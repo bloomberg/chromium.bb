@@ -4,6 +4,7 @@
 
 #include "ash/wm/maximize_mode/maximize_mode_window_manager.h"
 
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/switchable_windows.h"
 #include "ash/test/ash_test_base.h"
@@ -31,17 +32,27 @@ class MaximizeModeWindowManagerTest : public test::AshTestBase {
   MaximizeModeWindowManagerTest() {}
   virtual ~MaximizeModeWindowManagerTest() {}
 
-  // Creates a window. Note: This function will only work with a single root
-  // window.
-  aura::Window* CreateNonMaximizableWindow(ui::wm::WindowType type,
-                                           const gfx::Rect& bounds) {
-    return CreateWindowInWatchedContainer(type, bounds, false);
+  // Creates a window which has a fixed size.
+  aura::Window* CreateFixedSizeNonMaximizableWindow(ui::wm::WindowType type,
+                                                    const gfx::Rect& bounds) {
+    return CreateWindowInWatchedContainer(
+        type, bounds, gfx::Size(), false, false);
   }
 
-  // Creates a window.
+  // Creates a window which can not be maximized, but resized. |max_size|
+  // denotes the maximal possible size, if the size is empty, the window has no
+  // upper limit. Note: This function will only work with a single root window.
+  aura::Window* CreateNonMaximizableWindow(ui::wm::WindowType type,
+                                           const gfx::Rect& bounds,
+                                           const gfx::Size& max_size) {
+    return CreateWindowInWatchedContainer(type, bounds, max_size, false, true);
+  }
+
+  // Creates a maximizable and resizable window.
   aura::Window* CreateWindow(ui::wm::WindowType type,
                              const gfx::Rect bounds) {
-    return CreateWindowInWatchedContainer(type, bounds, true);
+    return CreateWindowInWatchedContainer(
+        type, bounds, gfx::Size(), true, true);
   }
 
   // Create the Maximized mode window manager.
@@ -74,17 +85,25 @@ class MaximizeModeWindowManagerTest : public test::AshTestBase {
  private:
   // Create a window in one of the containers which are watched by the
   // MaximizeModeWindowManager. Note that this only works with one root window.
+  // If |can_maximize| is not set, |max_size| is the upper limiting size for
+  // the window, whereas an empty size means that there is no limit.
   aura::Window* CreateWindowInWatchedContainer(ui::wm::WindowType type,
                                                const gfx::Rect& bounds,
-                                               bool can_maximize) {
+                                               const gfx::Size& max_size,
+                                               bool can_maximize,
+                                               bool can_resize) {
     aura::test::TestWindowDelegate* delegate = NULL;
     if (!can_maximize) {
       delegate = aura::test::TestWindowDelegate::CreateSelfDestroyingDelegate();
       delegate->set_window_component(HTCAPTION);
+      if (!max_size.IsEmpty())
+        delegate->set_maximum_size(max_size);
     }
     aura::Window* window = aura::test::CreateTestWindowWithDelegateAndType(
         delegate, type, 0, bounds, NULL);
     window->SetProperty(aura::client::kCanMaximizeKey, can_maximize);
+    if (!can_resize)
+      window->SetProperty(aura::client::kCanResizeKey, false);
     aura::Window* container = Shell::GetContainer(
         Shell::GetPrimaryRootWindow(),
         kSwitchableWindowContainerIds[0]);
@@ -116,7 +135,7 @@ TEST_F(MaximizeModeWindowManagerTest, PreCreateWindows) {
   scoped_ptr<aura::Window> w1(CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect1));
   scoped_ptr<aura::Window> w2(CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect2));
   scoped_ptr<aura::Window> w3(
-      CreateNonMaximizableWindow(ui::wm::WINDOW_TYPE_NORMAL, rect3));
+      CreateFixedSizeNonMaximizableWindow(ui::wm::WINDOW_TYPE_NORMAL, rect3));
   scoped_ptr<aura::Window> w4(CreateWindow(ui::wm::WINDOW_TYPE_PANEL, rect));
   scoped_ptr<aura::Window> w5(CreateWindow(ui::wm::WINDOW_TYPE_POPUP, rect));
   scoped_ptr<aura::Window> w6(CreateWindow(ui::wm::WINDOW_TYPE_CONTROL, rect));
@@ -168,6 +187,64 @@ TEST_F(MaximizeModeWindowManagerTest, PreCreateWindows) {
   EXPECT_EQ(rect.ToString(), w8->bounds().ToString());
 }
 
+// Test that non-maximizable windows get properly handled when going into
+// maximized mode.
+TEST_F(MaximizeModeWindowManagerTest,
+       PreCreateNonMaximizableButResizableWindows) {
+  // The window bounds.
+  gfx::Rect rect(10, 10, 200, 50);
+  gfx::Size max_size(300, 200);
+  gfx::Size empty_size;
+  scoped_ptr<aura::Window> unlimited_window(
+      CreateNonMaximizableWindow(ui::wm::WINDOW_TYPE_NORMAL, rect, empty_size));
+  scoped_ptr<aura::Window> limited_window(
+      CreateNonMaximizableWindow(ui::wm::WINDOW_TYPE_NORMAL, rect, max_size));
+  scoped_ptr<aura::Window> fixed_window(
+      CreateFixedSizeNonMaximizableWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
+  EXPECT_FALSE(wm::GetWindowState(unlimited_window.get())->IsMaximized());
+  EXPECT_EQ(rect.ToString(), unlimited_window->bounds().ToString());
+  EXPECT_FALSE(wm::GetWindowState(limited_window.get())->IsMaximized());
+  EXPECT_EQ(rect.ToString(), limited_window->bounds().ToString());
+  EXPECT_FALSE(wm::GetWindowState(fixed_window.get())->IsMaximized());
+  EXPECT_EQ(rect.ToString(), fixed_window->bounds().ToString());
+
+  gfx::Size workspace_size = ScreenUtil::GetMaximizedWindowBoundsInParent(
+      unlimited_window.get()).size();
+
+  // Create the manager and make sure that all qualifying windows were detected
+  // and changed.
+  ash::MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
+  ASSERT_TRUE(manager);
+  EXPECT_EQ(3, manager->GetNumberOfManagedWindows());
+  // The unlimited window should have the size of the workspace / parent window.
+  EXPECT_FALSE(wm::GetWindowState(unlimited_window.get())->IsMaximized());
+  EXPECT_EQ("0,0", unlimited_window->bounds().origin().ToString());
+  EXPECT_EQ(workspace_size.ToString(),
+            unlimited_window->bounds().size().ToString());
+  // The limited window should have the size of the upper possible bounds.
+  EXPECT_FALSE(wm::GetWindowState(limited_window.get())->IsMaximized());
+  EXPECT_NE(rect.origin().ToString(),
+            limited_window->bounds().origin().ToString());
+  EXPECT_EQ(max_size.ToString(),
+            limited_window->bounds().size().ToString());
+  // The fixed size window should have the size of the original window.
+  EXPECT_FALSE(wm::GetWindowState(fixed_window.get())->IsMaximized());
+  EXPECT_NE(rect.origin().ToString(),
+            fixed_window->bounds().origin().ToString());
+  EXPECT_EQ(rect.size().ToString(),
+            fixed_window->bounds().size().ToString());
+
+  // Destroy the manager again and check that the windows return to their
+  // previous state.
+  DestroyMaximizeModeWindowManager();
+  EXPECT_FALSE(wm::GetWindowState(unlimited_window.get())->IsMaximized());
+  EXPECT_EQ(rect.ToString(), unlimited_window->bounds().ToString());
+  EXPECT_FALSE(wm::GetWindowState(limited_window.get())->IsMaximized());
+  EXPECT_EQ(rect.ToString(), limited_window->bounds().ToString());
+  EXPECT_FALSE(wm::GetWindowState(fixed_window.get())->IsMaximized());
+  EXPECT_EQ(rect.ToString(), fixed_window->bounds().ToString());
+}
+
 // Test that creating windows while a maximizer exists picks them properly up.
 TEST_F(MaximizeModeWindowManagerTest, CreateWindows) {
   ash::MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
@@ -184,7 +261,7 @@ TEST_F(MaximizeModeWindowManagerTest, CreateWindows) {
   scoped_ptr<aura::Window> w1(CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect1));
   scoped_ptr<aura::Window> w2(CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect2));
   scoped_ptr<aura::Window> w3(
-      CreateNonMaximizableWindow(ui::wm::WINDOW_TYPE_NORMAL, rect3));
+      CreateFixedSizeNonMaximizableWindow(ui::wm::WINDOW_TYPE_NORMAL, rect3));
   scoped_ptr<aura::Window> w4(CreateWindow(ui::wm::WINDOW_TYPE_PANEL, rect));
   scoped_ptr<aura::Window> w5(CreateWindow(ui::wm::WINDOW_TYPE_POPUP, rect));
   scoped_ptr<aura::Window> w6(CreateWindow(ui::wm::WINDOW_TYPE_CONTROL, rect));
@@ -224,6 +301,60 @@ TEST_F(MaximizeModeWindowManagerTest, CreateWindows) {
   EXPECT_EQ(rect.ToString(), w8->bounds().ToString());
 }
 
+// Test that non-maximizable windows get properly handled when created in
+// maximized mode.
+TEST_F(MaximizeModeWindowManagerTest,
+       CreateNonMaximizableButResizableWindows) {
+  // Create the manager and make sure that all qualifying windows were detected
+  // and changed.
+  ash::MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
+  ASSERT_TRUE(manager);
+
+  gfx::Rect rect(10, 10, 200, 50);
+  gfx::Size max_size(300, 200);
+  gfx::Size empty_size;
+  scoped_ptr<aura::Window> unlimited_window(
+      CreateNonMaximizableWindow(ui::wm::WINDOW_TYPE_NORMAL, rect, empty_size));
+  scoped_ptr<aura::Window> limited_window(
+      CreateNonMaximizableWindow(ui::wm::WINDOW_TYPE_NORMAL, rect, max_size));
+  scoped_ptr<aura::Window> fixed_window(
+      CreateFixedSizeNonMaximizableWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
+
+  gfx::Size workspace_size = ScreenUtil::GetMaximizedWindowBoundsInParent(
+      unlimited_window.get()).size();
+
+  // All windows should be sized now as big as possible and be centered.
+  EXPECT_EQ(3, manager->GetNumberOfManagedWindows());
+  // The unlimited window should have the size of the workspace / parent window.
+  EXPECT_FALSE(wm::GetWindowState(unlimited_window.get())->IsMaximized());
+  EXPECT_EQ("0,0", unlimited_window->bounds().origin().ToString());
+  EXPECT_EQ(workspace_size.ToString(),
+            unlimited_window->bounds().size().ToString());
+  // The limited window should have the size of the upper possible bounds.
+  EXPECT_FALSE(wm::GetWindowState(limited_window.get())->IsMaximized());
+  EXPECT_NE(rect.origin().ToString(),
+            limited_window->bounds().origin().ToString());
+  EXPECT_EQ(max_size.ToString(),
+            limited_window->bounds().size().ToString());
+  // The fixed size window should have the size of the original window.
+  EXPECT_FALSE(wm::GetWindowState(fixed_window.get())->IsMaximized());
+  EXPECT_NE(rect.origin().ToString(),
+            fixed_window->bounds().origin().ToString());
+  EXPECT_EQ(rect.size().ToString(),
+            fixed_window->bounds().size().ToString());
+
+  // Destroy the manager again and check that the windows return to their
+  // creation state.
+  DestroyMaximizeModeWindowManager();
+
+  EXPECT_FALSE(wm::GetWindowState(unlimited_window.get())->IsMaximized());
+  EXPECT_EQ(rect.ToString(), unlimited_window->bounds().ToString());
+  EXPECT_FALSE(wm::GetWindowState(limited_window.get())->IsMaximized());
+  EXPECT_EQ(rect.ToString(), limited_window->bounds().ToString());
+  EXPECT_FALSE(wm::GetWindowState(fixed_window.get())->IsMaximized());
+  EXPECT_EQ(rect.ToString(), fixed_window->bounds().ToString());
+}
+
 // Test that windows which got created before the maximizer was created can be
 // destroyed while the maximizer is still running.
 TEST_F(MaximizeModeWindowManagerTest, PreCreateWindowsDeleteWhileActive) {
@@ -240,7 +371,7 @@ TEST_F(MaximizeModeWindowManagerTest, PreCreateWindowsDeleteWhileActive) {
     scoped_ptr<aura::Window> w2(
         CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect2));
     scoped_ptr<aura::Window> w3(
-        CreateNonMaximizableWindow(ui::wm::WINDOW_TYPE_NORMAL, rect3));
+        CreateFixedSizeNonMaximizableWindow(ui::wm::WINDOW_TYPE_NORMAL, rect3));
 
     // Create the manager and make sure that all qualifying windows were
     // detected and changed.
@@ -268,8 +399,8 @@ TEST_F(MaximizeModeWindowManagerTest, CreateWindowsAndDeleteWhileActive) {
     scoped_ptr<aura::Window> w2(
         CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, gfx::Rect(10, 60, 200, 50)));
     scoped_ptr<aura::Window> w3(
-        CreateNonMaximizableWindow(ui::wm::WINDOW_TYPE_NORMAL,
-                                   gfx::Rect(20, 140, 100, 100)));
+        CreateFixedSizeNonMaximizableWindow(ui::wm::WINDOW_TYPE_NORMAL,
+                                            gfx::Rect(20, 140, 100, 100)));
     // Check that the windows got automatically maximized as well.
     EXPECT_EQ(3, manager->GetNumberOfManagedWindows());
     EXPECT_TRUE(wm::GetWindowState(w1.get())->IsMaximized());
@@ -346,20 +477,20 @@ TEST_F(MaximizeModeWindowManagerTest, MinimizedWindowBehavior) {
       initially_maximized_window.get())->IsMaximized());
 }
 
-// Check that resizing the desktop does reposition unmaximizable & managed
-// windows.
+// Check that resizing the desktop does reposition unmaximizable, unresizable &
+// managed windows.
 TEST_F(MaximizeModeWindowManagerTest, DesktopSizeChangeMovesUnmaximizable) {
   UpdateDisplay("400x400");
   // This window will move because it does not fit the new bounds.
   gfx::Rect rect(20, 300, 100, 100);
   scoped_ptr<aura::Window> window1(
-      CreateNonMaximizableWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
+      CreateFixedSizeNonMaximizableWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
   EXPECT_EQ(rect.ToString(), window1->bounds().ToString());
 
   // This window will not move because it does fit the new bounds.
   gfx::Rect rect2(20, 140, 100, 100);
   scoped_ptr<aura::Window> window2(
-      CreateNonMaximizableWindow(ui::wm::WINDOW_TYPE_NORMAL, rect2));
+      CreateFixedSizeNonMaximizableWindow(ui::wm::WINDOW_TYPE_NORMAL, rect2));
 
   // Turning on the manager will reposition (but not resize) the window.
   ash::MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
@@ -388,7 +519,7 @@ TEST_F(MaximizeModeWindowManagerTest, DesktopSizeChangeMovesUnmaximizable) {
 TEST_F(MaximizeModeWindowManagerTest, SizeChangeReturnWindowToOriginalPos) {
   gfx::Rect rect(20, 140, 100, 100);
   scoped_ptr<aura::Window> window(
-      CreateNonMaximizableWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
+      CreateFixedSizeNonMaximizableWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
 
   // Turning on the manager will reposition (but not resize) the window.
   ash::MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
@@ -417,11 +548,11 @@ TEST_F(MaximizeModeWindowManagerTest, SizeChangeReturnWindowToOriginalPos) {
 TEST_F(MaximizeModeWindowManagerTest, ModeChangeKeepsMRUOrder) {
   gfx::Rect rect(20, 140, 100, 100);
   scoped_ptr<aura::Window> w1(
-      CreateNonMaximizableWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
+      CreateFixedSizeNonMaximizableWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
   scoped_ptr<aura::Window> w2(CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
   scoped_ptr<aura::Window> w3(CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
   scoped_ptr<aura::Window> w4(
-      CreateNonMaximizableWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
+      CreateFixedSizeNonMaximizableWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
   scoped_ptr<aura::Window> w5(CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
 
   // The windows should be in the reverse order of creation in the MRU list.
@@ -564,7 +695,7 @@ TEST_F(MaximizeModeWindowManagerTest, SnapModeTests) {
 TEST_F(MaximizeModeWindowManagerTest, TryToDesktopSizeDragUnmaximizable) {
   gfx::Rect rect(10, 10, 100, 100);
   scoped_ptr<aura::Window> window(
-      CreateNonMaximizableWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
+      CreateFixedSizeNonMaximizableWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
   EXPECT_EQ(rect.ToString(), window->bounds().ToString());
 
   // 1. Move the mouse over the caption and check that dragging the window does

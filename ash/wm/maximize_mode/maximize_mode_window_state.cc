@@ -28,7 +28,7 @@ namespace {
 // Returns the biggest possible size for a window which is about to be
 // maximized.
 gfx::Size GetMaximumSizeOfWindow(wm::WindowState* window_state) {
-  DCHECK(window_state->CanMaximize());
+  DCHECK(window_state->CanMaximize() || window_state->CanResize());
 
   gfx::Size workspace_size = ScreenUtil::GetMaximizedWindowBoundsInParent(
       window_state->window()).size();
@@ -48,7 +48,8 @@ gfx::Size GetMaximumSizeOfWindow(wm::WindowState* window_state) {
 // Returns the maximized and centered bounds of a window.
 gfx::Rect GetMaximizedAndCenteredBounds(wm::WindowState* state_object) {
   gfx::Rect bounds_in_parent;
-  if (state_object->CanMaximize()) {
+  // Make the window as big as possible.
+  if (state_object->CanMaximize() || state_object->CanResize()) {
     bounds_in_parent.set_size(GetMaximumSizeOfWindow(state_object));
   } else {
     // We prefer the user given window dimensions over the current windows
@@ -137,8 +138,14 @@ void MaximizeModeWindowState::OnWMEvent(wm::WindowState* window_state,
     case wm::WM_EVENT_SHOW_INACTIVE:
       return;
     case wm::WM_EVENT_SET_BOUNDS:
-      if (current_state_type_ != wm::WINDOW_STATE_TYPE_MINIMIZED &&
-          current_state_type_ != wm::WINDOW_STATE_TYPE_MAXIMIZED) {
+      if (current_state_type_ == wm::WINDOW_STATE_TYPE_MAXIMIZED ||
+          window_state->CanResize()) {
+        // In case the window is resizable and / or maximized we ignore the
+        // requested bounds change and resize to the biggest possible size.
+        MaximizeOrCenterWindow(window_state, true);
+      } else if (current_state_type_ != wm::WINDOW_STATE_TYPE_MINIMIZED) {
+        // In all other cases (except for minimized windows) we respect the
+        // requested bounds and center it to a fully visible area on the screen.
         gfx::Rect bounds_in_parent =
             (static_cast<const wm::SetBoundsEvent*>(event))->requested_bounds();
         bounds_in_parent.ClampToCenteredSize(

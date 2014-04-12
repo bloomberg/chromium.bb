@@ -164,7 +164,10 @@ class NativeAppWindowStateDelegate : public ash::wm::WindowStateDelegate,
   virtual void OnPostWindowStateTypeChange(
       ash::wm::WindowState* window_state,
       ash::wm::WindowStateType old_type) OVERRIDE {
+    // Since the window state might get set by a window manager, it is possible
+    // to come here before the application set its |BaseWindow|.
     if (!window_state->IsFullscreen() && !window_state->IsMinimized() &&
+        app_window_->GetBaseWindow() &&
         app_window_->GetBaseWindow()->IsFullscreenOrPending()) {
       app_window_->Restore();
       // Usually OnNativeWindowChanged() is called when the window bounds are
