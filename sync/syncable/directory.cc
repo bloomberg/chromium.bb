@@ -324,10 +324,6 @@ int Directory::GetPositionIndex(
   return std::distance(siblings->begin(), it);
 }
 
-EntryKernel* Directory::GetRootEntry() {
-  return GetEntryById(Id());
-}
-
 bool Directory::InsertEntry(BaseWriteTransaction* trans, EntryKernel* entry) {
   ScopedKernelLock lock(this);
   return InsertEntry(trans, entry, &lock);

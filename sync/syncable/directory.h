@@ -390,7 +390,6 @@ class SYNC_EXPORT Directory {
   virtual EntryKernel* GetEntryById(const Id& id);
   EntryKernel* GetEntryByServerTag(const std::string& tag);
   virtual EntryKernel* GetEntryByClientTag(const std::string& tag);
-  EntryKernel* GetRootEntry();
   bool ReindexId(BaseWriteTransaction* trans, EntryKernel* const entry,
                  const Id& new_id);
   bool ReindexParentId(BaseWriteTransaction* trans, EntryKernel* const entry,
