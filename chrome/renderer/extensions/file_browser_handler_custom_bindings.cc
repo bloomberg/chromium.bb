@@ -12,7 +12,7 @@
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebDOMFileSystem.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace extensions {
 
@@ -47,8 +47,8 @@ void FileBrowserHandlerCustomBindings::GetExternalFileEntry(
     blink::WebDOMFileSystem::EntryType entry_type =
         is_directory ? blink::WebDOMFileSystem::EntryTypeDirectory
                      : blink::WebDOMFileSystem::EntryTypeFile;
-    blink::WebFrame* webframe =
-        blink::WebFrame::frameForContext(context()->v8_context());
+    blink::WebLocalFrame* webframe =
+        blink::WebLocalFrame::frameForContext(context()->v8_context());
     args.GetReturnValue().Set(
         blink::WebDOMFileSystem::create(
             webframe,
