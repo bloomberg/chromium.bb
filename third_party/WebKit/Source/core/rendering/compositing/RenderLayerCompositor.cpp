@@ -150,8 +150,14 @@ void RenderLayerCompositor::updateForceCompositingMode()
     // FIXME: Can settings really be null here?
     if (Settings* settings = m_renderView.document().settings()) {
         bool forceCompositingMode = settings->forceCompositingMode() && m_hasAcceleratedCompositing;
-        if (forceCompositingMode && !isMainFrame())
+        if (forceCompositingMode && !isMainFrame()) {
+            // requiresCompositingForScrollableFrame will return a stale value if the RenderView
+            // needsLayout. Skip updating m_forceCompositingMode here as we'll call back into
+            // this method at the end of layout.
+            if (m_renderView.needsLayout())
+                return;
             forceCompositingMode = m_compositingReasonFinder.requiresCompositingForScrollableFrame();
+        }
         if (forceCompositingMode != m_forceCompositingMode) {
             setCompositingLayersNeedRebuild();
             m_forceCompositingMode = forceCompositingMode;
