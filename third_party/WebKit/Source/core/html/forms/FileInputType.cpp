@@ -296,10 +296,6 @@ void FileInputType::setFiles(PassRefPtrWillBeRawPtr<FileList> files)
     input->notifyFormStateChanged();
     input->setNeedsValidityCheck();
 
-    Vector<String> paths;
-    for (unsigned i = 0; i < m_fileList->length(); ++i)
-        paths.append(m_fileList->item(i)->path());
-
     if (input->renderer())
         input->renderer()->repaint();
 
