@@ -772,6 +772,54 @@ TEST_F(WorkspaceControllerTest, BasicAutoPlacingOnCreate) {
   }
 }
 
+// Test that adding a second window shifts both the first window and its
+// transient child.
+TEST_F(WorkspaceControllerTest, AutoPlacingMovesTransientChild) {
+  // Create an auto-positioned window.
+  scoped_ptr<aura::Window> window1(CreateTestWindowInShellWithId(0));
+  gfx::Rect desktop_area = window1->parent()->bounds();
+  wm::GetWindowState(window1.get())->set_window_position_managed(true);
+  // Hide and then show |window1| to trigger auto-positioning logic.
+  window1->Hide();
+  window1->SetBounds(gfx::Rect(16, 32, 300, 300));
+  window1->Show();
+
+  // |window1| should be horizontally centered.
+  int x_window1 = (desktop_area.width() - 300) / 2;
+  EXPECT_EQ(base::IntToString(x_window1) + ",32 300x300",
+            window1->bounds().ToString());
+
+  // Create a |child| window and make it a transient child of |window1|.
+  scoped_ptr<Window> child(CreateTestWindowUnparented());
+  ::wm::AddTransientChild(window1.get(), child.get());
+  const int x_child = 305;
+  child->SetBounds(gfx::Rect(x_child, 20, 200, 200));
+  ParentWindowInPrimaryRootWindow(child.get());
+  child->Show();
+  wm::ActivateWindow(child.get());
+
+  // The |child| should be where it was created.
+  EXPECT_EQ(base::IntToString(x_child) + ",20 200x200",
+            child->bounds().ToString());
+
+  // Create and show a second window forcing the first window and its child to
+  // move.
+  scoped_ptr<aura::Window> window2(CreateTestWindowInShellWithId(1));
+  wm::GetWindowState(window2.get())->set_window_position_managed(true);
+  // Hide and then show |window2| to trigger auto-positioning logic.
+  window2->Hide();
+  window2->SetBounds(gfx::Rect(32, 48, 250, 250));
+  window2->Show();
+
+  // Check that both |window1| and |child| have moved left.
+  EXPECT_EQ("0,32 300x300", window1->bounds().ToString());
+  int x = x_child - x_window1;
+  EXPECT_EQ(base::IntToString(x) + ",20 200x200", child->bounds().ToString());
+  // Check that |window2| has moved right.
+  x = desktop_area.width() - window2->bounds().width();
+  EXPECT_EQ(base::IntToString(x) + ",48 250x250", window2->bounds().ToString());
+}
+
 // Test the basic auto placement of one and or two windows in a "simulated
 // session" of sequential window operations.
 TEST_F(WorkspaceControllerTest, BasicAutoPlacingOnShowHide) {
