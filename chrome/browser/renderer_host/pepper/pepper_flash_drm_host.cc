@@ -37,8 +37,7 @@ using content::BrowserPpapiHost;
 namespace chrome {
 
 namespace {
-const base::FilePath::CharType kVoucherFilename[] =
-    FILE_PATH_LITERAL("plugin.vch");
+const char kVoucherFilename[] = "plugin.vch";
 }
 
 #if defined(OS_WIN)
@@ -123,8 +122,7 @@ PepperFlashDRMHost::PepperFlashDRMHost(BrowserPpapiHost* host,
       instance, &render_process_id, &render_frame_id);
   base::FilePath plugin_dir = host->GetPluginPath().DirName();
   DCHECK(!plugin_dir.empty() && success);
-  base::FilePath voucher_file =
-      plugin_dir.Append(base::FilePath(kVoucherFilename));
+  base::FilePath voucher_file = plugin_dir.AppendASCII(kVoucherFilename);
   content::ChildProcessSecurityPolicy::GetInstance()->GrantReadFile(
       render_process_id, voucher_file);
 
@@ -165,9 +163,8 @@ int32_t PepperFlashDRMHost::OnHostMsgGetHmonitor(
   if (monitor_id) {
     context->reply_msg = PpapiPluginMsg_FlashDRM_GetHmonitorReply(monitor_id);
     return PP_OK;
-  } else {
-    return PP_ERROR_FAILED;
   }
+  return PP_ERROR_FAILED;
 }
 
 int32_t PepperFlashDRMHost::OnHostMsgMonitorIsExternal(
@@ -178,9 +175,8 @@ int32_t PepperFlashDRMHost::OnHostMsgMonitorIsExternal(
     context->reply_msg =
         PpapiPluginMsg_FlashDRM_MonitorIsExternalReply(PP_FALSE);
     return PP_OK;
-  } else {
-    return PP_ERROR_FAILED;
   }
+  return PP_ERROR_FAILED;
 }
 
 void PepperFlashDRMHost::GotDeviceID(
