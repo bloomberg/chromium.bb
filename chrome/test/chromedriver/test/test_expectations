@@ -89,9 +89,6 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'PageLoadingTest.testShouldBeAbleToNavigateBackInTheBrowserHistoryInPresenceOfIframes',
     'PageLoadingTest.testShouldBeAbleToNavigateBackInTheBrowserHistory',
 ]
-_REVISION_NEGATIVE_FILTER['31'] = _REVISION_NEGATIVE_FILTER['HEAD'] + [
-    'I18nTest.*',  # This was fixed in a later version of 31 than we use.
-]
 
 
 _OS_NEGATIVE_FILTER = {}
