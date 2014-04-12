@@ -132,22 +132,6 @@ bool StyleStopData::operator==(const StyleStopData& other) const
         && opacity == other.opacity;
 }
 
-StyleTextData::StyleTextData()
-    : kerning(SVGRenderStyle::initialKerning())
-{
-}
-
-StyleTextData::StyleTextData(const StyleTextData& other)
-    : RefCounted<StyleTextData>()
-    , kerning(other.kerning->clone())
-{
-}
-
-bool StyleTextData::operator==(const StyleTextData& other) const
-{
-    return *kerning == *other.kerning;
-}
-
 StyleMiscData::StyleMiscData()
     : floodColor(SVGRenderStyle::initialFloodColor())
     , floodOpacity(SVGRenderStyle::initialFloodOpacity())

@@ -378,9 +378,6 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyHeight:
         style->setHeight(animatableValueToLength(value, state, NonNegativeValues));
         return;
-    case CSSPropertyKerning:
-        style->setKerning(toAnimatableSVGLength(value)->toSVGLength());
-        return;
     case CSSPropertyLeft:
         style->setLeft(animatableValueToLength(value, state));
         return;

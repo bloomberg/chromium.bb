@@ -132,7 +132,6 @@ imageRendering
 isolation
 justifyContent
 justifySelf
-kerning
 left
 length
 letterSpacing

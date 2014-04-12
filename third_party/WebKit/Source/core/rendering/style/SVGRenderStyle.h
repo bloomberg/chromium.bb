@@ -102,13 +102,6 @@ public:
         return length.release();
     }
 
-    static PassRefPtr<SVGLength> initialKerning()
-    {
-        RefPtr<SVGLength> length = SVGLength::create();
-        length->newValueSpecifiedUnits(LengthTypeNumber, 0);
-        return length.release();
-    }
-
     static PassRefPtr<SVGLength> initialStrokeDashOffset()
     {
         RefPtr<SVGLength> length = SVGLength::create();
@@ -220,12 +213,6 @@ public:
             stroke.access()->dashOffset = obj;
     }
 
-    void setKerning(PassRefPtr<SVGLength> obj)
-    {
-        if (!(text->kerning == obj))
-            text.access()->kerning = obj;
-    }
-
     void setStopOpacity(float obj)
     {
         if (!(stops->opacity == obj))
@@ -330,7 +317,6 @@ public:
     float strokeMiterLimit() const { return stroke->miterLimit; }
     PassRefPtr<SVGLength> strokeWidth() const { return stroke->width; }
     PassRefPtr<SVGLength> strokeDashOffset() const { return stroke->dashOffset; }
-    PassRefPtr<SVGLength> kerning() const { return text->kerning; }
     float stopOpacity() const { return stops->opacity; }
     const Color& stopColor() const { return stops->color; }
     float floodOpacity() const { return misc->floodOpacity; }
@@ -427,7 +413,6 @@ protected:
     // inherited attributes
     DataRef<StyleFillData> fill;
     DataRef<StyleStrokeData> stroke;
-    DataRef<StyleTextData> text;
     DataRef<StyleInheritedResourceData> inheritedResources;
 
     // non-inherited attributes

@@ -148,8 +148,6 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const RenderStyle&
         return a.fontWeight() == b.fontWeight();
     case CSSPropertyHeight:
         return a.height() == b.height();
-    case CSSPropertyKerning:
-        return ptrsOrValuesEqual<PassRefPtr<SVGLength> >(a.kerning(), b.kerning());
     case CSSPropertyLeft:
         return a.left() == b.left();
     case CSSPropertyLetterSpacing:

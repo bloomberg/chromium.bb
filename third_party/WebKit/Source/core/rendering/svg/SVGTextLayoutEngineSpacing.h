@@ -28,14 +28,14 @@ class Font;
 class SVGRenderStyle;
 class SVGElement;
 
-// Helper class used by SVGTextLayoutEngine to handle 'kerning' / 'letter-spacing' and 'word-spacing'.
+// Helper class used by SVGTextLayoutEngine to handle 'letter-spacing' and 'word-spacing'.
 class SVGTextLayoutEngineSpacing {
     WTF_MAKE_NONCOPYABLE(SVGTextLayoutEngineSpacing);
 public:
     SVGTextLayoutEngineSpacing(const Font&);
 
     float calculateSVGKerning(bool isVerticalText, Glyph currentGlyph);
-    float calculateCSSKerningAndSpacing(const SVGRenderStyle*, SVGElement* lengthContext, UChar currentCharacter);
+    float calculateCSSSpacing(UChar currentCharacter);
 
 private:
     const Font& m_font;

@@ -182,24 +182,6 @@ namespace WebCore {
         StyleStopData(const StyleStopData&);
     };
 
-    class StyleTextData : public RefCounted<StyleTextData> {
-    public:
-        static PassRefPtr<StyleTextData> create() { return adoptRef(new StyleTextData); }
-        PassRefPtr<StyleTextData> copy() const { return adoptRef(new StyleTextData(*this)); }
-
-        bool operator==(const StyleTextData& other) const;
-        bool operator!=(const StyleTextData& other) const
-        {
-            return !(*this == other);
-        }
-
-        RefPtr<SVGLength> kerning;
-
-    private:
-        StyleTextData();
-        StyleTextData(const StyleTextData&);
-    };
-
     // Note: the rule for this class is, *no inheritance* of these props
     class StyleMiscData : public RefCounted<StyleMiscData> {
     public:
@@ -216,7 +198,6 @@ namespace WebCore {
         float floodOpacity;
         Color lightingColor;
 
-        // non-inherited text stuff lives here not in StyleTextData.
         RefPtr<SVGLength> baselineShiftValue;
 
     private:

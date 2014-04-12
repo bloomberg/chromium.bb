@@ -366,7 +366,6 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyAlignmentBaseline,
     CSSPropertyBaselineShift,
     CSSPropertyDominantBaseline,
-    CSSPropertyKerning,
     CSSPropertyTextAnchor,
     CSSPropertyWritingMode,
     CSSPropertyGlyphOrientationHorizontal,
@@ -2852,7 +2851,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
         case CSSPropertyDominantBaseline:
         case CSSPropertyGlyphOrientationHorizontal:
         case CSSPropertyGlyphOrientationVertical:
-        case CSSPropertyKerning:
         case CSSPropertyTextAnchor:
         case CSSPropertyVectorEffect:
         case CSSPropertyPaintOrder:

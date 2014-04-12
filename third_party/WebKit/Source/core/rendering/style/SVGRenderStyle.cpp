@@ -40,7 +40,6 @@ SVGRenderStyle::SVGRenderStyle()
 
     fill = defaultStyle->fill;
     stroke = defaultStyle->stroke;
-    text = defaultStyle->text;
     stops = defaultStyle->stops;
     misc = defaultStyle->misc;
     inheritedResources = defaultStyle->inheritedResources;
@@ -55,7 +54,6 @@ SVGRenderStyle::SVGRenderStyle(CreateDefaultType)
 
     fill.init();
     stroke.init();
-    text.init();
     stops.init();
     misc.init();
     inheritedResources.init();
@@ -67,7 +65,6 @@ SVGRenderStyle::SVGRenderStyle(const SVGRenderStyle& other)
 {
     fill = other.fill;
     stroke = other.stroke;
-    text = other.text;
     stops = other.stops;
     misc = other.misc;
     inheritedResources = other.inheritedResources;
@@ -85,7 +82,6 @@ bool SVGRenderStyle::operator==(const SVGRenderStyle& other) const
 {
     return fill == other.fill
         && stroke == other.stroke
-        && text == other.text
         && stops == other.stops
         && misc == other.misc
         && inheritedResources == other.inheritedResources
@@ -98,7 +94,6 @@ bool SVGRenderStyle::inheritedNotEqual(const SVGRenderStyle* other) const
 {
     return fill != other->fill
         || stroke != other->stroke
-        || text != other->text
         || inheritedResources != other->inheritedResources
         || svg_inherited_flags != other->svg_inherited_flags;
 }
@@ -110,7 +105,6 @@ void SVGRenderStyle::inheritFrom(const SVGRenderStyle* svgInheritParent)
 
     fill = svgInheritParent->fill;
     stroke = svgInheritParent->stroke;
-    text = svgInheritParent->text;
     inheritedResources = svgInheritParent->inheritedResources;
 
     svg_inherited_flags = svgInheritParent->svg_inherited_flags;
@@ -127,10 +121,6 @@ void SVGRenderStyle::copyNonInheritedFrom(const SVGRenderStyle* other)
 StyleDifference SVGRenderStyle::diff(const SVGRenderStyle* other) const
 {
     // NOTE: All comparisions that may return StyleDifferenceLayout have to go before those who return StyleDifferenceRepaint
-
-    // If kerning changes, we need a relayout, to force SVGCharacterData to be recalculated in the SVGRootInlineBox.
-    if (text != other->text)
-        return StyleDifferenceLayout;
 
     // If resources change, we need a relayout, as the presence of resources influences the repaint rect.
     if (resources != other->resources)

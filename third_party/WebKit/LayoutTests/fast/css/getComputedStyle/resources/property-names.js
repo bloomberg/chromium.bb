@@ -170,7 +170,6 @@ var propertiesToTest = {
     "height": true,
     "image-rendering": true,
     "justify-content": true,
-    "kerning": true,
     "left": true,
     "letter-spacing": true,
     "lighting-color": true,

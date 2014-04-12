@@ -674,6 +674,16 @@ crbug.com/320099 webaudio/oscillator-triangle.html [ NeedsManualRebaseline ]
 
 crbug.com/326139 media/video-frame-accurate-seek.html [ Pass ImageOnlyFailure ]
 
+Bug(pdr) webexposed/css-properties-as-js-properties.html [ NeedsRebaseline ]
+Bug(pdr) virtual/stable/webexposed/css-properties-as-js-properties.html [ NeedsRebaseline ]
+Bug(pdr) transitions/svg-transitions.html [ NeedsRebaseline ]
+Bug(pdr) virtual/threaded/transitions/svg-transitions.html [ NeedsRebaseline ]
+Bug(pdr) svg/css/getComputedStyle-basic.xhtml [ NeedsRebaseline ]
+Bug(pdr) fast/css/getComputedStyle/computed-style-without-renderer.html [ NeedsRebaseline ]
+Bug(pdr) fast/css/getComputedStyle/computed-style.html [ NeedsRebaseline ]
+Bug(pdr) svg/batik/text/textLayout.svg [ NeedsRebaseline ]
+Bug(pdr) svg/batik/text/textOnPathSpaces.svg [ NeedsRebaseline ]
+
 crbug.com/245556 compositing/transitions/transform-on-large-layer.html [ ImageOnlyFailure ]
 crbug.com/245556 virtual/softwarecompositing/transitions/transform-on-large-layer.html [ ImageOnlyFailure ]
 

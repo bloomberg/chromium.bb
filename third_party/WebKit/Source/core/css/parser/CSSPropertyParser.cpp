@@ -8375,13 +8375,6 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
 
         break;
 
-    case CSSPropertyKerning: // auto | normal | <length> | inherit
-        if (id == CSSValueAuto || id == CSSValueNormal)
-            validPrimitive = true;
-        else
-            validPrimitive = validUnit(value, FLength, SVGAttributeMode);
-        break;
-
     case CSSPropertyClipPath: // <uri> | none | inherit
     case CSSPropertyFilter:
         if (id == CSSValueNone) {

@@ -21,7 +21,6 @@
 
 #include "core/rendering/svg/SVGTextLayoutEngineSpacing.h"
 
-#include "core/rendering/style/SVGRenderStyle.h"
 #include "core/svg/SVGLengthContext.h"
 #include "platform/fonts/Character.h"
 #include "platform/fonts/Font.h"
@@ -83,24 +82,15 @@ float SVGTextLayoutEngineSpacing::calculateSVGKerning(bool isVerticalText, Glyph
 #endif
 }
 
-float SVGTextLayoutEngineSpacing::calculateCSSKerningAndSpacing(const SVGRenderStyle* style, SVGElement* contextElement, UChar currentCharacter)
+float SVGTextLayoutEngineSpacing::calculateCSSSpacing(UChar currentCharacter)
 {
-    float kerning = 0;
-    RefPtr<SVGLength> kerningLength = style->kerning();
-    if (kerningLength->unitType() == LengthTypePercentage)
-        kerning = kerningLength->valueAsPercentage() * m_font.fontDescription().computedPixelSize();
-    else {
-        SVGLengthContext lengthContext(contextElement);
-        kerning = kerningLength->value(lengthContext);
-    }
-
     UChar lastCharacter = m_lastCharacter;
     m_lastCharacter = currentCharacter;
 
-    if (!kerning && !m_font.fontDescription().letterSpacing() && !m_font.fontDescription().wordSpacing())
+    if (!m_font.fontDescription().letterSpacing() && !m_font.fontDescription().wordSpacing())
         return 0;
 
-    float spacing = m_font.fontDescription().letterSpacing() + kerning;
+    float spacing = m_font.fontDescription().letterSpacing();
     if (currentCharacter && lastCharacter && m_font.fontDescription().wordSpacing()) {
         if (Character::treatAsSpace(currentCharacter) && !Character::treatAsSpace(lastCharacter))
             spacing += m_font.fontDescription().wordSpacing();

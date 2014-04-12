@@ -227,7 +227,6 @@ stroke-width: 1;
 alignment-baseline: auto;
 baseline-shift: baseline;
 dominant-baseline: auto;
-kerning: 0;
 text-anchor: start;
 writing-mode: lr-tb;
 glyph-orientation-horizontal: 0deg;

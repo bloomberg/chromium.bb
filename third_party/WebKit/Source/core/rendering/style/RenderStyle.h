@@ -1435,8 +1435,6 @@ public:
 
     PassRefPtr<SVGLength> baselineShiftValue() const { return svgStyle()->baselineShiftValue(); }
     void setBaselineShiftValue(PassRefPtr<SVGLength> s) { accessSVGStyle()->setBaselineShiftValue(s); }
-    PassRefPtr<SVGLength> kerning() const { return svgStyle()->kerning(); }
-    void setKerning(PassRefPtr<SVGLength> k) { accessSVGStyle()->setKerning(k); }
 
     void setShapeOutside(PassRefPtr<ShapeValue> value)
     {

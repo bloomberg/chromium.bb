@@ -2129,7 +2129,6 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     case CSSPropertyFillOpacity:
     case CSSPropertyFilter:
     case CSSPropertyFloodOpacity:
-    case CSSPropertyKerning:
     case CSSPropertyMarkerEnd:
     case CSSPropertyMarkerMid:
     case CSSPropertyMarkerStart:

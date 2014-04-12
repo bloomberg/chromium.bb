@@ -348,8 +348,6 @@ PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPro
         return createFromFontWeight(style.fontWeight());
     case CSSPropertyHeight:
         return createFromLength(style.height(), style);
-    case CSSPropertyKerning:
-        return AnimatableSVGLength::create(style.kerning());
     case CSSPropertyLightingColor:
         return createFromColor(property, style);
     case CSSPropertyListStyleImage:

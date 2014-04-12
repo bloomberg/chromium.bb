@@ -745,7 +745,6 @@ bool CSSAnimations::isAnimatableProperty(CSSPropertyID property)
     case CSSPropertyFontSize:
     case CSSPropertyFontWeight:
     case CSSPropertyHeight:
-    case CSSPropertyKerning:
     case CSSPropertyLeft:
     case CSSPropertyLetterSpacing:
     case CSSPropertyLightingColor:

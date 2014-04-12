@@ -256,7 +256,6 @@ fill-opacity svg, type_name=float, converter=convertNumberOrPercentage
 fill-rule svg, type_name=WindRule
 filter svg, type_name=String, name_for_methods=FilterResource, converter=convertFragmentIdentifier
 flood-opacity svg, type_name=float, converter=convertNumberOrPercentage
-kerning svg, type_name=SVGLength, converter=convertSVGLength
 marker-start svg, type_name=String, name_for_methods=MarkerStartResource, converter=convertFragmentIdentifier
 marker-mid svg, type_name=String, name_for_methods=MarkerMidResource, converter=convertFragmentIdentifier
 marker-end svg, type_name=String, name_for_methods=MarkerEndResource, converter=convertFragmentIdentifier

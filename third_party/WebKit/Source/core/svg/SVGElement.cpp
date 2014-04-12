@@ -388,7 +388,6 @@ CSSPropertyID SVGElement::cssPropertyIdForSVGAttributeName(const QualifiedName& 
         mapAttributeToCSSProperty(propertyNameToIdMap, glyph_orientation_horizontalAttr);
         mapAttributeToCSSProperty(propertyNameToIdMap, glyph_orientation_verticalAttr);
         mapAttributeToCSSProperty(propertyNameToIdMap, image_renderingAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, kerningAttr);
         mapAttributeToCSSProperty(propertyNameToIdMap, letter_spacingAttr);
         mapAttributeToCSSProperty(propertyNameToIdMap, lighting_colorAttr);
         mapAttributeToCSSProperty(propertyNameToIdMap, marker_endAttr);
@@ -663,7 +662,6 @@ AnimatedPropertyType SVGElement::animatedPropertyTypeForCSSAttribute(const Quali
         cssPropertyMap.set(font_variantAttr, AnimatedString);
         cssPropertyMap.set(font_weightAttr, AnimatedString);
         cssPropertyMap.set(image_renderingAttr, AnimatedString);
-        cssPropertyMap.set(kerningAttr, AnimatedLength);
         cssPropertyMap.set(letter_spacingAttr, AnimatedLength);
         cssPropertyMap.set(lighting_colorAttr, AnimatedColor);
         cssPropertyMap.set(marker_endAttr, AnimatedString);
