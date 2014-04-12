@@ -33,9 +33,6 @@ namespace {
 
 const int kUserLabelToIconPadding = 5;
 
-const int kTrayAvatarLargeSize = 32;
-const int kTrayAvatarLargeCornerRadius = 2;
-
 }  // namespace
 
 namespace ash {
@@ -180,9 +177,9 @@ void TrayUser::UpdateAfterLoginStatusChange(user::LoginStatus status) {
     label_->SetText(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_GUEST_LABEL));
   }
 
-  if (avatar_ && switches::UseAlternateShelfLayout()) {
+  if (avatar_) {
     avatar_->SetCornerRadii(
-        0, kTrayAvatarLargeCornerRadius, kTrayAvatarLargeCornerRadius, 0);
+        0, kTrayAvatarCornerRadius, kTrayAvatarCornerRadius, 0);
     avatar_->SetBorder(views::Border::NullBorder());
   }
   UpdateAvatarImage(status);
@@ -198,17 +195,9 @@ void TrayUser::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
   if (alignment == SHELF_ALIGNMENT_BOTTOM ||
       alignment == SHELF_ALIGNMENT_TOP) {
     if (avatar_) {
-      if (switches::UseAlternateShelfLayout()) {
-        avatar_->SetBorder(views::Border::NullBorder());
-        avatar_->SetCornerRadii(
-            0, kTrayAvatarLargeCornerRadius, kTrayAvatarLargeCornerRadius, 0);
-      } else {
-        avatar_->SetBorder(views::Border::CreateEmptyBorder(
-            0,
-            kTrayImageItemHorizontalPaddingBottomAlignment + 2,
-            0,
-            kTrayImageItemHorizontalPaddingBottomAlignment));
-      }
+      avatar_->SetBorder(views::Border::NullBorder());
+      avatar_->SetCornerRadii(
+          0, kTrayAvatarCornerRadius, kTrayAvatarCornerRadius, 0);
     }
     if (label_) {
       // If label_ hasn't figured out its size yet, do that first.
@@ -228,13 +217,9 @@ void TrayUser::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
                              0, 0, kUserLabelToIconPadding));
   } else {
     if (avatar_) {
-      if (switches::UseAlternateShelfLayout()) {
-        avatar_->SetBorder(views::Border::NullBorder());
-        avatar_->SetCornerRadii(
-            0, 0, kTrayAvatarLargeCornerRadius, kTrayAvatarLargeCornerRadius);
-      } else {
-        SetTrayImageItemBorder(avatar_, alignment);
-      }
+      avatar_->SetBorder(views::Border::NullBorder());
+      avatar_->SetCornerRadii(
+          0, 0, kTrayAvatarCornerRadius, kTrayAvatarCornerRadius);
     }
     if (label_) {
       label_->SetBorder(views::Border::CreateEmptyBorder(
@@ -276,17 +261,14 @@ void TrayUser::UpdateAvatarImage(user::LoginStatus status) {
       GetTrayIndex() >= session_state_delegate->NumberOfLoggedInUsers())
     return;
 
-  int icon_size = switches::UseAlternateShelfLayout() ? kTrayAvatarLargeSize
-                                                      : kTrayAvatarSize;
-
   content::BrowserContext* context = session_state_delegate->
       GetBrowserContextByIndex(GetTrayIndex());
   avatar_->SetImage(session_state_delegate->GetUserImage(context),
-                    gfx::Size(icon_size, icon_size));
+                    gfx::Size(kTrayAvatarSize, kTrayAvatarSize));
 
   // Unit tests might come here with no images for some users.
   if (avatar_->size().IsEmpty())
-    avatar_->SetSize(gfx::Size(icon_size, icon_size));
+    avatar_->SetSize(gfx::Size(kTrayAvatarSize, kTrayAvatarSize));
 }
 
 MultiProfileIndex TrayUser::GetTrayIndex() {

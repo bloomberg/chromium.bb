@@ -946,14 +946,6 @@ const Experiment kExperiments[] = {
   },
 #if defined(OS_CHROMEOS)
   {
-      "ash-use-alternate-shelf",
-      IDS_FLAGS_ALTERNATE_SHELF_LAYOUT_NAME,
-      IDS_FLAGS_ALTERNATE_SHELF_LAYOUT_DESCRIPTION,
-      kOsCrOS,
-      ENABLE_DISABLE_VALUE_TYPE(ash::switches::kAshUseAlternateShelfLayout,
-                                ash::switches::kAshDisableAlternateShelfLayout)
-  },
-  {
     "ash-disable-docked-windows",
     IDS_FLAGS_DOCKED_WINDOWS_NAME,
     IDS_FLAGS_DOCKED_WINDOWS_DESCRIPTION,

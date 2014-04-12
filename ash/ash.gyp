@@ -243,8 +243,6 @@
         'session_state_delegate.h',
         'session_state_observer.cc',
         'session_state_observer.h',
-        'shelf/alternate_app_list_button.cc',
-        'shelf/alternate_app_list_button.h',
         'shelf/app_list_button.cc',
         'shelf/app_list_button.h',
         'shelf/app_list_shelf_item_delegate.cc',

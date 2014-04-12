@@ -16,10 +16,10 @@ const int kPaddingFromInnerEdgeOfLauncherVerticalAlignment = 9;
 const int kPaddingFromBottomOfScreenVerticalAlignment = 10;
 
 // Padding used to position the system menu relative to the status area.
-const int kAlternateLayoutBubblePaddingHorizontalBottom = 6;
-const int kAlternateLayoutBubblePaddingHorizontalSide = 10;
-const int kAlternateLayoutBubblePaddingVerticalBottom = 3;
-const int kAlternateLayoutBubblePaddingVerticalSide = 15;
+const int kBubblePaddingHorizontalBottom = 6;
+const int kBubblePaddingHorizontalSide = 10;
+const int kBubblePaddingVerticalBottom = 3;
+const int kBubblePaddingVerticalSide = 15;
 
 const int kPaddingFromEdgeOfShelf = 3;
 
@@ -79,21 +79,9 @@ const int kTrayNotificationContentsWidth = kTrayPopupMinWidth -
      (kTrayPopupPaddingHorizontal / 2) * 3);
 
 const int kTrayAvatarCornerRadius = 2;
-const int kTrayAvatarSize = 27;
+const int kTrayAvatarSize = 32;
 
-const int kTraySpacing = 8;
-const int kAlternateTraySpacing = 4;
-const int kShelfItemHeight = 31;
-const int kAlternateShelfItemHeight = 38;
-
-int GetTraySpacing() {
-  return ash::switches::UseAlternateShelfLayout() ?
-      kAlternateTraySpacing : kTraySpacing;
-}
-
-int GetShelfItemHeight() {
-  return ash::switches::UseAlternateShelfLayout() ?
-      kAlternateShelfItemHeight : kShelfItemHeight;
-}
+const int kTraySpacing = 4;
+const int kShelfItemHeight = 38;
 
 }  // namespace ash

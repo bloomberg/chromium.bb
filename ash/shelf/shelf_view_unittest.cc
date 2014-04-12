@@ -270,8 +270,7 @@ class ShelfViewTest : public AshTestBase {
     shelf_view_ = ShelfTestAPI(shelf).shelf_view();
 
     // The bounds should be big enough for 4 buttons + overflow chevron.
-    shelf_view_->SetBounds(
-        0, 0, 500, ShelfLayoutManager::GetPreferredShelfSize());
+    shelf_view_->SetBounds(0, 0, 500, kShelfSize);
 
     test_api_.reset(new ShelfViewTestAPI(shelf_view_));
     test_api_->SetAnimationDuration(1);  // Speeds up animation for test.
@@ -578,24 +577,6 @@ class ShelfViewTest : public AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(ShelfViewTest);
 };
 
-class ShelfViewLegacyShelfLayoutTest : public ShelfViewTest {
- public:
-  ShelfViewLegacyShelfLayoutTest() : ShelfViewTest() {
-    browser_index_ = 0;
-  }
-
-  virtual ~ShelfViewLegacyShelfLayoutTest() {}
-
-  virtual void SetUp() OVERRIDE {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        ash::switches::kAshDisableAlternateShelfLayout);
-    ShelfViewTest::SetUp();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ShelfViewLegacyShelfLayoutTest);
-};
-
 class ScopedTextDirectionChange {
  public:
   ScopedTextDirectionChange(bool is_rtl)
@@ -741,33 +722,6 @@ TEST_F(ShelfViewTest, AddAppShortcutWithBrowserButtonUntilOverflow) {
   EXPECT_FALSE(GetButtonByID(browser_button_id)->visible());
 }
 
-TEST_F(ShelfViewLegacyShelfLayoutTest,
-       AddAppShortcutWithBrowserButtonUntilOverflow) {
-  // All buttons should be visible.
-  ASSERT_EQ(test_api_->GetButtonCount(),
-            test_api_->GetLastVisibleIndex() + 1);
-
-
-  ShelfID browser_button_id = AddPlatformApp();
-
-  // Add app shortcut until overflow.
-  int items_added = 0;
-  ShelfID last_added = AddAppShortcut();
-  while (!test_api_->IsOverflowButtonVisible()) {
-    // Added button is visible after animation while in this loop.
-    EXPECT_TRUE(GetButtonByID(last_added)->visible());
-
-    last_added = AddAppShortcut();
-    ++items_added;
-    ASSERT_LT(items_added, 10000);
-  }
-
-  // The last added app short button should be visible.
-  EXPECT_TRUE(GetButtonByID(last_added)->visible());
-  // And the platform app button is invisible.
-  EXPECT_FALSE(GetButtonByID(browser_button_id)->visible());
-}
-
 TEST_F(ShelfViewTest, AddPanelHidesPlatformAppButton) {
   // All buttons should be visible.
   ASSERT_EQ(test_api_->GetButtonCount(),
@@ -794,36 +748,6 @@ TEST_F(ShelfViewTest, AddPanelHidesPlatformAppButton) {
 
   RemoveByID(panel);
   EXPECT_FALSE(test_api_->IsOverflowButtonVisible());
-}
-
-TEST_F(ShelfViewLegacyShelfLayoutTest, AddPanelHidesPlatformAppButton) {
-  // All buttons should be visible.
-  ASSERT_EQ(test_api_->GetButtonCount(),
-            test_api_->GetLastVisibleIndex() + 1);
-
-  // Add platform app button until overflow, remember last visible platform app
-  // button.
-  int items_added = 0;
-  ShelfID first_added = AddPlatformApp();
-  EXPECT_TRUE(GetButtonByID(first_added)->visible());
-  ShelfID last_visible = first_added;
-  while (true) {
-    ShelfID added = AddPlatformApp();
-    if (test_api_->IsOverflowButtonVisible()) {
-      EXPECT_FALSE(GetButtonByID(added)->visible());
-      break;
-    }
-    last_visible = added;
-    ++items_added;
-    ASSERT_LT(items_added, 10000);
-  }
-
-  ShelfID panel = AddPanel();
-  EXPECT_TRUE(GetButtonByID(panel)->visible());
-  EXPECT_FALSE(GetButtonByID(last_visible)->visible());
-
-  RemoveByID(panel);
-  EXPECT_TRUE(GetButtonByID(last_visible)->visible());
 }
 
 // When there are more panels then platform app buttons we should hide panels
@@ -1012,66 +936,6 @@ TEST_F(ShelfViewTest, ModelChangesWhileDragging) {
       dragged_button, ShelfButtonHost::MOUSE, false);
 }
 
-TEST_F(ShelfViewLegacyShelfLayoutTest, ModelChangesWhileDragging) {
-  ShelfButtonHost* button_host = shelf_view_;
-
-  std::vector<std::pair<ShelfID, views::View*> > id_map;
-  SetupForDragTest(&id_map);
-
-  // Dragging browser shortcut at index 0.
-  EXPECT_TRUE(model_->items()[0].type == TYPE_BROWSER_SHORTCUT);
-  views::View* dragged_button = SimulateDrag(ShelfButtonHost::MOUSE, 0, 2);
-  std::rotate(id_map.begin(),
-              id_map.begin() + 1,
-              id_map.begin() + 3);
-  ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
-  button_host->PointerReleasedOnButton(
-      dragged_button, ShelfButtonHost::MOUSE, false);
-  EXPECT_TRUE(model_->items()[2].type == TYPE_BROWSER_SHORTCUT);
-
-  // Dragging changes model order.
-  dragged_button = SimulateDrag(ShelfButtonHost::MOUSE, 0, 2);
-  std::rotate(id_map.begin(),
-              id_map.begin() + 1,
-              id_map.begin() + 3);
-  ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
-
-  // Cancelling the drag operation restores previous order.
-  button_host->PointerReleasedOnButton(
-      dragged_button, ShelfButtonHost::MOUSE, true);
-  std::rotate(id_map.begin(),
-              id_map.begin() + 2,
-              id_map.begin() + 3);
-  ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
-
-  // Deleting an item keeps the remaining intact.
-  dragged_button = SimulateDrag(ShelfButtonHost::MOUSE, 0, 2);
-  model_->RemoveItemAt(1);
-  id_map.erase(id_map.begin() + 1);
-  ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
-  button_host->PointerReleasedOnButton(
-      dragged_button, ShelfButtonHost::MOUSE, false);
-
-  // Adding a shelf item cancels the drag and respects the order.
-  dragged_button = SimulateDrag(ShelfButtonHost::MOUSE, 0, 2);
-  ShelfID new_id = AddAppShortcut();
-  id_map.insert(id_map.begin() + 5,
-                std::make_pair(new_id, GetButtonByID(new_id)));
-  ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
-  button_host->PointerReleasedOnButton(
-      dragged_button, ShelfButtonHost::MOUSE, false);
-
-  // Adding a shelf item at the end (i.e. a panel)  canels drag and respects
-  // the order.
-  dragged_button = SimulateDrag(ShelfButtonHost::MOUSE, 0, 2);
-  new_id = AddPanel();
-  id_map.insert(id_map.begin() + 7,
-                std::make_pair(new_id, GetButtonByID(new_id)));
-  ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
-  button_host->PointerReleasedOnButton(
-      dragged_button, ShelfButtonHost::MOUSE, false);
-}
-
 // Check that 2nd drag from the other pointer would be ignored.
 TEST_F(ShelfViewTest, SimultaneousDrag) {
   ShelfButtonHost* button_host = shelf_view_;
@@ -1157,36 +1021,6 @@ TEST_F(ShelfViewTest, ShelfItemStatus) {
   item.status = STATUS_ATTENTION;
   model_->Set(index, item);
   ASSERT_EQ(ShelfButton::STATE_ATTENTION, button->state());
-}
-
-TEST_F(ShelfViewLegacyShelfLayoutTest,
-       ShelfItemPositionReflectedOnStateChanged) {
-  // All buttons should be visible.
-  ASSERT_EQ(test_api_->GetButtonCount(),
-            test_api_->GetLastVisibleIndex() + 1);
-
-  // Add 2 items to the shelf.
-  ShelfID item1_id = AddPlatformApp();
-  ShelfID item2_id = AddPlatformAppNoWait();
-  ShelfButton* item1_button = GetButtonByID(item1_id);
-  ShelfButton* item2_button = GetButtonByID(item2_id);
-
-  ShelfButton::State state_mask = static_cast<ShelfButton::State>(
-      ShelfButton::STATE_NORMAL | ShelfButton::STATE_HOVERED |
-      ShelfButton::STATE_RUNNING | ShelfButton::STATE_ACTIVE |
-      ShelfButton::STATE_ATTENTION | ShelfButton::STATE_FOCUSED);
-
-  // Clear the button states.
-  item1_button->ClearState(state_mask);
-  item2_button->ClearState(state_mask);
-
-  // Since default alignment in tests is bottom, state is reflected in y-axis.
-  ASSERT_EQ(item1_button->GetIconBounds().y(),
-            item2_button->GetIconBounds().y());
-  item1_button->AddState(ShelfButton::STATE_HOVERED);
-  ASSERT_NE(item1_button->GetIconBounds().y(),
-            item2_button->GetIconBounds().y());
-  item1_button->ClearState(ShelfButton::STATE_HOVERED);
 }
 
 // Confirm that item status changes are reflected in the buttons
@@ -1446,7 +1280,7 @@ TEST_F(ShelfViewTest, ResizeDuringOverflowAddAnimation) {
 
   // Resize shelf view with that animation running and stay overflown.
   gfx::Rect bounds = shelf_view_->bounds();
-  bounds.set_width(bounds.width() - kShelfPreferredSize);
+  bounds.set_width(bounds.width() - kShelfSize);
   shelf_view_->SetBoundsRect(bounds);
   ASSERT_TRUE(test_api_->IsOverflowButtonVisible());
 
@@ -1518,17 +1352,6 @@ TEST_F(ShelfViewTest, OverflowBubbleSize) {
             test_for_overflow_view.GetPreferredSize().width());
 }
 
-// Check that the first item in the list follows Fitt's law by including the
-// first pixel and being therefore bigger then the others.
-TEST_F(ShelfViewLegacyShelfLayoutTest, CheckFittsLaw) {
-  // All buttons should be visible.
-  ASSERT_EQ(test_api_->GetButtonCount(),
-            test_api_->GetLastVisibleIndex() + 1);
-  gfx::Rect ideal_bounds_0 = test_api_->GetIdealBoundsByIndex(0);
-  gfx::Rect ideal_bounds_1 = test_api_->GetIdealBoundsByIndex(1);
-  EXPECT_GT(ideal_bounds_0.width(), ideal_bounds_1.width());
-}
-
 // Check the drag insertion bounds of scrolled overflow bubble.
 TEST_F(ShelfViewTest, CheckDragInsertBoundsOfScrolledOverflowBubble) {
   UpdateDisplay("400x300");
@@ -1592,8 +1415,7 @@ TEST_F(ShelfViewTest, CheckDragInsertBoundsWithMultiMonitor) {
       ShelfTestAPI(secondary_shelf).shelf_view();
 
   // The bounds should be big enough for 4 buttons + overflow chevron.
-  shelf_view_for_secondary->SetBounds(
-      0, 0, 500, ShelfLayoutManager::GetPreferredShelfSize());
+  shelf_view_for_secondary->SetBounds(0, 0, 500, kShelfSize);
 
   ShelfViewTestAPI test_api_for_secondary(shelf_view_for_secondary);
   // Speeds up animation for test.

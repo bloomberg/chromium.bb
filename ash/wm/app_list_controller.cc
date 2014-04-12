@@ -173,7 +173,7 @@ void AppListController::SetVisible(bool visible, aura::Window* window) {
           Shell::GetScreen()->GetPrimaryDisplay().bounds().CenterPoint(),
           views::BubbleBorder::FLOAT,
           true /* border_accepts_events */);
-    } else if (ash::switches::UseAlternateShelfLayout()) {
+    } else {
       gfx::Rect applist_button_bounds = Shelf::ForWindow(container)->
           GetAppListButtonView()->GetBoundsInScreen();
       // We need the location of the button within the local screen.
@@ -190,14 +190,6 @@ void AppListController::SetVisible(bool visible, aura::Window* window) {
           GetBubbleArrow(container),
           true /* border_accepts_events */);
       view->SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
-    } else {
-      view->InitAsBubbleAttachedToAnchor(
-          container,
-          pagination_model_.get(),
-          Shelf::ForWindow(container)->GetAppListButtonView(),
-          gfx::Vector2d(),
-          GetBubbleArrow(container),
-          true /* border_accepts_events */);
     }
     SetView(view);
     // By setting us as DnD recipient, the app list knows that we can

@@ -11,6 +11,7 @@
 #include "ash/display/display_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_button.h"
+#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shelf/shelf_view.h"
@@ -820,7 +821,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, SetIcon) {
   EXPECT_TRUE(app_item_controller->image_set_by_controller());
   EXPECT_TRUE(panel_item_controller->image_set_by_controller());
   // Ensure icon heights are correct (see test.js in app_icon/ test directory)
-  EXPECT_EQ(48, app_item.image.height());
+  EXPECT_EQ(ash::kShelfSize, app_item.image.height());
   EXPECT_EQ(64, panel_item.image.height());
 }
 

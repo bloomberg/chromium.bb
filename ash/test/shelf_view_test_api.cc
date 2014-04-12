@@ -6,6 +6,7 @@
 
 #include "ash/shelf/overflow_button.h"
 #include "ash/shelf/shelf_button.h"
+#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_view.h"
 #include "base/message_loop/message_loop.h"
@@ -106,11 +107,11 @@ gfx::Size ShelfViewTestAPI::GetPreferredSize() {
 }
 
 int ShelfViewTestAPI::GetButtonSize() {
-  return shelf_view_->GetButtonSize();
+  return kShelfButtonSize;
 }
 
 int ShelfViewTestAPI::GetButtonSpacing() {
-  return shelf_view_->GetButtonSpacing();
+  return kShelfButtonSpacing;
 }
 
 bool ShelfViewTestAPI::SameDragType(ShelfItemType typea,

@@ -231,11 +231,6 @@ class ASH_EXPORT ShelfView : public views::View,
   // Toggles the overflow menu.
   void ToggleOverflowBubble();
 
-  // Update first launcher button's padding. This method adds padding to the
-  // first button to include the leading inset. It needs to be called once on
-  // button creation and every time when shelf alignment is changed.
-  void UpdateFirstButtonPadding();
-
   // Invoked after the fading out animation for item deletion is ended.
   void OnFadeOutAnimationEnded();
 
@@ -244,12 +239,6 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // Updates the visible range of overflow items in |overflow_view|.
   void UpdateOverflowRange(ShelfView* overflow_view);
-
-  // Returns the launcher button size.
-  int GetButtonSize() const;
-
-  // Returns the button spacing.
-  int GetButtonSpacing() const;
 
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;

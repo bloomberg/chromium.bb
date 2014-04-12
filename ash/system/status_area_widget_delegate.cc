@@ -20,11 +20,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-namespace {
-
-const int kStatusTrayOffsetFromScreenEdge = 4;
-
-}
 
 StatusAreaWidgetDelegate::StatusAreaWidgetDelegate()
     : focus_cycler_for_testing_(NULL),
@@ -88,20 +83,13 @@ void StatusAreaWidgetDelegate::UpdateLayout() {
   views::ColumnSet* columns = layout->AddColumnSet(0);
   if (alignment_ == SHELF_ALIGNMENT_BOTTOM ||
       alignment_ == SHELF_ALIGNMENT_TOP) {
-    // Alternate shelf layout insets are all handled by tray_background_view.
-    if (!ash::switches::UseAlternateShelfLayout()) {
-      if (alignment_ == SHELF_ALIGNMENT_TOP)
-        layout->SetInsets(kStatusTrayOffsetFromScreenEdge, 0, 0, 0);
-      else
-        layout->SetInsets(0, 0, kStatusTrayOffsetFromScreenEdge, 0);
-    }
     bool is_first_visible_child = true;
     for (int c = 0; c < child_count(); ++c) {
       views::View* child = child_at(c);
       if (!child->visible())
         continue;
       if (!is_first_visible_child)
-        columns->AddPaddingColumn(0, GetTraySpacing());
+        columns->AddPaddingColumn(0, kTraySpacing);
       is_first_visible_child = false;
       columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::FILL,
                          0, /* resize percent */
@@ -114,12 +102,6 @@ void StatusAreaWidgetDelegate::UpdateLayout() {
         layout->AddView(child);
     }
   } else {
-    if (!ash::switches::UseAlternateShelfLayout()) {
-      if (alignment_ == SHELF_ALIGNMENT_LEFT)
-        layout->SetInsets(0, kStatusTrayOffsetFromScreenEdge, 0, 0);
-      else
-        layout->SetInsets(0, 0, 0, kStatusTrayOffsetFromScreenEdge);
-    }
     columns->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
                        0, /* resize percent */
                        views::GridLayout::USE_PREF, 0, 0);
@@ -129,7 +111,7 @@ void StatusAreaWidgetDelegate::UpdateLayout() {
       if (!child->visible())
         continue;
       if (!is_first_visible_child)
-        layout->AddPaddingRow(0, GetTraySpacing());
+        layout->AddPaddingRow(0, kTraySpacing);
       is_first_visible_child = false;
       layout->StartRow(0, 0);
       layout->AddView(child);

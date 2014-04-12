@@ -14,44 +14,24 @@ namespace ash {
 namespace {
 
 int ShelfItemTypeToWeight(ShelfItemType type) {
-  if (ash::switches::UseAlternateShelfLayout()) {
-    switch (type) {
-      case TYPE_APP_LIST:
-        // TODO(skuhne): If the app list item becomes movable again, this need
-        // to be a fallthrough.
-        return 0;
-      case TYPE_BROWSER_SHORTCUT:
-      case TYPE_APP_SHORTCUT:
-        return 1;
-      case TYPE_WINDOWED_APP:
-      case TYPE_PLATFORM_APP:
-        return 2;
-      case TYPE_DIALOG:
-        return 3;
-      case TYPE_APP_PANEL:
-        return 4;
-      case TYPE_UNDEFINED:
-        NOTREACHED() << "ShelfItemType must be set";
-        return -1;
-    }
-  } else {
-    switch (type) {
-      case TYPE_BROWSER_SHORTCUT:
-      case TYPE_APP_SHORTCUT:
-        return 0;
-      case TYPE_WINDOWED_APP:
-      case TYPE_PLATFORM_APP:
-        return 1;
-      case TYPE_APP_LIST:
-        return 2;
-      case TYPE_DIALOG:
-        return 3;
-      case TYPE_APP_PANEL:
-        return 4;
-      case TYPE_UNDEFINED:
-        NOTREACHED() << "ShelfItemType must be set";
-        return -1;
-    }
+  switch (type) {
+    case TYPE_APP_LIST:
+      // TODO(skuhne): If the app list item becomes movable again, this need
+      // to be a fallthrough.
+      return 0;
+    case TYPE_BROWSER_SHORTCUT:
+    case TYPE_APP_SHORTCUT:
+      return 1;
+    case TYPE_WINDOWED_APP:
+    case TYPE_PLATFORM_APP:
+      return 2;
+    case TYPE_DIALOG:
+      return 3;
+    case TYPE_APP_PANEL:
+      return 4;
+    case TYPE_UNDEFINED:
+      NOTREACHED() << "ShelfItemType must be set";
+      return -1;
   }
 
   NOTREACHED() << "Invalid type " << type;
@@ -187,8 +167,7 @@ void ShelfModel::RemoveObserver(ShelfModelObserver* observer) {
 }
 
 int ShelfModel::ValidateInsertionIndex(ShelfItemType type, int index) const {
-  DCHECK(index >= 0 && index <= item_count() +
-      (ash::switches::UseAlternateShelfLayout() ? 1 : 0));
+  DCHECK(index >= 0 && index <= item_count() + 1);
 
   // Clamp |index| to the allowed range for the type as determined by |weight|.
   ShelfItem weight_dummy;

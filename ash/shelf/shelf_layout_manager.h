@@ -74,17 +74,9 @@ class ASH_EXPORT ShelfLayoutManager :
   // Size of the shelf when auto-hidden.
   static const int kAutoHideSize;
 
-  // The size of the shelf when shown (currently only used in alternate
-  // settings see ash::switches::UseAlternateShelfLayout).
-  static const int kShelfSize;
-
   // Inset between the inner edge of the shelf (towards centre of screen), and
   // the shelf items, notifications, status area etc.
   static const int kShelfItemInset;
-
-  // Returns the preferred size for the shelf (either kShelfPreferredSize or
-  // kShelfSize).
-  static int GetPreferredShelfSize();
 
   explicit ShelfLayoutManager(ShelfWidget* shelf);
   virtual ~ShelfLayoutManager();

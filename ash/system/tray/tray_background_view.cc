@@ -37,12 +37,6 @@ const int kTrayBackgroundAlpha = 100;
 const int kTrayBackgroundHoverAlpha = 150;
 const SkColor kTrayBackgroundPressedColor = SkColorSetRGB(66, 129, 244);
 
-// Adjust the size of TrayContainer with additional padding.
-const int kTrayContainerVerticalPaddingBottomAlignment  = 1;
-const int kTrayContainerHorizontalPaddingBottomAlignment  = 1;
-const int kTrayContainerVerticalPaddingVerticalAlignment  = 1;
-const int kTrayContainerHorizontalPaddingVerticalAlignment = 1;
-
 const int kAnimationDurationForPopupMS = 200;
 
 }  // namespace
@@ -153,7 +147,8 @@ class TrayBackground : public views::Background {
         status_area_widget()->GetNativeWindow())->shelf();
   }
 
-  void PaintForAlternateShelf(gfx::Canvas* canvas, views::View* view) const {
+  // Overridden from views::Background.
+  virtual void Paint(gfx::Canvas* canvas, views::View* view) const OVERRIDE {
     int orientation = kImageHorizontal;
     ShelfWidget* shelf_widget = GetShelfWidget();
     if (shelf_widget &&
@@ -209,23 +204,6 @@ class TrayBackground : public views::Background {
                          middle_bounds.height());
   }
 
-  // Overridden from views::Background.
-  virtual void Paint(gfx::Canvas* canvas, views::View* view) const OVERRIDE {
-    if (ash::switches::UseAlternateShelfLayout()) {
-      PaintForAlternateShelf(canvas, view);
-    } else {
-      SkPaint paint;
-      paint.setAntiAlias(true);
-      paint.setStyle(SkPaint::kFill_Style);
-      paint.setColor(color_);
-      SkPath path;
-      gfx::Rect bounds(view->GetLocalBounds());
-      SkScalar radius = SkIntToScalar(kTrayRoundedBorderRadius);
-      path.addRoundRect(gfx::RectToSkRect(bounds), radius, radius);
-      canvas->DrawPath(path, paint);
-    }
-  }
-
   SkColor color_;
   // Reference to the TrayBackgroundView for which this is a background.
   TrayBackgroundView* tray_background_view_;
@@ -277,32 +255,22 @@ void TrayBackgroundView::TrayContainer::UpdateLayout() {
   // empty border.
   if (alignment_ == SHELF_ALIGNMENT_BOTTOM ||
       alignment_ == SHELF_ALIGNMENT_TOP) {
-    int vertical_padding = kTrayContainerVerticalPaddingBottomAlignment;
-    int horizontal_padding = kTrayContainerHorizontalPaddingBottomAlignment;
-    if (ash::switches::UseAlternateShelfLayout()) {
-      vertical_padding = kPaddingFromEdgeOfShelf;
-      horizontal_padding = kPaddingFromEdgeOfShelf;
-    }
-    SetBorder(views::Border::CreateEmptyBorder(vertical_padding,
-                                               horizontal_padding,
-                                               vertical_padding,
-                                               horizontal_padding));
+    SetBorder(views::Border::CreateEmptyBorder(
+        kPaddingFromEdgeOfShelf,
+        kPaddingFromEdgeOfShelf,
+        kPaddingFromEdgeOfShelf,
+        kPaddingFromEdgeOfShelf));
 
     views::BoxLayout* layout =
         new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
     layout->set_spread_blank_space(true);
     views::View::SetLayoutManager(layout);
   } else {
-    int vertical_padding = kTrayContainerVerticalPaddingVerticalAlignment;
-    int horizontal_padding = kTrayContainerHorizontalPaddingVerticalAlignment;
-    if (ash::switches::UseAlternateShelfLayout()) {
-      vertical_padding = kPaddingFromEdgeOfShelf;
-      horizontal_padding = kPaddingFromEdgeOfShelf;
-    }
-    SetBorder(views::Border::CreateEmptyBorder(vertical_padding,
-                                               horizontal_padding,
-                                               vertical_padding,
-                                               horizontal_padding));
+    SetBorder(views::Border::CreateEmptyBorder(
+        kPaddingFromEdgeOfShelf,
+        kPaddingFromEdgeOfShelf,
+        kPaddingFromEdgeOfShelf,
+        kPaddingFromEdgeOfShelf));
 
     views::BoxLayout* layout =
         new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0);
@@ -357,20 +325,10 @@ const char* TrayBackgroundView::GetClassName() const {
 
 void TrayBackgroundView::OnMouseEntered(const ui::MouseEvent& event) {
   hovered_ = true;
-  if (!background_ || draw_background_as_active_ ||
-      ash::switches::UseAlternateShelfLayout())
-    return;
-  hover_background_animator_.SetPaintsBackground(
-      true, BACKGROUND_CHANGE_ANIMATE);
 }
 
 void TrayBackgroundView::OnMouseExited(const ui::MouseEvent& event) {
   hovered_ = false;
-  if (!background_ || draw_background_as_active_ ||
-      ash::switches::UseAlternateShelfLayout())
-    return;
-  hover_background_animator_.SetPaintsBackground(
-      false, BACKGROUND_CHANGE_ANIMATE);
 }
 
 void TrayBackgroundView::ChildPreferredSizeChanged(views::View* child) {
@@ -404,7 +362,6 @@ void TrayBackgroundView::UpdateBackground(int alpha) {
   // The animator should never fire when the alternate shelf layout is used.
   if (!background_ || draw_background_as_active_)
     return;
-  DCHECK(!ash::switches::UseAlternateShelfLayout());
   background_->set_alpha(hide_background_animator_.alpha() +
                          hover_background_animator_.alpha());
   SchedulePaint();
@@ -417,7 +374,6 @@ void TrayBackgroundView::SetContents(views::View* contents) {
 
 void TrayBackgroundView::SetPaintsBackground(
     bool value, BackgroundAnimatorChangeType change_type) {
-  DCHECK(!ash::switches::UseAlternateShelfLayout());
   hide_background_animator_.SetPaintsBackground(value, change_type);
 }
 
@@ -441,51 +397,24 @@ void TrayBackgroundView::SetTrayBorder() {
   // Tray views are laid out right-to-left or bottom-to-top
   bool on_edge = (this == parent->child_at(0));
   int left_edge, top_edge, right_edge, bottom_edge;
-  if (ash::switches::UseAlternateShelfLayout()) {
-    if (shelf_alignment() == SHELF_ALIGNMENT_BOTTOM) {
-      top_edge = ShelfLayoutManager::kShelfItemInset;
-      left_edge = 0;
-      bottom_edge = ShelfLayoutManager::GetPreferredShelfSize() -
-          ShelfLayoutManager::kShelfItemInset - GetShelfItemHeight();
-      right_edge = on_edge ? kPaddingFromEdgeOfShelf : 0;
-    } else if (shelf_alignment() == SHELF_ALIGNMENT_LEFT) {
-      top_edge = 0;
-      left_edge = ShelfLayoutManager::GetPreferredShelfSize() -
-          ShelfLayoutManager::kShelfItemInset - GetShelfItemHeight();
-      bottom_edge = on_edge ? kPaddingFromEdgeOfShelf : 0;
-      right_edge = ShelfLayoutManager::kShelfItemInset;
-    } else { // SHELF_ALIGNMENT_RIGHT
-      top_edge = 0;
-      left_edge = ShelfLayoutManager::kShelfItemInset;
-      bottom_edge = on_edge ? kPaddingFromEdgeOfShelf : 0;
-      right_edge = ShelfLayoutManager::GetPreferredShelfSize() -
-          ShelfLayoutManager::kShelfItemInset - GetShelfItemHeight();
-    }
-  } else {
-    // Change the border padding for different shelf alignment.
-    if (shelf_alignment() == SHELF_ALIGNMENT_BOTTOM) {
-      top_edge = 0;
-      left_edge = 0;
-      bottom_edge = on_edge ? kPaddingFromBottomOfScreenBottomAlignment :
-          kPaddingFromBottomOfScreenBottomAlignment - 1;
-      right_edge = on_edge ? kPaddingFromRightEdgeOfScreenBottomAlignment : 0;
-    } else if (shelf_alignment() == SHELF_ALIGNMENT_TOP) {
-      top_edge = on_edge ? kPaddingFromBottomOfScreenBottomAlignment :
-          kPaddingFromBottomOfScreenBottomAlignment - 1;
-      left_edge = 0;
-      bottom_edge = 0;
-      right_edge = on_edge ? kPaddingFromRightEdgeOfScreenBottomAlignment : 0;
-    } else if (shelf_alignment() == SHELF_ALIGNMENT_LEFT) {
-      top_edge = 0;
-      left_edge = kPaddingFromOuterEdgeOfLauncherVerticalAlignment;
-      bottom_edge = on_edge ? kPaddingFromBottomOfScreenVerticalAlignment : 0;
-      right_edge = kPaddingFromInnerEdgeOfLauncherVerticalAlignment;
-    } else {
-      top_edge = 0;
-      left_edge = kPaddingFromInnerEdgeOfLauncherVerticalAlignment;
-      bottom_edge = on_edge ? kPaddingFromBottomOfScreenVerticalAlignment : 0;
-      right_edge = kPaddingFromOuterEdgeOfLauncherVerticalAlignment;
-    }
+  if (shelf_alignment() == SHELF_ALIGNMENT_BOTTOM) {
+    top_edge = ShelfLayoutManager::kShelfItemInset;
+    left_edge = 0;
+    bottom_edge = kShelfSize -
+        ShelfLayoutManager::kShelfItemInset - kShelfItemHeight;
+    right_edge = on_edge ? kPaddingFromEdgeOfShelf : 0;
+  } else if (shelf_alignment() == SHELF_ALIGNMENT_LEFT) {
+    top_edge = 0;
+    left_edge = kShelfSize -
+        ShelfLayoutManager::kShelfItemInset - kShelfItemHeight;
+    bottom_edge = on_edge ? kPaddingFromEdgeOfShelf : 0;
+    right_edge = ShelfLayoutManager::kShelfItemInset;
+  } else { // SHELF_ALIGNMENT_RIGHT
+    top_edge = 0;
+    left_edge = ShelfLayoutManager::kShelfItemInset;
+    bottom_edge = on_edge ? kPaddingFromEdgeOfShelf : 0;
+    right_edge = kShelfSize -
+        ShelfLayoutManager::kShelfItemInset - kShelfItemHeight;
   }
   SetBorder(views::Border::CreateEmptyBorder(
       top_edge, left_edge, bottom_edge, right_edge));
@@ -520,46 +449,24 @@ gfx::Rect TrayBackgroundView::GetBubbleAnchorRect(
     if (anchor_type == TrayBubbleView::ANCHOR_TYPE_TRAY) {
       if (anchor_alignment == TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM) {
         bool rtl = base::i18n::IsRTL();
-        if (!ash::switches::UseAlternateShelfLayout()) {
-          rect.Inset(
-              rtl ? kPaddingFromRightEdgeOfScreenBottomAlignment : 0,
-              kTrayBubbleAnchorTopInsetBottomAnchor,
-              rtl ? 0 : kPaddingFromRightEdgeOfScreenBottomAlignment,
-              kPaddingFromBottomOfScreenBottomAlignment);
-        } else {
-          rect.Inset(
-              rtl ? kAlternateLayoutBubblePaddingHorizontalSide : 0,
-              kAlternateLayoutBubblePaddingHorizontalBottom,
-              rtl ? 0 : kAlternateLayoutBubblePaddingHorizontalSide,
-              0);
-        }
+        rect.Inset(
+            rtl ? kBubblePaddingHorizontalSide : 0,
+            kBubblePaddingHorizontalBottom,
+            rtl ? 0 : kBubblePaddingHorizontalSide,
+            0);
       } else if (anchor_alignment == TrayBubbleView::ANCHOR_ALIGNMENT_LEFT) {
-        if (!ash::switches::UseAlternateShelfLayout()) {
-          rect.Inset(0, 0, kPaddingFromInnerEdgeOfLauncherVerticalAlignment + 5,
-                     kPaddingFromBottomOfScreenVerticalAlignment);
-        } else {
-          rect.Inset(0, 0, kAlternateLayoutBubblePaddingVerticalSide + 4,
-                     kAlternateLayoutBubblePaddingVerticalBottom);
-        }
+        rect.Inset(0, 0, kBubblePaddingVerticalSide + 4,
+                   kBubblePaddingVerticalBottom);
       } else {
-        if (!ash::switches::UseAlternateShelfLayout()) {
-          rect.Inset(kPaddingFromInnerEdgeOfLauncherVerticalAlignment + 1,
-                     0, 0, kPaddingFromBottomOfScreenVerticalAlignment);
-        } else {
-          rect.Inset(kAlternateLayoutBubblePaddingVerticalSide, 0, 0,
-                     kAlternateLayoutBubblePaddingVerticalBottom);
-        }
+        rect.Inset(kBubblePaddingVerticalSide, 0, 0,
+                   kBubblePaddingVerticalBottom);
       }
     } else if (anchor_type == TrayBubbleView::ANCHOR_TYPE_BUBBLE) {
       // Invert the offsets to align with the bubble below.
       // Note that with the alternate shelf layout the tips are not shown and
       // the offsets for left and right alignment do not need to be applied.
-      int vertical_alignment = ash::switches::UseAlternateShelfLayout() ?
-          0 :
-          kPaddingFromInnerEdgeOfLauncherVerticalAlignment;
-      int horizontal_alignment = ash::switches::UseAlternateShelfLayout() ?
-          kAlternateLayoutBubblePaddingVerticalBottom :
-          kPaddingFromBottomOfScreenVerticalAlignment;
+      int vertical_alignment = 0;
+      int horizontal_alignment = kBubblePaddingVerticalBottom;
       if (anchor_alignment == TrayBubbleView::ANCHOR_ALIGNMENT_LEFT)
         rect.Inset(vertical_alignment, 0, 0, horizontal_alignment);
       else if (anchor_alignment == TrayBubbleView::ANCHOR_ALIGNMENT_RIGHT)
@@ -600,7 +507,7 @@ TrayBubbleView::AnchorAlignment TrayBackgroundView::GetAnchorAlignment() const {
 
 void TrayBackgroundView::SetDrawBackgroundAsActive(bool visible) {
   draw_background_as_active_ = visible;
-  if (!background_ || !switches::UseAlternateShelfLayout())
+  if (!background_)
     return;
 
   // Do not change gradually, changing color between grey and blue is weird.
@@ -615,16 +522,7 @@ void TrayBackgroundView::SetDrawBackgroundAsActive(bool visible) {
 
 void TrayBackgroundView::UpdateBubbleViewArrow(
     views::TrayBubbleView* bubble_view) {
-  if (switches::UseAlternateShelfLayout())
-    return;
-
-  aura::Window* root_window =
-      bubble_view->GetWidget()->GetNativeView()->GetRootWindow();
-  ash::ShelfLayoutManager* shelf = ShelfLayoutManager::ForShelf(root_window);
-  bubble_view->SetArrowPaintType(
-      (shelf && shelf->IsVisible()) ?
-      views::BubbleBorder::PAINT_NORMAL :
-      views::BubbleBorder::PAINT_TRANSPARENT);
+  // Nothing to do here.
 }
 
 }  // namespace ash

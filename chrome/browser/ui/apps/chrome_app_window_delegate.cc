@@ -226,7 +226,7 @@ void ChromeAppWindowDelegate::RequestMediaAccessPermission(
 
 int ChromeAppWindowDelegate::PreferredIconSize() {
 #if defined(USE_ASH)
-  return ash::kShelfPreferredSize;
+  return ash::kShelfSize;
 #else
   return extension_misc::EXTENSION_ICON_SMALL;
 #endif

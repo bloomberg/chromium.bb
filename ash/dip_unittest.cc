@@ -69,43 +69,4 @@ TEST_F(DIPTest, WorkArea) {
       shelf->shelf_widget()->GetNativeView()->layer()->bounds().height());
 }
 
-TEST_F(DIPTest, WorkAreaForLegacyShelfLayout) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      ash::switches::kAshDisableAlternateShelfLayout);
-  UpdateDisplay("1000x900*1.0f");
-
-  aura::Window* root = Shell::GetPrimaryRootWindow();
-  const gfx::Display display =
-      Shell::GetScreen()->GetDisplayNearestWindow(root);
-
-  EXPECT_EQ("0,0 1000x900", display.bounds().ToString());
-  gfx::Rect work_area = display.work_area();
-  EXPECT_EQ("0,0 1000x852", work_area.ToString());
-  EXPECT_EQ("0,0,48,0", display.bounds().InsetsFrom(work_area).ToString());
-
-  UpdateDisplay("2000x1800*2.0f");
-  gfx::Screen* screen = Shell::GetScreen();
-
-  const gfx::Display display_2x = screen->GetDisplayNearestWindow(root);
-  const DisplayInfo display_info_2x =
-      Shell::GetInstance()->display_manager()->GetDisplayInfo(display_2x.id());
-
-  // The |bounds_in_native()| should report bounds in pixel coordinate.
-  EXPECT_EQ("1,1 2000x1800",
-            display_info_2x.bounds_in_native().ToString());
-
-  // Aura and views coordinates are in DIP, so they their bounds do not change.
-  EXPECT_EQ("0,0 1000x900", display_2x.bounds().ToString());
-  work_area = display_2x.work_area();
-  EXPECT_EQ("0,0 1000x852", work_area.ToString());
-  EXPECT_EQ("0,0,48,0", display_2x.bounds().InsetsFrom(work_area).ToString());
-
-  // Sanity check if the workarea's inset hight is same as
-  // the shelf's height.
-  Shelf* shelf = Shelf::ForPrimaryDisplay();
-  EXPECT_EQ(
-      display_2x.bounds().InsetsFrom(work_area).height(),
-      shelf->shelf_widget()->GetNativeView()->layer()->bounds().height());
-}
-
 }  // namespace ash
