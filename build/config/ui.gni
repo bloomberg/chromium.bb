@@ -12,7 +12,7 @@
 # See also build/config/features.gni
 
 declare_args() {
-  # Indicates if Ash is enabled. Ash is the Aura SHell which provides a
+  # Indicates if Ash is enabled. Ash is the Aura Shell which provides a
   # desktop-like environment for Aura. Requires use_aura = true
   use_ash = is_win || is_chromeos
 
@@ -28,7 +28,7 @@ declare_args() {
   # minimum XI2 version. For example, use_xi2_mt=2 means XI2.2 or above.
   use_xi2_mt = 2
 
-  # True means the UI is built useing the "views" framework.
+  # True means the UI is built using the "views" framework.
   toolkit_views = is_win || is_chromeos || use_aura
 }
 
