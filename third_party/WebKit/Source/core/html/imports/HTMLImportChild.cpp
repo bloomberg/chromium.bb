@@ -132,14 +132,14 @@ void HTMLImportChild::importDestroyed()
     }
 }
 
-HTMLImportRoot* HTMLImportChild::root()
-{
-    return parent() ? parent()->root() : 0;
-}
-
 Document* HTMLImportChild::document() const
 {
     return (m_loader && m_loader->isOwnedBy(this)) ? m_loader->document() : 0;
+}
+
+void HTMLImportChild::stateWillChange()
+{
+    toHTMLImportsController(root())->scheduleRecalcState();
 }
 
 void HTMLImportChild::stateDidChange()
@@ -160,7 +160,7 @@ void HTMLImportChild::ensureLoader()
     if (m_loader)
         return;
 
-    if (HTMLImportChild* found = root()->findLinkFor(m_url, this))
+    if (HTMLImportChild* found = toHTMLImportsController(root())->findLinkFor(m_url, this))
         shareLoader(found);
     else
         createLoader();
@@ -170,7 +170,7 @@ void HTMLImportChild::createLoader()
 {
     ASSERT(!state().shouldBlockDocumentCreation());
     ASSERT(!m_loader);
-    m_loader = root()->toController()->createLoader();
+    m_loader = toHTMLImportsController(root())->createLoader();
     m_loader->addImport(this);
     m_loader->startLoading(resource());
 }

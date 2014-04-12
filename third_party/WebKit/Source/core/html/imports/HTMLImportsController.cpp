@@ -50,7 +50,8 @@ void HTMLImportsController::provideTo(Document& master)
 }
 
 HTMLImportsController::HTMLImportsController(Document& master)
-    : m_master(&master)
+    : HTMLImport(HTMLImport::Sync)
+    , m_master(&master)
     , m_recalcTimer(this, &HTMLImportsController::recalcTimerFired)
 {
     recalcTreeState(this); // This recomputes initial state.
@@ -144,11 +145,6 @@ LocalFrame* HTMLImportsController::frame() const
     return m_master->frame();
 }
 
-HTMLImportRoot* HTMLImportsController::root()
-{
-    return this;
-}
-
 Document* HTMLImportsController::document() const
 {
     return m_master;
@@ -177,6 +173,11 @@ bool HTMLImportsController::hasLoader() const
 bool HTMLImportsController::isDone() const
 {
     return !m_master->parsing() && m_master->styleEngine()->haveStylesheetsLoaded();
+}
+
+void HTMLImportsController::stateWillChange()
+{
+    scheduleRecalcState();
 }
 
 void HTMLImportsController::stateDidChange()

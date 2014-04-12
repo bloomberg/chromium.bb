@@ -36,6 +36,14 @@
 
 namespace WebCore {
 
+HTMLImport* HTMLImport::root()
+{
+    HTMLImport* i = this;
+    while (i->parent())
+        i = i->parent();
+    return i;
+}
+
 void HTMLImport::appendChild(HTMLImport* child)
 {
     TreeNode<HTMLImport>::appendChild(child);
@@ -56,15 +64,8 @@ void HTMLImport::stateDidChange()
     }
 }
 
-void HTMLImport::stateWillChange()
-{
-    root()->scheduleRecalcState();
-}
-
 void HTMLImport::recalcTreeState(HTMLImport* root)
 {
-    ASSERT(root == root->root());
-
     HashMap<HTMLImport*, HTMLImportState> snapshot;
     Vector<HTMLImport*> updated;
 

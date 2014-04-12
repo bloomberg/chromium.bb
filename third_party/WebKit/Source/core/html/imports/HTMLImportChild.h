@@ -68,12 +68,12 @@ public:
 
     // HTMLImport
     virtual bool isChild() const OVERRIDE { return true; }
-    virtual HTMLImportRoot* root() OVERRIDE;
     virtual Document* document() const OVERRIDE;
     virtual bool isDone() const OVERRIDE;
     virtual bool hasLoader() const OVERRIDE;
     virtual bool ownsLoader() const OVERRIDE;
     virtual CustomElementMicrotaskImportStep* customElementMicrotaskStep() const OVERRIDE FINAL { return m_customElementMicrotaskStep; }
+    virtual void stateWillChange() OVERRIDE;
     virtual void stateDidChange() OVERRIDE;
 
 #if !defined(NDEBUG)
