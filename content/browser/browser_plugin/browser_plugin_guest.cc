@@ -538,8 +538,6 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BrowserPluginGuest, message)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_BuffersSwappedACK,
-                        OnSwapBuffersACK)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_CompositorFrameSwappedACK,
                         OnCompositorFrameSwappedACK)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_CopyFromCompositingSurfaceAck,
@@ -1184,24 +1182,9 @@ void BrowserPluginGuest::RenderProcessGone(base::TerminationStatus status) {
 }
 
 // static
-void BrowserPluginGuest::AcknowledgeBufferPresent(
-    int route_id,
-    int gpu_host_id,
-    const gpu::Mailbox& mailbox,
-    uint32 sync_point) {
-  AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
-  ack_params.mailbox = mailbox;
-  ack_params.sync_point = sync_point;
-  RenderWidgetHostImpl::AcknowledgeBufferPresent(route_id,
-                                                 gpu_host_id,
-                                                 ack_params);
-}
-
-// static
 bool BrowserPluginGuest::ShouldForwardToBrowserPluginGuest(
     const IPC::Message& message) {
   switch (message.type()) {
-    case BrowserPluginHostMsg_BuffersSwappedACK::ID:
     case BrowserPluginHostMsg_CompositorFrameSwappedACK::ID:
     case BrowserPluginHostMsg_CopyFromCompositingSurfaceAck::ID:
     case BrowserPluginHostMsg_DragStatusUpdate::ID:
@@ -1637,13 +1620,6 @@ void BrowserPluginGuest::OnSetVisibility(int instance_id, bool visible) {
     GetWebContents()->WasShown();
   else
     GetWebContents()->WasHidden();
-}
-
-void BrowserPluginGuest::OnSwapBuffersACK(
-    int instance_id,
-    const FrameHostMsg_BuffersSwappedACK_Params& params) {
-  AcknowledgeBufferPresent(params.gpu_route_id, params.gpu_host_id,
-                           params.mailbox, params.sync_point);
 }
 
 void BrowserPluginGuest::OnUnlockMouse() {

@@ -366,8 +366,7 @@ IPC_MESSAGE_CONTROL2(BrowserPluginMsg_SetMouseLock,
 // See comment about BrowserPluginMsg_BuffersSwapped and
 // BrowserPluginMsg_CompositorFrameSwapped for how these related
 // to the FrameHostMsg variants.
-IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_BuffersSwappedACK,
-                    int /* instance_id */,
+IPC_MESSAGE_ROUTED1(BrowserPluginHostMsg_BuffersSwappedACK,
                     FrameHostMsg_BuffersSwappedACK_Params /* params */)
 
 // Acknowledge that we presented an ubercomp frame.

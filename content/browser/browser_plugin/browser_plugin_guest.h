@@ -297,13 +297,6 @@ class CONTENT_EXPORT BrowserPluginGuest
   // Cancels pending geolocation request.
   void CancelGeolocationRequest(int bridge_id);
 
-  // Allow the embedder to call this for unhandled messages when
-  // BrowserPluginGuest is already destroyed.
-  static void AcknowledgeBufferPresent(int route_id,
-                                       int gpu_host_id,
-                                       const gpu::Mailbox& mailbox,
-                                       uint32 sync_point);
-
   // Returns whether BrowserPluginGuest is interested in receiving the given
   // |message|.
   static bool ShouldForwardToBrowserPluginGuest(const IPC::Message& message);
@@ -475,9 +468,6 @@ class CONTENT_EXPORT BrowserPluginGuest
   // collection. See RenderThreadImpl::IdleHandler (executed when hidden) and
   // RenderThreadImpl::IdleHandlerInForegroundTab (executed when visible).
   void OnSetVisibility(int instance_id, bool visible);
-  // Message from embedder acknowledging last HW buffer.
-  void OnSwapBuffersACK(int instance_id,
-                        const FrameHostMsg_BuffersSwappedACK_Params& params);
   void OnUnlockMouse();
   void OnUnlockMouseAck(int instance_id);
   void OnUpdateGeometry(int instance_id, const gfx::Rect& view_rect);

@@ -142,21 +142,17 @@ bool BrowserPluginGuestManager::CanEmbedderAccessInstanceIDMaybeKill(
 
 void BrowserPluginGuestManager::OnMessageReceived(const IPC::Message& message,
                                                   int render_process_id) {
-  if (BrowserPluginGuest::ShouldForwardToBrowserPluginGuest(message)) {
-    int instance_id = 0;
-    // All allowed messages must have instance_id as their first parameter.
-    PickleIterator iter(message);
-    bool success = iter.ReadInt(&instance_id);
-    DCHECK(success);
-    BrowserPluginGuest* guest =
-        GetGuestByInstanceID(instance_id, render_process_id);
-    if (guest && guest->OnMessageReceivedFromEmbedder(message))
-      return;
-  }
-  IPC_BEGIN_MESSAGE_MAP(BrowserPluginGuestManager, message)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_BuffersSwappedACK,
-                        OnUnhandledSwapBuffersACK)
-  IPC_END_MESSAGE_MAP()
+  DCHECK(BrowserPluginGuest::ShouldForwardToBrowserPluginGuest(message));
+  int instance_id = 0;
+  // All allowed messages must have instance_id as their first parameter.
+  PickleIterator iter(message);
+  bool success = iter.ReadInt(&instance_id);
+  DCHECK(success);
+  BrowserPluginGuest* guest =
+      GetGuestByInstanceID(instance_id, render_process_id);
+  if (!guest)
+    return;
+  guest->OnMessageReceivedFromEmbedder(message);
 }
 
 // static
@@ -212,17 +208,6 @@ SiteInstance* BrowserPluginGuestManager::GetGuestSiteInstance(
       return it->second->GetSiteInstance();
   }
   return NULL;
-}
-
-// We only get here during teardown if we have one last buffer pending,
-// otherwise the ACK is handled by the guest.
-void BrowserPluginGuestManager::OnUnhandledSwapBuffersACK(
-    int instance_id,
-    const FrameHostMsg_BuffersSwappedACK_Params& params) {
-  BrowserPluginGuest::AcknowledgeBufferPresent(params.gpu_route_id,
-                                               params.gpu_host_id,
-                                               params.mailbox,
-                                               params.sync_point);
 }
 
 bool BrowserPluginGuestManager::ForEachGuest(

@@ -7,6 +7,8 @@
 
 #include "content/public/browser/browser_message_filter.h"
 
+struct FrameHostMsg_BuffersSwappedACK_Params;
+
 namespace content {
 
 class BrowserContext;
@@ -33,6 +35,8 @@ class BrowserPluginMessageFilter : public BrowserMessageFilter {
   virtual ~BrowserPluginMessageFilter();
 
   BrowserPluginGuestManager* GetBrowserPluginGuestManager();
+
+  void OnSwapBuffersACK(const FrameHostMsg_BuffersSwappedACK_Params& params);
 
   int render_process_id_;
   int is_guest_;

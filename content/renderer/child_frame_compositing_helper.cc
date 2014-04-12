@@ -114,7 +114,7 @@ void ChildFrameCompositingHelper::SendBuffersSwappedACKToBrowser(
   // BrowserPlugin is modified to use a RenderFrame.
   if (GetBrowserPluginManager()) {
     GetBrowserPluginManager()->Send(new BrowserPluginHostMsg_BuffersSwappedACK(
-        host_routing_id_, GetInstanceID(), params));
+        host_routing_id_, params));
   } else if (render_frame_) {
     render_frame_->Send(
         new FrameHostMsg_BuffersSwappedACK(host_routing_id_, params));

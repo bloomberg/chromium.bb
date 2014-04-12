@@ -17,7 +17,6 @@
 
 struct BrowserPluginHostMsg_Attach_Params;
 struct BrowserPluginHostMsg_ResizeGuest_Params;
-struct FrameHostMsg_BuffersSwappedACK_Params;
 class GURL;
 
 namespace gfx {
@@ -32,7 +31,6 @@ namespace content {
 
 class BrowserPluginGuest;
 class BrowserPluginHostFactory;
-class RenderProcessHostImpl;
 class RenderWidgetHostImpl;
 class SiteInstance;
 class WebContents;
@@ -114,11 +112,6 @@ class CONTENT_EXPORT BrowserPluginGuestManager :
   // Returns an existing SiteInstance if the current profile has a guest of the
   // given |guest_site|.
   SiteInstance* GetGuestSiteInstance(const GURL& guest_site);
-
-  // Message handlers.
-  void OnUnhandledSwapBuffersACK(
-      int instance_id,
-      const FrameHostMsg_BuffersSwappedACK_Params& params);
 
   // Static factory instance (always NULL outside of tests).
   static BrowserPluginHostFactory* factory_;

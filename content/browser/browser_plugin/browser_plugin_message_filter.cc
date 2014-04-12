@@ -7,9 +7,11 @@
 #include "base/supports_user_data.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/browser_plugin/browser_plugin_guest_manager.h"
+#include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/browser_plugin/browser_plugin_constants.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
+#include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -43,7 +45,14 @@ bool BrowserPluginMessageFilter::OnMessageReceived(
     // thread.
     return true;
   }
-  return false;
+  bool handled = true;
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  IPC_BEGIN_MESSAGE_MAP(BrowserPluginMessageFilter, message)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_BuffersSwappedACK,
+                        OnSwapBuffersACK)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 void BrowserPluginMessageFilter::OnDestruct() const {
@@ -68,6 +77,18 @@ BrowserPluginGuestManager*
   return static_cast<BrowserPluginGuestManager*>(
       browser_context->GetUserData(
           browser_plugin::kBrowserPluginGuestManagerKeyName));
+}
+
+void BrowserPluginMessageFilter::OnSwapBuffersACK(
+    const FrameHostMsg_BuffersSwappedACK_Params& params) {
+  GpuProcessHost* gpu_host = GpuProcessHost::FromID(params.gpu_host_id);
+  if (!gpu_host)
+    return;
+  AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
+  ack_params.mailbox = params.mailbox;
+  ack_params.sync_point = params.sync_point;
+  gpu_host->Send(new AcceleratedSurfaceMsg_BufferPresented(params.gpu_route_id,
+                                                           ack_params));
 }
 
 } // namespace content
