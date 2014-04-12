@@ -5,17 +5,16 @@
 #ifndef SYNC_ENGINE_NON_BLOCKING_TYPE_PROCESSOR_H_
 #define SYNC_ENGINE_NON_BLOCKING_TYPE_PROCESSOR_H_
 
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/non_thread_safe.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
-#include "sync/internal_api/public/sync_core_proxy.h"
 #include "sync/protocol/sync.pb.h"
 
 namespace syncer {
 
+class SyncCoreProxy;
 class NonBlockingTypeProcessorCore;
 
 // A sync component embedded on the synced type's thread that helps to handle
@@ -32,7 +31,7 @@ class SYNC_EXPORT_PRIVATE NonBlockingTypeProcessor : base::NonThreadSafe {
   ModelType GetModelType() const;
 
   // Starts the handshake with the sync thread.
-  void Enable(SyncCoreProxy core_proxy_);
+  void Enable(SyncCoreProxy* core_proxy);
 
   // Severs all ties to the sync thread.
   // Another call to Enable() can be used to re-establish this connection.

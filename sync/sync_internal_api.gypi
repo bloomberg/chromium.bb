@@ -125,6 +125,8 @@
     'internal_api/sync_core.cc',
     'internal_api/sync_core.h',
     'internal_api/sync_core_proxy.cc',
+    'internal_api/sync_core_proxy_impl.cc',
+    'internal_api/sync_core_proxy_impl.h',
     'internal_api/sync_encryption_handler_impl.cc',
     'internal_api/sync_encryption_handler_impl.h',
     'internal_api/sync_manager_factory.cc',

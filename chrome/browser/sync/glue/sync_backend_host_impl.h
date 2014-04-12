@@ -112,7 +112,7 @@ class SyncBackendHostImpl
       ChangeProcessor* change_processor) OVERRIDE;
   virtual void DeactivateDataType(syncer::ModelType type) OVERRIDE;
   virtual syncer::UserShare* GetUserShare() const OVERRIDE;
-  virtual syncer::SyncCoreProxy GetSyncCoreProxy() OVERRIDE;
+  virtual scoped_ptr<syncer::SyncCoreProxy> GetSyncCoreProxy() OVERRIDE;
   virtual Status GetDetailedStatus() OVERRIDE;
   virtual syncer::sessions::SyncSessionSnapshot
       GetLastSessionSnapshot() const OVERRIDE;
@@ -164,11 +164,15 @@ class SyncBackendHostImpl
 
   // Reports backend initialization success.  Includes some objects from sync
   // manager initialization to be passed back to the UI thread.
+  //
+  // |sync_core_proxy| points to an object owned by the SyncManager.  Ownership
+  // is not transferred, but we can obtain our own copy of the object using its
+  // Clone() method.
   virtual void HandleInitializationSuccessOnFrontendLoop(
     const syncer::WeakHandle<syncer::JsBackend> js_backend,
     const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>
         debug_info_listener,
-    syncer::SyncCoreProxy sync_core_proxy);
+    syncer::SyncCoreProxy* sync_core_proxy);
 
   // Downloading of control types failed and will be retried. Invokes the
   // frontend's sync configure retry method.

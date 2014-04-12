@@ -161,7 +161,9 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
 
   // Called on |frontend_loop_| to obtain a handle to the SyncCore needed by
   // the non-blocking sync types to communicate with the server.
-  virtual syncer::SyncCoreProxy GetSyncCoreProxy() = 0;
+  //
+  // Should be called only when the backend is initialized.
+  virtual scoped_ptr<syncer::SyncCoreProxy> GetSyncCoreProxy() = 0;
 
   // Called from any thread to obtain current status information in detailed or
   // summarized form.

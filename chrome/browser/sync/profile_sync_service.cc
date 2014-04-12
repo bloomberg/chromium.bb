@@ -947,8 +947,6 @@ void ProfileSyncService::OnBackendInitialized(
     backend_->RequestBufferedProtocolEventsAndEnableForwarding();
   }
 
-  syncer::SyncCoreProxy sync_core_proxy_ = backend_->GetSyncCoreProxy();
-
   // If we have a cached passphrase use it to decrypt/encrypt data now that the
   // backend is initialized. We want to call this before notifying observers in
   // case this operation affects the "passphrase required" status.

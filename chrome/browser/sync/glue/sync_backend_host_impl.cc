@@ -432,8 +432,8 @@ syncer::UserShare* SyncBackendHostImpl::GetUserShare() const {
   return core_->sync_manager()->GetUserShare();
 }
 
-syncer::SyncCoreProxy SyncBackendHostImpl::GetSyncCoreProxy() {
-  return *sync_core_proxy_.get();
+scoped_ptr<syncer::SyncCoreProxy> SyncBackendHostImpl::GetSyncCoreProxy() {
+  return scoped_ptr<syncer::SyncCoreProxy>(sync_core_proxy_->Clone());
 }
 
 SyncBackendHostImpl::Status SyncBackendHostImpl::GetDetailedStatus() {
@@ -597,14 +597,15 @@ void SyncBackendHostImpl::HandleInitializationSuccessOnFrontendLoop(
     const syncer::WeakHandle<syncer::JsBackend> js_backend,
     const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>
         debug_info_listener,
-    syncer::SyncCoreProxy sync_core_proxy) {
+    syncer::SyncCoreProxy* sync_core_proxy) {
   DCHECK_EQ(base::MessageLoop::current(), frontend_loop_);
+
+  sync_core_proxy_ = sync_core_proxy->Clone();
+
   if (!frontend_)
     return;
 
   initialized_ = true;
-
-  sync_core_proxy_.reset(new syncer::SyncCoreProxy(sync_core_proxy));
 
   invalidator_->RegisterInvalidationHandler(this);
   invalidation_handler_registered_ = true;

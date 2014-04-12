@@ -22,6 +22,7 @@
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/internal_api/public/engine/sync_status.h"
 #include "sync/internal_api/public/events/protocol_event.h"
+#include "sync/internal_api/public/sync_core_proxy.h"
 #include "sync/internal_api/public/sync_encryption_handler.h"
 #include "sync/internal_api/public/util/report_unrecoverable_error_function.h"
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
@@ -44,7 +45,7 @@ class HttpPostProviderFactory;
 class InternalComponentsFactory;
 class JsBackend;
 class JsEventHandler;
-class SyncCore;
+class SyncCoreProxy;
 class SyncEncryptionHandler;
 class ProtocolEvent;
 class SyncScheduler;
@@ -334,7 +335,7 @@ class SYNC_EXPORT SyncManager : public syncer::InvalidationHandler {
   virtual UserShare* GetUserShare() = 0;
 
   // Returns an instance of the main interface for non-blocking sync types.
-  virtual base::WeakPtr<syncer::SyncCore> GetSyncCore() = 0;
+  virtual syncer::SyncCoreProxy* GetSyncCoreProxy() = 0;
 
   // Returns the cache_guid of the currently open database.
   // Requires that the SyncManager be initialized.

@@ -8,16 +8,16 @@
 #include "base/sequenced_task_runner.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/non_blocking_type_processor.h"
-#include "sync/internal_api/public/sync_core_proxy.h"
 #include "sync/internal_api/sync_core.h"
+#include "sync/internal_api/sync_core_proxy_impl.h"
 #include "sync/sessions/model_type_registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
 
-class SyncCoreProxyTest : public ::testing::Test {
+class SyncCoreProxyImplTest : public ::testing::Test {
  public:
-  SyncCoreProxyTest()
+  SyncCoreProxyImplTest()
       : sync_task_runner_(base::MessageLoopProxy::current()),
         type_task_runner_(base::MessageLoopProxy::current()),
         core_(new SyncCore(&registry_)),
@@ -31,8 +31,8 @@ class SyncCoreProxyTest : public ::testing::Test {
     core_.reset();
   }
 
-  SyncCoreProxy GetProxy() {
-    return core_proxy_;
+  SyncCoreProxy* GetProxy() {
+    return &core_proxy_;
   }
 
  private:
@@ -41,11 +41,11 @@ class SyncCoreProxyTest : public ::testing::Test {
   scoped_refptr<base::SequencedTaskRunner> type_task_runner_;
   ModelTypeRegistry registry_;
   scoped_ptr<SyncCore> core_;
-  SyncCoreProxy core_proxy_;
+  SyncCoreProxyImpl core_proxy_;
 };
 
 // Try to connect a type to a SyncCore that has already shut down.
-TEST_F(SyncCoreProxyTest, FailToConnect1) {
+TEST_F(SyncCoreProxyImplTest, FailToConnect1) {
   NonBlockingTypeProcessor themes_processor(syncer::THEMES);
   DisableSync();
   themes_processor.Enable(GetProxy());
@@ -56,7 +56,7 @@ TEST_F(SyncCoreProxyTest, FailToConnect1) {
 }
 
 // Try to connect a type to a SyncCore as it shuts down.
-TEST_F(SyncCoreProxyTest, FailToConnect2) {
+TEST_F(SyncCoreProxyImplTest, FailToConnect2) {
   NonBlockingTypeProcessor themes_processor(syncer::THEMES);
   themes_processor.Enable(GetProxy());
   DisableSync();
@@ -67,7 +67,7 @@ TEST_F(SyncCoreProxyTest, FailToConnect2) {
 }
 
 // Tests the case where the type's processor shuts down first.
-TEST_F(SyncCoreProxyTest, TypeDisconnectsFirst) {
+TEST_F(SyncCoreProxyImplTest, TypeDisconnectsFirst) {
   scoped_ptr<NonBlockingTypeProcessor> themes_processor
       (new NonBlockingTypeProcessor(syncer::THEMES));
   themes_processor->Enable(GetProxy());
@@ -80,7 +80,7 @@ TEST_F(SyncCoreProxyTest, TypeDisconnectsFirst) {
 }
 
 // Tests the case where the sync thread shuts down first.
-TEST_F(SyncCoreProxyTest, SyncDisconnectsFirst) {
+TEST_F(SyncCoreProxyImplTest, SyncDisconnectsFirst) {
   scoped_ptr<NonBlockingTypeProcessor> themes_processor
       (new NonBlockingTypeProcessor(syncer::THEMES));
   themes_processor->Enable(GetProxy());

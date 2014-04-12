@@ -212,10 +212,6 @@ class SyncBackendHostCore
   void SendBufferedProtocolEventsAndEnableForwarding();
   void DisableProtocolEventForwarding();
 
-  // Returns handle to sync functionality used by non-blocking sync types.
-  // Should only be called when the backend is initialized.
-  syncer::SyncCoreProxy GetSyncCoreProxy();
-
   // Delete the sync data folder to cleanup backend data.  Happens the first
   // time sync is enabled for a user (to prevent accidentally reusing old
   // sync databases), as well as shutdown when you're no longer syncing.

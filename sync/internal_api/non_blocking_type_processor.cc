@@ -6,6 +6,7 @@
 
 #include "base/message_loop/message_loop_proxy.h"
 #include "sync/engine/non_blocking_type_processor_core.h"
+#include "sync/internal_api/public/sync_core_proxy.h"
 
 namespace syncer {
 
@@ -25,9 +26,9 @@ ModelType NonBlockingTypeProcessor::GetModelType() const {
   return type_;
 }
 
-void NonBlockingTypeProcessor::Enable(SyncCoreProxy core_proxy_) {
+void NonBlockingTypeProcessor::Enable(SyncCoreProxy* core_proxy) {
   DCHECK(CalledOnValidThread());
-  core_proxy_.ConnectTypeToCore(
+  core_proxy->ConnectTypeToCore(
       GetModelType(),
       AsWeakPtr());
 }

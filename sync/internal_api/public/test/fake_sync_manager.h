@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "sync/internal_api/public/sync_manager.h"
+#include "sync/internal_api/public/test/null_sync_core_proxy.h"
 #include "sync/internal_api/public/test/test_user_share.h"
 #include "sync/notifier/invalidator_registrar.h"
 
@@ -119,7 +120,7 @@ class FakeSyncManager : public SyncManager {
   virtual void SaveChanges() OVERRIDE;
   virtual void ShutdownOnSyncThread() OVERRIDE;
   virtual UserShare* GetUserShare() OVERRIDE;
-  virtual base::WeakPtr<syncer::SyncCore> GetSyncCore() OVERRIDE;
+  virtual syncer::SyncCoreProxy* GetSyncCoreProxy() OVERRIDE;
   virtual const std::string cache_guid() OVERRIDE;
   virtual bool ReceivedExperiment(Experiments* experiments) OVERRIDE;
   virtual bool HasUnsyncedItems() OVERRIDE;
@@ -162,6 +163,8 @@ class FakeSyncManager : public SyncManager {
   scoped_ptr<FakeSyncEncryptionHandler> fake_encryption_handler_;
 
   TestUserShare test_user_share_;
+
+  NullSyncCoreProxy null_sync_core_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSyncManager);
 };
