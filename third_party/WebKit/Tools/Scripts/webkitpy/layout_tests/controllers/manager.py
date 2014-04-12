@@ -108,6 +108,9 @@ class Manager(object):
         tests_to_skip = self._finder.skip_tests(paths, test_names, self._expectations, self._http_tests(test_names))
         tests_to_run = [test for test in test_names if test not in tests_to_skip]
 
+        if not tests_to_run:
+            return tests_to_run, tests_to_skip
+
         # Create a sorted list of test files so the subset chunk,
         # if used, contains alphabetically consecutive tests.
         if self._options.order == 'natural':

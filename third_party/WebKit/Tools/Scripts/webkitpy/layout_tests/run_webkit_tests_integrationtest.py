@@ -315,6 +315,11 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertEqual(details.exit_code, test_run_results.NO_TESTS_EXIT_STATUS)
         self.assertContains(err, 'No tests to run.\n')
 
+    def test_no_tests_found_3(self):
+        details, err, _ = logging_run(['--run-chunk', '5:400', 'foo/bar.html'], tests_included=True)
+        self.assertEqual(details.exit_code, test_run_results.NO_TESTS_EXIT_STATUS)
+        self.assertContains(err, 'No tests to run.\n')
+
     def test_natural_order(self):
         tests_to_run = ['passes/audio.html', 'failures/expected/text.html', 'failures/expected/missing_text.html', 'passes/args.html']
         tests_run = get_tests_run(['--order=natural'] + tests_to_run)
