@@ -15,12 +15,14 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
+#include "third_party/WebKit/public/web/WebAutocompleteParams.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFormElement.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 using base::ASCIIToUTF16;
+using blink::WebAutocompleteParams;
 using blink::WebDocument;
 using blink::WebElement;
 using blink::WebFormElement;
@@ -227,7 +229,8 @@ class RequestAutocompleteRendererTest : public AutofillRendererTest {
     render_thread_->sink().ClearMessages();
 
     // Invoke requestAutocomplete to show the dialog.
-    autofill_agent_->didRequestAutocomplete(invoking_frame(), invoking_form());
+    autofill_agent_->didRequestAutocomplete(invoking_form(),
+                                            blink::WebAutocompleteParams());
     ASSERT_TRUE(render_thread_->sink().GetFirstMessageMatching(
         AutofillHostMsg_RequestAutocomplete::ID));
 
@@ -301,7 +304,8 @@ TEST_F(RequestAutocompleteRendererTest, NoCancelOnMainFrameNavigateAfterDone) {
 
 TEST_F(RequestAutocompleteRendererTest, InvokingTwiceOnlyShowsOnce) {
   // Attempting to show the requestAutocomplete dialog again should be ignored.
-  autofill_agent_->didRequestAutocomplete(invoking_frame(), invoking_form());
+  autofill_agent_->didRequestAutocomplete(invoking_form(),
+                                          blink::WebAutocompleteParams());
   EXPECT_FALSE(render_thread_->sink().GetFirstMessageMatching(
       AutofillHostMsg_RequestAutocomplete::ID));
 }

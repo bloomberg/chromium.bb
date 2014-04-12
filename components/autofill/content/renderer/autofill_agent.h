@@ -83,10 +83,6 @@ class AutofillAgent : public content::RenderViewObserver,
   virtual void textFieldDidReceiveKeyDown(
       const blink::WebInputElement& element,
       const blink::WebKeyboardEvent& event);
-  // TODO(estade): remove this.
-  virtual void didRequestAutocomplete(
-      blink::WebLocalFrame* frame,
-      const blink::WebFormElement& form);
   virtual void didRequestAutocomplete(
       const blink::WebFormElement& form,
       const blink::WebAutocompleteParams& details);
