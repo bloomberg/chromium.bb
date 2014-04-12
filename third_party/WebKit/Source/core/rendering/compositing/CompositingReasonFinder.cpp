@@ -294,7 +294,7 @@ bool CompositingReasonFinder::requiresCompositingForPosition(RenderObject* rende
 
     RenderLayer* ancestor = layer->parent();
     while (ancestor && !hasScrollableAncestor) {
-        if (frameView->containsScrollableArea(ancestor->scrollableArea()))
+        if (ancestor->scrollsOverflow())
             hasScrollableAncestor = true;
         if (ancestor->renderer() == &m_renderView)
             break;

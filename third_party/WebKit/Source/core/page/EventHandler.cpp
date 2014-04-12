@@ -1450,13 +1450,9 @@ static RenderLayer* layerForNode(Node* node)
 
 ScrollableArea* EventHandler::associatedScrollableArea(const RenderLayer* layer) const
 {
-    ScrollableArea* layerScrollableArea = layer->scrollableArea();
-    if (!layerScrollableArea)
-        return 0;
-
-    if (FrameView* frameView = m_frame->view()) {
-        if (frameView->containsScrollableArea(layerScrollableArea))
-            return layerScrollableArea;
+    if (RenderLayerScrollableArea* scrollableArea = layer->scrollableArea()) {
+        if (scrollableArea->scrollsOverflow())
+            return scrollableArea;
     }
 
     return 0;

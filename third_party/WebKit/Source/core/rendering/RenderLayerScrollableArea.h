@@ -171,7 +171,7 @@ public:
     // Returns true our scrollable area is in the FrameView's collection of scrollable areas. This can
     // only happen if we're both scrollable, and we do in fact overflow. This means that overflow: hidden
     // layers never get added to the FrameView's collection.
-    bool scrollsOverflow() const;
+    bool scrollsOverflow() const { return m_scrollsOverflow; }
 
     // Rectangle encompassing the scroll corner and resizer rect.
     IntRect scrollCornerAndResizerRect() const;
@@ -229,6 +229,7 @@ private:
 
     // Keeps track of whether the layer is currently resizing, so events can cause resizing to start and stop.
     unsigned m_inResizeMode : 1;
+    unsigned m_scrollsOverflow : 1;
 
     unsigned m_scrollDimensionsDirty : 1;
     unsigned m_inOverflowRelayout : 1;
