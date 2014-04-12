@@ -193,7 +193,7 @@ void WebEmbeddedWorkerImpl::prepareShadowPageForLoader()
     // with SharedWorker.
     ASSERT(!m_webView);
     m_webView = WebView::create(0);
-    m_mainFrame = WebFrame::create(this);
+    m_mainFrame = WebLocalFrame::create(this);
     m_webView->setMainFrame(m_mainFrame);
 
     WebFrameImpl* webFrame = toWebFrameImpl(m_webView->mainFrame());

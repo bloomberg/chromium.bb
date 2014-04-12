@@ -31,7 +31,7 @@
 #ifndef WebFrameImpl_h
 #define WebFrameImpl_h
 
-#include "WebFrame.h"
+#include "WebLocalFrame.h"
 
 #include "FrameLoaderClientImpl.h"
 #include "core/frame/LocalFrame.h"

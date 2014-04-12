@@ -239,8 +239,8 @@ TEST_F(WebFrameTest, FrameForEnteredContext)
     webViewHelper.initializeAndLoad(m_baseURL + "iframes_test.html", true);
 
     v8::HandleScope scope(v8::Isolate::GetCurrent());
-    EXPECT_EQ(webViewHelper.webView()->mainFrame(), WebFrame::frameForContext(webViewHelper.webView()->mainFrame()->mainWorldScriptContext()));
-    EXPECT_EQ(webViewHelper.webView()->mainFrame()->firstChild(), WebFrame::frameForContext(webViewHelper.webView()->mainFrame()->firstChild()->mainWorldScriptContext()));
+    EXPECT_EQ(webViewHelper.webView()->mainFrame(), WebLocalFrame::frameForContext(webViewHelper.webView()->mainFrame()->mainWorldScriptContext()));
+    EXPECT_EQ(webViewHelper.webView()->mainFrame()->firstChild(), WebLocalFrame::frameForContext(webViewHelper.webView()->mainFrame()->firstChild()->mainWorldScriptContext()));
 }
 
 TEST_F(WebFrameTest, FormWithNullFrame)
@@ -4931,7 +4931,7 @@ public:
     virtual WebFrame* createChildFrame(WebLocalFrame* parent, const WebString&)
     {
         m_childFrameCreationCount++;
-        WebFrame* frame = WebFrame::create(m_client);
+        WebFrame* frame = WebLocalFrame::create(m_client);
         parent->appendChild(frame);
         return frame;
     }

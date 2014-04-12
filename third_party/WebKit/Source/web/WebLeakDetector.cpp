@@ -38,7 +38,7 @@
 #include "core/frame/DOMWindow.h"
 #include "core/inspector/InspectorCounters.h"
 #include "public/web/WebDocument.h"
-#include "public/web/WebFrame.h"
+#include "public/web/WebLocalFrame.h"
 
 #include <v8.h>
 

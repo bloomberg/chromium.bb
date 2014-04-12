@@ -457,7 +457,7 @@ int WebFrame::instanceCount()
     return frameCount;
 }
 
-WebLocalFrame* WebFrame::frameForCurrentContext()
+WebLocalFrame* WebLocalFrame::frameForCurrentContext()
 {
     v8::Handle<v8::Context> context = v8::Isolate::GetCurrent()->GetCurrentContext();
     if (context.IsEmpty())
@@ -465,12 +465,12 @@ WebLocalFrame* WebFrame::frameForCurrentContext()
     return frameForContext(context);
 }
 
-WebLocalFrame* WebFrame::frameForContext(v8::Handle<v8::Context> context)
+WebLocalFrame* WebLocalFrame::frameForContext(v8::Handle<v8::Context> context)
 {
    return WebFrameImpl::fromFrame(toFrameIfNotDetached(context));
 }
 
-WebLocalFrame* WebFrame::fromFrameOwnerElement(const WebElement& element)
+WebLocalFrame* WebLocalFrame::fromFrameOwnerElement(const WebElement& element)
 {
     return WebFrameImpl::fromFrameOwnerElement(PassRefPtr<Element>(element).get());
 }
@@ -1635,7 +1635,7 @@ WebString WebFrameImpl::layerTreeAsText(bool showDebugInfo) const
 
 // WebFrameImpl public ---------------------------------------------------------
 
-WebLocalFrame* WebFrame::create(WebFrameClient* client)
+WebLocalFrame* WebLocalFrame::create(WebFrameClient* client)
 {
     return WebFrameImpl::create(client);
 }

@@ -27,7 +27,7 @@
 #include "WebTestingSupport.h"
 
 #include "WebCoreTestSupport.h"
-#include "WebFrame.h"
+#include "WebLocalFrame.h"
 #include <v8/include/v8.h>
 
 namespace blink {

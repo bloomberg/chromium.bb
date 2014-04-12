@@ -70,7 +70,7 @@ public:
     void SetUp()
     {
         m_webView = WebView::create(0);
-        m_mainFrame = WebFrame::create(&m_webFrameClient);
+        m_mainFrame = WebLocalFrame::create(&m_webFrameClient);
         m_webView->setMainFrame(m_mainFrame);
         m_frameLoaderClientImpl = toFrameLoaderClientImpl(toWebFrameImpl(m_webView->mainFrame())->frame()->loader().client());
     }

@@ -8,6 +8,7 @@
 #include "FakeWebPlugin.h"
 #include "FrameTestHelpers.h"
 #include "WebFrameClient.h"
+#include "WebLocalFrame.h"
 #include <gtest/gtest.h>
 
 namespace blink {

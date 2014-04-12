@@ -147,7 +147,7 @@ NSAttributedString* WebSubstringUtil::attributedWordAtPoint(WebView* view, WebPo
     return string;
 }
 
-NSAttributedString* WebSubstringUtil::attributedSubstringInRange(WebFrame* webFrame, size_t location, size_t length)
+NSAttributedString* WebSubstringUtil::attributedSubstringInRange(WebLocalFrame* webFrame, size_t location, size_t length)
 {
     LocalFrame* frame = toWebFrameImpl(webFrame)->frame();
     if (frame->view()->needsLayout())
