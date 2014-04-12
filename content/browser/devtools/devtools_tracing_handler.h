@@ -11,6 +11,7 @@
 
 namespace base {
 class RefCountedString;
+class Timer;
 }
 
 namespace content {
@@ -27,6 +28,7 @@ class DevToolsTracingHandler : public DevToolsProtocol::Handler {
   void ReadRecordingResult(const scoped_refptr<base::RefCountedString>& result);
   void OnTraceDataCollected(const std::string& trace_fragment);
   void OnTracingStarted(scoped_refptr<DevToolsProtocol::Command> command);
+  void OnBufferUsage(float usage);
 
   scoped_refptr<DevToolsProtocol::Response> OnStart(
       scoped_refptr<DevToolsProtocol::Command> command);
@@ -36,7 +38,7 @@ class DevToolsTracingHandler : public DevToolsProtocol::Handler {
   TracingController::Options TraceOptionsFromString(const std::string& options);
 
   base::WeakPtrFactory<DevToolsTracingHandler> weak_factory_;
-
+  scoped_ptr<base::Timer> buffer_usage_poll_timer_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsTracingHandler);
 };
 

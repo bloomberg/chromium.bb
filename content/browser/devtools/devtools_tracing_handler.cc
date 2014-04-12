@@ -4,6 +4,8 @@
 
 #include "content/browser/devtools/devtools_tracing_handler.h"
 
+#include <cmath>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/file_util.h"
@@ -13,6 +15,8 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "base/values.h"
 #include "content/browser/devtools/devtools_http_handler_impl.h"
 #include "content/browser/devtools/devtools_protocol_constants.h"
@@ -142,11 +146,34 @@ DevToolsTracingHandler::OnStart(
     options = TraceOptionsFromString(options_param);
   }
 
+  if (params && params->HasKey(
+      devtools::Tracing::start::kParamBufferUsageReportingInterval)) {
+    double usage_reporting_interval = 0.0;
+    params->GetDouble(
+        devtools::Tracing::start::kParamBufferUsageReportingInterval,
+        &usage_reporting_interval);
+    if (usage_reporting_interval > 0) {
+      base::TimeDelta interval = base::TimeDelta::FromMilliseconds(
+          std::ceil(usage_reporting_interval));
+      buffer_usage_poll_timer_.reset(new base::Timer(
+          FROM_HERE,
+          interval,
+          base::Bind(
+              base::IgnoreResult(&TracingController::GetTraceBufferPercentFull),
+              base::Unretained(TracingController::GetInstance()),
+              base::Bind(&DevToolsTracingHandler::OnBufferUsage,
+                         weak_factory_.GetWeakPtr())),
+          true));
+      buffer_usage_poll_timer_->Reset();
+    }
+  }
+
   TracingController::GetInstance()->EnableRecording(
       categories, options,
       base::Bind(&DevToolsTracingHandler::OnTracingStarted,
                  weak_factory_.GetWeakPtr(),
                  command));
+
   return command->AsyncResponsePromise();
 }
 
@@ -155,9 +182,16 @@ void DevToolsTracingHandler::OnTracingStarted(
   SendAsyncResponse(command->SuccessResponse(NULL));
 }
 
+void DevToolsTracingHandler::OnBufferUsage(float usage) {
+  base::DictionaryValue* params = new base::DictionaryValue();
+  params->SetDouble(devtools::Tracing::bufferUsage::kParamValue, usage);
+  SendNotification(devtools::Tracing::bufferUsage::kName, params);
+}
+
 scoped_refptr<DevToolsProtocol::Response>
 DevToolsTracingHandler::OnEnd(
     scoped_refptr<DevToolsProtocol::Command> command) {
+  buffer_usage_poll_timer_.reset();
   TracingController::GetInstance()->DisableRecording(
       base::FilePath(),
       base::Bind(&DevToolsTracingHandler::BeginReadingRecordingResult,
