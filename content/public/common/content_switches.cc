@@ -366,7 +366,7 @@ const char kEnableContainerCulling[]        = "enable-container-culling";
 // Turns on extremely verbose logging of accessibility events.
 const char kEnableAccessibilityLogging[]    = "enable-accessibility-logging";
 
-// Use a BeginImplFrame signal from browser to renderer to schedule rendering.
+// Use a BeginFrame signal from browser to renderer to schedule rendering.
 const char kEnableBeginFrameScheduling[]    = "enable-begin-frame-scheduling";
 
 // Enables browser plugin for all types of pages.

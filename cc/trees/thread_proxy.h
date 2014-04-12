@@ -75,7 +75,7 @@ class ThreadProxy : public Proxy,
   virtual void DidLoseOutputSurfaceOnImplThread() OVERRIDE;
   virtual void DidSwapBuffersOnImplThread() OVERRIDE {}
   virtual void OnSwapBuffersCompleteOnImplThread() OVERRIDE;
-  virtual void BeginImplFrame(const BeginFrameArgs& args) OVERRIDE;
+  virtual void BeginFrame(const BeginFrameArgs& args) OVERRIDE;
   virtual void OnCanDrawStateChanged(bool can_draw) OVERRIDE;
   virtual void NotifyReadyToActivate() OVERRIDE;
   // Please call these 2 functions through
@@ -100,7 +100,8 @@ class ThreadProxy : public Proxy,
   virtual void DidManageTiles() OVERRIDE;
 
   // SchedulerClient implementation
-  virtual void SetNeedsBeginImplFrame(bool enable) OVERRIDE;
+  virtual void SetNeedsBeginFrame(bool enable) OVERRIDE;
+  virtual void WillBeginImplFrame(const BeginFrameArgs& args) OVERRIDE;
   virtual void ScheduledActionSendBeginMainFrame() OVERRIDE;
   virtual DrawSwapReadbackResult ScheduledActionDrawAndSwapIfPossible()
       OVERRIDE;

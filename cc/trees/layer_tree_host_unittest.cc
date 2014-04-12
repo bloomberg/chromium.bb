@@ -1046,15 +1046,11 @@ class LayerTreeHostTestFrameTimeUpdatesAfterActivationFails
     if (impl->pending_tree())
       frame_count_with_pending_tree_++;
 
-    if (frame_count_with_pending_tree_ == 2)
-      impl->BlockNotifyReadyToActivateForTesting(false);
-  }
-
-  virtual void DidBeginImplFrameOnThread(LayerTreeHostImpl* impl,
-                                         const BeginFrameArgs& args) OVERRIDE {
     if (frame_count_with_pending_tree_ == 1) {
       EXPECT_EQ(first_frame_time_.ToInternalValue(), 0);
       first_frame_time_ = impl->CurrentFrameTimeTicks();
+    } else if (frame_count_with_pending_tree_ == 2) {
+      impl->BlockNotifyReadyToActivateForTesting(false);
     }
   }
 
@@ -2604,16 +2600,16 @@ class LayerTreeHostTestLCDNotification : public LayerTreeHostTest {
 
 SINGLE_THREAD_TEST_F(LayerTreeHostTestLCDNotification);
 
-// Verify that the BeginImplFrame notification is used to initiate rendering.
-class LayerTreeHostTestBeginImplFrameNotification : public LayerTreeHostTest {
+// Verify that the BeginFrame notification is used to initiate rendering.
+class LayerTreeHostTestBeginFrameNotification : public LayerTreeHostTest {
  public:
   virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
     settings->begin_impl_frame_scheduling_enabled = true;
   }
 
   virtual void BeginTest() OVERRIDE {
-    // This will trigger a SetNeedsBeginImplFrame which will trigger a
-    // BeginImplFrame.
+    // This will trigger a SetNeedsBeginFrame which will trigger a
+    // BeginFrame.
     PostSetNeedsCommitToMainThread();
   }
 
@@ -2631,9 +2627,9 @@ class LayerTreeHostTestBeginImplFrameNotification : public LayerTreeHostTest {
   base::TimeTicks frame_time_;
 };
 
-MULTI_THREAD_TEST_F(LayerTreeHostTestBeginImplFrameNotification);
+MULTI_THREAD_TEST_F(LayerTreeHostTestBeginFrameNotification);
 
-class LayerTreeHostTestBeginImplFrameNotificationShutdownWhileEnabled
+class LayerTreeHostTestBeginFrameNotificationShutdownWhileEnabled
     : public LayerTreeHostTest {
  public:
   virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
@@ -2644,11 +2640,11 @@ class LayerTreeHostTestBeginImplFrameNotificationShutdownWhileEnabled
   virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
 
   virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
-    // The BeginImplFrame notification is turned off now but will get enabled
+    // The BeginFrame notification is turned off now but will get enabled
     // once we return. End test while it's enabled.
     ImplThreadTaskRunner()->PostTask(
         FROM_HERE,
-        base::Bind(&LayerTreeHostTestBeginImplFrameNotification::EndTest,
+        base::Bind(&LayerTreeHostTestBeginFrameNotification::EndTest,
                    base::Unretained(this)));
   }
 
@@ -2656,7 +2652,7 @@ class LayerTreeHostTestBeginImplFrameNotificationShutdownWhileEnabled
 };
 
 MULTI_THREAD_TEST_F(
-    LayerTreeHostTestBeginImplFrameNotificationShutdownWhileEnabled);
+    LayerTreeHostTestBeginFrameNotificationShutdownWhileEnabled);
 
 class LayerTreeHostTestAbortedCommitDoesntStall : public LayerTreeHostTest {
  protected:

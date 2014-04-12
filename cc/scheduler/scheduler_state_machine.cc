@@ -186,31 +186,27 @@ scoped_ptr<base::Value> SchedulerStateMachine::AsValue() const  {
   scoped_ptr<base::DictionaryValue> timestamps_state(new base::DictionaryValue);
   base::TimeTicks now = gfx::FrameTime::Now();
   timestamps_state->SetDouble(
-      "0_interval",
-      last_begin_impl_frame_args_.interval.InMicroseconds() / 1000.0L);
+      "0_interval", begin_impl_frame_args_.interval.InMicroseconds() / 1000.0L);
   timestamps_state->SetDouble(
       "1_now_to_deadline",
-      (last_begin_impl_frame_args_.deadline - now).InMicroseconds() / 1000.0L);
+      (begin_impl_frame_args_.deadline - now).InMicroseconds() / 1000.0L);
   timestamps_state->SetDouble(
       "2_frame_time_to_now",
-      (now - last_begin_impl_frame_args_.frame_time).InMicroseconds() /
-          1000.0L);
+      (now - begin_impl_frame_args_.frame_time).InMicroseconds() / 1000.0L);
   timestamps_state->SetDouble(
       "3_frame_time_to_deadline",
-      (last_begin_impl_frame_args_.deadline -
-              last_begin_impl_frame_args_.frame_time).InMicroseconds() /
+      (begin_impl_frame_args_.deadline - begin_impl_frame_args_.frame_time)
+              .InMicroseconds() /
           1000.0L);
   timestamps_state->SetDouble(
       "4_now", (now - base::TimeTicks()).InMicroseconds() / 1000.0L);
   timestamps_state->SetDouble(
       "5_frame_time",
-      (last_begin_impl_frame_args_.frame_time - base::TimeTicks())
-              .InMicroseconds() /
+      (begin_impl_frame_args_.frame_time - base::TimeTicks()).InMicroseconds() /
           1000.0L);
   timestamps_state->SetDouble(
       "6_deadline",
-      (last_begin_impl_frame_args_.deadline - base::TimeTicks())
-              .InMicroseconds() /
+      (begin_impl_frame_args_.deadline - base::TimeTicks()).InMicroseconds() /
           1000.0L);
   state->Set("major_timestamps_in_ms", timestamps_state.release());
 
@@ -460,7 +456,7 @@ bool SchedulerStateMachine::ShouldSendBeginMainFrame() const {
   // TODO(brianderson): Allow sending BeginMainFrame while idle when the main
   // thread isn't consuming user input.
   if (begin_impl_frame_state_ == BEGIN_IMPL_FRAME_STATE_IDLE &&
-      BeginImplFrameNeeded())
+      BeginFrameNeeded())
     return false;
 
   // We need a new commit for the forced redraw. This honors the
@@ -767,34 +763,32 @@ void SchedulerStateMachine::SetSkipNextBeginMainFrameToReduceLatency() {
   skip_next_begin_main_frame_to_reduce_latency_ = true;
 }
 
-bool SchedulerStateMachine::BeginImplFrameNeeded() const {
-  // Proactive BeginImplFrames are bad for the synchronous compositor because we
-  // have to draw when we get the BeginImplFrame and could end up drawing many
+bool SchedulerStateMachine::BeginFrameNeeded() const {
+  // Proactive BeginFrames are bad for the synchronous compositor because we
+  // have to draw when we get the BeginFrame and could end up drawing many
   // duplicate frames if our new frame isn't ready in time.
   // To poll for state with the synchronous compositor without having to draw,
   // we rely on ShouldPollForAnticipatedDrawTriggers instead.
-  if (!SupportsProactiveBeginImplFrame())
-    return BeginImplFrameNeededToDraw();
+  if (!SupportsProactiveBeginFrame())
+    return BeginFrameNeededToDraw();
 
-  return BeginImplFrameNeededToDraw() ||
-         ProactiveBeginImplFrameWanted();
+  return BeginFrameNeededToDraw() || ProactiveBeginFrameWanted();
 }
 
 bool SchedulerStateMachine::ShouldPollForAnticipatedDrawTriggers() const {
   // ShouldPollForAnticipatedDrawTriggers is what we use in place of
-  // ProactiveBeginImplFrameWanted when we are using the synchronous
+  // ProactiveBeginFrameWanted when we are using the synchronous
   // compositor.
-  if (!SupportsProactiveBeginImplFrame()) {
-    return !BeginImplFrameNeededToDraw() &&
-           ProactiveBeginImplFrameWanted();
+  if (!SupportsProactiveBeginFrame()) {
+    return !BeginFrameNeededToDraw() && ProactiveBeginFrameWanted();
   }
 
   // Non synchronous compositors should rely on
-  // ProactiveBeginImplFrameWanted to poll for state instead.
+  // ProactiveBeginFrameWanted to poll for state instead.
   return false;
 }
 
-bool SchedulerStateMachine::SupportsProactiveBeginImplFrame() const {
+bool SchedulerStateMachine::SupportsProactiveBeginFrame() const {
   // Both the synchronous compositor and disabled vsync settings
   // make it undesirable to proactively request BeginImplFrames.
   // If this is true, the scheduler should poll.
@@ -804,7 +798,7 @@ bool SchedulerStateMachine::SupportsProactiveBeginImplFrame() const {
 
 // These are the cases where we definitely (or almost definitely) have a
 // new frame to draw and can draw.
-bool SchedulerStateMachine::BeginImplFrameNeededToDraw() const {
+bool SchedulerStateMachine::BeginFrameNeededToDraw() const {
   // The output surface is the provider of BeginImplFrames, so we are not going
   // to get them even if we ask for them.
   if (!HasInitializedOutputSurface())
@@ -835,8 +829,8 @@ bool SchedulerStateMachine::BeginImplFrameNeededToDraw() const {
 // These are cases where we are very likely to draw soon, but might not
 // actually have a new frame to draw when we receive the next BeginImplFrame.
 // Proactively requesting the BeginImplFrame helps hide the round trip latency
-// of the SetNeedsBeginImplFrame request that has to go to the Browser.
-bool SchedulerStateMachine::ProactiveBeginImplFrameWanted() const {
+// of the SetNeedsBeginFrame request that has to go to the Browser.
+bool SchedulerStateMachine::ProactiveBeginFrameWanted() const {
   // The output surface is the provider of BeginImplFrames,
   // so we are not going to get them even if we ask for them.
   if (!HasInitializedOutputSurface())
@@ -863,7 +857,7 @@ bool SchedulerStateMachine::ProactiveBeginImplFrameWanted() const {
 
   // If we just swapped, it's likely that we are going to produce another
   // frame soon. This helps avoid negative glitches in our
-  // SetNeedsBeginImplFrame requests, which may propagate to the BeginImplFrame
+  // SetNeedsBeginFrame requests, which may propagate to the BeginImplFrame
   // provider and get sampled at an inopportune time, delaying the next
   // BeginImplFrame.
   if (last_frame_number_swap_performed_ == current_frame_number_)
@@ -874,7 +868,7 @@ bool SchedulerStateMachine::ProactiveBeginImplFrameWanted() const {
 
 void SchedulerStateMachine::OnBeginImplFrame(const BeginFrameArgs& args) {
   AdvanceCurrentFrameNumber();
-  last_begin_impl_frame_args_ = args;
+  begin_impl_frame_args_ = args;
   DCHECK_EQ(begin_impl_frame_state_, BEGIN_IMPL_FRAME_STATE_IDLE) << *AsValue();
   begin_impl_frame_state_ = BEGIN_IMPL_FRAME_STATE_BEGIN_FRAME_STARTING;
 }

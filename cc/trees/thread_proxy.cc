@@ -441,22 +441,18 @@ void ThreadProxy::OnSwapBuffersCompleteOnImplThread() {
       base::Bind(&ThreadProxy::DidCompleteSwapBuffers, main_thread_weak_ptr_));
 }
 
-void ThreadProxy::SetNeedsBeginImplFrame(bool enable) {
-  TRACE_EVENT1("cc", "ThreadProxy::SetNeedsBeginImplFrame", "enable", enable);
-  DCHECK(IsImplThread());
-  impl().layer_tree_host_impl->SetNeedsBeginImplFrame(enable);
+void ThreadProxy::SetNeedsBeginFrame(bool enable) {
+  TRACE_EVENT1("cc", "ThreadProxy::SetNeedsBeginFrame", "enable", enable);
+  impl().layer_tree_host_impl->SetNeedsBeginFrame(enable);
   UpdateBackgroundAnimateTicking();
 }
 
-void ThreadProxy::BeginImplFrame(const BeginFrameArgs& args) {
-  TRACE_EVENT0("cc", "ThreadProxy::BeginImplFrame");
-  DCHECK(IsImplThread());
+void ThreadProxy::BeginFrame(const BeginFrameArgs& args) {
+  impl().scheduler->BeginFrame(args);
+}
 
-  // Sample the frame time now. This time will be used for updating animations
-  // when we draw.
-  impl().layer_tree_host_impl->UpdateCurrentFrameTime();
-
-  impl().scheduler->BeginImplFrame(args);
+void ThreadProxy::WillBeginImplFrame(const BeginFrameArgs& args) {
+  impl().layer_tree_host_impl->WillBeginImplFrame(args);
 }
 
 void ThreadProxy::OnCanDrawStateChanged(bool can_draw) {
@@ -1496,7 +1492,7 @@ void ThreadProxy::LayerTreeHostClosedOnImplThread(CompletionEvent* completion) {
   layer_tree_host()->DeleteContentsTexturesOnImplThread(
       impl().layer_tree_host_impl->resource_provider());
   impl().current_resource_update_controller.reset();
-  impl().layer_tree_host_impl->SetNeedsBeginImplFrame(false);
+  impl().layer_tree_host_impl->SetNeedsBeginFrame(false);
   impl().scheduler.reset();
   impl().layer_tree_host_impl.reset();
   impl().weak_factory.InvalidateWeakPtrs();

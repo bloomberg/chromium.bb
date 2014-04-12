@@ -57,7 +57,7 @@ class CompositorOutputSurface
   virtual bool BindToClient(cc::OutputSurfaceClient* client) OVERRIDE;
   virtual void SwapBuffers(cc::CompositorFrame* frame) OVERRIDE;
 #if defined(OS_ANDROID)
-  virtual void SetNeedsBeginImplFrame(bool enable) OVERRIDE;
+  virtual void SetNeedsBeginFrame(bool enable) OVERRIDE;
 #endif
 
   // TODO(epenner): This seems out of place here and would be a better fit
@@ -99,7 +99,7 @@ class CompositorOutputSurface
   void OnUpdateVSyncParametersFromBrowser(base::TimeTicks timebase,
                                           base::TimeDelta interval);
 #if defined(OS_ANDROID)
-  void OnBeginImplFrame(const cc::BeginFrameArgs& args);
+  void OnBeginFrame(const cc::BeginFrameArgs& args);
 #endif
   bool Send(IPC::Message* message);
 

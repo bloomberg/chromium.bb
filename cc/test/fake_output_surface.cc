@@ -19,7 +19,7 @@ FakeOutputSurface::FakeOutputSurface(
     : OutputSurface(context_provider),
       client_(NULL),
       num_sent_frames_(0),
-      needs_begin_impl_frame_(false),
+      needs_begin_frame_(false),
       forced_draw_to_software_device_(false),
       has_external_stencil_test_(false),
       fake_weak_ptr_factory_(this) {
@@ -84,22 +84,23 @@ void FakeOutputSurface::SwapBuffers(CompositorFrame* frame) {
   }
 }
 
-void FakeOutputSurface::SetNeedsBeginImplFrame(bool enable) {
-  needs_begin_impl_frame_ = enable;
-  OutputSurface::SetNeedsBeginImplFrame(enable);
+void FakeOutputSurface::SetNeedsBeginFrame(bool enable) {
+  needs_begin_frame_ = enable;
+  OutputSurface::SetNeedsBeginFrame(enable);
 
-  // If there is not BeginImplFrame emulation from the FrameRateController,
-  // then we just post a BeginImplFrame to emulate it as part of the test.
+  // If there is not BeginFrame emulation from the FrameRateController,
+  // then we just post a BeginFrame to emulate it as part of the test.
   if (enable && !frame_rate_controller_) {
     base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE, base::Bind(&FakeOutputSurface::OnBeginImplFrame,
-                              fake_weak_ptr_factory_.GetWeakPtr()),
+        FROM_HERE,
+        base::Bind(&FakeOutputSurface::OnBeginFrame,
+                   fake_weak_ptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(16));
   }
 }
 
-void FakeOutputSurface::OnBeginImplFrame() {
-  OutputSurface::BeginImplFrame(BeginFrameArgs::CreateForTesting());
+void FakeOutputSurface::OnBeginFrame() {
+  OutputSurface::BeginFrame(BeginFrameArgs::CreateForTesting());
 }
 
 

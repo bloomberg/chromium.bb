@@ -123,14 +123,13 @@ void SynchronousCompositorOutputSurface::Reshape(
   // Intentional no-op: surface size is controlled by the embedder.
 }
 
-void SynchronousCompositorOutputSurface::SetNeedsBeginImplFrame(
-    bool enable) {
+void SynchronousCompositorOutputSurface::SetNeedsBeginFrame(bool enable) {
   DCHECK(CalledOnValidThread());
-  needs_begin_impl_frame_ = enable;
-  client_ready_for_begin_impl_frame_ = true;
+  needs_begin_frame_ = enable;
+  client_ready_for_begin_frame_ = true;
   SynchronousCompositorOutputSurfaceDelegate* delegate = GetDelegate();
   if (delegate && !invoking_composite_)
-    delegate->SetContinuousInvalidate(needs_begin_impl_frame_);
+    delegate->SetContinuousInvalidate(needs_begin_frame_);
 }
 
 void SynchronousCompositorOutputSurface::SwapBuffers(
@@ -239,7 +238,7 @@ void SynchronousCompositorOutputSurface::InvokeComposite(
   SetExternalDrawConstraints(
       adjusted_transform, viewport, clip, valid_for_tile_management);
   SetNeedsRedrawRect(gfx::Rect(viewport.size()));
-  BeginImplFrame(cc::BeginFrameArgs::CreateForSynchronousCompositor());
+  BeginFrame(cc::BeginFrameArgs::CreateForSynchronousCompositor());
 
   // After software draws (which might move the viewport arbitrarily), restore
   // the previous hardware viewport to allow CC's tile manager to prioritize
@@ -258,12 +257,11 @@ void SynchronousCompositorOutputSurface::InvokeComposite(
 
   SynchronousCompositorOutputSurfaceDelegate* delegate = GetDelegate();
   if (delegate)
-    delegate->SetContinuousInvalidate(needs_begin_impl_frame_);
+    delegate->SetContinuousInvalidate(needs_begin_frame_);
 }
 
-void
-SynchronousCompositorOutputSurface::PostCheckForRetroactiveBeginImplFrame() {
-  // Synchronous compositor cannot perform retroactive BeginImplFrames, so
+void SynchronousCompositorOutputSurface::PostCheckForRetroactiveBeginFrame() {
+  // Synchronous compositor cannot perform retroactive BeginFrames, so
   // intentionally no-op here.
 }
 

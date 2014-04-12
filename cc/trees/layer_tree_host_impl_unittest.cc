@@ -110,7 +110,7 @@ class LayerTreeHostImplTest : public testing::Test,
   virtual void DidLoseOutputSurfaceOnImplThread() OVERRIDE {}
   virtual void DidSwapBuffersOnImplThread() OVERRIDE {}
   virtual void OnSwapBuffersCompleteOnImplThread() OVERRIDE {}
-  virtual void BeginImplFrame(const BeginFrameArgs& args) OVERRIDE {}
+  virtual void BeginFrame(const BeginFrameArgs& args) OVERRIDE {}
   virtual void OnCanDrawStateChanged(bool can_draw) OVERRIDE {
     on_can_draw_state_changed_called_ = true;
   }

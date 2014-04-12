@@ -12,8 +12,8 @@ bool FakeOutputSurfaceClient::DeferredInitialize(
   return deferred_initialize_result_;
 }
 
-void FakeOutputSurfaceClient::BeginImplFrame(const BeginFrameArgs& args) {
-  begin_impl_frame_count_++;
+void FakeOutputSurfaceClient::BeginFrame(const BeginFrameArgs& args) {
+  begin_frame_count_++;
 }
 
 void FakeOutputSurfaceClient::DidLoseOutputSurface() {

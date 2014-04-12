@@ -5,6 +5,7 @@
 #ifndef CC_SCHEDULER_SCHEDULER_H_
 #define CC_SCHEDULER_SCHEDULER_H_
 
+#include <deque>
 #include <string>
 
 #include "base/basictypes.h"
@@ -24,7 +25,8 @@ class Thread;
 
 class SchedulerClient {
  public:
-  virtual void SetNeedsBeginImplFrame(bool enable) = 0;
+  virtual void SetNeedsBeginFrame(bool enable) = 0;
+  virtual void WillBeginImplFrame(const BeginFrameArgs& args) = 0;
   virtual void ScheduledActionSendBeginMainFrame() = 0;
   virtual DrawSwapReadbackResult ScheduledActionDrawAndSwapIfPossible() = 0;
   virtual DrawSwapReadbackResult ScheduledActionDrawAndSwapForced() = 0;
@@ -107,6 +109,8 @@ class CC_EXPORT Scheduler {
 
   base::TimeTicks LastBeginImplFrameTime();
 
+  void BeginFrame(const BeginFrameArgs& args);
+  void BeginRetroFrame();
   void BeginImplFrame(const BeginFrameArgs& args);
   void OnBeginImplFrameDeadline();
   void PollForAnticipatedDrawTriggers();
@@ -129,9 +133,12 @@ class CC_EXPORT Scheduler {
             int layer_tree_host_id,
             const scoped_refptr<base::SequencedTaskRunner>& impl_task_runner);
 
-  base::TimeTicks AdjustedBeginImplFrameDeadline() const;
+  base::TimeTicks AdjustedBeginImplFrameDeadline(
+      const BeginFrameArgs& args,
+      base::TimeDelta draw_duration_estimate) const;
   void ScheduleBeginImplFrameDeadline(base::TimeTicks deadline);
-  void SetupNextBeginImplFrameIfNeeded();
+  void SetupNextBeginFrameIfNeeded();
+  void PostBeginRetroFrameIfNeeded();
   void ActivatePendingTree();
   void DrawAndSwapIfPossible();
   void DrawAndSwapForced();
@@ -148,9 +155,13 @@ class CC_EXPORT Scheduler {
   int layer_tree_host_id_;
   scoped_refptr<base::SequencedTaskRunner> impl_task_runner_;
 
-  bool last_set_needs_begin_impl_frame_;
-  BeginFrameArgs last_begin_impl_frame_args_;
+  bool last_set_needs_begin_frame_;
+  bool begin_retro_frame_posted_;
 
+  std::deque<BeginFrameArgs> begin_retro_frame_args_;
+  BeginFrameArgs begin_impl_frame_args_;
+
+  base::Closure begin_retro_frame_closure_;
   base::Closure begin_impl_frame_deadline_closure_;
   base::Closure poll_for_draw_triggers_closure_;
   base::Closure advance_commit_state_closure_;

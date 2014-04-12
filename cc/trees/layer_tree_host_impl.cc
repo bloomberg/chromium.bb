@@ -1282,8 +1282,8 @@ void LayerTreeHostImpl::SetNeedsRedrawRect(const gfx::Rect& damage_rect) {
   client_->SetNeedsRedrawRectOnImplThread(damage_rect);
 }
 
-void LayerTreeHostImpl::BeginImplFrame(const BeginFrameArgs& args) {
-  client_->BeginImplFrame(args);
+void LayerTreeHostImpl::BeginFrame(const BeginFrameArgs& args) {
+  client_->BeginFrame(args);
 }
 
 void LayerTreeHostImpl::DidSwapBuffers() {
@@ -1499,9 +1499,15 @@ bool LayerTreeHostImpl::SwapBuffers(const LayerTreeHostImpl::FrameData& frame) {
   return true;
 }
 
-void LayerTreeHostImpl::SetNeedsBeginImplFrame(bool enable) {
+void LayerTreeHostImpl::SetNeedsBeginFrame(bool enable) {
   if (output_surface_)
-    output_surface_->SetNeedsBeginImplFrame(enable);
+    output_surface_->SetNeedsBeginFrame(enable);
+}
+
+void LayerTreeHostImpl::WillBeginImplFrame(const BeginFrameArgs& args) {
+  // Sample the frame time now. This time will be used for updating animations
+  // when we draw.
+  UpdateCurrentFrameTime();
 }
 
 gfx::SizeF LayerTreeHostImpl::ComputeInnerViewportContainerSize() const {
@@ -1877,14 +1883,14 @@ bool LayerTreeHostImpl::InitializeRenderer(
         GetRendererCapabilities().allow_rasterize_on_demand);
   }
 
-  // Setup BeginImplFrameEmulation if it's not supported natively
+  // Setup BeginFrameEmulation if it's not supported natively
   if (!settings_.begin_impl_frame_scheduling_enabled) {
     const base::TimeDelta display_refresh_interval =
       base::TimeDelta::FromMicroseconds(
           base::Time::kMicrosecondsPerSecond /
           settings_.refresh_rate);
 
-    output_surface->InitializeBeginImplFrameEmulation(
+    output_surface->InitializeBeginFrameEmulation(
         proxy_->ImplThreadTaskRunner(),
         settings_.throttle_frame_production,
         display_refresh_interval);

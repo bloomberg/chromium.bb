@@ -123,7 +123,7 @@ class CC_EXPORT SchedulerStateMachine {
 
   // Indicates whether the impl thread needs a BeginImplFrame callback in order
   // to make progress.
-  bool BeginImplFrameNeeded() const;
+  bool BeginFrameNeeded() const;
 
   // Indicates that we need to independently poll for new state and actions
   // because we can't expect a BeginImplFrame. This is mostly used to avoid
@@ -230,15 +230,15 @@ class CC_EXPORT SchedulerStateMachine {
   // True if we need to abort draws to make forward progress.
   bool PendingDrawsShouldBeAborted() const;
 
-  bool SupportsProactiveBeginImplFrame() const;
+  bool SupportsProactiveBeginFrame() const;
 
   void SetContinuousPainting(bool continuous_painting) {
     continuous_painting_ = continuous_painting;
   }
 
  protected:
-  bool BeginImplFrameNeededToDraw() const;
-  bool ProactiveBeginImplFrameWanted() const;
+  bool BeginFrameNeededToDraw() const;
+  bool ProactiveBeginFrameWanted() const;
 
   // True if we need to force activations to make forward progress.
   bool PendingActivationsShouldBeForced() const;
@@ -271,7 +271,7 @@ class CC_EXPORT SchedulerStateMachine {
   ForcedRedrawOnTimeoutState forced_redraw_state_;
   SynchronousReadbackState readback_state_;
 
-  BeginFrameArgs last_begin_impl_frame_args_;
+  BeginFrameArgs begin_impl_frame_args_;
 
   int commit_count_;
   int current_frame_number_;
