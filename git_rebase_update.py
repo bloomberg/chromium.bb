@@ -28,7 +28,7 @@ def find_return_branch():
   rebase-update runs into a conflict mid-way.
   """
   return_branch = git.config(STARTING_BRANCH_KEY)
-  if return_branch is None:
+  if not return_branch:
     return_branch = git.current_branch()
     if return_branch != 'HEAD':
       git.set_config(STARTING_BRANCH_KEY, return_branch)
@@ -244,7 +244,7 @@ def main(args=()):
           % (return_branch, root_branch)
         )
       git.run('checkout', root_branch)
-    git.del_config(STARTING_BRANCH_KEY)
+    git.set_config(STARTING_BRANCH_KEY, '')
 
   return retcode
 
