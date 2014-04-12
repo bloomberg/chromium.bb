@@ -135,6 +135,19 @@ void IDBOpenDBRequest::onSuccess(PassOwnPtr<WebIDBDatabase> backend, const IDBDa
     enqueueEvent(Event::create(EventTypeNames::success));
 }
 
+void IDBOpenDBRequest::onSuccess(int64_t oldVersion)
+{
+    IDB_TRACE("IDBOpenDBRequest::onSuccess()");
+    if (!shouldEnqueueEvent())
+        return;
+    if (oldVersion == IDBDatabaseMetadata::NoIntVersion) {
+        // This database hasn't had an integer version before.
+        oldVersion = IDBDatabaseMetadata::DefaultIntVersion;
+    }
+    setResult(IDBAny::createUndefined());
+    enqueueEvent(IDBVersionChangeEvent::create(EventTypeNames::success, oldVersion, Nullable<unsigned long long>()));
+}
+
 bool IDBOpenDBRequest::shouldEnqueueEvent() const
 {
     if (m_contextStopped || !executionContext())
