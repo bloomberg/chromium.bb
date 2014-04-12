@@ -175,16 +175,6 @@
             ],
           },
         }],
-        ['OS=="win" and (MSVS_VERSION=="2012" or MSVS_VERSION=="2012e")', {
-          'defines': [
-            '_VARIADIC_MAX=10',
-          ],
-          'direct_dependent_settings': {
-            'defines': [
-              '_VARIADIC_MAX=10',
-            ],
-          },
-        }],
       ],
       'direct_dependent_settings': {
         'defines': [

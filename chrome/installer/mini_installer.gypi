@@ -61,14 +61,6 @@
         'shlwapi.lib',
         'setupapi.lib',
       ],
-      'conditions': [
-        ['MSVS_VERSION=="2005e"', {
-          'AdditionalDependencies': [  # Must explicitly link in VC2005E
-            'advapi32.lib',
-            'shell32.lib',
-          ],
-        }],
-      ],
     },
     'VCManifestTool': {
       'AdditionalManifestFiles': [

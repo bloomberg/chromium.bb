@@ -74,7 +74,6 @@
             '../../sandbox/sandbox.gyp:sandbox',
             '../../ui/metro_viewer/metro_viewer.gyp:metro_viewer_messages',
             '../../url/url.gyp:url_lib',
-            '../win8.gyp:check_sdk_patch',
             'metro_driver_version_resources',
           ],
           'sources': [

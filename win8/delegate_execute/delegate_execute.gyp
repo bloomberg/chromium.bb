@@ -47,7 +47,6 @@
         '../../ui/base/ui_base.gyp:ui_base',
         '../../ui/gfx/gfx.gyp:gfx',
         '../../ui/gfx/gfx.gyp:gfx_geometry',
-        '../../win8/win8.gyp:check_sdk_patch',
         'delegate_execute_version_resources',
       ],
       'sources': [

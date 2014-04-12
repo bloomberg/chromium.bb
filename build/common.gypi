@@ -1741,7 +1741,7 @@
           },{
             'msvs_large_module_debug_link_mode%': '2',  # Yes
           }],
-          ['MSVS_VERSION=="2013e" or MSVS_VERSION=="2012e" or MSVS_VERSION=="2010e"', {
+          ['MSVS_VERSION=="2013e"', {
             'msvs_express%': 1,
             'secure_atl%': 0,
           },{
@@ -4863,25 +4863,6 @@
               '<(windows_driver_kit_path)/inc/atl71',
               '<(windows_driver_kit_path)/inc/mfc42',
             ],
-            'target_conditions': [
-              ['chromium_code and MSVS_VERSION=="2010e"', {
-                # Workaround for intsafe in 2010 Express + WDK.
-                # ATL code uses intsafe.h and both intsafe.h and stdint.h
-                # define INT8_MIN et al.
-                # We can't use this workaround in third_party code because
-                # it has various levels of intolerance for including stdint.h.
-                # This is not necessary in 2013e, and should be removed once
-                # mainline is switched: http://crbug.com/340358.
-                'msvs_system_include_dirs': [
-                  '<(DEPTH)/build',
-                ],
-                'msvs_settings': {
-                  'VCCLCompilerTool': {
-                    'ForcedIncludeFiles': [ 'intsafe_workaround.h', ],
-                  },
-                },
-              }],
-            ],
           }],
         ],
         'msvs_system_include_dirs': [
@@ -4988,6 +4969,7 @@
                 'WarnAsError': 'false',
                 'RuntimeTypeInfo': 'false',
                 'AdditionalOptions': [
+                  '-fmsc-version=1800',
                   '/fallback',
 
                   # Many files use intrinsics without including this header.
@@ -5032,22 +5014,6 @@
                   '-ferror-limit=1',
                 ],
               },
-              'conditions': [
-                ['MSVS_VERSION=="2013" or MSVS_VERSION=="2013e"', {
-                  'VCCLCompilerTool': {
-                    'AdditionalOptions': [
-                      '-fmsc-version=1800',
-                    ],
-                  },
-                }],
-                ['MSVS_VERSION=="2010" or MSVS_VERSION=="2010e"', {
-                  'VCCLCompilerTool': {
-                    'AdditionalOptions': [
-                      '-fmsc-version=1600',
-                    ],
-                  },
-                }],
-              ],
             }],
             ['asan==1', {
               # ASan on Windows is a work in progress and very experimental.
