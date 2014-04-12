@@ -435,7 +435,7 @@
      with formatter_data="android_java" since they are used only for the Play
      Store listings, and should not be bundled in the APK.
 -->
-        <message name="IDS_PLAY_STORE_TITLE" desc="Play Store title of the Chrome Remote Desktop app for Android. [CHAR-LIMIT=30] [NAME=play_store_title]">
+        <message name="IDS_PLAY_STORE_TITLE" desc="Play Store title of the Chrome Remote Desktop app for Android. If needed to meet the 30-char limit, please translate just 'Remote Desktop' instead. [CHAR-LIMIT=30] [NAME=play_store_title]" meaning="Title used in Play Store">
           Chrome Remote Desktop
         </message>
         <message name="IDS_PLAY_STORE_TAGLINE" desc="Play Store tagline for the Chrome Remote Desktop app for Android. [CHAR-LIMIT=80] [NAME=play_store_tagline]">
