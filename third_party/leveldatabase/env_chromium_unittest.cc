@@ -246,12 +246,12 @@ TEST(ChromiumEnv, GetChildrenPriorResults) {
   std::vector<std::string> result;
   leveldb::Status status = env->GetChildren(dir.AsUTF8Unsafe(), &result);
   EXPECT_TRUE(status.ok());
-  EXPECT_EQ(1, result.size());
+  EXPECT_EQ(1U, result.size());
 
   // And a second time should also return one result
   status = env->GetChildren(dir.AsUTF8Unsafe(), &result);
   EXPECT_TRUE(status.ok());
-  EXPECT_EQ(1, result.size());
+  EXPECT_EQ(1U, result.size());
 }
 
 int main(int argc, char** argv) { return base::TestSuite(argc, argv).Run(); }
