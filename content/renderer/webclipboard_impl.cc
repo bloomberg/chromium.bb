@@ -203,15 +203,14 @@ bool WebClipboardImpl::ConvertBufferType(Buffer buffer,
     case BufferStandard:
       break;
     case BufferSelection:
-#if defined(USE_X11)
-#if defined(OS_CHROMEOS)
-      //  Chrome OS only supports the standard clipboard,
-      //  but not the X selection clipboad.
-      return false;
-#else
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
       *result = ui::CLIPBOARD_TYPE_SELECTION;
       break;
-#endif
+#else
+      // Chrome OS and non-X11 unix builds do not support
+      // the X selection clipboad.
+      // TODO: remove the need for this case, see http://crbug.com/361753
+      return false;
 #endif
     default:
       NOTREACHED();
