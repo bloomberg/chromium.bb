@@ -38,6 +38,7 @@
         'usb/usb_ids_unittest.cc',
         'hid/hid_connection_unittest.cc',
         'hid/hid_service_unittest.cc',
+        'hid/input_service_linux_unittest.cc',
       ],
       'conditions': [
         ['chromeos==1', {

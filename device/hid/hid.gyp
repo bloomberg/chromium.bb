@@ -43,6 +43,8 @@
         'hid_service_win.h',
         'hid_utils_mac.cc',
         'hid_utils_mac.h',
+        'input_service_linux.cc',
+        'input_service_linux.h',
         'udev_common.h'
       ],
     },

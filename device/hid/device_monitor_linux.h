@@ -9,15 +9,22 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_pump_libevent.h"
 #include "base/observer_list.h"
+#include "base/threading/thread_checker.h"
 #include "device/hid/udev_common.h"
 
 struct udev_device;
 
 namespace device {
 
-class DeviceMonitorLinux : public base::MessagePumpLibevent::Watcher {
+// This class listends for notifications from libudev about
+// connected/disconnected devices. This class is *NOT* thread-safe and
+// all methods must be accessed from the FILE thread.
+class DeviceMonitorLinux : public base::MessageLoop::DestructionObserver,
+                           public base::MessagePumpLibevent::Watcher {
  public:
   typedef base::Callback<void(udev_device* device)> EnumerateCallback;
 
@@ -29,7 +36,6 @@ class DeviceMonitorLinux : public base::MessagePumpLibevent::Watcher {
   };
 
   DeviceMonitorLinux();
-  virtual ~DeviceMonitorLinux();
 
   static DeviceMonitorLinux* GetInstance();
   static bool HasInstance();
@@ -40,17 +46,26 @@ class DeviceMonitorLinux : public base::MessagePumpLibevent::Watcher {
   ScopedUdevDevicePtr GetDeviceFromPath(const std::string& path);
   void Enumerate(const EnumerateCallback& callback);
 
+  // Implements base::MessageLoop::DestructionObserver
+  virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
+
   // Implements base::MessagePumpLibevent::Watcher
   virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE;
   virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE;
 
  private:
+  friend struct base::DefaultDeleter<DeviceMonitorLinux>;
+
+  virtual ~DeviceMonitorLinux();
+
   ScopedUdevPtr udev_;
   ScopedUdevMonitorPtr monitor_;
   int monitor_fd_;
   base::MessagePumpLibevent::FileDescriptorWatcher monitor_watcher_;
 
   ObserverList<Observer> observers_;
+
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceMonitorLinux);
 };

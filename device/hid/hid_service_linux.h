@@ -25,7 +25,7 @@ class HidServiceLinux : public HidService,
   virtual scoped_refptr<HidConnection> Connect(const HidDeviceId& device_id)
       OVERRIDE;
 
-  // Implements base::DeviceMonitorLinux::Observer:
+  // Implements DeviceMonitorLinux::Observer:
   virtual void OnDeviceAdded(udev_device* device) OVERRIDE;
   virtual void OnDeviceRemoved(udev_device* device) OVERRIDE;
 

@@ -8,7 +8,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/threading/thread_restrictions.h"
 
 namespace device {
 
@@ -25,6 +25,9 @@ base::LazyInstance<scoped_ptr<DeviceMonitorLinux> >::Leaky
 }  // namespace
 
 DeviceMonitorLinux::DeviceMonitorLinux() : monitor_fd_(-1) {
+  base::ThreadRestrictions::AssertIOAllowed();
+  base::MessageLoop::current()->AddDestructionObserver(this);
+
   udev_.reset(udev_new());
   if (!udev_) {
     LOG(ERROR) << "Failed to create udev.";
@@ -58,11 +61,6 @@ DeviceMonitorLinux::DeviceMonitorLinux() : monitor_fd_(-1) {
   }
 }
 
-DeviceMonitorLinux::~DeviceMonitorLinux() {
-  monitor_watcher_.StopWatchingFileDescriptor();
-  close(monitor_fd_);
-}
-
 // static
 DeviceMonitorLinux* DeviceMonitorLinux::GetInstance() {
   if (!HasInstance())
@@ -76,23 +74,27 @@ bool DeviceMonitorLinux::HasInstance() {
 }
 
 void DeviceMonitorLinux::AddObserver(Observer* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (observer)
     observers_.AddObserver(observer);
 }
 
 void DeviceMonitorLinux::RemoveObserver(Observer* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (observer)
     observers_.RemoveObserver(observer);
 }
 
 ScopedUdevDevicePtr DeviceMonitorLinux::GetDeviceFromPath(
     const std::string& path) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   ScopedUdevDevicePtr device(
       udev_device_new_from_syspath(udev_.get(), path.c_str()));
   return device.Pass();
 }
 
 void DeviceMonitorLinux::Enumerate(const EnumerateCallback& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   ScopedUdevEnumeratePtr enumerate(udev_enumerate_new(udev_.get()));
 
   if (!enumerate) {
@@ -116,7 +118,13 @@ void DeviceMonitorLinux::Enumerate(const EnumerateCallback& callback) {
   }
 }
 
+void DeviceMonitorLinux::WillDestroyCurrentMessageLoop() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  g_device_monitor_linux_ptr.Get().reset(NULL);
+}
+
 void DeviceMonitorLinux::OnFileCanReadWithoutBlocking(int fd) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(monitor_fd_, fd);
 
   ScopedUdevDevicePtr device(udev_monitor_receive_device(monitor_.get()));
@@ -131,5 +139,12 @@ void DeviceMonitorLinux::OnFileCanReadWithoutBlocking(int fd) {
 }
 
 void DeviceMonitorLinux::OnFileCanWriteWithoutBlocking(int fd) {}
+
+DeviceMonitorLinux::~DeviceMonitorLinux() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  base::MessageLoop::current()->RemoveDestructionObserver(this);
+  monitor_watcher_.StopWatchingFileDescriptor();
+  close(monitor_fd_);
+}
 
 }  // namespace device
