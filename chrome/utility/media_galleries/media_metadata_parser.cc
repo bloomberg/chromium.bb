@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread.h"
+#include "chrome/utility/media_galleries/image_metadata_extractor.h"
 #include "media/base/audio_video_metadata_extractor.h"
 #include "media/base/data_source.h"
 
@@ -20,13 +21,26 @@ namespace {
 
 void SetStringScopedPtr(const std::string& value,
                         scoped_ptr<std::string>* destination) {
+  DCHECK(destination);
   if (!value.empty())
     destination->reset(new std::string(value));
 }
 
 void SetIntScopedPtr(int value, scoped_ptr<int>* destination) {
+  DCHECK(destination);
   if (value >= 0)
     destination->reset(new int(value));
+}
+
+void SetDoubleScopedPtr(double value, scoped_ptr<double>* destination) {
+  DCHECK(destination);
+  if (value >= 0)
+    destination->reset(new double(value));
+}
+
+void SetBoolScopedPtr(bool value, scoped_ptr<bool>* destination) {
+  DCHECK(destination);
+  destination->reset(new bool(value));
 }
 
 // This runs on |media_thread_|, as the underlying FFmpeg operation is
@@ -36,6 +50,7 @@ scoped_ptr<MediaMetadataParser::MediaMetadata> ParseAudioVideoMetadata(
     media::DataSource* source,
     scoped_ptr<MediaMetadataParser::MediaMetadata> metadata) {
   DCHECK(source);
+  DCHECK(metadata.get());
   media::AudioVideoMetadataExtractor extractor;
 
   if (!extractor.Extract(source))
@@ -70,6 +85,39 @@ scoped_ptr<MediaMetadataParser::MediaMetadata> ParseAudioVideoMetadata(
   return metadata.Pass();
 }
 
+void FinishParseImageMetadata(
+    ImageMetadataExtractor* extractor,
+    scoped_ptr<MediaMetadataParser::MediaMetadata> metadata,
+    MediaMetadataParser::MetadataCallback callback,
+    bool extract_success) {
+  DCHECK(extractor);
+  DCHECK(metadata.get());
+
+  if (!extract_success) {
+    callback.Run(metadata.Pass());
+    return;
+  }
+
+  SetIntScopedPtr(extractor->height(), &metadata->height);
+  SetIntScopedPtr(extractor->width(), &metadata->width);
+
+  SetIntScopedPtr(extractor->rotation(), &metadata->rotation);
+
+  SetDoubleScopedPtr(extractor->x_resolution(), &metadata->x_resolution);
+  SetDoubleScopedPtr(extractor->y_resolution(), &metadata->y_resolution);
+  SetBoolScopedPtr(extractor->flash_fired(), &metadata->flash_fired);
+  SetStringScopedPtr(extractor->camera_make(), &metadata->camera_make);
+  SetStringScopedPtr(extractor->camera_model(), &metadata->camera_model);
+  SetDoubleScopedPtr(extractor->exposure_time_sec(),
+                     &metadata->exposure_time_seconds);
+
+  SetDoubleScopedPtr(extractor->f_number(), &metadata->f_number);
+  SetDoubleScopedPtr(extractor->focal_length_mm(), &metadata->focal_length_mm);
+  SetDoubleScopedPtr(extractor->iso_equivalent(), &metadata->iso_equivalent);
+
+  callback.Run(metadata.Pass());
+}
+
 }  // namespace
 
 MediaMetadataParser::MediaMetadataParser(media::DataSource* source,
@@ -93,6 +141,15 @@ void MediaMetadataParser::Start(const MetadataCallback& callback) {
         FROM_HERE,
         base::Bind(&ParseAudioVideoMetadata, source_, base::Passed(&metadata)),
         callback);
+    return;
+  }
+
+  if (StartsWithASCII(mime_type_, "image/", true)) {
+    ImageMetadataExtractor* extractor = new ImageMetadataExtractor;
+    extractor->Extract(
+        source_,
+        base::Bind(&FinishParseImageMetadata, base::Owned(extractor),
+                   base::Passed(&metadata), callback));
     return;
   }
 

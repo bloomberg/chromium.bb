@@ -32,6 +32,27 @@ function ImageMIMETypeOnlyTest() {
   RunMetadataTest("test.jpg", {metadataType: 'mimeTypeOnly'}, verifyMetadata);
 }
 
+function ImageTagsTest() {
+  function verifyMetadata(metadata) {
+    chrome.test.assertEq("image/jpeg", metadata.mimeType);
+    chrome.test.assertEq(5616, metadata.width);
+    chrome.test.assertEq(3744, metadata.height);
+    chrome.test.assertEq(0, metadata.rotation);
+    chrome.test.assertEq(300.0, metadata.xResolution);
+    chrome.test.assertEq(300.0, metadata.yResolution);
+    chrome.test.assertEq("Canon", metadata.cameraMake);
+    chrome.test.assertEq("Canon EOS 5D Mark II", metadata.cameraModel);
+    chrome.test.assertEq(0.01, metadata.exposureTimeSeconds);
+    chrome.test.assertFalse(metadata.flashFired);
+    chrome.test.assertEq(3.2, metadata.fNumber);
+    chrome.test.assertEq(100, metadata.focalLengthMm);
+    chrome.test.assertEq(1600, metadata.isoEquivalent);
+    chrome.test.succeed();
+  }
+
+  RunMetadataTest("test.jpg", {}, verifyMetadata);
+}
+
 function MP3MIMETypeOnlyTest() {
   function verifyMetadata(metadata) {
     chrome.test.assertEq("audio/mpeg", metadata.mimeType);
@@ -92,7 +113,8 @@ chrome.test.getConfig(function(config) {
 
   // Should still be able to sniff MP3 MIME type without proprietary codecs.
   var testsToRun = [
-    ImageMIMETypeOnlyTest
+    ImageMIMETypeOnlyTest,
+    ImageTagsTest
   ];
 
   if (useProprietaryCodecs) {

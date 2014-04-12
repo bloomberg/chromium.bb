@@ -68,6 +68,7 @@
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
+#include "chrome/utility/media_galleries/image_metadata_extractor.h"
 #include "chrome/utility/media_galleries/ipc_data_source.h"
 #include "chrome/utility/media_galleries/media_metadata_parser.h"
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
@@ -436,6 +437,11 @@ void ChromeContentUtilityClient::PreSandboxStartup() {
 #endif  // ENABLE_MDNS
 
   g_pdf_lib.Get().Init();
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  // Initialize libexif for image metadata parsing.
+  metadata::ImageMetadataExtractor::InitializeLibrary();
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
   // Load media libraries for media file validation.
   base::FilePath media_path;

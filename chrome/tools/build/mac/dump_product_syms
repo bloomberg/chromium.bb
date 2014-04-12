@@ -81,6 +81,7 @@ SRC_NAMES=(
     "${SRC_APP_NAME} Helper.app"
     "crash_inspector"
     "crash_report_sender.app"
+    "exif.so"
     "ffmpegsumo.so"
     "libplugin_carbon_interpose.dylib"
     "ppGoogleNaClPluginChrome.plugin"

@@ -82,6 +82,7 @@
     ['OS=="mac"', {
       'variables': {
         'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/exif.so',
           '<(PRODUCT_DIR)/ffmpegsumo.so',
           '<(PRODUCT_DIR)/osmesa.so',
         ],
@@ -111,6 +112,7 @@
         'isolate_dependency_tracked': [
           '<(PRODUCT_DIR)/chrome_elf.dll',
           '<(PRODUCT_DIR)/ffmpegsumo.dll',
+          '<(PRODUCT_DIR)/libexif.dll',
           '<(PRODUCT_DIR)/osmesa.dll',
         ],
         'isolate_dependency_untracked': [

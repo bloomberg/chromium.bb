@@ -5,11 +5,9 @@
 {
   'variables': {
     'conditions': [
-      # TODO(kmadhusu): We are not ready to build this library on Android.
-      # Resolve the issues and build on Android.
-      ['os_posix==1 and OS!="mac"', {
-        'use_system_libexif%': 0,
-      }, {  # os_posix != 1 or OS == "mac"
+      ['OS == "linux" and chromeos==0', {
+        'use_system_libexif%': 1,
+      }, {  # OS != "linux" and chromeos==0
         'use_system_libexif%': 0,
       }],
     ],
@@ -19,8 +17,7 @@
       'targets': [
         {
           'target_name': 'libexif',
-          'type': 'shared_library',
-          'product_name': 'exif',
+          'type': 'loadable_module',
           'sources': [
             'sources/libexif/exif-byte-order.c',
             'sources/libexif/exif-content.c',
@@ -56,6 +53,19 @@
             ],
           },
           'conditions': [
+            ['clang==1', {
+              'cflags': [
+                '-Wno-enum-conversion', 
+                '-Wno-switch'
+              ],
+              'xcode_settings': {
+                'WARNING_CFLAGS': [
+                  '-Wno-enum-conversion', 
+                  '-Wno-switch',
+                  '-Wno-format',
+                ],
+              },
+            }],
             ['os_posix==1 and OS!="mac"', {
               'cflags!': ['-fvisibility=hidden'],
             }],
@@ -66,31 +76,29 @@
                     'mac_real_dsym': 1,
                   },
                }],
-             ],
-             'xcode_settings': {
+              ],
+              'xcode_settings': {
                 'GCC_SYMBOLS_PRIVATE_EXTERN': 'NO', # no -fvisibility=hidden
-                # TODO(kmadhusu): Copy this dylib to Versions folder.
-                # (Do something similar to libplugin_carbon_interpose.dylib).
-                'DYLIB_INSTALL_NAME_BASE': '@executable_path/../../..',
               },
             }],
             ['OS=="win"', {
               'product_name': 'libexif',
-              'msvs_settings': {
-                'VCLinkerTool': {
-                  'ModuleDefinitionFile': 'libexif.def',
-                },
-              },
+              'sources': [
+                'libexif.def',
+              ],
               'defines': [
                 # This seems like a hack, but this is what WebKit Win does.
                 'snprintf=_snprintf',
                 'inline=__inline',
               ],
+              'msvs_disabled_warnings': [
+                4267, # size_t -> ExifLong truncation on amd64
+              ],
             }],
           ],
         },
       ],
-    }, { # 'use_system_libexif==0
+    }, { # 'use_system_libexif!=0
       'conditions': [
         ['sysroot!=""', {
           'variables': {
@@ -112,14 +120,6 @@
             ],
             'defines': [
               'USE_SYSTEM_LIBEXIF',
-            ],
-          },
-          'link_settings': {
-            'ldflags': [
-              '<!@(<(pkg-config) --libs-only-L --libs-only-other libexif)',
-            ],
-            'libraries': [
-              '<!@(<(pkg-config) --libs-only-l libexif)',
             ],
           },
         }
