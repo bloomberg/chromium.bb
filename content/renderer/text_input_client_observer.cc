@@ -11,9 +11,9 @@
 #include "third_party/WebKit/public/platform/WebPoint.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/web/mac/WebSubstringUtil.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
+#include "third_party/WebKit/public/web/mac/WebSubstringUtil.h"
 #include "ui/gfx/rect.h"
 
 namespace content {
@@ -89,7 +89,7 @@ void TextInputClientObserver::OnFirstRectForCharacterRange(gfx::Range range) {
 void TextInputClientObserver::OnStringForRange(gfx::Range range) {
 #if defined(OS_MACOSX)
   NSAttributedString* string = nil;
-  blink::WebFrame* frame = webview()->focusedFrame();
+  blink::WebLocalFrame* frame = webview()->focusedFrame()->toWebLocalFrame();
   if (frame) {
     string = blink::WebSubstringUtil::attributedSubstringInRange(
         frame, range.start(), range.length());
