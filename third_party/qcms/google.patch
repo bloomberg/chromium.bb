@@ -1,5 +1,5 @@
 diff --git a/third_party/qcms/src/iccread.c b/third_party/qcms/src/iccread.c
-index 36b7011..d3c3dfe 100644
+index 36b7011..9ee6b94 100644
 --- a/third_party/qcms/src/iccread.c
 +++ b/third_party/qcms/src/iccread.c
 @@ -266,7 +266,7 @@ qcms_bool qcms_profile_is_bogus(qcms_profile *profile)
@@ -52,6 +52,16 @@ index 36b7011..d3c3dfe 100644
  	uint32_t clut_size;
  	size_t entry_size;
  	struct lutType *lut;
+@@ -997,6 +1006,9 @@ qcms_profile* qcms_profile_from_memory(const void *mem, size_t size)
+ 	source.size = size;
+ 	source.valid = true;
+ 
++	if (size < 4)
++		return INVALID_PROFILE;
++
+ 	length = read_u32(src, 0);
+ 	if (length <= size) {
+ 		// shrink the area that we can read if appropriate
 diff --git a/third_party/qcms/src/qcms.h b/third_party/qcms/src/qcms.h
 index 7d83623..11fe222 100644
 --- a/third_party/qcms/src/qcms.h
@@ -91,7 +101,7 @@ index 7d83623..11fe222 100644
  void qcms_enable_iccv4();
  
 diff --git a/third_party/qcms/src/qcmsint.h b/third_party/qcms/src/qcmsint.h
-index 53a3420..af20948 100644
+index 53a3420..fb53e96 100644
 --- a/third_party/qcms/src/qcmsint.h
 +++ b/third_party/qcms/src/qcmsint.h
 @@ -45,6 +45,11 @@ struct precache_output
@@ -150,10 +160,10 @@ index 53a3420..af20948 100644
 +long __cdecl _InterlockedDecrement(long volatile *);
 +#pragma intrinsic(_InterlockedIncrement)
 +#pragma intrinsic(_InterlockedDecrement)
-+ 
++
 +#define qcms_atomic_increment(x) _InterlockedIncrement((long volatile *)&x)
 +#define qcms_atomic_decrement(x) _InterlockedDecrement((long volatile*)&x)
-+ 
++
 +#else
 +
 +#define qcms_atomic_increment(x) __sync_add_and_fetch(&x, 1)
