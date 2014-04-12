@@ -44,6 +44,8 @@ class CC_EXPORT ResourcePool {
     return resource_count_ - unused_resources_.size();
   }
 
+  ResourceFormat resource_format() const { return format_; }
+
  protected:
   ResourcePool(ResourceProvider* resource_provider,
                GLenum target,

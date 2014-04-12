@@ -59,6 +59,7 @@ class FakePictureLayerTilingClient : public PictureLayerTilingClient {
 
  protected:
   FakeTileManagerClient tile_manager_client_;
+  scoped_ptr<ResourcePool> resource_pool_;
   scoped_ptr<TileManager> tile_manager_;
   scoped_refptr<PicturePileImpl> pile_;
   gfx::Size tile_size_;

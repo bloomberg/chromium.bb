@@ -150,7 +150,7 @@ class CC_EXPORT TileManager : public RasterizerClient,
 
   static scoped_ptr<TileManager> Create(
       TileManagerClient* client,
-      ResourceProvider* resource_provider,
+      ResourcePool* resource_pool,
       Rasterizer* rasterizer,
       Rasterizer* gpu_rasterizer,
       size_t max_raster_usage_bytes,
@@ -187,8 +187,6 @@ class CC_EXPORT TileManager : public RasterizerClient,
   }
 
   void GetPairedPictureLayers(std::vector<PairedPictureLayer>* layers) const;
-
-  ResourcePool* resource_pool() { return resource_pool_.get(); }
 
   void InitializeTilesWithResourcesForTesting(const std::vector<Tile*>& tiles) {
     for (size_t i = 0; i < tiles.size(); ++i) {
@@ -228,7 +226,7 @@ class CC_EXPORT TileManager : public RasterizerClient,
 
  protected:
   TileManager(TileManagerClient* client,
-              ResourceProvider* resource_provider,
+              ResourcePool* resource_pool,
               Rasterizer* rasterizer,
               Rasterizer* gpu_rasterizer,
               size_t max_raster_usage_bytes,
@@ -277,7 +275,8 @@ class CC_EXPORT TileManager : public RasterizerClient,
                              bool was_canceled);
 
   inline size_t BytesConsumedIfAllocated(const Tile* tile) const {
-    return Resource::MemorySizeBytes(tile->size(), resource_format_);
+    return Resource::MemorySizeBytes(tile->size(),
+                                     resource_pool_->resource_format());
   }
 
   void FreeResourceForTile(Tile* tile, RasterMode mode);
@@ -291,7 +290,7 @@ class CC_EXPORT TileManager : public RasterizerClient,
   void UpdatePrioritizedTileSetIfNeeded();
 
   TileManagerClient* client_;
-  scoped_ptr<ResourcePool> resource_pool_;
+  ResourcePool* resource_pool_;
   scoped_ptr<RasterizerDelegate> rasterizer_delegate_;
   GlobalStateThatImpactsTilePriority global_state_;
 

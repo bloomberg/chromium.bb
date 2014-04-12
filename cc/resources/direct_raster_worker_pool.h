@@ -31,8 +31,6 @@ class CC_EXPORT DirectRasterWorkerPool : public RasterWorkerPool,
   virtual void SetClient(RasterizerClient* client) OVERRIDE;
   virtual void Shutdown() OVERRIDE {}
   virtual void ScheduleTasks(RasterTaskQueue* queue) OVERRIDE;
-  virtual unsigned GetResourceTarget() const OVERRIDE;
-  virtual ResourceFormat GetResourceFormat() const OVERRIDE;
   virtual void CheckForCompletedTasks() OVERRIDE;
 
   // Overridden from internal::RasterizerTaskClient:

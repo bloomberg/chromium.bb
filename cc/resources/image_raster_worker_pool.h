@@ -22,8 +22,7 @@ class CC_EXPORT ImageRasterWorkerPool : public RasterWorkerPool,
   static scoped_ptr<RasterWorkerPool> Create(
       base::SequencedTaskRunner* task_runner,
       internal::TaskGraphRunner* task_graph_runner,
-      ResourceProvider* resource_provider,
-      unsigned texture_target);
+      ResourceProvider* resource_provider);
 
   // Overridden from RasterWorkerPool:
   virtual Rasterizer* AsRasterizer() OVERRIDE;
@@ -32,8 +31,6 @@ class CC_EXPORT ImageRasterWorkerPool : public RasterWorkerPool,
   virtual void SetClient(RasterizerClient* client) OVERRIDE;
   virtual void Shutdown() OVERRIDE;
   virtual void ScheduleTasks(RasterTaskQueue* queue) OVERRIDE;
-  virtual unsigned GetResourceTarget() const OVERRIDE;
-  virtual ResourceFormat GetResourceFormat() const OVERRIDE;
   virtual void CheckForCompletedTasks() OVERRIDE;
 
   // Overridden from internal::RasterizerTaskClient:
@@ -43,8 +40,7 @@ class CC_EXPORT ImageRasterWorkerPool : public RasterWorkerPool,
  protected:
   ImageRasterWorkerPool(base::SequencedTaskRunner* task_runner,
                         internal::TaskGraphRunner* task_graph_runner,
-                        ResourceProvider* resource_provider,
-                        unsigned texture_target);
+                        ResourceProvider* resource_provider);
 
  private:
   void OnRasterFinished();
@@ -56,7 +52,6 @@ class CC_EXPORT ImageRasterWorkerPool : public RasterWorkerPool,
   const internal::NamespaceToken namespace_token_;
   RasterizerClient* client_;
   ResourceProvider* resource_provider_;
-  const unsigned texture_target_;
 
   bool raster_tasks_pending_;
   bool raster_tasks_required_for_activation_pending_;

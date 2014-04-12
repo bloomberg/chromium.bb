@@ -14,22 +14,19 @@ namespace cc {
 scoped_ptr<RasterWorkerPool> ImageRasterWorkerPool::Create(
     base::SequencedTaskRunner* task_runner,
     internal::TaskGraphRunner* task_graph_runner,
-    ResourceProvider* resource_provider,
-    unsigned texture_target) {
+    ResourceProvider* resource_provider) {
   return make_scoped_ptr<RasterWorkerPool>(new ImageRasterWorkerPool(
-      task_runner, task_graph_runner, resource_provider, texture_target));
+      task_runner, task_graph_runner, resource_provider));
 }
 
 ImageRasterWorkerPool::ImageRasterWorkerPool(
     base::SequencedTaskRunner* task_runner,
     internal::TaskGraphRunner* task_graph_runner,
-    ResourceProvider* resource_provider,
-    unsigned texture_target)
+    ResourceProvider* resource_provider)
     : task_runner_(task_runner),
       task_graph_runner_(task_graph_runner),
       namespace_token_(task_graph_runner->GetNamespaceToken()),
       resource_provider_(resource_provider),
-      texture_target_(texture_target),
       raster_tasks_pending_(false),
       raster_tasks_required_for_activation_pending_(false),
       raster_finished_weak_ptr_factory_(this) {}
@@ -127,14 +124,6 @@ void ImageRasterWorkerPool::ScheduleTasks(RasterTaskQueue* queue) {
       "rasterizing",
       "state",
       TracedValue::FromValue(StateAsValue().release()));
-}
-
-unsigned ImageRasterWorkerPool::GetResourceTarget() const {
-  return texture_target_;
-}
-
-ResourceFormat ImageRasterWorkerPool::GetResourceFormat() const {
-  return resource_provider_->best_texture_format();
 }
 
 void ImageRasterWorkerPool::CheckForCompletedTasks() {

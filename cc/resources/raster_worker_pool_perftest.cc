@@ -226,8 +226,7 @@ class RasterWorkerPoolPerfTest
         raster_worker_pool_ = ImageRasterWorkerPool::Create(
             base::MessageLoopProxy::current().get(),
             task_graph_runner_.get(),
-            resource_provider_.get(),
-            GL_TEXTURE_2D);
+            resource_provider_.get());
         break;
       case RASTER_WORKER_POOL_TYPE_DIRECT:
         raster_worker_pool_ = DirectRasterWorkerPool::Create(

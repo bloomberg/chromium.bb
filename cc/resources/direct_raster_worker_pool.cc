@@ -102,14 +102,6 @@ void DirectRasterWorkerPool::ScheduleTasks(RasterTaskQueue* queue) {
       new_raster_required_for_activation_finished_task;
 }
 
-unsigned DirectRasterWorkerPool::GetResourceTarget() const {
-  return GL_TEXTURE_2D;
-}
-
-ResourceFormat DirectRasterWorkerPool::GetResourceFormat() const {
-  return resource_provider_->best_texture_format();
-}
-
 void DirectRasterWorkerPool::CheckForCompletedTasks() {
   TRACE_EVENT0("cc", "DirectRasterWorkerPool::CheckForCompletedTasks");
 

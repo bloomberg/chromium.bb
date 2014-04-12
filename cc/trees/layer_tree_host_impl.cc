@@ -50,6 +50,7 @@
 #include "cc/resources/pixel_buffer_raster_worker_pool.h"
 #include "cc/resources/prioritized_resource_manager.h"
 #include "cc/resources/raster_worker_pool.h"
+#include "cc/resources/resource_pool.h"
 #include "cc/resources/texture_mailbox_deleter.h"
 #include "cc/resources/ui_resource_bitmap.h"
 #include "cc/scheduler/delay_based_time_source.h"
@@ -307,6 +308,7 @@ LayerTreeHostImpl::~LayerTreeHostImpl() {
   pending_tree_.reset();
   active_tree_.reset();
   tile_manager_.reset();
+  resource_pool_.reset();
   raster_worker_pool_.reset();
   direct_raster_worker_pool_.reset();
 }
@@ -1190,6 +1192,15 @@ void LayerTreeHostImpl::UpdateTileManagerMemoryPolicy(
           gpu::MemoryAllocation::CUTOFF_ALLOW_NOTHING);
   global_tile_state_.num_resources_limit = policy.num_resources_limit;
 
+  DCHECK(resource_pool_);
+  resource_pool_->CheckBusyResources();
+  // Soft limit is used for resource pool such that memory returns to soft
+  // limit after going over.
+  resource_pool_->SetResourceUsageLimits(
+      global_tile_state_.soft_memory_limit_in_bytes,
+      global_tile_state_.unused_memory_limit_in_bytes,
+      global_tile_state_.num_resources_limit);
+
   DidModifyTilePriorities();
 }
 
@@ -1303,11 +1314,10 @@ void LayerTreeHostImpl::ReclaimResources(const CompositorFrameAck* ack) {
   // In OOM, we now might be able to release more resources that were held
   // because they were exported.
   if (tile_manager_) {
-    DCHECK(tile_manager_->resource_pool());
+    DCHECK(resource_pool_);
 
-    // TODO(vmpstr): Move resource pool to be LTHI member.
-    tile_manager_->resource_pool()->CheckBusyResources();
-    tile_manager_->resource_pool()->ReduceResourceUsage();
+    resource_pool_->CheckBusyResources();
+    resource_pool_->ReduceResourceUsage();
   }
   // If we're not visible, we likely released resources, so we want to
   // aggressively flush here to make sure those DeleteTextures make it to the
@@ -1803,23 +1813,30 @@ void LayerTreeHostImpl::CreateAndSetTileManager(
   DCHECK(proxy_->ImplThreadTaskRunner());
 
   if (using_map_image) {
-    raster_worker_pool_ = ImageRasterWorkerPool::Create(
-        proxy_->ImplThreadTaskRunner(),
-        RasterWorkerPool::GetTaskGraphRunner(),
-        resource_provider,
-        GetMapImageTextureTarget(context_provider));
+    raster_worker_pool_ =
+        ImageRasterWorkerPool::Create(proxy_->ImplThreadTaskRunner(),
+                                      RasterWorkerPool::GetTaskGraphRunner(),
+                                      resource_provider);
+    resource_pool_ =
+        ResourcePool::Create(resource_provider,
+                             GetMapImageTextureTarget(context_provider),
+                             resource_provider->best_texture_format());
   } else {
     raster_worker_pool_ = PixelBufferRasterWorkerPool::Create(
         proxy_->ImplThreadTaskRunner(),
         RasterWorkerPool::GetTaskGraphRunner(),
         resource_provider,
         GetMaxTransferBufferUsageBytes(context_provider));
+    resource_pool_ = ResourcePool::Create(
+        resource_provider,
+        GL_TEXTURE_2D,
+        resource_provider->memory_efficient_texture_format());
   }
   direct_raster_worker_pool_ = DirectRasterWorkerPool::Create(
       proxy_->ImplThreadTaskRunner(), resource_provider, context_provider);
   tile_manager_ =
       TileManager::Create(this,
-                          resource_provider,
+                          resource_pool_.get(),
                           raster_worker_pool_->AsRasterizer(),
                           direct_raster_worker_pool_->AsRasterizer(),
                           GetMaxRasterTasksUsageBytes(context_provider),
@@ -1848,6 +1865,7 @@ bool LayerTreeHostImpl::InitializeRenderer(
   // Note: order is important here.
   renderer_.reset();
   tile_manager_.reset();
+  resource_pool_.reset();
   raster_worker_pool_.reset();
   direct_raster_worker_pool_.reset();
   resource_provider_.reset();
@@ -1975,6 +1993,7 @@ void LayerTreeHostImpl::ReleaseGL() {
   ReleaseTreeResources();
   renderer_.reset();
   tile_manager_.reset();
+  resource_pool_.reset();
   raster_worker_pool_.reset();
   direct_raster_worker_pool_.reset();
   resource_provider_->InitializeSoftware();

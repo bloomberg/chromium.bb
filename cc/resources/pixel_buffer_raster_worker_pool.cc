@@ -222,14 +222,6 @@ void PixelBufferRasterWorkerPool::ScheduleTasks(RasterTaskQueue* queue) {
       TracedValue::FromValue(StateAsValue().release()));
 }
 
-unsigned PixelBufferRasterWorkerPool::GetResourceTarget() const {
-  return GL_TEXTURE_2D;
-}
-
-ResourceFormat PixelBufferRasterWorkerPool::GetResourceFormat() const {
-  return resource_provider_->memory_efficient_texture_format();
-}
-
 void PixelBufferRasterWorkerPool::CheckForCompletedTasks() {
   TRACE_EVENT0("cc", "PixelBufferRasterWorkerPool::CheckForCompletedTasks");
 

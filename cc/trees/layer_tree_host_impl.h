@@ -50,6 +50,7 @@ class PaintTimeCounter;
 class RasterWorkerPool;
 class RenderPassDrawQuad;
 class RenderingStatsInstrumentation;
+class ResourcePool;
 class ScrollbarLayerImplBase;
 class TextureMailboxDeleter;
 class TopControlsManager;
@@ -541,6 +542,7 @@ class CC_EXPORT LayerTreeHostImpl
   scoped_ptr<TileManager> tile_manager_;
   scoped_ptr<RasterWorkerPool> raster_worker_pool_;
   scoped_ptr<RasterWorkerPool> direct_raster_worker_pool_;
+  scoped_ptr<ResourcePool> resource_pool_;
   scoped_ptr<Renderer> renderer_;
 
   GlobalStateThatImpactsTilePriority global_tile_state_;

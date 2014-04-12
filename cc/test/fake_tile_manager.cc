@@ -48,12 +48,6 @@ class FakeRasterizerImpl : public Rasterizer,
     }
     completed_tasks_.clear();
   }
-  virtual GLenum GetResourceTarget() const OVERRIDE {
-    return GL_TEXTURE_2D;
-  }
-  virtual ResourceFormat GetResourceFormat() const OVERRIDE {
-    return RGBA_8888;
-  }
 
   // Overridden from internal::RasterizerTaskClient:
   virtual SkCanvas* AcquireCanvasForRaster(internal::RasterTask* task)
@@ -80,9 +74,9 @@ FakeTileManager::FakeTileManager(TileManagerClient* client)
                   NULL) {}
 
 FakeTileManager::FakeTileManager(TileManagerClient* client,
-                                 ResourceProvider* resource_provider)
+                                 ResourcePool* resource_pool)
     : TileManager(client,
-                  resource_provider,
+                  resource_pool,
                   g_fake_rasterizer.Pointer(),
                   g_fake_rasterizer.Pointer(),
                   std::numeric_limits<unsigned>::max(),
@@ -90,10 +84,10 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
                   NULL) {}
 
 FakeTileManager::FakeTileManager(TileManagerClient* client,
-                                 ResourceProvider* resource_provider,
+                                 ResourcePool* resource_pool,
                                  bool allow_on_demand_raster)
     : TileManager(client,
-                  resource_provider,
+                  resource_pool,
                   g_fake_rasterizer.Pointer(),
                   g_fake_rasterizer.Pointer(),
                   std::numeric_limits<unsigned>::max(),
@@ -101,10 +95,10 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
                   NULL) {}
 
 FakeTileManager::FakeTileManager(TileManagerClient* client,
-                                 ResourceProvider* resource_provider,
+                                 ResourcePool* resource_pool,
                                  size_t raster_task_limit_bytes)
     : TileManager(client,
-                  resource_provider,
+                  resource_pool,
                   g_fake_rasterizer.Pointer(),
                   g_fake_rasterizer.Pointer(),
                   raster_task_limit_bytes,

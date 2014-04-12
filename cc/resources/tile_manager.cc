@@ -397,14 +397,14 @@ scoped_ptr<base::Value> RasterTaskCompletionStatsAsValue(
 // static
 scoped_ptr<TileManager> TileManager::Create(
     TileManagerClient* client,
-    ResourceProvider* resource_provider,
+    ResourcePool* resource_pool,
     Rasterizer* rasterizer,
     Rasterizer* gpu_rasterizer,
     size_t max_raster_usage_bytes,
     bool use_rasterize_on_demand,
     RenderingStatsInstrumentation* rendering_stats_instrumentation) {
   return make_scoped_ptr(new TileManager(client,
-                                         resource_provider,
+                                         resource_pool,
                                          rasterizer,
                                          gpu_rasterizer,
                                          max_raster_usage_bytes,
@@ -414,16 +414,14 @@ scoped_ptr<TileManager> TileManager::Create(
 
 TileManager::TileManager(
     TileManagerClient* client,
-    ResourceProvider* resource_provider,
+    ResourcePool* resource_pool,
     Rasterizer* rasterizer,
     Rasterizer* gpu_rasterizer,
     size_t max_raster_usage_bytes,
     bool use_rasterize_on_demand,
     RenderingStatsInstrumentation* rendering_stats_instrumentation)
     : client_(client),
-      resource_pool_(ResourcePool::Create(resource_provider,
-                                          rasterizer->GetResourceTarget(),
-                                          rasterizer->GetResourceFormat())),
+      resource_pool_(resource_pool),
       prioritized_tiles_dirty_(false),
       all_tiles_that_need_to_be_rasterized_have_memory_(true),
       all_tiles_required_for_activation_have_memory_(true),
@@ -436,8 +434,7 @@ TileManager::TileManager(
       rendering_stats_instrumentation_(rendering_stats_instrumentation),
       did_initialize_visible_tile_(false),
       did_check_for_completed_tasks_since_last_schedule_tasks_(true),
-      use_rasterize_on_demand_(use_rasterize_on_demand),
-      resource_format_(rasterizer->GetResourceFormat()) {
+      use_rasterize_on_demand_(use_rasterize_on_demand) {
   Rasterizer* rasterizers[NUM_RASTERIZER_TYPES] = {
       rasterizer,      // RASTERIZER_TYPE_DEFAULT
       gpu_rasterizer,  // RASTERIZER_TYPE_GPU
@@ -723,12 +720,6 @@ void TileManager::ManageTiles(const GlobalStateThatImpactsTilePriority& state) {
   if (state != global_state_) {
     global_state_ = state;
     prioritized_tiles_dirty_ = true;
-    // Soft limit is used for resource pool such that
-    // memory returns to soft limit after going over.
-    resource_pool_->SetResourceUsageLimits(
-        global_state_.soft_memory_limit_in_bytes,
-        global_state_.unused_memory_limit_in_bytes,
-        global_state_.num_resources_limit);
   }
 
   // We need to call CheckForCompletedTasks() once in-between each call

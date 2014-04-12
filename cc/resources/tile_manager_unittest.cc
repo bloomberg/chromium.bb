@@ -40,8 +40,10 @@ class TileManagerTest : public testing::TestWithParam<bool>,
     shared_bitmap_manager_.reset(new TestSharedBitmapManager());
     resource_provider_ = ResourceProvider::Create(
         output_surface_.get(), shared_bitmap_manager_.get(), 0, false, 1);
+    resource_pool_ = ResourcePool::Create(
+        resource_provider_.get(), GL_TEXTURE_2D, RGBA_8888);
     tile_manager_ = make_scoped_ptr(new FakeTileManager(
-        this, resource_provider_.get(), allow_on_demand_raster));
+        this, resource_pool_.get(), allow_on_demand_raster));
 
     memory_limit_policy_ = memory_limit_policy;
     max_tiles_ = max_tiles;
@@ -149,6 +151,7 @@ class TileManagerTest : public testing::TestWithParam<bool>,
   scoped_ptr<FakeOutputSurface> output_surface_;
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager_;
   scoped_ptr<ResourceProvider> resource_provider_;
+  scoped_ptr<ResourcePool> resource_pool_;
   TileMemoryLimitPolicy memory_limit_policy_;
   int max_tiles_;
   bool ready_to_activate_;

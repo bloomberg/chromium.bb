@@ -162,12 +162,6 @@ class CC_EXPORT Rasterizer {
   // Check for completed tasks and dispatch reply callbacks.
   virtual void CheckForCompletedTasks() = 0;
 
-  // Returns the target that needs to be used for raster task resources.
-  virtual unsigned GetResourceTarget() const = 0;
-
-  // Returns the format that needs to be used for raster task resources.
-  virtual ResourceFormat GetResourceFormat() const = 0;
-
  protected:
   virtual ~Rasterizer() {}
 };

@@ -59,8 +59,10 @@ class PrioritizedTileSetTest : public testing::Test {
         ResourceProvider::Create(
             output_surface_.get(), shared_bitmap_manager_.get(), 0, false, 1)
             .Pass();
+    resource_pool_ = ResourcePool::Create(
+        resource_provider_.get(), GL_TEXTURE_2D, RGBA_8888);
     tile_manager_.reset(
-        new FakeTileManager(&tile_manager_client_, resource_provider_.get()));
+        new FakeTileManager(&tile_manager_client_, resource_pool_.get()));
     picture_pile_ = FakePicturePileImpl::CreateInfiniteFilledPile();
   }
 
@@ -81,6 +83,7 @@ class PrioritizedTileSetTest : public testing::Test {
   scoped_ptr<FakeOutputSurface> output_surface_;
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager_;
   scoped_ptr<ResourceProvider> resource_provider_;
+  scoped_ptr<ResourcePool> resource_pool_;
   FakeTileManagerClient tile_manager_client_;
   scoped_ptr<FakeTileManager> tile_manager_;
   scoped_refptr<FakePicturePileImpl> picture_pile_;
