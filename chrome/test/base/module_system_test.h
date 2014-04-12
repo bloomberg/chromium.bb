@@ -6,7 +6,7 @@
 #define CHROME_TEST_BASE_MODULE_SYSTEM_TEST_H_
 
 #include "chrome/renderer/extensions/chrome_v8_context.h"
-#include "chrome/renderer/extensions/module_system.h"
+#include "extensions/renderer/module_system.h"
 #include "extensions/renderer/scoped_persistent.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"

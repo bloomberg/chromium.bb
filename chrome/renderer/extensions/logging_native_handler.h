@@ -7,14 +7,15 @@
 
 #include <string>
 
-#include "chrome/renderer/extensions/object_backed_native_handler.h"
+#include "extensions/renderer/object_backed_native_handler.h"
 
 namespace extensions {
+class ScriptContext;
 
 // Exposes logging.h macros to JavaScript bindings.
 class LoggingNativeHandler : public ObjectBackedNativeHandler {
  public:
-  explicit LoggingNativeHandler(ChromeV8Context* context);
+  explicit LoggingNativeHandler(ScriptContext* context);
   virtual ~LoggingNativeHandler();
 
   // Equivalent to CHECK(predicate) << message.

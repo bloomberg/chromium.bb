@@ -12,6 +12,7 @@
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
 #include "extensions/common/constants.h"
+#include "extensions/renderer/script_context.h"
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebDOMError.h"
@@ -47,7 +48,7 @@ void FileSystemNatives::GetIsolatedFileSystem(
   DCHECK(webframe);
 
   GURL context_url =
-      extensions::UserScriptSlave::GetDataSourceURLForFrame(webframe);
+      extensions::ScriptContext::GetDataSourceURLForFrame(webframe);
   CHECK(context_url.SchemeIs(extensions::kExtensionScheme));
 
   std::string name(fileapi::GetIsolatedFileSystemName(context_url.GetOrigin(),

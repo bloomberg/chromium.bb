@@ -26,8 +26,12 @@ void PepperRequestNatives::SendResponse(
   DCHECK(args[0]->IsInt32());
   DCHECK(args[1]->IsArray());
   int request_id = args[0]->Int32Value();
+
+  // TODO(rockot): This downcast should be eliminated.
+  // See http://crbug.com/362616.
+  ChromeV8Context* chrome_context = static_cast<ChromeV8Context*>(context());
   if (args[2]->IsString()) {
-    context()->pepper_request_proxy()->OnResponseReceived(
+    chrome_context->pepper_request_proxy()->OnResponseReceived(
         request_id, false, base::ListValue(), *v8::String::Utf8Value(args[2]));
     return;
   }
@@ -35,11 +39,11 @@ void PepperRequestNatives::SendResponse(
   scoped_ptr<content::V8ValueConverter> converter(
       content::V8ValueConverter::create());
   scoped_ptr<const base::Value> result(
-      converter->FromV8Value(args[1], context()->v8_context()));
+      converter->FromV8Value(args[1], chrome_context->v8_context()));
   DCHECK(result);
   const base::ListValue* result_list = NULL;
   CHECK(result->GetAsList(&result_list));
-  context()->pepper_request_proxy()->OnResponseReceived(
+  chrome_context->pepper_request_proxy()->OnResponseReceived(
       request_id, true, *result_list, "");
 }
 

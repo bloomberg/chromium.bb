@@ -8,7 +8,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/renderer/extensions/request_sender.h"
+#include "extensions/renderer/request_sender.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 

@@ -1,14 +1,14 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/object_backed_native_handler.h"
+#include "extensions/renderer/object_backed_native_handler.h"
 
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
-#include "chrome/renderer/extensions/chrome_v8_context.h"
-#include "chrome/renderer/extensions/console.h"
-#include "chrome/renderer/extensions/module_system.h"
+#include "extensions/renderer/console.h"
+#include "extensions/renderer/module_system.h"
+#include "extensions/renderer/script_context.h"
 #include "v8/include/v8.h"
 
 namespace extensions {
@@ -18,15 +18,13 @@ namespace {
 const char* kHandlerFunction = "handler_function";
 }  // namespace
 
-ObjectBackedNativeHandler::ObjectBackedNativeHandler(ChromeV8Context* context)
+ObjectBackedNativeHandler::ObjectBackedNativeHandler(ScriptContext* context)
     : router_data_(context->v8_context()->GetIsolate()),
       context_(context),
       object_template_(
           v8::ObjectTemplate::New(context->v8_context()->GetIsolate())) {}
 
-ObjectBackedNativeHandler::~ObjectBackedNativeHandler() {
-  Invalidate();
-}
+ObjectBackedNativeHandler::~ObjectBackedNativeHandler() { Invalidate(); }
 
 v8::Handle<v8::Object> ObjectBackedNativeHandler::NewInstance() {
   return object_template_.NewHandle(v8::Isolate::GetCurrent())->NewInstance();
@@ -97,4 +95,4 @@ void ObjectBackedNativeHandler::Invalidate() {
   NativeHandler::Invalidate();
 }
 
-}   // namespace extensions
+}  // namespace extensions

@@ -20,6 +20,7 @@
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "extensions/renderer/script_context.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -260,7 +261,7 @@ void UserScriptScheduler::ExecuteCodeImpl(
       params.request_id,
       error,
       render_view->GetPageId(),
-      UserScriptSlave::GetDataSourceURLForFrame(frame_),
+      ScriptContext::GetDataSourceURLForFrame(frame_),
       execution_results));
 }
 

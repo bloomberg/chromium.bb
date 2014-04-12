@@ -12,6 +12,8 @@ include_rules = [
   #
   # TODO(jamescook): Remove these. http://crbug.com/162530
   "!chrome/browser/chrome_notification_types.h",
+  "!chrome/renderer/extensions/dispatcher.h",
+  "!chrome/renderer/extensions/extension_helper.h",
   "!grit/chromium_strings.h",
   "!grit/common_resources.h",
   "!grit/extensions_api_resources.h",

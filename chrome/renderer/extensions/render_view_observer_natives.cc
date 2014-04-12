@@ -8,6 +8,7 @@
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "extensions/common/extension_api.h"
+#include "extensions/renderer/script_context.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebScopedMicrotaskSuppression.h"
 
@@ -18,13 +19,10 @@ namespace {
 // Deletes itself when done.
 class LoadWatcher : public content::RenderViewObserver {
  public:
-  LoadWatcher(ChromeV8Context* context,
+  LoadWatcher(ScriptContext* context,
               content::RenderView* view,
               v8::Handle<v8::Function> cb)
-      : content::RenderViewObserver(view),
-        context_(context),
-        callback_(cb) {
-  }
+      : content::RenderViewObserver(view), context_(context), callback_(cb) {}
 
   virtual void DidCreateDocumentElement(blink::WebLocalFrame* frame) OVERRIDE {
     CallbackAndDie(true);
@@ -45,7 +43,7 @@ class LoadWatcher : public content::RenderViewObserver {
     delete this;
   }
 
-  ChromeV8Context* context_;
+  ScriptContext* context_;
   ScopedPersistent<v8::Function> callback_;
   DISALLOW_COPY_AND_ASSIGN(LoadWatcher);
 };

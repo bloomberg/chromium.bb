@@ -6,7 +6,7 @@
 
 #include "base/json/json_reader.h"
 #include "content/public/renderer/v8_value_converter.h"
-#include "chrome/renderer/extensions/request_sender.h"
+#include "extensions/renderer/request_sender.h"
 
 using content::V8ValueConverter;
 

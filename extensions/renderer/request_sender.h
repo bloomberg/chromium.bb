@@ -1,12 +1,12 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_EXTENSIONS_REQUEST_SENDER_H_
-#define CHROME_RENDERER_EXTENSIONS_REQUEST_SENDER_H_
+#ifndef EXTENSIONS_RENDERER_REQUEST_SENDER_H_
+#define EXTENSIONS_RENDERER_REQUEST_SENDER_H_
 
-#include <string>
 #include <map>
+#include <string>
 
 #include "base/memory/linked_ptr.h"
 #include "v8/include/v8.h"
@@ -16,8 +16,8 @@ class ListValue;
 }
 
 namespace extensions {
-class ChromeV8Context;
 class Dispatcher;
+class ScriptContext;
 
 struct PendingRequest;
 
@@ -34,7 +34,7 @@ class RequestSender {
    public:
     virtual ~Source() {}
 
-    virtual ChromeV8Context* GetContext() = 0;
+    virtual ScriptContext* GetContext() = 0;
     virtual void OnResponseReceived(const std::string& name,
                                     int request_id,
                                     bool success,
@@ -103,4 +103,4 @@ class RequestSender {
 
 }  // namespace extensions
 
-#endif  // CHROME_RENDERER_EXTENSIONS_REQUEST_SENDER_H_
+#endif  // EXTENSIONS_RENDERER_REQUEST_SENDER_H_

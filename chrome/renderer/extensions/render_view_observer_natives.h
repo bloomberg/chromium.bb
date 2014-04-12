@@ -8,10 +8,7 @@
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "v8/include/v8.h"
 
-class ChromeV8Context;
-
 namespace extensions {
-
 class Dispatcher;
 
 // Native functions for JS to run callbacks upon RenderView events.

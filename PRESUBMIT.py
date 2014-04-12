@@ -240,7 +240,9 @@ _BANNED_CPP_FUNCTIONS = (
         'gin::Wrappable instead. See http://crbug.com/334679',
       ),
       True,
-      (),
+      (
+        r'extensions[/\\]renderer[/\\]safe_builtins\.*',
+      ),
     ),
 )
 

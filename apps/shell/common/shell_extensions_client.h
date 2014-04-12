@@ -42,6 +42,7 @@ class ShellExtensionsClient : public extensions::ExtensionsClient {
       OVERRIDE;
   virtual void AddExtraFeatureFilters(extensions::SimpleFeature* feature) const
       OVERRIDE;
+  virtual bool ShouldSuppressFatalErrors() const OVERRIDE;
 
  private:
   ScriptingWhitelist scripting_whitelist_;

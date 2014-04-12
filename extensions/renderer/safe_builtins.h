@@ -1,14 +1,14 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_EXTENSIONS_SAFE_BUILTINS_H_
-#define CHROME_RENDERER_EXTENSIONS_SAFE_BUILTINS_H_
+#ifndef EXTENSIONS_RENDERER_SAFE_BUILTINS_H_
+#define EXTENSIONS_RENDERER_SAFE_BUILTINS_H_
 
 #include "v8/include/v8.h"
 
 namespace extensions {
-class ChromeV8Context;
+class ScriptContext;
 
 // A collection of safe builtin objects, in that they won't be tained by
 // extensions overriding methods on them.
@@ -17,7 +17,7 @@ class SafeBuiltins {
   // Creates the v8::Extension which manages SafeBuiltins instances.
   static v8::Extension* CreateV8Extension();
 
-  explicit SafeBuiltins(ChromeV8Context* context);
+  explicit SafeBuiltins(ScriptContext* context);
 
   virtual ~SafeBuiltins();
 
@@ -38,9 +38,9 @@ class SafeBuiltins {
   v8::Local<v8::Object> GetString() const;
 
  private:
-  ChromeV8Context* context_;
+  ScriptContext* context_;
 };
 
-} //  namespace extensions
+}  //  namespace extensions
 
-#endif  // CHROME_RENDERER_EXTENSIONS_SAFE_BUILTINS_H_
+#endif  // EXTENSIONS_RENDERER_SAFE_BUILTINS_H_

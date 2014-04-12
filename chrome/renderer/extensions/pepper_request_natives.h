@@ -6,13 +6,14 @@
 #define CHROME_RENDERER_EXTENSIONS_PEPPER_REQUEST_NATIVES_H_
 
 #include "base/compiler_specific.h"
-#include "chrome/renderer/extensions/object_backed_native_handler.h"
+#include "extensions/renderer/object_backed_native_handler.h"
 
 namespace base {
 class Value;
 }
 
 namespace extensions {
+class ChromeV8Context;
 
 // Custom bindings for handling API calls from pepper plugins.
 class PepperRequestNatives : public ObjectBackedNativeHandler {

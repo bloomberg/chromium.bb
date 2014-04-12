@@ -47,15 +47,11 @@
 #include "chrome/renderer/extensions/logging_native_handler.h"
 #include "chrome/renderer/extensions/media_galleries_custom_bindings.h"
 #include "chrome/renderer/extensions/messaging_bindings.h"
-#include "chrome/renderer/extensions/module_system.h"
-#include "chrome/renderer/extensions/object_backed_native_handler.h"
 #include "chrome/renderer/extensions/page_actions_custom_bindings.h"
 #include "chrome/renderer/extensions/page_capture_custom_bindings.h"
 #include "chrome/renderer/extensions/pepper_request_natives.h"
 #include "chrome/renderer/extensions/render_view_observer_natives.h"
-#include "chrome/renderer/extensions/request_sender.h"
 #include "chrome/renderer/extensions/runtime_custom_bindings.h"
-#include "chrome/renderer/extensions/safe_builtins.h"
 #include "chrome/renderer/extensions/send_request_natives.h"
 #include "chrome/renderer/extensions/set_icon_natives.h"
 #include "chrome/renderer/extensions/sync_file_system_custom_bindings.h"
@@ -85,6 +81,11 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/switches.h"
 #include "extensions/common/view_type.h"
+#include "extensions/renderer/module_system.h"
+#include "extensions/renderer/object_backed_native_handler.h"
+#include "extensions/renderer/request_sender.h"
+#include "extensions/renderer/safe_builtins.h"
+#include "extensions/renderer/script_context.h"
 #include "grit/common_resources.h"
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -133,7 +134,7 @@ static const char kOnSuspendCanceledEvent[] = "runtime.onSuspendCanceled";
 //
 // Note that this isn't necessarily an object, since webpages can write, for
 // example, "window.chrome = true".
-v8::Handle<v8::Value> GetOrCreateChrome(ChromeV8Context* context) {
+v8::Handle<v8::Value> GetOrCreateChrome(ScriptContext* context) {
   v8::Handle<v8::String> chrome_string(
       v8::String::NewFromUtf8(context->isolate(), "chrome"));
   v8::Handle<v8::Object> global(context->v8_context()->Global());
@@ -1131,11 +1132,11 @@ void Dispatcher::DidCreateScriptContext(
     extension_id = "";
   }
 
-  Feature::Context context_type = ClassifyJavaScriptContext(
-      extension,
-      extension_group,
-      UserScriptSlave::GetDataSourceURLForFrame(frame),
-      frame->document().securityOrigin());
+  Feature::Context context_type =
+      ClassifyJavaScriptContext(extension,
+                                extension_group,
+                                ScriptContext::GetDataSourceURLForFrame(frame),
+                                frame->document().securityOrigin());
 
   ChromeV8Context* context =
       new ChromeV8Context(v8_context, frame, extension, context_type);
@@ -1271,7 +1272,7 @@ std::string Dispatcher::GetExtensionID(const WebFrame* frame, int world_id) {
     return std::string();
 
   // Extension pages (chrome-extension:// URLs).
-  GURL frame_url = UserScriptSlave::GetDataSourceURLForFrame(frame);
+  GURL frame_url = ScriptContext::GetDataSourceURLForFrame(frame);
   return extensions_.GetExtensionOrAppIDByURL(frame_url);
 }
 
@@ -1606,7 +1607,8 @@ void Dispatcher::OnExtensionResponse(int request_id,
 }
 
 bool Dispatcher::CheckContextAccessToExtensionAPI(
-    const std::string& function_name, ChromeV8Context* context) const {
+    const std::string& function_name,
+    ScriptContext* context) const {
   if (!context) {
     DLOG(ERROR) << "Not in a v8::Context";
     return false;
@@ -1621,7 +1623,7 @@ bool Dispatcher::CheckContextAccessToExtensionAPI(
   // Theoretically we could end up with bindings being injected into sandboxed
   // frames, for example content scripts. Don't let them execute API functions.
   blink::WebFrame* frame = context->web_frame();
-  if (IsSandboxedPage(UserScriptSlave::GetDataSourceURLForFrame(frame))) {
+  if (IsSandboxedPage(ScriptContext::GetDataSourceURLForFrame(frame))) {
     static const char kMessage[] =
         "%s cannot be used within a sandboxed frame.";
     std::string error_msg = base::StringPrintf(kMessage, function_name.c_str());

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/base/module_system_test.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/renderer/extensions/module_system.h"
+#include "chrome/test/base/module_system_test.h"
+#include "extensions/renderer/module_system.h"
 
 // TODO(cduvall/kalman): Put this file in extensions namespace.
 using extensions::ModuleSystem;

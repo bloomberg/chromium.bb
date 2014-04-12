@@ -53,6 +53,7 @@ class Extension;
 class FilteredEventRouter;
 class ManifestPermissionSet;
 class RequestSender;
+class ScriptContext;
 class UserScriptSlave;
 struct Message;
 
@@ -127,8 +128,8 @@ class Dispatcher : public content::RenderProcessObserver {
   // Checks that the current context contains an extension that has permission
   // to execute the specified function. If it does not, a v8 exception is thrown
   // and the method returns false. Otherwise returns true.
-  bool CheckContextAccessToExtensionAPI(
-      const std::string& function_name, ChromeV8Context* context) const;
+  bool CheckContextAccessToExtensionAPI(const std::string& function_name,
+                                        ScriptContext* context) const;
 
   // Dispatches the event named |event_name| to all render views.
   void DispatchEvent(const std::string& extension_id,

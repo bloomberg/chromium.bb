@@ -8,8 +8,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
 #include "base/strings/string_piece.h"
-#include "chrome/renderer/extensions/module_system.h"
 #include "chrome/renderer/static_v8_external_string_resource.h"
+#include "extensions/renderer/module_system.h"
 #include "v8/include/v8.h"
 
 #include <map>

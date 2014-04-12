@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/console.h"
+#include "extensions/renderer/console.h"
 
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
@@ -35,8 +35,7 @@ class ByContextFinder : public content::RenderViewVisitor {
 
  private:
   explicit ByContextFinder(v8::Handle<v8::Context> context)
-      : context_(context), found_(NULL) {
-  }
+      : context_(context), found_(NULL) {}
 
   virtual bool Visit(content::RenderView* render_view) OVERRIDE {
     ExtensionHelper* helper = ExtensionHelper::Get(render_view);
@@ -57,8 +56,8 @@ class ByContextFinder : public content::RenderViewVisitor {
 void CheckWithMinidump(const std::string& message) {
   char minidump[1024];
   base::debug::Alias(&minidump);
-  base::snprintf(minidump, arraysize(minidump),
-                 "e::console: %s", message.c_str());
+  base::snprintf(
+      minidump, arraysize(minidump), "e::console: %s", message.c_str());
   CHECK(false) << message;
 }
 
@@ -66,8 +65,8 @@ typedef void (*LogMethod)(v8::Handle<v8::Context> context,
                           const std::string& message);
 
 void BoundLogMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  LogMethod log_method = reinterpret_cast<LogMethod>(
-      info.Data().As<v8::External>()->Value());
+  LogMethod log_method =
+      reinterpret_cast<LogMethod>(info.Data().As<v8::External>()->Value());
   std::string message;
   for (int i = 0; i < info.Length(); ++i) {
     if (i > 0)

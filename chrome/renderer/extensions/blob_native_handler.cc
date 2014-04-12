@@ -23,7 +23,7 @@ void GetBlobUuid(const v8::FunctionCallbackInfo<v8::Value>& args) {
 
 namespace extensions {
 
-BlobNativeHandler::BlobNativeHandler(ChromeV8Context* context)
+BlobNativeHandler::BlobNativeHandler(ScriptContext* context)
     : ObjectBackedNativeHandler(context) {
   RouteFunction("GetBlobUuid", base::Bind(&GetBlobUuid));
 }

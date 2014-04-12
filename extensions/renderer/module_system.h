@@ -1,25 +1,25 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_EXTENSIONS_MODULE_SYSTEM_H_
-#define CHROME_RENDERER_EXTENSIONS_MODULE_SYSTEM_H_
-
-#include "base/compiler_specific.h"
-#include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
-#include "chrome/renderer/extensions/object_backed_native_handler.h"
-#include "extensions/renderer/native_handler.h"
-#include "v8/include/v8.h"
+#ifndef EXTENSIONS_RENDERER_MODULE_SYSTEM_H_
+#define EXTENSIONS_RENDERER_MODULE_SYSTEM_H_
 
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
+#include "base/memory/linked_ptr.h"
+#include "base/memory/scoped_ptr.h"
+#include "extensions/renderer/native_handler.h"
+#include "extensions/renderer/object_backed_native_handler.h"
+#include "v8/include/v8.h"
+
 namespace extensions {
 
-class ChromeV8Context;
+class ScriptContext;
 
 // A module system for JS similar to node.js' require() function.
 // Each module has three variables in the global scope:
@@ -69,7 +69,7 @@ class ModuleSystem : public ObjectBackedNativeHandler {
   };
 
   // |source_map| is a weak pointer.
-  ModuleSystem(ChromeV8Context* context, SourceMap* source_map);
+  ModuleSystem(ScriptContext* context, SourceMap* source_map);
   virtual ~ModuleSystem();
 
   // Require the specified module. This is the equivalent of calling
@@ -90,11 +90,10 @@ class ModuleSystem : public ObjectBackedNativeHandler {
       const std::string& module_name,
       const std::string& method_name,
       std::vector<v8::Handle<v8::Value> >* args);
-  v8::Local<v8::Value> CallModuleMethod(
-      const std::string& module_name,
-      const std::string& method_name,
-      int argc,
-      v8::Handle<v8::Value> argv[]);
+  v8::Local<v8::Value> CallModuleMethod(const std::string& module_name,
+                                        const std::string& method_name,
+                                        int argc,
+                                        v8::Handle<v8::Value> argv[]);
 
   // Register |native_handler| as a potential target for requireNative(), so
   // calls to requireNative(|name|) from JS will return a new object created by
@@ -141,7 +140,7 @@ class ModuleSystem : public ObjectBackedNativeHandler {
   }
 
  protected:
-  friend class ChromeV8Context;
+  friend class ScriptContext;
   virtual void Invalidate() OVERRIDE;
 
  private:
@@ -165,7 +164,7 @@ class ModuleSystem : public ObjectBackedNativeHandler {
   void RequireForJs(const v8::FunctionCallbackInfo<v8::Value>& args);
   v8::Local<v8::Value> RequireForJsInner(v8::Handle<v8::String> module_name);
 
-  typedef v8::Handle<v8::Value> (ModuleSystem::*RequireFunction)(
+  typedef v8::Handle<v8::Value>(ModuleSystem::*RequireFunction)(
       const std::string&);
   // Base implementation of a LazyFieldGetter which uses |require_fn| to require
   // modules.
@@ -194,7 +193,7 @@ class ModuleSystem : public ObjectBackedNativeHandler {
   // provided function.
   void CreateFunctionWrapper(const v8::FunctionCallbackInfo<v8::Value>& args);
 
-  ChromeV8Context* context_;
+  ScriptContext* context_;
 
   // A map from module names to the JS source for that module. GetSource()
   // performs a lookup on this map.
@@ -218,4 +217,4 @@ class ModuleSystem : public ObjectBackedNativeHandler {
 
 }  // namespace extensions
 
-#endif  // CHROME_RENDERER_EXTENSIONS_MODULE_SYSTEM_H_
+#endif  // EXTENSIONS_RENDERER_MODULE_SYSTEM_H_

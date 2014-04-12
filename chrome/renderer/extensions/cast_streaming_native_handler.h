@@ -9,7 +9,7 @@
 
 #include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/renderer/extensions/object_backed_native_handler.h"
+#include "extensions/renderer/object_backed_native_handler.h"
 #include "extensions/renderer/scoped_persistent.h"
 #include "v8/include/v8.h"
 

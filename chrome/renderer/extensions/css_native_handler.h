@@ -5,9 +5,10 @@
 #ifndef CHROME_RENDERER_EXTENSIONS_CSS_NATIVE_HANDLER_H_
 #define CHROME_RENDERER_EXTENSIONS_CSS_NATIVE_HANDLER_H_
 
-#include "chrome/renderer/extensions/object_backed_native_handler.h"
+#include "extensions/renderer/object_backed_native_handler.h"
 
 namespace extensions {
+class ChromeV8Context;
 
 class CssNativeHandler : public ObjectBackedNativeHandler {
  public:

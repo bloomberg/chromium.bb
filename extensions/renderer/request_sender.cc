@@ -1,14 +1,14 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/request_sender.h"
+#include "extensions/renderer/request_sender.h"
 
 #include "base/values.h"
-#include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/dispatcher.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/extension_messages.h"
+#include "extensions/renderer/script_context.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
@@ -17,10 +17,9 @@ namespace extensions {
 
 // Contains info relevant to a pending API request.
 struct PendingRequest {
- public :
+ public:
   PendingRequest(const std::string& name, RequestSender::Source* source)
-      : name(name), source(source) {
-  }
+      : name(name), source(source) {}
 
   std::string name;
   RequestSender::Source* source;
@@ -40,12 +39,9 @@ RequestSender::ScopedTabID::~ScopedTabID() {
 }
 
 RequestSender::RequestSender(Dispatcher* dispatcher)
-    : dispatcher_(dispatcher),
-      source_tab_id_(-1) {
-}
+    : dispatcher_(dispatcher), source_tab_id_(-1) {}
 
-RequestSender::~RequestSender() {
-}
+RequestSender::~RequestSender() {}
 
 void RequestSender::InsertRequest(int request_id,
                                   PendingRequest* pending_request) {
@@ -73,7 +69,7 @@ void RequestSender::StartRequest(Source* source,
                                  bool has_callback,
                                  bool for_io_thread,
                                  base::ListValue* value_args) {
-  ChromeV8Context* context = source->GetContext();
+  ScriptContext* context = source->GetContext();
   if (!context)
     return;
 
@@ -85,8 +81,9 @@ void RequestSender::StartRequest(Source* source,
 
   const std::set<std::string>& function_names = dispatcher_->function_names();
   if (function_names.find(name) == function_names.end()) {
-    NOTREACHED() << "Unexpected function " << name <<
-        ". Did you remember to register it with ExtensionFunctionRegistry?";
+    NOTREACHED()
+        << "Unexpected function " << name
+        << ". Did you remember to register it with ExtensionFunctionRegistry?";
     return;
   }
 
@@ -114,8 +111,8 @@ void RequestSender::StartRequest(Source* source,
     renderview->Send(new ExtensionHostMsg_RequestForIOThread(
         renderview->GetRoutingID(), params));
   } else {
-    renderview->Send(new ExtensionHostMsg_Request(
-        renderview->GetRoutingID(), params));
+    renderview->Send(
+        new ExtensionHostMsg_Request(renderview->GetRoutingID(), params));
   }
 }
 
@@ -130,8 +127,8 @@ void RequestSender::HandleResponse(int request_id,
     return;
   }
 
-  request->source->OnResponseReceived(request->name, request_id, success,
-                                      response, error);
+  request->source->OnResponseReceived(
+      request->name, request_id, success, response, error);
 }
 
 void RequestSender::InvalidateSource(Source* source) {

@@ -179,4 +179,6 @@ base::StringPiece ShellExtensionsClient::GetAPISchema(
 void ShellExtensionsClient::AddExtraFeatureFilters(
     extensions::SimpleFeature* feature) const {}
 
+bool ShellExtensionsClient::ShouldSuppressFatalErrors() const { return true; }
+
 }  // namespace apps

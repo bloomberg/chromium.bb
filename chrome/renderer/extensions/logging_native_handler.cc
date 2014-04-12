@@ -9,7 +9,7 @@
 
 namespace extensions {
 
-LoggingNativeHandler::LoggingNativeHandler(ChromeV8Context* context)
+LoggingNativeHandler::LoggingNativeHandler(ScriptContext* context)
     : ObjectBackedNativeHandler(context) {
   RouteFunction("DCHECK",
       base::Bind(&LoggingNativeHandler::Dcheck, base::Unretained(this)));

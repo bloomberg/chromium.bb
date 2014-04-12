@@ -4,10 +4,10 @@
 
 #include "chrome/renderer/extensions/extension_frame_helper.h"
 
-#include "chrome/renderer/extensions/console.h"
 #include "chrome/renderer/extensions/dispatcher.h"
 #include "content/public/renderer/render_frame.h"
 #include "extensions/common/extension_messages.h"
+#include "extensions/renderer/console.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 

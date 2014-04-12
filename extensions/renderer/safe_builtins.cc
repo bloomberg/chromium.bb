@@ -1,13 +1,13 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/safe_builtins.h"
+#include "extensions/renderer/safe_builtins.h"
 
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/renderer/extensions/chrome_v8_context.h"
+#include "extensions/renderer/script_context.h"
 
 namespace extensions {
 
@@ -127,8 +127,8 @@ void SaveImpl(const char* name,
               v8::Local<v8::Value> value,
               v8::Local<v8::Context> context) {
   CHECK(!value.IsEmpty() && value->IsObject()) << name;
-  context->Global()
-      ->SetHiddenValue(MakeKey(name, context->GetIsolate()), value);
+  context->Global()->SetHiddenValue(MakeKey(name, context->GetIsolate()),
+                                    value);
 }
 
 v8::Local<v8::Object> Load(const char* name, v8::Handle<v8::Context> context) {
@@ -155,12 +155,11 @@ class ExtensionImpl : public v8::Extension {
   }
 
   static void Apply(const v8::FunctionCallbackInfo<v8::Value>& info) {
-    CHECK(info.Length() == 5 &&
-          info[0]->IsFunction() &&  // function
+    CHECK(info.Length() == 5 && info[0]->IsFunction() &&  // function
           // info[1] could be an object or a string
-          info[2]->IsObject() &&    // args
-          info[3]->IsInt32() &&     // first_arg_index
-          info[4]->IsInt32());      // args_length
+          info[2]->IsObject() &&  // args
+          info[3]->IsInt32() &&   // first_arg_index
+          info[4]->IsInt32());    // args_length
     v8::Local<v8::Function> function = info[0].As<v8::Function>();
     v8::Local<v8::Object> recv;
     if (info[1]->IsObject()) {
@@ -179,7 +178,7 @@ class ExtensionImpl : public v8::Extension {
     int args_length = static_cast<int>(info[4]->ToInt32()->Value());
 
     int argc = args_length - first_arg_index;
-    scoped_ptr<v8::Local<v8::Value>[]> argv(new v8::Local<v8::Value>[argc]);
+    scoped_ptr<v8::Local<v8::Value> []> argv(new v8::Local<v8::Value>[argc]);
     for (int i = 0; i < argc; ++i) {
       CHECK(args->Has(i + first_arg_index));
       argv[i] = args->Get(i + first_arg_index);
@@ -191,9 +190,7 @@ class ExtensionImpl : public v8::Extension {
   }
 
   static void Save(const v8::FunctionCallbackInfo<v8::Value>& info) {
-    CHECK(info.Length() == 2 &&
-          info[0]->IsString() &&
-          info[1]->IsObject());
+    CHECK(info.Length() == 2 && info[0]->IsString() && info[1]->IsObject());
     SaveImpl(*v8::String::Utf8Value(info[0]),
              info[1],
              info.GetIsolate()->GetCallingContext());
@@ -203,11 +200,9 @@ class ExtensionImpl : public v8::Extension {
 }  // namespace
 
 // static
-v8::Extension* SafeBuiltins::CreateV8Extension() {
-  return new ExtensionImpl();
-}
+v8::Extension* SafeBuiltins::CreateV8Extension() { return new ExtensionImpl(); }
 
-SafeBuiltins::SafeBuiltins(ChromeV8Context* context) : context_(context) {}
+SafeBuiltins::SafeBuiltins(ScriptContext* context) : context_(context) {}
 
 SafeBuiltins::~SafeBuiltins() {}
 
@@ -235,4 +230,4 @@ v8::Local<v8::Object> SafeBuiltins::GetString() const {
   return Load("String", context_->v8_context());
 }
 
-} //  namespace extensions
+}  //  namespace extensions

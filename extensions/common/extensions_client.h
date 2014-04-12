@@ -83,6 +83,10 @@ class ExtensionsClient {
   // Appends extra filters to any Features created by the features system.
   virtual void AddExtraFeatureFilters(SimpleFeature* feature) const = 0;
 
+  // Determines if certain fatal extensions errors should be surpressed
+  // (i.e., only logged) or allowed (i.e., logged before crashing).
+  virtual bool ShouldSuppressFatalErrors() const = 0;
+
   // Return the extensions client.
   static ExtensionsClient* Get();
 

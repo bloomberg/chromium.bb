@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_EXTENSIONS_OBJECT_BACKED_NATIVE_HANDLER_H_
-#define CHROME_RENDERER_EXTENSIONS_OBJECT_BACKED_NATIVE_HANDLER_H_
+#ifndef EXTENSIONS_RENDERER_OBJECT_BACKED_NATIVE_HANDLER_H_
+#define EXTENSIONS_RENDERER_OBJECT_BACKED_NATIVE_HANDLER_H_
 
 #include <string>
 #include <vector>
@@ -16,14 +16,14 @@
 #include "v8/include/v8.h"
 
 namespace extensions {
-class ChromeV8Context;
+class ScriptContext;
 
 // An ObjectBackedNativeHandler is a factory for JS objects with functions on
 // them that map to native C++ functions. Subclasses should call RouteFunction()
 // in their constructor to define functions on the created JS objects.
 class ObjectBackedNativeHandler : public NativeHandler {
  public:
-  explicit ObjectBackedNativeHandler(ChromeV8Context* context);
+  explicit ObjectBackedNativeHandler(ScriptContext* context);
   virtual ~ObjectBackedNativeHandler();
 
   // Create an object with bindings to the native functions defined through
@@ -42,7 +42,7 @@ class ObjectBackedNativeHandler : public NativeHandler {
   void RouteFunction(const std::string& name,
                      const HandlerFunction& handler_function);
 
-  ChromeV8Context* context() const { return context_; }
+  ScriptContext* context() const { return context_; }
 
   virtual void Invalidate() OVERRIDE;
 
@@ -67,7 +67,7 @@ class ObjectBackedNativeHandler : public NativeHandler {
   typedef v8::PersistentValueVector<v8::Object> RouterData;
   RouterData router_data_;
 
-  ChromeV8Context* context_;
+  ScriptContext* context_;
 
   ScopedPersistent<v8::ObjectTemplate> object_template_;
 
@@ -76,4 +76,4 @@ class ObjectBackedNativeHandler : public NativeHandler {
 
 }  // namespace extensions
 
-#endif  // CHROME_RENDERER_EXTENSIONS_OBJECT_BACKED_NATIVE_HANDLER_H_
+#endif  // EXTENSIONS_RENDERER_OBJECT_BACKED_NATIVE_HANDLER_H_

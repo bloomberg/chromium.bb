@@ -6,10 +6,12 @@
 
 #include "apps/common/api/generated_schemas.h"
 #include "base/command_line.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/api/generated_schemas.h"
 #include "chrome/common/extensions/chrome_manifest_handlers.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/features/chrome_channel_feature_filter.h"
+#include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/api/generated_schemas.h"
@@ -178,6 +180,11 @@ void ChromeExtensionsClient::AddExtraFeatureFilters(
     SimpleFeature* feature) const {
   feature->AddFilter(
       scoped_ptr<SimpleFeatureFilter>(new ChromeChannelFeatureFilter(feature)));
+}
+
+bool ChromeExtensionsClient::ShouldSuppressFatalErrors() const {
+  // <= dev means dev, canary, and trunk.
+  return GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV;
 }
 
 // static

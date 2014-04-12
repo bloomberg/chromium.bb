@@ -6,9 +6,10 @@
 #define CHROME_RENDERER_EXTENSIONS_FILE_SYSTEM_NATIVES_H_
 
 #include "base/compiler_specific.h"
-#include "chrome/renderer/extensions/object_backed_native_handler.h"
+#include "extensions/renderer/object_backed_native_handler.h"
 
 namespace extensions {
+class ChromeV8Context;
 
 // Custom bindings for the nativeFileSystem API.
 class FileSystemNatives : public ObjectBackedNativeHandler {

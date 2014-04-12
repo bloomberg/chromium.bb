@@ -7,9 +7,9 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
-#include "chrome/renderer/extensions/object_backed_native_handler.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/extension_api.h"
+#include "extensions/renderer/object_backed_native_handler.h"
 
 using content::V8ValueConverter;
 

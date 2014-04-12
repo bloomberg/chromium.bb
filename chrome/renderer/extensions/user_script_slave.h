@@ -32,10 +32,6 @@ class ExtensionSet;
 // Manages installed UserScripts for a render process.
 class UserScriptSlave {
  public:
-  // Utility to get the URL we will match against for a frame. If the frame has
-  // committed, this is the commited URL. Otherwise it is the provisional URL.
-  static GURL GetDataSourceURLForFrame(const blink::WebFrame* frame);
-
   explicit UserScriptSlave(const ExtensionSet* extensions);
   ~UserScriptSlave();
 

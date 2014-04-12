@@ -5,9 +5,10 @@
 #ifndef CHROME_RENDERER_EXTENSIONS_BLOB_NATIVE_HANDLER_H_
 #define CHROME_RENDERER_EXTENSIONS_BLOB_NATIVE_HANDLER_H_
 
-#include "chrome/renderer/extensions/chrome_v8_extension.h"
+#include "extensions/renderer/object_backed_native_handler.h"
 
 namespace extensions {
+class ScriptContext;
 
 // This native handler is used to extract Blobs' UUIDs and pass them over to the
 // browser process extension implementation via argument modification. This is
@@ -18,7 +19,7 @@ namespace extensions {
 // app using this technique must be sure to keep a reference.
 class BlobNativeHandler : public ObjectBackedNativeHandler {
  public:
-  explicit BlobNativeHandler(ChromeV8Context* context);
+  explicit BlobNativeHandler(ScriptContext* context);
 };
 
 }  // namespace extensions

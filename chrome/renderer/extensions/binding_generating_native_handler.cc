@@ -4,7 +4,7 @@
 
 #include "chrome/renderer/extensions/binding_generating_native_handler.h"
 
-#include "chrome/renderer/extensions/module_system.h"
+#include "extensions/renderer/module_system.h"
 
 namespace extensions {
 
