@@ -35,6 +35,9 @@ static_library("libevent") {
   } else if (is_linux) {
     include_dirs = [ "linux" ]
     sources -= [ "kqueue.c" ]
+  } else if (is_android) {
+    include_dirs = [ "android" ]
+    sources -= [ "kqueue.c" ]
   }
 
   configs -= [ "//build/config/compiler:chromium_code" ]

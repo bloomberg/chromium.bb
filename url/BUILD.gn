@@ -54,32 +54,35 @@ component("url") {
   ]
 }
 
-test("url_unittests") {
-  sources = [
-    "gurl_unittest.cc",
-    "url_canon_unittest.cc",
-    "url_parse_unittest.cc",
-    "url_test_utils.h",
-    "url_util_unittest.cc",
-  ]
+# TODO(dpranke): crbug.com/360936. Get this to build and run on Android.
+if (!is_android) {
+  test("url_unittests") {
+    sources = [
+      "gurl_unittest.cc",
+      "url_canon_unittest.cc",
+      "url_parse_unittest.cc",
+      "url_test_utils.h",
+      "url_util_unittest.cc",
+    ]
 
-  #if (is_posix && !is_mac && !is_ios) {
-  #  # TODO(dmikurube): Kill linux_use_tcmalloc. http://crbug.com/345554
-  #  if ((use_allocator!="none" && use_allocator!="see_use_tcmalloc") || (use_allocator=="see_use_tcmalloc" && linux_use_tcmalloc) {
-  #    deps += "//base/allocator"
-  #  }
-  #}
+    #if (is_posix && !is_mac && !is_ios) {
+    #  # TODO(dmikurube): Kill linux_use_tcmalloc. http://crbug.com/345554
+    #  if ((use_allocator!="none" && use_allocator!="see_use_tcmalloc") || (use_allocator=="see_use_tcmalloc" && linux_use_tcmalloc) {
+    #    deps += "//base/allocator"
+    #  }
+    #}
 
-  # if (is_win) {
-  #   TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-  #   'msvs_disabled_warnings': [ 4267, ]
-  # }
+    # if (is_win) {
+    #   TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    #   'msvs_disabled_warnings': [ 4267, ]
+    # }
 
-  deps = [
-    ":url",
-    "//base:i18n",
-    "//base/test:run_all_unittests",
-    "//testing/gtest",
-    "//third_party/icu:icuuc",
-  ]
+    deps = [
+      ":url",
+      "//base:i18n",
+      "//base/test:run_all_unittests",
+      "//testing/gtest",
+      "//third_party/icu:icuuc",
+    ]
+  }
 }

@@ -79,81 +79,84 @@ component("ipc") {
   ]
 }
 
-test("ipc_tests") {
-  sources = [
-    "file_descriptor_set_posix_unittest.cc",
-    "ipc_channel_posix_unittest.cc",
-    "ipc_channel_unittest.cc",
-    "ipc_fuzzing_tests.cc",
-    "ipc_message_unittest.cc",
-    "ipc_message_utils_unittest.cc",
-    "ipc_send_fds_test.cc",
-    "ipc_sync_channel_unittest.cc",
-    "ipc_sync_message_unittest.cc",
-    "ipc_sync_message_unittest.h",
-    "ipc_test_base.cc",
-    "ipc_test_base.h",
-    "sync_socket_unittest.cc",
-    "unix_domain_socket_util_unittest.cc",
-  ]
+# TODO(dpranke): crbug.com/360936. Get this to build and run on Android.
+if (!is_android) {
+  test("ipc_tests") {
+    sources = [
+      "file_descriptor_set_posix_unittest.cc",
+      "ipc_channel_posix_unittest.cc",
+      "ipc_channel_unittest.cc",
+      "ipc_fuzzing_tests.cc",
+      "ipc_message_unittest.cc",
+      "ipc_message_utils_unittest.cc",
+      "ipc_send_fds_test.cc",
+      "ipc_sync_channel_unittest.cc",
+      "ipc_sync_message_unittest.cc",
+      "ipc_sync_message_unittest.h",
+      "ipc_test_base.cc",
+      "ipc_test_base.h",
+      "sync_socket_unittest.cc",
+      "unix_domain_socket_util_unittest.cc",
+    ]
 
-  if (is_win || is_ios) {
-    sources -= [ "unix_domain_socket_util_unittest.cc" ]
+    if (is_win || is_ios) {
+      sources -= [ "unix_domain_socket_util_unittest.cc" ]
+    }
+
+    # TODO(brettw) hook up Android testing.
+    #if (is_android && gtest_target_type == "shared_library") {
+    #  deps += "/testing/android/native_test.gyp:native_testNative_code"
+    #}
+
+    # TODO(brettw) hook up tcmalloc to this target.
+    #if (is_posix && !is_mac && !is_android) {
+    #  # TODO(dmikurube): Kill linux_use_tcmalloc. http://crbug.com/345554
+    #  if ((use_allocator!="none" && use_allocator!="see_use_tcmalloc") || (use_allocator=="see_use_tcmalloc" && linux_use_tcmalloc)) {
+    #    deps += "/base/allocator"
+    #  }
+    #}
+
+    deps = [
+      ":ipc",
+      ":test_support_ipc",
+      "//base",
+      "//base:i18n",
+      "//base/test:run_all_unittests",
+      "//base/test:test_support",
+      "//testing/gtest",
+    ]
   }
 
-  # TODO(brettw) hook up Android testing.
-  #if (is_android && gtest_target_type == "shared_library") {
-  #  deps += "/testing/android/native_test.gyp:native_testNative_code"
-  #}
+  test("ipc_perftests") {
+    sources = [
+      "ipc_perftests.cc",
+      "ipc_test_base.cc",
+      "ipc_test_base.h",
+    ]
 
-  # TODO(brettw) hook up tcmalloc to this target.
-  #if (is_posix && !is_mac && !is_android) {
-  #  # TODO(dmikurube): Kill linux_use_tcmalloc. http://crbug.com/345554
-  #  if ((use_allocator!="none" && use_allocator!="see_use_tcmalloc") || (use_allocator=="see_use_tcmalloc" && linux_use_tcmalloc)) {
-  #    deps += "/base/allocator"
-  #  }
-  #}
+    # TODO(brettw) hook up Android testing.
+    #if (is_android && gtest_target_type == "shared_library") {
+    #  deps += "/testing/android/native_test.gyp:native_testNative_code"
+    #}
 
-  deps = [
-    ":ipc",
-    ":test_support_ipc",
-    "//base",
-    "//base:i18n",
-    "//base/test:run_all_unittests",
-    "//base/test:test_support",
-    "//testing/gtest",
-  ]
-}
+    # TODO(brettw) hook up tcmalloc to this target.
+    #if (is_posix && !is_mac && !is_android) {
+    #  # TODO(dmikurube): Kill linux_use_tcmalloc. http://crbug.com/345554
+    #  if ((use_allocator!="none" && use_allocator!="see_use_tcmalloc") || (use_allocator=="see_use_tcmalloc" && linux_use_tcmalloc)) {
+    #    deps += "//base/allocator"
+    #  }
+    #}
 
-test("ipc_perftests") {
-  sources = [
-    "ipc_perftests.cc",
-    "ipc_test_base.cc",
-    "ipc_test_base.h",
-  ]
-
-  # TODO(brettw) hook up Android testing.
-  #if (is_android && gtest_target_type == "shared_library") {
-  #  deps += "/testing/android/native_test.gyp:native_testNative_code"
-  #}
-
-  # TODO(brettw) hook up tcmalloc to this target.
-  #if (is_posix && !is_mac && !is_android) {
-  #  # TODO(dmikurube): Kill linux_use_tcmalloc. http://crbug.com/345554
-  #  if ((use_allocator!="none" && use_allocator!="see_use_tcmalloc") || (use_allocator=="see_use_tcmalloc" && linux_use_tcmalloc)) {
-  #    deps += "//base/allocator"
-  #  }
-  #}
-
-  deps = [
-    ":ipc",
-    ":test_support_ipc",
-    "//base",
-    "//base:i18n",
-    "//base/test:test_support",
-    "//base/test:test_support_perf",
-    "//testing/gtest",
-  ]
+    deps = [
+      ":ipc",
+      ":test_support_ipc",
+      "//base",
+      "//base:i18n",
+      "//base/test:test_support",
+      "//base/test:test_support_perf",
+      "//testing/gtest",
+    ]
+  }
 }
 
 static_library("test_support_ipc") {

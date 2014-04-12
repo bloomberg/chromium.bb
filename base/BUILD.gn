@@ -681,6 +681,32 @@ component("base") {
     "win/wrapped_window_proc.h",
   ]
 
+  if (is_android) {
+    sources -= [
+      "debug/stack_trace_posix.cc",
+    ]
+
+    # TODO(dpranke): crbug.com/360936.
+    # These are disabled until we have JNI support on Android.
+    sources -= [
+      "android/activity_status.cc",
+      "android/base_jni_registrar.cc",
+      "android/base_jni_registrar.h",
+      "android/build_info.cc",
+      "android/build_info.h",
+      "android/cpu_features.cc",
+      "android/important_file_writer_android.cc",
+      "android/memory_pressure_listener_android.cc",
+      "android/path_service_android.cc",
+      "android/path_utils.cc",
+      "android/sys_utils.cc",
+      "android/trace_event_binding.cc",
+      "message_loop/message_pump_android.cc",
+      "power_monitor/power_monitor_device_source_android.cc",
+      "threading/platform_thread_android.cc",
+    ]
+  }
+
   # TODO(brettw) I don't understand the conditions this file is used.
   sources -= [ "files/file_path_watcher_stub.cc" ]
 

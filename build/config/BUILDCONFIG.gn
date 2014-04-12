@@ -343,6 +343,8 @@ if (is_win) {
   native_compiler_configs += [ "//build/config/mac:sdk", ]
 } else if (is_ios) {
   native_compiler_configs += [ "//build/config/ios:sdk", ]
+} else if (is_android) {
+  native_compiler_configs += [ "//build/config/android:sdk", ]
 }
 if (is_clang) {
   native_compiler_configs += [ "//build/config/clang:find_bad_constructs" ]

@@ -48,7 +48,7 @@ group("root") {
     "//url",
   ]
 
-  if (is_posix) {  # TODO(brettw) should be use_openssl
+  if (is_posix && !is_android) {  # TODO(brettw) should be use_openssl
     deps += [
       "//third_party/openssl",
     ]
@@ -56,6 +56,16 @@ group("root") {
   if (is_linux) {
     deps += [
       "//third_party/freetype2",
+    ]
+  }
+
+  if (is_android) {
+    deps -= [
+      "//skia",
+      "//third_party/libusb",
+      "//tools/gn",
+      "//ui/events",
+      "//ui/gfx",
     ]
   }
 }
