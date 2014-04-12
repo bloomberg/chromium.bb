@@ -260,6 +260,7 @@ class CQMasterTable(CQStatsTable):
     """
     return self._slaves[:]
 
+
 class SSUploader(object):
   """Uploads data from table object to Google spreadsheet."""
 
@@ -346,6 +347,12 @@ class SSUploader(object):
     else:
       self._scomm = gdata_lib.SpreadsheetComm()
       self._scomm.Connect(self._creds, self.ss_key, ws_name, source=self.SOURCE)
+
+  def GetRowCacheByCol(self, ws_name, key):
+    """Fetch the row cache with id=|key|."""
+    self._Connect(ws_name)
+    ss_key = gdata_lib.PrepColNameForSS(key)
+    return self._scomm.GetRowCacheByCol(ss_key)
 
   def Upload(self, ws_name, data_table):
     """Upload |data_table| to the |ws_name| worksheet of sheet at self.ss_key.
@@ -640,14 +647,45 @@ class PreCQStats(StatsManager):
 class CLStats(StatsManager):
   """Manager for stats about CL actions taken by the Commit Queue."""
   TABLE_CLASS = None
+  COL_FAILURE_CATEGORY = 'failure category'
+  REASON_BAD_CL = 'Bad CL'
 
-
-  def __init__(self):
+  def __init__(self, email):
     super(CLStats, self).__init__(CQ_MASTER)
     self.actions = []
     self.per_patch_actions = {}
     self.per_cl_actions = {}
+    self.email = email
+    self.reasons = {}
 
+  def GatherFailureReasons(self, creds):
+    """Gather the reasons why our builds failed.
+
+    Args:
+      creds: A gdata_lib.Creds object.
+    """
+    data_table = CQMasterStats.TABLE_CLASS()
+    uploader = SSUploader(creds, data_table.SS_KEY)
+    ss_failure_category = gdata_lib.PrepColNameForSS(self.COL_FAILURE_CATEGORY)
+    rows = uploader.GetRowCacheByCol(data_table.WORKSHEET_NAME,
+                                     data_table.COL_BUILD_NUMBER)
+    for b in self.builds:
+      try:
+        row = rows[str(b.build_number)]
+      except KeyError:
+        self.reasons[b.build_number] = 'None'
+      else:
+        self.reasons[b.build_number] = str(row[ss_failure_category])
+
+  def Gather(self, *args, **kwargs):
+    """Fetches build data and failure reasons.
+
+    Args:
+      *args, **kwargs: See StatsManager.Gather.
+    """
+    creds = _PrepareCreds(self.email)
+    super(CLStats, self).Gather(*args, **kwargs)
+    self.GatherFailureReasons(creds)
 
   def CollectActions(self):
     """Collects the CL actions from the set of gathered builds.
@@ -665,7 +703,6 @@ class CLStats(StatsManager):
             build_number=b.build_number))
 
     return actions
-
 
   def CollateActions(self, actions):
     """Collates a list of actions into per-patch and per-cl actions.
@@ -712,13 +749,20 @@ class CLStats(StatsManager):
     sbfail_actions = [a for a in self.actions
                       if a.action == constants.CL_ACTION_SUBMIT_FAILED]
 
+    build_reason_counts = {}
+    for reason in self.reasons.values():
+      build_reason_counts[reason] = build_reason_counts.get(reason, 0) + 1
+
+    patch_reason_counts = {}
     rejected_then_submitted = {}
     for k, v in self.per_patch_actions.iteritems():
-      if (any(a.action==constants.CL_ACTION_KICKED_OUT for a in v) and
-          any(a.action==constants.CL_ACTION_SUBMITTED for a in v)):
+      if (any(a.action == constants.CL_ACTION_KICKED_OUT for a in v) and
+          any(a.action == constants.CL_ACTION_SUBMITTED for a in v)):
         rejected_then_submitted[k] = v
-
-
+        for a in v:
+          if a.action == constants.CL_ACTION_KICKED_OUT:
+            reason = self.reasons[a.build_number]
+            patch_reason_counts[reason] = patch_reason_counts.get(reason, 0) + 1
 
     submitted_changes = {k : v for k, v, in self.per_cl_actions.iteritems()
                          if any(a.action==constants.CL_ACTION_SUBMITTED
@@ -748,7 +792,7 @@ class CLStats(StatsManager):
                      'action.', k)
         continue
       submitted_patch_number = v[-1].change['patch_number']
-      if any(a.action==constants.CL_ACTION_KICKED_OUT and
+      if any(a.action == constants.CL_ACTION_KICKED_OUT and
              a.change['patch_number'] != submitted_patch_number for a in v):
         submitted_after_new_patch[k] = v
 
@@ -798,6 +842,13 @@ class CLStats(StatsManager):
                    if k.internal else constants.EXTERNAL_CHANGE_PREFIX,
                    k.gerrit_number)
 
+    def PrintCounts(d, desc):
+      for cnt, reason in sorted(((v, k) for (k, v) in d.items()), reverse=True):
+        logging.info('%d %s %s', cnt, desc, reason)
+
+    PrintCounts(patch_reason_counts, 'good patches were rejected due to:')
+    PrintCounts(build_reason_counts, 'builds failed due to:')
+
     super_summary.update(summary)
     return super_summary
 
@@ -829,6 +880,11 @@ def _CheckOptions(options):
   # The --save option requires --email.
   if options.save and not options.email:
     cros_build_lib.Error('You must specify --email with --save.')
+    return False
+
+  # The --cl-actions option requires --email.
+  if options.cl_actions and not options.email:
+    cros_build_lib.Error('You must specify --email with --cl-actions.')
     return False
 
   return True
@@ -898,7 +954,7 @@ def main(argv):
     stats_managers.append(CQMasterStats())
 
   if options.cl_actions:
-    stats_managers.append(CLStats())
+    stats_managers.append(CLStats(options.email))
 
   if options.pre_cq:
     # TODO(mtennant): Add spreadsheet and/or graphite support for pre-cq.

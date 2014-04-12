@@ -23,6 +23,9 @@ from chromite.buildbot import constants
 import mock
 
 
+REASON_BAD_CL = gather_builder_stats.CLStats.REASON_BAD_CL
+
+
 class TestCLActionLogic(unittest.TestCase):
   """Ensures that CL action analysis logic is correct."""
 
@@ -92,8 +95,12 @@ class TestCLActionLogic(unittest.TestCase):
       test_builddata = self._getTestBuildData()
       stack.Add(mock.patch.object, gather_builder_stats.StatsManager,
                 '_FetchBuildData', return_value=test_builddata)
-      cl_stats = gather_builder_stats.CLStats()
+      stack.Add(mock.patch.object, gather_builder_stats, '_PrepareCreds')
+      stack.Add(mock.patch.object, gather_builder_stats.CLStats,
+                'GatherFailureReasons')
+      cl_stats = gather_builder_stats.CLStats('foo@bar.com')
       cl_stats.Gather(datetime.date.today())
+      cl_stats.reasons = {1: '', 2: '', 3: REASON_BAD_CL, 4: REASON_BAD_CL}
       summary = cl_stats.Summarize()
 
       expected = {
