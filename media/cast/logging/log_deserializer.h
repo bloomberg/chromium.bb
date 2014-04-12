@@ -13,27 +13,20 @@
 namespace media {
 namespace cast {
 
-// Represents deserialized raw event logs for a particular stream.
-struct DeserializedLog {
- public:
-  proto::LogMetadata metadata;
-  FrameEventMap frame_events;
-  PacketEventMap packet_events;
-};
-
 // This function takes the output of LogSerializer and deserializes it into
 // its original format. Returns true if deserialization is successful. All
 // output arguments are valid if this function returns true.
 // |data|: Serialized event logs with length |data_bytes|.
 // |compressed|: true if |data| is compressed in gzip format.
 // |log_metadata|: This will be populated with deserialized LogMetadata proto.
-// |audio_log|, |video_log|: These will be populated with deserialized
-// log data for audio and video streams, respectively.
-bool DeserializeEvents(const char* data,
+// |frame_events|: This will be populated with deserialized frame events.
+// |packet_events|: This will be populated with deserialized packet events.
+bool DeserializeEvents(char* data,
                        int data_bytes,
                        bool compressed,
-                       DeserializedLog* audio_log,
-                       DeserializedLog* video_log);
+                       media::cast::proto::LogMetadata* log_metadata,
+                       FrameEventMap* frame_events,
+                       PacketEventMap* packet_events);
 
 }  // namespace cast
 }  // namespace media

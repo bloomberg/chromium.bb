@@ -19,28 +19,36 @@ using media::cast::proto::LogMetadata;
 
 namespace {
 
-// Use 60MB of temp buffer to hold uncompressed data if |compress| is true.
-// This is double the size of temp buffer used during compression (30MB)
-// since the there are two streams in the blob.
-// Keep in sync with media/cast/logging/log_serializer.cc.
-const int kMaxUncompressedBytes = 60 * 1000 * 1000;
+// Use 30MB of temp buffer to hold uncompressed data if |compress| is true.
+const int kMaxUncompressedBytes = 30 * 1000 * 1000;
 
-bool PopulateDeserializedLog(base::BigEndianReader* reader,
-                             media::cast::DeserializedLog* log) {
+bool DoDeserializeEvents(char* data,
+                         int data_bytes,
+                         LogMetadata* metadata,
+                         FrameEventMap* frame_events,
+                         PacketEventMap* packet_events) {
+  base::BigEndianReader reader(data, data_bytes);
+
+  uint16 proto_size;
+  if (!reader.ReadU16(&proto_size))
+    return false;
+  if (!metadata->ParseFromArray(reader.ptr(), proto_size))
+    return false;
+  if (!reader.Skip(proto_size))
+    return false;
   FrameEventMap frame_event_map;
   PacketEventMap packet_event_map;
 
-  int num_frame_events = log->metadata.num_frame_events();
+  int num_frame_events = metadata->num_frame_events();
   RtpTimestamp relative_rtp_timestamp = 0;
-  uint16 proto_size = 0;
   for (int i = 0; i < num_frame_events; i++) {
-    if (!reader->ReadU16(&proto_size))
+    if (!reader.ReadU16(&proto_size))
       return false;
 
     linked_ptr<AggregatedFrameEvent> frame_event(new AggregatedFrameEvent);
-    if (!frame_event->ParseFromArray(reader->ptr(), proto_size))
+    if (!frame_event->ParseFromArray(reader.ptr(), proto_size))
       return false;
-    if (!reader->Skip(proto_size))
+    if (!reader.Skip(proto_size))
       return false;
 
     // During serialization the RTP timestamp in proto is relative to previous
@@ -59,18 +67,18 @@ bool PopulateDeserializedLog(base::BigEndianReader* reader,
     }
   }
 
-  log->frame_events.swap(frame_event_map);
+  frame_events->swap(frame_event_map);
 
-  int num_packet_events = log->metadata.num_packet_events();
+  int num_packet_events = metadata->num_packet_events();
   relative_rtp_timestamp = 0;
   for (int i = 0; i < num_packet_events; i++) {
-    if (!reader->ReadU16(&proto_size))
+    if (!reader.ReadU16(&proto_size))
       return false;
 
     linked_ptr<AggregatedPacketEvent> packet_event(new AggregatedPacketEvent);
-    if (!packet_event->ParseFromArray(reader->ptr(), proto_size))
+    if (!packet_event->ParseFromArray(reader.ptr(), proto_size))
       return false;
-    if (!reader->Skip(proto_size))
+    if (!reader.Skip(proto_size))
       return false;
 
     packet_event->set_relative_rtp_timestamp(
@@ -86,54 +94,12 @@ bool PopulateDeserializedLog(base::BigEndianReader* reader,
     }
   }
 
-  log->packet_events.swap(packet_event_map);
+  packet_events->swap(packet_event_map);
 
   return true;
 }
 
-bool DoDeserializeEvents(const char* data,
-                         int data_bytes,
-                         media::cast::DeserializedLog* audio_log,
-                         media::cast::DeserializedLog* video_log) {
-  bool got_audio = false;
-  bool got_video = false;
-  base::BigEndianReader reader(data, data_bytes);
-
-  LogMetadata metadata;
-  uint16 proto_size = 0;
-  while (reader.remaining() > 0) {
-    if (!reader.ReadU16(&proto_size))
-      return false;
-    if (!metadata.ParseFromArray(reader.ptr(), proto_size))
-      return false;
-    reader.Skip(proto_size);
-
-    if (metadata.is_audio()) {
-      if (got_audio) {
-        VLOG(1) << "Got audio data twice.";
-        return false;
-      }
-
-      got_audio = true;
-      audio_log->metadata = metadata;
-      if (!PopulateDeserializedLog(&reader, audio_log))
-        return false;
-    } else {
-      if (got_video) {
-        VLOG(1) << "Got duplicate video log.";
-        return false;
-      }
-
-      got_video = true;
-      video_log->metadata = metadata;
-      if (!PopulateDeserializedLog(&reader, video_log))
-        return false;
-    }
-  }
-  return true;
-}
-
-bool Uncompress(const char* data,
+bool Uncompress(char* data,
                 int data_bytes,
                 int max_uncompressed_bytes,
                 char* uncompressed,
@@ -143,46 +109,40 @@ bool Uncompress(const char* data,
   int result = inflateInit2(&stream, MAX_WBITS + 16);
   DCHECK_EQ(Z_OK, result);
 
-  stream.next_in = reinterpret_cast<uint8*>(const_cast<char*>(data));
+  stream.next_in = reinterpret_cast<uint8*>(data);
   stream.avail_in = data_bytes;
   stream.next_out = reinterpret_cast<uint8*>(uncompressed);
   stream.avail_out = max_uncompressed_bytes;
 
-  bool success = false;
-  while (stream.avail_in > 0 && stream.avail_out > 0) {
-    // 16 is added to read in gzip format.
-    int result = inflateInit2(&stream, MAX_WBITS + 16);
-    DCHECK_EQ(Z_OK, result);
+  result = inflate(&stream, Z_FINISH);
+  bool success = (result == Z_STREAM_END);
+  if (!success)
+    DVLOG(2) << "inflate() failed. Result: " << result;
 
-    result = inflate(&stream, Z_FINISH);
-    success = (result == Z_STREAM_END);
-    if (!success) {
-      DVLOG(2) << "inflate() failed. Result: " << result;
-      break;
-    }
+  result = inflateEnd(&stream);
+  DCHECK(result == Z_OK);
 
-    result = inflateEnd(&stream);
-    DCHECK(result == Z_OK);
-  }
-
-  if (stream.avail_in == 0) {
-    success = true;
+  if (success)
     *uncompressed_bytes = max_uncompressed_bytes - stream.avail_out;
-  }
+
   return success;
 }
-
 }  // namespace
 
 namespace media {
 namespace cast {
 
-bool DeserializeEvents(const char* data,
+bool DeserializeEvents(char* data,
                        int data_bytes,
                        bool compressed,
-                       DeserializedLog* audio_log,
-                       DeserializedLog* video_log) {
+                       LogMetadata* log_metadata,
+                       FrameEventMap* frame_events,
+                       PacketEventMap* packet_events) {
+  DCHECK(data);
   DCHECK_GT(data_bytes, 0);
+  DCHECK(log_metadata);
+  DCHECK(frame_events);
+  DCHECK(packet_events);
 
   if (compressed) {
     scoped_ptr<char[]> uncompressed(new char[kMaxUncompressedBytes]);
@@ -194,10 +154,14 @@ bool DeserializeEvents(const char* data,
                     &uncompressed_bytes))
       return false;
 
-    return DoDeserializeEvents(
-        uncompressed.get(), uncompressed_bytes, audio_log, video_log);
+    return DoDeserializeEvents(uncompressed.get(),
+                               uncompressed_bytes,
+                               log_metadata,
+                               frame_events,
+                               packet_events);
   } else {
-    return DoDeserializeEvents(data, data_bytes, audio_log, video_log);
+    return DoDeserializeEvents(
+        data, data_bytes, log_metadata, frame_events, packet_events);
   }
 }
 

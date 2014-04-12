@@ -93,11 +93,9 @@ class SerializeDeserializeTest : public ::testing::Test {
     }
   }
 
-  void Verify(const DeserializedLog& video_log) {
-    const LogMetadata& returned_metadata = video_log.metadata;
-    const FrameEventMap& returned_frame_events = video_log.frame_events;
-    const PacketEventMap& returned_packet_events = video_log.packet_events;
-
+  void Verify(const LogMetadata& returned_metadata,
+              const FrameEventMap& returned_frame_events,
+              const PacketEventMap& returned_packet_events) {
     EXPECT_EQ(metadata_.SerializeAsString(),
               returned_metadata.SerializeAsString());
 
@@ -153,13 +151,18 @@ TEST_F(SerializeDeserializeTest, Uncompressed) {
   ASSERT_TRUE(success);
   ASSERT_GT(output_bytes_, 0);
 
-  DeserializedLog audio_log;
-  DeserializedLog video_log;
-  success = DeserializeEvents(
-      serialized_.get(), output_bytes_, compressed, &audio_log, &video_log);
+  FrameEventMap returned_frame_events;
+  PacketEventMap returned_packet_events;
+  LogMetadata returned_metadata;
+  success = DeserializeEvents(serialized_.get(),
+                              output_bytes_,
+                              compressed,
+                              &returned_metadata,
+                              &returned_frame_events,
+                              &returned_packet_events);
   ASSERT_TRUE(success);
 
-  Verify(video_log);
+  Verify(returned_metadata, returned_frame_events, returned_packet_events);
 }
 
 TEST_F(SerializeDeserializeTest, UncompressedInsufficientSpace) {
@@ -190,12 +193,17 @@ TEST_F(SerializeDeserializeTest, Compressed) {
   ASSERT_TRUE(success);
   ASSERT_GT(output_bytes_, 0);
 
-  DeserializedLog audio_log;
-  DeserializedLog video_log;
-  success = DeserializeEvents(
-      serialized_.get(), output_bytes_, compressed, &audio_log, &video_log);
+  FrameEventMap returned_frame_events;
+  PacketEventMap returned_packet_events;
+  LogMetadata returned_metadata;
+  success = DeserializeEvents(serialized_.get(),
+                              output_bytes_,
+                              compressed,
+                              &returned_metadata,
+                              &returned_frame_events,
+                              &returned_packet_events);
   ASSERT_TRUE(success);
-  Verify(video_log);
+  Verify(returned_metadata, returned_frame_events, returned_packet_events);
 }
 
 TEST_F(SerializeDeserializeTest, CompressedInsufficientSpace) {
