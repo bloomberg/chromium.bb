@@ -355,8 +355,10 @@ void DesktopWindowTreeHostX11::SetSize(const gfx::Size& size) {
   bool size_changed = bounds_.size() != size;
   XResizeWindow(xdisplay_, xwindow_, size.width(), size.height());
   bounds_.set_size(size);
-  if (size_changed)
+  if (size_changed) {
     OnHostResized(size);
+    ResetWindowRegion();
+  }
 }
 
 void DesktopWindowTreeHostX11::StackAtTop() {
@@ -799,10 +801,12 @@ void DesktopWindowTreeHostX11::SetBounds(const gfx::Rect& bounds) {
 
   if (origin_changed)
     native_widget_delegate_->AsWidget()->OnNativeWidgetMove();
-  if (size_changed)
+  if (size_changed) {
     OnHostResized(bounds.size());
-  else
+    ResetWindowRegion();
+  } else {
     compositor()->ScheduleRedrawRect(gfx::Rect(bounds.size()));
+  }
 }
 
 gfx::Point DesktopWindowTreeHostX11::GetLocationOnNativeScreen() const {
