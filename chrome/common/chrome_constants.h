@@ -56,7 +56,6 @@ extern const wchar_t kBrowserResourcesDll[];
 extern const base::FilePath::CharType kAndroidCacheFilename[];
 #endif
 extern const base::FilePath::CharType kArchivedHistoryFilename[];
-extern const base::FilePath::CharType kBookmarksFileName[];
 extern const base::FilePath::CharType kCacheDirname[];
 extern const base::FilePath::CharType kCookieFilename[];
 extern const base::FilePath::CharType kCRLSetFilename[];

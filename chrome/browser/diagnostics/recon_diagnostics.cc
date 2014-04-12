@@ -19,6 +19,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_version_info.h"
+#include "components/bookmarks/core/common/bookmark_constants.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -392,7 +393,7 @@ DiagnosticsTest* MakeInstallTypeTest() { return new InstallTypeTest(); }
 
 DiagnosticsTest* MakeBookMarksTest() {
   base::FilePath path = DiagnosticsTest::GetUserDefaultProfileDir();
-  path = path.Append(chrome::kBookmarksFileName);
+  path = path.Append(bookmarks::kBookmarksFileName);
   return new JSONTest(path,
                       DIAGNOSTICS_JSON_BOOKMARKS_TEST,
                       2 * kOneMegabyte,

@@ -25,6 +25,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/bookmarks/core/common/bookmark_constants.h"
 #include "components/sync_driver/sync_prefs.h"
 #include "content/public/browser/browser_context.h"
 
@@ -161,7 +162,7 @@ PreferencesPrivateApiTest::TestGetSyncCategoriesWithoutPassphraseFunction() {
   const base::ListValue* categories = NULL;
   ASSERT_TRUE(result->GetList(0, &categories));
   EXPECT_NE(categories->end(),
-            categories->Find(base::StringValue(chrome::kBookmarksFileName)));
+            categories->Find(base::StringValue(bookmarks::kBookmarksFileName)));
   EXPECT_NE(categories->end(),
             categories->Find(base::StringValue(chrome::kPreferencesFilename)));
   EXPECT_EQ(categories->end(),

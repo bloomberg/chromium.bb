@@ -15,7 +15,7 @@
 #include "chrome/browser/bookmarks/bookmark_codec.h"
 #include "chrome/browser/bookmarks/bookmark_index.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/common/chrome_constants.h"
+#include "components/bookmarks/core/common/bookmark_constants.h"
 #include "components/startup_metric_utils/startup_metric_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -120,7 +120,7 @@ BookmarkStorage::BookmarkStorage(
     BookmarkModel* model,
     base::SequencedTaskRunner* sequenced_task_runner)
     : model_(model),
-      writer_(context->GetPath().Append(chrome::kBookmarksFileName),
+      writer_(context->GetPath().Append(bookmarks::kBookmarksFileName),
               sequenced_task_runner) {
   sequenced_task_runner_ = sequenced_task_runner;
   writer_.set_commit_interval(base::TimeDelta::FromMilliseconds(kSaveDelayMS));

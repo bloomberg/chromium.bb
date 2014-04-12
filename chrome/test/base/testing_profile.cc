@@ -56,6 +56,7 @@
 #include "chrome/test/base/history_index_restore_observer.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/bookmarks/core/common/bookmark_constants.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/user_prefs/user_prefs.h"
@@ -500,7 +501,7 @@ static KeyedService* BuildBookmarkModel(content::BrowserContext* context) {
 
 void TestingProfile::CreateBookmarkModel(bool delete_file) {
   if (delete_file) {
-    base::FilePath path = GetPath().Append(chrome::kBookmarksFileName);
+    base::FilePath path = GetPath().Append(bookmarks::kBookmarksFileName);
     base::DeleteFile(path, false);
   }
   // This will create a bookmark model.

@@ -151,7 +151,6 @@ const base::FilePath::CharType kAndroidCacheFilename[] = FPL("AndroidCache");
 #endif
 const base::FilePath::CharType kArchivedHistoryFilename[] =
     FPL("Archived History");
-const base::FilePath::CharType kBookmarksFileName[] = FPL("Bookmarks");
 const base::FilePath::CharType kCacheDirname[] = FPL("Cache");
 const base::FilePath::CharType kCookieFilename[] = FPL("Cookies");
 const base::FilePath::CharType kCRLSetFilename[] =

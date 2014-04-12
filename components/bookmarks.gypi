@@ -14,6 +14,8 @@
         '../base/base.gyp:base',
       ],
       'sources': [
+        'bookmarks/core/common/bookmark_constants.cc',
+        'bookmarks/core/common/bookmark_constants.h',
         'bookmarks/core/common/bookmark_pref_names.cc',
         'bookmarks/core/common/bookmark_pref_names.h',
       ],
