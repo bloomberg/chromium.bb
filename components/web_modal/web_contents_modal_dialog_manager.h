@@ -28,12 +28,19 @@ class WebContentsModalDialogManager
   WebContentsModalDialogManagerDelegate* delegate() const { return delegate_; }
   void SetDelegate(WebContentsModalDialogManagerDelegate* d);
 
+  // TODO(gbillock): Rename to CreateNativeWebModalManager().
   static NativeWebContentsModalDialogManager* CreateNativeManager(
       NativeWebContentsModalDialogManagerDelegate* native_delegate);
 
   // Shows the dialog as a web contents modal dialog. The dialog will notify via
   // WillClose() when it is being destroyed.
   void ShowDialog(NativeWebContentsModalDialog dialog);
+
+  // Allow clients to supply their own native dialog manager. Suitable for
+  // bubble clients.
+  void ShowDialogWithManager(
+      NativeWebContentsModalDialog dialog,
+      scoped_ptr<NativeWebContentsModalDialogManager> manager);
 
   // Returns true if any dialogs are active and not closed.
   bool IsDialogActive() const;
@@ -59,9 +66,6 @@ class WebContentsModalDialogManager
 
     void CloseAllDialogs() { manager_->CloseAllDialogs(); }
     void DidAttachInterstitialPage() { manager_->DidAttachInterstitialPage(); }
-    void ResetNativeManager(NativeWebContentsModalDialogManager* delegate) {
-      manager_->native_manager_.reset(delegate);
-    }
     void WebContentsWasShown() { manager_->WasShown(); }
     void WebContentsWasHidden() { manager_->WasHidden(); }
 
@@ -76,13 +80,16 @@ class WebContentsModalDialogManager
   friend class content::WebContentsUserData<WebContentsModalDialogManager>;
 
   struct DialogState {
-    explicit DialogState(NativeWebContentsModalDialog dialog);
+    DialogState(NativeWebContentsModalDialog dialog,
+                scoped_ptr<NativeWebContentsModalDialogManager> manager);
+    ~DialogState();
 
     NativeWebContentsModalDialog dialog;
+    scoped_ptr<NativeWebContentsModalDialogManager> manager;
     bool close_on_interstitial_webui;
   };
 
-  typedef std::deque<DialogState> WebContentsModalDialogList;
+  typedef std::deque<DialogState*> WebContentsModalDialogList;
 
   // Utility function to get the dialog state for a dialog.
   WebContentsModalDialogList::iterator FindDialogState(
@@ -108,9 +115,6 @@ class WebContentsModalDialogManager
 
   // Delegate for notifying our owner about stuff. Not owned by us.
   WebContentsModalDialogManagerDelegate* delegate_;
-
-  // Delegate for native UI-specific functions on the dialog.
-  scoped_ptr<NativeWebContentsModalDialogManager> native_manager_;
 
   // All active dialogs.
   WebContentsModalDialogList child_dialogs_;

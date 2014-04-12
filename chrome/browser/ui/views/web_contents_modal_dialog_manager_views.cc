@@ -220,11 +220,14 @@ class NativeWebContentsModalDialogManagerViews
       view->parent()->ClearProperty(aura::client::kAnimationsDisabledKey);
 #endif
     widget->RemoveObserver(this);
-    native_delegate_->WillClose(widget->GetNativeView());
     observed_widgets_.erase(widget);
+
 #if defined(USE_AURA)
     shown_widgets_.erase(widget);
 #endif
+
+    // Will cause this object to be deleted.
+    native_delegate_->WillClose(widget->GetNativeView());
   }
 
   NativeWebContentsModalDialogManagerDelegate* native_delegate_;

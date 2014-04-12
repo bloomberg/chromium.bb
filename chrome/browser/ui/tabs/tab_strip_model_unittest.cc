@@ -2562,14 +2562,16 @@ TEST_F(TabStripModelTest, TabBlockedState) {
       web_modal::WebContentsModalDialogManager::FromWebContents(contents2);
   web_modal::WebContentsModalDialogManager::TestApi test_api(
       modal_dialog_manager);
-  test_api.ResetNativeManager(
-      new DummyNativeWebContentsModalDialogManager(modal_dialog_manager));
 
   // Show a dialog that blocks tab |contents2|.
   // DummyNativeWebContentsModalDialogManager doesn't care about the
   // NativeWebContentsModalDialog value, so any dummy value works.
-  modal_dialog_manager->ShowDialog(
-      reinterpret_cast<NativeWebContentsModalDialog>(0));
+  DummyNativeWebContentsModalDialogManager* native_manager =
+      new DummyNativeWebContentsModalDialogManager(modal_dialog_manager);
+  modal_dialog_manager->ShowDialogWithManager(
+      reinterpret_cast<NativeWebContentsModalDialog>(0),
+      scoped_ptr<web_modal::NativeWebContentsModalDialogManager>(
+          native_manager).Pass());
   EXPECT_TRUE(strip_src.IsTabBlocked(1));
 
   // Detach the tab.

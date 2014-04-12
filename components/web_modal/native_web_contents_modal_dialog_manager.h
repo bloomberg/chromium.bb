@@ -23,6 +23,9 @@ class NativeWebContentsModalDialogManagerDelegate {
   virtual ~NativeWebContentsModalDialogManagerDelegate() {}
 
   virtual content::WebContents* GetWebContents() const = 0;
+
+  // Notify the delegate that the dialog is closing. The native
+  // manager will be deleted before the end of this call.
   virtual void WillClose(NativeWebContentsModalDialog dialog) = 0;
 
  private:
@@ -31,6 +34,7 @@ class NativeWebContentsModalDialogManagerDelegate {
 
 // Provides an interface for platform-specific UI implementation for the web
 // contents modal dialog.
+// TODO(gbillock): perhaps rename to "SingleWebContentsDialogManager"
 class NativeWebContentsModalDialogManager {
  public:
   virtual ~NativeWebContentsModalDialogManager() {}
@@ -48,6 +52,8 @@ class NativeWebContentsModalDialogManager {
   virtual void HideDialog(NativeWebContentsModalDialog dialog) = 0;
 
   // Closes the web contents modal dialog.
+  // If this method causes a WillClose() call to the delegate, the manager
+  // will be deleted at the close of that invocation.
   virtual void CloseDialog(NativeWebContentsModalDialog dialog) = 0;
 
   // Sets focus on the web contents modal dialog.

@@ -25,20 +25,36 @@ WebContentsModalDialogManager::~WebContentsModalDialogManager() {
 void WebContentsModalDialogManager::SetDelegate(
     WebContentsModalDialogManagerDelegate* d) {
   delegate_ = d;
-  // Delegate can be NULL on Views/Win32 during tab drag.
-  native_manager_->HostChanged(d ? d->GetWebContentsModalDialogHost() : NULL);
+
+  for (WebContentsModalDialogList::iterator it = child_dialogs_.begin();
+       it != child_dialogs_.end(); it++) {
+    // Delegate can be NULL on Views/Win32 during tab drag.
+    (*it)->manager->HostChanged(d ? d->GetWebContentsModalDialogHost() : NULL);
+  }
 }
 
+// TODO(gbillock): Rename to ShowWebModalDialog()
 void WebContentsModalDialogManager::ShowDialog(
     NativeWebContentsModalDialog dialog) {
-  child_dialogs_.push_back(DialogState(dialog));
+  scoped_ptr<NativeWebContentsModalDialogManager> mgr(
+      CreateNativeManager(this));
+  ShowDialogWithManager(dialog, mgr.Pass());
+}
 
-  native_manager_->ManageDialog(dialog);
+// TODO(gbillock): Maybe "ShowBubbleWithManager"?
+void WebContentsModalDialogManager::ShowDialogWithManager(
+    NativeWebContentsModalDialog dialog,
+    scoped_ptr<NativeWebContentsModalDialogManager> manager) {
+  if (delegate_)
+    manager->HostChanged(delegate_->GetWebContentsModalDialogHost());
+  child_dialogs_.push_back(new DialogState(dialog, manager.Pass()));
+
+  child_dialogs_.back()->manager->ManageDialog(dialog);
 
   if (child_dialogs_.size() == 1) {
-    if (delegate_ && delegate_->IsWebContentsVisible(web_contents()))
-      native_manager_->ShowDialog(dialog);
     BlockWebContentsInteraction(true);
+    if (delegate_ && delegate_->IsWebContentsVisible(web_contents()))
+      child_dialogs_.back()->manager->ShowDialog(dialog);
   }
 }
 
@@ -48,7 +64,7 @@ bool WebContentsModalDialogManager::IsDialogActive() const {
 
 void WebContentsModalDialogManager::FocusTopmostDialog() {
   DCHECK(!child_dialogs_.empty());
-  native_manager_->FocusDialog(child_dialogs_.front().dialog);
+  child_dialogs_.front()->manager->FocusDialog(child_dialogs_.front()->dialog);
 }
 
 void WebContentsModalDialogManager::SetCloseOnInterstitialPage(
@@ -56,7 +72,7 @@ void WebContentsModalDialogManager::SetCloseOnInterstitialPage(
     bool close) {
   WebContentsModalDialogList::iterator loc = FindDialogState(dialog);
   DCHECK(loc != child_dialogs_.end());
-  loc->close_on_interstitial_webui = close;
+  (*loc)->close_on_interstitial_webui = close;
 }
 
 content::WebContents* WebContentsModalDialogManager::GetWebContents() const {
@@ -65,18 +81,20 @@ content::WebContents* WebContentsModalDialogManager::GetWebContents() const {
 
 void WebContentsModalDialogManager::WillClose(
     NativeWebContentsModalDialog dialog) {
-  WebContentsModalDialogList::iterator i = FindDialogState(dialog);
+  WebContentsModalDialogList::iterator dlg = FindDialogState(dialog);
 
   // The Views tab contents modal dialog calls WillClose twice.  Ignore the
   // second invocation.
-  if (i == child_dialogs_.end())
+  if (dlg == child_dialogs_.end())
     return;
 
-  bool removed_topmost_dialog = i == child_dialogs_.begin();
-  child_dialogs_.erase(i);
+  bool removed_topmost_dialog = dlg == child_dialogs_.begin();
+  scoped_ptr<DialogState> deleter(*dlg);
+  child_dialogs_.erase(dlg);
   if (!child_dialogs_.empty() && removed_topmost_dialog &&
-      !closing_all_dialogs_)
-    native_manager_->ShowDialog(child_dialogs_.front().dialog);
+      !closing_all_dialogs_) {
+    child_dialogs_.front()->manager->ShowDialog(child_dialogs_.front()->dialog);
+  }
 
   BlockWebContentsInteraction(!child_dialogs_.empty());
 }
@@ -85,14 +103,14 @@ WebContentsModalDialogManager::WebContentsModalDialogManager(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       delegate_(NULL),
-      native_manager_(CreateNativeManager(this)),
       closing_all_dialogs_(false) {
-  DCHECK(native_manager_);
 }
 
 WebContentsModalDialogManager::DialogState::DialogState(
-    NativeWebContentsModalDialog dialog)
+    NativeWebContentsModalDialog dialog,
+    scoped_ptr<NativeWebContentsModalDialogManager> mgr)
     : dialog(dialog),
+      manager(mgr.release()),
 #if defined(USE_AURA)
       close_on_interstitial_webui(true)
 #else
@@ -103,18 +121,24 @@ WebContentsModalDialogManager::DialogState::DialogState(
                                          {
 }
 
+WebContentsModalDialogManager::DialogState::~DialogState() {}
+
 WebContentsModalDialogManager::WebContentsModalDialogList::iterator
     WebContentsModalDialogManager::FindDialogState(
         NativeWebContentsModalDialog dialog) {
   WebContentsModalDialogList::iterator i;
   for (i = child_dialogs_.begin(); i != child_dialogs_.end(); ++i) {
-    if (i->dialog == dialog)
+    if ((*i)->dialog == dialog)
       break;
   }
 
   return i;
 }
 
+// TODO(gbillock): Move this to Views impl within ShowDialog? It would
+// call WebContents* contents = native_delegate_->GetWebContents(); and
+// then set the block state. Advantage: could restrict some of the
+// WCMDM delegate methods, then, and pass them behind the scenes.
 void WebContentsModalDialogManager::BlockWebContentsInteraction(bool blocked) {
   WebContents* contents = web_contents();
   if (!contents) {
@@ -134,8 +158,10 @@ void WebContentsModalDialogManager::CloseAllDialogs() {
   closing_all_dialogs_ = true;
 
   // Clear out any dialogs since we are leaving this page entirely.
-  while (!child_dialogs_.empty())
-    native_manager_->CloseDialog(child_dialogs_.front().dialog);
+  while (!child_dialogs_.empty()) {
+    child_dialogs_.front()->manager->CloseDialog(
+        child_dialogs_.front()->dialog);
+  }
 
   closing_all_dialogs_ = false;
 }
@@ -151,18 +177,20 @@ void WebContentsModalDialogManager::DidNavigateMainFrame(
 }
 
 void WebContentsModalDialogManager::DidGetIgnoredUIEvent() {
-  if (!child_dialogs_.empty())
-    native_manager_->FocusDialog(child_dialogs_.front().dialog);
+  if (!child_dialogs_.empty()) {
+    child_dialogs_.front()->manager->FocusDialog(
+        child_dialogs_.front()->dialog);
+  }
 }
 
 void WebContentsModalDialogManager::WasShown() {
   if (!child_dialogs_.empty())
-    native_manager_->ShowDialog(child_dialogs_.front().dialog);
+    child_dialogs_.front()->manager->ShowDialog(child_dialogs_.front()->dialog);
 }
 
 void WebContentsModalDialogManager::WasHidden() {
   if (!child_dialogs_.empty())
-    native_manager_->HideDialog(child_dialogs_.front().dialog);
+    child_dialogs_.front()->manager->HideDialog(child_dialogs_.front()->dialog);
 }
 
 void WebContentsModalDialogManager::WebContentsDestroyed(WebContents* tab) {
@@ -179,8 +207,8 @@ void WebContentsModalDialogManager::DidAttachInterstitialPage() {
   WebContentsModalDialogList dialogs(child_dialogs_);
   for (WebContentsModalDialogList::iterator it = dialogs.begin();
        it != dialogs.end(); ++it) {
-    if (it->close_on_interstitial_webui)
-      native_manager_->CloseDialog(it->dialog);
+    if ((*it)->close_on_interstitial_webui)
+      (*it)->manager->CloseDialog((*it)->dialog);
   }
 }
 
