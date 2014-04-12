@@ -109,9 +109,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'chrome/common/extensions/docs/examples': [  # http://crbug.com/98092
         'UNKNOWN',
     ],
-    'chrome/test/data/gpu/vt': [
-        'UNKNOWN',
-    ],
     'courgette/third_party/bsdiff_create.cc': [  # http://crbug.com/98095
         'UNKNOWN',
     ],
@@ -133,10 +130,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'GPL (v2 or later)',
         'GPL (v3.1)',
         'GPL (v3 or later)',
-    ],
-    'net/tools/spdyshark': [
-        'GPL (v2 or later)',
-        'UNKNOWN',
     ],
     'third_party/WebKit': [
         'UNKNOWN',
@@ -163,19 +156,7 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/clang_format/script': [
         'UNKNOWN',
     ],
-    'third_party/clang_format/scripts': [
-        'UNKNOWN',
-    ],
 
-    # Not used. http://crbug.com/156020
-    # Using third_party/cros_dbus_cplusplus/cros_dbus_cplusplus.gyp instead.
-    'third_party/cros_dbus_cplusplus/source/autogen.sh': [
-        'UNKNOWN',
-    ],
-    # Included in the source tree but not built. http://crbug.com/156020
-    'third_party/cros_dbus_cplusplus/source/examples': [
-        'UNKNOWN',
-    ],
     'third_party/devscripts': [
         'GPL (v2 or later)',
     ],
@@ -206,14 +187,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     ],
     'third_party/icu': [  # http://crbug.com/98301
         'UNKNOWN',
-    ],
-    'third_party/jemalloc': [  # http://crbug.com/98302
-        'UNKNOWN',
-    ],
-    'third_party/JSON': [
-        'Perl',  # Build-only.
-        # License missing upstream on 3 minor files.
-        'UNKNOWN',  # https://rt.cpan.org/Public/Bug/Display.html?id=85915
     ],
     'third_party/lcov': [  # http://crbug.com/98304
         'UNKNOWN',
@@ -256,9 +229,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
 
     'third_party/libvpx/source': [  # http://crbug.com/98319
         'UNKNOWN',
-    ],
-    'third_party/libvpx/source/libvpx/examples/includes': [
-        'GPL (v2 or later)',
     ],
     'third_party/libxml': [
         'UNKNOWN',
@@ -395,9 +365,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'UNKNOWN',
     ],
     'tools/gyp/test': [
-        'UNKNOWN',
-    ],
-    'tools/histograms': [
         'UNKNOWN',
     ],
     'tools/python/google/__init__.py': [
