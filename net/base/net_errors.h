@@ -57,13 +57,6 @@ NET_EXPORT std::vector<int> GetAllErrorCodesForUma();
 // A convenient function to translate file error to net error code.
 NET_EXPORT Error FileErrorToNetError(base::File::Error file_error);
 
-// Return a net_error other than net::OK, based on |os_error|.
-// Some older OSs (Mac 10.6?) may fail to set the os_error properly, even when
-// a system function returns a failing value.  This function is used to map such
-// cases into a default net_error, if the net_error would otherwise mistakenly
-// report OK (such as when errno was zero).
-int MapSystemErrorWithDefault(int os_error, int default_net_error);
-
 }  // namespace net
 
 #endif  // NET_BASE_NET_ERRORS_H__

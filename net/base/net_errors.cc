@@ -59,13 +59,4 @@ Error FileErrorToNetError(base::File::Error file_error) {
   }
 }
 
-int MapSystemErrorWithDefault(int os_error, int default_net_error) {
-  int net_error = MapSystemError(os_error);
-  if (net_error != OK)
-    return net_error;
-  DLOG(WARNING)  << "OS Error was not set meaningfully " << os_error;
-  DCHECK_NE(default_net_error, OK);
-  return default_net_error;
-}
-
 }  // namespace net

@@ -505,16 +505,14 @@ int TCPSocketLibevent::SetReceiveBufferSize(int32 size) {
   DCHECK(CalledOnValidThread());
   int rv = setsockopt(socket_, SOL_SOCKET, SO_RCVBUF,
                       reinterpret_cast<const char*>(&size), sizeof(size));
-  return (rv == 0) ? OK : MapSystemErrorWithDefault(
-      errno, ERR_SOCKET_SET_RECEIVE_BUFFER_SIZE_ERROR);
+  return (rv == 0) ? OK : MapSystemError(errno);
 }
 
 int TCPSocketLibevent::SetSendBufferSize(int32 size) {
   DCHECK(CalledOnValidThread());
   int rv = setsockopt(socket_, SOL_SOCKET, SO_SNDBUF,
                       reinterpret_cast<const char*>(&size), sizeof(size));
-  return (rv == 0) ? OK : MapSystemErrorWithDefault(
-      errno, ERR_SOCKET_SET_SEND_BUFFER_SIZE_ERROR);
+  return (rv == 0) ? OK : MapSystemError(errno);
 }
 
 bool TCPSocketLibevent::SetKeepAlive(bool enable, int delay) {
