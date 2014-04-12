@@ -113,7 +113,7 @@ def process_options():
 def main():
   landmine_scripts = process_options()
 
-  if landmine_utils.builder() == 'dump_dependency_json':
+  if landmine_utils.builder() in ('dump_dependency_json', 'eclipse'):
     return 0
 
   for target in ('Debug', 'Release', 'Debug_x64', 'Release_x64'):
