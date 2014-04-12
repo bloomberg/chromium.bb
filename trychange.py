@@ -640,12 +640,13 @@ def _SendChangeGit(bot_spec, options):
   with _PrepareDescriptionAndPatchFiles(description, options) as (
        patch_filename, description_filename):
     logging.info('Committing patch')
-    target_branch = ('refs/patches/' +
-                     os.path.basename(patch_filename).replace(' ','-'))
+    target_branch = 'refs/patches/%s/%s' % (
+        Escape(options.user),
+        os.path.basename(patch_filename).replace(' ','_'))
     target_filename = os.path.join(patch_dir, 'patch.diff')
     branch_file = os.path.join(patch_dir, GIT_BRANCH_FILE)
     try:
-      # Crete a new branch and put the patch there
+      # Create a new branch and put the patch there.
       patch_git('checkout', '--orphan', target_branch)
       patch_git('reset')
       patch_git('clean', '-f')
