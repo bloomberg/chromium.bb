@@ -12,7 +12,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/appcache/appcache_disk_cache.h"
 
-namespace appcache {
+using appcache::AppCacheDiskCache;
+
+namespace content {
 
 class AppCacheDiskCacheTest : public testing::Test {
  public:
@@ -183,4 +185,4 @@ TEST_F(AppCacheDiskCacheTest, DISABLED_DisableWithEntriesOpen) {
   FlushCacheTasks();
 }
 
-}  // namespace appcache
+}  // namespace content

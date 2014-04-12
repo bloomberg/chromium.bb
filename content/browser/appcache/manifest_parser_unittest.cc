@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,13 @@
 #include "url/gurl.h"
 #include "webkit/browser/appcache/manifest_parser.h"
 
-namespace appcache {
+using appcache::Manifest;
+using appcache::NamespaceVector;
+using appcache::FALLBACK_NAMESPACE;
+using appcache::INTERCEPT_NAMESPACE;
+using appcache::NETWORK_NAMESPACE;
+
+namespace content {
 
 class AppCacheManifestParserTest : public testing::Test {
 };
@@ -469,4 +475,4 @@ TEST(AppCacheManifestParserTest, PatternMatching) {
       manifest.online_whitelist_namespaces[1].target_url);
 }
 
-}  // namespace appcache
+}  // namespace content

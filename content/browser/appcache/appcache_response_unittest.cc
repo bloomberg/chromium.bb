@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,10 +20,16 @@
 #include "webkit/browser/appcache/appcache_response.h"
 #include "webkit/browser/appcache/mock_appcache_service.h"
 
+using appcache::AppCacheStorage;
+using appcache::AppCacheResponseInfo;
+using appcache::AppCacheResponseReader;
+using appcache::AppCacheResponseWriter;
+using appcache::HttpResponseInfoIOBuffer;
+using appcache::MockAppCacheService;
 using net::IOBuffer;
 using net::WrappedIOBuffer;
 
-namespace appcache {
+namespace content {
 
 static const int kNumBlocks = 4;
 static const int kBlockSize = 1024;
@@ -714,4 +720,4 @@ TEST_F(AppCacheResponseTest, DeleteWithIOPending) {
   RunTestOnIOThread(&AppCacheResponseTest::DeleteWithIOPending);
 }
 
-}  // namespace appcache
+}  // namespace content

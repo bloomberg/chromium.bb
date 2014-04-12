@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,14 @@
 #include "webkit/browser/appcache/appcache_update_job.h"
 #include "webkit/browser/appcache/mock_appcache_service.h"
 #include "webkit/common/appcache/appcache_interfaces.h"
+
+using appcache::AppCache;
+using appcache::AppCacheFrontend;
+using appcache::AppCacheGroup;
+using appcache::AppCacheHost;
+using appcache::AppCacheService;
+using appcache::AppCacheUpdateJob;
+using appcache::MockAppCacheService;
 
 namespace {
 
@@ -61,7 +69,7 @@ class TestAppCacheFrontend : public appcache::AppCacheFrontend {
 
 }  // namespace anon
 
-namespace appcache {
+namespace content {
 
 class TestUpdateObserver : public AppCacheGroup::UpdateObserver {
  public:
@@ -299,4 +307,4 @@ TEST_F(AppCacheGroupTest, QueueUpdate) {
   EXPECT_TRUE(host.update_completed_);
 }
 
-}  // namespace appcache
+}  // namespace content

@@ -26,6 +26,12 @@
 #include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/appcache/appcache_interfaces.h"
 
+namespace content {
+FORWARD_DECLARE_TEST(AppCacheGroupTest, QueueUpdate);
+class AppCacheGroupTest;
+class AppCacheUpdateJobTest;
+}
+
 namespace appcache {
 
 class HostNotifier;
@@ -51,7 +57,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheUpdateJob
   void StartUpdate(AppCacheHost* host, const GURL& new_master_resource);
 
  private:
-  friend class AppCacheUpdateJobTest;
+  friend class content::AppCacheGroupTest;
+  friend class content::AppCacheUpdateJobTest;
   class URLFetcher;
 
   // Master entries have multiple hosts, for example, the same page is opened
@@ -333,7 +340,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheUpdateJob
 
   AppCacheStorage* storage_;
 
-  FRIEND_TEST_ALL_PREFIXES(AppCacheGroupTest, QueueUpdate);
+  FRIEND_TEST_ALL_PREFIXES(content::AppCacheGroupTest, QueueUpdate);
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheUpdateJob);
 };

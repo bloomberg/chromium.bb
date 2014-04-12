@@ -22,6 +22,8 @@ class GURL;
 namespace content {
 FORWARD_DECLARE_TEST(AppCacheStorageTest, DelegateReferences);
 FORWARD_DECLARE_TEST(AppCacheStorageTest, UsageMap);
+class AppCacheQuotaClientTest;
+class AppCacheResponseTest;
 class AppCacheStorageTest;
 }
 
@@ -200,8 +202,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheStorage {
   AppCacheService* service() { return service_; }
 
  protected:
-  friend class AppCacheQuotaClientTest;
-  friend class AppCacheResponseTest;
+  friend class content::AppCacheQuotaClientTest;
+  friend class content::AppCacheResponseTest;
   friend class content::AppCacheStorageTest;
 
   // Helper to call a collection of delegates.

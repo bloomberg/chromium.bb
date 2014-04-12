@@ -2031,4 +2031,4 @@ TEST_F(AppCacheStorageImplTest, Reinitialize3) {
 
 // That's all folks!
 
-}  // namespace appcache
+}  // namespace content

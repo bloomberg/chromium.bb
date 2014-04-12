@@ -17,6 +17,15 @@
 #include "url/gurl.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 
+namespace content {
+FORWARD_DECLARE_TEST(AppCacheGroupTest, StartUpdate);
+FORWARD_DECLARE_TEST(AppCacheGroupTest, CancelUpdate);
+FORWARD_DECLARE_TEST(AppCacheGroupTest, QueueUpdate);
+FORWARD_DECLARE_TEST(AppCacheUpdateJobTest, AlreadyChecking);
+FORWARD_DECLARE_TEST(AppCacheUpdateJobTest, AlreadyDownloading);
+class AppCacheUpdateJobTest;
+}
+
 namespace appcache {
 
 class AppCache;
@@ -94,9 +103,9 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheGroup
  private:
   class HostObserver;
 
-  friend class AppCacheUpdateJob;
-  friend class AppCacheUpdateJobTest;
   friend class base::RefCounted<AppCacheGroup>;
+  friend class content::AppCacheUpdateJobTest;
+  friend class AppCacheUpdateJob;
   friend class MockAppCacheStorage;  // for old_caches()
 
   ~AppCacheGroup();
@@ -153,11 +162,11 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheGroup
   // True if we're in our destructor.
   bool is_in_dtor_;
 
-  FRIEND_TEST_ALL_PREFIXES(AppCacheGroupTest, StartUpdate);
-  FRIEND_TEST_ALL_PREFIXES(AppCacheGroupTest, CancelUpdate);
-  FRIEND_TEST_ALL_PREFIXES(AppCacheGroupTest, QueueUpdate);
-  FRIEND_TEST_ALL_PREFIXES(AppCacheUpdateJobTest, AlreadyChecking);
-  FRIEND_TEST_ALL_PREFIXES(AppCacheUpdateJobTest, AlreadyDownloading);
+  FRIEND_TEST_ALL_PREFIXES(content::AppCacheGroupTest, StartUpdate);
+  FRIEND_TEST_ALL_PREFIXES(content::AppCacheGroupTest, CancelUpdate);
+  FRIEND_TEST_ALL_PREFIXES(content::AppCacheGroupTest, QueueUpdate);
+  FRIEND_TEST_ALL_PREFIXES(content::AppCacheUpdateJobTest, AlreadyChecking);
+  FRIEND_TEST_ALL_PREFIXES(content::AppCacheUpdateJobTest, AlreadyDownloading);
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheGroup);
 };

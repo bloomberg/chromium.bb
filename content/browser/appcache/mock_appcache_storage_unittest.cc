@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,21 @@
 #include "webkit/browser/appcache/appcache_storage.h"
 #include "webkit/browser/appcache/mock_appcache_service.h"
 
-namespace appcache {
+using appcache::AppCache;
+using appcache::AppCacheEntry;
+using appcache::AppCacheGroup;
+using appcache::AppCacheStorage;
+using appcache::FALLBACK_NAMESPACE;
+using appcache::INTERCEPT_NAMESPACE;
+using appcache::kNoCacheId;
+using appcache::kNoResponseId;
+using appcache::Manifest;
+using appcache::MockAppCacheService;
+using appcache::MockAppCacheStorage;
+using appcache::Namespace;
+using appcache::NETWORK_NAMESPACE;
+
+namespace content {
 
 class MockAppCacheStorageTest : public testing::Test {
  public:
@@ -628,4 +642,4 @@ TEST_F(MockAppCacheStorageTest, FindMainResponseExclusions) {
   EXPECT_EQ(0, delegate.found_fallback_entry_.types());
 }
 
-}  // namespace appcache
+}  // namespace content

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,34 @@
 #include "webkit/browser/appcache/appcache_update_job.h"
 #include "webkit/browser/appcache/mock_appcache_service.h"
 
-namespace appcache {
+using appcache::AppCache;
+using appcache::AppCacheEntry;
+using appcache::AppCacheFrontend;
+using appcache::AppCacheHost;
+using appcache::AppCacheGroup;
+using appcache::AppCacheResponseInfo;
+using appcache::AppCacheUpdateJob;
+using appcache::AppCacheResponseWriter;
+using appcache::CACHED_EVENT;
+using appcache::CHECKING_EVENT;
+using appcache::DOWNLOADING_EVENT;
+using appcache::ERROR_EVENT;
+using appcache::EventID;
+using appcache::FALLBACK_NAMESPACE;
+using appcache::HttpResponseInfoIOBuffer;
+using appcache::kNoCacheId;
+using appcache::kNoResponseId;
+using appcache::MockAppCacheService;
+using appcache::MockAppCacheStorage;
+using appcache::Namespace;
+using appcache::NETWORK_NAMESPACE;
+using appcache::NO_UPDATE_EVENT;
+using appcache::OBSOLETE_EVENT;
+using appcache::PROGRESS_EVENT;
+using appcache::UPDATE_READY_EVENT;
+using appcache::Status;
+
+namespace content {
 class AppCacheUpdateJobTest;
 
 namespace {
@@ -3690,4 +3717,4 @@ TEST_F(AppCacheUpdateJobTest, CrossOriginHttpsDenied) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::CrossOriginHttpsDeniedTest);
 }
 
-}  // namespace appcache
+}  // namespace content

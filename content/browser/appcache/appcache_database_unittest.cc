@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,13 +17,19 @@
 #include "webkit/browser/appcache/appcache_database.h"
 #include "webkit/browser/appcache/appcache_entry.h"
 
+using appcache::AppCacheDatabase;
+using appcache::AppCacheEntry;
+using appcache::FALLBACK_NAMESPACE;
+using appcache::INTERCEPT_NAMESPACE;
+using appcache::NETWORK_NAMESPACE;
+
 namespace {
 
 const base::Time kZeroTime;
 
 }  // namespace
 
-namespace appcache {
+namespace content {
 
 class AppCacheDatabaseTest {};
 
@@ -1207,4 +1213,4 @@ TEST(AppCacheDatabaseTest, UpgradeSchema4to5) {
 }
 #endif  // !APPCACHE_USE_SIMPLE_CACHE
 
-}  // namespace appcache
+}  // namespace content

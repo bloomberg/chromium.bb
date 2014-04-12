@@ -16,6 +16,11 @@
 #include "webkit/browser/appcache/appcache_storage.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 
+namespace content {
+class AppCacheRequestHandlerTest;
+class AppCacheURLRequestJobTest;
+}
+
 namespace net {
 class GrowableIOBuffer;
 };
@@ -92,8 +97,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheURLRequestJob
   virtual ~AppCacheURLRequestJob();
 
  private:
-  friend class AppCacheRequestHandlerTest;
-  friend class AppCacheURLRequestJobTest;
+  friend class content::AppCacheRequestHandlerTest;
+  friend class content::AppCacheURLRequestJobTest;
 
   enum DeliveryType {
     AWAITING_DELIVERY_ORDERS,

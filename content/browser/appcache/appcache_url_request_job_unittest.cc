@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,10 +24,19 @@
 #include "webkit/browser/appcache/appcache_url_request_job.h"
 #include "webkit/browser/appcache/mock_appcache_service.h"
 
+using appcache::AppCacheEntry;
+using appcache::AppCacheStorage;
+using appcache::AppCacheResponseInfo;
+using appcache::AppCacheResponseReader;
+using appcache::AppCacheResponseWriter;
+using appcache::AppCacheURLRequestJob;
+using appcache::HttpResponseInfoIOBuffer;
+using appcache::kNoCacheId;
+using appcache::MockAppCacheService;
 using net::IOBuffer;
 using net::WrappedIOBuffer;
 
-namespace appcache {
+namespace content {
 
 static const char kHttpBasicHeaders[] =
     "HTTP/1.0 200 OK\0Content-Length: 5\0\0";
@@ -817,4 +826,4 @@ TEST_F(AppCacheURLRequestJobTest, CancelRequestWithIOPending) {
   RunTestOnIOThread(&AppCacheURLRequestJobTest::CancelRequestWithIOPending);
 }
 
-}  // namespace appcache
+}  // namespace content

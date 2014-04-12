@@ -30,6 +30,8 @@ class MessageLoopProxy;
 }
 
 namespace content {
+FORWARD_DECLARE_TEST(AppCacheServiceTest, ScheduleReinitialize);
+class AppCacheServiceTest;
 class AppCacheStorageImplTest;
 }
 
@@ -199,9 +201,9 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheService {
   bool force_keep_session_state() const { return force_keep_session_state_; }
 
  protected:
+  friend class content::AppCacheServiceTest;
   friend class content::AppCacheStorageImplTest;
-  friend class AppCacheServiceTest;
-  FRIEND_TEST_ALL_PREFIXES(AppCacheServiceTest, ScheduleReinitialize);
+  FRIEND_TEST_ALL_PREFIXES(content::AppCacheServiceTest, ScheduleReinitialize);
 
   class AsyncHelper;
   class CanHandleOfflineHelper;

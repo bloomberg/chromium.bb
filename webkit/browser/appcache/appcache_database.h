@@ -26,6 +26,21 @@ class StatementID;
 }
 
 namespace content {
+FORWARD_DECLARE_TEST(AppCacheDatabaseTest, CacheRecords);
+FORWARD_DECLARE_TEST(AppCacheDatabaseTest, EntryRecords);
+FORWARD_DECLARE_TEST(AppCacheDatabaseTest, QuickIntegrityCheck);
+FORWARD_DECLARE_TEST(AppCacheDatabaseTest, NamespaceRecords);
+FORWARD_DECLARE_TEST(AppCacheDatabaseTest, GroupRecords);
+FORWARD_DECLARE_TEST(AppCacheDatabaseTest, LazyOpen);
+FORWARD_DECLARE_TEST(AppCacheDatabaseTest, ExperimentalFlags);
+FORWARD_DECLARE_TEST(AppCacheDatabaseTest, OnlineWhiteListRecords);
+FORWARD_DECLARE_TEST(AppCacheDatabaseTest, ReCreate);
+FORWARD_DECLARE_TEST(AppCacheDatabaseTest, DeletableResponseIds);
+FORWARD_DECLARE_TEST(AppCacheDatabaseTest, OriginUsage);
+FORWARD_DECLARE_TEST(AppCacheDatabaseTest, UpgradeSchema3to5);
+FORWARD_DECLARE_TEST(AppCacheDatabaseTest, UpgradeSchema4to5);
+FORWARD_DECLARE_TEST(AppCacheDatabaseTest, WasCorrutionDetected);
+class AppCacheDatabaseTest;
 class AppCacheStorageImplTest;
 }
 
@@ -212,21 +227,24 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheDatabase {
   bool is_recreating_;
   bool was_corruption_detected_;
 
+  friend class content::AppCacheDatabaseTest;
   friend class content::AppCacheStorageImplTest;
-  FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, CacheRecords);
-  FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, EntryRecords);
-  FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, QuickIntegrityCheck);
-  FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, NamespaceRecords);
-  FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, GroupRecords);
-  FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, LazyOpen);
-  FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, ExperimentalFlags);
-  FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, OnlineWhiteListRecords);
-  FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, ReCreate);
-  FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, DeletableResponseIds);
-  FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, OriginUsage);
-  FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, UpgradeSchema3to5);
-  FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, UpgradeSchema4to5);
-  FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, WasCorrutionDetected);
+
+  FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest, CacheRecords);
+  FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest, EntryRecords);
+  FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest, QuickIntegrityCheck);
+  FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest, NamespaceRecords);
+  FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest, GroupRecords);
+  FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest, LazyOpen);
+  FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest, ExperimentalFlags);
+  FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest,
+                           OnlineWhiteListRecords);
+  FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest, ReCreate);
+  FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest, DeletableResponseIds);
+  FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest, OriginUsage);
+  FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest, UpgradeSchema3to5);
+  FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest, UpgradeSchema4to5);
+  FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest, WasCorrutionDetected);
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheDatabase);
 };

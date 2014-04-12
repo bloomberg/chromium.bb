@@ -21,7 +21,24 @@
 #include "webkit/browser/appcache/appcache_storage.h"
 
 namespace content {
+FORWARD_DECLARE_TEST(AppCacheServiceTest, DeleteAppCachesForOrigin);
+FORWARD_DECLARE_TEST(MockAppCacheStorageTest, BasicFindMainResponse);
+FORWARD_DECLARE_TEST(MockAppCacheStorageTest,
+                     BasicFindMainFallbackResponse);
+FORWARD_DECLARE_TEST(MockAppCacheStorageTest, CreateGroup);
+FORWARD_DECLARE_TEST(MockAppCacheStorageTest, FindMainResponseExclusions);
+FORWARD_DECLARE_TEST(MockAppCacheStorageTest,
+                     FindMainResponseWithMultipleCandidates);
+FORWARD_DECLARE_TEST(MockAppCacheStorageTest, LoadCache_FarHit);
+FORWARD_DECLARE_TEST(MockAppCacheStorageTest, LoadGroupAndCache_FarHit);
+FORWARD_DECLARE_TEST(MockAppCacheStorageTest, MakeGroupObsolete);
+FORWARD_DECLARE_TEST(MockAppCacheStorageTest, StoreNewGroup);
+FORWARD_DECLARE_TEST(MockAppCacheStorageTest, StoreExistingGroup);
+FORWARD_DECLARE_TEST(MockAppCacheStorageTest,
+                     StoreExistingGroupExistingCache);
 class AppCacheRequestHandlerTest;
+class AppCacheServiceTest;
+class MockAppCacheStorageTest;
 }
 
 namespace appcache {
@@ -67,8 +84,9 @@ class MockAppCacheStorage : public AppCacheStorage {
 
  private:
   friend class content::AppCacheRequestHandlerTest;
-  friend class AppCacheServiceTest;
-  friend class AppCacheUpdateJobTest;
+  friend class content::AppCacheServiceTest;
+  friend class content::AppCacheUpdateJobTest;
+  friend class content::MockAppCacheStorageTest;
 
   typedef base::hash_map<int64, scoped_refptr<AppCache> > StoredCacheMap;
   typedef std::map<GURL, scoped_refptr<AppCacheGroup> > StoredGroupMap;
@@ -199,21 +217,26 @@ class MockAppCacheStorage : public AppCacheStorage {
 
   base::WeakPtrFactory<MockAppCacheStorage> weak_factory_;
 
-  FRIEND_TEST_ALL_PREFIXES(MockAppCacheStorageTest, BasicFindMainResponse);
-  FRIEND_TEST_ALL_PREFIXES(MockAppCacheStorageTest,
+  FRIEND_TEST_ALL_PREFIXES(content::MockAppCacheStorageTest,
+                           BasicFindMainResponse);
+  FRIEND_TEST_ALL_PREFIXES(content::MockAppCacheStorageTest,
                            BasicFindMainFallbackResponse);
-  FRIEND_TEST_ALL_PREFIXES(MockAppCacheStorageTest, CreateGroup);
-  FRIEND_TEST_ALL_PREFIXES(MockAppCacheStorageTest, FindMainResponseExclusions);
-  FRIEND_TEST_ALL_PREFIXES(MockAppCacheStorageTest,
+  FRIEND_TEST_ALL_PREFIXES(content::MockAppCacheStorageTest, CreateGroup);
+  FRIEND_TEST_ALL_PREFIXES(content::MockAppCacheStorageTest,
+                           FindMainResponseExclusions);
+  FRIEND_TEST_ALL_PREFIXES(content::MockAppCacheStorageTest,
                            FindMainResponseWithMultipleCandidates);
-  FRIEND_TEST_ALL_PREFIXES(MockAppCacheStorageTest, LoadCache_FarHit);
-  FRIEND_TEST_ALL_PREFIXES(MockAppCacheStorageTest, LoadGroupAndCache_FarHit);
-  FRIEND_TEST_ALL_PREFIXES(MockAppCacheStorageTest, MakeGroupObsolete);
-  FRIEND_TEST_ALL_PREFIXES(MockAppCacheStorageTest, StoreNewGroup);
-  FRIEND_TEST_ALL_PREFIXES(MockAppCacheStorageTest, StoreExistingGroup);
-  FRIEND_TEST_ALL_PREFIXES(MockAppCacheStorageTest,
+  FRIEND_TEST_ALL_PREFIXES(content::MockAppCacheStorageTest, LoadCache_FarHit);
+  FRIEND_TEST_ALL_PREFIXES(content::MockAppCacheStorageTest,
+                           LoadGroupAndCache_FarHit);
+  FRIEND_TEST_ALL_PREFIXES(content::MockAppCacheStorageTest, MakeGroupObsolete);
+  FRIEND_TEST_ALL_PREFIXES(content::MockAppCacheStorageTest, StoreNewGroup);
+  FRIEND_TEST_ALL_PREFIXES(content::MockAppCacheStorageTest,
+                           StoreExistingGroup);
+  FRIEND_TEST_ALL_PREFIXES(content::MockAppCacheStorageTest,
                            StoreExistingGroupExistingCache);
-  FRIEND_TEST_ALL_PREFIXES(AppCacheServiceTest, DeleteAppCachesForOrigin);
+  FRIEND_TEST_ALL_PREFIXES(content::AppCacheServiceTest,
+                           DeleteAppCachesForOrigin);
 
   DISALLOW_COPY_AND_ASSIGN(MockAppCacheStorage);
 };

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,8 +16,18 @@
 #include "webkit/browser/appcache/appcache_service.h"
 #include "webkit/browser/appcache/mock_appcache_storage.h"
 
+using appcache::AppCache;
+using appcache::AppCacheEntry;
+using appcache::AppCacheGroup;
+using appcache::AppCacheInfo;
+using appcache::AppCacheInfoCollection;
+using appcache::AppCacheInfoVector;
+using appcache::AppCacheResponseReader;
+using appcache::AppCacheService;
+using appcache::HttpResponseInfoIOBuffer;
+using appcache::MockAppCacheStorage;
 
-namespace appcache {
+namespace content {
 namespace {
 
 const int64 kMockGroupId = 1;
@@ -374,4 +384,4 @@ TEST_F(AppCacheServiceTest, ScheduleReinitialize) {
 
 
 
-}  // namespace appcache
+}  // namespace content

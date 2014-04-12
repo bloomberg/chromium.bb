@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,26 @@
 #include "webkit/browser/appcache/appcache_host.h"
 #include "webkit/browser/appcache/mock_appcache_service.h"
 
-namespace appcache {
+using appcache::AppCache;
+using appcache::AppCacheDatabase;
+using appcache::AppCacheEntry;
+using appcache::AppCacheFrontend;
+using appcache::AppCacheGroup;
+using appcache::AppCacheHost;
+using appcache::AppCacheInfo;
+using appcache::ErrorDetails;
+using appcache::EventID;
+using appcache::FALLBACK_NAMESPACE;
+using appcache::INTERCEPT_NAMESPACE;
+using appcache::LogLevel;
+using appcache::Manifest;
+using appcache::MockAppCacheService;
+using appcache::Namespace;
+using appcache::NamespaceVector;
+using appcache::NETWORK_NAMESPACE;
+using appcache::Status;
+
+namespace content {
 
 namespace {
 
@@ -692,4 +711,4 @@ TEST(AppCacheTest, IsNamespaceMatch) {
            "/and_even_more_for_the_heck_of_it/01234567890abcdef/b")));
 }
 
-}  // namespace appacache
+}  // namespace content

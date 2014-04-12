@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,10 @@
 #include "webkit/browser/appcache/appcache_quota_client.h"
 #include "webkit/browser/appcache/mock_appcache_service.h"
 
-namespace appcache {
+using appcache::AppCacheQuotaClient;
+using appcache::MockAppCacheService;
+
+namespace content {
 
 // Declared to shorten the line lengths.
 static const quota::StorageType kTemp = quota::kStorageTypeTemporary;
@@ -432,4 +435,4 @@ TEST_F(AppCacheQuotaClientTest, DestroyWithDeleteInProgress) {
   Call_OnQuotaManagerDestroyed(client);
 }
 
-}  // namespace appcache
+}  // namespace content
