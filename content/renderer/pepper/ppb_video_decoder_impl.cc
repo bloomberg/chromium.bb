@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
-#include "content/renderer/media/pepper_platform_video_decoder.h"
+#include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/renderer/pepper/common.h"
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/pepper_platform_context_3d.h"
@@ -17,6 +17,7 @@
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/ppb_buffer_impl.h"
 #include "content/renderer/pepper/ppb_graphics_3d_impl.h"
+#include "content/renderer/render_thread_impl.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "media/video/picture.h"
 #include "media/video/video_decode_accelerator.h"
@@ -137,19 +138,27 @@ bool PPB_VideoDecoder_Impl::Init(PP_Resource graphics_context,
   if (command_buffer_route_id == 0)
     return false;
 
-  platform_video_decoder_.reset(
-      new PlatformVideoDecoder(command_buffer_route_id));
-  if (!platform_video_decoder_)
+  FlushCommandBuffer();
+
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
+
+  // This is not synchronous, but subsequent IPC messages will be buffered, so
+  // it is okay to immediately send IPC messages through the returned channel.
+  GpuChannelHost* channel =
+      render_thread->EstablishGpuChannelSync(
+          CAUSE_FOR_GPU_LAUNCH_VIDEODECODEACCELERATOR_INITIALIZE);
+
+  if (!channel)
     return false;
 
-  FlushCommandBuffer();
-  return platform_video_decoder_->Initialize(PPToMediaProfile(profile), this);
+  decoder_ = channel->CreateVideoDecoder(command_buffer_route_id);
+  return (decoder_ && decoder_->Initialize(PPToMediaProfile(profile), this));
 }
 
 int32_t PPB_VideoDecoder_Impl::Decode(
     const PP_VideoBitstreamBuffer_Dev* bitstream_buffer,
     scoped_refptr<TrackedCallback> callback) {
-  if (!platform_video_decoder_)
+  if (!decoder_)
     return PP_ERROR_BADRESOURCE;
 
   EnterResourceNoLock<PPB_Buffer_API> enter(bitstream_buffer->data, true);
@@ -165,14 +174,14 @@ int32_t PPB_VideoDecoder_Impl::Decode(
     return PP_ERROR_BADARGUMENT;
 
   FlushCommandBuffer();
-  platform_video_decoder_->Decode(decode_buffer);
+  decoder_->Decode(decode_buffer);
   return PP_OK_COMPLETIONPENDING;
 }
 
 void PPB_VideoDecoder_Impl::AssignPictureBuffers(
     uint32_t no_of_buffers,
     const PP_PictureBuffer_Dev* buffers) {
-  if (!platform_video_decoder_)
+  if (!decoder_)
     return;
   UMA_HISTOGRAM_COUNTS_100("Media.PepperVideoDecoderPictureCount",
                            no_of_buffers);
@@ -191,46 +200,46 @@ void PPB_VideoDecoder_Impl::AssignPictureBuffers(
   }
 
   FlushCommandBuffer();
-  platform_video_decoder_->AssignPictureBuffers(wrapped_buffers);
+  decoder_->AssignPictureBuffers(wrapped_buffers);
 }
 
 void PPB_VideoDecoder_Impl::ReusePictureBuffer(int32_t picture_buffer_id) {
-  if (!platform_video_decoder_)
+  if (!decoder_)
     return;
 
   FlushCommandBuffer();
-  platform_video_decoder_->ReusePictureBuffer(picture_buffer_id);
+  decoder_->ReusePictureBuffer(picture_buffer_id);
 }
 
 int32_t PPB_VideoDecoder_Impl::Flush(scoped_refptr<TrackedCallback> callback) {
-  if (!platform_video_decoder_)
+  if (!decoder_)
     return PP_ERROR_BADRESOURCE;
 
   if (!SetFlushCallback(callback))
     return PP_ERROR_INPROGRESS;
 
   FlushCommandBuffer();
-  platform_video_decoder_->Flush();
+  decoder_->Flush();
   return PP_OK_COMPLETIONPENDING;
 }
 
 int32_t PPB_VideoDecoder_Impl::Reset(scoped_refptr<TrackedCallback> callback) {
-  if (!platform_video_decoder_)
+  if (!decoder_)
     return PP_ERROR_BADRESOURCE;
 
   if (!SetResetCallback(callback))
     return PP_ERROR_INPROGRESS;
 
   FlushCommandBuffer();
-  platform_video_decoder_->Reset();
+  decoder_->Reset();
   return PP_OK_COMPLETIONPENDING;
 }
 
 void PPB_VideoDecoder_Impl::Destroy() {
   FlushCommandBuffer();
 
-  if (platform_video_decoder_)
-    platform_video_decoder_.release()->Destroy();
+  if (decoder_)
+    decoder_.release()->Destroy();
   ppp_videodecoder_ = NULL;
 
   ::ppapi::PPB_VideoDecoder_Shared::Destroy();
@@ -240,6 +249,7 @@ void PPB_VideoDecoder_Impl::ProvidePictureBuffers(
     uint32 requested_num_of_buffers,
     const gfx::Size& dimensions,
     uint32 texture_target) {
+  DCHECK(RenderThreadImpl::current());
   if (!ppp_videodecoder_)
     return;
 
@@ -252,6 +262,7 @@ void PPB_VideoDecoder_Impl::ProvidePictureBuffers(
 }
 
 void PPB_VideoDecoder_Impl::PictureReady(const media::Picture& picture) {
+  DCHECK(RenderThreadImpl::current());
   if (!ppp_videodecoder_)
     return;
 
@@ -262,6 +273,7 @@ void PPB_VideoDecoder_Impl::PictureReady(const media::Picture& picture) {
 }
 
 void PPB_VideoDecoder_Impl::DismissPictureBuffer(int32 picture_buffer_id) {
+  DCHECK(RenderThreadImpl::current());
   if (!ppp_videodecoder_)
     return;
   ppp_videodecoder_->DismissPictureBuffer(
@@ -270,6 +282,7 @@ void PPB_VideoDecoder_Impl::DismissPictureBuffer(int32 picture_buffer_id) {
 
 void PPB_VideoDecoder_Impl::NotifyError(
     media::VideoDecodeAccelerator::Error error) {
+  DCHECK(RenderThreadImpl::current());
   if (!ppp_videodecoder_)
     return;
 
@@ -280,13 +293,20 @@ void PPB_VideoDecoder_Impl::NotifyError(
                             media::VideoDecodeAccelerator::LARGEST_ERROR_ENUM);
 }
 
-void PPB_VideoDecoder_Impl::NotifyResetDone() { RunResetCallback(PP_OK); }
+void PPB_VideoDecoder_Impl::NotifyResetDone() {
+  DCHECK(RenderThreadImpl::current());
+  RunResetCallback(PP_OK);
+}
 
 void PPB_VideoDecoder_Impl::NotifyEndOfBitstreamBuffer(
     int32 bitstream_buffer_id) {
+  DCHECK(RenderThreadImpl::current());
   RunBitstreamBufferCallback(bitstream_buffer_id, PP_OK);
 }
 
-void PPB_VideoDecoder_Impl::NotifyFlushDone() { RunFlushCallback(PP_OK); }
+void PPB_VideoDecoder_Impl::NotifyFlushDone() {
+  DCHECK(RenderThreadImpl::current());
+  RunFlushCallback(PP_OK);
+}
 
 }  // namespace content

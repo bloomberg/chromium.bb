@@ -259,8 +259,6 @@
     'renderer/media/midi_dispatcher.h',
     'renderer/media/midi_message_filter.cc',
     'renderer/media/midi_message_filter.h',
-    'renderer/media/pepper_platform_video_decoder.cc',
-    'renderer/media/pepper_platform_video_decoder.h',
     'renderer/media/preload.h',
     'renderer/media/render_media_log.cc',
     'renderer/media/render_media_log.h',

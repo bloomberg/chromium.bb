@@ -72,9 +72,9 @@ class PPB_VideoDecoder_Impl : public ppapi::PPB_VideoDecoder_Shared,
             gpu::gles2::GLES2Implementation* gles2_impl,
             PP_VideoDecoder_Profile profile);
 
-  // This is NULL before initialization, and if this PPB_VideoDecoder_Impl is
-  // swapped with another.
-  scoped_ptr<PlatformVideoDecoder> platform_video_decoder_;
+  // This is NULL before initialization, and after destruction.
+  // Holds a GpuVideoDecodeAcceleratorHost.
+  scoped_ptr<media::VideoDecodeAccelerator> decoder_;
 
   // Reference to the plugin requesting this interface.
   const PPP_VideoDecoder_Dev* ppp_videodecoder_;
