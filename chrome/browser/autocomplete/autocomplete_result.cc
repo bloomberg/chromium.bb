@@ -194,9 +194,7 @@ void AutocompleteResult::SortAndCull(const AutocompleteInput& input,
   CompareWithDemoteByType comparing_object(input.current_page_classification());
   std::sort(matches_.begin() + (preserve_top_match ? 1 : 0), matches_.end(),
             comparing_object);
-  if (!matches_.empty() && !matches_.begin()->allowed_to_be_default_match &&
-      OmniboxFieldTrial::ReorderForLegalDefaultMatch(
-          input.current_page_classification())) {
+  if (!matches_.empty() && !matches_.begin()->allowed_to_be_default_match) {
     // Top match is not allowed to be the default match.  Find the most
     // relevant legal match and shift it to the front.
     for (AutocompleteResult::iterator it = matches_.begin() + 1;

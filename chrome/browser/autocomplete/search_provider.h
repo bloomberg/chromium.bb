@@ -195,24 +195,13 @@ class SearchProvider : public BaseSearchProvider {
   void ConvertResultsToAutocompleteMatches();
 
   // Returns an iterator to the first match in |matches_| which might
-  // be chosen as default.  If
-  // |autocomplete_result_will_reorder_for_default_match| is false,
-  // this simply means the first match; otherwise, it means the first
-  // match for which the |allowed_to_be_default_match| member is true.
-  ACMatches::const_iterator FindTopMatch(
-    bool autocomplete_result_will_reorder_for_default_match) const;
+  // be chosen as default.
+  ACMatches::const_iterator FindTopMatch() const;
 
   // Checks if suggested relevances violate certain expected constraints.
   // See UpdateMatches() for the use and explanation of these constraints.
-  bool IsTopMatchNavigationInKeywordMode(
-      bool autocomplete_result_will_reorder_for_default_match) const;
   bool HasKeywordDefaultMatchInKeywordMode() const;
-  bool IsTopMatchScoreTooLow(
-      bool autocomplete_result_will_reorder_for_default_match) const;
-  bool IsTopMatchSearchWithURLInput(
-      bool autocomplete_result_will_reorder_for_default_match) const;
-  bool HasValidDefaultMatch(
-      bool autocomplete_result_will_reorder_for_default_match) const;
+  bool IsTopMatchSearchWithURLInput() const;
 
   // Converts an appropriate number of navigation results in
   // |navigation_results| to matches and adds them to |matches|.
@@ -277,16 +266,6 @@ class SearchProvider : public BaseSearchProvider {
 
   // Returns an AutocompleteMatch for a navigational suggestion.
   AutocompleteMatch NavigationToMatch(const NavigationResult& navigation);
-
-  // Resets the scores of all |keyword_navigation_results_| matches to
-  // be below that of the top keyword query match (the verbatim match
-  // as expressed by |keyword_verbatim_relevance_| or keyword query
-  // suggestions stored in |keyword_suggest_results_|).  If there
-  // are no keyword suggestions and keyword verbatim is suppressed,
-  // then drops the suggested relevance scores for the navsuggestions
-  // and drops the request to suppress verbatim, thereby introducing the
-  // keyword verbatim match which will naturally outscore the navsuggestions.
-  void DemoteKeywordNavigationMatchesPastTopQuery();
 
   // Updates the value of |done_| from the internal state.
   void UpdateDone();

@@ -392,13 +392,6 @@ OmniboxFieldTrial::GetUndemotableTopTypes(
   return undemotable_types;
 }
 
-bool OmniboxFieldTrial::ReorderForLegalDefaultMatch(
-    AutocompleteInput::PageClassification current_page_classification) {
-  return OmniboxFieldTrial::GetValueForRuleInContext(
-      kReorderForLegalDefaultMatchRule, current_page_classification) !=
-      kReorderForLegalDefaultMatchRuleDisabled;
-}
-
 void OmniboxFieldTrial::GetExperimentalHUPScoringParams(
     HUPScoringParams* scoring_params) {
   scoring_params->experimental_scoring_enabled = false;
@@ -458,8 +451,6 @@ const char OmniboxFieldTrial::kShortcutsScoringMaxRelevanceRule[] =
 const char OmniboxFieldTrial::kSearchHistoryRule[] = "SearchHistory";
 const char OmniboxFieldTrial::kDemoteByTypeRule[] = "DemoteByType";
 const char OmniboxFieldTrial::kUndemotableTopTypeRule[] = "UndemotableTopTypes";
-const char OmniboxFieldTrial::kReorderForLegalDefaultMatchRule[] =
-    "ReorderForLegalDefaultMatch";
 const char OmniboxFieldTrial::kHQPBookmarkValueRule[] =
     "HQPBookmarkValue";
 const char OmniboxFieldTrial::kHQPAllowMatchInTLDRule[] = "HQPAllowMatchInTLD";
@@ -467,8 +458,6 @@ const char OmniboxFieldTrial::kHQPAllowMatchInSchemeRule[] =
     "HQPAllowMatchInScheme";
 const char OmniboxFieldTrial::kZeroSuggestRule[] = "ZeroSuggest";
 const char OmniboxFieldTrial::kZeroSuggestVariantRule[] = "ZeroSuggestVariant";
-const char OmniboxFieldTrial::kReorderForLegalDefaultMatchRuleDisabled[] =
-    "DontReorderForLegalDefaultMatch";
 
 const char OmniboxFieldTrial::kHUPNewScoringEnabledParam[] =
     "HUPExperimentalScoringEnabled";

@@ -145,7 +145,7 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
   int max_relevance;
   if (!OmniboxFieldTrial::ShortcutsScoringMaxRelevance(
       input.current_page_classification(), &max_relevance))
-    max_relevance = AutocompleteResult::kLowestDefaultScore - 1;
+    max_relevance = 1199;
 
   for (ShortcutsBackend::ShortcutMap::const_iterator it =
            FindFirstMatch(term_string, backend.get());
@@ -173,18 +173,8 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
     matches_.erase(matches_.begin() + AutocompleteProvider::kMaxMatches,
                    matches_.end());
   }
-  // Reset relevance scores to guarantee no match is given a score that may
-  // allow it to become the highest ranked match (i.e., the default match)
-  // unless either it is a legal default match (i.e., inlineable) or the
-  // omnibox will reorder matches as necessary to correct the problem.  In
-  // the process of resetting scores, guarantee that all scores are decreasing
-  // (but do not assign any scores below 1).
-  if (!OmniboxFieldTrial::ReorderForLegalDefaultMatch(
-          input.current_page_classification()) &&
-      (matches_.empty() || !matches_.front().allowed_to_be_default_match)) {
-    max_relevance = std::min(max_relevance,
-                             AutocompleteResult::kLowestDefaultScore - 1);
-  }
+  // Guarantee that all scores are decreasing (but do not assign any scores
+  // below 1).
   for (ACMatches::iterator it = matches_.begin(); it != matches_.end(); ++it) {
     max_relevance = std::min(max_relevance, it->relevance);
     it->relevance = max_relevance;

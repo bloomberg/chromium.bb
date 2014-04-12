@@ -143,59 +143,6 @@ void SearchProvider::ResetSession() {
 SearchProvider::~SearchProvider() {
 }
 
-// static
-void SearchProvider::RemoveStaleResults(const base::string16& input,
-                                        int verbatim_relevance,
-                                        SuggestResults* suggest_results,
-                                        NavigationResults* navigation_results) {
-  DCHECK_GE(verbatim_relevance, 0);
-  // Keep pointers to the head of (the highest scoring elements of)
-  // |suggest_results| and |navigation_results|.  Iterate down the lists
-  // removing non-inlineable results in order of decreasing relevance
-  // scores.  Stop when the highest scoring element among those remaining
-  // is inlineable or the element is less than |verbatim_relevance|.
-  // This allows non-inlineable lower-scoring results to remain
-  // because (i) they are guaranteed to not be inlined and (ii)
-  // letting them remain reduces visual jank.  For instance, as the
-  // user types the mis-spelled query "fpobar" (for foobar), the
-  // suggestion "foobar" will be suggested on every keystroke.  If the
-  // SearchProvider always removes all non-inlineable results, the user will
-  // see visual jitter/jank as the result disappears and re-appears moments
-  // later as the suggest server returns results.
-  SuggestResults::iterator sug_it = suggest_results->begin();
-  NavigationResults::iterator nav_it = navigation_results->begin();
-  while ((sug_it != suggest_results->end()) ||
-         (nav_it != navigation_results->end())) {
-    const int sug_rel =
-        (sug_it != suggest_results->end()) ? sug_it->relevance() : -1;
-    const int nav_rel =
-        (nav_it != navigation_results->end()) ? nav_it->relevance() : -1;
-    if (std::max(sug_rel, nav_rel) < verbatim_relevance)
-      break;
-    if (sug_rel > nav_rel) {
-      // The current top result is a search suggestion.
-      if (sug_it->IsInlineable(input))
-        break;
-      sug_it = suggest_results->erase(sug_it);
-    } else if (sug_rel == nav_rel) {
-      // Have both results and they're tied.
-      const bool sug_inlineable = sug_it->IsInlineable(input);
-      const bool nav_inlineable = nav_it->IsInlineable(input);
-      if (!sug_inlineable)
-        sug_it = suggest_results->erase(sug_it);
-      if (!nav_inlineable)
-        nav_it = navigation_results->erase(nav_it);
-      if (sug_inlineable || nav_inlineable)
-        break;
-    } else {
-      // The current top result is a navigational suggestion.
-      if (nav_it->IsInlineable(input))
-        break;
-      nav_it = navigation_results->erase(nav_it);
-    }
-  }
-}
-
 void SearchProvider::UpdateMatchContentsClass(const base::string16& input_text,
                                               Results* results) {
   for (SuggestResults::iterator sug_it = results->suggest_results.begin();
@@ -420,25 +367,6 @@ void SearchProvider::UpdateMatches() {
     // These blocks attempt to repair undesirable behavior by suggested
     // relevances with minimal impact, preserving other suggested relevances.
 
-    // True if the omnibox will reorder matches as necessary to make the first
-    // one something that is allowed to be the default match.
-    const bool omnibox_will_reorder_for_legal_default_match =
-        OmniboxFieldTrial::ReorderForLegalDefaultMatch(
-            input_.current_page_classification());
-    if (IsTopMatchNavigationInKeywordMode(
-        omnibox_will_reorder_for_legal_default_match)) {
-      // Correct the suggested relevance scores if the top match is a
-      // navigation in keyword mode, since inlining a navigation match
-      // would break the user out of keyword mode.  This will only be
-      // triggered in regular (non-reorder) mode; in reorder mode,
-      // navigation matches are marked as not allowed to be the default
-      // match and hence IsTopMatchNavigation() will always return false.
-      DCHECK(!omnibox_will_reorder_for_legal_default_match);
-      DemoteKeywordNavigationMatchesPastTopQuery();
-      ConvertResultsToAutocompleteMatches();
-      DCHECK(!IsTopMatchNavigationInKeywordMode(
-          omnibox_will_reorder_for_legal_default_match));
-    }
     if (!HasKeywordDefaultMatchInKeywordMode()) {
       // In keyword mode, disregard the keyword verbatim suggested relevance
       // if necessary so there at least one keyword match that's allowed to
@@ -446,18 +374,7 @@ void SearchProvider::UpdateMatches() {
       keyword_results_.verbatim_relevance = -1;
       ConvertResultsToAutocompleteMatches();
     }
-    if (IsTopMatchScoreTooLow(omnibox_will_reorder_for_legal_default_match)) {
-      // Disregard the suggested verbatim relevance if the top score is below
-      // the usual verbatim value. For example, a BarProvider may rely on
-      // SearchProvider's verbatim or inlineable matches for input "foo" (all
-      // allowed to be default match) to always outrank its own lowly-ranked
-      // "bar" matches that shouldn't be the default match.
-      default_results_.verbatim_relevance = -1;
-      keyword_results_.verbatim_relevance = -1;
-      ConvertResultsToAutocompleteMatches();
-    }
-    if (IsTopMatchSearchWithURLInput(
-        omnibox_will_reorder_for_legal_default_match)) {
+    if (IsTopMatchSearchWithURLInput()) {
       // Disregard the suggested search and verbatim relevances if the input
       // type is URL and the top match is a highly-ranked search suggestion.
       // For example, prevent a search for "foo.com" from outranking another
@@ -468,28 +385,16 @@ void SearchProvider::UpdateMatches() {
       keyword_results_.verbatim_relevance = -1;
       ConvertResultsToAutocompleteMatches();
     }
-    if (!HasValidDefaultMatch(omnibox_will_reorder_for_legal_default_match)) {
-      // If the omnibox is not going to reorder results to put a legal default
-      // match at the top, then this provider needs to guarantee that its top
-      // scoring result is a legal default match (i.e., it's either a verbatim
-      // match or inlinable).  For example, input "foo" should not invoke a
-      // search for "bar", which would happen if the "bar" search match
-      // outranked all other matches.  On the other hand, if the omnibox will
-      // reorder matches as necessary to put a legal default match at the top,
-      // all we need to guarantee is that SearchProvider returns a legal
-      // default match.  (The omnibox always needs at least one legal default
-      // match, and it relies on SearchProvider to always return one.)
+    if (FindTopMatch() == matches_.end()) {
+      // Guarantee that SearchProvider returns a legal default match.  (The
+      // omnibox always needs at least one legal default match, and it relies
+      // on SearchProvider to always return one.)
       ApplyCalculatedRelevance();
       ConvertResultsToAutocompleteMatches();
     }
-    DCHECK(!IsTopMatchNavigationInKeywordMode(
-        omnibox_will_reorder_for_legal_default_match));
     DCHECK(HasKeywordDefaultMatchInKeywordMode());
-    DCHECK(!IsTopMatchScoreTooLow(
-        omnibox_will_reorder_for_legal_default_match));
-    DCHECK(!IsTopMatchSearchWithURLInput(
-        omnibox_will_reorder_for_legal_default_match));
-    DCHECK(HasValidDefaultMatch(omnibox_will_reorder_for_legal_default_match));
+    DCHECK(!IsTopMatchSearchWithURLInput());
+    DCHECK(FindTopMatch() != matches_.end());
   }
   UMA_HISTOGRAM_CUSTOM_COUNTS(
       "Omnibox.SearchProviderMatches", matches_.size(), 1, 6, 7);
@@ -686,31 +591,6 @@ bool SearchProvider::IsQuerySuitableForSuggest() const {
 }
 
 void SearchProvider::RemoveAllStaleResults() {
-  // We only need to remove stale results (which ensures the top-scoring
-  // match is inlineable) if the user is not in reorder mode.  In reorder
-  // mode, the autocomplete system will reorder results to make sure the
-  // top result is inlineable.
-  const bool omnibox_will_reorder_for_legal_default_match =
-      OmniboxFieldTrial::ReorderForLegalDefaultMatch(
-          input_.current_page_classification());
-  // In theory it would be better to run an algorithm like that in
-  // RemoveStaleResults(...) below that uses all four results lists
-  // and both verbatim scores at once.  However, that will be much
-  // more complicated for little obvious gain.  For code simplicity
-  // and ease in reasoning about the invariants involved, this code
-  // removes stales results from the keyword provider and default
-  // provider independently.
-  if (!omnibox_will_reorder_for_legal_default_match) {
-    RemoveStaleResults(input_.text(), GetVerbatimRelevance(NULL),
-                       &default_results_.suggest_results,
-                       &default_results_.navigation_results);
-    if (!keyword_input_.text().empty()) {
-      RemoveStaleResults(keyword_input_.text(),
-                         GetKeywordVerbatimRelevance(NULL),
-                         &keyword_results_.suggest_results,
-                         &keyword_results_.navigation_results);
-    }
-  }
   if (keyword_input_.text().empty()) {
     // User is either in keyword mode with a blank input or out of
     // keyword mode entirely.
@@ -901,23 +781,11 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
                       base::TimeTicks::Now() - start_time);
 }
 
-ACMatches::const_iterator SearchProvider::FindTopMatch(
-    bool autocomplete_result_will_reorder_for_default_match) const {
-  if (!autocomplete_result_will_reorder_for_default_match)
-    return matches_.begin();
+ACMatches::const_iterator SearchProvider::FindTopMatch() const {
   ACMatches::const_iterator it = matches_.begin();
   while ((it != matches_.end()) && !it->allowed_to_be_default_match)
     ++it;
   return it;
-}
-
-bool SearchProvider::IsTopMatchNavigationInKeywordMode(
-    bool autocomplete_result_will_reorder_for_default_match) const {
-  ACMatches::const_iterator first_match =
-      FindTopMatch(autocomplete_result_will_reorder_for_default_match);
-  return !providers_.keyword_provider().empty() &&
-      (first_match != matches_.end()) &&
-      (first_match->type == AutocompleteMatchType::NAVSUGGEST);
 }
 
 bool SearchProvider::HasKeywordDefaultMatchInKeywordMode() const {
@@ -935,52 +803,13 @@ bool SearchProvider::HasKeywordDefaultMatchInKeywordMode() const {
   return false;
 }
 
-bool SearchProvider::IsTopMatchScoreTooLow(
-    bool autocomplete_result_will_reorder_for_default_match) const {
-  // In reorder mode, there's no such thing as a score that's too low.
-  if (autocomplete_result_will_reorder_for_default_match)
-    return false;
-
-  // Here we use CalculateRelevanceForVerbatimIgnoringKeywordModeState()
-  // rather than CalculateRelevanceForVerbatim() because the latter returns
-  // a very low score (250) if keyword mode is active.  This is because
-  // when keyword mode is active the user probably wants the keyword matches,
-  // not matches from the default provider.  Hence, we use the version of
-  // the function that ignores whether keyword mode is active.  This allows
-  // SearchProvider to maintain its contract with the AutocompleteController
-  // that it will always provide an inlineable match with a reasonable
-  // score.
-  return matches_.front().relevance <
-      CalculateRelevanceForVerbatimIgnoringKeywordModeState();
-}
-
-bool SearchProvider::IsTopMatchSearchWithURLInput(
-    bool autocomplete_result_will_reorder_for_default_match) const {
-  ACMatches::const_iterator first_match =
-      FindTopMatch(autocomplete_result_will_reorder_for_default_match);
+bool SearchProvider::IsTopMatchSearchWithURLInput() const {
+  ACMatches::const_iterator first_match = FindTopMatch();
   return (input_.type() == AutocompleteInput::URL) &&
       (first_match != matches_.end()) &&
       (first_match->relevance > CalculateRelevanceForVerbatim()) &&
       (first_match->type != AutocompleteMatchType::NAVSUGGEST);
 }
-
-bool SearchProvider::HasValidDefaultMatch(
-    bool autocomplete_result_will_reorder_for_default_match) const {
-  // One of the SearchProvider matches may need to be the overall default.  If
-  // AutocompleteResult is allowed to reorder matches, this means we simply
-  // need at least one match in the list to be |allowed_to_be_default_match|.
-  // If no reordering is possible, however, then our first match needs to have
-  // this flag.
-  for (ACMatches::const_iterator it = matches_.begin(); it != matches_.end();
-       ++it) {
-    if (it->allowed_to_be_default_match)
-      return true;
-    if (!autocomplete_result_will_reorder_for_default_match)
-      return false;
-  }
-  return false;
-}
-
 
 void SearchProvider::AddNavigationResultsToMatches(
     const NavigationResults& navigation_results,
@@ -1295,47 +1124,6 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
   match.RecordAdditionalInfo(kShouldPrefetchKey, kFalse);
 
   return match;
-}
-
-void SearchProvider::DemoteKeywordNavigationMatchesPastTopQuery() {
-  // First, determine the maximum score of any keyword query match (verbatim or
-  // query suggestion).
-  bool relevance_from_server;
-  int max_query_relevance = GetKeywordVerbatimRelevance(&relevance_from_server);
-  if (!keyword_results_.suggest_results.empty()) {
-    const SuggestResult& top_keyword = keyword_results_.suggest_results.front();
-    const int suggest_relevance = top_keyword.relevance();
-    if (suggest_relevance > max_query_relevance) {
-      max_query_relevance = suggest_relevance;
-      relevance_from_server = top_keyword.relevance_from_server();
-    } else if (suggest_relevance == max_query_relevance) {
-      relevance_from_server |= top_keyword.relevance_from_server();
-    }
-  }
-  // If no query is supposed to appear, then navigational matches cannot
-  // be demoted past it.  Get rid of suggested relevance scores for
-  // navsuggestions and introduce the verbatim results again.  The keyword
-  // verbatim match will outscore the navsuggest matches.
-  if (max_query_relevance == 0) {
-    ApplyCalculatedNavigationRelevance(&keyword_results_.navigation_results);
-    ApplyCalculatedNavigationRelevance(&default_results_.navigation_results);
-    keyword_results_.verbatim_relevance = -1;
-    default_results_.verbatim_relevance = -1;
-    return;
-  }
-  // Now we know we can enforce the minimum score constraint even after
-  // the navigation matches are demoted.  Proceed to demote the navigation
-  // matches to enforce the query-must-come-first constraint.
-  // Cap the relevance score of all results.
-  for (NavigationResults::iterator it =
-           keyword_results_.navigation_results.begin();
-       it != keyword_results_.navigation_results.end(); ++it) {
-    if (it->relevance() < max_query_relevance)
-      return;
-    max_query_relevance = std::max(max_query_relevance - 1, 0);
-    it->set_relevance(max_query_relevance);
-    it->set_relevance_from_server(relevance_from_server);
-  }
 }
 
 void SearchProvider::UpdateDone() {
