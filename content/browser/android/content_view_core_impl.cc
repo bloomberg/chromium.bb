@@ -366,8 +366,7 @@ void ContentViewCoreImpl::RenderViewReady() {
 }
 
 void ContentViewCoreImpl::OnGestureEvent(const ui::GestureEventData& gesture) {
-  SendGestureEvent(
-      CreateWebGestureEventFromGestureEventData(gesture, 1.f / dpi_scale()));
+  SendGestureEvent(CreateWebGestureEventFromGestureEventData(gesture));
 }
 
 RenderWidgetHostViewAndroid*
@@ -1056,7 +1055,8 @@ jboolean ContentViewCoreImpl::OnTouchEvent(JNIEnv* env,
   if (!rwhv)
     return false;
 
-  MotionEventAndroid event(env,
+  MotionEventAndroid event(1.f / dpi_scale(),
+                           env,
                            motion_event,
                            time_ms,
                            android_action,
@@ -1143,8 +1143,7 @@ bool ContentViewCoreImpl::OnMotionEvent(const ui::MotionEvent& event) {
     return true;
   }
 
-  rwhv->SendTouchEvent(
-      CreateWebTouchEventFromMotionEvent(event, 1.f / dpi_scale()));
+  rwhv->SendTouchEvent(CreateWebTouchEventFromMotionEvent(event));
   return true;
 }
 

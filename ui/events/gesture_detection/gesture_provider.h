@@ -11,6 +11,7 @@
 #include "ui/events/gesture_detection/gesture_detector.h"
 #include "ui/events/gesture_detection/scale_gesture_detector.h"
 #include "ui/events/gesture_detection/snap_scroll_controller.h"
+#include "ui/gfx/display.h"
 
 namespace ui {
 
@@ -29,9 +30,9 @@ class GESTURE_DETECTION_EXPORT GestureProvider {
   struct GESTURE_DETECTION_EXPORT Config {
     Config();
     ~Config();
+    gfx::Display display;
     GestureDetector::Config gesture_detector_config;
     ScaleGestureDetector::Config scale_gesture_detector_config;
-    SnapScrollController::Config snap_scroll_controller_config;
 
     // If |disable_click_delay| is true and double-tap support is disabled,
     // there will be no delay before tap events. When double-tap support is

@@ -16,25 +16,28 @@
 namespace content {
 
 // Implementation of ui::MotionEvent wrapping a native Android MotionEvent.
+// All *input* coordinates are in device pixels (as with Android MotionEvent),
+// while all *output* coordinates are in DIPs (as with WebTouchEvent).
 class MotionEventAndroid : public ui::MotionEvent {
  public:
   // Forcing the caller to provide all cached values upon construction
   // eliminates the need to perform a JNI call to retrieve values individually.
-  MotionEventAndroid(JNIEnv* env,
+  MotionEventAndroid(float pix_to_dip,
+                     JNIEnv* env,
                      jobject event,
                      jlong time_ms,
                      jint android_action,
                      jint pointer_count,
                      jint history_size,
                      jint action_index,
-                     jfloat pos_x_0,
-                     jfloat pos_y_0,
-                     jfloat pos_x_1,
-                     jfloat pos_y_1,
+                     jfloat pos_x_0_pixels,
+                     jfloat pos_y_0_pixels,
+                     jfloat pos_x_1_pixels,
+                     jfloat pos_y_1_pixels,
                      jint pointer_id_0,
                      jint pointer_id_1,
-                     jfloat touch_major_0,
-                     jfloat touch_major_1);
+                     jfloat touch_major_0_pixels,
+                     jfloat touch_major_1_pixels);
   virtual ~MotionEventAndroid();
 
   // ui::MotionEvent methods.
@@ -77,14 +80,17 @@ class MotionEventAndroid : public ui::MotionEvent {
       base::TimeTicks down_time,
       base::TimeTicks event_time,
       Action action,
-      float x,
-      float y);
+      float x_pixels,
+      float y_pixels);
 
  private:
   MotionEventAndroid();
-  MotionEventAndroid(JNIEnv* env, jobject event);
+  MotionEventAndroid(float pix_to_dip, JNIEnv* env, jobject event);
   MotionEventAndroid(const MotionEventAndroid&);
   MotionEventAndroid& operator=(const MotionEventAndroid&);
+
+  float ToDips(float pixels) const;
+  gfx::PointF ToDips(const gfx::PointF& pixels) const;
 
   // Cache pointer coords, id's and major lengths for the most common
   // touch-related scenarios, i.e., scrolling and pinching.  This prevents
@@ -102,6 +108,10 @@ class MotionEventAndroid : public ui::MotionEvent {
   gfx::PointF cached_positions_[MAX_POINTERS_TO_CACHE];
   int cached_pointer_ids_[MAX_POINTERS_TO_CACHE];
   float cached_touch_majors_[MAX_POINTERS_TO_CACHE];
+
+  // Used to convert pixel coordinates from the Java-backed MotionEvent to
+  // DIP coordinates cached/returned by the MotionEventAndroid.
+  const float pix_to_dip_;
 
   // Whether |event_| should be recycled on destruction. This will only be true
   // for those events generated via |Obtain(...)|.

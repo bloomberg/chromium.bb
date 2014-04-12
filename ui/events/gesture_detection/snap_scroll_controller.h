@@ -8,6 +8,10 @@
 #include "base/basictypes.h"
 #include "ui/events/gesture_detection/gesture_detection_export.h"
 
+namespace gfx {
+class Display;
+}
+
 namespace ui {
 
 class MotionEvent;
@@ -17,15 +21,7 @@ class ZoomManager;
 // Controls the scroll snapping behavior based on scroll updates.
 class SnapScrollController {
  public:
-  struct GESTURE_DETECTION_EXPORT Config {
-    Config();
-    ~Config();
-    int screen_width_pixels;
-    int screen_height_pixels;
-    float device_scale_factor;
-  };
-
-  explicit SnapScrollController(const Config& config);
+  explicit SnapScrollController(const gfx::Display& display);
   ~SnapScrollController();
 
   // Updates the snap scroll mode based on the given X and Y distance to be
@@ -48,8 +44,6 @@ class SnapScrollController {
     SNAP_HORIZ,
     SNAP_VERT
   };
-
-  static float CalculateChannelDistance(const Config& config);
 
   float channel_distance_;
   SnapMode snap_scroll_mode_;

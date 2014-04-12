@@ -25,14 +25,12 @@ CONTENT_EXPORT void UpdateWindowsKeyCodeAndKeyIdentifier(
 // Creates a WebTouchEvent from |event|, scaling all size components from
 // |event| by |scale|.
 CONTENT_EXPORT blink::WebTouchEvent CreateWebTouchEventFromMotionEvent(
-    const ui::MotionEvent& event,
-    float scale);
+    const ui::MotionEvent& event);
 
 // Creates a WebGestureEvent from |event|, scaling all size components from
 // |event| by |scale|.
 CONTENT_EXPORT blink::WebGestureEvent CreateWebGestureEventFromGestureEventData(
-    const ui::GestureEventData& data,
-    float scale);
+    const ui::GestureEventData& data);
 
 }  // namespace content
 

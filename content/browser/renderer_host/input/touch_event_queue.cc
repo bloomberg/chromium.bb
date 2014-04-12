@@ -21,6 +21,11 @@ using ui::LatencyInfo;
 namespace content {
 namespace {
 
+// Using a small epsilon when comparing slop distances allows pixel perfect
+// slop determination when using fractional DIP coordinates (assuming the slop
+// region and DPI scale are reasonably proportioned).
+const float kSlopEpsilon = .05f;
+
 typedef std::vector<TouchEventWithLatencyInfo> WebTouchEventWithLatencyList;
 
 TouchEventWithLatencyInfo ObtainCancelEventForTouchEvent(
@@ -167,6 +172,8 @@ class TouchEventQueue::TouchTimeoutHandler {
 
 // Provides touchmove slop suppression for a single touch that remains within
 // a given slop region, unless the touchstart is preventDefault'ed.
+// TODO(jdduke): Use a flag bundled with each TouchEvent declaring whether it
+// has exceeded the slop region, removing duplicated slop determination logic.
 class TouchEventQueue::TouchMoveSlopSuppressor {
  public:
   TouchMoveSlopSuppressor(double slop_suppression_length_dips)
@@ -288,8 +295,8 @@ TouchEventQueue::TouchEventQueue(TouchEventQueueClient* client,
       dispatching_touch_(false),
       touch_filtering_state_(TOUCH_FILTERING_STATE_DEFAULT),
       ack_timeout_enabled_(false),
-      touchmove_slop_suppressor_(
-          new TouchMoveSlopSuppressor(touchmove_suppression_length_dips)),
+      touchmove_slop_suppressor_(new TouchMoveSlopSuppressor(
+          touchmove_suppression_length_dips + kSlopEpsilon)),
       absorbing_touch_moves_(false),
       touch_scrolling_mode_(mode) {
   DCHECK(client);

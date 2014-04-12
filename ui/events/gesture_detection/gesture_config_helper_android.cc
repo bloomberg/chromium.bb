@@ -10,59 +10,57 @@
 using gfx::ViewConfiguration;
 
 namespace ui {
-
+namespace {
 // TODO(jdduke): Adopt GestureConfiguration on Android, crbug/339203.
 
-GestureDetector::Config DefaultGestureDetectorConfig() {
+GestureDetector::Config DefaultGestureDetectorConfig(
+    const gfx::Display& display) {
   GestureDetector::Config config;
 
   config.longpress_timeout = base::TimeDelta::FromMilliseconds(
       ViewConfiguration::GetLongPressTimeoutInMs());
-  config.showpress_timeout = base::TimeDelta::FromMilliseconds(
-      ViewConfiguration::GetTapTimeoutInMs());
+  config.showpress_timeout =
+      base::TimeDelta::FromMilliseconds(ViewConfiguration::GetTapTimeoutInMs());
   config.double_tap_timeout = base::TimeDelta::FromMilliseconds(
       ViewConfiguration::GetDoubleTapTimeoutInMs());
 
-  config.scaled_touch_slop = ViewConfiguration::GetTouchSlopInPixels();
-  config.scaled_double_tap_slop = ViewConfiguration::GetDoubleTapSlopInPixels();
-  config.scaled_minimum_fling_velocity =
-      ViewConfiguration::GetMinimumFlingVelocityInPixelsPerSecond();
-  config.scaled_maximum_fling_velocity =
-      ViewConfiguration::GetMaximumFlingVelocityInPixelsPerSecond();
+  const float px_to_dp = 1.f / display.device_scale_factor();
+  config.touch_slop =
+      ViewConfiguration::GetTouchSlopInPixels() * px_to_dp;
+  config.double_tap_slop =
+      ViewConfiguration::GetDoubleTapSlopInPixels() * px_to_dp;
+  config.minimum_fling_velocity =
+      ViewConfiguration::GetMinimumFlingVelocityInPixelsPerSecond() * px_to_dp;
+  config.maximum_fling_velocity =
+      ViewConfiguration::GetMaximumFlingVelocityInPixelsPerSecond() * px_to_dp;
 
   return config;
 }
 
-ScaleGestureDetector::Config DefaultScaleGestureDetectorConfig() {
+ScaleGestureDetector::Config DefaultScaleGestureDetectorConfig(
+    const gfx::Display& display) {
   ScaleGestureDetector::Config config;
 
-  config.gesture_detector_config = DefaultGestureDetectorConfig();
+  config.gesture_detector_config = DefaultGestureDetectorConfig(display);
   config.quick_scale_enabled = true;
+
+  const float px_to_dp = 1.f / display.device_scale_factor();
   config.min_scaling_touch_major =
-      ViewConfiguration::GetMinScalingTouchMajorInPixels();
-  config.min_scaling_span = ViewConfiguration::GetMinScalingSpanInPixels();
+      ViewConfiguration::GetMinScalingTouchMajorInPixels() * px_to_dp;
+  config.min_scaling_span =
+      ViewConfiguration::GetMinScalingSpanInPixels() * px_to_dp;
 
   return config;
 }
 
-SnapScrollController::Config DefaultSnapScrollControllerConfig() {
-  SnapScrollController::Config config;
-
-  const gfx::Display& display =
-      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
-
-  config.screen_width_pixels = display.GetSizeInPixel().width();
-  config.screen_height_pixels = display.GetSizeInPixel().height();
-  config.device_scale_factor = display.device_scale_factor();
-
-  return config;
-}
+}  // namespace
 
 GestureProvider::Config DefaultGestureProviderConfig() {
   GestureProvider::Config config;
-  config.gesture_detector_config = DefaultGestureDetectorConfig();
-  config.scale_gesture_detector_config = DefaultScaleGestureDetectorConfig();
-  config.snap_scroll_controller_config = DefaultSnapScrollControllerConfig();
+  config.display = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
+  config.gesture_detector_config = DefaultGestureDetectorConfig(config.display);
+  config.scale_gesture_detector_config =
+      DefaultScaleGestureDetectorConfig(config.display);
   config.gesture_begin_end_types_enabled = false;
   return config;
 }

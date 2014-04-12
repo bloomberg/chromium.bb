@@ -112,7 +112,7 @@ const char* GetKeyIdentifier(ui::KeyboardCode key_code) {
     case ui::VKEY_UP:
       return "Up";
     case ui::VKEY_DELETE:
-      return "U+007F"; // Standard says that DEL becomes U+007F.
+      return "U+007F";  // Standard says that DEL becomes U+007F.
     case ui::VKEY_MEDIA_NEXT_TRACK:
       return "MediaNextTrack";
     case ui::VKEY_MEDIA_PREV_TRACK:
@@ -177,19 +177,17 @@ WebTouchPoint::State ToWebTouchPointState(MotionEvent::Action action,
 }
 
 WebTouchPoint CreateWebTouchPoint(const MotionEvent& event,
-                                 size_t pointer_index,
-                                 float scale) {
+                                  size_t pointer_index) {
   WebTouchPoint touch;
   touch.id = event.GetPointerId(pointer_index);
   touch.state = ToWebTouchPointState(
       event.GetAction(),
       static_cast<int>(pointer_index) == event.GetActionIndex());
-  touch.position.x = event.GetX(pointer_index) * scale;
-  touch.position.y = event.GetY(pointer_index) * scale;
+  touch.position.x = event.GetX(pointer_index);
+  touch.position.y = event.GetY(pointer_index);
   // TODO(joth): Raw event co-ordinates.
   touch.screenPosition = touch.position;
-  touch.radiusX = touch.radiusY =
-      event.GetTouchMajor(pointer_index) * 0.5f * scale;
+  touch.radiusX = touch.radiusY = event.GetTouchMajor(pointer_index) * 0.5f;
   touch.force = event.GetPressure(pointer_index);
 
   return touch;
@@ -207,14 +205,15 @@ void UpdateWindowsKeyCodeAndKeyIdentifier(blink::WebKeyboardEvent* event,
   if (id) {
     base::strlcpy(event->keyIdentifier, id, sizeof(event->keyIdentifier) - 1);
   } else {
-    base::snprintf(event->keyIdentifier, sizeof(event->keyIdentifier), "U+%04X",
+    base::snprintf(event->keyIdentifier,
+                   sizeof(event->keyIdentifier),
+                   "U+%04X",
                    base::ToUpperASCII(static_cast<int>(windows_key_code)));
   }
 }
 
 blink::WebTouchEvent CreateWebTouchEventFromMotionEvent(
-    const ui::MotionEvent& event,
-    float scale) {
+    const ui::MotionEvent& event) {
   blink::WebTouchEvent result;
 
   result.type = ToWebInputEventType(event.GetAction());
@@ -229,84 +228,75 @@ blink::WebTouchEvent CreateWebTouchEventFromMotionEvent(
   DCHECK_GT(result.touchesLength, 0U);
 
   for (size_t i = 0; i < result.touchesLength; ++i)
-    result.touches[i] = CreateWebTouchPoint(event, i, scale);
+    result.touches[i] = CreateWebTouchPoint(event, i);
 
   return result;
 }
 
 WebGestureEvent CreateWebGestureEventFromGestureEventData(
-    const ui::GestureEventData& data,
-    float scale) {
+    const ui::GestureEventData& data) {
   WebGestureEvent gesture;
-  gesture.x = data.x * scale;
-  gesture.y = data.y * scale;
+  gesture.x = data.x;
+  gesture.y = data.y;
   gesture.timeStampSeconds = (data.time - base::TimeTicks()).InSecondsF();
   gesture.sourceDevice = WebGestureEvent::Touchscreen;
 
   switch (data.type) {
     case ui::ET_GESTURE_SHOW_PRESS:
       gesture.type = WebInputEvent::GestureShowPress;
-      gesture.data.showPress.width =
-          data.details.bounding_box_f().width() * scale;
-      gesture.data.showPress.height =
-          data.details.bounding_box_f().height() * scale;
+      gesture.data.showPress.width = data.details.bounding_box_f().width();
+      gesture.data.showPress.height = data.details.bounding_box_f().height();
       break;
     case ui::ET_GESTURE_DOUBLE_TAP:
       gesture.type = WebInputEvent::GestureDoubleTap;
       DCHECK_EQ(1, data.details.tap_count());
       gesture.data.tap.tapCount = data.details.tap_count();
-      gesture.data.tap.width = data.details.bounding_box_f().width() * scale;
-      gesture.data.tap.height = data.details.bounding_box_f().height() * scale;
+      gesture.data.tap.width = data.details.bounding_box_f().width();
+      gesture.data.tap.height = data.details.bounding_box_f().height();
       break;
     case ui::ET_GESTURE_TAP:
       gesture.type = WebInputEvent::GestureTap;
       DCHECK_EQ(1, data.details.tap_count());
       gesture.data.tap.tapCount = data.details.tap_count();
-      gesture.data.tap.width = data.details.bounding_box_f().width() * scale;
-      gesture.data.tap.height = data.details.bounding_box_f().height() * scale;
+      gesture.data.tap.width = data.details.bounding_box_f().width();
+      gesture.data.tap.height = data.details.bounding_box_f().height();
       break;
     case ui::ET_GESTURE_TAP_UNCONFIRMED:
       gesture.type = WebInputEvent::GestureTapUnconfirmed;
       DCHECK_EQ(1, data.details.tap_count());
       gesture.data.tap.tapCount = data.details.tap_count();
-      gesture.data.tap.width = data.details.bounding_box_f().width() * scale;
-      gesture.data.tap.height = data.details.bounding_box_f().height() * scale;
+      gesture.data.tap.width = data.details.bounding_box_f().width();
+      gesture.data.tap.height = data.details.bounding_box_f().height();
       break;
     case ui::ET_GESTURE_LONG_PRESS:
       gesture.type = WebInputEvent::GestureLongPress;
-      gesture.data.longPress.width =
-          data.details.bounding_box_f().width() * scale;
-      gesture.data.longPress.height =
-          data.details.bounding_box_f().height() * scale;
+      gesture.data.longPress.width = data.details.bounding_box_f().width();
+      gesture.data.longPress.height = data.details.bounding_box_f().height();
       break;
     case ui::ET_GESTURE_LONG_TAP:
       gesture.type = WebInputEvent::GestureLongTap;
-      gesture.data.longPress.width =
-          data.details.bounding_box_f().width() * scale;
-      gesture.data.longPress.height =
-          data.details.bounding_box_f().height() * scale;
+      gesture.data.longPress.width = data.details.bounding_box_f().width();
+      gesture.data.longPress.height = data.details.bounding_box_f().height();
       break;
     case ui::ET_GESTURE_SCROLL_BEGIN:
       gesture.type = WebInputEvent::GestureScrollBegin;
-      gesture.data.scrollBegin.deltaXHint =
-          data.details.scroll_x_hint() * scale;
-      gesture.data.scrollBegin.deltaYHint =
-          data.details.scroll_y_hint() * scale;
+      gesture.data.scrollBegin.deltaXHint = data.details.scroll_x_hint();
+      gesture.data.scrollBegin.deltaYHint = data.details.scroll_y_hint();
       break;
     case ui::ET_GESTURE_SCROLL_UPDATE:
       gesture.type = WebInputEvent::GestureScrollUpdate;
-      gesture.data.scrollUpdate.deltaX = data.details.scroll_x() * scale;
-      gesture.data.scrollUpdate.deltaY = data.details.scroll_y() * scale;
-      gesture.data.scrollUpdate.velocityX = data.details.velocity_x() * scale;
-      gesture.data.scrollUpdate.velocityY = data.details.velocity_y() * scale;
+      gesture.data.scrollUpdate.deltaX = data.details.scroll_x();
+      gesture.data.scrollUpdate.deltaY = data.details.scroll_y();
+      gesture.data.scrollUpdate.velocityX = data.details.velocity_x();
+      gesture.data.scrollUpdate.velocityY = data.details.velocity_y();
       break;
     case ui::ET_GESTURE_SCROLL_END:
       gesture.type = WebInputEvent::GestureScrollEnd;
       break;
     case ui::ET_SCROLL_FLING_START:
       gesture.type = WebInputEvent::GestureFlingStart;
-      gesture.data.flingStart.velocityX = data.details.velocity_x() * scale;
-      gesture.data.flingStart.velocityY = data.details.velocity_y() * scale;
+      gesture.data.flingStart.velocityX = data.details.velocity_x();
+      gesture.data.flingStart.velocityY = data.details.velocity_y();
       break;
     case ui::ET_SCROLL_FLING_CANCEL:
       gesture.type = WebInputEvent::GestureFlingCancel;
@@ -326,10 +316,8 @@ WebGestureEvent CreateWebGestureEventFromGestureEventData(
       break;
     case ui::ET_GESTURE_TAP_DOWN:
       gesture.type = WebInputEvent::GestureTapDown;
-      gesture.data.tapDown.width =
-          data.details.bounding_box_f().width() * scale;
-      gesture.data.tapDown.height =
-          data.details.bounding_box_f().height() * scale;
+      gesture.data.tapDown.width = data.details.bounding_box_f().width();
+      gesture.data.tapDown.height = data.details.bounding_box_f().height();
       break;
     case ui::ET_GESTURE_BEGIN:
     case ui::ET_GESTURE_END:

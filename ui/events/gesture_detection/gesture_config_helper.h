@@ -9,18 +9,8 @@
 #include "ui/events/gesture_detection/gesture_detector.h"
 #include "ui/events/gesture_detection/gesture_provider.h"
 #include "ui/events/gesture_detection/scale_gesture_detector.h"
-#include "ui/events/gesture_detection/snap_scroll_controller.h"
 
 namespace ui {
-
-GESTURE_DETECTION_EXPORT GestureDetector::Config
-DefaultGestureDetectorConfig();
-
-GESTURE_DETECTION_EXPORT ScaleGestureDetector::Config
-DefaultScaleGestureDetectorConfig();
-
-GESTURE_DETECTION_EXPORT SnapScrollController::Config
-DefaultSnapScrollControllerConfig();
 
 GESTURE_DETECTION_EXPORT GestureProvider::Config
 DefaultGestureProviderConfig();

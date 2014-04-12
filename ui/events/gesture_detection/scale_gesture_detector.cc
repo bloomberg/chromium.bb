@@ -17,6 +17,11 @@ using base::TimeTicks;
 namespace ui {
 namespace {
 
+// Using a small epsilon when comparing slop distances allows pixel perfect
+// slop determination when using fractional DPI coordinates (assuming the slop
+// region and DPI scale are reasonably proportioned).
+const float kSlopEpsilon = .05f;
+
 const int kTouchStabilizeTimeMs = 128;
 
 const float kScaleFactor = .5f;
@@ -26,9 +31,9 @@ const float kScaleFactor = .5f;
 // Note: These constants were taken directly from the default (unscaled)
 // versions found in Android's ViewConfiguration.
 ScaleGestureDetector::Config::Config()
-    : quick_scale_enabled(true),
-      min_scaling_touch_major(48),
-      min_scaling_span(200) {}
+    : min_scaling_touch_major(48),
+      min_scaling_span(200),
+      quick_scale_enabled(true) {}
 
 ScaleGestureDetector::Config::~Config() {}
 
@@ -72,9 +77,10 @@ ScaleGestureDetector::ScaleGestureDetector(const Config& config,
       double_tap_mode_(DOUBLE_TAP_MODE_NONE),
       event_before_or_above_starting_gesture_event_(false) {
   DCHECK(listener_);
-  span_slop_ = config.gesture_detector_config.scaled_touch_slop * 2;
+  span_slop_ =
+      (config.gesture_detector_config.touch_slop + kSlopEpsilon) * 2;
   touch_min_major_ = config.min_scaling_touch_major;
-  min_span_ = config.min_scaling_span;
+  min_span_ = config.min_scaling_span + kSlopEpsilon;
   SetQuickScaleEnabled(config.quick_scale_enabled);
 }
 
@@ -199,7 +205,7 @@ bool ScaleGestureDetector::OnTouchEvent(const MotionEvent& event) {
     initial_span_ = prev_span_ = curr_span_ = span;
   }
 
-  const int min_span = InDoubleTapMode() ? span_slop_ : min_span_;
+  const float min_span = InDoubleTapMode() ? span_slop_ : min_span_;
   if (!in_progress_ && span >= min_span &&
       (was_in_progress || std::abs(span - initial_span_) > span_slop_)) {
     prev_span_x_ = curr_span_x_ = span_x;

@@ -7,19 +7,33 @@
 #include <cmath>
 
 #include "ui/events/gesture_detection/motion_event.h"
+#include "ui/gfx/display.h"
 
 namespace ui {
 namespace {
 const int kSnapBound = 16;
+const float kMinSnapChannelDistance = kSnapBound;
+const float kMaxSnapChannelDistance = kMinSnapChannelDistance * 3.f;
+const float kSnapChannelDipsPerScreenDip = kMinSnapChannelDistance / 480.f;
+
+float CalculateChannelDistance(const gfx::Display& display) {
+  if (display.bounds().IsEmpty())
+    return kMinSnapChannelDistance;
+
+  float screen_size =
+      std::abs(hypot(static_cast<float>(display.bounds().width()),
+                     static_cast<float>(display.bounds().height())));
+
+  float snap_channel_distance = screen_size * kSnapChannelDipsPerScreenDip;
+  return std::max(kMinSnapChannelDistance,
+                  std::min(kMaxSnapChannelDistance, snap_channel_distance));
+}
+
 }  // namespace
 
-SnapScrollController::Config::Config()
-    : screen_width_pixels(1), screen_height_pixels(1), device_scale_factor(1) {}
 
-SnapScrollController::Config::~Config() {}
-
-SnapScrollController::SnapScrollController(const Config& config)
-    : channel_distance_(CalculateChannelDistance(config)),
+SnapScrollController::SnapScrollController(const gfx::Display& display)
+    : channel_distance_(CalculateChannelDistance(display)),
       snap_scroll_mode_(SNAP_NONE),
       first_touch_x_(-1),
       first_touch_y_(-1),
@@ -87,29 +101,6 @@ void SnapScrollController::SetSnapScrollingMode(
     default:
       break;
   }
-}
-
-// static
-float SnapScrollController::CalculateChannelDistance(const Config& config) {
-  float channel_distance = 16.f;
-
-  const float screen_size = std::abs(
-      hypot((float)config.screen_width_pixels / config.device_scale_factor,
-            (float)config.screen_height_pixels / config.device_scale_factor));
-  if (screen_size < 480.f) {
-    channel_distance = 16.f;
-  } else if (screen_size < 800.f) {
-    channel_distance = 22.f;
-  } else if (screen_size < 1120.f) {
-    channel_distance = 28.f;
-  } else {
-    channel_distance = 34.f;
-  }
-  channel_distance = channel_distance * config.device_scale_factor;
-  if (channel_distance < 16.f)
-    channel_distance = 16.f;
-
-  return channel_distance;
 }
 
 }  // namespace ui

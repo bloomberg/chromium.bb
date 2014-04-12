@@ -23,13 +23,23 @@ class GestureDetector {
   struct GESTURE_DETECTION_EXPORT Config {
     Config();
     ~Config();
+
     base::TimeDelta longpress_timeout;
     base::TimeDelta showpress_timeout;
     base::TimeDelta double_tap_timeout;
-    int scaled_touch_slop;
-    int scaled_double_tap_slop;
-    int scaled_minimum_fling_velocity;
-    int scaled_maximum_fling_velocity;
+
+    // Distance a touch can wander before a scroll will occur (in dips).
+    float touch_slop;
+
+    // Distance the first touch can wander before it is no longer considered a
+    // double tap (in dips).
+    float double_tap_slop;
+
+    // Minimum velocity to initiate a fling (in dips/second).
+    float minimum_fling_velocity;
+
+    // Maximum velocity of an initiated fling (in dips/second).
+    float maximum_fling_velocity;
   };
 
   class GestureListener {
@@ -114,11 +124,11 @@ class GestureDetector {
   GestureListener* const listener_;
   DoubleTapListener* double_tap_listener_;
 
-  int touch_slop_square_;
-  int double_tap_touch_slop_square_;
-  int double_tap_slop_square_;
-  int min_fling_velocity_;
-  int max_fling_velocity_;
+  float touch_slop_square_;
+  float double_tap_touch_slop_square_;
+  float double_tap_slop_square_;
+  float min_fling_velocity_;
+  float max_fling_velocity_;
   base::TimeDelta double_tap_timeout_;
 
   bool still_down_;

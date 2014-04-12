@@ -4,22 +4,14 @@
 
 #include "ui/events/gesture_detection/gesture_config_helper.h"
 
+#include "ui/gfx/screen.h"
+
 namespace ui {
 
-GestureDetector::Config DefaultGestureDetectorConfig() {
-  return GestureDetector::Config();
-}
-
-ScaleGestureDetector::Config DefaultScaleGestureDetectorConfig() {
-  return ScaleGestureDetector::Config();
-}
-
-SnapScrollController::Config DefaultSnapScrollControllerConfig() {
-  return SnapScrollController::Config();
-}
-
 GestureProvider::Config DefaultGestureProviderConfig() {
-  return GestureProvider::Config();
+  GestureProvider::Config config;
+  config.display = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
+  return config;
 }
 
 }  // namespace ui

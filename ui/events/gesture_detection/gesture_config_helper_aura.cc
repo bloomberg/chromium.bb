@@ -8,6 +8,7 @@
 #include "ui/gfx/screen.h"
 
 namespace ui {
+namespace {
 
 GestureDetector::Config DefaultGestureDetectorConfig() {
   GestureDetector::Config config;
@@ -18,13 +19,13 @@ GestureDetector::Config DefaultGestureDetectorConfig() {
       GestureConfiguration::show_press_delay_in_ms());
   config.double_tap_timeout = base::TimeDelta::FromMilliseconds(
       GestureConfiguration::semi_long_press_time_in_seconds() * 1000.);
-  config.scaled_touch_slop =
+  config.touch_slop =
       GestureConfiguration::max_touch_move_in_pixels_for_click();
-  config.scaled_double_tap_slop =
+  config.double_tap_slop =
       GestureConfiguration::max_distance_between_taps_for_double_tap();
-  config.scaled_minimum_fling_velocity =
+  config.minimum_fling_velocity =
       GestureConfiguration::min_scroll_velocity();
-  config.scaled_maximum_fling_velocity =
+  config.maximum_fling_velocity =
       GestureConfiguration::fling_velocity_cap();
 
   return config;
@@ -34,30 +35,19 @@ ScaleGestureDetector::Config DefaultScaleGestureDetectorConfig() {
   ScaleGestureDetector::Config config;
 
   config.gesture_detector_config = DefaultGestureDetectorConfig();
-  config.min_scaling_touch_major = GestureConfiguration::default_radius() / 2;
+  config.min_scaling_touch_major = GestureConfiguration::default_radius() * 2;
   config.min_scaling_span =
       GestureConfiguration::min_distance_for_pinch_scroll_in_pixels();
   return config;
 }
 
-SnapScrollController::Config DefaultSnapScrollControllerConfig() {
-  SnapScrollController::Config config;
-
-  const gfx::Display& display =
-      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
-
-  config.screen_width_pixels = display.GetSizeInPixel().width();
-  config.screen_height_pixels = display.GetSizeInPixel().height();
-  config.device_scale_factor = display.device_scale_factor();
-
-  return config;
-}
+}  // namespace
 
 GestureProvider::Config DefaultGestureProviderConfig() {
   GestureProvider::Config config;
+  config.display = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
   config.gesture_detector_config = DefaultGestureDetectorConfig();
   config.scale_gesture_detector_config = DefaultScaleGestureDetectorConfig();
-  config.snap_scroll_controller_config = DefaultSnapScrollControllerConfig();
   config.gesture_begin_end_types_enabled = true;
   return config;
 }

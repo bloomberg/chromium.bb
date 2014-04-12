@@ -94,7 +94,9 @@ GestureEventDetails CreateTapGestureDetails(EventType type,
 // GestureProvider:::Config
 
 GestureProvider::Config::Config()
-    : disable_click_delay(false), gesture_begin_end_types_enabled(false) {}
+    : display(gfx::Display::kInvalidDisplayID, gfx::Rect(1, 1)),
+      disable_click_delay(false),
+      gesture_begin_end_types_enabled(false) {}
 
 GestureProvider::Config::~Config() {}
 
@@ -104,11 +106,9 @@ class GestureProvider::ScaleGestureListenerImpl
     : public ScaleGestureDetector::ScaleGestureListener {
  public:
   ScaleGestureListenerImpl(const ScaleGestureDetector::Config& config,
-                           float device_scale_factor,
                            GestureProvider* provider)
       : scale_gesture_detector_(config, this),
         provider_(provider),
-        px_to_dp_(1.0f / device_scale_factor),
         ignore_multitouch_events_(false),
         pinch_event_sent_(false) {}
 
@@ -174,7 +174,7 @@ class GestureProvider::ScaleGestureListenerImpl
           (detector.GetCurrentSpanY() - detector.GetPreviousSpanY()) * 0.5f;
       scale = std::pow(scale > 1 ? 1.0f + kDoubleTapDragZoomSpeed
                                  : 1.0f - kDoubleTapDragZoomSpeed,
-                       std::abs(dy * px_to_dp_));
+                       std::abs(dy));
     }
     GestureEventDetails pinch_details(ET_GESTURE_PINCH_UPDATE, scale, 0);
     provider_->Send(CreateGesture(ET_GESTURE_PINCH_UPDATE,
@@ -217,9 +217,6 @@ class GestureProvider::ScaleGestureListenerImpl
 
   GestureProvider* const provider_;
 
-  // TODO(jdduke): Remove this when all MotionEvent's use DIPs.
-  const float px_to_dp_;
-
   // Completely silence multi-touch (pinch) scaling events. Used in WebView when
   // zoom support is turned off.
   bool ignore_multitouch_events_;
@@ -237,23 +234,18 @@ class GestureProvider::GestureListenerImpl
       public GestureDetector::DoubleTapListener {
  public:
   GestureListenerImpl(
+      const gfx::Display& display,
       const GestureDetector::Config& gesture_detector_config,
-      const SnapScrollController::Config& snap_scroll_controller_config,
       bool disable_click_delay,
       GestureProvider* provider)
       : gesture_detector_(gesture_detector_config, this, this),
-        snap_scroll_controller_(snap_scroll_controller_config),
+        snap_scroll_controller_(display),
         provider_(provider),
         disable_click_delay_(disable_click_delay),
-        scaled_touch_slop_(gesture_detector_config.scaled_touch_slop),
-        scaled_touch_slop_square_(scaled_touch_slop_ * scaled_touch_slop_),
+        touch_slop_(gesture_detector_config.touch_slop),
         double_tap_timeout_(gesture_detector_config.double_tap_timeout),
         ignore_single_tap_(false),
-        seen_first_scroll_event_(false),
-        last_raw_x_(0),
-        last_raw_y_(0),
-        accumulated_scroll_error_x_(0),
-        accumulated_scroll_error_y_(0) {}
+        seen_first_scroll_event_(false) {}
 
   virtual ~GestureListenerImpl() {}
 
@@ -276,10 +268,6 @@ class GestureProvider::GestureListenerImpl
     current_down_time_ = e.GetEventTime();
     ignore_single_tap_ = false;
     seen_first_scroll_event_ = false;
-    last_raw_x_ = e.GetRawX();
-    last_raw_y_ = e.GetRawY();
-    accumulated_scroll_error_x_ = 0;
-    accumulated_scroll_error_y_ = 0;
 
     GestureEventDetails tap_details(ET_GESTURE_TAP_DOWN, 0, 0);
     tap_details.set_bounding_box(
@@ -304,7 +292,7 @@ class GestureProvider::GestureListenerImpl
           std::sqrt(distance_x * distance_x + distance_y * distance_y);
       double epsilon = 1e-3;
       if (distance > epsilon) {
-        double ratio = std::max(0., distance - scaled_touch_slop_) / distance;
+        double ratio = std::max(0., distance - touch_slop_) / distance;
         distance_x *= ratio;
         distance_y *= ratio;
       }
@@ -318,8 +306,6 @@ class GestureProvider::GestureListenerImpl
       }
     }
 
-    last_raw_x_ = e2.GetRawX();
-    last_raw_y_ = e2.GetRawY();
     if (!provider_->IsScrollInProgress()) {
       // Note that scroll start hints are in distance traveled, where
       // scroll deltas are in the opposite direction.
@@ -337,20 +323,9 @@ class GestureProvider::GestureListenerImpl
                                     scroll_details));
     }
 
-    // distance_x and distance_y is the scrolling offset since last OnScroll.
-    // Because we are passing integers to Blink, this could introduce
-    // rounding errors. The rounding errors will accumulate overtime.
-    // To solve this, we should be adding back the rounding errors each time
-    // when we calculate the new offset.
-    // TODO(jdduke): Determine if we can simpy use floating point deltas, as
-    // WebGestureEvent also takes floating point deltas for GestureScrollUpdate.
-    int dx = (int)(distance_x + accumulated_scroll_error_x_);
-    int dy = (int)(distance_y + accumulated_scroll_error_y_);
-    accumulated_scroll_error_x_ += (distance_x - dx);
-    accumulated_scroll_error_y_ += (distance_y - dy);
-
-    if (dx || dy) {
-      GestureEventDetails scroll_details(ET_GESTURE_SCROLL_UPDATE, -dx, -dy);
+    if (distance_x || distance_y) {
+      GestureEventDetails scroll_details(
+          ET_GESTURE_SCROLL_UPDATE, -distance_x, -distance_y);
       provider_->Send(
           CreateGesture(ET_GESTURE_SCROLL_UPDATE, e2, scroll_details));
     }
@@ -384,10 +359,6 @@ class GestureProvider::GestureListenerImpl
   }
 
   virtual bool OnSingleTapUp(const MotionEvent& e) OVERRIDE {
-    if (IsPointOutsideCurrentSlopRegion(e.GetRawX(), e.GetRawY())) {
-      ignore_single_tap_ = true;
-      return true;
-    }
     // This is a hack to address the issue where user hovers
     // over a link for longer than double_tap_timeout_, then
     // OnSingleTapConfirmed() is not triggered. But we still
@@ -487,16 +458,6 @@ class GestureProvider::GestureListenerImpl
   }
 
  private:
-  bool IsPointOutsideCurrentSlopRegion(float x, float y) const {
-    return IsDistanceGreaterThanTouchSlop(last_raw_x_ - x, last_raw_y_ - y);
-  }
-
-  bool IsDistanceGreaterThanTouchSlop(float distance_x,
-                                      float distance_y) const {
-    return distance_x * distance_x + distance_y * distance_y >
-           scaled_touch_slop_square_;
-  }
-
   void SetIgnoreSingleTap(bool value) { ignore_single_tap_ = value; }
 
   bool IsDoubleTapEnabled() const {
@@ -512,11 +473,7 @@ class GestureProvider::GestureListenerImpl
   // double-tap gestures.
   const bool disable_click_delay_;
 
-  const int scaled_touch_slop_;
-
-  // Cache of square of the scaled touch slop so we don't have to calculate it
-  // on every touch.
-  const int scaled_touch_slop_square_;
+  const float touch_slop_;
 
   const base::TimeDelta double_tap_timeout_;
 
@@ -530,18 +487,6 @@ class GestureProvider::GestureListenerImpl
   // Used to remove the touch slop from the initial scroll event in a scroll
   // gesture.
   bool seen_first_scroll_event_;
-
-  // Used to track the last rawX/Y coordinates for moves.  This gives absolute
-  // scroll distance.
-  // Useful for full screen tracking.
-  float last_raw_x_;
-  float last_raw_y_;
-
-  // Used to track the accumulated scroll error over time. This is used to
-  // remove the
-  // rounding error we introduced by passing integers to webkit.
-  float accumulated_scroll_error_x_;
-  float accumulated_scroll_error_y_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureListenerImpl);
 };
@@ -627,15 +572,13 @@ bool GestureProvider::IsClickDelayDisabled() const {
 void GestureProvider::InitGestureDetectors(const Config& config) {
   TRACE_EVENT0("input", "GestureProvider::InitGestureDetectors");
   gesture_listener_.reset(
-      new GestureListenerImpl(config.gesture_detector_config,
-                              config.snap_scroll_controller_config,
+      new GestureListenerImpl(config.display,
+                              config.gesture_detector_config,
                               config.disable_click_delay,
                               this));
 
-  scale_gesture_listener_.reset(new ScaleGestureListenerImpl(
-      config.scale_gesture_detector_config,
-      config.snap_scroll_controller_config.device_scale_factor,
-      this));
+  scale_gesture_listener_.reset(
+      new ScaleGestureListenerImpl(config.scale_gesture_detector_config, this));
 
   UpdateDoubleTapDetectionSupport();
 }

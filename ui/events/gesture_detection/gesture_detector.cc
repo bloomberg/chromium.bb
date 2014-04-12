@@ -12,6 +12,15 @@
 namespace ui {
 namespace {
 
+// Using a small epsilon when comparing slop distances allows pixel perfect
+// slop determination when using fractional DIP coordinates (assuming the slop
+// region and DPI scale are reasonably proportioned).
+const float kSlopEpsilon = .05f;
+
+// Minimum distance a scroll must have traveled from the last scroll/focal point
+// to trigger an |OnScroll| callback.
+const float kScrollEpsilon = .1f;
+
 // Constants used by TimeoutGestureHandler.
 enum TimeoutEvent {
   SHOW_PRESS = 0,
@@ -28,10 +37,10 @@ GestureDetector::Config::Config()
     : longpress_timeout(base::TimeDelta::FromMilliseconds(500)),
       showpress_timeout(base::TimeDelta::FromMilliseconds(180)),
       double_tap_timeout(base::TimeDelta::FromMilliseconds(300)),
-      scaled_touch_slop(8),
-      scaled_double_tap_slop(100),
-      scaled_minimum_fling_velocity(50),
-      scaled_maximum_fling_velocity(8000) {}
+      touch_slop(8),
+      double_tap_slop(100),
+      minimum_fling_velocity(50),
+      maximum_fling_velocity(8000) {}
 
 GestureDetector::Config::~Config() {}
 
@@ -267,10 +276,10 @@ bool GestureDetector::OnTouchEvent(const MotionEvent& ev) {
           DCHECK(double_tap_listener_);
           handled |= double_tap_listener_->OnDoubleTapEvent(ev);
         } else if (always_in_tap_region_) {
-          const int delta_x = static_cast<int>(focus_x - down_focus_x_);
-          const int delta_y = static_cast<int>(focus_y - down_focus_y_);
-          int distance = (delta_x * delta_x) + (delta_y * delta_y);
-          if (distance > touch_slop_square_) {
+          const float delta_x = focus_x - down_focus_x_;
+          const float delta_y = focus_y - down_focus_y_;
+          const float distance_square = delta_x * delta_x + delta_y * delta_y;
+          if (distance_square > touch_slop_square_) {
             handled = listener_->OnScroll(
                 *current_down_event_, ev, scroll_x, scroll_y);
             last_focus_x_ = focus_x;
@@ -278,9 +287,10 @@ bool GestureDetector::OnTouchEvent(const MotionEvent& ev) {
             always_in_tap_region_ = false;
             timeout_handler_->Stop();
           }
-          if (distance > double_tap_touch_slop_square_)
+          if (distance_square > double_tap_touch_slop_square_)
             always_in_bigger_tap_region_ = false;
-        } else if ((std::abs(scroll_x) >= 1) || (std::abs(scroll_y) >= 1)) {
+        } else if (std::abs(scroll_x) > kScrollEpsilon ||
+                   std::abs(scroll_y) > kScrollEpsilon) {
           handled =
               listener_->OnScroll(*current_down_event_, ev, scroll_x, scroll_y);
           last_focus_x_ = focus_x;
@@ -340,15 +350,15 @@ bool GestureDetector::OnTouchEvent(const MotionEvent& ev) {
 void GestureDetector::Init(const Config& config) {
   DCHECK(listener_);
 
-  const int touch_slop = config.scaled_touch_slop;
-  const int double_tap_touch_slop = touch_slop;
-  const int double_tap_slop = config.scaled_double_tap_slop;
-  min_fling_velocity_ = config.scaled_minimum_fling_velocity;
-  max_fling_velocity_ = config.scaled_maximum_fling_velocity;
+  const float touch_slop = config.touch_slop + kSlopEpsilon;
+  const float double_tap_touch_slop = touch_slop;
+  const float double_tap_slop = config.double_tap_slop + kSlopEpsilon;
   touch_slop_square_ = touch_slop * touch_slop;
   double_tap_touch_slop_square_ = double_tap_touch_slop * double_tap_touch_slop;
   double_tap_slop_square_ = double_tap_slop * double_tap_slop;
   double_tap_timeout_ = config.double_tap_timeout;
+  min_fling_velocity_ = config.minimum_fling_velocity;
+  max_fling_velocity_ = config.maximum_fling_velocity;
 }
 
 void GestureDetector::OnShowPressTimeout() {
@@ -401,8 +411,8 @@ bool GestureDetector::IsConsideredDoubleTap(
       double_tap_timeout_)
     return false;
 
-  int delta_x = static_cast<int>(first_down.GetX() - second_down.GetX());
-  int delta_y = static_cast<int>(first_down.GetY() - second_down.GetY());
+  const float delta_x = first_down.GetX() - second_down.GetX();
+  const float delta_y = first_down.GetY() - second_down.GetY();
   return (delta_x * delta_x + delta_y * delta_y < double_tap_slop_square_);
 }
 
