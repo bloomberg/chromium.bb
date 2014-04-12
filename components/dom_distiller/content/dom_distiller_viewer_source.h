@@ -35,20 +35,14 @@ class DomDistillerViewerSource : public content::URLDataSource {
       int render_frame_id,
       const content::URLDataSource::GotDataCallback& callback) OVERRIDE;
   virtual std::string GetMimeType(const std::string& path) const OVERRIDE;
-  virtual bool ShouldServiceRequest(const net::URLRequest* request) const
-      OVERRIDE;
+  virtual bool ShouldServiceRequest(
+      const net::URLRequest* request) const OVERRIDE;
   virtual void WillServiceRequest(const net::URLRequest* request,
                                   std::string* path) const OVERRIDE;
   virtual std::string GetContentSecurityPolicyObjectSrc() const OVERRIDE;
 
  private:
   friend class DomDistillerViewerSourceTest;
-
-  // Based on the given path, calls into the DomDistillerServiceInterface for
-  // viewing distilled content based on the |path|.
-  scoped_ptr<ViewerHandle> CreateViewRequest(
-      const std::string& path,
-      ViewRequestDelegate* view_request_delegate);
 
   // The scheme this URLDataSource is hosted under.
   std::string scheme_;

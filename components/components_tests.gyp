@@ -74,6 +74,7 @@
             'dom_distiller/core/dom_distiller_store_unittest.cc',
             'dom_distiller/core/task_tracker_unittest.cc',
             'dom_distiller/core/url_utils_unittest.cc',
+            'dom_distiller/core/viewer_unittest.cc',
             'domain_reliability/context_unittest.cc',
             'domain_reliability/dispatcher_unittest.cc',
             'domain_reliability/monitor_unittest.cc',

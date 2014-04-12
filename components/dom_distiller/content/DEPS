@@ -4,5 +4,4 @@ include_rules = [
   "+content/shell",
   "+net/base",
   "+net/test",
-  "+ui/base/l10n",
 ]

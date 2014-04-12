@@ -39,6 +39,7 @@
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
             '../third_party/protobuf/protobuf.gyp:protobuf_lite',
             'components_resources.gyp:components_resources',
+            'components_strings.gyp:components_strings',
             'distilled_page_proto',
           ],
           'include_dirs': [
@@ -81,6 +82,8 @@
             'dom_distiller/core/url_utils_android.h',
             'dom_distiller/core/url_utils.cc',
             'dom_distiller/core/url_utils.h',
+            'dom_distiller/core/viewer.cc',
+            'dom_distiller/core/viewer.h',
           ],
           'conditions': [
             ['OS == "android"', {
