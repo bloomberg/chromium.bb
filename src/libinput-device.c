@@ -187,6 +187,17 @@ handle_touch_up(struct libinput_device *libinput_device,
 	notify_touch(device->seat, time, slot, 0, 0, WL_TOUCH_UP);
 }
 
+static void
+handle_touch_frame(struct libinput_device *libinput_device,
+		   struct libinput_event_touch *touch_event)
+{
+	struct evdev_device *device =
+		libinput_device_get_user_data(libinput_device);
+	struct weston_seat *seat = device->seat;
+
+	notify_touch_frame(seat);
+}
+
 int
 evdev_device_process_event(struct libinput_event *event)
 {
@@ -227,6 +238,10 @@ evdev_device_process_event(struct libinput_event *event)
 	case LIBINPUT_EVENT_TOUCH_UP:
 		handle_touch_up(libinput_device,
 				libinput_event_get_touch_event(event));
+		break;
+	case LIBINPUT_EVENT_TOUCH_FRAME:
+		handle_touch_frame(libinput_device,
+				   libinput_event_get_touch_event(event));
 		break;
 	default:
 		handled = 0;

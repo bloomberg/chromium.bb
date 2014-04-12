@@ -1403,6 +1403,11 @@ touch_move_grab_motion(struct weston_touch_grab *grab, uint32_t time,
 }
 
 static void
+touch_move_grab_frame(struct weston_touch_grab *grab)
+{
+}
+
+static void
 touch_move_grab_cancel(struct weston_touch_grab *grab)
 {
 	struct weston_touch_move_grab *move =
@@ -1417,6 +1422,7 @@ static const struct weston_touch_grab_interface touch_move_grab_interface = {
 	touch_move_grab_down,
 	touch_move_grab_up,
 	touch_move_grab_motion,
+	touch_move_grab_frame,
 	touch_move_grab_cancel,
 };
 

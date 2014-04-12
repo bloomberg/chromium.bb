@@ -278,6 +278,7 @@ struct weston_touch_grab_interface {
 			int touch_id,
 			wl_fixed_t sx,
 			wl_fixed_t sy);
+	void (*frame)(struct weston_touch_grab *grab);
 	void (*cancel)(struct weston_touch_grab *grab);
 };
 
@@ -1008,6 +1009,8 @@ notify_keyboard_focus_out(struct weston_seat *seat);
 void
 notify_touch(struct weston_seat *seat, uint32_t time, int touch_id,
 	     wl_fixed_t x, wl_fixed_t y, int touch_type);
+void
+notify_touch_frame(struct weston_seat *seat);
 
 void
 weston_layer_init(struct weston_layer *layer, struct wl_list *below);

@@ -497,6 +497,11 @@ drag_grab_touch_motion(struct weston_touch_grab *grab, uint32_t time,
 }
 
 static void
+drag_grab_touch_frame(struct weston_touch_grab *grab)
+{
+}
+
+static void
 drag_grab_touch_cancel(struct weston_touch_grab *grab)
 {
 	struct weston_touch_drag *touch_drag =
@@ -511,6 +516,7 @@ static const struct weston_touch_grab_interface touch_drag_grab_interface = {
 	drag_grab_touch_down,
 	drag_grab_touch_up,
 	drag_grab_touch_motion,
+	drag_grab_touch_frame,
 	drag_grab_touch_cancel
 };
 
