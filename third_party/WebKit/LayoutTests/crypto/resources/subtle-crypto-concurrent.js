@@ -87,27 +87,33 @@ function testHmac()
         shouldEvaluateAsSilent("tmpKey.usages.join(',')", "sign,verify");
 
         // (2) Sign.
-        return crypto.subtle.sign(algorithm, key, hexStringToUint8Array(testCase.message));
-    }).then(function(result) {
-        mac = result;
-        shouldEvaluateAsSilent("bytesToHexString(mac)", testCase.mac);
+        var signPromise = crypto.subtle.sign(algorithm, key, hexStringToUint8Array(testCase.message));
 
         // (3) Verify
-        return crypto.subtle.verify(algorithm, key, hexStringToUint8Array(testCase.mac), hexStringToUint8Array(testCase.message));
-    }).then(function(result) {
-        verifyResult = result;
-        shouldEvaluateAsSilent("verifyResult", true);
+        var verifyPromise = crypto.subtle.verify(algorithm, key, hexStringToUint8Array(testCase.mac), hexStringToUint8Array(testCase.message));
 
         // (4) Verify truncated mac (by stripping 1 byte off of it).
         var expectedMac = hexStringToUint8Array(testCase.mac);
-        return crypto.subtle.verify(algorithm, key, expectedMac.subarray(0, expectedMac.byteLength - 1), hexStringToUint8Array(testCase.message));
+        var verifyTruncatedPromise = crypto.subtle.verify(algorithm, key, expectedMac.subarray(0, expectedMac.byteLength - 1), hexStringToUint8Array(testCase.message));
+
+        var exportKeyPromise = crypto.subtle.exportKey('raw', key);
+
+        return Promise.all([signPromise, verifyPromise, verifyTruncatedPromise, exportKeyPromise]);
     }).then(function(result) {
-        verifyResult = result;
+        // signPromise
+        mac = result[0];
+        shouldEvaluateAsSilent("bytesToHexString(mac)", testCase.mac);
+
+        // verifyPromise
+        verifyResult = result[1];
+        shouldEvaluateAsSilent("verifyResult", true);
+
+        // verifyTruncatedPromise
+        verifyResult = result[2];
         shouldEvaluateAsSilent("verifyResult", false);
 
-        return crypto.subtle.exportKey('raw', key);
-    }).then(function(result) {
-        exportedKeyData = result;
+        // exportKeyPromise
+        exportedKeyData = result[3];
         shouldEvaluateAsSilent("bytesToHexString(exportedKeyData)", testCase.key);
     });
 }
@@ -147,17 +153,27 @@ function testAesGcm()
         shouldEvaluateAsSilent("tmpKey.algorithm.name", "AES-GCM");
         shouldEvaluateAsSilent("tmpKey.usages.join(',')", "encrypt,decrypt");
 
-        // (2) Encrypt.
-        return crypto.subtle.encrypt(algorithm, key, hexStringToUint8Array(testCase.plainText));
-    }).then(function(result) {
-        cipherText = result;
-        shouldEvaluateAsSilent("bytesToHexString(cipherText)", testCase.cipherText + testCase.authenticationTag);
+        // (2) Encrypt
+        var encryptPromise1 = crypto.subtle.encrypt(algorithm, key, hexStringToUint8Array(testCase.plainText));
+        var encryptPromise2 = crypto.subtle.encrypt(algorithm, key, hexStringToUint8Array(testCase.plainText));
 
         // (3) Decrypt
-        return crypto.subtle.decrypt(algorithm, key, hexStringToUint8Array(testCase.cipherText + testCase.authenticationTag));
+        var decryptPromise1 = crypto.subtle.decrypt(algorithm, key, hexStringToUint8Array(testCase.cipherText + testCase.authenticationTag));
+        var decryptPromise2 = crypto.subtle.decrypt(algorithm, key, hexStringToUint8Array(testCase.cipherText + testCase.authenticationTag));
+
+        return Promise.all([encryptPromise1, encryptPromise2, decryptPromise1, decryptPromise2]);
     }).then(function(result) {
-        plainText = result;
-        shouldEvaluateAsSilent("bytesToHexString(plainText)", testCase.plainText);
+        // encryptPromise1, encryptPromise2
+        for (var i = 0; i < 2; ++i) {
+            cipherText = result[i];
+            shouldEvaluateAsSilent("bytesToHexString(cipherText)", testCase.cipherText + testCase.authenticationTag);
+        }
+
+        // decryptPromise1, decryptPromise2
+        for (var i = 0; i < 2; ++i) {
+            plainText = result[2 + i];
+            shouldEvaluateAsSilent("bytesToHexString(plainText)", testCase.plainText);
+        }
     });
 }
 
