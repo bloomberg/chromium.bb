@@ -398,7 +398,7 @@ class ValgrindTool(BaseTool):
     # set by runtest.py to disable the sandbox.
     if os.environ.get("CHROME_DEVEL_SANDBOX", None):
       logging.info("Removing CHROME_DEVEL_SANDBOX from environment")
-      del os.environ["CHROME_DEVEL_SANDBOX"]
+      os.environ["CHROME_DEVEL_SANDBOX"] = ''
 
     # Handle --indirect_webkit_layout separately.
     if self._options.indirect_webkit_layout:
