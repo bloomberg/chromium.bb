@@ -33,22 +33,8 @@
 #include "core/html/LinkRelAttribute.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "wtf/text/WTFString.h"
 
 namespace WebCore {
-
-LinkRelAttribute::LinkRelAttribute()
-    : m_iconType(InvalidIcon)
-    , m_isStyleSheet(false)
-    , m_isAlternate(false)
-    , m_isDNSPrefetch(false)
-    , m_isLinkPrefetch(false)
-    , m_isLinkSubresource(false)
-    , m_isLinkPrerender(false)
-    , m_isLinkNext(false)
-    , m_isImport(false)
-{
-}
 
 LinkRelAttribute::LinkRelAttribute(const String& rel)
     : m_iconType(InvalidIcon)
@@ -61,56 +47,43 @@ LinkRelAttribute::LinkRelAttribute(const String& rel)
     , m_isLinkNext(false)
     , m_isImport(false)
 {
-    if (equalIgnoringCase(rel, "stylesheet")) {
-        m_isStyleSheet = true;
-    } else if (equalIgnoringCase(rel, "icon") || equalIgnoringCase(rel, "shortcut icon")) {
-        m_iconType = Favicon;
-    } else if (equalIgnoringCase(rel, "dns-prefetch")) {
-        m_isDNSPrefetch = true;
-    } else if (equalIgnoringCase(rel, "alternate stylesheet") || equalIgnoringCase(rel, "stylesheet alternate")) {
-        m_isStyleSheet = true;
-        m_isAlternate = true;
-    } else if (equalIgnoringCase(rel, "import")) {
-        m_isImport = true;
-    } else if (equalIgnoringCase(rel, "apple-touch-icon")) {
-        if (RuntimeEnabledFeatures::touchIconLoadingEnabled()) {
-            m_iconType = TouchIcon;
-        }
-    } else if (equalIgnoringCase(rel, "apple-touch-icon-precomposed")) {
-        if (RuntimeEnabledFeatures::touchIconLoadingEnabled()) {
-            m_iconType = TouchPrecomposedIcon;
-        }
-    } else {
-        // Tokenize the rel attribute and set bits based on specific keywords that we find.
-        String relCopy = rel;
-        relCopy.replace('\n', ' ');
-        Vector<String> list;
-        relCopy.split(' ', list);
-        Vector<String>::const_iterator end = list.end();
-        for (Vector<String>::const_iterator it = list.begin(); it != end; ++it) {
-            if (equalIgnoringCase(*it, "stylesheet")) {
+    if (rel.isEmpty())
+        return;
+    String relCopy = rel;
+    relCopy.replace('\n', ' ');
+    Vector<String> list;
+    relCopy.split(' ', list);
+    Vector<String>::const_iterator end = list.end();
+    for (Vector<String>::const_iterator it = list.begin(); it != end; ++it) {
+        if (equalIgnoringCase(*it, "stylesheet")) {
+            if (!m_isImport)
                 m_isStyleSheet = true;
-            } else if (equalIgnoringCase(*it, "alternate")) {
-                m_isAlternate = true;
-            } else if (equalIgnoringCase(*it, "icon")) {
-                m_iconType = Favicon;
-            } else if (equalIgnoringCase(*it, "prefetch")) {
-                m_isLinkPrefetch = true;
-            } else if (equalIgnoringCase(*it, "subresource")) {
-                m_isLinkSubresource = true;
-            } else if (equalIgnoringCase(*it, "prerender")) {
-                m_isLinkPrerender = true;
-            } else if (equalIgnoringCase(*it, "next")) {
-                m_isLinkNext = true;
-            } else if (equalIgnoringCase(*it, "apple-touch-icon")) {
-                if (RuntimeEnabledFeatures::touchIconLoadingEnabled()) {
-                    m_iconType = TouchIcon;
-                }
-            } else if (equalIgnoringCase(*it, "apple-touch-icon-precomposed")) {
-                if (RuntimeEnabledFeatures::touchIconLoadingEnabled()) {
-                    m_iconType = TouchPrecomposedIcon;
-                }
-            }
+        } else if (equalIgnoringCase(*it, "import")) {
+            if (!m_isStyleSheet)
+                m_isImport = true;
+        } else if (equalIgnoringCase(*it, "alternate")) {
+            m_isAlternate = true;
+        } else if (equalIgnoringCase(*it, "icon")) {
+            // This also allows "shortcut icon" since we just ignore the non-standard "shortcut" token.
+            // FIXME: This doesn't really follow the spec that requires "shortcut icon" to be the
+            // entire string http://www.whatwg.org/specs/web-apps/current-work/multipage/links.html#rel-icon
+            m_iconType = Favicon;
+        } else if (equalIgnoringCase(*it, "prefetch")) {
+            m_isLinkPrefetch = true;
+        } else if (equalIgnoringCase(*it, "dns-prefetch")) {
+            m_isDNSPrefetch = true;
+        } else if (equalIgnoringCase(*it, "subresource")) {
+            m_isLinkSubresource = true;
+        } else if (equalIgnoringCase(*it, "prerender")) {
+            m_isLinkPrerender = true;
+        } else if (equalIgnoringCase(*it, "next")) {
+            m_isLinkNext = true;
+        } else if (equalIgnoringCase(*it, "apple-touch-icon")) {
+            if (RuntimeEnabledFeatures::touchIconLoadingEnabled())
+                m_iconType = TouchIcon;
+        } else if (equalIgnoringCase(*it, "apple-touch-icon-precomposed")) {
+            if (RuntimeEnabledFeatures::touchIconLoadingEnabled())
+                m_iconType = TouchPrecomposedIcon;
         }
     }
 }

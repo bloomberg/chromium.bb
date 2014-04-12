@@ -33,17 +33,13 @@
 #define LinkRelAttribute_h
 
 #include "core/dom/IconURL.h"
-
-namespace WTF {
-class String;
-}
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
 class LinkRelAttribute {
 public:
-    LinkRelAttribute();
-    explicit LinkRelAttribute(const String&);
+    explicit LinkRelAttribute(const String& = "");
 
     bool isStyleSheet() const { return m_isStyleSheet; }
     IconType iconType() const { return m_iconType; }

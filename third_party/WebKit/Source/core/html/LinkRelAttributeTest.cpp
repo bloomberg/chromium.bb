@@ -115,6 +115,7 @@ TEST_F(LinkRelAttributeTest, ConstructorTouchIconLoadingEnabled)
 
     testLinkRelAttribute("dns-prefetch", false, InvalidIcon, false, true, false, false);
     testLinkRelAttribute("dNs-pReFeTcH", false, InvalidIcon, false, true, false, false);
+    testLinkRelAttribute("alternate dNs-pReFeTcH", false, InvalidIcon, true, true, false, false);
 
     testLinkRelAttribute("apple-touch-icon", false, TouchIcon, false, false, false, false);
     testLinkRelAttribute("aPpLe-tOuCh-IcOn", false, TouchIcon, false, false, false, false);
@@ -131,7 +132,7 @@ TEST_F(LinkRelAttributeTest, ConstructorTouchIconLoadingEnabled)
     testLinkRelAttribute("alternate icon stylesheet", true, Favicon, true, false, false, false);
 
     testLinkRelAttribute("import", false, InvalidIcon, false, false, false, false, true);
-    // "import" is mutually exclusive and "stylesheet" wins when they conflict.
+    testLinkRelAttribute("alternate import", false, InvalidIcon, true, false, false, false, true);
     testLinkRelAttribute("stylesheet import", true, InvalidIcon, false, false, false, false, false);
 }
 
