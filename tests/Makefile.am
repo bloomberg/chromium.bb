@@ -89,6 +89,11 @@ hyphenate_xxx_SOURCES =				\
 	brl_checks.h				\
 	hyphenate_xxx.c
 
+backtranslate_with_letsign_SOURCES =				\
+	brl_checks.c				\
+	brl_checks.h				\
+	backtranslate_with_letsign.c
+
 pass1Only_SOURCES =				\
 	brl_checks.c				\
 	brl_checks.h				\
@@ -135,6 +140,7 @@ check_PROGRAMS =				\
 	hyphenate_alderen			\
 	hyphenate_straightforward		\
 	hyphenate_xxx				\
+	backtranslate_with_letsign 		\
 	pass1Only				\
 	outpos					\
 	getTable				\
