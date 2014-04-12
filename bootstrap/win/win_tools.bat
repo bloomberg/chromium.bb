@@ -64,16 +64,23 @@ goto :GIT_190_CHECK
 
 
 :GIT_190_CHECK
+set GIT_ERASE_TOP=2
+set GIT_VERSION=1.9.0.chromium.3
+
+if not "%DEPOT_TOOLS_GIT_BLEEDING%" == "1" goto :GIT_190_CHECK_REST
+set GIT_ERASE_TOP=3
+set GIT_VERSION=1.9.0.chromium.4
+
+:GIT_190_CHECK_REST
 if "%DEPOT_TOOLS_GIT_190%" == "0" goto :GIT_1852_CHECK
 :: Clean up a couple of known broken releases
-for /l %%i in (1,1,2) do if exist "%WIN_TOOLS_ROOT_DIR%\git-1.9.0.chromium.%%i_bin" (
+for /l %%i in (1,1,%GIT_ERASE_TOP%) do if exist "%WIN_TOOLS_ROOT_DIR%\git-1.9.0.chromium.%%i_bin" (
   rmdir /s /q "%WIN_TOOLS_ROOT_DIR%\git-1.9.0.chromium.%%i_bin"
 )
-set GIT_VERSION=1.9.0.chromium.3
 for /f "tokens=2 delims=[]" %%i in ('ver') do set VERSTR=%%i
 for /f "tokens=2,3 delims=. " %%i in ("%VERSTR%") do (set VERMAJOR=%%i & set VERMINOR=%%j)
-if %VERMAJOR% lss 5 set GIT_VERSION=1.9.0.chromium.3-xp
-if %VERMAJOR% equ 5 if %VERMINOR% lss 2 set GIT_VERSION=1.9.0.chromium.3-xp
+if %VERMAJOR% lss 5 set GIT_VERSION=%GIT_VERSION%-xp
+if %VERMAJOR% equ 5 if %VERMINOR% lss 2 set GIT_VERSION=%GIT_VERSION%-xp
 set GIT_BIN_DIR=git-%GIT_VERSION%_bin
 set GIT_ZIP_FILE=%GIT_BIN_DIR%.zip
 set GIT_ZIP_URL=https://commondatastorage.googleapis.com/chrome-infra/%GIT_ZIP_FILE%
