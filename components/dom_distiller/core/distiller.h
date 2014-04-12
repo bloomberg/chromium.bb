@@ -15,8 +15,8 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "components/dom_distiller/core/article_distillation_update.h"
+#include "components/dom_distiller/core/distiller_page.h"
 #include "components/dom_distiller/core/distiller_url_fetcher.h"
-#include "components/dom_distiller/core/page_distiller.h"
 #include "components/dom_distiller/core/proto/distilled_article.pb.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
@@ -152,7 +152,7 @@ class DistillerImpl : public Distiller {
   const ArticleDistillationUpdate CreateDistillationUpdate() const;
 
   const DistillerURLFetcherFactory& distiller_url_fetcher_factory_;
-  scoped_ptr<PageDistiller> page_distiller_;
+  scoped_ptr<DistillerPage> distiller_page_;
   DistillationFinishedCallback finished_cb_;
   DistillationUpdateCallback update_cb_;
 

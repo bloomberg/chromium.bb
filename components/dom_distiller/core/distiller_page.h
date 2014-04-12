@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
@@ -14,24 +15,30 @@
 
 namespace dom_distiller {
 
+struct DistilledPageInfo {
+  std::string title;
+  std::string html;
+  std::string next_page_url;
+  std::string prev_page_url;
+  std::vector<std::string> image_urls;
+  DistilledPageInfo();
+  ~DistilledPageInfo();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DistilledPageInfo);
+};
+
 // Injects JavaScript into a page, and uses it to extract and return long-form
 // content. The class can be reused to load and distill multiple pages,
 // following the state transitions described along with the class's states.
 class DistillerPage {
  public:
-  class Delegate {
-   public:
-    virtual ~Delegate() {}
-    virtual void OnLoadURLDone() {}
-    virtual void OnExecuteJavaScriptDone(const GURL& page_url,
-                                         const base::Value* value) {}
-  };
+  typedef base::Callback<void(scoped_ptr<DistilledPageInfo> distilled_page,
+                              bool distillation_successful)>
+      DistillerPageCallback;
 
-  // Specifies the Delegate that owns this distiller page.
-  explicit DistillerPage(const base::WeakPtr<Delegate>& delegate);
-
+  DistillerPage();
   virtual ~DistillerPage();
-
 
   // Initializes a |DistillerPage|. It must be called before any
   // other functions, and must only be called once.
@@ -39,14 +46,14 @@ class DistillerPage {
 
   // Loads a URL. |OnLoadURLDone| is called when the load completes or fails.
   // May be called when the distiller is idle or a page is available.
-  void LoadURL(const GURL& url);
+  void DistillPage(const GURL& url, const DistillerPageCallback& callback);
   virtual void OnLoadURLDone();
   virtual void OnLoadURLFailed();
 
   // Injects and executes JavaScript in the context of a loaded page. |LoadURL|
   // must complete before this function is called. May be called only when
   // a page is available.
-  void ExecuteJavaScript(const std::string& script);
+  void ExecuteJavaScript();
 
   // Called when the JavaScript execution completes. |page_url| is the url of
   // the distilled page. |value| contains data returned by the script.
@@ -82,14 +89,11 @@ class DistillerPage {
   // to inject and execute JavaScript within the context of the loaded page.
   virtual void ExecuteJavaScriptImpl(const std::string& script) = 0;
 
-
-
   // The current state of the |DistillerPage|, initially |NO_CONTEXT|.
   State state_;
 
  private:
-  // The pointer to the delegate that owns this distiller page.
-  base::WeakPtr<Delegate> delegate_;
+  DistillerPageCallback distiller_page_callback_;
   DISALLOW_COPY_AND_ASSIGN(DistillerPage);
 };
 
@@ -98,8 +102,7 @@ class DistillerPageFactory {
  public:
   virtual ~DistillerPageFactory();
 
-  virtual scoped_ptr<DistillerPage> CreateDistillerPage(
-      const base::WeakPtr<DistillerPage::Delegate>& delegate) const = 0;
+  virtual scoped_ptr<DistillerPage> CreateDistillerPage() const = 0;
 };
 
 }  // namespace dom_distiller

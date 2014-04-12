@@ -18,20 +18,18 @@
 
 namespace dom_distiller {
 
-scoped_ptr<DistillerPage> DistillerPageWebContentsFactory::CreateDistillerPage(
-    const base::WeakPtr<DistillerPage::Delegate>& delegate) const {
+scoped_ptr<DistillerPage> DistillerPageWebContentsFactory::CreateDistillerPage()
+    const {
   DCHECK(browser_context_);
   return scoped_ptr<DistillerPage>(
-      new DistillerPageWebContents(delegate, browser_context_));
+      new DistillerPageWebContents(browser_context_));
 }
 
 DistillerPageWebContents::DistillerPageWebContents(
-    const base::WeakPtr<Delegate>& delegate,
     content::BrowserContext* browser_context)
-    : DistillerPage(delegate), browser_context_(browser_context) {}
+    : browser_context_(browser_context) {}
 
-DistillerPageWebContents::~DistillerPageWebContents() {
-}
+DistillerPageWebContents::~DistillerPageWebContents() {}
 
 void DistillerPageWebContents::InitImpl() {
   DCHECK(browser_context_);

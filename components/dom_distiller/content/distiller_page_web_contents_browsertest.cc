@@ -23,9 +23,7 @@ using testing::Not;
 
 namespace dom_distiller {
 
-class DistillerPageWebContentsTest
-  : public ContentBrowserTest,
-    public DistillerPage::Delegate {
+class DistillerPageWebContentsTest : public ContentBrowserTest {
  public:
   // ContentBrowserTest:
   virtual void SetUpOnMainThread() OVERRIDE {
@@ -36,18 +34,16 @@ class DistillerPageWebContentsTest
 
   void DistillPage(const base::Closure& quit_closure, const std::string& url) {
     quit_closure_ = quit_closure;
-    distiller_page_->LoadURL(embedded_test_server()->GetURL(url));
+    distiller_page_->DistillPage(
+        embedded_test_server()->GetURL(url),
+        base::Bind(&DistillerPageWebContentsTest::OnPageDistillationFinished,
+                   this));
   }
 
-  virtual void OnLoadURLDone() OVERRIDE {
-    std::string script = ResourceBundle::GetSharedInstance().
-        GetRawDataResource(IDR_DISTILLER_JS).as_string();
-    distiller_page_->ExecuteJavaScript(script);
-  }
-
-  virtual void OnExecuteJavaScriptDone(const GURL& page_url,
-                                       const base::Value* value) OVERRIDE {
-    value_ = value->DeepCopy();
+  void OnPageDistillationFinished(
+    scoped_ptr<DistilledPageInfo> distilled_page,
+    bool distillation_successful) {
+    page_info_ = distilled_page.Pass();
     quit_closure_.Run();
   }
 
@@ -72,13 +68,12 @@ class DistillerPageWebContentsTest
  protected:
   DistillerPageWebContents* distiller_page_;
   base::Closure quit_closure_;
-  const base::Value* value_;
+  scoped_ptr<DistilledPageInfo> page_info_;
 };
 
 IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, BasicDistillationWorks) {
-  base::WeakPtrFactory<DistillerPage::Delegate> weak_factory(this);
   DistillerPageWebContents distiller_page(
-      weak_factory.GetWeakPtr(), shell()->web_contents()->GetBrowserContext());
+      shell()->web_contents()->GetBrowserContext());
   distiller_page_ = &distiller_page;
   distiller_page.Init();
 
@@ -86,28 +81,16 @@ IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, BasicDistillationWorks) {
   DistillPage(run_loop.QuitClosure(), "/simple_article.html");
   run_loop.Run();
 
-  const base::ListValue* result_list = NULL;
-  ASSERT_TRUE(value_->GetAsList(&result_list));
-  ASSERT_EQ(4u, result_list->GetSize());
-  std::string title;
-  result_list->GetString(0, &title);
-  EXPECT_EQ("Test Page Title", title);
-  std::string html;
-  result_list->GetString(1, &html);
-  EXPECT_THAT(html, HasSubstr("Lorem ipsum"));
-  EXPECT_THAT(html, Not(HasSubstr("questionable content")));
-  std::string next_page_url;
-  result_list->GetString(2, &next_page_url);
-  EXPECT_EQ("", next_page_url);
-  std::string unused;
-  result_list->GetString(3, &unused);
-  EXPECT_EQ("", unused);
+  EXPECT_EQ("Test Page Title", page_info_.get()->title);
+  EXPECT_THAT(page_info_.get()->html, HasSubstr("Lorem ipsum"));
+  EXPECT_THAT(page_info_.get()->html, Not(HasSubstr("questionable content")));
+  EXPECT_EQ("", page_info_.get()->next_page_url);
+  EXPECT_EQ("", page_info_.get()->prev_page_url);
 }
 
 IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, HandlesRelativeLinks) {
-  base::WeakPtrFactory<DistillerPage::Delegate> weak_factory(this);
   DistillerPageWebContents distiller_page(
-      weak_factory.GetWeakPtr(), shell()->web_contents()->GetBrowserContext());
+      shell()->web_contents()->GetBrowserContext());
   distiller_page_ = &distiller_page;
   distiller_page.Init();
 
@@ -115,21 +98,16 @@ IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, HandlesRelativeLinks) {
   DistillPage(run_loop.QuitClosure(), "/simple_article.html");
   run_loop.Run();
 
-  const base::ListValue* result_list = NULL;
-  ASSERT_TRUE(value_->GetAsList(&result_list));
-  std::string html;
-  result_list->GetString(1, &html);
   // A relative link should've been updated.
-  EXPECT_THAT(html,
+  EXPECT_THAT(page_info_.get()->html,
               ContainsRegex("href=\"http://127.0.0.1:.*/relativelink.html\""));
-  EXPECT_THAT(html,
+  EXPECT_THAT(page_info_.get()->html,
               HasSubstr("href=\"http://www.google.com/absolutelink.html\""));
 }
 
 IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, HandlesRelativeImages) {
-  base::WeakPtrFactory<DistillerPage::Delegate> weak_factory(this);
   DistillerPageWebContents distiller_page(
-      weak_factory.GetWeakPtr(), shell()->web_contents()->GetBrowserContext());
+      shell()->web_contents()->GetBrowserContext());
   distiller_page_ = &distiller_page;
   distiller_page.Init();
 
@@ -137,14 +115,10 @@ IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, HandlesRelativeImages) {
   DistillPage(run_loop.QuitClosure(), "/simple_article.html");
   run_loop.Run();
 
-  const base::ListValue* result_list = NULL;
-  ASSERT_TRUE(value_->GetAsList(&result_list));
-  std::string html;
-  result_list->GetString(1, &html);
   // A relative link should've been updated.
-  EXPECT_THAT(html,
+  EXPECT_THAT(page_info_.get()->html,
               ContainsRegex("src=\"http://127.0.0.1:.*/relativeimage.png\""));
-  EXPECT_THAT(html,
+  EXPECT_THAT(page_info_.get()->html,
               HasSubstr("src=\"http://www.google.com/absoluteimage.png\""));
 }
 

@@ -30,19 +30,16 @@ class DistillerPageWebContentsFactory : public DistillerPageFactory {
       : DistillerPageFactory(), browser_context_(browser_context) {}
   virtual ~DistillerPageWebContentsFactory() {}
 
-  virtual scoped_ptr<DistillerPage> CreateDistillerPage(
-      const base::WeakPtr<DistillerPage::Delegate>& delegate) const OVERRIDE;
+  virtual scoped_ptr<DistillerPage> CreateDistillerPage() const OVERRIDE;
 
  private:
   content::BrowserContext* browser_context_;
 };
 
-
 class DistillerPageWebContents : public DistillerPage,
                                  public content::WebContentsObserver {
  public:
-  DistillerPageWebContents(const base::WeakPtr<Delegate>& delegate,
-                           content::BrowserContext* browser_context);
+  DistillerPageWebContents(content::BrowserContext* browser_context);
   virtual ~DistillerPageWebContents();
 
   // content::WebContentsObserver implementation.

@@ -54,7 +54,7 @@ DistillerImpl::DistillerImpl(
       max_pages_in_article_(kMaxPagesInArticle),
       destruction_allowed_(true),
       weak_factory_(this) {
-  page_distiller_.reset(new PageDistiller(distiller_page_factory));
+  distiller_page_ = distiller_page_factory.CreateDistillerPage().Pass();
 }
 
 DistillerImpl::~DistillerImpl() {
@@ -63,7 +63,7 @@ DistillerImpl::~DistillerImpl() {
 
 void DistillerImpl::Init() {
   DCHECK(AreAllPagesFinished());
-  page_distiller_->Init();
+  distiller_page_->Init();
 }
 
 void DistillerImpl::SetMaxNumPagesInArticle(size_t max_num_pages) {
@@ -125,7 +125,7 @@ void DistillerImpl::DistillNextPage() {
     seen_urls_.insert(url.spec());
     pages_.push_back(new DistilledPageData());
     started_pages_index_[page_num] = pages_.size() - 1;
-    page_distiller_->DistillPage(
+    distiller_page_->DistillPage(
         url,
         base::Bind(&DistillerImpl::OnPageDistillationFinished,
                    weak_factory_.GetWeakPtr(),
