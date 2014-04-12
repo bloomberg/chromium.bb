@@ -995,6 +995,7 @@
         'wm/gestures/overview_gesture_handler_unittest.cc',
         'wm/immersive_fullscreen_controller_unittest.cc',
         'wm/lock_state_controller_unittest.cc',
+        'wm/maximize_mode/accelerometer_test_data_literals.cc',
         'wm/maximize_mode/maximize_mode_controller_unittest.cc',
         'wm/maximize_mode/maximize_mode_window_manager_unittest.cc',
         'wm/mru_window_tracker_unittest.cc',

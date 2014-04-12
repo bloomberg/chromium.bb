@@ -14,6 +14,8 @@ namespace ash {
 // The interface for classes which observe accelerometer updates.
 class AccelerometerObserver {
  public:
+  // Invoked when an accelerometer reading has been taken. The |base| and |lid|
+  // accelerometer readings are in G's.
   virtual void OnAccelerometerUpdated(const gfx::Vector3dF& base,
                                       const gfx::Vector3dF& lid) = 0;
 

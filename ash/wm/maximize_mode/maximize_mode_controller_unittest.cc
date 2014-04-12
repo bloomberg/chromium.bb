@@ -54,6 +54,20 @@ void EventCounter::OnEvent(ui::Event* event) {
 
 }  // namespace
 
+// Test accelerometer data taken with the lid at less than 180 degrees while
+// shaking the device around. The data is to be interpreted in groups of 6 where
+// each 6 values corresponds to the X, Y, and Z readings from the base and lid
+// accelerometers in this order.
+extern const float kAccelerometerLaptopModeTestData[];
+extern const size_t kAccelerometerLaptopModeTestDataLength;
+
+// Test accelerometer data taken with the lid open 360 degrees while
+// shaking the device around. The data is to be interpreted in groups of 6 where
+// each 6 values corresponds to the X, Y, and Z readings from the base and lid
+// accelerometers in this order.
+extern const float kAccelerometerFullyOpenTestData[];
+extern const size_t kAccelerometerFullyOpenTestDataLength;
+
 class MaximizeModeControllerTest : public test::AshTestBase {
  public:
   MaximizeModeControllerTest() {}
@@ -249,20 +263,20 @@ TEST_F(MaximizeModeControllerTest, RotationSticky) {
 // return to the standard orientation on exiting maximize mode.
 TEST_F(MaximizeModeControllerTest, RotationOnlyInMaximizeMode) {
   // Rotate on side with lid only open 90 degrees.
-  TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 0.8f, 0.3f),
-                             gfx::Vector3dF(-0.3f, 0.8f, 0.0f));
+  TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 0.95f, 0.35f),
+                             gfx::Vector3dF(-0.35f, 0.95f, 0.0f));
   ASSERT_FALSE(IsMaximizeModeStarted());
   EXPECT_EQ(gfx::Display::ROTATE_0, GetInternalDisplayRotation());
 
   // Open lid, screen should now rotate to match orientation.
-  TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 0.8f, -0.3f),
-                             gfx::Vector3dF(-0.3f, 0.8f, 0.0f));
+  TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 0.95f, -0.35f),
+                             gfx::Vector3dF(-0.35f, 0.95f, 0.0f));
   ASSERT_TRUE(IsMaximizeModeStarted());
   EXPECT_EQ(gfx::Display::ROTATE_90, GetInternalDisplayRotation());
 
   // Close lid back to 90, screen should rotate back.
-  TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 0.8f, 0.3f),
-                             gfx::Vector3dF(-0.3f, 0.8f, 0.0f));
+  TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 0.95f, 0.35f),
+                             gfx::Vector3dF(-0.35f, 0.95f, 0.0f));
   ASSERT_FALSE(IsMaximizeModeStarted());
   EXPECT_EQ(gfx::Display::ROTATE_0, GetInternalDisplayRotation());
 }
@@ -311,6 +325,49 @@ TEST_F(MaximizeModeControllerTest, BlocksKeyboard) {
   event_generator.ReleaseKey(ui::VKEY_ESCAPE, 0);
   EXPECT_GT(counter.event_count(), 0u);
   counter.reset();
+}
+
+TEST_F(MaximizeModeControllerTest, LaptopTest) {
+  // Feeds in sample accelerometer data and verifies that there are no
+  // transitions into touchview / maximize mode while shaking the device around
+  // with the hinge at less than 180 degrees.
+  ASSERT_TRUE(kAccelerometerLaptopModeTestDataLength % 6 == 0);
+  for (size_t i = 0; i < kAccelerometerLaptopModeTestDataLength / 6; ++i) {
+    gfx::Vector3dF base(kAccelerometerLaptopModeTestData[i * 6],
+                        kAccelerometerLaptopModeTestData[i * 6 + 1],
+                        kAccelerometerLaptopModeTestData[i * 6 + 2]);
+    gfx::Vector3dF lid(kAccelerometerLaptopModeTestData[i * 6 + 3],
+                       kAccelerometerLaptopModeTestData[i * 6 + 4],
+                       kAccelerometerLaptopModeTestData[i * 6 + 5]);
+    TriggerAccelerometerUpdate(base, lid);
+    // There are a lot of samples, so ASSERT rather than EXPECT to only generate
+    // one failure rather than potentially hundreds.
+    ASSERT_FALSE(IsMaximizeModeStarted());
+  }
+}
+
+TEST_F(MaximizeModeControllerTest, MaximizeModeTest) {
+  // Trigger maximize mode by opening to 270 to begin the test in maximize mode.
+  TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 0.0f, -1.0f),
+                             gfx::Vector3dF(-1.0f, 0.0f, 0.0f));
+  ASSERT_TRUE(IsMaximizeModeStarted());
+
+  // Feeds in sample accelerometer data and verifies that there are no
+  // transitions out of touchview / maximize mode while shaking the device
+  // around.
+  ASSERT_TRUE(kAccelerometerFullyOpenTestDataLength % 6 == 0);
+  for (size_t i = 0; i < kAccelerometerFullyOpenTestDataLength / 6; ++i) {
+    gfx::Vector3dF base(kAccelerometerFullyOpenTestData[i * 6],
+                        kAccelerometerFullyOpenTestData[i * 6 + 1],
+                        kAccelerometerFullyOpenTestData[i * 6 + 2]);
+    gfx::Vector3dF lid(kAccelerometerFullyOpenTestData[i * 6 + 3],
+                       kAccelerometerFullyOpenTestData[i * 6 + 4],
+                       kAccelerometerFullyOpenTestData[i * 6 + 5]);
+    TriggerAccelerometerUpdate(base, lid);
+    // There are a lot of samples, so ASSERT rather than EXPECT to only generate
+    // one failure rather than potentially hundreds.
+    ASSERT_TRUE(IsMaximizeModeStarted());
+  }
 }
 
 }  // namespace ash

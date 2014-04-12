@@ -25,7 +25,7 @@ const float kExitMaximizeModeAngle = 160.0f;
 // occasionally appear as though the lid is almost closed. If the lid appears
 // near closed but the device is on we assume it is an erroneous reading from
 // it being open 360 degrees.
-const float kFullyOpenAngleErrorTolerance = 10.0f;
+const float kFullyOpenAngleErrorTolerance = 20.0f;
 
 // When the device approaches vertical orientation (i.e. portrait orientation)
 // the accelerometers for the base and lid approach the same values (i.e.
@@ -34,6 +34,16 @@ const float kFullyOpenAngleErrorTolerance = 10.0f;
 // This is the angle from vertical under which we will not compute a hinge
 // angle.
 const float kHingeAxisAlignedThreshold = 15.0f;
+
+// The maximum deviation from the acceleration expected due to gravity under
+// which to detect hinge angle and screen rotation.
+const float kDeviationFromGravityThreshold = 0.1f;
+
+// The maximum deviation between the magnitude of the two accelerometers under
+// which to detect hinge angle and screen rotation. These accelerometers are
+// attached to the same physical device and so should be under the same
+// acceleration.
+const float kNoisyMagnitudeDeviation = 0.1f;
 
 // The angle which the screen has to be rotated past before the display will
 // rotate to match it (i.e. 45.0f is no stickiness).
@@ -82,6 +92,17 @@ MaximizeModeController::~MaximizeModeController() {
 void MaximizeModeController::OnAccelerometerUpdated(
     const gfx::Vector3dF& base,
     const gfx::Vector3dF& lid) {
+  // Ignore the reading if it appears unstable. The reading is considered
+  // unstable if it deviates too much from gravity and/or the magnitude of the
+  // reading from the lid differs too much from the reading from the base.
+  float base_magnitude = base.Length();
+  float lid_magnitude = lid.Length();
+  if (std::abs(base_magnitude - lid_magnitude) > kNoisyMagnitudeDeviation ||
+      std::abs(base_magnitude - 1.0f) > kDeviationFromGravityThreshold ||
+      std::abs(lid_magnitude - 1.0f) > kDeviationFromGravityThreshold) {
+      return;
+  }
+
   // Responding to the hinge rotation can change the maximize mode state which
   // affects screen rotation, so we handle hinge rotation first.
   HandleHingeRotation(base, lid);
