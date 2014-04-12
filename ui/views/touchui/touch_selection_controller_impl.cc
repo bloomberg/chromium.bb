@@ -72,11 +72,11 @@ views::Widget* CreateTouchSelectionPopupWidget(
     gfx::NativeView context,
     views::WidgetDelegate* widget_delegate) {
   views::Widget* widget = new views::Widget;
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_TOOLTIP);
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.can_activate = false;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.context = context;
+  params.parent = context;
   params.delegate = widget_delegate;
   widget->Init(params);
   SetShadowType(widget->GetNativeView(), wm::SHADOW_TYPE_NONE);
@@ -156,7 +156,6 @@ class TouchSelectionControllerImpl::EditingHandleView
         draw_invisible_(false) {
     widget_.reset(CreateTouchSelectionPopupWidget(context, this));
     widget_->SetContentsView(this);
-    widget_->SetAlwaysOnTop(true);
 
     aura::Window* window = widget_->GetNativeWindow();
     window->SetEventTargeter(scoped_ptr<ui::EventTargeter>(
@@ -580,6 +579,10 @@ void TouchSelectionControllerImpl::HideContextMenu() {
     context_menu_->Close();
   context_menu_ = NULL;
   context_menu_timer_.Stop();
+}
+
+gfx::NativeView TouchSelectionControllerImpl::GetCursorHandleNativeView() {
+  return cursor_handle_->GetWidget()->GetNativeView();
 }
 
 gfx::Point TouchSelectionControllerImpl::GetSelectionHandle1Position() {

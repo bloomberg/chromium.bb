@@ -103,19 +103,31 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
  protected:
   static bool IsCursorHandleVisibleFor(
       ui::TouchSelectionController* controller) {
-    return static_cast<TouchSelectionControllerImpl*>(
-        controller)->IsCursorHandleVisible();
+    TouchSelectionControllerImpl* impl =
+        static_cast<TouchSelectionControllerImpl*>(controller);
+    return impl->IsCursorHandleVisible();
+  }
+
+  gfx::Rect GetCursorRect(const gfx::SelectionModel& sel) {
+    return textfield_->GetRenderText()->GetCursorBounds(sel, true);
   }
 
   gfx::Point GetCursorPosition(const gfx::SelectionModel& sel) {
-    gfx::RenderText* render_text = textfield_->GetRenderText();
-    gfx::Rect cursor_bounds = render_text->GetCursorBounds(sel, true);
+    gfx::Rect cursor_bounds = GetCursorRect(sel);
     return gfx::Point(cursor_bounds.x(), cursor_bounds.y());
   }
 
   TouchSelectionControllerImpl* GetSelectionController() {
     return static_cast<TouchSelectionControllerImpl*>(
         textfield_->touch_selection_controller_.get());
+  }
+
+  void StartTouchEditing() {
+    textfield_->CreateTouchSelectionControllerAndNotifyIt();
+  }
+
+  void EndTouchEditing() {
+    textfield_->touch_selection_controller_.reset();
   }
 
   void SimulateSelectionHandleDrag(gfx::Point p, int selection_handle) {
@@ -133,6 +145,10 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
 
     // Do the work of OnMouseReleased().
     controller->dragging_handle_ = NULL;
+  }
+
+  gfx::NativeView GetCursorHandleNativeView() {
+    return GetSelectionController()->GetCursorHandleNativeView();
   }
 
   gfx::Point GetSelectionHandle1Position() {
@@ -161,6 +177,15 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
 
   gfx::RenderText* GetRenderText() {
     return textfield_->GetRenderText();
+  }
+
+  gfx::Point GetCursorHandleDragPoint() {
+    gfx::Point point = GetCursorHandlePosition();
+    const gfx::SelectionModel& sel = textfield_->GetSelectionModel();
+    int cursor_height = GetCursorRect(sel).height();
+    point.Offset(GetHandleImageSize().width() / 2 + kPadding,
+                 GetHandleImageSize().height() / 2 + cursor_height);
+    return point;
   }
 
   Widget* textfield_widget_;
@@ -642,6 +667,44 @@ TEST_F(TouchSelectionControllerImplTest,
   EXPECT_FALSE(IsCursorHandleVisibleFor(touch_selection_controller.get()));
 
   touch_selection_controller.reset();
+}
+
+TEST_F(TouchSelectionControllerImplTest, HandlesStackAboveParent) {
+  ui::EventTarget* root = GetContext();
+  ui::EventTargeter* targeter = root->GetEventTargeter();
+
+  // Create the first window containing a Views::Textfield.
+  CreateTextfield();
+  aura::Window* window1 = textfield_widget_->GetNativeView();
+
+  // Start touch editing, check that the handle is above the first window, and
+  // end touch editing.
+  StartTouchEditing();
+  gfx::Point test_point = GetCursorHandleDragPoint();
+  ui::MouseEvent test_event1(ui::ET_MOUSE_MOVED, test_point, test_point,
+                             ui::EF_NONE, ui::EF_NONE);
+  EXPECT_EQ(GetCursorHandleNativeView(),
+            targeter->FindTargetForEvent(root, &test_event1));
+  EndTouchEditing();
+
+  // Create the second (empty) window over the first one.
+  CreateWidget();
+  aura::Window* window2 = widget_->GetNativeView();
+
+  // Start touch editing (in the first window) and check that the handle is not
+  // above the second window.
+  StartTouchEditing();
+  ui::MouseEvent test_event2(ui::ET_MOUSE_MOVED, test_point, test_point,
+                             ui::EF_NONE, ui::EF_NONE);
+  EXPECT_EQ(window2, targeter->FindTargetForEvent(root, &test_event2));
+
+  // Move the first window to top and check that the handle is kept above the
+  // first window.
+  window1->GetRootWindow()->StackChildAtTop(window1);
+  ui::MouseEvent test_event3(ui::ET_MOUSE_MOVED, test_point, test_point,
+                             ui::EF_NONE, ui::EF_NONE);
+  EXPECT_EQ(GetCursorHandleNativeView(),
+            targeter->FindTargetForEvent(root, &test_event3));
 }
 
 }  // namespace views

@@ -81,6 +81,7 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
   void HideContextMenu();
 
   // Convenience methods for testing.
+  gfx::NativeView GetCursorHandleNativeView();
   gfx::Point GetSelectionHandle1Position();
   gfx::Point GetSelectionHandle2Position();
   gfx::Point GetCursorHandlePosition();
