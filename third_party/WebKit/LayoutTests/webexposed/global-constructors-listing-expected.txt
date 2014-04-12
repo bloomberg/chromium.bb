@@ -405,6 +405,7 @@ Screen
 ScriptProcessorNode
 SecurityPolicyViolationEvent
 Selection
+ServiceWorker
 ShadowRoot
 SharedWorker
 SpeechInputEvent

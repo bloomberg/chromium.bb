@@ -28,8 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 [
-    RuntimeEnabled=ServiceWorker,
-    NoInterfaceObject
+    RuntimeEnabled=ServiceWorker
 ] interface ServiceWorker {
 
     // FIXME: Should inherit this from Worker.

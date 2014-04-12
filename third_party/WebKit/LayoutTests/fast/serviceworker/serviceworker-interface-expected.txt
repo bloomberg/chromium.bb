@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL ServiceWorker interface assert_equals: ServiceWorker should extend Worker expected object "[object Object]" but got object "[object Object]"
+Harness: the test ran to completion.
+

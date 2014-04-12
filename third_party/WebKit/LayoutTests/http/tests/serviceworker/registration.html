@@ -11,7 +11,8 @@
             {scope: '/*'}
         ).then(
             t.step_func(function(worker) {
-                assert_true(!!worker, 'Successfully registered.');
+                assert_true(worker instanceof ServiceWorker,
+                            'Successfully registered.');
                 t.done();
             }),
             t.step_func(function(reason) {
