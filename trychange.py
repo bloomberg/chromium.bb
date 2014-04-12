@@ -611,7 +611,15 @@ def _GetPatchGitRepo(git_url):
 
 
 def _SendChangeGit(bot_spec, options):
-  """Send a change to the try server by committing a diff file to a GIT repo"""
+  """Sends a change to the try server by committing a diff file to a GIT repo.
+
+  Creates a temp orphan branch, commits patch.diff, creates a ref pointing to
+  that commit, deletes the temp branch, checks master out, adds 'ref' file
+  containing the name of the new ref, pushes master and the ref to the origin.
+
+  TODO: instead of creating a temp branch, use git-commit-tree.
+  """
+
   if not options.git_repo:
     raise NoTryServerAccess('Please use the --git_repo option to specify the '
                             'try server git repository to connect to.')
@@ -640,35 +648,50 @@ def _SendChangeGit(bot_spec, options):
   with _PrepareDescriptionAndPatchFiles(description, options) as (
        patch_filename, description_filename):
     logging.info('Committing patch')
-    target_branch = 'refs/patches/%s/%s' % (
+
+    temp_branch = 'tmp_patch'
+    target_ref = 'refs/patches/%s/%s' % (
         Escape(options.user),
         os.path.basename(patch_filename).replace(' ','_'))
     target_filename = os.path.join(patch_dir, 'patch.diff')
     branch_file = os.path.join(patch_dir, GIT_BRANCH_FILE)
+
+    patch_git('checkout', 'master')
     try:
+      # Try deleting an existing temp branch, if any.
+      try:
+        patch_git('branch', '-D', temp_branch)
+        logging.debug('Deleted an existing temp branch.')
+      except subprocess2.CalledProcessError:
+        pass
       # Create a new branch and put the patch there.
-      patch_git('checkout', '--orphan', target_branch)
+      patch_git('checkout', '--orphan', temp_branch)
       patch_git('reset')
       patch_git('clean', '-f')
       shutil.copyfile(patch_filename, target_filename)
       add_and_commit(target_filename, description_filename)
       assert not scm.GIT.IsWorkTreeDirty(patch_dir)
 
-      # Update the branch file in the master
-      patch_git('checkout', 'master')
+      # Create a ref and point it to the commit referenced by temp_branch.
+      patch_git('update-ref', target_ref, temp_branch)
 
+      # Delete the temp ref.
+      patch_git('checkout', 'master')
+      patch_git('branch', '-D', temp_branch)
+
+      # Update the branch file in the master.
       def update_branch():
         with open(branch_file, 'w') as f:
-          f.write(target_branch)
+          f.write(target_ref)
         add_and_commit(branch_file, description_filename)
 
       update_branch()
 
-      # Push master and target_branch to origin.
+      # Push master and target_ref to origin.
       logging.info('Pushing patch')
       for attempt in xrange(_GIT_PUSH_ATTEMPTS):
         try:
-          patch_git('push', 'origin', 'master', target_branch)
+          patch_git('push', 'origin', 'master', target_ref)
         except subprocess2.CalledProcessError as e:
           is_last = attempt == _GIT_PUSH_ATTEMPTS - 1
           if is_last:
