@@ -2664,6 +2664,16 @@
             'browser/ui/app_list/test/fast_show_pickler_unittest.cc',
           ],
         }],
+        ['use_ozone==1', {
+          'sources!': [
+            # crbug.com/362698
+            'browser/chromeos/input_method/input_method_engine_unittest.cc',
+            'browser/chromeos/input_method/input_method_manager_impl_unittest.cc',
+          ],
+          'sources/': [
+            ['exclude', '^browser/chromeos/events/'],  # crbug.com/354036
+          ],
+        }],
       ],
     },
     {

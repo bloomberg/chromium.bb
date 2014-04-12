@@ -1950,6 +1950,13 @@
             '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput',
           ],
         }],
+        ['use_ozone==1', {
+          'sources!': [
+            # crbug.com/362698
+            'browser/chromeos/input_method/input_method_engine_browsertests.cc',
+            'browser/extensions/api/input_ime/input_ime_apitest_chromeos.cc',
+          ],
+        }],
       ],  # conditions
     },  # target browser_tests
     {

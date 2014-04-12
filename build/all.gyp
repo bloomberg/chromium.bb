@@ -1203,6 +1203,11 @@
                 '../chromeos/chromeos.gyp:chromeos_unittests',
               ],
             }],
+            ['use_ozone==1', {
+              'dependencies!': [
+                '../chrome/chrome.gyp:interactive_ui_tests',  # crbug.com/362166
+              ],
+            }],
           ],
         },
       ],  # targets
