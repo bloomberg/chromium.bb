@@ -47,7 +47,7 @@
 
 using namespace WebCore;
 
-namespace {
+namespace WebCore {
 
 TEST(RawResourceTest, DontIgnoreAcceptForCacheReuse)
 {
@@ -86,4 +86,105 @@ TEST(RawResourceTest, RevalidationSucceeded)
     EXPECT_NE(newResource.get(), newResourcePointer);
 }
 
-} // namespace
+class DummyClient : public RawResourceClient {
+public:
+    DummyClient() : m_called(false) { }
+    virtual ~DummyClient() { }
+
+    // ResourceClient implementation.
+    virtual void notifyFinished(Resource* resource)
+    {
+        m_called = true;
+    }
+
+    bool called() { return m_called; }
+private:
+    bool m_called;
+};
+
+// This client adds another client when notified.
+class AddingClient : public RawResourceClient {
+public:
+    AddingClient(DummyClient* client, Resource* resource)
+        : m_dummyClient(client)
+        , m_resource(resource)
+        , m_removeClientTimer(this, &AddingClient::removeClient) { }
+
+    virtual ~AddingClient() { }
+
+    // ResourceClient implementation.
+    virtual void notifyFinished(Resource* resource)
+    {
+        // First schedule an asynchronous task to remove the client.
+        // We do not expect the client to be called.
+        m_removeClientTimer.startOneShot(0, FROM_HERE);
+        resource->addClient(m_dummyClient);
+    }
+    void removeClient(Timer<AddingClient>* timer)
+    {
+        m_resource->removeClient(m_dummyClient);
+    }
+private:
+    DummyClient* m_dummyClient;
+    Resource* m_resource;
+    Timer<AddingClient> m_removeClientTimer;
+};
+
+TEST(RawResourceTest, AddClientDuringCallback)
+{
+    ResourcePtr<Resource> raw = new RawResource(ResourceRequest("data:text/html,"), Resource::Raw);
+    raw->setLoading(false);
+
+    // Create a non-null response.
+    ResourceResponse response = raw->response();
+    response.setURL(KURL(ParsedURLString, "http://600.613/"));
+    raw->setResponse(response);
+    EXPECT_FALSE(raw->response().isNull());
+
+    OwnPtr<DummyClient> dummyClient = adoptPtr(new DummyClient());
+    OwnPtr<AddingClient> addingClient = adoptPtr(new AddingClient(dummyClient.get(), raw.get()));
+    raw->addClient(addingClient.get());
+    testing::runPendingTasks();
+    raw->removeClient(addingClient.get());
+    EXPECT_FALSE(dummyClient->called());
+    EXPECT_FALSE(raw->hasClients());
+}
+
+// This client removes another client when notified.
+class RemovingClient : public RawResourceClient {
+public:
+    RemovingClient(DummyClient* client)
+        : m_dummyClient(client) { }
+
+    virtual ~RemovingClient() { }
+
+    // ResourceClient implementation.
+    virtual void notifyFinished(Resource* resource)
+    {
+        resource->removeClient(m_dummyClient);
+        resource->removeClient(this);
+    }
+private:
+    DummyClient* m_dummyClient;
+};
+
+TEST(RawResourceTest, RemoveClientDuringCallback)
+{
+    ResourcePtr<Resource> raw = new RawResource(ResourceRequest("data:text/html,"), Resource::Raw);
+    raw->setLoading(false);
+
+    // Create a non-null response.
+    ResourceResponse response = raw->response();
+    response.setURL(KURL(ParsedURLString, "http://600.613/"));
+    raw->setResponse(response);
+    EXPECT_FALSE(raw->response().isNull());
+
+    OwnPtr<DummyClient> dummyClient = adoptPtr(new DummyClient());
+    OwnPtr<RemovingClient> removingClient = adoptPtr(new RemovingClient(dummyClient.get()));
+    raw->addClient(dummyClient.get());
+    raw->addClient(removingClient.get());
+    testing::runPendingTasks();
+    EXPECT_FALSE(raw->hasClients());
+}
+
+} // namespace WebCore

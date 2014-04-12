@@ -478,7 +478,7 @@ void Resource::removeClient(ResourceClient* client)
         if (m_clientsAwaitingCallback.isEmpty())
             ResourceCallback::callbackHandler()->cancel(this);
     } else {
-        ASSERT(m_clients.contains(client));
+        RELEASE_ASSERT(m_clients.contains(client));
         m_clients.remove(client);
         didRemoveClient(client);
     }
@@ -563,12 +563,35 @@ void Resource::didAccessDecodedData()
 
 void Resource::finishPendingClients()
 {
-    while (!m_clientsAwaitingCallback.isEmpty()) {
-        ResourceClient* client = m_clientsAwaitingCallback.begin()->key;
-        m_clientsAwaitingCallback.remove(client);
+    // We're going to notify clients one by one. It is simple if the client does nothing.
+    // However there are a couple other things that can happen.
+    //
+    // 1. Clients can be added during the loop. Make sure they are not processed.
+    // 2. Clients can be removed during the loop. Make sure they are always available to be
+    //    removed. Also don't call removed clients or add them back.
+
+    // Handle case (1) by saving a list of clients to notify. A separate list also ensure
+    // a client is either in m_clients or m_clientsAwaitingCallback.
+    Vector<ResourceClient*> clientsToNotify;
+    copyToVector(m_clientsAwaitingCallback, clientsToNotify);
+
+    for (size_t i = 0; i < clientsToNotify.size(); ++i) {
+        ResourceClient* client = clientsToNotify[i];
+
+        // Handle case (2) to skip removed clients.
+        if (!m_clientsAwaitingCallback.remove(client))
+            continue;
         m_clients.add(client);
         didAddClient(client);
     }
+
+    bool scheduled = ResourceCallback::callbackHandler()->isScheduled(this);
+    // It is a critical problem if a callback is scheduled but there is no client waiting for it.
+    // Such a callback cannot be cancelled. It is better to crash the renderer now.
+    RELEASE_ASSERT(!scheduled || !m_clientsAwaitingCallback.isEmpty());
+
+    // Prevent the case when there are clients waiting but no callback scheduled.
+    ASSERT(m_clientsAwaitingCallback.isEmpty() || scheduled);
 }
 
 void Resource::prune()
