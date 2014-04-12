@@ -71,22 +71,6 @@ SyncStatus AllStatus::CalcSyncing(const SyncCycleEvent &event) const {
         snapshot.model_neutral_state().num_local_overwrites;
     status.num_server_overwrites_total +=
         snapshot.model_neutral_state().num_server_overwrites;
-    if (snapshot.model_neutral_state().num_updates_downloaded_total == 0) {
-      ++status.empty_get_updates;
-    } else {
-      ++status.nonempty_get_updates;
-    }
-    if (snapshot.model_neutral_state().num_successful_commits == 0) {
-      ++status.sync_cycles_without_commits;
-    } else {
-      ++status.sync_cycles_with_commits;
-    }
-    if (snapshot.model_neutral_state().num_successful_commits == 0 &&
-        snapshot.model_neutral_state().num_updates_downloaded_total == 0) {
-      ++status.useless_sync_cycles;
-    } else {
-      ++status.useful_sync_cycles;
-    }
   }
   return status;
 }

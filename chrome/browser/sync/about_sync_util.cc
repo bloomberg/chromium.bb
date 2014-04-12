@@ -248,7 +248,6 @@ scoped_ptr<base::DictionaryValue> ConstructAboutInformation(
   StringSyncStat backend_initialization(section_local,
                                         "Sync Backend Initialization");
   BoolSyncStat is_syncing(section_local, "Syncing");
-  BoolSyncStat is_token_available(section_local, "Sync Token Available");
 
   base::ListValue* section_network = AddSection(stats_list, "Network");
   BoolSyncStat is_throttled(section_network, "Throttled");
@@ -284,15 +283,6 @@ scoped_ptr<base::DictionaryValue> ConstructAboutInformation(
   base::ListValue* section_counters = AddSection(stats_list, "Running Totals");
   IntSyncStat notifications_received(section_counters,
                                      "Notifications Received");
-  IntSyncStat empty_get_updates(section_counters, "Cycles Without Updates");
-  IntSyncStat non_empty_get_updates(section_counters, "Cycles With Updates");
-  IntSyncStat sync_cycles_without_commits(section_counters,
-                                          "Cycles Without Commits");
-  IntSyncStat sync_cycles_with_commits(section_counters, "Cycles With Commits");
-  IntSyncStat useless_sync_cycles(section_counters,
-                           "Cycles Without Commits or Updates");
-  IntSyncStat useful_sync_cycles(section_counters,
-                                 "Cycles With Commits or Updates");
   IntSyncStat updates_received(section_counters, "Updates Downloaded");
   IntSyncStat tombstone_updates(section_counters, "Tombstone Updates");
   IntSyncStat reflected_updates(section_counters, "Reflected Updates");
@@ -422,14 +412,6 @@ scoped_ptr<base::DictionaryValue> ConstructAboutInformation(
 
   if (is_status_valid) {
     notifications_received.SetValue(full_status.notifications_received);
-    empty_get_updates.SetValue(full_status.empty_get_updates);
-    non_empty_get_updates.SetValue(full_status.nonempty_get_updates);
-    sync_cycles_without_commits.SetValue(
-        full_status.sync_cycles_without_commits);
-    sync_cycles_with_commits.SetValue(
-        full_status.sync_cycles_with_commits);
-    useless_sync_cycles.SetValue(full_status.useless_sync_cycles);
-    useful_sync_cycles.SetValue(full_status.useful_sync_cycles);
     updates_received.SetValue(full_status.updates_received);
     tombstone_updates.SetValue(full_status.tombstone_updates_received);
     reflected_updates.SetValue(full_status.reflected_updates_received);

@@ -65,18 +65,6 @@ struct SYNC_EXPORT SyncStatus {
   int num_local_overwrites_total;
   int num_server_overwrites_total;
 
-  // Count of empty and non empty getupdates;
-  int nonempty_get_updates;
-  int empty_get_updates;
-
-  // Count of sync cycles that successfully committed items;
-  int sync_cycles_with_commits;
-  int sync_cycles_without_commits;
-
-  // Count of useless and useful syncs we perform.
-  int useless_sync_cycles;
-  int useful_sync_cycles;
-
   // Nudge counts for each possible source
   int nudge_source_notification;
   int nudge_source_local;
