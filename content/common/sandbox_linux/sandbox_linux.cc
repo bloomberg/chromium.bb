@@ -22,6 +22,7 @@
 #include "base/memory/singleton.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/sys_info.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/common/sandbox_linux/sandbox_linux.h"
@@ -359,8 +360,13 @@ bool LinuxSandbox::LimitAddressSpace(const std::string& process_type) {
 
   bool limited_as = AddResourceLimit(RLIMIT_AS, address_space_limit);
   bool limited_data = AddResourceLimit(RLIMIT_DATA, kNewDataSegmentMaxSize);
+
+  // Cache the resource limit before turning on the sandbox.
+  base::SysInfo::AmountOfVirtualMemory();
+
   return limited_as && limited_data;
 #else
+  base::SysInfo::AmountOfVirtualMemory();
   return false;
 #endif  // !defined(ADDRESS_SANITIZER)
 }
