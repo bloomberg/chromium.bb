@@ -46,7 +46,6 @@
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebElement.h"
-#include "third_party/WebKit/public/web/WebFrameClient.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
 #include "third_party/WebKit/public/web/WebIconURL.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -174,7 +173,6 @@ class WebMediaPlayerProxyAndroid;
 class CONTENT_EXPORT RenderViewImpl
     : public RenderWidget,
       NON_EXPORTED_BASE(public blink::WebViewClient),
-      NON_EXPORTED_BASE(public blink::WebFrameClient),
       NON_EXPORTED_BASE(public blink::WebPageSerializerClient),
       public RenderView,
       NON_EXPORTED_BASE(public WebMediaPlayerDelegate),
@@ -462,6 +460,7 @@ class CONTENT_EXPORT RenderViewImpl
       const blink::WebGestureEvent& event,
       const blink::WebVector<blink::WebRect>& target_rects);
 #endif
+  virtual blink::WebString acceptLanguages();
   virtual void navigateBackForwardSoon(int offset);
   virtual int historyBackListCount();
   virtual int historyForwardListCount();
@@ -500,49 +499,53 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void didScrollWithKeyboard(const blink::WebSize& delta);
 #endif
 
-  // blink::WebFrameClient implementation -------------------------------------
+  // Old WebFrameClient implementations ----------------------------------------
 
-  virtual void didAccessInitialDocument(blink::WebLocalFrame* frame);
-  virtual void didDisownOpener(blink::WebLocalFrame* frame);
-  virtual void frameDetached(blink::WebFrame* frame);
-  virtual void willClose(blink::WebFrame* frame);
-  virtual void didMatchCSS(
+  // RenderViewImpl used to be a WebFrameClient, but now RenderFrameImpl is the
+  // WebFrameClient. However, many implementations of WebFrameClient methods
+  // still live here and are called from RenderFrameImpl. These implementations
+  // are to be moved to RenderFrameImpl <http://crbug.com/361761>.
+
+  void didAccessInitialDocument(blink::WebLocalFrame* frame);
+  void didDisownOpener(blink::WebLocalFrame* frame);
+  void frameDetached(blink::WebFrame* frame);
+  void willClose(blink::WebFrame* frame);
+  void didMatchCSS(
       blink::WebLocalFrame* frame,
       const blink::WebVector<blink::WebString>& newly_matching_selectors,
       const blink::WebVector<blink::WebString>& stopped_matching_selectors);
-  virtual void willSendSubmitEvent(blink::WebLocalFrame* frame,
-                                   const blink::WebFormElement& form);
-  virtual void willSubmitForm(blink::WebLocalFrame* frame,
-                              const blink::WebFormElement& form);
-  virtual void didCreateDataSource(blink::WebLocalFrame* frame,
-                                   blink::WebDataSource* datasource);
-  virtual void didStartProvisionalLoad(blink::WebLocalFrame* frame);
-  virtual void didFailProvisionalLoad(blink::WebLocalFrame* frame,
-                                      const blink::WebURLError& error);
-  virtual void didClearWindowObject(blink::WebLocalFrame* frame, int world_id);
-  virtual void didCreateDocumentElement(blink::WebLocalFrame* frame);
-  virtual void didReceiveTitle(blink::WebLocalFrame* frame,
-                               const blink::WebString& title,
-                               blink::WebTextDirection direction);
-  virtual void didChangeIcon(blink::WebLocalFrame*, blink::WebIconURL::Type);
-  virtual void didFinishDocumentLoad(blink::WebLocalFrame* frame);
-  virtual void didHandleOnloadEvents(blink::WebLocalFrame* frame);
-  virtual void didFailLoad(blink::WebLocalFrame* frame,
-                           const blink::WebURLError& error);
-  virtual void didFinishLoad(blink::WebLocalFrame* frame);
-  virtual void didUpdateCurrentHistoryItem(blink::WebLocalFrame* frame);
-  virtual void didFinishResourceLoad(blink::WebLocalFrame* frame,
-                                     unsigned identifier);
-  virtual void didChangeScrollOffset(blink::WebLocalFrame* frame);
-  virtual void didFirstVisuallyNonEmptyLayout(blink::WebLocalFrame*);
-  virtual void didChangeContentsSize(blink::WebLocalFrame* frame,
-                                     const blink::WebSize& size);
-  virtual bool willCheckAndDispatchMessageEvent(
+  void willSendSubmitEvent(blink::WebLocalFrame* frame,
+                           const blink::WebFormElement& form);
+  void willSubmitForm(blink::WebLocalFrame* frame,
+                      const blink::WebFormElement& form);
+  void didCreateDataSource(blink::WebLocalFrame* frame,
+                           blink::WebDataSource* datasource);
+  void didStartProvisionalLoad(blink::WebLocalFrame* frame);
+  void didFailProvisionalLoad(blink::WebLocalFrame* frame,
+                              const blink::WebURLError& error);
+  void didClearWindowObject(blink::WebLocalFrame* frame, int world_id);
+  void didCreateDocumentElement(blink::WebLocalFrame* frame);
+  void didReceiveTitle(blink::WebLocalFrame* frame,
+                       const blink::WebString& title,
+                       blink::WebTextDirection direction);
+  void didChangeIcon(blink::WebLocalFrame*, blink::WebIconURL::Type);
+  void didFinishDocumentLoad(blink::WebLocalFrame* frame);
+  void didHandleOnloadEvents(blink::WebLocalFrame* frame);
+  void didFailLoad(blink::WebLocalFrame* frame,
+                   const blink::WebURLError& error);
+  void didFinishLoad(blink::WebLocalFrame* frame);
+  void didUpdateCurrentHistoryItem(blink::WebLocalFrame* frame);
+  void didFinishResourceLoad(blink::WebLocalFrame* frame,
+                             unsigned identifier);
+  void didChangeScrollOffset(blink::WebLocalFrame* frame);
+  void didFirstVisuallyNonEmptyLayout(blink::WebLocalFrame*);
+  void didChangeContentsSize(blink::WebLocalFrame* frame,
+                             const blink::WebSize& size);
+  bool willCheckAndDispatchMessageEvent(
       blink::WebLocalFrame* sourceFrame,
       blink::WebFrame* targetFrame,
       blink::WebSecurityOrigin targetOrigin,
       blink::WebDOMMessageEvent event);
-  virtual blink::WebString acceptLanguages();
 
   // blink::WebPageSerializerClient implementation ----------------------------
 
