@@ -36,7 +36,7 @@ class ShellContentRendererClient : public ContentRendererClient {
   virtual void RenderViewCreated(RenderView* render_view) OVERRIDE;
   virtual bool OverrideCreatePlugin(
       RenderFrame* render_frame,
-      blink::WebFrame* frame,
+      blink::WebLocalFrame* frame,
       const blink::WebPluginParams& params,
       blink::WebPlugin** plugin) OVERRIDE;
   virtual blink::WebMediaStreamCenter* OverrideCreateWebMediaStreamCenter(

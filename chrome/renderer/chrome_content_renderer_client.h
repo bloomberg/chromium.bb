@@ -14,6 +14,7 @@
 #include "base/strings/string16.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "ipc/ipc_channel_proxy.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 class ChromeRenderProcessObserver;
 class PrescientNetworkingDispatcher;
@@ -71,7 +72,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   virtual std::string GetDefaultEncoding() OVERRIDE;
   virtual bool OverrideCreatePlugin(
       content::RenderFrame* render_frame,
-      blink::WebFrame* frame,
+      blink::WebLocalFrame* frame,
       const blink::WebPluginParams& params,
       blink::WebPlugin** plugin) OVERRIDE;
   virtual blink::WebPlugin* CreatePluginReplacement(
@@ -142,7 +143,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
 
   static blink::WebPlugin* CreatePlugin(
       content::RenderFrame* render_frame,
-      blink::WebFrame* frame,
+      blink::WebLocalFrame* frame,
       const blink::WebPluginParams& params,
       const ChromeViewHostMsg_GetPluginInfo_Output& output);
 

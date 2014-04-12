@@ -74,7 +74,7 @@ bool IsValidYouTubeVideo(const std::string& path) {
 namespace plugins {
 
 MobileYouTubePlugin::MobileYouTubePlugin(content::RenderFrame* render_frame,
-                                         blink::WebFrame* frame,
+                                         blink::WebLocalFrame* frame,
                                          const blink::WebPluginParams& params,
                                          base::StringPiece& template_html,
                                          GURL placeholderDataUrl)

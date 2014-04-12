@@ -18,7 +18,6 @@
 #include "gin/object_template_builder.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
@@ -27,7 +26,7 @@
 
 using base::UserMetricsAction;
 using blink::WebElement;
-using blink::WebFrame;
+using blink::WebLocalFrame;
 using blink::WebMouseEvent;
 using blink::WebNode;
 using blink::WebPlugin;
@@ -42,7 +41,7 @@ namespace plugins {
 gin::WrapperInfo PluginPlaceholder::kWrapperInfo = {gin::kEmbedderNativeGin};
 
 PluginPlaceholder::PluginPlaceholder(content::RenderFrame* render_frame,
-                                     WebFrame* frame,
+                                     WebLocalFrame* frame,
                                      const WebPluginParams& params,
                                      const std::string& html_data,
                                      GURL placeholderDataUrl)
@@ -245,7 +244,7 @@ void PluginPlaceholder::SetIdentifier(const std::string& identifier) {
   identifier_ = identifier;
 }
 
-blink::WebFrame* PluginPlaceholder::GetFrame() { return frame_; }
+blink::WebLocalFrame* PluginPlaceholder::GetFrame() { return frame_; }
 
 const blink::WebPluginParams& PluginPlaceholder::GetPluginParams() const {
   return plugin_params_;

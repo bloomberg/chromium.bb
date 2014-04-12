@@ -38,7 +38,7 @@ class PluginPlaceholder : public content::RenderFrameObserver,
   // |render_frame| and |frame| are weak pointers. If either one is going away,
   // our |plugin_| will be destroyed as well and will notify us.
   PluginPlaceholder(content::RenderFrame* render_frame,
-                    blink::WebFrame* frame,
+                    blink::WebLocalFrame* frame,
                     const blink::WebPluginParams& params,
                     const std::string& html_data,
                     GURL placeholderDataUrl);
@@ -52,7 +52,7 @@ class PluginPlaceholder : public content::RenderFrameObserver,
   void SetPluginInfo(const content::WebPluginInfo& plugin_info);
   const content::WebPluginInfo& GetPluginInfo() const;
   void SetIdentifier(const std::string& identifier);
-  blink::WebFrame* GetFrame();
+  blink::WebLocalFrame* GetFrame();
   const blink::WebPluginParams& GetPluginParams() const;
   bool LoadingAllowed() const { return allow_loading_; }
 
@@ -90,7 +90,7 @@ class PluginPlaceholder : public content::RenderFrameObserver,
 
   void UpdateMessage();
 
-  blink::WebFrame* frame_;
+  blink::WebLocalFrame* frame_;
   blink::WebPluginParams plugin_params_;
   WebViewPlugin* plugin_;
 

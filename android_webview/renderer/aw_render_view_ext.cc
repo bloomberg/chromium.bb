@@ -24,9 +24,9 @@
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebElementCollection.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebHitTestResult.h"
 #include "third_party/WebKit/public/web/WebImageCache.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebNode.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -180,7 +180,7 @@ void AwRenderViewExt::OnDocumentHasImagesRequest(int id) {
                                                    hasImages));
 }
 
-void AwRenderViewExt::DidCommitProvisionalLoad(blink::WebFrame* frame,
+void AwRenderViewExt::DidCommitProvisionalLoad(blink::WebLocalFrame* frame,
                                                bool is_new_navigation) {
   content::DocumentState* document_state =
       content::DocumentState::FromDataSource(frame->dataSource());

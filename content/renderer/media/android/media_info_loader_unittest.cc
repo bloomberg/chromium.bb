@@ -11,14 +11,14 @@
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
 using ::testing::_;
 using ::testing::InSequence;
 using ::testing::NiceMock;
 
-using blink::WebFrame;
+using blink::WebLocalFrame;
 using blink::WebString;
 using blink::WebURLError;
 using blink::WebURLResponse;
@@ -38,7 +38,7 @@ static const int kHttpNotFound = 404;
 class MediaInfoLoaderTest : public testing::Test {
  public:
   MediaInfoLoaderTest()
-      : view_(WebView::create(NULL)), frame_(WebFrame::create(&client_)) {
+      : view_(WebView::create(NULL)), frame_(WebLocalFrame::create(&client_)) {
     view_->setMainFrame(frame_);
   }
 
@@ -112,7 +112,7 @@ class MediaInfoLoaderTest : public testing::Test {
 
   MockWebFrameClient client_;
   WebView* view_;
-  WebFrame* frame_;
+  WebLocalFrame* frame_;
 
   base::MessageLoop message_loop_;
 

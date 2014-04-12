@@ -27,7 +27,7 @@
 
 using blink::WebAudioDevice;
 using blink::WebClipboard;
-using blink::WebFrame;
+using blink::WebLocalFrame;
 using blink::WebMIDIAccessor;
 using blink::WebMIDIAccessorClient;
 using blink::WebMediaStreamCenter;
@@ -84,7 +84,7 @@ void ShellContentRendererClient::RenderViewCreated(RenderView* render_view) {
 
 bool ShellContentRendererClient::OverrideCreatePlugin(
     RenderFrame* render_frame,
-    WebFrame* frame,
+    WebLocalFrame* frame,
     const WebPluginParams& params,
     WebPlugin** plugin) {
   std::string mime_type = params.mimeType.utf8();

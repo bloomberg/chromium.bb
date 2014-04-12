@@ -20,9 +20,9 @@
 #include "grit/renderer_resources.h"
 #include "grit/webkit_strings.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebKit.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -32,6 +32,7 @@ using base::UserMetricsAction;
 using blink::WebDocument;
 using blink::WebElement;
 using blink::WebFrame;
+using blink::WebLocalFrame;
 using blink::WebMouseEvent;
 using blink::WebNode;
 using blink::WebPlugin;
@@ -49,7 +50,7 @@ const char ChromePluginPlaceholder::kPluginPlaceholderDataURL[] =
 
 ChromePluginPlaceholder::ChromePluginPlaceholder(
     content::RenderFrame* render_frame,
-    blink::WebFrame* frame,
+    blink::WebLocalFrame* frame,
     const blink::WebPluginParams& params,
     const std::string& html_data,
     const base::string16& title)
@@ -87,7 +88,7 @@ ChromePluginPlaceholder::~ChromePluginPlaceholder() {
 // static
 ChromePluginPlaceholder* ChromePluginPlaceholder::CreateMissingPlugin(
     content::RenderFrame* render_frame,
-    WebFrame* frame,
+    WebLocalFrame* frame,
     const WebPluginParams& params) {
   const base::StringPiece template_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
@@ -142,7 +143,7 @@ ChromePluginPlaceholder* ChromePluginPlaceholder::CreateErrorPlugin(
 // static
 ChromePluginPlaceholder* ChromePluginPlaceholder::CreateBlockedPlugin(
     content::RenderFrame* render_frame,
-    WebFrame* frame,
+    WebLocalFrame* frame,
     const WebPluginParams& params,
     const content::WebPluginInfo& plugin,
     const std::string& identifier,
