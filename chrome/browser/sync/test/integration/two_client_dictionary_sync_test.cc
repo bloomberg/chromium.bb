@@ -23,7 +23,7 @@ class TwoClientDictionarySyncTest : public SyncTest {
 IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest, Sanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   dictionary_helper::LoadDictionaries();
-  ASSERT_TRUE(dictionary_helper::DictionariesMatch());
+  ASSERT_TRUE(dictionary_helper::AwaitDictionariesMatch());
 
   std::vector<std::string> words;
   words.push_back("foo");
@@ -32,121 +32,65 @@ IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest, Sanity) {
 
   for (int i = 0; i < num_clients(); ++i) {
     ASSERT_TRUE(dictionary_helper::AddWord(i, words[i]));
-    ASSERT_TRUE(GetClient(i)->AwaitMutualSyncCycleCompletion(
-        GetClient((i + 1) % 2)));
   }
-  ASSERT_TRUE(dictionary_helper::DictionariesMatch());
+  ASSERT_TRUE(dictionary_helper::AwaitDictionariesMatch());
   ASSERT_EQ(words.size(), dictionary_helper::GetDictionarySize(0));
 
   for (int i = 0; i < num_clients(); ++i) {
     ASSERT_TRUE(dictionary_helper::RemoveWord(i, words[i]));
-    ASSERT_TRUE(GetClient(i)->AwaitMutualSyncCycleCompletion(
-        GetClient((i + 1) % 2)));
   }
-  ASSERT_TRUE(dictionary_helper::DictionariesMatch());
+  ASSERT_TRUE(dictionary_helper::AwaitDictionariesMatch());
   ASSERT_EQ(0UL, dictionary_helper::GetDictionarySize(0));
 
   DisableVerifier();
   for (int i = 0; i < num_clients(); ++i)
     ASSERT_TRUE(dictionary_helper::AddWord(i, words[i]));
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(dictionary_helper::DictionariesMatch());
+  ASSERT_TRUE(dictionary_helper::AwaitDictionariesMatch());
   ASSERT_EQ(words.size(), dictionary_helper::GetDictionarySize(0));
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest, SimultaneousAdd) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   dictionary_helper::LoadDictionaries();
-  ASSERT_TRUE(dictionary_helper::DictionariesMatch());
+  ASSERT_TRUE(dictionary_helper::AwaitDictionariesMatch());
 
   for (int i = 0; i < num_clients(); ++i)
     dictionary_helper::AddWord(i, "foo");
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(dictionary_helper::DictionariesMatch());
+  ASSERT_TRUE(dictionary_helper::AwaitDictionariesMatch());
   ASSERT_EQ(1UL, dictionary_helper::GetDictionarySize(0));
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest, SimultaneousRemove) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   dictionary_helper::LoadDictionaries();
-  ASSERT_TRUE(dictionary_helper::DictionariesMatch());
+  ASSERT_TRUE(dictionary_helper::AwaitDictionariesMatch());
 
   for (int i = 0; i < num_clients(); ++i)
     dictionary_helper::AddWord(i, "foo");
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(dictionary_helper::DictionariesMatch());
+  ASSERT_TRUE(dictionary_helper::AwaitDictionariesMatch());
   ASSERT_EQ(1UL, dictionary_helper::GetDictionarySize(0));
 
   for (int i = 0; i < num_clients(); ++i)
     dictionary_helper::RemoveWord(i, "foo");
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(dictionary_helper::DictionariesMatch());
+  ASSERT_TRUE(dictionary_helper::AwaitDictionariesMatch());
   ASSERT_EQ(0UL, dictionary_helper::GetDictionarySize(0));
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest, RemoveOnAAddOnB) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   dictionary_helper::LoadDictionaries();
-  ASSERT_TRUE(dictionary_helper::DictionariesMatch());
+  ASSERT_TRUE(dictionary_helper::AwaitDictionariesMatch());
 
   std::string word = "foo";
-  // Add on client A
+  // Add on client A, check it appears on B.
   ASSERT_TRUE(dictionary_helper::AddWord(0, word));
-  // Remove on client A
+  ASSERT_TRUE(dictionary_helper::AwaitDictionariesMatch());
+  // Remove on client A, check it disappears on B.
   ASSERT_TRUE(dictionary_helper::RemoveWord(0, word));
-  ASSERT_TRUE(AwaitQuiescence());
-  // Add on client B
+  ASSERT_TRUE(dictionary_helper::AwaitDictionariesMatch());
+  // Add on client B, check it appears on A.
   ASSERT_TRUE(dictionary_helper::AddWord(1, word));
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(dictionary_helper::DictionariesMatch());
+  ASSERT_TRUE(dictionary_helper::AwaitDictionariesMatch());
   ASSERT_EQ(1UL, dictionary_helper::GetDictionarySize(0));
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest, DisableSync) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  dictionary_helper::LoadDictionaries();
-  ASSERT_TRUE(dictionary_helper::DictionariesMatch());
-
-  ASSERT_TRUE(GetClient(1)->DisableSyncForAllDatatypes());
-  ASSERT_TRUE(dictionary_helper::AddWord(0, "foo"));
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
-  ASSERT_TRUE(dictionary_helper::DictionaryMatchesVerifier(0));
-  ASSERT_FALSE(dictionary_helper::DictionaryMatchesVerifier(1));
-}
-
-IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest, Limit) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  dictionary_helper::LoadDictionaries();
-  ASSERT_TRUE(dictionary_helper::DictionariesMatch());
-
-  ASSERT_TRUE(GetClient(0)->DisableSyncForAllDatatypes());
-  for (size_t i = 0;
-       i < chrome::spellcheck_common::MAX_SYNCABLE_DICTIONARY_WORDS;
-       ++i) {
-    ASSERT_TRUE(dictionary_helper::AddWord(
-        0, "foo" + base::Uint64ToString(i)));
-    ASSERT_TRUE(dictionary_helper::AddWord(
-        1, "bar" + base::Uint64ToString(i)));
-  }
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_FALSE(dictionary_helper::DictionariesMatch());
-
-  // Client #0 should have only "foo" set of words.
-  ASSERT_EQ(chrome::spellcheck_common::MAX_SYNCABLE_DICTIONARY_WORDS,
-            dictionary_helper::GetDictionarySize(0));
-
-  // Client #1 should have only "bar" set of words.
-  ASSERT_EQ(chrome::spellcheck_common::MAX_SYNCABLE_DICTIONARY_WORDS,
-            dictionary_helper::GetDictionarySize(1));
-
-  ASSERT_TRUE(GetClient(0)->EnableSyncForAllDatatypes());
-  ASSERT_TRUE(AwaitQuiescence());
-
-  // Client #0 should have both "foo" and "bar" sets of words.
-  ASSERT_EQ(chrome::spellcheck_common::MAX_SYNCABLE_DICTIONARY_WORDS * 2,
-            dictionary_helper::GetDictionarySize(0));
-
-  // The sync server and client #1 should have only "bar" set of words.
-  ASSERT_EQ(chrome::spellcheck_common::MAX_SYNCABLE_DICTIONARY_WORDS,
-            dictionary_helper::GetDictionarySize(1));
-}
