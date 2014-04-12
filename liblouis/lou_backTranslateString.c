@@ -1130,7 +1130,7 @@ backTranslateString ()
 	  itsANumber = 0;
 	  goto insertChars;
 	case CTO_Space:
-	  itsANumber = allUpper = nextUpper = 0;
+	  itsALetter = itsANumber = allUpper = nextUpper = 0;
 	default:
 	insertChars:
 	  if (currentRule->charslen)
