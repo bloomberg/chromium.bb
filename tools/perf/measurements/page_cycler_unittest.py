@@ -6,6 +6,7 @@ import unittest
 
 from telemetry.core import browser_options
 from telemetry.page import page_measurement_results
+from telemetry.page import page_runner
 from telemetry.unittest import simple_mock
 
 from measurements import page_cycler
@@ -58,9 +59,11 @@ class PageCyclerUnitTest(unittest.TestCase):
     cycler = page_cycler.PageCycler()
     options = browser_options.BrowserFinderOptions()
     parser = options.CreateParser()
+    page_runner.AddCommandLineArgs(parser)
     cycler.AddCommandLineArgs(parser)
     cycler.SetArgumentDefaults(parser)
     parser.parse_args(args)
+    page_runner.ProcessCommandLineArgs(parser, options)
     cycler.ProcessCommandLineArgs(parser, options)
     cycler.CustomizeBrowserOptions(options)
 
