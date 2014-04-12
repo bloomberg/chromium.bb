@@ -33,6 +33,7 @@
 #include <limits.h>
 #include "platform/PlatformExport.h"
 #include "wtf/Forward.h"
+#include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
@@ -105,6 +106,7 @@ public:
     static void setUseDirectWrite(bool useDirectWrite) { s_useDirectWrite = useDirectWrite; }
     static void setDirectWriteFactory(IDWriteFactory* factory) { s_directWriteFactory = factory; }
     static void setUseSubpixelPositioning(bool useSubpixelPositioning) { s_useSubpixelPositioning = useSubpixelPositioning; }
+    static void addSideloadedFontForTesting(SkTypeface*);
 #endif
 
 #if ENABLE(OPENTYPE_VERTICAL)
@@ -156,6 +158,7 @@ private:
     static bool s_useDirectWrite;
     static IDWriteFactory* s_directWriteFactory;
     static bool s_useSubpixelPositioning;
+    static HashMap<String, SkTypeface*>* s_sideloadedFonts;
 #endif
 
 #if OS(MACOSX) || OS(ANDROID)

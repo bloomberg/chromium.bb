@@ -27,4 +27,10 @@ void WebFontRendering::setUseSubpixelPositioning(bool useSubpixelPositioning)
     WebCore::FontCache::setUseSubpixelPositioning(useSubpixelPositioning);
 }
 
+// static
+void WebFontRendering::addSideloadedFontForTesting(SkTypeface* typeface)
+{
+    WebCore::FontCache::addSideloadedFontForTesting(typeface);
+}
+
 } // namespace blink

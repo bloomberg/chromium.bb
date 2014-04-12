@@ -7,6 +7,7 @@
 
 #include "public/platform/WebCommon.h"
 
+class SkTypeface;
 struct IDWriteFactory;
 
 namespace blink {
@@ -16,6 +17,7 @@ public:
     BLINK_EXPORT static void setUseDirectWrite(bool);
     BLINK_EXPORT static void setDirectWriteFactory(IDWriteFactory*);
     BLINK_EXPORT static void setUseSubpixelPositioning(bool);
+    BLINK_EXPORT static void addSideloadedFontForTesting(SkTypeface*);
 };
 
 } // namespace blink

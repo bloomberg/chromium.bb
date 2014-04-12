@@ -42,6 +42,18 @@
 
 namespace WebCore {
 
+HashMap<String, SkTypeface*>* FontCache::s_sideloadedFonts = 0;
+
+// static
+void FontCache::addSideloadedFontForTesting(SkTypeface* typeface)
+{
+    if (!s_sideloadedFonts)
+        s_sideloadedFonts = new HashMap<String, SkTypeface*>;
+    SkString name;
+    typeface->getFamilyName(&name);
+    s_sideloadedFonts->set(name.c_str(), typeface);
+}
+
 FontCache::FontCache()
     : m_purgePreventCount(0)
 {
