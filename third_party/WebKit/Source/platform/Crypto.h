@@ -31,7 +31,7 @@ enum HashAlgorithm {
     HashAlgorithmSha512
 };
 
-PLATFORM_EXPORT void computeDigest(HashAlgorithm, const char* digestable, size_t length, DigestValue& digestResult);
+PLATFORM_EXPORT bool computeDigest(HashAlgorithm, const char* digestable, size_t length, DigestValue& digestResult);
 PLATFORM_EXPORT PassOwnPtr<blink::WebCryptoDigestor> createDigestor(HashAlgorithm);
 PLATFORM_EXPORT void finishDigestor(blink::WebCryptoDigestor*, DigestValue& digestResult);
 

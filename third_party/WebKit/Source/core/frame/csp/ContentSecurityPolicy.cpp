@@ -327,8 +327,8 @@ bool checkDigest(const String& source, uint8_t hashAlgorithmsUsed, const CSPDire
     for (size_t i = 0; i < (sizeof(kAlgorithmMap) / sizeof(kAlgorithmMap[0])); i++) {
         DigestValue digest;
         if (kAlgorithmMap[i].cspHashAlgorithm & hashAlgorithmsUsed) {
-            computeDigest(kAlgorithmMap[i].algorithm, normalizedSource.data(), normalizedSource.length(), digest);
-            if (isAllowedByAllWithHash<allowed>(policies, CSPHashValue(kAlgorithmMap[i].cspHashAlgorithm, digest)))
+            bool digestSuccess = computeDigest(kAlgorithmMap[i].algorithm, normalizedSource.data(), normalizedSource.length(), digest);
+            if (digestSuccess && isAllowedByAllWithHash<allowed>(policies, CSPHashValue(kAlgorithmMap[i].cspHashAlgorithm, digest)))
                 return true;
         }
     }

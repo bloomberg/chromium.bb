@@ -126,7 +126,8 @@ String WebSocketHandshake::getExpectedWebSocketAccept(const String& secWebSocket
     digestable.append(webSocketKeyGUID, strlen(webSocketKeyGUID));
     CString digestableCString = digestable.toString().utf8();
     DigestValue digest;
-    computeDigest(HashAlgorithmSha1, digestableCString.data(), digestableCString.length(), digest);
+    bool digestSuccess = computeDigest(HashAlgorithmSha1, digestableCString.data(), digestableCString.length(), digest);
+    RELEASE_ASSERT(digestSuccess);
 
     return base64Encode(reinterpret_cast<const char*>(digest.data()), sha1HashSize);
 }

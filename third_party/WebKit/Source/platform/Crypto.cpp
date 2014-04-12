@@ -31,19 +31,21 @@ static blink::WebCryptoAlgorithmId toWebCryptoAlgorithmId(HashAlgorithm algorith
     return blink::WebCryptoAlgorithmIdSha256;
 }
 
-void computeDigest(HashAlgorithm algorithm, const char* digestable, size_t length, DigestValue& digestResult)
+bool computeDigest(HashAlgorithm algorithm, const char* digestable, size_t length, DigestValue& digestResult)
 {
     blink::WebCryptoAlgorithmId algorithmId = toWebCryptoAlgorithmId(algorithm);
     blink::WebCrypto* crypto = blink::Platform::current()->crypto();
-    blink::WebArrayBuffer result;
+    unsigned char* result;
+    unsigned resultSize;
 
     ASSERT(crypto);
 
-    crypto->digestSynchronous(algorithmId, reinterpret_cast<const unsigned char*>(digestable), length, result);
+    OwnPtr<blink::WebCryptoDigestor> digestor = adoptPtr(crypto->createDigestor(algorithmId));
+    if (!digestor.get() || !digestor->consume(reinterpret_cast<const unsigned char*>(digestable), length) || !digestor->finish(result, resultSize))
+        return false;
 
-    ASSERT(!result.isNull());
-
-    digestResult.append(static_cast<uint8_t*>(result.data()), result.byteLength());
+    digestResult.append(static_cast<uint8_t*>(result), resultSize);
+    return true;
 }
 
 PassOwnPtr<blink::WebCryptoDigestor> createDigestor(HashAlgorithm algorithm)
