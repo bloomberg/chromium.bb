@@ -160,7 +160,7 @@ AudioParameters AudioManagerPulse::GetPreferredOutputStreamParameters(
     const std::string& output_device_id,
     const AudioParameters& input_params) {
   // TODO(tommi): Support |output_device_id|.
-  DLOG_IF(ERROR, !output_device_id.empty()) << "Not implemented!";
+  VLOG_IF(0, !output_device_id.empty()) << "Not implemented!";
   static const int kDefaultOutputBufferSize = 512;
 
   ChannelLayout channel_layout = CHANNEL_LAYOUT_STEREO;
@@ -220,7 +220,7 @@ bool AudioManagerPulse::Init() {
   // Check if the pulse library is avialbale.
   paths[kModulePulse].push_back(kPulseLib);
   if (!InitializeStubs(paths)) {
-    DLOG(WARNING) << "Failed on loading the Pulse library and symbols";
+    VLOG(1) << "Failed on loading the Pulse library and symbols";
     return false;
   }
 #endif  // defined(DLOPEN_PULSEAUDIO)
@@ -248,8 +248,8 @@ bool AudioManagerPulse::Init() {
   pa_context_set_state_callback(input_context_, &pulse::ContextStateCallback,
                                 input_mainloop_);
   if (pa_context_connect(input_context_, NULL, PA_CONTEXT_NOAUTOSPAWN, NULL)) {
-    DLOG(ERROR) << "Failed to connect to the context.  Error: "
-                << pa_strerror(pa_context_errno(input_context_));
+    VLOG(0) << "Failed to connect to the context.  Error: "
+            << pa_strerror(pa_context_errno(input_context_));
     return false;
   }
 
