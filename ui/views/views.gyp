@@ -39,6 +39,8 @@
       ],
       'sources': [
         # All .cc, .h under views, except unittests
+        'accessibility/ax_tree_source_views.cc',
+        'accessibility/ax_tree_source_views.h',
         'accessibility/native_view_accessibility.cc',
         'accessibility/native_view_accessibility.h',
         'accessibility/native_view_accessibility_win.cc',
@@ -384,6 +386,7 @@
         'widget/widget_hwnd_utils.cc',
         'widget/widget_hwnd_utils.h',
         'widget/widget_observer.h',
+        'widget/widget_removals_observer.h',
         'widget/window_reorderer.cc',
         'widget/window_reorderer.h',
         'win/appbar.cc',
@@ -585,6 +588,7 @@
         '..',
       ],
       'sources': [
+        'accessibility/ax_tree_source_views_unittest.cc',
         'accessibility/native_view_accessibility_win_unittest.cc',
         'accessible_pane_view_unittest.cc',
         'animation/bounds_animator_unittest.cc',

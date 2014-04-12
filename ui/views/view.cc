@@ -1806,6 +1806,7 @@ void View::DoRemoveChildView(View* view,
       UnregisterChildrenForVisibleBoundsNotification(view);
       if (view->visible())
         view->SchedulePaint();
+      GetWidget()->NotifyWillRemoveView(view);
     }
     view->PropagateRemoveNotifications(this, new_parent);
     view->parent_ = NULL;

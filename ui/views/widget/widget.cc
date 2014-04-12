@@ -30,6 +30,7 @@
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/widget_deletion_observer.h"
 #include "ui/views/widget/widget_observer.h"
+#include "ui/views/widget/widget_removals_observer.h"
 #include "ui/views/window/custom_frame_view.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -413,6 +414,18 @@ bool Widget::HasObserver(WidgetObserver* observer) {
   return observers_.HasObserver(observer);
 }
 
+void Widget::AddRemovalsObserver(WidgetRemovalsObserver* observer) {
+  removals_observers_.AddObserver(observer);
+}
+
+void Widget::RemoveRemovalsObserver(WidgetRemovalsObserver* observer) {
+  removals_observers_.RemoveObserver(observer);
+}
+
+bool Widget::HasRemovalsObserver(WidgetRemovalsObserver* observer) {
+  return removals_observers_.HasObserver(observer);
+}
+
 bool Widget::GetAccelerator(int cmd_id, ui::Accelerator* accelerator) {
   return false;
 }
@@ -440,6 +453,12 @@ void Widget::NotifyNativeViewHierarchyWillChange() {
 
 void Widget::NotifyNativeViewHierarchyChanged() {
   root_view_->NotifyNativeViewHierarchyChanged();
+}
+
+void Widget::NotifyWillRemoveView(View* view) {
+    FOR_EACH_OBSERVER(WidgetRemovalsObserver,
+                      removals_observers_,
+                      OnWillRemoveView(this, view));
 }
 
 // Converted methods (see header) ----------------------------------------------

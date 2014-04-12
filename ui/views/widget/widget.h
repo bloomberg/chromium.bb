@@ -61,6 +61,7 @@ class TooltipManager;
 class View;
 class WidgetDelegate;
 class WidgetObserver;
+class WidgetRemovalsObserver;
 
 namespace internal {
 class NativeWidgetPrivate;
@@ -338,6 +339,11 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   void RemoveObserver(WidgetObserver* observer);
   bool HasObserver(WidgetObserver* observer);
 
+  // Add/remove removals observer.
+  void AddRemovalsObserver(WidgetRemovalsObserver* observer);
+  void RemoveRemovalsObserver(WidgetRemovalsObserver* observer);
+  bool HasRemovalsObserver(WidgetRemovalsObserver* observer);
+
   // Returns the accelerator given a command id. Returns false if there is
   // no accelerator associated with a given id, which is a common condition.
   virtual bool GetAccelerator(int cmd_id, ui::Accelerator* accelerator);
@@ -352,6 +358,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Called after changing the widget's parent NativeView. Notifies the RootView
   // about the change.
   void NotifyNativeViewHierarchyChanged();
+
+  // Called immediately before removing |view| from this widget.
+  void NotifyWillRemoveView(View* view);
 
   // Returns the top level widget in a hierarchy (see is_top_level() for
   // the definition of top level widget.) Will return NULL if called
@@ -797,6 +806,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   internal::NativeWidgetPrivate* native_widget_;
 
   ObserverList<WidgetObserver> observers_;
+
+  ObserverList<WidgetRemovalsObserver> removals_observers_;
 
   // Non-owned pointer to the Widget's delegate. If a NULL delegate is supplied
   // to Init() a default WidgetDelegate is created.
