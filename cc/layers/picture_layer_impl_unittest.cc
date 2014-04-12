@@ -1935,6 +1935,14 @@ TEST_F(PictureLayerImplTest, LayerRasterTileIterator) {
 
   float low_res_factor = host_impl_.settings().low_res_contents_scale_factor;
 
+  // Empty iterator
+  PictureLayerImpl::LayerRasterTileIterator it;
+  EXPECT_FALSE(it);
+
+  // No tilings.
+  it = PictureLayerImpl::LayerRasterTileIterator(pending_layer_, false);
+  EXPECT_FALSE(it);
+
   pending_layer_->AddTiling(low_res_factor);
   pending_layer_->AddTiling(0.3f);
   pending_layer_->AddTiling(0.7f);
@@ -1943,9 +1951,6 @@ TEST_F(PictureLayerImplTest, LayerRasterTileIterator) {
 
   host_impl_.SetViewportSize(gfx::Size(500, 500));
   host_impl_.pending_tree()->UpdateDrawProperties();
-
-  PictureLayerImpl::LayerRasterTileIterator it;
-  EXPECT_FALSE(it);
 
   std::set<Tile*> unique_tiles;
   bool reached_prepaint = false;

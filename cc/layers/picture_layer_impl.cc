@@ -1297,8 +1297,10 @@ PictureLayerImpl::LayerRasterTileIterator::LayerRasterTileIterator(
     bool prioritize_low_res)
     : layer_(layer), current_stage_(0) {
   DCHECK(layer_);
-  if (!layer_->tilings_ || !layer_->tilings_->num_tilings())
+  if (!layer_->tilings_ || !layer_->tilings_->num_tilings()) {
+    current_stage_ = arraysize(stages_);
     return;
+  }
 
   WhichTree tree =
       layer_->layer_tree_impl()->IsActiveTree() ? ACTIVE_TREE : PENDING_TREE;
