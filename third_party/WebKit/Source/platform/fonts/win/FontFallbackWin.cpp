@@ -31,6 +31,7 @@
 #include "config.h"
 #include "platform/fonts/win/FontFallbackWin.h"
 
+#include "SkFontMgr.h"
 #include "SkTypeface.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/StringHash.h"
@@ -43,10 +44,10 @@ namespace WebCore {
 
 namespace {
 
-static inline bool isFontPresent(const UChar* fontName)
+static inline bool isFontPresent(const UChar* fontName, SkFontMgr* fontManager)
 {
     String family = fontName;
-    RefPtr<SkTypeface> tf = adoptRef(SkTypeface::CreateFromName(family.utf8().data(), SkTypeface::kNormal));
+    RefPtr<SkTypeface> tf = adoptRef(fontManager->legacyCreateTypeface(family.utf8().data(), SkTypeface::kNormal));
     if (!tf)
         return false;
 
@@ -68,7 +69,7 @@ static inline bool isFontPresent(const UChar* fontName)
 // which works well since the range of UScriptCode values is small.
 typedef const UChar* ScriptToFontMap[USCRIPT_CODE_LIMIT];
 
-void initializeScriptFontMap(ScriptToFontMap& scriptFontMap)
+void initializeScriptFontMap(ScriptToFontMap& scriptFontMap, SkFontMgr* fontManager)
 {
     struct FontMap {
         UScriptCode script;
@@ -163,7 +164,7 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap)
         scriptFontMap[script] = 0;
         const UChar** familyPtr = scriptToFontFamilies[i].families;
         while (*familyPtr) {
-            if (isFontPresent(*familyPtr)) {
+            if (isFontPresent(*familyPtr, fontManager)) {
                 scriptFontMap[script] = *familyPtr;
                 break;
             }
@@ -254,12 +255,13 @@ UScriptCode getScript(int ucs4)
 //  - Update script_font_cache in response to WM_FONTCHANGE
 
 const UChar* getFontFamilyForScript(UScriptCode script,
-    FontDescription::GenericFamilyType generic)
+    FontDescription::GenericFamilyType generic,
+    SkFontMgr* fontManager)
 {
     static ScriptToFontMap scriptFontMap;
     static bool initialized = false;
     if (!initialized) {
-        initializeScriptFontMap(scriptFontMap);
+        initializeScriptFontMap(scriptFontMap, fontManager);
         initialized = true;
     }
     if (script == USCRIPT_INVALID_CODE)
@@ -278,7 +280,8 @@ const UChar* getFontFamilyForScript(UScriptCode script,
 //    font can cover) need to be taken into account
 const UChar* getFallbackFamily(UChar32 character,
     FontDescription::GenericFamilyType generic,
-    UScriptCode* scriptChecked)
+    UScriptCode* scriptChecked,
+    SkFontMgr* fontManager)
 {
     ASSERT(character);
     UScriptCode script = getScript(character);
@@ -293,7 +296,7 @@ const UChar* getFallbackFamily(UChar32 character,
     if (script == USCRIPT_COMMON)
         script = getScriptBasedOnUnicodeBlock(character);
 
-    const UChar* family = getFontFamilyForScript(script, generic);
+    const UChar* family = getFontFamilyForScript(script, generic, fontManager);
     // Another lame work-around to cover non-BMP characters.
     // If the font family for script is not found or the character is
     // not in BMP (> U+FFFF), we resort to the hard-coded list of
@@ -322,29 +325,6 @@ const UChar* getFallbackFamily(UChar32 character,
 
     if (scriptChecked)
         *scriptChecked = script;
-    return family;
-}
-
-
-const UChar* getFallbackFamilyForFirstNonCommonCharacter(const UChar* characters,
-    int length,
-    FontDescription::GenericFamilyType generic)
-{
-    ASSERT(characters && characters[0] && length > 0);
-    UScriptCode script = USCRIPT_COMMON;
-
-    // Sometimes characters common to script (e.g. space) is at
-    // the beginning of a string so that we need to skip them
-    // to get a font required to render the string.
-    int i = 0;
-    UChar32 ucs4 = 0;
-    while (i < length && script == USCRIPT_COMMON) {
-        U16_NEXT(characters, i, length, ucs4);
-        script = getScript(ucs4);
-    }
-
-    const UChar* family = getFallbackFamily(ucs4, generic, 0);
-
     return family;
 }
 

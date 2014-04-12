@@ -122,7 +122,8 @@ PassRefPtr<SimpleFontData> FontCache::platformFallbackForCharacter(const FontDes
     UScriptCode script;
     const wchar_t* family = getFallbackFamily(character,
         fontDescription.genericFamily(),
-        &script);
+        &script,
+        m_fontManager.get());
     FontPlatformData* data = 0;
     if (family)
         data = getFontPlatformData(fontDescription,  AtomicString(family, wcslen(family)));
