@@ -286,15 +286,8 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    const testing::TestInfo* const test_info =
-        testing::UnitTest::GetInstance()->current_test_info();
-
     command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
     command_line->AppendSwitchASCII(switches::kJavaScriptFlags, "--expose-gc");
-
-    // Force SW rendering to check autosize bug.
-    if (!strncmp(test_info->name(), "AutoSizeSW", strlen("AutosizeSW")))
-      command_line->AppendSwitch(switches::kDisableForceCompositingMode);
 
     extensions::PlatformAppBrowserTest::SetUpCommandLine(command_line);
   }
@@ -669,20 +662,6 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, AutoSize) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/autosize"))
       << message_;
 }
-
-#if !defined(OS_CHROMEOS)
-// This test ensures <webview> doesn't crash in SW rendering when autosize is
-// turned on.
-#if defined(OS_MACOSX) || defined(USE_AURA)
-#define MAYBE_AutoSizeSW DISABLED_AutoSizeSW
-#else
-#define MAYBE_AutoSizeSW AutoSizeSW
-#endif
-IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_AutoSizeSW) {
-  ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/autosize"))
-      << message_;
-}
-#endif
 
 // http://crbug.com/326332
 IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_Shim_TestAutosizeAfterNavigation) {
@@ -2006,20 +1985,13 @@ IN_PROC_BROWSER_TEST_F(WebViewPluginTest, TestLoadPluginEvent) {
 }
 #endif  // defined(ENABLE_PLUGINS)
 
-class WebViewCaptureTest : public WebViewTest,
-  public testing::WithParamInterface<std::string> {
+class WebViewCaptureTest : public WebViewTest {
  public:
   WebViewCaptureTest() {}
   virtual ~WebViewCaptureTest() {}
   virtual void SetUp() OVERRIDE {
     EnablePixelOutput();
     WebViewTest::SetUp();
-  }
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    command_line->AppendSwitch(GetParam());
-    // http://crbug.com/327035
-    command_line->AppendSwitch(switches::kDisableDelegatedRenderer);
-    WebViewTest::SetUpCommandLine(command_line);
   }
 };
 
@@ -2037,20 +2009,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestFindAPI_findupdate) {
 
 // <webview> screenshot capture fails with ubercomp.
 // See http://crbug.com/327035.
-IN_PROC_BROWSER_TEST_P(WebViewCaptureTest,
+IN_PROC_BROWSER_TEST_F(WebViewCaptureTest,
                        DISABLED_Shim_ScreenshotCapture) {
   TestHelper("testScreenshotCapture", "web_view/shim", NO_TEST_SERVER);
 }
-
-// Threaded compositing is always enabled on Aura and Mac.
-#if !defined(USE_AURA) && !defined(OS_MACOSX)
-INSTANTIATE_TEST_CASE_P(WithoutThreadedCompositor,
-    WebViewCaptureTest,
-    ::testing::Values(std::string(switches::kDisableThreadedCompositing)));
-#endif
-
-#if defined(USE_AURA) || defined(OS_MACOSX)
-INSTANTIATE_TEST_CASE_P(WithThreadedCompositor,
-    WebViewCaptureTest,
-    ::testing::Values(std::string(switches::kEnableThreadedCompositing)));
-#endif

@@ -169,16 +169,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   void OnAcceleratedSurfaceBuffersSwapped(
       const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params);
 #endif
-  // Note: Different implementations depending on USE_AURA.
-#if defined(OS_WIN)
-  void OnAcceleratedSurfaceBuffersSwapped(
-      const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params);
-  void OnAcceleratedSurfacePostSubBuffer(
-      const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params);
-  void OnAcceleratedSurfaceSuspend(int32 surface_id);
-  void OnAcceleratedSurfaceRelease(
-    const GpuHostMsg_AcceleratedSurfaceRelease_Params& params);
-#endif
 
   void CreateChannelCache(int32 client_id);
   void OnDestroyChannel(int32 client_id);

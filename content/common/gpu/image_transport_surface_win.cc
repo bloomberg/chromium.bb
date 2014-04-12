@@ -26,14 +26,13 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(
     GpuCommandBufferStub* stub,
     const gfx::GLSurfaceHandle& handle) {
   DCHECK(handle.handle);
-  DCHECK(handle.transport_type == gfx::NATIVE_DIRECT ||
-         handle.transport_type == gfx::NATIVE_TRANSPORT);
+  DCHECK_EQ(handle.transport_type, gfx::NATIVE_DIRECT);
   scoped_refptr<gfx::GLSurface> surface =
       gfx::GLSurface::CreateViewGLSurface(handle.handle);
   if (!surface)
     return surface;
   return scoped_refptr<gfx::GLSurface>(new PassThroughImageTransportSurface(
-      manager, stub, surface.get(), handle.is_transport()));
+      manager, stub, surface.get(), false));
 }
 
 }  // namespace content

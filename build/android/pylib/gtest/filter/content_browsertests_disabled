@@ -96,14 +96,10 @@ BrowserGpuChannelHostFactoryTest.CrashAndRecover
 BrowserGpuChannelHostFactoryTest.EstablishAndTerminate
 
 # http://crbug.com/338011
-WithInputHandlerProxy/TouchInputBrowserTest.MultiPointTouchPress/0
-WithInputHandlerProxy/TouchInputBrowserTest.TouchHandlerConsume/0
-WithInputHandlerProxy/TouchInputBrowserTest.TouchHandlerNoConsume/0
-WithInputHandlerProxy/TouchInputBrowserTest.TouchNoHandler/0
-WithoutInputHandlerProxy/TouchInputBrowserTest.MultiPointTouchPress/0
-WithoutInputHandlerProxy/TouchInputBrowserTest.TouchHandlerConsume/0
-WithoutInputHandlerProxy/TouchInputBrowserTest.TouchHandlerNoConsume/0
-WithoutInputHandlerProxy/TouchInputBrowserTest.TouchNoHandler/0
+TouchInputBrowserTest.MultiPointTouchPress
+TouchInputBrowserTest.TouchHandlerConsume
+TouchInputBrowserTest.TouchHandlerNoConsume
+TouchInputBrowserTest.TouchNoHandler
 TouchActionBrowserTest.*
 
 # http://crbug.com/338408

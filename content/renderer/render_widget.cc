@@ -603,7 +603,6 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_WasShown, OnWasShown)
     IPC_MESSAGE_HANDLER(ViewMsg_WasSwappedOut, OnWasSwappedOut)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateRect_ACK, OnUpdateRectAck)
-    IPC_MESSAGE_HANDLER(ViewMsg_SwapBuffers_ACK, OnSwapBuffersComplete)
     IPC_MESSAGE_HANDLER(ViewMsg_SetInputMethodActive, OnSetInputMethodActive)
     IPC_MESSAGE_HANDLER(ViewMsg_CandidateWindowShown, OnCandidateWindowShown)
     IPC_MESSAGE_HANDLER(ViewMsg_CandidateWindowUpdated,

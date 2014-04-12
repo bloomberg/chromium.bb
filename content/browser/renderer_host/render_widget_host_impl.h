@@ -474,16 +474,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
                                              int renderer_host_id,
                                              const cc::CompositorFrameAck& ack);
 
-  // Called by the view in response to AcceleratedSurfaceBuffersSwapped for
-  // platforms that support deferred GPU process descheduling. This does
-  // nothing if the compositor thread is enabled.
-  // TODO(jbates) Once the compositor thread is always on, this can be removed.
-  void AcknowledgeSwapBuffersToRenderer();
-
-  bool is_threaded_compositing_enabled() const {
-    return is_threaded_compositing_enabled_;
-  }
-
   void set_allow_privileged_mouse_lock(bool allow) {
     allow_privileged_mouse_lock_ = allow;
   }
@@ -784,9 +774,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
 
   // True when a page is rendered directly via the GPU process.
   bool is_accelerated_compositing_active_;
-
-  // True if threaded compositing is enabled on this view.
-  bool is_threaded_compositing_enabled_;
 
   // Set if we are waiting for a repaint ack for the view.
   bool repaint_ack_pending_;

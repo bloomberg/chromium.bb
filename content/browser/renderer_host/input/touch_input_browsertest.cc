@@ -5,6 +5,7 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
+#include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
@@ -128,8 +129,7 @@ class InputEventMessageFilter : public BrowserMessageFilter {
   DISALLOW_COPY_AND_ASSIGN(InputEventMessageFilter);
 };
 
-class TouchInputBrowserTest : public ContentBrowserTest,
-                              public testing::WithParamInterface<std::string> {
+class TouchInputBrowserTest : public ContentBrowserTest {
  public:
   TouchInputBrowserTest() {}
   virtual ~TouchInputBrowserTest() {}
@@ -163,7 +163,6 @@ class TouchInputBrowserTest : public ContentBrowserTest,
   virtual void SetUpCommandLine(CommandLine* cmd) OVERRIDE {
     cmd->AppendSwitchASCII(switches::kTouchEvents,
                            switches::kTouchEventsEnabled);
-    cmd->AppendSwitch(GetParam());
   }
 
   scoped_refptr<InputEventMessageFilter> filter_;
@@ -175,7 +174,7 @@ class TouchInputBrowserTest : public ContentBrowserTest,
 #else
 #define MAYBE_TouchNoHandler TouchNoHandler
 #endif
-IN_PROC_BROWSER_TEST_P(TouchInputBrowserTest, MAYBE_TouchNoHandler) {
+IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, MAYBE_TouchNoHandler) {
   LoadURLAndAddFilter();
   SyntheticWebTouchEvent touch;
 
@@ -185,7 +184,7 @@ IN_PROC_BROWSER_TEST_P(TouchInputBrowserTest, MAYBE_TouchNoHandler) {
   GetWidgetHost()->ForwardTouchEventWithLatencyInfo(touch, ui::LatencyInfo());
   filter()->WaitForAck(WebInputEvent::TouchStart);
 
-  if (GetParam() == std::string(switches::kEnableThreadedCompositing)) {
+  if (content::IsThreadedCompositingEnabled()) {
     EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS,
               filter()->last_ack_state());
   } else {
@@ -201,7 +200,7 @@ IN_PROC_BROWSER_TEST_P(TouchInputBrowserTest, MAYBE_TouchNoHandler) {
   touch.ResetPoints();
 }
 
-IN_PROC_BROWSER_TEST_P(TouchInputBrowserTest, TouchHandlerNoConsume) {
+IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, TouchHandlerNoConsume) {
   LoadURLAndAddFilter();
   SyntheticWebTouchEvent touch;
 
@@ -218,7 +217,7 @@ IN_PROC_BROWSER_TEST_P(TouchInputBrowserTest, TouchHandlerNoConsume) {
   touch.ResetPoints();
 }
 
-IN_PROC_BROWSER_TEST_P(TouchInputBrowserTest, TouchHandlerConsume) {
+IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, TouchHandlerConsume) {
   LoadURLAndAddFilter();
   SyntheticWebTouchEvent touch;
 
@@ -240,7 +239,7 @@ IN_PROC_BROWSER_TEST_P(TouchInputBrowserTest, TouchHandlerConsume) {
 #else
 #define MAYBE_MultiPointTouchPress MultiPointTouchPress
 #endif
-IN_PROC_BROWSER_TEST_P(TouchInputBrowserTest, MAYBE_MultiPointTouchPress) {
+IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, MAYBE_MultiPointTouchPress) {
   LoadURLAndAddFilter();
   SyntheticWebTouchEvent touch;
 
@@ -249,7 +248,7 @@ IN_PROC_BROWSER_TEST_P(TouchInputBrowserTest, MAYBE_MultiPointTouchPress) {
   touch.PressPoint(25, 25);
   GetWidgetHost()->ForwardTouchEventWithLatencyInfo(touch, ui::LatencyInfo());
   filter()->WaitForAck(WebInputEvent::TouchStart);
-  if (GetParam() == std::string(switches::kEnableThreadedCompositing)) {
+  if (content::IsThreadedCompositingEnabled()) {
     EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS,
               filter()->last_ack_state());
   } else {
@@ -263,16 +262,5 @@ IN_PROC_BROWSER_TEST_P(TouchInputBrowserTest, MAYBE_MultiPointTouchPress) {
   filter()->WaitForAck(WebInputEvent::TouchStart);
   EXPECT_EQ(INPUT_EVENT_ACK_STATE_CONSUMED, filter()->last_ack_state());
 }
-
-// Threaded compositing is always enabled on Aura and Mac.
-#if !defined(USE_AURA) && !defined(OS_MACOSX)
-INSTANTIATE_TEST_CASE_P(WithoutInputHandlerProxy, TouchInputBrowserTest,
-    ::testing::Values(std::string(switches::kDisableThreadedCompositing)));
-#endif
-
-#if defined(USE_AURA) || defined(OS_MACOSX)
-INSTANTIATE_TEST_CASE_P(WithInputHandlerProxy, TouchInputBrowserTest,
-    ::testing::Values(std::string(switches::kEnableThreadedCompositing)));
-#endif
 
 }  // namespace content

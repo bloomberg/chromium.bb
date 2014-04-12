@@ -223,8 +223,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
     DCHECK(surface_id_);
   }
 
-  is_threaded_compositing_enabled_ = IsThreadedCompositingEnabled();
-
   std::pair<RoutingIDWidgetMap::iterator, bool> result =
       g_routing_id_widget_map.Get().insert(std::make_pair(
           RenderWidgetHostID(process->GetID(), routing_id_), this));
@@ -2339,11 +2337,6 @@ void RenderWidgetHostImpl::SendReclaimCompositorResources(
     return;
   host->Send(
       new ViewMsg_ReclaimCompositorResources(route_id, output_surface_id, ack));
-}
-
-void RenderWidgetHostImpl::AcknowledgeSwapBuffersToRenderer() {
-  if (!is_threaded_compositing_enabled_)
-    Send(new ViewMsg_SwapBuffers_ACK(routing_id_));
 }
 
 void RenderWidgetHostImpl::DelayedAutoResized() {

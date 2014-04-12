@@ -2200,9 +2200,6 @@ void RenderWidgetHostViewMac::SendPendingSwapAck() {
   RenderWidgetHostImpl::AcknowledgeBufferPresent(pending_swap_ack_->route_id,
                                                  pending_swap_ack_->gpu_host_id,
                                                  ack_params);
-  if (render_widget_host_)
-    render_widget_host_->AcknowledgeSwapBuffersToRenderer();
-
   pending_swap_ack_.reset();
 }
 

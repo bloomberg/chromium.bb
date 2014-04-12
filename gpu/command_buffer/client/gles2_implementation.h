@@ -767,7 +767,6 @@ class GLES2_IMPL_EXPORT GLES2Implementation
 
   Capabilities capabilities_;
 
-  bool use_echo_for_swap_ack_;
   base::Closure swap_buffers_complete_callback_;
 
   base::WeakPtrFactory<GLES2Implementation> weak_ptr_factory_;

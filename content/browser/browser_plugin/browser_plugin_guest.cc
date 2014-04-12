@@ -1644,14 +1644,6 @@ void BrowserPluginGuest::OnSwapBuffersACK(
     const FrameHostMsg_BuffersSwappedACK_Params& params) {
   AcknowledgeBufferPresent(params.gpu_route_id, params.gpu_host_id,
                            params.mailbox, params.sync_point);
-
-// This is only relevant on MACOSX and WIN when threaded compositing
-// is not enabled. In threaded mode, above ACK is sufficient.
-#if defined(OS_MACOSX) || defined(OS_WIN)
-  RenderWidgetHostImpl* render_widget_host =
-        RenderWidgetHostImpl::From(GetWebContents()->GetRenderViewHost());
-  render_widget_host->AcknowledgeSwapBuffersToRenderer();
-#endif  // defined(OS_MACOSX) || defined(OS_WIN)
 }
 
 void BrowserPluginGuest::OnUnlockMouse() {
