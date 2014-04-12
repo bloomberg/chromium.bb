@@ -112,9 +112,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'courgette/third_party/bsdiff_create.cc': [  # http://crbug.com/98095
         'UNKNOWN',
     ],
-    'data/tab_switching': [
-        'UNKNOWN',
-    ],
     'native_client': [  # http://crbug.com/98099
         'UNKNOWN',
     ],
@@ -174,9 +171,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'UNKNOWN',
     ],
     'third_party/freetype2': [ # http://crbug.com/177319
-        'UNKNOWN',
-    ],
-    'third_party/gles2_conform/GTF_ES': [  # http://crbug.com/98131
         'UNKNOWN',
     ],
     'third_party/hunspell': [  # http://crbug.com/98134
