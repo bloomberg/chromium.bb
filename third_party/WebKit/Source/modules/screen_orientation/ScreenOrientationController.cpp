@@ -49,7 +49,7 @@ const char* ScreenOrientationController::supplementName()
     return "ScreenOrientationController";
 }
 
-void ScreenOrientationController::didChangeScreenOrientation(blink::WebScreenOrientation orientation)
+void ScreenOrientationController::didChangeScreenOrientation(blink::WebScreenOrientationType orientation)
 {
     if (orientation == m_orientation)
         return;

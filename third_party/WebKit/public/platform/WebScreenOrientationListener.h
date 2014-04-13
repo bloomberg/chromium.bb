@@ -5,7 +5,7 @@
 #ifndef WebScreenOrientationListener_h
 #define WebScreenOrientationListener_h
 
-#include "WebScreenOrientation.h"
+#include "WebScreenOrientationType.h"
 
 namespace blink {
 
@@ -14,7 +14,7 @@ public:
     virtual ~WebScreenOrientationListener() { }
 
     // This method is called every time the screen orientation changes.
-    virtual void didChangeScreenOrientation(WebScreenOrientation) = 0;
+    virtual void didChangeScreenOrientation(WebScreenOrientationType) = 0;
 };
 
 } // namespace blink

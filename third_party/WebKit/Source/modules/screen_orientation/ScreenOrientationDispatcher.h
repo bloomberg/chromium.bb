@@ -27,7 +27,7 @@ private:
     void stopListening();
 
     // WebScreenOrientationListener API.
-    virtual void didChangeScreenOrientation(blink::WebScreenOrientation) OVERRIDE;
+    virtual void didChangeScreenOrientation(blink::WebScreenOrientationType) OVERRIDE;
 
     Vector<ScreenOrientationController*> m_controllers;
     bool m_needsPurge;

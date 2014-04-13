@@ -5,14 +5,12 @@
 #ifndef WebScreenOrientation_h
 #define WebScreenOrientation_h
 
-namespace blink {
+// FIXME: this file should be removed as soon as Chrome will no longer depends on it.
 
-enum WebScreenOrientation {
-    WebScreenOrientationPortraitPrimary = 1,
-    WebScreenOrientationLandscapePrimary = 1 << 1,
-    WebScreenOrientationPortraitSecondary = 1 << 2,
-    WebScreenOrientationLandscapeSecondary = 1 << 3,
-};
+#include "WebScreenOrientationType.h"
+#define WebScreenOrientation WebScreenOrientationType
+
+namespace blink {
 
 typedef unsigned char WebScreenOrientations;
 

@@ -10,14 +10,21 @@
 #include "core/frame/Screen.h"
 #include "modules/screen_orientation/ScreenOrientationController.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebScreenOrientationType.h"
+
+// This code assumes that WebScreenOrientationType values are included in WebScreenOrientationLockType.
+#define COMPILE_ASSERT_MATCHING_ENUM(enum1, enum2) \
+    COMPILE_ASSERT(static_cast<unsigned>(blink::enum1) == static_cast<unsigned>(blink::enum2), mismatching_types)
+COMPILE_ASSERT_MATCHING_ENUM(WebScreenOrientationPortraitPrimary, WebScreenOrientationLockPortraitPrimary);
+COMPILE_ASSERT_MATCHING_ENUM(WebScreenOrientationPortraitSecondary, WebScreenOrientationLockPortraitSecondary);
+COMPILE_ASSERT_MATCHING_ENUM(WebScreenOrientationLandscapePrimary, WebScreenOrientationLockLandscapePrimary);
+COMPILE_ASSERT_MATCHING_ENUM(WebScreenOrientationLandscapeSecondary, WebScreenOrientationLockLandscapeSecondary);
 
 namespace WebCore {
 
-static const unsigned WebScreenOrientationDefault = 0;
-
 struct ScreenOrientationInfo {
     const AtomicString& name;
-    blink::WebScreenOrientation orientation;
+    unsigned orientation;
 };
 
 static ScreenOrientationInfo* orientationsMap(unsigned& length)
@@ -26,77 +33,72 @@ static ScreenOrientationInfo* orientationsMap(unsigned& length)
     DEFINE_STATIC_LOCAL(const AtomicString, portraitSecondary, ("portrait-secondary", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(const AtomicString, landscapePrimary, ("landscape-primary", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(const AtomicString, landscapeSecondary, ("landscape-secondary", AtomicString::ConstructFromLiteral));
-
-    static ScreenOrientationInfo orientationMap[] = {
-        { portraitPrimary, blink::WebScreenOrientationPortraitPrimary },
-        { portraitSecondary, blink::WebScreenOrientationPortraitSecondary },
-        { landscapePrimary, blink::WebScreenOrientationLandscapePrimary },
-        { landscapeSecondary, blink::WebScreenOrientationLandscapeSecondary }
-    };
-    length = WTF_ARRAY_LENGTH(orientationMap);
-    return orientationMap;
-}
-
-static const AtomicString& orientationToString(blink::WebScreenOrientation orientation)
-{
-    unsigned length = 0;
-    ScreenOrientationInfo* orientationMap = orientationsMap(length);
-    for (unsigned i = 0; i < length; ++i) {
-        if (orientationMap[i].orientation == orientation)
-            return orientationMap[i].name;
-    }
-    // We do no handle OrientationInvalid and OrientationAny but this is fine because screen.orientation
-    // should never return these and WebScreenOrientation does not define those values.
-    ASSERT_NOT_REACHED();
-    return nullAtom;
-}
-
-static blink::WebScreenOrientations stringToOrientations(const AtomicString& orientationString)
-{
     DEFINE_STATIC_LOCAL(const AtomicString, any, ("any", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(const AtomicString, portrait, ("portrait", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(const AtomicString, landscape, ("landscape", AtomicString::ConstructFromLiteral));
 
-    if (orientationString == any) {
-        return blink::WebScreenOrientationPortraitPrimary | blink::WebScreenOrientationPortraitSecondary |
-            blink::WebScreenOrientationLandscapePrimary | blink::WebScreenOrientationLandscapeSecondary;
-    }
-    if (orientationString == portrait)
-        return blink::WebScreenOrientationPortraitPrimary | blink::WebScreenOrientationPortraitSecondary;
-    if (orientationString == landscape)
-        return blink::WebScreenOrientationLandscapePrimary | blink::WebScreenOrientationLandscapeSecondary;
+    static ScreenOrientationInfo orientationMap[] = {
+        { portraitPrimary, blink::WebScreenOrientationLockPortraitPrimary },
+        { portraitSecondary, blink::WebScreenOrientationLockPortraitSecondary },
+        { landscapePrimary, blink::WebScreenOrientationLockLandscapePrimary },
+        { landscapeSecondary, blink::WebScreenOrientationLockLandscapeSecondary },
+        { any, blink::WebScreenOrientationLockAny },
+        { portrait, blink::WebScreenOrientationLockPortrait },
+        { landscape, blink::WebScreenOrientationLockLandscape }
+    };
+    length = WTF_ARRAY_LENGTH(orientationMap);
 
+    return orientationMap;
+}
+
+static const AtomicString& orientationTypeToString(blink::WebScreenOrientationType orientation)
+{
     unsigned length = 0;
     ScreenOrientationInfo* orientationMap = orientationsMap(length);
     for (unsigned i = 0; i < length; ++i) {
-        if (orientationMap[i].name == orientationString)
-            return orientationMap[i].orientation;
+        if (static_cast<unsigned>(orientation) == orientationMap[i].orientation)
+            return orientationMap[i].name;
     }
-    return 0;
+
+    ASSERT_NOT_REACHED();
+    return nullAtom;
+}
+
+static blink::WebScreenOrientationLockType stringToOrientationLock(const AtomicString& orientationLockString)
+{
+    unsigned length = 0;
+    ScreenOrientationInfo* orientationMap = orientationsMap(length);
+    for (unsigned i = 0; i < length; ++i) {
+        if (orientationMap[i].name == orientationLockString)
+            return static_cast<blink::WebScreenOrientationLockType>(orientationMap[i].orientation);
+    }
+
+    ASSERT_NOT_REACHED();
+    return blink::WebScreenOrientationLockDefault;
 }
 
 ScreenOrientation::ScreenOrientation(Screen& screen)
     : DOMWindowProperty(screen.frame())
     , m_orientationLockTimer(this, &ScreenOrientation::orientationLockTimerFired)
-    , m_lockedOrientations(WebScreenOrientationDefault)
+    , m_prospectiveLock(blink::WebScreenOrientationLockDefault)
 {
 }
 
-void ScreenOrientation::lockOrientationAsync(blink::WebScreenOrientations orientations)
+void ScreenOrientation::lockOrientationAsync(blink::WebScreenOrientationLockType orientation)
 {
-    if (m_lockedOrientations == orientations)
-        return;
-    m_lockedOrientations = orientations;
-    if (!m_orientationLockTimer.isActive())
-        m_orientationLockTimer.startOneShot(0, FROM_HERE);
+    if (m_orientationLockTimer.isActive())
+        m_orientationLockTimer.stop();
+
+    m_prospectiveLock = orientation;
+    m_orientationLockTimer.startOneShot(0, FROM_HERE);
 }
 
 void ScreenOrientation::orientationLockTimerFired(Timer<ScreenOrientation>*)
 {
-    if (m_lockedOrientations == WebScreenOrientationDefault)
+    if (m_prospectiveLock == blink::WebScreenOrientationLockDefault)
         blink::Platform::current()->unlockOrientation();
     else
-        blink::Platform::current()->lockOrientation(m_lockedOrientations);
+        blink::Platform::current()->lockOrientation(m_prospectiveLock);
 }
 
 const char* ScreenOrientation::supplementName()
@@ -131,24 +133,21 @@ const AtomicString& ScreenOrientation::orientation(Screen& screen)
     ScreenOrientation& screenOrientation = ScreenOrientation::from(screen);
     if (!screenOrientation.document()) {
         // FIXME: we should try to return a better guess, like the latest known value.
-        return orientationToString(blink::WebScreenOrientationPortraitPrimary);
+        return orientationTypeToString(blink::WebScreenOrientationPortraitPrimary);
     }
     ScreenOrientationController& controller = ScreenOrientationController::from(*screenOrientation.document());
-    return orientationToString(controller.orientation());
+    return orientationTypeToString(controller.orientation());
 }
 
-bool ScreenOrientation::lockOrientation(Screen& screen, const AtomicString& orientationString)
+bool ScreenOrientation::lockOrientation(Screen& screen, const AtomicString& lockString)
 {
-    blink::WebScreenOrientations orientations = stringToOrientations(orientationString);
-    if (!orientations)
-        return false;
-    ScreenOrientation::from(screen).lockOrientationAsync(orientations);
+    ScreenOrientation::from(screen).lockOrientationAsync(stringToOrientationLock(lockString));
     return true;
 }
 
 void ScreenOrientation::unlockOrientation(Screen& screen)
 {
-    ScreenOrientation::from(screen).lockOrientationAsync(WebScreenOrientationDefault);
+    ScreenOrientation::from(screen).lockOrientationAsync(blink::WebScreenOrientationLockDefault);
 }
 
 } // namespace WebCore

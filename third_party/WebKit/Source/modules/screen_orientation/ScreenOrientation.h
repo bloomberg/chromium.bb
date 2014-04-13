@@ -10,7 +10,7 @@
 #include "heap/Handle.h"
 #include "platform/Supplementable.h"
 #include "platform/Timer.h"
-#include "public/platform/WebScreenOrientation.h"
+#include "public/platform/WebScreenOrientationLockType.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/WTFString.h"
 
@@ -36,14 +36,14 @@ public:
 private:
     explicit ScreenOrientation(Screen&);
 
-    void lockOrientationAsync(blink::WebScreenOrientations);
+    void lockOrientationAsync(blink::WebScreenOrientationLockType);
     void orientationLockTimerFired(Timer<ScreenOrientation>*);
 
     static const char* supplementName();
     Document* document() const;
 
     Timer<ScreenOrientation> m_orientationLockTimer;
-    blink::WebScreenOrientations m_lockedOrientations;
+    blink::WebScreenOrientationLockType m_prospectiveLock;
 };
 
 } // namespace WebCore

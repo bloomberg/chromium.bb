@@ -71,7 +71,7 @@ void ScreenOrientationDispatcher::purgeControllers()
         stopListening();
 }
 
-void ScreenOrientationDispatcher::didChangeScreenOrientation(blink::WebScreenOrientation orientation)
+void ScreenOrientationDispatcher::didChangeScreenOrientation(blink::WebScreenOrientationType orientation)
 {
     {
         TemporaryChange<bool> changeIsDispatching(m_isDispatching, true);
