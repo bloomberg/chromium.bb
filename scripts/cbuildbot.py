@@ -12,7 +12,6 @@ full and pre-flight-queue builds.
 
 import collections
 import distutils.version
-import errno
 import glob
 import logging
 import optparse
@@ -756,34 +755,6 @@ def _DetermineDefaultBuildRoot(sourceroot, internal_build):
     buildroot = os.path.join(top_level, _DEFAULT_EXT_BUILDROOT)
 
   return buildroot
-
-
-def _DisableYamaHardLinkChecks():
-  """Disable Yama kernel hardlink security checks.
-
-  The security module disables hardlinking to files you do not have
-  write access to which causes some of our build scripts problems.
-  Disable it so we don't have to worry about it.
-  """
-  PROC_PATH = '/proc/sys/kernel/yama/protected_nonaccess_hardlinks'
-  SYSCTL_PATH = PROC_PATH[len('/proc/sys/'):].replace('/', '.')
-
-  # Yama not available in this system -- nothing to do.
-  if not os.path.exists(PROC_PATH):
-    return
-
-  # Already disabled -- nothing to do.
-  if osutils.ReadFile(PROC_PATH).strip() == '0':
-    return
-
-  # Create a hardlink in a tempdir and see if we get back EPERM.
-  with osutils.TempDir() as tempdir:
-    try:
-      os.link('/bin/sh', os.path.join(tempdir, 'sh'))
-    except OSError as e:
-      if e.errno == errno.EPERM:
-        cros_build_lib.Warning('Disabling Yama hardlink security')
-        cros_build_lib.SudoRunCommand(['sysctl', '%s=0' % SYSCTL_PATH])
 
 
 def _BackupPreviousLog(log_file, backup_limit=25):
@@ -1729,9 +1700,6 @@ def main(argv):
     if not options.buildbot:
       build_config = cbuildbot_config.OverrideConfigForTrybot(
           build_config, options)
-
-    if options.buildbot or options.remote_trybot:
-      _DisableYamaHardLinkChecks()
 
     if options.mock_tree_status is not None:
       stack.Add(mock.patch.object, timeout_util, '_GetStatus',

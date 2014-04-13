@@ -3405,13 +3405,23 @@ class SDKPackageStage(bs.BuilderStage):
     cros_build_lib.SudoRunCommand(cmd, cwd=board_location)
 
   def CreateRedistributableToolchains(self, chroot_location):
+    """Create the toolchain packages"""
     osutils.RmDir(os.path.join(chroot_location,
                                constants.SDK_TOOLCHAINS_OUTPUT),
                   ignore_missing=True)
-    cros_build_lib.RunCommand(
-        ['cros_setup_toolchains', '--create-packages',
-         '--output-dir', os.path.join('/', constants.SDK_TOOLCHAINS_OUTPUT)],
-        enter_chroot=True)
+
+    # We need to run this as root because the tool creates hard links to root
+    # owned files and our bots enable security features which disallow that.
+    # Specifically, these features cause problems:
+    #  /proc/sys/kernel/yama/protected_nonaccess_hardlinks
+    #  /proc/sys/fs/protected_hardlinks
+    cmd = [
+        git.ReinterpretPathForChroot(os.path.join(
+            constants.CHROMITE_BIN_DIR, 'cros_setup_toolchains')),
+        '--create-packages',
+        '--output-dir', os.path.join('/', constants.SDK_TOOLCHAINS_OUTPUT),
+    ]
+    cros_build_lib.SudoRunCommand(cmd, enter_chroot=True)
 
   def CreateSDKTarball(self, _chroot, sdk_path, dest_tarball):
     """Creates an SDK tarball from a given source chroot.
