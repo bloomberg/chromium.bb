@@ -134,7 +134,7 @@ Atomic64 Acquire_Load(volatile const Atomic64* ptr);
 Atomic64 Release_Load(volatile const Atomic64* ptr);
 #endif  // ARCH_CPU_64_BITS
 
-}  // namespace base::subtle
+}  // namespace subtle
 }  // namespace base
 
 // Include our platform specific implementation.
