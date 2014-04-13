@@ -1,5 +1,8 @@
 description("Series of tests for canvas alpha");
 
+if (window.testRunner)
+    testRunner.dumpAsTextWithPixelResults();
+
 var canvas1 = document.getElementById("canvas1");
 var canvas2 = document.getElementById("canvas2");
 var canvas3 = document.getElementById("canvas3");
@@ -25,11 +28,6 @@ shouldBe("imgData2.data[2]", "0");
 shouldBe("imgData2.data[3]", "0");
 
 shouldBe("ctx3.getContextAttributes().alpha", "false");
-var imgData3 = ctx3.getImageData(0, 0, 1, 1);
-shouldBe("imgData3.data[0]", "0");
-shouldBe("imgData3.data[1]", "0");
-shouldBe("imgData3.data[2]", "0");
-shouldBe("imgData3.data[3]", "255");
 
 shouldBe("ctx4.getContextAttributes().alpha", "true");
 var imgData4 = ctx4.getImageData(0, 0, 1, 1);

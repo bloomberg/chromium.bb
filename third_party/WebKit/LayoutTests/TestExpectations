@@ -1098,3 +1098,6 @@ crbug.com/362499 [ Mac ] touchadjustment/context-menu-text-subtargets.html [ Fai
 crbug.com/362499 [ Mac ] touchadjustment/touch-inlines.html [ Failure Pass ]
 
 crbug.com/362501 [ Mac ] svg/text/obb-paintserver.html [ ImageOnlyFailure Crash Pass ]
+
+crbug.com/352018 fast/canvas/alpha.html [ NeedsRebaseline ]
+crbug.com/352018 virtual/gpu/fast/canvas/alpha.html [ NeedsRebaseline ]

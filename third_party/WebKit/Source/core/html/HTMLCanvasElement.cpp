@@ -326,6 +326,10 @@ void HTMLCanvasElement::paint(GraphicsContext* context, const LayoutRect& r)
             else
                 context->drawImageBuffer(imageBuffer, pixelSnappedIntRect(r), compositeOperator, blink::WebBlendModeNormal);
         }
+    } else {
+        // When alpha is false, we should draw to opaque black.
+        if (m_context && !m_context->hasAlpha())
+            context->fillRect(FloatRect(0, 0, width(), height()), Color(0, 0, 0));
     }
 
     if (is3D())
