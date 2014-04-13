@@ -466,11 +466,6 @@ deps_os = {
       ((Var("googlecode_url") % "linux-syscall-support") + "/trunk/lss@" +
        Var("lss_revision")),
 
-    # FIXME(mithro): src/third_party/binutils is replacing src/third_party/gold.
-    # Remove gold when binutils is being used correctly.
-    "src/third_party/gold":
-      "/trunk/deps/third_party/gold@228995",
-
     # For Linux and Chromium OS.
     "src/third_party/cros_system_api":
       Var("chromiumos_git") + "/platform/system_api.git" +

@@ -242,7 +242,6 @@ v8.log
 /third_party/freetype2/src
 /third_party/gles2_conform
 /third_party/gnu_binutils/
-/third_party/gold
 /third_party/google_appengine_cloudstorage
 /third_party/google_toolbox_for_mac/src
 /third_party/googlemac
