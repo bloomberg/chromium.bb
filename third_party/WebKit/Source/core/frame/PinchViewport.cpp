@@ -202,7 +202,7 @@ void PinchViewport::setupScrollbar(WebScrollbar::Orientation orientation)
         ScrollingCoordinator* coordinator = m_frameHost.page().scrollingCoordinator();
         ASSERT(coordinator);
         ScrollbarOrientation webcoreOrientation = isHorizontal ? HorizontalScrollbar : VerticalScrollbar;
-        webScrollbarLayer = coordinator->createSolidColorScrollbarLayer(webcoreOrientation, overlayScrollbarThickness, false);
+        webScrollbarLayer = coordinator->createSolidColorScrollbarLayer(webcoreOrientation, overlayScrollbarThickness, 0, false);
 
         webScrollbarLayer->setClipLayer(m_innerViewportContainerLayer->platformLayer());
         scrollbarGraphicsLayer->setContentsToPlatformLayer(webScrollbarLayer->layer());
