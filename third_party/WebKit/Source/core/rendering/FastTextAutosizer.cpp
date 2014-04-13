@@ -701,6 +701,23 @@ FastTextAutosizer::Supercluster* FastTextAutosizer::getSupercluster(const Render
     return supercluster;
 }
 
+const RenderBlock* FastTextAutosizer::deepestCommonAncestor(BlockSet& blocks)
+{
+    // Find the lowest common ancestor of blocks.
+    // Note: this could be improved to not be O(b*h) for b blocks and tree height h.
+    HashCountedSet<const RenderBlock*> ancestors;
+    for (BlockSet::iterator it = blocks.begin(); it != blocks.end(); ++it) {
+        for (const RenderBlock* block = (*it); block; block = block->containingBlock()) {
+            ancestors.add(block);
+            // The first ancestor that has all of the blocks as children wins.
+            if (ancestors.count(block) == blocks.size())
+                return block;
+        }
+    }
+    ASSERT_NOT_REACHED();
+    return 0;
+}
+
 float FastTextAutosizer::clusterMultiplier(Cluster* cluster)
 {
     if (cluster->m_multiplier)
@@ -768,7 +785,14 @@ float FastTextAutosizer::superclusterMultiplier(Cluster* cluster)
         const BlockSet* roots = supercluster->m_roots;
         const RenderBlock* widthProvider;
 
-        widthProvider = maxClusterWidthProvider(cluster->m_supercluster, cluster->m_root);
+        if (cluster->m_root->isTableCell()) {
+            widthProvider = clusterWidthProvider(cluster->m_root);
+        } else {
+            BlockSet widthProviders;
+            for (BlockSet::iterator it = roots->begin(); it != roots->end(); ++it)
+                widthProviders.add(clusterWidthProvider(*it));
+            widthProvider = deepestCommonAncestor(widthProviders);
+        }
 
         supercluster->m_multiplier = anyClusterHasEnoughTextToAutosize(roots, widthProvider)
             ? multiplierFromBlock(widthProvider) : 1.0f;
@@ -783,25 +807,6 @@ const RenderBlock* FastTextAutosizer::clusterWidthProvider(const RenderBlock* ro
         return root;
 
     return deepestBlockContainingAllText(root);
-}
-
-
-const RenderBlock* FastTextAutosizer::maxClusterWidthProvider(const Supercluster* supercluster, const RenderBlock* currentRoot)
-{
-    float maxWidth = 0;
-    const RenderBlock* result = 0;
-    const BlockSet* roots = supercluster->m_roots;
-    for (BlockSet::iterator it = roots->begin(); it != roots->end(); ++it) {
-        const RenderBlock* widthProvider = clusterWidthProvider(*it);
-        if (widthProvider != currentRoot && widthProvider->needsLayout())
-            continue;
-        float width = widthFromBlock(widthProvider);
-        if (width > maxWidth) {
-            maxWidth = width;
-            result = widthProvider;
-        }
-    }
-    return result;
 }
 
 float FastTextAutosizer::widthFromBlock(const RenderBlock* block)

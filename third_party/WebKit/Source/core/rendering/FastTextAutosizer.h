@@ -217,12 +217,12 @@ private:
     Fingerprint computeFingerprint(const RenderObject*);
     Cluster* maybeCreateCluster(const RenderBlock*);
     Supercluster* getSupercluster(const RenderBlock*);
+    const RenderBlock* deepestCommonAncestor(BlockSet&);
     float clusterMultiplier(Cluster*);
     float superclusterMultiplier(Cluster*);
     // A cluster's width provider is typically the deepest block containing all text.
     // There are exceptions, such as tables and table cells which use the table itself for width.
     const RenderBlock* clusterWidthProvider(const RenderBlock*);
-    const RenderBlock* maxClusterWidthProvider(const Supercluster*, const RenderBlock* currentRoot);
     // Typically this returns a block's computed width. In the case of tables layout, this
     // width is not yet known so the fixed width is used if it's available, or the containing
     // block's width otherwise.
