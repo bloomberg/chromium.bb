@@ -22,11 +22,4 @@ PasswordStore* StubPasswordManagerClient::GetPasswordStore() { return NULL; }
 
 PasswordManagerDriver* StubPasswordManagerClient::GetDriver() { return NULL; }
 
-void StubPasswordManagerClient::SetLogger(PasswordManagerLogger* logger) {}
-
-void StubPasswordManagerClient::LogSavePasswordProgress(
-    const std::string& text) {}
-
-bool StubPasswordManagerClient::IsLoggingActive() const { return false; }
-
 }  // namespace password_manager
