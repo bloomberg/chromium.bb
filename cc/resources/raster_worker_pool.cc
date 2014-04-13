@@ -28,7 +28,7 @@ struct RasterRequiredForActivationSyntheticDelayInitializer {
 static base::LazyInstance<RasterRequiredForActivationSyntheticDelayInitializer>
     g_raster_required_for_activation_delay = LAZY_INSTANCE_INITIALIZER;
 
-class RasterTaskGraphRunner : public internal::TaskGraphRunner,
+class RasterTaskGraphRunner : public TaskGraphRunner,
                               public base::DelegateSimpleThread::Delegate {
  public:
   RasterTaskGraphRunner() {
@@ -70,7 +70,7 @@ class RasterTaskGraphRunner : public internal::TaskGraphRunner,
     DCHECK_GT(RasterWorkerPool::GetNumRasterThreads(), picture_clone_index);
     current_tls_.Set(new ThreadLocalState(picture_clone_index));
 
-    internal::TaskGraphRunner::Run();
+    TaskGraphRunner::Run();
   }
 
   ScopedPtrDeque<base::DelegateSimpleThread> workers_;
@@ -85,7 +85,7 @@ const int kDefaultNumRasterThreads = 1;
 
 int g_num_raster_threads = 0;
 
-class RasterFinishedTaskImpl : public internal::RasterizerTask {
+class RasterFinishedTaskImpl : public RasterizerTask {
  public:
   explicit RasterFinishedTaskImpl(
       base::SequencedTaskRunner* task_runner,
@@ -93,21 +93,19 @@ class RasterFinishedTaskImpl : public internal::RasterizerTask {
       : task_runner_(task_runner),
         on_raster_finished_callback_(on_raster_finished_callback) {}
 
-  // Overridden from internal::Task:
+  // Overridden from Task:
   virtual void RunOnWorkerThread() OVERRIDE {
     TRACE_EVENT0("cc", "RasterFinishedTaskImpl::RunOnWorkerThread");
     RasterFinished();
   }
 
-  // Overridden from internal::RasterizerTask:
-  virtual void ScheduleOnOriginThread(internal::RasterizerTaskClient* client)
-      OVERRIDE {}
+  // Overridden from RasterizerTask:
+  virtual void ScheduleOnOriginThread(RasterizerTaskClient* client) OVERRIDE {}
   virtual void RunOnOriginThread() OVERRIDE {
     TRACE_EVENT0("cc", "RasterFinishedTaskImpl::RunOnOriginThread");
     RasterFinished();
   }
-  virtual void CompleteOnOriginThread(internal::RasterizerTaskClient* client)
-      OVERRIDE {}
+  virtual void CompleteOnOriginThread(RasterizerTaskClient* client) OVERRIDE {}
   virtual void RunReplyOnOriginThread() OVERRIDE {}
 
  protected:
@@ -140,14 +138,14 @@ class RasterRequiredForActivationFinishedTaskImpl
     }
   }
 
-  // Overridden from internal::Task:
+  // Overridden from Task:
   virtual void RunOnWorkerThread() OVERRIDE {
     TRACE_EVENT0(
         "cc", "RasterRequiredForActivationFinishedTaskImpl::RunOnWorkerThread");
     RunRasterFinished();
   }
 
-  // Overridden from internal::RasterizerTask:
+  // Overridden from RasterizerTask:
   virtual void RunOnOriginThread() OVERRIDE {
     TRACE_EVENT0(
         "cc", "RasterRequiredForActivationFinishedTaskImpl::RunOnOriginThread");
@@ -207,7 +205,7 @@ int RasterWorkerPool::GetNumRasterThreads() {
 }
 
 // static
-internal::TaskGraphRunner* RasterWorkerPool::GetTaskGraphRunner() {
+TaskGraphRunner* RasterWorkerPool::GetTaskGraphRunner() {
   return g_task_graph_runner.Pointer();
 }
 
@@ -217,8 +215,7 @@ size_t RasterWorkerPool::GetPictureCloneIndexForCurrentThread() {
 }
 
 // static
-scoped_refptr<internal::RasterizerTask>
-RasterWorkerPool::CreateRasterFinishedTask(
+scoped_refptr<RasterizerTask> RasterWorkerPool::CreateRasterFinishedTask(
     base::SequencedTaskRunner* task_runner,
     const base::Closure& on_raster_finished_callback) {
   return make_scoped_refptr(
@@ -226,7 +223,7 @@ RasterWorkerPool::CreateRasterFinishedTask(
 }
 
 // static
-scoped_refptr<internal::RasterizerTask>
+scoped_refptr<RasterizerTask>
 RasterWorkerPool::CreateRasterRequiredForActivationFinishedTask(
     size_t tasks_required_for_activation_count,
     base::SequencedTaskRunner* task_runner,
@@ -238,17 +235,15 @@ RasterWorkerPool::CreateRasterRequiredForActivationFinishedTask(
 }
 
 // static
-void RasterWorkerPool::ScheduleTasksOnOriginThread(
-    internal::RasterizerTaskClient* client,
-    internal::TaskGraph* graph) {
+void RasterWorkerPool::ScheduleTasksOnOriginThread(RasterizerTaskClient* client,
+                                                   TaskGraph* graph) {
   TRACE_EVENT0("cc", "Rasterizer::ScheduleTasksOnOriginThread");
 
-  for (internal::TaskGraph::Node::Vector::iterator it = graph->nodes.begin();
+  for (TaskGraph::Node::Vector::iterator it = graph->nodes.begin();
        it != graph->nodes.end();
        ++it) {
-    internal::TaskGraph::Node& node = *it;
-    internal::RasterizerTask* task =
-        static_cast<internal::RasterizerTask*>(node.task);
+    TaskGraph::Node& node = *it;
+    RasterizerTask* task = static_cast<RasterizerTask*>(node.task);
 
     if (!task->HasBeenScheduled()) {
       task->WillSchedule();
@@ -259,32 +254,30 @@ void RasterWorkerPool::ScheduleTasksOnOriginThread(
 }
 
 // static
-void RasterWorkerPool::InsertNodeForTask(internal::TaskGraph* graph,
-                                         internal::RasterizerTask* task,
+void RasterWorkerPool::InsertNodeForTask(TaskGraph* graph,
+                                         RasterizerTask* task,
                                          unsigned priority,
                                          size_t dependencies) {
   DCHECK(std::find_if(graph->nodes.begin(),
                       graph->nodes.end(),
-                      internal::TaskGraph::Node::TaskComparator(task)) ==
+                      TaskGraph::Node::TaskComparator(task)) ==
          graph->nodes.end());
-  graph->nodes.push_back(
-      internal::TaskGraph::Node(task, priority, dependencies));
+  graph->nodes.push_back(TaskGraph::Node(task, priority, dependencies));
 }
 
 // static
 void RasterWorkerPool::InsertNodesForRasterTask(
-    internal::TaskGraph* graph,
-    internal::RasterTask* raster_task,
-    const internal::ImageDecodeTask::Vector& decode_tasks,
+    TaskGraph* graph,
+    RasterTask* raster_task,
+    const ImageDecodeTask::Vector& decode_tasks,
     unsigned priority) {
   size_t dependencies = 0u;
 
   // Insert image decode tasks.
-  for (internal::ImageDecodeTask::Vector::const_iterator it =
-           decode_tasks.begin();
+  for (ImageDecodeTask::Vector::const_iterator it = decode_tasks.begin();
        it != decode_tasks.end();
        ++it) {
-    internal::ImageDecodeTask* decode_task = it->get();
+    ImageDecodeTask* decode_task = it->get();
 
     // Skip if already decoded.
     if (decode_task->HasCompleted())
@@ -293,14 +286,14 @@ void RasterWorkerPool::InsertNodesForRasterTask(
     dependencies++;
 
     // Add decode task if it doesn't already exists in graph.
-    internal::TaskGraph::Node::Vector::iterator decode_it =
+    TaskGraph::Node::Vector::iterator decode_it =
         std::find_if(graph->nodes.begin(),
                      graph->nodes.end(),
-                     internal::TaskGraph::Node::TaskComparator(decode_task));
+                     TaskGraph::Node::TaskComparator(decode_task));
     if (decode_it == graph->nodes.end())
       InsertNodeForTask(graph, decode_task, priority, 0u);
 
-    graph->edges.push_back(internal::TaskGraph::Edge(decode_task, raster_task));
+    graph->edges.push_back(TaskGraph::Edge(decode_task, raster_task));
   }
 
   InsertNodeForTask(graph, raster_task, priority, dependencies);

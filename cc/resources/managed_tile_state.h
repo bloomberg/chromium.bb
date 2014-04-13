@@ -102,7 +102,7 @@ class CC_EXPORT ManagedTileState {
     SkColor solid_color_;
     bool has_text_;
     scoped_ptr<ScopedResource> resource_;
-    scoped_refptr<internal::RasterTask> raster_task_;
+    scoped_refptr<RasterTask> raster_task_;
   };
 
   ManagedTileState();

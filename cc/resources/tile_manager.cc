@@ -45,7 +45,7 @@ class DisableLCDTextFilter : public SkDrawFilter {
   }
 };
 
-class RasterTaskImpl : public internal::RasterTask {
+class RasterTaskImpl : public RasterTask {
  public:
   RasterTaskImpl(
       const Resource* resource,
@@ -60,8 +60,8 @@ class RasterTaskImpl : public internal::RasterTask {
       bool analyze_picture,
       RenderingStatsInstrumentation* rendering_stats,
       const base::Callback<void(const PicturePileImpl::Analysis&, bool)>& reply,
-      internal::ImageDecodeTask::Vector* dependencies)
-      : internal::RasterTask(resource, dependencies),
+      ImageDecodeTask::Vector* dependencies)
+      : RasterTask(resource, dependencies),
         picture_pile_(picture_pile),
         content_rect_(content_rect),
         contents_scale_(contents_scale),
@@ -75,7 +75,7 @@ class RasterTaskImpl : public internal::RasterTask {
         reply_(reply),
         canvas_(NULL) {}
 
-  // Overridden from internal::Task:
+  // Overridden from Task:
   virtual void RunOnWorkerThread() OVERRIDE {
     TRACE_EVENT0("cc", "RasterizerTaskImpl::RunOnWorkerThread");
 
@@ -86,9 +86,8 @@ class RasterTaskImpl : public internal::RasterTask {
     }
   }
 
-  // Overridden from internal::RasterizerTask:
-  virtual void ScheduleOnOriginThread(internal::RasterizerTaskClient* client)
-      OVERRIDE {
+  // Overridden from RasterizerTask:
+  virtual void ScheduleOnOriginThread(RasterizerTaskClient* client) OVERRIDE {
     DCHECK(!canvas_);
     canvas_ = client->AcquireCanvasForRaster(this);
   }
@@ -97,8 +96,7 @@ class RasterTaskImpl : public internal::RasterTask {
     if (canvas_)
       AnalyzeAndRaster(picture_pile_);
   }
-  virtual void CompleteOnOriginThread(internal::RasterizerTaskClient* client)
-      OVERRIDE {
+  virtual void CompleteOnOriginThread(RasterizerTaskClient* client) OVERRIDE {
     canvas_ = NULL;
     client->ReleaseCanvasForRaster(this);
   }
@@ -222,7 +220,7 @@ class RasterTaskImpl : public internal::RasterTask {
   DISALLOW_COPY_AND_ASSIGN(RasterTaskImpl);
 };
 
-class ImageDecodeTaskImpl : public internal::ImageDecodeTask {
+class ImageDecodeTaskImpl : public ImageDecodeTask {
  public:
   ImageDecodeTaskImpl(SkPixelRef* pixel_ref,
                       int layer_id,
@@ -233,21 +231,19 @@ class ImageDecodeTaskImpl : public internal::ImageDecodeTask {
         rendering_stats_(rendering_stats),
         reply_(reply) {}
 
-  // Overridden from internal::Task:
+  // Overridden from Task:
   virtual void RunOnWorkerThread() OVERRIDE {
     TRACE_EVENT0("cc", "ImageDecodeTaskImpl::RunOnWorkerThread");
     Decode();
   }
 
-  // Overridden from internal::RasterizerTask:
-  virtual void ScheduleOnOriginThread(internal::RasterizerTaskClient* client)
-      OVERRIDE {}
+  // Overridden from RasterizerTask:
+  virtual void ScheduleOnOriginThread(RasterizerTaskClient* client) OVERRIDE {}
   virtual void RunOnOriginThread() OVERRIDE {
     TRACE_EVENT0("cc", "ImageDecodeTaskImpl::RunOnOriginThread");
     Decode();
   }
-  virtual void CompleteOnOriginThread(internal::RasterizerTaskClient* client)
-      OVERRIDE {}
+  virtual void CompleteOnOriginThread(RasterizerTaskClient* client) OVERRIDE {}
   virtual void RunReplyOnOriginThread() OVERRIDE {
     reply_.Run(!HasFinishedRunning());
   }
@@ -1085,7 +1081,7 @@ void TileManager::ScheduleTasks(
   did_check_for_completed_tasks_since_last_schedule_tasks_ = false;
 }
 
-scoped_refptr<internal::ImageDecodeTask> TileManager::CreateImageDecodeTask(
+scoped_refptr<ImageDecodeTask> TileManager::CreateImageDecodeTask(
     Tile* tile,
     SkPixelRef* pixel_ref) {
   return make_scoped_refptr(new ImageDecodeTaskImpl(
@@ -1098,7 +1094,7 @@ scoped_refptr<internal::ImageDecodeTask> TileManager::CreateImageDecodeTask(
                  base::Unretained(pixel_ref))));
 }
 
-scoped_refptr<internal::RasterTask> TileManager::CreateRasterTask(Tile* tile) {
+scoped_refptr<RasterTask> TileManager::CreateRasterTask(Tile* tile) {
   ManagedTileState& mts = tile->managed_state();
 
   scoped_ptr<ScopedResource> resource =
@@ -1106,7 +1102,7 @@ scoped_refptr<internal::RasterTask> TileManager::CreateRasterTask(Tile* tile) {
   const ScopedResource* const_resource = resource.get();
 
   // Create and queue all image decode tasks that this tile depends on.
-  internal::ImageDecodeTask::Vector decode_tasks;
+  ImageDecodeTask::Vector decode_tasks;
   PixelRefTaskMap& existing_pixel_refs = image_decode_tasks_[tile->layer_id()];
   for (PicturePileImpl::PixelRefIterator iter(
            tile->content_rect(), tile->contents_scale(), tile->picture_pile());
@@ -1123,7 +1119,7 @@ scoped_refptr<internal::RasterTask> TileManager::CreateRasterTask(Tile* tile) {
     }
 
     // Create and append new image decode task for this pixel ref.
-    scoped_refptr<internal::ImageDecodeTask> decode_task =
+    scoped_refptr<ImageDecodeTask> decode_task =
         CreateImageDecodeTask(tile, pixel_ref);
     decode_tasks.push_back(decode_task);
     existing_pixel_refs[id] = decode_task;

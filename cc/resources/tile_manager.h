@@ -282,10 +282,9 @@ class CC_EXPORT TileManager : public RasterizerClient,
   void FreeResourceForTile(Tile* tile, RasterMode mode);
   void FreeResourcesForTile(Tile* tile);
   void FreeUnusedResourcesForTile(Tile* tile);
-  scoped_refptr<internal::ImageDecodeTask> CreateImageDecodeTask(
-      Tile* tile,
-      SkPixelRef* pixel_ref);
-  scoped_refptr<internal::RasterTask> CreateRasterTask(Tile* tile);
+  scoped_refptr<ImageDecodeTask> CreateImageDecodeTask(Tile* tile,
+                                                       SkPixelRef* pixel_ref);
+  scoped_refptr<RasterTask> CreateRasterTask(Tile* tile);
   scoped_ptr<base::Value> GetMemoryRequirementsAsValue() const;
   void UpdatePrioritizedTileSetIfNeeded();
 
@@ -318,7 +317,7 @@ class CC_EXPORT TileManager : public RasterizerClient,
   bool did_initialize_visible_tile_;
   bool did_check_for_completed_tasks_since_last_schedule_tasks_;
 
-  typedef base::hash_map<uint32_t, scoped_refptr<internal::ImageDecodeTask> >
+  typedef base::hash_map<uint32_t, scoped_refptr<ImageDecodeTask> >
       PixelRefTaskMap;
   typedef base::hash_map<int, PixelRefTaskMap> LayerPixelRefTaskMap;
   LayerPixelRefTaskMap image_decode_tasks_;
@@ -337,7 +336,7 @@ class CC_EXPORT TileManager : public RasterizerClient,
   // Queues used when scheduling raster tasks.
   RasterTaskQueue raster_queue_[NUM_RASTERIZER_TYPES];
 
-  std::vector<scoped_refptr<internal::RasterTask> > orphan_raster_tasks_;
+  std::vector<scoped_refptr<RasterTask> > orphan_raster_tasks_;
 
   std::vector<PictureLayerImpl*> layers_;
 

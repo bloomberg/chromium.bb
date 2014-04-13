@@ -60,7 +60,7 @@ void DirectRasterWorkerPool::ScheduleTasks(RasterTaskQueue* queue) {
   // Cancel existing OnRasterFinished callbacks.
   raster_finished_weak_ptr_factory_.InvalidateWeakPtrs();
 
-  scoped_refptr<internal::RasterizerTask>
+  scoped_refptr<RasterizerTask>
       new_raster_required_for_activation_finished_task(
           CreateRasterRequiredForActivationFinishedTask(
               queue->required_for_activation_count,
@@ -68,7 +68,7 @@ void DirectRasterWorkerPool::ScheduleTasks(RasterTaskQueue* queue) {
               base::Bind(&DirectRasterWorkerPool::
                              OnRasterRequiredForActivationFinished,
                          raster_finished_weak_ptr_factory_.GetWeakPtr())));
-  scoped_refptr<internal::RasterizerTask> new_raster_finished_task(
+  scoped_refptr<RasterizerTask> new_raster_finished_task(
       CreateRasterFinishedTask(
           task_runner_.get(),
           base::Bind(&DirectRasterWorkerPool::OnRasterFinished,
@@ -83,7 +83,7 @@ void DirectRasterWorkerPool::ScheduleTasks(RasterTaskQueue* queue) {
              raster_tasks_.items.begin();
          it != raster_tasks_.items.end();
          ++it) {
-      internal::RasterTask* task = it->task;
+      RasterTask* task = it->task;
 
       if (std::find_if(queue->items.begin(),
                        queue->items.end(),
@@ -105,24 +105,21 @@ void DirectRasterWorkerPool::ScheduleTasks(RasterTaskQueue* queue) {
 void DirectRasterWorkerPool::CheckForCompletedTasks() {
   TRACE_EVENT0("cc", "DirectRasterWorkerPool::CheckForCompletedTasks");
 
-  for (internal::RasterizerTask::Vector::const_iterator it =
-           completed_tasks_.begin();
+  for (RasterizerTask::Vector::const_iterator it = completed_tasks_.begin();
        it != completed_tasks_.end();
        ++it) {
-    internal::RasterizerTask* task = it->get();
+    RasterizerTask* task = it->get();
 
     task->RunReplyOnOriginThread();
   }
   completed_tasks_.clear();
 }
 
-SkCanvas* DirectRasterWorkerPool::AcquireCanvasForRaster(
-    internal::RasterTask* task) {
+SkCanvas* DirectRasterWorkerPool::AcquireCanvasForRaster(RasterTask* task) {
   return resource_provider_->MapDirectRasterBuffer(task->resource()->id());
 }
 
-void DirectRasterWorkerPool::ReleaseCanvasForRaster(
-    internal::RasterTask* task) {
+void DirectRasterWorkerPool::ReleaseCanvasForRaster(RasterTask* task) {
   resource_provider_->UnmapDirectRasterBuffer(task->resource()->id());
 }
 
@@ -178,15 +175,15 @@ void DirectRasterWorkerPool::RunTasksOnOriginThread() {
              raster_tasks_.items.begin();
          it != raster_tasks_.items.end();
          ++it) {
-      internal::RasterTask* task = it->task;
+      RasterTask* task = it->task;
       DCHECK(!task->HasCompleted());
 
       // First need to run all dependencies.
-      for (internal::ImageDecodeTask::Vector::const_iterator it =
+      for (ImageDecodeTask::Vector::const_iterator it =
                task->dependencies().begin();
            it != task->dependencies().end();
            ++it) {
-        internal::ImageDecodeTask* dependency = it->get();
+        ImageDecodeTask* dependency = it->get();
         if (dependency->HasCompleted())
           continue;
 
@@ -209,8 +206,7 @@ void DirectRasterWorkerPool::RunTasksOnOriginThread() {
   RunTaskOnOriginThread(raster_finished_task_.get());
 }
 
-void DirectRasterWorkerPool::RunTaskOnOriginThread(
-    internal::RasterizerTask* task) {
+void DirectRasterWorkerPool::RunTaskOnOriginThread(RasterizerTask* task) {
   task->WillSchedule();
   task->ScheduleOnOriginThread(this);
   task->DidSchedule();

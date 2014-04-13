@@ -37,7 +37,7 @@ enum RasterWorkerPoolType {
   RASTER_WORKER_POOL_TYPE_DIRECT
 };
 
-class TestRasterTaskImpl : public internal::RasterTask {
+class TestRasterTaskImpl : public RasterTask {
  public:
   typedef base::Callback<void(const PicturePileImpl::Analysis& analysis,
                               bool was_canceled,
@@ -45,26 +45,24 @@ class TestRasterTaskImpl : public internal::RasterTask {
 
   TestRasterTaskImpl(const Resource* resource,
                      const Reply& reply,
-                     internal::ImageDecodeTask::Vector* dependencies)
-      : internal::RasterTask(resource, dependencies),
+                     ImageDecodeTask::Vector* dependencies)
+      : RasterTask(resource, dependencies),
         reply_(reply),
         raster_thread_(RASTER_THREAD_NONE) {}
 
-  // Overridden from internal::Task:
+  // Overridden from Task:
   virtual void RunOnWorkerThread() OVERRIDE {
     raster_thread_ = RASTER_THREAD_WORKER;
   }
 
-  // Overridden from internal::RasterizerTask:
-  virtual void ScheduleOnOriginThread(internal::RasterizerTaskClient* client)
-      OVERRIDE {
+  // Overridden from RasterizerTask:
+  virtual void ScheduleOnOriginThread(RasterizerTaskClient* client) OVERRIDE {
     client->AcquireCanvasForRaster(this);
   }
   virtual void RunOnOriginThread() OVERRIDE {
     raster_thread_ = RASTER_THREAD_ORIGIN;
   }
-  virtual void CompleteOnOriginThread(internal::RasterizerTaskClient* client)
-      OVERRIDE {
+  virtual void CompleteOnOriginThread(RasterizerTaskClient* client) OVERRIDE {
     client->ReleaseCanvasForRaster(this);
   }
   virtual void RunReplyOnOriginThread() OVERRIDE {
@@ -87,16 +85,16 @@ class BlockingTestRasterTaskImpl : public TestRasterTaskImpl {
   BlockingTestRasterTaskImpl(const Resource* resource,
                              const Reply& reply,
                              base::Lock* lock,
-                             internal::ImageDecodeTask::Vector* dependencies)
+                             ImageDecodeTask::Vector* dependencies)
       : TestRasterTaskImpl(resource, reply, dependencies), lock_(lock) {}
 
-  // Overridden from internal::Task:
+  // Overridden from Task:
   virtual void RunOnWorkerThread() OVERRIDE {
     base::AutoLock lock(*lock_);
     TestRasterTaskImpl::RunOnWorkerThread();
   }
 
-  // Overridden from internal::RasterizerTask:
+  // Overridden from RasterizerTask:
   virtual void RunReplyOnOriginThread() OVERRIDE {}
 
  protected:
@@ -118,7 +116,7 @@ class RasterWorkerPoolTest
     RasterThread raster_thread;
   };
 
-  typedef std::vector<scoped_refptr<internal::RasterTask> > RasterTaskVector;
+  typedef std::vector<scoped_refptr<RasterTask> > RasterTaskVector;
 
   RasterWorkerPoolTest()
       : context_provider_(TestContextProvider::Create()),
@@ -213,7 +211,7 @@ class RasterWorkerPoolTest
     resource->Allocate(size, ResourceProvider::TextureUsageAny, RGBA_8888);
     const Resource* const_resource = resource.get();
 
-    internal::ImageDecodeTask::Vector empty;
+    ImageDecodeTask::Vector empty;
     tasks_.push_back(new TestRasterTaskImpl(
         const_resource,
         base::Bind(&RasterWorkerPoolTest::OnTaskCompleted,
@@ -231,7 +229,7 @@ class RasterWorkerPoolTest
     resource->Allocate(size, ResourceProvider::TextureUsageAny, RGBA_8888);
     const Resource* const_resource = resource.get();
 
-    internal::ImageDecodeTask::Vector empty;
+    ImageDecodeTask::Vector empty;
     tasks_.push_back(new BlockingTestRasterTaskImpl(
         const_resource,
         base::Bind(&RasterWorkerPoolTest::OnTaskCompleted,

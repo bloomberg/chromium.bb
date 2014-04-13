@@ -33,7 +33,7 @@ class CC_EXPORT RasterWorkerPool {
   static int GetNumRasterThreads();
 
   // Returns a pointer to the global TaskGraphRunner instance.
-  static internal::TaskGraphRunner* GetTaskGraphRunner();
+  static TaskGraphRunner* GetTaskGraphRunner();
 
   // Returns a unique clone index for the current thread. Guaranteed to be a
   // value between 0 and GetNumRasterThreads() - 1.
@@ -41,13 +41,13 @@ class CC_EXPORT RasterWorkerPool {
 
   // Utility function that can be used to create a "raster finished" task that
   // posts |callback| to |task_runner| when run.
-  static scoped_refptr<internal::RasterizerTask> CreateRasterFinishedTask(
+  static scoped_refptr<RasterizerTask> CreateRasterFinishedTask(
       base::SequencedTaskRunner* task_runner,
       const base::Closure& callback);
 
   // Utility function that can be used to create a "raster required for
   // activation finished" task that posts |callback| to |task_runner| when run.
-  static scoped_refptr<internal::RasterizerTask>
+  static scoped_refptr<RasterizerTask>
       CreateRasterRequiredForActivationFinishedTask(
           size_t tasks_required_for_activation_count,
           base::SequencedTaskRunner* task_runner,
@@ -55,24 +55,23 @@ class CC_EXPORT RasterWorkerPool {
 
   // Utility function that can be used to call ::ScheduleOnOriginThread() for
   // each task in |graph|.
-  static void ScheduleTasksOnOriginThread(
-      internal::RasterizerTaskClient* client,
-      internal::TaskGraph* graph);
+  static void ScheduleTasksOnOriginThread(RasterizerTaskClient* client,
+                                          TaskGraph* graph);
 
   // Utility function that can be used to build a task graph. Inserts a node
   // that represents |task| in |graph|. See TaskGraph definition for valid
   // |priority| values.
-  static void InsertNodeForTask(internal::TaskGraph* graph,
-                                internal::RasterizerTask* task,
+  static void InsertNodeForTask(TaskGraph* graph,
+                                RasterizerTask* task,
                                 unsigned priority,
                                 size_t dependencies);
 
   // Utility function that can be used to build a task graph. Inserts nodes that
   // represent |task| and all its image decode dependencies in |graph|.
   static void InsertNodesForRasterTask(
-      internal::TaskGraph* graph,
-      internal::RasterTask* task,
-      const internal::ImageDecodeTask::Vector& decode_tasks,
+      TaskGraph* graph,
+      RasterTask* task,
+      const ImageDecodeTask::Vector& decode_tasks,
       unsigned priority);
 
   // Type-checking downcast routine.

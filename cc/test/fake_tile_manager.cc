@@ -14,8 +14,7 @@ namespace cc {
 
 namespace {
 
-class FakeRasterizerImpl : public Rasterizer,
-                           public internal::RasterizerTaskClient {
+class FakeRasterizerImpl : public Rasterizer, public RasterizerTaskClient {
  public:
   // Overridden from Rasterizer:
   virtual void SetClient(RasterizerClient* client) OVERRIDE {}
@@ -25,7 +24,7 @@ class FakeRasterizerImpl : public Rasterizer,
              queue->items.begin();
          it != queue->items.end();
          ++it) {
-      internal::RasterTask* task = it->task;
+      RasterTask* task = it->task;
 
       task->WillSchedule();
       task->ScheduleOnOriginThread(this);
@@ -35,10 +34,10 @@ class FakeRasterizerImpl : public Rasterizer,
     }
   }
   virtual void CheckForCompletedTasks() OVERRIDE {
-    for (internal::RasterTask::Vector::iterator it = completed_tasks_.begin();
+    for (RasterTask::Vector::iterator it = completed_tasks_.begin();
          it != completed_tasks_.end();
          ++it) {
-      internal::RasterTask* task = it->get();
+      RasterTask* task = it->get();
 
       task->WillComplete();
       task->CompleteOnOriginThread(this);
@@ -49,15 +48,14 @@ class FakeRasterizerImpl : public Rasterizer,
     completed_tasks_.clear();
   }
 
-  // Overridden from internal::RasterizerTaskClient:
-  virtual SkCanvas* AcquireCanvasForRaster(internal::RasterTask* task)
-      OVERRIDE {
+  // Overridden from RasterizerTaskClient:
+  virtual SkCanvas* AcquireCanvasForRaster(RasterTask* task) OVERRIDE {
     return NULL;
   }
-  virtual void ReleaseCanvasForRaster(internal::RasterTask* task) OVERRIDE {}
+  virtual void ReleaseCanvasForRaster(RasterTask* task) OVERRIDE {}
 
  private:
-  internal::RasterTask::Vector completed_tasks_;
+  RasterTask::Vector completed_tasks_;
 };
 base::LazyInstance<FakeRasterizerImpl> g_fake_rasterizer =
     LAZY_INSTANCE_INITIALIZER;

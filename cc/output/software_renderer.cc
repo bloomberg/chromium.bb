@@ -37,7 +37,7 @@ namespace cc {
 
 namespace {
 
-class OnDemandRasterTaskImpl : public internal::Task {
+class OnDemandRasterTaskImpl : public Task {
  public:
   OnDemandRasterTaskImpl(PicturePileImpl* picture_pile,
                          SkCanvas* canvas,
@@ -51,7 +51,7 @@ class OnDemandRasterTaskImpl : public internal::Task {
     DCHECK(canvas_);
   }
 
-  // Overridden from internal::Task:
+  // Overridden from Task:
   virtual void RunOnWorkerThread() OVERRIDE {
     TRACE_EVENT0("cc", "OnDemandRasterTaskImpl::RunOnWorkerThread");
 
@@ -391,7 +391,7 @@ void SoftwareRenderer::DrawPictureQuad(const DrawingFrame* frame,
                "SoftwareRenderer::DrawPictureQuad");
 
   // Create and run on-demand raster task for tile.
-  scoped_refptr<internal::Task> on_demand_raster_task(
+  scoped_refptr<Task> on_demand_raster_task(
       new OnDemandRasterTaskImpl(quad->picture_pile,
                                  current_canvas_,
                                  quad->content_rect,

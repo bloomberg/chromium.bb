@@ -7,7 +7,6 @@
 #include <algorithm>
 
 namespace cc {
-namespace internal {
 
 RasterizerTask::RasterizerTask() : did_schedule_(false), did_complete_(false) {}
 
@@ -47,7 +46,7 @@ ImageDecodeTask::~ImageDecodeTask() {}
 ImageDecodeTask* ImageDecodeTask::AsImageDecodeTask() { return this; }
 
 RasterTask::RasterTask(const Resource* resource,
-                       internal::ImageDecodeTask::Vector* dependencies)
+                       ImageDecodeTask::Vector* dependencies)
     : resource_(resource) {
   dependencies_.swap(*dependencies);
 }
@@ -56,10 +55,7 @@ RasterTask::~RasterTask() {}
 
 RasterTask* RasterTask::AsRasterTask() { return this; }
 
-}  // namespace internal
-
-RasterTaskQueue::Item::Item(internal::RasterTask* task,
-                            bool required_for_activation)
+RasterTaskQueue::Item::Item(RasterTask* task, bool required_for_activation)
     : task(task), required_for_activation(required_for_activation) {}
 
 RasterTaskQueue::Item::~Item() {}

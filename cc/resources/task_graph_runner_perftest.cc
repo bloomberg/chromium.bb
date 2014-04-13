@@ -20,13 +20,13 @@ static const int kTimeLimitMillis = 2000;
 static const int kWarmupRuns = 5;
 static const int kTimeCheckInterval = 10;
 
-class PerfTaskImpl : public internal::Task {
+class PerfTaskImpl : public Task {
  public:
   typedef std::vector<scoped_refptr<PerfTaskImpl> > Vector;
 
   PerfTaskImpl() {}
 
-  // Overridden from internal::Task:
+  // Overridden from Task:
   virtual void RunOnWorkerThread() OVERRIDE {}
 
   void Reset() { did_run_ = false; }
@@ -46,7 +46,7 @@ class TaskGraphRunnerPerfTest : public testing::Test {
 
   // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
-    task_graph_runner_ = make_scoped_ptr(new internal::TaskGraphRunner);
+    task_graph_runner_ = make_scoped_ptr(new TaskGraphRunner);
     namespace_token_ = task_graph_runner_->GetNamespaceToken();
   }
   virtual void TearDown() OVERRIDE { task_graph_runner_.reset(); }
@@ -69,7 +69,7 @@ class TaskGraphRunnerPerfTest : public testing::Test {
     CreateTasks(num_leaf_tasks, &leaf_tasks);
 
     // Avoid unnecessary heap allocations by reusing the same graph.
-    internal::TaskGraph graph;
+    TaskGraph graph;
 
     timer_.Reset();
     do {
@@ -99,8 +99,8 @@ class TaskGraphRunnerPerfTest : public testing::Test {
 
     // Avoid unnecessary heap allocations by reusing the same graph and
     // completed tasks vector.
-    internal::TaskGraph graph;
-    internal::Task::Vector completed_tasks;
+    TaskGraph graph;
+    Task::Vector completed_tasks;
 
     timer_.Reset();
     do {
@@ -113,7 +113,7 @@ class TaskGraphRunnerPerfTest : public testing::Test {
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
-    internal::TaskGraph empty;
+    TaskGraph empty;
     task_graph_runner_->ScheduleTasks(namespace_token_, &empty);
     CollectCompletedTasks(&completed_tasks);
 
@@ -141,8 +141,8 @@ class TaskGraphRunnerPerfTest : public testing::Test {
 
     // Avoid unnecessary heap allocations by reusing the same graph and
     // completed tasks vector.
-    internal::TaskGraph graph;
-    internal::Task::Vector completed_tasks;
+    TaskGraph graph;
+    Task::Vector completed_tasks;
 
     size_t count = 0;
     timer_.Reset();
@@ -159,7 +159,7 @@ class TaskGraphRunnerPerfTest : public testing::Test {
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
-    internal::TaskGraph empty;
+    TaskGraph empty;
     task_graph_runner_->ScheduleTasks(namespace_token_, &empty);
     CollectCompletedTasks(&completed_tasks);
 
@@ -184,8 +184,8 @@ class TaskGraphRunnerPerfTest : public testing::Test {
 
     // Avoid unnecessary heap allocations by reusing the same graph and
     // completed tasks vector.
-    internal::TaskGraph graph;
-    internal::Task::Vector completed_tasks;
+    TaskGraph graph;
+    Task::Vector completed_tasks;
 
     timer_.Reset();
     do {
@@ -230,55 +230,51 @@ class TaskGraphRunnerPerfTest : public testing::Test {
   void BuildTaskGraph(const PerfTaskImpl::Vector& top_level_tasks,
                       const PerfTaskImpl::Vector& tasks,
                       const PerfTaskImpl::Vector& leaf_tasks,
-                      internal::TaskGraph* graph) {
+                      TaskGraph* graph) {
     DCHECK(graph->nodes.empty());
     DCHECK(graph->edges.empty());
 
     for (PerfTaskImpl::Vector::const_iterator it = leaf_tasks.begin();
          it != leaf_tasks.end();
          ++it) {
-      graph->nodes.push_back(internal::TaskGraph::Node(it->get(), 0u, 0u));
+      graph->nodes.push_back(TaskGraph::Node(it->get(), 0u, 0u));
     }
 
     for (PerfTaskImpl::Vector::const_iterator it = tasks.begin();
          it != tasks.end();
          ++it) {
-      graph->nodes.push_back(
-          internal::TaskGraph::Node(it->get(), 0u, leaf_tasks.size()));
+      graph->nodes.push_back(TaskGraph::Node(it->get(), 0u, leaf_tasks.size()));
 
       for (PerfTaskImpl::Vector::const_iterator leaf_it = leaf_tasks.begin();
            leaf_it != leaf_tasks.end();
            ++leaf_it) {
-        graph->edges.push_back(
-            internal::TaskGraph::Edge(leaf_it->get(), it->get()));
+        graph->edges.push_back(TaskGraph::Edge(leaf_it->get(), it->get()));
       }
 
       for (PerfTaskImpl::Vector::const_iterator top_level_it =
                top_level_tasks.begin();
            top_level_it != top_level_tasks.end();
            ++top_level_it) {
-        graph->edges.push_back(
-            internal::TaskGraph::Edge(it->get(), top_level_it->get()));
+        graph->edges.push_back(TaskGraph::Edge(it->get(), top_level_it->get()));
       }
     }
 
     for (PerfTaskImpl::Vector::const_iterator it = top_level_tasks.begin();
          it != top_level_tasks.end();
          ++it) {
-      graph->nodes.push_back(
-          internal::TaskGraph::Node(it->get(), 0u, tasks.size()));
+      graph->nodes.push_back(TaskGraph::Node(it->get(), 0u, tasks.size()));
     }
   }
 
-  size_t CollectCompletedTasks(internal::Task::Vector* completed_tasks) {
+  size_t CollectCompletedTasks(Task::Vector* completed_tasks) {
     DCHECK(completed_tasks->empty());
     task_graph_runner_->CollectCompletedTasks(namespace_token_,
                                               completed_tasks);
     return completed_tasks->size();
   }
 
-  scoped_ptr<internal::TaskGraphRunner> task_graph_runner_;
-  internal::NamespaceToken namespace_token_;
+  scoped_ptr<TaskGraphRunner> task_graph_runner_;
+  NamespaceToken namespace_token_;
   LapTimer timer_;
 };
 

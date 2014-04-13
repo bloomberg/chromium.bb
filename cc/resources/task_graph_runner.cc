@@ -11,7 +11,6 @@
 #include "base/threading/thread_restrictions.h"
 
 namespace cc {
-namespace internal {
 namespace {
 
 // Helper class for iterating over all dependents of a task.
@@ -466,5 +465,4 @@ void TaskGraphRunner::RunTaskWithLockAcquired() {
     has_namespaces_with_finished_running_tasks_cv_.Signal();
 }
 
-}  // namespace internal
 }  // namespace cc

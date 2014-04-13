@@ -49,7 +49,7 @@ class RasterizeAndRecordBenchmarkImpl : public MicroBenchmarkImpl {
 
   RasterizeResults rasterize_results_;
   int rasterize_repeat_count_;
-  internal::NamespaceToken task_namespace_;
+  NamespaceToken task_namespace_;
 };
 
 }  // namespace cc

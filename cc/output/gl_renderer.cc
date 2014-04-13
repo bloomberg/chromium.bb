@@ -79,7 +79,7 @@ class SimpleSwapFence : public ResourceProvider::Fence {
   bool has_passed_;
 };
 
-class OnDemandRasterTaskImpl : public internal::Task {
+class OnDemandRasterTaskImpl : public Task {
  public:
   OnDemandRasterTaskImpl(PicturePileImpl* picture_pile,
                          SkBitmap* bitmap,
@@ -93,7 +93,7 @@ class OnDemandRasterTaskImpl : public internal::Task {
     DCHECK(bitmap_);
   }
 
-  // Overridden from internal::Task:
+  // Overridden from Task:
   virtual void RunOnWorkerThread() OVERRIDE {
     TRACE_EVENT0("cc", "OnDemandRasterTaskImpl::RunOnWorkerThread");
     SkCanvas canvas(*bitmap_);
@@ -1764,7 +1764,7 @@ void GLRenderer::DrawPictureQuad(const DrawingFrame* frame,
   }
 
   // Create and run on-demand raster task for tile.
-  scoped_refptr<internal::Task> on_demand_raster_task(
+  scoped_refptr<Task> on_demand_raster_task(
       new OnDemandRasterTaskImpl(quad->picture_pile,
                                  &on_demand_tile_raster_bitmap_,
                                  quad->content_rect,

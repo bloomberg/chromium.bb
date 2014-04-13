@@ -28,7 +28,7 @@ base::TimeTicks Now() {
              : base::TimeTicks::HighResNow();
 }
 
-class BenchmarkRasterTask : public internal::Task {
+class BenchmarkRasterTask : public Task {
  public:
   BenchmarkRasterTask(PicturePileImpl* picture_pile,
                       const gfx::Rect& content_rect,
@@ -41,7 +41,7 @@ class BenchmarkRasterTask : public internal::Task {
         is_solid_color_(false),
         best_time_(base::TimeDelta::Max()) {}
 
-  // Overridden from internal::Task:
+  // Overridden from Task:
   virtual void RunOnWorkerThread() OVERRIDE {
     PicturePileImpl* picture_pile = picture_pile_->GetCloneForDrawingOnThread(
         RasterWorkerPool::GetPictureCloneIndexForCurrentThread());
@@ -142,8 +142,7 @@ void RasterizeAndRecordBenchmarkImpl::RunOnLayer(PictureLayerImpl* layer) {
     return;
   }
 
-  internal::TaskGraphRunner* task_graph_runner =
-      RasterWorkerPool::GetTaskGraphRunner();
+  TaskGraphRunner* task_graph_runner = RasterWorkerPool::GetTaskGraphRunner();
   DCHECK(task_graph_runner);
 
   if (!task_namespace_.IsValid())
@@ -169,17 +168,17 @@ void RasterizeAndRecordBenchmarkImpl::RunOnLayer(PictureLayerImpl* layer) {
                                 contents_scale,
                                 rasterize_repeat_count_));
 
-    internal::TaskGraph graph;
+    TaskGraph graph;
 
-    graph.nodes.push_back(internal::TaskGraph::Node(
-        benchmark_raster_task,
-        RasterWorkerPool::kBenchmarkRasterTaskPriority,
-        0u));
+    graph.nodes.push_back(
+        TaskGraph::Node(benchmark_raster_task,
+                        RasterWorkerPool::kBenchmarkRasterTaskPriority,
+                        0u));
 
     task_graph_runner->ScheduleTasks(task_namespace_, &graph);
     task_graph_runner->WaitForTasksToFinishRunning(task_namespace_);
 
-    internal::Task::Vector completed_tasks;
+    Task::Vector completed_tasks;
     task_graph_runner->CollectCompletedTasks(task_namespace_, &completed_tasks);
     DCHECK_EQ(1u, completed_tasks.size());
     DCHECK_EQ(completed_tasks[0], benchmark_raster_task);
