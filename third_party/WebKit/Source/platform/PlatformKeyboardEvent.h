@@ -40,21 +40,19 @@ public:
         : PlatformEvent(PlatformEvent::KeyDown)
         , m_windowsVirtualKeyCode(0)
         , m_nativeVirtualKeyCode(0)
-        , m_macCharCode(0)
         , m_autoRepeat(false)
         , m_isKeypad(false)
         , m_isSystemKey(false)
     {
     }
 
-    PlatformKeyboardEvent(Type type, const String& text, const String& unmodifiedText, const String& keyIdentifier, int windowsVirtualKeyCode, int nativeVirtualKeyCode, int macCharCode, bool isAutoRepeat, bool isKeypad, bool isSystemKey, Modifiers modifiers, double timestamp)
+    PlatformKeyboardEvent(Type type, const String& text, const String& unmodifiedText, const String& keyIdentifier, int windowsVirtualKeyCode, int nativeVirtualKeyCode, bool isAutoRepeat, bool isKeypad, bool isSystemKey, Modifiers modifiers, double timestamp)
         : PlatformEvent(type, modifiers, timestamp)
         , m_text(text)
         , m_unmodifiedText(unmodifiedText)
         , m_keyIdentifier(keyIdentifier)
         , m_windowsVirtualKeyCode(windowsVirtualKeyCode)
         , m_nativeVirtualKeyCode(nativeVirtualKeyCode)
-        , m_macCharCode(macCharCode)
         , m_autoRepeat(isAutoRepeat)
         , m_isKeypad(isKeypad)
         , m_isSystemKey(isSystemKey)
@@ -83,7 +81,6 @@ public:
     int windowsVirtualKeyCode() const { return m_windowsVirtualKeyCode; }
 
     int nativeVirtualKeyCode() const { return m_nativeVirtualKeyCode; }
-    int macCharCode() const { return m_macCharCode; }
 
     bool isAutoRepeat() const { return m_autoRepeat; }
     bool isKeypad() const { return m_isKeypad; }
@@ -98,7 +95,6 @@ protected:
     String m_keyIdentifier;
     int m_windowsVirtualKeyCode;
     int m_nativeVirtualKeyCode;
-    int m_macCharCode;
     bool m_autoRepeat;
     bool m_isKeypad;
     bool m_isSystemKey;

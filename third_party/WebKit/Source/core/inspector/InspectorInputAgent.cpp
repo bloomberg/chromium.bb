@@ -122,7 +122,6 @@ void InspectorInputAgent::dispatchKeyEvent(ErrorString* error, const String& typ
         keyIdentifier ? *keyIdentifier : "",
         windowsVirtualKeyCode ? *windowsVirtualKeyCode : 0,
         nativeVirtualKeyCode ? *nativeVirtualKeyCode : 0,
-        macCharCode ? *macCharCode : 0,
         autoRepeat ? *autoRepeat : false,
         isKeypad ? *isKeypad : false,
         isSystemKey ? *isSystemKey : false,
