@@ -321,8 +321,6 @@ deps_os = {
             Var('git_url') + '/external/fontconfig.git@f16c3118e25546c1b749f9823c51827a60aeb5c1',
         'src/third_party/freetype2/src':
             Var('git_url') + '/chromium/src/third_party/freetype2.git@d699c2994ecc178c4ed05ac2086061b2034c2178',
-        'src/third_party/gold':
-            Var('git_url') + '/chromium/deps/gold.git@b471bdbb6e7c0ab8c5f105cc1489177fa4105778',
         'src/third_party/liblouis/src':
             Var('git_url') + '/external/liblouis.git@3c2daee56250162e5a75830871601d74328d39f5',
         'src/third_party/lss':
