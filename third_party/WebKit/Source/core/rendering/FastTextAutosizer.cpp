@@ -389,7 +389,7 @@ void FastTextAutosizer::inflateTable(RenderTable* table)
             if (!row->isTableRow())
                 continue;
             for (RenderObject* cell = row->firstChild(); cell; cell = cell->nextSibling()) {
-                if (!cell->isTableCell())
+                if (!cell->isTableCell() || !cell->needsLayout())
                     continue;
                 RenderTableCell* renderTableCell = toRenderTableCell(cell);
 
@@ -403,7 +403,7 @@ void FastTextAutosizer::inflateTable(RenderTable* table)
 
                 if (shouldAutosize) {
                     for (RenderObject* child = cell; child; child = child->nextInPreOrder(cell)) {
-                        if (child->isText()) {
+                        if (child->isText() && child->needsLayout()) {
                             applyMultiplier(child, multiplier);
                             applyMultiplier(child->parent(), multiplier); // Parent handles line spacing.
                         }

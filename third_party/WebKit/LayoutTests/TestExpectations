@@ -711,6 +711,8 @@ crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/narrow-iframe.h
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/clusters-insufficient-text.html [ ImageOnlyFailure ]
 crbug.com/343201 virtual/fasttextautosizing/fast/text-autosizing/hackernews-comments.html [ Pass Failure ]
 
+crbug.com/357299 virtual/fasttextautosizing/fast/text-autosizing/tables/nested-tables.html [ NeedsRebaseline ]
+
 # FIXME(crbug.com/332944): Remove this when hash-based autosizer performs sufficiently well on hackernews.
 crbug.com/332944 fast/text-autosizing/hackernews-comments.html [ Failure ]
 crbug.com/302005 fast/text-autosizing/list-item-above-dbcat.html [ Missing ]
