@@ -247,12 +247,6 @@ std::string ShellContentBrowserClient::GetDefaultDownloadName() {
   return "download";
 }
 
-bool ShellContentBrowserClient::SupportsBrowserPlugin(
-    content::BrowserContext* browser_context, const GURL& url) {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBrowserPluginForAllViewTypes);
-}
-
 WebContentsViewDelegate* ShellContentBrowserClient::GetWebContentsViewDelegate(
     WebContents* web_contents) {
 #if !defined(USE_AURA)

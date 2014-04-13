@@ -394,7 +394,6 @@ void RenderProcessHost::SetMaxRendererProcessCount(size_t count) {
 RenderProcessHostImpl::RenderProcessHostImpl(
     BrowserContext* browser_context,
     StoragePartitionImpl* storage_partition_impl,
-    bool supports_browser_plugin,
     bool is_guest)
     : fast_shutdown_started_(false),
       deleting_soon_(false),
@@ -414,7 +413,6 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       storage_partition_impl_(storage_partition_impl),
       sudden_termination_allowed_(true),
       ignore_input_events_(false),
-      supports_browser_plugin_(supports_browser_plugin),
       is_guest_(is_guest),
       gpu_observer_registered_(false),
       delayed_cleanup_needed_(false),
@@ -616,11 +614,9 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       BrowserMainLoop::GetInstance()->audio_manager();
   // Add BrowserPluginMessageFilter to ensure it gets the first stab at messages
   // from guests.
-  if (supports_browser_plugin_) {
-    scoped_refptr<BrowserPluginMessageFilter> bp_message_filter(
-        new BrowserPluginMessageFilter(GetID(), IsGuest()));
-    AddFilter(bp_message_filter.get());
-  }
+  scoped_refptr<BrowserPluginMessageFilter> bp_message_filter(
+      new BrowserPluginMessageFilter(GetID(), IsGuest()));
+  AddFilter(bp_message_filter.get());
 
   scoped_refptr<RenderMessageFilter> render_message_filter(
       new RenderMessageFilter(

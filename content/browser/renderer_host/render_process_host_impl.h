@@ -78,7 +78,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
  public:
   RenderProcessHostImpl(BrowserContext* browser_context,
                         StoragePartitionImpl* storage_partition_impl,
-                        bool supports_browser_plugin,
                         bool is_guest);
   virtual ~RenderProcessHostImpl();
 
@@ -381,10 +380,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // Records the last time we regarded the child process active.
   base::TimeTicks child_process_activity_time_;
-
-  // Indicates whether this is a RenderProcessHost that has permission to embed
-  // Browser Plugins.
-  bool supports_browser_plugin_;
 
   // Indicates whether this is a RenderProcessHost of a Browser Plugin guest
   // renderer.
