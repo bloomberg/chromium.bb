@@ -10,17 +10,10 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/callback.h"
 #include "base/memory/ref_counted.h"
-
-namespace base {
-
-template <class T> class DeleteHelper;
-
-}  // namespace base
-
-struct InitUsbContextTraits;
-template <typename T> struct DefaultSingletonTraits;
+#include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
+#include "base/threading/non_thread_safe.h"
 
 typedef struct libusb_device* PlatformUsbDevice;
 typedef struct libusb_context* PlatformUsbContext;
@@ -32,7 +25,8 @@ class UsbDevice;
 // used to manage and dispatch USB events. It is also responsible for device
 // discovery on the system, which allows it to re-use device handles to prevent
 // competition for the same USB device.
-class UsbService {
+class UsbService : public base::MessageLoop::DestructionObserver,
+                   public base::NonThreadSafe {
  public:
   typedef scoped_ptr<std::vector<scoped_refptr<UsbDevice> > >
       ScopedDeviceVector;
@@ -48,17 +42,14 @@ class UsbService {
   // in increasing order. Must be called on FILE thread.
   void GetDevices(std::vector<scoped_refptr<UsbDevice> >* devices);
 
+  // base::MessageLoop::DestructionObserver implementation.
+  virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
+
  private:
-  friend class base::DeleteHelper<UsbService>;
+  friend struct base::DefaultDeleter<UsbService>;
 
   explicit UsbService(PlatformUsbContext context);
   virtual ~UsbService();
-
-  // Return true if |device|'s vendor and product identifiers match |vendor_id|
-  // and |product_id|.
-  static bool DeviceMatches(scoped_refptr<UsbDevice> device,
-                            const uint16 vendor_id,
-                            const uint16 product_id);
 
   // Enumerate USB devices from OS and Update devices_ map.
   void RefreshDevices();
