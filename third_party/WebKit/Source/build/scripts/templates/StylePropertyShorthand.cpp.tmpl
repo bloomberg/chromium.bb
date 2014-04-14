@@ -27,36 +27,35 @@
 #include "wtf/StdLibExtras.h"
 
 namespace WebCore {
+{% for property_id, property in properties.items() %}
 
-{%- for property_id, property in properties.items() %}
-
-const StylePropertyShorthand& {{ property.camel_case_name }}Shorthand()
+const StylePropertyShorthand& {{property.camel_case_name}}Shorthand()
 {
-    static const CSSPropertyID {{ property.camel_case_name }}Properties[] = {
-        {%- for longhand_id in property.camel_case_longhands %}
-        {{ longhand_id }},
-        {%- endfor %}
+    static const CSSPropertyID {{property.camel_case_name}}Properties[] = {
+        {% for longhand_id in property.camel_case_longhands %}
+        {{longhand_id}},
+        {% endfor %}
     };
-    DEFINE_STATIC_LOCAL(StylePropertyShorthand, {{ property.camel_case_name }}Longhands, ({{ property_id }}, {{ property.camel_case_name }}Properties, WTF_ARRAY_LENGTH({{ property.camel_case_name }}Properties)));
-    return {{ property.camel_case_name }}Longhands;
+    DEFINE_STATIC_LOCAL(StylePropertyShorthand, {{property.camel_case_name}}Longhands, ({{property_id}}, {{property.camel_case_name}}Properties, WTF_ARRAY_LENGTH({{property.camel_case_name}}Properties)));
+    return {{property.camel_case_name}}Longhands;
 }
-{%- endfor %}
+{% endfor %}
 
 // Returns an empty list if the property is not a shorthand
 const StylePropertyShorthand& shorthandForProperty(CSSPropertyID propertyID)
 {
     DEFINE_STATIC_LOCAL(StylePropertyShorthand, emptyShorthand, ());
     switch (propertyID) {
-{%- for property_id, property in properties.items() %}
-    {%- if property.camel_case_name not in ["width", "height", "marker"] %}
-        case {{ property_id }}:
-        {%- if property.runtime_conditional_getter %}
-            if (!RuntimeEnabledFeatures::{{ property.runtime_conditional_getter }}())
+        {% for property_id, property in properties.items() %}
+        {% if property.camel_case_name not in ["width", "height", "marker"] %}
+        case {{property_id}}:
+            {% if property.runtime_conditional_getter %}
+            if (!RuntimeEnabledFeatures::{{property.runtime_conditional_getter}}())
                 return emptyShorthand;
-        {%- endif %}
-            return {{ property.camel_case_name }}Shorthand();
-    {%- endif %}
-{%- endfor %}
+            {% endif %}
+            return {{property.camel_case_name}}Shorthand();
+        {% endif %}
+        {% endfor %}
     default: {
         return emptyShorthand;
     }
@@ -67,21 +66,25 @@ void getMatchingShorthandsForLonghand(CSSPropertyID propertyID, Vector<StyleProp
 {
     ASSERT(!result->size());
     switch (propertyID) {
-{%- for longhand_id, shorthands in longhands_dictionary.items() %}
-    case {{ longhand_id }}: {
-{%- if shorthands|length == 1 %}
-    {% for shorthand in shorthands -%}
-       result->uncheckedAppend({{ shorthand.camel_case_name }}Shorthand());
+    {% for longhand_id, shorthands in longhands_dictionary.items() %}
+    case {{longhand_id}}: {
+        {# FIXME: indentation should be 4, not 0+3 #}
+        {# FIXME: this length check looks unnecessary #}
+        {% if shorthands|length == 1 %}
+        {% for shorthand in shorthands %}
+    result->uncheckedAppend({{shorthand.camel_case_name}}Shorthand());
        break;
-    {%- endfor %}
-{%- else %}
-        {% for shorthand in shorthands -%}
-        result->uncheckedAppend({{ shorthand.camel_case_name }}Shorthand());
-        {% endfor -%}
+        {% endfor %}
+        {% else %}
+        {% for shorthand in shorthands %}
+        result->uncheckedAppend({{shorthand.camel_case_name}}Shorthand());
+        {% endfor %}
         break;
-{% endif %}
+        {# FIXME: remove blank line #}
+
+        {% endif %}
     }
-{%- endfor %}
+    {% endfor %}
     default:
         break;
     }

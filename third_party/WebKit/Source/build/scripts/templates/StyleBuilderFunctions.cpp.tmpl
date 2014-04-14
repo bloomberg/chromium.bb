@@ -1,13 +1,11 @@
-{% from "macros.tmpl" import lower_first -%}
-
+{% from "macros.tmpl" import lower_first %}
 {#
     This file is for property handlers which use the templating engine to
     reduce (handwritten) code duplication.
 
     The `properties' dict can be used to access a property's parameters in
     jinja2 templates (i.e. setter, getter, initial, type_name)
--#}
-
+#}
 #include "config.h"
 #include "StyleBuilderFunctions.h"
 
@@ -18,46 +16,45 @@
 #include "core/css/Pair.h"
 #include "core/css/resolver/StyleResolverState.h"
 
-
-{%- macro declare_initial_function(property_id) -%}
+{# FIXME: factor macros out into a separate library #}
+{% macro declare_initial_function(property_id) %}
 void StyleBuilderFunctions::applyInitial{{property_id}}(StyleResolverState& state)
 {%- endmacro %}
-
-{%- macro declare_inherit_function(property_id) -%}
+{% macro declare_inherit_function(property_id) %}
 void StyleBuilderFunctions::applyInherit{{property_id}}(StyleResolverState& state)
 {%- endmacro %}
-
-{%- macro declare_value_function(property_id) -%}
+{% macro declare_value_function(property_id) %}
 void StyleBuilderFunctions::applyValue{{property_id}}(StyleResolverState& state, CSSValue* value)
 {%- endmacro %}
-
 // FIXME: This is duplicated in StyleBuilder.cpp.tmpl, but we'll move the
 // function definitions there over to here later.
-{%- macro set_value(property) %}
-{%- if property.svg -%}
-    state.style()->accessSVGStyle()->{{property.setter}}
-{%- else -%}
-    state.style()->{{property.setter}}
-{%- endif -%}
-{%- endmacro %}
+{% macro set_value(property) %}
+{% if property.svg %}
+state.style()->accessSVGStyle()->{{property.setter}}
+{%- else %}
+state.style()->{{property.setter}}
+{%- endif %}
+{% endmacro %}
 
 namespace WebCore {
+{# FIXME: remove excess newline #}
 
-{%- macro apply_animation(property_id, attribute, animation) %}
-{{ declare_initial_function(property_id) }}
+
+{% macro apply_animation(property_id, attribute, animation) %}
+{{declare_initial_function(property_id)}}
 {
     CSSAnimationDataList* list = state.style()->access{{animation}}();
     if (list->isEmpty())
         list->append(CSSAnimationData::create());
     list->animation(0)->set{{attribute}}(CSSAnimationData::initialAnimation{{attribute}}());
-    {%- if property_id == "CSSPropertyWebkitTransitionProperty" %}
+        {% if property_id == "CSSPropertyWebkitTransitionProperty" %}
         list->animation(0)->setAnimationMode(CSSAnimationData::AnimateAll);
-    {%- endif %}
+        {% endif %}
     for (size_t i = 1; i < list->size(); ++i)
         list->animation(i)->clear{{attribute}}();
 }
 
-{{ declare_inherit_function(property_id) }}
+{{declare_inherit_function(property_id)}}
 {
     CSSAnimationDataList* list = state.style()->access{{animation}}();
     const CSSAnimationDataList* parentList = state.parentStyle()->{{animation|lower}}();
@@ -67,9 +64,9 @@ namespace WebCore {
         if (list->size() == i)
             list->append(CSSAnimationData::create());
         list->animation(i)->set{{attribute}}(parentList->animation(i)->{{lower_first(attribute)}}());
-        {%- if property_id == "CSSPropertyWebkitTransitionProperty" %}
+            {% if property_id == "CSSPropertyWebkitTransitionProperty" %}
             list->animation(i)->setAnimationMode(parentList->animation(i)->animationMode());
-        {%- endif %}
+            {% endif %}
     }
 
     // Reset any remaining animations to not have the property set.
@@ -77,7 +74,7 @@ namespace WebCore {
         list->animation(i)->clear{{attribute}}();
 }
 
-{{ declare_value_function(property_id) }}
+{{declare_value_function(property_id)}}
 {
     CSSAnimationDataList* list = state.style()->access{{animation}}();
     size_t childIndex = 0;
@@ -101,39 +98,38 @@ namespace WebCore {
         list->animation(childIndex)->clear{{attribute}}();
     }
 }
-{%- endmacro %}
+{% endmacro %}
+{{apply_animation('CSSPropertyWebkitAnimationDelay', 'Delay', 'Animations')}}
+{{apply_animation('CSSPropertyWebkitAnimationDirection', 'Direction', 'Animations')}}
+{{apply_animation('CSSPropertyWebkitAnimationDuration', 'Duration', 'Animations')}}
+{{apply_animation('CSSPropertyWebkitAnimationFillMode', 'FillMode', 'Animations')}}
+{{apply_animation('CSSPropertyWebkitAnimationIterationCount', 'IterationCount', 'Animations')}}
+{{apply_animation('CSSPropertyWebkitAnimationName', 'Name', 'Animations')}}
+{{apply_animation('CSSPropertyWebkitAnimationPlayState', 'PlayState', 'Animations')}}
+{{apply_animation('CSSPropertyWebkitAnimationTimingFunction', 'TimingFunction', 'Animations')}}
+{{apply_animation('CSSPropertyWebkitTransitionDelay', 'Delay', 'Transitions')}}
+{{apply_animation('CSSPropertyWebkitTransitionDuration', 'Duration', 'Transitions')}}
+{{apply_animation('CSSPropertyWebkitTransitionProperty', 'Property', 'Transitions')}}
+{{apply_animation('CSSPropertyWebkitTransitionTimingFunction', 'TimingFunction', 'Transitions')}}
 
-{{ apply_animation("CSSPropertyWebkitAnimationDelay", "Delay", "Animations") }}
-{{ apply_animation("CSSPropertyWebkitAnimationDirection", "Direction", "Animations") }}
-{{ apply_animation("CSSPropertyWebkitAnimationDuration", "Duration", "Animations") }}
-{{ apply_animation("CSSPropertyWebkitAnimationFillMode", "FillMode", "Animations") }}
-{{ apply_animation("CSSPropertyWebkitAnimationIterationCount", "IterationCount", "Animations") }}
-{{ apply_animation("CSSPropertyWebkitAnimationName", "Name", "Animations") }}
-{{ apply_animation("CSSPropertyWebkitAnimationPlayState", "PlayState", "Animations") }}
-{{ apply_animation("CSSPropertyWebkitAnimationTimingFunction", "TimingFunction", "Animations") }}
-{{ apply_animation("CSSPropertyWebkitTransitionDelay", "Delay", "Transitions") }}
-{{ apply_animation("CSSPropertyWebkitTransitionDuration", "Duration", "Transitions") }}
-{{ apply_animation("CSSPropertyWebkitTransitionProperty", "Property", "Transitions") }}
-{{ apply_animation("CSSPropertyWebkitTransitionTimingFunction", "TimingFunction", "Transitions") }}
-
-{%- macro apply_auto(property_id, auto_getter=none, auto_setter=none, auto_identity="CSSValueAuto", compute_length=false) %}
-{%- set property = properties[property_id] %}
-{%- set auto_getter = auto_getter or "hasAuto" + property.camel_case_name %}
-{%- set auto_setter = auto_setter or "setHasAuto" + property.camel_case_name %}
-{{ declare_initial_function(property_id) }}
+{% macro apply_auto(property_id, auto_getter=none, auto_setter=none, auto_identity='CSSValueAuto', compute_length=false) %}
+{% set property = properties[property_id] %}
+{% set auto_getter = auto_getter or 'hasAuto' + property.camel_case_name %}
+{% set auto_setter = auto_setter or 'setHasAuto' + property.camel_case_name %}
+{{declare_initial_function(property_id)}}
 {
     state.style()->{{auto_setter}}();
 }
 
-{{ declare_inherit_function(property_id) }}
+{{declare_inherit_function(property_id)}}
 {
     if (state.parentStyle()->{{auto_getter}}())
         state.style()->{{auto_setter}}();
     else
-        {{ set_value(property) }}(state.parentStyle()->{{property.getter}}());
+        {{set_value(property)}}(state.parentStyle()->{{property.getter}}());
 }
 
-{{ declare_value_function(property_id) }}
+{{declare_value_function(property_id)}}
 {
     if (!value->isPrimitiveValue())
         return;
@@ -142,149 +138,145 @@ namespace WebCore {
     if (primitiveValue->getValueID() == {{auto_identity}})
         state.style()->{{auto_setter}}();
     else
-    {%- if compute_length %}
-        {{ set_value(property) }}(primitiveValue->computeLength<{{property.type_name}}>(state.cssToLengthConversionData()));
-    {%- else %}
-        {{ set_value(property) }}(*primitiveValue);
-    {%- endif %}
+        {% if compute_length %}
+        {{set_value(property)}}(primitiveValue->computeLength<{{property.type_name}}>(state.cssToLengthConversionData()));
+        {% else %}
+        {{set_value(property)}}(*primitiveValue);
+        {% endif %}
 }
-{%- endmacro %}
+{% endmacro %}
+{{apply_auto('CSSPropertyOrphans')}}
+{{apply_auto('CSSPropertyWebkitColumnCount')}}
+{{apply_auto('CSSPropertyWebkitColumnGap', auto_getter='hasNormalColumnGap', auto_setter='setHasNormalColumnGap', auto_identity='CSSValueNormal', compute_length=true)}}
+{{apply_auto('CSSPropertyWebkitColumnWidth', compute_length=true)}}
+{{apply_auto('CSSPropertyWidows')}}
+{{apply_auto('CSSPropertyZIndex')}}
 
-{{ apply_auto("CSSPropertyOrphans") }}
-{{ apply_auto("CSSPropertyWebkitColumnCount") }}
-{{ apply_auto("CSSPropertyWebkitColumnGap", auto_getter="hasNormalColumnGap", auto_setter="setHasNormalColumnGap", auto_identity="CSSValueNormal", compute_length=true) }}
-{{ apply_auto("CSSPropertyWebkitColumnWidth", compute_length=true) }}
-{{ apply_auto("CSSPropertyWidows") }}
-{{ apply_auto("CSSPropertyZIndex") }}
-
-{%- macro apply_border_image_modifier(property_id, modifier_type) %}
-{%- set is_mask_box = "MaskBox" in property_id %}
-{%- set getter = "maskBoxImage" if is_mask_box else "borderImage" %}
-{%- set setter = "setMaskBoxImage" if is_mask_box else "setBorderImage" %}
+{% macro apply_border_image_modifier(property_id, modifier_type) %}
+{% set is_mask_box = 'MaskBox' in property_id %}
+{% set getter = 'maskBoxImage' if is_mask_box else 'borderImage' %}
+{% set setter = 'setMaskBoxImage' if is_mask_box else 'setBorderImage' %}
 {{ declare_initial_function(property_id) }}
 {
     NinePieceImage image(state.style()->{{getter}}());
-    {%- if modifier_type == "Outset" %}
+    {% if modifier_type == 'Outset' %}
     image.setOutset(Length(0, Fixed));
-    {%- elif modifier_type == "Repeat" %}
+    {% elif modifier_type == 'Repeat' %}
     image.setHorizontalRule(StretchImageRule);
     image.setVerticalRule(StretchImageRule);
-    {%- elif modifier_type == "Slice" and is_mask_box %}
+    {% elif modifier_type == 'Slice' and is_mask_box %}
     // Masks have a different initial value for slices. Preserve the value of 0 for backwards compatibility.
-    image.setImageSlices(LengthBox({{ (["Length(0, Fixed)"]*4) | join(", ") }}));
+    image.setImageSlices(LengthBox({{ (['Length(0, Fixed)']*4) | join(', ') }}));
     image.setFill(true);
-    {%- elif modifier_type == "Slice" and not is_mask_box %}
-    image.setImageSlices(LengthBox({{ (["Length(100, Percent)"]*4) | join(", ") }}));
+    {% elif modifier_type == 'Slice' and not is_mask_box %}
+    image.setImageSlices(LengthBox({{ (['Length(100, Percent)']*4) | join(', ') }}));
     image.setFill(false);
-    {%- elif modifier_type == "Width" %}
+    {% elif modifier_type == 'Width' %}
     // Masks have a different initial value for widths. Preserve the value of 'auto' for backwards compatibility.
-    image.setBorderSlices({{ "Length(Auto)" if is_mask_box else "1.0" }});
-    {%- endif %}
+    image.setBorderSlices({{ 'Length(Auto)' if is_mask_box else '1.0' }});
+    {% endif %}
     state.style()->{{setter}}(image);
 }
 
-{{ declare_inherit_function(property_id) }}
+{{declare_inherit_function(property_id)}}
 {
     NinePieceImage image(state.style()->{{getter}}());
-    {%- if modifier_type == "Outset" %}
+    {% if modifier_type == 'Outset' %}
     image.copyOutsetFrom(state.parentStyle()->{{getter}}());
-    {%- elif modifier_type == "Repeat" %}
+    {% elif modifier_type == 'Repeat' %}
     image.copyRepeatFrom(state.parentStyle()->{{getter}}());
-    {%- elif modifier_type == "Slice" %}
+    {% elif modifier_type == 'Slice' %}
     image.copyImageSlicesFrom(state.parentStyle()->{{getter}}());
-    {%- elif modifier_type == "Width" %}
+    {% elif modifier_type == 'Width' %}
     image.copyBorderSlicesFrom(state.parentStyle()->{{getter}}());
-    {%- endif %}
+    {% endif %}
     state.style()->{{setter}}(image);
 }
 
-{{ declare_value_function(property_id) }}
+{{declare_value_function(property_id)}}
 {
     NinePieceImage image(state.style()->{{getter}}());
-    {%- if modifier_type == "Outset" %}
+    {% if modifier_type == 'Outset' %}
     image.setOutset(state.styleMap().mapNinePieceImageQuad(value));
-    {%- elif modifier_type == "Repeat" %}
+    {% elif modifier_type == 'Repeat' %}
     state.styleMap().mapNinePieceImageRepeat(value, image);
-    {%- elif modifier_type == "Slice" %}
+    {% elif modifier_type == 'Slice' %}
     state.styleMap().mapNinePieceImageSlice(value, image);
-    {%- elif modifier_type == "Width" %}
+    {% elif modifier_type == 'Width' %}
     image.setBorderSlices(state.styleMap().mapNinePieceImageQuad(value));
-    {%- endif %}
+    {% endif %}
     state.style()->{{setter}}(image);
 }
-{%- endmacro %}
+{% endmacro %}
+{{apply_border_image_modifier('CSSPropertyBorderImageOutset', 'Outset')}}
+{{apply_border_image_modifier('CSSPropertyBorderImageRepeat', 'Repeat')}}
+{{apply_border_image_modifier('CSSPropertyBorderImageSlice', 'Slice')}}
+{{apply_border_image_modifier('CSSPropertyBorderImageWidth', 'Width')}}
+{{apply_border_image_modifier('CSSPropertyWebkitMaskBoxImageOutset', 'Outset')}}
+{{apply_border_image_modifier('CSSPropertyWebkitMaskBoxImageRepeat', 'Repeat')}}
+{{apply_border_image_modifier('CSSPropertyWebkitMaskBoxImageSlice', 'Slice')}}
+{{apply_border_image_modifier('CSSPropertyWebkitMaskBoxImageWidth', 'Width')}}
 
-{{ apply_border_image_modifier("CSSPropertyBorderImageOutset", "Outset") }}
-{{ apply_border_image_modifier("CSSPropertyBorderImageRepeat", "Repeat") }}
-{{ apply_border_image_modifier("CSSPropertyBorderImageSlice", "Slice") }}
-{{ apply_border_image_modifier("CSSPropertyBorderImageWidth", "Width") }}
-{{ apply_border_image_modifier("CSSPropertyWebkitMaskBoxImageOutset", "Outset") }}
-{{ apply_border_image_modifier("CSSPropertyWebkitMaskBoxImageRepeat", "Repeat") }}
-{{ apply_border_image_modifier("CSSPropertyWebkitMaskBoxImageSlice", "Slice") }}
-{{ apply_border_image_modifier("CSSPropertyWebkitMaskBoxImageWidth", "Width") }}
-
-{%- macro apply_value_border_image_source(property_id) %}
-{{ declare_value_function(property_id) }}
+{% macro apply_value_border_image_source(property_id) %}
+{{declare_value_function(property_id)}}
 {
-    {%- set property = properties[property_id] %}
-    {{ set_value(property) }}(state.styleImage({{property_id}}, value));
+    {% set property = properties[property_id] %}
+    {{set_value(property)}}(state.styleImage({{property_id}}, value));
 }
-{%- endmacro %}
+{% endmacro %}
+{{apply_value_border_image_source('CSSPropertyBorderImageSource')}}
+{{apply_value_border_image_source('CSSPropertyWebkitMaskBoxImageSource')}}
 
-{{ apply_value_border_image_source("CSSPropertyBorderImageSource") }}
-{{ apply_value_border_image_source("CSSPropertyWebkitMaskBoxImageSource") }}
-
-{%- macro apply_color(property_id, initial_color="StyleColor::currentColor") %}
-{%- set property = properties[property_id] %}
-{%- set visited_link_setter = "setVisitedLink" + property.camel_case_name %}
-{{ declare_initial_function(property_id) }}
+{% macro apply_color(property_id, initial_color='StyleColor::currentColor') %}
+{% set property = properties[property_id] %}
+{% set visited_link_setter = 'setVisitedLink' + property.camel_case_name %}
+{{declare_initial_function(property_id)}}
 {
     StyleColor color = {{initial_color}}();
     if (state.applyPropertyToRegularStyle())
-        {{ set_value(property) }}(color);
+        {{set_value(property)}}(color);
     if (state.applyPropertyToVisitedLinkStyle())
         state.style()->{{visited_link_setter}}(color);
 }
 
-{{ declare_inherit_function(property_id) }}
+{{declare_inherit_function(property_id)}}
 {
     // Visited link style can never explicitly inherit from parent visited link style so no separate getters are needed.
     StyleColor color = state.parentStyle()->{{property.getter}}();
     Color resolvedColor = color.resolve(state.parentStyle()->color());
     if (state.applyPropertyToRegularStyle())
-        {{ set_value(property) }}(resolvedColor);
+        {{set_value(property)}}(resolvedColor);
     if (state.applyPropertyToVisitedLinkStyle())
         state.style()->{{visited_link_setter}}(resolvedColor);
 }
 
-{{ declare_value_function(property_id) }}
+{{declare_value_function(property_id)}}
 {
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
 
     if (state.applyPropertyToRegularStyle())
-        {{ set_value(property) }}(state.document().textLinkColors().colorFromPrimitiveValue(primitiveValue, state.style()->color()));
+        {{set_value(property)}}(state.document().textLinkColors().colorFromPrimitiveValue(primitiveValue, state.style()->color()));
     if (state.applyPropertyToVisitedLinkStyle())
         state.style()->{{visited_link_setter}}(state.document().textLinkColors().colorFromPrimitiveValue(primitiveValue, state.style()->color(), true));
 }
-{%- endmacro %}
+{% endmacro %}
+{{apply_color('CSSPropertyBackgroundColor', initial_color='RenderStyle::initialBackgroundColor') }}
+{{apply_color('CSSPropertyBorderBottomColor')}}
+{{apply_color('CSSPropertyBorderLeftColor')}}
+{{apply_color('CSSPropertyBorderRightColor')}}
+{{apply_color('CSSPropertyBorderTopColor')}}
+{{apply_color('CSSPropertyOutlineColor')}}
+{{apply_color('CSSPropertyTextDecorationColor')}}
+{{apply_color('CSSPropertyWebkitColumnRuleColor')}}
+{{apply_color('CSSPropertyWebkitTextEmphasisColor')}}
+{{apply_color('CSSPropertyWebkitTextFillColor')}}
+{{apply_color('CSSPropertyWebkitTextStrokeColor')}}
 
-{{ apply_color("CSSPropertyBackgroundColor", initial_color="RenderStyle::initialBackgroundColor") }}
-{{ apply_color("CSSPropertyBorderBottomColor") }}
-{{ apply_color("CSSPropertyBorderLeftColor") }}
-{{ apply_color("CSSPropertyBorderRightColor") }}
-{{ apply_color("CSSPropertyBorderTopColor") }}
-{{ apply_color("CSSPropertyOutlineColor") }}
-{{ apply_color("CSSPropertyTextDecorationColor") }}
-{{ apply_color("CSSPropertyWebkitColumnRuleColor") }}
-{{ apply_color("CSSPropertyWebkitTextEmphasisColor") }}
-{{ apply_color("CSSPropertyWebkitTextFillColor") }}
-{{ apply_color("CSSPropertyWebkitTextStrokeColor") }}
+{% macro apply_counter(property_id, action) %}
+{% set property = properties[property_id] %}
+{{declare_initial_function(property_id)}} { }
 
-{%- macro apply_counter(property_id, action) %}
-{%- set property = properties[property_id] %}
-{{ declare_initial_function(property_id) }} { }
-
-{{ declare_inherit_function(property_id) }}
+{{declare_inherit_function(property_id)}}
 {
     CounterDirectiveMap& map = state.style()->accessCounterDirectives();
     CounterDirectiveMap& parentMap = state.parentStyle()->accessCounterDirectives();
@@ -297,7 +289,7 @@ namespace WebCore {
     }
 }
 
-{{ declare_value_function(property_id) }}
+{{declare_value_function(property_id)}}
 {
     CounterDirectiveMap& map = state.style()->accessCounterDirectives();
     typedef CounterDirectiveMap::iterator Iterator;
@@ -326,24 +318,23 @@ namespace WebCore {
         AtomicString identifier(pair->first()->getStringValue());
         int value = pair->second()->getIntValue();
         CounterDirectives& directives = map.add(identifier, CounterDirectives()).storedValue->value;
-        {%- if action == "Reset" %}
+        {% if action == 'Reset' %}
         directives.setResetValue(value);
-        {%- else %}
+        {% else %}
         directives.addIncrementValue(value);
-        {%- endif %}
+        {% endif %}
     }
 }
-{%- endmacro %}
+{% endmacro %}
+{{apply_counter('CSSPropertyCounterIncrement', 'Increment')}}
+{{apply_counter('CSSPropertyCounterReset', 'Reset')}}
 
-{{ apply_counter("CSSPropertyCounterIncrement", "Increment") }}
-{{ apply_counter("CSSPropertyCounterReset", "Reset") }}
-
-{%- macro apply_fill_layer(property_id, fill_type) %}
-{%- set layer_type = "Background" if "Background" in property_id else "Mask" %}
-{%- set fill_layer_type = layer_type + "FillLayer" %}
-{%- set access_layers = "access" + layer_type + "Layers" %}
-{%- set map_fill = "mapFill" + fill_type %}
-{{ declare_initial_function(property_id) }}
+{% macro apply_fill_layer(property_id, fill_type) %}
+{% set layer_type = 'Background' if 'Background' in property_id else 'Mask' %}
+{% set fill_layer_type = layer_type + 'FillLayer' %}
+{% set access_layers = 'access' + layer_type + 'Layers' %}
+{% set map_fill = 'mapFill' + fill_type %}
+{{declare_initial_function(property_id)}}
 {
     FillLayer* currChild = state.style()->{{access_layers}}();
     currChild->set{{fill_type}}(FillLayer::initialFill{{fill_type}}({{fill_layer_type}}));
@@ -351,7 +342,7 @@ namespace WebCore {
         currChild->clear{{fill_type}}();
 }
 
-{{ declare_inherit_function(property_id) }}
+{{declare_inherit_function(property_id)}}
 {
     FillLayer* currChild = state.style()->{{access_layers}}();
     FillLayer* prevChild = 0;
@@ -375,7 +366,7 @@ namespace WebCore {
     }
 }
 
-{{ declare_value_function(property_id) }}
+{{declare_value_function(property_id)}}
 {
     FillLayer* currChild = state.style()->{{access_layers}}();
     FillLayer* prevChild = 0;
@@ -402,57 +393,55 @@ namespace WebCore {
         currChild = currChild->next();
     }
 }
-{%- endmacro %}
+{% endmacro %}
+{{apply_fill_layer('CSSPropertyBackgroundAttachment', 'Attachment')}}
+{{apply_fill_layer('CSSPropertyBackgroundBlendMode', 'BlendMode')}}
+{{apply_fill_layer('CSSPropertyBackgroundClip', 'Clip')}}
+{{apply_fill_layer('CSSPropertyBackgroundImage', 'Image')}}
+{{apply_fill_layer('CSSPropertyBackgroundOrigin', 'Origin')}}
+{{apply_fill_layer('CSSPropertyBackgroundPositionX', 'XPosition')}}
+{{apply_fill_layer('CSSPropertyBackgroundPositionY', 'YPosition')}}
+{{apply_fill_layer('CSSPropertyBackgroundRepeatX', 'RepeatX')}}
+{{apply_fill_layer('CSSPropertyBackgroundRepeatY', 'RepeatY')}}
+{{apply_fill_layer('CSSPropertyBackgroundSize', 'Size')}}
+{{apply_fill_layer('CSSPropertyMaskSourceType', 'MaskSourceType')}}
+{{apply_fill_layer('CSSPropertyWebkitBackgroundComposite', 'Composite')}}
+{{apply_fill_layer('CSSPropertyWebkitMaskClip', 'Clip')}}
+{{apply_fill_layer('CSSPropertyWebkitMaskComposite', 'Composite')}}
+{{apply_fill_layer('CSSPropertyWebkitMaskImage', 'Image')}}
+{{apply_fill_layer('CSSPropertyWebkitMaskOrigin', 'Origin')}}
+{{apply_fill_layer('CSSPropertyWebkitMaskPositionX', 'XPosition')}}
+{{apply_fill_layer('CSSPropertyWebkitMaskPositionY', 'YPosition')}}
+{{apply_fill_layer('CSSPropertyWebkitMaskRepeatX', 'RepeatX')}}
+{{apply_fill_layer('CSSPropertyWebkitMaskRepeatY', 'RepeatY')}}
+{{apply_fill_layer('CSSPropertyWebkitMaskSize', 'Size')}}
 
-{{ apply_fill_layer("CSSPropertyBackgroundAttachment", "Attachment") }}
-{{ apply_fill_layer("CSSPropertyBackgroundBlendMode", "BlendMode") }}
-{{ apply_fill_layer("CSSPropertyBackgroundClip", "Clip") }}
-{{ apply_fill_layer("CSSPropertyBackgroundImage", "Image") }}
-{{ apply_fill_layer("CSSPropertyBackgroundOrigin", "Origin") }}
-{{ apply_fill_layer("CSSPropertyBackgroundPositionX", "XPosition") }}
-{{ apply_fill_layer("CSSPropertyBackgroundPositionY", "YPosition") }}
-{{ apply_fill_layer("CSSPropertyBackgroundRepeatX", "RepeatX") }}
-{{ apply_fill_layer("CSSPropertyBackgroundRepeatY", "RepeatY") }}
-{{ apply_fill_layer("CSSPropertyBackgroundSize", "Size") }}
-{{ apply_fill_layer("CSSPropertyMaskSourceType", "MaskSourceType") }}
-{{ apply_fill_layer("CSSPropertyWebkitBackgroundComposite", "Composite") }}
-{{ apply_fill_layer("CSSPropertyWebkitMaskClip", "Clip") }}
-{{ apply_fill_layer("CSSPropertyWebkitMaskComposite", "Composite") }}
-{{ apply_fill_layer("CSSPropertyWebkitMaskImage", "Image") }}
-{{ apply_fill_layer("CSSPropertyWebkitMaskOrigin", "Origin") }}
-{{ apply_fill_layer("CSSPropertyWebkitMaskPositionX", "XPosition") }}
-{{ apply_fill_layer("CSSPropertyWebkitMaskPositionY", "YPosition") }}
-{{ apply_fill_layer("CSSPropertyWebkitMaskRepeatX", "RepeatX") }}
-{{ apply_fill_layer("CSSPropertyWebkitMaskRepeatY", "RepeatY") }}
-{{ apply_fill_layer("CSSPropertyWebkitMaskSize", "Size") }}
-
-{%- macro apply_value_number(property_id, id_for_minus_one) %}
-{{ declare_value_function(property_id) }}
+{% macro apply_value_number(property_id, id_for_minus_one) %}
+{{declare_value_function(property_id)}}
 {
-    {%- set property = properties[property_id] %}
+    {% set property = properties[property_id] %}
     if (!value->isPrimitiveValue())
         return;
 
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
     if (primitiveValue->getValueID() == {{id_for_minus_one}})
-        {{ set_value(property) }}(-1);
+        {{set_value(property)}}(-1);
     else
-        {{ set_value(property) }}(primitiveValue->getValue<{{property.type_name}}>(CSSPrimitiveValue::CSS_NUMBER));
+        {{set_value(property)}}(primitiveValue->getValue<{{property.type_name}}>(CSSPrimitiveValue::CSS_NUMBER));
 }
-{%- endmacro %}
+{% endmacro %}
+{{apply_value_number('CSSPropertyInternalMarqueeRepetition', 'CSSValueInfinite')}}
 
-{{ apply_value_number("CSSPropertyInternalMarqueeRepetition", "CSSValueInfinite") }}
-
-{%- macro apply_value_shape(property_id) %}
-{{ declare_value_function(property_id) }}
+{% macro apply_value_shape(property_id) %}
+{{declare_value_function(property_id)}}
 {
-    {%- set property = properties[property_id] %}
+    {% set property = properties[property_id] %}
     if (value->isPrimitiveValue()) {
         CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
         if (primitiveValue->getValueID() == CSSValueAuto)
-            {{ set_value(property) }}(nullptr);
+            {{set_value(property)}}(nullptr);
     } else if (value->isImageValue() || value->isImageSetValue()) {
-        {{ set_value(property) }}(ShapeValue::createImageValue(state.styleImage({{property_id}}, value)));
+        {{set_value(property)}}(ShapeValue::createImageValue(state.styleImage({{property_id}}, value)));
     } else if (value->isValueList()) {
         RefPtr<BasicShape> shape;
         CSSBoxType cssBox = BoxMissing;
@@ -471,13 +460,11 @@ namespace WebCore {
         }
 
         if (shape)
-            {{ set_value(property) }}(ShapeValue::createShapeValue(shape.release(), cssBox));
+            {{set_value(property)}}(ShapeValue::createShapeValue(shape.release(), cssBox));
         else if (cssBox != BoxMissing)
-            {{ set_value(property) }}(ShapeValue::createBoxShapeValue(cssBox));
+            {{set_value(property)}}(ShapeValue::createBoxShapeValue(cssBox));
     }
 }
-{%- endmacro %}
-
-{{ apply_value_shape("CSSPropertyShapeOutside") }}
-
+{% endmacro %}
+{{apply_value_shape('CSSPropertyShapeOutside')}}
 } // namespace WebCore

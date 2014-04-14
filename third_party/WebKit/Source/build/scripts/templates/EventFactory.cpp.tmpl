@@ -1,4 +1,4 @@
-{% from "macros.tmpl" import wrap_with_condition, license -%}
+{% from "macros.tmpl" import wrap_with_condition, license %}
 {{ license() }}
 
 #include "config.h"
@@ -11,12 +11,12 @@ namespace WebCore {
 
 PassRefPtrWillBeRawPtr<{{namespace}}> {{namespace}}Factory::create(const String& type)
 {
-{%- for event in events %}
-{%- call wrap_with_condition(event.Conditional) %}
+    {% for event in events %}
+    {% call wrap_with_condition(event.Conditional) %}
     if (type == "{{event|script_name}}"{% if event.RuntimeEnabled %} && RuntimeEnabledFeatures::{{event.RuntimeEnabled|lower_first}}(){% endif %})
         return {{event|cpp_name}}::create();
-{%- endcall %}
-{%- endfor %}
+    {% endcall %}
+    {% endfor %}
     return nullptr;
 }
 

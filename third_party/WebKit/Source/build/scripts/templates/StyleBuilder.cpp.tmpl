@@ -1,4 +1,4 @@
-{% from "macros.tmpl" import wrap_with_condition, license -%}
+{% from "macros.tmpl" import wrap_with_condition, license %}
 {{ license() }}
 
 #include "config.h"
@@ -10,73 +10,71 @@
 
 // FIXME: currently we're just generating a switch statement, but we should
 //   test other variations for performance once we have more properties here.
-
-{%- macro set_value(property) %}
-{%- if property.svg -%}
-    state.style()->accessSVGStyle()->{{property.setter}}
-{%- elif property.font -%}
-    state.fontBuilder().{{property.setter}}
-{%- else -%}
-    state.style()->{{property.setter}}
+{% macro set_value(property) %}
+{% if property.svg %}
+state.style()->accessSVGStyle()->{{property.setter}}
+{%- elif property.font %}
+state.fontBuilder().{{property.setter}}
+{%- else %}
+state.style()->{{property.setter}}
 {%- endif %}
-{%- endmacro %}
+{% endmacro %}
 
 namespace WebCore {
-
-{%- for property_id, property in properties.items() if not property.use_handlers_for %}
-{%- call wrap_with_condition(property.condition) %}
-{%- set apply_type = property.apply_type %}
-
-{%- if not property.custom_initial %}
+{# FIXME: add blank line #}
+{% for property_id, property in properties.items() if not property.use_handlers_for %}
+{% call wrap_with_condition(property.condition) %}
+{% set apply_type = property.apply_type %}
+{% if not property.custom_initial %}
 void StyleBuilderFunctions::applyInitial{{property_id}}(StyleResolverState& state)
 {
-{%- if property.svg %}
-    {{ set_value(property) }}(SVGRenderStyle::{{property.initial}}());
-{%- elif property.font %}
-    {{ set_value(property) }}(FontBuilder::{{property.initial}}());
-{%- else %}
-    {{ set_value(property) }}(RenderStyle::{{property.initial}}());
-{%- endif %}
+    {% if property.svg %}
+    {{set_value(property)}}(SVGRenderStyle::{{property.initial}}());
+    {% elif property.font %}
+    {{set_value(property)}}(FontBuilder::{{property.initial}}());
+    {% else %}
+    {{set_value(property)}}(RenderStyle::{{property.initial}}());
+    {% endif %}
 }
-{% endif %}
 
-{%- if not property.custom_inherit %}
+{% endif %}
+{% if not property.custom_inherit %}
 void StyleBuilderFunctions::applyInherit{{property_id}}(StyleResolverState& state)
 {
-{%- if property.svg %}
-    {{ set_value(property) }}(state.parentStyle()->svgStyle()->{{property.getter}}());
-{%- elif property.font %}
-    {{ set_value(property) }}(state.parentFontDescription().{{property.getter}}());
-{%- else %}
-    {{ set_value(property) }}(state.parentStyle()->{{property.getter}}());
-{%- endif %}
+    {% if property.svg %}
+    {{set_value(property)}}(state.parentStyle()->svgStyle()->{{property.getter}}());
+    {% elif property.font %}
+    {{set_value(property)}}(state.parentFontDescription().{{property.getter}}());
+    {% else %}
+    {{set_value(property)}}(state.parentStyle()->{{property.getter}}());
+    {% endif %}
 }
-{% endif %}
 
-{%- if not property.custom_value %}
+{% endif %}
+{% if not property.custom_value %}
 void StyleBuilderFunctions::applyValue{{property_id}}(StyleResolverState& state, CSSValue* value)
 {
-{%- if property.converter %}
+    {% if property.converter %}
     {{ set_value(property) }}(StyleBuilderConverter::{{property.converter}}(state, value));
-{%- elif property.font %}
+    {% elif property.font %}
     if (!value->isPrimitiveValue())
         return;
-    {{ set_value(property) }}(static_cast<{{property.type_name}}>(*toCSSPrimitiveValue(value)));
-{%- else %}
-    {{ set_value(property) }}(static_cast<{{property.type_name}}>(*toCSSPrimitiveValue(value)));
-{%- endif %}
+    {{set_value(property)}}(static_cast<{{property.type_name}}>(*toCSSPrimitiveValue(value)));
+    {% else %}
+    {{set_value(property)}}(static_cast<{{property.type_name}}>(*toCSSPrimitiveValue(value)));
+    {% endif %}
 }
-{% endif %}
 
-{%- endcall %}
-{%- endfor %}
+{% endif %}
+{% endcall %}
+{% endfor %}
 
 bool StyleBuilder::applyProperty(CSSPropertyID property, StyleResolverState& state, CSSValue* value, bool isInitial, bool isInherit) {
     switch(property) {
-{%- for property_id, property in properties.items() %}
-{%- set used_property = properties[property.use_handlers_for] or property %}
-{%- set used_property_id = used_property.property_id %}
-{%- call wrap_with_condition(used_property.condition) %}
+    {% for property_id, property in properties.items() %}
+    {% set used_property = properties[property.use_handlers_for] or property %}
+    {% set used_property_id = used_property.property_id %}
+    {% call wrap_with_condition(used_property.condition) %}
     case {{ property_id }}:
         if (isInitial)
             StyleBuilderFunctions::applyInitial{{ used_property_id }}(state);
@@ -85,8 +83,9 @@ bool StyleBuilder::applyProperty(CSSPropertyID property, StyleResolverState& sta
         else
             StyleBuilderFunctions::applyValue{{ used_property_id }}(state, value);
         return true;
-{%- endcall %}
-{% endfor %}
+
+    {% endcall %}
+    {% endfor %}
     default:
         return false;
     }

@@ -1,4 +1,4 @@
-{% from "macros.tmpl" import wrap_with_condition, license -%}
+{% from "macros.tmpl" import wrap_with_condition, license %}
 {{ license() }}
 
 #ifndef StyleBuilderFunctions_h
@@ -14,14 +14,15 @@ class StyleResolverState;
 class StyleBuilderFunctions {
 public:
 
-{%- for property_id, property in properties.items() if not property.use_handlers_for %}
-{% call wrap_with_condition(property.condition) %}
+    {% for property_id, property in properties.items()
+           if not property.use_handlers_for %}
+    {% call wrap_with_condition(property.condition) %}
     static void applyInitial{{property_id}}(StyleResolverState&);
     static void applyInherit{{property_id}}(StyleResolverState&);
     static void applyValue{{property_id}}(StyleResolverState&, CSSValue*);
-{%- endcall %}
-{%- endfor %}
+    {% endcall %}
 
+    {% endfor %}
 };
 
 } // namespace WebCore

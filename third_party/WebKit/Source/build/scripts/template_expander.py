@@ -39,7 +39,11 @@ import jinja2
 def apply_template(path_to_template, params, filters=None):
     dirname, basename = os.path.split(path_to_template)
     path_to_templates = os.path.join(_current_dir, 'templates')
-    jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader([dirname, path_to_templates]), keep_trailing_newline=True)
+    jinja_env = jinja2.Environment(
+        loader=jinja2.FileSystemLoader([dirname, path_to_templates]),
+        keep_trailing_newline=True,  # newline-terminate generated files
+        lstrip_blocks=True,  # so can indent control flow tags
+        trim_blocks=True)  # so don't need {%- -%} everywhere
     if filters:
         jinja_env.filters.update(filters)
     template = jinja_env.get_template(basename)

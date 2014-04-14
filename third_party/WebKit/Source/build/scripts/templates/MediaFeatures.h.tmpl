@@ -1,12 +1,16 @@
-{% from "macros.tmpl" import license -%}
+{% from "macros.tmpl" import license %}
 {{ license() }}
 
 #ifndef MediaFeatures_h
 #define MediaFeatures_h
 
 #define CSS_MEDIAQUERY_NAMES_FOR_EACH_MEDIAFEATURE(macro) \
-{%- for entry in entries %}
-    macro({{entry|symbol}}) {%- if not loop.last %}\{%-endif %}
-{%- endfor %}
+    {% for entry in entries %}
+    {# FIXME: add space before \ #}
+    macro({{entry|symbol}}){% if not loop.last %}\
+    {% endif %}
+    {% endfor %}
+{# FIXME: Remove extra blank line #}
+
 
 #endif

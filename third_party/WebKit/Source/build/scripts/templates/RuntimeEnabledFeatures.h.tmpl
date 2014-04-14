@@ -1,4 +1,4 @@
-{% from "macros.tmpl" import wrap_with_condition, license -%}
+{% from "macros.tmpl" import wrap_with_condition, license %}
 {{ license() }}
 
 #ifndef RuntimeEnabledFeatures_h
@@ -12,36 +12,38 @@ namespace WebCore {
 
 class PLATFORM_EXPORT RuntimeEnabledFeatures {
 public:
-
-{%- for feature_set in feature_sets %}
+    {% for feature_set in feature_sets %}
     static void set{{feature_set|capitalize}}FeaturesEnabled(bool);
-{%- endfor %}
+    {% endfor %}
 
-{% for feature in features %}
-{%- if feature.custom %}
+
+    {% for feature in features %}
+    {% if feature.custom %}
     static bool {{feature.first_lowered_name}}Enabled();
-{%- else %}
-{%- if feature.condition %}
+    {% else %}
+    {% if feature.condition %}
 #if ENABLE({{feature.condition}})
-{%- endif %}
+    {% endif %}
     static void set{{feature.name}}Enabled(bool isEnabled) { is{{feature.name}}Enabled = isEnabled; }
     static bool {{feature.first_lowered_name}}Enabled() { return {{feature.enabled_condition}}; }
-{%- if feature.condition %}
+    {% if feature.condition %}
 #else
     static void set{{feature.name}}Enabled(bool) { }
     static bool {{feature.first_lowered_name}}Enabled() { return false; }
 #endif
-{%- endif %}
-{%- endif %}
-{% endfor %}
+    {% endif %}
+
+    {% endif %}
+    {% endfor %}
 
 private:
     RuntimeEnabledFeatures() { }
-{% for feature in features if not feature.custom %}
-{%- call wrap_with_condition(feature.condition) %}
+
+    {% for feature in features if not feature.custom %}
+    {% call wrap_with_condition(feature.condition) %}
     static bool is{{feature.name}}Enabled;
-{%- endcall %}
-{%- endfor %}
+    {% endcall %}
+    {% endfor %}
 };
 
 } // namespace WebCore

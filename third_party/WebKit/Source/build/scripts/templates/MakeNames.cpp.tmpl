@@ -1,4 +1,4 @@
-{% from "macros.tmpl" import license -%}
+{% from "macros.tmpl" import license %}
 {{ license() }}
 
 #include "config.h"
@@ -15,26 +15,25 @@ namespace WebCore {
 namespace {{namespace}}Names {
 
 using namespace WTF;
-
-{%- for entry in entries|sort %}
-{%- if export %}
+{# FIXME: add blank line #}
+{% for entry in entries|sort %}
+{% if export %}
 DEFINE_GLOBAL(AtomicString, {{entry|symbol}}Storage)
 {{export}} const AtomicString& {{entry|symbol}} = *reinterpret_cast<const AtomicString*>(&{{entry|symbol}}Storage);
-{%- else %}
+{% else %}
 DEFINE_GLOBAL(AtomicString, {{entry|symbol}})
-{%- endif %}
-{%- endfor %}
+{% endif %}
+{% endfor %}
 
 void init()
 {
-{%- for entry in entries|sort %}
+    {% for entry in entries|sort %}
     StringImpl* {{entry|symbol}}Impl = StringImpl::createStatic("{{entry|cpp_name}}", {{entry|cpp_name|length}}, {{entry|cpp_name|hash}});
-{%- endfor %}
-
-
-{%- for entry in entries|sort %}
+    {% endfor %}
+    {# FIXME: add blank line #}
+    {% for entry in entries|sort %}
     new ((void*)&{{entry|symbol}}) AtomicString({{entry|symbol}}Impl);
-{%- endfor %}
+    {% endfor %}
 }
 
 } // {{namespace}}

@@ -1,4 +1,4 @@
-{% from "macros.tmpl" import license -%}
+{% from "macros.tmpl" import license %}
 {{ license() }}
 
 #include "config.h"
@@ -15,7 +15,9 @@ StringImpl* lookup{{namespace}}Tag(const UChar* data, unsigned length)
     ASSERT(data);
     ASSERT(length);
     switch (length) {
-{{body}}
+{{body}}{# FIXME: use indent #}
+{# FIXME: remove blank line #}
+
     }
     return 0;
 }

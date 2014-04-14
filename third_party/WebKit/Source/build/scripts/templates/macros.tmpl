@@ -1,17 +1,18 @@
+{# FIXME: replace with custom filter (already in bindings) #}
 {% macro wrap_with_condition(condition) %}
-{%- if condition %}
+{% if condition %}
 #if ENABLE({{condition}})
-{{- caller() }}
+{{ caller() -}}
 #endif
-{%- else %}
-{{- caller() }}
+{% else %}
+{{ caller() }}
 {%- endif %}
-{%- endmacro %}
+{% endmacro %}
 
 {#
     FIXME: Do we need to put license blocks in generated files?
 #}
-{% macro license() -%}
+{% macro license() %}
 /*
  * Copyright (C) 2013 Google Inc. All rights reserved.
  *
@@ -43,6 +44,6 @@
  */
 {%- endmacro %}
 
-{% macro lower_first(s) -%}
+{% macro lower_first(s) %}
 {{ (s[0]|lower) + s[1:] }}
 {%- endmacro %}
