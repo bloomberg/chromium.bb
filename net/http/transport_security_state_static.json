@@ -730,6 +730,13 @@
     { "name": "keeperapp.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "donmez.ws", "include_subdomains": true, "mode": "force-https" },
     { "name": "activiti.alfresco.com", "mode": "force-https" },
+    { "name": "cloudcert.org", "include_subdomains": true, "mode": "force-https" },
+    { "name": "seifried.org", "include_subdomains": true, "mode": "force-https" },
+    { "name": "wepay.com", "mode": "force-https" },
+    { "name": "www.wepay.com", "mode": "force-https" },
+    { "name": "static.wepay.com", "mode": "force-https" },
+    { "name": "stage.wepay.com", "mode": "force-https" },
+    { "name": "vmoagents.com", "mode": "force-https" },
 
     // Entries that are only valid if the client supports SNI.
     { "name": "gmail.com", "mode": "force-https", "pins": "google", "snionly": true },
