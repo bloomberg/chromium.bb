@@ -53,6 +53,7 @@ class GSContextMock(partial_mock.PartialCmdMock):
 
   def __init__(self):
     partial_mock.PartialCmdMock.__init__(self, create_tempdir=True)
+    self.raw_gs_cmds = []
 
   def _SetGSUtilUrl(self):
     tempfile = os.path.join(self.tempdir, 'tempfile')
@@ -82,7 +83,10 @@ class GSContextMock(partial_mock.PartialCmdMock):
         result.error)
 
     with rc_mock:
-      return self.backup['DoCommand'](inst, gsutil_cmd, **kwargs)
+      try:
+        return self.backup['DoCommand'](inst, gsutil_cmd, **kwargs)
+      finally:
+        self.raw_gs_cmds.extend(args[0] for args, _ in rc_mock.call_args_list)
 
 
 class AbstractGSContextTest(cros_test_lib.MockTempDirTestCase):
@@ -398,7 +402,7 @@ class GSDoCommandTest(cros_test_lib.TestCase):
     with mock.patch.object(retry_util, 'GenericRetry', autospec=True):
       ctx.Copy('/blah', 'gs://foon', version=version, recursive=recursive)
       cmd = [self.ctx.gsutil_bin] + self.ctx.gsutil_flags + list(headers)
-      cmd += ['-m', 'cp']
+      cmd += ['cp']
       if recursive:
         cmd += ['-r', '-e']
       cmd += ['--', '/blah', 'gs://foon']
@@ -599,11 +603,23 @@ class GSContextTest(AbstractGSContextTest):
                       ctx.WaitForGsPaths, ['/path1', '/path2'],
                       timeout=1, period=0.02)
 
+  def testParallelFalse(self):
+    """Tests that "-m" is not used by default."""
+    ctx = gs.GSContext()
+    ctx.Copy('-', 'gs://abc/1')
+    self.assertFalse(any('-m' in cmd for cmd in self.gs_mock.raw_gs_cmds))
+
+  def testParallelTrue(self):
+    """Tests that "-m" is used when you pass parallel=True."""
+    ctx = gs.GSContext()
+    ctx.Copy('gs://abc/1', 'gs://abc/2', parallel=True)
+    self.assertTrue(all('-m' in cmd for cmd in self.gs_mock.raw_gs_cmds))
+
   def testNoParallelOpWithStdin(self):
     """Tests that "-m" is not used when we pipe the input."""
     ctx = gs.GSContext()
-    ctx.Copy('-', 'gs://abc/1', input='foo')
-    self.gs_mock.assertCommandContains(['-m'], expected=False)
+    ctx.Copy('-', 'gs://abc/1', input='foo', parallel=True)
+    self.assertFalse(any('-m' in cmd for cmd in self.gs_mock.raw_gs_cmds))
 
 
 class NetworkGSContextTest(cros_test_lib.TempDirTestCase):
