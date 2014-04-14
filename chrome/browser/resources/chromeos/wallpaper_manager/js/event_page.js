@@ -4,6 +4,7 @@
 
 var WALLPAPER_PICKER_WIDTH = 574;
 var WALLPAPER_PICKER_HEIGHT = 420;
+var SURPRISE_ME_ALARM_NAME = 'DefaultEnableSurpriseMe';
 
 var wallpaperPickerWindow;
 
@@ -271,6 +272,23 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
   }
 });
 
-chrome.alarms.onAlarm.addListener(function() {
-  SurpriseWallpaper.getInstance().next();
+chrome.alarms.onAlarm.addListener(function(alarm) {
+  if (alarm.name === SURPRISE_ME_ALARM_NAME) {
+    Constants.WallpaperSyncStorage.get(Constants.AccessSurpriseMeEnabledKey,
+                                        function(items) {
+      if (!items.hasOwnProperty(Constants.AccessSurpriseMeEnabledKey)) {
+        WallpaperUtil.saveToStorage(Constants.AccessSurpriseMeEnabledKey,
+                                    true, true);
+      }
+    });
+  } else {
+    SurpriseWallpaper.getInstance().next();
+  }
+});
+
+/**
+ * Enables surprise me wallpaper iff it has not already been configured.
+ */
+chrome.wallpaperPrivate.onRequestEnableSurpriseMe.addListener(function() {
+  chrome.alarms.create(SURPRISE_ME_ALARM_NAME, {delayInMinutes: 5});
 });

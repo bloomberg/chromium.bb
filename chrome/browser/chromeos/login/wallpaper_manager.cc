@@ -29,11 +29,15 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/extensions/wallpaper_manager_util.h"
+#include "chrome/browser/chromeos/extensions/wallpaper_private_api.h"
+#include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -41,6 +45,8 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_ui.h"
+#include "extensions/browser/event_router.h"
 #include "grit/ash_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/jpeg_codec.h"
@@ -973,6 +979,20 @@ void WallpaperManager::AddObserver(WallpaperManager::Observer* observer) {
 
 void WallpaperManager::RemoveObserver(WallpaperManager::Observer* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void WallpaperManager::EnableSurpriseMe() {
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  DCHECK(profile);
+  DCHECK(extensions::ExtensionSystem::Get(profile)->event_router());
+  scoped_ptr<extensions::Event> event(
+      new extensions::Event(
+    extensions::api::wallpaper_private::OnRequestEnableSurpriseMe::kEventName,
+    extensions::api::wallpaper_private::OnRequestEnableSurpriseMe::Create()));
+
+  extensions::ExtensionSystem::Get(profile)->event_router()
+      ->DispatchEventToExtension(extension_misc::kWallpaperManagerId,
+                                 event.Pass());
 }
 
 void WallpaperManager::NotifyAnimationFinished() {

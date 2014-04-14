@@ -51,6 +51,7 @@
 #include "chrome/browser/chromeos/login/supervised_user_manager.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/login/wallpaper_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/first_run/first_run.h"
@@ -347,6 +348,14 @@ void LoginUtilsImpl::DoBrowserLaunchOnLocaleLoadedImpl(
                                 chrome::startup::IS_PROCESS_STARTUP,
                                 first_run,
                                 &return_code);
+
+  // If the current user is a new regular user (not including
+  // multi-profile cases) enable surprise me wallpaper by default.
+  if (UserManager::Get()->IsCurrentUserNew() &&
+      UserManager::Get()->IsLoggedInAsRegularUser() &&
+      UserManager::Get()->GetLoggedInUsers().size() == 1) {
+    WallpaperManager::Get()->EnableSurpriseMe();
+  }
 
   // Triggers app launcher start page service to load start page web contents.
   app_list::StartPageService::Get(profile);

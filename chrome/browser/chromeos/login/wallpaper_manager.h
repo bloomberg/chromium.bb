@@ -328,6 +328,9 @@ class WallpaperManager: public content::NotificationObserver {
   // Returns the appropriate wallpaper resolution for all root windows.
   static WallpaperResolution GetAppropriateResolution();
 
+  // Enable surprise me wallpaper mode.
+  void EnableSurpriseMe();
+
  private:
   friend class TestApi;
   friend class WallpaperManagerBrowserTest;
