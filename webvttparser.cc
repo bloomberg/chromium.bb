@@ -11,19 +11,19 @@
 
 namespace libwebvtt {
 
+// NOLINT'ing this enum because clang-format puts it in a single line which
+// makes it look really unreadable.
 enum {
   kNUL = '\x00',
   kSPACE = ' ',
   kTAB = '\x09',
   kLF = '\x0A',
   kCR = '\x0D'
-};
+};  // NOLINT
 
-Reader::~Reader() {
-}
+Reader::~Reader() {}
 
-LineReader::~LineReader() {
-}
+LineReader::~LineReader() {}
 
 int LineReader::GetLine(std::string* line_ptr) {
   if (line_ptr == NULL)
@@ -101,11 +101,9 @@ int LineReader::GetLine(std::string* line_ptr) {
   return 0;
 }
 
-Parser::Parser(Reader* r) : reader_(r), unget_(-1) {
-}
+Parser::Parser(Reader* r) : reader_(r), unget_(-1) {}
 
-Parser::~Parser() {
-}
+Parser::~Parser() {}
 
 int Parser::Init() {
   int e = ParseBOM();
@@ -143,7 +141,7 @@ int Parser::Init() {
   if (e < 0)  // error
     return e;
 
-  if (e > 0)  // EOF
+  if (e > 0)   // EOF
     return 0;  // weird but valid
 
   if (!line.empty()) {
@@ -164,7 +162,7 @@ int Parser::Init() {
   if (e < 0)  // error
     return e;
 
-  if (e > 0)  // EOF
+  if (e > 0)   // EOF
     return 0;  // weird but we allow it
 
   if (!line.empty())
@@ -226,10 +224,7 @@ int Parser::Parse(Cue* cue) {
       return -1;
   }
 
-  e = ParseTimingsLine(&line,
-                       arrow_pos,
-                       &cue->start_time,
-                       &cue->stop_time,
+  e = ParseTimingsLine(&line, arrow_pos, &cue->start_time, &cue->stop_time,
                        &cue->settings);
 
   if (e)  // error
@@ -269,9 +264,7 @@ int Parser::GetChar(char* c) {
   return reader_->GetChar(c);
 }
 
-void Parser::UngetChar(char c) {
-  unget_ = static_cast<unsigned char>(c);
-}
+void Parser::UngetChar(char c) { unget_ = static_cast<unsigned char>(c); }
 
 int Parser::ParseBOM() {
   // Explanation of UTF-8 BOM:
@@ -303,12 +296,9 @@ int Parser::ParseBOM() {
   return 0;  // success
 }
 
-int Parser::ParseTimingsLine(
-    std::string* line_ptr,
-    std::string::size_type arrow_pos,
-    Time* start_time,
-    Time* stop_time,
-    Cue::settings_t* settings) {
+int Parser::ParseTimingsLine(std::string* line_ptr,
+                             std::string::size_type arrow_pos, Time* start_time,
+                             Time* stop_time, Cue::settings_t* settings) {
   if (line_ptr == NULL)
     return -1;
 
@@ -353,10 +343,8 @@ int Parser::ParseTimingsLine(
   return 0;  // success
 }
 
-int Parser::ParseTime(
-    const std::string& line,
-    std::string::size_type* idx_ptr,
-    Time* time) {
+int Parser::ParseTime(const std::string& line, std::string::size_type* idx_ptr,
+                      Time* time) {
   if (idx_ptr == NULL)
     return -1;
 
@@ -511,10 +499,8 @@ int Parser::ParseTime(
   return 0;  // success
 }
 
-int Parser::ParseSettings(
-    const std::string& line,
-    std::string::size_type idx,
-    Cue::settings_t* settings) {
+int Parser::ParseSettings(const std::string& line, std::string::size_type idx,
+                          Cue::settings_t* settings) {
   settings->clear();
 
   if (idx == std::string::npos || idx >= line.length())
@@ -529,7 +515,7 @@ int Parser::ParseSettings(
       const char c = line[idx];
 
       if (c == kNUL)  // end-of-line
-        return 0;  // success
+        return 0;     // success
 
       if (c != kSPACE && c != kTAB)
         break;
@@ -585,9 +571,8 @@ int Parser::ParseSettings(
   }
 }
 
-int Parser::ParseNumber(
-    const std::string& line,
-    std::string::size_type* idx_ptr) {
+int Parser::ParseNumber(const std::string& line,
+                        std::string::size_type* idx_ptr) {
   if (idx_ptr == NULL)
     return -1;
 
@@ -656,17 +641,11 @@ bool Time::operator<(const Time& rhs) const {
   return (milliseconds < rhs.milliseconds);
 }
 
-bool Time::operator>(const Time& rhs) const {
-  return rhs.operator<(*this);
-}
+bool Time::operator>(const Time& rhs) const { return rhs.operator<(*this); }
 
-bool Time::operator<=(const Time& rhs) const {
-  return !this->operator>(rhs);
-}
+bool Time::operator<=(const Time& rhs) const { return !this->operator>(rhs); }
 
-bool Time::operator>=(const Time& rhs) const {
-  return !this->operator<(rhs);
-}
+bool Time::operator>=(const Time& rhs) const { return !this->operator<(rhs); }
 
 presentation_t Time::presentation() const {
   const presentation_t h = 1000LL * 3600LL * presentation_t(hours);
@@ -711,9 +690,7 @@ Time Time::operator+(presentation_t d) const {
   return t;
 }
 
-Time& Time::operator-=(presentation_t d) {
-  return this->operator+=(-d);
-}
+Time& Time::operator-=(presentation_t d) { return this->operator+=(-d); }
 
 presentation_t Time::operator-(const Time& t) const {
   const presentation_t rhs = t.presentation();
