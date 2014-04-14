@@ -18,6 +18,7 @@ InspectorTest.timelinePropertyFormatters = {
     scriptLine: "formatAsTypeName",
     layerId: "formatAsTypeName",
     lineNumber: "formatAsTypeName",
+    columnNumber: "formatAsTypeName",
     frameId: "formatAsTypeName",
     encodedDataLength: "formatAsTypeName",
     identifier: "formatAsTypeName",

@@ -50,7 +50,6 @@
 
 namespace WebCore {
 struct FetchInitiatorInfo;
-struct TimelineGCEvent;
 struct TimelineImageInfo;
 struct TimelineThreadState;
 struct TimelineRecordEntry;
@@ -268,8 +267,6 @@ private:
     void setFrameIdentifier(TypeBuilder::Timeline::TimelineEvent* record, LocalFrame*);
     void populateImageDetails(JSONObject* data, const RenderImage&);
 
-    void pushGCEventRecords();
-
     void didCompleteCurrentRecord(const String& type);
     void unwindRecordStack();
 
@@ -311,8 +308,6 @@ private:
     RefPtr<TypeBuilder::Array<TypeBuilder::Timeline::TimelineEvent> > m_bufferedEvents;
     Vector<String> m_consoleTimelines;
 
-    typedef Vector<TimelineGCEvent> GCEvents;
-    GCEvents m_gcEvents;
     unsigned m_platformInstrumentationClientInstalledAtStackDepth;
     RefPtr<TypeBuilder::Timeline::TimelineEvent> m_pendingFrameRecord;
     RefPtr<TypeBuilder::Timeline::TimelineEvent> m_pendingGPURecord;

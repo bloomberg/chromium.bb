@@ -1,0 +1,42 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/timeline-test.js"></script>
+<script>
+
+function produceGarbageForGCEvents(callback)
+{
+    if (window.testRunner) {
+        window.gc();
+        testRunner.displayAsyncThen(callback);
+    }
+}
+
+function test()
+{
+    InspectorTest.invokeAsyncWithTimeline("produceGarbageForGCEvents", validate);
+
+    function validate(records)
+    {
+        for (var i = 0; i < records.length; ++i) {
+            var record = records[i];
+            if (record.type === WebInspector.TimelineModel.RecordType.GCEvent) {
+                InspectorTest.addResult("The expected GC event record");
+                InspectorTest.addObject(record, InspectorTest.timelinePropertyFormatters);
+                break;
+            }
+        }
+
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests the Timeline API instrumentation of a gc event
+</p>
+</body>
+</html>
