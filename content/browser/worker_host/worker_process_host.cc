@@ -332,7 +332,10 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
 
   process_->AddFilter(new WorkerDevToolsMessageFilter(process_->GetData().id));
   process_->AddFilter(
-      new IndexedDBDispatcherHost(partition_.indexed_db_context()));
+      new IndexedDBDispatcherHost(process_->GetData().id,
+                                  url_request_context,
+                                  partition_.indexed_db_context(),
+                                  blob_storage_context));
 }
 
 void WorkerProcessHost::CreateWorker(const WorkerInstance& instance,

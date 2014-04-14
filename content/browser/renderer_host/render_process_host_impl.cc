@@ -685,7 +685,10 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       GetID(),
       storage_partition_impl_->GetDOMStorageContext()));
   AddFilter(new IndexedDBDispatcherHost(
-      storage_partition_impl_->GetIndexedDBContext()));
+      GetID(),
+      storage_partition_impl_->GetURLRequestContext(),
+      storage_partition_impl_->GetIndexedDBContext(),
+      ChromeBlobStorageContext::GetFor(browser_context)));
 
   if (IsGuest()) {
     if (!g_browser_plugin_geolocation_context.Get().get()) {

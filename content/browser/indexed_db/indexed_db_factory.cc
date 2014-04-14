@@ -180,6 +180,7 @@ void IndexedDBFactory::GetDatabaseNames(
   scoped_refptr<IndexedDBBackingStore> backing_store =
       OpenBackingStore(origin_url,
                        data_directory,
+                       NULL /* request_context */,
                        &data_loss,
                        &data_loss_message,
                        &disk_full);
@@ -198,6 +199,7 @@ void IndexedDBFactory::GetDatabaseNames(
 
 void IndexedDBFactory::DeleteDatabase(
     const base::string16& name,
+    net::URLRequestContext* request_context,
     scoped_refptr<IndexedDBCallbacks> callbacks,
     const GURL& origin_url,
     const base::FilePath& data_directory) {
@@ -218,6 +220,7 @@ void IndexedDBFactory::DeleteDatabase(
   scoped_refptr<IndexedDBBackingStore> backing_store =
       OpenBackingStore(origin_url,
                        data_directory,
+                       request_context,
                        &data_loss,
                        &data_loss_message,
                        &disk_full);
@@ -306,6 +309,7 @@ bool IndexedDBFactory::IsBackingStorePendingClose(const GURL& origin_url)
 scoped_refptr<IndexedDBBackingStore> IndexedDBFactory::OpenBackingStore(
     const GURL& origin_url,
     const base::FilePath& data_directory,
+    net::URLRequestContext* request_context,
     blink::WebIDBDataLoss* data_loss,
     std::string* data_loss_message,
     bool* disk_full) {
@@ -339,7 +343,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBFactory::OpenBackingStore(
 
     // All backing stores associated with this factory should be of the same
     // type.
-    DCHECK(session_only_backing_stores_.empty() || open_in_memory);
+    DCHECK_NE(session_only_backing_stores_.empty(), open_in_memory);
 
     return backing_store;
   }
@@ -349,6 +353,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBFactory::OpenBackingStore(
 
 void IndexedDBFactory::Open(const base::string16& name,
                             const IndexedDBPendingConnection& connection,
+                            net::URLRequestContext* request_context,
                             const GURL& origin_url,
                             const base::FilePath& data_directory) {
   IDB_TRACE("IndexedDBFactory::Open");
@@ -364,6 +369,7 @@ void IndexedDBFactory::Open(const base::string16& name,
     scoped_refptr<IndexedDBBackingStore> backing_store =
         OpenBackingStore(origin_url,
                          data_directory,
+                         request_context,
                          &data_loss,
                          &data_loss_message,
                          &disk_full);

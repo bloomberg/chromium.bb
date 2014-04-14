@@ -11,7 +11,9 @@
 #include "base/basictypes.h"
 #include "base/id_map.h"
 #include "base/memory/ref_counted.h"
+#include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 #include "webkit/browser/blob/blob_data_handle.h"
 
@@ -42,12 +44,20 @@ struct IndexedDBDatabaseMetadata;
 class IndexedDBDispatcherHost : public BrowserMessageFilter {
  public:
   // Only call the constructor from the UI thread.
-  explicit IndexedDBDispatcherHost(IndexedDBContextImpl* indexed_db_context);
+  IndexedDBDispatcherHost(int ipc_process_id,
+                          net::URLRequestContextGetter* request_context_getter,
+                          IndexedDBContextImpl* indexed_db_context,
+                          ChromeBlobStorageContext* blob_storage_context);
+  IndexedDBDispatcherHost(int ipc_process_id,
+                          net::URLRequestContext* request_context,
+                          IndexedDBContextImpl* indexed_db_context,
+                          ChromeBlobStorageContext* blob_storage_context);
 
   static ::IndexedDBDatabaseMetadata ConvertMetadata(
       const content::IndexedDBDatabaseMetadata& metadata);
 
   // BrowserMessageFilter implementation.
+  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
   virtual void OnChannelClosing() OVERRIDE;
   virtual void OnDestruct() const OVERRIDE;
   virtual base::TaskRunner* OverrideTaskRunnerForMessage(
@@ -59,6 +69,9 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
 
   // A shortcut for accessing our context.
   IndexedDBContextImpl* Context() { return indexed_db_context_; }
+  webkit_blob::BlobStorageContext* blob_storage_context() const {
+    return blob_storage_context_->context();
+  }
 
   // IndexedDBCallbacks call these methods to add the results into the
   // applicable map.  See below for more details.
@@ -236,7 +249,12 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
     RefIDMap<IndexedDBCursor> map_;
   };
 
+  // The getter holds the context until OnChannelConnected() can be called from
+  // the IO thread, which will extract the net::URLRequestContext from it.
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
+  net::URLRequestContext* request_context_;
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
+  scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
 
   typedef std::map<std::string, webkit_blob::BlobDataHandle*> BlobDataHandleMap;
   BlobDataHandleMap blob_data_handle_map_;
@@ -244,6 +262,9 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
   // Only access on IndexedDB thread.
   scoped_ptr<DatabaseDispatcherHost> database_dispatcher_host_;
   scoped_ptr<CursorDispatcherHost> cursor_dispatcher_host_;
+
+  // Used to set file permissions for blob storage.
+  int ipc_process_id_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBDispatcherHost);
 };

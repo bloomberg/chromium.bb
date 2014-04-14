@@ -26,6 +26,7 @@
 #include "content/public/common/result_codes.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabaseException.h"
 #include "url/gurl.h"
+#include "webkit/browser/blob/blob_storage_context.h"
 #include "webkit/browser/database/database_util.h"
 #include "webkit/common/database/database_identifier.h"
 
@@ -35,16 +36,49 @@ using blink::WebIDBKey;
 namespace content {
 
 IndexedDBDispatcherHost::IndexedDBDispatcherHost(
-    IndexedDBContextImpl* indexed_db_context)
+    int ipc_process_id,
+    net::URLRequestContextGetter* request_context_getter,
+    IndexedDBContextImpl* indexed_db_context,
+    ChromeBlobStorageContext* blob_storage_context)
     : BrowserMessageFilter(IndexedDBMsgStart),
+      request_context_getter_(request_context_getter),
+      request_context_(NULL),
       indexed_db_context_(indexed_db_context),
+      blob_storage_context_(blob_storage_context),
       database_dispatcher_host_(new DatabaseDispatcherHost(this)),
-      cursor_dispatcher_host_(new CursorDispatcherHost(this)) {
+      cursor_dispatcher_host_(new CursorDispatcherHost(this)),
+      ipc_process_id_(ipc_process_id) {
+  DCHECK(indexed_db_context_);
+}
+
+IndexedDBDispatcherHost::IndexedDBDispatcherHost(
+    int ipc_process_id,
+    net::URLRequestContext* request_context,
+    IndexedDBContextImpl* indexed_db_context,
+    ChromeBlobStorageContext* blob_storage_context)
+    : BrowserMessageFilter(IndexedDBMsgStart),
+      request_context_(request_context),
+      indexed_db_context_(indexed_db_context),
+      blob_storage_context_(blob_storage_context),
+      database_dispatcher_host_(new DatabaseDispatcherHost(this)),
+      cursor_dispatcher_host_(new CursorDispatcherHost(this)),
+      ipc_process_id_(ipc_process_id) {
   DCHECK(indexed_db_context_);
 }
 
 IndexedDBDispatcherHost::~IndexedDBDispatcherHost() {
   STLDeleteValues(&blob_data_handle_map_);
+}
+
+void IndexedDBDispatcherHost::OnChannelConnected(int32 peer_pid) {
+  BrowserMessageFilter::OnChannelConnected(peer_pid);
+
+  if (request_context_getter_.get()) {
+    DCHECK(!request_context_);
+    request_context_ = request_context_getter_->GetURLRequestContext();
+    request_context_getter_ = NULL;
+    DCHECK(request_context_);
+  }
 }
 
 void IndexedDBDispatcherHost::OnChannelClosing() {
@@ -176,7 +210,7 @@ uint32 IndexedDBDispatcherHost::TransactionIdToProcessId(
 void IndexedDBDispatcherHost::HoldBlobDataHandle(
     const std::string& uuid,
     scoped_ptr<webkit_blob::BlobDataHandle>& blob_data_handle) {
-  DCHECK(ContainsKey(blob_data_handle_map_, uuid));
+  DCHECK(!ContainsKey(blob_data_handle_map_, uuid));
   blob_data_handle_map_[uuid] = blob_data_handle.release();
 }
 
@@ -276,11 +310,12 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
           this, params.ipc_thread_id, params.ipc_database_callbacks_id);
   IndexedDBPendingConnection connection(callbacks,
                                         database_callbacks,
-                                        0 /* TODO(ericu) ipc_process_id */,
+                                        ipc_process_id_,
                                         host_transaction_id,
                                         params.version);
+  DCHECK(request_context_);
   Context()->GetIDBFactory()->Open(
-      params.name, connection, origin_url, indexed_db_path);
+      params.name, connection, request_context_, origin_url, indexed_db_path);
 }
 
 void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
@@ -289,8 +324,10 @@ void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
   GURL origin_url =
       webkit_database::GetOriginFromIdentifier(params.database_identifier);
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
+  DCHECK(request_context_);
   Context()->GetIDBFactory()->DeleteDatabase(
       params.name,
+      request_context_,
       new IndexedDBCallbacks(
           this, params.ipc_thread_id, params.ipc_callbacks_id),
       origin_url,

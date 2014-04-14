@@ -39,6 +39,7 @@ class MockIDBFactory : public IndexedDBFactory {
     scoped_refptr<IndexedDBBackingStore> backing_store =
         OpenBackingStore(origin,
                          data_directory,
+                         NULL /* request_context */,
                          &data_loss,
                          &data_loss_message,
                          &disk_full);
@@ -202,6 +203,7 @@ class DiskFullFactory : public IndexedDBFactory {
   virtual scoped_refptr<IndexedDBBackingStore> OpenBackingStore(
       const GURL& origin_url,
       const base::FilePath& data_directory,
+      net::URLRequestContext* request_context,
       blink::WebIDBDataLoss* data_loss,
       std::string* data_loss_message,
       bool* disk_full) OVERRIDE {
@@ -240,7 +242,11 @@ TEST_F(IndexedDBFactoryTest, QuotaErrorOnDiskFull) {
                                         0, /* child_process_id */
                                         2, /* transaction_id */
                                         1 /* version */);
-  factory->Open(name, connection, origin, temp_directory.path());
+  factory->Open(name,
+                connection,
+                NULL /* request_context */,
+                origin,
+                temp_directory.path());
 }
 
 TEST_F(IndexedDBFactoryTest, BackingStoreReleasedOnForcedClose) {
@@ -259,8 +265,11 @@ TEST_F(IndexedDBFactoryTest, BackingStoreReleasedOnForcedClose) {
       0, /* child_process_id */
       transaction_id,
       IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION);
-  factory()->Open(
-      ASCIIToUTF16("db"), connection, origin, temp_directory.path());
+  factory()->Open(ASCIIToUTF16("db"),
+                  connection,
+                  NULL /* request_context */,
+                  origin,
+                  temp_directory.path());
 
   EXPECT_TRUE(callbacks->connection());
 
@@ -289,8 +298,11 @@ TEST_F(IndexedDBFactoryTest, BackingStoreReleaseDelayedOnClose) {
       0, /* child_process_id */
       transaction_id,
       IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION);
-  factory()->Open(
-      ASCIIToUTF16("db"), connection, origin, temp_directory.path());
+  factory()->Open(ASCIIToUTF16("db"),
+                  connection,
+                  NULL /* request_context */,
+                  origin,
+                  temp_directory.path());
 
   EXPECT_TRUE(callbacks->connection());
   IndexedDBBackingStore* store =
@@ -325,8 +337,11 @@ TEST_F(IndexedDBFactoryTest, DeleteDatabaseClosesBackingStore) {
   const bool expect_connection = false;
   scoped_refptr<MockIndexedDBCallbacks> callbacks(
       new MockIndexedDBCallbacks(expect_connection));
-  factory()->DeleteDatabase(
-      ASCIIToUTF16("db"), callbacks, origin, temp_directory.path());
+  factory()->DeleteDatabase(ASCIIToUTF16("db"),
+                            NULL /* request_context */,
+                            callbacks,
+                            origin,
+                            temp_directory.path());
 
   EXPECT_TRUE(factory()->IsBackingStoreOpen(origin));
   EXPECT_TRUE(factory()->IsBackingStorePendingClose(origin));
@@ -377,8 +392,11 @@ TEST_F(IndexedDBFactoryTest, ForceCloseReleasesBackingStore) {
       0, /* child_process_id */
       transaction_id,
       IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION);
-  factory()->Open(
-      ASCIIToUTF16("db"), connection, origin, temp_directory.path());
+  factory()->Open(ASCIIToUTF16("db"),
+                  connection,
+                  NULL /* request_context */,
+                  origin,
+                  temp_directory.path());
 
   EXPECT_TRUE(callbacks->connection());
   EXPECT_TRUE(factory()->IsBackingStoreOpen(origin));
@@ -453,7 +471,11 @@ TEST_F(IndexedDBFactoryTest, DatabaseFailedOpen) {
                                           0, /* child_process_id */
                                           transaction_id,
                                           db_version);
-    factory()->Open(db_name, connection, origin, temp_directory.path());
+    factory()->Open(db_name,
+                    connection,
+                    NULL /* request_context */,
+                    origin,
+                    temp_directory.path());
     EXPECT_TRUE(factory()->IsDatabaseOpen(origin, db_name));
 
     // Pump the message loop so the upgrade transaction can run.
@@ -474,7 +496,11 @@ TEST_F(IndexedDBFactoryTest, DatabaseFailedOpen) {
                                           0, /* child_process_id */
                                           transaction_id,
                                           db_version - 1);
-    factory()->Open(db_name, connection, origin, temp_directory.path());
+    factory()->Open(db_name,
+                    connection,
+                    NULL /* request_context */,
+                    origin,
+                    temp_directory.path());
     EXPECT_FALSE(factory()->IsDatabaseOpen(origin, db_name));
   }
 

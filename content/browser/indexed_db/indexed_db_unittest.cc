@@ -181,6 +181,7 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
                                                0 /* version */);
     factory->Open(base::ASCIIToUTF16("opendb"),
                   open_connection,
+                  NULL /* request_context */,
                   kTestOrigin,
                   idb_context->data_path());
     IndexedDBPendingConnection closed_connection(closed_callbacks,
@@ -190,6 +191,7 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
                                                  0 /* version */);
     factory->Open(base::ASCIIToUTF16("closeddb"),
                   closed_connection,
+                  NULL /* request_context */,
                   kTestOrigin,
                   idb_context->data_path());
 
@@ -257,8 +259,11 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnCommitFailure) {
       0 /* child_process_id */,
       transaction_id,
       IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION);
-  factory->Open(
-      base::ASCIIToUTF16("db"), connection, kTestOrigin, temp_dir.path());
+  factory->Open(base::ASCIIToUTF16("db"),
+                connection,
+                NULL /* request_context */,
+                kTestOrigin,
+                temp_dir.path());
 
   EXPECT_TRUE(callbacks->connection());
 

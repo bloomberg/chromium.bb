@@ -18,6 +18,10 @@
 #include "content/common/content_export.h"
 #include "url/gurl.h"
 
+namespace net {
+class URLRequestContext;
+}
+
 namespace content {
 
 class IndexedDBBackingStore;
@@ -32,7 +36,6 @@ class CONTENT_EXPORT IndexedDBFactory
 
   explicit IndexedDBFactory(IndexedDBContextImpl* context);
 
-  // Notifications from weak pointers.
   void ReleaseDatabase(const IndexedDBDatabase::Identifier& identifier,
                        bool forcedClose);
 
@@ -41,10 +44,12 @@ class CONTENT_EXPORT IndexedDBFactory
                         const base::FilePath& data_directory);
   void Open(const base::string16& name,
             const IndexedDBPendingConnection& connection,
+            net::URLRequestContext* request_context,
             const GURL& origin_url,
             const base::FilePath& data_directory);
 
   void DeleteDatabase(const base::string16& name,
+                      net::URLRequestContext* request_context,
                       scoped_refptr<IndexedDBCallbacks> callbacks,
                       const GURL& origin_url,
                       const base::FilePath& data_directory);
@@ -78,12 +83,14 @@ class CONTENT_EXPORT IndexedDBFactory
   virtual scoped_refptr<IndexedDBBackingStore> OpenBackingStore(
       const GURL& origin_url,
       const base::FilePath& data_directory,
+      net::URLRequestContext* request_context,
       blink::WebIDBDataLoss* data_loss,
       std::string* data_loss_reason,
       bool* disk_full);
 
   void ReleaseBackingStore(const GURL& origin_url, bool immediate);
   void CloseBackingStore(const GURL& origin_url);
+  IndexedDBContextImpl* context() const { return context_; }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(IndexedDBFactoryTest,
