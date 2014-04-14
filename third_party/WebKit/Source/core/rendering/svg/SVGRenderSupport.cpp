@@ -284,7 +284,7 @@ bool SVGRenderSupport::isOverflowHidden(const RenderObject* object)
     ASSERT(object->style()->overflowX() != OSCROLL);
 
     // RenderSVGRoot should never query for overflow state - it should always clip itself to the initial viewport size.
-    ASSERT(!object->isRoot());
+    ASSERT(!object->isDocumentElement());
 
     return object->style()->overflowX() == OHIDDEN;
 }

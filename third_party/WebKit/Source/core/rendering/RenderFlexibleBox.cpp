@@ -258,7 +258,7 @@ void RenderFlexibleBox::layoutBlock(bool relayoutChildren)
         if (logicalHeight() != previousHeight)
             relayoutChildren = true;
 
-        layoutPositionedObjects(relayoutChildren || isRoot());
+        layoutPositionedObjects(relayoutChildren || isDocumentElement());
 
         computeRegionRangeForBlock(flowThreadContainingBlock());
 

@@ -397,7 +397,7 @@ public:
 
     virtual bool isRenderScrollbarPart() const { return false; }
 
-    bool isRoot() const { return document().documentElement() == m_node; }
+    bool isDocumentElement() const { return document().documentElement() == m_node; }
     // isBody is called from RenderBox::styleWillChange and is thus quite hot.
     bool isBody() const { return node() && node()->hasTagName(HTMLNames::bodyTag); }
     bool isHR() const;
@@ -976,7 +976,7 @@ public:
     // Compute a list of hit-test rectangles per layer rooted at this renderer.
     virtual void computeLayerHitTestRects(LayerHitTestRects&) const;
 
-    // Return the renderer whose background style is used to paint the root background. Should only be called on the renderer for which isRoot() is true.
+    // Return the renderer whose background style is used to paint the root background. Should only be called on the renderer for which isDocumentElement() is true.
     RenderObject* rendererForRootBackground();
 
     RespectImageOrientationEnum shouldRespectImageOrientation() const;

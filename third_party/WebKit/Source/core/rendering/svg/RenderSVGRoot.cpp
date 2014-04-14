@@ -224,7 +224,7 @@ void RenderSVGRoot::layout()
     m_overflow.clear();
     addVisualEffectOverflow();
     updateLayerTransform();
-    m_hasBoxDecorations = isRoot() ? calculateHasBoxDecorations() : hasBoxDecorations();
+    m_hasBoxDecorations = isDocumentElement() ? calculateHasBoxDecorations() : hasBoxDecorations();
     invalidateBackgroundObscurationStatus();
 
     repainter.repaintAfterLayout();

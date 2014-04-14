@@ -2090,7 +2090,7 @@ void InspectorDOMAgent::getRelayoutBoundary(ErrorString* errorString, int nodeId
         *errorString = "No renderer for node, perhaps orphan or hidden node";
         return;
     }
-    while (renderer && !renderer->isRoot() && !renderer->isRelayoutBoundaryForInspector())
+    while (renderer && !renderer->isDocumentElement() && !renderer->isRelayoutBoundaryForInspector())
         renderer = renderer->container();
     Node* resultNode = renderer ? renderer->generatingNode() : node->ownerDocument();
     *relayoutBoundaryNodeId = pushNodePathToFrontend(resultNode);

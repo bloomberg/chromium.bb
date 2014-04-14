@@ -995,7 +995,7 @@ bool RenderLayer::updateLayerPosition()
             // FIXME: Composited layers ignore pagination, so about the best we can do is make sure they're offset into the appropriate column.
             // They won't split across columns properly.
             LayoutSize columnOffset;
-            if (!parent()->renderer()->hasColumns() && parent()->renderer()->isRoot() && renderer()->view()->hasColumns())
+            if (!parent()->renderer()->hasColumns() && parent()->renderer()->isDocumentElement() && renderer()->view()->hasColumns())
                 renderer()->view()->adjustForColumns(columnOffset, localPoint);
             else
                 parent()->renderer()->adjustForColumns(columnOffset, localPoint);
@@ -1896,7 +1896,7 @@ static inline bool shouldSuppressPaintingLayer(RenderLayer* layer)
     // Avoid painting descendants of the root layer when stylesheets haven't loaded. This eliminates FOUC.
     // It's ok not to draw, because later on, when all the stylesheets do load, updateStyleSelector on the Document
     // will do a full repaint().
-    if (layer->renderer()->document().didLayoutWithPendingStylesheets() && !layer->isRootLayer() && !layer->renderer()->isRoot())
+    if (layer->renderer()->document().didLayoutWithPendingStylesheets() && !layer->isRootLayer() && !layer->renderer()->isDocumentElement())
         return true;
 
     return false;
@@ -1904,7 +1904,7 @@ static inline bool shouldSuppressPaintingLayer(RenderLayer* layer)
 
 static bool paintForFixedRootBackground(const RenderLayer* layer, PaintLayerFlags paintFlags)
 {
-    return layer->renderer()->isRoot() && (paintFlags & PaintLayerPaintingRootBackgroundOnly);
+    return layer->renderer()->isDocumentElement() && (paintFlags & PaintLayerPaintingRootBackgroundOnly);
 }
 
 void RenderLayer::paintLayer(GraphicsContext* context, const LayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags)
@@ -2030,7 +2030,7 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
 
     GraphicsContext* transparencyLayerContext = context;
 
-    if (paintFlags & PaintLayerPaintingRootBackgroundOnly && !renderer()->isRenderView() && !renderer()->isRoot())
+    if (paintFlags & PaintLayerPaintingRootBackgroundOnly && !renderer()->isRenderView() && !renderer()->isDocumentElement())
         return;
 
     // Ensure our lists are up-to-date.
@@ -2086,7 +2086,7 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
 
     // Blending operations must be performed only with the nearest ancestor stacking context.
     // Note that there is no need to create a transparency layer if we're painting the root.
-    bool createTransparencyLayerForBlendMode = !renderer()->isRoot() && m_stackingNode->isStackingContext() && m_blendInfo.childLayerHasBlendMode();
+    bool createTransparencyLayerForBlendMode = !renderer()->isDocumentElement() && m_stackingNode->isStackingContext() && m_blendInfo.childLayerHasBlendMode();
 
     if (createTransparencyLayerForBlendMode)
         beginTransparencyLayers(context, paintingInfo.rootLayer, paintingInfo.paintDirtyRect, paintingInfo.subPixelAccumulation, paintingInfo.paintBehavior);
@@ -3298,9 +3298,9 @@ bool RenderLayer::hasBlockSelectionGapBounds() const
 bool RenderLayer::intersectsDamageRect(const LayoutRect& layerBounds, const LayoutRect& damageRect, const RenderLayer* rootLayer, const LayoutPoint* offsetFromRoot) const
 {
     // Always examine the canvas and the root.
-    // FIXME: Could eliminate the isRoot() check if we fix background painting so that the RenderView
+    // FIXME: Could eliminate the isDocumentElement() check if we fix background painting so that the RenderView
     // paints the root's background.
-    if (isRootLayer() || renderer()->isRoot())
+    if (isRootLayer() || renderer()->isDocumentElement())
         return true;
 
     // If we aren't an inline flow, and our layer bounds do intersect the damage rect, then we

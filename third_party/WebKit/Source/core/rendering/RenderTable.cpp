@@ -647,7 +647,7 @@ void RenderTable::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 
     PaintPhase paintPhase = paintInfo.phase;
 
-    if (!isRoot()) {
+    if (!isDocumentElement()) {
         LayoutRect overflowBox = visualOverflowRect();
         flipForWritingMode(overflowBox);
         overflowBox.moveBy(adjustedPaintOffset);

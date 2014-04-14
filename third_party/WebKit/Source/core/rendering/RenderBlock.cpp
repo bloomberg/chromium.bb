@@ -496,7 +496,7 @@ RenderBlockFlow* RenderBlock::containingColumnsBlock(bool allowAnonymousColumnBl
 {
     RenderBlock* firstChildIgnoringAnonymousWrappers = 0;
     for (RenderObject* curr = this; curr; curr = curr->parent()) {
-        if (!curr->isRenderBlock() || curr->isFloatingOrOutOfFlowPositioned() || curr->isTableCell() || curr->isRoot() || curr->isRenderView() || curr->hasOverflowClip()
+        if (!curr->isRenderBlock() || curr->isFloatingOrOutOfFlowPositioned() || curr->isTableCell() || curr->isDocumentElement() || curr->isRenderView() || curr->hasOverflowClip()
             || curr->isInlineBlockOrInlineTable())
             return 0;
 
@@ -1475,7 +1475,7 @@ void RenderBlock::addVisualOverflowFromTheme()
 bool RenderBlock::createsBlockFormattingContext() const
 {
     return isInlineBlockOrInlineTable() || isFloatingOrOutOfFlowPositioned() || hasOverflowClip() || (parent() && parent()->isFlexibleBoxIncludingDeprecated())
-        || style()->specifiesColumns() || isTableCell() || isTableCaption() || isFieldset() || isWritingModeRoot() || isRoot() || style()->columnSpan();
+        || style()->specifiesColumns() || isTableCell() || isTableCaption() || isFieldset() || isWritingModeRoot() || isDocumentElement() || style()->columnSpan();
 }
 
 void RenderBlock::updateBlockChildDirtyBitsBeforeLayout(bool relayoutChildren, RenderBox* child)
@@ -1726,9 +1726,9 @@ void RenderBlock::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 
     LayoutRect overflowBox;
     // Check if we need to do anything at all.
-    // FIXME: Could eliminate the isRoot() check if we fix background painting so that the RenderView
+    // FIXME: Could eliminate the isDocumentElement() check if we fix background painting so that the RenderView
     // paints the root's background.
-    if (!isRoot()) {
+    if (!isDocumentElement()) {
         overflowBox = overflowRectForPaintRejection();
         flipForWritingMode(overflowBox);
         overflowBox.moveBy(adjustedPaintOffset);
@@ -1746,7 +1746,7 @@ void RenderBlock::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
     {
         GraphicsContextCullSaver cullSaver(*paintInfo.context);
         // Cull if we have more than one child and we didn't already clip.
-        bool shouldCull = document().settings()->containerCullingEnabled() && !pushedClip && !isRoot()
+        bool shouldCull = document().settings()->containerCullingEnabled() && !pushedClip && !isDocumentElement()
             && firstChild() && lastChild() && firstChild() != lastChild();
         if (shouldCull)
             cullSaver.cull(overflowBox);
@@ -2186,7 +2186,7 @@ bool RenderBlock::isSelectionRoot() const
     if (isTable())
         return false;
 
-    if (isBody() || isRoot() || hasOverflowClip()
+    if (isBody() || isDocumentElement() || hasOverflowClip()
         || isPositioned() || isFloating()
         || isTableCell() || isInlineBlockOrInlineTable()
         || hasTransform() || hasReflection() || hasMask() || isWritingModeRoot()
@@ -2292,7 +2292,7 @@ GapRects RenderBlock::selectionGaps(RenderBlock* rootBlock, const LayoutPoint& r
         rootBlock->flipForWritingMode(flippedBlockRect);
         flippedBlockRect.moveBy(rootBlockPhysicalPosition);
         clipOutPositionedObjects(paintInfo, flippedBlockRect.location(), positionedObjects());
-        if (isBody() || isRoot()) // The <body> must make sure to examine its containingBlock's positioned objects.
+        if (isBody() || isDocumentElement()) // The <body> must make sure to examine its containingBlock's positioned objects.
             for (RenderBlock* cb = containingBlock(); cb && !cb->isRenderView(); cb = cb->containingBlock())
                 clipOutPositionedObjects(paintInfo, LayoutPoint(cb->x(), cb->y()), cb->positionedObjects()); // FIXME: Not right for flipped writing modes.
         clipOutFloatingObjects(rootBlock, paintInfo, rootBlockPhysicalPosition, offsetFromRootBlock);

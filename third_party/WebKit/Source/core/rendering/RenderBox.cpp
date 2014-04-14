@@ -229,7 +229,7 @@ void RenderBox::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle
         }
     }
 
-    if (isRoot() || isBody())
+    if (isDocumentElement() || isBody())
         document().view()->recalculateScrollbarOverlayStyle();
 
     updateShapeOutsideInfoAfterStyleChange(*style(), oldStyle);
@@ -283,7 +283,7 @@ void RenderBox::updateFromStyle()
     RenderBoxModelObject::updateFromStyle();
 
     RenderStyle* styleToUse = style();
-    bool isRootObject = isRoot();
+    bool isRootObject = isDocumentElement();
     bool isViewObject = isRenderView();
 
     // The root and the RenderView always paint their backgrounds/borders.
@@ -1240,7 +1240,7 @@ void RenderBox::paintBackgroundWithBorderAndBoxShadow(PaintInfo& paintInfo, cons
 
 void RenderBox::paintBackground(const PaintInfo& paintInfo, const LayoutRect& paintRect, BackgroundBleedAvoidance bleedAvoidance)
 {
-    if (isRoot()) {
+    if (isDocumentElement()) {
         paintRootBoxFillLayers(paintInfo);
         return;
     }
@@ -1377,7 +1377,7 @@ bool RenderBox::computeBackgroundIsKnownToBeObscured()
     if (!hasBackground())
         return false;
     // Table and root background painting is special.
-    if (isTable() || isRoot())
+    if (isTable() || isDocumentElement())
         return false;
     // FIXME: box-shadow is painted while background painting.
     if (style()->boxShadow())
@@ -1587,7 +1587,7 @@ bool RenderBox::repaintLayerRectsForImage(WrappedImagePtr image, const FillLayer
         if (curLayer->image() && image == curLayer->image()->data() && curLayer->image()->canRender(this, style()->effectiveZoom())) {
             // Now that we know this image is being used, compute the renderer and the rect if we haven't already.
             if (!layerRenderer) {
-                bool drawingRootBackground = drawingBackground && (isRoot() || (isBody() && !document().documentElement()->renderer()->hasBackground()));
+                bool drawingRootBackground = drawingBackground && (isDocumentElement() || (isBody() && !document().documentElement()->renderer()->hasBackground()));
                 if (drawingRootBackground) {
                     layerRenderer = view();
 
@@ -2658,11 +2658,11 @@ void RenderBox::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logica
     // height since we don't set a height in RenderView when we're printing. So without this quirk, the
     // height has nothing to be a percentage of, and it ends up being 0. That is bad.
     bool paginatedContentNeedsBaseHeight = document().printing() && h.isPercent()
-        && (isRoot() || (isBody() && document().documentElement()->renderer()->style()->logicalHeight().isPercent())) && !isInline();
+        && (isDocumentElement() || (isBody() && document().documentElement()->renderer()->style()->logicalHeight().isPercent())) && !isInline();
     if (stretchesToViewport() || paginatedContentNeedsBaseHeight) {
         LayoutUnit margins = collapsedMarginBefore() + collapsedMarginAfter();
         LayoutUnit visibleHeight = viewLogicalHeightForPercentages();
-        if (isRoot())
+        if (isDocumentElement())
             computedValues.m_extent = max(computedValues.m_extent, visibleHeight - margins);
         else {
             LayoutUnit marginsBordersPadding = margins + parentBox()->marginBefore() + parentBox()->marginAfter() + parentBox()->borderAndPaddingLogicalHeight();
@@ -2750,7 +2750,7 @@ LayoutUnit RenderBox::computePercentageLogicalHeight(const Length& height) const
     const RenderBox* containingBlockChild = this;
     LayoutUnit rootMarginBorderPaddingHeight = 0;
     while (!cb->isRenderView() && skipContainingBlockForPercentHeightCalculation(cb)) {
-        if (cb->isBody() || cb->isRoot())
+        if (cb->isBody() || cb->isDocumentElement())
             rootMarginBorderPaddingHeight += cb->marginBefore() + cb->marginAfter() + cb->borderAndPaddingLogicalHeight();
         skippedAutoHeightContainingBlock = true;
         containingBlockChild = cb;
@@ -4401,7 +4401,7 @@ bool RenderBox::percentageLogicalHeightIsResolvableFromBlock(const RenderBlock* 
         return percentageLogicalHeightIsResolvableFromBlock(cb->containingBlock(), cb->isOutOfFlowPositioned());
     if (cb->isRenderView() || inQuirksMode || isOutOfFlowPositionedWithSpecifiedHeight)
         return true;
-    if (cb->isRoot() && isOutOfFlowPositioned) {
+    if (cb->isDocumentElement() && isOutOfFlowPositioned) {
         // Match the positioned objects behavior, which is that positioned objects will fill their viewport
         // always.  Note we could only hit this case by recurring into computePercentageLogicalHeight on a positioned containing block.
         return true;

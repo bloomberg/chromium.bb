@@ -690,7 +690,7 @@ bool TextAutosizer::contentHeightIsConstrained(const RenderBlock* container)
         if (style->height().isSpecified() || style->maxHeight().isSpecified() || container->isOutOfFlowPositioned()) {
             // Some sites (e.g. wikipedia) set their html and/or body elements to height:100%,
             // without intending to constrain the height of the content within them.
-            return !container->isRoot() && !container->isBody();
+            return !container->isDocumentElement() && !container->isBody();
         }
         if (container->isFloating())
             return false;

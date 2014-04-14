@@ -294,7 +294,7 @@ void RenderGrid::layoutBlock(bool relayoutChildren)
     if (size() != previousSize)
         relayoutChildren = true;
 
-    layoutPositionedObjects(relayoutChildren || isRoot());
+    layoutPositionedObjects(relayoutChildren || isDocumentElement());
 
     computeRegionRangeForBlock(flowThreadContainingBlock());
 

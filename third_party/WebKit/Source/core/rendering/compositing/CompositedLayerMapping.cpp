@@ -1517,7 +1517,7 @@ float CompositedLayerMapping::compositingOpacity(float rendererOpacity) const
 Color CompositedLayerMapping::rendererBackgroundColor() const
 {
     RenderObject* backgroundRenderer = renderer();
-    if (backgroundRenderer->isRoot())
+    if (backgroundRenderer->isDocumentElement())
         backgroundRenderer = backgroundRenderer->rendererForRootBackground();
 
     return backgroundRenderer->resolveColor(CSSPropertyBackgroundColor);

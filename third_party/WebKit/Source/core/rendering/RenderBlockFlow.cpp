@@ -447,7 +447,7 @@ inline bool RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
     if (heightChanged)
         relayoutChildren = true;
 
-    layoutPositionedObjects(relayoutChildren || isRoot(), oldLeft != logicalLeft() ? ForcedLayoutAfterContainingBlockMoved : DefaultLayout);
+    layoutPositionedObjects(relayoutChildren || isDocumentElement(), oldLeft != logicalLeft() ? ForcedLayoutAfterContainingBlockMoved : DefaultLayout);
 
     computeRegionRangeForBlock(flowThreadContainingBlock());
 
@@ -764,7 +764,7 @@ void RenderBlockFlow::rebuildFloatsFromIntruding()
     }
 
     // Inline blocks are covered by the isReplaced() check in the avoidFloats method.
-    if (avoidsFloats() || isRoot() || isRenderView() || isFloatingOrOutOfFlowPositioned() || isTableCell()) {
+    if (avoidsFloats() || isDocumentElement() || isRenderView() || isFloatingOrOutOfFlowPositioned() || isTableCell()) {
         if (m_floatingObjects) {
             m_floatingObjects->clear();
         }
@@ -2447,7 +2447,7 @@ void RenderBlockFlow::addIntrudingFloats(RenderBlockFlow* prev, LayoutUnit logic
 LayoutUnit RenderBlockFlow::addOverhangingFloats(RenderBlockFlow* child, bool makeChildPaintOtherFloats)
 {
     // Prevent floats from being added to the canvas by the root element, e.g., <html>.
-    if (child->hasOverflowClip() || !child->containsFloats() || child->isRoot() || child->hasColumns() || child->isWritingModeRoot())
+    if (child->hasOverflowClip() || !child->containsFloats() || child->isDocumentElement() || child->hasColumns() || child->isWritingModeRoot())
         return 0;
 
     LayoutUnit childLogicalTop = child->logicalTop();

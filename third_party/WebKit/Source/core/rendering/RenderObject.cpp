@@ -2077,7 +2077,7 @@ void RenderObject::styleWillChange(StyleDifference diff, const RenderStyle& newS
         bool newStyleSlowScroll = !shouldBlitOnFixedBackgroundImage && newStyle.hasFixedBackgroundImage();
         bool oldStyleSlowScroll = m_style && !shouldBlitOnFixedBackgroundImage && m_style->hasFixedBackgroundImage();
 
-        bool drawsRootBackground = isRoot() || (isBody() && !rendererHasBackground(document().documentElement()->renderer()));
+        bool drawsRootBackground = isDocumentElement() || (isBody() && !rendererHasBackground(document().documentElement()->renderer()));
         if (drawsRootBackground && !shouldBlitOnFixedBackgroundImage) {
             if (view()->compositor()->supportsFixedRootBackgroundCompositing()) {
                 if (newStyleSlowScroll && newStyle.hasEntirelyFixedBackground())
@@ -2495,7 +2495,7 @@ bool RenderObject::isRooted() const
 
 RenderObject* RenderObject::rendererForRootBackground()
 {
-    ASSERT(isRoot());
+    ASSERT(isDocumentElement());
     if (!hasBackground() && isHTMLHtmlElement(node())) {
         // Locate the <body> element using the DOM. This is easier than trying
         // to crawl around a render tree with potential :before/:after content and
@@ -3168,7 +3168,7 @@ void RenderObject::imageChanged(ImageResource* image, const IntRect* rect)
 
 Element* RenderObject::offsetParent() const
 {
-    if (isRoot() || isBody())
+    if (isDocumentElement() || isBody())
         return 0;
 
     if (isOutOfFlowPositioned() && style()->position() == FixedPosition)

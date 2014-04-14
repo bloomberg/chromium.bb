@@ -428,7 +428,7 @@ public:
 
     bool stretchesToViewport() const
     {
-        return document().inQuirksMode() && style()->logicalHeight().isAuto() && !isFloatingOrOutOfFlowPositioned() && (isRoot() || isBody()) && !isInline();
+        return document().inQuirksMode() && style()->logicalHeight().isAuto() && !isFloatingOrOutOfFlowPositioned() && (isDocumentElement() || isBody()) && !isInline();
     }
 
     virtual LayoutSize intrinsicSize() const { return LayoutSize(); }
