@@ -15,20 +15,20 @@ BufferLoader.prototype.loadBuffer = function(url, index) {
     var loader = this;
 
     request.onload = function() {
-        var buffer;
-        try {
-            buffer = loader.context.createBuffer(request.response, false);
-        } catch(e) {
-            alert('error decoding file data: ' + url);
-        }
-
-        try {
-            loader.bufferList[index] = buffer;
-            if (++loader.loadCount == loader.urlList.length)
-                loader.onload(loader.bufferList);
-        } catch(e) {
-            alert('BufferLoader: callback problem');
-        }
+        loader.context.decodeAudioData(
+            request.response,
+            function (decodedAudio) {
+                try {
+                    loader.bufferList[index] = decodedAudio;
+                    if (++loader.loadCount == loader.urlList.length)
+                        loader.onload(loader.bufferList);
+                } catch(e) {
+                    alert('BufferLoader: unable to load buffer' + index);
+                }
+            },
+            function () {
+                alert('error decoding file data: ' + url);
+            });
     }
 
     request.onerror = function() {

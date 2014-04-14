@@ -8,7 +8,7 @@ PASS context.createBuffer(1, 1, 1e6) threw exception NotSupportedError: Failed t
 PASS context.createBuffer(1, 1, 3000) did not throw exception.
 PASS context.createBuffer(1, 1, 192000) did not throw exception.
 PASS context.createBuffer(1, 0, context.sampleRate) threw exception NotSupportedError: Failed to execute 'createBuffer' on 'AudioContext': number of frames must be greater than 0..
-PASS context.createBuffer(new ArrayBuffer(100), true) threw exception SyntaxError: Failed to execute 'createBuffer' on 'AudioContext': invalid audio data in ArrayBuffer..
+PASS context.createBuffer(new ArrayBuffer(100), true) threw exception TypeError: Failed to execute 'createBuffer' on 'AudioContext': 3 arguments required, but only 2 present..
 PASS context.decodeAudioData(null, function() {}, function () {}) threw exception SyntaxError: Failed to execute 'decodeAudioData' on 'AudioContext': invalid ArrayBuffer for audioData..
 PASS context.createMediaElementSource(null) threw exception InvalidStateError: Failed to execute 'createMediaElementSource' on 'AudioContext': invalid HTMLMedialElement..
 PASS context.createMediaStreamSource(null) threw exception InvalidStateError: Failed to execute 'createMediaStreamSource' on 'AudioContext': invalid MediaStream source.

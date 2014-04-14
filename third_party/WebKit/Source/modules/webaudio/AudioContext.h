@@ -97,7 +97,6 @@ public:
     float sampleRate() const { return m_destinationNode->sampleRate(); }
 
     PassRefPtr<AudioBuffer> createBuffer(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState&);
-    PassRefPtr<AudioBuffer> createBuffer(ArrayBuffer*, bool mixToMono, ExceptionState&);
 
     // Asynchronous audio file data decoding.
     void decodeAudioData(ArrayBuffer*, PassOwnPtr<AudioBufferCallback>, PassOwnPtr<AudioBufferCallback>, ExceptionState&);

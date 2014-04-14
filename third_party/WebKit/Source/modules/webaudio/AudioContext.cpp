@@ -305,27 +305,6 @@ PassRefPtr<AudioBuffer> AudioContext::createBuffer(unsigned numberOfChannels, si
     return audioBuffer;
 }
 
-PassRefPtr<AudioBuffer> AudioContext::createBuffer(ArrayBuffer* arrayBuffer, bool mixToMono, ExceptionState& exceptionState)
-{
-    ASSERT(arrayBuffer);
-    if (!arrayBuffer) {
-        exceptionState.throwDOMException(
-            SyntaxError,
-            "invalid ArrayBuffer.");
-        return nullptr;
-    }
-
-    RefPtr<AudioBuffer> audioBuffer = AudioBuffer::createFromAudioFileData(arrayBuffer->data(), arrayBuffer->byteLength(), mixToMono, sampleRate());
-    if (!audioBuffer.get()) {
-        exceptionState.throwDOMException(
-            SyntaxError,
-            "invalid audio data in ArrayBuffer.");
-        return nullptr;
-    }
-
-    return audioBuffer;
-}
-
 void AudioContext::decodeAudioData(ArrayBuffer* audioData, PassOwnPtr<AudioBufferCallback> successCallback, PassOwnPtr<AudioBufferCallback> errorCallback, ExceptionState& exceptionState)
 {
     if (!audioData) {

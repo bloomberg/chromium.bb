@@ -40,7 +40,7 @@ function runTest() {
     shouldNotThrow("context.createBuffer(1, 1, 192000)");
     // Invalid number of frames: NotSupportedError
     shouldThrow("context.createBuffer(1, 0, context.sampleRate)");
-    // Invalid ArrayBuffer (unspecified error)
+    // 2-arg createBuffer not allowed.
     shouldThrow("context.createBuffer(new ArrayBuffer(100), true)");
     // Invalid ArrayBuffer (unspecified error)
     shouldThrow("context.decodeAudioData(null, function() {}, function () {})");

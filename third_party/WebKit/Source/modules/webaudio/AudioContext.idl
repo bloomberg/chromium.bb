@@ -45,7 +45,6 @@
     readonly attribute AudioListener listener;
 
     [RaisesException] AudioBuffer createBuffer(unsigned long numberOfChannels, unsigned long numberOfFrames, float sampleRate);
-    [RaisesException] AudioBuffer createBuffer(ArrayBuffer? buffer, boolean mixToMono);
 
     // Asynchronous audio file data decoding.
     [RaisesException] void decodeAudioData(ArrayBuffer audioData, AudioBufferCallback successCallback, optional AudioBufferCallback errorCallback);
