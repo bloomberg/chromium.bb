@@ -710,6 +710,9 @@ String UseCounter::deprecationMessage(Feature feature)
     case PrefixedCancelRequestAnimationFrame:
         return "'webkitCancelRequestAnimationFrame' is vendor-specific. Please use the standard 'cancelAnimationFrame' instead.";
 
+    case HTMLHtmlElementManifest:
+        return "'HTMLHtmlElement.manifest' is deprecated. The manifest attribute only has an effect during the early stages of document load.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

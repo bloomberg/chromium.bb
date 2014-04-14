@@ -1,3 +1,4 @@
+CONSOLE WARNING: 'HTMLHtmlElement.manifest' is deprecated. The manifest attribute only has an effect during the early stages of document load.
 Test reflecting URL attributes with empty string values.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

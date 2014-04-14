@@ -1,3 +1,4 @@
+CONSOLE WARNING: 'HTMLHtmlElement.manifest' is deprecated. The manifest attribute only has an effect during the early stages of document load.
 Tests that console's copy command is copying into front-end buffer.
 
 InspectorFrontendHost.copyText: qwerty
