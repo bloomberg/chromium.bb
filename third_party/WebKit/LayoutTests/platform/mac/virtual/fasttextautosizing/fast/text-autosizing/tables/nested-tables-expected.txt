@@ -21,18 +21,18 @@ layer at (0,0) size 800x305
                   text run at (0,99) width 777: "Autosize Autosize Autosize Autosize Autosize Autosize Autosize"
                   text run at (0,132) width 777: "Autosize Autosize Autosize Autosize Autosize Autosize Autosize"
                   text run at (0,165) width 105: "Autosize"
-              RenderTable {TABLE} at (3,201) size 227x63 [border: none]
-                RenderTableSection {TBODY} at (0,0) size 226x62
-                  RenderTableRow {TR} at (0,0) size 226x45
-                    RenderTableCell {TD} at (0,0) size 226x45 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
+              RenderTable {TABLE} at (3,201) size 92x63 [border: none]
+                RenderTableSection {TBODY} at (0,0) size 91x62
+                  RenderTableRow {TR} at (0,0) size 91x45
+                    RenderTableCell {TD} at (0,0) size 91x45 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
                       RenderText {#text} at (2,2) size 41x14
                         text run at (2,2) width 41: "This text"
                       RenderBR {BR} at (43,2) size 0x14
                       RenderText {#text} at (2,16) size 88x14
                         text run at (2,16) width 88: "should not overlap"
                       RenderBR {BR} at (90,16) size 0x14
-                      RenderText {#text} at (2,30) size 67x14
-                        text run at (2,30) width 67: "itself."
-                  RenderTableRow {TR} at (0,45) size 226x17
-                    RenderTableCell {TD} at (0,45) size 226x17 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=0 rs=1 cs=1]
+                      RenderText {#text} at (2,30) size 26x14
+                        text run at (2,30) width 26: "itself."
+                  RenderTableRow {TR} at (0,45) size 91x17
+                    RenderTableCell {TD} at (0,45) size 91x17 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=0 rs=1 cs=1]
                       RenderImage {IMG} at (2,8) size 5x5
