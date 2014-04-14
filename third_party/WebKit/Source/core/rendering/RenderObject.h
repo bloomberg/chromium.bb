@@ -306,6 +306,10 @@ private:
     void setLayerNeedsFullRepaintForPositionedMovementLayout();
     bool requiresAnonymousTableWrappers(const RenderObject*) const;
 
+    // Gets pseudoStyle from Shadow host(in case of input elements)
+    // or from Parent element.
+    PassRefPtr<RenderStyle> getUncachedPseudoStyleFromParentOrShadowHost() const;
+
 public:
 #ifndef NDEBUG
     void showTreeForThis() const;

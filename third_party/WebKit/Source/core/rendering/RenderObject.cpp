@@ -1789,7 +1789,7 @@ Color RenderObject::selectionBackgroundColor() const
     if (!isSelectable())
         return Color::transparent;
 
-    if (RefPtr<RenderStyle> pseudoStyle = getUncachedPseudoStyle(PseudoStyleRequest(SELECTION)))
+    if (RefPtr<RenderStyle> pseudoStyle = getUncachedPseudoStyleFromParentOrShadowHost())
         return resolveColor(pseudoStyle.get(), CSSPropertyBackgroundColor).blendWithWhite();
     return frame()->selection().isFocusedAndActive() ?
         RenderTheme::theme().activeSelectionBackgroundColor() :
@@ -1803,7 +1803,7 @@ Color RenderObject::selectionColor(int colorProperty) const
     if (!isSelectable() || (frame()->view()->paintBehavior() & PaintBehaviorSelectionOnly))
         return resolveColor(colorProperty);
 
-    if (RefPtr<RenderStyle> pseudoStyle = getUncachedPseudoStyle(PseudoStyleRequest(SELECTION)))
+    if (RefPtr<RenderStyle> pseudoStyle = getUncachedPseudoStyleFromParentOrShadowHost())
         return resolveColor(pseudoStyle.get(), colorProperty);
     if (!RenderTheme::theme().supportsSelectionForegroundColors())
         return resolveColor(colorProperty);
@@ -2970,6 +2970,19 @@ PassRefPtr<RenderStyle> RenderObject::getUncachedPseudoStyle(const PseudoStyleRe
     }
 
     return document().ensureStyleResolver().pseudoStyleForElement(element, pseudoStyleRequest, parentStyle);
+}
+
+PassRefPtr<RenderStyle> RenderObject::getUncachedPseudoStyleFromParentOrShadowHost() const
+{
+    if (!node())
+        return nullptr;
+
+    if (Element* shadowHost = node()->shadowHost()) {
+        if (shadowHost->isFormControlElement())
+            return shadowHost->renderer()->getUncachedPseudoStyle(PseudoStyleRequest(SELECTION));
+    }
+
+    return getUncachedPseudoStyle(PseudoStyleRequest(SELECTION));
 }
 
 bool RenderObject::hasBlendMode() const
