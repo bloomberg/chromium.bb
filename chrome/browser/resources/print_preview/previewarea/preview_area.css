@@ -21,6 +21,7 @@
   -webkit-transition: opacity 200ms linear;
   /* pluginFadeInTransitionDelay = overlayFadeOutTransitionDuration = 100ms */
   -webkit-transition-delay: 100ms;
+  border: none;
   cursor: inherit;
   height: 100%;
   opacity: 1;

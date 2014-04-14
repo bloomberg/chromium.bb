@@ -198,6 +198,7 @@
         <include name="IDR_PDF_JS" file="pdf/pdf.js" type="BINDATA" flattenhtml="true" />
         <include name="IDR_PDF_VIEWPORT_JS" file="pdf/viewport.js" type="BINDATA" />
         <include name="IDR_PDF_BACKGROUND_JS" file="pdf/background.js" type="BINDATA" />
+        <include name="IDR_PDF_SCRIPTING_API_JS" file="pdf/pdf_scripting_api.js" type="BINDATA" />
 
         <!-- Polymer libs. -->
         <include name="IDR_PDF_POLYMER_HTML" file="../../../third_party/polymer/vulcanized/polymer-elements.html" type="BINDATA" />

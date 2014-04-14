@@ -197,7 +197,6 @@ Viewport.prototype = {
     this.window_.scrollTo(
         currentScrollPos[0] * newZoom - this.window_.innerWidth / 2,
         currentScrollPos[1] * newZoom - this.window_.innerHeight / 2);
-    this.updateViewport_();
   },
 
   /**
@@ -451,11 +450,11 @@ Viewport.prototype = {
     };
 
     // Compute the amount of empty space of the left of the page.
-    var emptySpaceOnLeft = Viewport.PAGE_SHADOW.left +
-        (this.documentDimensions_.width - pageDimensions.width) / 2.0;
+    var spaceOnLeft = Math.max(
+        (this.size.width - pageDimensions.width * this.zoom_) / 2.0, 0);
 
     return {
-      x: (emptySpaceOnLeft * this.zoom_) - this.window_.pageXOffset,
+      x: Viewport.PAGE_SHADOW.left + spaceOnLeft - this.window_.pageXOffset,
       y: (insetDimensions.y * this.zoom_) - this.window_.pageYOffset,
       width: insetDimensions.width * this.zoom_,
       height: insetDimensions.height * this.zoom_

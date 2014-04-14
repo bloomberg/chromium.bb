@@ -8,8 +8,10 @@
   "offline_enabled": true,
   "permissions": [
     "file://*/",
+    "ftp://*/",
     "http://*/",
     "https://*/",
+    "chrome://*/",
     "streamsPrivate"
   ],
   "background": {
@@ -21,6 +23,6 @@
     "application/pdf"
   ],
   "web_accessible_resources": [
-    "pdf.html"
+    "index.html"
   ]
 }

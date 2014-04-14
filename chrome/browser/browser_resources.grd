@@ -242,6 +242,8 @@
         <include name="IDR_PRINT_PREVIEW_HTML" file="resources\print_preview\print_preview.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_PRINT_PREVIEW_PAGE" file="resources\print_preview\print_preview_page.html" flattenhtml="true" allowexternalscript="false" type="BINDATA" />
         <include name="IDR_PRINT_PREVIEW_JS" file="resources\print_preview\print_preview.js" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_PRINT_PREVIEW_AREA_JS" file="resources\print_preview\previewarea\preview_area.js" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_PRINT_PDF_SCRIPTING_API_JS" file="resources\pdf\pdf_scripting_api.js" type="BINDATA" />
         <include name="IDR_PRINT_PREVIEW_IMAGES_PRINTER"
                  file="resources\print_preview\images\printer.png" type="BINDATA" />
         <include name="IDR_PRINT_PREVIEW_IMAGES_PRINTER_SHARED"

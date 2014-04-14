@@ -7,6 +7,7 @@
 
 <include src="../../../../ui/webui/resources/js/util.js">
 <include src="viewport.js">
+<include src="pdf_scripting_api.js">
 
 /**
  * Creates a new PDFViewer. There should only be one of these objects per
@@ -40,10 +41,30 @@ function PDFViewer() {
   this.plugin_.type = 'application/x-google-chrome-pdf';
   this.plugin_.addEventListener('message', this.handleMessage_.bind(this),
                                 false);
-  // The pdf location is passed in stream details in the background page.
-  var streamDetails = chrome.extension.getBackgroundPage().popStreamDetails();
+
+  // If the viewer is started from a MIME type request, there will be a
+  // background page and stream details object with the details of the request.
+  // Otherwise, we take the query string of the URL to indicate the URL of the
+  // PDF to load. This is used for print preview in particular.
+  var streamDetails;
+  if (chrome.extension.getBackgroundPage)
+    streamDetails = chrome.extension.getBackgroundPage().popStreamDetails();
+
+  if (!streamDetails) {
+    // The URL of this page will be of the form
+    // "chrome-extension://<extension id>?<pdf url>". We pull out the <pdf url>
+    // part here.
+    var url = window.location.search.substring(1);
+    streamDetails = {
+      streamUrl: url,
+      originalUrl: url
+    };
+  }
+
   this.plugin_.setAttribute('src', streamDetails.streamUrl);
   document.body.appendChild(this.plugin_);
+
+  this.messagingHost_ = new PDFMessagingHost(window, this);
 
   this.setupEventListeners_(streamDetails);
 }
@@ -139,7 +160,6 @@ PDFViewer.prototype = {
     }.bind(this);
   },
 
-
   /**
    * @private
    * Notify the plugin to print.
@@ -167,6 +187,11 @@ PDFViewer.prototype = {
         this.passwordScreen_.deny();
         this.passwordScreen_.active = false;
       }
+    } else if (progress == 100) {
+      // Document load complete.
+      this.messagingHost_.documentLoaded();
+      if (this.lastViewportPosition_)
+        this.viewport_.position = this.lastViewportPosition_;
     }
   },
 
@@ -251,6 +276,8 @@ PDFViewer.prototype = {
     else
       this.pageIndicator_.style.visibility = 'hidden';
 
+    this.messagingHost_.viewportChanged();
+
     var position = this.viewport_.position;
     var zoom = this.viewport_.zoom;
     // Notify the plugin of the viewport change.
@@ -261,6 +288,70 @@ PDFViewer.prototype = {
       yOffset: position.y
     });
   },
+
+  /**
+   * Resets the viewer into print preview mode, which is used for Chrome print
+   * preview.
+   * @param {string} url the url of the pdf to load.
+   * @param {boolean} grayscale true if the pdf should be displayed in
+   *     grayscale, false otherwise.
+   * @param {Array.<number>} pageNumbers an array of the number to label each
+   *     page in the document.
+   * @param {boolean} modifiable whether the PDF is modifiable or not.
+   */
+  resetPrintPreviewMode: function(url,
+                                  grayscale,
+                                  pageNumbers,
+                                  modifiable) {
+    if (!this.inPrintPreviewMode_) {
+      this.inPrintPreviewMode_ = true;
+      this.viewport_.fitToPage();
+    }
+
+    // Stash the scroll location so that it can be restored when the new
+    // document is loaded.
+    this.lastViewportPosition_ = this.viewport_.position;
+
+    // TODO(raymes): Disable these properly in the plugin.
+    var printButton = $('print-button');
+    if (printButton)
+      printButton.parentNode.removeChild(printButton);
+    var saveButton = $('save-button');
+    if (saveButton)
+      saveButton.parentNode.removeChild(saveButton);
+
+    this.pageIndicator_.pageLabels = pageNumbers;
+
+    this.plugin_.postMessage({
+      type: 'resetPrintPreviewMode',
+      url: url,
+      grayscale: grayscale,
+      // If the PDF isn't modifiable we send 0 as the page count so that no
+      // blank placeholder pages get appended to the PDF.
+      pageCount: (modifiable ? pageNumbers.length : 0)
+    });
+  },
+
+  /**
+   * Load a page into the document while in print preview mode.
+   * @param {string} url the url of the pdf page to load.
+   * @param {number} index the index of the page to load.
+   */
+  loadPreviewPage: function(url, index) {
+    this.plugin_.postMessage({
+      type: 'loadPreviewPage',
+      url: url,
+      index: index
+    });
+  },
+
+  /**
+   * @type {Viewport} the viewport of the PDF viewer.
+   */
+  get viewport() {
+    return this.viewport_;
+  }
+
 }
 
 new PDFViewer();
