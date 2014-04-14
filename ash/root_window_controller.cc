@@ -699,6 +699,9 @@ void RootWindowController::Init(RootWindowType root_window_type,
   CreateContainersInRootWindow(root_window);
 
   if (root_window_type == VIRTUAL_KEYBOARD) {
+    aura::Window* virtual_keyboard_parent_container = GetContainer(
+        kShellWindowId_VirtualKeyboardParentContainer);
+    virtual_keyboard_parent_container->SetBounds(root_window->bounds());
     shell->InitKeyboard();
     return;
   }

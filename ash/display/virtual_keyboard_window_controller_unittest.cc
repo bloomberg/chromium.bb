@@ -67,9 +67,13 @@ TEST_F(VirtualKeyboardUsabilityExperimentTest, VirtualKeyboardWindowTest) {
       Shell::GetInstance()->display_controller()->
           virtual_keyboard_window_controller());
   EXPECT_TRUE(root_window_controller());
-  // Keyboard container is added to virtual keyboard window.
-  EXPECT_TRUE(root_window_controller()->GetContainer(
-      kShellWindowId_VirtualKeyboardContainer));
+  aura::Window* container = root_window_controller()->GetContainer(
+      kShellWindowId_VirtualKeyboardContainer);
+  // Keyboard container is added to virtual keyboard window and its bounds is
+  // the same as root window.
+  EXPECT_TRUE(container);
+  EXPECT_EQ(container->bounds(),
+            root_window_controller()->GetRootWindow()->bounds());
 }
 
 // Tests that the onscreen keyboard becomes enabled when maximize mode is
