@@ -5,8 +5,8 @@
 (function() {
 'use strict';
 
-<include src="../../../../ui/webui/resources/js/util.js"></include>
-<include src="viewport.js"></include>
+<include src="../../../../ui/webui/resources/js/util.js">
+<include src="viewport.js">
 
 /**
  * Creates a new PDFViewer. There should only be one of these objects per
