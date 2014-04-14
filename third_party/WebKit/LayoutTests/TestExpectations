@@ -617,6 +617,11 @@ crbug.com/310323 [ Debug ] http/tests/security/contentSecurityPolicy/report-mult
 
 crbug.com/311164 fast/js/mozilla/strict/15.4.4.6.html [ Failure Pass ]
 
+crbug.com/363103 fast/js/mozilla/strict/15.4.4.12.html [ NeedsManualRebaseline ]
+crbug.com/363103 fast/js/mozilla/strict/15.4.4.13.html [ NeedsManualRebaseline ]
+crbug.com/363103 fast/js/mozilla/strict/15.4.4.8.html [ NeedsManualRebaseline ]
+crbug.com/363103 fast/js/mozilla/strict/15.4.4.9.html [ NeedsManualRebaseline ]
+
 crbug.com/311301 fast/history/history_reload.html [ Failure Pass ]
 
 crbug.com/311429 [ Mac ] fast/images/png-suite/test.html [ ImageOnlyFailure Pass ]
