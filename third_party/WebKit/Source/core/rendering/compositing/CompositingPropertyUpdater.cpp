@@ -14,6 +14,7 @@ CompositingPropertyUpdater::CompositingPropertyUpdater(RenderLayer* rootRenderLa
     : m_geometryMap(UseTransforms)
     , m_rootRenderLayer(rootRenderLayer)
 {
+    rootRenderLayer->updateDescendantDependentFlags();
 }
 
 CompositingPropertyUpdater::~CompositingPropertyUpdater()
