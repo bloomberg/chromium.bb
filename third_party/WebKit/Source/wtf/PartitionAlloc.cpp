@@ -298,6 +298,16 @@ bool partitionAllocGenericShutdown(PartitionRootGeneric* root)
     return noLeaks;
 }
 
+static NEVER_INLINE void partitionOutOfMemory()
+{
+    IMMEDIATE_CRASH();
+}
+
+static NEVER_INLINE void partitionFull()
+{
+    IMMEDIATE_CRASH();
+}
+
 static ALWAYS_INLINE void* partitionAllocPartitionPages(PartitionRootBase* root, size_t numPartitionPages)
 {
     ASSERT(!(reinterpret_cast<uintptr_t>(root->nextPartitionPage) % kPartitionPageSize));
@@ -315,11 +325,13 @@ static ALWAYS_INLINE void* partitionAllocPartitionPages(PartitionRootBase* root,
 
     // Need a new super page.
     root->totalSizeOfSuperPages += kSuperPageSize;
-    RELEASE_ASSERT(root->totalSizeOfSuperPages <= kMaxPartitionSize);
+    if (root->totalSizeOfSuperPages > kMaxPartitionSize)
+        partitionFull();
     char* requestedAddress = root->nextSuperPage;
     char* superPage = reinterpret_cast<char*>(allocPages(requestedAddress, kSuperPageSize, kSuperPageSize));
     // TODO: handle allocation failure here with PartitionAllocReturnNull.
-    RELEASE_ASSERT(superPage);
+    if (!superPage)
+        partitionOutOfMemory();
     root->nextSuperPage = superPage + kSuperPageSize;
     char* ret = superPage + kPartitionPageSize;
     root->nextPartitionPage = ret + totalSize;
@@ -564,7 +576,7 @@ static ALWAYS_INLINE void* partitionDirectMap(PartitionRootBase* root, int flags
     if (!ptr) {
         if (flags & PartitionAllocReturnNull)
             return 0;
-        RELEASE_ASSERT(false);
+        partitionOutOfMemory();
     }
     char* ret = ptr + kPartitionPageSize;
     // TODO: due to all the guard paging, this arrangement creates 4 mappings.
