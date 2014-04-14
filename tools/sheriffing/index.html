@@ -9,61 +9,70 @@ found in the LICENSE file.
     <meta http-equiv="cache-control" content="no-cache">
 
     <title>Sheriffing dashboard</title>
+    <base target="_blank" />
     <link href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="style.css">
 
     <script type="text/javascript">
       /** Watefall pages, ordered by importance. */
       var kBuilderPages = new Array();
-      kBuilderPages.push(["clobber builders", "http://build.chromium.org/p/chromium/"]);
-      kBuilderPages.push(["win", "http://build.chromium.org/p/chromium.win/"]);
-      kBuilderPages.push(["mac", "http://build.chromium.org/p/chromium.mac/"]);
-      kBuilderPages.push(["linux", "http://build.chromium.org/p/chromium.linux/"]);
-      kBuilderPages.push(["chromeos", "http://build.chromium.org/p/chromium.chromiumos/"]);
-      kBuilderPages.push(["chrome branded", "http://build.chromium.org/p/chromium.chrome/"]);
-      kBuilderPages.push(["memory", "http://build.chromium.org/p/chromium.memory/"]);
+      kBuilderPages.push(['clobber builders', 'http://build.chromium.org/p/chromium/', true]);
+      kBuilderPages.push(['win', 'http://build.chromium.org/p/chromium.win/', true]);
+      kBuilderPages.push(['mac', 'http://build.chromium.org/p/chromium.mac/', true]);
+      kBuilderPages.push(['linux', 'http://build.chromium.org/p/chromium.linux/', true]);
+      kBuilderPages.push(['chromeos', 'http://build.chromium.org/p/chromium.chromiumos/', true]);
+      kBuilderPages.push(['chrome branded', 'http://build.chromium.org/p/chromium.chrome/', true]);
+      kBuilderPages.push(['memory', 'http://build.chromium.org/p/chromium.memory/', true]);
 
       /** Waterfall open/closed status pages. */
       var kStatusPages = new Array();
-      kStatusPages.push(["chromium", "https://chromium-status.appspot.com/"]);
-      kStatusPages.push(["blink", "http://blink-status.appspot.com/"]);
-
-      /** Links of interest. */
-      var kLinks = new Array();
-      kLinks.push(["Useful Chromium URLs", "https://code.google.com/p/chromium/wiki/UsefulURLs"]);
+      kStatusPages.push(['chromium', 'https://chromium-status.appspot.com/']);
+      kStatusPages.push(['blink', 'http://blink-status.appspot.com/']);
     </script>
 
     <script type="text/javascript" src="functions.js"></script>
+    <script type="text/javascript" src="statuspageinfo.js"></script>
+    <script type="text/javascript" src="waterfallinfo.js"></script>
+    <script type="text/javascript" src="botinfo.js"></script>
+    <script type="text/javascript" src="buildinfo.js"></script>
+    <script type="text/javascript" src="failureinfo.js"></script>
   </head>
   <body onload="javascript:initialize();">
-      <div id="sidebar">
-        <div id="sidebar_contents"></div>
+    <div id="sidebar">
+      <div id="sidebar-contents"></div>
 
-        <ul class="box">
-          <li>Email <a href="mailto:chrome-troopers@google.com" target="_blank">chrome-troopers@google.com</a> about bot issues</li>
-        </ul>
-
-        <!-- Useful links. -->
-        <ul id="useful_links" class="box">
-        </ul>
-
-        <!-- Options. -->
-        <ul id="options" class="box">
-          <li><input type="checkbox" checked id="checkbox_hide_stable" onclick="updateStatusHTML();">Hide steady green bots</input></li>
-          <li><input type="checkbox" id="checkbox_alert_steady_red" onclick="updateStatusHTML();">Alert if steady green bots go red</input></li>
-          <li>Filter: <input type="text" id="text_filter" onkeypress="filterUpdated();"></input></li>
-        </ul>
-
-        <!-- Debugging stats. -->
-        <ul id="debugging" class="box">
-          <li>Ticks until refresh: <span id="ticks_until_refresh"></span></li>
-          <li>Requests in flight: <span id="requests_in_flight"></span></li>
-          <li>Requests cached: <span id="requests_ignored"></span></li>
-          <li>Requests retried: <span id="requests_retried"></span></li>
-        </ul>
+      <div class="box">
+        Bot issues? E-mail:<br><a href="mailto:chrome-troopers@google.com">chrome-troopers@google.com</a>
       </div>
-      <table id="build_info"></table>
-      <table id="failure_info"></table>
+
+      <!-- Useful links. -->
+      <ul class="box">
+        <li>
+          <a href="https://code.google.com/p/chromium/wiki/UsefulURLs">
+            Useful Chromium URLs
+          </a>
+        </li>
+      </ul>
+
+      <!-- Options. -->
+      <ul id="options" class="box">
+        <li><input type="checkbox" checked id="checkbox-hide-stable" onclick="updateStatusHTML();">Hide steady green bots</input></li>
+        <li><input type="checkbox" id="checkbox-alert-steady-red" onclick="updateStatusHTML();">Alert if steady green bots go red</input></li>
+        <li>
+          <input type="text" placeholder="Status message filter" id="text-filter" onkeypress="filterUpdated();">
+          </input>
+        </li>
+      </ul>
+
+      <!-- Debugging stats. -->
+      <ul id="debugging" class="box">
+        <li>Ticks until refresh: <span id="num-ticks-until-refresh"></span></li>
+        <li>Requests in flight: <span id="num-requests-in-flight"></span></li>
+        <li>Requests cached: <span id="num-requests-ignored"></span></li>
+        <li>Requests retried: <span id="num-requests-retried"></span></li>
+      </ul>
+    </div>
+    <table id="build-info"></table>
+    <table id="failure-info"></table>
   </body>
 </html>
-

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<html>
+  <head>
+    <meta http-equiv="cache-control" content="no-cache">
+    <title>Android sheriffing dashboard</title>
+
+    <base target="_blank" />
+    <link href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="style.css">
+
+    <script type="text/javascript">
+      /** Watefall pages, ordered by importance. */
+      var kBuilderPages = new Array();
+      kBuilderPages.push(['Blink (blocks rolls into Chromium)',
+                          'http://build.chromium.org/p/chromium.webkit/',
+                          false]);
+      kBuilderPages.push(['Chromium',
+                          'http://build.chromium.org/p/chromium/',
+                          false]);
+      kBuilderPages.push(['Chromium Linux',
+                          'http://build.chromium.org/p/chromium.linux/',
+                          false]);
+      kBuilderPages.push(['Chrome on Android ToT (blocks rolls)',
+                          'https://chromegw.corp.google.com/i/clank.tot/',
+                          true]);
+      kBuilderPages.push(['Chrome on Android',
+                          'https://chromegw.corp.google.com/i/clank/',
+                          true]);
+      kBuilderPages.push(['Chromium FYI',
+                          'http://build.chromium.org/p/chromium.fyi/',
+                          false]);
+      kBuilderPages.push(['WebView ToT',
+                          'http://chromegw.corp.google.com/i/clank.webview.tot/',
+                          true]);
+      kBuilderPages.push(['Chrome on Android: offical release',
+                          'http://master.chrome.corp.google.com:8000/',
+                          true]);
+      kBuilderPages.push(['Chrome on Android: official release-tests',
+                          'https://chromegw.corp.google.com/i/clank.qa/',
+                          true]);
+      kBuilderPages.push(['Chromium GPU',
+                          'http://build.chromium.org/p/chromium.gpu/',
+                          false]);
+
+      /** Waterfall open/closed status pages. */
+      var kStatusPages = new Array();
+      kStatusPages.push(['blink', 'http://blink-status.appspot.com/']);
+      kStatusPages.push(['chromium', 'https://chromium-status.appspot.com/']);
+      kStatusPages.push(['clank', 'https://c-status.appspot.com/']);
+    </script>
+
+    <script type="text/javascript" src="functions.js"></script>
+    <script type="text/javascript" src="statuspageinfo.js"></script>
+    <script type="text/javascript" src="waterfallinfo.js"></script>
+    <script type="text/javascript" src="botinfo.js"></script>
+    <script type="text/javascript" src="buildinfo.js"></script>
+    <script type="text/javascript" src="failureinfo.js"></script>
+
+    <script type="text/javascript">
+      /** Override the original function to show all Android bots. */
+      WaterfallInfo.prototype.shouldShowBot = function(builderName) {
+        return builderName.toLowerCase().indexOf('android') != -1;
+      }
+    </script>
+  </head>
+  <body onload="javascript:initialize();">
+    <div id="sidebar">
+      <div id="sidebar-contents"></div>
+
+      <div class="box">
+        Bot issues? E-mail:<br><a href="mailto:chrome-troopers@google.com">chrome-troopers@google.com</a>
+      </div>
+
+      <!-- Useful links. -->
+      <ul class="box">
+        <li>
+          <a href="https://docs.google.com/a/google.com/document/d/1NTUhIbC-86hHK-IkznPuBlko0XG5o0r3eghDYs0g7no/edit#">
+            Sheriff status updates
+          </a>
+        </li>
+        <li>
+          <a href="https://sites.google.com/a/google.com/clank/engineering/sheriffs">
+            Sheriffing Chrome on Android
+          </a>
+        </li>
+        <li>
+          <a href="https://sites.google.com/a/google.com/clank/engineering/gardening-chromium">
+            Gardening Chrome on Android
+          </a>
+        </li>
+        <li>
+          <a href="http://build.chromium.org/p/tryserver.chromium/waterfall">
+            Try bots
+          </a>
+        </li>
+        <li>
+          <a href="https://code.google.com/p/chromium/wiki/UsefulURLs">
+            Useful Chromium URLs
+          </a>
+        </li>
+      </ul>
+
+      <!-- Options. -->
+      <ul id="options" class="box">
+        <li><input type="checkbox" id="checkbox-hide-stable" onclick="updateStatusHTML();">Hide steady green bots</input></li>
+        <li><input type="checkbox" id="checkbox-alert-steady-red" onclick="updateStatusHTML();">Alert if steady green bots break</input></li>
+        <li>
+          <input type="text" placeholder="Status message filter" id="text-filter" onkeypress="filterUpdated();">
+          </input>
+        </li>
+      </ul>
+
+      <!-- Debugging stats. -->
+      <ul id="debugging" class="box">
+        <li>Ticks until refresh: <span id="num-ticks-until-refresh"></span></li>
+        <li>Requests in flight: <span id="num-requests-in-flight"></span></li>
+        <li>Requests cached: <span id="num-requests-ignored"></span></li>
+        <li>Requests retried: <span id="num-requests-retried"></span></li>
+      </ul>
+    </div>
+    <table id="build-info"></table>
+  </body>
+</html>

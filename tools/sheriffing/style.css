@@ -21,47 +21,54 @@ a:hover {
   text-decoration: underline;
 }
 
+input#text-filter {
+  width: 100%;
+}
+
 /* Waterfall styles */
-#build_info {
+#build-info {
   background-color: white;
   margin-left: 250px;
-  border-spacing: 1px;
+  border-spacing: 0px;
 }
 
-#build_info td {
+#build-info td {
   padding: 0.2em 0.5em 0.2em 0.5em;
 }
 
-#failure_info {
+#failure-info {
   background-color: white;
   margin-left: 250px;
-  border-spacing: 1px;
+  border-spacing: 0px;
 }
 
-#failure_info td {
+#failure-info td {
   padding: 0.2em 0.5em 0.2em 0.5em;
 }
 
-.failure_range {
+.failure-range {
   white-space: nowrap;
 }
 
-.waterfall_name {
+.section-header {
   font-weight: bold;
   background: #eeeeee;
   border-top: 1px dotted #999999;
+  text-align: left;
+  padding: 0.2em 0.5em;
 }
 
-.pending_count {
+.pending-count {
   width: 2.5em;
   min-width: 2.5em;
   max-width: 3.5em;
   display: inline-block;
   text-align: right;
   color: #cccccc;
+  background: transparent;
 }
 
-.build_identifier {
+.build-identifier {
   width: 3.5em;
   min-width: 3.5em;
   max-width: 3.5em;
@@ -70,16 +77,16 @@ a:hover {
   color: blue;
 }
 
-.build_letter {
+.build-letter {
   color: blue;
 }
 
-.build_status {
+.build-status {
   padding-left: 0.5em;
   color: black;
 }
 
-.in_flight {
+.in-flight {
   background-color: #99ffff;
 }
 
@@ -107,7 +114,8 @@ a:hover {
   background: white;
   margin: 0.4em;
   padding: 1em;
-  border-bottom: 1px solid #999999;
+  box-shadow: 0px 2px 2px #888888;
+  border-radius: 0.25em;
 }
 
 .box li {
@@ -146,6 +154,10 @@ a:hover {
 
 .unknown {
   background: #cccccc;
+}
+
+.warnings {
+  background: #ffc343;
 }
 
 /* Tree statuses. */
