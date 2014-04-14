@@ -1100,3 +1100,5 @@ crbug.com/362501 [ Mac ] svg/text/obb-paintserver.html [ ImageOnlyFailure Crash 
 
 crbug.com/352018 fast/canvas/alpha.html [ NeedsRebaseline ]
 crbug.com/352018 virtual/gpu/fast/canvas/alpha.html [ NeedsRebaseline ]
+
+crbug.com/363029 [ Win Debug ] virtual/gpu/fast/canvas/canvas-composite-stroke-alpha.html [ Pass Timeout ]
