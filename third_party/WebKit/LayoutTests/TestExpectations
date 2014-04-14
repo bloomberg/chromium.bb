@@ -696,8 +696,6 @@ crbug.com/253763 fast/text-autosizing/first-line-scale-factor.html [ ImageOnlyFa
 crbug.com/253763 fast/text-autosizing/pseudo-scale-factor.html [ ImageOnlyFailure ]
 crbug.com/253763 virtual/fasttextautosizing/fast/text-autosizing/first-line-scale-factor.html [ ImageOnlyFailure ]
 
-crbug.com/362930 virtual/fasttextautosizing/fast/text-autosizing/tables/nested-table-wrapping.html [ NeedsRebaseline ]
-
 # FIXME(crbug.com/302005): Remove these as expectations are updated or the fasttextautosizer improves.
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/cluster-inline-grid-flex-box.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/cluster-list-item.html [ ImageOnlyFailure ]
