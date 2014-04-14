@@ -48,6 +48,8 @@ private:
     bool requiresCompositingForOverflowScrollingParent(const RenderLayer*) const;
     bool requiresCompositingForOutOfFlowClipping(const RenderLayer*) const;
     bool requiresCompositingForOverflowScrolling(const RenderLayer*) const;
+    bool requiresCompositingForPositionSticky(RenderObject*, const RenderLayer*) const;
+    bool requiresCompositingForPositionFixed(RenderObject*, const RenderLayer*, RenderLayer::ViewportConstrainedNotCompositedReason*, bool* needToRecomputeCompositingRequirements) const;
     bool requiresCompositingForWillChange(const RenderObject*) const;
 
     RenderView& m_renderView;

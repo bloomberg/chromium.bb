@@ -187,8 +187,11 @@ CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(cons
     if (requiresCompositingForOverflowScrolling(layer))
         directReasons |= CompositingReasonOverflowScrollingTouch;
 
-    if (requiresCompositingForPosition(renderer, layer, 0, needToRecomputeCompositingRequirements))
-        directReasons |= renderer->style()->position() == FixedPosition ? CompositingReasonPositionFixed : CompositingReasonPositionSticky;
+    if (requiresCompositingForPositionSticky(renderer, layer))
+        directReasons |= CompositingReasonPositionSticky;
+
+    if (requiresCompositingForPositionFixed(renderer, layer, 0, needToRecomputeCompositingRequirements))
+        directReasons |= CompositingReasonPositionFixed;
 
     directReasons |= renderer->additionalCompositingReasons(m_compositingTriggers);
 
@@ -221,10 +224,16 @@ bool CompositingReasonFinder::requiresCompositingForOverflowScrolling(const Rend
     return layer->needsCompositedScrolling();
 }
 
+static bool isViewportConstrainedStickyLayer(const RenderLayer* layer)
+{
+    ASSERT(layer->renderer()->isStickyPositioned());
+    return !layer->enclosingOverflowClipLayer(ExcludeSelf);
+}
+
 bool CompositingReasonFinder::isViewportConstrainedFixedOrStickyLayer(const RenderLayer* layer)
 {
     if (layer->renderer()->isStickyPositioned())
-        return !layer->enclosingOverflowClipLayer(ExcludeSelf);
+        return isViewportConstrainedStickyLayer(layer);
 
     if (layer->renderer()->style()->position() != FixedPosition)
         return false;
@@ -241,30 +250,27 @@ bool CompositingReasonFinder::isViewportConstrainedFixedOrStickyLayer(const Rend
 
 bool CompositingReasonFinder::requiresCompositingForPosition(RenderObject* renderer, const RenderLayer* layer, RenderLayer::ViewportConstrainedNotCompositedReason* viewportConstrainedNotCompositedReason, bool* needToRecomputeCompositingRequirements) const
 {
-    // position:fixed elements that create their own stacking context (e.g. have an explicit z-index,
-    // opacity, transform) can get their own composited layer. A stacking context is required otherwise
-    // z-index and clipping will be broken.
-    if (!renderer->isPositioned())
+    return requiresCompositingForPositionSticky(renderer, layer) || requiresCompositingForPositionFixed(renderer, layer, viewportConstrainedNotCompositedReason, needToRecomputeCompositingRequirements);
+}
+
+bool CompositingReasonFinder::requiresCompositingForPositionSticky(RenderObject* renderer, const RenderLayer* layer) const
+{
+    if (!(m_compositingTriggers & ViewportConstrainedPositionedTrigger))
+        return false;
+    if (renderer->style()->position() != StickyPosition)
+        return false;
+    // FIXME: This probably isn't correct for accelerated overflow scrolling. crbug.com/361723
+    // Instead it should return false only if the layer is not inside a scrollable region.
+    return isViewportConstrainedStickyLayer(layer);
+}
+
+bool CompositingReasonFinder::requiresCompositingForPositionFixed(RenderObject* renderer, const RenderLayer* layer, RenderLayer::ViewportConstrainedNotCompositedReason* viewportConstrainedNotCompositedReason, bool* needToRecomputeCompositingRequirements) const
+{
+    if (!(m_compositingTriggers & ViewportConstrainedPositionedTrigger))
         return false;
 
-    EPosition position = renderer->style()->position();
-    bool isFixed = renderer->isOutOfFlowPositioned() && position == FixedPosition;
-    // FIXME: The isStackingContainer check here is redundant. Fixed position elements are always stacking contexts.
-    if (isFixed && !layer->stackingNode()->isStackingContainer())
+    if (renderer->style()->position() != FixedPosition)
         return false;
-
-    bool isSticky = renderer->isInFlowPositioned() && position == StickyPosition;
-    if (!isFixed && !isSticky)
-        return false;
-
-    // FIXME: acceleratedCompositingForFixedPositionEnabled should probably be renamed acceleratedCompositingForViewportConstrainedPositionEnabled().
-    if (Settings* settings = m_renderView.document().settings()) {
-        if (!settings->acceleratedCompositingForFixedPositionEnabled())
-            return false;
-    }
-
-    if (isSticky)
-        return isViewportConstrainedFixedOrStickyLayer(layer);
 
     RenderObject* container = renderer->container();
     // If the renderer is not hooked up yet then we have to wait until it is.

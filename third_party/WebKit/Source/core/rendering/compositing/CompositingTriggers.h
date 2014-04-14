@@ -38,6 +38,7 @@ enum CompositingTrigger {
     // path is ready (crbug.com/254111).
     LegacyOverflowScrollTrigger = 1 << 8,
     OverflowScrollTrigger = 1 << 9,
+    ViewportConstrainedPositionedTrigger = 1 << 10,
     AllCompositingTriggers = 0xFFFFFFFF,
 };
 

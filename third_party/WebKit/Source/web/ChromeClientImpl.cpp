@@ -745,6 +745,10 @@ WebCore::CompositingTriggerFlags ChromeClientImpl::allowedCompositingTriggers() 
         flags |= WebCore::LegacyOverflowScrollTrigger;
     if (settings.compositorDrivenAcceleratedScrollingEnabled())
         flags |= WebCore::OverflowScrollTrigger;
+    // FIXME: acceleratedCompositingForFixedPositionEnabled should be renamed acceleratedCompositingForViewportConstrainedPositionEnabled().
+    // Or the sticky and fixed position elements should be behind different flags.
+    if (settings.acceleratedCompositingForFixedPositionEnabled())
+        flags |= WebCore::ViewportConstrainedPositionedTrigger;
 
     return flags;
 }
