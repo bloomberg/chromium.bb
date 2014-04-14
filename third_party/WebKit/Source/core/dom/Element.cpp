@@ -2154,7 +2154,8 @@ void Element::focus(bool restorePreviousSelection, FocusType type)
 void Element::updateFocusAppearance(bool /*restorePreviousSelection*/)
 {
     if (isRootEditableElement()) {
-        LocalFrame* frame = document().frame();
+        // Taking the ownership since setSelection() may release the last reference to |frame|.
+        RefPtr<LocalFrame> frame(document().frame());
         if (!frame)
             return;
 
