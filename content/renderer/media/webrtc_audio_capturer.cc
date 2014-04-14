@@ -460,11 +460,11 @@ void WebRtcAudioCapturer::Capture(media::AudioBus* audio_source,
     if (!running_)
       return;
 
-    // Map internal volume range of [0.0, 1.0] into [0, 255] used by the
-    // webrtc::VoiceEngine. webrtc::VoiceEngine will handle the case when the
-    // volume is higher than 255.
+    // Map internal volume range of [0.0, 1.0] into [0, 255] used by AGC.
+    // The volume can be higher than 255 on Linux, and it will be cropped to
+    // 255 since AGC does not allow values out of range.
     volume_ = static_cast<int>((volume * MaxVolume()) + 0.5);
-    current_volume = volume_;
+    current_volume = volume_ > MaxVolume() ? MaxVolume() : volume_;
     audio_delay = base::TimeDelta::FromMilliseconds(audio_delay_milliseconds);
     audio_delay_ = audio_delay;
     key_pressed_ = key_pressed;

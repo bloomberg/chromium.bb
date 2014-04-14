@@ -11,6 +11,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/renderer/media/media_stream_audio_processor_options.h"
 #include "content/renderer/media/rtc_media_constraints.h"
+#include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/audio_converter.h"
 #include "media/base/audio_fifo.h"
@@ -474,6 +475,7 @@ int MediaStreamAudioProcessor::ProcessData(webrtc::AudioFrame* audio_frame,
 
   audio_processing_->set_stream_delay_ms(total_delay_ms);
 
+  DCHECK_LE(volume, WebRtcAudioDeviceImpl::kMaxVolumeLevel);
   webrtc::GainControl* agc = audio_processing_->gain_control();
   int err = agc->set_stream_analog_level(volume);
   DCHECK_EQ(err, 0) << "set_stream_analog_level() error: " << err;
