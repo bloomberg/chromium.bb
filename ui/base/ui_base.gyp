@@ -159,8 +159,6 @@
         'dragdrop/drop_target_win.h',
         'dragdrop/file_info.cc',
         'dragdrop/file_info.h',
-        'dragdrop/gtk_dnd_util.cc',
-        'dragdrop/gtk_dnd_util.h',
         'dragdrop/os_exchange_data.cc',
         'dragdrop/os_exchange_data.h',
         'dragdrop/os_exchange_data_provider_aura.cc',
