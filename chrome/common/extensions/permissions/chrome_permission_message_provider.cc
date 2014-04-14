@@ -81,7 +81,6 @@ ChromePermissionMessageProvider::ChromePermissionMessageProvider() {
 ChromePermissionMessageProvider::~ChromePermissionMessageProvider() {
 }
 
-// static
 PermissionMessages ChromePermissionMessageProvider::GetPermissionMessages(
     const PermissionSet* permissions,
     Manifest::Type extension_type) const {
@@ -117,7 +116,6 @@ PermissionMessages ChromePermissionMessageProvider::GetPermissionMessages(
   return messages;
 }
 
-// static
 std::vector<base::string16> ChromePermissionMessageProvider::GetWarningMessages(
     const PermissionSet* permissions,
     Manifest::Type extension_type) const {
@@ -187,7 +185,6 @@ std::vector<base::string16> ChromePermissionMessageProvider::GetWarningMessages(
   return message_strings;
 }
 
-// static
 std::vector<base::string16>
 ChromePermissionMessageProvider::GetWarningMessagesDetails(
     const PermissionSet* permissions,
@@ -203,7 +200,6 @@ ChromePermissionMessageProvider::GetWarningMessagesDetails(
   return message_strings;
 }
 
-// static
 bool ChromePermissionMessageProvider::IsPrivilegeIncrease(
     const PermissionSet* old_permissions,
     const PermissionSet* new_permissions,

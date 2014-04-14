@@ -6,6 +6,7 @@
 #include "base/macros.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
+#include "extensions/test/test_extensions_client.h"
 
 namespace {
 
@@ -13,12 +14,13 @@ class ExtensionsTestSuite : public base::TestSuite {
  public:
   ExtensionsTestSuite(int argc, char** argv);
 
- protected:
+ private:
   // base::TestSuite:
   virtual void Initialize() OVERRIDE;
   virtual void Shutdown() OVERRIDE;
 
- private:
+  scoped_ptr<extensions::TestExtensionsClient> client_;
+
   DISALLOW_COPY_AND_ASSIGN(ExtensionsTestSuite);
 };
 
@@ -27,6 +29,9 @@ ExtensionsTestSuite::ExtensionsTestSuite(int argc, char** argv)
 
 void ExtensionsTestSuite::Initialize() {
   base::TestSuite::Initialize();
+
+  client_.reset(new extensions::TestExtensionsClient());
+  extensions::ExtensionsClient::Set(client_.get());
 }
 
 void ExtensionsTestSuite::Shutdown() {

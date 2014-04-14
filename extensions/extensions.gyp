@@ -20,7 +20,7 @@
         '../chrome/chrome_resources.gyp:chrome_strings',
         # Need default icons in theme_resources.grd
         '../chrome/chrome_resources.gyp:theme_resources',
-        
+
         # TODO(tfarina): This dep here is for extensions/common/constants.*
         # We should find a way to compile this module within extensions_common.
         '../chrome/common_constants.gyp:common_constants',
@@ -493,6 +493,12 @@
         'common/url_pattern_unittest.cc',
         'common/user_script_unittest.cc',
         'test/extensions_unittests_main.cc',
+        'test/test_extensions_client.cc',
+        'test/test_extensions_client.h',
+        'test/test_permission_message_provider.cc',
+        'test/test_permission_message_provider.h',
+        'test/test_permissions_provider.cc',
+        'test/test_permissions_provider.h',
       ],
     },
   ]
