@@ -1039,45 +1039,12 @@ static bool isSubmitImage(Node* node)
     return isHTMLInputElement(node) && toHTMLInputElement(node)->isImageButton();
 }
 
-// Returns true if the node's editable block is not current focused for editing
-static bool nodeIsNotBeingEdited(Node* node, LocalFrame* frame)
-{
-    return frame->selection().rootEditableElement() != node->rootEditableElement();
-}
-
-bool EventHandler::useHandCursor(Node* node, bool isOverLink, bool shiftKey)
+bool EventHandler::useHandCursor(Node* node, bool isOverLink)
 {
     if (!node)
         return false;
 
-    bool editable = node->rendererIsEditable();
-    bool editableLinkEnabled = false;
-
-    // If the link is editable, then we need to check the settings to see whether or not the link should be followed
-    if (editable) {
-        ASSERT(m_frame->settings());
-        switch (m_frame->settings()->editableLinkBehavior()) {
-        default:
-        case EditableLinkDefaultBehavior:
-        case EditableLinkAlwaysLive:
-            editableLinkEnabled = true;
-            break;
-
-        case EditableLinkNeverLive:
-            editableLinkEnabled = false;
-            break;
-
-        case EditableLinkLiveWhenNotFocused:
-            editableLinkEnabled = nodeIsNotBeingEdited(node, m_frame) || shiftKey;
-            break;
-
-        case EditableLinkOnlyLiveWithShiftKey:
-            editableLinkEnabled = shiftKey;
-            break;
-        }
-    }
-
-    return ((isOverLink || isSubmitImage(node)) && (!editable || editableLinkEnabled));
+    return ((isOverLink || isSubmitImage(node)) && !node->rendererIsEditable());
 }
 
 void EventHandler::cursorUpdateTimerFired(Timer<EventHandler>*)
@@ -1101,26 +1068,20 @@ void EventHandler::updateCursor()
     if (!renderView)
         return;
 
-    bool shiftKey;
-    bool ctrlKey;
-    bool altKey;
-    bool metaKey;
-    PlatformKeyboardEvent::getCurrentModifierState(shiftKey, ctrlKey, altKey, metaKey);
-
     m_frame->document()->updateLayout();
 
     HitTestRequest request(HitTestRequest::ReadOnly);
     HitTestResult result(view->windowToContents(m_lastKnownMousePosition));
     renderView->hitTest(request, result);
 
-    OptionalCursor optionalCursor = selectCursor(result, shiftKey);
+    OptionalCursor optionalCursor = selectCursor(result);
     if (optionalCursor.isCursorChange()) {
         m_currentMouseCursor = optionalCursor.cursor();
         view->setCursor(m_currentMouseCursor);
     }
 }
 
-OptionalCursor EventHandler::selectCursor(const HitTestResult& result, bool shiftKey)
+OptionalCursor EventHandler::selectCursor(const HitTestResult& result)
 {
     if (m_resizeScrollableArea && m_resizeScrollableArea->inResizeMode())
         return NoCursorChange;
@@ -1135,7 +1096,7 @@ OptionalCursor EventHandler::selectCursor(const HitTestResult& result, bool shif
 
     Node* node = result.innerPossiblyPseudoNode();
     if (!node)
-        return selectAutoCursor(result, node, iBeamCursor(), shiftKey);
+        return selectAutoCursor(result, node, iBeamCursor());
 
     RenderObject* renderer = node->renderer();
     RenderStyle* style = renderer ? renderer->style() : 0;
@@ -1186,7 +1147,7 @@ OptionalCursor EventHandler::selectCursor(const HitTestResult& result, bool shif
     case CURSOR_AUTO: {
         bool horizontalText = !style || style->isHorizontalWritingMode();
         const Cursor& iBeam = horizontalText ? iBeamCursor() : verticalTextCursor();
-        return selectAutoCursor(result, node, iBeam, shiftKey);
+        return selectAutoCursor(result, node, iBeam);
     }
     case CURSOR_CROSS:
         return crossCursor();
@@ -1262,11 +1223,11 @@ OptionalCursor EventHandler::selectCursor(const HitTestResult& result, bool shif
     return pointerCursor();
 }
 
-OptionalCursor EventHandler::selectAutoCursor(const HitTestResult& result, Node* node, const Cursor& iBeam, bool shiftKey)
+OptionalCursor EventHandler::selectAutoCursor(const HitTestResult& result, Node* node, const Cursor& iBeam)
 {
     bool editable = (node && node->rendererIsEditable());
 
-    if (useHandCursor(node, result.isOverLink(), shiftKey))
+    if (useHandCursor(node, result.isOverLink()))
         return handCursor();
 
     bool inResizer = false;
@@ -1592,7 +1553,7 @@ bool EventHandler::handleMouseMoveOrLeaveEvent(const PlatformMouseEvent& mouseEv
         if (scrollbar && !m_mousePressed)
             scrollbar->mouseMoved(mouseEvent); // Handle hover effects on platforms that support visual feedback on scrollbar hovering.
         if (FrameView* view = m_frame->view()) {
-            OptionalCursor optionalCursor = selectCursor(mev.hitTestResult(), mouseEvent.shiftKey());
+            OptionalCursor optionalCursor = selectCursor(mev.hitTestResult());
             if (optionalCursor.isCursorChange()) {
                 m_currentMouseCursor = optionalCursor.cursor();
                 view->setCursor(m_currentMouseCursor);

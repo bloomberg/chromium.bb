@@ -1124,14 +1124,14 @@ void WebViewImpl::computeScaleAndScrollForBlockRect(const WebPoint& hitPoint, co
     scroll = clampOffsetAtScale(scroll, scale);
 }
 
-static bool invokesHandCursor(Node* node, bool shiftKey, LocalFrame* frame)
+static bool invokesHandCursor(Node* node, LocalFrame* frame)
 {
     if (!node || !node->renderer())
         return false;
 
     ECursor cursor = node->renderer()->style()->cursor();
     return cursor == CURSOR_POINTER
-        || (cursor == CURSOR_AUTO && frame->eventHandler().useHandCursor(node, node->isLink(), shiftKey));
+        || (cursor == CURSOR_AUTO && frame->eventHandler().useHandCursor(node, node->isLink()));
 }
 
 Node* WebViewImpl::bestTapNode(const PlatformGestureEvent& tapEvent)
@@ -1155,14 +1155,14 @@ Node* WebViewImpl::bestTapNode(const PlatformGestureEvent& tapEvent)
 
     // Check if we're in the subtree of a node with a hand cursor
     // this is the heuristic we use to determine if we show a highlight on tap
-    while (bestTouchNode && !invokesHandCursor(bestTouchNode, false, m_page->mainFrame()))
+    while (bestTouchNode && !invokesHandCursor(bestTouchNode, m_page->mainFrame()))
         bestTouchNode = bestTouchNode->parentNode();
 
     if (!bestTouchNode)
         return 0;
 
     // We should pick the largest enclosing node with hand cursor set.
-    while (bestTouchNode->parentNode() && invokesHandCursor(bestTouchNode->parentNode(), false, m_page->mainFrame()))
+    while (bestTouchNode->parentNode() && invokesHandCursor(bestTouchNode->parentNode(), m_page->mainFrame()))
         bestTouchNode = bestTouchNode->parentNode();
 
     return bestTouchNode;

@@ -109,8 +109,6 @@ using namespace HTMLNames;
 
 HTMLAnchorElement::HTMLAnchorElement(const QualifiedName& tagName, Document& document)
     : HTMLElement(tagName, document)
-    , m_hasRootEditableElementForSelectionOnMouseDown(false)
-    , m_wasShiftKeyDownOnMouseDown(false)
     , m_linkRelations(0)
     , m_cachedVisitedLinkHash(0)
 {
@@ -129,7 +127,6 @@ PassRefPtr<HTMLAnchorElement> HTMLAnchorElement::create(const QualifiedName& tag
 
 HTMLAnchorElement::~HTMLAnchorElement()
 {
-    clearRootEditableElementForSelectionOnMouseDown();
 }
 
 bool HTMLAnchorElement::supportsFocus() const
@@ -194,7 +191,7 @@ static void appendServerMapMousePosition(StringBuilder& url, Event* event)
 void HTMLAnchorElement::defaultEventHandler(Event* event)
 {
     if (isLink()) {
-        if (focused() && isEnterKeyKeydownEvent(event) && treatLinkAsLiveForEventType(NonMouseEvent)) {
+        if (focused() && isEnterKeyKeydownEvent(event) && isLiveLink()) {
             event->setDefaultHandled();
             dispatchSimulatedClick(event);
             return;
@@ -202,24 +199,10 @@ void HTMLAnchorElement::defaultEventHandler(Event* event)
 
         prefetchEventHandler()->handleEvent(event);
 
-        if (isLinkClick(event) && treatLinkAsLiveForEventType(eventType(event))) {
+        if (isLinkClick(event) && isLiveLink()) {
             handleClick(event);
             prefetchEventHandler()->reset();
             return;
-        }
-
-        if (rendererIsEditable()) {
-            // This keeps track of the editable block that the selection was in (if it was in one) just before the link was clicked
-            // for the LiveWhenNotFocused editable link behavior
-            if (event->type() == EventTypeNames::mousedown && event->isMouseEvent() && toMouseEvent(event)->button() != RightButton && document().frame()) {
-                setRootEditableElementForSelectionOnMouseDown(document().frame()->selection().rootEditableElement());
-                m_wasShiftKeyDownOnMouseDown = toMouseEvent(event)->shiftKey();
-            } else if (event->type() == EventTypeNames::mouseover) {
-                // These are cleared on mouseover and not mouseout because their values are needed for drag events,
-                // but drag events happen after mouse out events.
-                clearRootEditableElementForSelectionOnMouseDown();
-                m_wasShiftKeyDownOnMouseDown = false;
-            }
         }
     }
 
@@ -228,32 +211,8 @@ void HTMLAnchorElement::defaultEventHandler(Event* event)
 
 void HTMLAnchorElement::setActive(bool down)
 {
-    if (rendererIsEditable()) {
-        EditableLinkBehavior editableLinkBehavior = EditableLinkDefaultBehavior;
-        if (Settings* settings = document().settings())
-            editableLinkBehavior = settings->editableLinkBehavior();
-
-        switch (editableLinkBehavior) {
-            default:
-            case EditableLinkDefaultBehavior:
-            case EditableLinkAlwaysLive:
-                break;
-
-            case EditableLinkNeverLive:
-                return;
-
-            // Don't set the link to be active if the current selection is in the same editable block as
-            // this link
-            case EditableLinkLiveWhenNotFocused:
-                if (down && document().frame() && document().frame()->selection().rootEditableElement() == rootEditableElement())
-                    return;
-                break;
-
-            case EditableLinkOnlyLiveWithShiftKey:
-                return;
-        }
-
-    }
+    if (rendererIsEditable())
+        return;
 
     ContainerNode::setActive(down);
 }
@@ -392,7 +351,7 @@ String HTMLAnchorElement::text()
 
 bool HTMLAnchorElement::isLiveLink() const
 {
-    return isLink() && treatLinkAsLiveForEventType(m_wasShiftKeyDownOnMouseDown ? MouseEventWithShiftKey : MouseEventWithoutShiftKey);
+    return isLink() && !rendererIsEditable();
 }
 
 void HTMLAnchorElement::sendPings(const KURL& destinationURL)
@@ -445,43 +404,6 @@ void HTMLAnchorElement::handleClick(Event* event)
     }
 }
 
-HTMLAnchorElement::EventType HTMLAnchorElement::eventType(Event* event)
-{
-    if (!event->isMouseEvent())
-        return NonMouseEvent;
-    return toMouseEvent(event)->shiftKey() ? MouseEventWithShiftKey : MouseEventWithoutShiftKey;
-}
-
-bool HTMLAnchorElement::treatLinkAsLiveForEventType(EventType eventType) const
-{
-    if (!rendererIsEditable())
-        return true;
-
-    Settings* settings = document().settings();
-    if (!settings)
-        return true;
-
-    switch (settings->editableLinkBehavior()) {
-    case EditableLinkDefaultBehavior:
-    case EditableLinkAlwaysLive:
-        return true;
-
-    case EditableLinkNeverLive:
-        return false;
-
-    // If the selection prior to clicking on this link resided in the same editable block as this link,
-    // and the shift key isn't pressed, we don't want to follow the link.
-    case EditableLinkLiveWhenNotFocused:
-        return eventType == MouseEventWithShiftKey || (eventType == MouseEventWithoutShiftKey && rootEditableElementForSelectionOnMouseDown() != rootEditableElement());
-
-    case EditableLinkOnlyLiveWithShiftKey:
-        return eventType == MouseEventWithShiftKey;
-    }
-
-    ASSERT_NOT_REACHED();
-    return false;
-}
-
 bool isEnterKeyKeydownEvent(Event* event)
 {
     return event->type() == EventTypeNames::keydown && event->isKeyboardEvent() && toKeyboardEvent(event)->keyIdentifier() == "Enter";
@@ -495,40 +417,6 @@ bool isLinkClick(Event* event)
 bool HTMLAnchorElement::willRespondToMouseClickEvents()
 {
     return isLink() || HTMLElement::willRespondToMouseClickEvents();
-}
-
-typedef HashMap<const HTMLAnchorElement*, RefPtr<Element> > RootEditableElementMap;
-
-static RootEditableElementMap& rootEditableElementMap()
-{
-    DEFINE_STATIC_LOCAL(RootEditableElementMap, map, ());
-    return map;
-}
-
-Element* HTMLAnchorElement::rootEditableElementForSelectionOnMouseDown() const
-{
-    if (!m_hasRootEditableElementForSelectionOnMouseDown)
-        return 0;
-    return rootEditableElementMap().get(this);
-}
-
-void HTMLAnchorElement::clearRootEditableElementForSelectionOnMouseDown()
-{
-    if (!m_hasRootEditableElementForSelectionOnMouseDown)
-        return;
-    rootEditableElementMap().remove(this);
-    m_hasRootEditableElementForSelectionOnMouseDown = false;
-}
-
-void HTMLAnchorElement::setRootEditableElementForSelectionOnMouseDown(Element* element)
-{
-    if (!element) {
-        clearRootEditableElementForSelectionOnMouseDown();
-        return;
-    }
-
-    rootEditableElementMap().set(this, element);
-    m_hasRootEditableElementForSelectionOnMouseDown = true;
 }
 
 HTMLAnchorElement::PrefetchEventHandler* HTMLAnchorElement::prefetchEventHandler()

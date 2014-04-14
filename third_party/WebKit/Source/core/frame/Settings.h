@@ -39,14 +39,6 @@
 
 namespace WebCore {
 
-enum EditableLinkBehavior {
-    EditableLinkDefaultBehavior,
-    EditableLinkAlwaysLive,
-    EditableLinkOnlyLiveWithShiftKey,
-    EditableLinkLiveWhenNotFocused,
-    EditableLinkNeverLive
-};
-
 class Settings {
     WTF_MAKE_NONCOPYABLE(Settings); WTF_MAKE_FAST_ALLOCATED;
 public:

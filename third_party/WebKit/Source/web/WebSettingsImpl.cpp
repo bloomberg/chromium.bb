@@ -351,10 +351,7 @@ void WebSettingsImpl::setMaxTouchPoints(int maxTouchPoints)
 
 void WebSettingsImpl::setEditableLinkBehaviorNeverLive()
 {
-    // FIXME: If you ever need more behaviors than this, then we should probably
-    //        define an enum in WebSettings.h and have a switch statement that
-    //        translates.  Until then, this is probably fine, though.
-    m_settings->setEditableLinkBehavior(WebCore::EditableLinkNeverLive);
+    // FIXME: remove once Chromium call site goes away
 }
 
 void WebSettingsImpl::setAllowUniversalAccessFromFileURLs(bool allow)

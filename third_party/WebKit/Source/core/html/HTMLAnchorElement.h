@@ -107,24 +107,10 @@ private:
     AtomicString target() const;
     void handleClick(Event*);
 
-    enum EventType {
-        MouseEventWithoutShiftKey,
-        MouseEventWithShiftKey,
-        NonMouseEvent,
-    };
-    static EventType eventType(Event*);
-    bool treatLinkAsLiveForEventType(EventType) const;
-
-    Element* rootEditableElementForSelectionOnMouseDown() const;
-    void setRootEditableElementForSelectionOnMouseDown(Element*);
-    void clearRootEditableElementForSelectionOnMouseDown();
-
     class PrefetchEventHandler;
     PrefetchEventHandler* prefetchEventHandler();
 
-    bool m_hasRootEditableElementForSelectionOnMouseDown : 1;
-    bool m_wasShiftKeyDownOnMouseDown : 1;
-    uint32_t m_linkRelations : 30;
+    uint32_t m_linkRelations;
     OwnPtr<PrefetchEventHandler> m_prefetchEventHandler;
     mutable LinkHash m_cachedVisitedLinkHash;
 };
