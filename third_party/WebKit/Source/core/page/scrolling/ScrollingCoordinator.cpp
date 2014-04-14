@@ -647,15 +647,35 @@ void ScrollingCoordinator::willDestroyRenderLayer(RenderLayer* layer)
     m_layersWithTouchRects.remove(layer);
 }
 
-void ScrollingCoordinator::setWheelEventHandlerCount(unsigned count)
+void ScrollingCoordinator::updateHaveWheelEventHandlers()
 {
-    if (WebLayer* scrollLayer = toWebLayer(m_page->mainFrame()->view()->layerForScrolling()))
-        scrollLayer->setHaveWheelEventHandlers(count > 0);
+    ASSERT(isMainThread());
+    ASSERT(m_page);
+
+    if (WebLayer* scrollLayer = toWebLayer(m_page->mainFrame()->view()->layerForScrolling())) {
+        unsigned wheelEventHandlerCount = 0;
+
+        for (LocalFrame* frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+            wheelEventHandlerCount += WheelController::from(*frame->document())->wheelEventHandlerCount();
+        }
+
+        scrollLayer->setHaveWheelEventHandlers(wheelEventHandlerCount);
+    }
 }
 
-void ScrollingCoordinator::recomputeWheelEventHandlerCountForFrameView(FrameView*)
+void ScrollingCoordinator::updateHaveScrollEventHandlers()
 {
-    setWheelEventHandlerCount(computeCurrentWheelEventHandlerCount());
+    ASSERT(isMainThread());
+    ASSERT(m_page);
+
+    // Currently the compositor only cares whether there are scroll handlers anywhere on the page
+    // instead on a per-layer basis. We therefore only update this information for the root
+    // scrolling layer.
+    if (WebLayer* scrollLayer = toWebLayer(m_page->mainFrame()->view()->layerForScrolling())) {
+        // TODO(skyostil): Hook this up.
+        bool haveHandlers = false;
+        scrollLayer->setHaveScrollEventHandlers(haveHandlers);
+    }
 }
 
 void ScrollingCoordinator::setShouldUpdateScrollLayerPositionOnMainThread(MainThreadScrollingReasons reasons)
@@ -819,26 +839,6 @@ void ScrollingCoordinator::computeTouchEventTargetRects(LayerHitTestRects& rects
     accumulateDocumentTouchEventTargetRects(rects, document);
 }
 
-unsigned ScrollingCoordinator::computeCurrentWheelEventHandlerCount()
-{
-    unsigned wheelEventHandlerCount = 0;
-
-    for (LocalFrame* frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
-        if (frame->document())
-            wheelEventHandlerCount += WheelController::from(*frame->document())->wheelEventHandlerCount();
-    }
-
-    return wheelEventHandlerCount;
-}
-
-void ScrollingCoordinator::frameViewWheelEventHandlerCountChanged(FrameView* frameView)
-{
-    ASSERT(isMainThread());
-    ASSERT(m_page);
-
-    recomputeWheelEventHandlerCountForFrameView(frameView);
-}
-
 void ScrollingCoordinator::frameViewHasSlowRepaintObjectsDidChange(FrameView* frameView)
 {
     ASSERT(isMainThread());
@@ -888,7 +888,8 @@ void ScrollingCoordinator::frameViewRootLayerDidChange(FrameView* frameView)
         return;
 
     notifyLayoutUpdated();
-    recomputeWheelEventHandlerCountForFrameView(frameView);
+    updateHaveWheelEventHandlers();
+    updateHaveScrollEventHandlers();
 }
 
 #if OS(MACOSX)

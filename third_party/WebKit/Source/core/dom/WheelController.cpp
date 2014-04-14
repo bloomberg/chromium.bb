@@ -69,11 +69,7 @@ static void wheelEventHandlerCountChanged(Document& document)
     if (!scrollingCoordinator)
         return;
 
-    FrameView* frameView = document.view();
-    if (!frameView)
-        return;
-
-    scrollingCoordinator->frameViewWheelEventHandlerCountChanged(frameView);
+    scrollingCoordinator->updateHaveWheelEventHandlers();
 }
 
 void WheelController::didAddWheelEventHandler(Document& document)

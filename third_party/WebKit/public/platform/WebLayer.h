@@ -183,6 +183,9 @@ public:
     virtual void setHaveWheelEventHandlers(bool) = 0;
     virtual bool haveWheelEventHandlers() const = 0;
 
+    virtual void setHaveScrollEventHandlers(bool) = 0;
+    virtual bool haveScrollEventHandlers() const = 0;
+
     virtual void setShouldScrollOnMainThread(bool) = 0;
     virtual bool shouldScrollOnMainThread() const = 0;
 
