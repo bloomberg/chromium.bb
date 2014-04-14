@@ -1285,6 +1285,11 @@ void HTMLSelectElement::updateSelectedState(int listIndex, bool multi, bool shif
 {
     ASSERT(listIndex >= 0);
 
+    HTMLElement* clickedElement = listItems()[listIndex];
+    ASSERT(clickedElement);
+    if (isHTMLOptGroupElement(clickedElement))
+        return;
+
     // Save the selection so it can be compared to the new selection when
     // dispatching change events during mouseup, or after autoscroll finishes.
     saveLastSelection();
@@ -1294,8 +1299,6 @@ void HTMLSelectElement::updateSelectedState(int listIndex, bool multi, bool shif
     bool shiftSelect = m_multiple && shift;
     bool multiSelect = m_multiple && multi && !shift;
 
-    HTMLElement* clickedElement = listItems()[listIndex];
-    ASSERT(clickedElement);
     if (isHTMLOptionElement(*clickedElement)) {
         // Keep track of whether an active selection (like during drag
         // selection), should select or deselect.
