@@ -57,10 +57,7 @@ class ProfileChooserView : public views::BubbleDelegateView,
     // Shows a web view for adding secondary accounts.
     BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT,
     // Shows a view for confirming account removal.
-    BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL,
-    // Shows a fast profile switcher view with a tutorial card that prompts the
-    // user to preview new profile management.
-    BUBBLE_VIEW_MODE_NEW_PROFILE_MANAGEMENT_PREVIEW
+    BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL
   };
 
   // Shows the bubble if one is not already showing.  This allows us to easily
@@ -95,7 +92,8 @@ class ProfileChooserView : public views::BubbleDelegateView,
   ProfileChooserView(views::View* anchor_view,
                      views::BubbleBorder::Arrow arrow,
                      const gfx::Rect& anchor_rect,
-                     Browser* browser);
+                     Browser* browser,
+                     BubbleViewMode view_mode);
   virtual ~ProfileChooserView();
 
   // views::BubbleDelegateView:
@@ -133,9 +131,14 @@ class ProfileChooserView : public views::BubbleDelegateView,
 
   void ResetView();
 
-  // Shows either the profile chooser or the account management views.
+  // Shows the bubble with the |view_to_display|.
   void ShowView(BubbleViewMode view_to_display,
                 AvatarMenu* avatar_menu);
+
+  // Creates the profile chooser view. |tutorial_shown| indicates if the "mirror
+  // enabled" tutorial was shown or not in the last active view.
+  views::View* CreateProfileChooserView(AvatarMenu* avatar_menu,
+                                        bool tutorial_shown);
 
   // Creates the main profile card for the profile |avatar_item|. |is_guest|
   // is used to determine whether to show any Sign in/Sign out/Manage accounts
@@ -166,9 +169,8 @@ class ProfileChooserView : public views::BubbleDelegateView,
   // Removes the currently selected account and attempts to restart Chrome.
   void RemoveAccount();
 
-  // Creates an avatar bubble view that shows a redesigned avatar menu with the
-  // same functionality as the old one, plus a tutorial card at the top
-  // prompting the user to try out the new profile management UI.
+  // Creates a a tutorial card at the top prompting the user to try out the new
+  // profile management UI.
   views::View* CreateNewProfileManagementPreviewView();
 
   // Creates a tutorial card shown when new profile management preview is

@@ -355,16 +355,13 @@ void ProfileChooserView::ShowBubble(
     views::BubbleBorder::BubbleAlignment border_alignment,
     const gfx::Rect& anchor_rect,
     Browser* browser) {
-  profile_bubble_ = new ProfileChooserView(
-      anchor_view, arrow, anchor_rect, browser);
+  profile_bubble_ = new ProfileChooserView(anchor_view, arrow, anchor_rect,
+                                           browser, view_mode);
   views::BubbleDelegateView::CreateBubble(profile_bubble_);
   profile_bubble_->set_close_on_deactivate(close_on_deactivate_for_testing_);
   profile_bubble_->SetAlignment(border_alignment);
   profile_bubble_->GetWidget()->Show();
   profile_bubble_->SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
-
-  if (view_mode != BUBBLE_VIEW_MODE_PROFILE_CHOOSER)
-    profile_bubble_->ShowView(view_mode, profile_bubble_->avatar_menu_.get());
 }
 
 // static
@@ -381,10 +378,11 @@ void ProfileChooserView::Hide() {
 ProfileChooserView::ProfileChooserView(views::View* anchor_view,
                                        views::BubbleBorder::Arrow arrow,
                                        const gfx::Rect& anchor_rect,
-                                       Browser* browser)
+                                       Browser* browser,
+                                       BubbleViewMode view_mode)
     : BubbleDelegateView(anchor_view, arrow),
       browser_(browser),
-      view_mode_(BUBBLE_VIEW_MODE_PROFILE_CHOOSER),
+      view_mode_(view_mode),
       tutorial_showing_(false) {
   // Reset the default margins inherited from the BubbleDelegateView.
   set_margins(gfx::Insets());
@@ -433,7 +431,7 @@ void ProfileChooserView::ResetView() {
 }
 
 void ProfileChooserView::Init() {
-  ShowView(BUBBLE_VIEW_MODE_PROFILE_CHOOSER, avatar_menu_.get());
+  ShowView(view_mode_, avatar_menu_.get());
 }
 
 void ProfileChooserView::OnAvatarMenuChanged(
@@ -472,101 +470,32 @@ void ProfileChooserView::ShowView(BubbleViewMode view_to_display,
     DCHECK(active_item.signed_in);
   }
 
-  // Records if the tutorial card is currently shown before resetting the view.
+  // Records if the "mirror enabled" tutorial card is currently shown before
+  // resetting the view.
   bool tutorial_shown = tutorial_showing_;
   ResetView();
   RemoveAllChildViews(true);
   view_mode_ = view_to_display;
 
-  if (view_mode_ == BUBBLE_VIEW_MODE_GAIA_SIGNIN ||
-      view_mode_ == BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT ||
-      view_mode_ == BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL ||
-      view_mode_ == BUBBLE_VIEW_MODE_NEW_PROFILE_MANAGEMENT_PREVIEW) {
-    views::GridLayout* layout;
-    views::View* sub_view;
-    switch (view_mode_) {
-      case BUBBLE_VIEW_MODE_GAIA_SIGNIN:
-      case BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT:
-        layout = CreateSingleColumnLayout(this, kFixedGaiaViewWidth);
-        sub_view = CreateGaiaSigninView(
-            view_mode_ == BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT);
-        break;
-      case BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL:
-        layout = CreateSingleColumnLayout(this, kFixedAccountRemovalViewWidth);
-        sub_view = CreateAccountRemovalView();
-        break;
-      case BUBBLE_VIEW_MODE_NEW_PROFILE_MANAGEMENT_PREVIEW:
-        layout = CreateSingleColumnLayout(this, kFixedMenuWidth);
-        sub_view = CreateNewProfileManagementPreviewView();
-        break;
-      default:
-        NOTREACHED();
-        return;
-    }
-    layout->StartRow(1, 0);
-    layout->AddView(sub_view);
-    Layout();
-    if (GetBubbleFrameView())
-      SizeToContents();
-    return;
+  views::GridLayout* layout;
+  views::View* sub_view;
+  switch (view_mode_) {
+    case BUBBLE_VIEW_MODE_GAIA_SIGNIN:
+    case BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT:
+      layout = CreateSingleColumnLayout(this, kFixedGaiaViewWidth);
+      sub_view = CreateGaiaSigninView(
+          view_mode_ == BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT);
+      break;
+    case BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL:
+      layout = CreateSingleColumnLayout(this, kFixedAccountRemovalViewWidth);
+      sub_view = CreateAccountRemovalView();
+      break;
+    default:
+      layout = CreateSingleColumnLayout(this, kFixedMenuWidth);
+      sub_view = CreateProfileChooserView(avatar_menu, tutorial_shown);
   }
-
-  views::GridLayout* layout = CreateSingleColumnLayout(this, kFixedMenuWidth);
-  // Separate items into active and alternatives.
-  Indexes other_profiles;
-  views::View* tutorial_view = NULL;
-  views::View* current_profile_view = NULL;
-  views::View* current_profile_accounts = NULL;
-  views::View* option_buttons_view = NULL;
-  for (size_t i = 0; i < avatar_menu->GetNumberOfItems(); ++i) {
-    const AvatarMenu::Item& item = avatar_menu->GetItemAt(i);
-    if (item.active) {
-      option_buttons_view = CreateOptionsView(item.signed_in);
-      if (view_to_display == BUBBLE_VIEW_MODE_PROFILE_CHOOSER) {
-        tutorial_view = CreatePreviewEnabledTutorialView(item, tutorial_shown);
-        current_profile_view = CreateCurrentProfileView(item, false);
-      } else {
-        current_profile_view = CreateCurrentProfileEditableView(item);
-        current_profile_accounts = CreateCurrentProfileAccountsView(item);
-      }
-    } else {
-      other_profiles.push_back(i);
-    }
-  }
-
-  if (tutorial_view) {
-    layout->StartRow(1, 0);
-    layout->AddView(tutorial_view);
-  }
-
-  if (!current_profile_view) {
-    // Guest windows don't have an active profile.
-    current_profile_view = CreateGuestProfileView();
-    option_buttons_view = CreateOptionsView(false);
-  }
-
   layout->StartRow(1, 0);
-  layout->AddView(current_profile_view);
-
-  if (view_to_display == BUBBLE_VIEW_MODE_PROFILE_CHOOSER) {
-    layout->StartRow(1, 0);
-    if (switches::IsFastUserSwitching())
-      layout->AddView(CreateOtherProfilesView(other_profiles));
-  } else {
-    DCHECK(current_profile_accounts);
-    layout->StartRow(0, 0);
-    layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
-    layout->StartRow(1, 0);
-    layout->AddView(current_profile_accounts);
-  }
-
-  layout->StartRow(0, 0);
-  layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
-
-  // Action buttons.
-  layout->StartRow(0, 0);
-  layout->AddView(option_buttons_view);
-
+  layout->AddView(sub_view);
   Layout();
   if (GetBubbleFrameView())
     SizeToContents();
@@ -702,10 +631,77 @@ bool ProfileChooserView::HandleKeyEvent(views::Textfield* sender,
   return false;
 }
 
+views::View* ProfileChooserView::CreateProfileChooserView(
+    AvatarMenu* avatar_menu, bool tutorial_shown) {
+  // TODO(guohui, noms): the view should be customized based on whether new
+  // profile management preview is enabled or not.
+
+  views::View* view = new views::View();
+  views::GridLayout* layout = CreateSingleColumnLayout(view, kFixedMenuWidth);
+  // Separate items into active and alternatives.
+  Indexes other_profiles;
+  views::View* tutorial_view = NULL;
+  views::View* current_profile_view = NULL;
+  views::View* current_profile_accounts = NULL;
+  views::View* option_buttons_view = NULL;
+  for (size_t i = 0; i < avatar_menu->GetNumberOfItems(); ++i) {
+    const AvatarMenu::Item& item = avatar_menu->GetItemAt(i);
+    if (item.active) {
+      option_buttons_view = CreateOptionsView(item.signed_in);
+      if (view_mode_ == BUBBLE_VIEW_MODE_PROFILE_CHOOSER) {
+        tutorial_view = switches::IsNewProfileManagement() ?
+            CreatePreviewEnabledTutorialView(item, tutorial_shown) :
+            CreateNewProfileManagementPreviewView();
+        current_profile_view = CreateCurrentProfileView(item, false);
+      } else {
+        current_profile_view = CreateCurrentProfileEditableView(item);
+        current_profile_accounts = CreateCurrentProfileAccountsView(item);
+      }
+    } else {
+      other_profiles.push_back(i);
+    }
+  }
+
+  if (tutorial_view) {
+    layout->StartRow(1, 0);
+    layout->AddView(tutorial_view);
+  }
+
+  if (!current_profile_view) {
+    // Guest windows don't have an active profile.
+    current_profile_view = CreateGuestProfileView();
+    option_buttons_view = CreateOptionsView(false);
+  }
+
+  layout->StartRow(1, 0);
+  layout->AddView(current_profile_view);
+
+  if (view_mode_ == BUBBLE_VIEW_MODE_PROFILE_CHOOSER) {
+    layout->StartRow(1, 0);
+    if (switches::IsFastUserSwitching())
+      layout->AddView(CreateOtherProfilesView(other_profiles));
+  } else {
+    DCHECK(current_profile_accounts);
+    layout->StartRow(0, 0);
+    layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
+    layout->StartRow(1, 0);
+    layout->AddView(current_profile_accounts);
+  }
+
+  layout->StartRow(0, 0);
+  layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
+
+  // Action buttons.
+  layout->StartRow(0, 0);
+  layout->AddView(option_buttons_view);
+
+  return view;
+}
+
 views::View* ProfileChooserView::CreatePreviewEnabledTutorialView(
     const AvatarMenu::Item& current_avatar_item,
     bool tutorial_shown) {
-  if (!current_avatar_item.signed_in)
+  if (!switches::IsNewProfileManagementPreviewEnabled())
     return NULL;
 
   Profile* profile = browser_->profile();
@@ -1172,23 +1168,13 @@ views::View* ProfileChooserView::CreateAccountRemovalView() {
 }
 
 views::View* ProfileChooserView::CreateNewProfileManagementPreviewView() {
-  views::View* view = new views::View();
-  views::GridLayout* layout = CreateSingleColumnLayout(view, kFixedMenuWidth);
-
-  // Adds tutorial card.
-  layout->StartRow(1, 0);
-  layout->AddView(CreateTutorialView(
+  return CreateTutorialView(
       l10n_util::GetStringUTF16(IDS_PROFILES_PREVIEW_TUTORIAL_TITLE),
       l10n_util::GetStringUTF16(IDS_PROFILES_PREVIEW_TUTORIAL_CONTENT_TEXT),
       l10n_util::GetStringUTF16(IDS_PROFILES_PROFILE_TUTORIAL_LEARN_MORE),
       l10n_util::GetStringUTF16(IDS_PROFILES_TUTORIAL_TRY_BUTTON),
       &tutorial_learn_more_link_,
-      &tutorial_enable_new_profile_management_button_));
-
-  // TODO(guohui, noms): adds the current account card and fast profile switcher
-  // card.
-
-  return view;
+      &tutorial_enable_new_profile_management_button_);
 }
 
 void ProfileChooserView::EnableNewProfileManagementPreview() {
@@ -1203,5 +1189,5 @@ void ProfileChooserView::EnableNewProfileManagementPreview() {
 
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kNewProfileManagement);
-  chrome::ShowUserManager(base::FilePath());
+  chrome::ShowUserManagerWithTutorial(profiles::USER_MANAGER_TUTORIAL_OVERVIEW);
 }
