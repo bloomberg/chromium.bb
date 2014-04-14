@@ -283,6 +283,7 @@
                   'eustas+blink@chromium.org',
                   'caseq+blink@chromium.org',
                   'paulirish+reviews@chromium.org',
+                  'malch+blink@chromium.org',
                   'devtools-reviews@chromium.org' ],
     'bidi': [ 'leviw+bidiwatch@chromium.org' ],
     'bindings': [ 'abarth@chromium.org',
