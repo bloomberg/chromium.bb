@@ -157,6 +157,7 @@
       # This variable contains additional defines, specified in skia's
       # skia_for_chromium_defines.gypi file.
       '<@(skia_for_chromium_defines)',
+      'SK_SUPPORT_LEGACY_GETTOTALCLIP',
     ],
 
     'default_font_cache_limit%': '(20*1024*1024)',
