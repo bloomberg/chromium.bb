@@ -1,0 +1,27 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x175
+  RenderBlock {HTML} at (0,0) size 800x175
+    RenderBody {BODY} at (8,16) size 784x151
+      RenderBlock {P} at (0,0) size 784x18
+        RenderText {#text} at (0,0) size 595x18
+          text run at (0,0) width 595: "The select list box should not display items (options and optgroups) with style \"display: none\"."
+      RenderBlock (anonymous) at (0,34) size 784x117
+        RenderListBox {SELECT} at (2,16) size 48x99 [bgcolor=#FFFFFF] [border: (1px inset #808080)]
+        RenderText {#text} at (52,96) size 4x18
+          text run at (52,96) width 4: " "
+        RenderListBox {SELECT} at (58,16) size 63x99 [bgcolor=#FFFFFF] [border: (1px inset #808080)]
+        RenderText {#text} at (123,96) size 4x18
+          text run at (123,96) width 4: " "
+        RenderListBox {SELECT} at (129,16) size 63x99 [bgcolor=#FFFFFF] [border: (1px inset #808080)]
+        RenderText {#text} at (194,96) size 4x18
+          text run at (194,96) width 4: " "
+        RenderListBox {SELECT} at (200,2) size 48x113 [bgcolor=#FFFFFF] [border: (1px inset #808080)]
+        RenderText {#text} at (250,96) size 4x18
+          text run at (250,96) width 4: " "
+        RenderListBox {SELECT} at (256,2) size 48x113 [bgcolor=#FFFFFF] [border: (1px inset #808080)]
+        RenderText {#text} at (306,96) size 4x18
+          text run at (306,96) width 4: " "
+        RenderListBox {SELECT} at (312,2) size 60x113 [bgcolor=#FFFFFF] [border: (1px inset #808080)]
+        RenderText {#text} at (0,0) size 0x0
+        RenderText {#text} at (0,0) size 0x0
