@@ -883,7 +883,7 @@ def BuildStepBuildNaClPorts(pepper_ver, pepperdir):
   extra_licenses = ('tinyxml/readme.txt',
                     'jpeg-8d/README',
                     'zlib-1.2.3/README')
-  src_root = os.path.join(NACLPORTS_DIR, 'out', 'repository-i686')
+  src_root = os.path.join(NACLPORTS_DIR, 'out', 'build')
   output_license = os.path.join(out_dir, 'ports', 'LICENSE')
   GenerateNotice(src_root , output_license, extra_licenses)
   readme = os.path.join(out_dir, 'ports', 'README')
