@@ -31,6 +31,7 @@ public:
     virtual void didStartFontLoad(FontResource*) OVERRIDE;
     virtual void fontLoaded(FontResource*) OVERRIDE;
     virtual void fontLoadWaitLimitExceeded(FontResource*) OVERRIDE;
+    virtual void corsFailed(FontResource*) OVERRIDE;
 
     // For UMA reporting
     virtual bool hadBlankText() OVERRIDE { return m_histograms.hadBlankText(); }

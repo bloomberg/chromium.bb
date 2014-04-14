@@ -588,6 +588,12 @@ bool ResourceFetcher::canAccessResource(Resource* resource, SecurityOrigin* sour
             String resourceType = Resource::resourceTypeToString(resource->type(), resource->options().initiatorInfo);
             frame()->document()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, resourceType + " from origin '" + SecurityOrigin::create(url)->toString() + "' has been blocked from loading by Cross-Origin Resource Sharing policy: " + errorDescription);
         }
+
+        // FIXME: Remove later, http://crbug.com/286681
+        if (resource->type() == Resource::Font) {
+            FontResource* fontResource = toFontResource(resource);
+            fontResource->setCORSFailed();
+        }
         return false;
     }
     return true;

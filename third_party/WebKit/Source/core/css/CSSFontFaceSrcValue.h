@@ -84,6 +84,8 @@ private:
     {
     }
 
+    bool shouldSetCrossOriginAccessControl(const KURL& resource, SecurityOrigin*);
+
     String m_resource;
     String m_format;
     bool m_isLocal;
