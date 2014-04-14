@@ -106,6 +106,7 @@ public:
     virtual ~HTMLImport() { }
 
     HTMLImport* root();
+    bool isRoot() const { return !isChild(); }
     bool isSync() const { return SyncMode(m_sync) == Sync; }
     const HTMLImportState& state() const { return m_state; }
 
