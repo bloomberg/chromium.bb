@@ -5,6 +5,8 @@
 #include "extensions/browser/extension_protocols.h"
 
 #include <algorithm>
+#include <string>
+#include <vector>
 
 #include "base/base64.h"
 #include "base/compiler_specific.h"
@@ -14,9 +16,12 @@
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/sha1.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -25,6 +30,8 @@
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
+#include "crypto/secure_hash.h"
+#include "crypto/sha2.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/common/constants.h"
@@ -37,6 +44,7 @@
 #include "extensions/common/manifest_handlers/incognito_info.h"
 #include "extensions/common/manifest_handlers/shared_module_info.h"
 #include "extensions/common/manifest_handlers/web_accessible_resources_info.h"
+#include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
@@ -157,19 +165,30 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
                          const std::string& content_security_policy,
                          bool send_cors_header,
                          bool follow_symlinks_anywhere)
-    : net::URLRequestFileJob(
-          request, network_delegate, base::FilePath(),
-          BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
-                  base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)),
-      directory_path_(directory_path),
-      // TODO(tc): Move all of these files into resources.pak so we don't break
-      // when updating on Linux.
-      resource_(extension_id, directory_path, relative_path),
-      content_security_policy_(content_security_policy),
-      send_cors_header_(send_cors_header),
-      weak_factory_(this) {
+      : net::URLRequestFileJob(
+            request,
+            network_delegate,
+            base::FilePath(),
+            BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
+                base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)),
+        seek_position_(0),
+        bytes_read_(0),
+        directory_path_(directory_path),
+        // TODO(tc): Move all of these files into resources.pak so we don't
+        // break when updating on Linux.
+        resource_(extension_id, directory_path, relative_path),
+        content_security_policy_(content_security_policy),
+        send_cors_header_(send_cors_header),
+        weak_factory_(this) {
     if (follow_symlinks_anywhere) {
       resource_.set_follow_symlinks_anywhere();
+    }
+    const std::string& group =
+        base::FieldTrialList::FindFullName("ExtensionContentHashMeasurement");
+    if (group == "Yes") {
+      base::ElapsedTimer timer;
+      hash_.reset(crypto::SecureHash::Create(crypto::SecureHash::SHA256));
+      hashing_time_ = timer.Elapsed();
     }
   }
 
@@ -182,7 +201,8 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
     base::Time* last_modified_time = new base::Time();
     bool posted = BrowserThread::PostBlockingPoolTaskAndReply(
         FROM_HERE,
-        base::Bind(&ReadResourceFilePathAndLastModifiedTime, resource_,
+        base::Bind(&ReadResourceFilePathAndLastModifiedTime,
+                   resource_,
                    directory_path_,
                    base::Unretained(read_file_path),
                    base::Unretained(last_modified_time)),
@@ -193,8 +213,35 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
     DCHECK(posted);
   }
 
+  virtual void OnSeekComplete(int64 result) OVERRIDE {
+    DCHECK_EQ(seek_position_, 0);
+    seek_position_ = result;
+  }
+
+  virtual void OnReadComplete(net::IOBuffer* buffer, int result) OVERRIDE {
+    UMA_HISTOGRAM_COUNTS("ExtensionUrlRequest.OnReadCompleteResult", result);
+    if (result > 0) {
+      bytes_read_ += result;
+      if (hash_.get()) {
+        base::ElapsedTimer timer;
+        hash_->Update(buffer->data(), result);
+        hashing_time_ += timer.Elapsed();
+      }
+    }
+  }
+
  private:
-  virtual ~URLRequestExtensionJob() {}
+  virtual ~URLRequestExtensionJob() {
+    if (hash_.get()) {
+      base::ElapsedTimer timer;
+      std::string hash_bytes(crypto::kSHA256Length, 0);
+      hash_->Finish(string_as_array(&hash_bytes), hash_bytes.size());
+      hashing_time_ += timer.Elapsed();
+      UMA_HISTOGRAM_TIMES("ExtensionUrlRequest.HashTimeMs", hashing_time_);
+    }
+    UMA_HISTOGRAM_COUNTS("ExtensionUrlRequest.TotalKbRead", bytes_read_ / 1024);
+    UMA_HISTOGRAM_COUNTS("ExtensionUrlRequest.SeekPosition", seek_position_);
+  }
 
   void OnFilePathAndLastModifiedTimeRead(base::FilePath* read_file_path,
                                          base::Time* last_modified_time) {
@@ -205,6 +252,18 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
         *last_modified_time);
     URLRequestFileJob::Start();
   }
+
+  // A hash of the contents we've read from the file.
+  scoped_ptr<crypto::SecureHash> hash_;
+
+  // The position we seeked to in the file.
+  int64 seek_position_;
+
+  // The number of bytes of content we read from the file.
+  int bytes_read_;
+
+  // Used to count the total time it takes to do hashing operations.
+  base::TimeDelta hashing_time_;
 
   net::HttpResponseInfo response_info_;
   base::FilePath directory_path_;

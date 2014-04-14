@@ -16,7 +16,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
 
-namespace base{
+namespace base {
 class TaskRunner;
 }
 namespace file_util {
@@ -47,6 +47,10 @@ class NET_EXPORT URLRequestFileJob : public URLRequestJob {
   virtual bool GetMimeType(std::string* mime_type) const OVERRIDE;
   virtual void SetExtraRequestHeaders(
       const HttpRequestHeaders& headers) OVERRIDE;
+
+  // An interface for subclasses who wish to monitor read operations.
+  virtual void OnSeekComplete(int64 result);
+  virtual void OnReadComplete(net::IOBuffer* buf, int result);
 
  protected:
   virtual ~URLRequestFileJob();
@@ -88,8 +92,8 @@ class NET_EXPORT URLRequestFileJob : public URLRequestJob {
   // on a background thread.
   void DidSeek(int64 result);
 
-  // Callback after data is asynchronously read from the file.
-  void DidRead(int result);
+  // Callback after data is asynchronously read from the file into |buf|.
+  void DidRead(scoped_refptr<net::IOBuffer> buf, int result);
 
   scoped_ptr<FileStream> stream_;
   FileMetaInfo meta_info_;
