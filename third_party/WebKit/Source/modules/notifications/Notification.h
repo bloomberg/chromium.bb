@@ -49,11 +49,11 @@ class Dictionary;
 class ExecutionContext;
 class NotificationPermissionCallback;
 
-class Notification : public RefCountedWillBeRefCountedGarbageCollected<Notification>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData {
-    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<Notification>);
+class Notification : public RefCountedGarbageCollected<Notification>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData {
+    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedGarbageCollected<Notification>);
 
 public:
-    static PassRefPtrWillBeRawPtr<Notification> create(ExecutionContext*, const String& title, const Dictionary& options);
+    static Notification* create(ExecutionContext*, const String& title, const Dictionary& options);
 
     virtual ~Notification();
 
@@ -92,7 +92,6 @@ public:
     virtual void stop() OVERRIDE;
     virtual bool hasPendingActivity() const OVERRIDE;
 
-    // RefCountedWillBeRefCountedGarbageCollected<Notification> interface.
     void trace(Visitor*) { }
 
 private:

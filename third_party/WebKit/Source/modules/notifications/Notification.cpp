@@ -40,10 +40,10 @@
 
 namespace WebCore {
 
-PassRefPtrWillBeRawPtr<Notification> Notification::create(ExecutionContext* context, const String& title, const Dictionary& options)
+Notification* Notification::create(ExecutionContext* context, const String& title, const Dictionary& options)
 {
     NotificationClient* client = NotificationController::clientFrom(toDocument(context)->page());
-    RefPtrWillBeRawPtr<Notification> notification = adoptRefWillBeRefCountedGarbageCollected(new Notification(title, context, client));
+    Notification* notification = adoptRefCountedGarbageCollected(new Notification(title, context, client));
 
     String argument;
     if (options.get("body", argument))
@@ -61,7 +61,7 @@ PassRefPtrWillBeRawPtr<Notification> Notification::create(ExecutionContext* cont
     }
 
     notification->suspendIfNeeded();
-    return notification.release();
+    return notification;
 }
 
 Notification::Notification(const String& title, ExecutionContext* context, NotificationClient* client)
