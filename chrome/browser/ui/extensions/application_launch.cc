@@ -190,21 +190,26 @@ WebContents* OpenApplicationWindow(const AppLaunchParams& params) {
 
   DCHECK(!url_input.is_empty() || extension);
   GURL url = UrlForExtension(extension, url_input);
-  Browser::CreateParams browser_params(
-      Browser::TYPE_POPUP, profile, params.desktop_type);
-
-  browser_params.app_name = extension ?
+  std::string app_name = extension ?
       web_app::GenerateApplicationNameFromExtensionId(extension->id()) :
       web_app::GenerateApplicationNameFromURL(url);
 
+  gfx::Rect initial_bounds;
   if (!params.override_bounds.IsEmpty()) {
-    browser_params.initial_bounds = params.override_bounds;
+    initial_bounds = params.override_bounds;
   } else if (extension) {
-    browser_params.initial_bounds.set_width(
+    initial_bounds.set_width(
         extensions::AppLaunchInfo::GetLaunchWidth(extension));
-    browser_params.initial_bounds.set_height(
+    initial_bounds.set_height(
         extensions::AppLaunchInfo::GetLaunchHeight(extension));
   }
+
+  Browser::CreateParams browser_params(
+      Browser::CreateParams::CreateForApp(app_name,
+                                          true /* trusted_source */,
+                                          initial_bounds,
+                                          profile,
+                                          params.desktop_type));
 
   browser_params.initial_show_state = DetermineWindowShowState(profile,
                                                                params.container,

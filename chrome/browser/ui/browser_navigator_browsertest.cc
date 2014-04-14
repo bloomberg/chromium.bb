@@ -116,11 +116,10 @@ Browser* BrowserNavigatorTest::CreateEmptyBrowserForType(Browser::Type type,
   return browser;
 }
 
-Browser* BrowserNavigatorTest::CreateEmptyBrowserForApp(Browser::Type type,
-                                                        Profile* profile) {
+Browser* BrowserNavigatorTest::CreateEmptyBrowserForApp(Profile* profile) {
   Browser* browser = new Browser(
       Browser::CreateParams::CreateForApp(
-          Browser::TYPE_POPUP, "Test", gfx::Rect(), profile,
+          "Test", false /* trusted_source */, gfx::Rect(), profile,
           chrome::GetActiveDesktop()));
   chrome::AddTabAt(browser, GURL(), -1, true);
   return browser;
@@ -512,11 +511,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewPopupFromPopup) {
 }
 
 // This test verifies that navigating with WindowOpenDisposition = NEW_POPUP
-// from an app frame results in a new Browser with TYPE_APP_POPUP.
+// from an app frame results in a new Browser with TYPE_POPUP.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_NewPopupFromAppWindow) {
-  Browser* app_browser = CreateEmptyBrowserForApp(Browser::TYPE_TABBED,
-                                                  browser()->profile());
+  Browser* app_browser = CreateEmptyBrowserForApp(browser()->profile());
   chrome::NavigateParams p(MakeNavigateParams(app_browser));
   p.disposition = NEW_POPUP;
   p.window_bounds = gfx::Rect(0, 0, 200, 200);
@@ -537,11 +535,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 }
 
 // This test verifies that navigating with WindowOpenDisposition = NEW_POPUP
-// from an app popup results in a new Browser also of TYPE_APP_POPUP.
+// from an app popup results in a new Browser also of TYPE_POPUP.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_NewPopupFromAppPopup) {
-  Browser* app_browser = CreateEmptyBrowserForApp(Browser::TYPE_TABBED,
-                                                  browser()->profile());
+  Browser* app_browser = CreateEmptyBrowserForApp(browser()->profile());
   // Open an app popup.
   chrome::NavigateParams p1(MakeNavigateParams(app_browser));
   p1.disposition = NEW_POPUP;
@@ -593,6 +590,24 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewPopupUnfocused) {
   EXPECT_FALSE(p.browser->window()->IsActive());
 #endif
 }
+
+// This test verifies that navigating with WindowOpenDisposition = NEW_POPUP
+// and trusted_source = true results in a new Browser where is_trusted_source()
+// is true.
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewPopupTrusted) {
+  chrome::NavigateParams p(MakeNavigateParams());
+  p.disposition = NEW_POPUP;
+  p.trusted_source = true;
+  p.window_bounds = gfx::Rect(0, 0, 200, 200);
+  // Wait for new popup to to load and gain focus.
+  ui_test_utils::NavigateToURL(&p);
+
+  // Navigate() should have opened a new popup window of TYPE_TRUSTED_POPUP.
+  EXPECT_NE(browser(), p.browser);
+  EXPECT_TRUE(p.browser->is_type_popup());
+  EXPECT_TRUE(p.browser->is_trusted_source());
+}
+
 
 // This test verifies that navigating with WindowOpenDisposition = NEW_WINDOW
 // always opens a new window.

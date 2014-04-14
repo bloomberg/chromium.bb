@@ -48,6 +48,7 @@ void SettingsWindowManager::ShowForProfile(Profile* profile,
   // No existing browser window, create one.
   NavigateParams params(profile, gurl, content::PAGE_TRANSITION_AUTO_BOOKMARK);
   params.disposition = NEW_POPUP;
+  params.trusted_source = true;
   params.window_action = NavigateParams::SHOW_WINDOW;
   params.user_gesture = true;
   params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;

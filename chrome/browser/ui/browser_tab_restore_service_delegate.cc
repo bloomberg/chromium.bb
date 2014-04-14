@@ -92,9 +92,10 @@ TabRestoreServiceDelegate* TabRestoreServiceDelegate::Create(
   if (app_name.empty()) {
     browser = new Browser(Browser::CreateParams(profile, host_desktop_type));
   } else {
+    // Only trusted app popup windows should ever be restored.
     browser = new Browser(
         Browser::CreateParams::CreateForApp(
-            Browser::TYPE_POPUP, app_name, gfx::Rect(), profile,
+            app_name, true /* trusted_source */, gfx::Rect(), profile,
             host_desktop_type));
   }
   if (browser)

@@ -31,7 +31,7 @@ class BrowserNavigatorTest : public InProcessBrowserTest,
   chrome::NavigateParams MakeNavigateParams(Browser* browser) const;
 
   Browser* CreateEmptyBrowserForType(Browser::Type type, Profile* profile);
-  Browser* CreateEmptyBrowserForApp(Browser::Type type, Profile* profile);
+  Browser* CreateEmptyBrowserForApp(Profile* profile);
 
   content::WebContents* CreateWebContents();
 

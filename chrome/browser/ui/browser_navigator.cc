@@ -167,12 +167,16 @@ Browser* GetBrowserForDisposition(chrome::NavigateParams* params) {
       if (app_name.empty()) {
         Browser::CreateParams browser_params(
             Browser::TYPE_POPUP, profile, params->host_desktop_type);
+        browser_params.trusted_source = params->trusted_source;
         browser_params.initial_bounds = params->window_bounds;
         return new Browser(browser_params);
       }
 
       return new Browser(Browser::CreateParams::CreateForApp(
-          Browser::TYPE_POPUP, app_name, params->window_bounds, profile,
+          app_name,
+          params->trusted_source,
+          params->window_bounds,
+          profile,
           params->host_desktop_type));
     }
     case NEW_WINDOW: {
@@ -398,6 +402,7 @@ NavigateParams::NavigateParams(Browser* a_browser,
       target_contents(NULL),
       source_contents(NULL),
       disposition(CURRENT_TAB),
+      trusted_source(false),
       transition(a_transition),
       is_renderer_initiated(false),
       tabstrip_index(-1),
@@ -420,6 +425,7 @@ NavigateParams::NavigateParams(Browser* a_browser,
       target_contents(a_target_contents),
       source_contents(NULL),
       disposition(CURRENT_TAB),
+      trusted_source(false),
       transition(content::PAGE_TRANSITION_LINK),
       is_renderer_initiated(false),
       tabstrip_index(-1),
@@ -444,6 +450,7 @@ NavigateParams::NavigateParams(Profile* a_profile,
       target_contents(NULL),
       source_contents(NULL),
       disposition(NEW_FOREGROUND_TAB),
+      trusted_source(false),
       transition(a_transition),
       is_renderer_initiated(false),
       tabstrip_index(-1),
@@ -468,6 +475,7 @@ void FillNavigateParamsFromOpenURLParams(chrome::NavigateParams* nav_params,
   nav_params->redirect_chain = params.redirect_chain;
   nav_params->extra_headers = params.extra_headers;
   nav_params->disposition = params.disposition;
+  nav_params->trusted_source = false;
   nav_params->is_renderer_initiated = params.is_renderer_initiated;
   nav_params->transferred_global_request_id =
       params.transferred_global_request_id;

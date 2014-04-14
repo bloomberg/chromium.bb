@@ -1072,8 +1072,16 @@ class SessionRestoreImpl : public content::NotificationObserver {
                                  ui::WindowShowState show_state,
                                  const std::string& app_name) {
     Browser::CreateParams params(type, profile_, host_desktop_type_);
-    params.app_name = app_name;
-    params.initial_bounds = bounds;
+    if (!app_name.empty()) {
+      const bool trusted_source = true;  // We only store trusted app windows.
+      params = Browser::CreateParams::CreateForApp(app_name,
+                                                   trusted_source,
+                                                   bounds,
+                                                   profile_,
+                                                   host_desktop_type_);
+    } else {
+      params.initial_bounds = bounds;
+    }
     params.initial_show_state = show_state;
     params.is_session_restore = true;
     return new Browser(params);

@@ -226,10 +226,16 @@ Browser* BrowserWithTestWindowTest::CreateBrowser(
     chrome::HostDesktopType host_desktop_type,
     BrowserWindow* browser_window) {
   Browser::CreateParams params(profile, host_desktop_type);
-  params.type = browser_type;
+  if (hosted_app) {
+    params = Browser::CreateParams::CreateForApp("Test",
+                                                 true /* trusted_source */,
+                                                 gfx::Rect(),
+                                                 profile,
+                                                 host_desktop_type);
+  } else {
+    params.type = browser_type;
+  }
   params.window = browser_window;
-  if (hosted_app)
-    params.app_name = "Test";
   return new Browser(params);
 }
 

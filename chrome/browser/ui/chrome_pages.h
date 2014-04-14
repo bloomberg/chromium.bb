@@ -57,9 +57,6 @@ void ShowSlow(Browser* browser);
 // Constructs a settings GURL for the specified |sub_page|.
 GURL GetSettingsUrl(const std::string& sub_page);
 
-// Returns true if |browser| is a popup window containing a settings page.
-bool IsSettingsWindow(const Browser* browser);
-
 // Various things that open in a settings UI.
 void ShowSettings(Browser* browser);
 void ShowSettingsSubPage(Browser* browser, const std::string& sub_page);

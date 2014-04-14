@@ -1590,7 +1590,8 @@ bool BrowserView::ShouldShowWindowTitle() const {
   // For Ash only, app host windows do not show an icon, crbug.com/119411.
   // Child windows (i.e. popups) do show an icon.
   if (browser_->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH &&
-      browser_->is_app() && browser_->app_type() == Browser::APP_TYPE_HOST)
+      browser_->is_app() &&
+      browser_->is_trusted_source())
     return false;
 
   return browser_->SupportsWindowFeature(Browser::FEATURE_TITLEBAR);
@@ -1619,7 +1620,8 @@ bool BrowserView::ShouldShowWindowIcon() const {
   // For Ash only, app host windows do not show an icon, crbug.com/119411.
   // Child windows (i.e. popups) do show an icon.
   if (browser_->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH &&
-      browser_->is_app() && browser_->app_type() == Browser::APP_TYPE_HOST)
+      browser_->is_app() &&
+      browser_->is_trusted_source())
     return false;
 
   return browser_->SupportsWindowFeature(Browser::FEATURE_TITLEBAR);
@@ -1679,9 +1681,9 @@ bool BrowserView::GetSavedWindowPlacement(
 
   if (browser_->is_type_popup() &&
       !browser_->is_app() &&
-      !browser_->is_devtools()) {
-    // This is non-app popup window. The value passed in |bounds| represents
-    // two pieces of information:
+      !browser_->is_trusted_source()) {
+    // This is normal non-app popup window. The value passed in |bounds|
+    // represents two pieces of information:
     // - the position of the window, in screen coordinates (outer position).
     // - the size of the content area (inner size).
     // We need to use these values to determine the appropriate size and

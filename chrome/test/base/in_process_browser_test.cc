@@ -325,7 +325,7 @@ Browser* InProcessBrowserTest::CreateBrowserForApp(
     Profile* profile) {
   Browser* browser = new Browser(
       Browser::CreateParams::CreateForApp(
-          Browser::TYPE_POPUP, app_name, gfx::Rect(), profile,
+          app_name, false /* trusted_source */, gfx::Rect(), profile,
           chrome::GetActiveDesktop()));
   AddBlankTabAndShow(browser);
   return browser;

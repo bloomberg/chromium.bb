@@ -123,7 +123,7 @@ BrowserFrameAsh::~BrowserFrameAsh() {
 // BrowserFrameAsh, private:
 
 void BrowserFrameAsh::SetWindowAutoManaged() {
-  if (browser_view_->browser()->type() != Browser::TYPE_POPUP ||
+  if (!browser_view_->browser()->is_type_popup() ||
       browser_view_->browser()->is_app()) {
     ash::wm::GetWindowState(GetNativeWindow())->
         set_window_position_managed(true);

@@ -212,21 +212,6 @@ GURL GetSettingsUrl(const std::string& sub_page) {
   return GURL(url);
 }
 
-bool IsSettingsWindow(const Browser* browser) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableSettingsWindow))
-    return false;
-  if (browser->is_type_tabbed())
-    return false;
-  const content::WebContents* web_contents =
-      browser->tab_strip_model()->GetWebContentsAt(0);
-  if (!web_contents)
-    return false;
-  GURL url(web_contents->GetURL());
-  return (url.SchemeIs(content::kChromeUIScheme) &&
-          url.spec().find(chrome::kChromeUISettingsURL) == 0);
-}
-
 void ShowSettings(Browser* browser) {
   ShowSettingsSubPage(browser, std::string());
 }

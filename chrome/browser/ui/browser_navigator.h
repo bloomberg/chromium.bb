@@ -125,6 +125,9 @@ struct NavigateParams {
   // |tabstrip_add_types|.
   WindowOpenDisposition disposition;
 
+  // Sets browser->is_trusted_source. Default is false.
+  bool trusted_source;
+
   // The transition type of the navigation. Default is
   // content::PAGE_TRANSITION_LINK when target_contents is specified in the
   // constructor.

@@ -564,8 +564,8 @@ bool WindowsCreateFunction::RunImpl() {
     create_params.initial_bounds = window_bounds;
   } else {
     create_params = Browser::CreateParams::CreateForApp(
-        window_type,
         web_app::GenerateApplicationNameFromExtensionId(extension_id),
+        false /* trusted_source */,
         window_bounds,
         window_profile,
         host_desktop_type);

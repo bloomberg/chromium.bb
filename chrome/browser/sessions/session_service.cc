@@ -1574,9 +1574,17 @@ bool SessionService::ShouldTrackChangesToWindow(
 }
 
 bool SessionService::ShouldTrackBrowser(Browser* browser) const {
+  if (browser->profile() != profile())
+    return false;
+  // Never track app popup windows that do not have a trusted source (i.e.
+  // popup windows spawned by an app). If this logic changes, be sure to also
+  // change SessionRestoreImpl::CreateRestoredBrowser().
+  if (browser->is_app() && browser->is_type_popup() &&
+      !browser->is_trusted_source()) {
+    return false;
+  }
   AppType app_type = browser->is_app() ? TYPE_APP : TYPE_NORMAL;
-  return browser->profile() == profile() &&
-         should_track_changes_for_browser_type(browser->type(), app_type);
+  return should_track_changes_for_browser_type(browser->type(), app_type);
 }
 
 bool SessionService::should_track_changes_for_browser_type(Browser::Type type,

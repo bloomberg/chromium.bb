@@ -253,7 +253,7 @@ Browser::CreateParams::CreateParams(Profile* profile,
     : type(TYPE_TABBED),
       profile(profile),
       host_desktop_type(host_desktop_type),
-      app_type(APP_TYPE_HOST),
+      trusted_source(false),
       initial_show_state(ui::SHOW_STATE_DEFAULT),
       is_session_restore(false),
       window(NULL) {
@@ -265,7 +265,7 @@ Browser::CreateParams::CreateParams(Type type,
     : type(type),
       profile(profile),
       host_desktop_type(host_desktop_type),
-      app_type(APP_TYPE_HOST),
+      trusted_source(false),
       initial_show_state(ui::SHOW_STATE_DEFAULT),
       is_session_restore(false),
       window(NULL) {
@@ -273,17 +273,16 @@ Browser::CreateParams::CreateParams(Type type,
 
 // static
 Browser::CreateParams Browser::CreateParams::CreateForApp(
-    Type type,
     const std::string& app_name,
+    bool trusted_source,
     const gfx::Rect& window_bounds,
     Profile* profile,
     chrome::HostDesktopType host_desktop_type) {
-  DCHECK(type != TYPE_TABBED);
   DCHECK(!app_name.empty());
 
-  CreateParams params(type, profile, host_desktop_type);
+  CreateParams params(TYPE_POPUP, profile, host_desktop_type);
   params.app_name = app_name;
-  params.app_type = APP_TYPE_CHILD;
+  params.trusted_source = trusted_source;
   params.initial_bounds = window_bounds;
 
   return params;
@@ -295,6 +294,7 @@ Browser::CreateParams Browser::CreateParams::CreateForDevTools(
     chrome::HostDesktopType host_desktop_type) {
   CreateParams params(TYPE_POPUP, profile, host_desktop_type);
   params.app_name = DevToolsWindow::kDevToolsApp;
+  params.trusted_source = true;
   return params;
 }
 
@@ -335,7 +335,7 @@ Browser::Browser(const CreateParams& params)
       tab_strip_model_(new TabStripModel(tab_strip_model_delegate_.get(),
                                          params.profile)),
       app_name_(params.app_name),
-      app_type_(params.app_type),
+      is_trusted_source_(params.trusted_source),
       cancel_download_confirmation_state_(NOT_PROMPTED),
       override_bounds_(params.initial_bounds),
       initial_show_state_(params.initial_show_state),
@@ -2235,22 +2235,24 @@ void Browser::TabDetachedAtImpl(content::WebContents* contents,
 }
 
 bool Browser::ShouldShowLocationBar() const {
-  if (!is_app()) {
-    // Hide the URL for singleton settings windows.
-    // TODO(stevenjb): We could avoid this check by setting a Browser
-    // property for "system" windows, possibly shared with hosted app windows.
-    // crbug.com/350128.
-    if (chrome::IsSettingsWindow(this))
-      return false;
+  // Tabbed browser always show a location bar.
+  if (is_type_tabbed())
     return true;
-  }
+
+  // Trusted app windows and system windows never show a location bar.
+  if (is_trusted_source())
+    return false;
+
+  // Other non-app browsers always show a location bar.
+  if (!is_app())
+    return true;
 
   // Normally apps do not show a location bar.
-  if (app_type() != APP_TYPE_HOST ||
-      app_name() == DevToolsWindow::kDevToolsApp ||
+  if (app_name() == DevToolsWindow::kDevToolsApp ||
       !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableStreamlinedHostedApps))
+          switches::kEnableStreamlinedHostedApps)) {
     return false;
+  }
 
   // If kEnableStreamlinedHostedApps is true, show the locaiton bar for non
   // legacy packaged apps.

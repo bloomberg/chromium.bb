@@ -706,12 +706,12 @@ class V1App : public TestBrowserWindow {
     aura::client::ParentWindowWithContext(native_window_.get(),
                                           ash::Shell::GetPrimaryRootWindow(),
                                           gfx::Rect(10, 10, 20, 30));
-    Browser::CreateParams params = Browser::CreateParams::CreateForApp(
-        Browser::TYPE_POPUP,
-        kCrxAppPrefix + app_name,
-        gfx::Rect(),
-        profile,
-        chrome::HOST_DESKTOP_TYPE_ASH);
+    Browser::CreateParams params =
+        Browser::CreateParams::CreateForApp(kCrxAppPrefix + app_name,
+                                            true /* trusted_source */,
+                                            gfx::Rect(),
+                                            profile,
+                                            chrome::HOST_DESKTOP_TYPE_ASH);
     params.window = this;
     browser_.reset(new Browser(params));
     chrome::AddTabAt(browser_.get(), GURL(), 0, true);
