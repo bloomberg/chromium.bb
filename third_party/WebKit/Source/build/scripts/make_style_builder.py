@@ -46,7 +46,6 @@ class StyleBuilderWriter(in_generator.Writer):
         'custom_value': [True, False],
     }
     defaults = {
-        'condition': None,
         'name_for_methods': None,
         'use_handlers_for': None,
         'svg': False,

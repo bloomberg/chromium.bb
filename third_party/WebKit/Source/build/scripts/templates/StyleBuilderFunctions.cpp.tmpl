@@ -16,7 +16,6 @@
 #include "core/css/Pair.h"
 #include "core/css/resolver/StyleResolverState.h"
 
-{# FIXME: factor macros out into a separate library #}
 {% macro declare_initial_function(property_id) %}
 void StyleBuilderFunctions::applyInitial{{property_id}}(StyleResolverState& state)
 {%- endmacro %}
@@ -26,19 +25,58 @@ void StyleBuilderFunctions::applyInherit{{property_id}}(StyleResolverState& stat
 {% macro declare_value_function(property_id) %}
 void StyleBuilderFunctions::applyValue{{property_id}}(StyleResolverState& state, CSSValue* value)
 {%- endmacro %}
-// FIXME: This is duplicated in StyleBuilder.cpp.tmpl, but we'll move the
-// function definitions there over to here later.
 {% macro set_value(property) %}
 {% if property.svg %}
 state.style()->accessSVGStyle()->{{property.setter}}
+{%- elif property.font %}
+state.fontBuilder().{{property.setter}}
 {%- else %}
 state.style()->{{property.setter}}
 {%- endif %}
 {% endmacro %}
 
 namespace WebCore {
-{# FIXME: remove excess newline #}
 
+{% for property_id, property in properties.items() if not property.use_handlers_for %}
+{% set apply_type = property.apply_type %}
+{% if not property.custom_initial %}
+{{declare_initial_function(property_id)}}
+{
+    {% if property.svg %}
+    {{set_value(property)}}(SVGRenderStyle::{{property.initial}}());
+    {% elif property.font %}
+    {{set_value(property)}}(FontBuilder::{{property.initial}}());
+    {% else %}
+    {{set_value(property)}}(RenderStyle::{{property.initial}}());
+    {% endif %}
+}
+
+{% endif %}
+{% if not property.custom_inherit %}
+{{declare_inherit_function(property_id)}}
+{
+    {% if property.svg %}
+    {{set_value(property)}}(state.parentStyle()->svgStyle()->{{property.getter}}());
+    {% elif property.font %}
+    {{set_value(property)}}(state.parentFontDescription().{{property.getter}}());
+    {% else %}
+    {{set_value(property)}}(state.parentStyle()->{{property.getter}}());
+    {% endif %}
+}
+
+{% endif %}
+{% if not property.custom_value %}
+{{declare_value_function(property_id)}}
+{
+    {% if property.converter %}
+    {{set_value(property)}}(StyleBuilderConverter::{{property.converter}}(state, value));
+    {% else %}
+    {{set_value(property)}}(static_cast<{{property.type_name}}>(*toCSSPrimitiveValue(value)));
+    {% endif %}
+}
+
+{% endif %}
+{% endfor %}
 
 {% macro apply_animation(property_id, attribute, animation) %}
 {{declare_initial_function(property_id)}}
