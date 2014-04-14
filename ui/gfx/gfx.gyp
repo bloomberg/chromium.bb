@@ -489,6 +489,13 @@
       'target_name': 'gfx_unittests',
       'type': '<(gtest_target_type)',
       'sources': [
+        'animation/animation_container_unittest.cc',
+        'animation/animation_unittest.cc',
+        'animation/multi_animation_unittest.cc',
+        'animation/slide_animation_unittest.cc',
+        'codec/png_codec_unittest.cc',
+        'color_utils_unittest.cc',
+        'display_unittest.cc',
         'geometry/box_unittest.cc',
         'geometry/cubic_bezier_unittest.cc',
         'geometry/insets_unittest.cc',
@@ -504,14 +511,25 @@
         'range/range_mac_unittest.mm',
         'range/range_unittest.cc',
         'range/range_win_unittest.cc',
+        'shadow_value_unittest.cc',
+        'skbitmap_operations_unittest.cc',
+        'skrect_conversion_unittest.cc',
       ],
       'dependencies': [
-        '<(DEPTH)/base/base.gyp:base',
-        '<(DEPTH)/base/base.gyp:run_all_unittests',
-        '<(DEPTH)/base/base.gyp:test_support_base',
-        '<(DEPTH)/testing/gtest.gyp:gtest',
+        '../../base/base.gyp:base',
+        '../../base/base.gyp:run_all_unittests',
+        '../../base/base.gyp:test_support_base',
+        '../../skia/skia.gyp:skia',
+        '../../testing/gtest.gyp:gtest',
+        '../../third_party/libpng/libpng.gyp:libpng',
         'gfx',
         'gfx_geometry',
+      ],
+      'conditions': [
+        ['OS == "win"', {
+          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+          'msvs_disabled_warnings': [ 4267, ],
+        }],
       ],
     }
   ],
