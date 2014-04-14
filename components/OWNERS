@@ -9,6 +9,13 @@ per-file breakpad.gypi=jochen@chromium.org
 per-file breakpad.gypi=rsesek@chromium.org
 per-file breakpad.gypi=thestig@chromium.org
 
+per-file bookmarks*=brettw@chromium.org
+per-file bookmarks*=sky@chromium.org
+# Temporary for the duration of the bookmarks componentization.
+per-file bookmarks*=blundell@chromium.org
+# Temporary for the duration of the bookmarks componentization.
+per-file bookmarks*=droger@chromium.org
+
 per-file cloud_devices*=gene@chromium.org
 per-file cloud_devices*=noamsml@chromium.org
 per-file cloud_devices*=vitalybuka@chromium.org
@@ -27,6 +34,10 @@ per-file domain_reliability.gypi=ttuttle@chromium.org
 
 per-file favicon*=sky@chromium.org
 per-file favicon*=stevenjb@chromium.org
+# Temporary for the duration of the favicon componentization.
+per-file favicon*=blundell@chromium.org
+# Temporary for the duration of the favicon componentization.
+per-file favicon*=droger@chromium.org
 
 per-file json_schema.gypi=asargent@chromium.org
 per-file json_schema.gypi=calamity@chromium.org
