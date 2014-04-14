@@ -1109,9 +1109,6 @@ void ThreadProxy::ScheduledActionCommit() {
   impl().next_frame_is_newly_committed_frame = true;
 
   impl().timing_history.DidCommit();
-
-  // SetVisible kicks off the next scheduler action, so this must be last.
-  impl().scheduler->SetVisible(impl().layer_tree_host_impl->visible());
 }
 
 void ThreadProxy::ScheduledActionUpdateVisibleTiles() {
