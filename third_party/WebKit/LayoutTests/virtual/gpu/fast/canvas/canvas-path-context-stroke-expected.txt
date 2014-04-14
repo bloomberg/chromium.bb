@@ -15,7 +15,7 @@ PASS pixelDataAtPoint()[0] is within 5 of 0
 PASS pixelDataAtPoint()[1] is within 5 of 255
 PASS pixelDataAtPoint()[2] is within 5 of 0
 PASS pixelDataAtPoint()[3] is within 5 of 255
-PASS ctx.stroke(null) threw exception TypeError: Failed to execute 'stroke' on 'CanvasRenderingContext2D': The 1st argument provided is either null, or an invalid Path object..
+PASS ctx.stroke(null) threw exception TypeError: Failed to execute 'stroke' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
 PASS ctx.stroke([]) threw exception TypeError: Failed to execute 'stroke' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
 PASS ctx.stroke({}) threw exception TypeError: Failed to execute 'stroke' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
 PASS successfullyParsed is true

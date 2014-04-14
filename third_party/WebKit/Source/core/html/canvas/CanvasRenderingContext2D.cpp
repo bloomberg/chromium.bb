@@ -1024,18 +1024,13 @@ void CanvasRenderingContext2D::fill(const String& windingRuleString)
     fillInternal(m_path, windingRuleString);
 }
 
-void CanvasRenderingContext2D::fill(Path2D* domPath, ExceptionState& exceptionState)
+void CanvasRenderingContext2D::fill(Path2D* domPath)
 {
-    fill(domPath, "nonzero", exceptionState);
+    fill(domPath, "nonzero");
 }
 
-void CanvasRenderingContext2D::fill(Path2D* domPath, const String& windingRuleString, ExceptionState& exceptionState)
+void CanvasRenderingContext2D::fill(Path2D* domPath, const String& windingRuleString)
 {
-    if (!domPath) {
-        exceptionState.throwTypeError(ExceptionMessages::argumentNullOrIncorrectType(1, "Path"));
-        return;
-    }
-
     fillInternal(domPath->path(), windingRuleString);
 }
 
@@ -1084,13 +1079,8 @@ void CanvasRenderingContext2D::stroke()
     strokeInternal(m_path);
 }
 
-void CanvasRenderingContext2D::stroke(Path2D* domPath, ExceptionState& exceptionState)
+void CanvasRenderingContext2D::stroke(Path2D* domPath)
 {
-    if (!domPath) {
-        exceptionState.throwTypeError(ExceptionMessages::argumentNullOrIncorrectType(1, "Path"));
-        return;
-    }
-
     strokeInternal(domPath->path());
 }
 
@@ -1113,18 +1103,13 @@ void CanvasRenderingContext2D::clip(const String& windingRuleString)
     clipInternal(m_path, windingRuleString);
 }
 
-void CanvasRenderingContext2D::clip(Path2D* domPath, ExceptionState& exceptionState)
+void CanvasRenderingContext2D::clip(Path2D* domPath)
 {
-    clip(domPath, "nonzero", exceptionState);
+    clip(domPath, "nonzero");
 }
 
-void CanvasRenderingContext2D::clip(Path2D* domPath, const String& windingRuleString, ExceptionState& exceptionState)
+void CanvasRenderingContext2D::clip(Path2D* domPath, const String& windingRuleString)
 {
-    if (!domPath) {
-        exceptionState.throwTypeError(ExceptionMessages::argumentNullOrIncorrectType(1, "Path"));
-        return;
-    }
-
     clipInternal(domPath->path(), windingRuleString);
 }
 
@@ -1133,18 +1118,13 @@ bool CanvasRenderingContext2D::isPointInPath(const float x, const float y, const
     return isPointInPathInternal(m_path, x, y, windingRuleString);
 }
 
-bool CanvasRenderingContext2D::isPointInPath(Path2D* domPath, const float x, const float y, ExceptionState& exceptionState)
+bool CanvasRenderingContext2D::isPointInPath(Path2D* domPath, const float x, const float y)
 {
-    return isPointInPath(domPath, x, y, "nonzero", exceptionState);
+    return isPointInPath(domPath, x, y, "nonzero");
 }
 
-bool CanvasRenderingContext2D::isPointInPath(Path2D* domPath, const float x, const float y, const String& windingRuleString, ExceptionState& exceptionState)
+bool CanvasRenderingContext2D::isPointInPath(Path2D* domPath, const float x, const float y, const String& windingRuleString)
 {
-    if (!domPath) {
-        exceptionState.throwTypeError(ExceptionMessages::argumentNullOrIncorrectType(1, "Path"));
-        return false;
-    }
-
     return isPointInPathInternal(domPath->path(), x, y, windingRuleString);
 }
 
@@ -1170,13 +1150,8 @@ bool CanvasRenderingContext2D::isPointInStroke(const float x, const float y)
     return isPointInStrokeInternal(m_path, x, y);
 }
 
-bool CanvasRenderingContext2D::isPointInStroke(Path2D* domPath, const float x, const float y, ExceptionState& exceptionState)
+bool CanvasRenderingContext2D::isPointInStroke(Path2D* domPath, const float x, const float y)
 {
-    if (!domPath) {
-        exceptionState.throwTypeError(ExceptionMessages::argumentNullOrIncorrectType(1, "Path"));
-        return false;
-    }
-
     return isPointInStrokeInternal(domPath->path(), x, y);
 }
 
@@ -1208,13 +1183,8 @@ void CanvasRenderingContext2D::scrollPathIntoView()
     scrollPathIntoViewInternal(m_path);
 }
 
-void CanvasRenderingContext2D::scrollPathIntoView(Path2D* path2d, ExceptionState& exceptionState)
+void CanvasRenderingContext2D::scrollPathIntoView(Path2D* path2d)
 {
-    if (!path2d) {
-        exceptionState.throwTypeError(ExceptionMessages::argumentNullOrIncorrectType(1, "Path2D"));
-        return;
-    }
-
     scrollPathIntoViewInternal(path2d->path());
 }
 

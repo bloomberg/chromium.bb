@@ -33,7 +33,7 @@
     Constructor(DOMString text)
 ] interface Path2D {
 
-    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] void addPath(Path2D? path, optional SVGMatrix? transform);
+    [RuntimeEnabled=ExperimentalCanvasFeatures, StrictTypeChecking] void addPath(Path2D path, optional SVGMatrix? transform);
 };
 
 Path2D implements CanvasPathMethods;

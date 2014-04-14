@@ -152,22 +152,22 @@ public:
     PassRefPtr<Path2D> currentPath();
     void setCurrentPath(Path2D*);
     void fill(const String& winding = "nonzero");
-    void fill(Path2D*, ExceptionState&);
-    void fill(Path2D*, const String& winding, ExceptionState&);
+    void fill(Path2D*);
+    void fill(Path2D*, const String& winding);
     void stroke();
-    void stroke(Path2D*, ExceptionState&);
+    void stroke(Path2D*);
     void clip(const String& winding = "nonzero");
-    void clip(Path2D*, ExceptionState&);
-    void clip(Path2D*, const String& winding, ExceptionState&);
+    void clip(Path2D*);
+    void clip(Path2D*, const String& winding);
 
     bool isPointInPath(const float x, const float y, const String& winding = "nonzero");
-    bool isPointInPath(Path2D*, const float x, const float y, ExceptionState&);
-    bool isPointInPath(Path2D*, const float x, const float y, const String& winding, ExceptionState&);
+    bool isPointInPath(Path2D*, const float x, const float y);
+    bool isPointInPath(Path2D*, const float x, const float y, const String& winding);
     bool isPointInStroke(const float x, const float y);
-    bool isPointInStroke(Path2D*, const float x, const float y, ExceptionState&);
+    bool isPointInStroke(Path2D*, const float x, const float y);
 
     void scrollPathIntoView();
-    void scrollPathIntoView(Path2D*, ExceptionState&);
+    void scrollPathIntoView(Path2D*);
 
     void clearRect(float x, float y, float width, float height);
     void fillRect(float x, float y, float width, float height);

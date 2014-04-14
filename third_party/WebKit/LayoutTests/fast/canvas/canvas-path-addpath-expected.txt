@@ -22,6 +22,8 @@ PASS imgdata[6] is 0
 PASS imgdata[7] is not 255
 
 Test addPath() with transform as null or invalid type.
+PASS p7.addPath(p8, []) threw exception TypeError: Failed to execute 'addPath' on 'Path2D': parameter 2 is not of type 'SVGMatrix'..
+PASS p7.addPath(p8, {}) threw exception TypeError: Failed to execute 'addPath' on 'Path2D': parameter 2 is not of type 'SVGMatrix'..
 PASS imgdata[4] is 255
 PASS imgdata[5] is 0
 PASS imgdata[6] is 0
@@ -34,9 +36,9 @@ PASS imgdata[2] is 0
 PASS imgdata[3] is 255
 
 Test addPath() with path as null and invalid type
-PASS p7.addPath(null, m) threw exception TypeError: Failed to execute 'addPath' on 'Path2D': The 1st argument provided is either null, or an invalid Path object..
-PASS p7.addPath([], m) threw exception TypeError: Failed to execute 'addPath' on 'Path2D': The 1st argument provided is either null, or an invalid Path object..
-PASS p7.addPath({}, m) threw exception TypeError: Failed to execute 'addPath' on 'Path2D': The 1st argument provided is either null, or an invalid Path object..
+PASS p7.addPath(null, m) threw exception TypeError: Failed to execute 'addPath' on 'Path2D': parameter 1 is not of type 'Path2D'..
+PASS p7.addPath([], m) threw exception TypeError: Failed to execute 'addPath' on 'Path2D': parameter 1 is not of type 'Path2D'..
+PASS p7.addPath({}, m) threw exception TypeError: Failed to execute 'addPath' on 'Path2D': parameter 1 is not of type 'Path2D'..
 
 PASS successfullyParsed is true
 
