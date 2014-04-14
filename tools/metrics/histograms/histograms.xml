@@ -33951,6 +33951,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="322" label="PrefixedDocumentFullscreenEnabled"/>
   <int value="323" label="PrefixedDocumentFullscreenElement"/>
   <int value="324" label="PrefixedDocumentExitFullscreen"/>
+  <int value="325" label="SVGForeignObjectElement"/>
+  <int value="326" label="PrefixedElementRequestPointerLock"/>
+  <int value="327" label="SelectionSetPosition"/>
+  <int value="328" label="AnimationPlayerFinishEvent"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
