@@ -692,6 +692,9 @@ crbug.com/343892 [ Linux Mac ] fast/workers/shared-worker-name.html [ Pass Crash
 crbug.com/345831 [ Win ] fast/dom/Window/open-window-min-size.html [ Failure ]
 crbug.com/345831 [ Linux Mac ] fast/dom/Window/open-window-min-size.html [ Failure Pass ]
 
+# Fails frequently on ASAN and Debug builds
+crbug.com/363235 [ Linux ] http/tests/accessibility/slow-document-load.html [ Failure Pass ]
+
 crbug.com/253763 fast/text-autosizing/first-line-scale-factor.html [ ImageOnlyFailure ]
 crbug.com/253763 fast/text-autosizing/pseudo-scale-factor.html [ ImageOnlyFailure ]
 crbug.com/253763 virtual/fasttextautosizing/fast/text-autosizing/first-line-scale-factor.html [ ImageOnlyFailure ]
