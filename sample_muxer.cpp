@@ -28,7 +28,7 @@ using mkvmuxer::uint64;
 
 #ifdef _MSC_VER
 // Disable MSVC warnings that suggest making code non-portable.
-#pragma warning(disable:4996)
+#pragma warning(disable : 4996)
 #endif
 
 namespace {
@@ -62,16 +62,16 @@ void Usage() {
   printf("  -cues_before_clusters <int> >0 puts Cues before Clusters\n");
   printf("\n");
   printf("Metadata options:\n");
-  printf("  -webvtt-subtitles <vttfile>    "
-         "add WebVTT subtitles as metadata track\n");
-  printf("  -webvtt-captions <vttfile>     "
-         "add WebVTT captions as metadata track\n");
-  printf("  -webvtt-descriptions <vttfile> "
-         "add WebVTT descriptions as metadata track\n");
-  printf("  -webvtt-metadata <vttfile>     "
-         "add WebVTT subtitles as metadata track\n");
-  printf("  -webvtt-chapters <vttfile>     "
-         "add WebVTT chapters as MKV chapters element\n");
+  printf("  -webvtt-subtitles <vttfile>    ");
+  printf("add WebVTT subtitles as metadata track\n");
+  printf("  -webvtt-captions <vttfile>     ");
+  printf("add WebVTT captions as metadata track\n");
+  printf("  -webvtt-descriptions <vttfile> ");
+  printf("add WebVTT descriptions as metadata track\n");
+  printf("  -webvtt-metadata <vttfile>     ");
+  printf("add WebVTT subtitles as metadata track\n");
+  printf("  -webvtt-chapters <vttfile>     ");
+  printf("add WebVTT chapters as MKV chapters element\n");
 }
 
 struct MetadataFile {
@@ -82,9 +82,8 @@ struct MetadataFile {
 typedef std::list<MetadataFile> metadata_files_t;
 
 // Cache the WebVTT filenames specified as command-line args.
-bool LoadMetadataFiles(
-    const metadata_files_t& files,
-    SampleMuxerMetadata* metadata) {
+bool LoadMetadataFiles(const metadata_files_t& files,
+                       SampleMuxerMetadata* metadata) {
   typedef metadata_files_t::const_iterator iter_t;
 
   iter_t i = files.begin();
@@ -100,22 +99,21 @@ bool LoadMetadataFiles(
   return true;
 }
 
-int ParseArgWebVTT(
-    char* argv[],
-    int* argv_index,
-    int argc_check,
-    metadata_files_t* metadata_files) {
+int ParseArgWebVTT(char* argv[], int* argv_index, int argc_check,
+                   metadata_files_t* metadata_files) {
   int& i = *argv_index;
 
   enum { kCount = 5 };
-  struct Arg { const char* name; SampleMuxerMetadata::Kind kind; };
-  const Arg args[kCount] = {
-    { "-webvtt-subtitles", SampleMuxerMetadata::kSubtitles },
-    { "-webvtt-captions", SampleMuxerMetadata::kCaptions },
-    { "-webvtt-descriptions", SampleMuxerMetadata::kDescriptions },
-    { "-webvtt-metadata", SampleMuxerMetadata::kMetadata },
-    { "-webvtt-chapters", SampleMuxerMetadata::kChapters }
+  struct Arg {
+    const char* name;
+    SampleMuxerMetadata::Kind kind;
   };
+  const Arg args[kCount] = {
+      {"-webvtt-subtitles", SampleMuxerMetadata::kSubtitles},
+      {"-webvtt-captions", SampleMuxerMetadata::kCaptions},
+      {"-webvtt-descriptions", SampleMuxerMetadata::kDescriptions},
+      {"-webvtt-metadata", SampleMuxerMetadata::kMetadata},
+      {"-webvtt-chapters", SampleMuxerMetadata::kChapters}};
 
   for (int idx = 0; idx < kCount; ++idx) {
     const Arg& arg = args[idx];
@@ -202,8 +200,7 @@ int main(int argc, char* argv[]) {
         cues_on_video_track = false;
     } else if (!strcmp("-max_cluster_duration", argv[i]) && i < argc_check) {
       const double seconds = strtod(argv[++i], &end);
-      max_cluster_duration =
-          static_cast<uint64>(seconds * 1000000000.0);
+      max_cluster_duration = static_cast<uint64>(seconds * 1000000000.0);
     } else if (!strcmp("-max_cluster_size", argv[i]) && i < argc_check) {
       max_cluster_size = strtol(argv[++i], &end, 10);
     } else if (!strcmp("-switch_tracks", argv[i]) && i < argc_check) {
@@ -249,9 +246,8 @@ int main(int argc, char* argv[]) {
   ebml_header.Parse(&reader, pos);
 
   mkvparser::Segment* parser_segment;
-  long long ret = mkvparser::Segment::CreateInstance(&reader,
-                                                     pos,
-                                                     parser_segment);
+  long long ret =
+      mkvparser::Segment::CreateInstance(&reader, pos, parser_segment);
   if (ret) {
     printf("\n Segment::CreateInstance() failed.");
     return EXIT_FAILURE;
@@ -330,7 +326,7 @@ int main(int argc, char* argv[]) {
       // Get the video track from the parser
       const mkvparser::VideoTrack* const pVideoTrack =
           static_cast<const mkvparser::VideoTrack*>(parser_track);
-      const long long width =  pVideoTrack->GetWidth();
+      const long long width = pVideoTrack->GetWidth();
       const long long height = pVideoTrack->GetHeight();
 
       // Add the video track to the muxer
@@ -342,9 +338,8 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
       }
 
-      mkvmuxer::VideoTrack* const video =
-          static_cast<mkvmuxer::VideoTrack*>(
-              muxer_segment.GetTrackByNumber(vid_track));
+      mkvmuxer::VideoTrack* const video = static_cast<mkvmuxer::VideoTrack*>(
+          muxer_segment.GetTrackByNumber(vid_track));
       if (!video) {
         printf("\n Could not get video track.\n");
         return EXIT_FAILURE;
@@ -370,7 +365,7 @@ int main(int argc, char* argv[]) {
       // Get the audio track from the parser
       const mkvparser::AudioTrack* const pAudioTrack =
           static_cast<const mkvparser::AudioTrack*>(parser_track);
-      const long long channels =  pAudioTrack->GetChannels();
+      const long long channels = pAudioTrack->GetChannels();
       const double sample_rate = pAudioTrack->GetSamplingRate();
 
       // Add the audio track to the muxer
@@ -382,9 +377,8 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
       }
 
-      mkvmuxer::AudioTrack* const audio =
-          static_cast<mkvmuxer::AudioTrack*>(
-              muxer_segment.GetTrackByNumber(aud_track));
+      mkvmuxer::AudioTrack* const audio = static_cast<mkvmuxer::AudioTrack*>(
+          muxer_segment.GetTrackByNumber(aud_track));
       if (!audio) {
         printf("\n Could not get audio track.\n");
         return EXIT_FAILURE;
@@ -454,16 +448,15 @@ int main(int argc, char* argv[]) {
     long status = cluster->GetFirst(block_entry);
 
     if (status) {
-        printf("\n Could not get first block of cluster.\n");
-        return EXIT_FAILURE;
+      printf("\n Could not get first block of cluster.\n");
+      return EXIT_FAILURE;
     }
 
     while ((block_entry != NULL) && !block_entry->EOS()) {
       const mkvparser::Block* const block = block_entry->GetBlock();
       const long long trackNum = block->GetTrackNumber();
       const mkvparser::Track* const parser_track =
-          parser_tracks->GetTrackByNumber(
-              static_cast<unsigned long>(trackNum));
+          parser_tracks->GetTrackByNumber(static_cast<unsigned long>(trackNum));
       const long long track_type = parser_track->GetType();
       const long long time_ns = block->GetTime(cluster);
 
@@ -482,7 +475,7 @@ int main(int argc, char* argv[]) {
           const mkvparser::Block::Frame& frame = block->GetFrame(i);
 
           if (frame.len > data_len) {
-            delete [] data;
+            delete[] data;
             data = new unsigned char[frame.len];
             if (!data)
               return EXIT_FAILURE;
@@ -498,17 +491,11 @@ int main(int argc, char* argv[]) {
 
           bool frame_added = false;
           if (discard_padding) {
-            frame_added =
-                muxer_segment.AddFrameWithDiscardPadding(data, frame.len,
-                                                         discard_padding,
-                                                         track_num,
-                                                         time_ns,
-                                                         is_key);
+            frame_added = muxer_segment.AddFrameWithDiscardPadding(
+                data, frame.len, discard_padding, track_num, time_ns, is_key);
           } else {
-            frame_added = muxer_segment.AddFrame(data, frame.len,
-                                                 track_num,
-                                                 time_ns,
-                                                 is_key);
+            frame_added = muxer_segment.AddFrame(data, frame.len, track_num,
+                                                 time_ns, is_key);
           }
           if (!frame_added) {
             printf("\n Could not add frame.\n");
@@ -520,8 +507,8 @@ int main(int argc, char* argv[]) {
       status = cluster->GetNext(block_entry, block_entry);
 
       if (status) {
-          printf("\n Could not get next block of cluster.\n");
-          return EXIT_FAILURE;
+        printf("\n Could not get next block of cluster.\n");
+        return EXIT_FAILURE;
       }
     }
 
@@ -559,7 +546,7 @@ int main(int argc, char* argv[]) {
     remove(temp_file);
   }
 
-  delete [] data;
+  delete[] data;
   delete parser_segment;
 
   return EXIT_SUCCESS;
