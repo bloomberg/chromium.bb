@@ -178,7 +178,7 @@ def _CheckLicenseHeaders(excluded_dirs_list, whitelisted_files):
   stale = set(whitelisted_files) - set(offending_files)
   if stale:
     print 'The following files are whitelisted unnecessarily. You must ' \
-          ' remove the following files from the whitelist.\n%s' % \
+          'remove the following files from the whitelist.\n%s' % \
           '\n'.join(sorted(stale))
 
   if unknown:
