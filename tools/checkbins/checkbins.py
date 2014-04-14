@@ -89,6 +89,17 @@ def main(options, args):
       success = False
       print "Checking %s for /SAFESEH... FAIL" % path
 
+    # ASLR is weakened on Windows 64-bit when the ImageBase is below 4GB
+    # (because the loader will never be rebase the image above 4GB).
+    if pe.FILE_HEADER.Machine == MACHINE_TYPE_AMD64:
+      if pe.OPTIONAL_HEADER.ImageBase <= 0xFFFFFFFF:
+        print("Checking %s ImageBase (0x%X < 4GB)... FAIL" %
+              (path, pe.OPTIONAL_HEADER.ImageBase))
+        success = False
+      elif options.verbose:
+        print("Checking %s ImageBase (0x%X > 4GB)... PASS" %
+              (path, pe.OPTIONAL_HEADER.ImageBase))
+
     # Update tally.
     if success:
       pe_passed = pe_passed + 1
