@@ -402,10 +402,17 @@ void FastTextAutosizer::inflateTable(RenderTable* table)
                     shouldAutosize = clusterWouldHaveEnoughTextToAutosize(renderTableCell, table);
 
                 if (shouldAutosize) {
-                    for (RenderObject* child = cell; child; child = child->nextInPreOrder(cell)) {
-                        if (child->isText() && child->needsLayout()) {
-                            applyMultiplier(child, multiplier);
-                            applyMultiplier(child->parent(), multiplier); // Parent handles line spacing.
+                    RenderObject* child = cell;
+                    while (child) {
+                        if (child->needsLayout() && !child->isTable()) {
+                            if (child->isText()) {
+                                applyMultiplier(child, multiplier);
+                                applyMultiplier(child->parent(), multiplier); // Parent handles line spacing.
+                            }
+                            child = child->nextInPreOrder(cell);
+                        } else {
+                            // Skip inflation of this subtree.
+                            child = child->nextInPreOrderAfterChildren(cell);
                         }
                     }
                 }
