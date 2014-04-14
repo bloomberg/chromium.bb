@@ -1101,9 +1101,6 @@ crbug.com/362499 [ Mac ] touchadjustment/touch-inlines.html [ Failure Pass ]
 
 crbug.com/362501 [ Mac ] svg/text/obb-paintserver.html [ ImageOnlyFailure Crash Pass ]
 
-crbug.com/352018 fast/canvas/alpha.html [ NeedsRebaseline ]
-crbug.com/352018 virtual/gpu/fast/canvas/alpha.html [ NeedsRebaseline ]
-
 crbug.com/363029 [ Win Debug ] virtual/gpu/fast/canvas/canvas-composite-stroke-alpha.html [ Pass Timeout ]
 
 crbug.com/362503 http/tests/xmlhttprequest/xmlhttprequest-responseXML-exception.html [ Pass Timeout ]
