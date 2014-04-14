@@ -359,7 +359,8 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
       id_generator_(0),
       needs_scroll_styles_(false),
       in_size_loop_(false),
-      touch_down_context_(false) {
+      touch_down_context_(false),
+      last_mouse_hwheel_time_(0) {
 }
 
 HWNDMessageHandler::~HWNDMessageHandler() {
@@ -2313,6 +2314,18 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
     LRESULT hittest = SendMessage(hwnd(), WM_NCHITTEST, 0, l_param_ht);
     if (hittest == HTCLIENT || hittest == HTNOWHERE)
       return 0;
+  }
+
+  // Certain logitech drivers send the WM_MOUSEHWHEEL message to the parent
+  // followed by WM_MOUSEWHEEL messages to the child window causing a vertical
+  // scroll. We treat these WM_MOUSEWHEEL messages as WM_MOUSEHWHEEL
+  // messages.
+  if (message == WM_MOUSEHWHEEL)
+    last_mouse_hwheel_time_ = ::GetMessageTime();
+
+  if (message == WM_MOUSEWHEEL &&
+      ::GetMessageTime() == last_mouse_hwheel_time_) {
+    message = WM_MOUSEHWHEEL;
   }
 
   if (message == WM_RBUTTONUP && is_right_mouse_pressed_on_caption_) {

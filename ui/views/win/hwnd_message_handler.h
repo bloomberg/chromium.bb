@@ -600,6 +600,10 @@ class VIEWS_EXPORT HWNDMessageHandler :
   // the IsMouseEventFromTouch function.
   static long last_touch_message_time_;
 
+  // Time the last WM_MOUSEHWHEEL message is received. Please refer to the
+  // HandleMouseEventInternal function as to why this is needed.
+  long last_mouse_hwheel_time_;
+
   DISALLOW_COPY_AND_ASSIGN(HWNDMessageHandler);
 };
 
