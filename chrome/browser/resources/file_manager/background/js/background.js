@@ -138,6 +138,13 @@ Background.makeGeometryKey = function(url) {
 };
 
 /**
+ * Key for getting and storing the last window state (maximized or not).
+ * @const
+ * @private
+ */
+Background.MAXIMIZED_KEY_ = 'isMaximized';
+
+/**
  * Register callback to be invoked after initialization.
  * If the initialization is already done, the callback is invoked immediately.
  *
@@ -324,13 +331,17 @@ AppWindowWrapper.prototype.launch = function(appState, reopen, opt_callback) {
     callback();
   });
 
-  // Obtains the last geometry.
+  // Obtains the last geometry and window state (maximized or not).
   var lastBounds;
+  var isMaximized = false;
   this.queue.run(function(callback) {
-    var key = Background.makeGeometryKey(this.url_);
-    chrome.storage.local.get(key, function(preferences) {
-      if (!chrome.runtime.lastError)
-        lastBounds = preferences[key];
+    var boundsKey = Background.makeGeometryKey(this.url_);
+    var maximizedKey = Background.MAXIMIZED_KEY_;
+    chrome.storage.local.get([boundsKey, maximizedKey], function(preferences) {
+      if (!chrome.runtime.lastError) {
+        lastBounds = preferences[boundsKey];
+        isMaximized = preferences[maximizedKey];
+      }
       callback();
     });
   }.bind(this));
@@ -340,6 +351,8 @@ AppWindowWrapper.prototype.launch = function(appState, reopen, opt_callback) {
     // Apply the last bounds.
     if (lastBounds)
       this.options_.bounds = lastBounds;
+    if (isMaximized)
+      this.options_.state = 'maximized';
 
     // Create a window.
     chrome.app.window.create(this.url_, this.options_, function(appWindow) {
@@ -404,6 +417,11 @@ AppWindowWrapper.prototype.launch = function(appState, reopen, opt_callback) {
  * @private
  */
 AppWindowWrapper.prototype.onClosed_ = function() {
+  // Remember the last window state (maximized or normal).
+  var preferences = {};
+  preferences[Background.MAXIMIZED_KEY_] = this.window_.isMaximized();
+  chrome.storage.local.set(preferences);
+
   // Unload the window.
   var appWindow = this.window_;
   var contentWindow = this.window_.contentWindow;
