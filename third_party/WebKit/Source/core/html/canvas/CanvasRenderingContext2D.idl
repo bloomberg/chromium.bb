@@ -129,23 +129,23 @@ interface CanvasRenderingContext2D {
 
     void strokeRect(float x, float y, float width, float height);
 
-    [RaisesException] void drawImage(HTMLImageElement? image, float x, float y);
-    [RaisesException] void drawImage(HTMLImageElement? image, float x, float y, float width, float height);
-    [RaisesException] void drawImage(HTMLImageElement? image, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh);
-    [RaisesException] void drawImage(HTMLCanvasElement? canvas, float x, float y);
-    [RaisesException] void drawImage(HTMLCanvasElement? canvas, float x, float y, float width, float height);
-    [RaisesException] void drawImage(HTMLCanvasElement? canvas, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh);
-    [RaisesException] void drawImage(HTMLVideoElement? video, float x, float y);
-    [RaisesException] void drawImage(HTMLVideoElement? video, float x, float y, float width, float height);
-    [RaisesException] void drawImage(HTMLVideoElement? video, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh);
-    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] void drawImage(ImageBitmap? imageBitmap, float x, float y);
-    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] void drawImage(ImageBitmap? imageBitmap, float x, float y, float width, float height);
-    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] void drawImage(ImageBitmap? imageBitmap, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh);
+    [RaisesException, StrictTypeChecking] void drawImage(HTMLImageElement image, float x, float y);
+    [RaisesException, StrictTypeChecking] void drawImage(HTMLImageElement image, float x, float y, float width, float height);
+    [RaisesException, StrictTypeChecking] void drawImage(HTMLImageElement image, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh);
+    [RaisesException, StrictTypeChecking] void drawImage(HTMLCanvasElement canvas, float x, float y);
+    [RaisesException, StrictTypeChecking] void drawImage(HTMLCanvasElement canvas, float x, float y, float width, float height);
+    [RaisesException, StrictTypeChecking] void drawImage(HTMLCanvasElement canvas, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh);
+    [RaisesException, StrictTypeChecking] void drawImage(HTMLVideoElement video, float x, float y);
+    [RaisesException, StrictTypeChecking] void drawImage(HTMLVideoElement video, float x, float y, float width, float height);
+    [RaisesException, StrictTypeChecking] void drawImage(HTMLVideoElement video, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh);
+    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException, StrictTypeChecking] void drawImage(ImageBitmap imageBitmap, float x, float y);
+    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException, StrictTypeChecking] void drawImage(ImageBitmap imageBitmap, float x, float y, float width, float height);
+    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException, StrictTypeChecking] void drawImage(ImageBitmap imageBitmap, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh);
 
-    void drawImageFromRect(HTMLImageElement image,
-                           optional float sx, optional float sy, optional float sw, optional float sh,
-                           optional float dx, optional float dy, optional float dw, optional float dh,
-                           optional DOMString compositeOperation);
+    [StrictTypeChecking] void drawImageFromRect(HTMLImageElement? image,
+                                                optional float sx, optional float sy, optional float sw, optional float sh,
+                                                optional float dx, optional float dy, optional float dw, optional float dh,
+                                                optional DOMString compositeOperation);
 
     void setShadow(float width, float height, float blur, [StrictTypeChecking] optional DOMString color, optional float alpha);
     void setShadow(float width, float height, float blur, float grayLevel, optional float alpha);
@@ -155,9 +155,9 @@ interface CanvasRenderingContext2D {
     [RaisesException] void putImageData(ImageData? imagedata, float dx, float dy);
     [RaisesException] void putImageData(ImageData? imagedata, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight);
 
-    [RaisesException] CanvasPattern createPattern(HTMLCanvasElement? canvas, [TreatNullAs=NullString] DOMString repetitionType);
-    [RaisesException] CanvasPattern createPattern(HTMLImageElement? image, [TreatNullAs=NullString] DOMString repetitionType);
-    [RaisesException] CanvasPattern createPattern(HTMLVideoElement? image, [TreatNullAs=NullString] DOMString repetitionType);
+    [RaisesException, StrictTypeChecking] CanvasPattern createPattern(HTMLCanvasElement canvas, [TreatNullAs=NullString] DOMString repetitionType);
+    [RaisesException, StrictTypeChecking] CanvasPattern createPattern(HTMLImageElement image, [TreatNullAs=NullString] DOMString repetitionType);
+    [RaisesException, StrictTypeChecking] CanvasPattern createPattern(HTMLVideoElement image, [TreatNullAs=NullString] DOMString repetitionType);
     [RaisesException] ImageData createImageData(ImageData? imagedata);
     [RaisesException] ImageData createImageData(float sw, float sh);
 

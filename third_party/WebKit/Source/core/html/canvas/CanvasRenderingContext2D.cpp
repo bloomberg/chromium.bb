@@ -1448,20 +1448,8 @@ static inline void clipRectsToImageRect(const FloatRect& imageRect, FloatRect* s
     dstRect->move(offset);
 }
 
-static bool checkImageSource(CanvasImageSource* imageSource, ExceptionState& exceptionState)
-{
-    if (!imageSource) {
-        // FIXME: Message should mention ImageBitmap once that feature ships.
-        exceptionState.throwTypeError(ExceptionMessages::argumentNullOrIncorrectType(1, String("HTMLImageElement, HTMLCanvasElement or HTMLVideoElement")));
-        return false;
-    }
-    return true;
-}
-
 void CanvasRenderingContext2D::drawImage(CanvasImageSource* imageSource, float x, float y, ExceptionState& exceptionState)
 {
-    if (!checkImageSource(imageSource, exceptionState))
-        return;
     FloatSize destRectSize = imageSource->defaultDestinationSize();
     drawImage(imageSource, x, y, destRectSize.width(), destRectSize.height(), exceptionState);
 }
@@ -1469,8 +1457,6 @@ void CanvasRenderingContext2D::drawImage(CanvasImageSource* imageSource, float x
 void CanvasRenderingContext2D::drawImage(CanvasImageSource* imageSource,
     float x, float y, float width, float height, ExceptionState& exceptionState)
 {
-    if (!checkImageSource(imageSource, exceptionState))
-        return;
     FloatSize sourceRectSize = imageSource->sourceSize();
     drawImage(imageSource, 0, 0, sourceRectSize.width(), sourceRectSize.height(), x, y, width, height, exceptionState);
 }
@@ -1490,9 +1476,6 @@ void CanvasRenderingContext2D::drawImageInternal(CanvasImageSource* imageSource,
     float dx, float dy, float dw, float dh, ExceptionState& exceptionState,
     CompositeOperator op, blink::WebBlendMode blendMode)
 {
-    if (!checkImageSource(imageSource, exceptionState))
-        return;
-
     RefPtr<Image> image;
     SourceImageStatus sourceImageStatus;
     if (!imageSource->isVideoElement()) {
@@ -1575,6 +1558,8 @@ void CanvasRenderingContext2D::drawImageFromRect(HTMLImageElement* image,
     float dx, float dy, float dw, float dh,
     const String& compositeOperation)
 {
+    if (!image)
+        return;
     CompositeOperator op;
     blink::WebBlendMode blendOp = blink::WebBlendModeNormal;
     if (!parseCompositeAndBlendOperator(compositeOperation, op, blendOp) || blendOp != blink::WebBlendModeNormal)
@@ -1720,8 +1705,6 @@ PassRefPtr<CanvasGradient> CanvasRenderingContext2D::createRadialGradient(float 
 PassRefPtr<CanvasPattern> CanvasRenderingContext2D::createPattern(CanvasImageSource* imageSource,
     const String& repetitionType, ExceptionState& exceptionState)
 {
-    if (!checkImageSource(imageSource, exceptionState))
-        return nullptr;
     bool repeatX, repeatY;
     CanvasPattern::parseRepetitionType(repetitionType, repeatX, repeatY, exceptionState);
     if (exceptionState.hadException())

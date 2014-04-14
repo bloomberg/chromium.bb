@@ -3,9 +3,9 @@ This test checks behavior of Canvas::drawImage with a broken source image.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS ctx.drawImage(null, 0, 0) threw exception TypeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The 1st argument provided is either null, or an invalid HTMLImageElement, HTMLCanvasElement or HTMLVideoElement object..
-PASS ctx.drawImage(null, 0, 0, 20, 20) threw exception TypeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The 1st argument provided is either null, or an invalid HTMLImageElement, HTMLCanvasElement or HTMLVideoElement object..
-PASS ctx.drawImage(null, 0, 0, 20, 20, 0, 0, 20, 20) threw exception TypeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The 1st argument provided is either null, or an invalid HTMLImageElement, HTMLCanvasElement or HTMLVideoElement object..
+PASS ctx.drawImage(null, 0, 0) threw exception TypeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
+PASS ctx.drawImage(null, 0, 0, 20, 20) threw exception TypeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
+PASS ctx.drawImage(null, 0, 0, 20, 20, 0, 0, 20, 20) threw exception TypeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
 PASS ctx.drawImage(invalidImage, 0, 0) threw exception InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The HTMLImageElement provided is in the 'broken' state..
 PASS ctx.drawImage(invalidImage, 0, 0, 20, 20) threw exception InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The HTMLImageElement provided is in the 'broken' state..
 PASS ctx.drawImage(invalidImage, 0, 0, 20, 20, 0, 0, 20, 20) threw exception InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The HTMLImageElement provided is in the 'broken' state..
