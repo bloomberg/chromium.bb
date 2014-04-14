@@ -23,8 +23,16 @@ function test()
     {
         panel.searchableView().showSearchField();
         InspectorTest.addResult("Search controller: '" + panel.searchableView()._searchInputElement.value + "'");
-        WebInspector.advancedSearchController.show();
-        InspectorTest.addResult("Advanced search controller: '" + WebInspector.advancedSearchController._searchView._search.value + "'");
+        var extensions = WebInspector.moduleManager.extensions("drawer-view");
+        var searchView;
+        for (var i = 0; i < extensions.length; ++i) {
+            if (extensions[i].descriptor()["name"] === "search") {
+                searchView = extensions[i].instance();
+                break;
+            }
+        }
+        searchView.toggle();
+        InspectorTest.addResult("Advanced search controller: '" + searchView._search.value + "'");
         InspectorTest.completeTest();
     }
 
