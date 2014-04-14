@@ -108,7 +108,6 @@ SharedWorker status=stable
 PictureSizes status=experimental
 SpeechInput status=test
 SpeechSynthesis status=stable
-Srcset status=stable
 Stream status=experimental
 StyleScoped status=experimental
 SubpixelFontScaling status=experimental

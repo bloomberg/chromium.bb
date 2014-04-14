@@ -154,16 +154,14 @@ void HTMLImageElement::parseAttribute(const QualifiedName& name, const AtomicStr
         if (renderer() && renderer()->isImage())
             toRenderImage(renderer())->updateAltText();
     } else if (name == srcAttr || name == srcsetAttr) {
-        if (RuntimeEnabledFeatures::srcsetEnabled()) {
-            int effectiveSize = -1; // FIXME - hook up the real value from `sizes`
-            ImageCandidate candidate = bestFitSourceForImageAttributes(document().devicePixelRatio(), effectiveSize, fastGetAttribute(srcAttr), fastGetAttribute(srcsetAttr));
-            m_bestFitImageURL = candidate.toAtomicString();
-            float candidateScaleFactor = candidate.scaleFactor();
-            if (candidateScaleFactor > 0)
-                m_imageDevicePixelRatio = 1 / candidateScaleFactor;
-            if (renderer() && renderer()->isImage())
-                toRenderImage(renderer())->setImageDevicePixelRatio(m_imageDevicePixelRatio);
-        }
+        int effectiveSize = -1; // FIXME - hook up the real value from `sizes`
+        ImageCandidate candidate = bestFitSourceForImageAttributes(document().devicePixelRatio(), effectiveSize, fastGetAttribute(srcAttr), fastGetAttribute(srcsetAttr));
+        m_bestFitImageURL = candidate.toAtomicString();
+        float candidateScaleFactor = candidate.scaleFactor();
+        if (candidateScaleFactor > 0)
+            m_imageDevicePixelRatio = 1 / candidateScaleFactor;
+        if (renderer() && renderer()->isImage())
+            toRenderImage(renderer())->setImageDevicePixelRatio(m_imageDevicePixelRatio);
         m_imageLoader.updateFromElementIgnoringPreviousError();
     } else if (name == usemapAttr) {
         setIsLink(!value.isNull());

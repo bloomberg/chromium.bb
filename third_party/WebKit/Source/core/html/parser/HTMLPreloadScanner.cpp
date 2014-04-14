@@ -177,9 +177,7 @@ private:
                 setUrlToLoad(bestFitSourceForImageAttributes(m_mediaValues->devicePixelRatio(), effectiveSize, attributeValue, m_srcsetImageCandidate), AllowURLReplacement);
             } else if (match(attributeName, crossoriginAttr)) {
                 setCrossOriginAllowed(attributeValue);
-            } else if (RuntimeEnabledFeatures::srcsetEnabled()
-                && match(attributeName, srcsetAttr)
-                && m_srcsetImageCandidate.isEmpty()) {
+            } else if (match(attributeName, srcsetAttr) && m_srcsetImageCandidate.isEmpty()) {
                 m_srcsetImageCandidate = bestFitSourceForSrcsetAttribute(m_mediaValues->devicePixelRatio(), effectiveSize, attributeValue);
                 setUrlToLoad(bestFitSourceForImageAttributes(m_mediaValues->devicePixelRatio(), effectiveSize, m_urlToLoad, m_srcsetImageCandidate), AllowURLReplacement);
             }

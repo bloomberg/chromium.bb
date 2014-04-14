@@ -37,7 +37,7 @@
     readonly attribute long naturalHeight;
     readonly attribute long naturalWidth;
     [Reflect, URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute DOMString src;
-    [Reflect, RuntimeEnabled=Srcset] attribute DOMString srcset;
+    [Reflect] attribute DOMString srcset;
     [Reflect] attribute DOMString useMap;
     [Reflect] attribute long vspace;
     attribute long width;
