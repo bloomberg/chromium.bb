@@ -104,10 +104,10 @@ PassRefPtr<IDBRequest> IDBObjectStore::get(ExecutionContext* context, const Scri
     return request.release();
 }
 
-static void generateIndexKeysForValue(DOMRequestState* requestState, const IDBIndexMetadata& indexMetadata, const ScriptValue& objectValue, IDBObjectStore::IndexKeys* indexKeys)
+static void generateIndexKeysForValue(v8::Isolate* isolate, const IDBIndexMetadata& indexMetadata, const ScriptValue& objectValue, IDBObjectStore::IndexKeys* indexKeys)
 {
     ASSERT(indexKeys);
-    RefPtr<IDBKey> indexKey = createIDBKeyFromScriptValueAndKeyPath(requestState, objectValue, indexMetadata.keyPath);
+    RefPtr<IDBKey> indexKey = createIDBKeyFromScriptValueAndKeyPath(isolate, objectValue, indexMetadata.keyPath);
 
     if (!indexKey)
         return;
@@ -141,9 +141,7 @@ PassRefPtr<IDBRequest> IDBObjectStore::put(ScriptState* state, ScriptValue& valu
 
 PassRefPtr<IDBRequest> IDBObjectStore::put(WebIDBDatabase::PutMode putMode, PassRefPtr<IDBAny> source, ScriptState* state, ScriptValue& value, const ScriptValue& keyValue, ExceptionState& exceptionState)
 {
-    ExecutionContext* context = state->executionContext();
-    DOMRequestState requestState(toIsolate(context));
-    RefPtr<IDBKey> key = keyValue.isUndefined() ? nullptr : scriptValueToIDBKey(&requestState, keyValue);
+    RefPtr<IDBKey> key = keyValue.isUndefined() ? nullptr : scriptValueToIDBKey(state->isolate(), keyValue);
     return put(putMode, source, state, value, key.release(), exceptionState);
 }
 
@@ -182,8 +180,6 @@ PassRefPtr<IDBRequest> IDBObjectStore::put(WebIDBDatabase::PutMode putMode, Pass
     const bool hasKeyGenerator = autoIncrement();
 
     ExecutionContext* context = state->executionContext();
-    DOMRequestState requestState(toIsolate(context));
-
     if (putMode != WebIDBDatabase::CursorUpdate && usesInLineKeys && key) {
         exceptionState.throwDOMException(DataError, "The object store uses in-line keys and the key parameter was provided.");
         return nullptr;
@@ -193,7 +189,7 @@ PassRefPtr<IDBRequest> IDBObjectStore::put(WebIDBDatabase::PutMode putMode, Pass
         return nullptr;
     }
     if (usesInLineKeys) {
-        RefPtr<IDBKey> keyPathKey = createIDBKeyFromScriptValueAndKeyPath(&requestState, value, keyPath);
+        RefPtr<IDBKey> keyPathKey = createIDBKeyFromScriptValueAndKeyPath(state->isolate(), value, keyPath);
         if (keyPathKey && !keyPathKey->isValid()) {
             exceptionState.throwDOMException(DataError, "Evaluating the object store's key path yielded a value that is not a valid key.");
             return nullptr;
@@ -203,7 +199,7 @@ PassRefPtr<IDBRequest> IDBObjectStore::put(WebIDBDatabase::PutMode putMode, Pass
             return nullptr;
         }
         if (hasKeyGenerator && !keyPathKey) {
-            if (!canInjectIDBKeyIntoScriptValue(&requestState, value, keyPath)) {
+            if (!canInjectIDBKeyIntoScriptValue(state->isolate(), value, keyPath)) {
                 exceptionState.throwDOMException(DataError, "A generated key could not be inserted into the value.");
                 return nullptr;
             }
@@ -220,7 +216,7 @@ PassRefPtr<IDBRequest> IDBObjectStore::put(WebIDBDatabase::PutMode putMode, Pass
     Vector<IndexKeys> indexKeys;
     for (IDBObjectStoreMetadata::IndexMap::const_iterator it = m_metadata.indexes.begin(); it != m_metadata.indexes.end(); ++it) {
         IndexKeys keys;
-        generateIndexKeysForValue(&requestState, it->value, value, &keys);
+        generateIndexKeysForValue(state->isolate(), it->value, value, &keys);
         indexIds.append(it->key);
         indexKeys.append(keys);
     }
@@ -340,7 +336,7 @@ private:
             ScriptValue value = cursor->value(m_scriptState.get());
 
             IDBObjectStore::IndexKeys indexKeys;
-            generateIndexKeysForValue(request->requestState(), m_indexMetadata, value, &indexKeys);
+            generateIndexKeysForValue(toIsolate(context), m_indexMetadata, value, &indexKeys);
 
             Vector<IDBObjectStore::IndexKeys> indexKeysList;
             indexKeysList.append(indexKeys);

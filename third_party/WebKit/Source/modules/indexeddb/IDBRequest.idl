@@ -30,10 +30,10 @@
 [
     ActiveDOMObject
 ] interface IDBRequest : EventTarget {
-    [CallWith=NewScriptState, RaisesException=Getter, CachedAttribute=isResultDirty] readonly attribute any result;
+    [RaisesException=Getter, CachedAttribute=isResultDirty] readonly attribute any result;
     [RaisesException=Getter] readonly attribute DOMError error;
 
-    [CallWith=NewScriptState] readonly attribute any source;
+    readonly attribute any source;
     readonly attribute IDBTransaction transaction;
 
     // States

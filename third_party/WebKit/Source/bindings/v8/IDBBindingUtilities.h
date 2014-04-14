@@ -33,7 +33,6 @@
 
 namespace WebCore {
 
-class DOMRequestState;
 class IDBAny;
 class IDBKey;
 class IDBKeyPath;
@@ -42,18 +41,18 @@ class SerializedScriptValue;
 class SharedBuffer;
 
 // Exposed for unit testing:
-bool injectV8KeyIntoV8Value(v8::Handle<v8::Value> key, v8::Handle<v8::Value>, const IDBKeyPath&, v8::Isolate*);
+bool injectV8KeyIntoV8Value(v8::Isolate*, v8::Handle<v8::Value> key, v8::Handle<v8::Value>, const IDBKeyPath&);
 
 // For use by Source/modules/indexeddb:
-PassRefPtr<IDBKey> createIDBKeyFromScriptValueAndKeyPath(DOMRequestState*, const ScriptValue&, const IDBKeyPath&);
-bool canInjectIDBKeyIntoScriptValue(DOMRequestState*, const ScriptValue&, const IDBKeyPath&);
+PassRefPtr<IDBKey> createIDBKeyFromScriptValueAndKeyPath(v8::Isolate*, const ScriptValue&, const IDBKeyPath&);
+bool canInjectIDBKeyIntoScriptValue(v8::Isolate*, const ScriptValue&, const IDBKeyPath&);
 ScriptValue idbAnyToScriptValue(NewScriptState*, PassRefPtr<IDBAny>);
 ScriptValue idbKeyToScriptValue(NewScriptState*, PassRefPtr<IDBKey>);
-PassRefPtr<IDBKey> scriptValueToIDBKey(DOMRequestState*, const ScriptValue&);
-PassRefPtr<IDBKeyRange> scriptValueToIDBKeyRange(DOMRequestState*, const ScriptValue&);
+PassRefPtr<IDBKey> scriptValueToIDBKey(v8::Isolate*, const ScriptValue&);
+PassRefPtr<IDBKeyRange> scriptValueToIDBKeyRange(v8::Isolate*, const ScriptValue&);
 
 #ifndef NDEBUG
-void assertPrimaryKeyValidOrInjectable(DOMRequestState*, PassRefPtr<SharedBuffer>, PassRefPtr<IDBKey>, const IDBKeyPath&);
+void assertPrimaryKeyValidOrInjectable(NewScriptState*, PassRefPtr<SharedBuffer>, PassRefPtr<IDBKey>, const IDBKeyPath&);
 #endif
 
 } // namespace WebCore

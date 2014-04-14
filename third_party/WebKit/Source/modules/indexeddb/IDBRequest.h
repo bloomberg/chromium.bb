@@ -29,7 +29,7 @@
 #ifndef IDBRequest_h
 #define IDBRequest_h
 
-#include "bindings/v8/DOMRequestState.h"
+#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
@@ -67,9 +67,9 @@ public:
     static PassRefPtr<IDBRequest> create(ExecutionContext*, PassRefPtr<IDBAny> source, IDBTransaction*);
     virtual ~IDBRequest();
 
-    ScriptValue result(NewScriptState*, ExceptionState&);
+    ScriptValue result(ExceptionState&);
     PassRefPtrWillBeRawPtr<DOMError> error(ExceptionState&) const;
-    ScriptValue source(NewScriptState*) const;
+    ScriptValue source() const;
     PassRefPtr<IDBTransaction> transaction() const { return m_transaction; }
 
     bool isResultDirty() const { return m_resultDirty; }
@@ -135,7 +135,6 @@ public:
             checkForReferenceCycle();
     }
 
-    DOMRequestState* requestState() { return &m_requestState; }
     IDBCursor* getResultCursor() const;
 
 protected:
@@ -155,6 +154,7 @@ private:
     void setResultCursor(PassRefPtr<IDBCursor>, PassRefPtr<IDBKey>, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer> value);
     void checkForReferenceCycle();
 
+    RefPtr<NewScriptState> m_scriptState;
     RefPtr<IDBAny> m_source;
     RefPtr<IDBAny> m_result;
     RefPtrWillBePersistent<DOMError> m_error;
@@ -175,8 +175,6 @@ private:
     bool m_didFireUpgradeNeededEvent;
     bool m_preventPropagation;
     bool m_resultDirty;
-
-    DOMRequestState m_requestState;
 };
 
 } // namespace WebCore

@@ -37,17 +37,17 @@ using namespace WebCore;
 
 namespace {
 
-PassRefPtr<IDBKey> checkKeyFromValueAndKeyPathInternal(const ScriptValue& value, const String& keyPath)
+PassRefPtr<IDBKey> checkKeyFromValueAndKeyPathInternal(v8::Isolate* isolate, const ScriptValue& value, const String& keyPath)
 {
     IDBKeyPath idbKeyPath(keyPath);
     EXPECT_TRUE(idbKeyPath.isValid());
 
-    return createIDBKeyFromScriptValueAndKeyPath(0, value, idbKeyPath);
+    return createIDBKeyFromScriptValueAndKeyPath(isolate, value, idbKeyPath);
 }
 
-void checkKeyPathNullValue(const ScriptValue& value, const String& keyPath)
+void checkKeyPathNullValue(v8::Isolate* isolate, const ScriptValue& value, const String& keyPath)
 {
-    RefPtr<IDBKey> idbKey = checkKeyFromValueAndKeyPathInternal(value, keyPath);
+    RefPtr<IDBKey> idbKey = checkKeyFromValueAndKeyPathInternal(isolate, value, keyPath);
     ASSERT_FALSE(idbKey.get());
 }
 
@@ -56,7 +56,7 @@ bool injectKey(NewScriptState* scriptState, PassRefPtr<IDBKey> key, ScriptValue&
     IDBKeyPath idbKeyPath(keyPath);
     EXPECT_TRUE(idbKeyPath.isValid());
     ScriptValue keyValue = idbKeyToScriptValue(scriptState, key);
-    return injectV8KeyIntoV8Value(keyValue.v8Value(), value.v8Value(), idbKeyPath, v8::Isolate::GetCurrent());
+    return injectV8KeyIntoV8Value(scriptState->isolate(), keyValue.v8Value(), value.v8Value(), idbKeyPath);
 }
 
 void checkInjection(NewScriptState* scriptState, PassRefPtr<IDBKey> prpKey, ScriptValue& value, const String& keyPath)
@@ -64,7 +64,7 @@ void checkInjection(NewScriptState* scriptState, PassRefPtr<IDBKey> prpKey, Scri
     RefPtr<IDBKey> key = prpKey;
     bool result = injectKey(scriptState, key, value, keyPath);
     ASSERT_TRUE(result);
-    RefPtr<IDBKey> extractedKey = checkKeyFromValueAndKeyPathInternal(value, keyPath);
+    RefPtr<IDBKey> extractedKey = checkKeyFromValueAndKeyPathInternal(scriptState->isolate(), value, keyPath);
     EXPECT_TRUE(key->isEqual(extractedKey.get()));
 }
 
@@ -73,17 +73,17 @@ void checkInjectionFails(NewScriptState* scriptState, PassRefPtr<IDBKey> key, Sc
     EXPECT_FALSE(injectKey(scriptState, key, value, keyPath));
 }
 
-void checkKeyPathStringValue(const ScriptValue& value, const String& keyPath, const String& expected)
+void checkKeyPathStringValue(v8::Isolate* isolate, const ScriptValue& value, const String& keyPath, const String& expected)
 {
-    RefPtr<IDBKey> idbKey = checkKeyFromValueAndKeyPathInternal(value, keyPath);
+    RefPtr<IDBKey> idbKey = checkKeyFromValueAndKeyPathInternal(isolate, value, keyPath);
     ASSERT_TRUE(idbKey.get());
     ASSERT_EQ(IDBKey::StringType, idbKey->type());
     ASSERT_TRUE(expected == idbKey->string());
 }
 
-void checkKeyPathNumberValue(const ScriptValue& value, const String& keyPath, int expected)
+void checkKeyPathNumberValue(v8::Isolate* isolate, const ScriptValue& value, const String& keyPath, int expected)
 {
-    RefPtr<IDBKey> idbKey = checkKeyFromValueAndKeyPathInternal(value, keyPath);
+    RefPtr<IDBKey> idbKey = checkKeyFromValueAndKeyPathInternal(isolate, value, keyPath);
     ASSERT_TRUE(idbKey.get());
     ASSERT_EQ(IDBKey::NumberType, idbKey->type());
     ASSERT_TRUE(expected == idbKey->number());
@@ -107,8 +107,8 @@ TEST_F(IDBKeyFromValueAndKeyPathTest, TopLevelPropertyStringValue)
 
     ScriptValue scriptValue(object, isolate);
 
-    checkKeyPathStringValue(scriptValue, "foo", "zoo");
-    checkKeyPathNullValue(scriptValue, "bar");
+    checkKeyPathStringValue(isolate, scriptValue, "foo", "zoo");
+    checkKeyPathNullValue(isolate, scriptValue, "bar");
 }
 
 TEST_F(IDBKeyFromValueAndKeyPathTest, TopLevelPropertyNumberValue)
@@ -119,8 +119,8 @@ TEST_F(IDBKeyFromValueAndKeyPathTest, TopLevelPropertyNumberValue)
 
     ScriptValue scriptValue(object, isolate);
 
-    checkKeyPathNumberValue(scriptValue, "foo", 456);
-    checkKeyPathNullValue(scriptValue, "bar");
+    checkKeyPathNumberValue(isolate, scriptValue, "foo", 456);
+    checkKeyPathNullValue(isolate, scriptValue, "bar");
 }
 
 TEST_F(IDBKeyFromValueAndKeyPathTest, SubProperty)
@@ -133,8 +133,8 @@ TEST_F(IDBKeyFromValueAndKeyPathTest, SubProperty)
 
     ScriptValue scriptValue(object, isolate);
 
-    checkKeyPathStringValue(scriptValue, "foo.bar", "zee");
-    checkKeyPathNullValue(scriptValue, "bar");
+    checkKeyPathStringValue(isolate, scriptValue, "foo.bar", "zee");
+    checkKeyPathNullValue(isolate, scriptValue, "bar");
 }
 
 class InjectIDBKeyTest : public IDBKeyFromValueAndKeyPathTest {

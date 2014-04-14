@@ -38,7 +38,6 @@
 
 namespace WebCore {
 
-class DOMRequestState;
 class ExceptionState;
 class IDBAny;
 class IDBTransaction;

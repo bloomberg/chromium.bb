@@ -28,6 +28,7 @@
 
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/IDBBindingUtilities.h"
+#include "bindings/v8/ScriptState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/inspector/ScriptCallStack.h"
@@ -130,7 +131,7 @@ PassRefPtr<IDBRequest> IDBCursor::update(ScriptState* state, ScriptValue& value,
     const IDBKeyPath& keyPath = objectStore->metadata().keyPath;
     const bool usesInLineKeys = !keyPath.isNull();
     if (usesInLineKeys) {
-        RefPtr<IDBKey> keyPathKey = createIDBKeyFromScriptValueAndKeyPath(m_request->requestState(), value, keyPath);
+        RefPtr<IDBKey> keyPathKey = createIDBKeyFromScriptValueAndKeyPath(state->isolate(), value, keyPath);
         if (!keyPathKey || !keyPathKey->isEqual(m_primaryKey.get())) {
             exceptionState.throwDOMException(DataError, "The effective object store of this cursor uses in-line keys and evaluating the key path of the value parameter results in a different value than the cursor's effective key.");
             return nullptr;
@@ -173,8 +174,7 @@ void IDBCursor::advance(unsigned long count, ExceptionState& exceptionState)
 void IDBCursor::continueFunction(ExecutionContext* context, const ScriptValue& keyValue, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBCursor::continue");
-    DOMRequestState requestState(toIsolate(context));
-    RefPtr<IDBKey> key = keyValue.isUndefined() || keyValue.isNull() ? nullptr : scriptValueToIDBKey(&requestState, keyValue);
+    RefPtr<IDBKey> key = keyValue.isUndefined() || keyValue.isNull() ? nullptr : scriptValueToIDBKey(toIsolate(context), keyValue);
     if (key && !key->isValid()) {
         exceptionState.throwDOMException(DataError, IDBDatabase::notValidKeyErrorMessage);
         return;
@@ -185,9 +185,8 @@ void IDBCursor::continueFunction(ExecutionContext* context, const ScriptValue& k
 void IDBCursor::continuePrimaryKey(ExecutionContext* context, const ScriptValue& keyValue, const ScriptValue& primaryKeyValue, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBCursor::continuePrimaryKey");
-    DOMRequestState requestState(toIsolate(context));
-    RefPtr<IDBKey> key = scriptValueToIDBKey(&requestState, keyValue);
-    RefPtr<IDBKey> primaryKey = scriptValueToIDBKey(&requestState, primaryKeyValue);
+    RefPtr<IDBKey> key = scriptValueToIDBKey(toIsolate(context), keyValue);
+    RefPtr<IDBKey> primaryKey = scriptValueToIDBKey(toIsolate(context), primaryKeyValue);
     if (!key->isValid() || !primaryKey->isValid()) {
         exceptionState.throwDOMException(DataError, IDBDatabase::notValidKeyErrorMessage);
         return;
@@ -331,8 +330,7 @@ ScriptValue IDBCursor::value(NewScriptState* scriptState)
     if (metadata.autoIncrement && !metadata.keyPath.isNull()) {
         value = IDBAny::create(m_value, m_primaryKey, metadata.keyPath);
 #ifndef NDEBUG
-        DOMRequestState requestState(scriptState->isolate());
-        assertPrimaryKeyValidOrInjectable(&requestState, m_value, m_primaryKey, metadata.keyPath);
+        assertPrimaryKeyValidOrInjectable(scriptState, m_value, m_primaryKey, metadata.keyPath);
 #endif
     } else {
         value = IDBAny::create(m_value);
