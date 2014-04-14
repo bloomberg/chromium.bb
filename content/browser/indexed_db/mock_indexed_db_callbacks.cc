@@ -19,6 +19,8 @@ MockIndexedDBCallbacks::~MockIndexedDBCallbacks() {
 
 void MockIndexedDBCallbacks::OnSuccess() {}
 
+void MockIndexedDBCallbacks::OnSuccess(int64) {}
+
 void MockIndexedDBCallbacks::OnSuccess(const std::vector<base::string16>&) {}
 
 void MockIndexedDBCallbacks::OnSuccess(

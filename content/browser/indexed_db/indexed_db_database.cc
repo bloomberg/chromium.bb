@@ -1601,11 +1601,12 @@ void IndexedDBDatabase::DeleteDatabaseFinal(
                                "Internal error deleting database."));
     return;
   }
+  int64 old_version = metadata_.int_version;
   metadata_.version = kNoStringVersion;
   metadata_.id = kInvalidId;
   metadata_.int_version = IndexedDBDatabaseMetadata::NO_INT_VERSION;
   metadata_.object_stores.clear();
-  callbacks->OnSuccess();
+  callbacks->OnSuccess(old_version);
   if (factory_)
     factory_->DatabaseDeleted(identifier_);
 }

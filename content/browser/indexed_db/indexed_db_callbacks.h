@@ -96,6 +96,7 @@ class CONTENT_EXPORT IndexedDBCallbacks
   virtual void OnSuccess(const IndexedDBKey& key);
 
   // IndexedDBDatabase::Count
+  // IndexedDBFactory::DeleteDatabase
   virtual void OnSuccess(int64 value);
 
   // IndexedDBDatabase::Delete
