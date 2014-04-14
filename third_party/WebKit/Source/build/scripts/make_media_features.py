@@ -38,9 +38,9 @@ class MakeMediaFeaturesWriter(in_generator.Writer):
             'entries': self.in_file.name_dictionaries,
         }
 
-    @template_expander.use_jinja("MediaFeatures.h.tmpl", filters=filters)
+    @template_expander.use_jinja('MediaFeatures.h.tmpl', filters=filters)
     def generate_header(self):
         return self._template_context
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     in_generator.Maker(MakeMediaFeaturesWriter).main(sys.argv)
