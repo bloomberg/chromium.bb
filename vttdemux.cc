@@ -15,23 +15,23 @@
 #include "./mkvreader.hpp"
 #include "./webvttparser.h"
 
+#ifdef _MSC_VER
+// Disable MSVC warnings that suggest making code non-portable.
+#pragma warning(disable : 4996)
+#endif
+
 using std::string;
 
 namespace vttdemux {
 
 typedef long long mkvtime_t;  // NOLINT
-typedef long long mkvpos_t;  // NOLINT
+typedef long long mkvpos_t;   // NOLINT
 typedef std::auto_ptr<mkvparser::Segment> segment_ptr_t;
 
 // WebVTT metadata tracks have a type (encoded in the CodecID for the track).
 // We use |type| to synthesize a filename for the out-of-band WebVTT |file|.
 struct MetadataInfo {
-  enum Type {
-    kSubtitles,
-    kCaptions,
-    kDescriptions,
-    kMetadata,
-    kChapters } type;
+  enum Type { kSubtitles, kCaptions, kDescriptions, kMetadata, kChapters } type;
   FILE* file;
 };
 
@@ -125,45 +125,36 @@ bool ParseHeader(mkvparser::IMkvReader* reader, mkvpos_t* pos);
 
 // Parse the Segment of the input file and load all of its clusters.
 // Returns false if there was an error parsing the file.
-bool ParseSegment(
-    mkvparser::IMkvReader* reader,
-    mkvpos_t pos,
-    segment_ptr_t* segment);
+bool ParseSegment(mkvparser::IMkvReader* reader, mkvpos_t pos,
+                  segment_ptr_t* segment);
 
 // If |segment| has a Chapters element (in which case, there will be a
 // corresponding entry in |metadata_map|), convert the MKV chapters to
 // WebVTT chapter cues and write them to the output file.  Returns
 // false on error.
-bool WriteChaptersFile(
-    const metadata_map_t& metadata_map,
-    const mkvparser::Segment* segment);
+bool WriteChaptersFile(const metadata_map_t& metadata_map,
+                       const mkvparser::Segment* segment);
 
 // Convert an MKV Chapters Atom to a WebVTT cue and write it to the
 // output |file|.  Returns false on error.
-bool WriteChaptersCue(
-    FILE* file,
-    const mkvparser::Chapters* chapters,
-    const mkvparser::Chapters::Atom* atom,
-    const mkvparser::Chapters::Display* display);
+bool WriteChaptersCue(FILE* file, const mkvparser::Chapters* chapters,
+                      const mkvparser::Chapters::Atom* atom,
+                      const mkvparser::Chapters::Display* display);
 
 // Write the Cue Identifier line of the WebVTT cue, if it's present.
 // Returns false on error.
-bool WriteChaptersCueIdentifier(
-    FILE* file,
-    const mkvparser::Chapters::Atom* atom);
+bool WriteChaptersCueIdentifier(FILE* file,
+                                const mkvparser::Chapters::Atom* atom);
 
 // Use the timecodes from the chapters |atom| to write just the
 // timings line of the WebVTT cue.  Returns false on error.
-bool WriteChaptersCueTimings(
-    FILE* file,
-    const mkvparser::Chapters* chapters,
-    const mkvparser::Chapters::Atom* atom);
+bool WriteChaptersCueTimings(FILE* file, const mkvparser::Chapters* chapters,
+                             const mkvparser::Chapters::Atom* atom);
 
 // Parse the String sub-element of the |display| and write the payload
 // of the WebVTT cue.  Returns false on error.
-bool WriteChaptersCuePayload(
-    FILE* file,
-    const mkvparser::Chapters::Display* display);
+bool WriteChaptersCuePayload(FILE* file,
+                             const mkvparser::Chapters::Display* display);
 
 // Iterate over the tracks of the input file (and any chapters
 // element) and cache information about each metadata track.
@@ -190,16 +181,14 @@ bool InitializeFiles(const metadata_map_t& metadata_map);
 // Iterate over the blocks of the |cluster|, writing a WebVTT cue to
 // its associated output file for each block of metadata.  Returns
 // false if processing a block failed, or there was a parse error.
-bool ProcessCluster(
-    const metadata_map_t& metadata_map,
-    const mkvparser::Cluster* cluster);
+bool ProcessCluster(const metadata_map_t& metadata_map,
+                    const mkvparser::Cluster* cluster);
 
 // Look up this track number in the cache, and if found (meaning this
 // is a metadata track), write a WebVTT cue to the associated output
 // file.  Returns false if writing the WebVTT cue failed.
-bool ProcessBlockEntry(
-    const metadata_map_t& metadata_map,
-    const mkvparser::BlockEntry* block_entry);
+bool ProcessBlockEntry(const metadata_map_t& metadata_map,
+                       const mkvparser::BlockEntry* block_entry);
 
 // Parse the lines of text from the |block_group| to reconstruct the
 // original WebVTT cue, and write it to the associated output |file|.
@@ -215,24 +204,18 @@ bool WriteCueIdentifier(FILE* f, FrameParser* parser);
 // cue settings) and write the cue timings line for this cue to the
 // associated output file.  Returns false if there was an error
 // writing to the file.
-bool WriteCueTimings(
-    FILE* f,
-    FrameParser* parser);
+bool WriteCueTimings(FILE* f, FrameParser* parser);
 
 // Write the timestamp (representating either the start time or stop
 // time of the cue) to the output file.  Returns false if there was an
 // error writing to the file.
-bool WriteCueTime(
-    FILE* f,
-    mkvtime_t time_ns);
+bool WriteCueTime(FILE* f, mkvtime_t time_ns);
 
 // Consume the remaining lines of text from the character stream
 // (these lines are the actual payload of the WebVTT cue), and write
 // them to the associated output file.  Returns false if there was an
 // error writing to the file.
-bool WriteCuePayload(
-    FILE* f,
-    FrameParser* parser);
+bool WriteCuePayload(FILE* f, FrameParser* parser);
 }  // namespace vttdemux
 
 int main(int argc, const char* argv[]) {
@@ -299,12 +282,11 @@ FrameParser::FrameParser(const mkvparser::BlockGroup* block_group)
   pos_end_ = f.pos + f.len;
 }
 
-FrameParser::~FrameParser() {
-}
+FrameParser::~FrameParser() {}
 
 int FrameParser::GetChar(char* c) {
   if (pos_ >= pos_end_)  // end-of-stream
-    return 1;  // per the semantics of libwebvtt::Reader::GetChar
+    return 1;            // per the semantics of libwebvtt::Reader::GetChar
 
   const mkvparser::Cluster* const cluster = block_group_->GetCluster();
   const mkvparser::Segment* const segment = cluster->m_pSegment;
@@ -320,7 +302,7 @@ int FrameParser::GetChar(char* c) {
   return 0;
 }
 
-void FrameParser::UngetChar(char /* c */ ) {
+void FrameParser::UngetChar(char /* c */) {
   // All we need to do here is decrement the position in the stream.
   // The next time GetChar is called the same character will be
   // re-read from the input file.
@@ -335,18 +317,17 @@ ChapterAtomParser::ChapterAtomParser(
   str_end_ = str_ + len;
 }
 
-ChapterAtomParser::~ChapterAtomParser() {
-}
+ChapterAtomParser::~ChapterAtomParser() {}
 
 int ChapterAtomParser::GetChar(char* c) {
   if (str_ >= str_end_)  // end-of-stream
-    return 1;  // per the semantics of libwebvtt::Reader::GetChar
+    return 1;            // per the semantics of libwebvtt::Reader::GetChar
 
   *c = *str_++;  // consume this character in the stream
   return 0;
 }
 
-void ChapterAtomParser::UngetChar(char /* c */ ) {
+void ChapterAtomParser::UngetChar(char /* c */) {
   // All we need to do here is decrement the position in the stream.
   // The next time GetChar is called the same character will be
   // re-read from the input file.
@@ -355,9 +336,7 @@ void ChapterAtomParser::UngetChar(char /* c */ ) {
 
 }  // namespace vttdemux
 
-bool vttdemux::ParseHeader(
-    mkvparser::IMkvReader* reader,
-    mkvpos_t* pos) {
+bool vttdemux::ParseHeader(mkvparser::IMkvReader* reader, mkvpos_t* pos) {
   mkvparser::EBMLHeader h;
   const mkvpos_t status = h.Parse(reader, *pos);
 
@@ -374,10 +353,8 @@ bool vttdemux::ParseHeader(
   return true;  // success
 }
 
-bool vttdemux::ParseSegment(
-    mkvparser::IMkvReader* reader,
-    mkvpos_t pos,
-    segment_ptr_t* segment_ptr) {
+bool vttdemux::ParseSegment(mkvparser::IMkvReader* reader, mkvpos_t pos,
+                            segment_ptr_t* segment_ptr) {
   // We first create the segment object.
 
   mkvparser::Segment* p;
@@ -402,9 +379,8 @@ bool vttdemux::ParseSegment(
   return true;
 }
 
-void vttdemux::BuildMap(
-    const mkvparser::Segment* segment,
-    metadata_map_t* map_ptr) {
+void vttdemux::BuildMap(const mkvparser::Segment* segment,
+                        metadata_map_t* map_ptr) {
   metadata_map_t& m = *map_ptr;
   m.clear();
 
@@ -566,13 +542,8 @@ bool vttdemux::OpenFiles(metadata_map_t* metadata_map, const char* filename) {
     // We have synthesized the full output filename, so attempt to
     // open the WebVTT output file.
 
-#ifndef _MSC_VER
     info.file = fopen(name.c_str(), "wb");
     const bool success = (info.file != NULL);
-#else
-    const errno_t e = fopen_s(&info.file, name.c_str(), "wb");
-    const bool success = (e == 0);
-#endif
 
     if (!success) {
       printf("unable to open output file %s\n", name.c_str());
@@ -650,9 +621,8 @@ bool vttdemux::InitializeFiles(const metadata_map_t& m) {
   return true;
 }
 
-bool vttdemux::WriteChaptersFile(
-    const metadata_map_t& m,
-    const mkvparser::Segment* s) {
+bool vttdemux::WriteChaptersFile(const metadata_map_t& m,
+                                 const mkvparser::Segment* s) {
   const metadata_map_t::const_iterator info_iter = m.find(kChaptersKey);
   if (info_iter == m.end())  // no chapters, so nothing to do
     return true;
@@ -667,7 +637,7 @@ bool vttdemux::WriteChaptersFile(
   const int edition_count = chapters->GetEditionCount();
 
   if (edition_count <= 0)  // weird
-    return true;  // nothing to do
+    return true;           // nothing to do
 
   if (edition_count > 1) {
     // TODO(matthewjheaney): figure what to do here
@@ -723,11 +693,9 @@ bool vttdemux::WriteChaptersFile(
   return true;
 }
 
-bool vttdemux::WriteChaptersCue(
-    FILE* f,
-    const mkvparser::Chapters* chapters,
-    const mkvparser::Chapters::Atom* atom,
-    const mkvparser::Chapters::Display* display) {
+bool vttdemux::WriteChaptersCue(FILE* f, const mkvparser::Chapters* chapters,
+                                const mkvparser::Chapters::Atom* atom,
+                                const mkvparser::Chapters::Display* display) {
   // We start a new cue by writing a cue separator (an empty line)
   // into the stream.
 
@@ -751,9 +719,7 @@ bool vttdemux::WriteChaptersCue(
 }
 
 bool vttdemux::WriteChaptersCueIdentifier(
-    FILE* f,
-    const mkvparser::Chapters::Atom* atom) {
-
+    FILE* f, const mkvparser::Chapters::Atom* atom) {
   const char* const identifier = atom->GetStringUID();
 
   if (identifier == NULL)
@@ -765,10 +731,9 @@ bool vttdemux::WriteChaptersCueIdentifier(
   return true;
 }
 
-bool vttdemux::WriteChaptersCueTimings(
-    FILE* f,
-    const mkvparser::Chapters* chapters,
-    const mkvparser::Chapters::Atom* atom) {
+bool vttdemux::WriteChaptersCueTimings(FILE* f,
+                                       const mkvparser::Chapters* chapters,
+                                       const mkvparser::Chapters::Atom* atom) {
   const mkvtime_t start_ns = atom->GetStartTime(chapters);
 
   if (start_ns < 0)
@@ -795,8 +760,7 @@ bool vttdemux::WriteChaptersCueTimings(
 }
 
 bool vttdemux::WriteChaptersCuePayload(
-    FILE* f,
-    const mkvparser::Chapters::Display* display) {
+    FILE* f, const mkvparser::Chapters::Display* display) {
   // Bind a Chapter parser object to the display, which allows us to
   // extract each line of text from the title-part of the display.
   ChapterAtomParser parser(display);
@@ -823,16 +787,15 @@ bool vttdemux::WriteChaptersCuePayload(
   return true;
 }
 
-bool vttdemux::ProcessCluster(
-    const metadata_map_t& m,
-    const mkvparser::Cluster* c) {
+bool vttdemux::ProcessCluster(const metadata_map_t& m,
+                              const mkvparser::Cluster* c) {
   // Visit the blocks in this cluster, writing a WebVTT cue for each
   // metadata block.
 
   const mkvparser::BlockEntry* block_entry;
 
   long result = c->GetFirst(block_entry);  // NOLINT
-  if (result < 0) {  // error
+  if (result < 0) {                        // error
     printf("bad cluster (unable to get first block)\n");
     return false;
   }
@@ -851,9 +814,8 @@ bool vttdemux::ProcessCluster(
   return true;
 }
 
-bool vttdemux::ProcessBlockEntry(
-    const metadata_map_t& m,
-    const mkvparser::BlockEntry* block_entry) {
+bool vttdemux::ProcessBlockEntry(const metadata_map_t& m,
+                                 const mkvparser::BlockEntry* block_entry) {
   // If the track number for this block is in the cache, then we have
   // a metadata block, so write the WebVTT cue to the output file.
 
@@ -878,9 +840,7 @@ bool vttdemux::ProcessBlockEntry(
   return WriteCue(f, block_group);
 }
 
-bool vttdemux::WriteCue(
-    FILE* f,
-    const mkvparser::BlockGroup* block_group) {
+bool vttdemux::WriteCue(FILE* f, const mkvparser::BlockGroup* block_group) {
   // Bind a FrameParser object to the block, which allows us to
   // extract each line of text from the payload of the block.
   FrameParser parser(block_group);
@@ -907,9 +867,7 @@ bool vttdemux::WriteCue(
   return true;
 }
 
-bool vttdemux::WriteCueIdentifier(
-    FILE* f,
-    FrameParser* parser) {
+bool vttdemux::WriteCueIdentifier(FILE* f, FrameParser* parser) {
   string line;
   int e = parser->GetLine(&line);
 
@@ -932,9 +890,7 @@ bool vttdemux::WriteCueIdentifier(
   return true;
 }
 
-bool vttdemux::WriteCueTimings(
-    FILE* f,
-    FrameParser* parser) {
+bool vttdemux::WriteCueTimings(FILE* f, FrameParser* parser) {
   const mkvparser::BlockGroup* const block_group = parser->block_group_;
   const mkvparser::Cluster* const cluster = block_group->GetCluster();
   const mkvparser::Block* const block = block_group->GetBlock();
@@ -996,9 +952,7 @@ bool vttdemux::WriteCueTimings(
   return true;
 }
 
-bool vttdemux::WriteCueTime(
-    FILE* f,
-    mkvtime_t time_ns) {
+bool vttdemux::WriteCueTime(FILE* f, mkvtime_t time_ns) {
   mkvtime_t ms = time_ns / 1000000;  // WebVTT time has millisecond resolution
 
   mkvtime_t sec = ms / 1000;
@@ -1016,14 +970,12 @@ bool vttdemux::WriteCueTime(
   }
 
   if (fprintf(f, "%02lld:%02lld.%03lld", min, sec, ms) < 0)
-      return false;
+    return false;
 
   return true;
 }
 
-bool vttdemux::WriteCuePayload(
-    FILE* f,
-    FrameParser* parser) {
+bool vttdemux::WriteCuePayload(FILE* f, FrameParser* parser) {
   int count = 0;  // count of lines of payload text written to output file
   for (string line;;) {
     const int e = parser->GetLine(&line);
