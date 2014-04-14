@@ -10,7 +10,7 @@
 #include <X11/X.h>
 
 #include "base/memory/singleton.h"
-#include "base/message_loop/message_pump_x11.h"
+#include "ui/gfx/x/x11_types.h"
 
 namespace libgtk2ui {
 
@@ -66,7 +66,7 @@ void Gtk2EventLoop::ProcessGdkEventKey(const GdkEventKey& gdk_event_key) {
   x_event.xkey.type =
       gdk_event_key.type == GDK_KEY_PRESS ? KeyPress : KeyRelease;
   x_event.xkey.send_event = gdk_event_key.send_event;
-  x_event.xkey.display = base::MessagePumpX11::GetDefaultXDisplay();
+  x_event.xkey.display = gfx::GetXDisplay();
   x_event.xkey.window = GDK_WINDOW_XID(gdk_event_key.window);
   x_event.xkey.root = DefaultRootWindow(x_event.xkey.display);
   x_event.xkey.time = gdk_event_key.time;

@@ -22,7 +22,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "base/message_loop/message_pump_x11.h"
 #include "base/nix/xdg_util.h"
 #include "base/synchronization/lock.h"
 #include "content/public/browser/browser_thread.h"
@@ -294,7 +293,7 @@ void PowerSaveBlockerImpl::Delegate::RemoveBlock(DBusAPI api) {
 
 // static
 bool PowerSaveBlockerImpl::Delegate::DPMSEnabled() {
-  XDisplay* display = base::MessagePumpForUI::GetDefaultXDisplay();
+  XDisplay* display = gfx::GetXDisplay();
   BOOL enabled = false;
   int dummy;
   if (DPMSQueryExtension(display, &dummy, &dummy) && DPMSCapable(display)) {

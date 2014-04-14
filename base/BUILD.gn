@@ -330,8 +330,6 @@ component("base") {
     "message_loop/message_pump_observer.h",
     "message_loop/message_pump_win.cc",
     "message_loop/message_pump_win.h",
-    "message_loop/message_pump_x11.cc",
-    "message_loop/message_pump_x11.h",
     "metrics/field_trial.cc",
     "metrics/field_trial.h",
     "metrics/sample_map.cc",

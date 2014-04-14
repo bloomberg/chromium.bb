@@ -20,7 +20,7 @@
 #if defined(USE_X11)
 #include <X11/Xlib.h>
 
-#include "base/message_loop/message_pump_x11.h"
+#include "ui/gfx/x/x11_types.h"
 #endif
 
 namespace ash {
@@ -59,7 +59,7 @@ DisplayInfo CreateDisplayInfo(int64 id,
 
 void MoveMouseSync(aura::Window* window, int x, int y) {
 #if defined(USE_X11)
-  XWarpPointer(base::MessagePumpX11::GetDefaultXDisplay(),
+  XWarpPointer(gfx::GetXDisplay(),
                None,
                window->GetHost()->GetAcceleratedWidget(),
                0, 0, 0, 0,

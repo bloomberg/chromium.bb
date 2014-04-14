@@ -12,7 +12,6 @@
 
 #include "base/logging.h"
 #include "base/memory/singleton.h"
-#include "base/message_loop/message_pump_x11.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
 #include "ui/events/x/device_data_manager.h"

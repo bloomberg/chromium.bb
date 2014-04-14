@@ -580,6 +580,8 @@
           'sources': [
             'x/x11_atom_cache.cc',
             'x/x11_atom_cache.h',
+            'x/x11_connection.cc',
+            'x/x11_connection.h',
             'x/x11_error_tracker.cc',
             'x/x11_error_tracker.h',
             'x/x11_types.cc',

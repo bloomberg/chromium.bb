@@ -12,7 +12,6 @@
 
 #include "base/basictypes.h"
 #include "base/debug/trace_event.h"
-#include "base/message_loop/message_pump_x11.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkPath.h"

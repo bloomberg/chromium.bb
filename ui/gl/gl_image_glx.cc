@@ -12,6 +12,7 @@ extern "C" {
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "ui/gfx/x/x11_types.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_surface_glx.h"
 
@@ -43,7 +44,7 @@ int TextureFormat(int depth) {
 }  // namespace anonymous
 
 GLImageGLX::GLImageGLX(gfx::PluginWindowHandle window)
-    : display_(base::MessagePumpForUI::GetDefaultXDisplay()),
+    : display_(gfx::GetXDisplay()),
       window_(window),
       pixmap_(0),
       glx_pixmap_(0) {}

@@ -245,8 +245,6 @@
         'message_loop/message_pump_libevent.h',
         'message_loop/message_pump_mac.h',
         'message_loop/message_pump_mac.mm',
-        'message_loop/message_pump_x11.cc',
-        'message_loop/message_pump_x11.h',
         'metrics/field_trial.cc',
         'metrics/field_trial.h',
         'posix/file_descriptor_shuffle.cc',

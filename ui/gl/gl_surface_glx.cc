@@ -21,6 +21,7 @@ extern "C" {
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "third_party/mesa/src/include/GL/osmesa.h"
+#include "ui/gfx/x/x11_connection.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_implementation.h"
@@ -378,22 +379,8 @@ bool GLSurfaceGLX::InitializeOneOff() {
 
   // SGIVideoSyncProviderShim (if instantiated) will issue X commands on
   // it's own thread.
-  XInitThreads();
-
-#if defined(TOOLKIT_GTK)
-  // Be sure to use the X display handle and not the GTK display handle if this
-  // is the GPU process.
-  g_create_child_windows =
-      base::MessageLoop::current() &&
-      base::MessageLoop::current()->type() == base::MessageLoop::TYPE_GPU;
-
-  if (g_create_child_windows)
-    g_display = base::MessagePumpX11::GetDefaultXDisplay();
-  else
-    g_display = base::MessagePumpForUI::GetDefaultXDisplay();
-#else
-  g_display = base::MessagePumpForUI::GetDefaultXDisplay();
-#endif
+  gfx::InitializeThreadedX11();
+  g_display = gfx::GetXDisplay();
 
   if (!g_display) {
     LOG(ERROR) << "XOpenDisplay failed.";
