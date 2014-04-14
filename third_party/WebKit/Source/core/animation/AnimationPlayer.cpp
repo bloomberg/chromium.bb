@@ -347,7 +347,7 @@ bool AnimationPlayer::update(UpdateReason reason)
 double AnimationPlayer::timeToEffectChange()
 {
     ASSERT(!m_outdated);
-    if (!m_content || !m_playbackRate)
+    if (!m_content || m_held)
         return std::numeric_limits<double>::infinity();
     if (m_playbackRate > 0)
         return m_content->timeToForwardsEffectChange() / m_playbackRate;

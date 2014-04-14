@@ -678,6 +678,14 @@ TEST_F(AnimationAnimationPlayerTest, AnimationPlayersReturnTimeToNextEffect)
     EXPECT_EQ(0.5, player->timeToEffectChange());
 }
 
+TEST_F(AnimationAnimationPlayerTest, TimeToNextEffectWhenPaused)
+{
+    EXPECT_EQ(0, player->timeToEffectChange());
+    player->pause();
+    player->update(AnimationPlayer::UpdateOnDemand);
+    EXPECT_EQ(std::numeric_limits<double>::infinity(), player->timeToEffectChange());
+}
+
 TEST_F(AnimationAnimationPlayerTest, AttachedAnimationPlayers)
 {
     RefPtr<Element> element = document->createElement("foo", ASSERT_NO_EXCEPTION);
