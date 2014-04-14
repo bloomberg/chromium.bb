@@ -20,25 +20,25 @@ test = TestGyp.TestGyp(formats=FORMATS)
 
 # We reset the environ after calling gyp. When the auto-regeneration happens,
 # the same define should be reused anyway.
-with TestGyp.LocalEnv({'CXXFLAGS': '-O0'}):
+with TestGyp.LocalEnv({'CXXFLAGS': ''}):
   test.run_gyp('cxxflags.gyp')
 
 test.build('cxxflags.gyp')
 
 expect = """\
-Using no optimization flag
+No define
 """
 test.run_built_executable('cxxflags', stdout=expect)
 
 test.sleep()
 
-with TestGyp.LocalEnv({'CXXFLAGS': '-O2'}):
+with TestGyp.LocalEnv({'CXXFLAGS': '-DABC'}):
   test.run_gyp('cxxflags.gyp')
 
 test.build('cxxflags.gyp')
 
 expect = """\
-Using an optimization flag
+With define
 """
 test.run_built_executable('cxxflags', stdout=expect)
 
