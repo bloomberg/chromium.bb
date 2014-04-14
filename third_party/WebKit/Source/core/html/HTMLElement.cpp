@@ -302,9 +302,6 @@ const AtomicString& HTMLElement::eventNameForAttributeName(const QualifiedName& 
 
 void HTMLElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
-    if (isIdAttributeName(name) || name == classAttr || name == styleAttr)
-        return Element::parseAttribute(name, value);
-
     if (name == dirAttr)
         dirAttributeChanged(value);
     else if (name == tabindexAttr) {
