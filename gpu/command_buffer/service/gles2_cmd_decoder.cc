@@ -9844,6 +9844,8 @@ static GLenum ExtractFormatFromStorageFormat(GLenum internalformat) {
 void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
     GLenum target, GLuint source_id, GLuint dest_id, GLint level,
     GLenum internal_format, GLenum dest_type) {
+  TRACE_EVENT0("gpu", "GLES2DecoderImpl::DoCopyTextureCHROMIUM");
+
   TextureRef* dest_texture_ref = GetTexture(dest_id);
   TextureRef* source_texture_ref = GetTexture(source_id);
 
