@@ -27,7 +27,7 @@
 ] interface IDBIndex {
     readonly attribute DOMString name;
     readonly attribute IDBObjectStore objectStore;
-    [CallWith=ExecutionContext] readonly attribute any keyPath;
+    [CallWith=NewScriptState] readonly attribute any keyPath;
     readonly attribute boolean unique;
     readonly attribute boolean multiEntry;
 

@@ -51,26 +51,26 @@ void checkKeyPathNullValue(const ScriptValue& value, const String& keyPath)
     ASSERT_FALSE(idbKey.get());
 }
 
-bool injectKey(PassRefPtr<IDBKey> key, ScriptValue& value, const String& keyPath)
+bool injectKey(NewScriptState* scriptState, PassRefPtr<IDBKey> key, ScriptValue& value, const String& keyPath)
 {
     IDBKeyPath idbKeyPath(keyPath);
     EXPECT_TRUE(idbKeyPath.isValid());
-    ScriptValue keyValue = idbKeyToScriptValue(0, key);
+    ScriptValue keyValue = idbKeyToScriptValue(scriptState, key);
     return injectV8KeyIntoV8Value(keyValue.v8Value(), value.v8Value(), idbKeyPath, v8::Isolate::GetCurrent());
 }
 
-void checkInjection(PassRefPtr<IDBKey> prpKey, ScriptValue& value, const String& keyPath)
+void checkInjection(NewScriptState* scriptState, PassRefPtr<IDBKey> prpKey, ScriptValue& value, const String& keyPath)
 {
     RefPtr<IDBKey> key = prpKey;
-    bool result = injectKey(key, value, keyPath);
+    bool result = injectKey(scriptState, key, value, keyPath);
     ASSERT_TRUE(result);
     RefPtr<IDBKey> extractedKey = checkKeyFromValueAndKeyPathInternal(value, keyPath);
     EXPECT_TRUE(key->isEqual(extractedKey.get()));
 }
 
-void checkInjectionFails(PassRefPtr<IDBKey> key, ScriptValue& value, const String& keyPath)
+void checkInjectionFails(NewScriptState* scriptState, PassRefPtr<IDBKey> key, ScriptValue& value, const String& keyPath)
 {
-    EXPECT_FALSE(injectKey(key, value, keyPath));
+    EXPECT_FALSE(injectKey(scriptState, key, value, keyPath));
 }
 
 void checkKeyPathStringValue(const ScriptValue& value, const String& keyPath, const String& expected)
@@ -143,34 +143,36 @@ class InjectIDBKeyTest : public IDBKeyFromValueAndKeyPathTest {
 TEST_F(InjectIDBKeyTest, TopLevelPropertyStringValue)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    NewScriptState* scriptState = NewScriptState::current(isolate);
     v8::Local<v8::Object> object = v8::Object::New(isolate);
     object->Set(v8AtomicString(isolate, "foo"), v8AtomicString(isolate, "zoo"));
 
     ScriptValue foozoo(object, isolate);
-    checkInjection(IDBKey::createString("myNewKey"), foozoo, "bar");
-    checkInjection(IDBKey::createNumber(1234), foozoo, "bar");
+    checkInjection(scriptState, IDBKey::createString("myNewKey"), foozoo, "bar");
+    checkInjection(scriptState, IDBKey::createNumber(1234), foozoo, "bar");
 
-    checkInjectionFails(IDBKey::createString("key"), foozoo, "foo.bar");
+    checkInjectionFails(scriptState, IDBKey::createString("key"), foozoo, "foo.bar");
 }
 
 TEST_F(InjectIDBKeyTest, SubProperty)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    NewScriptState* scriptState = NewScriptState::current(isolate);
     v8::Local<v8::Object> object = v8::Object::New(isolate);
     v8::Local<v8::Object> subProperty = v8::Object::New(isolate);
     subProperty->Set(v8AtomicString(isolate, "bar"), v8AtomicString(isolate, "zee"));
     object->Set(v8AtomicString(isolate, "foo"), subProperty);
 
     ScriptValue scriptObject(object, isolate);
-    checkInjection(IDBKey::createString("myNewKey"), scriptObject, "foo.baz");
-    checkInjection(IDBKey::createNumber(789), scriptObject, "foo.baz");
-    checkInjection(IDBKey::createDate(4567), scriptObject, "foo.baz");
-    checkInjection(IDBKey::createDate(4567), scriptObject, "bar");
-    checkInjection(IDBKey::createArray(IDBKey::KeyArray()), scriptObject, "foo.baz");
-    checkInjection(IDBKey::createArray(IDBKey::KeyArray()), scriptObject, "bar");
+    checkInjection(scriptState, IDBKey::createString("myNewKey"), scriptObject, "foo.baz");
+    checkInjection(scriptState, IDBKey::createNumber(789), scriptObject, "foo.baz");
+    checkInjection(scriptState, IDBKey::createDate(4567), scriptObject, "foo.baz");
+    checkInjection(scriptState, IDBKey::createDate(4567), scriptObject, "bar");
+    checkInjection(scriptState, IDBKey::createArray(IDBKey::KeyArray()), scriptObject, "foo.baz");
+    checkInjection(scriptState, IDBKey::createArray(IDBKey::KeyArray()), scriptObject, "bar");
 
-    checkInjectionFails(IDBKey::createString("zoo"), scriptObject, "foo.bar.baz");
-    checkInjection(IDBKey::createString("zoo"), scriptObject, "foo.xyz.foo");
+    checkInjectionFails(scriptState, IDBKey::createString("zoo"), scriptObject, "foo.bar.baz");
+    checkInjection(scriptState, IDBKey::createString("zoo"), scriptObject, "foo.xyz.foo");
 }
 
 } // namespace

@@ -26,7 +26,7 @@
 [
 ] interface IDBObjectStore {
     [TreatReturnedNullStringAs=Null] readonly attribute DOMString name;
-    [CallWith=ExecutionContext] readonly attribute any keyPath;
+    [CallWith=NewScriptState] readonly attribute any keyPath;
     readonly attribute DOMStringList indexNames;
     readonly attribute IDBTransaction transaction;
     readonly attribute boolean autoIncrement;
@@ -39,8 +39,8 @@
     [CallWith=ExecutionContext, RaisesException] IDBRequest openCursor([Default=Undefined] optional any range, [Default=NullString] optional DOMString direction);
     [CallWith=ExecutionContext, RaisesException, RuntimeEnabled=IndexedDBExperimental] IDBRequest openKeyCursor([Default=Undefined] optional any range, [Default=NullString] optional DOMString direction);
 
-    [CallWith=ExecutionContext, RaisesException] IDBIndex createIndex(DOMString name, sequence<DOMString> keyPath, optional Dictionary options);
-    [CallWith=ExecutionContext, RaisesException] IDBIndex createIndex(DOMString name, DOMString keyPath, optional Dictionary options);
+    [CallWith=NewScriptState, RaisesException] IDBIndex createIndex(DOMString name, sequence<DOMString> keyPath, optional Dictionary options);
+    [CallWith=NewScriptState, RaisesException] IDBIndex createIndex(DOMString name, DOMString keyPath, optional Dictionary options);
     [RaisesException] IDBIndex index(DOMString name);
     [RaisesException] void deleteIndex(DOMString name);
     [CallWith=ExecutionContext, RaisesException] IDBRequest count([Default=Undefined] optional any key);

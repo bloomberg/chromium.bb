@@ -28,7 +28,7 @@
     ActiveDOMObject
 ] interface IDBDatabase : EventTarget {
     readonly attribute DOMString name;
-    [CallWith=ExecutionContext] readonly attribute any version;
+    [CallWith=NewScriptState] readonly attribute any version;
     readonly attribute DOMStringList objectStoreNames;
 
     attribute EventHandler onabort;

@@ -60,10 +60,9 @@ IDBIndex::~IDBIndex()
 {
 }
 
-ScriptValue IDBIndex::keyPath(ExecutionContext* context) const
+ScriptValue IDBIndex::keyPath(NewScriptState* scriptState) const
 {
-    DOMRequestState requestState(toIsolate(context));
-    return idbAnyToScriptValue(&requestState, IDBAny::create(m_metadata.keyPath));
+    return idbAnyToScriptValue(scriptState, IDBAny::create(m_metadata.keyPath));
 }
 
 PassRefPtr<IDBRequest> IDBIndex::openCursor(ExecutionContext* context, const ScriptValue& range, const String& directionString, ExceptionState& exceptionState)

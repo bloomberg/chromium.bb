@@ -48,6 +48,9 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     {% if attribute.is_call_with_execution_context %}
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     {% endif %}
+    {% if attribute.is_call_with_new_script_state %}
+    NewScriptState* state = NewScriptState::current(info.GetIsolate());
+    {% endif %}
     {% if attribute.is_check_security_for_node or
           attribute.is_getter_raises_exception %}
     ExceptionState exceptionState(ExceptionState::GetterContext, "{{attribute.name}}", "{{interface_name}}", holder, info.GetIsolate());

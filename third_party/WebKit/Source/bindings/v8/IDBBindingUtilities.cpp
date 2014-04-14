@@ -403,23 +403,19 @@ bool canInjectIDBKeyIntoScriptValue(DOMRequestState* state, const ScriptValue& s
     return canInjectNthValueOnKeyPath(v8Value, keyPathElements, keyPathElements.size() - 1, state->context()->GetIsolate());
 }
 
-ScriptValue idbAnyToScriptValue(DOMRequestState* state, PassRefPtr<IDBAny> any)
+ScriptValue idbAnyToScriptValue(NewScriptState* scriptState, PassRefPtr<IDBAny> any)
 {
-    v8::Isolate* isolate = state ? state->isolate() : v8::Isolate::GetCurrent();
-    ASSERT(isolate->InContext());
-    v8::Local<v8::Context> context = state ? state->context() : isolate->GetCurrentContext();
+    v8::Isolate* isolate = scriptState->isolate();
     v8::HandleScope handleScope(isolate);
-    v8::Handle<v8::Value> v8Value(toV8(any.get(), context->Global(), isolate));
+    v8::Handle<v8::Value> v8Value(toV8(any.get(), scriptState->context()->Global(), isolate));
     return ScriptValue(v8Value, isolate);
 }
 
-ScriptValue idbKeyToScriptValue(DOMRequestState* state, PassRefPtr<IDBKey> key)
+ScriptValue idbKeyToScriptValue(NewScriptState* scriptState, PassRefPtr<IDBKey> key)
 {
-    v8::Isolate* isolate = state ? state->isolate() : v8::Isolate::GetCurrent();
-    ASSERT(isolate->InContext());
-    v8::Local<v8::Context> context = state ? state->context() : isolate->GetCurrentContext();
+    v8::Isolate* isolate = scriptState->isolate();
     v8::HandleScope handleScope(isolate);
-    v8::Handle<v8::Value> v8Value(toV8(key.get(), context->Global(), isolate));
+    v8::Handle<v8::Value> v8Value(toV8(key.get(), scriptState->context()->Global(), isolate));
     return ScriptValue(v8Value, isolate);
 }
 
@@ -448,7 +444,7 @@ void assertPrimaryKeyValidOrInjectable(DOMRequestState* state, PassRefPtr<Shared
     DOMRequestState::Scope scope(*state);
     v8::Isolate* isolate = state ? state->isolate() : v8::Isolate::GetCurrent();
 
-    ScriptValue keyValue = idbKeyToScriptValue(state, key);
+    ScriptValue keyValue = idbKeyToScriptValue(state->scriptState(), key);
     ScriptValue scriptValue(deserializeIDBValueBuffer(buffer.get(), isolate), isolate);
 
     // This assertion is about already persisted data, so allow experimental types.

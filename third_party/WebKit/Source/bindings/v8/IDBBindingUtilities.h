@@ -26,6 +26,7 @@
 #ifndef IDBBindingUtilities_h
 #define IDBBindingUtilities_h
 
+#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScriptValue.h"
 #include <v8.h>
 #include "wtf/Forward.h"
@@ -46,8 +47,8 @@ bool injectV8KeyIntoV8Value(v8::Handle<v8::Value> key, v8::Handle<v8::Value>, co
 // For use by Source/modules/indexeddb:
 PassRefPtr<IDBKey> createIDBKeyFromScriptValueAndKeyPath(DOMRequestState*, const ScriptValue&, const IDBKeyPath&);
 bool canInjectIDBKeyIntoScriptValue(DOMRequestState*, const ScriptValue&, const IDBKeyPath&);
-ScriptValue idbAnyToScriptValue(DOMRequestState*, PassRefPtr<IDBAny>);
-ScriptValue idbKeyToScriptValue(DOMRequestState*, PassRefPtr<IDBKey>);
+ScriptValue idbAnyToScriptValue(NewScriptState*, PassRefPtr<IDBAny>);
+ScriptValue idbKeyToScriptValue(NewScriptState*, PassRefPtr<IDBKey>);
 PassRefPtr<IDBKey> scriptValueToIDBKey(DOMRequestState*, const ScriptValue&);
 PassRefPtr<IDBKeyRange> scriptValueToIDBKeyRange(DOMRequestState*, const ScriptValue&);
 

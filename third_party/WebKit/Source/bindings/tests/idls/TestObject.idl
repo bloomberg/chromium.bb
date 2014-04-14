@@ -148,6 +148,8 @@ interface TestObject {
     [ActivityLogging=SetterForAllWorlds] attribute long activityLoggingSetterForAllWorldsLongAttribute;
     [CachedAttribute=isValueDirty] attribute any cachedAttributeAnyAttribute;
     [CallWith=ExecutionContext] attribute any callWithExecutionContextAnyAttribute;
+    [CallWith=NewScriptState] attribute any callWithNewScriptStateAnyAttribute;
+    [CallWith=ExecutionContext|NewScriptState] attribute any callWithExecutionContextAndNewScriptStateAnyAttribute;
     [CheckSecurity=Node] readonly attribute Document checkSecurityForNodeReadonlyDocumentAttribute; // All uses are read only
     [Conditional=CONDITION] attribute long conditionalLongAttribute;
     [Conditional=CONDITION_1&CONDITION_2] attribute long conditionalAndLongAttribute;

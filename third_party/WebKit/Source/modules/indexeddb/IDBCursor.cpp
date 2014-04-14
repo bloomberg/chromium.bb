@@ -309,31 +309,29 @@ void IDBCursor::checkForReferenceCycle()
     m_request.clear();
 }
 
-ScriptValue IDBCursor::key(ExecutionContext* context)
+ScriptValue IDBCursor::key(NewScriptState* scriptState)
 {
     m_keyDirty = false;
-    DOMRequestState requestState(toIsolate(context));
-    return idbKeyToScriptValue(&requestState, m_key);
+    return idbKeyToScriptValue(scriptState, m_key);
 }
 
-ScriptValue IDBCursor::primaryKey(ExecutionContext* context)
+ScriptValue IDBCursor::primaryKey(NewScriptState* scriptState)
 {
     m_primaryKeyDirty = false;
-    DOMRequestState requestState(toIsolate(context));
-    return idbKeyToScriptValue(&requestState, m_primaryKey);
+    return idbKeyToScriptValue(scriptState, m_primaryKey);
 }
 
-ScriptValue IDBCursor::value(ExecutionContext* context)
+ScriptValue IDBCursor::value(NewScriptState* scriptState)
 {
     ASSERT(isCursorWithValue());
 
-    DOMRequestState requestState(toIsolate(context));
     RefPtr<IDBObjectStore> objectStore = effectiveObjectStore();
     const IDBObjectStoreMetadata& metadata = objectStore->metadata();
     RefPtr<IDBAny> value;
     if (metadata.autoIncrement && !metadata.keyPath.isNull()) {
         value = IDBAny::create(m_value, m_primaryKey, metadata.keyPath);
 #ifndef NDEBUG
+        DOMRequestState requestState(scriptState->isolate());
         assertPrimaryKeyValidOrInjectable(&requestState, m_value, m_primaryKey, metadata.keyPath);
 #endif
     } else {
@@ -341,13 +339,12 @@ ScriptValue IDBCursor::value(ExecutionContext* context)
     }
 
     m_valueDirty = false;
-    return idbAnyToScriptValue(&requestState, value);
+    return idbAnyToScriptValue(scriptState, value);
 }
 
-ScriptValue IDBCursor::source(ExecutionContext* context) const
+ScriptValue IDBCursor::source(NewScriptState* scriptState) const
 {
-    DOMRequestState requestState(toIsolate(context));
-    return idbAnyToScriptValue(&requestState, m_source);
+    return idbAnyToScriptValue(scriptState, m_source);
 }
 
 void IDBCursor::setValueReady(PassRefPtr<IDBKey> key, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer> value)

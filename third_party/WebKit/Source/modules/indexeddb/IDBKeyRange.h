@@ -60,8 +60,8 @@ public:
     PassRefPtr<IDBKey> lower() const { return m_lower; }
     PassRefPtr<IDBKey> upper() const { return m_upper; }
 
-    ScriptValue lowerValue(ExecutionContext*) const;
-    ScriptValue upperValue(ExecutionContext*) const;
+    ScriptValue lowerValue(NewScriptState*) const;
+    ScriptValue upperValue(NewScriptState*) const;
     bool lowerOpen() const { return m_lowerType == LowerBoundOpen; }
     bool upperOpen() const { return m_upperType == UpperBoundOpen; }
 

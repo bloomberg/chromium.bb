@@ -135,15 +135,16 @@ private:
 
 class ExecutableWithDatabase : public RefCounted<ExecutableWithDatabase> {
 public:
-    ExecutableWithDatabase(ExecutionContext* context)
-        : m_context(context) { }
+    ExecutableWithDatabase(NewScriptState* scriptState)
+        : m_scriptState(scriptState) { }
     virtual ~ExecutableWithDatabase() { };
     void start(IDBFactory*, SecurityOrigin*, const String& databaseName);
     virtual void execute(PassRefPtr<IDBDatabase>) = 0;
     virtual RequestCallback* requestCallback() = 0;
-    ExecutionContext* context() { return m_context; };
+    ExecutionContext* context() const { return m_scriptState->executionContext(); }
+    NewScriptState* scriptState() const { return m_scriptState.get(); }
 private:
-    ExecutionContext* m_context;
+    RefPtr<NewScriptState> m_scriptState;
 };
 
 class OpenDatabaseCallback FINAL : public EventListener {
@@ -255,9 +256,9 @@ static PassRefPtr<KeyPath> keyPathFromIDBKeyPath(const IDBKeyPath& idbKeyPath)
 
 class DatabaseLoader FINAL : public ExecutableWithDatabase {
 public:
-    static PassRefPtr<DatabaseLoader> create(ExecutionContext* context, PassRefPtr<RequestDatabaseCallback> requestCallback)
+    static PassRefPtr<DatabaseLoader> create(NewScriptState* scriptState, PassRefPtr<RequestDatabaseCallback> requestCallback)
     {
-        return adoptRef(new DatabaseLoader(context, requestCallback));
+        return adoptRef(new DatabaseLoader(scriptState, requestCallback));
     }
 
     virtual ~DatabaseLoader() { }
@@ -306,8 +307,8 @@ public:
 
     virtual RequestCallback* requestCallback() OVERRIDE { return m_requestCallback.get(); }
 private:
-    DatabaseLoader(ExecutionContext* context, PassRefPtr<RequestDatabaseCallback> requestCallback)
-        : ExecutableWithDatabase(context)
+    DatabaseLoader(NewScriptState* scriptState, PassRefPtr<RequestDatabaseCallback> requestCallback)
+        : ExecutableWithDatabase(scriptState)
         , m_requestCallback(requestCallback) { }
     RefPtr<RequestDatabaseCallback> m_requestCallback;
 };
@@ -388,9 +389,9 @@ class DataLoader;
 
 class OpenCursorCallback FINAL : public EventListener {
 public:
-    static PassRefPtr<OpenCursorCallback> create(PassRefPtr<RequestDataCallback> requestCallback, int skipCount, unsigned pageSize)
+    static PassRefPtr<OpenCursorCallback> create(NewScriptState* scriptState, PassRefPtr<RequestDataCallback> requestCallback, int skipCount, unsigned pageSize)
     {
-        return adoptRef(new OpenCursorCallback(requestCallback, skipCount, pageSize));
+        return adoptRef(new OpenCursorCallback(scriptState, requestCallback, skipCount, pageSize));
     }
 
     virtual ~OpenCursorCallback() { }
@@ -400,7 +401,7 @@ public:
         return this == &other;
     }
 
-    virtual void handleEvent(ExecutionContext* context, Event* event) OVERRIDE
+    virtual void handleEvent(ExecutionContext*, Event* event) OVERRIDE
     {
         if (event->type() != EventTypeNames::success) {
             m_requestCallback->sendFailure("Unexpected event type.");
@@ -442,15 +443,15 @@ public:
             return;
         }
 
-        Document* document = toDocument(context);
+        Document* document = toDocument(m_scriptState->executionContext());
         if (!document)
             return;
         ScriptState* scriptState = mainWorldScriptState(document->frame());
 
         RefPtr<DataEntry> dataEntry = DataEntry::create()
-            .setKey(idbCursor->key(context).toJSONValue(scriptState)->toJSONString())
-            .setPrimaryKey(idbCursor->primaryKey(context).toJSONValue(scriptState)->toJSONString())
-            .setValue(idbCursor->value(context).toJSONValue(scriptState)->toJSONString());
+            .setKey(idbCursor->key(m_scriptState.get()).toJSONValue(scriptState)->toJSONString())
+            .setPrimaryKey(idbCursor->primaryKey(m_scriptState.get()).toJSONValue(scriptState)->toJSONString())
+            .setValue(idbCursor->value(m_scriptState.get()).toJSONValue(scriptState)->toJSONString());
         m_result->addItem(dataEntry);
 
     }
@@ -463,14 +464,17 @@ public:
     }
 
 private:
-    OpenCursorCallback(PassRefPtr<RequestDataCallback> requestCallback, int skipCount, unsigned pageSize)
+    OpenCursorCallback(NewScriptState* scriptState, PassRefPtr<RequestDataCallback> requestCallback, int skipCount, unsigned pageSize)
         : EventListener(EventListener::CPPEventListenerType)
+        , m_scriptState(scriptState)
         , m_requestCallback(requestCallback)
         , m_skipCount(skipCount)
         , m_pageSize(pageSize)
     {
         m_result = Array<DataEntry>::create();
     }
+
+    RefPtr<NewScriptState> m_scriptState;
     RefPtr<RequestDataCallback> m_requestCallback;
     int m_skipCount;
     unsigned m_pageSize;
@@ -479,9 +483,9 @@ private:
 
 class DataLoader FINAL : public ExecutableWithDatabase {
 public:
-    static PassRefPtr<DataLoader> create(ExecutionContext* context, PassRefPtr<RequestDataCallback> requestCallback, const String& objectStoreName, const String& indexName, PassRefPtr<IDBKeyRange> idbKeyRange, int skipCount, unsigned pageSize)
+    static PassRefPtr<DataLoader> create(NewScriptState* scriptState, PassRefPtr<RequestDataCallback> requestCallback, const String& objectStoreName, const String& indexName, PassRefPtr<IDBKeyRange> idbKeyRange, int skipCount, unsigned pageSize)
     {
-        return adoptRef(new DataLoader(context, requestCallback, objectStoreName, indexName, idbKeyRange, skipCount, pageSize));
+        return adoptRef(new DataLoader(scriptState, requestCallback, objectStoreName, indexName, idbKeyRange, skipCount, pageSize));
     }
 
     virtual ~DataLoader() { }
@@ -502,7 +506,7 @@ public:
             return;
         }
 
-        RefPtr<OpenCursorCallback> openCursorCallback = OpenCursorCallback::create(m_requestCallback, m_skipCount, m_pageSize);
+        RefPtr<OpenCursorCallback> openCursorCallback = OpenCursorCallback::create(scriptState(), m_requestCallback, m_skipCount, m_pageSize);
 
         RefPtr<IDBRequest> idbRequest;
         if (!m_indexName.isEmpty()) {
@@ -520,14 +524,17 @@ public:
     }
 
     virtual RequestCallback* requestCallback() OVERRIDE { return m_requestCallback.get(); }
-    DataLoader(ExecutionContext* executionContext, PassRefPtr<RequestDataCallback> requestCallback, const String& objectStoreName, const String& indexName, PassRefPtr<IDBKeyRange> idbKeyRange, int skipCount, unsigned pageSize)
-        : ExecutableWithDatabase(executionContext)
+    DataLoader(NewScriptState* scriptState, PassRefPtr<RequestDataCallback> requestCallback, const String& objectStoreName, const String& indexName, PassRefPtr<IDBKeyRange> idbKeyRange, int skipCount, unsigned pageSize)
+        : ExecutableWithDatabase(scriptState)
         , m_requestCallback(requestCallback)
         , m_objectStoreName(objectStoreName)
         , m_indexName(indexName)
         , m_idbKeyRange(idbKeyRange)
         , m_skipCount(skipCount)
-        , m_pageSize(pageSize) { }
+        , m_pageSize(pageSize)
+    {
+    }
+
     RefPtr<RequestDataCallback> m_requestCallback;
     String m_objectStoreName;
     String m_indexName;
@@ -655,7 +662,7 @@ void InspectorIndexedDBAgent::requestDatabase(ErrorString* errorString, const St
     ASSERT(!context.IsEmpty());
     v8::Context::Scope contextScope(context);
 
-    RefPtr<DatabaseLoader> databaseLoader = DatabaseLoader::create(document, requestCallback);
+    RefPtr<DatabaseLoader> databaseLoader = DatabaseLoader::create(NewScriptState::current(isolate), requestCallback);
     databaseLoader->start(idbFactory, document->securityOrigin(), databaseName);
 }
 
@@ -682,7 +689,7 @@ void InspectorIndexedDBAgent::requestData(ErrorString* errorString, const String
     ASSERT(!context.IsEmpty());
     v8::Context::Scope contextScope(context);
 
-    RefPtr<DataLoader> dataLoader = DataLoader::create(document, requestCallback, objectStoreName, indexName, idbKeyRange, skipCount, pageSize);
+    RefPtr<DataLoader> dataLoader = DataLoader::create(NewScriptState::current(isolate), requestCallback, objectStoreName, indexName, idbKeyRange, skipCount, pageSize);
     dataLoader->start(idbFactory, document->securityOrigin(), databaseName);
 }
 
@@ -725,13 +732,13 @@ private:
 
 class ClearObjectStore FINAL : public ExecutableWithDatabase {
 public:
-    static PassRefPtr<ClearObjectStore> create(ExecutionContext* context, const String& objectStoreName, PassRefPtr<ClearObjectStoreCallback> requestCallback)
+    static PassRefPtr<ClearObjectStore> create(NewScriptState* scriptState, const String& objectStoreName, PassRefPtr<ClearObjectStoreCallback> requestCallback)
     {
-        return adoptRef(new ClearObjectStore(context, objectStoreName, requestCallback));
+        return adoptRef(new ClearObjectStore(scriptState, objectStoreName, requestCallback));
     }
 
-    ClearObjectStore(ExecutionContext* context, const String& objectStoreName, PassRefPtr<ClearObjectStoreCallback> requestCallback)
-        : ExecutableWithDatabase(context)
+    ClearObjectStore(NewScriptState* scriptState, const String& objectStoreName, PassRefPtr<ClearObjectStoreCallback> requestCallback)
+        : ExecutableWithDatabase(scriptState)
         , m_objectStoreName(objectStoreName)
         , m_requestCallback(requestCallback)
     {
@@ -787,7 +794,7 @@ void InspectorIndexedDBAgent::clearObjectStore(ErrorString* errorString, const S
     ASSERT(!context.IsEmpty());
     v8::Context::Scope contextScope(context);
 
-    RefPtr<ClearObjectStore> clearObjectStore = ClearObjectStore::create(document, objectStoreName, requestCallback);
+    RefPtr<ClearObjectStore> clearObjectStore = ClearObjectStore::create(NewScriptState::current(isolate), objectStoreName, requestCallback);
     clearObjectStore->start(idbFactory, document->securityOrigin(), databaseName);
 }
 

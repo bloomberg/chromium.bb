@@ -58,6 +58,7 @@ public:
     v8::Local<v8::Context> context() { return m_scriptState->context(); }
     v8::Isolate* isolate() const { return m_scriptState->isolate(); }
     bool isValid() const { return m_scriptState; }
+    NewScriptState* scriptState() const { return m_scriptState.get(); }
 
 private:
     RefPtr<NewScriptState> m_scriptState;

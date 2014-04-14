@@ -61,10 +61,9 @@ IDBObjectStore::IDBObjectStore(const IDBObjectStoreMetadata& metadata, IDBTransa
     ScriptWrappable::init(this);
 }
 
-ScriptValue IDBObjectStore::keyPath(ExecutionContext* context) const
+ScriptValue IDBObjectStore::keyPath(NewScriptState* scriptState) const
 {
-    DOMRequestState requestState(toIsolate(context));
-    return idbAnyToScriptValue(&requestState, IDBAny::create(m_metadata.keyPath));
+    return idbAnyToScriptValue(scriptState, IDBAny::create(m_metadata.keyPath));
 }
 
 PassRefPtr<DOMStringList> IDBObjectStore::indexNames() const
@@ -300,9 +299,9 @@ namespace {
 // cursor success handlers are kept alive.
 class IndexPopulator FINAL : public EventListener {
 public:
-    static PassRefPtr<IndexPopulator> create(PassRefPtr<IDBDatabase> database, int64_t transactionId, int64_t objectStoreId, const IDBIndexMetadata& indexMetadata)
+    static PassRefPtr<IndexPopulator> create(NewScriptState* scriptState, PassRefPtr<IDBDatabase> database, int64_t transactionId, int64_t objectStoreId, const IDBIndexMetadata& indexMetadata)
     {
-        return adoptRef(new IndexPopulator(database, transactionId, objectStoreId, indexMetadata));
+        return adoptRef(new IndexPopulator(scriptState, database, transactionId, objectStoreId, indexMetadata));
     }
 
     virtual bool operator==(const EventListener& other) OVERRIDE
@@ -311,8 +310,9 @@ public:
     }
 
 private:
-    IndexPopulator(PassRefPtr<IDBDatabase> database, int64_t transactionId, int64_t objectStoreId, const IDBIndexMetadata& indexMetadata)
+    IndexPopulator(NewScriptState* scriptState, PassRefPtr<IDBDatabase> database, int64_t transactionId, int64_t objectStoreId, const IDBIndexMetadata& indexMetadata)
         : EventListener(CPPEventListenerType)
+        , m_scriptState(scriptState)
         , m_database(database)
         , m_transactionId(transactionId)
         , m_objectStoreId(objectStoreId)
@@ -337,7 +337,7 @@ private:
             cursor->continueFunction(static_cast<IDBKey*>(0), static_cast<IDBKey*>(0), ASSERT_NO_EXCEPTION);
 
             RefPtr<IDBKey> primaryKey = cursor->idbPrimaryKey();
-            ScriptValue value = cursor->value(context);
+            ScriptValue value = cursor->value(m_scriptState.get());
 
             IDBObjectStore::IndexKeys indexKeys;
             generateIndexKeysForValue(request->requestState(), m_indexMetadata, value, &indexKeys);
@@ -355,6 +355,7 @@ private:
 
     }
 
+    RefPtr<NewScriptState> m_scriptState;
     RefPtr<IDBDatabase> m_database;
     const int64_t m_transactionId;
     const int64_t m_objectStoreId;
@@ -362,7 +363,7 @@ private:
 };
 }
 
-PassRefPtr<IDBIndex> IDBObjectStore::createIndex(ExecutionContext* context, const String& name, const IDBKeyPath& keyPath, const Dictionary& options, ExceptionState& exceptionState)
+PassRefPtr<IDBIndex> IDBObjectStore::createIndex(NewScriptState* scriptState, const String& name, const IDBKeyPath& keyPath, const Dictionary& options, ExceptionState& exceptionState)
 {
     bool unique = false;
     options.get("unique", unique);
@@ -370,10 +371,10 @@ PassRefPtr<IDBIndex> IDBObjectStore::createIndex(ExecutionContext* context, cons
     bool multiEntry = false;
     options.get("multiEntry", multiEntry);
 
-    return createIndex(context, name, keyPath, unique, multiEntry, exceptionState);
+    return createIndex(scriptState, name, keyPath, unique, multiEntry, exceptionState);
 }
 
-PassRefPtr<IDBIndex> IDBObjectStore::createIndex(ExecutionContext* context, const String& name, const IDBKeyPath& keyPath, bool unique, bool multiEntry, ExceptionState& exceptionState)
+PassRefPtr<IDBIndex> IDBObjectStore::createIndex(NewScriptState* scriptState, const String& name, const IDBKeyPath& keyPath, bool unique, bool multiEntry, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBObjectStore::createIndex");
     if (!m_transaction->isVersionChange()) {
@@ -425,13 +426,12 @@ PassRefPtr<IDBIndex> IDBObjectStore::createIndex(ExecutionContext* context, cons
     if (exceptionState.hadException())
         return nullptr;
 
-    RefPtr<IDBRequest> indexRequest = openCursor(context, static_cast<IDBKeyRange*>(0), blink::WebIDBCursor::Next, WebIDBDatabase::PreemptiveTask);
+    RefPtr<IDBRequest> indexRequest = openCursor(scriptState->executionContext(), static_cast<IDBKeyRange*>(0), blink::WebIDBCursor::Next, WebIDBDatabase::PreemptiveTask);
     indexRequest->preventPropagation();
 
     // This is kept alive by being the success handler of the request, which is in turn kept alive by the owning transaction.
-    RefPtr<IndexPopulator> indexPopulator = IndexPopulator::create(transaction()->db(), m_transaction->id(), id(), metadata);
+    RefPtr<IndexPopulator> indexPopulator = IndexPopulator::create(scriptState, transaction()->db(), m_transaction->id(), id(), metadata);
     indexRequest->setOnsuccess(indexPopulator);
-
     return index.release();
 }
 

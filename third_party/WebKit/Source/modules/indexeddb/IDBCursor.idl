@@ -26,9 +26,9 @@
 interface IDBCursor {
 
     readonly attribute DOMString direction;
-    [CallWith=ExecutionContext, CachedAttribute=isKeyDirty] readonly attribute any key;
-    [CallWith=ExecutionContext, CachedAttribute=isPrimaryKeyDirty] readonly attribute any primaryKey;
-    [CallWith=ExecutionContext] readonly attribute any source;
+    [CallWith=NewScriptState, CachedAttribute=isKeyDirty] readonly attribute any key;
+    [CallWith=NewScriptState, CachedAttribute=isPrimaryKeyDirty] readonly attribute any primaryKey;
+    [CallWith=NewScriptState] readonly attribute any source;
 
     [CallWith=ScriptState, RaisesException] IDBRequest update(any value);
     [RaisesException] void advance([EnforceRange] unsigned long count);

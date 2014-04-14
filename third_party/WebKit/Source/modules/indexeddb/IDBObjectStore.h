@@ -60,7 +60,7 @@ public:
     // Implement the IDBObjectStore IDL
     int64_t id() const { return m_metadata.id; }
     const String& name() const { return m_metadata.name; }
-    ScriptValue keyPath(ExecutionContext*) const;
+    ScriptValue keyPath(NewScriptState*) const;
     PassRefPtr<DOMStringList> indexNames() const;
     PassRefPtr<IDBTransaction> transaction() const { return m_transaction; }
     bool autoIncrement() const { return m_metadata.autoIncrement; }
@@ -73,8 +73,14 @@ public:
     PassRefPtr<IDBRequest> deleteFunction(ExecutionContext*, const ScriptValue& key, ExceptionState&);
     PassRefPtr<IDBRequest> clear(ExecutionContext*, ExceptionState&);
 
-    PassRefPtr<IDBIndex> createIndex(ExecutionContext* context, const String& name, const String& keyPath, const Dictionary& options, ExceptionState& exceptionState) { return createIndex(context, name, IDBKeyPath(keyPath), options, exceptionState); }
-    PassRefPtr<IDBIndex> createIndex(ExecutionContext* context, const String& name, const Vector<String>& keyPath, const Dictionary& options, ExceptionState& exceptionState) { return createIndex(context, name, IDBKeyPath(keyPath), options, exceptionState); }
+    PassRefPtr<IDBIndex> createIndex(NewScriptState* scriptState, const String& name, const String& keyPath, const Dictionary& options, ExceptionState& exceptionState)
+    {
+        return createIndex(scriptState, name, IDBKeyPath(keyPath), options, exceptionState);
+    }
+    PassRefPtr<IDBIndex> createIndex(NewScriptState* scriptState, const String& name, const Vector<String>& keyPath, const Dictionary& options, ExceptionState& exceptionState)
+    {
+        return createIndex(scriptState, name, IDBKeyPath(keyPath), options, exceptionState);
+    }
     PassRefPtr<IDBIndex> index(const String& name, ExceptionState&);
     void deleteIndex(const String& name, ExceptionState&);
 
@@ -101,8 +107,8 @@ public:
 private:
     IDBObjectStore(const IDBObjectStoreMetadata&, IDBTransaction*);
 
-    PassRefPtr<IDBIndex> createIndex(ExecutionContext*, const String& name, const IDBKeyPath&, const Dictionary&, ExceptionState&);
-    PassRefPtr<IDBIndex> createIndex(ExecutionContext*, const String& name, const IDBKeyPath&, bool unique, bool multiEntry, ExceptionState&);
+    PassRefPtr<IDBIndex> createIndex(NewScriptState*, const String& name, const IDBKeyPath&, const Dictionary&, ExceptionState&);
+    PassRefPtr<IDBIndex> createIndex(NewScriptState*, const String& name, const IDBKeyPath&, bool unique, bool multiEntry, ExceptionState&);
     PassRefPtr<IDBRequest> put(blink::WebIDBDatabase::PutMode, PassRefPtr<IDBAny> source, ScriptState*, ScriptValue&, const ScriptValue& key, ExceptionState&);
 
     int64_t findIndexId(const String& name) const;

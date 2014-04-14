@@ -162,14 +162,13 @@ PassRefPtr<DOMStringList> IDBDatabase::objectStoreNames() const
     return objectStoreNames.release();
 }
 
-ScriptValue IDBDatabase::version(ExecutionContext* context) const
+ScriptValue IDBDatabase::version(NewScriptState* scriptState) const
 {
-    DOMRequestState requestState(toIsolate(context));
     int64_t intVersion = m_metadata.intVersion;
     if (intVersion == IDBDatabaseMetadata::NoIntVersion)
-        return idbAnyToScriptValue(&requestState, IDBAny::createString(m_metadata.version));
+        return idbAnyToScriptValue(scriptState, IDBAny::createString(m_metadata.version));
 
-    return idbAnyToScriptValue(&requestState, IDBAny::create(intVersion));
+    return idbAnyToScriptValue(scriptState, IDBAny::create(intVersion));
 }
 
 PassRefPtr<IDBObjectStore> IDBDatabase::createObjectStore(const String& name, const Dictionary& options, ExceptionState& exceptionState)

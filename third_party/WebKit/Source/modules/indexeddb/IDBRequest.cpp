@@ -78,7 +78,7 @@ IDBRequest::~IDBRequest()
     ASSERT(m_readyState == DONE || m_readyState == EarlyDeath || !executionContext());
 }
 
-ScriptValue IDBRequest::result(ExceptionState& exceptionState)
+ScriptValue IDBRequest::result(NewScriptState* scriptState, ExceptionState& exceptionState)
 {
     if (m_readyState != DONE) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::requestNotFinishedErrorMessage);
@@ -87,7 +87,7 @@ ScriptValue IDBRequest::result(ExceptionState& exceptionState)
     if (m_contextStopped || !executionContext())
         return ScriptValue();
     m_resultDirty = false;
-    return idbAnyToScriptValue(&m_requestState, m_result);
+    return idbAnyToScriptValue(scriptState, m_result);
 }
 
 PassRefPtrWillBeRawPtr<DOMError> IDBRequest::error(ExceptionState& exceptionState) const
@@ -99,13 +99,12 @@ PassRefPtrWillBeRawPtr<DOMError> IDBRequest::error(ExceptionState& exceptionStat
     return m_error;
 }
 
-ScriptValue IDBRequest::source(ExecutionContext* context) const
+ScriptValue IDBRequest::source(NewScriptState* scriptState) const
 {
     if (m_contextStopped || !executionContext())
         return ScriptValue();
 
-    DOMRequestState requestState(toIsolate(context));
-    return idbAnyToScriptValue(&requestState, m_source);
+    return idbAnyToScriptValue(scriptState, m_source);
 }
 
 const String& IDBRequest::readyState() const

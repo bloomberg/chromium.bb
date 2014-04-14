@@ -62,16 +62,14 @@ IDBKeyRange::IDBKeyRange(PassRefPtr<IDBKey> lower, PassRefPtr<IDBKey> upper, Low
     ScriptWrappable::init(this);
 }
 
-ScriptValue IDBKeyRange::lowerValue(ExecutionContext* context) const
+ScriptValue IDBKeyRange::lowerValue(NewScriptState* scriptState) const
 {
-    DOMRequestState requestState(toIsolate(context));
-    return idbKeyToScriptValue(&requestState, m_lower);
+    return idbKeyToScriptValue(scriptState, m_lower);
 }
 
-ScriptValue IDBKeyRange::upperValue(ExecutionContext* context) const
+ScriptValue IDBKeyRange::upperValue(NewScriptState* scriptState) const
 {
-    DOMRequestState requestState(toIsolate(context));
-    return idbKeyToScriptValue(&requestState, m_upper);
+    return idbKeyToScriptValue(scriptState, m_upper);
 }
 
 PassRefPtr<IDBKeyRange> IDBKeyRange::only(PassRefPtr<IDBKey> prpKey, ExceptionState& exceptionState)

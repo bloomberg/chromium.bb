@@ -67,9 +67,9 @@ public:
     static PassRefPtr<IDBRequest> create(ExecutionContext*, PassRefPtr<IDBAny> source, IDBTransaction*);
     virtual ~IDBRequest();
 
-    ScriptValue result(ExceptionState&);
+    ScriptValue result(NewScriptState*, ExceptionState&);
     PassRefPtrWillBeRawPtr<DOMError> error(ExceptionState&) const;
-    ScriptValue source(ExecutionContext*) const;
+    ScriptValue source(NewScriptState*) const;
     PassRefPtr<IDBTransaction> transaction() const { return m_transaction; }
 
     bool isResultDirty() const { return m_resultDirty; }
