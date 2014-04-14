@@ -43,11 +43,13 @@ def get_result(test_name, result_type=test_expectations.PASS, run_time=0):
         failures = [test_failures.FailureAudioMismatch()]
     elif result_type == test_expectations.CRASH:
         failures = [test_failures.FailureCrash()]
+    elif result_type == test_expectations.LEAK:
+        failures = [test_failures.FailureLeak()]
     return test_results.TestResult(test_name, failures=failures, test_run_time=run_time)
 
 
 def run_results(port, extra_skipped_tests=[]):
-    tests = ['passes/text.html', 'failures/expected/timeout.html', 'failures/expected/crash.html', 'failures/expected/keyboard.html',
+    tests = ['passes/text.html', 'failures/expected/timeout.html', 'failures/expected/crash.html', 'failures/expected/leak.html', 'failures/expected/keyboard.html',
              'failures/expected/audio.html', 'passes/skipped/skip.html']
     expectations = test_expectations.TestExpectations(port, tests)
     if extra_skipped_tests:
@@ -64,6 +66,7 @@ def summarized_results(port, expected, passing, flaky, only_include_failing=Fals
         initial_results.add(get_result('failures/expected/audio.html', test_expectations.AUDIO), expected, test_is_slow)
         initial_results.add(get_result('failures/expected/timeout.html', test_expectations.TIMEOUT), expected, test_is_slow)
         initial_results.add(get_result('failures/expected/crash.html', test_expectations.CRASH), expected, test_is_slow)
+        initial_results.add(get_result('failures/expected/leak.html', test_expectations.LEAK), expected, test_is_slow)
     elif passing:
         skipped_result = get_result('passes/skipped/skip.html')
         skipped_result.type = test_expectations.SKIP
@@ -73,11 +76,13 @@ def summarized_results(port, expected, passing, flaky, only_include_failing=Fals
         initial_results.add(get_result('failures/expected/audio.html'), expected, test_is_slow)
         initial_results.add(get_result('failures/expected/timeout.html'), expected, test_is_slow)
         initial_results.add(get_result('failures/expected/crash.html'), expected, test_is_slow)
+        initial_results.add(get_result('failures/expected/leak.html'), expected, test_is_slow)
     else:
         initial_results.add(get_result('passes/text.html', test_expectations.TIMEOUT, run_time=1), expected, test_is_slow)
         initial_results.add(get_result('failures/expected/audio.html', test_expectations.AUDIO, run_time=0.049), expected, test_is_slow)
         initial_results.add(get_result('failures/expected/timeout.html', test_expectations.CRASH, run_time=0.05), expected, test_is_slow)
         initial_results.add(get_result('failures/expected/crash.html', test_expectations.TIMEOUT), expected, test_is_slow)
+        initial_results.add(get_result('failures/expected/leak.html', test_expectations.TIMEOUT), expected, test_is_slow)
 
         # we only list keyboard.html here, since normally this is WontFix
         initial_results.add(get_result('failures/expected/keyboard.html', test_expectations.SKIP), expected, test_is_slow)
@@ -87,6 +92,7 @@ def summarized_results(port, expected, passing, flaky, only_include_failing=Fals
         retry_results.add(get_result('passes/text.html'), True, test_is_slow)
         retry_results.add(get_result('failures/expected/timeout.html'), True, test_is_slow)
         retry_results.add(get_result('failures/expected/crash.html'), True, test_is_slow)
+        retry_results.add(get_result('failures/expected/leak.html'), True, test_is_slow)
     else:
         retry_results = None
 
@@ -126,13 +132,13 @@ class SummarizedResultsTest(unittest.TestCase):
 
     def test_num_failures_by_type(self):
         summary = summarized_results(self.port, expected=False, passing=False, flaky=False)
-        self.assertEquals(summary['num_failures_by_type'], {'CRASH': 1, 'MISSING': 0, 'TEXT': 0, 'IMAGE': 0, 'NEEDSREBASELINE': 0, 'NEEDSMANUALREBASELINE': 0, 'PASS': 0, 'REBASELINE': 0, 'SKIP': 0, 'SLOW': 0, 'TIMEOUT': 2, 'IMAGE+TEXT': 0, 'LEAK': 0, 'FAIL': 0, 'AUDIO': 1, 'WONTFIX': 1})
+        self.assertEquals(summary['num_failures_by_type'], {'CRASH': 1, 'MISSING': 0, 'TEXT': 0, 'IMAGE': 0, 'NEEDSREBASELINE': 0, 'NEEDSMANUALREBASELINE': 0, 'PASS': 0, 'REBASELINE': 0, 'SKIP': 0, 'SLOW': 0, 'TIMEOUT': 3, 'IMAGE+TEXT': 0, 'LEAK': 0, 'FAIL': 0, 'AUDIO': 1, 'WONTFIX': 1})
 
         summary = summarized_results(self.port, expected=True, passing=False, flaky=False)
-        self.assertEquals(summary['num_failures_by_type'], {'CRASH': 1, 'MISSING': 0, 'TEXT': 0, 'IMAGE': 0, 'NEEDSREBASELINE': 0, 'NEEDSMANUALREBASELINE': 0, 'PASS': 1, 'REBASELINE': 0, 'SKIP': 0, 'SLOW': 0, 'TIMEOUT': 1, 'IMAGE+TEXT': 0, 'LEAK': 0, 'FAIL': 0, 'AUDIO': 1, 'WONTFIX': 0})
+        self.assertEquals(summary['num_failures_by_type'], {'CRASH': 1, 'MISSING': 0, 'TEXT': 0, 'IMAGE': 0, 'NEEDSREBASELINE': 0, 'NEEDSMANUALREBASELINE': 0, 'PASS': 1, 'REBASELINE': 0, 'SKIP': 0, 'SLOW': 0, 'TIMEOUT': 1, 'IMAGE+TEXT': 0, 'LEAK': 1, 'FAIL': 0, 'AUDIO': 1, 'WONTFIX': 0})
 
         summary = summarized_results(self.port, expected=False, passing=True, flaky=False)
-        self.assertEquals(summary['num_failures_by_type'], {'CRASH': 0, 'MISSING': 0, 'TEXT': 0, 'IMAGE': 0, 'NEEDSREBASELINE': 0, 'NEEDSMANUALREBASELINE': 0, 'PASS': 4, 'REBASELINE': 0, 'SKIP': 1, 'SLOW': 0, 'TIMEOUT': 0, 'IMAGE+TEXT': 0, 'LEAK': 0, 'FAIL': 0, 'AUDIO': 0, 'WONTFIX': 0})
+        self.assertEquals(summary['num_failures_by_type'], {'CRASH': 0, 'MISSING': 0, 'TEXT': 0, 'IMAGE': 0, 'NEEDSREBASELINE': 0, 'NEEDSMANUALREBASELINE': 0, 'PASS': 5, 'REBASELINE': 0, 'SKIP': 1, 'SLOW': 0, 'TIMEOUT': 0, 'IMAGE+TEXT': 0, 'LEAK': 0, 'FAIL': 0, 'AUDIO': 0, 'WONTFIX': 0})
 
     def test_svn_revision(self):
         self.port._options.builder_name = 'dummy builder'
@@ -168,6 +174,7 @@ class SummarizedResultsTest(unittest.TestCase):
         self.assertTrue(summary['tests']['failures']['expected']['audio.html'])
         self.assertTrue(summary['tests']['failures']['expected']['timeout.html'])
         self.assertTrue(summary['tests']['failures']['expected']['crash.html'])
+        self.assertTrue(summary['tests']['failures']['expected']['leak.html'])
 
     def test_summarized_results_skipped(self):
         self.port._options.builder_name = 'dummy builder'
@@ -185,6 +192,7 @@ class SummarizedResultsTest(unittest.TestCase):
         self.assertTrue('time' not in summary['tests']['failures']['expected']['audio.html'])
         self.assertEquals(summary['tests']['failures']['expected']['timeout.html']['time'], 0.1)
         self.assertTrue('time' not in summary['tests']['failures']['expected']['crash.html'])
+        self.assertTrue('time' not in summary['tests']['failures']['expected']['leak.html'])
 
     def test_timeout_then_unexpected_pass(self):
         tests = ['failures/expected/image.html']

@@ -697,6 +697,12 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertEqual(details.exit_code, 1)
         self.assertTrue('Retrying' in err.getvalue())
 
+    def test_retrying_leak_tests(self):
+        host = MockHost()
+        details, err, _ = logging_run(['--retry-failures', 'failures/unexpected/leak.html'], tests_included=True, host=host)
+        self.assertEqual(details.exit_code, 1)
+        self.assertTrue('Retrying' in err.getvalue())
+
     def test_retrying_force_pixel_tests(self):
         host = MockHost()
         details, err, _ = logging_run(['--no-pixel-tests', '--retry-failures', 'failures/unexpected/text-image-checksum.html'], tests_included=True, host=host)

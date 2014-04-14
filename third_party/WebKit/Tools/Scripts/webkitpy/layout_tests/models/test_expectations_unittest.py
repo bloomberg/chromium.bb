@@ -118,6 +118,7 @@ class MiscTests(Base):
 
         # test handling of SKIPped tests and results
         self.assertEqual(TestExpectations.result_was_expected(SKIP, set([CRASH]), test_needs_rebaselining=False), True)
+        self.assertEqual(TestExpectations.result_was_expected(SKIP, set([LEAK]), test_needs_rebaselining=False), True)
 
         # test handling of MISSING results and the REBASELINE specifier
         self.assertEqual(TestExpectations.result_was_expected(MISSING, set([PASS]), test_needs_rebaselining=True), True)
@@ -131,6 +132,7 @@ class MiscTests(Base):
         self.assertTrue(TestExpectations.result_was_expected(AUDIO, set([NEEDS_REBASELINE]), test_needs_rebaselining=False))
         self.assertFalse(TestExpectations.result_was_expected(TIMEOUT, set([NEEDS_REBASELINE]), test_needs_rebaselining=False))
         self.assertFalse(TestExpectations.result_was_expected(CRASH, set([NEEDS_REBASELINE]), test_needs_rebaselining=False))
+        self.assertFalse(TestExpectations.result_was_expected(LEAK, set([NEEDS_REBASELINE]), test_needs_rebaselining=False))
 
     def test_remove_pixel_failures(self):
         self.assertEqual(TestExpectations.remove_pixel_failures(set([FAIL])), set([FAIL]))

@@ -53,6 +53,7 @@ class TestInstance(object):
         self.timeout = False
         self.is_reftest = False
         self.device_failure = False
+        self.leak = False
 
         # The values of each field are treated as raw byte strings. They
         # will be converted to unicode strings where appropriate using
@@ -102,11 +103,11 @@ class TestList(object):
 #
 # These numbers may need to be updated whenever we add or delete tests. This includes virtual tests.
 #
-TOTAL_TESTS = 114
-TOTAL_SKIPS = 29
+TOTAL_TESTS = 117
+TOTAL_SKIPS = 30
 
 UNEXPECTED_PASSES = 1
-UNEXPECTED_FAILURES = 25
+UNEXPECTED_FAILURES = 26
 
 def unit_test_list():
     tests = TestList()
@@ -114,6 +115,7 @@ def unit_test_list():
     tests.add('failures/expected/exception.html', exception=True)
     tests.add('failures/expected/device_failure.html', device_failure=True)
     tests.add('failures/expected/timeout.html', timeout=True)
+    tests.add('failures/expected/leak.html', leak=True)
     tests.add('failures/expected/missing_text.html', expected_text=None)
     tests.add('failures/expected/needsrebaseline.html', actual_text='needsrebaseline text')
     tests.add('failures/expected/needsmanualrebaseline.html', actual_text='needsmanualrebaseline text')
@@ -185,6 +187,7 @@ layer at (0,0) size 800x34
     tests.add('failures/unexpected/text.html', actual_text='text_fail-txt')
     tests.add('failures/unexpected/text_then_crash.html')
     tests.add('failures/unexpected/timeout.html', timeout=True)
+    tests.add('failures/unexpected/leak.html', leak=True)
     tests.add('http/tests/passes/text.html')
     tests.add('http/tests/passes/image.html')
     tests.add('http/tests/ssl/text.html')
@@ -314,6 +317,7 @@ Bug(test) failures/expected/timeout.html [ Timeout ]
 Bug(test) failures/expected/keyboard.html [ WontFix ]
 Bug(test) failures/expected/exception.html [ WontFix ]
 Bug(test) failures/expected/device_failure.html [ WontFix ]
+Bug(test) failures/expected/leak.html [ Leak ]
 Bug(test) failures/unexpected/pass.html [ Failure ]
 Bug(test) passes/skipped/skip.html [ Skip ]
 Bug(test) passes/text.html [ Pass ]
@@ -657,7 +661,8 @@ class TestDriver(Driver):
         return DriverOutput(actual_text, image, test.actual_checksum, audio,
             crash=(crash or web_process_crash), crashed_process_name=crashed_process_name,
             crashed_pid=crashed_pid, crash_log=crash_log,
-            test_time=time.time() - start_time, timeout=test.timeout, error=test.error, pid=self.pid)
+            test_time=time.time() - start_time, timeout=test.timeout, error=test.error, pid=self.pid,
+            leak=test.leak)
 
     def stop(self):
         self.started = False
