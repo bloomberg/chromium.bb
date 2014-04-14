@@ -118,6 +118,7 @@ void InspectorFrontendClientImpl::windowObjectCleared()
             "     ['resetZoom', 0],"
             "     ['save', 3],"
             "     ['searchInPath', 3],"
+            "     ['setWhitelistedShortcuts', 1],"
             "     ['setContentsResizingStrategy', 2],"
             "     ['setIsDocked', 1],"
             "     ['stopIndexing', 1],"

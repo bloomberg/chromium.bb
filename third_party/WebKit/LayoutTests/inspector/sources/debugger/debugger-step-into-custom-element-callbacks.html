@@ -32,7 +32,7 @@ function testFunction() {
 var test = function() {
     InspectorTest.resumeExecution = function(callback) {
         if (WebInspector.panels.sources.paused)
-            WebInspector.panels.sources._togglePause();
+            WebInspector.panels.sources.togglePause();
         InspectorTest.waitUntilResumed(callback);
     };
 
