@@ -43,9 +43,39 @@ struct input_panel_surface {
 	struct weston_view *view;
 	struct wl_listener surface_destroy_listener;
 
+	struct weston_view_animation *anim;
+
 	struct weston_output *output;
 	uint32_t panel;
 };
+
+static void
+input_panel_slide_done(struct weston_view_animation *animation, void *data)
+{
+	struct input_panel_surface *ipsurf = data;
+
+	ipsurf->anim = NULL;
+}
+
+static void
+show_input_panel_surface(struct input_panel_surface *ipsurf)
+{
+	struct desktop_shell *shell = ipsurf->shell;
+
+	wl_list_insert(&shell->input_panel_layer.view_list,
+		       &ipsurf->view->layer_link);
+	weston_view_geometry_dirty(ipsurf->view);
+	weston_view_update_transform(ipsurf->view);
+	weston_surface_damage(ipsurf->surface);
+
+	if (ipsurf->anim)
+		weston_view_animation_destroy(ipsurf->anim);
+
+	ipsurf->anim =
+		weston_slide_run(ipsurf->view,
+				 ipsurf->surface->height * 0.9, 0,
+				 input_panel_slide_done, ipsurf);
+}
 
 static void
 show_input_panels(struct wl_listener *listener, void *data)
@@ -70,13 +100,8 @@ show_input_panels(struct wl_listener *listener, void *data)
 			      &shell->input_panel.surfaces, link) {
 		if (ipsurf->surface->width == 0)
 			continue;
-		wl_list_insert(&shell->input_panel_layer.view_list,
-			       &ipsurf->view->layer_link);
-		weston_view_geometry_dirty(ipsurf->view);
-		weston_view_update_transform(ipsurf->view);
-		weston_surface_damage(ipsurf->surface);
-		weston_slide_run(ipsurf->view, ipsurf->surface->height * 0.9,
-				 0, NULL, NULL);
+
+		show_input_panel_surface(ipsurf);
 	}
 }
 
@@ -135,13 +160,8 @@ input_panel_configure(struct weston_surface *surface, int32_t sx, int32_t sy)
 
 	weston_view_set_position(ip_surface->view, x, y);
 
-	if (!weston_surface_is_mapped(surface) && shell->showing_input_panels) {
-		wl_list_insert(&shell->input_panel_layer.view_list,
-			       &ip_surface->view->layer_link);
-		weston_view_update_transform(ip_surface->view);
-		weston_surface_damage(surface);
-		weston_slide_run(ip_surface->view, ip_surface->view->surface->height * 0.9, 0, NULL, NULL);
-	}
+	if (!weston_surface_is_mapped(surface) && shell->showing_input_panels)
+		show_input_panel_surface(ip_surface);
 }
 
 static void
