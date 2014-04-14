@@ -1586,7 +1586,8 @@ void FrameSelection::updateAppearance()
     if (startPos.isNotNull() && endPos.isNotNull() && selection.visibleStart() != selection.visibleEnd()) {
         RenderObject* startRenderer = startPos.deprecatedNode()->renderer();
         RenderObject* endRenderer = endPos.deprecatedNode()->renderer();
-        view->setSelection(startRenderer, startPos.deprecatedEditingOffset(), endRenderer, endPos.deprecatedEditingOffset());
+        if (startRenderer->view() == view && endRenderer->view() == view)
+            view->setSelection(startRenderer, startPos.deprecatedEditingOffset(), endRenderer, endPos.deprecatedEditingOffset());
     }
 }
 
