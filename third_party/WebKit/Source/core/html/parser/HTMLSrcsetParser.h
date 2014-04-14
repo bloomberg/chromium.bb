@@ -53,15 +53,21 @@ struct DescriptorParsingResult {
 
 class ImageCandidate {
 public:
+    enum OriginAttribute {
+        SrcsetOrigin,
+        SrcOrigin
+    };
+
     ImageCandidate()
         : m_scaleFactor(1.0)
     {
     }
 
-    ImageCandidate(const String& source, unsigned start, unsigned length, const DescriptorParsingResult& result)
+    ImageCandidate(const String& source, unsigned start, unsigned length, const DescriptorParsingResult& result, OriginAttribute originAttribute)
         : m_string(source.createView(start, length))
         , m_scaleFactor(result.scaleFactor)
         , m_resourceWidth(result.resourceWidth)
+        , m_originAttribute(originAttribute)
     {
     }
 
@@ -90,6 +96,11 @@ public:
         return m_resourceWidth;
     }
 
+    bool srcOrigin() const
+    {
+        return (m_originAttribute == SrcOrigin);
+    }
+
     inline bool isEmpty() const
     {
         return m_string.isEmpty();
@@ -99,6 +110,7 @@ private:
     StringView m_string;
     float m_scaleFactor;
     int m_resourceWidth;
+    OriginAttribute m_originAttribute;
 };
 
 ImageCandidate bestFitSourceForSrcsetAttribute(float deviceScaleFactor, int effectiveSize, const String& srcsetAttribute);
