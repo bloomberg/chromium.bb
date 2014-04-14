@@ -238,8 +238,9 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
                        atIndex:(NSInteger)modelIndex;
 - (void)layoutTabsWithAnimation:(BOOL)animate
              regenerateSubviews:(BOOL)doUpdate;
-- (void)animationDidStopForController:(TabController*)controller
-                             finished:(BOOL)finished;
+- (void)animationDidStop:(CAAnimation*)animation
+           forController:(TabController*)controller
+                finished:(BOOL)finished;
 - (NSInteger)indexFromModelIndex:(NSInteger)index;
 - (void)clickNewTabButton:(id)sender;
 - (NSInteger)numberOfOpenTabs;
@@ -388,7 +389,9 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
 }
 
 - (void)animationDidStop:(CAAnimation*)animation finished:(BOOL)finished {
-  [strip_ animationDidStopForController:controller_ finished:finished];
+  [strip_ animationDidStop:animation
+             forController:controller_
+                  finished:finished];
 }
 
 @end
@@ -1443,8 +1446,10 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
 
 // Called by the CAAnimation delegate when the tab completes the closing
 // animation.
-- (void)animationDidStopForController:(TabController*)controller
-                             finished:(BOOL)finished {
+- (void)animationDidStop:(CAAnimation*)animation
+           forController:(TabController*)controller
+                finished:(BOOL)finished{
+  [[animation delegate] invalidate];
   [closingControllers_ removeObject:controller];
   [self removeTab:controller];
 }
