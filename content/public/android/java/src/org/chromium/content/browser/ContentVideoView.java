@@ -360,7 +360,7 @@ public class ContentVideoView extends FrameLayout
         }
     }
 
-    protected boolean isPlaying() {
+    public boolean isPlaying() {
         return mNativeContentVideoView != 0 && nativeIsPlaying(mNativeContentVideoView);
     }
 
