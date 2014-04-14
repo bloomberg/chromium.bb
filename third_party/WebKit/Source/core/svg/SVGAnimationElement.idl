@@ -38,9 +38,9 @@ interface SVGAnimationElement : SVGElement {
     float getSimpleDuration();
 
     void beginElement();
-    void beginElementAt([Default=Undefined] optional float offset);
+    void beginElementAt(float offset);
     void endElement();
-    void endElementAt([Default=Undefined] optional float offset);
+    void endElementAt(float offset);
 
 };
 
