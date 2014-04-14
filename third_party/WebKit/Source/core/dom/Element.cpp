@@ -3318,13 +3318,10 @@ bool Element::supportsStyleSharing() const
     // Ids stop style sharing if they show up in the stylesheets.
     if (hasID() && document().ensureStyleResolver().hasRulesForId(idForStyleResolution()))
         return false;
-    // Active and hovered elements always make a chain towards the document node
-    // and no siblings or cousins will have the same state.
-    if (hovered())
-        return false;
-    if (active())
-        return false;
-    if (focused())
+    // :active and :hover elements always make a chain towards the document node
+    // and no siblings or cousins will have the same state. There's also only one
+    // :focus element per scope so we don't need to attempt to share.
+    if (isUserActionElement())
         return false;
     if (!parentOrShadowHostElement()->childrenSupportStyleSharing())
         return false;
