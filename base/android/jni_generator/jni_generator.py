@@ -580,8 +580,14 @@ class JNIFromJavaP(object):
 class JNIFromJavaSource(object):
   """Uses the given java source file to generate the JNI header file."""
 
+  # Match single line comments, multiline comments, character literals, and
+  # double-quoted strings.
+  _comment_remover_regex = re.compile(
+      r'//.*?$|/\*.*?\*/|\'(?:\\.|[^\\\'])*\'|"(?:\\.|[^\\"])*"',
+      re.DOTALL | re.MULTILINE)
+
   def __init__(self, contents, fully_qualified_class, options):
-    contents = self._RemoveComments(contents, options)
+    contents = self._RemoveComments(contents)
     JniParams.SetFullyQualifiedClass(fully_qualified_class)
     JniParams.ExtractImportsAndInnerClasses(contents)
     jni_namespace = ExtractJNINamespace(contents) or options.namespace
@@ -595,23 +601,23 @@ class JNIFromJavaSource(object):
         [], options)
     self.content = inl_header_file_generator.GetContent()
 
-  def _RemoveComments(self, contents, options):
+  @classmethod
+  def _RemoveComments(cls, contents):
     # We need to support both inline and block comments, and we need to handle
-    # strings that contain '//' or '/*'. Rather than trying to do all that with
-    # regexps, we just pipe the contents through the C preprocessor. We tell cpp
-    # the file has already been preprocessed, so it just removes comments and
-    # doesn't try to parse #include, #pragma etc.
-    #
-    # TODO(husky): This is a bit hacky. It would be cleaner to use a real Java
+    # strings that contain '//' or '/*'.
+    # TODO(bulach): This is a bit hacky. It would be cleaner to use a real Java
     # parser. Maybe we could ditch JNIFromJavaSource and just always use
     # JNIFromJavaP; or maybe we could rewrite this script in Java and use APT.
     # http://code.google.com/p/chromium/issues/detail?id=138941
-    p = subprocess.Popen(args=[options.cpp, '-fpreprocessed'],
-                         stdin=subprocess.PIPE,
-                         stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE)
-    stdout, _ = p.communicate(contents)
-    return stdout
+    def replacer(match):
+      # Replace matches that are comments with nothing; return literals/strings
+      # unchanged.
+      s = match.group(0)
+      if s.startswith('/'):
+        return ''
+      else:
+        return s
+    return cls._comment_remover_regex.sub(replacer, contents)
 
   def GetContent(self):
     return self.content
