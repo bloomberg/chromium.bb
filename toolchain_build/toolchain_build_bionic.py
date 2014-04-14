@@ -112,7 +112,9 @@ def Clobber():
 
 def FetchAndBuild_gcc_libs():
   tc_args = ['-y', '--no-use-remote-cache', 'gcc_libs_arm']
-  # TODO(dyen): Fill in PACKAGE_TARGETS for bionic.
+  # Call toolchain_build to build the gcc libs. We do not need to fill in
+  # any package targets since we are using toolchain_build as an
+  # intermediate step.
   toolchain_main.PackageBuilder(toolchain_build.PACKAGES, {}, tc_args).Main()
 
 
@@ -534,7 +536,12 @@ def ArchiveAndUpload(version, zipname, zippath, packages_file):
   package_desc = package_info.PackageInfo()
   package_desc.AppendArchive(archive_desc)
 
-  package_info_file = os.path.join(TOOLCHAIN_BUILD_OUT, 'nacl_arm_bionic.json')
+  os_name = pynacl.platform.GetOS()
+  arch_name = pynacl.platform.GetArch()
+  package_info_file = os.path.join(TOOLCHAIN_BUILD_OUT,
+                                   'packages',
+                                   '%s_%s' % (os_name, arch_name),
+                                   'nacl_arm_bionic.json')
   package_desc.SavePackageFile(package_info_file)
 
   # If packages_file is specified, write out our packages file of 1 package.
