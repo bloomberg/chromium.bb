@@ -1802,13 +1802,8 @@ static PassRefPtrWillBeRawPtr<ImageData> createEmptyImageData(const IntSize& siz
     return nullptr;
 }
 
-PassRefPtrWillBeRawPtr<ImageData> CanvasRenderingContext2D::createImageData(PassRefPtrWillBeRawPtr<ImageData> imageData, ExceptionState& exceptionState) const
+PassRefPtrWillBeRawPtr<ImageData> CanvasRenderingContext2D::createImageData(PassRefPtrWillBeRawPtr<ImageData> imageData) const
 {
-    if (!imageData) {
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::argumentNullOrIncorrectType(1, "ImageData"));
-        return nullptr;
-    }
-
     return createEmptyImageData(imageData->size());
 }
 
@@ -1886,19 +1881,13 @@ PassRefPtrWillBeRawPtr<ImageData> CanvasRenderingContext2D::getImageData(float s
 
 void CanvasRenderingContext2D::putImageData(ImageData* data, float dx, float dy, ExceptionState& exceptionState)
 {
-    if (!data) {
-        exceptionState.throwTypeError(ExceptionMessages::argumentNullOrIncorrectType(1, "ImageData"));
-        return;
-    }
     putImageData(data, dx, dy, 0, 0, data->width(), data->height(), exceptionState);
 }
 
 void CanvasRenderingContext2D::putImageData(ImageData* data, float dx, float dy, float dirtyX, float dirtyY,
     float dirtyWidth, float dirtyHeight, ExceptionState& exceptionState)
 {
-    if (!data)
-        exceptionState.throwTypeError(ExceptionMessages::argumentNullOrIncorrectType(1, "ImageData"));
-    else if (!std::isfinite(dx))
+    if (!std::isfinite(dx))
         exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(dx, "dx"));
     else if (!std::isfinite(dy))
         exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(dy, "dy"));

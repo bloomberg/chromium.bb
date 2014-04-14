@@ -152,13 +152,13 @@ interface CanvasRenderingContext2D {
     void setShadow(float width, float height, float blur, float r, float g, float b, float a);
     void setShadow(float width, float height, float blur, float c, float m, float y, float k, float a);
 
-    [RaisesException] void putImageData(ImageData? imagedata, float dx, float dy);
-    [RaisesException] void putImageData(ImageData? imagedata, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight);
+    [RaisesException, StrictTypeChecking] void putImageData(ImageData imagedata, float dx, float dy);
+    [RaisesException, StrictTypeChecking] void putImageData(ImageData imagedata, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight);
 
     [RaisesException, StrictTypeChecking] CanvasPattern createPattern(HTMLCanvasElement canvas, [TreatNullAs=NullString] DOMString repetitionType);
     [RaisesException, StrictTypeChecking] CanvasPattern createPattern(HTMLImageElement image, [TreatNullAs=NullString] DOMString repetitionType);
     [RaisesException, StrictTypeChecking] CanvasPattern createPattern(HTMLVideoElement image, [TreatNullAs=NullString] DOMString repetitionType);
-    [RaisesException] ImageData createImageData(ImageData? imagedata);
+    [StrictTypeChecking] ImageData createImageData(ImageData imagedata);
     [RaisesException] ImageData createImageData(float sw, float sh);
 
     [Custom] attribute object strokeStyle;
