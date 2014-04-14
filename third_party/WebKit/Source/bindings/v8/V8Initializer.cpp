@@ -173,7 +173,7 @@ static void initializeV8Common(v8::Isolate* isolate)
     v8::V8::AddGCPrologueCallback(V8GCController::gcPrologue);
     v8::V8::AddGCEpilogueCallback(V8GCController::gcEpilogue);
 
-    v8::Debug::SetLiveEditEnabled(false);
+    v8::Debug::SetLiveEditEnabled(false, isolate);
 }
 
 void V8Initializer::initializeMainThreadIfNeeded(v8::Isolate* isolate)

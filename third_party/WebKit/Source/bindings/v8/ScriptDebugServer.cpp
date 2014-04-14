@@ -252,8 +252,10 @@ bool ScriptDebugServer::setScriptSource(const String& sourceID, const String& ne
 {
     class EnableLiveEditScope {
     public:
-        EnableLiveEditScope() { v8::Debug::SetLiveEditEnabled(true); }
-        ~EnableLiveEditScope() { v8::Debug::SetLiveEditEnabled(false); }
+        explicit EnableLiveEditScope(v8::Isolate* isolate) : m_isolate(isolate) { v8::Debug::SetLiveEditEnabled(true, m_isolate); }
+        ~EnableLiveEditScope() { v8::Debug::SetLiveEditEnabled(false, m_isolate); }
+    private:
+        v8::Isolate* m_isolate;
     };
 
     ensureDebuggerScriptCompiled();
@@ -268,7 +270,7 @@ bool ScriptDebugServer::setScriptSource(const String& sourceID, const String& ne
 
     v8::Local<v8::Value> v8result;
     {
-        EnableLiveEditScope enableLiveEditScope;
+        EnableLiveEditScope enableLiveEditScope(m_isolate);
         v8::TryCatch tryCatch;
         tryCatch.SetVerbose(false);
         v8result = callDebuggerMethod("liveEditScriptSource", 3, argv);
