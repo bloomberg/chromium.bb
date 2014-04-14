@@ -648,7 +648,7 @@ crbug.com/313219 traversal/node-iterator-004.html [ Crash Pass ]
 crbug.com/312925 inspector-protocol/heap-profiler/heap-snapshot-with-detached-dom-tree.html [ Failure Pass ]
 crbug.com/344239 inspector-protocol/heap-profiler/heap-objects-tracking.html [ Crash Pass Timeout ]
 
-crbug.com/313846 [ Mac Win ] http/tests/images/webp-partial-load.html [ ImageOnlyFailure Timeout Pass ]
+crbug.com/313846 http/tests/images/webp-partial-load.html [ ImageOnlyFailure Timeout Pass ]
 
 crbug.com/316150 inspector/timeline/timeline-network-received-data.html [ Failure Pass ]
 
