@@ -2372,11 +2372,12 @@ bool CanvasRenderingContext2D::drawCustomFocusRing(Element* element)
 
 bool CanvasRenderingContext2D::focusRingCallIsValid(const Path& path, Element* element)
 {
+    ASSERT(element);
     if (!state().m_invertibleCTM)
         return false;
     if (path.isEmpty())
         return false;
-    if (!element || !element->isDescendantOf(canvas()))
+    if (!element->isDescendantOf(canvas()))
         return false;
 
     return true;

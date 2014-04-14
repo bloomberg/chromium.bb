@@ -16,7 +16,7 @@ document.getElementById("button1").focus();
 
 var canvas = document.getElementById("canvas").getContext("2d");
 
-shouldNotThrow('canvas.drawFocusIfNeeded(null);');
+shouldThrow('canvas.drawFocusIfNeeded(null);');
 shouldThrow('canvas.drawFocusIfNeeded();');
 
 canvas.beginPath();
@@ -24,7 +24,7 @@ canvas.rect(50, 50, 200, 100);
 canvas.fillStyle = "#ccf";
 canvas.fill();
 // re-test null case after having defined a path (regression test for crbug.com/353248)
-shouldNotThrow('canvas.drawFocusIfNeeded(null);');
+shouldThrow('canvas.drawFocusIfNeeded(null);');
 canvas.drawFocusIfNeeded(document.getElementById("button1"));
 
 canvas.beginPath();
