@@ -1061,7 +1061,7 @@ component("net") {
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
     "//crypto",
-    "//crypto/ssl:metassl",
+    "//crypto:ssl",
     "//sdch",
     "//third_party/icu",
     "//third_party/zlib",

@@ -17,6 +17,9 @@ import("//build/config/sysroot.gni")
 #     packages = [ "mything1", "mything2" ]
 #     defines = [ "ENABLE_AWESOME" ]
 #   }
+#
+# You can also use "extra args" to filter out results (see pkg-config.py):
+#   extra_args = [ "-v, "foo" ]
 
 template("pkg_config") {
   assert(defined(invoker.packages),
@@ -28,6 +31,11 @@ template("pkg_config") {
     } else {
       args = invoker.packages
     }
+
+    if (defined(invoker.extra_args)) {
+      args += invoker.extra_args
+    }
+
     pkgresult = exec_script("//build/config/linux/pkg-config.py",
                             args, "value")
     include_dirs = pkgresult[0]

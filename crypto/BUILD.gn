@@ -4,18 +4,6 @@
 
 import("//build/config/crypto.gni")
 
-crypto_minimal_sources = [
-  "hmac.cc",
-  "hmac.h",
-  "hmac_win.cc",
-  "secure_util.cc",
-  "secure_util.h",
-  "symmetric_key.h",
-  "symmetric_key_win.cc",
-  "third_party/nss/chromium-sha256.h",
-  "third_party/nss/sha512.cc",
-]
-
 component("crypto") {
   output_name = "crcrypto"  # Avoid colliding with OpenSSL's libcrypto.
   sources = [
@@ -29,10 +17,8 @@ component("crypto") {
     "cssm_init.cc",
     "cssm_init.h",
     "curve25519.cc",
-    "curve25519.h",
     "curve25519-donna.c",
-    "ghash.cc",
-    "ghash.h",
+    "curve25519.h",
     "ec_private_key.h",
     "ec_private_key_nss.cc",
     "ec_private_key_openssl.cc",
@@ -45,8 +31,12 @@ component("crypto") {
     "encryptor.h",
     "encryptor_nss.cc",
     "encryptor_openssl.cc",
+    "ghash.cc",
+    "ghash.h",
     "hkdf.cc",
     "hkdf.h",
+    "hmac.cc",
+    "hmac.h",
     "hmac_nss.cc",
     "hmac_openssl.cc",
     "mac_security_services_lock.cc",
@@ -57,8 +47,6 @@ component("crypto") {
     "mock_apple_keychain.h",
     "mock_apple_keychain_ios.cc",
     "mock_apple_keychain_mac.cc",
-    "p224_spake.cc",
-    "p224_spake.h",
     "nss_util.cc",
     "nss_util.h",
     "nss_util_internal.h",
@@ -68,17 +56,21 @@ component("crypto") {
     "openssl_util.h",
     "p224.cc",
     "p224.h",
-    "random.h",
+    "p224_spake.cc",
+    "p224_spake.h",
     "random.cc",
+    "random.h",
     "rsa_private_key.cc",
     "rsa_private_key.h",
     "rsa_private_key_nss.cc",
     "rsa_private_key_openssl.cc",
     "scoped_capi_types.h",
     "scoped_nss_types.h",
-    "secure_hash.h",
     "secure_hash_default.cc",
+    "secure_hash.h",
     "secure_hash_openssl.cc",
+    "secure_util.cc",
+    "secure_util.h",
     "sha2.cc",
     "sha2.h",
     "signature_creator.h",
@@ -87,22 +79,24 @@ component("crypto") {
     "signature_verifier.h",
     "signature_verifier_nss.cc",
     "signature_verifier_openssl.cc",
+    "symmetric_key.h",
     "symmetric_key_nss.cc",
     "symmetric_key_openssl.cc",
     "third_party/nss/chromium-blapi.h",
     "third_party/nss/chromium-blapit.h",
     "third_party/nss/chromium-nss.h",
+    "third_party/nss/chromium-sha256.h",
     "third_party/nss/pk11akey.cc",
     "third_party/nss/rsawrapr.c",
     "third_party/nss/secsign.cc",
+    "third_party/nss/sha512.cc",
   ]
 
   deps = [
+    ":platform",
     "//base",
     "//base/third_party/dynamic_annotations",
-    "//crypto/ssl:metassl",
   ]
-  forward_dependent_configs_from = [ "//crypto/ssl:metassl" ]
 
   if (!is_mac && !is_ios) {
     sources -= [
@@ -113,6 +107,10 @@ component("crypto") {
   }
 
   if (!is_linux) {
+    sources -= [
+      "openpgp_symmetric_encryption.cc",
+      "openpgp_symmetric_encryption.h",
+    ]
     if (use_nss) {  # Removed for non-NSS in all cases below.
       sources -= [
         "openpgp_symmetric_encryption.cc",
@@ -135,9 +133,7 @@ component("crypto") {
     ]
   }
 
-  if (use_nss) {
-    configs += [ "//third_party/nss:nss_linux_config" ]
-  } else {
+  if (!use_nss) {
     sources -= [
       "ec_private_key_nss.cc",
       "ec_signature_creator_nss.cc",
@@ -175,24 +171,32 @@ component("crypto") {
   }
 
   defines = [ "CRYPTO_IMPLEMENTATION" ]
-
-  # TODO(brettw) once GYP compat is no longer necessary, just move
-  # crypto_minimal_sources to the crypto_minimal target and include a
-  # dependency on it here.
-  sources += crypto_minimal_sources
 }
 
-# A minimal crypto subset for core features that small standalone targets can
-# use to reduce code size.
-static_library("crypto_minimal") {
-  sources = crypto_minimal_sources
+if (is_win) {
+  # A minimal crypto subset for hmac-related stuff that small standalone
+  # targets can use to reduce code size on Windows. This does not depend on
+  # OpenSSL/NSS but will use Windows APIs for that functionality.
+  source_set("crypto_minimal_win") {
+    sources = [
+      "hmac.cc",
+      "hmac.h",
+      "hmac_win.cc",
+      "secure_util.cc",
+      "secure_util.h",
+      "symmetric_key.h",
+      "symmetric_key_win.cc",
+      "third_party/nss/chromium-sha256.h",
+      "third_party/nss/sha512.cc",
+    ]
 
-  deps = [
-    "//base",
-    "//base/third_party/dynamic_annotations",
-  ]
+    deps = [
+      "//base",
+      "//base/third_party/dynamic_annotations",
+    ]
 
-  defines = [ "CRYPTO_IMPLEMENTATION" ]
+    defines = [ "CRYPTO_IMPLEMENTATION" ]
+  }
 }
 
 test("crypto_unittests") {
@@ -227,16 +231,48 @@ test("crypto_unittests") {
     ]
   }
 
+  if (use_openssl || !is_linux) {
+    sources -= [
+      "rsa_private_key_nss_unittest.cc",
+      "openpgp_symmetric_encryption_unittest.cc",
+    ]
+  }
+
+  if (use_openssl) {
+    sources -= [ "nss_util_unittest.cc" ]
+  }
+
   deps = [
     ":crypto",
+    ":platform",
     "//base",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]
+}
 
-  if (is_mac) {
-    #deps += "//third_party/nss:nspr"
+# This is a meta-target that forwards to NSS's SSL library or OpenSSL,
+# according to the state of the crypto flags. A target just wanting to depend
+# on the current SSL library should just depend on this.
+group("platform") {
+  if (use_openssl) {
+    deps = [ "//third_party/openssl" ]
+  } else {
+    deps = [ "//net/third_party/nss/ssl:libssl" ]
+    if (is_linux) {
+      # On Linux, we use the system NSS (excepting SSL where we always use our
+      # own).
+      direct_dependent_configs = [
+        "//third_party/nss:system_nss_no_ssl_config"
+      ]
+    } else {
+      # Non-Linux platforms use the hermetic NSS from the tree.
+      deps += [
+        "//third_party/nss:nspr",
+        "//third_party/nss:nss",
+      ]
+    }
   }
 }

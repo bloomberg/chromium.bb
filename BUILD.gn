@@ -24,11 +24,10 @@ group("root") {
     "//components/startup_metric_utils",
     #"//components/translate:translate_core_browser",
     #"//components/translate:translate_core_common",
-    #"//crypto",
+    "//crypto",
     "//device/usb",
     "//ipc",
     #"//net",
-    #"//net/third_party/nss:ssl",
     #"//sdch",
     "//skia",
     #"//third_party/WebKit/Source/platform",
@@ -47,11 +46,6 @@ group("root") {
     "//url",
   ]
 
-  if (is_posix && !is_android) {  # TODO(brettw) should be use_openssl
-    deps += [
-      "//third_party/openssl",
-    ]
-  }
   if (is_linux) {
     deps += [
       "//third_party/freetype2",
