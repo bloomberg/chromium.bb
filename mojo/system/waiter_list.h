@@ -20,8 +20,8 @@ class Waiter;
 // handle/|Dispatcher|. There should be a |WaiterList| for each handle that can
 // be waited on (in any way). In the simple case, the |WaiterList| is owned by
 // the |Dispatcher|, whereas in more complex cases it is owned by the secondary
-// object (see simple_dispatcher.* and the explanatory comment in core_impl.cc).
-// This class is thread-unsafe (all concurrent access must be protected by some
+// object (see simple_dispatcher.* and the explanatory comment in core.cc). This
+// class is thread-unsafe (all concurrent access must be protected by some
 // lock).
 class MOJO_SYSTEM_IMPL_EXPORT WaiterList {
  public:

@@ -9,13 +9,18 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/system/channel.h"
-#include "mojo/system/core_impl.h"
+#include "mojo/system/core.h"
+#include "mojo/system/entrypoints.h"
 #include "mojo/system/message_pipe.h"
 #include "mojo/system/message_pipe_dispatcher.h"
 #include "mojo/system/raw_channel.h"
 
 namespace mojo {
 namespace embedder {
+
+void Init() {
+  system::entrypoints::SetCore(new system::Core());
+}
 
 struct ChannelInfo {
   scoped_refptr<system::Channel> channel;
@@ -55,10 +60,6 @@ static void CreateChannelOnIOThread(
   }
 }
 
-void Init() {
-  Core::Init(new system::CoreImpl());
-}
-
 ScopedMessagePipeHandle CreateChannel(
     ScopedPlatformHandle platform_handle,
     scoped_refptr<base::TaskRunner> io_thread_task_runner,
@@ -70,10 +71,10 @@ ScopedMessagePipeHandle CreateChannel(
             scoped_refptr<system::MessagePipe> > remote_message_pipe =
       system::MessagePipeDispatcher::CreateRemoteMessagePipe();
 
-  system::CoreImpl* core_impl = static_cast<system::CoreImpl*>(Core::Get());
-  DCHECK(core_impl);
+  system::Core* core = system::entrypoints::GetCore();
+  DCHECK(core);
   ScopedMessagePipeHandle rv(
-      MessagePipeHandle(core_impl->AddDispatcher(remote_message_pipe.first)));
+      MessagePipeHandle(core->AddDispatcher(remote_message_pipe.first)));
   // TODO(vtl): Do we properly handle the failure case here?
   if (rv.is_valid()) {
     io_thread_task_runner->PostTask(FROM_HERE,

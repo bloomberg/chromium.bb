@@ -1409,7 +1409,6 @@
         'content_common_mojo_bindings',
         '../cc/cc.gyp:cc',
         '../mojo/mojo.gyp:mojo_bindings',
-        '../mojo/mojo.gyp:mojo_system',
         '../net/net.gyp:http_server',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '../ui/surface/surface.gyp:surface',

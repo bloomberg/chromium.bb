@@ -19,7 +19,7 @@ class Waiter;
 class WaiterList;
 
 // |DataPipe| is a base class for secondary objects implementing data pipes,
-// similar to |MessagePipe| (see the explanatory comment in core_impl.cc). It is
+// similar to |MessagePipe| (see the explanatory comment in core.cc). It is
 // typically owned by the dispatcher(s) corresponding to the local endpoints.
 // Its subclasses implement the three cases: local producer and consumer, local
 // producer and remote consumer, and remote producer and local consumer. This

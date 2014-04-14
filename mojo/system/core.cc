@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/system/core_impl.h"
+#include "mojo/system/core.h"
 
 #include <vector>
 
 #include "base/logging.h"
 #include "base/time/time.h"
+#include "mojo/public/c/system/core.h"
 #include "mojo/system/constants.h"
 #include "mojo/system/data_pipe.h"
 #include "mojo/system/data_pipe_consumer_dispatcher.h"
@@ -26,11 +27,11 @@ namespace system {
 
 // Implementation notes
 //
-// Mojo primitives are implemented by the singleton |CoreImpl| object. Most
+// Mojo primitives are implemented by the singleton |Core| object. Most
 // calls are for a "primary" handle (the first argument).
-// |CoreImpl::GetDispatcher()| is used to look up a |Dispatcher| object for a
+// |Core::GetDispatcher()| is used to look up a |Dispatcher| object for a
 // given handle. That object implements most primitives for that object. The
-// wait primitives are not attached to objects and are implemented by |CoreImpl|
+// wait primitives are not attached to objects and are implemented by |Core|
 // itself.
 //
 // Some objects have multiple handles associated to them, e.g., message pipes
@@ -73,39 +74,37 @@ namespace system {
 //    - Locks at the "INF" level may not have any locks taken while they are
 //      held.
 
-CoreImpl::HandleTableEntry::HandleTableEntry()
+Core::HandleTableEntry::HandleTableEntry()
     : busy(false) {
 }
 
-CoreImpl::HandleTableEntry::HandleTableEntry(
+Core::HandleTableEntry::HandleTableEntry(
     const scoped_refptr<Dispatcher>& dispatcher)
     : dispatcher(dispatcher),
       busy(false) {
 }
 
-CoreImpl::HandleTableEntry::~HandleTableEntry() {
+Core::HandleTableEntry::~HandleTableEntry() {
   DCHECK(!busy);
 }
 
-CoreImpl::CoreImpl() {
+Core::Core() {
 }
 
-CoreImpl::~CoreImpl() {
-  // This should usually not be reached (the singleton lives forever), except in
-  // tests.
+Core::~Core() {
 }
 
-MojoHandle CoreImpl::AddDispatcher(
+MojoHandle Core::AddDispatcher(
     const scoped_refptr<Dispatcher>& dispatcher) {
   base::AutoLock locker(handle_table_lock_);
   return handle_table_.AddDispatcher(dispatcher);
 }
 
-MojoTimeTicks CoreImpl::GetTimeTicksNow() {
+MojoTimeTicks Core::GetTimeTicksNow() {
   return base::TimeTicks::Now().ToInternalValue();
 }
 
-MojoResult CoreImpl::Close(MojoHandle handle) {
+MojoResult Core::Close(MojoHandle handle) {
   if (handle == MOJO_HANDLE_INVALID)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
@@ -125,16 +124,16 @@ MojoResult CoreImpl::Close(MojoHandle handle) {
   return dispatcher->Close();
 }
 
-MojoResult CoreImpl::Wait(MojoHandle handle,
-                          MojoWaitFlags flags,
-                          MojoDeadline deadline) {
+MojoResult Core::Wait(MojoHandle handle,
+                      MojoWaitFlags flags,
+                      MojoDeadline deadline) {
   return WaitManyInternal(&handle, &flags, 1, deadline);
 }
 
-MojoResult CoreImpl::WaitMany(const MojoHandle* handles,
-                              const MojoWaitFlags* flags,
-                              uint32_t num_handles,
-                              MojoDeadline deadline) {
+MojoResult Core::WaitMany(const MojoHandle* handles,
+                          const MojoWaitFlags* flags,
+                          uint32_t num_handles,
+                          MojoDeadline deadline) {
   if (!VerifyUserPointer<MojoHandle>(handles, num_handles))
     return MOJO_RESULT_INVALID_ARGUMENT;
   if (!VerifyUserPointer<MojoWaitFlags>(flags, num_handles))
@@ -146,8 +145,8 @@ MojoResult CoreImpl::WaitMany(const MojoHandle* handles,
   return WaitManyInternal(handles, flags, num_handles, deadline);
 }
 
-MojoResult CoreImpl::CreateMessagePipe(MojoHandle* message_pipe_handle0,
-                                       MojoHandle* message_pipe_handle1) {
+MojoResult Core::CreateMessagePipe(MojoHandle* message_pipe_handle0,
+                                   MojoHandle* message_pipe_handle1) {
   if (!VerifyUserPointer<MojoHandle>(message_pipe_handle0, 1))
     return MOJO_RESULT_INVALID_ARGUMENT;
   if (!VerifyUserPointer<MojoHandle>(message_pipe_handle1, 1))
@@ -185,12 +184,12 @@ MojoResult CoreImpl::CreateMessagePipe(MojoHandle* message_pipe_handle0,
 // isn't done, in the in-process case, calls on the old handle may complete
 // after the the message has been received and a new handle created (and
 // possibly even after calls have been made on the new handle).
-MojoResult CoreImpl::WriteMessage(MojoHandle message_pipe_handle,
-                                  const void* bytes,
-                                  uint32_t num_bytes,
-                                  const MojoHandle* handles,
-                                  uint32_t num_handles,
-                                  MojoWriteMessageFlags flags) {
+MojoResult Core::WriteMessage(MojoHandle message_pipe_handle,
+                              const void* bytes,
+                              uint32_t num_bytes,
+                              const MojoHandle* handles,
+                              uint32_t num_handles,
+                              MojoWriteMessageFlags flags) {
   scoped_refptr<Dispatcher> dispatcher(GetDispatcher(message_pipe_handle));
   if (!dispatcher.get())
     return MOJO_RESULT_INVALID_ARGUMENT;
@@ -249,12 +248,12 @@ MojoResult CoreImpl::WriteMessage(MojoHandle message_pipe_handle,
   return rv;
 }
 
-MojoResult CoreImpl::ReadMessage(MojoHandle message_pipe_handle,
-                                 void* bytes,
-                                 uint32_t* num_bytes,
-                                 MojoHandle* handles,
-                                 uint32_t* num_handles,
-                                 MojoReadMessageFlags flags) {
+MojoResult Core::ReadMessage(MojoHandle message_pipe_handle,
+                             void* bytes,
+                             uint32_t* num_bytes,
+                             MojoHandle* handles,
+                             uint32_t* num_handles,
+                             MojoReadMessageFlags flags) {
   scoped_refptr<Dispatcher> dispatcher(GetDispatcher(message_pipe_handle));
   if (!dispatcher.get())
     return MOJO_RESULT_INVALID_ARGUMENT;
@@ -298,9 +297,9 @@ MojoResult CoreImpl::ReadMessage(MojoHandle message_pipe_handle,
   return rv;
 }
 
-MojoResult CoreImpl::CreateDataPipe(const MojoCreateDataPipeOptions* options,
-                                    MojoHandle* data_pipe_producer_handle,
-                                    MojoHandle* data_pipe_consumer_handle) {
+MojoResult Core::CreateDataPipe(const MojoCreateDataPipeOptions* options,
+                                MojoHandle* data_pipe_producer_handle,
+                                MojoHandle* data_pipe_consumer_handle) {
   if (options) {
     // The |struct_size| field must be valid to read.
     if (!VerifyUserPointer<uint32_t>(&options->struct_size, 1))
@@ -348,10 +347,10 @@ MojoResult CoreImpl::CreateDataPipe(const MojoCreateDataPipeOptions* options,
   return MOJO_RESULT_OK;
 }
 
-MojoResult CoreImpl::WriteData(MojoHandle data_pipe_producer_handle,
-                               const void* elements,
-                               uint32_t* num_bytes,
-                               MojoWriteDataFlags flags) {
+MojoResult Core::WriteData(MojoHandle data_pipe_producer_handle,
+                           const void* elements,
+                           uint32_t* num_bytes,
+                           MojoWriteDataFlags flags) {
   scoped_refptr<Dispatcher> dispatcher(
       GetDispatcher(data_pipe_producer_handle));
   if (!dispatcher.get())
@@ -360,10 +359,10 @@ MojoResult CoreImpl::WriteData(MojoHandle data_pipe_producer_handle,
   return dispatcher->WriteData(elements, num_bytes, flags);
 }
 
-MojoResult CoreImpl::BeginWriteData(MojoHandle data_pipe_producer_handle,
-                                    void** buffer,
-                                    uint32_t* buffer_num_bytes,
-                                    MojoWriteDataFlags flags) {
+MojoResult Core::BeginWriteData(MojoHandle data_pipe_producer_handle,
+                                void** buffer,
+                                uint32_t* buffer_num_bytes,
+                                MojoWriteDataFlags flags) {
   scoped_refptr<Dispatcher> dispatcher(
       GetDispatcher(data_pipe_producer_handle));
   if (!dispatcher.get())
@@ -372,8 +371,8 @@ MojoResult CoreImpl::BeginWriteData(MojoHandle data_pipe_producer_handle,
   return dispatcher->BeginWriteData(buffer, buffer_num_bytes, flags);
 }
 
-MojoResult CoreImpl::EndWriteData(MojoHandle data_pipe_producer_handle,
-                                  uint32_t num_bytes_written) {
+MojoResult Core::EndWriteData(MojoHandle data_pipe_producer_handle,
+                              uint32_t num_bytes_written) {
   scoped_refptr<Dispatcher> dispatcher(
       GetDispatcher(data_pipe_producer_handle));
   if (!dispatcher.get())
@@ -382,10 +381,10 @@ MojoResult CoreImpl::EndWriteData(MojoHandle data_pipe_producer_handle,
   return dispatcher->EndWriteData(num_bytes_written);
 }
 
-MojoResult CoreImpl::ReadData(MojoHandle data_pipe_consumer_handle,
-                              void* elements,
-                              uint32_t* num_bytes,
-                              MojoReadDataFlags flags) {
+MojoResult Core::ReadData(MojoHandle data_pipe_consumer_handle,
+                          void* elements,
+                          uint32_t* num_bytes,
+                          MojoReadDataFlags flags) {
   scoped_refptr<Dispatcher> dispatcher(
       GetDispatcher(data_pipe_consumer_handle));
   if (!dispatcher.get())
@@ -394,10 +393,10 @@ MojoResult CoreImpl::ReadData(MojoHandle data_pipe_consumer_handle,
   return dispatcher->ReadData(elements, num_bytes, flags);
 }
 
-MojoResult CoreImpl::BeginReadData(MojoHandle data_pipe_consumer_handle,
-                                   const void** buffer,
-                                   uint32_t* buffer_num_bytes,
-                                   MojoReadDataFlags flags) {
+MojoResult Core::BeginReadData(MojoHandle data_pipe_consumer_handle,
+                               const void** buffer,
+                               uint32_t* buffer_num_bytes,
+                               MojoReadDataFlags flags) {
   scoped_refptr<Dispatcher> dispatcher(
       GetDispatcher(data_pipe_consumer_handle));
   if (!dispatcher.get())
@@ -406,8 +405,8 @@ MojoResult CoreImpl::BeginReadData(MojoHandle data_pipe_consumer_handle,
   return dispatcher->BeginReadData(buffer, buffer_num_bytes, flags);
 }
 
-MojoResult CoreImpl::EndReadData(MojoHandle data_pipe_consumer_handle,
-                                 uint32_t num_bytes_read) {
+MojoResult Core::EndReadData(MojoHandle data_pipe_consumer_handle,
+                             uint32_t num_bytes_read) {
   scoped_refptr<Dispatcher> dispatcher(
       GetDispatcher(data_pipe_consumer_handle));
   if (!dispatcher.get())
@@ -416,7 +415,7 @@ MojoResult CoreImpl::EndReadData(MojoHandle data_pipe_consumer_handle,
   return dispatcher->EndReadData(num_bytes_read);
 }
 
-MojoResult CoreImpl::CreateSharedBuffer(
+MojoResult Core::CreateSharedBuffer(
     const MojoCreateSharedBufferOptions* options,
     uint64_t num_bytes,
     MojoHandle* shared_buffer_handle) {
@@ -456,7 +455,7 @@ MojoResult CoreImpl::CreateSharedBuffer(
   return MOJO_RESULT_OK;
 }
 
-MojoResult CoreImpl::DuplicateBufferHandle(
+MojoResult Core::DuplicateBufferHandle(
     MojoHandle buffer_handle,
     const MojoDuplicateBufferHandleOptions* options,
     MojoHandle* new_buffer_handle) {
@@ -485,11 +484,11 @@ MojoResult CoreImpl::DuplicateBufferHandle(
   return MOJO_RESULT_OK;
 }
 
-MojoResult CoreImpl::MapBuffer(MojoHandle buffer_handle,
-                               uint64_t offset,
-                               uint64_t num_bytes,
-                               void** buffer,
-                               MojoMapBufferFlags flags) {
+MojoResult Core::MapBuffer(MojoHandle buffer_handle,
+                           uint64_t offset,
+                           uint64_t num_bytes,
+                           void** buffer,
+                           MojoMapBufferFlags flags) {
   scoped_refptr<Dispatcher> dispatcher(GetDispatcher(buffer_handle));
   if (!dispatcher.get())
     return MOJO_RESULT_INVALID_ARGUMENT;
@@ -515,12 +514,12 @@ MojoResult CoreImpl::MapBuffer(MojoHandle buffer_handle,
   return MOJO_RESULT_OK;
 }
 
-MojoResult CoreImpl::UnmapBuffer(void* buffer) {
+MojoResult Core::UnmapBuffer(void* buffer) {
   base::AutoLock locker(mapping_table_lock_);
   return mapping_table_.RemoveMapping(buffer);
 }
 
-scoped_refptr<Dispatcher> CoreImpl::GetDispatcher(MojoHandle handle) {
+scoped_refptr<Dispatcher> Core::GetDispatcher(MojoHandle handle) {
   if (handle == MOJO_HANDLE_INVALID)
     return NULL;
 
@@ -532,10 +531,10 @@ scoped_refptr<Dispatcher> CoreImpl::GetDispatcher(MojoHandle handle) {
 // different flags may be specified.
 // TODO(vtl): This incurs a performance cost in |RemoveWaiter()|. Analyze this
 // more carefully and address it if necessary.
-MojoResult CoreImpl::WaitManyInternal(const MojoHandle* handles,
-                                      const MojoWaitFlags* flags,
-                                      uint32_t num_handles,
-                                      MojoDeadline deadline) {
+MojoResult Core::WaitManyInternal(const MojoHandle* handles,
+                                  const MojoWaitFlags* flags,
+                                  uint32_t num_handles,
+                                  MojoDeadline deadline) {
   DCHECK_GT(num_handles, 0u);
 
   std::vector<scoped_refptr<Dispatcher> > dispatchers;

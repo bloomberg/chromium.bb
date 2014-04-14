@@ -6,7 +6,8 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "mojo/system/core_impl.h"
+#include "mojo/system/core.h"
+#include "mojo/system/entrypoints.h"
 #include "mojo/system/handle_table.h"
 
 namespace mojo {
@@ -14,7 +15,7 @@ namespace mojo {
 namespace system {
 namespace internal {
 
-bool ShutdownCheckNoLeaks(CoreImpl* core_impl) {
+bool ShutdownCheckNoLeaks(Core* core_impl) {
   // No point in taking the lock.
   const HandleTable::HandleToEntryMap& handle_to_entry_map =
       core_impl->handle_table_.handle_to_entry_map_;
@@ -38,12 +39,12 @@ namespace embedder {
 namespace test {
 
 bool Shutdown() {
-  system::CoreImpl* core_impl = static_cast<system::CoreImpl*>(Core::Get());
-  CHECK(core_impl);
-  Core::Reset();
+  system::Core* core = system::entrypoints::GetCore();
+  CHECK(core);
+  system::entrypoints::SetCore(NULL);
 
-  bool rv = system::internal::ShutdownCheckNoLeaks(core_impl);
-  delete core_impl;
+  bool rv = system::internal::ShutdownCheckNoLeaks(core);
+  delete core;
   return rv;
 }
 
