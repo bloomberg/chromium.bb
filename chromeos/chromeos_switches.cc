@@ -171,10 +171,6 @@ const char kPowerStub[] = "power-stub";
 //  'interactive=3' - Interactive mode, connect/scan/etc requests take 3 secs
 const char kShillStub[] = "shill-stub";
 
-// Skips the machine hwid check. Useful for running in VMs because they have no
-// hwid.
-const char kSkipHWIDCheck[]                 = "skip-hwid-check";
-
 // Sends test messages on first call to RequestUpdate (stub only).
 const char kSmsTestMessages[]               = "sms-test-messages";
 

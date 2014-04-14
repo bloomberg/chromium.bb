@@ -113,8 +113,7 @@ bool IsMachineHWIDCorrect() {
   return true;
 #endif
   CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  if (cmd_line->HasSwitch(::switches::kTestType) ||
-      cmd_line->HasSwitch(chromeos::switches::kSkipHWIDCheck))
+  if (cmd_line->HasSwitch(::switches::kTestType))
     return true;
   if (!base::SysInfo::IsRunningOnChromeOS())
     return true;

@@ -63,7 +63,6 @@ CHROMEOS_EXPORT extern const char kOobeTimerInterval[];
 CHROMEOS_EXPORT extern const char kOobeGuestSession[];
 CHROMEOS_EXPORT extern const char kPowerStub[];
 CHROMEOS_EXPORT extern const char kShillStub[];
-CHROMEOS_EXPORT extern const char kSkipHWIDCheck[];
 CHROMEOS_EXPORT extern const char kSmsTestMessages[];
 CHROMEOS_EXPORT extern const char kStubCrosSettings[];
 CHROMEOS_EXPORT extern const char kDisableFirstRunUI[];
