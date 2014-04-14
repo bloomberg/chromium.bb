@@ -530,6 +530,15 @@ TEST_F(KernelProxyTest, Lstat) {
   EXPECT_EQ(ENOENT, errno);
 }
 
+TEST_F(KernelProxyTest, UseAfterClose) {
+  int fd = ki_open("/dummy", O_CREAT | O_WRONLY);
+  ASSERT_GT(fd, -1);
+  EXPECT_EQ(5, ki_write(fd, "hello", 5));
+  EXPECT_EQ(0, ki_close(fd));
+  EXPECT_EQ(-1, ki_write(fd, "hello", 5));
+  EXPECT_EQ(EBADF, errno);
+}
+
 namespace {
 
 StringMap_t g_string_map;

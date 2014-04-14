@@ -172,11 +172,12 @@ Error KernelObject::AcquireHandle(int fd, ScopedKernelHandle* out_handle) {
   if (fd < 0 || fd >= static_cast<int>(handle_map_.size()))
     return EBADF;
 
-  *out_handle = handle_map_[fd].handle;
-  if (out_handle)
-    return 0;
+  Descriptor_t& desc = handle_map_[fd];
+  if (!desc.handle)
+    return EBADF;
 
-  return EBADF;
+  *out_handle = desc.handle;
+  return 0;
 }
 
 Error KernelObject::AcquireHandleAndPath(int fd, ScopedKernelHandle* out_handle,
@@ -187,12 +188,12 @@ Error KernelObject::AcquireHandleAndPath(int fd, ScopedKernelHandle* out_handle,
   if (fd < 0 || fd >= static_cast<int>(handle_map_.size()))
     return EBADF;
 
-  *out_handle = handle_map_[fd].handle;
-  if (!out_handle)
+  Descriptor_t& desc = handle_map_[fd];
+  if (!desc.handle)
     return EBADF;
 
-  *out_path = handle_map_[fd].path;
-
+  *out_handle = desc.handle;
+  *out_path = desc.path;
   return 0;
 }
 
@@ -243,7 +244,6 @@ void KernelObject::FreeFD(int fd) {
 
   // Force lower numbered FD to be available first.
   std::push_heap(free_fds_.begin(), free_fds_.end(), std::greater<int>());
-  //
 }
 
 }  // namespace nacl_io
