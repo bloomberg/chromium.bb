@@ -367,10 +367,8 @@ HttpResponseInfo::ConnectionInfo HttpResponseInfo::ConnectionInfoFromNextProto(
     case kProtoSPDY3:
     case kProtoSPDY31:
       return CONNECTION_INFO_SPDY3;
-    case kProtoSPDY4a2:
-      return CONNECTION_INFO_SPDY4A2;
-    case kProtoHTTP2Draft04:
-      return CONNECTION_INFO_HTTP2_DRAFT_04;
+    case kProtoSPDY4:
+      return CONNECTION_INFO_SPDY4;
     case kProtoQUIC1SPDY3:
       return CONNECTION_INFO_QUIC1_SPDY3;
 
@@ -395,10 +393,10 @@ std::string HttpResponseInfo::ConnectionInfoToString(
       return "spdy/2";
     case CONNECTION_INFO_SPDY3:
       return "spdy/3";
-    case CONNECTION_INFO_SPDY4A2:
-      return "spdy/4a2";
-    case CONNECTION_INFO_HTTP2_DRAFT_04:
-      return "HTTP-draft-04/2.0";
+    case CONNECTION_INFO_SPDY4:
+      // This is the HTTP/2 draft 11 identifier. For internal
+      // consistency, HTTP/2 is named SPDY4 within Chromium.
+      return "h2-11";
     case CONNECTION_INFO_QUIC1_SPDY3:
       return "quic/1+spdy/3";
     case NUM_OF_CONNECTION_INFOS:

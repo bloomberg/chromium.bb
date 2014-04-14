@@ -1162,7 +1162,7 @@ const char* SpdyTestUtil::GetStatusKey() const {
 const char* SpdyTestUtil::GetHostKey() const {
   if (protocol_ < kProtoSPDY3)
     return "host";
-  if (protocol_ < kProtoSPDY4a2)
+  if (protocol_ < kProtoSPDY4)
     return ":host";
   else
     return ":authority";

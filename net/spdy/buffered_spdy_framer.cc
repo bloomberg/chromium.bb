@@ -15,9 +15,7 @@ SpdyMajorVersion NextProtoToSpdyMajorVersion(NextProto next_proto) {
     case kProtoSPDY3:
     case kProtoSPDY31:
       return SPDY3;
-    // SPDY/4 and HTTP/2 share the same framing for now.
-    case kProtoSPDY4a2:
-    case kProtoHTTP2Draft04:
+    case kProtoSPDY4:
       return SPDY4;
     case kProtoUnknown:
     case kProtoHTTP11:

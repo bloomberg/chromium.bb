@@ -20,8 +20,7 @@ INSTANTIATE_TEST_CASE_P(
     NextProto,
     HttpStreamFactoryImplRequestTest,
     testing::Values(kProtoDeprecatedSPDY2,
-                    kProtoSPDY3, kProtoSPDY31, kProtoSPDY4a2,
-                    kProtoHTTP2Draft04));
+                    kProtoSPDY3, kProtoSPDY31, kProtoSPDY4));
 
 namespace {
 

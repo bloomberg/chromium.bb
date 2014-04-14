@@ -29,8 +29,7 @@ INSTANTIATE_TEST_CASE_P(
     NextProto,
     WebSocketHandshakeHandlerSpdyTest,
     testing::Values(kProtoDeprecatedSPDY2,
-                    kProtoSPDY3, kProtoSPDY31, kProtoSPDY4a2,
-                    kProtoHTTP2Draft04));
+                    kProtoSPDY3, kProtoSPDY31, kProtoSPDY4));
 
 TEST_P(WebSocketHandshakeHandlerSpdyTest, RequestResponse) {
   WebSocketHandshakeRequestHandler request_handler;

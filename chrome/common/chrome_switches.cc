@@ -520,9 +520,6 @@ const char kEnableExtensionActivityLogTesting[] =
 // crbug.com/142458 .
 const char kEnableFastUnload[]         = "enable-fast-unload";
 
-// Enable HTTP/2 draft 04. This is a temporary testing flag.
-const char kEnableHttp2Draft04[]            = "enable-http2-draft-04";
-
 // Enables the pure web-based flow for sign in on first run/NTP/wrench menu/
 // settings page.
 const char kEnableWebBasedSignin[]            = "enable-web-based-signin";
@@ -650,8 +647,8 @@ const char kEnableSearchButtonInOmniboxForStrOrIip[] =
 // Enable settings in a separate browser window per profile.
 const char kEnableSettingsWindow[]          = "enable-settings-window";
 
-// Enable SPDY/4 alpha 2. This is a temporary testing flag.
-const char kEnableSpdy4a2[]                 = "enable-spdy4a2";
+// Enable SPDY/4, aka HTTP/2. This is a temporary testing flag.
+const char kEnableSpdy4[]                   = "enable-spdy4";
 
 // Enables auto correction for misspelled words.
 const char kEnableSpellingAutoCorrect[]     = "enable-spelling-auto-correct";

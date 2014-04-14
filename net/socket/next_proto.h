@@ -20,10 +20,8 @@ enum NextProto {
   kProtoSPDYMinimumVersion = kProtoDeprecatedSPDY2,
   kProtoSPDY3,
   kProtoSPDY31,
-  kProtoSPDY4a2,
-  // We lump in HTTP/2 with the SPDY protocols for now.
-  kProtoHTTP2Draft04,
-  kProtoSPDYMaximumVersion = kProtoHTTP2Draft04,
+  kProtoSPDY4,  // SPDY4 is HTTP/2.
+  kProtoSPDYMaximumVersion = kProtoSPDY4,
 
   kProtoQUIC1SPDY3,
 

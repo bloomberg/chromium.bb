@@ -564,7 +564,7 @@ void SpdySession::InitializeWithSocket(
   DCHECK_GE(protocol_, kProtoSPDYMinimumVersion);
   DCHECK_LE(protocol_, kProtoSPDYMaximumVersion);
 
-  if (protocol_ == kProtoHTTP2Draft04)
+  if (protocol_ == kProtoSPDY4)
     send_connection_header_prefix_ = true;
 
   if (protocol_ >= kProtoSPDY31) {
@@ -2415,8 +2415,8 @@ void SpdySession::OnPing(SpdyPingId unique_id, bool is_ack) {
       base::Bind(&NetLogSpdyPingCallback, unique_id, is_ack, "received"));
 
   // Send response to a PING from server.
-  if ((protocol_ >= kProtoSPDY4a2 && !is_ack) ||
-      (protocol_ < kProtoSPDY4a2 && unique_id % 2 == 0)) {
+  if ((protocol_ >= kProtoSPDY4 && !is_ack) ||
+      (protocol_ < kProtoSPDY4 && unique_id % 2 == 0)) {
     WritePingFrame(unique_id, true);
     return;
   }
@@ -2527,7 +2527,7 @@ void SpdySession::SendInitialData() {
   DCHECK_NE(availability_state_, STATE_CLOSED);
 
   if (send_connection_header_prefix_) {
-    DCHECK_EQ(protocol_, kProtoHTTP2Draft04);
+    DCHECK_EQ(protocol_, kProtoSPDY4);
     scoped_ptr<SpdyFrame> connection_header_prefix_frame(
         new SpdyFrame(const_cast<char*>(kHttp2ConnectionHeaderPrefix),
                       kHttp2ConnectionHeaderPrefixSize,

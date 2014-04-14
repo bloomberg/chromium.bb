@@ -20,8 +20,7 @@ const char* const kAlternateProtocolStrings[] = {
   "npn-spdy/2",
   "npn-spdy/3",
   "npn-spdy/3.1",
-  "npn-spdy/4a2",
-  "npn-HTTP-draft-04/2.0",
+  "npn-h2-11",  // HTTP/2 draft 11. Called SPDY4 internally.
   "quic"
 };
 const char kBrokenAlternateProtocol[] = "Broken";
@@ -53,8 +52,7 @@ const char* AlternateProtocolToString(AlternateProtocol protocol) {
     case DEPRECATED_NPN_SPDY_2:
     case NPN_SPDY_3:
     case NPN_SPDY_3_1:
-    case NPN_SPDY_4A2:
-    case NPN_HTTP2_DRAFT_04:
+    case NPN_SPDY_4:
     case QUIC:
       DCHECK(IsAlternateProtocolValid(protocol));
       return kAlternateProtocolStrings[
@@ -88,10 +86,8 @@ AlternateProtocol AlternateProtocolFromNextProto(NextProto next_proto) {
       return NPN_SPDY_3;
     case kProtoSPDY31:
       return NPN_SPDY_3_1;
-    case kProtoSPDY4a2:
-      return NPN_SPDY_4A2;
-    case kProtoHTTP2Draft04:
-      return NPN_HTTP2_DRAFT_04;
+    case kProtoSPDY4:
+      return NPN_SPDY_4;
     case kProtoQUIC1SPDY3:
       return QUIC;
 

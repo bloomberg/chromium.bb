@@ -182,8 +182,7 @@ INSTANTIATE_TEST_CASE_P(
     NextProto,
     SpdySessionTest,
     testing::Values(kProtoDeprecatedSPDY2,
-                    kProtoSPDY3, kProtoSPDY31, kProtoSPDY4a2,
-                    kProtoHTTP2Draft04));
+                    kProtoSPDY3, kProtoSPDY31, kProtoSPDY4));
 
 // Try to create a SPDY session that will fail during
 // initialization. Nothing should blow up.
@@ -1278,7 +1277,7 @@ TEST_P(SpdySessionTest, SendInitialDataOnNewSession) {
           kSessionFlowControlStreamId,
           kDefaultInitialRecvWindowSize - kSpdySessionInitialWindowSize));
   std::vector<MockWrite> writes;
-  if (GetParam() == kProtoHTTP2Draft04) {
+  if (GetParam() == kProtoSPDY4) {
     writes.push_back(
         MockWrite(ASYNC,
                   kHttp2ConnectionHeaderPrefix,

@@ -779,18 +779,11 @@ const Experiment kExperiments[] = {
                               switches::kDisableQuicHttps)
   },
   {
-    "enable-spdy4a2",
-    IDS_FLAGS_ENABLE_SPDY4A2_NAME,
-    IDS_FLAGS_ENABLE_SPDY4A2_DESCRIPTION,
+    "enable-spdy4",
+    IDS_FLAGS_ENABLE_SPDY4_NAME,
+    IDS_FLAGS_ENABLE_SPDY4_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableSpdy4a2)
-  },
-  {
-    "enable-http2-draft-04",
-    IDS_FLAGS_ENABLE_HTTP2_DRAFT_04_NAME,
-    IDS_FLAGS_ENABLE_HTTP2_DRAFT_04_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableHttp2Draft04)
+    SINGLE_VALUE_TYPE(switches::kEnableSpdy4)
   },
   {
     "enable-async-dns",

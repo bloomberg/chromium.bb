@@ -6242,17 +6242,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_QUIC_HTTPS_DESCRIPTION" desc="Description for the flag to enable HTTPS over QUIC.">
         Enables QUIC over an Authenticated Encrypted channel (can replace HTTPS transactions). Without this flag, only HTTP requests are supported over QUIC. This only has an effect if QUIC protocol is enabled.
       </message>
-      <message name="IDS_FLAGS_ENABLE_SPDY4A2_NAME" desc="Title for the flag to enable SPDY/4 alpha 2">
-        Enable SPDY/4 alpha 2
+      <message name="IDS_FLAGS_ENABLE_SPDY4_NAME" desc="Title for the flag to enable SPDY/4">
+        Enable SPDY/4
       </message>
-      <message name="IDS_FLAGS_ENABLE_SPDY4A2_DESCRIPTION" desc="Description for the flag to enable SPDY/4 alpha 2.">
-        Enable experimental SPDY/4 alpha 2.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_HTTP2_DRAFT_04_NAME" desc="Title for the flag to enable HTTP/2 draft 04">
-        Enable HTTP/2 draft 04.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_HTTP2_DRAFT_04_DESCRIPTION" desc="Description for the flag to enable HTTP/2 draft 04.">
-        Enable experimental HTTP/2 draft 04.
+      <message name="IDS_FLAGS_ENABLE_SPDY4_DESCRIPTION" desc="Description for the flag to enable SPDY/4.">
+        Enable SPDY/4, which is the HTTP/2 standard. Currently experimental.
       </message>
       <message name="IDS_FLAGS_ENABLE_ASYNC_DNS_NAME" desc="Title for the flag to enable asynchronous DNS client.">
         Built-in Asynchronous DNS

@@ -705,12 +705,9 @@ INSTANTIATE_TEST_CASE_P(
         SpdyNetworkTransactionTestParams(kProtoSPDY31, SPDYNOSSL),
         SpdyNetworkTransactionTestParams(kProtoSPDY31, SPDYSSL),
         SpdyNetworkTransactionTestParams(kProtoSPDY31, SPDYNPN),
-        SpdyNetworkTransactionTestParams(kProtoSPDY4a2, SPDYNOSSL),
-        SpdyNetworkTransactionTestParams(kProtoSPDY4a2, SPDYSSL),
-        SpdyNetworkTransactionTestParams(kProtoSPDY4a2, SPDYNPN),
-        SpdyNetworkTransactionTestParams(kProtoHTTP2Draft04, SPDYNOSSL),
-        SpdyNetworkTransactionTestParams(kProtoHTTP2Draft04, SPDYSSL),
-        SpdyNetworkTransactionTestParams(kProtoHTTP2Draft04, SPDYNPN)));
+        SpdyNetworkTransactionTestParams(kProtoSPDY4, SPDYNOSSL),
+        SpdyNetworkTransactionTestParams(kProtoSPDY4, SPDYSSL),
+        SpdyNetworkTransactionTestParams(kProtoSPDY4, SPDYNPN)));
 
 // Verify HttpNetworkTransaction constructor.
 TEST_P(SpdyNetworkTransactionTest, Constructor) {
@@ -4495,7 +4492,7 @@ TEST_P(SpdyNetworkTransactionTest, SettingsPlayback) {
       spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
 
   std::vector<MockWrite> writes;
-  if (GetParam().protocol == kProtoHTTP2Draft04) {
+  if (GetParam().protocol == kProtoSPDY4) {
     writes.push_back(
         MockWrite(ASYNC,
                   kHttp2ConnectionHeaderPrefix,

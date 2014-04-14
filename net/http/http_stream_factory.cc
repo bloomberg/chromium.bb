@@ -200,27 +200,14 @@ void HttpStreamFactory::EnableNpnSpdy31WithSpdy2() {
 }
 
 // static
-void HttpStreamFactory::EnableNpnSpdy4a2() {
+void HttpStreamFactory::EnableNpnSpdy4Http2() {
   set_use_alternate_protocols(true);
   std::vector<NextProto> next_protos;
   next_protos.push_back(kProtoHTTP11);
   next_protos.push_back(kProtoQUIC1SPDY3);
   next_protos.push_back(kProtoSPDY3);
   next_protos.push_back(kProtoSPDY31);
-  next_protos.push_back(kProtoSPDY4a2);
-  SetNextProtos(next_protos);
-}
-
-// static
-void HttpStreamFactory::EnableNpnHttp2Draft04() {
-  set_use_alternate_protocols(true);
-  std::vector<NextProto> next_protos;
-  next_protos.push_back(kProtoHTTP11);
-  next_protos.push_back(kProtoQUIC1SPDY3);
-  next_protos.push_back(kProtoSPDY3);
-  next_protos.push_back(kProtoSPDY31);
-  next_protos.push_back(kProtoSPDY4a2);
-  next_protos.push_back(kProtoHTTP2Draft04);
+  next_protos.push_back(kProtoSPDY4);
   SetNextProtos(next_protos);
 }
 

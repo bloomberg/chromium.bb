@@ -278,13 +278,9 @@ class NET_EXPORT HttpStreamFactory {
   // protocols supported via NPN or Alternate-Protocol.
   static void EnableNpnSpdy31WithSpdy2();
 
-  // Sets http/1.1, quic, spdy/3, spdy/3.1, and spdy/4a2 as the
+  // Sets http/1.1, quic, spdy/3, spdy/3.1, and spdy/4 (http/2) as the
   // protocols supported via NPN or Alternate-Protocol.
-  static void EnableNpnSpdy4a2();
-
-  // Sets http/1.1, quic, spdy/3, spdy/3.1, spdy/4a2, and http/2 draft
-  // 04 as the protocols supported via NPN or Alternate-Protocol.
-  static void EnableNpnHttp2Draft04();
+  static void EnableNpnSpdy4Http2();
 
   // Sets the protocols supported by NPN (next protocol negotiation) during the
   // SSL handshake as well as by HTTP Alternate-Protocol.
