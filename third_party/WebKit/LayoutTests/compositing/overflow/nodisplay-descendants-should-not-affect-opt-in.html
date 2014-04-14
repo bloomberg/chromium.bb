@@ -47,8 +47,8 @@
     function doTest()
     {
       var descendant = document.getElementById('descendant');
-      descendant.style.visibility = 'hidden';
-      descendant.style.display = '';
+      descendant.style.visibility = '';
+      descendant.style.display = 'none';
 
       if (window.internals)
         document.getElementById('layers').innerText = window.internals.layerTreeAsText(document);
