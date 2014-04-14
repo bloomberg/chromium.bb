@@ -5,6 +5,23 @@
 {
   'targets': [
     {
+      'target_name': 'bookmarks_core_browser',
+      'type': 'static_library',
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../ui/base/ui_base.gyp:ui_base',
+        '../ui/gfx/gfx.gyp:gfx',
+        '../url/url.gyp:url_lib',
+      ],
+      'sources': [
+        'bookmarks/core/browser/bookmark_node.cc',
+        'bookmarks/core/browser/bookmark_node.h',
+      ],
+    },
+    {
       'target_name': 'bookmarks_core_common',
       'type': 'static_library',
       'include_dirs': [

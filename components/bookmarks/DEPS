@@ -2,4 +2,5 @@ include_rules = [
   # Bookmarks is a component that is not allowed to uses content/ so that it
   # can be shared on iOS.
   "-content",
+  "+ui",
 ]
