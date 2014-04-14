@@ -29544,6 +29544,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="WebFont.CORSSuccess" enum="BooleanSuccess">
+  <owner>bashi@chromium.org</owner>
+  <summary>The success or failure of web fonts CORS-enabled fetching.</summary>
+</histogram>
+
 <histogram name="WebFont.DownloadTime.0.Under10KB" units="milliseconds">
   <owner>ksakamoto@chromium.org</owner>
   <summary>
