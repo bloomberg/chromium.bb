@@ -1455,6 +1455,16 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
 class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
   """Commits or reports errors to CL's that failed to be validated."""
 
+  def _HandleStageException(self, exc_info):
+    """Decide whether an exception should be treated as fatal."""
+    exc_type = exc_info[0]
+    if isinstance(
+        exc_type, validation_pool.FailedToSubmitAllChangesNonFatalException):
+      return self._HandleExceptionAsWarning(exc_info)
+    else:
+      return super(CommitQueueCompletionStage, self)._HandleStageException(
+          self, exc_info)
+
   def HandleSuccess(self):
     if self._run.config.master:
       self.sync_stage.pool.SubmitPool()

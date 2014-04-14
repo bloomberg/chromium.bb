@@ -829,6 +829,7 @@ class TestCoreLogic(MoxBase):
     return (pool, patches, failed)
 
   def testSubmitPoolFailures(self):
+    """Tests that a fatal exception is raised."""
     pool, patches, _failed = self._setUpSubmit()
     patch1, patch2, patch3 = patches
 
@@ -843,7 +844,25 @@ class TestCoreLogic(MoxBase):
                       pool.SubmitPool)
     self.mox.VerifyAll()
 
+  def testSubmitPartialPass(self):
+    """Tests that a non-fatal exception is raised."""
+    pool, patches, _failed = self._setUpSubmit()
+    patch1, patch2, patch3 = patches
+    # Make patch2 not commit-ready.
+    patch2._approvals = []
+
+    pool._SubmitChange(patch1).AndReturn(True)
+
+    pool._HandleCouldNotSubmit(patch2, mox.IgnoreArg()).InAnyOrder()
+    pool._HandleCouldNotSubmit(patch3, mox.IgnoreArg()).InAnyOrder()
+
+    self.mox.ReplayAll()
+    self.assertRaises(validation_pool.FailedToSubmitAllChangesNonFatalException,
+                      pool.SubmitPool)
+    self.mox.VerifyAll()
+
   def testSubmitPool(self):
+    """Tests that we can submit a pool of patches."""
     pool, patches, failed = self._setUpSubmit()
 
     for patch in patches:

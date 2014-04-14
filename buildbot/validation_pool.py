@@ -77,12 +77,16 @@ class TreeIsClosedException(Exception):
 
 
 class FailedToSubmitAllChangesException(results_lib.StepFailure):
-  """Raised if we fail to submit any changes."""
+  """Raised if we fail to submit any change."""
 
   def __init__(self, changes):
     super(FailedToSubmitAllChangesException, self).__init__(
         'FAILED TO SUBMIT ALL CHANGES:  Could not verify that changes %s were '
         'submitted' % ' '.join(str(c) for c in changes))
+
+
+class FailedToSubmitAllChangesNonFatalException(results_lib.StepFailure):
+  """Raised if we fail to submit any change due to non-fatal errors."""
 
 
 class InternalCQError(cros_patch.PatchException):
@@ -1845,7 +1849,6 @@ class ValidationPool(object):
     try:
       plan = patch_series.CreateTransaction(change, limit_to=limit_to)
     except cros_patch.PatchException as e:
-      self._HandleCouldNotSubmit(change, e)
       errors[change] = e
       return errors
 
@@ -1964,7 +1967,7 @@ class ValidationPool(object):
       logging.error('Could not submit %s', patch)
       self._HandleCouldNotSubmit(patch, error)
 
-    return errors.keys()
+    return errors
 
   @classmethod
   def ReloadChanges(cls, changes):
@@ -2060,6 +2063,8 @@ class ValidationPool(object):
     Raises:
       TreeIsClosedException: if the tree is closed.
       FailedToSubmitAllChangesException: if we can't submit a change.
+      FailedToSubmitAllChangesNonFatalException: if we can't submit a change
+        due to non-fatal errors.
     """
     # Note that SubmitChanges can throw an exception if it can't
     # submit all changes; in that particular case, don't mark the inflight
@@ -2070,7 +2075,20 @@ class ValidationPool(object):
     errors = self.SubmitChanges(self.changes, check_tree_open=check_tree_open,
                                 throttled_ok=throttled_ok)
     if errors:
-      raise FailedToSubmitAllChangesException(errors)
+      # We don't throw a fatal error for the whitelisted
+      # exceptions. These exceptions are mostly caused by human
+      # intervention during the current run and have limited impact on
+      # other patches.
+      whitelisted_exceptions = (PatchNotCommitReady,
+                                PatchNotPublished,
+                                PatchConflict,
+                                cros_patch.DependencyError,)
+
+      if all(isinstance(e, whitelisted_exceptions) for e in errors.values()):
+        raise FailedToSubmitAllChangesNonFatalException(errors)
+      else:
+        raise FailedToSubmitAllChangesException(errors)
+
     if self.changes_that_failed_to_apply_earlier:
       self._HandleApplyFailure(self.changes_that_failed_to_apply_earlier)
 
