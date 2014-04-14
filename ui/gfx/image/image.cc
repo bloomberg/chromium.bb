@@ -103,7 +103,6 @@ scoped_refptr<base::RefCountedMemory> Get1xPNGBytesFromImageSkia(
 class ImageRepPNG;
 class ImageRepSkia;
 class ImageRepGdk;
-class ImageRepCairo;
 class ImageRepCocoa;
 class ImageRepCocoaTouch;
 
