@@ -347,11 +347,13 @@ bool AnimationPlayer::update(UpdateReason reason)
 double AnimationPlayer::timeToEffectChange()
 {
     ASSERT(!m_outdated);
-    if (!m_content || m_held)
+    if (m_held || !hasStartTime())
         return std::numeric_limits<double>::infinity();
+    if (!m_content)
+        return -currentTime() / m_playbackRate;
     if (m_playbackRate > 0)
         return m_content->timeToForwardsEffectChange() / m_playbackRate;
-    return m_content->timeToReverseEffectChange() / std::abs(m_playbackRate);
+    return m_content->timeToReverseEffectChange() / -m_playbackRate;
 }
 
 void AnimationPlayer::cancel()

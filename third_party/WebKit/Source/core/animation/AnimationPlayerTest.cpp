@@ -686,6 +686,26 @@ TEST_F(AnimationAnimationPlayerTest, TimeToNextEffectWhenPaused)
     EXPECT_EQ(std::numeric_limits<double>::infinity(), player->timeToEffectChange());
 }
 
+TEST_F(AnimationAnimationPlayerTest, TimeToNextEffectWhenCancelledBeforeStart)
+{
+    EXPECT_EQ(0, player->timeToEffectChange());
+    player->setCurrentTime(-8);
+    player->setPlaybackRate(2);
+    player->cancel();
+    player->update(AnimationPlayer::UpdateOnDemand);
+    EXPECT_EQ(4, player->timeToEffectChange());
+}
+
+TEST_F(AnimationAnimationPlayerTest, TimeToNextEffectWhenCancelledBeforeStartReverse)
+{
+    EXPECT_EQ(0, player->timeToEffectChange());
+    player->setCurrentTime(9);
+    player->setPlaybackRate(-3);
+    player->cancel();
+    player->update(AnimationPlayer::UpdateOnDemand);
+    EXPECT_EQ(3, player->timeToEffectChange());
+}
+
 TEST_F(AnimationAnimationPlayerTest, AttachedAnimationPlayers)
 {
     RefPtr<Element> element = document->createElement("foo", ASSERT_NO_EXCEPTION);
