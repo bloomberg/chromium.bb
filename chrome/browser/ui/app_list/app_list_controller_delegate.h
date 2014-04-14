@@ -152,6 +152,9 @@ class AppListControllerDelegate {
 
   // Get the list of installed apps for the given profile.
   void GetApps(Profile* profile, extensions::ExtensionSet* out_apps);
+
+  // Called when a search is started using the app list search box.
+  void OnSearchStarted();
 };
 
 #endif  // CHROME_BROWSER_UI_APP_LIST_APP_LIST_CONTROLLER_DELEGATE_H_

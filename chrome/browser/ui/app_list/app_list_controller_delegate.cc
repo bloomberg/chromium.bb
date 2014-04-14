@@ -28,6 +28,10 @@
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_switches.h"
 
+#if defined(ENABLE_RLZ)
+#include "chrome/browser/rlz/rlz.h"
+#endif
+
 using extensions::ExtensionRegistry;
 
 namespace {
@@ -202,4 +206,10 @@ void AppListControllerDelegate::GetApps(Profile* profile,
   out_apps->InsertAll(registry->enabled_extensions());
   out_apps->InsertAll(registry->disabled_extensions());
   out_apps->InsertAll(registry->terminated_extensions());
+}
+
+void AppListControllerDelegate::OnSearchStarted() {
+#if defined(ENABLE_RLZ)
+  RLZTracker::RecordAppListSearch();
+#endif
 }
