@@ -136,6 +136,60 @@ TEST(AddressDataTest, FormatForDisplayJpLatn) {
   EXPECT_EQ(expected, actual);
 }
 
+TEST(AddressDataTest, FormatForDisplayJpLatnCapitalized) {
+  AddressData address;
+  address.country_code = "JP";
+  address.language_code = "ja-Latn";
+  address.administrative_area = "Tokyo";
+  address.locality = "Shibuya-ku";
+  address.postal_code = "150-8512";
+  address.address_lines.push_back("26-1 Sakuragaoka-cho");
+  address.address_lines.push_back("Cerulean Tower 6F");
+  address.organization = "Google Japan Inc.";
+  address.recipient = "Miki Murakami";
+
+  std::vector<std::string> actual;
+  address.FormatForDisplay(&actual);
+
+  std::vector<std::string> expected;
+  expected.push_back(address.recipient);
+  expected.push_back(address.organization);
+  expected.insert(expected.end(),
+                  address.address_lines.begin(),
+                  address.address_lines.end());
+  expected.push_back(address.locality + ", "+ address.administrative_area);
+  expected.push_back(address.postal_code);
+
+  EXPECT_EQ(expected, actual);
+}
+
+TEST(AddressDataTest, FormatForDisplayJpLatnUs) {
+  AddressData address;
+  address.country_code = "JP";
+  address.language_code = "ja-latn-US";
+  address.administrative_area = "Tokyo";
+  address.locality = "Shibuya-ku";
+  address.postal_code = "150-8512";
+  address.address_lines.push_back("26-1 Sakuragaoka-cho");
+  address.address_lines.push_back("Cerulean Tower 6F");
+  address.organization = "Google Japan Inc.";
+  address.recipient = "Miki Murakami";
+
+  std::vector<std::string> actual;
+  address.FormatForDisplay(&actual);
+
+  std::vector<std::string> expected;
+  expected.push_back(address.recipient);
+  expected.push_back(address.organization);
+  expected.insert(expected.end(),
+                  address.address_lines.begin(),
+                  address.address_lines.end());
+  expected.push_back(address.locality + ", "+ address.administrative_area);
+  expected.push_back(address.postal_code);
+
+  EXPECT_EQ(expected, actual);
+}
+
 TEST(AddressDataTest, FormatForDisplayWithStreetCi) {
   AddressData address;
   address.country_code = "CI";

@@ -83,10 +83,6 @@ bool DataModelWrapper::GetDisplayText(
   return true;
 }
 
-const std::string& DataModelWrapper::GetLanguageCode() const {
-  return g_browser_process->GetApplicationLocale();
-}
-
 bool DataModelWrapper::FillFormStructure(
     const std::vector<ServerFieldType>& types,
     const FormStructure::InputFieldComparator& compare,
@@ -216,6 +212,11 @@ bool AutofillCreditCardWrapper::GetDisplayText(
   return true;
 }
 
+const std::string& AutofillCreditCardWrapper::GetLanguageCode() const {
+  // Formatting a credit card for display does not depend on language code.
+  return base::EmptyString();
+}
+
 // WalletAddressWrapper
 
 WalletAddressWrapper::WalletAddressWrapper(
@@ -247,6 +248,10 @@ bool WalletAddressWrapper::GetDisplayText(
 
   return DataModelWrapper::GetDisplayText(vertically_compact,
                                           horizontally_compact);
+}
+
+const std::string& WalletAddressWrapper::GetLanguageCode() const {
+  return address_->language_code();
 }
 
 // WalletInstrumentWrapper
@@ -304,6 +309,10 @@ bool WalletInstrumentWrapper::GetDisplayText(
   return true;
 }
 
+const std::string& WalletInstrumentWrapper::GetLanguageCode() const {
+  return instrument_->address().language_code();
+}
+
 // FullWalletBillingWrapper
 
 FullWalletBillingWrapper::FullWalletBillingWrapper(
@@ -333,6 +342,12 @@ bool FullWalletBillingWrapper::GetDisplayText(
                                           horizontally_compact);
 }
 
+const std::string& FullWalletBillingWrapper::GetLanguageCode() const {
+  // Can be NULL if there are required actions.
+  return full_wallet_->billing_address() ?
+      full_wallet_->billing_address()->language_code() : base::EmptyString();
+}
+
 // FullWalletShippingWrapper
 
 FullWalletShippingWrapper::FullWalletShippingWrapper(
@@ -348,6 +363,15 @@ base::string16 FullWalletShippingWrapper::GetInfo(
   return full_wallet_->shipping_address()->GetInfo(
       type, g_browser_process->GetApplicationLocale());
 }
+
+const std::string& FullWalletShippingWrapper::GetLanguageCode() const {
+  // Can be NULL if there are required actions or shipping address is not
+  // required.
+  return full_wallet_->shipping_address() ?
+      full_wallet_->shipping_address()->language_code() : base::EmptyString();
+}
+
+// I18nAddressDataWrapper
 
 I18nAddressDataWrapper::I18nAddressDataWrapper(
     const ::i18n::addressinput::AddressData* address)

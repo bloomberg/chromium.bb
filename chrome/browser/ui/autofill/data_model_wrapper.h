@@ -70,9 +70,8 @@ class DataModelWrapper {
                               base::string16* horizontally_compact);
 
   // Returns the BCP 47 language code that should be used for formatting the
-  // data for display. The default implementation returns the current browser
-  // locale.
-  virtual const std::string& GetLanguageCode() const;
+  // data for display.
+  virtual const std::string& GetLanguageCode() const = 0;
 
   // Fills in |form_structure| with the data that this model contains. |inputs|
   // and |comparator| are used to determine whether each field in the
@@ -142,6 +141,7 @@ class AutofillCreditCardWrapper : public DataModelWrapper {
   virtual gfx::Image GetIcon() OVERRIDE;
   virtual bool GetDisplayText(base::string16* vertically_compact,
                               base::string16* horizontally_compact) OVERRIDE;
+  virtual const std::string& GetLanguageCode() const OVERRIDE;
 
  private:
   const CreditCard* card_;
@@ -160,6 +160,7 @@ class WalletAddressWrapper : public DataModelWrapper {
       OVERRIDE;
   virtual bool GetDisplayText(base::string16* vertically_compact,
                               base::string16* horizontally_compact) OVERRIDE;
+  virtual const std::string& GetLanguageCode() const OVERRIDE;
 
  private:
   const wallet::Address* address_;
@@ -180,6 +181,7 @@ class WalletInstrumentWrapper : public DataModelWrapper {
   virtual gfx::Image GetIcon() OVERRIDE;
   virtual bool GetDisplayText(base::string16* vertically_compact,
                               base::string16* horizontally_compact) OVERRIDE;
+  virtual const std::string& GetLanguageCode() const OVERRIDE;
 
  private:
   const wallet::WalletItems::MaskedInstrument* instrument_;
@@ -196,6 +198,7 @@ class FullWalletBillingWrapper : public DataModelWrapper {
   virtual base::string16 GetInfo(const AutofillType& type) const OVERRIDE;
   virtual bool GetDisplayText(base::string16* vertically_compact,
                               base::string16* horizontally_compact) OVERRIDE;
+  virtual const std::string& GetLanguageCode() const OVERRIDE;
 
  private:
   wallet::FullWallet* full_wallet_;
@@ -210,6 +213,7 @@ class FullWalletShippingWrapper : public DataModelWrapper {
   virtual ~FullWalletShippingWrapper();
 
   virtual base::string16 GetInfo(const AutofillType& type) const OVERRIDE;
+  virtual const std::string& GetLanguageCode() const OVERRIDE;
 
  private:
   wallet::FullWallet* full_wallet_;

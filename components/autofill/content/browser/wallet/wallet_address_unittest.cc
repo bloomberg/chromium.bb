@@ -33,7 +33,8 @@ const char kAddressMissingObjectId[] =
     "    \"administrative_area_name\":\"administrative_area_name\","
     "    \"postal_code_number\":\"postal_code_number\","
     "    \"sorting_code\":\"sorting_code\","
-    "    \"country_name_code\":\"US\""
+    "    \"country_name_code\":\"US\","
+    "    \"language_code\":\"language_code\""
     "  }"
     "}";
 
@@ -97,7 +98,7 @@ const char kAddressMissingPostalCodeNumber[] =
     "  }"
     "}";
 
-const char kValidAddress[] =
+const char kAddressMissingLanguageCode[] =
     "{"
     "  \"id\":\"id\","
     "  \"phone_number\":\"phone_number\","
@@ -116,6 +117,29 @@ const char kValidAddress[] =
     "    \"country_name_code\":\"US\","
     "    \"postal_code_number\":\"postal_code_number\","
     "    \"sorting_code\":\"sorting_code\""
+    "  }"
+    "}";
+
+const char kValidAddress[] =
+    "{"
+    "  \"id\":\"id\","
+    "  \"phone_number\":\"phone_number\","
+    "  \"is_minimal_address\":true,"
+    "  \"postal_address\":"
+    "  {"
+    "    \"recipient_name\":\"recipient_name\","
+    "    \"address_line\":"
+    "    ["
+    "      \"address_line_1\","
+    "      \"address_line_2\""
+    "    ],"
+    "    \"locality_name\":\"locality_name\","
+    "    \"dependent_locality_name\":\"dependent_locality_name\","
+    "    \"administrative_area_name\":\"administrative_area_name\","
+    "    \"country_name_code\":\"US\","
+    "    \"postal_code_number\":\"postal_code_number\","
+    "    \"sorting_code\":\"sorting_code\","
+    "    \"language_code\":\"language_code\""
     "  }"
     "}";
 
@@ -154,7 +178,7 @@ const char kClientAddressMissingName[] =
   "  \"country_code\":\"US\""
   "}";
 
-const char kClientValidAddress[] =
+const char kClientAddressMissingLanguageCode[] =
   "{"
   "  \"name\":\"name\","
   "  \"address1\":\"address1\","
@@ -167,6 +191,22 @@ const char kClientValidAddress[] =
   "  \"phone_number\":\"phone_number\","
   "  \"country_code\":\"US\","
   "  \"type\":\"FULL\""
+  "}";
+
+const char kClientValidAddress[] =
+  "{"
+  "  \"name\":\"name\","
+  "  \"address1\":\"address1\","
+  "  \"address2\":\"address2\","
+  "  \"city\":\"city\","
+  "  \"dependent_locality_name\":\"district\","
+  "  \"state\":\"state\","
+  "  \"postal_code\":\"postal_code\","
+  "  \"sorting_code\":\"sorting_code\","
+  "  \"phone_number\":\"phone_number\","
+  "  \"country_code\":\"US\","
+  "  \"type\":\"FULL\","
+  "  \"language_code\":\"language_code\""
   "}";
 
 }  // anonymous namespace
@@ -198,7 +238,8 @@ TEST_F(WalletAddressTest, AddressEqualsIgnoreID) {
                    ASCIIToUTF16("postal_code_number"),
                    ASCIIToUTF16("sorting_code"),
                    ASCIIToUTF16("phone_number"),
-                   "id1");
+                   "id1",
+                   "language_code");
   // Same as address1, only id is different.
   Address address2("US",
                    ASCIIToUTF16("recipient_name"),
@@ -209,7 +250,8 @@ TEST_F(WalletAddressTest, AddressEqualsIgnoreID) {
                    ASCIIToUTF16("postal_code_number"),
                    ASCIIToUTF16("sorting_code"),
                    ASCIIToUTF16("phone_number"),
-                   "id2");
+                   "id2",
+                   "language_code");
   // Has same id as address1, but name is different.
   Address address3("US",
                    ASCIIToUTF16("a_different_name"),
@@ -220,7 +262,8 @@ TEST_F(WalletAddressTest, AddressEqualsIgnoreID) {
                    ASCIIToUTF16("phone_number"),
                    ASCIIToUTF16("postal_code_number"),
                    ASCIIToUTF16("sorting_code"),
-                   "id1");
+                   "id1",
+                   "language_code");
   // Same as address1, but no id.
   Address address4("US",
                    ASCIIToUTF16("recipient_name"),
@@ -231,7 +274,20 @@ TEST_F(WalletAddressTest, AddressEqualsIgnoreID) {
                    ASCIIToUTF16("postal_code_number"),
                    ASCIIToUTF16("sorting_code"),
                    ASCIIToUTF16("phone_number"),
-                   std::string());
+                   std::string(),
+                   "language_code");
+  // Same as address1, only language code is different.
+  Address address5("US",
+                   ASCIIToUTF16("recipient_name"),
+                   StreetAddress("address_line_1", "address_line_2"),
+                   ASCIIToUTF16("locality_name"),
+                   ASCIIToUTF16("dependent_locality_name"),
+                   ASCIIToUTF16("administrative_area_name"),
+                   ASCIIToUTF16("postal_code_number"),
+                   ASCIIToUTF16("sorting_code"),
+                   ASCIIToUTF16("phone_number"),
+                   "id1",
+                   "other_language_code");
 
   // Compare the address has id field to itself.
   EXPECT_EQ(address1, address1);
@@ -255,6 +311,11 @@ TEST_F(WalletAddressTest, AddressEqualsIgnoreID) {
   EXPECT_NE(address1, address4);
   EXPECT_TRUE(address1.EqualsIgnoreID(address4));
   EXPECT_TRUE(address4.EqualsIgnoreID(address1));
+
+  // Compare two addresses with different language code.
+  EXPECT_NE(address1, address5);
+  EXPECT_TRUE(address1.EqualsIgnoreID(address5));
+  EXPECT_TRUE(address5.EqualsIgnoreID(address1));
 }
 
 TEST_F(WalletAddressTest, CreateAddressMissingObjectId) {
@@ -268,7 +329,8 @@ TEST_F(WalletAddressTest, CreateAddressMissingObjectId) {
                   ASCIIToUTF16("postal_code_number"),
                   ASCIIToUTF16("sorting_code"),
                   ASCIIToUTF16("phone_number"),
-                  std::string());
+                  std::string(),
+                  "language_code");
   EXPECT_EQ(address, *Address::CreateAddress(*dict_));
 }
 
@@ -295,6 +357,24 @@ TEST_F(WalletAddressTest, CreateAddressMissingPostalCodeNumber) {
   EXPECT_EQ(NULL, Address::CreateAddressWithID(*dict_).get());
 }
 
+TEST_F(WalletAddressTest, CreateAddressMissingLanguageCode) {
+  SetUpDictionary(kAddressMissingLanguageCode);
+  Address address("US",
+                  ASCIIToUTF16("recipient_name"),
+                  StreetAddress("address_line_1", "address_line_2"),
+                  ASCIIToUTF16("locality_name"),
+                  ASCIIToUTF16("dependent_locality_name"),
+                  ASCIIToUTF16("administrative_area_name"),
+                  ASCIIToUTF16("postal_code_number"),
+                  ASCIIToUTF16("sorting_code"),
+                  ASCIIToUTF16("phone_number"),
+                  "id",
+                  std::string());
+  address.set_is_complete_address(false);
+  EXPECT_EQ(address, *Address::CreateAddress(*dict_));
+  EXPECT_EQ(address, *Address::CreateAddressWithID(*dict_));
+}
+
 TEST_F(WalletAddressTest, CreateAddressWithID) {
   SetUpDictionary(kValidAddress);
   Address address("US",
@@ -306,7 +386,8 @@ TEST_F(WalletAddressTest, CreateAddressWithID) {
                   ASCIIToUTF16("postal_code_number"),
                   ASCIIToUTF16("sorting_code"),
                   ASCIIToUTF16("phone_number"),
-                  "id");
+                  "id",
+                  "language_code");
   address.set_is_complete_address(false);
   EXPECT_EQ(address, *Address::CreateAddress(*dict_));
   EXPECT_EQ(address, *Address::CreateAddressWithID(*dict_));
@@ -327,6 +408,22 @@ TEST_F(WalletAddressTest, CreateDisplayAddressMissingPostalCode) {
   EXPECT_EQ(NULL, Address::CreateDisplayAddress(*dict_).get());
 }
 
+TEST_F(WalletAddressTest, CreateDisplayAddressMissingLanguageCode) {
+  SetUpDictionary(kClientAddressMissingLanguageCode);
+  Address address("US",
+                  ASCIIToUTF16("name"),
+                  StreetAddress("address1", "address2"),
+                  ASCIIToUTF16("city"),
+                  ASCIIToUTF16("district"),
+                  ASCIIToUTF16("state"),
+                  ASCIIToUTF16("postal_code"),
+                  ASCIIToUTF16("sorting_code"),
+                  ASCIIToUTF16("phone_number"),
+                  std::string(),
+                  std::string());
+  EXPECT_EQ(address, *Address::CreateDisplayAddress(*dict_));
+}
+
 TEST_F(WalletAddressTest, CreateDisplayAddress) {
   SetUpDictionary(kClientValidAddress);
   Address address("US",
@@ -338,7 +435,8 @@ TEST_F(WalletAddressTest, CreateDisplayAddress) {
                   ASCIIToUTF16("postal_code"),
                   ASCIIToUTF16("sorting_code"),
                   ASCIIToUTF16("phone_number"),
-                  std::string());
+                  std::string(),
+                  "language_code");
   EXPECT_EQ(address, *Address::CreateDisplayAddress(*dict_));
 }
 
@@ -358,6 +456,8 @@ TEST_F(WalletAddressTest, ToDictionaryWithoutID) {
                      "postal_code_number");
   expected.SetString("sorting_code",
                      "sorting_code");
+  expected.SetString("language_code",
+                     "language_code");
   base::ListValue* address_lines = new base::ListValue();
   address_lines->AppendString("address_line_1");
   address_lines->AppendString("address_line_2");
@@ -372,7 +472,10 @@ TEST_F(WalletAddressTest, ToDictionaryWithoutID) {
                   ASCIIToUTF16("postal_code_number"),
                   ASCIIToUTF16("sorting_code"),
                   ASCIIToUTF16("phone_number"),
-                  std::string());
+                  std::string(),
+                  "language_code");
+
+  EXPECT_TRUE(expected.Equals(address.ToDictionaryWithoutID().get()));
 }
 
 TEST_F(WalletAddressTest, ToDictionaryWithID) {
@@ -393,6 +496,8 @@ TEST_F(WalletAddressTest, ToDictionaryWithID) {
                      "postal_code_number");
   expected.SetString("postal_address.sorting_code",
                      "sorting_code");
+  expected.SetString("postal_address.language_code",
+                     "language_code");
   base::ListValue* address_lines = new base::ListValue();
   address_lines->AppendString("address_line_1");
   address_lines->AppendString("address_line_2");
@@ -407,7 +512,8 @@ TEST_F(WalletAddressTest, ToDictionaryWithID) {
                   ASCIIToUTF16("postal_code_number"),
                   ASCIIToUTF16("sorting_code"),
                   ASCIIToUTF16("phone_number"),
-                  "id");
+                  "id",
+                  "language_code");
 
   EXPECT_TRUE(expected.Equals(address.ToDictionaryWithID().get()));
 }
@@ -424,7 +530,8 @@ TEST_F(WalletAddressTest, GetCountryInfo) {
                   ASCIIToUTF16("postal_code_number"),
                   ASCIIToUTF16("sorting_code"),
                   ASCIIToUTF16("phone_number"),
-                  "id1");
+                  "id1",
+                  "language_code");
 
   AutofillType type = AutofillType(HTML_TYPE_COUNTRY_CODE, HTML_MODE_NONE);
   EXPECT_EQ(ASCIIToUTF16("FR"), address.GetInfo(type, "en-US"));
@@ -451,7 +558,8 @@ TEST_F(WalletAddressTest, GetStreetAddress) {
                    ASCIIToUTF16("postal_code_number"),
                    ASCIIToUTF16("sorting_code"),
                    ASCIIToUTF16("phone_number"),
-                   "id1");
+                   "id1",
+                   "language_code");
   AutofillType type = AutofillType(HTML_TYPE_STREET_ADDRESS, HTML_MODE_NONE);
   EXPECT_EQ(ASCIIToUTF16("address_line_1\naddress_line_2"),
             address1.GetInfo(type, "en-US"));
@@ -467,7 +575,8 @@ TEST_F(WalletAddressTest, GetStreetAddress) {
                    ASCIIToUTF16("postal_code_number"),
                    ASCIIToUTF16("sorting_code"),
                    ASCIIToUTF16("phone_number"),
-                   "id1");
+                   "id1",
+                   "language_code");
   EXPECT_EQ(ASCIIToUTF16("address_line_1"), address2.GetInfo(type, "en-US"));
 
   // Address has no address lines.
@@ -481,7 +590,8 @@ TEST_F(WalletAddressTest, GetStreetAddress) {
                    ASCIIToUTF16("postal_code_number"),
                    ASCIIToUTF16("sorting_code"),
                    ASCIIToUTF16("phone_number"),
-                   "id1");
+                   "id1",
+                   "language_code");
   EXPECT_EQ(base::string16(), address3.GetInfo(type, "en-US"));
 }
 

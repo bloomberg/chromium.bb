@@ -65,6 +65,7 @@ scoped_ptr<wallet::Address> ParseJavaWalletAddress(
   // TODO(aruslan): get these from the JavaWalletAddress.
   const base::string16 dependent_locality_name;
   const base::string16 sorting_code;
+  const std::string language_code;
 
   return scoped_ptr<wallet::Address>(new wallet::Address(
       country_name_code,
@@ -76,7 +77,8 @@ scoped_ptr<wallet::Address> ParseJavaWalletAddress(
       postal_code_number,
       sorting_code,
       phone_number,
-      std::string()));
+      std::string(),
+      language_code));
 }
 
 scoped_ptr<wallet::FullWallet> ParseJavaWallet(JNIEnv* env, jobject wallet) {

@@ -52,7 +52,8 @@ class Address {
           const base::string16& postal_code_number,
           const base::string16& sorting_code,
           const base::string16& phone_number,
-          const std::string& object_id);
+          const std::string& object_id,
+          const std::string& language_code);
 
   ~Address();
 
@@ -117,6 +118,7 @@ class Address {
   bool is_complete_address() const {
     return is_complete_address_;
   }
+  const std::string& language_code() const { return language_code_; }
 
   void set_country_name_code(const std::string& country_name_code) {
     country_name_code_ = country_name_code;
@@ -151,11 +153,18 @@ class Address {
   void set_is_complete_address(bool is_complete_address) {
     is_complete_address_ = is_complete_address;
   }
+  void set_language_code(const std::string& language_code) {
+    language_code_ = language_code;
+  }
 
-  // Tests if this address exact matches |other|. |object_id| is ignored.
+  // Tests if this address exact matches |other|. This method can be used to
+  // cull duplicates. It wouldn't make sense to have multiple identical street
+  // addresses with different identifiers or language codes (used for
+  // formatting). Therefore, |object_id| and |language_code| are ignored.
   bool EqualsIgnoreID(const Address& other) const;
 
-  // Tests if this address exact matches |other| including |object_id|.
+  // Tests if this address exact matches |other| including |object_id| and
+  // |language_code|.
   bool operator==(const Address& other) const;
   bool operator!=(const Address& other) const;
 
@@ -207,6 +216,10 @@ class Address {
 
   // Server's understanding of this address as complete address or not.
   bool is_complete_address_;
+
+  // The BCP 47 language code that can be used for formatting this address for
+  // display.
+  std::string language_code_;
 
   // This class is intentionally copyable.
   DISALLOW_ASSIGN(Address);

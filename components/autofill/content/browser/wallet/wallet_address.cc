@@ -87,6 +87,12 @@ Address* CreateAddressInternal(const base::DictionaryValue& dictionary,
     DVLOG(1) << "Response from Google Wallet missing administrative area name";
   }
 
+  std::string language_code;
+  if (!dictionary.GetString("postal_address.language_code",
+                            &language_code)) {
+    DVLOG(1) << "Response from Google Wallet missing language code";
+  }
+
   Address* address = new Address(country_name_code,
                                  recipient_name,
                                  street_address,
@@ -96,7 +102,8 @@ Address* CreateAddressInternal(const base::DictionaryValue& dictionary,
                                  postal_code_number,
                                  sorting_code,
                                  phone_number,
-                                 object_id);
+                                 object_id,
+                                 language_code);
 
   bool is_minimal_address = false;
   if (dictionary.GetBoolean("is_minimal_address", &is_minimal_address))
@@ -122,7 +129,8 @@ Address::Address(const AutofillProfile& profile)
       postal_code_number_(profile.GetRawInfo(ADDRESS_HOME_ZIP)),
       sorting_code_(profile.GetRawInfo(ADDRESS_HOME_SORTING_CODE)),
       phone_number_(profile.GetRawInfo(PHONE_HOME_WHOLE_NUMBER)),
-      is_complete_address_(true) {
+      is_complete_address_(true),
+      language_code_(profile.language_code()) {
   base::SplitString(
       profile.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS), '\n', &street_address_);
 
@@ -139,7 +147,8 @@ Address::Address(const std::string& country_name_code,
                  const base::string16& postal_code_number,
                  const base::string16& sorting_code,
                  const base::string16& phone_number,
-                 const std::string& object_id)
+                 const std::string& object_id,
+                 const std::string& language_code)
     : country_name_code_(country_name_code),
       recipient_name_(recipient_name),
       street_address_(street_address),
@@ -151,7 +160,8 @@ Address::Address(const std::string& country_name_code,
       phone_number_(phone_number),
       phone_object_(phone_number, country_name_code),
       object_id_(object_id),
-      is_complete_address_(true) {}
+      is_complete_address_(true),
+      language_code_(language_code) {}
 
 Address::~Address() {}
 
@@ -237,6 +247,10 @@ scoped_ptr<Address> Address::CreateDisplayAddress(
   if (!dictionary.GetString("type", &address_state))
     DVLOG(1) << "Response from Google Wallet missing type/state of address";
 
+  std::string language_code;
+  if (!dictionary.GetString("language_code", &language_code))
+    DVLOG(1) << "Response from Google Wallet missing language code";
+
   scoped_ptr<Address> address(
       new Address(country_code,
                   name,
@@ -247,7 +261,8 @@ scoped_ptr<Address> Address::CreateDisplayAddress(
                   postal_code,
                   sorting_code,
                   phone_number,
-                  std::string()));
+                  std::string(),
+                  language_code));
   address->set_is_complete_address(address_state == kFullAddress);
 
   return address.Pass();
@@ -279,6 +294,7 @@ scoped_ptr<base::DictionaryValue> Address::ToDictionaryWithoutID() const {
                   administrative_area_name_);
   dict->SetString("postal_code_number", postal_code_number_);
   dict->SetString("sorting_code", sorting_code_);
+  dict->SetString("language_code", language_code_);
 
   return dict.Pass();
 }
@@ -390,7 +406,9 @@ base::string16 Address::GetStreetAddressLine(size_t line) const {
 }
 
 bool Address::operator==(const Address& other) const {
-  return object_id_ == other.object_id_ && EqualsIgnoreID(other);
+  return object_id_ == other.object_id_ &&
+         language_code_ == other.language_code_ &&
+         EqualsIgnoreID(other);
 }
 
 bool Address::operator!=(const Address& other) const {

@@ -16,7 +16,9 @@
 
 #include <libaddressinput/util/scoped_ptr.h>
 
+#include <algorithm>
 #include <cassert>
+#include <cctype>
 #include <cstddef>
 #include <cstdio>
 #include <ctime>
@@ -34,14 +36,19 @@ namespace i18n {
 namespace addressinput {
 
 std::string NormalizeLanguageCode(const std::string& language_code) {
-  std::string::size_type pos = language_code.find('-');
+  std::string lowercase = language_code;
+  std::transform(lowercase.begin(), lowercase.end(), lowercase.begin(),
+                 tolower);
+  std::string::size_type pos = lowercase.find('-');
   if (pos == std::string::npos) {
     return language_code;
   }
-  if (language_code.substr(pos) == "-latn") {
+  static const char kLatinSuffix[] = "-latn";
+  static const size_t kLatinSuffixSize = sizeof kLatinSuffix - 1;
+  if (lowercase.substr(pos, kLatinSuffixSize) == kLatinSuffix) {
     return language_code;
   }
-  return language_code.substr(0, pos);
+  return lowercase.substr(0, pos);
 }
 
 std::string TimeToString(time_t time) {

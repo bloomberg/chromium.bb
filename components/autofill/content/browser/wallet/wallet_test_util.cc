@@ -92,7 +92,8 @@ scoped_ptr<Address> GetTestAddress() {
                   ASCIIToUTF16("postal_code_number"),
                   ASCIIToUTF16("sorting_code"),
                   ASCIIToUTF16("phone_number"),
-                  std::string()));
+                  std::string(),
+                  "language_code"));
 }
 
 scoped_ptr<Address> GetTestMinimalAddress() {
@@ -223,7 +224,8 @@ scoped_ptr<Address> GetTestSaveableAddress() {
                   ASCIIToUTF16("save_postal_code_number"),
                   ASCIIToUTF16("save_sorting_code"),
                   ASCIIToUTF16("save_phone_number"),
-                  std::string()));
+                  std::string(),
+                  "save_language_code"));
 }
 
 scoped_ptr<Address> GetTestShippingAddress() {
@@ -237,7 +239,8 @@ scoped_ptr<Address> GetTestShippingAddress() {
                   ASCIIToUTF16("ship_postal_code_number"),
                   ASCIIToUTF16("ship_sorting_code"),
                   ASCIIToUTF16("ship_phone_number"),
-                  "default_address_id"));
+                  "default_address_id",
+                  "ship_language_code"));
 }
 
 scoped_ptr<Address> GetTestNonDefaultShippingAddress() {

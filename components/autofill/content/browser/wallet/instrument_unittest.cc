@@ -57,6 +57,7 @@ TEST(Instrument, ToDictionary) {
   address_lines->AppendString("ship_address_line_1");
   address_lines->AppendString("ship_address_line_2");
   expected.Set("credit_card.address.address_line", address_lines);
+  expected.SetString("credit_card.address.language_code", "ship_language_code");
 
   Instrument instrument(ASCIIToUTF16(kPrimaryAccountNumber),
                         ASCIIToUTF16(kCardVerificationNumber),
