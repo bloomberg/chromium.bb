@@ -141,18 +141,28 @@ class ContentProvider(object):
           lambda: ContentAndType(zip_future.Get(), 'application/zip', None))
 
     # If there is no file extension, look for a file with one of the default
+    # extensions. If one cannot be found, check if the path is a directory.
+    # If it is, then check for an index file with one of the default
     # extensions.
-    #
-    # Note that it would make sense to guard this on Exists(path), since a file
-    # without an extension may actually exist, but it's such an uncommon case
-    # it hardly seems worth the potential performance hit.
     if not ext:
-      for default_ext in self._default_extensions:
-        if self.file_system.Exists(path + default_ext).Get():
-          path += default_ext
-          break
+      new_path = self._AddExt(path)
+      # Add a trailing / to check if it is a directory and not a file with
+      # no extension.
+      if new_path is None and self.file_system.Exists(path + '/').Get():
+        new_path = self._AddExt(path + '/index')
+      if new_path is not None:
+        path = new_path
 
     return self._content_cache.GetFromFile(path)
+
+  def _AddExt(self, path):
+    '''Tries to append each of the default file extensions to path and returns
+    the first one that is an existing file.
+    '''
+    for default_ext in self._default_extensions:
+      if self.file_system.Exists(path + default_ext).Get():
+        return path + default_ext
+    return None
 
   def Cron(self):
     futures = [('<path_canonicalizer>',  # semi-arbitrary string since there is
