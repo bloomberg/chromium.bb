@@ -770,17 +770,20 @@ GL_FUNCTIONS = [
     'GLsync sync, GLbitfield flags, GLuint64 timeout', },
 { 'return_type': 'void',
   'known_as': 'glDrawArraysInstancedANGLE',
-  'names': ['glDrawArraysInstancedARB', 'glDrawArraysInstancedANGLE'],
+  'names': ['glDrawArraysInstancedARB', 'glDrawArraysInstancedANGLE',
+            'glDrawArraysInstanced'],
   'arguments': 'GLenum mode, GLint first, GLsizei count, GLsizei primcount', },
 { 'return_type': 'void',
   'known_as': 'glDrawElementsInstancedANGLE',
-  'names': ['glDrawElementsInstancedARB', 'glDrawElementsInstancedANGLE'],
+  'names': ['glDrawElementsInstancedARB', 'glDrawElementsInstancedANGLE',
+            'glDrawElementsInstanced'],
   'arguments':
       'GLenum mode, GLsizei count, GLenum type, const void* indices, '
       'GLsizei primcount', },
 { 'return_type': 'void',
   'known_as': 'glVertexAttribDivisorANGLE',
-  'names': ['glVertexAttribDivisorARB', 'glVertexAttribDivisorANGLE'],
+  'names': ['glVertexAttribDivisorARB', 'glVertexAttribDivisorANGLE',
+            'glVertexAttribDivisor'],
   'arguments':
       'GLuint index, GLuint divisor', },
 { 'return_type': 'void',
