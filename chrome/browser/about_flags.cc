@@ -1577,6 +1577,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableServiceWorker)
   },
+  {
+    "enable-service-worker-sync",
+    IDS_FLAGS_ENABLE_SERVICE_WORKER_SYNC_NAME,
+    IDS_FLAGS_ENABLE_SERVICE_WORKER_SYNC_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableServiceWorkerSync)
+  },
 #if defined(OS_ANDROID)
   {
     "disable-click-delay",

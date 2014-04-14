@@ -4,6 +4,7 @@
 
 #include "content/browser/service_worker/service_worker_version.h"
 
+#include "base/command_line.h"
 #include "base/stl_util.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
@@ -11,6 +12,7 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_switches.h"
 
 namespace content {
 
@@ -347,6 +349,13 @@ void ServiceWorkerVersion::DispatchFetchEvent(
 
 void ServiceWorkerVersion::DispatchSyncEvent(const StatusCallback& callback) {
   DCHECK_EQ(ACTIVE, status()) << status();
+
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableServiceWorkerSync)) {
+    callback.Run(SERVICE_WORKER_ERROR_ABORT);
+    return;
+  }
+
   SendMessageAndRegisterCallback(
       ServiceWorkerMsg_SyncEvent(),
       base::Bind(&HandleSyncEventFinished, callback));

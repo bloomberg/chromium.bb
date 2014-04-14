@@ -6860,6 +6860,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_SERVICE_WORKER_DESCRIPTION" desc="Description for the flag to enable ServiceWorker.">
         ServiceWorker is a new kind of web worker that can intercept resource requests. See https://github.com/slightlyoff/ServiceWorker for more information.
       </message>
+      <message name="IDS_FLAGS_ENABLE_SERVICE_WORKER_SYNC_NAME" desc="Name of the flag to enable ServiceWorker background synchronization.">
+        Enable support for ServiceWorker background sync event.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_SERVICE_WORKER_SYNC_DESCRIPTION" desc="Description for the flag to enable ServiceWorker background synchronization.">
+        ServiceWorker background synchronization lets ServiceWorkers send messages and update resources even when the page is in the background.
+      </message>
       <if expr="is_android">
         <message name="IDS_FLAGS_DISABLE_CLICK_DELAY_NAME" desc="Name of the flag to disable the click delay.">
           Disable click delay.
