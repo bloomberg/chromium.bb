@@ -53,8 +53,16 @@ PassRefPtr<OfflineAudioContext> OfflineAudioContext::create(ExecutionContext* co
         return nullptr;
     }
 
-    if (numberOfChannels > 10) {
-        exceptionState.throwDOMException(SyntaxError, "number of channels (" + String::number(numberOfChannels) + ") exceeds maximum (10).");
+    if (numberOfChannels > AudioContext::maxNumberOfChannels()) {
+        exceptionState.throwDOMException(
+            IndexSizeError,
+            ExceptionMessages::indexOutsideRange<unsigned>(
+                "number of channels",
+                numberOfChannels,
+                0,
+                ExceptionMessages::InclusiveBound,
+                AudioContext::maxNumberOfChannels(),
+                ExceptionMessages::InclusiveBound));
         return nullptr;
     }
 

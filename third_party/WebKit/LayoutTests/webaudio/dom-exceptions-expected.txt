@@ -45,7 +45,8 @@ PASS node.channelCount = 99 threw exception NotSupportedError: Failed to set the
 PASS node.channelCountMode = mode threw exception InvalidStateError: Failed to set the 'channelCountMode' property on 'AudioNode': invalid mode 'fancy'; must be 'max', 'clamped-max', or 'explicit'..
 PASS node.channelInterpretation = mode threw exception InvalidStateError: Failed to set the 'channelInterpretation' property on 'AudioNode': invalid interpretation 'fancy'; must be 'speakers' or 'discrete'..
 PASS context.destination.channelCount = 99 threw exception IndexSizeError: Failed to set the 'channelCount' property on 'AudioNode': The channel count provided (99) is outside the range [1, 2]..
-PASS new OfflineAudioContext(99, 100, context.sampleRate) threw exception SyntaxError: Failed to construct 'OfflineAudioContext': number of channels (99) exceeds maximum (10)..
+PASS new OfflineAudioContext(32, 100, context.sampleRate) did not throw exception.
+PASS new OfflineAudioContext(99, 100, context.sampleRate) threw exception IndexSizeError: Failed to construct 'OfflineAudioContext': The number of channels provided (99) is outside the range [0, 32]..
 PASS new OfflineAudioContext(1, 100, 1) threw exception SyntaxError: Failed to construct 'OfflineAudioContext': sample rate (1) must be in the range 44100-96000 Hz..
 PASS new OfflineAudioContext(1, 100, 1e6) threw exception SyntaxError: Failed to construct 'OfflineAudioContext': sample rate (1.00000e+6) must be in the range 44100-96000 Hz..
 PASS new OfflineAudioContext(1, -88200000000000, 44100) threw exception NotSupportedError: Failed to construct 'OfflineAudioContext': OfflineAudioContext(1, 1448390656, 44100).

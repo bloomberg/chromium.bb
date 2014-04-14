@@ -113,6 +113,8 @@ function runTest() {
     // Delay nodes are tested elsewhere, so don't duplicate that work here.
 
     // OfflineAudioContext
+    // Max supported channels
+    shouldNotThrow("new OfflineAudioContext(32, 100, context.sampleRate)");
     // Invalid number of channels (unspecified error)
     shouldThrow("new OfflineAudioContext(99, 100, context.sampleRate)");
     // Invalid sample rate. (unspecified error)
