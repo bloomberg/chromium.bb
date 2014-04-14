@@ -288,32 +288,13 @@ public:
     virtual void registerProtocolHandler(const WebString& scheme,
         const WebURL& baseUrl,
         const WebURL& url,
-        const WebString& title)
-    {
-        registerProtocolHandler(scheme, baseUrl.string(), url.string(), title);
-    }
+        const WebString& title) { }
 
     // Unregisters a given URL handler for the given protocol.
-    virtual void unregisterProtocolHandler(const WebString& scheme, const WebURL& baseUrl, const WebURL& url)
-    {
-        unregisterProtocolHandler(scheme, baseUrl.string(), url.string());
-    }
+    virtual void unregisterProtocolHandler(const WebString& scheme, const WebURL& baseUrl, const WebURL& url) { }
 
     // Check if a given URL handler is registered for the given protocol.
     virtual WebCustomHandlersState isProtocolHandlerRegistered(const WebString& scheme, const WebURL& baseUrl, const WebURL& url)
-    {
-        return isProtocolHandlerRegistered(scheme, baseUrl.string(), url.string());
-    }
-
-    // These old version APIs need to be removed after synching with chrome side.
-    virtual void registerProtocolHandler(const WebString& scheme,
-        const WebString& baseUrl,
-        const WebString& url,
-        const WebString& title) { }
-
-    virtual void unregisterProtocolHandler(const WebString& scheme, const WebString& baseUrl, const WebString& url) { }
-
-    virtual WebCustomHandlersState isProtocolHandlerRegistered(const WebString& scheme, const WebString& baseUrl, const WebString& url)
     {
         return WebCustomHandlersNew;
     }
