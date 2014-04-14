@@ -1662,7 +1662,11 @@ static WebRect ExpectedRootBounds(WebCore::Document* document, float scaleFactor
     if (element->hasTagName(WebCore::HTMLNames::iframeTag))
         return ExpectedRootBounds(toHTMLIFrameElement(element)->contentDocument(), scaleFactor);
 
-    WebCore::IntRect boundingBox = element->pixelSnappedBoundingBox();
+    WebCore::IntRect boundingBox;
+    if (element->hasTagName(WebCore::HTMLNames::htmlTag))
+        boundingBox = WebCore::IntRect(WebCore::IntPoint(0, 0), document->frame()->view()->contentsSize());
+    else
+        boundingBox = element->pixelSnappedBoundingBox();
     boundingBox = document->frame()->view()->contentsToWindow(boundingBox);
     boundingBox.scale(scaleFactor);
     return boundingBox;
@@ -1740,6 +1744,27 @@ TEST_F(WebViewTest, GetSelectionRootBounds)
     testSelectionRootBounds("select_range_basic.html", 0.1f);
     testSelectionRootBounds("select_range_basic.html", 1.5f);
     testSelectionRootBounds("select_range_basic.html", 2.0f);
+}
+
+TEST_F(WebViewTest, GetSelectionRootBoundsBrokenHeight)
+{
+    WebSize contentSize = WebSize(640, 480);
+
+    registerMockedHttpURLLoad("select_range_basic_broken_height.html");
+
+    WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "select_range_basic_broken_height.html", true);
+    webView->resize(contentSize);
+    webView->setPageScaleFactor(1.0f, WebPoint(0, 0));
+    webView->layout();
+    runPendingTasks();
+
+    WebFrameImpl* frame = toWebFrameImpl(webView->mainFrame());
+    EXPECT_TRUE(frame->frame()->document()->isHTMLDocument());
+
+    WebRect expectedRootBounds = WebRect(0, 0, contentSize.width, contentSize.height);
+    WebRect actualRootBounds;
+    webView->getSelectionRootBounds(actualRootBounds);
+    ASSERT_EQ(expectedRootBounds, actualRootBounds);
 }
 
 class NonUserInputTextUpdateWebViewClient : public WebViewClient {

@@ -867,7 +867,10 @@ void WebViewImpl::getSelectionRootBounds(WebRect& bounds) const
                 && toHTMLInputElement(*shadowHost).isText())))
         root = shadowHost;
 
-    IntRect boundingBox = root->pixelSnappedBoundingBox();
+    IntRect boundingBox = isHTMLHtmlElement(root)
+        ? IntRect(IntPoint(0, 0), root->document().frame()->view()->contentsSize())
+        : root->pixelSnappedBoundingBox();
+
     boundingBox = root->document().frame()->view()->contentsToWindow(boundingBox);
     boundingBox.scale(pageScaleFactor());
     bounds = boundingBox;
