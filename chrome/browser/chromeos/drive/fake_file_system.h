@@ -97,7 +97,8 @@ class FakeFileSystem : public FileSystemInterface {
       const GetResourceEntryCallback& callback) OVERRIDE;
   virtual void ReadDirectory(
       const base::FilePath& file_path,
-      const ReadDirectoryCallback& callback) OVERRIDE;
+      const ReadDirectoryEntriesCallback& entries_callback,
+      const FileOperationCallback& completion_callback) OVERRIDE;
   virtual void Search(const std::string& search_query,
                       const GURL& next_link,
                       const SearchCallback& callback) OVERRIDE;

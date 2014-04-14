@@ -57,21 +57,10 @@ class TestDirectoryLoaderObserver : public ChangeListLoaderObserver {
   DISALLOW_COPY_AND_ASSIGN(TestDirectoryLoaderObserver);
 };
 
-void AccumulateReadDirectoryResult(FileError* out_error,
-                                   ResourceEntryVector* out_entries,
-                                   bool* last_has_more,
-                                   FileError error,
-                                   scoped_ptr<ResourceEntryVector> entries,
-                                   bool has_more) {
-  EXPECT_TRUE(*last_has_more);
-  *out_error = error;
-  *last_has_more = has_more;
-  if (error == FILE_ERROR_OK) {
-    ASSERT_TRUE(entries);
-    out_entries->insert(out_entries->end(), entries->begin(), entries->end());
-  } else {
-    EXPECT_FALSE(has_more);
-  }
+void AccumulateReadDirectoryResult(ResourceEntryVector* out_entries,
+                                   scoped_ptr<ResourceEntryVector> entries) {
+  ASSERT_TRUE(entries);
+  out_entries->insert(out_entries->end(), entries->begin(), entries->end());
 }
 
 }  // namespace
@@ -155,14 +144,12 @@ TEST_F(DirectoryLoaderTest, ReadDirectory_GrandRoot) {
   // Load grand root.
   FileError error = FILE_ERROR_FAILED;
   ResourceEntryVector entries;
-  bool last_has_more = true;
   directory_loader_->ReadDirectory(
       util::GetDriveGrandRootPath(),
-      base::Bind(&AccumulateReadDirectoryResult,
-                 &error, &entries, &last_has_more));
+      base::Bind(&AccumulateReadDirectoryResult, &entries),
+      google_apis::test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
-  EXPECT_FALSE(last_has_more);
   EXPECT_EQ(0U, observer.changed_directories().size());
   observer.clear_changed_directories();
 
@@ -187,14 +174,12 @@ TEST_F(DirectoryLoaderTest, ReadDirectory_MyDrive) {
   // Load My Drive.
   FileError error = FILE_ERROR_FAILED;
   ResourceEntryVector entries;
-  bool last_has_more = true;
   directory_loader_->ReadDirectory(
       util::GetDriveMyDriveRootPath(),
-      base::Bind(&AccumulateReadDirectoryResult,
-                 &error, &entries, &last_has_more));
+      base::Bind(&AccumulateReadDirectoryResult, &entries),
+      google_apis::test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
-  EXPECT_FALSE(last_has_more);
   EXPECT_EQ(1U, observer.changed_directories().count(
       util::GetDriveMyDriveRootPath()));
 
@@ -219,27 +204,23 @@ TEST_F(DirectoryLoaderTest, ReadDirectory_MultipleCalls) {
   // Load grand root.
   FileError error = FILE_ERROR_FAILED;
   ResourceEntryVector entries;
-  bool last_has_more = true;
   directory_loader_->ReadDirectory(
       util::GetDriveGrandRootPath(),
-      base::Bind(&AccumulateReadDirectoryResult,
-                 &error, &entries, &last_has_more));
+      base::Bind(&AccumulateReadDirectoryResult, &entries),
+      google_apis::test_util::CreateCopyResultCallback(&error));
 
   // Load grand root again without waiting for the result.
   FileError error2 = FILE_ERROR_FAILED;
   ResourceEntryVector entries2;
-  bool last_has_more2 = true;
   directory_loader_->ReadDirectory(
       util::GetDriveGrandRootPath(),
-      base::Bind(&AccumulateReadDirectoryResult,
-                 &error2, &entries2, &last_has_more2));
+      base::Bind(&AccumulateReadDirectoryResult, &entries2),
+      google_apis::test_util::CreateCopyResultCallback(&error2));
   base::RunLoop().RunUntilIdle();
 
   // Callback is called for each method call.
   EXPECT_EQ(FILE_ERROR_OK, error);
-  EXPECT_FALSE(last_has_more);
   EXPECT_EQ(FILE_ERROR_OK, error2);
-  EXPECT_FALSE(last_has_more2);
 }
 
 TEST_F(DirectoryLoaderTest, Lock) {
@@ -250,11 +231,10 @@ TEST_F(DirectoryLoaderTest, Lock) {
   TestDirectoryLoaderObserver observer(directory_loader_.get());
   FileError error = FILE_ERROR_FAILED;
   ResourceEntryVector entries;
-  bool last_has_more = true;
   directory_loader_->ReadDirectory(
       util::GetDriveMyDriveRootPath(),
-      base::Bind(&AccumulateReadDirectoryResult,
-                 &error, &entries, &last_has_more));
+      base::Bind(&AccumulateReadDirectoryResult, &entries),
+      google_apis::test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
 
   // Update is pending due to the lock.

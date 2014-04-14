@@ -231,10 +231,8 @@ void GetPathFromResourceIdAfterGetPath(base::FilePath* file_path,
 
 // Excludes hosted documents from the given entries.
 // Used to implement ReadDirectory().
-void FilterHostedDocuments(const ReadDirectoryCallback& callback,
-                           FileError error,
-                           scoped_ptr<ResourceEntryVector> entries,
-                           bool has_more) {
+void FilterHostedDocuments(const ReadDirectoryEntriesCallback& callback,
+                           scoped_ptr<ResourceEntryVector> entries) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -249,7 +247,7 @@ void FilterHostedDocuments(const ReadDirectoryCallback& callback,
     }
     entries.swap(filtered);
   }
-  callback.Run(error, entries.Pass(), has_more);
+  callback.Run(entries.Pass());
 }
 
 // Adapter for using FileOperationCallback as google_apis::EntryActionCallback.
@@ -481,20 +479,15 @@ void FileSystem::CreateDirectory(
 
   // Ensure its parent directory is loaded to the local metadata.
   ReadDirectory(directory_path.DirName(),
+                ReadDirectoryEntriesCallback(),
                 base::Bind(&FileSystem::CreateDirectoryAfterRead,
                            weak_ptr_factory_.GetWeakPtr(), params));
 }
 
-void FileSystem::CreateDirectoryAfterRead(
-    const CreateDirectoryParams& params,
-    FileError error,
-    scoped_ptr<ResourceEntryVector> entries,
-    bool has_more) {
+void FileSystem::CreateDirectoryAfterRead(const CreateDirectoryParams& params,
+                                          FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!params.callback.is_null());
-
-  if (has_more)
-    return;
 
   DVLOG_IF(1, error != FILE_ERROR_OK) << "ReadDirectory failed. "
                                       << FileErrorToString(error);
@@ -637,6 +630,7 @@ void FileSystem::GetResourceEntry(
   DCHECK(!callback.is_null());
 
   ReadDirectory(file_path.DirName(),
+                ReadDirectoryEntriesCallback(),
                 base::Bind(&FileSystem::GetResourceEntryAfterRead,
                            weak_ptr_factory_.GetWeakPtr(),
                            file_path,
@@ -646,14 +640,9 @@ void FileSystem::GetResourceEntry(
 void FileSystem::GetResourceEntryAfterRead(
     const base::FilePath& file_path,
     const GetResourceEntryCallback& callback,
-    FileError error,
-    scoped_ptr<ResourceEntryVector> entries,
-    bool has_more) {
+    FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
-
-  if (has_more)
-    return;
 
   DVLOG_IF(1, error != FILE_ERROR_OK) << "ReadDirectory failed. "
                                       << FileErrorToString(error);
@@ -673,17 +662,19 @@ void FileSystem::GetResourceEntryAfterRead(
 
 void FileSystem::ReadDirectory(
     const base::FilePath& directory_path,
-    const ReadDirectoryCallback& callback) {
+    const ReadDirectoryEntriesCallback& entries_callback_in,
+    const FileOperationCallback& completion_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
+  DCHECK(!completion_callback.is_null());
 
   const bool hide_hosted_docs =
       pref_service_->GetBoolean(prefs::kDisableDriveHostedFiles);
+  ReadDirectoryEntriesCallback entries_callback = entries_callback_in;
+  if (!entries_callback.is_null() && hide_hosted_docs)
+    entries_callback = base::Bind(&FilterHostedDocuments, entries_callback);
 
   directory_loader_->ReadDirectory(
-      directory_path,
-      hide_hosted_docs ?
-          base::Bind(&FilterHostedDocuments, callback) : callback);
+      directory_path, entries_callback, completion_callback);
 
   // Also start loading all of the user's contents.
   change_list_loader_->LoadIfNeeded(

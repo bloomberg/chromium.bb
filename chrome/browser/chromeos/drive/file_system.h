@@ -137,7 +137,8 @@ class FileSystem : public FileSystemInterface,
       const GetResourceEntryCallback& callback) OVERRIDE;
   virtual void ReadDirectory(
       const base::FilePath& directory_path,
-      const ReadDirectoryCallback& callback) OVERRIDE;
+      const ReadDirectoryEntriesCallback& entries_callback,
+      const FileOperationCallback& completion_callback) OVERRIDE;
   virtual void GetAvailableSpace(
       const GetAvailableSpaceCallback& callback) OVERRIDE;
   virtual void GetShareUrl(
@@ -194,9 +195,7 @@ class FileSystem : public FileSystemInterface,
   // Part of CreateDirectory(). Called after ReadDirectory()
   // is called and made sure that the resource metadata is loaded.
   void CreateDirectoryAfterRead(const CreateDirectoryParams& params,
-                                FileError error,
-                                scoped_ptr<ResourceEntryVector> entries,
-                                bool has_more);
+                                FileError error);
 
   void FinishPin(const FileOperationCallback& callback,
                  const std::string* local_id,
@@ -220,9 +219,7 @@ class FileSystem : public FileSystemInterface,
   // Called when ReadDirectory() is complete.
   void GetResourceEntryAfterRead(const base::FilePath& file_path,
                                  const GetResourceEntryCallback& callback,
-                                 FileError error,
-                                 scoped_ptr<ResourceEntryVector> entries,
-                                 bool has_more);
+                                 FileError error);
 
   // Part of GetShareUrl. Resolves the resource entry to get the resource it,
   // and then uses it to ask for the share url. |callback| must not be null.
