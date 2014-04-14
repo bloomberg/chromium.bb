@@ -228,14 +228,12 @@ TEST_F(NetworkChangeNotifierWinTest, NetChangeWinFailStart) {
   StartWatchingAndFail();
 }
 
-// https://code.google.com/p/chromium/issues/detail?id=356401
-TEST_F(NetworkChangeNotifierWinTest, FLAKY_NetChangeWinFailStartOnce) {
+TEST_F(NetworkChangeNotifierWinTest, NetChangeWinFailStartOnce) {
   StartWatchingAndFail();
   RetryAndSucceed();
 }
 
-// https://code.google.com/p/chromium/issues/detail?id=356401
-TEST_F(NetworkChangeNotifierWinTest, FLAKY_NetChangeWinFailStartTwice) {
+TEST_F(NetworkChangeNotifierWinTest, NetChangeWinFailStartTwice) {
   StartWatchingAndFail();
   RetryAndFail();
   RetryAndSucceed();
@@ -246,15 +244,13 @@ TEST_F(NetworkChangeNotifierWinTest, NetChangeWinSignal) {
   SignalAndSucceed();
 }
 
-// https://code.google.com/p/chromium/issues/detail?id=356401
-TEST_F(NetworkChangeNotifierWinTest, FLAKY_NetChangeWinFailSignalOnce) {
+TEST_F(NetworkChangeNotifierWinTest, NetChangeWinFailSignalOnce) {
   StartWatchingAndSucceed();
   SignalAndFail();
   RetryAndSucceed();
 }
 
-// https://code.google.com/p/chromium/issues/detail?id=356401
-TEST_F(NetworkChangeNotifierWinTest, FLAKY_NetChangeWinFailSignalTwice) {
+TEST_F(NetworkChangeNotifierWinTest, NetChangeWinFailSignalTwice) {
   StartWatchingAndSucceed();
   SignalAndFail();
   RetryAndFail();
