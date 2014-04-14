@@ -67,6 +67,7 @@ void RequestAutocompleteManager::OnCancelRequestAutocomplete() {
 
 void RequestAutocompleteManager::ReturnAutocompleteResult(
     AutofillManagerDelegate::RequestAutocompleteResult result,
+    const base::string16& debug_message,
     const FormStructure* form_structure) {
   // autofill_driver_->GetWebContents() will be NULL when the interactive
   // autocomplete is closed due to a tab or browser window closing.
@@ -81,6 +82,7 @@ void RequestAutocompleteManager::ReturnAutocompleteResult(
   host->Send(new AutofillMsg_RequestAutocompleteResult(
       host->GetRoutingID(),
       ToWebkitAutocompleteResult(result),
+      debug_message,
       form_structure ? form_structure->ToFormData() : FormData()));
 }
 

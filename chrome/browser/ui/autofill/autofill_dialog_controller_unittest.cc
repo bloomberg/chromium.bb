@@ -645,6 +645,7 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
  private:
   void FinishedCallback(
       AutofillManagerDelegate::RequestAutocompleteResult result,
+      const base::string16& debug_message,
       const FormStructure* form_structure) {
     form_structure_ = form_structure;
   }

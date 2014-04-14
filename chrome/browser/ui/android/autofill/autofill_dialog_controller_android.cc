@@ -206,8 +206,10 @@ void AutofillDialogControllerAndroid::Show() {
       !Java_AutofillDialogControllerAndroid_isDialogAllowed(
           env,
           invoked_from_same_origin_)) {
-    callback_.Run(AutofillManagerDelegate::AutocompleteResultErrorUnsupported,
-                  NULL);
+    callback_.Run(
+        AutofillManagerDelegate::AutocompleteResultErrorUnsupported,
+        base::ASCIIToUTF16("Form is missing autocomplete attributes."),
+        NULL);
     delete this;
     return;
   }
@@ -326,6 +328,7 @@ void AutofillDialogControllerAndroid::DialogCancel(JNIEnv* env,
                                                    jobject obj) {
   LogOnCancelMetrics();
   callback_.Run(AutofillManagerDelegate::AutocompleteResultErrorCancel,
+                base::string16(),
                 NULL);
 }
 
@@ -383,6 +386,7 @@ void AutofillDialogControllerAndroid::DialogContinue(
 
   // Callback should be called as late as possible.
   callback_.Run(AutofillManagerDelegate::AutocompleteResultSuccess,
+                base::string16(),
                 &form_structure_);
 
   // This might delete us.

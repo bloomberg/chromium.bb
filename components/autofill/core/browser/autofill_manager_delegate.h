@@ -54,7 +54,9 @@ class AutofillManagerDelegate {
   };
 
   typedef base::Callback<
-      void(RequestAutocompleteResult, const FormStructure*)> ResultCallback;
+      void(RequestAutocompleteResult,
+           const base::string16&,
+           const FormStructure*)> ResultCallback;
 
   virtual ~AutofillManagerDelegate() {}
 

@@ -152,9 +152,11 @@ IPC_MESSAGE_ROUTED1(AutofillMsg_FormNotBlacklisted,
 
 // Sent when requestAutocomplete() finishes (either succesfully or with an
 // error). If it was a success, the renderer fills the form that requested
-// autocomplete with the |form_data| values input by the user.
-IPC_MESSAGE_ROUTED2(AutofillMsg_RequestAutocompleteResult,
+// autocomplete with the |form_data| values input by the user. |message|
+// is printed to the console if non-empty.
+IPC_MESSAGE_ROUTED3(AutofillMsg_RequestAutocompleteResult,
                     blink::WebFormElement::AutocompleteResult /* result */,
+                    base::string16 /* message */,
                     autofill::FormData /* form_data */)
 
 // Sent when Autofill manager gets the query response from the Autofill server

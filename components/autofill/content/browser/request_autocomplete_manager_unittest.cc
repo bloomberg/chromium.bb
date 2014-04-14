@@ -51,9 +51,12 @@ class CustomTestAutofillManagerDelegate : public TestAutofillManagerDelegate {
         const ResultCallback& callback) OVERRIDE {
       if (should_simulate_success_) {
         FormStructure form_structure(form);
-        callback.Run(AutocompleteResultSuccess, &form_structure);
+        callback.Run(AutocompleteResultSuccess,
+                     base::string16(),
+                     &form_structure);
       } else {
         callback.Run(AutofillManagerDelegate::AutocompleteResultErrorDisabled,
+                     base::string16(),
                      NULL);
       }
     }
@@ -124,7 +127,8 @@ class RequestAutocompleteManagerTest :
         process()->sink().GetFirstMessageMatching(kMsgID);
     if (!message)
       return false;
-    Tuple2<blink::WebFormElement::AutocompleteResult, FormData> autofill_param;
+    Tuple3<blink::WebFormElement::AutocompleteResult, base::string16, FormData>
+        autofill_param;
     AutofillMsg_RequestAutocompleteResult::Read(message, &autofill_param);
     *result = autofill_param.a;
     process()->sink().ClearMessages();

@@ -283,7 +283,9 @@ TEST_F(RequestAutocompleteRendererTest, MainFrameNavigateCancels) {
 TEST_F(RequestAutocompleteRendererTest, NoCancelOnSubframeNavigateAfterDone) {
   // Pretend that the dialog was cancelled.
   autofill_agent_->OnRequestAutocompleteResult(
-      WebFormElement::AutocompleteResultErrorCancel, FormData());
+      WebFormElement::AutocompleteResultErrorCancel,
+      base::ASCIIToUTF16("Print me to the console"),
+      FormData());
 
   // Additional navigations should not crash nor send cancels.
   NavigateFrame(invoking_frame());
@@ -294,7 +296,9 @@ TEST_F(RequestAutocompleteRendererTest, NoCancelOnSubframeNavigateAfterDone) {
 TEST_F(RequestAutocompleteRendererTest, NoCancelOnMainFrameNavigateAfterDone) {
   // Pretend that the dialog was cancelled.
   autofill_agent_->OnRequestAutocompleteResult(
-      WebFormElement::AutocompleteResultErrorCancel, FormData());
+      WebFormElement::AutocompleteResultErrorCancel,
+      base::ASCIIToUTF16("Print me to the console"),
+      FormData());
 
   // Additional navigations should not crash nor send cancels.
   NavigateFrame(GetMainFrame());

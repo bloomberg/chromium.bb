@@ -33,9 +33,11 @@ class RequestAutocompleteManager {
  private:
   // Tells the renderer that the current interactive autocomplete dialog
   // finished with the |result| saying if it was successful or not, and
-  // |form_structure| containing the filled form data.
+  // |form_structure| containing the filled form data. |debug_message| will
+  // be printed to the developer console.
   void ReturnAutocompleteResult(
       AutofillManagerDelegate::RequestAutocompleteResult result,
+      const base::string16& debug_message,
       const FormStructure* form_structure);
 
   // Shows the requestAutocomplete dialog for |source_url| with data from |form|

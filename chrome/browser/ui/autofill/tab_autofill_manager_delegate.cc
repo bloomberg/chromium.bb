@@ -108,6 +108,7 @@ void TabAutofillManagerDelegate::ShowRequestAutocompleteDialog(
     dialog_controller_->Show();
   } else {
     callback.Run(AutofillManagerDelegate::AutocompleteResultErrorDisabled,
+                 base::string16(),
                  NULL);
     NOTIMPLEMENTED();
   }

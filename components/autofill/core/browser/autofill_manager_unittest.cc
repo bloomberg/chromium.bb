@@ -2860,6 +2860,7 @@ class MockAutofillManagerDelegate : public TestAutofillManagerDelegate {
       const ResultCallback& callback) OVERRIDE {
     callback.Run(user_supplied_data_ ? AutocompleteResultSuccess :
                                        AutocompleteResultErrorDisabled,
+                 base::string16(),
                  user_supplied_data_.get());
   }
 

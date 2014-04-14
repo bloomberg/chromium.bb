@@ -32,6 +32,7 @@
 #include "net/cert/cert_status_flags.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
+#include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElementCollection.h"
@@ -47,6 +48,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 
 using blink::WebAutofillClient;
+using blink::WebConsoleMessage;
 using blink::WebElement;
 using blink::WebElementCollection;
 using blink::WebFormControlElement;
@@ -501,6 +503,7 @@ void AutofillAgent::OnAcceptPasswordAutofillSuggestion(
 
 void AutofillAgent::OnRequestAutocompleteResult(
     WebFormElement::AutocompleteResult result,
+    const base::string16& message,
     const FormData& form_data) {
   if (in_flight_request_form_.isNull())
     return;
@@ -512,6 +515,15 @@ void AutofillAgent::OnRequestAutocompleteResult(
   }
 
   in_flight_request_form_.finishRequestAutocomplete(result);
+
+  if (!message.empty()) {
+    const base::string16 prefix(base::ASCIIToUTF16("requestAutocomplete: "));
+    WebConsoleMessage console_message = WebConsoleMessage(
+        WebConsoleMessage::LevelLog, WebString(prefix + message));
+    in_flight_request_form_.document().frame()->addMessageToConsole(
+        console_message);
+  }
+
   in_flight_request_form_.reset();
 }
 

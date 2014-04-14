@@ -653,8 +653,10 @@ void AutofillDialogControllerImpl::Show() {
 
   // Fail if the author didn't specify autocomplete types.
   if (!has_types) {
-    callback_.Run(AutofillManagerDelegate::AutocompleteResultErrorUnsupported,
-                  NULL);
+    callback_.Run(
+        AutofillManagerDelegate::AutocompleteResultErrorUnsupported,
+        base::ASCIIToUTF16("Form is missing autocomplete attributes."),
+        NULL);
     delete this;
     return;
   }
@@ -2180,7 +2182,9 @@ bool AutofillDialogControllerImpl::OnCancel() {
   HidePopup();
   if (!is_submitting_)
     LogOnCancelMetrics();
-  callback_.Run(AutofillManagerDelegate::AutocompleteResultErrorCancel, NULL);
+  callback_.Run(AutofillManagerDelegate::AutocompleteResultErrorCancel,
+                base::string16(),
+                NULL);
   return true;
 }
 
@@ -3770,6 +3774,7 @@ void AutofillDialogControllerImpl::DoFinishSubmit() {
 
   // Callback should be called as late as possible.
   callback_.Run(AutofillManagerDelegate::AutocompleteResultSuccess,
+                base::string16(),
                 &form_structure_);
   data_was_passed_back_ = true;
 
