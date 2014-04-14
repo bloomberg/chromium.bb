@@ -27497,6 +27497,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Tab.SwitchedToForegroundLaunchedWithURL"
     enum="TabSwitchedToForegroundLaunchedWithURL">
+  <obsolete>
+    Deprecated as of 04/2014.
+  </obsolete>
   <owner>lliabraa@chromium.org</owner>
   <summary>
     Each time a tab is brought to the foreground, this histogram indicates if
@@ -27506,6 +27509,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Tab.SwitchedToForegroundMRURank">
+  <obsolete>
+    Deprecated as of 04/2014.
+  </obsolete>
   <owner>lliabraa@chromium.org</owner>
   <summary>
     Rank in MRU order (0 being first) when the tab was switched to foreground.
@@ -27519,6 +27525,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Tab.SwitchedToForegroundRevisit"
     enum="TabSwitchedToForegroundRevisit">
+  <obsolete>
+    Deprecated as of 04/2014.
+  </obsolete>
   <owner>lliabraa@chromium.org</owner>
   <summary>
     Each time a tab is brought to the foreground, this histogram indicates if
@@ -41195,11 +41204,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </enum>
 
 <enum name="TabSwitchedToForegroundLaunchedWithURL" type="int">
+  <obsolete>
+    Deprecated as of 04/2014.
+  </obsolete>
   <int value="0" label="Launched without an URL"/>
   <int value="1" label="Launched with an URL"/>
 </enum>
 
 <enum name="TabSwitchedToForegroundRevisit" type="int">
+  <obsolete>
+    Deprecated as of 04/2014.
+  </obsolete>
   <int value="0" label="First time"/>
   <int value="1" label="Revisit"/>
 </enum>
