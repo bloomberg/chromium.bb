@@ -69,6 +69,13 @@ bool SessionStateDelegateStub::IsUserSessionBlocked() const  {
   return !IsActiveUserSessionStarted() || IsScreenLocked();
 }
 
+SessionStateDelegate::SessionState SessionStateDelegateStub::GetSessionState()
+    const {
+  // Assume that if session is not active we're at login.
+  return IsActiveUserSessionStarted() ?
+      SESSION_STATE_ACTIVE : SESSION_STATE_LOGIN_PRIMARY;
+}
+
 const base::string16 SessionStateDelegateStub::GetUserDisplayName(
     MultiProfileIndex index) const {
   return base::UTF8ToUTF16("stub-user");

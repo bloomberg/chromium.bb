@@ -9,7 +9,9 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
+#include "chrome/browser/chromeos/login/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chromeos/login/login_state.h"
 
 namespace ash {
 class SessionStateObserver;
@@ -17,7 +19,9 @@ class SessionStateObserver;
 
 class SessionStateDelegateChromeos
     : public ash::SessionStateDelegate,
-      public chromeos::UserManager::UserSessionStateObserver {
+      public chromeos::LoginState::Observer,
+      public chromeos::UserManager::UserSessionStateObserver,
+      public chromeos::UserAddingScreen::Observer {
  public:
   SessionStateDelegateChromeos();
   virtual ~SessionStateDelegateChromeos();
@@ -36,6 +40,7 @@ class SessionStateDelegateChromeos
   virtual void LockScreen() OVERRIDE;
   virtual void UnlockScreen() OVERRIDE;
   virtual bool IsUserSessionBlocked() const OVERRIDE;
+  virtual SessionState GetSessionState() const OVERRIDE;
   virtual const base::string16 GetUserDisplayName(
       ash::MultiProfileIndex index) const OVERRIDE;
   virtual const base::string16 GetUserGivenName(
@@ -53,13 +58,32 @@ class SessionStateDelegateChromeos
       ash::SessionStateObserver* observer) OVERRIDE;
   virtual void RemoveSessionStateObserver(
       ash::SessionStateObserver* observer) OVERRIDE;
-  // UserManager::UserSessionStateObserver:
+
+  // chromeos::LoginState::Observer overrides.
+  virtual void LoggedInStateChanged() OVERRIDE;
+
+  // chromeos::UserManager::UserSessionStateObserver:
   virtual void ActiveUserChanged(const chromeos::User* active_user) OVERRIDE;
   virtual void UserAddedToSession(const chromeos::User* added_user) OVERRIDE;
 
+  // chromeos::UserAddingScreen::Observer:
+  virtual void OnUserAddingStarted() OVERRIDE;
+  virtual void OnUserAddingFinished() OVERRIDE;
+
  private:
+  // Sets session state to |new_state|.
+  // If |force| is true then |new_state| is set even if existing session
+  // state is the same (used for explicit initialization).
+  void SetSessionState(SessionState new_state, bool force);
+
+  // Notify observers about session state change.
+  void NotifySessionStateChanged();
+
   // List of observers is only used on Chrome OS for now.
   ObserverList<ash::SessionStateObserver> session_state_observer_list_;
+
+  // Session state (e.g. login screen vs. user session).
+  SessionState session_state_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionStateDelegateChromeos);
 };

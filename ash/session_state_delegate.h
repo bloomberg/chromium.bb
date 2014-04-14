@@ -45,6 +45,22 @@ class ASH_EXPORT SessionStateDelegate {
     CYCLE_TO_PREVIOUS_USER,  // Cycle to the previous user.
   };
 
+  // Defines session state i.e. whether session is running or not and
+  // whether user session is blocked by things like multi-profile login.
+  enum SessionState {
+    // When primary user login UI is shown i.e. after boot or sign out,
+    // no active user session exists yet.
+    SESSION_STATE_LOGIN_PRIMARY = 0,
+
+    // Inside user session (including lock screen),
+    // no login UI (primary or multi-profiles) is shown.
+    SESSION_STATE_ACTIVE,
+
+    // When secondary user login UI is shown i.e. other users are
+    // already logged in and is currently adding another user to the session.
+    SESSION_STATE_LOGIN_SECONDARY,
+  };
+
   virtual ~SessionStateDelegate() {};
 
   // Returns the browser context for the user given by |index|.
@@ -88,6 +104,9 @@ class ASH_EXPORT SessionStateDelegate {
   // login screen, lock screen or screen for adding users into multi-profile
   // session.
   virtual bool IsUserSessionBlocked() const = 0;
+
+  // Returns current session state.
+  virtual SessionState GetSessionState() const = 0;
 
   // Gets the displayed name for the user with the given |index|.
   // Note that |index| can at maximum be |NumberOfLoggedInUsers() - 1|.

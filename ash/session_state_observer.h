@@ -8,6 +8,7 @@
 #include <string>
 
 #include "ash/ash_export.h"
+#include "ash/session_state_delegate.h"
 #include "base/basictypes.h"
 
 namespace ash {
@@ -19,6 +20,9 @@ class ASH_EXPORT SessionStateObserver {
 
   // Called when another user gets added to the existing session.
   virtual void UserAddedToSession(const std::string& user_id) {}
+
+  // Called when session state is changed.
+  virtual void SessionStateChanged(SessionStateDelegate::SessionState state) {}
 
  protected:
   virtual ~SessionStateObserver() {}

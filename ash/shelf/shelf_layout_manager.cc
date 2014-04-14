@@ -205,6 +205,7 @@ ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf)
   Shell::GetInstance()->AddShellObserver(this);
   Shell::GetInstance()->lock_state_controller()->AddObserver(this);
   aura::client::GetActivationClient(root_window_)->AddObserver(this);
+  Shell::GetInstance()->session_state_delegate()->AddSessionStateObserver(this);
 }
 
 ShelfLayoutManager::~ShelfLayoutManager() {
@@ -215,6 +216,8 @@ ShelfLayoutManager::~ShelfLayoutManager() {
   Shell::GetInstance()->RemoveShellObserver(this);
   Shell::GetInstance()->lock_state_controller()->RemoveObserver(this);
   aura::client::GetActivationClient(root_window_)->RemoveObserver(this);
+  Shell::GetInstance()->
+      session_state_delegate()->RemoveSessionStateObserver(this);
 }
 
 void ShelfLayoutManager::SetAutoHideBehavior(ShelfAutoHideBehavior behavior) {
@@ -732,11 +735,16 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
           status_bounds));
   SessionStateDelegate* session_state_delegate =
       Shell::GetInstance()->session_state_delegate();
-  if (!state_.is_screen_locked &&
-      (session_state_delegate->IsActiveUserSessionStarted() ||
-       !keyboard_bounds_.IsEmpty())) {
-    Shell::GetInstance()->SetDisplayWorkAreaInsets(
-        root_window_, target_bounds.work_area_insets);
+  if (!state_.is_screen_locked) {
+    gfx::Insets insets;
+    // If user session is blocked (login to new user session or add user to
+    // the existing session - multi-profile) then give 100% of work area only if
+    // keyboard is not shown.
+    if (!session_state_delegate->IsUserSessionBlocked() ||
+        !keyboard_bounds_.IsEmpty()) {
+      insets = target_bounds.work_area_insets;
+    }
+    Shell::GetInstance()->SetDisplayWorkAreaInsets(root_window_, insets);
   }
 }
 
@@ -1133,7 +1141,7 @@ void ShelfLayoutManager::OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) {
   // On login screen if keyboard has been just hidden, update bounds just once
   // but ignore target_bounds.work_area_insets since shelf overlaps with login
   // window.
-  if (!session_state_delegate->IsActiveUserSessionStarted() &&
+  if (session_state_delegate->IsUserSessionBlocked() &&
       keyboard_is_about_to_hide) {
     Shell::GetInstance()->SetDisplayWorkAreaInsets(root_window_, gfx::Insets());
   }
@@ -1166,6 +1174,14 @@ void ShelfLayoutManager::OnLockStateEvent(LockStateObserver::EventType event) {
     UpdateBoundsAndOpacity(target_bounds, true, NULL);
     UpdateVisibilityState();
   }
+}
+
+void ShelfLayoutManager::SessionStateChanged(
+    SessionStateDelegate::SessionState state) {
+  TargetBounds target_bounds;
+  CalculateTargetBounds(state_, &target_bounds);
+  UpdateBoundsAndOpacity(target_bounds, true, NULL);
+  UpdateVisibilityState();
 }
 
 }  // namespace ash

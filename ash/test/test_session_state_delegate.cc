@@ -91,6 +91,16 @@ bool TestSessionStateDelegate::IsUserSessionBlocked() const {
       user_adding_screen_running_;
 }
 
+SessionStateDelegate::SessionState TestSessionStateDelegate::GetSessionState()
+    const {
+  if (user_adding_screen_running_)
+    return SESSION_STATE_LOGIN_SECONDARY;
+
+  // Assuming that if session is not active we're at login.
+  return IsActiveUserSessionStarted() ?
+      SESSION_STATE_ACTIVE : SESSION_STATE_LOGIN_PRIMARY;
+}
+
 void TestSessionStateDelegate::SetHasActiveUser(bool has_active_user) {
   has_active_user_ = has_active_user;
   if (!has_active_user)

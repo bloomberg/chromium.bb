@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/session_state_delegate.h"
+#include "ash/shell.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -35,11 +37,21 @@ class BrowserLoginTest : public chromeos::LoginManagerTest {
 
 IN_PROC_BROWSER_TEST_F(BrowserLoginTest, PRE_BrowserActive) {
   RegisterUser(kTestUser);
+  EXPECT_EQ(ash::SessionStateDelegate::SESSION_STATE_LOGIN_PRIMARY,
+            ash::Shell::GetInstance()->session_state_delegate()->
+                GetSessionState());
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserLoginTest, BrowserActive) {
+  EXPECT_EQ(ash::SessionStateDelegate::SESSION_STATE_LOGIN_PRIMARY,
+            ash::Shell::GetInstance()->session_state_delegate()->
+                GetSessionState());
   LoginUser(kTestUser);
+  EXPECT_EQ(ash::SessionStateDelegate::SESSION_STATE_ACTIVE,
+            ash::Shell::GetInstance()->session_state_delegate()->
+                GetSessionState());
+
   Browser* browser = FindAnyBrowser(ProfileManager::GetActiveUserProfile(),
                                     false,
                                     chrome::HOST_DESKTOP_TYPE_ASH);
