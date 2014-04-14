@@ -1397,10 +1397,12 @@ void SigninScreenHandler::SendUserList(bool animated) {
           !signed_in && !is_signin_to_add);
       user_dict->SetBoolean(kKeyCanRemove, can_remove_user);
 
-      if (is_owner) {
-        users_list.Insert(0, user_dict);
-      } else {
+      if (!is_owner)
         ++non_owner_count;
+      if (is_owner && users_list.GetSize() > kMaxUsers) {
+        // Owner is always in the list.
+        users_list.Insert(kMaxUsers - 1, user_dict);
+      } else {
         users_list.Append(user_dict);
       }
     }
