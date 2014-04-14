@@ -173,6 +173,7 @@ def generate_argument(interface, method, argument, index):
         'v8_set_return_value_for_main_world': v8_set_return_value(interface.name, method, this_cpp_value, for_main_world=True),
         'v8_set_return_value': v8_set_return_value(interface.name, method, this_cpp_value),
         'v8_value_to_local_cpp_value': v8_value_to_local_cpp_value(argument, index),
+        'v8_value_to_local_cpp_value_async': v8_value_to_local_cpp_value(argument, index, async=True),
     }
 
 
@@ -243,15 +244,28 @@ def v8_set_return_value(interface_name, method, cpp_value, for_main_world=False)
     return idl_type.v8_set_return_value(cpp_value, extended_attributes, script_wrappable=script_wrappable, release=release, for_main_world=for_main_world)
 
 
-def v8_value_to_local_cpp_value(argument, index):
+def v8_value_to_local_cpp_variadic_value(argument, index, async):
+    assert argument.is_variadic
+    idl_type = argument.idl_type
+    vector_type = v8_types.cpp_ptr_type('Vector', 'HeapVector', idl_type.gc_type)
+
+    macro = 'TONATIVE_VOID' + ('_ASYNC' if async else '')
+    macro_args = [
+      '%s<%s>' % (vector_type, idl_type.cpp_type),
+      argument.name,
+      'toNativeArguments<%s>(info, %s)' % (idl_type.cpp_type, index),
+    ]
+    if async:
+        macro_args.append('info')
+    return '%s(%s)' % (macro, ', '.join(macro_args))
+
+
+def v8_value_to_local_cpp_value(argument, index, async=False):
     extended_attributes = argument.extended_attributes
     idl_type = argument.idl_type
     name = argument.name
     if argument.is_variadic:
-        vector_type = v8_types.cpp_ptr_type('Vector', 'HeapVector', idl_type.gc_type)
-        return 'TONATIVE_VOID({vector_type}<{cpp_type}>, {name}, toNativeArguments<{cpp_type}>(info, {index}))'.format(
-            vector_type=vector_type, cpp_type=idl_type.cpp_type, name=name,
-            index=index)
+        return v8_value_to_local_cpp_variadic_value(argument, index, async)
     # [Default=NullString]
     if (argument.is_optional and idl_type.name == 'String' and
         extended_attributes.get('Default') == 'NullString'):
@@ -259,7 +273,7 @@ def v8_value_to_local_cpp_value(argument, index):
     else:
         v8_value = 'info[%s]' % index
     return idl_type.v8_value_to_local_cpp_value(extended_attributes, v8_value,
-                                                name, index=index)
+                                                name, index=index, async=async)
 
 
 ################################################################################

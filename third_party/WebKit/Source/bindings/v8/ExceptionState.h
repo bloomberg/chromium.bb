@@ -32,6 +32,7 @@
 #define ExceptionState_h
 
 #include "bindings/v8/ScopedPersistent.h"
+#include "bindings/v8/ScriptPromise.h"
 #include "bindings/v8/V8ThrowException.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/text/WTFString.h"
@@ -90,6 +91,13 @@ public:
             return false;
         throwException();
         return true;
+    }
+
+    ScriptPromise reject()
+    {
+        if (hadException())
+            return ScriptPromise::reject(m_exception.newLocal(m_isolate), m_isolate);
+        return ScriptPromise::reject(V8ThrowException::createError(v8GeneralError, "Unknown Error", m_isolate), m_isolate);
     }
 
     Context context() const { return m_context; }

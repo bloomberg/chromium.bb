@@ -33,11 +33,14 @@
 
 #include "bindings/v8/ScriptFunction.h"
 #include "bindings/v8/ScriptValue.h"
+#include "bindings/v8/V8ThrowException.h"
 #include "wtf/PassOwnPtr.h"
+#include "wtf/text/WTFString.h"
 #include <v8.h>
 
 namespace WebCore {
 
+class ExceptionState;
 class ExecutionContext;
 
 // ScriptPromise is the class for representing Promise values in C++ world.
@@ -95,6 +98,23 @@ public:
     // if |value| is not a Promise object, returns a Promise object
     // resolved with |value|.
     static ScriptPromise cast(const ScriptValue& /*value*/);
+    static ScriptPromise cast(v8::Handle<v8::Value>, v8::Isolate*);
+
+    static ScriptPromise reject(const ScriptValue&);
+    static ScriptPromise reject(v8::Handle<v8::Value>, v8::Isolate*);
+
+    // static functions each of which returns a ScriptPromise rejected with
+    // the given error.
+    // They coresspond to functions in V8Binding.h, such as throwError,
+    // throwTypeError, etc.
+    static ScriptPromise rejectWithError(V8ErrorType, const String&, v8::Isolate*);
+    static ScriptPromise rejectWithError(v8::Handle<v8::Value>, v8::Isolate*);
+    static ScriptPromise rejectWithTypeError(const String&, v8::Isolate*);
+    static ScriptPromise rejectWithArityTypeErrorForMethod(
+        const char* method, const char* type, unsigned expected, unsigned providedLeastNumMandatoryParams, v8::Isolate*);
+    static ScriptPromise rejectWithArityTypeErrorForConstructor(
+        const char* type, unsigned expected, unsigned providedLeastNumMandatoryParams, v8::Isolate*);
+    static ScriptPromise rejectWithArityTypeError(ExceptionState&, unsigned expected, unsigned providedLeastNumMandatoryParams);
 
 private:
     ScriptValue m_promise;

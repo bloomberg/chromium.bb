@@ -2442,6 +2442,24 @@ ScriptPromise Internals::addOneToPromise(ExecutionContext* context, ScriptPromis
     return promise.then(AddOneFunction::create(context));
 }
 
+ScriptPromise Internals::promiseCheck(ExecutionContext* context, long arg1, bool arg2, const Dictionary& arg3, const String& arg4, const Vector<String>& arg5, ExceptionState& exceptionState)
+{
+    if (arg2)
+        return ScriptPromise::cast(v8String(toIsolate(context), "done"), toIsolate(context));
+    exceptionState.throwDOMException(InvalidStateError, "Thrown from the native implementation.");
+    return ScriptPromise();
+}
+
+ScriptPromise Internals::promiseCheckWithoutExceptionState(ExecutionContext* context, const Dictionary& arg1, const String& arg2, const Vector<String>& arg3)
+{
+    return ScriptPromise::cast(v8String(toIsolate(context), "done"), toIsolate(context));
+}
+
+ScriptPromise Internals::promiseCheckRange(ExecutionContext* context, long arg1)
+{
+    return ScriptPromise::cast(v8String(toIsolate(context), "done"), toIsolate(context));
+}
+
 void Internals::trace(Visitor* visitor)
 {
     visitor->trace(m_frontendWindow);

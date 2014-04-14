@@ -1090,6 +1090,18 @@ crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/international/bid
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/international/bidi-menulist.html [ NeedsManualRebaseline ]
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/textIteratorNilRenderer.html [ NeedsManualRebaseline ]
 
+crbug.com/362992 crypto/aes-cbc-generateKey-parseAlgorithm-failures.html [ Skip ]
+crbug.com/362992 crypto/digest-failures.html [ Skip ]
+crbug.com/362992 crypto/unwrapKey-badParameters.html [ Skip ]
+crbug.com/362992 crypto/worker-subtle-crypto-concurrent.html [ Skip ]
+crbug.com/362992 fast/canvas/canvas-createImageBitmap-invalid-args-in-workers.html [ Skip ]
+crbug.com/362992 fast/canvas/canvas-createImageBitmap-invalid-args.html [ Skip ]
+crbug.com/362992 http/tests/security/cross-origin-createImageBitmap.html [ Skip ]
+crbug.com/362992 storage/quota/storagequota-query-info.html [ Skip ]
+crbug.com/362992 storage/quota/storagequota-request-persistent-quota.html [ Skip ]
+crbug.com/362992 virtual/gpu/fast/canvas/canvas-createImageBitmap-invalid-args-in-workers.html [ Skip ]
+crbug.com/362992 virtual/gpu/fast/canvas/canvas-createImageBitmap-invalid-args.html [ Skip ]
+
 crbug.com/362434 [ Mac ] compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ ImageOnlyFailure Pass ]
 crbug.com/362434 [ Mac ] virtual/gpu/compositedscrolling/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ ImageOnlyFailure Pass ]
 

@@ -223,6 +223,7 @@ def v8_type(interface_name):
 # compute_interfaces_info.py to avoid having to parse IDLs of all used interfaces.
 IdlType.implemented_as_interfaces = {}
 
+
 def implemented_as(idl_type):
     base_idl_type = idl_type.base_type
     if base_idl_type in IdlType.implemented_as_interfaces:
@@ -427,7 +428,7 @@ def v8_value_to_cpp_value_array_or_sequence(array_or_sequence_type, v8_value, in
     return expression
 
 
-def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variable_name, index=None):
+def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variable_name, index=None, async=False):
     """Returns an expression that converts a V8 value to a C++ value and stores it as a local value."""
     this_cpp_type = idl_type.cpp_type_args(extended_attributes=extended_attributes, used_as_argument=True)
 
@@ -442,7 +443,12 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
     else:
         macro = 'TONATIVE_VOID'
 
+    if async:
+        macro += '_ASYNC'
+        args.append('info')
+
     return '%s(%s)' % (macro, ', '.join(args))
+
 
 IdlType.v8_value_to_local_cpp_value = v8_value_to_local_cpp_value
 IdlUnionType.v8_value_to_local_cpp_value = v8_value_to_local_cpp_value

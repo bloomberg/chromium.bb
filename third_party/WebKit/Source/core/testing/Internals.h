@@ -317,6 +317,9 @@ public:
     ScriptPromise createResolvedPromise(ExecutionContext*, ScriptValue);
     ScriptPromise createRejectedPromise(ExecutionContext*, ScriptValue);
     ScriptPromise addOneToPromise(ExecutionContext*, ScriptPromise);
+    ScriptPromise promiseCheck(ExecutionContext*, long, bool, const Dictionary&, const String&, const Vector<String>&, ExceptionState&);
+    ScriptPromise promiseCheckWithoutExceptionState(ExecutionContext*, const Dictionary&, const String&, const Vector<String>&);
+    ScriptPromise promiseCheckRange(ExecutionContext*, long);
 
     void trace(Visitor*);
 

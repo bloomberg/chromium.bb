@@ -283,6 +283,9 @@
     [CallWith=ExecutionContext] Promise createResolvedPromise(any value);
     [CallWith=ExecutionContext] Promise createRejectedPromise(any reason);
     [CallWith=ExecutionContext] Promise addOneToPromise(Promise promise);
+    [CallWith=ExecutionContext, RaisesException] Promise promiseCheck(long arg1, boolean arg2, Dictionary arg3, DOMString arg4, DOMString[] arg5);
+    [CallWith=ExecutionContext] Promise promiseCheckWithoutExceptionState(Dictionary arg1, DOMString arg2, DOMString... variadic);
+    [CallWith=ExecutionContext] Promise promiseCheckRange([EnforceRange] octet arg1);
 
     void startSpeechInput(Element element);
     void setValueForUser(Element element, DOMString value);

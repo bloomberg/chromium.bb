@@ -449,7 +449,10 @@ template<>
 struct NativeValueTraits<String> {
     static inline String nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate)
     {
-        TOSTRING_BOOL(V8StringResource<>, stringValue, value, String());
+        V8StringResource<> stringValue = value;
+        if (UNLIKELY(!stringValue.prepare())) {
+            return String();
+        }
         return stringValue;
     }
 };

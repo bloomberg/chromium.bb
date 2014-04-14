@@ -31,9 +31,12 @@
 #include "config.h"
 #include "bindings/v8/ScriptPromise.h"
 
-#include "RuntimeEnabledFeatures.h"
+#include "bindings/v8/ExceptionMessages.h"
+#include "bindings/v8/ExceptionState.h"
+#include "bindings/v8/ScriptPromiseResolver.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
+#include "bindings/v8/V8ThrowException.h"
 #include "bindings/v8/custom/V8PromiseCustom.h"
 
 #include <v8.h>
@@ -89,22 +92,73 @@ ScriptPromise ScriptPromise::cast(const ScriptValue& value)
 {
     if (value.hasNoValue())
         return ScriptPromise();
-    v8::Local<v8::Value> v8Value(value.v8Value());
-    v8::Isolate* isolate = value.isolate();
-    if (V8PromiseCustom::isPromise(v8Value, isolate) || v8Value->IsPromise()) {
-        return ScriptPromise(v8Value, isolate);
-    }
-    if (RuntimeEnabledFeatures::scriptPromiseOnV8PromiseEnabled()) {
-        v8::Local<v8::Promise::Resolver> resolver = v8::Promise::Resolver::New(isolate);
-        if (resolver.IsEmpty()) {
-            // The Promise constructor may return an empty value, for example
-            // when the stack is exhausted.
-            return ScriptPromise();
-        }
-        resolver->Resolve(v8Value);
-        return ScriptPromise(resolver->GetPromise(), isolate);
-    }
-    return ScriptPromise(V8PromiseCustom::toPromise(v8Value, isolate), isolate);
+    return cast(value.v8Value(), value.isolate());
+}
+
+ScriptPromise ScriptPromise::cast(v8::Handle<v8::Value> value, v8::Isolate* isolate)
+{
+    if (value.IsEmpty())
+        return ScriptPromise();
+    if (V8PromiseCustom::isPromise(value, isolate) || value->IsPromise())
+        return ScriptPromise(value, isolate);
+
+    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(isolate);
+    ScriptPromise promise = resolver->promise();
+    resolver->resolve(value);
+    return promise;
+}
+
+ScriptPromise ScriptPromise::reject(const ScriptValue& value)
+{
+    if (value.hasNoValue())
+        return ScriptPromise();
+    return reject(value.v8Value(), value.isolate());
+}
+
+ScriptPromise ScriptPromise::reject(v8::Handle<v8::Value> value, v8::Isolate* isolate)
+{
+    if (value.IsEmpty())
+        return ScriptPromise();
+
+    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(isolate);
+    ScriptPromise promise = resolver->promise();
+    resolver->reject(value);
+    return promise;
+}
+
+ScriptPromise ScriptPromise::rejectWithError(V8ErrorType type, const String& message, v8::Isolate* isolate)
+{
+    return reject(V8ThrowException::createError(type, message, isolate), isolate);
+}
+
+ScriptPromise ScriptPromise::rejectWithError(v8::Handle<v8::Value> value, v8::Isolate* isolate)
+{
+    return reject(value, isolate);
+}
+
+ScriptPromise ScriptPromise::rejectWithTypeError(const String& message, v8::Isolate* isolate)
+{
+    return reject(V8ThrowException::createTypeError(message, isolate), isolate);
+}
+
+ScriptPromise ScriptPromise::rejectWithArityTypeErrorForMethod(
+    const char* method, const char* type, unsigned expected, unsigned providedLeastNumMandatoryParams, v8::Isolate* isolate)
+{
+    String message = ExceptionMessages::failedToExecute(method, type, ExceptionMessages::notEnoughArguments(expected, providedLeastNumMandatoryParams));
+    return rejectWithTypeError(message, isolate);
+}
+
+ScriptPromise ScriptPromise::rejectWithArityTypeErrorForConstructor(
+    const char* type, unsigned expected, unsigned providedLeastNumMandatoryParams, v8::Isolate* isolate)
+{
+    String message = ExceptionMessages::failedToConstruct(type, ExceptionMessages::notEnoughArguments(expected, providedLeastNumMandatoryParams));
+    return rejectWithTypeError(message, isolate);
+}
+
+ScriptPromise ScriptPromise::rejectWithArityTypeError(ExceptionState& exceptionState, unsigned expected, unsigned providedLeastNumMandatoryParams)
+{
+    exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(expected, providedLeastNumMandatoryParams));
+    return exceptionState.reject();
 }
 
 } // namespace WebCore
