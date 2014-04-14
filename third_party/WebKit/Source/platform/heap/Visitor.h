@@ -39,6 +39,7 @@
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/HashTraits.h"
+#include "wtf/LinkedHashSet.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
@@ -59,7 +60,12 @@ template<typename T> class Member;
 template<typename T> class WeakMember;
 class Visitor;
 
-template<bool needsTracing, bool isWeak, bool markWeakMembersStrongly, typename T, typename Traits> struct CollectionBackingTraceTrait;
+enum ShouldWeakPointersBeMarkedStrongly {
+    WeakPointersActStrong,
+    WeakPointersActWeak
+};
+
+template<bool needsTracing, bool isWeak, ShouldWeakPointersBeMarkedStrongly strongify, typename T, typename Traits> struct CollectionBackingTraceTrait;
 
 // The TraceMethodDelegate is used to convert a trace method for type T to a TraceCallback.
 // This allows us to pass a type's trace method as a parameter to the PersistentNode
@@ -270,6 +276,12 @@ public:
         OffHeapCollectionTraceTrait<ListHashSet<T, inlineCapacity, U> >::trace(this, hashSet);
     }
 
+    template<typename T, typename U>
+    void trace(const LinkedHashSet<T, U>& hashSet)
+    {
+        OffHeapCollectionTraceTrait<LinkedHashSet<T, U> >::trace(this, hashSet);
+    }
+
     template<typename T, size_t N>
     void trace(const Deque<T, N>& deque)
     {
@@ -417,7 +429,7 @@ struct OffHeapCollectionTraceTrait<WTF::HashSet<T, HashFunctions, Traits, WTF::D
         if (WTF::ShouldBeTraced<Traits>::value) {
             HashSet& iterSet = const_cast<HashSet&>(set);
             for (typename HashSet::iterator it = iterSet.begin(), end = iterSet.end(); it != end; ++it)
-                CollectionBackingTraceTrait<WTF::ShouldBeTraced<Traits>::value, Traits::isWeak, false, T, Traits>::mark(visitor, *it);
+                CollectionBackingTraceTrait<WTF::ShouldBeTraced<Traits>::value, Traits::isWeak, WeakPointersActWeak, T, Traits>::mark(visitor, *it);
         }
         COMPILE_ASSERT(!Traits::isWeak, WeakOffHeapCollectionsConsideredDangerous0);
     }
@@ -437,6 +449,20 @@ struct OffHeapCollectionTraceTrait<WTF::ListHashSet<T, inlineCapacity, HashFunct
     }
 };
 
+template<typename T, typename HashFunctions>
+struct OffHeapCollectionTraceTrait<WTF::LinkedHashSet<T, HashFunctions> > {
+    typedef WTF::LinkedHashSet<T, HashFunctions> LinkedHashSet;
+
+    static void trace(Visitor* visitor, const LinkedHashSet& set)
+    {
+        if (set.isEmpty())
+            return;
+        LinkedHashSet& iterSet = const_cast<LinkedHashSet&>(set);
+        for (typename LinkedHashSet::iterator it = iterSet.begin(), end = iterSet.end(); it != end; ++it)
+            visitor->trace(*it);
+    }
+};
+
 template<typename Key, typename Value, typename HashFunctions, typename KeyTraits, typename ValueTraits>
 struct OffHeapCollectionTraceTrait<WTF::HashMap<Key, Value, HashFunctions, KeyTraits, ValueTraits, WTF::DefaultAllocator> > {
     typedef WTF::HashMap<Key, Value, HashFunctions, KeyTraits, ValueTraits, WTF::DefaultAllocator> HashMap;
@@ -448,8 +474,8 @@ struct OffHeapCollectionTraceTrait<WTF::HashMap<Key, Value, HashFunctions, KeyTr
         if (WTF::ShouldBeTraced<KeyTraits>::value || WTF::ShouldBeTraced<ValueTraits>::value) {
             HashMap& iterMap = const_cast<HashMap&>(map);
             for (typename HashMap::iterator it = iterMap.begin(), end = iterMap.end(); it != end; ++it) {
-                CollectionBackingTraceTrait<WTF::ShouldBeTraced<KeyTraits>::value, KeyTraits::isWeak, false, Key, KeyTraits>::mark(visitor, it->key);
-                CollectionBackingTraceTrait<WTF::ShouldBeTraced<ValueTraits>::value, ValueTraits::isWeak, false, Value, ValueTraits>::mark(visitor, it->value);
+                CollectionBackingTraceTrait<WTF::ShouldBeTraced<KeyTraits>::value, KeyTraits::isWeak, WeakPointersActWeak, Key, KeyTraits>::mark(visitor, it->key);
+                CollectionBackingTraceTrait<WTF::ShouldBeTraced<ValueTraits>::value, ValueTraits::isWeak, WeakPointersActWeak, Value, ValueTraits>::mark(visitor, it->value);
             }
         }
         COMPILE_ASSERT(!KeyTraits::isWeak, WeakOffHeapCollectionsConsideredDangerous1);

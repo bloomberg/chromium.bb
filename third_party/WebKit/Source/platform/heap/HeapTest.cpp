@@ -37,6 +37,7 @@
 #include "platform/heap/ThreadState.h"
 #include "platform/heap/Visitor.h"
 #include "wtf/HashTraits.h"
+#include "wtf/LinkedHashSet.h"
 
 #include <gtest/gtest.h>
 
@@ -309,9 +310,38 @@ private:
     int m_x;
 };
 
+class OffHeapInt : public RefCounted<OffHeapInt> {
+public:
+    static RefPtr<OffHeapInt> create(int x)
+    {
+        return adoptRef(new OffHeapInt(x));
+    }
+
+    virtual ~OffHeapInt()
+    {
+        ++s_destructorCalls;
+    }
+
+    static int s_destructorCalls;
+
+    int value() const { return m_x; }
+
+    bool operator==(const OffHeapInt& other) const { return other.value() == value(); }
+
+    unsigned hash() { return IntHash<int>::hash(m_x); }
+
+protected:
+    OffHeapInt(int x) : m_x(x) { }
+
+private:
+    OffHeapInt();
+    int m_x;
+};
+
 USED_FROM_MULTIPLE_THREADS(IntWrapper);
 
 int IntWrapper::s_destructorCalls = 0;
+int OffHeapInt::s_destructorCalls = 0;
 
 class ThreadedTesterBase {
 protected:
@@ -1899,16 +1929,70 @@ class OffHeapContainer : public GarbageCollectedFinalized<OffHeapContainer> {
 public:
     static OffHeapContainer* create() { return new OffHeapContainer(); }
 
+    static const int iterations = 300;
+    static const int deadWrappers = 2700;
+
     OffHeapContainer()
     {
-        m_deque1.append(ShouldBeTraced(IntWrapper::create(1)));
-        m_vector1.append(ShouldBeTraced(IntWrapper::create(2)));
-        m_deque2.append(IntWrapper::create(3));
-        m_vector2.append(IntWrapper::create(4));
-        m_hashSet.add(IntWrapper::create(5));
-        m_hashMap.add(this, IntWrapper::create(6));
-        m_listHashSet.add(IntWrapper::create(7));
-        m_ownedVector.append(adoptPtr(new ShouldBeTraced(IntWrapper::create(8))));
+        for (int i = 0; i < iterations; i++) {
+            m_deque1.append(ShouldBeTraced(IntWrapper::create(i)));
+            m_vector1.append(ShouldBeTraced(IntWrapper::create(i)));
+            m_deque2.append(IntWrapper::create(i));
+            m_vector2.append(IntWrapper::create(i));
+            m_hashSet.add(IntWrapper::create(i));
+            m_hashMap.add(i + 103, IntWrapper::create(i));
+            m_listHashSet.add(IntWrapper::create(i));
+            m_linkedHashSet.add(IntWrapper::create(i));
+            m_ownedVector.append(adoptPtr(new ShouldBeTraced(IntWrapper::create(i))));
+        }
+
+        Deque<ShouldBeTraced>::iterator d1Iterator(m_deque1.begin());
+        Vector<ShouldBeTraced>::iterator v1Iterator(m_vector1.begin());
+        Deque<Member<IntWrapper> >::iterator d2Iterator(m_deque2.begin());
+        Vector<Member<IntWrapper> >::iterator v2Iterator(m_vector2.begin());
+        HashSet<Member<IntWrapper> >::iterator setIterator(m_hashSet.begin());
+        HashMap<int, Member<IntWrapper> >::iterator mapIterator(m_hashMap.begin());
+        ListHashSet<Member<IntWrapper> >::iterator listSetIterator(m_listHashSet.begin());
+        LinkedHashSet<Member<IntWrapper> >::iterator linkedSetIterator(m_linkedHashSet.begin());
+        Vector<OwnPtr<ShouldBeTraced> >::iterator ownedVectorIterator(m_ownedVector.begin());
+
+        for (int i = 0; i < iterations; i++) {
+            EXPECT_EQ(i, m_vector1[i].m_wrapper->value());
+            EXPECT_EQ(i, m_vector2[i]->value());
+            EXPECT_EQ(i, d1Iterator->m_wrapper->value());
+            EXPECT_EQ(i, v1Iterator->m_wrapper->value());
+            EXPECT_EQ(i, d2Iterator->get()->value());
+            EXPECT_EQ(i, v2Iterator->get()->value());
+            EXPECT_EQ(i, linkedSetIterator->get()->value());
+            EXPECT_EQ(i, ownedVectorIterator->get()->m_wrapper->value());
+            int value = setIterator->get()->value();
+            EXPECT_LE(0, value);
+            EXPECT_GT(iterations, value);
+            value = listSetIterator->get()->value();
+            EXPECT_LE(0, value);
+            EXPECT_GT(iterations, value);
+            value = mapIterator->value.get()->value();
+            EXPECT_LE(0, value);
+            EXPECT_GT(iterations, value);
+            ++d1Iterator;
+            ++v1Iterator;
+            ++d2Iterator;
+            ++v2Iterator;
+            ++setIterator;
+            ++mapIterator;
+            ++listSetIterator;
+            ++linkedSetIterator;
+            ++ownedVectorIterator;
+        }
+        EXPECT_EQ(d1Iterator, m_deque1.end());
+        EXPECT_EQ(v1Iterator, m_vector1.end());
+        EXPECT_EQ(d2Iterator, m_deque2.end());
+        EXPECT_EQ(v2Iterator, m_vector2.end());
+        EXPECT_EQ(setIterator, m_hashSet.end());
+        EXPECT_EQ(mapIterator, m_hashMap.end());
+        EXPECT_EQ(listSetIterator, m_listHashSet.end());
+        EXPECT_EQ(linkedSetIterator, m_linkedHashSet.end());
+        EXPECT_EQ(ownedVectorIterator, m_ownedVector.end());
     }
 
     void trace(Visitor* visitor)
@@ -1920,6 +2004,7 @@ public:
         visitor->trace(m_hashSet);
         visitor->trace(m_hashMap);
         visitor->trace(m_listHashSet);
+        visitor->trace(m_linkedHashSet);
         visitor->trace(m_ownedVector);
     }
 
@@ -1928,11 +2013,14 @@ public:
     Deque<Member<IntWrapper> > m_deque2;
     Vector<Member<IntWrapper> > m_vector2;
     HashSet<Member<IntWrapper> > m_hashSet;
-    HashMap<void*, Member<IntWrapper> > m_hashMap;
+    HashMap<int, Member<IntWrapper> > m_hashMap;
     ListHashSet<Member<IntWrapper> > m_listHashSet;
+    LinkedHashSet<Member<IntWrapper> > m_linkedHashSet;
     Vector<OwnPtr<ShouldBeTraced> > m_ownedVector;
 };
 
+const int OffHeapContainer::iterations;
+const int OffHeapContainer::deadWrappers;
 
 // These class definitions test compile-time asserts with transition
 // types. They are therefore unused in test code and just need to
@@ -2384,6 +2472,124 @@ TEST(HeapTest, HeapWeakCollectionSimple)
     EXPECT_EQ(0u, strongWeak->size());
     EXPECT_EQ(0u, weakWeak->size());
     EXPECT_EQ(2u, weakSet->size());
+}
+
+template<typename Set>
+void linkedSetHelper(bool strong)
+{
+    HeapStats initialHeapStats;
+    clearOutOldGarbage(&initialHeapStats);
+    IntWrapper::s_destructorCalls = 0;
+
+    PersistentHeapVector<Member<IntWrapper> > keepNumbersAlive;
+
+    Persistent<Set> set1 = new Set();
+    Persistent<Set> set2 = new Set();
+
+    const Set& constSet = *set1.get();
+
+    keepNumbersAlive.append(IntWrapper::create(2));
+    keepNumbersAlive.append(IntWrapper::create(103));
+    keepNumbersAlive.append(IntWrapper::create(10));
+
+    set1->add(IntWrapper::create(0));
+    set1->add(keepNumbersAlive[0]);
+    set1->add(keepNumbersAlive[1]);
+    set1->add(keepNumbersAlive[2]);
+
+    set2->clear();
+    set2->add(IntWrapper::create(42));
+    set2->clear();
+
+    EXPECT_EQ(4u, set1->size());
+    typename Set::iterator it(set1->begin());
+    typename Set::reverse_iterator reverse(set1->rbegin());
+    typename Set::const_iterator cit(constSet.begin());
+    typename Set::const_reverse_iterator creverse(constSet.rbegin());
+
+    EXPECT_EQ(0, (*it)->value());
+    EXPECT_EQ(0, (*cit)->value());
+    ++it;
+    ++cit;
+    EXPECT_EQ(2, (*it)->value());
+    EXPECT_EQ(2, (*cit)->value());
+    --it;
+    --cit;
+    EXPECT_EQ(0, (*it)->value());
+    EXPECT_EQ(0, (*cit)->value());
+    ++it;
+    ++cit;
+    ++it;
+    ++cit;
+    EXPECT_EQ(103, (*it)->value());
+    EXPECT_EQ(103, (*cit)->value());
+    ++it;
+    ++cit;
+    EXPECT_EQ(10, (*it)->value());
+    EXPECT_EQ(10, (*cit)->value());
+    ++it;
+    ++cit;
+
+    EXPECT_EQ(10, (*reverse)->value());
+    EXPECT_EQ(10, (*creverse)->value());
+    ++reverse;
+    ++creverse;
+    EXPECT_EQ(103, (*reverse)->value());
+    EXPECT_EQ(103, (*creverse)->value());
+    --reverse;
+    --creverse;
+    EXPECT_EQ(10, (*reverse)->value());
+    EXPECT_EQ(10, (*creverse)->value());
+    ++reverse;
+    ++creverse;
+    ++reverse;
+    ++creverse;
+    EXPECT_EQ(2, (*reverse)->value());
+    EXPECT_EQ(2, (*creverse)->value());
+    ++reverse;
+    ++creverse;
+    EXPECT_EQ(0, (*reverse)->value());
+    EXPECT_EQ(0, (*creverse)->value());
+    ++reverse;
+    ++creverse;
+
+    EXPECT_EQ(set1->end(), it);
+    EXPECT_EQ(constSet.end(), cit);
+    EXPECT_EQ(set1->rend(), reverse);
+    EXPECT_EQ(constSet.rend(), creverse);
+
+    typename Set::iterator iX(set2->begin());
+    EXPECT_EQ(set2->end(), iX);
+
+    if (strong)
+        set1->remove(keepNumbersAlive[0]);
+
+    keepNumbersAlive[0] = nullptr;
+
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+
+    EXPECT_EQ(2u + (strong ? 1u : 0u), set1->size());
+
+    EXPECT_EQ(2 + (strong ? 0 : 1), IntWrapper::s_destructorCalls);
+
+    typename Set::iterator i2(set1->begin());
+    if (strong) {
+        EXPECT_EQ(0, (*i2)->value());
+        ++i2;
+        EXPECT_NE(set1->end(), i2);
+    }
+    EXPECT_EQ(103, (*i2)->value());
+    ++i2;
+    EXPECT_NE(set1->end(), i2);
+    EXPECT_EQ(10, (*i2)->value());
+    ++i2;
+    EXPECT_EQ(set1->end(), i2);
+}
+
+TEST(HeapTest, HeapWeakLinkedHashSet)
+{
+    linkedSetHelper<HeapLinkedHashSet<Member<IntWrapper> > >(true);
+    linkedSetHelper<HeapLinkedHashSet<WeakMember<IntWrapper> > >(false);
 }
 
 class ThingWithDestructor {
@@ -3012,7 +3218,7 @@ TEST(HeapTest, VisitOffHeapCollections)
     EXPECT_EQ(0, IntWrapper::s_destructorCalls);
     container = nullptr;
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
-    EXPECT_EQ(8, IntWrapper::s_destructorCalls);
+    EXPECT_EQ(OffHeapContainer::deadWrappers, IntWrapper::s_destructorCalls);
 }
 
 TEST(HeapTest, PersistentHeapCollectionTypes)

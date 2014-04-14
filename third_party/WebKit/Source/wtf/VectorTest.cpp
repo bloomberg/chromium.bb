@@ -136,7 +136,7 @@ TEST(WTF_Vector, OwnPtr)
     OwnPtrVector vector;
     vector.append(adoptPtr(new DestructCounter(0, &destructNumber)));
     vector.append(adoptPtr(new DestructCounter(1, &destructNumber)));
-    ASSERT_EQ(2u, vector.size());
+    EXPECT_EQ(2u, vector.size());
 
     OwnPtr<DestructCounter>& counter0 = vector.first();
     ASSERT_EQ(0, counter0->get());
@@ -147,25 +147,25 @@ TEST(WTF_Vector, OwnPtr)
     size_t index = 0;
     for (OwnPtrVector::iterator iter = vector.begin(); iter != vector.end(); ++iter) {
         OwnPtr<DestructCounter>* refCounter = iter;
-        ASSERT_EQ(index, static_cast<size_t>(refCounter->get()->get()));
-        ASSERT_EQ(index, static_cast<size_t>((*refCounter)->get()));
+        EXPECT_EQ(index, static_cast<size_t>(refCounter->get()->get()));
+        EXPECT_EQ(index, static_cast<size_t>((*refCounter)->get()));
         index++;
     }
-    ASSERT_EQ(0, destructNumber);
+    EXPECT_EQ(0, destructNumber);
 
     for (index = 0; index < vector.size(); index++) {
         OwnPtr<DestructCounter>& refCounter = vector[index];
-        ASSERT_EQ(index, static_cast<size_t>(refCounter->get()));
+        EXPECT_EQ(index, static_cast<size_t>(refCounter->get()));
         index++;
     }
-    ASSERT_EQ(0, destructNumber);
+    EXPECT_EQ(0, destructNumber);
 
-    ASSERT_EQ(0, vector[0]->get());
-    ASSERT_EQ(1, vector[1]->get());
+    EXPECT_EQ(0, vector[0]->get());
+    EXPECT_EQ(1, vector[1]->get());
     vector.remove(0);
-    ASSERT_EQ(1, vector[0]->get());
-    ASSERT_EQ(1u, vector.size());
-    ASSERT_EQ(1, destructNumber);
+    EXPECT_EQ(1, vector[0]->get());
+    EXPECT_EQ(1u, vector.size());
+    EXPECT_EQ(1, destructNumber);
 
     OwnPtr<DestructCounter> ownCounter1 = vector[0].release();
     vector.remove(0);
@@ -174,7 +174,7 @@ TEST(WTF_Vector, OwnPtr)
     ASSERT_EQ(1, destructNumber);
 
     ownCounter1.clear();
-    ASSERT_EQ(2, destructNumber);
+    EXPECT_EQ(2, destructNumber);
 
     size_t count = 1025;
     destructNumber = 0;
@@ -182,17 +182,17 @@ TEST(WTF_Vector, OwnPtr)
         vector.prepend(adoptPtr(new DestructCounter(i, &destructNumber)));
 
     // Vector relocation must not destruct OwnPtr element.
-    ASSERT_EQ(0, destructNumber);
-    ASSERT_EQ(count, vector.size());
+    EXPECT_EQ(0, destructNumber);
+    EXPECT_EQ(count, vector.size());
 
     OwnPtrVector copyVector;
     vector.swap(copyVector);
-    ASSERT_EQ(0, destructNumber);
-    ASSERT_EQ(count, copyVector.size());
-    ASSERT_EQ(0u, vector.size());
+    EXPECT_EQ(0, destructNumber);
+    EXPECT_EQ(count, copyVector.size());
+    EXPECT_EQ(0u, vector.size());
 
     copyVector.clear();
-    ASSERT_EQ(count, static_cast<size_t>(destructNumber));
+    EXPECT_EQ(count, static_cast<size_t>(destructNumber));
 }
 
 // WrappedInt class will fail if it was memmoved or memcpyed.
@@ -241,41 +241,41 @@ TEST(WTF_Vector, SwapWithInlineCapacity)
     Vector<WrappedInt, inlineCapacity> vectorB;
     vectorB.append(WrappedInt(2));
 
-    ASSERT_EQ(vectorA.size(), vectorB.size());
+    EXPECT_EQ(vectorA.size(), vectorB.size());
     vectorA.swap(vectorB);
 
-    ASSERT_EQ(1u, vectorA.size());
+    EXPECT_EQ(1u, vectorA.size());
     EXPECT_EQ(2, vectorA.at(0).get());
-    ASSERT_EQ(1u, vectorB.size());
+    EXPECT_EQ(1u, vectorB.size());
     EXPECT_EQ(1, vectorB.at(0).get());
 
     vectorA.append(WrappedInt(3));
 
-    ASSERT_GT(vectorA.size(), vectorB.size());
+    EXPECT_GT(vectorA.size(), vectorB.size());
     vectorA.swap(vectorB);
 
-    ASSERT_EQ(1u, vectorA.size());
+    EXPECT_EQ(1u, vectorA.size());
     EXPECT_EQ(1, vectorA.at(0).get());
-    ASSERT_EQ(2u, vectorB.size());
+    EXPECT_EQ(2u, vectorB.size());
     EXPECT_EQ(2, vectorB.at(0).get());
     EXPECT_EQ(3, vectorB.at(1).get());
 
-    ASSERT_LT(vectorA.size(), vectorB.size());
+    EXPECT_LT(vectorA.size(), vectorB.size());
     vectorA.swap(vectorB);
 
-    ASSERT_EQ(2u, vectorA.size());
+    EXPECT_EQ(2u, vectorA.size());
     EXPECT_EQ(2, vectorA.at(0).get());
     EXPECT_EQ(3, vectorA.at(1).get());
-    ASSERT_EQ(1u, vectorB.size());
+    EXPECT_EQ(1u, vectorB.size());
     EXPECT_EQ(1, vectorB.at(0).get());
 
     vectorA.append(WrappedInt(4));
-    ASSERT_GT(vectorA.size(), inlineCapacity);
+    EXPECT_GT(vectorA.size(), inlineCapacity);
     vectorA.swap(vectorB);
 
-    ASSERT_EQ(1u, vectorA.size());
+    EXPECT_EQ(1u, vectorA.size());
     EXPECT_EQ(1, vectorA.at(0).get());
-    ASSERT_EQ(3u, vectorB.size());
+    EXPECT_EQ(3u, vectorB.size());
     EXPECT_EQ(2, vectorB.at(0).get());
     EXPECT_EQ(3, vectorB.at(1).get());
     EXPECT_EQ(4, vectorB.at(2).get());

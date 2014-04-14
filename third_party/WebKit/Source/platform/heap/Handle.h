@@ -50,6 +50,7 @@ template<typename T> class HeapTerminatedArray;
         typedef WTF::IsSubclassOfTemplate<NonConstType, GarbageCollected> GarbageCollectedSubclass;       \
         typedef WTF::IsSubclass<NonConstType, GarbageCollectedMixin> GarbageCollectedMixinSubclass;       \
         typedef WTF::IsSubclassOfTemplate3<NonConstType, HeapHashSet> HeapHashSetSubclass;                \
+        typedef WTF::IsSubclassOfTemplate3<NonConstType, HeapLinkedHashSet> HeapLinkedHashSetSubclass;    \
         typedef WTF::IsSubclassOfTemplate5<NonConstType, HeapHashMap> HeapHashMapSubclass;                \
         typedef WTF::IsSubclassOfTemplateTypenameSize<NonConstType, HeapVector> HeapVectorSubclass;       \
         typedef WTF::IsSubclassOfTemplateTypenameSize<NonConstType, HeapDeque> HeapDequeSubclass;         \
@@ -57,6 +58,7 @@ template<typename T> class HeapTerminatedArray;
         COMPILE_ASSERT(GarbageCollectedSubclass::value ||                                                 \
             GarbageCollectedMixinSubclass::value ||                                                       \
             HeapHashSetSubclass::value ||                                                                 \
+            HeapLinkedHashSetSubclass::value ||                                                           \
             HeapHashMapSubclass::value ||                                                                 \
             HeapVectorSubclass::value ||                                                                  \
             HeapDequeSubclass::value ||                                                                   \
@@ -410,6 +412,12 @@ template<
     typename TraitsArg = HashTraits<ValueArg> >
 class PersistentHeapHashSet : public PersistentHeapCollectionBase<HeapHashSet<ValueArg, HashArg, TraitsArg> > { };
 
+template<
+    typename ValueArg,
+    typename HashArg = typename DefaultHash<ValueArg>::Hash,
+    typename TraitsArg = HashTraits<ValueArg> >
+class PersistentHeapLinkedHashSet : public PersistentHeapCollectionBase<HeapLinkedHashSet<ValueArg, HashArg, TraitsArg> > { };
+
 template<typename T, size_t inlineCapacity = 0>
 class PersistentHeapVector : public PersistentHeapCollectionBase<HeapVector<T, inlineCapacity> > {
 public:
@@ -550,7 +558,7 @@ public:
 protected:
     T* m_raw;
 
-    template<bool x, bool y, bool z, typename U, typename V> friend struct CollectionBackingTraceTrait;
+    template<bool x, bool y, ShouldWeakPointersBeMarkedStrongly z, typename U, typename V> friend struct CollectionBackingTraceTrait;
 };
 
 template<typename T>
@@ -742,6 +750,8 @@ template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, 
 #define WillBePersistentHeapHashMap WebCore::PersistentHeapHashMap
 #define WillBeHeapHashSet WebCore::HeapHashSet
 #define WillBePersistentHeapHashSet WebCore::PersistentHeapHashSet
+#define WillBeHeapLinkedHashSet WebCore::HeapLinkedHashSet
+#define WillBePersistentHeapLinkedHashSet WebCore::PersistentHeapLinkedHashSet
 #define WillBeHeapVector WebCore::HeapVector
 #define WillBePersistentHeapVector WebCore::PersistentHeapVector
 #define WillBeHeapDeque WebCore::HeapDeque
@@ -816,6 +826,8 @@ public:
 #define WillBePersistentHeapHashMap WTF::HashMap
 #define WillBeHeapHashSet WTF::HashSet
 #define WillBePersistentHeapHashSet WTF::HashSet
+#define WillBeHeapLinkedHashSet WTF::LinkedHashSet
+#define WillBePersistentLinkedHeapHashSet WTF::LinkedHashSet
 #define WillBeHeapVector WTF::Vector
 #define WillBePersistentHeapVector WTF::Vector
 #define WillBeHeapDeque WTF::Deque
@@ -1016,18 +1028,23 @@ struct NeedsTracing<Deque<T, N> > {
     static const bool value = false;
 };
 
-template<typename T>
-struct NeedsTracing<HashSet<T> > {
+template<typename T, typename U, typename V>
+struct NeedsTracing<HashSet<T, U, V> > {
     static const bool value = false;
 };
 
-template<typename T>
-struct NeedsTracing<ListHashSet<T> > {
+template<typename T, size_t U, typename V>
+struct NeedsTracing<ListHashSet<T, U, V> > {
     static const bool value = false;
 };
 
-template<typename T, typename U>
-struct NeedsTracing<HashMap<T, U> > {
+template<typename T, typename U, typename V>
+struct NeedsTracing<LinkedHashSet<T, U, V> > {
+    static const bool value = false;
+};
+
+template<typename T, typename U, typename V, typename W, typename X>
+struct NeedsTracing<HashMap<T, U, V, W, X> > {
     static const bool value = false;
 };
 

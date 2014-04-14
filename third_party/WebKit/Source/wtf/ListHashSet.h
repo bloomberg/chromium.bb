@@ -300,7 +300,6 @@ namespace WTF {
     template<typename ValueArg, size_t inlineCapacity, typename HashArg> class ListHashSetIterator {
     private:
         typedef ListHashSet<ValueArg, inlineCapacity, HashArg> ListHashSetType;
-        typedef ListHashSetIterator<ValueArg, inlineCapacity, HashArg> iterator;
         typedef ListHashSetConstIterator<ValueArg, inlineCapacity, HashArg> const_iterator;
         typedef ListHashSetNode<ValueArg, inlineCapacity> Node;
         typedef ValueArg ValueType;
@@ -320,17 +319,17 @@ namespace WTF {
         ReferenceType operator*() const { return *get(); }
         PointerType operator->() const { return get(); }
 
-        iterator& operator++() { ++m_iterator; return *this; }
+        ListHashSetIterator& operator++() { ++m_iterator; return *this; }
 
         // postfix ++ intentionally omitted
 
-        iterator& operator--() { --m_iterator; return *this; }
+        ListHashSetIterator& operator--() { --m_iterator; return *this; }
 
         // postfix -- intentionally omitted
 
         // Comparison.
-        bool operator==(const iterator& other) const { return m_iterator == other.m_iterator; }
-        bool operator!=(const iterator& other) const { return m_iterator != other.m_iterator; }
+        bool operator==(const ListHashSetIterator& other) const { return m_iterator == other.m_iterator; }
+        bool operator!=(const ListHashSetIterator& other) const { return m_iterator != other.m_iterator; }
 
         operator const_iterator() const { return m_iterator; }
 
@@ -343,7 +342,6 @@ namespace WTF {
     template<typename ValueArg, size_t inlineCapacity, typename HashArg> class ListHashSetConstIterator {
     private:
         typedef ListHashSet<ValueArg, inlineCapacity, HashArg> ListHashSetType;
-        typedef ListHashSetIterator<ValueArg, inlineCapacity, HashArg> iterator;
         typedef ListHashSetConstIterator<ValueArg, inlineCapacity, HashArg> const_iterator;
         typedef ListHashSetNode<ValueArg, inlineCapacity> Node;
         typedef ValueArg ValueType;
@@ -946,6 +944,7 @@ namespace WTF {
     {
         return ListHashSetConstIterator<T, inlineCapacity, U>(this, position);
     }
+
     template<bool, typename ValueType, typename HashTableType>
     void deleteAllValues(HashTableType& collection)
     {
@@ -955,6 +954,9 @@ namespace WTF {
             delete (*it)->m_value;
     }
 
+    // Warning: After and while calling this you have a collection with deleted
+    // pointers. Consider using a smart pointer like OwnPtr and calling clear()
+    // instead.
     template<typename T, size_t inlineCapacity, typename U>
     inline void deleteAllValues(const ListHashSet<T, inlineCapacity, U>& collection)
     {

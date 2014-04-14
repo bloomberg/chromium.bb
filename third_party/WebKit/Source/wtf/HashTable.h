@@ -61,6 +61,8 @@ namespace WTF {
     class HashTableIterator;
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
     class HashTableConstIterator;
+    template<typename Value, typename HashFunctions, typename HashTraits, typename Allocator>
+    class LinkedHashSet;
     template<bool x, typename T, typename U, typename V, typename W, typename X, typename Y, typename Z>
     struct WeakProcessingHashTableHelper;
 
@@ -104,6 +106,7 @@ namespace WTF {
             , m_containerModifications(container->modifications())
 #endif
         {
+            ASSERT(m_containerModifications == m_container->modifications());
         }
 
         void checkModifications() const
@@ -372,17 +375,24 @@ namespace WTF {
         static bool isDeletedBucket(const ValueType& value) { return KeyTraits::isDeletedValue(Extractor::extract(value)); }
         static bool isEmptyOrDeletedBucket(const ValueType& value) { return HashTableHelper<ValueType, Extractor, KeyTraits>:: isEmptyOrDeletedBucket(value); }
 
-        ValueType* lookup(KeyPeekInType key) { return lookup<IdentityTranslatorType>(key); }
-        template<typename HashTranslator, typename T> ValueType* lookup(const T&);
+        ValueType* lookup(KeyPeekInType key) { return lookup<IdentityTranslatorType, KeyPeekInType>(key); }
+        template<typename HashTranslator, typename T> ValueType* lookup(T);
+        template<typename HashTranslator, typename T> const ValueType* lookup(T) const;
 
         void trace(typename Allocator::Visitor*);
 
 #ifdef ASSERT_ENABLED
         int64_t modifications() const { return m_modifications; }
         void registerModification() { m_modifications++; }
+        // HashTable and collections that build on it do not support
+        // modifications while there is an iterator in use. The exception is
+        // ListHashSet, which has its own iterators that tolerate modification
+        // of the underlying set.
+        void checkModifications(int64_t mods) const { ASSERT(mods == m_modifications); }
 #else
         int64_t modifications() const { return 0; }
         void registerModification() { }
+        void checkModifications(int64_t mods) const { }
 #endif
 
     private:
@@ -436,6 +446,7 @@ namespace WTF {
 #endif
 
         template<bool x, typename T, typename U, typename V, typename W, typename X, typename Y, typename Z> friend struct WeakProcessingHashTableHelper;
+        template<typename T, typename U, typename V, typename W> friend class LinkedHashSet;
     };
 
     // Set all the bits to one after the most significant bit: 00110101010 -> 00111111111.
@@ -504,9 +515,16 @@ namespace WTF {
 
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
     template<typename HashTranslator, typename T>
-    inline Value* HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::lookup(const T& key)
+    inline Value* HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::lookup(T key)
     {
-        ValueType* table = m_table;
+        return const_cast<Value*>(const_cast<const HashTable*>(this)->lookup<HashTranslator, T>(key));
+    }
+
+    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
+    template<typename HashTranslator, typename T>
+    inline const Value* HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::lookup(T key) const
+    {
+        const ValueType* table = m_table;
         if (!table)
             return 0;
 
@@ -526,7 +544,7 @@ namespace WTF {
 #endif
 
         while (1) {
-            ValueType* entry = table + i;
+            const ValueType* entry = table + i;
 
             // we count on the compiler to optimize out this branch
             if (HashFunctions::safeToCompareToEmptyOrDeleted) {
@@ -563,6 +581,7 @@ namespace WTF {
     inline typename HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::LookupType HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::lookupForWriting(const T& key)
     {
         ASSERT(m_table);
+        registerModification();
 
         size_t k = 0;
         ValueType* table = m_table;
@@ -625,6 +644,7 @@ namespace WTF {
     inline typename HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::FullLookupType HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::fullLookupForWriting(const T& key)
     {
         ASSERT(m_table);
+        registerModification();
 
         size_t k = 0;
         ValueType* table = m_table;

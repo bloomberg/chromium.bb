@@ -37,6 +37,7 @@
 #include "platform/heap/Visitor.h"
 
 #include "wtf/Assertions.h"
+#include "wtf/LinkedHashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 
@@ -1301,7 +1302,7 @@ public:
     template<typename T, typename Traits>
     static void trace(Visitor* visitor, T& t)
     {
-        CollectionBackingTraceTrait<WTF::ShouldBeTraced<Traits>::value, Traits::isWeak, false, T, Traits>::mark(visitor, t);
+        CollectionBackingTraceTrait<WTF::ShouldBeTraced<Traits>::value, Traits::isWeak, WeakPointersActWeak, T, Traits>::mark(visitor, t);
     }
 
     template<typename T>
@@ -1328,6 +1329,9 @@ public:
     {
         return hasDeadMember(visitor, t.key) || hasDeadMember(visitor, t.value);
     }
+
+    template<typename T>
+    static bool hasDeadMember(Visitor*, const WTF::LinkedHashSetNode<T>&);
 
     static void registerWeakMembers(Visitor* visitor, const void* closure, const void* object, WeakPointerCallback callback)
     {
@@ -1395,6 +1399,12 @@ template<
     typename HashArg = typename DefaultHash<ValueArg>::Hash,
     typename TraitsArg = HashTraits<ValueArg> >
 class HeapHashSet : public HashSet<ValueArg, HashArg, TraitsArg, HeapAllocator> { };
+
+template<
+    typename ValueArg,
+    typename HashArg = typename DefaultHash<ValueArg>::Hash,
+    typename TraitsArg = HashTraits<ValueArg> >
+class HeapLinkedHashSet : public LinkedHashSet<ValueArg, HashArg, TraitsArg, HeapAllocator> { };
 
 template<typename T, size_t inlineCapacity = 0>
 class HeapVector : public Vector<T, inlineCapacity, HeapAllocator> {
@@ -1468,6 +1478,12 @@ public:
         Deque<T, inlineCapacity, HeapAllocator>::append(other);
     }
 };
+
+template<typename T>
+bool HeapAllocator::hasDeadMember(Visitor* visitor, const WTF::LinkedHashSetNode<T>& t)
+{
+    return hasDeadMember(visitor, t.m_value);
+}
 
 template<typename T>
 struct ThreadingTrait<Member<T> > {
@@ -1566,6 +1582,19 @@ const GCInfo GCInfoTrait<HashSet<T, U, V, HeapAllocator> >::info = {
     false, // HashSet needs no finalizer.
 };
 
+template<typename T, typename U, typename V>
+struct GCInfoTrait<LinkedHashSet<T, U, V, HeapAllocator> > {
+    static const GCInfo* get() { return &info; }
+    static const GCInfo info;
+};
+
+template<typename T, typename U, typename V>
+const GCInfo GCInfoTrait<LinkedHashSet<T, U, V, HeapAllocator> >::info = {
+    TraceTrait<LinkedHashSet<T, U, V, HeapAllocator> >::trace,
+    LinkedHashSet<T, U, V, HeapAllocator>::finalize,
+    true, // Needs finalization. The anchor needs to unlink itself from the chain.
+};
+
 template<typename T>
 struct GCInfoTrait<Vector<T, 0, HeapAllocator> > {
     static const GCInfo* get() { return &info; }
@@ -1654,7 +1683,7 @@ const GCInfo GCInfoTrait<HeapHashTableBacking<Table> >::info = {
     Table::ValueTraits::needsDestruction,
 };
 
-template<bool markWeakMembersStrongly, typename T, typename Traits>
+template<typename T, typename Traits>
 struct BaseVisitVectorBackingTrait {
     static void mark(WebCore::Visitor* visitor, void* self)
     {
@@ -1671,11 +1700,11 @@ struct BaseVisitVectorBackingTrait {
         // elements to mark.
         size_t length = header->payloadSize() / sizeof(T);
         for (size_t i = 0; i < length; i++)
-            CollectionBackingTraceTrait<WTF::ShouldBeTraced<Traits>::value, Traits::isWeak, markWeakMembersStrongly, T, Traits>::mark(visitor, array[i]);
+            CollectionBackingTraceTrait<WTF::ShouldBeTraced<Traits>::value, Traits::isWeak, WeakPointersActStrong, T, Traits>::mark(visitor, array[i]);
     }
 };
 
-template<bool markWeakMembersStrongly, typename Table>
+template<ShouldWeakPointersBeMarkedStrongly strongify, typename Table>
 struct BaseVisitHashTableBackingTrait {
     typedef typename Table::ValueType Value;
     typedef typename Table::ValueTraits Traits;
@@ -1686,83 +1715,106 @@ struct BaseVisitHashTableBackingTrait {
         size_t length = header->payloadSize() / sizeof(Value);
         for (size_t i = 0; i < length; i++) {
             if (!WTF::HashTableHelper<Value, typename Table::ExtractorType, typename Table::KeyTraitsType>::isEmptyOrDeletedBucket(array[i]))
-                CollectionBackingTraceTrait<WTF::ShouldBeTraced<Traits>::value, Traits::isWeak, markWeakMembersStrongly, Value, Traits>::mark(visitor, array[i]);
+                CollectionBackingTraceTrait<WTF::ShouldBeTraced<Traits>::value, Traits::isWeak, strongify, Value, Traits>::mark(visitor, array[i]);
         }
     }
 };
 
-template<bool markWeakMembersStrongly, typename Key, typename Value, typename Traits>
+template<ShouldWeakPointersBeMarkedStrongly strongify, typename Key, typename Value, typename Traits>
 struct BaseVisitKeyValuePairTrait {
     static void mark(WebCore::Visitor* visitor, WTF::KeyValuePair<Key, Value>& self)
     {
-        ASSERT(WTF::ShouldBeTraced<Traits>::value || (Traits::isWeak && markWeakMembersStrongly));
-        CollectionBackingTraceTrait<WTF::ShouldBeTraced<typename Traits::KeyTraits>::value, Traits::KeyTraits::isWeak, markWeakMembersStrongly, Key, typename Traits::KeyTraits>::mark(visitor, self.key);
-        CollectionBackingTraceTrait<WTF::ShouldBeTraced<typename Traits::ValueTraits>::value, Traits::ValueTraits::isWeak, markWeakMembersStrongly, Value, typename Traits::ValueTraits>::mark(visitor, self.value);
+        ASSERT(WTF::ShouldBeTraced<Traits>::value || (Traits::isWeak && strongify == WeakPointersActStrong));
+        CollectionBackingTraceTrait<WTF::ShouldBeTraced<typename Traits::KeyTraits>::value, Traits::KeyTraits::isWeak, strongify, Key, typename Traits::KeyTraits>::mark(visitor, self.key);
+        CollectionBackingTraceTrait<WTF::ShouldBeTraced<typename Traits::ValueTraits>::value, Traits::ValueTraits::isWeak, strongify, Value, typename Traits::ValueTraits>::mark(visitor, self.value);
     }
 };
 
-// FFX - Things that don't need marking and have no weak pointers.
-template<bool markWeakMembersStrongly, typename T, typename U>
-struct CollectionBackingTraceTrait<false, false, markWeakMembersStrongly, T, U> {
+template<ShouldWeakPointersBeMarkedStrongly strongify, typename Value, typename Traits>
+struct BaseVisitLinkedNodeTrait {
+    static void mark(WebCore::Visitor* visitor, WTF::LinkedHashSetNode<Value>& self)
+    {
+        ASSERT(WTF::ShouldBeTraced<Traits>::value || (Traits::isWeak && strongify == WeakPointersActStrong));
+        CollectionBackingTraceTrait<WTF::ShouldBeTraced<Traits>::value, Traits::isWeak, strongify, Value, Traits>::mark(visitor, self.m_value);
+    }
+};
+
+// Catch-all for things that don't need marking and have no weak pointers. We
+// do nothing, even if WeakPointersActStrong.
+template<ShouldWeakPointersBeMarkedStrongly strongify, typename T, typename U>
+struct CollectionBackingTraceTrait<false, false, strongify, T, U> {
     static void mark(Visitor*, const T&) { }
     static void mark(Visitor*, const void*) { }
 };
 
-// FTF - Things that don't need marking. They have weak pointers, but we are
-// not marking weak pointers in this object in this GC.
+// Catch-all for things that don't need marking. They have weak pointers, but
+// we are not marking weak pointers in this object in this GC.
 template<typename T, typename U>
-struct CollectionBackingTraceTrait<false, true, false, T, U> {
+struct CollectionBackingTraceTrait<false, true, WeakPointersActWeak, T, U> {
     static void mark(Visitor*, const T&) { }
     static void mark(Visitor*, const void*) { }
 };
 
-// For each type that we understand we have the FTT case and the TXX case. The
-// FTT case is where we would not normally need to mark it, but it has weak
-// pointers, and we are marking them as strong. The TXX case is the regular
-// case for things that need marking.
+// For each type that we understand we have the strongified case and the
+// needsMarking case. The strongified case is where we would not normally need
+// to mark it, but it has weak pointers, and we are marking them as strong
+// because there is a live iterator that would be disturbed if the collection
+// were subject to weak processing right now. The needsMarking case is the
+// case for things that need marking, which may also be strongified (eg. for
+// a map pair that has a key that is weak and a value that needs marking).
 
-// FTT (vector)
-template<typename T, typename Traits>
-struct CollectionBackingTraceTrait<false, true, true, HeapVectorBacking<T, Traits>, void> : public BaseVisitVectorBackingTrait<true, T, Traits> {
-};
+// The body is the same for most objects, but there are two template
+// specializations because there is no way to express needsMarking || (isWeak
+// && WeakPointersActStrong) in a single specialization.
 
-// TXX (vector)
-template<bool isWeak, bool markWeakMembersStrongly, typename T, typename Traits>
-struct CollectionBackingTraceTrait<true, isWeak, markWeakMembersStrongly, HeapVectorBacking<T, Traits>, void> : public BaseVisitVectorBackingTrait<markWeakMembersStrongly, T, Traits> {
-};
-
-// FTT (hash table)
+// Hash table that would not normally need marking, but strongified.
 template<typename Table>
-struct CollectionBackingTraceTrait<false, true, true, HeapHashTableBacking<Table>, void> : public BaseVisitHashTableBackingTrait<true, Table> {
+struct CollectionBackingTraceTrait<false, true, WeakPointersActStrong, HeapHashTableBacking<Table>, void> : public BaseVisitHashTableBackingTrait<WeakPointersActStrong, Table> {
 };
 
-// TXX (hash table)
-template<bool isWeak, bool markWeakMembersStrongly, typename Table>
-struct CollectionBackingTraceTrait<true, isWeak, markWeakMembersStrongly, HeapHashTableBacking<Table>, void> : public BaseVisitHashTableBackingTrait<markWeakMembersStrongly, Table> {
+// Hash table that needs marking, optionally also strongified.
+template<bool isWeak, ShouldWeakPointersBeMarkedStrongly strongify, typename Table>
+struct CollectionBackingTraceTrait<true, isWeak, strongify, HeapHashTableBacking<Table>, void> : public BaseVisitHashTableBackingTrait<strongify, Table> {
 };
 
-// FTT (key value pair)
+// Key-value pair that would not normally need marking, but strongified.
 template<typename Key, typename Value, typename Traits>
-struct CollectionBackingTraceTrait<false, true, true, WTF::KeyValuePair<Key, Value>, Traits> : public BaseVisitKeyValuePairTrait<true, Key, Value, Traits> {
+struct CollectionBackingTraceTrait<false, true, WeakPointersActStrong, WTF::KeyValuePair<Key, Value>, Traits> : public BaseVisitKeyValuePairTrait<WeakPointersActStrong, Key, Value, Traits> {
 };
 
-// TXX (key value pair)
-template<bool isWeak, bool markWeakMembersStrongly, typename Key, typename Value, typename Traits>
-struct CollectionBackingTraceTrait<true, isWeak, markWeakMembersStrongly, WTF::KeyValuePair<Key, Value>, Traits> : public BaseVisitKeyValuePairTrait<markWeakMembersStrongly, Key, Value, Traits> {
+// Key value pair that needs marking, optionally also strongified.
+template<bool isWeak, ShouldWeakPointersBeMarkedStrongly strongify, typename Key, typename Value, typename Traits>
+struct CollectionBackingTraceTrait<true, isWeak, strongify, WTF::KeyValuePair<Key, Value>, Traits> : public BaseVisitKeyValuePairTrait<strongify, Key, Value, Traits> {
 };
 
-// TFX (member)
-template<bool markWeakMembersStrongly, typename T, typename Traits>
-struct CollectionBackingTraceTrait<true, false, markWeakMembersStrongly, Member<T>, Traits> {
+// List hash set node that would not normally need marking, but strongified.
+template<typename Value, typename Traits>
+struct CollectionBackingTraceTrait<false, true, WeakPointersActStrong, WTF::LinkedHashSetNode<Value>, Traits> : public BaseVisitLinkedNodeTrait<WeakPointersActStrong, Value, Traits> {
+};
+
+// List hash set node that needs marking, optionally also strongified.
+template<bool isWeak, ShouldWeakPointersBeMarkedStrongly strongify, typename Value, typename Traits>
+struct CollectionBackingTraceTrait<true, isWeak, strongify, WTF::LinkedHashSetNode<Value>, Traits> : public BaseVisitLinkedNodeTrait<strongify, Value, Traits> {
+};
+
+// Vector backing that needs marking. We don't support weak members in vectors,
+// so we don't need a strongified variant here.
+template<bool isWeak, ShouldWeakPointersBeMarkedStrongly strongify, typename T, typename Traits>
+struct CollectionBackingTraceTrait<true, isWeak, strongify, HeapVectorBacking<T, Traits>, void> : public BaseVisitVectorBackingTrait<T, Traits> {
+};
+
+// Member always needs marking, never weak.
+template<ShouldWeakPointersBeMarkedStrongly strongify, typename T, typename Traits>
+struct CollectionBackingTraceTrait<true, false, strongify, Member<T>, Traits> {
     static void mark(WebCore::Visitor* visitor, Member<T> self)
     {
         visitor->mark(self.get());
     }
 };
 
-// FTT (weak member)
+// Weak member never has needsMarking, always weak, strongified case.
 template<typename T, typename Traits>
-struct CollectionBackingTraceTrait<false, true, true, WeakMember<T>, Traits> {
+struct CollectionBackingTraceTrait<false, true, WeakPointersActStrong, WeakMember<T>, Traits> {
     static void mark(WebCore::Visitor* visitor, WeakMember<T> self)
     {
         // This can mark weak members as if they were strong. The reason we
@@ -1776,9 +1828,12 @@ struct CollectionBackingTraceTrait<false, true, true, WeakMember<T>, Traits> {
 
 // Catch-all for things that have a way to trace. For things that contain weak
 // pointers they will generally be visited weakly even if
-// markWeakMembersStrongly is true. This is what you want.
-template<bool isWeak, bool markWeakMembersStrongly, typename T, typename Traits>
-struct CollectionBackingTraceTrait<true, isWeak, markWeakMembersStrongly, T, Traits> {
+// WeakPointersActStrong. This is a deliberate choice: We currently don't
+// strongify weak members that are embedded in larger structures, they are just
+// zeroed during weak processing without the whole structure being
+// removed from the collection.
+template<bool isWeak, ShouldWeakPointersBeMarkedStrongly strongify, typename T, typename Traits>
+struct CollectionBackingTraceTrait<true, isWeak, strongify, T, Traits> {
     static void mark(WebCore::Visitor* visitor, T& t)
     {
         TraceTrait<T>::trace(visitor, &t);
@@ -1792,7 +1847,7 @@ struct TraceTrait<HeapVectorBacking<T, Traits> > {
     {
         COMPILE_ASSERT(!Traits::isWeak, WeDontSupportWeaknessInHeapVectorsOrDeques);
         if (WTF::ShouldBeTraced<Traits>::value)
-            CollectionBackingTraceTrait<WTF::ShouldBeTraced<Traits>::value, false, false, HeapVectorBacking<T, Traits>, void>::mark(visitor, self);
+            CollectionBackingTraceTrait<WTF::ShouldBeTraced<Traits>::value, false, WeakPointersActWeak, HeapVectorBacking<T, Traits>, void>::mark(visitor, self);
     }
     static void mark(Visitor* visitor, const Backing* backing)
     {
@@ -1819,7 +1874,7 @@ struct TraceTrait<HeapHashTableBacking<Table> > {
     static void trace(WebCore::Visitor* visitor, void* self)
     {
         if (WTF::ShouldBeTraced<Traits>::value || Traits::isWeak)
-            CollectionBackingTraceTrait<WTF::ShouldBeTraced<Traits>::value, Traits::isWeak, true, Backing, void>::mark(visitor, self);
+            CollectionBackingTraceTrait<WTF::ShouldBeTraced<Traits>::value, Traits::isWeak, WeakPointersActStrong, Backing, void>::mark(visitor, self);
     }
     static void mark(Visitor* visitor, const Backing* backing)
     {
@@ -1856,6 +1911,8 @@ template<typename T, typename U, typename V, typename W, typename X>
 struct GCInfoTrait<HeapHashMap<T, U, V, W, X> > : public GCInfoTrait<HashMap<T, U, V, W, X, HeapAllocator> > { };
 template<typename T, typename U, typename V>
 struct GCInfoTrait<HeapHashSet<T, U, V> > : public GCInfoTrait<HashSet<T, U, V, HeapAllocator> > { };
+template<typename T, typename U, typename V>
+struct GCInfoTrait<HeapLinkedHashSet<T, U, V> > : public GCInfoTrait<LinkedHashSet<T, U, V, HeapAllocator> > { };
 template<typename T, size_t inlineCapacity>
 struct GCInfoTrait<HeapVector<T, inlineCapacity> > : public GCInfoTrait<Vector<T, inlineCapacity, HeapAllocator> > { };
 template<typename T, size_t inlineCapacity>
