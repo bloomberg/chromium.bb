@@ -1235,6 +1235,9 @@ Press any key to continue exploring.
   <message name="IDS_KEYBOARD_SELECTION_SELECT" desc="Label for keyboard selection dropdown">
     Select your keyboard:
   </message>
+  <message name="IDS_HID_DETECTION_CONTINUE_BUTTON" desc="Text shown on continue button" meaning="Continue button label of HID detection screen.">
+    Continue
+  </message>
   <message name="IDS_NETWORK_SELECTION_NONE" desc="Text shown in combobox when no network are selected">
     No selection
   </message>
@@ -1244,7 +1247,7 @@ Press any key to continue exploring.
   <message name="IDS_NETWORK_SELECTION_CONNECTING" desc="Text shown when known device is connecting to known network">
     Connecting to <ph name="NETWORK_ID">$1<ex>Public Wifi</ex></ph>
   </message>
-  <message name="IDS_NETWORK_SELECTION_CONTINUE_BUTTON" desc="Text shown on continue button">
+  <message name="IDS_NETWORK_SELECTION_CONTINUE_BUTTON" desc="Text shown on continue button" meaning="Continue button label of network screen.">
     Continue
   </message>
   <message name="IDS_NETWORK_SELECTION_ERROR" desc="Error shown when connection to network failed or timed out.">

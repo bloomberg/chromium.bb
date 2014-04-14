@@ -57,6 +57,7 @@
 #oobe.kiosk-enable #inner-container,
 #oobe.oauth-enrollment #inner-container,
 #oobe.reset #inner-container,
+#oobe.hid-detection #inner-container,
 #oobe.update #inner-container,
 #oobe.user-image #inner-container,
 #oobe.managed-user-creation-dialog #inner-container,
@@ -139,7 +140,8 @@
 #terms-of-service-dot,
 #wrong-hwid-dot,
 #confirm-password-dot,
-#fatal-error-dot {
+#fatal-error-dot,
+#hid-detection-dot {
   display: none;
 }
 

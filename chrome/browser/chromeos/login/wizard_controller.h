@@ -39,6 +39,7 @@ class AutoEnrollmentCheckStep;
 class EnrollmentScreen;
 class ErrorScreen;
 class EulaScreen;
+class HIDDetectionScreen;
 class KioskAutolaunchScreen;
 class KioskEnableScreen;
 class LocallyManagedUserCreationScreen;
@@ -132,6 +133,7 @@ class WizardController : public ScreenObserver {
   KioskEnableScreen* GetKioskEnableScreen();
   TermsOfServiceScreen* GetTermsOfServiceScreen();
   WrongHWIDScreen* GetWrongHWIDScreen();
+  HIDDetectionScreen* GetHIDDetectionScreen();
   LocallyManagedUserCreationScreen* GetLocallyManagedUserCreationScreen();
 
   // Returns a pointer to the current screen or NULL if there's no such
@@ -157,6 +159,7 @@ class WizardController : public ScreenObserver {
   static const char kWrongHWIDScreenName[];
   static const char kLocallyManagedUserCreationScreenName[];
   static const char kAppLaunchSplashScreenName[];
+  static const char kHIDDetectionScreenName [];
 
   // Volume percent at which spoken feedback is still audible.
   static const int kMinAudibleOutputVolumePercent;
@@ -178,6 +181,7 @@ class WizardController : public ScreenObserver {
   void ShowTermsOfServiceScreen();
   void ShowWrongHWIDScreen();
   void ShowLocallyManagedUserCreationScreen();
+  void ShowHIDDetectionScreen();
 
   // Shows images login screen.
   void ShowLoginScreen(const LoginScreenContext& context);
@@ -186,6 +190,7 @@ class WizardController : public ScreenObserver {
   void ResumeLoginScreen();
 
   // Exit handlers:
+  void OnHIDDetectionCompleted();
   void OnNetworkConnected();
   void OnNetworkOffline();
   void OnConnectionFailed();
@@ -303,6 +308,7 @@ class WizardController : public ScreenObserver {
   scoped_ptr<WrongHWIDScreen> wrong_hwid_screen_;
   scoped_ptr<LocallyManagedUserCreationScreen>
       locally_managed_user_creation_screen_;
+  scoped_ptr<HIDDetectionScreen> hid_detection_screen_;
 
   // Screen that's currently active.
   WizardScreen* current_screen_;

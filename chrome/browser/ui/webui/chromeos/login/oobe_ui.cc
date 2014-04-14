@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/hid_detection_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_app_menu_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_autolaunch_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_enable_screen_handler.h"
@@ -148,6 +149,7 @@ const char OobeUI::kScreenManagedUserCreationFlow[]
                                             = "managed-user-creation";
 const char OobeUI::kScreenTermsOfService[]  = "terms-of-service";
 const char OobeUI::kScreenWrongHWID[]       = "wrong-hwid";
+const char OobeUI::kScreenHIDDetection[]    = "hid-detection";
 const char OobeUI::kScreenAppLaunchSplash[] = "app-launch-splash";
 const char OobeUI::kScreenConfirmPassword[] = "confirm-password";
 const char OobeUI::kScreenFatalError[]      = "fatal-error";
@@ -159,6 +161,7 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
       update_screen_handler_(NULL),
       network_screen_actor_(NULL),
       eula_screen_actor_(NULL),
+      hid_detection_screen_actor_(NULL),
       reset_screen_actor_(NULL),
       autolaunch_screen_actor_(NULL),
       kiosk_enable_screen_actor_(NULL),
@@ -224,6 +227,11 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
       new WrongHWIDScreenHandler();
   wrong_hwid_screen_actor_ = wrong_hwid_screen_handler;
   AddScreenHandler(wrong_hwid_screen_handler);
+
+  HIDDetectionScreenHandler* hid_detection_screen_handler =
+      new HIDDetectionScreenHandler();
+  hid_detection_screen_actor_ = hid_detection_screen_handler;
+  AddScreenHandler(hid_detection_screen_handler);
 
   EnrollmentScreenHandler* enrollment_screen_handler =
       new EnrollmentScreenHandler();
@@ -333,6 +341,10 @@ TermsOfServiceScreenActor* OobeUI::GetTermsOfServiceScreenActor() {
 
 WrongHWIDScreenActor* OobeUI::GetWrongHWIDScreenActor() {
   return wrong_hwid_screen_actor_;
+}
+
+HIDDetectionScreenActor* OobeUI::GetHIDDetectionScreenActor() {
+  return hid_detection_screen_actor_;
 }
 
 UserImageScreenActor* OobeUI::GetUserImageScreenActor() {

@@ -16,6 +16,7 @@ class AppLaunchSplashScreenActor;
 class EnrollmentScreenActor;
 class ErrorScreenActor;
 class EulaScreenActor;
+class HIDDetectionScreenActor;
 class KioskAutolaunchScreenActor;
 class KioskEnableScreenActor;
 class NetworkScreenActor;
@@ -39,6 +40,7 @@ class OobeDisplay {
     SCREEN_OOBE_UPDATE,
     SCREEN_OOBE_ENROLLMENT,
     SCREEN_OOBE_RESET,
+    SCREEN_OOBE_HID_DETECTION,
     SCREEN_GAIA_SIGNIN,
     SCREEN_ACCOUNT_PICKER,
     SCREEN_KIOSK_AUTOLAUNCH,
@@ -78,6 +80,7 @@ class OobeDisplay {
   virtual UserImageScreenActor* GetUserImageScreenActor() = 0;
   virtual ErrorScreenActor* GetErrorScreenActor() = 0;
   virtual WrongHWIDScreenActor* GetWrongHWIDScreenActor() = 0;
+  virtual HIDDetectionScreenActor* GetHIDDetectionScreenActor() = 0;
   virtual LocallyManagedUserCreationScreenHandler*
       GetLocallyManagedUserCreationScreenActor() = 0;
   virtual AppLaunchSplashScreenActor* GetAppLaunchSplashScreenActor() = 0;

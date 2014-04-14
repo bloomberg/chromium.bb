@@ -36,6 +36,7 @@
 #include "chrome/browser/chromeos/login/oobe_display.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/eula_screen.h"
+#include "chrome/browser/chromeos/login/screens/hid_detection_screen.h"
 #include "chrome/browser/chromeos/login/screens/kiosk_autolaunch_screen.h"
 #include "chrome/browser/chromeos/login/screens/kiosk_enable_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_screen.h"
@@ -104,6 +105,7 @@ const char WizardController::kLocallyManagedUserCreationScreenName[] =
   "locally-managed-user-creation-flow";
 const char WizardController::kAppLaunchSplashScreenName[] =
   "app-launch-splash";
+const char WizardController::kHIDDetectionScreenName[] = "hid-detection";
 
 // static
 const int WizardController::kMinAudibleOutputVolumePercent = 10;
@@ -303,6 +305,15 @@ chromeos::LocallyManagedUserCreationScreen*
   return locally_managed_user_creation_screen_.get();
 }
 
+chromeos::HIDDetectionScreen* WizardController::GetHIDDetectionScreen() {
+  if (!hid_detection_screen_.get()) {
+    hid_detection_screen_.reset(
+        new chromeos::HIDDetectionScreen(
+            this, oobe_display_->GetHIDDetectionScreenActor()));
+  }
+  return hid_detection_screen_.get();
+}
+
 void WizardController::ShowNetworkScreen() {
   VLOG(1) << "Showing network screen.";
   SetStatusAreaVisible(false);
@@ -443,6 +454,12 @@ void WizardController::ShowLocallyManagedUserCreationScreen() {
   SetCurrentScreen(screen);
 }
 
+void WizardController::ShowHIDDetectionScreen() {
+  VLOG(1) << "Showing HID discovery screen.";
+  SetStatusAreaVisible(false);
+  SetCurrentScreen(GetHIDDetectionScreen());
+}
+
 void WizardController::SkipToLoginForTesting(
     const LoginScreenContext& context) {
   StartupUtils::MarkEulaAccepted();
@@ -469,6 +486,10 @@ void WizardController::SkipUpdateEnrollAfterEula() {
 
 ///////////////////////////////////////////////////////////////////////////////
 // WizardController, ExitHandlers:
+void WizardController::OnHIDDetectionCompleted() {
+  ShowNetworkScreen();
+}
+
 void WizardController::OnNetworkConnected() {
   if (is_official_build_) {
     if (!StartupUtils::IsEulaAccepted()) {
@@ -741,6 +762,8 @@ void WizardController::AdvanceToScreen(const std::string& screen_name) {
     ShowLocallyManagedUserCreationScreen();
   } else if (screen_name == kAppLaunchSplashScreenName) {
     AutoLaunchKioskApp();
+  } else if (screen_name == kHIDDetectionScreenName) {
+    ShowHIDDetectionScreen();
   } else if (screen_name != kTestNoScreenName) {
     if (is_out_of_box_) {
       ShowNetworkScreen();
@@ -755,6 +778,9 @@ void WizardController::AdvanceToScreen(const std::string& screen_name) {
 void WizardController::OnExit(ExitCodes exit_code) {
   VLOG(1) << "Wizard screen exit code: " << exit_code;
   switch (exit_code) {
+    case HID_DETECTION_COMPLETED:
+      OnHIDDetectionCompleted();
+      break;
     case NETWORK_CONNECTED:
       OnNetworkConnected();
       break;

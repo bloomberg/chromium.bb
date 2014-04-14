@@ -71,6 +71,7 @@ class OobeUI : public OobeDisplay,
   static const char kScreenAppLaunchSplash[];
   static const char kScreenConfirmPassword[];
   static const char kScreenFatalError[];
+  static const char kScreenHIDDetection[];
 
   OobeUI(content::WebUI* web_ui, const GURL& url);
   virtual ~OobeUI();
@@ -96,6 +97,7 @@ class OobeUI : public OobeDisplay,
       GetAppLaunchSplashScreenActor() OVERRIDE;
   virtual bool IsJSReady(const base::Closure& display_is_ready_callback)
       OVERRIDE;
+  virtual HIDDetectionScreenActor* GetHIDDetectionScreenActor() OVERRIDE;
 
   // Collects localized strings from the owned handlers.
   void GetLocalizedStrings(base::DictionaryValue* localized_strings);
@@ -163,6 +165,7 @@ class OobeUI : public OobeDisplay,
   NetworkScreenActor* network_screen_actor_;
   EulaScreenActor* eula_screen_actor_;
   EnrollmentScreenActor* enrollment_screen_actor_;
+  HIDDetectionScreenActor* hid_detection_screen_actor_;
   ResetScreenActor* reset_screen_actor_;
   KioskAutolaunchScreenActor* autolaunch_screen_actor_;
   KioskEnableScreenActor* kiosk_enable_screen_actor_;
