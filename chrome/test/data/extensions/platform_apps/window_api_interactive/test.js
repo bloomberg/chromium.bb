@@ -53,43 +53,43 @@ function testCreate() {
   chrome.test.runTests([
     function createUnfocusedWindow() {
       chrome.app.window.create('test.html', {
-        bounds: { width: 200, height: 200 },
+        innerBounds: { width: 200, height: 200 },
         focused: false
       }, callbackPass(testWindowNeverGetsFocus));
     },
     function createTwiceUnfocused() {
       chrome.app.window.create('test.html', {
         id: 'createTwiceUnfocused', focused: false,
-        bounds: { width: 200, height: 200 }
+        innerBounds: { width: 200, height: 200 }
       }, callbackPass(function(win) {
         win.contentWindow.onload = callbackPass(function() {
           chrome.app.window.create('test.html', {
             id: 'createTwiceUnfocused', focused: false,
-            bounds: { width: 200, height: 200 }
+            innerBounds: { width: 200, height: 200 }
           }, callbackPass(testWindowNeverGetsFocus));
         });
       }));
     },
     function createFocusedWindow() {
       chrome.app.window.create('test.html', {
-        bounds: { width: 200, height: 200 },
+        innerBounds: { width: 200, height: 200 },
         focused: true
       }, callbackPass(testWindowGetsFocus));
     },
     function createDefaultFocusStateWindow() {
       chrome.app.window.create('test.html', {
-        bounds: { width: 200, height: 200 },
+        innerBounds: { width: 200, height: 200 },
       }, callbackPass(testWindowGetsFocus));
     },
     function createTwiceFocusUnfocus() {
       chrome.app.window.create('test.html', {
         id: 'createTwiceFocusUnfocus', focused: true,
-        bounds: { width: 200, height: 200 }
+        innerBounds: { width: 200, height: 200 }
       }, callbackPass(function(win) {
         win.contentWindow.onload = callbackPass(function() {
           chrome.app.window.create('test.html', {
             id: 'createTwiceFocusUnfocus', focused: false,
-            bounds: { width: 200, height: 200 }
+            innerBounds: { width: 200, height: 200 }
           }, callbackPass(testWindowGetsFocus));
         });
       }));
@@ -97,12 +97,12 @@ function testCreate() {
     function createTwiceUnfocusFocus() {
       chrome.app.window.create('test.html', {
         id: 'createTwiceUnfocusFocus', focused: false,
-        bounds: { width: 200, height: 200 }
+        innerBounds: { width: 200, height: 200 }
       }, callbackPass(function(win) {
         win.contentWindow.onload = callbackPass(function() {
           chrome.app.window.create('test.html', {
             id: 'createTwiceUnfocusFocus', focused: true,
-            bounds: { width: 200, height: 200 }
+            innerBounds: { width: 200, height: 200 }
           }, callbackPass(function() {
             // This test fails on Linux GTK, see http://crbug.com/325219
             // And none of those tests run on Linux Aura, see
@@ -123,7 +123,7 @@ function testShow() {
     function createUnfocusThenShow() {
       chrome.app.window.create('test.html', {
         id: 'createUnfocusThenShow', focused: false,
-        bounds: { width: 200, height: 200 }
+        innerBounds: { width: 200, height: 200 }
       }, callbackPass(function(win) {
         win.contentWindow.onload = callbackPass(function() {
           win.show();
@@ -140,7 +140,7 @@ function testShow() {
     function createUnfocusThenShowUnfocused() {
       chrome.app.window.create('test.html', {
         id: 'createUnfocusThenShowUnfocused', focused: false,
-        bounds: { width: 200, height: 200 }
+        innerBounds: { width: 200, height: 200 }
       }, callbackPass(function(win) {
         win.contentWindow.onload = callbackPass(function() {
           win.show(false);
@@ -151,7 +151,7 @@ function testShow() {
     function createUnfocusThenShowFocusedThenShowUnfocused() {
       chrome.app.window.create('test.html', {
         id: 'createUnfocusThenShowFocusedThenShowUnfocused', focused: false,
-        bounds: { width: 200, height: 200 }
+        innerBounds: { width: 200, height: 200 }
       }, callbackPass(function(win) {
         win.contentWindow.onload = callbackPass(function() {
           win.show(true);

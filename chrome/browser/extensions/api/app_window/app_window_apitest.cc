@@ -53,51 +53,6 @@ class TestAppWindowRegistryObserver : public apps::AppWindowRegistry::Observer {
 
 namespace extensions {
 
-// Flaky, http://crbug.com/164735 .
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DISABLED_WindowsApiBounds) {
-  ExtensionTestMessageListener background_listener("background_ok", false);
-  ExtensionTestMessageListener ready_listener("ready", true /* will_reply */);
-  ExtensionTestMessageListener success_listener("success", false);
-
-  LoadAndLaunchPlatformApp("windows_api_bounds");
-  ASSERT_TRUE(background_listener.WaitUntilSatisfied());
-  ASSERT_TRUE(ready_listener.WaitUntilSatisfied());
-  AppWindow* window = GetFirstAppWindow();
-
-  gfx::Rect new_bounds(100, 200, 300, 400);
-  new_bounds.Inset(-window->GetBaseWindow()->GetFrameInsets());
-  window->GetBaseWindow()->SetBounds(new_bounds);
-
-  // TODO(jeremya/asargent) figure out why in GTK the window doesn't end up
-// with exactly the bounds we set. Is it a bug in our app window
-// implementation?  crbug.com/160252
-#ifdef TOOLKIT_GTK
-  int slop = 50;
-#else
-  int slop = 0;
-#endif  // !TOOLKIT_GTK
-
-  ready_listener.Reply(base::IntToString(slop));
-
-#ifdef TOOLKIT_GTK
-  // TODO(asargent)- this is here to help track down the root cause of
-  // crbug.com/164735.
-  {
-    gfx::Rect last_bounds;
-    while (!success_listener.was_satisfied()) {
-      gfx::Rect current_bounds = window->GetBaseWindow()->GetBounds();
-      if (current_bounds != last_bounds) {
-        LOG(INFO) << "new bounds: " << current_bounds.ToString();
-      }
-      last_bounds = current_bounds;
-      content::RunAllPendingInMessageLoop();
-    }
-  }
-#endif
-
-  ASSERT_TRUE(success_listener.WaitUntilSatisfied());
-}
-
 // Tests chrome.app.window.setIcon.
 IN_PROC_BROWSER_TEST_F(ExperimentalPlatformAppBrowserTest, WindowsApiSetIcon) {
   scoped_ptr<TestAppWindowRegistryObserver> test_observer(

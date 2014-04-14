@@ -4,7 +4,7 @@
 
 chrome.app.runtime.onLaunched.addListener(function() {
   chrome.test.getConfig(function(config) {
-    var options = {bounds: {width: 200, height: 100}};
+    var options = {innerBounds: {width: 200, height: 100}};
     chrome.app.window.create('test.html', options, function(appWindow) {
       appWindow.contentWindow.onload = function() {
         appWindow.contentWindow.print();

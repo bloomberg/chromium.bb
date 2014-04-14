@@ -230,14 +230,14 @@ function verifyJPEG(parentDirectoryEntry, filename, expectedFileLength,
 function CreateDummyWindowToPreventSleep() {
   chrome.app.runtime.onLaunched.addListener(function() {
     chrome.app.window.create('dummy.html', {
-      bounds: {
+      outerBounds: {
         width: 800,
         height: 600,
         left: 100,
-        top: 100
-      },
-      minWidth: 800,
-      minHeight: 600
+        top: 100,
+        minWidth: 800,
+        minHeight: 600
+      }
     });
   });
 }

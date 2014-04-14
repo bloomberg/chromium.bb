@@ -1105,7 +1105,7 @@ function testMaximize() {
   chrome.test.runTests([
     function basic() {
       chrome.app.window.create('test.html',
-                               { bounds: {width: 200, height: 200} },
+                               { innerBounds: {width: 200, height: 200} },
         callbackPass(function(win) {
           // TODO(mlamouri): we should be able to use onMaximized here but to
           // make that happen we need to make sure the event is not fired when
@@ -1127,7 +1127,7 @@ function testMaximize() {
 
     function nonResizableWindow() {
       chrome.app.window.create('test.html',
-                               { bounds: {width: 200, height: 200},
+                               { innerBounds: {width: 200, height: 200},
                                  resizable: false },
         callbackPass(function(win) {
           // TODO(mlamouri): we should be able to use onMaximized here but to
@@ -1154,7 +1154,7 @@ function testRestore() {
   chrome.test.runTests([
     function basic() {
       chrome.app.window.create('test.html',
-                               { bounds: {width: 200, height: 200} },
+                               { innerBounds: {width: 200, height: 200} },
         callbackPass(function(win) {
           var oldWidth = win.contentWindow.innerWidth;
           var oldHeight = win.contentWindow.innerHeight;
@@ -1191,9 +1191,11 @@ function testRestoreAfterClose() {
   chrome.test.runTests([
     function restoredBoundsLowerThanNewMinSize() {
       chrome.app.window.create('test.html', {
-        bounds: { width: 100, height: 150 },
-        minWidth: 200, minHeight: 250,
-        maxWidth: 200, maxHeight: 250,
+        innerBounds: {
+          width: 100, height: 150,
+          minWidth: 200, minHeight: 250,
+          maxWidth: 200, maxHeight: 250
+        },
         id: 'test-id'
       }, callbackPass(function(win) {
         var w = win.contentWindow;
@@ -1202,9 +1204,11 @@ function testRestoreAfterClose() {
 
         win.onClosed.addListener(callbackPass(function() {
           chrome.app.window.create('test.html', {
-            bounds: { width: 500, height: 550 },
-            minWidth: 400, minHeight: 450,
-            maxWidth: 600, maxHeight: 650,
+            innerBounds: {
+              width: 500, height: 550,
+              minWidth: 400, minHeight: 450,
+              maxWidth: 600, maxHeight: 650
+            },
             id: 'test-id'
           }, callbackPass(function(win) {
             var w = win.contentWindow;
@@ -1224,15 +1228,13 @@ function testRestoreAfterGeometryCacheChange() {
   chrome.test.runTests([
     function restorePositionAndSize() {
       chrome.app.window.create('test.html', {
-        bounds: { left: 200, top: 200, width: 200, height: 200 }, id: 'test-ra',
+        outerBounds: { left: 200, top: 200 },
+        innerBounds: { width: 200, height: 200 },
+        id: 'test-ra',
       }, callbackPass(function(win) { waitForLoad(win, function(win) {
         var w = win.contentWindow;
-        // The fuzzy factor here is related to the fact that depending on the
-        // platform, the bounds initialization will set the inner bounds or the
-        // outer bounds.
-        // TODO(mlamouri): remove the fuzz factor.
-        assertFuzzyEq(200, w.screenX, 5);
-        assertFuzzyEq(200, w.screenY, 30);
+        chrome.test.assertEq(200, w.screenX);
+        chrome.test.assertEq(200, w.screenY);
         chrome.test.assertEq(200, w.innerHeight);
         chrome.test.assertEq(200, w.innerWidth);
 
@@ -1240,7 +1242,7 @@ function testRestoreAfterGeometryCacheChange() {
         w.moveTo(100, 100);
 
         chrome.app.window.create('test.html', {
-          bounds: { left: 200, top: 200, width: 200, height: 200 },
+          outerBounds: { left: 200, top: 200, width: 200, height: 200 },
           id: 'test-rb', frame: 'none'
         }, callbackPass(function(win2) { waitForLoad(win2, function(win2) {
           var w2 = win2.contentWindow;

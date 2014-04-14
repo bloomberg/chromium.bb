@@ -46,7 +46,16 @@ var tests = [
     current.restore();
   }),
   makeEventTest('onBoundsChanged', function() {
-    current.setBounds({left:5, top:5, width:100, height:100});
+    current.outerBounds.setPosition(5, 5);
+  }),
+  makeEventTest('onBoundsChanged', function() {
+    current.outerBounds.setSize(150, 150);
+  }),
+  makeEventTest('onBoundsChanged', function() {
+    current.innerBounds.setPosition(40, 40);
+  }),
+  makeEventTest('onBoundsChanged', function() {
+    current.innerBounds.setSize(100, 100);
   })
 
 ];
