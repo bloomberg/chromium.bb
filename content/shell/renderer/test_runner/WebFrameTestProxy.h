@@ -21,19 +21,13 @@ class WebFrameTestProxy : public Base {
 public:
     WebFrameTestProxy(P p, R r)
         : Base(p, r)
-        , m_baseProxy(0)
-        , m_version(0) { }
+        , m_baseProxy(0) { }
 
     virtual ~WebFrameTestProxy() { }
 
     void setBaseProxy(WebTestProxyBase* proxy)
     {
         m_baseProxy = proxy;
-    }
-
-    void setVersion(int version)
-    {
-        m_version = version;
     }
 
     blink::WebPlugin* createPlugin(blink::WebLocalFrame* frame, const blink::WebPluginParams& params)
@@ -59,8 +53,7 @@ public:
     }
     virtual void didStartProvisionalLoad(blink::WebLocalFrame* frame)
     {
-        if (m_version > 2)
-            m_baseProxy->didStartProvisionalLoad(frame);
+        m_baseProxy->didStartProvisionalLoad(frame);
         Base::didStartProvisionalLoad(frame);
     }
     virtual void didReceiveServerRedirectForProvisionalLoad(blink::WebLocalFrame* frame)
@@ -202,11 +195,6 @@ public:
 
 private:
     WebTestProxyBase* m_baseProxy;
-
-    // This is used to incrementally change code between Blink and Chromium.
-    // It is used instead of a #define and is set by layouttest_support when
-    // creating this object.
-    int m_version;
 
     DISALLOW_COPY_AND_ASSIGN(WebFrameTestProxy);
 };
