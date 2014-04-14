@@ -25,11 +25,8 @@ class Time;
 // same rules of the equivalent File method, as they are implemented by bouncing
 // the operation to File using a TaskRunner.
 //
-// This class does NOT perform automatic proxying to close the underlying file
-// at destruction, which means that it may potentially close the file in the
-// wrong thread (the current thread). If that is not appropriate, the caller
-// must ensure that Close() is called, so that the operation happens on the
-// desired thread.
+// This class performs automatic proxying to close the underlying file at
+// destruction.
 //
 // The TaskRunner is in charge of any sequencing of the operations, but a single
 // operation can be proxied at a time, regardless of the use of a callback.
@@ -131,6 +128,7 @@ class BASE_EXPORT FileProxy : public SupportsWeakPtr<FileProxy> {
  private:
   friend class FileHelper;
   void SetFile(File file);
+  TaskRunner* task_runner() { return task_runner_.get(); }
 
   scoped_refptr<TaskRunner> task_runner_;
   File file_;
