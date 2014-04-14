@@ -16,10 +16,12 @@
       'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
       'export_dependent_settings': [
         'mojo_bindings',
+        'mojo_system',
       ],
       'dependencies': [
         '../gpu/gpu.gyp:command_buffer_common',
         'mojo_bindings',
+        'mojo_system',
       ],
     },
     {
@@ -53,14 +55,16 @@
       'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
       'export_dependent_settings': [
         'mojo_bindings',
+        'mojo_system',
       ],
       'dependencies': [
         'mojo_bindings',
+        'mojo_system',
       ],
     },
     {
       'target_name': 'mojo_native_viewport_service',
-      'type': 'shared_library',
+      'type': '<(component)',
       'dependencies': [
         '../base/base.gyp:base',
         '../ui/events/events.gyp:events',
@@ -71,7 +75,6 @@
         'mojo_gles2_service',
         'mojo_native_viewport_bindings',
         'mojo_shell_client',
-        'mojo_system_impl',
       ],
       'defines': [
         'MOJO_NATIVE_VIEWPORT_IMPLEMENTATION',

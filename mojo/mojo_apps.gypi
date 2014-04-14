@@ -14,6 +14,7 @@
         'mojo_gles2_bindings',
         'mojo_js_bindings_lib',
         'mojo_native_viewport_bindings',
+        'mojo_system',
       ],
       'export_dependent_settings': [
         '../base/base.gyp:base',
@@ -22,6 +23,7 @@
         'mojo_gles2',
         'mojo_gles2_bindings',
         'mojo_native_viewport_bindings',
+        'mojo_system',
       ],
       'sources': [
         'apps/js/mojo_runner_delegate.cc',
@@ -54,7 +56,6 @@
       'type': 'shared_library',
       'dependencies': [
         'mojo_js_lib',
-        'mojo_system_impl',
       ],
       'sources': [
         'apps/js/main.cc',

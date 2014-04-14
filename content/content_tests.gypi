@@ -954,6 +954,7 @@
           'type': 'static_library',
           'dependencies': [
             '../mojo/mojo.gyp:mojo_bindings',
+            '../mojo/mojo.gyp:mojo_system',
           ],
           'sources': [
             'test/data/web_ui_test_mojo_bindings.mojom',
@@ -966,6 +967,7 @@
           'includes': [ '../mojo/public/tools/bindings/mojom_bindings_generator.gypi' ],
           'export_dependent_settings': [
             '../mojo/mojo.gyp:mojo_bindings',
+            '../mojo/mojo.gyp:mojo_system',
           ],
         },
         {
@@ -991,6 +993,7 @@
             '../mojo/mojo.gyp:mojo_bindings',
             '../mojo/mojo.gyp:mojo_environment_chromium',
             '../mojo/mojo.gyp:mojo_service_manager',
+            '../mojo/mojo.gyp:mojo_system',
             '../mojo/mojo.gyp:mojo_system_impl',
             '../net/net.gyp:net_test_support',
             '../ppapi/ppapi_internal.gyp:ppapi_host',

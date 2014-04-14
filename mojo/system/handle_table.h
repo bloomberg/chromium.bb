@@ -17,23 +17,23 @@
 namespace mojo {
 namespace system {
 
-class Core;
+class CoreImpl;
 class Dispatcher;
 class DispatcherTransport;
 
 // Test-only function (defined/used in embedder/test_embedder.cc). Declared here
 // so it can be friended.
 namespace internal {
-bool ShutdownCheckNoLeaks(Core*);
+bool ShutdownCheckNoLeaks(CoreImpl*);
 }
 
-// This class provides the (global) handle table (owned by |Core|), which maps
-// (valid) |MojoHandle|s to |Dispatcher|s. This is abstracted so that, e.g.,
-// caching may be added.
+// This class provides the (global) handle table (owned by |CoreImpl|), which
+// maps (valid) |MojoHandle|s to |Dispatcher|s. This is abstracted so that,
+// e.g., caching may be added.
 //
-// This class is NOT thread-safe; locking is left to |Core| (since it may need
-// to make several changes -- "atomically" or in rapid successsion, in which
-// case the extra locking/unlocking would be unnecessary overhead).
+// This class is NOT thread-safe; locking is left to |CoreImpl| (since it may
+// need to make several changes -- "atomically" or in rapid successsion, in
+// which case the extra locking/unlocking would be unnecessary overhead).
 
 class MOJO_SYSTEM_IMPL_EXPORT HandleTable {
  public:
@@ -44,8 +44,8 @@ class MOJO_SYSTEM_IMPL_EXPORT HandleTable {
   // |MOJO_HANDLE_INVALID|). Returns null if there's no dispatcher for the given
   // handle.
   // WARNING: For efficiency, this returns a dumb pointer. If you're going to
-  // use the result outside |Core|'s lock, you MUST take a reference (e.g., by
-  // storing the result inside a |scoped_refptr|).
+  // use the result outside |CoreImpl|'s lock, you MUST take a reference (e.g.,
+  // by storing the result inside a |scoped_refptr|).
   Dispatcher* GetDispatcher(MojoHandle handle);
 
   // On success, gets the dispatcher for a given handle (which should not be
@@ -98,7 +98,7 @@ class MOJO_SYSTEM_IMPL_EXPORT HandleTable {
   void RestoreBusyHandles(const MojoHandle* handles, uint32_t num_handles);
 
  private:
-  friend bool internal::ShutdownCheckNoLeaks(Core*);
+  friend bool internal::ShutdownCheckNoLeaks(CoreImpl*);
 
   struct Entry {
     Entry();

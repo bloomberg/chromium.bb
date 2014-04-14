@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "mojo/system/constants.h"
-#include "mojo/system/core.h"
+#include "mojo/system/core_impl.h"
 #include "mojo/system/dispatcher.h"
 #include "mojo/system/memory.h"
 
@@ -168,7 +168,7 @@ CoreTestBase::~CoreTestBase() {
 }
 
 void CoreTestBase::SetUp() {
-  core_ = new Core();
+  core_ = new CoreImpl();
 }
 
 void CoreTestBase::TearDown() {

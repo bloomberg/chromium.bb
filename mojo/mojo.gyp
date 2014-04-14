@@ -36,7 +36,6 @@
         'mojo_js',
         'mojo_js_unittests',
         'mojo_message_generator',
-        'mojo_native_viewport_service',
         'mojo_pepper_container_app',
         'mojo_public_test_utils',
         'mojo_public_bindings_unittests',
@@ -71,6 +70,7 @@
         '../base/base.gyp:base',
         '../base/base.gyp:test_support_base',
         '../testing/gtest.gyp:gtest',
+        'mojo_system',
         'mojo_system_impl',
         'mojo_test_support',
         'mojo_test_support_impl',
@@ -84,6 +84,7 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:test_support_base',
+        'mojo_system',
         'mojo_system_impl',
         'mojo_test_support',
         'mojo_test_support_impl',
@@ -96,12 +97,12 @@
       'target_name': 'mojo_system_impl',
       'type': '<(component)',
       'dependencies': [
+        'mojo_system',
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
       ],
       'defines': [
         'MOJO_SYSTEM_IMPL_IMPLEMENTATION',
-        'MOJO_SYSTEM_IMPLEMENTATION',
       ],
       'sources': [
         'embedder/embedder.cc',
@@ -118,8 +119,8 @@
         'system/channel.cc',
         'system/channel.h',
         'system/constants.h',
-        'system/core.cc',
-        'system/core.h',
+        'system/core_impl.cc',
+        'system/core_impl.h',
         'system/data_pipe.cc',
         'system/data_pipe.h',
         'system/data_pipe_consumer_dispatcher.cc',
@@ -128,7 +129,6 @@
         'system/data_pipe_producer_dispatcher.h',
         'system/dispatcher.cc',
         'system/dispatcher.h',
-        'system/entrypoints.cc',
         'system/handle_table.cc',
         'system/handle_table.h',
         'system/local_data_pipe.cc',
@@ -179,16 +179,16 @@
       'target_name': 'mojo_system_unittests',
       'type': 'executable',
       'dependencies': [
-        '../base/base.gyp:base',
         '../base/base.gyp:run_all_unittests',
         '../testing/gtest.gyp:gtest',
         'mojo_common_test_support',
+        'mojo_system',
         'mojo_system_impl',
       ],
       'sources': [
         'embedder/embedder_unittest.cc',
         'embedder/platform_channel_pair_posix_unittest.cc',
-        'system/core_unittest.cc',
+        'system/core_impl_unittest.cc',
         'system/core_test_base.cc',
         'system/core_test_base.h',
         'system/data_pipe_unittest.cc',
@@ -223,7 +223,6 @@
         'mojo_gles2',
         'mojo_gles2_bindings',
         'mojo_environment_chromium',
-        'mojo_system_impl',
       ],
       'defines': [
         'MOJO_GLES2_IMPL_IMPLEMENTATION',
@@ -258,11 +257,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-        'mojo_system_impl',
-      ],
-      'export_dependent_settings': [
-        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-        'mojo_system_impl',
+        'mojo_system',
       ],
       'sources': [
         'common/common_type_converters.cc',
@@ -285,6 +280,7 @@
         '../base/base.gyp:base',
         '../base/base.gyp:test_support_base',
         '../testing/gtest.gyp:gtest',
+        'mojo_system',
         'mojo_system_impl',
       ],
       'sources': [
@@ -308,6 +304,8 @@
         'mojo_common_test_support',
         'mojo_public_test_utils',
         'mojo_run_all_unittests',
+        'mojo_system',
+        'mojo_system_impl',
       ],
       'sources': [
         'common/common_type_converters_unittest.cc',
@@ -370,7 +368,6 @@
         'mojo_common_lib',
         'mojo_environment_chromium',
         'mojo_shell_bindings',
-        'mojo_system_impl',
       ],
       'sources': [
         'service_manager/service_loader.h',
@@ -408,6 +405,7 @@
         'mojo_gles2_impl',
         'mojo_service_manager',
         'mojo_shell_bindings',
+        'mojo_system',
         'mojo_system_impl',
         'mojo_native_viewport_service',
         'mojo_spy',
@@ -468,6 +466,7 @@
         'mojo_environment_chromium',
         'mojo_service_manager',
         'mojo_shell_lib',
+        'mojo_system',
         'mojo_system_impl',
       ],
       'sources': [
@@ -487,6 +486,7 @@
         'mojo_run_all_unittests',
         'mojo_service_manager',
         'mojo_shell_client',
+        'mojo_system',
       ],
       'variables': {
         'mojom_base_output_dir': 'mojo',
@@ -505,11 +505,13 @@
         '../gin/gin.gyp:gin',
         '../v8/tools/gyp/v8.gyp:v8',
         'mojo_common_lib',
+        'mojo_system',
       ],
       'export_dependent_settings': [
         '../base/base.gyp:base',
         '../gin/gin.gyp:gin',
         'mojo_common_lib',
+        'mojo_system',
       ],
       'sources': [
         'bindings/js/core.cc',
@@ -544,6 +546,7 @@
         'mojo_bindings',
         'mojo_common_lib',
         'mojo_environment_chromium',
+        'mojo_system',
         'mojo_system_impl',
       ],
       'sources': [

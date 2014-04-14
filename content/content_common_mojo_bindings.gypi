@@ -10,6 +10,7 @@
       'dependencies': [
         '../mojo/mojo.gyp:mojo_bindings',
         '../mojo/mojo.gyp:mojo_environment_chromium',
+        '../mojo/mojo.gyp:mojo_system',
       ],
       'sources': [
         'common/mojo/render_process.mojom',
@@ -23,6 +24,7 @@
       'export_dependent_settings': [
         '../mojo/mojo.gyp:mojo_bindings',
         '../mojo/mojo.gyp:mojo_environment_chromium',
+        '../mojo/mojo.gyp:mojo_system',
       ],
     },
   ],

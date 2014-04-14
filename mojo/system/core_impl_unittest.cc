@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/system/core.h"
+#include "mojo/system/core_impl.h"
 
 #include <limits>
 
@@ -15,9 +15,9 @@ namespace mojo {
 namespace system {
 namespace {
 
-typedef test::CoreTestBase CoreTest;
+typedef test::CoreTestBase CoreImplTest;
 
-TEST_F(CoreTest, GetTimeTicksNow) {
+TEST_F(CoreImplTest, GetTimeTicksNow) {
   const MojoTimeTicks start = core()->GetTimeTicksNow();
   EXPECT_NE(static_cast<MojoTimeTicks>(0), start)
       << "GetTimeTicksNow should return nonzero value";
@@ -28,7 +28,7 @@ TEST_F(CoreTest, GetTimeTicksNow) {
       << "Sleeping should result in increasing time ticks";
 }
 
-TEST_F(CoreTest, Basic) {
+TEST_F(CoreImplTest, Basic) {
   MockHandleInfo info;
 
   EXPECT_EQ(0u, info.GetCtorCallCount());
@@ -120,7 +120,7 @@ TEST_F(CoreTest, Basic) {
   EXPECT_EQ(0u, info.GetRemoveWaiterCallCount());
 }
 
-TEST_F(CoreTest, InvalidArguments) {
+TEST_F(CoreImplTest, InvalidArguments) {
   // |Close()|:
   {
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, core()->Close(MOJO_HANDLE_INVALID));
@@ -195,7 +195,7 @@ TEST_F(CoreTest, InvalidArguments) {
   }
 
   // |WriteMessage()|:
-  // Only check arguments checked by |Core|, namely |handle|, |handles|, and
+  // Only check arguments checked by |CoreImpl|, namely |handle|, |handles|, and
   // |num_handles|.
   {
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
@@ -210,7 +210,7 @@ TEST_F(CoreTest, InvalidArguments) {
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
               core()->WriteMessage(h, NULL, 0, NULL, 1,
                                    MOJO_WRITE_MESSAGE_FLAG_NONE));
-    // Checked by |Core|, shouldn't go through to the dispatcher.
+    // Checked by |CoreImpl|, shouldn't go through to the dispatcher.
     EXPECT_EQ(0u, info.GetWriteMessageCallCount());
 
     // Huge handle count (implausibly big on some systems -- more than can be
@@ -289,7 +289,7 @@ TEST_F(CoreTest, InvalidArguments) {
   }
 
   // |ReadMessage()|:
-  // Only check arguments checked by |Core|, namely |handle|, |handles|, and
+  // Only check arguments checked by |CoreImpl|, namely |handle|, |handles|, and
   // |num_handles|.
   {
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
@@ -303,7 +303,7 @@ TEST_F(CoreTest, InvalidArguments) {
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
               core()->ReadMessage(h, NULL, NULL, NULL, &handle_count,
                                   MOJO_READ_MESSAGE_FLAG_NONE));
-    // Checked by |Core|, shouldn't go through to the dispatcher.
+    // Checked by |CoreImpl|, shouldn't go through to the dispatcher.
     EXPECT_EQ(0u, info.GetReadMessageCallCount());
 
     // Okay.
@@ -311,7 +311,7 @@ TEST_F(CoreTest, InvalidArguments) {
     EXPECT_EQ(MOJO_RESULT_OK,
               core()->ReadMessage(h, NULL, NULL, NULL, &handle_count,
                                   MOJO_READ_MESSAGE_FLAG_NONE));
-    // Checked by |Core|, shouldn't go through to the dispatcher.
+    // Checked by |CoreImpl|, shouldn't go through to the dispatcher.
     EXPECT_EQ(1u, info.GetReadMessageCallCount());
 
     EXPECT_EQ(MOJO_RESULT_OK, core()->Close(h));
@@ -322,7 +322,7 @@ TEST_F(CoreTest, InvalidArguments) {
 //  - including |WaitMany()| with the same handle more than once (with
 //    same/different flags)
 
-TEST_F(CoreTest, MessagePipe) {
+TEST_F(CoreImplTest, MessagePipe) {
   MojoHandle h[2];
 
   EXPECT_EQ(MOJO_RESULT_OK, core()->CreateMessagePipe(&h[0], &h[1]));
@@ -424,7 +424,7 @@ TEST_F(CoreTest, MessagePipe) {
 }
 
 // Tests passing a message pipe handle.
-TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing1) {
+TEST_F(CoreImplTest, MessagePipeBasicLocalHandlePassing1) {
   const char kHello[] = "hello";
   const uint32_t kHelloSize = static_cast<uint32_t>(sizeof(kHello));
   const char kWorld[] = "world!!!";
@@ -551,7 +551,7 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing1) {
   EXPECT_EQ(MOJO_RESULT_OK, core()->Close(h_received));
 }
 
-TEST_F(CoreTest, DataPipe) {
+TEST_F(CoreImplTest, DataPipe) {
   MojoHandle ph, ch;  // p is for producer and c is for consumer.
 
   EXPECT_EQ(MOJO_RESULT_OK, core()->CreateDataPipe(NULL, &ph, &ch));
@@ -673,7 +673,7 @@ TEST_F(CoreTest, DataPipe) {
 }
 
 // Tests passing data pipe producer and consumer handles.
-TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing2) {
+TEST_F(CoreImplTest, MessagePipeBasicLocalHandlePassing2) {
   const char kHello[] = "hello";
   const uint32_t kHelloSize = static_cast<uint32_t>(sizeof(kHello));
   const char kWorld[] = "world!!!";

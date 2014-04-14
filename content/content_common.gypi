@@ -510,6 +510,7 @@
         '../media/media.gyp:media',
         '../media/media.gyp:shared_memory_support',
         '../mojo/mojo.gyp:mojo_environment_chromium',
+        '../mojo/mojo.gyp:mojo_system',
         '../mojo/mojo.gyp:mojo_system_impl',
         '../third_party/WebKit/public/blink.gyp:blink',
         '../ui/gl/gl.gyp:gl',

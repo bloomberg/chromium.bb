@@ -14,7 +14,7 @@
 namespace mojo {
 namespace system {
 
-class Core;
+class CoreImpl;
 
 namespace test {
 
@@ -34,10 +34,10 @@ class CoreTestBase : public testing::Test {
   // |info| must remain alive until the returned handle is closed.
   MojoHandle CreateMockHandle(MockHandleInfo* info);
 
-  Core* core() { return core_; }
+  CoreImpl* core() { return core_; }
 
  private:
-  Core* core_;
+  CoreImpl* core_;
 
   DISALLOW_COPY_AND_ASSIGN(CoreTestBase);
 };

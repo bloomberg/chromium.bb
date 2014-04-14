@@ -17,8 +17,8 @@ namespace system {
 
 // A base class for simple dispatchers. "Simple" means that there's a one-to-one
 // correspondence between handles and dispatchers (see the explanatory comment
-// in core.cc). This class implements the standard waiter-signalling mechanism
-// in that case.
+// in core_impl.cc). This class implements the standard waiter-signalling
+// mechanism in that case.
 class MOJO_SYSTEM_IMPL_EXPORT SimpleDispatcher : public Dispatcher {
  protected:
   SimpleDispatcher();

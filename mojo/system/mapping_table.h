@@ -18,19 +18,20 @@
 namespace mojo {
 namespace system {
 
-class Core;
+class CoreImpl;
 class RawSharedBufferMapping;
 
 // Test-only function (defined/used in embedder/test_embedder.cc). Declared here
 // so it can be friended.
 namespace internal {
-bool ShutdownCheckNoLeaks(Core*);
+bool ShutdownCheckNoLeaks(CoreImpl*);
 }
 
-// This class provides the (global) table of memory mappings (owned by |Core|),
-// which maps mapping base addresses to |RawSharedBuffer::Mapping|s.
+// This class provides the (global) table of memory mappings (owned by
+// |CoreImpl|), which maps mapping base addresses to
+// |RawSharedBuffer::Mapping|s.
 //
-// This class is NOT thread-safe; locking is left to |Core|.
+// This class is NOT thread-safe; locking is left to |CoreImpl|.
 class MOJO_SYSTEM_IMPL_EXPORT MappingTable {
  public:
   MappingTable();
@@ -42,7 +43,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MappingTable {
   MojoResult RemoveMapping(void* address);
 
  private:
-  friend bool internal::ShutdownCheckNoLeaks(Core*);
+  friend bool internal::ShutdownCheckNoLeaks(CoreImpl*);
 
   typedef base::hash_map<uintptr_t, RawSharedBufferMapping*>
       AddressToMappingMap;
