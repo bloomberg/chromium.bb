@@ -415,15 +415,6 @@ void DirectoryLoader::ReadDirectoryAfterCheckLocalState(
   DirectoryFetchInfo directory_fetch_info(
       local_id, entry->resource_id(), remote_changestamp);
 
-  // We may not fetch from the server at all if the local metadata is new
-  // enough, but we log this message here, so "Fast-fetch start" and
-  // "Fast-fetch complete" always match.
-  // TODO(satorux): Distinguish the "not fetching at all" case.
-  logger_->Log(logging::LOG_INFO,
-               "Fast-fetch start: %s; Server changestamp: %s",
-               directory_fetch_info.ToString().c_str(),
-               base::Int64ToString(remote_changestamp).c_str());
-
   // If the directory's changestamp is new enough, just schedule to run the
   // callback, as there is no need to fetch the directory.
   if (directory_changestamp + kMinimumChangestampGap > remote_changestamp) {
@@ -440,11 +431,6 @@ void DirectoryLoader::ReadDirectoryAfterCheckLocalState(
 void DirectoryLoader::OnDirectoryLoadComplete(const std::string& local_id,
                                               FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  logger_->Log(logging::LOG_INFO,
-               "Fast-fetch complete: %s => %s",
-               local_id.c_str(),
-               FileErrorToString(error).c_str());
 
   ResourceEntryVector* entries = new ResourceEntryVector;
   base::PostTaskAndReplyWithResult(
@@ -507,13 +493,21 @@ void DirectoryLoader::LoadDirectoryFromServer(
     const DirectoryFetchInfo& directory_fetch_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!directory_fetch_info.empty());
-  DCHECK(about_resource_loader_->cached_about_resource());
   DVLOG(1) << "Start loading directory: " << directory_fetch_info.ToString();
 
-  FeedFetcher* fetcher = new FeedFetcher(
-      this,
-      directory_fetch_info,
-      about_resource_loader_->cached_about_resource()->root_folder_id());
+  const google_apis::AboutResource* about_resource =
+      about_resource_loader_->cached_about_resource();
+  DCHECK(about_resource);
+
+  logger_->Log(logging::LOG_INFO,
+               "Fast-fetch start: %s; Server changestamp: %s",
+               directory_fetch_info.ToString().c_str(),
+               base::Int64ToString(
+                   about_resource->largest_change_id()).c_str());
+
+  FeedFetcher* fetcher = new FeedFetcher(this,
+                                         directory_fetch_info,
+                                         about_resource->root_folder_id());
   fast_fetch_feed_fetcher_set_.insert(fetcher);
   fetcher->Run(
       base::Bind(&DirectoryLoader::LoadDirectoryFromServerAfterLoad,
@@ -532,6 +526,11 @@ void DirectoryLoader::LoadDirectoryFromServerAfterLoad(
   // Delete the fetcher.
   fast_fetch_feed_fetcher_set_.erase(fetcher);
   delete fetcher;
+
+  logger_->Log(logging::LOG_INFO,
+               "Fast-fetch complete: %s => %s",
+               directory_fetch_info.ToString().c_str(),
+               FileErrorToString(error).c_str());
 
   if (error != FILE_ERROR_OK) {
     LOG(ERROR) << "Failed to load directory: "
