@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -63,7 +63,7 @@ else {
     Markup.dump(element, 'Overwrite behaves like insert on range selections');
 
     element.innerHTML = "&#x4E20;&#x4E21;&#x4E22;&#x4E23;";
-    selection.collapse();
+    selection.removeAllRanges();
     Markup.dump(element, 'New CJK contents');
 
     selection.collapse(element, 0);
@@ -71,7 +71,7 @@ else {
     Markup.dump(element, 'Overwrite CJK text');
 
     element.innerHTML="<div id=\"rtl-div\" dir=\"rtl\">&aleph;&beth;&gimel;&daleth;</div>"
-    selection.collapse();
+    selection.removeAllRanges();
     Markup.dump(element, 'New RTL contents');
 
     selection.collapse(element, 0);
