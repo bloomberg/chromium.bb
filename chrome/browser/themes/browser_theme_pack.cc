@@ -870,8 +870,7 @@ gfx::Image BrowserThemePack::GetImageNamed(int idr_id) {
       png_map[scale_factors_[i]] = memory;
   }
   if (!png_map.empty()) {
-    gfx::ImageSkia image_skia(new ThemeImagePngSource(png_map),
-                              ui::SCALE_FACTOR_100P);
+    gfx::ImageSkia image_skia(new ThemeImagePngSource(png_map), 1.0f);
     // |image_skia| takes ownership of ThemeImagePngSource.
     gfx::Image ret = gfx::Image(image_skia);
     images_on_ui_thread_[prs_id] = ret;

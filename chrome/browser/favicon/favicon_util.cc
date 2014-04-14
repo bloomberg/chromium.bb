@@ -227,13 +227,11 @@ gfx::Image FaviconUtil::SelectFaviconFramesFromPNGs(
 
   gfx::ImageSkia resized_image_skia;
   for (size_t i = 0; i < scale_factors_to_generate.size(); ++i) {
-    ui::ScaleFactor scale_factor = scale_factors_to_generate[i];
-    int desired_size_in_pixel =
-        ceil(favicon_size * ui::GetImageScale(scale_factor));
+    float scale = ui::GetImageScale(scale_factors_to_generate[i]);
+    int desired_size_in_pixel = ceil(favicon_size * scale);
     SkBitmap bitmap = ResizeBitmapByDownsamplingIfPossible(
         bitmaps, desired_size_in_pixel);
-    resized_image_skia.AddRepresentation(
-        gfx::ImageSkiaRep(bitmap, scale_factor));
+    resized_image_skia.AddRepresentation(gfx::ImageSkiaRep(bitmap, scale));
   }
 
   if (png_reps.empty())
