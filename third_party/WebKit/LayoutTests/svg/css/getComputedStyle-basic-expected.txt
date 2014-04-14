@@ -916,8 +916,6 @@ g: style.getPropertyValue(baseline-shift) : baseline
 g: style.getPropertyCSSValue(baseline-shift) : [object CSSPrimitiveValue]
 g: style.getPropertyValue(dominant-baseline) : auto
 g: style.getPropertyCSSValue(dominant-baseline) : [object CSSPrimitiveValue]
-g: style.getPropertyValue(kerning) : 0
-g: style.getPropertyCSSValue(kerning) : [object CSSPrimitiveValue]
 g: style.getPropertyValue(text-anchor) : start
 g: style.getPropertyCSSValue(text-anchor) : [object CSSPrimitiveValue]
 g: style.getPropertyValue(writing-mode) : lr-tb

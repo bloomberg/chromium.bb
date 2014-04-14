@@ -105,7 +105,6 @@ glyphOrientationVertical
 height
 imageRendering
 justifyContent
-kerning
 left
 length
 letterSpacing
