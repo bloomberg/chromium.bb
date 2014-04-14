@@ -18,6 +18,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/test_content_browser_client.h"
 #include "ipc/ipc_message.h"
+#include "net/base/io_buffer.h"
 #include "net/base/mock_file_stream.h"
 #include "net/base/request_priority.h"
 #include "net/cert/x509_certificate.h"
@@ -77,20 +78,40 @@ class ClientCertStoreStub : public net::ClientCertStore {
   std::vector<std::string> requested_authorities_;
 };
 
+// Arbitrary read buffer size.
+const int kReadBufSize = 1024;
+
 // Dummy implementation of ResourceHandler, instance of which is needed to
 // initialize ResourceLoader.
 class ResourceHandlerStub : public ResourceHandler {
  public:
   explicit ResourceHandlerStub(net::URLRequest* request)
       : ResourceHandler(request),
+        read_buffer_(new net::IOBuffer(kReadBufSize)),
         defer_request_on_will_start_(false),
+        expect_reads_(true),
+        cancel_on_read_completed_(false),
+        defer_eof_(false),
         received_response_completed_(false),
         total_bytes_downloaded_(0) {
   }
 
+  // If true, defers the resource load in OnWillStart.
   void set_defer_request_on_will_start(bool defer_request_on_will_start) {
     defer_request_on_will_start_ = defer_request_on_will_start;
   }
+
+  // If true, expect OnWillRead / OnReadCompleted pairs for handling
+  // data. Otherwise, expect OnDataDownloaded.
+  void set_expect_reads(bool expect_reads) { expect_reads_ = expect_reads; }
+
+  // If true, cancel the request in OnReadCompleted by returning false.
+  void set_cancel_on_read_completed(bool cancel_on_read_completed) {
+    cancel_on_read_completed_ = cancel_on_read_completed;
+  }
+
+  // If true, cancel the request in OnReadCompleted by returning false.
+  void set_defer_eof(bool defer_eof) { defer_eof_ = defer_eof; }
 
   const GURL& start_url() const { return start_url_; }
   ResourceResponse* response() const { return response_.get(); }
@@ -147,35 +168,57 @@ class ResourceHandlerStub : public ResourceHandler {
                           scoped_refptr<net::IOBuffer>* buf,
                           int* buf_size,
                           int min_size) OVERRIDE {
-    NOTREACHED();
-    return false;
+    if (!expect_reads_) {
+      ADD_FAILURE();
+      return false;
+    }
+
+    *buf = read_buffer_;
+    *buf_size = kReadBufSize;
+    return true;
   }
 
   virtual bool OnReadCompleted(int request_id,
                                int bytes_read,
                                bool* defer) OVERRIDE {
-    NOTREACHED();
-    return false;
+    if (!expect_reads_) {
+      ADD_FAILURE();
+      return false;
+    }
+
+    if (bytes_read == 0 && defer_eof_) {
+      // Only defer it once; on resumption there will be another EOF.
+      defer_eof_ = false;
+      *defer = true;
+    }
+
+    return !cancel_on_read_completed_;
   }
 
   virtual void OnResponseCompleted(int request_id,
                                    const net::URLRequestStatus& status,
                                    const std::string& security_info,
                                    bool* defer) OVERRIDE {
-    // TODO(davidben): This DCHECK currently fires everywhere. Fix the places in
-    // ResourceLoader where OnResponseCompleted is signaled twice.
-    // DCHECK(!received_response_completed_);
+    EXPECT_FALSE(received_response_completed_);
     received_response_completed_ = true;
     status_ = status;
   }
 
   virtual void OnDataDownloaded(int request_id,
                                 int bytes_downloaded) OVERRIDE {
+    if (expect_reads_)
+      ADD_FAILURE();
     total_bytes_downloaded_ += bytes_downloaded;
   }
 
  private:
+  scoped_refptr<net::IOBuffer> read_buffer_;
+
   bool defer_request_on_will_start_;
+  bool expect_reads_;
+  bool cancel_on_read_completed_;
+  bool defer_eof_;
+
   GURL start_url_;
   scoped_refptr<ResourceResponse> response_;
   bool received_response_completed_;
@@ -404,6 +447,38 @@ TEST_F(ResourceLoaderTest, ResumeCancelledRequest) {
   static_cast<ResourceController*>(loader_.get())->Resume();
 }
 
+// Tests that no invariants are broken if a ResourceHandler cancels during
+// OnReadCompleted.
+TEST_F(ResourceLoaderTest, CancelOnReadCompleted) {
+  raw_ptr_resource_handler_->set_cancel_on_read_completed(true);
+
+  loader_->StartRequest();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(test_url(), raw_ptr_resource_handler_->start_url());
+  EXPECT_TRUE(raw_ptr_resource_handler_->received_response_completed());
+  EXPECT_EQ(net::URLRequestStatus::CANCELED,
+            raw_ptr_resource_handler_->status().status());
+}
+
+// Tests that no invariants are broken if a ResourceHandler defers EOF.
+TEST_F(ResourceLoaderTest, DeferEOF) {
+  raw_ptr_resource_handler_->set_defer_eof(true);
+
+  loader_->StartRequest();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(test_url(), raw_ptr_resource_handler_->start_url());
+  EXPECT_FALSE(raw_ptr_resource_handler_->received_response_completed());
+
+  raw_ptr_resource_handler_->Resume();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(raw_ptr_resource_handler_->received_response_completed());
+  EXPECT_EQ(net::URLRequestStatus::SUCCESS,
+            raw_ptr_resource_handler_->status().status());
+}
+
 class ResourceLoaderRedirectToFileTest : public ResourceLoaderTest {
  public:
   ResourceLoaderRedirectToFileTest()
@@ -429,6 +504,8 @@ class ResourceLoaderRedirectToFileTest : public ResourceLoaderTest {
   virtual scoped_ptr<ResourceHandler> WrapResourceHandler(
       scoped_ptr<ResourceHandlerStub> leaf_handler,
       net::URLRequest* request) OVERRIDE {
+    leaf_handler->set_expect_reads(false);
+
     // Make a temporary file.
     CHECK(base::CreateTemporaryFile(&temp_path_));
     int flags = base::File::FLAG_WRITE | base::File::FLAG_TEMPORARY |

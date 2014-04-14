@@ -2038,12 +2038,14 @@ TEST_F(ResourceDispatcherHostTest, ForbiddenDownload) {
 
   // Flush all pending requests.
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
+  base::MessageLoop::current()->RunUntilIdle();
 
   // Sorts out all the messages we saw by request.
   ResourceIPCAccumulator::ClassifiedMessages msgs;
   accum_.GetClassifiedMessages(&msgs);
 
   // We should have gotten one RequestComplete message.
+  ASSERT_EQ(1U, msgs.size());
   ASSERT_EQ(1U, msgs[0].size());
   EXPECT_EQ(ResourceMsg_RequestComplete::ID, msgs[0][0].type());
 
