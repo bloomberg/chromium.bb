@@ -2348,9 +2348,6 @@ void RenderViewImpl::ProcessViewLayoutFlags(const CommandLine& command_line) {
   webview()->setPageScaleFactorLimits(1, maxPageScaleFactor);
 }
 
-// TODO(nasko): Remove this method once WebTestProxy in Blink is fixed.
-void RenderViewImpl::didStartProvisionalLoad(WebLocalFrame* frame) {}
-
 void RenderViewImpl::didFailProvisionalLoad(WebLocalFrame* frame,
                                             const WebURLError& error) {
   // Notify the browser that we failed a provisional load with an error.

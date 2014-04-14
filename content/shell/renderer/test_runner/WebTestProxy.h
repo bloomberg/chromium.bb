@@ -358,11 +358,6 @@ public:
         WebTestProxyBase::resetInputMethod();
     }
 
-    virtual void didStartProvisionalLoad(blink::WebLocalFrame* frame)
-    {
-        WebTestProxyBase::didStartProvisionalLoad(frame);
-        Base::didStartProvisionalLoad(frame);
-    }
     virtual void didReceiveServerRedirectForProvisionalLoad(blink::WebLocalFrame* frame)
     {
         WebTestProxyBase::didReceiveServerRedirectForProvisionalLoad(frame);

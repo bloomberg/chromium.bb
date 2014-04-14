@@ -516,7 +516,6 @@ class CONTENT_EXPORT RenderViewImpl
                               const blink::WebFormElement& form);
   virtual void didCreateDataSource(blink::WebLocalFrame* frame,
                                    blink::WebDataSource* datasource);
-  virtual void didStartProvisionalLoad(blink::WebLocalFrame* frame);
   virtual void didFailProvisionalLoad(blink::WebLocalFrame* frame,
                                       const blink::WebURLError& error);
   virtual void didClearWindowObject(blink::WebLocalFrame* frame, int world_id);
