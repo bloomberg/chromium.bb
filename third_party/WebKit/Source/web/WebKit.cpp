@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WebKit.h"
 
-#include "IDBFactoryBackendProxy.h"
+#include "IndexedDBClientImpl.h"
 #include "RuntimeEnabledFeatures.h"
 #include "WebMediaPlayerClientImpl.h"
 #include "bindings/v8/V8Binding.h"
@@ -189,7 +189,7 @@ void initializeWithoutV8(Platform* platform)
     // this, initializing this lazily probably doesn't buy us much.
     WTF::UTF8Encoding();
 
-    WebCore::setIDBFactoryBackendInterfaceCreateFunction(blink::IDBFactoryBackendProxy::create);
+    WebCore::setIndexedDBClientCreateFunction(blink::IndexedDBClientImpl::create);
 
     WebCore::MediaPlayer::setMediaEngineCreateFunction(blink::WebMediaPlayerClientImpl::create);
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2011 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -25,17 +25,44 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef IDBFactoryBackendInterfaceChromium_h
-#define IDBFactoryBackendInterfaceChromium_h
 
-#include "modules/indexeddb/IDBFactoryBackendInterface.h"
+#include "config.h"
+#include "IndexedDBClientImpl.h"
 
-namespace WebCore {
+#include "WebFrameImpl.h"
+#include "WebKit.h"
+#include "WebPermissionClient.h"
+#include "WebSecurityOrigin.h"
+#include "WorkerPermissionClient.h"
+#include "bindings/v8/WorkerScriptController.h"
+#include "core/dom/Document.h"
+#include "core/workers/WorkerGlobalScope.h"
+#include "platform/weborigin/SecurityOrigin.h"
 
-typedef PassRefPtr<IDBFactoryBackendInterface> IDBFactoryBackendInterfaceCreate();
 
-void setIDBFactoryBackendInterfaceCreateFunction(IDBFactoryBackendInterfaceCreate);
+using namespace WebCore;
 
-} // namespace WebCore
+namespace blink {
 
-#endif // IDBFactoryBackendInterfaceChromium_h
+PassRefPtr<IndexedDBClient> IndexedDBClientImpl::create()
+{
+    return adoptRef(new IndexedDBClientImpl());
+}
+
+bool IndexedDBClientImpl::allowIndexedDB(ExecutionContext* context, const String& name)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(context->isDocument() || context->isWorkerGlobalScope());
+
+    if (context->isDocument()) {
+        WebSecurityOrigin origin(context->securityOrigin());
+        Document* document = toDocument(context);
+        WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
+        // FIXME: webFrame->permissionClient() returns 0 in test_shell and content_shell http://crbug.com/137269
+        return !webFrame->permissionClient() || webFrame->permissionClient()->allowIndexedDB(name, origin);
+    }
+
+    WorkerGlobalScope& workerGlobalScope = *toWorkerGlobalScope(context);
+    return WorkerPermissionClient::from(workerGlobalScope)->allowIndexedDB(name);
+}
+
+} // namespace blink

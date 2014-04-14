@@ -26,10 +26,10 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef IDBFactoryBackendProxy_h
-#define IDBFactoryBackendProxy_h
+#ifndef IndexedDBClientImpl_h
+#define IndexedDBClientImpl_h
 
-#include "modules/indexeddb/chromium/IDBFactoryBackendInterfaceChromium.h"
+#include "modules/indexeddb/IndexedDBClient.h"
 
 namespace WebCore {
 class ExecutionContext;
@@ -37,18 +37,17 @@ class ExecutionContext;
 
 namespace blink {
 
-// FIXME: This is just a permission client at this point. Rename/refactor.
-class IDBFactoryBackendProxy FINAL : public WebCore::IDBFactoryBackendInterface {
+class IndexedDBClientImpl FINAL : public WebCore::IndexedDBClient {
 public:
-    static PassRefPtr<WebCore::IDBFactoryBackendInterface> create();
-    virtual ~IDBFactoryBackendProxy() { }
+    static PassRefPtr<WebCore::IndexedDBClient> create();
+    virtual ~IndexedDBClientImpl() { }
 
     virtual bool allowIndexedDB(WebCore::ExecutionContext*, const String& name) OVERRIDE;
 
 private:
-    IDBFactoryBackendProxy() { }
+    IndexedDBClientImpl() { }
 };
 
 } // namespace blink
 
-#endif // IDBFactoryBackendProxy_h
+#endif // IndexedDBClientImpl_h

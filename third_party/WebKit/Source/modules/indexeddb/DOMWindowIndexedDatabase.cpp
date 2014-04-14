@@ -89,7 +89,7 @@ IDBFactory* DOMWindowIndexedDatabase::indexedDB()
         return 0;
 
     if (!m_idbFactory)
-        m_idbFactory = IDBFactory::create(IDBFactoryBackendInterface::create().get());
+        m_idbFactory = IDBFactory::create(IndexedDBClient::create().get());
     return m_idbFactory.get();
 }
 

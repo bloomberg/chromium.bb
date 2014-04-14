@@ -38,16 +38,16 @@
 namespace WebCore {
 
 class ExceptionState;
-class IDBFactoryBackendInterface;
+class IndexedDBClient;
 class IDBKey;
 class IDBKeyRange;
 class ExecutionContext;
 
 class IDBFactory : public ScriptWrappable, public RefCounted<IDBFactory> {
 public:
-    static PassRefPtr<IDBFactory> create(IDBFactoryBackendInterface* factory)
+    static PassRefPtr<IDBFactory> create(IndexedDBClient* client)
     {
-        return adoptRef(new IDBFactory(factory));
+        return adoptRef(new IDBFactory(client));
     }
     ~IDBFactory();
 
@@ -60,11 +60,11 @@ public:
     short cmp(ExecutionContext*, const ScriptValue& first, const ScriptValue& second, ExceptionState&);
 
 private:
-    explicit IDBFactory(IDBFactoryBackendInterface*);
+    explicit IDBFactory(IndexedDBClient*);
 
     PassRefPtr<IDBOpenDBRequest> openInternal(ExecutionContext*, const String& name, int64_t version, ExceptionState&);
 
-    RefPtr<IDBFactoryBackendInterface> m_permissionClient;
+    RefPtr<IndexedDBClient> m_permissionClient;
 };
 
 } // namespace WebCore

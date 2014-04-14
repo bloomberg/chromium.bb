@@ -58,7 +58,6 @@
 #include "modules/indexeddb/IDBKeyPath.h"
 #include "modules/indexeddb/IDBMetadata.h"
 #include "modules/indexeddb/IndexedDB.h"
-#include "modules/indexeddb/chromium/IDBFactoryBackendInterfaceChromium.h"
 #include "modules/navigatorcontentutils/NavigatorContentUtilsClient.h"
 #include "modules/notifications/NotificationClient.h"
 #include "modules/quota/DeprecatedStorageQuota.h"

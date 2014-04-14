@@ -25,24 +25,29 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "config.h"
-#include "modules/indexeddb/chromium/IDBFactoryBackendInterfaceChromium.h"
+#ifndef IndexedDBClient_h
+#define IndexedDBClient_h
+
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-static IDBFactoryBackendInterfaceCreate* s_idbFactoryBackendInterfaceCreateFunction = 0;
+class ExecutionContext;
 
-void setIDBFactoryBackendInterfaceCreateFunction(IDBFactoryBackendInterfaceCreate idbFactoryBackendInterfaceCreateFunction)
-{
-    s_idbFactoryBackendInterfaceCreateFunction = idbFactoryBackendInterfaceCreateFunction;
-}
+class IndexedDBClient : public RefCounted<IndexedDBClient> {
+public:
+    static PassRefPtr<IndexedDBClient> create();
+    virtual ~IndexedDBClient() { }
 
-PassRefPtr<IDBFactoryBackendInterface> IDBFactoryBackendInterface::create()
-{
-    ASSERT(s_idbFactoryBackendInterfaceCreateFunction);
-    // There's no reason why we need to allocate a new proxy each time, but
-    // there's also no strong reason not to.
-    return s_idbFactoryBackendInterfaceCreateFunction();
-}
+    virtual bool allowIndexedDB(ExecutionContext*, const String& name) = 0;
+};
+
+typedef PassRefPtr<IndexedDBClient> CreateIndexedDBClient();
+
+void setIndexedDBClientCreateFunction(CreateIndexedDBClient);
 
 } // namespace WebCore
+
+#endif // IndexedDBClient_h

@@ -31,7 +31,7 @@
 
 #include "core/dom/ExecutionContext.h"
 #include "modules/indexeddb/IDBFactory.h"
-#include "modules/indexeddb/IDBFactoryBackendInterface.h"
+#include "modules/indexeddb/IndexedDBClient.h"
 
 namespace WebCore {
 
@@ -65,10 +65,10 @@ IDBFactory* WorkerGlobalScopeIndexedDatabase::indexedDB(WillBeHeapSupplementable
 
 IDBFactory* WorkerGlobalScopeIndexedDatabase::indexedDB()
 {
-    if (!m_factoryBackend)
-        m_factoryBackend = IDBFactoryBackendInterface::create();
+    if (!m_client)
+        m_client = IndexedDBClient::create();
     if (!m_idbFactory)
-        m_idbFactory = IDBFactory::create(m_factoryBackend.get());
+        m_idbFactory = IDBFactory::create(m_client.get());
     return m_idbFactory.get();
 }
 
