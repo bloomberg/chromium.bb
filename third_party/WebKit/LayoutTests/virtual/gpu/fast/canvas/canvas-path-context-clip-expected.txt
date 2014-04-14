@@ -47,6 +47,8 @@ PASS ctx.clip({}, 'nonzero') threw exception TypeError: Failed to execute 'clip'
 PASS ctx.clip(null, 'evenodd') threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': The 1st argument provided is either null, or an invalid Path object..
 PASS ctx.clip([], 'evenodd') threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
 PASS ctx.clip({}, 'evenodd') threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
+PASS ctx.clip('gazonk') threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': parameter 1 ('gazonk') is not a valid enum value..
+PASS ctx.clip(path, 'gazonk') threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': parameter 2 ('gazonk') is not a valid enum value..
 PASS successfullyParsed is true
 
 TEST COMPLETE

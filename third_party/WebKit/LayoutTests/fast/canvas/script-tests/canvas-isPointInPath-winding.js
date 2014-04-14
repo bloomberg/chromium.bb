@@ -56,6 +56,11 @@ function prepareTestScenario() {
     shouldBeFalse("ctx.isPointInPath(path, 50, 50, 'evenodd')");
     debug('');
 
+    debug('Testing invalid enumeration isPointInPath (w/ and w/o Path object');
+    shouldThrow("ctx.isPointInPath(path, 50, 50, 'gazonk')");
+    shouldThrow("ctx.isPointInPath(50, 50, 'gazonk')");
+    debug('');
+
     debug('Testing null isPointInPath with Path object');
     path = null;
     shouldThrow("ctx.isPointInPath(null, 50, 50)");

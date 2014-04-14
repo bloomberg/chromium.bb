@@ -53,7 +53,7 @@ function testFillWith(fillRule, path) {
 // Execute test.
 function prepareTestScenario() {
     fillRules = [undefined, 'nonzero', 'evenodd'];
-    var path = new Path2D();
+    path = new Path2D();
     drawRectanglesOn(path);
 
     for (var i = 0; i < fillRules.length; i++) {
@@ -70,6 +70,8 @@ function prepareTestScenario() {
     shouldThrow("ctx.fill(null, 'evenodd')");
     shouldThrow("ctx.fill([], 'evenodd')");
     shouldThrow("ctx.fill({}, 'evenodd')");
+    shouldThrow("ctx.fill('gazonk')");
+    shouldThrow("ctx.fill(path, 'gazonk')");
 }
 
 // Run test and allow variation of results.

@@ -25,6 +25,10 @@ PASS ctx.isPointInPath(path, 50, 50, 'nonzero') is true
 Testing evenodd isPointInPath with Path object
 PASS ctx.isPointInPath(path, 50, 50, 'evenodd') is false
 
+Testing invalid enumeration isPointInPath (w/ and w/o Path object
+PASS ctx.isPointInPath(path, 50, 50, 'gazonk') threw exception TypeError: Failed to execute 'isPointInPath' on 'CanvasRenderingContext2D': parameter 4 ('gazonk') is not a valid enum value..
+PASS ctx.isPointInPath(50, 50, 'gazonk') threw exception TypeError: Failed to execute 'isPointInPath' on 'CanvasRenderingContext2D': parameter 3 ('gazonk') is not a valid enum value..
+
 Testing null isPointInPath with Path object
 PASS ctx.isPointInPath(null, 50, 50) threw exception TypeError: Failed to execute 'isPointInPath' on 'CanvasRenderingContext2D': The 1st argument provided is either null, or an invalid Path object..
 PASS ctx.isPointInPath(null, 50, 50, 'nonzero') threw exception TypeError: Failed to execute 'isPointInPath' on 'CanvasRenderingContext2D': The 1st argument provided is either null, or an invalid Path object..

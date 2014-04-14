@@ -964,16 +964,15 @@ static bool isFullCanvasCompositeMode(CompositeOperator op)
     return op == CompositeSourceIn || op == CompositeSourceOut || op == CompositeDestinationIn || op == CompositeDestinationAtop;
 }
 
-static bool parseWinding(const String& windingRuleString, WindRule& windRule)
+static WindRule parseWinding(const String& windingRuleString)
 {
     if (windingRuleString == "nonzero")
-        windRule = RULE_NONZERO;
-    else if (windingRuleString == "evenodd")
-        windRule = RULE_EVENODD;
-    else
-        return false;
+        return RULE_NONZERO;
+    if (windingRuleString == "evenodd")
+        return RULE_EVENODD;
 
-    return true;
+    ASSERT_NOT_REACHED();
+    return RULE_EVENODD;
 }
 
 void CanvasRenderingContext2D::fillInternal(const Path& path, const String& windingRuleString)
@@ -1000,11 +999,7 @@ void CanvasRenderingContext2D::fillInternal(const Path& path, const String& wind
     }
 
     WindRule windRule = c->fillRule();
-    WindRule newWindRule = RULE_NONZERO;
-    if (!parseWinding(windingRuleString, newWindRule)) {
-        return;
-    }
-    c->setFillRule(newWindRule);
+    c->setFillRule(parseWinding(windingRuleString));
 
     if (isFullCanvasCompositeMode(state().m_globalComposite)) {
         fullCanvasCompositedFill(path);
@@ -1109,13 +1104,8 @@ void CanvasRenderingContext2D::clipInternal(const Path& path, const String& wind
         return;
     }
 
-    WindRule newWindRule = RULE_NONZERO;
-    if (!parseWinding(windingRuleString, newWindRule)) {
-        return;
-    }
-
     realizeSaves();
-    c->canvasClip(path, newWindRule);
+    c->canvasClip(path, parseWinding(windingRuleString));
 }
 
 void CanvasRenderingContext2D::clip(const String& windingRuleString)
@@ -1172,11 +1162,7 @@ bool CanvasRenderingContext2D::isPointInPathInternal(const Path& path, const flo
     if (!std::isfinite(transformedPoint.x()) || !std::isfinite(transformedPoint.y()))
         return false;
 
-    WindRule windRule = RULE_NONZERO;
-    if (!parseWinding(windingRuleString, windRule))
-        return false;
-
-    return path.contains(transformedPoint, windRule);
+    return path.contains(transformedPoint, parseWinding(windingRuleString));
 }
 
 bool CanvasRenderingContext2D::isPointInStroke(const float x, const float y)

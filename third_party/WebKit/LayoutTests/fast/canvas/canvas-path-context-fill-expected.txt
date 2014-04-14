@@ -47,6 +47,8 @@ PASS ctx.fill({}, 'nonzero') threw exception TypeError: Failed to execute 'fill'
 PASS ctx.fill(null, 'evenodd') threw exception TypeError: Failed to execute 'fill' on 'CanvasRenderingContext2D': The 1st argument provided is either null, or an invalid Path object..
 PASS ctx.fill([], 'evenodd') threw exception TypeError: Failed to execute 'fill' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
 PASS ctx.fill({}, 'evenodd') threw exception TypeError: Failed to execute 'fill' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
+PASS ctx.fill('gazonk') threw exception TypeError: Failed to execute 'fill' on 'CanvasRenderingContext2D': parameter 1 ('gazonk') is not a valid enum value..
+PASS ctx.fill(path, 'gazonk') threw exception TypeError: Failed to execute 'fill' on 'CanvasRenderingContext2D': parameter 2 ('gazonk') is not a valid enum value..
 PASS successfullyParsed is true
 
 TEST COMPLETE
