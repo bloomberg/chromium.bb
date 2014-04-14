@@ -62,11 +62,10 @@ class PepperExtensionsCommonHost : public ppapi::host::ResourceHost {
                  const std::string& request_name,
                  const base::ListValue& args);
 
-  void OnResponseReceived(
-      scoped_ptr<ppapi::host::ReplyMessageContext> response_context,
-      bool success,
-      const base::ListValue& response,
-      const std::string& error);
+  void OnResponseReceived(ppapi::host::ReplyMessageContext reply_context,
+                          bool success,
+                          const base::ListValue& response,
+                          const std::string& error);
 
   // Non-owning pointer.
   content::RendererPpapiHost* renderer_ppapi_host_;

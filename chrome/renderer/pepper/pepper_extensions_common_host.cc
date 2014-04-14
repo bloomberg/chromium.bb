@@ -84,12 +84,12 @@ int32_t PepperExtensionsCommonHost::OnResourceMessageReceived(
 }
 
 void PepperExtensionsCommonHost::OnResponseReceived(
-    scoped_ptr<ppapi::host::ReplyMessageContext> context,
+    ppapi::host::ReplyMessageContext reply_context,
     bool success,
     const base::ListValue& response,
     const std::string& /* error */) {
-  context->params.set_result(success ? PP_OK : PP_ERROR_FAILED);
-  SendReply(*context, PpapiPluginMsg_ExtensionsCommon_CallReply(response));
+  reply_context.params.set_result(success ? PP_OK : PP_ERROR_FAILED);
+  SendReply(reply_context, PpapiPluginMsg_ExtensionsCommon_CallReply(response));
 }
 
 int32_t PepperExtensionsCommonHost::OnPost(
@@ -107,12 +107,10 @@ int32_t PepperExtensionsCommonHost::OnCall(
     const std::string& request_name,
     const base::ListValue& args) {
   std::string error;
-  scoped_ptr<ppapi::host::ReplyMessageContext> message_context(
-      new ppapi::host::ReplyMessageContext(context->MakeReplyMessageContext()));
   bool success = pepper_request_proxy_->StartRequest(
       base::Bind(&PepperExtensionsCommonHost::OnResponseReceived,
                  weak_factory_.GetWeakPtr(),
-                 base::Passed(&message_context)),
+                 context->MakeReplyMessageContext()),
       request_name,
       args,
       &error);

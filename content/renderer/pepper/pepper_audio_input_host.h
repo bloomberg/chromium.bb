@@ -60,10 +60,12 @@ class PepperAudioInputHost : public ppapi::host::ResourceHost {
 
   void Close();
 
+  void SendOpenReply(int32_t result);
+
   // Non-owning pointer.
   RendererPpapiHostImpl* renderer_ppapi_host_;
 
-  scoped_ptr<ppapi::host::ReplyMessageContext> open_context_;
+  ppapi::host::ReplyMessageContext open_context_;
 
   // Audio input object that we delegate audio IPC through.
   // We don't own this pointer but are responsible for calling Shutdown on it.

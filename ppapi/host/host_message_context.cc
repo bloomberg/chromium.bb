@@ -7,8 +7,8 @@
 namespace ppapi {
 namespace host {
 
-ReplyMessageContext::ReplyMessageContext() {
-}
+ReplyMessageContext::ReplyMessageContext()
+    : sync_reply_msg(NULL), routing_id(MSG_ROUTING_NONE) {}
 
 ReplyMessageContext::ReplyMessageContext(
     const ppapi::proxy::ResourceMessageReplyParams& cp,

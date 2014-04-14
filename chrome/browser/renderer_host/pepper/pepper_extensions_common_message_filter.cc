@@ -127,26 +127,45 @@ int32_t PepperExtensionsCommonMessageFilter::OnPost(
     ppapi::host::HostMessageContext* context,
     const std::string& request_name,
     base::ListValue& args) {
-  if (HandleRequest(context, request_name, &args, false))
-    return PP_OK;
-  else
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  if (!EnsureDispatcherOwnerInitialized())
     return PP_ERROR_FAILED;
+
+  ExtensionHostMsg_Request_Params params;
+  PopulateParams(request_name, &args, false, &params);
+
+  dispatcher_owner_->dispatcher()->Dispatch(
+      params, dispatcher_owner_->render_frame_host()->GetRenderViewHost());
+  // There will be no callback so return PP_OK.
+  return PP_OK;
 }
 
 int32_t PepperExtensionsCommonMessageFilter::OnCall(
     ppapi::host::HostMessageContext* context,
     const std::string& request_name,
     base::ListValue& args) {
-  if (HandleRequest(context, request_name, &args, true))
-    return PP_OK_COMPLETIONPENDING;
-  else
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  if (!EnsureDispatcherOwnerInitialized())
     return PP_ERROR_FAILED;
+
+  ExtensionHostMsg_Request_Params params;
+  PopulateParams(request_name, &args, true, &params);
+
+  dispatcher_owner_->dispatcher()->DispatchWithCallback(
+      params,
+      dispatcher_owner_->render_frame_host(),
+      base::Bind(&PepperExtensionsCommonMessageFilter::OnCallCompleted,
+                 this,
+                 context->MakeReplyMessageContext()));
+  return PP_OK_COMPLETIONPENDING;
 }
 
-void PepperExtensionsCommonMessageFilter::EnsureDispatcherOwnerInitialized() {
+bool PepperExtensionsCommonMessageFilter::EnsureDispatcherOwnerInitialized() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (dispatcher_owner_initialized_)
-    return;
+    return (!!dispatcher_owner_);
   dispatcher_owner_initialized_ = true;
 
   DCHECK(!dispatcher_owner_);
@@ -156,16 +175,17 @@ void PepperExtensionsCommonMessageFilter::EnsureDispatcherOwnerInitialized() {
       content::WebContents::FromRenderFrameHost(frame_host);
 
   if (!document_url_.SchemeIs(extensions::kExtensionScheme))
-    return;
+    return false;
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   if (!profile_manager)
-    return;
+    return false;
   Profile* profile = profile_manager->GetProfile(profile_directory_);
 
   // It will be automatically destroyed when |view_host| goes away.
   dispatcher_owner_ =
       new DispatcherOwner(this, profile, frame_host, web_contents);
+  return true;
 }
 
 void PepperExtensionsCommonMessageFilter::DetachDispatcherOwner() {
@@ -192,18 +212,12 @@ void PepperExtensionsCommonMessageFilter::PopulateParams(
   params->user_gesture = false;
 }
 
-void PepperExtensionsCommonMessageFilter::OnExtensionFunctionCompleted(
-    scoped_ptr<ppapi::host::ReplyMessageContext> reply_context,
+void PepperExtensionsCommonMessageFilter::OnCallCompleted(
+    ppapi::host::ReplyMessageContext reply_context,
     ExtensionFunction::ResponseType type,
     const base::ListValue& results,
     const std::string& /* error */) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
-  // Ignore responses resulted from calls to OnPost().
-  if (!reply_context) {
-    DCHECK_EQ(0u, results.GetSize());
-    return;
-  }
 
   if (type == ExtensionFunction::BAD_MESSAGE) {
     // The input arguments were not validated at the plugin side, so don't kill
@@ -212,39 +226,9 @@ void PepperExtensionsCommonMessageFilter::OnExtensionFunctionCompleted(
     type = ExtensionFunction::FAILED;
   }
 
-  reply_context->params.set_result(
+  reply_context.params.set_result(
       type == ExtensionFunction::SUCCEEDED ? PP_OK : PP_ERROR_FAILED);
-  SendReply(*reply_context, PpapiPluginMsg_ExtensionsCommon_CallReply(results));
-}
-
-bool PepperExtensionsCommonMessageFilter::HandleRequest(
-    ppapi::host::HostMessageContext* context,
-    const std::string& request_name,
-    base::ListValue* args,
-    bool has_callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
-  EnsureDispatcherOwnerInitialized();
-  if (!dispatcher_owner_)
-    return false;
-
-  ExtensionHostMsg_Request_Params params;
-  PopulateParams(request_name, args, has_callback, &params);
-
-  scoped_ptr<ppapi::host::ReplyMessageContext> reply_context;
-  if (has_callback) {
-    reply_context.reset(new ppapi::host::ReplyMessageContext(
-        context->MakeReplyMessageContext()));
-  }
-
-  dispatcher_owner_->dispatcher()->DispatchWithCallback(
-      params,
-      dispatcher_owner_->render_frame_host(),
-      base::Bind(
-          &PepperExtensionsCommonMessageFilter::OnExtensionFunctionCompleted,
-          this,
-          base::Passed(&reply_context)));
-  return true;
+  SendReply(reply_context, PpapiPluginMsg_ExtensionsCommon_CallReply(results));
 }
 
 }  // namespace chrome

@@ -14,6 +14,7 @@
 #include "base/strings/string16.h"
 #include "extensions/browser/extension_function.h"
 #include "ppapi/c/pp_instance.h"
+#include "ppapi/host/host_message_context.h"
 #include "ppapi/host/resource_message_filter.h"
 #include "url/gurl.h"
 
@@ -25,12 +26,6 @@ class ListValue;
 
 namespace content {
 class BrowserPpapiHost;
-}
-
-namespace ppapi {
-namespace host {
-struct HostMessageContext;
-}
 }
 
 namespace chrome {
@@ -72,9 +67,8 @@ class PepperExtensionsCommonMessageFilter
                  const std::string& request_name,
                  base::ListValue& args);
 
-  // It is possible that |dispatcher_owner_| is still NULL after this method is
-  // called.
-  void EnsureDispatcherOwnerInitialized();
+  // Returns true if |dispatcher_owner_| is non-null.
+  bool EnsureDispatcherOwnerInitialized();
   // Resets |dispatcher_owner_| to NULL.
   void DetachDispatcherOwner();
 
@@ -83,16 +77,10 @@ class PepperExtensionsCommonMessageFilter
                       bool has_callback,
                       ExtensionHostMsg_Request_Params* params);
 
-  void OnExtensionFunctionCompleted(
-      scoped_ptr<ppapi::host::ReplyMessageContext> reply_context,
-      ExtensionFunction::ResponseType type,
-      const base::ListValue& results,
-      const std::string& error);
-
-  bool HandleRequest(ppapi::host::HostMessageContext* context,
-                     const std::string& request_name,
-                     base::ListValue* args,
-                     bool has_callback);
+  void OnCallCompleted(ppapi::host::ReplyMessageContext reply_context,
+                       ExtensionFunction::ResponseType type,
+                       const base::ListValue& results,
+                       const std::string& error);
 
   // All the members are initialized on the IO thread when the object is
   // constructed, and accessed only on the UI thread afterwards.

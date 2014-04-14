@@ -22,6 +22,9 @@ struct PPAPI_HOST_EXPORT ReplyMessageContext {
       int routing_id);
   ~ReplyMessageContext();
 
+  // Returns a value indicating whether this context is valid or "null".
+  bool is_valid() const { return params.pp_resource() != 0; }
+
   // The "reply params" struct with the same resource and sequence number
   // as the original resource message call.
   ppapi::proxy::ResourceMessageReplyParams params;

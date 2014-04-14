@@ -87,7 +87,7 @@ int32_t PepperAudioInputHost::OnOpen(ppapi::host::HostMessageContext* context,
                                      const std::string& device_id,
                                      PP_AudioSampleRate sample_rate,
                                      uint32_t sample_frame_count) {
-  if (open_context_)
+  if (open_context_.is_valid())
     return PP_ERROR_INPROGRESS;
   if (audio_input_)
     return PP_ERROR_FAILED;
@@ -109,8 +109,7 @@ int32_t PepperAudioInputHost::OnOpen(ppapi::host::HostMessageContext* context,
                                        static_cast<int>(sample_frame_count),
                                        this);
   if (audio_input_) {
-    open_context_.reset(new ppapi::host::ReplyMessageContext(
-        context->MakeReplyMessageContext()));
+    open_context_ = context->MakeReplyMessageContext();
     return PP_OK_COMPLETIONPENDING;
   } else {
     return PP_ERROR_FAILED;
@@ -144,7 +143,7 @@ void PepperAudioInputHost::OnOpenComplete(
   base::SyncSocket scoped_socket(socket_handle);
   base::SharedMemory scoped_shared_memory(shared_memory_handle, false);
 
-  if (!open_context_) {
+  if (!open_context_.is_valid()) {
     NOTREACHED();
     return;
   }
@@ -170,12 +169,9 @@ void PepperAudioInputHost::OnOpenComplete(
   // inconvenient to clean up. Our IPC code will automatically handle this for
   // us, as long as the remote side always closes the handles it receives, even
   // in the failure case.
-  open_context_->params.set_result(result);
-  open_context_->params.AppendHandle(serialized_socket_handle);
-  open_context_->params.AppendHandle(serialized_shared_memory_handle);
-
-  host()->SendReply(*open_context_, PpapiPluginMsg_AudioInput_OpenReply());
-  open_context_.reset();
+  open_context_.params.AppendHandle(serialized_socket_handle);
+  open_context_.params.AppendHandle(serialized_shared_memory_handle);
+  SendOpenReply(result);
 }
 
 int32_t PepperAudioInputHost::GetRemoteHandles(
@@ -203,11 +199,14 @@ void PepperAudioInputHost::Close() {
   audio_input_->ShutDown();
   audio_input_ = NULL;
 
-  if (open_context_) {
-    open_context_->params.set_result(PP_ERROR_ABORTED);
-    host()->SendReply(*open_context_, PpapiPluginMsg_AudioInput_OpenReply());
-    open_context_.reset();
-  }
+  if (open_context_.is_valid())
+    SendOpenReply(PP_ERROR_ABORTED);
+}
+
+void PepperAudioInputHost::SendOpenReply(int32_t result) {
+  open_context_.params.set_result(result);
+  host()->SendReply(open_context_, PpapiPluginMsg_AudioInput_OpenReply());
+  open_context_ = ppapi::host::ReplyMessageContext();
 }
 
 }  // namespace content

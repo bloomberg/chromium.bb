@@ -12,17 +12,17 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "ppapi/c/dev/ppb_device_ref_dev.h"
+#include "ppapi/host/host_message_context.h"
 #include "url/gurl.h"
 
 namespace ppapi {
 struct DeviceRefData;
 
 namespace host {
-struct HostMessageContext;
-struct ReplyMessageContext;
 class ResourceHost;
 }
-}
+
+}  // namespace ppapi
 
 namespace IPC {
 class Message;
@@ -101,7 +101,7 @@ class CONTENT_EXPORT PepperDeviceEnumerationHostHelper {
   scoped_ptr<ScopedRequest> enumerate_;
   scoped_ptr<ScopedRequest> monitor_;
 
-  scoped_ptr<ppapi::host::ReplyMessageContext> enumerate_devices_context_;
+  ppapi::host::ReplyMessageContext enumerate_devices_context_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperDeviceEnumerationHostHelper);
 };

@@ -131,7 +131,7 @@ int32_t PepperDeviceEnumerationHostHelper::InternalHandleResourceMessage(
 
 int32_t PepperDeviceEnumerationHostHelper::OnEnumerateDevices(
     HostMessageContext* context) {
-  if (enumerate_devices_context_)
+  if (enumerate_devices_context_.is_valid())
     return PP_ERROR_INPROGRESS;
 
   enumerate_.reset(new ScopedRequest(
@@ -141,8 +141,7 @@ int32_t PepperDeviceEnumerationHostHelper::OnEnumerateDevices(
   if (!enumerate_->requested())
     return PP_ERROR_FAILED;
 
-  enumerate_devices_context_.reset(
-      new ppapi::host::ReplyMessageContext(context->MakeReplyMessageContext()));
+  enumerate_devices_context_ = context->MakeReplyMessageContext();
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -167,15 +166,15 @@ int32_t PepperDeviceEnumerationHostHelper::OnStopMonitoringDeviceChange(
 void PepperDeviceEnumerationHostHelper::OnEnumerateDevicesComplete(
     int /* request_id */,
     const std::vector<ppapi::DeviceRefData>& devices) {
-  DCHECK(enumerate_devices_context_.get());
+  DCHECK(enumerate_devices_context_.is_valid());
 
   enumerate_.reset(NULL);
 
-  enumerate_devices_context_->params.set_result(PP_OK);
+  enumerate_devices_context_.params.set_result(PP_OK);
   resource_host_->host()->SendReply(
-      *enumerate_devices_context_,
+      enumerate_devices_context_,
       PpapiPluginMsg_DeviceEnumeration_EnumerateDevicesReply(devices));
-  enumerate_devices_context_.reset();
+  enumerate_devices_context_ = ppapi::host::ReplyMessageContext();
 }
 
 void PepperDeviceEnumerationHostHelper::OnNotifyDeviceChange(
