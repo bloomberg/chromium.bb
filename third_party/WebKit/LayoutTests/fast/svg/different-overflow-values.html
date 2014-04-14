@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<script src="../../resources/js-test.js"></script>
+
+<svg id="svg1"/>
+<svg id="svg2" style="overflow-x: auto"/>
+<svg id="svg3" style="overflow-x: visible; overflow-y: hidden"/>
+
+<script>
+  description("This test checks the overflow equality in case of SVG.")
+
+  svg = document.getElementById("svg1");
+  computedStyle1 = getComputedStyle(svg);
+  shouldBe("computedStyle1.getPropertyValue('overflow-x')", "computedStyle1.getPropertyValue('overflow-y')");
+
+  svg = document.getElementById("svg2");
+  computedStyle2 = getComputedStyle(svg);
+  shouldBe("computedStyle2.getPropertyValue('overflow-x')", "computedStyle2.getPropertyValue('overflow-y')");
+
+  svg = document.getElementById("svg3");
+  computedStyle3 = getComputedStyle(svg);
+  shouldBe("computedStyle3.getPropertyValue('overflow-x')", "computedStyle3.getPropertyValue('overflow-y')");
+</script>

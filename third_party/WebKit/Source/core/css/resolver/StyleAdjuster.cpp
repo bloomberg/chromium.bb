@@ -419,6 +419,14 @@ void StyleAdjuster::adjustOverflow(RenderStyle* style, Element* element)
             style->setOverflowX(OHIDDEN);
         else if (style->overflowX() == OAUTO)
             style->setOverflowX(OVISIBLE);
+
+        if (style->overflowX() == style->overflowY())
+            return;
+
+        if (style->overflowX() != OVISIBLE)
+            style->setOverflowX(OVISIBLE);
+        else
+            style->setOverflowY(OVISIBLE);
     }
 }
 

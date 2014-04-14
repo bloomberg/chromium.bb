@@ -1,0 +1,12 @@
+This test checks the overflow equality in case of SVG.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS computedStyle1.getPropertyValue('overflow-x') is computedStyle1.getPropertyValue('overflow-y')
+PASS computedStyle2.getPropertyValue('overflow-x') is computedStyle2.getPropertyValue('overflow-y')
+PASS computedStyle3.getPropertyValue('overflow-x') is computedStyle3.getPropertyValue('overflow-y')
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
