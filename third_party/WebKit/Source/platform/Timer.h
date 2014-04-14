@@ -125,6 +125,9 @@ public:
 private:
     virtual void fired() OVERRIDE { (m_object->*m_function)(this); }
 
+    // FIXME: oilpan: TimerBase should be moved to the heap and m_object should be traced.
+    // This raw pointer is safe as long as Timer<X> is held by the X itself (That's the case
+    // in the current code base).
     TimerFiredClass* m_object;
     TimerFiredFunction m_function;
 };
@@ -177,6 +180,9 @@ private:
         (m_object->*m_function)(this);
     }
 
+    // FIXME: oilpan: TimerBase should be moved to the heap and m_object should be traced.
+    // This raw pointer is safe as long as Timer<X> is held by the X itself (That's the case
+    // in the current code base).
     TimerFiredClass* m_object;
     TimerFiredFunction m_function;
 
