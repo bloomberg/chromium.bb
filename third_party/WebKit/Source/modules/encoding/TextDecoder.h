@@ -43,9 +43,9 @@ namespace WebCore {
 
 class ExceptionState;
 
-class TextDecoder FINAL : public RefCountedWillBeGarbageCollectedFinalized<TextDecoder> {
+class TextDecoder FINAL : public GarbageCollectedFinalized<TextDecoder> {
 public:
-    static PassRefPtrWillBeRawPtr<TextDecoder> create(const String& label, const Dictionary&, ExceptionState&);
+    static TextDecoder* create(const String& label, const Dictionary&, ExceptionState&);
     ~TextDecoder();
 
     // Implement the IDL

@@ -44,9 +44,9 @@ namespace WebCore {
 class Dictionary;
 class ExceptionState;
 
-class TextEncoder FINAL : public RefCountedWillBeGarbageCollectedFinalized<TextEncoder> {
+class TextEncoder FINAL : public GarbageCollectedFinalized<TextEncoder> {
 public:
-    static PassRefPtrWillBeRawPtr<TextEncoder> create(const String& utfLabel, ExceptionState&);
+    static TextEncoder* create(const String& utfLabel, ExceptionState&);
     ~TextEncoder();
 
     // Implement the IDL

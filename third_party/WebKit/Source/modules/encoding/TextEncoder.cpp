@@ -39,23 +39,23 @@
 
 namespace WebCore {
 
-PassRefPtrWillBeRawPtr<TextEncoder> TextEncoder::create(const String& utfLabel, ExceptionState& exceptionState)
+TextEncoder* TextEncoder::create(const String& utfLabel, ExceptionState& exceptionState)
 {
     const String& encodingLabel = utfLabel.isNull() ? String("utf-8") : utfLabel;
 
     WTF::TextEncoding encoding(encodingLabel);
     if (!encoding.isValid()) {
         exceptionState.throwTypeError("The encoding label provided ('" + encodingLabel + "') is invalid.");
-        return nullptr;
+        return 0;
     }
 
     String name(encoding.name());
     if (name != "UTF-8" && name != "UTF-16LE" && name != "UTF-16BE") {
         exceptionState.throwTypeError("The encoding provided ('" + encodingLabel + "') is not one of 'utf-8', 'utf-16', or 'utf-16be'.");
-        return nullptr;
+        return 0;
     }
 
-    return adoptRefWillBeNoop(new TextEncoder(encoding.name()));
+    return new TextEncoder(encoding.name());
 }
 
 TextEncoder::TextEncoder(const String& encoding)

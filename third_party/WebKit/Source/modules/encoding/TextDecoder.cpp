@@ -38,20 +38,20 @@
 
 namespace WebCore {
 
-PassRefPtrWillBeRawPtr<TextDecoder> TextDecoder::create(const String& label, const Dictionary& options, ExceptionState& exceptionState)
+TextDecoder* TextDecoder::create(const String& label, const Dictionary& options, ExceptionState& exceptionState)
 {
     const String& encodingLabel = label.isNull() ? String("utf-8") : label;
 
     WTF::TextEncoding encoding(encodingLabel);
     if (!encoding.isValid()) {
         exceptionState.throwTypeError("The encoding label provided ('" + encodingLabel + "') is invalid.");
-        return nullptr;
+        return 0;
     }
 
     bool fatal = false;
     options.get("fatal", fatal);
 
-    return adoptRefWillBeNoop(new TextDecoder(encoding.name(), fatal));
+    return new TextDecoder(encoding.name(), fatal);
 }
 
 
