@@ -341,8 +341,8 @@ void WebSocketChannel::SendFrame(bool fin,
     return;
   }
   if (InClosingState()) {
-    VLOG(1) << "SendFrame called in state " << state_
-            << ". This may be a bug, or a harmless race.";
+    DVLOG(1) << "SendFrame called in state " << state_
+             << ". This may be a bug, or a harmless race.";
     return;
   }
   if (state_ != CONNECTED) {
@@ -440,8 +440,8 @@ void WebSocketChannel::SendFlowControl(int64 quota) {
 void WebSocketChannel::StartClosingHandshake(uint16 code,
                                              const std::string& reason) {
   if (InClosingState()) {
-    VLOG(1) << "StartClosingHandshake called in state " << state_
-            << ". This may be a bug, or a harmless race.";
+    DVLOG(1) << "StartClosingHandshake called in state " << state_
+             << ". This may be a bug, or a harmless race.";
     return;
   }
   if (state_ == CONNECTING) {
@@ -766,15 +766,15 @@ ChannelState WebSocketChannel::HandleFrameByState(
       return HandleDataFrame(opcode, final, data_buffer, size);
 
     case WebSocketFrameHeader::kOpCodePing:
-      VLOG(1) << "Got Ping of size " << size;
+      DVLOG(1) << "Got Ping of size " << size;
       if (state_ == CONNECTED)
         return SendFrameFromIOBuffer(
             true, WebSocketFrameHeader::kOpCodePong, data_buffer, size);
-      VLOG(3) << "Ignored ping in state " << state_;
+      DVLOG(3) << "Ignored ping in state " << state_;
       return CHANNEL_ALIVE;
 
     case WebSocketFrameHeader::kOpCodePong:
-      VLOG(1) << "Got Pong of size " << size;
+      DVLOG(1) << "Got Pong of size " << size;
       // There is no need to do anything with pong messages.
       return CHANNEL_ALIVE;
 
@@ -791,7 +791,7 @@ ChannelState WebSocketChannel::HandleFrameByState(
       }
       // TODO(ricea): Find a way to safely log the message from the close
       // message (escape control codes and so on).
-      VLOG(1) << "Got Close with code " << code;
+      DVLOG(1) << "Got Close with code " << code;
       switch (state_) {
         case CONNECTED:
           state_ = RECV_CLOSED;
