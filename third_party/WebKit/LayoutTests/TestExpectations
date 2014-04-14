@@ -541,6 +541,8 @@ crbug.com/307777 [ Android ] virtual/softwarecompositing/overflow/get-transform-
 crbug.com/307777 [ Android ] webaudio/stereo2mono-down-mixing.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] webexposed/custom-elements.html [ Timeout Pass ]
 
+crbug.com/363280 [ Debug ] inspector-protocol/debugger/debugger-terminate-dedicated-worker-while-paused.html [ Crash Pass ]
+
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ ImageOnlyFailure ]
 
 crbug.com/305345 fast/events/mouseover-mouseout.html [ Failure Pass ]
