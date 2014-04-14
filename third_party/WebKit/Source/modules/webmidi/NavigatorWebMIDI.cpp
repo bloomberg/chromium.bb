@@ -73,7 +73,7 @@ ScriptPromise NavigatorWebMIDI::requestMIDIAccess(Navigator& navigator, const Di
 
 ScriptPromise NavigatorWebMIDI::requestMIDIAccess(const Dictionary& options)
 {
-    if (!frame()) {
+    if (!frame() || frame()->document()->activeDOMObjectsAreStopped()) {
         RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(v8::Isolate::GetCurrent());
         ScriptPromise promise = resolver->promise();
         // FIXME: Currently this rejection does not work because the context is stopped.

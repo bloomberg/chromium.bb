@@ -181,6 +181,9 @@ String NavigatorContentUtils::isProtocolHandlerRegistered(Navigator& navigator, 
         return declined;
 
     Document* document = navigator.frame()->document();
+    if (document->activeDOMObjectsAreStopped())
+        return declined;
+
     KURL baseURL = document->baseURL();
 
     if (!verifyCustomHandlerURL(baseURL, url, exceptionState))
