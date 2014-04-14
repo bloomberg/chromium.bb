@@ -29,7 +29,6 @@ function PDFViewer() {
   // Create the viewport.
   this.viewport_ = new Viewport(window,
                                 this.sizer_,
-                                this.isFitToPageEnabled_.bind(this),
                                 this.viewportChangedCallback_.bind(this));
 
   // Create the plugin object dynamically so we can set its src. The plugin
@@ -153,14 +152,6 @@ PDFViewer.prototype = {
 
   /**
    * @private
-   * @return {boolean} true if the fit-to-page button is enabled.
-   */
-  isFitToPageEnabled_: function() {
-    return $('fit-to-page-button').classList.contains('polymer-selected');
-  },
-
-  /**
-   * @private
    * Update the loading progress of the document in response to a progress
    * message being received from the plugin.
    * @param {number} progress the progress as a percentage.
@@ -230,41 +221,44 @@ PDFViewer.prototype = {
   /**
    * @private
    * A callback that's called when the viewport changes.
-   * @param {number} zoom the zoom level.
-   * @param {number} x the x scroll coordinate.
-   * @param {number} y the y scroll coordinate.
-   * @param {number} scrollbarWidth the width of scrollbars on the page.
-   * @param {Object} hasScrollbars whether the viewport has a
-   *     horizontal/vertical scrollbar.
-   * @param {number} page the index of the most visible page in the viewport.
    */
-  viewportChangedCallback_: function(zoom,
-                                     x,
-                                     y,
-                                     scrollbarWidth,
-                                     hasScrollbars,
-                                     page) {
+  viewportChangedCallback_: function() {
+    if (!this.documentDimensions_)
+      return;
+
+    // Update the buttons selected.
+    $('fit-to-page-button').classList.remove('polymer-selected');
+    $('fit-to-width-button').classList.remove('polymer-selected');
+    if (this.viewport_.fittingType == Viewport.FittingType.FIT_TO_PAGE) {
+      $('fit-to-page-button').classList.add('polymer-selected');
+    } else if (this.viewport_.fittingType ==
+               Viewport.FittingType.FIT_TO_WIDTH) {
+      $('fit-to-width-button').classList.add('polymer-selected');
+    }
+
+    var hasScrollbars = this.viewport_.documentHasScrollbars();
+    var scrollbarWidth = this.viewport_.scrollbarWidth;
     // Offset the toolbar position so that it doesn't move if scrollbars appear.
-    var toolbarRight = hasScrollbars.y ? 0 : scrollbarWidth;
-    var toolbarBottom = hasScrollbars.x ? 0 : scrollbarWidth;
+    var toolbarRight = hasScrollbars.vertical ? 0 : scrollbarWidth;
+    var toolbarBottom = hasScrollbars.horizontal ? 0 : scrollbarWidth;
     this.toolbar_.style.right = toolbarRight + 'px';
     this.toolbar_.style.bottom = toolbarBottom + 'px';
 
-    // Show or hide the page indicator.
+    // Update the page indicator.
+    this.pageIndicator_.index = this.viewport_.getMostVisiblePage() + 1;
     if (this.documentDimensions_.pageDimensions.length > 1 && hasScrollbars.y)
       this.pageIndicator_.style.visibility = 'visible';
     else
       this.pageIndicator_.style.visibility = 'hidden';
 
-    // Update the most visible page.
-    this.pageIndicator_.text = page + 1;
-
+    var position = this.viewport_.position;
+    var zoom = this.viewport_.zoom;
     // Notify the plugin of the viewport change.
     this.plugin_.postMessage({
       type: 'viewport',
       zoom: zoom,
-      xOffset: x,
-      yOffset: y
+      xOffset: position.x,
+      yOffset: position.y
     });
   },
 }

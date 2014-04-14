@@ -3,13 +3,6 @@
 // found in the LICENSE file.
 
 /**
- * Predefined zoom factors to be used when zooming in/out. These are in
- * ascending order.
- */
-var ZOOM_FACTORS = [0.25, 0.333, 0.5, 0.666, 0.75, 0.9, 1,
-                    1.1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5];
-
-/**
  * Returns the area of the intersection of two rectangles.
  * @param {Object} rect1 the first rect
  * @param {Object} rect2 the second rect
@@ -48,39 +41,61 @@ function getScrollbarWidth() {
  * @param {Window} window the window
  * @param {Object} sizer is the element which represents the size of the
  *     document in the viewport
- * @param {Function} fitToPageEnabledFunction returns true if fit-to-page is
- *     enabled
  * @param {Function} viewportChangedCallback is run when the viewport changes
  */
 function Viewport(window,
                   sizer,
-                  fitToPageEnabledFunction,
                   viewportChangedCallback) {
   this.window_ = window;
   this.sizer_ = sizer;
-  this.fitToPageEnabledFunction_ = fitToPageEnabledFunction;
   this.viewportChangedCallback_ = viewportChangedCallback;
   this.zoom_ = 1;
-  this.documentDimensions_ = {};
+  this.documentDimensions_ = null;
   this.pageDimensions_ = [];
   this.scrollbarWidth_ = getScrollbarWidth();
+  this.fittingType_ = Viewport.FittingType.NONE;
 
   window.addEventListener('scroll', this.updateViewport_.bind(this));
+  window.addEventListener('resize', this.resize_.bind(this));
 }
+
+/**
+ * Enumeration of page fitting types.
+ * @enum {string}
+ */
+Viewport.FittingType = {
+  NONE: 'none',
+  FIT_TO_PAGE: 'fit-to-page',
+  FIT_TO_WIDTH: 'fit-to-width'
+};
+
+/**
+ * Predefined zoom factors to be used when zooming in/out. These are in
+ * ascending order.
+ */
+Viewport.ZOOM_FACTORS = [0.25, 0.333, 0.5, 0.666, 0.75, 0.9, 1,
+                         1.1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5];
+
+/**
+ * The width of the page shadow around pages in pixels.
+ */
+Viewport.PAGE_SHADOW = {top: 3, bottom: 7, left: 5, right: 5};
 
 Viewport.prototype = {
   /**
    * @private
    * Returns true if the document needs scrollbars at the given zoom level.
    * @param {number} zoom compute whether scrollbars are needed at this zoom
-   * @return {Object} with 'x' and 'y' keys which map to bool values
-   *     indicating if the horizontal and vertical scrollbars are needed
+   * @return {Object} with 'horizontal' and 'vertical' keys which map to bool
+   *     values indicating if the horizontal and vertical scrollbars are needed
    *     respectively.
    */
   documentNeedsScrollbars_: function(zoom) {
+    var documentWidth = this.documentDimensions_.width * zoom;
+    var documentHeight = this.documentDimensions_.height * zoom;
     return {
-      x: this.documentDimensions_.width * zoom > this.window_.innerWidth,
-      y: this.documentDimensions_.height * zoom > this.window_.innerHeight
+      horizontal: documentWidth > this.window_.innerWidth,
+      vertical: documentHeight > this.window_.innerHeight
     };
   },
 
@@ -106,10 +121,70 @@ Viewport.prototype = {
   },
 
   /**
-   * Sets the zoom of the viewport.
-   * @param {number} newZoom the zoom level to zoom to
+   * @private
+   * Called when the viewport should be updated.
    */
-  setZoom: function(newZoom) {
+  updateViewport_: function() {
+    this.viewportChangedCallback_();
+  },
+
+  /**
+   * @private
+   * Called when the viewport size changes.
+   */
+  resize_: function() {
+    if (this.fittingType_ == Viewport.FittingType.FIT_TO_PAGE)
+      this.fitToPage();
+    else if (this.fittingType_ == Viewport.FittingType.FIT_TO_WIDTH)
+      this.fitToWidth();
+    else
+      this.updateViewport_();
+  },
+
+  /**
+   * @type {Object} the scroll position of the viewport.
+   */
+  get position() {
+    return {
+      x: this.window_.pageXOffset,
+      y: this.window_.pageYOffset
+    };
+  },
+
+  /**
+   * Scroll the viewport to the specified position.
+   * @type {Object} position the position to scroll to.
+   */
+  set position(position) {
+    this.window_.scrollTo(position.x, position.y);
+  },
+
+  /**
+   * @type {Object} the size of the viewport excluding scrollbars.
+   */
+  get size() {
+    var needsScrollbars = this.documentNeedsScrollbars_(this.zoom_);
+    var scrollbarWidth = needsScrollbars.vertical ? this.scrollbarWidth_ : 0;
+    var scrollbarHeight = needsScrollbars.horizontal ? this.scrollbarWidth_ : 0;
+    return {
+      width: this.window_.innerWidth - scrollbarWidth,
+      height: this.window_.innerHeight - scrollbarHeight
+    };
+  },
+
+  /**
+   * @type {number} the zoom level of the viewport.
+   */
+  get zoom() {
+    return this.zoom_;
+  },
+
+  /**
+   * @private
+   * Sets the zoom of the viewport.
+   * @param {number} newZoom the zoom level to zoom to.
+   */
+  setZoom_: function(newZoom) {
     var oldZoom = this.zoom_;
     this.zoom_ = newZoom;
     // Record the scroll position (relative to the middle of the window).
@@ -122,35 +197,21 @@ Viewport.prototype = {
     this.window_.scrollTo(
         currentScrollPos[0] * newZoom - this.window_.innerWidth / 2,
         currentScrollPos[1] * newZoom - this.window_.innerHeight / 2);
+    this.updateViewport_();
   },
 
   /**
-   * @private
-   * Called when the viewport should be updated.
+   * @type {number} the width of scrollbars in the viewport in pixels.
    */
-  updateViewport_: function() {
-    var needsScrollbars = this.documentHasScrollbars();
-    var page = this.getMostVisiblePage();
-    this.viewportChangedCallback_(this.zoom_,
-                                  this.window_.pageXOffset,
-                                  this.window_.pageYOffset,
-                                  this.scrollbarWidth_,
-                                  needsScrollbars,
-                                  page);
+  get scrollbarWidth() {
+    return this.scrollbarWidth_;
   },
 
   /**
-   * @private
-   * Returns a rect representing the current viewport.
-   * @return {Object} a rect representing the current viewport.
+   * @type {Viewport.FittingType} the fitting type the viewport is currently in.
    */
-  getCurrentViewportRect_: function() {
-    return {
-      x: this.window_.pageXOffset / this.zoom_,
-      y: this.window_.pageYOffset / this.zoom_,
-      width: this.window_.innerWidth / this.zoom_,
-      height: this.window_.innerHeight / this.zoom_,
-    };
+  get fittingType() {
+    return this.fittingType_;
   },
 
   /**
@@ -188,11 +249,17 @@ Viewport.prototype = {
    * @return {int} the index of the most visible page.
    */
   getMostVisiblePage: function() {
-    var firstVisiblePage = this.getPageAtY_(this.getCurrentViewportRect_().y);
-    var mostVisiblePage = {'number': 0, 'area': 0};
+    var firstVisiblePage = this.getPageAtY_(this.position.y / this.zoom_);
+    var mostVisiblePage = {number: 0, area: 0};
     for (var i = firstVisiblePage; i < this.pageDimensions_.length; i++) {
-      var area = getIntersectionArea(this.pageDimensions_[i],
-                                     this.getCurrentViewportRect_());
+      var viewportRect = {
+        x: 0,
+        y: 0,
+        width: this.size.width,
+        height: this.size.height
+      };
+      var area = getIntersectionArea(this.getPageScreenRect(i),
+                                     viewportRect);
       // If we hit a page with 0 area overlap, we must have gone past the
       // pages visible in the viewport so we can break.
       if (area == 0)
@@ -229,7 +296,7 @@ Viewport.prototype = {
     var needsScrollbars = this.documentNeedsScrollbars_(zoom);
 
     // If the document fits, just return the zoom.
-    if (!needsScrollbars.x && !needsScrollbars.y)
+    if (!needsScrollbars.horizontal && !needsScrollbars.vertical)
       return zoom;
 
     var zoomedDimensions = {
@@ -239,13 +306,13 @@ Viewport.prototype = {
 
     // Check if adding a scrollbar will result in needing the other scrollbar.
     var scrollbarWidth = this.scrollbarWidth_;
-    if (needsScrollbars.x &&
+    if (needsScrollbars.horizontal &&
         zoomedDimensions.height > this.window_.innerHeight - scrollbarWidth) {
-      needsScrollbars.y = true;
+      needsScrollbars.vertical = true;
     }
-    if (needsScrollbars.y &&
+    if (needsScrollbars.vertical &&
         zoomedDimensions.width > this.window_.innerWidth - scrollbarWidth) {
-      needsScrollbars.x = true;
+      needsScrollbars.horizontal = true;
     }
 
     // Compute available window space.
@@ -253,9 +320,9 @@ Viewport.prototype = {
       width: this.window_.innerWidth,
       height: this.window_.innerHeight
     };
-    if (needsScrollbars.x)
+    if (needsScrollbars.horizontal)
       windowWithScrollbars.height -= scrollbarWidth;
-    if (needsScrollbars.y)
+    if (needsScrollbars.vertical)
       windowWithScrollbars.width -= scrollbarWidth;
 
     // Recompute the zoom.
@@ -273,10 +340,17 @@ Viewport.prototype = {
    * Zoom the viewport so that the page-width consumes the entire viewport.
    */
   fitToWidth: function() {
+    this.fittingType_ = Viewport.FittingType.FIT_TO_WIDTH;
+    if (!this.documentDimensions_)
+      return;
+    // Track the last y-position so we stay at the same position after zooming.
+    var oldY = this.window_.scrollY / this.zoom_;
+    // When computing fit-to-width, the maximum width of a page in the document
+    // is used, which is equal to the size of the document width.
+    this.setZoom_(this.computeFittingZoom_(this.documentDimensions_, true));
     var page = this.getMostVisiblePage();
-    this.setZoom(this.computeFittingZoom_(this.pageDimensions_[page], true));
     this.window_.scrollTo(this.pageDimensions_[page].x * this.zoom_,
-                          this.window_.scrollY);
+                          oldY * this.zoom_);
     this.updateViewport_();
   },
 
@@ -285,9 +359,17 @@ Viewport.prototype = {
    * to the top of the most visible page.
    */
   fitToPage: function() {
+    this.fittingType_ = Viewport.FittingType.FIT_TO_PAGE;
+    if (!this.documentDimensions_)
+      return;
     var page = this.getMostVisiblePage();
-    this.setZoom(this.computeFittingZoom_(this.pageDimensions_[page], false));
-    this.window_.scrollTo(this.pageDimensions_[page].x * this.zoom_,
+    this.setZoom_(this.computeFittingZoom_(this.pageDimensions_[page], false));
+    // Center the document in the page by scrolling by the amount of empty
+    // space to the left of the document.
+    var xOffset =
+        (this.documentDimensions_.width - this.pageDimensions_[page].width) *
+        this.zoom_ / 2;
+    this.window_.scrollTo(xOffset,
                           this.pageDimensions_[page].y * this.zoom_);
     this.updateViewport_();
   },
@@ -296,12 +378,13 @@ Viewport.prototype = {
    * Zoom out to the next predefined zoom level.
    */
   zoomOut: function() {
-    var nextZoom = ZOOM_FACTORS[0];
-    for (var i = 0; i < ZOOM_FACTORS.length; i++) {
-      if (ZOOM_FACTORS[i] < this.zoom_)
-        nextZoom = ZOOM_FACTORS[i];
+    this.fittingType_ = Viewport.FittingType.NONE;
+    var nextZoom = Viewport.ZOOM_FACTORS[0];
+    for (var i = 0; i < Viewport.ZOOM_FACTORS.length; i++) {
+      if (Viewport.ZOOM_FACTORS[i] < this.zoom_)
+        nextZoom = Viewport.ZOOM_FACTORS[i];
     }
-    this.setZoom(nextZoom);
+    this.setZoom_(nextZoom);
     this.updateViewport_();
   },
 
@@ -309,12 +392,13 @@ Viewport.prototype = {
    * Zoom in to the next predefined zoom level.
    */
   zoomIn: function() {
-    var nextZoom = ZOOM_FACTORS[ZOOM_FACTORS.length - 1];
-    for (var i = ZOOM_FACTORS.length - 1; i >= 0; i--) {
-      if (ZOOM_FACTORS[i] > this.zoom_)
-        nextZoom = ZOOM_FACTORS[i];
+    this.fittingType_ = Viewport.FittingType.NONE;
+    var nextZoom = Viewport.ZOOM_FACTORS[Viewport.ZOOM_FACTORS.length - 1];
+    for (var i = Viewport.ZOOM_FACTORS.length - 1; i >= 0; i--) {
+      if (Viewport.ZOOM_FACTORS[i] > this.zoom_)
+        nextZoom = Viewport.ZOOM_FACTORS[i];
     }
-    this.setZoom(nextZoom);
+    this.setZoom_(nextZoom);
     this.updateViewport_();
   },
 
@@ -323,8 +407,12 @@ Viewport.prototype = {
    * @param {number} page the index of the page to go to
    */
   goToPage: function(page) {
+    if (this.pageDimensions_.length == 0)
+      return;
     if (page < 0)
       page = 0;
+    if (page >= this.pageDimensions_.length)
+      page = this.pageDimensions_.length - 1;
     var dimensions = this.pageDimensions_[page];
     this.window_.scrollTo(dimensions.x * this.zoom_, dimensions.y * this.zoom_);
   },
@@ -337,6 +425,40 @@ Viewport.prototype = {
     this.documentDimensions_ = documentDimensions;
     this.pageDimensions_ = this.documentDimensions_.pageDimensions;
     this.contentSizeChanged_();
-    this.updateViewport_();
+    this.resize_();
+  },
+
+  /**
+   * Get the coordinates of the page contents (excluding the page shadow)
+   * relative to the screen.
+   * @param {number} page the index of the page to get the rect for.
+   * @return {Object} a rect representing the page in screen coordinates.
+   */
+  getPageScreenRect: function(page) {
+    if (page >= this.pageDimensions_.length)
+      page = this.pageDimensions_.length - 1;
+
+    var pageDimensions = this.pageDimensions_[page];
+
+    // Compute the page dimensions minus the shadows.
+    var insetDimensions = {
+      x: pageDimensions.x + Viewport.PAGE_SHADOW.left,
+      y: pageDimensions.y + Viewport.PAGE_SHADOW.top,
+      width: pageDimensions.width - Viewport.PAGE_SHADOW.left -
+          Viewport.PAGE_SHADOW.right,
+      height: pageDimensions.height - Viewport.PAGE_SHADOW.top -
+          Viewport.PAGE_SHADOW.bottom
+    };
+
+    // Compute the amount of empty space of the left of the page.
+    var emptySpaceOnLeft = Viewport.PAGE_SHADOW.left +
+        (this.documentDimensions_.width - pageDimensions.width) / 2.0;
+
+    return {
+      x: (emptySpaceOnLeft * this.zoom_) - this.window_.pageXOffset,
+      y: (insetDimensions.y * this.zoom_) - this.window_.pageYOffset,
+      width: insetDimensions.width * this.zoom_,
+      height: insetDimensions.height * this.zoom_
+    };
   }
 };
