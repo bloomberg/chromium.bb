@@ -174,5 +174,5 @@ class Archive(object):
       latest_path = os.path.join(base_archive_path, filename)
       osutils.WriteFile(latest_path, self.version, mode='w')
       commands.UploadArchivedFile(
-          base_archive_path, base_upload_url, filename,
+          base_archive_path, [base_upload_url], filename,
           debug, acl=self.upload_acl)

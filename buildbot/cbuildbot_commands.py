@@ -1324,15 +1324,16 @@ def AppendToFile(file_path, string):
   osutils.WriteFile(file_path, string, mode='a')
 
 
-def UpdateUploadedList(last_uploaded, archive_path, upload_url,
+def UpdateUploadedList(last_uploaded, archive_path, upload_urls,
                        debug):
-  """Updates the list of files uploaded to Google Storage.
+  """Updates the archive's UPLOADED file, and uploads it to Google Storage.
 
   Args:
      buildroot: The root directory where the build occurs.
      last_uploaded: Filename of the last uploaded file.
      archive_path: Path to archive_dir.
-     upload_url: Location where tarball should be uploaded.
+     upload_urls: Iterable of GS locations where the UPLOADED file should be
+                  uploaded.
      debug: Whether we are in debug mode.
   """
   # Append to the uploaded list.
@@ -1340,17 +1341,18 @@ def UpdateUploadedList(last_uploaded, archive_path, upload_url,
   AppendToFile(os.path.join(archive_path, filename), last_uploaded + '\n')
 
   # Upload the updated list to Google Storage.
-  UploadArchivedFile(archive_path, upload_url, filename, debug,
+  UploadArchivedFile(archive_path, upload_urls, filename, debug,
                      update_list=False)
 
 
-def UploadArchivedFile(archive_path, upload_url, filename, debug,
+def UploadArchivedFile(archive_path, upload_urls, filename, debug,
                        update_list=False, timeout=2 * 60 * 60, acl=None):
   """Upload the specified file from the archive dir to Google Storage.
 
   Args:
     archive_path: Path to archive dir.
-    upload_url: Location where file should be uploaded.
+    upload_urls: Iterable of GS locations where the UPLOADED file should be
+                 uploaded.
     debug: Whether we are in debug mode.
     filename: Filename of the file to upload.
     update_list: Flag to update the list of uploaded files.
@@ -1362,14 +1364,15 @@ def UploadArchivedFile(archive_path, upload_url, filename, debug,
   gs_context = gs.GSContext(acl=acl, dry_run=debug)
 
   try:
-    with timeout_util.Timeout(timeout):
-      gs_context.CopyInto(local_path, upload_url, recursive=True)
+    for upload_url in upload_urls:
+      with timeout_util.Timeout(timeout):
+        gs_context.CopyInto(local_path, upload_url, recursive=True)
   except timeout_util.TimeoutError:
     raise timeout_util.TimeoutError('Timed out uploading %s' % filename)
   else:
     # Update the list of uploaded files.
     if update_list:
-      UpdateUploadedList(filename, archive_path, upload_url, debug)
+      UpdateUploadedList(filename, archive_path, upload_urls, debug)
 
 
 def UploadSymbols(buildroot, board, official, cnt, failed_list):

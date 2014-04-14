@@ -307,10 +307,9 @@ class ArchivingStageMixin(object):
     if archive:
       filename = commands.ArchiveFile(path, self.archive_path)
     try:
-      for url in self._GetUploadUrls():
-        commands.UploadArchivedFile(
-            self.archive_path, url, filename, self._run.debug,
-            update_list=True, acl=self.acl)
+      commands.UploadArchivedFile(
+          self.archive_path, self._GetUploadUrls(), filename, self._run.debug,
+          update_list=True, acl=self.acl)
     except (gs.GSContextException, timeout_util.TimeoutError):
       cros_build_lib.PrintBuildbotStepText('Upload failed')
       if strict:
@@ -4390,12 +4389,14 @@ class ReportStage(bs.BuilderStage, ArchivingStageMixin):
           '..|',
       ]
       index = os.path.join(archive_path, 'index.html')
+      # TODO (sbasi) crbug.com/362776: Rework the way we do uploading to
+      # multiple buckets. Currently this can only be done in the Archive Stage
+      # therefore index.html will only end up in the normal Chrome OS bucket.
       commands.GenerateHtmlIndex(index, files, url_base=archive.download_url,
                                  head=head)
       commands.UploadArchivedFile(
-          archive_path, archive.upload_url, os.path.basename(index),
+          archive_path, [archive.upload_url], os.path.basename(index),
           debug=self._run.debug, acl=self.acl)
-
       return dict((b, archive.download_url + '/index.html') for b in boards)
 
   def PerformStage(self):
