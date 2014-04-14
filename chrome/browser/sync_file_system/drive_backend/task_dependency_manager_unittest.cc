@@ -24,7 +24,7 @@ bool InsertPath(TaskDependencyManager* manager,
   BlockingFactor blocker;
   blocker.app_id = app_id;
   blocker.paths.push_back(MakePath(path));
-  return manager->Insert(blocker);
+  return manager->Insert(&blocker);
 }
 
 void ErasePath(TaskDependencyManager* manager,
@@ -33,19 +33,19 @@ void ErasePath(TaskDependencyManager* manager,
   BlockingFactor blocker;
   blocker.app_id = app_id;
   blocker.paths.push_back(MakePath(path));
-  return manager->Erase(blocker);
+  return manager->Erase(&blocker);
 }
 
 bool InsertExclusiveTask(TaskDependencyManager* manager) {
   BlockingFactor blocker;
   blocker.exclusive = true;
-  return manager->Insert(blocker);
+  return manager->Insert(&blocker);
 }
 
 void EraseExclusiveTask(TaskDependencyManager* manager) {
   BlockingFactor blocker;
   blocker.exclusive = true;
-  manager->Erase(blocker);
+  manager->Erase(&blocker);
 }
 
 }  // namespace
@@ -58,14 +58,14 @@ TEST(TaskDependencyManagerTest, BasicTest) {
   blocker.file_ids.push_back("file_id");
   blocker.tracker_ids.push_back(100);
 
-  EXPECT_TRUE(manager.Insert(blocker));
-  EXPECT_FALSE(manager.Insert(blocker));
+  EXPECT_TRUE(manager.Insert(&blocker));
+  EXPECT_FALSE(manager.Insert(&blocker));
 
-  manager.Erase(blocker);
+  manager.Erase(&blocker);
 
-  EXPECT_TRUE(manager.Insert(blocker));
+  EXPECT_TRUE(manager.Insert(&blocker));
 
-  manager.Erase(blocker);
+  manager.Erase(&blocker);
 }
 
 TEST(TaskDependencyManagerTest, BlocksAncestorAndDescendant) {
@@ -104,6 +104,23 @@ TEST(TaskDependencyManagerTest, ExclusiveTask) {
 
   EXPECT_TRUE(InsertPath(&manager, "app_id", FPL("/foo/bar")));
   ErasePath(&manager, "app_id", FPL("/foo/bar"));
+}
+
+TEST(TaskDependencyManagerTest, PermissiveTask) {
+  TaskDependencyManager manager;
+
+  EXPECT_TRUE(manager.Insert(NULL));
+  EXPECT_TRUE(InsertPath(&manager, "app_id", FPL("/foo/bar")));
+  EXPECT_FALSE(InsertExclusiveTask(&manager));
+  ErasePath(&manager, "app_id", FPL("/foo/bar"));
+
+  EXPECT_FALSE(InsertExclusiveTask(&manager));
+  manager.Erase(NULL);
+  EXPECT_TRUE(InsertExclusiveTask(&manager));
+
+  EXPECT_FALSE(manager.Insert(NULL));
+
+  EraseExclusiveTask(&manager);
 }
 
 }  // namespace drive_backend

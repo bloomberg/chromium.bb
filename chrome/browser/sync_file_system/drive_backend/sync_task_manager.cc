@@ -162,7 +162,7 @@ void SyncTaskManager::NotifyTaskDoneBody(scoped_ptr<SyncTaskToken> token,
            << " " << token_->location().ToString();
 
   if (token->blocking_factor()) {
-    dependency_manager_.Erase(*token->blocking_factor());
+    dependency_manager_.Erase(token->blocking_factor());
     token->clear_blocking_factor();
   }
 
@@ -199,7 +199,7 @@ void SyncTaskManager::MoveTaskToBackgroundBody(
   }
 
   if (running_background_task_.size() >= maximum_background_task_ ||
-      !dependency_manager_.Insert(*blocking_factor)) {
+      !dependency_manager_.Insert(blocking_factor.get())) {
     DCHECK(!running_background_task_.empty());
 
     // Wait for NotifyTaskDone to release a |blocking_factor|.

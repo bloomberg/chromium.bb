@@ -42,13 +42,14 @@ class TaskDependencyManager {
   //  - They have common |file_id| or |tracker_id|.
   //  - Or, they have the same |app_id| and have a |path| that one of its parent
   //    belongs to the |blocking_factor|.
-  bool Insert(const BlockingFactor& blocking_factor);
+  bool Insert(const BlockingFactor* blocking_factor);
 
-  void Erase(const BlockingFactor& blocking_factor);
+  void Erase(const BlockingFactor* blocking_factor);
 
  private:
   friend class TaskDependencyManagerTest;
 
+  int running_task_count_;
   bool running_exclusive_task_;
   std::map<std::string, SubtreeSet> paths_by_app_id_;
   std::set<std::string> file_ids_;
