@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2012 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2013 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -59,6 +59,10 @@
  * perceptible loss of image clarity (the human eye is more sensitive to small
  * changes in brightness than small changes in color.)  This is called
  * "chrominance subsampling".
+ * <p>
+ * NOTE: Technically, the JPEG format uses the YCbCr colorspace, but per the
+ * convention of the digital video community, the TurboJPEG API uses "YUV" to
+ * refer to an image format consisting of Y, Cb, and Cr image planes.
  */
 enum TJSAMP
 {
@@ -85,6 +89,7 @@ enum TJSAMP
   /**
    * 4:4:0 chrominance subsampling.  The JPEG or YUV image will contain one
    * chrominance component for every 1x2 block of pixels in the source image.
+   * Note that 4:4:0 subsampling is not fully accelerated in libjpeg-turbo.
    */
   TJSAMP_440
 };
@@ -246,10 +251,11 @@ static const int tjPixelSize[TJ_NUMPF] = {3, 3, 4, 4, 4, 4, 1, 4, 4, 4, 4};
  */
 #define TJFLAG_FORCESSE3     128
 /**
- * When decompressing, use the fastest chrominance upsampling algorithm
- * available in the underlying codec.  The default is to use smooth upsampling,
- * which creates a smooth transition between neighboring chrominance components
- * in order to reduce upsampling artifacts in the decompressed image.
+ * When decompressing an image that was compressed using chrominance
+ * subsampling, use the fastest chrominance upsampling algorithm available in
+ * the underlying codec.  The default is to use smooth upsampling, which
+ * creates a smooth transition between neighboring chrominance components in
+ * order to reduce upsampling artifacts in the decompressed image.
  */
 #define TJFLAG_FASTUPSAMPLE  256
 /**
@@ -262,26 +268,26 @@ static const int tjPixelSize[TJ_NUMPF] = {3, 3, 4, 4, 4, 4, 1, 4, 4, 4, 4};
 #define TJFLAG_NOREALLOC     1024
 /**
  * Use the fastest DCT/IDCT algorithm available in the underlying codec.  The
- * default if this flag is not specified is implementation-specific.  The
- * libjpeg implementation, for example, uses the fast algorithm by default when
- * compressing, because this has been shown to have only a very slight effect
- * on accuracy, but it uses the accurate algorithm when decompressing, because
- * this has been shown to have a larger effect.
+ * default if this flag is not specified is implementation-specific.  For
+ * example, the implementation of TurboJPEG for libjpeg[-turbo] uses the fast
+ * algorithm by default when compressing, because this has been shown to have
+ * only a very slight effect on accuracy, but it uses the accurate algorithm
+ * when decompressing, because this has been shown to have a larger effect.
  */
 #define TJFLAG_FASTDCT       2048
 /**
  * Use the most accurate DCT/IDCT algorithm available in the underlying codec.
- * The default if this flag is not specified is implementation-specific.  The
- * libjpeg implementation, for example, uses the fast algorithm by default when
- * compressing, because this has been shown to have only a very slight effect
- * on accuracy, but it uses the accurate algorithm when decompressing, because
- * this has been shown to have a larger effect.
+ * The default if this flag is not specified is implementation-specific.  For
+ * example, the implementation of TurboJPEG for libjpeg[-turbo] uses the fast
+ * algorithm by default when compressing, because this has been shown to have
+ * only a very slight effect on accuracy, but it uses the accurate algorithm
+ * when decompressing, because this has been shown to have a larger effect.
  */
 #define TJFLAG_ACCURATEDCT   4096
 
 
 /**
- * Number of transform operations
+ * The number of transform operations
  */
 #define TJ_NUMXOP 8
 
@@ -439,8 +445,8 @@ typedef struct tjtransform
   /**
    * A callback function that can be used to modify the DCT coefficients
    * after they are losslessly transformed but before they are transcoded to a
-   * new JPEG file.  This allows for custom filters or other transformations to
-   * be applied in the frequency domain.
+   * new JPEG image.  This allows for custom filters or other transformations
+   * to be applied in the frequency domain.
    *
    * @param coeffs pointer to an array of transformed DCT coefficients.  (NOTE:
    *        this pointer is not guaranteed to be valid once the callback
@@ -459,7 +465,7 @@ typedef struct tjtransform
    *        0, 1, and 2 in typical JPEG images.)
    * @param transformID ID number of the transformed image to which
    *        <tt>coeffs</tt> belongs.  This is the same as the index of the
-   *        transform in the transforms array that was passed to
+   *        transform in the <tt>transforms</tt> array that was passed to
    *        #tjTransform().
    * @param transform a pointer to a #tjtransform structure that specifies the
    *        parameters and/or cropping region for this transform
@@ -562,7 +568,7 @@ DLLEXPORT int DLLCALL tjCompress2(tjhandle handle, unsigned char *srcBuf,
  * the given parameters.  The number of bytes returned by this function is
  * larger than the size of the uncompressed source image.  The reason for this
  * is that the JPEG format uses 16-bit coefficients, and it is thus possible
- * for a very high-quality JPEG image with very high frequency content to
+ * for a very high-quality JPEG image with very high-frequency content to
  * expand rather than compress when converted to the JPEG format.  Such images
  * represent a very rare corner case, but since there is no way to predict the
  * size of a JPEG image prior to compression, the corner case has to be
@@ -602,13 +608,17 @@ DLLEXPORT unsigned long DLLCALL tjBufSizeYUV(int width, int height,
  * uses the accelerated color conversion routines in TurboJPEG's underlying
  * codec to produce a planar YUV image that is suitable for X Video.
  * Specifically, if the chrominance components are subsampled along the
- * horizontal dimension, then the width of the luminance plane is padded to 2
- * in the output image (same goes for the height of the luminance plane, if the
- * chrominance components are subsampled along the vertical dimension.)  Also,
- * each line of each plane in the output image is padded to 4 bytes.  Although
- * this will work with any subsampling option, it is really only useful in
- * combination with TJ_420, which produces an image compatible with the I420
- * (AKA "YUV420P") format.
+ * horizontal dimension, then the width of the luminance plane is padded to the
+ * nearest multiple of 2 in the output image (same goes for the height of the
+ * luminance plane, if the chrominance components are subsampled along the
+ * vertical dimension.)  Also, each line of each plane in the output image is
+ * padded to 4 bytes.  Although this will work with any subsampling option, it
+ * is really only useful in combination with TJ_420, which produces an image
+ * compatible with the I420 (AKA "YUV420P") format.
+ * <p>
+ * NOTE: Technically, the JPEG format uses the YCbCr colorspace, but per the
+ * convention of the digital video community, the TurboJPEG API uses "YUV" to
+ * refer to an image format consisting of Y, Cb, and Cr image planes.
  *
  * @param handle a handle to a TurboJPEG compressor or transformer instance
  * @param srcBuf pointer to an image buffer containing RGB or grayscale pixels
@@ -694,14 +704,15 @@ DLLEXPORT tjscalingfactor* DLLCALL tjGetScalingFactors(int *numscalingfactors);
  *        image.  This buffer should normally be <tt>pitch * scaledHeight</tt>
  *        bytes in size, where <tt>scaledHeight</tt> can be determined by
  *        calling #TJSCALED() with the JPEG image height and one of the scaling
- *        factors returned by #tjGetScalingFactors().  The dstBuf pointer may
- *        also be used to decompress into a specific region of a larger buffer.
+ *        factors returned by #tjGetScalingFactors().  The <tt>dstBuf</tt>
+ *        pointer may also be used to decompress into a specific region of a
+ *        larger buffer.
  * @param width desired width (in pixels) of the destination image.  If this is
- *        smaller than the width of the JPEG image being decompressed, then
+ *        different than the width of the JPEG image being decompressed, then
  *        TurboJPEG will use scaling in the JPEG decompressor to generate the
  *        largest possible image that will fit within the desired width.  If
- *        width is set to 0, then only the height will be considered when
- *        determining the scaled image size.
+ *        <tt>width</tt> is set to 0, then only the height will be considered
+ *        when determining the scaled image size.
  * @param pitch bytes per line of the destination image.  Normally, this is
  *        <tt>scaledWidth * #tjPixelSize[pixelFormat]</tt> if the decompressed
  *        image is unpadded, else <tt>#TJPAD(scaledWidth *
@@ -714,11 +725,11 @@ DLLEXPORT tjscalingfactor* DLLCALL tjGetScalingFactors(int *numscalingfactors);
  *        parameter to 0 is the equivalent of setting it to <tt>scaledWidth
  *        * #tjPixelSize[pixelFormat]</tt>.
  * @param height desired height (in pixels) of the destination image.  If this
- *        is smaller than the height of the JPEG image being decompressed, then
- *        TurboJPEG will use scaling in the JPEG decompressor to generate the
- *        largest possible image that will fit within the desired height.  If
- *        height is set to 0, then only the width will be considered when
- *        determining the scaled image size.
+ *        is different than the height of the JPEG image being decompressed,
+ *        then TurboJPEG will use scaling in the JPEG decompressor to generate
+ *        the largest possible image that will fit within the desired height.
+ *        If <tt>height</tt> is set to 0, then only the width will be
+ *        considered when determining the scaled image size.
  * @param pixelFormat pixel format of the destination image (see @ref
  *        TJPF "Pixel formats".)
  * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
@@ -735,16 +746,20 @@ DLLEXPORT int DLLCALL tjDecompress2(tjhandle handle,
  * Decompress a JPEG image to a YUV planar image.  This function performs JPEG
  * decompression but leaves out the color conversion step, so a planar YUV
  * image is generated instead of an RGB image.  The padding of the planes in
- * this image is the same as the images generated by #tjEncodeYUV2().  Note
+ * this image is the same as in the images generated by #tjEncodeYUV2().  Note
  * that, if the width or height of the image is not an even multiple of the MCU
  * block size (see #tjMCUWidth and #tjMCUHeight), then an intermediate buffer
  * copy will be performed within TurboJPEG.
+ * <p>
+ * NOTE: Technically, the JPEG format uses the YCbCr colorspace, but per the
+ * convention of the digital video community, the TurboJPEG API uses "YUV" to
+ * refer to an image format consisting of Y, Cb, and Cr image planes.
  *
  * @param handle a handle to a TurboJPEG decompressor or transformer instance
  * @param jpegBuf pointer to a buffer containing the JPEG image to decompress
  * @param jpegSize size of the JPEG image (in bytes)
  * @param dstBuf pointer to an image buffer that will receive the YUV image.
- *        Use #tjBufSizeYUV to determine the appropriate size for this buffer
+ *        Use #tjBufSizeYUV() to determine the appropriate size for this buffer
  *        based on the image width, height, and level of subsampling.
  * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP
  *        "flags".
@@ -771,12 +786,12 @@ DLLEXPORT tjhandle DLLCALL tjInitTransform(void);
  * to another without altering the values of the coefficients.  While this is
  * typically faster than decompressing the image, transforming it, and
  * re-compressing it, lossless transforms are not free.  Each lossless
- * transform requires reading and Huffman decoding all of the coefficients in
- * the source image, regardless of the size of the destination image.  Thus,
- * this function provides a means of generating multiple transformed images
- * from the same source or of applying multiple transformations simultaneously,
- * in order to eliminate the need to read the source coefficients multiple
- * times.
+ * transform requires reading and performing Huffman decoding on all of the
+ * coefficients in the source image, regardless of the size of the destination
+ * image.  Thus, this function provides a means of generating multiple
+ * transformed images from the same source or  applying multiple
+ * transformations simultaneously, in order to eliminate the need to read the
+ * source coefficients multiple times.
  *
  * @param handle a handle to a TurboJPEG transformer instance
  * @param jpegBuf pointer to a buffer containing the JPEG image to transform
@@ -792,9 +807,9 @@ DLLEXPORT tjhandle DLLCALL tjInitTransform(void);
  *        -# set <tt>dstBufs[i]</tt> to NULL to tell TurboJPEG to allocate the
  *        buffer for you, or
  *        -# pre-allocate the buffer to a "worst case" size determined by
- *        calling #tjBufSize() with the cropped width and height.  This should
- *        ensure that the buffer never has to be re-allocated (setting
- *        #TJFLAG_NOREALLOC guarantees this.)
+ *        calling #tjBufSize() with the transformed or cropped width and
+ *        height.  This should ensure that the buffer never has to be
+ *        re-allocated (setting #TJFLAG_NOREALLOC guarantees this.)
  *        .
  *        If you choose option 1, <tt>dstSizes[i]</tt> should be set to
  *        the size of your pre-allocated buffer.  In any case, unless you have
@@ -806,7 +821,7 @@ DLLEXPORT tjhandle DLLCALL tjInitTransform(void);
  *        <tt>dstSizes[i]</tt> should be set to the size of the buffer.  Upon
  *        return, <tt>dstSizes[i]</tt> will contain the size of the JPEG image
  *        (in bytes.)
- * @param transforms pointer to an array of n tjtransform structures, each of
+ * @param transforms pointer to an array of n #tjtransform structures, each of
  *        which specifies the transform parameters and/or cropping region for
  *        the corresponding transformed output image.
  * @param flags the bitwise OR of one or more of the @ref TJFLAG_BOTTOMUP

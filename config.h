@@ -2,13 +2,16 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
 /* Build number */
-#define BUILD "20120511"
+#define BUILD "20140410"
 
 /* Support arithmetic encoding */
 /* #undef C_ARITH_CODING_SUPPORTED */
 
 /* Support arithmetic decoding */
 /* #undef D_ARITH_CODING_SUPPORTED */
+
+/* Support in-memory source/destination managers */
+/* #undef MEM_SRCDST_SUPPORTED */
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #define HAVE_DLFCN_H 1
@@ -81,7 +84,7 @@
 #define JPEG_LIB_VERSION 62
 
 /* libjpeg-turbo version */
-#define LIBJPEG_TURBO_VERSION 1.2.80
+#define LIBJPEG_TURBO_VERSION 1.3.1
 
 /* Define to the sub-directory in which libtool stores uninstalled libraries.
    */
@@ -106,7 +109,7 @@
 #define PACKAGE_NAME "libjpeg-turbo"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "libjpeg-turbo 1.2.80"
+#define PACKAGE_STRING "libjpeg-turbo 1.3.1"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "libjpeg-turbo"
@@ -115,7 +118,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "1.2.80"
+#define PACKAGE_VERSION "1.3.1"
 
 /* Define if shift is unsigned */
 /* #undef RIGHT_SHIFT_IS_UNSIGNED */
@@ -124,7 +127,7 @@
 #define STDC_HEADERS 1
 
 /* Version number of package */
-#define VERSION "1.2.80"
+#define VERSION "1.3.1"
 
 /* Use accelerated SIMD routines. */
 #define WITH_SIMD 1
