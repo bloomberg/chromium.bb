@@ -12,7 +12,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/x/x11_types.h"
 
 #include <X11/Xlib.h>
 
@@ -41,7 +40,7 @@ class ImeKeyboardTest : public testing::Test {
 
 // Returns true if X display is available.
 bool DisplayAvailable() {
-  return gfx::GetXDisplay() != NULL;
+  return (base::MessagePumpForUI::GetDefaultXDisplay() != NULL);
 }
 
 }  // namespace

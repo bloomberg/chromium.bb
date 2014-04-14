@@ -3466,7 +3466,6 @@
             ['use_x11==1', {
               'dependencies': [
                 '../build/linux/system.gyp:x11',
-                '../ui/gfx/gfx.gyp:gfx_x11',
               ],
             }],
           ],

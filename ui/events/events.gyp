@@ -61,8 +61,7 @@
       'conditions': [
         ['use_x11==1', {
           'dependencies': [
-            '../../build/linux/system.gyp:x11',
-            '../gfx/gfx.gyp:gfx_x11',
+            '<(DEPTH)/build/linux/system.gyp:x11',
           ],
         }],
       ],
@@ -173,8 +172,7 @@
             'platform/platform_event_source_stub.cc',
           ],
           'dependencies': [
-            '../../build/linux/system.gyp:x11',
-            '../gfx/gfx.gyp:gfx_x11',
+            '<(DEPTH)/build/linux/system.gyp:x11',
           ],
         }],
         ['use_glib==1', {
@@ -278,8 +276,7 @@
       'conditions': [
         ['use_x11==1', {
           'dependencies': [
-            '../../build/linux/system.gyp:x11',
-            '../gfx/gfx.gyp:gfx_x11',
+            '<(DEPTH)/build/linux/system.gyp:x11',
           ],
         }],
         ['OS=="ios"', {

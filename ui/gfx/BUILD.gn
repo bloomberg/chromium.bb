@@ -230,6 +230,12 @@ component("gfx") {
     "win/singleton_hwnd.h",
     "win/window_impl.cc",
     "win/window_impl.h",
+    "x/x11_atom_cache.cc",
+    "x/x11_atom_cache.h",
+    "x/x11_error_tracker.cc",
+    "x/x11_error_tracker.h",
+    "x/x11_types.cc",
+    "x/x11_types.h",
   ]
 
   defines = [ "GFX_IMPLEMENTATION" ]
@@ -350,8 +356,17 @@ component("gfx") {
     ]
   }
   if (use_x11) {
-    deps += [
-      ":gfx_x11",
+    configs += [ "//build/config/linux:x11" ]
+  } else {
+    sources -= [
+      "path_x11.cc",
+      "path_x11.h",
+      "x/x11_atom_cache.cc",
+      "x/x11_atom_cache.h",
+      "x/x11_error_tracker.cc",
+      "x/x11_error_tracker.h",
+      "x/x11_types.cc",
+      "x/x11_types.h",
     ]
   }
   if (use_pango) {
@@ -424,19 +439,4 @@ test("gfx_unittests") {
 
 if (is_android) {
   # TODO(brettw) gfx_jni_headers
-}
-
-if (use_x11) {
-  component("gfx_x11") {
-    sources = [
-      "x/x11_atom_cache.cc",
-      "x/x11_atom_cache.h",
-      "x/x11_error_tracker.cc",
-      "x/x11_error_tracker.h",
-      "x/x11_types.cc",
-      "x/x11_types.h",
-    ]
-
-    configs += [ "//build/config/linux:x11" ]
-  }
 }

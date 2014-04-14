@@ -3,6 +3,5 @@ include_rules = [
   "+net",
   "+third_party/cros_system_api",
   "+third_party/libxml",
-  "+ui/gfx/geometry",
-  "+ui/gfx/x"
+  "+ui/gfx/geometry"
 ]
