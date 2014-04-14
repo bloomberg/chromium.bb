@@ -684,6 +684,10 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(GraphicsLayerUpdater::U
         // position relative to it.
         IntRect clippingBox = clipBox(toRenderBox(compAncestor->renderer()));
         graphicsLayerParentLocation = clippingBox.location() + roundedIntSize(compAncestor->subpixelAccumulation());
+    } else if (compAncestor && compAncestor->compositedLayerMapping()->childTransformLayer()) {
+        // Similarly, if the compositing ancestor has a child transform layer, we parent in that, and therefore
+        // position relative to it. It's already taken into account the contents offset, so we do not need to here.
+        graphicsLayerParentLocation = roundedIntPoint(compAncestor->subpixelAccumulation());
     } else if (compAncestor) {
         graphicsLayerParentLocation = ancestorCompositingBounds.location();
     } else {
@@ -733,7 +737,9 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(GraphicsLayerUpdater::U
             m_childClippingMaskLayer->setOffsetFromRenderer(clipLayer->offsetFromRenderer());
         }
     } else if (m_childTransformLayer) {
-        m_childTransformLayer->setSize(contentsSize);
+        const IntRect borderBox = toRenderBox(m_owningLayer.renderer())->pixelSnappedBorderBoxRect();
+        m_childTransformLayer->setSize(borderBox.size());
+        m_childTransformLayer->setPosition(FloatPoint(contentOffsetInCompostingLayer()));
     }
 
     if (m_maskLayer) {
@@ -763,9 +769,6 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(GraphicsLayerUpdater::U
     } else {
         m_graphicsLayer->setAnchorPoint(FloatPoint3D(0.5f, 0.5f, 0));
     }
-
-    if (GraphicsLayer* childrenTransformLayer = layerForChildrenTransform())
-        childrenTransformLayer->setAnchorPoint(m_graphicsLayer->anchorPoint());
 
     if (m_foregroundLayer) {
         FloatSize foregroundSize = contentsSize;
