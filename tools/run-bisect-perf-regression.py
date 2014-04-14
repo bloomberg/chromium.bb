@@ -393,6 +393,20 @@ def _RunBisectionScript(config, working_directory, path_to_file, path_to_goma,
   if path_to_extra_src:
     cmd.extend(['--extra_src', path_to_extra_src])
 
+  # These flags are used to download build archives from cloud storage if
+  # available, otherwise will post a try_job_http request to build it on
+  # tryserver.
+  if config.get('gs_bucket'):
+    if config.get('builder_host') and config.get('builder_port'):
+      cmd.extend(['--gs_bucket', config['gs_bucket'],
+                  '--builder_host', config['builder_host'],
+                  '--builder_port', config['builder_port']
+                 ])
+    else:
+      print ('Error: Specified gs_bucket, but missing builder_host or '
+             'builder_port information in config.')
+      return 1
+
   if dry_run:
     cmd.extend(['--debug_ignore_build', '--debug_ignore_sync',
         '--debug_ignore_perf_test'])
