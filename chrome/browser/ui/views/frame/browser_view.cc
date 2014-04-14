@@ -433,7 +433,6 @@ BrowserView::BrowserView()
       ticker_(0),
 #endif
       force_location_bar_focus_(false),
-      immersive_mode_controller_(chrome::CreateImmersiveModeController()),
 #if defined(OS_CHROMEOS)
       scroll_end_effect_controller_(ScrollEndEffectController::Create()),
 #endif
@@ -493,6 +492,8 @@ BrowserView::~BrowserView() {
 void BrowserView::Init(Browser* browser) {
   browser_.reset(browser);
   browser_->tab_strip_model()->AddObserver(this);
+  immersive_mode_controller_.reset(
+      chrome::CreateImmersiveModeController(browser_->host_desktop_type()));
 }
 
 // static
@@ -920,14 +921,14 @@ void BrowserView::EnterFullscreen(
   if (IsFullscreen())
     return;  // Nothing to do.
 
-  ProcessFullscreen(true, FOR_DESKTOP, url, bubble_type);
+  ProcessFullscreen(true, NORMAL_FULLSCREEN, url, bubble_type);
 }
 
 void BrowserView::ExitFullscreen() {
   if (!IsFullscreen())
     return;  // Nothing to do.
 
-  ProcessFullscreen(false, FOR_DESKTOP, GURL(), FEB_TYPE_NONE);
+  ProcessFullscreen(false, NORMAL_FULLSCREEN, GURL(), FEB_TYPE_NONE);
 }
 
 void BrowserView::UpdateFullscreenExitBubbleContent(
@@ -966,7 +967,7 @@ bool BrowserView::IsFullscreenBubbleVisible() const {
 #if defined(OS_WIN)
 void BrowserView::SetMetroSnapMode(bool enable) {
   HISTOGRAM_COUNTS("Metro.SnapModeToggle", enable);
-  ProcessFullscreen(enable, FOR_METRO, GURL(), FEB_TYPE_NONE);
+  ProcessFullscreen(enable, METRO_SNAP_FULLSCREEN, GURL(), FEB_TYPE_NONE);
 }
 
 bool BrowserView::IsInMetroSnapMode() const {
@@ -988,7 +989,7 @@ void BrowserView::SetWindowSwitcherButton(views::Button* button) {
 
 void BrowserView::FullscreenStateChanged() {
   CHECK(!IsFullscreen());
-  ProcessFullscreen(false, FOR_DESKTOP, GURL(), FEB_TYPE_NONE);
+  ProcessFullscreen(false, NORMAL_FULLSCREEN, GURL(), FEB_TYPE_NONE);
 }
 
 void BrowserView::ToolbarSizeChanged(bool is_animating) {
@@ -2210,7 +2211,7 @@ void BrowserView::UpdateUIForContents(WebContents* contents) {
 }
 
 void BrowserView::ProcessFullscreen(bool fullscreen,
-                                    FullscreenType type,
+                                    FullscreenMode mode,
                                     const GURL& url,
                                     FullscreenExitBubbleType bubble_type) {
   if (in_process_fullscreen_)
@@ -2223,7 +2224,7 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
   //     thus are slow and look ugly (enforced via |in_process_fullscreen_|).
   LocationBarView* location_bar = GetLocationBarView();
 
-  if (type == FOR_METRO || !fullscreen) {
+  if (mode == METRO_SNAP_FULLSCREEN || !fullscreen) {
     // Hide the fullscreen bubble as soon as possible, since the mode toggle can
     // take enough time for the user to notice.
     fullscreen_bubble_.reset();
@@ -2242,13 +2243,15 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
   frame_->SetFullscreen(fullscreen);
 
   // Enable immersive before the browser refreshes its list of enabled commands.
-  if (ShouldUseImmersiveFullscreenForUrl(url))
+  if (mode != METRO_SNAP_FULLSCREEN && ShouldUseImmersiveFullscreenForUrl(url))
     immersive_mode_controller_->SetEnabled(fullscreen);
 
   browser_->WindowFullscreenStateChanged();
 
-  if (fullscreen && !chrome::IsRunningInAppMode() && type != FOR_METRO)
+  if (fullscreen && !chrome::IsRunningInAppMode() &&
+      mode != METRO_SNAP_FULLSCREEN) {
     UpdateFullscreenExitBubbleContent(url, bubble_type);
+  }
 
   // Undo our anti-jankiness hacks and force a re-layout. We also need to
   // recompute the height of the infobar top arrow because toggling in and out
@@ -2261,15 +2264,14 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
 }
 
 bool BrowserView::ShouldUseImmersiveFullscreenForUrl(const GURL& url) const {
-#if defined(OS_CHROMEOS)
-  // Kiosk mode needs the whole screen.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode))
+  // Kiosk mode needs the whole screen, and if we're not in an Ash desktop
+  // immersive fullscreen doesn't exist.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode) ||
+      browser()->host_desktop_type() != chrome::HOST_DESKTOP_TYPE_ASH) {
     return false;
-  bool is_browser_fullscreen = url.is_empty();
-  return is_browser_fullscreen;
-#else
-  return false;
-#endif
+  }
+
+  return url.is_empty();
 }
 
 void BrowserView::LoadAccelerators() {

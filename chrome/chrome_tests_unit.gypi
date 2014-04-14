@@ -2142,6 +2142,9 @@
         }],
         ['chromeos==0', {
           'sources!': [
+            # TODO(zturner): Enable this on Windows.  See
+            # BrowserWithTestWindowTest::SetUp() for a comment explaining why
+            # this is broken.
             'browser/ui/views/frame/immersive_mode_controller_ash_unittest.cc',
             'browser/ui/views/select_file_dialog_extension_unittest.cc',
           ],

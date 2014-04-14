@@ -51,9 +51,6 @@ class CustomFrameViewAshWindowStateDelegate
       ash::wm::WindowState* window_state,
       ash::CustomFrameViewAsh* custom_frame_view)
       : window_state_(NULL) {
-#if defined(OS_CHROMEOS)
-    // TODO(pkotwicz): Investigate if immersive fullscreen can be enabled for
-    // Windows Ash.
     immersive_fullscreen_controller_.reset(
         new ash::ImmersiveFullscreenController);
     custom_frame_view->InitImmersiveFullscreenControllerForView(
@@ -67,7 +64,6 @@ class CustomFrameViewAshWindowStateDelegate
     window_state_ = window_state;
     window_state_->AddObserver(this);
     window_state_->window()->AddObserver(this);
-#endif
   }
   virtual ~CustomFrameViewAshWindowStateDelegate() {
     if (window_state_) {

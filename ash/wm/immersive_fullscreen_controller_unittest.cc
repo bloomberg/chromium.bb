@@ -25,9 +25,6 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
-// For now, immersive fullscreen is Chrome OS only.
-#if defined(OS_CHROMEOS)
-
 namespace ash {
 
 namespace {
@@ -346,12 +343,6 @@ TEST_F(ImmersiveFullscreenControllerTest, RevealedLock) {
 // Test mouse event processing for top-of-screen reveal triggering.
 TEST_F(ImmersiveFullscreenControllerTest, OnMouseEvent) {
   // Set up initial state.
-  UpdateDisplay("800x600,800x600");
-  ash::DisplayLayout display_layout(ash::DisplayLayout::RIGHT, 0);
-  ash::Shell::GetInstance()->display_manager()->SetLayoutForCurrentDisplays(
-      display_layout);
-
-  // Set up initial state.
   SetEnabled(true);
   ASSERT_TRUE(controller()->IsEnabled());
   ASSERT_FALSE(controller()->IsRevealed());
@@ -378,7 +369,8 @@ TEST_F(ImmersiveFullscreenControllerTest, OnMouseEvent) {
 
   // Moving |ImmersiveFullscreenControllerTest::kMouseRevealBoundsHeight| down
   // from the top edge stops it.
-  event_generator.MoveMouseBy(0, 3);
+  event_generator.MoveMouseBy(0,
+      ImmersiveFullscreenController::kMouseRevealBoundsHeight);
   EXPECT_FALSE(top_edge_hover_timer_running());
 
   // Moving back to the top starts the timer again.
@@ -679,7 +671,16 @@ TEST_F(ImmersiveFullscreenControllerTest, DifferentModalityEnterExit) {
 }
 
 // Test when the SWIPE_CLOSE edge gesture closes the top-of-window views.
-TEST_F(ImmersiveFullscreenControllerTest, EndRevealViaGesture) {
+#if defined(OS_WIN)
+// On Windows, touch events do not result in mouse events being disabled.  As
+// a result, the last part of this test which ends the reveal via a gesture will
+// not work correctly.  See crbug.com/332430, and the function
+// ShouldHideCursorOnTouch() in compound_event_filter.cc.
+#define MAYBE_EndRevealViaGesture DISABLED_EndRevealViaGesture
+#else
+#define MAYBE_EndRevealViaGesture EndRevealViaGesture
+#endif
+TEST_F(ImmersiveFullscreenControllerTest, MAYBE_EndRevealViaGesture) {
   SetEnabled(true);
   EXPECT_TRUE(controller()->IsEnabled());
   EXPECT_FALSE(controller()->IsRevealed());
@@ -1054,5 +1055,3 @@ TEST_F(ImmersiveFullscreenControllerTest, Shelf) {
 }
 
 }  // namespase ash
-
-#endif  // defined(OS_CHROMEOS)

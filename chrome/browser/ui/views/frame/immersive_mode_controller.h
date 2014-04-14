@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
+#include "chrome/browser/ui/host_desktop.h"
 
 #if defined(USE_ASH)
 #include "ash/wm/immersive_revealed_lock.h"
@@ -120,7 +121,8 @@ class ImmersiveModeController {
 namespace chrome {
 
 // Implemented in immersive_mode_controller_factory.cc.
-ImmersiveModeController* CreateImmersiveModeController();
+ImmersiveModeController* CreateImmersiveModeController(
+    chrome::HostDesktopType host_desktop_type);
 
 }  // namespace chrome
 

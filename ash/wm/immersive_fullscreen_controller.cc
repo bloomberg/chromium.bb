@@ -62,13 +62,6 @@ const int kSwipeVerticalThresholdMultiplier = 3;
 // See ShouldIgnoreMouseEventAtLocation() for more details.
 const int kHeightOfDeadRegionAboveTopContainer = 10;
 
-// The height in pixels of the region below the top edge of the display in which
-// the mouse can trigger revealing the top-of-window views. The height must be
-// greater than 1px because the top pixel is used to trigger moving the cursor
-// between displays if the user has a vertical display layout (primary display
-// above/below secondary display).
-const int kMouseRevealBoundsHeight = 3;
-
 // Returns the BubbleDelegateView corresponding to |maybe_bubble| if
 // |maybe_bubble| is a bubble.
 views::BubbleDelegateView* AsBubbleDelegate(aura::Window* maybe_bubble) {
@@ -110,6 +103,20 @@ gfx::Rect GetDisplayBoundsInScreen(aura::Window* window) {
 }
 
 }  // namespace
+
+// The height in pixels of the region below the top edge of the display in which
+// the mouse can trigger revealing the top-of-window views.
+#if defined(OS_WIN)
+// Windows 8 reserves some pixels at the top of the screen for the hand icon
+// that allows you to drag a metro app off the screen, so a few additional
+// pixels of space must be reserved for the mouse reveal.
+const int ImmersiveFullscreenController::kMouseRevealBoundsHeight = 9;
+#else
+// The height must be greater than 1px because the top pixel is used to trigger
+// moving the cursor between displays if the user has a vertical display layout
+// (primary display above/below secondary display).
+const int ImmersiveFullscreenController::kMouseRevealBoundsHeight = 3;
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -397,6 +404,12 @@ void ImmersiveFullscreenController::OnGestureEvent(ui::GestureEvent* event) {
     return;
 
   switch (event->type()) {
+#if defined(OS_WIN)
+    case ui::ET_GESTURE_WIN8_EDGE_SWIPE:
+      UpdateRevealedLocksForSwipe(GetSwipeType(event));
+      event->SetHandled();
+      break;
+#endif
     case ui::ET_GESTURE_SCROLL_BEGIN:
       if (ShouldHandleGestureEvent(GetEventLocationInScreen(*event))) {
         gesture_begun_ = true;
@@ -850,6 +863,10 @@ void ImmersiveFullscreenController::OnSlideClosedAnimationCompleted() {
 
 ImmersiveFullscreenController::SwipeType
 ImmersiveFullscreenController::GetSwipeType(ui::GestureEvent* event) const {
+#if defined(OS_WIN)
+  if (event->type() == ui::ET_GESTURE_WIN8_EDGE_SWIPE)
+    return SWIPE_OPEN;
+#endif
   if (event->type() != ui::ET_GESTURE_SCROLL_UPDATE)
     return SWIPE_NONE;
   // Make sure that it is a clear vertical gesture.

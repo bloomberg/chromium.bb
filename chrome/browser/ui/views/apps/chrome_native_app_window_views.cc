@@ -513,15 +513,11 @@ views::NonClientFrameView* ChromeNativeAppWindowViews::CreateNonClientFrameView(
     if (!IsFrameless()) {
       ash::CustomFrameViewAsh* custom_frame_view =
           new ash::CustomFrameViewAsh(widget);
-#if defined(OS_CHROMEOS)
       // Non-frameless app windows can be put into immersive fullscreen.
-      // TODO(pkotwicz): Investigate if immersive fullscreen can be enabled for
-      // Windows Ash.
       immersive_fullscreen_controller_.reset(
           new ash::ImmersiveFullscreenController());
       custom_frame_view->InitImmersiveFullscreenControllerForView(
           immersive_fullscreen_controller_.get());
-#endif
       custom_frame_view->GetHeaderView()->set_context_menu_controller(this);
       return custom_frame_view;
     }
