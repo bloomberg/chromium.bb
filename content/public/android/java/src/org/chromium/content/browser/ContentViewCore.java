@@ -732,6 +732,13 @@ public class ContentViewCore
                 resetScrollInProgress();
                 resetGestureDetectors();
             }
+
+            @Override
+            public void renderProcessGone(boolean wasOomProtected) {
+                hidePopupDialog();
+                resetScrollInProgress();
+                resetGestureDetectors();
+            }
         };
     }
 
