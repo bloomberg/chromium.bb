@@ -44,7 +44,9 @@ def PostTryJob(url_params):
   if not url_params.get('bot'):
     raise ValueError('Missing bot details. Please specify bot information.')
 
-  url = 'http://%s:%s/send_try_patch' % (url_params['host'], url_params['port'])
+  # Pop 'host' and 'port' to avoid passing them as query params.
+  url = 'http://%s:%s/send_try_patch' % (url_params.pop('host'),
+                                         url_params.pop('port'))
 
   print 'Sending by HTTP'
   query_params = '&'.join('%s=%s' % (k, v) for k, v in url_params.iteritems())
