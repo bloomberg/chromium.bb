@@ -94,7 +94,7 @@ function test()
         "samples": [ 1, 2 ]
     };
     WebInspector.inspectorView.showPanel("profiles");
-    WebInspector.CPUProfileView.prototype._calculateTimes(profileAndExpectations);
+    WebInspector.CPUProfileDataModel.prototype._calculateTimes(profileAndExpectations);
     function checkExpectations(node)
     {
         if (Math.abs(node.selfTime - node.expectedSelfTime) > 0.0001) {

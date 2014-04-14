@@ -44,9 +44,9 @@ function test()
         {
             function waitForTempFile(view)
             {
-                InspectorTest.addSniffer(view.profile, "_writeToTempFile", saveProfileToFile.bind(this, view));
+                InspectorTest.addSniffer(view._profileHeader, "_writeToTempFile", saveProfileToFile.bind(this, view._profileHeader));
             }
-            function saveProfileToFile(view)
+            function saveProfileToFile(profile)
             {
                 WebInspector.FileOutputStream = function() { }
                 WebInspector.FileOutputStream.prototype = {
@@ -81,7 +81,7 @@ function test()
                     }
                 }
 
-                view.profile.saveToFile();
+                profile.saveToFile();
             }
             InspectorTest.showProfileWhenAdded("manual");
             InspectorTest.waitUntilProfileViewIsShown("manual", waitForTempFile.bind(this));
