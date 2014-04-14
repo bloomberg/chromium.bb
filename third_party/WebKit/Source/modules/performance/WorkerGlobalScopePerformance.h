@@ -54,7 +54,7 @@ private:
     WorkerPerformance* performance();
     static const char* supplementName();
 
-    RefPtrWillBeMember<WorkerPerformance> m_performance;
+    PersistentWillBeMember<WorkerPerformance> m_performance;
 };
 
 } // namespace WebCore

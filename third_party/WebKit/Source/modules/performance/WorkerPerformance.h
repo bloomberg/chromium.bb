@@ -42,9 +42,12 @@ namespace WebCore {
 
 class ExecutionContext;
 
-class WorkerPerformance : public RefCountedWillBeGarbageCollectedFinalized<WorkerPerformance>, public ScriptWrappable {
+class WorkerPerformance : public GarbageCollectedFinalized<WorkerPerformance>, public ScriptWrappable {
 public:
-    static PassRefPtrWillBeRawPtr<WorkerPerformance> create() { return adoptRefWillBeNoop(new WorkerPerformance()); }
+    static WorkerPerformance* create()
+    {
+        return new WorkerPerformance();
+    }
     ~WorkerPerformance();
 
     double now(ExecutionContext*) const;
