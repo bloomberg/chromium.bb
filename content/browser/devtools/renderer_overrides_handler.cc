@@ -900,6 +900,7 @@ RendererOverridesHandler::InputDispatchGestureEvent(
       agent_->GetRenderViewHost());
   blink::WebGestureEvent event;
   ParseGenericInputParams(params, &event);
+  event.sourceDevice = WebGestureEvent::Touchscreen;
 
   std::string type;
   if (params->GetString(devtools::Input::dispatchGestureEvent::kParamType,
