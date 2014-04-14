@@ -749,6 +749,11 @@ class RemoteDeviceUpdater(object):
         if self.reboot:
           logging.info('Rebooting device..')
           device.Reboot()
+          if self.clobber_stateful:
+            # --clobber-stateful wipes the stateful partition and the
+            # working directory on the device no longer exists. To
+            # remedy this, we recreate the working directory here.
+            device.BaseRunCommand(['mkdir', '-p', device.work_dir])
 
         if self.do_rootfs_update and self.reboot:
           new_root_dev = self.GetRootDev(device)

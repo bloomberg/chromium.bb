@@ -465,8 +465,8 @@ class RemoteDevice(object):
     self.base_dir = base_dir
 
     # Do not call RunCommand here because we have not set up work directory yet.
-    self._BaseRunCommand(['mkdir', '-p', self.base_dir])
-    self.work_dir = self._BaseRunCommand(
+    self.BaseRunCommand(['mkdir', '-p', self.base_dir])
+    self.work_dir = self.BaseRunCommand(
         ['mktemp', '-d', '--tmpdir=%s' % base_dir],
         capture_output=True).output.strip()
     logging.debug(
@@ -501,7 +501,7 @@ class RemoteDevice(object):
     for cmd, kwargs in self.cleanup_cmds:
       # We want to run through all cleanup commands even if there are errors.
       kwargs.setdefault('error_code_ok', True)
-      self._BaseRunCommand(cmd, **kwargs)
+      self.BaseRunCommand(cmd, **kwargs)
 
     self.tempdir.Cleanup()
 
@@ -554,7 +554,7 @@ class RemoteDevice(object):
     """Reboot the device."""
     return self.agent.RemoteReboot()
 
-  def _BaseRunCommand(self, cmd, **kwargs):
+  def BaseRunCommand(self, cmd, **kwargs):
     """Executes a shell command on the device with output captured by default.
 
     Args:
@@ -601,7 +601,7 @@ class RemoteDevice(object):
 
         new_cmd += cmd
 
-    return self._BaseRunCommand(new_cmd, **kwargs)
+    return self.BaseRunCommand(new_cmd, **kwargs)
 
 
 class ChromiumOSDevice(RemoteDevice):
@@ -620,7 +620,7 @@ class ChromiumOSDevice(RemoteDevice):
   def _GetPath(self):
     """Gets $PATH on the device and prepend it with DEV_BIN_PATHS."""
     try:
-      result = self._BaseRunCommand(['echo', "${PATH}"])
+      result = self.BaseRunCommand(['echo', "${PATH}"])
     except cros_build_lib.RunCommandError:
       logging.warning('Error detecting $PATH on the device.')
       raise
@@ -687,7 +687,7 @@ class ChromiumOSDevice(RemoteDevice):
     entry or if the command failed, returns an empty string.
     """
     try:
-      result = self._BaseRunCommand(self.GET_BOARD_CMD, capture_output=True)
+      result = self.BaseRunCommand(self.GET_BOARD_CMD, capture_output=True)
     except cros_build_lib.RunCommandError:
       logging.warning('Error detecting the board.')
       return ''
