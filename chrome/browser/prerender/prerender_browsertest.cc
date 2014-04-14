@@ -3674,10 +3674,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHTML5MediaSourceVideo) {
 
 // Checks that a prerender that creates an audio stream (via a WebAudioDevice)
 // is cancelled.
-// http://crbug.com/261489
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderWebAudioDevice) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderWebAudioDevice) {
+  DisableLoadEventCheck();
   PrerenderTestURL("files/prerender/prerender_web_audio_device.html",
-                   FINAL_STATUS_CREATING_AUDIO_STREAM, 1);
+                   FINAL_STATUS_CREATING_AUDIO_STREAM, 0);
 }
 
 // Checks that prerenders do not swap in to WebContents being captured.
