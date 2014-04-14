@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "chromeos/login/login_state.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "grit/chromium_strings.h"
@@ -298,6 +299,14 @@ ChildNetworkConfigView::~ChildNetworkConfigView() {
 
 bool ChildNetworkConfigView::IsConfigureDialog() {
   return false;
+}
+
+// static
+void ChildNetworkConfigView::GetShareStateForLoginState(bool* default_value,
+                                                        bool* modifiable) {
+  *default_value = !LoginState::Get()->UserHasNetworkProfile();
+  // Allow only authenticated user to change the share state.
+  *modifiable = LoginState::Get()->IsUserAuthenticated();
 }
 
 // ControlledSettingIndicatorView

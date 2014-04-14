@@ -118,7 +118,7 @@ bool GetNetworkProfilePath(bool shared, std::string* profile_path) {
     return true;
   }
 
-  if (!chromeos::LoginState::Get()->IsUserAuthenticated()) {
+  if (!chromeos::LoginState::Get()->UserHasNetworkProfile()) {
     NET_LOG_ERROR("User profile specified before login", "");
     return false;
   }

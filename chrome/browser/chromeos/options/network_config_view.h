@@ -148,6 +148,9 @@ class ChildNetworkConfigView : public views::View {
   static const int kInputFieldMinWidth;
 
  protected:
+  // Gets the default network share state for the current login state.
+  static void GetShareStateForLoginState(bool* default_value, bool* modifiable);
+
   NetworkConfigView* parent_;
   std::string service_path_;
 

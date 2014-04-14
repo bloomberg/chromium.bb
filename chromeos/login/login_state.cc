@@ -101,17 +101,26 @@ bool LoginState::IsGuestUser() const {
   return false;
 }
 
+bool LoginState::IsKioskApp() const {
+  return logged_in_user_type_ == LoginState::LOGGED_IN_USER_KIOSK_APP;
+}
+
+bool LoginState::UserHasNetworkProfile() const {
+  if (!IsUserLoggedIn())
+    return false;
+  return logged_in_user_type_ != LOGGED_IN_USER_RETAIL_MODE &&
+         logged_in_user_type_ != LOGGED_IN_USER_PUBLIC_ACCOUNT;
+}
+
 bool LoginState::IsUserAuthenticated() const {
-  LoggedInUserType type = logged_in_user_type_;
-  return type == chromeos::LoginState::LOGGED_IN_USER_REGULAR ||
-      type == chromeos::LoginState::LOGGED_IN_USER_OWNER ||
-      type == chromeos::LoginState::LOGGED_IN_USER_LOCALLY_MANAGED;
+  return logged_in_user_type_ == LOGGED_IN_USER_REGULAR ||
+         logged_in_user_type_ == LOGGED_IN_USER_OWNER ||
+         logged_in_user_type_ == LOGGED_IN_USER_LOCALLY_MANAGED;
 }
 
 bool LoginState::IsUserGaiaAuthenticated() const {
-  LoggedInUserType type = logged_in_user_type_;
-  return type == chromeos::LoginState::LOGGED_IN_USER_REGULAR ||
-      type == chromeos::LoginState::LOGGED_IN_USER_OWNER;
+  return logged_in_user_type_ == LOGGED_IN_USER_REGULAR ||
+         logged_in_user_type_ == LOGGED_IN_USER_OWNER;
 }
 
 // Private methods

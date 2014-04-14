@@ -67,6 +67,12 @@ class CHROMEOS_EXPORT LoginState {
   // Returns true if logged in and is a guest, retail, or public user.
   bool IsGuestUser() const;
 
+  // Returns true if logged in as a kiosk app.
+  bool IsKioskApp() const;
+
+  // Whether a network profile is created for the user.
+  bool UserHasNetworkProfile() const;
+
   // Returns true if the user is an authenticated user (i.e. non public account)
   bool IsUserAuthenticated() const;
 

@@ -561,13 +561,13 @@ void WifiConfigView::RefreshShareCheckbox() {
     // user certificates are enabled.
     share_network_checkbox_->SetEnabled(false);
     share_network_checkbox_->SetChecked(false);
-  } else if (!LoginState::Get()->IsUserAuthenticated()) {
-    // If not logged in as an authenticated user, networks must be shared.
-    share_network_checkbox_->SetEnabled(false);
-    share_network_checkbox_->SetChecked(true);
   } else {
-    share_network_checkbox_->SetEnabled(true);
-    share_network_checkbox_->SetChecked(false);  // Default to unshared.
+    bool value = false;
+    bool enabled = false;
+    ChildNetworkConfigView::GetShareStateForLoginState(&value, &enabled);
+
+    share_network_checkbox_->SetChecked(value);
+    share_network_checkbox_->SetEnabled(enabled);
   }
 }
 
@@ -575,7 +575,8 @@ void WifiConfigView::UpdateErrorLabel() {
   base::string16 error_msg;
   if (UserCertRequired() && CertLibrary::Get()->CertificatesLoaded()) {
     if (!HaveUserCerts()) {
-      if (!LoginState::Get()->IsUserAuthenticated()) {
+      if (!LoginState::Get()->IsUserLoggedIn() ||
+          LoginState::Get()->IsGuestUser()) {
         error_msg = l10n_util::GetStringUTF16(
             IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_LOGIN_FOR_USER_CERT);
       } else {

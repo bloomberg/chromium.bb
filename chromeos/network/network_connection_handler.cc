@@ -87,7 +87,7 @@ bool VPNRequiresCredentials(const std::string& service_path,
 
 std::string GetDefaultUserProfilePath(const NetworkState* network) {
   if (!NetworkHandler::IsInitialized() ||
-      !LoginState::Get()->IsUserAuthenticated() ||
+      !LoginState::Get()->UserHasNetworkProfile() ||
       (network && network->type() == shill::kTypeWifi &&
        network->security() == shill::kSecurityNone)) {
     return NetworkProfileHandler::GetSharedProfilePath();

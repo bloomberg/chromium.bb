@@ -367,7 +367,9 @@ bool VPNConfigView::Login() {
         shill::kProviderTypeProperty, GetProviderTypeString());
 
     SetConfigProperties(&properties);
-    bool shared = !LoginState::Get()->IsUserAuthenticated();
+    bool shared = false;
+    bool modifiable = false;
+    ChildNetworkConfigView::GetShareStateForLoginState(&shared, &modifiable);
 
     bool only_policy_autoconnect =
         onc::PolicyAllowsOnlyPolicyNetworksToAutoconnect(!shared);

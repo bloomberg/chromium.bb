@@ -324,14 +324,16 @@ void WimaxConfigView::Init() {
     share_network_checkbox_ = new views::Checkbox(
         l10n_util::GetStringUTF16(
             IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SHARE_NETWORK));
-    if (LoginState::Get()->IsUserAuthenticated()) {
-      share_network_checkbox_->SetChecked(false);  // Default to unshared
-      share_network_checkbox_->SetEnabled(true);
-    } else {
-      // Not logged in, must be shared
-      share_network_checkbox_->SetChecked(true);
-      share_network_checkbox_->SetEnabled(false);
-    }
+
+    bool share_network_checkbox_value = false;
+    bool share_network_checkbox_enabled = false;
+    ChildNetworkConfigView::GetShareStateForLoginState(
+        &share_network_checkbox_value,
+        &share_network_checkbox_enabled);
+
+    share_network_checkbox_->SetChecked(share_network_checkbox_value);
+    share_network_checkbox_->SetEnabled(share_network_checkbox_enabled);
+
     layout->SkipColumns(1);
     layout->AddView(share_network_checkbox_);
   }
