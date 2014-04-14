@@ -48,18 +48,12 @@ int main(int argc, const char* argv[]) {
     fprintf(stdout, "cue identifier: \"%s\"\n", cue.identifier.c_str());
 
     const libwebvtt::Time& st = cue.start_time;
-    fprintf(stdout, "cue start time: \"HH=%i MM=%i SS=%i SSS=%i\"\n",
-            st.hours,
-            st.minutes,
-            st.seconds,
-            st.milliseconds);
+    fprintf(stdout, "cue start time: \"HH=%i MM=%i SS=%i SSS=%i\"\n", st.hours,
+            st.minutes, st.seconds, st.milliseconds);
 
     const libwebvtt::Time& sp = cue.stop_time;
-    fprintf(stdout, "cue stop time: \"HH=%i MM=%i SS=%i SSS=%i\"\n",
-            sp.hours,
-            sp.minutes,
-            sp.seconds,
-            sp.milliseconds);
+    fprintf(stdout, "cue stop time: \"HH=%i MM=%i SS=%i SSS=%i\"\n", sp.hours,
+            sp.minutes, sp.seconds, sp.milliseconds);
 
     {
       typedef libwebvtt::Cue::settings_t::const_iterator iter_t;
@@ -72,8 +66,7 @@ int main(int argc, const char* argv[]) {
         while (i != j) {
           const libwebvtt::Setting& setting = *i++;
           fprintf(stdout, "cue setting: name=%s value=%s\n",
-                  setting.name.c_str(),
-                  setting.value.c_str());
+                  setting.name.c_str(), setting.value.c_str());
         }
       }
     }
