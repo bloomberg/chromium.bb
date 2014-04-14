@@ -205,6 +205,9 @@ const AtomicString& HTMLElement::eventNameForAttributeName(const QualifiedName& 
     if (!attrName.namespaceURI().isNull())
         return nullAtom;
 
+    if (!attrName.localName().startsWith("on", false))
+        return nullAtom;
+
     typedef HashMap<AtomicString, AtomicString> StringToStringMap;
     DEFINE_STATIC_LOCAL(StringToStringMap, attributeNameToEventNameMap, ());
     if (!attributeNameToEventNameMap.size()) {
