@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "sandbox/linux/suid/client/setuid_sandbox_client.h"
+
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -15,7 +17,6 @@
 #include "sandbox/linux/services/init_process_reaper.h"
 #include "sandbox/linux/suid/common/sandbox.h"
 #include "sandbox/linux/suid/common/suid_unsafe_environment_variables.h"
-#include "setuid_sandbox_client.h"
 
 namespace {
 

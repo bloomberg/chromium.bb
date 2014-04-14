@@ -11,8 +11,6 @@
 #include <stdbool.h>
 #include <sys/types.h>
 
-#include "base/base_export.h"
-
 // This adjusts /proc/process/oom_score_adj so the Linux OOM killer
 // will prefer certain process types over others. The range for the
 // adjustment is [-1000, 1000], with [0, 1000] being user accessible.
@@ -21,12 +19,12 @@
 // try to set the older oom_adj value instead, scaling the score to
 // the required range of [0, 15]. This may result in some aliasing of
 // values, of course.
-BASE_EXPORT bool AdjustOOMScore(pid_t process, int score);
+bool AdjustOOMScore(pid_t process, int score);
 
 // This adjusts /sys/kernel/mm/chromeos-low_mem/margin so that
 // the kernel notifies us that we are low on memory when less than
 // |margin_mb| megabytes are available.  Setting |margin_mb| to -1
 // turns off low memory notification.
-BASE_EXPORT bool AdjustLowMemoryMargin(int64_t margin_mb);
+bool AdjustLowMemoryMargin(int64_t margin_mb);
 
 #endif  // SANDBOX_LINUX_SUID_PROCESS_UTIL_H_

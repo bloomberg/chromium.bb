@@ -4,7 +4,7 @@
 
 // http://code.google.com/p/chromium/wiki/LinuxSUIDSandbox
 
-#include "common/sandbox.h"
+#include "sandbox/linux/suid/common/sandbox.h"
 
 #define _GNU_SOURCE
 #include <asm/unistd.h>
@@ -29,9 +29,9 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#include "linux_util.h"
-#include "process_util.h"
-#include "common/suid_unsafe_environment_variables.h"
+#include "sandbox/linux/suid/common/suid_unsafe_environment_variables.h"
+#include "sandbox/linux/suid/linux_util.h"
+#include "sandbox/linux/suid/process_util.h"
 
 #if !defined(CLONE_NEWPID)
 #define CLONE_NEWPID 0x20000000
@@ -44,10 +44,10 @@ static bool DropRoot();
 
 #define HANDLE_EINTR(x) TEMP_FAILURE_RETRY(x)
 
-static void FatalError(const char *msg, ...)
+static void FatalError(const char* msg, ...)
     __attribute__((noreturn, format(printf, 1, 2)));
 
-static void FatalError(const char *msg, ...) {
+static void FatalError(const char* msg, ...) {
   va_list ap;
   va_start(ap, msg);
 
@@ -85,20 +85,18 @@ static bool SpawnChrootHelper() {
     return false;
   }
 
-  char *safedir = NULL;
+  char* safedir = NULL;
   struct stat sdir_stat;
-  if (!stat(SAFE_DIR, &sdir_stat) && S_ISDIR(sdir_stat.st_mode))
+  if (!stat(SAFE_DIR, &sdir_stat) && S_ISDIR(sdir_stat.st_mode)) {
     safedir = SAFE_DIR;
-  else
-    if (!stat(SAFE_DIR2, &sdir_stat) && S_ISDIR(sdir_stat.st_mode))
-      safedir = SAFE_DIR2;
-    else {
-      fprintf(stderr, "Could not find %s\n", SAFE_DIR2);
-      return false;
-    }
+  } else if (!stat(SAFE_DIR2, &sdir_stat) && S_ISDIR(sdir_stat.st_mode)) {
+    safedir = SAFE_DIR2;
+  } else {
+    fprintf(stderr, "Could not find %s\n", SAFE_DIR2);
+    return false;
+  }
 
-  const pid_t pid = syscall(
-      __NR_clone, CLONE_FS | SIGCHLD, 0, 0, 0);
+  const pid_t pid = syscall(__NR_clone, CLONE_FS | SIGCHLD, 0, 0, 0);
 
   if (pid == -1) {
     perror("clone");
@@ -214,7 +212,7 @@ static void WaitForChildAndExit(pid_t child_pid) {
   }
 
   int wait_ret =
-    HANDLE_EINTR(waitid(P_PID, child_pid, &reaped_child_info, WEXITED));
+      HANDLE_EINTR(waitid(P_PID, child_pid, &reaped_child_info, WEXITED));
 
   if (!wait_ret && reaped_child_info.si_pid == child_pid) {
     if (reaped_child_info.si_code == CLD_EXITED) {
@@ -229,10 +227,7 @@ static void WaitForChildAndExit(pid_t child_pid) {
 
 static bool MoveToNewNamespaces() {
   // These are the sets of flags which we'll try, in order.
-  const int kCloneExtraFlags[] = {
-    CLONE_NEWPID | CLONE_NEWNET,
-    CLONE_NEWPID,
-  };
+  const int kCloneExtraFlags[] = {CLONE_NEWPID | CLONE_NEWNET, CLONE_NEWPID, };
 
   // We need to close kZygoteIdFd before the child can continue. We use this
   // socketpair to tell the child when to continue;
@@ -241,8 +236,7 @@ static bool MoveToNewNamespaces() {
     FatalError("Failed to create a socketpair");
   }
 
-  for (size_t i = 0;
-       i < sizeof(kCloneExtraFlags) / sizeof(kCloneExtraFlags[0]);
+  for (size_t i = 0; i < sizeof(kCloneExtraFlags) / sizeof(kCloneExtraFlags[0]);
        i++) {
     pid_t pid = syscall(__NR_clone, SIGCHLD | kCloneExtraFlags[i], 0, 0, 0);
     const int clone_errno = errno;
@@ -386,7 +380,7 @@ bool CheckAndExportApiVersion() {
   // Check the environment to see if a specific API version was requested.
   // assume version 0 if none.
   long api_number = -1;
-  char *api_string = getenv(kSandboxEnvironmentApiRequest);
+  char* api_string = getenv(kSandboxEnvironmentApiRequest);
   if (!api_string) {
     api_number = 0;
   } else {
@@ -399,20 +393,22 @@ bool CheckAndExportApiVersion() {
 
   // Warn only for now.
   if (api_number != kSUIDSandboxApiNumber) {
-    fprintf(stderr, "The setuid sandbox provides API version %ld, "
-      "but you need %ld\n"
-      "Please read "
-      "https://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment."
-      "\n\n",
-      kSUIDSandboxApiNumber,
-      api_number);
+    fprintf(
+        stderr,
+        "The setuid sandbox provides API version %ld, "
+        "but you need %ld\n"
+        "Please read "
+        "https://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment."
+        "\n\n",
+        kSUIDSandboxApiNumber,
+        api_number);
   }
 
   // Export our version so that the sandboxed process can verify it did not
   // use an old sandbox.
   char version_string[64];
-  snprintf(version_string, sizeof(version_string), "%ld",
-           kSUIDSandboxApiNumber);
+  snprintf(
+      version_string, sizeof(version_string), "%ld", kSUIDSandboxApiNumber);
   if (setenv(kSandboxEnvironmentApiProvides, version_string, 1)) {
     perror("setenv");
     return false;
@@ -421,7 +417,7 @@ bool CheckAndExportApiVersion() {
   return true;
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   if (argc <= 1) {
     if (argc <= 0) {
       return 1;
@@ -476,9 +472,10 @@ int main(int argc, char **argv) {
     endptr = NULL;
     errno = 0;
     score = strtol(argv[3], &endptr, 10);
-    if (score == LONG_MAX || score == LONG_MIN ||
-        !endptr || *endptr || errno != 0)
+    if (score == LONG_MAX || score == LONG_MIN || !endptr || *endptr ||
+        errno != 0) {
       return 1;
+    }
     return AdjustOOMScore(pid, score);
   }
 
@@ -489,9 +486,9 @@ int main(int argc, char **argv) {
 
   if (geteuid() != 0) {
     fprintf(stderr,
-        "The setuid sandbox is not running as root. Common causes:\n"
-        "  * An unprivileged process using ptrace on it, like a debugger.\n"
-        "  * A parent process set prctl(PR_SET_NO_NEW_PRIVS, ...)\n");
+            "The setuid sandbox is not running as root. Common causes:\n"
+            "  * An unprivileged process using ptrace on it, like a debugger.\n"
+            "  * A parent process set prctl(PR_SET_NO_NEW_PRIVS, ...)\n");
   }
 
   if (!MoveToNewNamespaces())

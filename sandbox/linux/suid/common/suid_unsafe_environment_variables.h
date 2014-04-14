@@ -54,7 +54,7 @@ static inline char* SandboxSavedEnvironmentVariable(const char* envvar) {
   const size_t envvar_len = strlen(envvar);
   const size_t kMaxSizeT = (size_t) -1;
 
-  if (envvar_len > kMaxSizeT - 1 -8)
+  if (envvar_len > kMaxSizeT - 1 - 8)
     return NULL;
 
   const size_t saved_envvarlen = envvar_len + 1 /* NUL terminator */ +

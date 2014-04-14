@@ -5,9 +5,9 @@
 // The following is the C version of code from base/process_utils_linux.cc.
 // We shouldn't link against C++ code in a setuid binary.
 
-#define _GNU_SOURCE  // needed for O_DIRECTORY
+#include "sandbox/linux/suid/process_util.h"
 
-#include "process_util.h"
+#define _GNU_SOURCE  // needed for O_DIRECTORY
 
 #include <fcntl.h>
 #include <inttypes.h>

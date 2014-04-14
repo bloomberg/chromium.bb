@@ -6,10 +6,9 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
-#include "testing/gtest/include/gtest/gtest.h"
-
+#include "sandbox/linux/suid/client/setuid_sandbox_client.h"
 #include "sandbox/linux/suid/common/sandbox.h"
-#include "setuid_sandbox_client.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace sandbox {
 
