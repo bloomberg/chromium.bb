@@ -46,6 +46,7 @@ private:
     // Enabled extension objects.
     RefPtr<ANGLEInstancedArrays> m_angleInstancedArrays;
     RefPtr<EXTFragDepth> m_extFragDepth;
+    RefPtr<EXTShaderTextureLOD> m_extShaderTextureLOD;
     RefPtr<EXTTextureFilterAnisotropic> m_extTextureFilterAnisotropic;
     RefPtr<OESTextureFloat> m_oesTextureFloat;
     RefPtr<OESTextureFloatLinear> m_oesTextureFloatLinear;

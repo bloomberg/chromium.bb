@@ -11,6 +11,7 @@ namespace WebCore {
 enum WebGLExtensionName {
     ANGLEInstancedArraysName,
     EXTFragDepthName,
+    EXTShaderTextureLODName,
     EXTTextureFilterAnisotropicName,
     OESElementIndexUintName,
     OESStandardDerivativesName,

@@ -52,6 +52,7 @@ namespace WebCore {
 
 class ANGLEInstancedArrays;
 class EXTFragDepth;
+class EXTShaderTextureLOD;
 class EXTTextureFilterAnisotropic;
 class ExceptionState;
 class HTMLImageElement;
