@@ -1,0 +1,6 @@
+include_rules = [
+  "+crypto",
+  "+net",
+  # Data reduction proxy is used by iOS, which does not use content.
+  "-content",
+]

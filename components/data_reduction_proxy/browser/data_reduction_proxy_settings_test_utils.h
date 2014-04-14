@@ -1,24 +1,44 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NET_SPDYPROXY_DATA_REDUCTION_PROXY_SETTINGS_UNITTEST_H_
-#define CHROME_BROWSER_NET_SPDYPROXY_DATA_REDUCTION_PROXY_SETTINGS_UNITTEST_H_
+#ifndef COMPONENTS_DATA_REDUCTION_PROXY_BROWSER_DATA_REDUCTION_PROXY_SETTINGS_TEST_UTILS_H_
+#define COMPONENTS_DATA_REDUCTION_PROXY_BROWSER_DATA_REDUCTION_PROXY_SETTINGS_TEST_UTILS_H_
 
 
-#include "base/metrics/field_trial.h"
-#include "base/metrics/histogram_samples.h"
 #include "base/prefs/testing_pref_service.h"
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_configurator.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
 #include "net/url_request/test_url_fetcher_factory.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class PrefService;
 class TestingPrefServiceSimple;
 
-using spdyproxy::ProbeURLFetchResult;
-using spdyproxy::ProxyStartupState;
+namespace data_reduction_proxy {
+
+class TestDataReductionProxyConfig : public DataReductionProxyConfigurator {
+ public:
+  TestDataReductionProxyConfig()
+      : enabled_(false), restricted_(false) {}
+  virtual ~TestDataReductionProxyConfig() {}
+  virtual void Enable(bool restricted,
+                      const std::string& primary_origin,
+                      const std::string& fallback_origin) OVERRIDE;
+  virtual void Disable() OVERRIDE;
+  virtual void AddHostPatternToBypass(const std::string& pattern) OVERRIDE {}
+  virtual void AddURLPatternToBypass(const std::string& pattern) OVERRIDE {}
+
+  // True if the proxy has been enabled, i.e., only after |Enable| has been
+  // called. Defaults to false.
+  bool enabled_;
+
+  // Describes whether the proxy has been put in a restricted mode. True if
+  // |Enable| is called with |restricted| set to true. Defaults to false.
+  bool restricted_;
+};
 
 template <class C>
 class MockDataReductionProxySettings : public C {
@@ -65,8 +85,6 @@ class DataReductionProxySettingsTestBase : public testing::Test {
                               bool success,
                               int expected_calls) = 0;
 
-  void CheckProxyPref(const std::string& expected_servers,
-                      const std::string& expected_mode);
   void CheckProxyConfigs(bool expected_enabled, bool expected_restricted);
   void CheckProbe(bool initially_enabled,
                   const std::string& probe_url,
@@ -84,8 +102,6 @@ class DataReductionProxySettingsTestBase : public testing::Test {
   TestingPrefServiceSimple pref_service_;
   scoped_ptr<DataReductionProxySettings> settings_;
   base::Time last_update_time_;
-  // This is a singleton that will clear all set field trials on destruction.
-  scoped_ptr<base::FieldTrialList> field_trial_list_;
 };
 
 // Test implementations should be subclasses of an instantiation of this
@@ -110,4 +126,6 @@ class ConcreteDataReductionProxySettingsTest
   }
 };
 
-#endif  // CHROME_BROWSER_NET_SPDYPROXY_DATA_REDUCTION_PROXY_SETTINGS_UNITTEST_H_
+}  // namespace data_reduction_proxy
+
+#endif  // COMPONENTS_DATA_REDUCTION_PROXY_BROWSER_DATA_REDUCTION_PROXY_SETTINGS_TEST_UTILS_H_

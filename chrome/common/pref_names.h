@@ -13,6 +13,7 @@
 
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/bookmarks/core/common/bookmark_pref_names.h"
+#include "components/data_reduction_proxy/common/data_reduction_proxy_pref_names.h"
 #include "components/signin/core/common/signin_pref_names.h"
 
 namespace prefs {
@@ -589,11 +590,6 @@ extern const char kDevToolsPortForwardingConfig[];
 #if defined(OS_ANDROID)
 extern const char kDevToolsRemoteEnabled[];
 #endif
-#if defined(OS_ANDROID) || defined(OS_IOS)
-// Used by Chrome Mobile.
-extern const char kSpdyProxyAuthEnabled[];
-extern const char kSpdyProxyAuthWasEnabledBefore[];
-#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 extern const char kGoogleServicesPasswordHash[];
 
@@ -747,26 +743,9 @@ extern const char kEnableAuthNegotiatePort[];
 extern const char kAuthServerWhitelist[];
 extern const char kAuthNegotiateDelegateWhitelist[];
 extern const char kGSSAPILibraryName[];
-extern const char kSpdyProxyAuthOrigin[];
 extern const char kAllowCrossOriginAuthPrompt[];
 
 extern const char kBuiltInDnsClientEnabled[];
-
-extern const char kHttpReceivedContentLength[];
-extern const char kHttpOriginalContentLength[];
-#if defined(OS_ANDROID) || defined(OS_IOS)
-extern const char kDailyHttpOriginalContentLength[];
-extern const char kDailyHttpReceivedContentLength[];
-extern const char kDailyOriginalContentLengthWithDataReductionProxyEnabled[];
-extern const char kDailyContentLengthWithDataReductionProxyEnabled[];
-extern const char kDailyContentLengthHttpsWithDataReductionProxyEnabled[];
-extern const char kDailyContentLengthShortBypassWithDataReductionProxyEnabled[];
-extern const char kDailyContentLengthLongBypassWithDataReductionProxyEnabled[];
-extern const char kDailyContentLengthUnknownWithDataReductionProxyEnabled[];
-extern const char kDailyOriginalContentLengthViaDataReductionProxy[];
-extern const char kDailyContentLengthViaDataReductionProxy[];
-extern const char kDailyHttpContentLengthLastUpdateDate[];
-#endif
 
 extern const char kRegisteredProtocolHandlers[];
 extern const char kIgnoredProtocolHandlers[];

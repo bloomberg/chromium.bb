@@ -2,36 +2,84 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings_unittest.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings_android.h"
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/base64.h"
 #include "base/command_line.h"
-#include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
-#include "base/prefs/scoped_user_pref_update.h"
-#include "base/prefs/testing_pref_service.h"
-#include "base/strings/string_number_conversions.h"
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings_android.h"
 #include "chrome/browser/prefs/proxy_prefs.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/common/pref_names.h"
-#include "components/variations/entropy_provider.h"
-#include "net/url_request/test_url_fetcher_factory.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_settings_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+using testing::_;
+using testing::AnyNumber;
+using testing::Return;
+
 const char kDataReductionProxyOrigin[] = "https://foo.com:443/";
-const char kDataReductionProxyDevHost[] = "http://foo-dev.com:80";
-const char kDataReductionProxyOriginPAC[] = "HTTPS foo.com:443;";
-const char kDataReductionProxyFallbackPAC[] = "PROXY bar.com:80;";
+const char kDataReductionProxyDev[] = "http://foo-dev.com:80";
+
+template <class C>
+void data_reduction_proxy::DataReductionProxySettingsTestBase::ResetSettings() {
+  MockDataReductionProxySettings<C>* settings =
+      new MockDataReductionProxySettings<C>;
+  EXPECT_CALL(*settings, GetOriginalProfilePrefs())
+      .Times(AnyNumber())
+      .WillRepeatedly(Return(&pref_service_));
+  EXPECT_CALL(*settings, GetLocalStatePrefs())
+      .Times(AnyNumber())
+      .WillRepeatedly(Return(&pref_service_));
+  EXPECT_CALL(*settings, GetURLFetcher()).Times(0);
+  EXPECT_CALL(*settings, LogProxyState(_, _, _)).Times(0);
+  settings_.reset(settings);
+}
+
+template <class C>
+void data_reduction_proxy::DataReductionProxySettingsTestBase::SetProbeResult(
+    const std::string& test_url,
+    const std::string& response,
+    ProbeURLFetchResult result,
+    bool success,
+    int expected_calls)  {
+  MockDataReductionProxySettings<C>* settings =
+      static_cast<MockDataReductionProxySettings<C>*>(settings_.get());
+  if (0 == expected_calls) {
+    EXPECT_CALL(*settings, GetURLFetcher()).Times(0);
+    EXPECT_CALL(*settings, RecordProbeURLFetchResult(_)).Times(0);
+  } else {
+    EXPECT_CALL(*settings, RecordProbeURLFetchResult(result)).Times(1);
+    EXPECT_CALL(*settings, GetURLFetcher())
+        .Times(expected_calls)
+        .WillRepeatedly(Return(new net::FakeURLFetcher(
+            GURL(test_url),
+            settings,
+            response,
+            success ? net::HTTP_OK : net::HTTP_INTERNAL_SERVER_ERROR,
+            success ? net::URLRequestStatus::SUCCESS :
+                      net::URLRequestStatus::FAILED)));
+  }
+}
+
+template void
+data_reduction_proxy::DataReductionProxySettingsTestBase::ResetSettings<
+    DataReductionProxySettingsAndroid>();
+
+template void
+data_reduction_proxy::DataReductionProxySettingsTestBase::SetProbeResult<
+    DataReductionProxySettingsAndroid>(const std::string& test_url,
+                                       const std::string& response,
+                                       ProbeURLFetchResult result,
+                                       bool success,
+                                       int expected_calls);
 
 class DataReductionProxySettingsAndroidTest
-    : public ConcreteDataReductionProxySettingsTest<
+    : public data_reduction_proxy::ConcreteDataReductionProxySettingsTest<
         DataReductionProxySettingsAndroid> {
  public:
   // DataReductionProxySettingsTest implementation:
@@ -39,18 +87,6 @@ class DataReductionProxySettingsAndroidTest
     env_ = base::android::AttachCurrentThread();
     DataReductionProxySettingsAndroid::Register(env_);
     DataReductionProxySettingsTestBase::SetUp();
-  }
-
-  void CheckProxyPacPref(const std::string& expected_pac_url,
-                         const std::string& expected_mode) {
-    const base::DictionaryValue* dict =
-        pref_service_.GetDictionary(prefs::kProxy);
-    std::string mode;
-    std::string pac_url;
-    dict->GetString("mode", &mode);
-    ASSERT_EQ(expected_mode, mode);
-    dict->GetString("pac_url", &pac_url);
-    ASSERT_EQ(expected_pac_url, pac_url);
   }
 
   DataReductionProxySettingsAndroid* Settings() {
@@ -74,76 +110,31 @@ TEST_F(DataReductionProxySettingsAndroidTest,
        TestGetDataReductionProxyDevOrigin) {
   AddProxyToCommandLine();
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kSpdyProxyDevAuthOrigin, kDataReductionProxyDevHost);
+      data_reduction_proxy::switches::kDataReductionProxyDev,
+      kDataReductionProxyDev);
   ScopedJavaLocalRef<jstring> result =
       Settings()->GetDataReductionProxyOrigin(env_, NULL);
   ASSERT_TRUE(result.obj());
   const base::android::JavaRef<jstring>& str_ref = result;
-  EXPECT_EQ(kDataReductionProxyDevHost, ConvertJavaStringToUTF8(str_ref));
-}
-
-// Confirm that the bypass rule functions generate the intended JavaScript
-// code for the Proxy PAC.
-TEST_F(DataReductionProxySettingsAndroidTest, TestBypassPACRules) {
-  Settings()->AddURLPatternToBypass("http://foo.com/*");
-  Settings()->AddHostPatternToBypass("bar.com");
-
-  EXPECT_EQ(Settings()->pac_bypass_rules_.size(), 1u);
-  EXPECT_EQ("shExpMatch(url, 'http://foo.com/*')",
-            Settings()->pac_bypass_rules_[0]);
-
-  EXPECT_EQ(Settings()->BypassRules().size(), 1u);
-  EXPECT_EQ("bar.com", Settings()->BypassRules()[0]);
-}
-
-TEST_F(DataReductionProxySettingsAndroidTest, TestSetProxyPac) {
-  AddProxyToCommandLine();
-  Settings()->AddDefaultProxyBypassRules();
-
-  // First check without restriction.
-  std::string raw_pac = Settings()->GetProxyPacScript(false);
-  EXPECT_NE(raw_pac.find(kDataReductionProxyOriginPAC), std::string::npos);
-  EXPECT_NE(raw_pac.find(kDataReductionProxyFallbackPAC), std::string::npos);
-  std::string pac;
-  base::Base64Encode(raw_pac, &pac);
-  std::string expected_pac_url =
-      "data:application/x-ns-proxy-autoconfig;base64," + pac;
-  Settings()->SetProxyConfigs(true, false, false);
-  CheckProxyPacPref(expected_pac_url,
-                    ProxyModeToString(ProxyPrefs::MODE_PAC_SCRIPT));
-
-  // Now check with restriction.
-  raw_pac = Settings()->GetProxyPacScript(true);
-  // Primary proxy origin should not appear.
-  EXPECT_EQ(raw_pac.find(kDataReductionProxyOriginPAC), std::string::npos);
-  EXPECT_NE(raw_pac.find(kDataReductionProxyFallbackPAC), std::string::npos);
-  base::Base64Encode(raw_pac, &pac);
-  expected_pac_url = "data:application/x-ns-proxy-autoconfig;base64," + pac;
-  Settings()->SetProxyConfigs(true, true, false);
-  CheckProxyPacPref(expected_pac_url,
-                    ProxyModeToString(ProxyPrefs::MODE_PAC_SCRIPT));
-
-  Settings()->SetProxyConfigs(false, false, false);
-  CheckProxyPacPref(std::string(), ProxyModeToString(ProxyPrefs::MODE_SYSTEM));
-
-  // Restriction is irrelevant when the proxy is disabled.
-  Settings()->SetProxyConfigs(false, false, false);
-  CheckProxyPacPref(std::string(), ProxyModeToString(ProxyPrefs::MODE_SYSTEM));
+  EXPECT_EQ(kDataReductionProxyDev, ConvertJavaStringToUTF8(str_ref));
 }
 
 TEST_F(DataReductionProxySettingsAndroidTest, TestGetDailyContentLengths) {
   ScopedJavaLocalRef<jlongArray> result = Settings()->GetDailyContentLengths(
-        env_, prefs::kDailyHttpOriginalContentLength);
+        env_, data_reduction_proxy::prefs::kDailyHttpOriginalContentLength);
   ASSERT_TRUE(result.obj());
 
   jsize java_array_len = env_->GetArrayLength(result.obj());
-  ASSERT_EQ(static_cast<jsize>(spdyproxy::kNumDaysInHistory), java_array_len);
+  ASSERT_EQ(static_cast<jsize>(data_reduction_proxy::kNumDaysInHistory),
+            java_array_len);
 
   jlong value;
-  for (size_t i = 0; i < spdyproxy::kNumDaysInHistory; ++i) {
+  for (size_t i = 0; i < data_reduction_proxy::kNumDaysInHistory; ++i) {
     env_->GetLongArrayRegion(result.obj(), i, 1, &value);
     ASSERT_EQ(
-        static_cast<long>((spdyproxy::kNumDaysInHistory - 1 - i) * 2), value);
+        static_cast<long>(
+            (data_reduction_proxy::kNumDaysInHistory - 1 - i) * 2),
+        value);
   }
 }
 

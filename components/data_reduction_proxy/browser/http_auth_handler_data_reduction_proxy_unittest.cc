@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/spdyproxy/http_auth_handler_spdyproxy.h"
+#include "components/data_reduction_proxy/browser/http_auth_handler_data_reduction_proxy.h"
 
 #include <string>
 #include <vector>
@@ -25,7 +25,7 @@ const char kValidChallenge[] = "SpdyProxy realm=\"SpdyProxy\", "
 
 }  // namespace
 
-namespace spdyproxy {
+namespace data_reduction_proxy {
 
 using net::ERR_INVALID_RESPONSE;
 using net::ERR_UNSUPPORTED_AUTH_SCHEME;
@@ -39,7 +39,7 @@ using net::HttpAuthChallengeTokenizer;
 using net::HttpAuthHandler;
 using net::HttpRequestInfo;
 
-TEST(HttpAuthHandlerSpdyProxyTest, GenerateAuthToken) {
+TEST(HttpAuthHandlerDataReductionProxyTest, GenerateAuthToken) {
   // Verifies that challenge parsing is expected as described in individual
   // cases below.
   static const struct {
@@ -88,7 +88,7 @@ TEST(HttpAuthHandlerSpdyProxyTest, GenerateAuthToken) {
       std::vector<GURL> authorized_origins;
       authorized_origins.push_back(authorized_origin);
       authorized_origins.push_back(authorized_origin2);
-      HttpAuthHandlerSpdyProxy::Factory factory(authorized_origins);
+      HttpAuthHandlerDataReductionProxy::Factory factory(authorized_origins);
       scoped_ptr<HttpAuthHandler> spdyproxy;
       EXPECT_EQ(tests[j].err1, factory.CreateAuthHandlerFromString(
           tests[j].challenge, targets[i], origin, BoundNetLog(),
@@ -109,13 +109,13 @@ TEST(HttpAuthHandlerSpdyProxyTest, GenerateAuthToken) {
   }
 }
 
-TEST(HttpAuthHandlerSpdyProxyTest, HandleAnotherChallenge) {
+TEST(HttpAuthHandlerDataReductionProxyTest, HandleAnotherChallenge) {
   // Verifies that any repeat challenge is treated as a failure.
   GURL origin(kValidOrigin);
   GURL accepted_origin(kValidOrigin);
   std::vector<GURL> accepted_origins;
   accepted_origins.push_back(accepted_origin);
-  HttpAuthHandlerSpdyProxy::Factory factory(accepted_origins);
+  HttpAuthHandlerDataReductionProxy::Factory factory(accepted_origins);
   scoped_ptr<HttpAuthHandler> spdyproxy;
   EXPECT_EQ(OK, factory.CreateAuthHandlerFromString(
       kValidChallenge, HttpAuth::AUTH_PROXY, origin,
@@ -127,7 +127,7 @@ TEST(HttpAuthHandlerSpdyProxyTest, HandleAnotherChallenge) {
             spdyproxy->HandleAnotherChallenge(&tok));
 }
 
-TEST(HttpAuthHandlerSpdyProxyTest, ParseChallenge) {
+TEST(HttpAuthHandlerDataReductionProxyTest, ParseChallenge) {
   // Verifies that various challenge strings are parsed appropriately as
   // described below.
   static const struct {
@@ -151,7 +151,7 @@ TEST(HttpAuthHandlerSpdyProxyTest, ParseChallenge) {
   std::vector<GURL> accepted_origins;
   accepted_origins.push_back(accepted_origin2);
   accepted_origins.push_back(accepted_origin);
-  HttpAuthHandlerSpdyProxy::Factory factory(accepted_origins);
+  HttpAuthHandlerDataReductionProxy::Factory factory(accepted_origins);
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
     std::string challenge = tests[i].challenge;
     scoped_ptr<HttpAuthHandler> spdyproxy;
@@ -160,12 +160,12 @@ TEST(HttpAuthHandlerSpdyProxyTest, ParseChallenge) {
     EXPECT_EQ(tests[i].expected_rv, rv);
     if (rv == OK) {
       EXPECT_EQ(tests[i].expected_realm, spdyproxy->realm());
-      HttpAuthHandlerSpdyProxy* as_spdyproxy =
-          static_cast<HttpAuthHandlerSpdyProxy*>(spdyproxy.get());
+      HttpAuthHandlerDataReductionProxy* as_spdyproxy =
+          static_cast<HttpAuthHandlerDataReductionProxy*>(spdyproxy.get());
       EXPECT_EQ(tests[i].expected_ps,
                 as_spdyproxy->ps_token_);
     }
   }
 }
 
-}  // namespace spdyproxy
+}  // namespace data_reduction_proxy

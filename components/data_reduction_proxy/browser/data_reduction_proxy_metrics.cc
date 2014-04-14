@@ -1,22 +1,23 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/spdyproxy/data_saving_metrics.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_metrics.h"
 
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings.h"
-#include "chrome/common/pref_names.h"
-#include "content/public/common/url_constants.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
+#include "components/data_reduction_proxy/common/data_reduction_proxy_pref_names.h"
 #include "net/base/host_port_pair.h"
 #include "net/http/http_response_headers.h"
 #include "net/proxy/proxy_retry_info.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
+
+namespace data_reduction_proxy {
 
 namespace {
 
@@ -24,9 +25,6 @@ namespace {
 const int kLongBypassDelayInSeconds = 30 * 60;
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
-
-// The number of days of history stored in the content lengths prefs.
-const size_t kNumDaysInHistory = 60;
 
 // Increments an int64, stored as a string, in a ListPref at the specified
 // index.  The value must already exist and be a string representation of a
@@ -328,8 +326,8 @@ bool IsBypassRequest(const net::URLRequest* request, int64* delay_seconds) {
   for (size_t i = 0; i < proxies.size(); ++i) {
     std::string proxy = net::HostPortPair::FromURL(proxies[i]).ToString();
     // The retry list has the scheme prefix for https but not for http.
-    if (proxies[i].SchemeIs(content::kHttpsScheme))
-      proxy = std::string(content::kHttpsScheme) + "://" + proxy;
+    if (proxies[i].SchemeIs("https"))
+      proxy = std::string("https://") + proxy;
 
     net::ProxyRetryInfoMap::const_iterator found = retry_map.find(proxy);
     if (found == retry_map.end())
@@ -349,13 +347,11 @@ bool IsBypassRequest(const net::URLRequest* request, int64* delay_seconds) {
 
 }  // namespace
 
-namespace spdyproxy {
-
-DataReductionRequestType GetDataReductionRequestType(
+DataReductionProxyRequestType GetDataReductionProxyRequestType(
     const net::URLRequest* request) {
-  if (request->url().SchemeIs(content::kHttpsScheme))
+  if (request->url().SchemeIs("https"))
     return HTTPS;
-  if (!request->url().SchemeIs(content::kHttpScheme)) {
+  if (!request->url().SchemeIs("http")) {
     NOTREACHED();
     return UNKNOWN_TYPE;
   }
@@ -366,7 +362,7 @@ DataReductionRequestType GetDataReductionRequestType(
   }
 #if defined(SPDY_PROXY_AUTH_ORIGIN)
   if (request->response_info().headers &&
-      request->response_info().headers->IsChromeProxyResponse()) {
+      request->response_info().headers->IsDataReductionProxyResponse()) {
     return VIA_DATA_REDUCTION_PROXY;
   }
 #endif
@@ -374,13 +370,13 @@ DataReductionRequestType GetDataReductionRequestType(
 }
 
 int64 GetAdjustedOriginalContentLength(
-    DataReductionRequestType data_reduction_type,
+    DataReductionProxyRequestType request_type,
     int64 original_content_length,
     int64 received_content_length) {
   // Since there was no indication of the original content length, presume
   // it is no different from the number of bytes read.
   if (original_content_length == -1 ||
-      data_reduction_type != spdyproxy::VIA_DATA_REDUCTION_PROXY) {
+      request_type != VIA_DATA_REDUCTION_PROXY) {
     return received_content_length;
   }
   return original_content_length;
@@ -391,7 +387,7 @@ void UpdateContentLengthPrefsForDataReductionProxy(
     int received_content_length,
     int original_content_length,
     bool with_data_reduction_proxy_enabled,
-    DataReductionRequestType data_reduction_type,
+    DataReductionProxyRequestType request_type,
     base::Time now, PrefService* prefs) {
   // TODO(bengr): Remove this check once the underlying cause of
   // http://crbug.com/287821 is fixed. For now, only continue if the current
@@ -406,7 +402,7 @@ void UpdateContentLengthPrefsForDataReductionProxy(
 
   // Determine how many days it has been since the last update.
   int64 then_internal = prefs->GetInt64(
-      prefs::kDailyHttpContentLengthLastUpdateDate);
+      data_reduction_proxy::prefs::kDailyHttpContentLengthLastUpdateDate);
   // Local midnight could have been shifted due to time zone change.
   base::Time then_midnight =
       base::Time::FromInternalValue(then_internal).LocalMidnight();
@@ -419,38 +415,49 @@ void UpdateContentLengthPrefsForDataReductionProxy(
   // by applying our compression techniques. Totals for the last
   // |kNumDaysInHistory| days are maintained.
   DailyDataSavingUpdate total(
-      prefs::kDailyHttpOriginalContentLength,
-      prefs::kDailyHttpReceivedContentLength,
+      data_reduction_proxy::prefs::kDailyHttpOriginalContentLength,
+      data_reduction_proxy::prefs::kDailyHttpReceivedContentLength,
       prefs);
   total.UpdateForDataChange(days_since_last_update);
 
   DailyDataSavingUpdate proxy_enabled(
-      prefs::kDailyOriginalContentLengthWithDataReductionProxyEnabled,
-      prefs::kDailyContentLengthWithDataReductionProxyEnabled,
+      data_reduction_proxy::prefs::
+          kDailyOriginalContentLengthWithDataReductionProxyEnabled,
+      data_reduction_proxy::prefs::
+          kDailyContentLengthWithDataReductionProxyEnabled,
       prefs);
   proxy_enabled.UpdateForDataChange(days_since_last_update);
 
   DailyDataSavingUpdate via_proxy(
-      prefs::kDailyOriginalContentLengthViaDataReductionProxy,
-      prefs::kDailyContentLengthViaDataReductionProxy,
+      data_reduction_proxy::prefs::
+          kDailyOriginalContentLengthViaDataReductionProxy,
+      data_reduction_proxy::prefs::
+          kDailyContentLengthViaDataReductionProxy,
       prefs);
   via_proxy.UpdateForDataChange(days_since_last_update);
 
   DailyContentLengthUpdate https(
-      prefs::kDailyContentLengthHttpsWithDataReductionProxyEnabled, prefs);
+      data_reduction_proxy::prefs::
+          kDailyContentLengthHttpsWithDataReductionProxyEnabled,
+      prefs);
   https.UpdateForDataChange(days_since_last_update);
 
   DailyContentLengthUpdate short_bypass(
-      prefs::kDailyContentLengthShortBypassWithDataReductionProxyEnabled,
+      data_reduction_proxy::prefs::
+          kDailyContentLengthShortBypassWithDataReductionProxyEnabled,
       prefs);
   short_bypass.UpdateForDataChange(days_since_last_update);
 
   DailyContentLengthUpdate long_bypass(
-      prefs::kDailyContentLengthLongBypassWithDataReductionProxyEnabled, prefs);
+      data_reduction_proxy::prefs::
+          kDailyContentLengthLongBypassWithDataReductionProxyEnabled,
+      prefs);
   long_bypass.UpdateForDataChange(days_since_last_update);
 
   DailyContentLengthUpdate unknown(
-      prefs::kDailyContentLengthUnknownWithDataReductionProxyEnabled, prefs);
+      data_reduction_proxy::prefs::
+          kDailyContentLengthUnknownWithDataReductionProxyEnabled,
+      prefs);
   unknown.UpdateForDataChange(days_since_last_update);
 
   total.Add(original_content_length, received_content_length);
@@ -458,7 +465,7 @@ void UpdateContentLengthPrefsForDataReductionProxy(
     proxy_enabled.Add(original_content_length, received_content_length);
     // Ignore data source cases, if exist, when
     // "with_data_reduction_proxy_enabled == false"
-    switch (data_reduction_type) {
+    switch (request_type) {
       case VIA_DATA_REDUCTION_PROXY:
         via_proxy.Add(original_content_length, received_content_length);
         break;
@@ -479,8 +486,9 @@ void UpdateContentLengthPrefsForDataReductionProxy(
 
   if (days_since_last_update) {
     // Record the last update time in microseconds in UTC.
-    prefs->SetInt64(prefs::kDailyHttpContentLengthLastUpdateDate,
-                    midnight.ToInternalValue());
+    prefs->SetInt64(
+        data_reduction_proxy::prefs::kDailyHttpContentLengthLastUpdateDate,
+        midnight.ToInternalValue());
 
     // A new day. Report the previous day's data if exists. We'll lose usage
     // data if the last time Chrome was run was more than a day ago.
@@ -509,25 +517,29 @@ void UpdateContentLengthPrefs(
     int received_content_length,
     int original_content_length,
     bool with_data_reduction_proxy_enabled,
-    DataReductionRequestType data_reduction_type,
+    DataReductionProxyRequestType request_type,
     PrefService* prefs) {
-  int64 total_received = prefs->GetInt64(prefs::kHttpReceivedContentLength);
-  int64 total_original = prefs->GetInt64(prefs::kHttpOriginalContentLength);
+  int64 total_received = prefs->GetInt64(
+      data_reduction_proxy::prefs::kHttpReceivedContentLength);
+  int64 total_original = prefs->GetInt64(
+      data_reduction_proxy::prefs::kHttpOriginalContentLength);
   total_received += received_content_length;
   total_original += original_content_length;
-  prefs->SetInt64(prefs::kHttpReceivedContentLength, total_received);
-  prefs->SetInt64(prefs::kHttpOriginalContentLength, total_original);
+  prefs->SetInt64(data_reduction_proxy::prefs::kHttpReceivedContentLength,
+                  total_received);
+  prefs->SetInt64(data_reduction_proxy::prefs::kHttpOriginalContentLength,
+                  total_original);
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
   UpdateContentLengthPrefsForDataReductionProxy(
       received_content_length,
       original_content_length,
       with_data_reduction_proxy_enabled,
-      data_reduction_type,
+      request_type,
       base::Time::Now(),
       prefs);
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 }
 
-}  // namespace spdyproxy
+}  // namespace data_reduction_proxy

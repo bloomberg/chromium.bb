@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/spdyproxy/http_auth_handler_spdyproxy.h"
+#include "components/data_reduction_proxy/browser/http_auth_handler_data_reduction_proxy.h"
 
 #include <algorithm>
 #include <string>
@@ -17,7 +17,7 @@
 #include "net/http/http_auth_challenge_tokenizer.h"
 #include "net/http/http_request_info.h"
 
-namespace spdyproxy {
+namespace data_reduction_proxy {
 
 using net::AuthCredentials;
 using net::BoundNetLog;
@@ -29,7 +29,7 @@ using net::HttpAuthHandlerFactory;
 using net::HttpRequestInfo;
 using net::HttpUtil;
 
-HttpAuthHandlerSpdyProxy::Factory::Factory(
+HttpAuthHandlerDataReductionProxy::Factory::Factory(
     const std::vector<GURL>& authorized_spdyproxy_origins) {
   for (unsigned int i = 0; i < authorized_spdyproxy_origins.size(); ++i) {
     if (authorized_spdyproxy_origins[i].possibly_invalid_spec().empty()) {
@@ -40,10 +40,10 @@ HttpAuthHandlerSpdyProxy::Factory::Factory(
   authorized_spdyproxy_origins_ = authorized_spdyproxy_origins;
 }
 
-HttpAuthHandlerSpdyProxy::Factory::~Factory() {
+HttpAuthHandlerDataReductionProxy::Factory::~Factory() {
 }
 
-int HttpAuthHandlerSpdyProxy::Factory::CreateAuthHandler(
+int HttpAuthHandlerDataReductionProxy::Factory::CreateAuthHandler(
     HttpAuthChallengeTokenizer* challenge,
     HttpAuth::Target target,
     const GURL& origin,
@@ -69,7 +69,8 @@ int HttpAuthHandlerSpdyProxy::Factory::CreateAuthHandler(
     return net::ERR_UNSUPPORTED_AUTH_SCHEME;
   }
 
-  scoped_ptr<HttpAuthHandler> tmp_handler(new HttpAuthHandlerSpdyProxy());
+  scoped_ptr<HttpAuthHandler> tmp_handler(
+      new HttpAuthHandlerDataReductionProxy());
   if (!tmp_handler->InitFromChallenge(challenge, target, origin, net_log))
     return net::ERR_INVALID_RESPONSE;
   handler->swap(tmp_handler);
@@ -77,28 +78,28 @@ int HttpAuthHandlerSpdyProxy::Factory::CreateAuthHandler(
 }
 
 HttpAuth::AuthorizationResult
-HttpAuthHandlerSpdyProxy::HandleAnotherChallenge(
+HttpAuthHandlerDataReductionProxy::HandleAnotherChallenge(
     HttpAuthChallengeTokenizer* challenge) {
   // SpdyProxy authentication is always a single round, so any responses
   // should be treated as a rejection.
   return HttpAuth::AUTHORIZATION_RESULT_REJECT;
 }
 
-bool HttpAuthHandlerSpdyProxy::NeedsIdentity() {
+bool HttpAuthHandlerDataReductionProxy::NeedsIdentity() {
   return true;
 }
 
-bool HttpAuthHandlerSpdyProxy::AllowsDefaultCredentials() {
+bool HttpAuthHandlerDataReductionProxy::AllowsDefaultCredentials() {
   return false;
 }
 
-bool HttpAuthHandlerSpdyProxy::AllowsExplicitCredentials() {
+bool HttpAuthHandlerDataReductionProxy::AllowsExplicitCredentials() {
   return true;
 }
 
-HttpAuthHandlerSpdyProxy::~HttpAuthHandlerSpdyProxy() {}
+HttpAuthHandlerDataReductionProxy::~HttpAuthHandlerDataReductionProxy() {}
 
-bool HttpAuthHandlerSpdyProxy::Init(
+bool HttpAuthHandlerDataReductionProxy::Init(
     HttpAuthChallengeTokenizer* challenge) {
   auth_scheme_ = HttpAuth::AUTH_SCHEME_SPDYPROXY;
   score_ = 5;
@@ -106,7 +107,7 @@ bool HttpAuthHandlerSpdyProxy::Init(
   return ParseChallenge(challenge);
 }
 
-int HttpAuthHandlerSpdyProxy::GenerateAuthTokenImpl(
+int HttpAuthHandlerDataReductionProxy::GenerateAuthTokenImpl(
     const AuthCredentials* credentials, const HttpRequestInfo* request,
     const CompletionCallback&, std::string* auth_token) {
   DCHECK(credentials);
@@ -120,7 +121,7 @@ int HttpAuthHandlerSpdyProxy::GenerateAuthTokenImpl(
   return net::OK;
 }
 
-bool HttpAuthHandlerSpdyProxy::ParseChallenge(
+bool HttpAuthHandlerDataReductionProxy::ParseChallenge(
     HttpAuthChallengeTokenizer* challenge) {
 
   // Verify the challenge's auth-scheme.
@@ -152,7 +153,7 @@ bool HttpAuthHandlerSpdyProxy::ParseChallenge(
   return true;
 }
 
-bool HttpAuthHandlerSpdyProxy::ParseChallengeProperty(
+bool HttpAuthHandlerDataReductionProxy::ParseChallengeProperty(
     const std::string& name, const std::string& value) {
   if (LowerCaseEqualsASCII(name, "realm")) {
     std::string realm;
@@ -167,4 +168,4 @@ bool HttpAuthHandlerSpdyProxy::ParseChallengeProperty(
   return true;
 }
 
-}  // namespace spdyproxy
+}  // namespace data_reduction_proxy

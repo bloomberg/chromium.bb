@@ -7,23 +7,23 @@
 #include "base/android/build_info.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_member.h"
 #include "base/prefs/pref_service.h"
-#include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_configurator.h"
 #include "chrome/browser/prefs/proxy_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_configurator.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
 #include "jni/DataReductionProxySettings_jni.h"
 #include "net/base/auth.h"
 #include "net/base/host_port_pair.h"
@@ -32,14 +32,13 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_status.h"
-#include "url/gurl.h"
 
 using base::android::CheckException;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ScopedJavaLocalRef;
-using base::StringPrintf;
+using data_reduction_proxy::DataReductionProxySettings;
 
 namespace {
 
@@ -55,21 +54,6 @@ enum {
   NUM_SPDY_PROXY_AUTH_STATE
 };
 
-// Generates a PAC proxy string component, including trailing semicolon and
-// space, for |origin|. Eg:
-//     "http://foo.com/"        -> "PROXY foo.com:80; "
-//     "https://bar.com:10443"  -> "HTTPS bar.coom:10443; "
-// The returned strings are suitable for concatenating into a PAC string.
-// If |origin| is empty, returns an empty string.
-std::string ProtocolAndHostForPACString(const std::string& origin) {
-  if (origin.empty()) {
-    return std::string();
-  }
-  GURL url = GURL(origin);
-  std::string protocol = url.SchemeIsSecure() ? "HTTPS "  : "PROXY ";
-  return protocol + net::HostPortPair::FromURL(url).ToString() + "; ";
-}
-
 }  // namespace
 
 DataReductionProxySettingsAndroid::DataReductionProxySettingsAndroid(
@@ -83,23 +67,25 @@ DataReductionProxySettingsAndroid::~DataReductionProxySettingsAndroid() {}
 void DataReductionProxySettingsAndroid::InitDataReductionProxySettings(
     JNIEnv* env,
     jobject obj) {
-  DataReductionProxySettings::InitDataReductionProxySettings();
+  scoped_ptr<data_reduction_proxy::DataReductionProxyConfigurator>
+      configurator(
+          new DataReductionProxyChromeConfigurator(
+              ProfileManager::GetActiveUserProfile()->GetPrefs()));
+  DataReductionProxySettings::InitDataReductionProxySettings(
+      ProfileManager::GetActiveUserProfile()->GetPrefs(),
+      g_browser_process->local_state(),
+      ProfileManager::GetActiveUserProfile()->GetRequestContext(),
+      configurator.Pass());
 }
 
 void DataReductionProxySettingsAndroid::BypassHostPattern(
     JNIEnv* env, jobject obj, jstring pattern) {
-  DataReductionProxySettings::AddHostPatternToBypass(
+  config()->AddHostPatternToBypass(
       ConvertJavaStringToUTF8(env, pattern));
 }
 void DataReductionProxySettingsAndroid::BypassURLPattern(
     JNIEnv* env, jobject obj, jstring pattern) {
-  AddURLPatternToBypass(ConvertJavaStringToUTF8(env, pattern));
-}
-
-void DataReductionProxySettingsAndroid::AddURLPatternToBypass(
-    const std::string& pattern) {
-  pac_bypass_rules_.push_back(
-      StringPrintf("shExpMatch(%s, '%s')", "url", pattern.c_str()));
+  config()->AddURLPatternToBypass(ConvertJavaStringToUTF8(env, pattern));
 }
 
 jboolean DataReductionProxySettingsAndroid::IsDataReductionProxyAllowed(
@@ -148,7 +134,7 @@ DataReductionProxySettingsAndroid::GetContentLengths(JNIEnv* env,
   int64 received_content_length;
   int64 last_update_internal;
   DataReductionProxySettings::GetContentLengths(
-      spdyproxy::kNumDaysInHistorySummary,
+      data_reduction_proxy::kNumDaysInHistorySummary,
       &original_content_length,
       &received_content_length,
       &last_update_internal);
@@ -189,13 +175,15 @@ DataReductionProxySettingsAndroid::GetTokenForAuthChallenge(JNIEnv* env,
 ScopedJavaLocalRef<jlongArray>
 DataReductionProxySettingsAndroid::GetDailyOriginalContentLengths(
     JNIEnv* env, jobject obj) {
-  return GetDailyContentLengths(env, prefs::kDailyHttpOriginalContentLength);
+  return GetDailyContentLengths(
+      env, data_reduction_proxy::prefs::kDailyHttpOriginalContentLength);
 }
 
 ScopedJavaLocalRef<jlongArray>
 DataReductionProxySettingsAndroid::GetDailyReceivedContentLengths(
     JNIEnv* env, jobject obj) {
-  return GetDailyContentLengths(env, prefs::kDailyHttpReceivedContentLength);
+  return GetDailyContentLengths(
+      env, data_reduction_proxy::prefs::kDailyHttpReceivedContentLength);
 }
 
 // static
@@ -206,10 +194,9 @@ bool DataReductionProxySettingsAndroid::Register(JNIEnv* env) {
 
 void DataReductionProxySettingsAndroid::AddDefaultProxyBypassRules() {
    DataReductionProxySettings::AddDefaultProxyBypassRules();
-
   // Chrome cannot authenticate with the data reduction proxy when fetching URLs
   // from the settings menu.
-  AddURLPatternToBypass("http://www.google.com/policies/privacy*");
+  config()->AddURLPatternToBypass("http://www.google.com/policies/privacy*");
 }
 
 void DataReductionProxySettingsAndroid::SetProxyConfigs(bool enabled,
@@ -220,47 +207,28 @@ void DataReductionProxySettingsAndroid::SetProxyConfigs(bool enabled,
   if (fallback.empty() && enabled && restricted)
       enabled = false;
 
-  // Keys duplicated from proxy_config_dictionary.cc
-  // TODO(bengr): Move these to proxy_config_dictionary.h and reuse them here.
-  const char kProxyMode[] = "mode";
-  const char kProxyPacURL[] = "pac_url";
-  const char kProxyBypassList[] = "bypass_list";
-
   LogProxyState(enabled, restricted, at_startup);
 
-  PrefService* prefs = GetOriginalProfilePrefs();
-  DCHECK(prefs);
-  DictionaryPrefUpdate update(prefs, prefs::kProxy);
-  base::DictionaryValue* dict = update.Get();
   if (enabled) {
-    // Convert to a data URI and update the PAC settings.
-    std::string base64_pac;
-    base::Base64Encode(GetProxyPacScript(restricted), &base64_pac);
-
-    dict->SetString(kProxyPacURL,
-                    "data:application/x-ns-proxy-autoconfig;base64," +
-                    base64_pac);
-    dict->SetString(kProxyMode,
-                    ProxyModeToString(ProxyPrefs::MODE_PAC_SCRIPT));
-    dict->SetString(kProxyBypassList, JoinString(BypassRules(), ", "));
-
+    config()->Enable(restricted,
+                     DataReductionProxySettings::GetDataReductionProxyOrigin(),
+                     GetDataReductionProxyFallback());
   } else {
-    dict->SetString(kProxyMode, ProxyModeToString(ProxyPrefs::MODE_SYSTEM));
-    dict->SetString(kProxyPacURL, "");
-    dict->SetString(kProxyBypassList, "");
+    config()->Disable();
   }
 }
 
 ScopedJavaLocalRef<jlongArray>
 DataReductionProxySettingsAndroid::GetDailyContentLengths(
     JNIEnv* env,  const char* pref_name) {
-  jlongArray result = env->NewLongArray(spdyproxy::kNumDaysInHistory);
+  jlongArray result = env->NewLongArray(
+      data_reduction_proxy::kNumDaysInHistory);
 
   DataReductionProxySettings::ContentLengthList lengths  =
       DataReductionProxySettings::GetDailyContentLengths(pref_name);
 
   if (!lengths.empty()) {
-    DCHECK_EQ(lengths.size(), spdyproxy::kNumDaysInHistory);
+    DCHECK_EQ(lengths.size(), data_reduction_proxy::kNumDaysInHistory);
     env->SetLongArrayRegion(result, 0, lengths.size(), &lengths[0]);
     return ScopedJavaLocalRef<jlongArray>(env, result);
   }
@@ -268,34 +236,7 @@ DataReductionProxySettingsAndroid::GetDailyContentLengths(
   return ScopedJavaLocalRef<jlongArray>(env, result);
 }
 
-// TODO(bengr): Replace with our own ProxyResolver.
-std::string DataReductionProxySettingsAndroid::GetProxyPacScript(
-    bool restricted) {
-  // Compose the PAC-only bypass code; these will be URL patterns that
-  // are matched by regular expression. Host bypasses are handled outside
-  // of the PAC file using the regular proxy bypass list configs.
-  std::string bypass_clause =
-      "(" + JoinString(pac_bypass_rules_, ") || (") + ")";
 
-  // Generate a proxy PAC that falls back to direct loading when the proxy is
-  // unavailable and only process HTTP traffic.
-
-  std::string proxy_host = ProtocolAndHostForPACString(
-      DataReductionProxySettings::GetDataReductionProxyOrigin());
-  std::string fallback_host = ProtocolAndHostForPACString(
-      DataReductionProxySettings::GetDataReductionProxyFallback());
-  std::string hosts = restricted ? fallback_host : proxy_host + fallback_host;
-  std::string pac = "function FindProxyForURL(url, host) {"
-      "  if (" + bypass_clause + ") {"
-      "    return 'DIRECT';"
-      "  } "
-      "  if (url.substring(0, 5) == 'http:') {"
-      "    return '" + hosts + "DIRECT';"
-      "  }"
-      "  return 'DIRECT';"
-      "}";
-  return pac;
-}
 
 // Used by generated jni code.
 static jlong Init(JNIEnv* env, jobject obj) {

@@ -9,9 +9,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
 #include "net/base/request_priority.h"
@@ -27,6 +27,7 @@
 #endif
 
 using content::BrowserThread;
+using data_reduction_proxy::DataReductionProxySettings;
 
 namespace {
 const char kOmniboxMotivation[] = "omnibox";
@@ -77,7 +78,9 @@ ProxyAdvisor::ProxyAdvisor(PrefService* pref_service,
 
   // pref_service may be null in mock test subclasses.
   if (pref_service) {
-    proxy_pref_member_.Init(prefs::kSpdyProxyAuthEnabled, pref_service,
+    proxy_pref_member_.Init(
+        data_reduction_proxy::prefs::kDataReductionProxyEnabled,
+        pref_service,
         base::Bind(&ProxyAdvisor::UpdateProxyState, base::Unretained(this)));
     proxy_pref_member_.MoveToThread(
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));

@@ -2093,17 +2093,17 @@ TEST(HttpResponseHeadersTest, GetProxyBypassInfo) {
     scoped_refptr<net::HttpResponseHeaders> parsed(
         new net::HttpResponseHeaders(headers));
 
-    net::HttpResponseHeaders::ChromeProxyInfo chrome_proxy_info;
+    net::HttpResponseHeaders::DataReductionProxyInfo data_reduction_proxy_info;
     EXPECT_EQ(tests[i].expected_result,
-              parsed->GetChromeProxyInfo(&chrome_proxy_info));
+              parsed->GetDataReductionProxyInfo(&data_reduction_proxy_info));
     EXPECT_EQ(tests[i].expected_retry_delay,
-              chrome_proxy_info.bypass_duration.InSeconds());
+              data_reduction_proxy_info.bypass_duration.InSeconds());
     EXPECT_EQ(tests[i].expected_bypass_all,
-              chrome_proxy_info.bypass_all);
+              data_reduction_proxy_info.bypass_all);
   }
 }
 
-TEST(HttpResponseHeadersTest, IsChromeProxyResponse) {
+TEST(HttpResponseHeadersTest, IsDataReductionProxyResponse) {
   const struct {
      const char* headers;
      bool expected_result;
@@ -2173,11 +2173,11 @@ TEST(HttpResponseHeadersTest, IsChromeProxyResponse) {
     scoped_refptr<net::HttpResponseHeaders> parsed(
         new net::HttpResponseHeaders(headers));
 
-    EXPECT_EQ(tests[i].expected_result, parsed->IsChromeProxyResponse());
+    EXPECT_EQ(tests[i].expected_result, parsed->IsDataReductionProxyResponse());
   }
 }
 
-TEST(HttpResponseHeadersTest, GetChromeProxyBypassEventType) {
+TEST(HttpResponseHeadersTest, GetDataReductionProxyBypassEventType) {
   const struct {
      const char* headers;
      net::ProxyService::DataReductionProxyBypassEventType expected_result;
@@ -2244,9 +2244,9 @@ TEST(HttpResponseHeadersTest, GetChromeProxyBypassEventType) {
     HeadersToRaw(&headers);
     scoped_refptr<net::HttpResponseHeaders> parsed(
         new net::HttpResponseHeaders(headers));
-    net::HttpResponseHeaders::ChromeProxyInfo chrome_proxy_info;
+    net::HttpResponseHeaders::DataReductionProxyInfo chrome_proxy_info;
     EXPECT_EQ(tests[i].expected_result,
-              parsed->GetChromeProxyBypassEventType(&chrome_proxy_info));
+              parsed->GetDataReductionProxyBypassEventType(&chrome_proxy_info));
   }
 }
 #endif  // defined(SPDY_PROXY_AUTH_ORIGIN)

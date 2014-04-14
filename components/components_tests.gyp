@@ -65,6 +65,9 @@
             'autofill/core/common/password_form_fill_data_unittest.cc',
             'autofill/core/common/save_password_progress_logger_unittest.cc',
             'cloud_devices/printer_description_unittest.cc',
+            'data_reduction_proxy/browser/data_reduction_proxy_metrics_unittest.cc',
+            'data_reduction_proxy/browser/data_reduction_proxy_settings_unittest.cc',
+            'data_reduction_proxy/browser/http_auth_handler_data_reduction_proxy_unittest.cc',
             'dom_distiller/core/article_entry_unittest.cc',
             'dom_distiller/core/distiller_unittest.cc',
             'dom_distiller/core/distiller_url_fetcher_unittest.cc',
@@ -184,6 +187,11 @@
 
             # Dependencies of cloud_devices
             'components.gyp:cloud_devices',
+
+            # Dependencies of data_reduction_proxy
+            'components.gyp:data_reduction_proxy_browser',
+            'components.gyp:data_reduction_proxy_common',
+            'components.gyp:data_reduction_proxy_test_support',
 
             # Dependencies of dom_distiller
             'components.gyp:distilled_page_proto',

@@ -204,12 +204,6 @@ const char kCrashOnHangThreads[]            = "crash-on-hang-threads";
 const char kCreateBrowserOnStartupForTests[] =
     "create-browser-on-startup-for-tests";
 
-#if defined(OS_ANDROID) || defined(OS_IOS)
-// If set, the data reduction proxy will only be enabled if a request for this
-// URL is successful.
-const char kDataReductionProxyProbeURL[]    = "data-reduction-proxy-probe-url";
-#endif
-
 // Enables a frame context menu item that toggles the frame in and out of glass
 // mode (Windows Vista and up only).
 const char kDebugEnableFrameToggle[]        = "debug-enable-frame-toggle";
@@ -1191,21 +1185,6 @@ const char kSimulateOutdated[]               = "simulate-outdated";
 // Simulates that current version is outdated and auto-update is off.
 const char kSimulateOutdatedNoAU[]           = "simulate-outdated-no-au";
 
-// Replaces the buffered data source for <audio> and <video> with a simplified
-// resource loader that downloads the entire resource into memory.
-
-// Second origin that can be used for the spdy proxy.
-const char kSpdyProxyAuthFallback[]         = "spdy-proxy-auth-fallback";
-
-// Origin for which SpdyProxy authentication is supported.
-const char kSpdyProxyAuthOrigin[]           = "spdy-proxy-auth-origin";
-
-// Authentication string for the data reduction proxy.
-const char kSpdyProxyAuthValue[]            = "spdy-proxy-auth-value";
-
-// Origin for which dev version of SpdyProxy authentication is supported.
-const char kSpdyProxyDevAuthOrigin[]        = "spdy-proxy-dev-auth-origin";
-
 // Specifies the URL where spelling service feedback data will be sent instead
 // of the default URL. This switch is for temporary testing only.
 // TODO(rouslan): Remove this flag when feedback testing is complete. Revisit by
@@ -1349,11 +1328,6 @@ const char kWinHttpProxyResolver[]          = "winhttp-proxy-resolver";
 // Specifies a custom URL for fetching plug-ins metadata. Used for testing.
 const char kPluginsMetadataServerURL[]      = "plugins-metadata-server-url";
 #endif
-
-#if defined(OS_ANDROID) || defined(OS_IOS)
-// Enable SPDY proxy.
-const char kEnableSpdyProxyAuth[]           = "enable-spdy-proxy-auth";
-#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 #if defined(OS_ANDROID)
 // Disables the app banner <meta> tag.

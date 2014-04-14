@@ -14,6 +14,7 @@ include_rules = [
   "+components/autofill/core/common",
   "+components/bookmarks/core/common",
   "+components/breakpad",
+  "+components/data_reduction_proxy",
   "+components/dom_distiller",
   "+components/domain_reliability",
   "+components/keyed_service",

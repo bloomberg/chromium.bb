@@ -11,6 +11,7 @@
 
 #include "base/base_switches.h"
 #include "components/autofill/core/common/autofill_switches.h"
+#include "components/data_reduction_proxy/common/data_reduction_proxy_switches.h"
 #include "components/password_manager/core/common/password_manager_switches.h"
 #include "components/signin/core/common/signin_switches.h"
 #include "content/public/common/content_switches.h"
@@ -66,9 +67,6 @@ extern const char kComponentUpdater[];
 extern const char kConflictingModulesCheck[];
 extern const char kCrashOnHangThreads[];
 extern const char kCreateBrowserOnStartupForTests[];
-#if defined(OS_ANDROID) || defined(OS_IOS)
-extern const char kDataReductionProxyProbeURL[];
-#endif
 extern const char kDebugEnableFrameToggle[];
 extern const char kDebugPackedApps[];
 extern const char kDiagnostics[];
@@ -324,10 +322,6 @@ extern const char kSimulateUpgrade[];
 extern const char kSimulateCriticalUpdate[];
 extern const char kSimulateOutdated[];
 extern const char kSimulateOutdatedNoAU[];
-extern const char kSpdyProxyAuthFallback[];
-extern const char kSpdyProxyAuthOrigin[];
-extern const char kSpdyProxyAuthValue[];
-extern const char kSpdyProxyDevAuthOrigin[];
 extern const char kSpellingServiceFeedbackUrl[];
 extern const char kSpellingServiceFeedbackIntervalSeconds[];
 extern const char kSSLVersionMax[];
@@ -369,10 +363,6 @@ extern const char kWinHttpProxyResolver[];
 #if defined(ENABLE_PLUGIN_INSTALLATION)
 extern const char kPluginsMetadataServerURL[];
 #endif
-
-#if defined(OS_ANDROID) || defined(OS_IOS)
-extern const char kEnableSpdyProxyAuth[];
-#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 #if defined(OS_ANDROID)
 extern const char kDisableAppBanners[];

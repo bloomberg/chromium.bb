@@ -39,12 +39,12 @@
 #include "chrome/browser/net/pref_proxy_config_tracker.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
-#include "chrome/browser/net/spdyproxy/http_auth_handler_spdyproxy.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/data_reduction_proxy/browser/http_auth_handler_data_reduction_proxy.h"
 #include "components/policy/core/common/policy_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
@@ -101,7 +101,7 @@
 #endif
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -110,6 +110,10 @@
 #endif
 
 using content::BrowserThread;
+
+#if defined(OS_ANDROID) || defined(OS_IOS)
+using data_reduction_proxy::DataReductionProxySettings;
+#endif
 
 class SafeBrowsingURLRequestContext;
 
@@ -871,30 +875,46 @@ void IOThread::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kAuthNegotiateDelegateWhitelist,
                                std::string());
   registry->RegisterStringPref(prefs::kGSSAPILibraryName, std::string());
-  registry->RegisterStringPref(prefs::kSpdyProxyAuthOrigin, std::string());
+  registry->RegisterStringPref(
+      data_reduction_proxy::prefs::kDataReductionProxy, std::string());
   registry->RegisterBooleanPref(prefs::kEnableReferrers, true);
-  registry->RegisterInt64Pref(prefs::kHttpReceivedContentLength, 0);
-  registry->RegisterInt64Pref(prefs::kHttpOriginalContentLength, 0);
+  registry->RegisterInt64Pref(
+      data_reduction_proxy::prefs::kHttpReceivedContentLength, 0);
+  registry->RegisterInt64Pref(
+      data_reduction_proxy::prefs::kHttpOriginalContentLength, 0);
 #if defined(OS_ANDROID) || defined(OS_IOS)
-  registry->RegisterListPref(prefs::kDailyHttpOriginalContentLength);
-  registry->RegisterListPref(prefs::kDailyHttpReceivedContentLength);
   registry->RegisterListPref(
-      prefs::kDailyOriginalContentLengthWithDataReductionProxyEnabled);
+      data_reduction_proxy::prefs::kDailyHttpOriginalContentLength);
   registry->RegisterListPref(
-      prefs::kDailyContentLengthWithDataReductionProxyEnabled);
+      data_reduction_proxy::prefs::kDailyHttpReceivedContentLength);
   registry->RegisterListPref(
-      prefs::kDailyContentLengthHttpsWithDataReductionProxyEnabled);
+      data_reduction_proxy::prefs::
+          kDailyOriginalContentLengthWithDataReductionProxyEnabled);
   registry->RegisterListPref(
-      prefs::kDailyContentLengthShortBypassWithDataReductionProxyEnabled);
+      data_reduction_proxy::prefs::
+          kDailyContentLengthWithDataReductionProxyEnabled);
   registry->RegisterListPref(
-      prefs::kDailyContentLengthLongBypassWithDataReductionProxyEnabled);
+      data_reduction_proxy::prefs::
+          kDailyContentLengthHttpsWithDataReductionProxyEnabled);
   registry->RegisterListPref(
-      prefs::kDailyContentLengthUnknownWithDataReductionProxyEnabled);
+      data_reduction_proxy::prefs::
+          kDailyContentLengthShortBypassWithDataReductionProxyEnabled
+      );
   registry->RegisterListPref(
-      prefs::kDailyOriginalContentLengthViaDataReductionProxy);
+      data_reduction_proxy::prefs::
+          kDailyContentLengthLongBypassWithDataReductionProxyEnabled);
   registry->RegisterListPref(
-      prefs::kDailyContentLengthViaDataReductionProxy);
-  registry->RegisterInt64Pref(prefs::kDailyHttpContentLengthLastUpdateDate, 0L);
+      data_reduction_proxy::prefs::
+          kDailyContentLengthUnknownWithDataReductionProxyEnabled);
+  registry->RegisterListPref(
+      data_reduction_proxy::prefs::
+          kDailyOriginalContentLengthViaDataReductionProxy);
+  registry->RegisterListPref(
+      data_reduction_proxy::
+          prefs::kDailyContentLengthViaDataReductionProxy);
+  registry->RegisterInt64Pref(
+      data_reduction_proxy::prefs::
+          kDailyHttpContentLengthLastUpdateDate, 0L);
 #endif
   registry->RegisterBooleanPref(prefs::kBuiltInDnsClientEnabled, true);
   registry->RegisterBooleanPref(prefs::kQuickCheckEnabled, true);
@@ -927,7 +947,7 @@ net::HttpAuthHandlerFactory* IOThread::CreateDefaultAuthHandlerFactory(
   if (!spdyproxy_auth_origins_.empty()) {
     registry_factory->RegisterSchemeFactory(
         "spdyproxy",
-        new spdyproxy::HttpAuthHandlerSpdyProxy::Factory(
+        new data_reduction_proxy::HttpAuthHandlerDataReductionProxy::Factory(
             spdyproxy_auth_origins_));
   }
 

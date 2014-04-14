@@ -28,12 +28,12 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/net/client_hints.h"
 #include "chrome/browser/net/connect_interceptor.h"
-#include "chrome/browser/net/spdyproxy/data_saving_metrics.h"
 #include "chrome/browser/performance_monitor/performance_monitor.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_metrics.h"
 #include "components/domain_reliability/monitor.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -225,7 +225,7 @@ void ForwardRequestStatus(
 void UpdateContentLengthPrefs(
     int received_content_length,
     int original_content_length,
-    spdyproxy::DataReductionRequestType data_reduction_type,
+    data_reduction_proxy::DataReductionProxyRequestType request_type,
     Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_GE(received_content_length, 0);
@@ -249,26 +249,26 @@ void UpdateContentLengthPrefs(
   // the browser preference will be taken.
   bool with_data_reduction_proxy_enabled =
       ProfileManager::GetActiveUserProfile()->GetPrefs()->GetBoolean(
-          prefs::kSpdyProxyAuthEnabled);
+          data_reduction_proxy::prefs::kDataReductionProxyEnabled);
 #else
   bool with_data_reduction_proxy_enabled = false;
 #endif
 
-  spdyproxy::UpdateContentLengthPrefs(received_content_length,
-                                      original_content_length,
-                                      with_data_reduction_proxy_enabled,
-                                      data_reduction_type, prefs);
+  data_reduction_proxy::UpdateContentLengthPrefs(received_content_length,
+                                         original_content_length,
+                                         with_data_reduction_proxy_enabled,
+                                         request_type, prefs);
 }
 
 void StoreAccumulatedContentLength(
     int received_content_length,
     int original_content_length,
-    spdyproxy::DataReductionRequestType data_reduction_type,
+    data_reduction_proxy::DataReductionProxyRequestType request_type,
     Profile* profile) {
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       base::Bind(&UpdateContentLengthPrefs,
                  received_content_length, original_content_length,
-                 data_reduction_type, profile));
+                 request_type, profile));
 }
 
 void RecordContentLengthHistograms(
@@ -424,8 +424,10 @@ void ChromeNetworkDelegate::AllowAccessToAllFiles() {
 base::Value* ChromeNetworkDelegate::HistoricNetworkStatsInfoToValue() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   PrefService* prefs = g_browser_process->local_state();
-  int64 total_received = prefs->GetInt64(prefs::kHttpReceivedContentLength);
-  int64 total_original = prefs->GetInt64(prefs::kHttpOriginalContentLength);
+  int64 total_received = prefs->GetInt64(
+      data_reduction_proxy::prefs::kHttpReceivedContentLength);
+  int64 total_original = prefs->GetInt64(
+      data_reduction_proxy::prefs::kHttpOriginalContentLength);
 
   base::DictionaryValue* dict = new base::DictionaryValue();
   // Use strings to avoid overflow.  base::Value only supports 32-bit integers.
@@ -617,19 +619,19 @@ void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
       int64 original_content_length =
           request->response_info().headers->GetInt64HeaderValue(
               "x-original-content-length");
-      spdyproxy::DataReductionRequestType data_reduction_type =
-          spdyproxy::GetDataReductionRequestType(request);
+      data_reduction_proxy::DataReductionProxyRequestType request_type =
+          data_reduction_proxy::GetDataReductionProxyRequestType(request);
 
       base::TimeDelta freshness_lifetime =
           request->response_info().headers->GetFreshnessLifetime(
               request->response_info().response_time);
       int64 adjusted_original_content_length =
-          spdyproxy::GetAdjustedOriginalContentLength(
-              data_reduction_type, original_content_length,
+          data_reduction_proxy::GetAdjustedOriginalContentLength(
+              request_type, original_content_length,
               received_content_length);
       AccumulateContentLength(received_content_length,
                               adjusted_original_content_length,
-                              data_reduction_type);
+                              request_type);
       RecordContentLengthHistograms(received_content_length,
                                     original_content_length,
                                     freshness_lifetime);
@@ -856,12 +858,12 @@ int ChromeNetworkDelegate::OnBeforeSocketStreamConnect(
 void ChromeNetworkDelegate::AccumulateContentLength(
     int64 received_content_length,
     int64 original_content_length,
-    spdyproxy::DataReductionRequestType data_reduction_type) {
+    data_reduction_proxy::DataReductionProxyRequestType request_type) {
   DCHECK_GE(received_content_length, 0);
   DCHECK_GE(original_content_length, 0);
   StoreAccumulatedContentLength(received_content_length,
                                 original_content_length,
-                                data_reduction_type,
+                                request_type,
                                 reinterpret_cast<Profile*>(profile_));
   received_content_length_ += received_content_length;
   original_content_length_ += original_content_length;

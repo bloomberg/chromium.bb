@@ -1,0 +1,7 @@
+The Data Reduction Proxy component contains code for a configuring and using
+the data reduction proxy. The Data Reduction proxy is not allowed to depend
+on content/, because it is used by iOS. If dependencies on content/ need to be
+added to the Data Reduction Proxy, it will have to be make into a layered
+component. See
+http://www.chromium.org/developers/design-documents/layered-components-design
+for more information.

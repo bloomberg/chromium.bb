@@ -1794,12 +1794,6 @@ const char kDevToolsPortForwardingConfig[] = "devtools.port_forwarding_config";
 const char kDevToolsRemoteEnabled[] = "devtools.remote_enabled";
 #endif
 
-#if defined(OS_ANDROID) || defined(OS_IOS)
-// A boolean specifying whether a SPDY proxy is enabled.
-const char kSpdyProxyAuthEnabled[] = "spdy_proxy.enabled";
-const char kSpdyProxyAuthWasEnabledBefore[] = "spdy_proxy.was_enabled_before";
-#endif  // defined(OS_ANDROID) || defined(OS_IOS)
-
 // An ID to uniquely identify this client to the invalidator service.
 const char kInvalidatorClientId[] = "invalidator.client_id";
 
@@ -1929,74 +1923,12 @@ const char kAuthNegotiateDelegateWhitelist[] =
 // String that specifies the name of a custom GSSAPI library to load.
 const char kGSSAPILibraryName[] = "auth.gssapi_library_name";
 
-// String that specifies the origin allowed to use SpdyProxy
-// authentication, if any.
-const char kSpdyProxyAuthOrigin[] = "auth.spdyproxy.origin";
-
 // Boolean that specifies whether to allow basic auth prompting on cross-
 // domain sub-content requests.
 const char kAllowCrossOriginAuthPrompt[] = "auth.allow_cross_origin_prompt";
 
 // Boolean that specifies whether the built-in asynchronous DNS client is used.
 const char kBuiltInDnsClientEnabled[] = "async_dns.enabled";
-
-// An int64 pref that contains the total size of all HTTP content that has been
-// received from the network.
-const char kHttpReceivedContentLength[] = "http_received_content_length";
-
-// An int64 pref that contains the total original size of all HTTP content that
-// was received over the network.
-const char kHttpOriginalContentLength[] = "http_original_content_length";
-
-#if defined(OS_ANDROID) || defined(OS_IOS)
-// A List pref that contains daily totals of the original size of all HTTP/HTTPS
-// that was received from the network.
-const char kDailyHttpOriginalContentLength[] =
-    "data_reduction.daily_original_length";
-
-// A List pref that contains daily totals of the size of all HTTP/HTTPS content
-// that was received from the network.
-const char kDailyHttpReceivedContentLength[] =
-    "data_reduction.daily_received_length";
-
-// A List pref that contains daily totals of the original size of all HTTP/HTTPS
-// that was received while the data reduction proxy is enabled.
-const char kDailyOriginalContentLengthWithDataReductionProxyEnabled[] =
-    "data_reduction.daily_original_length_with_data_reduction_proxy_enabled";
-
-// A List pref that contains daily totals of the size of all HTTP/HTTPS
-// that was received while the data reduction proxy is enabled.
-const char kDailyContentLengthWithDataReductionProxyEnabled[] =
-    "data_reduction.daily_received_length_with_data_reduction_proxy_enabled";
-
-const char kDailyContentLengthHttpsWithDataReductionProxyEnabled[] =
-    "data_reduction.daily_received_length_https_with_"
-    "data_reduction_proxy_enabled";
-const char kDailyContentLengthShortBypassWithDataReductionProxyEnabled[] =
-    "data_reduction.daily_received_length_short_bypass_with_"
-    "data_reduction_proxy_enabled";
-const char kDailyContentLengthLongBypassWithDataReductionProxyEnabled[] =
-    "data_reduction.daily_received_length_long_bypass_with_"
-    "data_reduction_proxy_enabled";
-const char kDailyContentLengthUnknownWithDataReductionProxyEnabled[] =
-    "data_reduction.daily_received_length_unknown_with_"
-    "data_reduction_proxy_enabled";
-
-// A List pref that contains daily totals of the original size of all HTTP/HTTPS
-// that was received via the data reduction proxy.
-const char kDailyOriginalContentLengthViaDataReductionProxy[] =
-    "data_reduction.daily_original_length_via_data_reduction_proxy";
-
-// A List pref that contains daily totals of the size of all HTTP/HTTPS
-// that was received via the data reduction proxy.
-const char kDailyContentLengthViaDataReductionProxy[] =
-    "data_reduction.daily_received_length_via_data_reduction_proxy";
-
-// An int64 pref that contains an internal representation of midnight on the
-// date of the last update to |kDailyHttp{Original,Received}ContentLength|.
-const char kDailyHttpContentLengthLastUpdateDate[] =
-    "data_reduction.last_update_date";
-#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 // A pref holding the value of the policy used to explicitly allow or deny
 // access to audio capture devices.  When enabled or not set, the user is

@@ -52,7 +52,8 @@ void InterceptDownloadResourceThrottle::ProcessDownloadRequest() {
     request_->GetFullRequestHeaders(&headers);
     if (headers.HasHeader(net::HttpRequestHeaders::kAuthorization) ||
         !(request_->response_info().headers &&
-            request_->response_info().headers->IsChromeProxyResponse())) {
+            request_->response_info().headers->
+                IsDataReductionProxyResponse())) {
       return;
     }
 #else

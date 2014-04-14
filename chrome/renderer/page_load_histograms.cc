@@ -215,7 +215,7 @@ bool DataReductionProxyWasUsed(WebFrame* frame) {
   std::replace(headers.begin(), headers.end(), '\n', '\0');
   scoped_refptr<net::HttpResponseHeaders> response_headers(
       new net::HttpResponseHeaders(headers));
-  return response_headers->IsChromeProxyResponse();
+  return response_headers->IsDataReductionProxyResponse();
 #else
   return false;
 #endif

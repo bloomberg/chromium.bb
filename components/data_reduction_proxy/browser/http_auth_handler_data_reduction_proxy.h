@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NET_SPDYPROXY_HTTP_AUTH_HANDLER_SPDYPROXY_H_
-#define CHROME_BROWSER_NET_SPDYPROXY_HTTP_AUTH_HANDLER_SPDYPROXY_H_
+#ifndef COMPONENTS_DATA_REDUCTION_PROXY_BROWSER_HTTP_AUTH_HANDLER_DATA_REDUCTION_PROXY_H_
+#define COMPONENTS_DATA_REDUCTION_PROXY_BROWSER_HTTP_AUTH_HANDLER_DATA_REDUCTION_PROXY_H_
 
 #include <string>
 #include <vector>
@@ -12,10 +12,10 @@
 #include "net/http/http_auth_handler.h"
 #include "net/http/http_auth_handler_factory.h"
 
-namespace spdyproxy {
+namespace data_reduction_proxy {
 
 // Code for handling http SpdyProxy authentication.
-class HttpAuthHandlerSpdyProxy : public net::HttpAuthHandler {
+class HttpAuthHandlerDataReductionProxy : public net::HttpAuthHandler {
  public:
   class Factory : public net::HttpAuthHandlerFactory {
    public:
@@ -39,7 +39,7 @@ class HttpAuthHandlerSpdyProxy : public net::HttpAuthHandler {
   };
 
   // Constructs a new spdyproxy handler.
-  HttpAuthHandlerSpdyProxy() {}
+  HttpAuthHandlerDataReductionProxy() {}
 
   // Overrides from net::HttpAuthHandler.
   virtual net::HttpAuth::AuthorizationResult HandleAnotherChallenge(
@@ -49,9 +49,10 @@ class HttpAuthHandlerSpdyProxy : public net::HttpAuthHandler {
   virtual bool AllowsExplicitCredentials() OVERRIDE;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(HttpAuthHandlerSpdyProxyTest, ParseChallenge);
+  FRIEND_TEST_ALL_PREFIXES(HttpAuthHandlerDataReductionProxyTest,
+                           ParseChallenge);
 
-  virtual ~HttpAuthHandlerSpdyProxy();
+  virtual ~HttpAuthHandlerDataReductionProxy();
 
   virtual bool Init(net::HttpAuthChallengeTokenizer* challenge) OVERRIDE;
 
@@ -68,9 +69,9 @@ class HttpAuthHandlerSpdyProxy : public net::HttpAuthHandler {
   // Proxy server token, encoded as UTF-8.
   std::string ps_token_;
 
-  DISALLOW_COPY_AND_ASSIGN(HttpAuthHandlerSpdyProxy);
+  DISALLOW_COPY_AND_ASSIGN(HttpAuthHandlerDataReductionProxy);
 };
 
-}  // namespace spdyproxy
+}  // namespace data_reduction_proxy
 
-#endif  // CHROME_BROWSER_NET_SPDYPROXY_HTTP_AUTH_HANDLER_SPDYPROXY_H_
+#endif  // COMPONENTS_DATA_REDUCTION_PROXY_BROWSER_HTTP_AUTH_HANDLER_DATA_REDUCTION_PROXY_H_

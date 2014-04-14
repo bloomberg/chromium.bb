@@ -13,7 +13,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_member.h"
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
 
 
 using base::android::ScopedJavaLocalRef;
@@ -22,7 +22,8 @@ using base::android::ScopedJavaLocalRef;
 // Central point for configuring the data reduction proxy on Android.
 // This object lives on the UI thread and all of its methods are expected to
 // be called from there.
-class DataReductionProxySettingsAndroid : public DataReductionProxySettings {
+class DataReductionProxySettingsAndroid
+    : public data_reduction_proxy::DataReductionProxySettings {
  public:
   DataReductionProxySettingsAndroid(JNIEnv* env, jobject obj);
   // Parameter-free constructor for C++ unit tests.
@@ -38,8 +39,6 @@ class DataReductionProxySettingsAndroid : public DataReductionProxySettings {
   // used in proxy PAC resolution. These functions must only be called before
   // the proxy is used.
   void BypassURLPattern(JNIEnv* env, jobject obj, jstring pattern);
-
-  virtual void AddURLPatternToBypass(const std::string& pattern) OVERRIDE;
 
   // JNI wrapper interfaces to the indentically-named superclass methods.
   jboolean IsDataReductionProxyAllowed(JNIEnv* env, jobject obj);
@@ -89,18 +88,11 @@ class DataReductionProxySettingsAndroid : public DataReductionProxySettings {
  private:
   friend class DataReductionProxySettingsAndroidTest;
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsAndroidTest,
-                           TestBypassPACRules);
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsAndroidTest,
-                           TestSetProxyPac);
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsAndroidTest,
                            TestGetDailyContentLengths);
 
 
   ScopedJavaLocalRef<jlongArray> GetDailyContentLengths(JNIEnv* env,
                                                         const char* pref_name);
-  std::string GetProxyPacScript(bool restricted);
-
-  std::vector<std::string> pac_bypass_rules_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxySettingsAndroid);
 };

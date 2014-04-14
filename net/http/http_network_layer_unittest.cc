@@ -50,7 +50,7 @@ class HttpNetworkLayerTest : public PlatformTest {
   }
 
 #if defined(SPDY_PROXY_AUTH_ORIGIN)
-  std::string GetChromeProxy() {
+  std::string GetDataReductionProxy() {
     return HostPortPair::FromURL(GURL(SPDY_PROXY_AUTH_ORIGIN)).ToString();
   }
 #endif
@@ -355,21 +355,21 @@ TEST_F(HttpNetworkLayerTest, GET) {
 
 #if defined(SPDY_PROXY_AUTH_ORIGIN)
 TEST_F(HttpNetworkLayerTest, ServerTwoProxyBypassPac) {
-  std::string bad_proxy = GetChromeProxy();
+  std::string bad_proxy = GetDataReductionProxy();
   ConfigureTestDependencies(ProxyService::CreateFixedFromPacResult(
       "PROXY " + bad_proxy + "; PROXY good:8080"));
   TestProxyFallback(bad_proxy);
 }
 
 TEST_F(HttpNetworkLayerTest, ServerTwoProxyBypassFixed) {
-  std::string bad_proxy = GetChromeProxy();
+  std::string bad_proxy = GetDataReductionProxy();
   ConfigureTestDependencies(
       ProxyService::CreateFixed(bad_proxy +", good:8080"));
   TestProxyFallback(bad_proxy);
 }
 
 TEST_F(HttpNetworkLayerTest, BypassAndRetryIdempotentMethods) {
-  std::string bad_proxy = GetChromeProxy();
+  std::string bad_proxy = GetDataReductionProxy();
   const struct {
     std::string method;
     std::string content;
@@ -430,14 +430,14 @@ TEST_F(HttpNetworkLayerTest, BypassAndRetryIdempotentMethods) {
 }
 
 TEST_F(HttpNetworkLayerTest, ServerOneProxyWithDirectBypassPac) {
-  std::string bad_proxy = GetChromeProxy();
+  std::string bad_proxy = GetDataReductionProxy();
   ConfigureTestDependencies(ProxyService::CreateFixedFromPacResult(
       "PROXY " + bad_proxy + "; DIRECT"));
   TestProxyFallbackToDirect(bad_proxy);
 }
 
 TEST_F(HttpNetworkLayerTest, ServerOneProxyWithDirectBypassFixed) {
-  std::string bad_proxy = GetChromeProxy();
+  std::string bad_proxy = GetDataReductionProxy();
   ConfigureTestDependencies(
       ProxyService::CreateFixed(bad_proxy + ", direct://"));
   TestProxyFallbackToDirect(bad_proxy);
@@ -445,7 +445,7 @@ TEST_F(HttpNetworkLayerTest, ServerOneProxyWithDirectBypassFixed) {
 
 #if defined(DATA_REDUCTION_FALLBACK_HOST)
 TEST_F(HttpNetworkLayerTest, ServerTwoProxyDoubleBypassPac) {
-  std::string bad_proxy = GetChromeProxy();
+  std::string bad_proxy = GetDataReductionProxy();
   std::string bad_proxy2 =
       HostPortPair::FromURL(GURL(DATA_REDUCTION_FALLBACK_HOST)).ToString();
   ConfigureTestDependencies(ProxyService::CreateFixedFromPacResult(
@@ -454,7 +454,7 @@ TEST_F(HttpNetworkLayerTest, ServerTwoProxyDoubleBypassPac) {
 }
 
 TEST_F(HttpNetworkLayerTest, ServerTwoProxyDoubleBypassFixed) {
-  std::string bad_proxy = GetChromeProxy();
+  std::string bad_proxy = GetDataReductionProxy();
   std::string bad_proxy2 =
       HostPortPair::FromURL(GURL(DATA_REDUCTION_FALLBACK_HOST)).ToString();
   ConfigureTestDependencies(ProxyService::CreateFixed(
@@ -464,14 +464,14 @@ TEST_F(HttpNetworkLayerTest, ServerTwoProxyDoubleBypassFixed) {
 #endif
 
 TEST_F(HttpNetworkLayerTest, ServerOneProxyNoDirectBypassPac) {
-  std::string bad_proxy = GetChromeProxy();
+  std::string bad_proxy = GetDataReductionProxy();
   ConfigureTestDependencies(ProxyService::CreateFixedFromPacResult(
       "PROXY " + bad_proxy));
   TestProxyFallbackFail(1u, bad_proxy, "");
 }
 
 TEST_F(HttpNetworkLayerTest, ServerOneProxyNoDirectBypassFixed) {
-  std::string bad_proxy = GetChromeProxy();
+  std::string bad_proxy = GetDataReductionProxy();
   ConfigureTestDependencies(ProxyService::CreateFixed(bad_proxy));
   TestProxyFallbackFail(1u, bad_proxy, "");
 }
@@ -615,7 +615,7 @@ TEST_F(HttpNetworkLayerTest, ProxyBypassIgnoredOnDirectConnectionPac) {
 TEST_F(HttpNetworkLayerTest, ServerFallbackWithProxyTimedBypass) {
   // Verify that a Chrome-Proxy: bypass=<seconds> header induces proxy
   // fallback to a second proxy, if configured.
-  std::string bad_proxy = GetChromeProxy();
+  std::string bad_proxy = GetDataReductionProxy();
   ConfigureTestDependencies(ProxyService::CreateFixedFromPacResult(
       "PROXY " + bad_proxy + "; PROXY good:8080"));
 
@@ -637,7 +637,7 @@ TEST_F(HttpNetworkLayerTest, ServerFallbackWithProxyTimedBypass) {
 TEST_F(HttpNetworkLayerTest, ServerFallbackWithWrongViaHeader) {
   // Verify that a Via header that lacks the Chrome-Proxy induces proxy fallback
   // to a second proxy, if configured.
-  std::string chrome_proxy = GetChromeProxy();
+  std::string chrome_proxy = GetDataReductionProxy();
   ConfigureTestDependencies(ProxyService::CreateFixedFromPacResult(
       "PROXY " + chrome_proxy + "; PROXY good:8080"));
 
@@ -656,7 +656,7 @@ TEST_F(HttpNetworkLayerTest, ServerFallbackWithWrongViaHeader) {
 TEST_F(HttpNetworkLayerTest, ServerFallbackWithNoViaHeader) {
   // Verify that the lack of a Via header induces proxy fallback to a second
   // proxy, if configured.
-  std::string chrome_proxy = GetChromeProxy();
+  std::string chrome_proxy = GetDataReductionProxy();
   ConfigureTestDependencies(ProxyService::CreateFixedFromPacResult(
       "PROXY " + chrome_proxy + "; PROXY good:8080"));
 
@@ -672,9 +672,9 @@ TEST_F(HttpNetworkLayerTest, ServerFallbackWithNoViaHeader) {
 }
 
 TEST_F(HttpNetworkLayerTest, NoServerFallbackWith304Response) {
-  // Verify that Chrome will not be induced to bypass the Chrome proxy when
-  // the Chrome Proxy via header is absent on a 304.
-  std::string chrome_proxy = GetChromeProxy();
+  // Verify that Chrome will not be induced to bypass the data reduction proxy
+  // when the data reduction proxy via header is absent on a 304.
+  std::string chrome_proxy = GetDataReductionProxy();
   ConfigureTestDependencies(ProxyService::CreateFixedFromPacResult(
       "PROXY " + chrome_proxy + "; PROXY good:8080"));
 
@@ -690,9 +690,10 @@ TEST_F(HttpNetworkLayerTest, NoServerFallbackWith304Response) {
 }
 
 TEST_F(HttpNetworkLayerTest, NoServerFallbackWithChainedViaHeader) {
-  // Verify that Chrome will not be induced to bypass the Chrome proxy when
-  // the Chrome Proxy via header is present, even if that header is chained.
-  std::string chrome_proxy = GetChromeProxy();
+  // Verify that Chrome will not be induced to bypass the data reduction proxy
+  // when the data reduction proxy via header is present, even if that header
+  // is chained.
+  std::string chrome_proxy = GetDataReductionProxy();
   ConfigureTestDependencies(ProxyService::CreateFixedFromPacResult(
       "PROXY " + chrome_proxy + "; PROXY good:8080"));
 
@@ -710,10 +711,10 @@ TEST_F(HttpNetworkLayerTest, NoServerFallbackWithChainedViaHeader) {
 }
 
 TEST_F(HttpNetworkLayerTest, NoServerFallbackWithDeprecatedViaHeader) {
-  // Verify that Chrome will not be induced to bypass the Chrome proxy when
-  // the deprecated Chrome Proxy via header is present, even if that header is
-  // chained.
-  std::string chrome_proxy = GetChromeProxy();
+  // Verify that Chrome will not be induced to bypass the data reduction proxy
+  // when the deprecated data reduction proxy via header is present, even if
+  // that header is chained.
+  std::string chrome_proxy = GetDataReductionProxy();
   ConfigureTestDependencies(ProxyService::CreateFixedFromPacResult(
       "PROXY " + chrome_proxy + "; PROXY good:8080"));
 
@@ -735,7 +736,7 @@ TEST_F(HttpNetworkLayerTest, ServerFallbackWithProxyTimedBypassAll) {
   // Verify that a Chrome-Proxy: block=<seconds> header bypasses a
   // a configured Chrome-Proxy and fallback and induces proxy fallback to a
   // third proxy, if configured.
-  std::string bad_proxy = GetChromeProxy();
+  std::string bad_proxy = GetDataReductionProxy();
   std::string fallback_proxy = GetChromeFallbackProxy();
   ConfigureTestDependencies(ProxyService::CreateFixedFromPacResult(
       "PROXY " + bad_proxy + "; PROXY " + fallback_proxy +

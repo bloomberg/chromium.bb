@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NET_SPDYPROXY_DATA_REDUCTION_PROXY_SETTINGS_H_
-#define CHROME_BROWSER_NET_SPDYPROXY_DATA_REDUCTION_PROXY_SETTINGS_H_
+#ifndef COMPONENTS_DATA_REDUCTION_PROXY_BROWSER_DATA_REDUCTION_PROXY_SETTINGS_H_
+#define COMPONENTS_DATA_REDUCTION_PROXY_BROWSER_DATA_REDUCTION_PROXY_SETTINGS_H_
 
 #include <vector>
 
@@ -12,6 +12,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_member.h"
+#include "base/threading/thread_checker.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_configurator.h"
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
@@ -24,9 +26,10 @@ class HttpAuthCache;
 class HttpNetworkSession;
 class HttpResponseHeaders;
 class URLFetcher;
+class URLRequestContextGetter;
 }
 
-namespace spdyproxy {
+namespace data_reduction_proxy {
 
 // The number of days of bandwidth usage statistics that are tracked.
 const unsigned int kNumDaysInHistory = 60;
@@ -53,7 +56,7 @@ COMPILE_ASSERT(kNumDaysInHistorySummary <= kNumDaysInHistory,
   // TODO(marq): Rename these histogram buckets with s/DISABLED/RESTRICTED/, so
   //     their names match the behavior they track.
   enum ProbeURLFetchResult {
-    // The probe failed because the internet was disconnected.
+    // The probe failed because the Internet was disconnected.
     INTERNET_DISCONNECTED = 0,
 
     // The probe failed for any other reason, and as a result, the proxy was
@@ -73,8 +76,6 @@ COMPILE_ASSERT(kNumDaysInHistorySummary <= kNumDaysInHistory,
     PROBE_URL_FETCH_RESULT_COUNT
   };
 
-}  // namespace spdyproxy
-
 // Central point for configuring the data reduction proxy.
 // This object lives on the UI thread and all of its methods are expected to
 // be called from there.
@@ -91,23 +92,19 @@ class DataReductionProxySettings
   DataReductionProxySettings();
   virtual ~DataReductionProxySettings();
 
-  void InitDataReductionProxySettings();
+  // Initializes the data reduction proxy with profile and local state prefs,
+  // and a |UrlRequestContextGetter| for canary probes. The caller must ensure
+  // that all parameters remain alive for the lifetime of the
+  // |DataReductionProxySettings| instance.
+  void InitDataReductionProxySettings(
+      PrefService* prefs,
+      PrefService* local_state_prefs,
+      net::URLRequestContextGetter* url_request_context_getter,
+      scoped_ptr<DataReductionProxyConfigurator> config);
 
   // If proxy authentication is compiled in, pre-cache authentication
   // keys for all configured proxies in |session|.
   static void InitDataReductionProxySession(net::HttpNetworkSession* session);
-
-  // Add a host pattern to bypass. This should follow the same syntax used
-  // in net::ProxyBypassRules; that is, a hostname pattern, a hostname suffix
-  // pattern, an IP literal, a CIDR block, or the magic string '<local>'.
-  // Bypass settings persist for the life of this object and are applied
-  // each time the proxy is enabled, but are not updated while it is enabled.
-  void AddHostPatternToBypass(const std::string& pattern);
-
-  // Add a URL pattern to bypass the proxy. The base implementation strips
-  // everything in |pattern| after the first single slash and then treats it
-  // as a hostname pattern. Subclasses may implement other semantics.
-  virtual void AddURLPatternToBypass(const std::string& pattern);
 
   // Returns true if the data reduction proxy is allowed to be used on this
   // instance of Chrome. This could return false, for example, if this instance
@@ -201,12 +198,15 @@ class DataReductionProxySettings
   // customer feedback. Virtual so tests can mock it for verification.
   virtual void LogProxyState(bool enabled, bool restricted, bool at_startup);
 
-  // Accessor for unit tests.
-  std::vector<std::string> BypassRules() { return bypass_rules_;}
-
   // Virtualized for mocking
-  virtual void RecordProbeURLFetchResult(spdyproxy::ProbeURLFetchResult result);
-  virtual void RecordStartupState(spdyproxy::ProxyStartupState state);
+  virtual void RecordProbeURLFetchResult(
+      data_reduction_proxy::ProbeURLFetchResult result);
+  virtual void RecordStartupState(
+      data_reduction_proxy::ProxyStartupState state);
+
+  DataReductionProxyConfigurator* config() {
+    return config_.get();
+  }
 
  private:
   friend class DataReductionProxySettingsTestBase;
@@ -237,6 +237,8 @@ class DataReductionProxySettings
                            TestInitDataReductionProxyOff);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsTest,
                            TestBypassList);
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsTest,
+                           CheckInitMetricsWhenNotAllowed);
 
   // NetworkChangeNotifier::IPAddressObserver:
   virtual void OnIPAddressChanged() OVERRIDE;
@@ -262,15 +264,24 @@ class DataReductionProxySettings
   // the data reduction proxy feature isn't available.
   static base::string16 AuthHashForSalt(int64 salt);
 
-  std::vector<std::string> bypass_rules_;
-
   bool restricted_by_carrier_;
   bool enabled_by_user_;
 
   scoped_ptr<net::URLFetcher> fetcher_;
   BooleanPrefMember spdy_proxy_auth_enabled_;
 
+  PrefService* prefs_;
+  PrefService* local_state_prefs_;
+
+  net::URLRequestContextGetter* url_request_context_getter_;
+
+  scoped_ptr<DataReductionProxyConfigurator> config_;
+
+  base::ThreadChecker thread_checker_;
+
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxySettings);
 };
 
-#endif  // CHROME_BROWSER_NET_SPDYPROXY_DATA_REDUCTION_PROXY_SETTINGS_H_
+}  // namespace data_reduction_proxy
+
+#endif  // COMPONENTS_DATA_REDUCTION_PROXY_BROWSER_DATA_REDUCTION_PROXY_SETTINGS_H_

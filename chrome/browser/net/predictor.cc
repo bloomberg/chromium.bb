@@ -26,11 +26,11 @@
 #include "base/values.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/preconnect.h"
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings.h"
 #include "chrome/browser/net/spdyproxy/proxy_advisor.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/address_list.h"
@@ -337,7 +337,8 @@ void Predictor::InitNetworkPredictor(PrefService* user_prefs,
   // Until then, we may create a proxy advisor when the proxy feature itself
   // isn't available, and the advisor instance will never send advisory
   // requests, which is slightly wasteful but not harmful.
-  if (DataReductionProxySettings::IsPreconnectHintingAllowed()) {
+  if (data_reduction_proxy::DataReductionProxySettings::
+          IsPreconnectHintingAllowed()) {
     proxy_advisor_.reset(new ProxyAdvisor(user_prefs, getter));
   }
 #endif

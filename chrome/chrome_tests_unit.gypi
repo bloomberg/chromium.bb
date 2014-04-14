@@ -1095,11 +1095,8 @@
         'browser/net/pref_proxy_config_tracker_impl_unittest.cc',
         'browser/net/probe_message_unittest.cc',
         'browser/net/proxy_policy_handler_unittest.cc',
-        'browser/net/spdyproxy/data_reduction_proxy_settings_unittest.cc',
-        'browser/net/spdyproxy/data_reduction_proxy_settings_unittest.h',
+        'browser/net/spdyproxy/data_reduction_proxy_chrome_configurator_unittest.cc',
         'browser/net/spdyproxy/data_reduction_proxy_settings_unittest_android.cc',
-        'browser/net/spdyproxy/data_saving_metrics_unittest.cc',
-        'browser/net/spdyproxy/http_auth_handler_spdyproxy_unittest.cc',
         'browser/net/sqlite_server_bound_cert_store_unittest.cc',
         'browser/net/ssl_config_service_manager_pref_unittest.cc',
         'browser/net/url_info_unittest.cc',
@@ -1971,6 +1968,7 @@
         ['OS!="ios"', {
           'dependencies': [
             '../components/components.gyp:autofill_content_test_support',
+            '../components/components.gyp:data_reduction_proxy_test_support',
             '../components/components_strings.gyp:components_strings',
             '../device/bluetooth/bluetooth.gyp:device_bluetooth_mocks',
             '../gpu/gpu.gyp:gpu_unittest_utils',

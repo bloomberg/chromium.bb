@@ -269,14 +269,14 @@ class NET_EXPORT HttpResponseHeaders
 
 #if defined (SPDY_PROXY_AUTH_ORIGIN)
   // Contains instructions contained in the Chrome-Proxy header.
-  struct ChromeProxyInfo {
-    ChromeProxyInfo() : bypass_all(false) {}
+  struct DataReductionProxyInfo {
+    DataReductionProxyInfo() : bypass_all(false) {}
 
-    // True if Chrome should bypass all available Chrome proxies. False if only
-    // the currently connected Chrome proxy should be bypassed.
+    // True if Chrome should bypass all available data reduction proxies. False
+    // if only the currently connected data reduction proxy should be bypassed.
     bool bypass_all;
 
-    // Amount of time to bypass the Chrome proxy or proxies.
+    // Amount of time to bypass the data reduction proxy or proxies.
     base::TimeDelta bypass_duration;
   };
 
@@ -284,18 +284,20 @@ class NET_EXPORT HttpResponseHeaders
   // delay. Sets |proxy_info->bypass_duration| to the specified delay if greater
   // than 0, and to 0 otherwise to indicate that the default proxy delay
   // (as specified in |ProxyList::UpdateRetryInfoOnFallback|) should be used.
-  // If all available Chrome proxies should by bypassed, |bypass_all| is set to
-  // true. |proxy_info| must be non-NULL.
-  bool GetChromeProxyInfo(ChromeProxyInfo* proxy_info) const;
-
-  // Returns true if response headers contain the Chrome proxy Via header value.
-  bool IsChromeProxyResponse() const;
+  // If all available data reduction proxies should by bypassed, |bypass_all| is
+  // set to true. |proxy_info| must be non-NULL.
+  bool GetDataReductionProxyInfo(DataReductionProxyInfo* proxy_info) const;
 
   // Returns the reason why the Chrome proxy should be bypassed or not, and
   // populates |proxy_info| with information on how long to bypass if
   // applicable.
   ProxyService::DataReductionProxyBypassEventType
-  GetChromeProxyBypassEventType(ChromeProxyInfo* proxy_info) const;
+  GetDataReductionProxyBypassEventType(
+      DataReductionProxyInfo* proxy_info) const;
+
+  // Returns true if response headers contain the data reduction proxy Via
+  // header value.
+  bool IsDataReductionProxyResponse() const;
 #endif
 
   // Creates a Value for use with the NetLog containing the response headers.
@@ -399,8 +401,8 @@ class NET_EXPORT HttpResponseHeaders
 #if defined(SPDY_PROXY_AUTH_ORIGIN)
   // Searches for the specified Chrome-Proxy action, and if present interprets
   // its value as a duration in seconds.
-  bool GetChromeProxyBypassDuration(const std::string& action_prefix,
-                                    base::TimeDelta* duration) const;
+  bool GetDataReductionProxyBypassDuration(const std::string& action_prefix,
+                                           base::TimeDelta* duration) const;
 #endif
 
   // We keep a list of ParsedHeader objects.  These tell us where to locate the
