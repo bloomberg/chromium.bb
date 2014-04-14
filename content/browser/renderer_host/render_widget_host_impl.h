@@ -26,7 +26,6 @@
 #include "content/browser/renderer_host/input/input_ack_handler.h"
 #include "content/browser/renderer_host/input/input_router_client.h"
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
-#include "content/browser/renderer_host/input/touch_emulator_client.h"
 #include "content/common/input/synthetic_gesture_packet.h"
 #include "content/common/view_message_enums.h"
 #include "content/port/browser/event_with_latency_info.h"
@@ -85,7 +84,6 @@ class RenderWidgetHostDelegate;
 class RenderWidgetHostViewPort;
 class SyntheticGestureController;
 class TimeoutMonitor;
-class TouchEmulator;
 class WebCursor;
 struct EditCommand;
 
@@ -94,7 +92,6 @@ struct EditCommand;
 class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
                                             public InputRouterClient,
                                             public InputAckHandler,
-                                            public TouchEmulatorClient,
                                             public IPC::Listener {
  public:
   // routing_id can be MSG_ROUTING_NONE, in which case the next available
@@ -301,6 +298,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
 
   // Forwards the given message to the renderer. These are called by the view
   // when it has received a message.
+  void ForwardGestureEvent(const blink::WebGestureEvent& gesture_event);
   void ForwardGestureEventWithLatencyInfo(
       const blink::WebGestureEvent& gesture_event,
       const ui::LatencyInfo& ui_latency);
@@ -313,13 +311,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   void ForwardWheelEventWithLatencyInfo(
       const blink::WebMouseWheelEvent& wheel_event,
       const ui::LatencyInfo& ui_latency);
-
-  // TouchEmulatorClient overrides.
-  virtual void ForwardGestureEvent(
-      const blink::WebGestureEvent& gesture_event) OVERRIDE;
-  virtual void ForwardTouchEvent(
-      const blink::WebTouchEvent& touch_event) OVERRIDE;
-  virtual void SetCursor(const WebCursor& cursor) OVERRIDE;
 
   // Queues a synthetic gesture for testing purposes.  Invokes the on_complete
   // callback when the gesture is finished running.
@@ -667,7 +658,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   virtual void OnFocus();
   virtual void OnBlur();
   void OnSetCursor(const WebCursor& cursor);
-  void OnSetTouchEventEmulationEnabled(bool enabled, bool allow_pinch);
   void OnTextInputTypeChanged(ui::TextInputType type,
                               ui::TextInputMode input_mode,
                               bool can_compose_inline);
@@ -912,8 +902,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_;
 
   scoped_ptr<SyntheticGestureController> synthetic_gesture_controller_;
-
-  scoped_ptr<TouchEmulator> touch_emulator_;
 
   // Receives and handles all input events.
   scoped_ptr<InputRouter> input_router_;

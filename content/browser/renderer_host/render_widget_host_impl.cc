@@ -38,7 +38,6 @@
 #include "content/browser/renderer_host/input/synthetic_gesture_controller.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
-#include "content/browser/renderer_host/input/touch_emulator.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -239,8 +238,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       BrowserAccessibilityStateImpl::GetInstance()->accessibility_mode();
 
   input_router_.reset(new InputRouterImpl(process_, this, this, routing_id_));
-
-  touch_emulator_.reset();
 
 #if defined(USE_AURA)
   bool overscroll_enabled = CommandLine::ForCurrentProcess()->
@@ -482,8 +479,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_Focus, OnFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Blur, OnBlur)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetCursor, OnSetCursor)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SetTouchEventEmulationEnabled,
-                        OnSetTouchEventEmulationEnabled)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TextInputTypeChanged,
                         OnTextInputTypeChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ImeCancelComposition,
@@ -682,16 +677,10 @@ void RenderWidgetHostImpl::Blur() {
   if (overscroll_controller_)
     overscroll_controller_->Cancel();
 
-  if (touch_emulator_)
-    touch_emulator_->CancelTouch();
-
   Send(new InputMsg_SetFocus(routing_id_, false));
 }
 
 void RenderWidgetHostImpl::LostCapture() {
-  if (touch_emulator_)
-    touch_emulator_->CancelTouch();
-
   Send(new InputMsg_MouseCaptureLost(routing_id_));
 }
 
@@ -995,9 +984,6 @@ void RenderWidgetHostImpl::ForwardMouseEventWithLatencyInfo(
   if (IgnoreInputEvents())
     return;
 
-  if (touch_emulator_ && touch_emulator_->HandleMouseEvent(mouse_event))
-    return;
-
   input_router_->SendMouseEvent(MouseEventWithLatencyInfo(mouse_event,
                                                           latency_info));
 }
@@ -1019,9 +1005,6 @@ void RenderWidgetHostImpl::ForwardWheelEventWithLatencyInfo(
       CreateRWHLatencyInfoIfNotExist(&ui_latency, wheel_event.type);
 
   if (IgnoreInputEvents())
-    return;
-
-  if (touch_emulator_ && touch_emulator_->HandleMouseWheelEvent(wheel_event))
     return;
 
   input_router_->SendWheelEvent(MouseWheelEventWithLatencyInfo(wheel_event,
@@ -1071,11 +1054,6 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
 
   GestureEventWithLatencyInfo gesture_with_latency(gesture_event, latency_info);
   input_router_->SendGestureEvent(gesture_with_latency);
-}
-
-void RenderWidgetHostImpl::ForwardTouchEvent(
-      const blink::WebTouchEvent& touch_event) {
-  ForwardTouchEventWithLatencyInfo(touch_event, ui::LatencyInfo());
 }
 
 void RenderWidgetHostImpl::ForwardTouchEventWithLatencyInfo(
@@ -1153,9 +1131,6 @@ void RenderWidgetHostImpl::ForwardKeyboardEvent(
       suppress_next_char_events_ = false;
   }
 
-  if (touch_emulator_ && touch_emulator_->HandleKeyboardEvent(key_event))
-    return;
-
   input_router_->SendKeyboardEvent(
       key_event,
       CreateRWHLatencyInfoIfNotExist(NULL, key_event.type),
@@ -1174,12 +1149,6 @@ void RenderWidgetHostImpl::QueueSyntheticGesture(
     synthetic_gesture_controller_->QueueSyntheticGesture(
         synthetic_gesture.Pass(), on_complete);
   }
-}
-
-void RenderWidgetHostImpl::SetCursor(const WebCursor& cursor) {
-  if (!view_)
-    return;
-  view_->UpdateCursor(cursor);
 }
 
 void RenderWidgetHostImpl::SendCursorVisibilityState(bool is_visible) {
@@ -1846,19 +1815,10 @@ void RenderWidgetHostImpl::OnBlur() {
 }
 
 void RenderWidgetHostImpl::OnSetCursor(const WebCursor& cursor) {
-  SetCursor(cursor);
-}
-
-void RenderWidgetHostImpl::OnSetTouchEventEmulationEnabled(
-    bool enabled, bool allow_pinch) {
-  if (enabled) {
-    if (!touch_emulator_)
-      touch_emulator_.reset(new TouchEmulator(this));
-    touch_emulator_->Enable(allow_pinch);
-  } else {
-    if (touch_emulator_)
-      touch_emulator_->Disable();
+  if (!view_) {
+    return;
   }
+  view_->UpdateCursor(cursor);
 }
 
 void RenderWidgetHostImpl::OnTextInputTypeChanged(
@@ -2196,10 +2156,6 @@ void RenderWidgetHostImpl::OnTouchEventAck(
         ui::INPUT_EVENT_LATENCY_TERMINATED_TOUCH_COMPONENT, 0, 0);
   }
   ComputeTouchLatency(touch_event.latency);
-
-  if (touch_emulator_ && touch_emulator_->HandleTouchEventAck(ack_result))
-    return;
-
   if (view_)
     view_->ProcessAckedTouchEvent(touch_event, ack_result);
 }
