@@ -24,13 +24,24 @@
                     eventSender.mouseMoveTo(slider.offsetLeft + 7, slider.offsetTop + 7);
                     eventSender.mouseDown();
                     eventSender.mouseUp();
+                    // On touch events, check if change event is dispatched at touch end
+                    var x = slider.offsetLeft;
+                    var y = slider.offsetTop + slider.clientHeight / 2;
+                    var w = slider.clientWidth;
+
+                    eventSender.clearTouchPoints();
+                    eventSender.addTouchPoint(x + w / 2, y);
+                    eventSender.touchStart();
+                    eventSender.touchMove();
+                    eventSender.releaseTouchPoint(0);
+                    eventSender.touchEnd();
                 }
             }
         </script>
     </head>
     <body onload="test()">
         This tests that slider controls get the onchange event and that it is sent after the DOMInput event.<br>
-        <input type="range" id="slider" onchange="log('change')" oninput="log('input')" value=0>
+        <input type="range" id="slider" onchange="log('change')" oninput="log('input')" value=0 width=200px height=300px>
         <div id="res"></div>
     </body>
 </html>

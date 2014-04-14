@@ -166,6 +166,7 @@ void RangeInputType::handleTouchEvent(TouchEvent* event)
         return;
 
     if (event->type() == EventTypeNames::touchend) {
+        element().dispatchFormControlChangeEvent();
         event->setDefaultHandled();
         return;
     }
