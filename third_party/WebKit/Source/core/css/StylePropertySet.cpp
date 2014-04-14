@@ -457,7 +457,7 @@ bool MutableStylePropertySet::removePropertiesInSet(const CSSPropertyID* set, un
     if (m_propertyVector.isEmpty())
         return false;
 
-    WillBeHeapVector<CSSProperty, 4> newProperties;
+    WillBeHeapVector<CSSProperty> newProperties;
     newProperties.reserveInitialCapacity(m_propertyVector.size());
 
     unsigned initialSize = m_propertyVector.size();
@@ -470,7 +470,7 @@ bool MutableStylePropertySet::removePropertiesInSet(const CSSPropertyID* set, un
         newProperties.append(property);
     }
 
-    m_propertyVector.swap(newProperties);
+    m_propertyVector = newProperties;
     return initialSize != m_propertyVector.size();
 }
 
