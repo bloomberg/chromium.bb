@@ -182,11 +182,11 @@ def main():
         [os.path.join(os.path.dirname(__file__), 'update.sh')] +  sys.argv[1:],
         stderr=os.fdopen(os.dup(sys.stdin.fileno())))
 
-  if not re.search(r'\b(clang|asan)=1\b', os.environ.get('GYP_DEFINES', '')):
+  if not re.search(r'\b(clang|asan)=1', os.environ.get('GYP_DEFINES', '')):
     print 'Skipping Clang update (clang=1 was not set in GYP_DEFINES).'
     return 0
 
-  if re.search(r'\b(make_clang_dir)=\b', os.environ.get('GYP_DEFINES', '')):
+  if re.search(r'\b(make_clang_dir)=', os.environ.get('GYP_DEFINES', '')):
     print 'Skipping Clang update (make_clang_dir= was set in GYP_DEFINES).'
     return 0
 
