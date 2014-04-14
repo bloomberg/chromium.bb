@@ -20,32 +20,32 @@ class PageCyclerDhtml(test.Test):
 
 class PageCyclerIntlArFaHe(test.Test):
   test = page_cycler.PageCycler
-  page_set = 'page_sets/intl_ar_fa_he.json'
+  page_set = 'page_sets/intl_ar_fa_he.py'
   options = {'pageset_repeat': 10}
 
 
 class PageCyclerIntlEsFrPtBr(test.Test):
   test = page_cycler.PageCycler
-  page_set = 'page_sets/intl_es_fr_pt-BR.json'
+  page_set = 'page_sets/intl_es_fr_pt-BR.py'
   options = {'pageset_repeat': 10}
 
 
 class PageCyclerIntlHiRu(test.Test):
   test = page_cycler.PageCycler
-  page_set = 'page_sets/intl_hi_ru.json'
+  page_set = 'page_sets/intl_hi_ru.py'
   options = {'pageset_repeat': 10}
 
 
 @test.Disabled('win')  # crbug.com/330909
 class PageCyclerIntlJaZh(test.Test):
   test = page_cycler.PageCycler
-  page_set = 'page_sets/intl_ja_zh.json'
+  page_set = 'page_sets/intl_ja_zh.py'
   options = {'pageset_repeat': 10}
 
 
 class PageCyclerIntlKoThVi(test.Test):
   test = page_cycler.PageCycler
-  page_set = 'page_sets/intl_ko_th_vi.json'
+  page_set = 'page_sets/intl_ko_th_vi.py'
   options = {'pageset_repeat': 10}
 
 
