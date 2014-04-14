@@ -102,7 +102,8 @@ const int g_category_categories_exhausted = 2;
 const int g_category_metadata = 3;
 const int g_category_trace_event_overhead = 4;
 const int g_num_builtin_categories = 5;
-int g_category_index = g_num_builtin_categories; // Skip default categories.
+// Skip default categories.
+base::subtle::AtomicWord g_category_index = g_num_builtin_categories;
 
 // The name of the current thread. This is used to decide if the current
 // thread name has changed. We combine all the seen thread names into the
@@ -1224,7 +1225,8 @@ void TraceLog::UpdateCategoryGroupEnabledFlag(int category_index) {
 }
 
 void TraceLog::UpdateCategoryGroupEnabledFlags() {
-  for (int i = 0; i < g_category_index; i++)
+  int category_index = base::subtle::NoBarrier_Load(&g_category_index);
+  for (int i = 0; i < category_index; i++)
     UpdateCategoryGroupEnabledFlag(i);
 }
 
@@ -1261,39 +1263,50 @@ const unsigned char* TraceLog::GetCategoryGroupEnabledInternal(
     const char* category_group) {
   DCHECK(!strchr(category_group, '"')) <<
       "Category groups may not contain double quote";
-  AutoLock lock(lock_);
+  // The g_category_groups is append only, avoid using a lock for the fast path.
+  int current_category_index = base::subtle::Acquire_Load(&g_category_index);
 
-  unsigned char* category_group_enabled = NULL;
   // Search for pre-existing category group.
-  for (int i = 0; i < g_category_index; i++) {
+  for (int i = 0; i < current_category_index; ++i) {
     if (strcmp(g_category_groups[i], category_group) == 0) {
-      category_group_enabled = &g_category_group_enabled[i];
-      break;
+      return &g_category_group_enabled[i];
     }
   }
 
-  if (!category_group_enabled) {
-    // Create a new category group
-    DCHECK(g_category_index < MAX_CATEGORY_GROUPS) <<
-        "must increase MAX_CATEGORY_GROUPS";
-    if (g_category_index < MAX_CATEGORY_GROUPS) {
-      int new_index = g_category_index++;
-      // Don't hold on to the category_group pointer, so that we can create
-      // category groups with strings not known at compile time (this is
-      // required by SetWatchEvent).
-      const char* new_group = strdup(category_group);
-      ANNOTATE_LEAKING_OBJECT_PTR(new_group);
-      g_category_groups[new_index] = new_group;
-      DCHECK(!g_category_group_enabled[new_index]);
-      // Note that if both included and excluded patterns in the
-      // CategoryFilter are empty, we exclude nothing,
-      // thereby enabling this category group.
-      UpdateCategoryGroupEnabledFlag(new_index);
-      category_group_enabled = &g_category_group_enabled[new_index];
-    } else {
-      category_group_enabled =
-          &g_category_group_enabled[g_category_categories_exhausted];
+  unsigned char* category_group_enabled = NULL;
+  // This is the slow path: the lock is not held in the case above, so more
+  // than one thread could have reached here trying to add the same category.
+  // Only hold to lock when actually appending a new category, and
+  // check the categories groups again.
+  AutoLock lock(lock_);
+  int category_index = base::subtle::Acquire_Load(&g_category_index);
+  for (int i = 0; i < category_index; ++i) {
+    if (strcmp(g_category_groups[i], category_group) == 0) {
+      return &g_category_group_enabled[i];
     }
+  }
+
+  // Create a new category group.
+  DCHECK(category_index < MAX_CATEGORY_GROUPS) <<
+      "must increase MAX_CATEGORY_GROUPS";
+  if (category_index < MAX_CATEGORY_GROUPS) {
+    // Don't hold on to the category_group pointer, so that we can create
+    // category groups with strings not known at compile time (this is
+    // required by SetWatchEvent).
+    const char* new_group = strdup(category_group);
+    ANNOTATE_LEAKING_OBJECT_PTR(new_group);
+    g_category_groups[category_index] = new_group;
+    DCHECK(!g_category_group_enabled[category_index]);
+    // Note that if both included and excluded patterns in the
+    // CategoryFilter are empty, we exclude nothing,
+    // thereby enabling this category group.
+    UpdateCategoryGroupEnabledFlag(category_index);
+    category_group_enabled = &g_category_group_enabled[category_index];
+    // Update the max index now.
+    base::subtle::Release_Store(&g_category_index, category_index + 1);
+  } else {
+    category_group_enabled =
+        &g_category_group_enabled[g_category_categories_exhausted];
   }
   return category_group_enabled;
 }
@@ -1303,7 +1316,8 @@ void TraceLog::GetKnownCategoryGroups(
   AutoLock lock(lock_);
   category_groups->push_back(
       g_category_groups[g_category_trace_event_overhead]);
-  for (int i = g_num_builtin_categories; i < g_category_index; i++)
+  int category_index = base::subtle::NoBarrier_Load(&g_category_index);
+  for (int i = g_num_builtin_categories; i < category_index; i++)
     category_groups->push_back(g_category_groups[i]);
 }
 
