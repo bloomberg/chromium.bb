@@ -12,12 +12,14 @@
 
 namespace WebCore {
 
+class NewScriptState;
+
 class PushError {
     WTF_MAKE_NONCOPYABLE(PushError);
 public:
     // For CallbackPromiseAdapter.
     typedef blink::WebPushError WebType;
-    static PassRefPtrWillBeRawPtr<DOMError> from(WebType* webErrorRaw)
+    static PassRefPtrWillBeRawPtr<DOMError> from(NewScriptState*, WebType* webErrorRaw)
     {
         OwnPtr<WebType> webError = adoptPtr(webErrorRaw);
         RefPtrWillBeRawPtr<DOMError> error = DOMError::create(errorString(webError->errorType), webError->message);

@@ -47,7 +47,8 @@ namespace WebCore {
 //
 // class MyClass ... {
 //    typedef blink::WebMyClass WebType;
-//    static PassRefPtr<MyClass> from(blink::WebMyClass* webInstance) {
+//    static PassRefPtr<MyClass> from(NewScriptState*,
+//                                    blink::WebMyClass* webInstance) {
 //        // convert/create as appropriate, but often it's just:
 //        return MyClass::create(adoptPtr(webInstance));
 //    }
@@ -73,12 +74,12 @@ public:
     virtual void onSuccess(typename S::WebType* result) OVERRIDE
     {
         NewScriptState::Scope scope(m_scriptState.get());
-        m_resolver->resolve(S::from(result));
+        m_resolver->resolve(S::from(m_scriptState.get(), result));
     }
     virtual void onError(typename T::WebType* error) OVERRIDE
     {
         NewScriptState::Scope scope(m_scriptState.get());
-        m_resolver->reject(T::from(error));
+        m_resolver->reject(T::from(m_scriptState.get(), error));
     }
 private:
     RefPtr<ScriptPromiseResolver> m_resolver;

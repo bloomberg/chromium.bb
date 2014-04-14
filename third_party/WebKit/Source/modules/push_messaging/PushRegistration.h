@@ -13,11 +13,13 @@
 
 namespace WebCore {
 
+class NewScriptState;
+
 class PushRegistration FINAL : public RefCountedWillBeGarbageCollectedFinalized<PushRegistration>, public ScriptWrappable {
 public:
     // For CallbackPromiseAdapter.
     typedef blink::WebPushRegistration WebType;
-    static PassRefPtrWillBeRawPtr<PushRegistration> from(WebType* registrationRaw)
+    static PassRefPtrWillBeRawPtr<PushRegistration> from(NewScriptState*, WebType* registrationRaw)
     {
         OwnPtr<WebType> registration = adoptPtr(registrationRaw);
         return adoptRefWillBeNoop(new PushRegistration(registration->endpoint, registration->registrationId));

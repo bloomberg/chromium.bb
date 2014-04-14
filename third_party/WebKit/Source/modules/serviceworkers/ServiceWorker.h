@@ -45,6 +45,8 @@ class WebServiceWorker;
 
 namespace WebCore {
 
+class NewScriptState;
+
 class ServiceWorker
     : public RefCounted<ServiceWorker>
     , public blink::WebServiceWorkerProxy {
@@ -56,7 +58,7 @@ public:
 
     // For CallbackPromiseAdapter
     typedef blink::WebServiceWorker WebType;
-    static PassRefPtr<ServiceWorker> from(WebType* worker)
+    static PassRefPtr<ServiceWorker> from(NewScriptState*, WebType* worker)
     {
         return create(adoptPtr(worker));
     }
