@@ -247,10 +247,7 @@ public:
 
     Length blend(const Length& from, double progress, ValueRange range) const
     {
-        // FIXME: These should step at 50%, but transitions currently blend values that should
-        // never be transitioned in the first place.
-        if (isUndefined() || from.isUndefined() || isIntrinsicOrAuto() || from.isIntrinsicOrAuto())
-            return *this;
+        ASSERT(isSpecified() && from.isSpecified());
 
         if (progress == 0.0)
             return from;
