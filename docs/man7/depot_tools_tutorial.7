@@ -2,12 +2,12 @@
 .\"     Title: depot_tools_tutorial
 .\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 04/10/2014
+.\"      Date: 04/14/2014
 .\"    Manual: Chromium depot_tools Manual
-.\"    Source: depot_tools bec7be9
+.\"    Source: depot_tools e722300
 .\"  Language: English
 .\"
-.TH "DEPOT_TOOLS_TUTORIAL" "7" "04/10/2014" "depot_tools bec7be9" "Chromium depot_tools Manual"
+.TH "DEPOT_TOOLS_TUTORIAL" "7" "04/14/2014" "depot_tools e722300" "Chromium depot_tools Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -63,7 +63,7 @@ Getting the code
 .sp -1
 .IP \(bu 2.3
 .\}
-TL;DR Walkthrough
+TL;DR
 .RE
 .sp
 .RS 4
@@ -108,6 +108,17 @@ Managing multiple CLs
 .IP \(bu 2.3
 .\}
 Managing dependent CLs
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Example Walkthrough
 .RE
 .sp
 Please refer to the manpages (or \-\-help output) for details about any of the commands mentioned in this tutorial\&.
@@ -247,6 +258,33 @@ If you have never used git before, you\(cqll need to set some global git configu
 .RE
 .\}
 .sp
+.SH "TL;DR"
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+\fB$\fR # get the code
+\fB$\fR # In an empty directory:
+\fB$ fetch {chromium,blink,\&.\&.\&.}\fR
+
+\fB$\fR # Update third_party repos and run pre\-compile hooks
+\fB$ gclient sync\fR
+
+\fB$\fR # Make a new change and upload it for review
+\fB$ git new\-branch branchname\fR
+\fB$\fR # repeat: [edit, git add, git commit]
+\fB$ git cl upload\fR
+
+\fB$\fR # After change is reviewed, commit with the CQ
+\fB$ git cl set_commit\fR
+\fB$\fR # Note that the committed hash which lands will /not/ match the
+\fB$\fR # commit hashes of your local branch\&.
+.fi
+.if n \{\
+.RE
+.\}
+.sp
 .SH "GETTING THE CODE"
 .sp
 Pick an empty directory and run one of the following:
@@ -298,16 +336,190 @@ And finally:
 .RS 4
 .\}
 .nf
-\fB$ gclient sync\fR \fB(1)\fR
+\fB$ gclient sync\fR
 .fi
 .if n \{\
 .RE
 .\}
 .sp
 .sp
-\fB1. \fRThis will pull all dependencies of the Chromium src checkout\&. You will need to run this any time you update the main src checkout\&.
+This will pull all dependencies of the Chromium src checkout\&. You will need to run this any time you update the main src checkout\&.
+.SH "CREATING / UPLOADING A CL"
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
 .br
-.SH "TL;DR WALKTHROUGH"
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+.sp
+The remainder of the tutorial assumes that your current working directory is the src/ folder mentioned in Getting the code\&.
+.sp .5v
+.RE
+.sp
+Each CL corresponds exactly with a single branch in git\&. Any time you want to begin a new CL, just:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+\fB$ git new\-branch <branch_name>\fR
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+.sp
+This will create and checkout a new branch named branch_name which will track the default upstream (which is origin/master)\&. See \fBgit-new-branch\fR(1) for more features, such as the ability to track \fILKGR\fR\&.
+.sp
+Commit as many changes as you like to this branch\&. When you want to upload it for review, run:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+\fB$ git cl upload\fR
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+.sp
+This will take the diff of your branch against its upstream (origin/master), and will post it to the \m[blue]\fBChromium code review site\fR\m[]\&\s-2\u[5]\d\s+2\&.
+.SH "UPDATING THE CODE"
+.sp
+Inevitably, you\(cqll want to pull in changes from the main Chromium repo\&. This is pretty easy with \fIdepot_tools\fR:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+\fB$ git rebase\-update\fR
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+.sp
+This command will update all of your CLs to contain the latest code from their upstreams\&. It will also automatically clean up CLs which have been committed and a couple other nice things\&. See \fBgit-rebase-update\fR(1) for the full scoop\&.
+.sp
+One thing to look out for are \fImerge conflicts\fR\&. These happen for exactly the same as they do with SVN, but the experience is a little more controllable with git\&. git rebase\-update will try to rebase all your branches for you, but if it encounters a merge conflict in one, it will halt and leave you in a rebase conflict state (see \fBgit-rebase\fR(1))\&. Resolving git rebase merge conflicts is beyond the scope of this tutorial, but there are many good sources online (see the Prerequisites for some)\&.
+.sp
+Sometimes you\(cqre pretty certain that you\(cqve committed a certain branch, but git rebase\-update isn\(cqt able to tell that for sure\&. This is usually because your branch doesn\(cqt rebase cleanly\&. You could just delete the branch with git branch \-D <branch>, but you\(cqd like to double check the diff of your branch against its upstream before deleting it\&. If this is the case you can abort the rebase started by git rebase\-update, and then run \fBgit-squash-branch\fR(1) to flatten your branch into a single commit\&. When you run git rebase\-update again, you\(cqll get a (hopefully) much smaller / saner diff\&. If it turns out you were wrong about your branch being fully committed, you can use \fBgit-reflog\fR(1) to reset your branch back to where it was before\&. If the diff looks inconsequential, you can use git rebase \-\-skip to ignore it, and then git rebase\-update will clean it up for you\&.
+.sp
+Once you\(cqre done resolving all of the merge conflict, just run git rebase\-update, and it will pick up where it left off\&. Once the command has finished updating all of your branches, it will return you back to the branch you started on\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+.sp
+Running git rebase\-update will update all your branches, but it will not automatically run gclient sync to update your dependencies\&.
+.sp .5v
+.RE
+.SH "MANAGING MULTIPLE CLS"
+.sp
+Sometimes you want to work on more than one CL at once (say, you have a CL posted for review and want to work on something else)\&. For each CL that you want to work on, just use git new\-branch <branchname>\&.
+.sp
+Once you start to have more than one CL at a time, it can be easy to lose your bearings\&. Fortunately, \fIdepot_tools\fR has two tools to help you out:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+\fB$ git map\fR
+*\:\fB 7dcfe47       \fR (\:\fBfrozen_changes\fR\:) 2014\-03\-12 ~ FREEZE\&.unindexed
+* \fB4b0c180\fR        2014\-03\-12 ~ modfile
+* \fB59a7cca\fR        2014\-03\-12 ~ a deleted file
+* \fB6bec695\fR        (\:origin/master\:) 2014\-03\-11 ~ Add neat feature    \fB<(frozen_changes)\fR
+* \fBd15a38a\fR        2014\-03\-11 ~ Epic README update
+* \fBd559894\fR        (\:\fBmaster\fR\:) 2014\-03\-11 ~ Important upstream change
+| * \fB9c311fd\fR      (\:\fBcool_feature\fR\:) 2014\-03\-11 ~ Respond to CL comments
+| | * \fB2a1eeb2\fR    (\:\fBsubfeature\fR\:) 2014\-03\-11 ~ integrate with CoolService
+| | * \fBd777af6\fR    2014\-03\-11 ~ slick commenting action
+| |/
+| * \fB265803a\fR      2014\-03\-11 ~ another improvement    \fB<(subfeature)\fR
+| * \fB6d831ac\fR      (\:\fBspleen_tag\fR\:) 2014\-03\-11 ~ Refactor spleen
+| * \fB82e74ab\fR      2014\-03\-11 ~ Add widget
+|/
+* \fBd08c5b3\fR        (\:\fBbogus_noparent\fR\:) 2014\-03\-11 ~ Wonderful beginnings    \fB<(cool_feature)\fR
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+.sp
+Note that this example repo is in dire need of a \fBgit-rebase-update\fR(1)!
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+\fB$ git map\-branches\fR
+origin/master
+  cool_feature
+    subfeature
+  frozen_changes *
+  master
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+
+.PP
+\fBgit-map\fR(1)
+.RS 4
+This tool shows you the history of all of your branches in a pseudo\-graphical format\&. In particular, it will show you which commits all of your branches are on, which commit you currently have checked out, and more\&. Check out the doc for the full details\&.
+.RE
+.PP
+\fBgit-map-branches\fR(1)
+.RS 4
+This tool just shows you which branches you have in your repo, and thier upstream relationship to each other (as well as which branch you have checked out at the moment)\&.
+.RE
+.sp
+Additionally, sometimes you need to switch between branches, but you\(cqve got work in progress\&. You could use \fBgit-stash\fR(1), but that can be tricky to manage because you need to remember which branches you stashed what changes on\&. Helpfully \fIdepot_tools\fR includes two tools which can greatly assist in case:
+.sp
+\fBgit-freeze\fR(1) allows you to put the current branch in \*(Aqsuspended animation\*(Aq by committing your changes to a specially\-named commit on the top of your current branch\&. When you come back to your branch later, you can just run \fBgit-thaw\fR(1) to get your work\-in\-progress changes back to what they were\&.
+.sp
+Another useful tool is \fBgit-rename-branch\fR(1)\&. Unlike git branch \-m <old> <new>, this tool will correctly preserve the upstream relationships of your branch compared to its downstreams\&.
+.sp
+Finally, take a look at \fBgit-upstream-diff\fR(1)\&. This will show you the combined diff for all the commits on your branch against the upstream tracking branch\&. This is \fIexactly\fR what git cl upload will push up to code review\&. Additionally, consider trying the \-\-wordwise argument to get a colorized per\-word diff (instead of a per\-line diff)\&.
+.SH "MANAGING DEPENDENT CLS"
+.sp
+Now that you know how to manage \fIindependent\fR CLs, we\(cqll see how to manage \fIdependent\fR CLs\&. Dependent CLs are useful when your second (or third or fourth or \&...) CL depends on the changes in one of your other CLs (such as: CL 2 won\(cqt compile without CL 1, but you want to submit them as two separate reviews)\&.
+.sp
+Like all of the other CLs we\(cqve created, we use \fBgit-new-branch\fR(1), but this time with an extra argument\&. First, git checkout the branch you want to base the new one on (i\&.e\&. CL 1), and then run:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+\fB$ git new\-branch \-\-upstream_current <branch_name>\fR
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+.sp
+This will make a new branch which tracks the \fIcurrent\fR branch as its upstream (as opposed to \fIorigin/master\fR)\&. All changes you commit to this branch will be in addition to the previous branch, but when you git cl upload, you will only upload the diff for the dependent (child) branch\&. You may have as many branches nested in this fashion as you like\&.
+.sp
+\fBgit-map\fR(1) and \fBgit-map-branches\fR(1) are particularly helpful when you have dependent branches\&. In addition, there are two helper commands which let you traverse your working copy up and down this tree of branches: \fBgit-nav-upstream\fR(1) and \fBgit-nav-downstream\fR(1)\&.
+.sp
+Sometimes when dealing with dependent CLs, it turns out that you accidentally based a branch on the wrong upstream, but since then you\(cqve committed changes to it, or even based \fIanother\fR branch off of that one\&. Or you discover that you have two independent CLs that would actually be much better off as dependent CLs\&. In instances like these, you can check out the offending branch and use \fBgit-reparent-branch\fR(1) to move it to track a different parent\&. Note that this can also be used to move a branch from tracking origin/master to lkgr or vice versa\&.
+.SH "EXAMPLE WALKTHROUGH"
 .sp
 This section will demo what a typical workflow looks like when writing, updating, and committing multiple CLs\&.
 .sp
@@ -376,10 +588,10 @@ It was a Domo\-Kuun\&.
 * \fB2250f53	\fR 2014\-04\-10 ~ ozone: evdev: Filter devices by path
 * \fB33a7a74	\fR 2014\-04\-10 ~ Always output seccomp error messages to stderr
 \fB$ git status\fR
-# On branch fix_typo
-# Your branch is ahead of \*(Aqorigin/master\*(Aq by 1 commit\&.
-#   (use "git push" to publish your local commits)
-#
+On branch fix_typo
+Your branch is ahead of \*(Aqorigin/master\*(Aq by 1 commit\&.
+  (use "git push" to publish your local commits)
+
 nothing to commit, working directory clean
 \fB$ git cl upload \-r domo@chromium\&.org \-\-send\-mail\fR
 \&.\&.\&. truncated output \&.\&.\&.
@@ -406,15 +618,15 @@ overhead, barely disturbing the thick cigarette smoke\&. No doubt was left about
 when the fan was last cleaned\&.
 EOF
 \fB$ git status\fR
-# On branch chap2
-# Your branch is up\-to\-date with \*(Aqorigin/master\*(Aq\&.
-#
-# Changes not staged for commit:
-#   (use "git add <file>\&.\&.\&." to update what will be committed)
-#   (use "git checkout \-\- <file>\&.\&.\&." to discard changes in working directory)
-#
-#	modified:   build/whitespace_file\&.txt
-#
+On branch chap2
+Your branch is up\-to\-date with \*(Aqorigin/master\*(Aq\&.
+
+Changes not staged for commit:
+  (use "git add <file>\&.\&.\&." to update what will be committed)
+  (use "git checkout \-\- <file>\&.\&.\&." to discard changes in working directory)
+
+	modified:   build/whitespace_file\&.txt
+
 no changes added to commit (use "git add" and/or "git commit \-a")
 .fi
 .if n \{\
@@ -780,181 +992,6 @@ chap3 up\-to\-date
 .sp
 .sp
 So there you have the basic flow\&. Note that you don\(cqt \fIhave\fR to do chromium development using these tools\&. Any git workflow is compatible, as long as git cl upload is able to upload good patches\&.
-.SH "CREATING / UPLOADING A CL"
-.if n \{\
-.sp
-.\}
-.RS 4
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.ps +1
-\fBNote\fR
-.ps -1
-.br
-.sp
-The remainder of the tutorial assumes that your current working directory is the src/ folder mentioned in Getting the code\&.
-.sp .5v
-.RE
-.sp
-Each CL corresponds exactly with a single branch in git\&. Any time you want to begin a new CL, just:
-.sp
-.if n \{\
-.RS 4
-.\}
-.nf
-\fB$ git new\-branch <branch_name>\fR
-.fi
-.if n \{\
-.RE
-.\}
-.sp
-.sp
-This will create and checkout a new branch named branch_name which will track the default upstream (which is origin/master)\&. See \fBgit-new-branch\fR(1) for more features, such as the ability to track \fILKGR\fR\&.
-.sp
-Commit as many changes as you like to this branch\&. When you want to upload it for review, run:
-.sp
-.if n \{\
-.RS 4
-.\}
-.nf
-\fB$ git cl upload\fR
-.fi
-.if n \{\
-.RE
-.\}
-.sp
-.sp
-This will take the diff of your branch against its upstream (origin/master), and will post it to the \m[blue]\fBChromium code review site\fR\m[]\&\s-2\u[5]\d\s+2\&.
-.SH "UPDATING THE CODE"
-.sp
-Inevitably, you\(cqll want to pull in changes from the main Chromium repo\&. This is pretty easy with \fIdepot_tools\fR:
-.sp
-.if n \{\
-.RS 4
-.\}
-.nf
-\fB$ git rebase\-update\fR
-.fi
-.if n \{\
-.RE
-.\}
-.sp
-.sp
-This command will update all of your CLs to contain the latest code from their upstreams\&. It will also automatically clean up CLs which have been committed and a couple other nice things\&. See \fBgit-rebase-update\fR(1) for the full scoop\&.
-.sp
-One thing to look out for are \fImerge conflicts\fR\&. These happen for exactly the same as they do with SVN, but the experience is a little more controllable with git\&. git rebase\-update will try to rebase all your branches for you, but if it encounters a merge conflict in one, it will halt and leave you in a rebase conflict state (see \fBgit-rebase\fR(1))\&. Resolving git rebase merge conflicts is beyond the scope of this tutorial, but there are many good sources online (see the Prerequisites for some)\&.
-.sp
-Sometimes you\(cqre pretty certain that you\(cqve committed a certain branch, but git rebase\-update isn\(cqt able to tell that for sure\&. This is usually because your branch doesn\(cqt rebase cleanly\&. You could just delete the branch with git branch \-D <branch>, but you\(cqd like to double check the diff of your branch against its upstream before deleting it\&. If this is the case you can abort the rebase started by git rebase\-update, and then run \fBgit-squash-branch\fR(1) to flatten your branch into a single commit\&. When you run git rebase\-update again, you\(cqll get a (hopefully) much smaller / saner diff\&. If it turns out you were wrong about your branch being fully committed, you can use \fBgit-reflog\fR(1) to reset your branch back to where it was before\&. If the diff looks inconsequential, you can use git rebase \-\-skip to ignore it, and then git rebase\-update will clean it up for you\&.
-.sp
-Once you\(cqre done resolving all of the merge conflict, just run git rebase\-update, and it will pick up where it left off\&. Once the command has finished updating all of your branches, it will return you back to the branch you started on\&.
-.if n \{\
-.sp
-.\}
-.RS 4
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.ps +1
-\fBNote\fR
-.ps -1
-.br
-.sp
-Running git rebase\-update will update all your branches, but it will not automatically run gclient sync to update your dependencies\&.
-.sp .5v
-.RE
-.SH "MANAGING MULTIPLE CLS"
-.sp
-Sometimes you want to work on more than one CL at once (say, you have a CL posted for review and want to work on something else)\&. For each CL that you want to work on, just use git new\-branch <branchname>\&.
-.sp
-Once you start to have more than one CL at a time, it can be easy to lose your bearings\&. Fortunately, \fIdepot_tools\fR has two tools to help you out:
-.sp
-.if n \{\
-.RS 4
-.\}
-.nf
-\fB$ git map\fR
-*\:\fB 7dcfe47       \fR (\:\fBfrozen_changes\fR\:) 2014\-03\-12 ~ FREEZE\&.unindexed
-* \fB4b0c180\fR        2014\-03\-12 ~ modfile
-* \fB59a7cca\fR        2014\-03\-12 ~ a deleted file
-* \fB6bec695\fR        (\:origin/master\:) 2014\-03\-11 ~ Add neat feature    \fB<(frozen_changes)\fR
-* \fBd15a38a\fR        2014\-03\-11 ~ Epic README update
-* \fBd559894\fR        (\:\fBmaster\fR\:) 2014\-03\-11 ~ Important upstream change
-| * \fB9c311fd\fR      (\:\fBcool_feature\fR\:) 2014\-03\-11 ~ Respond to CL comments
-| | * \fB2a1eeb2\fR    (\:\fBsubfeature\fR\:) 2014\-03\-11 ~ integrate with CoolService
-| | * \fBd777af6\fR    2014\-03\-11 ~ slick commenting action
-| |/
-| * \fB265803a\fR      2014\-03\-11 ~ another improvement    \fB<(subfeature)\fR
-| * \fB6d831ac\fR      (\:\fBspleen_tag\fR\:) 2014\-03\-11 ~ Refactor spleen
-| * \fB82e74ab\fR      2014\-03\-11 ~ Add widget
-|/
-* \fBd08c5b3\fR        (\:\fBbogus_noparent\fR\:) 2014\-03\-11 ~ Wonderful beginnings    \fB<(cool_feature)\fR
-.fi
-.if n \{\
-.RE
-.\}
-.sp
-.sp
-Note that this example repo is in dire need of a \fBgit-rebase-update\fR(1)!
-.sp
-.if n \{\
-.RS 4
-.\}
-.nf
-\fB$ git map\-branches\fR
-origin/master
-  cool_feature
-    subfeature
-  frozen_changes *
-  master
-.fi
-.if n \{\
-.RE
-.\}
-.sp
-
-.PP
-\fBgit-map\fR(1)
-.RS 4
-This tool shows you the history of all of your branches in a pseudo\-graphical format\&. In particular, it will show you which commits all of your branches are on, which commit you currently have checked out, and more\&. Check out the doc for the full details\&.
-.RE
-.PP
-\fBgit-map-branches\fR(1)
-.RS 4
-This tool just shows you which branches you have in your repo, and thier upstream relationship to each other (as well as which branch you have checked out at the moment)\&.
-.RE
-.sp
-Additionally, sometimes you need to switch between branches, but you\(cqve got work in progress\&. You could use \fBgit-stash\fR(1), but that can be tricky to manage because you need to remember which branches you stashed what changes on\&. Helpfully \fIdepot_tools\fR includes two tools which can greatly assist in case:
-.sp
-\fBgit-freeze\fR(1) allows you to put the current branch in \*(Aqsuspended animation\*(Aq by committing your changes to a specially\-named commit on the top of your current branch\&. When you come back to your branch later, you can just run \fBgit-thaw\fR(1) to get your work\-in\-progress changes back to what they were\&.
-.sp
-Another useful tool is \fBgit-rename-branch\fR(1)\&. Unlike git branch \-m <old> <new>, this tool will correctly preserve the upstream relationships of your branch compared to its downstreams\&.
-.sp
-Finally, take a look at \fBgit-upstream-diff\fR(1)\&. This will show you the combined diff for all the commits on your branch against the upstream tracking branch\&. This is \fIexactly\fR what git cl upload will push up to code review\&. Additionally, consider trying the \-\-wordwise argument to get a colorized per\-word diff (instead of a per\-line diff)\&.
-.SH "MANAGING DEPENDENT CLS"
-.sp
-Now that you know how to manage \fIindependent\fR CLs, we\(cqll see how to manage \fIdependent\fR CLs\&. Dependent CLs are useful when your second (or third or fourth or \&...) CL depends on the changes in one of your other CLs (such as: CL 2 won\(cqt compile without CL 1, but you want to submit them as two separate reviews)\&.
-.sp
-Like all of the other CLs we\(cqve created, we use \fBgit-new-branch\fR(1), but this time with an extra argument\&. First, git checkout the branch you want to base the new one on (i\&.e\&. CL 1), and then run:
-.sp
-.if n \{\
-.RS 4
-.\}
-.nf
-\fB$ git new\-branch \-\-upstream_current <branch_name>\fR
-.fi
-.if n \{\
-.RE
-.\}
-.sp
-.sp
-This will make a new branch which tracks the \fIcurrent\fR branch as its upstream (as opposed to \fIorigin/master\fR)\&. All changes you commit to this branch will be in addition to the previous branch, but when you git cl upload, you will only upload the diff for the dependent (child) branch\&. You may have as many branches nested in this fashion as you like\&.
-.sp
-\fBgit-map\fR(1) and \fBgit-map-branches\fR(1) are particularly helpful when you have dependent branches\&. In addition, there are two helper commands which let you traverse your working copy up and down this tree of branches: \fBgit-nav-upstream\fR(1) and \fBgit-nav-downstream\fR(1)\&.
-.sp
-Sometimes when dealing with dependent CLs, it turns out that you accidentally based a branch on the wrong upstream, but since then you\(cqve committed changes to it, or even based \fIanother\fR branch off of that one\&. Or you discover that you have two independent CLs that would actually be much better off as dependent CLs\&. In instances like these, you can check out the offending branch and use \fBgit-reparent-branch\fR(1) to move it to track a different parent\&. Note that this can also be used to move a branch from tracking origin/master to lkgr or vice versa\&.
 .SH "CONCLUSION"
 .sp
 Hopefully that gives you a good starting overview on Chromium development using \fIdepot_tools\fR\&. If you have questions which weren\(cqt answered by this tutorial or the man pages for the tools (see the index of all tools here: \fBdepot_tools\fR(7)), please feel free to ask\&.

@@ -16,11 +16,12 @@ Chromium using these tools. This will cover:
 
 * <<_setting_up,Setting up>>
 * <<_getting_the_code,Getting the code>>
-* <<_tl_dr_walkthrough,TL;DR Walkthrough>>
+* <<_tl_dr,TL;DR>>
 * <<_creating_uploading_a_cl,Creating / Uploading a CL>>
 * <<_updating_the_code,Updating the code>>
 * <<_managing_multiple_cls,Managing multiple CLs>>
 * <<_managing_dependent_cls,Managing dependent CLs>>
+* <<_example_walkthrough,Example Walkthrough>>
 
 Please refer to the manpages (or `--help` output) for details about any of the
 commands mentioned in this tutorial.
@@ -145,6 +146,29 @@ commands:
 [white]**$ git config --global color.ui true**
 ----
 
+TL;DR
+-----
+[postsubs="quotes"]
+----
+[white]**$** # get the code
+[white]**$** # In an empty directory:
+[white]**$ fetch {chromium,blink,...}**
+
+[white]**$** # Update third_party repos and run pre-compile hooks
+[white]**$ gclient sync**
+
+[white]**$** # Make a new change and upload it for review
+[white]**$ git new-branch branchname**
+[white]**$** # repeat: [edit, git add, git commit]
+[white]**$ git cl upload**
+
+[white]**$** # After change is reviewed, commit with the CQ
+[white]**$ git cl set_commit**
+[white]**$** # Note that the committed hash which lands will /not/ match the
+[white]**$** # commit hashes of your local branch.
+----
+
+
 GETTING THE CODE
 ----------------
 Pick an empty directory and run one of the following:
@@ -177,22 +201,11 @@ And finally:
 
 [postsubs="quotes"]
 ----
-[white]**$ gclient sync** <1>
+[white]**$ gclient sync**
 ----
-<1> This will pull all dependencies of the Chromium src checkout. You will need
+
+This will pull all dependencies of the Chromium src checkout. You will need
 to run this any time you update the main src checkout.
-
-
-TL;DR WALKTHROUGH
------------------
-This section will demo what a typical workflow looks like when writing, updating,
-and committing multiple CLs.
-
-demo:tldr[]
-
-So there you have the basic flow. Note that you don't 'have' to do chromium
-development using these tools. Any git workflow is compatible, as long as
-`git cl upload` is able to upload good patches.
 
 
 CREATING / UPLOADING A CL
@@ -377,6 +390,18 @@ CLs. In instances like these, you can check out the offending branch and use
 linkgit:git-reparent-branch[1] to move it to track a different parent. Note that
 this can also be used to move a branch from tracking `origin/master` to `lkgr`
 or vice versa.
+
+
+EXAMPLE WALKTHROUGH
+-------------------
+This section will demo what a typical workflow looks like when writing,
+updating, and committing multiple CLs.
+
+demo:walkthrough[]
+
+So there you have the basic flow. Note that you don't 'have' to do chromium
+development using these tools. Any git workflow is compatible, as long as
+`git cl upload` is able to upload good patches.
 
 
 CONCLUSION

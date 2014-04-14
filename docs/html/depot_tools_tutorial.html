@@ -771,7 +771,7 @@ Chromium using these tools. This will cover:</p></div>
 </li>
 <li>
 <p>
-<a href="#_tl_dr_walkthrough">TL;DR Walkthrough</a>
+<a href="#_tl_dr">TL;DR</a>
 </p>
 </li>
 <li>
@@ -792,6 +792,11 @@ Chromium using these tools. This will cover:</p></div>
 <li>
 <p>
 <a href="#_managing_dependent_cls">Managing dependent CLs</a>
+</p>
+</li>
+<li>
+<p>
+<a href="#_example_walkthrough">Example Walkthrough</a>
 </p>
 </li>
 </ul></div>
@@ -979,6 +984,30 @@ commands:</p></div>
 </div>
 </div>
 <div class="sect1">
+<h2 id="_tl_dr">TL;DR</h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="content">
+<pre><code><strong><span class="white">$</span></strong> # get the code
+<strong><span class="white">$</span></strong> # In an empty directory:
+<strong><span class="white">$ fetch {chromium,blink,...}</span></strong>
+
+<strong><span class="white">$</span></strong> # Update third_party repos and run pre-compile hooks
+<strong><span class="white">$ gclient sync</span></strong>
+
+<strong><span class="white">$</span></strong> # Make a new change and upload it for review
+<strong><span class="white">$ git new-branch branchname</span></strong>
+<strong><span class="white">$</span></strong> # repeat: [edit, git add, git commit]
+<strong><span class="white">$ git cl upload</span></strong>
+
+<strong><span class="white">$</span></strong> # After change is reviewed, commit with the CQ
+<strong><span class="white">$ git cl set_commit</span></strong>
+<strong><span class="white">$</span></strong> # Note that the committed hash which lands will /not/ match the
+<strong><span class="white">$</span></strong> # commit hashes of your local branch.</code></pre>
+</div></div>
+</div>
+</div>
+<div class="sect1">
 <h2 id="_getting_the_code">GETTING THE CODE</h2>
 <div class="sectionbody">
 <div class="paragraph"><p>Pick an empty directory and run one of the following:</p></div>
@@ -1004,23 +1033,207 @@ directory:</p></div>
 <div class="paragraph"><p>And finally:</p></div>
 <div class="listingblock">
 <div class="content">
-<pre><code><strong><span class="white">$ gclient sync</span></strong> <b>&lt;1&gt;</b></code></pre>
+<pre><code><strong><span class="white">$ gclient sync</span></strong></code></pre>
 </div></div>
-<div class="colist arabic"><ol>
-<li>
-<p>
-This will pull all dependencies of the Chromium src checkout. You will need
-to run this any time you update the main src checkout.
-</p>
-</li>
-</ol></div>
+<div class="paragraph"><p>This will pull all dependencies of the Chromium src checkout. You will need
+to run this any time you update the main src checkout.</p></div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_tl_dr_walkthrough">TL;DR WALKTHROUGH</h2>
+<h2 id="_creating_uploading_a_cl">CREATING / UPLOADING A CL</h2>
 <div class="sectionbody">
-<div class="paragraph"><p>This section will demo what a typical workflow looks like when writing, updating,
-and committing multiple CLs.</p></div>
+<div class="admonitionblock">
+<table><tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">The remainder of the tutorial assumes that your current working directory
+is the <code>src/</code> folder mentioned in <a href="#_getting_the_code">Getting the code</a>.</td>
+</tr></table>
+</div>
+<div class="paragraph"><p>Each CL corresponds exactly with a single branch in git. Any time you want to
+begin a new CL, just:</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><code><strong><span class="white">$ git new-branch &lt;branch_name&gt;</span></strong></code></pre>
+</div></div>
+<div class="paragraph"><p>This will create and checkout a new branch named <code>branch_name</code> which will track
+the default upstream (which is <code>origin/master</code>). See <a href="git-new-branch.html">git-new-branch(1)</a>
+for more features, such as the ability to track <em>LKGR</em>.</p></div>
+<div class="paragraph"><p>Commit as many changes as you like to this branch. When you want to upload it
+for review, run:</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><code><strong><span class="white">$ git cl upload</span></strong></code></pre>
+</div></div>
+<div class="paragraph"><p>This will take the diff of your branch against its upstream (<code>origin/master</code>),
+and will post it to the <a href="https://codereview.chromium.org">Chromium code
+review site</a>.</p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_updating_the_code">UPDATING THE CODE</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>Inevitably, you&#8217;ll want to pull in changes from the main Chromium repo. This is
+pretty easy with <em>depot_tools</em>:</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><code><strong><span class="white">$ git rebase-update</span></strong></code></pre>
+</div></div>
+<div class="paragraph"><p>This command will update all of your CLs to contain the latest code from their
+upstreams. It will also automatically clean up CLs which have been committed and
+a couple other nice things. See <a href="git-rebase-update.html">git-rebase-update(1)</a> for the full
+scoop.</p></div>
+<div class="paragraph"><p>One thing to look out for are <em>merge conflicts</em>. These happen for exactly the
+same as they do with SVN, but the experience is a little more controllable with
+git. <code>git rebase-update</code> will try to rebase all your branches for you, but if it
+encounters a merge conflict in one, it will halt and leave you in a rebase
+conflict state (see <a href="git-rebase.html">git-rebase(1)</a>). Resolving <code>git rebase</code> merge
+conflicts is beyond the scope of this tutorial, but there are many good sources
+online (see the <a href="#_prerequisites">Prerequisites</a> for some).</p></div>
+<div class="paragraph"><p>Sometimes you&#8217;re pretty certain that you&#8217;ve committed a certain branch, but <code>git
+rebase-update</code> isn&#8217;t able to tell that for sure. This is usually because your
+branch doesn&#8217;t rebase cleanly. You could just delete the branch with <code>git branch
+-D &lt;branch&gt;</code>, but you&#8217;d like to double check the diff of your branch against its
+upstream before deleting it. If this is the case you can abort the rebase
+started by <code>git rebase-update</code>, and then run <a href="git-squash-branch.html">git-squash-branch(1)</a> to
+flatten your branch into a single commit. When you run <code>git rebase-update</code>
+again, you&#8217;ll get a (hopefully) much smaller / saner diff. If it turns out you
+were wrong about your branch being fully committed, you can use
+<a href="git-reflog.html">git-reflog(1)</a> to reset your branch back to where it was before. If the
+diff looks inconsequential, you can use <code>git rebase --skip</code> to ignore it, and
+then <code>git rebase-update</code> will clean it up for you.</p></div>
+<div class="paragraph"><p>Once you&#8217;re done resolving all of the merge conflict, just run <code>git
+rebase-update</code>, and it will pick up where it left off. Once the command has
+finished updating all of your branches, it will return you back to the branch
+you started on.</p></div>
+<div class="admonitionblock">
+<table><tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">Running <code>git rebase-update</code> will update all your branches, but it will not
+automatically run <code>gclient sync</code> to update your dependencies.</td>
+</tr></table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_managing_multiple_cls">MANAGING MULTIPLE CLS</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>Sometimes you want to work on more than one CL at once (say, you have a CL
+posted for review and want to work on something else). For each CL that you
+want to work on, just use <code>git new-branch &lt;branchname&gt;</code>.</p></div>
+<div class="paragraph"><p>Once you start to have more than one CL at a time, it can be easy to lose your
+bearings. Fortunately, <em>depot_tools</em> has two tools to help you out:</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><code><strong><span class="white">$ git map</span></strong>
+<span class="white blue-background">*</span>&#8203;<strong><span class="blue-background red"> 7dcfe47       </span></strong> <span class="green">(</span>&#8203;<strong><span class="aqua">frozen_changes</span></strong>&#8203;<span class="green">)</span> <span class="yellow">2014-03-12</span> ~ FREEZE.unindexed
+* <strong><span class="red">4b0c180</span></strong>        <span class="yellow">2014-03-12</span> ~ modfile
+* <strong><span class="red">59a7cca</span></strong>        <span class="yellow">2014-03-12</span> ~ a deleted file
+* <strong><span class="red">6bec695</span></strong>        <span class="green">(</span>&#8203;<span class="red">origin/master</span>&#8203;<span class="green">)</span> <span class="yellow">2014-03-11</span> ~ Add neat feature    <strong><span class="white">&lt;(frozen_changes)</span></strong>
+* <strong><span class="red">d15a38a</span></strong>        <span class="yellow">2014-03-11</span> ~ Epic README update
+* <strong><span class="red">d559894</span></strong>        <span class="green">(</span>&#8203;<strong><span class="lime">master</span></strong>&#8203;<span class="green">)</span> <span class="yellow">2014-03-11</span> ~ Important upstream change
+<span class="red">|</span> * <strong><span class="red">9c311fd</span></strong>      <span class="green">(</span>&#8203;<strong><span class="lime">cool_feature</span></strong>&#8203;<span class="green">)</span> <span class="yellow">2014-03-11</span> ~ Respond to CL comments
+<span class="red">|</span> <span class="green">|</span> * <strong><span class="red">2a1eeb2</span></strong>    <span class="green">(</span>&#8203;<strong><span class="lime">subfeature</span></strong>&#8203;<span class="green">)</span> <span class="yellow">2014-03-11</span> ~ integrate with CoolService
+<span class="red">|</span> <span class="green">|</span> * <strong><span class="red">d777af6</span></strong>    <span class="yellow">2014-03-11</span> ~ slick commenting action
+<span class="red">|</span> <span class="green">|/</span>
+<span class="red">|</span> * <strong><span class="red">265803a</span></strong>      <span class="yellow">2014-03-11</span> ~ another improvement    <strong><span class="white">&lt;(subfeature)</span></strong>
+<span class="red">|</span> * <strong><span class="red">6d831ac</span></strong>      <span class="green">(</span>&#8203;<strong><span class="fuchsia">spleen_tag</span></strong>&#8203;<span class="green">)</span> <span class="yellow">2014-03-11</span> ~ Refactor spleen
+<span class="red">|</span> * <strong><span class="red">82e74ab</span></strong>      <span class="yellow">2014-03-11</span> ~ Add widget
+<span class="red">|/</span>
+* <strong><span class="red">d08c5b3</span></strong>        <span class="green">(</span>&#8203;<strong><span class="lime">bogus_noparent</span></strong>&#8203;<span class="green">)</span> <span class="yellow">2014-03-11</span> ~ Wonderful beginnings    <strong><span class="white">&lt;(cool_feature)</span></strong></code></pre>
+</div></div>
+<div class="paragraph"><p>Note that this example repo is in dire need of a <a href="git-rebase-update.html">git-rebase-update(1)</a>!</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><code><strong><span class="white">$ git map-branches</span></strong>
+<span class="red">origin/master</span>
+  <span class="green">cool_feature</span>
+    <span class="green">subfeature</span>
+  <span class="aqua">frozen_changes *</span>
+  <span class="green">master</span></code></pre>
+</div></div>
+<div class="dlist"><dl>
+<dt class="hdlist1">
+<a href="git-map.html">git-map(1)</a>
+</dt>
+<dd>
+<p>
+  This tool shows you the history of all of your branches in a pseudo-graphical
+  format. In particular, it will show you which commits all of your branches
+  are on, which commit you currently have checked out, and more. Check out the
+  doc for the full details.
+</p>
+</dd>
+<dt class="hdlist1">
+<a href="git-map-branches.html">git-map-branches(1)</a>
+</dt>
+<dd>
+<p>
+  This tool just shows you which branches you have in your repo, and thier
+  upstream relationship to each other (as well as which branch you have checked
+  out at the moment).
+</p>
+</dd>
+</dl></div>
+<div class="paragraph"><p>Additionally, sometimes you need to switch between branches, but you&#8217;ve got work
+in progress. You could use <a href="git-stash.html">git-stash(1)</a>, but that can be tricky to
+manage because you need to remember which branches you stashed what changes on.
+Helpfully <em>depot_tools</em> includes two tools which can greatly assist in case:</p></div>
+<div class="paragraph"><p><a href="git-freeze.html">git-freeze(1)</a> allows you to put the current branch in 'suspended
+animation' by committing your changes to a specially-named commit on the top of
+your current branch. When you come back to your branch later, you can just run
+<a href="git-thaw.html">git-thaw(1)</a> to get your work-in-progress changes back to what they were.</p></div>
+<div class="paragraph"><p>Another useful tool is <a href="git-rename-branch.html">git-rename-branch(1)</a>. Unlike <code>git branch -m &lt;old&gt;
+&lt;new&gt;</code>, this tool will correctly preserve the upstream relationships of your
+branch compared to its downstreams.</p></div>
+<div class="paragraph"><p>Finally, take a look at <a href="git-upstream-diff.html">git-upstream-diff(1)</a>. This will show you the
+combined diff for all the commits on your branch against the upstream tracking
+branch. This is <em>exactly</em> what <code>git cl upload</code> will push up to code review.
+Additionally, consider trying the <code>--wordwise</code> argument to get a colorized
+per-word diff (instead of a per-line diff).</p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_managing_dependent_cls">MANAGING DEPENDENT CLS</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>Now that you know how to manage <em>independent</em> CLs, we&#8217;ll see how to manage
+<em>dependent</em> CLs. Dependent CLs are useful when your second (or third or fourth
+or &#8230;) CL depends on the changes in one of your other CLs (such as: CL 2 won&#8217;t
+compile without CL 1, but you want to submit them as two separate reviews).</p></div>
+<div class="paragraph"><p>Like all of the other CLs we&#8217;ve created, we use <a href="git-new-branch.html">git-new-branch(1)</a>, but
+this time with an extra argument. First, <code>git checkout</code> the branch
+you want to base the new one on (i.e. CL 1), and then run:</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><code><strong><span class="white">$ git new-branch --upstream_current &lt;branch_name&gt;</span></strong></code></pre>
+</div></div>
+<div class="paragraph"><p>This will make a new branch which tracks the <em>current</em> branch as its upstream
+(as opposed to <em>origin/master</em>). All changes you commit to this branch will be
+in addition to the previous branch, but when you <code>git cl upload</code>, you will only
+upload the diff for the dependent (child) branch. You may have as many branches
+nested in this fashion as you like.</p></div>
+<div class="paragraph"><p><a href="git-map.html">git-map(1)</a> and <a href="git-map-branches.html">git-map-branches(1)</a> are particularly helpful when
+you have dependent branches. In addition, there are two helper commands which
+let you traverse your working copy up and down this tree of branches:
+<a href="git-nav-upstream.html">git-nav-upstream(1)</a> and <a href="git-nav-downstream.html">git-nav-downstream(1)</a>.</p></div>
+<div class="paragraph"><p>Sometimes when dealing with dependent CLs, it turns out that you accidentally
+based a branch on the wrong upstream, but since then you&#8217;ve committed changes to
+it, or even based <em>another</em> branch off of that one. Or you discover that you
+have two independent CLs that would actually be much better off as dependent
+CLs. In instances like these, you can check out the offending branch and use
+<a href="git-reparent-branch.html">git-reparent-branch(1)</a> to move it to track a different parent. Note that
+this can also be used to move a branch from tracking <code>origin/master</code> to <code>lkgr</code>
+or vice versa.</p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_example_walkthrough">EXAMPLE WALKTHROUGH</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>This section will demo what a typical workflow looks like when writing,
+updating, and committing multiple CLs.</p></div>
 <div class="paragraph"><p></p></div><div class="listingblock"><div class="content"><pre><code><span style="font-weight: bold; color: #ffffff">$ fetch chromium</span>
 ... truncated output ...
 <span style="font-weight: bold; color: #ffffff">$ cd src</span>
@@ -1047,10 +1260,10 @@ It was a Domo-Kuun.
 * <span style="font-weight: bold; color: #e42e16">2250f53	</span><span style="color: #19c518"></span> <span style="color: #e7e71c">2014-04-10</span> ~ ozone: evdev: Filter devices by path
 * <span style="font-weight: bold; color: #e42e16">33a7a74	</span><span style="color: #19c518"></span> <span style="color: #e7e71c">2014-04-10</span> ~ Always output seccomp error messages to stderr
 <span style="font-weight: bold; color: #ffffff">$ git status</span>
-# On branch fix_typo
-# Your branch is ahead of 'origin/master' by 1 commit.
-#   (use "git push" to publish your local commits)
-#
+On branch fix_typo
+Your branch is ahead of 'origin/master' by 1 commit.
+  (use "git push" to publish your local commits)
+
 nothing to commit, working directory clean
 <span style="font-weight: bold; color: #ffffff">$ git cl upload -r domo@chromium.org --send-mail</span>
 ... truncated output ...
@@ -1066,15 +1279,15 @@ overhead, barely disturbing the thick cigarette smoke. No doubt was left about
 when the fan was last cleaned.
 EOF
 <span style="font-weight: bold; color: #ffffff">$ git status</span>
-# On branch chap2
-# Your branch is up-to-date with 'origin/master'.
-#
-# Changes not staged for commit:
-#   (use "git add &lt;file&gt;..." to update what will be committed)
-#   (use "git checkout -- &lt;file&gt;..." to discard changes in working directory)
-#
-#	<span style="color: #e42e16">modified:   build/whitespace_file.txt</span>
-#
+On branch chap2
+Your branch is up-to-date with 'origin/master'.
+
+Changes not staged for commit:
+  (use "git add &lt;file&gt;..." to update what will be committed)
+  (use "git checkout -- &lt;file&gt;..." to discard changes in working directory)
+
+	<span style="color: #e42e16">modified:   build/whitespace_file.txt</span>
+
 no changes added to commit (use "git add" and/or "git commit -a")
 </code></pre></div></div><p><div class="paragraph"> Someone on the code review pointed out that our typo-fix has a typo :( We're still working on 'chap2' but we really want to land 'fix_typo', so let's switch over and fix it.</p></div><div class="listingblock"><div class="content"><pre><code><span style="font-weight: bold; color: #ffffff">$ git freeze</span>
 <span style="font-weight: bold; color: #ffffff">$ git checkout fix_typo</span>
@@ -1319,196 +1532,6 @@ development using these tools. Any git workflow is compatible, as long as
 </div>
 </div>
 <div class="sect1">
-<h2 id="_creating_uploading_a_cl">CREATING / UPLOADING A CL</h2>
-<div class="sectionbody">
-<div class="admonitionblock">
-<table><tr>
-<td class="icon">
-<div class="title">Note</div>
-</td>
-<td class="content">The remainder of the tutorial assumes that your current working directory
-is the <code>src/</code> folder mentioned in <a href="#_getting_the_code">Getting the code</a>.</td>
-</tr></table>
-</div>
-<div class="paragraph"><p>Each CL corresponds exactly with a single branch in git. Any time you want to
-begin a new CL, just:</p></div>
-<div class="listingblock">
-<div class="content">
-<pre><code><strong><span class="white">$ git new-branch &lt;branch_name&gt;</span></strong></code></pre>
-</div></div>
-<div class="paragraph"><p>This will create and checkout a new branch named <code>branch_name</code> which will track
-the default upstream (which is <code>origin/master</code>). See <a href="git-new-branch.html">git-new-branch(1)</a>
-for more features, such as the ability to track <em>LKGR</em>.</p></div>
-<div class="paragraph"><p>Commit as many changes as you like to this branch. When you want to upload it
-for review, run:</p></div>
-<div class="listingblock">
-<div class="content">
-<pre><code><strong><span class="white">$ git cl upload</span></strong></code></pre>
-</div></div>
-<div class="paragraph"><p>This will take the diff of your branch against its upstream (<code>origin/master</code>),
-and will post it to the <a href="https://codereview.chromium.org">Chromium code
-review site</a>.</p></div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_updating_the_code">UPDATING THE CODE</h2>
-<div class="sectionbody">
-<div class="paragraph"><p>Inevitably, you&#8217;ll want to pull in changes from the main Chromium repo. This is
-pretty easy with <em>depot_tools</em>:</p></div>
-<div class="listingblock">
-<div class="content">
-<pre><code><strong><span class="white">$ git rebase-update</span></strong></code></pre>
-</div></div>
-<div class="paragraph"><p>This command will update all of your CLs to contain the latest code from their
-upstreams. It will also automatically clean up CLs which have been committed and
-a couple other nice things. See <a href="git-rebase-update.html">git-rebase-update(1)</a> for the full
-scoop.</p></div>
-<div class="paragraph"><p>One thing to look out for are <em>merge conflicts</em>. These happen for exactly the
-same as they do with SVN, but the experience is a little more controllable with
-git. <code>git rebase-update</code> will try to rebase all your branches for you, but if it
-encounters a merge conflict in one, it will halt and leave you in a rebase
-conflict state (see <a href="git-rebase.html">git-rebase(1)</a>). Resolving <code>git rebase</code> merge
-conflicts is beyond the scope of this tutorial, but there are many good sources
-online (see the <a href="#_prerequisites">Prerequisites</a> for some).</p></div>
-<div class="paragraph"><p>Sometimes you&#8217;re pretty certain that you&#8217;ve committed a certain branch, but <code>git
-rebase-update</code> isn&#8217;t able to tell that for sure. This is usually because your
-branch doesn&#8217;t rebase cleanly. You could just delete the branch with <code>git branch
--D &lt;branch&gt;</code>, but you&#8217;d like to double check the diff of your branch against its
-upstream before deleting it. If this is the case you can abort the rebase
-started by <code>git rebase-update</code>, and then run <a href="git-squash-branch.html">git-squash-branch(1)</a> to
-flatten your branch into a single commit. When you run <code>git rebase-update</code>
-again, you&#8217;ll get a (hopefully) much smaller / saner diff. If it turns out you
-were wrong about your branch being fully committed, you can use
-<a href="git-reflog.html">git-reflog(1)</a> to reset your branch back to where it was before. If the
-diff looks inconsequential, you can use <code>git rebase --skip</code> to ignore it, and
-then <code>git rebase-update</code> will clean it up for you.</p></div>
-<div class="paragraph"><p>Once you&#8217;re done resolving all of the merge conflict, just run <code>git
-rebase-update</code>, and it will pick up where it left off. Once the command has
-finished updating all of your branches, it will return you back to the branch
-you started on.</p></div>
-<div class="admonitionblock">
-<table><tr>
-<td class="icon">
-<div class="title">Note</div>
-</td>
-<td class="content">Running <code>git rebase-update</code> will update all your branches, but it will not
-automatically run <code>gclient sync</code> to update your dependencies.</td>
-</tr></table>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_managing_multiple_cls">MANAGING MULTIPLE CLS</h2>
-<div class="sectionbody">
-<div class="paragraph"><p>Sometimes you want to work on more than one CL at once (say, you have a CL
-posted for review and want to work on something else). For each CL that you
-want to work on, just use <code>git new-branch &lt;branchname&gt;</code>.</p></div>
-<div class="paragraph"><p>Once you start to have more than one CL at a time, it can be easy to lose your
-bearings. Fortunately, <em>depot_tools</em> has two tools to help you out:</p></div>
-<div class="listingblock">
-<div class="content">
-<pre><code><strong><span class="white">$ git map</span></strong>
-<span class="white blue-background">*</span>&#8203;<strong><span class="blue-background red"> 7dcfe47       </span></strong> <span class="green">(</span>&#8203;<strong><span class="aqua">frozen_changes</span></strong>&#8203;<span class="green">)</span> <span class="yellow">2014-03-12</span> ~ FREEZE.unindexed
-* <strong><span class="red">4b0c180</span></strong>        <span class="yellow">2014-03-12</span> ~ modfile
-* <strong><span class="red">59a7cca</span></strong>        <span class="yellow">2014-03-12</span> ~ a deleted file
-* <strong><span class="red">6bec695</span></strong>        <span class="green">(</span>&#8203;<span class="red">origin/master</span>&#8203;<span class="green">)</span> <span class="yellow">2014-03-11</span> ~ Add neat feature    <strong><span class="white">&lt;(frozen_changes)</span></strong>
-* <strong><span class="red">d15a38a</span></strong>        <span class="yellow">2014-03-11</span> ~ Epic README update
-* <strong><span class="red">d559894</span></strong>        <span class="green">(</span>&#8203;<strong><span class="lime">master</span></strong>&#8203;<span class="green">)</span> <span class="yellow">2014-03-11</span> ~ Important upstream change
-<span class="red">|</span> * <strong><span class="red">9c311fd</span></strong>      <span class="green">(</span>&#8203;<strong><span class="lime">cool_feature</span></strong>&#8203;<span class="green">)</span> <span class="yellow">2014-03-11</span> ~ Respond to CL comments
-<span class="red">|</span> <span class="green">|</span> * <strong><span class="red">2a1eeb2</span></strong>    <span class="green">(</span>&#8203;<strong><span class="lime">subfeature</span></strong>&#8203;<span class="green">)</span> <span class="yellow">2014-03-11</span> ~ integrate with CoolService
-<span class="red">|</span> <span class="green">|</span> * <strong><span class="red">d777af6</span></strong>    <span class="yellow">2014-03-11</span> ~ slick commenting action
-<span class="red">|</span> <span class="green">|/</span>
-<span class="red">|</span> * <strong><span class="red">265803a</span></strong>      <span class="yellow">2014-03-11</span> ~ another improvement    <strong><span class="white">&lt;(subfeature)</span></strong>
-<span class="red">|</span> * <strong><span class="red">6d831ac</span></strong>      <span class="green">(</span>&#8203;<strong><span class="fuchsia">spleen_tag</span></strong>&#8203;<span class="green">)</span> <span class="yellow">2014-03-11</span> ~ Refactor spleen
-<span class="red">|</span> * <strong><span class="red">82e74ab</span></strong>      <span class="yellow">2014-03-11</span> ~ Add widget
-<span class="red">|/</span>
-* <strong><span class="red">d08c5b3</span></strong>        <span class="green">(</span>&#8203;<strong><span class="lime">bogus_noparent</span></strong>&#8203;<span class="green">)</span> <span class="yellow">2014-03-11</span> ~ Wonderful beginnings    <strong><span class="white">&lt;(cool_feature)</span></strong></code></pre>
-</div></div>
-<div class="paragraph"><p>Note that this example repo is in dire need of a <a href="git-rebase-update.html">git-rebase-update(1)</a>!</p></div>
-<div class="listingblock">
-<div class="content">
-<pre><code><strong><span class="white">$ git map-branches</span></strong>
-<span class="red">origin/master</span>
-  <span class="green">cool_feature</span>
-    <span class="green">subfeature</span>
-  <span class="aqua">frozen_changes *</span>
-  <span class="green">master</span></code></pre>
-</div></div>
-<div class="dlist"><dl>
-<dt class="hdlist1">
-<a href="git-map.html">git-map(1)</a>
-</dt>
-<dd>
-<p>
-  This tool shows you the history of all of your branches in a pseudo-graphical
-  format. In particular, it will show you which commits all of your branches
-  are on, which commit you currently have checked out, and more. Check out the
-  doc for the full details.
-</p>
-</dd>
-<dt class="hdlist1">
-<a href="git-map-branches.html">git-map-branches(1)</a>
-</dt>
-<dd>
-<p>
-  This tool just shows you which branches you have in your repo, and thier
-  upstream relationship to each other (as well as which branch you have checked
-  out at the moment).
-</p>
-</dd>
-</dl></div>
-<div class="paragraph"><p>Additionally, sometimes you need to switch between branches, but you&#8217;ve got work
-in progress. You could use <a href="git-stash.html">git-stash(1)</a>, but that can be tricky to
-manage because you need to remember which branches you stashed what changes on.
-Helpfully <em>depot_tools</em> includes two tools which can greatly assist in case:</p></div>
-<div class="paragraph"><p><a href="git-freeze.html">git-freeze(1)</a> allows you to put the current branch in 'suspended
-animation' by committing your changes to a specially-named commit on the top of
-your current branch. When you come back to your branch later, you can just run
-<a href="git-thaw.html">git-thaw(1)</a> to get your work-in-progress changes back to what they were.</p></div>
-<div class="paragraph"><p>Another useful tool is <a href="git-rename-branch.html">git-rename-branch(1)</a>. Unlike <code>git branch -m &lt;old&gt;
-&lt;new&gt;</code>, this tool will correctly preserve the upstream relationships of your
-branch compared to its downstreams.</p></div>
-<div class="paragraph"><p>Finally, take a look at <a href="git-upstream-diff.html">git-upstream-diff(1)</a>. This will show you the
-combined diff for all the commits on your branch against the upstream tracking
-branch. This is <em>exactly</em> what <code>git cl upload</code> will push up to code review.
-Additionally, consider trying the <code>--wordwise</code> argument to get a colorized
-per-word diff (instead of a per-line diff).</p></div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_managing_dependent_cls">MANAGING DEPENDENT CLS</h2>
-<div class="sectionbody">
-<div class="paragraph"><p>Now that you know how to manage <em>independent</em> CLs, we&#8217;ll see how to manage
-<em>dependent</em> CLs. Dependent CLs are useful when your second (or third or fourth
-or &#8230;) CL depends on the changes in one of your other CLs (such as: CL 2 won&#8217;t
-compile without CL 1, but you want to submit them as two separate reviews).</p></div>
-<div class="paragraph"><p>Like all of the other CLs we&#8217;ve created, we use <a href="git-new-branch.html">git-new-branch(1)</a>, but
-this time with an extra argument. First, <code>git checkout</code> the branch
-you want to base the new one on (i.e. CL 1), and then run:</p></div>
-<div class="listingblock">
-<div class="content">
-<pre><code><strong><span class="white">$ git new-branch --upstream_current &lt;branch_name&gt;</span></strong></code></pre>
-</div></div>
-<div class="paragraph"><p>This will make a new branch which tracks the <em>current</em> branch as its upstream
-(as opposed to <em>origin/master</em>). All changes you commit to this branch will be
-in addition to the previous branch, but when you <code>git cl upload</code>, you will only
-upload the diff for the dependent (child) branch. You may have as many branches
-nested in this fashion as you like.</p></div>
-<div class="paragraph"><p><a href="git-map.html">git-map(1)</a> and <a href="git-map-branches.html">git-map-branches(1)</a> are particularly helpful when
-you have dependent branches. In addition, there are two helper commands which
-let you traverse your working copy up and down this tree of branches:
-<a href="git-nav-upstream.html">git-nav-upstream(1)</a> and <a href="git-nav-downstream.html">git-nav-downstream(1)</a>.</p></div>
-<div class="paragraph"><p>Sometimes when dealing with dependent CLs, it turns out that you accidentally
-based a branch on the wrong upstream, but since then you&#8217;ve committed changes to
-it, or even based <em>another</em> branch off of that one. Or you discover that you
-have two independent CLs that would actually be much better off as dependent
-CLs. In instances like these, you can check out the offending branch and use
-<a href="git-reparent-branch.html">git-reparent-branch(1)</a> to move it to track a different parent. Note that
-this can also be used to move a branch from tracking <code>origin/master</code> to <code>lkgr</code>
-or vice versa.</p></div>
-</div>
-</div>
-<div class="sect1">
 <h2 id="_conclusion">CONCLUSION</h2>
 <div class="sectionbody">
 <div class="paragraph"><p>Hopefully that gives you a good starting overview on Chromium development using
@@ -1564,7 +1587,7 @@ from <a href="https://chromium.googlesource.com/chromium/tools/depot_tools.git">
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2014-04-10 21:30:33 PDT
+Last updated 2014-04-14 16:26:14 PDT
 </div>
 </div>
 </body>
