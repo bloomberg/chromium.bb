@@ -36,6 +36,10 @@
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 
+namespace blink {
+class WebURL;
+};
+
 namespace WebCore {
 
 class ExecutionContext;
@@ -46,6 +50,8 @@ class ServiceWorkerGlobalScopeClient : public Supplement<WorkerClients> {
     WTF_MAKE_NONCOPYABLE(ServiceWorkerGlobalScopeClient);
 public:
     virtual ~ServiceWorkerGlobalScopeClient() { }
+
+    virtual blink::WebURL scope() const = 0;
 
     virtual void didHandleActivateEvent(int eventID, blink::WebServiceWorkerEventResult) = 0;
     virtual void didHandleInstallEvent(int installEventID, blink::WebServiceWorkerEventResult) = 0;

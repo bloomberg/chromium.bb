@@ -31,6 +31,9 @@
     GlobalContext=ServiceWorkerGlobalScope,
     RuntimeEnabled=ServiceWorker,
 ] interface ServiceWorkerGlobalScope : WorkerGlobalScope {
+
+  [CallWith=ExecutionContext, Unforgeable] readonly attribute DOMString scope;
+
   attribute EventHandler onactivate;
   attribute EventHandler onfetch;
   attribute EventHandler oninstall;

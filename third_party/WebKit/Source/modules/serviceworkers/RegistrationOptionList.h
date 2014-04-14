@@ -11,7 +11,7 @@ namespace WebCore {
 
 struct RegistrationOptionList  {
     explicit RegistrationOptionList(const Dictionary& options)
-        : scope("/*")
+        : scope("*")
     {
         options.get("scope", scope);
     }

@@ -35,6 +35,7 @@
 #include "modules/serviceworkers/Response.h"
 #include "platform/NotImplemented.h"
 #include "public/platform/WebServiceWorkerResponse.h"
+#include "public/platform/WebURL.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
@@ -46,6 +47,11 @@ PassOwnPtr<WebCore::ServiceWorkerGlobalScopeClient> ServiceWorkerGlobalScopeClie
 
 ServiceWorkerGlobalScopeClientImpl::~ServiceWorkerGlobalScopeClientImpl()
 {
+}
+
+WebURL ServiceWorkerGlobalScopeClientImpl::scope() const
+{
+    return m_client->scope();
 }
 
 void ServiceWorkerGlobalScopeClientImpl::didHandleActivateEvent(int eventID, WebServiceWorkerEventResult result)

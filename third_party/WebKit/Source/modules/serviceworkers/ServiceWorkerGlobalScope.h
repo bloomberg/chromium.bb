@@ -48,6 +48,9 @@ public:
     virtual ~ServiceWorkerGlobalScope();
     virtual bool isServiceWorkerGlobalScope() const OVERRIDE { return true; }
 
+    // ServiceWorkerGlobalScope.idl
+    String scope(ExecutionContext*);
+
     // EventTarget
     virtual const AtomicString& interfaceName() const OVERRIDE;
 

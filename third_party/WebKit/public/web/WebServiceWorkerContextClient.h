@@ -33,6 +33,7 @@
 
 #include "WebWorkerPermissionClientProxy.h"
 #include "public/platform/WebServiceWorkerEventResult.h"
+#include "public/platform/WebURL.h"
 
 namespace blink {
 
@@ -53,6 +54,10 @@ class WebServiceWorkerResponse;
 class WebServiceWorkerContextClient {
 public:
     virtual ~WebServiceWorkerContextClient() { }
+
+    // ServiceWorker specific method. Called when script accesses the
+    // the |scope| attribute of the ServiceWorkerGlobalScope. Immutable per spec.
+    virtual WebURL scope() const { return WebURL(); }
 
     // A new WorkerGlobalScope is created and started to run on the
     // worker thread.

@@ -33,8 +33,10 @@
 #include "bindings/v8/ScriptObject.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerThreadStartupData.h"
+#include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "modules/serviceworkers/ServiceWorkerThread.h"
 #include "platform/weborigin/KURL.h"
+#include "public/platform/WebURL.h"
 #include "wtf/CurrentTime.h"
 
 namespace WebCore {
@@ -47,14 +49,19 @@ PassRefPtrWillBeRawPtr<ServiceWorkerGlobalScope> ServiceWorkerGlobalScope::creat
     return context.release();
 }
 
-ServiceWorkerGlobalScope::ServiceWorkerGlobalScope(const KURL& url, const String& userAgent, ServiceWorkerThread* thread, double timeOrigin, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients) :
-    WorkerGlobalScope(url, userAgent, thread, timeOrigin, workerClients)
+ServiceWorkerGlobalScope::ServiceWorkerGlobalScope(const KURL& url, const String& userAgent, ServiceWorkerThread* thread, double timeOrigin, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients)
+    : WorkerGlobalScope(url, userAgent, thread, timeOrigin, workerClients)
 {
     ScriptWrappable::init(this);
 }
 
 ServiceWorkerGlobalScope::~ServiceWorkerGlobalScope()
 {
+}
+
+String ServiceWorkerGlobalScope::scope(ExecutionContext* context)
+{
+    return ServiceWorkerGlobalScopeClient::from(context)->scope().string();
 }
 
 const AtomicString& ServiceWorkerGlobalScope::interfaceName() const

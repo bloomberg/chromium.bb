@@ -37,11 +37,14 @@
 namespace blink {
 
 class WebServiceWorkerContextClient;
+class WebURL;
 
 class ServiceWorkerGlobalScopeClientImpl FINAL : public WebCore::ServiceWorkerGlobalScopeClient {
 public:
     static PassOwnPtr<WebCore::ServiceWorkerGlobalScopeClient> create(PassOwnPtr<WebServiceWorkerContextClient>);
     virtual ~ServiceWorkerGlobalScopeClientImpl();
+
+    virtual WebURL scope() const OVERRIDE;
 
     virtual void didHandleActivateEvent(int eventID, WebServiceWorkerEventResult) OVERRIDE;
     virtual void didHandleInstallEvent(int installEventID, WebServiceWorkerEventResult) OVERRIDE;
