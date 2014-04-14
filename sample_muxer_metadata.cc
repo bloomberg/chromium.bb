@@ -13,8 +13,7 @@
 #include <string>
 #include "vttreader.h"
 
-SampleMuxerMetadata::SampleMuxerMetadata() : segment_(NULL) {
-}
+SampleMuxerMetadata::SampleMuxerMetadata() : segment_(NULL) {}
 
 bool SampleMuxerMetadata::Init(mkvmuxer::Segment* segment) {
   if (segment == NULL || segment_ != NULL)
@@ -93,9 +92,8 @@ bool SampleMuxerMetadata::LoadChapters(const char* file) {
   return true;
 }
 
-bool SampleMuxerMetadata::ParseChapters(
-    const char* file,
-    cue_list_t* cues_ptr) {
+bool SampleMuxerMetadata::ParseChapters(const char* file,
+                                        cue_list_t* cues_ptr) {
   cue_list_t& cues = *cues_ptr;
   cues.clear();
 
@@ -199,9 +197,7 @@ bool SampleMuxerMetadata::AddChapter(const cue_t& cue) {
   return true;
 }
 
-bool SampleMuxerMetadata::AddTrack(
-    Kind kind,
-    mkvmuxer::uint64* track_num) {
+bool SampleMuxerMetadata::AddTrack(Kind kind, mkvmuxer::uint64* track_num) {
   *track_num = 0;
 
   // Track number value 0 means "let muxer choose track number"
@@ -249,10 +245,8 @@ bool SampleMuxerMetadata::AddTrack(
   return true;
 }
 
-bool SampleMuxerMetadata::Parse(
-    const char* file,
-    Kind /* kind */,
-    mkvmuxer::uint64 track_num) {
+bool SampleMuxerMetadata::Parse(const char* file, Kind /* kind */,
+                                mkvmuxer::uint64 track_num) {
   libwebvtt::VttReader r;
   int e = r.Open(file);
 
@@ -311,16 +305,14 @@ void SampleMuxerMetadata::MakeFrame(const cue_t& c, std::string* pf) {
   WriteCuePayload(c.payload, pf);
 }
 
-void SampleMuxerMetadata::WriteCueIdentifier(
-    const std::string& identifier,
-    std::string* pf) {
+void SampleMuxerMetadata::WriteCueIdentifier(const std::string& identifier,
+                                             std::string* pf) {
   pf->append(identifier);
   pf->push_back('\x0A');  // LF
 }
 
-void SampleMuxerMetadata::WriteCueSettings(
-    const cue_t::settings_t& settings,
-    std::string* pf) {
+void SampleMuxerMetadata::WriteCueSettings(const cue_t::settings_t& settings,
+                                           std::string* pf) {
   if (settings.empty()) {
     pf->push_back('\x0A');  // LF
     return;
@@ -347,9 +339,8 @@ void SampleMuxerMetadata::WriteCueSettings(
   pf->push_back('\x0A');  // LF
 }
 
-void SampleMuxerMetadata::WriteCuePayload(
-    const cue_t::payload_t& payload,
-    std::string* pf) {
+void SampleMuxerMetadata::WriteCuePayload(const cue_t::payload_t& payload,
+                                          std::string* pf) {
   typedef cue_t::payload_t::const_iterator iter_t;
 
   iter_t i = payload.begin();
@@ -362,8 +353,7 @@ void SampleMuxerMetadata::WriteCuePayload(
   }
 }
 
-bool SampleMuxerMetadata::SortableCue::Write(
-    mkvmuxer::Segment* segment) const {
+bool SampleMuxerMetadata::SortableCue::Write(mkvmuxer::Segment* segment) const {
   // Cue start time expressed in milliseconds
   const mkvmuxer::int64 start_ms = cue.start_time.presentation();
 

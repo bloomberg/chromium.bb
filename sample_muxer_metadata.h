@@ -17,13 +17,7 @@
 
 class SampleMuxerMetadata {
  public:
-  enum Kind {
-    kSubtitles,
-    kCaptions,
-    kDescriptions,
-    kMetadata,
-    kChapters
-  };
+  enum Kind { kSubtitles, kCaptions, kDescriptions, kMetadata, kChapters };
 
   SampleMuxerMetadata();
 
@@ -86,8 +80,7 @@ class SampleMuxerMetadata {
 
   // Parse the WebVTT chapters in |file| to populate |cues|.  Returns
   // false on error.
-  static bool ParseChapters(const char* file,
-                            cue_list_t* cues);
+  static bool ParseChapters(const char* file, cue_list_t* cues);
 
   // Adds WebVTT cue |chapter| to the chapters element of the output
   // file's segment element.  Returns false on error.
