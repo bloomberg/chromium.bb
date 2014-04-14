@@ -10,17 +10,14 @@
 
 #ifdef _MSC_VER
 // Disable MSVC warnings that suggest making code non-portable.
-#pragma warning(disable:4996)
+#pragma warning(disable : 4996)
 #endif
 
 namespace libwebvtt {
 
-VttReader::VttReader() : file_(NULL) {
-}
+VttReader::VttReader() : file_(NULL) {}
 
-VttReader::~VttReader() {
-  Close();
-}
+VttReader::~VttReader() { Close(); }
 
 int VttReader::Open(const char* filename) {
   if (filename == NULL || file_ != NULL)
