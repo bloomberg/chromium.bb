@@ -39,6 +39,8 @@ public:
 
     String groupLabelText() const;
 
+    bool isDisplayNone() const;
+
 private:
     explicit HTMLOptGroupElement(Document&);
 

@@ -116,6 +116,7 @@ public:
     void optionSelectionStateChanged(HTMLOptionElement*, bool optionIsSelected);
     bool anonymousIndexedSetter(unsigned, PassRefPtr<HTMLOptionElement>, ExceptionState&);
 
+    void updateListOnRenderer();
 protected:
     HTMLSelectElement(Document&, HTMLFormElement*);
 

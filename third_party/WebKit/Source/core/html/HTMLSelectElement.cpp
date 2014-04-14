@@ -76,6 +76,7 @@ HTMLSelectElement::HTMLSelectElement(Document& document, HTMLFormElement* form)
     , m_suggestedIndex(-1)
 {
     ScriptWrappable::init(this);
+    setHasCustomStyleCallbacks();
 }
 
 PassRefPtr<HTMLSelectElement> HTMLSelectElement::create(Document& document)
@@ -521,11 +522,12 @@ int HTMLSelectElement::nextValidIndex(int listIndex, SkipDirection direction, in
     int size = listItems.size();
     for (listIndex += direction; listIndex >= 0 && listIndex < size; listIndex += direction) {
         --skip;
-        if (!listItems[listIndex]->isDisabledFormControl() && isHTMLOptionElement(*listItems[listIndex])) {
-            lastGoodIndex = listIndex;
-            if (skip <= 0)
-                break;
-        }
+        HTMLElement* element = listItems[listIndex];
+        if (!isHTMLOptionElement(*element) || toHTMLOptionElement(element)->isDisabledFormControl() || toHTMLOptionElement(element)->isDisplayNone())
+            continue;
+        lastGoodIndex = listIndex;
+        if (skip <= 0)
+            break;
     }
     return lastGoodIndex;
 }
@@ -638,7 +640,7 @@ void HTMLSelectElement::updateListBoxSelection(bool deselectOtherOptions)
     const Vector<HTMLElement*>& items = listItems();
     for (unsigned i = 0; i < items.size(); ++i) {
         HTMLElement* element = items[i];
-        if (!isHTMLOptionElement(*element) || toHTMLOptionElement(element)->isDisabledFormControl())
+        if (!isHTMLOptionElement(*element) || toHTMLOptionElement(element)->isDisabledFormControl() || toHTMLOptionElement(element)->isDisplayNone())
             continue;
 
         if (i >= start && i <= end)
@@ -1650,6 +1652,11 @@ bool HTMLSelectElement::isInteractiveContent() const
 bool HTMLSelectElement::supportsAutofocus() const
 {
     return true;
+}
+
+void HTMLSelectElement::updateListOnRenderer()
+{
+    setOptionsChangedOnRenderer();
 }
 
 } // namespace

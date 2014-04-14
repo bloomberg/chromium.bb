@@ -47,11 +47,10 @@ public:
 
     void setOptionsChanged(bool changed) { m_optionsChanged = changed; }
 
-    int listIndexAtOffset(const LayoutSize&);
-    LayoutRect itemBoundingBoxRect(const LayoutPoint&, int index);
+    int listIndexAtOffset(const LayoutSize&) const;
+    LayoutRect itemBoundingBoxRect(const LayoutPoint&, int index) const;
 
     bool scrollToRevealElementAtListIndex(int index);
-    bool listIndexIsVisible(int index);
 
     int scrollToward(const IntPoint&); // Returns the new index or -1 if no scroll occurred
 
@@ -132,6 +131,9 @@ private:
     virtual float pixelStep(ScrollbarOrientation) const OVERRIDE;
     virtual IntRect scrollableAreaBoundingBox() const OVERRIDE;
 
+    LayoutRect itemBoundingBoxRectInternal(const LayoutPoint&, int index) const;
+    bool scrollToRevealElementAtListIndexInternal(int index);
+
     // NOTE: This should only be called by the overriden setScrollOffset from ScrollableArea.
     void scrollTo(int newOffset);
 
@@ -141,6 +143,7 @@ private:
 
     LayoutUnit itemHeight() const;
     int numVisibleItems() const;
+    bool listIndexIsVisible(int index) const;
     int numItems() const;
     LayoutUnit listHeight() const;
     int scrollbarLeft() const;
@@ -149,11 +152,15 @@ private:
     void paintItemBackground(PaintInfo&, const LayoutPoint&, int listIndex);
     void scrollToRevealSelection();
 
+    int renderListBoxIndexToListIndex(int index) const;
+    int listIndexToRenderListBoxIndex(int index) const;
+
     bool m_optionsChanged;
     bool m_scrollToRevealSelectionAfterLayout;
     bool m_inAutoscroll;
     int m_optionsWidth;
     int m_indexOffset;
+    int m_listItemCount;
 
     RefPtr<Scrollbar> m_vBar;
 };

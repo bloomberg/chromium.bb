@@ -282,7 +282,12 @@ void HTMLOptionElement::setLabel(const AtomicString& label)
 
 void HTMLOptionElement::updateNonRenderStyle()
 {
+    bool oldDisplayNoneStatus = isDisplayNone();
     m_style = originalStyleForRenderer();
+    if (oldDisplayNoneStatus != isDisplayNone()) {
+        if (HTMLSelectElement* select = ownerSelectElement())
+            select->updateListOnRenderer();
+    }
 }
 
 RenderStyle* HTMLOptionElement::nonRendererStyle() const
@@ -362,6 +367,18 @@ HTMLFormElement* HTMLOptionElement::form() const
         return selectElement->formOwner();
 
     return 0;
+}
+
+bool HTMLOptionElement::isDisplayNone() const
+{
+    ContainerNode* parent = parentNode();
+    // Check for parent optgroup having display NONE
+    if (parent && isHTMLOptGroupElement(*parent)) {
+        if (toHTMLOptGroupElement(*parent).isDisplayNone())
+            return true;
+    }
+    RenderStyle* style = nonRendererStyle();
+    return style && style->display() == NONE;
 }
 
 } // namespace WebCore

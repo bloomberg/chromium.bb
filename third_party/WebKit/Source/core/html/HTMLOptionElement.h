@@ -66,6 +66,8 @@ public:
 
     HTMLFormElement* form() const;
 
+    bool isDisplayNone() const;
+
 private:
     explicit HTMLOptionElement(Document&);
 

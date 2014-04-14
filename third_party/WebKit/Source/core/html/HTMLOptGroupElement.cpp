@@ -96,7 +96,12 @@ void HTMLOptGroupElement::detach(const AttachContext& context)
 
 void HTMLOptGroupElement::updateNonRenderStyle()
 {
+    bool oldDisplayNoneStatus = isDisplayNone();
     m_style = originalStyleForRenderer();
+    if (oldDisplayNoneStatus != isDisplayNone()) {
+        if (HTMLSelectElement* select = ownerSelectElement())
+            select->updateListOnRenderer();
+    }
 }
 
 RenderStyle* HTMLOptGroupElement::nonRendererStyle() const
@@ -133,6 +138,12 @@ void HTMLOptGroupElement::accessKeyAction(bool)
     // send to the parent to bring focus to the list box
     if (select && !select->focused())
         select->accessKeyAction(false);
+}
+
+bool HTMLOptGroupElement::isDisplayNone() const
+{
+    RenderStyle* style = nonRendererStyle();
+    return style && style->display() == NONE;
 }
 
 } // namespace
