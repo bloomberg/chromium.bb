@@ -231,6 +231,10 @@ scoped_refptr<VideoFrame> VideoFrame::WrapVideoFrame(
       const gfx::Rect& visible_rect,
       const gfx::Size& natural_size,
       const base::Closure& no_longer_needed_cb) {
+  // NATIVE_TEXTURE frames need mailbox info propagated, and there's no support
+  // for that here yet, see http://crbug/362521.
+  CHECK(frame->format() != NATIVE_TEXTURE);
+
   DCHECK(frame->visible_rect().Contains(visible_rect));
   scoped_refptr<VideoFrame> wrapped_frame(new VideoFrame(
       frame->format(), frame->coded_size(), visible_rect, natural_size,

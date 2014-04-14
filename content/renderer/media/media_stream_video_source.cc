@@ -291,7 +291,7 @@ MediaStreamVideoSource* MediaStreamVideoSource::GetVideoSource(
   return static_cast<MediaStreamVideoSource*>(source.extraData());
 }
 
-//static
+// static
 bool MediaStreamVideoSource::IsConstraintSupported(const std::string& name) {
   for (size_t i = 0; i < arraysize(kSupportedConstraints); ++i) {
     if (kSupportedConstraints[i] == name)
@@ -395,26 +395,20 @@ void MediaStreamVideoSource::DeliverVideoFrame(
 
   if (frame->visible_rect().size().width() > max_frame_output_size_.width() ||
       frame->visible_rect().size().height() > max_frame_output_size_.height()) {
-
     // If |frame| is not the size that is expected, we need to crop it by
     // providing a new |visible_rect|. The new visible rect must be within the
     // original |visible_rect|.
-    const int visible_width = std::min(max_frame_output_size_.width(),
-                                       frame->visible_rect().width());
-
-    const int visible_height = std::min(max_frame_output_size_.height(),
-                                        frame->visible_rect().height());
-
-    // Find a new horizontal offset within |frame|.
-    const int horiz_crop = frame->visible_rect().x() +
-        ((frame->visible_rect().width() - visible_width) / 2);
-    // Find a new vertical offset within |frame|.
-    const int vert_crop = frame->visible_rect().y() +
-        ((frame->visible_rect().height() - visible_height) / 2);
-
-    gfx::Rect rect(horiz_crop, vert_crop, visible_width, visible_height);
-    video_frame = media::VideoFrame::WrapVideoFrame(
-        frame, rect, rect.size(), base::Bind(&ReleaseOriginalFrame, frame));
+    gfx::Rect output_rect = frame->visible_rect();
+    output_rect.ClampToCenteredSize(max_frame_output_size_);
+    // TODO(perkj): Allow cropping of textures once http://crbug/362521 is
+    // fixed.
+    if (frame->format() != media::VideoFrame::NATIVE_TEXTURE) {
+      video_frame = media::VideoFrame::WrapVideoFrame(
+          frame,
+          output_rect,
+          output_rect.size(),
+          base::Bind(&ReleaseOriginalFrame, frame));
+    }
   }
 
   if ((frame->format() == media::VideoFrame::I420 ||
@@ -506,7 +500,6 @@ void MediaStreamVideoSource::FinalizeAddTrack() {
   callbacks.swap(requested_constraints_);
   for (std::vector<RequestedConstraints>::iterator it = callbacks.begin();
        it != callbacks.end(); ++it) {
-
     bool success = state_ == STARTED &&
         !FilterFormats(it->constraints, formats).empty();
     DVLOG(3) << "FinalizeAddTrack() success " << success;
