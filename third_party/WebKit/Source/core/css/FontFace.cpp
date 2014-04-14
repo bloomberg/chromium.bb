@@ -36,7 +36,7 @@
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/NewScriptState.h"
-#include "bindings/v8/ScriptPromiseResolver.h"
+#include "bindings/v8/ScriptPromiseResolverWithContext.h"
 #include "core/css/BinaryDataFontFaceSource.h"
 #include "core/css/CSSFontFace.h"
 #include "core/css/CSSFontFaceSrcValue.h"
@@ -72,7 +72,6 @@ public:
 
     void resolve(PassRefPtr<FontFace> fontFace)
     {
-        NewScriptState::Scope scope(m_scriptState.get());
         switch (fontFace->loadStatus()) {
         case FontFace::Loaded:
             m_resolver->resolve(fontFace);
@@ -89,13 +88,11 @@ public:
 
 private:
     FontFaceReadyPromiseResolver(ExecutionContext* context)
-        : m_scriptState(NewScriptState::current(toIsolate(context)))
-        , m_resolver(ScriptPromiseResolver::create(context))
+        : m_resolver(ScriptPromiseResolverWithContext::create(NewScriptState::current(toIsolate(context))))
     {
     }
 
-    RefPtr<NewScriptState> m_scriptState;
-    RefPtr<ScriptPromiseResolver> m_resolver;
+    RefPtr<ScriptPromiseResolverWithContext> m_resolver;
 };
 
 static PassRefPtrWillBeRawPtr<CSSValue> parseCSSValue(const Document* document, const String& s, CSSPropertyID propertyID)

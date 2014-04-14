@@ -29,7 +29,7 @@
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/NewScriptState.h"
-#include "bindings/v8/ScriptPromiseResolver.h"
+#include "bindings/v8/ScriptPromiseResolverWithContext.h"
 #include "core/css/CSSFontFaceLoadEvent.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/css/parser/BisonCSSParser.h"
@@ -65,8 +65,7 @@ private:
     LoadFontPromiseResolver(FontFaceArray faces, ExecutionContext* context)
         : m_numLoading(faces.size())
         , m_errorOccured(false)
-        , m_scriptState(NewScriptState::current(toIsolate(context)))
-        , m_resolver(ScriptPromiseResolver::create(context))
+        , m_resolver(ScriptPromiseResolverWithContext::create(NewScriptState::current(toIsolate(context))))
     {
         m_fontFaces.swap(faces);
     }
@@ -74,8 +73,7 @@ private:
     FontFaceArray m_fontFaces;
     int m_numLoading;
     bool m_errorOccured;
-    RefPtr<NewScriptState> m_scriptState;
-    RefPtr<ScriptPromiseResolver> m_resolver;
+    RefPtr<ScriptPromiseResolverWithContext> m_resolver;
 };
 
 void LoadFontPromiseResolver::loadFonts(ExecutionContext* context)
@@ -95,7 +93,6 @@ void LoadFontPromiseResolver::notifyLoaded(FontFace* fontFace)
     if (m_numLoading || m_errorOccured)
         return;
 
-    NewScriptState::Scope scope(m_scriptState.get());
     m_resolver->resolve(m_fontFaces);
 }
 
@@ -104,7 +101,6 @@ void LoadFontPromiseResolver::notifyError(FontFace* fontFace)
     m_numLoading--;
     if (!m_errorOccured) {
         m_errorOccured = true;
-        NewScriptState::Scope scope(m_scriptState.get());
         m_resolver->reject(fontFace->error());
     }
 }
@@ -118,7 +114,6 @@ public:
 
     void resolve(PassRefPtr<FontFaceSet> fontFaceSet)
     {
-        NewScriptState::Scope scope(m_scriptState.get());
         m_resolver->resolve(fontFaceSet);
     }
 
@@ -126,13 +121,11 @@ public:
 
 private:
     FontsReadyPromiseResolver(ExecutionContext* context)
-        : m_scriptState(NewScriptState::current(toIsolate(context)))
-        , m_resolver(ScriptPromiseResolver::create(context))
+        : m_resolver(ScriptPromiseResolverWithContext::create(NewScriptState::current(toIsolate(context))))
     {
     }
 
-    RefPtr<NewScriptState> m_scriptState;
-    RefPtr<ScriptPromiseResolver> m_resolver;
+    RefPtr<ScriptPromiseResolverWithContext> m_resolver;
 };
 
 FontFaceSet::FontFaceSet(Document& document)
