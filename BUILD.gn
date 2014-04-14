@@ -32,7 +32,7 @@ group("root") {
     #"//sdch",
     "//skia",
     #"//third_party/WebKit/Source/platform",
-    #"//third_party/icu:icudata",
+    "//third_party/icu",
     "//third_party/leveldatabase",
     "//third_party/libpng",
     "//third_party/libusb",
