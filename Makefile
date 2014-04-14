@@ -190,6 +190,7 @@ clean:
 	rm -rf $(OBJDIR) $(DEPDIR) $(TEST_EXE) html app.info app.info.orig
 
 setup-in-place:
+	sudo emerge -v1 dev-libs/jsoncpp
 	mkdir -p $(SRC)/in-place/gestures || true
 	ln -sf $(SRC)/include/gestures.h $(SRC)/in-place/gestures/gestures.h
 	ln -sf $(SRC)/$(SONAME) $(SRC)/in-place/$(SONAME:$(OBJDIR)/%.0=%)
