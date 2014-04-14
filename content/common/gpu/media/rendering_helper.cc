@@ -14,10 +14,6 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
 
-#if defined(USE_X11)
-#include "ui/gfx/x/x11_types.h"
-#endif
-
 #ifdef GL_VARIANT_GLX
 typedef GLXWindow NativeWindowType;
 struct XFreeDeleter {
@@ -116,7 +112,7 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
   CHECK_GT(params.num_windows, 0);
 
 #if GL_VARIANT_GLX
-  x_display_ = gfx::GetXDisplay();
+  x_display_ = base::MessagePumpForUI::GetDefaultXDisplay();
   CHECK(x_display_);
   CHECK(glXQueryVersion(x_display_, NULL, NULL));
   const int fbconfig_attr[] = {
@@ -148,7 +144,7 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
 #if defined(OS_WIN)
   native_display = EGL_DEFAULT_DISPLAY;
 #else
-  x_display_ = gfx::GetXDisplay();
+  x_display_ = base::MessagePumpForUI::GetDefaultXDisplay();
   CHECK(x_display_);
   native_display = x_display_;
 #endif

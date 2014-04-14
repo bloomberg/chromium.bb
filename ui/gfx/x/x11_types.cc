@@ -11,10 +11,7 @@
 namespace gfx {
 
 XDisplay* GetXDisplay() {
-  static XDisplay* display = NULL;
-  if (!display)
-    display = XOpenDisplay(NULL);
-  return display;
+  return base::MessagePumpForUI::GetDefaultXDisplay();
 }
 
 void PutARGBImage(XDisplay* display,

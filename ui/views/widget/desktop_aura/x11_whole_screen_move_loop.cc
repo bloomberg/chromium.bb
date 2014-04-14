@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_x11.h"
 #include "base/run_loop.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/aura/env.h"

@@ -208,13 +208,6 @@
       'sources': [
         'demo/demo_main.cc',
       ],
-      'conditions': [
-        ['use_x11==1', {
-          'dependencies': [
-            '../gfx/gfx.gyp:gfx_x11',
-          ],
-        }],
-      ]
     },
     {
       'target_name': 'aura_bench',
@@ -241,13 +234,6 @@
       'sources': [
         'bench/bench_main.cc',
       ],
-      'conditions': [
-        ['use_x11==1', {
-          'dependencies': [
-            '../gfx/gfx.gyp:gfx_x11',
-          ],
-        }],
-      ]
     },
     {
       'target_name': 'aura_unittests',

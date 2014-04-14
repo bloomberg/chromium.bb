@@ -10,14 +10,14 @@
 #include <cmath>
 #include <set>
 
+#include "base/message_loop/message_pump_x11.h"
 #include "ui/display/chromeos/display_mode.h"
 #include "ui/display/chromeos/display_snapshot.h"
-#include "ui/gfx/x/x11_types.h"
 
 namespace ui {
 
 TouchscreenDelegateX11::TouchscreenDelegateX11()
-    : display_(gfx::GetXDisplay()) {}
+    : display_(base::MessagePumpX11::GetDefaultXDisplay()) {}
 
 TouchscreenDelegateX11::~TouchscreenDelegateX11() {}
 

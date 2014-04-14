@@ -120,7 +120,7 @@ namespace views {
 // DesktopScreenX11, public:
 
 DesktopScreenX11::DesktopScreenX11()
-    : xdisplay_(gfx::GetXDisplay()),
+    : xdisplay_(base::MessagePumpX11::GetDefaultXDisplay()),
       x_root_window_(DefaultRootWindow(xdisplay_)),
       has_xrandr_(false),
       xrandr_event_base_(0) {
@@ -342,7 +342,7 @@ uint32_t DesktopScreenX11::DispatchEvent(const ui::PlatformEvent& event) {
 
 DesktopScreenX11::DesktopScreenX11(
     const std::vector<gfx::Display>& test_displays)
-    : xdisplay_(gfx::GetXDisplay()),
+    : xdisplay_(base::MessagePumpX11::GetDefaultXDisplay()),
       x_root_window_(DefaultRootWindow(xdisplay_)),
       has_xrandr_(false),
       xrandr_event_base_(0),

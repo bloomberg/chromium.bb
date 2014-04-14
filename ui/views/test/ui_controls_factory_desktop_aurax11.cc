@@ -21,7 +21,6 @@
 #include "ui/compositor/dip_util.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
 #include "ui/events/test/platform_event_waiter.h"
-#include "ui/gfx/x/x11_connection.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
 
 namespace views {
@@ -281,9 +280,8 @@ class UIControlsDesktopX11 : public UIControlsAura {
 }  // namespace
 
 UIControlsAura* CreateUIControlsDesktopAura() {
-  // The constructor of UIControlsDesktopX11 needs X11 connection to be
-  // initialized.
-  gfx::InitializeThreadedX11();
+  // The constructor of UIControlsDesktopX11 needs XInitThreads to be called.
+  XInitThreads();
   return new UIControlsDesktopX11();
 }
 

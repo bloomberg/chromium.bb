@@ -114,7 +114,7 @@
 #if defined(USE_X11)
 #include "ash/accelerators/magnifier_key_scroller.h"
 #include "ash/accelerators/spoken_feedback_toggler.h"
-#include "ui/gfx/x/x11_types.h"
+#include "base/message_loop/message_pump_x11.h"
 #endif  // defined(USE_X11)
 #include "ash/ash_constants.h"
 #include "ash/display/display_change_observer_chromeos.h"

@@ -1400,7 +1400,6 @@
               ['use_x11==1', {
                 'dependencies': [
                   '../build/linux/system.gyp:x11',  # Used by rendering_helper.cc
-                  '../ui/gfx/gfx.gyp:gfx_x11',
                 ],
               }],
             ],

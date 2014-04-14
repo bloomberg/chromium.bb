@@ -20,7 +20,6 @@
 #include "ui/base/ime/composition_text_util_pango.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/event.h"
-#include "ui/gfx/x/x11_types.h"
 
 namespace {
 
@@ -104,7 +103,8 @@ X11InputMethodContextImplGtk2::X11InputMethodContextImplGtk2(
   CHECK(delegate_);
 
   {
-    XModifierKeymap* keymap = XGetModifierMapping(gfx::GetXDisplay());
+    XModifierKeymap* keymap = XGetModifierMapping(
+        base::MessagePumpForUI::GetDefaultXDisplay());
     for (int i = 0; i < 8 * keymap->max_keypermod; ++i) {
       if (keymap->modifiermap[i])
         modifier_keycodes_.insert(keymap->modifiermap[i]);

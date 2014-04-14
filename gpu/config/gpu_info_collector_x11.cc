@@ -20,7 +20,6 @@
 #include "library_loaders/libpci.h"
 #include "third_party/libXNVCtrl/NVCtrl.h"
 #include "third_party/libXNVCtrl/NVCtrlLib.h"
-#include "ui/gfx/x/x11_types.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
@@ -71,7 +70,7 @@ std::string CollectDriverVersionATI() {
 // Use NVCtrl extention to query NV driver version.
 // Return empty string on failing.
 std::string CollectDriverVersionNVidia() {
-  Display* display = gfx::GetXDisplay();
+  Display* display = base::MessagePumpForUI::GetDefaultXDisplay();
   if (!display) {
     LOG(ERROR) << "XOpenDisplay failed.";
     return std::string();

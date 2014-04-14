@@ -33,13 +33,16 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/skia_util.h"
-#include "ui/gfx/x/x11_connection.h"
 #include "ui/gl/gl_surface.h"
 
 #ifndef GL_GLEXT_PROTOTYPES
 #define GL_GLEXT_PROTOTYPES 1
 #endif
 #include "third_party/khronos/GLES2/gl2ext.h"
+
+#if defined(USE_X11)
+#include "base/message_loop/message_pump_x11.h"
+#endif
 
 using base::TimeTicks;
 using ui::Compositor;
@@ -291,7 +294,7 @@ int main(int argc, char** argv) {
 #if defined(USE_X11)
   // This demo uses InProcessContextFactory which uses X on a separate Gpu
   // thread.
-  gfx::InitializeThreadedX11();
+  XInitThreads();
 #endif
 
   gfx::GLSurface::InitializeOneOff();

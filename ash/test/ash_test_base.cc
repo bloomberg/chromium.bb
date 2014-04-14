@@ -49,7 +49,7 @@
 #endif
 
 #if defined(USE_X11)
-#include "ui/gfx/x/x11_connection.h"
+#include <X11/Xlib.h>
 #endif
 
 namespace ash {
@@ -98,7 +98,7 @@ AshTestBase::AshTestBase()
   // This is needed for tests which use this base class but are run in browser
   // test binaries so don't get the default initialization in the unit test
   // suite.
-  gfx::InitializeThreadedX11();
+  XInitThreads();
 #endif
 
   thread_bundle_.reset(new content::TestBrowserThreadBundle);

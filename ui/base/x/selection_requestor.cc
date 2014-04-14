@@ -4,10 +4,10 @@
 
 #include "ui/base/x/selection_requestor.h"
 
+#include "base/message_loop/message_pump_x11.h"
 #include "base/run_loop.h"
 #include "ui/base/x/selection_utils.h"
 #include "ui/base/x/x11_util.h"
-#include "ui/gfx/x/x11_types.h"
 
 namespace ui {
 

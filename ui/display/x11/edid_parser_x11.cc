@@ -8,9 +8,9 @@
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 
+#include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "ui/display/edid_parser.h"
-#include "ui/gfx/x/x11_types.h"
 
 namespace ui {
 
@@ -20,7 +20,7 @@ bool IsRandRAvailable() {
   int randr_version_major = 0;
   int randr_version_minor = 0;
   static bool is_randr_available = XRRQueryVersion(
-      gfx::GetXDisplay(),
+      base::MessagePumpX11::GetDefaultXDisplay(),
       &randr_version_major, &randr_version_minor);
   return is_randr_available;
 }
@@ -32,10 +32,10 @@ bool GetEDIDProperty(XID output, std::vector<uint8_t>* edid) {
   if (!IsRandRAvailable())
     return false;
 
-  Display* display = gfx::GetXDisplay();
+  Display* display = base::MessagePumpX11::GetDefaultXDisplay();
 
   static Atom edid_property = XInternAtom(
-      gfx::GetXDisplay(),
+      base::MessagePumpX11::GetDefaultXDisplay(),
       RR_PROPERTY_RANDR_EDID, false);
 
   bool has_edid_property = false;

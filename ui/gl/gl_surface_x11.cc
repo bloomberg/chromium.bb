@@ -10,7 +10,6 @@
 #include "base/message_loop/message_loop.h"
 #include "third_party/mesa/src/include/GL/osmesa.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/x/x11_types.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_egl.h"
@@ -80,7 +79,7 @@ bool GLSurface::InitializeOneOffInternal() {
 NativeViewGLSurfaceOSMesa::NativeViewGLSurfaceOSMesa(
     gfx::AcceleratedWidget window)
     : GLSurfaceOSMesa(OSMESA_BGRA, gfx::Size(1, 1)),
-      xdisplay_(gfx::GetXDisplay()),
+      xdisplay_(base::MessagePumpForUI::GetDefaultXDisplay()),
       window_graphics_context_(0),
       window_(window),
       pixmap_graphics_context_(0),
@@ -95,7 +94,7 @@ bool NativeViewGLSurfaceOSMesa::InitializeOneOff() {
   if (initialized)
     return true;
 
-  if (!gfx::GetXDisplay()) {
+  if (!base::MessagePumpForUI::GetDefaultXDisplay()) {
     LOG(ERROR) << "XOpenDisplay failed.";
     return false;
   }
@@ -342,7 +341,7 @@ scoped_refptr<GLSurface> GLSurface::CreateOffscreenGLSurface(
 }
 
 EGLNativeDisplayType GetPlatformDefaultEGLNativeDisplay() {
-  return gfx::GetXDisplay();
+  return base::MessagePumpForUI::GetDefaultXDisplay();
 }
 
 }  // namespace gfx
