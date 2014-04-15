@@ -310,4 +310,12 @@ net::CookieStore* ContentBrowserClient::OverrideCookieStoreForRenderProcess(
   return NULL;
 }
 
+#if defined(VIDEO_HOLE)
+ExternalVideoSurfaceContainer*
+ContentBrowserClient::OverrideCreateExternalVideoSurfaceContainer(
+    WebContents* web_contents) {
+  return NULL;
+}
+#endif
+
 }  // namespace content

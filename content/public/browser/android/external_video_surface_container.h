@@ -23,14 +23,6 @@ class CONTENT_EXPORT ExternalVideoSurfaceContainer {
   typedef base::Callback<void(int, jobject)> SurfaceCreatedCB;
   typedef base::Callback<void(int)> SurfaceDestroyedCB;
 
-  // Creates an ExternalVideoSurfaceContainer, and attaches it to the given
-  // WebContents. If an instance is already attached, does nothing.
-  static void CreateForWebContents(WebContents* contents);
-
-  // Returns the existing ExternalVideoSurfaceContainer attached to the given
-  // WebContents or NULL.
-  static ExternalVideoSurfaceContainer* FromWebContents(WebContents* contents);
-
   // Called when a media player wants to request an external video surface.
   // Whenever the surface is created and visible, |surface_created_cb| will be
   // called.  And whenever it is destroyed or invisible, |surface_destroyed_cb|
@@ -52,7 +44,6 @@ class CONTENT_EXPORT ExternalVideoSurfaceContainer {
   // Called when the page that contains the video element is scrolled or zoomed.
   virtual void OnFrameInfoUpdated() = 0;
 
- protected:
   virtual ~ExternalVideoSurfaceContainer() {}
 };
 

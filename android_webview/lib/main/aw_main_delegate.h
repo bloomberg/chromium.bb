@@ -13,6 +13,7 @@
 
 namespace content {
 class BrowserMainRunner;
+class ExternalVideoSurfaceContainel;
 }
 
 namespace android_webview {
@@ -49,6 +50,11 @@ class AwMainDelegate : public content::ContentMainDelegate,
   virtual content::WebContentsViewDelegate* CreateViewDelegate(
       content::WebContents* web_contents) OVERRIDE;
   virtual AwWebPreferencesPopulater* CreateWebPreferencesPopulater() OVERRIDE;
+#if defined(VIDEO_HOLE)
+  virtual content::ExternalVideoSurfaceContainer*
+      CreateExternalVideoSurfaceContainer(
+          content::WebContents* web_contents) OVERRIDE;
+#endif
 
   scoped_ptr<content::BrowserMainRunner> browser_runner_;
   AwContentClient content_client_;

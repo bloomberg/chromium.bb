@@ -15,6 +15,7 @@
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/android/external_video_surface_container.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/storage_partition.h"
@@ -437,28 +438,42 @@ void BrowserMediaPlayerManager::DetachExternalVideoSurface(int player_id) {
     player->SetVideoSurface(gfx::ScopedJavaSurface());
 }
 
+void BrowserMediaPlayerManager::OnFrameInfoUpdated() {
+  if (external_video_surface_container_)
+    external_video_surface_container_->OnFrameInfoUpdated();
+}
+
 void BrowserMediaPlayerManager::OnNotifyExternalSurface(
     int player_id, bool is_request, const gfx::RectF& rect) {
   if (!web_contents_)
     return;
 
-  ExternalVideoSurfaceContainer::CreateForWebContents(web_contents_);
-  ExternalVideoSurfaceContainer* surface_container =
-      ExternalVideoSurfaceContainer::FromWebContents(web_contents_);
-  if (!surface_container)
-    return;
-
   if (is_request) {
-    // It's safe to use base::Unretained(this), because the callbacks will not
-    // be called after running ReleaseExternalVideoSurface().
-    surface_container->RequestExternalVideoSurface(
+    OnRequestExternalSurface(player_id, rect);
+  }
+  if (external_video_surface_container_) {
+    external_video_surface_container_->OnExternalVideoSurfacePositionChanged(
+        player_id, rect);
+  }
+}
+
+void BrowserMediaPlayerManager::OnRequestExternalSurface(
+    int player_id, const gfx::RectF& rect) {
+  if (!external_video_surface_container_) {
+    ContentBrowserClient* client = GetContentClient()->browser();
+    external_video_surface_container_.reset(
+        client->OverrideCreateExternalVideoSurfaceContainer(web_contents_));
+  }
+  // It's safe to use base::Unretained(this), because the callbacks will not
+  // be called after running ReleaseExternalVideoSurface().
+  if (external_video_surface_container_) {
+    external_video_surface_container_->RequestExternalVideoSurface(
         player_id,
         base::Bind(&BrowserMediaPlayerManager::AttachExternalVideoSurface,
                    base::Unretained(this)),
         base::Bind(&BrowserMediaPlayerManager::DetachExternalVideoSurface,
                    base::Unretained(this)));
   }
-  surface_container->OnExternalVideoSurfacePositionChanged(player_id, rect);
 }
 #endif  // defined(VIDEO_HOLE)
 
@@ -484,10 +499,8 @@ void BrowserMediaPlayerManager::OnEnterFullscreen(int player_id) {
   }
 
 #if defined(VIDEO_HOLE)
-  ExternalVideoSurfaceContainer* surface_container =
-      ExternalVideoSurfaceContainer::FromWebContents(web_contents_);
-  if (surface_container)
-    surface_container->ReleaseExternalVideoSurface(player_id);
+  if (external_video_surface_container_)
+    external_video_surface_container_->ReleaseExternalVideoSurface(player_id);
 #endif  // defined(VIDEO_HOLE)
   if (video_view_.get()) {
     fullscreen_player_id_ = player_id;
@@ -873,10 +886,8 @@ void BrowserMediaPlayerManager::OnMediaResourcesReleased(int player_id) {
   MediaPlayerAndroid* player = GetPlayer(player_id);
   if (player && player->IsSurfaceInUse())
     return;
-  ExternalVideoSurfaceContainer* surface_container =
-      ExternalVideoSurfaceContainer::FromWebContents(web_contents_);
-  if (surface_container)
-    surface_container->ReleaseExternalVideoSurface(player_id);
+  if (external_video_surface_container_)
+    external_video_surface_container_->ReleaseExternalVideoSurface(player_id);
 #endif  // defined(VIDEO_HOLE)
 }
 

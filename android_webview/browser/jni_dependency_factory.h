@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 
 namespace content {
+class ExternalVideoSurfaceContainer;
 class GeolocationPermissionContext;
 class WebContents;
 class WebContentsViewDelegate;
@@ -31,6 +32,10 @@ class JniDependencyFactory {
   virtual content::WebContentsViewDelegate* CreateViewDelegate(
       content::WebContents* web_contents) = 0;
   virtual AwWebPreferencesPopulater* CreateWebPreferencesPopulater() = 0;
+#if defined(VIDEO_HOLE)
+  virtual content::ExternalVideoSurfaceContainer*
+      CreateExternalVideoSurfaceContainer(content::WebContents* contents) = 0;
+#endif
 };
 
 }  // namespace android_webview

@@ -35,11 +35,13 @@
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
+#include "content/browser/media/android/browser_media_player_manager.h"
 #include "content/browser/renderer_host/compositor_impl_android.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/image_transport_factory_android.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target_android.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -936,19 +938,26 @@ void RenderWidgetHostViewAndroid::SynchronousCopyContents(
 
 void RenderWidgetHostViewAndroid::UpdateContentViewCoreFrameMetadata(
     const cc::CompositorFrameMetadata& frame_metadata) {
-  if (content_view_core_) {
-    // All offsets and sizes are in CSS pixels.
-    content_view_core_->UpdateFrameInfo(
-        frame_metadata.root_scroll_offset,
-        frame_metadata.page_scale_factor,
-        gfx::Vector2dF(frame_metadata.min_page_scale_factor,
-                       frame_metadata.max_page_scale_factor),
-        frame_metadata.root_layer_size,
-        frame_metadata.viewport_size,
-        frame_metadata.location_bar_offset,
-        frame_metadata.location_bar_content_translation,
-        frame_metadata.overdraw_bottom_height);
+  if (!content_view_core_)
+    return;
+  // All offsets and sizes are in CSS pixels.
+  content_view_core_->UpdateFrameInfo(
+      frame_metadata.root_scroll_offset,
+      frame_metadata.page_scale_factor,
+      gfx::Vector2dF(frame_metadata.min_page_scale_factor,
+                     frame_metadata.max_page_scale_factor),
+      frame_metadata.root_layer_size,
+      frame_metadata.viewport_size,
+      frame_metadata.location_bar_offset,
+      frame_metadata.location_bar_content_translation,
+      frame_metadata.overdraw_bottom_height);
+#if defined(VIDEO_HOLE)
+  if (host_ && host_->IsRenderView()) {
+    RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(
+        RenderViewHost::From(host_));
+    rvhi->media_player_manager()->OnFrameInfoUpdated();
   }
+#endif  // defined(VIDEO_HOLE)
 }
 
 void RenderWidgetHostViewAndroid::AcceleratedSurfaceInitialized(int host_id,

@@ -87,6 +87,7 @@ class BrowserMainParts;
 class BrowserPluginGuestDelegate;
 class BrowserPpapiHost;
 class BrowserURLHandler;
+class ExternalVideoSurfaceContainer;
 class LocationProvider;
 class MediaObserver;
 class QuotaPermissionContext;
@@ -640,6 +641,13 @@ class CONTENT_EXPORT ContentBrowserClient {
   // This is called on the IO thread.
   virtual net::CookieStore* OverrideCookieStoreForRenderProcess(
       int render_process_id_);
+
+#if defined(VIDEO_HOLE)
+  // Allows an embedder to provide its own ExternalVideoSurfaceContainer
+  // implementation.  Return NULL to disable external surface video.
+  virtual ExternalVideoSurfaceContainer*
+  OverrideCreateExternalVideoSurfaceContainer(WebContents* web_contents);
+#endif
 };
 
 }  // namespace content

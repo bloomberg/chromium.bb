@@ -9,29 +9,8 @@
 #include "jni/ExternalVideoSurfaceContainer_jni.h"
 #include "ui/gfx/rect_f.h"
 
-using android_webview::ExternalVideoSurfaceContainerImpl;
 using base::android::AttachCurrentThread;
 using content::ContentViewCore;
-
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(ExternalVideoSurfaceContainerImpl);
-
-namespace content {
-
-// static
-void ExternalVideoSurfaceContainer::CreateForWebContents(
-    WebContents* web_contents) {
-  WebContentsUserData<ExternalVideoSurfaceContainerImpl>::CreateForWebContents(
-      web_contents);
-}
-
-// static
-ExternalVideoSurfaceContainer* ExternalVideoSurfaceContainer::FromWebContents(
-    WebContents* web_contents) {
-  return WebContentsUserData<ExternalVideoSurfaceContainerImpl>::
-      FromWebContents(web_contents);
-}
-
-} // namespace content
 
 namespace android_webview {
 

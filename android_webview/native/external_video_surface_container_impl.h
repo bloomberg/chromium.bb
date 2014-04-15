@@ -11,13 +11,11 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "content/public/browser/android/external_video_surface_container.h"
-#include "content/public/browser/web_contents_user_data.h"
 
 namespace android_webview {
 
 class ExternalVideoSurfaceContainerImpl
-    : public content::ExternalVideoSurfaceContainer,
-      public content::WebContentsUserData<ExternalVideoSurfaceContainerImpl> {
+    : public content::ExternalVideoSurfaceContainer {
  public:
   typedef base::Callback<void(int, jobject)> SurfaceCreatedCB;
   typedef base::Callback<void(int)> SurfaceDestroyedCB;

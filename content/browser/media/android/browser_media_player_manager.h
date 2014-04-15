@@ -31,6 +31,7 @@ class MediaDrmBridge;
 namespace content {
 class BrowserDemuxerAndroid;
 class ContentViewCoreImpl;
+class ExternalVideoSurfaceContainer;
 class WebContents;
 
 // This class manages all the MediaPlayerAndroid objects. It receives
@@ -108,6 +109,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
 #if defined(VIDEO_HOLE)
   void AttachExternalVideoSurface(int player_id, jobject surface);
   void DetachExternalVideoSurface(int player_id);
+  void OnFrameInfoUpdated();
 #endif  // defined(VIDEO_HOLE)
 
   // Called to disble the current fullscreen playback if the video is encrypted.
@@ -151,11 +153,6 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
 
   // Cancels all pending session creations associated with |cdm_id|.
   void CancelAllPendingSessionCreations(int cdm_id);
-
-#if defined(VIDEO_HOLE)
-  virtual void OnNotifyExternalSurface(
-      int player_id, bool is_request, const gfx::RectF& rect);
-#endif  // defined(VIDEO_HOLE)
 
   // Adds a given player to the list.
   void AddPlayer(media::MediaPlayerAndroid* player);
@@ -213,6 +210,12 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   // releasing all the decoding resources.
   virtual void OnMediaResourcesReleased(int player_id);
 
+#if defined(VIDEO_HOLE)
+  void OnNotifyExternalSurface(
+      int player_id, bool is_request, const gfx::RectF& rect);
+  void OnRequestExternalSurface(int player_id, const gfx::RectF& rect);
+#endif  // defined(VIDEO_HOLE)
+
   // An array of managed players.
   ScopedVector<media::MediaPlayerAndroid> players_;
 
@@ -229,6 +232,10 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   // The fullscreen video view object or NULL if video is not played in
   // fullscreen.
   scoped_ptr<ContentVideoView> video_view_;
+
+#if defined(VIDEO_HOLE)
+  scoped_ptr<ExternalVideoSurfaceContainer> external_video_surface_container_;
+#endif
 
   // Player ID of the fullscreen media player.
   int fullscreen_player_id_;

@@ -164,6 +164,11 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   virtual void OverrideWebkitPrefs(content::RenderViewHost* rvh,
                                    const GURL& url,
                                    WebPreferences* web_prefs) OVERRIDE;
+#if defined(VIDEO_HOLE)
+  virtual content::ExternalVideoSurfaceContainer*
+      OverrideCreateExternalVideoSurfaceContainer(
+          content::WebContents* web_contents) OVERRIDE;
+#endif
 
  private:
   // Android WebView currently has a single global (non-off-the-record) browser

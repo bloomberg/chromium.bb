@@ -13,6 +13,7 @@
 #include "android_webview/native/aw_quota_manager_bridge_impl.h"
 #include "android_webview/native/aw_web_contents_view_delegate.h"
 #include "android_webview/native/aw_web_preferences_populater_impl.h"
+#include "android_webview/native/external_video_surface_container_impl.h"
 #include "android_webview/renderer/aw_content_renderer_client.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
@@ -146,5 +147,13 @@ content::WebContentsViewDelegate* AwMainDelegate::CreateViewDelegate(
 AwWebPreferencesPopulater* AwMainDelegate::CreateWebPreferencesPopulater() {
   return new AwWebPreferencesPopulaterImpl();
 }
+
+#if defined(VIDEO_HOLE)
+content::ExternalVideoSurfaceContainer*
+AwMainDelegate::CreateExternalVideoSurfaceContainer(
+    content::WebContents* web_contents) {
+  return new ExternalVideoSurfaceContainerImpl(web_contents);
+}
+#endif
 
 }  // namespace android_webview

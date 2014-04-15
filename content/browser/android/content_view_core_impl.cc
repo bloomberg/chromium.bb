@@ -38,7 +38,6 @@
 #include "content/common/input/web_input_event_traits.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
-#include "content/public/browser/android/external_video_surface_container.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/favicon_status.h"
@@ -485,12 +484,6 @@ void ContentViewCoreImpl::UpdateFrameInfo(
       controls_offset.y(),
       content_offset.y(),
       overdraw_bottom_height);
-#if defined(VIDEO_HOLE)
-  ExternalVideoSurfaceContainer* surface_container =
-      ExternalVideoSurfaceContainer::FromWebContents(web_contents_);
-  if (surface_container)
-    surface_container->OnFrameInfoUpdated();
-#endif  // defined(VIDEO_HOLE)
 }
 
 void ContentViewCoreImpl::SetTitle(const base::string16& title) {
