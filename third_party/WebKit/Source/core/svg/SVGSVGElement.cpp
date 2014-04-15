@@ -542,6 +542,8 @@ Node::InsertionNotificationRequest SVGSVGElement::insertedInto(ContainerNode* ro
 {
     if (rootParent->inDocument()) {
         UseCounter::count(document(), UseCounter::SVGSVGElementInDocument);
+        if (rootParent->document().isXMLDocument())
+            UseCounter::count(document(), UseCounter::SVGSVGElementInXMLDocument);
 
         document().accessSVGExtensions().addTimeContainer(this);
 
