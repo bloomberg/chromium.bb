@@ -940,7 +940,6 @@ crbug.com/359194 fast/events/mouse-click-events-pseudo-element.html [ NeedsManua
 crbug.com/359194 fast/events/touch/touch-target-removed-crash.html [ NeedsManualRebaseline ]
 crbug.com/359194 http/tests/local/formdata/send-form-data-with-bad-string.html [ NeedsManualRebaseline ]
 crbug.com/359194 http/tests/xmlhttprequest/xhr-to-blob-in-isolated-world.html [ NeedsManualRebaseline ]
-crbug.com/359408 [ Mac Win ] http/tests/inspector/network/network-xhr-replay.html [ Pass Timeout ]
 
 # Disabling this for now since Chromium CL changes output. Will re-enable once Chromium side lands.
 Bug(simonhatch) http/tests/loading/promote-img-in-viewport-priority.html [ Skip ]
