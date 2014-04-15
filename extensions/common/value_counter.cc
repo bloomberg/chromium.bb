@@ -1,40 +1,29 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/value_counter.h"
-
-#include "base/values.h"
+#include "extensions/common/value_counter.h"
 
 #include <algorithm>
 
+#include "base/values.h"
+
 namespace extensions {
 
-ValueCounter::ValueCounter() {
-}
+ValueCounter::ValueCounter() {}
 
-ValueCounter::~ValueCounter() {
-}
+ValueCounter::~ValueCounter() {}
 
 ValueCounter::Entry::Entry(const base::Value& value)
-    : value_(value.DeepCopy()),
-      count_(1) {
-}
+    : value_(value.DeepCopy()), count_(1) {}
 
-ValueCounter::Entry::~Entry() {
-}
+ValueCounter::Entry::~Entry() {}
 
-int ValueCounter::Entry::Increment() {
-  return ++count_;
-}
+int ValueCounter::Entry::Increment() { return ++count_; }
 
-int ValueCounter::Entry::Decrement() {
-  return --count_;
-}
+int ValueCounter::Entry::Decrement() { return --count_; }
 
-int ValueCounter::Add(const base::Value& value) {
-  return AddImpl(value, true);
-}
+int ValueCounter::Add(const base::Value& value) { return AddImpl(value, true); }
 
 int ValueCounter::Remove(const base::Value& value) {
   for (EntryList::iterator it = entries_.begin(); it != entries_.end(); it++) {

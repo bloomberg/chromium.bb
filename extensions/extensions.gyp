@@ -194,6 +194,8 @@
         'common/url_pattern_set.h',
         'common/user_script.cc',
         'common/user_script.h',
+        'common/value_counter.cc',
+        'common/value_counter.h',
         'common/view_type.cc',
         'common/view_type.h',
       ],
@@ -415,6 +417,8 @@
       'sources': [
         'renderer/console.cc',
         'renderer/console.h',
+        'renderer/event_bindings.cc',
+        'renderer/event_bindings.h',
         'renderer/module_system.cc',
         'renderer/module_system.h',
         'renderer/native_handler.cc',

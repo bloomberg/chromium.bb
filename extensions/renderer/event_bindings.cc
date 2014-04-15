@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/event_bindings.h"
+#include "extensions/renderer/event_bindings.h"
 
 #include <map>
 #include <set>
@@ -13,15 +13,8 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
-#include "chrome/common/extensions/value_counter.h"
-#include "chrome/common/url_constants.h"
-#include "chrome/renderer/extensions/chrome_v8_context.h"
-#include "chrome/renderer/extensions/chrome_v8_context_set.h"
-#include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/dispatcher.h"
 #include "chrome/renderer/extensions/extension_helper.h"
-#include "chrome/renderer/extensions/user_script_slave.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/v8_value_converter.h"
@@ -29,19 +22,10 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_handlers/background_info.h"
-#include "extensions/common/view_type.h"
-#include "grit/renderer_resources.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/public/platform/WebURLRequest.h"
-#include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
-#include "third_party/WebKit/public/web/WebView.h"
+#include "extensions/common/value_counter.h"
+#include "extensions/renderer/object_backed_native_handler.h"
 #include "url/gurl.h"
 #include "v8/include/v8.h"
-
-using blink::WebFrame;
-using blink::WebURL;
-using content::RenderThread;
 
 namespace extensions {
 
@@ -70,23 +54,25 @@ base::LazyInstance<std::map<std::string, FilteredEventListenerCounts> >
 base::LazyInstance<EventFilter> g_event_filter = LAZY_INSTANCE_INITIALIZER;
 
 // TODO(koz): Merge this into EventBindings.
-class ExtensionImpl : public ChromeV8Extension {
+class ExtensionImpl : public ObjectBackedNativeHandler {
  public:
-  explicit ExtensionImpl(Dispatcher* dispatcher, ChromeV8Context* context)
-      : ChromeV8Extension(dispatcher, context) {
-    RouteFunction("AttachEvent",
+  explicit ExtensionImpl(Dispatcher* dispatcher, ScriptContext* context)
+      : ObjectBackedNativeHandler(context), dispatcher_(dispatcher) {
+    RouteFunction(
+        "AttachEvent",
         base::Bind(&ExtensionImpl::AttachEvent, base::Unretained(this)));
-    RouteFunction("DetachEvent",
+    RouteFunction(
+        "DetachEvent",
         base::Bind(&ExtensionImpl::DetachEvent, base::Unretained(this)));
     RouteFunction("AttachFilteredEvent",
-        base::Bind(&ExtensionImpl::AttachFilteredEvent,
-                   base::Unretained(this)));
+                  base::Bind(&ExtensionImpl::AttachFilteredEvent,
+                             base::Unretained(this)));
     RouteFunction("DetachFilteredEvent",
-        base::Bind(&ExtensionImpl::DetachFilteredEvent,
-                   base::Unretained(this)));
+                  base::Bind(&ExtensionImpl::DetachFilteredEvent,
+                             base::Unretained(this)));
     RouteFunction("MatchAgainstEventFilter",
-        base::Bind(&ExtensionImpl::MatchAgainstEventFilter,
-                   base::Unretained(this)));
+                  base::Bind(&ExtensionImpl::MatchAgainstEventFilter,
+                             base::Unretained(this)));
   }
 
   virtual ~ExtensionImpl() {}
@@ -112,7 +98,7 @@ class ExtensionImpl : public ChromeV8Extension {
     // This is called the first time the page has added a listener. Since
     // the background page is the only lazy page, we know this is the first
     // time this listener has been registered.
-    if (IsLazyBackgroundPage(GetRenderView(), context()->extension())) {
+    if (IsLazyBackgroundContext(context())) {
       content::RenderThread::Get()->Send(
           new ExtensionHostMsg_AddLazyListener(extension_id, event_name));
     }
@@ -139,8 +125,7 @@ class ExtensionImpl : public ChromeV8Extension {
     // removed. If the context is the background page, and it removes the
     // last listener manually, then we assume that it is no longer interested
     // in being awakened for this event.
-    if (is_manual && IsLazyBackgroundPage(GetRenderView(),
-                                          context()->extension())) {
+    if (is_manual && IsLazyBackgroundContext(context())) {
       content::RenderThread::Get()->Send(
           new ExtensionHostMsg_RemoveLazyListener(extension_id, event_name));
     }
@@ -187,15 +172,15 @@ class ExtensionImpl : public ChromeV8Extension {
 
     filter.reset(filter_dict);
     EventFilter& event_filter = g_event_filter.Get();
-    int id = event_filter.AddEventMatcher(event_name, ParseEventMatcher(
-        filter.get()));
+    int id = event_filter.AddEventMatcher(event_name,
+                                          ParseEventMatcher(filter.get()));
 
     // Only send IPCs the first time a filter gets added.
     if (AddFilter(event_name, extension_id, filter.get())) {
-      bool lazy = IsLazyBackgroundPage(GetRenderView(), context()->extension());
+      bool lazy = IsLazyBackgroundContext(context());
       content::RenderThread::Get()->Send(
-          new ExtensionHostMsg_AddFilteredListener(extension_id, event_name,
-                                                   *filter, lazy));
+          new ExtensionHostMsg_AddFilteredListener(
+              extension_id, event_name, *filter, lazy));
     }
 
     args.GetReturnValue().Set(static_cast<int32_t>(id));
@@ -245,19 +230,16 @@ class ExtensionImpl : public ChromeV8Extension {
 
     int matcher_id = args[0]->Int32Value();
     EventFilter& event_filter = g_event_filter.Get();
-    EventMatcher* event_matcher =
-        event_filter.GetEventMatcher(matcher_id);
+    EventMatcher* event_matcher = event_filter.GetEventMatcher(matcher_id);
 
     const std::string& event_name = event_filter.GetEventName(matcher_id);
 
     // Only send IPCs the last time a filter gets removed.
     if (RemoveFilter(event_name, extension_id, event_matcher->value())) {
-      bool lazy = is_manual && IsLazyBackgroundPage(GetRenderView(),
-                                                    context()->extension());
+      bool lazy = is_manual && IsLazyBackgroundContext(context());
       content::RenderThread::Get()->Send(
-          new ExtensionHostMsg_RemoveFilteredListener(extension_id, event_name,
-                                                      *event_matcher->value(),
-                                                      lazy));
+          new ExtensionHostMsg_RemoveFilteredListener(
+              extension_id, event_name, *event_matcher->value(), lazy));
     }
 
     event_filter.RemoveEventMatcher(matcher_id);
@@ -269,8 +251,7 @@ class ExtensionImpl : public ChromeV8Extension {
     typedef std::set<EventFilter::MatcherID> MatcherIDs;
     EventFilter& event_filter = g_event_filter.Get();
     std::string event_name = *v8::String::Utf8Value(args[0]->ToString());
-    EventFilteringInfo info =
-        ParseFromObject(args[1]->ToObject(), isolate);
+    EventFilteringInfo info = ParseFromObject(args[1]->ToObject(), isolate);
     // Only match events routed to this context's RenderView or ones that don't
     // have a routingId in their filter.
     MatcherIDs matched_event_filters = event_filter.MatchEvent(
@@ -279,7 +260,8 @@ class ExtensionImpl : public ChromeV8Extension {
         v8::Array::New(isolate, matched_event_filters.size()));
     int i = 0;
     for (MatcherIDs::iterator it = matched_event_filters.begin();
-         it != matched_event_filters.end(); ++it) {
+         it != matched_event_filters.end();
+         ++it) {
       array->Set(v8::Integer::New(isolate, i++),
                  v8::Integer::New(isolate, *it));
     }
@@ -310,11 +292,12 @@ class ExtensionImpl : public ChromeV8Extension {
   }
 
  private:
-  static bool IsLazyBackgroundPage(content::RenderView* render_view,
-                                   const Extension* extension) {
+  static bool IsLazyBackgroundContext(ScriptContext* context) {
+    content::RenderView* render_view = context->GetRenderView();
     if (!render_view)
       return false;
     ExtensionHelper* helper = ExtensionHelper::Get(render_view);
+    const Extension* extension = context->extension();
     return (extension && BackgroundInfo::HasLazyBackgroundPage(extension) &&
             helper->view_type() == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
   }
@@ -323,15 +306,18 @@ class ExtensionImpl : public ChromeV8Extension {
       base::DictionaryValue* filter_dict) {
     return scoped_ptr<EventMatcher>(new EventMatcher(
         scoped_ptr<base::DictionaryValue>(filter_dict->DeepCopy()),
-            context()->GetRenderView()->GetRoutingID()));
+        context()->GetRenderView()->GetRoutingID()));
   }
+
+  // Not owned.
+  Dispatcher* dispatcher_;
 };
 
 }  // namespace
 
 // static
-ChromeV8Extension* EventBindings::Create(Dispatcher* dispatcher,
-                                         ChromeV8Context* context) {
+ObjectBackedNativeHandler* EventBindings::Create(Dispatcher* dispatcher,
+                                                 ScriptContext* context) {
   return new ExtensionImpl(dispatcher, context);
 }
 

@@ -4,7 +4,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/common/extensions/value_counter.h"
+#include "extensions/common/value_counter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class ValueCounterUnittest : public testing::Test {

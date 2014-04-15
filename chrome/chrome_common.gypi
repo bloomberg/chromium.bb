@@ -203,8 +203,6 @@
         'common/extensions/sync_helper.h',
         'common/extensions/update_manifest.cc',
         'common/extensions/update_manifest.h',
-        'common/extensions/value_counter.cc',
-        'common/extensions/value_counter.h',
         'common/favicon/favicon_types.cc',
         'common/favicon/favicon_types.h',
         'common/favicon/favicon_url_parser.cc',
