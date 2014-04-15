@@ -121,6 +121,7 @@ component("net") {
     "base/net_module.h",
     "base/net_util.cc",
     "base/net_util.h",
+    "base/net_util_icu.cc",
     "base/net_util_posix.cc",
     "base/net_util_win.cc",
     "base/network_change_notifier.cc",

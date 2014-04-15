@@ -43,6 +43,7 @@
       'base/net_module.h',
       'base/net_util.cc',
       'base/net_util.h',
+      'base/net_util_icu.cc',
       'base/net_util_posix.cc',
       'base/openssl_private_key_store.h',
       'base/openssl_private_key_store_android.cc',
