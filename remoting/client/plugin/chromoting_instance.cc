@@ -275,13 +275,6 @@ bool ChromotingInstance::Init(uint32_t argc,
     return false;
   }
 
-  // Enable support for SSL server sockets, which must be done as early as
-  // possible, preferably before any NSS SSL sockets (client or server) have
-  // been created.
-  // It's possible that the hosting process has already made use of SSL, in
-  // which case, there may be a slight race.
-  net::EnableSSLServerSockets();
-
   // Start all the threads.
   context_.Start();
 
