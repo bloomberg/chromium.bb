@@ -790,6 +790,7 @@ void OmniboxViewViews::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void OmniboxViewViews::AboutToRequestFocusFromTabTraversal(bool reverse) {
+  views::Textfield::AboutToRequestFocusFromTabTraversal(reverse);
   // Tabbing into the omnibox should affect the origin chip in the same way
   // clicking it should.
   HandleOriginChipMouseRelease();

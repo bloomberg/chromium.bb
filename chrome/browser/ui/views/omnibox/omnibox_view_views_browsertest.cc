@@ -222,3 +222,21 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, SelectAllOnTap) {
   EXPECT_FALSE(omnibox_view->IsSelectAll());
 }
 #endif // defined(USE_AURA)
+
+IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, SelectAllOnTabToFocus) {
+  OmniboxView* omnibox_view = NULL;
+  ASSERT_NO_FATAL_FAILURE(GetOmniboxViewForBrowser(browser(), &omnibox_view));
+  ui_test_utils::NavigateToURL(browser(), GURL("http://www.google.com/"));
+  // RevertAll after navigation to invalidate the selection range saved on blur.
+  omnibox_view->RevertAll();
+  EXPECT_FALSE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
+  EXPECT_FALSE(omnibox_view->IsSelectAll());
+
+  // Pressing tab to focus the omnibox should select all text.
+  while (!ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX)) {
+    ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_TAB,
+                                                false, false, false, false));
+  }
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
+  EXPECT_TRUE(omnibox_view->IsSelectAll());
+}
