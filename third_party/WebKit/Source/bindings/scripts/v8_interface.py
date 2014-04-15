@@ -300,18 +300,28 @@ def generate_constant(constant):
 ################################################################################
 
 def generate_overloads(methods):
-    generate_overloads_by_type(methods, is_static=False)  # Regular methods
-    generate_overloads_by_type(methods, is_static=True)
+    # Regular methods
+    generate_overloads_by_type([method for method in methods
+                                if not method['is_static']])
+    # Static methods
+    generate_overloads_by_type([method for method in methods
+                                if method['is_static']])
 
 
-def generate_overloads_by_type(methods, is_static):
-    # Generates |overloads| template values and modifies |methods| in place;
-    # |is_static| flag used (instead of partitioning list in 2) because need to
-    # iterate over original list of methods to modify in place
+def generate_overloads_by_type(methods):
+    """Generates |method.overload*| template values.
+
+    Modifies |method| in place for |method| in |methods|.
+    Called separately for static and non-static (regular) methods,
+    as these are overloaded separately.
+    Doesn't change the |methods| list itself (only the values, i.e. individual
+    methods), so ok to treat these separately.
+    """
+
+    # Once using Python 2.7, using collections.Counter
+    # method_counts = Counter(method['name'] for method in methods)
     method_counts = defaultdict(lambda: 0)
     for method in methods:
-        if method['is_static'] != is_static:
-            continue
         name = method['name']
         method_counts[name] += 1
 
@@ -319,15 +329,13 @@ def generate_overloads_by_type(methods, is_static):
     overloaded_method_counts = dict((name, count)
                                     for name, count in method_counts.iteritems()
                                     if count > 1)
+    overloaded_name_methods = [(method['name'], method) for method in methods
+                               if method['name'] in overloaded_method_counts]
 
     # Add overload information only to overloaded methods, so template code can
     # easily verify if a function is overloaded
     method_overloads = defaultdict(list)
-    for method in methods:
-        name = method['name']
-        if (method['is_static'] != is_static or
-            name not in overloaded_method_counts):
-            continue
+    for name, method in overloaded_name_methods:
         # Overload index includes self, so first append, then compute index
         method_overloads[name].append(method)
         method.update({
@@ -337,13 +345,10 @@ def generate_overloads_by_type(methods, is_static):
 
     # Resolution function is generated after last overloaded function;
     # package necessary information into |method.overloads| for that method.
-    for method in methods:
-        if (method['is_static'] != is_static or
-            'overload_index' not in method):
-            continue
-        name = method['name']
-        if method['overload_index'] != overloaded_method_counts[name]:
-            continue
+    last_overloaded_name_methods = [
+        (name, method) for name, method in overloaded_name_methods
+        if method['overload_index'] == overloaded_method_counts[name]]
+    for name, method in last_overloaded_name_methods:
         overloads = method_overloads[name]
         minimum_number_of_required_arguments = min(
             overload['number_of_required_arguments']
@@ -360,8 +365,7 @@ def overload_resolution_expression(method):
     # Expression is an OR of ANDs: each term in the OR corresponds to a
     # possible argument count for a given method, with type checks.
     # FIXME: Blink's overload resolution algorithm is incorrect, per:
-    # Implement WebIDL overload resolution algorithm.
-    # https://code.google.com/p/chromium/issues/detail?id=293561
+    # Implement WebIDL overload resolution algorithm.  http://crbug.com/293561
     #
     # Currently if distinguishing non-primitive type from primitive type,
     # (e.g., sequence<DOMString> from DOMString or Dictionary from double)
