@@ -24,10 +24,6 @@ public abstract class ContentSwitches {
     // Whether Chromium should use a mobile user agent.
     public static final String USE_MOBILE_UA = "use-mobile-user-agent";
 
-    // tablet specific UI components.
-    // Native switch - chrome_switches::kTabletUI
-    public static final String TABLET_UI = "tablet-ui";
-
     // Change the url of the JavaScript that gets injected when accessibility mode is enabled.
     public static final String ACCESSIBILITY_JAVASCRIPT_URL = "accessibility-js-url";
 

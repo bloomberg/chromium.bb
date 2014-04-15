@@ -7,7 +7,7 @@
 
 #include "ui/base/ui_base_export.h"
 
-#ifdef OS_ANDROID
+#if defined(OS_ANDROID)
 #include <jni.h>
 #endif
 
@@ -26,7 +26,7 @@ UI_BASE_EXPORT bool IsTouchDevicePresent();
 // http://www.w3.org/TR/pointerevents/#widl-Navigator-maxTouchPoints
 UI_BASE_EXPORT int MaxTouchPoints();
 
-#ifdef OS_ANDROID
+#if defined(OS_ANDROID)
 bool RegisterTouchDeviceAndroid(JNIEnv* env);
 #endif
 

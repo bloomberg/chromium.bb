@@ -14,7 +14,7 @@ import android.view.View;
 import android.widget.CheckBox;
 
 import org.chromium.chrome.R;
-import org.chromium.content.browser.DeviceUtils;
+import org.chromium.ui.base.DeviceFormFactor;
 
 /**
  * Java version of the translate infobar
@@ -248,7 +248,8 @@ public class TranslateInfoBar extends TwoButtonInfoBar implements SubPanelListen
 
     private boolean needsAlwaysPanel() {
         return (getInfoBarType() == TranslateInfoBar.AFTER_TRANSLATE_INFOBAR
-                && mOptions.alwaysTranslateLanguageState() && !DeviceUtils.isTablet(getContext()));
+                && mOptions.alwaysTranslateLanguageState()
+                && !DeviceFormFactor.isTablet(getContext()));
     }
 
     /**

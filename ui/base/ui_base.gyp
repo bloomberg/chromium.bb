@@ -140,6 +140,7 @@
         'default_theme_provider.h',
         'default_theme_provider_mac.mm',
         'device_form_factor_android.cc',
+        'device_form_factor_android.h',
         'device_form_factor_desktop.cc',
         'device_form_factor_ios.mm',
         'device_form_factor.h',
@@ -574,6 +575,7 @@
            'type': 'none',
            'sources': [
              '../android/java/src/org/chromium/ui/base/Clipboard.java',
+             '../android/java/src/org/chromium/ui/base/DeviceFormFactor.java',
              '../android/java/src/org/chromium/ui/base/LocalizationUtils.java',
              '../android/java/src/org/chromium/ui/base/SelectFileDialog.java',
              '../android/java/src/org/chromium/ui/base/TouchDevice.java',

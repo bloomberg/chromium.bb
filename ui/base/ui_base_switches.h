@@ -31,10 +31,6 @@ UI_BASE_EXPORT extern const char kTouchOptimizedUIAuto[];
 UI_BASE_EXPORT extern const char kTouchOptimizedUIDisabled[];
 UI_BASE_EXPORT extern const char kTouchOptimizedUIEnabled[];
 
-#if defined(OS_ANDROID)
-UI_BASE_EXPORT extern const char kTabletUI[];
-#endif
-
 }  // namespace switches
 
 #endif  // UI_BASE_UI_BASE_SWITCHES_H_

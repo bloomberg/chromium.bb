@@ -18,9 +18,9 @@ import com.google.common.annotations.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CalledByNative;
-import org.chromium.content.browser.DeviceUtils;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.UiUtils;
+import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -112,7 +112,7 @@ public class InfoBarContainer extends LinearLayout {
         mAnimationSizer.setVisibility(INVISIBLE);
 
         // The tablet has the infobars below the location bar. On the phone they are at the bottom.
-        mInfoBarsOnTop = DeviceUtils.isTablet(activity);
+        mInfoBarsOnTop = DeviceFormFactor.isTablet(activity);
         setGravity(determineGravity());
 
         // Chromium's InfoBarContainer may add an InfoBar immediately during this initialization

@@ -63,9 +63,4 @@ const char kTouchOptimizedUIEnabled[] = "enabled";
 //   disabled: never optimized for touch.
 const char kTouchOptimizedUIDisabled[] = "disabled";
 
-#if defined(OS_ANDROID)
-// Uses the tablet specific UI components when available.
-const char kTabletUI[] = "tablet-ui";
-#endif
-
 }  // namespace switches
