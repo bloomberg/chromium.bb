@@ -34,7 +34,6 @@
 #include "WebInputEvent.h"
 #include "platform/KeyCodeConversion.h"
 #include "platform/KeyboardCodes.h"
-#include "wtf/Assertions.h"
 
 namespace blink {
 
@@ -68,119 +67,11 @@ WebKeyboardEvent WebInputEventFactory::keyboardEvent(WebInputEvent::Type type,
     return result;
 }
 
-WebMouseEvent WebInputEventFactory::mouseEvent(MouseEventType type,
-                                               WebMouseEvent::Button button,
-                                               double timeStampSeconds,
-                                               int windowX,
-                                               int windowY,
-                                               int modifiers,
-                                               int clickCount)
-{
-    WebMouseEvent result;
-
-    result.x = windowX;
-    result.y = windowY;
-    result.windowX = windowX;
-    result.windowY = windowY;
-    result.timeStampSeconds = timeStampSeconds;
-    result.clickCount = clickCount;
-    result.modifiers = modifiers;
-
-    switch (type) {
-    case MouseEventTypeDown:
-        result.type = WebInputEvent::MouseDown;
-        result.button = button;
-        break;
-    case MouseEventTypeUp:
-        result.type = WebInputEvent::MouseUp;
-        result.button = button;
-        break;
-    case MouseEventTypeMove:
-        result.type = WebInputEvent::MouseMove;
-        result.button = WebMouseEvent::ButtonNone;
-        break;
-    };
-
-    return result;
-}
-
 bool WebInputEventFactory::isSystemKeyEvent(const WebKeyboardEvent& event)
 {
     // On Windows all keys with Alt modifier will be marked as system key.
     // We keep the same behavior on Linux and everywhere non-Mac.
     return event.modifiers & WebInputEvent::AltKey;
-}
-
-// WebMouseWheelEvent ------------------------------------------------------------
-
-WebMouseWheelEvent WebInputEventFactory::mouseWheelEvent(MouseWheelDirectionType direction,
-                                                         double timeStampSeconds,
-                                                         int windowX,
-                                                         int windowY)
-{
-    WebMouseWheelEvent result;
-
-    result.type = WebInputEvent::MouseWheel;
-    result.x = windowX;
-    result.y = windowY;
-    result.windowX = windowX;
-    result.windowY = windowY;
-    result.timeStampSeconds = timeStampSeconds;
-    result.button = WebMouseEvent::ButtonNone;
-
-    // The below choices are matched from GTK.
-    static const float scrollbarPixelsPerTick = 160.0f / 3.0f;
-
-    switch (direction) {
-    case MouseWheelDirectionTypeUp:
-        result.deltaY = scrollbarPixelsPerTick;
-        result.wheelTicksY = 1;
-        break;
-    case MouseWheelDirectionTypeDown:
-        result.deltaY = -scrollbarPixelsPerTick;
-        result.wheelTicksY = -1;
-        break;
-    case MouseWheelDirectionTypeLeft:
-        result.deltaX = scrollbarPixelsPerTick;
-        result.wheelTicksX = 1;
-        break;
-    case MouseWheelDirectionTypeRight:
-        result.deltaX = -scrollbarPixelsPerTick;
-        result.wheelTicksX = -1;
-        break;
-    }
-
-    return result;
-}
-
-// WebGestureEvent ------------------------------------------------------------
-
-// FIXME: remove this obsolete version
-WebGestureEvent WebInputEventFactory::gestureEvent(WebInputEvent::Type type,
-                                                   double timeStampSeconds,
-                                                   int x,
-                                                   int y,
-                                                   float,
-                                                   float,
-                                                   int modifiers) {
-    return gestureEvent(type, timeStampSeconds, x, y, modifiers);
-}
-
-WebGestureEvent WebInputEventFactory::gestureEvent(WebInputEvent::Type type,
-                                                   double timeStampSeconds,
-                                                   int x,
-                                                   int y,
-                                                   int modifiers)
-{
-    WebGestureEvent result;
-
-    result.type = type;
-    result.x = x;
-    result.y = y;
-    result.timeStampSeconds = timeStampSeconds;
-    result.modifiers = modifiers;
-
-    return result;
 }
 
 } // namespace blink

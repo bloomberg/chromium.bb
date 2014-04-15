@@ -40,52 +40,12 @@ class WebKeyboardEvent;
 
 class WebInputEventFactory {
 public:
-    enum MouseEventType {
-        MouseEventTypeDown = 0,
-        MouseEventTypeUp,
-        MouseEventTypeMove,
-    };
-
-    enum MouseWheelDirectionType {
-        MouseWheelDirectionTypeUp = 0,
-        MouseWheelDirectionTypeDown,
-        MouseWheelDirectionTypeLeft,
-        MouseWheelDirectionTypeRight,
-    };
-
     BLINK_EXPORT static WebKeyboardEvent keyboardEvent(WebInputEvent::Type,
                                                         int modifiers,
                                                         double timeStampSeconds,
                                                         int keycode,
                                                         WebUChar unicodeCharacter,
                                                         bool isSystemKey);
-
-    BLINK_EXPORT static WebMouseEvent mouseEvent(MouseEventType,
-                                                  WebMouseEvent::Button,
-                                                  double timeStampSeconds,
-                                                  int windowX,
-                                                  int windowY,
-                                                  int modifiers,
-                                                  int clickCount);
-
-    BLINK_EXPORT static WebMouseWheelEvent mouseWheelEvent(MouseWheelDirectionType,
-                                                            double timeStampSeconds,
-                                                            int windowX,
-                                                            int windowY);
-
-    BLINK_EXPORT static WebGestureEvent gestureEvent(WebInputEvent::Type,
-                                                      double timeStampSeconds,
-                                                      int x,
-                                                      int y,
-                                                      float deltaX,
-                                                      float deltaY,
-                                                      int modifiers);
-
-    BLINK_EXPORT static WebGestureEvent gestureEvent(WebInputEvent::Type,
-                                                      double timeStampSeconds,
-                                                      int x,
-                                                      int y,
-                                                      int modifiers);
 
     BLINK_EXPORT static bool isSystemKeyEvent(const WebKeyboardEvent&);
 };
