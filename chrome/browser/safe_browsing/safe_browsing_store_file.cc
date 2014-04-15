@@ -212,17 +212,9 @@ void DeleteChunksFromSet(const base::hash_set<int32>& deleted,
   }
 }
 
-// base::MD5Final() modifies |context| in generating |digest|.  This wrapper
-// generates an intermediate digest without modifying the context.
-void MD5IntermediateDigest(base::MD5Digest* digest, base::MD5Context* context) {
-  base::MD5Context temp_context;
-  memcpy(&temp_context, context, sizeof(temp_context));
-  base::MD5Final(digest, &temp_context);
-}
-
 bool ReadAndVerifyChecksum(FILE* fp, base::MD5Context* context) {
   base::MD5Digest calculated_digest;
-  MD5IntermediateDigest(&calculated_digest, context);
+  base::MD5IntermediateFinal(&calculated_digest, context);
 
   base::MD5Digest file_digest;
   if (!ReadItem(&file_digest, fp, context))
@@ -352,7 +344,7 @@ bool WriteHeader(uint32 out_stride,
 
   // Write out the header digest.
   base::MD5Digest header_digest;
-  MD5IntermediateDigest(&header_digest, context);
+  base::MD5IntermediateFinal(&header_digest, context);
   if (!WriteItem(header_digest, fp, context))
     return false;
 
