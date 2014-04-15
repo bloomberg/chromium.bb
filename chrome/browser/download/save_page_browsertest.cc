@@ -459,7 +459,13 @@ class DelayingDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
   DISALLOW_COPY_AND_ASSIGN(DelayingDownloadManagerDelegate);
 };
 
-IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnlyTabDestroy) {
+// Disabled on Windows due to flakiness. http://crbug.com/162323
+#if defined(OS_WIN)
+#define MAYBE_SaveHTMLOnlyTabDestroy DISABLED_SaveHTMLOnlyTabDestroy
+#else
+#define MAYBE_SaveHTMLOnlyTabDestroy SaveHTMLOnlyTabDestroy
+#endif
+IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveHTMLOnlyTabDestroy) {
   GURL url = NavigateToMockURL("a");
   scoped_ptr<DelayingDownloadManagerDelegate> delaying_delegate(
       new DelayingDownloadManagerDelegate(browser()->profile()));
@@ -806,4 +812,3 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SavePageBrowserTest_NonMHTML) {
 }
 
 }  // namespace
-
