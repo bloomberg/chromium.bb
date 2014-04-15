@@ -39,7 +39,11 @@ sandbox::ErrorCode SandboxBPFBasePolicyAndroid::EvaluateSyscall(
     case __NR_rt_sigtimedwait:
     case __NR_setpriority:
     case __NR_sigaltstack:
+#if defined(__i386__) || defined(__arm__)
     case __NR_ugetrlimit:
+#else
+    case __NR_getrlimit:
+#endif
     case __NR_uname:
       override_and_allow = true;
       break;
