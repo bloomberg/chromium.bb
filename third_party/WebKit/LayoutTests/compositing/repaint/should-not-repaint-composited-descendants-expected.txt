@@ -78,9 +78,6 @@ clip change with non-composited child
           (bounds 100.00 100.00)
           (opacity 0.50)
           (drawsContent 1)
-          (repaint rects
-            (rect 0.00 0.00 100.00 100.00)
-          )
         )
         (GraphicsLayer
           (position 8.00 1159.00)
@@ -105,17 +102,11 @@ clip change with non-composited child
           (bounds 100.00 100.00)
           (drawsContent 1)
           (transform [1.00 0.00 0.00 0.00] [0.00 1.00 0.00 0.00] [0.00 0.00 1.00 0.00] [0.00 0.00 20.00 1.00])
-          (repaint rects
-            (rect 0.00 0.00 100.00 100.00)
-          )
         )
         (GraphicsLayer
           (position 8.00 1519.00)
           (bounds 100.00 100.00)
           (drawsContent 1)
-          (repaint rects
-            (rect 0.00 0.00 100.00 100.00)
-          )
           (children 1
             (GraphicsLayer
               (bounds 100.00 100.00)
@@ -134,9 +125,6 @@ clip change with non-composited child
           (position 8.00 1699.00)
           (bounds 100.00 100.00)
           (drawsContent 1)
-          (repaint rects
-            (rect 0.00 0.00 100.00 100.00)
-          )
         )
         (GraphicsLayer
           (position 8.00 1879.00)
@@ -187,6 +175,8 @@ clip change with non-composited child
           (bounds 100.00 100.00)
           (drawsContent 1)
           (repaint rects
+            (rect 0.00 0.00 100.00 100.00)
+            (rect 0.00 0.00 100.00 100.00)
             (rect 0.00 0.00 100.00 100.00)
           )
         )

@@ -28,7 +28,6 @@
 </style>
 <style id="old-style">
     .clip { clip: rect(200px, 100px, 100px, 200px); }
-    .container { width: 100px; }
     .position { position: relative; }
     .zindex { z-index: 0; }
     .opacity { opacity: 0.99; }
@@ -37,7 +36,6 @@
 </style>
 <style id="new-style">
     .clip { clip: rect(100px, 200px, 200px, 100px); }
-    .container { width: 100%; }
     .position { position: static; }
     .zindex { z-index: 1; }
     .opacity { opacity: 0.5; }
@@ -82,7 +80,7 @@
 <div class="spacer"><div class="container transform"><div class="child"></div></div></div>
 <h1>filter change with composited child</h1>
 <div class="spacer"><div class="container filter"><div class="child composited"></div></div></div>
-<h1>filter change with non-composited child</h2>
+<h1>filter change with non-composited child</h1>
 <div class="spacer"><div class="container filter"><div class="child"></div></div></div>
 <h1>clip change with composited child</h1>
 <div class="spacer"><div class="container clip"><div class="child composited"></div></div></div>
