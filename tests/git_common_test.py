@@ -392,6 +392,23 @@ class GitMutableStructuredTest(git_test_utils.GitRepoReadWriteTestBase,
     self.repo.git('branch', '--set-upstream-to', 'root_A', 'branch_G')
     self.repo.git('branch', '--set-upstream-to', 'root_X', 'root_A')
 
+  def testTooManyBranches(self):
+    for i in xrange(30):
+      self.repo.git('branch', 'a'*i)
+
+    with self.assertRaises(SystemExit):
+      self.repo.run(list, self.gc.branches())
+
+    self.repo.git('config', 'depot-tools.branch-limit', 'cat')
+
+    with self.assertRaises(SystemExit):
+      self.repo.run(list, self.gc.branches())
+
+    self.repo.git('config', 'depot-tools.branch-limit', '100')
+
+    # should not raise
+    self.assertEqual(36, len(self.repo.run(list, self.gc.branches())))
+
   def testMergeBase(self):
     self.repo.git('checkout', 'branch_K')
 

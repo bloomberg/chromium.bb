@@ -25,6 +25,7 @@ import re
 import signal
 import sys
 import tempfile
+import textwrap
 import threading
 
 import subprocess2
@@ -239,7 +240,27 @@ def branch_config_map(option):
 
 def branches(*args):
   NO_BRANCH = ('* (no branch', '* (detached from ')
-  for line in run('branch', *args).splitlines():
+
+  key = 'depot-tools.branch-limit'
+  limit = 20
+  try:
+    limit = int(config(key, limit))
+  except ValueError:
+    pass
+
+  raw_branches = run('branch', *args).splitlines()
+
+  num = len(raw_branches)
+  if num > limit:
+    print >> sys.stderr, textwrap.dedent("""\
+    Your git repo has too many branches (%d/%d) for this tool to work well.
+
+    You may adjust this limit by running:
+      git config %s <new_limit>
+    """ % (num, limit, key))
+    sys.exit(1)
+
+  for line in raw_branches:
     if line.startswith(NO_BRANCH):
       continue
     yield line.split()[-1]
