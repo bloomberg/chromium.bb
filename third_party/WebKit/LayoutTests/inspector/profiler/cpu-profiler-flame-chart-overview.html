@@ -809,8 +809,7 @@ function test()
     WebInspector.inspectorView.showPanel("profiles");
     var cpuProfileView = new WebInspector.CPUProfileView(profileAndExpectations);
     var dataProvider = new WebInspector.CPUFlameChartDataProvider(cpuProfileView.profile);
-    var colorGenerator = new WebInspector.CPUProfileFlameChart.ColorGenerator();
-    var timelineData = dataProvider.timelineData(colorGenerator);
+    var timelineData = dataProvider.timelineData();
     console.log(Object.values(WebInspector.CPUProfileFlameChart.OverviewPane.calculateDrawData(dataProvider, timelineData, 16)));
     console.log(Object.values(WebInspector.CPUProfileFlameChart.OverviewPane.calculateDrawData(dataProvider, timelineData, 8)));
     console.log(Object.values(WebInspector.CPUProfileFlameChart.OverviewPane.calculateDrawData(dataProvider, timelineData, 4)));
