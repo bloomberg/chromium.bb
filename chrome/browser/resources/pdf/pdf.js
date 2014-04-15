@@ -233,6 +233,14 @@ PDFViewer.prototype = {
       case 'goToPage':
         this.viewport_.goToPage(message.data.page);
         break;
+      case 'setScrollPosition':
+        var position = this.viewport_.position;
+        if (message.data.x != undefined)
+          position.x = message.data.x;
+        if (message.data.y != undefined)
+          position.y = message.data.y;
+        this.viewport_.position = position;
+        break;
       case 'getPassword':
         // If the password screen isn't up, put it up. Otherwise we're
         // responding to an incorrect password so deny it.
