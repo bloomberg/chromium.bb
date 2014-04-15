@@ -371,17 +371,8 @@ bool AccessibilityManager::ShouldShowAccessibilityMenu() {
 }
 
 bool AccessibilityManager::ShouldEnableCursorCompositing() {
-#if defined(OS_CHROMEOS)
-  if (!profile_)
-    return false;
-  PrefService* pref_service = profile_->GetPrefs();
-  // Enable cursor compositing when one or more of the listed accessibility
-  // features are turned on.
-  if (pref_service->GetBoolean(prefs::kLargeCursorEnabled) ||
-      pref_service->GetBoolean(prefs::kHighContrastEnabled) ||
-      pref_service->GetBoolean(prefs::kScreenMagnifierEnabled))
-    return true;
-#endif
+  // TODO(hshi): re-enable this on trunk after fixing issues. See
+  // http://crbug.com/362693, http://crosbug.com/p/28034.
   return false;
 }
 
