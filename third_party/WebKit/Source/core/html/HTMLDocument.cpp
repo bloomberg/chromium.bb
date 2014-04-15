@@ -79,21 +79,6 @@ HTMLDocument::~HTMLDocument()
 {
 }
 
-const AtomicString& HTMLDocument::dir()
-{
-    HTMLElement* b = body();
-    if (!b)
-        return nullAtom;
-    return b->getAttribute(dirAttr);
-}
-
-void HTMLDocument::setDir(const AtomicString& value)
-{
-    HTMLElement* b = body();
-    if (b)
-        b->setAttribute(dirAttr, value);
-}
-
 String HTMLDocument::designMode() const
 {
     return inDesignMode() ? "on" : "off";

@@ -41,7 +41,6 @@ interface HTMLDocument : Document {
     [MeasureAs=DocumentCaptureEvents] void captureEvents();
     [MeasureAs=DocumentReleaseEvents] void releaseEvents();
 
-    [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString dir;
     [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString designMode;
     readonly attribute DOMString compatMode;
 

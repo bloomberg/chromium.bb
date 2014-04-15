@@ -1391,6 +1391,21 @@ void Document::removeTitle(Element* titleElement)
         updateTitle(String());
 }
 
+const AtomicString& Document::dir()
+{
+    // FIXME(crbug.com/363107): This should be the root html element, not the body.
+    if (HTMLElement* b = body())
+        return b->getAttribute(dirAttr);
+    return nullAtom;
+}
+
+void Document::setDir(const AtomicString& value)
+{
+    // FIXME(crbug.com/363107): This should be the root html element, not the body.
+    if (HTMLElement* b = body())
+        b->setAttribute(dirAttr, value);
+}
+
 PageVisibilityState Document::pageVisibilityState() const
 {
     // The visibility of the document is inherited from the visibility of the

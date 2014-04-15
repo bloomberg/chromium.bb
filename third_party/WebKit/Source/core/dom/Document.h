@@ -749,6 +749,9 @@ public:
     void setTitleElement(const String& title, Element* titleElement);
     void removeTitle(Element* titleElement);
 
+    const AtomicString& dir();
+    void setDir(const AtomicString&);
+
     String cookie(ExceptionState&) const;
     void setCookie(const String&, ExceptionState&);
 

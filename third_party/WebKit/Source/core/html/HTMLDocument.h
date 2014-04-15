@@ -41,9 +41,6 @@ public:
     }
     virtual ~HTMLDocument();
 
-    const AtomicString& dir();
-    void setDir(const AtomicString&);
-
     String designMode() const;
     void setDesignMode(const String&);
 
