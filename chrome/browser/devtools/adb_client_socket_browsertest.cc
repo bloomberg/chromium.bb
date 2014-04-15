@@ -310,7 +310,7 @@ class MockAdbServer: public SingleConnectionServer {
 };
 
 class AdbClientSocketTest : public InProcessBrowserTest,
-                            public DevToolsAdbBridge::Listener {
+                            public DevToolsAdbBridge::DeviceListListener {
 
 public:
   void StartTest() {
@@ -325,11 +325,11 @@ public:
                    base::Unretained(this)));
   }
 
-  virtual void RemoteDevicesChanged(DevToolsAdbBridge::RemoteDevices* devices)
-      OVERRIDE {
+  virtual void DeviceListChanged(
+      const DevToolsAdbBridge::RemoteDevices& devices) OVERRIDE {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    adb_bridge_->RemoveListener(this);
-    devices_ = *devices;
+    adb_bridge_->RemoveDeviceListListener(this);
+    devices_ = devices;
     EndTest();
   }
 
@@ -398,7 +398,7 @@ private:
     device_providers.push_back(AndroidDeviceManager::GetAdbDeviceProvider());
 
     adb_bridge_->set_device_providers_for_test(device_providers);
-    adb_bridge_->AddListener(this);
+    adb_bridge_->AddDeviceListListener(this);
   }
 
 public:

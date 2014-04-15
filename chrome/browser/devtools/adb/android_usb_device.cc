@@ -164,12 +164,6 @@ AdbMessage::AdbMessage(uint32 command,
 AdbMessage::~AdbMessage() {
 }
 
-static void RespondWithCountOnUIThread(base::Callback<void(int)> callback,
-                                       int count) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  callback.Run(count);
-}
-
 static void RespondOnCallerThread(const AndroidUsbDevicesCallback& callback,
                                   AndroidUsbDevices* new_devices) {
   scoped_ptr<AndroidUsbDevices> devices(new_devices);
@@ -219,8 +213,8 @@ static void OpenAndroidDeviceOnFileThread(
   barrier.Run();
 }
 
-static void CountOnFileThread(
-    const base::Callback<void(int)>& callback) {
+static int CountOnFileThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   UsbService* service = UsbService::GetInstance();
   UsbDevices usb_devices;
   if (service != NULL)
@@ -237,9 +231,7 @@ static void CountOnFileThread(
         ++device_count;
     }
   }
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(&RespondWithCountOnUIThread, callback,
-                                     device_count));
+  return device_count;
 }
 
 static void EnumerateOnFileThread(
@@ -293,9 +285,11 @@ static void EnumerateOnFileThread(
 // static
 void AndroidUsbDevice::CountDevices(
     const base::Callback<void(int)>& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          base::Bind(&CountOnFileThread, callback));
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&CountOnFileThread),
+      callback);
 }
 
 // static

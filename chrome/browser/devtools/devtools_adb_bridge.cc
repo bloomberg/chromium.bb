@@ -1179,23 +1179,38 @@ DevToolsAdbBridge::DevToolsAdbBridge(Profile* profile)
       base::Bind(&DevToolsAdbBridge::CreatedDeviceManager, this));
 }
 
-void DevToolsAdbBridge::AddListener(Listener* listener) {
+void DevToolsAdbBridge::AddDeviceListListener(DeviceListListener* listener) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  listeners_.push_back(listener);
-  if (listeners_.size() == 1 && device_manager_)
-    RequestRemoteDevices();
+  device_list_listeners_.push_back(listener);
+  if (device_list_listeners_.size() == 1 && device_manager_)
+    RequestDeviceList();
 }
 
-void DevToolsAdbBridge::RemoveListener(Listener* listener) {
+void DevToolsAdbBridge::RemoveDeviceListListener(DeviceListListener* listener) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  Listeners::iterator it =
-      std::find(listeners_.begin(), listeners_.end(), listener);
-  DCHECK(it != listeners_.end());
-  listeners_.erase(it);
-  if (listeners_.empty() && device_manager_) {
+  DeviceListListeners::iterator it = std::find(
+      device_list_listeners_.begin(), device_list_listeners_.end(), listener);
+  DCHECK(it != device_list_listeners_.end());
+  device_list_listeners_.erase(it);
+  if (device_list_listeners_.empty() && device_manager_) {
     device_message_loop()->PostTask(FROM_HERE,
         base::Bind(&AndroidDeviceManager::Stop, device_manager_));
   }
+}
+
+void DevToolsAdbBridge::AddDeviceCountListener(DeviceCountListener* listener) {
+  device_count_listeners_.push_back(listener);
+  if (device_count_listeners_.size() == 1 && device_manager_)
+    RequestDeviceCount();
+}
+
+void DevToolsAdbBridge::RemoveDeviceCountListener(
+    DeviceCountListener* listener) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DeviceCountListeners::iterator it = std::find(
+      device_count_listeners_.begin(), device_count_listeners_.end(), listener);
+  DCHECK(it != device_count_listeners_.end());
+  device_count_listeners_.erase(it);
 }
 
 // static
@@ -1206,17 +1221,18 @@ bool DevToolsAdbBridge::HasDevToolsWindow(const std::string& agent_id) {
 
 DevToolsAdbBridge::~DevToolsAdbBridge() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(listeners_.empty());
+  DCHECK(device_list_listeners_.empty());
+  DCHECK(device_count_listeners_.empty());
   if (device_manager_)
     device_message_loop()->PostTask(FROM_HERE,
         base::Bind(&AndroidDeviceManager::Stop, device_manager_));
 }
 
-void DevToolsAdbBridge::RequestRemoteDevices() {
+void DevToolsAdbBridge::RequestDeviceList() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(device_manager_);
 
-  if (listeners_.empty())
+  if (device_list_listeners_.empty())
     return;
 
   new AdbPagesCommand(
@@ -1224,33 +1240,63 @@ void DevToolsAdbBridge::RequestRemoteDevices() {
       device_manager(),
       device_message_loop(),
       device_providers_,
-      base::Bind(&DevToolsAdbBridge::ReceivedRemoteDevices, this));
+      base::Bind(&DevToolsAdbBridge::ReceivedDeviceList, this));
 }
 
 void DevToolsAdbBridge::CreatedDeviceManager(
     scoped_refptr<AndroidDeviceManager> device_manager) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   device_manager_ = device_manager;
-  if (!listeners_.empty())
-    RequestRemoteDevices();
+  if (!device_list_listeners_.empty())
+    RequestDeviceList();
+  if (!device_count_listeners_.empty())
+    RequestDeviceCount();
 }
 
-void DevToolsAdbBridge::ReceivedRemoteDevices(RemoteDevices* devices_ptr) {
+void DevToolsAdbBridge::ReceivedDeviceList(RemoteDevices* devices_ptr) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   scoped_ptr<RemoteDevices> devices(devices_ptr);
 
-  Listeners copy(listeners_);
-  for (Listeners::iterator it = copy.begin(); it != copy.end(); ++it)
-    (*it)->RemoteDevicesChanged(devices.get());
-
-  if (listeners_.empty())
+  if (device_list_listeners_.empty())
     return;
+
+  DeviceListListeners copy(device_list_listeners_);
+  for (DeviceListListeners::iterator it = copy.begin(); it != copy.end(); ++it)
+    (*it)->DeviceListChanged(*devices.get());
 
   BrowserThread::PostDelayedTask(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&DevToolsAdbBridge::RequestRemoteDevices, this),
+      base::Bind(&DevToolsAdbBridge::RequestDeviceList, this),
+      base::TimeDelta::FromMilliseconds(kAdbPollingIntervalMs));
+}
+
+void DevToolsAdbBridge::RequestDeviceCount() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(device_manager_);
+
+  if (device_count_listeners_.empty())
+    return;
+
+  AndroidUsbDevice::CountDevices(
+      base::Bind(&DevToolsAdbBridge::ReceivedDeviceCount, this));
+}
+
+void DevToolsAdbBridge::ReceivedDeviceCount(int count) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (device_count_listeners_.empty())
+     return;
+
+  DeviceCountListeners copy(device_count_listeners_);
+  for (DeviceCountListeners::iterator it = copy.begin(); it != copy.end(); ++it)
+    (*it)->DeviceCountChanged(count);
+
+  BrowserThread::PostDelayedTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&DevToolsAdbBridge::RequestDeviceCount, this),
       base::TimeDelta::FromMilliseconds(kAdbPollingIntervalMs));
 }
 

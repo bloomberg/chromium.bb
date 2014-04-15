@@ -552,12 +552,12 @@ void PortForwardingController::RemoveListener(Listener* listener) {
   listeners_.erase(it);
 }
 
-void PortForwardingController::RemoteDevicesChanged(
-    DevToolsAdbBridge::RemoteDevices* devices) {
+void PortForwardingController::DeviceListChanged(
+    const DevToolsAdbBridge::RemoteDevices& devices) {
   DevicesStatus status;
 
-  for (DevToolsAdbBridge::RemoteDevices::const_iterator it = devices->begin();
-       it != devices->end(); ++it) {
+  for (DevToolsAdbBridge::RemoteDevices::const_iterator it = devices.begin();
+       it != devices.end(); ++it) {
     scoped_refptr<DevToolsAdbBridge::RemoteDevice> device = *it;
     if (!device->is_connected())
       continue;
@@ -609,7 +609,7 @@ void PortForwardingController::StartListening() {
   DevToolsAdbBridge* adb_bridge =
       DevToolsAdbBridge::Factory::GetForProfile(profile_);
   if (adb_bridge)
-    adb_bridge->AddListener(this);
+    adb_bridge->AddDeviceListListener(this);
 
 }
 
@@ -620,7 +620,7 @@ void PortForwardingController::StopListening() {
   DevToolsAdbBridge* adb_bridge =
       DevToolsAdbBridge::Factory::GetForProfile(profile_);
   if (adb_bridge)
-    adb_bridge->RemoveListener(this);
+    adb_bridge->RemoveDeviceListListener(this);
 }
 
 void PortForwardingController::UpdateConnections() {

@@ -335,7 +335,7 @@ void WorkerTargetsUIHandler::UpdateTargets(
 
 class AdbTargetsUIHandler
     : public DevToolsRemoteTargetsUIHandler,
-      public DevToolsAdbBridge::Listener {
+      public DevToolsAdbBridge::DeviceListListener {
  public:
   AdbTargetsUIHandler(Callback callback, Profile* profile);
   virtual ~AdbTargetsUIHandler();
@@ -348,8 +348,8 @@ class AdbTargetsUIHandler
 
  private:
   // DevToolsAdbBridge::Listener overrides.
-  virtual void RemoteDevicesChanged(
-      DevToolsAdbBridge::RemoteDevices* devices) OVERRIDE;
+  virtual void DeviceListChanged(
+      const DevToolsAdbBridge::RemoteDevices& devices) OVERRIDE;
 
   Profile* profile_;
 
@@ -364,14 +364,14 @@ AdbTargetsUIHandler::AdbTargetsUIHandler(Callback callback, Profile* profile)
   DevToolsAdbBridge* adb_bridge =
       DevToolsAdbBridge::Factory::GetForProfile(profile_);
   if (adb_bridge)
-    adb_bridge->AddListener(this);
+    adb_bridge->AddDeviceListListener(this);
 }
 
 AdbTargetsUIHandler::~AdbTargetsUIHandler() {
   DevToolsAdbBridge* adb_bridge =
       DevToolsAdbBridge::Factory::GetForProfile(profile_);
   if (adb_bridge)
-    adb_bridge->RemoveListener(this);
+    adb_bridge->RemoveDeviceListListener(this);
 }
 
 void AdbTargetsUIHandler::Open(const std::string& browser_id,
@@ -389,14 +389,14 @@ void AdbTargetsUIHandler::OpenAndInspect(const std::string& browser_id,
     it->second->OpenAndInspect(url, profile);
 }
 
-void AdbTargetsUIHandler::RemoteDevicesChanged(
-    DevToolsAdbBridge::RemoteDevices* devices) {
+void AdbTargetsUIHandler::DeviceListChanged(
+    const DevToolsAdbBridge::RemoteDevices& devices) {
   remote_browsers_.clear();
   STLDeleteValues(&targets_);
 
   scoped_ptr<base::ListValue> device_list(new base::ListValue());
-  for (DevToolsAdbBridge::RemoteDevices::iterator dit = devices->begin();
-       dit != devices->end(); ++dit) {
+  for (DevToolsAdbBridge::RemoteDevices::const_iterator dit = devices.begin();
+       dit != devices.end(); ++dit) {
     DevToolsAdbBridge::RemoteDevice* device = dit->get();
     base::DictionaryValue* device_data = new base::DictionaryValue();
     device_data->SetString(kAdbModelField, device->model());

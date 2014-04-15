@@ -16,7 +16,7 @@ class PrefService;
 class Profile;
 
 class PortForwardingController : private KeyedService,
-                                 private DevToolsAdbBridge::Listener {
+                                 private DevToolsAdbBridge::DeviceListListener {
  public:
   explicit PortForwardingController(Profile* profile);
 
@@ -64,8 +64,8 @@ class PortForwardingController : private KeyedService,
   typedef std::map<std::string, Connection*> Registry;
 
   // DevToolsAdbBridge::Listener implementation.
-  virtual void RemoteDevicesChanged(
-      DevToolsAdbBridge::RemoteDevices* devices) OVERRIDE;
+  virtual void DeviceListChanged(
+      const DevToolsAdbBridge::RemoteDevices& devices) OVERRIDE;
 
   void OnPrefsChange();
 

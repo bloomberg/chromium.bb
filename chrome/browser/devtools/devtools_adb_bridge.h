@@ -208,16 +208,26 @@ class DevToolsAdbBridge
 
   typedef std::vector<scoped_refptr<RemoteDevice> > RemoteDevices;
 
-  class Listener {
+  class DeviceListListener {
    public:
-    virtual void RemoteDevicesChanged(RemoteDevices* devices) = 0;
+    virtual void DeviceListChanged(const RemoteDevices& devices) = 0;
    protected:
-    virtual ~Listener() {}
+    virtual ~DeviceListListener() {}
   };
 
   explicit DevToolsAdbBridge(Profile* profile);
-  void AddListener(Listener* listener);
-  void RemoveListener(Listener* listener);
+  void AddDeviceListListener(DeviceListListener* listener);
+  void RemoveDeviceListListener(DeviceListListener* listener);
+
+  class DeviceCountListener {
+   public:
+    virtual void DeviceCountChanged(int count) = 0;
+   protected:
+    virtual ~DeviceCountListener() {}
+  };
+
+  void AddDeviceCountListener(DeviceCountListener* listener);
+  void RemoveDeviceCountListener(DeviceCountListener* listener);
 
   void set_device_providers_for_test(
       const AndroidDeviceManager::DeviceProviders& device_providers) {
@@ -258,15 +268,24 @@ class DevToolsAdbBridge
   }
 
   void CreatedDeviceManager(scoped_refptr<AndroidDeviceManager> device_manager);
-  void RequestRemoteDevices();
-  void ReceivedRemoteDevices(RemoteDevices* devices);
+  void RequestDeviceList();
+  void ReceivedDeviceList(RemoteDevices* devices);
+
+  void RequestDeviceCount();
+  void ReceivedDeviceCount(int count);
+
   void CreateDeviceProviders();
 
   Profile* profile_;
   scoped_refptr<RefCountedAdbThread> adb_thread_;
   scoped_refptr<AndroidDeviceManager> device_manager_;
-  typedef std::vector<Listener*> Listeners;
-  Listeners listeners_;
+
+  typedef std::vector<DeviceListListener*> DeviceListListeners;
+  DeviceListListeners device_list_listeners_;
+
+  typedef std::vector<DeviceCountListener*> DeviceCountListeners;
+  DeviceCountListeners device_count_listeners_;
+
   AndroidDeviceManager::DeviceProviders device_providers_;
   PrefChangeRegistrar pref_change_registrar_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsAdbBridge);

@@ -264,13 +264,13 @@ FindBrowserByDisplayName(DevToolsAdbBridge::RemoteBrowsers browsers,
 }
 
 class DevToolsAdbBridgeTest : public InProcessBrowserTest,
-                               public DevToolsAdbBridge::Listener {
+                              public DevToolsAdbBridge::DeviceListListener {
   typedef DevToolsAdbBridge::RemoteDevices::const_iterator rdci;
   typedef DevToolsAdbBridge::RemoteBrowsers::const_iterator rbci;
 public:
-  virtual void RemoteDevicesChanged(
-      DevToolsAdbBridge::RemoteDevices* devices) OVERRIDE{
-    devices_ = *devices;
+  virtual void DeviceListChanged(
+      const DevToolsAdbBridge::RemoteDevices& devices) OVERRIDE {
+    devices_ = devices;
     runner_->Quit();
   }
 
@@ -369,7 +369,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsAdbBridgeTest, DiscoverAndroidBrowsers) {
     FAIL() << "Failed to get DevToolsAdbBridge.";
   }
 
-  adb_bridge->AddListener(this);
+  adb_bridge->AddDeviceListListener(this);
 
   runner_->Run();
 
