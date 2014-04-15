@@ -639,11 +639,6 @@ StyleDifference RenderStyle::repaintOnlyDiff(const RenderStyle& other, unsigned&
         || rareInheritedData->m_imageRendering != other.rareInheritedData->m_imageRendering)
         return StyleDifferenceRepaint;
 
-        // FIXME: The current spec is being reworked to remove dependencies between exclusions and affected
-        // content. There's a proposal to use floats instead. In that case, wrap-shape should actually relayout
-        // the parent container. For sure, I will have to revisit this code, but for now I've added this in order
-        // to avoid having diff() == StyleDifferenceEqual where wrap-shapes actually differ.
-        // Tracking bug: https://bugs.webkit.org/show_bug.cgi?id=62991
         if (rareNonInheritedData->m_shapeOutside != other.rareNonInheritedData->m_shapeOutside)
             return StyleDifferenceRepaint;
 
