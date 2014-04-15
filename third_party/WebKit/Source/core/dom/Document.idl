@@ -120,6 +120,7 @@ typedef (CanvasRenderingContext2D or WebGLRenderingContext) RenderingContext;
     readonly attribute HTMLCollection applets;
     readonly attribute HTMLCollection links;
     readonly attribute HTMLCollection forms;
+    readonly attribute HTMLCollection scripts;
     readonly attribute HTMLCollection anchors;
     readonly attribute DOMString lastModified;
 
