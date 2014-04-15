@@ -154,6 +154,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
           RenderThreadImpl::current()->GetMediaThreadMessageLoopProxy()),
       media_log_(new RenderMediaLog()),
       pipeline_(media_loop_, media_log_.get()),
+      opaque_(false),
       paused_(true),
       seeking_(false),
       playback_rate_(0.0f),
@@ -173,7 +174,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
           (RenderThreadImpl::current()->compositor_message_loop_proxy()
                ? RenderThreadImpl::current()->compositor_message_loop_proxy()
                : base::MessageLoopProxy::current()),
-          BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnNaturalSizeChange)),
+          BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnNaturalSizeChanged),
+          BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnOpacityChanged)),
       text_track_index_(0),
       web_cdm_(NULL) {
   media_log_->AddEvent(
@@ -981,7 +983,11 @@ void WebMediaPlayerImpl::OnPipelineMetadata(
     DCHECK(!video_weblayer_);
     video_weblayer_.reset(new webkit::WebLayerImpl(
         cc::VideoLayer::Create(compositor_.GetVideoFrameProvider())));
+
     client_->setWebLayer(video_weblayer_.get());
+    // TODO(scherkus): Remove once plumbing from HTMLMediaElement is removed.
+    client_->setOpaque(opaque_);
+    video_weblayer_->setOpaque(opaque_);
   }
 
   // TODO(scherkus): This should be handled by HTMLMediaElement and controls
@@ -1103,12 +1109,6 @@ void WebMediaPlayerImpl::OnKeyMessage(const std::string& session_id,
       default_url_gurl);
 }
 
-void WebMediaPlayerImpl::SetOpaque(bool opaque) {
-  DCHECK(main_loop_->BelongsToCurrentThread());
-
-  client_->setOpaque(opaque);
-}
-
 void WebMediaPlayerImpl::DataSourceInitialized(const GURL& gurl, bool success) {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
@@ -1204,7 +1204,6 @@ void WebMediaPlayerImpl::StartPipeline() {
           video_decoders.Pass(),
           set_decryptor_ready_cb,
           base::Bind(&WebMediaPlayerImpl::FrameReady, base::Unretained(this)),
-          BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::SetOpaque),
           true));
   filter_collection->SetVideoRenderer(video_renderer.Pass());
 
@@ -1226,7 +1225,7 @@ void WebMediaPlayerImpl::StartPipeline() {
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineSeek),
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineMetadata),
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelinePrerollCompleted),
-      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnDurationChange));
+      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnDurationChanged));
 }
 
 void WebMediaPlayerImpl::SetNetworkState(WebMediaPlayer::NetworkState state) {
@@ -1273,14 +1272,14 @@ double WebMediaPlayerImpl::GetPipelineDuration() const {
   return duration.InSecondsF();
 }
 
-void WebMediaPlayerImpl::OnDurationChange() {
+void WebMediaPlayerImpl::OnDurationChanged() {
   if (ready_state_ == WebMediaPlayer::ReadyStateHaveNothing)
     return;
 
   client_->durationChanged();
 }
 
-void WebMediaPlayerImpl::OnNaturalSizeChange(gfx::Size size) {
+void WebMediaPlayerImpl::OnNaturalSizeChanged(gfx::Size size) {
   DCHECK(main_loop_->BelongsToCurrentThread());
   DCHECK_NE(ready_state_, WebMediaPlayer::ReadyStateHaveNothing);
   TRACE_EVENT0("media", "WebMediaPlayerImpl::OnNaturalSizeChanged");
@@ -1290,6 +1289,17 @@ void WebMediaPlayerImpl::OnNaturalSizeChange(gfx::Size size) {
   pipeline_metadata_.natural_size = size;
 
   client_->sizeChanged();
+}
+
+void WebMediaPlayerImpl::OnOpacityChanged(bool opaque) {
+  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK_NE(ready_state_, WebMediaPlayer::ReadyStateHaveNothing);
+
+  opaque_ = opaque;
+  // TODO(scherkus): Remove once plumbing from HTMLMediaElement is removed.
+  client_->setOpaque(opaque);
+  if (video_weblayer_)
+    video_weblayer_->setOpaque(opaque_);
 }
 
 void WebMediaPlayerImpl::FrameReady(

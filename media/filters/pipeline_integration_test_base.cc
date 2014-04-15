@@ -36,7 +36,6 @@ PipelineIntegrationTestBase::PipelineIntegrationTestBase()
       last_video_frame_format_(VideoFrame::UNKNOWN),
       hardware_config_(AudioParameters(), AudioParameters()) {
   base::MD5Init(&md5_context_);
-  EXPECT_CALL(*this, OnSetOpaque(true)).Times(AnyNumber());
 }
 
 PipelineIntegrationTestBase::~PipelineIntegrationTestBase() {
@@ -249,8 +248,6 @@ PipelineIntegrationTestBase::CreateFilterCollection(
                  base::Unretained(this),
                  decryptor),
       base::Bind(&PipelineIntegrationTestBase::OnVideoRendererPaint,
-                 base::Unretained(this)),
-      base::Bind(&PipelineIntegrationTestBase::OnSetOpaque,
                  base::Unretained(this)),
       false));
   collection->SetVideoRenderer(renderer.Pass());

@@ -87,7 +87,7 @@ class VideoFrameStreamTest
     total_bytes_decoded_ += statistics.video_bytes_decoded;
   }
 
-  void OnInitialized(bool success, bool has_alpha) {
+  void OnInitialized(bool success) {
     DCHECK(!pending_read_);
     DCHECK(!pending_reset_);
     DCHECK(pending_initialize_);

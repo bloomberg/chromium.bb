@@ -16,10 +16,6 @@ scoped_refptr<VideoFrame> VideoDecoder::GetDecodeOutput() {
   return NULL;
 }
 
-bool VideoDecoder::HasAlpha() const {
-  return false;
-}
-
 bool VideoDecoder::NeedsBitstreamConversion() const {
   return false;
 }

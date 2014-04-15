@@ -328,11 +328,6 @@ void GpuVideoDecoder::GetBufferData(int32 id, base::TimeDelta* timestamp,
   NOTREACHED() << "Missing bitstreambuffer id: " << id;
 }
 
-bool GpuVideoDecoder::HasAlpha() const {
-  DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
-  return true;
-}
-
 bool GpuVideoDecoder::NeedsBitstreamConversion() const {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
   return needs_bitstream_conversion_;

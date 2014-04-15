@@ -36,7 +36,6 @@ class MEDIA_EXPORT VideoRendererImpl
       public base::PlatformThread::Delegate {
  public:
   typedef base::Callback<void(const scoped_refptr<VideoFrame>&)> PaintCB;
-  typedef base::Callback<void(bool)> SetOpaqueCB;
 
   // Maximum duration of the last frame.
   static base::TimeDelta kMaxLastFrameDuration();
@@ -45,9 +44,6 @@ class MEDIA_EXPORT VideoRendererImpl
   //
   // |paint_cb| is executed on the video frame timing thread whenever a new
   // frame is available for painting.
-  //
-  // |set_opaque_cb| is executed when the renderer is initialized to inform
-  // the player whether the decoded output will be opaque or not.
   //
   // Implementors should avoid doing any sort of heavy work in this method and
   // instead post a task to a common/worker thread to handle rendering.  Slowing
@@ -59,7 +55,6 @@ class MEDIA_EXPORT VideoRendererImpl
       ScopedVector<VideoDecoder> decoders,
       const SetDecryptorReadyCB& set_decryptor_ready_cb,
       const PaintCB& paint_cb,
-      const SetOpaqueCB& set_opaque_cb,
       bool drop_frames);
   virtual ~VideoRendererImpl();
 
@@ -85,7 +80,7 @@ class MEDIA_EXPORT VideoRendererImpl
 
  private:
   // Callback for |video_frame_stream_| initialization.
-  void OnVideoFrameStreamInitialized(bool success, bool has_alpha);
+  void OnVideoFrameStreamInitialized(bool success);
 
   // Callback for |video_frame_stream_| to deliver decoded video frames and
   // report video decoding status.
@@ -224,9 +219,6 @@ class MEDIA_EXPORT VideoRendererImpl
 
   // Embedder callback for notifying a new frame is available for painting.
   PaintCB paint_cb_;
-
-  // Callback to execute to inform the player if the decoded output is opaque.
-  SetOpaqueCB set_opaque_cb_;
 
   // The timestamp of the last frame removed from the |ready_frames_| queue,
   // either for calling |paint_cb_| or for dropping. Set to kNoTimestamp()

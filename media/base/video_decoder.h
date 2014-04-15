@@ -79,11 +79,6 @@ class MEDIA_EXPORT VideoDecoder {
   // must be called before destructing the decoder.
   virtual void Stop() = 0;
 
-  // Returns true if the output format has an alpha channel. Most formats do not
-  // have alpha so the default is false. Override and return true for decoders
-  // that return formats with an alpha channel.
-  virtual bool HasAlpha() const;
-
   // Returns true if the decoder needs bitstream conversion before decoding.
   virtual bool NeedsBitstreamConversion() const;
 

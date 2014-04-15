@@ -27,7 +27,6 @@ VideoRendererImpl::VideoRendererImpl(
     ScopedVector<VideoDecoder> decoders,
     const SetDecryptorReadyCB& set_decryptor_ready_cb,
     const PaintCB& paint_cb,
-    const SetOpaqueCB& set_opaque_cb,
     bool drop_frames)
     : task_runner_(task_runner),
       video_frame_stream_(task_runner, decoders.Pass(), set_decryptor_ready_cb),
@@ -39,7 +38,6 @@ VideoRendererImpl::VideoRendererImpl(
       drop_frames_(drop_frames),
       playback_rate_(0),
       paint_cb_(paint_cb),
-      set_opaque_cb_(set_opaque_cb),
       last_timestamp_(kNoTimestamp()),
       frames_decoded_(0),
       frames_dropped_(0),
@@ -189,8 +187,7 @@ void VideoRendererImpl::Initialize(DemuxerStream* stream,
                  weak_factory_.GetWeakPtr()));
 }
 
-void VideoRendererImpl::OnVideoFrameStreamInitialized(bool success,
-                                                      bool has_alpha) {
+void VideoRendererImpl::OnVideoFrameStreamInitialized(bool success) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
 
@@ -210,9 +207,6 @@ void VideoRendererImpl::OnVideoFrameStreamInitialized(bool success,
   // Since we had an initial Preroll(), we consider ourself flushed, because we
   // have not populated any buffers yet.
   state_ = kFlushed;
-
-  set_opaque_cb_.Run(!has_alpha);
-  set_opaque_cb_.Reset();
 
   // Create our video thread.
   if (!base::PlatformThread::Create(0, this, &thread_)) {

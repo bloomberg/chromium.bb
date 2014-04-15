@@ -184,7 +184,6 @@ class WebMediaPlayerImpl
                  const std::vector<uint8>& init_data);
   void OnAddTextTrack(const media::TextTrackConfig& config,
                       const media::AddTextTrackDoneCB& done_cb);
-  void SetOpaque(bool);
 
  private:
   // Called after |defer_load_cb_| has decided to allow the load. If
@@ -228,8 +227,9 @@ class WebMediaPlayerImpl
   double GetPipelineDuration() const;
 
   // Callbacks from |pipeline_| that are forwarded to |client_|.
-  void OnDurationChange();
-  void OnNaturalSizeChange(gfx::Size size);
+  void OnDurationChanged();
+  void OnNaturalSizeChanged(gfx::Size size);
+  void OnOpacityChanged(bool opaque);
 
   // Called by VideoRendererImpl on its internal thread with the new frame to be
   // painted.
@@ -264,6 +264,9 @@ class WebMediaPlayerImpl
 
   // Cache of metadata for answering hasAudio(), hasVideo(), and naturalSize().
   media::PipelineMetadata pipeline_metadata_;
+
+  // Whether the video is known to be opaque or not.
+  bool opaque_;
 
   // Playback state.
   //

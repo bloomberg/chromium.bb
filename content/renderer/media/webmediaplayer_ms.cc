@@ -152,6 +152,7 @@ void WebMediaPlayerMS::load(LoadType load_type,
     RenderFrame::FromWebFrame(frame_)->GetRoutingID());
 
   if (video_frame_provider_.get() || audio_renderer_.get()) {
+    // TODO(scherkus): Remove once plumbing from HTMLMediaElement is removed.
     GetClient()->setOpaque(true);
     if (audio_renderer_.get())
       audio_renderer_->Start();
@@ -417,6 +418,7 @@ void WebMediaPlayerMS::OnFrameAvailable(
     if (video_frame_provider_) {
       video_weblayer_.reset(
           new webkit::WebLayerImpl(cc::VideoLayer::Create(this)));
+      video_weblayer_->setOpaque(true);
       GetClient()->setWebLayer(video_weblayer_.get());
     }
   }

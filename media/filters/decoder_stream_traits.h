@@ -44,7 +44,7 @@ struct DecoderStreamTraits<DemuxerStream::VIDEO> {
   typedef VideoDecoder DecoderType;
   typedef VideoDecoderConfig DecoderConfigType;
   typedef DecryptingVideoDecoder DecryptingDecoderType;
-  typedef base::Callback<void(bool success, bool has_alpha)> StreamInitCB;
+  typedef base::Callback<void(bool success)> StreamInitCB;
 
   static std::string ToString();
   static bool FinishInitialization(const StreamInitCB& init_cb,

@@ -564,7 +564,6 @@ TEST_P(PipelineIntegrationTest, BasicPlayback_MediaSource_VP9_WebM) {
 }
 
 TEST_P(PipelineIntegrationTest, BasicPlayback_MediaSource_VP8A_WebM) {
-  EXPECT_CALL(*this, OnSetOpaque(false)).Times(AnyNumber());
   MockMediaSource source("bear-vp8a.webm", kVideoOnlyWebM, kAppendWholeFile,
                          GetParam());
   StartPipelineWithMediaSource(&source);
@@ -583,7 +582,6 @@ TEST_P(PipelineIntegrationTest, BasicPlayback_MediaSource_VP8A_WebM) {
 }
 
 TEST_P(PipelineIntegrationTest, BasicPlayback_MediaSource_Opus_WebM) {
-  EXPECT_CALL(*this, OnSetOpaque(false)).Times(AnyNumber());
   MockMediaSource source("bear-opus-end-trimming.webm", kOpusAudioOnlyWebM,
                          kAppendWholeFile, GetParam());
   StartPipelineWithMediaSource(&source);
@@ -606,7 +604,6 @@ TEST_P(PipelineIntegrationTest, BasicPlayback_MediaSource_Opus_WebM) {
 
 // Flaky. http://crbug.com/304776
 TEST_P(PipelineIntegrationTest, DISABLED_MediaSource_Opus_Seeking_WebM) {
-  EXPECT_CALL(*this, OnSetOpaque(false)).Times(AnyNumber());
   MockMediaSource source("bear-opus-end-trimming.webm", kOpusAudioOnlyWebM,
                          kAppendWholeFile, GetParam());
   StartHashedPipelineWithMediaSource(&source);
@@ -1189,7 +1186,6 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_VP9_Opus_WebM) {
 
 // Verify that VP8 video with alpha channel can be played back.
 TEST_F(PipelineIntegrationTest, BasicPlayback_VP8A_WebM) {
-  EXPECT_CALL(*this, OnSetOpaque(false)).Times(AnyNumber());
   ASSERT_TRUE(Start(GetTestDataFilePath("bear-vp8a.webm"),
                     PIPELINE_OK));
   Play();
@@ -1199,7 +1195,6 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_VP8A_WebM) {
 
 // Verify that VP8A video with odd width/height can be played back.
 TEST_F(PipelineIntegrationTest, BasicPlayback_VP8A_Odd_WebM) {
-  EXPECT_CALL(*this, OnSetOpaque(false)).Times(AnyNumber());
   ASSERT_TRUE(Start(GetTestDataFilePath("bear-vp8a-odd-dimensions.webm"),
                     PIPELINE_OK));
   Play();

@@ -20,9 +20,13 @@ class VideoFrameCompositorTest : public testing::Test,
       : compositor_(new VideoFrameCompositor(
             message_loop_.message_loop_proxy(),
             base::Bind(&VideoFrameCompositorTest::NaturalSizeChanged,
+                       base::Unretained(this)),
+            base::Bind(&VideoFrameCompositorTest::OpacityChanged,
                        base::Unretained(this)))),
         did_receive_frame_count_(0),
-        natural_size_changed_count_(0) {
+        natural_size_changed_count_(0),
+        opacity_changed_count_(0),
+        opaque_(false) {
     provider()->SetVideoFrameProviderClient(this);
   }
 
@@ -41,6 +45,9 @@ class VideoFrameCompositorTest : public testing::Test,
   int natural_size_changed_count() { return natural_size_changed_count_; }
   gfx::Size natural_size() { return natural_size_; }
 
+  int opacity_changed_count() { return opacity_changed_count_; }
+  bool opaque() { return opaque_; }
+
  private:
   // cc::VideoFrameProvider::Client implementation.
   virtual void StopUsingProvider() OVERRIDE {}
@@ -54,11 +61,18 @@ class VideoFrameCompositorTest : public testing::Test,
     natural_size_ = natural_size;
   }
 
+  void OpacityChanged(bool opaque) {
+    ++opacity_changed_count_;
+    opaque_ = opaque;
+  }
+
   base::MessageLoop message_loop_;
   scoped_ptr<VideoFrameCompositor> compositor_;
   int did_receive_frame_count_;
   int natural_size_changed_count_;
   gfx::Size natural_size_;
+  int opacity_changed_count_;
+  bool opaque_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoFrameCompositorTest);
 };
@@ -123,6 +137,39 @@ TEST_F(VideoFrameCompositorTest, NaturalSizeChanged) {
   EXPECT_EQ(initial_size.width(), natural_size().width());
   EXPECT_EQ(initial_size, natural_size());
   EXPECT_EQ(2, natural_size_changed_count());
+}
+
+TEST_F(VideoFrameCompositorTest, OpacityChanged) {
+  gfx::Size size(8, 8);
+  gfx::Rect rect(gfx::Point(0, 0), size);
+  scoped_refptr<VideoFrame> opaque_frame = VideoFrame::CreateFrame(
+      VideoFrame::YV12, size, rect, size, base::TimeDelta());
+  scoped_refptr<VideoFrame> not_opaque_frame = VideoFrame::CreateFrame(
+      VideoFrame::YV12A, size, rect, size, base::TimeDelta());
+
+  // Initial expectations.
+  EXPECT_FALSE(opaque());
+  EXPECT_EQ(0, opacity_changed_count());
+
+  // Callback is fired for the first frame.
+  compositor()->UpdateCurrentFrame(not_opaque_frame);
+  EXPECT_FALSE(opaque());
+  EXPECT_EQ(1, opacity_changed_count());
+
+  // Callback shouldn't be first subsequent times with same opaqueness.
+  compositor()->UpdateCurrentFrame(not_opaque_frame);
+  EXPECT_FALSE(opaque());
+  EXPECT_EQ(1, opacity_changed_count());
+
+  // Callback is fired when using opacity changes.
+  compositor()->UpdateCurrentFrame(opaque_frame);
+  EXPECT_TRUE(opaque());
+  EXPECT_EQ(2, opacity_changed_count());
+
+  // Callback shouldn't be first subsequent times with same opaqueness.
+  compositor()->UpdateCurrentFrame(opaque_frame);
+  EXPECT_TRUE(opaque());
+  EXPECT_EQ(2, opacity_changed_count());
 }
 
 TEST_F(VideoFrameCompositorTest, GetFramesDroppedBeforeCompositorWasNotified) {

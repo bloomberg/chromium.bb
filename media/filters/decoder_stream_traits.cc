@@ -53,14 +53,12 @@ bool DecoderStreamTraits<DemuxerStream::VIDEO>::FinishInitialization(
     DemuxerStream* stream) {
   DCHECK(stream);
   if (!decoder) {
-    init_cb.Run(false, false);
+    init_cb.Run(false);
     return false;
   }
   if (decoder->NeedsBitstreamConversion())
     stream->EnableBitstreamConverter();
-  // TODO(xhwang): We assume |decoder_->HasAlpha()| does not change after
-  // reinitialization. Check this condition.
-  init_cb.Run(true, decoder->HasAlpha());
+  init_cb.Run(true);
   return true;
 }
 

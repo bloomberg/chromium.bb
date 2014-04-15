@@ -79,9 +79,6 @@ bool InitX11() {
   return true;
 }
 
-void SetOpaque(bool /*opaque*/) {
-}
-
 typedef base::Callback<void(media::VideoFrame*)> PaintCB;
 void Paint(base::MessageLoop* message_loop, const PaintCB& paint_cb,
            const scoped_refptr<media::VideoFrame>& video_frame) {
@@ -132,7 +129,6 @@ void InitPipeline(
       video_decoders.Pass(),
       media::SetDecryptorReadyCB(),
       base::Bind(&Paint, paint_message_loop, paint_cb),
-      base::Bind(&SetOpaque),
       true));
   collection->SetVideoRenderer(video_renderer.Pass());
 

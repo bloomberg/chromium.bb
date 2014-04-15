@@ -48,7 +48,6 @@ class MEDIA_EXPORT GpuVideoDecoder
                       const DecodeCB& decode_cb) OVERRIDE;
   virtual void Reset(const base::Closure& closure) OVERRIDE;
   virtual void Stop() OVERRIDE;
-  virtual bool HasAlpha() const OVERRIDE;
   virtual bool NeedsBitstreamConversion() const OVERRIDE;
   virtual bool CanReadWithoutStalling() const OVERRIDE;
 

@@ -49,7 +49,6 @@ class VideoRendererImplTest : public ::testing::Test {
         decoders.Pass(),
         media::SetDecryptorReadyCB(),
         base::Bind(&VideoRendererImplTest::OnPaint, base::Unretained(this)),
-        base::Bind(&VideoRendererImplTest::OnSetOpaque, base::Unretained(this)),
         true));
 
     demuxer_stream_.set_video_decoder_config(TestVideoConfig::Normal());
@@ -64,14 +63,9 @@ class VideoRendererImplTest : public ::testing::Test {
         .Times(AnyNumber());
     EXPECT_CALL(*this, OnTimeUpdate(_))
         .Times(AnyNumber());
-    EXPECT_CALL(*this, OnSetOpaque(_))
-        .Times(AnyNumber());
   }
 
   virtual ~VideoRendererImplTest() {}
-
-  // Callbacks passed into VideoRendererImpl().
-  MOCK_CONST_METHOD1(OnSetOpaque, void(bool));
 
   // Callbacks passed into Initialize().
   MOCK_METHOD1(OnTimeUpdate, void(base::TimeDelta));

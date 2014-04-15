@@ -340,10 +340,6 @@ void VpxVideoDecoder::Stop() {
   state_ = kUninitialized;
 }
 
-bool VpxVideoDecoder::HasAlpha() const {
-  return vpx_codec_alpha_ != NULL;
-}
-
 void VpxVideoDecoder::DecodeBuffer(const scoped_refptr<DecoderBuffer>& buffer) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_NE(state_, kUninitialized);

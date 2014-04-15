@@ -41,9 +41,18 @@ class CONTENT_EXPORT VideoFrameCompositor {
   // frame whenever a change in natural size is detected. It is not called the
   // first time UpdateCurrentFrame() is called. Run on the same thread as the
   // caller of UpdateCurrentFrame().
+  //
+  // |opacity_changed_cb| is run when a change in opacity is detected. It *is*
+  // called the first time UpdateCurrentFrame() is called. Run on the same
+  // thread as the caller of UpdateCurrentFrame().
+  //
+  // TODO(scherkus): Investigate the inconsistency between the callbacks with
+  // respect to why we don't call |natural_size_changed_cb| on the first frame.
+  // I suspect it was for historical reasons that no longer make sense.
   VideoFrameCompositor(
       const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
-      const base::Callback<void(gfx::Size)>& natural_size_changed_cb);
+      const base::Callback<void(gfx::Size)>& natural_size_changed_cb,
+      const base::Callback<void(bool)>& opacity_changed_cb);
   ~VideoFrameCompositor();
 
   cc::VideoFrameProvider* GetVideoFrameProvider();

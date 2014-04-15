@@ -13,13 +13,34 @@
 
 namespace content {
 
+static bool IsOpaque(const scoped_refptr<media::VideoFrame>& frame) {
+  switch (frame->format()) {
+    case media::VideoFrame::UNKNOWN:
+    case media::VideoFrame::YV12:
+    case media::VideoFrame::YV12J:
+    case media::VideoFrame::YV16:
+    case media::VideoFrame::I420:
+      return true;
+
+    case media::VideoFrame::YV12A:
+#if defined(VIDEO_HOLE)
+    case media::VideoFrame::HOLE:
+#endif  // defined(VIDEO_HOLE)
+    case media::VideoFrame::NATIVE_TEXTURE:
+      break;
+  }
+  return false;
+}
+
 class VideoFrameCompositor::Internal : public cc::VideoFrameProvider {
  public:
   Internal(
       const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
-      const base::Callback<void(gfx::Size)>& natural_size_changed_cb)
+      const base::Callback<void(gfx::Size)>& natural_size_changed_cb,
+      const base::Callback<void(bool)>& opacity_changed_cb)
       : compositor_task_runner_(compositor_task_runner),
         natural_size_changed_cb_(natural_size_changed_cb),
+        opacity_changed_cb_(opacity_changed_cb),
         client_(NULL),
         compositor_notification_pending_(false),
         frames_dropped_before_compositor_was_notified_(0) {}
@@ -39,6 +60,10 @@ class VideoFrameCompositor::Internal : public cc::VideoFrameProvider {
     if (current_frame_ &&
         current_frame_->natural_size() != frame->natural_size()) {
       natural_size_changed_cb_.Run(frame->natural_size());
+    }
+
+    if (!current_frame_ || IsOpaque(current_frame_) != IsOpaque(frame)) {
+      opacity_changed_cb_.Run(IsOpaque(frame));
     }
 
     current_frame_ = frame;
@@ -94,7 +119,8 @@ class VideoFrameCompositor::Internal : public cc::VideoFrameProvider {
   }
 
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
-  base::Callback<void(gfx::Size)>natural_size_changed_cb_;
+  base::Callback<void(gfx::Size)> natural_size_changed_cb_;
+  base::Callback<void(bool)> opacity_changed_cb_;
 
   cc::VideoFrameProvider::Client* client_;
 
@@ -108,8 +134,11 @@ class VideoFrameCompositor::Internal : public cc::VideoFrameProvider {
 
 VideoFrameCompositor::VideoFrameCompositor(
     const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
-    const base::Callback<void(gfx::Size)>& natural_size_changed_cb)
-    : internal_(new Internal(compositor_task_runner, natural_size_changed_cb)) {
+    const base::Callback<void(gfx::Size)>& natural_size_changed_cb,
+    const base::Callback<void(bool)>& opacity_changed_cb)
+    : internal_(new Internal(compositor_task_runner,
+                             natural_size_changed_cb,
+                             opacity_changed_cb)) {
 }
 
 VideoFrameCompositor::~VideoFrameCompositor() {
