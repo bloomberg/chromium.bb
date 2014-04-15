@@ -70,22 +70,6 @@
             '../build/linux/system.gyp:glib',
           ],
         }],
-        ['use_x11==1', {
-          'dependencies': [
-            '../build/linux/system.gyp:x11',
-          ],
-          'export_dependent_settings': [
-            '../build/linux/system.gyp:x11',
-          ],
-        }],
-        ['use_aura==1 and use_x11==1', {
-          'dependencies': [
-            '../build/linux/system.gyp:xrandr',
-          ],
-          'export_dependent_settings': [
-            '../build/linux/system.gyp:xrandr',
-          ],
-        }],
         ['OS == "android" and _toolset == "host"', {
           # Always build base as a static_library for host toolset, even if
           # we're doing a component build. Specifically, we only care about the
@@ -720,11 +704,6 @@
                 '../build/linux/system.gyp:gtk',
               ]
             }],
-          ],
-        }],
-        ['use_x11 == 1', {
-          'dependencies': [
-            '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
         }],
         ['use_glib == 1', {

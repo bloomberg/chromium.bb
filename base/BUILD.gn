@@ -808,11 +808,6 @@ component("base") {
     if (toolkit_uses_gtk) {
       linux_configs += [ "//build/config/linux:gtk" ]
     }
-    if (use_x11) {
-      linux_configs += [
-        "//build/config/linux:x11",
-      ]
-    }
 
     configs += linux_configs
     all_dependent_configs = linux_configs
@@ -833,13 +828,6 @@ component("base") {
       "nix/mime_util_xdg.h",
       "nix/xdg_util.cc",
       "nix/xdg_util.h",
-    ]
-  }
-
-  if (!use_x11) {
-    sources -= [
-      "message_loop/message_pump_x11.cc",
-      "message_loop/message_pump_x11.h",
     ]
   }
 
