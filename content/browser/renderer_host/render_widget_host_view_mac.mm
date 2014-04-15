@@ -85,6 +85,7 @@ using content::RenderWidgetHostImpl;
 using content::RenderWidgetHostViewMac;
 using content::RenderWidgetHostViewMacEditCommandHelper;
 using content::TextInputClientMac;
+using content::WebContents;
 using blink::WebInputEvent;
 using blink::WebInputEventFactory;
 using blink::WebMouseEvent;
@@ -4050,31 +4051,45 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 }
 
 - (void)undo:(id)sender {
-  renderWidgetHostView_->GetWebContents()->Undo();
+  WebContents* web_contents = renderWidgetHostView_->GetWebContents();
+  if (web_contents)
+    web_contents->Undo();
 }
 
 - (void)redo:(id)sender {
-  renderWidgetHostView_->GetWebContents()->Redo();
+  WebContents* web_contents = renderWidgetHostView_->GetWebContents();
+  if (web_contents)
+    web_contents->Redo();
 }
 
 - (void)cut:(id)sender {
-  renderWidgetHostView_->GetWebContents()->Cut();
+  WebContents* web_contents = renderWidgetHostView_->GetWebContents();
+  if (web_contents)
+    web_contents->Cut();
 }
 
 - (void)copy:(id)sender {
-  renderWidgetHostView_->GetWebContents()->Copy();
+  WebContents* web_contents = renderWidgetHostView_->GetWebContents();
+  if (web_contents)
+    web_contents->Copy();
 }
 
 - (void)copyToFindPboard:(id)sender {
-  renderWidgetHostView_->GetWebContents()->CopyToFindPboard();
+  WebContents* web_contents = renderWidgetHostView_->GetWebContents();
+  if (web_contents)
+    web_contents->CopyToFindPboard();
 }
 
 - (void)paste:(id)sender {
-  renderWidgetHostView_->GetWebContents()->Paste();
+  WebContents* web_contents = renderWidgetHostView_->GetWebContents();
+  if (web_contents)
+    web_contents->Paste();
 }
 
 - (void)pasteAndMatchStyle:(id)sender {
-  renderWidgetHostView_->GetWebContents()->PasteAndMatchStyle();
+  WebContents* web_contents = renderWidgetHostView_->GetWebContents();
+  if (web_contents)
+    web_contents->PasteAndMatchStyle();
 }
 
 - (void)selectAll:(id)sender {
@@ -4085,7 +4100,9 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   // menu handler, neither is true.
   // Explicitly call SelectAll() here to make sure the renderer returns
   // selection results.
-  renderWidgetHostView_->GetWebContents()->SelectAll();
+  WebContents* web_contents = renderWidgetHostView_->GetWebContents();
+  if (web_contents)
+    web_contents->SelectAll();
 }
 
 - (void)startSpeaking:(id)sender {
