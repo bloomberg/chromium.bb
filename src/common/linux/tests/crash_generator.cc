@@ -199,19 +199,25 @@ bool CrashGenerator::CreateChildCrash(
         fprintf(stderr, "CrashGenerator: Failed to copy proc files\n");
         exit(1);
       }
-      if (tkill(*GetThreadIdPointer(crash_thread), crash_signal) == -1) {
-        perror("CrashGenerator: Failed to kill thread by signal");
-      } else {
-        // At this point, we've queued the signal for delivery, but there's no
-        // guarantee when it'll be delivered.  We don't want the main thread to
-        // race and exit before the thread we signaled is processed.  So sleep
-        // long enough that we won't flake even under fairly high load.
-        // TODO: See if we can't be a bit more deterministic.  There doesn't
-        // seem to be an API to check on signal delivery status, so we can't
-        // really poll and wait for the kernel to declare the signal has been
-        // delivered.  If it has, and things worked, we'd be killed, so the
-        // sleep length doesn't really matter.
-        sleep(10 * 60);
+      // On Android the signal sometimes doesn't seem to get sent even though
+      // tkill returns '0'.  Retry a couple of times if the signal doesn't get
+      // through on the first go:
+      // https://code.google.com/p/google-breakpad/issues/detail?id=579
+      for (int i = 0; i < 60; i++) {
+        if (tkill(*GetThreadIdPointer(crash_thread), crash_signal) == -1) {
+          perror("CrashGenerator: Failed to kill thread by signal");
+        } else {
+          // At this point, we've queued the signal for delivery, but there's no
+          // guarantee when it'll be delivered.  We don't want the main thread to
+          // race and exit before the thread we signaled is processed.  So sleep
+          // long enough that we won't flake even under fairly high load.
+          // TODO: See if we can't be a bit more deterministic.  There doesn't
+          // seem to be an API to check on signal delivery status, so we can't
+          // really poll and wait for the kernel to declare the signal has been
+          // delivered.  If it has, and things worked, we'd be killed, so the
+          // sleep length doesn't really matter.
+          sleep(1);
+        }
       }
     } else {
       perror("CrashGenerator: Failed to set core limit");
