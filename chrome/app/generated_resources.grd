@@ -6254,17 +6254,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_ASYNC_DNS_DESCRIPTION" desc="Description for the flag to enable asynchronous DNS client.">
         Enable experimental asynchronous DNS client.
       </message>
-      <message name="IDS_FLAGS_DISABLE_WEBKIT_MEDIA_SOURCE_NAME" desc="Title for the flag to disable the prefixed Media Source API.">
-        Disable prefixed Media Source API.
+      <message name="IDS_FLAGS_DISABLE_MEDIA_SOURCE_NAME" desc="Title for the flag to disable the Media Source API.">
+        Disable Media Source API.
       </message>
-      <message name="IDS_FLAGS_DISABLE_WEBKIT_MEDIA_SOURCE_DESCRIPTION" desc="Description for the flag to disable the prefixed Media Source API.">
-        Disable the experimental WebKitMediaSource object. This object allows JavaScript to send media data directly to a video element.
-      </message>
-      <message name="IDS_FLAGS_DISABLE_UNPREFIXED_MEDIA_SOURCE_NAME" desc="Title for the flag to disable the unprefixed Media Source API.">
-        Disable unprefixed Media Source API.
-      </message>
-      <message name="IDS_FLAGS_DISABLE_UNPREFIXED_MEDIA_SOURCE_DESCRIPTION" desc="Description for the flag to disable the unprefixed Media Source API.">
-        Disable the unprefixed MediaSource object. This object allows JavaScript to send media data directly to a video element.
+      <message name="IDS_FLAGS_DISABLE_MEDIA_SOURCE_DESCRIPTION" desc="Description for the flag to disable the Media Source API.">
+        Disable the MediaSource object. This object allows JavaScript to send media data directly to a video element.
       </message>
       <message name="IDS_FLAGS_ENABLE_ENCRYPTED_MEDIA_NAME" desc="Title for the flag to enable the (unprefixed) Encrypted Media Extensions APIs (e.g. MediaKeys).">
         Enable Encrypted Media Extensions.

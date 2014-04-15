@@ -246,6 +246,9 @@ const char kDisableLogging[]                = "disable-logging";
 // Overrides the kEnableMapImage flag.
 const char kDisableMapImage[]               = "disable-map-image";
 
+// Disables Media Source API (i.e., the MediaSource object).
+const char kDisableMediaSource[]            = "disable-media-source";
+
 // Disable Pepper3D.
 const char kDisablePepper3d[]               = "disable-pepper-3d";
 
@@ -307,12 +310,6 @@ const char kDisableThreadedHTMLParser[]     = "disable-threaded-html-parser";
 // handled by enable-accelerated-overflow-scroll).
 const char kDisableUniversalAcceleratedOverflowScroll[] =
     "disable-universal-accelerated-overflow-scroll";
-
-// Disables unprefixed Media Source API (i.e., the MediaSource object).
-const char kDisableUnprefixedMediaSource[]  = "disable-unprefixed-media-source";
-
-// Disables prefixed Media Source API (i.e., the WebKitMediaSource object).
-const char kDisableWebKitMediaSource[]      = "disable-webkit-media-source";
 
 // Don't enforce the same-origin policy. (Used by people testing their sites.)
 const char kDisableWebSecurity[]            = "disable-web-security";

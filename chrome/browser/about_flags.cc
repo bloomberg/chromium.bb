@@ -794,18 +794,11 @@ const Experiment kExperiments[] = {
                               switches::kDisableAsyncDns)
   },
   {
-    "disable-webkit-media-source",
-    IDS_FLAGS_DISABLE_WEBKIT_MEDIA_SOURCE_NAME,
-    IDS_FLAGS_DISABLE_WEBKIT_MEDIA_SOURCE_DESCRIPTION,
+    "disable-media-source",
+    IDS_FLAGS_DISABLE_MEDIA_SOURCE_NAME,
+    IDS_FLAGS_DISABLE_MEDIA_SOURCE_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kDisableWebKitMediaSource)
-  },
-  {
-    "disable-unprefixed-media-source",
-    IDS_FLAGS_DISABLE_UNPREFIXED_MEDIA_SOURCE_NAME,
-    IDS_FLAGS_DISABLE_UNPREFIXED_MEDIA_SOURCE_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kDisableUnprefixedMediaSource)
+    SINGLE_VALUE_TYPE(switches::kDisableMediaSource)
   },
   {
     "enable-encrypted-media",
