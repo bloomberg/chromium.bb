@@ -10,14 +10,14 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "ui/events/event_handler.h"
-#include "ui/wm/core/wm_core_export.h"
+#include "ui/wm/wm_export.h"
 
 namespace wm {
 
 class UserActivityObserver;
 
 // Watches for input events and notifies observers that the user is active.
-class WM_CORE_EXPORT UserActivityDetector : public ui::EventHandler {
+class WM_EXPORT UserActivityDetector : public ui::EventHandler {
  public:
   // Minimum amount of time between notifications to observers.
   static const int kNotifyIntervalMs;

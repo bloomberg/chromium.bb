@@ -6,7 +6,7 @@
 #define UI_WM_CORE_USER_ACTIVITY_OBSERVER_H_
 
 #include "base/basictypes.h"
-#include "ui/wm/core/wm_core_export.h"
+#include "ui/wm/wm_export.h"
 
 namespace ui {
 class Event;
@@ -16,7 +16,7 @@ namespace wm {
 
 // Interface for classes that want to be notified about user activity.
 // Implementations should register themselves with UserActivityDetector.
-class WM_CORE_EXPORT UserActivityObserver {
+class WM_EXPORT UserActivityObserver {
  public:
   // Invoked periodically while the user is active (i.e. generating input
   // events). |event| is the event that triggered the notification; it may

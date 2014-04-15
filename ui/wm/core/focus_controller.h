@@ -12,8 +12,8 @@
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window_observer.h"
 #include "ui/events/event_handler.h"
-#include "ui/wm/core/wm_core_export.h"
 #include "ui/wm/public/activation_client.h"
+#include "ui/wm/wm_export.h"
 
 namespace wm {
 
@@ -34,10 +34,10 @@ class FocusRules;
 // . Window disposition changes (implemented here in aura::WindowObserver).
 //   (The FocusController registers itself as an observer of the active and
 //    focused windows).
-class WM_CORE_EXPORT FocusController : public aura::client::ActivationClient,
-                                       public aura::client::FocusClient,
-                                       public ui::EventHandler,
-                                       public aura::WindowObserver {
+class WM_EXPORT FocusController : public aura::client::ActivationClient,
+                                  public aura::client::FocusClient,
+                                  public ui::EventHandler,
+                                  public aura::WindowObserver {
  public:
   // |rules| cannot be NULL.
   explicit FocusController(FocusRules* rules);

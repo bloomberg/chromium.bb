@@ -13,7 +13,7 @@
       'dependencies': [
         '../../base/base.gyp:base',
         '../events/events.gyp:events',
-        '../wm/wm.gyp:wm_core',
+        '../wm/wm.gyp:wm',
       ],
       'defines': [
         'UI_CHROMEOS_IMPLEMENTATION',
