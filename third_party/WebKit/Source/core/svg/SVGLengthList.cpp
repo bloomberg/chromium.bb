@@ -102,8 +102,10 @@ void SVGLengthList::parseInternal(const CharType*& ptr, const CharType* end, Exc
 
 void SVGLengthList::setValueAsString(const String& value, ExceptionState& exceptionState)
 {
-    if (value.isEmpty())
+    if (value.isEmpty()) {
+        clear();
         return;
+    }
     if (value.is8Bit()) {
         const LChar* ptr = value.characters8();
         const LChar* end = ptr + value.length();
