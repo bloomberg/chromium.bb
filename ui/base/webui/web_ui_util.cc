@@ -140,7 +140,9 @@ void SetFontAndTextDirection(base::DictionaryValue* localized_strings) {
 
   std::string font_family = l10n_util::GetStringUTF8(web_font_family_id);
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(dnicoara) Remove Ozone check when PlatformFont support is introduced
+// into Ozone: crbug.com/320050
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(USE_OZONE)
   font_family = ui::ResourceBundle::GetSharedInstance().GetFont(
       ui::ResourceBundle::BaseFont).GetFontName() + ", " + font_family;
 #endif
