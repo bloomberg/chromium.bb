@@ -32,7 +32,9 @@
 #include "modules/imagebitmap/ImageBitmapFactories.h"
 
 #include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/ScriptScope.h"
+#include "bindings/v8/ScriptPromiseResolver.h"
+#include "bindings/v8/ScriptPromiseResolverWithContext.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/fileapi/Blob.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLImageElement.h"
@@ -200,9 +202,8 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(EventTarget& eventTarget, 
         exceptionState.throwTypeError("The blob provided is invalid.");
         return ScriptPromise();
     }
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(eventTarget.executionContext());
-    ScriptPromise promise = resolver->promise();
-    RefPtr<ImageBitmapLoader> loader = ImageBitmapFactories::ImageBitmapLoader::create(from(eventTarget), resolver, IntRect());
+    RefPtr<ImageBitmapLoader> loader = ImageBitmapFactories::ImageBitmapLoader::create(from(eventTarget), eventTarget.executionContext(), IntRect());
+    ScriptPromise promise = loader->promise();
     from(eventTarget).addLoader(loader);
     loader->loadBlobAsync(eventTarget.executionContext(), blob);
     return promise;
@@ -218,9 +219,8 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(EventTarget& eventTarget, 
         exceptionState.throwDOMException(IndexSizeError, String::format("The source %s provided is 0.", sw ? "height" : "width"));
         return ScriptPromise();
     }
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(eventTarget.executionContext());
-    ScriptPromise promise = resolver->promise();
-    RefPtr<ImageBitmapLoader> loader = ImageBitmapFactories::ImageBitmapLoader::create(from(eventTarget), resolver, IntRect(sx, sy, sw, sh));
+    RefPtr<ImageBitmapLoader> loader = ImageBitmapFactories::ImageBitmapLoader::create(from(eventTarget), eventTarget.executionContext(), IntRect(sx, sy, sw, sh));
+    ScriptPromise promise = loader->promise();
     from(eventTarget).addLoader(loader);
     loader->loadBlobAsync(eventTarget.executionContext(), blob);
     return promise;
@@ -300,11 +300,10 @@ void ImageBitmapFactories::didFinishLoading(ImageBitmapLoader* loader)
     m_pendingLoaders.remove(loader);
 }
 
-ImageBitmapFactories::ImageBitmapLoader::ImageBitmapLoader(ImageBitmapFactories& factory, PassRefPtr<ScriptPromiseResolver> resolver, const IntRect& cropRect)
-    : m_scriptState(NewScriptState::current(resolver->isolate()))
-    , m_loader(FileReaderLoader::ReadAsArrayBuffer, this)
+ImageBitmapFactories::ImageBitmapLoader::ImageBitmapLoader(ImageBitmapFactories& factory, ExecutionContext* context, const IntRect& cropRect)
+    : m_loader(FileReaderLoader::ReadAsArrayBuffer, this)
     , m_factory(&factory)
-    , m_resolver(resolver)
+    , m_resolver(ScriptPromiseResolverWithContext::create(NewScriptState::current(toIsolate(context))))
     , m_cropRect(cropRect)
 {
 }
@@ -316,7 +315,6 @@ void ImageBitmapFactories::ImageBitmapLoader::loadBlobAsync(ExecutionContext* co
 
 void ImageBitmapFactories::ImageBitmapLoader::rejectPromise()
 {
-    NewScriptState::Scope scope(m_scriptState.get());
     m_resolver->reject(ScriptValue::createNull());
     m_factory->didFinishLoading(this);
 }
@@ -348,7 +346,6 @@ void ImageBitmapFactories::ImageBitmapLoader::didFinishLoading()
     }
 
     RefPtrWillBeRawPtr<ImageBitmap> imageBitmap = ImageBitmap::create(image.get(), m_cropRect);
-    NewScriptState::Scope scope(m_scriptState.get());
     m_resolver->resolve(imageBitmap.release());
     m_factory->didFinishLoading(this);
 }

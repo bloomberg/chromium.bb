@@ -31,9 +31,8 @@
 #ifndef ImageBitmapFactories_h
 #define ImageBitmapFactories_h
 
-#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScriptPromise.h"
-#include "bindings/v8/ScriptPromiseResolver.h"
+#include "bindings/v8/ScriptPromiseResolverWithContext.h"
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
 #include "platform/Supplementable.h"
@@ -83,17 +82,18 @@ protected:
 private:
     class ImageBitmapLoader FINAL : public RefCounted<ImageBitmapLoader>, public FileReaderLoaderClient {
     public:
-        static PassRefPtr<ImageBitmapLoader> create(ImageBitmapFactories& factory, PassRefPtr<ScriptPromiseResolver> resolver, const IntRect& cropRect)
+        static PassRefPtr<ImageBitmapLoader> create(ImageBitmapFactories& factory, ExecutionContext* context, const IntRect& cropRect)
         {
-            return adoptRef(new ImageBitmapLoader(factory, resolver, cropRect));
+            return adoptRef(new ImageBitmapLoader(factory, context, cropRect));
         }
 
         void loadBlobAsync(ExecutionContext*, Blob*);
+        ScriptPromise promise() { return m_resolver->promise(); }
 
         virtual ~ImageBitmapLoader() { }
 
     private:
-        ImageBitmapLoader(ImageBitmapFactories&, PassRefPtr<ScriptPromiseResolver>, const IntRect&);
+        ImageBitmapLoader(ImageBitmapFactories&, ExecutionContext*, const IntRect&);
 
         void rejectPromise();
 
@@ -103,10 +103,9 @@ private:
         virtual void didFinishLoading() OVERRIDE;
         virtual void didFail(FileError::ErrorCode) OVERRIDE;
 
-        RefPtr<NewScriptState> m_scriptState;
         FileReaderLoader m_loader;
         ImageBitmapFactories* m_factory;
-        RefPtr<ScriptPromiseResolver> m_resolver;
+        RefPtr<ScriptPromiseResolverWithContext> m_resolver;
         IntRect m_cropRect;
     };
 
