@@ -4,8 +4,8 @@
 from measurements import timeline_controller
 from metrics import loading
 from metrics import timeline
-from metrics import timeline_interaction_record
 from telemetry.page import page_measurement
+from telemetry.web_perf import timeline_interaction_record as tir_module
 
 class LoadingTrace(page_measurement.PageMeasurement):
   def __init__(self, *args, **kwargs):
@@ -32,7 +32,7 @@ class LoadingTrace(page_measurement.PageMeasurement):
     timeline_metric = timeline.LoadTimesTimelineMetric()
     renderer_thread = \
         self._timeline_controller.model.GetRendererThreadFromTab(tab)
-    record = timeline_interaction_record.TimelineInteractionRecord(
+    record = tir_module.TimelineInteractionRecord(
       "loading_trace_interaction", 0, float('inf'))
     timeline_metric.AddResults(
       self._timeline_controller.model,

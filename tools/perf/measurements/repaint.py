@@ -19,9 +19,6 @@ class Repaint(page_measurement.PageMeasurement):
     tab.ExecuteJavaScript(
         'chrome.gpuBenchmarking.setRasterizeOnlyVisibleContent();')
 
-  def DidRunAction(self, page, tab, action):
-    self._smoothness_controller.AddActionToIncludeInMetric(action)
-
   def DidRunActions(self, page, tab):
     self._smoothness_controller.Stop(tab)
 

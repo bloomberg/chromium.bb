@@ -8,11 +8,5 @@ class NoOp(page_measurement.PageMeasurement):
   def __init__(self):
     super(NoOp, self).__init__('RunNoOp')
 
-  def WillRunAction(self, page, tab, action):
-    pass
-
-  def DidRunAction(self, page, tab, action):
-    pass
-
   def MeasurePage(self, page, tab, results):
     pass

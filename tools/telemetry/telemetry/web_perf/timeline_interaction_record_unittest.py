@@ -4,24 +4,24 @@
 
 import unittest
 
-from metrics import timeline_interaction_record
+from telemetry.web_perf import timeline_interaction_record as tir_module
 from telemetry.core.timeline import async_slice
 
 
 class ParseTests(unittest.TestCase):
   def testParse(self):
-    self.assertTrue(timeline_interaction_record.IsTimelineInteractionRecord(
+    self.assertTrue(tir_module.IsTimelineInteractionRecord(
         'Interaction.Foo'))
-    self.assertTrue(timeline_interaction_record.IsTimelineInteractionRecord(
+    self.assertTrue(tir_module.IsTimelineInteractionRecord(
         'Interaction.Foo/Bar'))
-    self.assertFalse(timeline_interaction_record.IsTimelineInteractionRecord(
+    self.assertFalse(tir_module.IsTimelineInteractionRecord(
         'SomethingRandom'))
 
   def CreateRecord(self, event_name):
     s = async_slice.AsyncSlice(
       'cat', event_name,
       timestamp=1, duration=2)
-    return timeline_interaction_record.TimelineInteractionRecord.FromEvent(s)
+    return tir_module.TimelineInteractionRecord.FromEvent(s)
 
   def testCreate(self):
     r = self.CreateRecord('Interaction.LogicalName')
@@ -44,3 +44,13 @@ class ParseTests(unittest.TestCase):
     self.assertEquals('LogicalNameWith/Slash', r.logical_name)
     self.assertEquals(True, r.is_smooth)
     self.assertEquals(True, r.is_loading_resources)
+
+  def testGetJavascriptMarker(self):
+    smooth_marker = tir_module.TimelineInteractionRecord.GetJavascriptMarker(
+      'LogicalName', [tir_module.IS_SMOOTH])
+    self.assertEquals('Interaction.LogicalName/is_smooth', smooth_marker)
+    slr_marker = tir_module.TimelineInteractionRecord.GetJavascriptMarker(
+      'LogicalName', [tir_module.IS_SMOOTH, tir_module.IS_LOADING_RESOURCES])
+    self.assertEquals('Interaction.LogicalName/is_smooth,is_loading_resources',
+                      slr_marker)
+

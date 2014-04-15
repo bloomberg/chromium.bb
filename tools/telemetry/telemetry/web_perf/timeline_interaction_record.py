@@ -8,6 +8,14 @@ from telemetry import decorators
 import telemetry.core.timeline.bounds as timeline_bounds
 
 
+IS_SMOOTH = "is_smooth"
+IS_LOADING_RESOURCES = "is_loading_resources"
+
+FLAGS = [
+  IS_SMOOTH,
+  IS_LOADING_RESOURCES
+]
+
 def IsTimelineInteractionRecord(event_name):
   return event_name.startswith('Interaction.')
 
@@ -74,15 +82,15 @@ class TimelineInteractionRecord(object):
 
     record = TimelineInteractionRecord(logical_name, event.start, event.end)
     for f in flags:
-      if not f in ('is_smooth', 'is_loading_resources'):
+      if not f in FLAGS:
         raise Exception(
           'Unrecognized flag in timeline Interaction record: %s' % f)
-    record.is_smooth = 'is_smooth' in flags
-    record.is_loading_resources = 'is_loading_resources' in flags
+    record.is_smooth = IS_SMOOTH in flags
+    record.is_loading_resources = IS_LOADING_RESOURCES in flags
     return record
 
   def GetResultNameFor(self, result_name):
-    return "%s-%s" % (self.logical_name, result_name)
+    return '%s-%s' % (self.logical_name, result_name)
 
   @decorators.Cache
   def GetBounds(self):
@@ -90,3 +98,15 @@ class TimelineInteractionRecord(object):
     bounds.AddValue(self.start)
     bounds.AddValue(self.end)
     return bounds
+
+  @staticmethod
+  def GetJavascriptMarker(logical_name, flags):
+    """ Get the marker string of an interaction record with logical_name
+    and flags.
+    """
+    assert isinstance(flags, list)
+    for f in flags:
+      if f not in FLAGS:
+        raise Exception(
+          'Unrecognized flag for a timeline Interaction record: %s' % f)
+    return 'Interaction.%s/%s' % (logical_name, ','.join(flags))

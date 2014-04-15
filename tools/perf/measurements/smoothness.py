@@ -23,9 +23,6 @@ class Smoothness(page_measurement.PageMeasurement):
     self._smoothness_controller = smoothness_controller.SmoothnessController()
     self._smoothness_controller.Start(page, tab)
 
-  def DidRunAction(self, page, tab, action):
-    self._smoothness_controller.AddActionToIncludeInMetric(action)
-
   def DidRunActions(self, page, tab):
     self._power_metric.Stop(page, tab)
     self._smoothness_controller.Stop(tab)

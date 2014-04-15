@@ -3,11 +3,10 @@
 # found in the LICENSE file.
 
 from metrics import smoothness
-from metrics import timeline_interaction_record as tir_module
 from telemetry.core.timeline.model import TimelineModel
 from telemetry.page import page_measurement
-
-import telemetry.core.timeline.bounds as timeline_bounds
+from telemetry.page.actions import action_runner
+from telemetry.web_perf import timeline_interaction_record as tir_module
 
 
 class MissingDisplayFrameRateError(page_measurement.MeasurementFailure):
@@ -17,21 +16,22 @@ class MissingDisplayFrameRateError(page_measurement.MeasurementFailure):
 
 class SmoothnessController(object):
   def __init__(self):
-    self._actions = []
     self._timeline_model = None
 
   def Start(self, page, tab):
-    self._actions = []
     custom_categories = ['webkit.console', 'benchmark']
     custom_categories += page.GetSyntheticDelayCategories()
     tab.browser.StartTracing(','.join(custom_categories), 60)
     if tab.browser.platform.IsRawDisplayFrameRateSupported():
       tab.browser.platform.StartRawDisplayFrameRateMeasurement()
-
-  def AddActionToIncludeInMetric(self, action):
-    self._actions.append(action)
+    # Start the smooth marker for all smooth actions.
+    runner = action_runner.ActionRunner(None, tab)
+    runner.BeginInteraction('RunSmoothActions', [tir_module.IS_SMOOTH])
 
   def Stop(self, tab):
+    # End the smooth marker for all smooth actions.
+    runner = action_runner.ActionRunner(None, tab)
+    runner.EndInteraction('RunSmoothActions', [tir_module.IS_SMOOTH])
     # Stop tracing for smoothness metric.
     if tab.browser.platform.IsRawDisplayFrameRateSupported():
       tab.browser.platform.StopRawDisplayFrameRateMeasurement()
@@ -43,20 +43,18 @@ class SmoothnessController(object):
     # the time range between the first action starts and the last action ends.
     # To get the measurement for each action, use
     # measurement.TimelineBasedMeasurement.
-    time_bounds = timeline_bounds.Bounds()
-    for action in self._actions:
-      time_bounds.AddBounds(
-        action.GetActiveRangeOnTimeline(self._timeline_model))
     # Create an interaction_record for this legacy measurement. Since we don't
     # wrap the results that is sent to smoothnes metric, the logical_name will
     # not be used.
-    interaction_record = tir_module.TimelineInteractionRecord(
-      'smoothness_interaction', time_bounds.min, time_bounds.max)
     renderer_thread = self._timeline_model.GetRendererThreadFromTab(tab)
+    records = [tir_module.TimelineInteractionRecord.FromEvent(event) for
+               event in renderer_thread.async_slices
+               if tir_module.IsTimelineInteractionRecord(event.name)]
+    assert len(records) == 1
     smoothness_metric = smoothness.SmoothnessMetric()
     smoothness_metric.AddResults(self._timeline_model,
                                        renderer_thread,
-                                       interaction_record,
+                                       records[0],
                                        results)
     if tab.browser.platform.IsRawDisplayFrameRateSupported():
       for r in tab.browser.platform.GetRawDisplayFrameRateMeasurements():
