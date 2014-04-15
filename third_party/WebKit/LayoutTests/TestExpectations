@@ -984,6 +984,9 @@ crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/whitespace/015.ht
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/whitespace/016.html [ Skip ]
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/whitespace/017.html [ Skip ]
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/whitespace/018.html [ Skip ]
+crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/text-combine-shrink-to-fit.html [ Skip ]
+crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/remove-zero-length-run.html [ Skip ]
+crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/line-break-after-question-mark.html [ Skip ]
 
 # Sub-pixel scaling currently broken for DW.
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/sub-pixel/text-scaling-ltr.html [ Failure ]
@@ -991,11 +994,6 @@ crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/sub-pixel/text-sc
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/sub-pixel/text-scaling-rtl.html [ Failure ]
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/sub-pixel/text-scaling-vertical.html [ Failure ]
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/sub-pixel/text-scaling-webfont.html [ Failure ]
-
-# Needs investigation.
-crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/line-break-after-question-mark.html [ Failure ]
-crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/remove-zero-length-run.html [ Failure ]
-crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/text-combine-shrink-to-fit.html [ Failure ]
 
 # Ref tests fail as the reference rendering uses the default text rendering options (GDI w/o AA)
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/bidi-isolate-hang-with-neutral.html [ Skip ]
