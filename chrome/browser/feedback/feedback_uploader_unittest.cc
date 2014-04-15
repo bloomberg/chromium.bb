@@ -106,7 +106,7 @@ class FeedbackUploaderTest : public testing::Test {
   size_t expected_reports_;
 };
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MACOSX)
+#if defined(OS_LINUX) || defined(OS_MACOSX)
 #define MAYBE_QueueMultiple QueueMultiple
 #else
 // crbug.com/330547

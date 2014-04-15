@@ -378,7 +378,7 @@ class ProtocolHandlerRegistryTest : public testing::Test {
 
 // ProtocolHandlerRegistryTest tests are flaky on Linux & ChromeOS.
 // http://crbug.com/133023
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if defined(OS_LINUX)
 #define MAYBE_AcceptProtocolHandlerHandlesProtocol \
     DISABLED_AcceptProtocolHandlerHandlesProtocol
 #define MAYBE_DeniedProtocolIsntHandledUntilAccepted \
@@ -404,7 +404,7 @@ class ProtocolHandlerRegistryTest : public testing::Test {
 #define MAYBE_TestIsHandledProtocolWorksOnIOThread \
     TestIsHandledProtocolWorksOnIOThread
 #define MAYBE_TestInstallDefaultHandler TestInstallDefaultHandler
-#endif  // defined(OS_CHROMEOS)
+#endif  // defined(OS_LINUX)
 
 TEST_F(ProtocolHandlerRegistryTest,
        MAYBE_AcceptProtocolHandlerHandlesProtocol) {

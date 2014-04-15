@@ -59,7 +59,7 @@ const size_t kTooBigAllocSize = INT_MAX;
 
 // Detect runtime TCMalloc bypasses.
 bool IsTcMallocBypassed() {
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if defined(OS_LINUX)
   // This should detect a TCMalloc bypass from Valgrind.
   char* g_slice = getenv("G_SLICE");
   if (g_slice && !strcmp(g_slice, "always-malloc"))
@@ -230,7 +230,7 @@ TEST(SecurityTest, CallocOverflow) {
   }
 }
 
-#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(__x86_64__)
+#if defined(OS_LINUX) && defined(__x86_64__)
 // Check if ptr1 and ptr2 are separated by less than size chars.
 bool ArePointersToSameArea(void* ptr1, void* ptr2, size_t size) {
   ptrdiff_t ptr_diff = reinterpret_cast<char*>(std::max(ptr1, ptr2)) -
@@ -286,6 +286,6 @@ TEST(SecurityTest, TCMALLOC_TEST(RandomMemoryAllocations)) {
   EXPECT_FALSE(impossible_random_address);
 }
 
-#endif  // (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(__x86_64__)
+#endif  // defined(OS_LINUX) && defined(__x86_64__)
 
 }  // namespace

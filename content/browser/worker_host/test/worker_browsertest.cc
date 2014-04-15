@@ -141,7 +141,7 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, SharedWorkerHttpAuth) {
   NavigateAndWaitForAuth(url);
 }
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if defined(OS_LINUX)
 // This test is flaky inside the Linux SUID sandbox.
 // http://crbug.com/130116
 IN_PROC_BROWSER_TEST_F(WorkerTest, DISABLED_LimitPerPage) {
@@ -157,7 +157,7 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, LimitPerPage) {
 }
 
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MACOSX)
+#if defined(OS_LINUX) || defined(OS_MACOSX)
 // This test is flaky inside the Linux SUID sandbox: http://crbug.com/130116
 // Also flaky on Mac: http://crbug.com/295193
 IN_PROC_BROWSER_TEST_F(WorkerTest, DISABLED_LimitTotal) {
