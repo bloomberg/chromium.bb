@@ -8,6 +8,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/server/http_server.h"
@@ -15,13 +16,11 @@
 namespace content {
 
 DevToolsBrowserTarget::DevToolsBrowserTarget(
-    base::MessageLoopProxy* message_loop_proxy,
     net::HttpServer* http_server,
     int connection_id)
-    : message_loop_proxy_(message_loop_proxy),
+    : message_loop_proxy_(base::MessageLoopProxy::current()),
       http_server_(http_server),
       connection_id_(connection_id),
-      handlers_deleter_(&handlers_),
       weak_factory_(this) {
 }
 
@@ -29,6 +28,8 @@ void DevToolsBrowserTarget::RegisterDomainHandler(
     const std::string& domain,
     DevToolsProtocol::Handler* handler,
     bool handle_on_ui_thread) {
+  DCHECK_EQ(message_loop_proxy_, base::MessageLoopProxy::current());
+
   DCHECK(handlers_.find(domain) == handlers_.end());
   handlers_[domain] = handler;
   if (handle_on_ui_thread) {
@@ -42,6 +43,8 @@ void DevToolsBrowserTarget::RegisterDomainHandler(
 }
 
 void DevToolsBrowserTarget::HandleMessage(const std::string& data) {
+  DCHECK_EQ(message_loop_proxy_, base::MessageLoopProxy::current());
+
   std::string error_response;
   scoped_refptr<DevToolsProtocol::Command> command =
       DevToolsProtocol::ParseCommand(data, &error_response);
@@ -81,7 +84,9 @@ void DevToolsBrowserTarget::HandleMessage(const std::string& data) {
 }
 
 void DevToolsBrowserTarget::Detach() {
-  message_loop_proxy_ = NULL;
+  DCHECK_EQ(message_loop_proxy_, base::MessageLoopProxy::current());
+  DCHECK(http_server_);
+
   http_server_ = NULL;
 
   std::vector<DevToolsProtocol::Handler*> ui_handlers;
@@ -94,6 +99,8 @@ void DevToolsBrowserTarget::Detach() {
     handlers_.erase(handler_it);
   }
 
+  STLDeleteValues(&handlers_);
+
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
@@ -103,11 +110,14 @@ void DevToolsBrowserTarget::Detach() {
 }
 
 DevToolsBrowserTarget::~DevToolsBrowserTarget() {
+  // DCHECK that Detach has been called or no handler has ever been registered.
+  DCHECK(handlers_.empty());
 }
 
 void DevToolsBrowserTarget::HandleCommandOnUIThread(
     DevToolsProtocol::Handler* handler,
     scoped_refptr<DevToolsProtocol::Command> command) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   scoped_refptr<DevToolsProtocol::Response> response =
       handler->HandleCommand(command);
   if (response && response->is_async_promise())
@@ -121,18 +131,19 @@ void DevToolsBrowserTarget::HandleCommandOnUIThread(
 
 void DevToolsBrowserTarget::DeleteHandlersOnUIThread(
     std::vector<DevToolsProtocol::Handler*> handlers) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   STLDeleteElements(&handlers);
 }
 
 void DevToolsBrowserTarget::Respond(const std::string& message) {
+  DCHECK_EQ(message_loop_proxy_, base::MessageLoopProxy::current());
   if (!http_server_)
     return;
   http_server_->SendOverWebSocket(connection_id_, message);
 }
 
 void DevToolsBrowserTarget::RespondFromUIThread(const std::string& message) {
-  if (!message_loop_proxy_)
-    return;
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   message_loop_proxy_->PostTask(
       FROM_HERE,
       base::Bind(&DevToolsBrowserTarget::Respond, this, message));

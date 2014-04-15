@@ -13,7 +13,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/stl_util.h"
 #include "content/browser/devtools/devtools_protocol.h"
 
 namespace base {
@@ -32,9 +31,7 @@ namespace content {
 class DevToolsBrowserTarget
     : public base::RefCountedThreadSafe<DevToolsBrowserTarget> {
  public:
-  DevToolsBrowserTarget(base::MessageLoopProxy* message_loop_proxy,
-                        net::HttpServer* server,
-                        int connection_id);
+  DevToolsBrowserTarget(net::HttpServer* server, int connection_id);
 
   int connection_id() const { return connection_id_; }
 
@@ -61,13 +58,12 @@ class DevToolsBrowserTarget
   void Respond(const std::string& message);
   void RespondFromUIThread(const std::string& message);
 
-  base::MessageLoopProxy* message_loop_proxy_;
+  scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
   net::HttpServer* http_server_;
   const int connection_id_;
 
   typedef std::map<std::string, DevToolsProtocol::Handler*> DomainHandlerMap;
   DomainHandlerMap handlers_;
-  STLValueDeleter<DomainHandlerMap> handlers_deleter_;
   std::set<std::string> handle_on_ui_thread_;
   base::WeakPtrFactory<DevToolsBrowserTarget> weak_factory_;
 

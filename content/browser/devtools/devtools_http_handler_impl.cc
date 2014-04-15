@@ -321,8 +321,7 @@ void DevToolsHttpHandlerImpl::OnWebSocketRequest(
       server_->Send500(connection_id, "Another client already attached");
       return;
     }
-    browser_target_ = new DevToolsBrowserTarget(
-        thread_->message_loop_proxy().get(), server_.get(), connection_id);
+    browser_target_ = new DevToolsBrowserTarget(server_.get(), connection_id);
     browser_target_->RegisterDomainHandler(
         devtools::Tracing::kName,
         new DevToolsTracingHandler(),
