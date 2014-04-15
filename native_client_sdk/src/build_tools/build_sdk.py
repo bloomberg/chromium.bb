@@ -34,7 +34,6 @@ import buildbot_common
 import build_projects
 import build_updater
 import build_version
-import generate_make
 import generate_notice
 import manifest_util
 import parse_dsc
@@ -261,22 +260,6 @@ def BuildStepUntarToolchains(pepperdir, toolchains):
     buildbot_common.Move(tmpdir, pnacldir)
 
   buildbot_common.RemoveDir(tmpdir)
-
-  if options.gyp and platform != 'win':
-    # If the gyp options is specified we install a toolchain
-    # wrapper so that gyp can switch toolchains via a commandline
-    # option.
-    bindir = os.path.join(pepperdir, 'toolchain', tcname, 'bin')
-    wrapper = os.path.join(SDK_SRC_DIR, 'tools', 'compiler-wrapper.py')
-    buildbot_common.MakeDir(bindir)
-    buildbot_common.CopyFile(wrapper, bindir)
-
-    # Module 'os' has no 'symlink' member (on Windows).
-    # pylint: disable=E1101
-
-    os.symlink('compiler-wrapper.py', os.path.join(bindir, 'i686-nacl-g++'))
-    os.symlink('compiler-wrapper.py', os.path.join(bindir, 'i686-nacl-gcc'))
-    os.symlink('compiler-wrapper.py', os.path.join(bindir, 'i686-nacl-ar'))
 
 
 # List of toolchain headers to install.
@@ -924,9 +907,6 @@ def main(args):
       action='store_true')
   parser.add_option('--archive', help='Force the archive step.',
       action='store_true')
-  parser.add_option('--gyp',
-      help='Use gyp to build examples/libraries/Makefiles.',
-      action='store_true')
   parser.add_option('--release', help='PPAPI release version.',
       dest='release', default=None)
   parser.add_option('--build-ports',
@@ -955,7 +935,6 @@ def main(args):
   if args:
     parser.error("Unexpected arguments: %s" % str(args))
 
-  generate_make.use_gyp = options.gyp
   if buildbot_common.IsSDKBuilder():
     options.archive = True
     options.build_ports = True
