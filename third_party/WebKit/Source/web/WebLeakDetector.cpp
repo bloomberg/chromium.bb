@@ -33,10 +33,11 @@
 #include "public/web/WebLeakDetector.h"
 
 #include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8GCController.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceFetcher.h"
-#include "core/frame/DOMWindow.h"
 #include "core/inspector/InspectorCounters.h"
+#include "platform/Timer.h"
 #include "public/web/WebDocument.h"
 #include "public/web/WebLocalFrame.h"
 
@@ -44,44 +45,89 @@
 
 using namespace WebCore;
 
+namespace blink {
+
 namespace {
 
-void cleanUpDOMObjects(blink::WebFrame* frame)
+// FIXME: Oilpan: It may take multiple GC to collect on-heap objects referenced from off-heap objects.
+// Please see comment in Heap::collectAllGarbage()
+static const int kNumberOfGCsToClaimChains = 5;
+
+class WebLeakDetectorImpl FINAL : public WebLeakDetector {
+WTF_MAKE_NONCOPYABLE(WebLeakDetectorImpl);
+public:
+    explicit WebLeakDetectorImpl(WebLeakDetectorClient* client)
+        : m_client(client)
+        , m_delayedGCAndReportTimer(this, &WebLeakDetectorImpl::delayedGCAndReport)
+        , m_delayedReportTimer(this, &WebLeakDetectorImpl::delayedReport)
+    {
+        ASSERT(m_client);
+    }
+
+    virtual ~WebLeakDetectorImpl() { }
+
+    virtual void collectGarbageAndGetDOMCounts(WebLocalFrame*) OVERRIDE;
+
+private:
+    void delayedGCAndReport(Timer<WebLeakDetectorImpl>*);
+    void delayedReport(Timer<WebLeakDetectorImpl>*);
+
+    WebLeakDetectorClient* m_client;
+    Timer<WebLeakDetectorImpl> m_delayedGCAndReportTimer;
+    Timer<WebLeakDetectorImpl> m_delayedReportTimer;
+};
+
+void WebLeakDetectorImpl::collectGarbageAndGetDOMCounts(WebLocalFrame* frame)
 {
-    v8::HandleScope handleScope(v8::Isolate::GetCurrent());
-    v8::Local<v8::Context> context(frame->mainWorldScriptContext());
-    v8::Context::Scope contextScope(context);
+    memoryCache()->evictResources();
+
+    {
+        RefPtr<Document> document = PassRefPtr<Document>(frame->document());
+        if (ResourceFetcher* fetcher = document->fetcher())
+            fetcher->garbageCollectDocumentResources();
+    }
 
     // FIXME: HTML5 Notification should be closed because notification affects the result of number of DOM objects.
 
-    ResourceFetcher* fetcher = currentDOMWindow(context->GetIsolate())->document()->fetcher();
-    if (fetcher)
-        fetcher->garbageCollectDocumentResources();
+    for (int i = 0; i < kNumberOfGCsToClaimChains; ++i)
+        V8GCController::collectGarbage(v8::Isolate::GetCurrent());
+    // Note: Oilpan precise GC is scheduled at the end of the event loop.
 
-    memoryCache()->evictResources();
-
-    v8::V8::LowMemoryNotification();
+    // Task queue may contain delayed object destruction tasks.
+    // This method is called from navigation hook inside FrameLoader,
+    // so previous document is still held by the loader until the next event loop.
+    // Complete all pending tasks before proceeding to gc.
+    m_delayedGCAndReportTimer.startOneShot(0, FROM_HERE);
 }
 
-void numberOfDOMObjects(blink::WebFrame *frame, unsigned* numberOfLiveDocuments, unsigned* numberOfLiveNodes)
+void WebLeakDetectorImpl::delayedGCAndReport(Timer<WebLeakDetectorImpl>*)
 {
-    v8::HandleScope handleScope(v8::Isolate::GetCurrent());
-    v8::Local<v8::Context> context(frame->mainWorldScriptContext());
-    v8::Context::Scope contextScope(context);
+    // We do a second GC here to address flakiness: Resource GC may have postponed clean-up tasks to next event loop.
 
-    *numberOfLiveDocuments = InspectorCounters::counterValue(InspectorCounters::DocumentCounter);
-    *numberOfLiveNodes = InspectorCounters::counterValue(InspectorCounters::NodeCounter);
+    for (int i = 0; i < kNumberOfGCsToClaimChains; ++i)
+        V8GCController::collectGarbage(V8PerIsolateData::mainThreadIsolate());
+    // Note: Oilpan precise GC is scheduled at the end of the event loop.
+
+    // Inspect counters on the next event loop.
+    m_delayedReportTimer.startOneShot(0, FROM_HERE);
+}
+
+void WebLeakDetectorImpl::delayedReport(Timer<WebLeakDetectorImpl>*)
+{
+    ASSERT(m_client);
+
+    WebLeakDetectorClient::Result result;
+    result.numberOfLiveDocuments = InspectorCounters::counterValue(InspectorCounters::DocumentCounter);
+    result.numberOfLiveNodes = InspectorCounters::counterValue(InspectorCounters::NodeCounter);
+
+    m_client->onLeakDetectionComplete(result);
 }
 
 } // namespace
 
-namespace blink {
-
-void WebLeakDetector::collectGarbargeAndGetDOMCounts(WebLocalFrame* frame, unsigned* numberOfLiveDocuments, unsigned* numberOfLiveNodes)
+WebLeakDetector* WebLeakDetector::create(WebLeakDetectorClient* client)
 {
-    // FIXME: Count other DOM objects using WTF::dumpRefCountedInstanceCounts.
-    cleanUpDOMObjects(frame);
-    numberOfDOMObjects(frame, numberOfLiveDocuments, numberOfLiveNodes);
+    return new WebLeakDetectorImpl(client);
 }
 
 } // namespace blink
