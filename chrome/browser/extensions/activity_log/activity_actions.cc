@@ -4,69 +4,27 @@
 
 #include "chrome/browser/extensions/activity_log/activity_actions.h"
 
-#include <algorithm>  // for std::find.
 #include <string>
 
 #include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/values.h"
 #include "chrome/browser/extensions/activity_log/activity_action_constants.h"
-#include "chrome/browser/extensions/activity_log/ad_network_database.h"
 #include "chrome/browser/extensions/activity_log/fullstream_ui_policy.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/ad_injection_constants.h"
 #include "chrome/common/extensions/dom_action_types.h"
-#include "components/rappor/rappor_service.h"
 #include "content/public/browser/web_contents.h"
 #include "sql/statement.h"
-#include "url/gurl.h"
 
 namespace constants = activity_log_constants;
 
-namespace extensions {
-
 namespace {
-
-namespace keys = ad_injection_constants::keys;
-
-// The list of APIs for which we upload the URL to RAPPOR.
-const char* kApisForRapporMetric[] = {
-  "HTMLIFrameElement.src",
-  "HTMLEmbedElement.src",
-  "HTMLAnchorElement.href",
-};
-
-const char* kExtensionAdInjectionRapporMetricName =
-    "Extensions.PossibleAdInjection";
-
-// The elements for which we check the 'src' attribute to look for ads.
-const char* kSrcElements[] = {
-  "HTMLIFrameElement",
-  "HTMLEmbedElement"
-};
-
-// The elements for which we check the 'href' attribute to look for ads.
-const char* kHrefElements[] = {
-  "HTMLAnchorElement",
-};
-
-bool IsSrcElement(const std::string& str) {
-  static const char** end = kSrcElements + arraysize(kSrcElements);
-  return std::find(kSrcElements, end, str) != end;
-}
-
-bool IsHrefElement(const std::string& str) {
-  static const char** end = kHrefElements + arraysize(kHrefElements);
-  return std::find(kHrefElements, end, str) != end;
-}
 
 std::string Serialize(const base::Value* value) {
   std::string value_as_text;
@@ -79,40 +37,9 @@ std::string Serialize(const base::Value* value) {
   return value_as_text;
 }
 
-Action::InjectionType CheckDomObject(const base::DictionaryValue* object) {
-  std::string type;
-  object->GetString(keys::kType, &type);
-
-  std::string url_key;
-  if (IsSrcElement(type))
-    url_key = keys::kSrc;
-  else if (IsHrefElement(type))
-    url_key = keys::kHref;
-
-  if (!url_key.empty()) {
-    std::string url;
-    if (object->GetString(url_key, &url) &&
-        AdNetworkDatabase::Get()->IsAdNetwork(GURL(url))) {
-      return Action::INJECTION_NEW_AD;
-    }
-  }
-
-  const base::ListValue* children = NULL;
-  if (object->GetList(keys::kChildren, &children)) {
-    const base::DictionaryValue* child = NULL;
-    for (size_t i = 0;
-         i < children->GetSize() &&
-             i < ad_injection_constants::kMaximumChildrenToCheck;
-         ++i) {
-      if (children->GetDictionary(i, &child) && CheckDomObject(child))
-        return Action::INJECTION_NEW_AD;
-    }
-  }
-
-  return Action::NO_AD_INJECTION;
-}
-
 }  // namespace
+
+namespace extensions {
 
 using api::activity_log_private::ExtensionActivity;
 
@@ -149,27 +76,6 @@ scoped_refptr<Action> Action::Clone() const {
   if (other())
     clone->set_other(make_scoped_ptr(other()->DeepCopy()));
   return clone;
-}
-
-Action::InjectionType Action::DidInjectAd(
-    rappor::RapporService* rappor_service) const {
-  MaybeUploadUrl(rappor_service);
-
-  // Currently, we do not have the list of ad networks, so we exit immediately
-  // with NO_AD_INJECTION (unless the database has been set by a test).
-  if (!AdNetworkDatabase::Get())
-    return NO_AD_INJECTION;
-
-  if (api_name_ == ad_injection_constants::kHtmlIframeSrcApiName ||
-      api_name_ == ad_injection_constants::kHtmlEmbedSrcApiName) {
-    return CheckSrcModification();
-  } else if (EndsWith(api_name_,
-                      ad_injection_constants::kAppendChildApiSuffix,
-                      true /* case senstive */)) {
-    return CheckAppendChild();
-  }
-
-  return NO_AD_INJECTION;
 }
 
 void Action::set_args(scoped_ptr<base::ListValue> args) {
@@ -386,50 +292,6 @@ std::string Action::PrintForDebug() const {
 
   result += base::StringPrintf(" COUNT=%d", count_);
   return result;
-}
-
-void Action::MaybeUploadUrl(rappor::RapporService* rappor_service) const {
-  // If there's no given |rappor_service|, abort immediately.
-  if (!rappor_service)
-    return;
-
-  // If the action has no url, or the url is empty, then return.
-  if (!arg_url_.is_valid() || arg_url_.is_empty())
-    return;
-  std::string host = arg_url_.host();
-  if (host.empty())
-    return;
-
-  bool can_inject_ads = false;
-  for (size_t i = 0; i < arraysize(kApisForRapporMetric); ++i) {
-    if (api_name_ == kApisForRapporMetric[i]) {
-      can_inject_ads = true;
-      break;
-    }
-  }
-
-  if (!can_inject_ads)
-    return;
-
-  // Record the URL - an ad *may* have been injected.
-  rappor_service->RecordSample(kExtensionAdInjectionRapporMetricName,
-                               rappor::ETLD_PLUS_ONE_RAPPOR_TYPE,
-                               host);
-}
-
-Action::InjectionType Action::CheckSrcModification() const {
-  bool injected_ad = arg_url_.is_valid() &&
-                     !arg_url_.is_empty() &&
-                     AdNetworkDatabase::Get()->IsAdNetwork(arg_url_);
-  return injected_ad ? INJECTION_NEW_AD : NO_AD_INJECTION;
-}
-
-Action::InjectionType Action::CheckAppendChild() const {
-  const base::DictionaryValue* child = NULL;
-  if (!args_->GetDictionary(0u, &child))
-    return NO_AD_INJECTION;
-
-  return CheckDomObject(child);
 }
 
 bool ActionComparator::operator()(

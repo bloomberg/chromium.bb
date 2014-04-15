@@ -14,7 +14,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_checker.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/activity_log/activity_action_constants.h"
+#include "chrome/browser/extensions/activity_log/ad_injection_util.h"
 #include "chrome/browser/extensions/activity_log/counting_policy.h"
 #include "chrome/browser/extensions/activity_log/fullstream_ui_policy.h"
 #include "chrome/browser/extensions/api/activity_log_private/activity_log_private_api.h"
@@ -475,7 +477,7 @@ bool ActivityLog::IsWatchdogAppActive() {
   return (watchdog_apps_active_ > 0);
 }
 
-void ActivityLog::SetWatchdogAppActiveForTesting(bool active) {
+void ActivityLog::SetWatchdogAppActive(bool active) {
   watchdog_apps_active_ = active ? 1 : 0;
 }
 
@@ -555,6 +557,11 @@ void ActivityLog::LogAction(scoped_refptr<Action> action) {
         dom_verb == DomActionType::METHOD) {
       other->SetInteger(constants::kActionDomVerb, DomActionType::XHR);
     }
+  }
+
+  if (g_browser_process->rappor_service()) {
+    ad_injection_util::CheckActionForAdInjection(
+        action, g_browser_process->rappor_service());
   }
 
   if (uma_policy_)

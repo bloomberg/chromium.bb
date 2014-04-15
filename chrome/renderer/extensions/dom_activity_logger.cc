@@ -4,7 +4,7 @@
 
 #include "chrome/renderer/extensions/dom_activity_logger.h"
 
-#include "chrome/common/extensions/ad_injection_constants.h"
+#include "base/logging.h"
 #include "chrome/common/extensions/dom_action_types.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/extensions/activity_log_converter_strategy.h"
@@ -23,10 +23,7 @@ using blink::WebURL;
 namespace extensions {
 
 DOMActivityLogger::DOMActivityLogger(const std::string& extension_id)
-    : extension_id_(extension_id) {
-}
-
-DOMActivityLogger::~DOMActivityLogger() {}
+    : extension_id_(extension_id) {}
 
 void DOMActivityLogger::log(
     const WebString& api_name,
@@ -37,18 +34,15 @@ void DOMActivityLogger::log(
     const WebString& title) {
   scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
   ActivityLogConverterStrategy strategy;
-  strategy.set_enable_detailed_parsing(
-      ad_injection_constants::ApiCanInjectAds(api_name.utf8().c_str()));
   converter->SetFunctionAllowed(true);
   converter->SetStrategy(&strategy);
   scoped_ptr<base::ListValue> argv_list_value(new base::ListValue());
-  for (int i = 0; i < argc; i++) {
+  for (int i =0; i < argc; i++) {
     argv_list_value->Set(
         i,
         converter->FromV8Value(argv[i],
                                v8::Isolate::GetCurrent()->GetCurrentContext()));
   }
-
   ExtensionHostMsg_DOMAction_Params params;
   params.url = url;
   params.url_title = title;
@@ -79,3 +73,4 @@ void DOMActivityLogger::AttachToWorld(int world_id,
 }
 
 }  // namespace extensions
+

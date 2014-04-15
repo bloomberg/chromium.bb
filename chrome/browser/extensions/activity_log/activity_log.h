@@ -117,13 +117,10 @@ class ActivityLog : public BrowserContextKeyedAPI,
   // Deletes the database associated with the policy that's currently in use.
   void DeleteDatabase();
 
-  // If we're in a browser test, we need to pretend that the watchdog app is
-  // active.
-  void SetWatchdogAppActiveForTesting(bool active);
-
  private:
   friend class ActivityLogTest;
   friend class BrowserContextKeyedAPIFactory<ActivityLog>;
+  friend class RenderViewActivityLogTest;
 
   explicit ActivityLog(content::BrowserContext* context);
   virtual ~ActivityLog();
@@ -131,6 +128,9 @@ class ActivityLog : public BrowserContextKeyedAPI,
   // Specifies if the Watchdog app is active (installed & enabled).
   // If so, we need to log to the database and stream to the API.
   bool IsWatchdogAppActive();
+  // If we're in a browser test, we need to pretend that the watchdog app is
+  // active.
+  void SetWatchdogAppActive(bool active);
 
   // Specifies if we need to record actions to the db. If so, we need to log to
   // the database. This is true if the Watchdog app is active *or* the

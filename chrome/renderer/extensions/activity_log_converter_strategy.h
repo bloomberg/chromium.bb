@@ -6,7 +6,6 @@
 #define CHROME_RENDERER_EXTENSIONS_ACTIVITY_LOG_CONVERTER_STRATEGY_H_
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "v8/include/v8.h"
 
@@ -20,38 +19,19 @@ namespace extensions {
 class ActivityLogConverterStrategy
     : public content::V8ValueConverter::Strategy {
  public:
-  typedef content::V8ValueConverter::Strategy::FromV8ValueCallback
-      FromV8ValueCallback;
+  virtual ~ActivityLogConverterStrategy() {}
 
-  ActivityLogConverterStrategy();
-  virtual ~ActivityLogConverterStrategy();
-
-  // content::V8ValueConverter::Strategy implementation.
   virtual bool FromV8Object(v8::Handle<v8::Object> value,
                             base::Value** out,
-                            v8::Isolate* isolate,
-                            const FromV8ValueCallback& callback) const OVERRIDE;
+                            v8::Isolate* isolate) const OVERRIDE;
   virtual bool FromV8Array(v8::Handle<v8::Array> value,
                            base::Value** out,
-                           v8::Isolate* isolate,
-                           const FromV8ValueCallback& callback) const OVERRIDE;
-
-  void set_enable_detailed_parsing(bool enable_detailed_parsing) {
-    enable_detailed_parsing_ = enable_detailed_parsing;
-  }
+                           v8::Isolate* isolate) const OVERRIDE;
 
  private:
-  bool FromV8Internal(v8::Handle<v8::Object> value,
-                      base::Value** out,
-                      v8::Isolate* isolate,
-                      const FromV8ValueCallback& callback) const;
-
-  // Whether or not to extract a detailed value from the passed in objects. We
-  // do this when we need more information about the arguments in order to
-  // determine, e.g., if an ad was injected.
-  bool enable_detailed_parsing_;
-
-  DISALLOW_COPY_AND_ASSIGN(ActivityLogConverterStrategy);
+  bool FromV8ObjectInternal(v8::Handle<v8::Object> value,
+                            base::Value** out,
+                            v8::Isolate* isolate) const;
 };
 
 }  // namespace extensions

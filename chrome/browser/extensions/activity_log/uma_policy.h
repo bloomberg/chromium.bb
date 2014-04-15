@@ -9,6 +9,7 @@
 #include <string>
 
 #include "chrome/browser/extensions/activity_log/activity_log_policy.h"
+
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "url/gurl.h"
@@ -45,15 +46,11 @@ class UmaPolicy : public ActivityLogPolicy,
     CREATED_INPUT,
     CREATED_EMBED,
     CREATED_OBJECT,
-    AD_INJECTED,
-    AD_REMOVED,
-    AD_REPLACED,
     MAX_STATUS  // Insert new page statuses right before this one.
   };
 
   explicit UmaPolicy(Profile* profile);
 
-  // ActivityLogPolicy implementation.
   virtual void ProcessAction(scoped_refptr<Action> action) OVERRIDE;
   virtual void Close() OVERRIDE;
 
