@@ -172,6 +172,7 @@ void OpaqueRegionSkia::pushCanvasLayer(const SkPaint* paint)
 
 void OpaqueRegionSkia::popCanvasLayer(const GraphicsContext* context)
 {
+    ASSERT(!context->paintingDisabled());
     ASSERT(!m_canvasLayerStack.isEmpty());
     if (m_canvasLayerStack.isEmpty())
         return;
@@ -198,6 +199,7 @@ void OpaqueRegionSkia::setImageMask(const SkRect& imageOpaqueRect)
 
 void OpaqueRegionSkia::didDrawRect(const GraphicsContext* context, const SkRect& fillRect, const SkPaint& paint, const SkBitmap* sourceBitmap)
 {
+    ASSERT(!context->paintingDisabled());
     // Any stroking may put alpha in pixels even if the filling part does not.
     if (paint.getStyle() != SkPaint::kFill_Style) {
         bool fillsBounds = false;
@@ -217,6 +219,7 @@ void OpaqueRegionSkia::didDrawRect(const GraphicsContext* context, const SkRect&
 
 void OpaqueRegionSkia::didDrawPath(const GraphicsContext* context, const SkPath& path, const SkPaint& paint)
 {
+    ASSERT(!context->paintingDisabled());
     SkRect rect;
     if (path.isRect(&rect)) {
         didDrawRect(context, rect, paint, 0);
@@ -235,6 +238,7 @@ void OpaqueRegionSkia::didDrawPath(const GraphicsContext* context, const SkPath&
 
 void OpaqueRegionSkia::didDrawPoints(const GraphicsContext* context, SkCanvas::PointMode mode, int numPoints, const SkPoint points[], const SkPaint& paint)
 {
+    ASSERT(!context->paintingDisabled());
     if (!numPoints)
         return;
 
@@ -263,6 +267,7 @@ void OpaqueRegionSkia::didDrawPoints(const GraphicsContext* context, SkCanvas::P
 
 void OpaqueRegionSkia::didDrawBounded(const GraphicsContext* context, const SkRect& bounds, const SkPaint& paint)
 {
+    ASSERT(!context->paintingDisabled());
     bool fillsBounds = false;
 
     if (!paint.canComputeFastBounds())
@@ -276,6 +281,7 @@ void OpaqueRegionSkia::didDrawBounded(const GraphicsContext* context, const SkRe
 
 void OpaqueRegionSkia::didDraw(const GraphicsContext* context, const SkRect& rect, const SkPaint& paint, const SkBitmap* sourceBitmap, bool fillsBounds, DrawType drawType)
 {
+    ASSERT(!context->paintingDisabled());
     SkRect targetRect = rect;
 
     // Apply the transform to device coordinate space.
@@ -302,6 +308,7 @@ void OpaqueRegionSkia::didDraw(const GraphicsContext* context, const SkRect& rec
 
 void OpaqueRegionSkia::didDrawUnbounded(const GraphicsContext* context, const SkPaint& paint, DrawType drawType)
 {
+    ASSERT(!context->paintingDisabled());
     bool drawsOpaque = paintIsOpaque(paint, drawType, 0);
     bool preservesOpaque = xfermodePreservesOpaque(paint, drawsOpaque);
 

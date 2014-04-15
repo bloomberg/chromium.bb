@@ -244,9 +244,6 @@ bool RenderTheme::paint(RenderObject* o, const PaintInfo& paintInfo, const IntRe
             o->repaint();
         return false;
     }
-    if (paintInfo.context->paintingDisabled())
-        return false;
-
     ControlPart part = o->style()->appearance();
 
     if (shouldUseFallbackTheme(o->style()))
@@ -354,9 +351,6 @@ bool RenderTheme::paint(RenderObject* o, const PaintInfo& paintInfo, const IntRe
 
 bool RenderTheme::paintBorderOnly(RenderObject* o, const PaintInfo& paintInfo, const IntRect& r)
 {
-    if (paintInfo.context->paintingDisabled())
-        return false;
-
     // Call the appropriate paint method based off the appearance value.
     switch (o->style()->appearance()) {
     case TextFieldPart:
@@ -398,9 +392,6 @@ bool RenderTheme::paintBorderOnly(RenderObject* o, const PaintInfo& paintInfo, c
 
 bool RenderTheme::paintDecorations(RenderObject* o, const PaintInfo& paintInfo, const IntRect& r)
 {
-    if (paintInfo.context->paintingDisabled())
-        return false;
-
     // Call the appropriate paint method based off the appearance value.
     switch (o->style()->appearance()) {
     case MenulistButtonPart:
@@ -1173,6 +1164,8 @@ void RenderTheme::setSizeIfAuto(RenderStyle* style, const IntSize& size)
 
 bool RenderTheme::paintCheckboxUsingFallbackTheme(RenderObject* o, const PaintInfo& i, const IntRect& r)
 {
+    if (i.context->paintingDisabled())
+        return false;
     blink::WebFallbackThemeEngine::ExtraParams extraParams;
     blink::WebCanvas* canvas = i.context->canvas();
     extraParams.button.checked = isChecked(o);
@@ -1215,6 +1208,8 @@ void RenderTheme::adjustCheckboxStyleUsingFallbackTheme(RenderStyle* style, Elem
 
 bool RenderTheme::paintRadioUsingFallbackTheme(RenderObject* o, const PaintInfo& i, const IntRect& r)
 {
+    if (i.context->paintingDisabled())
+        return false;
     blink::WebFallbackThemeEngine::ExtraParams extraParams;
     blink::WebCanvas* canvas = i.context->canvas();
     extraParams.button.checked = isChecked(o);

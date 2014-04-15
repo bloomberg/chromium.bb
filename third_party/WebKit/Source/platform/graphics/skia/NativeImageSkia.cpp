@@ -242,6 +242,8 @@ SkBitmap NativeImageSkia::extractScaledImageFragment(const SkRect& srcRect, floa
 void NativeImageSkia::drawResampledBitmap(GraphicsContext* context, SkPaint& paint, const SkRect& srcRect, const SkRect& destRect) const
 {
     TRACE_EVENT0("skia", "drawResampledBitmap");
+    if (context->paintingDisabled())
+        return;
     // We want to scale |destRect| with transformation in the canvas to obtain
     // the final scale. The final scale is a combination of scale transform
     // in canvas and explicit scaling (srcRect and destRect).

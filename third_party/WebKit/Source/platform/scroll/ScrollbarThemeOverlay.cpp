@@ -124,6 +124,8 @@ int ScrollbarThemeOverlay::thumbThickness(ScrollbarThemeClient*)
 
 void ScrollbarThemeOverlay::paintThumb(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& rect)
 {
+    if (context->paintingDisabled())
+        return;
     IntRect thumbRect = rect;
     if (scrollbar->orientation() == HorizontalScrollbar) {
         thumbRect.setHeight(thumbRect.height() - m_scrollbarMargin);

@@ -87,6 +87,8 @@ static blink::WebThemeEngine::State scrollbarStateToThemeState(ScrollbarThemeCli
 //     - Skia specific changes
 bool ScrollbarThemeMacNonOverlayAPI::paint(ScrollbarThemeClient* scrollbar, GraphicsContext* context, const IntRect& damageRect)
 {
+    if (context->paintingDisabled())
+        return true;
     // Get the tickmarks for the frameview.
     Vector<IntRect> tickmarks;
     scrollbar->getTickmarks(tickmarks);

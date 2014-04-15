@@ -71,6 +71,8 @@ int ScrollbarThemeAura::scrollbarThickness(ScrollbarControlSize controlSize)
 
 void ScrollbarThemeAura::paintTrackPiece(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect, ScrollbarPart partType)
 {
+    if (gc->paintingDisabled())
+        return;
     blink::WebThemeEngine::State state = scrollbar->hoveredPart() == partType ? blink::WebThemeEngine::StateHover : blink::WebThemeEngine::StateNormal;
 
     if (useMockTheme() && !scrollbar->enabled())
@@ -89,6 +91,8 @@ void ScrollbarThemeAura::paintTrackPiece(GraphicsContext* gc, ScrollbarThemeClie
 
 void ScrollbarThemeAura::paintButton(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect, ScrollbarPart part)
 {
+    if (gc->paintingDisabled())
+        return;
     blink::WebThemeEngine::Part paintPart;
     blink::WebThemeEngine::State state = blink::WebThemeEngine::StateNormal;
     blink::WebCanvas* canvas = gc->canvas();
@@ -132,6 +136,8 @@ void ScrollbarThemeAura::paintButton(GraphicsContext* gc, ScrollbarThemeClient* 
 
 void ScrollbarThemeAura::paintThumb(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect)
 {
+    if (gc->paintingDisabled())
+        return;
     blink::WebThemeEngine::State state;
     blink::WebCanvas* canvas = gc->canvas();
     if (scrollbar->pressedPart() == ThumbPart)

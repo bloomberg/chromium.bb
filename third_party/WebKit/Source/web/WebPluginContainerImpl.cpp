@@ -340,6 +340,8 @@ int WebPluginContainerImpl::printBegin(const WebPrintParams& printParams) const
 bool WebPluginContainerImpl::printPage(int pageNumber,
                                        WebCore::GraphicsContext* gc)
 {
+    if (gc->paintingDisabled())
+        return true;
     gc->save();
     WebCanvas* canvas = gc->canvas();
     bool ret = m_webPlugin->printPage(pageNumber, canvas);

@@ -73,17 +73,23 @@ public:
     explicit GraphicsContext(SkCanvas*);
     ~GraphicsContext();
 
-    // Returns the canvas used for painting, NOT guaranteed to be non-null.
+    // Returns the canvas used for painting. Must not be called if painting is disabled.
     // Accessing the backing canvas this way flushes all queued save ops,
     // so it should be avoided. Use the corresponding draw/matrix/clip methods instead.
     SkCanvas* canvas()
     {
+        ASSERT(!paintingDisabled());
+
         // Flush any pending saves.
         realizeCanvasSave();
 
         return m_canvas;
     }
-    const SkCanvas* canvas() const { return m_canvas; }
+    const SkCanvas* canvas() const
+    {
+        ASSERT(!paintingDisabled());
+        return m_canvas;
+    }
     bool paintingDisabled() const { return !m_canvas; }
 
     // ---------- State management methods -----------------
