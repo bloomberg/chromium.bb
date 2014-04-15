@@ -11,10 +11,8 @@
 #include "mojo/services/native_viewport/native_viewport_export.h"
 #include "mojo/shell/context.h"
 
-#if defined(OS_ANDROID)
 MOJO_NATIVE_VIEWPORT_EXPORT mojo::Application*
     CreateNativeViewportService(mojo::shell::Context* context,
                                 mojo::ScopedShellHandle shell_handle);
-#endif
 
 #endif  // MOJO_SERVICES_NATIVE_VIEWPORT_SERVICE_H_

@@ -182,9 +182,6 @@ class NativeViewportImpl
 }  // namespace mojo
 
 
-#if defined(OS_ANDROID)
-
-// Android will call this.
 MOJO_NATIVE_VIEWPORT_EXPORT mojo::Application*
     CreateNativeViewportService(mojo::shell::Context* context,
                                 mojo::ScopedShellHandle shell_handle) {
@@ -195,17 +192,3 @@ MOJO_NATIVE_VIEWPORT_EXPORT mojo::Application*
   return app;
 }
 
-#else
-
-extern "C" MOJO_NATIVE_VIEWPORT_EXPORT MojoResult MojoMain(
-    const MojoHandle shell_handle) {
-  base::MessageLoopForUI loop;
-  mojo::Application app(shell_handle);
-  app.AddServiceFactory(
-    new mojo::ServiceFactory<mojo::services::NativeViewportImpl,
-                             mojo::shell::Context>);
-  loop.Run();
-  return MOJO_RESULT_OK;
-}
-
-#endif // !OS_ANDROID

@@ -41,13 +41,14 @@ class Context {
 #endif  // defined(OS_ANDROID)
 
  private:
+  class NativeViewportServiceLoader;
   TaskRunners task_runners_;
   Storage storage_;
   Loader loader_;
   ServiceManager service_manager_;
   scoped_ptr<DynamicServiceLoader> dynamic_service_loader_;
   scoped_ptr<Spy> spy_;
-
+  scoped_ptr<NativeViewportServiceLoader> native_viewport_service_loader_;
 #if defined(OS_ANDROID)
   base::android::ScopedJavaGlobalRef<jobject> activity_;
 #endif  // defined(OS_ANDROID)
