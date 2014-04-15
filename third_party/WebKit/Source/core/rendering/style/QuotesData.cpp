@@ -64,13 +64,14 @@ const String QuotesData::getCloseQuote(int index) const
     return m_quotePairs.at(index).second;
 }
 
-bool QuotesData::equals(const QuotesData* a, const QuotesData* b)
+bool QuotesData::operator==(const QuotesData* a)
 {
-    if (a == b)
-        return true;
-    if (!a || !b)
-        return false;
-    return a->m_quotePairs == b->m_quotePairs;
+    return m_quotePairs == a->m_quotePairs;
+}
+
+bool QuotesData::operator!=(const QuotesData* a)
+{
+    return m_quotePairs != a->m_quotePairs;
 }
 
 } // namespace WebCore

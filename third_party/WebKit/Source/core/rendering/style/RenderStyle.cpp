@@ -505,7 +505,7 @@ StyleDifference RenderStyle::visualInvalidationDiff(const RenderStyle& other, un
         if (!rareInheritedData->shadowDataEquivalent(*other.rareInheritedData.get()))
             return StyleDifferenceLayout;
 
-        if (!QuotesData::equals(rareInheritedData->quotes.get(), other.rareInheritedData->quotes.get()))
+        if (rareInheritedData->quotes.get() != other.rareInheritedData->quotes.get())
             return StyleDifferenceLayout;
     }
 
@@ -703,7 +703,7 @@ void RenderStyle::setCursorList(PassRefPtr<CursorList> other)
 
 void RenderStyle::setQuotes(PassRefPtr<QuotesData> q)
 {
-    if (QuotesData::equals(rareInheritedData->quotes.get(), q.get()))
+    if (rareInheritedData->quotes.get() == q.get())
         return;
     rareInheritedData.access()->quotes = q;
 }

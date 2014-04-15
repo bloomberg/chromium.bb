@@ -35,8 +35,8 @@ public:
     static PassRefPtr<QuotesData> create(const String open, const String close);
     static PassRefPtr<QuotesData> create(UChar open1, UChar close1, UChar open2, UChar close2);
 
-    // FIXME: this should be an operator==.
-    static bool equals(const QuotesData*, const QuotesData*);
+    bool operator==(const QuotesData*);
+    bool operator!=(const QuotesData*);
 
     void addPair(const std::pair<String, String> quotePair);
     const String getOpenQuote(int index) const;
