@@ -122,6 +122,9 @@ readonly ARMEL_EXTRA_PACKAGES="\
   libcups2-dev \
   libdbus-1-3 \
   libdbus-1-dev \
+  libdbus-glib-1-2 \
+  libexif12 \
+  libexif-dev \
   libexpat1 \
   libexpat1-dev \
   libffi6 \
