@@ -159,7 +159,7 @@ FrameView::FrameView(LocalFrame* frame)
     ASSERT(m_frame);
     init();
 
-    if (!isMainFrame())
+    if (!m_frame->isMainFrame())
         return;
 
     ScrollableArea::setVerticalScrollElasticity(ScrollElasticityAllowed);
@@ -369,7 +369,7 @@ void FrameView::setFrameRect(const IntRect& newRect)
     // Autosized font sizes depend on the width of the viewing area.
     bool autosizerNeedsUpdating = false;
     if (newRect.width() != oldRect.width()) {
-        if (isMainFrame() && m_frame->settings()->textAutosizingEnabled()) {
+        if (m_frame->isMainFrame() && m_frame->settings()->textAutosizingEnabled()) {
             autosizerNeedsUpdating = true;
             for (LocalFrame* frame = m_frame.get(); frame; frame = frame->tree().traverseNext()) {
                 if (TextAutosizer* textAutosizer = frame->document()->textAutosizer())
@@ -427,7 +427,7 @@ bool FrameView::shouldUseCustomScrollbars(Element*& customScrollbarElement, Loca
     customScrollbarFrame = 0;
 
     if (Settings* settings = m_frame->settings()) {
-        if (!settings->allowCustomScrollbarInMainFrame() && isMainFrame())
+        if (!settings->allowCustomScrollbarInMainFrame() && m_frame->isMainFrame())
             return false;
     }
 
@@ -1309,7 +1309,7 @@ bool FrameView::shouldPlaceVerticalScrollbarOnLeft() const
 {
     // FIXME: Mainframe scrollbar placement should respect the embedding application RTL UI policy.
     // See crbug.com/249860.
-    if (isMainFrame())
+    if (m_frame->isMainFrame())
         return false;
 
     Document* document = m_frame->document();
@@ -1723,7 +1723,7 @@ void FrameView::repaintContentRectangle(const IntRect& r)
 
 void FrameView::contentsResized()
 {
-    if (isMainFrame() && m_frame->document()) {
+    if (m_frame->isMainFrame() && m_frame->document()) {
         if (FastTextAutosizer* textAutosizer = m_frame->document()->fastTextAutosizer())
             textAutosizer->updatePageInfoInAllFrames();
     }
@@ -2093,7 +2093,7 @@ void FrameView::sendResizeEventIfNeeded()
 
     m_frame->document()->enqueueResizeEvent();
 
-    if (isMainFrame())
+    if (m_frame->isMainFrame())
         InspectorInstrumentation::didResizeMainFrame(m_frame->page());
 }
 
@@ -2430,7 +2430,7 @@ bool FrameView::shouldSuspendScrollAnimations() const
 
 void FrameView::scrollbarStyleChanged(int newStyle, bool forceUpdate)
 {
-    if (!isMainFrame())
+    if (!m_frame->isMainFrame())
         return;
 
     if (forceUpdate)
@@ -2526,7 +2526,7 @@ void FrameView::paintScrollCorner(GraphicsContext* context, const IntRect& corne
     }
 
     if (m_scrollCorner) {
-        bool needsBackgorund = isMainFrame();
+        bool needsBackgorund = m_frame->isMainFrame();
         if (needsBackgorund)
             context->fillRect(cornerRect, baseBackgroundColor());
         m_scrollCorner->paintIntoRect(context, cornerRect.location(), cornerRect);
@@ -2538,7 +2538,7 @@ void FrameView::paintScrollCorner(GraphicsContext* context, const IntRect& corne
 
 void FrameView::paintScrollbar(GraphicsContext* context, Scrollbar* bar, const IntRect& rect)
 {
-    bool needsBackgorund = bar->isCustomScrollbar() && isMainFrame();
+    bool needsBackgorund = bar->isCustomScrollbar() && m_frame->isMainFrame();
     if (needsBackgorund) {
         IntRect toFill = bar->frameRect();
         toFill.intersect(rect);
@@ -2762,7 +2762,7 @@ void FrameView::paintOverhangAreas(GraphicsContext* context, const IntRect& hori
     if (m_frame->document()->printing())
         return;
 
-    if (isMainFrame()) {
+    if (m_frame->isMainFrame()) {
         if (m_frame->page()->chrome().client().paintCustomOverhangArea(context, horizontalOverhangArea, verticalOverhangArea, dirtyRect))
             return;
     }
@@ -3174,11 +3174,6 @@ void FrameView::setCursor(const Cursor& cursor)
     if (!page)
         return;
     page->chrome().setCursor(cursor);
-}
-
-bool FrameView::isMainFrame() const
-{
-    return m_frame->isMainFrame();
 }
 
 void FrameView::frameRectsChanged()

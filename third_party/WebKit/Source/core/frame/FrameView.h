@@ -406,8 +406,6 @@ private:
     AXObjectCache* axObjectCache() const;
     void removeFromAXObjectCache();
 
-    bool isMainFrame() const;
-
     void setLayoutSizeInternal(const IntSize&);
 
     bool repaintAllowed() const

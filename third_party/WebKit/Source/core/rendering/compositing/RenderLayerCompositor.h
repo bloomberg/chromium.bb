@@ -284,8 +284,6 @@ private:
     void attachRootLayer(RootLayerAttachment);
     void detachRootLayer();
 
-    bool isMainFrame() const;
-
     void updateOverflowControlsLayers();
 
     void notifyIFramesOfCompositingChange();

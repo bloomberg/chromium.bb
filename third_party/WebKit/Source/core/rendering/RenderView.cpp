@@ -949,7 +949,7 @@ IntervalArena* RenderView::intervalArena()
 bool RenderView::backgroundIsKnownToBeOpaqueInRect(const LayoutRect&) const
 {
     // FIXME: Remove this main frame check. Same concept applies to subframes too.
-    if (!m_frameView || !m_frameView->isMainFrame())
+    if (!frame()->isMainFrame())
         return false;
 
     return m_frameView->hasOpaqueBackground();
