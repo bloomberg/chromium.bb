@@ -13,38 +13,27 @@
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
 
-namespace {
-
-void FileDeleter(base::File file) {
-}
-
-}  // namespace
-
 namespace base {
 
 class FileHelper {
  public:
    FileHelper(FileProxy* proxy, File file)
       : file_(file.Pass()),
-        error_(File::FILE_ERROR_FAILED),
-        task_runner_(proxy->task_runner()),
-        proxy_(AsWeakPtr(proxy)) {
+        proxy_(AsWeakPtr(proxy)),
+        error_(File::FILE_ERROR_FAILED) {
    }
 
    void PassFile() {
      if (proxy_)
        proxy_->SetFile(file_.Pass());
-     else if (file_.IsValid())
-       task_runner_->PostTask(FROM_HERE, Bind(&FileDeleter, Passed(&file_)));
    }
 
  protected:
   File file_;
+  WeakPtr<FileProxy> proxy_;
   File::Error error_;
 
  private:
-  scoped_refptr<TaskRunner> task_runner_;
-  WeakPtr<FileProxy> proxy_;
   DISALLOW_COPY_AND_ASSIGN(FileHelper);
 };
 
@@ -230,12 +219,13 @@ class WriteHelper : public FileHelper {
 
 }  // namespace
 
+FileProxy::FileProxy() : task_runner_(NULL) {
+}
+
 FileProxy::FileProxy(TaskRunner* task_runner) : task_runner_(task_runner) {
 }
 
 FileProxy::~FileProxy() {
-  if (file_.IsValid())
-    task_runner_->PostTask(FROM_HERE, Bind(&FileDeleter, Passed(&file_)));
 }
 
 bool FileProxy::CreateOrOpen(const FilePath& file_path,

@@ -14,7 +14,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
-#include "base/threading/thread_restrictions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -142,21 +141,6 @@ TEST_F(FileProxyTest, CreateOrOpen_OpenNonExistent) {
   EXPECT_FALSE(proxy.IsValid());
   EXPECT_FALSE(proxy.created());
   EXPECT_FALSE(PathExists(test_path()));
-}
-
-TEST_F(FileProxyTest, CreateOrOpen_AbandonedCreate) {
-  bool prev = ThreadRestrictions::SetIOAllowed(false);
-  {
-    FileProxy proxy(file_task_runner());
-    proxy.CreateOrOpen(
-        test_path(),
-        File::FLAG_CREATE | File::FLAG_READ,
-        Bind(&FileProxyTest::DidCreateOrOpen, weak_factory_.GetWeakPtr()));
-  }
-  MessageLoop::current()->Run();
-  ThreadRestrictions::SetIOAllowed(prev);
-
-  EXPECT_TRUE(PathExists(test_path()));
 }
 
 TEST_F(FileProxyTest, Close) {
