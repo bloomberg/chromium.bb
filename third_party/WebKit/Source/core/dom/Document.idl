@@ -106,6 +106,7 @@ typedef (CanvasRenderingContext2D or WebGLRenderingContext) RenderingContext;
 
     // Moved down from HTMLDocument
              [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString dir;
+             [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString designMode;
              [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString title;
     readonly attribute DOMString referrer;
              [TreatNullAs=NullString, RaisesException=Setter] attribute DOMString domain;

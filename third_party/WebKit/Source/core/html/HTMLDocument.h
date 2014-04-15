@@ -41,9 +41,6 @@ public:
     }
     virtual ~HTMLDocument();
 
-    String designMode() const;
-    void setDesignMode(const String&);
-
     const AtomicString& bgColor() const;
     void setBgColor(const AtomicString&);
     const AtomicString& fgColor() const;
