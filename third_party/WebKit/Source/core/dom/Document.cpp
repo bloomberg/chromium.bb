@@ -4467,13 +4467,13 @@ PassRefPtr<HTMLCollection> Document::anchors()
     return ensureCachedCollection(DocAnchors);
 }
 
-PassRefPtr<HTMLCollection> Document::allForBinding()
+PassRefPtr<HTMLAllCollection> Document::allForBinding()
 {
     UseCounter::count(*this, UseCounter::DocumentAll);
     return all();
 }
 
-PassRefPtr<HTMLCollection> Document::all()
+PassRefPtr<HTMLAllCollection> Document::all()
 {
     return ensureRareData().ensureNodeLists().addCache<HTMLAllCollection>(*this, DocAll);
 }

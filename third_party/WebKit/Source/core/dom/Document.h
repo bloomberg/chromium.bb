@@ -392,8 +392,8 @@ public:
     PassRefPtr<HTMLCollection> forms();
     PassRefPtr<HTMLCollection> anchors();
     PassRefPtr<HTMLCollection> scripts();
-    PassRefPtr<HTMLCollection> allForBinding();
-    PassRefPtr<HTMLCollection> all();
+    PassRefPtr<HTMLAllCollection> allForBinding();
+    PassRefPtr<HTMLAllCollection> all();
 
     PassRefPtr<HTMLCollection> windowNamedItems(const AtomicString& name);
     PassRefPtr<HTMLCollection> documentNamedItems(const AtomicString& name);
