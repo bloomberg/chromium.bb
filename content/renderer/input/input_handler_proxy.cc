@@ -305,10 +305,14 @@ InputHandlerProxy::HandleGestureFling(
           !gesture_event.data.flingStart.velocityX;
       disallow_vertical_fling_scroll_ =
           !gesture_event.data.flingStart.velocityY;
-      TRACE_EVENT_ASYNC_BEGIN0(
+      TRACE_EVENT_ASYNC_BEGIN2(
           "input",
           "InputHandlerProxy::HandleGestureFling::started",
-          this);
+          this,
+          "vx",
+          gesture_event.data.flingStart.velocityX,
+          "vy",
+          gesture_event.data.flingStart.velocityY);
       if (gesture_event.timeStampSeconds) {
         fling_parameters_.startTime = gesture_event.timeStampSeconds;
         DCHECK_LT(fling_parameters_.startTime -
@@ -389,6 +393,13 @@ void InputHandlerProxy::DidOverscroll(
     const gfx::Vector2dF& accumulated_overscroll,
     const gfx::Vector2dF& latest_overscroll_delta) {
   DCHECK(client_);
+
+  TRACE_EVENT2("input",
+               "InputHandlerProxy::DidOverscroll",
+               "dx",
+               latest_overscroll_delta.x(),
+               "dy",
+               latest_overscroll_delta.y());
 
   DidOverscrollParams params;
   params.accumulated_overscroll = accumulated_overscroll;
