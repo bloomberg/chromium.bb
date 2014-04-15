@@ -107,15 +107,14 @@ var tests = [
 
     chrome.management.getPermissionWarningsByManifest(
         manifest_str, callback(function(warnings) {
-      chrome.test.assertEq(5, warnings.length);
+      // Warning for "tabs" is suppressed by "history" permission.
+      chrome.test.assertEq(4, warnings.length);
       chrome.test.assertEq(
         "Access your data on *.flickr.com and api.flickr.com", warnings[0]);
       chrome.test.assertEq("Read and modify your bookmarks", warnings[1]);
       chrome.test.assertEq("Detect your physical location", warnings[2]);
       chrome.test.assertEq("Read and modify your browsing history",
                            warnings[3]);
-      chrome.test.assertEq("Access your tabs and browsing activity",
-                           warnings[4]);
     }));
 
     chrome.management.getAll(callback(function(items) {

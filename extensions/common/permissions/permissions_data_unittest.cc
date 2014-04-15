@@ -158,15 +158,15 @@ TEST(ExtensionPermissionsTest, GetPermissionMessages_ManyAPIPermissions) {
   extension = LoadManifest("permissions", "many-apis.json");
   std::vector<base::string16> warnings =
       PermissionsData::GetPermissionMessageStrings(extension.get());
-  ASSERT_EQ(6u, warnings.size());
+  // Warning for "tabs" is suppressed by "history" permission.
+  ASSERT_EQ(5u, warnings.size());
   EXPECT_EQ("Access your data on api.flickr.com",
             UTF16ToUTF8(warnings[0]));
   EXPECT_EQ("Read and modify your bookmarks", UTF16ToUTF8(warnings[1]));
   EXPECT_EQ("Detect your physical location", UTF16ToUTF8(warnings[2]));
   EXPECT_EQ("Read and modify your browsing history", UTF16ToUTF8(warnings[3]));
-  EXPECT_EQ("Access your tabs and browsing activity", UTF16ToUTF8(warnings[4]));
   EXPECT_EQ("Manage your apps, extensions, and themes",
-            UTF16ToUTF8(warnings[5]));
+            UTF16ToUTF8(warnings[4]));
 }
 
 TEST(ExtensionPermissionsTest, GetPermissionMessages_ManyHostsPermissions) {

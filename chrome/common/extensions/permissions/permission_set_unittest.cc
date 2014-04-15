@@ -811,6 +811,20 @@ TEST(PermissionsTest, HiddenFileSystemPermissionMessages) {
   EXPECT_EQ(PermissionMessage::kFileSystemWriteDirectory, messages[0].id());
 }
 
+TEST(PermissionsTest, SuppressedPermissionMessages) {
+  APIPermissionSet api_permissions;
+  api_permissions.insert(APIPermission::kTab);
+  api_permissions.insert(APIPermission::kHistory);
+  scoped_refptr<PermissionSet> permissions(
+      new PermissionSet(api_permissions, ManifestPermissionSet(),
+                        URLPatternSet(), URLPatternSet()));
+  PermissionMessages messages =
+      PermissionMessageProvider::Get()->GetPermissionMessages(
+          permissions, Manifest::TYPE_EXTENSION);
+  EXPECT_EQ(1u, messages.size());
+  EXPECT_EQ(PermissionMessage::kBrowsingHistory, messages[0].id());
+}
+
 TEST(PermissionsTest, MergedFileSystemPermissionComparison) {
   APIPermissionSet write_api_permissions;
   write_api_permissions.insert(APIPermission::kFileSystemWrite);
