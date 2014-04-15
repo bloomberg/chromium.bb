@@ -619,7 +619,7 @@ void HttpHandler::HandleCommand(
     if (!parsed_body || !parsed_body->GetAsDictionary(&body_params)) {
       scoped_ptr<net::HttpServerResponseInfo> response(
           new net::HttpServerResponseInfo(net::HTTP_BAD_REQUEST));
-      response->SetBody("missing command parameters", "test/plain");
+      response->SetBody("missing command parameters", "text/plain");
       send_response_func.Run(response.Pass());
       return;
     }
