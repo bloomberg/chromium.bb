@@ -71,10 +71,8 @@ class TestingPageNavigator : public PageNavigator {
   GURL url_;
 };
 
-// TODO(jschuh): Fix bookmark DND tests on Win64. crbug.com/244605
 // TODO(erg): Fix bookmark DBD tests on linux_aura. crbug.com/163931
-#if (defined(OS_WIN) && defined(ARCH_CPU_X86_64)) || \
-  (defined(OS_LINUX) && defined(USE_AURA))
+#if defined(OS_LINUX) && defined(USE_AURA)
 #define MAYBE(x) DISABLED_##x
 #else
 #define MAYBE(x) x
