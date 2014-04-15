@@ -106,7 +106,7 @@ deps = {
     "/trunk/deps/third_party/icu46@262949",
 
   "src/third_party/libexif/sources":
-    "/trunk/deps/third_party/libexif/sources@146817",
+    "/trunk/deps/third_party/libexif/sources@263766",
 
   "src/third_party/hunspell":
    "/trunk/deps/third_party/hunspell@256272",
