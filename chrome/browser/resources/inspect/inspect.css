@@ -373,6 +373,16 @@ img {
   opacity: 0.5;
 }
 
+#port-forwarding-message {
+  margin-bottom: 12px;
+  width: 20em;
+}
+
+#port-forwarding-message a {
+  font-weight: bold;
+  text-decoration: none;
+}
+
 #port-forwarding-config-buttons {
   align-items: center;
   display: flex;
