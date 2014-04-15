@@ -71,7 +71,7 @@ class ManagePasswordsBubbleUIController
     password_to_be_saved_ = false;
   }
 
-  const autofill::PasswordForm pending_credentials() const {
+  const autofill::PasswordForm& pending_credentials() const {
     return form_manager_->pending_credentials();
   }
 

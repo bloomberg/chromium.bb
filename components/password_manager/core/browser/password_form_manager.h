@@ -142,7 +142,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
   }
 
   // Returns the pending credentials.
-  const autofill::PasswordForm pending_credentials() const {
+  const autofill::PasswordForm& pending_credentials() const {
     return pending_credentials_;
   }
 
