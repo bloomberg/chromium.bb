@@ -54,14 +54,9 @@ TEST(GaiaAuthUtilTest, EmailAddressDifferentOnesRejected) {
             CanonicalizeEmail("Us....E.r@what.com"));
 }
 
-TEST(GaiaAuthUtilTest, EmailAddressIgnorePlusSuffix) {
-  const char with_plus[] = "user+cc@what.com";
-  EXPECT_EQ(with_plus, CanonicalizeEmail(with_plus));
-}
-
-TEST(GaiaAuthUtilTest, EmailAddressIgnoreMultiPlusSuffix) {
-  const char multi_plus[] = "user+cc+bcc@what.com";
-  EXPECT_EQ(multi_plus, CanonicalizeEmail(multi_plus));
+TEST(GaiaAuthUtilTest, GooglemailNotCanonicalizedToGmail) {
+  const char googlemail[] = "user@googlemail.com";
+  EXPECT_EQ(googlemail, CanonicalizeEmail(googlemail));
 }
 
 TEST(GaiaAuthUtilTest, CanonicalizeDomain) {
@@ -91,6 +86,11 @@ TEST(GaiaAuthUtilTest, AreEmailsSame) {
   EXPECT_TRUE(AreEmailsSame("foo@gmail.com", "Foo@Gmail.com"));
   EXPECT_FALSE(AreEmailsSame("foo@gmail.com", "foo@othermail.com"));
   EXPECT_FALSE(AreEmailsSame("user@gmail.com", "foo@gmail.com"));
+}
+
+TEST(GaiaAuthUtilTest, GmailAndGooglemailAreSame) {
+  EXPECT_TRUE(AreEmailsSame("foo@gmail.com", "foo@googlemail.com"));
+  EXPECT_FALSE(AreEmailsSame("bar@gmail.com", "foo@googlemail.com"));
 }
 
 TEST(GaiaAuthUtilTest, IsGaiaSignonRealm) {

@@ -14,10 +14,7 @@ class GURL;
 namespace gaia {
 
 // Perform basic canonicalization of |email_address|, taking into account that
-// gmail does not consider '.' or caps inside a username to matter. It also
-// ignores everything after a '+'. For example, c.masone+abc@gmail.com ==
-// cMaSone@gmail.com, per
-// http://mail.google.com/support/bin/answer.py?hl=en&ctx=mail&answer=10313#
+// gmail does not consider '.' or caps inside a username to matter.
 std::string CanonicalizeEmail(const std::string& email_address);
 
 // Returns the canonical form of the given domain.

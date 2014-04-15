@@ -15,22 +15,39 @@
 namespace gaia {
 
 namespace {
-const char kGmailDomain[] = "gmail.com";
-}
 
-std::string CanonicalizeEmail(const std::string& email_address) {
+const char kGmailDomain[] = "gmail.com";
+const char kGooglemailDomain[] = "googlemail.com";
+
+std::string CanonicalizeEmailImpl(const std::string& email_address,
+                                  bool change_googlemail_to_gmail) {
   std::vector<std::string> parts;
   char at = '@';
   base::SplitString(email_address, at, &parts);
   if (parts.size() != 2U) {
     NOTREACHED() << "expecting exactly one @, but got " << parts.size()-1 <<
         " : " << email_address;
-  } else if (parts[1] == kGmailDomain) {  // only strip '.' for gmail accounts.
-    base::RemoveChars(parts[0], ".", &parts[0]);
+  } else {
+    if (change_googlemail_to_gmail && parts[1] == kGooglemailDomain)
+      parts[1] = kGmailDomain;
+
+    if (parts[1] == kGmailDomain)  // only strip '.' for gmail accounts.
+      base::RemoveChars(parts[0], ".", &parts[0]);
   }
+
   std::string new_email = StringToLowerASCII(JoinString(parts, at));
   VLOG(1) << "Canonicalized " << email_address << " to " << new_email;
   return new_email;
+}
+
+}  // namespace
+
+std::string CanonicalizeEmail(const std::string& email_address) {
+  // CanonicalizeEmail() is called to process email strings that are eventually
+  // shown to the user, and may also be used in persisting email strings.  To
+  // avoid breaking this existing behavior, this function will not try to
+  // change googlemail to gmail.
+  return CanonicalizeEmailImpl(email_address, false);
 }
 
 std::string CanonicalizeDomain(const std::string& domain) {
@@ -52,8 +69,8 @@ std::string SanitizeEmail(const std::string& email_address) {
 }
 
 bool AreEmailsSame(const std::string& email1, const std::string& email2) {
-  return gaia::CanonicalizeEmail(gaia::SanitizeEmail(email1)) ==
-      gaia::CanonicalizeEmail(gaia::SanitizeEmail(email2));
+  return CanonicalizeEmailImpl(gaia::SanitizeEmail(email1), true) ==
+      CanonicalizeEmailImpl(gaia::SanitizeEmail(email2), true);
 }
 
 std::string ExtractDomainName(const std::string& email_address) {
