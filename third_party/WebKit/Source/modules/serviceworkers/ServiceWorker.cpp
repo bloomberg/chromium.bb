@@ -31,13 +31,22 @@
 #include "config.h"
 #include "ServiceWorker.h"
 
+#include "EventTargetNames.h"
 #include "bindings/v8/ExceptionState.h"
+#include "bindings/v8/NewScriptState.h"
 #include "core/dom/MessagePort.h"
+#include "core/events/Event.h"
 #include "platform/NotImplemented.h"
 #include "public/platform/WebMessagePortChannel.h"
+#include "public/platform/WebServiceWorkerState.h"
 #include "public/platform/WebString.h"
 
 namespace WebCore {
+
+const AtomicString& ServiceWorker::interfaceName() const
+{
+    return EventTargetNames::ServiceWorker;
+}
 
 void ServiceWorker::postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray* ports, ExceptionState& exceptionState)
 {
@@ -53,13 +62,59 @@ void ServiceWorker::postMessage(PassRefPtr<SerializedScriptValue> message, const
 
 void ServiceWorker::dispatchStateChangeEvent()
 {
-    // FIXME: implement this.
-    notImplemented();
+    this->dispatchEvent(Event::create(EventTypeNames::statechange));
 }
 
-ServiceWorker::ServiceWorker(PassOwnPtr<blink::WebServiceWorker> worker)
-    : m_outerWorker(worker)
+const AtomicString& ServiceWorker::state() const
 {
+    DEFINE_STATIC_LOCAL(AtomicString, unknown, ("unknown", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, parsed, ("parsed", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, installing, ("installing", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, installed, ("installed", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, activating, ("activating", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, active, ("active", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, deactivated, ("deactivated", AtomicString::ConstructFromLiteral));
+
+    switch (m_outerWorker->state()) {
+    case blink::WebServiceWorkerStateUnknown:
+        // The web platform should never see this internal state
+        ASSERT_NOT_REACHED();
+        return unknown;
+    case blink::WebServiceWorkerStateParsed:
+        return parsed;
+    case blink::WebServiceWorkerStateInstalling:
+        return installing;
+    case blink::WebServiceWorkerStateInstalled:
+        return installed;
+    case blink::WebServiceWorkerStateActivating:
+        return activating;
+    case blink::WebServiceWorkerStateActive:
+        return active;
+    case blink::WebServiceWorkerStateDeactivated:
+        return deactivated;
+    default:
+        ASSERT_NOT_REACHED();
+        return nullAtom;
+    }
+}
+
+PassRefPtr<ServiceWorker> ServiceWorker::from(NewScriptState* scriptState, WebType* worker)
+{
+    return create(scriptState->executionContext(), adoptPtr(worker));
+}
+
+PassRefPtr<ServiceWorker> ServiceWorker::create(ExecutionContext* executionContext, PassOwnPtr<blink::WebServiceWorker> outerWorker)
+{
+    RefPtr<ServiceWorker> worker = adoptRef(new ServiceWorker(executionContext, outerWorker));
+    worker->suspendIfNeeded();
+    return worker.release();
+}
+
+ServiceWorker::ServiceWorker(ExecutionContext* executionContext, PassOwnPtr<blink::WebServiceWorker> worker)
+    : AbstractWorker(executionContext)
+    , m_outerWorker(worker)
+{
+    ScriptWrappable::init(this);
     ASSERT(m_outerWorker);
     m_outerWorker->setProxy(this);
 }
