@@ -26,6 +26,9 @@ const base::FilePath::CharType kOldDownloadsFolderPath[] =
     FILE_PATH_LITERAL("/home/chronos/user/Downloads");
 const base::FilePath::CharType kOldDriveFolderPath[] =
     FILE_PATH_LITERAL("/special/drive");
+// Unintended path introduced in crbug.com/363026.
+const base::FilePath::CharType kBuggyDriveFolderPath[] =
+    FILE_PATH_LITERAL("/special/drive-user");
 
 }  // namespace
 
@@ -66,6 +69,7 @@ bool MigratePathFromOldFormat(Profile* profile,
   bases.push_back(std::make_pair(DownloadPrefs::GetDefaultDownloadDirectory(),
                                  downloads));
   bases.push_back(std::make_pair(base::FilePath(kOldDriveFolderPath), drive));
+  bases.push_back(std::make_pair(base::FilePath(kBuggyDriveFolderPath), drive));
 
   // Trying migrating u-<hash>/Downloads to the current download path. This is
   // no-op when multi-profile is enabled. This is necessary for (1) back
