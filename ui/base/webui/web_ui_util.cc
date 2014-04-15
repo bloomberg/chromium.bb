@@ -140,6 +140,11 @@ void SetFontAndTextDirection(base::DictionaryValue* localized_strings) {
 
   std::string font_family = l10n_util::GetStringUTF8(web_font_family_id);
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  font_family = ui::ResourceBundle::GetSharedInstance().GetFont(
+      ui::ResourceBundle::BaseFont).GetFontName() + ", " + font_family;
+#endif
+
   localized_strings->SetString("fontfamily", font_family);
   localized_strings->SetString("fontsize",
       l10n_util::GetStringUTF8(web_font_size_id));
