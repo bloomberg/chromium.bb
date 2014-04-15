@@ -37,9 +37,13 @@
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 
+class SkCanvas;
 class SkPicture;
+class SkPictureRecorder;
 
 namespace WebCore {
+
+class IntSize;
 
 class PLATFORM_EXPORT DisplayList FINAL : public WTF::RefCounted<DisplayList> {
     WTF_MAKE_FAST_ALLOCATED;
@@ -49,11 +53,19 @@ public:
     ~DisplayList();
 
     const FloatRect& bounds() const;
+    // The recorded picture is only valid (i.e., non-0) after an endRecording
+    // call. It will be held on to (and returned) by this object until the next
+    // endRecording call.
     SkPicture* picture() const;
+
+    SkCanvas* beginRecording(const IntSize&, uint32_t recordFlags = 0);
+    bool isRecording() const { return m_recorder; }
+    void endRecording();
 
 private:
     FloatRect m_bounds;
     RefPtr<SkPicture> m_picture;
+    OwnPtr<SkPictureRecorder> m_recorder;
 };
 
 }
