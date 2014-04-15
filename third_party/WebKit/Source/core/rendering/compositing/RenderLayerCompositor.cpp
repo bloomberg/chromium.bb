@@ -167,38 +167,27 @@ void RenderLayerCompositor::updateShouldForceCompositingMode()
 
     m_forceCompositingModeDirty = false;
 
-    // FIXME: Can settings really be null here?
-    if (Settings* settings = m_renderView.document().settings()) {
-        bool forceCompositingMode = settings->forceCompositingMode() && m_hasAcceleratedCompositing;
-        if (forceCompositingMode && !m_renderView.frame()->isMainFrame())
-            forceCompositingMode = m_compositingReasonFinder.requiresCompositingForScrollableFrame();
-        if (forceCompositingMode != m_forceCompositingMode) {
-            setCompositingLayersNeedRebuild();
-            m_forceCompositingMode = forceCompositingMode;
-        }
+    Settings* settings = m_renderView.document().settings();
+    bool forceCompositingMode = settings->forceCompositingMode() && m_hasAcceleratedCompositing;
+    if (forceCompositingMode && !m_renderView.frame()->isMainFrame())
+        forceCompositingMode = m_compositingReasonFinder.requiresCompositingForScrollableFrame();
+    if (forceCompositingMode != m_forceCompositingMode) {
+        setCompositingLayersNeedRebuild();
+        m_forceCompositingMode = forceCompositingMode;
     }
 }
 
 void RenderLayerCompositor::updateAcceleratedCompositingSettings()
 {
-    bool hasAcceleratedCompositing = false;
-    bool showRepaintCounter = false;
+    m_compositingReasonFinder.updateTriggers();
 
-    // FIXME: Can settings really be null here?
-    if (Settings* settings = m_renderView.document().settings()) {
-        if (settings->acceleratedCompositingEnabled()) {
-            m_compositingReasonFinder.updateTriggers();
-            hasAcceleratedCompositing = m_compositingReasonFinder.hasTriggers();
-        }
-
-        showRepaintCounter = settings->showRepaintCounter();
-    }
-
-    if (hasAcceleratedCompositing != m_hasAcceleratedCompositing || showRepaintCounter != m_showRepaintCounter)
+    Settings* settings = m_renderView.document().settings();
+    bool hasAcceleratedCompositing = settings->acceleratedCompositingEnabled() && m_compositingReasonFinder.hasTriggers();
+    if (hasAcceleratedCompositing != m_hasAcceleratedCompositing || settings->showRepaintCounter() != m_showRepaintCounter)
         setCompositingLayersNeedRebuild();
 
     m_hasAcceleratedCompositing = hasAcceleratedCompositing;
-    m_showRepaintCounter = showRepaintCounter;
+    m_showRepaintCounter = settings->showRepaintCounter();
     m_forceCompositingModeDirty = true;
 }
 
