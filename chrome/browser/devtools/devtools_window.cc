@@ -20,6 +20,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chrome_page_zoom.h"
+#include "chrome/browser/devtools/devtools_adb_bridge.h"
 #include "chrome/browser/extensions/api/debugger/debugger_api.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -1374,6 +1375,31 @@ void DevToolsWindow::ResetZoom() {
   chrome_page_zoom::Zoom(web_contents(), content::PAGE_ZOOM_RESET);
 }
 
+void DevToolsWindow::OpenUrlOnRemoteDeviceAndInspect(
+    const std::string& browser_id,
+    const std::string& url) {
+  if (remote_targets_handler_)
+    remote_targets_handler_->OpenAndInspect(browser_id, url, profile_);
+}
+
+void DevToolsWindow::StartRemoteDevicesListener() {
+  remote_targets_handler_ = DevToolsRemoteTargetsUIHandler::CreateForAdb(
+      base::Bind(&DevToolsWindow::PopulateRemoteDevices,
+                 base::Unretained(this)),
+      profile_);
+}
+
+void DevToolsWindow::StopRemoteDevicesListener() {
+  remote_targets_handler_.reset();
+}
+
+void DevToolsWindow::PopulateRemoteDevices(
+    const std::string& source,
+    scoped_ptr<base::ListValue> targets) {
+  CallClientFunction(
+      "InspectorFrontendAPI.populateRemoteDevices", targets.get(), NULL, NULL);
+}
+
 void DevToolsWindow::FileSavedAs(const std::string& url) {
   base::StringValue url_value(url);
   CallClientFunction("InspectorFrontendAPI.savedURL", &url_value, NULL, NULL);
@@ -1628,7 +1654,7 @@ void DevToolsWindow::CallClientFunction(const std::string& function_name,
     }
   }
   base::string16 javascript =
-      base::ASCIIToUTF16(function_name + "(" + params + ");");
+      base::UTF8ToUTF16(function_name + "(" + params + ");");
   web_contents_->GetMainFrame()->ExecuteJavaScript(javascript);
 }
 

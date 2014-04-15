@@ -342,6 +342,9 @@ class AdbTargetsUIHandler
 
   virtual void Open(const std::string& browser_id,
                     const std::string& url) OVERRIDE;
+  virtual void OpenAndInspect(const std::string& browser_id,
+                              const std::string& url,
+                              Profile* profile) OVERRIDE;
 
  private:
   // DevToolsAdbBridge::Listener overrides.
@@ -376,6 +379,14 @@ void AdbTargetsUIHandler::Open(const std::string& browser_id,
   RemoteBrowsers::iterator it = remote_browsers_.find(browser_id);
   if (it !=  remote_browsers_.end())
     it->second->Open(url);
+}
+
+void AdbTargetsUIHandler::OpenAndInspect(const std::string& browser_id,
+                                         const std::string& url,
+                                         Profile* profile) {
+  RemoteBrowsers::iterator it = remote_browsers_.find(browser_id);
+  if (it != remote_browsers_.end())
+    it->second->OpenAndInspect(url, profile);
 }
 
 void AdbTargetsUIHandler::RemoteDevicesChanged(

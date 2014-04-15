@@ -134,9 +134,11 @@ class DevToolsAdbBridge
                          const JsonRequestCallback& callback);
     void SendProtocolCommand(const std::string& debug_url,
                              const std::string& method,
-                             base::DictionaryValue* params);
+                             base::DictionaryValue* params,
+                             const base::Closure callback);
 
     void Open(const std::string& url);
+    void OpenAndInspect(const std::string& url, Profile* profile);
 
     scoped_refptr<AdbWebSocket> CreateWebSocket(
         const std::string& url,
@@ -146,11 +148,18 @@ class DevToolsAdbBridge
     friend class base::RefCounted<RemoteBrowser>;
     virtual ~RemoteBrowser();
 
-    void PageCreatedOnHandlerThread(
-        const std::string& url, int result, const std::string& response);
+    void Open(const std::string& url,
+              const JsonRequestCallback& callback);
 
     void PageCreatedOnUIThread(
-        const std::string& response, const std::string& url);
+        const JsonRequestCallback& callback,
+        const std::string& url, int result, const std::string& response);
+
+    void NavigatePageOnUIThread(const JsonRequestCallback& callback,
+        int result, const std::string& response, const std::string& url);
+
+    void InspectAfterOpenOnUIThread(Profile* profile, int result,
+                                    const std::string& response);
 
     scoped_refptr<DevToolsAdbBridge> adb_bridge_;
     const std::string serial_;

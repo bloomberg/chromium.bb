@@ -64,6 +64,9 @@ class DevToolsRemoteTargetsUIHandler: public DevToolsTargetsUIHandler {
       Callback callback, Profile* profile);
 
   virtual void Open(const std::string& browser_id, const std::string& url) = 0;
+  virtual void OpenAndInspect(const std::string& browser_id,
+                              const std::string& url,
+                              Profile* profile) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DevToolsRemoteTargetsUIHandler);
