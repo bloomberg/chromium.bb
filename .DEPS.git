@@ -96,7 +96,7 @@ deps = {
     'src/third_party/libvpx':
         Var('git_url') + '/chromium/deps/libvpx.git@37fc486eee21129fa42b92b99778b54caf773980',
     'src/third_party/libwebm/source':
-        Var('git_url') + '/webm/libwebm.git@0f7815b036651e242ec8c2fcfb59fe54f69be1a8',
+        Var('git_url') + '/webm/libwebm.git@fb6b6e64444c637f27d103fd113e0c7bf4f107dd',
     'src/third_party/libyuv':
         Var('git_url') + '/external/libyuv.git@c99fa63f6b8a240fb28c354752a192ac64fdf9b9',
     'src/third_party/mesa/src':
