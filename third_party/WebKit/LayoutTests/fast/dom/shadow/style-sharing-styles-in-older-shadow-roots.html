@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+
+<style>
+    #sandbox div {
+        width: 50px;
+        height: 50px;
+    }
+</style>
+
+<script src="../../../resources/js-test.js"></script>
+
+<div id="sandbox">
+    <div></div>
+    <div></div>
+</div>
+
+<script>
+description("Should not share style if sibling has different styles in older shadow roots");
+
+document.body.offsetTop;
+div1 = document.getElementById("sandbox").firstElementChild;
+div2 = document.getElementById("sandbox").lastElementChild;
+
+div2.createShadowRoot();
+
+div1.createShadowRoot();
+div1.createShadowRoot().innerHTML = "<style>:host { background: red; }</style>";
+shouldBeEqualToString("getComputedStyle(div1).backgroundColor", "rgb(255, 0, 0)");
+</script>

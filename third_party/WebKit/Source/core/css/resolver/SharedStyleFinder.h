@@ -64,7 +64,7 @@ private:
     bool canShareStyleWithElement(Element& candidate) const;
     bool canShareStyleWithControl(Element& candidate) const;
     bool sharingCandidateHasIdenticalStyleAffectingAttributes(Element& candidate) const;
-    bool sharingCandidateShadowHasSharedStyleSheetContents(Element& candidate) const;
+    bool sharingCandidateCanShareHostStyles(Element& candidate) const;
     bool sharingCandidateDistributedToSameInsertionPoint(Element& candidate) const;
     bool matchesRuleSet(RuleSet*);
 

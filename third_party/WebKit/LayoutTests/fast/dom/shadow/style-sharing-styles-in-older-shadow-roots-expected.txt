@@ -1,0 +1,10 @@
+Should not share style if sibling has different styles in older shadow roots
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS getComputedStyle(div1).backgroundColor is "rgb(255, 0, 0)"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -52,8 +52,7 @@ public:
 
     ShadowRoot& addShadowRoot(Element& shadowHost, ShadowRoot::ShadowRootType);
 
-    bool containsActiveStyles() const;
-    bool hasSameStyles(ElementShadow *) const;
+    bool hasSameStyles(const ElementShadow*) const;
 
     void attach(const Node::AttachContext&);
     void detach(const Node::AttachContext&);

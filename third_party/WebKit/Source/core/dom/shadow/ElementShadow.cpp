@@ -208,18 +208,7 @@ void ElementShadow::setNeedsDistributionRecalc()
     clearDistribution();
 }
 
-bool ElementShadow::containsActiveStyles() const
-{
-    for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot()) {
-        if (root->hasScopedHTMLStyleChild())
-            return true;
-        if (!root->containsShadowElements())
-            return false;
-    }
-    return false;
-}
-
-bool ElementShadow::hasSameStyles(ElementShadow *other) const
+bool ElementShadow::hasSameStyles(const ElementShadow* other) const
 {
     ShadowRoot* root = youngestShadowRoot();
     ShadowRoot* otherRoot = other->youngestShadowRoot();
