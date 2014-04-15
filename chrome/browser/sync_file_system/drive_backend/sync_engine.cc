@@ -96,10 +96,12 @@ scoped_ptr<SyncEngine> SyncEngine::CreateForBrowserContext(
           base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
 
   scoped_ptr<drive_backend::SyncEngine> sync_engine(
-      new SyncEngine(notification_manager, extension_service, signin_manager));
+      new SyncEngine(drive_service.Pass(),
+                     drive_uploader.Pass(),
+                     notification_manager,
+                     extension_service,
+                     signin_manager));
   sync_engine->Initialize(GetSyncFileSystemDir(context->GetPath()),
-                          drive_service.Pass(),
-                          drive_uploader.Pass(),
                           task_runner.get(),
                           NULL);
 
@@ -122,18 +124,17 @@ SyncEngine::~SyncEngine() {
     notification_manager_->RemoveObserver(this);
 }
 
-void SyncEngine::Initialize(
-    const base::FilePath& base_dir,
-    scoped_ptr<drive::DriveServiceInterface> drive_service,
-    scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
-    base::SequencedTaskRunner* task_runner,
-    leveldb::Env* env_override) {
+void SyncEngine::Initialize(const base::FilePath& base_dir,
+                            base::SequencedTaskRunner* task_runner,
+                            leveldb::Env* env_override) {
+  scoped_ptr<SyncEngineContext> sync_engine_context(
+      new SyncEngineContext(drive_service_.get(),
+                            drive_uploader_.get(),
+                            task_runner));
   // TODO(peria): Move this create function to thread pool.
   sync_worker_ = SyncWorker::CreateOnWorker(weak_ptr_factory_.GetWeakPtr(),
                                             base_dir,
-                                            drive_service.Pass(),
-                                            drive_uploader.Pass(),
-                                            task_runner,
+                                            sync_engine_context.Pass(),
                                             env_override);
 
   if (notification_manager_)
@@ -310,10 +311,15 @@ MetadataDatabase* SyncEngine::GetMetadataDatabase() {
   return sync_worker_->GetMetadataDatabase();
 }
 
-SyncEngine::SyncEngine(drive::DriveNotificationManager* notification_manager,
-                       ExtensionServiceInterface* extension_service,
-                       SigninManagerBase* signin_manager)
-    : notification_manager_(notification_manager),
+SyncEngine::SyncEngine(
+    scoped_ptr<drive::DriveServiceInterface> drive_service,
+    scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
+    drive::DriveNotificationManager* notification_manager,
+    ExtensionServiceInterface* extension_service,
+    SigninManagerBase* signin_manager)
+    : drive_service_(drive_service.Pass()),
+      drive_uploader_(drive_uploader.Pass()),
+      notification_manager_(notification_manager),
       extension_service_(extension_service),
       signin_manager_(signin_manager),
       weak_ptr_factory_(this) {}

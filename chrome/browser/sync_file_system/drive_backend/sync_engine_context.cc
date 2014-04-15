@@ -17,22 +17,22 @@ namespace sync_file_system {
 namespace drive_backend {
 
 SyncEngineContext::SyncEngineContext(
-    scoped_ptr<drive::DriveServiceInterface> drive_service,
-    scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
+    drive::DriveServiceInterface* drive_service,
+    drive::DriveUploaderInterface* drive_uploader,
     base::SequencedTaskRunner* task_runner)
-    : drive_service_(drive_service.Pass()),
-      drive_uploader_(drive_uploader.Pass()),
+    : drive_service_(drive_service),
+      drive_uploader_(drive_uploader),
       remote_change_processor_(NULL),
       task_runner_(task_runner) {}
 
 SyncEngineContext::~SyncEngineContext() {}
 
 drive::DriveServiceInterface* SyncEngineContext::GetDriveService() {
-  return drive_service_.get();
+  return drive_service_;
 }
 
 drive::DriveUploaderInterface* SyncEngineContext::GetDriveUploader() {
-  return drive_uploader_.get();
+  return drive_uploader_;
 }
 
 MetadataDatabase* SyncEngineContext::GetMetadataDatabase() {

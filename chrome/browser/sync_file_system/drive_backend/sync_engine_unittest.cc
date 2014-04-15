@@ -112,15 +112,14 @@ class SyncEngineTest
         new drive::FakeDriveService);
 
     sync_engine_.reset(new drive_backend::SyncEngine(
+        fake_drive_service.PassAs<drive::DriveServiceInterface>(),
+        scoped_ptr<drive::DriveUploaderInterface>(),
         NULL /* notification_manager */,
         extension_service_.get(),
         NULL /* signin_manager */));
-    sync_engine_->Initialize(
-        profile_dir_.path(),
-        fake_drive_service.PassAs<drive::DriveServiceInterface>(),
-        scoped_ptr<drive::DriveUploaderInterface>(),
-        base::MessageLoopProxy::current(),
-        in_memory_env_.get());
+    sync_engine_->Initialize(profile_dir_.path(),
+                             base::MessageLoopProxy::current(),
+                             in_memory_env_.get());
     sync_engine_->SetSyncEnabled(true);
     base::RunLoop().RunUntilIdle();
   }

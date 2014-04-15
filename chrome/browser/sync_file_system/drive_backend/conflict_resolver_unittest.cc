@@ -56,18 +56,19 @@ class ConflictResolverTest : public testing::Test {
     ASSERT_TRUE(database_dir_.CreateUniqueTempDir());
     in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
 
-    scoped_ptr<FakeDriveServiceWrapper>
-        fake_drive_service(new FakeDriveServiceWrapper);
+    fake_drive_service_.reset(new FakeDriveServiceWrapper);
 
-    scoped_ptr<drive::DriveUploaderInterface>
-        drive_uploader(new FakeDriveUploader(fake_drive_service.get()));
-    fake_drive_helper_.reset(new FakeDriveServiceHelper(
-        fake_drive_service.get(), drive_uploader.get(), kSyncRootFolderTitle));
+    drive_uploader_.reset(new FakeDriveUploader(fake_drive_service_.get()));
+    fake_drive_helper_.reset(
+        new FakeDriveServiceHelper(fake_drive_service_.get(),
+                                   drive_uploader_.get(),
+                                   kSyncRootFolderTitle));
     fake_remote_change_processor_.reset(new FakeRemoteChangeProcessor);
 
     context_.reset(new SyncEngineContext(
-        fake_drive_service.PassAs<drive::DriveServiceInterface>(),
-        drive_uploader.Pass(), base::MessageLoopProxy::current()));
+        fake_drive_service_.get(),
+        drive_uploader_.get(),
+        base::MessageLoopProxy::current()));
     context_->SetRemoteChangeProcessor(fake_remote_change_processor_.get());
 
     RegisterSyncableFileSystem();
@@ -80,6 +81,8 @@ class ConflictResolverTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     sync_task_manager_.reset();
+    fake_drive_service_.reset();
+    drive_uploader_.reset();
 
     RevokeSyncableFileSystem();
 
@@ -268,6 +271,8 @@ class ConflictResolverTest : public testing::Test {
   scoped_ptr<leveldb::Env> in_memory_env_;
 
   scoped_ptr<SyncEngineContext> context_;
+  scoped_ptr<FakeDriveServiceWrapper> fake_drive_service_;
+  scoped_ptr<drive::DriveUploaderInterface> drive_uploader_;
   scoped_ptr<FakeDriveServiceHelper> fake_drive_helper_;
   scoped_ptr<FakeRemoteChangeProcessor> fake_remote_change_processor_;
 

@@ -55,21 +55,20 @@ class RemoteToLocalSyncerTest : public testing::Test {
     ASSERT_TRUE(database_dir_.CreateUniqueTempDir());
     in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
 
-    scoped_ptr<drive::FakeDriveService>
-        fake_drive_service(new drive::FakeDriveService);
+    fake_drive_service_.reset(new drive::FakeDriveService);
 
-    scoped_ptr<drive::DriveUploaderInterface>
-        drive_uploader(new drive::DriveUploader(
-            fake_drive_service.get(),
-            base::MessageLoopProxy::current().get()));
-    fake_drive_helper_.reset(new FakeDriveServiceHelper(
-        fake_drive_service.get(), drive_uploader.get(),
-        kSyncRootFolderTitle));
+    drive_uploader_.reset(
+        new drive::DriveUploader(fake_drive_service_.get(),
+                                 base::MessageLoopProxy::current().get()));
+    fake_drive_helper_.reset(
+        new FakeDriveServiceHelper(fake_drive_service_.get(),
+                                   drive_uploader_.get(),
+                                   kSyncRootFolderTitle));
     fake_remote_change_processor_.reset(new FakeRemoteChangeProcessor);
 
-    context_.reset(new SyncEngineContext(
-        fake_drive_service.PassAs<drive::DriveServiceInterface>(),
-        drive_uploader.Pass(), base::MessageLoopProxy::current()));
+    context_.reset(new SyncEngineContext(fake_drive_service_.get(),
+                                         drive_uploader_.get(),
+                                         base::MessageLoopProxy::current()));
     context_->SetRemoteChangeProcessor(fake_remote_change_processor_.get());
 
     RegisterSyncableFileSystem();
@@ -87,6 +86,8 @@ class RemoteToLocalSyncerTest : public testing::Test {
 
     fake_remote_change_processor_.reset();
     fake_drive_helper_.reset();
+    fake_drive_service_.reset();
+    drive_uploader_.reset();
     context_.reset();
     base::RunLoop().RunUntilIdle();
   }
@@ -219,6 +220,8 @@ class RemoteToLocalSyncerTest : public testing::Test {
   scoped_ptr<leveldb::Env> in_memory_env_;
 
   scoped_ptr<SyncEngineContext> context_;
+  scoped_ptr<drive::FakeDriveService> fake_drive_service_;
+  scoped_ptr<drive::DriveUploaderInterface> drive_uploader_;
   scoped_ptr<FakeDriveServiceHelper> fake_drive_helper_;
   scoped_ptr<FakeRemoteChangeProcessor> fake_remote_change_processor_;
 

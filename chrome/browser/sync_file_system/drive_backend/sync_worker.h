@@ -10,6 +10,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "chrome/browser/drive/drive_notification_observer.h"
 #include "chrome/browser/drive/drive_service_interface.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_task_manager.h"
@@ -46,13 +47,10 @@ class SyncEngineInitializer;
 
 class SyncWorker : public SyncTaskManager::Client {
  public:
-
   static scoped_ptr<SyncWorker> CreateOnWorker(
       const base::WeakPtr<drive_backend::SyncEngine>& sync_engine,
       const base::FilePath& base_dir,
-      scoped_ptr<drive::DriveServiceInterface> drive_service,
-      scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
-      base::SequencedTaskRunner* task_runner,
+      scoped_ptr<SyncEngineContext> sync_engine_context,
       leveldb::Env* env_override);
 
   virtual ~SyncWorker();
@@ -108,11 +106,12 @@ class SyncWorker : public SyncTaskManager::Client {
   SyncTaskManager* GetSyncTaskManager();
 
  private:
+  friend class DriveBackendSyncTest;
+  friend class SyncEngineTest;
+
   SyncWorker(const base::WeakPtr<drive_backend::SyncEngine>& sync_engine,
              const base::FilePath& base_dir,
-             scoped_ptr<drive::DriveServiceInterface> drive_service,
-             scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
-             base::SequencedTaskRunner* task_runner,
+             scoped_ptr<SyncEngineContext> sync_engine_context,
              leveldb::Env* env_override);
 
   void DoDisableApp(const std::string& app_id,
@@ -138,6 +137,7 @@ class SyncWorker : public SyncTaskManager::Client {
                                             bool used_network);
   void UpdateServiceState(RemoteServiceState state,
                           const std::string& description);
+  void UpdateRegisteredApps();
 
   base::FilePath base_dir_;
 

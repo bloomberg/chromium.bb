@@ -72,12 +72,13 @@ class DriveBackendSyncTest : public testing::Test,
         new drive::DriveUploader(drive_service.get(),
                                  file_task_runner_.get()));
 
-    remote_sync_service_.reset(new SyncEngine(NULL, NULL, NULL));
+    remote_sync_service_.reset(new SyncEngine(
+        drive_service.PassAs<drive::DriveServiceInterface>(),
+        uploader.Pass(),
+        NULL, NULL, NULL));
     remote_sync_service_->AddServiceObserver(this);
     remote_sync_service_->Initialize(
         base_dir_.path(),
-        drive_service.PassAs<drive::DriveServiceInterface>(),
-        uploader.Pass(),
         file_task_runner_.get(),
         in_memory_env_.get());
     remote_sync_service_->SetSyncEnabled(true);

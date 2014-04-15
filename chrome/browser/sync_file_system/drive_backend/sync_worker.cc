@@ -61,16 +61,12 @@ void EmptyStatusCallback(SyncStatusCode status) {}
 scoped_ptr<SyncWorker> SyncWorker::CreateOnWorker(
     const base::WeakPtr<drive_backend::SyncEngine>& sync_engine,
     const base::FilePath& base_dir,
-    scoped_ptr<drive::DriveServiceInterface> drive_service,
-    scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
-    base::SequencedTaskRunner* task_runner,
+    scoped_ptr<SyncEngineContext> sync_engine_context,
     leveldb::Env* env_override) {
   scoped_ptr<SyncWorker> sync_worker(
       new SyncWorker(sync_engine,
                      base_dir,
-                     drive_service.Pass(),
-                     drive_uploader.Pass(),
-                     task_runner,
+                     sync_engine_context.Pass(),
                      env_override));
   sync_worker->Initialize();
 
@@ -346,9 +342,7 @@ SyncTaskManager* SyncWorker::GetSyncTaskManager() {
 SyncWorker::SyncWorker(
     const base::WeakPtr<drive_backend::SyncEngine>& sync_engine,
     const base::FilePath& base_dir,
-    scoped_ptr<drive::DriveServiceInterface> drive_service,
-    scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
-    base::SequencedTaskRunner* task_runner,
+    scoped_ptr<SyncEngineContext> sync_engine_context,
     leveldb::Env* env_override)
     : base_dir_(base_dir),
       env_override_(env_override),
@@ -360,9 +354,7 @@ SyncWorker::SyncWorker(
       default_conflict_resolution_policy_(
           CONFLICT_RESOLUTION_POLICY_LAST_WRITE_WIN),
       network_available_(false),
-      context_(new SyncEngineContext(drive_service.Pass(),
-                                     drive_uploader.Pass(),
-                                     task_runner)),
+      context_(sync_engine_context.Pass()),
       sync_engine_(sync_engine),
       weak_ptr_factory_(this) {}
 

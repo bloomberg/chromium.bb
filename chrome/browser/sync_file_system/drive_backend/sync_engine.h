@@ -64,8 +64,6 @@ class SyncEngine : public RemoteFileSyncService,
 
   void Initialize(
       const base::FilePath& base_dir,
-      scoped_ptr<drive::DriveServiceInterface> drive_service,
-      scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
       base::SequencedTaskRunner* task_runner,
       leveldb::Env* env_override);
 
@@ -147,7 +145,9 @@ class SyncEngine : public RemoteFileSyncService,
   // TODO(peria): Remove friendship with SyncWorker
   friend class SyncWorker;
 
-  SyncEngine(drive::DriveNotificationManager* notification_manager,
+  SyncEngine(scoped_ptr<drive::DriveServiceInterface> drive_service,
+             scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
+             drive::DriveNotificationManager* notification_manager,
              ExtensionServiceInterface* extension_service,
              SigninManagerBase* signin_manager);
 
@@ -157,6 +157,9 @@ class SyncEngine : public RemoteFileSyncService,
   void UpdateServiceState(const std::string& description);
   void UpdateRegisteredApps();
   void NotifyLastOperationStatus();
+
+  scoped_ptr<drive::DriveServiceInterface> drive_service_;
+  scoped_ptr<drive::DriveUploaderInterface> drive_uploader_;
 
   // These external services are not owned by SyncEngine.
   // The owner of the SyncEngine is responsible for their lifetime.
