@@ -923,6 +923,26 @@ void HTMLElement::defaultEventHandler(Event* event)
     Element::defaultEventHandler(event);
 }
 
+bool HTMLElement::matchesReadOnlyPseudoClass() const
+{
+    return !matchesReadWritePseudoClass();
+}
+
+bool HTMLElement::matchesReadWritePseudoClass() const
+{
+    if (fastHasAttribute(contenteditableAttr)) {
+        const AtomicString& value = fastGetAttribute(contenteditableAttr);
+
+        if (value.isEmpty() || equalIgnoringCase(value, "true") || equalIgnoringCase(value, "plaintext-only"))
+            return true;
+        if (equalIgnoringCase(value, "false"))
+            return false;
+        // All other values should be treated as "inherit".
+    }
+
+    return parentElement() && parentElement()->rendererIsEditable();
+}
+
 void HTMLElement::handleKeypressEvent(KeyboardEvent* event)
 {
     if (!document().settings() || !document().settings()->spatialNavigationEnabled() || !supportsFocus())
