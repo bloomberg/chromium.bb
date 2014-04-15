@@ -19,7 +19,6 @@
             'v8/CustomElementWrapper.h',
             'v8/DOMDataStore.cpp',
             'v8/DOMDataStore.h',
-            'v8/DOMRequestState.h',
             'v8/DOMWrapperMap.h',
             'v8/DOMWrapperWorld.cpp',
             'v8/DOMWrapperWorld.h',

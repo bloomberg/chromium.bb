@@ -32,10 +32,9 @@
 #include "bindings/v8/custom/V8PromiseCustom.h"
 
 #include "V8Promise.h"
-#include "bindings/v8/DOMRequestState.h"
+#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScopedPersistent.h"
 #include "bindings/v8/ScriptFunctionCall.h"
-#include "bindings/v8/ScriptState.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8HiddenValue.h"
 #include "bindings/v8/V8PerIsolateData.h"
@@ -236,7 +235,7 @@ public:
         : m_promise(isolate, promise)
         , m_handler(isolate, handler)
         , m_argument(isolate, argument)
-        , m_requestState(isolate)
+        , m_scriptState(NewScriptState::current(isolate))
     {
         ASSERT(!m_promise.isEmpty());
         ASSERT(!m_handler.isEmpty());
@@ -251,7 +250,7 @@ private:
     ScopedPersistent<v8::Object> m_promise;
     ScopedPersistent<v8::Function> m_handler;
     ScopedPersistent<v8::Value> m_argument;
-    DOMRequestState m_requestState;
+    RefPtr<NewScriptState> m_scriptState;
 };
 
 void CallHandlerTask::performTask(ExecutionContext* context)
@@ -262,8 +261,8 @@ void CallHandlerTask::performTask(ExecutionContext* context)
     if (context->activeDOMObjectsAreStopped())
         return;
 
-    DOMRequestState::Scope scope(m_requestState);
-    v8::Isolate* isolate = m_requestState.isolate();
+    NewScriptState::Scope scope(m_scriptState.get());
+    v8::Isolate* isolate = m_scriptState->isolate();
     v8::Handle<v8::Value> info[] = { m_argument.newLocal(isolate) };
     v8::TryCatch trycatch;
     v8::Local<v8::Value> value = V8ScriptRunner::callFunction(m_handler.newLocal(isolate), context, v8::Undefined(isolate), WTF_ARRAY_LENGTH(info), info, isolate);
@@ -281,7 +280,7 @@ public:
         , m_onFulfilled(isolate, onFulfilled)
         , m_onRejected(isolate, onRejected)
         , m_originatorValueObject(isolate, originatorValueObject)
-        , m_requestState(isolate)
+        , m_scriptState(NewScriptState::current(isolate))
     {
         ASSERT(!m_promise.isEmpty());
         ASSERT(!m_originatorValueObject.isEmpty());
@@ -296,7 +295,7 @@ private:
     ScopedPersistent<v8::Function> m_onFulfilled;
     ScopedPersistent<v8::Function> m_onRejected;
     ScopedPersistent<v8::Object> m_originatorValueObject;
-    DOMRequestState m_requestState;
+    RefPtr<NewScriptState> m_scriptState;
 };
 
 void UpdateDerivedTask::performTask(ExecutionContext* context)
@@ -307,8 +306,8 @@ void UpdateDerivedTask::performTask(ExecutionContext* context)
     if (context->activeDOMObjectsAreStopped())
         return;
 
-    DOMRequestState::Scope scope(m_requestState);
-    v8::Isolate* isolate = m_requestState.isolate();
+    NewScriptState::Scope scope(m_scriptState.get());
+    v8::Isolate* isolate = m_scriptState->isolate();
     v8::Local<v8::Object> originatorValueObject = m_originatorValueObject.newLocal(isolate);
     v8::Local<v8::Value> coercedAlready = V8HiddenValue::getHiddenValue(isolate, originatorValueObject, V8HiddenValue::thenableHiddenPromise(isolate));
     if (!coercedAlready.IsEmpty() && coercedAlready->IsObject()) {
