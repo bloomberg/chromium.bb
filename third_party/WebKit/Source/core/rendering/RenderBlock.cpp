@@ -789,7 +789,7 @@ void RenderBlock::addChildIgnoringAnonymousColumnBlocks(RenderObject* newChild, 
     }
 
     // Check for a spanning element in columns.
-    if (gColumnFlowSplitEnabled) {
+    if (gColumnFlowSplitEnabled && !document().regionBasedColumnsEnabled()) {
         RenderBlockFlow* columnsBlockAncestor = columnsBlockForSpanningElement(newChild);
         if (columnsBlockAncestor) {
             TemporaryChange<bool> columnFlowSplitEnabled(gColumnFlowSplitEnabled, false);
