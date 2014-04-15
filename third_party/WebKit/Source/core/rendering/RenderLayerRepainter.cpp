@@ -186,9 +186,10 @@ void RenderLayerRepainter::setBackingNeedsRepaint()
 
 void RenderLayerRepainter::setBackingNeedsRepaintInRect(const LayoutRect& r)
 {
+    ASSERT(m_renderer->compositingState() == PaintsIntoOwnBacking);
+
     // https://bugs.webkit.org/show_bug.cgi?id=61159 describes an unreproducible crash here,
     // so assert but check that the layer is composited.
-    ASSERT(m_renderer->compositingState() != NotComposited);
     if (m_renderer->compositingState() == NotComposited) {
         // If we're trying to repaint the placeholder document layer, propagate the
         // repaint to the native view system.
@@ -200,20 +201,11 @@ void RenderLayerRepainter::setBackingNeedsRepaintInRect(const LayoutRect& r)
         RenderView* view = m_renderer->view();
         if (view)
             view->repaintViewRectangle(absRect);
-    } else {
-        if (m_renderer->compositingState() == PaintsIntoGroupedBacking) {
-            // FIXME: LayoutRect rounding to IntRect is probably not a good idea.
-            IntRect offsetRect = pixelSnappedIntRect(r);
-            if (m_renderer->hasTransform())
-                offsetRect = m_renderer->layer()->transform()->mapRect(pixelSnappedIntRect(r));
-
-            offsetRect.move(-m_renderer->layer()->offsetFromSquashingLayerOrigin());
-            m_renderer->groupedMapping()->squashingLayer()->setNeedsDisplayInRect(offsetRect);
-        } else {
-            IntRect repaintRect = pixelSnappedIntRect(r.location() +  m_renderer->layer()->subpixelAccumulation(), r.size());
-            m_renderer->compositedLayerMapping()->setContentsNeedDisplayInRect(repaintRect);
-        }
+        return;
     }
+
+    IntRect repaintRect = pixelSnappedIntRect(r.location() +  m_renderer->layer()->subpixelAccumulation(), r.size());
+    m_renderer->compositedLayerMapping()->setContentsNeedDisplayInRect(repaintRect);
 }
 
 void RenderLayerRepainter::setFilterBackendNeedsRepaintingInRect(const LayoutRect& rect)

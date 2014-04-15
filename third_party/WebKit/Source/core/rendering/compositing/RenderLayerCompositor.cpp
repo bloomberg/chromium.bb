@@ -776,23 +776,15 @@ void RenderLayerCompositor::repaintOnCompositingChange(RenderLayer* layer)
 void RenderLayerCompositor::repaintInCompositedAncestor(RenderLayer* layer, const LayoutRect& rect)
 {
     RenderLayer* compositedAncestor = layer->enclosingCompositingLayerForRepaint(ExcludeSelf);
-    if (compositedAncestor) {
-        // FIXME: make sure repaintRect is computed correctly for squashed scenario
-        LayoutPoint offset;
-        layer->convertToLayerCoords(compositedAncestor, offset);
+    if (!compositedAncestor)
+        return;
+    ASSERT(compositedAncestor->compositingState() == PaintsIntoOwnBacking);
 
-        LayoutRect repaintRect = rect;
-        repaintRect.moveBy(offset);
-
-        if (compositedAncestor->compositingState() == PaintsIntoOwnBacking) {
-            compositedAncestor->repainter().setBackingNeedsRepaintInRect(repaintRect);
-        } else if (compositedAncestor->compositingState() == PaintsIntoGroupedBacking) {
-            // FIXME: Need to perform the correct coordinate conversion for repaintRect here, including transforms
-            compositedAncestor->groupedMapping()->squashingLayer()->setNeedsDisplayInRect(repaintRect);
-        } else {
-            ASSERT_NOT_REACHED();
-        }
-    }
+    LayoutPoint offset;
+    layer->convertToLayerCoords(compositedAncestor, offset);
+    LayoutRect repaintRect = rect;
+    repaintRect.moveBy(offset);
+    compositedAncestor->repainter().setBackingNeedsRepaintInRect(repaintRect);
 }
 
 void RenderLayerCompositor::layerWasAdded(RenderLayer* /*parent*/, RenderLayer* /*child*/)

@@ -1402,7 +1402,9 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
         RenderLayer* enclosingCompositingLayer = layer->enclosingCompositingLayer(ExcludeSelf);
         if (enclosingCompositingLayer && !enclosingCompositingLayer->renderer()->isRenderView()) {
             // If the fixed-position layer is contained by a composited layer that is not its containing block,
-            // then we have to invlidate that enclosing layer, not the RenderView.
+            // then we have to invalidate that enclosing layer, not the RenderView.
+            // FIXME: Why do we need to issue this invalidation? Won't the fixed position element just scroll
+            //        with the enclosing layer.
             updateRect.moveBy(scrollPosition());
             IntRect previousRect = updateRect;
             previousRect.move(scrollDelta);
