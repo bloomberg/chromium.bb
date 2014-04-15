@@ -39,7 +39,6 @@ class WebLayer;
 
 namespace WebCore {
 
-class Document;
 class DOMWindow;
 class ChromeClient;
 class FrameDestructionObserver;
@@ -47,7 +46,6 @@ class FrameHost;
 class HTMLFrameOwnerElement;
 class Page;
 class RenderPart;
-class RenderView;
 class Settings;
 
 class Frame : public RefCounted<Frame> {
@@ -71,7 +69,7 @@ public:
 
     bool isMainFrame() const;
 
-    void disconnectOwnerElement();
+    virtual void disconnectOwnerElement();
 
     HTMLFrameOwnerElement* ownerElement() const;
 
@@ -79,11 +77,9 @@ public:
     // after RemoteFrame is complete enough to exist without them.
     virtual void setDOMWindow(PassRefPtrWillBeRawPtr<DOMWindow>);
     DOMWindow* domWindow() const;
-    Document* document() const;
 
     ChromeClient& chromeClient() const;
 
-    RenderView* contentRenderer() const; // Root of the render tree for the document contained in this frame.
     RenderPart* ownerRenderer() const; // Renderer for the element that contains this frame.
 
     int64_t frameID() const { return m_frameID; }

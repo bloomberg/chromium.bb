@@ -39,6 +39,7 @@
 namespace WebCore {
 
     class Color;
+    class Document;
     class DragImage;
     class Editor;
     class EventHandler;
@@ -52,6 +53,7 @@ namespace WebCore {
     class IntSize;
     class Node;
     class Range;
+    class RenderView;
     class TreeScope;
     class ScriptController;
     class SpellChecker;
@@ -75,8 +77,13 @@ namespace WebCore {
         virtual void willDetachFrameHost() OVERRIDE;
         virtual void detachFromFrameHost() OVERRIDE;
 
+        virtual void disconnectOwnerElement() OVERRIDE;
+
         virtual void setDOMWindow(PassRefPtrWillBeRawPtr<DOMWindow>) OVERRIDE;
         FrameView* view() const;
+        Document* document() const;
+
+        RenderView* contentRenderer() const; // Root of the render tree for the document contained in this frame.
 
         Editor& editor() const;
         EventHandler& eventHandler() const;

@@ -161,8 +161,12 @@ AXObject* AXObjectCache::focusedUIElementForPage(const Page* page)
     if (!gAccessibilityEnabled)
         return 0;
 
+    // Cross-process accessibility is not yet implemented.
+    if (!page->focusController().focusedOrMainFrame()->isLocalFrame())
+        return 0;
+
     // get the focused node in the page
-    Document* focusedDocument = page->focusController().focusedOrMainFrame()->document();
+    Document* focusedDocument = toLocalFrame(page->focusController().focusedOrMainFrame())->document();
     Node* focusedNode = focusedDocument->focusedElement();
     if (!focusedNode)
         focusedNode = focusedDocument;

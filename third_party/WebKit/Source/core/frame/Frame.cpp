@@ -46,7 +46,6 @@
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderPart.h"
-#include "core/rendering/RenderView.h"
 #include "public/platform/WebLayer.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCountedLeakCounter.h"
@@ -152,16 +151,6 @@ ChromeClient& Frame::chromeClient() const
     return emptyChromeClient();
 }
 
-Document* Frame::document() const
-{
-    return m_domWindow ? m_domWindow->document() : 0;
-}
-
-RenderView* Frame::contentRenderer() const
-{
-    return document() ? document()->renderView() : 0;
-}
-
 RenderPart* Frame::ownerRenderer() const
 {
     if (!ownerElement())
@@ -205,11 +194,7 @@ bool Frame::isMainFrame() const
 
 void Frame::disconnectOwnerElement()
 {
-    // FIXME: The semantics here are specific to LocalFrame and will need to change
-    // when RemoteFrames no longer have Documents.
     if (ownerElement()) {
-        if (Document* doc = document())
-            doc->topDocument().clearAXObjectCache();
         ownerElement()->clearContentFrame();
         if (page())
             page()->decrementSubframeCount();

@@ -120,8 +120,8 @@ FocusNavigationScope FocusNavigationScope::ownedByShadowHost(Node* node)
 
 FocusNavigationScope FocusNavigationScope::ownedByIFrame(HTMLFrameOwnerElement* frame)
 {
-    ASSERT(frame && frame->contentFrame());
-    return FocusNavigationScope(frame->contentFrame()->document());
+    ASSERT(frame && frame->contentFrame() && frame->contentFrame()->isLocalFrame());
+    return FocusNavigationScope(toLocalFrame(frame->contentFrame())->document());
 }
 
 FocusNavigationScope FocusNavigationScope::ownedByShadowInsertionPoint(HTMLShadowElement* shadowInsertionPoint)
@@ -297,7 +297,7 @@ Node* FocusController::findFocusableNodeDecendingDownIntoFrameDocument(FocusType
     // 2) the deepest-nested HTMLFrameOwnerElement.
     while (node && node->isFrameOwnerElement()) {
         HTMLFrameOwnerElement* owner = toHTMLFrameOwnerElement(node);
-        if (!owner->contentFrame())
+        if (!owner->contentFrame() || !owner->contentFrame()->isLocalFrame())
             break;
         Node* foundNode = findFocusableNode(type, FocusNavigationScope::ownedByIFrame(owner), 0);
         if (!foundNode)
@@ -315,8 +315,11 @@ bool FocusController::setInitialFocus(FocusType type)
     // If focus is being set initially, accessibility needs to be informed that system focus has moved
     // into the web area again, even if focus did not change within WebCore. PostNotification is called instead
     // of handleFocusedUIElementChanged, because this will send the notification even if the element is the same.
-    if (AXObjectCache* cache = focusedOrMainFrame()->document()->existingAXObjectCache())
-        cache->postNotification(focusedOrMainFrame()->document(), AXObjectCache::AXFocusedUIElementChanged, true);
+    if (focusedOrMainFrame()->isLocalFrame()) {
+        Document* document = toLocalFrame(focusedOrMainFrame())->document();
+        if (AXObjectCache* cache = document->existingAXObjectCache())
+            cache->postNotification(document, AXObjectCache::AXFocusedUIElementChanged, true);
+    }
 
     return didAdvanceFocus;
 }
@@ -649,8 +652,8 @@ bool FocusController::setFocusedElement(Element* element, PassRefPtr<Frame> newF
     RefPtr<Document> newDocument;
     if (element)
         newDocument = &element->document();
-    else if (newFocusedFrame)
-        newDocument = newFocusedFrame->document();
+    else if (newFocusedFrame && newFocusedFrame->isLocalFrame())
+        newDocument = toLocalFrame(newFocusedFrame.get())->document();
 
     if (newDocument && oldDocument == newDocument && newDocument->focusedElement() == element)
         return true;
@@ -781,7 +784,7 @@ static void updateFocusCandidateIfNeeded(FocusType type, const FocusCandidate& c
 
 void FocusController::findFocusCandidateInContainer(Node& container, const LayoutRect& startingRect, FocusType type, FocusCandidate& closest)
 {
-    Element* focusedElement = (focusedFrame() && focusedFrame()->document()) ? focusedFrame()->document()->focusedElement() : 0;
+    Element* focusedElement = (focusedFrame() && toLocalFrame(focusedFrame())->document()) ? toLocalFrame(focusedFrame())->document()->focusedElement() : 0;
 
     Element* element = ElementTraversal::firstWithin(container);
     FocusCandidate current;
@@ -828,23 +831,23 @@ bool FocusController::advanceFocusDirectionallyInContainer(Node* container, cons
         return scrollInDirection(container, type);
     }
 
-    if (HTMLFrameOwnerElement* frameElement = frameOwnerElement(focusCandidate)) {
-        // If we have an iframe without the src attribute, it will not have a contentFrame().
-        // We ASSERT here to make sure that
-        // updateFocusCandidateIfNeeded() will never consider such an iframe as a candidate.
-        ASSERT(frameElement->contentFrame());
-
+    HTMLFrameOwnerElement* frameElement = frameOwnerElement(focusCandidate);
+    // If we have an iframe without the src attribute, it will not have a contentFrame().
+    // We ASSERT here to make sure that
+    // updateFocusCandidateIfNeeded() will never consider such an iframe as a candidate.
+    ASSERT(!frameElement || frameElement->contentFrame());
+    if (frameElement && frameElement->contentFrame()->isLocalFrame()) {
         if (focusCandidate.isOffscreenAfterScrolling) {
             scrollInDirection(&focusCandidate.visibleNode->document(), type);
             return true;
         }
         // Navigate into a new frame.
         LayoutRect rect;
-        Element* focusedElement = focusedOrMainFrame()->document()->focusedElement();
+        Element* focusedElement = toLocalFrame(focusedOrMainFrame())->document()->focusedElement();
         if (focusedElement && !hasOffscreenRect(focusedElement))
             rect = nodeRectInAbsoluteCoordinates(focusedElement, true /* ignore border */);
-        frameElement->contentFrame()->document()->updateLayoutIgnorePendingStylesheets();
-        if (!advanceFocusDirectionallyInContainer(frameElement->contentFrame()->document(), rect, type)) {
+        toLocalFrame(frameElement->contentFrame())->document()->updateLayoutIgnorePendingStylesheets();
+        if (!advanceFocusDirectionallyInContainer(toLocalFrame(frameElement->contentFrame())->document(), rect, type)) {
             // The new frame had nothing interesting, need to find another candidate.
             return advanceFocusDirectionallyInContainer(container, nodeRectInAbsoluteCoordinates(focusCandidate.visibleNode, true), type);
         }
@@ -858,7 +861,7 @@ bool FocusController::advanceFocusDirectionallyInContainer(Node* container, cons
         }
         // Navigate into a new scrollable container.
         LayoutRect startingRect;
-        Element* focusedElement = focusedOrMainFrame()->document()->focusedElement();
+        Element* focusedElement = toLocalFrame(focusedOrMainFrame())->document()->focusedElement();
         if (focusedElement && !hasOffscreenRect(focusedElement))
             startingRect = nodeRectInAbsoluteCoordinates(focusedElement, true);
         return advanceFocusDirectionallyInContainer(focusCandidate.visibleNode, startingRect, type);
