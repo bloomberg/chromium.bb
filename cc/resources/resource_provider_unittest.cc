@@ -3037,7 +3037,7 @@ TEST_P(ResourceProviderTest, CopyResource_GLTexture) {
   FakeOutputSurfaceClient output_surface_client;
   scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
       context_owned.PassAs<TestWebGraphicsContext3D>()));
-  CHECK(output_surface->BindToClient(&output_surface_client));
+  ASSERT_TRUE(output_surface->BindToClient(&output_surface_client));
 
   const int kWidth = 2;
   const int kHeight = 2;
@@ -3069,11 +3069,13 @@ TEST_P(ResourceProviderTest, CopyResource_GLTexture) {
       .WillOnce(Return(dummy_mapped_buffer_address))
       .RetiresOnSaturation();
   resource_provider->MapImageRasterBuffer(source_id);
+  Mock::VerifyAndClearExpectations(context);
 
   EXPECT_CALL(*context, unmapImageCHROMIUM(kImageId))
       .Times(1)
       .RetiresOnSaturation();
   resource_provider->UnmapImageRasterBuffer(source_id);
+  Mock::VerifyAndClearExpectations(context);
 
   dest_id = resource_provider->CreateResource(
       size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
@@ -3094,6 +3096,7 @@ TEST_P(ResourceProviderTest, CopyResource_GLTexture) {
       .Times(1)
       .RetiresOnSaturation();
   resource_provider->CopyResource(source_id, dest_id);
+  Mock::VerifyAndClearExpectations(context);
 
   EXPECT_CALL(*context, destroyImageCHROMIUM(kImageId))
       .Times(1)
