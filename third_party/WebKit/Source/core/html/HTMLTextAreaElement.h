@@ -81,6 +81,7 @@ private:
     virtual bool supportsPlaceholder() const OVERRIDE { return true; }
     virtual void updatePlaceholderText() OVERRIDE;
     virtual bool isEmptyValue() const OVERRIDE { return value().isEmpty(); }
+    virtual bool isEmptySuggestedValue() const OVERRIDE FINAL { return suggestedValue().isEmpty(); }
 
     virtual bool isOptionalFormControl() const OVERRIDE { return !isRequiredFormControl(); }
     virtual bool isRequiredFormControl() const OVERRIDE { return isRequired(); }
