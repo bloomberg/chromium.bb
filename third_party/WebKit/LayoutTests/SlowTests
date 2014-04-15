@@ -152,3 +152,4 @@ crbug.com/362503 http/tests/xmlhttprequest/xmlhttprequest-responseXML-exception.
 crbug.com/362507 http/tests/media/media-source/webkitmediasource-seek-to-end-after-duration-change.html [ Slow ]
 crbug.com/362509 [ Debug ] fast/parser/xml-error-adopted.xml [ Slow ]
 
+crbug.com/363029 virtual/gpu/fast/canvas/canvas-composite-stroke-alpha.html [ Slow ]
