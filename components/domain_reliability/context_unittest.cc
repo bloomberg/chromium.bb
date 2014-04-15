@@ -30,7 +30,7 @@ DomainReliabilityBeacon MakeBeacon(MockableTime* time) {
   beacon.server_ip = "127.0.0.1";
   beacon.http_response_code = 200;
   beacon.elapsed = base::TimeDelta::FromMilliseconds(250);
-  beacon.start_time = time->Now() - beacon.elapsed;
+  beacon.start_time = time->NowTicks() - beacon.elapsed;
   return beacon;
 }
 

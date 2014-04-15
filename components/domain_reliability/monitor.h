@@ -61,6 +61,8 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor {
     RequestInfo(const net::URLRequest& request);
     ~RequestInfo();
 
+    bool DefinitelyReachedNetwork() const;
+
     GURL url;
     net::URLRequestStatus status;
     int response_code;

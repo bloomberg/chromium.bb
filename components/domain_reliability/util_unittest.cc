@@ -24,9 +24,9 @@ TEST_F(DomainReliabilityMockTimeTest, Null) {
 TEST_F(DomainReliabilityMockTimeTest, NowAndAdvance) {
   const TimeDelta delta = TimeDelta::FromSeconds(1);
 
-  TimeTicks initial = time_.Now();
+  TimeTicks initial = time_.NowTicks();
   time_.Advance(delta);
-  TimeTicks final = time_.Now();
+  TimeTicks final = time_.NowTicks();
   EXPECT_EQ(delta, final - initial);
 }
 

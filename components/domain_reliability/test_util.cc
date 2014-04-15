@@ -95,43 +95,51 @@ void MockUploader::UploadReport(const std::string& report_json,
 }
 
 MockTime::MockTime()
-    : now_(base::TimeTicks::Now()),
-      epoch_(now_),
+    : now_(base::Time::Now()),
+      now_ticks_(base::TimeTicks::Now()),
+      epoch_ticks_(now_ticks_),
       task_sequence_number_(0) {
   VLOG(1) << "Creating mock time: T=" << elapsed_sec() << "s";
 }
 
 MockTime::~MockTime() {}
 
-base::TimeTicks MockTime::Now() { return now_; }
+base::Time MockTime::Now() { return now_; }
+base::TimeTicks MockTime::NowTicks() { return now_ticks_; }
 
 scoped_ptr<MockableTime::Timer> MockTime::CreateTimer() {
   return scoped_ptr<MockableTime::Timer>(new MockTimer(this));
 }
 
 void MockTime::Advance(base::TimeDelta delta) {
-  base::TimeTicks target = now_ + delta;
+  base::TimeTicks target_ticks = now_ticks_ + delta;
 
-  while (!tasks_.empty() && tasks_.begin()->first.time <= target) {
+  while (!tasks_.empty() && tasks_.begin()->first.time <= target_ticks) {
     TaskKey key = tasks_.begin()->first;
     base::Closure task = tasks_.begin()->second;
     tasks_.erase(tasks_.begin());
 
-    DCHECK(now_ <= key.time);
-    DCHECK(key.time <= target);
-    now_ = key.time;
+    DCHECK(now_ticks_ <= key.time);
+    DCHECK(key.time <= target_ticks);
+    AdvanceToInternal(key.time);
     VLOG(1) << "Advancing mock time: task at T=" << elapsed_sec() << "s";
 
     task.Run();
   }
 
-  DCHECK(now_ <= target);
-  now_ = target;
+  DCHECK(now_ticks_ <= target_ticks);
+  AdvanceToInternal(target_ticks);
   VLOG(1) << "Advanced mock time: T=" << elapsed_sec() << "s";
 }
 
 void MockTime::AddTask(base::TimeDelta delay, const base::Closure& task) {
-  tasks_[TaskKey(now_ + delay, task_sequence_number_++)] = task;
+  tasks_[TaskKey(now_ticks_ + delay, task_sequence_number_++)] = task;
+}
+
+void MockTime::AdvanceToInternal(base::TimeTicks target_ticks) {
+  base::TimeDelta delta = target_ticks - now_ticks_;
+  now_ += delta;
+  now_ticks_ += delta;
 }
 
 }  // namespace domain_reliability

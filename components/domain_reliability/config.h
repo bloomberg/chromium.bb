@@ -12,6 +12,7 @@
 #include "base/json/json_value_converter.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "components/domain_reliability/domain_reliability_export.h"
 #include "url/gurl.h"
@@ -45,6 +46,8 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityConfig {
     static void RegisterJSONConverter(
         base::JSONValueConverter<Resource>* converter);
 
+    bool IsValid() const;
+
     // Name of the Resource, as will be reported in uploads.
     std::string name;
 
@@ -73,6 +76,8 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityConfig {
     static void RegisterJSONConverter(
         base::JSONValueConverter<Collector>* converter);
 
+    bool IsValid() const;
+
     GURL upload_url;
 
    private:
@@ -86,6 +91,10 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityConfig {
   static scoped_ptr<const DomainReliabilityConfig> FromJSON(
       const base::StringPiece& json);
 
+  bool IsValid() const;
+
+  bool IsExpired(base::Time now) const;
+
   // Finds the index (in resources) of the first Resource that matches a
   // particular URL. Returns -1 if the URL is not matched by any Resources.
   int GetResourceIndexForUrl(const GURL& url) const;
@@ -95,13 +104,11 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityConfig {
   static void RegisterJSONConverter(
       base::JSONValueConverter<DomainReliabilityConfig>* converter);
 
-  std::string config_version;
+  std::string version;
+  double valid_until;
   std::string domain;
   ScopedVector<Resource> resources;
   ScopedVector<Collector> collectors;
-
-  // TODO(ttuttle): Add config_valid_util when fetching and expiring configs
-  //                is implemented.
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DomainReliabilityConfig);

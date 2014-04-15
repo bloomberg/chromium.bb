@@ -99,18 +99,16 @@ bool DomainReliabilityUtil::GetBeaconStatus(
 }
 
 MockableTime::Timer::~Timer() {}
-
 MockableTime::Timer::Timer() {}
 
 MockableTime::~MockableTime() {}
-
 MockableTime::MockableTime() {}
 
 ActualTime::ActualTime() {}
-
 ActualTime::~ActualTime() {}
 
-base::TimeTicks ActualTime::Now() { return base::TimeTicks::Now(); }
+base::Time ActualTime::Now() { return base::Time::Now(); }
+base::TimeTicks ActualTime::NowTicks() { return base::TimeTicks::Now(); }
 
 scoped_ptr<MockableTime::Timer> ActualTime::CreateTimer() {
   return scoped_ptr<MockableTime::Timer>(new ActualTimer());

@@ -191,7 +191,7 @@ void DomainReliabilityContext::StartUpload() {
   MarkUpload();
 
   DCHECK(upload_time_.is_null());
-  upload_time_ = time_->Now();
+  upload_time_ = time_->NowTicks();
   std::string report_json;
   scoped_ptr<const Value> report_value(CreateReport(upload_time_));
   base::JSONWriter::Write(report_value.get(), &report_json);
@@ -222,7 +222,7 @@ void DomainReliabilityContext::OnUploadComplete(bool success) {
   UMA_HISTOGRAM_BOOLEAN("DomainReliability.UploadSuccess", success);
   DCHECK(!upload_time_.is_null());
   UMA_HISTOGRAM_MEDIUM_TIMES("DomainReliability.UploadDuration",
-                             time_->Now() - upload_time_);
+                             time_->NowTicks() - upload_time_);
   last_upload_time_ = upload_time_;
   upload_time_ = base::TimeTicks();
 }

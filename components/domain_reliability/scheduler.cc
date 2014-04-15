@@ -81,7 +81,7 @@ DomainReliabilityScheduler::~DomainReliabilityScheduler() {}
 
 void DomainReliabilityScheduler::OnBeaconAdded() {
   if (!upload_pending_)
-    first_beacon_time_ = time_->Now();
+    first_beacon_time_ = time_->NowTicks();
   upload_pending_ = true;
   VLOG(2) << "OnBeaconAdded";
   MaybeScheduleUpload();
@@ -94,7 +94,7 @@ void DomainReliabilityScheduler::OnUploadStart(int* collector_index_out) {
   upload_scheduled_ = false;
   upload_running_ = true;
 
-  base::TimeTicks now = time_->Now();
+  base::TimeTicks now = time_->NowTicks();
   base::TimeTicks min_upload_time;
   GetNextUploadTimeAndCollector(now, &min_upload_time, &collector_index_);
   DCHECK(min_upload_time <= now);
@@ -127,7 +127,7 @@ void DomainReliabilityScheduler::OnUploadComplete(bool success) {
   }
 
   base::TimeDelta retry_interval = GetUploadRetryInterval(collector->failures);
-  collector->next_upload = time_->Now() + retry_interval;
+  collector->next_upload = time_->NowTicks() + retry_interval;
 
   VLOG(1) << "Next upload to collector at least "
           << retry_interval.InSeconds() << " seconds from now.";
@@ -145,7 +145,7 @@ void DomainReliabilityScheduler::MaybeScheduleUpload() {
   upload_scheduled_ = true;
   old_first_beacon_time_ = first_beacon_time_;
 
-  base::TimeTicks now = time_->Now();
+  base::TimeTicks now = time_->NowTicks();
 
   base::TimeTicks min_by_deadline, max_by_deadline;
   min_by_deadline = first_beacon_time_ + params_.minimum_upload_delay;

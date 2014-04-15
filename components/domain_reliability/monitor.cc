@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/time/time.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -28,7 +29,7 @@ class TrivialURLRequestContextGetter : public net::URLRequestContextGetter {
       : context_(context),
         main_task_runner_(main_task_runner) {}
 
-  // net::URLRequestContextGEtter implementation:
+  // net::URLRequestContextGetter implementation:
   virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE {
     return context_;
   }
@@ -101,7 +102,12 @@ void DomainReliabilityMonitor::OnCompleted(net::URLRequest* request,
   if (!started)
     return;
   RequestInfo request_info(*request);
-  OnRequestLegComplete(request_info);
+  if (request_info.DefinitelyReachedNetwork()) {
+    OnRequestLegComplete(request_info);
+    // A request was just using the network, so now is a good time to run any
+    // pending and eligible uploads.
+    dispatcher_.RunEligibleTasks();
+  }
 }
 
 DomainReliabilityContext* DomainReliabilityMonitor::AddContextForTesting(
@@ -134,12 +140,14 @@ DomainReliabilityMonitor::RequestInfo::RequestInfo(
 
 DomainReliabilityMonitor::RequestInfo::~RequestInfo() {}
 
+bool DomainReliabilityMonitor::RequestInfo::DefinitelyReachedNetwork() const {
+  return status.status() != net::URLRequestStatus::CANCELED && !was_cached;
+}
+
 void DomainReliabilityMonitor::OnRequestLegComplete(
     const RequestInfo& request) {
-  if (request.was_cached ||
-      request.status.status() == net::URLRequestStatus::CANCELED) {
+  if (!request.DefinitelyReachedNetwork())
     return;
-  }
 
   std::map<std::string, DomainReliabilityContext*>::iterator it =
       contexts_.find(request.url.host());
@@ -161,7 +169,7 @@ void DomainReliabilityMonitor::OnRequestLegComplete(
   beacon.server_ip = request.socket_address.host();
   beacon.http_response_code = request.response_code;
   beacon.start_time = request.load_timing_info.request_start;
-  beacon.elapsed = time_->Now() - beacon.start_time;
+  beacon.elapsed = time_->NowTicks() - beacon.start_time;
   context->AddBeacon(beacon, request.url);
 }
 

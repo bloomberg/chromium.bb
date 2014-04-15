@@ -16,6 +16,8 @@ bool ConvertURL(const base::StringPiece& string_piece, GURL* url) {
   return url->is_valid();
 }
 
+bool IsValidSampleRate(double p) { return p >= 0.0 && p <= 1.0; }
+
 }  // namespace
 
 namespace domain_reliability {
@@ -28,9 +30,10 @@ bool DomainReliabilityConfig::Resource::MatchesUrlString(
     const std::string& url_string) const {
   ScopedVector<std::string>::const_iterator it;
 
-  for (it = url_patterns.begin(); it != url_patterns.end(); it++)
+  for (it = url_patterns.begin(); it != url_patterns.end(); it++) {
     if (MatchPattern(url_string, **it))
       return true;
+  }
 
   return false;
 }
@@ -52,6 +55,12 @@ void DomainReliabilityConfig::Resource::RegisterJSONConverter(
                                  &Resource::failure_sample_rate);
 }
 
+bool DomainReliabilityConfig::Resource::IsValid() const {
+  return !name.empty() && !url_patterns.empty() &&
+      IsValidSampleRate(success_sample_rate) &&
+      IsValidSampleRate(failure_sample_rate);
+}
+
 DomainReliabilityConfig::Collector::Collector() {}
 
 DomainReliabilityConfig::Collector::~Collector() {}
@@ -63,7 +72,11 @@ void DomainReliabilityConfig::Collector::RegisterJSONConverter(
                                        &ConvertURL);
 }
 
-DomainReliabilityConfig::DomainReliabilityConfig() {}
+bool DomainReliabilityConfig::Collector::IsValid() const {
+  return upload_url.is_valid();
+}
+
+DomainReliabilityConfig::DomainReliabilityConfig() : valid_until(0.0) {}
 
 DomainReliabilityConfig::~DomainReliabilityConfig() {}
 
@@ -80,7 +93,33 @@ scoped_ptr<const DomainReliabilityConfig> DomainReliabilityConfig::FromJSON(
     return scoped_ptr<const DomainReliabilityConfig>();
   }
 
+  if (!config->IsValid())
+    return scoped_ptr<const DomainReliabilityConfig>();
+
   return scoped_ptr<const DomainReliabilityConfig>(config);
+}
+
+bool DomainReliabilityConfig::IsValid() const {
+  if (valid_until == 0.0 || domain.empty() || resources.empty() ||
+      collectors.empty()) {
+    return false;
+  }
+
+  for (size_t i = 0; i < resources.size(); ++i) {
+    if (!resources[i]->IsValid())
+      return false;
+  }
+
+  for (size_t i = 0; i < collectors.size(); ++i) {
+    if (!collectors[i]->IsValid())
+      return false;
+  }
+
+  return true;
+}
+
+bool DomainReliabilityConfig::IsExpired(base::Time now) const {
+  return now < base::Time::FromDoubleT(valid_until);
 }
 
 int DomainReliabilityConfig::GetResourceIndexForUrl(const GURL& url) const {
@@ -98,7 +137,9 @@ int DomainReliabilityConfig::GetResourceIndexForUrl(const GURL& url) const {
 void DomainReliabilityConfig::RegisterJSONConverter(
     base::JSONValueConverter<DomainReliabilityConfig>* converter) {
   converter->RegisterStringField("config_version",
-                                 &DomainReliabilityConfig::config_version);
+                                 &DomainReliabilityConfig::version);
+  converter->RegisterDoubleField("config_valid_until",
+                                 &DomainReliabilityConfig::valid_until);
   converter->RegisterStringField("monitored_domain",
                                  &DomainReliabilityConfig::domain);
   converter->RegisterRepeatedMessage("monitored_resources",
