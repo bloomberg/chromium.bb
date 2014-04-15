@@ -12,6 +12,7 @@ int avcodec_decode_audio4(AVCodecContext *avctx, AVFrame *frame, int *got_frame_
 int avcodec_decode_video2(AVCodecContext *avctx, AVFrame *picture, int *got_picture_ptr, const AVPacket *avpkt);
 int avcodec_open2(AVCodecContext *avctx, const AVCodec *codec, AVDictionary **options);
 int avcodec_close(AVCodecContext *avctx);
+const char *avcodec_get_name(enum AVCodecID id);
 void av_free_packet(AVPacket *pkt);
 void av_init_packet(AVPacket *pkt);
 int av_dup_packet(AVPacket *pkt);
