@@ -60,14 +60,10 @@ bool SetupFonts() {
     return false;
   }
 
-  // TODO(scottmg): http://crbug.com/333029 This changes layout test
-  // expectations even when DirectWrite isn't on.
-#if 0
   // DirectWrite sandbox registration.
   CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
   command_line.AppendSwitchASCII(switches::kRegisterFontFiles,
                                  base::WideToUTF8(font_path.value()));
-#endif
 
   return true;
 }
