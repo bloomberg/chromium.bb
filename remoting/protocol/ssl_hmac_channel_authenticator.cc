@@ -10,7 +10,6 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "net/cert/cert_verifier.h"
 #include "net/cert/x509_certificate.h"
 #include "net/http/transport_security_state.h"
 #include "net/socket/client_socket_factory.h"
@@ -87,7 +86,6 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
         base::Bind(&SslHmacChannelAuthenticator::OnConnected,
                    base::Unretained(this)));
   } else {
-    cert_verifier_.reset(net::CertVerifier::CreateDefault());
     transport_security_state_.reset(new net::TransportSecurityState);
 
     net::SSLConfig::CertAndStatus cert_and_status;
@@ -105,7 +103,6 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
 
     net::HostPortPair host_and_port(kSslFakeHostName, 0);
     net::SSLClientSocketContext context;
-    context.cert_verifier = cert_verifier_.get();
     context.transport_security_state = transport_security_state_.get();
     scoped_ptr<net::ClientSocketHandle> connection(new net::ClientSocketHandle);
     connection->SetSocket(socket.Pass());
