@@ -467,6 +467,8 @@ class Tracer;
 class GestureInterpreterConsumer;
 class MetricsProperties;
 
+#if __cplusplus >= 201103L
+
 struct GestureInterpreter {
  public:
   explicit GestureInterpreter(int version);
@@ -516,6 +518,14 @@ struct GestureInterpreter {
   GestureInterpreter(const GestureInterpreter&);
   void operator=(const GestureInterpreter&);
 };
+
+#else  // __cplusplus >= 201103L
+
+// Must be opaque under C++03 builds, since it has unique_ptr members.
+struct GestureInterpreter;
+
+#endif  // __cplusplus >= 201103L
+
 
 }  // namespace gestures
 
