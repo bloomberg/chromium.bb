@@ -115,7 +115,9 @@ class MockDriWrapper : public gfx::DriWrapper {
 class MockDriBuffer : public gfx::DriBuffer {
  public:
   MockDriBuffer(gfx::DriWrapper* dri) : DriBuffer(dri) {}
-  virtual ~MockDriBuffer() {}
+  virtual ~MockDriBuffer() {
+    surface_.clear();
+  }
 
   virtual bool Initialize(const SkImageInfo& info) OVERRIDE {
     surface_ = skia::AdoptRef(SkSurface::NewRaster(info));
@@ -123,7 +125,6 @@ class MockDriBuffer : public gfx::DriBuffer {
 
     return true;
   }
-  virtual void Destroy() OVERRIDE {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockDriBuffer);

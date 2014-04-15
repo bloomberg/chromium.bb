@@ -74,7 +74,16 @@ DriBuffer::DriBuffer(DriWrapper* dri)
     : dri_(dri), handle_(0), framebuffer_(0) {}
 
 DriBuffer::~DriBuffer() {
-  Destroy();
+  if (!surface_)
+    return;
+
+  SkImageInfo info;
+  void* pixels = const_cast<void*>(surface_->peekPixels(&info, NULL));
+  if (!pixels)
+    return;
+
+  munmap(pixels, info.getSafeSize(stride_));
+  DestroyDumbBuffer(dri_->get_fd(), handle_);
 }
 
 bool DriBuffer::Initialize(const SkImageInfo& info) {
@@ -91,19 +100,6 @@ bool DriBuffer::Initialize(const SkImageInfo& info) {
   }
 
   return true;
-}
-
-void DriBuffer::Destroy() {
-  if (!surface_)
-    return;
-
-  SkImageInfo info;
-  void* pixels = const_cast<void*>(surface_->peekPixels(&info, NULL));
-  if (!pixels)
-    return;
-
-  munmap(pixels, info.getSafeSize(stride_));
-  DestroyDumbBuffer(dri_->get_fd(), handle_);
 }
 
 uint8_t DriBuffer::GetColorDepth() const {

@@ -41,9 +41,6 @@ class GFX_EXPORT DriBuffer {
 
   void set_framebuffer(uint32_t framebuffer) { framebuffer_ = framebuffer; }
 
-  // Cleans up the resources created by Initialize().
-  virtual void Destroy();
-
   DriWrapper* dri_;  // Not owned.
 
   // Wrapper around the native pixel memory.

@@ -70,7 +70,9 @@ class MockDriBuffer : public gfx::DriBuffer {
  public:
   MockDriBuffer(gfx::DriWrapper* dri, bool initialize_expectation)
       : DriBuffer(dri), initialize_expectation_(initialize_expectation) {}
-  virtual ~MockDriBuffer() {}
+  virtual ~MockDriBuffer() {
+    surface_.clear();
+  }
 
   virtual bool Initialize(const SkImageInfo& info) OVERRIDE {
     if (!initialize_expectation_)
@@ -81,7 +83,6 @@ class MockDriBuffer : public gfx::DriBuffer {
 
     return true;
   }
-  virtual void Destroy() OVERRIDE {}
 
  private:
   bool initialize_expectation_;
