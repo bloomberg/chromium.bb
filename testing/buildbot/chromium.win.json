@@ -31,7 +31,7 @@
       "base_unittests",
       "net_unittests",
       "views_unittests",
-      "wm_core_unittests",
+      "wm_unittests",
       "aura_unittests",
       "ash_unittests",
       "compositor_unittests",
@@ -51,7 +51,7 @@
       "ui_unittests",
       "content_unittests",
       "views_unittests",
-      "wm_core_unittests",
+      "wm_unittests",
       {"test": "browser_tests", "shard_index": 2, "total_shards": 3}
     ]
   },
@@ -87,7 +87,7 @@
       "base_unittests",
       "net_unittests",
       "views_unittests",
-      "wm_core_unittests",
+      "wm_unittests",
       "aura_unittests",
       "ash_unittests",
       "compositor_unittests",
@@ -107,7 +107,7 @@
       "ui_unittests",
       "content_unittests",
       "views_unittests",
-      "wm_core_unittests",
+      "wm_unittests",
       {"test": "browser_tests", "shard_index": 2, "total_shards": 3}
     ]
   },
@@ -143,7 +143,7 @@
       "base_unittests",
       "net_unittests",
       "views_unittests",
-      "wm_core_unittests",
+      "wm_unittests",
       "aura_unittests",
       "ash_unittests",
       "compositor_unittests",
@@ -163,7 +163,7 @@
       "ui_unittests",
       "content_unittests",
       "views_unittests",
-      "wm_core_unittests",
+      "wm_unittests",
       {"test": "browser_tests", "shard_index": 2, "total_shards": 3}
     ]
   },
@@ -208,7 +208,7 @@
       "content_unittests",
       "ui_unittests",
       "views_unittests",
-      "wm_core_unittests",
+      "wm_unittests",
       "ipc_tests",
       "sync_unit_tests",
       "unit_tests",
@@ -245,7 +245,7 @@
       "ui_unittests",
       "content_unittests",
       "views_unittests",
-      "wm_core_unittests",
+      "wm_unittests",
       "installer_util_unittests",
       "webkit_compositor_bindings_unittests"
     ]
@@ -288,7 +288,7 @@
   "Win8 Aura": {
     "gtest_tests": [
       "views_unittests",
-      "wm_core_unittests",
+      "wm_unittests",
       "aura_unittests",
       "ash_unittests",
       "compositor_unittests",

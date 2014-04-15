@@ -13,7 +13,7 @@ namespace wm {
 
 // A set of basic focus and activation rules. Specializations should most likely
 // subclass this and call up to these methods rather than reimplementing them.
-class WM_CORE_EXPORT BaseFocusRules : public FocusRules {
+class WM_EXPORT BaseFocusRules : public FocusRules {
  protected:
   BaseFocusRules();
   virtual ~BaseFocusRules();

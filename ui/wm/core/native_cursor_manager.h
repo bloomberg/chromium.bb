@@ -7,7 +7,7 @@
 
 #include "base/strings/string16.h"
 #include "ui/wm/core/native_cursor_manager_delegate.h"
-#include "ui/wm/core/wm_core_export.h"
+#include "ui/wm/wm_export.h"
 
 namespace gfx {
 class Display;
@@ -19,7 +19,7 @@ namespace wm {
 // requested changes to cursor state. When requested, implementer should tell
 // the CursorManager of any actual state changes performed through the
 // delegate.
-class WM_CORE_EXPORT NativeCursorManager {
+class WM_EXPORT NativeCursorManager {
  public:
   virtual ~NativeCursorManager() {}
 

@@ -48,7 +48,7 @@
         '../events/events.gyp:events',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
-        '../wm/wm.gyp:wm_core',
+        '../wm/wm.gyp:wm',
         'keyboard_resources',
       ],
       'defines': [

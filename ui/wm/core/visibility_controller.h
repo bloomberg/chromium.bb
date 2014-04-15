@@ -8,11 +8,11 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "ui/aura/client/visibility_client.h"
-#include "ui/wm/core/wm_core_export.h"
+#include "ui/wm/wm_export.h"
 
 namespace wm {
 
-class WM_CORE_EXPORT VisibilityController
+class WM_EXPORT VisibilityController
     : public aura::client::VisibilityClient {
  public:
   VisibilityController();
@@ -47,7 +47,7 @@ class WM_CORE_EXPORT VisibilityController
 //   // previous state.
 // }
 //
-class WM_CORE_EXPORT SuspendChildWindowVisibilityAnimations {
+class WM_EXPORT SuspendChildWindowVisibilityAnimations {
  public:
   // Suspend visibility animations of child windows.
   explicit SuspendChildWindowVisibilityAnimations(aura::Window* window);
@@ -66,7 +66,7 @@ class WM_CORE_EXPORT SuspendChildWindowVisibilityAnimations {
 };
 
 // Tells |window| to animate visibility changes to its children.
-void WM_CORE_EXPORT SetChildWindowVisibilityChangesAnimated(
+void WM_EXPORT SetChildWindowVisibilityChangesAnimated(
     aura::Window* window);
 
 }  // namespace wm
