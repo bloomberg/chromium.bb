@@ -118,6 +118,7 @@ RenderLayerCompositor::RenderLayerCompositor(RenderView& renderView)
     , m_compositing(false)
     , m_compositingLayersNeedRebuild(false)
     , m_forceCompositingMode(false)
+    , m_forceCompositingModeDirty(true)
     , m_needsUpdateCompositingRequirementsState(false)
     , m_isTrackingRepaints(false)
     , m_rootLayerAttachment(RootLayerUnattached)
@@ -130,7 +131,7 @@ RenderLayerCompositor::~RenderLayerCompositor()
     ASSERT(m_rootLayerAttachment == RootLayerUnattached);
 }
 
-void RenderLayerCompositor::enableCompositingMode(bool enable)
+void RenderLayerCompositor::setCompositingModeEnabled(bool enable)
 {
     if (enable == m_compositing)
         return;
@@ -145,19 +146,32 @@ void RenderLayerCompositor::enableCompositingMode(bool enable)
     notifyIFramesOfCompositingChange();
 }
 
-void RenderLayerCompositor::updateForceCompositingMode()
+void RenderLayerCompositor::enableCompositingModeIfNeeded()
 {
+    ASSERT(!m_forceCompositingModeDirty);
+    if (m_forceCompositingMode && !m_compositing)
+        setCompositingModeEnabled(true);
+}
+
+bool RenderLayerCompositor::compositingLayersNeedRebuild()
+{
+    // Updating m_forceCompositingMode can set the m_compositingLayersNeedRebuild bit.
+    ASSERT(!m_forceCompositingModeDirty);
+    return m_compositingLayersNeedRebuild;
+}
+
+void RenderLayerCompositor::updateShouldForceCompositingMode()
+{
+    if (!m_forceCompositingModeDirty)
+        return;
+
+    m_forceCompositingModeDirty = false;
+
     // FIXME: Can settings really be null here?
     if (Settings* settings = m_renderView.document().settings()) {
         bool forceCompositingMode = settings->forceCompositingMode() && m_hasAcceleratedCompositing;
-        if (forceCompositingMode && !m_renderView.frame()->isMainFrame()) {
-            // requiresCompositingForScrollableFrame will return a stale value if the RenderView
-            // needsLayout. Skip updating m_forceCompositingMode here as we'll call back into
-            // this method at the end of layout.
-            if (m_renderView.needsLayout())
-                return;
+        if (forceCompositingMode && !m_renderView.frame()->isMainFrame())
             forceCompositingMode = m_compositingReasonFinder.requiresCompositingForScrollableFrame();
-        }
         if (forceCompositingMode != m_forceCompositingMode) {
             setCompositingLayersNeedRebuild();
             m_forceCompositingMode = forceCompositingMode;
@@ -185,8 +199,7 @@ void RenderLayerCompositor::updateAcceleratedCompositingSettings()
 
     m_hasAcceleratedCompositing = hasAcceleratedCompositing;
     m_showRepaintCounter = showRepaintCounter;
-
-    updateForceCompositingMode();
+    m_forceCompositingModeDirty = true;
 }
 
 bool RenderLayerCompositor::layerSquashingEnabled() const
@@ -281,6 +294,7 @@ void RenderLayerCompositor::updateIfNeededRecursive()
     TRACE_EVENT0("blink_rendering", "RenderLayerCompositor::updateIfNeededRecursive");
 
     ASSERT(!m_renderView.needsLayout());
+
     lifecycle().advanceTo(DocumentLifecycle::InCompositingUpdate);
 
     updateIfNeeded();
@@ -300,12 +314,19 @@ void RenderLayerCompositor::setNeedsCompositingUpdate(CompositingUpdateType upda
     // skipping unnecessary compositing updates and not incorrectly skipping
     // necessary updates.
 
+    // FIXME: Technically we only need to do this when the FrameView's isScrollable method
+    // would return a different value.
+    if (updateType == CompositingUpdateAfterLayout)
+        m_forceCompositingModeDirty = true;
+
     // Avoid updating the layers with old values. Compositing layers will be updated after the layout is finished.
     if (m_renderView.needsLayout())
         return;
 
-    if (m_forceCompositingMode && !m_compositing)
-        enableCompositingMode(true);
+    // FIXME: We shouldn't clear dirty bits in this function. Also, we shouldn't
+    // enable compositing mode in this function.
+    updateShouldForceCompositingMode();
+    enableCompositingModeIfNeeded();
 
     if (!m_needsToRecomputeCompositingRequirements && !m_compositing)
         return;
@@ -350,21 +371,24 @@ void RenderLayerCompositor::scheduleAnimationIfNeeded()
 
 bool RenderLayerCompositor::hasUnresolvedDirtyBits()
 {
-    return m_needsToRecomputeCompositingRequirements || m_compositingLayersNeedRebuild || m_needsUpdateCompositingRequirementsState || m_pendingUpdateType > CompositingUpdateNone;
+    return m_needsToRecomputeCompositingRequirements || compositingLayersNeedRebuild() || m_needsUpdateCompositingRequirementsState || m_pendingUpdateType > CompositingUpdateNone;
 }
 
 void RenderLayerCompositor::updateIfNeeded()
 {
-    if (m_forceCompositingMode && !m_compositing)
-        enableCompositingMode(true);
-
     {
         // Notice that we call this function before checking the dirty bits below.
         // We'll need to remove DeprecatedDirtyCompositingDuringCompositingUpdate
         // before moving this function after checking the dirty bits.
         DeprecatedDirtyCompositingDuringCompositingUpdate marker(lifecycle());
         updateCompositingRequirementsState();
+
+        // updateShouldForceCompositingMode can call setCompositingLayersNeedRebuild,
+        // which asserts that it's not InCompositingUpdate.
+        updateShouldForceCompositingMode();
     }
+
+    enableCompositingModeIfNeeded();
 
     if (!m_needsToRecomputeCompositingRequirements && !m_compositing)
         return;
@@ -372,7 +396,7 @@ void RenderLayerCompositor::updateIfNeeded()
     CompositingUpdateType updateType = m_pendingUpdateType;
 
     bool needCompositingRequirementsUpdate = m_needsToRecomputeCompositingRequirements;
-    bool needHierarchyAndGeometryUpdate = m_compositingLayersNeedRebuild;
+    bool needHierarchyAndGeometryUpdate = compositingLayersNeedRebuild();
     bool needsToUpdateScrollingCoordinator = scrollingCoordinator() ? scrollingCoordinator()->needsToUpdateAfterCompositingChange() : false;
 
     if (updateType == CompositingUpdateNone && !needCompositingRequirementsUpdate && !needHierarchyAndGeometryUpdate && !needsToUpdateScrollingCoordinator)
@@ -474,10 +498,10 @@ void RenderLayerCompositor::updateIfNeeded()
         m_needsUpdateFixedBackground = false;
     }
 
-    ASSERT(updateRoot || !m_compositingLayersNeedRebuild);
+    ASSERT(updateRoot || !compositingLayersNeedRebuild());
 
     if (!hasAcceleratedCompositing())
-        enableCompositingMode(false);
+        setCompositingModeEnabled(false);
 
     // The scrolling coordinator may realize that it needs updating while compositing was being updated in this function.
     needsToUpdateScrollingCoordinator |= scrollingCoordinator() && scrollingCoordinator()->needsToUpdateAfterCompositingChange();
@@ -512,7 +536,7 @@ bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* l
         ASSERT(!layer->hasCompositedLayerMapping());
         {
             DeprecatedDirtyCompositingDuringCompositingUpdate marker(lifecycle());
-            enableCompositingMode();
+            setCompositingModeEnabled(true);
         }
 
         // If we need to repaint, do so before allocating the compositedLayerMapping

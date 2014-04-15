@@ -74,7 +74,7 @@ public:
     bool inCompositingMode() const { return m_compositing; }
     // This will make a compositing layer at the root automatically, and hook up to
     // the native view/window system.
-    void enableCompositingMode(bool enable = true);
+    void setCompositingModeEnabled(bool);
 
     bool inForcedCompositingMode() const { return m_forceCompositingMode; }
 
@@ -88,8 +88,6 @@ public:
     bool acceleratedCompositingForOverflowScrollEnabled() const;
 
     bool canRender3DTransforms() const;
-
-    void updateForceCompositingMode();
 
     // Copy the accelerated compositing related flags from Settings
     void updateAcceleratedCompositingSettings();
@@ -295,6 +293,12 @@ private:
 
     void addViewportConstrainedLayer(RenderLayer*);
 
+    bool compositingLayersNeedRebuild();
+
+    void updateShouldForceCompositingMode();
+
+    void enableCompositingModeIfNeeded();
+
     bool requiresHorizontalScrollbarLayer() const;
     bool requiresVerticalScrollbarLayer() const;
     bool requiresScrollCornerLayer() const;
@@ -324,6 +328,7 @@ private:
     bool m_compositing;
     bool m_compositingLayersNeedRebuild;
     bool m_forceCompositingMode;
+    bool m_forceCompositingModeDirty;
     bool m_needsUpdateCompositingRequirementsState;
     bool m_needsUpdateFixedBackground;
 

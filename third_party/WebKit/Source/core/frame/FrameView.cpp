@@ -627,7 +627,6 @@ void FrameView::updateCompositingLayersAfterStyleChange()
     // FIXME: Remove incremental compositing updates after fixing the chicken/egg issues
     // https://code.google.com/p/chromium/issues/detail?id=343756
     DisableCompositingQueryAsserts disabler;
-
     renderView->compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterStyleChange);
 }
 
@@ -641,8 +640,6 @@ void FrameView::updateCompositingLayersAfterLayout()
     // FIXME: Remove incremental compositing updates after fixing the chicken/egg issues
     // https://code.google.com/p/chromium/issues/detail?id=343756
     DisableCompositingQueryAsserts disabler;
-
-    renderView->compositor()->updateForceCompositingMode();
     renderView->compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterLayout);
 }
 

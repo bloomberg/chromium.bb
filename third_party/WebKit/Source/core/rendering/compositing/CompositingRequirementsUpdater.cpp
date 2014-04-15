@@ -499,7 +499,7 @@ void CompositingRequirementsUpdater::updateRecursive(RenderLayer* ancestorLayer,
             willBeCompositedOrSquashed = true;
             reasonsToComposite |= CompositingReasonRoot;
         } else {
-            compositor->enableCompositingMode(false);
+            compositor->setCompositingModeEnabled(false);
             willBeCompositedOrSquashed = false;
             reasonsToComposite = CompositingReasonNone;
         }
