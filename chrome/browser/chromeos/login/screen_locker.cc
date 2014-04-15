@@ -288,6 +288,7 @@ void ScreenLocker::Authenticate(const UserContext& user_context) {
                      extended_authenticator_.get(),
                      updated_context,
                      base::Closure()));
+      return;
     }
   }
 

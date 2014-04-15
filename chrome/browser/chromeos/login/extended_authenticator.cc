@@ -321,7 +321,8 @@ void ExtendedAuthenticator::OnOperationComplete(
 
   RecordEndMarker(time_marker);
   if (return_code == cryptohome::MOUNT_ERROR_NONE) {
-    success_callback.Run();
+    if (!success_callback.is_null())
+      success_callback.Run();
     if (old_consumer_)
       old_consumer_->OnLoginSuccess(user_context);
     return;
