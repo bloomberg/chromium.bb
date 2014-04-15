@@ -237,7 +237,7 @@ int HttpStreamParser::SendRequest(const std::string& request_line,
     }
   }
 
-  io_state_ = STATE_SENDING_HEADERS;
+  io_state_ = STATE_SEND_HEADERS;
 
   // If we have a small request body, then we'll merge with the headers into a
   // single write.
@@ -291,7 +291,7 @@ int HttpStreamParser::SendRequest(const std::string& request_line,
 }
 
 int HttpStreamParser::ReadResponseHeaders(const CompletionCallback& callback) {
-  DCHECK(io_state_ == STATE_REQUEST_SENT || io_state_ == STATE_DONE);
+  DCHECK(io_state_ == STATE_NONE || io_state_ == STATE_DONE);
   DCHECK(callback_.is_null());
   DCHECK(!callback.is_null());
   DCHECK_EQ(0, read_buf_unused_offset_);
@@ -327,13 +327,16 @@ void HttpStreamParser::Close(bool not_reusable) {
 
 int HttpStreamParser::ReadResponseBody(IOBuffer* buf, int buf_len,
                                        const CompletionCallback& callback) {
-  DCHECK(io_state_ == STATE_BODY_PENDING || io_state_ == STATE_DONE);
+  DCHECK(io_state_ == STATE_NONE || io_state_ == STATE_DONE);
   DCHECK(callback_.is_null());
   DCHECK(!callback.is_null());
   DCHECK_LE(buf_len, kMaxBufSize);
 
   if (io_state_ == STATE_DONE)
     return OK;
+
+  // Must have response headers with a non-1xx error code.
+  DCHECK_NE(1, response_->headers->response_code() / 100);
 
   user_read_buf_ = buf;
   user_read_buf_len_ = buf_len;
@@ -359,30 +362,25 @@ void HttpStreamParser::OnIOComplete(int result) {
 }
 
 int HttpStreamParser::DoLoop(int result) {
-  bool can_do_more = true;
   do {
-    switch (io_state_) {
-      case STATE_SENDING_HEADERS:
-        if (result < 0)
-          can_do_more = false;
-        else
-          result = DoSendHeaders(result);
+    DCHECK_NE(ERR_IO_PENDING, result);
+    DCHECK_NE(STATE_DONE, io_state_);
+    DCHECK_NE(STATE_NONE, io_state_);
+    State state = io_state_;
+    io_state_ = STATE_NONE;
+    switch (state) {
+      case STATE_SEND_HEADERS:
+        result = DoSendHeaders(result);
         break;
-      case STATE_SENDING_BODY:
-        if (result < 0)
-          can_do_more = false;
-        else
-          result = DoSendBody(result);
+      case STATE_SEND_BODY:
+        result = DoSendBody(result);
         break;
-      case STATE_SEND_REQUEST_READING_BODY:
-        result = DoSendRequestReadingBody(result);
-        break;
-      case STATE_REQUEST_SENT:
-        DCHECK(result != ERR_IO_PENDING);
-        can_do_more = false;
+      case STATE_SEND_REQUEST_READ_BODY_COMPLETE:
+        result = DoSendRequestReadBodyComplete(result);
         break;
       case STATE_READ_HEADERS:
         net_log_.BeginEvent(NetLog::TYPE_HTTP_STREAM_PARSER_READ_HEADERS);
+        DCHECK_GE(result, 0);
         result = DoReadHeaders();
         break;
       case STATE_READ_HEADERS_COMPLETE:
@@ -390,32 +388,27 @@ int HttpStreamParser::DoLoop(int result) {
         net_log_.EndEventWithNetErrorCode(
             NetLog::TYPE_HTTP_STREAM_PARSER_READ_HEADERS, result);
         break;
-      case STATE_BODY_PENDING:
-        DCHECK(result != ERR_IO_PENDING);
-        can_do_more = false;
-        break;
       case STATE_READ_BODY:
+        DCHECK_GE(result, 0);
         result = DoReadBody();
-        // DoReadBodyComplete handles error conditions.
         break;
       case STATE_READ_BODY_COMPLETE:
         result = DoReadBodyComplete(result);
         break;
-      case STATE_DONE:
-        DCHECK(result != ERR_IO_PENDING);
-        can_do_more = false;
-        break;
       default:
         NOTREACHED();
-        can_do_more = false;
         break;
     }
-  } while (result != ERR_IO_PENDING && can_do_more);
+  } while (result != ERR_IO_PENDING &&
+           (io_state_ != STATE_DONE && io_state_ != STATE_NONE));
 
   return result;
 }
 
 int HttpStreamParser::DoSendHeaders(int result) {
+  // If there was a problem writing to the socket, just return the error code.
+  if (result < 0)
+    return result;
   request_headers_->DidConsume(result);
   int bytes_remaining = request_headers_->BytesRemaining();
   if (bytes_remaining > 0) {
@@ -424,34 +417,40 @@ int HttpStreamParser::DoSendHeaders(int result) {
     if (bytes_remaining == request_headers_->size()) {
       response_->request_time = base::Time::Now();
     }
-    result = connection_->socket()
+    io_state_ = STATE_SEND_HEADERS;
+    return connection_->socket()
         ->Write(request_headers_.get(), bytes_remaining, io_callback_);
-  } else if (request_->upload_data_stream != NULL &&
-             (request_->upload_data_stream->is_chunked() ||
-              // !IsEOF() indicates that the body wasn't merged.
-              (request_->upload_data_stream->size() > 0 &&
-               !request_->upload_data_stream->IsEOF()))) {
+  }
+
+  if (request_->upload_data_stream != NULL &&
+      (request_->upload_data_stream->is_chunked() ||
+      // !IsEOF() indicates that the body wasn't merged.
+      (request_->upload_data_stream->size() > 0 &&
+        !request_->upload_data_stream->IsEOF()))) {
     net_log_.AddEvent(
         NetLog::TYPE_HTTP_TRANSACTION_SEND_REQUEST_BODY,
         base::Bind(&NetLogSendRequestBodyCallback,
                    request_->upload_data_stream->size(),
                    request_->upload_data_stream->is_chunked(),
                    false /* not merged */));
-    io_state_ = STATE_SENDING_BODY;
-    result = OK;
-  } else {
-    io_state_ = STATE_REQUEST_SENT;
+    io_state_ = STATE_SEND_BODY;
+    return OK;
   }
-  return result;
+
+  // Finished sending the request.
+  return OK;
 }
 
 int HttpStreamParser::DoSendBody(int result) {
   // |result| is the number of bytes sent from the last call to
-  // DoSendBody(), or 0 (i.e. OK).
+  // DoSendBody(), 0 (i.e. OK), or negative if the last write failed.
+  if (result < 0)
+    return result;
 
   // Send the remaining data in the request body buffer.
   request_body_send_buf_->DidConsume(result);
   if (request_body_send_buf_->BytesRemaining() > 0) {
+    io_state_ = STATE_SEND_BODY;
     return connection_->socket()
         ->Write(request_body_send_buf_.get(),
                 request_body_send_buf_->BytesRemaining(),
@@ -459,18 +458,18 @@ int HttpStreamParser::DoSendBody(int result) {
   }
 
   if (request_->upload_data_stream->is_chunked() && sent_last_chunk_) {
-    io_state_ = STATE_REQUEST_SENT;
+    // Finished sending the request.
     return OK;
   }
 
   request_body_read_buf_->Clear();
-  io_state_ = STATE_SEND_REQUEST_READING_BODY;
+  io_state_ = STATE_SEND_REQUEST_READ_BODY_COMPLETE;
   return request_->upload_data_stream->Read(request_body_read_buf_.get(),
                                             request_body_read_buf_->capacity(),
                                             io_callback_);
 }
 
-int HttpStreamParser::DoSendRequestReadingBody(int result) {
+int HttpStreamParser::DoSendRequestReadBodyComplete(int result) {
   // |result| is the result of read from the request body from the last call to
   // DoSendBody().
   DCHECK_GE(result, 0);  // There won't be errors.
@@ -494,11 +493,11 @@ int HttpStreamParser::DoSendRequestReadingBody(int result) {
     // chunked. (i.e. No need to send the terminal chunk.)
     DCHECK(request_->upload_data_stream->IsEOF());
     DCHECK(!request_->upload_data_stream->is_chunked());
-    io_state_ = STATE_REQUEST_SENT;
+    // Finished sending the request.
   } else if (result > 0) {
     request_body_send_buf_->DidAppend(result);
     result = 0;
-    io_state_ = STATE_SENDING_BODY;
+    io_state_ = STATE_SEND_BODY;
   }
   return result;
 }
@@ -561,7 +560,7 @@ int HttpStreamParser::DoReadHeadersComplete(int result) {
       io_state_ = STATE_READ_BODY_COMPLETE;
       end_offset = read_buf_->offset();
     } else {
-      io_state_ = STATE_BODY_PENDING;
+      // Now waiting for the body to be read.
       end_offset = 0;
     }
     int rv = DoParseResponseHeaders(end_offset);
@@ -611,7 +610,7 @@ int HttpStreamParser::DoReadHeadersComplete(int result) {
         // tunnel.
         response_header_start_offset_ = -1;
         response_body_length_ = -1;
-        io_state_ = STATE_REQUEST_SENT;
+        // Now waiting for the second set of headers to be read.
       } else {
         io_state_ = STATE_DONE;
       }
@@ -620,7 +619,7 @@ int HttpStreamParser::DoReadHeadersComplete(int result) {
 
     // Note where the headers stop.
     read_buf_unused_offset_ = end_of_header_offset;
-    io_state_ = STATE_BODY_PENDING;
+    // Now waiting for the body to be read.
   }
   return result;
 }
@@ -751,7 +750,7 @@ int HttpStreamParser::DoReadBodyComplete(int result) {
     }
     read_buf_unused_offset_ = 0;
   } else {
-    io_state_ = STATE_BODY_PENDING;
+    // Now waiting for more of the body to be read.
     user_read_buf_ = NULL;
     user_read_buf_len_ = 0;
   }

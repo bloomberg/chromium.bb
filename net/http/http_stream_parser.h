@@ -110,17 +110,17 @@ class NET_EXPORT_PRIVATE HttpStreamParser {
   // FOO_COMPLETE states implement the second half of potentially asynchronous
   // operations and don't necessarily mean that FOO is complete.
   enum State {
+    // STATE_NONE indicates that this is waiting on an external call before
+    // continuing.
     STATE_NONE,
-    STATE_SENDING_HEADERS,
+    STATE_SEND_HEADERS,
     // If the request comes with a body, either of the following two
     // states will be executed, depending on whether the body is chunked
     // or not.
-    STATE_SENDING_BODY,
-    STATE_SEND_REQUEST_READING_BODY,
-    STATE_REQUEST_SENT,
+    STATE_SEND_BODY,
+    STATE_SEND_REQUEST_READ_BODY_COMPLETE,
     STATE_READ_HEADERS,
     STATE_READ_HEADERS_COMPLETE,
-    STATE_BODY_PENDING,
     STATE_READ_BODY,
     STATE_READ_BODY_COMPLETE,
     STATE_DONE
@@ -148,7 +148,7 @@ class NET_EXPORT_PRIVATE HttpStreamParser {
   // The implementations of each state of the state machine.
   int DoSendHeaders(int result);
   int DoSendBody(int result);
-  int DoSendRequestReadingBody(int result);
+  int DoSendRequestReadBodyComplete(int result);
   int DoReadHeaders();
   int DoReadHeadersComplete(int result);
   int DoReadBody();
@@ -167,7 +167,7 @@ class NET_EXPORT_PRIVATE HttpStreamParser {
   // Examine the parsed headers to try to determine the response body size.
   void CalculateResponseBodySize();
 
-  // Current state of the request.
+  // Next state of the request, when the current one completes.
   State io_state_;
 
   // The request to send.
