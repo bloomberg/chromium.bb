@@ -41,7 +41,6 @@ struct BidiRun : BidiCharacterRun {
     {
         // Stored in base class to save space.
         m_hasHyphen = false;
-        m_startsSegment = false;
     }
 
     BidiRun* next() { return static_cast<BidiRun*>(m_next); }
