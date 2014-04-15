@@ -15,6 +15,7 @@
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/history_item_serialization.h"
+#include "content/renderer/history_controller.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_main_platform_delegate.h"
@@ -130,6 +131,11 @@ void RenderViewTest::GoBack(const blink::WebHistoryItem& item) {
 
 void RenderViewTest::GoForward(const blink::WebHistoryItem& item) {
   GoToOffset(1, item);
+}
+
+void RenderViewTest::GoBackToPrevious() {
+  RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
+  GoBack(impl->history_controller()->GetPreviousItemForExport());
 }
 
 void RenderViewTest::SetUp() {
@@ -360,9 +366,11 @@ bool RenderViewTest::OnMessageReceived(const IPC::Message& msg) {
 void RenderViewTest::DidNavigateWithinPage(blink::WebLocalFrame* frame,
                                            bool is_new_navigation) {
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
+  blink::WebHistoryItem item;
+  item.initialize();
   impl->main_render_frame()->didNavigateWithinPage(
       frame,
-      blink::WebHistoryItem(),
+      item,
       is_new_navigation ? blink::WebStandardCommit
                         : blink::WebHistoryInertCommit);
 }

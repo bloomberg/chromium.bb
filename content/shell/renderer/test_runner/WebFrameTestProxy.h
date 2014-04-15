@@ -65,10 +65,10 @@ public:
     {
         Base::didFailProvisionalLoad(frame, error);
     }
-    virtual void didCommitProvisionalLoad(blink::WebLocalFrame* frame, bool isNewNavigation)
+    virtual void didCommitProvisionalLoad(blink::WebLocalFrame* frame, const blink::WebHistoryItem& item, blink::WebHistoryCommitType commit_type)
     {
-        m_baseProxy->didCommitProvisionalLoad(frame, isNewNavigation);
-        Base::didCommitProvisionalLoad(frame, isNewNavigation);
+        m_baseProxy->didCommitProvisionalLoad(frame, item, commit_type);
+        Base::didCommitProvisionalLoad(frame, item, commit_type);
     }
     virtual void didReceiveTitle(blink::WebLocalFrame* frame, const blink::WebString& title, blink::WebTextDirection direction)
     {

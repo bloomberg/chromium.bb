@@ -1060,7 +1060,7 @@ bool WebTestProxyBase::didFailProvisionalLoad(WebLocalFrame* frame, const WebURL
     return !frame->provisionalDataSource();
 }
 
-void WebTestProxyBase::didCommitProvisionalLoad(WebLocalFrame* frame, bool)
+void WebTestProxyBase::didCommitProvisionalLoad(WebLocalFrame* frame, const WebHistoryItem&, blink::WebHistoryCommitType)
 {
     if (m_testInterfaces->testRunner()->shouldDumpFrameLoadCallbacks()) {
         printFrameDescription(m_delegate, frame);

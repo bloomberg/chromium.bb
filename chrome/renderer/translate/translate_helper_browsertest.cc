@@ -10,7 +10,6 @@
 #include "content/public/renderer/render_view.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/web/WebHistoryItem.h"
 
 using testing::AtLeast;
 using testing::Return;
@@ -470,7 +469,7 @@ TEST_F(ChromeRenderViewTest, BackToTranslatablePage) {
   EXPECT_EQ("fr", params.a.adopted_language);
   render_thread_->sink().ClearMessages();
 
-  GoBack(GetMainFrame()->previousHistoryItem());
+  GoBackToPrevious();
 
   message = render_thread_->sink().GetUniqueMessageMatching(
       ChromeViewHostMsg_TranslateLanguageDetermined::ID);

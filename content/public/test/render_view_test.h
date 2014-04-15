@@ -82,6 +82,10 @@ class RenderViewTest : public testing::Test {
   void GoBack(const blink::WebHistoryItem& item);
   void GoForward(const blink::WebHistoryItem& item);
 
+  // Navigates the main frame back to whatever is considered the previous
+  // history entry internally.
+  void GoBackToPrevious();
+
   // Sends one native key event over IPC.
   void SendNativeKeyEvent(const NativeWebKeyboardEvent& key_event);
 

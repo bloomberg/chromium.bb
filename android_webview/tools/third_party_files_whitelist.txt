@@ -66,6 +66,12 @@ content/browser/renderer_host/render_widget_host_view_mac.mm
 # Copyright The Chromium Authors and Google Inc; BSD license. Not used on
 # Android.
 content/browser/renderer_host/web_input_event_aurax11.cc
+# Copyright Apple Inc and Torch Mobile Inc; BSD license. Moved from
+# third_party/WebKit/.
+content/renderer/history_controller.h
+# Copyright Apple Inc, Nokia Corporation and Torch Mobile Inc; BSD license.
+# Moved from third_party/WebKit/.
+content/renderer/history_controller.cc
 # Copyright Google Inc, no license. Not used on Android.
 google_update/google_update_idl.idl
 # Native client not used in Android. Contains the word "Copyright"

@@ -266,9 +266,6 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebLocalFrame* frame,
       const blink::WebHistoryItem& item,
       blink::WebHistoryCommitType commit_type);
-  // DEPRECATED
-  virtual void didCommitProvisionalLoad(blink::WebLocalFrame* frame,
-                                        bool is_new_navigation);
   virtual void didClearWindowObject(blink::WebLocalFrame* frame, int world_id);
   virtual void didCreateDocumentElement(blink::WebLocalFrame* frame);
   virtual void didReceiveTitle(blink::WebLocalFrame* frame,
@@ -284,9 +281,6 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual void didNavigateWithinPage(blink::WebLocalFrame* frame,
                                      const blink::WebHistoryItem& item,
                                      blink::WebHistoryCommitType commit_type);
-  // DEPRECATED
-  virtual void didNavigateWithinPage(blink::WebLocalFrame* frame,
-                                     bool is_new_navigation);
   virtual void didUpdateCurrentHistoryItem(blink::WebLocalFrame* frame);
   virtual blink::WebNotificationPresenter* notificationPresenter();
   virtual void didChangeSelection(bool is_empty_selection);

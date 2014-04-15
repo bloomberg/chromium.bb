@@ -80,6 +80,7 @@
 #include "content/renderer/external_popup_menu.h"
 #include "content/renderer/geolocation_dispatcher.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
+#include "content/renderer/history_controller.h"
 #include "content/renderer/idle_user_detector.h"
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/input/input_handler_manager.h"
@@ -815,6 +816,8 @@ void RenderViewImpl::Initialize(
   }
   mouse_lock_dispatcher_ = new RenderViewMouseLockDispatcher(this);
 
+  history_controller_.reset(new HistoryController(this));
+
   // Create renderer_accessibility_ if needed.
   OnSetAccessibilityMode(params->accessibility_mode);
 
@@ -1374,8 +1377,7 @@ void RenderViewImpl::UpdateSessionHistory(WebFrame* frame) {
   if (page_id_ == -1)
     return;
 
-  const WebHistoryItem& item =
-      webview()->mainFrame()->previousHistoryItem();
+  WebHistoryItem item = history_controller_->GetPreviousItemForExport();
   SendUpdateState(item);
 }
 
@@ -2809,7 +2811,7 @@ void RenderViewImpl::SyncNavigationState() {
   if (!webview())
     return;
 
-  const WebHistoryItem& item = webview()->mainFrame()->currentHistoryItem();
+  WebHistoryItem item = history_controller_->GetCurrentItemForExport();
   SendUpdateState(item);
 }
 

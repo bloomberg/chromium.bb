@@ -50,6 +50,7 @@
 #include "content/renderer/child_frame_compositing_helper.h"
 #include "content/renderer/context_menu_params_builder.h"
 #include "content/renderer/dom_automation_controller.h"
+#include "content/renderer/history_controller.h"
 #include "content/renderer/image_loading_helper.h"
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/internal_document_state_data.h"
@@ -675,7 +676,9 @@ void RenderFrameImpl::OnNavigate(const FrameMsg_Navigate_Params& params) {
     CHECK(frame) << "Invalid frame name passed: " << params.frame_to_navigate;
   }
 
-  if (is_reload && frame->currentHistoryItem().isNull()) {
+  WebHistoryItem item =
+      render_view_->history_controller()->GetCurrentItemForExport();
+  if (is_reload && item.isNull()) {
     // We cannot reload if we do not have any history state.  This happens, for
     // example, when recovering from a crash.
     is_reload = false;
@@ -708,7 +711,7 @@ void RenderFrameImpl::OnNavigate(const FrameMsg_Navigate_Params& params) {
       // Ensure we didn't save the swapped out URL in UpdateState, since the
       // browser should never be telling us to navigate to swappedout://.
       CHECK(item.urlString() != WebString::fromUTF8(kSwappedOutURL));
-      frame->loadHistoryItem(item, cache_policy);
+      render_view_->history_controller()->GoToItem(item, cache_policy);
     }
   } else if (!params.base_url_for_data_url.is_empty()) {
     // A loadData request with a specified base URL.
@@ -1520,7 +1523,8 @@ blink::WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
 
 blink::WebHistoryItem RenderFrameImpl::historyItemForNewChildFrame(
     blink::WebFrame* frame) {
-  return render_view_->webview()->itemForNewChildFrame(frame);
+  DCHECK(!frame_ || frame_ == frame);
+  return render_view_->history_controller()->GetItemForNewChildFrame(this);
 }
 
 void RenderFrameImpl::willSendSubmitEvent(blink::WebLocalFrame* frame,
@@ -1633,7 +1637,7 @@ void RenderFrameImpl::didStartProvisionalLoad(blink::WebLocalFrame* frame) {
 void RenderFrameImpl::didReceiveServerRedirectForProvisionalLoad(
     blink::WebLocalFrame* frame) {
   DCHECK(!frame_ || frame_ == frame);
-  render_view_->webview()->removeChildrenForRedirect(frame);
+  render_view_->history_controller()->RemoveChildrenForRedirect(this);
   if (frame->parent())
     return;
   // Received a redirect on the main frame.
@@ -1758,20 +1762,13 @@ void RenderFrameImpl::didCommitProvisionalLoad(
     blink::WebLocalFrame* frame,
     const blink::WebHistoryItem& item,
     blink::WebHistoryCommitType commit_type) {
-  DocumentState* document_state =
-      DocumentState::FromDataSource(frame->dataSource());
-  render_view_->webview()->updateForCommit(frame, item, commit_type,
-      document_state->navigation_state()->was_within_same_page());
-
-  didCommitProvisionalLoad(frame, commit_type == blink::WebStandardCommit);
-}
-
-void RenderFrameImpl::didCommitProvisionalLoad(blink::WebLocalFrame* frame,
-                                               bool is_new_navigation) {
   DCHECK(!frame_ || frame_ == frame);
   DocumentState* document_state =
       DocumentState::FromDataSource(frame->dataSource());
   NavigationState* navigation_state = document_state->navigation_state();
+  render_view_->history_controller()->UpdateForCommit(this, item, commit_type,
+      navigation_state->was_within_same_page());
+
   InternalDocumentStateData* internal_data =
       InternalDocumentStateData::FromDocumentState(document_state);
 
@@ -1784,6 +1781,7 @@ void RenderFrameImpl::didCommitProvisionalLoad(blink::WebLocalFrame* frame,
   }
   internal_data->set_use_error_page(false);
 
+  bool is_new_navigation = commit_type == blink::WebStandardCommit;
   if (is_new_navigation) {
     // When we perform a new navigation, we need to update the last committed
     // session history entry with state for the page we are leaving.
@@ -2005,26 +2003,6 @@ void RenderFrameImpl::didNavigateWithinPage(blink::WebLocalFrame* frame,
   new_state->set_was_within_same_page(true);
 
   didCommitProvisionalLoad(frame, item, commit_type);
-}
-
-void RenderFrameImpl::didNavigateWithinPage(blink::WebLocalFrame* frame,
-                                            bool is_new_navigation) {
-  DCHECK(!frame_ || frame_ == frame);
-  // If this was a reference fragment navigation that we initiated, then we
-  // could end up having a non-null pending navigation params.  We just need to
-  // update the ExtraData on the datasource so that others who read the
-  // ExtraData will get the new NavigationState.  Similarly, if we did not
-  // initiate this navigation, then we need to take care to reset any pre-
-  // existing navigation state to a content-initiated navigation state.
-  // DidCreateDataSource conveniently takes care of this for us.
-  didCreateDataSource(frame, frame->dataSource());
-
-  DocumentState* document_state =
-      DocumentState::FromDataSource(frame->dataSource());
-  NavigationState* new_state = document_state->navigation_state();
-  new_state->set_was_within_same_page(true);
-
-  didCommitProvisionalLoad(frame, is_new_navigation);
 }
 
 void RenderFrameImpl::didUpdateCurrentHistoryItem(blink::WebLocalFrame* frame) {
@@ -2705,7 +2683,8 @@ void RenderFrameImpl::UpdateURL(blink::WebFrame* frame) {
 
   // Make navigation state a part of the DidCommitProvisionalLoad message so
   // that commited entry has it at all times.
-  WebHistoryItem item = frame->currentHistoryItem();
+  WebHistoryItem item =
+      render_view_->history_controller()->GetCurrentItemForExport();
   if (item.isNull()) {
     item.initialize();
     item.setURLString(request.url().spec().utf16());

@@ -139,6 +139,7 @@ class DocumentState;
 class ExternalPopupMenu;
 class FaviconHelper;
 class GeolocationDispatcher;
+class HistoryController;
 class ImageResourceFetcher;
 class InputTagSpeechDispatcher;
 class LoadProgressTracker;
@@ -241,6 +242,10 @@ class CONTENT_EXPORT RenderViewImpl
 
   MouseLockDispatcher* mouse_lock_dispatcher() {
     return mouse_lock_dispatcher_;
+  }
+
+  HistoryController* history_controller() {
+    return history_controller_.get();
   }
 
   // Lazily initialize this view's BrowserPluginManager and return it.
@@ -1205,6 +1210,8 @@ class CONTENT_EXPORT RenderViewImpl
 
   // Mouse Lock dispatcher attached to this view.
   MouseLockDispatcher* mouse_lock_dispatcher_;
+
+  scoped_ptr<HistoryController> history_controller_;
 
 #if defined(OS_ANDROID)
   // Android Specific ---------------------------------------------------------

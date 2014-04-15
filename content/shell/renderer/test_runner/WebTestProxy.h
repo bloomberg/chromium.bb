@@ -20,6 +20,7 @@
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDragOperation.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebHistoryCommitType.h"
 #include "third_party/WebKit/public/web/WebIconURL.h"
 // TODO(dcheng): Temporary. Delete once forward declarable.
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -169,7 +170,7 @@ protected:
     void didStartProvisionalLoad(blink::WebLocalFrame*);
     void didReceiveServerRedirectForProvisionalLoad(blink::WebLocalFrame*);
     bool didFailProvisionalLoad(blink::WebLocalFrame*, const blink::WebURLError&);
-    void didCommitProvisionalLoad(blink::WebLocalFrame*, bool isNewNavigation);
+    void didCommitProvisionalLoad(blink::WebLocalFrame*, const blink::WebHistoryItem&, blink::WebHistoryCommitType);
     void didReceiveTitle(blink::WebLocalFrame*, const blink::WebString& title, blink::WebTextDirection);
     void didChangeIcon(blink::WebLocalFrame*, blink::WebIconURL::Type);
     void didFinishDocumentLoad(blink::WebLocalFrame*);

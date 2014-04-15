@@ -31,6 +31,7 @@
 #include "content/renderer/accessibility/renderer_accessibility.h"
 #include "content/renderer/accessibility/renderer_accessibility_complete.h"
 #include "content/renderer/accessibility/renderer_accessibility_focus_only.h"
+#include "content/renderer/history_controller.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
@@ -1585,8 +1586,13 @@ TEST_F(RenderViewImplTest, SetHistoryLengthAndPrune) {
   EXPECT_EQ(-1, view()->history_page_ids_[1]);
   ClearHistory();
 
+  blink::WebHistoryItem item;
+  item.initialize();
+
   // No history to merge and a committed page to be kept.
-  frame()->didCommitProvisionalLoad(GetMainFrame(), true);
+  frame()->didCommitProvisionalLoad(GetMainFrame(),
+                                    item,
+                                    blink::WebStandardCommit);
   expected_page_id = view()->page_id_;
   view()->OnSetHistoryLengthAndPrune(0, expected_page_id);
   EXPECT_EQ(1, view()->history_list_length_);
@@ -1595,7 +1601,9 @@ TEST_F(RenderViewImplTest, SetHistoryLengthAndPrune) {
   ClearHistory();
 
   // No history to merge and a committed page to be pruned.
-  frame()->didCommitProvisionalLoad(GetMainFrame(), true);
+  frame()->didCommitProvisionalLoad(GetMainFrame(),
+                                    item,
+                                    blink::WebStandardCommit);
   expected_page_id = view()->page_id_;
   view()->OnSetHistoryLengthAndPrune(0, expected_page_id + 1);
   EXPECT_EQ(0, view()->history_list_length_);
@@ -1603,7 +1611,9 @@ TEST_F(RenderViewImplTest, SetHistoryLengthAndPrune) {
   ClearHistory();
 
   // No history to merge and a committed page that the browser was unaware of.
-  frame()->didCommitProvisionalLoad(GetMainFrame(), true);
+  frame()->didCommitProvisionalLoad(GetMainFrame(),
+                                    item,
+                                    blink::WebStandardCommit);
   expected_page_id = view()->page_id_;
   view()->OnSetHistoryLengthAndPrune(0, -1);
   EXPECT_EQ(1, view()->history_list_length_);
@@ -1612,7 +1622,9 @@ TEST_F(RenderViewImplTest, SetHistoryLengthAndPrune) {
   ClearHistory();
 
   // History to merge and a committed page to be kept.
-  frame()->didCommitProvisionalLoad(GetMainFrame(), true);
+  frame()->didCommitProvisionalLoad(GetMainFrame(),
+                                    item,
+                                    blink::WebStandardCommit);
   expected_page_id = view()->page_id_;
   view()->OnSetHistoryLengthAndPrune(2, expected_page_id);
   EXPECT_EQ(3, view()->history_list_length_);
@@ -1623,7 +1635,9 @@ TEST_F(RenderViewImplTest, SetHistoryLengthAndPrune) {
   ClearHistory();
 
   // History to merge and a committed page to be pruned.
-  frame()->didCommitProvisionalLoad(GetMainFrame(), true);
+  frame()->didCommitProvisionalLoad(GetMainFrame(),
+                                    item,
+                                    blink::WebStandardCommit);
   expected_page_id = view()->page_id_;
   view()->OnSetHistoryLengthAndPrune(2, expected_page_id + 1);
   EXPECT_EQ(2, view()->history_list_length_);
@@ -1633,7 +1647,9 @@ TEST_F(RenderViewImplTest, SetHistoryLengthAndPrune) {
   ClearHistory();
 
   // History to merge and a committed page that the browser was unaware of.
-  frame()->didCommitProvisionalLoad(GetMainFrame(), true);
+  frame()->didCommitProvisionalLoad(GetMainFrame(),
+                                    item,
+                                    blink::WebStandardCommit);
   expected_page_id = view()->page_id_;
   view()->OnSetHistoryLengthAndPrune(2, -1);
   EXPECT_EQ(3, view()->history_list_length_);
@@ -1646,9 +1662,13 @@ TEST_F(RenderViewImplTest, SetHistoryLengthAndPrune) {
   int expected_page_id_2 = -1;
 
   // No history to merge and two committed pages, both to be kept.
-  frame()->didCommitProvisionalLoad(GetMainFrame(), true);
+  frame()->didCommitProvisionalLoad(GetMainFrame(),
+                                    item,
+                                    blink::WebStandardCommit);
   expected_page_id = view()->page_id_;
-  frame()->didCommitProvisionalLoad(GetMainFrame(), true);
+  frame()->didCommitProvisionalLoad(GetMainFrame(),
+                                    item,
+                                    blink::WebStandardCommit);
   expected_page_id_2 = view()->page_id_;
   EXPECT_GT(expected_page_id_2, expected_page_id);
   view()->OnSetHistoryLengthAndPrune(0, expected_page_id);
@@ -1659,9 +1679,13 @@ TEST_F(RenderViewImplTest, SetHistoryLengthAndPrune) {
   ClearHistory();
 
   // No history to merge and two committed pages, and only the second is kept.
-  frame()->didCommitProvisionalLoad(GetMainFrame(), true);
+  frame()->didCommitProvisionalLoad(GetMainFrame(),
+                                    item,
+                                    blink::WebStandardCommit);
   expected_page_id = view()->page_id_;
-  frame()->didCommitProvisionalLoad(GetMainFrame(), true);
+  frame()->didCommitProvisionalLoad(GetMainFrame(),
+                                    item,
+                                    blink::WebStandardCommit);
   expected_page_id_2 = view()->page_id_;
   EXPECT_GT(expected_page_id_2, expected_page_id);
   view()->OnSetHistoryLengthAndPrune(0, expected_page_id_2);
@@ -1672,9 +1696,13 @@ TEST_F(RenderViewImplTest, SetHistoryLengthAndPrune) {
 
   // No history to merge and two committed pages, both of which the browser was
   // unaware of.
-  frame()->didCommitProvisionalLoad(GetMainFrame(), true);
+  frame()->didCommitProvisionalLoad(GetMainFrame(),
+                                    item,
+                                    blink::WebStandardCommit);
   expected_page_id = view()->page_id_;
-  frame()->didCommitProvisionalLoad(GetMainFrame(), true);
+  frame()->didCommitProvisionalLoad(GetMainFrame(),
+                                    item,
+                                    blink::WebStandardCommit);
   expected_page_id_2 = view()->page_id_;
   EXPECT_GT(expected_page_id_2, expected_page_id);
   view()->OnSetHistoryLengthAndPrune(0, -1);
@@ -1685,9 +1713,13 @@ TEST_F(RenderViewImplTest, SetHistoryLengthAndPrune) {
   ClearHistory();
 
   // History to merge and two committed pages, both to be kept.
-  frame()->didCommitProvisionalLoad(GetMainFrame(), true);
+  frame()->didCommitProvisionalLoad(GetMainFrame(),
+                                    item,
+                                    blink::WebStandardCommit);
   expected_page_id = view()->page_id_;
-  frame()->didCommitProvisionalLoad(GetMainFrame(), true);
+  frame()->didCommitProvisionalLoad(GetMainFrame(),
+                                    item,
+                                    blink::WebStandardCommit);
   expected_page_id_2 = view()->page_id_;
   EXPECT_GT(expected_page_id_2, expected_page_id);
   view()->OnSetHistoryLengthAndPrune(2, expected_page_id);
@@ -1700,9 +1732,13 @@ TEST_F(RenderViewImplTest, SetHistoryLengthAndPrune) {
   ClearHistory();
 
   // History to merge and two committed pages, and only the second is kept.
-  frame()->didCommitProvisionalLoad(GetMainFrame(), true);
+  frame()->didCommitProvisionalLoad(GetMainFrame(),
+                                    item,
+                                    blink::WebStandardCommit);
   expected_page_id = view()->page_id_;
-  frame()->didCommitProvisionalLoad(GetMainFrame(), true);
+  frame()->didCommitProvisionalLoad(GetMainFrame(),
+                                    item,
+                                    blink::WebStandardCommit);
   expected_page_id_2 = view()->page_id_;
   EXPECT_GT(expected_page_id_2, expected_page_id);
   view()->OnSetHistoryLengthAndPrune(2, expected_page_id_2);
@@ -1715,9 +1751,13 @@ TEST_F(RenderViewImplTest, SetHistoryLengthAndPrune) {
 
   // History to merge and two committed pages, both of which the browser was
   // unaware of.
-  frame()->didCommitProvisionalLoad(GetMainFrame(), true);
+  frame()->didCommitProvisionalLoad(GetMainFrame(),
+                                    item,
+                                    blink::WebStandardCommit);
   expected_page_id = view()->page_id_;
-  frame()->didCommitProvisionalLoad(GetMainFrame(), true);
+  frame()->didCommitProvisionalLoad(GetMainFrame(),
+                                    item,
+                                    blink::WebStandardCommit);
   expected_page_id_2 = view()->page_id_;
   EXPECT_GT(expected_page_id_2, expected_page_id);
   view()->OnSetHistoryLengthAndPrune(2, -1);
@@ -1754,7 +1794,8 @@ TEST_F(RenderViewImplTest, ContextMenu) {
 
 TEST_F(RenderViewImplTest, TestBackForward) {
   LoadHTML("<div id=pagename>Page A</div>");
-  blink::WebHistoryItem page_a_item = GetMainFrame()->currentHistoryItem();
+  blink::WebHistoryItem page_a_item =
+      view()->history_controller()->GetCurrentItemForExport();
   int was_page_a = -1;
   base::string16 check_page_a =
       base::ASCIIToUTF16(
@@ -1778,8 +1819,9 @@ TEST_F(RenderViewImplTest, TestBackForward) {
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_c, &was_page_c));
   EXPECT_EQ(1, was_page_b);
 
-  blink::WebHistoryItem forward_item = GetMainFrame()->currentHistoryItem();
-  GoBack(GetMainFrame()->previousHistoryItem());
+  blink::WebHistoryItem forward_item =
+      view()->history_controller()->GetCurrentItemForExport();
+  GoBack(view()->history_controller()->GetPreviousItemForExport());
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_b, &was_page_b));
   EXPECT_EQ(1, was_page_b);
 
@@ -1787,11 +1829,11 @@ TEST_F(RenderViewImplTest, TestBackForward) {
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_c, &was_page_c));
   EXPECT_EQ(1, was_page_c);
 
-  GoBack(GetMainFrame()->previousHistoryItem());
+  GoBack(view()->history_controller()->GetPreviousItemForExport());
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_b, &was_page_b));
   EXPECT_EQ(1, was_page_b);
 
-  forward_item = GetMainFrame()->currentHistoryItem();
+  forward_item = view()->history_controller()->GetCurrentItemForExport();
   GoBack(page_a_item);
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_a, &was_page_a));
   EXPECT_EQ(1, was_page_a);
