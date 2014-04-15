@@ -305,7 +305,7 @@ deps = {
 
   "src/third_party/libwebm/source":
     Var("chromium_git") +
-      "/webm/libwebm.git@0f7815b036651e242ec8c2fcfb59fe54f69be1a8",
+      "/webm/libwebm.git@fb6b6e64444c637f27d103fd113e0c7bf4f107dd",
 
   "src/third_party/openssl":
     "/trunk/deps/third_party/openssl@" + Var("openssl_revision"),
