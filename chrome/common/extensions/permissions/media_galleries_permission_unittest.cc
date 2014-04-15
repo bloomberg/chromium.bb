@@ -158,6 +158,13 @@ TEST(MediaGalleriesPermissionTest, UnknownValues) {
   EXPECT_EQ(2U, unhandled.size());
   error.clear();
   unhandled.clear();
+
+  // Unnknown with a NULL argument.
+  value.reset(new base::ListValue());
+  value->AppendString("Unknown1");
+  EXPECT_FALSE(permission->FromValue(value.get(), &error, NULL));
+  EXPECT_FALSE(error.empty());
+  error.clear();
 }
 
 TEST(MediaGalleriesPermissionTest, Equal) {

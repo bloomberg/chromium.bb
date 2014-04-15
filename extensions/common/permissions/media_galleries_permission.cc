@@ -60,20 +60,23 @@ bool MediaGalleriesPermission::FromValue(
     const base::Value* value,
     std::string* error,
     std::vector<std::string>* unhandled_permissions) {
-  std::vector<std::string> unhandled_sub_permissions;
-  if (!SetDisjunctionPermission<MediaGalleriesPermissionData,
-                                MediaGalleriesPermission>::FromValue(
-                                    value, error, &unhandled_sub_permissions)) {
-    unhandled_permissions->insert(unhandled_permissions->end(),
-                                  unhandled_sub_permissions.begin(),
-                                  unhandled_sub_permissions.end());
+  size_t unhandled_permissions_count = 0;
+  if (unhandled_permissions)
+    unhandled_permissions_count = unhandled_permissions->size();
+  bool parsed_ok =
+      SetDisjunctionPermission<MediaGalleriesPermissionData,
+                               MediaGalleriesPermission>::FromValue(
+                                   value, error, unhandled_permissions);
+  if (unhandled_permissions) {
+    for (size_t i = unhandled_permissions_count;
+         i < unhandled_permissions->size();
+         i++) {
+      (*unhandled_permissions)[i] =
+          "{\"mediaGalleries\": [" + (*unhandled_permissions)[i] + "]}";
+    }
+  }
+  if (!parsed_ok)
     return false;
-  }
-
-  for (size_t i = 0; i < unhandled_sub_permissions.size(); i++) {
-    unhandled_permissions->push_back(
-        "{\"mediaGalleries\": [" + unhandled_sub_permissions[i] + "]}");
-  }
 
   bool has_read = false;
   bool has_copy_to = false;
