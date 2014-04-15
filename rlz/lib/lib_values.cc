@@ -99,9 +99,7 @@ const char* GetAccessPointName(AccessPoint point) {
   case CHROMEOS_HOME_PAGE:            return "CB";
   case CHROMEOS_APP_LIST:             return "CC";
   case CHROME_IOS_OMNIBOX:            return "C9";
-  // Note: this enumeration does not correspond to a real access point and
-  // should never be used. Fails back to the default that raises an assert.
-  case CHROME_IOS_RESERVED:           break;
+  case CHROME_IOS_RESERVED:           return "C0";
   case CHROME_APP_LIST:               return "C7";
   case CHROME_MAC_APP_LIST:           return "C8";
   case UNDEFINED_AP_Q:                return "RQ";
