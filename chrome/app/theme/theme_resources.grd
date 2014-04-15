@@ -332,15 +332,10 @@
       <structure type="chrome_scaled_image" name="IDR_FINDINPAGE_PREV_D" file="common/find_prev_disabled.png" />
       <structure type="chrome_scaled_image" name="IDR_FINDINPAGE_PREV_H" file="common/find_prev_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_FINDINPAGE_PREV_P" file="common/find_prev_pressed.png" />
-      <if expr="desktop_linux and not toolkit_views">
-        <structure type="chrome_scaled_image" name="IDR_FIND_BOX_BACKGROUND" file="common/find_box_bg.png" />
-        <structure type="chrome_scaled_image" name="IDR_FIND_BOX_BACKGROUND_LEFT" file="common/find_box_bg_left.png" />
-      </if>
       <structure type="chrome_scaled_image" name="IDR_FIND_DIALOG_LEFT" file="common/find_dialog_left.png" />
       <structure type="chrome_scaled_image" name="IDR_FIND_DIALOG_MIDDLE" file="common/find_dialog_middle.png" />
       <structure type="chrome_scaled_image" name="IDR_FIND_DIALOG_RIGHT" file="common/find_dialog_right.png" />
       <structure type="chrome_scaled_image" name="IDR_FIND_DLG_LEFT_BACKGROUND" file="common/find_dlg_left_bg.png" />
-      <structure type="chrome_scaled_image" name="IDR_FIND_DLG_MIDDLE_BACKGROUND" file="common/find_dlg_middle_bg.png" />
       <structure type="chrome_scaled_image" name="IDR_FIND_DLG_RIGHT_BACKGROUND" file="common/find_dlg_right_bg.png" />
       <structure type="chrome_scaled_image" name="IDR_FLAGS_FAVICON" file="common/favicon_flags.png" />
       <if expr="not toolkit_views and not is_macosx and not is_ios">
