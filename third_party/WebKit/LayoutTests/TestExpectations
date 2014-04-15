@@ -718,7 +718,7 @@ crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/clusters-insuff
 crbug.com/343201 virtual/fasttextautosizing/fast/text-autosizing/hackernews-comments.html [ NeedsRebaseline ]
 
 # FIXME(crbug.com/332944): Remove this when hash-based autosizer performs sufficiently well on hackernews.
-crbug.com/332944 fast/text-autosizing/hackernews-comments.html [ Failure ]
+crbug.com/332944 fast/text-autosizing/hackernews-comments.html [ NeedsRebaseline ]
 crbug.com/302005 fast/text-autosizing/list-item-above-dbcat.html [ Missing ]
 crbug.com/302005 fast/text-autosizing/similar-clusters.html [ Missing ]
 crbug.com/302005 fast/text-autosizing/supercluster-multiple-layout.html [ Missing ]
