@@ -53,7 +53,7 @@ import oshelpers
 CYGTAR = os.path.join(NACL_DIR, 'build', 'cygtar.py')
 
 NACLPORTS_URL = 'https://naclports.googlecode.com/svn/trunk/src'
-NACLPORTS_REV = 1152
+NACLPORTS_REV = 1226
 
 GYPBUILD_DIR = 'gypbuild'
 
@@ -866,8 +866,9 @@ def BuildStepBuildNaClPorts(pepper_ver, pepperdir):
   env['PEPPER_DIR'] = os.path.basename(pepperdir)  # pepper_NN
   env['NACLPORTS_NO_ANNOTATE'] = "1"
   env['NACLPORTS_NO_UPLOAD'] = "1"
+  env['BUILDBOT_GOT_REVISION'] = str(NACLPORTS_REV)
 
-  build_script = 'build_tools/naclports-linux-sdk-bundle.sh'
+  build_script = 'build_tools/buildbot_sdk_bundle.sh'
   buildbot_common.BuildStep('Build naclports')
 
   bundle_dir = os.path.join(NACLPORTS_DIR, 'out', 'sdk_bundle')
