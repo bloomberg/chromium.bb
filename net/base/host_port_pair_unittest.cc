@@ -70,10 +70,9 @@ TEST(HostPortPairTest, HostForURL) {
   }
 
   // Test hostname with null character.
-  string bar_hostname("a\0.com", 6);
+  string bar_hostname("a\0.\0com", 7);
   HostPortPair bar(bar_hostname, 80);
-  string expected_error("Host has a null char: ");
-  expected_error.append(bar_hostname);
+  string expected_error("Host has a null char: a%00.%00com");
   EXPECT_DFATAL(bar.HostForURL(), expected_error);
 }
 
