@@ -4,6 +4,7 @@
 
 #include "base/auto_reset.h"
 #include "chrome/browser/undo/undo_manager.h"
+#include "chrome/browser/undo/undo_manager_observer.h"
 #include "chrome/browser/undo/undo_operation.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -94,6 +95,22 @@ void TestUndoService::RecordUndoCall() {
   else
     ++undo_operation_count_;
 }
+
+// TestObserver ----------------------------------------------------------------
+
+class TestObserver : public UndoManagerObserver {
+ public:
+  TestObserver() : state_change_count_(0) {}
+  // Returns the number of state change callbacks
+  int state_change_count() { return state_change_count_; }
+
+  virtual void OnUndoManagerStateChange() OVERRIDE { ++state_change_count_; }
+
+ private:
+  int state_change_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestObserver);
+};
 
 // Tests -----------------------------------------------------------------------
 
@@ -214,6 +231,36 @@ TEST(UndoServiceTest, GetAllUndoOperations) {
   std::vector<UndoOperation*> all_operations =
       undo_service.undo_manager_.GetAllUndoOperations();
   EXPECT_EQ(4U, all_operations.size());
+}
+
+TEST(UndoServiceTest, ObserverCallbacks) {
+  TestObserver observer;
+  TestUndoService undo_service;
+  undo_service.undo_manager_.AddObserver(&observer);
+  EXPECT_EQ(0, observer.state_change_count());
+
+  undo_service.TriggerOperation();
+  EXPECT_EQ(1, observer.state_change_count());
+
+  undo_service.undo_manager_.StartGroupingActions();
+  undo_service.TriggerOperation();
+  undo_service.TriggerOperation();
+  undo_service.undo_manager_.EndGroupingActions();
+  EXPECT_EQ(2, observer.state_change_count());
+
+  // There should be at least 1 observer callback for undo.
+  undo_service.undo_manager_.Undo();
+  int callback_count_after_undo = observer.state_change_count();
+  EXPECT_GT(callback_count_after_undo, 2);
+
+  // There should be at least 1 observer callback for redo.
+  undo_service.undo_manager_.Redo();
+  int callback_count_after_redo = observer.state_change_count();
+  EXPECT_GT(callback_count_after_redo, callback_count_after_undo);
+
+  undo_service.undo_manager_.RemoveObserver(&observer);
+  undo_service.undo_manager_.Undo();
+  EXPECT_EQ(callback_count_after_redo, observer.state_change_count());
 }
 
 } // namespace

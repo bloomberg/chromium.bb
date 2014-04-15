@@ -6,6 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/logging.h"
+#include "chrome/browser/undo/undo_manager_observer.h"
 #include "chrome/browser/undo/undo_operation.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -165,6 +166,16 @@ void UndoManager::RemoveAllOperations() {
   DCHECK(!group_actions_count_);
   undo_actions_.clear();
   redo_actions_.clear();
+
+  NotifyOnUndoManagerStateChange();
+}
+
+void UndoManager::AddObserver(UndoManagerObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void UndoManager::RemoveObserver(UndoManagerObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void UndoManager::Undo(bool* performing_indicator,
@@ -185,6 +196,13 @@ void UndoManager::Undo(bool* performing_indicator,
   StartGroupingActions();
   action->Undo();
   EndGroupingActions();
+
+  NotifyOnUndoManagerStateChange();
+}
+
+void UndoManager::NotifyOnUndoManagerStateChange() {
+  FOR_EACH_OBSERVER(
+      UndoManagerObserver, observers_, OnUndoManagerStateChange());
 }
 
 void UndoManager::AddUndoGroup(UndoGroup* new_undo_group) {
@@ -197,6 +215,8 @@ void UndoManager::AddUndoGroup(UndoGroup* new_undo_group) {
   // Limit the number of undo levels so the undo stack does not grow unbounded.
   if (GetActiveUndoGroup()->size() > kMaxUndoGroups)
     GetActiveUndoGroup()->erase(GetActiveUndoGroup()->begin());
+
+  NotifyOnUndoManagerStateChange();
 }
 
 ScopedVector<UndoGroup>* UndoManager::GetActiveUndoGroup() {

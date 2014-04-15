@@ -8,8 +8,10 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/observer_list.h"
 #include "base/strings/string16.h"
 
+class UndoManagerObserver;
 class UndoOperation;
 
 // UndoGroup ------------------------------------------------------------------
@@ -83,10 +85,17 @@ class UndoManager {
   // suspension of undo tracking states are left unchanged.
   void RemoveAllOperations();
 
+  // Observers are notified when the internal state of this class changes.
+  void AddObserver(UndoManagerObserver* observer);
+  void RemoveObserver(UndoManagerObserver* observer);
+
  private:
   void Undo(bool* performing_indicator,
             ScopedVector<UndoGroup>* active_undo_group);
   bool is_user_action() const { return !performing_undo_ && !performing_redo_; }
+
+  // Notifies the observers that the undo manager's state has changed.
+  void NotifyOnUndoManagerStateChange();
 
   // Handle the addition of |new_undo_group| to the active undo group container.
   void AddUndoGroup(UndoGroup* new_undo_group);
@@ -98,6 +107,9 @@ class UndoManager {
   // Containers of user actions ready for an undo or redo treated as a stack.
   ScopedVector<UndoGroup> undo_actions_;
   ScopedVector<UndoGroup> redo_actions_;
+
+  // The observers to notify when internal state changes.
+  ObserverList<UndoManagerObserver> observers_;
 
   // Supports grouping operations into a single undo action.
   int group_actions_count_;
