@@ -24,7 +24,7 @@ from chromite.lib import osutils
 _PRIVATE_PREFIX = '%(buildroot)s/src/private-overlays'
 _GLOBAL_OVERLAYS = [
   '%s/chromeos-overlay' % _PRIVATE_PREFIX,
-  '%s/chromeos-partner-overlay' % _PRIVATE_PREFIX,
+  '%s/chromeos-*-overlay' % _PRIVATE_PREFIX,
   '%(buildroot)s/src/third_party/chromiumos-overlay',
   '%(buildroot)s/src/third_party/portage-stable',
 ]
@@ -66,9 +66,7 @@ def _ListOverlays(board=None, buildroot=constants.SOURCE_ROOT):
       patterns += ['overlay-variant-%s' % board.replace('_', '-')]
 
   for d in _GLOBAL_OVERLAYS:
-    d %= dict(buildroot=buildroot)
-    if os.path.isdir(d):
-      overlays.append(d)
+      overlays += glob.glob(d % dict(buildroot=buildroot))
 
   for p in patterns:
     overlays += glob.glob('%s/src/overlays/%s' % (buildroot, p))
