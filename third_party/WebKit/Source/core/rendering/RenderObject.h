@@ -1076,6 +1076,8 @@ private:
 
     Color selectionColor(int colorProperty) const;
 
+    void removeShapeImageClient(ShapeValue*);
+
 #ifndef NDEBUG
     void checkBlockPositionedObjectsNeedLayout();
 #endif

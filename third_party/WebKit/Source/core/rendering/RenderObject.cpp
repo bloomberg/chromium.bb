@@ -2740,6 +2740,14 @@ void RenderObject::destroy()
     postDestroy();
 }
 
+void RenderObject::removeShapeImageClient(ShapeValue* shapeValue)
+{
+    if (!shapeValue)
+        return;
+    if (StyleImage* shapeImage = shapeValue->image())
+        shapeImage->removeClient(this);
+}
+
 void RenderObject::postDestroy()
 {
     // It seems ugly that this is not in willBeDestroyed().
@@ -2759,6 +2767,8 @@ void RenderObject::postDestroy()
 
         if (StyleImage* maskBoxImage = m_style->maskBoxImage().image())
             maskBoxImage->removeClient(this);
+
+        removeShapeImageClient(m_style->shapeOutside());
     }
 
     delete this;

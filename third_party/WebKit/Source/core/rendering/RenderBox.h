@@ -624,7 +624,6 @@ public:
 
 protected:
     virtual void willBeDestroyed() OVERRIDE;
-    void clearShapeOutside();
 
     virtual void styleWillChange(StyleDifference, const RenderStyle& newStyle) OVERRIDE;
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
