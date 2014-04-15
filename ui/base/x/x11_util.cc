@@ -119,14 +119,14 @@ class XCursorCache {
     std::pair<std::map<int, ::Cursor>::iterator, bool> it = cache_.insert(
         std::make_pair(cursor_shape, 0));
     if (it.second) {
-      XDisplay* display = base::MessagePumpForUI::GetDefaultXDisplay();
+      XDisplay* display = gfx::GetXDisplay();
       it.first->second = XCreateFontCursor(display, cursor_shape);
     }
     return it.first->second;
   }
 
   void Clear() {
-    XDisplay* display = base::MessagePumpForUI::GetDefaultXDisplay();
+    XDisplay* display = gfx::GetXDisplay();
     for (std::map<int, ::Cursor>::iterator it =
         cache_.begin(); it != cache_.end(); ++it) {
       XFreeCursor(display, it->second);

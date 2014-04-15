@@ -111,7 +111,7 @@
 #endif
 
 #if defined(USE_X11)
-#include <X11/Xlib.h>
+#include "ui/gfx/x/x11_connection.h"
 #endif
 
 #if defined(USE_OZONE)
@@ -363,7 +363,7 @@ void BrowserMainLoop::EarlyInitialization() {
 #if defined(USE_X11)
   if (parsed_command_line_.HasSwitch(switches::kSingleProcess) ||
       parsed_command_line_.HasSwitch(switches::kInProcessGPU)) {
-    if (!XInitThreads()) {
+    if (!gfx::InitializeThreadedX11()) {
       LOG(ERROR) << "Failed to put Xlib into threaded mode.";
     }
   }

@@ -21,6 +21,7 @@ extern "C" {
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "third_party/mesa/src/include/GL/osmesa.h"
+#include "ui/gfx/x/x11_connection.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_implementation.h"
@@ -313,9 +314,8 @@ bool GLSurfaceGLX::InitializeOneOff() {
 
   // SGIVideoSyncProviderShim (if instantiated) will issue X commands on
   // it's own thread.
-  XInitThreads();
-
-  g_display = base::MessagePumpForUI::GetDefaultXDisplay();
+  gfx::InitializeThreadedX11();
+  g_display = gfx::GetXDisplay();
 
   if (!g_display) {
     LOG(ERROR) << "XOpenDisplay failed.";

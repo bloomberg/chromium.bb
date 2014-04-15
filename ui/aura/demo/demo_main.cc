@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if defined(USE_X11)
-#include <X11/Xlib.h>
-#endif
-
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
@@ -28,7 +24,7 @@
 #include "ui/gl/gl_surface.h"
 
 #if defined(USE_X11)
-#include "base/message_loop/message_pump_x11.h"
+#include "ui/gfx/x/x11_connection.h"
 #endif
 
 namespace {
@@ -111,7 +107,7 @@ int DemoMain() {
 #if defined(USE_X11)
   // This demo uses InProcessContextFactory which uses X on a separate Gpu
   // thread.
-  XInitThreads();
+  gfx::InitializeThreadedX11();
 #endif
 
   gfx::GLSurface::InitializeOneOff();

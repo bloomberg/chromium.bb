@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if defined(USE_X11)
-#include <X11/Xlib.h>
-#endif
-
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -27,8 +23,13 @@
 #if !defined(OS_CHROMEOS)
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 #endif
+
 #if defined(OS_WIN)
 #include "ui/base/win/scoped_ole_initializer.h"
+#endif
+
+#if defined(USE_X11)
+#include "ui/gfx/x/x11_connection.h"
 #endif
 
 int main(int argc, char** argv) {
@@ -43,7 +44,7 @@ int main(int argc, char** argv) {
 #if defined(USE_X11)
   // This demo uses InProcessContextFactory which uses X on a separate Gpu
   // thread.
-  XInitThreads();
+  gfx::InitializeThreadedX11();
 #endif
 
   gfx::GLSurface::InitializeOneOff();
