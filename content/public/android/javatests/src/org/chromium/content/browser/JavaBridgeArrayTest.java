@@ -237,4 +237,29 @@ public class JavaBridgeArrayTest extends JavaBridgeTestBase {
         assertEquals(0, result[0]);
         assertEquals(0, result[1]);
     }
+
+    // Verify that ArrayBuffers are not converted into arrays when passed to Java.
+    // The LiveConnect spec doesn't mention ArrayBuffers, so it doesn't seem to
+    // be a compliance issue.
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
+    public void testPassArrayBuffer() throws Throwable {
+        executeJavaScript("buffer = new ArrayBuffer(16);");
+        executeJavaScript("testObject.setIntArray(buffer);");
+        assertNull(mTestObject.waitForIntArray());
+    }
+
+    // Verify that ArrayBufferViews are not converted into arrays when passed to Java.
+    // The LiveConnect spec doesn't mention ArrayBufferViews, so it doesn't seem to
+    // be a compliance issue.
+    // Here, a DataView is used as an ArrayBufferView instance (since the latter is
+    // an interface and can't be instantiated directly). See also JavaBridgeArrayCoercionTest
+    // for typed arrays (that also subclass ArrayBufferView) tests.
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
+    public void testPassDataView() throws Throwable {
+        executeJavaScript("buffer = new ArrayBuffer(16);");
+        executeJavaScript("testObject.setIntArray(new DataView(buffer));");
+        assertNull(mTestObject.waitForIntArray());
+    }
 }

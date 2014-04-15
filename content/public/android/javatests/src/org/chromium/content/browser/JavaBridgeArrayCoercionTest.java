@@ -627,4 +627,340 @@ public class JavaBridgeArrayCoercionTest extends JavaBridgeTestBase {
         executeJavaScript("testObject.setCustomTypeArray([undefined]);");
         assertNull(mTestObject.waitForCustomTypeArray());
     }
+
+    // Test passing a typed Int8Array to a method which takes a Java array.
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
+    public void testPassInt8Array() throws Throwable {
+        executeJavaScript("buffer = new ArrayBuffer(1);");
+        executeJavaScript("int8_array = new Int8Array(buffer);");
+        executeJavaScript("int8_array[0] = 42;");
+
+        executeJavaScript("testObject.setBooleanArray(int8_array);");
+        assertFalse(mTestObject.waitForBooleanArray()[0]);
+
+        executeJavaScript("testObject.setByteArray(int8_array);");
+        assertEquals(42, mTestObject.waitForByteArray()[0]);
+
+        executeJavaScript("testObject.setCharArray(int8_array);");
+        assertEquals('\u0000', mTestObject.waitForCharArray()[0]);
+
+        executeJavaScript("testObject.setShortArray(int8_array);");
+        assertEquals(42, mTestObject.waitForShortArray()[0]);
+
+        executeJavaScript("testObject.setIntArray(int8_array);");
+        assertEquals(42, mTestObject.waitForIntArray()[0]);
+
+        executeJavaScript("testObject.setLongArray(int8_array);");
+        assertEquals(42L, mTestObject.waitForLongArray()[0]);
+
+        executeJavaScript("testObject.setFloatArray(int8_array);");
+        assertEquals(42.0f, mTestObject.waitForFloatArray()[0]);
+
+        executeJavaScript("testObject.setDoubleArray(int8_array);");
+        assertEquals(42.0, mTestObject.waitForDoubleArray()[0]);
+
+        executeJavaScript("testObject.setObjectArray(int8_array);");
+        assertNull(mTestObject.waitForObjectArray());
+
+        executeJavaScript("testObject.setStringArray(int8_array);");
+        assertNull(mTestObject.waitForStringArray()[0]);
+
+        executeJavaScript("testObject.setCustomTypeArray(int8_array);");
+        assertNull(mTestObject.waitForCustomTypeArray());
+    }
+
+    // Test passing a typed Uint8Array to a method which takes a Java array.
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
+    public void testPassUint8Array() throws Throwable {
+        executeJavaScript("buffer = new ArrayBuffer(1);");
+        executeJavaScript("uint8_array = new Uint8Array(buffer);");
+        executeJavaScript("uint8_array[0] = 42;");
+
+        executeJavaScript("testObject.setBooleanArray(uint8_array);");
+        assertFalse(mTestObject.waitForBooleanArray()[0]);
+
+        executeJavaScript("testObject.setByteArray(uint8_array);");
+        assertEquals(42, mTestObject.waitForByteArray()[0]);
+
+        executeJavaScript("testObject.setCharArray(uint8_array);");
+        assertEquals('\u0000', mTestObject.waitForCharArray()[0]);
+
+        executeJavaScript("testObject.setShortArray(uint8_array);");
+        assertEquals(42, mTestObject.waitForShortArray()[0]);
+
+        executeJavaScript("testObject.setIntArray(uint8_array);");
+        assertEquals(42, mTestObject.waitForIntArray()[0]);
+
+        executeJavaScript("testObject.setLongArray(uint8_array);");
+        assertEquals(42L, mTestObject.waitForLongArray()[0]);
+
+        executeJavaScript("testObject.setFloatArray(uint8_array);");
+        assertEquals(42.0f, mTestObject.waitForFloatArray()[0]);
+
+        executeJavaScript("testObject.setDoubleArray(uint8_array);");
+        assertEquals(42.0, mTestObject.waitForDoubleArray()[0]);
+
+        executeJavaScript("testObject.setObjectArray(uint8_array);");
+        assertNull(mTestObject.waitForObjectArray());
+
+        executeJavaScript("testObject.setStringArray(uint8_array);");
+        assertNull(mTestObject.waitForStringArray()[0]);
+
+        executeJavaScript("testObject.setCustomTypeArray(uint8_array);");
+        assertNull(mTestObject.waitForCustomTypeArray());
+    }
+
+    // Test passing a typed Int16Array to a method which takes a Java array.
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
+    public void testPassInt16Array() throws Throwable {
+        executeJavaScript("buffer = new ArrayBuffer(2);");
+        executeJavaScript("int16_array = new Int16Array(buffer);");
+        executeJavaScript("int16_array[0] = 42;");
+
+        executeJavaScript("testObject.setBooleanArray(int16_array);");
+        assertFalse(mTestObject.waitForBooleanArray()[0]);
+
+        executeJavaScript("testObject.setByteArray(int16_array);");
+        assertEquals(42, mTestObject.waitForByteArray()[0]);
+
+        executeJavaScript("testObject.setCharArray(int16_array);");
+        assertEquals('\u0000', mTestObject.waitForCharArray()[0]);
+
+        executeJavaScript("testObject.setShortArray(int16_array);");
+        assertEquals(42, mTestObject.waitForShortArray()[0]);
+
+        executeJavaScript("testObject.setIntArray(int16_array);");
+        assertEquals(42, mTestObject.waitForIntArray()[0]);
+
+        executeJavaScript("testObject.setLongArray(int16_array);");
+        assertEquals(42L, mTestObject.waitForLongArray()[0]);
+
+        executeJavaScript("testObject.setFloatArray(int16_array);");
+        assertEquals(42.0f, mTestObject.waitForFloatArray()[0]);
+
+        executeJavaScript("testObject.setDoubleArray(int16_array);");
+        assertEquals(42.0, mTestObject.waitForDoubleArray()[0]);
+
+        executeJavaScript("testObject.setObjectArray(int16_array);");
+        assertNull(mTestObject.waitForObjectArray());
+
+        executeJavaScript("testObject.setStringArray(int16_array);");
+        assertNull(mTestObject.waitForStringArray()[0]);
+
+        executeJavaScript("testObject.setCustomTypeArray(int16_array);");
+        assertNull(mTestObject.waitForCustomTypeArray());
+    }
+
+    // Test passing a typed Uint16Array to a method which takes a Java array.
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
+    public void testPassUint16Array() throws Throwable {
+        executeJavaScript("buffer = new ArrayBuffer(2);");
+        executeJavaScript("uint16_array = new Uint16Array(buffer);");
+        executeJavaScript("uint16_array[0] = 42;");
+
+        executeJavaScript("testObject.setBooleanArray(uint16_array);");
+        assertFalse(mTestObject.waitForBooleanArray()[0]);
+
+        executeJavaScript("testObject.setByteArray(uint16_array);");
+        assertEquals(42, mTestObject.waitForByteArray()[0]);
+
+        executeJavaScript("testObject.setCharArray(uint16_array);");
+        assertEquals('\u0000', mTestObject.waitForCharArray()[0]);
+
+        executeJavaScript("testObject.setShortArray(uint16_array);");
+        assertEquals(42, mTestObject.waitForShortArray()[0]);
+
+        executeJavaScript("testObject.setIntArray(uint16_array);");
+        assertEquals(42, mTestObject.waitForIntArray()[0]);
+
+        executeJavaScript("testObject.setLongArray(uint16_array);");
+        assertEquals(42L, mTestObject.waitForLongArray()[0]);
+
+        executeJavaScript("testObject.setFloatArray(uint16_array);");
+        assertEquals(42.0f, mTestObject.waitForFloatArray()[0]);
+
+        executeJavaScript("testObject.setDoubleArray(uint16_array);");
+        assertEquals(42.0, mTestObject.waitForDoubleArray()[0]);
+
+        executeJavaScript("testObject.setObjectArray(uint16_array);");
+        assertNull(mTestObject.waitForObjectArray());
+
+        executeJavaScript("testObject.setStringArray(uint16_array);");
+        assertNull(mTestObject.waitForStringArray()[0]);
+
+        executeJavaScript("testObject.setCustomTypeArray(uint16_array);");
+        assertNull(mTestObject.waitForCustomTypeArray());
+    }
+
+    // Test passing a typed Int32Array to a method which takes a Java array.
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
+    public void testPassInt32Array() throws Throwable {
+        executeJavaScript("buffer = new ArrayBuffer(4);");
+        executeJavaScript("int32_array = new Int32Array(buffer);");
+        executeJavaScript("int32_array[0] = 42;");
+
+        executeJavaScript("testObject.setBooleanArray(int32_array);");
+        assertFalse(mTestObject.waitForBooleanArray()[0]);
+
+        executeJavaScript("testObject.setByteArray(int32_array);");
+        assertEquals(42, mTestObject.waitForByteArray()[0]);
+
+        executeJavaScript("testObject.setCharArray(int32_array);");
+        assertEquals('\u0000', mTestObject.waitForCharArray()[0]);
+
+        executeJavaScript("testObject.setShortArray(int32_array);");
+        assertEquals(42, mTestObject.waitForShortArray()[0]);
+
+        executeJavaScript("testObject.setIntArray(int32_array);");
+        assertEquals(42, mTestObject.waitForIntArray()[0]);
+
+        executeJavaScript("testObject.setLongArray(int32_array);");
+        assertEquals(42L, mTestObject.waitForLongArray()[0]);
+
+        executeJavaScript("testObject.setFloatArray(int32_array);");
+        assertEquals(42.0f, mTestObject.waitForFloatArray()[0]);
+
+        executeJavaScript("testObject.setDoubleArray(int32_array);");
+        assertEquals(42.0, mTestObject.waitForDoubleArray()[0]);
+
+        executeJavaScript("testObject.setObjectArray(int32_array);");
+        assertNull(mTestObject.waitForObjectArray());
+
+        executeJavaScript("testObject.setStringArray(int32_array);");
+        assertNull(mTestObject.waitForStringArray()[0]);
+
+        executeJavaScript("testObject.setCustomTypeArray(int32_array);");
+        assertNull(mTestObject.waitForCustomTypeArray());
+    }
+
+    // Test passing a typed Uint32Array to a method which takes a Java array.
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
+    public void testPassUint32Array() throws Throwable {
+        executeJavaScript("buffer = new ArrayBuffer(4);");
+        executeJavaScript("uint32_array = new Uint32Array(buffer);");
+        executeJavaScript("uint32_array[0] = 42;");
+
+        executeJavaScript("testObject.setBooleanArray(uint32_array);");
+        assertFalse(mTestObject.waitForBooleanArray()[0]);
+
+        executeJavaScript("testObject.setByteArray(uint32_array);");
+        assertEquals(42, mTestObject.waitForByteArray()[0]);
+
+        executeJavaScript("testObject.setCharArray(uint32_array);");
+        assertEquals('\u0000', mTestObject.waitForCharArray()[0]);
+
+        executeJavaScript("testObject.setShortArray(uint32_array);");
+        assertEquals(42, mTestObject.waitForShortArray()[0]);
+
+        executeJavaScript("testObject.setIntArray(uint32_array);");
+        assertEquals(42, mTestObject.waitForIntArray()[0]);
+
+        executeJavaScript("testObject.setLongArray(uint32_array);");
+        assertEquals(42L, mTestObject.waitForLongArray()[0]);
+
+        executeJavaScript("testObject.setFloatArray(uint32_array);");
+        assertEquals(42.0f, mTestObject.waitForFloatArray()[0]);
+
+        executeJavaScript("testObject.setDoubleArray(uint32_array);");
+        assertEquals(42.0, mTestObject.waitForDoubleArray()[0]);
+
+        executeJavaScript("testObject.setObjectArray(uint32_array);");
+        assertNull(mTestObject.waitForObjectArray());
+
+        executeJavaScript("testObject.setStringArray(uint32_array);");
+        assertNull(mTestObject.waitForStringArray()[0]);
+
+        executeJavaScript("testObject.setCustomTypeArray(uint32_array);");
+        assertNull(mTestObject.waitForCustomTypeArray());
+    }
+
+    // Test passing a typed Float32Array to a method which takes a Java array.
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
+    public void testPassFloat32Array() throws Throwable {
+        executeJavaScript("buffer = new ArrayBuffer(4);");
+        executeJavaScript("float32_array = new Float32Array(buffer);");
+        executeJavaScript("float32_array[0] = 42.0;");
+
+        executeJavaScript("testObject.setBooleanArray(float32_array);");
+        assertFalse(mTestObject.waitForBooleanArray()[0]);
+
+        executeJavaScript("testObject.setByteArray(float32_array);");
+        assertEquals(42, mTestObject.waitForByteArray()[0]);
+
+        executeJavaScript("testObject.setCharArray(float32_array);");
+        assertEquals('\u0000', mTestObject.waitForCharArray()[0]);
+
+        executeJavaScript("testObject.setShortArray(float32_array);");
+        assertEquals(42, mTestObject.waitForShortArray()[0]);
+
+        executeJavaScript("testObject.setIntArray(float32_array);");
+        assertEquals(42, mTestObject.waitForIntArray()[0]);
+
+        executeJavaScript("testObject.setLongArray(float32_array);");
+        assertEquals(42L, mTestObject.waitForLongArray()[0]);
+
+        executeJavaScript("testObject.setFloatArray(float32_array);");
+        assertEquals(42.0f, mTestObject.waitForFloatArray()[0]);
+
+        executeJavaScript("testObject.setDoubleArray(float32_array);");
+        assertEquals(42.0, mTestObject.waitForDoubleArray()[0]);
+
+        executeJavaScript("testObject.setObjectArray(float32_array);");
+        assertNull(mTestObject.waitForObjectArray());
+
+        executeJavaScript("testObject.setStringArray(float32_array);");
+        assertNull(mTestObject.waitForStringArray()[0]);
+
+        executeJavaScript("testObject.setCustomTypeArray(float32_array);");
+        assertNull(mTestObject.waitForCustomTypeArray());
+    }
+
+    // Test passing a typed Float64Array to a method which takes a Java array.
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
+    public void testPassFloat64Array() throws Throwable {
+        executeJavaScript("buffer = new ArrayBuffer(8);");
+        executeJavaScript("float64_array = new Float64Array(buffer);");
+        executeJavaScript("float64_array[0] = 42.0;");
+
+        executeJavaScript("testObject.setBooleanArray(float64_array);");
+        assertFalse(mTestObject.waitForBooleanArray()[0]);
+
+        executeJavaScript("testObject.setByteArray(float64_array);");
+        assertEquals(42, mTestObject.waitForByteArray()[0]);
+
+        executeJavaScript("testObject.setCharArray(float64_array);");
+        assertEquals('\u0000', mTestObject.waitForCharArray()[0]);
+
+        executeJavaScript("testObject.setShortArray(float64_array);");
+        assertEquals(42, mTestObject.waitForShortArray()[0]);
+
+        executeJavaScript("testObject.setIntArray(float64_array);");
+        assertEquals(42, mTestObject.waitForIntArray()[0]);
+
+        executeJavaScript("testObject.setLongArray(float64_array);");
+        assertEquals(42L, mTestObject.waitForLongArray()[0]);
+
+        executeJavaScript("testObject.setFloatArray(float64_array);");
+        assertEquals(42.0f, mTestObject.waitForFloatArray()[0]);
+
+        executeJavaScript("testObject.setDoubleArray(float64_array);");
+        assertEquals(42.0, mTestObject.waitForDoubleArray()[0]);
+
+        executeJavaScript("testObject.setObjectArray(float64_array);");
+        assertNull(mTestObject.waitForObjectArray());
+
+        executeJavaScript("testObject.setStringArray(float64_array);");
+        assertNull(mTestObject.waitForStringArray()[0]);
+
+        executeJavaScript("testObject.setCustomTypeArray(float64_array);");
+        assertNull(mTestObject.waitForCustomTypeArray());
+    }
 }

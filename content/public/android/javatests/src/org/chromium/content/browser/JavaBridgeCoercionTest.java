@@ -662,4 +662,34 @@ public class JavaBridgeCoercionTest extends JavaBridgeTestBase {
         executeJavaScript("testObject.setBooleanValue(undefined);");
         assertFalse(mTestObject.waitForBooleanValue());
     }
+
+    // Verify that ArrayBuffers are not converted into objects or strings when passed
+    // to Java. Basically, ArrayBuffers are treated as generic JavaScript objects.
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
+    public void testPassArrayBuffer() throws Throwable {
+        executeJavaScript("buffer = new ArrayBuffer(16);");
+
+        executeJavaScript("testObject.setObjectValue(buffer);");
+        assertNull(mTestObject.waitForObjectValue());
+
+        executeJavaScript("testObject.setStringValue(buffer);");
+        assertEquals("undefined", mTestObject.waitForStringValue());
+    }
+
+    // Verify that ArrayBufferViewss are not converted into objects or strings when passed
+    // to Java. Basically, ArrayBufferViews are treated as generic JavaScript objects.
+    // Here, a DataView is used as an ArrayBufferView instance (since the latter is
+    // an interface and can't be instantiated directly).
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
+    public void testPassDataView() throws Throwable {
+        executeJavaScript("buffer = new ArrayBuffer(16);");
+
+        executeJavaScript("testObject.setObjectValue(new DataView(buffer));");
+        assertNull(mTestObject.waitForObjectValue());
+
+        executeJavaScript("testObject.setStringValue(new DataView(buffer));");
+        assertEquals("undefined", mTestObject.waitForStringValue());
+    }
 }
