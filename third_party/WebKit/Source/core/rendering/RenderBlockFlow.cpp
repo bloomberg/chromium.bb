@@ -199,10 +199,11 @@ bool RenderBlockFlow::updateLogicalWidthAndColumnWidth()
 void RenderBlockFlow::checkForPaginationLogicalHeightChange(LayoutUnit& pageLogicalHeight, bool& pageLogicalHeightChanged, bool& hasSpecifiedPageLogicalHeight)
 {
     if (RenderMultiColumnFlowThread* flowThread = multiColumnFlowThread()) {
-        updateLogicalHeight();
-        pageLogicalHeightChanged = contentLogicalHeight() != flowThread->columnHeightAvailable();
-        flowThread->setColumnHeightAvailable(std::max<LayoutUnit>(contentLogicalHeight(), 0));
-        setLogicalHeight(0);
+        LogicalExtentComputedValues computedValues;
+        computeLogicalHeight(LayoutUnit(), logicalTop(), computedValues);
+        LayoutUnit columnHeight = computedValues.m_extent - borderAndPaddingLogicalHeight() - scrollbarLogicalHeight();
+        pageLogicalHeightChanged = columnHeight != flowThread->columnHeightAvailable();
+        flowThread->setColumnHeightAvailable(std::max<LayoutUnit>(columnHeight, 0));
     } else if (hasColumns()) {
         ColumnInfo* colInfo = columnInfo();
 
