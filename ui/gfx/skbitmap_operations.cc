@@ -776,8 +776,8 @@ SkBitmap SkBitmapOperations::CreateDropShadow(
                                                                 shadow.color());
 
     skia::RefPtr<SkBlurImageFilter> filter =
-        skia::AdoptRef(new SkBlurImageFilter(SkDoubleToScalar(shadow.blur()),
-                                             SkDoubleToScalar(shadow.blur())));
+        skia::AdoptRef(SkBlurImageFilter::Create(
+            SkDoubleToScalar(shadow.blur()), SkDoubleToScalar(shadow.blur())));
     paint.setImageFilter(filter.get());
 
     canvas.saveLayer(0, &paint);

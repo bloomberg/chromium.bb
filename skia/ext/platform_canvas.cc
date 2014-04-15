@@ -55,7 +55,7 @@ void MakeOpaque(SkCanvas* canvas, int x, int y, int width, int height) {
   paint.setColor(0);
   // install our custom mode
   skia::RefPtr<SkProcXfermode> xfermode =
-      skia::AdoptRef(new SkProcXfermode(MakeOpaqueXfermodeProc));
+      skia::AdoptRef(SkProcXfermode::Create(MakeOpaqueXfermodeProc));
   paint.setXfermode(xfermode.get());
   canvas->drawRect(rect, paint);
 }

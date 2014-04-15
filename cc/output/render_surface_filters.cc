@@ -151,7 +151,7 @@ skia::RefPtr<SkImageFilter> CreateMatrixImageFilter(
     const SkScalar matrix[20],
     const skia::RefPtr<SkImageFilter>& input) {
   skia::RefPtr<SkColorFilter> color_filter =
-      skia::AdoptRef(new SkColorMatrixFilter(matrix));
+      skia::AdoptRef(SkColorMatrixFilter::Create(matrix));
   return skia::AdoptRef(
       SkColorFilterImageFilter::Create(color_filter.get(), input.get()));
 }
@@ -199,11 +199,11 @@ skia::RefPtr<SkImageFilter> RenderSurfaceFilters::BuildImageFilter(
         image_filter = CreateMatrixImageFilter(matrix, image_filter);
         break;
       case FilterOperation::BLUR:
-        image_filter = skia::AdoptRef(new SkBlurImageFilter(
+        image_filter = skia::AdoptRef(SkBlurImageFilter::Create(
             op.amount(), op.amount(), image_filter.get()));
         break;
       case FilterOperation::DROP_SHADOW:
-        image_filter = skia::AdoptRef(new SkDropShadowImageFilter(
+        image_filter = skia::AdoptRef(SkDropShadowImageFilter::Create(
             SkIntToScalar(op.drop_shadow_offset().x()),
             SkIntToScalar(op.drop_shadow_offset().y()),
             SkIntToScalar(op.amount()),
@@ -214,8 +214,8 @@ skia::RefPtr<SkImageFilter> RenderSurfaceFilters::BuildImageFilter(
         image_filter = CreateMatrixImageFilter(op.matrix(), image_filter);
         break;
       case FilterOperation::ZOOM: {
-        skia::RefPtr<SkImageFilter> zoom_filter = skia::AdoptRef(
-            new SkMagnifierImageFilter(
+        skia::RefPtr<SkImageFilter> zoom_filter =
+            skia::AdoptRef(SkMagnifierImageFilter::Create(
                 SkRect::MakeXYWH(
                     (size.width() - (size.width() / op.amount())) / 2.f,
                     (size.height() - (size.height() / op.amount())) / 2.f,
@@ -226,7 +226,7 @@ skia::RefPtr<SkImageFilter> RenderSurfaceFilters::BuildImageFilter(
           // TODO(ajuma): When there's a 1-input version of
           // SkMagnifierImageFilter, use that to handle the input filter
           // instead of using an SkComposeImageFilter.
-          image_filter = skia::AdoptRef(new SkComposeImageFilter(
+          image_filter = skia::AdoptRef(SkComposeImageFilter::Create(
               zoom_filter.get(), image_filter.get()));
         } else {
           image_filter = zoom_filter;
@@ -253,7 +253,7 @@ skia::RefPtr<SkImageFilter> RenderSurfaceFilters::BuildImageFilter(
             !op.image_filter()->getInput(0)) {
           image_filter = CreateMatrixImageFilter(matrix, image_filter);
         } else if (image_filter) {
-          image_filter = skia::AdoptRef(new SkComposeImageFilter(
+          image_filter = skia::AdoptRef(SkComposeImageFilter::Create(
               op.image_filter().get(), image_filter.get()));
         } else {
           image_filter = op.image_filter();

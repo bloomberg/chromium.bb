@@ -43,7 +43,7 @@ static inline SkPaint CreatePaint() {
   swizzle_matrix.fMat[3 + 5 * 3] = 1;
 
   skia::RefPtr<SkColorMatrixFilter> filter =
-      skia::AdoptRef(new SkColorMatrixFilter(swizzle_matrix));
+      skia::AdoptRef(SkColorMatrixFilter::Create(swizzle_matrix));
   paint.setColorFilter(filter.get());
 #endif
   return paint;
