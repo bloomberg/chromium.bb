@@ -444,7 +444,7 @@ class Rietveld(object):
 class OAuthRpcServer(object):
   def __init__(self,
                host,
-               client_id,
+               client_email,
                client_private_key,
                private_key_password='notasecret',
                user_agent=None,
@@ -452,7 +452,7 @@ class OAuthRpcServer(object):
                extra_headers=None):
     """Wrapper around httplib2.Http() that handles authentication.
 
-    client_id: client id for service account
+    client_email: email associated with the service account
     client_private_key: encrypted private key, as a string
     private_key_password: password used to decrypt the private key
     """
@@ -475,12 +475,12 @@ class OAuthRpcServer(object):
     self.extra_headers = extra_headers or {}
 
     if not oa2client.HAS_OPENSSL:
-      logging.error("Support for OpenSSL hasn't been found, "
+      logging.error("No support for OpenSSL has been found, "
                     "OAuth2 support requires it.")
       logging.error("Installing pyopenssl will probably solve this issue.")
       raise RuntimeError('No OpenSSL support')
     creds = oa2client.SignedJwtAssertionCredentials(
-      client_id,
+      client_email,
       client_private_key,
       'https://www.googleapis.com/auth/userinfo.email',
       private_key_password=private_key_password,
@@ -513,7 +513,6 @@ class OAuthRpcServer(object):
     if payload is not None:
       method = 'POST'
       headers['Content-Type'] = content_type
-      raise NotImplementedError('POST requests are not yet supported.')
 
     prev_timeout = self._http.timeout
     try:
@@ -528,7 +527,9 @@ class OAuthRpcServer(object):
                                method=method,
                                body=payload,
                                headers=headers)
-      if not ret[0]['content-location'].startswith(self.host):
+
+      if (method == 'GET'
+          and not ret[0]['content-location'].startswith(self.host)):
         upload.logging.warning('Redirection to host %s detected: '
                                'login may have failed/expired.'
                                % urlparse.urlparse(
@@ -549,18 +550,26 @@ class JwtOAuth2Rietveld(Rietveld):
   # pylint: disable=W0231
   def __init__(self,
                url,
-               client_id,
+               client_email,
                client_private_key_file,
                private_key_password=None,
                extra_headers=None):
+
+    # These attributes are accessed by commit queue. Keep them.
+    self.email = client_email
+    self.private_key_file = client_private_key_file
+
     if private_key_password is None:  # '' means 'empty password'
       private_key_password = 'notasecret'
 
     self.url = url.rstrip('/')
+    bot_url = self.url + '/bots'
+
     with open(client_private_key_file, 'rb') as f:
       client_private_key = f.read()
-    self.rpc_server = OAuthRpcServer(url,
-                                     client_id,
+    logging.info('Using OAuth login: %s' % client_email)
+    self.rpc_server = OAuthRpcServer(bot_url,
+                                     client_email,
                                      client_private_key,
                                      private_key_password=private_key_password,
                                      extra_headers=extra_headers or {})

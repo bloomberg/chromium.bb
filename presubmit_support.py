@@ -833,7 +833,7 @@ class Change(object):
 
   def SetDescriptionText(self, description):
     """Sets the full description text (including tags) to |description|.
-    
+
     Also updates the list of tags."""
     self._full_description = description
 
@@ -1018,7 +1018,7 @@ class GetTrySlavesExecuter(object):
   @staticmethod
   def ExecPresubmitScript(script_text, presubmit_path, project, change):
     """Executes GetPreferredTrySlaves() from a single presubmit script.
-    
+
     This will soon be deprecated and replaced by GetPreferredTryMasters().
 
     Args:
@@ -1541,25 +1541,52 @@ def Main(argv):
   parser.add_option("--rietveld_password", help=optparse.SUPPRESS_HELP)
   parser.add_option("--rietveld_fetch", action='store_true', default=False,
                     help=optparse.SUPPRESS_HELP)
+  # These are for OAuth2 authentication for bots. See also apply_issue.py
+  parser.add_option("--rietveld_email_file", help=optparse.SUPPRESS_HELP)
+  parser.add_option("--rietveld_private_key_file", help=optparse.SUPPRESS_HELP)
+
   parser.add_option("--trybot-json",
                     help="Output trybot information to the file specified.")
   options, args = parser.parse_args(argv)
+
   if options.verbose >= 2:
     logging.basicConfig(level=logging.DEBUG)
   elif options.verbose:
     logging.basicConfig(level=logging.INFO)
   else:
     logging.basicConfig(level=logging.ERROR)
+
+  if options.rietveld_email and options.rietveld_email_file:
+    parser.error("Only one of --rietveld_email or --rietveld_email_file "
+                 "can be passed to this program.")
+  if options.rietveld_private_key_file and options.rietveld_password:
+    parser.error("Only one of --rietveld_private_key_file or "
+                 "--rietveld_password can be passed to this program.")
+  if options.rietveld_email_file:
+    with open(options.rietveld_email_file, "rb") as f:
+      options.rietveld_email = f.read().strip()
+
   change_class, files = load_files(options, args)
   if not change_class:
     parser.error('For unversioned directory, <files> is not optional.')
   logging.info('Found %d file(s).' % len(files))
+
   rietveld_obj = None
   if options.rietveld_url:
-    rietveld_obj = rietveld.CachingRietveld(
+    # The empty password is permitted: '' is not None.
+    if options.rietveld_password is not None:
+      rietveld_obj = rietveld.CachingRietveld(
         options.rietveld_url,
         options.rietveld_email,
         options.rietveld_password)
+    elif options.rietveld_private_key_file:
+      rietveld_obj = rietveld.JwtOAuth2Rietveld(
+        options.rietveld_url,
+        options.rietveld_email,
+        options.rietveld_private_key_file)
+    else:
+      parser.error("No password or secret key has been provided for "
+                   "Rietveld. Unable to connect.")
     if options.rietveld_fetch:
       assert options.issue
       props = rietveld_obj.get_issue_properties(options.issue, False)
