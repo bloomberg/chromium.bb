@@ -32,6 +32,7 @@
 #define WebScreenInfo_h
 
 #include "WebRect.h"
+#include "WebScreenOrientationType.h"
 
 namespace blink {
 
@@ -67,11 +68,21 @@ struct WebScreenInfo {
     //   some of the rectangle's coordinates may be negative values".
     WebRect availableRect;
 
+    // This is the orientation 'type' or 'name', as in landscape-primary or
+    // portrait-secondary for examples.
+    // See WebScreenOrientationType.h for the full list.
+    WebScreenOrientationType orientationType;
+
+    // This is the orientation angle of the displayed content in degrees.
+    // It is the opposite of the physical rotation.
+    uint16_t orientationAngle;
+
     WebScreenInfo()
         : deviceScaleFactor(1)
         , depth(0)
         , depthPerComponent(0)
-        , isMonochrome(false) { }
+        , isMonochrome(false)
+        , orientationAngle(0) { }
 };
 
 } // namespace blink
