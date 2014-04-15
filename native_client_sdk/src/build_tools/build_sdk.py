@@ -229,9 +229,9 @@ def BuildStepUntarToolchains(pepperdir, toolchains):
   if 'arm' in toolchains:
     # Copy the existing arm toolchain from native_client tree
     tcname = platform + '_arm_newlib'
-    arm_toolchain = os.path.join(NACL_DIR, 'toolchain', tcname)
-    arm_toolchain_sdk = os.path.join(pepperdir, 'toolchain',
-                                     os.path.basename(arm_toolchain))
+    arm_toolchain = os.path.join(NACL_DIR, 'toolchain', '%s_x86' % platform,
+                                 'nacl_arm_newlib' )
+    arm_toolchain_sdk = os.path.join(pepperdir, 'toolchain', tcname)
     buildbot_common.CopyDir(arm_toolchain, arm_toolchain_sdk)
 
   if 'glibc' in toolchains:
