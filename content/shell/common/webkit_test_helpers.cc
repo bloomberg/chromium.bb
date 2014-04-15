@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
-#include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/common/content_switches.h"
 #include "content/shell/common/shell_switches.h"
@@ -117,18 +116,6 @@ base::FilePath GetWebKitRootDirFilePath() {
   base::FilePath base_path;
   PathService::Get(base::DIR_SOURCE_ROOT, &base_path);
   return base_path.Append(FILE_PATH_LITERAL("third_party/WebKit"));
-}
-
-std::vector<std::string> GetSideloadFontFiles() {
-  std::vector<std::string> files;
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kRegisterFontFiles)) {
-    base::SplitString(
-        command_line.GetSwitchValueASCII(switches::kRegisterFontFiles),
-        ';',
-        &files);
-  }
-  return files;
 }
 
 }  // namespace content

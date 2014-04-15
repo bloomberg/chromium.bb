@@ -54,8 +54,6 @@
     'public/renderer/render_frame_observer.cc',
     'public/renderer/render_frame_observer.h',
     'public/renderer/render_frame_observer_tracker.h',
-    'public/renderer/render_font_warmup_win.cc',
-    'public/renderer/render_font_warmup_win.h',
     'public/renderer/render_process_observer.cc',
     'public/renderer/render_process_observer.h',
     'public/renderer/render_thread.cc',

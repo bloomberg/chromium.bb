@@ -9,7 +9,6 @@
 #include "base/file_util.h"
 #include "base/files/file.h"
 #include "base/path_service.h"
-#include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/storage_partition.h"
@@ -46,11 +45,6 @@
 #include "components/breakpad/app/breakpad_linux.h"
 #include "components/breakpad/browser/crash_handler_host_linux.h"
 #include "content/public/common/content_descriptors.h"
-#endif
-
-#if defined(OS_WIN)
-#include "content/common/sandbox_win.h"
-#include "sandbox/win/src/sandbox.h"
 #endif
 
 namespace content {
@@ -231,13 +225,6 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableLeakDetection))
     command_line->AppendSwitch(switches::kEnableLeakDetection);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kRegisterFontFiles)) {
-    command_line->AppendSwitchASCII(
-        switches::kRegisterFontFiles,
-        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kRegisterFontFiles));
-  }
 }
 
 void ShellContentBrowserClient::OverrideWebkitPrefs(
@@ -333,22 +320,6 @@ void ShellContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
 #endif  // defined(OS_ANDROID)
 }
 #endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
-
-#if defined(OS_WIN)
-void ShellContentBrowserClient::PreSpawnRenderer(sandbox::TargetPolicy* policy,
-                                                 bool* success) {
-  // Add sideloaded font files for testing. See also DIR_WINDOWS_FONTS
-  // addition in |StartSandboxedProcess|.
-  std::vector<std::string> font_files = GetSideloadFontFiles();
-  for (std::vector<std::string>::const_iterator i(font_files.begin());
-      i != font_files.end();
-      ++i) {
-    policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
-        sandbox::TargetPolicy::FILES_ALLOW_READONLY,
-        base::UTF8ToWide(*i).c_str());
-  }
-}
-#endif  // OS_WIN
 
 ShellBrowserContext* ShellContentBrowserClient::browser_context() {
   return shell_browser_main_parts_->browser_context();

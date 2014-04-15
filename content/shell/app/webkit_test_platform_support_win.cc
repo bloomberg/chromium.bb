@@ -9,13 +9,11 @@
 #include <list>
 #include <string>
 
-#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/shell/common/shell_switches.h"
 
 #define SIZEOF_STRUCT_WITH_SPECIFIED_LAST_MEMBER(struct_name, member) \
     offsetof(struct_name, member) + \
@@ -36,12 +34,6 @@ bool SetupFonts() {
   base::FilePath font_path =
       base_path.Append(FILE_PATH_LITERAL("/AHEM____.TTF"));
 
-  // We do two registrations:
-  // 1. For GDI font rendering via ::AddFontMemResourceEx.
-  // 2. For DirectWrite rendering by appending a command line flag that tells
-  //    the sandbox policy/warmup to grant access to the given path.
-
-  // GDI registration.
   std::string font_buffer;
   if (!base::ReadFileToString(font_path, &font_buffer)) {
     std::cerr << "Failed to load font " << base::WideToUTF8(font_path.value())
@@ -59,12 +51,6 @@ bool SetupFonts() {
     std::cerr << "Failed to register Ahem font\n";
     return false;
   }
-
-  // DirectWrite sandbox registration.
-  CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
-  command_line.AppendSwitchASCII(switches::kRegisterFontFiles,
-                                 base::WideToUTF8(font_path.value()));
-
   return true;
 }
 

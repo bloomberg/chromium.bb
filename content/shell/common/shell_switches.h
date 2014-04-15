@@ -20,7 +20,6 @@ extern const char kEnableFontSmoothing[];
 extern const char kEnableLeakDetection[];
 extern const char kEncodeBinary[];
 extern const char kExposeInternalsForTesting[];
-extern const char kRegisterFontFiles[];
 extern const char kStableReleaseMode[];
 
 }  // namespace switches
