@@ -2818,8 +2818,24 @@ void FrameView::updateLayoutAndStyleIfNeededRecursive()
     for (Vector<RefPtr<FrameView> >::iterator it = frameViews.begin(); it != end; ++it)
         (*it)->updateLayoutAndStyleIfNeededRecursive();
 
-    // This assert ensures that parent frames are clean, when child frames finished updating layout and style.
+    // When an <iframe> gets composited, it triggers an extra style recalc in its containing FrameView.
+    // To avoid pushing an invalid tree for display, we have to check for this case and do another
+    // style recalc. The extra style recalc needs to happen after our child <iframes> were updated.
+    // FIXME: We shouldn't be triggering an extra style recalc in the first place.
+    if (m_frame->document()->hasElementsRequiringLayerUpdate()) {
+        m_frame->document()->updateRenderTreeIfNeeded();
+
+        if (needsLayout())
+            layout();
+    }
+
+    // These asserts ensure that parent frames are clean, when child frames finished updating layout and style.
     ASSERT(!needsLayout());
+    ASSERT(!m_frame->document()->hasElementsRequiringLayerUpdate());
+#ifndef NDEBUG
+    m_frame->document()->renderer()->assertRendererLaidOut();
+#endif
+
 }
 
 void FrameView::enableAutoSizeMode(bool enable, const IntSize& minSize, const IntSize& maxSize)
