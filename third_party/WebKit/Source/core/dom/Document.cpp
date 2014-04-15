@@ -1824,7 +1824,7 @@ void Document::updateStyle(StyleRecalcChange change)
 
     if (change == Force) {
         m_hasNodesWithPlaceholderStyle = false;
-        RefPtr<RenderStyle> documentStyle = StyleResolver::styleForDocument(*this, m_styleEngine->fontSelector());
+        RefPtr<RenderStyle> documentStyle = StyleResolver::styleForDocument(*this);
         StyleRecalcChange localChange = RenderStyle::stylePropagationDiff(documentStyle.get(), renderView()->style());
         if (localChange != NoChange)
             renderView()->setStyle(documentStyle.release());

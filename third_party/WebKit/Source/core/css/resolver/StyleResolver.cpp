@@ -539,7 +539,7 @@ void StyleResolver::matchAllRules(StyleResolverState& state, ElementRuleCollecto
     }
 }
 
-PassRefPtr<RenderStyle> StyleResolver::styleForDocument(Document& document, CSSFontSelector* fontSelector)
+PassRefPtr<RenderStyle> StyleResolver::styleForDocument(Document& document)
 {
     const LocalFrame* frame = document.frame();
 
@@ -549,11 +549,10 @@ PassRefPtr<RenderStyle> StyleResolver::styleForDocument(Document& document, CSSF
     documentStyle->setZoom(frame && !document.printing() ? frame->pageZoomFactor() : 1);
     documentStyle->setLocale(document.contentLanguage());
     documentStyle->setZIndex(0);
-
-    // This overrides any -webkit-user-modify inherited from the parent iframe.
     documentStyle->setUserModify(document.inDesignMode() ? READ_WRITE : READ_ONLY);
 
     document.setupFontBuilder(documentStyle.get());
+
     return documentStyle.release();
 }
 

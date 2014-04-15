@@ -130,7 +130,7 @@ public:
     PassRefPtr<RenderStyle> defaultStyleForElement();
     PassRefPtr<RenderStyle> styleForText(Text*);
 
-    static PassRefPtr<RenderStyle> styleForDocument(Document&, CSSFontSelector* = 0);
+    static PassRefPtr<RenderStyle> styleForDocument(Document&);
 
     // FIXME: This only has 5 callers and should be removed. Callers should be explicit about
     // their dependency on Document* instead of grabbing one through StyleResolver.
