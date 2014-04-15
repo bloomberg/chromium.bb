@@ -65,7 +65,6 @@ class WebInputElement;
 class WebKeyboardEvent;
 class WebMIDIClient;
 class WebNode;
-class WebNotificationPresenter;
 class WebPushClient;
 class WebRange;
 class WebSpeechInputController;
@@ -126,9 +125,6 @@ public:
     // children, to print.  Otherwise, the main frame and its children
     // should be printed.
     virtual void printPage(WebLocalFrame*) { }
-
-    // Called to retrieve the provider of desktop notifications.
-    virtual WebNotificationPresenter* notificationPresenter() { return 0; }
 
     // This method enumerates all the files in the path. It returns immediately
     // and asynchronously invokes the WebFileChooserCompletion with all the

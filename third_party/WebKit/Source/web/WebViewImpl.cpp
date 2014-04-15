@@ -122,7 +122,6 @@
 #include "modules/encryptedmedia/MediaKeysController.h"
 #include "modules/geolocation/GeolocationController.h"
 #include "modules/indexeddb/InspectorIndexedDBAgent.h"
-#include "modules/notifications/NotificationController.h"
 #include "modules/push_messaging/PushController.h"
 #include "painting/ContinuousPainter.h"
 #include "platform/ContextMenu.h"
@@ -392,7 +391,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     provideSpeechInputTo(*m_page, SpeechInputClientImpl::create(client));
 #endif
     provideSpeechRecognitionTo(*m_page, SpeechRecognitionClientProxy::create(client ? client->speechRecognizer() : 0));
-    provideNotification(*m_page, notificationPresenterImpl());
     provideNavigatorContentUtilsTo(*m_page, NavigatorContentUtilsClientImpl::create(this));
 
     provideContextFeaturesTo(*m_page, ContextFeaturesClientImpl::create());
@@ -3574,13 +3572,6 @@ void WebViewImpl::setOverlayLayer(WebCore::GraphicsLayer* layer)
         if (layer->parent() != m_rootTransformLayer)
             m_rootTransformLayer->addChild(layer);
     }
-}
-
-NotificationPresenterImpl* WebViewImpl::notificationPresenterImpl()
-{
-    if (!m_notificationPresenter.isInitialized() && m_client)
-        m_notificationPresenter.initialize(m_client->notificationPresenter());
-    return &m_notificationPresenter;
 }
 
 Element* WebViewImpl::focusedElement() const

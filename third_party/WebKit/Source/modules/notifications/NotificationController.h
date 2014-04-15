@@ -26,7 +26,7 @@
 #ifndef NotificationController_h
 #define NotificationController_h
 
-#include "core/page/Page.h"
+#include "core/frame/LocalFrame.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 
@@ -34,15 +34,15 @@ namespace WebCore {
 
 class NotificationClient;
 
-class NotificationController FINAL : public Supplement<Page> {
+class NotificationController FINAL : public Supplement<LocalFrame> {
     WTF_MAKE_NONCOPYABLE(NotificationController);
 public:
     virtual ~NotificationController();
 
     static PassOwnPtr<NotificationController> create(NotificationClient*);
     static const char* supplementName();
-    static NotificationController* from(Page* page) { return static_cast<NotificationController*>(Supplement<Page>::from(page, supplementName())); }
-    static NotificationClient* clientFrom(Page*);
+    static NotificationController* from(LocalFrame* frame) { return static_cast<NotificationController*>(Supplement<LocalFrame>::from(frame, supplementName())); }
+    static NotificationClient* clientFrom(LocalFrame*);
 
     NotificationClient* client() { return m_client; }
 
@@ -54,7 +54,7 @@ private:
     NotificationClient* m_client;
 };
 
-void provideNotification(Page&, NotificationClient*);
+void provideNotification(LocalFrame&, NotificationClient*);
 
 } // namespace WebCore
 

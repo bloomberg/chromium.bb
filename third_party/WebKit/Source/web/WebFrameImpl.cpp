@@ -162,6 +162,7 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/StyleInheritedData.h"
 #include "core/timing/Performance.h"
+#include "modules/notifications/NotificationController.h"
 #include "platform/TraceEvent.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/clipboard/ClipboardUtilities.h"
@@ -1388,6 +1389,13 @@ WebPlugin* WebFrameImpl::focusedPluginIfInputMethodSupported()
     return 0;
 }
 
+NotificationPresenterImpl* WebFrameImpl::notificationPresenterImpl()
+{
+    if (!m_notificationPresenter.isInitialized() && m_client)
+        m_notificationPresenter.initialize(m_client->notificationPresenter());
+    return &m_notificationPresenter;
+}
+
 int WebFrameImpl::printBegin(const WebPrintParams& printParams, const WebNode& constrainToNode)
 {
     ASSERT(!frame()->document()->isFrameSet());
@@ -1676,6 +1684,10 @@ WebFrameImpl::~WebFrameImpl()
 void WebFrameImpl::setWebCoreFrame(PassRefPtr<WebCore::LocalFrame> frame)
 {
     m_frame = frame;
+
+    // FIXME: we shouldn't add overhead to every frame by registering these objects when they're not used.
+    if (m_frame)
+        provideNotification(*m_frame, notificationPresenterImpl());
 }
 
 void WebFrameImpl::initializeAsMainFrame(WebCore::Page* page)

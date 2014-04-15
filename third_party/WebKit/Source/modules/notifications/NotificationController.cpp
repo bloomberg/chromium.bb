@@ -45,9 +45,9 @@ PassOwnPtr<NotificationController> NotificationController::create(NotificationCl
     return adoptPtr(new NotificationController(client));
 }
 
-NotificationClient* NotificationController::clientFrom(Page* page)
+NotificationClient* NotificationController::clientFrom(LocalFrame* frame)
 {
-    if (NotificationController* controller = NotificationController::from(page))
+    if (NotificationController* controller = NotificationController::from(frame))
         return controller->client();
     return 0;
 }
@@ -57,9 +57,9 @@ const char* NotificationController::supplementName()
     return "NotificationController";
 }
 
-void provideNotification(Page& page, NotificationClient* client)
+void provideNotification(LocalFrame& frame, NotificationClient* client)
 {
-    NotificationController::provideTo(page, NotificationController::supplementName(), NotificationController::create(client));
+    NotificationController::provideTo(frame, NotificationController::supplementName(), NotificationController::create(client));
 }
 
 } // namespace WebCore

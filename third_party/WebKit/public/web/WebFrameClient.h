@@ -66,6 +66,7 @@ class WebFormElement;
 class WebInputEvent;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
+class WebNotificationPresenter;
 class WebServiceWorkerProvider;
 class WebServiceWorkerProviderClient;
 class WebNode;
@@ -260,6 +261,11 @@ public:
     // non-navigational events related to the data held by WebHistoryItem.
     // WARNING: This method may be called very frequently.
     virtual void didUpdateCurrentHistoryItem(WebLocalFrame*) { }
+
+    // Misc ----------------------------------------------------------------
+
+    // Called to retrieve the provider of desktop notifications.
+    virtual WebNotificationPresenter* notificationPresenter() { return 0; }
 
 
     // Editing -------------------------------------------------------------

@@ -32,6 +32,7 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/NavigationScheduler.h"
 #include "core/page/FrameTree.h"
+#include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
 
@@ -57,7 +58,7 @@ namespace WebCore {
     class TreeScope;
     class VisiblePosition;
 
-    class LocalFrame : public Frame {
+    class LocalFrame : public Frame, public Supplementable<LocalFrame>  {
     public:
         static PassRefPtr<LocalFrame> create(FrameLoaderClient*, FrameHost*, HTMLFrameOwnerElement*);
 

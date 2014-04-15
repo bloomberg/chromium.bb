@@ -34,6 +34,7 @@
 #include "WebLocalFrame.h"
 
 #include "FrameLoaderClientImpl.h"
+#include "NotificationPresenterImpl.h"
 #include "core/frame/LocalFrame.h"
 #include "platform/geometry/FloatRect.h"
 #include "public/platform/WebFileSystemType.h"
@@ -332,6 +333,9 @@ private:
 
     WebPlugin* focusedPluginIfInputMethodSupported();
 
+    // Returns the provider of desktop notifications.
+    NotificationPresenterImpl* notificationPresenterImpl();
+
     FrameLoaderClientImpl m_frameLoaderClientImpl;
 
     // The embedder retains a reference to the WebCore LocalFrame while it is active in the DOM. This
@@ -365,6 +369,9 @@ private:
     // Stores the additional input events offset and scale when device metrics emulation is enabled.
     WebCore::IntSize m_inputEventsOffsetForEmulation;
     float m_inputEventsScaleFactorForEmulation;
+
+    // The provider of desktop notifications;
+    NotificationPresenterImpl m_notificationPresenter;
 };
 
 DEFINE_TYPE_CASTS(WebFrameImpl, WebFrame, frame, true, true);
