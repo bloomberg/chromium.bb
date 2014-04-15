@@ -181,6 +181,11 @@ public:
 
         return Base::decidePolicyForNavigation(frame, extraData, request, type, defaultPolicy, isRedirect);
     }
+    virtual void willStartUsingPeerConnectionHandler(blink::WebLocalFrame* frame, blink::WebRTCPeerConnectionHandler* handler)
+    {
+        // RenderFrameImpl::willStartUsingPeerConnectionHandler can not be mocked.
+        // See http://crbug/363285.
+    }
     virtual bool willCheckAndDispatchMessageEvent(blink::WebLocalFrame* sourceFrame, blink::WebFrame* targetFrame, blink::WebSecurityOrigin target, blink::WebDOMMessageEvent event)
     {
         if (m_baseProxy->willCheckAndDispatchMessageEvent(sourceFrame, targetFrame, target, event))
