@@ -4,7 +4,6 @@ Tests the Timeline API instrumentation of a DecodeImage and ResizeImage events
 DecodeImage Properties:
 {
     children : <object>
-    counters : <object>
     data : {
         elementId : <number>
         imageType : "BMP"
@@ -17,7 +16,6 @@ DecodeImage Properties:
 DecodeImage Properties:
 {
     children : <object>
-    counters : <object>
     data : {
         elementId : <number>
         imageType : "GIF"
@@ -30,7 +28,6 @@ DecodeImage Properties:
 DecodeImage Properties:
 {
     children : <object>
-    counters : <object>
     data : {
         elementId : <number>
         imageType : "ICO"
@@ -43,7 +40,6 @@ DecodeImage Properties:
 ResizeImage Properties:
 {
     children : <object>
-    counters : <object>
     data : {
         cached : true
         elementId : <number>
@@ -56,7 +52,6 @@ ResizeImage Properties:
 DecodeImage Properties:
 {
     children : <object>
-    counters : <object>
     data : {
         elementId : <number>
         imageType : "JPEG"
@@ -69,7 +64,6 @@ DecodeImage Properties:
 DecodeImage Properties:
 {
     children : <object>
-    counters : <object>
     data : {
         elementId : <number>
         imageType : "PNG"
@@ -82,7 +76,6 @@ DecodeImage Properties:
 DecodeImage Properties:
 {
     children : <object>
-    counters : <object>
     data : {
         elementId : <number>
         imageType : "WEBP"
@@ -95,7 +88,6 @@ DecodeImage Properties:
 DecodeImage Properties:
 {
     children : <object>
-    counters : <object>
     data : {
         elementId : <number>
         imageType : "PNG"

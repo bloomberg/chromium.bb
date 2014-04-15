@@ -26,7 +26,6 @@ DecodeImage Properties:
 DecodeImage Properties:
 {
     children : <object>
-    counters : <object>
     data : {
         elementId : <number>
         imageType : "ICO"
@@ -39,7 +38,6 @@ DecodeImage Properties:
 ResizeImage Properties:
 {
     children : <object>
-    counters : <object>
     data : {
         cached : true
         elementId : <number>

@@ -3,7 +3,6 @@ Tests the Timeline events for XMLHttpReqeust
 XHRReadyStateChange Properties:
 {
     children : <object>
-    counters : <object>
     data : {
         readyState : 2
         url : .../inspector/network/resources/resource.php
@@ -16,7 +15,6 @@ XHRReadyStateChange Properties:
 XHRReadyStateChange Properties:
 {
     children : <object>
-    counters : <object>
     data : {
         readyState : 3
         url : .../inspector/network/resources/resource.php
@@ -29,7 +27,6 @@ XHRReadyStateChange Properties:
 XHRReadyStateChange Properties:
 {
     children : <object>
-    counters : <object>
     data : {
         readyState : 4
         url : .../inspector/network/resources/resource.php
@@ -42,7 +39,6 @@ XHRReadyStateChange Properties:
 XHRLoad Properties:
 {
     children : <object>
-    counters : <object>
     data : {
         url : .../inspector/network/resources/resource.php
     }

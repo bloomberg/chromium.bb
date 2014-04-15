@@ -263,7 +263,6 @@ private:
     void pushCurrentRecord(PassRefPtr<JSONObject> data, const String& type, bool captureCallStack, LocalFrame*, bool hasLowLevelDetails = false);
     TimelineThreadState& threadState(ThreadIdentifier);
 
-    void setCounters(TypeBuilder::Timeline::TimelineEvent*);
     void setFrameIdentifier(TypeBuilder::Timeline::TimelineEvent* record, LocalFrame*);
     void populateImageDetails(JSONObject* data, const RenderImage&);
 
@@ -274,6 +273,7 @@ private:
 
     void addRecordToTimeline(PassRefPtr<TypeBuilder::Timeline::TimelineEvent>, double ts);
     void innerAddRecordToTimeline(PassRefPtr<TypeBuilder::Timeline::TimelineEvent>);
+    void addCountersUpdate(TypeBuilder::Array<TypeBuilder::Timeline::TimelineEvent>* records);
     void clearRecordStack();
     PassRefPtr<TypeBuilder::Timeline::TimelineEvent> createRecordForEvent(const TraceEventDispatcher::TraceEvent&, const String& type, PassRefPtr<JSONObject> data);
 

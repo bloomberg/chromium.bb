@@ -3,7 +3,6 @@ Tests the Timeline API function call record for InjectedScript.eval call feature
 FunctionCall Properties:
 {
     children : <object>
-    counters : <object>
     data : {
         scriptId : <string>
         scriptLine : <number>
@@ -17,7 +16,6 @@ FunctionCall Properties:
 FunctionCall Properties:
 {
     children : <object>
-    counters : <object>
     data : {
         scriptId : <string>
         scriptLine : <number>

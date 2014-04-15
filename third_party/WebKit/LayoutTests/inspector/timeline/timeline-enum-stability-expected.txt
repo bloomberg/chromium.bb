@@ -44,6 +44,7 @@ Applications outside of WebKit depend on the stability of the mapping of these t
     TimerFire : "TimerFire"
     TimerInstall : "TimerInstall"
     TimerRemove : "TimerRemove"
+    UpdateCounters : "UpdateCounters"
     UpdateLayerTree : "UpdateLayerTree"
     WebSocketCreate : "WebSocketCreate"
     WebSocketDestroy : "WebSocketDestroy"

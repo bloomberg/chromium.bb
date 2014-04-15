@@ -8,7 +8,6 @@ text
 Layout Properties:
 {
     children : <object>
-    counters : <object>
     data : {
         dirtyObjects : 3
         partialLayout : true
@@ -25,7 +24,6 @@ Layout Properties:
 Layout Properties:
 {
     children : <object>
-    counters : <object>
     data : {
         dirtyObjects : 2
         partialLayout : true

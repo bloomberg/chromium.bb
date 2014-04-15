@@ -2,7 +2,6 @@ Tests the Timeline events for WebSocket
 
 WebSocketCreate Properties:
 {
-    counters : <object>
     data : {
         identifier : <number>
         url : ws://127.0.0.1:8880/simple
@@ -14,7 +13,6 @@ WebSocketCreate Properties:
 }
 WebSocketSendHandshakeRequest Properties:
 {
-    counters : <object>
     data : {
         identifier : <number>
     }
@@ -24,7 +22,6 @@ WebSocketSendHandshakeRequest Properties:
 }
 WebSocketReceiveHandshakeResponse Properties:
 {
-    counters : <object>
     data : {
         identifier : <number>
     }
@@ -34,7 +31,6 @@ WebSocketReceiveHandshakeResponse Properties:
 }
 WebSocketDestroy Properties:
 {
-    counters : <object>
     data : {
         identifier : <number>
     }

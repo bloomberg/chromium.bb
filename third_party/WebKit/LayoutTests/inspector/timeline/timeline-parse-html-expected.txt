@@ -4,7 +4,6 @@ Test data
 ParseHTML Properties:
 {
     children : <object>
-    counters : <object>
     data : {
         endLine : 0
         startLine : 0
@@ -18,7 +17,6 @@ ParseHTML Properties:
 ParseHTML Properties:
 {
     children : <object>
-    counters : <object>
     data : {
         endLine : 0
         startLine : 0

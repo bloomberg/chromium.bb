@@ -2,7 +2,6 @@ Tests the Timeline API instrumentation of a gc event
 
 The expected GC event record
 {
-    counters : <object>
     data : {
     }
     endTime : <number>

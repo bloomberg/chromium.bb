@@ -4,7 +4,6 @@ Test Mouse Target
 EventDispatch Properties:
 {
     children : <object>
-    counters : <object>
     data : {
         type : "mousedown"
     }

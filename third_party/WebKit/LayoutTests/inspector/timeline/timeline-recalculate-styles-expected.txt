@@ -4,7 +4,6 @@ Test data
 RecalculateStyles Properties:
 {
     children : <object>
-    counters : <object>
     data : {
         elementCount : 2
     }

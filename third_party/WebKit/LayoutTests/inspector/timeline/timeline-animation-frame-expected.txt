@@ -2,7 +2,6 @@ Tests the Timeline events for Animation Frame feature
 
 RequestAnimationFrame Properties:
 {
-    counters : <object>
     data : {
         id : <number>
     }
@@ -14,7 +13,6 @@ RequestAnimationFrame Properties:
 FireAnimationFrame Properties:
 {
     children : <object>
-    counters : <object>
     data : {
         id : <number>
     }
@@ -25,7 +23,6 @@ FireAnimationFrame Properties:
 }
 CancelAnimationFrame Properties:
 {
-    counters : <object>
     data : {
         id : <number>
     }

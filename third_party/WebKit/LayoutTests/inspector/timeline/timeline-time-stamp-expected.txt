@@ -2,7 +2,6 @@ Tests the Timeline API timeStamp feature
 
 TimeStamp Properties:
 {
-    counters : <object>
     data : {
         message : "TIME STAMP"
     }
@@ -14,7 +13,6 @@ TimeStamp Properties:
 Timestamp records: 
 TimeStamp Properties:
 {
-    counters : <object>
     data : {
         message : "TIME STAMP"
     }

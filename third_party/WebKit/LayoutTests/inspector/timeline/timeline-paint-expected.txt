@@ -4,7 +4,6 @@ Tests the Timeline API instrumentation of a paint event
 Paint Properties:
 {
     children : <object>
-    counters : <object>
     data : {
         clip : <object>
         layerId : <number>

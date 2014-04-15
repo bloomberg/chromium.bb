@@ -4,7 +4,6 @@ Page reloaded.
 Model records:
 MarkDOMContent Properties:
 {
-    counters : <object>
     data : {
         isMainFrame : true
     }
@@ -14,7 +13,6 @@ MarkDOMContent Properties:
 }
 MarkLoad Properties:
 {
-    counters : <object>
     data : {
         isMainFrame : true
     }
@@ -25,7 +23,6 @@ MarkLoad Properties:
 Timestamp records:
 MarkDOMContent Properties:
 {
-    counters : <object>
     data : {
         isMainFrame : true
     }
@@ -35,7 +32,6 @@ MarkDOMContent Properties:
 }
 MarkLoad Properties:
 {
-    counters : <object>
     data : {
         isMainFrame : true
     }

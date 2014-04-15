@@ -6,10 +6,11 @@ ParseHTML
 ParseHTML
 ----> EvaluateScript
 --------> TimeStamp : SCRIPT TAG
+--------> UpdateCounters
+----> UpdateCounters
 EvaluateScript Properties:
 {
     children : <object>
-    counters : <object>
     data : {
         lineNumber : <number>
         url : .../inspector/timeline/resources/timeline-iframe-data.html
@@ -21,9 +22,16 @@ EvaluateScript Properties:
 }
 ParseHTML
 ParseHTML
+----> UpdateCounters
 ----> EventDispatch
 --------> FunctionCall
 ------------> FunctionCall
+------------> UpdateCounters
+--------> UpdateCounters
+----> UpdateCounters
 ----> MarkLoad
+----> UpdateCounters
+----> UpdateCounters
 ----> MarkDOMContent
+----> UpdateCounters
 

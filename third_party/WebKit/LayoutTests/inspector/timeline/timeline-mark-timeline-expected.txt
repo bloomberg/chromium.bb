@@ -3,7 +3,6 @@ Tests the Timeline API mark feature
 
 TimeStamp Properties:
 {
-    counters : <object>
     data : {
         message : "MARK TIMELINE"
     }

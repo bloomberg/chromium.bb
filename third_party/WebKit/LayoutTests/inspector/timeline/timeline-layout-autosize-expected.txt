@@ -8,7 +8,6 @@ text
 AutosizeText Properties:
 {
     children : <object>
-    counters : <object>
     data : {
         rootNode : <number>
     }
@@ -20,7 +19,6 @@ AutosizeText Properties:
 AutosizeText Properties:
 {
     children : <object>
-    counters : <object>
     data : {
         rootNode : <number>
     }
