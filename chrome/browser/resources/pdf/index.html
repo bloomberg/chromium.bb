@@ -6,7 +6,6 @@
                      fully implemented. At that point includes.js can be removed
                      as the scripts will be pulled in automatically. -->
   <script src="includes.js"></script>
-  <include src="../../../../third_party/polymer/vulcanized/polymer-elements.html">
   <include src="html_office/elements/viewer-button/viewer-button.html">
   <include src="html_office/elements/viewer-error-screen/viewer-error-screen.html">
   <include src="html_office/elements/viewer-page-indicator/viewer-page-indicator.html">
@@ -23,24 +22,22 @@
 <viewer-progress-bar id="progress-bar"></viewer-progress-bar>
 
 <viewer-toolbar id="toolbar">
-  <polymer-selector>
-    <viewer-button id="fit-to-page-button"
-        assetpath="html_office/elements/viewer-button/"
-        img="button_fit_page.png" latchable>
-    </viewer-button>
-    <viewer-button id="fit-to-width-button"
-        assetpath="html_office/elements/viewer-button/"
-        img="button_fit_width.png" latchable>
-    </viewer-button>
-    <viewer-button id="zoom-in-button"
-        assetpath="html_office/elements/viewer-button/"
-        img="button_zoom_in.png">
-    </viewer-button>
-    <viewer-button id="zoom-out-button"
-        assetpath="html_office/elements/viewer-button/"
-        img="button_zoom_out.png">
-    </viewer-button>
-  </polymer-selector>
+  <viewer-button id="fit-to-page-button"
+      assetpath="html_office/elements/viewer-button/"
+      img="button_fit_page.png" latchable>
+  </viewer-button>
+  <viewer-button id="fit-to-width-button"
+      assetpath="html_office/elements/viewer-button/"
+      img="button_fit_width.png" latchable>
+  </viewer-button>
+  <viewer-button id="zoom-in-button"
+      assetpath="html_office/elements/viewer-button/"
+      img="button_zoom_in.png">
+  </viewer-button>
+  <viewer-button id="zoom-out-button"
+      assetpath="html_office/elements/viewer-button/"
+      img="button_zoom_out.png">
+  </viewer-button>
   <a id="save-button-link" download>
     <viewer-button id="save-button"
         assetpath="html_office/elements/viewer-button/"

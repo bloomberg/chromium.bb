@@ -2,7 +2,6 @@
   "name": "chromium",
   "private": true,
   "dependencies": {
-    "polymer": "Polymer/polymer#~0.2.2",
-    "polymer-selector": "Polymer/polymer-selector#~0.2.2"
+    "polymer": "Polymer/polymer#~0.2.2"
   }
 }

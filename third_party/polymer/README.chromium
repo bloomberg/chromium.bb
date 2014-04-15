@@ -12,8 +12,6 @@ This directory contains a copy of the following components which are a part of
 the Polymer project:
 -polymer
 -platform
--polymer-selector
--polymer-selection
 
 The directory can be updated by running "bower update". A now component can be
 installed by running "bower install Polymer/<component>". Be sure to add the

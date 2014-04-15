@@ -201,9 +201,8 @@
         <include name="IDR_PDF_SCRIPTING_API_JS" file="pdf/pdf_scripting_api.js" type="BINDATA" />
 
         <!-- Polymer libs. -->
-        <include name="IDR_PDF_POLYMER_HTML" file="../../../third_party/polymer/vulcanized/polymer-elements.html" type="BINDATA" />
-        <include name="IDR_PDF_POLYMER_JS" file="../../../third_party/polymer/vulcanized/polymer-elements.js" type="BINDATA" />
         <include name="IDR_PDF_PLATFORM_JS" file="../../../third_party/polymer/platform/platform.js" type="BINDATA" />
+        <include name="IDR_PDF_POLYMER_JS" file="../../../third_party/polymer/polymer/polymer.js" type="BINDATA" />
 
         <!-- Polymer elements. -->
         <include name="IDR_PDF_INCLUDES_JS" file="pdf/includes.js" type="BINDATA" flattenhtml="true" />
