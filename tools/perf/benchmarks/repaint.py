@@ -11,7 +11,7 @@ class RepaintKeyMobileSites(test.Test):
 
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
   test = repaint.Repaint
-  page_set = 'page_sets/key_mobile_sites.json'
+  page_set = 'page_sets/key_mobile_sites.py'
 
 
 class RepaintGpuRasterizationKeyMobileSites(test.Test):
@@ -21,7 +21,7 @@ class RepaintGpuRasterizationKeyMobileSites(test.Test):
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
   tag = 'gpu_rasterization'
   test = repaint.Repaint
-  page_set = 'page_sets/key_mobile_sites.json'
+  page_set = 'page_sets/key_mobile_sites.py'
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--enable-threaded-compositing')
     options.AppendExtraBrowserArgs('--force-compositing-mode')

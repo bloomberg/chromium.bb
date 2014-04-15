@@ -27,7 +27,7 @@ class RasterizeAndRecordKeyMobileSites(test.Test):
 
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
   test = rasterize_and_record.RasterizeAndRecord
-  page_set = 'page_sets/key_mobile_sites.json'
+  page_set = 'page_sets/key_mobile_sites.py'
 
 
 @test.Disabled('linux', 'mac')
@@ -36,7 +36,7 @@ class RasterizeAndRecordSilk(test.Test):
 
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
   test = rasterize_and_record.RasterizeAndRecord
-  page_set = 'page_sets/key_silk_cases.json'
+  page_set = 'page_sets/key_silk_cases.py'
 
 
 @test.Disabled('linux', 'mac')
@@ -48,6 +48,6 @@ class RasterizeAndRecordFastPathSilk(test.Test):
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
   tag = 'fast_path'
   test = rasterize_and_record.RasterizeAndRecord
-  page_set = 'page_sets/key_silk_cases.json'
+  page_set = 'page_sets/key_silk_cases.py'
   def CustomizeBrowserOptions(self, options):
     silk_flags.CustomizeBrowserOptionsForFastPath(options)

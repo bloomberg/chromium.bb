@@ -90,7 +90,7 @@ class PageCyclerTop10Mobile(test.Test):
 
 class PageCyclerKeyMobileSites(test.Test):
   test = page_cycler.PageCycler
-  page_set = 'page_sets/key_mobile_sites.json'
+  page_set = 'page_sets/key_mobile_sites.py'
   options = {'pageset_repeat': 10}
 
 

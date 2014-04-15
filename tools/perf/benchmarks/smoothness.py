@@ -36,7 +36,7 @@ class SmoothnessKeyMobileSites(test.Test):
 
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
   test = smoothness.Smoothness
-  page_set = 'page_sets/key_mobile_sites.json'
+  page_set = 'page_sets/key_mobile_sites.py'
 
 
 @test.Disabled('android')  # crbug.com/350692
@@ -50,7 +50,7 @@ class SmoothnessKeySilkCases(test.Test):
   rasterization
   """
   test = smoothness.Smoothness
-  page_set = 'page_sets/key_silk_cases.json'
+  page_set = 'page_sets/key_silk_cases.py'
 
 
 class SmoothnessFastPathKeySilkCases(test.Test):
@@ -59,7 +59,7 @@ class SmoothnessFastPathKeySilkCases(test.Test):
   """
   tag = 'fast_path'
   test = smoothness.Smoothness
-  page_set = 'page_sets/key_silk_cases.json'
+  page_set = 'page_sets/key_silk_cases.py'
   def CustomizeBrowserOptions(self, options):
     silk_flags.CustomizeBrowserOptionsForFastPath(options)
 
@@ -83,7 +83,7 @@ class SmoothnessGpuRasterizationKeyMobileSites(test.Test):
   """
   tag = 'gpu_rasterization'
   test = smoothness.Smoothness
-  page_set = 'page_sets/key_mobile_sites.json'
+  page_set = 'page_sets/key_mobile_sites.py'
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--enable-threaded-compositing')
     options.AppendExtraBrowserArgs('--force-compositing-mode')
@@ -96,7 +96,7 @@ class SmoothnessGpuRasterizationKeySilkCases(test.Test):
   """
   tag = 'gpu_rasterization'
   test = smoothness.Smoothness
-  page_set = 'page_sets/key_silk_cases.json'
+  page_set = 'page_sets/key_silk_cases.py'
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--enable-threaded-compositing')
     options.AppendExtraBrowserArgs('--force-compositing-mode')
@@ -111,7 +111,7 @@ class SmoothnessFastPathGpuRasterizationKeySilkCases(
   """
   tag = 'fast_path_gpu_rasterization'
   test = smoothness.Smoothness
-  page_set = 'page_sets/key_silk_cases.json'
+  page_set = 'page_sets/key_silk_cases.py'
   def CustomizeBrowserOptions(self, options):
     super(SmoothnessFastPathGpuRasterizationKeySilkCases, self). \
         CustomizeBrowserOptions(options)
