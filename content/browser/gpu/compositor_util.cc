@@ -157,12 +157,8 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
       },
       {
           "raster",
-          manager->IsFeatureBlacklisted(
-              gpu::GPU_FEATURE_TYPE_GPU_RASTERIZATION) &&
+          false,
           !IsGpuRasterizationEnabled() && !IsForceGpuRasterizationEnabled(),
-          !IsGpuRasterizationEnabled() && !IsForceGpuRasterizationEnabled() &&
-          !manager->IsFeatureBlacklisted(
-              gpu::GPU_FEATURE_TYPE_GPU_RASTERIZATION),
           "Accelerated rasterization has not been enabled or"
           " is not supported by the current system.",
           true
@@ -292,11 +288,6 @@ bool IsGpuRasterizationEnabled() {
     return false;
   else if (command_line.HasSwitch(switches::kEnableGpuRasterization))
     return true;
-
-  if (GpuDataManagerImpl::GetInstance()->IsFeatureBlacklisted(
-          gpu::GPU_FEATURE_TYPE_GPU_RASTERIZATION)) {
-    return false;
-  }
 
   return command_line.HasSwitch(
       switches::kEnableBleedingEdgeRenderingFastPaths);

@@ -42,8 +42,6 @@ GpuBlacklist* GpuBlacklist::Create() {
                             GPU_FEATURE_TYPE_PANEL_FITTING);
   list->AddSupportedFeature("force_compositing_mode",
                             GPU_FEATURE_TYPE_FORCE_COMPOSITING_MODE);
-  list->AddSupportedFeature("gpu_rasterization",
-                            GPU_FEATURE_TYPE_GPU_RASTERIZATION);
   list->set_supports_feature_type_all(true);
   return list;
 }
