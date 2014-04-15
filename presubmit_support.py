@@ -1562,6 +1562,7 @@ def Main(argv):
   if options.rietveld_private_key_file and options.rietveld_password:
     parser.error("Only one of --rietveld_private_key_file or "
                  "--rietveld_password can be passed to this program.")
+
   if options.rietveld_email_file:
     with open(options.rietveld_email_file, "rb") as f:
       options.rietveld_email = f.read().strip()
@@ -1574,19 +1575,16 @@ def Main(argv):
   rietveld_obj = None
   if options.rietveld_url:
     # The empty password is permitted: '' is not None.
-    if options.rietveld_password is not None:
-      rietveld_obj = rietveld.CachingRietveld(
-        options.rietveld_url,
-        options.rietveld_email,
-        options.rietveld_password)
-    elif options.rietveld_private_key_file:
+    if options.rietveld_private_key_file:
       rietveld_obj = rietveld.JwtOAuth2Rietveld(
         options.rietveld_url,
         options.rietveld_email,
         options.rietveld_private_key_file)
     else:
-      parser.error("No password or secret key has been provided for "
-                   "Rietveld. Unable to connect.")
+      rietveld_obj = rietveld.CachingRietveld(
+        options.rietveld_url,
+        options.rietveld_email,
+        options.rietveld_password)
     if options.rietveld_fetch:
       assert options.issue
       props = rietveld_obj.get_issue_properties(options.issue, False)
