@@ -10,13 +10,21 @@
 
 #include "base/memory/ref_counted_memory.h"
 #include "base/time/time.h"
-#include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/activity_log_private.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 #include "url/gurl.h"
+
+namespace base {
+class ListValue;
+class DictionaryValue;
+}
+
+namespace rappor {
+class RapporService;
+}
 
 namespace extensions {
 
@@ -37,6 +45,15 @@ class Action : public base::RefCountedThreadSafe<Action> {
     ACTION_ANY = 1001,              // Used for lookups of unspecified type.
   };
 
+  // The type of ad injection an action performed.
+  enum InjectionType {
+    NO_AD_INJECTION = 0,    // No ad injection occurred.
+    INJECTION_NEW_AD,       // A new ad was injected.
+    INJECTION_REMOVED_AD,   // An ad was removed.
+    INJECTION_REPLACED_AD,  // An ad was replaced.
+    NUM_INJECTION_TYPES     // Place any new injection types above this entry.
+  };
+
   // A useful shorthand for methods that take or return collections of Action
   // objects.
   typedef std::vector<scoped_refptr<Action> > ActionVector;
@@ -52,6 +69,12 @@ class Action : public base::RefCountedThreadSafe<Action> {
 
   // Creates and returns a mutable copy of an Action.
   scoped_refptr<Action> Clone() const;
+
+  // Return the type of ad-injection performed in the |action|, or
+  // NO_AD_INJECTION if none was present.
+  // TODO(rdevlin.cronin): This isn't done.
+  // See crbug.com/357204.
+  InjectionType DidInjectAd(rappor::RapporService* rappor_service) const;
 
   // The extension which caused this record to be generated.
   const std::string& extension_id() const { return extension_id_; }
@@ -130,6 +153,15 @@ class Action : public base::RefCountedThreadSafe<Action> {
 
  private:
   friend class base::RefCountedThreadSafe<Action>;
+
+  // Uploads the URL to RAPPOR (preserving privacy) if this might have been an
+  // ad injection.
+  void MaybeUploadUrl(rappor::RapporService* rappor_service) const;
+
+  // Checks an action with the appendChild API for ad injection.
+  InjectionType CheckAppendChild() const;
+  // Checks an action that modified the src of an element for ad injection.
+  InjectionType CheckSrcModification() const;
 
   std::string extension_id_;
   base::Time time_;

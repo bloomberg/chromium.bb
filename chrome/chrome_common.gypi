@@ -109,6 +109,8 @@
         'common/custom_handlers/protocol_handler.h',
         'common/descriptors_android.h',
         'common/encrypted_media_messages_android.h',
+        'common/extensions/ad_injection_constants.cc',
+        'common/extensions/ad_injection_constants.h',
         'common/extensions/api/bluetooth/bluetooth_manifest_data.cc',
         'common/extensions/api/bluetooth/bluetooth_manifest_data.h',
         'common/extensions/api/bluetooth/bluetooth_manifest_handler.cc',
