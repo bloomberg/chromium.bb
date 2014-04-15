@@ -367,6 +367,11 @@ bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int valueID, const
         return false;
 
     switch (propertyId) {
+    case CSSPropertyBackgroundRepeatX: // repeat | no-repeat | inherit
+    case CSSPropertyBackgroundRepeatY: // repeat | no-repeat | inherit
+        if (valueID == CSSValueRepeat || valueID == CSSValueNoRepeat)
+            return true;
+        break;
     case CSSPropertyBorderCollapse: // collapse | separate | inherit
         if (valueID == CSSValueCollapse || valueID == CSSValueSeparate)
             return true;
@@ -739,6 +744,8 @@ bool isKeywordPropertyID(CSSPropertyID propertyId)
     switch (propertyId) {
     case CSSPropertyMixBlendMode:
     case CSSPropertyIsolation:
+    case CSSPropertyBackgroundRepeatX:
+    case CSSPropertyBackgroundRepeatY:
     case CSSPropertyBorderBottomStyle:
     case CSSPropertyBorderCollapse:
     case CSSPropertyBorderLeftStyle:
