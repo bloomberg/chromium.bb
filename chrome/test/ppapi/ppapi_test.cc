@@ -445,6 +445,12 @@ std::string PPAPINaClPNaClTest::BuildQuery(const std::string& base,
                             test_case.c_str());
 }
 
+void PPAPIPrivateNaClPNaClTest::SetUpCommandLine(
+    base::CommandLine* command_line) {
+  PPAPINaClPNaClTest::SetUpCommandLine(command_line);
+  AddPrivateSwitches(command_line);
+}
+
 void PPAPINaClPNaClNonSfiTest::SetUpCommandLine(
     base::CommandLine* command_line) {
   PPAPINaClTest::SetUpCommandLine(command_line);
@@ -458,9 +464,9 @@ std::string PPAPINaClPNaClNonSfiTest::BuildQuery(
                             base.c_str(), test_case.c_str());
 }
 
-void PPAPIPrivateNaClPNaClTest::SetUpCommandLine(
+void PPAPIPrivateNaClPNaClNonSfiTest::SetUpCommandLine(
     base::CommandLine* command_line) {
-  PPAPINaClPNaClTest::SetUpCommandLine(command_line);
+  PPAPINaClPNaClNonSfiTest::SetUpCommandLine(command_line);
   AddPrivateSwitches(command_line);
 }
 
