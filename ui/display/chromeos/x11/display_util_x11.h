@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include "ui/display/display_constants.h"
 #include "ui/display/display_export.h"
+#include "ui/display/types/display_constants.h"
 
 typedef unsigned long XID;
 typedef XID RROutput;

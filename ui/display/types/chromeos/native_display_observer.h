@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_DISPLAY_CHROMEOS_NATIVE_DISPLAY_OBSERVER_H_
-#define UI_DISPLAY_CHROMEOS_NATIVE_DISPLAY_OBSERVER_H_
+#ifndef UI_DISPLAY_TYPES_CHROMEOS_NATIVE_DISPLAY_OBSERVER_H_
+#define UI_DISPLAY_TYPES_CHROMEOS_NATIVE_DISPLAY_OBSERVER_H_
+
+#include "ui/display/types/display_types_export.h"
 
 namespace ui {
 
 // Observer class used by NativeDisplayDelegate to announce when the display
 // configuration changes.
-class NativeDisplayObserver {
+class DISPLAY_TYPES_EXPORT NativeDisplayObserver {
  public:
   virtual ~NativeDisplayObserver() {}
 
@@ -18,4 +20,4 @@ class NativeDisplayObserver {
 
 }  //  namespace ui
 
-#endif  // UI_DISPLAY_CHROMEOS_NATIVE_DISPLAY_OBSERVER_H_
+#endif  // UI_DISPLAY_TYPES_CHROMEOS_NATIVE_DISPLAY_OBSERVER_H_

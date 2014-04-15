@@ -11,18 +11,10 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/time/time.h"
-#include "ui/display/chromeos/display_mode.h"
-#include "ui/display/chromeos/display_snapshot.h"
-#include "ui/display/chromeos/native_display_delegate.h"
 #include "ui/display/display_switches.h"
-
-#if defined(USE_OZONE)
-#include "ui/display/chromeos/ozone/native_display_delegate_ozone.h"
-#include "ui/display/chromeos/ozone/touchscreen_delegate_ozone.h"
-#elif defined(USE_X11)
-#include "ui/display/chromeos/x11/native_display_delegate_x11.h"
-#include "ui/display/chromeos/x11/touchscreen_delegate_x11.h"
-#endif
+#include "ui/display/types/chromeos/display_mode.h"
+#include "ui/display/types/chromeos/display_snapshot.h"
+#include "ui/display/types/chromeos/native_display_delegate.h"
 
 namespace ui {
 
@@ -172,20 +164,14 @@ DisplayConfigurator::~DisplayConfigurator() {
     native_display_delegate_->RemoveObserver(this);
 }
 
-void DisplayConfigurator::SetNativeDisplayDelegateForTesting(
-    scoped_ptr<NativeDisplayDelegate> delegate) {
+void DisplayConfigurator::SetDelegatesForTesting(
+    scoped_ptr<NativeDisplayDelegate> display_delegate,
+    scoped_ptr<TouchscreenDelegate> touchscreen_delegate) {
   DCHECK(!native_display_delegate_);
-
-  native_display_delegate_ = delegate.Pass();
-  native_display_delegate_->AddObserver(this);
-  configure_display_ = true;
-}
-
-void DisplayConfigurator::SetTouchscreenDelegateForTesting(
-    scoped_ptr<TouchscreenDelegate> delegate) {
   DCHECK(!touchscreen_delegate_);
 
-  touchscreen_delegate_ = delegate.Pass();
+  InitializeDelegates(display_delegate.Pass(), touchscreen_delegate.Pass());
+  configure_display_ = true;
 }
 
 void DisplayConfigurator::SetInitialDisplayPower(
@@ -199,25 +185,17 @@ void DisplayConfigurator::Init(bool is_panel_fitting_enabled) {
   if (!configure_display_)
     return;
 
-  if (!native_display_delegate_) {
-#if defined(USE_OZONE)
-    native_display_delegate_.reset(new NativeDisplayDelegateOzone());
-#elif defined(USE_X11)
-    native_display_delegate_.reset(new NativeDisplayDelegateX11());
-#else
-    NOTREACHED();
-#endif
-    native_display_delegate_->AddObserver(this);
-  }
+  PlatformInitialize();
+}
 
-  if (!touchscreen_delegate_) {
-#if defined(USE_OZONE)
-    touchscreen_delegate_.reset(new TouchscreenDelegateOzone());
-#elif defined(USE_X11)
-    touchscreen_delegate_.reset(new TouchscreenDelegateX11());
-#else
-    NOTREACHED();
-#endif
+void DisplayConfigurator::InitializeDelegates(
+    scoped_ptr<NativeDisplayDelegate> display_delegate,
+    scoped_ptr<TouchscreenDelegate> touchscreen_delegate) {
+  if (!native_display_delegate_ && !touchscreen_delegate_) {
+    native_display_delegate_ = display_delegate.Pass();
+    touchscreen_delegate_ = touchscreen_delegate.Pass();
+
+    native_display_delegate_->AddObserver(this);
   }
 }
 

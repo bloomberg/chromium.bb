@@ -16,9 +16,9 @@
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
-#include "ui/display/chromeos/native_display_observer.h"
-#include "ui/display/display_constants.h"
 #include "ui/display/display_export.h"
+#include "ui/display/types/chromeos/native_display_observer.h"
+#include "ui/display/types/display_constants.h"
 
 namespace gfx {
 class Point;
@@ -182,13 +182,12 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
     mirroring_controller_ = controller;
   }
 
-  // Replaces |native_display_delegate_| with |delegate| and sets
-  // |configure_display_| to true.  Should be called before Init().
-  void SetNativeDisplayDelegateForTesting(
-      scoped_ptr<NativeDisplayDelegate> delegate);
-
-  void SetTouchscreenDelegateForTesting(
-      scoped_ptr<TouchscreenDelegate> delegate);
+  // Replaces |native_display_delegate_| and |touchscreen_delegate_| with the 2
+  // delegates passed in and sets |configure_display_| to true. Should be called
+  // before Init().
+  void SetDelegatesForTesting(
+      scoped_ptr<NativeDisplayDelegate> display_delegate,
+      scoped_ptr<TouchscreenDelegate> touchscreen_delegate);
 
   // Sets the initial value of |power_state_|.  Must be called before Start().
   void SetInitialDisplayPower(chromeos::DisplayPowerState power_state);
@@ -276,6 +275,15 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
   // Mapping a client to its protection request.
   typedef std::map<ContentProtectionClientId, ContentProtections>
       ProtectionRequests;
+
+  // If |native_display_delegate_| and |touchscreen_delegate_| are not set, then
+  // set them to the passed in values.
+  void InitializeDelegates(
+      scoped_ptr<NativeDisplayDelegate> display_delegate,
+      scoped_ptr<TouchscreenDelegate> touchscreen_delegate);
+
+  // Performs platform specific delegate initialization.
+  void PlatformInitialize();
 
   // Updates |cached_displays_| to contain currently-connected displays. Calls
   // |delegate_->GetDisplays()| and then does additional work, like finding the

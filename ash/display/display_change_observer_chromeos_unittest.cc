@@ -8,8 +8,8 @@
 #include "base/memory/scoped_vector.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/chromeos/display_configurator.h"
-#include "ui/display/chromeos/display_mode.h"
 #include "ui/display/chromeos/test/test_display_snapshot.h"
+#include "ui/display/types/chromeos/display_mode.h"
 
 using ui::DisplayConfigurator;
 

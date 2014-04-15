@@ -15,8 +15,8 @@
 #include "ui/wm/test/wm_test_helper.h"
 
 #if defined(OS_CHROMEOS)
-#include "ui/display/chromeos/display_mode.h"
-#include "ui/display/chromeos/display_snapshot.h"
+#include "ui/display/types/chromeos/display_mode.h"
+#include "ui/display/types/chromeos/display_snapshot.h"
 #endif
 
 namespace apps {

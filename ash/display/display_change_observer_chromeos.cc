@@ -19,9 +19,9 @@
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/dip_util.h"
-#include "ui/display/chromeos/display_mode.h"
-#include "ui/display/chromeos/display_snapshot.h"
 #include "ui/display/display_util.h"
+#include "ui/display/types/chromeos/display_mode.h"
+#include "ui/display/types/chromeos/display_snapshot.h"
 #include "ui/gfx/display.h"
 
 namespace ash {

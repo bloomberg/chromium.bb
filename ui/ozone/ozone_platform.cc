@@ -65,6 +65,12 @@ void OzonePlatform::Initialize() {
 }
 
 // static
+OzonePlatform* OzonePlatform::GetInstance() {
+  CHECK(instance_) << "OzonePlatform is not initialized";
+  return instance_;
+}
+
+// static
 OzonePlatform* OzonePlatform::instance_;
 
 }  // namespace ui

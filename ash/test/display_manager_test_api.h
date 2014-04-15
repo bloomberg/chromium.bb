@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "ui/display/display_constants.h"
+#include "ui/display/types/display_constants.h"
 
 namespace ash {
 class DisplayManager;

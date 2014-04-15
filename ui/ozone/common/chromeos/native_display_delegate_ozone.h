@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_DISPLAY_CHROMEOS_OZONE_NATIVE_DISPLAY_DELEGATE_OZONE_H_
-#define UI_DISPLAY_CHROMEOS_OZONE_NATIVE_DISPLAY_DELEGATE_OZONE_H_
+#ifndef UI_OZONE_COMMON_CHROMEOS_NATIVE_DISPLAY_DELEGATE_OZONE_H_
+#define UI_OZONE_COMMON_CHROMEOS_NATIVE_DISPLAY_DELEGATE_OZONE_H_
 
 #include "base/macros.h"
-#include "ui/display/chromeos/native_display_delegate.h"
+#include "ui/display/types/chromeos/native_display_delegate.h"
 
 namespace ui {
 
@@ -48,4 +48,4 @@ class NativeDisplayDelegateOzone : public NativeDisplayDelegate {
 
 }  // namespace ui
 
-#endif  // UI_DISPLAY_CHROMEOS_OZONE_NATIVE_DISPLAY_DELEGATE_OZONE_H_
+#endif  // UI_OZONE_COMMON_CHROMEOS_NATIVE_DISPLAY_DELEGATE_OZONE_H_

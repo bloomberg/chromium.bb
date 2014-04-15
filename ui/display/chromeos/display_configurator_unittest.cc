@@ -18,9 +18,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/display/chromeos/display_mode.h"
-#include "ui/display/chromeos/native_display_delegate.h"
 #include "ui/display/chromeos/test/test_display_snapshot.h"
+#include "ui/display/types/chromeos/display_mode.h"
+#include "ui/display/types/chromeos/native_display_delegate.h"
 
 namespace ui {
 
@@ -399,11 +399,9 @@ class DisplayConfiguratorTest : public testing::Test {
     log_.reset(new ActionLogger());
 
     native_display_delegate_ = new TestNativeDisplayDelegate(log_.get());
-    configurator_.SetNativeDisplayDelegateForTesting(
-        scoped_ptr<NativeDisplayDelegate>(native_display_delegate_));
-
     touchscreen_delegate_ = new TestTouchscreenDelegate(log_.get());
-    configurator_.SetTouchscreenDelegateForTesting(
+    configurator_.SetDelegatesForTesting(
+        scoped_ptr<NativeDisplayDelegate>(native_display_delegate_),
         scoped_ptr<DisplayConfigurator::TouchscreenDelegate>(
             touchscreen_delegate_));
 

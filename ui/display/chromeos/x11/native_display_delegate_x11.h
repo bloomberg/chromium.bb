@@ -15,7 +15,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
-#include "ui/display/chromeos/native_display_delegate.h"
+#include "ui/display/display_export.h"
+#include "ui/display/types/chromeos/native_display_delegate.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 

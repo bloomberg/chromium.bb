@@ -10,8 +10,8 @@
 #include <cmath>
 #include <set>
 
-#include "ui/display/chromeos/display_mode.h"
-#include "ui/display/chromeos/display_snapshot.h"
+#include "ui/display/types/chromeos/display_mode.h"
+#include "ui/display/types/chromeos/display_snapshot.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace ui {

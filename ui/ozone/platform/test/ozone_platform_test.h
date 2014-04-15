@@ -26,6 +26,10 @@ class OzonePlatformTest : public OzonePlatform {
   virtual ui::InputMethodContextFactoryOzone*
       GetInputMethodContextFactoryOzone() OVERRIDE;
   virtual ui::CursorFactoryOzone* GetCursorFactoryOzone() OVERRIDE;
+#if defined(OS_CHROMEOS)
+  virtual scoped_ptr<ui::NativeDisplayDelegate>
+      CreateNativeDisplayDelegate() OVERRIDE;
+#endif
 
  private:
   gfx::FileSurfaceFactory surface_factory_ozone_;

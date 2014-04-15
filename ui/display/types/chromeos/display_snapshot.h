@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_DISPLAY_CHROMEOS_DISPLAY_SNAPSHOT_H_
-#define UI_DISPLAY_CHROMEOS_DISPLAY_SNAPSHOT_H_
+#ifndef UI_DISPLAY_TYPES_CHROMEOS_DISPLAY_SNAPSHOT_H_
+#define UI_DISPLAY_TYPES_CHROMEOS_DISPLAY_SNAPSHOT_H_
 
 #include <vector>
 
-#include "ui/display/chromeos/display_mode.h"
-#include "ui/display/chromeos/display_snapshot.h"
-#include "ui/display/display_constants.h"
+#include "ui/display/types/chromeos/display_mode.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -18,7 +17,7 @@ namespace ui {
 // This class represents the state of a display at one point in time. Platforms
 // will extend this class in order to add platform specific configuration and
 // identifiers required to configure this display.
-class DISPLAY_EXPORT DisplaySnapshot {
+class DISPLAY_TYPES_EXPORT DisplaySnapshot {
  public:
   DisplaySnapshot(int64_t display_id,
                   bool has_proper_display_id,
@@ -88,4 +87,4 @@ class DISPLAY_EXPORT DisplaySnapshot {
 
 }  // namespace ui
 
-#endif  // UI_DISPLAY_CHROMEOS_DISPLAY_SNAPSHOT_H_
+#endif  // UI_DISPLAY_TYPES_CHROMEOS_DISPLAY_SNAPSHOT_H_

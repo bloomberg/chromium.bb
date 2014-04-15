@@ -28,7 +28,7 @@
 #if defined(OS_CHROMEOS)
 #include "ui/display/chromeos/display_configurator.h"
 #include "ui/display/chromeos/test/test_display_snapshot.h"
-#include "ui/display/display_constants.h"
+#include "ui/display/types/display_constants.h"
 #endif
 
 #if defined(OS_WIN)

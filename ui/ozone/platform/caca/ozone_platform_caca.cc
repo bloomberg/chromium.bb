@@ -7,6 +7,10 @@
 #include "ui/ozone/ozone_platform.h"
 #include "ui/ozone/platform/caca/caca_connection.h"
 
+#if defined(OS_CHROMEOS)
+#include "ui/ozone/common/chromeos/native_display_delegate_ozone.h"
+#endif
+
 namespace ui {
 
 OzonePlatformCaca::OzonePlatformCaca()
@@ -32,6 +36,14 @@ OzonePlatformCaca::GetInputMethodContextFactoryOzone() {
 ui::CursorFactoryOzone* OzonePlatformCaca::GetCursorFactoryOzone() {
   return &cursor_factory_ozone_;
 }
+
+#if defined(OS_CHROMEOS)
+scoped_ptr<ui::NativeDisplayDelegate>
+OzonePlatformCaca::CreateNativeDisplayDelegate() {
+  return scoped_ptr<ui::NativeDisplayDelegate>(
+      new NativeDisplayDelegateOzone());
+}
+#endif
 
 OzonePlatform* CreateOzonePlatformCaca() { return new OzonePlatformCaca; }
 

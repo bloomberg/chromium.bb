@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_DISPLAY_CHROMEOS_NATIVE_DISPLAY_DELEGATE_H_
-#define UI_DISPLAY_CHROMEOS_NATIVE_DISPLAY_DELEGATE_H_
+#ifndef UI_DISPLAY_TYPES_CHROMEOS_NATIVE_DISPLAY_DELEGATE_H_
+#define UI_DISPLAY_TYPES_CHROMEOS_NATIVE_DISPLAY_DELEGATE_H_
 
 #include <stdint.h>
 
 #include <vector>
 
-#include "ui/display/display_constants.h"
-#include "ui/display/display_export.h"
+#include "ui/display/types/display_constants.h"
+#include "ui/display/types/display_types_export.h"
 
 namespace gfx {
 class Point;
@@ -25,7 +25,7 @@ class NativeDisplayObserver;
 
 // Interface for classes that perform display configuration actions on behalf
 // of DisplayConfigurator.
-class DISPLAY_EXPORT NativeDisplayDelegate {
+class DISPLAY_TYPES_EXPORT NativeDisplayDelegate {
  public:
   virtual ~NativeDisplayDelegate() {}
 
@@ -92,4 +92,4 @@ class DISPLAY_EXPORT NativeDisplayDelegate {
 
 }  // namespace ui
 
-#endif  // UI_DISPLAY_CHROMEOS_NATIVE_DISPLAY_DELEGATE_H_
+#endif  // UI_DISPLAY_TYPES_CHROMEOS_NATIVE_DISPLAY_DELEGATE_H_

@@ -9,6 +9,10 @@
 #include "ui/ozone/ozone_platform.h"
 #include "ui/ozone/ozone_switches.h"
 
+#if defined(OS_CHROMEOS)
+#include "ui/ozone/common/chromeos/native_display_delegate_ozone.h"
+#endif
+
 namespace ui {
 
 OzonePlatformTest::OzonePlatformTest(const base::FilePath& dump_file)
@@ -32,6 +36,15 @@ OzonePlatformTest::GetInputMethodContextFactoryOzone() {
 ui::CursorFactoryOzone* OzonePlatformTest::GetCursorFactoryOzone() {
   return &cursor_factory_ozone_;
 }
+
+#if defined(OS_CHROMEOS)
+scoped_ptr<ui::NativeDisplayDelegate>
+OzonePlatformTest::CreateNativeDisplayDelegate() {
+  return scoped_ptr<ui::NativeDisplayDelegate>(
+      new NativeDisplayDelegateOzone());
+  return scoped_ptr<ui::NativeDisplayDelegate>();
+}
+#endif
 
 OzonePlatform* CreateOzonePlatformTest() {
   CommandLine* cmd = CommandLine::ForCurrentProcess();

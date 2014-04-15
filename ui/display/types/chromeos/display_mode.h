@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_DISPLAY_CHROMEOS_DISPLAY_MODE_H_
-#define UI_DISPLAY_CHROMEOS_DISPLAY_MODE_H_
+#ifndef UI_DISPLAY_TYPES_CHROMEOS_DISPLAY_MODE_H_
+#define UI_DISPLAY_TYPES_CHROMEOS_DISPLAY_MODE_H_
 
 #include <string>
 
 #include "base/macros.h"
-#include "ui/display/display_export.h"
+#include "ui/display/types/display_types_export.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace ui {
 
 // This class represents the basic information for a native mode. Platforms will
 // extend this class to add platform specific information about the mode.
-class DISPLAY_EXPORT DisplayMode {
+class DISPLAY_TYPES_EXPORT DisplayMode {
  public:
   DisplayMode(const gfx::Size& size, bool interlaced, float refresh_rate);
   virtual ~DisplayMode();
@@ -36,4 +36,4 @@ class DISPLAY_EXPORT DisplayMode {
 
 }  // namespace ui
 
-#endif  // UI_DISPLAY_CHROMEOS_DISPLAY_MODE_H_
+#endif  // UI_DISPLAY_TYPES_CHROMEOS_DISPLAY_MODE_H_

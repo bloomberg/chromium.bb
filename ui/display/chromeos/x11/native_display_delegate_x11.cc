@@ -14,11 +14,11 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "ui/display/chromeos/native_display_observer.h"
 #include "ui/display/chromeos/x11/display_mode_x11.h"
 #include "ui/display/chromeos/x11/display_snapshot_x11.h"
 #include "ui/display/chromeos/x11/display_util_x11.h"
 #include "ui/display/chromeos/x11/native_display_event_dispatcher_x11.h"
+#include "ui/display/types/chromeos/native_display_observer.h"
 #include "ui/display/x11/edid_parser_x11.h"
 #include "ui/events/platform/platform_event_observer.h"
 #include "ui/events/platform/platform_event_source.h"

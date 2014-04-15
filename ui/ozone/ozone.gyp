@@ -32,6 +32,11 @@
       },
       'sources': [
         '<(platform_list_file)',
+        # common/chromeos files are excluded automatically when building with
+        # chromeos=0, by exclusion rules in filename_rules.gypi due to the
+        # 'chromeos' folder name.
+        'common/chromeos/native_display_delegate_ozone.cc',
+        'common/chromeos/native_display_delegate_ozone.h',
         'ozone_platform.cc',
         'ozone_platform.h',
         'ozone_switches.cc',
@@ -91,6 +96,11 @@
           'sources/': [
             ['exclude', '^platform/test/'],
           ]
+        }],
+        ['chromeos==1', {
+          'dependencies': [
+            '<(DEPTH)/ui/display/display.gyp:display_types',
+          ],
         }],
       ]
     },

@@ -7,6 +7,10 @@
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
 #include "ui/ozone/ozone_platform.h"
 
+#if defined(OS_CHROMEOS)
+#include "ui/ozone/common/chromeos/native_display_delegate_ozone.h"
+#endif
+
 namespace ui {
 
 OzonePlatformDri::OzonePlatformDri()
@@ -31,6 +35,14 @@ OzonePlatformDri::GetInputMethodContextFactoryOzone() {
 ui::CursorFactoryOzone* OzonePlatformDri::GetCursorFactoryOzone() {
   return &cursor_factory_ozone_;
 }
+
+#if defined(OS_CHROMEOS)
+scoped_ptr<ui::NativeDisplayDelegate>
+OzonePlatformDri::CreateNativeDisplayDelegate() {
+  return scoped_ptr<ui::NativeDisplayDelegate>(
+      new NativeDisplayDelegateOzone());
+}
+#endif
 
 OzonePlatform* CreateOzonePlatformDri() { return new OzonePlatformDri; }
 
