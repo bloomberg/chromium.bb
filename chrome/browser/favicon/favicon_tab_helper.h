@@ -84,6 +84,7 @@ class FaviconTabHelper : public content::WebContentsObserver,
 
   // FaviconClient implementation:
   virtual FaviconService* GetFaviconService() OVERRIDE;
+  virtual bool IsBookmarked(const GURL& url) OVERRIDE;
 
  private:
   explicit FaviconTabHelper(content::WebContents* web_contents);

@@ -169,10 +169,14 @@ class HistoryRequestHandler {
 
 class TestFaviconClient : public FaviconClient {
  public:
+  virtual ~TestFaviconClient() {};
+
   virtual FaviconService* GetFaviconService() OVERRIDE {
     // Just give none NULL value, so overridden methods can be hit.
     return (FaviconService*)(1);
   }
+
+  virtual bool IsBookmarked(const GURL& url) OVERRIDE { return false; }
 };
 
 class TestFaviconHandlerDelegate : public FaviconHandlerDelegate {

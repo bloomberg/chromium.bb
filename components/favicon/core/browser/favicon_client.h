@@ -6,13 +6,18 @@
 #define COMPONENTS_FAVICON_CORE_BROWSER_FAVICON_CLIENT_H_
 
 class FaviconService;
+class GURL;
 
 // This class abstracts operations that depend on the embedder's environment,
-// e.g.
-// Chrome.
+// e.g. Chrome.
 class FaviconClient {
  public:
+  virtual ~FaviconClient() {};
+
   virtual FaviconService* GetFaviconService() = 0;
+
+  // Returns true if the specified URL is bookmarked.
+  virtual bool IsBookmarked(const GURL& url) = 0;
 };
 
 #endif  // COMPONENTS_FAVICON_CORE_BROWSER_FAVICON_CLIENT_H_
