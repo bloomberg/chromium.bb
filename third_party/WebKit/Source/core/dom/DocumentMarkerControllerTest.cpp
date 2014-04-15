@@ -88,6 +88,21 @@ void DocumentMarkerControllerTest::setBodyInnerHTML(const char* bodyContent)
     document().body()->setInnerHTML(String::fromUTF8(bodyContent), ASSERT_NO_EXCEPTION);
 }
 
+TEST_F(DocumentMarkerControllerTest, DidMoveToNewDocument)
+{
+    setBodyInnerHTML("<b><i>foo</i></b>");
+    RefPtr<Element> parent = toElement(document().body()->firstChild()->firstChild());
+    markNodeContents(parent.get());
+    EXPECT_EQ(1u, markerController().markers().size());
+    RefPtr<Document> anotherDocument = Document::create();
+    anotherDocument->adoptNode(parent.get(), ASSERT_NO_EXCEPTION);
+
+    // No more reference to marked node.
+    Heap::collectAllGarbage();
+    EXPECT_EQ(0u, markerController().markers().size());
+    EXPECT_EQ(0u, anotherDocument->markers().markers().size());
+}
+
 TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByNormalize)
 {
     setBodyInnerHTML("<b><i>foo</i></b>");
