@@ -461,8 +461,13 @@ Mosaic.prototype.onSplice_ = function(event) {
   this.layoutModel_.invalidateFromTile_(index);
 
   if (event.removed.length) {
-    for (var t = 0; t !== event.removed.length; t++)
-      this.removeChild(this.tiles_[index + t]);
+    for (var t = 0; t !== event.removed.length; t++) {
+      // If the layout for the tile has not done yet, the parent is null.
+      // And the layout will not be done after onSplice_ becuase it is removed
+      // from this.tiles_.
+      if (this.tiles_[index + t].parentNode)
+        this.removeChild(this.tiles_[index + t]);
+    }
 
     this.tiles_.splice(index, event.removed.length);
     this.scheduleLayout(Mosaic.LAYOUT_DELAY);
