@@ -3,17 +3,29 @@ Tests that evals with sourceURL comment are shown in scripts panel.
 Debugger was enabled.
 
 Running: testSourceURLCommentInInlineScript
+hasSourceURL: undefined
+hasSourceURL: undefined
 
 Running: testSourceURLComment
 function keepAlive() {}
+hasSourceURL: true
 
 Running: testDeprecatedSourceURLComment
 function keepAlive() {}
+hasSourceURL: true
+
+Running: testSourceURLAndMappingURLComment
+function keepAlive() {}
+//# sourceMappingURL=sourceMappingURL.map
+hasSourceURL: true
+sourceMapURL: sourceMappingURL.map
 
 Running: testSourceURLCommentInDynamicScript
 function keepAliveInDynamicScript() {}
+hasSourceURL: true
 
 Running: testNonRelativeURL
 function relativeURLScript() {}
+hasSourceURL: true
 Debugger was disabled.
 

@@ -30,15 +30,20 @@ function doDynamicScript()
     document.body.appendChild(scriptElement);
 }
 
+function doURLAndMappingURL()
+{
+    eval("function keepAlive() {}\n//# sourceMappingURL=sourceMappingURL.map\n//# sourceURL=sourceURL.js");
+}
+
 function test()
 
 {
     function forEachScriptMatchingURL(url, handler)
     {
-        var scripts = WebInspector.debuggerModel.scripts;
-        for (var i = 0; i < scripts.length; ++i) {
-            if (scripts[i].sourceURL.indexOf(url) !== -1)
-                handler(scripts[i]);
+        var scripts = WebInspector.debuggerModel._scripts;
+        for (var id in scripts) {
+            if (scripts[id].sourceURL.indexOf(url) !== -1)
+                handler(scripts[id]);
         }
     }
 
@@ -49,16 +54,11 @@ function test()
 
             function didShowScriptSource(sourceFrame)
             {
-                function checkScriptDoesNotHaveSourceURL(script)
-                {
-                    InspectorTest.assertTrue(!script.hasSourceURL, "hasSourceURL flag is set for inline script");
-                }
-
                 var panel = WebInspector.inspectorView.panel("sources");
                 var uiSourceCodes = panel._workspace.uiSourceCodes();
                 for (var i = 0; i < uiSourceCodes.length; ++i)
                     InspectorTest.assertTrue(uiSourceCodes[i].originURL().indexOf("inlineScriptURL.js") === -1, "sourceURL comment in inline script was used as a script name");
-                forEachScriptMatchingURL("source-url-comment.html", checkScriptDoesNotHaveSourceURL)
+                forEachScriptMatchingURL("source-url-comment.html", checkScriptSourceURL)
                 next();
             }
         },
@@ -70,13 +70,8 @@ function test()
 
             function didShowScriptSource(sourceFrame)
             {
-                function checkScriptHasSourceURL(script)
-                {
-                    InspectorTest.assertTrue(script.hasSourceURL, "hasSourceURL flag is not set for eval with sourceURL comment");
-                }
-
                 InspectorTest.addResult(sourceFrame.textEditor.text());
-                forEachScriptMatchingURL("evalURL.js", checkScriptHasSourceURL);
+                forEachScriptMatchingURL("evalURL.js", checkScriptSourceURL);
                 next();
             }
         },
@@ -88,13 +83,27 @@ function test()
 
             function didShowScriptSource(sourceFrame)
             {
-                function checkScriptHasSourceURL(script)
+                InspectorTest.addResult(sourceFrame.textEditor.text());
+                forEachScriptMatchingURL("deprecatedEvalURL.js", checkScriptSourceURL);
+                next();
+            }
+        },
+
+        function testSourceURLAndMappingURLComment(next)
+        {
+            InspectorTest.showScriptSource("sourceURL.js", didShowScriptSource);
+            InspectorTest.evaluateInPage("setTimeout(doURLAndMappingURL, 0)");
+
+            function didShowScriptSource(sourceFrame)
+            {
+                function checkScriptSourceURLAndMappingURL(script)
                 {
-                    InspectorTest.assertTrue(script.hasSourceURL, "hasSourceURL flag is not set for eval with sourceURL comment");
+                    InspectorTest.addResult("hasSourceURL: " + script.hasSourceURL);
+                    InspectorTest.addResult("sourceMapURL: " + script.sourceMapURL);
                 }
 
                 InspectorTest.addResult(sourceFrame.textEditor.text());
-                forEachScriptMatchingURL("deprecatedEvalURL.js", checkScriptHasSourceURL);
+                forEachScriptMatchingURL("sourceURL.js", checkScriptSourceURLAndMappingURL);
                 next();
             }
         },
@@ -106,13 +115,8 @@ function test()
 
             function didShowScriptSource(sourceFrame)
             {
-                function checkScriptHasSourceURL(script)
-                {
-                    InspectorTest.assertTrue(script.hasSourceURL, "hasSourceURL flag is not set for dynamic script with sourceURL comment");
-                }
-
                 InspectorTest.addResult(sourceFrame.textEditor.text());
-                forEachScriptMatchingURL("dynamicScriptURL.js", checkScriptHasSourceURL);
+                forEachScriptMatchingURL("dynamicScriptURL.js", checkScriptSourceURL);
                 next();
             }
         },
@@ -124,17 +128,17 @@ function test()
 
             function didShowScriptSource(sourceFrame)
             {
-                function checkScriptHasSourceURL(script)
-                {
-                    InspectorTest.assertTrue(script.hasSourceURL, "hasSourceURL flag is not set for eval with a non-relative URL in a sourceURL comment");
-                }
-
                 InspectorTest.addResult(sourceFrame.textEditor.text());
-                forEachScriptMatchingURL("nonRelativeURL.js", checkScriptHasSourceURL);
+                forEachScriptMatchingURL("nonRelativeURL.js", checkScriptSourceURL);
                 next();
             }
         }
     ]);
+
+    function checkScriptSourceURL(script)
+    {
+        InspectorTest.addResult("hasSourceURL: " + script.hasSourceURL);
+    }    
 };
 
 </script>

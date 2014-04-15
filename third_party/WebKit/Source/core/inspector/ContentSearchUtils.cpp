@@ -164,8 +164,6 @@ static String findMagicComment(const String& content, const String& name, MagicC
             closingCommentPos = content.find("*/", equalSignPos + 1);
             if (closingCommentPos == kNotFound)
                 return String();
-            if (!content.substring(closingCommentPos + 2).containsOnlyWhitespace())
-                return String();
         }
 
         break;
@@ -185,7 +183,7 @@ static String findMagicComment(const String& content, const String& name, MagicC
     String disallowedChars("\"' \t\n\r");
     for (unsigned i = 0; i < match.length(); ++i) {
         if (disallowedChars.find(match[i]) != kNotFound)
-            return String();
+            return match.substring(0, i);
     }
 
     return match;
