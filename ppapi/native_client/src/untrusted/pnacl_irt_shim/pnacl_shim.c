@@ -3152,14 +3152,14 @@ static void Pnacl_M25_PPB_NaCl_Private_DispatchEvent(PP_Instance instance, PP_Na
   iface->DispatchEvent(instance, event_type, resource_url, length_is_computable, loaded_bytes, total_bytes);
 }
 
-static void Pnacl_M25_PPB_NaCl_Private_NexeFileDidOpen(PP_Instance instance, int32_t pp_error, int32_t fd, int32_t http_status, int64_t nexe_bytes_read, const char* url) {
+static void Pnacl_M25_PPB_NaCl_Private_NexeFileDidOpen(PP_Instance instance, int32_t pp_error, int32_t fd, int32_t http_status, int64_t nexe_bytes_read, const char* url, int64_t time_since_open) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  iface->NexeFileDidOpen(instance, pp_error, fd, http_status, nexe_bytes_read, url);
+  iface->NexeFileDidOpen(instance, pp_error, fd, http_status, nexe_bytes_read, url, time_since_open);
 }
 
-static void Pnacl_M25_PPB_NaCl_Private_ReportLoadSuccess(PP_Instance instance, const char* url, uint64_t loaded_bytes, uint64_t total_bytes) {
+static void Pnacl_M25_PPB_NaCl_Private_ReportLoadSuccess(PP_Instance instance, PP_Bool is_pnacl, const char* url, uint64_t loaded_bytes, uint64_t total_bytes) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  iface->ReportLoadSuccess(instance, url, loaded_bytes, total_bytes);
+  iface->ReportLoadSuccess(instance, is_pnacl, url, loaded_bytes, total_bytes);
 }
 
 static void Pnacl_M25_PPB_NaCl_Private_ReportLoadError(PP_Instance instance, PP_NaClError error, const char* error_message, const char* console_message) {
@@ -3225,11 +3225,6 @@ static PP_Bool Pnacl_M25_PPB_NaCl_Private_GetIsInstalled(PP_Instance instance) {
 static void Pnacl_M25_PPB_NaCl_Private_SetIsInstalled(PP_Instance instance, PP_Bool is_installed) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
   iface->SetIsInstalled(instance, is_installed);
-}
-
-static void Pnacl_M25_PPB_NaCl_Private_SetReadyTime(PP_Instance instance) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  iface->SetReadyTime(instance);
 }
 
 static int32_t Pnacl_M25_PPB_NaCl_Private_GetExitStatus(PP_Instance instance) {
@@ -5149,8 +5144,8 @@ static const struct PPB_NaCl_Private_1_0 Pnacl_Wrappers_PPB_NaCl_Private_1_0 = {
     .ReportTranslationFinished = (void (*)(PP_Instance instance, PP_Bool success))&Pnacl_M25_PPB_NaCl_Private_ReportTranslationFinished,
     .OpenNaClExecutable = (PP_FileHandle (*)(PP_Instance instance, const char* file_url, uint64_t* file_token_lo, uint64_t* file_token_hi))&Pnacl_M25_PPB_NaCl_Private_OpenNaClExecutable,
     .DispatchEvent = (void (*)(PP_Instance instance, PP_NaClEventType event_type, const char* resource_url, PP_Bool length_is_computable, uint64_t loaded_bytes, uint64_t total_bytes))&Pnacl_M25_PPB_NaCl_Private_DispatchEvent,
-    .NexeFileDidOpen = (void (*)(PP_Instance instance, int32_t pp_error, int32_t fd, int32_t http_status, int64_t nexe_bytes_read, const char* url))&Pnacl_M25_PPB_NaCl_Private_NexeFileDidOpen,
-    .ReportLoadSuccess = (void (*)(PP_Instance instance, const char* url, uint64_t loaded_bytes, uint64_t total_bytes))&Pnacl_M25_PPB_NaCl_Private_ReportLoadSuccess,
+    .NexeFileDidOpen = (void (*)(PP_Instance instance, int32_t pp_error, int32_t fd, int32_t http_status, int64_t nexe_bytes_read, const char* url, int64_t time_since_open))&Pnacl_M25_PPB_NaCl_Private_NexeFileDidOpen,
+    .ReportLoadSuccess = (void (*)(PP_Instance instance, PP_Bool is_pnacl, const char* url, uint64_t loaded_bytes, uint64_t total_bytes))&Pnacl_M25_PPB_NaCl_Private_ReportLoadSuccess,
     .ReportLoadError = (void (*)(PP_Instance instance, PP_NaClError error, const char* error_message, const char* console_message))&Pnacl_M25_PPB_NaCl_Private_ReportLoadError,
     .ReportLoadAbort = (void (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_ReportLoadAbort,
     .NexeDidCrash = (void (*)(PP_Instance instance, const char* crash_log))&Pnacl_M25_PPB_NaCl_Private_NexeDidCrash,
@@ -5164,7 +5159,6 @@ static const struct PPB_NaCl_Private_1_0 Pnacl_Wrappers_PPB_NaCl_Private_1_0 = {
     .SetNaClReadyState = (void (*)(PP_Instance instance, PP_NaClReadyState ready_state))&Pnacl_M25_PPB_NaCl_Private_SetNaClReadyState,
     .GetIsInstalled = (PP_Bool (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_GetIsInstalled,
     .SetIsInstalled = (void (*)(PP_Instance instance, PP_Bool is_installed))&Pnacl_M25_PPB_NaCl_Private_SetIsInstalled,
-    .SetReadyTime = (void (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_SetReadyTime,
     .GetExitStatus = (int32_t (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_GetExitStatus,
     .SetExitStatus = (void (*)(PP_Instance instance, int32_t exit_status))&Pnacl_M25_PPB_NaCl_Private_SetExitStatus,
     .Vlog = (void (*)(const char* message))&Pnacl_M25_PPB_NaCl_Private_Vlog,

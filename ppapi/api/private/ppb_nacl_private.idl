@@ -276,10 +276,12 @@ interface PPB_NaCl_Private {
                        [in] int32_t fd,
                        [in] int32_t http_status,
                        [in] int64_t nexe_bytes_read,
-                       [in] str_t url);
+                       [in] str_t url,
+                       [in] int64_t time_since_open);
 
   /* Report that the nexe loaded successfully. */
   void ReportLoadSuccess([in] PP_Instance instance,
+                         [in] PP_Bool is_pnacl,
                          [in] str_t url,
                          [in] uint64_t loaded_bytes,
                          [in] uint64_t total_bytes);
@@ -333,9 +335,6 @@ interface PPB_NaCl_Private {
   /* Sets whether the plugin is an installed app. */
   void SetIsInstalled([in] PP_Instance instance,
                       [in] PP_Bool is_installed);
-
-  /* Sets the time the nexe became ready. */
-  void SetReadyTime([in] PP_Instance instance);
 
   /* Returns the exit status of the plugin process. */
   int32_t GetExitStatus([in] PP_Instance instance);

@@ -116,6 +116,20 @@ void HistogramEnumerateOsArch(const std::string& sandbox_isa) {
   HistogramEnumerate("NaCl.Client.OSArch", os_arch, kNaClOSArchMax);
 }
 
+// Records values up to 20 seconds.
+// These constants MUST match those in
+// ppapi/native_client/src/trusted/plugin/plugin.cc
+void HistogramTimeSmall(const std::string& name, int64_t sample) {
+  base::HistogramBase* counter = base::Histogram::FactoryTimeGet(
+      name,
+      base::TimeDelta::FromMilliseconds(1),
+      base::TimeDelta::FromMilliseconds(20000),
+      100,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  if (counter)
+    counter->AddTime(base::TimeDelta::FromMilliseconds(sample));
+}
+
 // Records values up to 3 minutes, 20 seconds.
 // These constants MUST match those in
 // ppapi/native_client/src/trusted/plugin/plugin.cc
@@ -131,6 +145,8 @@ void HistogramTimeMedium(const std::string& name, int64_t sample) {
 }
 
 // Records values up to 33 minutes.
+// These constants MUST match those in
+// ppapi/native_client/src/trusted/plugin/plugin.cc
 void HistogramTimeLarge(const std::string& name, int64_t sample) {
   base::HistogramBase* counter = base::Histogram::FactoryTimeGet(
       name,
@@ -140,6 +156,17 @@ void HistogramTimeLarge(const std::string& name, int64_t sample) {
       base::HistogramBase::kUmaTargetedHistogramFlag);
   if (counter)
     counter->AddTime(base::TimeDelta::FromMilliseconds(sample));
+}
+
+void HistogramStartupTimeSmall(const std::string& name,
+                               base::TimeDelta td,
+                               int64_t nexe_size) {
+  HistogramTimeSmall(name, static_cast<int64_t>(td.InMilliseconds()));
+  if (nexe_size > 0) {
+    float size_in_MB = static_cast<float>(nexe_size) / (1024.f * 1024.f);
+    HistogramTimeSmall(name + "PerMB",
+                       static_cast<int64_t>(td.InMilliseconds() / size_in_MB));
+  }
 }
 
 void HistogramStartupTimeMedium(const std::string& name,
@@ -234,7 +261,8 @@ void NexeLoadManager::NexeFileDidOpen(int32_t pp_error,
                                       int32_t fd,
                                       int32_t http_status,
                                       int64_t nexe_bytes_read,
-                                      const std::string& url) {
+                                      const std::string& url,
+                                      int64_t time_since_open) {
   // Check that we are on the main renderer thread.
   DCHECK(content::RenderThread::Get());
   VLOG(1) << "Plugin::NexeFileDidOpen (pp_error=" << pp_error << ")";
@@ -256,30 +284,44 @@ void NexeLoadManager::NexeFileDidOpen(int32_t pp_error,
       ReportLoadError(PP_NACL_ERROR_NEXE_LOAD_URL,
                       "could not load nexe url.");
     }
-    return;
   } else if (nexe_bytes_read == -1) {
     ReportLoadError(PP_NACL_ERROR_NEXE_STAT, "could not stat nexe file.");
-    return;
+  } else {
+    // TODO(dmichael): Can we avoid stashing away so much state?
+    nexe_size_ = nexe_bytes_read;
+    HistogramSizeKB("NaCl.Perf.Size.Nexe",
+                    static_cast<int32_t>(nexe_size_ / 1024));
+    HistogramStartupTimeMedium(
+        "NaCl.Perf.StartupTime.NexeDownload",
+        base::TimeDelta::FromMilliseconds(time_since_open),
+        nexe_size_);
+
+    // Inform JavaScript that we successfully downloaded the nacl module.
+    ProgressEvent progress_event(pp_instance_, PP_NACL_EVENT_PROGRESS, url,
+        true, nexe_size_, nexe_size_);
+    ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+        FROM_HERE,
+        base::Bind(&NexeLoadManager::DispatchEvent,
+                   weak_factory_.GetWeakPtr(),
+                   progress_event));
+
+    load_start_ = base::Time::Now();
   }
-
-  // TODO(dmichael): Can we avoid stashing away so much state?
-  nexe_size_ = nexe_bytes_read;
-  HistogramSizeKB("NaCl.Perf.Size.Nexe",
-                  static_cast<int32_t>(nexe_size_ / 1024));
-
-  // Inform JavaScript that we successfully downloaded the nacl module.
-  ProgressEvent progress_event(pp_instance_, PP_NACL_EVENT_PROGRESS, url, true,
-      nexe_size_, nexe_size_);
-  ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
-      FROM_HERE,
-      base::Bind(&NexeLoadManager::DispatchEvent,
-                 weak_factory_.GetWeakPtr(),
-                 progress_event));
 }
 
-void NexeLoadManager::ReportLoadSuccess(const std::string& url,
+void NexeLoadManager::ReportLoadSuccess(bool is_pnacl,
+                                        const std::string& url,
                                         uint64_t loaded_bytes,
                                         uint64_t total_bytes) {
+  ready_time_ = base::Time::Now();
+  if (!is_pnacl) {
+    base::TimeDelta load_module_time = ready_time_ - load_start_;
+    HistogramStartupTimeSmall(
+        "NaCl.Perf.StartupTime.LoadModule", load_module_time, nexe_size_);
+    HistogramStartupTimeMedium(
+        "NaCl.Perf.StartupTime.Total", ready_time_ - init_time_, nexe_size_);
+  }
+
   // Check that we are on the main renderer thread.
   DCHECK(content::RenderThread::Get());
   set_nacl_ready_state(PP_NACL_READY_STATE_DONE);

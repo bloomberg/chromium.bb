@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Thu Apr 10 15:09:29 2014. */
+/* From private/ppb_nacl_private.idl modified Tue Apr 15 09:24:03 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -283,9 +283,11 @@ struct PPB_NaCl_Private_1_0 {
                           int32_t fd,
                           int32_t http_status,
                           int64_t nexe_bytes_read,
-                          const char* url);
+                          const char* url,
+                          int64_t time_since_open);
   /* Report that the nexe loaded successfully. */
   void (*ReportLoadSuccess)(PP_Instance instance,
+                            PP_Bool is_pnacl,
                             const char* url,
                             uint64_t loaded_bytes,
                             uint64_t total_bytes);
@@ -323,8 +325,6 @@ struct PPB_NaCl_Private_1_0 {
   PP_Bool (*GetIsInstalled)(PP_Instance instance);
   /* Sets whether the plugin is an installed app. */
   void (*SetIsInstalled)(PP_Instance instance, PP_Bool is_installed);
-  /* Sets the time the nexe became ready. */
-  void (*SetReadyTime)(PP_Instance instance);
   /* Returns the exit status of the plugin process. */
   int32_t (*GetExitStatus)(PP_Instance instance);
   /* Sets the exit status of the plugin process. */

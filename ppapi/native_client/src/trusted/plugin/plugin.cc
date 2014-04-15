@@ -75,11 +75,6 @@ const int64_t kTimeSmallMin = 1;         // in ms
 const int64_t kTimeSmallMax = 20000;     // in ms
 const uint32_t kTimeSmallBuckets = 100;
 
-// Up to 3 minutes, 20 seconds
-const int64_t kTimeMediumMin = 10;         // in ms
-const int64_t kTimeMediumMax = 200000;     // in ms
-const uint32_t kTimeMediumBuckets = 100;
-
 const int64_t kSizeKBMin = 1;
 const int64_t kSizeKBMax = 512*1024;     // very large .nexe
 const uint32_t kSizeKBBuckets = 100;
@@ -140,15 +135,6 @@ void Plugin::HistogramTimeSmall(const std::string& name,
                                       ms,
                                       kTimeSmallMin, kTimeSmallMax,
                                       kTimeSmallBuckets);
-}
-
-void Plugin::HistogramTimeMedium(const std::string& name,
-                                 int64_t ms) {
-  if (ms < 0) return;
-  uma_interface_.HistogramCustomTimes(name,
-                                      ms,
-                                      kTimeMediumMin, kTimeMediumMax,
-                                      kTimeMediumBuckets);
 }
 
 void Plugin::HistogramSizeKB(const std::string& name,
@@ -445,7 +431,6 @@ Plugin* Plugin::New(PP_Instance pp_instance) {
 // failure. Note that module loading functions will log their own errors.
 bool Plugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
   PLUGIN_PRINTF(("Plugin::Init (argc=%" NACL_PRIu32 ")\n", argc));
-  init_time_ = NaClGetTimeOfDayMicroseconds();
   nacl_interface_->SetInitTime(pp_instance());
 
   url_util_ = pp::URLUtil_Dev::Get();
@@ -513,8 +498,6 @@ Plugin::Plugin(PP_Instance pp_instance)
       uses_nonsfi_mode_(false),
       wrapper_factory_(NULL),
       enable_dev_interfaces_(false),
-      init_time_(0),
-      ready_time_(0),
       time_of_last_progress_event_(0),
       nacl_interface_(NULL),
       uma_interface_(this) {
@@ -598,24 +581,6 @@ bool Plugin::HandleDocumentLoad(const pp::URLLoader& url_loader) {
   return true;
 }
 
-void Plugin::HistogramStartupTimeSmall(const std::string& name, float dt) {
-  int64_t nexe_size = nacl_interface_->GetNexeSize(pp_instance());
-  if (nexe_size > 0) {
-    float size_in_MB = static_cast<float>(nexe_size) / (1024.f * 1024.f);
-    HistogramTimeSmall(name, static_cast<int64_t>(dt));
-    HistogramTimeSmall(name + "PerMB", static_cast<int64_t>(dt / size_in_MB));
-  }
-}
-
-void Plugin::HistogramStartupTimeMedium(const std::string& name, float dt) {
-  int64_t nexe_size = nacl_interface_->GetNexeSize(pp_instance());
-  if (nexe_size > 0) {
-    float size_in_MB = static_cast<float>(nexe_size) / (1024.f * 1024.f);
-    HistogramTimeMedium(name, static_cast<int64_t>(dt));
-    HistogramTimeMedium(name + "PerMB", static_cast<int64_t>(dt / size_in_MB));
-  }
-}
-
 void Plugin::NexeFileDidOpen(int32_t pp_error) {
   NaClFileInfo tmp_info(nexe_downloader_.GetFileInfo());
   NaClFileInfoAutoCloser info(&tmp_info);
@@ -627,17 +592,18 @@ void Plugin::NexeFileDidOpen(int32_t pp_error) {
       nexe_bytes_read = stat_buf.st_size;
   }
 
-  nacl_interface_->NexeFileDidOpen(pp_instance(),
-                                   pp_error,
-                                   info.get_desc(),
-                                   nexe_downloader_.status_code(),
-                                   nexe_bytes_read,
-                                   nexe_downloader_.url().c_str());
-  HistogramStartupTimeMedium(
-      "NaCl.Perf.StartupTime.NexeDownload",
-      static_cast<float>(nexe_downloader_.TimeSinceOpenMilliseconds()));
+  nacl_interface_->NexeFileDidOpen(
+      pp_instance(),
+      pp_error,
+      info.get_desc(),
+      nexe_downloader_.status_code(),
+      nexe_bytes_read,
+      nexe_downloader_.url().c_str(),
+      nexe_downloader_.TimeSinceOpenMilliseconds());
 
-  load_start_ = NaClGetTimeOfDayMicroseconds();
+  if (nexe_bytes_read == -1)
+    return;
+
   nacl::scoped_ptr<nacl::DescWrapper>
       wrapper(wrapper_factory()->MakeFileDesc(info.Release().desc, O_RDONLY));
   NaClLog(4, "NexeFileDidOpen: invoking LoadNaClModule\n");
@@ -662,15 +628,6 @@ void Plugin::NexeFileDidOpenContinuation(int32_t pp_error) {
   if (was_successful) {
     NaClLog(4, "NexeFileDidOpenContinuation: success;"
             " setting histograms\n");
-    ready_time_ = NaClGetTimeOfDayMicroseconds();
-    nacl_interface_->SetReadyTime(pp_instance());
-    HistogramStartupTimeSmall(
-        "NaCl.Perf.StartupTime.LoadModule",
-        static_cast<float>(ready_time_ - load_start_) / NACL_MICROS_PER_MILLI);
-    HistogramStartupTimeMedium(
-        "NaCl.Perf.StartupTime.Total",
-        static_cast<float>(ready_time_ - init_time_) / NACL_MICROS_PER_MILLI);
-
     int64_t nexe_size = nacl_interface_->GetNexeSize(pp_instance());
     ReportLoadSuccess(nexe_size, nexe_size);
   } else {
@@ -1047,8 +1004,10 @@ bool Plugin::StreamAsFile(const nacl::string& url,
 
 void Plugin::ReportLoadSuccess(uint64_t loaded_bytes, uint64_t total_bytes) {
   const nacl::string& url = nexe_downloader_.url();
+  bool is_pnacl = (mime_type() == kPnaclMIMEType);
   nacl_interface_->ReportLoadSuccess(
-      pp_instance(), url.c_str(), loaded_bytes, total_bytes);
+      pp_instance(), PP_FromBool(is_pnacl), url.c_str(), loaded_bytes,
+      total_bytes);
 }
 
 

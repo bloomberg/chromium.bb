@@ -493,24 +493,28 @@ void NexeFileDidOpen(PP_Instance instance,
                      int32_t fd,
                      int32_t http_status,
                      int64_t nexe_bytes_read,
-                     const char* url) {
+                     const char* url,
+                     int64_t time_since_open) {
   nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   if (load_manager) {
     load_manager->NexeFileDidOpen(pp_error,
                                   fd,
                                   http_status,
                                   nexe_bytes_read,
-                                  url);
+                                  url,
+                                  time_since_open);
   }
 }
 
 void ReportLoadSuccess(PP_Instance instance,
+                       PP_Bool is_pnacl,
                        const char* url,
                        uint64_t loaded_bytes,
                        uint64_t total_bytes) {
   nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   if (load_manager)
-    load_manager->ReportLoadSuccess(url, loaded_bytes, total_bytes);
+    load_manager->ReportLoadSuccess(
+        PP_ToBool(is_pnacl), url, loaded_bytes, total_bytes);
 }
 
 void ReportLoadError(PP_Instance instance,
@@ -622,13 +626,6 @@ void SetIsInstalled(PP_Instance instance, PP_Bool installed) {
     load_manager->set_is_installed(PP_ToBool(installed));
 }
 
-void SetReadyTime(PP_Instance instance) {
-  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
-  DCHECK(load_manager);
-  if (load_manager)
-    load_manager->set_ready_time();
-}
-
 int32_t GetExitStatus(PP_Instance instance) {
   nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   DCHECK(load_manager);
@@ -692,7 +689,6 @@ const PPB_NaCl_Private nacl_interface = {
   &SetNaClReadyState,
   &GetIsInstalled,
   &SetIsInstalled,
-  &SetReadyTime,
   &GetExitStatus,
   &SetExitStatus,
   &Vlog,

@@ -396,12 +396,6 @@ class Plugin : public pp::Instance {
   // These are owned by the browser.
   std::map<nacl::string, NaClFileInfoAutoCloser*> url_file_info_map_;
 
-  // Used for NexeFileDidOpenContinuation
-  int64_t load_start_;
-
-  int64_t init_time_;
-  int64_t ready_time_;
-
   // Callback to receive .nexe and .dso download progress notifications.
   static void UpdateDownloadProgress(
       PP_Instance pp_instance,
