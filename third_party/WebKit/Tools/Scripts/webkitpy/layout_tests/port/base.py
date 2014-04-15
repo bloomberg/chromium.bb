@@ -1541,7 +1541,6 @@ class Port(object):
             VirtualTestSuite('softwarecompositing',
                              'compositing',
                              ['--disable-gpu',
-                              '--enable-software-compositing',
                               '--disable-gpu-compositing'],
                              use_legacy_naming=True),
             VirtualTestSuite('deferred',
