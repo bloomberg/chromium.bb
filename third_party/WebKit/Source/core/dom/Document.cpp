@@ -1617,7 +1617,7 @@ void Document::updateDistributionIfNeeded()
 {
     if (!childNeedsDistributionRecalc())
         return;
-    TRACE_EVENT0("webkit", "Document::recalcDistribution");
+    TRACE_EVENT0("webkit", "Document::updateDistributionIfNeeded");
     recalcDistribution();
 }
 
@@ -1627,7 +1627,7 @@ void Document::updateStyleInvalidationIfNeeded()
         return;
     if (!childNeedsStyleInvalidation())
         return;
-    TRACE_EVENT0("webkit", "Document::computeNeedsStyleRecalcState");
+    TRACE_EVENT0("webkit", "Document::updateStyleInvalidationIfNeeded");
     ASSERT(styleResolver());
 
     styleResolver()->ruleFeatureSet().styleInvalidator().invalidate(*this);
