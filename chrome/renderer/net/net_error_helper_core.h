@@ -11,8 +11,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
+#include "chrome/common/localized_error.h"
 #include "chrome/common/net/net_error_info.h"
 #include "url/gurl.h"
+
+namespace base {
+class ListValue;
+}
 
 namespace blink {
 struct WebURLError;
@@ -39,9 +44,11 @@ class NetErrorHelperCore {
   class Delegate {
    public:
     // Generates an error page's HTML for the given error.
-    virtual void GenerateLocalizedErrorPage(const blink::WebURLError& error,
-                                            bool is_failed_post,
-                                            std::string* html) const = 0;
+    virtual void GenerateLocalizedErrorPage(
+        const blink::WebURLError& error,
+        bool is_failed_post,
+        scoped_ptr<LocalizedError::ErrorPageParams> params,
+        std::string* html) const = 0;
 
     // Loads the given HTML in the main frame for use as an error page.
     virtual void LoadErrorPageInMainFrame(const std::string& html,
@@ -59,10 +66,13 @@ class NetErrorHelperCore {
     // Fetches an error page and calls into OnErrorPageFetched when done.  Any
     // previous fetch must either be canceled or finished before calling.  Can't
     // be called synchronously after a previous fetch completes.
-    virtual void FetchErrorPage(const GURL& url) = 0;
+    virtual void FetchNavigationCorrections(
+        const GURL& navigation_correction_url,
+        const std::string& navigation_correction_request_body) = 0;
 
-    // Cancels an error page fetch.  Does nothing if no fetch is ongoing.
-    virtual void CancelFetchErrorPage() = 0;
+    // Cancels fetching navigation corrections.  Does nothing if no fetch is
+    // ongoing.
+    virtual void CancelFetchNavigationCorrections() = 0;
 
     // Starts a reload of the page in the observed frame.
     virtual void ReloadPage() = 0;
@@ -97,15 +107,19 @@ class NetErrorHelperCore {
 
   // Called when an error page have has been retrieved over the network.  |html|
   // must be an empty string on error.
-  void OnAlternateErrorPageFetched(const std::string& html);
+  void OnNavigationCorrectionsFetched(const std::string& corrections,
+                                      const std::string& accept_languages,
+                                      bool is_rtl);
 
   // Notifies |this| that network error information from the browser process
   // has been received.
   void OnNetErrorInfo(chrome_common_net::DnsProbeStatus status);
 
-  void set_alt_error_page_url(const GURL& alt_error_page_url) {
-    alt_error_page_url_ = alt_error_page_url;
-  }
+  void OnSetNavigationCorrectionInfo(const GURL& navigation_correction_url,
+                                     const std::string& language,
+                                     const std::string& country_code,
+                                     const std::string& api_key,
+                                     const GURL& search_url);
   // Notifies |this| that the network's online status changed.
   // Handler for NetworkStateChanged notification from the browser process. If
   // the network state changes to online, this method is responsible for
@@ -143,6 +157,7 @@ class NetErrorHelperCore {
       FrameType frame_type,
       const blink::WebURLError& error,
       bool is_failed_post,
+      scoped_ptr<LocalizedError::ErrorPageParams> params,
       std::string* error_html);
 
   blink::WebURLError GetUpdatedError(const blink::WebURLError& error) const;
@@ -166,7 +181,11 @@ class NetErrorHelperCore {
   // not an error page.
   scoped_ptr<ErrorPageInfo> committed_error_page_info_;
 
-  GURL alt_error_page_url_;
+  GURL navigation_correction_url_;
+  std::string language_;
+  std::string country_code_;
+  std::string api_key_;
+  GURL search_url_;
 
   bool auto_reload_enabled_;
   scoped_ptr<base::Timer> auto_reload_timer_;

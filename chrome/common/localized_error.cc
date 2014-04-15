@@ -23,7 +23,6 @@
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
-#include "url/gurl.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -484,6 +483,12 @@ const char* GetIconClassForError(const std::string& error_domain,
 
 const char LocalizedError::kHttpErrorDomain[] = "http";
 
+LocalizedError::ErrorPageParams::ErrorPageParams() : suggest_reload(false) {
+}
+
+LocalizedError::ErrorPageParams::~ErrorPageParams() {
+}
+
 void LocalizedError::GetStrings(int error_code,
                                 const std::string& error_domain,
                                 const GURL& failed_url,
@@ -491,6 +496,7 @@ void LocalizedError::GetStrings(int error_code,
                                 bool stale_copy_in_cache,
                                 const std::string& locale,
                                 const std::string& accept_languages,
+                                scoped_ptr<ErrorPageParams> params,
                                 base::DictionaryValue* error_strings) {
   bool rtl = LocaleIsRTL();
   error_strings->SetString("textdirection", rtl ? "rtl" : "ltr");
@@ -553,14 +559,6 @@ void LocalizedError::GetStrings(int error_code,
   error_strings->SetString(
       "less", l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_LESS));
   error_strings->Set("summary", summary);
-  error_strings->SetBoolean("staleCopyInCache", stale_copy_in_cache);
-
-#if defined(OS_CHROMEOS)
-  error_strings->SetString(
-      "diagnose", l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_DIAGNOSE));
-#endif  // defined(OS_CHROMEOS)
-
-  error_strings->SetBoolean("staleCopyInCache", stale_copy_in_cache);
 
   if (options.details_resource_id != kErrorPagesNoDetails) {
     error_strings->SetString(
@@ -585,9 +583,7 @@ void LocalizedError::GetStrings(int error_code,
   error_strings->SetString("errorCode",
       l10n_util::GetStringFUTF16(IDS_ERRORPAGES_ERROR_CODE, error_string));
 
-  base::ListValue* suggestions = new base::ListValue();
-
-  // Platform specific instructions for diagnosing network issues on OSX and
+  // Platform specific information for diagnosing network issues on OSX and
   // Windows.
 #if defined(OS_MACOSX) || defined(OS_WIN)
   if (error_domain == net::kErrorDomain &&
@@ -617,7 +613,32 @@ void LocalizedError::GetStrings(int error_code,
   }
 #endif  // defined(OS_MACOSX) || defined(OS_WIN)
 
-  if (options.suggestions & SUGGEST_RELOAD) {
+  // If no parameters were provided, use the defaults.
+  if (!params) {
+    params.reset(new ErrorPageParams());
+    params->suggest_reload = !!(options.suggestions & SUGGEST_RELOAD);
+  }
+
+  base::ListValue* suggestions = NULL;
+  bool use_default_suggestions = true;
+  if (!params->override_suggestions) {
+    suggestions = new base::ListValue();
+  } else {
+    suggestions = params->override_suggestions.release();
+    use_default_suggestions = false;
+  }
+
+  error_strings->Set("suggestions", suggestions);
+
+  if (params->search_url.is_valid()) {
+    error_strings->SetString("searchHeader",
+        l10n_util::GetStringUTF16(IDS_ERRORPAGES_SUGGESTION_GOOGLE_SEARCH));
+    error_strings->SetString("searchUrl", params->search_url.spec());
+    error_strings->SetString("searchTerms", params->search_terms);
+  }
+
+  // Add the reload suggestion, if needed.
+  if (params->suggest_reload) {
     if (!is_post) {
       base::DictionaryValue* reload_button = new base::DictionaryValue;
       reload_button->SetString("msg",
@@ -636,9 +657,22 @@ void LocalizedError::GetStrings(int error_code,
       suggest_reload_repost->SetString("body",
           l10n_util::GetStringUTF16(
               IDS_ERRORPAGES_SUGGESTION_RELOAD_REPOST_BODY));
-      suggestions->Append(suggest_reload_repost);
+      // Add at the front, so it appears before other suggestions, in the case
+      // suggestions are being overridden by |params|.
+      suggestions->Insert(0, suggest_reload_repost);
     }
   }
+
+  // If not using the default suggestions, nothing else to do.
+  if (!use_default_suggestions)
+    return;
+
+  error_strings->SetBoolean("staleCopyInCache", stale_copy_in_cache);
+
+#if defined(OS_CHROMEOS)
+  error_strings->SetString(
+      "diagnose", l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_DIAGNOSE));
+#endif  // defined(OS_CHROMEOS)
 
   if (options.suggestions & SUGGEST_CHECK_CONNECTION) {
     base::DictionaryValue* suggest_check_connection = new base::DictionaryValue;
@@ -763,8 +797,6 @@ void LocalizedError::GetStrings(int error_code,
       suggestions->Append(suggest_learn_more);
     }
   }
-
-  error_strings->Set("suggestions", suggestions);
 }
 
 base::string16 LocalizedError::GetErrorDetails(const blink::WebURLError& error,
