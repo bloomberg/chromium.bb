@@ -54,7 +54,7 @@ void StrokeData::setLineDash(const DashArray& dashes, float dashOffset)
     for (unsigned i = 0; i < count; i++)
         intervals[i] = dashes[i % dashLength];
 
-    m_dash = adoptRef(new SkDashPathEffect(intervals.get(), count, dashOffset));
+    m_dash = adoptRef(SkDashPathEffect::Create(intervals.get(), count, dashOffset));
 }
 
 void StrokeData::setupPaint(SkPaint* paint, int length) const
@@ -105,7 +105,7 @@ void StrokeData::setupPaintDashPathEffect(SkPaint* paint, int length) const
             }
             SkScalar dashLengthSk = SkIntToScalar(dashLength);
             SkScalar intervals[2] = { dashLengthSk, dashLengthSk };
-            RefPtr<SkDashPathEffect> pathEffect = adoptRef(new SkDashPathEffect(intervals, 2, SkIntToScalar(phase)));
+            RefPtr<SkDashPathEffect> pathEffect = adoptRef(SkDashPathEffect::Create(intervals, 2, SkIntToScalar(phase)));
             paint->setPathEffect(pathEffect.get());
         }
     }

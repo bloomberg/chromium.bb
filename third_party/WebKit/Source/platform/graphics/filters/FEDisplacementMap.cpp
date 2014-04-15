@@ -185,7 +185,7 @@ PassRefPtr<SkImageFilter> FEDisplacementMap::createImageFilter(SkiaImageFilterBu
     SkImageFilter::CropRect cropRect = getCropRect(builder->cropOffset());
     // FIXME : Only applyHorizontalScale is used and applyVerticalScale is ignored
     // This can be fixed by adding a 2nd scale parameter to SkDisplacementMapEffect
-    return adoptRef(new SkDisplacementMapEffect(typeX, typeY, SkFloatToScalar(filter()->applyHorizontalScale(m_scale)), displ.get(), color.get(), &cropRect));
+    return adoptRef(SkDisplacementMapEffect::Create(typeX, typeY, SkFloatToScalar(filter()->applyHorizontalScale(m_scale)), displ.get(), color.get(), &cropRect));
 }
 
 static TextStream& operator<<(TextStream& ts, const ChannelSelectorType& type)

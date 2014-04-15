@@ -146,7 +146,7 @@ static SkColorFilter* createColorFilter(ColorMatrixType type, const float* value
         luminanceToAlphaMatrix(matrix);
         break;
     }
-    return new SkColorMatrixFilter(matrix);
+    return SkColorMatrixFilter::Create(matrix);
 }
 
 void FEColorMatrix::applySoftware()

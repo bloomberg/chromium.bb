@@ -396,7 +396,7 @@ PassRefPtr<SkImageFilter> FEComposite::createImageFilterInternal(SkiaImageFilter
         mode = adoptRef(SkArithmeticMode::Create(SkFloatToScalar(m_k1), SkFloatToScalar(m_k2), SkFloatToScalar(m_k3), SkFloatToScalar(m_k4), requiresPMColorValidation));
     else
         mode = adoptRef(SkXfermode::Create(toXfermode(m_type)));
-    return adoptRef(new SkXfermodeImageFilter(mode.get(), background.get(), foreground.get(), &cropRect));
+    return adoptRef(SkXfermodeImageFilter::Create(mode.get(), background.get(), foreground.get(), &cropRect));
 }
 
 static TextStream& operator<<(TextStream& ts, const CompositeOperationType& type)

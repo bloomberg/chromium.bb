@@ -157,7 +157,7 @@ void FEGaussianBlur::applySoftware()
 
     SkPaint paint;
     GraphicsContext* dstContext = resultImage->context();
-    paint.setImageFilter(new SkBlurImageFilter(stdX, stdY))->unref();
+    paint.setImageFilter(SkBlurImageFilter::Create(stdX, stdY))->unref();
 
     SkRect bounds = SkRect::MakeWH(absolutePaintRect().width(), absolutePaintRect().height());
     dstContext->saveLayer(&bounds, &paint);
@@ -172,7 +172,7 @@ PassRefPtr<SkImageFilter> FEGaussianBlur::createImageFilter(SkiaImageFilterBuild
     float stdX = filter()->applyHorizontalScale(m_stdX);
     float stdY = filter()->applyVerticalScale(m_stdY);
     SkImageFilter::CropRect rect = getCropRect(builder->cropOffset());
-    return adoptRef(new SkBlurImageFilter(SkFloatToScalar(stdX), SkFloatToScalar(stdY), input.get(), &rect));
+    return adoptRef(SkBlurImageFilter::Create(SkFloatToScalar(stdX), SkFloatToScalar(stdY), input.get(), &rect));
 }
 
 TextStream& FEGaussianBlur::externalRepresentation(TextStream& ts, int indent) const

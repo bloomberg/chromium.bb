@@ -79,7 +79,7 @@ PassRefPtr<SkImageFilter> SourceAlpha::createImageFilter(SkiaImageFilterBuilder*
         0, 0, 0, 0, 0,
         0, 0, 0, SK_Scalar1, 0
     };
-    RefPtr<SkColorFilter> colorFilter(adoptRef(new SkColorMatrixFilter(matrix)));
+    RefPtr<SkColorFilter> colorFilter(adoptRef(SkColorMatrixFilter::Create(matrix)));
     return adoptRef(SkColorFilterImageFilter::Create(colorFilter.get()));
 }
 

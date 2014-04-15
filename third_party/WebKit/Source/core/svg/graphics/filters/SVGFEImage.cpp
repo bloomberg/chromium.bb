@@ -201,7 +201,7 @@ PassRefPtr<SkImageFilter> FEImage::createImageFilterForRenderer(RenderObject* re
 
     GraphicsContext* context = builder->context();
     if (!context)
-        return adoptRef(new SkBitmapSource(SkBitmap()));
+        return adoptRef(SkBitmapSource::Create(SkBitmap()));
     AffineTransform contentTransformation;
     context->save();
     context->beginRecording(FloatRect(FloatPoint(), dstRect.size()));
@@ -209,7 +209,7 @@ PassRefPtr<SkImageFilter> FEImage::createImageFilterForRenderer(RenderObject* re
     SVGRenderingContext::renderSubtree(context, renderer, contentTransformation);
     RefPtr<DisplayList> displayList = context->endRecording();
     context->restore();
-    RefPtr<SkImageFilter> result = adoptRef(new SkPictureImageFilter(displayList->picture(), dstRect));
+    RefPtr<SkImageFilter> result = adoptRef(SkPictureImageFilter::Create(displayList->picture(), dstRect));
     return result.release();
 }
 
@@ -217,7 +217,7 @@ PassRefPtr<SkImageFilter> FEImage::createImageFilter(SkiaImageFilterBuilder* bui
 {
     RenderObject* renderer = referencedRenderer();
     if (!m_image && !renderer)
-        return adoptRef(new SkBitmapSource(SkBitmap()));
+        return adoptRef(SkBitmapSource::Create(SkBitmap()));
 
     setOperatingColorSpace(ColorSpaceDeviceRGB);
 
@@ -235,9 +235,9 @@ PassRefPtr<SkImageFilter> FEImage::createImageFilter(SkiaImageFilterBuilder* bui
     m_preserveAspectRatio->transformRect(dstRect, srcRect);
 
     if (!m_image->nativeImageForCurrentFrame())
-        return adoptRef(new SkBitmapSource(SkBitmap()));
+        return adoptRef(SkBitmapSource::Create(SkBitmap()));
 
-    RefPtr<SkImageFilter> result = adoptRef(new SkBitmapSource(m_image->nativeImageForCurrentFrame()->bitmap(), srcRect, dstRect));
+    RefPtr<SkImageFilter> result = adoptRef(SkBitmapSource::Create(m_image->nativeImageForCurrentFrame()->bitmap(), srcRect, dstRect));
     return result.release();
 }
 

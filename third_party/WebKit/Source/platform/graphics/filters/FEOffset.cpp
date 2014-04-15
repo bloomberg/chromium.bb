@@ -97,7 +97,7 @@ PassRefPtr<SkImageFilter> FEOffset::createImageFilter(SkiaImageFilterBuilder* bu
     RefPtr<SkImageFilter> input(builder->build(inputEffect(0), operatingColorSpace()));
     Filter* filter = this->filter();
     SkImageFilter::CropRect cropRect = getCropRect(builder->cropOffset());
-    return adoptRef(new SkOffsetImageFilter(SkFloatToScalar(filter->applyHorizontalScale(m_dx)), SkFloatToScalar(filter->applyVerticalScale(m_dy)), input.get(), &cropRect));
+    return adoptRef(SkOffsetImageFilter::Create(SkFloatToScalar(filter->applyHorizontalScale(m_dx)), SkFloatToScalar(filter->applyVerticalScale(m_dy)), input.get(), &cropRect));
 }
 
 TextStream& FEOffset::externalRepresentation(TextStream& ts, int indent) const

@@ -116,9 +116,9 @@ void FEMorphology::applySoftware()
     SkPaint paint;
     GraphicsContext* dstContext = resultImage->context();
     if (m_type == FEMORPHOLOGY_OPERATOR_DILATE)
-        paint.setImageFilter(new SkDilateImageFilter(radiusX, radiusY))->unref();
+        paint.setImageFilter(SkDilateImageFilter::Create(radiusX, radiusY))->unref();
     else if (m_type == FEMORPHOLOGY_OPERATOR_ERODE)
-        paint.setImageFilter(new SkErodeImageFilter(radiusX, radiusY))->unref();
+        paint.setImageFilter(SkErodeImageFilter::Create(radiusX, radiusY))->unref();
 
     SkRect bounds = SkRect::MakeWH(absolutePaintRect().width(), absolutePaintRect().height());
     dstContext->saveLayer(&bounds, &paint);
@@ -133,8 +133,8 @@ PassRefPtr<SkImageFilter> FEMorphology::createImageFilter(SkiaImageFilterBuilder
     SkScalar radiusY = SkFloatToScalar(filter()->applyVerticalScale(m_radiusY));
     SkImageFilter::CropRect rect = getCropRect(builder->cropOffset());
     if (m_type == FEMORPHOLOGY_OPERATOR_DILATE)
-        return adoptRef(new SkDilateImageFilter(radiusX, radiusY, input.get(), &rect));
-    return adoptRef(new SkErodeImageFilter(radiusX, radiusY, input.get(), &rect));
+        return adoptRef(SkDilateImageFilter::Create(radiusX, radiusY, input.get(), &rect));
+    return adoptRef(SkErodeImageFilter::Create(radiusX, radiusY, input.get(), &rect));
 }
 
 static TextStream& operator<<(TextStream& ts, const MorphologyOperatorType& type)

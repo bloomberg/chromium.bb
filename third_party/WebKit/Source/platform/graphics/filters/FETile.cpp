@@ -112,7 +112,7 @@ PassRefPtr<SkImageFilter> FETile::createImageFilter(SkiaImageFilterBuilder* buil
     RefPtr<SkImageFilter> input(builder->build(inputEffect(0), operatingColorSpace()));
     FloatRect srcRect = inputEffect(0) ? getRect(inputEffect(0)) : filter()->filterRegion();
     FloatRect dstRect = getRect(this);
-    return adoptRef(new SkTileImageFilter(srcRect, dstRect, input.get()));
+    return adoptRef(SkTileImageFilter::Create(srcRect, dstRect, input.get()));
 }
 
 TextStream& FETile::externalRepresentation(TextStream& ts, int indent) const
