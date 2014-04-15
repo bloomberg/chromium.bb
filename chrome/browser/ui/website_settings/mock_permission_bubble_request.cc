@@ -6,6 +6,7 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "grit/theme_resources.h"
 
 MockPermissionBubbleRequest::MockPermissionBubbleRequest()
     : granted_(false), cancelled_(false), finished_(false) {
@@ -34,7 +35,8 @@ MockPermissionBubbleRequest::MockPermissionBubbleRequest(
 MockPermissionBubbleRequest::~MockPermissionBubbleRequest() {}
 
 int MockPermissionBubbleRequest::GetIconID() const {
-  return 0;
+  // Use a valid icon ID to support UI tests.
+  return IDR_INFOBAR_MEDIA_STREAM_CAMERA;
 }
 
 base::string16 MockPermissionBubbleRequest::GetMessageText() const {

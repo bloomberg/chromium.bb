@@ -38,13 +38,11 @@ const CGFloat kTitlePaddingX = 50.0f;
 const CGFloat kCheckboxYAdjustment = 2.0f;
 
 const CGFloat kFontSize = 15.0f;
-const base::char16 kBulletPoint = 0x2022;
-
 }  // namespace
 
 @interface PermissionBubbleController ()
 
-// Returns an autoreleased NSView displaying the label for |request|.
+// Returns an autoreleased NSView displaying the icon and label for |request|.
 - (NSView*)labelForRequest:(PermissionBubbleRequest*)request;
 
 // Returns an autoreleased NSView displaying the title for the bubble
@@ -118,8 +116,8 @@ const base::char16 kBulletPoint = 0x2022;
 }
 
 - (void)showAtAnchor:(NSPoint)anchorPoint
-        withDelegate:(PermissionBubbleView::Delegate*)delegate
-         forRequests:(const std::vector<PermissionBubbleRequest*>&)requests
+         withDelegate:(PermissionBubbleView::Delegate*)delegate
+          forRequests:(const std::vector<PermissionBubbleRequest*>&)requests
          acceptStates:(const std::vector<bool>&)acceptStates
     customizationMode:(BOOL)customizationMode {
   DCHECK(!requests.empty());
@@ -252,19 +250,46 @@ const base::char16 kBulletPoint = 0x2022;
 
 - (NSView*)labelForRequest:(PermissionBubbleRequest*)request {
   DCHECK(request);
+  base::scoped_nsobject<NSView> permissionView(
+      [[NSView alloc] initWithFrame:NSZeroRect]);
+  base::scoped_nsobject<NSImageView> permissionIcon(
+      [[NSImageView alloc] initWithFrame:NSZeroRect]);
+  [permissionIcon setImage:ui::ResourceBundle::GetSharedInstance().
+      GetNativeImageNamed(request->GetIconID()).ToNSImage()];
+  [permissionIcon setFrameSize:[[permissionIcon image] size]];
+  [permissionView addSubview:permissionIcon];
+
   base::scoped_nsobject<NSTextField> permissionLabel(
       [[NSTextField alloc] initWithFrame:NSZeroRect]);
-  base::string16 label;
-  label.push_back(kBulletPoint);
-  label.push_back(' ');
-  label += request->GetMessageTextFragment();
+  base::string16 label = request->GetMessageTextFragment();
   [permissionLabel setDrawsBackground:NO];
   [permissionLabel setBezeled:NO];
   [permissionLabel setEditable:NO];
   [permissionLabel setSelectable:NO];
   [permissionLabel setStringValue:base::SysUTF16ToNSString(label)];
   [permissionLabel sizeToFit];
-  return permissionLabel.autorelease();
+  [permissionLabel setFrameOrigin:
+      NSMakePoint(NSWidth([permissionIcon frame]), 0)];
+  [permissionView addSubview:permissionLabel];
+
+  // Match the horizontal centers of the two subviews.  Note that the label's
+  // center is rounded down, and the icon's center, up.  It looks better that
+  // way - with the text's center slightly lower than the icon's center - if the
+  // height delta is not evenly split.
+  NSRect iconFrame = [permissionIcon frame];
+  NSRect labelFrame = [permissionLabel frame];
+  NSRect unionFrame = NSUnionRect(iconFrame, labelFrame);
+
+  iconFrame.origin.y =
+      std::ceil((NSHeight(unionFrame) - NSHeight(iconFrame)) / 2);
+  labelFrame.origin.y =
+      std::floor((NSHeight(unionFrame) - NSHeight(labelFrame)) / 2);
+
+  [permissionLabel setFrame:labelFrame];
+  [permissionIcon setFrame:iconFrame];
+  [permissionView setFrame:unionFrame];
+
+  return permissionView.autorelease();
 }
 
 - (NSView*)titleWithHostname:(const std::string&)host {

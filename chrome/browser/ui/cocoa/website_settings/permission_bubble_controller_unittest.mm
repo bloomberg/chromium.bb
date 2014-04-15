@@ -88,14 +88,20 @@ class PermissionBubbleControllerTest : public CocoaTest,
 
   NSTextField* FindTextFieldWithString(const std::string& text) {
     NSView* parent = base::mac::ObjCCastStrict<NSView>([controller_ bubble]);
-    NSString* title = base::SysUTF8ToNSString(text);
-    for (NSView* child in [parent subviews]) {
-      NSTextField* textField = base::mac::ObjCCast<NSTextField>(child);
-      if ([[textField stringValue] hasSuffix:title]) {
-        return textField;
+    return FindTextFieldWithString(parent, base::SysUTF8ToNSString(text));
+  }
+
+  NSTextField* FindTextFieldWithString(NSView* view, NSString* text) {
+    NSTextField* textField = nil;
+    for (NSView* child in [view subviews]) {
+      textField = base::mac::ObjCCast<NSTextField>(child);
+      if (![[textField stringValue] hasSuffix:text]) {
+        textField = FindTextFieldWithString(child, text);
+        if (textField)
+          break;
       }
     }
-    return nil;
+    return textField;
   }
 
  protected:
