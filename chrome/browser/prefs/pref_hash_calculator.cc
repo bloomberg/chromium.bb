@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/tracked/pref_hash_calculator_helper.h"
 #include "crypto/hmac.h"
@@ -137,6 +138,16 @@ PrefHashCalculator::ValidationResult PrefHashCalculator::Validate(
 
 std::string PrefHashCalculator::RetrieveLegacyDeviceId() const {
   if (!legacy_device_id_instance_) {
+    // Allow IO on this thread to retrieve the legacy device ID. The result of
+    // this operation is stored in |legacy_device_id_instance_| and will thus
+    // only happen at most once per PrefHashCalculator. This is not ideal, but
+    // this value is required synchronously to be able to continue loading prefs
+    // for this profile. This profile should then be migrated to a modern device
+    // ID and subsequent loads of this profile shouldn't need to run this code
+    // ever again.
+    // TODO(gab): Remove this when the legacy device ID (M33) becomes
+    // irrelevant.
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
     legacy_device_id_instance_.reset(
         new std::string(GenerateDeviceIdLikePrefMetricsServiceDid(
             get_legacy_device_id_callback_.Run(raw_device_id_))));
