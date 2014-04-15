@@ -67,6 +67,7 @@
   -webkit-box-flex: 1;
   /* To share the center line with the left pane. */
   -webkit-margin-start: -1px;
+  overflow-y: auto;
 }
 
 #language-options-details h3:not(:first-of-type) {
