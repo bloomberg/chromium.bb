@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_UTILS_H_
 
 #include "content/common/content_export.h"
+#include "content/common/service_worker/service_worker_status_code.h"
 #include "webkit/common/resource_type.h"
 
 namespace content {
@@ -24,6 +25,9 @@ class ServiceWorkerUtils {
   // Returns true if the feature is enabled (or not disabled) by command-line
   // flag.
   static bool IsFeatureEnabled();
+
+  // A helper for creating a do-nothing status callback.
+  static void NoOpStatusCallback(ServiceWorkerStatusCode status) {}
 
   // Returns true if |scope| matches |url|.
   CONTENT_EXPORT static bool ScopeMatches(const GURL& scope, const GURL& url);

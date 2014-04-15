@@ -178,6 +178,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void AddPendingControllee(ServiceWorkerProviderHost* provider_host);
   void RemovePendingControllee(ServiceWorkerProviderHost* provider_host);
 
+  // Returns if it has (non-pending) controllee.
+  bool HasControllee() const { return !controllee_providers_.empty(); }
+
   // Adds and removes Listeners.
   void AddListener(Listener* listener);
   void RemoveListener(Listener* listener);

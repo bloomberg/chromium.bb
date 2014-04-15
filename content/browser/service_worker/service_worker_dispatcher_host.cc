@@ -36,8 +36,6 @@ const uint32 kFilteredMessageClasses[] = {
   EmbeddedWorkerMsgStart,
 };
 
-void NoOpStatusCallback(ServiceWorkerStatusCode status) {}
-
 }  // namespace
 
 ServiceWorkerDispatcherHost::ServiceWorkerDispatcherHost(
@@ -221,7 +219,7 @@ void ServiceWorkerDispatcherHost::OnPostMessage(
 
   handle->version()->SendMessage(
       ServiceWorkerMsg_Message(message, sent_message_port_ids, new_routing_ids),
-      base::Bind(&NoOpStatusCallback));
+      base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
 }
 
 void ServiceWorkerDispatcherHost::OnProviderCreated(int provider_id) {

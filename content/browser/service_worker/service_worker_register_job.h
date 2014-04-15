@@ -90,6 +90,7 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
   void InstallAndContinue();
   void OnInstallFinished(ServiceWorkerStatusCode status);
   void ActivateAndContinue();
+  void OnActivateFinished(ServiceWorkerStatusCode status);
   void Complete(ServiceWorkerStatusCode status);
 
   void RunCallbacks(ServiceWorkerStatusCode status,

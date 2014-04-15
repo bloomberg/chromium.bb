@@ -196,13 +196,14 @@ void ServiceWorkerRegisterJob::UpdateAndContinue(
     return;
   }
 
-  // TODO: "If serviceWorkerRegistration.pendingWorker is not null..." then
-  // terminate the pending worker. It doesn't make sense to implement yet since
-  // we always activate the worker if install completed, so there can be no
-  // pending worker at this point.
+  // TODO(falken): "If serviceWorkerRegistration.pendingWorker is not null..."
+  // then terminate the pending worker. It doesn't make sense to implement yet
+  // since we always activate the worker if install completed, so there can be
+  // no pending worker at this point.
   DCHECK(!registration()->pending_version());
 
-  // TODO: Script fetching and comparing the old and new script belongs here.
+  // TODO(michaeln,falken): Script fetching and comparing the old and new
+  // script belongs here.
 
   // "Let serviceWorker be a newly-created ServiceWorker object..." and start
   // the worker.
@@ -256,27 +257,67 @@ void ServiceWorkerRegisterJob::OnInstallFinished(
     ServiceWorkerStatusCode status) {
   // "If any handler called waitUntil()..." and the resulting promise
   // is rejected, abort.
+  // TODO(kinuko,falken): For some error cases (e.g. ServiceWorker is
+  // unexpectedly terminated) we may want to retry sending the event again.
   if (status != SERVICE_WORKER_OK) {
     registration()->set_pending_version(NULL);
     Complete(status);
     return;
   }
 
-  // TODO: Per spec, only activate if no document is using the registration.
   ActivateAndContinue();
 }
 
 // This function corresponds to the spec's _Activate algorithm.
 void ServiceWorkerRegisterJob::ActivateAndContinue() {
   SetPhase(ACTIVATE);
-  // "Set serviceWorkerRegistration.pendingWorker to null."
-  registration()->set_pending_version(NULL);
 
-  // TODO: Dispatch the activate event.
   // TODO(michaeln): Persist the newly ACTIVE version.
-  pending_version()->SetStatus(ServiceWorkerVersion::ACTIVE);
+
+  // "If existingWorker is not null, then: wait for exitingWorker to finish
+  // handling any in-progress requests."
+  // See if we already have an active_version for the scope and it has
+  // controllee documents (if so activating the new version should wait
+  // until we have no documents controlled by the version).
+  if (registration()->active_version() &&
+      registration()->active_version()->HasControllee()) {
+    // TODO(kinuko,falken): Currently we immediately return if the existing
+    // registration already has an active version, so we shouldn't come
+    // this way.
+    NOTREACHED();
+    // TODO(falken): Register an continuation task to wait for NoControllees
+    // notification so that we can resume activation later (see comments
+    // in ServiceWorkerVersion::RemoveControllee).
+    Complete(SERVICE_WORKER_OK);
+    return;
+  }
+
+  // "Set serviceWorkerRegistration.pendingWorker to null."
+  // "Set serviceWorkerRegistration.activeWorker to activatingWorker."
+  registration()->set_pending_version(NULL);
   DCHECK(!registration()->active_version());
   registration()->set_active_version(pending_version());
+
+  // "Set serviceWorkerRegistration.activeWorker._state to activating."
+  // "Fire activate event on the associated ServiceWorkerGlobalScope object."
+  // "Set serviceWorkerRegistration.activeWorker._state to active."
+  pending_version()->DispatchActivateEvent(
+      base::Bind(&ServiceWorkerRegisterJob::OnActivateFinished,
+                 weak_factory_.GetWeakPtr()));
+}
+
+void ServiceWorkerRegisterJob::OnActivateFinished(
+    ServiceWorkerStatusCode status) {
+  // "If any handler called waitUntil()..." and the resulting promise
+  // is rejected, abort.
+  // TODO(kinuko,falken): For some error cases (e.g. ServiceWorker is
+  // unexpectedly terminated) we may want to retry sending the event again.
+  if (status != SERVICE_WORKER_OK) {
+    registration()->set_active_version(NULL);
+    Complete(status);
+    return;
+  }
+
   set_pending_version(NULL);
   Complete(SERVICE_WORKER_OK);
 }
