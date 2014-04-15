@@ -305,6 +305,16 @@ bool Slider::OnKeyPressed(const ui::KeyEvent& event) {
   return false;
 }
 
+void Slider::OnFocus() {
+  View::OnFocus();
+  SchedulePaint();
+}
+
+void Slider::OnBlur() {
+  View::OnBlur();
+  SchedulePaint();
+}
+
 void Slider::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN ||
       event->type() == ui::ET_GESTURE_TAP_DOWN) {
