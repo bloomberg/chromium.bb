@@ -581,7 +581,7 @@ MetadataCache.prototype.mergeProperties_ = function(entry, data) {
   if (data === null) return;
   var properties = this.cache_[entry.toURL()].properties;
   for (var type in data) {
-    if (data.hasOwnProperty(type)) {
+    if (data.hasOwnProperty(type) && !properties.hasOwnProperty(type)) {
       properties[type] = data[type];
       this.notifyObservers_(entry, type);
     }
