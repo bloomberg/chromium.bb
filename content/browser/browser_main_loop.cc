@@ -169,18 +169,7 @@ static void GLibLogHandler(const gchar* log_domain,
   if (!message)
     message = "<no message>";
 
-  if (strstr(message, "Loading IM context type") ||
-      strstr(message, "wrong ELF class: ELFCLASS64")) {
-    // http://crbug.com/9643
-    // Until we have a real 64-bit build or all of these 32-bit package issues
-    // are sorted out, don't fatal on ELF 32/64-bit mismatch warnings and don't
-    // spam the user with more than one of them.
-    static bool alerted = false;
-    if (!alerted) {
-      LOG(ERROR) << "Bug 9643: " << log_domain << ": " << message;
-      alerted = true;
-    }
-  } else if (strstr(message, "Unable to retrieve the file info for")) {
+  if (strstr(message, "Unable to retrieve the file info for")) {
     LOG(ERROR) << "GTK File code error: " << message;
   } else if (strstr(message, "Could not find the icon") &&
              strstr(log_domain, "Gtk")) {
@@ -203,8 +192,6 @@ static void GLibLogHandler(const gchar* log_domain,
              strstr(log_domain, "<unknown>")) {
     LOG(ERROR) << "DConf settings backend could not connect to session bus: "
                << "http://crbug.com/179797";
-  } else if (strstr(message, "XDG_RUNTIME_DIR variable not set")) {
-    LOG(ERROR) << message << " (http://bugs.chromium.org/97293)";
   } else if (strstr(message, "Attempting to store changes into") ||
              strstr(message, "Attempting to set the permissions of")) {
     LOG(ERROR) << message << " (http://bugs.chromium.org/161366)";
