@@ -10,11 +10,11 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/common/extensions/extension_file_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_l10n_util.h"
+#include "extensions/common/file_util.h"
 #include "extensions/common/manifest_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -141,7 +141,7 @@ scoped_ptr<base::DictionaryValue> ComponentExtensionIMEManagerImpl::GetManifest(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   std::string error;
   scoped_ptr<base::DictionaryValue> manifest(
-      extension_file_util::LoadManifest(file_path, &error));
+      extensions::file_util::LoadManifest(file_path, &error));
   if (!manifest.get())
     LOG(ERROR) << "Failed at getting manifest";
   if (!extension_l10n_util::LocalizeExtension(file_path,

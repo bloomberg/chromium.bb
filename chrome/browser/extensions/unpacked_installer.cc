@@ -18,12 +18,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/plugins/plugins_handler.h"
-#include "chrome/common/extensions/extension_file_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_l10n_util.h"
+#include "extensions/common/file_util.h"
 #include "extensions/common/id_util.h"
 #include "extensions/common/manifest.h"
 #include "sync/api/string_ordinal.h"
@@ -149,8 +149,9 @@ bool UnpackedInstaller::LoadFromCommandLine(const base::FilePath& path_in,
   }
 
   std::string error;
-  installer_.set_extension(extension_file_util::LoadExtension(
-      extension_path_, Manifest::COMMAND_LINE, GetFlags(), &error).get());
+  installer_.set_extension(
+      file_util::LoadExtension(
+          extension_path_, Manifest::COMMAND_LINE, GetFlags(), &error).get());
 
   if (!installer_.extension().get() ||
       !extension_l10n_util::ValidateExtensionLocales(
@@ -236,8 +237,7 @@ void UnpackedInstaller::GetAbsolutePath() {
   extension_path_ = base::MakeAbsoluteFilePath(extension_path_);
 
   std::string error;
-  if (!extension_file_util::CheckForIllegalFilenames(extension_path_,
-                                                     &error)) {
+  if (!file_util::CheckForIllegalFilenames(extension_path_, &error)) {
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
@@ -269,8 +269,9 @@ void UnpackedInstaller::LoadWithFileAccess(int flags) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   std::string error;
-  installer_.set_extension(extension_file_util::LoadExtension(
-      extension_path_, Manifest::UNPACKED, flags, &error).get());
+  installer_.set_extension(
+      file_util::LoadExtension(
+          extension_path_, Manifest::UNPACKED, flags, &error).get());
 
   if (!installer_.extension().get() ||
       !extension_l10n_util::ValidateExtensionLocales(

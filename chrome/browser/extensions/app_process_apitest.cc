@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/navigation_entry.h"
@@ -30,6 +29,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_map.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/file_util.h"
 #include "extensions/common/switches.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -303,7 +303,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_BookmarkAppGetsNormalProcess) {
 
   // Load an app as a bookmark app.
   std::string error;
-  scoped_refptr<const Extension> extension(extension_file_util::LoadExtension(
+  scoped_refptr<const Extension> extension(extensions::file_util::LoadExtension(
       test_data_dir_.AppendASCII("app_process"),
       extensions::Manifest::UNPACKED,
       Extension::FROM_BOOKMARK,

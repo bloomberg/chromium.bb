@@ -85,7 +85,7 @@ class UnpackedInstaller
   // the UI thread. In turn, once that gets the pref, it goes back to the
   // file thread with LoadWithFileAccess.
   // TODO(yoz): It would be nice to remove this ping-pong, but we need to know
-  // what file access flags to pass to extension_file_util::LoadExtension.
+  // what file access flags to pass to file_util::LoadExtension.
   void GetAbsolutePath();
   void CheckExtensionFileAccess();
   void LoadWithFileAccess(int flags);

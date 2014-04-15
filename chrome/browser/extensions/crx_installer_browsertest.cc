@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/render_view_host.h"
@@ -23,6 +22,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/feature_switch.h"
+#include "extensions/common/file_util.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/switches.h"
 #include "grit/generated_resources.h"
@@ -147,7 +147,7 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
     base::FilePath ext_path = test_data_dir_.AppendASCII(manifest_dir);
     std::string error;
     scoped_ptr<base::DictionaryValue> parsed_manifest(
-        extension_file_util::LoadManifest(ext_path, &error));
+        file_util::LoadManifest(ext_path, &error));
     if (!parsed_manifest.get() || !error.empty())
       return result.Pass();
 

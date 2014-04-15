@@ -19,12 +19,12 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/plugin_service.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/file_util.h"
 #include "extensions/common/id_util.h"
 #include "extensions/common/manifest_constants.h"
 #include "grit/browser_resources.h"
@@ -196,7 +196,7 @@ std::string ComponentLoader::AddOrReplace(const base::FilePath& path) {
   base::FilePath absolute_path = base::MakeAbsoluteFilePath(path);
   std::string error;
   scoped_ptr<base::DictionaryValue> manifest(
-      extension_file_util::LoadManifest(absolute_path, &error));
+      file_util::LoadManifest(absolute_path, &error));
   if (!manifest) {
     LOG(ERROR) << "Could not load extension from '" <<
                   absolute_path.value() << "'. " << error;

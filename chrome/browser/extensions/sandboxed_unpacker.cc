@@ -33,6 +33,7 @@
 #include "extensions/common/crx_file.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_l10n_util.h"
+#include "extensions/common/file_util.h"
 #include "extensions/common/id_util.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
@@ -167,7 +168,7 @@ bool FindWritableTempLocation(const base::FilePath& extensions_dir,
     return true;
 #endif
 
-  *temp_dir = extension_file_util::GetInstallTempDir(extensions_dir);
+  *temp_dir = file_util::GetInstallTempDir(extensions_dir);
   if (VerifyJunctionFreeLocation(temp_dir))
     return true;
   // Neither paths is link free chances are good installation will fail.

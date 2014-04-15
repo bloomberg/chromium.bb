@@ -14,11 +14,11 @@
 #include "base/memory/scoped_handle.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/extensions/extension_creator_filter.h"
-#include "chrome/common/extensions/extension_file_util.h"
 #include "crypto/rsa_private_key.h"
 #include "crypto/signature_creator.h"
 #include "extensions/common/crx_file.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/file_util.h"
 #include "extensions/common/id_util.h"
 #include "grit/generated_resources.h"
 #include "third_party/zlib/google/zip.h"
@@ -109,12 +109,11 @@ bool ExtensionCreator::ValidateManifest(const base::FilePath& extension_dir,
     create_flags |= Extension::REQUIRE_MODERN_MANIFEST_VERSION;
 
   scoped_refptr<Extension> extension(
-      extension_file_util::LoadExtension(
-          extension_dir,
-          extension_id,
-          Manifest::INTERNAL,
-          create_flags,
-          &error_message_));
+      file_util::LoadExtension(extension_dir,
+                               extension_id,
+                               Manifest::INTERNAL,
+                               create_flags,
+                               &error_message_));
   return !!extension.get();
 }
 

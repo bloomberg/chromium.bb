@@ -10,7 +10,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_dir.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "extensions/common/manifest_constants.h"
 #include "net/dns/mock_host_resolver.h"

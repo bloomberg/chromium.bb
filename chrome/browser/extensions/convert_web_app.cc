@@ -21,11 +21,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/web_application_info.h"
 #include "crypto/sha2.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/file_util.h"
 #include "extensions/common/manifest_constants.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -88,7 +88,7 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
     const Time& create_time,
     const base::FilePath& extensions_dir) {
   base::FilePath install_temp_dir =
-      extension_file_util::GetInstallTempDir(extensions_dir);
+      file_util::GetInstallTempDir(extensions_dir);
   if (install_temp_dir.empty()) {
     LOG(ERROR) << "Could not get path to profile temporary directory.";
     return NULL;

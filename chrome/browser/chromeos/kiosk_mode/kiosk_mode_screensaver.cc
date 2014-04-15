@@ -22,13 +22,13 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/sandboxed_unpacker.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
-#include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chromeos/login/login_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/file_util.h"
 #include "ui/wm/core/user_activity_detector.h"
 
 using extensions::Extension;
@@ -114,10 +114,10 @@ void ScreensaverUnpackerClient::LoadScreensaverExtension(
 
   std::string error;
   scoped_refptr<Extension> screensaver_extension =
-      extension_file_util::LoadExtension(screensaver_extension_path,
-                                         extensions::Manifest::COMPONENT,
-                                         Extension::NO_FLAGS,
-                                         &error);
+      extensions::file_util::LoadExtension(screensaver_extension_path,
+                                           extensions::Manifest::COMPONENT,
+                                           Extension::NO_FLAGS,
+                                           &error);
   if (!screensaver_extension.get()) {
     LOG(ERROR) << "Could not load screensaver extension from: "
                << screensaver_extension_path.value() << " due to: " << error;
@@ -185,7 +185,7 @@ KioskModeScreensaver::~KioskModeScreensaver() {
         content::BrowserThread::FILE,
         FROM_HERE,
         base::Bind(
-            &extension_file_util::DeleteFile, extension_base_path_, true));
+            &extensions::file_util::DeleteFile, extension_base_path_, true));
   }
 
   // In case we're shutting down without ever triggering the active

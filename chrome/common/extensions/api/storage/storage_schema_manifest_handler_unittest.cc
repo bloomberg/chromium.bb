@@ -12,9 +12,9 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/values.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/file_util.h"
 #include "extensions/common/manifest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -60,8 +60,7 @@ class StorageSchemaManifestHandlerTest : public testing::Test {
       return testing::AssertionFailure() << "Failed to create test extension";
     std::string error;
     std::vector<InstallWarning> warnings;
-    if (extension_file_util::ValidateExtension(
-            extension.get(), &error, &warnings))
+    if (file_util::ValidateExtension(extension.get(), &error, &warnings))
       return testing::AssertionSuccess();
     return testing::AssertionFailure() << error;
   }

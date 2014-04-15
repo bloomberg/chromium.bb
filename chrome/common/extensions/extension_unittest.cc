@@ -9,12 +9,12 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/command.h"
-#include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
 #include "chrome/common/url_constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_resource.h"
+#include "extensions/common/file_util.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "net/base/mime_sniffer.h"
@@ -173,8 +173,7 @@ TEST(ExtensionTest, GetAbsolutePathNoError) {
   EXPECT_TRUE(extension.get());
   std::string err;
   std::vector<InstallWarning> warnings;
-  EXPECT_TRUE(extension_file_util::ValidateExtension(extension.get(),
-                                                     &err, &warnings));
+  EXPECT_TRUE(file_util::ValidateExtension(extension.get(), &err, &warnings));
   EXPECT_EQ(0U, warnings.size());
 
   EXPECT_EQ(extension->path().AppendASCII("test.html").value(),

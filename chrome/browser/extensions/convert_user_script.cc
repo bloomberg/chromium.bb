@@ -17,10 +17,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/extensions/extension_file_util.h"
 #include "crypto/sha2.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/file_util.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/user_script.h"
 #include "url/gurl.h"
@@ -52,7 +52,7 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
   }
 
   base::FilePath install_temp_dir =
-      extension_file_util::GetInstallTempDir(extensions_dir);
+      file_util::GetInstallTempDir(extensions_dir);
   if (install_temp_dir.empty()) {
     *error = base::ASCIIToUTF16(
         "Could not get path to profile temporary directory.");

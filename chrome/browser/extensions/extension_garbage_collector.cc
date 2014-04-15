@@ -17,7 +17,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
-#include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/manifest_handlers/app_isolation_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -26,6 +25,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/file_util.h"
 
 namespace extensions {
 
@@ -46,7 +46,7 @@ void CheckExtensionDirectory(const base::FilePath& path,
   base::FilePath basename = path.BaseName();
   // Clean up temporary files left if Chrome crashed or quit in the middle
   // of an extension install.
-  if (basename.value() == extension_file_util::kTempDirectoryName) {
+  if (basename.value() == file_util::kTempDirectoryName) {
     if (clean_temp_dir)
       base::DeleteFile(path, true);  // Recursive.
     return;

@@ -25,6 +25,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_l10n_util.h"
+#include "extensions/common/file_util.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "grit/generated_resources.h"
@@ -202,8 +203,7 @@ bool Unpacker::Run() {
   }
 
   std::vector<InstallWarning> warnings;
-  if (!extension_file_util::ValidateExtension(extension.get(),
-                                              &error, &warnings)) {
+  if (!file_util::ValidateExtension(extension.get(), &error, &warnings)) {
     SetError(error);
     return false;
   }

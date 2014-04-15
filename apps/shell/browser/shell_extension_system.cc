@@ -9,7 +9,6 @@
 #include "apps/shell/browser/shell_app_runtime_api.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/common/extensions/extension_file_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
@@ -23,6 +22,7 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/quota_service.h"
 #include "extensions/browser/runtime_data.h"
+#include "extensions/common/file_util.h"
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -38,11 +38,8 @@ ShellExtensionSystem::~ShellExtensionSystem() {
 
 bool ShellExtensionSystem::LoadAndLaunchApp(const base::FilePath& app_dir) {
   std::string load_error;
-  scoped_refptr<Extension> extension =
-      extension_file_util::LoadExtension(app_dir,
-                                         extensions::Manifest::COMMAND_LINE,
-                                         Extension::NO_FLAGS,
-                                         &load_error);
+  scoped_refptr<Extension> extension = file_util::LoadExtension(
+      app_dir, Manifest::COMMAND_LINE, Extension::NO_FLAGS, &load_error);
   if (!extension) {
     LOG(ERROR) << "Loading extension at " << app_dir.value()
         << " failed with: " << load_error;
