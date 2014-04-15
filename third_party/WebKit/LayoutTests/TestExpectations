@@ -1116,5 +1116,3 @@ crbug.com/362501 [ Mac ] svg/text/obb-paintserver.html [ ImageOnlyFailure Crash 
 crbug.com/363029 [ Win Debug ] virtual/gpu/fast/canvas/canvas-composite-stroke-alpha.html [ Pass Timeout ]
 
 crbug.com/362503 http/tests/xmlhttprequest/xmlhttprequest-responseXML-exception.html [ Pass Timeout ]
-
-crbug.com/363025 virtual/serviceworker/http/tests/serviceworker/state.html [ Failure Pass ]

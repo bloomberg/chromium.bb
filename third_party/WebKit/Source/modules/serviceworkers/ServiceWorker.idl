@@ -29,13 +29,8 @@
  */
 [
     RuntimeEnabled=ServiceWorker
-] interface ServiceWorker : EventTarget {
+] interface ServiceWorker {
 
     // FIXME: Should inherit this from Worker.
     [Custom, RaisesException] void postMessage(SerializedScriptValue message, optional MessagePort[] messagePorts);
-
-    readonly attribute DOMString state;
-    attribute EventHandler onstatechange;
 };
-
-ServiceWorker implements AbstractWorker;

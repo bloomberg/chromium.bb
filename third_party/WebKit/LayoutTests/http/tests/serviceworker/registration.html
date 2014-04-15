@@ -8,7 +8,7 @@
     t.step(function() {
         navigator.serviceWorker.register(
             'resources/registration-worker.js',
-            {scope: '/registration/*'}
+            {scope: '/*'}
         ).then(
             t.step_func(function(worker) {
                 assert_true(worker instanceof ServiceWorker,

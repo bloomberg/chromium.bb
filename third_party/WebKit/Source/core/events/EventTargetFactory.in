@@ -40,7 +40,6 @@ modules/mediastream/RTCDTMFSender
 modules/mediastream/RTCDataChannel
 modules/mediastream/RTCPeerConnection
 modules/notifications/Notification
-modules/serviceworkers/ServiceWorker
 modules/serviceworkers/ServiceWorkerGlobalScope
 modules/speech/SpeechRecognition
 modules/speech/SpeechSynthesisUtterance

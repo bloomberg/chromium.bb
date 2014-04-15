@@ -31,9 +31,7 @@
 #ifndef ServiceWorker_h
 #define ServiceWorker_h
 
-#include "bindings/v8/ScriptWrappable.h"
 #include "bindings/v8/SerializedScriptValue.h"
-#include "core/workers/AbstractWorker.h"
 #include "public/platform/WebServiceWorker.h"
 #include "public/platform/WebServiceWorkerProxy.h"
 #include "wtf/OwnPtr.h"
@@ -50,31 +48,30 @@ namespace WebCore {
 class NewScriptState;
 
 class ServiceWorker
-    : public AbstractWorker
-    , public ScriptWrappable
+    : public RefCounted<ServiceWorker>
     , public blink::WebServiceWorkerProxy {
 public:
-    static PassRefPtr<ServiceWorker> create(ExecutionContext*, PassOwnPtr<blink::WebServiceWorker>);
-
-    virtual ~ServiceWorker() { }
+    static PassRefPtr<ServiceWorker> create(PassOwnPtr<blink::WebServiceWorker> worker)
+    {
+        return adoptRef(new ServiceWorker(worker));
+    }
 
     // For CallbackPromiseAdapter
     typedef blink::WebServiceWorker WebType;
-    static PassRefPtr<ServiceWorker> from(NewScriptState*, WebType* worker);
+    static PassRefPtr<ServiceWorker> from(NewScriptState*, WebType* worker)
+    {
+        return create(adoptPtr(worker));
+    }
+
+    virtual ~ServiceWorker() { }
 
     void postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, ExceptionState&);
-
-    const AtomicString& state() const;
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
 
     // WebServiceWorkerProxy overrides.
     virtual void dispatchStateChangeEvent() OVERRIDE;
 
-    // AbstractWorker overrides.
-    virtual const AtomicString& interfaceName() const OVERRIDE;
-
 private:
-    ServiceWorker(ExecutionContext*, PassOwnPtr<blink::WebServiceWorker>);
+    explicit ServiceWorker(PassOwnPtr<blink::WebServiceWorker>);
 
     OwnPtr<blink::WebServiceWorker> m_outerWorker;
 };

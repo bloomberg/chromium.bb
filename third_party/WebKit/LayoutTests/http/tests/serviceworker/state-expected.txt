@@ -1,3 +1,0 @@
-
-FAIL Service Worker state property and "statechange" event assert_true: the service worker should be in a state up to "installing". expected true got false
-
