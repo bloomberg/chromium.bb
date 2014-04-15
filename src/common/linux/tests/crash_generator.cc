@@ -203,7 +203,14 @@ bool CrashGenerator::CreateChildCrash(
       // tkill returns '0'.  Retry a couple of times if the signal doesn't get
       // through on the first go:
       // https://code.google.com/p/google-breakpad/issues/detail?id=579
-      for (int i = 0; i < 60; i++) {
+#if defined(__ANDROID__)
+      const int kRetries = 60;
+      const unsigned int kSleepTimeInSeconds = 1;
+#else
+      const int kRetries = 1;
+      const unsigned int kSleepTimeInSeconds = 600;
+#endif
+      for (int i = 0; i < kRetries; i++) {
         if (tkill(*GetThreadIdPointer(crash_thread), crash_signal) == -1) {
           perror("CrashGenerator: Failed to kill thread by signal");
         } else {
@@ -216,7 +223,7 @@ bool CrashGenerator::CreateChildCrash(
           // really poll and wait for the kernel to declare the signal has been
           // delivered.  If it has, and things worked, we'd be killed, so the
           // sleep length doesn't really matter.
-          sleep(1);
+          sleep(kSleepTimeInSeconds);
         }
       }
     } else {
