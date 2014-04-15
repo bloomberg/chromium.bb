@@ -8,8 +8,7 @@
    the result can then be packed into a multi-CRX zip file.
 
    This script depends on and pulls in the translator nexes and libraries
-   from the toolchain directory (so that must be downloaded first) and
-   it depends on the pnacl_irt_shim.
+   from the PNaCl translator. It also depends on the pnacl_irt_shim.
 """
 
 import json
@@ -180,12 +179,16 @@ class PnaclPackaging(object):
 ######################################################################
 
 class PnaclDirs(object):
-  toolchain_dir = J(NACL_ROOT, 'toolchain')
-  output_dir = J(toolchain_dir, 'pnacl-package')
+  translator_dir = None
+  output_dir = None
+
+  @staticmethod
+  def SetTranslatorRoot(d):
+    PnaclDirs.translator_dir = d
 
   @staticmethod
   def TranslatorRoot():
-    return J(PnaclDirs.toolchain_dir, 'pnacl_translator')
+    return PnaclDirs.translator_dir
 
   @staticmethod
   def LibDir(target_arch):
@@ -193,8 +196,7 @@ class PnaclDirs(object):
 
   @staticmethod
   def SandboxedCompilerDir(target_arch):
-    return J(PnaclDirs.toolchain_dir,
-             'pnacl_translator', StandardArch(target_arch), 'bin')
+    return J(PnaclDirs.TranslatorRoot(), StandardArch(target_arch), 'bin')
 
   @staticmethod
   def SetOutputDir(d):
@@ -256,6 +258,9 @@ def CopyFlattenDirsAndPrefix(src_dir, arch, dest_dir):
   When copying, also rename the files such that they match the white-listing
   pattern in chrome/browser/nacl_host/nacl_file_host.cc.
   """
+  if not os.path.isdir(src_dir):
+    raise Exception('Copy dir failed, directory does not exist: %s' % src_dir)
+
   for (root, dirs, files) in os.walk(src_dir, followlinks=True):
     for f in files:
       # Assume a flat directory.
@@ -331,6 +336,8 @@ def Main():
                     help='Path of the info template file')
   parser.add_option('--tool_revisions_path', dest='tool_revisions_path',
                     default=None, help='Location of NaCl TOOL_REVISIONS file.')
+  parser.add_option('--pnacl_translator_path', dest='pnacl_translator_path',
+                    default=None, help='Location of PNaCl translator.')
   parser.add_option('-v', '--verbose', dest='verbose', default=False,
                     action='store_true',
                     help='Print verbose debug messages.')
@@ -344,11 +351,16 @@ def Main():
                % (options, args))
 
   # Set destination directory before doing any cleaning, etc.
-  if options.dest:
-    PnaclDirs.SetOutputDir(options.dest)
+  if options.dest is None:
+    raise Exception('Destination path must be set.')
+  PnaclDirs.SetOutputDir(options.dest)
 
   if options.clean:
     Clean()
+
+  if options.pnacl_translator_path is None:
+    raise Exception('PNaCl translator path must be set.')
+  PnaclDirs.SetTranslatorRoot(options.pnacl_translator_path)
 
   if options.info_template_path:
     PnaclPackaging.SetPnaclInfoTemplatePath(options.info_template_path)

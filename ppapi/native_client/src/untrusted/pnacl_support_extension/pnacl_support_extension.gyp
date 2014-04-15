@@ -10,6 +10,29 @@
   ],
   'targets': [
   {
+    'target_name': 'untar_pnacl_translator',
+    'type': 'none',
+    'actions': [{
+      'action_name': 'Untar pnacl_translator',
+      'description': 'Untar pnacl_translator',
+      'inputs': [
+        '<(DEPTH)/native_client/build/cygtar.py',
+        '<(DEPTH)/native_client/toolchain/.tars/naclsdk_pnacl_translator.tgz',
+      ],
+      'outputs': ['<(SHARED_INTERMEDIATE_DIR)/pnacl_translator/stamp.untar'],
+      'action': [
+        'python',
+        '<(DEPTH)/native_client/build/untar_toolchain.py',
+        '--tool', 'pnacl',
+        '--tmp', '<(SHARED_INTERMEDIATE_DIR)/temp/untar',
+        '--sdk', '<(SHARED_INTERMEDIATE_DIR)/temp/sdk',
+        '--os', '<(OS)',
+        '--fin', '<(SHARED_INTERMEDIATE_DIR)/pnacl_translator',
+        '<(DEPTH)/native_client/toolchain/.tars/naclsdk_pnacl_translator.tgz',
+      ],
+    }],
+  },
+  {
     'target_name': 'pnacl_support_extension',
     'type': 'none',
     'conditions': [
@@ -17,6 +40,7 @@
         'dependencies': [
           '../../../../../ppapi/native_client/src/untrusted/pnacl_irt_shim/pnacl_irt_shim.gyp:pnacl_irt_shim_browser',
           '../../../../../native_client/tools.gyp:prep_toolchain',
+          'untar_pnacl_translator',
         ],
         'sources': [
           'pnacl_component_crx_gen.py',
@@ -29,7 +53,7 @@
             'inputs': [
               'pnacl_component_crx_gen.py',
               # A stamp file representing the contents of pnacl_translator.
-              '<(DEPTH)/native_client/toolchain/<(OS)_x86/pnacl_translator/SOURCE_SHA1',
+              '<(SHARED_INTERMEDIATE_DIR)/pnacl_translator/stamp.untar',
               '<(DEPTH)/native_client/pnacl/driver/pnacl_info_template.json',
               '<(DEPTH)/native_client/TOOL_REVISIONS',
             ],
@@ -161,6 +185,7 @@
               '<@(lib_overrides)',
               '--target_arch=<(target_arch)',
               '--info_template_path=<(DEPTH)/native_client/pnacl/driver/pnacl_info_template.json',
+              '--pnacl_translator_path=<(SHARED_INTERMEDIATE_DIR)/pnacl_translator',
               '--tool_revisions_path=<(DEPTH)/native_client/TOOL_REVISIONS',
               # ABI Version Number.
               '1',
