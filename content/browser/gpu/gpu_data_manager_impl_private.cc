@@ -217,17 +217,25 @@ void DisplayReconfigCallback(CGDirectDisplayID display,
       reinterpret_cast<GpuDataManagerImpl*>(gpu_data_manager);
   DCHECK(manager);
 
+  // Display change.
+  bool display_changed = false;
   uint32_t displayCount;
   CGGetActiveDisplayList(0, NULL, &displayCount);
-
-  bool fireGpuSwitch = flags & kCGDisplayAddFlag;
-
   if (displayCount != manager->GetDisplayCount()) {
     manager->SetDisplayCount(displayCount);
-    fireGpuSwitch = true;
+    display_changed = true;
   }
 
-  if (fireGpuSwitch)
+  // Gpu change.
+  bool gpu_changed = false;
+  if (flags & kCGDisplayAddFlag) {
+    uint32 vendor_id, device_id;
+    if (gpu::CollectGpuID(&vendor_id, &device_id) == gpu::kGpuIDSuccess) {
+      gpu_changed = manager->UpdateActiveGpu(vendor_id, device_id);
+    }
+  }
+
+  if (display_changed || gpu_changed)
     manager->HandleGpuSwitch();
 }
 #endif  // OS_MACOSX
@@ -882,34 +890,36 @@ base::ListValue* GpuDataManagerImplPrivate::GetLogMessages() const {
 }
 
 void GpuDataManagerImplPrivate::HandleGpuSwitch() {
-  // Check if the active gpu has changed.
-  uint32 vendor_id, device_id;
-  gpu::GPUInfo::GPUDevice* active = NULL;
-  gpu::GPUInfo::GPUDevice* old_active = NULL;
-  if (gpu::CollectGpuID(&vendor_id, &device_id) == gpu::kGpuIDSuccess) {
+  GpuDataManagerImpl::UnlockedSession session(owner_);
+  observer_list_->Notify(&GpuDataManagerObserver::OnGpuSwitching);
+}
+
+bool GpuDataManagerImplPrivate::UpdateActiveGpu(
+    uint32 vendor_id, uint32 device_id) {
+  if (gpu_info_.gpu.vendor_id == vendor_id &&
+      gpu_info_.gpu.device_id == device_id) {
+    // The primary GPU is active.
     if (gpu_info_.gpu.active)
-      old_active = &gpu_info_.gpu;
-    if (gpu_info_.gpu.vendor_id == vendor_id &&
-        gpu_info_.gpu.device_id == device_id)
-      active = &gpu_info_.gpu;
+      return false;
+    gpu_info_.gpu.active = true;
+    for (size_t ii = 0; ii < gpu_info_.secondary_gpus.size(); ++ii)
+      gpu_info_.secondary_gpus[ii].active = false;
+  } else {
+    // A secondary GPU is active.
     for (size_t ii = 0; ii < gpu_info_.secondary_gpus.size(); ++ii) {
-      gpu::GPUInfo::GPUDevice& gpu = gpu_info_.secondary_gpus[ii];
-      if (gpu.active)
-        old_active = &gpu;
-      if (gpu.vendor_id == vendor_id && gpu.device_id == device_id)
-        active = &gpu;
+      if (gpu_info_.secondary_gpus[ii].vendor_id == vendor_id &&
+          gpu_info_.secondary_gpus[ii].device_id == device_id) {
+        if (gpu_info_.secondary_gpus[ii].active)
+          return false;
+        gpu_info_.secondary_gpus[ii].active = true;
+      } else {
+        gpu_info_.secondary_gpus[ii].active = false;
+      }
     }
-    DCHECK(active && old_active);
-    if (active != old_active) {  // A different GPU is used.
-      old_active->active = false;
-      active->active = true;
-      UpdateGpuInfoHelper();
-    }
+    gpu_info_.gpu.active = false;
   }
-  {
-    GpuDataManagerImpl::UnlockedSession session(owner_);
-    observer_list_->Notify(&GpuDataManagerObserver::OnGpuSwitching);
-  }
+  UpdateGpuInfoHelper();
+  return true;
 }
 
 bool GpuDataManagerImplPrivate::CanUseGpuBrowserCompositor() const {

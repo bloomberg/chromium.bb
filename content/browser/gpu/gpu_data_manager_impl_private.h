@@ -107,6 +107,8 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   void SetDisplayCount(unsigned int display_count);
   unsigned int GetDisplayCount() const;
 
+  bool UpdateActiveGpu(uint32 vendor_id, uint32 device_id);
+
   void OnGpuProcessInitFailure();
 
   virtual ~GpuDataManagerImplPrivate();

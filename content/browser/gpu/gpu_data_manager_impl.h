@@ -166,6 +166,10 @@ class CONTENT_EXPORT GpuDataManagerImpl
   void SetDisplayCount(unsigned int display_count);
   unsigned int GetDisplayCount() const;
 
+  // Set the active gpu.
+  // Return true if it's a different GPU from the previous active one.
+  bool UpdateActiveGpu(uint32 vendor_id, uint32 device_id);
+
   // Called when GPU process initialization failed.
   void OnGpuProcessInitFailure();
 
