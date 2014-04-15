@@ -11,7 +11,6 @@
 #include "base/version.h"
 #include "chrome/browser/devtools/devtools_adb_bridge.h"
 #include "chrome/browser/devtools/devtools_target_impl.h"
-#include "chrome/browser/devtools/port_forwarding_controller.h"
 #include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/browser/browser_thread.h"
@@ -54,8 +53,8 @@ const char kGuestList[] = "guests";
 const char kAdbModelField[] = "adbModel";
 const char kAdbConnectedField[] = "adbConnected";
 const char kAdbSerialField[] = "adbSerial";
-const char kAdbPortStatus[] = "adbPortStatus";
 const char kAdbBrowsersList[] = "browsers";
+const char kAdbDeviceIdFormat[] = "device:%s";
 
 const char kAdbBrowserNameField[] = "adbBrowserName";
 const char kAdbBrowserVersionField[] = "adbBrowserVersion";
@@ -381,13 +380,6 @@ void AdbTargetsUIHandler::Open(const std::string& browser_id,
 
 void AdbTargetsUIHandler::RemoteDevicesChanged(
     DevToolsAdbBridge::RemoteDevices* devices) {
-  PortForwardingController* port_forwarding_controller =
-      PortForwardingController::Factory::GetForProfile(profile_);
-  PortForwardingController::DevicesStatus port_forwarding_status;
-  if (port_forwarding_controller)
-    port_forwarding_status =
-        port_forwarding_controller->UpdateDeviceList(*devices);
-
   remote_browsers_.clear();
   STLDeleteValues(&targets_);
 
@@ -400,7 +392,7 @@ void AdbTargetsUIHandler::RemoteDevicesChanged(
     device_data->SetString(kAdbSerialField, device->serial());
     device_data->SetBoolean(kAdbConnectedField, device->is_connected());
     std::string device_id = base::StringPrintf(
-        "device:%s",
+        kAdbDeviceIdFormat,
         device->serial().c_str());
     device_data->SetString(kTargetIdField, device_id);
     base::ListValue* browser_list = new base::ListValue();
@@ -467,22 +459,6 @@ void AdbTargetsUIHandler::RemoteDevicesChanged(
         page_list->Append(target_data);
       }
       browser_list->Append(browser_data);
-    }
-
-    if (port_forwarding_controller) {
-      PortForwardingController::DevicesStatus::iterator sit =
-          port_forwarding_status.find(device->serial());
-      if (sit != port_forwarding_status.end()) {
-        base::DictionaryValue* port_status_dict = new base::DictionaryValue();
-        typedef PortForwardingController::PortStatusMap StatusMap;
-        const StatusMap& port_status = sit->second;
-        for (StatusMap::const_iterator it = port_status.begin();
-             it != port_status.end(); ++it) {
-          port_status_dict->SetInteger(
-              base::StringPrintf("%d", it->first), it->second);
-        }
-        device_data->Set(kAdbPortStatus, port_status_dict);
-      }
     }
 
     device_list->Append(device_data);
@@ -580,4 +556,44 @@ DevToolsRemoteTargetsUIHandler::CreateForAdb(
     DevToolsTargetsUIHandler::Callback callback, Profile* profile) {
   return scoped_ptr<DevToolsRemoteTargetsUIHandler>(
       new AdbTargetsUIHandler(callback, profile));
+}
+
+// PortForwardingStatusSerializer ---------------------------------------------
+
+PortForwardingStatusSerializer::PortForwardingStatusSerializer(
+    const Callback& callback, Profile* profile)
+      : callback_(callback),
+        profile_(profile) {
+  PortForwardingController* port_forwarding_controller =
+      PortForwardingController::Factory::GetForProfile(profile_);
+  if (port_forwarding_controller)
+    port_forwarding_controller->AddListener(this);
+}
+
+PortForwardingStatusSerializer::~PortForwardingStatusSerializer() {
+  PortForwardingController* port_forwarding_controller =
+      PortForwardingController::Factory::GetForProfile(profile_);
+  if (port_forwarding_controller)
+    port_forwarding_controller->RemoveListener(this);
+}
+
+void PortForwardingStatusSerializer::PortStatusChanged(
+    const DevicesStatus& status) {
+  base::DictionaryValue result;
+  for (DevicesStatus::const_iterator sit = status.begin();
+      sit != status.end(); ++sit) {
+    base::DictionaryValue* device_status_dict = new base::DictionaryValue();
+    const PortStatusMap& device_status_map = sit->second;
+    for (PortStatusMap::const_iterator it = device_status_map.begin();
+         it != device_status_map.end(); ++it) {
+      device_status_dict->SetInteger(
+          base::StringPrintf("%d", it->first), it->second);
+    }
+
+    std::string device_id = base::StringPrintf(
+        kAdbDeviceIdFormat,
+        sit->first.c_str());
+    result.Set(device_id, device_status_dict);
+  }
+  callback_.Run(result);
 }

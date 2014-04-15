@@ -257,9 +257,11 @@ class PortForwardingController::Connection
   Connection(Registry* registry,
              scoped_refptr<DevToolsAdbBridge::RemoteDevice> device,
              scoped_refptr<DevToolsAdbBridge::RemoteBrowser> browser,
-             PrefService* pref_service);
+             const ForwardingMap& forwarding_map);
 
   const PortStatusMap& GetPortStatusMap();
+
+  void UpdateForwardingMap(const ForwardingMap& new_forwarding_map);
 
   void Shutdown();
 
@@ -274,8 +276,6 @@ class PortForwardingController::Connection
 
   typedef base::Callback<void(PortStatus)> CommandCallback;
   typedef std::map<int, CommandCallback> CommandCallbackMap;
-
-  void OnPrefsChange();
 
   void SerializeChanges(const std::string& method,
                         const ForwardingMap& old_map,
@@ -298,9 +298,9 @@ class PortForwardingController::Connection
   PortForwardingController::Registry* registry_;
   scoped_refptr<DevToolsAdbBridge::RemoteDevice> device_;
   scoped_refptr<DevToolsAdbBridge::RemoteBrowser> browser_;
-  PrefChangeRegistrar pref_change_registrar_;
   scoped_refptr<DevToolsAdbBridge::AdbWebSocket> web_socket_;
   int command_id_;
+  bool connected_;
   ForwardingMap forwarding_map_;
   CommandCallbackMap pending_responses_;
   PortStatusMap port_status_;
@@ -312,13 +312,14 @@ PortForwardingController::Connection::Connection(
     Registry* registry,
     scoped_refptr<DevToolsAdbBridge::RemoteDevice> device,
     scoped_refptr<DevToolsAdbBridge::RemoteBrowser> browser,
-    PrefService* pref_service)
+    const ForwardingMap& forwarding_map)
     : registry_(registry),
       device_(device),
       browser_(browser),
-      command_id_(0) {
+      command_id_(0),
+      connected_(false),
+      forwarding_map_(forwarding_map) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  pref_change_registrar_.Init(pref_service);
   (*registry_)[device_->serial()] = this;
   web_socket_ = browser->CreateWebSocket(kDevToolsRemoteBrowserTarget, this);
   AddRef();  // Balanced in OnSocketClosed();
@@ -339,25 +340,13 @@ PortForwardingController::Connection::~Connection() {
   }
 }
 
-void PortForwardingController::Connection::OnPrefsChange() {
+void PortForwardingController::Connection::UpdateForwardingMap(
+    const ForwardingMap& new_forwarding_map) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  ForwardingMap new_forwarding_map;
-
-  PrefService* pref_service = pref_change_registrar_.prefs();
-  const base::DictionaryValue* dict =
-      pref_service->GetDictionary(prefs::kDevToolsPortForwardingConfig);
-  for (base::DictionaryValue::Iterator it(*dict);
-       !it.IsAtEnd(); it.Advance()) {
-    int port_num;
-    std::string location;
-    if (base::StringToInt(it.key(), &port_num) &&
-        dict->GetString(it.key(), &location))
-      new_forwarding_map[port_num] = location;
+  if (connected_) {
+    SerializeChanges(kTetheringUnbind, new_forwarding_map, forwarding_map_);
+    SerializeChanges(kTetheringBind, forwarding_map_, new_forwarding_map);
   }
-
-  SerializeChanges(kTetheringUnbind, new_forwarding_map, forwarding_map_);
-  SerializeChanges(kTetheringBind, forwarding_map_, new_forwarding_map);
   forwarding_map_ = new_forwarding_map;
 }
 
@@ -477,10 +466,8 @@ void PortForwardingController::Connection::OnSocketOpened() {
     web_socket_->Disconnect();
     return;
   }
-  OnPrefsChange();
-  pref_change_registrar_.Add(
-      prefs::kDevToolsPortForwardingConfig,
-          base::Bind(&Connection::OnPrefsChange, base::Unretained(this)));
+  connected_ = true;
+  SerializeChanges(kTetheringBind, ForwardingMap(), forwarding_map_);
 }
 
 void PortForwardingController::Connection::OnSocketClosed(
@@ -538,27 +525,39 @@ void PortForwardingController::Connection::OnFrameRead(
 
 PortForwardingController::PortForwardingController(Profile* profile)
     : profile_(profile),
-      pref_service_(profile->GetPrefs()) {
+      pref_service_(profile->GetPrefs()),
+      listening_(false) {
   pref_change_registrar_.Init(pref_service_);
   base::Closure callback = base::Bind(
       &PortForwardingController::OnPrefsChange, base::Unretained(this));
   pref_change_registrar_.Add(prefs::kDevToolsPortForwardingEnabled, callback);
   pref_change_registrar_.Add(prefs::kDevToolsPortForwardingConfig, callback);
+  OnPrefsChange();
 }
 
 PortForwardingController::~PortForwardingController() {
-  ShutdownConnections();
+  // Existing connection will not be shut down. This might be confusing for
+  // some users, but the opposite is more confusing.
+  StopListening();
 }
 
-PortForwardingController::DevicesStatus
-PortForwardingController::UpdateDeviceList(
-    const DevToolsAdbBridge::RemoteDevices& devices) {
-  DevicesStatus status;
-  if (!ShouldCreateConnections())
-    return status;
+void PortForwardingController::AddListener(Listener* listener) {
+  listeners_.push_back(listener);
+}
 
-  for (DevToolsAdbBridge::RemoteDevices::const_iterator it = devices.begin();
-       it != devices.end(); ++it) {
+void PortForwardingController::RemoveListener(Listener* listener) {
+  Listeners::iterator it =
+      std::find(listeners_.begin(), listeners_.end(), listener);
+  DCHECK(it != listeners_.end());
+  listeners_.erase(it);
+}
+
+void PortForwardingController::RemoteDevicesChanged(
+    DevToolsAdbBridge::RemoteDevices* devices) {
+  DevicesStatus status;
+
+  for (DevToolsAdbBridge::RemoteDevices::const_iterator it = devices->begin();
+       it != devices->end(); ++it) {
     scoped_refptr<DevToolsAdbBridge::RemoteDevice> device = *it;
     if (!device->is_connected())
       continue;
@@ -567,33 +566,79 @@ PortForwardingController::UpdateDeviceList(
       scoped_refptr<DevToolsAdbBridge::RemoteBrowser> browser =
           FindBestBrowserForTethering(device->browsers());
       if (browser) {
-        new Connection(&registry_, device, browser, pref_service_);
+        new Connection(&registry_, device, browser, forwarding_map_);
       }
     } else {
       status[device->serial()] = (*rit).second->GetPortStatusMap();
     }
   }
-  return status;
+
+  NotifyListeners(status);
 }
 
 void PortForwardingController::OnPrefsChange() {
-  if (!ShouldCreateConnections())
+  forwarding_map_.clear();
+
+  if (pref_service_->GetBoolean(prefs::kDevToolsPortForwardingEnabled)) {
+    const base::DictionaryValue* dict =
+        pref_service_->GetDictionary(prefs::kDevToolsPortForwardingConfig);
+    for (base::DictionaryValue::Iterator it(*dict);
+         !it.IsAtEnd(); it.Advance()) {
+      int port_num;
+      std::string location;
+      if (base::StringToInt(it.key(), &port_num) &&
+          dict->GetString(it.key(), &location))
+        forwarding_map_[port_num] = location;
+    }
+  }
+
+  if (!forwarding_map_.empty()) {
+    StartListening();
+    UpdateConnections();
+  } else {
+    StopListening();
     ShutdownConnections();
+    NotifyListeners(DevicesStatus());
+  }
 }
 
-bool PortForwardingController::ShouldCreateConnections() {
-  if (!pref_service_->GetBoolean(prefs::kDevToolsPortForwardingEnabled))
-    return false;
+void PortForwardingController::StartListening() {
+  if (listening_)
+    return;
+  listening_ = true;
+  DevToolsAdbBridge* adb_bridge =
+      DevToolsAdbBridge::Factory::GetForProfile(profile_);
+  if (adb_bridge)
+    adb_bridge->AddListener(this);
 
-  const base::DictionaryValue* dict =
-      pref_service_->GetDictionary(prefs::kDevToolsPortForwardingConfig);
-  return !base::DictionaryValue::Iterator(*dict).IsAtEnd();
+}
+
+void PortForwardingController::StopListening() {
+  if (!listening_)
+    return;
+  listening_ = false;
+  DevToolsAdbBridge* adb_bridge =
+      DevToolsAdbBridge::Factory::GetForProfile(profile_);
+  if (adb_bridge)
+    adb_bridge->RemoveListener(this);
+}
+
+void PortForwardingController::UpdateConnections() {
+  for (Registry::iterator it = registry_.begin(); it != registry_.end(); ++it)
+    it->second->UpdateForwardingMap(forwarding_map_);
 }
 
 void PortForwardingController::ShutdownConnections() {
   for (Registry::iterator it = registry_.begin(); it != registry_.end(); ++it)
     it->second->Shutdown();
   registry_.clear();
+}
+
+void PortForwardingController::NotifyListeners(
+    const DevicesStatus& status) const {
+  Listeners copy(listeners_);  // Iterate over copy.
+  for (Listeners::const_iterator it = copy.begin(); it != copy.end(); ++it)
+    (*it)->PortStatusChanged(status);
 }
 
 // static

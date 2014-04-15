@@ -15,7 +15,8 @@
 class PrefService;
 class Profile;
 
-class PortForwardingController : public KeyedService {
+class PortForwardingController : private KeyedService,
+                                 private DevToolsAdbBridge::Listener {
  public:
   explicit PortForwardingController(Profile* profile);
 
@@ -45,21 +46,48 @@ class PortForwardingController : public KeyedService {
   typedef std::map<int, PortStatus> PortStatusMap;
   typedef std::map<std::string, PortStatusMap> DevicesStatus;
 
-  DevicesStatus UpdateDeviceList(
-      const DevToolsAdbBridge::RemoteDevices& devices);
+  class Listener {
+   public:
+    typedef PortForwardingController::PortStatusMap PortStatusMap;
+    typedef PortForwardingController::DevicesStatus DevicesStatus;
+
+    virtual void PortStatusChanged(const DevicesStatus&) = 0;
+   protected:
+    virtual ~Listener() {}
+  };
+
+  void AddListener(Listener* listener);
+  void RemoveListener(Listener* listener);
 
  private:
   class Connection;
-  typedef std::map<std::string, Connection* > Registry;
+  typedef std::map<std::string, Connection*> Registry;
+
+  // DevToolsAdbBridge::Listener implementation.
+  virtual void RemoteDevicesChanged(
+      DevToolsAdbBridge::RemoteDevices* devices) OVERRIDE;
 
   void OnPrefsChange();
-  bool ShouldCreateConnections();
+
+  void StartListening();
+  void StopListening();
+
+  void UpdateConnections();
   void ShutdownConnections();
+
+  void NotifyListeners(const DevicesStatus& status) const;
 
   Profile* profile_;
   PrefService* pref_service_;
   PrefChangeRegistrar pref_change_registrar_;
   Registry registry_;
+
+  typedef std::vector<Listener*> Listeners;
+  Listeners listeners_;
+  bool listening_;
+
+  typedef std::map<int, std::string> ForwardingMap;
+  ForwardingMap forwarding_map_;
 
   DISALLOW_COPY_AND_ASSIGN(PortForwardingController);
 };

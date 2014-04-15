@@ -198,30 +198,6 @@ function populateRemoteTargets(devices) {
         device.adbConnected ? '' : 'Pending authentication: please accept ' +
           'debugging session on the device.';
 
-    var devicePorts = deviceSection.querySelector('.device-ports');
-    devicePorts.textContent = '';
-    if (device.adbPortStatus) {
-      for (var port in device.adbPortStatus) {
-        var status = device.adbPortStatus[port];
-        var portIcon = document.createElement('div');
-        portIcon.className = 'port-icon';
-        if (status > 0)
-          portIcon.classList.add('connected');
-        else if (status == -1 || status == -2)
-          portIcon.classList.add('transient');
-        else if (status < 0)
-          portIcon.classList.add('error');
-        devicePorts.appendChild(portIcon);
-
-        var portNumber = document.createElement('div');
-        portNumber.className = 'port-number';
-        portNumber.textContent = ':' + port;
-        if (status > 0)
-          portNumber.textContent += '(' + status + ')';
-        devicePorts.appendChild(portNumber);
-      }
-    }
-
     var browserList = deviceSection.querySelector('.browsers');
     var newBrowserIds =
         device.browsers.map(function(b) { return b.id });
@@ -818,6 +794,55 @@ function commitFreshLineIfValid(opt_selectNew) {
   if (opt_selectNew)
     freshLine.querySelector('.port').focus();
   return true;
+}
+
+function populatePortStatus(devicesStatusMap) {
+  for (var deviceId in devicesStatusMap) {
+    if (!devicesStatusMap.hasOwnProperty(deviceId))
+      continue;
+    var deviceStatusMap = devicesStatusMap[deviceId];
+
+    var deviceSection = $(deviceId);
+    if (!deviceSection)
+      continue;
+
+    var devicePorts = deviceSection.querySelector('.device-ports');
+    devicePorts.textContent = '';
+    for (var port in deviceStatusMap) {
+      if (!deviceStatusMap.hasOwnProperty(port))
+        continue;
+
+      var status = deviceStatusMap[port];
+      var portIcon = document.createElement('div');
+      portIcon.className = 'port-icon';
+      // status === 0 is the default (connected) state.
+      // Positive values correspond to the tunnelling connection count
+      // (in DEBUG_DEVTOOLS mode).
+      if (status > 0)
+        portIcon.classList.add('connected');
+      else if (status === -1 || status === -2)
+        portIcon.classList.add('transient');
+      else if (status < 0)
+        portIcon.classList.add('error');
+      devicePorts.appendChild(portIcon);
+
+      var portNumber = document.createElement('div');
+      portNumber.className = 'port-number';
+      portNumber.textContent = ':' + port;
+      if (status > 0)
+        portNumber.textContent += '(' + status + ')';
+      devicePorts.appendChild(portNumber);
+    }
+  }
+
+  function clearPorts(deviceSection) {
+    if (deviceSection.id in devicesStatusMap)
+      return;
+    deviceSection.querySelector('.device-ports').textContent = '';
+  }
+
+  Array.prototype.forEach.call(
+      document.querySelectorAll('.device'), clearPorts);
 }
 
 document.addEventListener('DOMContentLoaded', onload);

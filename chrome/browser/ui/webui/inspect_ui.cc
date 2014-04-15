@@ -267,6 +267,11 @@ void InspectUI::StartListeningNotifications() {
   AddRemoteTargetUIHandler(
       DevToolsRemoteTargetsUIHandler::CreateForAdb(callback, profile));
 
+  port_status_serializer_.reset(
+      new PortForwardingStatusSerializer(
+          base::Bind(&InspectUI::PopulatePortStatus, base::Unretained(this)),
+          profile));
+
   notification_registrar_.Add(this,
                               content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
                               content::NotificationService::AllSources());
@@ -289,6 +294,8 @@ void InspectUI::StopListeningNotifications() {
 
   STLDeleteValues(&target_handlers_);
   STLDeleteValues(&remote_target_handlers_);
+
+  port_status_serializer_.reset();
 
   notification_registrar_.RemoveAll();
   pref_change_registrar_.RemoveAll();
@@ -392,4 +399,8 @@ void InspectUI::PopulateTargets(const std::string& source,
       "populateTargets",
       *source_value.get(),
       *targets.get());
+}
+
+void InspectUI::PopulatePortStatus(const base::Value& status) {
+  web_ui()->CallJavascriptFunction("populatePortStatus", status);
 }

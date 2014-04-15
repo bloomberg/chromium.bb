@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/devtools/port_forwarding_controller.h"
 
 namespace base {
 class ListValue;
@@ -66,6 +67,21 @@ class DevToolsRemoteTargetsUIHandler: public DevToolsTargetsUIHandler {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DevToolsRemoteTargetsUIHandler);
+};
+
+class PortForwardingStatusSerializer
+    : private PortForwardingController::Listener {
+ public:
+  typedef base::Callback<void(const base::Value&)> Callback;
+
+  PortForwardingStatusSerializer(const Callback& callback, Profile* profile);
+  virtual ~PortForwardingStatusSerializer();
+
+  virtual void PortStatusChanged(const DevicesStatus&) OVERRIDE;
+
+ private:
+  Callback callback_;
+  Profile* profile_;
 };
 
 #endif  // CHROME_BROWSER_DEVTOOLS_DEVTOOLS_TARGETS_UI_H_
