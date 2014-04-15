@@ -3,7 +3,7 @@
 
 #ifndef {{namespace}}Names_h
 #define {{namespace}}Names_h
-{# FIXME: add blank line #}
+
 {% if export %}
 #include "platform/PlatformExport.h"
 {% endif %}
@@ -13,7 +13,7 @@ namespace WebCore {
 namespace {{namespace}}Names {
 
 #ifndef {{namespace|to_macro_style}}_NAMES_HIDE_GLOBALS
-{# FIXME: add blank line #}
+
 {% for entry in entries|sort %}
 {% if export %}
 {{export}} extern const WTF::AtomicString& {{entry|symbol}};

@@ -15,7 +15,7 @@ namespace WebCore {
 namespace {{namespace}}Names {
 
 using namespace WTF;
-{# FIXME: add blank line #}
+
 {% for entry in entries|sort %}
 {% if export %}
 DEFINE_GLOBAL(AtomicString, {{entry|symbol}}Storage)
@@ -30,7 +30,7 @@ void init()
     {% for entry in entries|sort %}
     StringImpl* {{entry|symbol}}Impl = StringImpl::createStatic("{{entry|cpp_name}}", {{entry|cpp_name|length}}, {{entry|cpp_name|hash}});
     {% endfor %}
-    {# FIXME: add blank line #}
+
     {% for entry in entries|sort %}
     new ((void*)&{{entry|symbol}}) AtomicString({{entry|symbol}}Impl);
     {% endfor %}

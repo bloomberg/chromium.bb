@@ -68,21 +68,10 @@ void getMatchingShorthandsForLonghand(CSSPropertyID propertyID, Vector<StyleProp
     switch (propertyID) {
     {% for longhand_id, shorthands in longhands_dictionary.items() %}
     case {{longhand_id}}: {
-        {# FIXME: indentation should be 4, not 0+3 #}
-        {# FIXME: this length check looks unnecessary #}
-        {% if shorthands|length == 1 %}
-        {% for shorthand in shorthands %}
-    result->uncheckedAppend({{shorthand.camel_case_name}}Shorthand());
-       break;
-        {% endfor %}
-        {% else %}
         {% for shorthand in shorthands %}
         result->uncheckedAppend({{shorthand.camel_case_name}}Shorthand());
         {% endfor %}
         break;
-        {# FIXME: remove blank line #}
-
-        {% endif %}
     }
     {% endfor %}
     default:

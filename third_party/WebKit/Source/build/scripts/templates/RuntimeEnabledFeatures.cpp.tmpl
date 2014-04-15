@@ -5,18 +5,16 @@
 #include "RuntimeEnabledFeatures.h"
 
 namespace WebCore {
-{# FIXME: remove excess blank line #}
 
 {% for feature_set in feature_sets %}
-
 void RuntimeEnabledFeatures::set{{feature_set|capitalize}}FeaturesEnabled(bool enable)
 {
 {% for feature in features if feature.status == feature_set %}
     set{{feature.name}}Enabled(enable);
 {% endfor %}
 }
-{% endfor %}
 
+{% endfor %}
 {% for feature in features if not feature.custom %}
 {% call wrap_with_condition(feature.condition) %}
 bool RuntimeEnabledFeatures::is{{feature.name}}Enabled = {{'true' if feature.status == 'stable' else 'false'}};

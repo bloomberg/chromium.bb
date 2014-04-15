@@ -29,8 +29,6 @@ public:
     {% call wrap_with_condition(feature.condition) %}
     bool {{feature.first_lowered_name}}Enabled() { return RuntimeEnabledFeatures::{{feature.first_lowered_name}}Enabled(); }
     {% endcall %}
-    {# FIXME: remove extra blank line #}
-
     {% endfor %}
 
     void trace(Visitor*) { }

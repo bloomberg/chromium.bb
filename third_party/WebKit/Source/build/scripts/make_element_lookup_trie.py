@@ -48,11 +48,12 @@ def _generate_if(name, index):
     conditions = []
     for i in range(index, len(name)):
         conditions.append("data[%d] == '%c'" % (i, name[i].lower()))
-    return "if (%s)\n" % " && ".join(conditions)
+    return 'if (%s)\n' % ' && '.join(conditions)
 
 
 def _print_switch(buf, tag_list, index):
-    indent = '    ' * (index + 2)
+    # FIXME: move this into a Jinja macro
+    indent = '    ' * (index + 1)
     data = _char_dict(tag_list, index)
     # FIXME: No need to switch if there's only a single item in the data dict
     buf.write(indent + 'switch (data[%d]) {\n' % index)
@@ -62,16 +63,16 @@ def _print_switch(buf, tag_list, index):
             _print_switch(buf, tags, index + 1)
         else:
             tag = tags[0]
-            retval = indent + "    return %sTag.localName().impl();\n" % tag
+            retval = 'return %sTag.localName().impl();\n' % tag
             if len(tag) == index + 1:
-                buf.write(retval)
+                buf.write(indent + '    ' + retval)
             else:
                 buf.write(indent + '    ' + _generate_if(tag, index + 1))
-                buf.write('    ' + retval)
-                buf.write(indent + "    return 0;\n")
+                buf.write(indent + '        ' + retval)
+                buf.write(indent + '    ' + 'return 0;\n')
 
     buf.write(indent + '}\n')
-    buf.write(indent + "return 0;\n")
+    buf.write(indent + 'return 0;\n')
 
 
 class ElementLookupTrieWriter(in_generator.Writer):
@@ -117,7 +118,7 @@ class ElementLookupTrieWriter(in_generator.Writer):
 
         buf = StringIO.StringIO()
         for length, tags in size_dict.iteritems():
-            buf.write("    case %d:\n" % length)
+            buf.write('case %d:\n' % length)
             _print_switch(buf, tags, 0)
         return {
             'namespace': self._namespace,

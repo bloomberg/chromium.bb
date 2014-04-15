@@ -6,11 +6,8 @@
 
 #define CSS_MEDIAQUERY_NAMES_FOR_EACH_MEDIAFEATURE(macro) \
     {% for entry in entries %}
-    {# FIXME: add space before \ #}
-    macro({{entry|symbol}}){% if not loop.last %}\
+    macro({{entry|symbol}}){% if not loop.last %} \
     {% endif %}
     {% endfor %}
-{# FIXME: Remove extra blank line #}
-
 
 #endif
