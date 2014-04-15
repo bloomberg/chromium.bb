@@ -12,7 +12,6 @@
 namespace media {
 
 class AudioCodecBridge;
-class AudioTimestampHelper;
 
 // Class for managing audio decoding jobs.
 class AudioDecoderJob : public MediaDecoderJob {
@@ -35,13 +34,8 @@ class AudioDecoderJob : public MediaDecoderJob {
 
   void SetVolume(double volume);
 
-  // Sets the base timestamp for |audio_timestamp_helper_|.
-  void SetBaseTimestamp(base::TimeDelta base_timestamp);
-
  private:
-  AudioDecoderJob(scoped_ptr<AudioTimestampHelper> audio_timestamp_helper,
-                  scoped_ptr<AudioCodecBridge> audio_decoder_bridge,
-                  int bytes_per_frame,
+  AudioDecoderJob(scoped_ptr<AudioCodecBridge> audio_decoder_bridge,
                   const base::Closure& request_data_cb);
 
   // MediaDecoderJob implementation.
@@ -49,18 +43,11 @@ class AudioDecoderJob : public MediaDecoderJob {
       int output_buffer_index,
       size_t size,
       bool render_output,
-      base::TimeDelta current_presentation_timestamp,
       const ReleaseOutputCompletionCallback& callback) OVERRIDE;
 
   virtual bool ComputeTimeToRender() const OVERRIDE;
 
-  // number of bytes per audio frame;
-  int bytes_per_frame_;
-
   scoped_ptr<AudioCodecBridge> audio_codec_bridge_;
-
-  // Object to calculate the current audio timestamp for A/V sync.
-  scoped_ptr<AudioTimestampHelper> audio_timestamp_helper_;
 };
 
 }  // namespace media

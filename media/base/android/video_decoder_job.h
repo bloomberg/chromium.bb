@@ -48,7 +48,6 @@ class VideoDecoderJob : public MediaDecoderJob {
       int output_buffer_index,
       size_t size,
       bool render_output,
-      base::TimeDelta current_presentation_timestamp,
       const ReleaseOutputCompletionCallback& callback) OVERRIDE;
 
   virtual bool ComputeTimeToRender() const OVERRIDE;

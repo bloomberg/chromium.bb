@@ -29,16 +29,15 @@ class MediaDecoderJob {
   };
 
   // Callback when a decoder job finishes its work. Args: whether decode
-  // finished successfully, current presentation time, max presentation time.
-  // If the current presentation time is equal to kNoTimestamp(), the decoder
-  // job skipped rendering of the decoded output and the callback target should
+  // finished successfully, presentation time, audio output bytes.
+  // If the presentation time is equal to kNoTimestamp(), the decoder job
+  // skipped rendering of the decoded output and the callback target should
   // update its clock to avoid introducing extra delays to the next frame.
   typedef base::Callback<void(MediaCodecStatus, base::TimeDelta,
-                              base::TimeDelta)> DecoderCallback;
+                              size_t)> DecoderCallback;
   // Callback when a decoder job finishes releasing the output buffer.
-  // Args: current presentation time, max presentation time.
-  typedef base::Callback<void(base::TimeDelta, base::TimeDelta)>
-      ReleaseOutputCompletionCallback;
+  // Args: audio output bytes, must be 0 for video.
+  typedef base::Callback<void(size_t)> ReleaseOutputCompletionCallback;
 
   virtual ~MediaDecoderJob();
 
@@ -96,7 +95,6 @@ class MediaDecoderJob {
       int output_buffer_index,
       size_t size,
       bool render_output,
-      base::TimeDelta current_presentation_timestamp,
       const ReleaseOutputCompletionCallback& callback) = 0;
 
   // Returns true if the "time to render" needs to be computed for frames in
@@ -139,8 +137,8 @@ class MediaDecoderJob {
   // Completes any pending job destruction or any pending decode stop. If
   // destruction was not pending, passes its arguments to |decode_cb_|.
   void OnDecodeCompleted(MediaCodecStatus status,
-                         base::TimeDelta current_presentation_timestamp,
-                         base::TimeDelta max_presentation_timestamp);
+                         base::TimeDelta presentation_timestamp,
+                         size_t audio_output_bytes);
 
   // Helper function to get the current access unit that is being decoded.
   const AccessUnit& CurrentAccessUnit() const;

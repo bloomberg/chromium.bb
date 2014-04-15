@@ -63,10 +63,9 @@ void VideoDecoderJob::ReleaseOutputBuffer(
     int output_buffer_index,
     size_t size,
     bool render_output,
-    base::TimeDelta current_presentation_timestamp,
     const ReleaseOutputCompletionCallback& callback) {
   video_codec_bridge_->ReleaseOutputBuffer(output_buffer_index, render_output);
-  callback.Run(current_presentation_timestamp, current_presentation_timestamp);
+  callback.Run(0u);
 }
 
 bool VideoDecoderJob::ComputeTimeToRender() const {

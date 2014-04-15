@@ -285,8 +285,6 @@ class MediaCodecBridge {
         try {
             mFlushed = true;
             if (mAudioTrack != null) {
-                // Need to call pause() here, or otherwise flush() is a no-op.
-                mAudioTrack.pause();
                 mAudioTrack.flush();
             }
             mMediaCodec.flush();
@@ -527,36 +525,18 @@ class MediaCodecBridge {
         return false;
     }
 
-    /**
-     *  Play the audio buffer that is passed in.
-     *
-     *  @param buf Audio buffer to be rendered.
-     *  @return The number of frames that have already been consumed by the
-     *  hardware. This number resets to 0 after each flush call.
-     */
     @CalledByNative
-    private long playOutputBuffer(byte[] buf) {
-        if (mAudioTrack == null) {
-            return 0;
+    private void playOutputBuffer(byte[] buf) {
+        if (mAudioTrack != null) {
+            if (AudioTrack.PLAYSTATE_PLAYING != mAudioTrack.getPlayState()) {
+                mAudioTrack.play();
+            }
+            int size = mAudioTrack.write(buf, 0, buf.length);
+            if (buf.length != size) {
+                Log.i(TAG, "Failed to send all data to audio output, expected size: " +
+                        buf.length + ", actual size: " + size);
+            }
         }
-
-        if (AudioTrack.PLAYSTATE_PLAYING != mAudioTrack.getPlayState()) {
-            mAudioTrack.play();
-        }
-        int size = mAudioTrack.write(buf, 0, buf.length);
-        if (buf.length != size) {
-            Log.i(TAG, "Failed to send all data to audio output, expected size: " +
-                    buf.length + ", actual size: " + size);
-        }
-        // TODO(qinmin): Returning the head position allows us to estimate
-        // the current presentation time in native code. However, it is
-        // better to use AudioTrack.getCurrentTimestamp() to get the last
-        // known time when a frame is played. However, we will need to
-        // convert the java nano time to C++ timestamp.
-        // If the stream runs too long, getPlaybackHeadPosition() could
-        // overflow. AudioTimestampHelper in MediaSourcePlayer has the same
-        // issue. See http://crbug.com/358801.
-        return mAudioTrack.getPlaybackHeadPosition();
     }
 
     @CalledByNative
