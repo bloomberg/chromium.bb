@@ -7,13 +7,13 @@
 
 #include "ui/aura/window_targeter.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/wm/wm_export.h"
+#include "ui/wm/core/wm_core_export.h"
 
 namespace wm {
 
 // An EventTargeter for a container window that uses a slightly larger
 // hit-target region for easier resize.
-class WM_EXPORT EasyResizeWindowTargeter : public aura::WindowTargeter {
+class WM_CORE_EXPORT EasyResizeWindowTargeter : public aura::WindowTargeter {
  public:
   // |container| window is the owner of this targeter.
   EasyResizeWindowTargeter(aura::Window* container,

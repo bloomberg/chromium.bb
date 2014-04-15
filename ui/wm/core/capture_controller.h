@@ -11,12 +11,12 @@
 #include "base/compiler_specific.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/window_observer.h"
-#include "ui/wm/wm_export.h"
+#include "ui/wm/core/wm_core_export.h"
 
 namespace wm {
 
 // Internal CaptureClient implementation. See ScopedCaptureClient for details.
-class WM_EXPORT CaptureController : public aura::client::CaptureClient {
+class WM_CORE_EXPORT CaptureController : public aura::client::CaptureClient {
  public:
   // Adds |root| to the list of RootWindows notified when capture changes.
   void Attach(aura::Window* root);
@@ -53,7 +53,7 @@ class WM_EXPORT CaptureController : public aura::client::CaptureClient {
 // ScopedCaptureClient is responsible for creating a CaptureClient for a
 // RootWindow. Specifically it creates a single CaptureController that is shared
 // among all ScopedCaptureClients and adds the RootWindow to it.
-class WM_EXPORT ScopedCaptureClient : public aura::WindowObserver {
+class WM_CORE_EXPORT ScopedCaptureClient : public aura::WindowObserver {
  public:
   explicit ScopedCaptureClient(aura::Window* root);
   virtual ~ScopedCaptureClient();

@@ -323,7 +323,7 @@
                 '../ui/views/controls/webview/webview.gyp:webview',
                 '../ui/views/views.gyp:views',
                 '../ui/views/views.gyp:views_test_support',
-                '../ui/wm/wm.gyp:wm',
+                '../ui/wm/wm.gyp:wm_core',
               ],
               'sources/': [
                 ['exclude', 'shell/browser/shell_aura.cc'],

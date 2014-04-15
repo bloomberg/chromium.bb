@@ -6,7 +6,7 @@
 #define UI_WM_CORE_WM_CORE_SWITCHES_H_
 
 #include "build/build_config.h"
-#include "ui/wm/wm_export.h"
+#include "ui/wm/core/wm_core_export.h"
 
 namespace wm {
 namespace switches {
@@ -16,7 +16,7 @@ namespace switches {
 // see chromeos::LoginUtil::GetOffTheRecordCommandLine().)
 
 // Please keep alphabetized.
-WM_EXPORT extern const char kWindowAnimationsDisabled[];
+WM_CORE_EXPORT extern const char kWindowAnimationsDisabled[];
 
 }  // namespace switches
 }  // namespace wm

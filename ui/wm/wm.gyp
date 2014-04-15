@@ -8,7 +8,19 @@
   },
   'targets': [
     {
-      'target_name': 'wm',
+      'target_name': 'wm_public',
+      'type': 'static_library',
+      'dependencies': [
+        '../../skia/skia.gyp:skia',
+        '../aura/aura.gyp:aura',
+        '../gfx/gfx.gyp:gfx_geometry',
+      ],
+      'sources': [
+        'public/window_types.h',
+      ],
+    },
+    {
+      'target_name': 'wm_core',
       'type': '<(component)',
       'dependencies': [
         '../../base/base.gyp:base',
@@ -23,7 +35,7 @@
         '../base/ui_base.gyp:ui_base',
       ],
       'defines': [
-        'WM_IMPLEMENTATION',
+        'WM_CORE_IMPLEMENTATION',
       ],
       'sources': [
         'core/base_focus_rules.cc',
@@ -71,12 +83,11 @@
         'core/window_modality_controller.h',
         'core/window_util.cc',
         'core/window_util.h',
+        'core/wm_core_export.h',
         'core/wm_core_switches.cc',
         'core/wm_core_switches.h',
         'core/wm_state.cc',
         'core/wm_state.h',
-        'public/window_types.h',
-        'wm_export.h',
       ],
     },
     {
@@ -94,7 +105,7 @@
       ],
     },
     {
-      'target_name': 'wm_unittests',
+      'target_name': 'wm_core_unittests',
       'type': 'executable',
       'dependencies': [
         '../../base/base.gyp:base',
@@ -109,7 +120,7 @@
         '../gfx/gfx.gyp:gfx_geometry',
         '../gfx/gfx.gyp:gfx',
         '../base/ui_base.gyp:ui_base',
-        'wm',
+        'wm_core',
         'wm_test_support',
       ],
       'sources': [
