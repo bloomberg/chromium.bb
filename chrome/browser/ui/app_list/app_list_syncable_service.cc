@@ -233,10 +233,7 @@ void AppListSyncableService::BuildModel() {
     controller = service->GetControllerDelegate();
   apps_builder_.reset(new ExtensionAppModelBuilder(controller));
   DCHECK(profile_);
-  // TODO(stevenjb): Correctly handle OTR profiles for Guest mode.
-  // crbug.com/359176.
-  if (!profile_->IsOffTheRecord() &&
-      app_list::switches::IsAppListSyncEnabled()) {
+  if (app_list::switches::IsAppListSyncEnabled()) {
     VLOG(1) << this << ": AppListSyncableService: InitializeWithService.";
     SyncStarted();
     apps_builder_->InitializeWithService(this);
