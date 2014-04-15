@@ -18,8 +18,6 @@
 #include "ui/shell_dialogs/select_file_dialog_win.h"
 #elif defined(OS_MACOSX)
 #include "ui/shell_dialogs/select_file_dialog_mac.h"
-#elif defined(TOOLKIT_GTK)
-#include "ui/shell_dialogs/gtk/select_file_dialog_impl.h"
 #elif defined(OS_ANDROID)
 #include "ui/shell_dialogs/select_file_dialog_android.h"
 #elif defined(USE_AURA) && !defined(USE_ASH) && defined(OS_LINUX)
@@ -90,8 +88,6 @@ scoped_refptr<SelectFileDialog> SelectFileDialog::Create(
   return CreateWinSelectFileDialog(listener, policy);
 #elif defined(OS_MACOSX) && !defined(USE_AURA)
   return CreateMacSelectFileDialog(listener, policy);
-#elif defined(TOOLKIT_GTK)
-  return CreateLinuxSelectFileDialog(listener, policy);
 #elif defined(OS_ANDROID)
   return CreateAndroidSelectFileDialog(listener, policy);
 #else

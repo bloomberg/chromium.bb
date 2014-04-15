@@ -49,12 +49,6 @@ const bool kSyncAutoStarts = false;
 const bool kShowOtherBrowsersInAboutMemory = true;
 #endif
 
-#if defined(TOOLKIT_GTK)
-const bool kShowCancelButtonInTaskManager = true;
-#else
-const bool kShowCancelButtonInTaskManager = false;
-#endif
-
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 const bool kScrollEventChangesTab = true;
 #else

@@ -8,8 +8,6 @@
 namespace ui {
 
 // TODO(dcheng): This name is temporary. See crbug.com/106449
-#if defined(USE_AURA) || defined(TOOLKIT_GTK)
 const char kMimeTypeWebCustomData[] = "chromium/x-web-custom-data";
-#endif
 
 }  // namespace ui

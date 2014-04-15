@@ -6,17 +6,11 @@
 #define UI_SURFACE_TRANSPORT_DIB_H_
 
 #include "base/basictypes.h"
-#include "ui/surface/surface_export.h"
-
-#if !defined(TOOLKIT_GTK)
 #include "base/memory/shared_memory.h"
-#endif
+#include "ui/surface/surface_export.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
-#elif defined(TOOLKIT_GTK)
-#include "ui/base/x/x11_util.h"
-#include "ui/gfx/x/x11_types.h"
 #endif
 
 class SkCanvas;
@@ -74,27 +68,6 @@ class SURFACE_EXPORT TransportDIB {
   // Returns a default, invalid handle, that is meant to indicate a missing
   // Transport DIB.
   static Handle DefaultHandleValue() { return NULL; }
-#elif defined(TOOLKIT_GTK)
-  typedef int Handle;  // These two ints are SysV IPC shared memory keys
-  struct Id {
-    // Ensure that default initialized Ids are invalid.
-    Id() : shmkey(-1) {
-    }
-
-    bool operator<(const Id& other) const {
-      return shmkey < other.shmkey;
-    }
-
-    bool operator==(const Id& other) const {
-      return shmkey == other.shmkey;
-    }
-
-    int shmkey;
-  };
-
-  // Returns a default, invalid handle, that is meant to indicate a missing
-  // Transport DIB.
-  static Handle DefaultHandleValue() { return -1; }
 #else  // OS_POSIX
   typedef base::SharedMemoryHandle Handle;
   // On POSIX, the inode number of the backing file is used as an id.
@@ -166,39 +139,15 @@ class SURFACE_EXPORT TransportDIB {
   // wire to give this transport DIB to another process.
   Handle handle() const;
 
-#if defined(TOOLKIT_GTK)
-  // Map the shared memory into the X server and return an id for the shared
-  // segment.
-  XID MapToX(XDisplay* connection);
-
-  void IncreaseInFlightCounter() { inflight_counter_++; }
-  // Decreases the inflight counter, and deletes the transport DIB if it is
-  // detached.
-  void DecreaseInFlightCounter();
-
-  // Deletes this transport DIB and detaches the shared memory once the
-  // |inflight_counter_| is zero.
-  void Detach();
-#endif
-
  private:
   TransportDIB();
 
   // Verifies that the dib can hold a canvas of the requested dimensions.
   bool VerifyCanvasSize(int w, int h);
 
-#if defined(TOOLKIT_GTK)
-  Id key_;  // SysV shared memory id
-  void* address_;  // mapped address
-  XSharedMemoryId x_shm_;  // X id for the shared segment
-  XDisplay* display_;  // connection to the X server
-  size_t inflight_counter_;  // How many requests to the X server are in flight
-  bool detached_;  // If true, delete the transport DIB when it is idle
-#else
   explicit TransportDIB(base::SharedMemoryHandle dib);
   base::SharedMemory shared_memory_;
   uint32 sequence_num_;
-#endif
   size_t size_;  // length, in bytes
 
   DISALLOW_COPY_AND_ASSIGN(TransportDIB);

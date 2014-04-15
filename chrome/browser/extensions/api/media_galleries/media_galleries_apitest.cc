@@ -611,15 +611,7 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest, CancelScan) {
   ASSERT_TRUE(RunMediaGalleriesTest("cancel_scan")) << message_;
 }
 
-// The scan result dialog is not implemented on GTK because it is going away
-// soon.
-#if defined (TOOLKIT_GTK)
-#define MAYBE_Scan DISABLED_Scan
-#else
-#define MAYBE_Scan Scan
-#endif  // defined (USE_AURA) || defined(OS_MACOSX)
-
-IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest, MAYBE_Scan) {
+IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest, Scan) {
   base::ScopedTempDir scan_root;
   ASSERT_TRUE(scan_root.CreateUniqueTempDir());
   std::vector<base::FilePath> roots;

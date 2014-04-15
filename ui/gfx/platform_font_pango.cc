@@ -24,11 +24,6 @@
 #include "ui/gfx/pango_util.h"
 #include "ui/gfx/text_utils.h"
 
-#if defined(TOOLKIT_GTK)
-#include <gdk/gdk.h>
-#include <gtk/gtk.h>
-#endif
-
 namespace {
 
 // The font family name which is used when a user's application font for
@@ -256,7 +251,6 @@ PlatformFontPango::~PlatformFontPango() {}
 
 // static
 std::string PlatformFontPango::GetDefaultFont() {
-#if !defined(TOOLKIT_GTK)
 #if defined(OS_CHROMEOS)
   // Font name must have been provided by way of SetDefaultFontDescription().
   CHECK(default_font_description_);
@@ -268,22 +262,7 @@ std::string PlatformFontPango::GetDefaultFont() {
 
   return "sans 10";
 #endif    // defined(OS_CHROMEOS)
-#else
-  GtkSettings* settings = gtk_settings_get_default();
-
-  gchar* font_name = NULL;
-  g_object_get(settings, "gtk-font-name", &font_name, NULL);
-
-  // Temporary CHECK for helping track down
-  // http://code.google.com/p/chromium/issues/detail?id=12530
-  CHECK(font_name) << " Unable to get gtk-font-name for default font.";
-
-  std::string default_font = std::string(font_name);
-  g_free(font_name);
-  return default_font;
-#endif  // !defined(TOOLKIT_GTK)
 }
-
 
 void PlatformFontPango::InitWithNameAndSize(const std::string& font_name,
                                             int font_size) {

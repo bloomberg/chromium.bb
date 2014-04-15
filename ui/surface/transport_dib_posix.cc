@@ -4,9 +4,6 @@
 
 #include "ui/surface/transport_dib.h"
 
-// Desktop GTK Linux builds use the old-style SYSV SHM based DIBs.
-#if !defined(TOOLKIT_GTK)
-
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -111,6 +108,3 @@ TransportDIB::Id TransportDIB::id() const {
 TransportDIB::Handle TransportDIB::handle() const {
   return shared_memory_.handle();
 }
-
-#endif  // !defined(TOOLKIT_GTK)
-

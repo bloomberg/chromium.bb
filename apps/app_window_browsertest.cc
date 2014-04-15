@@ -16,7 +16,7 @@ typedef extensions::PlatformAppBrowserTest AppWindowBrowserTest;
 // This test is disabled on Linux because of the unpredictable nature of native
 // windows. We cannot assume that the window manager will insert any title bar
 // at all, so the test may fail on certain window managers.
-#if defined(TOOLKIT_GTK) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #define MAYBE_FrameInsetsForDefaultFrame DISABLED_FrameInsetsForDefaultFrame
 #else
 #define MAYBE_FrameInsetsForDefaultFrame FrameInsetsForDefaultFrame
@@ -39,7 +39,7 @@ IN_PROC_BROWSER_TEST_F(AppWindowBrowserTest, MAYBE_FrameInsetsForDefaultFrame) {
 // This test is also disabled on Linux because frame: color is ignored on stable
 // and beta channels (so it can fail the same as the previous test).
 // TODO(benwells): Re-enable on Linux after frame: color is on stable.
-#if defined(TOOLKIT_GTK) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #define MAYBE_FrameInsetsForColoredFrame DISABLED_FrameInsetsForColoredFrame
 #else
 #define MAYBE_FrameInsetsForColoredFrame FrameInsetsForColoredFrame

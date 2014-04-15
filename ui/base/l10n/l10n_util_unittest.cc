@@ -374,7 +374,6 @@ TEST_F(L10nUtilTest, GetDisplayNameForLocale) {
   result = l10n_util::GetDisplayNameForLocale("xyz-xyz", "en", false);
   EXPECT_EQ(ASCIIToUTF16("xyz (XYZ)"), result);
 
-#if !defined(TOOLKIT_GTK)
   // Check for directional markers when using RTL languages to ensure that
   // direction neutral characters such as parentheses are properly formatted.
 
@@ -387,7 +386,6 @@ TEST_F(L10nUtilTest, GetDisplayNameForLocale) {
 
   // Clean up.
   base::i18n::SetICUDefaultLocale(original_locale);
-#endif
 
   // ToUpper and ToLower should work with embedded NULLs.
   const size_t length_with_null = 4;

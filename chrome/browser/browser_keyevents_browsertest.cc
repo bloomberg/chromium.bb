@@ -653,13 +653,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, DISABLED_AccessKeys) {
   // On Ash, alt-1..9 are assigned as window selection global accelerators, so
   // they can not be used as accesskeys.
   EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestAccess1));
-#if defined(TOOLKIT_GTK)
-  // On GTK, alt-0..9 are assigned as tab selection accelerators, so they can
-  // not be used as accesskeys.
-  EXPECT_NO_FATAL_FAILURE(CheckFocusedElement(tab_index, L""));
-#else
   EXPECT_NO_FATAL_FAILURE(CheckFocusedElement(tab_index, L"1"));
-#endif
 #endif
 }
 

@@ -20,10 +20,6 @@
 #include "ui/base/clipboard/clipboard_types.h"
 #include "ui/base/ui_base_export.h"
 
-#if defined(TOOLKIT_GTK)
-#include <gdk/gdk.h>
-#endif
-
 #if defined(OS_WIN)
 #include <objidl.h>
 #elif defined(OS_ANDROID)
@@ -55,10 +51,6 @@ class Size;
 }
 
 class SkBitmap;
-
-#if defined(TOOLKIT_GTK)
-typedef struct _GtkClipboard GtkClipboard;
-#endif
 
 #ifdef __OBJC__
 @class NSString;
@@ -130,11 +122,6 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
     explicit FormatType(NSString* native_format);
     NSString* ToNSString() const { return data_; }
     NSString* data_;
-#elif defined(TOOLKIT_GTK)
-    explicit FormatType(const std::string& native_format);
-    explicit FormatType(const GdkAtom& native_format);
-    const GdkAtom& ToGdkAtom() const { return data_; }
-    GdkAtom data_;
 #elif defined(OS_ANDROID)
     explicit FormatType(const std::string& native_format);
     const std::string& data() const { return data_; }
@@ -371,30 +358,6 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
   // Mark this as mutable so const methods can still do lazy initialization.
   mutable scoped_ptr<base::win::MessageWindow> clipboard_owner_;
 
-#elif defined(TOOLKIT_GTK)
-  // The public API is via WriteObjects() which dispatches to multiple
-  // Write*() calls, but on GTK we must write all the clipboard types
-  // in a single GTK call.  To support this we store the current set
-  // of data we intend to put on the clipboard on clipboard_data_ as
-  // WriteObjects is running, and then at the end call SetGtkClipboard
-  // which replaces whatever is on the system clipboard with the
-  // contents of clipboard_data_.
-
- public:
-  typedef std::map<std::string, std::pair<char*, size_t> > TargetMap;
-
- private:
-  // Write changes to gtk clipboard.
-  void SetGtkClipboard(ClipboardType type);
-  // Insert a mapping into clipboard_data_.
-  void InsertMapping(const char* key, char* data, size_t data_len);
-
-  // Find the gtk clipboard for the passed type enum.
-  GtkClipboard* LookupBackingClipboard(ClipboardType type) const;
-
-  TargetMap* clipboard_data_;
-  GtkClipboard* clipboard_;
-  GtkClipboard* primary_selection_;
 #elif defined(USE_CLIPBOARD_AURAX11)
  private:
   // We keep our implementation details private because otherwise we bring in

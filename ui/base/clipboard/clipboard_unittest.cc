@@ -159,7 +159,7 @@ TEST_F(ClipboardTest, RTFTest) {
   EXPECT_EQ(rtf, result);
 }
 
-#if defined(TOOLKIT_GTK)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 TEST_F(ClipboardTest, MultipleBufferTest) {
   base::string16 text(ASCIIToUTF16("Standard")), text_result;
   base::string16 markup(ASCIIToUTF16("<string>Selection</string>"));
@@ -253,27 +253,6 @@ TEST_F(ClipboardTest, UniodeHTMLTest) {
   EXPECT_EQ(52, fragment_end);
 }
 #endif  // defined(OS_WIN)
-
-#if defined(TOOLKIT_GTK)
-// Regression test for crbug.com/56298 (pasting empty HTML crashes Linux).
-TEST_F(ClipboardTest, EmptyHTMLTest) {
-  // ScopedClipboardWriter doesn't let us write empty data to the clipboard.
-  clipboard().clipboard_data_ = new Clipboard::TargetMap();
-  // The 1 is so the compiler doesn't warn about allocating an empty array.
-  char* empty = new char[1];
-  clipboard().InsertMapping("text/html", empty, 0U);
-  clipboard().SetGtkClipboard(CLIPBOARD_TYPE_COPY_PASTE);
-
-  EXPECT_TRUE(clipboard().IsFormatAvailable(Clipboard::GetHtmlFormatType(),
-                                            CLIPBOARD_TYPE_COPY_PASTE));
-  base::string16 markup_result;
-  std::string url_result;
-  uint32 ignored;
-  clipboard().ReadHTML(CLIPBOARD_TYPE_COPY_PASTE, &markup_result, &url_result,
-                       &ignored, &ignored);
-  EXPECT_PRED2(MarkupMatches, base::string16(), markup_result);
-}
-#endif
 
 // TODO(estade): Port the following test (decide what target we use for urls)
 #if !defined(OS_POSIX) || defined(OS_MACOSX)
@@ -414,19 +393,8 @@ static void TestBitmapWrite(Clipboard* clipboard,
     for (int i = 0; i < image.width(); ++i) {
       int offset = i + j * image.width();
       uint32 pixel = SkPreMultiplyColor(bitmap_data[offset]);
-#if defined(TOOLKIT_GTK)
-      // Non-Aura GTK doesn't support alpha transparency. Instead, the alpha
-      // channel is always set to 0xFF - see http://crbug.com/154573.
-      // However, since we premultiplied above, we must also premultiply here
-      // before unpremultiplying and setting alpha to 0xFF; otherwise, the
-      // results will not match GTK's.
-      EXPECT_EQ(
-          SkUnPreMultiply::PMColorToColor(pixel) | 0xFF000000, row_address[i])
-          << "i = " << i << ", j = " << j;
-#else
       EXPECT_EQ(pixel, row_address[i])
           << "i = " << i << ", j = " << j;
-#endif  // defined(TOOLKIT_GTK)
     }
   }
 }

@@ -454,13 +454,7 @@ const LocalizedErrorMap* LookupErrorMap(const std::string& error_domain,
 }
 
 bool LocaleIsRTL() {
-#if defined(TOOLKIT_GTK)
-  // base::i18n::IsRTL() uses the GTK text direction, which doesn't work within
-  // the renderer sandbox.
-  return base::i18n::ICUIsRTL();
-#else
   return base::i18n::IsRTL();
-#endif
 }
 
 // Returns a dictionary containing the strings for the settings menu under the

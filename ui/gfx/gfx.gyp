@@ -338,24 +338,6 @@
             'canvas_skia.cc',
           ],
         }],
-        ['toolkit_uses_gtk == 1', {
-          'dependencies': [
-            '<(DEPTH)/build/linux/system.gyp:gtk',
-          ],
-          'sources': [
-            'gtk_native_view_id_manager.cc',
-            'gtk_native_view_id_manager.h',
-            'gtk_preserve_window.cc',
-            'gtk_preserve_window.h',
-            'gdk_compat.h',
-            'gtk_compat.h',
-            'gtk_util.cc',
-            'gtk_util.h',
-            'image/cairo_cached_surface.cc',
-            'image/cairo_cached_surface.h',
-            'scoped_gobject.h',
-          ],
-        }],
         ['OS=="win"', {
           'sources': [
             'gdi_util.cc',

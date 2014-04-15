@@ -9,8 +9,6 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
-#elif defined(TOOLKIT_GTK)
-#include <gtk/gtk.h>
 #elif defined(OS_ANDROID)
 #include "content/public/browser/render_widget_host_view.h"
 #endif
@@ -22,9 +20,6 @@ void ResizeWebContents(content::WebContents* web_contents,
 #if defined(USE_AURA)
   aura::Window* window = web_contents->GetView()->GetNativeView();
   window->SetBounds(gfx::Rect(window->bounds().origin(), new_size));
-#elif defined(TOOLKIT_GTK)
-  GtkWidget* widget = web_contents->GetView()->GetNativeView();
-  gtk_widget_set_size_request(widget, new_size.width(), new_size.height());
 #elif defined(OS_ANDROID)
   content::RenderWidgetHostView* view = web_contents->GetRenderWidgetHostView();
   if (view)

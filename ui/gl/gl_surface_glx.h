@@ -76,34 +76,6 @@ class GL_EXPORT NativeViewGLSurfaceGLX : public GLSurfaceGLX {
   // Window passed in at creation. Always valid.
   gfx::AcceleratedWidget parent_window_;
 
-#if defined(TOOLKIT_GTK)
-  // Some NVIDIA drivers don't allow deleting GLX windows separately from their
-  // parent X windows. Work around this by creating a child X window to the
-  // window passed in to the constructor, creating the GLX window against the
-  // child window, and then destroying the child window to destroy the GLX
-  // window.
-  // http://crbug.com/145600
-  void CreateChildWindow();
-  void DestroyChildWindow();
-
-  // Destroy the child window when both the front and back buffers are
-  // deallocated.
-  virtual bool SetBackbufferAllocation(bool allocated) OVERRIDE;
-  virtual void SetFrontbufferAllocation(bool allocated) OVERRIDE;
-  void AdjustBufferAllocation();
-
-  // Child window which is used with GLX, and is discarded when it is
-  // backgrounded.
-  gfx::AcceleratedWidget child_window_;
-
-  // Dummy 1x1 window which is supplied to glXMakeCurrent when making
-  // the context current while its output surface is destroyed.
-  gfx::AcceleratedWidget dummy_window_;
-
-  bool backbuffer_allocated_;
-  bool frontbuffer_allocated_;
-#endif
-
   void* config_;
   gfx::Size size_;
 

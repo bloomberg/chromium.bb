@@ -68,9 +68,6 @@ extern const bool kSyncAutoStarts;
 // Should other browsers be shown in about:memory page?
 extern const bool kShowOtherBrowsersInAboutMemory;
 
-// Should the close button be shown in the Task Manager dialog?
-extern const bool kShowCancelButtonInTaskManager;
-
 // Should scroll events on the tabstrip change tabs?
 extern const bool kScrollEventChangesTab;
 

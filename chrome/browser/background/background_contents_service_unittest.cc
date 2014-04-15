@@ -119,7 +119,7 @@ class MockBackgroundContents : public BackgroundContents {
   Profile* profile_;
 };
 
-#if defined(ENABLE_NOTIFICATIONS) && !defined(TOOLKIT_GTK)
+#if defined(ENABLE_NOTIFICATIONS)
 // Wait for the notification created.
 class NotificationWaiter : public message_center::MessageCenterObserver {
  public:
@@ -343,7 +343,7 @@ TEST_F(BackgroundContentsServiceTest, TestApplicationIDLinkage) {
   EXPECT_EQ(url2.spec(), GetPrefURLForApp(&profile, contents2->appid()));
 }
 
-#if defined(ENABLE_NOTIFICATIONS) && !defined(TOOLKIT_GTK)
+#if defined(ENABLE_NOTIFICATIONS)
 TEST_F(BackgroundContentsServiceNotificationTest, TestShowBalloon) {
   scoped_refptr<extensions::Extension> extension =
       extension_test_util::LoadManifest("image_loading_tracker", "app.json");

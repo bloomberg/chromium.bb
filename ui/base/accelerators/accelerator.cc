@@ -6,8 +6,6 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
-#elif defined(TOOLKIT_GTK)
-#include <gdk/gdk.h>
 #endif
 
 #include "base/i18n/rtl.h"
@@ -192,23 +190,6 @@ base::string16 Accelerator::GetShortcutText() const {
     if (c != 0)
       shortcut +=
           static_cast<base::string16::value_type>(base::ToUpperASCII(c));
-#elif defined(TOOLKIT_GTK)
-    const gchar* name = NULL;
-    switch (key_code_) {
-      case ui::VKEY_OEM_2:
-        name = static_cast<const gchar*>("/");
-        break;
-      default:
-        name = gdk_keyval_name(gdk_keyval_to_lower(key_code_));
-        break;
-    }
-    if (name) {
-      if (name[0] != 0 && name[1] == 0)
-        shortcut +=
-            static_cast<base::string16::value_type>(g_ascii_toupper(name[0]));
-      else
-        shortcut += base::UTF8ToUTF16(name);
-    }
 #endif
   } else {
     shortcut = l10n_util::GetStringUTF16(string_id);

@@ -35,7 +35,7 @@ namespace chrome_browser {
 extern const char kMissingLocaleDataTitle[];
 #endif
 
-#if defined(OS_WIN) || defined(TOOLKIT_GTK)
+#if defined(OS_WIN)
 extern const char kMissingLocaleDataMessage[];
 #endif
 }
