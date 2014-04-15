@@ -261,8 +261,7 @@ class DepGraphGenerator(object):
     # These packages take a really long time to build, so, for expediency, we
     # are blacklisting them from automatic rebuilds because one of their
     # dependencies needs to be recompiled.
-    for pkg in ("chromeos-base/chromeos-chrome", "media-plugins/o3d",
-                "dev-java/icedtea"):
+    for pkg in ("chromeos-base/chromeos-chrome",):
       emerge_args.append("--rebuild-exclude=%s" % pkg)
 
     return emerge_args
