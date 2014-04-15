@@ -159,7 +159,9 @@ TEST_F(ClipboardTest, RTFTest) {
   EXPECT_EQ(rtf, result);
 }
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(dnicoara) Enable test once Ozone implements clipboard support:
+// crbug.com/361707
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(USE_OZONE)
 TEST_F(ClipboardTest, MultipleBufferTest) {
   base::string16 text(ASCIIToUTF16("Standard")), text_result;
   base::string16 markup(ASCIIToUTF16("<string>Selection</string>"));
