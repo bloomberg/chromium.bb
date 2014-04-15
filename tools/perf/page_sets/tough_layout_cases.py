@@ -33,7 +33,7 @@ class ToughLayoutCasesPageSet(page_set_module.PageSet):
 
     urls_list = [
       'http://oilevent.com',
-      'http://www.muzoboss.r',
+      'http://www.muzoboss.ru',
       'http://natunkantha.com',
       'http://www.mossiella.com',
       'http://bookish.com',
