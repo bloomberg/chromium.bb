@@ -181,9 +181,9 @@ test.util.sync.getFileList = function(contentWindow) {
  * @param {Array.<string>=} opt_styleNames List of CSS property name to be
  *     obtained.
  * @return {Array.<{attributes:Object.<string, string>, text:string,
- *                  style:Object.<string, string>}>} Element information that
- *     contains contentText, attribute names and values, and style names and
- *     values.
+ *                  styles:Object.<string, string>, hidden:boolean}>} Element
+ *     information that contains contentText, attribute names and
+ *     values, hidden attribute, and style names and values.
  */
 test.util.sync.queryAllElements = function(
     contentWindow, targetQuery, iframeQuery, opt_styleNames) {
@@ -206,7 +206,14 @@ test.util.sync.queryAllElements = function(
           styles[styleNames[i]] = computedStyles[styleNames[i]];
         }
         var text = element.textContent;
-        return {attributes: attributes, text: text, styles: styles};
+        return {
+          attributes: attributes,
+          text: text,
+          styles: styles,
+          // The hidden attribute is not in the element.attributes even if
+          // element.hasAttribute('hidden') is true.
+          hidden: !!element.hidden
+        };
       });
 };
 

@@ -157,15 +157,11 @@ a:focus {
 }
 
 .dialog-navigation-list-header #profile-badge {
-  display: none;
-}
-
-.dialog-navigation-list-header #profile-badge[src] {
   display: inline-block;
-  height: 30px;
+  height: 29px;  /* Size of a profile image. */
   margin: 8px;
   vertical-align: top;
-  width: 30px;
+  width: 29px;  /* Size of a profile image. */
 }
 
 .dialog-navigation-list-header #app-name {
@@ -174,7 +170,7 @@ a:focus {
   font-size: 130%;
 }
 
-.dialog-navigation-list-header #profile-badge[src] + #app-name {
+.dialog-navigation-list-header #profile-badge:not([hidden]) + #app-name {
   -webkit-margin-start: 0;
 }
 

@@ -68,7 +68,7 @@ testcase.multiProfileBadge = function() {
     },
     // Verify no badge image is shown yet.  Move to other deskop.
     function(element) {
-      chrome.test.assertTrue(!element.attributes.src, 'Badge hidden initially');
+      chrome.test.assertTrue(element.hidden, 'Badge hidden initially');
       callRemoteTestUtil('visitDesktop',
                          appId,
                          ['bob@invalid.domain'],
@@ -77,21 +77,29 @@ testcase.multiProfileBadge = function() {
     // Get the badge element again.
     function(result) {
       chrome.test.assertTrue(result);
-      waitForElement(appId, '#profile-badge[src]').then(this.next);
+      waitForElement(appId, '#profile-badge:not([hidden])').then(this.next);
     },
     // Verify an image source is filled. Go back to the original desktop
     function(element) {
-      chrome.test.assertTrue(element.attributes.src.indexOf('data:image') === 0,
-                             'Badge shown after moving desktop');
+      callRemoteTestUtil('queryAllElements',
+                         appId,
+                         ['#profile-badge',
+                          null,
+                          ['background']]).then(this.next);
+    },
+    function(elements) {
+      chrome.test.assertTrue(
+          elements[0].styles.background.indexOf('data:image') !== -1,
+          'Badge shown after moving desktop');
       callRemoteTestUtil('visitDesktop',
                          appId,
                          ['alice@invalid.domain'],
                          this.next);
     },
-    // Wait for #profile-badge element with .src to disappear.
+    // Wait for #profile-badge element to disappear.
     function(result) {
       chrome.test.assertTrue(result);
-      waitForElementLost(appId, '#profile-badge[src]').then(this.next);
+      waitForElementLost(appId, '#profile-badge:not([hidden])').then(this.next);
     },
     // The image is gone.
     function(result) {
@@ -121,7 +129,9 @@ testcase.multiProfileVisitDesktopMenu = function() {
         waitForVisitDesktopMenu(appId, 'charlie@invalid.domain', UNTIL_ADDED),
         waitForVisitDesktopMenu(appId, 'alice@invalid.domain', UNTIL_REMOVED)
       ]).
-      then(this.next);
+      then(this.next, function(error) {
+        chrome.test.fail(error.stack || error);
+      });
     },
     // Activate the visit desktop menu.
     function() {
@@ -132,12 +142,15 @@ testcase.multiProfileVisitDesktopMenu = function() {
     },
     // Wait for the new menu state. Now 'alice' is shown and 'bob' is hidden.
     function(result) {
+      chrome.test.assertTrue(result);
       Promise.all([
         waitForVisitDesktopMenu(appId, 'bob@invalid.domain', UNTIL_REMOVED),
         waitForVisitDesktopMenu(appId, 'charlie@invalid.domain', UNTIL_ADDED),
         waitForVisitDesktopMenu(appId, 'alice@invalid.domain', UNTIL_ADDED)
       ]).
-      then(this.next);
+      then(this.next, function(error) {
+        chrome.test.fail(error.stack || error);
+      });
     },
     // Check that the window owner has indeed been changed.
     function() {

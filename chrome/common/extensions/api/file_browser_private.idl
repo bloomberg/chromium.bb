@@ -132,6 +132,14 @@ enum DriveShareType {
   can_view
 };
 
+// ImageSet that represents multi-scale images.
+dictionary ImageSet {
+  // 1x scale URL.
+  DOMString scale1xUrl;
+  // 2x scale URL.
+  DOMString scale2xUrl;
+};
+
 // A file task represents an action that the file manager can perform over the
 // currently selected files. See
 // chrome/browser/chromeos/extensions/file_manager/file_tasks.h for details
@@ -209,8 +217,8 @@ dictionary ProfileInfo {
   // multi-profile suuport.
   boolean isCurrentProfile;
 
-  // Data URI of profile image;
-  DOMString? imageUri;
+  // Image set of profile image.
+  ImageSet? profileImage;
 };
 
 // Mounted disk volume metadata.

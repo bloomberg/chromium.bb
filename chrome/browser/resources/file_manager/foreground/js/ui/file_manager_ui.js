@@ -206,19 +206,25 @@ FileManagerUI.prototype.updateProfileBadge = function() {
   chrome.fileBrowserPrivate.getProfiles(function(profiles,
                                                  currentId,
                                                  displayedId) {
-    var imageUri;
+    var profileImage;
     if (currentId !== displayedId) {
       for (var i = 0; i < profiles.length; i++) {
         if (profiles[i].profileId === currentId) {
-          imageUri = profiles[i].imageUri;
+          profileImage = profiles[i].profileImage;
           break;
         }
       }
     }
     var profileBadge = this.element_.querySelector('#profile-badge');
-    if (imageUri)
-      profileBadge.setAttribute('src', imageUri);
-    else
-      profileBadge.removeAttribute('src');
+    if (profileImage) {
+      profileBadge.style.background =
+          '-webkit-image-set(' +
+          'url(' + profileImage.scale1xUrl + ') 1x,' +
+          'url(' + profileImage.scale2xUrl + ') 2x) no-repeat center';
+      profileBadge.hidden = false;
+    } else {
+      profileBadge.style.background = '';
+      profileBadge.hidden = true;
+    }
   }.bind(this));
 };

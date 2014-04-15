@@ -87,11 +87,13 @@ GetLoggedInProfileInfoList(content::WebContents* contents) {
     if (contents) {
       const gfx::Image& image =
           ash::GetAvatarImageForContext(contents->GetBrowserContext());
-      const SkBitmap* const bitmap = image.ToSkBitmap();
-      if (bitmap) {
-        profile_info->image_uri.reset(
-            new std::string(webui::GetBitmapDataUrl(*bitmap)));
-      }
+      const gfx::ImageSkia& skia = image.AsImageSkia();
+      profile_info->profile_image.reset(
+          new api::file_browser_private::ImageSet);
+      profile_info->profile_image->scale1x_url =
+          webui::GetBitmapDataUrl(skia.GetRepresentation(1.0f).sk_bitmap());
+      profile_info->profile_image->scale2x_url =
+          webui::GetBitmapDataUrl(skia.GetRepresentation(2.0f).sk_bitmap());
     }
     result_profiles.push_back(profile_info);
   }
