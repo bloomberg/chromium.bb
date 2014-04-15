@@ -1,0 +1,5 @@
+include_rules = [
+  # query_parser is a component that is not allowed to uses content/ so that it
+  # can be shared on iOS.
+  "-content",
+]

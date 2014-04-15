@@ -28,6 +28,7 @@ include_rules = [
   "+components/password_manager",
   "+components/policy",
   "+components/precache",
+  "+components/query_parser",
   "+components/rappor",
   "+components/sessions",
   "+components/signin",

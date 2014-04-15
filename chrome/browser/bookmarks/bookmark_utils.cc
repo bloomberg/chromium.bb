@@ -16,8 +16,8 @@
 #include "base/time/time.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/history/query_parser.h"
 #include "chrome/common/pref_names.h"
+#include "components/query_parser/query_parser.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/user_metrics.h"
 #include "net/base/net_util.h"
@@ -259,7 +259,7 @@ void GetBookmarksMatchingProperties(BookmarkModel* model,
                                     const std::string& languages,
                                     std::vector<const BookmarkNode*>* nodes) {
   std::vector<base::string16> query_words;
-  QueryParser parser;
+  query_parser::QueryParser parser;
   if (query.word_phrase_query) {
     parser.ParseQueryWords(base::i18n::ToLower(*query.word_phrase_query),
                            &query_words);

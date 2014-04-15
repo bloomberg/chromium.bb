@@ -14,8 +14,6 @@
 
 class BookmarkNode;
 struct BookmarkTitleMatch;
-class QueryNode;
-class QueryParser;
 
 namespace content {
 class BrowserContext;
@@ -23,6 +21,11 @@ class BrowserContext;
 
 namespace history {
 class URLDatabase;
+}
+
+namespace query_parser {
+class QueryNode;
+class QueryParser;
 }
 
 // BookmarkIndex maintains an index of the titles of bookmarks for quick
@@ -82,10 +85,11 @@ class BookmarkIndex {
   }
 
   // Add |node| to |results| if the node matches the query.
-  void AddMatchToResults(const BookmarkNode* node,
-                         QueryParser* parser,
-                         const std::vector<QueryNode*>& query_nodes,
-                         std::vector<BookmarkTitleMatch>* results);
+  void AddMatchToResults(
+      const BookmarkNode* node,
+      query_parser::QueryParser* parser,
+      const std::vector<query_parser::QueryNode*>& query_nodes,
+      std::vector<BookmarkTitleMatch>* results);
 
   // Populates |matches| for the specified term. If |first_term| is true, this
   // is the first term in the query. Returns true if there is at least one node

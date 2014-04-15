@@ -30,6 +30,7 @@
     'password_manager.gypi',
     'policy.gypi',
     'precache.gypi',
+    'query_parser.gypi',
     'rappor.gypi',
     'signin.gypi',
     'startup_metric_utils.gypi',

@@ -101,7 +101,7 @@ URLResult::URLResult(const GURL& url, base::Time visit_time)
 }
 
 URLResult::URLResult(const GURL& url,
-                     const Snippet::MatchPositions& title_matches)
+                     const query_parser::Snippet::MatchPositions& title_matches)
     : URLRow(url) {
   title_match_positions_ = title_matches;
 }

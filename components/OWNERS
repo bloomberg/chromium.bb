@@ -88,6 +88,13 @@ per-file policy*=atwilson@chromium.org
 per-file policy*=pneubeck@chromium.org
 per-file policy*=dconnelly@chromium.org
 
+per-file query_parser*=brettw@chromium.org
+per-file query_parser*=sky@chromium.org
+# Temporary for the duration of the bookmarks & history componentization.
+per-file query_parser*=blundell@chromium.org
+# Temporary for the duration of the bookmarks & history componentization.
+per-file query_parser*=droger@chromium.org
+
 per-file rappor*=asvitkine@chromium.org
 # OWNER-to-be: per-file rappor*=holte@chromium.org
 

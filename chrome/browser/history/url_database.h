@@ -7,8 +7,8 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/history/history_types.h"
-#include "chrome/browser/history/query_parser.h"
 #include "chrome/browser/search_engines/template_url_id.h"
+#include "components/query_parser/query_parser.h"
 #include "sql/statement.h"
 
 class GURL;
@@ -290,7 +290,7 @@ class URLDatabase {
   // have keyword search terms.
   bool has_keyword_search_terms_;
 
-  QueryParser query_parser_;
+  query_parser::QueryParser query_parser_;
 
   DISALLOW_COPY_AND_ASSIGN(URLDatabase);
 };

@@ -17,11 +17,11 @@
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "chrome/browser/history/snippet.h"
 #include "chrome/browser/search_engines/template_url_id.h"
 #include "chrome/common/favicon/favicon_types.h"
 #include "chrome/common/ref_counted_util.h"
 #include "chrome/common/thumbnail_score.h"
+#include "components/query_parser/snippet.h"
 #include "content/public/common/page_transition_types.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/size.h"
@@ -284,14 +284,15 @@ class URLResult : public URLRow {
   URLResult(const GURL& url, base::Time visit_time);
   // Constructor that create a URLResult from the specified URL and title match
   // positions from title_matches.
-  URLResult(const GURL& url, const Snippet::MatchPositions& title_matches);
+  URLResult(const GURL& url,
+            const query_parser::Snippet::MatchPositions& title_matches);
   explicit URLResult(const URLRow& url_row);
   virtual ~URLResult();
 
   base::Time visit_time() const { return visit_time_; }
   void set_visit_time(base::Time visit_time) { visit_time_ = visit_time; }
 
-  const Snippet& snippet() const { return snippet_; }
+  const query_parser::Snippet& snippet() const { return snippet_; }
 
   bool blocked_visit() const { return blocked_visit_; }
   void set_blocked_visit(bool blocked_visit) {
@@ -301,7 +302,7 @@ class URLResult : public URLRow {
   // If this is a title match, title_match_positions contains an entry for
   // every word in the title that matched one of the query parameters. Each
   // entry contains the start and end of the match.
-  const Snippet::MatchPositions& title_match_positions() const {
+  const query_parser::Snippet::MatchPositions& title_match_positions() const {
     return title_match_positions_;
   }
 
@@ -316,8 +317,8 @@ class URLResult : public URLRow {
   base::Time visit_time_;
 
   // These values are typically set by HistoryBackend.
-  Snippet snippet_;
-  Snippet::MatchPositions title_match_positions_;
+  query_parser::Snippet snippet_;
+  query_parser::Snippet::MatchPositions title_match_positions_;
 
   // Whether a managed user was blocked when attempting to visit this URL.
   bool blocked_visit_;

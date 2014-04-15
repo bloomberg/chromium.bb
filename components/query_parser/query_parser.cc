@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/history/query_parser.h"
+#include "components/query_parser/query_parser.h"
 
 #include <algorithm>
 
@@ -13,6 +13,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 
+namespace query_parser {
 namespace {
 
 // Returns true if |mp1.first| is less than |mp2.first|. This is used to
@@ -471,3 +472,5 @@ void QueryParser::ExtractQueryWords(const base::string16& text,
     }
   }
 }
+
+}  // namespace query_parser

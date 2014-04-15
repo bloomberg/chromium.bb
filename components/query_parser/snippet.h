@@ -1,16 +1,18 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // This module computes snippets of queries based on hits in the documents
 // for display in history search results.
 
-#ifndef CHROME_BROWSER_HISTORY_SNIPPET_H__
-#define CHROME_BROWSER_HISTORY_SNIPPET_H__
+#ifndef COMPONENTS_QUERY_PARSER_SNIPPET_H__
+#define COMPONENTS_QUERY_PARSER_SNIPPET_H__
 
 #include <vector>
 
 #include "base/strings/string16.h"
+
+namespace query_parser {
 
 class Snippet {
  public:
@@ -66,4 +68,6 @@ class Snippet {
   MatchPositions matches_;
 };
 
-#endif  // CHROME_BROWSER_HISTORY_SNIPPET_H__
+}  // namespace query_parser
+
+#endif  // COMPONENTS_QUERY_PARSER_SNIPPET_H__

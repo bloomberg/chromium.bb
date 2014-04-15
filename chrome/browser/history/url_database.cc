@@ -362,7 +362,7 @@ bool URLDatabase::FindShortestURLFromBase(const std::string& base,
 
 bool URLDatabase::GetTextMatches(const base::string16& query,
                                  URLRows* results) {
-  ScopedVector<QueryNode> query_nodes;
+  ScopedVector<query_parser::QueryNode> query_nodes;
   query_parser_.ParseQueryNodes(query, &query_nodes.get());
 
   results->clear();
@@ -370,7 +370,7 @@ bool URLDatabase::GetTextMatches(const base::string16& query,
       "SELECT" HISTORY_URL_ROW_FIELDS "FROM urls WHERE hidden = 0"));
 
   while (statement.Step()) {
-    std::vector<QueryWord> query_words;
+    std::vector<query_parser::QueryWord> query_words;
     base::string16 url = base::i18n::ToLower(statement.ColumnString16(1));
     query_parser_.ExtractQueryWords(url, &query_words);
     GURL gurl(url);

@@ -110,6 +110,8 @@
             'precache/core/precache_database_unittest.cc',
             'precache/core/precache_fetcher_unittest.cc',
             'precache/core/precache_url_table_unittest.cc',
+            'query_parser/query_parser_unittest.cc',
+            'query_parser/snippet_unittest.cc',
             'rappor/bloom_filter_unittest.cc',
             'rappor/byte_vector_utils_unittest.cc',
             'rappor/log_uploader_unittest.cc',
@@ -220,6 +222,9 @@
             # Dependencies of precache/core
             'components.gyp:password_manager_core_browser',
             'components.gyp:precache_core',
+
+            # Dependencies of query_parser
+            'components.gyp:query_parser',
 
             # Dependencies of rappor
             'components.gyp:rappor',

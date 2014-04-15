@@ -10,7 +10,7 @@
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
-#include "chrome/browser/history/snippet.h"
+#include "components/query_parser/snippet.h"
 
 class BookmarkModel;
 struct BookmarkTitleMatch;
@@ -64,7 +64,7 @@ class BookmarkProvider : public AutocompleteProvider {
   // 'unhighlighted' classification span so the tail of the source string
   // properly highlighted.
   static ACMatchClassifications ClassificationsFromMatch(
-      const Snippet::MatchPositions& positions,
+      const query_parser::Snippet::MatchPositions& positions,
       size_t text_length);
 
   BookmarkModel* bookmark_model_;

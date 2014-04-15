@@ -14,8 +14,8 @@
 #include "chrome/browser/bookmarks/bookmark_title_match.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/history/query_parser.h"
 #include "chrome/browser/history/url_database.h"
+#include "components/query_parser/query_parser.h"
 #include "third_party/icu/source/common/unicode/normalizer2.h"
 
 namespace {
@@ -118,8 +118,8 @@ void BookmarkIndex::GetBookmarksWithTitlesMatching(
   // We use a QueryParser to fill in match positions for us. It's not the most
   // efficient way to go about this, but by the time we get here we know what
   // matches and so this shouldn't be performance critical.
-  QueryParser parser;
-  ScopedVector<QueryNode> query_nodes;
+  query_parser::QueryParser parser;
+  ScopedVector<query_parser::QueryNode> query_nodes;
   parser.ParseQueryNodes(query, &query_nodes.get());
 
   // The highest typed counts should be at the beginning of the results vector
@@ -176,8 +176,8 @@ void BookmarkIndex::ExtractBookmarkNodePairs(
 
 void BookmarkIndex::AddMatchToResults(
     const BookmarkNode* node,
-    QueryParser* parser,
-    const std::vector<QueryNode*>& query_nodes,
+    query_parser::QueryParser* parser,
+    const std::vector<query_parser::QueryNode*>& query_nodes,
     std::vector<BookmarkTitleMatch>* results) {
   BookmarkTitleMatch title_match;
   // Check that the result matches the query.  The previous search
@@ -199,7 +199,7 @@ bool BookmarkIndex::GetBookmarksWithTitleMatchingTerm(const base::string16& term
   if (i == index_.end())
     return false;
 
-  if (!QueryParser::IsWordLongEnoughForPrefixSearch(term)) {
+  if (!query_parser::QueryParser::IsWordLongEnoughForPrefixSearch(term)) {
     // Term is too short for prefix match, compare using exact match.
     if (i->first != term)
       return false;  // No bookmarks with this term.
@@ -279,7 +279,7 @@ std::vector<base::string16> BookmarkIndex::ExtractQueryWords(
   std::vector<base::string16> terms;
   if (query.empty())
     return std::vector<base::string16>();
-  QueryParser parser;
+  query_parser::QueryParser parser;
   parser.ParseQueryWords(base::i18n::ToLower(query), &terms);
   return terms;
 }

@@ -1,8 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/history/snippet.h"
+#include "components/query_parser/snippet.h"
 
 #include <algorithm>
 
@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace query_parser {
 namespace {
 
 // A sample document to compute snippets of.
@@ -88,7 +89,7 @@ bool ComparePair1st(const Snippet::MatchPosition& a,
 // sqlite's FTS matching.  BuildSnippet returns the snippet for matching
 // |query| against |document|.  Matches are surrounded by "**".
 base::string16 BuildSnippet(const std::string& document,
-                      const std::string& query) {
+                            const std::string& query) {
   // This function assumes that |document| does not contain
   // any character for which lowercasing changes its length. Further,
   // it's assumed that lowercasing only the ASCII-portion works for
@@ -250,3 +251,5 @@ TEST(Snippets, ExtractMatchPositions) {
     }
   }
 }
+
+}  // namespace query_parser

@@ -1,15 +1,17 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_HISTORY_QUERY_PARSER_H_
-#define CHROME_BROWSER_HISTORY_QUERY_PARSER_H_
+#ifndef COMPONENTS_QUERY_PARSER_QUERY_PARSER_H_
+#define COMPONENTS_QUERY_PARSER_QUERY_PARSER_H_
 
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/history/snippet.h"
+#include "components/query_parser/snippet.h"
+
+namespace query_parser {
 
 class QueryNodeList;
 
@@ -109,4 +111,6 @@ class QueryParser {
   DISALLOW_COPY_AND_ASSIGN(QueryParser);
 };
 
-#endif  // CHROME_BROWSER_HISTORY_QUERY_PARSER_H_
+}  // namespace query_parser
+
+#endif  // COMPONENTS_QUERY_PARSER_QUERY_PARSER_H_

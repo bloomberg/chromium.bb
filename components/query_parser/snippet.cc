@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/history/snippet.h"
+#include "components/query_parser/snippet.h"
 
 #include <algorithm>
 
@@ -15,6 +15,7 @@
 #include "third_party/icu/source/common/unicode/utext.h"
 #include "third_party/icu/source/common/unicode/utf8.h"
 
+namespace query_parser {
 namespace {
 
 bool PairFirstLessThan(const Snippet::MatchPosition& a,
@@ -126,7 +127,7 @@ void MoveByNGraphemes(icu::BreakIterator* bi, int count, size_t* utf8_pos) {
   // It's simpler than calling following(n) and then previous().
   // isBoundary() is not very fast, but should be good enough for the
   // snippet generation. If not, revisit the way we scan in ComputeSnippet.
-  bi->isBoundary(*utf8_pos);
+  bi->isBoundary(static_cast<int32_t>(*utf8_pos));
   bi->next(count);
   *utf8_pos = static_cast<size_t>(bi->current());
 }
@@ -145,7 +146,7 @@ bool IsNextMatchWithinSnippetWindow(icu::BreakIterator* bi,
   // that it's within a window in terms of graphemes as well.
   if (next_match_start < previous_match_end + kSnippetContext)
     return true;
-  bi->isBoundary(previous_match_end);
+  bi->isBoundary(static_cast<int32_t>(previous_match_end));
   // An alternative to this is to call |bi->next()| at most
   // kSnippetContext times, compare |bi->current()| with |next_match_start|
   // after each call and return early if possible. There are other
@@ -194,9 +195,11 @@ void Snippet::ConvertMatchPositionsToWide(
   for (Snippet::MatchPositions::iterator i = match_positions->begin();
        i != match_positions->end(); ++i) {
     i->first = AdvanceAndReturnUTF16Pos(utf8_cstring, utf8_length,
-                                        i->first, &utf8_pos, &utf16_pos);
+                                        static_cast<int32_t>(i->first),
+                                        &utf8_pos, &utf16_pos);
     i->second = AdvanceAndReturnUTF16Pos(utf8_cstring, utf8_length,
-                                         i->second, &utf8_pos, &utf16_pos);
+                                         static_cast<int32_t>(i->second),
+                                         &utf8_pos, &utf16_pos);
   }
 }
 
@@ -295,3 +298,5 @@ void Snippet::Swap(Snippet* other) {
   text_.swap(other->text_);
   matches_.swap(other->matches_);
 }
+
+}  // namespace query_parser
