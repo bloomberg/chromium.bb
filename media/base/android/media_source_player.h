@@ -29,7 +29,6 @@
 namespace media {
 
 class AudioDecoderJob;
-class AudioTimestampHelper;
 class VideoDecoderJob;
 
 // This class handles media source extensions on Android. It uses Android
@@ -77,8 +76,8 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   friend class MediaSourcePlayerTest;
 
   // Update the current timestamp.
-  void UpdateTimestamps(base::TimeDelta presentation_timestamp,
-                        size_t audio_output_bytes);
+  void UpdateTimestamps(base::TimeDelta current_presentation_timestamp,
+                        base::TimeDelta max_presentation_timestamp);
 
   // Helper function for starting media playback.
   void StartInternal();
@@ -89,8 +88,8 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   // Called when the decoder finishes its task.
   void MediaDecoderCallback(
         bool is_audio, MediaCodecStatus status,
-        base::TimeDelta presentation_timestamp,
-        size_t audio_output_bytes);
+        base::TimeDelta current_presentation_timestamp,
+        base::TimeDelta max_presentation_timestamp);
 
   // Gets MediaCrypto object from |drm_bridge_|.
   base::android::ScopedJavaLocalRef<jobject> GetMediaCrypto();
@@ -133,10 +132,14 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   void OnDecoderStarved();
 
   // Starts the |decoder_starvation_callback_| task with the timeout value.
-  // |presentation_timestamp| - The presentation timestamp used for starvation
-  // timeout computations. It represents the timestamp of the last piece of
-  // decoded data.
-  void StartStarvationCallback(base::TimeDelta presentation_timestamp);
+  // |current_presentation_timestamp| - The presentation timestamp used for
+  // starvation timeout computations. It represents the current timestamp of
+  // rendered data.
+  // |max_presentation_timestamp| - The presentation timestamp if all the
+  // decoded data are rendered.
+  void StartStarvationCallback(
+      base::TimeDelta current_presentation_timestamp,
+      base::TimeDelta max_presentation_timestamp);
 
   // Schedules a seek event in |pending_events_| and calls StopDecode() on all
   // the MediaDecoderJobs. Sets clock to |seek_time|, and resets
@@ -265,9 +268,6 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   // new data. This callback runs if no data arrives before the timeout period
   // elapses.
   base::CancelableClosure decoder_starvation_callback_;
-
-  // Object to calculate the current audio timestamp for A/V sync.
-  scoped_ptr<AudioTimestampHelper> audio_timestamp_helper_;
 
   MediaDrmBridge* drm_bridge_;
 

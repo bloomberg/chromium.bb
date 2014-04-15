@@ -222,8 +222,9 @@ class AudioCodecBridge : public MediaCodecBridge {
              bool play_audio, jobject media_crypto) WARN_UNUSED_RESULT;
 
   // Play the output buffer. This call must be called after
-  // DequeueOutputBuffer() and before ReleaseOutputBuffer.
-  void PlayOutputBuffer(int index, size_t size);
+  // DequeueOutputBuffer() and before ReleaseOutputBuffer. Returns the playback
+  // head position expressed in frames.
+  int64 PlayOutputBuffer(int index, size_t size);
 
   // Set the volume of the audio output.
   void SetVolume(double volume);

@@ -19,15 +19,7 @@
 #include "media/base/android/media_drm_bridge.h"
 #include "media/base/android/media_player_manager.h"
 #include "media/base/android/video_decoder_job.h"
-#include "media/base/audio_timestamp_helper.h"
 #include "media/base/buffers.h"
-
-namespace {
-
-// Use 16bit PCM for audio output. Keep this value in sync with the output
-// format we passed to AudioTrack in MediaCodecBridge.
-const int kBytesPerAudioOutputSample = 2;
-}
 
 namespace media {
 
@@ -117,8 +109,6 @@ void MediaSourcePlayer::ScheduleSeekEventAndStopDecoding(
   pending_seek_ = false;
 
   clock_.SetTime(seek_time, seek_time);
-  if (audio_timestamp_helper_)
-    audio_timestamp_helper_->SetBaseTimestamp(seek_time);
 
   if (audio_decoder_job_ && audio_decoder_job_->is_decoding())
     audio_decoder_job_->StopDecode();
@@ -315,14 +305,6 @@ void MediaSourcePlayer::OnDemuxerConfigsAvailable(
   sampling_rate_ = configs.audio_sampling_rate;
   is_audio_encrypted_ = configs.is_audio_encrypted;
   audio_extra_data_ = configs.audio_extra_data;
-  if (HasAudio()) {
-    DCHECK_GT(num_channels_, 0);
-    audio_timestamp_helper_.reset(new AudioTimestampHelper(sampling_rate_));
-    audio_timestamp_helper_->SetBaseTimestamp(GetCurrentTime());
-  } else {
-    audio_timestamp_helper_.reset();
-  }
-
   video_codec_ = configs.video_codec;
   width_ = configs.video_size.width();
   height_ = configs.video_size.height();
@@ -444,8 +426,8 @@ void MediaSourcePlayer::OnDemuxerSeekDone(
     DVLOG(1) << __FUNCTION__ << " : setting clock to actual browser seek time: "
              << seek_time.InSecondsF();
     clock_.SetTime(seek_time, seek_time);
-    if (audio_timestamp_helper_)
-      audio_timestamp_helper_->SetBaseTimestamp(seek_time);
+    if (audio_decoder_job_)
+      audio_decoder_job_->SetBaseTimestamp(seek_time);
   } else {
     DCHECK(actual_browser_seek_time == kNoTimestamp());
   }
@@ -471,16 +453,10 @@ void MediaSourcePlayer::OnDemuxerSeekDone(
 }
 
 void MediaSourcePlayer::UpdateTimestamps(
-    base::TimeDelta presentation_timestamp, size_t audio_output_bytes) {
-  base::TimeDelta new_max_time = presentation_timestamp;
+    base::TimeDelta current_presentation_timestamp,
+    base::TimeDelta max_presentation_timestamp) {
+  clock_.SetTime(current_presentation_timestamp, max_presentation_timestamp);
 
-  if (audio_output_bytes > 0) {
-    audio_timestamp_helper_->AddFrames(
-        audio_output_bytes / (kBytesPerAudioOutputSample * num_channels_));
-    new_max_time = audio_timestamp_helper_->GetTimestamp();
-  }
-
-  clock_.SetMaxTime(new_max_time);
   manager()->OnTimeUpdate(player_id(), GetCurrentTime());
 }
 
@@ -510,6 +486,8 @@ void MediaSourcePlayer::ProcessPendingEvents() {
   if (IsEventPending(SEEK_EVENT_PENDING)) {
     DVLOG(1) << __FUNCTION__ << " : Handling SEEK_EVENT";
     ClearDecodingData();
+    if (audio_decoder_job_)
+      audio_decoder_job_->SetBaseTimestamp(GetCurrentTime());
     demuxer_->RequestDemuxerSeek(GetCurrentTime(), doing_browser_seek_);
     return;
   }
@@ -581,7 +559,8 @@ void MediaSourcePlayer::ProcessPendingEvents() {
 
 void MediaSourcePlayer::MediaDecoderCallback(
     bool is_audio, MediaCodecStatus status,
-    base::TimeDelta presentation_timestamp, size_t audio_output_bytes) {
+    base::TimeDelta current_presentation_timestamp,
+    base::TimeDelta max_presentation_timestamp) {
   DVLOG(1) << __FUNCTION__ << ": " << is_audio << ", " << status;
 
   // TODO(xhwang): Drop IntToString() when http://crbug.com/303899 is fixed.
@@ -625,6 +604,12 @@ void MediaSourcePlayer::MediaDecoderCallback(
     return;
   }
 
+  if (status == MEDIA_CODEC_OK && is_clock_manager &&
+      current_presentation_timestamp != kNoTimestamp()) {
+    UpdateTimestamps(
+        current_presentation_timestamp, max_presentation_timestamp);
+  }
+
   if (status == MEDIA_CODEC_OUTPUT_END_OF_STREAM)
     PlaybackCompleted(is_audio);
 
@@ -635,11 +620,6 @@ void MediaSourcePlayer::MediaDecoderCallback(
 
   if (status == MEDIA_CODEC_OUTPUT_END_OF_STREAM)
     return;
-
-  if (status == MEDIA_CODEC_OK && is_clock_manager &&
-      presentation_timestamp != kNoTimestamp()) {
-    UpdateTimestamps(presentation_timestamp, audio_output_bytes);
-  }
 
   if (!playing_) {
     if (is_clock_manager)
@@ -662,8 +642,9 @@ void MediaSourcePlayer::MediaDecoderCallback(
     // If we have a valid timestamp, start the starvation callback. Otherwise,
     // reset the |start_time_ticks_| so that the next frame will not suffer
     // from the decoding delay caused by the current frame.
-    if (presentation_timestamp != kNoTimestamp())
-      StartStarvationCallback(presentation_timestamp);
+    if (current_presentation_timestamp != kNoTimestamp())
+      StartStarvationCallback(current_presentation_timestamp,
+                              max_presentation_timestamp);
     else
       start_time_ticks_ = base::TimeTicks::Now();
   }
@@ -811,6 +792,13 @@ void MediaSourcePlayer::ConfigureAudioDecoderJob() {
 
   if (audio_decoder_job_) {
     SetVolumeInternal();
+    // Need to reset the base timestamp in |audio_decoder_job_|.
+    // TODO(qinmin): When reconfiguring the |audio_decoder_job_|, there might
+    // still be some audio frames in the decoder or in AudioTrack. Therefore,
+    // we are losing some time here. http://crbug.com/357726.
+    base::TimeDelta current_time = GetCurrentTime();
+    audio_decoder_job_->SetBaseTimestamp(current_time);
+    clock_.SetTime(current_time, current_time);
     audio_decoder_job_->BeginPrerolling(preroll_timestamp_);
     reconfig_audio_decoder_ =  false;
   }
@@ -912,7 +900,8 @@ void MediaSourcePlayer::OnDecoderStarved() {
 }
 
 void MediaSourcePlayer::StartStarvationCallback(
-    base::TimeDelta presentation_timestamp) {
+    base::TimeDelta current_presentation_timestamp,
+    base::TimeDelta max_presentation_timestamp) {
   // 20ms was chosen because it is the typical size of a compressed audio frame.
   // Anything smaller than this would likely cause unnecessary cycling in and
   // out of the prefetch state.
@@ -922,16 +911,16 @@ void MediaSourcePlayer::StartStarvationCallback(
   base::TimeDelta current_timestamp = GetCurrentTime();
   base::TimeDelta timeout;
   if (HasAudio()) {
-    timeout = audio_timestamp_helper_->GetTimestamp() - current_timestamp;
+    timeout = max_presentation_timestamp - current_timestamp;
   } else {
-    DCHECK(current_timestamp <= presentation_timestamp);
+    DCHECK(current_timestamp <= current_presentation_timestamp);
 
     // For video only streams, fps can be estimated from the difference
     // between the previous and current presentation timestamps. The
     // previous presentation timestamp is equal to current_timestamp.
     // TODO(qinmin): determine whether 2 is a good coefficient for estimating
     // video frame timeout.
-    timeout = 2 * (presentation_timestamp - current_timestamp);
+    timeout = 2 * (current_presentation_timestamp - current_timestamp);
   }
 
   timeout = std::max(timeout, kMinStarvationTimeout);
