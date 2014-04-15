@@ -125,8 +125,18 @@ bool CollectPCIVideoCardInfo(GPUInfo* gpu_info) {
        device != NULL; device = device->next) {
     // Fill the IDs and class fields.
     (libpci_loader.pci_fill_info)(device, 33);
-    // TODO(zmo): there might be other classes that qualify as display devices.
-    if (device->device_class != 0x0300)  // Device class is DISPLAY_VGA.
+    bool is_gpu = false;
+    switch (device->device_class) {
+      case PCI_CLASS_DISPLAY_VGA:
+      case PCI_CLASS_DISPLAY_XGA:
+      case PCI_CLASS_DISPLAY_3D:
+        is_gpu = true;
+        break;
+      case PCI_CLASS_DISPLAY_OTHER:
+      default:
+        break;
+    }
+    if (!is_gpu)
       continue;
 
     GPUInfo::GPUDevice gpu;

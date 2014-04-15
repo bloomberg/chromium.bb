@@ -135,4 +135,8 @@ GPU_BLACKLIST_FEATURE_TEST(ForceCompositingMode,
                            "force_compositing_mode",
                            GPU_FEATURE_TYPE_FORCE_COMPOSITING_MODE)
 
+GPU_BLACKLIST_FEATURE_TEST(GpuRasterization,
+                           "gpu_rasterization",
+                           GPU_FEATURE_TYPE_GPU_RASTERIZATION)
+
 }  // namespace gpu
