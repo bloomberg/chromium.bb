@@ -11,6 +11,8 @@ pfeldman@chromium.org
 tkent@chromium.org
 tony@chromium.org
 
+per-file AssertMatchingEnums.cpp=*
+
 # Bindings owners for WebBindings.cpp
 per-file WebBindings.cpp=adamk@chromium.org
 per-file WebBindings.cpp=arv@chromium.org
