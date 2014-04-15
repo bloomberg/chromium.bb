@@ -454,9 +454,9 @@ bool BrowserNonClientFrameViewAsh::ShouldPaint() const {
 void BrowserNonClientFrameViewAsh::PaintImmersiveLightbarStyleHeader(
     gfx::Canvas* canvas) {
   // The light bar header is not themed because theming it does not look good.
-  gfx::ImageSkia* frame_image = GetThemeProvider()->GetImageSkiaNamed(
-      IDR_ASH_BROWSER_WINDOW_HEADER_BASE_MAXIMIZED);
-  canvas->TileImageInt(*frame_image, 0, 0, width(), frame_image->height());
+  canvas->FillRect(
+      gfx::Rect(width(), header_painter_->GetHeaderHeightForPainting()),
+      SK_ColorBLACK);
 }
 
 void BrowserNonClientFrameViewAsh::PaintToolbarBackground(gfx::Canvas* canvas) {
