@@ -9,6 +9,9 @@
 cr.define('speech', function() {
   'use strict';
 
+  /** The timeout milliseconds to load the model file. */
+  var MODEL_LOAD_TIMEOUT = 2000;
+
   /**
    * The type of the plugin state.
    ** @enum {number}
@@ -39,12 +42,14 @@ cr.define('speech', function() {
   /**
    * @constructor
    */
-  function PluginManager(prefix, onReady, onRecognized) {
+  function PluginManager(prefix, onReady, onRecognized, onError) {
     this.state = PluginState.UNINITIALIZED;
     this.onReady_ = onReady;
     this.onRecognized_ = onRecognized;
+    this.onError_ = onError;
     this.samplingRate_ = null;
     this.config_ = null;
+    this.modelLoadTimeoutId_ = null;
     var recognizer = $('recognizer');
     if (!recognizer) {
       recognizer = document.createElement('EMBED');
@@ -55,6 +60,7 @@ cr.define('speech', function() {
       recognizer.height = '1';
       document.body.appendChild(recognizer);
     }
+    recognizer.addEventListener('error', onError);
     recognizer.addEventListener('message', this.onMessage_.bind(this));
     recognizer.addEventListener('load', this.onLoad_.bind(this));
   };
@@ -69,8 +75,11 @@ cr.define('speech', function() {
     if (messageEvent.data == 'audio') {
       var wasNotReady = this.state < PluginState.READY;
       this.state = PluginState.RECOGNIZING;
-      if (wasNotReady)
+      if (wasNotReady) {
+        window.clearTimeout(this.modelLoadTimeoutId_);
+        this.modelLoadTimeoutId_ = null;
         this.onReady_(this);
+      }
     } else if (messageEvent.data == 'stopped' &&
                this.state == PluginState.RECOGNIZING) {
       this.state = PluginState.READY;
@@ -89,6 +98,10 @@ cr.define('speech', function() {
       this.state = PluginState.LOADED;
       if (this.samplingRate_ && this.config_)
         this.initialize_(this.samplingRate_, this.config_);
+      // Sets the timeout for initialization in case that NaCl module failed to
+      // respond during the initialization.
+      this.modelLoadTimeoutId_ = window.setTimeout(
+          this.onError_, MODEL_LOAD_TIMEOUT);
     }
   };
 

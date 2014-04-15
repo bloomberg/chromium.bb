@@ -97,6 +97,16 @@ cr.define('speech', function() {
   };
 
   /**
+   * Called when an error happens for loading the hotword recognizer.
+   *
+   * @private
+   */
+  SpeechManager.prototype.onHotwordRecognizerLoadError_ = function() {
+    this.setHotwordEnabled(false);
+    this.setState_(SpeechState.READY);
+  };
+
+  /**
    * Called when the hotword is recognized.
    *
    * @private
@@ -185,7 +195,8 @@ cr.define('speech', function() {
       var pluginManager = new speech.PluginManager(
           prefix,
           this.onHotwordRecognizerReady_.bind(this),
-          this.onHotwordRecognized_.bind(this));
+          this.onHotwordRecognized_.bind(this),
+          this.onHotwordRecognizerLoadError_.bind(this));
       var modelUrl = 'chrome://app-list/_platform_specific/' + this.naclArch +
           '_' + prefix + '/hotword.data';
       pluginManager.scheduleInitialize(this.audioManager_.sampleRate, modelUrl);
