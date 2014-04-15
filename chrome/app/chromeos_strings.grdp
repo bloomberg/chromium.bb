@@ -1235,6 +1235,36 @@ Press any key to continue exploring.
   <message name="IDS_KEYBOARD_SELECTION_SELECT" desc="Label for keyboard selection dropdown">
     Select your keyboard:
   </message>
+  <message name="IDS_HID_DETECTION_INVITATION_TEXT" desc="Text shown on top of HID detection screen inviting user to connect an input device.">
+    Please connect a mouse or keyboard
+  </message>
+  <message name="IDS_HID_DETECTION_PRECONDITION_TEXT" desc="Text shown on HID detection screen beneath invitation.">
+    If you're using Bluetooth, make sure your devices are ready to pair.
+  </message>
+  <message name="IDS_HID_DETECTION_SEARCHING_MOUSE" desc="Text shown on HID detection screen next to mouse icon while device searching.">
+    Searching for mouse...
+  </message>
+  <message name="IDS_HID_DETECTION_SEARCHING_KEYBOARD" desc="Text shown on HID detection screen next to keyboard icon while device searching.">
+    Searching for keyboard...
+  </message>
+  <message name="IDS_HID_DETECTION_CONNECTED_USB_MOUSE" desc="Text shown on HID detection screen next to mouse icon after USB mouse is connected.">
+    USB mouse connected
+  </message>
+  <message name="IDS_HID_DETECTION_CONNECTED_USB_KEYBOARD" desc="Text shown on HID detection screen next to keyboard icon after USB keyboard is connected.">
+    USB keyboard connected
+  </message>
+  <message name="IDS_HID_DETECTION_PAIRED_BLUETOOTH_MOUSE" desc="Text shown on HID detection screen next to mouse icon after Bluetooth mouse is connected.">
+    Bluetooth mouse paired
+  </message>
+  <message name="IDS_HID_DETECTION_PAIRED_BLUETOOTH_KEYBOARD" desc="Text shown on HID detection screen next to keyboard icon after Bluetooth keyboard is connected.">
+    "<ph name="DEVICE_NAME">%1<ex>Bluetooth Keyboard</ex></ph>" paired
+  </message>
+  <message name="IDS_HID_DETECTION_BLUETOOTH_REMOTE_PIN_CODE_REQUEST" desc="Bluetooth pairing message displayed on HID detection screen when pairing a Bluetooth keyboard.">
+    Type this code on "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>" to pair:
+  </message>
+  <message name="IDS_HID_DETECTION_BLUETOOTH_ENTER_KEY" meaning="Label on the button representing Enter key at the HID detection screen.">
+    enter
+  </message>
   <message name="IDS_HID_DETECTION_CONTINUE_BUTTON" desc="Text shown on continue button" meaning="Continue button label of HID detection screen.">
     Continue
   </message>
