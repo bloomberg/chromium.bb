@@ -160,22 +160,23 @@ class WindowSizer {
   gfx::Display GetTargetDisplay(const gfx::Rect& bounds) const;
 
 #if defined(USE_ASH)
+  // Ash specific logic for window placement. Returns true if |bounds| and
+  // |show_state| have been fully determined, otherwise returns false (but
+  // may still affect |show_state|).
+  bool GetBrowserBoundsAsh(gfx::Rect* bounds,
+                           ui::WindowShowState* show_state) const;
+
   // Determines the position and size for a tabbed browser window in
   // ash as it gets created. This will be called before other standard
   // placement logic. |show_state| will only be changed
   // if it was set to SHOW_STATE_DEFAULT.
-  void GetTabbedBrowserBoundsAsh(gfx::Rect* bounds_in_screen,
+  void GetTabbedBrowserBoundsAsh(gfx::Rect* bounds,
                                  ui::WindowShowState* show_state) const;
 #endif
 
   // Determine the default show state for the window - not looking at other
   // windows or at persistent information.
   ui::WindowShowState GetWindowDefaultShowState() const;
-
-#if defined(USE_ASH)
-  bool IsTabbedBrowserInAsh() const;
-  bool IsPopupBrowserInAsh() const;
-#endif
 
   // Providers for persistent storage and monitor metrics.
   scoped_ptr<StateProvider> state_provider_;

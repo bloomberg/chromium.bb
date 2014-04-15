@@ -896,3 +896,23 @@ TEST_F(WindowSizerAshTest, DefaultBoundsInTargetDisplay) {
     EXPECT_TRUE(second_root->GetBoundsInScreen().Contains(bounds));
   }
 }
+
+TEST_F(WindowSizerAshTest, TrustedPopupBehavior) {
+  scoped_ptr<TestingProfile> profile(new TestingProfile());
+  Browser::CreateParams trusted_popup_create_params(
+      Browser::TYPE_POPUP, profile.get(), chrome::HOST_DESKTOP_TYPE_ASH);
+  trusted_popup_create_params.trusted_source = true;
+
+  scoped_ptr<TestBrowserWindowAura> trusted_popup(CreateTestBrowserWindow(
+      CreateTestWindowInShellWithId(1),
+      gfx::Rect(16, 32, 640, 320),
+      trusted_popup_create_params));
+  // Trusted popup windows should follow the saved show state and ignore the
+  // last show state.
+  EXPECT_EQ(ui::SHOW_STATE_DEFAULT,
+            GetWindowShowState(ui::SHOW_STATE_DEFAULT,
+                               ui::SHOW_STATE_NORMAL,
+                               BOTH,
+                               trusted_popup->browser(),
+                               p1600x1200));
+}

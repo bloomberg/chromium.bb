@@ -1572,6 +1572,9 @@ const char kBrowserSuppressDefaultBrowserPrompt[] =
 // window to restore on startup.
 const char kBrowserWindowPlacement[] = "browser.window_placement";
 
+// Browser window placement for popup windows.
+const char kBrowserWindowPlacementPopup[] = "browser.window_placement_popup";
+
 // A collection of position, size, and other data relating to the task
 // manager window to restore on startup.
 const char kTaskManagerWindowPlacement[] = "task_manager.window_placement";
