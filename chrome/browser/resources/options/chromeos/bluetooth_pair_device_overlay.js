@@ -184,7 +184,7 @@ cr.define('options', function() {
 
       // Update visibility of dialog elements.
       if (this.device_.passkey) {
-        this.updatePasskey_();
+        this.updatePasskey_(String(this.device_.passkey));
         if (this.device_.pairing == PAIRING.CONFIRM_PASSKEY) {
           // Confirming a match between displayed passkeys.
           this.displayElements_(['bluetooth-pairing-passkey-display',
@@ -197,7 +197,7 @@ cr.define('options', function() {
                                  'bluetooth-pair-device-cancel-button']);
         }
       } else if (this.device_.pincode) {
-        this.updatePinCode_();
+        this.updatePasskey_(String(this.device_.pincode));
         this.displayElements_(['bluetooth-pairing-passkey-display',
                                'bluetooth-pair-device-cancel-button']);
       } else if (this.device_.pairing == PAIRING.ENTER_PIN_CODE) {
@@ -270,14 +270,15 @@ cr.define('options', function() {
     },
 
     /**
-     * Formats an element for displaying the passkey.
+     * Formats an element for displaying the passkey or PIN code.
+     * @param {string} key Passkey or PIN to display.
      */
-    updatePasskey_: function() {
+    updatePasskey_: function(key) {
       var passkeyEl = $('bluetooth-pairing-passkey-display');
-      var keyClass = this.device_.pairing == PAIRING.REMOTE_PASSKEY ?
+      var keyClass = (this.device_.pairing == PAIRING.REMOTE_PASSKEY ||
+                      this.device_.pairing == PAIRING.REMOTE_PIN_CODE) ?
           'bluetooth-keyboard-button' : 'bluetooth-passkey-char';
       this.clearElement_(passkeyEl);
-      var key = String(this.device_.passkey);
       // Passkey should always have 6 digits.
       key = '000000'.substring(0, 6 - key.length) + key;
       var progress = this.device_.entered;
@@ -285,52 +286,32 @@ cr.define('options', function() {
         var keyEl = document.createElement('span');
         keyEl.textContent = key.charAt(i);
         keyEl.className = keyClass;
-        if (progress == undefined)
-          keyEl.classList.add('key-pin');
-        else if (i < progress)
-          keyEl.classList.add('key-typed');
+        if (progress != undefined) {
+          if (i < progress)
+            keyEl.classList.add('key-typed');
+          else if (i == progress)
+            keyEl.classList.add('key-next');
+          else
+            keyEl.classList.add('key-untyped');
+        }
         passkeyEl.appendChild(keyEl);
       }
-      if (this.device_.pairing == PAIRING.REMOTE_PASSKEY) {
+      if (this.device_.pairing == PAIRING.REMOTE_PASSKEY ||
+          this.device_.pairing == PAIRING.REMOTE_PIN_CODE) {
         // Add enter key.
         var label = loadTimeData.getString('bluetoothEnterKey');
         var keyEl = document.createElement('span');
         keyEl.textContent = label;
         keyEl.className = keyClass;
         keyEl.id = 'bluetooth-enter-key';
-        if (progress == undefined)
-          keyEl.classList.add('key-pin');
-        else if (progress > key.length)
-          keyEl.classList.add('key-typed');
-        passkeyEl.appendChild(keyEl);
-      }
-      passkeyEl.hidden = false;
-    },
-
-    /**
-     * Formats an element for displaying the PIN code.
-     */
-    updatePinCode_: function() {
-      var passkeyEl = $('bluetooth-pairing-passkey-display');
-      var keyClass = this.device_.pairing == PAIRING.REMOTE_PIN_CODE ?
-          'bluetooth-keyboard-button' : 'bluetooth-passkey-char';
-      this.clearElement_(passkeyEl);
-      var key = String(this.device_.pincode);
-      for (var i = 0; i < key.length; i++) {
-        var keyEl = document.createElement('span');
-        keyEl.textContent = key.charAt(i);
-        keyEl.className = keyClass;
-        keyEl.classList.add('key-pin');
-        passkeyEl.appendChild(keyEl);
-      }
-      if (this.device_.pairing == PAIRING.REMOTE_PIN_CODE) {
-        // Add enter key.
-        var label = loadTimeData.getString('bluetoothEnterKey');
-        var keyEl = document.createElement('span');
-        keyEl.textContent = label;
-        keyEl.className = keyClass;
-        keyEl.classList.add('key-pin');
-        keyEl.id = 'bluetooth-enter-key';
+        if (progress != undefined) {
+          if (progress > key.length)
+            keyEl.classList.add('key-typed');
+          else if (progress == key.length)
+            keyEl.classList.add('key-next');
+          else
+            keyEl.classList.add('key-untyped');
+        }
         passkeyEl.appendChild(keyEl);
       }
       passkeyEl.hidden = false;
