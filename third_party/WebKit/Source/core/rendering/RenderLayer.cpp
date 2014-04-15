@@ -3785,7 +3785,7 @@ inline bool RenderLayer::needsCompositingLayersRebuiltForOverflow(const RenderSt
     return stackingNode && stackingNode->layer()->hasCompositingDescendant();
 }
 
-inline bool RenderLayer::needsCompositingLayersRebuiltForFilters(const RenderStyle* oldStyle, const RenderStyle* newStyle, bool didPaintWithFilters) const
+inline bool RenderLayer::needsCompositingLayersRebuiltForFilters(const RenderStyle* oldStyle, const RenderStyle* newStyle) const
 {
     if (!hasOrHadFilters(oldStyle, newStyle))
         return false;
@@ -3865,13 +3865,9 @@ void RenderLayer::styleChanged(StyleDifference diff, const RenderStyle* oldStyle
     if (!oldStyle || !renderer()->style()->transformDataEquivalent(*oldStyle))
         updateTransform();
 
-    bool didPaintWithFilters = false;
-
     {
         // https://code.google.com/p/chromium/issues/detail?id=343759
         DisableCompositingQueryAsserts disabler;
-        if (paintsWithFilters())
-            didPaintWithFilters = true;
         updateFilters(oldStyle, renderer()->style());
     }
 
@@ -3887,9 +3883,11 @@ void RenderLayer::styleChanged(StyleDifference diff, const RenderStyle* oldStyle
 
     compositor()->updateLayerCompositingState(this, RenderLayerCompositor::UseChickenEggHacks);
     // FIXME: this compositing logic should be pushed into the compositing code, not here.
+    // Moving the filter code will require caching the presence of a filter on oldStyle and
+    // the outsets for that filter, so that we can detect a change in outsets.
     if (needsCompositingLayersRebuiltForClip(oldStyle, newStyle)
         || needsCompositingLayersRebuiltForOverflow(oldStyle, newStyle)
-        || needsCompositingLayersRebuiltForFilters(oldStyle, newStyle, didPaintWithFilters)
+        || needsCompositingLayersRebuiltForFilters(oldStyle, newStyle)
         || needsCompositingLayersRebuiltForBlending(oldStyle, newStyle)) {
         compositor()->setCompositingLayersNeedRebuild();
     }
