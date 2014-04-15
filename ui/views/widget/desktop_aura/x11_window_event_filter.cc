@@ -68,7 +68,8 @@ X11WindowEventFilter::X11WindowEventFilter(
       x_root_window_(DefaultRootWindow(xdisplay_)),
       atom_cache_(xdisplay_, kAtomsToCache),
       window_tree_host_(window_tree_host),
-      is_active_(false) {
+      is_active_(false),
+      click_component_(HTNOWHERE) {
 }
 
 X11WindowEventFilter::~X11WindowEventFilter() {
@@ -102,8 +103,13 @@ void X11WindowEventFilter::OnMouseEvent(ui::MouseEvent* event) {
   if (!target->delegate())
     return;
 
+  int previous_click_component = HTNOWHERE;
   int component =
       target->delegate()->GetNonClientComponent(event->location());
+  if (event->IsLeftMouseButton()) {
+    previous_click_component = click_component_;
+    click_component_ = component;
+  }
   if (component == HTCLIENT)
     return;
 
@@ -134,15 +140,18 @@ void X11WindowEventFilter::OnMouseEvent(ui::MouseEvent* event) {
   }
 
   // Left button case.
-  if (event->flags() & ui::EF_IS_DOUBLE_CLICK &&
-      component == HTCAPTION &&
-      target->GetProperty(aura::client::kCanMaximizeKey)) {
-    // Our event is a double click in the caption area in a window that can be
-    // maximized. We are responsible for dispatching this as a minimize/
-    // maximize on X11 (Windows converts this to min/max events for us).
-    ToggleMaximizedState();
-    event->SetHandled();
-    return;
+  if (event->flags() & ui::EF_IS_DOUBLE_CLICK) {
+    click_component_ = HTNOWHERE;
+    if (component == HTCAPTION &&
+        target->GetProperty(aura::client::kCanMaximizeKey) &&
+        previous_click_component == component) {
+      // Our event is a double click in the caption area in a window that can be
+      // maximized. We are responsible for dispatching this as a minimize/
+      // maximize on X11 (Windows converts this to min/max events for us).
+      ToggleMaximizedState();
+      event->SetHandled();
+      return;
+    }
   }
 
   // Get the |x_root_window_| location out of the native event.

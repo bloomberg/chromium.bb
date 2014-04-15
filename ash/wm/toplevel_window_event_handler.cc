@@ -476,7 +476,10 @@ void ToplevelWindowEventHandler::HandleMousePressed(
         ConvertPointToParent(target, event->location()));
     AttemptToStartDrag(target, location_in_parent, component,
                        aura::client::WINDOW_MOVE_SOURCE_MOUSE);
-    event->StopPropagation();
+    // Set as handled so that other event handlers do no act upon the event
+    // but still receive it so that they receive both parts of each pressed/
+    // released pair.
+    event->SetHandled();
   } else {
     CompleteDrag(DRAG_COMPLETE);
   }
@@ -491,12 +494,13 @@ void ToplevelWindowEventHandler::HandleMouseReleased(
   CompleteDrag(event->type() == ui::ET_MOUSE_RELEASED ?
                    DRAG_COMPLETE : DRAG_REVERT);
   // Completing the drag may result in hiding the window. If this happens
-  // return true so no other handlers/observers see the event. Otherwise
-  // they see the event on a hidden window.
+  // mark the event as handled so no other handlers/observers act upon the
+  // event. They should see the event on a hidden window, to determine targets
+  // of destructive actions such as hiding. They should not act upon them.
   if (window_resizer_ &&
       event->type() == ui::ET_MOUSE_CAPTURE_CHANGED &&
       !target->IsVisible()) {
-    event->StopPropagation();
+    event->SetHandled();
   }
 }
 
