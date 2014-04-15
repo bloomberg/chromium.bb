@@ -45,7 +45,7 @@ namespace {
 
 const int kFileManagerWidth = 972;  // pixels
 const int kFileManagerHeight = 640;  // pixels
-const int kFileManagerMinimumWidth = 320;  // pixels
+const int kFileManagerMinimumWidth = 640;  // pixels
 const int kFileManagerMinimumHeight = 240;  // pixels
 
 // Holds references to file manager dialogs that have callbacks pending

@@ -805,12 +805,6 @@ INSTANTIATE_TEST_CASE_P(
                                     "transferFromOfflineToDrive")));
 
 INSTANTIATE_TEST_CASE_P(
-     HideSearchBox,
-     FileManagerBrowserTest,
-     ::testing::Values(TestParameter(IN_GUEST_MODE, "hideSearchBox"),
-                       TestParameter(NOT_IN_GUEST_MODE, "hideSearchBox")));
-
-INSTANTIATE_TEST_CASE_P(
     RestorePrefs,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(IN_GUEST_MODE, "restoreSortColumn"),

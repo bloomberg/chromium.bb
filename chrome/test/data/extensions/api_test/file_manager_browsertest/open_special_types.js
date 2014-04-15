@@ -21,7 +21,7 @@ function galleryOpen(path) {
       appId = inAppId;
       callRemoteTestUtil('resizeWindow',
                          appId,
-                         [320, 320],
+                         [480, 480],
                          this.next);
     },
     // Select the image.
@@ -41,8 +41,8 @@ function galleryOpen(path) {
     },
     // Verify the gallery's screen image.
     function(element) {
-      chrome.test.assertEq('320', element.attributes.width);
-      chrome.test.assertEq('240', element.attributes.height);
+      chrome.test.assertEq('480', element.attributes.width);
+      chrome.test.assertEq('360', element.attributes.height);
       // Get the full-resolution image.
       waitForElement(appId,
                          '.gallery .content canvas.fullres',
