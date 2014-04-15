@@ -418,10 +418,21 @@ void HTMLFormElement::reset()
 
 void HTMLFormElement::requestAutocomplete(const Dictionary& details)
 {
-    if (!document().frame() || !shouldAutocomplete() || !UserGestureIndicator::processingUserGesture())
+    String errorMessage;
+
+    if (!document().frame())
+        errorMessage = "requestAutocomplete: form is not owned by a displayed document.";
+    else if (!shouldAutocomplete())
+        errorMessage = "requestAutocomplete: form autocomplete attribute is set to off.";
+    else if (!UserGestureIndicator::processingUserGesture())
+        errorMessage = "requestAutocomplete: must be called in response to a user gesture.";
+
+    if (!errorMessage.isEmpty()) {
+        document().addConsoleMessage(RenderingMessageSource, LogMessageLevel, errorMessage);
         finishRequestAutocomplete(AutocompleteResultErrorDisabled);
-    else
+    } else {
         document().frame()->loader().client()->didRequestAutocomplete(this, details);
+    }
 }
 
 void HTMLFormElement::finishRequestAutocomplete(AutocompleteResult result)

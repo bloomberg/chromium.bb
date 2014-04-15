@@ -1,3 +1,7 @@
+CONSOLE MESSAGE: requestAutocomplete: form autocomplete attribute is set to off.
+CONSOLE MESSAGE: requestAutocomplete: form autocomplete attribute is set to off.
+CONSOLE MESSAGE: requestAutocomplete: form autocomplete attribute is set to off.
+CONSOLE MESSAGE: requestAutocomplete: must be called in response to a user gesture.
 HTMLFormElement#requestAutocomplete and associated events
 
 For this test to pass, you should see all PASSED below.
