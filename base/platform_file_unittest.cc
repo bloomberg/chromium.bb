@@ -25,6 +25,26 @@ int WriteFully(PlatformFile file, int64 offset,
   return WritePlatformFile(file, offset, data, size);
 }
 
+PlatformFile CreatePlatformFile(const FilePath& path,
+                                int flags,
+                                bool* created,
+                                PlatformFileError* error) {
+  File file(path, flags);
+  if (!file.IsValid()) {
+    if (error)
+      *error = static_cast<PlatformFileError>(file.error_details());
+    return kInvalidPlatformFileValue;
+  }
+
+  if (created)
+    *created = file.created();
+
+  if (error)
+    *error = PLATFORM_FILE_OK;
+
+  return file.TakePlatformFile();
+}
+
 } // namespace
 
 TEST(PlatformFile, CreatePlatformFile) {

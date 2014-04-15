@@ -14,18 +14,4 @@ PlatformFileInfo::PlatformFileInfo()
 
 PlatformFileInfo::~PlatformFileInfo() {}
 
-#if !defined(OS_NACL)
-PlatformFile CreatePlatformFile(const FilePath& name,
-                                int flags,
-                                bool* created,
-                                PlatformFileError* error) {
-  if (name.ReferencesParent()) {
-    if (error)
-      *error = PLATFORM_FILE_ERROR_ACCESS_DENIED;
-    return kInvalidPlatformFileValue;
-  }
-  return CreatePlatformFileUnsafe(name, flags, created, error);
-}
-#endif
-
 }  // namespace base
