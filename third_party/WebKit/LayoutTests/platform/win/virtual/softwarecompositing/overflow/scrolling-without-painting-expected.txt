@@ -33,8 +33,6 @@
               (drawsContent 1)
               (repaint rects
                 (rect 0.00 0.00 15.00 185.00)
-                (rect 0.00 0.00 15.00 185.00)
-                (rect 0.00 0.00 15.00 185.00)
               )
             )
             (GraphicsLayer
