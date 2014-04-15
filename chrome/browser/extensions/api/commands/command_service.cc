@@ -202,9 +202,11 @@ bool CommandService::RemovesBookmarkOpenPagesShortcut(
                *settings_overrides)) ||
           (ui_overrides &&
            UIOverrides::RemovesBookmarkOpenPagesShortcut(*ui_overrides))) &&
-      extensions::PermissionsData::HasAPIPermission(
+      (extensions::PermissionsData::HasAPIPermission(
           extension,
-          extensions::APIPermission::kBookmarkManagerPrivate);
+          extensions::APIPermission::kBookmarkManagerPrivate) ||
+       extensions::FeatureSwitch::enable_override_bookmarks_ui()->
+           IsEnabled());
 }
 
 bool CommandService::GetBrowserActionCommand(const std::string& extension_id,
