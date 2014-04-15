@@ -107,39 +107,6 @@ class BrowserPluginGuest::DownloadRequest : public PermissionRequest {
   base::Callback<void(bool)> callback_;
 };
 
-class BrowserPluginGuest::MediaRequest : public PermissionRequest {
- public:
-  MediaRequest(const base::WeakPtr<BrowserPluginGuest>& guest,
-               const MediaStreamRequest& request,
-               const MediaResponseCallback& callback)
-               : PermissionRequest(guest),
-                 request_(request),
-                 callback_(callback) {
-    RecordAction(
-        base::UserMetricsAction("BrowserPlugin.Guest.PermissionRequest.Media"));
-  }
-
-  virtual void RespondImpl(bool should_allow,
-                           const std::string& user_input) OVERRIDE {
-    WebContentsImpl* web_contents = guest_->embedder_web_contents();
-    if (should_allow && web_contents) {
-      // Re-route the request to the embedder's WebContents; the guest gets the
-      // permission this way.
-      web_contents->RequestMediaAccessPermission(request_, callback_);
-    } else {
-      // Deny the request.
-      callback_.Run(MediaStreamDevices(),
-                    MEDIA_DEVICE_INVALID_STATE,
-                    scoped_ptr<MediaStreamUI>());
-    }
-  }
-
- private:
-  virtual ~MediaRequest() {}
-  MediaStreamRequest request_;
-  MediaResponseCallback callback_;
-};
-
 class BrowserPluginGuest::NewWindowRequest : public PermissionRequest {
  public:
   NewWindowRequest(const base::WeakPtr<BrowserPluginGuest>& guest,
@@ -1609,16 +1576,14 @@ void BrowserPluginGuest::RequestMediaAccessPermission(
     WebContents* web_contents,
     const MediaStreamRequest& request,
     const MediaResponseCallback& callback) {
-  base::DictionaryValue request_info;
-  request_info.Set(
-      browser_plugin::kURL,
-      base::Value::CreateStringValue(request.security_origin.spec()));
+  if (!delegate_) {
+    callback.Run(MediaStreamDevices(),
+                 MEDIA_DEVICE_INVALID_STATE,
+                 scoped_ptr<MediaStreamUI>());
+    return;
+  }
 
-  RequestPermission(BROWSER_PLUGIN_PERMISSION_TYPE_MEDIA,
-                    new MediaRequest(weak_ptr_factory_.GetWeakPtr(),
-                                     request,
-                                     callback),
-                    request_info);
+  delegate_->RequestMediaAccessPermission(request, callback);
 }
 
 bool BrowserPluginGuest::PreHandleGestureEvent(

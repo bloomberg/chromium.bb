@@ -81,6 +81,9 @@ class WebViewGuest : public GuestView,
   virtual GURL ResolveURL(const std::string& src) OVERRIDE;
   virtual void SizeChanged(const gfx::Size& old_size, const gfx::Size& new_size)
       OVERRIDE;
+  virtual void RequestMediaAccessPermission(
+      const content::MediaStreamRequest& request,
+      const content::MediaResponseCallback& callback) OVERRIDE;
 
   // NotificationObserver implementation.
   virtual void Observe(int type,
@@ -122,6 +125,12 @@ class WebViewGuest : public GuestView,
       const std::string& user_input);
 
   void CancelGeolocationPermissionRequest(int bridge_id);
+
+  void OnWebViewMediaPermissionResponse(
+      const content::MediaStreamRequest& request,
+      const content::MediaResponseCallback& callback,
+      bool allow,
+      const std::string& user_input);
 
   enum PermissionResponseAction {
     DENY,

@@ -32,6 +32,8 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/media_stream_request.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/stop_find_action.h"
@@ -77,8 +79,6 @@ static std::string PermissionTypeToString(BrowserPluginPermissionType type) {
   switch (type) {
     case BROWSER_PLUGIN_PERMISSION_TYPE_DOWNLOAD:
       return webview::kPermissionTypeDownload;
-    case BROWSER_PLUGIN_PERMISSION_TYPE_MEDIA:
-      return webview::kPermissionTypeMedia;
     case BROWSER_PLUGIN_PERMISSION_TYPE_NEW_WINDOW:
       return webview::kPermissionTypeNewWindow;
     case BROWSER_PLUGIN_PERMISSION_TYPE_POINTER_LOCK:
@@ -95,6 +95,8 @@ static std::string PermissionTypeToString(BrowserPluginPermissionType type) {
           return webview::kPermissionTypeGeolocation;
         case WEB_VIEW_PERMISSION_TYPE_LOAD_PLUGIN:
           return webview::kPermissionTypeLoadPlugin;
+        case WEB_VIEW_PERMISSION_TYPE_MEDIA:
+          return webview::kPermissionTypeMedia;
       }
       NOTREACHED();
     }
@@ -195,10 +197,6 @@ void WebViewGuest::RecordUserInitiatedUMA(const PermissionResponseInfo& info,
         content::RecordAction(
             UserMetricsAction("BrowserPlugin.PermissionAllow.Download"));
         break;
-      case BROWSER_PLUGIN_PERMISSION_TYPE_MEDIA:
-        content::RecordAction(
-            UserMetricsAction("BrowserPlugin.PermissionAllow.Media"));
-        break;
       case BROWSER_PLUGIN_PERMISSION_TYPE_POINTER_LOCK:
         content::RecordAction(
             UserMetricsAction("BrowserPlugin.PermissionAllow.PointerLock"));
@@ -224,6 +222,9 @@ void WebViewGuest::RecordUserInitiatedUMA(const PermissionResponseInfo& info,
           case WEB_VIEW_PERMISSION_TYPE_LOAD_PLUGIN:
             content::RecordAction(
                 UserMetricsAction("WebView.Guest.PermissionAllow.PluginLoad"));
+          case WEB_VIEW_PERMISSION_TYPE_MEDIA:
+            content::RecordAction(
+                UserMetricsAction("WebView.PermissionAllow.Media"));
             break;
           default:
             break;
@@ -235,10 +236,6 @@ void WebViewGuest::RecordUserInitiatedUMA(const PermissionResponseInfo& info,
       case BROWSER_PLUGIN_PERMISSION_TYPE_DOWNLOAD:
         content::RecordAction(
             UserMetricsAction("BrowserPlugin.PermissionDeny.Download"));
-        break;
-      case BROWSER_PLUGIN_PERMISSION_TYPE_MEDIA:
-        content::RecordAction(
-            UserMetricsAction("BrowserPlugin.PermissionDeny.Media"));
         break;
       case BROWSER_PLUGIN_PERMISSION_TYPE_POINTER_LOCK:
         content::RecordAction(
@@ -265,6 +262,9 @@ void WebViewGuest::RecordUserInitiatedUMA(const PermissionResponseInfo& info,
           case WEB_VIEW_PERMISSION_TYPE_LOAD_PLUGIN:
             content::RecordAction(
                 UserMetricsAction("WebView.Guest.PermissionDeny.PluginLoad"));
+          case WEB_VIEW_PERMISSION_TYPE_MEDIA:
+            content::RecordAction(
+                UserMetricsAction("WebView.PermissionDeny.Media"));
             break;
           default:
             break;
@@ -590,6 +590,25 @@ void WebViewGuest::CancelGeolocationPermissionRequest(int bridge_id) {
   pending_permission_requests_.erase(request_itr);
 }
 
+void WebViewGuest::OnWebViewMediaPermissionResponse(
+    const content::MediaStreamRequest& request,
+    const content::MediaResponseCallback& callback,
+    bool allow,
+    const std::string& user_input) {
+  if (!allow || !attached()) {
+    // Deny the request.
+    callback.Run(content::MediaStreamDevices(),
+                 content::MEDIA_DEVICE_INVALID_STATE,
+                 scoped_ptr<content::MediaStreamUI>());
+    return;
+  }
+  if (!embedder_web_contents()->GetDelegate())
+    return;
+
+  embedder_web_contents()->GetDelegate()->
+      RequestMediaAccessPermission(embedder_web_contents(), request, callback);
+}
+
 WebViewGuest::SetPermissionResult WebViewGuest::SetPermission(
     int request_id,
     PermissionResponseAction action,
@@ -833,6 +852,23 @@ void WebViewGuest::SizeChanged(const gfx::Size& old_size,
   args->SetInteger(webview::kNewHeight, new_size.height());
   args->SetInteger(webview::kNewWidth, new_size.width());
   DispatchEvent(new GuestView::Event(webview::kEventSizeChanged, args.Pass()));
+}
+
+void WebViewGuest::RequestMediaAccessPermission(
+    const content::MediaStreamRequest& request,
+    const content::MediaResponseCallback& callback) {
+  base::DictionaryValue request_info;
+  request_info.Set(
+      guestview::kUrl,
+      base::Value::CreateStringValue(request.security_origin.spec()));
+  RequestPermission(static_cast<BrowserPluginPermissionType>(
+                        WEB_VIEW_PERMISSION_TYPE_MEDIA),
+                    request_info,
+                    base::Bind(&WebViewGuest::OnWebViewMediaPermissionResponse,
+                               base::Unretained(this),
+                               request,
+                               callback),
+                    false /* allowed_by_default */);
 }
 
 #if defined(OS_CHROMEOS)

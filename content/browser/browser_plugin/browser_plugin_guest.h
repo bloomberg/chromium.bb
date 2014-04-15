@@ -320,8 +320,6 @@ class CONTENT_EXPORT BrowserPluginGuest
 
   class DownloadRequest;
   class JavaScriptDialogRequest;
-  // MediaRequest because of naming conflicts with MediaStreamRequest.
-  class MediaRequest;
   class NewWindowRequest;
   class PermissionRequest;
   class PointerLockRequest;
