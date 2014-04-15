@@ -41,14 +41,14 @@ bool IsDisplaySizeBlackListed(const gfx::Size& physical_size) {
   // Ignore if the reported display is smaller than minimum size.
   if (physical_size.width() <= kInvalidDisplaySizeList[0][0] ||
       physical_size.height() <= kInvalidDisplaySizeList[0][1]) {
-    LOG(WARNING) << "Smaller than minimum display size";
+    VLOG(1) << "Smaller than minimum display size";
     return true;
   }
   for (size_t i = 1; i < arraysize(kInvalidDisplaySizeList); ++i) {
     const gfx::Size size(kInvalidDisplaySizeList[i][0],
                          kInvalidDisplaySizeList[i][1]);
     if (physical_size == size) {
-      LOG(WARNING) << "Black listed display size detected:" << size.ToString();
+      VLOG(1) << "Black listed display size detected:" << size.ToString();
       return true;
     }
   }
