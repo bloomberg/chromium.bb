@@ -573,8 +573,6 @@ public:
     bool canNavigate(LocalFrame* targetFrame);
     LocalFrame* findUnsafeParentScrollPropagationBoundary();
 
-    bool canDispatchEvents() const { return !isSandboxed(SandboxScripts); }
-
     CSSStyleSheet& elementSheet();
 
     virtual PassRefPtr<DocumentParser> createParser();

@@ -51,8 +51,8 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-static void dispatchChildInsertionEvents(Node& child);
-static void dispatchChildRemovalEvents(Node& child);
+static void dispatchChildInsertionEvents(Node&);
+static void dispatchChildRemovalEvents(Node&);
 
 ChildNodesLazySnapshot* ChildNodesLazySnapshot::latestSnapshot = 0;
 
@@ -945,9 +945,6 @@ static void dispatchChildInsertionEvents(Node& child)
     if (child.isInShadowTree())
         return;
 
-    if (!child.document().canDispatchEvents())
-        return;
-
     ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
 
     RefPtr<Node> c(child);
@@ -965,15 +962,14 @@ static void dispatchChildInsertionEvents(Node& child)
 
 static void dispatchChildRemovalEvents(Node& child)
 {
-    InspectorInstrumentation::willRemoveDOMNode(&child);
-
-    if (child.isInShadowTree())
+    if (child.isInShadowTree()) {
+        InspectorInstrumentation::willRemoveDOMNode(&child);
         return;
-
-    if (!child.document().canDispatchEvents())
-        return;
+    }
 
     ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
+
+    InspectorInstrumentation::willRemoveDOMNode(&child);
 
     RefPtr<Node> c(child);
     RefPtr<Document> document(child.document());
