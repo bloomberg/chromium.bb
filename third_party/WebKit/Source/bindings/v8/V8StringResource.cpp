@@ -52,7 +52,7 @@ void WebCoreStringResourceBase::visitStrings(ExternalStringVisitor* visitor)
 
 template<class StringClass> struct StringTraits {
     static const StringClass& fromStringResource(WebCoreStringResourceBase*);
-    template<bool oneByte>
+    template <typename V8StringTrait>
     static StringClass fromV8String(v8::Handle<v8::String>, int);
 };
 
@@ -62,7 +62,7 @@ struct StringTraits<String> {
     {
         return resource->webcoreString();
     }
-    template<bool oneByte>
+    template <typename V8StringTrait>
     static String fromV8String(v8::Handle<v8::String>, int);
 };
 
@@ -72,59 +72,49 @@ struct StringTraits<AtomicString> {
     {
         return resource->atomicString();
     }
-    template<bool oneByte>
+    template <typename V8StringTrait>
     static AtomicString fromV8String(v8::Handle<v8::String>, int);
 };
 
-template<>
-String StringTraits<String>::fromV8String<false>(v8::Handle<v8::String> v8String, int length)
+struct V8StringTwoBytesTrait {
+    typedef UChar CharType;
+    ALWAYS_INLINE static void write(v8::Handle<v8::String> v8String, CharType* buffer, int length)
+    {
+        v8String->Write(reinterpret_cast<uint16_t*>(buffer), 0, length);
+    }
+};
+
+struct V8StringOneByteTrait {
+    typedef LChar CharType;
+    ALWAYS_INLINE static void write(v8::Handle<v8::String> v8String, CharType* buffer, int length)
+    {
+        v8String->WriteOneByte(buffer, 0, length);
+    }
+};
+
+template <typename V8StringTrait>
+String StringTraits<String>::fromV8String(v8::Handle<v8::String> v8String, int length)
 {
     ASSERT(v8String->Length() == length);
-    UChar* buffer;
+    typename V8StringTrait::CharType* buffer;
     String result = String::createUninitialized(length, buffer);
-    v8String->Write(reinterpret_cast<uint16_t*>(buffer), 0, length);
+    V8StringTrait::write(v8String, buffer, length);
     return result;
 }
 
-template<>
-AtomicString StringTraits<AtomicString>::fromV8String<false>(v8::Handle<v8::String> v8String, int length)
+template <typename V8StringTrait>
+AtomicString StringTraits<AtomicString>::fromV8String(v8::Handle<v8::String> v8String, int length)
 {
     ASSERT(v8String->Length() == length);
-    static const int inlineBufferSize = 16;
+    static const int inlineBufferSize = 32 / sizeof(typename V8StringTrait::CharType);
     if (length <= inlineBufferSize) {
-        UChar inlineBuffer[inlineBufferSize];
-        v8String->Write(reinterpret_cast<uint16_t*>(inlineBuffer), 0, length);
+        typename V8StringTrait::CharType inlineBuffer[inlineBufferSize];
+        V8StringTrait::write(v8String, inlineBuffer, length);
         return AtomicString(inlineBuffer, length);
     }
-    UChar* buffer;
-    String result = String::createUninitialized(length, buffer);
-    v8String->Write(reinterpret_cast<uint16_t*>(buffer), 0, length);
-    return AtomicString(result);
-}
-
-template<>
-String StringTraits<String>::fromV8String<true>(v8::Handle<v8::String> v8String, int length)
-{
-    ASSERT(v8String->Length() == length);
-    LChar* buffer;
-    String result = String::createUninitialized(length, buffer);
-    v8String->WriteOneByte(buffer, 0, length);
-    return result;
-}
-
-template<>
-AtomicString StringTraits<AtomicString>::fromV8String<true>(v8::Handle<v8::String> v8String, int length)
-{
-    ASSERT(v8String->Length() == length);
-    static const int inlineBufferSize = 32;
-    if (length <= inlineBufferSize) {
-        LChar inlineBuffer[inlineBufferSize];
-        v8String->WriteOneByte(inlineBuffer, 0, length);
-        return AtomicString(inlineBuffer, length);
-    }
-    LChar* buffer;
+    typename V8StringTrait::CharType* buffer;
     String string = String::createUninitialized(length, buffer);
-    v8String->WriteOneByte(buffer, 0, length);
+    V8StringTrait::write(v8String, buffer, length);
     return AtomicString(string);
 }
 
@@ -151,7 +141,7 @@ StringType v8StringToWebCoreString(v8::Handle<v8::String> v8String, ExternalMode
         return StringType("");
 
     bool oneByte = v8String->ContainsOnlyOneByte();
-    StringType result(oneByte ? StringTraits<StringType>::template fromV8String<true>(v8String, length) : StringTraits<StringType>::template fromV8String<false>(v8String, length));
+    StringType result(oneByte ? StringTraits<StringType>::template fromV8String<V8StringOneByteTrait>(v8String, length) : StringTraits<StringType>::template fromV8String<V8StringTwoBytesTrait>(v8String, length));
 
     if (external != Externalize || !v8String->CanMakeExternal())
         return result;
