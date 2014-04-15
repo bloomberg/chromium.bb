@@ -365,6 +365,7 @@ const char kCheckPortalProperty[] = "CheckPortal";
 const char kSSIDProperty[] = "SSID";
 const char kConnectedProperty[] = "Connected";
 const char kUIDataProperty[] = "UIData";
+const char kConnectionIdProperty[] = "ConnectionId";
 
 // Flimflam provider property names.
 const char kProviderHostProperty[] = "Provider.Host";
