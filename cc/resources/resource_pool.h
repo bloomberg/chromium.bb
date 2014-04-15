@@ -40,6 +40,7 @@ class CC_EXPORT ResourcePool {
   size_t acquired_memory_usage_bytes() const {
     return memory_usage_bytes_ - unused_memory_usage_bytes_;
   }
+  size_t total_resource_count() const { return resource_count_; }
   size_t acquired_resource_count() const {
     return resource_count_ - unused_resources_.size();
   }

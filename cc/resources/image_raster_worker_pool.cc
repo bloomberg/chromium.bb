@@ -151,6 +151,11 @@ SkCanvas* ImageRasterWorkerPool::AcquireCanvasForRaster(RasterTask* task) {
 
 void ImageRasterWorkerPool::ReleaseCanvasForRaster(RasterTask* task) {
   resource_provider_->UnmapImageRasterBuffer(task->resource()->id());
+
+  // Map/UnmapImageRasterBuffer provides direct access to the memory used by the
+  // GPU. Read lock fences are required to ensure that we're not trying to map a
+  // resource that is currently in-use by the GPU.
+  resource_provider_->EnableReadLockFences(task->resource()->id(), true);
 }
 
 void ImageRasterWorkerPool::OnRasterFinished() {

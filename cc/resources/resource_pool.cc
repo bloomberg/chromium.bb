@@ -51,15 +51,9 @@ scoped_ptr<ScopedResource> ResourcePool::AcquireResource(
     return make_scoped_ptr(resource);
   }
 
-  // Create new resource.
   scoped_ptr<ScopedResource> resource =
       ScopedResource::Create(resource_provider_);
   resource->AllocateManaged(size, target_, format_);
-
-  // Extend all read locks on all resources until the resource is
-  // finished being used, such that we know when resources are
-  // truly safe to recycle.
-  resource_provider_->EnableReadLockFences(resource->id(), true);
 
   memory_usage_bytes_ += resource->bytes();
   ++resource_count_;

@@ -198,6 +198,30 @@ class BufferIdAllocator : public IdAllocator {
   DISALLOW_COPY_AND_ASSIGN(BufferIdAllocator);
 };
 
+// Generic fence implementation for query objects. Fence has passed when query
+// result is available.
+class QueryFence : public ResourceProvider::Fence {
+ public:
+  QueryFence(gpu::gles2::GLES2Interface* gl, unsigned query_id)
+      : gl_(gl), query_id_(query_id) {}
+
+  // Overridden from ResourceProvider::Fence:
+  virtual bool HasPassed() OVERRIDE {
+    unsigned available = 1;
+    gl_->GetQueryObjectuivEXT(
+        query_id_, GL_QUERY_RESULT_AVAILABLE_EXT, &available);
+    return !!available;
+  }
+
+ private:
+  virtual ~QueryFence() {}
+
+  gpu::gles2::GLES2Interface* gl_;
+  unsigned query_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(QueryFence);
+};
+
 }  // namespace
 
 ResourceProvider::Resource::Resource()
@@ -205,6 +229,7 @@ ResourceProvider::Resource::Resource()
       gl_id(0),
       gl_pixel_buffer_id(0),
       gl_upload_query_id(0),
+      gl_read_lock_query_id(0),
       pixels(NULL),
       lock_for_read_count(0),
       imported_count(0),
@@ -249,6 +274,7 @@ ResourceProvider::Resource::Resource(GLuint texture_id,
       gl_id(texture_id),
       gl_pixel_buffer_id(0),
       gl_upload_query_id(0),
+      gl_read_lock_query_id(0),
       pixels(NULL),
       lock_for_read_count(0),
       imported_count(0),
@@ -291,6 +317,7 @@ ResourceProvider::Resource::Resource(uint8_t* pixels,
       gl_id(0),
       gl_pixel_buffer_id(0),
       gl_upload_query_id(0),
+      gl_read_lock_query_id(0),
       pixels(pixels),
       lock_for_read_count(0),
       imported_count(0),
@@ -334,6 +361,7 @@ ResourceProvider::Resource::Resource(const SharedBitmapId& bitmap_id,
       gl_id(0),
       gl_pixel_buffer_id(0),
       gl_upload_query_id(0),
+      gl_read_lock_query_id(0),
       pixels(NULL),
       lock_for_read_count(0),
       imported_count(0),
@@ -829,12 +857,17 @@ void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
     DCHECK(gl);
     GLC(gl, gl->DestroyImageCHROMIUM(resource->image_id));
   }
-
   if (resource->gl_upload_query_id) {
     DCHECK(resource->origin == Resource::Internal);
     GLES2Interface* gl = ContextGL();
     DCHECK(gl);
     GLC(gl, gl->DeleteQueriesEXT(1, &resource->gl_upload_query_id));
+  }
+  if (resource->gl_read_lock_query_id) {
+    DCHECK(resource->origin == Resource::Internal);
+    GLES2Interface* gl = ContextGL();
+    DCHECK(gl);
+    GLC(gl, gl->DeleteQueriesEXT(1, &resource->gl_read_lock_query_id));
   }
   if (resource->gl_pixel_buffer_id) {
     DCHECK(resource->origin == Resource::Internal);
@@ -1750,10 +1783,10 @@ SkCanvas* ResourceProvider::MapImageRasterBuffer(ResourceId id) {
   return resource->image_raster_buffer->LockForWrite();
 }
 
-void ResourceProvider::UnmapImageRasterBuffer(ResourceId id) {
+bool ResourceProvider::UnmapImageRasterBuffer(ResourceId id) {
   Resource* resource = GetResource(id);
-  resource->image_raster_buffer->UnlockForWrite();
   resource->dirty_image = true;
+  return resource->image_raster_buffer->UnlockForWrite();
 }
 
 void ResourceProvider::AcquirePixelRasterBuffer(ResourceId id) {
@@ -2179,6 +2212,65 @@ void ResourceProvider::UnmapImage(const Resource* resource) {
     GLES2Interface* gl = ContextGL();
     DCHECK(gl);
     gl->UnmapImageCHROMIUM(resource->image_id);
+  }
+}
+
+void ResourceProvider::CopyResource(ResourceId source_id, ResourceId dest_id) {
+  TRACE_EVENT0("cc", "ResourceProvider::CopyResource");
+
+  Resource* source_resource = GetResource(source_id);
+  DCHECK(!source_resource->lock_for_read_count);
+  DCHECK(source_resource->origin == Resource::Internal);
+  DCHECK_EQ(source_resource->exported_count, 0);
+  DCHECK(source_resource->allocated);
+  LazyCreate(source_resource);
+
+  Resource* dest_resource = GetResource(dest_id);
+  DCHECK(!dest_resource->locked_for_write);
+  DCHECK(!dest_resource->lock_for_read_count);
+  DCHECK(dest_resource->origin == Resource::Internal);
+  DCHECK_EQ(dest_resource->exported_count, 0);
+  LazyCreate(dest_resource);
+
+  DCHECK_EQ(source_resource->type, dest_resource->type);
+  DCHECK_EQ(source_resource->format, dest_resource->format);
+  DCHECK(source_resource->size == dest_resource->size);
+
+  if (source_resource->type == GLTexture) {
+    GLES2Interface* gl = ContextGL();
+    DCHECK(gl);
+    if (source_resource->image_id && source_resource->dirty_image) {
+      gl->BindTexture(source_resource->target, source_resource->gl_id);
+      BindImageForSampling(source_resource);
+    }
+    if (!source_resource->gl_read_lock_query_id)
+      gl->GenQueriesEXT(1, &source_resource->gl_read_lock_query_id);
+    // Note: Use of COMMANDS_ISSUED target assumes that it's safe to access the
+    // source resource once the command has been processed on the service side.
+    // TODO(reveman): Implement COMMANDS_COMPLETED query that can be used to
+    // accurately determine when it's safe to access the source resource again.
+    gl->BeginQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM,
+                      source_resource->gl_read_lock_query_id);
+    DCHECK(!dest_resource->image_id);
+    dest_resource->allocated = true;
+    gl->CopyTextureCHROMIUM(dest_resource->target,
+                            source_resource->gl_id,
+                            dest_resource->gl_id,
+                            0,
+                            GLInternalFormat(dest_resource->format),
+                            GLDataType(dest_resource->format));
+    // End query and create a read lock fence that will prevent access to
+    // source resource until CopyTextureCHROMIUM command has completed.
+    gl->EndQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM);
+    source_resource->read_lock_fence = make_scoped_refptr(
+        new QueryFence(gl, source_resource->gl_read_lock_query_id));
+  } else {
+    DCHECK_EQ(Bitmap, source_resource->type);
+    DCHECK_EQ(RGBA_8888, source_resource->format);
+    LazyAllocate(dest_resource);
+
+    size_t bytes = SharedBitmap::CheckedSizeInBytes(source_resource->size);
+    memcpy(dest_resource->pixels, source_resource->pixels, bytes);
   }
 }
 

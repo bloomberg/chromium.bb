@@ -3027,6 +3027,133 @@ TEST_P(ResourceProviderTest, Image_Bitmap) {
   resource_provider->DeleteResource(id);
 }
 
+TEST_P(ResourceProviderTest, CopyResource_GLTexture) {
+  if (GetParam() != ResourceProvider::GLTexture)
+    return;
+  scoped_ptr<AllocationTrackingContext3D> context_owned(
+      new StrictMock<AllocationTrackingContext3D>);
+  AllocationTrackingContext3D* context = context_owned.get();
+
+  FakeOutputSurfaceClient output_surface_client;
+  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
+      context_owned.PassAs<TestWebGraphicsContext3D>()));
+  CHECK(output_surface->BindToClient(&output_surface_client));
+
+  const int kWidth = 2;
+  const int kHeight = 2;
+  gfx::Size size(kWidth, kHeight);
+  ResourceFormat format = RGBA_8888;
+  ResourceProvider::ResourceId source_id = 0;
+  ResourceProvider::ResourceId dest_id = 0;
+  const unsigned kSourceTextureId = 123u;
+  const unsigned kDestTextureId = 321u;
+  const unsigned kImageId = 234u;
+
+  scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
+      output_surface.get(), shared_bitmap_manager_.get(), 0, false, 1));
+
+  source_id = resource_provider->CreateResource(
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+
+  const int kStride = 4;
+  void* dummy_mapped_buffer_address = NULL;
+  EXPECT_CALL(*context, createImageCHROMIUM(kWidth, kHeight, GL_RGBA8_OES))
+      .WillOnce(Return(kImageId))
+      .RetiresOnSaturation();
+  EXPECT_CALL(
+      *context,
+      getImageParameterivCHROMIUM(kImageId, GL_IMAGE_ROWBYTES_CHROMIUM, _))
+      .WillOnce(SetArgPointee<2>(kStride))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*context, mapImageCHROMIUM(kImageId, GL_READ_WRITE))
+      .WillOnce(Return(dummy_mapped_buffer_address))
+      .RetiresOnSaturation();
+  resource_provider->MapImageRasterBuffer(source_id);
+
+  EXPECT_CALL(*context, unmapImageCHROMIUM(kImageId))
+      .Times(1)
+      .RetiresOnSaturation();
+  resource_provider->UnmapImageRasterBuffer(source_id);
+
+  dest_id = resource_provider->CreateResource(
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+
+  EXPECT_CALL(*context, NextTextureId())
+      .WillOnce(Return(kDestTextureId))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, kDestTextureId))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*context, NextTextureId())
+      .WillOnce(Return(kSourceTextureId))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, kSourceTextureId))
+      .Times(2)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*context, bindTexImage2DCHROMIUM(GL_TEXTURE_2D, kImageId))
+      .Times(1)
+      .RetiresOnSaturation();
+  resource_provider->CopyResource(source_id, dest_id);
+
+  EXPECT_CALL(*context, destroyImageCHROMIUM(kImageId))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*context, RetireTextureId(kSourceTextureId))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*context, RetireTextureId(kDestTextureId))
+      .Times(1)
+      .RetiresOnSaturation();
+  resource_provider->DeleteResource(source_id);
+  resource_provider->DeleteResource(dest_id);
+}
+
+TEST_P(ResourceProviderTest, CopyResource_Bitmap) {
+  if (GetParam() != ResourceProvider::Bitmap)
+    return;
+  FakeOutputSurfaceClient output_surface_client;
+  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::CreateSoftware(
+      make_scoped_ptr(new SoftwareOutputDevice)));
+  CHECK(output_surface->BindToClient(&output_surface_client));
+
+  gfx::Size size(1, 1);
+  ResourceFormat format = RGBA_8888;
+  ResourceProvider::ResourceId source_id = 0;
+  ResourceProvider::ResourceId dest_id = 0;
+  const uint32_t kBadBeef = 0xbadbeef;
+
+  scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
+      output_surface.get(), shared_bitmap_manager_.get(), 0, false, 1));
+
+  source_id = resource_provider->CreateResource(
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(size.width(), size.height());
+  *(bitmap.getAddr32(0, 0)) = kBadBeef;
+  SkCanvas* canvas = resource_provider->MapImageRasterBuffer(source_id);
+  ASSERT_TRUE(!!canvas);
+  canvas->writePixels(bitmap, 0, 0);
+  resource_provider->UnmapImageRasterBuffer(source_id);
+
+  dest_id = resource_provider->CreateResource(
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+
+  resource_provider->CopyResource(source_id, dest_id);
+
+  {
+    ResourceProvider::ScopedReadLockSoftware lock(resource_provider.get(),
+                                                  dest_id);
+    const SkBitmap* sk_bitmap = lock.sk_bitmap();
+    EXPECT_EQ(sk_bitmap->width(), size.width());
+    EXPECT_EQ(sk_bitmap->height(), size.height());
+    EXPECT_EQ(*sk_bitmap->getAddr32(0, 0), kBadBeef);
+  }
+
+  resource_provider->DeleteResource(source_id);
+  resource_provider->DeleteResource(dest_id);
+}
+
 void InitializeGLAndCheck(ContextSharedData* shared_data,
                           ResourceProvider* resource_provider,
                           FakeOutputSurface* output_surface) {

@@ -324,13 +324,14 @@ class CC_EXPORT ResourceProvider {
   SkCanvas* MapDirectRasterBuffer(ResourceId id);
   void UnmapDirectRasterBuffer(ResourceId id);
 
-  // Returns a canvas backed by an image buffer.
+  // Returns a canvas backed by an image buffer. UnmapImageRasterBuffer
+  // returns true if canvas was written to while mapped.
   // Rasterizing to the canvas writes the content into the image buffer,
   // which is internally bound to the underlying resource when read.
   // Call Unmap before the resource can be read or used for compositing.
   // It is used by ImageRasterWorkerPool.
   SkCanvas* MapImageRasterBuffer(ResourceId id);
-  void UnmapImageRasterBuffer(ResourceId id);
+  bool UnmapImageRasterBuffer(ResourceId id);
 
   // Returns a canvas backed by pixel buffer. UnmapPixelRasterBuffer
   // returns true if canvas was written to while mapped.
@@ -369,6 +370,9 @@ class CC_EXPORT ResourceProvider {
 
   // Indicates if we can currently lock this resource for write.
   bool CanLockForWrite(ResourceId id);
+
+  // Copy pixels from source to destination.
+  void CopyResource(ResourceId source_id, ResourceId dest_id);
 
   static GLint GetActiveTextureUnit(gpu::gles2::GLES2Interface* gl);
 
@@ -409,6 +413,8 @@ class CC_EXPORT ResourceProvider {
     unsigned gl_pixel_buffer_id;
     // Query used to determine when asynchronous set pixels complete.
     unsigned gl_upload_query_id;
+    // Query used to determine when read lock fence has passed.
+    unsigned gl_read_lock_query_id;
     TextureMailbox mailbox;
     ReleaseCallback release_callback;
     uint8_t* pixels;
