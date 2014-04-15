@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -23,6 +24,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
+#include "net/base/test_completion_callback.h"
 #include "net/server/http_server.h"
 #include "net/server/http_server_request_info.h"
 #include "net/socket/tcp_client_socket.h"
@@ -37,6 +39,8 @@
 namespace net {
 
 namespace {
+
+const int kMaxExpectedResponseLength = 2048;
 
 void SetTimedOutAndQuitLoop(const base::WeakPtr<bool> timed_out,
                             const base::Closure& quit_loop_func) {
@@ -86,6 +90,17 @@ class TestHttpClient {
     Write();
   }
 
+  bool Read(std::string* message) {
+    net::TestCompletionCallback callback;
+    ReadInternal(callback.callback());
+    int bytes_received = callback.WaitForResult();
+    if (bytes_received <= 0)
+      return false;
+    std::string io_buffer_contents(read_buffer_->data());
+    *message = io_buffer_contents.substr(0, bytes_received);
+    return true;
+  }
+
  private:
   void OnConnect(const base::Closure& quit_loop, int result) {
     connect_result_ = result;
@@ -108,6 +123,16 @@ class TestHttpClient {
       Write();
   }
 
+  void ReadInternal(const net::CompletionCallback& callback) {
+    read_buffer_ = new IOBufferWithSize(kMaxExpectedResponseLength);
+    int result = socket_->Read(read_buffer_,
+                               kMaxExpectedResponseLength,
+                               callback);
+    if (result != ERR_IO_PENDING)
+      callback.Run(result);
+  }
+
+  scoped_refptr<IOBufferWithSize> read_buffer_;
   scoped_refptr<DrainableIOBuffer> write_buffer_;
   scoped_ptr<TCPClientSocket> socket_;
   int connect_result_;
@@ -128,7 +153,7 @@ class HttpServerTest : public testing::Test,
 
   virtual void OnHttpRequest(int connection_id,
                              const HttpServerRequestInfo& info) OVERRIDE {
-    requests_.push_back(info);
+    requests_.push_back(std::make_pair(info, connection_id));
     if (requests_.size() == quit_after_request_count_)
       run_loop_quit_func_.Run();
   }
@@ -157,11 +182,19 @@ class HttpServerTest : public testing::Test,
     return success;
   }
 
+  HttpServerRequestInfo GetRequest(size_t request_index) {
+    return requests_[request_index].first;
+  }
+
+  int GetConnectionId(size_t request_index) {
+    return requests_[request_index].second;
+  }
+
  protected:
   scoped_refptr<HttpServer> server_;
   IPEndPoint server_address_;
   base::Closure run_loop_quit_func_;
-  std::vector<HttpServerRequestInfo> requests_;
+  std::vector<std::pair<HttpServerRequestInfo, int> > requests_;
 
  private:
   size_t quit_after_request_count_;
@@ -172,11 +205,13 @@ TEST_F(HttpServerTest, Request) {
   ASSERT_EQ(OK, client.ConnectAndWait(server_address_));
   client.Send("GET /test HTTP/1.1\r\n\r\n");
   ASSERT_TRUE(RunUntilRequestsReceived(1));
-  ASSERT_EQ("GET", requests_[0].method);
-  ASSERT_EQ("/test", requests_[0].path);
-  ASSERT_EQ("", requests_[0].data);
-  ASSERT_EQ(0u, requests_[0].headers.size());
-  ASSERT_TRUE(StartsWithASCII(requests_[0].peer.ToString(), "127.0.0.1", true));
+  ASSERT_EQ("GET", GetRequest(0).method);
+  ASSERT_EQ("/test", GetRequest(0).path);
+  ASSERT_EQ("", GetRequest(0).data);
+  ASSERT_EQ(0u, GetRequest(0).headers.size());
+  ASSERT_TRUE(StartsWithASCII(GetRequest(0).peer.ToString(),
+                              "127.0.0.1",
+                              true));
 }
 
 TEST_F(HttpServerTest, RequestWithHeaders) {
@@ -199,13 +234,13 @@ TEST_F(HttpServerTest, RequestWithHeaders) {
 
   client.Send("GET /test HTTP/1.1\r\n" + headers + "\r\n");
   ASSERT_TRUE(RunUntilRequestsReceived(1));
-  ASSERT_EQ("", requests_[0].data);
+  ASSERT_EQ("", GetRequest(0).data);
 
   for (size_t i = 0; i < arraysize(kHeaders); ++i) {
     std::string field = StringToLowerASCII(std::string(kHeaders[i][0]));
     std::string value = kHeaders[i][2];
-    ASSERT_EQ(1u, requests_[0].headers.count(field)) << field;
-    ASSERT_EQ(value, requests_[0].headers[field]) << kHeaders[i][0];
+    ASSERT_EQ(1u, GetRequest(0).headers.count(field)) << field;
+    ASSERT_EQ(value, GetRequest(0).headers[field]) << kHeaders[i][0];
   }
 }
 
@@ -220,8 +255,8 @@ TEST_F(HttpServerTest, RequestWithBody) {
       body.length(),
       body.c_str()));
   ASSERT_TRUE(RunUntilRequestsReceived(1));
-  ASSERT_EQ(2u, requests_[0].headers.size());
-  ASSERT_EQ(body.length(), requests_[0].data.length());
+  ASSERT_EQ(2u, GetRequest(0).headers.size());
+  ASSERT_EQ(body.length(), GetRequest(0).data.length());
   ASSERT_EQ('a', body[0]);
   ASSERT_EQ('c', *body.rbegin());
 }
@@ -261,6 +296,33 @@ TEST_F(HttpServerTest, RequestWithTooLargeBody) {
   ASSERT_EQ(0u, requests_.size());
 }
 
+TEST_F(HttpServerTest, Send200) {
+  TestHttpClient client;
+  ASSERT_EQ(OK, client.ConnectAndWait(server_address_));
+  client.Send("GET /test HTTP/1.1\r\n\r\n");
+  ASSERT_TRUE(RunUntilRequestsReceived(1));
+  server_->Send200(GetConnectionId(0), "Response!", "text/plain");
+
+  std::string response;
+  ASSERT_TRUE(client.Read(&response));
+  ASSERT_TRUE(StartsWithASCII(response, "HTTP/1.1 200 OK", true));
+  ASSERT_TRUE(EndsWith(response, "Response!", true));
+}
+
+TEST_F(HttpServerTest, SendRaw) {
+  TestHttpClient client;
+  ASSERT_EQ(OK, client.ConnectAndWait(server_address_));
+  client.Send("GET /test HTTP/1.1\r\n\r\n");
+  ASSERT_TRUE(RunUntilRequestsReceived(1));
+  server_->SendRaw(GetConnectionId(0), "Raw Data ");
+  server_->SendRaw(GetConnectionId(0), "More Data");
+  server_->SendRaw(GetConnectionId(0), "Third Piece of Data");
+
+  std::string response;
+  ASSERT_TRUE(client.Read(&response));
+  ASSERT_EQ("Raw Data More DataThird Piece of Data", response);
+}
+
 namespace {
 
 class MockStreamListenSocket : public StreamListenSocket {
@@ -281,17 +343,17 @@ TEST_F(HttpServerTest, RequestWithBodySplitAcrossPackets) {
       new MockStreamListenSocket(server_.get());
   server_->DidAccept(NULL, make_scoped_ptr(socket));
   std::string body("body");
-  std::string request = base::StringPrintf(
+  std::string request_text = base::StringPrintf(
       "GET /test HTTP/1.1\r\n"
       "SomeHeader: 1\r\n"
       "Content-Length: %" PRIuS "\r\n\r\n%s",
       body.length(),
       body.c_str());
-  server_->DidRead(socket, request.c_str(), request.length() - 2);
+  server_->DidRead(socket, request_text.c_str(), request_text.length() - 2);
   ASSERT_EQ(0u, requests_.size());
-  server_->DidRead(socket, request.c_str() + request.length() - 2, 2);
+  server_->DidRead(socket, request_text.c_str() + request_text.length() - 2, 2);
   ASSERT_EQ(1u, requests_.size());
-  ASSERT_EQ(body, requests_[0].data);
+  ASSERT_EQ(body, GetRequest(0).data);
 }
 
 TEST_F(HttpServerTest, MultipleRequestsOnSameConnection) {
@@ -306,15 +368,35 @@ TEST_F(HttpServerTest, MultipleRequestsOnSameConnection) {
       body.length(),
       body.c_str()));
   ASSERT_TRUE(RunUntilRequestsReceived(1));
-  ASSERT_EQ(body, requests_[0].data);
+  ASSERT_EQ(body, GetRequest(0).data);
+
+  int client_connection_id = GetConnectionId(0);
+  server_->Send200(client_connection_id, "Content for /test", "text/plain");
+  std::string response1;
+  ASSERT_TRUE(client.Read(&response1));
+  ASSERT_TRUE(StartsWithASCII(response1, "HTTP/1.1 200 OK", true));
+  ASSERT_TRUE(EndsWith(response1, "Content for /test", true));
 
   client.Send("GET /test2 HTTP/1.1\r\n\r\n");
   ASSERT_TRUE(RunUntilRequestsReceived(2));
-  ASSERT_EQ("/test2", requests_[1].path);
+  ASSERT_EQ("/test2", GetRequest(1).path);
+
+  ASSERT_EQ(client_connection_id, GetConnectionId(1));
+  server_->Send404(client_connection_id);
+  std::string response2;
+  ASSERT_TRUE(client.Read(&response2));
+  ASSERT_TRUE(StartsWithASCII(response2, "HTTP/1.1 404 Not Found", true));
 
   client.Send("GET /test3 HTTP/1.1\r\n\r\n");
   ASSERT_TRUE(RunUntilRequestsReceived(3));
-  ASSERT_EQ("/test3", requests_[2].path);
+  ASSERT_EQ("/test3", GetRequest(2).path);
+
+  ASSERT_EQ(client_connection_id, GetConnectionId(2));
+  server_->Send200(client_connection_id, "Content for /test3", "text/plain");
+  std::string response3;
+  ASSERT_TRUE(client.Read(&response3));
+  ASSERT_TRUE(StartsWithASCII(response3, "HTTP/1.1 200 OK", true));
+  ASSERT_TRUE(EndsWith(response3, "Content for /test3", true));
 }
 
 }  // namespace net
