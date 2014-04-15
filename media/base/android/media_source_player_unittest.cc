@@ -1861,8 +1861,7 @@ TEST_F(MediaSourcePlayerTest, SeekToThenReleaseThenDemuxerSeekAndDone) {
   EXPECT_EQ(1, demuxer_->num_seek_requests());
 }
 
-TEST_F(MediaSourcePlayerTest,
-       DISABLED_SeekToThenReleaseThenDemuxerSeekThenStart) {
+TEST_F(MediaSourcePlayerTest, SeekToThenReleaseThenDemuxerSeekThenStart) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test if Release() occurs after SeekTo(), but the DemuxerSeek IPC request
@@ -1890,8 +1889,7 @@ TEST_F(MediaSourcePlayerTest,
   EXPECT_EQ(1, demuxer_->num_seek_requests());
 }
 
-TEST_F(MediaSourcePlayerTest,
-       DISABLED_SeekToThenDemuxerSeekThenReleaseThenSeekDone) {
+TEST_F(MediaSourcePlayerTest, SeekToThenDemuxerSeekThenReleaseThenSeekDone) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test if Release() occurs after a SeekTo()'s subsequent DemuxerSeek IPC
@@ -1918,8 +1916,7 @@ TEST_F(MediaSourcePlayerTest,
   EXPECT_EQ(1, demuxer_->num_seek_requests());
 }
 
-// Flaky. See http://crbug.com/361359.
-TEST_F(MediaSourcePlayerTest, DISABLED_SeekToThenReleaseThenStart) {
+TEST_F(MediaSourcePlayerTest, SeekToThenReleaseThenStart) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test if Release() occurs after a SeekTo()'s subsequent DemuxerSeeK IPC
