@@ -5,7 +5,7 @@
 cr.define('print_preview', function() {
   'use strict';
 
-<include src="../../pdf/pdf_scripting_api.js"></include>
+<include src="../../pdf/pdf_scripting_api.js" />
 
   /**
    * Creates a PreviewArea object. It represents the area where the preview

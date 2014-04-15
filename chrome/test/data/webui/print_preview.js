@@ -80,9 +80,9 @@ PrintPreviewWebUITest.prototype = {
       cloudprint.CloudPrintInterface = CloudPrintInterfaceStub;
       cloudprint.CloudPrintInterface.EventType = oldCpInterfaceEventType;
 
-      print_preview.PreviewArea.prototype.checkPluginCompatibility_ =
+      print_preview.PreviewArea.prototype.getPluginType_ =
           function() {
-        return false;
+        return print_preview.PreviewArea.PluginType_.NONE;
       };
     }.bind(this));
   },
