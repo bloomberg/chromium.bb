@@ -171,6 +171,7 @@ speechend
 speechstart
 stalled
 start
+statechange
 storage
 submit
 success
