@@ -1516,7 +1516,6 @@ void RenderLayerCompositor::ensureRootLayer()
         m_scrollLayer->addChild(m_rootContentLayer.get());
 
         frameViewDidChangeSize();
-        frameViewDidScroll();
     }
 
     // Check to see if we have to change the attachment

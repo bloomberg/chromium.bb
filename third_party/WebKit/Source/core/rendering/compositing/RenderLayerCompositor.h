@@ -309,7 +309,6 @@ private:
     void applyUpdateLayerCompositingStateChickenEggHacks(RenderLayer*, CompositingStateTransitionType compositedLayerUpdate);
     void assignLayersToBackingsForReflectionLayer(RenderLayer* reflectionLayer, bool& layersChanged);
 
-private:
     DocumentLifecycle& lifecycle() const;
 
     RenderView& m_renderView;
