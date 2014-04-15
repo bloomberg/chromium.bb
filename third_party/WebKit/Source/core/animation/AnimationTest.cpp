@@ -359,7 +359,7 @@ TEST_F(AnimationAnimationTest, TimeToEffectChange)
     timing.startDelay = 100;
     timing.endDelay = 100;
     timing.fillMode = Timing::FillModeNone;
-    RefPtr<Animation> animation = Animation::create(nullptr, nullptr, timing);
+    RefPtr<Animation> animation = Animation::create(0, nullptr, timing);
     RefPtr<AnimationPlayer> player = document->timeline().play(animation.get());
     double inf = std::numeric_limits<double>::infinity();
 
@@ -392,7 +392,7 @@ TEST_F(AnimationAnimationTest, TimeToEffectChangeWithPlaybackRate)
     timing.endDelay = 100;
     timing.playbackRate = 2;
     timing.fillMode = Timing::FillModeNone;
-    RefPtr<Animation> animation = Animation::create(nullptr, nullptr, timing);
+    RefPtr<Animation> animation = Animation::create(0, nullptr, timing);
     RefPtr<AnimationPlayer> player = document->timeline().play(animation.get());
     double inf = std::numeric_limits<double>::infinity();
 
@@ -425,7 +425,7 @@ TEST_F(AnimationAnimationTest, TimeToEffectChangeWithNegativePlaybackRate)
     timing.endDelay = 100;
     timing.playbackRate = -2;
     timing.fillMode = Timing::FillModeNone;
-    RefPtr<Animation> animation = Animation::create(nullptr, nullptr, timing);
+    RefPtr<Animation> animation = Animation::create(0, nullptr, timing);
     RefPtr<AnimationPlayer> player = document->timeline().play(animation.get());
     double inf = std::numeric_limits<double>::infinity();
 
@@ -447,6 +447,19 @@ TEST_F(AnimationAnimationTest, TimeToEffectChangeWithNegativePlaybackRate)
     player->setCurrentTime(200);
     EXPECT_EQ(inf, animation->timeToForwardsEffectChange());
     EXPECT_EQ(50, animation->timeToReverseEffectChange());
+}
+
+TEST_F(AnimationAnimationTest, ElementDestructorClearsAnimationTarget)
+{
+    // This test expects incorrect behaviour should be removed once Element
+    // and Animation are moved to Oilpan. See crbug.com/362404 for context.
+    Timing timing;
+    timing.iterationDuration = 5;
+    RefPtr<Animation> animation = Animation::create(0, nullptr, timing);
+    RefPtr<AnimationPlayer> player = document->timeline().play(animation.get());
+    document.clear();
+    element.clear();
+    EXPECT_EQ(0, animation->target());
 }
 
 } // namespace WebCore

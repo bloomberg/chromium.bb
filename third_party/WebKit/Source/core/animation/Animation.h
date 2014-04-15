@@ -50,7 +50,7 @@ class Animation FINAL : public TimedItem {
 public:
     enum Priority { DefaultPriority, TransitionPriority };
 
-    static PassRefPtr<Animation> create(PassRefPtr<Element>, PassRefPtrWillBeRawPtr<AnimationEffect>, const Timing&, Priority = DefaultPriority, PassOwnPtr<EventDelegate> = nullptr);
+    static PassRefPtr<Animation> create(Element*, PassRefPtrWillBeRawPtr<AnimationEffect>, const Timing&, Priority = DefaultPriority, PassOwnPtr<EventDelegate> = nullptr);
     // Web Animations API Bindings constructors.
     static PassRefPtr<Animation> create(Element*, PassRefPtrWillBeRawPtr<AnimationEffect>, const Dictionary& timingInputDictionary);
     static PassRefPtr<Animation> create(Element*, PassRefPtrWillBeRawPtr<AnimationEffect>, double duration);
@@ -59,15 +59,18 @@ public:
     static PassRefPtr<Animation> create(Element*, const Vector<Dictionary>& keyframeDictionaryVector, double duration, ExceptionState&);
     static PassRefPtr<Animation> create(Element*, const Vector<Dictionary>& keyframeDictionaryVector, ExceptionState&);
 
+    virtual ~Animation();
+
     virtual bool isAnimation() const OVERRIDE { return true; }
 
     bool affects(CSSPropertyID) const;
     const AnimationEffect* effect() const { return m_effect.get(); }
     AnimationEffect* effect() { return m_effect.get(); }
     Priority priority() const { return m_priority; }
-    Element* target() { return m_target.get(); }
+    Element* target() { return m_target; }
 
     void notifySampledEffectRemovedFromAnimationStack();
+    void notifyElementDestroyed();
 
     bool isCandidateForAnimationOnCompositor() const;
     // Must only be called once.
@@ -87,9 +90,9 @@ protected:
     virtual double calculateTimeToEffectChange(bool forwards, double inheritedTime, double timeToNextIteration) const OVERRIDE;
 
 private:
-    Animation(PassRefPtr<Element>, PassRefPtrWillBeRawPtr<AnimationEffect>, const Timing&, Priority, PassOwnPtr<EventDelegate>);
+    Animation(Element*, PassRefPtrWillBeRawPtr<AnimationEffect>, const Timing&, Priority, PassOwnPtr<EventDelegate>);
 
-    RefPtr<Element> m_target;
+    Element* m_target;
     RefPtrWillBePersistent<AnimationEffect> m_effect;
 
     SampledEffect* m_sampledEffect;

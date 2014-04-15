@@ -68,7 +68,7 @@ protected:
         Timing timing;
         timing.fillMode = Timing::FillModeBoth;
         timing.iterationDuration = duration;
-        return Animation::create(element, effect, timing);
+        return Animation::create(element.get(), effect, timing);
     }
 
     AnimatableValue* interpolationValue(Interpolation* interpolation)

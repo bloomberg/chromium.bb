@@ -35,6 +35,12 @@
 
 namespace WebCore {
 
+ActiveAnimations::~ActiveAnimations()
+{
+    for (size_t i = 0; i < m_animations.size(); ++i)
+        m_animations[i]->notifyElementDestroyed();
+}
+
 void ActiveAnimations::updateAnimationFlags(RenderStyle& style)
 {
     for (AnimationPlayerSet::const_iterator it = m_players.begin(); it != players().end(); ++it) {

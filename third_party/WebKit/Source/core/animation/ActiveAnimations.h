@@ -52,6 +52,8 @@ public:
     {
     }
 
+    ~ActiveAnimations();
+
     // Animations that are currently active for this element, their effects will be applied
     // during a style recalc. CSS Transitions are included in this stack.
     AnimationStack& defaultStack() { return m_defaultStack; }
@@ -66,12 +68,15 @@ public:
     const AnimationPlayerSet& players() const { return m_players; }
     AnimationPlayerSet& players() { return m_players; }
 
-    bool isEmpty() const { return m_defaultStack.isEmpty() && m_cssAnimations.isEmpty(); }
+    bool isEmpty() const { return m_defaultStack.isEmpty() && m_cssAnimations.isEmpty() && m_animations.isEmpty(); }
 
     void cancelAnimationOnCompositor();
 
     void updateAnimationFlags(RenderStyle&);
     void setAnimationStyleChange(bool animationStyleChange) { m_animationStyleChange = animationStyleChange; }
+
+    void addAnimation(Animation* animation) { m_animations.append(animation); }
+    void notifyAnimationDestroyed(Animation* animation) { m_animations.remove(m_animations.find(animation)); }
 
     void trace(Visitor*);
 
@@ -82,6 +87,10 @@ private:
     CSSAnimations m_cssAnimations;
     AnimationPlayerSet m_players;
     bool m_animationStyleChange;
+
+    // This is to avoid a reference cycle that keeps Elements alive and
+    // won't be needed once Element and Animation are moved to Oilpan.
+    Vector<Animation*> m_animations;
 
     // CSSAnimations checks if a style change is due to animation.
     friend class CSSAnimations;

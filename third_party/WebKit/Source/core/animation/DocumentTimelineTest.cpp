@@ -283,7 +283,7 @@ TEST_F(AnimationDocumentTimelineTest, PlayAfterDocumentDeref)
     element = nullptr;
     document = nullptr;
 
-    RefPtr<Animation> anim = Animation::create(nullptr, nullptr, timing);
+    RefPtr<Animation> anim = Animation::create(0, nullptr, timing);
     // Test passes if this does not crash.
     timeline->play(anim.get());
 }
