@@ -62,6 +62,6 @@ PasswordManagerInternalsWebUIBrowserTest::GetWebContents() {
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest,
                        LogSavePasswordProgress) {
-  controller()->LogSavePasswordProgress("text test text");
+  controller()->LogSavePasswordProgress("<script> text for testing");
   ASSERT_TRUE(RunJavascriptTest("testLogText"));
 }

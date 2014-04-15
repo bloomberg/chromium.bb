@@ -6,6 +6,9 @@ function testLogText() {
   var divLogs = document.getElementById('log-entries');
   assertNotEquals(null, divLogs, "The <div> with logs not found.");
   assertNotEquals(null,
-                  divLogs.innerHTML.match(/text test text/),
+                  divLogs.innerHTML.match(/text for testing/),
                   "The logged text not found.");
+  assertEquals(null,
+               divLogs.innerHTML.match(/<script>/),
+               "The logged text was not escaped.");
 }

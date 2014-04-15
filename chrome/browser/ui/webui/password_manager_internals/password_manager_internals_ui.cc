@@ -22,6 +22,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "grit/password_manager_internals_resources.h"
+#include "net/base/escape.h"
 
 using content::BrowserContext;
 using content::WebContents;
@@ -66,7 +67,7 @@ PasswordManagerInternalsUI::~PasswordManagerInternalsUI() {
 
 void PasswordManagerInternalsUI::LogSavePasswordProgress(
     const std::string& text) {
-  base::StringValue text_string_value(text);
+  base::StringValue text_string_value(net::EscapeForHTML(text));
   web_ui()->CallJavascriptFunction("addSavePasswordProgressLog",
                                    text_string_value);
 }
