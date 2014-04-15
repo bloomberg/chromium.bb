@@ -128,7 +128,7 @@ RenderLayer* LinkHighlight::computeEnclosingCompositingLayer()
         return 0;
 
     CompositedLayerMappingPtr compositedLayerMapping = renderLayer->compositingState() == PaintsIntoGroupedBacking ? renderLayer->groupedMapping() : renderLayer->compositedLayerMapping();
-    GraphicsLayer* newGraphicsLayer = compositedLayerMapping->mainGraphicsLayer();
+    GraphicsLayer* newGraphicsLayer = renderLayer->compositingState() == PaintsIntoGroupedBacking ? compositedLayerMapping->squashingLayer() : compositedLayerMapping->mainGraphicsLayer();
 
     m_clipLayer->setTransform(SkMatrix44());
 
