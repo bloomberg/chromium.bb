@@ -13,6 +13,6 @@ def GetPreferredTryMasters(project, change):
     'tryserver.chromium': {
       'linux_chromium_rel': set(['defaulttests']),
       'mac_chromium_rel': set(['defaulttests']),
-      'win_rel': set(['sync_integration_tests']),
+      'win_chromium_rel': set(['defaulttests']),
     }
   }

@@ -1337,6 +1337,8 @@ def GetDefaultTryConfigs(bots=None):
       ],
       'win': ['compile'],
       'win_chromium_compile_dbg': ['defaulttests'],
+      'win_chromium_dbg': ['defaulttests'],
+      'win_chromium_rel': ['defaulttests'],
       'win_nacl_sdk_build': ['compile'],
       'win_rel': standard_tests + [
           'app_list_unittests',
@@ -1429,7 +1431,7 @@ def GetPreferredTryMasters(project, change):
         'mac_chromium_rel',
     ])
   if all(re.search('(^|[/_])win[/_.]', f) for f in files):
-    return GetDefaultTryConfigs(['win', 'win_rel'])
+    return GetDefaultTryConfigs(['win_chromium_dbg', 'win_chromium_rel'])
   if all(re.search('(^|[/_])android[/_.]', f) for f in files):
     return GetDefaultTryConfigs([
         'android_aosp',
@@ -1450,7 +1452,7 @@ def GetPreferredTryMasters(project, change):
       'mac_chromium_compile_dbg',
       'mac_chromium_rel',
       'win_chromium_compile_dbg',
-      'win_rel',
+      'win_chromium_rel',
       'win_x64_rel',
   ]
 
