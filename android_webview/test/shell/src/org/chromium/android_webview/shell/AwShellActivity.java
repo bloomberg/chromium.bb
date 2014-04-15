@@ -111,6 +111,14 @@ public class AwShellActivity extends Activity {
                 decorView.removeView(mCustomView);
                 mCustomView = null;
             }
+
+            @Override
+            public boolean shouldOverrideKeyEvent(KeyEvent event) {
+                if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
+                    return true;
+                }
+                return false;
+            }
         };
 
         SharedPreferences sharedPreferences =
