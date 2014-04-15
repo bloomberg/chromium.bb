@@ -6,7 +6,7 @@
 #include "core/css/MediaQueryEvaluator.h"
 
 #include "core/css/MediaList.h"
-#include "core/css/MediaValues.h"
+#include "core/css/MediaValuesCached.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -25,6 +25,8 @@ TEST(MediaQueryEvaluatorTest, Basic)
     // The second string represents the output string, if present.
     // Otherwise, the output string is identical to the first string.
     TestCase screenTestCases[] = {
+        {"", 1},
+        {" ", 1},
         {"screen", 1},
         {"screen and (color)", 1},
         {"all and (min-width: 500px)", 1},
@@ -68,22 +70,26 @@ TEST(MediaQueryEvaluatorTest, Basic)
         {0, 0} // Do not remove the terminator line.
     };
 
-    RefPtr<MediaValues> mediaValues = MediaValues::create(MediaValues::CachingMode,
-        500, // Viewport Width
-        500, // Viewport height
-        500, // Device Width
-        500, // Device Height
-        2.0, // Device pixel ratio
-        24, // Color bits per component
-        0, // Monochrome bits per component
-        MediaValues::MousePointer, // Pointer device
-        16, // Default font size
-        true, // 3D enabled
-        false, // scan media type
-        true, // screen media type
-        false, // print media type
-        true // Strict mode
-        );
+    MediaValuesCached::MediaValuesCachedData data;
+    data.viewportWidth = 500;
+    data.viewportHeight = 500;
+    data.deviceWidth = 500;
+    data.deviceHeight = 500;
+    data.devicePixelRatio = 2.0;
+    data.colorBitsPerComponent = 24;
+    data.monochromeBitsPerComponent = 0;
+    data.pointer = MediaValues::MousePointer;
+    data.defaultFontSize = 16;
+    data.computedFontSize = 16;
+    data.hasXHeight = true;
+    data.xHeight = 16;
+    data.zeroWidth = 16;
+    data.threeDEnabled = true;
+    data.scanMediaType = false;
+    data.screenMediaType = true;
+    data.printMediaType = false;
+    data.strictMode = true;
+    RefPtr<MediaValues> mediaValues = MediaValuesCached::create(data);
 
     for (unsigned i = 0; screenTestCases[i].input; ++i) {
         RefPtrWillBeRawPtr<MediaQuerySet> querySet = MediaQuerySet::create(screenTestCases[i].input);

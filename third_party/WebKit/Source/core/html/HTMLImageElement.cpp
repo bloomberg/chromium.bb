@@ -27,6 +27,8 @@
 #include "HTMLNames.h"
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ScriptEventListener.h"
+#include "core/css/MediaValuesDynamic.h"
+#include "core/css/parser/SizesAttributeParser.h"
 #include "core/dom/Attribute.h"
 #include "core/fetch/ImageResource.h"
 #include "core/html/HTMLAnchorElement.h"
@@ -49,6 +51,7 @@ HTMLImageElement::HTMLImageElement(Document& document, HTMLFormElement* form)
     , m_compositeOperator(CompositeSourceOver)
     , m_imageDevicePixelRatio(1.0f)
     , m_formWasSetByParser(false)
+    , m_effectiveSize(0)
 {
     ScriptWrappable::init(this);
     if (form && form->inDocument()) {
@@ -163,6 +166,8 @@ void HTMLImageElement::parseAttribute(const QualifiedName& name, const AtomicStr
         if (renderer() && renderer()->isImage())
             toRenderImage(renderer())->setImageDevicePixelRatio(m_imageDevicePixelRatio);
         m_imageLoader.updateFromElementIgnoringPreviousError();
+    } else if (RuntimeEnabledFeatures::pictureSizesEnabled() && name == sizesAttr) {
+        m_effectiveSize = SizesAttributeParser::findEffectiveSize(value, MediaValuesDynamic::create(document()));
     } else if (name == usemapAttr) {
         setIsLink(!value.isNull());
     } else if (name == compositeAttr) {

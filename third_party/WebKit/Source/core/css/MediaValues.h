@@ -5,107 +5,78 @@
 #ifndef MediaValues_h
 #define MediaValues_h
 
-#include "core/css/MediaQueryEvaluator.h"
-#include "core/css/resolver/StyleResolverState.h"
-#include "core/rendering/style/RenderStyle.h"
+#include "core/frame/LocalFrame.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
-#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
 class Document;
+class RenderStyle;
+class CSSPrimitiveValue;
 
 class MediaValues : public RefCounted<MediaValues> {
 public:
-    enum MediaValuesMode { CachingMode,
-        DynamicMode };
 
-    enum PointerDeviceType { TouchPointer,
+    enum MediaValuesMode {
+        CachingMode,
+        DynamicMode
+    };
+
+    enum PointerDeviceType {
+        TouchPointer,
         MousePointer,
         NoPointer,
-        UnknownPointer };
+        UnknownPointer
+    };
 
+    virtual ~MediaValues() { }
 
-    static PassRefPtr<MediaValues> create(Document*, MediaValuesMode);
-    static PassRefPtr<MediaValues> create(LocalFrame*, RenderStyle*, MediaValuesMode);
-    static PassRefPtr<MediaValues> create(MediaValuesMode,
-        int viewportWidth,
-        int viewportHeight,
-        int deviceWidth,
-        int deviceHeight,
-        float devicePixelRatio,
-        int colorBitsPerComponent,
-        int monochromeBitsPerComponent,
-        PointerDeviceType,
-        int defaultFontSize,
-        bool threeDEnabled,
-        bool scanMediaType,
-        bool screenMediaType,
-        bool printMediaType,
-        bool strictMode);
-    PassRefPtr<MediaValues> copy() const;
-    bool isSafeToSendToAnotherThread() const;
+    virtual PassRefPtr<MediaValues> copy() const = 0;
+    virtual bool isSafeToSendToAnotherThread() const = 0;
+    virtual bool computeLength(double value, unsigned short type, int& result) const = 0;
 
-    int viewportWidth() const;
-    int viewportHeight() const;
-    int deviceWidth() const;
-    int deviceHeight() const;
-    float devicePixelRatio() const;
-    int colorBitsPerComponent() const;
-    int monochromeBitsPerComponent() const;
-    PointerDeviceType pointer() const;
-    int defaultFontSize() const;
-    bool threeDEnabled() const;
-    bool scanMediaType() const;
-    bool screenMediaType() const;
-    bool printMediaType() const;
-    bool strictMode() const;
-    RenderStyle* style() const { return m_style.get(); }
-    Document* document() const;
+    virtual int viewportWidth() const = 0;
+    virtual int viewportHeight() const = 0;
+    virtual int deviceWidth() const = 0;
+    virtual int deviceHeight() const = 0;
+    virtual float devicePixelRatio() const = 0;
+    virtual int colorBitsPerComponent() const = 0;
+    virtual int monochromeBitsPerComponent() const = 0;
+    virtual PointerDeviceType pointer() const = 0;
+    virtual bool threeDEnabled() const = 0;
+    virtual bool scanMediaType() const = 0;
+    virtual bool screenMediaType() const = 0;
+    virtual bool printMediaType() const = 0;
+    virtual bool strictMode() const = 0;
+    virtual Document* document() const = 0;
+    virtual bool hasValues() const = 0;
 
-private:
-    MediaValues(LocalFrame* frame, PassRefPtr<RenderStyle> style, MediaValuesMode mode)
-        : m_style(style)
-        , m_frame(frame)
-        , m_mode(mode)
-        , m_viewportWidth(0)
-        , m_viewportHeight(0)
-        , m_deviceWidth(0)
-        , m_deviceHeight(0)
-        , m_devicePixelRatio(0)
-        , m_colorBitsPerComponent(0)
-        , m_monochromeBitsPerComponent(0)
-        , m_pointer(UnknownPointer)
-        , m_defaultFontSize(0)
-        , m_threeDEnabled(false)
-        , m_scanMediaType(false)
-        , m_screenMediaType(false)
-        , m_printMediaType(false)
-        , m_strictMode(false)
-    {
-    }
+protected:
+    static Document* getExecutingDocument(Document&);
 
-    RefPtr<RenderStyle> m_style;
-    LocalFrame* m_frame;
-    MediaValuesMode m_mode;
+    int calculateViewportWidth(LocalFrame*, RenderStyle*) const;
+    int calculateViewportHeight(LocalFrame*, RenderStyle*) const;
+    int calculateDeviceWidth(LocalFrame*) const;
+    int calculateDeviceHeight(LocalFrame*) const;
+    bool calculateStrictMode(LocalFrame*) const;
+    float calculateDevicePixelRatio(LocalFrame*) const;
+    int calculateColorBitsPerComponent(LocalFrame*) const;
+    int calculateMonochromeBitsPerComponent(LocalFrame*) const;
+    int calculateDefaultFontSize(RenderStyle*) const;
+    int calculateComputedFontSize(RenderStyle*) const;
+    bool calculateHasXHeight(RenderStyle*) const;
+    double calculateXHeight(RenderStyle*) const;
+    double calculateZeroWidth(RenderStyle*) const;
+    bool calculateScanMediaType(LocalFrame*) const;
+    bool calculateScreenMediaType(LocalFrame*) const;
+    bool calculatePrintMediaType(LocalFrame*) const;
+    bool calculateThreeDEnabled(LocalFrame*) const;
+    float calculateEffectiveZoom(RenderStyle*) const;
+    MediaValues::PointerDeviceType calculateLeastCapablePrimaryPointerDeviceType(LocalFrame*) const;
 
-    // Members variables beyond this point must be thread safe, since they're copied to the parser thread
-    int m_viewportWidth;
-    int m_viewportHeight;
-    int m_deviceWidth;
-    int m_deviceHeight;
-    float m_devicePixelRatio;
-    int m_colorBitsPerComponent;
-    int m_monochromeBitsPerComponent;
-    PointerDeviceType m_pointer;
-    int m_defaultFontSize;
-    bool m_threeDEnabled;
-    bool m_scanMediaType;
-    bool m_screenMediaType;
-    bool m_printMediaType;
-    bool m_strictMode;
 };
 
 } // namespace
-#endif
+
+#endif // MediaValues_h

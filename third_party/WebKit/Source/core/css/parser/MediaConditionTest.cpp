@@ -41,7 +41,7 @@ TEST(MediaConditionParserTest, Basic)
     for (unsigned i = 0; testCases[i].input; ++i) {
         Vector<MediaQueryToken> tokens;
         MediaQueryTokenizer::tokenize(testCases[i].input, tokens);
-        MediaQueryParser::TokenIterator endToken;
+        TokenIterator endToken;
         // Stop the input once we hit a comma token
         for (endToken = tokens.begin(); endToken != tokens.end() && endToken->type() != CommaToken; ++endToken) { }
         RefPtrWillBeRawPtr<MediaQuerySet> mediaConditionQuerySet = MediaQueryParser::parseMediaCondition(tokens.begin(), endToken);
