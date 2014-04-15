@@ -1049,13 +1049,13 @@ void ChromeBrowserMainParts::PreProfileInit() {
   ProfileInfoCache& profile_cache = profile_manager->GetProfileInfoCache();
   size_t profiles_count = profile_cache.GetNumberOfProfiles();
   std::vector<base::FilePath> profiles_to_delete;
-  for (size_t i = 0;i < profiles_count; ++i) {
+  for (size_t i = 0; i < profiles_count; ++i) {
     if (profile_cache.ProfileIsEphemeralAtIndex(i))
       profiles_to_delete.push_back(profile_cache.GetPathOfProfileAtIndex(i));
   }
 
   if (profiles_to_delete.size()) {
-    for (size_t i = 0;i < profiles_to_delete.size(); ++i) {
+    for (size_t i = 0; i < profiles_to_delete.size(); ++i) {
       profile_manager->ScheduleProfileForDeletion(
           profiles_to_delete[i], ProfileManager::CreateCallback());
     }
