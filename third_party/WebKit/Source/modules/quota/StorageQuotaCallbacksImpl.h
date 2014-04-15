@@ -31,8 +31,7 @@
 #ifndef StorageQuotaCallbacksImpl_h
 #define StorageQuotaCallbacksImpl_h
 
-#include "bindings/v8/NewScriptState.h"
-#include "bindings/v8/ScriptPromiseResolver.h"
+#include "bindings/v8/ScriptPromiseResolverWithContext.h"
 #include "platform/StorageQuotaCallbacks.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
@@ -43,9 +42,9 @@ namespace WebCore {
 class StorageQuotaCallbacksImpl FINAL : public StorageQuotaCallbacks {
     WTF_MAKE_NONCOPYABLE(StorageQuotaCallbacksImpl);
 public:
-    static PassOwnPtr<StorageQuotaCallbacksImpl> create(PassRefPtr<ScriptPromiseResolver> resolver, ExecutionContext* context)
+    static PassOwnPtr<StorageQuotaCallbacksImpl> create(PassRefPtr<ScriptPromiseResolverWithContext> resolver)
     {
-        return adoptPtr(new StorageQuotaCallbacksImpl(resolver, context));
+        return adoptPtr(new StorageQuotaCallbacksImpl(resolver));
     }
 
     virtual ~StorageQuotaCallbacksImpl();
@@ -55,10 +54,9 @@ public:
     virtual void didFail(blink::WebStorageQuotaError) OVERRIDE;
 
 private:
-    StorageQuotaCallbacksImpl(PassRefPtr<ScriptPromiseResolver>, ExecutionContext*);
+    StorageQuotaCallbacksImpl(PassRefPtr<ScriptPromiseResolverWithContext>);
 
-    RefPtr<ScriptPromiseResolver> m_resolver;
-    RefPtr<NewScriptState> m_scriptState;
+    RefPtr<ScriptPromiseResolverWithContext> m_resolver;
 };
 
 } // namespace

@@ -33,6 +33,7 @@
 
 #include "bindings/v8/ScriptPromise.h"
 #include "bindings/v8/ScriptPromiseResolver.h"
+#include "bindings/v8/ScriptPromiseResolverWithContext.h"
 #include "core/dom/DOMError.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
@@ -87,7 +88,7 @@ ScriptPromise StorageQuota::queryInfo(ExecutionContext* executionContext, String
 {
     ASSERT(executionContext);
 
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(executionContext);
+    RefPtr<ScriptPromiseResolverWithContext> resolver = ScriptPromiseResolverWithContext::create(NewScriptState::current(toIsolate(executionContext)));
     ScriptPromise promise = resolver->promise();
 
     SecurityOrigin* securityOrigin = executionContext->securityOrigin();
@@ -97,7 +98,7 @@ ScriptPromise StorageQuota::queryInfo(ExecutionContext* executionContext, String
     }
 
     KURL storagePartition = KURL(KURL(), securityOrigin->toString());
-    OwnPtr<StorageQuotaCallbacks> callbacks = StorageQuotaCallbacksImpl::create(resolver, executionContext);
+    OwnPtr<StorageQuotaCallbacks> callbacks = StorageQuotaCallbacksImpl::create(resolver);
     blink::Platform::current()->queryStorageUsageAndQuota(storagePartition, stringToStorageQuotaType(type), callbacks.release());
     return promise;
 }
@@ -109,8 +110,9 @@ ScriptPromise StorageQuota::requestPersistentQuota(ExecutionContext* executionCo
     StorageQuotaClient* client = StorageQuotaClient::from(executionContext);
     if (!client) {
         RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(executionContext);
+        ScriptPromise promise = resolver->promise();
         resolver->reject(DOMError::create(NotSupportedError));
-        return resolver->promise();
+        return promise;
     }
 
     return client->requestPersistentQuota(executionContext, newQuota);

@@ -33,8 +33,9 @@
 
 #include "WebFrameClient.h"
 #include "WebFrameImpl.h"
+#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScriptPromise.h"
-#include "bindings/v8/ScriptPromiseResolver.h"
+#include "bindings/v8/ScriptPromiseResolverWithContext.h"
 #include "core/dom/DOMError.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
@@ -79,13 +80,13 @@ ScriptPromise StorageQuotaClientImpl::requestPersistentQuota(ExecutionContext* e
 {
     ASSERT(executionContext);
 
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(executionContext);
+    RefPtr<ScriptPromiseResolverWithContext> resolver = ScriptPromiseResolverWithContext::create(NewScriptState::current(toIsolate(executionContext)));
     ScriptPromise promise = resolver->promise();
 
     if (executionContext->isDocument()) {
         Document* document = toDocument(executionContext);
         WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
-        OwnPtr<StorageQuotaCallbacks> callbacks = StorageQuotaCallbacksImpl::create(resolver, executionContext);
+        OwnPtr<StorageQuotaCallbacks> callbacks = StorageQuotaCallbacksImpl::create(resolver);
         webFrame->client()->requestStorageQuota(webFrame, WebStorageQuotaTypePersistent, newQuotaInBytes, callbacks.release());
     } else {
         // Requesting quota in Worker is not supported.
