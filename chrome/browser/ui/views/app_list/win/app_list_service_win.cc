@@ -203,7 +203,7 @@ void SetDidRunForNDayActiveStats() {
 void CreateAppListShortcuts(
     const base::FilePath& user_data_dir,
     const base::string16& app_model_id,
-    const ShellIntegration::ShortcutLocations& creation_locations) {
+    const web_app::ShortcutLocations& creation_locations) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
 
   // Shortcut paths under which to create shortcuts.
@@ -455,11 +455,11 @@ void AppListServiceWin::CreateShortcut() {
   // Shortcuts should only be created once. If the user unpins the taskbar
   // shortcut, they can restore it by pinning the start menu or desktop
   // shortcut.
-  ShellIntegration::ShortcutLocations shortcut_locations;
+  web_app::ShortcutLocations shortcut_locations;
   shortcut_locations.on_desktop = true;
   shortcut_locations.in_quick_launch_bar = true;
   shortcut_locations.applications_menu_location =
-      ShellIntegration::APP_MENU_LOCATION_SUBDIR_CHROME;
+      web_app::APP_MENU_LOCATION_SUBDIR_CHROME;
   base::FilePath user_data_dir(
       g_browser_process->profile_manager()->user_data_dir());
 

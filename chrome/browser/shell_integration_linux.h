@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
-#include "chrome/browser/shell_integration.h"
+#include "chrome/browser/web_applications/web_app.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -48,7 +48,7 @@ std::string GetIconName();
 // This searches the file system for .desktop files in appropriate locations. A
 // shortcut with NoDisplay=true causes hidden to become true, instead of
 // creating at APP_MENU_LOCATIONS_SUBDIR_CHROMEAPPS.
-ShellIntegration::ShortcutLocations GetExistingShortcutLocations(
+web_app::ShortcutLocations GetExistingShortcutLocations(
     base::Environment* env,
     const base::FilePath& profile_path,
     const std::string& extension_id);
@@ -56,7 +56,7 @@ ShellIntegration::ShortcutLocations GetExistingShortcutLocations(
 // Version of GetExistingShortcutLocations which takes an explicit path
 // to the user's desktop directory. Useful for testing.
 // If |desktop_path| is empty, the desktop is not searched.
-ShellIntegration::ShortcutLocations GetExistingShortcutLocations(
+web_app::ShortcutLocations GetExistingShortcutLocations(
     base::Environment* env,
     const base::FilePath& profile_path,
     const std::string& extension_id,
@@ -116,8 +116,8 @@ std::string GetDirectoryFileContents(const base::string16& title,
 // For extensions, duplicate shortcuts are avoided, so if a requested shortcut
 // already exists it is deleted first.
 bool CreateDesktopShortcut(
-    const ShellIntegration::ShortcutInfo& shortcut_info,
-    const ShellIntegration::ShortcutLocations& creation_locations);
+    const web_app::ShortcutInfo& shortcut_info,
+    const web_app::ShortcutLocations& creation_locations);
 
 // Create shortcuts in the application menu for the app launcher. Duplicate
 // shortcuts are avoided, so if a requested shortcut already exists it is

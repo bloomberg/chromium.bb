@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_WIN_H_
 
 #include "base/files/file_path.h"
-#include "chrome/browser/shell_integration.h"
+#include "chrome/browser/web_applications/web_app.h"
 
 namespace content {
 class WebContents;
@@ -22,7 +22,7 @@ namespace web_app {
 // created shortcut.
 base::FilePath CreateShortcutInWebAppDir(
     const base::FilePath& web_app_path,
-    const ShellIntegration::ShortcutInfo& shortcut_info);
+    const web_app::ShortcutInfo& shortcut_info);
 
 namespace internals {
 

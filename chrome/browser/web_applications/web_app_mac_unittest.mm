@@ -37,7 +37,7 @@ class WebAppShortcutCreatorMock : public web_app::WebAppShortcutCreator {
  public:
   explicit WebAppShortcutCreatorMock(
       const base::FilePath& app_data_dir,
-      const ShellIntegration::ShortcutInfo& shortcut_info)
+      const web_app::ShortcutInfo& shortcut_info)
       : WebAppShortcutCreator(app_data_dir,
                               shortcut_info) {
   }
@@ -51,8 +51,8 @@ class WebAppShortcutCreatorMock : public web_app::WebAppShortcutCreator {
   DISALLOW_COPY_AND_ASSIGN(WebAppShortcutCreatorMock);
 };
 
-ShellIntegration::ShortcutInfo GetShortcutInfo() {
-  ShellIntegration::ShortcutInfo info;
+web_app::ShortcutInfo GetShortcutInfo() {
+  web_app::ShortcutInfo info;
   info.extension_id = "extensionid";
   info.extension_path = base::FilePath("/fake/extension/path");
   info.title = base::ASCIIToUTF16("Shortcut Title");
@@ -87,7 +87,7 @@ class WebAppShortcutCreatorTest : public testing::Test {
   base::FilePath app_data_dir_;
   base::FilePath destination_dir_;
 
-  ShellIntegration::ShortcutInfo info_;
+  web_app::ShortcutInfo info_;
   base::FilePath shim_base_name_;
   base::FilePath internal_shim_path_;
   base::FilePath shim_path_;
@@ -107,7 +107,7 @@ TEST_F(WebAppShortcutCreatorTest, CreateShortcuts) {
       .WillRepeatedly(Return(destination_dir_));
 
   EXPECT_TRUE(shortcut_creator.CreateShortcuts(
-      SHORTCUT_CREATION_AUTOMATED, ShellIntegration::ShortcutLocations()));
+      SHORTCUT_CREATION_AUTOMATED, web_app::ShortcutLocations()));
   EXPECT_TRUE(base::PathExists(shim_path_));
   EXPECT_TRUE(base::PathExists(destination_dir_));
   EXPECT_EQ(shim_base_name_, shortcut_creator.GetShortcutBasename());
@@ -191,7 +191,7 @@ TEST_F(WebAppShortcutCreatorTest, DeleteShortcuts) {
       .WillOnce(Return(other_shim_path));
 
   EXPECT_TRUE(shortcut_creator.CreateShortcuts(
-      SHORTCUT_CREATION_AUTOMATED, ShellIntegration::ShortcutLocations()));
+      SHORTCUT_CREATION_AUTOMATED, web_app::ShortcutLocations()));
   EXPECT_TRUE(base::PathExists(internal_shim_path_));
   EXPECT_TRUE(base::PathExists(shim_path_));
 
@@ -237,7 +237,7 @@ TEST_F(WebAppShortcutCreatorTest, RunShortcut) {
       .WillRepeatedly(Return(destination_dir_));
 
   EXPECT_TRUE(shortcut_creator.CreateShortcuts(
-      SHORTCUT_CREATION_AUTOMATED, ShellIntegration::ShortcutLocations()));
+      SHORTCUT_CREATION_AUTOMATED, web_app::ShortcutLocations()));
   EXPECT_TRUE(base::PathExists(shim_path_));
 
   ssize_t status = getxattr(
@@ -254,7 +254,7 @@ TEST_F(WebAppShortcutCreatorTest, CreateFailure) {
   EXPECT_CALL(shortcut_creator, GetApplicationsDirname())
       .WillRepeatedly(Return(non_existent_path));
   EXPECT_FALSE(shortcut_creator.CreateShortcuts(
-      SHORTCUT_CREATION_AUTOMATED, ShellIntegration::ShortcutLocations()));
+      SHORTCUT_CREATION_AUTOMATED, web_app::ShortcutLocations()));
 }
 
 TEST_F(WebAppShortcutCreatorTest, UpdateIcon) {
@@ -283,11 +283,11 @@ TEST_F(WebAppShortcutCreatorTest, RevealAppShimInFinder) {
   EXPECT_CALL(shortcut_creator, RevealAppShimInFinder())
       .Times(0);
   EXPECT_TRUE(shortcut_creator.CreateShortcuts(
-      SHORTCUT_CREATION_AUTOMATED, ShellIntegration::ShortcutLocations()));
+      SHORTCUT_CREATION_AUTOMATED, web_app::ShortcutLocations()));
 
   EXPECT_CALL(shortcut_creator, RevealAppShimInFinder());
   EXPECT_TRUE(shortcut_creator.CreateShortcuts(
-      SHORTCUT_CREATION_BY_USER, ShellIntegration::ShortcutLocations()));
+      SHORTCUT_CREATION_BY_USER, web_app::ShortcutLocations()));
 }
 
 }  // namespace web_app

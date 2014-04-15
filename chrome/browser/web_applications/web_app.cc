@@ -42,7 +42,7 @@ using content::BrowserThread;
 
 namespace {
 
-typedef base::Callback<void(const ShellIntegration::ShortcutInfo&,
+typedef base::Callback<void(const web_app::ShortcutInfo&,
                             const extensions::FileHandlersInfo&)> InfoCallback;
 
 #if defined(OS_MACOSX)
@@ -71,8 +71,8 @@ bool IconPrecedes(const WebApplicationInfo::IconInfo& left,
 
 bool CreateShortcutsWithInfoOnFileThread(
     web_app::ShortcutCreationReason reason,
-    const ShellIntegration::ShortcutLocations& locations,
-    const ShellIntegration::ShortcutInfo& shortcut_info,
+    const web_app::ShortcutLocations& locations,
+    const web_app::ShortcutInfo& shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
@@ -85,7 +85,7 @@ bool CreateShortcutsWithInfoOnFileThread(
 }
 
 void DeleteShortcutsOnFileThread(
-    const ShellIntegration::ShortcutInfo& shortcut_info) {
+    const web_app::ShortcutInfo& shortcut_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   base::FilePath shortcut_data_dir = web_app::GetWebAppDataDirectory(
@@ -96,7 +96,7 @@ void DeleteShortcutsOnFileThread(
 
 void UpdateShortcutsOnFileThread(
     const base::string16& old_app_title,
-    const ShellIntegration::ShortcutInfo& shortcut_info,
+    const web_app::ShortcutInfo& shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
@@ -108,8 +108,8 @@ void UpdateShortcutsOnFileThread(
 
 void CreateShortcutsWithInfo(
     web_app::ShortcutCreationReason reason,
-    const ShellIntegration::ShortcutLocations& locations,
-    const ShellIntegration::ShortcutInfo& shortcut_info,
+    const web_app::ShortcutLocations& locations,
+    const web_app::ShortcutInfo& shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -123,7 +123,7 @@ void CreateShortcutsWithInfo(
 
 void UpdateAllShortcutsForShortcutInfo(
     const base::string16& old_app_title,
-    const ShellIntegration::ShortcutInfo& shortcut_info,
+    const web_app::ShortcutInfo& shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info) {
   BrowserThread::PostTask(
       BrowserThread::FILE,
@@ -132,7 +132,7 @@ void UpdateAllShortcutsForShortcutInfo(
                  old_app_title, shortcut_info, file_handlers_info));
 }
 
-void OnImageLoaded(ShellIntegration::ShortcutInfo shortcut_info,
+void OnImageLoaded(web_app::ShortcutInfo shortcut_info,
                    extensions::FileHandlersInfo file_handlers_info,
                    InfoCallback callback,
                    const gfx::ImageFamily& image_family) {
@@ -160,7 +160,7 @@ void OnImageLoaded(ShellIntegration::ShortcutInfo shortcut_info,
 void GetInfoForApp(const extensions::Extension* extension,
                    Profile* profile,
                    const InfoCallback& callback) {
-  ShellIntegration::ShortcutInfo shortcut_info =
+  web_app::ShortcutInfo shortcut_info =
       web_app::ShortcutInfoForExtensionAndProfile(extension, profile);
   extensions::FileHandlersInfo file_handlers_info(
       extensions::FileHandlers::GetFileHandlers(extension));
@@ -212,7 +212,7 @@ void GetInfoForApp(const extensions::Extension* extension,
 
 void IgnoreFileHandlersInfo(
     const web_app::ShortcutInfoCallback& shortcut_info_callback,
-    const ShellIntegration::ShortcutInfo& shortcut_info,
+    const web_app::ShortcutInfo& shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info) {
   shortcut_info_callback.Run(shortcut_info);
 }
@@ -243,8 +243,8 @@ base::FilePath GetSanitizedFileName(const base::string16& name) {
 
 bool CreateShortcutsOnFileThread(
     ShortcutCreationReason reason,
-    const ShellIntegration::ShortcutLocations& locations,
-    const ShellIntegration::ShortcutInfo& shortcut_info) {
+    const web_app::ShortcutLocations& locations,
+    const web_app::ShortcutInfo& shortcut_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   return CreateShortcutsWithInfoOnFileThread(
@@ -253,8 +253,24 @@ bool CreateShortcutsOnFileThread(
 
 }  // namespace internals
 
+web_app::ShortcutInfo::ShortcutInfo()
+    : is_platform_app(false) {
+}
+
+web_app::ShortcutInfo::~ShortcutInfo() {}
+
+web_app::ShortcutLocations::ShortcutLocations()
+    : on_desktop(false),
+      applications_menu_location(APP_MENU_LOCATION_NONE),
+      in_quick_launch_bar(false)
+#if defined(OS_POSIX)
+      , hidden(false)
+#endif
+      {
+}
+
 void GetShortcutInfoForTab(content::WebContents* web_contents,
-                           ShellIntegration::ShortcutInfo* info) {
+                           web_app::ShortcutInfo* info) {
   DCHECK(info);  // Must provide a valid info.
 
   const FaviconTabHelper* favicon_tab_helper =
@@ -281,9 +297,9 @@ void GetShortcutInfoForTab(content::WebContents* web_contents,
 void UpdateShortcutForTabContents(content::WebContents* web_contents) {}
 #endif
 
-ShellIntegration::ShortcutInfo ShortcutInfoForExtensionAndProfile(
+web_app::ShortcutInfo ShortcutInfoForExtensionAndProfile(
     const extensions::Extension* app, Profile* profile) {
-  ShellIntegration::ShortcutInfo shortcut_info;
+  web_app::ShortcutInfo shortcut_info;
   shortcut_info.extension_id = app->id();
   shortcut_info.is_platform_app = app->is_platform_app();
   shortcut_info.url = extensions::AppLaunchInfo::GetLaunchWebURL(app);
@@ -341,7 +357,7 @@ base::FilePath GetWebAppDataDirectory(const base::FilePath& profile_path,
 }
 
 std::string GenerateApplicationNameFromInfo(
-    const ShellIntegration::ShortcutInfo& shortcut_info) {
+    const web_app::ShortcutInfo& shortcut_info) {
   if (!shortcut_info.extension_id.empty()) {
     return web_app::GenerateApplicationNameFromExtensionId(
         shortcut_info.extension_id);
@@ -374,8 +390,8 @@ std::string GetExtensionIdFromApplicationName(const std::string& app_name) {
 
 void CreateShortcutsForShortcutInfo(
     web_app::ShortcutCreationReason reason,
-    const ShellIntegration::ShortcutLocations& locations,
-    const ShellIntegration::ShortcutInfo& shortcut_info) {
+    const web_app::ShortcutLocations& locations,
+    const web_app::ShortcutInfo& shortcut_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   BrowserThread::PostTask(
@@ -388,7 +404,7 @@ void CreateShortcutsForShortcutInfo(
 
 void CreateShortcuts(
     ShortcutCreationReason reason,
-    const ShellIntegration::ShortcutLocations& locations,
+    const web_app::ShortcutLocations& locations,
     Profile* profile,
     const extensions::Extension* app) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

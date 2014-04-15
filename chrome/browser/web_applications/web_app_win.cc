@@ -18,7 +18,6 @@
 #include "base/win/shortcut.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/web_applications/update_shortcut_worker_win.h"
-#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/shell_util.h"
@@ -161,7 +160,7 @@ std::vector<base::FilePath> FindAppShortcutsByProfileAndTitle(
 // Must be called on the FILE thread.
 bool CreateShortcutsInPaths(
     const base::FilePath& web_app_path,
-    const ShellIntegration::ShortcutInfo& shortcut_info,
+    const web_app::ShortcutInfo& shortcut_info,
     const std::vector<base::FilePath>& shortcut_paths,
     web_app::ShortcutCreationReason creation_reason,
     std::vector<base::FilePath>* out_filenames) {
@@ -279,14 +278,14 @@ void GetShortcutLocationsAndDeleteShortcuts(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
   // Get all possible locations for shortcuts.
-  ShellIntegration::ShortcutLocations all_shortcut_locations;
+  web_app::ShortcutLocations all_shortcut_locations;
   all_shortcut_locations.in_quick_launch_bar = true;
   all_shortcut_locations.on_desktop = true;
   // Delete shortcuts from the Chrome Apps subdirectory.
   // This matches the subdir name set by CreateApplicationShortcutView::Accept
   // for Chrome apps (not URL apps, but this function does not apply for them).
   all_shortcut_locations.applications_menu_location =
-      ShellIntegration::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS;
+      web_app::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS;
   std::vector<base::FilePath> all_paths = web_app::internals::GetShortcutPaths(
       all_shortcut_locations);
   if (base::win::GetVersion() >= base::win::VERSION_WIN7 &&
@@ -330,7 +329,7 @@ namespace web_app {
 
 base::FilePath CreateShortcutInWebAppDir(
     const base::FilePath& web_app_dir,
-    const ShellIntegration::ShortcutInfo& shortcut_info) {
+    const web_app::ShortcutInfo& shortcut_info) {
   std::vector<base::FilePath> paths;
   paths.push_back(web_app_dir);
   std::vector<base::FilePath> out_filenames;
@@ -377,9 +376,9 @@ bool CheckAndSaveIcon(const base::FilePath& icon_file,
 
 bool CreatePlatformShortcuts(
     const base::FilePath& web_app_path,
-    const ShellIntegration::ShortcutInfo& shortcut_info,
+    const web_app::ShortcutInfo& shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info,
-    const ShellIntegration::ShortcutLocations& creation_locations,
+    const web_app::ShortcutLocations& creation_locations,
     ShortcutCreationReason creation_reason) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
@@ -420,7 +419,7 @@ bool CreatePlatformShortcuts(
 void UpdatePlatformShortcuts(
     const base::FilePath& web_app_path,
     const base::string16& old_app_title,
-    const ShellIntegration::ShortcutInfo& shortcut_info,
+    const web_app::ShortcutInfo& shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
@@ -459,7 +458,7 @@ void UpdatePlatformShortcuts(
 
 void DeletePlatformShortcuts(
     const base::FilePath& web_app_path,
-    const ShellIntegration::ShortcutInfo& shortcut_info) {
+    const web_app::ShortcutInfo& shortcut_info) {
   GetShortcutLocationsAndDeleteShortcuts(
       web_app_path, shortcut_info.profile_path, shortcut_info.title, NULL,
       NULL);
@@ -493,7 +492,7 @@ void DeleteAllShortcutsForProfile(const base::FilePath& profile_path) {
 }
 
 std::vector<base::FilePath> GetShortcutPaths(
-    const ShellIntegration::ShortcutLocations& creation_locations) {
+    const web_app::ShortcutLocations& creation_locations) {
   // Shortcut paths under which to create shortcuts.
   std::vector<base::FilePath> shortcut_paths;
   // Locations to add to shortcut_paths.
@@ -506,15 +505,15 @@ std::vector<base::FilePath> GetShortcutPaths(
       ShellUtil::SHORTCUT_LOCATION_DESKTOP
     }, {
       creation_locations.applications_menu_location ==
-          ShellIntegration::APP_MENU_LOCATION_ROOT,
+          web_app::APP_MENU_LOCATION_ROOT,
       ShellUtil::SHORTCUT_LOCATION_START_MENU_ROOT
     }, {
       creation_locations.applications_menu_location ==
-          ShellIntegration::APP_MENU_LOCATION_SUBDIR_CHROME,
+          web_app::APP_MENU_LOCATION_SUBDIR_CHROME,
       ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR
     }, {
       creation_locations.applications_menu_location ==
-          ShellIntegration::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS,
+          web_app::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS,
       ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_APPS_DIR
     }, {
       // For Win7+, |in_quick_launch_bar| indicates that we are pinning to

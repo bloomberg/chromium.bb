@@ -36,7 +36,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
-#include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/shell_integration.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
@@ -616,7 +616,7 @@ std::string GetIconName() {
 #endif
 }
 
-ShellIntegration::ShortcutLocations GetExistingShortcutLocations(
+web_app::ShortcutLocations GetExistingShortcutLocations(
     base::Environment* env,
     const base::FilePath& profile_path,
     const std::string& extension_id) {
@@ -627,7 +627,7 @@ ShellIntegration::ShortcutLocations GetExistingShortcutLocations(
                                       desktop_path);
 }
 
-ShellIntegration::ShortcutLocations GetExistingShortcutLocations(
+web_app::ShortcutLocations GetExistingShortcutLocations(
     base::Environment* env,
     const base::FilePath& profile_path,
     const std::string& extension_id,
@@ -637,7 +637,7 @@ ShellIntegration::ShortcutLocations GetExistingShortcutLocations(
   base::FilePath shortcut_filename = GetExtensionShortcutFilename(
       profile_path, extension_id);
   DCHECK(!shortcut_filename.empty());
-  ShellIntegration::ShortcutLocations locations;
+  web_app::ShortcutLocations locations;
 
   // Determine whether there is a shortcut on desktop.
   if (!desktop_path.empty()) {
@@ -655,7 +655,7 @@ ShellIntegration::ShortcutLocations GetExistingShortcutLocations(
       locations.hidden = true;
     } else {
       locations.applications_menu_location =
-          ShellIntegration::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS;
+          web_app::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS;
     }
   }
 
@@ -870,8 +870,8 @@ std::string GetDirectoryFileContents(const base::string16& title,
 }
 
 bool CreateDesktopShortcut(
-    const ShellIntegration::ShortcutInfo& shortcut_info,
-    const ShellIntegration::ShortcutLocations& creation_locations) {
+    const web_app::ShortcutInfo& shortcut_info,
+    const web_app::ShortcutLocations& creation_locations) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   base::FilePath shortcut_filename;
@@ -885,7 +885,7 @@ bool CreateDesktopShortcut(
     // The 'applications_menu_location' and 'hidden' locations are actually the
     // same place ('applications').
     if (creation_locations.applications_menu_location !=
-            ShellIntegration::APP_MENU_LOCATION_NONE ||
+            web_app::APP_MENU_LOCATION_NONE ||
         creation_locations.hidden)
       DeleteShortcutInApplicationsMenu(shortcut_filename, base::FilePath());
   } else {
@@ -922,15 +922,15 @@ bool CreateDesktopShortcut(
   }
 
   if (creation_locations.applications_menu_location !=
-          ShellIntegration::APP_MENU_LOCATION_NONE ||
+          web_app::APP_MENU_LOCATION_NONE ||
       creation_locations.hidden) {
     base::FilePath directory_filename;
     std::string directory_contents;
     switch (creation_locations.applications_menu_location) {
-      case ShellIntegration::APP_MENU_LOCATION_NONE:
-      case ShellIntegration::APP_MENU_LOCATION_ROOT:
+      case web_app::APP_MENU_LOCATION_NONE:
+      case web_app::APP_MENU_LOCATION_ROOT:
         break;
-      case ShellIntegration::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS:
+      case web_app::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS:
         directory_filename = base::FilePath(kDirectoryFilename);
         directory_contents = ShellIntegrationLinux::GetDirectoryFileContents(
             ShellIntegration::GetAppShortcutsSubdirName(), "");
@@ -950,7 +950,7 @@ bool CreateDesktopShortcut(
         icon_name,
         shortcut_info.profile_path,
         creation_locations.applications_menu_location ==
-            ShellIntegration::APP_MENU_LOCATION_NONE);
+            web_app::APP_MENU_LOCATION_NONE);
     success = CreateShortcutInApplicationsMenu(
         shortcut_filename, contents, directory_filename, directory_contents) &&
         success;

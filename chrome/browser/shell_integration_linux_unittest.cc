@@ -19,7 +19,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_path_override.h"
-#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_constants.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -167,11 +166,11 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
   // No existing shortcuts.
   {
     MockEnvironment env;
-    ShellIntegration::ShortcutLocations result =
+    web_app::ShortcutLocations result =
         ShellIntegrationLinux::GetExistingShortcutLocations(
             &env, kProfilePath, kExtensionId);
     EXPECT_FALSE(result.on_desktop);
-    EXPECT_EQ(ShellIntegration::APP_MENU_LOCATION_NONE,
+    EXPECT_EQ(web_app::APP_MENU_LOCATION_NONE,
               result.applications_menu_location);
 
     EXPECT_FALSE(result.in_quick_launch_bar);
@@ -189,11 +188,11 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
     ASSERT_FALSE(base::WriteFile(
         desktop_path.AppendASCII(kTemplateFilename),
         "", 0));
-    ShellIntegration::ShortcutLocations result =
+    web_app::ShortcutLocations result =
         ShellIntegrationLinux::GetExistingShortcutLocations(
             &env, kProfilePath, kExtensionId, desktop_path);
     EXPECT_TRUE(result.on_desktop);
-    EXPECT_EQ(ShellIntegration::APP_MENU_LOCATION_NONE,
+    EXPECT_EQ(web_app::APP_MENU_LOCATION_NONE,
               result.applications_menu_location);
 
     EXPECT_FALSE(result.in_quick_launch_bar);
@@ -212,11 +211,11 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
     ASSERT_FALSE(base::WriteFile(
         apps_path.AppendASCII(kTemplateFilename),
         "", 0));
-    ShellIntegration::ShortcutLocations result =
+    web_app::ShortcutLocations result =
         ShellIntegrationLinux::GetExistingShortcutLocations(
             &env, kProfilePath, kExtensionId);
     EXPECT_FALSE(result.on_desktop);
-    EXPECT_EQ(ShellIntegration::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS,
+    EXPECT_EQ(web_app::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS,
               result.applications_menu_location);
 
     EXPECT_FALSE(result.in_quick_launch_bar);
@@ -235,12 +234,12 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
     ASSERT_TRUE(base::WriteFile(
         apps_path.AppendASCII(kTemplateFilename),
         kNoDisplayDesktopFile, strlen(kNoDisplayDesktopFile)));
-    ShellIntegration::ShortcutLocations result =
+    web_app::ShortcutLocations result =
         ShellIntegrationLinux::GetExistingShortcutLocations(
             &env, kProfilePath, kExtensionId);
     // Doesn't count as being in applications menu.
     EXPECT_FALSE(result.on_desktop);
-    EXPECT_EQ(ShellIntegration::APP_MENU_LOCATION_NONE,
+    EXPECT_EQ(web_app::APP_MENU_LOCATION_NONE,
               result.applications_menu_location);
     EXPECT_FALSE(result.in_quick_launch_bar);
     EXPECT_TRUE(result.hidden);
@@ -266,11 +265,11 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
     ASSERT_FALSE(base::WriteFile(
         apps_path.AppendASCII(kTemplateFilename),
         "", 0));
-    ShellIntegration::ShortcutLocations result =
+    web_app::ShortcutLocations result =
         ShellIntegrationLinux::GetExistingShortcutLocations(
             &env, kProfilePath, kExtensionId, desktop_path);
     EXPECT_TRUE(result.on_desktop);
-    EXPECT_EQ(ShellIntegration::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS,
+    EXPECT_EQ(web_app::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS,
               result.applications_menu_location);
     EXPECT_FALSE(result.in_quick_launch_bar);
     EXPECT_FALSE(result.hidden);

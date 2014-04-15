@@ -43,7 +43,7 @@ TEST_F(WebApplicationTest, MAYBE_GetShortcutInfoForTab) {
   RenderViewHostTester::TestOnMessageReceived(
       rvh(),
       ChromeExtensionHostMsg_DidGetApplicationInfo(0, 0, web_app_info));
-  ShellIntegration::ShortcutInfo info;
+  web_app::ShortcutInfo info;
   web_app::GetShortcutInfoForTab(web_contents(), &info);
 
   EXPECT_EQ(title, info.title);

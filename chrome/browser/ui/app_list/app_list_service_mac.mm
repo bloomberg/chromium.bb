@@ -87,9 +87,9 @@ const NSTimeInterval kAnimationDuration = 0.2;
 // Distance towards the screen edge that the app list moves from when showing.
 const CGFloat kDistanceMovedOnShow = 20;
 
-ShellIntegration::ShortcutInfo GetAppListShortcutInfo(
+web_app::ShortcutInfo GetAppListShortcutInfo(
     const base::FilePath& profile_path) {
-  ShellIntegration::ShortcutInfo shortcut_info;
+  web_app::ShortcutInfo shortcut_info;
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
   if (channel == chrome::VersionInfo::CHANNEL_CANARY) {
     shortcut_info.title =
@@ -108,7 +108,7 @@ ShellIntegration::ShortcutInfo GetAppListShortcutInfo(
 void CreateAppListShim(const base::FilePath& profile_path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   WebApplicationInfo web_app_info;
-  ShellIntegration::ShortcutInfo shortcut_info =
+  web_app::ShortcutInfo shortcut_info =
       GetAppListShortcutInfo(profile_path);
 
   ResourceBundle& resource_bundle = ResourceBundle::GetSharedInstance();
@@ -137,7 +137,7 @@ void CreateAppListShim(const base::FilePath& profile_path) {
         *resource_bundle.GetImageSkiaNamed(IDR_APP_LIST_256));
   }
 
-  ShellIntegration::ShortcutLocations shortcut_locations;
+  web_app::ShortcutLocations shortcut_locations;
   PrefService* local_state = g_browser_process->local_state();
   int installed_version =
       local_state->GetInteger(prefs::kAppLauncherShortcutVersion);

@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_APPS_CHROME_NATIVE_APP_WINDOW_VIEWS_WIN_H_
 #define CHROME_BROWSER_UI_VIEWS_APPS_CHROME_NATIVE_APP_WINDOW_VIEWS_WIN_H_
 
-#include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/views/apps/chrome_native_app_window_views.h"
+
+namespace web_app {
+struct ShortcutInfo;
+}
 
 // Windows-specific parts of the views-backed native shell window implementation
 // for packaged apps.
@@ -18,7 +21,7 @@ class ChromeNativeAppWindowViewsWin : public ChromeNativeAppWindowViews {
   void ActivateParentDesktopIfNecessary();
 
   void OnShortcutInfoLoaded(
-      const ShellIntegration::ShortcutInfo& shortcut_info);
+      const web_app::ShortcutInfo& shortcut_info);
 
   HWND GetNativeAppWindowHWND() const;
 

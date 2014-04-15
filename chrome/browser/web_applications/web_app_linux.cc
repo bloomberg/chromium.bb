@@ -15,9 +15,9 @@ namespace internals {
 
 bool CreatePlatformShortcuts(
     const base::FilePath& web_app_path,
-    const ShellIntegration::ShortcutInfo& shortcut_info,
+    const web_app::ShortcutInfo& shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info,
-    const ShellIntegration::ShortcutLocations& creation_locations,
+    const web_app::ShortcutLocations& creation_locations,
     ShortcutCreationReason /*creation_reason*/) {
 #if !defined(OS_CHROMEOS)
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
@@ -30,7 +30,7 @@ bool CreatePlatformShortcuts(
 
 void DeletePlatformShortcuts(
     const base::FilePath& web_app_path,
-    const ShellIntegration::ShortcutInfo& shortcut_info) {
+    const web_app::ShortcutInfo& shortcut_info) {
 #if !defined(OS_CHROMEOS)
   ShellIntegrationLinux::DeleteDesktopShortcuts(shortcut_info.profile_path,
       shortcut_info.extension_id);
@@ -40,14 +40,14 @@ void DeletePlatformShortcuts(
 void UpdatePlatformShortcuts(
     const base::FilePath& web_app_path,
     const base::string16& /*old_app_title*/,
-    const ShellIntegration::ShortcutInfo& shortcut_info,
+    const web_app::ShortcutInfo& shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
   scoped_ptr<base::Environment> env(base::Environment::Create());
 
   // Find out whether shortcuts are already installed.
-  ShellIntegration::ShortcutLocations creation_locations =
+  web_app::ShortcutLocations creation_locations =
       ShellIntegrationLinux::GetExistingShortcutLocations(
           env.get(), shortcut_info.profile_path, shortcut_info.extension_id);
   // Always create a hidden shortcut in applications if a visible one is not

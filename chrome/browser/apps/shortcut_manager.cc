@@ -39,10 +39,10 @@ namespace {
 // not already one present.
 void CreateShortcutsInApplicationsMenu(Profile* profile,
                                        const Extension* app) {
-  ShellIntegration::ShortcutLocations creation_locations;
+  web_app::ShortcutLocations creation_locations;
   // Create the shortcut in the Chrome Apps subdir.
   creation_locations.applications_menu_location =
-      ShellIntegration::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS;
+      web_app::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS;
   web_app::CreateShortcuts(
       web_app::SHORTCUT_CREATION_AUTOMATED, creation_locations, profile, app);
 }

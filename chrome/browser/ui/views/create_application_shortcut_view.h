@@ -76,7 +76,7 @@ class CreateApplicationShortcutView : public views::DialogDelegateView,
   views::Checkbox* quick_launch_check_box_;
 
   // Target shortcut info.
-  ShellIntegration::ShortcutInfo shortcut_info_;
+  web_app::ShortcutInfo shortcut_info_;
   // If false, the shortcut will be created in the root level of the Start Menu.
   bool create_in_chrome_apps_subdir_;
 
@@ -133,7 +133,7 @@ class CreateChromeApplicationShortcutView
 
  private:
   void OnShortcutInfoLoaded(
-      const ShellIntegration::ShortcutInfo& shortcut_info);
+      const web_app::ShortcutInfo& shortcut_info);
 
   const extensions::Extension* app_;
   base::Closure close_callback_;

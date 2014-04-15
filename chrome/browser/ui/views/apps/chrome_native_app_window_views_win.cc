@@ -36,7 +36,7 @@ namespace {
 void CreateIconAndSetRelaunchDetails(
     const base::FilePath& web_app_path,
     const base::FilePath& icon_file,
-    const ShellIntegration::ShortcutInfo& shortcut_info,
+    const web_app::ShortcutInfo& shortcut_info,
     const HWND hwnd) {
   DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
@@ -88,7 +88,7 @@ void ChromeNativeAppWindowViewsWin::ActivateParentDesktopIfNecessary() {
 }
 
 void ChromeNativeAppWindowViewsWin::OnShortcutInfoLoaded(
-    const ShellIntegration::ShortcutInfo& shortcut_info) {
+    const web_app::ShortcutInfo& shortcut_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   HWND hwnd = GetNativeAppWindowHWND();

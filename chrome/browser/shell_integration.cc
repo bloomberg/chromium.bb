@@ -37,22 +37,6 @@ ShellIntegration::DefaultWebClientSetPermission
   return CanSetAsDefaultBrowser();
 }
 
-ShellIntegration::ShortcutInfo::ShortcutInfo()
-    : is_platform_app(false) {
-}
-
-ShellIntegration::ShortcutInfo::~ShortcutInfo() {}
-
-ShellIntegration::ShortcutLocations::ShortcutLocations()
-    : on_desktop(false),
-      applications_menu_location(APP_MENU_LOCATION_NONE),
-      in_quick_launch_bar(false)
-#if defined(OS_POSIX)
-      , hidden(false)
-#endif
-      {
-}
-
 static const struct ShellIntegration::AppModeInfo* gAppModeInfo = NULL;
 
 // static
