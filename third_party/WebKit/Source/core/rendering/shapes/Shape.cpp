@@ -202,7 +202,8 @@ PassOwnPtr<Shape> Shape::createRasterShape(Image* image, float threshold, const 
                 if (startX == -1 && alphaAboveThreshold) {
                     startX = x;
                 } else if (startX != -1 && (!alphaAboveThreshold || x == imageRect.width() - 1)) {
-                    intervals->intervalAt(y + imageRect.y()).unite(IntShapeInterval(startX + imageRect.x(), x + imageRect.x()));
+                    int endX = alphaAboveThreshold ? x + 1 : x;
+                    intervals->intervalAt(y + imageRect.y()).unite(IntShapeInterval(startX + imageRect.x(), endX + imageRect.x()));
                     startX = -1;
                 }
             }

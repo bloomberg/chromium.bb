@@ -151,7 +151,10 @@ void RasterShape::getExcludedIntervals(LayoutUnit logicalTop, LayoutUnit logical
     for (int y = y1; y < y2;  y++)
         excludedInterval.unite(intervals.intervalAt(y));
 
-    result.append(LineSegment(excludedInterval.x1(), excludedInterval.x2() + 1));
+    // Note: |marginIntervals()| returns end-point exclusive
+    // intervals. |excludedInterval.x2()| contains the left-most pixel
+    // offset to the right of the calculated union.
+    result.append(LineSegment(excludedInterval.x1(), excludedInterval.x2()));
 }
 
 } // namespace WebCore
