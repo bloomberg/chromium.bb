@@ -16,5 +16,11 @@ if (is_linux) {
     packages = [ "nss" ]
     extra_args = [ "-v", "-lssl3" ]
   }
+} else {
+  # TODO(brettw) write these for non-Linux platforms.
+  source_set("nspr") {
+  }
+  source_set("nss") {
+  }
 }
 

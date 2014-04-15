@@ -215,7 +215,7 @@ component("gesture_detection") {
   }
 
   if (!use_aura && !is_android) {
-    sources -= [ "gesture_detection/gesture_config_helper.cc" ]
+    sources -= [ "gesture_detection/gesture_config_helper_aura.cc" ]
   }
 }
 
