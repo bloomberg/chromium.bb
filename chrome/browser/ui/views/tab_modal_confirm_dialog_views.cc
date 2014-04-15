@@ -57,7 +57,8 @@ TabModalConfirmDialogViews::TabModalConfirmDialogViews(
   DCHECK(modal_delegate);
   dialog_ = views::Widget::CreateWindowAsFramelessChild(
       this, modal_delegate->GetWebContentsModalDialogHost()->GetHostView());
-  web_contents_modal_dialog_manager->ShowDialog(dialog_->GetNativeView());
+  web_contents_modal_dialog_manager->ShowModalDialog(
+      dialog_->GetNativeView());
   delegate_->set_close_delegate(this);
 }
 

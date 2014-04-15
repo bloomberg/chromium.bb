@@ -111,7 +111,8 @@ SignedCertificateTimestampsViews::SignedCertificateTimestampsViews(
   DCHECK(modal_delegate);
   views::Widget* window = views::Widget::CreateWindowAsFramelessChild(
       this, modal_delegate->GetWebContentsModalDialogHost()->GetHostView());
-  web_contents_modal_dialog_manager->ShowDialog(window->GetNativeView());
+  web_contents_modal_dialog_manager->ShowModalDialog(
+      window->GetNativeView());
 }
 
 SignedCertificateTimestampsViews::~SignedCertificateTimestampsViews() {}

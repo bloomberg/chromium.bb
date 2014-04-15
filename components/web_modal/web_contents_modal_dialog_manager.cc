@@ -33,18 +33,17 @@ void WebContentsModalDialogManager::SetDelegate(
   }
 }
 
-// TODO(gbillock): Rename to ShowWebModalDialog()
-void WebContentsModalDialogManager::ShowDialog(
+void WebContentsModalDialogManager::ShowModalDialog(
     NativeWebContentsModalDialog dialog) {
-  scoped_ptr<NativeWebContentsModalDialogManager> mgr(
-      CreateNativeManager(this));
+  scoped_ptr<SingleWebContentsDialogManager> mgr(
+      CreateNativeWebModalManager(this));
   ShowDialogWithManager(dialog, mgr.Pass());
 }
 
 // TODO(gbillock): Maybe "ShowBubbleWithManager"?
 void WebContentsModalDialogManager::ShowDialogWithManager(
     NativeWebContentsModalDialog dialog,
-    scoped_ptr<NativeWebContentsModalDialogManager> manager) {
+    scoped_ptr<SingleWebContentsDialogManager> manager) {
   if (delegate_)
     manager->HostChanged(delegate_->GetWebContentsModalDialogHost());
   child_dialogs_.push_back(new DialogState(dialog, manager.Pass()));
@@ -108,7 +107,7 @@ WebContentsModalDialogManager::WebContentsModalDialogManager(
 
 WebContentsModalDialogManager::DialogState::DialogState(
     NativeWebContentsModalDialog dialog,
-    scoped_ptr<NativeWebContentsModalDialogManager> mgr)
+    scoped_ptr<SingleWebContentsDialogManager> mgr)
     : dialog(dialog),
       manager(mgr.release()),
 #if defined(USE_AURA)

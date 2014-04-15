@@ -5,14 +5,14 @@
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
-#include "components/web_modal/native_web_contents_modal_dialog_manager.h"
+#include "components/web_modal/single_web_contents_dialog_manager.h"
 
 using web_modal::NativeWebContentsModalDialog;
 
 namespace {
 
 class NativeWebContentsModalDialogManagerCocoa
-    : public web_modal::NativeWebContentsModalDialogManager {
+    : public web_modal::SingleWebContentsDialogManager {
  public:
   NativeWebContentsModalDialogManagerCocoa() {
   }
@@ -20,7 +20,7 @@ class NativeWebContentsModalDialogManagerCocoa
   virtual ~NativeWebContentsModalDialogManagerCocoa() {
   }
 
-  // NativeWebContentsModalDialogManager overrides
+  // SingleWebContentsDialogManager overrides
   virtual void ManageDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
   }
 
@@ -60,9 +60,9 @@ class NativeWebContentsModalDialogManagerCocoa
 
 namespace web_modal {
 
-NativeWebContentsModalDialogManager*
-    WebContentsModalDialogManager::CreateNativeManager(
-        NativeWebContentsModalDialogManagerDelegate* native_delegate) {
+SingleWebContentsDialogManager*
+    WebContentsModalDialogManager::CreateNativeWebModalManager(
+        SingleWebContentsDialogManagerDelegate* native_delegate) {
   return new NativeWebContentsModalDialogManagerCocoa;
 }
 

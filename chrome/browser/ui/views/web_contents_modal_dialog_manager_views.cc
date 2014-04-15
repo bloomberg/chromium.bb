@@ -7,7 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
-#include "components/web_modal/native_web_contents_modal_dialog_manager.h"
+#include "components/web_modal/single_web_contents_dialog_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/web_contents_view.h"
@@ -36,20 +36,20 @@
 #endif
 
 using web_modal::NativeWebContentsModalDialog;
-using web_modal::NativeWebContentsModalDialogManager;
-using web_modal::NativeWebContentsModalDialogManagerDelegate;
+using web_modal::SingleWebContentsDialogManager;
+using web_modal::SingleWebContentsDialogManagerDelegate;
 using web_modal::WebContentsModalDialogHost;
 using web_modal::ModalDialogHostObserver;
 
 namespace {
 
 class NativeWebContentsModalDialogManagerViews
-    : public NativeWebContentsModalDialogManager,
+    : public SingleWebContentsDialogManager,
       public ModalDialogHostObserver,
       public views::WidgetObserver {
  public:
   NativeWebContentsModalDialogManagerViews(
-      NativeWebContentsModalDialogManagerDelegate* native_delegate)
+      SingleWebContentsDialogManagerDelegate* native_delegate)
       : native_delegate_(native_delegate),
         host_(NULL) {
   }
@@ -65,7 +65,7 @@ class NativeWebContentsModalDialogManagerViews
     }
   }
 
-  // NativeWebContentsModalDialogManager overrides
+  // SingleWebContentsDialogManager overrides
   virtual void ManageDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
     views::Widget* widget = GetWidget(dialog);
     widget->AddObserver(this);
@@ -230,7 +230,7 @@ class NativeWebContentsModalDialogManagerViews
     native_delegate_->WillClose(widget->GetNativeView());
   }
 
-  NativeWebContentsModalDialogManagerDelegate* native_delegate_;
+  SingleWebContentsDialogManagerDelegate* native_delegate_;
   WebContentsModalDialogHost* host_;
   std::set<views::Widget*> observed_widgets_;
   std::set<views::Widget*> shown_widgets_;
@@ -242,9 +242,9 @@ class NativeWebContentsModalDialogManagerViews
 
 namespace web_modal {
 
-NativeWebContentsModalDialogManager* WebContentsModalDialogManager::
-CreateNativeManager(
-    NativeWebContentsModalDialogManagerDelegate* native_delegate) {
+SingleWebContentsDialogManager* WebContentsModalDialogManager::
+CreateNativeWebModalManager(
+    SingleWebContentsDialogManagerDelegate* native_delegate) {
   return new NativeWebContentsModalDialogManagerViews(native_delegate);
 }
 

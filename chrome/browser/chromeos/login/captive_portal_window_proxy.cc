@@ -67,7 +67,8 @@ void CaptivePortalWindowProxy::Show() {
   captive_portal_view->Init();
 
   widget_->AddObserver(this);
-  web_contents_modal_dialog_manager->ShowDialog(widget_->GetNativeView());
+  web_contents_modal_dialog_manager->ShowModalDialog(
+      widget_->GetNativeView());
   DCHECK(GetState() == STATE_DISPLAYED);
 }
 

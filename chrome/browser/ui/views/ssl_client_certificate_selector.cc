@@ -155,7 +155,8 @@ void SSLClientCertificateSelector::Init() {
   DCHECK(modal_delegate);
   window_ = views::Widget::CreateWindowAsFramelessChild(
       this, modal_delegate->GetWebContentsModalDialogHost()->GetHostView());
-  web_contents_modal_dialog_manager->ShowDialog(window_->GetNativeView());
+  web_contents_modal_dialog_manager->ShowModalDialog(
+      window_->GetNativeView());
 
   // Select the first row automatically.  This must be done after the dialog has
   // been created.

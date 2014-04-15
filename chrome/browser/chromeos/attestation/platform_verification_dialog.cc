@@ -57,7 +57,8 @@ void PlatformVerificationDialog::ShowDialog(
       web_contents_modal_dialog_manager->delegate();
   views::Widget* widget = views::Widget::CreateWindowAsFramelessChild(
       dialog, modal_delegate->GetWebContentsModalDialogHost()->GetHostView());
-  web_contents_modal_dialog_manager->ShowDialog(widget->GetNativeView());
+  web_contents_modal_dialog_manager->ShowModalDialog(
+      widget->GetNativeView());
   widget->Show();
 }
 

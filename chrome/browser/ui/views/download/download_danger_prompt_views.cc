@@ -357,7 +357,8 @@ DownloadDangerPrompt* DownloadDangerPrompt::Create(
   views::Widget* dialog = views::Widget::CreateWindowAsFramelessChild(
       download_danger_prompt,
       modal_delegate->GetWebContentsModalDialogHost()->GetHostView());
-  web_contents_modal_dialog_manager->ShowDialog(dialog->GetNativeView());
+  web_contents_modal_dialog_manager->ShowModalDialog(
+      dialog->GetNativeView());
 
   return download_danger_prompt;
 }

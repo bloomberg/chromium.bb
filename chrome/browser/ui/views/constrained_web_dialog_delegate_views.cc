@@ -213,7 +213,8 @@ ConstrainedWebDialogDelegate* CreateConstrainedWebDialog(
   views::Widget* window = views::Widget::CreateWindowAsFramelessChild(
       constrained_delegate,
       modal_delegate->GetWebContentsModalDialogHost()->GetHostView());
-  web_contents_modal_dialog_manager->ShowDialog(window->GetNativeView());
+  web_contents_modal_dialog_manager->ShowModalDialog(
+      window->GetNativeView());
   constrained_delegate->SetWindow(window);
   return constrained_delegate;
 }

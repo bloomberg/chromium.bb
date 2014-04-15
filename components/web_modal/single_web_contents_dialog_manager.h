@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_WEB_MODAL_NATIVE_WEB_CONTENTS_MODAL_DIALOG_MANAGER_H_
-#define COMPONENTS_WEB_MODAL_NATIVE_WEB_CONTENTS_MODAL_DIALOG_MANAGER_H_
+#ifndef COMPONENTS_WEB_MODAL_SINGLE_WEB_CONTENTS_DIALOG_MANAGER_H_
+#define COMPONENTS_WEB_MODAL_SINGLE_WEB_CONTENTS_DIALOG_MANAGER_H_
 
 #include "components/web_modal/native_web_contents_modal_dialog.h"
 
@@ -15,12 +15,12 @@ namespace web_modal {
 
 class WebContentsModalDialogHost;
 
-// Interface from NativeWebContentsModalDialogManager to
+// Interface from SingleWebContentsDialogManager to
 // WebContentsModalDialogManager.
-class NativeWebContentsModalDialogManagerDelegate {
+class SingleWebContentsDialogManagerDelegate {
  public:
-  NativeWebContentsModalDialogManagerDelegate() {}
-  virtual ~NativeWebContentsModalDialogManagerDelegate() {}
+  SingleWebContentsDialogManagerDelegate() {}
+  virtual ~SingleWebContentsDialogManagerDelegate() {}
 
   virtual content::WebContents* GetWebContents() const = 0;
 
@@ -29,15 +29,14 @@ class NativeWebContentsModalDialogManagerDelegate {
   virtual void WillClose(NativeWebContentsModalDialog dialog) = 0;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(NativeWebContentsModalDialogManagerDelegate);
+  DISALLOW_COPY_AND_ASSIGN(SingleWebContentsDialogManagerDelegate);
 };
 
 // Provides an interface for platform-specific UI implementation for the web
 // contents modal dialog.
-// TODO(gbillock): perhaps rename to "SingleWebContentsDialogManager"
-class NativeWebContentsModalDialogManager {
+class SingleWebContentsDialogManager {
  public:
-  virtual ~NativeWebContentsModalDialogManager() {}
+  virtual ~SingleWebContentsDialogManager() {}
 
   // Starts management of the modal aspects of the dialog.  This function should
   // also register to be notified when the dialog is closing, so that it can
@@ -66,12 +65,12 @@ class NativeWebContentsModalDialogManager {
   virtual void HostChanged(WebContentsModalDialogHost* new_host) = 0;
 
  protected:
-  NativeWebContentsModalDialogManager() {}
+  SingleWebContentsDialogManager() {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(NativeWebContentsModalDialogManager);
+  DISALLOW_COPY_AND_ASSIGN(SingleWebContentsDialogManager);
 };
 
 }  // namespace web_modal
 
-#endif  // COMPONENTS_WEB_MODAL_NATIVE_WEB_CONTENTS_MODAL_DIALOG_MANAGER_H_
+#endif  // COMPONENTS_WEB_MODAL_SINGLE_WEB_CONTENTS_DIALOG_MANAGER_H_

@@ -104,13 +104,13 @@ class TabStripModelTestIDUserData : public base::SupportsUserData::Data {
   int id_;
 };
 
-class DummyNativeWebContentsModalDialogManager
-    : public web_modal::NativeWebContentsModalDialogManager {
+class DummySingleWebContentsDialogManager
+    : public web_modal::SingleWebContentsDialogManager {
  public:
-  explicit DummyNativeWebContentsModalDialogManager(
-      web_modal::NativeWebContentsModalDialogManagerDelegate* delegate)
+  explicit DummySingleWebContentsDialogManager(
+      web_modal::SingleWebContentsDialogManagerDelegate* delegate)
       : delegate_(delegate) {}
-  virtual ~DummyNativeWebContentsModalDialogManager() {}
+  virtual ~DummySingleWebContentsDialogManager() {}
 
   virtual void ManageDialog(NativeWebContentsModalDialog dialog) OVERRIDE {}
   virtual void ShowDialog(NativeWebContentsModalDialog dialog) OVERRIDE {}
@@ -124,9 +124,9 @@ class DummyNativeWebContentsModalDialogManager
       web_modal::WebContentsModalDialogHost* new_host) OVERRIDE {}
 
  private:
-  web_modal::NativeWebContentsModalDialogManagerDelegate* delegate_;
+  web_modal::SingleWebContentsDialogManagerDelegate* delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(DummyNativeWebContentsModalDialogManager);
+  DISALLOW_COPY_AND_ASSIGN(DummySingleWebContentsDialogManager);
 };
 
 // Test Browser-like class for TabStripModelTest.TabBlockedState.
@@ -2557,20 +2557,20 @@ TEST_F(TabStripModelTest, TabBlockedState) {
   TabStripModel strip_dst(&dummy_tab_strip_delegate, profile());
   TabBlockedStateTestBrowser browser_dst(&strip_dst);
 
-  // Setup a NativeWebContentsModalDialogManager for tab |contents2|.
+  // Setup a SingleWebContentsDialogManager for tab |contents2|.
   web_modal::WebContentsModalDialogManager* modal_dialog_manager =
       web_modal::WebContentsModalDialogManager::FromWebContents(contents2);
   web_modal::WebContentsModalDialogManager::TestApi test_api(
       modal_dialog_manager);
 
   // Show a dialog that blocks tab |contents2|.
-  // DummyNativeWebContentsModalDialogManager doesn't care about the
+  // DummySingleWebContentsDialogManager doesn't care about the
   // NativeWebContentsModalDialog value, so any dummy value works.
-  DummyNativeWebContentsModalDialogManager* native_manager =
-      new DummyNativeWebContentsModalDialogManager(modal_dialog_manager);
+  DummySingleWebContentsDialogManager* native_manager =
+      new DummySingleWebContentsDialogManager(modal_dialog_manager);
   modal_dialog_manager->ShowDialogWithManager(
       reinterpret_cast<NativeWebContentsModalDialog>(0),
-      scoped_ptr<web_modal::NativeWebContentsModalDialogManager>(
+      scoped_ptr<web_modal::SingleWebContentsDialogManager>(
           native_manager).Pass());
   EXPECT_TRUE(strip_src.IsTabBlocked(1));
 
