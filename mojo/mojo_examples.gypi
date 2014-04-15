@@ -44,7 +44,6 @@
         '../skia/skia.gyp:skia',
         '../gpu/gpu.gyp:gles2_implementation',
         'mojo_gles2',
-        'mojo_system',
       ],
       'sources': [
         'examples/compositor_app/mojo_context_provider.cc',
@@ -65,7 +64,7 @@
         'mojo_gles2',
         'mojo_native_viewport_bindings',
         'mojo_shell_client',
-        'mojo_system',
+        'mojo_system_impl',
       ],
       'sources': [
         'examples/compositor_app/compositor_app.cc',
@@ -94,7 +93,7 @@
         'mojo_gles2',
         'mojo_native_viewport_bindings',
         'mojo_shell_client',
-        'mojo_system',
+        'mojo_system_impl',
       ],
       'defines': [
         # We don't really want to export. We could change how
@@ -215,7 +214,7 @@
             'mojo_environment_chromium',
             'mojo_gles2',
             'mojo_shell_client',
-            'mojo_system',
+            'mojo_system_impl'
           ],
           'sources': [
             'examples/aura_demo/aura_demo.cc',
@@ -240,11 +239,9 @@
           'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
           'export_dependent_settings': [
             'mojo_bindings',
-            'mojo_system',
           ],
           'dependencies': [
             'mojo_bindings',
-            'mojo_system',
           ],
         },
         {
@@ -266,7 +263,7 @@
             'mojo_gles2',
             'mojo_launcher_bindings',
             'mojo_shell_client',
-            'mojo_system',
+            'mojo_system_impl',
           ],
           'sources': [
             'examples/launcher/launcher.cc',
@@ -291,11 +288,9 @@
           'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
           'export_dependent_settings': [
             'mojo_bindings',
-            'mojo_system',
           ],
           'dependencies': [
             'mojo_bindings',
-            'mojo_system',
           ],
         },
         {
@@ -309,7 +304,7 @@
             'mojo_launcher_bindings',
             'mojo_native_viewport_bindings',
             'mojo_shell_client',
-            'mojo_system',
+            'mojo_system_impl',
             'mojo_view_manager_bindings',
           ],
           'sources': [

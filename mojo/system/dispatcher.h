@@ -22,7 +22,7 @@ namespace mojo {
 namespace system {
 
 class Channel;
-class CoreImpl;
+class Core;
 class Dispatcher;
 class DispatcherTransport;
 class HandleTable;
@@ -135,9 +135,9 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
   // has been called.
   class HandleTableAccess {
    private:
-    friend class CoreImpl;
+    friend class Core;
     friend class HandleTable;
-    // Tests also need this, to avoid needing |CoreImpl|.
+    // Tests also need this, to avoid needing |Core|.
     friend DispatcherTransport test::DispatcherTryStartTransport(Dispatcher*);
 
     // This must be called under the handle table lock and only if the handle

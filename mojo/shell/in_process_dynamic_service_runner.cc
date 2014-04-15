@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/scoped_native_library.h"
+#include "mojo/public/platform/native/system_thunks.h"
 
 namespace mojo {
 namespace shell {
@@ -61,6 +62,20 @@ void InProcessDynamicServiceRunner::Run() {
       LOG(ERROR) << "Failed to load library (error: " << error.ToString()
                  << ")";
       break;
+    }
+
+    MojoSetSystemThunksFn mojo_set_system_thunks_fn =
+        reinterpret_cast<MojoSetSystemThunksFn>(app_library.GetFunctionPointer(
+            "MojoSetSystemThunks"));
+    if (mojo_set_system_thunks_fn) {
+      MojoSystemThunks system_thunks = MojoMakeSystemThunks();
+      size_t expected_size = mojo_set_system_thunks_fn(&system_thunks);
+      if (expected_size > sizeof(MojoSystemThunks)) {
+        LOG(ERROR)
+            << "Invalid DSO. Expected MojoSystemThunks size: "
+            << expected_size;
+        break;
+      }
     }
 
     typedef MojoResult (*MojoMainFunction)(MojoHandle);

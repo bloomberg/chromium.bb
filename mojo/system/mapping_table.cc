@@ -16,7 +16,7 @@ MappingTable::MappingTable() {
 
 MappingTable::~MappingTable() {
   // This should usually not be reached (the only instance should be owned by
-  // the singleton |CoreImpl|, which lives forever), except in tests.
+  // the singleton |Core|, which lives forever), except in tests.
 }
 
 MojoResult MappingTable::AddMapping(

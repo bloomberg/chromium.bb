@@ -181,7 +181,7 @@ MojoResult MessagePipe::EnqueueMessage(
 
     // You're not allowed to send either handle to a message pipe over the
     // message pipe, so check for this. (The case of trying to write a handle to
-    // itself is taken care of by |CoreImpl|. That case kind of makes sense, but
+    // itself is taken care of by |Core|. That case kind of makes sense, but
     // leads to complications if, e.g., both sides try to do the same thing with
     // their respective handles simultaneously. The other case, of trying to
     // write the peer handle to a handle, doesn't make sense -- since no handle
@@ -192,8 +192,8 @@ MojoResult MessagePipe::EnqueueMessage(
       if ((*transports)[i].GetType() == Dispatcher::kTypeMessagePipe) {
         MessagePipeDispatcherTransport mp_transport((*transports)[i]);
         if (mp_transport.GetMessagePipe() == this) {
-          // The other case should have been disallowed by |CoreImpl|. (Note:
-          // |port| is the peer port of the handle given to |WriteMessage()|.)
+          // The other case should have been disallowed by |Core|. (Note: |port|
+          // is the peer port of the handle given to |WriteMessage()|.)
           DCHECK_EQ(mp_transport.GetPort(), port);
           return MOJO_RESULT_INVALID_ARGUMENT;
         }
