@@ -7706,6 +7706,20 @@ class GLES2DecoderVertexArraysOESTest : public GLES2DecoderWithShaderTest {
               ExecuteImmediateCmd(cmd, sizeof(temp)));
   }
 
+  void DeleteBoundVertexArraysOESImmediateValidArgs() {
+    BindVertexArrayOESValidArgs();
+
+    AddExpectationsForDeleteBoundVertexArraysOES();
+    DeleteVertexArraysOESImmediate& cmd =
+        *GetImmediateAs<DeleteVertexArraysOESImmediate>();
+    cmd.Init(1, &client_vertexarray_id_);
+    EXPECT_EQ(error::kNoError,
+              ExecuteImmediateCmd(cmd, sizeof(client_vertexarray_id_)));
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
+    EXPECT_TRUE(GetVertexArrayInfo(client_vertexarray_id_) == NULL);
+    vertex_array_deleted_manually_ = true;
+  }
+
   void IsVertexArrayOESValidArgs() {
     IsVertexArrayOES cmd;
     cmd.Init(client_vertexarray_id_, shared_memory_id_, shared_memory_offset_);
@@ -7822,6 +7836,15 @@ TEST_F(GLES2DecoderVertexArraysOESTest,
 TEST_F(GLES2DecoderEmulatedVertexArraysOESTest,
     DeleteVertexArraysOESImmediateInvalidArgs) {
   DeleteVertexArraysOESImmediateInvalidArgs();
+}
+
+TEST_F(GLES2DecoderVertexArraysOESTest,
+       DeleteBoundVertexArraysOESImmediateValidArgs) {
+  DeleteBoundVertexArraysOESImmediateValidArgs();
+}
+TEST_F(GLES2DecoderEmulatedVertexArraysOESTest,
+       DeleteBoundVertexArraysOESImmediateValidArgs) {
+  DeleteBoundVertexArraysOESImmediateValidArgs();
 }
 
 TEST_F(GLES2DecoderVertexArraysOESTest, IsVertexArrayOESValidArgs) {

@@ -987,6 +987,12 @@ void GLES2DecoderTestBase::AddExpectationsForDeleteVertexArraysOES(){
   }
 }
 
+void GLES2DecoderTestBase::AddExpectationsForDeleteBoundVertexArraysOES() {
+  // Expectations are the same as a delete, followed by binding VAO 0.
+  AddExpectationsForDeleteVertexArraysOES();
+  AddExpectationsForBindVertexArrayOES();
+}
+
 void GLES2DecoderTestBase::AddExpectationsForBindVertexArrayOES() {
   if (group_->feature_info()->feature_flags().native_vertex_array_object) {
     EXPECT_CALL(*gl_, BindVertexArrayOES(_))

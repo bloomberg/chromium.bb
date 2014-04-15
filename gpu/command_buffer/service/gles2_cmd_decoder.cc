@@ -9631,7 +9631,7 @@ void GLES2DecoderImpl::DeleteVertexArraysOESHelper(
         GetVertexAttribManager(client_ids[ii]);
     if (vao && !vao->IsDeleted()) {
       if (state_.vertex_attrib_manager.get() == vao) {
-        state_.vertex_attrib_manager = default_vertex_attrib_manager_;
+        DoBindVertexArrayOES(0);
       }
       RemoveVertexAttribManager(client_ids[ii]);
     }

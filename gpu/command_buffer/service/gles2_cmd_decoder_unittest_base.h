@@ -354,6 +354,7 @@ class GLES2DecoderTestBase : public testing::Test {
 
   void AddExpectationsForGenVertexArraysOES();
   void AddExpectationsForDeleteVertexArraysOES();
+  void AddExpectationsForDeleteBoundVertexArraysOES();
   void AddExpectationsForBindVertexArrayOES();
   void AddExpectationsForRestoreAttribState(GLuint attrib);
 
