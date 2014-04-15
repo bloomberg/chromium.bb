@@ -82,11 +82,6 @@ int WebInputElement::maxLength() const
     return constUnwrap<HTMLInputElement>()->maxLength();
 }
 
-bool WebInputElement::isActivatedSubmit() const
-{
-    return constUnwrap<HTMLInputElement>()->isActivatedSubmit();
-}
-
 void WebInputElement::setActivatedSubmit(bool activated)
 {
     unwrap<HTMLInputElement>()->setActivatedSubmit(activated);

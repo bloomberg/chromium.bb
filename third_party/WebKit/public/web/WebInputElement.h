@@ -70,7 +70,6 @@ namespace blink {
         BLINK_EXPORT bool isRadioButton() const;
         BLINK_EXPORT bool isCheckbox() const;
         BLINK_EXPORT int maxLength() const;
-        BLINK_EXPORT bool isActivatedSubmit() const;
         BLINK_EXPORT void setActivatedSubmit(bool);
         BLINK_EXPORT int size() const;
         BLINK_EXPORT void setChecked(bool, bool sendEvents = false);

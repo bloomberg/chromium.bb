@@ -105,6 +105,9 @@ public:
     // Returns direction of text of element.
     BLINK_EXPORT WebString directionForFormData() const;
 
+    // Returns true if sumit is activated.
+    BLINK_EXPORT bool isActivatedSubmit() const;
+
     // Returns the name that should be used for the specified |element| when
     // storing autofill data.  This is either the field name or its id, an empty
     // string if it has no name and no id.

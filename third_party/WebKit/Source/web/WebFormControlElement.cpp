@@ -178,6 +178,11 @@ WebString WebFormControlElement::directionForFormData() const
     return WebString();
 }
 
+bool WebFormControlElement::isActivatedSubmit() const
+{
+    return constUnwrap<HTMLFormControlElement>()->isActivatedSubmit();
+}
+
 WebFormElement WebFormControlElement::form() const
 {
     return WebFormElement(constUnwrap<HTMLFormControlElement>()->form());
