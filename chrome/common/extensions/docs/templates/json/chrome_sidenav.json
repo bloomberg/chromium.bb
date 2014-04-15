@@ -307,7 +307,7 @@
                 "title": "What Are Chrome Apps?",
                 "href": "/apps/about_apps"
               },
-	      {
+              {
                 "title": "Create Your First App",
                 "href": "/apps/first_app"
               },
@@ -370,7 +370,7 @@
           {
             "title": "Develop in the Cloud",
             "href": "/apps/offline_apps",
-      "items": [
+            "items": [
               {
                 "title": "Offline First",
                 "href": "/apps/offline_apps"
@@ -440,6 +440,10 @@
               {
                 "title": "Publish Your App",
                 "href": "/apps/publish_app"
+              },
+              {
+                "title": "Run Chrome Apps on Mobile",
+                "href": "/apps/chrome_apps_on_mobile"
               },
               {
                 "title": "Monetize Your App",
