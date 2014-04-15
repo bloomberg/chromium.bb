@@ -261,22 +261,35 @@ DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderView, isRenderView());
 
 class RootLayoutStateScope {
 public:
-    explicit RootLayoutStateScope(RenderView& view)
-        : m_view(view)
-        , m_rootLayoutState(view.pageLogicalHeight(), view.pageLogicalHeightChanged())
+    explicit RootLayoutStateScope(RenderObject& obj)
+        : m_view(*obj.view())
+        , m_rootLayoutState(m_view.pageLogicalHeight(), m_view.pageLogicalHeightChanged())
+        , m_isRenderView(obj.isRenderView())
     {
-        ASSERT(!m_view.m_layoutState);
-        m_view.m_layoutState = &m_rootLayoutState;
+        // If the invalidation root isn't the renderView we have to make sure it
+        // gets added correctly to LayoutState otherwise we'll lose the margins that
+        // are set in the ancestors of the roots.
+        if (m_isRenderView) {
+            ASSERT(!m_view.m_layoutState);
+            m_view.m_layoutState = &m_rootLayoutState;
+        } else {
+            m_view.pushLayoutState(obj);
+        }
     }
 
     ~RootLayoutStateScope()
     {
-        ASSERT(m_view.m_layoutState == &m_rootLayoutState);
-        m_view.m_layoutState = 0;
+        if (m_isRenderView) {
+            ASSERT(m_view.m_layoutState == &m_rootLayoutState);
+            m_view.m_layoutState = 0;
+        } else {
+            m_view.popLayoutState();
+        }
     }
 private:
     RenderView& m_view;
     LayoutState m_rootLayoutState;
+    bool m_isRenderView;
 };
 
 // Stack-based class to assist with LayoutState push/pop
