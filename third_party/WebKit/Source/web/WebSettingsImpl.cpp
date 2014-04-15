@@ -349,11 +349,6 @@ void WebSettingsImpl::setMaxTouchPoints(int maxTouchPoints)
     m_settings->setMaxTouchPoints(maxTouchPoints);
 }
 
-void WebSettingsImpl::setEditableLinkBehaviorNeverLive()
-{
-    // FIXME: remove once Chromium call site goes away
-}
-
 void WebSettingsImpl::setAllowUniversalAccessFromFileURLs(bool allow)
 {
     m_settings->setAllowUniversalAccessFromFileURLs(allow);

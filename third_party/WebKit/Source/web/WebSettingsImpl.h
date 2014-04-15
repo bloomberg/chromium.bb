@@ -97,7 +97,6 @@ public:
     virtual void setDeviceSupportsTouch(bool) OVERRIDE;
     virtual void setDoubleTapToZoomEnabled(bool) OVERRIDE;
     virtual void setDownloadableBinaryFontsEnabled(bool) OVERRIDE;
-    virtual void setEditableLinkBehaviorNeverLive() OVERRIDE;
     virtual void setEditingBehavior(EditingBehavior) OVERRIDE;
     virtual void setEnableScrollAnimator(bool) OVERRIDE;
     virtual void setEnableTouchAdjustment(bool) OVERRIDE;

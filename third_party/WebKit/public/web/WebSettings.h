@@ -107,8 +107,6 @@ public:
     virtual void setDeviceSupportsTouch(bool) = 0;
     virtual void setDoubleTapToZoomEnabled(bool) = 0;
     virtual void setDownloadableBinaryFontsEnabled(bool) = 0;
-    // FIXME: remove setEditableLinkBehaviorNeverLive once the call site goes away
-    virtual void setEditableLinkBehaviorNeverLive() = 0;
     virtual void setEditingBehavior(EditingBehavior) = 0;
     virtual void setEnableScrollAnimator(bool) = 0;
     virtual void setEnableTouchAdjustment(bool) = 0;
