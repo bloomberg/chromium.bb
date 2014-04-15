@@ -11,6 +11,7 @@
 // chromoting_lib.h contains MIDL-generated declarations.
 #include "remoting/host/chromoting_lib.h"
 #include "remoting/host/setup/daemon_controller.h"
+#include "remoting/host/setup/daemon_installer_win.h"
 
 namespace remoting {
 
@@ -24,6 +25,8 @@ class DaemonControllerDelegateWin : public DaemonController::Delegate {
   // DaemonController::Delegate interface.
   virtual DaemonController::State GetState() OVERRIDE;
   virtual scoped_ptr<base::DictionaryValue> GetConfig() OVERRIDE;
+  virtual void InstallHost(
+      const DaemonController::CompletionCallback& done) OVERRIDE;
   virtual void SetConfigAndStart(
       scoped_ptr<base::DictionaryValue> config,
       bool consent,
@@ -48,9 +51,12 @@ class DaemonControllerDelegateWin : public DaemonController::Delegate {
   // Releases the cached instance of the controller.
   void ReleaseController();
 
+  // Install the host and then invoke the callback.
+  void DoInstallHost(const DaemonInstallerWin::CompletionCallback& done);
+
   // Procedes with the daemon configuration if the installation succeeded,
   // otherwise reports the error.
-  void OnInstallationComplete(
+  void StartHostWithConfig(
       scoped_ptr<base::DictionaryValue> config,
       bool consent,
       const DaemonController::CompletionCallback& done,

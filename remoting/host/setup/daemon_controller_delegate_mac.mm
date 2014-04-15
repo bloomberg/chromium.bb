@@ -66,6 +66,11 @@ scoped_ptr<base::DictionaryValue> DaemonControllerDelegateMac::GetConfig() {
   return config.Pass();
 }
 
+void DaemonControllerDelegateMac::InstallHost(
+    const DaemonController::CompletionCallback& done) {
+  NOTREACHED();
+}
+
 void DaemonControllerDelegateMac::SetConfigAndStart(
     scoped_ptr<base::DictionaryValue> config,
     bool consent,

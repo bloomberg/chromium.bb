@@ -372,7 +372,9 @@ remoting.HostSetupDialog.prototype.installHost_ = function() {
     var installed =
         state != remoting.HostController.State.NOT_INSTALLED &&
         state != remoting.HostController.State.INSTALLING;
-    if (installed) {
+
+    // On Windows we perform the host installation after showing the pin form.
+    if (installed || navigator.platform == 'Win32') {
       that.flow_.switchToNextStep();
       that.updateState_();
     } else {

@@ -145,6 +145,12 @@ class HostNPScriptObject : public It2MeHost::Observer {
                             uint32_t arg_count,
                             NPVariant* result);
 
+  // Download and install the host component.
+  //   function(number) done_callback
+  bool InstallHost(const NPVariant* args,
+                   uint32_t arg_count,
+                   NPVariant* result);
+
   // Start the daemon process with the specified config. Args are:
   //   string config
   //   function(number) done_callback

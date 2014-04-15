@@ -121,6 +121,10 @@ class DaemonController : public base::RefCountedThreadSafe<DaemonController> {
     // sensitive have been filtered out.
     virtual scoped_ptr<base::DictionaryValue> GetConfig() = 0;
 
+    // Download and install the host component. |done| is invoked on the
+    // calling thread when the operation is completed.
+    virtual void InstallHost(const CompletionCallback& done) = 0;
+
     // Starts the daemon process. This may require that the daemon be
     // downloaded and installed. |done| is invoked on the calling thread when
     // the operation is completed.
@@ -171,6 +175,10 @@ class DaemonController : public base::RefCountedThreadSafe<DaemonController> {
   // sensitive have been filtered out.
   void GetConfig(const GetConfigCallback& done);
 
+  // Download and install the host component. |done| is called when the
+  // operation is finished or fails.
+  void InstallHost(const CompletionCallback& done);
+
   // Start the daemon process. This may require that the daemon be
   // downloaded and installed. |done| is called when the
   // operation is finished or fails.
@@ -216,6 +224,7 @@ class DaemonController : public base::RefCountedThreadSafe<DaemonController> {
 
   // Blocking helper methods used to call the delegate.
   void DoGetConfig(const GetConfigCallback& done);
+  void DoInstallHost(const CompletionCallback& done);
   void DoSetConfigAndStart(scoped_ptr<base::DictionaryValue> config,
                            bool consent,
                            const CompletionCallback& done);

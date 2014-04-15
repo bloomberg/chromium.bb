@@ -24,7 +24,6 @@
 #include "remoting/host/branding.h"
 // chromoting_lib.h contains MIDL-generated declarations.
 #include "remoting/host/chromoting_lib.h"
-#include "remoting/host/setup/daemon_installer_win.h"
 #include "remoting/host/usage_stats_consent.h"
 
 using base::win::ScopedBstr;
@@ -128,6 +127,11 @@ DaemonController::AsyncResult HResultToAsyncResult(
   }
 }
 
+void InvokeCompletionCallback(
+    const DaemonController::CompletionCallback& done, HRESULT hr) {
+  done.Run(HResultToAsyncResult(hr));
+}
+
 }  // namespace
 
 DaemonControllerDelegateWin::DaemonControllerDelegateWin()
@@ -193,14 +197,26 @@ scoped_ptr<base::DictionaryValue> DaemonControllerDelegateWin::GetConfig() {
       static_cast<base::DictionaryValue*>(config.release()));
 }
 
+void DaemonControllerDelegateWin::InstallHost(
+    const DaemonController::CompletionCallback& done) {
+  DoInstallHost(base::Bind(&InvokeCompletionCallback, done));
+}
+
 void DaemonControllerDelegateWin::SetConfigAndStart(
     scoped_ptr<base::DictionaryValue> config,
     bool consent,
     const DaemonController::CompletionCallback& done) {
+  DoInstallHost(
+      base::Bind(&DaemonControllerDelegateWin::StartHostWithConfig,
+                 base::Unretained(this), base::Passed(&config), consent, done));
+}
+
+void DaemonControllerDelegateWin::DoInstallHost(
+    const DaemonInstallerWin::CompletionCallback& done) {
   // Configure and start the Daemon Controller if it is installed already.
   HRESULT hr = ActivateElevatedController();
   if (SUCCEEDED(hr)) {
-    OnInstallationComplete(config.Pass(), consent, done, S_OK);
+    done.Run(S_OK);
     return;
   }
 
@@ -209,19 +225,14 @@ void DaemonControllerDelegateWin::SetConfigAndStart(
     DCHECK(!installer_);
 
     installer_ = DaemonInstallerWin::Create(
-        GetTopLevelWindow(window_handle_),
-        base::Bind(&DaemonControllerDelegateWin::OnInstallationComplete,
-                   base::Unretained(this),
-                   base::Passed(&config),
-                   consent,
-                   done));
+        GetTopLevelWindow(window_handle_), done);
     installer_->Install();
     return;
   }
 
   LOG(ERROR) << "Failed to initiate the Chromoting Host installation "
              << "(error: 0x" << std::hex << hr << std::dec << ").";
-  done.Run(HResultToAsyncResult(hr));
+  done.Run(hr);
 }
 
 void DaemonControllerDelegateWin::UpdateConfig(
@@ -229,7 +240,7 @@ void DaemonControllerDelegateWin::UpdateConfig(
     const DaemonController::CompletionCallback& done) {
   HRESULT hr = ActivateElevatedController();
   if (FAILED(hr)) {
-    done.Run(HResultToAsyncResult(hr));
+    InvokeCompletionCallback(done, hr);
     return;
   }
 
@@ -237,7 +248,7 @@ void DaemonControllerDelegateWin::UpdateConfig(
   ScopedBstr config_str(NULL);
   ConfigToString(*config, &config_str);
   if (config_str == NULL) {
-    done.Run(HResultToAsyncResult(E_OUTOFMEMORY));
+    InvokeCompletionCallback(done, E_OUTOFMEMORY);
     return;
   }
 
@@ -245,12 +256,12 @@ void DaemonControllerDelegateWin::UpdateConfig(
   hr = control_->SetOwnerWindow(
       reinterpret_cast<LONG_PTR>(GetTopLevelWindow(window_handle_)));
   if (FAILED(hr)) {
-    done.Run(HResultToAsyncResult(hr));
+    InvokeCompletionCallback(done, hr);
     return;
   }
 
   hr = control_->UpdateConfig(config_str);
-  done.Run(HResultToAsyncResult(hr));
+  InvokeCompletionCallback(done, hr);
 }
 
 void DaemonControllerDelegateWin::Stop(
@@ -259,7 +270,7 @@ void DaemonControllerDelegateWin::Stop(
   if (SUCCEEDED(hr))
     hr = control_->StopDaemon();
 
-  done.Run(HResultToAsyncResult(hr));
+  InvokeCompletionCallback(done, hr);
 }
 
 void DaemonControllerDelegateWin::SetWindow(void* window_handle) {
@@ -394,7 +405,7 @@ void DaemonControllerDelegateWin::ReleaseController() {
   control_is_elevated_ = false;
 }
 
-void DaemonControllerDelegateWin::OnInstallationComplete(
+void DaemonControllerDelegateWin::StartHostWithConfig(
     scoped_ptr<base::DictionaryValue> config,
     bool consent,
     const DaemonController::CompletionCallback& done,
@@ -404,13 +415,13 @@ void DaemonControllerDelegateWin::OnInstallationComplete(
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to install the Chromoting Host "
                << "(error: 0x" << std::hex << hr << std::dec << ").";
-    done.Run(HResultToAsyncResult(hr));
+    InvokeCompletionCallback(done, hr);
     return;
   }
 
   hr = ActivateElevatedController();
   if (FAILED(hr)) {
-    done.Run(HResultToAsyncResult(hr));
+    InvokeCompletionCallback(done, hr);
     return;
   }
 
@@ -418,7 +429,7 @@ void DaemonControllerDelegateWin::OnInstallationComplete(
   if (control2_) {
     hr = control2_->SetUsageStatsConsent(consent);
     if (FAILED(hr)) {
-      done.Run(HResultToAsyncResult(hr));
+      InvokeCompletionCallback(done, hr);
       return;
     }
   }
@@ -427,26 +438,26 @@ void DaemonControllerDelegateWin::OnInstallationComplete(
   ScopedBstr config_str(NULL);
   ConfigToString(*config, &config_str);
   if (config_str == NULL) {
-    done.Run(HResultToAsyncResult(E_OUTOFMEMORY));
+    InvokeCompletionCallback(done, E_OUTOFMEMORY);
     return;
   }
 
   hr = control_->SetOwnerWindow(
       reinterpret_cast<LONG_PTR>(GetTopLevelWindow(window_handle_)));
   if (FAILED(hr)) {
-    done.Run(HResultToAsyncResult(hr));
+    InvokeCompletionCallback(done, hr);
     return;
   }
 
   hr = control_->SetConfig(config_str);
   if (FAILED(hr)) {
-    done.Run(HResultToAsyncResult(hr));
+    InvokeCompletionCallback(done, hr);
     return;
   }
 
   // Start daemon.
   hr = control_->StartDaemon();
-  done.Run(HResultToAsyncResult(hr));
+  InvokeCompletionCallback(done, hr);
 }
 
 scoped_refptr<DaemonController> DaemonController::Create() {

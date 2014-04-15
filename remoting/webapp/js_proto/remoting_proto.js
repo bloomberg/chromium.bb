@@ -97,6 +97,11 @@ remoting.HostPlugin.prototype.getDaemonVersion = function(callback) {};
  *  @return {void} Nothing. */
 remoting.HostPlugin.prototype.getUsageStatsConsent = function(callback) {};
 
+/** @param {function(remoting.HostController.AsyncResult):void} callback
+ *     Callback to be called when finished.
+ *  @return {void} Nothing. */
+remoting.HostPlugin.prototype.installHost = function(callback) {};
+
 /** @param {string} config Host configuration.
  *  @param {function(remoting.HostController.AsyncResult):void} callback
  *     Callback to be called when finished.

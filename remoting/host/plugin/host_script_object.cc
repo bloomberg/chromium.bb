@@ -57,6 +57,7 @@ const char* kFuncNameGetDaemonConfig = "getDaemonConfig";
 const char* kFuncNameGetDaemonVersion = "getDaemonVersion";
 const char* kFuncNameGetPairedClients = "getPairedClients";
 const char* kFuncNameGetUsageStatsConsent = "getUsageStatsConsent";
+const char* kFuncNameInstallHost = "installHost";
 const char* kFuncNameStartDaemon = "startDaemon";
 const char* kFuncNameStopDaemon = "stopDaemon";
 
@@ -153,6 +154,7 @@ bool HostNPScriptObject::HasMethod(const std::string& method_name) {
           method_name == kFuncNameGetDaemonVersion ||
           method_name == kFuncNameGetPairedClients ||
           method_name == kFuncNameGetUsageStatsConsent ||
+          method_name == kFuncNameInstallHost ||
           method_name == kFuncNameStartDaemon ||
           method_name == kFuncNameStopDaemon);
 }
@@ -198,6 +200,8 @@ bool HostNPScriptObject::Invoke(const std::string& method_name,
     return GetPairedClients(args, arg_count, result);
   } else if (method_name == kFuncNameGetUsageStatsConsent) {
     return GetUsageStatsConsent(args, arg_count, result);
+  } else if (method_name == kFuncNameInstallHost) {
+    return InstallHost(args, arg_count, result);
   } else if (method_name == kFuncNameStartDaemon) {
     return StartDaemon(args, arg_count, result);
   } else if (method_name == kFuncNameStopDaemon) {
@@ -433,6 +437,7 @@ bool HostNPScriptObject::Enumerate(std::vector<std::string>* values) {
     kFuncNameGetDaemonVersion,
     kFuncNameGetPairedClients,
     kFuncNameGetUsageStatsConsent,
+    kFuncNameInstallHost,
     kFuncNameStartDaemon,
     kFuncNameStopDaemon
   };
@@ -799,6 +804,29 @@ bool HostNPScriptObject::GetUsageStatsConsent(const NPVariant* args,
   daemon_controller_->GetUsageStatsConsent(
       base::Bind(&HostNPScriptObject::InvokeGetUsageStatsConsentCallback,
                  weak_ptr_, base::Passed(&callback_obj)));
+  return true;
+}
+
+bool HostNPScriptObject::InstallHost(const NPVariant* args,
+                                     uint32_t arg_count,
+                                     NPVariant* result) {
+  DCHECK(plugin_task_runner_->BelongsToCurrentThread());
+
+  if (arg_count != 1) {
+    SetException("installHost: bad number of arguments");
+    return false;
+  }
+
+  scoped_ptr<ScopedRefNPObject> callback_obj(
+      new ScopedRefNPObject(ObjectFromNPVariant(args[0])));
+  if (!callback_obj->get()) {
+    SetException("installHost: invalid callback parameter");
+    return false;
+  }
+
+  daemon_controller_->InstallHost(
+      base::Bind(&HostNPScriptObject::InvokeAsyncResultCallback, weak_ptr_,
+                 base::Passed(&callback_obj)));
   return true;
 }
 

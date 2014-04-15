@@ -34,12 +34,13 @@ remoting.HostDispatcher = function(createPluginCallback) {
   /** @type {remoting.HostPlugin} @private */
   this.npapiHost_ = null;
 
-  /** @type {remoting.HostDispatcher.State} */
+  /** @type {remoting.HostDispatcher.State} @private */
   this.state_ = remoting.HostDispatcher.State.UNKNOWN;
 
-  /** @type {Array.<function()>} */
+  /** @type {Array.<function()>} @private */
   this.pendingRequests_ = [];
 
+  /** @type {function():remoting.HostPlugin} @private */
   this.createPluginCallback_ = createPluginCallback;
 
   this.tryToInitialize_();
@@ -315,6 +316,34 @@ remoting.HostDispatcher.prototype.getUsageStatsConsent =
     case remoting.HostDispatcher.State.NPAPI:
       try {
         this.npapiHost_.getUsageStatsConsent(onDone);
+      } catch (err) {
+        onError(remoting.Error.MISSING_PLUGIN);
+      }
+      break;
+    case remoting.HostDispatcher.State.NOT_INSTALLED:
+      onError(remoting.Error.MISSING_PLUGIN);
+      break;
+  }
+};
+
+/**
+ * @param {function(remoting.HostController.AsyncResult):void} onDone
+ * @param {function(remoting.Error):void} onError
+ * @return {void}
+ */
+remoting.HostDispatcher.prototype.installHost = function(onDone, onError) {
+  switch (this.state_) {
+    case remoting.HostDispatcher.State.UNKNOWN:
+      this.pendingRequests_.push(
+          this.startDaemon.bind(this, config, consent, onDone, onError));
+      break;
+    case remoting.HostDispatcher.State.NATIVE_MESSAGING:
+      // Host already installed, no action needed.
+      onDone(remoting.HostController.AsyncResult.OK);
+      break;
+    case remoting.HostDispatcher.State.NPAPI:
+      try {
+        this.npapiHost_.installHost(onDone);
       } catch (err) {
         onError(remoting.Error.MISSING_PLUGIN);
       }

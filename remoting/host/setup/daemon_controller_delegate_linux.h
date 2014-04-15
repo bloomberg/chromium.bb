@@ -18,6 +18,8 @@ class DaemonControllerDelegateLinux : public DaemonController::Delegate {
   // DaemonController::Delegate interface.
   virtual DaemonController::State GetState() OVERRIDE;
   virtual scoped_ptr<base::DictionaryValue> GetConfig() OVERRIDE;
+  virtual void InstallHost(
+      const DaemonController::CompletionCallback& done) OVERRIDE;
   virtual void SetConfigAndStart(
       scoped_ptr<base::DictionaryValue> config,
       bool consent,
