@@ -171,6 +171,20 @@ Study_FormFactor GetCurrentFormFactor() {
   return Study_FormFactor_DESKTOP;
 }
 
+// Returns the date that should be used by the VariationsSeedProcessor to do
+// expiry and start date checks.
+base::Time GetReferenceDateForExpiryChecks(PrefService* local_state) {
+  const int64 date_value = local_state->GetInt64(prefs::kVariationsSeedDate);
+  const base::Time seed_date = base::Time::FromInternalValue(date_value);
+  const base::Time build_time = base::GetBuildTime();
+  // Use the build time for date checks if either the seed date is invalid or
+  // the build time is newer than the seed date.
+  base::Time reference_date = seed_date;
+  if (seed_date.is_null() || seed_date < build_time)
+    reference_date = build_time;
+  return reference_date;
+}
+
 }  // namespace
 
 VariationsService::VariationsService(PrefService* local_state)
@@ -205,15 +219,6 @@ bool VariationsService::CreateTrialsFromSeed() {
   if (!seed_store_.LoadSeed(&seed))
     return false;
 
-  const int64 date_value = local_state_->GetInt64(prefs::kVariationsSeedDate);
-  const base::Time seed_date = base::Time::FromInternalValue(date_value);
-  const base::Time build_time = base::GetBuildTime();
-  // Use the build time for date checks if either the seed date is invalid or
-  // the build time is newer than the seed date.
-  base::Time reference_date = seed_date;
-  if (seed_date.is_null() || seed_date < build_time)
-    reference_date = build_time;
-
   const chrome::VersionInfo current_version_info;
   if (!current_version_info.is_valid())
     return false;
@@ -223,8 +228,9 @@ bool VariationsService::CreateTrialsFromSeed() {
     return false;
 
   VariationsSeedProcessor().CreateTrialsFromSeed(
-      seed, g_browser_process->GetApplicationLocale(), reference_date,
-      current_version, GetChannelForVariations(), GetCurrentFormFactor());
+      seed, g_browser_process->GetApplicationLocale(),
+      GetReferenceDateForExpiryChecks(local_state_), current_version,
+      GetChannelForVariations(), GetCurrentFormFactor());
 
   // Log the "freshness" of the seed that was just used. The freshness is the
   // time between the last successful seed download and now.
@@ -375,8 +381,9 @@ void VariationsService::DoActualFetch() {
 void VariationsService::StoreSeed(const std::string& seed_data,
                                   const std::string& seed_signature,
                                   const base::Time& date_fetched) {
-  if (seed_store_.StoreSeedData(seed_data, seed_signature, date_fetched))
-    RecordLastFetchTime();
+  if (!seed_store_.StoreSeedData(seed_data, seed_signature, date_fetched))
+    return;
+  RecordLastFetchTime();
 }
 
 void VariationsService::FetchVariationsSeed() {
