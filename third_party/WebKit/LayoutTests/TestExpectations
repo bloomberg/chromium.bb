@@ -468,6 +468,12 @@ crbug.com/284734 svg/custom/getsvgdocument.html [ Pass ImageOnlyFailure ]
 
 crbug.com/283723 [ Win ] http/tests/local/fileapi/file-last-modified-after-delete.html [ Failure Pass Timeout ]
 
+crbug.com/356805 http/tests/media/media-source/mediasource-buffered.html [ Failure ]
+crbug.com/356805 http/tests/media/media-source/mediasource-remove.html [ Failure ]
+crbug.com/356805 http/tests/media/media-source/webkitmediasource-append-in-ended-state.html [ Failure ]
+crbug.com/356805 http/tests/media/media-source/webkitmediasource-append-with-offset-in-ended-state.html [ Failure ]
+crbug.com/356805 http/tests/media/media-source/webkitmediasource-duration-changed.html [ Failure ]
+
 # 309184 and 303419 track Android-specific failures
 crbug.com/309184 crbug.com/303419 crbug.com/284782 http/tests/media/media-source/mediasource-duration.html [ Failure Pass ]
 
