@@ -16,11 +16,12 @@ extern const char kDisablePnaclInstall[];
 extern const char kEnableNaClDebug[];
 extern const char kEnableNaClNonSfiMode[];
 extern const char kNaClBrokerProcess[];
+extern const char kNaClDangerousNoSandboxNonSfi[];
 extern const char kNaClDebugMask[];
-extern const char kNaClGdb[];
 extern const char kNaClGdbScript[];
-extern const char kNaClLoaderProcess[];
+extern const char kNaClGdb[];
 extern const char kNaClLoaderNonSfiProcess[];
+extern const char kNaClLoaderProcess[];
 
 }  // namespace switches
 

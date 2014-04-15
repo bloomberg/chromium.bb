@@ -184,6 +184,7 @@
               'dependencies': [
                 'nacl',
                 'nacl_common',
+                'nacl_switches',
                 '../components/tracing.gyp:tracing',
                 '../crypto/crypto.gyp:crypto',
                 '../sandbox/sandbox.gyp:libc_urandom_override',

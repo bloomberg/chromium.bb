@@ -28,6 +28,7 @@
 #include "base/posix/unix_domain_socket_linux.h"
 #include "base/process/kill.h"
 #include "base/rand_util.h"
+#include "components/nacl/common/nacl_switches.h"
 #include "components/nacl/loader/nacl_listener.h"
 #include "components/nacl/loader/nacl_sandbox_linux.h"
 #include "content/public/common/zygote_fork_delegate_linux.h"
@@ -43,6 +44,46 @@ struct NaClLoaderSystemInfo {
   long number_of_cores;
 };
 
+// This is a poor man's check on whether we are sandboxed.
+bool IsSandboxed() {
+  int proc_fd = open("/proc/self/exe", O_RDONLY);
+  if (proc_fd >= 0) {
+    close(proc_fd);
+    return false;
+  }
+  return true;
+}
+
+void InitializeSandbox(bool uses_nonsfi_mode) {
+  if (uses_nonsfi_mode) {
+    const bool can_be_no_sandbox = CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kNaClDangerousNoSandboxNonSfi);
+    const bool setuid_sandbox_enabled = IsSandboxed();
+    if (!setuid_sandbox_enabled) {
+      if (can_be_no_sandbox)
+        LOG(ERROR) << "DANGEROUS: Running non-SFI NaCl without SUID sandbox!";
+      else
+        LOG(FATAL) << "SUID sandbox is mandatory for non-SFI NaCl";
+    }
+    const bool bpf_sandbox_initialized = InitializeBPFSandbox();
+    if (!bpf_sandbox_initialized) {
+      if (can_be_no_sandbox) {
+        LOG(ERROR)
+            << "DANGEROUS: Running non-SFI NaCl without seccomp-bpf sandbox!";
+      } else {
+        LOG(FATAL) << "Could not initialize NaCl's second "
+                   << "layer sandbox (seccomp-bpf) for non-SFI mode.";
+      }
+    }
+  } else {
+    const bool bpf_sandbox_initialized = InitializeBPFSandbox();
+    if (!bpf_sandbox_initialized) {
+      LOG(ERROR) << "Could not initialize NaCl's second "
+                 << "layer sandbox (seccomp-bpf) for SFI mode.";
+    }
+  }
+}
+
 // The child must mimic the behavior of zygote_main_linux.cc on the child
 // side of the fork. See zygote_main_linux.cc:HandleForkRequest from
 //   if (!child) {
@@ -53,11 +94,7 @@ void BecomeNaClLoader(const std::vector<int>& child_fds,
   // don't need zygote FD any more
   if (IGNORE_EINTR(close(kNaClZygoteDescriptor)) != 0)
     LOG(ERROR) << "close(kNaClZygoteDescriptor) failed.";
-  bool sandbox_initialized = InitializeBPFSandbox();
-  if (!sandbox_initialized) {
-    LOG(ERROR) << "Could not initialize NaCl's second "
-      << "layer sandbox (seccomp-bpf).";
-  }
+  InitializeSandbox(uses_nonsfi_mode);
   base::GlobalDescriptors::GetInstance()->Set(
       kPrimaryIPCChannel,
       child_fds[content::ZygoteForkDelegate::kBrowserFDIndex]);
@@ -183,16 +220,6 @@ bool HandleGetTerminationStatusRequest(PickleIterator* input_iter,
     status = base::GetTerminationStatus(child_to_wait, &exit_code);
   output_pickle->WriteInt(static_cast<int>(status));
   output_pickle->WriteInt(exit_code);
-  return true;
-}
-
-// This is a poor man's check on whether we are sandboxed.
-bool IsSandboxed() {
-  int proc_fd = open("/proc/self/exe", O_RDONLY);
-  if (proc_fd >= 0) {
-    close(proc_fd);
-    return false;
-  }
   return true;
 }
 

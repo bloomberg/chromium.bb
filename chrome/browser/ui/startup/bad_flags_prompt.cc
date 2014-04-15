@@ -15,6 +15,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/switch_utils.h"
+#include "components/nacl/common/nacl_switches.h"
 #include "components/startup_metric_utils/startup_metric_utils.h"
 #include "components/translate/core/common/translate_switches.h"
 #include "content/public/common/content_switches.h"
@@ -41,6 +42,7 @@ void ShowBadFlagsPrompt(Browser* browser) {
     switches::kDisableSeccompFilterSandbox,
     switches::kDisableSetuidSandbox,
     switches::kDisableWebSecurity,
+    switches::kNaClDangerousNoSandboxNonSfi,
     switches::kNoSandbox,
     switches::kSingleProcess,
 

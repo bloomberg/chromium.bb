@@ -166,6 +166,7 @@ void NaClForkDelegate::Init(const int sandboxdesc) {
       // Append any switches that need to be forwarded to the NaCl helper.
       static const char* kForwardSwitches[] = {
         switches::kDisableSeccompFilterSandbox,
+        switches::kNaClDangerousNoSandboxNonSfi,
         switches::kNoSandbox,
       };
       const CommandLine& current_cmd_line = *CommandLine::ForCurrentProcess();
