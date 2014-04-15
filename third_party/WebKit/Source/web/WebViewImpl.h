@@ -179,9 +179,11 @@ public:
     virtual void setInitialPageScaleOverride(float) OVERRIDE;
     virtual bool zoomToMultipleTargetsRect(const WebRect&) OVERRIDE;
     virtual float pageScaleFactor() const OVERRIDE;
-    virtual void setPageScaleFactorPreservingScrollOffset(float) OVERRIDE;
-    virtual void setPageScaleFactor(float scaleFactor, const WebPoint& origin) OVERRIDE;
     virtual void setPageScaleFactorLimits(float minPageScale, float maxPageScale) OVERRIDE;
+    virtual void setMainFrameScrollOffset(const WebPoint&) OVERRIDE;
+    virtual void setPageScaleFactor(float) OVERRIDE;
+    virtual void setPinchViewportOffset(const WebFloatPoint&) OVERRIDE;
+    virtual WebFloatPoint pinchViewportOffset() const OVERRIDE;
     virtual float minimumPageScaleFactor() const OVERRIDE;
     virtual float maximumPageScaleFactor() const OVERRIDE;
     virtual void saveScrollAndScaleState() OVERRIDE;
@@ -485,6 +487,12 @@ public:
     WebLayerTreeView* layerTreeView() const { return m_layerTreeView; }
 
 private:
+    // TODO(bokan): Remains for legacy pinch. Remove once it's gone. Made private to
+    // prevent external usage
+    virtual void setPageScaleFactor(float scaleFactor, const WebPoint& origin) OVERRIDE;
+
+    bool pinchVirtualViewportEnabled() const;
+
     float legibleScale() const;
     void refreshPageScaleFactorAfterLayout();
     void resumeTreeViewCommits();

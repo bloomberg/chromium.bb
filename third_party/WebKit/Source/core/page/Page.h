@@ -115,7 +115,7 @@ public:
     // This method returns all ordinary pages.
     static HashSet<Page*>& ordinaryPages();
 
-    FrameHost& frameHost() { return *m_frameHost; }
+    FrameHost& frameHost() const { return *m_frameHost; }
 
     void setNeedsRecalcStyleInAllFrames();
     void updateAcceleratedCompositingSettings();
@@ -177,7 +177,7 @@ public:
     bool defersLoading() const { return m_defersLoading; }
 
     void setPageScaleFactor(float scale, const IntPoint& origin);
-    float pageScaleFactor() const { return m_pageScaleFactor; }
+    float pageScaleFactor() const;
 
     float deviceScaleFactor() const { return m_deviceScaleFactor; }
     void setDeviceScaleFactor(float);
@@ -275,7 +275,6 @@ private:
     bool m_tabKeyCyclesThroughElements;
     bool m_defersLoading;
 
-    float m_pageScaleFactor;
     float m_deviceScaleFactor;
 
     OwnPtr<StorageNamespace> m_sessionStorage;

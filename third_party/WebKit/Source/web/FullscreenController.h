@@ -31,6 +31,7 @@
 #ifndef FullscreenController_h
 #define FullscreenController_h
 
+#include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/IntSize.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
@@ -63,6 +64,7 @@ private:
 
     float m_exitFullscreenPageScaleFactor;
     WebCore::IntSize m_exitFullscreenScrollOffset;
+    WebCore::FloatPoint m_exitFullscreenPinchViewportOffset;
 
     // If set, the WebView is transitioning to fullscreen for this element.
     RefPtr<WebCore::Element> m_provisionalFullScreenElement;

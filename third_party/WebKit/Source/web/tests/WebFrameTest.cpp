@@ -952,7 +952,7 @@ TEST_F(WebFrameTest, DeviceScaleFactorUsesDefaultWithoutViewportTag)
 
     // Device scale factor should be independent of page scale.
     webViewHelper.webView()->setPageScaleFactorLimits(1, 2);
-    webViewHelper.webView()->setPageScaleFactorPreservingScrollOffset(0.5);
+    webViewHelper.webView()->setPageScaleFactor(0.5);
     webViewHelper.webView()->layout();
     EXPECT_EQ(1, webViewHelper.webView()->pageScaleFactor());
 
@@ -984,7 +984,7 @@ TEST_F(WebFrameTest, FixedLayoutInitializeAtMinimumScale)
 
     // Assume the user has pinch zoomed to page scale factor 2.
     float userPinchPageScaleFactor = 2;
-    webViewHelper.webView()->setPageScaleFactorPreservingScrollOffset(userPinchPageScaleFactor);
+    webViewHelper.webView()->setPageScaleFactor(userPinchPageScaleFactor);
     webViewHelper.webView()->layout();
 
     // Make sure we don't reset to initial scale if the page continues to load.
@@ -1021,7 +1021,7 @@ TEST_F(WebFrameTest, WideDocumentInitializeAtMinimumScale)
 
     // Assume the user has pinch zoomed to page scale factor 2.
     float userPinchPageScaleFactor = 2;
-    webViewHelper.webView()->setPageScaleFactorPreservingScrollOffset(userPinchPageScaleFactor);
+    webViewHelper.webView()->setPageScaleFactor(userPinchPageScaleFactor);
     webViewHelper.webView()->layout();
 
     // Make sure we don't reset to initial scale if the page continues to load.
@@ -1594,7 +1594,7 @@ TEST_F(WebFrameTest, setPageScaleFactorDoesNotLayout)
     webViewHelper.webView()->layout();
 
     int prevLayoutCount = webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutCount();
-    webViewHelper.webViewImpl()->setPageScaleFactor(3, WebPoint());
+    webViewHelper.webViewImpl()->setPageScaleFactor(3);
     EXPECT_FALSE(webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->needsLayout());
     EXPECT_EQ(prevLayoutCount, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutCount());
 }
@@ -1616,7 +1616,7 @@ TEST_F(WebFrameTest, setPageScaleFactorWithOverlayScrollbarsDoesNotLayout)
     webViewHelper.webView()->layout();
 
     int prevLayoutCount = webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutCount();
-    webViewHelper.webViewImpl()->setPageScaleFactor(30, WebPoint());
+    webViewHelper.webViewImpl()->setPageScaleFactor(30);
     EXPECT_FALSE(webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->needsLayout());
     EXPECT_EQ(prevLayoutCount, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutCount());
 
@@ -1629,7 +1629,7 @@ TEST_F(WebFrameTest, setPageScaleFactorBeforeFrameHasView)
     float pageScaleFactor = 3;
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad("about:html", true, 0, 0);
-    webViewHelper.webView()->setPageScaleFactor(pageScaleFactor, WebPoint());
+    webViewHelper.webView()->setPageScaleFactor(pageScaleFactor);
 
     FrameTestHelpers::loadFrame(webViewHelper.webView()->mainFrame(), m_baseURL + "fixed_layout.html");
     Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
@@ -1652,7 +1652,7 @@ TEST_F(WebFrameTest, pageScaleFactorWrittenToHistoryItem)
     webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
     webViewHelper.webView()->layout();
 
-    webViewHelper.webView()->setPageScaleFactor(3, WebPoint());
+    webViewHelper.webView()->setPageScaleFactor(3);
     EXPECT_EQ(3, webViewHelper.webViewImpl()->page()->mainFrame()->loader().currentItem()->pageScaleFactor());
 }
 
@@ -1696,7 +1696,7 @@ TEST_F(WebFrameTest, pageScaleFactorShrinksViewport)
     int viewportWidthMinusScrollbar = viewportWidth - (view->verticalScrollbar()->isOverlayScrollbar() ? 0 : 15);
     int viewportHeightMinusScrollbar = viewportHeight - (view->horizontalScrollbar()->isOverlayScrollbar() ? 0 : 15);
 
-    webViewHelper.webView()->setPageScaleFactor(2, WebPoint());
+    webViewHelper.webView()->setPageScaleFactor(2);
 
     WebCore::IntSize unscaledSize = view->unscaledVisibleContentSize(WebCore::IncludeScrollbars);
     EXPECT_EQ(viewportWidth, unscaledSize.width());
@@ -1726,7 +1726,7 @@ TEST_F(WebFrameTest, pageScaleFactorDoesNotApplyCssTransform)
     webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
     webViewHelper.webView()->layout();
 
-    webViewHelper.webView()->setPageScaleFactor(2, WebPoint());
+    webViewHelper.webView()->setPageScaleFactor(2);
 
     EXPECT_EQ(980, webViewHelper.webViewImpl()->page()->mainFrame()->contentRenderer()->unscaledDocumentRect().width());
     EXPECT_EQ(980, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->contentsSize().width());
@@ -1998,7 +1998,7 @@ protected:
         // Origin scrollOffsets preserved under resize.
         {
             webViewHelper.webViewImpl()->resize(WebSize(viewportSize.width, viewportSize.height));
-            webViewHelper.webViewImpl()->setPageScaleFactor(initialPageScaleFactor, WebPoint());
+            webViewHelper.webViewImpl()->setPageScaleFactor(initialPageScaleFactor);
             ASSERT_EQ(viewportSize, webViewHelper.webViewImpl()->size());
             ASSERT_EQ(initialPageScaleFactor, webViewHelper.webViewImpl()->pageScaleFactor());
             webViewHelper.webViewImpl()->resize(WebSize(viewportSize.height, viewportSize.width));
@@ -2010,7 +2010,8 @@ protected:
         // Resizing just the height should not affect pageScaleFactor or scrollOffset.
         {
             webViewHelper.webViewImpl()->resize(WebSize(viewportSize.width, viewportSize.height));
-            webViewHelper.webViewImpl()->setPageScaleFactor(initialPageScaleFactor, WebPoint(scrollOffset.width, scrollOffset.height));
+            webViewHelper.webViewImpl()->setPageScaleFactor(initialPageScaleFactor);
+            webViewHelper.webViewImpl()->setMainFrameScrollOffset(WebPoint(scrollOffset.width, scrollOffset.height));
             webViewHelper.webViewImpl()->layout();
             const WebSize expectedScrollOffset = webViewHelper.webViewImpl()->mainFrame()->scrollOffset();
             webViewHelper.webViewImpl()->resize(WebSize(viewportSize.width, viewportSize.height * 0.8f));
@@ -2110,7 +2111,7 @@ TEST_F(WebFrameTest, pageScaleFactorScalesPaintClip)
 
     // Set <1 page scale so that the clip rect should be larger than
     // the viewport size as passed into resize().
-    webViewHelper.webView()->setPageScaleFactor(0.5, WebPoint());
+    webViewHelper.webView()->setPageScaleFactor(0.5);
 
     SkBitmap bitmap;
     ASSERT_TRUE(bitmap.allocN32Pixels(200, 200));
@@ -2151,7 +2152,7 @@ TEST_F(WebFrameTest, pageScaleFactorUpdatesScrollbars)
     EXPECT_EQ(view->scrollSize(WebCore::HorizontalScrollbar), view->contentsSize().width() - view->visibleContentRect().width());
     EXPECT_EQ(view->scrollSize(WebCore::VerticalScrollbar), view->contentsSize().height() - view->visibleContentRect().height());
 
-    webViewHelper.webView()->setPageScaleFactor(10, WebPoint());
+    webViewHelper.webView()->setPageScaleFactor(10);
 
     EXPECT_EQ(view->scrollSize(WebCore::HorizontalScrollbar), view->contentsSize().width() - view->visibleContentRect().width());
     EXPECT_EQ(view->scrollSize(WebCore::VerticalScrollbar), view->contentsSize().height() - view->visibleContentRect().height());
@@ -2218,7 +2219,8 @@ TEST_F(WebFrameTest, updateOverlayScrollbarLayers)
 
 void setScaleAndScrollAndLayout(blink::WebView* webView, WebPoint scroll, float scale)
 {
-    webView->setPageScaleFactor(scale, WebPoint(scroll.x, scroll.y));
+    webView->setPageScaleFactor(scale);
+    webView->setMainFrameScrollOffset(WebPoint(scroll.x, scroll.y));
     webView->layout();
 }
 
@@ -2234,7 +2236,7 @@ TEST_F(WebFrameTest, DivAutoZoomParamsTest)
     webViewHelper.initializeAndLoad(m_baseURL + "get_scale_for_auto_zoom_into_div_test.html");
     webViewHelper.webView()->setDeviceScaleFactor(deviceScaleFactor);
     webViewHelper.webView()->setPageScaleFactorLimits(0.01f, 4);
-    webViewHelper.webView()->setPageScaleFactor(0.5f, WebPoint(0, 0));
+    webViewHelper.webView()->setPageScaleFactor(0.5f);
     webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
     webViewHelper.webView()->layout();
 
@@ -2315,7 +2317,7 @@ TEST_F(WebFrameTest, DivAutoZoomWideDivTest)
     webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
     webViewHelper.webView()->setPageScaleFactorLimits(1.0f, 4);
     webViewHelper.webView()->setDeviceScaleFactor(deviceScaleFactor);
-    webViewHelper.webView()->setPageScaleFactor(1.0f, WebPoint(0, 0));
+    webViewHelper.webView()->setPageScaleFactor(1.0f);
     webViewHelper.webView()->layout();
 
     webViewHelper.webViewImpl()->enableFakePageScaleAnimationForTesting(true);
@@ -2348,7 +2350,7 @@ TEST_F(WebFrameTest, DivAutoZoomVeryTallTest)
     webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
     webViewHelper.webView()->setPageScaleFactorLimits(1.0f, 4);
     webViewHelper.webView()->setDeviceScaleFactor(deviceScaleFactor);
-    webViewHelper.webView()->setPageScaleFactor(1.0f, WebPoint(0, 0));
+    webViewHelper.webView()->setPageScaleFactor(1.0f);
     webViewHelper.webView()->layout();
 
     WebRect div(200, 300, 400, 5000);
@@ -2375,7 +2377,7 @@ TEST_F(WebFrameTest, DivAutoZoomMultipleDivsTest)
     webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
     webViewHelper.webView()->setPageScaleFactorLimits(0.5f, 4);
     webViewHelper.webView()->setDeviceScaleFactor(deviceScaleFactor);
-    webViewHelper.webView()->setPageScaleFactor(0.5f, WebPoint(0, 0));
+    webViewHelper.webView()->setPageScaleFactor(0.5f);
     webViewHelper.webView()->layout();
 
     webViewHelper.webViewImpl()->enableFakePageScaleAnimationForTesting(true);
@@ -2563,7 +2565,7 @@ TEST_F(WebFrameTest, DivMultipleTargetZoomMultipleDivsTest)
     webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
     webViewHelper.webView()->setPageScaleFactorLimits(0.5f, 4);
     webViewHelper.webView()->setDeviceScaleFactor(deviceScaleFactor);
-    webViewHelper.webView()->setPageScaleFactor(0.5f, WebPoint(0, 0));
+    webViewHelper.webView()->setPageScaleFactor(0.5f);
     webViewHelper.webView()->layout();
 
     webViewHelper.webViewImpl()->enableFakePageScaleAnimationForTesting(true);
@@ -2580,7 +2582,7 @@ TEST_F(WebFrameTest, DivMultipleTargetZoomMultipleDivsTest)
     EXPECT_FLOAT_EQ(1, scale);
     simulateMultiTargetZoom(webViewHelper.webViewImpl(), viewportRect, scale);
     EXPECT_FLOAT_EQ(1, scale);
-    webViewHelper.webViewImpl()->setPageScaleFactor(webViewHelper.webViewImpl()->minimumPageScaleFactor(), WebPoint(0, 0));
+    webViewHelper.webViewImpl()->setPageScaleFactor(webViewHelper.webViewImpl()->minimumPageScaleFactor());
     simulateMultiTargetZoom(webViewHelper.webViewImpl(), topDiv, scale);
     EXPECT_FLOAT_EQ(1, scale);
 }
@@ -2707,7 +2709,7 @@ TEST_F(WebFrameTest, ReloadWithOverrideURLPreservesState)
     webViewHelper.initializeAndLoad(m_baseURL + firstURL, true);
     webViewHelper.webViewImpl()->resize(WebSize(pageWidth, pageHeight));
     webViewHelper.webViewImpl()->mainFrame()->setScrollOffset(WebSize(pageWidth / 4, pageHeight / 4));
-    webViewHelper.webViewImpl()->setPageScaleFactorPreservingScrollOffset(pageScaleFactor);
+    webViewHelper.webViewImpl()->setPageScaleFactor(pageScaleFactor);
 
     WebSize previousOffset = webViewHelper.webViewImpl()->mainFrame()->scrollOffset();
     float previousScale = webViewHelper.webViewImpl()->pageScaleFactor();
@@ -4049,7 +4051,7 @@ TEST_F(WebFrameTest, DisambiguationPopupPageScale)
     webViewHelper.webView()->handleInputEvent(fatTap(230, 190));
     EXPECT_TRUE(client.triggered());
 
-    webViewHelper.webView()->setPageScaleFactor(3.0f, WebPoint(0, 0));
+    webViewHelper.webView()->setPageScaleFactor(3.0f);
     webViewHelper.webView()->layout();
 
     client.resetTriggered();

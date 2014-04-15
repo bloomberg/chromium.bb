@@ -127,7 +127,6 @@ Page::Page(PageClients& pageClients)
     , m_openedByDOM(false)
     , m_tabKeyCyclesThroughElements(true)
     , m_defersLoading(false)
-    , m_pageScaleFactor(1)
     , m_deviceScaleFactor(1)
     , m_timerAlignmentInterval(DOMTimer::visiblePageAlignmentInterval())
     , m_visibilityState(PageVisibilityStateVisible)
@@ -318,9 +317,10 @@ void Page::setDefersLoading(bool defers)
 void Page::setPageScaleFactor(float scale, const IntPoint& origin)
 {
     FrameView* view = mainFrame()->view();
+    PinchViewport& viewport = frameHost().pinchViewport();
 
-    if (scale != m_pageScaleFactor) {
-        m_pageScaleFactor = scale;
+    if (scale != viewport.scale()) {
+        viewport.setScale(scale);
 
         if (view)
             view->setVisibleContentScaleFactor(scale);
@@ -336,6 +336,11 @@ void Page::setPageScaleFactor(float scale, const IntPoint& origin)
 
     if (view && view->scrollPosition() != origin)
         view->notifyScrollPositionChanged(origin);
+}
+
+float Page::pageScaleFactor() const
+{
+    return frameHost().pinchViewport().scale();
 }
 
 void Page::setDeviceScaleFactor(float scaleFactor)

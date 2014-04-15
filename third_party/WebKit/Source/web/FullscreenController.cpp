@@ -81,7 +81,8 @@ void FullscreenController::didEnterFullScreen()
             if (!m_exitFullscreenPageScaleFactor) {
                 m_exitFullscreenPageScaleFactor = m_webViewImpl->pageScaleFactor();
                 m_exitFullscreenScrollOffset = m_webViewImpl->mainFrame()->scrollOffset();
-                m_webViewImpl->setPageScaleFactorPreservingScrollOffset(1.0f);
+                m_exitFullscreenPinchViewportOffset = m_webViewImpl->pinchViewportOffset();
+                m_webViewImpl->setPageScaleFactor(1.0f);
             }
 
             FullscreenElementStack::from(*doc).webkitDidEnterFullScreenForElement(0);
@@ -126,8 +127,9 @@ void FullscreenController::didExitFullScreen()
         if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(*doc)) {
             if (fullscreen->webkitIsFullScreen()) {
                 if (m_exitFullscreenPageScaleFactor) {
-                    m_webViewImpl->setPageScaleFactor(m_exitFullscreenPageScaleFactor,
-                        WebPoint(m_exitFullscreenScrollOffset.width(), m_exitFullscreenScrollOffset.height()));
+                    m_webViewImpl->setPageScaleFactor(m_exitFullscreenPageScaleFactor);
+                    m_webViewImpl->setMainFrameScrollOffset(IntPoint(m_exitFullscreenScrollOffset));
+                    m_webViewImpl->setPinchViewportOffset(m_exitFullscreenPinchViewportOffset);
                     m_exitFullscreenPageScaleFactor = 0;
                     m_exitFullscreenScrollOffset = IntSize();
                 }

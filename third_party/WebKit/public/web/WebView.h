@@ -64,6 +64,7 @@ struct WebActiveWheelFlingParameters;
 struct WebMediaPlayerAction;
 struct WebPluginAction;
 struct WebPoint;
+struct WebFloatPoint;
 struct WebWindowFeatures;
 
 class WebView : public WebWidget {
@@ -238,14 +239,30 @@ public:
     // is scaled up, < 1.0 is scaled down.
     virtual float pageScaleFactor() const = 0;
 
-    // Scales the page and the scroll offset by a given factor, while ensuring
-    // that the new scroll position does not go beyond the edge of the page.
-    virtual void setPageScaleFactorPreservingScrollOffset(float) = 0;
-
+    // TODO: Obsolete, the origin parameter is ambiguous with two viewports. Remove
+    // once Chromium side users are removed.
     // Scales a page by a factor of scaleFactor and then sets a scroll position to (x, y).
     // setPageScaleFactor() magnifies and shrinks a page without affecting layout.
     // On the other hand, zooming affects layout of the page.
     virtual void setPageScaleFactor(float scaleFactor, const WebPoint& origin) = 0;
+
+    // TODO: Reevaluate if this is needed once all users are converted to using the
+    // virtual viewport pinch model.
+    // Temporary to keep old style pinch viewport working while we gradually bring up
+    // virtual viewport pinch.
+    virtual void setMainFrameScrollOffset(const WebPoint& origin) = 0;
+
+    // Scales the page without affecting layout by using the pinch-to-zoom viewport.
+    virtual void setPageScaleFactor(float) = 0;
+
+    // Sets the offset of the pinch-to-zoom viewport within the main frame, in
+    // partial CSS pixels. The offset will be clamped so the pinch viewport
+    // stays within the frame's bounds.
+    virtual void setPinchViewportOffset(const WebFloatPoint&) = 0;
+
+    // Gets the pinch viewport's current offset within the page's main frame,
+    // in partial CSS pixels.
+    virtual WebFloatPoint pinchViewportOffset() const = 0;
 
     // PageScaleFactor will be force-clamped between minPageScale and maxPageScale
     // (and these values will persist until setPageScaleFactorLimits is called

@@ -37,6 +37,7 @@
 #include "core/events/OverflowEvent.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourceLoadPriorityOptimizer.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLFrameElement.h"
@@ -2360,7 +2361,10 @@ IntSize FrameView::inputEventsOffsetForEmulation() const
 
 float FrameView::inputEventsScaleFactor() const
 {
-    return visibleContentScaleFactor() * m_inputEventsScaleFactorForEmulation;
+    float pageScale = m_frame->settings()->pinchVirtualViewportEnabled()
+        ? m_frame->page()->frameHost().pinchViewport().scale()
+        : visibleContentScaleFactor();
+    return pageScale * m_inputEventsScaleFactorForEmulation;
 }
 
 bool FrameView::scrollbarsCanBeActive() const
@@ -3146,18 +3150,24 @@ void FrameView::removeChild(Widget* widget)
 
 bool FrameView::wheelEvent(const PlatformWheelEvent& wheelEvent)
 {
+    bool allowScrolling = userInputScrollable(HorizontalScrollbar) || userInputScrollable(VerticalScrollbar);
+
     // Note that to allow for rubber-band over-scroll behavior, even non-scrollable views
     // should handle wheel events.
 #if !USE(RUBBER_BANDING)
     if (!isScrollable())
-        return false;
+        allowScrolling = false;
 #endif
 
-    // We don't allow mouse wheeling to happen in a ScrollView that has had its scrollbars explicitly disabled.
-    if (!canHaveScrollbars())
-        return false;
+    if (allowScrolling && ScrollableArea::handleWheelEvent(wheelEvent))
+        return true;
 
-    return ScrollableArea::handleWheelEvent(wheelEvent);
+    // If the frame didn't handle the event, give the pinch-zoom viewport a chance to
+    // process the scroll event.
+    if (m_frame->settings()->pinchVirtualViewportEnabled() && m_frame->isMainFrame())
+        return page()->frameHost().pinchViewport().handleWheelEvent(wheelEvent);
+
+    return false;
 }
 
 bool FrameView::isVerticalDocument() const

@@ -123,6 +123,11 @@ public:
         return FloatPoint(std::max(m_x, other.m_x), std::max(m_y, other.m_y));
     }
 
+    FloatPoint shrunkTo(const FloatPoint& other) const
+    {
+        return FloatPoint(std::min(m_x, other.m_x), std::min(m_y, other.m_y));
+    }
+
     FloatPoint transposedPoint() const
     {
         return FloatPoint(m_y, m_x);

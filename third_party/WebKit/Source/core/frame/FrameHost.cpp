@@ -44,7 +44,7 @@ PassOwnPtr<FrameHost> FrameHost::create(Page& page)
 
 FrameHost::FrameHost(Page& page)
     : m_page(page)
-    , m_pinchViewport(*this)
+    , m_pinchViewport(adoptPtr(new PinchViewport(*this)))
 {
 }
 
@@ -73,9 +73,9 @@ float FrameHost::deviceScaleFactor() const
     return m_page.deviceScaleFactor();
 }
 
-PinchViewport& FrameHost::pinchViewport()
+PinchViewport& FrameHost::pinchViewport() const
 {
-    return m_pinchViewport;
+    return *m_pinchViewport;
 }
 
 }

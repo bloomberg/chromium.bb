@@ -355,7 +355,7 @@ TEST_F(WebViewTest, HitTestResultAtWithPageScale)
     negativeResult.reset();
 
     // Scale page up 2x so image should occupy the whole viewport.
-    webView->setPageScaleFactor(2.0f, WebPoint(0, 0));
+    webView->setPageScaleFactor(2.0f);
     WebHitTestResult positiveResult = webView->hitTestResultAt(hitPoint);
     ASSERT_EQ(WebNode::ElementNode, positiveResult.node().nodeType());
     EXPECT_TRUE(positiveResult.node().to<WebElement>().hasTagName("img"));
@@ -781,7 +781,8 @@ TEST_F(WebViewTest, HistoryResetScrollAndScaleState)
     EXPECT_EQ(0, webViewImpl->mainFrame()->scrollOffset().height);
 
     // Make the page scale and scroll with the given paremeters.
-    webViewImpl->setPageScaleFactor(2.0f, WebPoint(116, 84));
+    webViewImpl->setPageScaleFactor(2.0f);
+    webViewImpl->setMainFrameScrollOffset(WebPoint(116, 84));
     EXPECT_EQ(2.0f, webViewImpl->pageScaleFactor());
     EXPECT_EQ(116, webViewImpl->mainFrame()->scrollOffset().width);
     EXPECT_EQ(84, webViewImpl->mainFrame()->scrollOffset().height);
@@ -821,7 +822,8 @@ TEST_F(WebViewTest, EnterFullscreenResetScrollAndScaleState)
     EXPECT_EQ(0, webViewImpl->mainFrame()->scrollOffset().height);
 
     // Make the page scale and scroll with the given paremeters.
-    webViewImpl->setPageScaleFactor(2.0f, WebPoint(116, 84));
+    webViewImpl->setPageScaleFactor(2.0f);
+    webViewImpl->setMainFrameScrollOffset(WebPoint(116, 84));
     EXPECT_EQ(2.0f, webViewImpl->pageScaleFactor());
     EXPECT_EQ(116, webViewImpl->mainFrame()->scrollOffset().width);
     EXPECT_EQ(84, webViewImpl->mainFrame()->scrollOffset().height);
@@ -1678,7 +1680,7 @@ void WebViewTest::testSelectionRootBounds(const char* htmlFile, float pageScaleF
 
     WebView* webView = m_webViewHelper.initializeAndLoad(url, true);
     webView->resize(WebSize(640, 480));
-    webView->setPageScaleFactor(pageScaleFactor, WebPoint(0, 0));
+    webView->setPageScaleFactor(pageScaleFactor);
     webView->layout();
     runPendingTasks();
 

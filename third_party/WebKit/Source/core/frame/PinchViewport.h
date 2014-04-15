@@ -31,6 +31,8 @@
 #ifndef PinchViewport_h
 #define PinchViewport_h
 
+#include "platform/geometry/FloatPoint.h"
+#include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/GraphicsLayerClient.h"
 #include "platform/scroll/ScrollableArea.h"
@@ -52,7 +54,13 @@ class GraphicsLayer;
 class GraphicsLayerFactory;
 class IntRect;
 class IntSize;
+class LocalFrame;
 
+// Represents the pinch-to-zoom viewport the user is currently seeing the page through. This
+// class corresponds to the InnerViewport on the compositor. It is a ScrollableArea; it's
+// offset is set through the GraphicsLayer <-> CC sync mechanisms. Its contents is the page's
+// main FrameView, which corresponds to the outer viewport. The inner viewport is always contained
+// in the outer viewport and can pan within it.
 class PinchViewport FINAL : public GraphicsLayerClient, public ScrollableArea {
 public:
     PinchViewport(FrameHost&);
@@ -64,20 +72,24 @@ public:
         return m_innerViewportContainerLayer.get();
     }
 
-    void setLocation(const IntPoint&);
-    void setSize(const IntSize&);
+    void setLocation(const FloatPoint&);
+    void mainFrameDidChangeSize();
+
+    void setScale(float);
+    float scale() const { return m_scale; }
 
     void registerLayersWithTreeView(blink::WebLayerTreeView*) const;
     void clearLayersForTreeView(blink::WebLayerTreeView*) const;
 
-    IntRect visibleRect() const { return m_visibleRect; }
+    // The portion of the unzoomed frame visible in the inner "pinch" viewport, in partial CSS pixels.
+    FloatRect visibleRect() const;
 private:
     // ScrollableArea implementation
     virtual bool isActive() const OVERRIDE { return false; }
     virtual int scrollSize(ScrollbarOrientation) const OVERRIDE;
     virtual bool isScrollCornerVisible() const OVERRIDE { return false; }
     virtual IntRect scrollCornerRect() const OVERRIDE { return IntRect(); }
-    virtual IntPoint scrollPosition() const OVERRIDE { return visibleRect().location(); }
+    virtual IntPoint scrollPosition() const OVERRIDE { return flooredIntPoint(m_offset); }
     virtual IntPoint minimumScrollPosition() const OVERRIDE;
     virtual IntPoint maximumScrollPosition() const OVERRIDE;
     virtual int visibleHeight() const OVERRIDE { return visibleRect().height(); };
@@ -101,6 +113,9 @@ private:
     virtual String debugName(const GraphicsLayer*) OVERRIDE;
 
     void setupScrollbar(blink::WebScrollbar::Orientation);
+    FloatPoint clampOffsetToBoundaries(const FloatPoint&);
+
+    LocalFrame* mainFrame() const;
 
     FrameHost& m_frameHost;
     OwnPtr<GraphicsLayer> m_innerViewportContainerLayer;
@@ -111,7 +126,9 @@ private:
     OwnPtr<blink::WebScrollbarLayer> m_webOverlayScrollbarHorizontal;
     OwnPtr<blink::WebScrollbarLayer> m_webOverlayScrollbarVertical;
 
-    IntRect m_visibleRect;
+    // Offset of the pinch viewport from the main frame's origin, in CSS pixels.
+    FloatPoint m_offset;
+    float m_scale;
 };
 
 } // namespace WebCore

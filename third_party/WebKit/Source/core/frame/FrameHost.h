@@ -72,13 +72,13 @@ public:
     // This value does not account for Page zoom, use LocalFrame::devicePixelRatio instead.
     float deviceScaleFactor() const;
 
-    PinchViewport& pinchViewport();
+    PinchViewport& pinchViewport() const;
 
 private:
     explicit FrameHost(Page&);
 
     Page& m_page;
-    PinchViewport m_pinchViewport;
+    const OwnPtr<PinchViewport> m_pinchViewport;
 };
 
 }

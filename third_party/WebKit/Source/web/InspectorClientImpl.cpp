@@ -36,8 +36,9 @@
 #include "WebViewImpl.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/frame/DOMWindow.h"
-#include "core/page/Page.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/page/Page.h"
 #include "platform/JSONValues.h"
 #include "platform/geometry/FloatRect.h"
 #include "public/platform/WebRect.h"
@@ -139,7 +140,8 @@ void InspectorClientImpl::setShowScrollBottleneckRects(bool show)
 
 void InspectorClientImpl::requestPageScaleFactor(float scale, const IntPoint& origin)
 {
-    m_inspectedWebView->setPageScaleFactor(scale, origin);
+    m_inspectedWebView->setPageScaleFactor(scale);
+    m_inspectedWebView->setMainFrameScrollOffset(origin);
 }
 
 void InspectorClientImpl::getAllocatedObjects(HashSet<const void*>& set)

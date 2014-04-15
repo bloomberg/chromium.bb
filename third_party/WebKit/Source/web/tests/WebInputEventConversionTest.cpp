@@ -44,6 +44,7 @@
 #include "core/dom/Touch.h"
 #include "core/events/TouchEvent.h"
 #include "core/dom/TouchList.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 
@@ -104,7 +105,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
     webViewImpl->resize(WebSize(pageWidth, pageHeight));
     webViewImpl->layout();
 
-    webViewImpl->setPageScaleFactor(2, WebPoint());
+    webViewImpl->setPageScaleFactor(2);
 
     FrameView* view = webViewImpl->page()->mainFrame()->view();
     RefPtr<Document> document = webViewImpl->page()->mainFrame()->document();
@@ -311,7 +312,7 @@ TEST(WebInputEventConversionTest, InputEventsTransform)
     webViewImpl->resize(WebSize(pageWidth, pageHeight));
     webViewImpl->layout();
 
-    webViewImpl->setPageScaleFactor(2, WebPoint());
+    webViewImpl->setPageScaleFactor(2);
     webViewImpl->setRootLayerTransform(WebSize(10, 20), 1.5);
 
     FrameView* view = webViewImpl->page()->mainFrame()->view();
@@ -489,6 +490,104 @@ TEST(WebInputEventConversionTest, InputEventsConversions)
         EXPECT_EQ(webGestureEvent.globalX, recreatedWebGestureEvent.globalX);
         EXPECT_EQ(webGestureEvent.globalY, recreatedWebGestureEvent.globalY);
         EXPECT_EQ(webGestureEvent.data.tap.tapCount, recreatedWebGestureEvent.data.tap.tapCount);
+    }
+}
+
+static void setupVirtualViewportPinch(WebSettings* settings)
+{
+    settings->setPinchVirtualViewportEnabled(true);
+    settings->setAcceleratedCompositingEnabled(true);
+}
+
+TEST(WebInputEventConversionTest, PinchViewportOffset)
+{
+    const std::string baseURL("http://www.test4.com/");
+    const std::string fileName("fixed_layout.html");
+
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(baseURL.c_str()), WebString::fromUTF8("fixed_layout.html"));
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(baseURL + fileName, true, 0, 0, setupVirtualViewportPinch);
+    int pageWidth = 640;
+    int pageHeight = 480;
+    webViewImpl->resize(WebSize(pageWidth, pageHeight));
+    webViewImpl->layout();
+
+    webViewImpl->setPageScaleFactor(2);
+
+    IntPoint pinchOffset(35, 60);
+    webViewImpl->page()->frameHost().pinchViewport().setLocation(pinchOffset);
+
+    FrameView* view = webViewImpl->page()->mainFrame()->view();
+
+    {
+        WebMouseEvent webMouseEvent;
+        webMouseEvent.type = WebInputEvent::MouseMove;
+        webMouseEvent.x = 10;
+        webMouseEvent.y = 10;
+        webMouseEvent.windowX = 10;
+        webMouseEvent.windowY = 10;
+        webMouseEvent.globalX = 10;
+        webMouseEvent.globalY = 10;
+
+        PlatformMouseEventBuilder platformMouseBuilder(view, webMouseEvent);
+        EXPECT_EQ(5 + pinchOffset.x(), platformMouseBuilder.position().x());
+        EXPECT_EQ(5 + pinchOffset.y(), platformMouseBuilder.position().y());
+        EXPECT_EQ(10, platformMouseBuilder.globalPosition().x());
+        EXPECT_EQ(10, platformMouseBuilder.globalPosition().y());
+    }
+
+    {
+        WebMouseWheelEvent webMouseWheelEvent;
+        webMouseWheelEvent.type = WebInputEvent::MouseWheel;
+        webMouseWheelEvent.x = 10;
+        webMouseWheelEvent.y = 10;
+        webMouseWheelEvent.windowX = 10;
+        webMouseWheelEvent.windowY = 10;
+        webMouseWheelEvent.globalX = 10;
+        webMouseWheelEvent.globalY = 10;
+
+        PlatformWheelEventBuilder platformWheelBuilder(view, webMouseWheelEvent);
+        EXPECT_EQ(5 + pinchOffset.x(), platformWheelBuilder.position().x());
+        EXPECT_EQ(5 + pinchOffset.y(), platformWheelBuilder.position().y());
+        EXPECT_EQ(10, platformWheelBuilder.globalPosition().x());
+        EXPECT_EQ(10, platformWheelBuilder.globalPosition().y());
+    }
+
+    {
+        WebGestureEvent webGestureEvent;
+        webGestureEvent.type = WebInputEvent::GestureScrollUpdate;
+        webGestureEvent.x = 10;
+        webGestureEvent.y = 10;
+        webGestureEvent.globalX = 10;
+        webGestureEvent.globalY = 10;
+
+        PlatformGestureEventBuilder platformGestureBuilder(view, webGestureEvent);
+        EXPECT_EQ(5 + pinchOffset.x(), platformGestureBuilder.position().x());
+        EXPECT_EQ(5 + pinchOffset.y(), platformGestureBuilder.position().y());
+        EXPECT_EQ(10, platformGestureBuilder.globalPosition().x());
+        EXPECT_EQ(10, platformGestureBuilder.globalPosition().y());
+    }
+
+    {
+        WebTouchEvent webTouchEvent;
+        webTouchEvent.type = WebInputEvent::TouchMove;
+        webTouchEvent.touchesLength = 1;
+        webTouchEvent.touches[0].state = WebTouchPoint::StateMoved;
+        webTouchEvent.touches[0].screenPosition.x = 10.6f;
+        webTouchEvent.touches[0].screenPosition.y = 10.4f;
+        webTouchEvent.touches[0].position.x = 10.6f;
+        webTouchEvent.touches[0].position.y = 10.4f;
+
+        EXPECT_FLOAT_EQ(10.6f, webTouchEvent.touches[0].screenPosition.x);
+        EXPECT_FLOAT_EQ(10.4f, webTouchEvent.touches[0].screenPosition.y);
+        EXPECT_FLOAT_EQ(10.6f, webTouchEvent.touches[0].position.x);
+        EXPECT_FLOAT_EQ(10.4f, webTouchEvent.touches[0].position.y);
+
+        PlatformTouchEventBuilder platformTouchBuilder(view, webTouchEvent);
+        EXPECT_EQ(10, platformTouchBuilder.touchPoints()[0].screenPos().x());
+        EXPECT_EQ(10, platformTouchBuilder.touchPoints()[0].screenPos().y());
+        EXPECT_EQ(5 + pinchOffset.x(), platformTouchBuilder.touchPoints()[0].pos().x());
+        EXPECT_EQ(5 + pinchOffset.y(), platformTouchBuilder.touchPoints()[0].pos().y());
     }
 }
 

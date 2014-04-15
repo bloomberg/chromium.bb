@@ -61,7 +61,8 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithScale)
     LocalFrame* frame = webViewImpl->mainFrameImpl()->frame();
     frame->loader().setLoadType(FrameLoadTypeBackForward);
 
-    webViewImpl->setPageScaleFactor(3.0f, WebPoint(0, 500));
+    webViewImpl->setPageScaleFactor(3.0f);
+    webViewImpl->setMainFrameScrollOffset(WebPoint(0, 500));
     frame->view()->setWasScrolledByUser(false);
     frame->loader().currentItem()->setPageScaleFactor(2);
     frame->loader().currentItem()->setScrollPoint(WebPoint(0, 200));
@@ -90,7 +91,8 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithoutScale)
     LocalFrame* frame = webViewImpl->mainFrameImpl()->frame();
     frame->loader().setLoadType(FrameLoadTypeBackForward);
 
-    webViewImpl->setPageScaleFactor(3.0f, WebPoint(0, 500));
+    webViewImpl->setPageScaleFactor(3.0f);
+    webViewImpl->setMainFrameScrollOffset(WebPoint(0, 500));
     frame->view()->setWasScrolledByUser(false);
     frame->loader().currentItem()->setPageScaleFactor(0);
     frame->loader().currentItem()->setScrollPoint(WebPoint(0, 400));
