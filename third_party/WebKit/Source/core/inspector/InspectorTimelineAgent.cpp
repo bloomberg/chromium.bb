@@ -118,8 +118,6 @@ static const char XHRLoad[] = "XHRLoad";
 static const char FunctionCall[] = "FunctionCall";
 static const char GCEvent[] = "GCEvent";
 
-static const char UpdateCounters[] = "UpdateCounters";
-
 static const char RequestAnimationFrame[] = "RequestAnimationFrame";
 static const char CancelAnimationFrame[] = "CancelAnimationFrame";
 static const char FireAnimationFrame[] = "FireAnimationFrame";
@@ -148,11 +146,12 @@ const char BackendNodeIdGroup[] = "timeline";
 using TypeBuilder::Timeline::TimelineEvent;
 
 struct TimelineRecordEntry {
-    TimelineRecordEntry(PassRefPtr<TimelineEvent> record, PassRefPtr<JSONObject> data, PassRefPtr<TypeBuilder::Array<TimelineEvent> > children, const String& type)
+    TimelineRecordEntry(PassRefPtr<TimelineEvent> record, PassRefPtr<JSONObject> data, PassRefPtr<TypeBuilder::Array<TimelineEvent> > children, const String& type, size_t usedHeapSizeAtStart)
         : record(record)
         , data(data)
         , children(children)
         , type(type)
+        , usedHeapSizeAtStart(usedHeapSizeAtStart)
         , skipWhenUnbalanced(false)
     {
     }
@@ -160,6 +159,7 @@ struct TimelineRecordEntry {
     RefPtr<JSONObject> data;
     RefPtr<TypeBuilder::Array<TimelineEvent> > children;
     String type;
+    size_t usedHeapSizeAtStart;
     bool skipWhenUnbalanced;
 };
 
@@ -1043,13 +1043,13 @@ void InspectorTimelineAgent::processGPUEvent(const GPUEvent& event)
         m_pendingGPURecord = TimelineRecordFactory::createBackgroundRecord(timelineTimestamp, "gpu", TimelineRecordType::GPUTask, TimelineRecordFactory::createGPUTaskData(event.foreign));
     } else if (m_pendingGPURecord) {
         m_pendingGPURecord->setEndTime(timelineTimestamp);
-        sendEvent(m_pendingGPURecord.release());
         if (!event.foreign && m_state->getBoolean(TimelineAgentState::includeCounters)) {
             RefPtr<TypeBuilder::Timeline::Counters> counters = TypeBuilder::Timeline::Counters::create();
             counters->setGpuMemoryUsedKB(static_cast<double>(event.usedGPUMemoryBytes / 1024));
             counters->setGpuMemoryLimitKB(static_cast<double>(event.limitGPUMemoryBytes / 1024));
-            sendEvent(TimelineRecordFactory::createBackgroundRecord(timelineTimestamp, "gpu", TimelineRecordType::UpdateCounters, counters.release()->asObject()));
+            m_pendingGPURecord->setCounters(counters.release());
         }
+        sendEvent(m_pendingGPURecord.release());
     }
 }
 
@@ -1084,9 +1084,9 @@ void InspectorTimelineAgent::innerAddRecordToTimeline(PassRefPtr<TimelineEvent> 
         TraceEventDispatcher::instance()->processBackgroundEvents();
         sendEvent(record);
     } else {
+        setCounters(record.get());
         TimelineRecordEntry& parent = m_recordStack.last();
         parent.children->addItem(record);
-        addCountersUpdate(parent.children.get());
     }
 }
 
@@ -1097,7 +1097,7 @@ static size_t getUsedHeapSize()
     return info.usedJSHeapSize;
 }
 
-void InspectorTimelineAgent::addCountersUpdate(TypeBuilder::Array<TimelineEvent>* records)
+void InspectorTimelineAgent::setCounters(TimelineEvent* record)
 {
     if (!m_state->getBoolean(TimelineAgentState::includeCounters))
         return;
@@ -1108,7 +1108,7 @@ void InspectorTimelineAgent::addCountersUpdate(TypeBuilder::Array<TimelineEvent>
         counters->setJsEventListeners(InspectorCounters::counterValue(InspectorCounters::JSEventListenerCounter));
     }
     counters->setJsHeapSizeUsed(static_cast<double>(getUsedHeapSize()));
-    records->addItem(TimelineRecordFactory::createGenericRecord(timestamp(), 0, TimelineRecordType::UpdateCounters, counters.release()->asObject()));
+    record->setCounters(counters.release());
 }
 
 void InspectorTimelineAgent::setFrameIdentifier(TimelineEvent* record, LocalFrame* frame)
@@ -1150,6 +1150,9 @@ void InspectorTimelineAgent::didCompleteCurrentRecord(const String& type)
         entry.record->setChildren(entry.children);
         double ts = timestamp();
         entry.record->setEndTime(ts);
+        ptrdiff_t usedHeapSizeDelta = getUsedHeapSize() - entry.usedHeapSizeAtStart;
+        if (usedHeapSizeDelta)
+            entry.record->setUsedHeapSizeDelta(usedHeapSizeDelta);
         addRecordToTimeline(entry.record, ts);
     }
 }
@@ -1208,7 +1211,7 @@ void InspectorTimelineAgent::pushCurrentRecord(PassRefPtr<JSONObject> data, cons
     commitFrameRecord();
     RefPtr<TimelineEvent> record = TimelineRecordFactory::createGenericRecord(timestamp(), captureCallStack ? m_maxCallStackDepth : 0, type, data.get());
     setFrameIdentifier(record.get(), frame);
-    m_recordStack.append(TimelineRecordEntry(record.release(), data, TypeBuilder::Array<TimelineEvent>::create(), type));
+    m_recordStack.append(TimelineRecordEntry(record.release(), data, TypeBuilder::Array<TimelineEvent>::create(), type, getUsedHeapSize()));
     if (hasLowLevelDetails && !m_platformInstrumentationClientInstalledAtStackDepth && !PlatformInstrumentation::hasClient()) {
         m_platformInstrumentationClientInstalledAtStackDepth = m_recordStack.size();
         PlatformInstrumentation::setClient(this);
