@@ -102,6 +102,7 @@
             '<(DEPTH)/media/cast/cast_sender.gyp:*',
             '<(DEPTH)/media/media.gyp:media',
             '<(DEPTH)/testing/gtest.gyp:gtest',
+            '<(DEPTH)/third_party/ffmpeg/ffmpeg.gyp:ffmpeg',
             '<(DEPTH)/third_party/opus/opus.gyp:opus',
             '<(DEPTH)/media/cast/transport/cast_transport.gyp:cast_transport',
             '<(DEPTH)/media/cast/test/utility/utility.gyp:cast_test_utility',

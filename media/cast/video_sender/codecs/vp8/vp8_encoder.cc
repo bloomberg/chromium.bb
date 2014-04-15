@@ -35,7 +35,7 @@ Vp8Encoder::Vp8Encoder(const VideoSenderConfig& video_config,
       max_number_of_repeated_buffers_in_a_row_(
           ComputeMaxNumOfRepeatedBuffes(max_unacked_frames)),
       key_frame_requested_(true),
-      timestamp_(0),
+      first_frame_received_(false),
       last_encoded_frame_id_(kStartFrameId),
       number_of_repeated_buffers_(0) {
   // TODO(pwestin): we need to figure out how to synchronize the acking with the
@@ -105,8 +105,8 @@ void Vp8Encoder::InitEncode(int number_of_encode_threads) {
   config_->g_threads = number_of_encode_threads;
 
   // Rate control settings.
-  // TODO(pwestin): revisit these constants. Currently identical to webrtc.
-  config_->rc_dropframe_thresh = 30;
+  // Never allow the encoder to drop frame internally.
+  config_->rc_dropframe_thresh = 0;
   config_->rc_end_usage = VPX_CBR;
   config_->g_pass = VPX_RC_ONE_PASS;
   config_->rc_resize_allowed = 0;
@@ -121,7 +121,6 @@ void Vp8Encoder::InitEncode(int number_of_encode_threads) {
   // set the maximum target size of any key-frame.
   uint32 rc_max_intra_target = MaxIntraTarget(config_->rc_buf_optimal_sz);
   vpx_codec_flags_t flags = 0;
-  // TODO(mikhal): Tune settings.
   if (vpx_codec_enc_init(
           encoder_.get(), vpx_codec_vp8_cx(), config_.get(), flags)) {
     DCHECK(false) << "vpx_codec_enc_init() failed.";
@@ -175,15 +174,27 @@ bool Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
   // TODO(miu): This is a semi-hack.  We should consider using
   // |video_frame->timestamp()| instead.
   uint32 duration = kVideoFrequency / cast_config_.max_frame_rate;
+
+  // Note: Timestamp here is used for bitrate calculation. The absolute value
+  // is not important.
+  if (!first_frame_received_) {
+    first_frame_received_ = true;
+    first_frame_timestamp_ = video_frame->timestamp();
+  }
+
+  vpx_codec_pts_t timestamp =
+      (video_frame->timestamp() - first_frame_timestamp_).InMicroseconds() *
+      kVideoFrequency / base::Time::kMicrosecondsPerSecond;
+
   if (vpx_codec_encode(encoder_.get(),
                        raw_image_,
-                       timestamp_,
+                       timestamp,
                        duration,
                        flags,
-                       VPX_DL_REALTIME)) {
+                       VPX_DL_REALTIME) != VPX_CODEC_OK) {
+    LOG(ERROR) << "Failed to encode for once.";
     return false;
   }
-  timestamp_ += duration;
 
   // Get encoded frame.
   const vpx_codec_cx_pkt_t* pkt = NULL;
@@ -289,6 +300,9 @@ uint32 Vp8Encoder::GetLatestFrameIdToReference() {
 }
 
 Vp8Encoder::Vp8Buffers Vp8Encoder::GetNextBufferToUpdate() {
+  if (!use_multiple_video_buffers_)
+    return kNoBuffer;
+
   // Update at most one buffer, except for key-frames.
 
   Vp8Buffers buffer_to_update = kNoBuffer;
