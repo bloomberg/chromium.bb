@@ -7,7 +7,6 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 AnalyserNode
 Animation
 AnimationEvent
-AnimationPlayer
 AnimationPlayerEvent
 ApplicationCache
 ApplicationCacheErrorEvent

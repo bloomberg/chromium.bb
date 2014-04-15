@@ -128,7 +128,8 @@ TouchIconLoading
 UserSelectAll status=experimental
 ScriptPromiseOnV8Promise
 WebAnimationsSVG
-WebAnimationsAPI status=experimental
+WebAnimationsElementAnimate status=experimental
+WebAnimationsAPI status=experimental, depends_on=WebAnimationsElementAnimate
 WebAudio condition=WEB_AUDIO, status=stable
 WebGLDraftExtensions status=experimental
 WebMIDI status=test

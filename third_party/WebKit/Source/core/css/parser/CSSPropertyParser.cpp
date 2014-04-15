@@ -3170,7 +3170,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAnimationTimingFunction
     CSSParserValue* value = m_valueList->current();
     if (value->id == CSSValueEase || value->id == CSSValueLinear || value->id == CSSValueEaseIn || value->id == CSSValueEaseOut
         || value->id == CSSValueEaseInOut || value->id == CSSValueStepStart || value->id == CSSValueStepEnd
-        || (value->id == CSSValueStepMiddle && RuntimeEnabledFeatures::webAnimationsAPIEnabled()))
+        || (value->id == CSSValueStepMiddle && RuntimeEnabledFeatures::webAnimationsElementAnimateEnabled()))
         return cssValuePool().createIdentifierValue(value->id);
 
     // We must be a function.
