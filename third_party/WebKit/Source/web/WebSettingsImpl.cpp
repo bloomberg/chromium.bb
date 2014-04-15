@@ -500,11 +500,6 @@ void WebSettingsImpl::setAcceleratedCompositingForAnimationEnabled(bool enabled)
     m_settings->setAcceleratedCompositingForAnimationEnabled(enabled);
 }
 
-void WebSettingsImpl::setAcceleratedCompositingForScrollableFramesEnabled(bool enabled)
-{
-    m_settings->setAcceleratedCompositingForScrollableFramesEnabled(enabled);
-}
-
 void WebSettingsImpl::setAccelerated2dCanvasEnabled(bool enabled)
 {
     m_settings->setAccelerated2dCanvasEnabled(enabled);

@@ -735,7 +735,7 @@ WebCore::CompositingTriggerFlags ChromeClientImpl::allowedCompositingTriggers() 
         flags |= WebCore::CanvasTrigger;
     if (settings.acceleratedCompositingForAnimationEnabled())
         flags |= WebCore::AnimationTrigger;
-    if (settings.acceleratedCompositingForScrollableFramesEnabled())
+    if (settings.compositedScrollingForFramesEnabled())
         flags |= WebCore::ScrollableInnerFrameTrigger;
     if (settings.acceleratedCompositingForFiltersEnabled())
         flags |= WebCore::FilterTrigger;

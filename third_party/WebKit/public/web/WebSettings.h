@@ -73,6 +73,7 @@ public:
     // Not implemented yet, see http://crbug.com/178119
     virtual void setAcceleratedCompositingForTransitionEnabled(bool) { };
     virtual void setAcceleratedCompositingForPluginsEnabled(bool) = 0;
+    // FIXME: Remove this method after updating Chromium code. crbug.com/304900.
     virtual void setAcceleratedCompositingForScrollableFramesEnabled(bool) = 0;
     virtual void setAcceleratedCompositingForVideoEnabled(bool) = 0;
     virtual void setAllowDisplayOfInsecureContent(bool) = 0;

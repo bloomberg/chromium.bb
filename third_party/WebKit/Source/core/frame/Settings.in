@@ -110,9 +110,7 @@ acceleratedCompositingForGpuRasterizationHintEnabled initial=false, invalidate=A
 forceCompositingMode initial=false, invalidate=AcceleratedCompositing
 
 # Works only in conjunction with forceCompositingMode.
-# crbug.com/304900 tracks removal once enabled on all platforms.
-acceleratedCompositingForScrollableFramesEnabled initial=false, invalidate=AcceleratedCompositing
-compositedScrollingForFramesEnabled initial=false
+compositedScrollingForFramesEnabled initial=false, invalidate=AcceleratedCompositing
 
 # 3D canvas (WebGL) support.
 webGLEnabled initial=false

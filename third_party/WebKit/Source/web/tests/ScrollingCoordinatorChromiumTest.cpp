@@ -120,7 +120,6 @@ private:
         settings->setAcceleratedCompositingEnabled(true);
         settings->setAcceleratedCompositingForFixedPositionEnabled(true);
         settings->setAcceleratedCompositingForOverflowScrollEnabled(true);
-        settings->setAcceleratedCompositingForScrollableFramesEnabled(true);
         settings->setCompositedScrollingForFramesEnabled(true);
     }
 

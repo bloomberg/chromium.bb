@@ -82,7 +82,6 @@ public:
         m_webViewImpl->settings()->setAcceleratedCompositingEnabled(true);
         m_webViewImpl->settings()->setAcceleratedCompositingForFixedPositionEnabled(true);
         m_webViewImpl->settings()->setAcceleratedCompositingForOverflowScrollEnabled(true);
-        m_webViewImpl->settings()->setAcceleratedCompositingForScrollableFramesEnabled(true);
         m_webViewImpl->settings()->setCompositedScrollingForFramesEnabled(true);
         m_webViewImpl->setMainFrame(m_mainFrame);
         m_webViewImpl->resize(IntSize(320, 240));
