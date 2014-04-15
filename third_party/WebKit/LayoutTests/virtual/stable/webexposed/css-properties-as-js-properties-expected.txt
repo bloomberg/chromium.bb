@@ -65,7 +65,6 @@ clipRule
 color
 colorInterpolation
 colorInterpolationFilters
-colorProfile
 colorRendering
 content
 counterIncrement

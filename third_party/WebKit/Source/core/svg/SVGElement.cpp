@@ -366,7 +366,6 @@ CSSPropertyID SVGElement::cssPropertyIdForSVGAttributeName(const QualifiedName& 
         mapAttributeToCSSProperty(propertyNameToIdMap, SVGNames::colorAttr);
         mapAttributeToCSSProperty(propertyNameToIdMap, color_interpolationAttr);
         mapAttributeToCSSProperty(propertyNameToIdMap, color_interpolation_filtersAttr);
-        mapAttributeToCSSProperty(propertyNameToIdMap, color_profileAttr);
         mapAttributeToCSSProperty(propertyNameToIdMap, color_renderingAttr);
         mapAttributeToCSSProperty(propertyNameToIdMap, cursorAttr);
         mapAttributeToCSSProperty(propertyNameToIdMap, SVGNames::directionAttr);
@@ -644,7 +643,6 @@ AnimatedPropertyType SVGElement::animatedPropertyTypeForCSSAttribute(const Quali
         cssPropertyMap.set(SVGNames::colorAttr, AnimatedColor);
         cssPropertyMap.set(color_interpolationAttr, AnimatedString);
         cssPropertyMap.set(color_interpolation_filtersAttr, AnimatedString);
-        cssPropertyMap.set(color_profileAttr, AnimatedString);
         cssPropertyMap.set(color_renderingAttr, AnimatedString);
         cssPropertyMap.set(cursorAttr, AnimatedString);
         cssPropertyMap.set(displayAttr, AnimatedString);

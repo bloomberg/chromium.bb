@@ -219,7 +219,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getSVGPropertyCSSV
             return CSSPrimitiveValue::create(svgStyle->maskType());
         case CSSPropertyMarker:
         case CSSPropertyEnableBackground:
-        case CSSPropertyColorProfile:
             // the above properties are not yet implemented in the engine
             break;
     default:

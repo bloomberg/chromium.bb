@@ -418,7 +418,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyStopOpacity: return 364;
     case CSSPropertyColorInterpolation: return 365;
     case CSSPropertyColorInterpolationFilters: return 366;
-    case CSSPropertyColorProfile: return 367;
+    // case CSSPropertyColorProfile: return 367;
     case CSSPropertyColorRendering: return 368;
     case CSSPropertyFill: return 369;
     case CSSPropertyFillOpacity: return 370;

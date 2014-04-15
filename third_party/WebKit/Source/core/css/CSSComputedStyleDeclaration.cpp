@@ -2827,7 +2827,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
         case CSSPropertyStopOpacity:
         case CSSPropertyColorInterpolation:
         case CSSPropertyColorInterpolationFilters:
-        case CSSPropertyColorProfile:
         case CSSPropertyColorRendering:
         case CSSPropertyFill:
         case CSSPropertyFillOpacity:

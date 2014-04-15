@@ -8256,11 +8256,6 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
             validPrimitive = true;
         break;
 
-    case CSSPropertyColorProfile: // auto | sRGB | <name> | <uri> inherit
-        if (id == CSSValueAuto || id == CSSValueSrgb)
-            validPrimitive = true;
-        break;
-
     case CSSPropertyColorInterpolation: // auto | sRGB | linearRGB | inherit
     case CSSPropertyColorInterpolationFilters:
         if (id == CSSValueAuto || id == CSSValueSrgb || id == CSSValueLinearrgb)

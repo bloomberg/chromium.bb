@@ -2175,11 +2175,6 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
 
         break;
     }
-    case CSSPropertyColorProfile:
-    {
-        // Not implemented.
-        break;
-    }
     // end of ident only properties
     case CSSPropertyFill:
     {

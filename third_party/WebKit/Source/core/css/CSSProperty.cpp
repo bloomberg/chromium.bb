@@ -420,7 +420,6 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyClear:
     case CSSPropertyClip:
     case CSSPropertyClipPath:
-    case CSSPropertyColorProfile:
     case CSSPropertyContent:
     case CSSPropertyCounterIncrement:
     case CSSPropertyCounterReset:

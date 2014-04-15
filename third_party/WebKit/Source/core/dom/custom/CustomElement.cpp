@@ -68,9 +68,6 @@ bool CustomElement::isValidName(const AtomicString& name, NameSet validNames)
         DEFINE_STATIC_LOCAL(Vector<AtomicString>, reservedNames, ());
         if (reservedNames.isEmpty()) {
             reservedNames.append(MathMLNames::annotation_xmlTag.localName());
-            // In principle, "color-profile" should exist in the SVGNames
-            // namespace, but we don't implement the color-profile element.
-            reservedNames.append("color-profile");
             reservedNames.append(SVGNames::font_faceTag.localName());
             reservedNames.append(SVGNames::font_face_srcTag.localName());
             reservedNames.append(SVGNames::font_face_uriTag.localName());

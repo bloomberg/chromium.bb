@@ -18,7 +18,6 @@ stop-opacity
 // pointer-events
 color-interpolation
 color-interpolation-filters
-color-profile
 color-rendering
 fill
 fill-opacity
