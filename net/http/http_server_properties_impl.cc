@@ -4,8 +4,10 @@
 
 #include "net/http/http_server_properties_impl.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -13,10 +15,16 @@
 
 namespace net {
 
+namespace {
+
 // TODO(simonjam): Run experiments with different values of this to see what
 // value is good at avoiding evictions without eating too much memory. Until
 // then, this is just a bad guess.
-static const int kDefaultNumHostsToRemember = 200;
+const int kDefaultNumHostsToRemember = 200;
+
+const uint64 kBrokenAlternateProtocolDelaySecs = 300;
+
+}  // namespace
 
 HttpServerPropertiesImpl::HttpServerPropertiesImpl()
     : alternate_protocol_map_(AlternateProtocolMap::NO_AUTO_EVICT),
@@ -289,6 +297,20 @@ void HttpServerPropertiesImpl::SetBrokenAlternateProtocol(
   PortAlternateProtocolPair alternate;
   alternate.protocol = ALTERNATE_PROTOCOL_BROKEN;
   alternate_protocol_map_.Put(server, alternate);
+
+  int count = ++broken_alternate_protocol_map_[server];
+  base::TimeDelta delay =
+      base::TimeDelta::FromSeconds(kBrokenAlternateProtocolDelaySecs);
+  BrokenAlternateProtocolEntry entry;
+  entry.server = server;
+  entry.when = base::TimeTicks::Now() + delay * (1 << (count - 1));
+  broken_alternate_protocol_list_.push_back(entry);
+  // If this is the only entry in the list, schedule an expiration task.
+  // Otherwse it will be rescheduled automatically when the pending
+  // task runs.
+  if (broken_alternate_protocol_list_.size() == 1) {
+    ScheduleBrokenAlternateProtocolMappingsExpiration();
+  }
 }
 
 void HttpServerPropertiesImpl::ClearAlternateProtocol(
@@ -415,6 +437,37 @@ HttpServerPropertiesImpl::GetCanonicalHost(HostPortPair server) const {
   }
 
   return canonical_host_to_origin_map_.end();
+}
+
+void HttpServerPropertiesImpl::ExpireBrokenAlternateProtocolMappings() {
+  base::TimeTicks now = base::TimeTicks::Now();
+  while (!broken_alternate_protocol_list_.empty()) {
+    BrokenAlternateProtocolEntry entry =
+        broken_alternate_protocol_list_.front();
+    if (now < entry.when) {
+      break;
+    }
+
+    ClearAlternateProtocol(entry.server);
+    broken_alternate_protocol_list_.pop_front();
+  }
+  ScheduleBrokenAlternateProtocolMappingsExpiration();
+}
+
+void
+HttpServerPropertiesImpl::ScheduleBrokenAlternateProtocolMappingsExpiration() {
+  if (broken_alternate_protocol_list_.empty()) {
+    return;
+  }
+  base::TimeTicks now = base::TimeTicks::Now();
+  base::TimeTicks when = broken_alternate_protocol_list_.front().when;
+  base::TimeDelta delay = when > now ? when - now : base::TimeDelta();
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(
+          &HttpServerPropertiesImpl::ExpireBrokenAlternateProtocolMappings,
+          weak_ptr_factory_.GetWeakPtr()),
+      delay);
 }
 
 }  // namespace net

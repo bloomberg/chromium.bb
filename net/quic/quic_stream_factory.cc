@@ -53,8 +53,6 @@ enum CreateSessionFailure {
   CREATION_ERROR_MAX
 };
 
-const uint64 kBrokenAlternateProtocolDelaySecs = 300;
-
 // The initial receive window size for both streams and sessions.
 const int32 kInitialReceiveWindowSize = 10 * 1024 * 1024;  // 10MB
 
@@ -568,23 +566,9 @@ void QuicStreamFactory::OnSessionGoingAway(QuicClientSession* session) {
       http_server_properties_->SetBrokenAlternateProtocol(it->host_port_pair());
       UMA_HISTOGRAM_COUNTS("Net.QuicHandshakeNotConfirmedNumPacketsReceived",
                            stats.packets_received);
-      int count = ++broken_alternate_protocol_map_[it->host_port_pair()];
-      base::TimeDelta delay =
-          base::TimeDelta::FromSeconds(kBrokenAlternateProtocolDelaySecs);
-      BrokenAlternateProtocolEntry entry;
-      entry.origin = it->host_port_pair();
-      entry.when = base::TimeTicks::Now() + delay * (1 << (count - 1));
-      broken_alternate_protocol_list_.push_back(entry);
-      // If this is the only entry in the list, schedule an expiration task.
-      // Otherwse it will be rescheduled automatically when the pending
-      // task runs.
-      if (broken_alternate_protocol_list_.size() == 1) {
-        ScheduleBrokenAlternateProtocolMappingsExpiration();
-      }
       continue;
     }
 
-    broken_alternate_protocol_map_.erase(it->host_port_pair());
     HttpServerProperties::NetworkStats network_stats;
     network_stats.rtt = base::TimeDelta::FromMicroseconds(stats.rtt);
     network_stats.bandwidth_estimate = stats.estimated_bandwidth;
@@ -812,35 +796,6 @@ void QuicStreamFactory::InitializeCachedState(
     // Don't check the certificates for insecure QUIC.
     cached->SetProofValid();
   }
-}
-
-void QuicStreamFactory::ExpireBrokenAlternateProtocolMappings() {
-  base::TimeTicks now = base::TimeTicks::Now();
-  while (!broken_alternate_protocol_list_.empty()) {
-    BrokenAlternateProtocolEntry entry =
-        broken_alternate_protocol_list_.front();
-    if (now < entry.when) {
-      break;
-    }
-
-    http_server_properties_->ClearAlternateProtocol(entry.origin);
-    broken_alternate_protocol_list_.pop_front();
-  }
-  ScheduleBrokenAlternateProtocolMappingsExpiration();
-}
-
-void QuicStreamFactory::ScheduleBrokenAlternateProtocolMappingsExpiration() {
-  if (broken_alternate_protocol_list_.empty()) {
-    return;
-  }
-  base::TimeTicks now = base::TimeTicks::Now();
-  base::TimeTicks when = broken_alternate_protocol_list_.front().when;
-  base::TimeDelta delay = when > now ? when - now : base::TimeDelta();
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&QuicStreamFactory::ExpireBrokenAlternateProtocolMappings,
-                 weak_factory_.GetWeakPtr()),
-      delay);
 }
 
 }  // namespace net
