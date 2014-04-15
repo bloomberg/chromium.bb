@@ -130,7 +130,7 @@ class CQMasterTable(CQStatsTable):
 
   # Bump this number whenever this class adds new data columns, or changes
   # the values of existing data columns.
-  SHEETS_VERSION = 0
+  SHEETS_VERSION = 1
 
   # These must match up with the column names on the spreadsheet.
   COL_BUILD_NUMBER = 'build number'
