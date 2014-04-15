@@ -42,6 +42,8 @@ base::FilePath GetChromeInstallPath(bool system_install,
 }
 
 base::FilePath GetChromeUserDataPath(BrowserDistribution* dist) {
+  // TODO(msw): Remove this method and make callers use PathService directly to
+  // obtain the right DIR_USER_DATA.
   return GetChromeInstallBasePath(false, dist, kInstallUserDataDir);
 }
 

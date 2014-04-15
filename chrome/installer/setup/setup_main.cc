@@ -855,10 +855,8 @@ installer::InstallStatus ShowEULADialog(const base::string16& inner_frame) {
 // accepted.
 bool CreateEULASentinel(BrowserDistribution* dist) {
   base::FilePath eula_sentinel;
-  if (!InstallUtil::GetSentinelFilePath(installer::kEULASentinelFile, dist,
-                                        &eula_sentinel)) {
+  if (!InstallUtil::GetEULASentinelFilePath(&eula_sentinel))
     return false;
-  }
 
   return (base::CreateDirectory(eula_sentinel.DirName()) &&
           base::WriteFile(eula_sentinel, "", 0) != -1);

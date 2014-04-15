@@ -109,11 +109,8 @@ class InstallUtil {
   // Returns true if the sentinel file exists (or the path cannot be obtained).
   static bool IsFirstRunSentinelPresent();
 
-  // Populates |path| with the path to |file| in the sentinel directory for
-  // |dist|. Returns false on error.
-  static bool GetSentinelFilePath(const base::FilePath::CharType* file,
-                                  BrowserDistribution* dist,
-                                  base::FilePath* path);
+  // Populates |path| with EULA sentinel file path. Returns false on error.
+  static bool GetEULASentinelFilePath(base::FilePath* path);
 
   // Deletes the registry key at path key_path under the key given by root_key.
   static bool DeleteRegistryKey(HKEY root_key, const base::string16& key_path);

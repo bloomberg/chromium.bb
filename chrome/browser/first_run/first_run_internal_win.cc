@@ -78,12 +78,6 @@ bool LaunchSetupForEula(const base::FilePath::StringType& value,
   }
 }
 
-bool GetEULASentinelFilePath(base::FilePath* path) {
-  return InstallUtil::GetSentinelFilePath(
-      installer::kEULASentinelFile, BrowserDistribution::GetDistribution(),
-      path);
-}
-
 // Returns true if the EULA is required but has not been accepted by this user.
 // The EULA is considered having been accepted if the user has gotten past
 // first run in the "other" environment (desktop or metro).
@@ -94,7 +88,7 @@ bool IsEULANotAccepted(installer::MasterPreferences* install_prefs) {
     base::FilePath eula_sentinel;
     // Be conservative and show the EULA if the path to the sentinel can't be
     // determined.
-    if (!GetEULASentinelFilePath(&eula_sentinel) ||
+    if (!InstallUtil::GetEULASentinelFilePath(&eula_sentinel) ||
         !base::PathExists(eula_sentinel)) {
       return true;
     }
@@ -115,11 +109,9 @@ bool WriteEULAtoTempFile(base::FilePath* eula_path) {
 // accepted.
 bool CreateEULASentinel() {
   base::FilePath eula_sentinel;
-  if (!GetEULASentinelFilePath(&eula_sentinel))
-    return false;
-
-  return (base::CreateDirectory(eula_sentinel.DirName()) &&
-          base::WriteFile(eula_sentinel, "", 0) != -1);
+  return InstallUtil::GetEULASentinelFilePath(&eula_sentinel) &&
+      base::CreateDirectory(eula_sentinel.DirName()) &&
+      base::WriteFile(eula_sentinel, "", 0) != -1;
 }
 
 }  // namespace

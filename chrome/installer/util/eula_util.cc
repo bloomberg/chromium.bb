@@ -11,7 +11,6 @@
 #include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/master_preferences_constants.h"
-#include "chrome/installer/util/util_constants.h"
 
 namespace installer {
 
@@ -22,8 +21,7 @@ bool IsEULAAcceptanceFlagged(BrowserDistribution* dist) {
   // doing so is required by master_preferences. Assume the EULA has not been
   // accepted if the path to the sentinel cannot be determined.
   base::FilePath eula_sentinel;
-  return InstallUtil::GetSentinelFilePath(kEULASentinelFile, dist,
-                                          &eula_sentinel) &&
+  return InstallUtil::GetEULASentinelFilePath(&eula_sentinel) &&
       base::PathExists(eula_sentinel);
 }
 
