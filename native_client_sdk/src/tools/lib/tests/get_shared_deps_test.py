@@ -14,13 +14,15 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 LIB_DIR = os.path.dirname(SCRIPT_DIR)
 TOOLS_DIR = os.path.dirname(LIB_DIR)
 DATA_DIR = os.path.join(SCRIPT_DIR, 'data')
-CHROME_SRC = os.path.dirname(os.path.dirname(os.path.dirname(TOOLS_DIR)))
 
 sys.path.append(LIB_DIR)
 sys.path.append(TOOLS_DIR)
 
-import getos
+import build_paths
 import get_shared_deps
+
+TOOLCHAIN_OUT = os.path.join(build_paths.OUT_DIR, 'sdk_tests', 'toolchain')
+NACL_X86_GLIBC_TOOLCHAIN = os.path.join(TOOLCHAIN_OUT, 'nacl_x86_glibc')
 
 
 def StripDependencies(deps):
@@ -42,9 +44,7 @@ def StripDependencies(deps):
 class TestGetNeeded(unittest.TestCase):
   def setUp(self):
     self.tempdir = None
-    toolchain = os.path.join(CHROME_SRC, 'native_client', 'toolchain')
-    self.toolchain = os.path.join(toolchain, '%s_x86' % getos.GetPlatform(),
-                                  'nacl_x86_glibc')
+    self.toolchain = NACL_X86_GLIBC_TOOLCHAIN
     self.objdump = os.path.join(self.toolchain, 'bin', 'i686-nacl-objdump')
     if os.name == 'nt':
       self.objdump += '.exe'
