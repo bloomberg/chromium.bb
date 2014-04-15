@@ -1,5 +1,4 @@
 #!/usr/bin/python
-
 # Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -41,10 +40,10 @@ class MergeTest(cros_test_lib.OutputTestCase, cros_test_lib.TempDirTestCase):
           mps.COL_OVERLAY: 'portage',
           COL_VER_x86: '1.2.3',
           COL_VER_arm: '1.2.3',
-          mps.COL_TARGET: 'chromeos-dev virtual/target-sdk'}
+          mps.COL_TARGET: 'virtual/target-os-dev virtual/target-sdk'}
   ROW0_FINAL = dict(ROW0)
   ROW0_FINAL[mps.COL_PACKAGE] = ROW0[mps.COL_PACKAGE] + ':' + ROW0[mps.COL_SLOT]
-  ROW0_FINAL[COL_CROS_TARGET] = 'chromeos-dev'
+  ROW0_FINAL[COL_CROS_TARGET] = 'virtual/target-os-dev'
   ROW0_FINAL[COL_HOST_TARGET] = 'virtual/target-sdk'
   ROW0_FINAL[COL_CMP_ARCH] = 'same'
 
@@ -64,10 +63,10 @@ class MergeTest(cros_test_lib.OutputTestCase, cros_test_lib.TempDirTestCase):
           mps.COL_OVERLAY: 'portage',
           COL_VER_x86: '1.2.3',
           COL_VER_arm: '',
-          mps.COL_TARGET: 'chromeos-dev world'}
+          mps.COL_TARGET: 'virtual/target-os-dev world'}
   ROW2_FINAL = dict(ROW2)
   ROW2_FINAL[mps.COL_PACKAGE] = ROW2[mps.COL_PACKAGE] + ':' + ROW2[mps.COL_SLOT]
-  ROW2_FINAL[COL_CROS_TARGET] = 'chromeos-dev'
+  ROW2_FINAL[COL_CROS_TARGET] = 'virtual/target-os-dev'
   ROW2_FINAL[COL_HOST_TARGET] = 'world'
   ROW2_FINAL[COL_CMP_ARCH] = ''
 
@@ -100,7 +99,7 @@ class MergeTest(cros_test_lib.OutputTestCase, cros_test_lib.TempDirTestCase):
 
   def testGetCrosTargetRank(self):
     cros_rank = mps._GetCrosTargetRank('virtual/target-os')
-    crosdev_rank = mps._GetCrosTargetRank('chromeos-dev')
+    crosdev_rank = mps._GetCrosTargetRank('virtual/target-os-dev')
     crostest_rank = mps._GetCrosTargetRank('chromeos-test')
     other_rank = mps._GetCrosTargetRank('foobar')
 
@@ -113,19 +112,21 @@ class MergeTest(cros_test_lib.OutputTestCase, cros_test_lib.TempDirTestCase):
 
   def testProcessTargets(self):
     test_in = [
-        ['virtual/target-os', 'chromeos-dev'],
-        ['world', 'virtual/target-os', 'chromeos-dev', 'chromeos-test'],
-        ['world', 'virtual/target-sdk', 'chromeos-dev', 'chromeos-test'],
+        ['virtual/target-os', 'virtual/target-os-dev'],
+        ['world', 'virtual/target-os', 'virtual/target-os-dev',
+         'chromeos-test'],
+        ['world', 'virtual/target-sdk', 'virtual/target-os-dev',
+         'chromeos-test'],
         ]
     test_out = [
-        ['chromeos-dev'],
+        ['virtual/target-os-dev'],
         ['chromeos-test', 'world'],
         ['chromeos-test', 'virtual/target-sdk', 'world'],
         ]
     test_rev_out = [
         ['virtual/target-os'],
         ['virtual/target-os', 'world'],
-        ['chromeos-dev', 'virtual/target-sdk', 'world'],
+        ['virtual/target-os-dev', 'virtual/target-sdk', 'world'],
         ]
 
     for targets, good_out, rev_out in zip(test_in, test_out, test_rev_out):
@@ -146,7 +147,7 @@ class MergeTest(cros_test_lib.OutputTestCase, cros_test_lib.TempDirTestCase):
               mps.COL_SLOT: '1',
               mps.COL_OVERLAY: 'portage',
               self.COL_VER_arm: '1.2.4',
-              mps.COL_TARGET: 'chromeos-dev world'}
+              mps.COL_TARGET: 'virtual/target-os-dev world'}
     row1_2 = {mps.COL_PACKAGE: 'dev/bar',
               mps.COL_SLOT: '0',
               mps.COL_OVERLAY: 'chromiumos-overlay',
@@ -188,13 +189,13 @@ class MergeTest(cros_test_lib.OutputTestCase, cros_test_lib.TempDirTestCase):
                   mps.COL_OVERLAY: 'portage',
                   self.COL_VER_x86: '1.2.3',
                   self.COL_VER_arm: '1.2.3',
-                  mps.COL_TARGET: 'chromeos-dev virtual/target-sdk'}
+                  mps.COL_TARGET: 'virtual/target-os-dev virtual/target-sdk'}
     final_row3 = {mps.COL_PACKAGE: 'lib/foo',
                   mps.COL_SLOT: '1',
                   mps.COL_OVERLAY: 'portage',
                   self.COL_VER_x86: '1.2.3',
                   self.COL_VER_arm: '1.2.4',
-                  mps.COL_TARGET: 'chromeos-dev world'}
+                  mps.COL_TARGET: 'virtual/target-os-dev world'}
 
     final_rows = (final_row0, final_row1, final_row2, final_row3)
     for ix, row_out in enumerate(final_rows):

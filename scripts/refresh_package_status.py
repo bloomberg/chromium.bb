@@ -79,12 +79,12 @@ def RefreshPackageStatus(board, csv_root, test,
   crosdev_csv = '%s/chromeos-dev-boards.csv' % csv_root
   cros_build_lib.RunCommand(cpu_cmd_baseline +
                             ['--to-csv=%s' % crosdev_csv,
-                             'virtual/target-os', 'chromeos-dev'])
+                             'virtual/target-os', 'virtual/target-os-dev'])
 
   crostest_csv = '%s/chromeos-test-boards.csv' % csv_root
   cros_build_lib.RunCommand(cpu_cmd_baseline +
                             ['--to-csv=%s' % crostest_csv,
-                             'virtual/target-os', 'chromeos-dev',
+                             'virtual/target-os', 'virtual/target-os-dev',
                              'chromeos-test'])
 
   # Run all host targets for the sdk.

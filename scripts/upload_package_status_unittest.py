@@ -96,7 +96,7 @@ class UploaderTest(cros_test_lib.MoxOutputTestCase):
           COL_VER: '1.2.3-r1',
           COL_STABLE_UP: '1.2.3-r2',
           COL_LATEST_UP: '1.2.4',
-          COL_TARGET: 'chromeos-dev',
+          COL_TARGET: 'virtual/target-os-dev',
           }
   ROW2 = {COL_PKG: 'sys-dev/raster',
           COL_SLOT: '1',

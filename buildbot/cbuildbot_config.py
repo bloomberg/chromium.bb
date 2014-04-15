@@ -964,7 +964,7 @@ brillo = _config(
 # Base brillo config don't build tests and they only need the base image.
 brillo_non_testable = brillo.derive(
   # Literally build the minimal possible.
-  packages=['virtual/target-os', 'chromeos-base/chromeos-dev'],
+  packages=['virtual/target-os', 'virtual/target-os-dev'],
   images=['base', 'dev'],
 
   # Disable all the tests!
