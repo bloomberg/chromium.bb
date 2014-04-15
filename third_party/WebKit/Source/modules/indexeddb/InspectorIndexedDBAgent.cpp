@@ -629,13 +629,7 @@ void InspectorIndexedDBAgent::requestDatabaseNames(ErrorString* errorString, con
     if (!idbFactory)
         return;
 
-    // FIXME: This should probably use ScriptState/ScriptScope instead of V8 API
-    v8::Isolate* isolate = toIsolate(frame);
-    v8::HandleScope handleScope(isolate);
-    v8::Handle<v8::Context> context = toV8Context(isolate, document->frame(), DOMWrapperWorld::mainWorld());
-    ASSERT(!context.IsEmpty());
-    v8::Context::Scope contextScope(context);
-
+    NewScriptState::Scope scope(NewScriptState::forMainWorld(frame));
     TrackExceptionState exceptionState;
     RefPtr<IDBRequest> idbRequest = idbFactory->getDatabaseNames(document, exceptionState);
     if (exceptionState.hadException()) {
@@ -655,14 +649,9 @@ void InspectorIndexedDBAgent::requestDatabase(ErrorString* errorString, const St
     if (!idbFactory)
         return;
 
-    // FIXME: This should probably use ScriptState/ScriptScope instead of V8 API
-    v8::Isolate* isolate = toIsolate(frame);
-    v8::HandleScope handleScope(isolate);
-    v8::Handle<v8::Context> context = toV8Context(isolate, document->frame(), DOMWrapperWorld::mainWorld());
-    ASSERT(!context.IsEmpty());
-    v8::Context::Scope contextScope(context);
-
-    RefPtr<DatabaseLoader> databaseLoader = DatabaseLoader::create(NewScriptState::current(isolate), requestCallback);
+    NewScriptState* scriptState = NewScriptState::forMainWorld(frame);
+    NewScriptState::Scope scope(scriptState);
+    RefPtr<DatabaseLoader> databaseLoader = DatabaseLoader::create(scriptState, requestCallback);
     databaseLoader->start(idbFactory, document->securityOrigin(), databaseName);
 }
 
@@ -682,14 +671,9 @@ void InspectorIndexedDBAgent::requestData(ErrorString* errorString, const String
         return;
     }
 
-    // FIXME: This should probably use ScriptState/ScriptScope instead of V8 API
-    v8::Isolate* isolate = toIsolate(frame);
-    v8::HandleScope handleScope(isolate);
-    v8::Handle<v8::Context> context = toV8Context(isolate, document->frame(), DOMWrapperWorld::mainWorld());
-    ASSERT(!context.IsEmpty());
-    v8::Context::Scope contextScope(context);
-
-    RefPtr<DataLoader> dataLoader = DataLoader::create(NewScriptState::current(isolate), requestCallback, objectStoreName, indexName, idbKeyRange, skipCount, pageSize);
+    NewScriptState* scriptState = NewScriptState::forMainWorld(frame);
+    NewScriptState::Scope scope(scriptState);
+    RefPtr<DataLoader> dataLoader = DataLoader::create(scriptState, requestCallback, objectStoreName, indexName, idbKeyRange, skipCount, pageSize);
     dataLoader->start(idbFactory, document->securityOrigin(), databaseName);
 }
 
@@ -787,14 +771,9 @@ void InspectorIndexedDBAgent::clearObjectStore(ErrorString* errorString, const S
     if (!idbFactory)
         return;
 
-    // FIXME: This should probably use ScriptState/ScriptScope instead of V8 API
-    v8::Isolate* isolate = toIsolate(frame);
-    v8::HandleScope handleScope(isolate);
-    v8::Handle<v8::Context> context = toV8Context(isolate, document->frame(), DOMWrapperWorld::mainWorld());
-    ASSERT(!context.IsEmpty());
-    v8::Context::Scope contextScope(context);
-
-    RefPtr<ClearObjectStore> clearObjectStore = ClearObjectStore::create(NewScriptState::current(isolate), objectStoreName, requestCallback);
+    NewScriptState* scriptState = NewScriptState::forMainWorld(frame);
+    NewScriptState::Scope scope(scriptState);
+    RefPtr<ClearObjectStore> clearObjectStore = ClearObjectStore::create(scriptState, objectStoreName, requestCallback);
     clearObjectStore->start(idbFactory, document->securityOrigin(), databaseName);
 }
 

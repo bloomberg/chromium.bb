@@ -14,6 +14,7 @@ namespace WebCore {
 
 class DOMWrapperWorld;
 class ExecutionContext;
+class LocalFrame;
 
 // NewScriptState is created when v8::Context is created.
 // NewScriptState is destroyed when v8::Context is garbage-collected and
@@ -60,6 +61,8 @@ public:
         RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(scriptState->context() == context);
         return scriptState;
     }
+
+    static NewScriptState* forMainWorld(LocalFrame*);
 
     v8::Isolate* isolate() const { return m_isolate; }
     DOMWrapperWorld& world() const { return *m_world; }

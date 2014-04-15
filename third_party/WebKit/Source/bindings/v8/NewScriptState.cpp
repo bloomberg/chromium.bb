@@ -6,6 +6,7 @@
 #include "bindings/v8/NewScriptState.h"
 
 #include "bindings/v8/V8Binding.h"
+#include "core/frame/LocalFrame.h"
 
 namespace WebCore {
 
@@ -45,6 +46,13 @@ NewScriptState::~NewScriptState()
 ExecutionContext* NewScriptState::executionContext() const
 {
     return toExecutionContext(context());
+}
+
+NewScriptState* NewScriptState::forMainWorld(LocalFrame* frame)
+{
+    v8::Isolate* isolate = toIsolate(frame);
+    v8::HandleScope handleScope(isolate);
+    return NewScriptState::from(toV8Context(isolate, frame, DOMWrapperWorld::mainWorld()));
 }
 
 }
