@@ -68,8 +68,8 @@ public:
     PassRefPtr<IDBRequest> openCursor(ExecutionContext*, const ScriptValue& range, const String& direction, ExceptionState&);
     PassRefPtr<IDBRequest> openKeyCursor(ExecutionContext*, const ScriptValue& range, const String& direction, ExceptionState&);
     PassRefPtr<IDBRequest> get(ExecutionContext*, const ScriptValue& key, ExceptionState&);
-    PassRefPtr<IDBRequest> add(ScriptState*, ScriptValue&, const ScriptValue& key, ExceptionState&);
-    PassRefPtr<IDBRequest> put(ScriptState*, ScriptValue&, const ScriptValue& key, ExceptionState&);
+    PassRefPtr<IDBRequest> add(ExecutionContext*, ScriptValue&, const ScriptValue& key, ExceptionState&);
+    PassRefPtr<IDBRequest> put(ExecutionContext*, ScriptValue&, const ScriptValue& key, ExceptionState&);
     PassRefPtr<IDBRequest> deleteFunction(ExecutionContext*, const ScriptValue& key, ExceptionState&);
     PassRefPtr<IDBRequest> clear(ExecutionContext*, ExceptionState&);
 
@@ -87,7 +87,7 @@ public:
     PassRefPtr<IDBRequest> count(ExecutionContext*, const ScriptValue& range, ExceptionState&);
 
     // Used by IDBCursor::update():
-    PassRefPtr<IDBRequest> put(blink::WebIDBDatabase::PutMode, PassRefPtr<IDBAny> source, ScriptState*, ScriptValue&, PassRefPtr<IDBKey>, ExceptionState&);
+    PassRefPtr<IDBRequest> put(ExecutionContext*, blink::WebIDBDatabase::PutMode, PassRefPtr<IDBAny> source, ScriptValue&, PassRefPtr<IDBKey>, ExceptionState&);
 
     // Used internally and by InspectorIndexedDBAgent:
     PassRefPtr<IDBRequest> openCursor(ExecutionContext*, PassRefPtr<IDBKeyRange>, blink::WebIDBCursor::Direction, blink::WebIDBDatabase::TaskType = blink::WebIDBDatabase::NormalTask);
@@ -109,7 +109,7 @@ private:
 
     PassRefPtr<IDBIndex> createIndex(NewScriptState*, const String& name, const IDBKeyPath&, const Dictionary&, ExceptionState&);
     PassRefPtr<IDBIndex> createIndex(NewScriptState*, const String& name, const IDBKeyPath&, bool unique, bool multiEntry, ExceptionState&);
-    PassRefPtr<IDBRequest> put(blink::WebIDBDatabase::PutMode, PassRefPtr<IDBAny> source, ScriptState*, ScriptValue&, const ScriptValue& key, ExceptionState&);
+    PassRefPtr<IDBRequest> put(ExecutionContext*, blink::WebIDBDatabase::PutMode, PassRefPtr<IDBAny> source, ScriptValue&, const ScriptValue& key, ExceptionState&);
 
     int64_t findIndexId(const String& name) const;
     bool containsIndex(const String& name) const

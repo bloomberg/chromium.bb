@@ -31,8 +31,8 @@
     readonly attribute IDBTransaction transaction;
     readonly attribute boolean autoIncrement;
 
-    [CallWith=ScriptState, RaisesException] IDBRequest put(any value, [Default=Undefined] optional any key);
-    [CallWith=ScriptState, RaisesException] IDBRequest add(any value, [Default=Undefined] optional any key);
+    [CallWith=ExecutionContext, RaisesException] IDBRequest put(any value, [Default=Undefined] optional any key);
+    [CallWith=ExecutionContext, RaisesException] IDBRequest add(any value, [Default=Undefined] optional any key);
     [CallWith=ExecutionContext, ImplementedAs=deleteFunction, RaisesException] IDBRequest delete(any key);
     [CallWith=ExecutionContext, RaisesException] IDBRequest clear();
     [CallWith=ExecutionContext, RaisesException] IDBRequest get(any key);

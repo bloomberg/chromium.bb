@@ -29,7 +29,7 @@
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "bindings/v8/IDBBindingUtilities.h"
-#include "bindings/v8/ScriptState.h"
+#include "bindings/v8/NewScriptState.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
@@ -127,25 +127,25 @@ static void generateIndexKeysForValue(v8::Isolate* isolate, const IDBIndexMetada
     }
 }
 
-PassRefPtr<IDBRequest> IDBObjectStore::add(ScriptState* state, ScriptValue& value, const ScriptValue& key, ExceptionState& exceptionState)
+PassRefPtr<IDBRequest> IDBObjectStore::add(ExecutionContext* executionContext, ScriptValue& value, const ScriptValue& key, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBObjectStore::add");
-    return put(WebIDBDatabase::AddOnly, IDBAny::create(this), state, value, key, exceptionState);
+    return put(executionContext, WebIDBDatabase::AddOnly, IDBAny::create(this), value, key, exceptionState);
 }
 
-PassRefPtr<IDBRequest> IDBObjectStore::put(ScriptState* state, ScriptValue& value, const ScriptValue& key, ExceptionState& exceptionState)
+PassRefPtr<IDBRequest> IDBObjectStore::put(ExecutionContext* executionContext, ScriptValue& value, const ScriptValue& key, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBObjectStore::put");
-    return put(WebIDBDatabase::AddOrUpdate, IDBAny::create(this), state, value, key, exceptionState);
+    return put(executionContext, WebIDBDatabase::AddOrUpdate, IDBAny::create(this), value, key, exceptionState);
 }
 
-PassRefPtr<IDBRequest> IDBObjectStore::put(WebIDBDatabase::PutMode putMode, PassRefPtr<IDBAny> source, ScriptState* state, ScriptValue& value, const ScriptValue& keyValue, ExceptionState& exceptionState)
+PassRefPtr<IDBRequest> IDBObjectStore::put(ExecutionContext* executionContext, WebIDBDatabase::PutMode putMode, PassRefPtr<IDBAny> source, ScriptValue& value, const ScriptValue& keyValue, ExceptionState& exceptionState)
 {
-    RefPtr<IDBKey> key = keyValue.isUndefined() ? nullptr : scriptValueToIDBKey(state->isolate(), keyValue);
-    return put(putMode, source, state, value, key.release(), exceptionState);
+    RefPtr<IDBKey> key = keyValue.isUndefined() ? nullptr : scriptValueToIDBKey(toIsolate(executionContext), keyValue);
+    return put(executionContext, putMode, source, value, key.release(), exceptionState);
 }
 
-PassRefPtr<IDBRequest> IDBObjectStore::put(WebIDBDatabase::PutMode putMode, PassRefPtr<IDBAny> source, ScriptState* state, ScriptValue& value, PassRefPtr<IDBKey> prpKey, ExceptionState& exceptionState)
+PassRefPtr<IDBRequest> IDBObjectStore::put(ExecutionContext* executionContext, WebIDBDatabase::PutMode putMode, PassRefPtr<IDBAny> source, ScriptValue& value, PassRefPtr<IDBKey> prpKey, ExceptionState& exceptionState)
 {
     RefPtr<IDBKey> key = prpKey;
     if (isDeleted()) {
@@ -165,7 +165,7 @@ PassRefPtr<IDBRequest> IDBObjectStore::put(WebIDBDatabase::PutMode putMode, Pass
         return nullptr;
     }
 
-    RefPtr<SerializedScriptValue> serializedValue = SerializedScriptValue::create(value, 0, exceptionState, state);
+    RefPtr<SerializedScriptValue> serializedValue = SerializedScriptValue::create(value, 0, exceptionState, toIsolate(executionContext));
     if (exceptionState.hadException())
         return nullptr;
 
@@ -179,7 +179,6 @@ PassRefPtr<IDBRequest> IDBObjectStore::put(WebIDBDatabase::PutMode putMode, Pass
     const bool usesInLineKeys = !keyPath.isNull();
     const bool hasKeyGenerator = autoIncrement();
 
-    ExecutionContext* context = state->executionContext();
     if (putMode != WebIDBDatabase::CursorUpdate && usesInLineKeys && key) {
         exceptionState.throwDOMException(DataError, "The object store uses in-line keys and the key parameter was provided.");
         return nullptr;
@@ -189,7 +188,7 @@ PassRefPtr<IDBRequest> IDBObjectStore::put(WebIDBDatabase::PutMode putMode, Pass
         return nullptr;
     }
     if (usesInLineKeys) {
-        RefPtr<IDBKey> keyPathKey = createIDBKeyFromScriptValueAndKeyPath(state->isolate(), value, keyPath);
+        RefPtr<IDBKey> keyPathKey = createIDBKeyFromScriptValueAndKeyPath(toIsolate(executionContext), value, keyPath);
         if (keyPathKey && !keyPathKey->isValid()) {
             exceptionState.throwDOMException(DataError, "Evaluating the object store's key path yielded a value that is not a valid key.");
             return nullptr;
@@ -199,7 +198,7 @@ PassRefPtr<IDBRequest> IDBObjectStore::put(WebIDBDatabase::PutMode putMode, Pass
             return nullptr;
         }
         if (hasKeyGenerator && !keyPathKey) {
-            if (!canInjectIDBKeyIntoScriptValue(state->isolate(), value, keyPath)) {
+            if (!canInjectIDBKeyIntoScriptValue(toIsolate(executionContext), value, keyPath)) {
                 exceptionState.throwDOMException(DataError, "A generated key could not be inserted into the value.");
                 return nullptr;
             }
@@ -216,12 +215,12 @@ PassRefPtr<IDBRequest> IDBObjectStore::put(WebIDBDatabase::PutMode putMode, Pass
     Vector<IndexKeys> indexKeys;
     for (IDBObjectStoreMetadata::IndexMap::const_iterator it = m_metadata.indexes.begin(); it != m_metadata.indexes.end(); ++it) {
         IndexKeys keys;
-        generateIndexKeysForValue(state->isolate(), it->value, value, &keys);
+        generateIndexKeysForValue(toIsolate(executionContext), it->value, value, &keys);
         indexIds.append(it->key);
         indexKeys.append(keys);
     }
 
-    RefPtr<IDBRequest> request = IDBRequest::create(context, source, m_transaction.get());
+    RefPtr<IDBRequest> request = IDBRequest::create(executionContext, source, m_transaction.get());
     Vector<char> wireBytes;
     serializedValue->toWireBytes(wireBytes);
     RefPtr<SharedBuffer> valueBuffer = SharedBuffer::adoptVector(wireBytes);

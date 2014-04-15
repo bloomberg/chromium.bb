@@ -64,7 +64,7 @@ public:
     ScriptValue value(NewScriptState*);
     ScriptValue source(NewScriptState*) const;
 
-    PassRefPtr<IDBRequest> update(ScriptState*, ScriptValue&, ExceptionState&);
+    PassRefPtr<IDBRequest> update(ExecutionContext*, ScriptValue&, ExceptionState&);
     void advance(unsigned long, ExceptionState&);
     void continueFunction(ExecutionContext*, const ScriptValue& key, ExceptionState&);
     void continuePrimaryKey(ExecutionContext*, const ScriptValue& key, const ScriptValue& primaryKey, ExceptionState&);

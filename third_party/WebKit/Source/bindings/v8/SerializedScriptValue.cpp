@@ -40,7 +40,6 @@
 #include "V8MessagePort.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptScope.h"
-#include "bindings/v8/ScriptState.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/WorkerScriptController.h"
 #include "bindings/v8/custom/V8ArrayBufferCustom.h"
@@ -2800,10 +2799,10 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValue::createAndSwallowExcepti
     return adoptRef(new SerializedScriptValue(value, 0, 0, 0, exceptionState, isolate));
 }
 
-PassRefPtr<SerializedScriptValue> SerializedScriptValue::create(const ScriptValue& value, WebBlobInfoArray* blobInfo, ExceptionState& exceptionState, ScriptState* state)
+PassRefPtr<SerializedScriptValue> SerializedScriptValue::create(const ScriptValue& value, WebBlobInfoArray* blobInfo, ExceptionState& exceptionState, v8::Isolate* isolate)
 {
-    ScriptScope scope(state);
-    return adoptRef(new SerializedScriptValue(value.v8Value(), 0, 0, blobInfo, exceptionState, state->isolate()));
+    ASSERT(isolate->InContext());
+    return adoptRef(new SerializedScriptValue(value.v8Value(), 0, 0, blobInfo, exceptionState, isolate));
 }
 
 PassRefPtr<SerializedScriptValue> SerializedScriptValue::createFromWire(const String& data)

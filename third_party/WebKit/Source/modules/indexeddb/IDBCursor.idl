@@ -30,7 +30,7 @@ interface IDBCursor {
     [CallWith=NewScriptState, CachedAttribute=isPrimaryKeyDirty] readonly attribute any primaryKey;
     [CallWith=NewScriptState] readonly attribute any source;
 
-    [CallWith=ScriptState, RaisesException] IDBRequest update(any value);
+    [CallWith=ExecutionContext, RaisesException] IDBRequest update(any value);
     [RaisesException] void advance([EnforceRange] unsigned long count);
     [CallWith=ExecutionContext, ImplementedAs=continueFunction, RaisesException] void continue([Default=Undefined] optional any key);
     [CallWith=ExecutionContext, RaisesException, RuntimeEnabled=IndexedDBExperimental] void continuePrimaryKey(any key, any primaryKey);
