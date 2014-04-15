@@ -1,7 +1,7 @@
 Iteration 0: Passed
-Iteration 0, layer tree
+Iteration 0, container opted in
 Iteration 1: Passed
-Iteration 1, no layer tree
+Iteration 1, container did not opt in
 Iteration 2: Passed
-Iteration 2, layer tree
+Iteration 2, container opted in
 

@@ -58,19 +58,23 @@
       document.body.offsetTop;
 
       if (window.internals) {
-        var layerTree = window.internals.layerTreeAsText(document);
+        var container = document.getElementById('container');
+        var containerOptedIn = window.internals.needsCompositedScrolling(container);
 
-        if (!layerTree == !expectedResult)
+        if (!containerOptedIn == !expectedResult)
           write('Iteration ' + iteration.toString() + ': Passed')
         else
           write('Iteration ' + iteration.toString() + ': FAILED')
 
-        if (layerTree) {
-          write('Iteration ' + iteration.toString() + ', layer tree');
-          if (debugMode)
-              write(layerTree);
-        } else
-          write('Iteration ' + iteration.toString() + ', no layer tree');
+        if (containerOptedIn) {
+          write('Iteration ' + iteration.toString() + ', container opted in');
+          if (debugMode) {
+            var layerTree = window.internals.layerTreeAsText(document);
+            write(layerTree);
+          }
+        } else {
+          write('Iteration ' + iteration.toString() + ', container did not opt in');
+        }
       }
       iteration++;
     }
