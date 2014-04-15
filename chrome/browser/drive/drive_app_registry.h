@@ -13,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "google_apis/drive/gdata_errorcode.h"
 #include "google_apis/drive/gdata_wapi_parser.h"
 #include "url/gurl.h"
@@ -23,6 +24,7 @@ class AppList;
 
 namespace drive {
 
+class DriveAppRegistryObserver;
 class DriveServiceInterface;
 
 // Data structure that defines Drive app. See
@@ -97,6 +99,9 @@ class DriveAppRegistry {
   // Updates this registry from the |app_list|.
   void UpdateFromAppList(const google_apis::AppList& app_list);
 
+  void AddObserver(DriveAppRegistryObserver* observer);
+  void RemoveObserver(DriveAppRegistryObserver* observer);
+
  private:
   // Part of Update(). Runs upon the completion of fetching the Drive apps
   // data from the server.
@@ -121,9 +126,12 @@ class DriveAppRegistry {
 
   bool is_updating_;
 
+  ObserverList<DriveAppRegistryObserver> observers_;
+
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.
   base::WeakPtrFactory<DriveAppRegistry> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(DriveAppRegistry);
 };
 

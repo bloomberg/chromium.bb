@@ -625,6 +625,7 @@
         'browser/download/save_package_file_picker.h',
         'browser/drive/drive_app_registry.cc',
         'browser/drive/drive_app_registry.h',
+        'browser/drive/drive_app_registry_observer.h',
         'browser/drive/drive_api_service.cc',
         'browser/drive/drive_api_service.h',
         'browser/drive/drive_api_util.cc',

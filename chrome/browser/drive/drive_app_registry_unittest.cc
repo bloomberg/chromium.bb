@@ -5,7 +5,9 @@
 #include "chrome/browser/drive/drive_app_registry.h"
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
+#include "chrome/browser/drive/drive_app_registry_observer.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/drive/drive_api_parser.h"
@@ -14,6 +16,28 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace drive {
+
+class TestDriveAppRegistryObserver : public DriveAppRegistryObserver {
+ public:
+  explicit TestDriveAppRegistryObserver(DriveAppRegistry* registry)
+      : registry_(registry),
+        update_count_(0) {
+    registry_->AddObserver(this);
+  }
+  virtual ~TestDriveAppRegistryObserver() {
+    registry_->RemoveObserver(this);
+  }
+
+  int update_count() const { return update_count_; }
+
+ private:
+  // DriveAppRegistryObserver overrides:
+  virtual void OnDriveAppRegistryUpdated() OVERRIDE { ++update_count_; }
+
+  DriveAppRegistry* registry_;
+  int update_count_;
+  DISALLOW_COPY_AND_ASSIGN(TestDriveAppRegistryObserver);
+};
 
 class DriveAppRegistryTest : public testing::Test {
  protected:
@@ -46,8 +70,11 @@ class DriveAppRegistryTest : public testing::Test {
 };
 
 TEST_F(DriveAppRegistryTest, BasicParse) {
+  TestDriveAppRegistryObserver observer(apps_registry_.get());
+
   apps_registry_->Update();
   base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, observer.update_count());
 
   std::vector<DriveAppInfo> apps;
   apps_registry_->GetAppList(&apps);
@@ -62,8 +89,11 @@ TEST_F(DriveAppRegistryTest, BasicParse) {
 }
 
 TEST_F(DriveAppRegistryTest, LoadAndFindDriveApps) {
+  TestDriveAppRegistryObserver observer(apps_registry_.get());
+
   apps_registry_->Update();
   base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, observer.update_count());
 
   // Find by primary extension 'exe'.
   std::vector<DriveAppInfo> ext_results;
@@ -93,7 +123,9 @@ TEST_F(DriveAppRegistryTest, UpdateFromAppList) {
   scoped_ptr<google_apis::AppList> app_list(
       google_apis::AppList::CreateFrom(*app_info_value));
 
+  TestDriveAppRegistryObserver observer(apps_registry_.get());
   apps_registry_->UpdateFromAppList(*app_list);
+  EXPECT_EQ(1, observer.update_count());
 
   // Confirm that something was loaded from applist.json.
   std::vector<DriveAppInfo> ext_results;
@@ -103,16 +135,21 @@ TEST_F(DriveAppRegistryTest, UpdateFromAppList) {
 }
 
 TEST_F(DriveAppRegistryTest, MultipleUpdate) {
+  TestDriveAppRegistryObserver observer(apps_registry_.get());
+
   // Call Update().
   apps_registry_->Update();
+  EXPECT_EQ(0, observer.update_count());
 
   // Call Update() again.
   // This call should be ignored because there is already an ongoing update.
   apps_registry_->Update();
+  EXPECT_EQ(0, observer.update_count());
 
   // The app list should be loaded only once.
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, fake_drive_service_->app_list_load_count());
+  EXPECT_EQ(1, observer.update_count());
 }
 
 TEST(DriveAppRegistryUtilTest, FindPreferredIcon_Empty) {

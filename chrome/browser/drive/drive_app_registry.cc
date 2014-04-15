@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "chrome/browser/drive/drive_app_registry_observer.h"
 #include "chrome/browser/drive/drive_service_interface.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/drive/drive_api_parser.h"
@@ -186,6 +187,18 @@ void DriveAppRegistry::UpdateFromAppList(const google_apis::AppList& app_list) {
     AddAppSelectorList(app.primary_file_extensions(), id, &extension_map_);
     AddAppSelectorList(app.secondary_file_extensions(), id, &extension_map_);
   }
+
+  FOR_EACH_OBSERVER(DriveAppRegistryObserver,
+                    observers_,
+                    OnDriveAppRegistryUpdated());
+}
+
+void DriveAppRegistry::AddObserver(DriveAppRegistryObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void DriveAppRegistry::RemoveObserver(DriveAppRegistryObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void DriveAppRegistry::UninstallApp(const std::string& app_id,
