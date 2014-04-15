@@ -529,66 +529,6 @@ function testInitialBounds() {
   ]);
 }
 
-function testNewBoundsApiInStable() {
-  chrome.test.runTests([
-    function testInitInnerBounds() {
-      var innerBounds = {
-        width: 600,
-        height: 400
-      };
-      chrome.app.window.create('test.html', {
-        innerBounds: innerBounds
-      }, callbackFail('innerBounds and outerBounds are only available in'+
-                      ' dev channel.')
-      );
-    },
-
-    function testInitOuterBounds() {
-      var outerBounds = {
-        width: 600,
-        height: 400
-      };
-      chrome.app.window.create('test.html', {
-        outerBounds: outerBounds
-      }, callbackFail('innerBounds and outerBounds are only available in'+
-                      ' dev channel.')
-      );
-    },
-
-    function testSetBounds() {
-      var init = {
-        bounds: { width: 198, height: 159 }
-      };
-      chrome.app.window.create('test.html', init, callbackPass(function(win) {
-        chrome.test.assertTrue(win != null);
-        win.innerBounds.setSize(250, 100);
-        chrome.test.waitForRoundTrip('msg', callbackPass(function(msg) {
-          var bounds = win.getBounds();
-          chrome.test.assertEq(init.bounds.width, bounds.width);
-          chrome.test.assertEq(init.bounds.height, bounds.height);
-          win.close();
-        }));
-      }));
-    },
-
-    function testSetConstraints() {
-      var init = {
-        bounds: { width: 198, height: 159 }
-      };
-      chrome.app.window.create('test.html', init, callbackPass(function(win) {
-        chrome.test.assertTrue(win != null);
-        win.innerBounds.setMaximumSize(80, 80);
-        chrome.test.waitForRoundTrip('msg', callbackPass(function(msg) {
-          var bounds = win.getBounds();
-          chrome.test.assertEq(init.bounds.width, bounds.width);
-          chrome.test.assertEq(init.bounds.height, bounds.height);
-          win.close();
-        }));
-      }));
-    },
-  ]);
-}
-
 function testInitialConstraints() {
   chrome.test.runTests([
     function testMaxInnerConstraints() {

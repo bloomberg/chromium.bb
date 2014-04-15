@@ -185,11 +185,6 @@ IN_PROC_BROWSER_TEST_F(AppWindowAPITest, MAYBE_TestSetSizeConstraints) {
   ASSERT_TRUE(RunAppWindowAPITest("testSetSizeConstraints")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AppWindowAPITest, TestNewBoundsApiInStable) {
-  extensions::ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_STABLE);
-  ASSERT_TRUE(RunAppWindowAPITest("testNewBoundsApiInStable")) << message_;
-}
-
 // Flaky failures on mac_rel and WinXP, see http://crbug.com/324915.
 IN_PROC_BROWSER_TEST_F(AppWindowAPITest,
                        DISABLED_TestRestoreGeometryCacheChange) {

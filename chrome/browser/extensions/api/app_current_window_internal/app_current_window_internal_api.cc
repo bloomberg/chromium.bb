@@ -201,12 +201,6 @@ bool AppCurrentWindowInternalSetBoundsFunction::RunWithWindow(
     return false;
   }
 
-  if (bounds_type != bounds::DEPRECATED_BOUNDS &&
-      GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV) {
-    error_ = kDevChannelOnly;
-    return false;
-  }
-
   // Start with the current bounds, and change any values that are specified in
   // the incoming parameters.
   gfx::Rect original_window_bounds = window->GetBaseWindow()->GetBounds();
@@ -262,11 +256,6 @@ bool AppCurrentWindowInternalSetBoundsFunction::RunWithWindow(
 
 bool AppCurrentWindowInternalSetSizeConstraintsFunction::RunWithWindow(
     AppWindow* window) {
-  if (GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV) {
-    error_ = kDevChannelOnly;
-    return false;
-  }
-
   scoped_ptr<SetSizeConstraints::Params> params(
       SetSizeConstraints::Params::Create(*args_));
   CHECK(params.get());

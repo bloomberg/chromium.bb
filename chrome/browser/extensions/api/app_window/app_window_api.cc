@@ -46,8 +46,6 @@ const char kInvalidColorSpecification[] =
 const char kInvalidChannelForFrameOptions[] =
     "frameOptions is only available in dev channel.";
 const char kColorWithFrameNone[] = "Windows with no frame cannot have a color.";
-const char kInvalidChannelForBounds[] =
-    "innerBounds and outerBounds are only available in dev channel.";
 const char kConflictingBoundsOptions[] =
     "The $1 property cannot be specified for both inner and outer bounds.";
 }  // namespace app_window_constants
@@ -309,11 +307,6 @@ bool AppWindowCreateFunction::GetBoundsSpec(
     // Parse the inner and outer bounds specifications. If developers use the
     // new API, the deprecated fields will be ignored - do not attempt to merge
     // them.
-
-    if (GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV) {
-      *error = app_window_constants::kInvalidChannelForBounds;
-      return false;
-    }
 
     const extensions::api::app_window::BoundsSpecification* inner_bounds =
         options.inner_bounds.get();
