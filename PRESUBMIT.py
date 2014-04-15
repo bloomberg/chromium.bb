@@ -1339,6 +1339,7 @@ def GetDefaultTryConfigs(bots=None):
       'win_chromium_compile_dbg': ['defaulttests'],
       'win_chromium_dbg': ['defaulttests'],
       'win_chromium_rel': ['defaulttests'],
+      'win_chromium_x64_rel': ['defaulttests'],
       'win_nacl_sdk_build': ['compile'],
       'win_rel': standard_tests + [
           'app_list_unittests',
@@ -1453,7 +1454,7 @@ def GetPreferredTryMasters(project, change):
       'mac_chromium_rel',
       'win_chromium_compile_dbg',
       'win_chromium_rel',
-      'win_x64_rel',
+      'win_chromium_x64_rel',
   ]
 
   # Match things like path/aura/file.cc and path/file_aura.cc.
