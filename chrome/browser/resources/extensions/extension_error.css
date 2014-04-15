@@ -6,8 +6,29 @@
   cursor: pointer;
 }
 
-.extension-error-list ul {
+.extension-error-list-contents {
+  -webkit-transition: max-height 500ms ease-in-out;
   list-style-type: none;
+  max-height: 50px;
+  overflow-y: hidden;
+}
+
+.extension-error-list-contents.active {
+  max-height: 200px;
+}
+
+.extension-error-list-contents.scrollable {
+  overflow-y: auto;
+}
+
+/* These next three rules hide all except for the most recent three entries in
+ * the list, unless the list is active. */
+.extension-error-list-contents li {
+  display: none;
+}
+.extension-error-list-contents.active li,
+.extension-error-list ul li:nth-last-child(-n + 3) {
+  display: initial;
 }
 
 .extension-error-list-contents {
@@ -17,6 +38,10 @@
 .extension-error-list-show-more {
   text-align: center;
   width: 100%;
+}
+
+.extension-error-list-show-more button {
+  width: auto;
 }
 
 .extension-error-metadata {

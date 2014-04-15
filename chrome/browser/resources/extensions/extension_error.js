@@ -118,13 +118,8 @@ cr.define('extensions', function() {
         }
       }, this);
 
-      if (this.contents_.children.length > this.MAX_ERRORS_TO_SHOW_) {
-        for (var i = this.MAX_ERRORS_TO_SHOW_;
-             i < this.contents_.children.length; ++i) {
-          this.contents_.children[i].hidden = true;
-        }
+      if (this.contents_.children.length > this.MAX_ERRORS_TO_SHOW_)
         this.initShowMoreButton_();
-      }
     },
 
     /**
@@ -133,14 +128,19 @@ cr.define('extensions', function() {
      * @private
      */
     initShowMoreButton_: function() {
-      var button = this.querySelector('.extension-error-list-show-more a');
+      var button = this.querySelector('.extension-error-list-show-more button');
       button.hidden = false;
       button.isShowingAll = false;
+      var listContents = this.querySelector('.extension-error-list-contents');
+      listContents.addEventListener('webkitTransitionEnd', function(e) {
+        if (listContents.classList.contains('active'))
+          listContents.classList.add('scrollable');
+      });
       button.addEventListener('click', function(e) {
-        for (var i = this.MAX_ERRORS_TO_SHOW_;
-             i < this.contents_.children.length; ++i) {
-          this.contents_.children[i].hidden = button.isShowingAll;
-        }
+        // Disable scrolling while transitioning. If the element is active,
+        // scrolling is enabled when the transition ends.
+        listContents.classList.toggle('active');
+        listContents.classList.remove('scrollable');
         var message = button.isShowingAll ? 'extensionErrorsShowMore' :
                                             'extensionErrorsShowFewer';
         button.textContent = loadTimeData.getString(message);
