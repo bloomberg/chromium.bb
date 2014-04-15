@@ -10,6 +10,7 @@
 import glob
 import gyp_helper
 import os
+import re
 import shlex
 import subprocess
 import string
@@ -248,7 +249,7 @@ if __name__ == '__main__':
 
   # We explicitly don't support the make gyp generator (crbug.com/348686). Be
   # nice and fail here, rather than choking in gyp.
-  if 'make' in os.environ.get('GYP_GENERATORS', ''):
+  if re.search(r'(^|,|\s)make($|,|\s)', os.environ.get('GYP_GENERATORS', '')):
     print 'Error: make gyp generator not supported (check GYP_GENERATORS).'
     sys.exit(1)
 
