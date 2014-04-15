@@ -175,8 +175,12 @@ const char kCloudPrintSetupProxy[]          = "cloud-print-setup-proxy";
 
 // The URL of the cloud print service to use, overrides any value stored in
 // preferences, and the default. Only used if the cloud print service has been
-// enabled (see enable-cloud-print).
+// enabled. Used for testing.
 const char kCloudPrintServiceURL[]          = "cloud-print-service";
+
+// The XMPP endpoint the cloud print service will use. Only used if the cloud
+// print service has been enabled. Used for testing.
+const char kCloudPrintXmppEndpoint[] = "cloud-print-xmpp-endpoint";
 
 // Comma-separated options to troubleshoot the component updater. Only valid
 // for the browser process.
