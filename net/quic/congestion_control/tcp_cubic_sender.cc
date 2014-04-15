@@ -34,6 +34,7 @@ TcpCubicSender::TcpCubicSender(
     : hybrid_slow_start_(clock),
       cubic_(clock, stats),
       rtt_stats_(rtt_stats),
+      stats_(stats),
       reno_(reno),
       congestion_window_count_(0),
       receive_window_(kDefaultReceiveWindow),
@@ -47,6 +48,7 @@ TcpCubicSender::TcpCubicSender(
       largest_sent_at_last_cutback_(0),
       congestion_window_(kInitialCongestionWindow),
       slowstart_threshold_(max_tcp_congestion_window),
+      last_cutback_exited_slowstart_(false),
       max_tcp_congestion_window_(max_tcp_congestion_window) {
 }
 
@@ -75,10 +77,12 @@ void TcpCubicSender::OnPacketAcked(
     QuicPacketSequenceNumber acked_sequence_number, QuicByteCount acked_bytes) {
   DCHECK_GE(bytes_in_flight_, acked_bytes);
   bytes_in_flight_ -= acked_bytes;
-  prr_delivered_ += acked_bytes;
-  ++ack_count_since_loss_;
   largest_acked_sequence_number_ = max(acked_sequence_number,
                                        largest_acked_sequence_number_);
+  if (InRecovery()) {
+    PrrOnPacketAcked(acked_bytes);
+    return;
+  }
   MaybeIncreaseCwnd(acked_sequence_number);
   // TODO(ianswett): Should this even be called when not in slow start?
   hybrid_slow_start_.OnPacketAcked(acked_sequence_number, InSlowStart());
@@ -89,22 +93,19 @@ void TcpCubicSender::OnPacketLost(QuicPacketSequenceNumber sequence_number,
   // TCP NewReno (RFC6582) says that once a loss occurs, any losses in packets
   // already sent should be treated as a single loss event, since it's expected.
   if (sequence_number <= largest_sent_at_last_cutback_) {
+    if (last_cutback_exited_slowstart_) {
+      ++stats_->slowstart_packets_lost;
+    }
     DVLOG(1) << "Ignoring loss for largest_missing:" << sequence_number
              << " because it was sent prior to the last CWND cutback.";
     return;
   }
-
-  // Initialize proportional rate reduction(RFC 6937) variables.
-  prr_out_ = 0;
-  bytes_in_flight_before_loss_ = bytes_in_flight_;
-  // Since all losses are triggered by an incoming ack currently, and acks are
-  // registered before losses by the SentPacketManager, initialize the variables
-  // as though one ack was received directly after the loss.  This is too low
-  // for stretch acks, but we expect missing packets to be immediately acked.
-  // This ensures 1 or 2 packets are immediately able to be sent, depending upon
-  // whether we're in PRR or PRR-SSRB mode.
-  prr_delivered_ = kMaxPacketSize;
-  ack_count_since_loss_ = 1;
+  ++stats_->tcp_loss_events;
+  last_cutback_exited_slowstart_ = InSlowStart();
+  if (InSlowStart()) {
+    ++stats_->slowstart_packets_lost;
+  }
+  PrrOnPacketLost();
 
   // In a normal TCP we would need to know the lowest missing packet to detect
   // if we receive 3 missing packets. Here we get a missing packet for which we
@@ -163,24 +164,10 @@ QuicTime::Delta TcpCubicSender::TimeUntilSend(
     // tail loss probe (draft-dukkipati-tcpm-tcp-loss-probe-01).
     return QuicTime::Delta::Zero();
   }
-  if (AvailableSendWindow() > 0) {
-    // During PRR-SSRB, limit outgoing packets to 1 extra MSS per ack, instead
-    // of sending the entire available window. This prevents burst retransmits
-    // when more packets are lost than the CWND reduction.
-    //   limit = MAX(prr_delivered - prr_out, DeliveredData) + MSS
-    if (InRecovery() &&
-        prr_delivered_ + ack_count_since_loss_ * kMaxSegmentSize < prr_out_) {
-      return QuicTime::Delta::Infinite();
-    }
-    return QuicTime::Delta::Zero();
+  if (InRecovery()) {
+    return PrrTimeUntilSend();
   }
-  // Implement Proportional Rate Reduction (RFC6937)
-  // Checks a simplified version of the PRR formula that doesn't use division:
-  // AvailableSendWindow =
-  //   CEIL(prr_delivered * ssthresh / BytesInFlightAtLoss) - prr_sent
-  if (InRecovery() &&
-      prr_delivered_ * slowstart_threshold_ * kMaxSegmentSize >
-          prr_out_ * bytes_in_flight_before_loss_) {
+  if (AvailableSendWindow() > 0) {
     return QuicTime::Delta::Zero();
   }
   return QuicTime::Delta::Infinite();
@@ -236,13 +223,10 @@ bool TcpCubicSender::InRecovery() const {
 // represents, but quic has a separate ack for each packet.
 void TcpCubicSender::MaybeIncreaseCwnd(
     QuicPacketSequenceNumber acked_sequence_number) {
+  LOG_IF(DFATAL, InRecovery()) << "Never increase the CWND during recovery.";
   if (!IsCwndLimited()) {
     // We don't update the congestion window unless we are close to using the
     // window we have available.
-    return;
-  }
-  if (acked_sequence_number <= largest_sent_at_last_cutback_) {
-    // We don't increase the congestion window during recovery.
     return;
   }
   if (InSlowStart()) {
@@ -295,6 +279,47 @@ void TcpCubicSender::UpdateRtt(QuicTime::Delta rtt) {
       hybrid_slow_start_.ShouldExitSlowStart(rtt_stats_, congestion_window_)) {
      slowstart_threshold_ = congestion_window_;
   }
+}
+
+void TcpCubicSender::PrrOnPacketLost() {
+  prr_out_ = 0;
+  bytes_in_flight_before_loss_ = bytes_in_flight_;
+  // Since all losses are triggered by an incoming ack currently, and acks are
+  // registered before losses by the SentPacketManager, initialize the variables
+  // as though one ack was received directly after the loss.  This is too low
+  // for stretch acks, but we expect missing packets to be immediately acked.
+  // This ensures 1 or 2 packets are immediately able to be sent, depending upon
+  // whether we're in PRR or PRR-SSRB mode.
+  prr_delivered_ = kMaxPacketSize;
+  ack_count_since_loss_ = 1;
+}
+
+void TcpCubicSender::PrrOnPacketAcked(QuicByteCount acked_bytes) {
+  prr_delivered_ += acked_bytes;
+  ++ack_count_since_loss_;
+}
+
+QuicTime::Delta TcpCubicSender::PrrTimeUntilSend() {
+  DCHECK(InRecovery());
+  if (AvailableSendWindow() > 0) {
+    // During PRR-SSRB, limit outgoing packets to 1 extra MSS per ack, instead
+    // of sending the entire available window. This prevents burst retransmits
+    // when more packets are lost than the CWND reduction.
+    //   limit = MAX(prr_delivered - prr_out, DeliveredData) + MSS
+    if (prr_delivered_ + ack_count_since_loss_ * kMaxSegmentSize < prr_out_) {
+      return QuicTime::Delta::Infinite();
+    }
+    return QuicTime::Delta::Zero();
+  }
+  // Implement Proportional Rate Reduction (RFC6937)
+  // Checks a simplified version of the PRR formula that doesn't use division:
+  // AvailableSendWindow =
+  //   CEIL(prr_delivered * ssthresh / BytesInFlightAtLoss) - prr_sent
+  if (prr_delivered_ * slowstart_threshold_ * kMaxSegmentSize >
+          prr_out_ * bytes_in_flight_before_loss_) {
+    return QuicTime::Delta::Zero();
+  }
+  return QuicTime::Delta::Infinite();
 }
 
 }  // namespace net

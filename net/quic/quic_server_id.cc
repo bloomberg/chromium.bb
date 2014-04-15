@@ -19,6 +19,13 @@ QuicServerId::QuicServerId(const HostPortPair& host_port_pair,
 
 QuicServerId::QuicServerId(const string& host,
                            uint16 port,
+                           bool is_https)
+    : host_port_pair_(host, port),
+      is_https_(is_https),
+      privacy_mode_(PRIVACY_MODE_DISABLED) {}
+
+QuicServerId::QuicServerId(const string& host,
+                           uint16 port,
                            bool is_https,
                            PrivacyMode privacy_mode)
     : host_port_pair_(host, port),

@@ -111,6 +111,7 @@ void QuicTimeWaitListManager::AddConnectionIdToTimeWait(
     QuicConnectionId connection_id,
     QuicVersion version,
     QuicEncryptedPacket* close_packet) {
+  DVLOG(1) << "Adding " << connection_id << " to the time wait list.";
   int num_packets = 0;
   ConnectionIdMap::iterator it = connection_id_map_.find(connection_id);
   if (it != connection_id_map_.end()) {  // Replace record if it is reinserted.
@@ -150,8 +151,10 @@ void QuicTimeWaitListManager::ProcessPacket(
     const IPEndPoint& server_address,
     const IPEndPoint& client_address,
     QuicConnectionId connection_id,
-    QuicPacketSequenceNumber sequence_number) {
+    QuicPacketSequenceNumber sequence_number,
+    const QuicEncryptedPacket& /*packet*/) {
   DCHECK(IsConnectionIdInTimeWait(connection_id));
+  DVLOG(1) << "Processing " << connection_id << " in time wait state.";
   // TODO(satyamshekhar): Think about handling packets from different client
   // addresses.
   ConnectionIdMap::iterator it = connection_id_map_.find(connection_id);
@@ -199,9 +202,14 @@ void QuicTimeWaitListManager::SendPublicReset(
   QueuedPacket* queued_packet = new QueuedPacket(
       server_address,
       client_address,
-      QuicFramer::BuildPublicResetPacket(packet));
+      BuildPublicReset(packet));
   // Takes ownership of the packet.
   SendOrQueuePacket(queued_packet);
+}
+
+QuicEncryptedPacket* QuicTimeWaitListManager::BuildPublicReset(
+    const QuicPublicResetPacket& packet) {
+  return QuicFramer::BuildPublicResetPacket(packet);
 }
 
 // Either sends the packet and deletes it or makes pending queue the

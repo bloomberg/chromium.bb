@@ -8,7 +8,7 @@
 namespace net {
 
 // Privacy Mode is enabled if cookies to particular site are blocked, so
-// Channel ID is disabled on that connection (https or spdy).
+// Channel ID is disabled on that connection (https, spdy or quic).
 enum PrivacyMode {
   PRIVACY_MODE_DISABLED = 0,
   PRIVACY_MODE_ENABLED = 1,

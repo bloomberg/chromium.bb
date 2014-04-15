@@ -80,6 +80,24 @@ int QuicSocketUtils::SetGetAddressInfo(int fd, int address_family) {
 }
 
 // static
+bool QuicSocketUtils::SetSendBufferSize(int fd, size_t size) {
+  if (setsockopt(fd, SOL_SOCKET, SO_SNDBUF, &size, sizeof(size)) != 0) {
+    LOG(ERROR) << "Failed to set socket send size";
+    return false;
+  }
+  return true;
+}
+
+// static
+bool QuicSocketUtils::SetReceiveBufferSize(int fd, size_t size) {
+  if (setsockopt(fd, SOL_SOCKET, SO_RCVBUF, &size, sizeof(size)) != 0) {
+    LOG(ERROR) << "Failed to set socket recv size";
+    return false;
+  }
+  return true;
+}
+
+// static
 int QuicSocketUtils::ReadPacket(int fd, char* buffer, size_t buf_len,
                                 uint32* dropped_packets,
                                 IPAddressNumber* self_address,

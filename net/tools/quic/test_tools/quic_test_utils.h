@@ -112,7 +112,7 @@ class TestSession : public QuicSession {
 
   void SetCryptoStream(QuicCryptoStream* stream);
 
-  virtual QuicCryptoStream* GetCryptoStream();
+  virtual QuicCryptoStream* GetCryptoStream() OVERRIDE;
 
  private:
   QuicCryptoStream* crypto_stream_;

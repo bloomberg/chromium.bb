@@ -75,7 +75,8 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
   virtual void ProcessPacket(const IPEndPoint& server_address,
                              const IPEndPoint& client_address,
                              QuicConnectionId connection_id,
-                             QuicPacketSequenceNumber sequence_number);
+                             QuicPacketSequenceNumber sequence_number,
+                             const QuicEncryptedPacket& packet);
 
   // Called by the dispatcher when the underlying socket becomes writable again,
   // since we might need to send pending public reset packets which we didn't
@@ -89,6 +90,10 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
   // Given a ConnectionId that exists in the time wait list, returns the
   // QuicVersion associated with it.
   QuicVersion GetQuicVersionFromConnectionId(QuicConnectionId connection_id);
+
+ protected:
+  virtual QuicEncryptedPacket* BuildPublicReset(
+      const QuicPublicResetPacket& packet);
 
  private:
   friend class test::QuicTimeWaitListManagerPeer;

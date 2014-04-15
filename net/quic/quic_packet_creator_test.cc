@@ -102,7 +102,7 @@ class QuicPacketCreatorTest : public ::testing::TestWithParam<bool> {
 };
 
 TEST_F(QuicPacketCreatorTest, SerializeFrames) {
-  frames_.push_back(QuicFrame(new QuicAckFrame(0u, QuicTime::Zero(), 0u)));
+  frames_.push_back(QuicFrame(new QuicAckFrame(MakeAckFrame(0u, 0u))));
   frames_.push_back(QuicFrame(new QuicStreamFrame(0u, false, 0u, IOVector())));
   frames_.push_back(QuicFrame(new QuicStreamFrame(0u, true, 0u, IOVector())));
   SerializedPacket serialized = creator_.SerializeAllFrames(frames_);
@@ -166,7 +166,7 @@ TEST_F(QuicPacketCreatorTest, SerializeWithFEC) {
 }
 
 TEST_F(QuicPacketCreatorTest, SerializeChangingSequenceNumberLength) {
-  frames_.push_back(QuicFrame(new QuicAckFrame(0u, QuicTime::Zero(), 0u)));
+  frames_.push_back(QuicFrame(new QuicAckFrame(MakeAckFrame(0u, 0u))));
   creator_.AddSavedFrame(frames_[0]);
   creator_.options()->send_sequence_number_length =
       PACKET_4BYTE_SEQUENCE_NUMBER;
@@ -209,7 +209,7 @@ TEST_F(QuicPacketCreatorTest, SerializeWithFECChangingSequenceNumberLength) {
   creator_.options()->max_packets_per_fec_group = 6;
   ASSERT_FALSE(creator_.ShouldSendFec(false));
 
-  frames_.push_back(QuicFrame(new QuicAckFrame(0u, QuicTime::Zero(), 0u)));
+  frames_.push_back(QuicFrame(new QuicAckFrame(MakeAckFrame(0u, 0u))));
   creator_.AddSavedFrame(frames_[0]);
   // Change the sequence number length mid-FEC group and it should not change.
   creator_.options()->send_sequence_number_length =
@@ -620,7 +620,7 @@ TEST_P(QuicPacketCreatorTest, AddFrameAndSerialize) {
             creator_.BytesFree());
 
   // Add a variety of frame types and then a padding frame.
-  QuicAckFrame ack_frame(0u, QuicTime::Zero(), 0u);
+  QuicAckFrame ack_frame(MakeAckFrame(0u, 0u));
   EXPECT_TRUE(creator_.AddSavedFrame(QuicFrame(&ack_frame)));
   EXPECT_TRUE(creator_.HasPendingFrames());
 

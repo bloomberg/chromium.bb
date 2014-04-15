@@ -78,6 +78,11 @@ QuicConfig DefaultQuicConfig();
 // Returns a version vector consisting of |version|.
 QuicVersionVector SupportedVersions(QuicVersion version);
 
+// Testing convenience method to construct a QuicAckFrame with all packets
+// from least_unacked to largest_observed acked.
+QuicAckFrame MakeAckFrame(QuicPacketSequenceNumber largest_observed,
+                          QuicPacketSequenceNumber least_unacked);
+
 template<typename SaveType>
 class ValueRestore {
  public:

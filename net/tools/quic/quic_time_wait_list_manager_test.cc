@@ -101,10 +101,12 @@ class QuicTimeWaitListManagerTest : public ::testing::Test {
 
   void ProcessPacket(QuicConnectionId connection_id,
                      QuicPacketSequenceNumber sequence_number) {
+    QuicEncryptedPacket packet(NULL, 0);
     time_wait_list_manager_.ProcessPacket(server_address_,
                                           client_address_,
                                           connection_id,
-                                          sequence_number);
+                                          sequence_number,
+                                          packet);
   }
 
   QuicEncryptedPacket* ConstructEncryptedPacket(

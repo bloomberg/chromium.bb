@@ -186,9 +186,9 @@ TEST(QuicCryptoClientConfigTest, Canonical) {
   QuicCryptoClientConfig config;
   config.AddCanonicalSuffix(".google.com");
   QuicServerId canonical_id1("www.google.com", 80, false,
-                              PRIVACY_MODE_DISABLED);
+                             PRIVACY_MODE_DISABLED);
   QuicServerId canonical_id2("mail.google.com", 80, false,
-                              PRIVACY_MODE_DISABLED);
+                             PRIVACY_MODE_DISABLED);
   QuicCryptoClientConfig::CachedState* state =
       config.LookupOrCreate(canonical_id1);
   // TODO(rch): Populate other fields of |state|.
@@ -205,7 +205,7 @@ TEST(QuicCryptoClientConfigTest, Canonical) {
   EXPECT_EQ(1u, other->generation_counter());
 
   QuicServerId different_id("mail.google.org", 80, false,
-                             PRIVACY_MODE_DISABLED);
+                            PRIVACY_MODE_DISABLED);
   EXPECT_TRUE(config.LookupOrCreate(different_id)->IsEmpty());
 }
 
@@ -213,9 +213,9 @@ TEST(QuicCryptoClientConfigTest, CanonicalNotUsedIfNotValid) {
   QuicCryptoClientConfig config;
   config.AddCanonicalSuffix(".google.com");
   QuicServerId canonical_id1("www.google.com", 80, false,
-                              PRIVACY_MODE_DISABLED);
+                             PRIVACY_MODE_DISABLED);
   QuicServerId canonical_id2("mail.google.com", 80, false,
-                              PRIVACY_MODE_DISABLED);
+                             PRIVACY_MODE_DISABLED);
   QuicCryptoClientConfig::CachedState* state =
       config.LookupOrCreate(canonical_id1);
   // TODO(rch): Populate other fields of |state|.

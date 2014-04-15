@@ -570,7 +570,7 @@ void QuicStreamFactory::OnSessionGoingAway(QuicClientSession* session) {
     }
 
     HttpServerProperties::NetworkStats network_stats;
-    network_stats.rtt = base::TimeDelta::FromMicroseconds(stats.rtt);
+    network_stats.srtt = base::TimeDelta::FromMicroseconds(stats.srtt_us);
     network_stats.bandwidth_estimate = stats.estimated_bandwidth;
     http_server_properties_->SetServerNetworkStats(it->host_port_pair(),
                                                    network_stats);
@@ -745,8 +745,8 @@ int QuicStreamFactory::CreateSession(
         http_server_properties_->GetServerNetworkStats(
             server_id.host_port_pair());
     if (stats != NULL) {
-      config.set_initial_round_trip_time_us(stats->rtt.InMicroseconds(),
-                                            stats->rtt.InMicroseconds());
+      config.set_initial_round_trip_time_us(stats->srtt.InMicroseconds(),
+                                            stats->srtt.InMicroseconds());
     }
   }
 

@@ -99,21 +99,13 @@ bool QuicClient::Initialize() {
     overflow_supported_ = true;
   }
 
-  // Set the receive buffer size.
-  rc = setsockopt(fd_, SOL_SOCKET, SO_RCVBUF,
-                  &TcpReceiver::kReceiveWindowTCP,
-                  sizeof(TcpReceiver::kReceiveWindowTCP));
-  if (rc != 0) {
-    LOG(ERROR) << "Failed to set socket recv size";
+  if (!QuicSocketUtils::SetReceiveBufferSize(fd_,
+                                             TcpReceiver::kReceiveWindowTCP)) {
     return false;
   }
 
-  // Set the send buffer size.
-  rc = setsockopt(fd_, SOL_SOCKET, SO_SNDBUF,
-                  &TcpReceiver::kReceiveWindowTCP,
-                  sizeof(TcpReceiver::kReceiveWindowTCP));
-  if (rc != 0) {
-    LOG(ERROR) << "Failed to set socket send size";
+  if (!QuicSocketUtils::SetSendBufferSize(fd_,
+                                          TcpReceiver::kReceiveWindowTCP)) {
     return false;
   }
 

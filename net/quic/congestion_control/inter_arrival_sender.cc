@@ -312,7 +312,8 @@ QuicTime::Delta InterArrivalSender::RetransmissionDelay() const {
 }
 
 QuicByteCount InterArrivalSender::GetCongestionWindow() const {
-  return 0;
+  // Return an estimate based on the bandwidth and rtt.
+  return BandwidthEstimate().ToBytesPerPeriod(rtt_stats_->SmoothedRtt());
 }
 
 void InterArrivalSender::EstimateNewBandwidth(QuicTime feedback_receive_time,

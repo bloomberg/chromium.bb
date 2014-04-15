@@ -19,13 +19,16 @@ class QuicConnectionPeer;
 class QuicReceivedPacketManagerPeer;
 }  // namespace test
 
+struct QuicConnectionStats;
+
 // Records all received packets by a connection and tracks their entropy.
 // Also calculates the correct entropy for the framer when it truncates an ack
 // frame being serialized.
 class NET_EXPORT_PRIVATE QuicReceivedPacketManager :
     public QuicReceivedEntropyHashCalculatorInterface {
  public:
-  explicit QuicReceivedPacketManager(CongestionFeedbackType congestion_type);
+  explicit QuicReceivedPacketManager(CongestionFeedbackType congestion_type,
+                                     QuicConnectionStats* stats);
   virtual ~QuicReceivedPacketManager();
 
   // Updates the internal state concerning which packets have been received.
@@ -145,6 +148,8 @@ class NET_EXPORT_PRIVATE QuicReceivedPacketManager :
   QuicTime time_largest_observed_;
 
   scoped_ptr<ReceiveAlgorithmInterface> receive_algorithm_;
+
+  QuicConnectionStats* stats_;
 };
 
 }  // namespace net

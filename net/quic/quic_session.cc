@@ -264,7 +264,12 @@ void QuicSession::OnCanWrite() {
   // streams become pending, HasPendingWrites will be true, which will cause
   // the connection to request resumption before yielding to other connections.
   size_t num_writes = write_blocked_streams_.NumBlockedStreams();
+  if (num_writes == 0) {
+    return;
+  }
 
+  QuicConnection::ScopedPacketBundler ack_bundler(
+      connection_.get(), QuicConnection::NO_ACK);
   for (size_t i = 0; i < num_writes; ++i) {
     if (!write_blocked_streams_.HasWriteBlockedStreams()) {
       // Writing one stream removed another?! Something's broken.

@@ -16,6 +16,7 @@
 #include "net/tools/quic/quic_epoll_connection_helper.h"
 #include "net/tools/quic/quic_packet_writer_wrapper.h"
 #include "net/tools/quic/quic_socket_utils.h"
+#include "net/tools/quic/quic_time_wait_list_manager.h"
 
 namespace net {
 
@@ -164,9 +165,7 @@ QuicDispatcher::~QuicDispatcher() {
 void QuicDispatcher::Initialize(int fd) {
   DCHECK(writer_ == NULL);
   writer_.reset(CreateWriterWrapper(CreateWriter(fd)));
-  time_wait_list_manager_.reset(
-      new QuicTimeWaitListManager(writer_.get(), this,
-                                  epoll_server(), supported_versions()));
+  time_wait_list_manager_.reset(CreateQuicTimeWaitListManager());
 
   // Remove all versions > QUIC_VERSION_16 from the
   // supported_versions_no_flow_control_ vector.
@@ -254,7 +253,8 @@ void QuicDispatcher::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
   time_wait_list_manager_->ProcessPacket(current_server_address_,
                                          current_client_address_,
                                          header.public_header.connection_id,
-                                         header.packet_sequence_number);
+                                         header.packet_sequence_number,
+                                         *current_packet_);
 }
 
 void QuicDispatcher::CleanUpSession(SessionMap::iterator it) {
@@ -380,6 +380,11 @@ QuicConnection* QuicDispatcher::CreateQuicConnection(
                               supported_versions_no_flow_control_,
                               initial_flow_control_window_bytes_);
   }
+}
+
+QuicTimeWaitListManager* QuicDispatcher::CreateQuicTimeWaitListManager() {
+  return new QuicTimeWaitListManager(
+      writer_.get(), this, epoll_server(), supported_versions());
 }
 
 void QuicDispatcher::set_writer(QuicPacketWriter* writer) {

@@ -107,7 +107,7 @@ extern const char kAlternateProtocolHeader[];
 class NET_EXPORT HttpServerProperties {
  public:
   struct NetworkStats {
-    base::TimeDelta rtt;
+    base::TimeDelta srtt;
     uint64 bandwidth_estimate;
   };
 

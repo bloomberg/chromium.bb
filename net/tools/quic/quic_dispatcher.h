@@ -37,7 +37,6 @@ namespace net {
 
 class EpollServer;
 class QuicConfig;
-class QuicConnectionHelper;
 class QuicCryptoServerConfig;
 class QuicSession;
 
@@ -116,10 +115,19 @@ class QuicDispatcher : public QuicServerSessionVisitor {
                                          const IPEndPoint& server_address,
                                          const IPEndPoint& client_address);
 
-  QuicConnection* CreateQuicConnection(QuicConnectionId connection_id,
-                                       const IPEndPoint& server_address,
-                                       const IPEndPoint& client_address,
-                                       uint32 initial_flow_control_window);
+  virtual QuicConnection* CreateQuicConnection(
+      QuicConnectionId connection_id,
+      const IPEndPoint& server_address,
+      const IPEndPoint& client_address,
+      uint32 initial_flow_control_window);
+
+  // Called by |framer_visitor_| when the public header has been parsed.
+  virtual bool OnUnauthenticatedPublicHeader(
+      const QuicPacketPublicHeader& header);
+
+  // Create and return the time wait list manager for this dispatcher, which
+  // will be owned by the dispatcher as time_wait_list_manager_
+  virtual QuicTimeWaitListManager* CreateQuicTimeWaitListManager();
 
   // Replaces the packet writer with |writer|. Takes ownership of |writer|.
   void set_writer(QuicPacketWriter* writer);
@@ -134,9 +142,9 @@ class QuicDispatcher : public QuicServerSessionVisitor {
     return supported_versions_;
   }
 
-  // Called by |framer_visitor_| when the public header has been parsed.
-  virtual bool OnUnauthenticatedPublicHeader(
-      const QuicPacketPublicHeader& header);
+  const QuicVersionVector& supported_versions_no_flow_control() const {
+    return supported_versions_no_flow_control_;
+  }
 
   const IPEndPoint& current_server_address() {
     return current_server_address_;
@@ -153,6 +161,14 @@ class QuicDispatcher : public QuicServerSessionVisitor {
   const QuicCryptoServerConfig& crypto_config() const { return crypto_config_; }
 
   QuicFramer* framer() { return &framer_; }
+
+  QuicEpollConnectionHelper* helper() { return helper_.get(); }
+
+  QuicPacketWriterWrapper* writer() { return writer_.get(); }
+
+  const uint32 initial_flow_control_window_bytes() const {
+    return initial_flow_control_window_bytes_;
+  }
 
  private:
   class QuicFramerVisitor;

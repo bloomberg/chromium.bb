@@ -75,10 +75,16 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
   void MaybeIncreaseCwnd(QuicPacketSequenceNumber acked_sequence_number);
   bool IsCwndLimited() const;
   bool InRecovery() const;
+  // Methods for isolating PRR from the rest of TCP Cubic.
+  void PrrOnPacketLost();
+  void PrrOnPacketAcked(QuicByteCount acked_bytes);
+  QuicTime::Delta PrrTimeUntilSend();
+
 
   HybridSlowStart hybrid_slow_start_;
   Cubic cubic_;
   const RttStats* rtt_stats_;
+  QuicConnectionStats* stats_;
 
   // Reno provided for testing.
   const bool reno_;
@@ -114,6 +120,10 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
 
   // Slow start congestion window in packets, aka ssthresh.
   QuicTcpCongestionWindow slowstart_threshold_;
+
+  // Whether the last loss event caused us to exit slowstart.
+  // Used for stats collection of slowstart_packets_lost
+  bool last_cutback_exited_slowstart_;
 
   // Maximum number of outstanding packets for tcp.
   QuicTcpCongestionWindow max_tcp_congestion_window_;

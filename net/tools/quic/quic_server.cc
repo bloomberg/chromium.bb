@@ -114,6 +114,19 @@ bool QuicServer::Listen(const IPEndPoint& address) {
     overflow_supported_ = true;
   }
 
+  // These send and receive buffer sizes are sized for a single connection,
+  // because the default usage of QuicServer is as a test server with one or
+  // two clients.  Adjust higher for use with many clients.
+  if (!QuicSocketUtils::SetReceiveBufferSize(fd_,
+                                             TcpReceiver::kReceiveWindowTCP)) {
+    return false;
+  }
+
+  if (!QuicSocketUtils::SetSendBufferSize(fd_,
+                                          TcpReceiver::kReceiveWindowTCP)) {
+    return false;
+  }
+
   // Enable the socket option that allows the local address to be
   // returned if the socket is bound to more than on address.
   int get_local_ip = 1;
@@ -125,24 +138,6 @@ bool QuicServer::Listen(const IPEndPoint& address) {
   }
   if (rc != 0) {
     LOG(ERROR) << "Failed to set required socket options";
-    return false;
-  }
-
-  // Set the receive buffer size.
-  rc = setsockopt(fd_, SOL_SOCKET, SO_RCVBUF,
-                  &TcpReceiver::kReceiveWindowTCP,
-                  sizeof(TcpReceiver::kReceiveWindowTCP));
-  if (rc != 0) {
-    LOG(ERROR) << "Failed to set socket recv size";
-    return false;
-  }
-
-  // Set the send buffer size.
-  rc = setsockopt(fd_, SOL_SOCKET, SO_SNDBUF,
-                  &TcpReceiver::kReceiveWindowTCP,
-                  sizeof(TcpReceiver::kReceiveWindowTCP));
-  if (rc != 0) {
-    LOG(ERROR) << "Failed to set socket send size";
     return false;
   }
 

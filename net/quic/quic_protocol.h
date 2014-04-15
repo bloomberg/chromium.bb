@@ -655,11 +655,6 @@ struct NET_EXPORT_PRIVATE QuicStopWaitingFrame {
 
 struct NET_EXPORT_PRIVATE QuicAckFrame {
   QuicAckFrame();
-  // Testing convenience method to construct a QuicAckFrame with all packets
-  // from least_unacked to largest_observed acked.
-  QuicAckFrame(QuicPacketSequenceNumber largest_observed,
-               QuicTime largest_observed_receive_time,
-               QuicPacketSequenceNumber least_unacked);
 
   NET_EXPORT_PRIVATE friend std::ostream& operator<<(
       std::ostream& os, const QuicAckFrame& s);

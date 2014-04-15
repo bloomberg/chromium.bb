@@ -191,10 +191,11 @@ class MockTimeWaitListManager : public QuicTimeWaitListManager {
       : QuicTimeWaitListManager(writer, visitor, eps, QuicSupportedVersions()) {
   }
 
-  MOCK_METHOD4(ProcessPacket, void(const IPEndPoint& server_address,
+  MOCK_METHOD5(ProcessPacket, void(const IPEndPoint& server_address,
                                    const IPEndPoint& client_address,
                                    QuicConnectionId connection_id,
-                                   QuicPacketSequenceNumber sequence_number));
+                                   QuicPacketSequenceNumber sequence_number,
+                                   const QuicEncryptedPacket& packet));
 };
 
 TEST_F(QuicDispatcherTest, TimeWaitListManager) {
@@ -236,7 +237,7 @@ TEST_F(QuicDispatcherTest, TimeWaitListManager) {
   // Dispatcher forwards subsequent packets for this connection_id to the time
   // wait list manager.
   EXPECT_CALL(*time_wait_list_manager,
-              ProcessPacket(_, _, connection_id, _)).Times(1);
+              ProcessPacket(_, _, connection_id, _, _)).Times(1);
   ProcessPacket(client_address, connection_id, true, "foo");
 }
 
@@ -254,7 +255,7 @@ TEST_F(QuicDispatcherTest, StrayPacketToTimeWaitListManager) {
   // list manager.
   EXPECT_CALL(dispatcher_, CreateQuicSession(_, _, _)).Times(0);
   EXPECT_CALL(*time_wait_list_manager,
-              ProcessPacket(_, _, connection_id, _)).Times(1);
+              ProcessPacket(_, _, connection_id, _, _)).Times(1);
   string data = "foo";
   ProcessPacket(client_address, connection_id, false, "foo");
 }

@@ -1052,7 +1052,7 @@ TEST_F(QuicSentPacketManagerTest, GetTransmissionTimeCryptoHandshake) {
   QuicSentPacketManagerPeer::GetRttStats(&manager_)->set_initial_rtt_us(
       100 * base::Time::kMicrosecondsPerMillisecond);
 
-  QuicTime::Delta srtt = manager_.SmoothedRtt();
+  QuicTime::Delta srtt = manager_.GetRttStats()->SmoothedRtt();
   QuicTime expected_time = clock_.Now().Add(srtt.Multiply(1.5));
   EXPECT_EQ(expected_time, manager_.GetRetransmissionTime());
 
@@ -1081,7 +1081,7 @@ TEST_F(QuicSentPacketManagerTest, GetTransmissionTimeTailLossProbe) {
   // Test with a standard smoothed RTT.
   QuicSentPacketManagerPeer::GetRttStats(&manager_)->set_initial_rtt_us(
       100 * base::Time::kMicrosecondsPerMillisecond);
-  QuicTime::Delta srtt = manager_.SmoothedRtt();
+  QuicTime::Delta srtt = manager_.GetRttStats()->SmoothedRtt();
   QuicTime::Delta expected_tlp_delay = srtt.Multiply(2);
   QuicTime expected_time = clock_.Now().Add(expected_tlp_delay);
   EXPECT_EQ(expected_time, manager_.GetRetransmissionTime());

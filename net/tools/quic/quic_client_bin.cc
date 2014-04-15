@@ -21,6 +21,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/privacy_mode.h"
 #include "net/quic/quic_protocol.h"
+#include "net/quic/quic_server_id.h"
 #include "net/tools/quic/quic_client.h"
 
 // The port the quic client will connect to.

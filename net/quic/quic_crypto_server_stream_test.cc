@@ -180,8 +180,8 @@ TEST_P(QuicCryptoServerStreamTest, ZeroRTT) {
   reinterpret_cast<MockRandom*>(client_conn->random_generator())->ChangeValue();
   client_session.reset(new TestClientSession(client_conn, client_config));
   server_session.reset(new TestSession(server_conn, config_));
-  client.reset(new QuicCryptoClientStream(server_id, client_session.get(),
-                                          NULL, &client_crypto_config));
+  client.reset(new QuicCryptoClientStream(
+      server_id, client_session.get(), NULL, &client_crypto_config));
   client_session->SetCryptoStream(client.get());
 
   server.reset(new QuicCryptoServerStream(crypto_config_,

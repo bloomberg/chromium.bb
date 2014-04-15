@@ -661,7 +661,7 @@ const QuicTime QuicSentPacketManager::GetRetransmissionTime() const {
       QuicTime rto_timeout = sent_time.Add(GetRetransmissionDelay());
       // Always wait at least 1.5 * RTT from now.
       QuicTime min_timeout = clock_->ApproximateNow().Add(
-          SmoothedRtt().Multiply(1.5));
+          rtt_stats_.SmoothedRtt().Multiply(1.5));
 
       return QuicTime::Max(min_timeout, rto_timeout);
     }
@@ -675,13 +675,13 @@ const QuicTime::Delta QuicSentPacketManager::GetCryptoRetransmissionDelay()
   // This is equivalent to the TailLossProbeDelay, but slightly more aggressive
   // because crypto handshake messages don't incur a delayed ack time.
   int64 delay_ms = max<int64>(kMinHandshakeTimeoutMs,
-                              1.5 * SmoothedRtt().ToMilliseconds());
+                              1.5 * rtt_stats_.SmoothedRtt().ToMilliseconds());
   return QuicTime::Delta::FromMilliseconds(
       delay_ms << consecutive_crypto_retransmission_count_);
 }
 
 const QuicTime::Delta QuicSentPacketManager::GetTailLossProbeDelay() const {
-  QuicTime::Delta srtt = SmoothedRtt();
+  QuicTime::Delta srtt = rtt_stats_.SmoothedRtt();
   if (!unacked_packets_.HasMultiplePendingPackets()) {
     return QuicTime::Delta::Max(
         srtt.Multiply(1.5).Add(DelayedAckTime()), srtt.Multiply(2));
@@ -713,8 +713,8 @@ const QuicTime::Delta QuicSentPacketManager::GetRetransmissionDelay() const {
   return retransmission_delay;
 }
 
-const QuicTime::Delta QuicSentPacketManager::SmoothedRtt() const {
-  return rtt_stats_.SmoothedRtt();
+const RttStats* QuicSentPacketManager::GetRttStats() const {
+  return &rtt_stats_;
 }
 
 QuicBandwidth QuicSentPacketManager::BandwidthEstimate() const {

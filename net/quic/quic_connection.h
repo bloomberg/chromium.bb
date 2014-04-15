@@ -450,6 +450,26 @@ class NET_EXPORT_PRIVATE QuicConnection
     return max_flow_control_receive_window_bytes_;
   }
 
+  // Stores current batch state for connection, puts the connection
+  // into batch mode, and destruction restores the stored batch state.
+  // While the bundler is in scope, any generated frames are bundled
+  // as densely as possible into packets.  In addition, this bundler
+  // can be configured to ensure that an ACK frame is included in the
+  // first packet created, if there's new ack information to be sent.
+  class ScopedPacketBundler {
+   public:
+    // In addition to all outgoing frames being bundled when the
+    // bundler is in scope, setting |include_ack| to true ensures that
+    // an ACK frame is opportunistically bundled with the first
+    // outgoing packet.
+    ScopedPacketBundler(QuicConnection* connection, AckBundling send_ack);
+    ~ScopedPacketBundler();
+
+   private:
+    QuicConnection* connection_;
+    bool already_in_batch_mode_;
+  };
+
  protected:
   // Send a packet to the peer using encryption |level|. If |sequence_number|
   // is present in the |retransmission_map_|, then contents of this packet will
@@ -471,28 +491,9 @@ class NET_EXPORT_PRIVATE QuicConnection
   // such a version exists, false otherwise.
   bool SelectMutualVersion(const QuicVersionVector& available_versions);
 
+  QuicPacketWriter* writer() { return writer_; }
+
  private:
-  // Stores current batch state for connection, puts the connection
-  // into batch mode, and destruction restores the stored batch state.
-  // While the bundler is in scope, any generated frames are bundled
-  // as densely as possible into packets.  In addition, this bundler
-  // can be configured to ensure that an ACK frame is included in the
-  // first packet created, if there's new ack information to be sent.
-  class ScopedPacketBundler {
-   public:
-    // In addition to all outgoing frames being bundled when the
-    // bundler is in scope, setting |include_ack| to true ensures that
-    // an ACK frame is opportunistically bundled with the first
-    // outgoing packet.
-    ScopedPacketBundler(QuicConnection* connection, AckBundling send_ack);
-    ~ScopedPacketBundler();
-
-   private:
-    QuicConnection* connection_;
-    bool already_in_batch_mode_;
-  };
-
-  friend class ScopedPacketBundler;
   friend class test::QuicConnectionPeer;
 
   // Packets which have not been written to the wire.

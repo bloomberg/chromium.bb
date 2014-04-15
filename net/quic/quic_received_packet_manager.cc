@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "net/base/linked_hash_map.h"
+#include "net/quic/quic_connection_stats.h"
 
 using std::make_pair;
 using std::max;
@@ -26,14 +27,16 @@ const size_t kMaxPacketsAfterNewMissing = 4;
 }
 
 QuicReceivedPacketManager::QuicReceivedPacketManager(
-    CongestionFeedbackType congestion_type)
+    CongestionFeedbackType congestion_type,
+    QuicConnectionStats* stats)
     : packets_entropy_hash_(0),
       largest_sequence_number_(0),
       peer_largest_observed_packet_(0),
       least_packet_awaited_by_peer_(1),
       peer_least_packet_awaiting_ack_(0),
       time_largest_observed_(QuicTime::Zero()),
-      receive_algorithm_(ReceiveAlgorithmInterface::Create(congestion_type)) {
+      receive_algorithm_(ReceiveAlgorithmInterface::Create(congestion_type)),
+      stats_(stats) {
   received_info_.largest_observed = 0;
   received_info_.entropy_hash = 0;
 }
@@ -57,6 +60,16 @@ void QuicReceivedPacketManager::RecordPacketReceived(
     // "missing packets" list.
     DVLOG(1) << "Removing " << sequence_number << " from missing list";
     received_info_.missing_packets.erase(sequence_number);
+
+    // Record how out of order stats.
+    ++stats_->packets_reordered;
+    uint32 sequence_gap = received_info_.largest_observed - sequence_number;
+    stats_->max_sequence_reordering =
+        max(stats_->max_sequence_reordering, sequence_gap);
+    uint32 reordering_time_us =
+        receipt_time.Subtract(time_largest_observed_).ToMicroseconds();
+    stats_->max_time_reordering_us = max(stats_->max_time_reordering_us,
+                                         reordering_time_us);
   }
   if (header.packet_sequence_number > received_info_.largest_observed) {
     received_info_.largest_observed = header.packet_sequence_number;

@@ -261,15 +261,6 @@ QuicStopWaitingFrame::~QuicStopWaitingFrame() {}
 
 QuicAckFrame::QuicAckFrame() {}
 
-QuicAckFrame::QuicAckFrame(QuicPacketSequenceNumber largest_observed,
-                           QuicTime largest_observed_receive_time,
-                           QuicPacketSequenceNumber least_unacked) {
-  received_info.largest_observed = largest_observed;
-  received_info.entropy_hash = 0;
-  sent_info.least_unacked = least_unacked;
-  sent_info.entropy_hash = 0;
-}
-
 CongestionFeedbackMessageTCP::CongestionFeedbackMessageTCP()
     : receive_window(0) {
 }

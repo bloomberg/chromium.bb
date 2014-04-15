@@ -128,7 +128,7 @@ class QuicPacketGeneratorTest : public ::testing::Test {
 
   QuicAckFrame* CreateAckFrame() {
     // TODO(rch): Initialize this so it can be verified later.
-    return new QuicAckFrame(0, QuicTime::Zero(), 0);
+    return new QuicAckFrame(MakeAckFrame(0, 0));
   }
 
   QuicCongestionFeedbackFrame* CreateFeedbackFrame() {

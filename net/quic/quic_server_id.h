@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_QUIC_QUIC_SESSION_KEY_H_
-#define NET_QUIC_QUIC_SESSION_KEY_H_
+#ifndef NET_QUIC_QUIC_SERVER_ID_H_
+#define NET_QUIC_QUIC_SERVER_ID_H_
 
 #include <string>
 
@@ -21,6 +21,9 @@ class NET_EXPORT_PRIVATE QuicServerId {
   QuicServerId(const HostPortPair& host_port_pair,
                bool is_https,
                PrivacyMode privacy_mode);
+  QuicServerId(const std::string& host,
+               uint16 port,
+               bool is_https);
   QuicServerId(const std::string& host,
                uint16 port,
                bool is_https,
@@ -54,4 +57,4 @@ class NET_EXPORT_PRIVATE QuicServerId {
 
 }  // namespace net
 
-#endif  // NET_QUIC_QUIC_SESSION_KEY_H_
+#endif  // NET_QUIC_QUIC_SERVER_ID_H_

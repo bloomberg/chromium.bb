@@ -182,7 +182,8 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       largest_seen_packet_with_stop_waiting_(0),
       pending_version_negotiation_packet_(false),
       received_packet_manager_(
-          FLAGS_quic_congestion_control_inter_arrival ? kInterArrival : kTCP),
+          FLAGS_quic_congestion_control_inter_arrival ? kInterArrival : kTCP,
+          &stats_),
       ack_queued_(false),
       stop_waiting_count_(0),
       ack_alarm_(helper->CreateAlarm(new AckAlarm(this))),
@@ -1004,7 +1005,10 @@ void QuicConnection::SendBlocked(QuicStreamId id) {
 
 const QuicConnectionStats& QuicConnection::GetStats() {
   // Update rtt and estimated bandwidth.
-  stats_.rtt = sent_packet_manager_.SmoothedRtt().ToMicroseconds();
+  stats_.min_rtt_us =
+      sent_packet_manager_.GetRttStats()->min_rtt().ToMicroseconds();
+  stats_.srtt_us =
+      sent_packet_manager_.GetRttStats()->SmoothedRtt().ToMicroseconds();
   stats_.estimated_bandwidth =
       sent_packet_manager_.BandwidthEstimate().ToBytesPerSecond();
   return stats_;
@@ -1410,8 +1414,7 @@ bool QuicConnection::OnPacketSent(WriteResult result) {
   // options by a more explicit API than setting a struct value directly.
   packet_creator_.UpdateSequenceNumberLength(
       received_packet_manager_.least_packet_awaited_by_peer(),
-      sent_packet_manager_.BandwidthEstimate().ToBytesPerPeriod(
-          sent_packet_manager_.SmoothedRtt()));
+      sent_packet_manager_.GetCongestionWindow());
 
   bool reset_retransmission_alarm =
       sent_packet_manager_.OnPacketSent(sequence_number, now, length,

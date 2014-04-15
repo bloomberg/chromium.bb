@@ -151,6 +151,10 @@ class TestSession : public QuicSession {
     writev_consumes_all_data_ = val;
   }
 
+  QuicConsumedData SendStreamData() {
+    return WritevData(5, IOVector(), 0, true, NULL);
+  }
+
  private:
   TestCryptoStream crypto_stream_;
 
@@ -346,6 +350,40 @@ TEST_P(QuicSessionTest, OnCanWrite) {
   EXPECT_CALL(*stream4, OnCanWrite());
   session_.OnCanWrite();
   EXPECT_TRUE(session_.HasPendingWrites());
+}
+
+TEST_P(QuicSessionTest, OnCanWriteBundlesStreams) {
+  // Drive congestion control manually.
+  MockSendAlgorithm* send_algorithm = new StrictMock<MockSendAlgorithm>;
+  QuicConnectionPeer::SetSendAlgorithm(session_.connection(), send_algorithm);
+
+  TestStream* stream2 = session_.CreateOutgoingDataStream();
+  TestStream* stream4 = session_.CreateOutgoingDataStream();
+  TestStream* stream6 = session_.CreateOutgoingDataStream();
+
+  session_.MarkWriteBlocked(stream2->id(), kSomeMiddlePriority);
+  session_.MarkWriteBlocked(stream6->id(), kSomeMiddlePriority);
+  session_.MarkWriteBlocked(stream4->id(), kSomeMiddlePriority);
+
+
+  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _)).WillRepeatedly(
+      Return(QuicTime::Delta::Zero()));
+  EXPECT_CALL(*send_algorithm, GetCongestionWindow()).WillOnce(
+      Return(kMaxPacketSize * 10));
+  EXPECT_CALL(*stream2, OnCanWrite()).WillOnce(IgnoreResult(
+      InvokeWithoutArgs(&session_, &TestSession::SendStreamData)));
+  EXPECT_CALL(*stream6, OnCanWrite()).WillOnce(IgnoreResult(
+      InvokeWithoutArgs(&session_, &TestSession::SendStreamData)));
+  EXPECT_CALL(*stream4, OnCanWrite()).WillOnce(IgnoreResult(
+      InvokeWithoutArgs(&session_, &TestSession::SendStreamData)));
+  MockPacketWriter* writer =
+      static_cast<MockPacketWriter*>(
+          QuicConnectionPeer::GetWriter(session_.connection()));
+  EXPECT_CALL(*writer, WritePacket(_, _, _, _)).WillOnce(
+                  Return(WriteResult(WRITE_STATUS_OK, 0)));
+  EXPECT_CALL(*send_algorithm, OnPacketSent(_, _, _, _));
+  session_.OnCanWrite();
+  EXPECT_FALSE(session_.HasPendingWrites());
 }
 
 TEST_P(QuicSessionTest, OnCanWriteCongestionControlBlocks) {

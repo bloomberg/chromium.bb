@@ -569,8 +569,8 @@ class QuicConnectionTest : public ::testing::TestWithParam<QuicVersion> {
         .Times(AnyNumber());
     EXPECT_CALL(*send_algorithm_, RetransmissionDelay()).WillRepeatedly(
         Return(QuicTime::Delta::Zero()));
-    EXPECT_CALL(*send_algorithm_, BandwidthEstimate()).WillRepeatedly(Return(
-        QuicBandwidth::FromKBitsPerSecond(100)));
+    EXPECT_CALL(*send_algorithm_, GetCongestionWindow()).WillRepeatedly(
+        Return(kMaxPacketSize));
     ON_CALL(*send_algorithm_, OnPacketSent(_, _, _, _))
         .WillByDefault(Return(true));
     EXPECT_CALL(visitor_, HasPendingWrites()).Times(AnyNumber());
@@ -855,7 +855,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<QuicVersion> {
   // Initialize a frame acknowledging all packets up to largest_observed.
   const QuicAckFrame InitAckFrame(QuicPacketSequenceNumber largest_observed,
                                   QuicPacketSequenceNumber least_unacked) {
-    QuicAckFrame frame(largest_observed, QuicTime::Zero(), least_unacked);
+    QuicAckFrame frame(MakeAckFrame(largest_observed, least_unacked));
     if (largest_observed > 0) {
       frame.received_info.entropy_hash =
         QuicConnectionPeer::GetSentEntropyHash(&connection_, largest_observed);
@@ -1268,7 +1268,7 @@ TEST_P(QuicConnectionTest, AckUnsentData) {
   EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_INVALID_ACK_DATA, false));
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _));
-  QuicAckFrame frame(1, QuicTime::Zero(), 0);
+  QuicAckFrame frame(MakeAckFrame(1, 0));
   EXPECT_CALL(visitor_, OnCanWrite()).Times(0);
   ProcessAckPacket(&frame);
 }
@@ -1283,9 +1283,6 @@ TEST_P(QuicConnectionTest, AckAll) {
 }
 
 TEST_P(QuicConnectionTest, SendingDifferentSequenceNumberLengthsBandwidth) {
-  EXPECT_CALL(*send_algorithm_, BandwidthEstimate()).WillOnce(Return(
-       QuicBandwidth::FromKBitsPerSecond(1000)));
-
   QuicPacketSequenceNumber last_packet;
   SendStreamDataToPeer(1, "foo", 0, !kFin, &last_packet);
   EXPECT_EQ(1u, last_packet);
@@ -1294,8 +1291,8 @@ TEST_P(QuicConnectionTest, SendingDifferentSequenceNumberLengthsBandwidth) {
   EXPECT_EQ(PACKET_1BYTE_SEQUENCE_NUMBER,
             last_header()->public_header.sequence_number_length);
 
-  EXPECT_CALL(*send_algorithm_, BandwidthEstimate()).WillOnce(Return(
-       QuicBandwidth::FromKBitsPerSecond(1000 * 256)));
+  EXPECT_CALL(*send_algorithm_, GetCongestionWindow()).WillRepeatedly(
+      Return(kMaxPacketSize * 256));
 
   SendStreamDataToPeer(1, "bar", 3, !kFin, &last_packet);
   EXPECT_EQ(2u, last_packet);
@@ -1306,8 +1303,8 @@ TEST_P(QuicConnectionTest, SendingDifferentSequenceNumberLengthsBandwidth) {
   EXPECT_EQ(PACKET_1BYTE_SEQUENCE_NUMBER,
             last_header()->public_header.sequence_number_length);
 
-  EXPECT_CALL(*send_algorithm_, BandwidthEstimate()).WillOnce(Return(
-       QuicBandwidth::FromKBitsPerSecond(1000 * 256 * 256)));
+  EXPECT_CALL(*send_algorithm_, GetCongestionWindow()).WillRepeatedly(
+      Return(kMaxPacketSize * 256 * 256));
 
   SendStreamDataToPeer(1, "foo", 6, !kFin, &last_packet);
   EXPECT_EQ(3u, last_packet);
@@ -1316,8 +1313,8 @@ TEST_P(QuicConnectionTest, SendingDifferentSequenceNumberLengthsBandwidth) {
   EXPECT_EQ(PACKET_2BYTE_SEQUENCE_NUMBER,
             last_header()->public_header.sequence_number_length);
 
-  EXPECT_CALL(*send_algorithm_, BandwidthEstimate()).WillOnce(Return(
-       QuicBandwidth::FromKBitsPerSecond(1000ll * 256 * 256 * 256)));
+  EXPECT_CALL(*send_algorithm_, GetCongestionWindow()).WillRepeatedly(
+      Return(kMaxPacketSize * 256 * 256 * 256));
 
   SendStreamDataToPeer(1, "bar", 9, !kFin, &last_packet);
   EXPECT_EQ(4u, last_packet);
@@ -1326,8 +1323,8 @@ TEST_P(QuicConnectionTest, SendingDifferentSequenceNumberLengthsBandwidth) {
   EXPECT_EQ(PACKET_4BYTE_SEQUENCE_NUMBER,
             last_header()->public_header.sequence_number_length);
 
-  EXPECT_CALL(*send_algorithm_, BandwidthEstimate()).WillOnce(Return(
-      QuicBandwidth::FromKBitsPerSecond(1000ll * 256 * 256 * 256 * 256)));
+  EXPECT_CALL(*send_algorithm_, GetCongestionWindow()).WillRepeatedly(
+      Return(kMaxPacketSize * 256 * 256 * 256 * 256));
 
   SendStreamDataToPeer(1, "foo", 12, !kFin, &last_packet);
   EXPECT_EQ(5u, last_packet);

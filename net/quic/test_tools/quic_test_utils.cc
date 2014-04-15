@@ -42,6 +42,16 @@ class TestAlarm : public QuicAlarm {
 
 }  // namespace
 
+QuicAckFrame MakeAckFrame(QuicPacketSequenceNumber largest_observed,
+                          QuicPacketSequenceNumber least_unacked) {
+  QuicAckFrame ack;
+  ack.received_info.largest_observed = largest_observed;
+  ack.received_info.entropy_hash = 0;
+  ack.sent_info.least_unacked = least_unacked;
+  ack.sent_info.entropy_hash = 0;
+  return ack;
+}
+
 MockFramerVisitor::MockFramerVisitor() {
   // By default, we want to accept packets.
   ON_CALL(*this, OnProtocolVersionMismatch(_))

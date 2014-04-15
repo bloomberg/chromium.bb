@@ -146,8 +146,7 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // there are no retransmittable packets.
   const QuicTime GetRetransmissionTime() const;
 
-  // Returns the estimated smoothed RTT calculated by the congestion algorithm.
-  const QuicTime::Delta SmoothedRtt() const;
+  const RttStats* GetRttStats() const;
 
   // Returns the estimated bandwidth calculated by the congestion algorithm.
   QuicBandwidth BandwidthEstimate() const;
