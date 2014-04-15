@@ -155,26 +155,9 @@ class UI_BASE_EXPORT IMEBridge {
   virtual void SetInputContextHandler(
       IMEInputContextHandlerInterface* handler) = 0;
 
-  // Initializes the mapping from |engine_id| to |handler|.
-  // |engine_id| must not be empty and |handler| must not be null.
-  virtual void SetEngineHandler(
-      const std::string& engine_id,
-      IMEEngineHandlerInterface* handler) = 0;
-
-  // Returns IMEEngineHandlerInterface* mapped by |engine_id|.  NULL is
-  // returned if |engine_id| is not mapped any engines.
-  virtual IMEEngineHandlerInterface* GetEngineHandler(
-      const std::string& engine_id) = 0;
-
   // Updates current EngineHandler. If there is no active engine service, pass
   // NULL for |handler|. Caller must release |handler|.
   virtual void SetCurrentEngineHandler(IMEEngineHandlerInterface* handler) = 0;
-
-  // Updates current EngineHandler by Engine ID. If there is no active
-  // engine service, pass an empty string for |engine_id|.  The set
-  // IMEEngineHandlerInterface is returned.
-  virtual IMEEngineHandlerInterface* SetCurrentEngineHandlerById(
-      const std::string& engine_id) = 0;
 
   // Returns current EngineHandler. This function returns NULL if current engine
   // is not ready to use.

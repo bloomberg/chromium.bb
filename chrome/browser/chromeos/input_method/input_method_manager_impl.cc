@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/input_method/component_extension_ime_manager_impl.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "chrome/browser/chromeos/language_preferences.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/ime/component_extension_ime_manager.h"
 #include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/ime/fake_ime_keyboard.h"
@@ -357,11 +358,11 @@ bool InputMethodManagerImpl::ChangeInputMethodInternal(
     IMEBridge::Get()->SetCurrentEngineHandler(NULL);
   } else {
     IMEEngineHandlerInterface* next_engine =
-        IMEBridge::Get()->SetCurrentEngineHandlerById(
-            input_method_id_to_switch);
-
-    if (next_engine)
+        profile_engine_map_[GetProfile()][input_method_id_to_switch];
+    if (next_engine) {
+      IMEBridge::Get()->SetCurrentEngineHandler(next_engine);
       next_engine->Enable();
+    }
   }
 
   // TODO(komatsu): Check if it is necessary to perform the above routine
@@ -490,7 +491,7 @@ void InputMethodManagerImpl::AddInputMethodExtension(
     MaybeInitializeCandidateWindowController();
   }
 
-  IMEBridge::Get()->SetEngineHandler(id, engine);
+  profile_engine_map_[GetProfile()][id] = engine;
 }
 
 void InputMethodManagerImpl::RemoveInputMethodExtension(const std::string& id) {
@@ -508,7 +509,7 @@ void InputMethodManagerImpl::RemoveInputMethodExtension(const std::string& id) {
   ChangeInputMethod(current_input_method_.id());
 
   if (IMEBridge::Get()->GetCurrentEngineHandler() ==
-      IMEBridge::Get()->GetEngineHandler(id))
+      profile_engine_map_[GetProfile()][id])
     IMEBridge::Get()->SetCurrentEngineHandler(NULL);
 }
 
@@ -852,6 +853,10 @@ void InputMethodManagerImpl::MaybeInitializeCandidateWindowController() {
   candidate_window_controller_.reset(
       CandidateWindowController::CreateCandidateWindowController());
   candidate_window_controller_->AddObserver(this);
+}
+
+Profile* InputMethodManagerImpl::GetProfile() const {
+  return ProfileManager::GetActiveUserProfile();
 }
 
 }  // namespace input_method

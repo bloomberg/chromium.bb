@@ -88,12 +88,18 @@ class MockInputMethodEngine : public InputMethodEngineInterface {
                                   uint32 anchor_pos) OVERRIDE;
   virtual void HideInputView() OVERRIDE;
 
+  std::string last_activated_property() const {
+    return last_activated_property_;
+  }
+
  private:
   // Descriptor of this input method.
   input_method::InputMethodDescriptor descriptor_;
 
   // The current candidate window property.
   CandidateWindowProperty candidate_window_property_;
+
+  std::string last_activated_property_;
 };
 
 }  // namespace chromeos

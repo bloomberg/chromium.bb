@@ -15,9 +15,14 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine_interface.h"
 #include "chrome/browser/chromeos/input_method/mock_candidate_window_controller.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_engine.h"
+#include "chrome/test/base/browser_with_test_window_test.h"
+#include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/ime/fake_ime_keyboard.h"
 #include "chromeos/ime/fake_input_method_delegate.h"
@@ -25,6 +30,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/ime/chromeos/mock_ime_engine_handler.h"
+#include "ui/base/ime/input_method_initializer.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 namespace chromeos {
@@ -63,7 +69,7 @@ std::string XkbId(const std::string& id) {
   return extension_ime_util::GetInputMethodIDByKeyboardLayout(id);
 }
 
-class InputMethodManagerImplTest :  public testing::Test {
+class InputMethodManagerImplTest :  public BrowserWithTestWindowTest {
  public:
   InputMethodManagerImplTest()
       : delegate_(NULL),
@@ -73,6 +79,11 @@ class InputMethodManagerImplTest :  public testing::Test {
   virtual ~InputMethodManagerImplTest() {}
 
   virtual void SetUp() OVERRIDE {
+    profile_manager_.reset(new TestingProfileManager(GetBrowserProcess()));
+    ASSERT_TRUE(profile_manager_->SetUp());
+
+    ui::InitializeInputMethodForTesting();
+
     delegate_ = new FakeInputMethodDelegate();
     manager_.reset(new InputMethodManagerImpl(
         scoped_ptr<InputMethodDelegate>(delegate_)));
@@ -82,12 +93,53 @@ class InputMethodManagerImplTest :  public testing::Test {
         candidate_window_controller_);
     keyboard_ = new FakeImeKeyboard;
     manager_->SetImeKeyboardForTesting(keyboard_);
-    mock_engine_handler_.reset(new MockIMEEngineHandler());
+    mock_engine_handler_.reset(
+        new MockInputMethodEngine(InputMethodDescriptor()));
     IMEBridge::Initialize();
     IMEBridge::Get()->SetCurrentEngineHandler(mock_engine_handler_.get());
 
     menu_manager_ = ash::ime::InputMethodMenuManager::GetInstance();
 
+    InitImeList();
+
+    BrowserWithTestWindowTest::SetUp();
+  }
+
+  virtual void TearDown() OVERRIDE {
+    BrowserWithTestWindowTest::TearDown();
+
+    ui::ShutdownInputMethodForTesting();
+
+    delegate_ = NULL;
+    candidate_window_controller_ = NULL;
+    keyboard_ = NULL;
+    manager_.reset();
+
+    profile_manager_.reset();
+  }
+
+ protected:
+  // Helper function to initialize component extension stuff for testing.
+  void InitComponentExtension() {
+    mock_delegate_ = new MockComponentExtIMEManagerDelegate();
+    mock_delegate_->set_ime_list(ime_list_);
+    scoped_ptr<ComponentExtensionIMEManagerDelegate> delegate(mock_delegate_);
+
+    // Note, for production, these SetEngineHandler are called when
+    // IMEEngineHandlerInterface is initialized via
+    // InitializeComponentextension.
+    manager_->AddInputMethodExtension(kNaclMozcUsId,
+                                      mock_engine_handler_.get());
+    manager_->AddInputMethodExtension(kNaclMozcJpId,
+                                      mock_engine_handler_.get());
+    manager_->AddInputMethodExtension(kExt2Engine1Id,
+                                      mock_engine_handler_.get());
+    manager_->AddInputMethodExtension(kExt2Engine2Id,
+                                      mock_engine_handler_.get());
+    manager_->InitializeComponentExtensionForTesting(delegate.Pass());
+  }
+
+  void InitImeList() {
     ime_list_.clear();
 
     ComponentExtensionIME ext_xkb;
@@ -210,42 +262,16 @@ class InputMethodManagerImplTest :  public testing::Test {
     ime_list_.push_back(ext2);
   }
 
-  virtual void TearDown() OVERRIDE {
-    delegate_ = NULL;
-    candidate_window_controller_ = NULL;
-    keyboard_ = NULL;
-    manager_.reset();
-
-    IMEBridge::Get()->SetCurrentEngineHandler(NULL);
-    IMEBridge::Shutdown();
+  TestingBrowserProcess* GetBrowserProcess() {
+    return TestingBrowserProcess::GetGlobal();
   }
 
- protected:
-  // Helper function to initialize component extension stuff for testing.
-  void InitComponentExtension() {
-    mock_delegate_ = new MockComponentExtIMEManagerDelegate();
-    mock_delegate_->set_ime_list(ime_list_);
-    scoped_ptr<ComponentExtensionIMEManagerDelegate> delegate(mock_delegate_);
-    // Note, for production, these SetEngineHandler are called when
-    // IMEEngineHandlerInterface is initialized via
-    // InitializeComponentextension.
-    IMEBridge::Get()->SetEngineHandler(kNaclMozcUsId,
-                                        mock_engine_handler_.get());
-    IMEBridge::Get()->SetEngineHandler(kNaclMozcJpId,
-                                        mock_engine_handler_.get());
-    IMEBridge::Get()->SetEngineHandler(kExt2Engine1Id,
-                                        mock_engine_handler_.get());
-    IMEBridge::Get()->SetEngineHandler(kExt2Engine2Id,
-                                        mock_engine_handler_.get());
-    manager_->InitializeComponentExtensionForTesting(delegate.Pass());
-  }
-
+  scoped_ptr<TestingProfileManager> profile_manager_;
   scoped_ptr<InputMethodManagerImpl> manager_;
   FakeInputMethodDelegate* delegate_;
   MockCandidateWindowController* candidate_window_controller_;
-  scoped_ptr<MockIMEEngineHandler> mock_engine_handler_;
+  scoped_ptr<MockInputMethodEngine> mock_engine_handler_;
   FakeImeKeyboard* keyboard_;
-  base::MessageLoop message_loop_;
   MockComponentExtIMEManagerDelegate* mock_delegate_;
   std::vector<ComponentExtensionIME> ime_list_;
   ash::ime::InputMethodMenuManager* menu_manager_;

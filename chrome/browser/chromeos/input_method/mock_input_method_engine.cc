@@ -118,6 +118,7 @@ void MockInputMethodEngine::Disable() {
 }
 
 void MockInputMethodEngine::PropertyActivate(const std::string& property_name) {
+  last_activated_property_ = property_name;
 }
 
 void MockInputMethodEngine::Reset() {

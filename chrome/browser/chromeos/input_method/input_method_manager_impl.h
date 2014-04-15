@@ -14,6 +14,7 @@
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/chromeos/input_method/candidate_window_controller.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "chromeos/ime/input_method_whitelist.h"
 
@@ -159,6 +160,9 @@ class InputMethodManagerImpl : public InputMethodManager,
   // (after list of enabled input methods has been updated)
   void ReconfigureIMFramework();
 
+  // Gets the current active user profile.
+  Profile* GetProfile() const;
+
   scoped_ptr<InputMethodDelegate> delegate_;
 
   // The current browser status.
@@ -211,6 +215,13 @@ class InputMethodManagerImpl : public InputMethodManager,
   base::ThreadChecker thread_checker_;
 
   base::WeakPtrFactory<InputMethodManagerImpl> weak_ptr_factory_;
+
+  // The engine map:
+  //   { Profile : { input_method_id : Engine } }.
+  typedef std::map<std::string, InputMethodEngineInterface*>
+      EngineMap;
+  typedef std::map<Profile*, EngineMap, ProfileCompare> ProfileEngineMap;
+  ProfileEngineMap profile_engine_map_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodManagerImpl);
 };

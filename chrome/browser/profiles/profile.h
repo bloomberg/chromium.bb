@@ -402,6 +402,11 @@ class Profile : public content::BrowserContext {
   DISALLOW_COPY_AND_ASSIGN(Profile);
 };
 
+// The comparator for profile pointers as key in a map.
+struct ProfileCompare {
+  bool operator()(Profile* a, Profile* b) const;
+};
+
 #if defined(COMPILER_GCC)
 namespace BASE_HASH_NAMESPACE {
 

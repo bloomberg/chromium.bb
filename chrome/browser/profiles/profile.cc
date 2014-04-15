@@ -226,3 +226,10 @@ void Profile::MaybeSendDestroyedNotification() {
         content::NotificationService::NoDetails());
   }
 }
+
+bool ProfileCompare::operator()(Profile* a, Profile* b) const {
+  DCHECK(a && b);
+  if (a->IsSameProfile(b))
+    return false;
+  return a->GetOriginalProfile() < b->GetOriginalProfile();
+}
