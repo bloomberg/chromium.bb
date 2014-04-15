@@ -7,6 +7,7 @@
 namespace guestview {
 
 // Parameters/properties on events.
+const char kUserGesture[] = "userGesture";
 const char kIsTopLevel[] = "isTopLevel";
 const char kReason[] = "reason";
 const char kUrl[] = "url";

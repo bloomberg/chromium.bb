@@ -40,7 +40,6 @@
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/browser_main.h"
 #include "content/browser/browser_main_loop.h"
-#include "content/browser/browser_plugin/browser_plugin_geolocation_permission_context.h"
 #include "content/browser/browser_plugin/browser_plugin_message_filter.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/device_orientation/device_motion_message_filter.h"
@@ -228,9 +227,6 @@ void DisableAecDumpOnFileThread() {
 // the global list of all renderer processes
 base::LazyInstance<IDMap<RenderProcessHost> >::Leaky
     g_all_hosts = LAZY_INSTANCE_INITIALIZER;
-
-base::LazyInstance<scoped_refptr<BrowserPluginGeolocationPermissionContext> >
-    g_browser_plugin_geolocation_context = LAZY_INSTANCE_INITIALIZER;
 
 // Map of site to process, to ensure we only have one RenderProcessHost per
 // site in process-per-site mode.  Each map is specific to a BrowserContext.
@@ -690,17 +686,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       storage_partition_impl_->GetIndexedDBContext(),
       ChromeBlobStorageContext::GetFor(browser_context)));
 
-  if (IsGuest()) {
-    if (!g_browser_plugin_geolocation_context.Get().get()) {
-      g_browser_plugin_geolocation_context.Get() =
-          new BrowserPluginGeolocationPermissionContext();
-    }
-    geolocation_dispatcher_host_ = GeolocationDispatcherHost::New(
-        GetID(), g_browser_plugin_geolocation_context.Get().get());
-  } else {
-    geolocation_dispatcher_host_ = GeolocationDispatcherHost::New(
-        GetID(), browser_context->GetGeolocationPermissionContext());
-  }
+  geolocation_dispatcher_host_ = GeolocationDispatcherHost::New(
+      GetID(), browser_context->GetGeolocationPermissionContext());
   AddFilter(geolocation_dispatcher_host_);
   gpu_message_filter_ = new GpuMessageFilter(GetID(), widget_helper_.get());
   AddFilter(gpu_message_filter_);

@@ -78,6 +78,7 @@ extern const char kParameterUserAgentOverride[];
 
 // Miscellaneous.
 extern const unsigned int kMaxOutstandingPermissionRequests;
+extern const int kInvalidPermissionRequestID;
 
 }  // namespace webview
 

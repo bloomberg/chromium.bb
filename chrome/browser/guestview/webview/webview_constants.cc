@@ -74,5 +74,6 @@ const char kParameterUserAgentOverride[] = "userAgentOverride";
 
 // Miscellaneous.
 const unsigned int kMaxOutstandingPermissionRequests = 1024;
+const int kInvalidPermissionRequestID = 0;
 
 }  // namespace webview

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/guestview/webview/webview_guest.h"
 
+#include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/guestview/webview/webview_permission_types.h"
 #include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/geolocation_permission_context.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
@@ -75,8 +77,6 @@ static std::string PermissionTypeToString(BrowserPluginPermissionType type) {
   switch (type) {
     case BROWSER_PLUGIN_PERMISSION_TYPE_DOWNLOAD:
       return webview::kPermissionTypeDownload;
-    case BROWSER_PLUGIN_PERMISSION_TYPE_GEOLOCATION:
-      return webview::kPermissionTypeGeolocation;
     case BROWSER_PLUGIN_PERMISSION_TYPE_MEDIA:
       return webview::kPermissionTypeMedia;
     case BROWSER_PLUGIN_PERMISSION_TYPE_NEW_WINDOW:
@@ -91,6 +91,8 @@ static std::string PermissionTypeToString(BrowserPluginPermissionType type) {
     default: {
       WebViewPermissionType webview = static_cast<WebViewPermissionType>(type);
       switch (webview) {
+        case WEB_VIEW_PERMISSION_TYPE_GEOLOCATION:
+          return webview::kPermissionTypeGeolocation;
         case WEB_VIEW_PERMISSION_TYPE_LOAD_PLUGIN:
           return webview::kPermissionTypeLoadPlugin;
       }
@@ -193,10 +195,6 @@ void WebViewGuest::RecordUserInitiatedUMA(const PermissionResponseInfo& info,
         content::RecordAction(
             UserMetricsAction("BrowserPlugin.PermissionAllow.Download"));
         break;
-      case BROWSER_PLUGIN_PERMISSION_TYPE_GEOLOCATION:
-        content::RecordAction(
-            UserMetricsAction("BrowserPlugin.PermissionAllow.Geolocation"));
-        break;
       case BROWSER_PLUGIN_PERMISSION_TYPE_MEDIA:
         content::RecordAction(
             UserMetricsAction("BrowserPlugin.PermissionAllow.Media"));
@@ -219,6 +217,10 @@ void WebViewGuest::RecordUserInitiatedUMA(const PermissionResponseInfo& info,
         WebViewPermissionType webview_permission_type =
             static_cast<WebViewPermissionType>(info.permission_type);
         switch (webview_permission_type) {
+          case WEB_VIEW_PERMISSION_TYPE_GEOLOCATION:
+            content::RecordAction(
+                UserMetricsAction("WebView.PermissionAllow.Geolocation"));
+            break;
           case WEB_VIEW_PERMISSION_TYPE_LOAD_PLUGIN:
             content::RecordAction(
                 UserMetricsAction("WebView.Guest.PermissionAllow.PluginLoad"));
@@ -233,10 +235,6 @@ void WebViewGuest::RecordUserInitiatedUMA(const PermissionResponseInfo& info,
       case BROWSER_PLUGIN_PERMISSION_TYPE_DOWNLOAD:
         content::RecordAction(
             UserMetricsAction("BrowserPlugin.PermissionDeny.Download"));
-        break;
-      case BROWSER_PLUGIN_PERMISSION_TYPE_GEOLOCATION:
-        content::RecordAction(
-            UserMetricsAction("BrowserPlugin.PermissionDeny.Geolocation"));
         break;
       case BROWSER_PLUGIN_PERMISSION_TYPE_MEDIA:
         content::RecordAction(
@@ -260,6 +258,10 @@ void WebViewGuest::RecordUserInitiatedUMA(const PermissionResponseInfo& info,
         WebViewPermissionType webview_permission_type =
             static_cast<WebViewPermissionType>(info.permission_type);
         switch (webview_permission_type) {
+          case WEB_VIEW_PERMISSION_TYPE_GEOLOCATION:
+            content::RecordAction(
+                UserMetricsAction("WebView.PermissionDeny.Geolocation"));
+            break;
           case WEB_VIEW_PERMISSION_TYPE_LOAD_PLUGIN:
             content::RecordAction(
                 UserMetricsAction("WebView.Guest.PermissionDeny.PluginLoad"));
@@ -437,43 +439,15 @@ void WebViewGuest::RendererUnresponsive() {
   DispatchEvent(new GuestView::Event(webview::kEventUnresponsive, args.Pass()));
 }
 
-bool WebViewGuest::RequestPermission(
+void WebViewGuest::RequestPermission(
     BrowserPluginPermissionType permission_type,
     const base::DictionaryValue& request_info,
     const PermissionResponseCallback& callback,
     bool allowed_by_default) {
-  // If there are too many pending permission requests then reject this request.
-  if (pending_permission_requests_.size() >=
-      webview::kMaxOutstandingPermissionRequests) {
-    callback.Run(false, std::string());
-    return true;
-  }
-
-  int request_id = next_permission_request_id_++;
-  pending_permission_requests_[request_id] =
-      PermissionResponseInfo(callback, permission_type, allowed_by_default);
-  scoped_ptr<base::DictionaryValue> args(request_info.DeepCopy());
-  args->SetInteger(webview::kRequestId, request_id);
-  switch (permission_type) {
-    case BROWSER_PLUGIN_PERMISSION_TYPE_NEW_WINDOW: {
-      DispatchEvent(new GuestView::Event(webview::kEventNewWindow,
-                                         args.Pass()));
-      break;
-    }
-    case BROWSER_PLUGIN_PERMISSION_TYPE_JAVASCRIPT_DIALOG: {
-      DispatchEvent(new GuestView::Event(webview::kEventDialog,
-                                         args.Pass()));
-      break;
-    }
-    default: {
-      args->SetString(webview::kPermission,
-                      PermissionTypeToString(permission_type));
-      DispatchEvent(new GuestView::Event(webview::kEventPermissionRequest,
-                                         args.Pass()));
-      break;
-    }
-  }
-  return true;
+  RequestPermissionInternal(permission_type,
+                            request_info,
+                            callback,
+                            allowed_by_default);
 }
 
 void WebViewGuest::Observe(int type,
@@ -542,6 +516,78 @@ void WebViewGuest::Reload() {
   // Chromium's repost warning. We might want to implement a separate API
   // for registering a callback if a repost is about to happen.
   guest_web_contents()->GetController().Reload(false);
+}
+
+
+void WebViewGuest::RequestGeolocationPermission(
+    int bridge_id,
+    const GURL& requesting_frame,
+    bool user_gesture,
+    const base::Callback<void(bool)>& callback) {
+  base::DictionaryValue request_info;
+  request_info.Set(guestview::kUrl,
+                   base::Value::CreateStringValue(requesting_frame.spec()));
+  request_info.Set(guestview::kUserGesture,
+                   base::Value::CreateBooleanValue(user_gesture));
+
+  // It is safe to hold an unretained pointer to WebViewGuest because this
+  // callback is called from WebViewGuest::SetPermission.
+  const PermissionResponseCallback permission_callback =
+      base::Bind(&WebViewGuest::OnWebViewGeolocationPermissionResponse,
+                 base::Unretained(this),
+                 bridge_id,
+                 user_gesture,
+                 callback);
+  int request_id = RequestPermissionInternal(
+      static_cast<BrowserPluginPermissionType>(
+          WEB_VIEW_PERMISSION_TYPE_GEOLOCATION),
+      request_info,
+      permission_callback,
+      false /* allowed_by_default */);
+  bridge_id_to_request_id_map_[bridge_id] = request_id;
+}
+
+void WebViewGuest::OnWebViewGeolocationPermissionResponse(
+    int bridge_id,
+    bool user_gesture,
+    const base::Callback<void(bool)>& callback,
+    bool allow,
+    const std::string& user_input) {
+  // The <webview> embedder has allowed the permission. We now need to make sure
+  // that the embedder has geolocation permission.
+  RemoveBridgeID(bridge_id);
+
+  if (!allow || !attached()) {
+    callback.Run(false);
+    return;
+  }
+
+  content::GeolocationPermissionContext* geolocation_context =
+      browser_context()->GetGeolocationPermissionContext();
+
+  DCHECK(geolocation_context);
+  geolocation_context->RequestGeolocationPermission(
+      embedder_web_contents()->GetRenderProcessHost()->GetID(),
+      embedder_web_contents()->GetRoutingID(),
+      // The geolocation permission request here is not initiated
+      // through WebGeolocationPermissionRequest. We are only interested
+      // in the fact whether the embedder/app has geolocation
+      // permission. Therefore we use an invalid |bridge_id|.
+      -1 /* bridge_id */,
+      embedder_web_contents()->GetLastCommittedURL(),
+      user_gesture,
+      callback);
+}
+
+void WebViewGuest::CancelGeolocationPermissionRequest(int bridge_id) {
+  int request_id = RemoveBridgeID(bridge_id);
+  RequestMap::iterator request_itr =
+      pending_permission_requests_.find(request_id);
+
+  if (request_itr == pending_permission_requests_.end())
+    return;
+
+  pending_permission_requests_.erase(request_itr);
 }
 
 WebViewGuest::SetPermissionResult WebViewGuest::SetPermission(
@@ -816,6 +862,65 @@ void WebViewGuest::InjectChromeVoxIfNeeded(
     }
   }
 #endif
+}
+
+int WebViewGuest::RemoveBridgeID(int bridge_id) {
+  std::map<int, int>::iterator bridge_itr =
+      bridge_id_to_request_id_map_.find(bridge_id);
+  if (bridge_itr == bridge_id_to_request_id_map_.end())
+    return webview::kInvalidPermissionRequestID;
+
+  int request_id = bridge_itr->second;
+  bridge_id_to_request_id_map_.erase(bridge_itr);
+  return request_id;
+}
+
+int WebViewGuest::RequestPermissionInternal(
+    BrowserPluginPermissionType permission_type,
+    const base::DictionaryValue& request_info,
+    const PermissionResponseCallback& callback,
+    bool allowed_by_default) {
+  // If there are too many pending permission requests then reject this request.
+  if (pending_permission_requests_.size() >=
+      webview::kMaxOutstandingPermissionRequests) {
+    // Let the stack unwind before we deny the permission request so that
+    // objects held by the permission request are not destroyed immediately
+    // after creation. This is to allow those same objects to be accessed again
+    // in the same scope without fear of use after freeing.
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&PermissionResponseCallback::Run,
+                  base::Owned(new PermissionResponseCallback(callback)),
+                  allowed_by_default,
+                  std::string()));
+    return webview::kInvalidPermissionRequestID;
+  }
+
+  int request_id = next_permission_request_id_++;
+  pending_permission_requests_[request_id] =
+      PermissionResponseInfo(callback, permission_type, allowed_by_default);
+  scoped_ptr<base::DictionaryValue> args(request_info.DeepCopy());
+  args->SetInteger(webview::kRequestId, request_id);
+  switch (permission_type) {
+    case BROWSER_PLUGIN_PERMISSION_TYPE_NEW_WINDOW: {
+      DispatchEvent(new GuestView::Event(webview::kEventNewWindow,
+                                         args.Pass()));
+      break;
+    }
+    case BROWSER_PLUGIN_PERMISSION_TYPE_JAVASCRIPT_DIALOG: {
+      DispatchEvent(new GuestView::Event(webview::kEventDialog,
+                                         args.Pass()));
+      break;
+    }
+    default: {
+      args->SetString(webview::kPermission,
+                      PermissionTypeToString(permission_type));
+      DispatchEvent(new GuestView::Event(webview::kEventPermissionRequest,
+                                         args.Pass()));
+      break;
+    }
+  }
+  return request_id;
 }
 
 WebViewGuest::PermissionResponseInfo::PermissionResponseInfo()

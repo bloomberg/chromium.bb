@@ -87,12 +87,11 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
   // Request permission from the delegate to perform an action of the provided
   // |permission_type|. Details of the permission request are found in
   // |request_info|. A |callback| is provided to make the decision.
-  // Returns whether the delegate has, or will handle the permission request.
-  virtual bool RequestPermission(
+  virtual void RequestPermission(
       BrowserPluginPermissionType permission_type,
       const base::DictionaryValue& request_info,
       const PermissionResponseCallback& callback,
-      bool allowed_by_default);
+      bool allowed_by_default) {}
 
   // Requests resolution of a potentially relative URL.
   virtual GURL ResolveURL(const std::string& src);

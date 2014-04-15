@@ -71,10 +71,6 @@ embedder.assertCorrectEvent_ = function(e) {
   chrome.test.assertEq('geolocation', e.permission);
   chrome.test.assertTrue(!!e.url);
   chrome.test.assertTrue(e.url.indexOf(embedder.baseGuestURL) == 0);
-
-  // Check that unexpected properties (from other permissionrequest) do not show
-  // up in the event object.
-  chrome.test.assertFalse('userGesture' in e);
 };
 
 var g_requestObject;

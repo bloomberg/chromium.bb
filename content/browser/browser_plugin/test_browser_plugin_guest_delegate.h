@@ -34,7 +34,7 @@ class TestBrowserPluginGuestDelegate : public BrowserPluginGuestDelegate {
                          const std::string& error_type) OVERRIDE;
   virtual void RendererResponsive() OVERRIDE;
   virtual void RendererUnresponsive() OVERRIDE;
-  virtual bool RequestPermission(
+  virtual void RequestPermission(
       BrowserPluginPermissionType permission_type,
       const base::DictionaryValue& request_info,
       const PermissionResponseCallback& callback,
