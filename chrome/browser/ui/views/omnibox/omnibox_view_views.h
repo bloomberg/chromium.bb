@@ -61,6 +61,9 @@ class OmniboxViewViews
   // Starts an animation that fades in the entire OmniboxView.
   void FadeIn();
 
+  // View:
+  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) OVERRIDE;
+
   // OmniboxView:
   virtual void SaveStateToTab(content::WebContents* tab) OVERRIDE;
   virtual void OnTabChanged(const content::WebContents* web_contents) OVERRIDE;

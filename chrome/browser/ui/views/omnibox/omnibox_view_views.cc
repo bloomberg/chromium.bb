@@ -444,6 +444,16 @@ bool OmniboxViewViews::HandleEarlyTabActions(const ui::KeyEvent& event) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// OmniboxViewViews, private View implementation:
+
+void OmniboxViewViews::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+  views::Textfield::OnNativeThemeChanged(theme);
+  SetBackgroundColor(location_bar_view_->GetColor(
+      ToolbarModel::NONE, LocationBarView::BACKGROUND));
+  EmphasizeURLComponents();
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // OmniboxViewViews, private OmniboxView implementation:
 
 void OmniboxViewViews::SetWindowTextAndCaretPos(const base::string16& text,
