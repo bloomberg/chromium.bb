@@ -715,6 +715,7 @@ crbug.com/343201 virtual/fasttextautosizing/fast/text-autosizing/hackernews-comm
 crbug.com/332944 fast/text-autosizing/hackernews-comments.html [ Failure ]
 crbug.com/302005 fast/text-autosizing/list-item-above-dbcat.html [ Missing ]
 crbug.com/302005 fast/text-autosizing/similar-clusters.html [ Missing ]
+crbug.com/302005 fast/text-autosizing/supercluster-multiple-layout.html [ Missing ]
 
 crbug.com/335710 virtual/gpu/canvas/philip/tests/2d.text.draw.fontface.notinpage.html [ Pass Failure ]
 crbug.com/335710 canvas/philip/tests/2d.text.draw.fontface.notinpage.html [ Pass Failure ]
