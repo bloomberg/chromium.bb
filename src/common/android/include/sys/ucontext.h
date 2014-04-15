@@ -238,7 +238,7 @@ typedef struct ucontext {
   stack_t uc_stack;
   mcontext_t uc_mcontext;
   sigset_t uc_sigmask;
-  uint64_t __padding[15];
+  uint64_t __padding[18];
   _libc_fpstate __fpregs_mem;
 } ucontext_t;
 
