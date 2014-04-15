@@ -258,7 +258,7 @@ PassRefPtr<WebSocket> WebSocket::create(ExecutionContext* context, const String&
     RefPtr<WebSocket> webSocket(adoptRef(new WebSocket(context)));
     webSocket->suspendIfNeeded();
 
-    webSocket->connect(context->completeURL(url), protocols, exceptionState);
+    webSocket->connect(url, protocols, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
 

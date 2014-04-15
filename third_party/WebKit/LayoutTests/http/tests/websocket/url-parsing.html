@@ -39,6 +39,8 @@ shouldBe('(new WebSocket("ws://127.0.0.1:8880/simple?k=v")).URL', '"ws://127.0.0
 shouldThrow('new WebSocket("ws://127.0.0.1/path#")');
 shouldThrow('new WebSocket("ws://127.0.0.1/path#fragment")');
 
+shouldThrow('new WebSocket("ws:://127.0.0.1/")');
+
 </script>
 </body>
 </html>
