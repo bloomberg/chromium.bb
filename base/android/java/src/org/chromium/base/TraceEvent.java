@@ -22,9 +22,6 @@ public class TraceEvent {
     private static volatile boolean sEnabled = false;
 
     private static class BasicLooperMonitor implements Printer {
-        private static final String DISPATCH_EVENT_NAME =
-                "Looper.dispatchMessage";
-
         @Override
         public void println(final String line) {
             if (line.startsWith(">")) {
@@ -36,11 +33,11 @@ public class TraceEvent {
         }
 
         void beginHandling(final String line) {
-            TraceEvent.begin(DISPATCH_EVENT_NAME, line);
+            if (sEnabled) nativeBeginToplevel();
         }
 
         void endHandling(final String line) {
-            TraceEvent.end(DISPATCH_EVENT_NAME);
+            if (sEnabled) nativeEndToplevel();
         }
     }
 
@@ -349,6 +346,8 @@ public class TraceEvent {
     private static native void nativeInstant(String name, String arg);
     private static native void nativeBegin(String name, String arg);
     private static native void nativeEnd(String name, String arg);
+    private static native void nativeBeginToplevel();
+    private static native void nativeEndToplevel();
     private static native void nativeStartAsync(String name, long id, String arg);
     private static native void nativeFinishAsync(String name, long id, String arg);
 }
