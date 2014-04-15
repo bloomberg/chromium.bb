@@ -120,8 +120,6 @@ static inline bool isCSSTokenAString(int yytype)
     case HOSTCONTEXTFUNCTION:
     case NOTFUNCTION:
     case CALCFUNCTION:
-    case MINFUNCTION:
-    case MAXFUNCTION:
     case UNICODERANGE:
         return true;
     default:
@@ -265,8 +263,6 @@ inline static CSSParserValue makeIdentValue(CSSParserString string)
 %token <string> NOTFUNCTION
 %token <string> DISTRIBUTEDFUNCTION
 %token <string> CALCFUNCTION
-%token <string> MINFUNCTION
-%token <string> MAXFUNCTION
 %token <string> HOSTFUNCTION
 %token <string> HOSTCONTEXTFUNCTION
 
@@ -359,11 +355,8 @@ inline static CSSParserValue makeIdentValue(CSSParserString string)
 %type <value> calc_func_term
 %type <character> calc_func_operator
 %type <valueList> calc_func_expr
-%type <valueList> calc_func_expr_list
 %type <valueList> calc_func_paren_expr
 %type <value> calc_function
-%type <string> min_or_max
-%type <value> min_or_max_function
 
 %type <string> element_name
 %type <string> attr_name
@@ -1611,7 +1604,6 @@ term:
   /* FIXME: according to the specs a function can have a unary_operator in front. I know no case where this makes sense */
   | function maybe_space
   | calc_function maybe_space
-  | min_or_max_function maybe_space
   | '%' maybe_space { /* Handle width: %; */
       $$.id = CSSValueInvalid; $$.unit = 0;
   }
@@ -1721,15 +1713,6 @@ calc_func_expr:
     | calc_func_paren_expr
   ;
 
-calc_func_expr_list:
-    calc_func_expr calc_maybe_space
-    | calc_func_expr_list ',' maybe_space calc_func_expr calc_maybe_space {
-        $$ = $1;
-        $$->addValue(makeOperatorValue(','));
-        $$->stealValues(*($4));
-    }
-  ;
-
 calc_function:
     CALCFUNCTION maybe_space calc_func_expr calc_maybe_space closing_parenthesis {
         $$.setFromFunction(parser->createFloatingFunction($1, parser->sinkFloatingValueList($3)));
@@ -1739,20 +1722,6 @@ calc_function:
     }
     ;
 
-
-min_or_max:
-    MINFUNCTION
-    | MAXFUNCTION
-    ;
-
-min_or_max_function:
-    min_or_max maybe_space calc_func_expr_list closing_parenthesis {
-        $$.setFromFunction(parser->createFloatingFunction($1, parser->sinkFloatingValueList($3)));
-    }
-    | min_or_max maybe_space expr_recovery closing_parenthesis {
-        YYERROR;
-    }
-    ;
 
 invalid_at:
     ATKEYWORD
@@ -1830,7 +1799,7 @@ invalid_parentheses_block:
     opening_parenthesis error_recovery closing_parenthesis;
 
 opening_parenthesis:
-    '(' | FUNCTION | CALCFUNCTION | MINFUNCTION | MAXFUNCTION | ANYFUNCTION | NOTFUNCTION | CUEFUNCTION | DISTRIBUTEDFUNCTION | HOSTFUNCTION
+    '(' | FUNCTION | CALCFUNCTION | ANYFUNCTION | NOTFUNCTION | CUEFUNCTION | DISTRIBUTEDFUNCTION | HOSTFUNCTION
     ;
 
 error_location: {

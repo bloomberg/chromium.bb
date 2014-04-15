@@ -942,12 +942,6 @@ inline void CSSTokenizer::detectDashToken(int length)
         CASE("webkit-any") {
             m_token = ANYFUNCTION;
         }
-        CASE("webkit-min") {
-            m_token = MINFUNCTION;
-        }
-        CASE("webkit-max") {
-            m_token = MAXFUNCTION;
-        }
         CASE("webkit-calc") {
             m_token = CALCFUNCTION;
         }
