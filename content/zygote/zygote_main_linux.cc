@@ -59,6 +59,15 @@
 
 namespace content {
 
+namespace {
+
+void InitializeForkDelegate(ZygoteForkDelegate* forkdelegate) {
+  DCHECK(forkdelegate);
+  forkdelegate->Init(GetSandboxFD());
+}
+
+}  // namespace
+
 // See http://code.google.com/p/chromium/wiki/LinuxZygote
 
 static void ProxyLocaltimeCallToBrowser(time_t input, struct tm* output,
@@ -457,7 +466,7 @@ bool ZygoteMain(const MainFunctionParams& params,
 
   if (forkdelegate != NULL) {
     VLOG(1) << "ZygoteMain: initializing fork delegate";
-    forkdelegate->Init(GetSandboxFD());
+    InitializeForkDelegate(forkdelegate);
   } else {
     VLOG(1) << "ZygoteMain: fork delegate is NULL";
   }

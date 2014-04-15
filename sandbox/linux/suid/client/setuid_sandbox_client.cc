@@ -4,16 +4,21 @@
 
 #include "sandbox/linux/suid/client/setuid_sandbox_client.h"
 
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
+#include "base/command_line.h"
 #include "base/environment.h"
+#include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/process/process_metrics.h"
 #include "base/strings/string_number_conversions.h"
-
 #include "sandbox/linux/services/init_process_reaper.h"
 #include "sandbox/linux/suid/common/sandbox.h"
 #include "sandbox/linux/suid/common/suid_unsafe_environment_variables.h"
@@ -90,6 +95,10 @@ pid_t GetHelperPID(base::Environment* env) {
 // Get the IPC file descriptor used to communicate with the setuid helper.
 int GetIPCDescriptor(base::Environment* env) {
   return EnvToInt(env, sandbox::kSandboxDescriptorEnvironmentVarName);
+}
+
+const char* GetDevelSandboxPath() {
+  return getenv("CHROME_DEVEL_SANDBOX");
 }
 
 }  // namespace
@@ -175,6 +184,63 @@ bool SetuidSandboxClient::IsInNewNETNamespace() const {
 
 bool SetuidSandboxClient::IsSandboxed() const {
   return sandboxed_;
+}
+
+// Check if CHROME_DEVEL_SANDBOX is set but empty. This currently disables
+// the setuid sandbox. TODO(jln): fix this (crbug.com/245376).
+bool SetuidSandboxClient::IsDisabledViaEnvironment() {
+  const char* devel_sandbox_path = GetDevelSandboxPath();
+  if (devel_sandbox_path && '\0' == *devel_sandbox_path) {
+    return true;
+  }
+  return false;
+}
+
+base::FilePath SetuidSandboxClient::GetSandboxBinaryPath() {
+  base::FilePath sandbox_binary;
+  base::FilePath exe_dir;
+  if (PathService::Get(base::DIR_EXE, &exe_dir)) {
+    base::FilePath sandbox_candidate = exe_dir.AppendASCII("chrome-sandbox");
+    if (base::PathExists(sandbox_candidate))
+      sandbox_binary = sandbox_candidate;
+  }
+
+  // In user-managed builds, including development builds, an environment
+  // variable is required to enable the sandbox. See
+  // http://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment
+  struct stat st;
+  if (sandbox_binary.empty() && stat(base::kProcSelfExe, &st) == 0 &&
+      st.st_uid == getuid()) {
+    const char* devel_sandbox_path = GetDevelSandboxPath();
+    if (devel_sandbox_path) {
+      sandbox_binary = base::FilePath(devel_sandbox_path);
+    }
+  }
+
+  return sandbox_binary;
+}
+
+void SetuidSandboxClient::PrependWrapper(base::CommandLine* cmd_line) {
+  DCHECK(cmd_line);
+  std::string sandbox_binary(GetSandboxBinaryPath().value());
+  struct stat st;
+  if (sandbox_binary.empty() || stat(sandbox_binary.c_str(), &st) != 0) {
+    LOG(FATAL) << "The SUID sandbox helper binary is missing: "
+               << sandbox_binary << " Aborting now. See "
+                                    "https://code.google.com/p/chromium/wiki/"
+                                    "LinuxSUIDSandboxDevelopment.";
+  }
+
+  if (access(sandbox_binary.c_str(), X_OK) != 0 || (st.st_uid != 0) ||
+      ((st.st_mode & S_ISUID) == 0) || ((st.st_mode & S_IXOTH)) == 0) {
+    LOG(FATAL) << "The SUID sandbox helper binary was found, but is not "
+                  "configured correctly. Rather than run without sandboxing "
+                  "I'm aborting now. You need to make sure that "
+               << sandbox_binary << " is owned by root and has mode 4755.";
+
+  } else {
+    cmd_line->PrependWrapper(sandbox_binary);
+  }
 }
 
 void SetuidSandboxClient::SetupLaunchEnvironment() {

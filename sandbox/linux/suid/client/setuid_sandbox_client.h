@@ -7,9 +7,13 @@
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/files/file_path.h"
 #include "sandbox/linux/sandbox_export.h"
 
-namespace base { class Environment; }
+namespace base {
+class CommandLine;
+class Environment;
+}
 
 namespace sandbox {
 
@@ -49,6 +53,14 @@ class SANDBOX_EXPORT SetuidSandboxClient {
   // Are we done and fully sandboxed ?
   bool IsSandboxed() const;
 
+  bool IsDisabledViaEnvironment();
+  // Get the sandbox binary path. This method knows about the
+  // CHROME_DEVEL_SANDBOX environment variable used for user-managed builds. If
+  // the sandbox binary cannot be found, it will return an empty FilePath.
+  base::FilePath GetSandboxBinaryPath();
+  // Modify |cmd_line| to launch via the setuid sandbox. Crash if the setuid
+  // sandbox binary cannot be found.
+  void PrependWrapper(base::CommandLine* cmd_line);
   // Set-up the environment. This should be done prior to launching the setuid
   // helper.
   void SetupLaunchEnvironment();

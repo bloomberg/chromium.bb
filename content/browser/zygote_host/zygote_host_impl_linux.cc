@@ -128,27 +128,10 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
   using_suid_sandbox_ = !sandbox_cmd.empty();
 
   if (using_suid_sandbox_) {
-    struct stat st;
-    if (stat(sandbox_binary_.c_str(), &st) != 0) {
-      LOG(FATAL) << "The SUID sandbox helper binary is missing: "
-                 << sandbox_binary_ << " Aborting now.";
-    }
-
-    if (access(sandbox_binary_.c_str(), X_OK) == 0 &&
-        (st.st_uid == 0) &&
-        (st.st_mode & S_ISUID) &&
-        (st.st_mode & S_IXOTH)) {
-      cmd_line.PrependWrapper(sandbox_binary_);
-
-      scoped_ptr<sandbox::SetuidSandboxClient>
-          sandbox_client(sandbox::SetuidSandboxClient::Create());
-      sandbox_client->SetupLaunchEnvironment();
-    } else {
-      LOG(FATAL) << "The SUID sandbox helper binary was found, but is not "
-                    "configured correctly. Rather than run without sandboxing "
-                    "I'm aborting now. You need to make sure that "
-                 << sandbox_binary_ << " is owned by root and has mode 4755.";
-    }
+    scoped_ptr<sandbox::SetuidSandboxClient>
+        sandbox_client(sandbox::SetuidSandboxClient::Create());
+    sandbox_client->PrependWrapper(&cmd_line);
+    sandbox_client->SetupLaunchEnvironment();
   }
 
   // Start up the sandbox host process and get the file descriptor for the

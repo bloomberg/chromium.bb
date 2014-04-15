@@ -100,10 +100,9 @@
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-#include <sys/stat.h>
-
 #include "content/browser/renderer_host/render_sandbox_host_linux.h"
 #include "content/browser/zygote_host/zygote_host_impl_linux.h"
+#include "sandbox/linux/suid/client/setuid_sandbox_client.h"
 #endif
 
 #if defined(TCMALLOC_TRACE_MEMORY_SUPPORTED)
@@ -129,51 +128,29 @@ namespace {
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 void SetupSandbox(const CommandLine& parsed_command_line) {
   TRACE_EVENT0("startup", "SetupSandbox");
-  // TODO(evanm): move this into SandboxWrapper; I'm just trying to move this
-  // code en masse out of chrome_main for now.
   base::FilePath sandbox_binary;
-  bool env_chrome_devel_sandbox_set = false;
-  struct stat st;
+
+  scoped_ptr<sandbox::SetuidSandboxClient> setuid_sandbox_client(
+      sandbox::SetuidSandboxClient::Create());
 
   const bool want_setuid_sandbox =
       !parsed_command_line.HasSwitch(switches::kNoSandbox) &&
-      !parsed_command_line.HasSwitch(switches::kDisableSetuidSandbox);
+      !parsed_command_line.HasSwitch(switches::kDisableSetuidSandbox) &&
+      !setuid_sandbox_client->IsDisabledViaEnvironment();
 
+  static const char no_suid_error[] =
+      "Running without the SUID sandbox! See "
+      "https://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment "
+      "for more information on developing with the sandbox on.";
   if (want_setuid_sandbox) {
-    base::FilePath exe_dir;
-    if (PathService::Get(base::DIR_EXE, &exe_dir)) {
-      base::FilePath sandbox_candidate = exe_dir.AppendASCII("chrome-sandbox");
-      if (base::PathExists(sandbox_candidate))
-        sandbox_binary = sandbox_candidate;
-    }
-
-    // In user-managed builds, including development builds, an environment
-    // variable is required to enable the sandbox. See
-    // http://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment
-    if (sandbox_binary.empty() &&
-        stat(base::kProcSelfExe, &st) == 0 && st.st_uid == getuid()) {
-      const char* devel_sandbox_path = getenv("CHROME_DEVEL_SANDBOX");
-      if (devel_sandbox_path) {
-        env_chrome_devel_sandbox_set = true;
-        sandbox_binary = base::FilePath(devel_sandbox_path);
-      }
-    }
-
-    static const char no_suid_error[] = "Running without the SUID sandbox! See "
-        "https://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment "
-        "for more information on developing with the sandbox on.";
+    sandbox_binary = setuid_sandbox_client->GetSandboxBinaryPath();
     if (sandbox_binary.empty()) {
-      if (!env_chrome_devel_sandbox_set) {
-        // This needs to be fatal. Talk to security@chromium.org if you feel
-        // otherwise.
-        LOG(FATAL) << no_suid_error;
-      }
-
-      // TODO(jln): an empty CHROME_DEVEL_SANDBOX environment variable (as
-      // opposed to a non existing one) is not fatal yet. This is needed
-      // because of existing bots and scripts. Fix it (crbug.com/245376).
-      LOG(ERROR) << no_suid_error;
+      // This needs to be fatal. Talk to security@chromium.org if you feel
+      // otherwise.
+      LOG(FATAL) << no_suid_error;
     }
+  } else {
+    LOG(ERROR) << no_suid_error;
   }
 
   // Tickle the sandbox host and zygote host so they fork now.

@@ -89,5 +89,13 @@ TEST(SetuidSandboxClient, SandboxedClientAPI) {
   EXPECT_FALSE(sandbox_client->IsSandboxed());
 }
 
+// This test doesn't accomplish much, but will make sure that analysis tools
+// will run this codepath.
+TEST(SetuidSandboxClient, GetSandboxBinaryPath) {
+  scoped_ptr<SetuidSandboxClient> setuid_sandbox_client(
+      SetuidSandboxClient::Create());
+  ignore_result(setuid_sandbox_client->GetSandboxBinaryPath());
+}
+
 }  // namespace sandbox
 
