@@ -701,6 +701,7 @@ const DataResource kDataResources[] = {
   { "generatePassword", IDR_PASSWORD_GENERATION_ICON, ui::SCALE_FACTOR_100P },
   { "generatePasswordHover",
     IDR_PASSWORD_GENERATION_ICON_HOVER, ui::SCALE_FACTOR_100P },
+  // TODO(dgozman): remove this after moving to content-based touch emulation.
   { "syntheticTouchCursor",
     IDR_SYNTHETIC_TOUCH_CURSOR, ui::SCALE_FACTOR_100P },
 };
