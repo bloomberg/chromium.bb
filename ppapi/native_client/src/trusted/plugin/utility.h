@@ -28,6 +28,7 @@ namespace plugin {
 bool IsValidIdentifierString(const char* strval, uint32_t* length);
 
 const PPB_NaCl_Private* GetNaClInterface();
+void SetNaClInterface(const PPB_NaCl_Private* nacl_interface);
 
 // Debugging print utility
 extern int gNaClPluginDebugPrintEnabled;

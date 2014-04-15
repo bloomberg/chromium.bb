@@ -27,6 +27,15 @@ int NaClPluginPrintLog(const char *format, ...) {
 
   static const int kStackBufferSize = 512;
   char stack_buffer[kStackBufferSize];
+
+  // Just log locally to stderr if we can't use the nacl interface.
+  if (!GetNaClInterface()) {
+    va_start(arg, format);
+    int rc = vfprintf(stderr, format, arg);
+    va_end(arg);
+    return rc;
+  }
+
   va_start(arg, format);
   out_size = vsnprintf(stack_buffer, kStackBufferSize, format, arg);
   va_end(arg);
@@ -101,15 +110,11 @@ bool IsValidIdentifierString(const char* strval, uint32_t* length) {
 static const PPB_NaCl_Private* g_nacl_interface = NULL;
 
 const PPB_NaCl_Private* GetNaClInterface() {
-  if (g_nacl_interface)
-    return g_nacl_interface;
-
-  pp::Module *module = pp::Module::Get();
-  CHECK(module);
-  CHECK(module->core()->IsMainThread());
-  g_nacl_interface = static_cast<const PPB_NaCl_Private*>(
-      module->GetBrowserInterface(PPB_NACL_PRIVATE_INTERFACE));
   return g_nacl_interface;
+}
+
+void SetNaClInterface(const PPB_NaCl_Private* nacl_interface) {
+  g_nacl_interface = nacl_interface;
 }
 
 }  // namespace plugin
