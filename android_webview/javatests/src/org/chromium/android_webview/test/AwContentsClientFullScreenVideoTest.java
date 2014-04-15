@@ -4,10 +4,10 @@
 
 package org.chromium.android_webview.test;
 
-import android.test.suitebuilder.annotation.SmallTest;
 import android.view.KeyEvent;
 
 import org.chromium.android_webview.test.util.VideoTestWebServer;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.TouchCommon;
 
@@ -16,8 +16,9 @@ import org.chromium.content.browser.test.util.TouchCommon;
  */
 public class AwContentsClientFullScreenVideoTest extends AwTestBase {
 
+    /** Disabled to unblock the waterfall, investigating in http://crbug.com/361514. */
     @Feature({"AndroidWebView"})
-    @SmallTest
+    @DisabledTest
     public void testOnShowAndHideCustomView() throws Throwable {
         FullScreenVideoTestAwContentsClient contentsClient =
                 new FullScreenVideoTestAwContentsClient(getActivity());
