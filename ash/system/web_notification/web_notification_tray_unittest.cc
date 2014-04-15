@@ -15,6 +15,7 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/status_area_widget_test_helper.h"
 #include "ash/test/test_system_tray_delegate.h"
 #include "ash/wm/window_state.h"
 #include "base/strings/stringprintf.h"
@@ -41,22 +42,15 @@ namespace ash {
 namespace {
 
 WebNotificationTray* GetTray() {
-  return Shell::GetPrimaryRootWindowController()->shelf()->
-      status_area_widget()->web_notification_tray();
+  return StatusAreaWidgetTestHelper::GetStatusAreaWidget()->
+      web_notification_tray();
 }
 
 WebNotificationTray* GetSecondaryTray() {
-  RootWindowController* primary_controller =
-      Shell::GetPrimaryRootWindowController();
-  Shell::RootWindowControllerList controllers =
-      Shell::GetAllRootWindowControllers();
-  for (size_t i = 0; i < controllers.size(); ++i) {
-    if (controllers[i] != primary_controller) {
-      return controllers[i]->shelf()->
-          status_area_widget()->web_notification_tray();
-    }
-  }
-
+  StatusAreaWidget* status_area_widget =
+      StatusAreaWidgetTestHelper::GetSecondaryStatusAreaWidget();
+  if (status_area_widget)
+    return status_area_widget->web_notification_tray();
   return NULL;
 }
 
@@ -65,8 +59,7 @@ message_center::MessageCenter* GetMessageCenter() {
 }
 
 SystemTray* GetSystemTray() {
-  return Shell::GetPrimaryRootWindowController()->shelf()->
-      status_area_widget()->system_tray();
+  return StatusAreaWidgetTestHelper::GetStatusAreaWidget()->system_tray();
 }
 
 // Trivial item implementation for testing PopupAndSystemTray test case.

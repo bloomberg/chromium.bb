@@ -81,7 +81,8 @@ float ClockwiseAngleBetweenVectorsInDegrees(const gfx::Vector3dF& base,
 
 }  // namespace
 
-MaximizeModeController::MaximizeModeController() {
+MaximizeModeController::MaximizeModeController()
+    : rotation_locked_(false) {
   Shell::GetInstance()->accelerometer_controller()->AddObserver(this);
 }
 
@@ -165,8 +166,12 @@ void MaximizeModeController::HandleScreenRotation(const gfx::Vector3dF& lid) {
       display_manager->SetDisplayRotation(gfx::Display::InternalDisplayId(),
                                           gfx::Display::ROTATE_0);
     }
+    rotation_locked_ = false;
     return;
   }
+
+  if (rotation_locked_)
+    return;
 
   // After determining maximize mode state, determine if the screen should
   // be rotated.

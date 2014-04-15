@@ -370,4 +370,50 @@ TEST_F(MaximizeModeControllerTest, MaximizeModeTest) {
   }
 }
 
+// Tests that the display will stick to its current orientation when the
+// rotation lock has been set.
+TEST_F(MaximizeModeControllerTest, RotationLockPreventsRotation) {
+  // Trigger maximize mode by opening to 270.
+  TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 0.0f, -1.0f),
+                             gfx::Vector3dF(-1.0f, 0.0f, 0.0f));
+  ASSERT_TRUE(IsMaximizeModeStarted());
+
+  gfx::Vector3dF gravity(-1.0f, 0.0f, 0.0f);
+
+  maximize_mode_controller()->set_rotation_locked(true);
+
+  // Turn past the threshold for rotation.
+  float degrees = 90.0;
+  gravity.set_x(-cos(degrees * kDegreesToRadians));
+  gravity.set_y(sin(degrees * kDegreesToRadians));
+  TriggerAccelerometerUpdate(gravity, gravity);
+  EXPECT_EQ(gfx::Display::ROTATE_0, GetInternalDisplayRotation());
+
+  maximize_mode_controller()->set_rotation_locked(false);
+  TriggerAccelerometerUpdate(gravity, gravity);
+  EXPECT_EQ(gfx::Display::ROTATE_90, GetInternalDisplayRotation());
+}
+
+// Tests that when MaximizeModeController turns off MaximizeMode that on the
+// next accelerometer update the rotation lock is cleared.
+TEST_F(MaximizeModeControllerTest, ExitingMaximizeModeClearRotationLock) {
+  // The base remains steady.
+  gfx::Vector3dF base(0.0f, 0.0f, 1.0f);
+
+  // Trigger maximize mode by opening to 270.
+  TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 0.0f, -1.0f),
+                             gfx::Vector3dF(-1.0f, 0.0f, 0.0f));
+  ASSERT_TRUE(IsMaximizeModeStarted());
+
+  maximize_mode_controller()->set_rotation_locked(true);
+
+  // Open 90 degrees.
+  TriggerAccelerometerUpdate(base, gfx::Vector3dF(-1.0f, 0.0f, 0.0f));
+  EXPECT_FALSE(IsMaximizeModeStarted());
+
+  // Send an update that would not relaunch MaximizeMode. 90 degrees.
+  TriggerAccelerometerUpdate(base, gfx::Vector3dF(-1.0f, 0.0f, 0.0f));
+  EXPECT_FALSE(maximize_mode_controller()->rotation_locked());
+}
+
 }  // namespace ash

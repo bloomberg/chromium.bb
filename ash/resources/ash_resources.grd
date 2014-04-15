@@ -191,6 +191,11 @@
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_VIRTUAL_KEYBOARD" file="cros/status/status_virtual_keyboard.png" />
       </if>
 
+      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_AUTO_ROTATION" file="cros/status/status_auto_rotate.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_AUTO_ROTATION_DARK" file="cros/status/status_auto_rotate_dark.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_AUTO_ROTATION_LOCKED" file="cros/status/status_auto_rotate_locked.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_AUTO_ROTATION_LOCKED_DARK" file="cros/status/status_auto_rotate_locked_dark.png" />
+
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_UPDATE" file="cros/status/status_update.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_UPDATE_GREEN" file="cros/status/status_update_green.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_UPDATE_ORANGE" file="cros/status/status_update_orange.png" />

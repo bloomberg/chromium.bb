@@ -12,6 +12,7 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/user/login_status.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/status_area_widget_test_helper.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "base/time/time.h"
 #include "ui/events/event.h"
@@ -24,23 +25,13 @@ namespace ash {
 namespace {
 
 OverviewButtonTray* GetTray() {
-  return Shell::GetPrimaryRootWindowController()->shelf()->
-      status_area_widget()->overview_button_tray();
+  return StatusAreaWidgetTestHelper::GetStatusAreaWidget()->
+      overview_button_tray();
 }
 
 OverviewButtonTray* GetSecondaryTray() {
-  RootWindowController* primary_controller =
-      Shell::GetPrimaryRootWindowController();
-  Shell::RootWindowControllerList controllers =
-      Shell::GetAllRootWindowControllers();
-  for (size_t i = 0; i < controllers.size(); ++i) {
-    if (controllers[i] != primary_controller) {
-      return controllers[i]->shelf()->
-          status_area_widget()->overview_button_tray();
-    }
-  }
-
-  return NULL;
+  return StatusAreaWidgetTestHelper::GetSecondaryStatusAreaWidget()->
+      overview_button_tray();
 }
 
 }  // namespace

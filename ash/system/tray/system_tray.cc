@@ -53,6 +53,7 @@
 #include "ash/system/chromeos/network/tray_sms.h"
 #include "ash/system/chromeos/network/tray_vpn.h"
 #include "ash/system/chromeos/power/tray_power.h"
+#include "ash/system/chromeos/rotation/tray_rotation_lock.h"
 #include "ash/system/chromeos/screen_security/screen_capture_tray_item.h"
 #include "ash/system/chromeos/screen_security/screen_share_tray_item.h"
 #include "ash/system/chromeos/session/tray_session_length_limit.h"
@@ -192,6 +193,7 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   AddTrayItem(new TrayCapsLock(this));
   AddTrayItem(new TraySettings(this));
   AddTrayItem(new TrayUpdate(this));
+  AddTrayItem(new TrayRotationLock(this));
   AddTrayItem(tray_date_);
 #elif defined(OS_WIN)
   AddTrayItem(tray_accessibility_);
