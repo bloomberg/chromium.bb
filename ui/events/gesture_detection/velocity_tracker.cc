@@ -34,6 +34,12 @@ namespace {
 
 COMPILE_ASSERT(MotionEvent::MAX_POINTER_ID < 32, max_pointer_id_too_large);
 
+// Threshold for determining that a pointer has stopped moving.
+// Some input devices do not send ACTION_MOVE events in the case where a pointer
+// has stopped.  We need to detect this case so that we can accurately predict
+// the velocity after the pointer starts moving again.
+const int kAssumePointerStoppedTimeMs = 40;
+
 struct Position {
   float x, y;
 };
@@ -66,13 +72,7 @@ struct Estimator {
   }
 };
 
-// Threshold for determining that a pointer has stopped moving.
-// Some input devices do not send ACTION_MOVE events in the case where a pointer
-// hasstopped.  We need to detect this case so that we can accurately predict
-// the velocity after the pointer starts moving again.
-const TimeDelta ASSUME_POINTER_STOPPED_TIME = TimeDelta::FromMilliseconds(40);
-
-static float VectorDot(const float* a, const float* b, uint32_t m) {
+float VectorDot(const float* a, const float* b, uint32_t m) {
   float r = 0;
   while (m--) {
     r += *(a++) * *(b++);
@@ -80,7 +80,7 @@ static float VectorDot(const float* a, const float* b, uint32_t m) {
   return r;
 }
 
-static float VectorNorm(const float* a, uint32_t m) {
+float VectorNorm(const float* a, uint32_t m) {
   float r = 0;
   while (m--) {
     float t = *(a++);
@@ -127,7 +127,7 @@ class LeastSquaresVelocityTrackerStrategy : public VelocityTrackerStrategy {
   // Sample horizon.
   // We don't use too much history by default since we want to react to quick
   // changes in direction.
-  static const TimeDelta HORIZON;
+  enum { HORIZON_MS = 100 };
 
   struct Movement {
     TimeTicks event_time;
@@ -255,7 +255,8 @@ void VelocityTracker::AddMovement(const TimeTicks& event_time,
     id_bits.clear_last_marked_bit();
 
   if ((current_pointer_id_bits_.value & id_bits.value) &&
-      event_time >= (last_event_time_ + ASSUME_POINTER_STOPPED_TIME)) {
+      event_time >= (last_event_time_ + base::TimeDelta::FromMilliseconds(
+                                            kAssumePointerStoppedTimeMs))) {
     // We have not received any movements for too long.  Assume that all
     // pointers
     // have stopped.
@@ -376,9 +377,6 @@ bool VelocityTracker::GetEstimator(uint32_t id,
 }
 
 // --- LeastSquaresVelocityTrackerStrategy ---
-
-const TimeDelta LeastSquaresVelocityTrackerStrategy::HORIZON =
-    TimeDelta::FromMilliseconds(100);
 
 LeastSquaresVelocityTrackerStrategy::LeastSquaresVelocityTrackerStrategy(
     uint32_t degree,
@@ -568,6 +566,7 @@ bool LeastSquaresVelocityTrackerStrategy::GetEstimator(
   float time[HISTORY_SIZE];
   uint32_t m = 0;
   uint32_t index = index_;
+  const base::TimeDelta horizon = base::TimeDelta::FromMilliseconds(HORIZON_MS);
   const Movement& newest_movement = movements_[index_];
   do {
     const Movement& movement = movements_[index];
@@ -575,7 +574,7 @@ bool LeastSquaresVelocityTrackerStrategy::GetEstimator(
       break;
 
     TimeDelta age = newest_movement.event_time - movement.event_time;
-    if (age > HORIZON)
+    if (age > horizon)
       break;
 
     const Position& position = movement.GetPosition(id);

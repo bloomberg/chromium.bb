@@ -141,6 +141,8 @@ class VelocityTracker {
   BitSet32 current_pointer_id_bits_;
   int32_t active_pointer_id_;
   scoped_ptr<VelocityTrackerStrategy> strategy_;
+
+  DISALLOW_COPY_AND_ASSIGN(VelocityTracker);
 };
 
 }  // namespace ui
