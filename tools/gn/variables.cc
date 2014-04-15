@@ -240,6 +240,25 @@ const char kTargetOutDir_Help[] =
 
 // Target variables ------------------------------------------------------------
 
+#define COMMON_ORDERING_HELP \
+    "\n" \
+    "Ordering of flags and values:\n" \
+    "\n" \
+    "  1. Those set on the current target (not in a config).\n" \
+    "  2. Those set on the \"configs\" on the target in order that the\n" \
+    "     configs appear in the list.\n" \
+    "  3. Those set on the \"all_dependent_configs\" on the target in order\n" \
+    "     that the configs appear in the list.\n" \
+    "  4. Those set on the \"direct_dependent_configs\" on the target in\n" \
+    "     order that those configs appear in the list.\n" \
+    "  5. all_dependent_configs pulled from dependencies, in the order of\n" \
+    "     the \"deps\" list. This is done recursively. If a config appears\n" \
+    "     more than once, only the first occurance will be used.\n" \
+    "  6. direct_dependent_configs pulled from dependencies, in the order\n" \
+    "     of the \"deps\" list. If a dependency has\n" \
+    "     \"forward_dependent_configs_from\", they will be applied\n" \
+    "     recursively.\n"
+
 const char kAllDependentConfigs[] = "all_dependent_configs";
 const char kAllDependentConfigs_HelpShort[] =
     "all_dependent_configs: [label list] Configs to be forced on dependents.";
@@ -259,7 +278,8 @@ const char kAllDependentConfigs_Help[] =
     "  capability should generally only be used to add defines and include\n"
     "  directories necessary to compile a target's headers.\n"
     "\n"
-    "  See also \"direct_dependent_configs\".\n";
+    "  See also \"direct_dependent_configs\".\n"
+    COMMON_ORDERING_HELP;
 
 const char kArgs[] = "args";
 const char kArgs_HelpShort[] =
@@ -294,7 +314,8 @@ const char kCommonCflagsHelp[] =
     "  To target one of these variants individually, use \"cflags_c\",\n"
     "  \"cflags_cc\", \"cflags_objc\", and \"cflags_objcc\", respectively.\n"
     "  These variant-specific versions will be appended to the \"cflags\".\n"
-    COMMON_FLAGS_HELP;
+    COMMON_FLAGS_HELP
+    COMMON_ORDERING_HELP;
 const char* kCflags_Help = kCommonCflagsHelp;
 
 const char kCflagsC[] = "cflags_c";
@@ -334,6 +355,7 @@ const char kConfigs_Help[] =
     "  configs applying to a given target type (see \"set_defaults\").\n"
     "  When a target is being defined, it can add to or remove from this\n"
     "  list.\n"
+    COMMON_ORDERING_HELP
     "\n"
     "Example:\n"
     "  static_library(\"foo\") {\n"
@@ -392,6 +414,7 @@ const char kDefines_Help[] =
     "\n"
     "  These strings will be passed to the C/C++ compiler as #defines. The\n"
     "  strings may or may not include an \"=\" to assign a value.\n"
+    COMMON_ORDERING_HELP
     "\n"
     "Example:\n"
     "  defines = [ \"AWESOME_FEATURE\", \"LOG_LEVEL=3\" ]\n";
@@ -464,7 +487,8 @@ const char kDirectDependentConfigs_Help[] =
     "  capability should generally only be used to add defines and include\n"
     "  directories necessary to compile a target's headers.\n"
     "\n"
-    "  See also \"all_dependent_configs\".\n";
+    "  See also \"all_dependent_configs\".\n"
+    COMMON_ORDERING_HELP;
 
 const char kForwardDependentConfigsFrom[] = "forward_dependent_configs_from";
 const char kForwardDependentConfigsFrom_HelpShort[] =
@@ -551,6 +575,7 @@ const char kIncludeDirs_Help[] =
     "\n"
     "  The directories in this list will be added to the include path for\n"
     "  the files in the affected target.\n"
+    COMMON_ORDERING_HELP
     "\n"
     "Example:\n"
     "  include_dirs = [ \"src/include\", \"//third_party/foo\" ]\n";
@@ -566,6 +591,11 @@ const char kLdflags_Help[] =
     "  These flags are passed on the command-line to the linker and generally\n"
     "  specify various linking options. Most targets will not need these and\n"
     "  will use \"libs\" and \"lib_dirs\" instead.\n"
+    "\n"
+    "  ldflags are NOT pushed to dependents, so applying ldflags to source\n"
+    "  sets or static libraries will be a no-op. If you want to apply ldflags\n"
+    "  to dependent targets, put them in a config and set it in the\n"
+    "  all_dependent_configs or direct_dependent_configs.\n"
     COMMON_FLAGS_HELP;
 
 #define COMMON_LIB_INHERITANCE_HELP \
@@ -574,13 +604,7 @@ const char kLdflags_Help[] =
     "  First, then are inherited across static library boundaries until a\n" \
     "  shared library or executable target is reached. Second, they are\n" \
     "  uniquified so each one is only passed once (the first instance of it\n" \
-    "  will be the one used).\n" \
-    "\n" \
-    "  The order that libs/lib_dirs apply is:\n" \
-    "    1. Ones set on the target itself.\n" \
-    "    2. Ones from the configs applying to the target.\n" \
-    "    3. Ones from deps of the target, in order (recursively following\n" \
-    "       these rules).\n"
+    "  will be the one used).\n"
 
 const char kLibDirs[] = "lib_dirs";
 const char kLibDirs_HelpShort[] =
@@ -594,6 +618,7 @@ const char kLibDirs_Help[] =
     "  for the required libraries. If an item is not an absolute path, it\n"
     "  will be treated as being relative to the current build file.\n"
     COMMON_LIB_INHERITANCE_HELP
+    COMMON_ORDERING_HELP
     "\n"
     "Example:\n"
     "  lib_dirs = [ \"/usr/lib/foo\", \"lib/doom_melon\" ]\n";
@@ -621,6 +646,7 @@ const char kLibs_Help[] =
     "  special-cased: the switch \"-framework\" will be prepended instead of\n"
     "  the lib_prefix, and the \".framework\" suffix will be trimmed.\n"
     COMMON_LIB_INHERITANCE_HELP
+    COMMON_ORDERING_HELP
     "\n"
     "Examples:\n"
     "  On Windows:\n"

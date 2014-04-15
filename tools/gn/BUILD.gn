@@ -173,6 +173,7 @@ test("gn_unittests") {
   sources = [
     "builder_unittest.cc",
     "c_include_iterator_unittest.cc",
+    "config_values_extractors_unittest.cc",
     "escape_unittest.cc",
     "filesystem_utils_unittest.cc",
     "file_template_unittest.cc",
