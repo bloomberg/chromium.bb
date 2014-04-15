@@ -369,6 +369,10 @@ void ServiceWorkerVersion::RemoveProcessFromWorker(int process_id) {
   embedded_worker_->ReleaseProcessReference(process_id);
 }
 
+bool ServiceWorkerVersion::HasProcessToRun() const {
+  return embedded_worker_->HasProcessToRun();
+}
+
 void ServiceWorkerVersion::AddControllee(
     ServiceWorkerProviderHost* provider_host) {
   DCHECK(!ContainsKey(controllee_providers_, provider_host));
@@ -384,6 +388,16 @@ void ServiceWorkerVersion::RemoveControllee(
   // TODO(kinuko): Fire NoControllees notification when the # of controllees
   // reaches 0, so that a new pending version can be activated (which will
   // deactivate this version).
+}
+
+void ServiceWorkerVersion::AddPendingControllee(
+    ServiceWorkerProviderHost* provider_host) {
+  AddProcessToWorker(provider_host->process_id());
+}
+
+void ServiceWorkerVersion::RemovePendingControllee(
+    ServiceWorkerProviderHost* provider_host) {
+  RemoveProcessFromWorker(provider_host->process_id());
 }
 
 void ServiceWorkerVersion::AddListener(Listener* listener) {

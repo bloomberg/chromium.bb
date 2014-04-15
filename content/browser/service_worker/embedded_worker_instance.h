@@ -73,6 +73,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   // worker can be started.
   void AddProcessReference(int process_id);
   void ReleaseProcessReference(int process_id);
+  bool HasProcessToRun() const { return !process_refs_.empty(); }
 
   int embedded_worker_id() const { return embedded_worker_id_; }
   Status status() const { return status_; }

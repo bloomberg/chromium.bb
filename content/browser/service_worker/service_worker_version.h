@@ -169,9 +169,14 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void AddProcessToWorker(int process_id);
   void RemoveProcessFromWorker(int process_id);
 
+  // Returns true if this has at least one process to run.
+  bool HasProcessToRun() const;
+
   // Adds and removes a controllee's |provider_host|.
   void AddControllee(ServiceWorkerProviderHost* provider_host);
   void RemoveControllee(ServiceWorkerProviderHost* provider_host);
+  void AddPendingControllee(ServiceWorkerProviderHost* provider_host);
+  void RemovePendingControllee(ServiceWorkerProviderHost* provider_host);
 
   // Adds and removes Listeners.
   void AddListener(Listener* listener);
