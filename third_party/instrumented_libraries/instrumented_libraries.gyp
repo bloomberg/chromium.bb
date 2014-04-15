@@ -120,7 +120,6 @@
     {
       'library_name': 'freetype',
       'dependencies=': [],
-      'custom_configure_flags': '',
       'run_before_build': 'freetype.sh',
       'includes': ['standard_instrumented_library_target.gypi'],
     },
@@ -142,7 +141,9 @@
       'dependencies=': [
         '<(_sanitizer_type)-libglib2.0-0',
       ],
-      'build_method': 'prefix',
+      # Use system dbus-binding-tool. The just-built one is instrumented but
+      # doesn't have the correct RPATH, and will crash.
+      'custom_configure_flags': '--with-dbus-binding-tool=dbus-binding-tool',
       'includes': ['standard_instrumented_library_target.gypi'],
     },
     {

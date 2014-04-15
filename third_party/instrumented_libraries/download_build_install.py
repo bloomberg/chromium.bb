@@ -165,7 +165,7 @@ def libcap2_make_install(parsed_arguments, environment, install_prefix):
   shell_call('make -j%s %s' % (parsed_arguments.jobs, ' '.join(make_args)),
     parsed_arguments.verbose, environment)
   install_args = [
-    'prefix=%s' % install_prefix,
+    'DESTDIR=%s' % install_prefix,
     # Do not install in lib64/.
     'lib=lib',
     # Skip a step that requires sudo.
