@@ -1911,8 +1911,11 @@
       ['notifications==1', {
         'grit_defines': ['-D', 'enable_notifications'],
       }],
-      ['enable_resource_whitelist_generation==1', {
+      ['enable_resource_whitelist_generation==1 and OS!="win"', {
         'grit_rc_header_format': ['-h', '#define {textual_id} _Pragma("whitelisted_resource_{numeric_id}") {numeric_id}'],
+      }],
+      ['enable_resource_whitelist_generation==1 and OS=="win"', {
+        'grit_rc_header_format': ['-h', '#define {textual_id} __pragma(message("whitelisted_resource_{numeric_id}")) {numeric_id}'],
       }],
       ['enable_mdns==1 or OS=="mac"', {
         'grit_defines': ['-D', 'enable_service_discovery'],

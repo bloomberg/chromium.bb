@@ -21,6 +21,8 @@ to print out a UnknownPragma message every time a resource id is used. E.g.:
 foo.cc:22:0: warning: ignoring #pragma whitelisted_resource_12345
 [-Wunknown-pragmas]
 
+On Windows, the message is simply a message via __pragma(message(...)).
+
 """
 
 
@@ -29,8 +31,8 @@ def GetResourceIdsInPragmaWarnings(input):
      for the given input.
   """
   used_resources = set()
-  unknown_pragma_warning_pattern = re.compile('warning: ignoring #pragma '
-      'whitelisted_resource_(?P<resource_id>[0-9]*)  \[-Wunknown-pragmas\]')
+  unknown_pragma_warning_pattern = re.compile(
+      'whitelisted_resource_(?P<resource_id>[0-9]*)')
   for ln in input:
     match = unknown_pragma_warning_pattern.search(ln)
     if match:
