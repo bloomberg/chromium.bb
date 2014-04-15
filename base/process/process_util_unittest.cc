@@ -234,9 +234,7 @@ MULTIPROCESS_TEST_MAIN(CrashingChildProcess) {
 
 // This test intentionally crashes, so we don't need to run it under
 // AddressSanitizer.
-// TODO(jschuh): crbug.com/175753 Fix this in Win64 bots.
-#if defined(ADDRESS_SANITIZER) || \
-    (defined(OS_WIN) && defined(ARCH_CPU_X86_64)) || defined(SYZYASAN)
+#if defined(ADDRESS_SANITIZER) || defined(SYZYASAN)
 #define MAYBE_GetTerminationStatusCrash DISABLED_GetTerminationStatusCrash
 #else
 #define MAYBE_GetTerminationStatusCrash GetTerminationStatusCrash
