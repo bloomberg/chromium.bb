@@ -234,10 +234,37 @@ namespace WTF {
         template<typename T, typename U, typename V> static void translate(T& location, const U&, const V& value) { location = value; }
     };
 
-    template<typename ValueType> struct HashTableAddResult {
-        HashTableAddResult(ValueType* storedValue, bool isNewEntry) : storedValue(storedValue), isNewEntry(isNewEntry) { }
+    template<typename HashTableType, typename ValueType> struct HashTableAddResult {
+        HashTableAddResult(const HashTableType* container, ValueType* storedValue, bool isNewEntry)
+            : storedValue(storedValue)
+            , isNewEntry(isNewEntry)
+#if SECURITY_ASSERT_ENABLED
+            , m_container(container)
+            , m_containerModifications(container->modifications())
+#endif
+        {
+            ASSERT_UNUSED(container, container);
+        }
+
+        ~HashTableAddResult()
+        {
+            // If rehash happened before accessing storedValue, it's
+            // use-after-free. Any modification may cause a rehash, so we check
+            // for modifications here.
+            // Rehash after accessing storedValue is harmless but will assert if
+            // the AddResult destructor takes place after a modification. You
+            // may need to limit the scope of the AddResult.
+            ASSERT_WITH_SECURITY_IMPLICATION(m_containerModifications == m_container->modifications());
+        }
+
         ValueType* storedValue;
         bool isNewEntry;
+
+#if SECURITY_ASSERT_ENABLED
+    private:
+        const HashTableType* m_container;
+        const int64_t m_containerModifications;
+#endif
     };
 
     template<typename Value, typename Extractor, typename KeyTraits>
@@ -274,7 +301,7 @@ namespace WTF {
         typedef KeyTraits KeyTraitsType;
         typedef typename Traits::PeekInType ValuePeekInType;
         typedef IdentityHashTranslator<HashFunctions> IdentityTranslatorType;
-        typedef HashTableAddResult<ValueType> AddResult;
+        typedef HashTableAddResult<HashTable, ValueType> AddResult;
 
 #if DUMP_HASHTABLE_STATS_PER_TABLE
         struct Stats {
@@ -763,7 +790,7 @@ namespace WTF {
                     break;
 
                 if (HashTranslator::equal(Extractor::extract(*entry), key))
-                    return AddResult(entry, false);
+                    return AddResult(this, entry, false);
 
                 if (isDeletedBucket(*entry))
                     deletedEntry = entry;
@@ -774,7 +801,7 @@ namespace WTF {
                 if (isDeletedBucket(*entry))
                     deletedEntry = entry;
                 else if (HashTranslator::equal(Extractor::extract(*entry), key))
-                    return AddResult(entry, false);
+                    return AddResult(this, entry, false);
             }
 #if DUMP_HASHTABLE_STATS
             ++probeCount;
@@ -806,7 +833,7 @@ namespace WTF {
         if (shouldExpand())
             entry = expand(entry);
 
-        return AddResult(entry, true);
+        return AddResult(this, entry, true);
     }
 
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
@@ -823,7 +850,7 @@ namespace WTF {
         unsigned h = lookupResult.second;
 
         if (found)
-            return AddResult(entry, false);
+            return AddResult(this, entry, false);
 
         registerModification();
 
@@ -837,7 +864,7 @@ namespace WTF {
         if (shouldExpand())
             entry = expand(entry);
 
-        return AddResult(entry, true);
+        return AddResult(this, entry, true);
     }
 
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>

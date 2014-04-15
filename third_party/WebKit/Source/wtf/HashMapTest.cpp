@@ -184,4 +184,31 @@ TEST(WTF, HashMapWithRefPtrAsKey)
     ASSERT_TRUE(map.isEmpty());
 }
 
+class SimpleClass {
+public:
+    explicit SimpleClass(int v) : m_v(v) { }
+    int v() { return m_v; }
+
+private:
+    int m_v;
+};
+typedef HashMap<int, OwnPtr<SimpleClass> > IntSimpleMap;
+
+TEST(HashMapTest, AddResult)
+{
+    IntSimpleMap map;
+    IntSimpleMap::AddResult result = map.add(1, nullptr);
+    EXPECT_TRUE(result.isNewEntry);
+    EXPECT_EQ(1, result.storedValue->key);
+    EXPECT_EQ(0, result.storedValue->value.get());
+
+    SimpleClass* simple1 = new SimpleClass(1);
+    result.storedValue->value = adoptPtr(simple1);
+    EXPECT_EQ(simple1, map.get(1));
+
+    IntSimpleMap::AddResult result2 = map.add(1, adoptPtr(new SimpleClass(2)));
+    EXPECT_FALSE(result2.isNewEntry);
+    EXPECT_EQ(1, map.get(1)->v());
+}
+
 } // namespace
