@@ -21,6 +21,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/threading/thread_checker.h"
+#include "ui/gfx/x/x11_types.h"
 
 // These includes conflict with base/tracked_objects.h so must come last.
 #include <X11/XKBlib.h>
@@ -29,10 +30,6 @@
 namespace chromeos {
 namespace input_method {
 namespace {
-
-Display* GetXDisplay() {
-  return base::MessagePumpForUI::GetDefaultXDisplay();
-}
 
 // The delay in milliseconds that we'll wait between checking if
 // setxkbmap command finished.
@@ -182,7 +179,7 @@ ImeKeyboardX11::ImeKeyboardX11()
     : is_running_on_chrome_os_(base::SysInfo::IsRunningOnChromeOS()),
       weak_factory_(this) {
   // X must be already initialized.
-  CHECK(GetXDisplay());
+  CHECK(gfx::GetXDisplay());
 
   num_lock_mask_ = GetNumLockMask();
 
@@ -213,7 +210,7 @@ unsigned int ImeKeyboardX11::GetNumLockMask() {
 
   unsigned int real_mask = kBadMask;
   XkbDescPtr xkb_desc =
-      XkbGetKeyboard(GetXDisplay(), XkbAllComponentsMask, XkbUseCoreKbd);
+      XkbGetKeyboard(gfx::GetXDisplay(), XkbAllComponentsMask, XkbUseCoreKbd);
   if (!xkb_desc)
     return kBadMask;
 
@@ -252,7 +249,7 @@ void ImeKeyboardX11::SetLockedModifiers(bool caps_lock_enabled) {
   value_mask |= (caps_lock_enabled ? LockMask : 0);
   current_caps_lock_status_ = caps_lock_enabled;
 
-  XkbLockModifiers(GetXDisplay(), XkbUseCoreKbd, affect_mask, value_mask);
+  XkbLockModifiers(gfx::GetXDisplay(), XkbUseCoreKbd, affect_mask, value_mask);
 }
 
 bool ImeKeyboardX11::SetLayoutInternal(const std::string& layout_name,
@@ -349,7 +346,7 @@ void ImeKeyboardX11::PollUntilChildFinish(const base::ProcessHandle handle) {
 bool ImeKeyboardX11::CapsLockIsEnabled() {
   DCHECK(thread_checker_.CalledOnValidThread());
   XkbStateRec status;
-  XkbGetState(GetXDisplay(), XkbUseCoreKbd, &status);
+  XkbGetState(gfx::GetXDisplay(), XkbUseCoreKbd, &status);
   return (status.locked_mods & LockMask);
 }
 
@@ -371,9 +368,9 @@ bool ImeKeyboardX11::IsAltGrAvailable() const {
 
 bool ImeKeyboardX11::SetAutoRepeatEnabled(bool enabled) {
   if (enabled)
-    XAutoRepeatOn(GetXDisplay());
+    XAutoRepeatOn(gfx::GetXDisplay());
   else
-    XAutoRepeatOff(GetXDisplay());
+    XAutoRepeatOff(gfx::GetXDisplay());
   DVLOG(1) << "Set auto-repeat mode to: " << (enabled ? "on" : "off");
   return true;
 }
@@ -382,7 +379,7 @@ bool ImeKeyboardX11::SetAutoRepeatRate(const AutoRepeatRate& rate) {
   DVLOG(1) << "Set auto-repeat rate to: "
            << rate.initial_delay_in_ms << " ms delay, "
            << rate.repeat_interval_in_ms << " ms interval";
-  if (XkbSetAutoRepeatRate(GetXDisplay(), XkbUseCoreKbd,
+  if (XkbSetAutoRepeatRate(gfx::GetXDisplay(), XkbUseCoreKbd,
                            rate.initial_delay_in_ms,
                            rate.repeat_interval_in_ms) != True) {
     DVLOG(1) << "Failed to set auto-repeat rate";
@@ -440,13 +437,13 @@ void ImeKeyboardX11::OnSetLayoutFinish() {
 // static
 bool ImeKeyboard::GetAutoRepeatEnabledForTesting() {
   XKeyboardState state = {};
-  XGetKeyboardControl(GetXDisplay(), &state);
+  XGetKeyboardControl(gfx::GetXDisplay(), &state);
   return state.global_auto_repeat != AutoRepeatModeOff;
 }
 
 // static
 bool ImeKeyboard::GetAutoRepeatRateForTesting(AutoRepeatRate* out_rate) {
-  return XkbGetAutoRepeatRate(GetXDisplay(),
+  return XkbGetAutoRepeatRate(gfx::GetXDisplay(),
                               XkbUseCoreKbd,
                               &(out_rate->initial_delay_in_ms),
                               &(out_rate->repeat_interval_in_ms)) == True;

@@ -309,12 +309,6 @@
         'win/singleton_hwnd.h',
         'win/window_impl.cc',
         'win/window_impl.h',
-        'x/x11_atom_cache.cc',
-        'x/x11_atom_cache.h',
-        'x/x11_error_tracker.cc',
-        'x/x11_error_tracker.h',
-        'x/x11_types.cc',
-        'x/x11_types.h',
       ],
       'conditions': [
         ['OS=="ios"', {
@@ -396,7 +390,7 @@
         }],
         ['use_x11==1', {
           'dependencies': [
-            '<(DEPTH)/build/linux/system.gyp:x11',
+            'gfx_x11',
           ],
         }],
         ['use_pango==1', {
@@ -551,6 +545,30 @@
           'includes': [ '../../build/apk_test.gypi' ],
         },
       ],
+    }],
+    ['use_x11 == 1', {
+      'targets': [
+        {
+          'target_name': 'gfx_x11',
+          'type': '<(component)',
+          'dependencies': [
+            '../../base/base.gyp:base',
+            '../../build/linux/system.gyp:x11',
+            'gfx_geometry',
+          ],
+          'defines': [
+            'GFX_IMPLEMENTATION',
+          ],
+          'sources': [
+            'x/x11_atom_cache.cc',
+            'x/x11_atom_cache.h',
+            'x/x11_error_tracker.cc',
+            'x/x11_error_tracker.h',
+            'x/x11_types.cc',
+            'x/x11_types.h',
+          ],
+        },
+      ]
     }],
   ],
 }

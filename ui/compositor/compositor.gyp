@@ -120,7 +120,8 @@
       'conditions': [
         ['use_x11==1', {
           'dependencies': [
-            '<(DEPTH)/build/linux/system.gyp:x11'
+            '<(DEPTH)/build/linux/system.gyp:x11',
+            '<(DEPTH)/ui/gfx/gfx.gyp:gfx_x11',
           ]
         }]
       ]
