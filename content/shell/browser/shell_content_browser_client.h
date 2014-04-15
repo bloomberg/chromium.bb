@@ -69,6 +69,10 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       int child_process_id,
       std::vector<content::FileDescriptorInfo>* mappings) OVERRIDE;
 #endif
+#if defined(OS_WIN)
+  virtual void PreSpawnRenderer(sandbox::TargetPolicy* policy,
+                                bool* success) OVERRIDE;
+#endif
 
   ShellBrowserContext* browser_context();
   ShellBrowserContext* off_the_record_browser_context();

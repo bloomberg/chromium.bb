@@ -14,6 +14,7 @@
 #include "content/common/sandbox_win.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/injection_test_win.h"
+#include "content/public/renderer/render_font_warmup_win.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/render_thread_impl.h"
 #include "sandbox/win/src/sandbox.h"
@@ -52,32 +53,12 @@ void SkiaPreCacheFontCharacters(const LOGFONT& logfont,
   }
 }
 
-// Windows-only DirectWrite support. These warm up the DirectWrite paths
-// before sandbox lock down to allow Skia access to the Font Manager service.
-void CreateDirectWriteFactory(IDWriteFactory** factory) {
-  typedef decltype(DWriteCreateFactory)* DWriteCreateFactoryProc;
-  DWriteCreateFactoryProc dwrite_create_factory_proc =
-      reinterpret_cast<DWriteCreateFactoryProc>(
-          GetProcAddress(LoadLibraryW(L"dwrite.dll"), "DWriteCreateFactory"));
-  CHECK(dwrite_create_factory_proc);
-  CHECK(SUCCEEDED(
-      dwrite_create_factory_proc(DWRITE_FACTORY_TYPE_ISOLATED,
-                                 __uuidof(IDWriteFactory),
-                                 reinterpret_cast<IUnknown**>(factory))));
-}
-
 void WarmupDirectWrite() {
   // The objects used here are intentionally not freed as we want the Skia
   // code to use these objects after warmup.
-  IDWriteFactory* factory;
-  CreateDirectWriteFactory(&factory);
-  blink::WebFontRendering::setDirectWriteFactory(factory);
-  SkFontMgr* fontmgr = SkFontMgr_New_DirectWrite(factory);
-  SkTypeface* typeface = fontmgr->legacyCreateTypeface("Times New Roman", 0);
-  SkPaint paint_warmup;
-  paint_warmup.setTypeface(typeface);
-  wchar_t glyph = L'S';
-  paint_warmup.measureText(&glyph, 2);
+  SkTypeface* typeface =
+      GetPreSandboxWarmupFontMgr()->legacyCreateTypeface("Times New Roman", 0);
+  DoPreSandboxWarmupForTypeface(typeface);
 }
 
 }  // namespace
