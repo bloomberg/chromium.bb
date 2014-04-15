@@ -96,7 +96,7 @@ class PageCyclerKeyMobileSites(test.Test):
 
 class PageCyclerToughLayoutCases(test.Test):
   test = page_cycler.PageCycler
-  page_set = 'page_sets/tough_layout_cases.json'
+  page_set = 'page_sets/tough_layout_cases.py'
   options = {'pageset_repeat': 10}
 
 

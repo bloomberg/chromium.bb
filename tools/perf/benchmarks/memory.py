@@ -24,4 +24,4 @@ class Reload2012Q3(test.Test):
 
 class MemoryToughDomMemoryCases(test.Test):
   test = memory.Memory
-  page_set = 'page_sets/tough_dom_memory_cases.json'
+  page_set = 'page_sets/tough_dom_memory_cases.py'

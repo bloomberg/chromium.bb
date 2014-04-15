@@ -18,5 +18,5 @@ class TabSwitchingFiveBlankTabs(test.Test):
 
 class TabSwitchingToughEnergyCases(test.Test):
   test = tab_switching.TabSwitching
-  page_set = 'page_sets/tough_energy_cases.json'
+  page_set = 'page_sets/tough_energy_cases.py'
   options = {'pageset_repeat': 10}

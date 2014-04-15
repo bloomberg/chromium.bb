@@ -18,12 +18,12 @@ class SmoothnessTop25(test.Test):
 @test.Disabled('mac')
 class SmoothnessToughCanvasCases(test.Test):
   test = smoothness.Smoothness
-  page_set = 'page_sets/tough_canvas_cases.json'
+  page_set = 'page_sets/tough_canvas_cases.py'
 
 
 class SmoothnessToughWebGLCases(test.Test):
   test = smoothness.Smoothness
-  page_set = 'page_sets/tough_webgl_cases.json'
+  page_set = 'page_sets/tough_webgl_cases.py'
 
 
 class SmoothnessMaps(test.Test):
@@ -42,7 +42,7 @@ class SmoothnessKeyMobileSites(test.Test):
 @test.Disabled('android')  # crbug.com/350692
 class SmoothnessToughAnimationCases(test.Test):
   test = smoothness.Smoothness
-  page_set = 'page_sets/tough_animation_cases.json'
+  page_set = 'page_sets/tough_animation_cases.py'
 
 
 class SmoothnessKeySilkCases(test.Test):
@@ -124,4 +124,4 @@ class SmoothnessToughPinchZoomCases(test.Test):
   cases
   """
   test = smoothness.Smoothness
-  page_set = 'page_sets/tough_pinch_zoom_cases.json'
+  page_set = 'page_sets/tough_pinch_zoom_cases.py'
