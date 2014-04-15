@@ -8,7 +8,6 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "base/time/time.h"
 #include "media/cast/cast_config.h"
 #include "third_party/libvpx/source/libvpx/vpx/vpx_encoder.h"
 
@@ -82,8 +81,7 @@ class Vp8Encoder {
   vpx_image_t* raw_image_;
 
   bool key_frame_requested_;
-  bool first_frame_received_;
-  base::TimeDelta first_frame_timestamp_;
+  int64 timestamp_;
   uint32 last_encoded_frame_id_;
   uint32 used_buffers_frame_id_[kNumberOfVp8VideoBuffers];
   bool acked_frame_buffers_[kNumberOfVp8VideoBuffers];

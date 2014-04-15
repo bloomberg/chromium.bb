@@ -128,7 +128,6 @@ AudioReceiverConfig GetAudioReceiverConfig() {
   AudioReceiverConfig audio_config = GetDefaultAudioReceiverConfig();
   GetSsrcs(&audio_config);
   GetPayloadtype(&audio_config);
-  audio_config.rtp_max_delay_ms = 300;
   return audio_config;
 }
 
@@ -144,7 +143,6 @@ VideoReceiverConfig GetVideoReceiverConfig() {
   VideoReceiverConfig video_config = GetDefaultVideoReceiverConfig();
   GetSsrcs(&video_config);
   GetPayloadtype(&video_config);
-  video_config.rtp_max_delay_ms = 300;
   return video_config;
 }
 
