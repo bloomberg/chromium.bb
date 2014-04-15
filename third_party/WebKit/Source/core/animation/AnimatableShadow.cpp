@@ -39,13 +39,6 @@ PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableShadow::interpolateTo(const An
     return AnimatableShadow::create(ShadowList::blend(m_shadowList.get(), shadowList->m_shadowList.get(), fraction));
 }
 
-PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableShadow::addWith(const AnimatableValue* value) const
-{
-    // FIXME: The spec doesn't specify anything for shadow in particular, but
-    // the default behaviour is probably not what one would expect.
-    return AnimatableValue::defaultAddWith(this, value);
-}
-
 bool AnimatableShadow::equalTo(const AnimatableValue* value) const
 {
     const ShadowList* shadowList = toAnimatableShadow(value)->m_shadowList.get();

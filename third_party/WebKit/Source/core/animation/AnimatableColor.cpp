@@ -76,14 +76,6 @@ AnimatableColorImpl AnimatableColorImpl::interpolateTo(const AnimatableColorImpl
         blend(m_alpha, to.m_alpha, fraction));
 }
 
-AnimatableColorImpl AnimatableColorImpl::addWith(const AnimatableColorImpl& addend) const
-{
-    return AnimatableColorImpl(m_red + addend.m_red,
-        m_green + addend.m_green,
-        m_blue + addend.m_blue,
-        m_alpha + addend.m_alpha);
-}
-
 bool AnimatableColorImpl::operator==(const AnimatableColorImpl& other) const
 {
     return m_red == other.m_red
@@ -110,13 +102,6 @@ PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableColor::interpolateTo(const Ani
     const AnimatableColor* color = toAnimatableColor(value);
     return create(m_color.interpolateTo(color->m_color, fraction),
         m_visitedLinkColor.interpolateTo(color->m_visitedLinkColor, fraction));
-}
-
-PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableColor::addWith(const AnimatableValue* value) const
-{
-    const AnimatableColor* color = toAnimatableColor(value);
-    return create(m_color.addWith(color->m_color),
-        m_visitedLinkColor.addWith(color->m_visitedLinkColor));
 }
 
 bool AnimatableColor::equalTo(const AnimatableValue* value) const

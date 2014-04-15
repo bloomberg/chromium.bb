@@ -65,16 +65,6 @@ TEST(AnimationAnimatableColorTest, Interpolate)
     EXPECT_EQ(AnimatableColorImpl(Color(0x10204080)).interpolateTo(Color(0x104080C0), 0.5).toColor().rgb(), 0x103060A0u);
 }
 
-TEST(AnimationAnimatableColorTest, Add)
-{
-    EXPECT_EQ(AnimatableColorImpl(Color(0xFF012345)).addWith(Color(0xFF543210)).toColor().rgb(), 0xFF555555);
-    EXPECT_EQ(AnimatableColorImpl(Color(0xFF808080)).addWith(Color(0xFF808080)).toColor().rgb(), 0xFFFFFFFF);
-    EXPECT_EQ(AnimatableColorImpl(Color(0x80FFFFFF)).addWith(Color(0x80FFFFFF)).toColor().rgb(), 0xFFFFFFFF);
-    EXPECT_EQ(AnimatableColorImpl(Color(0x40FFFFFF)).addWith(Color(0x40FFFFFF)).toColor().rgb(), 0x80FFFFFF);
-    EXPECT_EQ(AnimatableColorImpl(Color(0x40004080)).addWith(Color(0x80804000)).toColor().rgb(), 0xC055402B);
-    EXPECT_EQ(AnimatableColorImpl(Color(0x10204080)).addWith(Color(0x104080C0)).toColor().rgb(), 0x203060A0u);
-}
-
 TEST(AnimationAnimatableColorTest, Distance)
 {
     EXPECT_NEAR(1.0, AnimatableColorImpl(Color(0xFF000000)).distanceTo(Color(0xFFFF0000)), 0.00000001);

@@ -41,14 +41,6 @@ PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableLengthSize::interpolateTo(cons
         AnimatableValue::interpolate(this->height(), lengthSize->height(), fraction));
 }
 
-PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableLengthSize::addWith(const AnimatableValue* value) const
-{
-    const AnimatableLengthSize* lengthSize = toAnimatableLengthSize(value);
-    return AnimatableLengthSize::create(
-        AnimatableValue::add(this->width(), lengthSize->width()),
-        AnimatableValue::add(this->height(), lengthSize->height()));
-}
-
 bool AnimatableLengthSize::equalTo(const AnimatableValue* value) const
 {
     const AnimatableLengthSize* lengthSize = toAnimatableLengthSize(value);

@@ -42,7 +42,6 @@ public:
     AnimatableColorImpl(Color);
     Color toColor() const;
     AnimatableColorImpl interpolateTo(const AnimatableColorImpl&, double fraction) const;
-    AnimatableColorImpl addWith(const AnimatableColorImpl&) const;
     bool operator==(const AnimatableColorImpl&) const;
     double distanceTo(const AnimatableColorImpl&) const;
 
@@ -67,7 +66,6 @@ public:
 
 protected:
     virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
-    virtual PassRefPtrWillBeRawPtr<AnimatableValue> addWith(const AnimatableValue*) const OVERRIDE;
 
 private:
     AnimatableColor(const AnimatableColorImpl& color, const AnimatableColorImpl& visitedLinkColor)

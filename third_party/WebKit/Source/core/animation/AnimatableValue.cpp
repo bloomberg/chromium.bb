@@ -66,27 +66,6 @@ PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableValue::interpolate(const Anima
     return defaultInterpolateTo(left, right, fraction);
 }
 
-PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableValue::add(const AnimatableValue* left, const AnimatableValue* right)
-{
-    ASSERT(left);
-    ASSERT(right);
-
-    if (left->isNeutral())
-        return takeConstRef(right);
-    if (right->isNeutral())
-        return takeConstRef(left);
-
-    if (left->isSameType(right))
-        return left->addWith(right);
-
-    return defaultAddWith(left, right);
-}
-
-PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableValue::addWith(const AnimatableValue* value) const
-{
-    return defaultAddWith(this, value);
-}
-
 double AnimatableValue::distance(const AnimatableValue* left, const AnimatableValue* right)
 {
     ASSERT(left);

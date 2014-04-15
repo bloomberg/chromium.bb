@@ -281,35 +281,6 @@ TEST_F(AnimationAnimatableLengthTest, Interpolate)
         AnimatableValue::interpolate(from0percent.get(), to20rem.get(), 1.5));
 }
 
-TEST_F(AnimationAnimatableLengthTest, Add)
-{
-    EXPECT_REFV_EQ(create(10, CSSPrimitiveValue::CSS_PX),
-        AnimatableValue::add(create(10, CSSPrimitiveValue::CSS_PX).get(), create(0, CSSPrimitiveValue::CSS_MM).get()));
-    EXPECT_REFV_EQ(create(100, CSSPrimitiveValue::CSS_PX),
-        AnimatableValue::add(create(4, CSSPrimitiveValue::CSS_PX).get(), create(1, CSSPrimitiveValue::CSS_IN).get()));
-    EXPECT_REFV_EQ(
-        create(10, CSSPrimitiveValue::CSS_EMS, 20, CSSPrimitiveValue::CSS_REMS),
-        AnimatableValue::add(create(10, CSSPrimitiveValue::CSS_EMS).get(), create(20, CSSPrimitiveValue::CSS_REMS).get()));
-    EXPECT_REFV_EQ(
-        create(10, CSSPrimitiveValue::CSS_EMS),
-        AnimatableValue::add(create(10, CSSPrimitiveValue::CSS_EMS).get(), create(0, CSSPrimitiveValue::CSS_REMS).get()));
-    EXPECT_REFV_EQ(
-        create(20, CSSPrimitiveValue::CSS_REMS),
-        AnimatableValue::add(create(0, CSSPrimitiveValue::CSS_EMS).get(), create(20, CSSPrimitiveValue::CSS_REMS).get()));
-
-    // Check you actually get the reference back for zero optimization
-    RefPtrWillBeRawPtr<AnimatableLength> rems20 = create(20, CSSPrimitiveValue::CSS_REMS);
-    EXPECT_EQ(rems20.get(), AnimatableValue::add(create(0, CSSPrimitiveValue::CSS_EMS).get(), rems20.get()).get());
-    EXPECT_EQ(rems20.get(), AnimatableValue::add(rems20.get(), create(0, CSSPrimitiveValue::CSS_EMS).get()).get());
-
-    // Except 0% which is special
-    RefPtrWillBeRawPtr<AnimatableLength> zeropercent = create(0, CSSPrimitiveValue::CSS_PERCENTAGE);
-    EXPECT_REFV_EQ(create(0, CSSPrimitiveValue::CSS_PERCENTAGE, -10, CSSPrimitiveValue::CSS_REMS),
-        AnimatableValue::add(zeropercent.get(), create(-10, CSSPrimitiveValue::CSS_REMS).get()));
-    EXPECT_REFV_EQ(create(-10, CSSPrimitiveValue::CSS_REMS, 0, CSSPrimitiveValue::CSS_PERCENTAGE),
-        AnimatableValue::add(create(-10, CSSPrimitiveValue::CSS_REMS).get(), zeropercent.get()));
-}
-
 TEST_F(AnimationAnimatableLengthTest, IsUnitless)
 {
     EXPECT_TRUE(isUnitlessZero(create(0, CSSPrimitiveValue::CSS_PX)));

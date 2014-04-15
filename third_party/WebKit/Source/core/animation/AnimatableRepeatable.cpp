@@ -90,19 +90,6 @@ PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableRepeatable::interpolateTo(cons
     return defaultInterpolateTo(this, value, fraction);
 }
 
-PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableRepeatable::addWith(const AnimatableValue* value) const
-{
-    const WillBeHeapVector<RefPtrWillBeMember<AnimatableValue> >& otherValues = toAnimatableRepeatable(value)->m_values;
-    ASSERT(!m_values.isEmpty() && !otherValues.isEmpty());
-    WillBeHeapVector<RefPtrWillBeMember<AnimatableValue> > addedValues(lowestCommonMultiple(m_values.size(), otherValues.size()));
-    for (size_t i = 0; i < addedValues.size(); ++i) {
-        const AnimatableValue* left = m_values[i % m_values.size()].get();
-        const AnimatableValue* right = otherValues[i % otherValues.size()].get();
-        addedValues[i] = add(left, right);
-    }
-    return create(addedValues);
-}
-
 bool AnimatableRepeatable::equalTo(const AnimatableValue* value) const
 {
     const WillBeHeapVector<RefPtrWillBeMember<AnimatableValue> >& otherValues = toAnimatableRepeatable(value)->m_values;

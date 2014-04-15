@@ -60,12 +60,6 @@ PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableImage::interpolateTo(const Ani
     return create(crossfadeValue);
 }
 
-PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableImage::addWith(const AnimatableValue* value) const
-{
-    // FIXME: Correct procedure is defined here: http://dev.w3.org/fxtf/web-animations/#the--image--type
-    return defaultAddWith(this, value);
-}
-
 bool AnimatableImage::equalTo(const AnimatableValue* value) const
 {
     return m_value->equals(*toAnimatableImage(value)->m_value.get());

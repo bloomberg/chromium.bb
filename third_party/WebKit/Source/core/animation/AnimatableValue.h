@@ -44,8 +44,6 @@ public:
     static const AnimatableValue* neutralValue();
 
     static PassRefPtrWillBeRawPtr<AnimatableValue> interpolate(const AnimatableValue*, const AnimatableValue*, double fraction);
-    // For noncommutative values read add(A, B) to mean the value A with B composed onto it.
-    static PassRefPtrWillBeRawPtr<AnimatableValue> add(const AnimatableValue*, const AnimatableValue*);
     static double distance(const AnimatableValue* from, const AnimatableValue* to);
     static bool usesDefaultInterpolation(const AnimatableValue* from, const AnimatableValue* to)
     {
@@ -119,12 +117,6 @@ protected:
     virtual bool usesDefaultInterpolationWith(const AnimatableValue* value) const { return false; }
     virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const = 0;
     static PassRefPtrWillBeRawPtr<AnimatableValue> defaultInterpolateTo(const AnimatableValue* left, const AnimatableValue* right, double fraction) { return takeConstRef((fraction < 0.5) ? left : right); }
-
-    // For noncommutative values read A->addWith(B) to mean the value A with B composed onto it.
-    virtual PassRefPtrWillBeRawPtr<AnimatableValue> addWith(const AnimatableValue*) const;
-    static PassRefPtrWillBeRawPtr<AnimatableValue> defaultAddWith(const AnimatableValue* left, const AnimatableValue* right) { return takeConstRef(right); }
-
-
 
     template <class T>
     static PassRefPtrWillBeRawPtr<T> takeConstRef(const T* value) { return PassRefPtrWillBeRawPtr<T>(const_cast<T*>(value)); }

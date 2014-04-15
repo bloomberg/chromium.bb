@@ -42,15 +42,6 @@ PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableLengthPoint3D::interpolateTo(c
         AnimatableValue::interpolate(this->z(), lengthPoint->z(), fraction));
 }
 
-PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableLengthPoint3D::addWith(const AnimatableValue* value) const
-{
-    const AnimatableLengthPoint3D* lengthPoint = toAnimatableLengthPoint3D(value);
-    return AnimatableLengthPoint3D::create(
-        AnimatableValue::add(this->x(), lengthPoint->x()),
-        AnimatableValue::add(this->y(), lengthPoint->y()),
-        AnimatableValue::add(this->z(), lengthPoint->z()));
-}
-
 bool AnimatableLengthPoint3D::equalTo(const AnimatableValue* value) const
 {
     const AnimatableLengthPoint3D* lengthPoint = toAnimatableLengthPoint3D(value);

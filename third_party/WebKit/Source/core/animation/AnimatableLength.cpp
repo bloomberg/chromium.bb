@@ -111,23 +111,6 @@ PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableLength::interpolateTo(const An
     return AnimatableLength::create(scale(1 - fraction).get(), length->scale(fraction).get());
 }
 
-PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableLength::addWith(const AnimatableValue* value) const
-{
-    // Optimization for adding with 0.
-    if (isUnitlessZero())
-        return takeConstRef(value);
-
-    const AnimatableLength* length = toAnimatableLength(value);
-    if (length->isUnitlessZero())
-        return takeConstRef(this);
-
-    CSSPrimitiveValue::LengthUnitType type = commonUnitType(length);
-    if (!isCalc(type))
-        return AnimatableLength::create(m_lengthValue + length->m_lengthValue, type);
-
-    return AnimatableLength::create(this, length);
-}
-
 bool AnimatableLength::equalTo(const AnimatableValue* value) const
 {
     const AnimatableLength* length = toAnimatableLength(value);

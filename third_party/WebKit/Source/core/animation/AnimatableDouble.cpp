@@ -58,18 +58,6 @@ PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableDouble::interpolateTo(const An
     return AnimatableDouble::create(blend(m_number, other->m_number, fraction));
 }
 
-PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableDouble::addWith(const AnimatableValue* value) const
-{
-    // Optimization for adding with 0.
-    if (!m_number)
-        return takeConstRef(value);
-    const AnimatableDouble* other = toAnimatableDouble(value);
-    if (!other->m_number)
-        return takeConstRef(this);
-
-    return AnimatableDouble::create(m_number + other->m_number);
-}
-
 bool AnimatableDouble::equalTo(const AnimatableValue* value) const
 {
     return m_number == toAnimatableDouble(value)->m_number;

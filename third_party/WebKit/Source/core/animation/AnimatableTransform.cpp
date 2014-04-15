@@ -44,12 +44,6 @@ PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableTransform::interpolateTo(const
     return AnimatableTransform::create(transform->m_transform.blend(m_transform, fraction));
 }
 
-PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableTransform::addWith(const AnimatableValue* value) const
-{
-    const AnimatableTransform* transform = toAnimatableTransform(value);
-    return AnimatableTransform::create(m_transform.add(transform->m_transform));
-}
-
 bool AnimatableTransform::equalTo(const AnimatableValue* value) const
 {
     return m_transform == toAnimatableTransform(value)->m_transform;

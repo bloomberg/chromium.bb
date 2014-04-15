@@ -54,7 +54,6 @@ public:
 
 protected:
     virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
-    virtual PassRefPtrWillBeRawPtr<AnimatableValue> addWith(const AnimatableValue*) const OVERRIDE;
 
 private:
     AnimatableSVGLength(PassRefPtr<SVGLength> length)

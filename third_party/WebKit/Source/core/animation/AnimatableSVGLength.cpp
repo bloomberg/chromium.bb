@@ -40,12 +40,6 @@ PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableSVGLength::interpolateTo(const
     return create(toAnimatableSVGLength(value)->toSVGLength()->blend(m_length.get(), narrowPrecisionToFloat(fraction)));
 }
 
-PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableSVGLength::addWith(const AnimatableValue* value) const
-{
-    ASSERT_WITH_MESSAGE(false, "Web Animations not yet implemented: AnimatableSVGLength::addWith()");
-    return defaultAddWith(this, value);
-}
-
 bool AnimatableSVGLength::equalTo(const AnimatableValue* value) const
 {
     return *m_length == *toAnimatableSVGLength(value)->m_length;

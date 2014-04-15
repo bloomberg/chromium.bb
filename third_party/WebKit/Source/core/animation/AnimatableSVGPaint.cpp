@@ -49,16 +49,6 @@ PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableSVGPaint::interpolateTo(const 
     return defaultInterpolateTo(this, value, fraction);
 }
 
-PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableSVGPaint::addWith(const AnimatableValue* value) const
-{
-    const AnimatableSVGPaint* svgPaint = toAnimatableSVGPaint(value);
-    if (paintType() != SVGPaint::SVG_PAINTTYPE_RGBCOLOR || svgPaint->paintType() != SVGPaint::SVG_PAINTTYPE_RGBCOLOR) {
-        ASSERT(uri().isNull());
-        return AnimatableSVGPaint::create(SVGPaint::SVG_PAINTTYPE_RGBCOLOR, m_color.addWith(svgPaint->m_color), String());
-    }
-    return defaultAddWith(this, value);
-}
-
 bool AnimatableSVGPaint::equalTo(const AnimatableValue* value) const
 {
     const AnimatableSVGPaint* svgPaint = toAnimatableSVGPaint(value);

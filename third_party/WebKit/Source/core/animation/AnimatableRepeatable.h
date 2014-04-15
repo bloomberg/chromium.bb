@@ -70,7 +70,6 @@ protected:
 
 private:
     virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
-    virtual PassRefPtrWillBeRawPtr<AnimatableValue> addWith(const AnimatableValue*) const OVERRIDE FINAL;
 
     virtual AnimatableType type() const OVERRIDE { return TypeRepeatable; }
     virtual bool equalTo(const AnimatableValue*) const OVERRIDE FINAL;

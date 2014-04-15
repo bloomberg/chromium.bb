@@ -41,14 +41,6 @@ PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableLengthPoint::interpolateTo(con
         AnimatableValue::interpolate(this->y(), lengthPoint->y(), fraction));
 }
 
-PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableLengthPoint::addWith(const AnimatableValue* value) const
-{
-    const AnimatableLengthPoint* lengthPoint = toAnimatableLengthPoint(value);
-    return AnimatableLengthPoint::create(
-        AnimatableValue::add(this->x(), lengthPoint->x()),
-        AnimatableValue::add(this->y(), lengthPoint->y()));
-}
-
 bool AnimatableLengthPoint::equalTo(const AnimatableValue* value) const
 {
     const AnimatableLengthPoint* lengthPoint = toAnimatableLengthPoint(value);
