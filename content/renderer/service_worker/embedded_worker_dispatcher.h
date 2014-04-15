@@ -35,6 +35,7 @@ class EmbeddedWorkerDispatcher : public IPC::Listener {
 
   void OnStartWorker(int embedded_worker_id,
                      int64 service_worker_version_id,
+                     const GURL& service_worker_scope,
                      const GURL& script_url);
   void OnStopWorker(int embedded_worker_id);
 

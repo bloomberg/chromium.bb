@@ -61,6 +61,7 @@ bool EmbeddedWorkerTestHelper::OnMessageReceived(const IPC::Message& message) {
 void EmbeddedWorkerTestHelper::OnStartWorker(
     int embedded_worker_id,
     int64 service_worker_version_id,
+    const GURL& scope,
     const GURL& script_url) {
   // By default just notify the sender that the worker is started.
   SimulateWorkerStarted(next_thread_id_++, embedded_worker_id);
@@ -147,6 +148,7 @@ void EmbeddedWorkerTestHelper::SimulateSendMessageToBrowser(
 void EmbeddedWorkerTestHelper::OnStartWorkerStub(
     int embedded_worker_id,
     int64 service_worker_version_id,
+    const GURL& scope,
     const GURL& script_url) {
   EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
   ASSERT_TRUE(worker != NULL);
@@ -157,6 +159,7 @@ void EmbeddedWorkerTestHelper::OnStartWorkerStub(
                  weak_factory_.GetWeakPtr(),
                  embedded_worker_id,
                  service_worker_version_id,
+                 scope,
                  script_url));
 }
 

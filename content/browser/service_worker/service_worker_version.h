@@ -203,6 +203,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   const int64 version_id_;
   int64 registration_id_;
   GURL script_url_;
+  GURL scope_;
   Status status_;
   scoped_ptr<EmbeddedWorkerInstance> embedded_worker_;
   std::vector<StatusCallback> start_callbacks_;

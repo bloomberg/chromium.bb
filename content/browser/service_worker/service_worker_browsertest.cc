@@ -161,10 +161,11 @@ class EmbeddedWorkerBrowserTest : public ServiceWorkerBrowserTest,
     AssociateRendererProcessToWorker(worker_.get());
 
     const int64 service_worker_version_id = 33L;
+    const GURL scope = embedded_test_server()->GetURL("/*");
     const GURL script_url = embedded_test_server()->GetURL(
         "/service_worker/worker.js");
     ServiceWorkerStatusCode status = worker_->Start(
-        service_worker_version_id, script_url);
+        service_worker_version_id, scope, script_url);
 
     last_worker_status_ = worker_->status();
     EXPECT_EQ(SERVICE_WORKER_OK, status);

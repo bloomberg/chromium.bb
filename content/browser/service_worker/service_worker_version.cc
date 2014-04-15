@@ -177,6 +177,7 @@ ServiceWorkerVersion::ServiceWorkerVersion(
   if (registration) {
     registration_id_ = registration->id();
     script_url_ = registration->script_url();
+    scope_ = registration->pattern();
   }
   context_->AddLiveVersion(this);
   embedded_worker_ = context_->embedded_worker_registry()->CreateWorker();
@@ -233,8 +234,7 @@ void ServiceWorkerVersion::StartWorker(const StatusCallback& callback) {
   }
   if (start_callbacks_.empty()) {
     ServiceWorkerStatusCode status = embedded_worker_->Start(
-        version_id_,
-        script_url_);
+        version_id_, scope_, script_url_);
     if (status != SERVICE_WORKER_OK) {
       RunSoon(base::Bind(callback, status));
       return;

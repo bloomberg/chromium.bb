@@ -403,6 +403,7 @@ class FailToStartWorkerTestHelper : public EmbeddedWorkerTestHelper {
 
   virtual void OnStartWorker(int embedded_worker_id,
                              int64 service_worker_version_id,
+                             const GURL& scope,
                              const GURL& script_url) OVERRIDE {
     // Simulate failure by sending worker stopped instead of started.
     EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);

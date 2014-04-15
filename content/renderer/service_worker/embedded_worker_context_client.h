@@ -11,6 +11,7 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "ipc/ipc_listener.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerEventResult.h"
+#include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebServiceWorkerContextClient.h"
 #include "url/gurl.h"
 
@@ -48,6 +49,7 @@ class EmbeddedWorkerContextClient
 
   EmbeddedWorkerContextClient(int embedded_worker_id,
                               int64 service_worker_version_id,
+                              const GURL& service_worker_scope,
                               const GURL& script_url);
 
   virtual ~EmbeddedWorkerContextClient();
@@ -58,6 +60,7 @@ class EmbeddedWorkerContextClient
 
   // WebServiceWorkerContextClient overrides, some of them are just dispatched
   // on to script_context_.
+  virtual blink::WebURL scope() const;
   virtual void workerContextFailedToStart();
   virtual void workerContextStarted(blink::WebServiceWorkerContextProxy* proxy);
   virtual void workerContextDestroyed();
@@ -93,6 +96,7 @@ class EmbeddedWorkerContextClient
 
   const int embedded_worker_id_;
   const int64 service_worker_version_id_;
+  const GURL service_worker_scope_;
   const GURL script_url_;
   scoped_refptr<ThreadSafeSender> sender_;
   scoped_refptr<base::MessageLoopProxy> main_thread_proxy_;

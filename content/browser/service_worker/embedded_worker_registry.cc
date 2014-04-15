@@ -30,11 +30,12 @@ ServiceWorkerStatusCode EmbeddedWorkerRegistry::StartWorker(
     int process_id,
     int embedded_worker_id,
     int64 service_worker_version_id,
+    const GURL& scope,
     const GURL& script_url) {
-  return Send(process_id,
-              new EmbeddedWorkerMsg_StartWorker(embedded_worker_id,
-                                               service_worker_version_id,
-                                               script_url));
+  return Send(
+      process_id,
+      new EmbeddedWorkerMsg_StartWorker(
+          embedded_worker_id, service_worker_version_id, scope, script_url));
 }
 
 ServiceWorkerStatusCode EmbeddedWorkerRegistry::StopWorker(

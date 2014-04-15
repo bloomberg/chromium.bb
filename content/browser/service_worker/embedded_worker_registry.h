@@ -46,6 +46,7 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
   ServiceWorkerStatusCode StartWorker(int process_id,
                                       int embedded_worker_id,
                                       int64 service_worker_version_id,
+                                      const GURL& scope,
                                       const GURL& script_url);
   ServiceWorkerStatusCode StopWorker(int process_id,
                                      int embedded_worker_id);

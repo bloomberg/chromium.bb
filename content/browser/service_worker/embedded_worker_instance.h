@@ -53,6 +53,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   // Starts the worker. It is invalid to call this when the worker is
   // not in STOPPED status.
   ServiceWorkerStatusCode Start(int64 service_worker_version_id,
+                                const GURL& scope,
                                 const GURL& script_url);
 
   // Stops the worker. It is invalid to call this when the worker is

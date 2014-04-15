@@ -70,6 +70,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   // - OnSendMessageToWorker calls the message's respective On*Event handler
   virtual void OnStartWorker(int embedded_worker_id,
                              int64 service_worker_version_id,
+                             const GURL& scope,
                              const GURL& script_url);
   virtual void OnStopWorker(int embedded_worker_id);
   virtual bool OnSendMessageToWorker(int thread_id,
@@ -103,6 +104,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
  private:
   void OnStartWorkerStub(int embedded_worker_id,
                          int64 service_worker_version_id,
+                         const GURL& scope,
                          const GURL& script_url);
   void OnStopWorkerStub(int embedded_worker_id);
   void OnSendMessageToWorkerStub(int thread_id,

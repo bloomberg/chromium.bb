@@ -17,9 +17,10 @@
 #define IPC_MESSAGE_START EmbeddedWorkerMsgStart
 
 // Browser -> Renderer message to create a new embedded worker context.
-IPC_MESSAGE_CONTROL3(EmbeddedWorkerMsg_StartWorker,
+IPC_MESSAGE_CONTROL4(EmbeddedWorkerMsg_StartWorker,
                      int /* embedded_worker_id */,
                      int64 /* service_worker_version_id */,
+                     GURL /* scope */,
                      GURL /* script_url */)
 
 // Browser -> Renderer message to stop (terminate) the embedded worker.
