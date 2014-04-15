@@ -1,13 +1,21 @@
 module mojo {
 
+struct EchoArgs {
+  int32 x;
+  int16 y;
+  string name;
+};
+
 [Peer=RendererTarget]
 interface BrowserTarget {
-  Test();
+  PingResponse();
+  EchoResponse(EchoArgs arg1, EchoArgs arg2);
 };
 
 [Peer=BrowserTarget]
 interface RendererTarget {
-  Test();
+  Ping();
+  Echo(EchoArgs arg);
 };
 
 }

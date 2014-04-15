@@ -22,6 +22,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/test/data/web_ui_test_mojo_bindings.mojom.h"
 #include "grit/content_resources.h"
+#include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/public/cpp/bindings/remote_ptr.h"
 #include "mojo/public/js/bindings/constants.h"
 
@@ -29,6 +30,8 @@ namespace content {
 namespace {
 
 bool got_message = false;
+int message_count = 0;
+const int kExpectedMessageCount = 1000;
 
 // Returns the path to the mojom js bindings file.
 base::FilePath GetFilePathForJSResource(const std::string& path) {
@@ -63,37 +66,95 @@ bool GetResource(const std::string& id,
   return true;
 }
 
-// BrowserTarget implementation that quits a RunLoop when BrowserTarget::Test()
-// is called.
 class BrowserTargetImpl : public mojo::BrowserTarget {
  public:
-  BrowserTargetImpl(mojo::ScopedRendererTargetHandle handle,
+  BrowserTargetImpl(mojo::ScopedRendererTargetHandle& handle,
                     base::RunLoop* run_loop)
       : client_(handle.Pass(), this),
         run_loop_(run_loop) {
-    client_->Test();
   }
+
   virtual ~BrowserTargetImpl() {}
 
   // mojo::BrowserTarget overrides:
-  virtual void Test() OVERRIDE {
+  virtual void PingResponse() OVERRIDE {
+    NOTREACHED();
+  }
+
+  virtual void EchoResponse(const mojo::EchoArgs& arg1,
+                            const mojo::EchoArgs& arg2) OVERRIDE {
+    NOTREACHED();
+  }
+
+ protected:
+  mojo::RemotePtr<mojo::RendererTarget> client_;
+  base::RunLoop* run_loop_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BrowserTargetImpl);
+};
+
+class PingBrowserTargetImpl : public BrowserTargetImpl {
+ public:
+  PingBrowserTargetImpl(mojo::ScopedRendererTargetHandle handle,
+                        base::RunLoop* run_loop)
+      : BrowserTargetImpl(handle, run_loop) {
+    client_->Ping();
+  }
+
+  virtual ~PingBrowserTargetImpl() {}
+
+  // mojo::BrowserTarget overrides:
+  // Quit the RunLoop when called.
+  virtual void PingResponse() OVERRIDE {
     got_message = true;
     run_loop_->Quit();
   }
 
  private:
-  mojo::RemotePtr<mojo::RendererTarget> client_;
-
-  base::RunLoop* run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserTargetImpl);
+  DISALLOW_COPY_AND_ASSIGN(PingBrowserTargetImpl);
 };
 
-// WebUIController that sets up mojo bindings. Additionally it creates the
-// BrowserTarget implementation at the right time.
+class EchoBrowserTargetImpl : public BrowserTargetImpl {
+ public:
+  EchoBrowserTargetImpl(mojo::ScopedRendererTargetHandle handle,
+                        base::RunLoop* run_loop)
+      : BrowserTargetImpl(handle, run_loop) {
+    mojo::AllocationScope scope;
+    mojo::EchoArgs::Builder builder;
+    builder.set_x(1900);
+    builder.set_y(42);
+    builder.set_name("coming");
+    client_->Echo(builder.Finish());
+  }
+
+  virtual ~EchoBrowserTargetImpl() {}
+
+  // mojo::BrowserTarget overrides:
+  // Check the response, and quit the RunLoop after N calls.
+  virtual void EchoResponse(const mojo::EchoArgs& arg1,
+                            const mojo::EchoArgs& arg2) OVERRIDE {
+    EXPECT_EQ(1900, arg1.x());
+    EXPECT_EQ(42, arg1.y());
+    EXPECT_EQ(std::string("coming"), arg1.name().To<std::string>());
+
+    EXPECT_EQ(-1, arg2.x());
+    EXPECT_EQ(-1, arg2.y());
+    EXPECT_EQ(std::string("going"), arg2.name().To<std::string>());
+
+    message_count += 1;
+    if (message_count == kExpectedMessageCount)
+      run_loop_->Quit();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(EchoBrowserTargetImpl);
+};
+
+// WebUIController that sets up mojo bindings.
 class TestWebUIController : public WebUIController {
  public:
-  explicit TestWebUIController(WebUI* web_ui, base::RunLoop* run_loop)
+   TestWebUIController(WebUI* web_ui, base::RunLoop* run_loop)
       : WebUIController(web_ui),
         run_loop_(run_loop) {
     content::WebUIDataSource* data_source =
@@ -102,21 +163,54 @@ class TestWebUIController : public WebUIController {
     data_source->SetRequestFilter(base::Bind(&GetResource));
   }
 
+ protected:
+  base::RunLoop* run_loop_;
+  scoped_ptr<BrowserTargetImpl> browser_target_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestWebUIController);
+};
+
+// TestWebUIController that additionally creates the ping test BrowserTarget
+// implementation at the right time.
+class PingTestWebUIController : public TestWebUIController {
+ public:
+   PingTestWebUIController(WebUI* web_ui, base::RunLoop* run_loop)
+       : TestWebUIController(web_ui, run_loop) {
+   }
+
   // WebUIController overrides:
   virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE {
     mojo::InterfacePipe<mojo::BrowserTarget, mojo::RendererTarget> pipe;
-    browser_target_.reset(
-        new BrowserTargetImpl(pipe.handle_to_peer.Pass(), run_loop_));
+    browser_target_.reset(new PingBrowserTargetImpl(
+        pipe.handle_to_peer.Pass(), run_loop_));
     render_view_host->SetWebUIHandle(
         mojo::ScopedMessagePipeHandle(pipe.handle_to_self.release()));
   }
 
  private:
-  base::RunLoop* run_loop_;
+  DISALLOW_COPY_AND_ASSIGN(PingTestWebUIController);
+};
 
-  scoped_ptr<BrowserTargetImpl> browser_target_;
+// TestWebUIController that additionally creates the echo test BrowserTarget
+// implementation at the right time.
+class EchoTestWebUIController : public TestWebUIController {
+ public:
+   EchoTestWebUIController(WebUI* web_ui, base::RunLoop* run_loop)
+      : TestWebUIController(web_ui, run_loop) {
+  }
 
-  DISALLOW_COPY_AND_ASSIGN(TestWebUIController);
+  // WebUIController overrides:
+  virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE {
+    mojo::InterfacePipe<mojo::BrowserTarget, mojo::RendererTarget> pipe;
+    browser_target_.reset(new EchoBrowserTargetImpl(
+        pipe.handle_to_peer.Pass(), run_loop_));
+    render_view_host->SetWebUIHandle(
+        mojo::ScopedMessagePipeHandle(pipe.handle_to_self.release()));
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(EchoTestWebUIController);
 };
 
 // WebUIControllerFactory that creates TestWebUIController.
@@ -128,7 +222,11 @@ class TestWebUIControllerFactory : public WebUIControllerFactory {
 
   virtual WebUIController* CreateWebUIControllerForURL(
       WebUI* web_ui, const GURL& url) const OVERRIDE {
-    return new TestWebUIController(web_ui, run_loop_);
+    if (url.query() == "ping")
+      return new PingTestWebUIController(web_ui, run_loop_);
+    if (url.query() == "echo")
+      return new EchoTestWebUIController(web_ui, run_loop_);
+    return NULL;
   }
   virtual WebUI::TypeID GetWebUIType(BrowserContext* browser_context,
       const GURL& url) const OVERRIDE {
@@ -169,14 +267,16 @@ class WebUIMojoTest : public ContentBrowserTest {
 
 // Temporarily disabled due to memory leaks. http://crbug.com/360081
 #if defined(LEAK_SANITIZER)
-#define MAYBE_EndToEnd DISABLED_EndToEnd
+#define MAYBE_EndToEndPing DISABLED_EndToEndPing
+#define MAYBE_EndToEndEcho DISABLED_EndToEndEcho
 #else
-#define MAYBE_EndToEnd EndToEnd
+#define MAYBE_EndToEndPing EndToEndPing
+#define MAYBE_EndToEndEcho EndToEndEcho
 #endif
 
 // Loads a webui page that contains mojo bindings and verifies a message makes
 // it from the browser to the page and back.
-IN_PROC_BROWSER_TEST_F(WebUIMojoTest, MAYBE_EndToEnd) {
+IN_PROC_BROWSER_TEST_F(WebUIMojoTest, MAYBE_EndToEndPing) {
   // Currently there is no way to have a generated file included in the isolate
   // files. If the bindings file doesn't exist assume we're on such a bot and
   // pass.
@@ -193,11 +293,37 @@ IN_PROC_BROWSER_TEST_F(WebUIMojoTest, MAYBE_EndToEnd) {
   ASSERT_TRUE(test_server()->Start());
   base::RunLoop run_loop;
   factory()->set_run_loop(&run_loop);
-  GURL test_url(test_server()->GetURL("files/web_ui_mojo.html"));
+  GURL test_url(test_server()->GetURL("files/web_ui_mojo.html?ping"));
   NavigateToURL(shell(), test_url);
   // RunLoop is quit when message received from page.
   run_loop.Run();
   EXPECT_TRUE(got_message);
+}
+
+// Loads a webui page that contains mojo bindings and verifies that
+// parameters are passed back correctly from JavaScript.
+IN_PROC_BROWSER_TEST_F(WebUIMojoTest, MAYBE_EndToEndEcho) {
+  // Currently there is no way to have a generated file included in the isolate
+  // files. If the bindings file doesn't exist assume we're on such a bot and
+  // pass.
+  // TODO(sky): remove this conditional when isolates support copying from gen.
+  const base::FilePath test_file_path(
+      GetFilePathForJSResource(
+          "content/test/data/web_ui_test_mojo_bindings.mojom"));
+  if (!base::PathExists(test_file_path)) {
+    LOG(WARNING) << " mojom binding file doesn't exist, assuming on isolate";
+    return;
+  }
+
+  message_count = 0;
+  ASSERT_TRUE(test_server()->Start());
+  base::RunLoop run_loop;
+  factory()->set_run_loop(&run_loop);
+  GURL test_url(test_server()->GetURL("files/web_ui_mojo.html?echo"));
+  NavigateToURL(shell(), test_url);
+  // RunLoop is quit when response received from page.
+  run_loop.Run();
+  EXPECT_EQ(kExpectedMessageCount, message_count);
 }
 
 }  // namespace

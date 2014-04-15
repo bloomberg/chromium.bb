@@ -6,6 +6,7 @@ define('main', [
     'mojo/public/js/bindings/connection',
     'content/test/data/web_ui_test_mojo_bindings.mojom',
 ], function(connection, bindings) {
+  var retainedConnection, iterations = 1000;
 
   function RendererTargetTest(bindings) {
     this.bindings_ = bindings;
@@ -18,14 +19,23 @@ define('main', [
   RendererTargetTest.prototype =
       Object.create(bindings.RendererTargetStub.prototype);
 
-  RendererTargetTest.prototype.test = function() {
-    this.bindings_.test();
+  RendererTargetTest.prototype.ping = function() {
+    this.bindings_.pingResponse();
   };
 
-  var retainedConnection;
+  RendererTargetTest.prototype.echo = function(arg) {
+    var i;
+    for (i = 0; i < iterations; ++i) {
+      arg2 = new bindings.EchoArgs();
+      arg2.x = -1;
+      arg2.y = -1;
+      arg2.name = "going";
+      this.bindings_.echoResponse(arg, arg2);
+    }
+  };
 
   return function(handle) {
-    retainedConnection = new connection.Connection(handle, RendererTargetTest,
-                                                   bindings.BrowserTargetProxy);
+    retainedConnection = new connection.Connection(
+        handle, RendererTargetTest, bindings.BrowserTargetProxy);
   };
 });
