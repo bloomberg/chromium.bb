@@ -47,13 +47,6 @@ void HttpServer::SendOverWebSocket(int connection_id,
   connection->web_socket_->Send(data);
 }
 
-void HttpServer::SendRaw(int connection_id, const std::string& data) {
-  HttpConnection* connection = FindConnection(connection_id);
-  if (connection == NULL)
-    return;
-  connection->Send(data);
-}
-
 void HttpServer::SendResponse(int connection_id,
                               const HttpServerResponseInfo& response) {
   HttpConnection* connection = FindConnection(connection_id);

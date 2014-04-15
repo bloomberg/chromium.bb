@@ -47,10 +47,6 @@ class HttpServer : public StreamListenSocket::Delegate,
   void AcceptWebSocket(int connection_id,
                        const HttpServerRequestInfo& request);
   void SendOverWebSocket(int connection_id, const std::string& data);
-  // Sends the provided data directly to the given connection. No validation is
-  // performed that data constitutes a valid HTTP response. A valid HTTP
-  // response may be split across multiple calls to SendRaw.
-  void SendRaw(int connection_id, const std::string& data);
   void SendResponse(int connection_id, const HttpServerResponseInfo& response);
   void Send(int connection_id,
             HttpStatusCode status_code,
