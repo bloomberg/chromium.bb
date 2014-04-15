@@ -212,23 +212,16 @@ std::string NinjaHelper::GetRuleForSourceType(const Settings* settings,
     return prefix + "cc";
   if (type == SOURCE_CC)
     return prefix + "cxx";
+  if (type == SOURCE_M)
+    return prefix + "objc";
+  if (type == SOURCE_MM)
+    return prefix + "objcxx";
+  if (type == SOURCE_RC)
+    return prefix + "rc";
+  if (type == SOURCE_S)
+    return prefix + "cc";  // Assembly files just get compiled by CC.
 
   // TODO(brettw) asm files.
-
-  if (settings->IsMac()) {
-    if (type == SOURCE_M)
-      return prefix + "objc";
-    if (type == SOURCE_MM)
-      return prefix + "objcxx";
-  }
-
-  if (settings->IsWin()) {
-    if (type == SOURCE_RC)
-      return prefix + "rc";
-  } else {
-    if (type == SOURCE_S)
-      return prefix + "cc";  // Assembly files just get compiled by CC.
-  }
 
   return std::string();
 }

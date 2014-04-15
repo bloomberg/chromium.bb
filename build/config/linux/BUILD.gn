@@ -75,3 +75,53 @@ config("x11") {
     "Xtst",
   ]
 }
+
+config("libresolv") {
+  libs = [ "libresolv" ]
+}
+
+pkg_config("gconf") {
+  packages = [ "gconf-2.0" ]
+  defines = [ "USE_GCONF" ]
+}
+
+pkg_config("gio_config") {
+  packages = [ "gio-2.0" ]
+  defines = [ "USE_GIO" ]
+}
+
+gio_output_h = "$root_gen_dir/library_loaders/libgio.h"
+gio_output_cc = "$root_gen_dir/library_loaders/libgio_loader.cc"
+
+action("make_gio_headers") {
+  visibility = ":gio"
+
+  script = "//tools/generate_library_loader/generate_library_loader.py"
+
+  outputs = [ gio_output_h, gio_output_cc ]
+
+  args = [
+    "--name", "LibGioLoader",
+    "--output-h", rebase_path(gio_output_h),
+    "--output-cc", rebase_path(gio_output_cc),
+    # TODO(brettw) convert ti "<gio/gio.h>" once GN doesn't mangle <>.
+    "--header", "\"gio/gio.h\"",
+    # Note GYP build exposes a variable linux_link_gsettings to control this,
+    # which, if manually set to true, will disable dlopen() for this. Its not
+    # clear this is needed, so here we just leave off.
+    "--link-directly=0",
+    "g_settings_new",
+    "g_settings_get_child",
+    "g_settings_get_string",
+    "g_settings_get_boolean",
+    "g_settings_get_int",
+    "g_settings_get_strv",
+    "g_settings_list_schemas",
+  ]
+}
+
+source_set("gio") {
+  direct_dependent_configs = [ ":gio_config" ]
+  sources = [ gio_output_h, gio_output_cc ]
+  deps = [ ":make_gio_headers" ]
+}

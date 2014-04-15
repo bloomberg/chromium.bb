@@ -44,9 +44,15 @@ template("grit") {
     [ "--outputs", "$output_dir", source_path, "-f", resource_ids ] +
     grit_flags,
     "list lines")
+
   # The inputs are relative to the current (build) directory, rebase to
   # the current one.
-  grit_outputs = rebase_path(grit_outputs_build_rel, root_build_dir)
+  grit_outputs = rebase_path(grit_outputs_build_rel, ".", root_build_dir)
+
+  # The config and the action below get this visibility son only the generated
+  # source set can depend on them. The variable "target_name" will get
+  # overwritten inside the innter classes so we need to compute it here.
+  target_visibility = ":$target_name"
 
   # The current grit setup makes an file in $target_gen_dir/grit/foo.h that
   # the source code expects to include via "grit/foo.h". It would be nice to
@@ -55,14 +61,13 @@ template("grit") {
   grit_config = target_name + "_grit_config"
   config(grit_config) {
     include_dirs = [ target_gen_dir ]
-
-    # Only our generated static library can depend on this.
-    visibility = ":" + target_name
+    visibility = target_visibility
   }
 
   grit_custom_target = target_name + "_grit"
   action(grit_custom_target) {
     script = "//tools/grit/grit.py"
+    hard_dep = true
     source_prereqs = grit_inputs
     outputs = grit_outputs
 
@@ -73,13 +78,12 @@ template("grit") {
       "-o", output_dir,
     ] + grit_flags
 
-    # Only our generated static library can depend on this.
-    visibility = ":" + target_name
+    visibility = target_visibility
   }
 
   # This is the thing that people actually link with, it must be named the
   # same as the argument the template was invoked with.
-  static_library(target_name) {
+  source_set(target_name) {
     # Since we generate a file, we need to be run before the targets that
     # depend on us.
     hard_dep = true
@@ -87,7 +91,6 @@ template("grit") {
 
     # Deps set on the template invocation will go on the grit script running
     # target rather than this library.
-    deps = []
     deps = [ ":$grit_custom_target" ]
     direct_dependent_configs = [ ":$grit_config" ]
 

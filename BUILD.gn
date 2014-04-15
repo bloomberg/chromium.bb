@@ -27,7 +27,7 @@ group("root") {
     "//crypto",
     "//device/usb",
     "//ipc",
-    #"//net",
+    "//net",
     #"//sdch",
     "//skia",
     #"//third_party/WebKit/Source/platform",

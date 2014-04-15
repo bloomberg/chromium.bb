@@ -207,6 +207,7 @@ windows_sources_filters = [
   "*_win.h",
   "*_win_unittest.cc",
   "*\bwin/*",
+  "*.rc",
 ]
 mac_sources_filters = [
   "*_mac.h",
@@ -257,6 +258,13 @@ posix_sources_filters = [
   "*_posix_unittest.cc",
   "*\bposix/*",
 ]
+chromeos_sources_filters = [
+  "*_chromeos.h",
+  "*_chromeos.cc",
+  "*_chromeos_unittest.h",
+  "*_chromeos_unittest.cc",
+  "*\bchromeos/*",
+]
 # DO NOT ADD MORE PATTERNS TO THIS LIST, see set_sources_assignment_filter call
 # below.
 
@@ -281,6 +289,9 @@ if (!is_linux) {
 }
 if (!is_android) {
   sources_assignment_filter += android_sources_filters
+}
+if (!is_chromeos) {
+  sources_assignment_filter += chromeos_sources_filters
 }
 
 # Actually save this list.

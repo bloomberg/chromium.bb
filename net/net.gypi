@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# This file is shared between the regular GYP build, the NaCl GYP build, and
+# the GN build. For GN support, it must have no conditionals or anything like
+# that beyond the simple one-level-deep dictionary of values.
 {
   'variables': {
     # Subset of net source files that are compiled for NaCl (net_nacl target).

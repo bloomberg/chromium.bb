@@ -57,7 +57,7 @@ component("libssl") {
     "bodge/secitem_array.c",
   ]
 
-  direct_dependent_settings = [ ":ssl_config" ]
+  direct_dependent_configs = [ ":ssl_config" ]
 
   cflags = []
   defines = [
@@ -83,7 +83,9 @@ component("libssl") {
 
     include_dirs = [ "bodge" ]
 
-    direct_dependent_configs = [
+    # Must be after ssl_config since we want our SSL headers to take
+    # precedence.
+    direct_dependent_configs += [
       "//third_party/nss:system_nss_no_ssl_config"
     ]
   } else if (is_mac) {

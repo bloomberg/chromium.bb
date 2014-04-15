@@ -731,12 +731,6 @@ component("base") {
     "//third_party/modp_b64",
   ]
 
-  if (!is_chromeos) {
-    sources -= [
-      "sys_info_chromeos.cc",
-    ]
-  }
-
   if (is_nacl) {
     # These things would otherwise be built on a Posix build but aren't
     # supported on NaCl.
