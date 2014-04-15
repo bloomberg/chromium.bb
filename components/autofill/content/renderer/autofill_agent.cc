@@ -280,14 +280,26 @@ void AutofillAgent::didRequestAutocomplete(
       ::switches::kReduceSecurityForTesting);
 
   FormData form_data;
-  if (!in_flight_request_form_.isNull() ||
-      (!is_safe && !allow_unsafe) ||
-      !WebFormElementToFormData(form,
-                                WebFormControlElement(),
-                                REQUIRE_AUTOCOMPLETE,
-                                EXTRACT_OPTIONS,
-                                &form_data,
-                                NULL)) {
+  std::string error_message;
+  if (!in_flight_request_form_.isNull()) {
+    error_message = "already active.";
+  } else if (!is_safe && !allow_unsafe) {
+    error_message =
+        "must use a secure connection or --reduce-security-for-testing.";
+  } else if (!WebFormElementToFormData(form,
+                                       WebFormControlElement(),
+                                       REQUIRE_AUTOCOMPLETE,
+                                       EXTRACT_OPTIONS,
+                                       &form_data,
+                                       NULL)) {
+    error_message = "failed to parse form.";
+  }
+
+  if (!error_message.empty()) {
+    WebConsoleMessage console_message = WebConsoleMessage(
+        WebConsoleMessage::LevelLog,
+        WebString(base::ASCIIToUTF16("requestAutocomplete: ") +
+                      base::ASCIIToUTF16(error_message)));
     WebFormElement(form).finishRequestAutocomplete(
         WebFormElement::AutocompleteResultErrorDisabled);
     return;
