@@ -46,6 +46,7 @@ class InfoBarService : public InfoBarManager,
   virtual ~InfoBarService();
 
   // InfoBarManager:
+  virtual int GetActiveEntryID() OVERRIDE;
   // TODO(droger): Remove these functions once infobar notifications are
   // removed. See http://crbug.com/354380
   virtual void NotifyInfoBarAdded(InfoBar* infobar) OVERRIDE;

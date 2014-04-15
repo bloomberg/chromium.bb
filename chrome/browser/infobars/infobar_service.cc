@@ -55,6 +55,12 @@ InfoBarService::~InfoBarService() {
   ShutDown();
 }
 
+int InfoBarService::GetActiveEntryID() {
+  content::NavigationEntry* active_entry =
+      web_contents()->GetController().GetActiveEntry();
+  return active_entry ? active_entry->GetUniqueID() : 0;
+}
+
 void InfoBarService::NotifyInfoBarAdded(InfoBar* infobar) {
   InfoBarManager::NotifyInfoBarAdded(infobar);
   // TODO(droger): Remove the notifications and have listeners change to be

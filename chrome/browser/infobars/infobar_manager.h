@@ -87,6 +87,9 @@ class InfoBarManager {
   void AddObserver(Observer* obs);
   void RemoveObserver(Observer* obs);
 
+  // Returns the active entry ID.
+  virtual int GetActiveEntryID() = 0;
+
  protected:
   // Notifies the observer in |observer_list_|.
   // TODO(droger): Absorb these methods back into their callers once virtual

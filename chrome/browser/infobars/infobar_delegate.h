@@ -73,9 +73,9 @@ class InfoBarDelegate {
 
   // Returns true if the supplied |delegate| is equal to this one. Equality is
   // left to the implementation to define. This function is called by the
-  // InfoBarService when determining whether or not a delegate should be
+  // InfoBarManager when determining whether or not a delegate should be
   // added because a matching one already exists. If this function returns true,
-  // the InfoBarService will not add the new delegate because it considers
+  // the InfoBarManager will not add the new delegate because it considers
   // one to already be present.
   virtual bool EqualsDelegate(InfoBarDelegate* delegate) const;
 
@@ -112,9 +112,8 @@ class InfoBarDelegate {
 
   void set_infobar(InfoBar* infobar) { infobar_ = infobar; }
 
-  // Store the unique id for the active entry in our WebContents, to be used
-  // later upon navigation to determine if this InfoBarDelegate should be
-  // expired.
+  // Store the unique id for the active entry, to be used later upon navigation
+  // to determine if this InfoBarDelegate should be expired.
   void StoreActiveEntryUniqueID();
 
   // Return the icon to be shown for this InfoBar. If the returned Image is
