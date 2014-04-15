@@ -32,9 +32,9 @@ import sys
 
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-URL_PREFIX = 'https://commondatastorage.googleapis.com'
+URL_PREFIX = 'https://storage.googleapis.com'
 URL_PATH = 'nativeclient-archive2/toolchain'
-REVISION = 12356
+REVISION = 13035
 TARBALL = 'sysroot-arm-trusted.tgz'
 
 def main(args):
@@ -64,7 +64,12 @@ def main(args):
     shutil.rmtree(sysroot)
   os.mkdir(sysroot)
   tarball = os.path.join(sysroot, TARBALL)
-  subprocess.check_call(['curl', '-L', url, '-o', tarball])
+  curl = ['curl', '--fail', '-L', url, '-o', tarball]
+  if os.isatty(sys.stdout.fileno()):
+    curl.append('--progress')
+  else:
+    curl.append('--silent')
+  subprocess.check_call(curl)
   subprocess.check_call(['tar', 'xf', tarball, '-C', sysroot])
   os.remove(tarball)
 
