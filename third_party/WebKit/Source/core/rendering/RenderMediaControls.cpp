@@ -106,7 +106,7 @@ static bool paintMediaPlayButton(RenderObject* object, const PaintInfo& paintInf
     if (!hasSource(mediaElement))
         return paintMediaButton(paintInfo.context, rect, mediaPlayDisabled);
 
-    return paintMediaButton(paintInfo.context, rect, mediaElement->togglePlayStateWillPlay() ? mediaPlay : mediaPause);
+    return paintMediaButton(paintInfo.context, rect, mediaControlElementType(object->node()) == MediaPlayButton ? mediaPlay : mediaPause);
 }
 
 static bool paintMediaOverlayPlayButton(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
