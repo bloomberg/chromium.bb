@@ -73,6 +73,9 @@ AXNodeObject::~AXNodeObject()
 // ARIA Implementer's Guide.
 static String accessibleNameForNode(Node* node)
 {
+    if (!node)
+        return String();
+
     if (node->isTextNode())
         return toText(node)->data();
 
@@ -223,6 +226,8 @@ AccessibilityRole AXNodeObject::determineAccessibilityRole()
         return LinkRole;
     if (node()->hasTagName(iframeTag))
         return IframeRole;
+    if (isEmbeddedObject())
+        return EmbeddedObjectRole;
 
     return UnknownRole;
 }
@@ -468,6 +473,13 @@ bool AXNodeObject::isControl() const
 
     return ((node->isElementNode() && toElement(node)->isFormControlElement())
         || AXObject::isARIAControl(ariaRoleAttribute()));
+}
+
+bool AXNodeObject::isEmbeddedObject() const
+{
+    return node()
+        && (node()->hasTagName(objectTag) || node()->hasTagName(embedTag)
+        || node()->hasTagName(appletTag));
 }
 
 bool AXNodeObject::isFieldset() const

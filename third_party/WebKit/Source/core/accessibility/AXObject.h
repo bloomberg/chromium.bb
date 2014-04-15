@@ -86,6 +86,7 @@ enum AccessibilityRole {
     DocumentRole,
     DrawerRole,
     EditableTextRole,
+    EmbeddedObjectRole,
     FooterRole,
     FormRole,
     GridRole,
@@ -317,6 +318,7 @@ public:
     bool isComboBox() const { return roleValue() == ComboBoxRole; }
     virtual bool isControl() const { return false; }
     virtual bool isDataTable() const { return false; }
+    virtual bool isEmbeddedObject() const { return false; }
     virtual bool isFieldset() const { return false; }
     virtual bool isFileUploadButton() const { return false; }
     virtual bool isHeading() const { return false; }

@@ -107,6 +107,7 @@ protected:
     // Check object role or purpose.
     virtual bool isAnchor() const OVERRIDE FINAL;
     virtual bool isControl() const OVERRIDE;
+    virtual bool isEmbeddedObject() const OVERRIDE FINAL;
     virtual bool isFieldset() const OVERRIDE FINAL;
     virtual bool isHeading() const OVERRIDE FINAL;
     virtual bool isHovered() const OVERRIDE FINAL;

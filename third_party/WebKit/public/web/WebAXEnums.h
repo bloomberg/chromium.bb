@@ -99,6 +99,7 @@ enum WebAXRole {
     WebAXRoleDocument,
     WebAXRoleDrawer,
     WebAXRoleEditableText,
+    WebAXRoleEmbeddedObject,
     WebAXRoleFooter,
     WebAXRoleForm,
     WebAXRoleGrid,
