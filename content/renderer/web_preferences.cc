@@ -163,12 +163,6 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
   settings->setCookieEnabled(prefs.cookie_enabled);
   settings->setNavigateOnDragDrop(prefs.navigate_on_drag_drop);
 
-  // This setting affects the behavior of links in an editable region:
-  // clicking the link should select it rather than navigate to it.
-  // Safari uses the same default. It is unlikley an embedder would want to
-  // change this, since it would break existing rich text editors.
-  settings->setEditableLinkBehaviorNeverLive();
-
   settings->setJavaEnabled(prefs.java_enabled);
 
   // By default, allow_universal_access_from_file_urls is set to false and thus
