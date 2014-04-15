@@ -53,22 +53,24 @@ LOCAL_SRC_FILES += \
 
 # Java files generated from .template rules. This list should match list of java dependencies in
 # android_webview/all_webview.gyp
+# TODO(torne): remove TARGET_2ND_ARCH here once we're no longer 64-bit blacklisted in the Android
+# build system. http://crbug.com/358141
 LOCAL_GENERATED_SOURCES := \
-$(call intermediates-dir-for,GYP,shared)/templates/org/chromium/base/ApplicationState.java \
-$(call intermediates-dir-for,GYP,shared)/templates/org/chromium/base/MemoryPressureLevelList.java \
-$(call intermediates-dir-for,GYP,shared)/templates/org/chromium/content/browser/GestureEventType.java \
-$(call intermediates-dir-for,GYP,shared)/templates/org/chromium/content/browser/PageTransitionTypes.java \
-$(call intermediates-dir-for,GYP,shared)/templates/org/chromium/content/browser/SpeechRecognitionError.java \
-$(call intermediates-dir-for,GYP,shared)/templates/org/chromium/content/browser/input/PopupItemType.java \
-$(call intermediates-dir-for,GYP,shared)/templates/org/chromium/content/common/ResultCodes.java \
-$(call intermediates-dir-for,GYP,shared)/templates/org/chromium/content/common/ScreenOrientationValues.java \
-$(call intermediates-dir-for,GYP,shared)/templates/org/chromium/media/ImageFormat.java \
-$(call intermediates-dir-for,GYP,shared)/templates/org/chromium/net/CertificateMimeType.java \
-$(call intermediates-dir-for,GYP,shared)/templates/org/chromium/net/CertVerifyStatusAndroid.java \
-$(call intermediates-dir-for,GYP,shared)/templates/org/chromium/net/NetError.java \
-$(call intermediates-dir-for,GYP,shared)/templates/org/chromium/net/PrivateKeyType.java \
-$(call intermediates-dir-for,GYP,shared)/templates/org/chromium/ui/WindowOpenDisposition.java \
-$(call intermediates-dir-for,GYP,shared)/templates/org/chromium/ui/gfx/BitmapFormat.java \
+$(call intermediates-dir-for,GYP,shared,,,$(TARGET_2ND_ARCH))/templates/org/chromium/base/ApplicationState.java \
+$(call intermediates-dir-for,GYP,shared,,,$(TARGET_2ND_ARCH))/templates/org/chromium/base/MemoryPressureLevelList.java \
+$(call intermediates-dir-for,GYP,shared,,,$(TARGET_2ND_ARCH))/templates/org/chromium/content/browser/GestureEventType.java \
+$(call intermediates-dir-for,GYP,shared,,,$(TARGET_2ND_ARCH))/templates/org/chromium/content/browser/PageTransitionTypes.java \
+$(call intermediates-dir-for,GYP,shared,,,$(TARGET_2ND_ARCH))/templates/org/chromium/content/browser/SpeechRecognitionError.java \
+$(call intermediates-dir-for,GYP,shared,,,$(TARGET_2ND_ARCH))/templates/org/chromium/content/browser/input/PopupItemType.java \
+$(call intermediates-dir-for,GYP,shared,,,$(TARGET_2ND_ARCH))/templates/org/chromium/content/common/ResultCodes.java \
+$(call intermediates-dir-for,GYP,shared,,,$(TARGET_2ND_ARCH))/templates/org/chromium/content/common/ScreenOrientationValues.java \
+$(call intermediates-dir-for,GYP,shared,,,$(TARGET_2ND_ARCH))/templates/org/chromium/media/ImageFormat.java \
+$(call intermediates-dir-for,GYP,shared,,,$(TARGET_2ND_ARCH))/templates/org/chromium/net/CertificateMimeType.java \
+$(call intermediates-dir-for,GYP,shared,,,$(TARGET_2ND_ARCH))/templates/org/chromium/net/CertVerifyStatusAndroid.java \
+$(call intermediates-dir-for,GYP,shared,,,$(TARGET_2ND_ARCH))/templates/org/chromium/net/NetError.java \
+$(call intermediates-dir-for,GYP,shared,,,$(TARGET_2ND_ARCH))/templates/org/chromium/net/PrivateKeyType.java \
+$(call intermediates-dir-for,GYP,shared,,,$(TARGET_2ND_ARCH))/templates/org/chromium/ui/WindowOpenDisposition.java \
+$(call intermediates-dir-for,GYP,shared,,,$(TARGET_2ND_ARCH))/templates/org/chromium/ui/gfx/BitmapFormat.java \
 
 # content dependencies on java components that are provided by the system on
 # android

@@ -11,6 +11,8 @@ LOCAL_MODULE_PATH := $(TARGET_OUT_JAVA_LIBRARIES)/webview/paks
 
 include $(BUILD_SYSTEM)/base_rules.mk
 
-built_by_gyp := $(call intermediates-dir-for,GYP,shared)/$(LOCAL_BUILT_MODULE_STEM)
+# TODO(torne): remove TARGET_2ND_ARCH here once we're no longer 64-bit blacklisted in the Android
+# build system. http://crbug.com/358141
+built_by_gyp := $(call intermediates-dir-for,GYP,shared,,,$(TARGET_2ND_ARCH))/$(LOCAL_BUILT_MODULE_STEM)
 
 $(eval $(call copy-one-file,$(built_by_gyp),$(LOCAL_BUILT_MODULE)))
