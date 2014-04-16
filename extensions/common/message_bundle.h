@@ -168,6 +168,6 @@ L10nMessagesMap* GetL10nMessagesMap(const std::string& extension_id);
 // Erases the L10nMessagesMap for the given |extension_id|.
 void EraseL10nMessagesMap(const std::string& extension_id);
 
-}  // namsepace extensions
+}  // namespace extensions
 
 #endif  // EXTENSIONS_COMMON_MESSAGE_BUNDLE_H_

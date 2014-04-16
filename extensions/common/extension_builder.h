@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_COMMON_EXTENSION_BUILDER_H_
 #define EXTENSIONS_COMMON_EXTENSION_BUILDER_H_
 
+#include <string>
+
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -58,6 +60,6 @@ class ExtensionBuilder {
   std::string id_;
 };
 
-} // namespace extensions
+}  // namespace extensions
 
 #endif  // EXTENSIONS_COMMON_EXTENSION_BUILDER_H_

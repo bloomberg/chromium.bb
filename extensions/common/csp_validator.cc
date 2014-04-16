@@ -4,6 +4,8 @@
 
 #include "extensions/common/csp_validator.h"
 
+#include <vector>
+
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"

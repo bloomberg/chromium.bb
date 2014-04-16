@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "extensions/common/event_filter.h"
