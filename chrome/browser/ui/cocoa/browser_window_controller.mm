@@ -1542,7 +1542,7 @@ enum {
 }
 
 - (BOOL)shouldUseNewAvatarButton {
-  return switches::IsNewProfileManagement() &&
+  return switches::IsNewAvatarMenu() &&
       profiles::IsRegularOrGuestSession(browser_.get());
 }
 

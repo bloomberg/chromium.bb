@@ -32,6 +32,9 @@ class ProfileChooserControllerTest : public CocoaProfileTest {
   }
 
   virtual void SetUp() OVERRIDE {
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kNewProfileManagement);
+
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(browser()->profile());
 

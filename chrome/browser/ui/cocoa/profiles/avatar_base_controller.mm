@@ -113,15 +113,15 @@ class ProfileInfoUpdateObserver : public ProfileInfoCacheObserver {
 
   // The new avatar bubble does not have an arrow, and it should be anchored
   // to the edge of the avatar button.
-  int anchorX = switches::IsNewProfileManagement() ? NSMaxX([anchor bounds]) :
-                                                     NSMidX([anchor bounds]);
+  int anchorX = switches::IsNewAvatarMenu() ? NSMaxX([anchor bounds]) :
+                                              NSMidX([anchor bounds]);
   NSPoint point = NSMakePoint(anchorX,
                               NSMaxY([anchor bounds]) - kMenuYOffsetAdjust);
   point = [anchor convertPoint:point toView:nil];
   point = [[anchor window] convertBaseToScreen:point];
 
   // |menuController_| will automatically release itself on close.
-  if (switches::IsNewProfileManagement()) {
+  if (switches::IsNewAvatarMenu()) {
     BubbleViewMode viewMode =
         mode == BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT ?
         BUBBLE_VIEW_MODE_PROFILE_CHOOSER :

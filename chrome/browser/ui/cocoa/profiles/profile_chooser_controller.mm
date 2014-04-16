@@ -649,8 +649,23 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 @end
 
 @interface ProfileChooserController ()
-// Creates a tutorial card for the profile |avatar_item| if needed.
-- (NSView*)createTutorialViewIfNeeded:(const AvatarMenu::Item&)item;
+// Builds a tutorial card with a title label using |titleMessageId|, a content
+// label using |contentMessageId|, and a bottom row with a right-aligned link
+// using |linkMessageId|, and a left aligned button using |buttonMessageId|.
+// On click, the link would execute |linkAction|, and the button would execute
+// |buttonAction|.
+- (NSView*)tutorialViewWithTitle:(int)titleMessageId
+                  contentMessage:(int)contentMessageId
+                     linkMessage:(int)linkMessageId
+                   buttonMessage:(int)buttonMessageId
+                      linkAction:(SEL)linkAction
+                    buttonAction:(SEL)buttonAction;
+
+// Builds a a tutorial card for new profile management preview if needed. if
+// new profile management is not enabled yet, then it prompts the user to try
+// out the feature. Otherwise, it notifies the user that the feature has been
+// enabled if needed.
+- (NSView*)buildPreviewTutorialIfNeeded:(const AvatarMenu::Item&)item;
 
 // Creates the main profile card for the profile |item| at the top of
 // the bubble.
@@ -778,6 +793,10 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   chrome::Navigate(&params);
 }
 
+- (IBAction)enableNewProfileManagementPreview:(id)sender {
+  profiles::EnableNewProfileManagementPreview();
+}
+
 - (IBAction)dismissTutorial:(id)sender {
   // If the user manually dismissed the tutorial, never show it again by setting
   // the number of times shown to the maximum plus 1, so that later we could
@@ -857,7 +876,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     const AvatarMenu::Item& item = avatarMenu_->GetItemAt(i);
     if (item.active) {
       if (viewMode_ == BUBBLE_VIEW_MODE_PROFILE_CHOOSER)
-        tutorialView = [self createTutorialViewIfNeeded:item];
+        tutorialView = [self buildPreviewTutorialIfNeeded:item];
       currentProfileView = [self createCurrentProfileView:item];
       enableLock = item.signed_in;
     } else {
@@ -933,8 +952,19 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   SetWindowSize([self window], NSMakeSize(kFixedMenuWidth, yOffset));
 }
 
-- (NSView*)createTutorialViewIfNeeded:(const AvatarMenu::Item&)item {
-  if (!item.signed_in)
+- (NSView*)buildPreviewTutorialIfNeeded:(const AvatarMenu::Item&)item {
+  if (!switches::IsNewProfileManagement()) {
+    return [self tutorialViewWithTitle:IDS_PROFILES_PREVIEW_TUTORIAL_TITLE
+                        contentMessage:
+        IDS_PROFILES_PREVIEW_TUTORIAL_CONTENT_TEXT
+                           linkMessage:IDS_PROFILES_PROFILE_TUTORIAL_LEARN_MORE
+                         buttonMessage:IDS_PROFILES_TUTORIAL_TRY_BUTTON
+                            linkAction:@selector(openTutorialLearnMoreURL:)
+                          buttonAction:
+        @selector(enableNewProfileManagementPreview:)];
+  }
+
+  if (!switches::IsNewProfileManagementPreviewEnabled())
     return nil;
 
   Profile* profile = browser_->profile();
@@ -948,10 +978,25 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     if (showCount == kProfileAvatarTutorialShowMax)
       return nil;
     profile->GetPrefs()->SetInteger(
-      prefs::kProfileAvatarTutorialShown, showCount + 1);
+        prefs::kProfileAvatarTutorialShown, showCount + 1);
     tutorialShowing_ = true;
   }
 
+  return [self tutorialViewWithTitle:IDS_PROFILES_PREVIEW_ENABLED_TUTORIAL_TITLE
+                      contentMessage:
+      IDS_PROFILES_PREVIEW_ENABLED_TUTORIAL_CONTENT_TEXT
+                         linkMessage:IDS_PROFILES_PROFILE_TUTORIAL_LEARN_MORE
+                       buttonMessage:IDS_PROFILES_TUTORIAL_OK_BUTTON
+                          linkAction:@selector(openTutorialLearnMoreURL:)
+                        buttonAction:@selector(dismissTutorial:)];
+}
+
+- (NSView*)tutorialViewWithTitle:(int)titleMessageId
+                  contentMessage:(int)contentMessageId
+                     linkMessage:(int)linkMessageId
+                   buttonMessage:(int)buttonMessageId
+                      linkAction:(SEL)linkAction
+                    buttonAction:(SEL)buttonAction {
   NSColor* tutorialBackgroundColor =
       gfx::SkColorToSRGBNSColor(profiles::kAvatarTutorialBackgroundColor);
   base::scoped_nsobject<NSView> container([[BackgroundColorView alloc]
@@ -967,7 +1012,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       IDS_PROFILES_TUTORIAL_OK_BUTTON)];
   [tutorialOkButton setBezelStyle:NSRoundedBezelStyle];
   [tutorialOkButton setTarget:self];
-  [tutorialOkButton setAction:@selector(dismissTutorial:)];
+  [tutorialOkButton setAction:buttonAction];
   [tutorialOkButton sizeToFit];
   NSSize buttonSize = [tutorialOkButton frame].size;
   const CGFloat kTopBottomTextPadding = 6;
@@ -982,10 +1027,9 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   [container addSubview:tutorialOkButton];
 
   NSButton* learnMoreLink =
-      [self linkButtonWithTitle:
-          l10n_util::GetNSString(IDS_PROFILES_PROFILE_TUTORIAL_LEARN_MORE)
+      [self linkButtonWithTitle:l10n_util::GetNSString(linkMessageId)
                     frameOrigin:NSZeroPoint
-                         action:@selector(openTutorialLearnMoreURL:)];
+                         action:@selector(linkAction:)];
   [[learnMoreLink cell] setTextColor:[NSColor whiteColor]];
   CGFloat linkYOffset = yOffset + (NSHeight([tutorialOkButton frame]) -
                                    NSHeight([learnMoreLink frame])) / 2;
@@ -997,8 +1041,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
   // Adds body content.
   NSTextField* contentLabel = BuildLabel(
-      l10n_util::GetNSString(
-          IDS_PROFILES_PREVIEW_ENABLED_TUTORIAL_CONTENT_TEXT),
+      l10n_util::GetNSString(contentMessageId),
       NSMakePoint(kHorizontalSpacing, yOffset),
       tutorialBackgroundColor,
       gfx::SkColorToSRGBNSColor(profiles::kAvatarTutorialContentTextColor));
@@ -1009,11 +1052,10 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
   // Adds title.
   NSTextField* titleLabel =
-      BuildLabel(
-          l10n_util::GetNSString(IDS_PROFILES_PREVIEW_ENABLED_TUTORIAL_TITLE),
-          NSMakePoint(kHorizontalSpacing, yOffset),
-          tutorialBackgroundColor,
-          [NSColor whiteColor] /* text_color */);
+      BuildLabel(l10n_util::GetNSString(titleMessageId),
+                 NSMakePoint(kHorizontalSpacing, yOffset),
+                 tutorialBackgroundColor,
+                 [NSColor whiteColor] /* text_color */);
   [titleLabel setFont:[NSFont labelFontOfSize:kTitleFontSize]];
   [titleLabel sizeToFit];
   [titleLabel setFrameSize:

@@ -193,9 +193,6 @@ class ProfileChooserView : public views::BubbleDelegateView,
       views::Link** link,
       views::LabelButton** button);
 
-  // Enables new profile management preview.
-  void EnableNewProfileManagementPreview();
-
   scoped_ptr<AvatarMenu> avatar_menu_;
   Browser* browser_;
 
