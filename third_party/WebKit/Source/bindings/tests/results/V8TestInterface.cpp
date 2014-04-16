@@ -34,7 +34,7 @@ namespace WebCore {
 static void initializeScriptWrappableForInterface(TestInterfaceImplementation* object)
 {
     if (ScriptWrappable::wrapperCanBeStoredInObject(object))
-        ScriptWrappable::setTypeInfoInObject(object, &V8TestInterface::wrapperTypeInfo);
+        ScriptWrappable::fromObject(object)->setTypeInfo(&V8TestInterface::wrapperTypeInfo);
     else
         ASSERT_NOT_REACHED();
 }

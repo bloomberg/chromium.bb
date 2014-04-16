@@ -214,16 +214,10 @@ private:
         Node** const nodeIteratorEnd = partiallyDependentNodes.end();
         if (nodeIterator == nodeIteratorEnd)
             return;
-        v8::UniqueId id(reinterpret_cast<intptr_t>((*nodeIterator)->unsafePersistent().value()));
+
+        Node* groupRoot = *nodeIterator;
         for (; nodeIterator != nodeIteratorEnd; ++nodeIterator) {
-            // This is safe because we know that GC won't happen before we
-            // dispose the UnsafePersistent (we're just preparing a GC). Though,
-            // we need to keep the UnsafePersistent alive until we're done with
-            // v8::Persistent.
-            UnsafePersistent<v8::Object> unsafeWrapper = (*nodeIterator)->unsafePersistent();
-            v8::Persistent<v8::Object>* wrapper = unsafeWrapper.persistent();
-            wrapper->MarkPartiallyDependent();
-            isolate->SetObjectGroupId(v8::Persistent<v8::Value>::Cast(*wrapper), id);
+            (*nodeIterator)->markAsDependentGroup(groupRoot, isolate);
         }
     }
 

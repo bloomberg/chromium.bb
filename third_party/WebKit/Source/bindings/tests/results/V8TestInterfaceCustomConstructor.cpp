@@ -24,7 +24,7 @@ namespace WebCore {
 static void initializeScriptWrappableForInterface(TestInterfaceCustomConstructor* object)
 {
     if (ScriptWrappable::wrapperCanBeStoredInObject(object))
-        ScriptWrappable::setTypeInfoInObject(object, &V8TestInterfaceCustomConstructor::wrapperTypeInfo);
+        ScriptWrappable::fromObject(object)->setTypeInfo(&V8TestInterfaceCustomConstructor::wrapperTypeInfo);
     else
         ASSERT_NOT_REACHED();
 }
@@ -114,7 +114,7 @@ v8::Handle<v8::Object> V8TestInterfaceCustomConstructor::createWrapper(PassRefPt
     ASSERT(impl);
     ASSERT(!DOMDataStore::containsWrapper<V8TestInterfaceCustomConstructor>(impl.get(), isolate));
     if (ScriptWrappable::wrapperCanBeStoredInObject(impl.get())) {
-        const WrapperTypeInfo* actualInfo = ScriptWrappable::getTypeInfoFromObject(impl.get());
+        const WrapperTypeInfo* actualInfo = ScriptWrappable::fromObject(impl.get())->typeInfo();
         // Might be a XXXConstructor::wrapperTypeInfo instead of an XXX::wrapperTypeInfo. These will both have
         // the same object de-ref functions, though, so use that as the basis of the check.
         RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(actualInfo->derefObjectFunction == wrapperTypeInfo.derefObjectFunction);

@@ -17,7 +17,7 @@ namespace WebCore {
 static void initializeScriptWrappableForInterface({{cpp_class}}* object)
 {
     if (ScriptWrappable::wrapperCanBeStoredInObject(object))
-        ScriptWrappable::setTypeInfoInObject(object, &{{v8_class}}::wrapperTypeInfo);
+        ScriptWrappable::fromObject(object)->setTypeInfo(&{{v8_class}}::wrapperTypeInfo);
     else
         ASSERT_NOT_REACHED();
 }

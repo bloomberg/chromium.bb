@@ -35,7 +35,7 @@ namespace WebCore {
 static void initializeScriptWrappableForInterface(DataView* object)
 {
     if (ScriptWrappable::wrapperCanBeStoredInObject(object))
-        ScriptWrappable::setTypeInfoInObject(object, &V8DataView::wrapperTypeInfo);
+        ScriptWrappable::fromObject(object)->setTypeInfo(&V8DataView::wrapperTypeInfo);
     else
         ASSERT_NOT_REACHED();
 }

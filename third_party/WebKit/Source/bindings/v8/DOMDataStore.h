@@ -66,14 +66,18 @@ public:
     template<typename V8T, typename T, typename Wrappable>
     static bool setReturnValueFromWrapperFast(v8::ReturnValue<v8::Value> returnValue, T* object, v8::Local<v8::Object> holder, Wrappable* wrappable)
     {
-        if (canUseScriptWrappable(object))
-            return ScriptWrappable::setReturnValueWithSecurityCheck<V8T>(returnValue, object);
+        if (canUseScriptWrappable(object)) {
+            ScriptWrappable::assertWrapperSanity<V8T, T>(object, object, returnValue.GetIsolate());
+            return ScriptWrappable::fromObject(object)->setReturnValue(returnValue);
+        }
         // The second fastest way to check if we're in the main world is to check if
         // the wrappable's wrapper is the same as the holder.
         // FIXME: Investigate if it's worth having this check for performance.
         if (holderContainsWrapper(holder, wrappable)) {
-            if (ScriptWrappable::wrapperCanBeStoredInObject(object))
-                return ScriptWrappable::setReturnValueWithSecurityCheck<V8T>(returnValue, object);
+            if (ScriptWrappable::wrapperCanBeStoredInObject(object)) {
+                ScriptWrappable::assertWrapperSanity<V8T, T>(object, object, returnValue.GetIsolate());
+                return ScriptWrappable::fromObject(object)->setReturnValue(returnValue);
+            }
             return DOMWrapperWorld::mainWorld().domDataStore().m_wrapperMap.setReturnValueFrom(returnValue, V8T::toInternalPointer(object));
         }
         return current(returnValue.GetIsolate()).template setReturnValueFrom<V8T>(returnValue, object);
@@ -82,8 +86,10 @@ public:
     template<typename V8T, typename T>
     static bool setReturnValueFromWrapper(v8::ReturnValue<v8::Value> returnValue, T* object)
     {
-        if (canUseScriptWrappable(object))
-            return ScriptWrappable::setReturnValueWithSecurityCheck<V8T>(returnValue, object);
+        if (canUseScriptWrappable(object)) {
+            ScriptWrappable::assertWrapperSanity<V8T, T>(object, object, returnValue.GetIsolate());
+            return ScriptWrappable::fromObject(object)->setReturnValue(returnValue);
+        }
         return current(returnValue.GetIsolate()).template setReturnValueFrom<V8T>(returnValue, object);
     }
 
@@ -91,7 +97,7 @@ public:
     static bool setReturnValueFromWrapperForMainWorld(v8::ReturnValue<v8::Value> returnValue, T* object)
     {
         if (ScriptWrappable::wrapperCanBeStoredInObject(object))
-            return ScriptWrappable::setReturnValue(returnValue, object);
+            return ScriptWrappable::fromObject(object)->setReturnValue(returnValue);
         return DOMWrapperWorld::mainWorld().domDataStore().m_wrapperMap.setReturnValueFrom(returnValue, V8T::toInternalPointer(object));
     }
 
@@ -99,9 +105,9 @@ public:
     static v8::Handle<v8::Object> getWrapper(T* object, v8::Isolate* isolate)
     {
         if (canUseScriptWrappable(object)) {
-            v8::Handle<v8::Object> result = ScriptWrappable::getUnsafeWrapperFromObject(object).newLocal(isolate);
+            v8::Handle<v8::Object> result = ScriptWrappable::fromObject(object)->newLocalWrapper(isolate);
             // Security: always guard against malicious tampering.
-            RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(result.IsEmpty() || result->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex) == V8T::toInternalPointer(object));
+            ScriptWrappable::assertWrapperSanity<V8T, T>(result, object);
             return result;
         }
         return current(isolate).template get<V8T>(object, isolate);
@@ -111,10 +117,8 @@ public:
     static void setWrapperReference(const v8::Persistent<v8::Object>& parent, T* child, v8::Isolate* isolate)
     {
         if (canUseScriptWrappable(child)) {
-            UnsafePersistent<v8::Object> unsafePersistent = ScriptWrappable::getUnsafeWrapperFromObject(child);
-            // Security: always guard against malicious tampering.
-            RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(unsafePersistent.isEmpty() || unsafePersistent.value()->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex) == V8T::toInternalPointer(child));
-            unsafePersistent.setReferenceFrom(parent, isolate);
+            ScriptWrappable::assertWrapperSanity<V8T, T>(child, child, isolate);
+            ScriptWrappable::fromObject(child)->setReference(parent, isolate);
             return;
         }
         current(isolate).template setReference<V8T>(parent, child, isolate);
@@ -124,7 +128,7 @@ public:
     static void setWrapper(T* object, v8::Handle<v8::Object> wrapper, v8::Isolate* isolate, const WrapperConfiguration& configuration)
     {
         if (canUseScriptWrappable(object)) {
-            ScriptWrappable::setWrapperInObject(object, wrapper, isolate, configuration);
+            ScriptWrappable::fromObject(object)->setWrapper(wrapper, isolate, configuration);
             return;
         }
         return current(isolate).template set<V8T>(object, wrapper, isolate, configuration);
@@ -140,7 +144,7 @@ public:
     inline v8::Handle<v8::Object> get(T* object, v8::Isolate* isolate)
     {
         if (ScriptWrappable::wrapperCanBeStoredInObject(object) && m_isMainWorld)
-            return ScriptWrappable::getUnsafeWrapperFromObject(object).newLocal(isolate);
+            return ScriptWrappable::fromObject(object)->newLocalWrapper(isolate);
         return m_wrapperMap.newLocal(V8T::toInternalPointer(object), isolate);
     }
 
@@ -148,7 +152,7 @@ public:
     inline void setReference(const v8::Persistent<v8::Object>& parent, T* child, v8::Isolate* isolate)
     {
         if (ScriptWrappable::wrapperCanBeStoredInObject(child) && m_isMainWorld) {
-            ScriptWrappable::getUnsafeWrapperFromObject(child).setReferenceFrom(parent, isolate);
+            ScriptWrappable::fromObject(child)->setReference(parent, isolate);
             return;
         }
         m_wrapperMap.setReference(parent, V8T::toInternalPointer(child), isolate);
@@ -158,7 +162,7 @@ public:
     inline bool setReturnValueFrom(v8::ReturnValue<v8::Value> returnValue, T* object)
     {
         if (ScriptWrappable::wrapperCanBeStoredInObject(object) && m_isMainWorld)
-            return ScriptWrappable::setReturnValue(returnValue, object);
+            return ScriptWrappable::fromObject(object)->setReturnValue(returnValue);
         return m_wrapperMap.setReturnValueFrom(returnValue, V8T::toInternalPointer(object));
     }
 
@@ -166,7 +170,7 @@ public:
     inline bool containsWrapper(T* object)
     {
         if (ScriptWrappable::wrapperCanBeStoredInObject(object) && m_isMainWorld)
-            return !ScriptWrappable::getUnsafeWrapperFromObject(object).isEmpty();
+            return ScriptWrappable::fromObject(object)->containsWrapper();
         return m_wrapperMap.containsKey(V8T::toInternalPointer(object));
     }
 
@@ -177,7 +181,7 @@ private:
         ASSERT(!!object);
         ASSERT(!wrapper.IsEmpty());
         if (ScriptWrappable::wrapperCanBeStoredInObject(object) && m_isMainWorld) {
-            ScriptWrappable::setWrapperInObject(object, wrapper, isolate, configuration);
+            ScriptWrappable::fromObject(object)->setWrapper(wrapper, isolate, configuration);
             return;
         }
         m_wrapperMap.set(V8T::toInternalPointer(object), wrapper, configuration);
@@ -194,9 +198,9 @@ private:
     static bool holderContainsWrapper(v8::Local<v8::Object> holder, ScriptWrappable* wrappable)
     {
         // Verify our assumptions about the main world.
-        UnsafePersistent<v8::Object> unsafePersistent = wrappable->unsafePersistent();
-        ASSERT(unsafePersistent.isEmpty() || !(holder == *unsafePersistent.persistent()) || current(v8::Isolate::GetCurrent()).m_isMainWorld);
-        return holder == *unsafePersistent.persistent();
+        v8::Local<v8::Object> wrapper = wrappable->newLocalWrapper(v8::Isolate::GetCurrent());
+        ASSERT(wrapper.IsEmpty() || holder != wrapper || current(v8::Isolate::GetCurrent()).m_isMainWorld);
+        return holder == wrapper;
     }
 
     bool m_isMainWorld;
