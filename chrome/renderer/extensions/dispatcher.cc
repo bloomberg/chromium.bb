@@ -890,8 +890,9 @@ void Dispatcher::RegisterBinding(const std::string& api_name,
 // NOTE: please use the naming convention "foo_natives" for these.
 void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
                                         ChromeV8Context* context) {
-  module_system->RegisterNativeHandler("event_natives",
-      scoped_ptr<NativeHandler>(EventBindings::Create(this, context)));
+  module_system->RegisterNativeHandler(
+      "event_natives",
+      scoped_ptr<NativeHandler>(new EventBindings(this, context)));
   module_system->RegisterNativeHandler("messaging_natives",
       scoped_ptr<NativeHandler>(MessagingBindings::Get(this, context)));
   module_system->RegisterNativeHandler("apiDefinitions",
