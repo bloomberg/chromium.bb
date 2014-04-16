@@ -692,6 +692,15 @@ typedef void(GL_APIENTRYP PFNGLSCHEDULEOVERLAYPLANECHROMIUMPROC)(
     GLfloat uv_height);
 #endif /* GL_CHROMIUM_schedule_overlay_plane */
 
+/* GL_CHROMIUM_sync_query */
+#ifndef GL_CHROMIUM_sync_query
+#define GL_CHROMIUM_sync_query 1
+
+#ifndef GL_COMMANDS_COMPLETED_CHROMIUM
+#define GL_COMMANDS_COMPLETED_CHROMIUM 0x84F7
+#endif
+#endif  /* GL_CHROMIUM_sync_query */
+
 #ifdef __cplusplus
 }
 #endif

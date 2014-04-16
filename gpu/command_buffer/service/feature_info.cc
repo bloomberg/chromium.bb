@@ -103,6 +103,7 @@ FeatureInfo::FeatureFlags::FeatureFlags()
     : chromium_color_buffer_float_rgba(false),
       chromium_color_buffer_float_rgb(false),
       chromium_framebuffer_multisample(false),
+      chromium_sync_query(false),
       use_core_framebuffer_multisample(false),
       multisampled_render_to_texture(false),
       use_img_for_multisampled_render_to_texture(false),
@@ -783,6 +784,11 @@ void FeatureInfo::InitializeFeatures() {
     // DiscardFramebufferEXT is automatically bound to InvalidateFramebuffer.
     AddExtensionString("GL_EXT_discard_framebuffer");
     feature_flags_.ext_discard_framebuffer = true;
+  }
+
+  if (ui_gl_fence_works) {
+    AddExtensionString("GL_CHROMIUM_sync_query");
+    feature_flags_.chromium_sync_query = true;
   }
 }
 

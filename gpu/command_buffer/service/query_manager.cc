@@ -16,6 +16,7 @@
 #include "gpu/command_buffer/service/error_state.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
+#include "ui/gl/gl_fence.h"
 
 namespace gpu {
 namespace gles2 {
@@ -389,6 +390,55 @@ void GetErrorQuery::Destroy(bool /* have_context */) {
 GetErrorQuery::~GetErrorQuery() {
 }
 
+class CommandsCompletedQuery : public QueryManager::Query {
+ public:
+  CommandsCompletedQuery(QueryManager* manager,
+                         GLenum target,
+                         int32 shm_id,
+                         uint32 shm_offset);
+
+  // Overridden from QueryManager::Query:
+  virtual bool Begin() OVERRIDE;
+  virtual bool End(base::subtle::Atomic32 submit_count) OVERRIDE;
+  virtual bool Process() OVERRIDE;
+  virtual void Destroy(bool have_context) OVERRIDE;
+
+ protected:
+  virtual ~CommandsCompletedQuery();
+
+ private:
+  scoped_ptr<gfx::GLFence> fence_;
+};
+
+CommandsCompletedQuery::CommandsCompletedQuery(QueryManager* manager,
+                                               GLenum target,
+                                               int32 shm_id,
+                                               uint32 shm_offset)
+    : Query(manager, target, shm_id, shm_offset) {}
+
+bool CommandsCompletedQuery::Begin() { return true; }
+
+bool CommandsCompletedQuery::End(base::subtle::Atomic32 submit_count) {
+  fence_.reset(gfx::GLFence::Create());
+  DCHECK(fence_);
+  return AddToPendingQueue(submit_count);
+}
+
+bool CommandsCompletedQuery::Process() {
+  if (fence_ && !fence_->HasCompleted())
+    return true;
+  return MarkAsCompleted(0);
+}
+
+void CommandsCompletedQuery::Destroy(bool have_context) {
+  if (have_context && !IsDeleted()) {
+    fence_.reset();
+    MarkAsDeleted();
+  }
+}
+
+CommandsCompletedQuery::~CommandsCompletedQuery() {}
+
 QueryManager::QueryManager(
     GLES2Decoder* decoder,
     FeatureInfo* feature_info)
@@ -443,6 +493,9 @@ QueryManager::Query* QueryManager::CreateQuery(
       break;
     case GL_GET_ERROR_QUERY_CHROMIUM:
       query = new GetErrorQuery(this, target, shm_id, shm_offset);
+      break;
+    case GL_COMMANDS_COMPLETED_CHROMIUM:
+      query = new CommandsCompletedQuery(this, target, shm_id, shm_offset);
       break;
     default: {
       GLuint service_id = 0;

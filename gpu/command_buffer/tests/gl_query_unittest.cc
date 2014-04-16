@@ -150,6 +150,22 @@ TEST_F(QueryTest, DISABLED_LatencyQueryBasic) {
   EXPECT_LE(query_result, kTimePrecisionMicroseconds);
 }
 
+TEST_F(QueryTest, SyncQueryBasic) {
+  EXPECT_TRUE(GLTestHelper::HasExtension("GL_CHROMIUM_sync_query"));
+
+  GLuint query = 0;
+  glGenQueriesEXT(1, &query);
+
+  glBeginQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM, query);
+  glEndQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM);
+
+  glFinish();
+
+  GLuint available = 0;
+  glGetQueryObjectuivEXT(query, GL_QUERY_RESULT_AVAILABLE_EXT, &available);
+  EXPECT_TRUE(available);
+}
+
 }  // namespace gpu
 
 
