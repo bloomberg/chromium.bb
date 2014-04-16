@@ -32,6 +32,7 @@
 #include "ui/wm/core/user_activity_detector.h"
 
 using extensions::Extension;
+using extensions::ExtensionGarbageCollector;
 using extensions::SandboxedUnpacker;
 
 namespace chromeos {
@@ -44,6 +45,13 @@ ExtensionService* GetDefaultExtensionService() {
     return NULL;
   return extensions::ExtensionSystem::Get(
       default_profile)->extension_service();
+}
+
+ExtensionGarbageCollector* GetDefaultExtensionGarbageCollector() {
+  Profile* default_profile = ProfileHelper::GetSigninProfile();
+  if (!default_profile)
+    return NULL;
+  return ExtensionGarbageCollector::Get(default_profile);
 }
 
 typedef base::Callback<void(
@@ -106,11 +114,11 @@ void ScreensaverUnpackerClient::LoadScreensaverExtension(
     const base::FilePath& screensaver_extension_path) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
-  ExtensionService* service = GetDefaultExtensionService();
   // TODO(rkc): This is a HACK, please remove this method from extension
   // service once this code is deprecated. See crbug.com/280363
-  if (service)
-    service->garbage_collector()->disable_garbage_collection();
+  ExtensionGarbageCollector* gc = GetDefaultExtensionGarbageCollector();
+  if (gc)
+    gc->disable_garbage_collection();
 
   std::string error;
   scoped_refptr<Extension> screensaver_extension =
@@ -174,11 +182,11 @@ KioskModeScreensaver::~KioskModeScreensaver() {
 
   // If the extension was unpacked.
   if (!extension_base_path_.empty()) {
-    ExtensionService* service = GetDefaultExtensionService();
     // TODO(rkc): This is a HACK, please remove this method from extension
     // service once this code is deprecated. See crbug.com/280363
-    if (service)
-      service->garbage_collector()->enable_garbage_collection();
+    ExtensionGarbageCollector* gc = GetDefaultExtensionGarbageCollector();
+    if (gc)
+      gc->enable_garbage_collection();
 
     // Delete it.
     content::BrowserThread::PostTask(

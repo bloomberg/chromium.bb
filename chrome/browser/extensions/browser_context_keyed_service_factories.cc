@@ -50,6 +50,7 @@
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/api/webrtc_audio_private/webrtc_audio_private_api.h"
 #include "chrome/browser/extensions/api/webstore/webstore_api.h"
+#include "chrome/browser/extensions/extension_garbage_collector_factory.h"
 #include "chrome/browser/extensions/extension_gcm_app_handler.h"
 #include "chrome/browser/extensions/extension_storage_monitor_factory.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
@@ -98,6 +99,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::DeveloperPrivateAPI::GetFactoryInstance();
   extensions::DialAPIFactory::GetInstance();
   extensions::ExtensionActionAPI::GetFactoryInstance();
+  extensions::ExtensionGarbageCollectorFactory::GetInstance();
   extensions::ExtensionStorageMonitorFactory::GetInstance();
   extensions::ExtensionSystemFactory::GetInstance();
   extensions::ExtensionToolbarModelFactory::GetInstance();

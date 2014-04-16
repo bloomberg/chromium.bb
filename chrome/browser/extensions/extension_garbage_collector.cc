@@ -14,8 +14,10 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "chrome/browser/extensions/extension_garbage_collector_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/common/extensions/manifest_handlers/app_isolation_info.h"
 #include "content/public/browser/browser_context.h"
@@ -41,14 +43,12 @@ const int kGarbageCollectStartupDelay = 30;
 typedef std::multimap<std::string, base::FilePath> ExtensionPathsMultimap;
 
 void CheckExtensionDirectory(const base::FilePath& path,
-                             const ExtensionPathsMultimap& extension_paths,
-                             bool clean_temp_dir) {
+                             const ExtensionPathsMultimap& extension_paths) {
   base::FilePath basename = path.BaseName();
   // Clean up temporary files left if Chrome crashed or quit in the middle
   // of an extension install.
   if (basename.value() == file_util::kTempDirectoryName) {
-    if (clean_temp_dir)
-      base::DeleteFile(path, true);  // Recursive.
+    base::DeleteFile(path, true);  // Recursive.
     return;
   }
 
@@ -97,8 +97,7 @@ void CheckExtensionDirectory(const base::FilePath& path,
 
 void GarbageCollectExtensionsOnFileThread(
     const base::FilePath& install_directory,
-    const ExtensionPathsMultimap& extension_paths,
-    bool clean_temp_dir) {
+    const ExtensionPathsMultimap& extension_paths) {
   DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   // Nothing to clean up if it doesn't exist.
@@ -112,18 +111,15 @@ void GarbageCollectExtensionsOnFileThread(
   for (base::FilePath extension_path = enumerator.Next();
        !extension_path.empty();
        extension_path = enumerator.Next()) {
-    CheckExtensionDirectory(extension_path, extension_paths, clean_temp_dir);
+    CheckExtensionDirectory(extension_path, extension_paths);
   }
 }
 
 }  // namespace
 
 ExtensionGarbageCollector::ExtensionGarbageCollector(
-    ExtensionService* extension_service)
-    : extension_service_(extension_service),
-      context_(extension_service->GetBrowserContext()),
-      install_directory_(extension_service->install_directory()),
-      weak_factory_(this) {
+    content::BrowserContext* context)
+    : context_(context), crx_installs_in_progress_(0), weak_factory_(this) {
 #if defined(OS_CHROMEOS)
   disable_garbage_collection_ = false;
 #endif
@@ -142,9 +138,21 @@ ExtensionGarbageCollector::ExtensionGarbageCollector(
       base::Bind(
           &ExtensionGarbageCollector::GarbageCollectIsolatedStorageIfNeeded,
           weak_factory_.GetWeakPtr()));
+
+  InstallTracker::Get(context_)->AddObserver(this);
 }
 
 ExtensionGarbageCollector::~ExtensionGarbageCollector() {}
+
+// static
+ExtensionGarbageCollector* ExtensionGarbageCollector::Get(
+    content::BrowserContext* context) {
+  return ExtensionGarbageCollectorFactory::GetForBrowserContext(context);
+}
+
+void ExtensionGarbageCollector::Shutdown() {
+  InstallTracker::Get(context_)->RemoveObserver(this);
+}
 
 void ExtensionGarbageCollector::GarbageCollectExtensionsForTest() {
   GarbageCollectExtensions();
@@ -164,18 +172,16 @@ void ExtensionGarbageCollector::GarbageCollectExtensions() {
   if (extension_prefs->pref_service()->ReadOnly())
     return;
 
-  bool clean_temp_dir = true;
-
-  if (extension_service_->pending_extension_manager()->HasPendingExtensions()) {
-    // Don't garbage collect temp dir while there are pending installations,
+  if (crx_installs_in_progress_ > 0) {
+    // Don't garbage collect while there are installations in progress,
     // which may be using the temporary installation directory. Try to garbage
     // collect again later.
-    clean_temp_dir = false;
     base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&ExtensionGarbageCollector::GarbageCollectExtensions,
                    weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromSeconds(kGarbageCollectRetryDelayInSeconds));
+    return;
   }
 
   scoped_ptr<ExtensionPrefs::ExtensionsInfo> info(
@@ -192,13 +198,13 @@ void ExtensionGarbageCollector::GarbageCollectExtensions() {
         std::make_pair(info->at(i)->extension_id, info->at(i)->extension_path));
   }
 
-  if (!extension_service_->GetFileTaskRunner()->PostTask(
+  ExtensionService* service =
+      ExtensionSystem::Get(context_)->extension_service();
+  if (!service->GetFileTaskRunner()->PostTask(
           FROM_HERE,
-          base::Bind(
-              &GarbageCollectExtensionsOnFileThread,
-              install_directory_,
-              extension_paths,
-              clean_temp_dir))) {
+          base::Bind(&GarbageCollectExtensionsOnFileThread,
+                     service->install_directory(),
+                     extension_paths))) {
     NOTREACHED();
   }
 }
@@ -241,12 +247,34 @@ void ExtensionGarbageCollector::GarbageCollectIsolatedStorageIfNeeded() {
     }
   }
 
-  extension_service_->OnGarbageCollectIsolatedStorageStart();
+  ExtensionService* service =
+      ExtensionSystem::Get(context_)->extension_service();
+  service->OnGarbageCollectIsolatedStorageStart();
   content::BrowserContext::GarbageCollectStoragePartitions(
       context_,
       active_paths.Pass(),
       base::Bind(&ExtensionService::OnGarbageCollectIsolatedStorageFinished,
-                 extension_service_->AsWeakPtr()));
+                 service->AsWeakPtr()));
+}
+
+void ExtensionGarbageCollector::OnBeginCrxInstall(
+    const std::string& extension_id) {
+  crx_installs_in_progress_++;
+}
+
+void ExtensionGarbageCollector::OnFinishCrxInstall(
+    const std::string& extension_id,
+    bool success) {
+  crx_installs_in_progress_--;
+  if (crx_installs_in_progress_ < 0) {
+    // This can only happen if there is a mismatch in our begin/finish
+    // accounting.
+    NOTREACHED();
+
+    // Don't let the count go negative to avoid garbage collecting when
+    // an install is actually in progress.
+    crx_installs_in_progress_ = 0;
+  }
 }
 
 }  // namespace extensions

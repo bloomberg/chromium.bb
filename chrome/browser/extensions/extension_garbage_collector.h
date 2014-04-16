@@ -10,6 +10,8 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/extensions/install_observer.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 namespace content {
 class BrowserContext;
@@ -24,10 +26,12 @@ namespace extensions {
 // The class is owned by ExtensionService, but is mostly independent. Tasks to
 // garbage collect extensions and isolated storage are posted once the
 // ExtensionSystem signals ready.
-class ExtensionGarbageCollector {
+class ExtensionGarbageCollector : public KeyedService, public InstallObserver {
  public:
-  explicit ExtensionGarbageCollector(ExtensionService* extension_service);
-  ~ExtensionGarbageCollector();
+  explicit ExtensionGarbageCollector(content::BrowserContext* context);
+  virtual ~ExtensionGarbageCollector();
+
+  static ExtensionGarbageCollector* Get(content::BrowserContext* context);
 
 #if defined(OS_CHROMEOS)
   // Enable or disable garbage collection. See |disable_garbage_collection_|.
@@ -37,6 +41,14 @@ class ExtensionGarbageCollector {
 
   // Manually trigger GarbageCollectExtensions() for testing.
   void GarbageCollectExtensionsForTest();
+
+  // Overriddes for KeyedService:
+  virtual void Shutdown() OVERRIDE;
+
+  // Overriddes for InstallObserver
+  virtual void OnBeginCrxInstall(const std::string& extension_id) OVERRIDE;
+  virtual void OnFinishCrxInstall(const std::string& extension_id,
+                                  bool success) OVERRIDE;
 
  private:
   // Cleans up the extension install directory. It can end up with garbage in it
@@ -53,15 +65,8 @@ class ExtensionGarbageCollector {
   // for ephemeral apps, because they can outlive their cache lifetimes.
   void GarbageCollectIsolatedStorageIfNeeded();
 
-  // The ExtensionService which owns this GarbageCollector.
-  ExtensionService* extension_service_;
-
-  // The BrowserContext associated with the GarbageCollector, for convenience.
-  // (This is equivalent to extension_service_->GetBrowserContext().)
+  // The BrowserContext associated with the GarbageCollector.
   content::BrowserContext* context_;
-
-  // The root extensions installation directory.
-  base::FilePath install_directory_;
 
 #if defined(OS_CHROMEOS)
   // TODO(rkc): HACK alert - this is only in place to allow the
@@ -70,6 +75,10 @@ class ExtensionGarbageCollector {
   // See crbug.com/280363
   bool disable_garbage_collection_;
 #endif
+
+  // The number of currently ongoing CRX installations. This is used to prevent
+  // garbage collection from running while a CRX is being installed.
+  int crx_installs_in_progress_;
 
   // Generate weak pointers for safely posting to the file thread for garbage
   // collection.

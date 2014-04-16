@@ -80,6 +80,12 @@ void InstallTracker::OnBeginCrxInstall(const std::string& extension_id) {
       InstallObserver, observers_, OnBeginCrxInstall(extension_id));
 }
 
+void InstallTracker::OnFinishCrxInstall(const std::string& extension_id,
+                                        bool success) {
+  FOR_EACH_OBSERVER(
+      InstallObserver, observers_, OnFinishCrxInstall(extension_id, success));
+}
+
 void InstallTracker::OnInstallFailure(
     const std::string& extension_id) {
   FOR_EACH_OBSERVER(InstallObserver, observers_,

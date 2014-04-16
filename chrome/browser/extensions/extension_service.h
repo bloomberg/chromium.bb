@@ -49,7 +49,6 @@ class ComponentLoader;
 class CrxInstaller;
 class ExtensionActionStorageManager;
 class ExtensionErrorController;
-class ExtensionGarbageCollector;
 class ExtensionRegistry;
 class ExtensionSystem;
 class ExtensionToolbarModel;
@@ -449,10 +448,6 @@ class ExtensionService
 
   base::WeakPtr<ExtensionService> AsWeakPtr() { return base::AsWeakPtr(this); }
 
-  extensions::ExtensionGarbageCollector* garbage_collector() {
-    return garbage_collector_.get();
-  }
-
   bool browser_terminating() const { return browser_terminating_; }
 
   extensions::SharedModuleService* shared_module_service() {
@@ -692,10 +687,6 @@ class ExtensionService
 #endif
   scoped_ptr<extensions::ManagementPolicy::Provider>
       shared_module_policy_provider_;
-
-  // The ExtensionGarbageCollector to clean up all the garbage that leaks into
-  // the extensions directory.
-  scoped_ptr<extensions::ExtensionGarbageCollector> garbage_collector_;
 
   // The SharedModuleService used to check for import dependencies.
   scoped_ptr<extensions::SharedModuleService> shared_module_service_;

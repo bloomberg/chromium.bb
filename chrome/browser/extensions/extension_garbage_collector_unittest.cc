@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_garbage_collector.h"
 #include "chrome/browser/extensions/extension_service_unittest.h"
+#include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/base/testing_profile.h"
@@ -47,14 +48,14 @@ class ExtensionGarbageCollectorUnitTest : public ExtensionServiceTestBase {
   // ExtensionGarbageCollector's constructor. But, as the test won't wait for
   // the delayed task to be called, we have to call it manually instead.
   void GarbageCollectExtensions() {
-    service_->garbage_collector()->GarbageCollectExtensionsForTest();
+    ExtensionGarbageCollector::Get(profile_.get())
+        ->GarbageCollectExtensionsForTest();
     // Wait for GarbageCollectExtensions task to complete.
     content::BrowserThread::GetBlockingPool()->FlushForTesting();
   }
 };
 
-// Test that partially deleted extensions are cleaned up during startup
-// Test loading bad extensions from the profile directory.
+// Test that partially deleted extensions are cleaned up during startup.
 TEST_F(ExtensionGarbageCollectorUnitTest, CleanupOnStartup) {
   const std::string kExtensionId = "behllobkkfkfnphdnhnkndlbkcpglgmj";
 
@@ -86,6 +87,43 @@ TEST_F(ExtensionGarbageCollectorUnitTest, CleanupOnStartup) {
   // And extension1 dir should now be toast.
   base::FilePath extension_dir =
       extensions_install_dir_.AppendASCII(kExtensionId);
+  ASSERT_FALSE(base::PathExists(extension_dir));
+}
+
+// Test that garbage collection doesn't delete anything while a crx is being
+// installed.
+TEST_F(ExtensionGarbageCollectorUnitTest, NoCleanupDuringInstall) {
+  const std::string kExtensionId = "behllobkkfkfnphdnhnkndlbkcpglgmj";
+
+  InitPluginService();
+  InitializeGoodInstalledExtensionService();
+  InitFileTaskRunner();
+
+  // Simulate that one of them got partially deleted by clearing its pref.
+  {
+    DictionaryPrefUpdate update(profile_->GetPrefs(), "extensions.settings");
+    base::DictionaryValue* dict = update.Get();
+    ASSERT_TRUE(dict != NULL);
+    dict->Remove(kExtensionId, NULL);
+  }
+
+  service_->Init();
+
+  // Simulate a CRX installation.
+  InstallTracker::Get(profile_.get())->OnBeginCrxInstall(kExtensionId);
+
+  GarbageCollectExtensions();
+
+  // extension1 dir should still exist.
+  base::FilePath extension_dir =
+      extensions_install_dir_.AppendASCII(kExtensionId);
+  ASSERT_TRUE(base::PathExists(extension_dir));
+
+  // Finish CRX installation and re-run garbage collection.
+  InstallTracker::Get(profile_.get())->OnFinishCrxInstall(kExtensionId, false);
+  GarbageCollectExtensions();
+
+  // extension1 dir should be gone
   ASSERT_FALSE(base::PathExists(extension_dir));
 }
 

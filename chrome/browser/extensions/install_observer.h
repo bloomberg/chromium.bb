@@ -51,6 +51,11 @@ class InstallObserver {
   // installation is due to start.
   virtual void OnBeginCrxInstall(const std::string& extension_id) {}
 
+  // Called when installation of a crx has completed (either successfully or
+  // not).
+  virtual void OnFinishCrxInstall(const std::string& extension_id,
+                                  bool success) {}
+
   // Called if the extension fails to install.
   virtual void OnInstallFailure(const std::string& extension_id) {}
 

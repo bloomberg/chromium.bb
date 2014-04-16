@@ -248,6 +248,7 @@ class CrxInstaller
   void ReportFailureFromUIThread(const CrxInstallerError& error);
   void ReportSuccessFromFileThread();
   void ReportSuccessFromUIThread();
+  void NotifyCrxInstallBegin();
   void NotifyCrxInstallComplete(bool success);
 
   // Deletes temporary directory and crx file if needed.

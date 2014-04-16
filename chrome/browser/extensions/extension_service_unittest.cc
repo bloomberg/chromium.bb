@@ -40,6 +40,7 @@
 #include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_error_ui.h"
+#include "chrome/browser/extensions/extension_garbage_collector_factory.h"
 #include "chrome/browser/extensions/extension_notification_observer.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
@@ -493,6 +494,10 @@ void ExtensionServiceTestBase::InitializeExtensionService(
   extensions_install_dir_ = params.extensions_install_dir;
   expected_extensions_count_ = 0;
   registry_ = extensions::ExtensionRegistry::Get(profile_.get());
+  extensions::ExtensionGarbageCollectorFactory::GetInstance()
+      ->SetTestingFactoryAndUse(
+          profile_.get(),
+          &extensions::ExtensionGarbageCollectorFactory::BuildInstanceFor);
 }
 
 // static

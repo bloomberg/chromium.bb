@@ -40,6 +40,7 @@ class InstallTracker : public KeyedService,
   void OnDownloadProgress(const std::string& extension_id,
                           int percent_downloaded);
   void OnBeginCrxInstall(const std::string& extension_id);
+  void OnFinishCrxInstall(const std::string& extension_id, bool success);
   void OnInstallFailure(const std::string& extension_id);
 
   // Overriddes for KeyedService:
