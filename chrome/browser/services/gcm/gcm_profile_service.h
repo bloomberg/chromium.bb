@@ -52,7 +52,7 @@ class GCMProfileService : public KeyedService,
                               GCMClient::Result result)> SendCallback;
   typedef base::Callback<void(GCMClient::Result result)> UnregisterCallback;
   typedef base::Callback<void(const GCMClient::GCMStatistics& stats)>
-      GetGCMStatisticsCallback;
+      RequestGCMStatisticsCallback;
 
   // Any change made to this enum should have corresponding change in the
   // GetGCMEnabledStateString(...) function.
@@ -129,14 +129,9 @@ class GCMProfileService : public KeyedService,
   // Returns true if the gcm client is ready.
   bool IsGCMClientReady() const;
 
-  // Get GCM client internal states and statistics.
-  // If clear_logs is true then activity logs will be cleared before the stats
-  // are returned.
-  void GetGCMStatistics(GetGCMStatisticsCallback callback,
-                        bool clear_logs);
-
-  // Enables/disables GCM activity recording, and then returns the stats.
-  void SetGCMRecording(GetGCMStatisticsCallback callback, bool recording);
+  // Get GCM client internal states and statistics. If it has not been created
+  // then stats won't be modified.
+  void RequestGCMStatistics(RequestGCMStatisticsCallback callback);
 
  private:
   friend class GCMProfileServiceTestConsumer;
@@ -204,7 +199,7 @@ class GCMProfileService : public KeyedService,
   // Returns the handler for the given app.
   GCMAppHandler* GetAppHandler(const std::string& app_id);
 
-  void GetGCMStatisticsFinished(GCMClient::GCMStatistics stats);
+  void RequestGCMStatisticsFinished(GCMClient::GCMStatistics stats);
 
   // The profile which owns this object.
   Profile* profile_;
@@ -238,8 +233,8 @@ class GCMProfileService : public KeyedService,
   // Callback map (from <app_id, message_id> to callback) for Send.
   std::map<std::pair<std::string, std::string>, SendCallback> send_callbacks_;
 
-  // Callback for GetGCMStatistics.
-  GetGCMStatisticsCallback request_gcm_statistics_callback_;
+  // Callback for RequestGCMStatistics.
+  RequestGCMStatisticsCallback request_gcm_statistics_callback_;
 
   // Used to pass a weak pointer to the IO worker.
   base::WeakPtrFactory<GCMProfileService> weak_ptr_factory_;

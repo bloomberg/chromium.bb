@@ -5,11 +5,9 @@
 cr.define('gcmInternals', function() {
   'use strict';
 
-  var isRecording = false;
-
   /**
    * If the info dictionary has property prop, then set the text content of
-   * element to the value of this property. Otherwise clear the content.
+   * element to the value of this property.
    * @param {!Object} info A dictionary of device infos to be displayed.
    * @param {string} prop Name of the property.
    * @param {string} element The id of a HTML element.
@@ -17,8 +15,6 @@ cr.define('gcmInternals', function() {
   function setIfExists(info, prop, element) {
     if (info[prop] !== undefined) {
       $(element).textContent = info[prop];
-    } else {
-      $(element).textContent = '';
     }
   }
 
@@ -36,73 +32,10 @@ cr.define('gcmInternals', function() {
     setIfExists(info, 'gcmClientReady', 'gcm-client-ready');
     setIfExists(info, 'connectionClientCreated', 'connection-client-created');
     setIfExists(info, 'connectionState', 'connection-state');
-    setIfExists(info, 'registeredAppIds', 'registered-app-ids');
-    setIfExists(info, 'sendQueueSize', 'send-queue-size');
-    setIfExists(info, 'resendQueueSize', 'resend-queue-size');
-  }
-
-  /**
-   * Remove all the child nodes of the element.
-   * @param {HTMLElement} element A HTML element.
-   */
-  function removeAllChildNodes(element) {
-    element.textContent = '';
-  }
-
-  /**
-   * For each item in line, add a row to the table. Each item is actually a list
-   * of sub-items; each of which will have a corresponding cell created in that
-   * row, and the sub-item will be displayed in the cell.
-   * @param {HTMLElement} table A HTML tbody element.
-   * @param {!Object} list A list of list of item.
-   */
-  function addRows(table, list) {
-    for (var i = 0; i < list.length; ++i) {
-      var row = document.createElement('tr');
-
-      // The first element is always a timestamp.
-      var cell = document.createElement('td');
-      var d = new Date(list[i][0]);
-      cell.textContent = d;
-      row.appendChild(cell);
-
-      for (var j = 1; j < list[i].length; ++j) {
-        var cell = document.createElement('td');
-        cell.textContent = list[i][j];
-        row.appendChild(cell);
-      }
-      table.appendChild(row);
-    }
-  }
-
-  /**
-   * Refresh all displayed information.
-   */
-  function refreshAll() {
-    chrome.send('getGcmInternalsInfo', [false]);
-  }
-
-  /**
-   * Toggle the isRecording variable and send it to browser.
-   */
-  function setRecording() {
-    isRecording = !isRecording;
-    chrome.send('setGcmInternalsRecording', [isRecording]);
-  }
-
-  /**
-   * Clear all the activity logs.
-   */
-  function clearLogs() {
-    chrome.send('getGcmInternalsInfo', [true]);
   }
 
   function initialize() {
-    $('recording').disabled = true;
-    $('refresh').onclick = refreshAll;
-    $('recording').onclick = setRecording;
-    $('clear-logs').onclick = clearLogs;
-    chrome.send('getGcmInternalsInfo', [false]);
+    chrome.send('getGcmInternalsInfo');
   }
 
   /**
@@ -110,19 +43,8 @@ cr.define('gcmInternals', function() {
    * @param {!Object} infos A dictionary of info items to be displayed.
    */
   function setGcmInternalsInfo(infos) {
-    isRecording = infos.isRecording;
-    if (isRecording)
-      $('recording').textContent = 'Stop Recording';
-    else
-      $('recording').textContent = 'Start Recording';
-    $('recording').disabled = false;
     if (infos.deviceInfo !== undefined) {
       displayDeviceInfo(infos.deviceInfo);
-    }
-
-    removeAllChildNodes($('send-info'));
-    if (infos.sendInfo !== undefined) {
-      addRows($('send-info'), infos.sendInfo);
     }
   }
 

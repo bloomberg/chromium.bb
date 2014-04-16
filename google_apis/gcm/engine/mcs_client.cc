@@ -15,7 +15,6 @@
 #include "google_apis/gcm/base/mcs_util.h"
 #include "google_apis/gcm/base/socket_stream.h"
 #include "google_apis/gcm/engine/connection_factory.h"
-#include "google_apis/gcm/monitoring/gcm_stats_recorder.h"
 
 using namespace google::protobuf::io;
 
@@ -129,14 +128,6 @@ ReliablePacketInfo::ReliablePacketInfo()
 }
 ReliablePacketInfo::~ReliablePacketInfo() {}
 
-int MCSClient::GetSendQueueSize() const {
-  return to_send_.size();
-}
-
-int MCSClient::GetResendQueueSize() const {
-  return to_resend_.size();
-}
-
 std::string MCSClient::GetStateString() const {
   switch(state_) {
     case UNINITIALIZED:
@@ -156,8 +147,7 @@ std::string MCSClient::GetStateString() const {
 MCSClient::MCSClient(const std::string& version_string,
                      base::Clock* clock,
                      ConnectionFactory* connection_factory,
-                     GCMStore* gcm_store,
-                     GCMStatsRecorder* recorder)
+                     GCMStore* gcm_store)
     : version_string_(version_string),
       clock_(clock),
       state_(UNINITIALIZED),
@@ -170,7 +160,6 @@ MCSClient::MCSClient(const std::string& version_string,
       stream_id_out_(0),
       stream_id_in_(0),
       gcm_store_(gcm_store),
-      recorder_(recorder),
       weak_ptr_factory_(this) {
 }
 
@@ -506,11 +495,6 @@ void MCSClient::SendPacketToWire(ReliablePacketInfo* packet_info) {
         base::Time::kMicrosecondsPerSecond) - sent;
     DVLOG(1) << "Message was queued for " << queued << " seconds.";
     data_message->set_queued(queued);
-    recorder_->RecordDataSentToWire(
-        data_message->category(),
-        data_message->to(),
-        data_message->id(),
-        queued);
   }
 
   // Set the proper last received stream id to acknowledge received server
@@ -878,13 +862,6 @@ void MCSClient::NotifyMessageSendStatus(
 
   const mcs_proto::DataMessageStanza* data_message_stanza =
       reinterpret_cast<const mcs_proto::DataMessageStanza*>(&protobuf);
-  recorder_->RecordNotifySendStatus(
-      data_message_stanza->category(),
-      data_message_stanza->to(),
-      data_message_stanza->id(),
-      status,
-      protobuf.ByteSize(),
-      data_message_stanza->ttl());
   message_sent_callback_.Run(
       data_message_stanza->device_user_id(),
       data_message_stanza->category(),

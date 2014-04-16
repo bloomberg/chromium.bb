@@ -48,8 +48,6 @@ class GCMClientMock : public GCMClient {
   virtual void Send(const std::string& app_id,
                     const std::string& receiver_id,
                     const OutgoingMessage& message) OVERRIDE;
-  virtual void SetRecording(bool recording) OVERRIDE;
-  virtual void ClearActivityLogs() OVERRIDE;
   virtual GCMStatistics GetStatistics() const OVERRIDE;
 
   // Initiate the loading that has been delayed.

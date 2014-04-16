@@ -15,7 +15,6 @@
 #include "google_apis/gcm/engine/fake_connection_factory.h"
 #include "google_apis/gcm/engine/fake_connection_handler.h"
 #include "google_apis/gcm/engine/gcm_store_impl.h"
-#include "google_apis/gcm/monitoring/gcm_stats_recorder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gcm {
@@ -68,9 +67,8 @@ class TestMCSClient : public MCSClient {
  public:
   TestMCSClient(base::Clock* clock,
                 ConnectionFactory* connection_factory,
-                GCMStore* gcm_store,
-                gcm::GCMStatsRecorder* recorder)
-    : MCSClient("", clock, connection_factory, gcm_store, recorder),
+                GCMStore* gcm_store)
+    : MCSClient("", clock, connection_factory, gcm_store),
       next_id_(0) {
   }
 
@@ -138,8 +136,6 @@ class MCSClientTest : public testing::Test {
   scoped_ptr<MCSMessage> received_message_;
   std::string sent_message_id_;
   MCSClient::MessageSendStatus message_send_status_;
-
-  gcm::GCMStatsRecorder recorder_;
 };
 
 MCSClientTest::MCSClientTest()
@@ -170,8 +166,7 @@ void MCSClientTest::BuildMCSClient() {
                                     message_loop_.message_loop_proxy()));
   mcs_client_.reset(new TestMCSClient(&clock_,
                                       &connection_factory_,
-                                      gcm_store_.get(),
-                                      &recorder_));
+                                      gcm_store_.get()));
 }
 
 void MCSClientTest::InitializeClient() {

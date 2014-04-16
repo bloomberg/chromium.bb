@@ -176,8 +176,7 @@ class GCMProfileService::IOWorker
   void Send(const std::string& app_id,
             const std::string& receiver_id,
             const GCMClient::OutgoingMessage& message);
-  void GetGCMStatistics(bool clear_logs);
-  void SetGCMRecording(bool recording);
+  void RequestGCMStatistics();
 
   // For testing purpose. Can be called from UI thread. Use with care.
   GCMClient* gcm_client_for_testing() const { return gcm_client_.get(); }
@@ -373,38 +372,19 @@ void GCMProfileService::IOWorker::Send(
   gcm_client_->Send(app_id, receiver_id, message);
 }
 
-void GCMProfileService::IOWorker::GetGCMStatistics(bool clear_logs) {
+void GCMProfileService::IOWorker::RequestGCMStatistics() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   gcm::GCMClient::GCMStatistics stats;
 
   if (gcm_client_.get()) {
-    if (clear_logs)
-      gcm_client_->ClearActivityLogs();
-    stats = gcm_client_->GetStatistics();
-  }
-
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&GCMProfileService::GetGCMStatisticsFinished,
-                 service_,
-                 stats));
-}
-
-void GCMProfileService::IOWorker::SetGCMRecording(bool recording) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  gcm::GCMClient::GCMStatistics stats;
-
-  if (gcm_client_.get()) {
-    gcm_client_->SetRecording(recording);
-    stats = gcm_client_->GetStatistics();
     stats.gcm_client_created = true;
+    stats = gcm_client_->GetStatistics();
   }
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&GCMProfileService::GetGCMStatisticsFinished,
+      base::Bind(&GCMProfileService::RequestGCMStatisticsFinished,
                  service_,
                  stats));
 }
@@ -708,8 +688,8 @@ bool GCMProfileService::IsGCMClientReady() const {
   return gcm_client_ready_;
 }
 
-void GCMProfileService::GetGCMStatistics(
-    GetGCMStatisticsCallback callback, bool clear_logs) {
+void GCMProfileService::RequestGCMStatistics(
+    RequestGCMStatisticsCallback callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -717,22 +697,8 @@ void GCMProfileService::GetGCMStatistics(
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&GCMProfileService::IOWorker::GetGCMStatistics,
-                 io_worker_,
-                 clear_logs));
-}
-
-void GCMProfileService::SetGCMRecording(
-    GetGCMStatisticsCallback callback, bool recording) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
-  request_gcm_statistics_callback_ = callback;
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&GCMProfileService::IOWorker::SetGCMRecording,
-                 io_worker_,
-                 recording));
+      base::Bind(&GCMProfileService::IOWorker::RequestGCMStatistics,
+                 io_worker_));
 }
 
 void GCMProfileService::Observe(int type,
@@ -938,9 +904,10 @@ GCMAppHandler* GCMProfileService::GetAppHandler(const std::string& app_id) {
   return iter == app_handlers_.end() ? &default_app_handler_ : iter->second;
 }
 
-void GCMProfileService::GetGCMStatisticsFinished(
+void GCMProfileService::RequestGCMStatisticsFinished(
     GCMClient::GCMStatistics stats) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
   request_gcm_statistics_callback_.Run(stats);
 }
 

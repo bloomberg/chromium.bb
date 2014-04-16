@@ -13,118 +13,74 @@
 </head>
 <body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
 <h1>GCM Internals</h1>
-<div class="flexbar">
-  <button id="refresh">Refresh</button>
-  <button id="recording">Start Recording</button>
-  <button id="clear-logs">Clear All Logs</button>
-</div>
-
-<h2>Device Info</h2>
-<table id="device-info">
-  <tbody>
-    <tr>
-      <td>
+<div>
+  <h2>Device Info</h2>
+  <table>
+    <tr class="odd-number-row">
+      <td class="row-caption">
         Android Id
       </td>
       <td id="android-id">
       </td>
     </tr>
     <tr>
-      <td>
+      <td class="row-caption">
         User Profile Service Created
       </td>
       <td id="profile-service-created">
       </td>
     </tr>
-    <tr>
-      <td>
+    <tr class="odd-number-row">
+      <td class="row-caption">
         GCM Enabled State
       </td>
       <td id="gcm-enabled-state">
       </td>
     </tr>
     <tr>
-      <td>
+      <td class="row-caption">
         Signed In Username
       </td>
       <td id="signed-in-username">
       </td>
     </tr>
-    <tr>
-      <td>
+    <tr class="odd-number-row">
+      <td class="row-caption">
         GCM Client Created
       </td>
       <td id="gcm-client-created">
       </td>
     </tr>
     <tr>
-      <td>
+      <td class="row-caption">
         GCM Client State
       </td>
       <td id="gcm-client-state">
       </td>
     </tr>
-    <tr>
-      <td>
+    <tr class="odd-number-row">
+      <td class="row-caption">
         GCM Client Is Ready
       </td>
       <td id="gcm-client-ready">
       </td>
     </tr>
     <tr>
-      <td>
+      <td class="row-caption">
         Connection Client Created
       </td>
       <td id="connection-client-created">
       </td>
     </tr>
-    <tr>
-      <td>
+    <tr class="odd-number-row">
+      <td class="row-caption">
         Connection State
       </td>
       <td id="connection-state">
       </td>
     </tr>
-    <tr>
-      <td>
-        Registered App Ids
-      </td>
-      <td id="registered-app-ids">
-      </td>
-    </tr>
-    <tr>
-      <td>
-        Send Message Queue Size
-      </td>
-      <td id="send-queue-size">
-      </td>
-    </tr>
-    <tr>
-      <td>
-        Resend Message Queue Size
-      </td>
-      <td id="resend-queue-size">
-      </td>
-    </tr>
-  </tbody>
-</table>
-
-<h2>Send Message Log</h2>
-<table class="log-table">
-  <thead>
-    <tr>
-      <th>Time</th>
-      <th>App Id</th>
-      <th>Receiver Id</th>
-      <th>Msg Id</th>
-      <th>Event</th>
-      <th>Details</th>
-    </tr>
-  </thead>
-  <tbody id="send-info">
-  </tbody>
-</table>
-
+  </table>
+</div>
 <script src="chrome://resources/js/i18n_template2.js"></script>
 </body>
 </html>

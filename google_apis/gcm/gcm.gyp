@@ -72,8 +72,6 @@
         'gcm_client.h',
         'gcm_client_impl.cc',
         'gcm_client_impl.h',
-        'monitoring/gcm_stats_recorder.cc',
-        'monitoring/gcm_stats_recorder.h',
         'protocol/android_checkin.proto',
         'protocol/checkin.proto',
         'protocol/mcs.proto',
@@ -140,8 +138,7 @@
         'engine/mcs_client_unittest.cc',
         'engine/registration_request_unittest.cc',
         'engine/unregistration_request_unittest.cc',
-        'gcm_client_impl_unittest.cc',
-        'monitoring/gcm_stats_recorder_unittest.cc'
+        'gcm_client_impl_unittest.cc'
       ]
     },
   ],

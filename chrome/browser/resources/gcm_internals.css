@@ -12,28 +12,12 @@ td {
   padding: 4px;
 }
 
-tr:nth-child(odd) {
-  background-color: rgb(245, 245, 200);
-}
-
-th {
-  background-color: rgb(160, 160, 125);
-  color: rgb(255, 255, 255);
-  font-weight: bold;
-}
-
-.flexbar {
-  display: flex;
-  flex-direction: row;
-  margin: 5px;
-}
-
-#device-info tr :first-child {
+.row-caption {
   font-weight: bold;
   padding-right: 10px;
   text-align: end;
 }
 
-.log-table {
-  padding: 4px;
+.odd-number-row {
+  background-color: rgb(245, 245, 200);
 }

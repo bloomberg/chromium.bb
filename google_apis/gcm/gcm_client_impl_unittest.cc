@@ -14,7 +14,6 @@
 #include "google_apis/gcm/base/mcs_util.h"
 #include "google_apis/gcm/engine/fake_connection_factory.h"
 #include "google_apis/gcm/engine/fake_connection_handler.h"
-#include "google_apis/gcm/monitoring/gcm_stats_recorder.h"
 #include "google_apis/gcm/protocol/android_checkin.pb.h"
 #include "google_apis/gcm/protocol/checkin.pb.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
@@ -68,8 +67,7 @@ class FakeMCSClient : public MCSClient {
  public:
   FakeMCSClient(base::Clock* clock,
                 ConnectionFactory* connection_factory,
-                GCMStore* gcm_store,
-                GCMStatsRecorder* recorder);
+                GCMStore* gcm_store);
   virtual ~FakeMCSClient();
   virtual void Login(uint64 android_id, uint64 security_token) OVERRIDE;
   virtual void SendMessage(const MCSMessage& message) OVERRIDE;
@@ -90,9 +88,8 @@ class FakeMCSClient : public MCSClient {
 
 FakeMCSClient::FakeMCSClient(base::Clock* clock,
                              ConnectionFactory* connection_factory,
-                             GCMStore* gcm_store,
-                             GCMStatsRecorder* recorder)
-    : MCSClient("", clock, connection_factory, gcm_store, recorder),
+                             GCMStore* gcm_store)
+    : MCSClient("", clock, connection_factory, gcm_store),
       last_android_id_(0u),
       last_security_token_(0u),
       last_message_tag_(kNumProtoTypes) {
@@ -125,8 +122,7 @@ class FakeGCMInternalsBuilder : public GCMInternalsBuilder {
       const std::string& version,
       base::Clock* clock,
       ConnectionFactory* connection_factory,
-      GCMStore* gcm_store,
-      GCMStatsRecorder* recorder) OVERRIDE;
+      GCMStore* gcm_store) OVERRIDE;
   virtual scoped_ptr<ConnectionFactory> BuildConnectionFactory(
       const std::vector<GURL>& endpoints,
       const net::BackoffEntry::Policy& backoff_policy,
@@ -146,12 +142,10 @@ scoped_ptr<MCSClient> FakeGCMInternalsBuilder::BuildMCSClient(
     const std::string& version,
     base::Clock* clock,
     ConnectionFactory* connection_factory,
-    GCMStore* gcm_store,
-    GCMStatsRecorder* recorder) {
+    GCMStore* gcm_store) {
   return make_scoped_ptr<MCSClient>(new FakeMCSClient(clock,
                                                       connection_factory,
-                                                      gcm_store,
-                                                      recorder));
+                                                      gcm_store));
 }
 
 scoped_ptr<ConnectionFactory> FakeGCMInternalsBuilder::BuildConnectionFactory(

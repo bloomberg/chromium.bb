@@ -9,8 +9,6 @@
 #include <string>
 #include <vector>
 
-#include <google/protobuf/message_lite.h>
-
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/memory/linked_ptr.h"
@@ -19,6 +17,13 @@
 #include "base/time/time.h"
 #include "google_apis/gcm/base/gcm_export.h"
 #include "google_apis/gcm/engine/registration_info.h"
+#include "google_apis/gcm/protocol/mcs.pb.h"
+
+namespace google {
+namespace protobuf {
+class MessageLite;
+}  // namespace protobuf
+}  // namespace google
 
 namespace gcm {
 

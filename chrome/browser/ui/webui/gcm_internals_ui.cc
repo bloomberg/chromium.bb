@@ -4,13 +4,10 @@
 
 #include "chrome/browser/ui/webui/gcm_internals_ui.h"
 
-#include <vector>
-
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/format_macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
@@ -25,24 +22,6 @@
 #include "grit/browser_resources.h"
 
 namespace {
-
-void SetSendingInfo(
-    const std::vector<gcm::GCMStatsRecorder::SendingActivity>& sends,
-    base::ListValue* send_info) {
-  std::vector<gcm::GCMStatsRecorder::SendingActivity>::const_iterator it =
-     sends.begin();
-  for (; it < sends.end(); ++it) {
-    base::ListValue* row = new base::ListValue();
-    send_info->Append(row);
-
-    row->AppendDouble(it->time.ToJsTime());
-    row->AppendString(it->app_id);
-    row->AppendString(it->receiver_id);
-    row->AppendString(it->message_id);
-    row->AppendString(it->event);
-    row->AppendString(it->details);
-  }
-}
 
 // Class acting as a controller of the chrome://gcm-internals WebUI.
 class GcmInternalsUIMessageHandler : public content::WebUIMessageHandler {
@@ -62,9 +41,6 @@ class GcmInternalsUIMessageHandler : public content::WebUIMessageHandler {
 
   // Request all of the GCM related infos through gcm profile service.
   void RequestAllInfo(const base::ListValue* args);
-
-  // Enables/disables GCM activity recording through gcm profile service.
-  void SetRecording(const base::ListValue* args);
 
   // Callback function of the request for all gcm related infos.
   void RequestGCMStatisticsFinished(
@@ -100,26 +76,15 @@ void GcmInternalsUIMessageHandler::ReturnResults(
                             profile_service->IsGCMClientReady());
   }
   if (stats) {
-    results.SetBoolean("isRecording", stats->is_recording);
     device_info->SetBoolean("gcmClientCreated", stats->gcm_client_created);
     device_info->SetString("gcmClientState", stats->gcm_client_state);
     device_info->SetBoolean("connectionClientCreated",
                             stats->connection_client_created);
-    device_info->SetString("registeredAppIds",
-                           JoinString(stats->registered_app_ids, ","));
     if (stats->connection_client_created)
       device_info->SetString("connectionState", stats->connection_state);
     if (stats->android_id > 0) {
       device_info->SetString("androidId",
           base::StringPrintf("0x%" PRIx64, stats->android_id));
-    }
-    device_info->SetInteger("sendQueueSize", stats->send_queue_size);
-    device_info->SetInteger("resendQueueSize", stats->resend_queue_size);
-
-    if (stats->sending_activities.size() > 0) {
-      base::ListValue* send_info = new base::ListValue();
-      results.Set("sendInfo", send_info);
-      SetSendingInfo(stats->sending_activities, send_info);
     }
   }
   web_ui()->CallJavascriptFunction("gcmInternals.setGcmInternalsInfo",
@@ -128,61 +93,17 @@ void GcmInternalsUIMessageHandler::ReturnResults(
 
 void GcmInternalsUIMessageHandler::RequestAllInfo(
     const base::ListValue* args) {
-  if (args->GetSize() != 1) {
-    NOTREACHED();
-    return;
-  }
-  bool clear_logs = false;
-  if (!args->GetBoolean(0, &clear_logs)) {
-    NOTREACHED();
-    return;
-  }
-
   Profile* profile = Profile::FromWebUI(web_ui());
   gcm::GCMProfileService* profile_service =
     gcm::GCMProfileServiceFactory::GetForProfile(profile);
 
   if (!profile_service) {
     ReturnResults(profile, NULL, NULL);
-  } else if (profile_service->SignedInUserName().empty()) {
-    ReturnResults(profile, profile_service, NULL);
   } else {
-    profile_service->GetGCMStatistics(
-        base::Bind(&GcmInternalsUIMessageHandler::RequestGCMStatisticsFinished,
-                   weak_ptr_factory_.GetWeakPtr()),
-        clear_logs);
+    profile_service->RequestGCMStatistics(base::Bind(
+        &GcmInternalsUIMessageHandler::RequestGCMStatisticsFinished,
+        weak_ptr_factory_.GetWeakPtr()));
   }
-}
-
-void GcmInternalsUIMessageHandler::SetRecording(const base::ListValue* args) {
-  if (args->GetSize() != 1) {
-    NOTREACHED();
-    return;
-  }
-  bool recording = false;
-  if (!args->GetBoolean(0, &recording)) {
-    NOTREACHED();
-    return;
-  }
-
-  Profile* profile = Profile::FromWebUI(web_ui());
-  gcm::GCMProfileService* profile_service =
-      gcm::GCMProfileServiceFactory::GetForProfile(profile);
-
-  if (!profile_service) {
-    ReturnResults(profile, NULL, NULL);
-    return;
-  }
-  if (profile_service->SignedInUserName().empty()) {
-    ReturnResults(profile, profile_service, NULL);
-    return;
-  }
-  // Get fresh stats after changing recording setting.
-  profile_service->SetGCMRecording(
-      base::Bind(
-          &GcmInternalsUIMessageHandler::RequestGCMStatisticsFinished,
-          weak_ptr_factory_.GetWeakPtr()),
-      recording);
 }
 
 void GcmInternalsUIMessageHandler::RequestGCMStatisticsFinished(
@@ -199,11 +120,7 @@ void GcmInternalsUIMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getGcmInternalsInfo",
       base::Bind(&GcmInternalsUIMessageHandler::RequestAllInfo,
-                 weak_ptr_factory_.GetWeakPtr()));
-  web_ui()->RegisterMessageCallback(
-      "setGcmInternalsRecording",
-      base::Bind(&GcmInternalsUIMessageHandler::SetRecording,
-                 weak_ptr_factory_.GetWeakPtr()));
+                 base::Unretained(this)));
 }
 
 }  // namespace

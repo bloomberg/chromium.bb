@@ -12,7 +12,6 @@
 #include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "base/time/default_clock.h"
 #include "google_apis/gcm/base/mcs_message.h"
 #include "google_apis/gcm/base/mcs_util.h"
@@ -20,7 +19,6 @@
 #include "google_apis/gcm/engine/connection_factory_impl.h"
 #include "google_apis/gcm/engine/gcm_store_impl.h"
 #include "google_apis/gcm/engine/mcs_client.h"
-#include "google_apis/gcm/monitoring/gcm_stats_recorder.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
 #include "net/http/http_network_session.h"
 #include "net/url_request/url_request_context.h"
@@ -132,14 +130,12 @@ scoped_ptr<MCSClient> GCMInternalsBuilder::BuildMCSClient(
     const std::string& version,
     base::Clock* clock,
     ConnectionFactory* connection_factory,
-    GCMStore* gcm_store,
-    GCMStatsRecorder* recorder) {
+    GCMStore* gcm_store) {
   return make_scoped_ptr<MCSClient>(
       new MCSClient(version,
                     clock,
                     connection_factory,
-                    gcm_store,
-                    recorder));
+                    gcm_store));
 }
 
 scoped_ptr<ConnectionFactory> GCMInternalsBuilder::BuildConnectionFactory(
@@ -245,8 +241,7 @@ void GCMClientImpl::InitializeMCSClient(
       chrome_build_proto_.chrome_version(),
       clock_.get(),
       connection_factory_.get(),
-      gcm_store_.get(),
-      &recorder_).Pass();
+      gcm_store_.get()).Pass();
 
   mcs_client_->Initialize(
       base::Bind(&GCMClientImpl::OnMCSError, weak_ptr_factory_.GetWeakPtr()),
@@ -562,33 +557,16 @@ std::string GCMClientImpl::GetStateString() const {
   }
 }
 
-void GCMClientImpl::SetRecording(bool recording) {
-  recorder_.SetRecording(recording);
-}
-
-void GCMClientImpl::ClearActivityLogs() {
-  recorder_.Clear();
-}
-
 GCMClient::GCMStatistics GCMClientImpl::GetStatistics() const {
   GCMClient::GCMStatistics stats;
-  stats.gcm_client_created = true;
-  stats.is_recording = recorder_.is_recording();
-  stats.gcm_client_state = GetStateString();
+  stats.gcm_client_state = GCMClientImpl::GetStateString();
   stats.connection_client_created = mcs_client_.get() != NULL;
   if (mcs_client_.get()) {
     stats.connection_state = mcs_client_->GetStateString();
-    stats.send_queue_size = mcs_client_->GetSendQueueSize();
-    stats.resend_queue_size = mcs_client_->GetResendQueueSize();
+    // TODO(juyik): add more statistics such as message metadata list, etc.
   }
   if (device_checkin_info_.android_id > 0)
     stats.android_id = device_checkin_info_.android_id;
-  recorder_.CollectSendingActivities(&stats.sending_activities);
-
-  for (RegistrationInfoMap::const_iterator it = registrations_.begin();
-       it != registrations_.end(); ++it) {
-    stats.registered_app_ids.push_back(it->first);
-  }
   return stats;
 }
 
@@ -717,10 +695,6 @@ void GCMClientImpl::HandleIncomingSendError(
     send_error_details.additional_data.erase(iter);
   }
 
-  recorder_.RecordIncomingSendError(
-      data_message_stanza.category(),
-      data_message_stanza.to(),
-      data_message_stanza.id());
   delegate_->OnMessageSendError(data_message_stanza.category(),
                                 send_error_details);
 }

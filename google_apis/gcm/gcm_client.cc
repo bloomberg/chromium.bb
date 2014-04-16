@@ -24,12 +24,7 @@ GCMClient::SendErrorDetails::SendErrorDetails() : result(UNKNOWN_ERROR) {}
 GCMClient::SendErrorDetails::~SendErrorDetails() {}
 
 GCMClient::GCMStatistics::GCMStatistics()
-    : is_recording(false),
-      gcm_client_created(false),
-      connection_client_created(false),
-      android_id(0),
-      send_queue_size(0),
-      resend_queue_size(0) {
+    : gcm_client_created(false), connection_client_created(false) {
 }
 
 GCMClient::GCMStatistics::~GCMStatistics() {
