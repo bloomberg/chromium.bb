@@ -74,6 +74,9 @@ DEFAULT_CLOUD_BUCKET = 'nativeclient-archive2'
 
 def RemoveOldToolchainFiles(toolchain_dir):
   """Temporary code to delete old toolchain files."""
+  if not os.path.isdir(toolchain_dir):
+    return
+
   # Delete old tar files
   tars_dir = os.path.join(toolchain_dir, '.tars')
   if os.path.isdir(tars_dir):
