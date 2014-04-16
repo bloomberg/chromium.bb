@@ -24,6 +24,8 @@ class ScreenOrientationProvider {
 
     private int getOrientationFromWebScreenOrientations(byte orientations) {
         switch (orientations) {
+            case ScreenOrientationValues.DEFAULT:
+                return ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
             case ScreenOrientationValues.PORTRAIT_PRIMARY:
                 return ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
             case ScreenOrientationValues.PORTRAIT_SECONDARY:
@@ -32,16 +34,11 @@ class ScreenOrientationProvider {
                 return ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
             case ScreenOrientationValues.LANDSCAPE_SECONDARY:
                 return ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
-            case ScreenOrientationValues.PORTRAIT_PRIMARY |
-                    ScreenOrientationValues.PORTRAIT_SECONDARY:
+            case ScreenOrientationValues.PORTRAIT:
                 return ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT;
-            case ScreenOrientationValues.LANDSCAPE_PRIMARY |
-                    ScreenOrientationValues.LANDSCAPE_SECONDARY:
+            case ScreenOrientationValues.LANDSCAPE:
                 return ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE;
-            case ScreenOrientationValues.PORTRAIT_PRIMARY |
-                    ScreenOrientationValues.PORTRAIT_SECONDARY |
-                    ScreenOrientationValues.LANDSCAPE_PRIMARY |
-                    ScreenOrientationValues.LANDSCAPE_SECONDARY:
+            case ScreenOrientationValues.ANY:
                 return ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR;
             default:
                 Log.w(TAG, "Trying to lock to unsupported orientation!");

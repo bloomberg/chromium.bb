@@ -15,7 +15,7 @@
 #include "content/shell/common/shell_test_configuration.h"
 #include "content/shell/common/test_runner/test_preferences.h"
 #include "content/shell/renderer/test_runner/WebTestDelegate.h"
-#include "third_party/WebKit/public/platform/WebScreenOrientation.h"
+#include "third_party/WebKit/public/platform/WebScreenOrientationType.h"
 #include "v8/include/v8.h"
 
 class SkCanvas;
@@ -66,7 +66,7 @@ class WebKitTestRunner : public RenderViewObserver,
   virtual void setDeviceOrientationData(
       const blink::WebDeviceOrientationData& data) OVERRIDE;
   virtual void setScreenOrientation(
-      const blink::WebScreenOrientation& orientation) OVERRIDE;
+      const blink::WebScreenOrientationType& orientation) OVERRIDE;
   virtual void printMessage(const std::string& message) OVERRIDE;
   virtual void postTask(::WebTestRunner::WebTask* task) OVERRIDE;
   virtual void postDelayedTask(::WebTestRunner::WebTask* task,

@@ -18,7 +18,7 @@ class ScreenOrientationProviderAndroid : public ScreenOrientationProvider {
   static bool Register(JNIEnv* env);
 
   // ScreenOrientationProvider
-  virtual void LockOrientation(blink::WebScreenOrientations) OVERRIDE;
+  virtual void LockOrientation(blink::WebScreenOrientationLockType) OVERRIDE;
   virtual void UnlockOrientation() OVERRIDE;
 
  private:

@@ -20,19 +20,20 @@ class MockScreenOrientationListener :
   MockScreenOrientationListener();
   virtual ~MockScreenOrientationListener() {}
 
-  virtual void didChangeScreenOrientation(blink::WebScreenOrientation) OVERRIDE;
+  virtual void didChangeScreenOrientation(
+      blink::WebScreenOrientationType) OVERRIDE;
 
   bool did_change_screen_orientation() const {
     return did_change_screen_orientation_;
   }
 
-  blink::WebScreenOrientation screen_orientation() const {
+  blink::WebScreenOrientationType screen_orientation() const {
     return screen_orientation_;
   }
 
  private:
   bool did_change_screen_orientation_;
-  blink::WebScreenOrientation screen_orientation_;
+  blink::WebScreenOrientationType screen_orientation_;
 
   DISALLOW_COPY_AND_ASSIGN(MockScreenOrientationListener);
 };
@@ -43,7 +44,7 @@ MockScreenOrientationListener::MockScreenOrientationListener()
 }
 
 void MockScreenOrientationListener::didChangeScreenOrientation(
-    blink::WebScreenOrientation orientation) {
+    blink::WebScreenOrientationType orientation) {
   did_change_screen_orientation_ = true;
   screen_orientation_ = orientation;
 }

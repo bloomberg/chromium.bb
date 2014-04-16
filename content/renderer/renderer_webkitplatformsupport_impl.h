@@ -13,6 +13,7 @@
 #include "content/renderer/webpublicsuffixlist_impl.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebIDBFactory.h"
+#include "third_party/WebKit/public/platform/WebScreenOrientationType.h"
 #include "webkit/renderer/compositor_bindings/web_compositor_support_impl.h"
 
 namespace base {
@@ -146,7 +147,7 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   virtual void cancelVibration();
   virtual void setScreenOrientationListener(
     blink::WebScreenOrientationListener*) OVERRIDE;
-  virtual void lockOrientation(blink::WebScreenOrientations) OVERRIDE;
+  virtual void lockOrientation(blink::WebScreenOrientationLockType) OVERRIDE;
   virtual void unlockOrientation() OVERRIDE;
 
   // Disables the WebSandboxSupport implementation for testing.
@@ -178,7 +179,8 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
       const blink::WebDeviceOrientationData& data);
   // Set WebScreenOrientation to return when setScreenOrientationListener is
   // invoked.
-  static void SetMockScreenOrientationForTesting(blink::WebScreenOrientation);
+  static void SetMockScreenOrientationForTesting(
+      blink::WebScreenOrientationType);
 
   WebDatabaseObserverImpl* web_database_observer_impl() {
     return web_database_observer_impl_.get();

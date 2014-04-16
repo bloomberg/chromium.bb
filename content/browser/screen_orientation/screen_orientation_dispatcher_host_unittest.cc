@@ -14,11 +14,13 @@ namespace content {
 
 class MockScreenOrientationProvider : public ScreenOrientationProvider {
  public:
-  MockScreenOrientationProvider() : orientations_(0), unlock_called_(false) {}
+  MockScreenOrientationProvider()
+      : orientation_(blink::WebScreenOrientationLockPortraitPrimary),
+        unlock_called_(false) {}
 
-  virtual void LockOrientation(blink::WebScreenOrientations orientations)
+  virtual void LockOrientation(blink::WebScreenOrientationLockType orientation)
       OVERRIDE {
-    orientations_ = orientations;
+    orientation_ = orientation;
 
   }
 
@@ -26,8 +28,8 @@ class MockScreenOrientationProvider : public ScreenOrientationProvider {
     unlock_called_ = true;
   }
 
-  blink::WebScreenOrientations orientations() const {
-    return orientations_;
+  blink::WebScreenOrientationLockType orientation() const {
+    return orientation_;
   }
 
   bool unlock_called() const {
@@ -37,7 +39,7 @@ class MockScreenOrientationProvider : public ScreenOrientationProvider {
   virtual ~MockScreenOrientationProvider() {}
 
  private:
-  blink::WebScreenOrientations orientations_;
+  blink::WebScreenOrientationLockType orientation_;
   bool unlock_called_;
 
   DISALLOW_COPY_AND_ASSIGN(MockScreenOrientationProvider);
@@ -63,8 +65,8 @@ TEST_F(ScreenOrientationDispatcherHostTest, NullProvider) {
 
   bool message_was_ok = false;
   bool message_was_handled = dispatcher_->OnMessageReceived(
-      ScreenOrientationHostMsg_Lock(blink::WebScreenOrientationPortraitPrimary),
-          &message_was_ok);
+      ScreenOrientationHostMsg_Lock(
+          blink::WebScreenOrientationLockPortraitPrimary), &message_was_ok);
 
   EXPECT_TRUE(message_was_ok);
   EXPECT_TRUE(message_was_handled);
@@ -74,43 +76,32 @@ TEST_F(ScreenOrientationDispatcherHostTest, NullProvider) {
 // ScreenOrientationProvider.
 TEST_F(ScreenOrientationDispatcherHostTest, ProviderLock) {
   // If we change this array, update |orientationsToTestCount| below.
-  blink::WebScreenOrientations orientationsToTest[] = {
-    // The basic types.
-    blink::WebScreenOrientationPortraitPrimary,
-    blink::WebScreenOrientationPortraitSecondary,
-    blink::WebScreenOrientationLandscapePrimary,
-    blink::WebScreenOrientationLandscapeSecondary,
-    // Some unions.
-    blink::WebScreenOrientationLandscapePrimary |
-        blink::WebScreenOrientationPortraitPrimary,
-    blink::WebScreenOrientationLandscapePrimary |
-        blink::WebScreenOrientationPortraitSecondary,
-    blink::WebScreenOrientationPortraitPrimary |
-        blink::WebScreenOrientationPortraitSecondary |
-        blink::WebScreenOrientationLandscapePrimary |
-        blink::WebScreenOrientationLandscapeSecondary,
-    // Garbage values.
-    0,
-    100,
-    42
+  blink::WebScreenOrientationLockType orientationsToTest[] = {
+    blink::WebScreenOrientationLockPortraitPrimary,
+    blink::WebScreenOrientationLockPortraitSecondary,
+    blink::WebScreenOrientationLockLandscapePrimary,
+    blink::WebScreenOrientationLockLandscapeSecondary,
+    blink::WebScreenOrientationLockPortrait,
+    blink::WebScreenOrientationLockLandscapePrimary,
+    blink::WebScreenOrientationLockAny
   };
 
   // Unfortunately, initializer list constructor for std::list is not yet
   // something we can use.
   // Keep this in sync with |orientationsToTest|.
-  int orientationsToTestCount = 10;
+  int orientationsToTestCount = 7;
 
   for (int i = 0; i < orientationsToTestCount; ++i) {
     bool message_was_ok = false;
     bool message_was_handled = false;
-    blink::WebScreenOrientations orientations = orientationsToTest[i];
+    blink::WebScreenOrientationLockType orientation = orientationsToTest[i];
 
     message_was_handled = dispatcher_->OnMessageReceived(
-        ScreenOrientationHostMsg_Lock(orientations), &message_was_ok);
+        ScreenOrientationHostMsg_Lock(orientation), &message_was_ok);
 
     EXPECT_TRUE(message_was_ok);
     EXPECT_TRUE(message_was_handled);
-    EXPECT_EQ(orientations, provider_->orientations());
+    EXPECT_EQ(orientation, provider_->orientation());
   }
 }
 

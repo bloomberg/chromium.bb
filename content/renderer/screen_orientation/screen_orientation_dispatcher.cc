@@ -30,7 +30,7 @@ bool ScreenOrientationDispatcher::OnControlMessageReceived(
 }
 
 void ScreenOrientationDispatcher::OnOrientationChange(
-    blink::WebScreenOrientation orientation) {
+    blink::WebScreenOrientationType orientation) {
   if (!listener_)
     return;
 

@@ -2202,7 +2202,7 @@ void TestRunner::SetMockDeviceOrientation(bool has_alpha, double alpha,
 }
 
 void TestRunner::SetMockScreenOrientation(const std::string& orientation_str) {
-  blink::WebScreenOrientation orientation;
+  blink::WebScreenOrientationType orientation;
 
   if (orientation_str == "portrait-primary") {
     orientation = WebScreenOrientationPortraitPrimary;

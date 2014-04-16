@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_SCREEN_ORIENTATION_SCREEN_ORIENTATION_PROVIDER_H_
 #define CONTENT_BROWSER_SCREEN_ORIENTATION_SCREEN_ORIENTATION_PROVIDER_H_
 
-#include "third_party/WebKit/public/platform/WebScreenOrientation.h"
+#include "third_party/WebKit/public/platform/WebScreenOrientationLockType.h"
 
 namespace content {
 
@@ -14,7 +14,8 @@ namespace content {
 class ScreenOrientationProvider {
  public:
   // Lock the screen orientation to |orientations|.
-  virtual void LockOrientation(blink::WebScreenOrientations orientations) = 0;
+  virtual void LockOrientation(
+      blink::WebScreenOrientationLockType orientations) = 0;
 
   // Unlock the screen orientation.
   virtual void UnlockOrientation() = 0;

@@ -6,7 +6,8 @@
 #define CONTENT_BROWSER_SCREEN_ORIENTATION_SCREEN_ORIENTATION_DISPATCHER_HOST_H_
 
 #include "content/public/browser/browser_message_filter.h"
-#include "third_party/WebKit/public/platform/WebScreenOrientation.h"
+#include "third_party/WebKit/public/platform/WebScreenOrientationLockType.h"
+#include "third_party/WebKit/public/platform/WebScreenOrientationType.h"
 
 namespace content {
 
@@ -23,14 +24,14 @@ class CONTENT_EXPORT ScreenOrientationDispatcherHost
   // BrowserMessageFilter
   virtual bool OnMessageReceived(const IPC::Message&, bool*) OVERRIDE;
 
-  void OnOrientationChange(blink::WebScreenOrientation orientation);
+  void OnOrientationChange(blink::WebScreenOrientationType orientation);
 
   void SetProviderForTests(ScreenOrientationProvider* provider);
 
  private:
   virtual ~ScreenOrientationDispatcherHost();
 
-  void OnLockRequest(blink::WebScreenOrientations orientations);
+  void OnLockRequest(blink::WebScreenOrientationLockType orientations);
   void OnUnlockRequest();
 
   static ScreenOrientationProvider* CreateProvider();

@@ -34,7 +34,7 @@ bool ScreenOrientationDispatcherHost::OnMessageReceived(
 }
 
 void ScreenOrientationDispatcherHost::OnOrientationChange(
-    blink::WebScreenOrientation orientation) {
+    blink::WebScreenOrientationType orientation) {
   Send(new ScreenOrientationMsg_OrientationChange(orientation));
 }
 
@@ -44,11 +44,11 @@ void ScreenOrientationDispatcherHost::SetProviderForTests(
 }
 
 void ScreenOrientationDispatcherHost::OnLockRequest(
-    blink::WebScreenOrientations orientations) {
+    blink::WebScreenOrientationLockType orientation) {
   if (!provider_.get())
     return;
 
-  provider_->LockOrientation(orientations);
+  provider_->LockOrientation(orientation);
 }
 
 void ScreenOrientationDispatcherHost::OnUnlockRequest() {

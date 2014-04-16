@@ -1708,7 +1708,7 @@ void ContentViewCoreImpl::SendOrientationChangeEventInternal() {
   // TODO(mlamouri): temporary plumbing for Screen Orientation, this will change
   // in the future. It might leave ContentViewCoreImpl or simply replace the
   // SendOrientationChangeEvent call above.
-  blink::WebScreenOrientation orientation =
+  blink::WebScreenOrientationType orientation =
       blink::WebScreenOrientationPortraitPrimary;
 
   switch (device_orientation_) {

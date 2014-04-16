@@ -21,7 +21,7 @@ bool ScreenOrientationProviderAndroid::Register(JNIEnv* env) {
 }
 
 void ScreenOrientationProviderAndroid::LockOrientation(
-    blink::WebScreenOrientations orientations) {
+    blink::WebScreenOrientationLockType orientation) {
   if (j_screen_orientation_provider_.is_null()) {
     j_screen_orientation_provider_.Reset(Java_ScreenOrientationProvider_create(
         base::android::AttachCurrentThread()));
@@ -29,7 +29,7 @@ void ScreenOrientationProviderAndroid::LockOrientation(
 
   Java_ScreenOrientationProvider_lockOrientation(
       base::android::AttachCurrentThread(),
-      j_screen_orientation_provider_.obj(), orientations);
+      j_screen_orientation_provider_.obj(), orientation);
 }
 
 void ScreenOrientationProviderAndroid::UnlockOrientation() {

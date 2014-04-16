@@ -42,16 +42,11 @@ public class ScreenOrientationProviderTest extends ContentShellTestBase {
                 return mObserver.mOrientation == 90;
             case ScreenOrientationValues.LANDSCAPE_SECONDARY:
                 return mObserver.mOrientation == -90;
-            case ScreenOrientationValues.PORTRAIT_PRIMARY |
-                    ScreenOrientationValues.PORTRAIT_SECONDARY:
+            case ScreenOrientationValues.PORTRAIT:
                 return mObserver.mOrientation == 0 || mObserver.mOrientation == 180;
-            case ScreenOrientationValues.LANDSCAPE_PRIMARY |
-                    ScreenOrientationValues.LANDSCAPE_SECONDARY:
+            case ScreenOrientationValues.LANDSCAPE:
                 return mObserver.mOrientation == 90 || mObserver.mOrientation == -90;
-            case ScreenOrientationValues.PORTRAIT_PRIMARY |
-                    ScreenOrientationValues.PORTRAIT_SECONDARY |
-                    ScreenOrientationValues.LANDSCAPE_PRIMARY |
-                    ScreenOrientationValues.LANDSCAPE_SECONDARY:
+            case ScreenOrientationValues.ANY:
                 // The orientation should not change but might and the value could be anything.
                 return true;
             default:

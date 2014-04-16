@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "content/public/renderer/render_process_observer.h"
-#include "third_party/WebKit/public/platform/WebScreenOrientation.h"
+#include "third_party/WebKit/public/platform/WebScreenOrientationType.h"
 
 namespace blink {
 class WebScreenOrientationListener;
@@ -31,7 +31,7 @@ class CONTENT_EXPORT ScreenOrientationDispatcher
   void setListener(blink::WebScreenOrientationListener* listener);
 
  private:
-  void OnOrientationChange(blink::WebScreenOrientation orientation);
+  void OnOrientationChange(blink::WebScreenOrientationType orientation);
 
   blink::WebScreenOrientationListener* listener_;
 

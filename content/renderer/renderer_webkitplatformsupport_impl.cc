@@ -145,7 +145,7 @@ base::LazyInstance<blink::WebDeviceMotionData>::Leaky
     g_test_device_motion_data = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<blink::WebDeviceOrientationData>::Leaky
     g_test_device_orientation_data = LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<blink::WebScreenOrientation>::Leaky
+base::LazyInstance<blink::WebScreenOrientationType>::Leaky
     g_test_screen_orientation_value = LAZY_INSTANCE_INITIALIZER;
 
 //------------------------------------------------------------------------------
@@ -1143,11 +1143,11 @@ void RendererWebKitPlatformSupportImpl::setScreenOrientationListener(
 }
 
 void RendererWebKitPlatformSupportImpl::lockOrientation(
-    blink::WebScreenOrientations orientations) {
+    blink::WebScreenOrientationLockType orientation) {
   // No-op if we are currently using mock values.
   if (!(g_test_screen_orientation_value == 0))
     return;
-  RenderThread::Get()->Send(new ScreenOrientationHostMsg_Lock(orientations));
+  RenderThread::Get()->Send(new ScreenOrientationHostMsg_Lock(orientation));
 }
 
 void RendererWebKitPlatformSupportImpl::unlockOrientation() {
@@ -1159,7 +1159,7 @@ void RendererWebKitPlatformSupportImpl::unlockOrientation() {
 
 // static
 void RendererWebKitPlatformSupportImpl::SetMockScreenOrientationForTesting(
-    blink::WebScreenOrientation orientation) {
+    blink::WebScreenOrientationType orientation) {
   g_test_screen_orientation_value.Get() = orientation;
 }
 
