@@ -152,17 +152,14 @@ public:
     PassRefPtr<Path2D> currentPath();
     void setCurrentPath(Path2D*);
     void fill(const String& winding = "nonzero");
-    void fill(Path2D*);
-    void fill(Path2D*, const String& winding);
+    void fill(Path2D*, const String& winding = "nonzero");
     void stroke();
     void stroke(Path2D*);
     void clip(const String& winding = "nonzero");
-    void clip(Path2D*);
-    void clip(Path2D*, const String& winding);
+    void clip(Path2D*, const String& winding = "nonzero");
 
     bool isPointInPath(const float x, const float y, const String& winding = "nonzero");
-    bool isPointInPath(Path2D*, const float x, const float y);
-    bool isPointInPath(Path2D*, const float x, const float y, const String& winding);
+    bool isPointInPath(Path2D*, const float x, const float y, const String& winding = "nonzero");
     bool isPointInStroke(const float x, const float y);
     bool isPointInStroke(Path2D*, const float x, const float y);
 

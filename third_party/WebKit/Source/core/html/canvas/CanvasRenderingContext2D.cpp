@@ -1024,11 +1024,6 @@ void CanvasRenderingContext2D::fill(const String& windingRuleString)
     fillInternal(m_path, windingRuleString);
 }
 
-void CanvasRenderingContext2D::fill(Path2D* domPath)
-{
-    fill(domPath, "nonzero");
-}
-
 void CanvasRenderingContext2D::fill(Path2D* domPath, const String& windingRuleString)
 {
     fillInternal(domPath->path(), windingRuleString);
@@ -1103,11 +1098,6 @@ void CanvasRenderingContext2D::clip(const String& windingRuleString)
     clipInternal(m_path, windingRuleString);
 }
 
-void CanvasRenderingContext2D::clip(Path2D* domPath)
-{
-    clip(domPath, "nonzero");
-}
-
 void CanvasRenderingContext2D::clip(Path2D* domPath, const String& windingRuleString)
 {
     clipInternal(domPath->path(), windingRuleString);
@@ -1116,11 +1106,6 @@ void CanvasRenderingContext2D::clip(Path2D* domPath, const String& windingRuleSt
 bool CanvasRenderingContext2D::isPointInPath(const float x, const float y, const String& windingRuleString)
 {
     return isPointInPathInternal(m_path, x, y, windingRuleString);
-}
-
-bool CanvasRenderingContext2D::isPointInPath(Path2D* domPath, const float x, const float y)
-{
-    return isPointInPath(domPath, x, y, "nonzero");
 }
 
 bool CanvasRenderingContext2D::isPointInPath(Path2D* domPath, const float x, const float y, const String& windingRuleString)
