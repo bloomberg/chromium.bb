@@ -737,6 +737,8 @@
     { "name": "static.wepay.com", "mode": "force-https" },
     { "name": "stage.wepay.com", "mode": "force-https" },
     { "name": "vmoagents.com", "mode": "force-https" },
+    { "name": "adsfund.org", "include_subdomains": true, "mode": "force-https" },
+    { "name": "pult.co", "mode": "force-https" },
 
     // Entries that are only valid if the client supports SNI.
     { "name": "gmail.com", "mode": "force-https", "pins": "google", "snionly": true },
