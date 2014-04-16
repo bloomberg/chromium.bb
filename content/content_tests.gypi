@@ -175,8 +175,6 @@
         'test/net/url_request_slow_download_job.h',
         'test/ppapi_unittest.cc',
         'test/ppapi_unittest.h',
-        'test/test_backing_store.cc',
-        'test/test_backing_store.h',
         'test/test_content_browser_client.cc',
         'test/test_content_browser_client.h',
         'test/test_content_client.cc',

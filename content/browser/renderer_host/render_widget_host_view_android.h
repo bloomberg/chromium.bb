@@ -119,7 +119,6 @@ class RenderWidgetHostViewAndroid
       const ViewHostMsg_SelectionBounds_Params& params) OVERRIDE;
   virtual void SelectionRootBoundsChanged(const gfx::Rect& bounds) OVERRIDE;
   virtual void ScrollOffsetChanged() OVERRIDE;
-  virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
   virtual void OnAcceleratedCompositingStateChange() OVERRIDE;
   virtual void AcceleratedSurfaceInitialized(int host_id,
                                              int route_id) OVERRIDE;

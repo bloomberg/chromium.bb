@@ -16,7 +16,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/page_state.h"
-#include "content/test/test_backing_store.h"
 #include "content/test/test_web_contents.h"
 #include "media/base/video_frame.h"
 #include "ui/gfx/rect.h"
@@ -98,11 +97,6 @@ void TestRenderWidgetHostView::Destroy() { delete this; }
 
 gfx::Rect TestRenderWidgetHostView::GetViewBounds() const {
   return gfx::Rect();
-}
-
-BackingStore* TestRenderWidgetHostView::AllocBackingStore(
-    const gfx::Size& size) {
-  return new TestBackingStore(rwh_, size);
 }
 
 void TestRenderWidgetHostView::CopyFromCompositingSurface(

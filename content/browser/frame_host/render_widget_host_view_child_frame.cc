@@ -301,12 +301,6 @@ void RenderWidgetHostViewChildFrame::ShowDisambiguationPopup(
 }
 #endif  // defined(OS_ANDROID)
 
-BackingStore* RenderWidgetHostViewChildFrame::AllocBackingStore(
-    const gfx::Size& size) {
-  NOTREACHED();
-  return NULL;
-}
-
 void RenderWidgetHostViewChildFrame::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& /* dst_size */,

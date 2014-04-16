@@ -93,7 +93,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   virtual void SelectionRootBoundsChanged(const gfx::Rect& bounds) OVERRIDE;
 #endif
   virtual void ScrollOffsetChanged() OVERRIDE;
-  virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
   virtual void CopyFromCompositingSurface(
       const gfx::Rect& src_subrect,
       const gfx::Size& dst_size,

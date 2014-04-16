@@ -19,7 +19,6 @@
 #include "extensions/common/user_script.h"
 #include "url/gurl.h"
 
-class BackingStore;
 class GURL;
 class SkBitmap;
 class TabStripModel;

@@ -461,8 +461,6 @@ void MemoryDetails::UpdateHistograms() {
         continue;
     }
   }
-  UMA_HISTOGRAM_MEMORY_KB("Memory.BackingStore",
-                          RenderWidgetHost::BackingStoreMemorySize() / 1024);
 #if defined(OS_CHROMEOS)
   // Chrome OS exposes system-wide graphics driver memory which has historically
   // been a source of leak/bloat.

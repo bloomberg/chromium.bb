@@ -77,7 +77,6 @@ class WebLayer;
 #endif
 
 namespace content {
-class BackingStore;
 class InputRouter;
 class MockRenderWidgetHost;
 class OverscrollController;
@@ -139,11 +138,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
 #if defined(OS_ANDROID)
   virtual void LockBackingStore() OVERRIDE;
   virtual void UnlockBackingStore() OVERRIDE;
-#endif
-#if defined(OS_MACOSX)
-  virtual gfx::Size GetBackingStoreSize() OVERRIDE;
-  virtual bool CopyFromBackingStoreToCGContext(const CGRect& dest_rect,
-                                               CGContextRef target) OVERRIDE;
 #endif
   virtual void EnableFullAccessibilityMode() OVERRIDE;
   virtual bool IsFullAccessibilityModeForTesting() OVERRIDE;
@@ -259,26 +253,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // Whether pausing may be useful.
   bool CanPauseForPendingResizeOrRepaints();
 
-  // Check for the existance of a BackingStore of the given |desired_size| and
-  // return it if it exists. If the BackingStore is GPU, true is returned and
-  // |*backing_store| is set to NULL.
-  bool TryGetBackingStore(const gfx::Size& desired_size,
-                          BackingStore** backing_store);
-
-  // Get access to the widget's backing store matching the size of the widget's
-  // view. If you pass |force_create| as true, then GetBackingStore may block
-  // for the renderer to send a new frame. Otherwise, NULL will be returned if
-  // the backing store doesn't already exist. It will also return NULL if the
-  // backing store could not be created.
-  //
-  // Mac only: NULL may also be returned if the last frame was GPU accelerated.
-  // Call GetView()->HasAcceleratedSurface to determine if the last frame was
-  // accelerated.
-  BackingStore* GetBackingStore(bool force_create);
-
-  // Allocate a new backing store of the given size. Returns NULL on failure
-  // (for example, if we don't currently have a RenderWidgetHostView.)
-  BackingStore* AllocBackingStore(const gfx::Size& size);
+  // Wait for a surface matching the size of the widget's view, possibly
+  // blocking until the renderer sends a new frame.
+  void WaitForSurface();
 
   // When a backing store does asynchronous painting, it will call this function
   // when it is done with the DIB. We will then forward a message to the
@@ -703,24 +680,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // again.
   void DidUpdateBackingStore(const ViewHostMsg_UpdateRect_Params& params,
                              const base::TimeTicks& paint_start);
-
-  // Paints the given bitmap to the current backing store at the given
-  // location.  Returns true if the passed callback was asynchronously
-  // scheduled in the future (and thus the caller must manually synchronously
-  // call the callback function).
-  bool PaintBackingStoreRect(TransportDIB::Id bitmap,
-                             const gfx::Rect& bitmap_rect,
-                             const std::vector<gfx::Rect>& copy_rects,
-                             const gfx::Size& view_size,
-                             float scale_factor,
-                             const base::Closure& completion_callback);
-
-  // Scrolls the given |clip_rect| in the backing by the given dx/dy amount. The
-  // |dib| and its corresponding location |bitmap_rect| in the backing store
-  // is the newly painted pixels by the renderer.
-  void ScrollBackingStoreRect(const gfx::Vector2d& delta,
-                              const gfx::Rect& clip_rect,
-                              const gfx::Size& view_size);
 
   // Give key press listeners a chance to handle this key press. This allow
   // widgets that don't have focus to still handle key presses.

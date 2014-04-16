@@ -9,7 +9,6 @@
 #include "base/memory/shared_memory.h"
 #include "base/timer/timer.h"
 #include "content/browser/browser_thread_impl.h"
-#include "content/browser/renderer_host/backing_store.h"
 #include "content/browser/renderer_host/input/gesture_event_queue.h"
 #include "content/browser/renderer_host/input/input_router_impl.h"
 #include "content/browser/renderer_host/input/tap_suppression_controller.h"
@@ -1042,68 +1041,6 @@ TEST_F(RenderWidgetHostTest, Background) {
   // since windows HDC structures are opaque.
 }
 
-// Tests getting the backing store with the renderer not setting repaint ack
-// flags.
-TEST_F(RenderWidgetHostTest, GetBackingStore_NoRepaintAck) {
-  // First set the view size to match what the renderer is rendering.
-  ViewHostMsg_UpdateRect_Params params;
-  process_->InitUpdateRectParams(&params);
-  view_->set_bounds(gfx::Rect(params.view_size));
-
-  // We don't currently have a backing store, and if the renderer doesn't send
-  // one in time, we should get nothing.
-  process_->set_update_msg_should_reply(false);
-  BackingStore* backing = host_->GetBackingStore(true);
-  EXPECT_FALSE(backing);
-  // The widget host should have sent a request for a repaint, and there should
-  // be no paint ACK.
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Repaint::ID));
-  EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(
-      ViewMsg_UpdateRect_ACK::ID));
-
-  // Allowing the renderer to reply in time should give is a backing store.
-  process_->sink().ClearMessages();
-  process_->set_update_msg_should_reply(true);
-  process_->set_update_msg_reply_flags(0);
-  backing = host_->GetBackingStore(true);
-  EXPECT_TRUE(backing);
-  // The widget host should NOT have sent a request for a repaint, since there
-  // was an ACK already pending.
-  EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(ViewMsg_Repaint::ID));
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      ViewMsg_UpdateRect_ACK::ID));
-}
-
-// Tests getting the backing store with the renderer sending a repaint ack.
-TEST_F(RenderWidgetHostTest, GetBackingStore_RepaintAck) {
-  // First set the view size to match what the renderer is rendering.
-  ViewHostMsg_UpdateRect_Params params;
-  process_->InitUpdateRectParams(&params);
-  view_->set_bounds(gfx::Rect(params.view_size));
-
-  // Doing a request request with the update message allowed should work and
-  // the repaint ack should work.
-  process_->set_update_msg_should_reply(true);
-  process_->set_update_msg_reply_flags(
-      ViewHostMsg_UpdateRect_Flags::IS_REPAINT_ACK);
-  BackingStore* backing = host_->GetBackingStore(true);
-  EXPECT_TRUE(backing);
-  // We still should not have sent out a repaint request since the last flags
-  // didn't have the repaint ack set, and the pending flag will still be set.
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Repaint::ID));
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      ViewMsg_UpdateRect_ACK::ID));
-
-  // Asking again for the backing store should just re-use the existing one
-  // and not send any messagse.
-  process_->sink().ClearMessages();
-  backing = host_->GetBackingStore(true);
-  EXPECT_TRUE(backing);
-  EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(ViewMsg_Repaint::ID));
-  EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(
-      ViewMsg_UpdateRect_ACK::ID));
-}
-
 // Test that we don't paint when we're hidden, but we still send the ACK. Most
 // of the rest of the painting is tested in the GetBackingStore* ones.
 TEST_F(RenderWidgetHostTest, HiddenPaint) {
@@ -1329,20 +1266,6 @@ TEST_F(RenderWidgetHostTest, MultipleInputEvents) {
   base::MessageLoop::current()->Run();
   EXPECT_TRUE(host_->unresponsive_timer_fired());
 }
-
-// This test is not valid for Windows because getting the shared memory
-// size doesn't work.
-#if !defined(OS_WIN)
-TEST_F(RenderWidgetHostTest, IncorrectBitmapScaleFactor) {
-  ViewHostMsg_UpdateRect_Params params;
-  process_->InitUpdateRectParams(&params);
-  params.scale_factor = params.scale_factor * 2;
-
-  EXPECT_EQ(0, process_->bad_msg_count());
-  host_->OnUpdateRect(params);
-  EXPECT_EQ(1, process_->bad_msg_count());
-}
-#endif
 
 // Tests that scroll ACKs are correctly handled by the overscroll-navigation
 // controller.

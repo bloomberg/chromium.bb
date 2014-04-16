@@ -26,7 +26,6 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/gpu/compositor_util.h"
-#include "content/browser/renderer_host/backing_store_aura.h"
 #include "content/browser/renderer_host/compositor_resize_lock_aura.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target_aura.h"
@@ -833,7 +832,7 @@ bool RenderWidgetHostViewAura::HasFocus() const {
 }
 
 bool RenderWidgetHostViewAura::IsSurfaceAvailableForCopy() const {
-  return CanCopyToBitmap() || !!host_->GetBackingStore(false);
+  return CanCopyToBitmap();
 }
 
 void RenderWidgetHostViewAura::Show() {
@@ -1051,11 +1050,6 @@ void RenderWidgetHostViewAura::ScrollOffsetChanged() {
       aura::client::GetCursorClient(root);
   if (cursor_client && !cursor_client->IsCursorVisible())
     cursor_client->DisableMouseEvents();
-}
-
-BackingStore* RenderWidgetHostViewAura::AllocBackingStore(
-    const gfx::Size& size) {
-  return new BackingStoreAura(host_, size);
 }
 
 void RenderWidgetHostViewAura::CopyFromCompositingSurface(
@@ -2247,38 +2241,17 @@ void RenderWidgetHostViewAura::OnCaptureLost() {
 }
 
 void RenderWidgetHostViewAura::OnPaint(gfx::Canvas* canvas) {
-  bool has_backing_store = !!host_->GetBackingStore(false);
-  if (has_backing_store) {
-    paint_canvas_ = canvas;
-    BackingStoreAura* backing_store = static_cast<BackingStoreAura*>(
-        host_->GetBackingStore(true));
-    paint_canvas_ = NULL;
-    backing_store->SkiaShowRect(gfx::Point(), canvas);
-
-    ui::Compositor* compositor = GetCompositor();
-    if (compositor) {
-      for (size_t i = 0; i < software_latency_info_.size(); i++)
-        compositor->SetLatencyInfo(software_latency_info_[i]);
-    }
-    software_latency_info_.clear();
-  } else {
-    // For non-opaque windows, we don't draw anything, since we depend on the
-    // canvas coming from the compositor to already be initialized as
-    // transparent.
-    if (window_->layer()->fills_bounds_opaquely())
-      canvas->DrawColor(SK_ColorWHITE);
-  }
+  // For non-opaque windows, we don't draw anything, since we depend on the
+  // canvas coming from the compositor to already be initialized as
+  // transparent.
+  if (window_->layer()->fills_bounds_opaquely())
+    canvas->DrawColor(SK_ColorWHITE);
 }
 
 void RenderWidgetHostViewAura::OnDeviceScaleFactorChanged(
     float device_scale_factor) {
   if (!host_)
     return;
-
-  BackingStoreAura* backing_store = static_cast<BackingStoreAura*>(
-      host_->GetBackingStore(false));
-  if (backing_store)  // NULL in hardware path.
-    backing_store->ScaleFactorChanged(device_scale_factor);
 
   UpdateScreenInfo(window_);
 

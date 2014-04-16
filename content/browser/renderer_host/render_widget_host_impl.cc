@@ -30,8 +30,6 @@
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
-#include "content/browser/renderer_host/backing_store.h"
-#include "content/browser/renderer_host/backing_store_manager.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/input/input_router_impl.h"
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
@@ -70,9 +68,7 @@
 #include "ui/snapshot/snapshot.h"
 #include "webkit/common/webpreferences.h"
 
-#if defined(OS_MACOSX)
-#include "content/browser/renderer_host/backing_store_mac.h"
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
 #include "content/common/plugin_constants_win.h"
 #endif
 
@@ -155,12 +151,6 @@ class RenderWidgetHostIteratorImpl : public RenderWidgetHostIterator {
 };
 
 }  // namespace
-
-
-// static
-size_t RenderWidgetHost::BackingStoreMemorySize() {
-  return BackingStoreManager::MemorySize();
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostImpl
@@ -258,9 +248,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
 
 RenderWidgetHostImpl::~RenderWidgetHostImpl() {
   SetView(NULL);
-
-  // Clear our current or cached backing store if either remains.
-  BackingStoreManager::RemoveBackingStore(this);
 
   GpuSurfaceTracker::Get()->RemoveSurface(surface_id_);
   surface_id_ = 0;
@@ -566,19 +553,9 @@ void RenderWidgetHostImpl::WasShown() {
 
   SendScreenRects();
 
-  BackingStore* backing_store = BackingStoreManager::Lookup(this);
-  // If we already have a backing store for this widget, then we don't need to
-  // repaint on restore _unless_ we know that our backing store is invalid.
-  // When accelerated compositing is on, we must always repaint, even when
-  // the backing store exists.
-  bool needs_repainting;
-  if (needs_repainting_on_restore_ || !backing_store ||
-      is_accelerated_compositing_active()) {
-    needs_repainting = true;
-    needs_repainting_on_restore_ = false;
-  } else {
-    needs_repainting = false;
-  }
+  // Always repaint on restore.
+  bool needs_repainting = true;
+  needs_repainting_on_restore_ = false;
   Send(new ViewMsg_WasShown(routing_id_, needs_repainting));
 
   process_->WidgetRestored();
@@ -733,21 +710,7 @@ void RenderWidgetHostImpl::CopyFromBackingStore(
     return;
   }
 
-  BackingStore* backing_store = GetBackingStore(false);
-  if (!backing_store) {
-    callback.Run(false, SkBitmap());
-    return;
-  }
-
-  TRACE_EVENT0("browser",
-      "RenderWidgetHostImpl::CopyFromBackingStore::FromBackingStore");
-  gfx::Rect copy_rect = src_subrect.IsEmpty() ?
-      gfx::Rect(backing_store->size()) : src_subrect;
-  // When the result size is equal to the backing store size, copy from the
-  // backing store directly to the output canvas.
-  skia::PlatformBitmap output;
-  bool result = backing_store->CopyFromBackingStore(copy_rect, &output);
-  callback.Run(result, output.GetBitmap());
+  callback.Run(false, SkBitmap());
 }
 
 bool RenderWidgetHostImpl::CanCopyFromBackingStore() {
@@ -768,23 +731,6 @@ void RenderWidgetHostImpl::UnlockBackingStore() {
 }
 #endif
 
-#if defined(OS_MACOSX)
-gfx::Size RenderWidgetHostImpl::GetBackingStoreSize() {
-  BackingStore* backing_store = GetBackingStore(false);
-  return backing_store ? backing_store->size() : gfx::Size();
-}
-
-bool RenderWidgetHostImpl::CopyFromBackingStoreToCGContext(
-    const CGRect& dest_rect, CGContextRef target) {
-  BackingStore* backing_store = GetBackingStore(false);
-  if (!backing_store)
-    return false;
-  (static_cast<BackingStoreMac*>(backing_store))->
-      CopyFromBackingStoreToCGContext(dest_rect, target);
-  return true;
-}
-#endif
-
 void RenderWidgetHostImpl::PauseForPendingResizeOrRepaints() {
   TRACE_EVENT0("browser",
       "RenderWidgetHostImpl::PauseForPendingResizeOrRepaints");
@@ -792,8 +738,7 @@ void RenderWidgetHostImpl::PauseForPendingResizeOrRepaints() {
   if (!CanPauseForPendingResizeOrRepaints())
     return;
 
-  // Waiting for a backing store will do the wait for us.
-  ignore_result(GetBackingStore(true));
+  WaitForSurface();
 }
 
 bool RenderWidgetHostImpl::CanPauseForPendingResizeOrRepaints() {
@@ -808,25 +753,11 @@ bool RenderWidgetHostImpl::CanPauseForPendingResizeOrRepaints() {
   return true;
 }
 
-bool RenderWidgetHostImpl::TryGetBackingStore(const gfx::Size& desired_size,
-                                              BackingStore** backing_store) {
-  // Check if the view has an accelerated surface of the desired size.
-  if (view_->HasAcceleratedSurface(desired_size)) {
-    *backing_store = NULL;
-    return true;
-  }
-
-  // Check for a software backing store of the desired size.
-  *backing_store = BackingStoreManager::GetBackingStore(this, desired_size);
-  return !!*backing_store;
-}
-
-BackingStore* RenderWidgetHostImpl::GetBackingStore(bool force_create) {
-  TRACE_EVENT1("browser", "RenderWidgetHostImpl::GetBackingStore",
-               "force_create", force_create);
+void RenderWidgetHostImpl::WaitForSurface() {
+  TRACE_EVENT0("browser", "RenderWidgetHostImpl::WaitForSurface");
 
   if (!view_)
-    return NULL;
+    return;
 
   // The view_size will be current_size_ for auto-sized views and otherwise the
   // size of the view_. (For auto-sized views, current_size_ is updated during
@@ -836,31 +767,32 @@ BackingStore* RenderWidgetHostImpl::GetBackingStore(bool force_create) {
     // Get the desired size from the current view bounds.
     gfx::Rect view_rect = view_->GetViewBounds();
     if (view_rect.IsEmpty())
-      return NULL;
+      return;
     view_size = view_rect.size();
   }
 
-  TRACE_EVENT2("renderer_host", "RenderWidgetHostImpl::GetBackingStore",
-               "width", base::IntToString(view_size.width()),
-               "height", base::IntToString(view_size.height()));
+  TRACE_EVENT2("renderer_host",
+               "RenderWidgetHostImpl::WaitForBackingStore",
+               "width",
+               base::IntToString(view_size.width()),
+               "height",
+               base::IntToString(view_size.height()));
 
   // We should not be asked to paint while we are hidden.  If we are hidden,
   // then it means that our consumer failed to call WasShown. If we're not
   // force creating the backing store, it's OK since we can feel free to give
   // out our cached one if we have it.
-  DCHECK(!is_hidden_ || !force_create) <<
-      "GetBackingStore called while hidden!";
+  DCHECK(!is_hidden_) << "WaitForSurface called while hidden!";
 
   // We should never be called recursively; this can theoretically lead to
   // infinite recursion and almost certainly leads to lower performance.
-  DCHECK(!in_get_backing_store_) << "GetBackingStore called recursively!";
+  DCHECK(!in_get_backing_store_) << "WaitForSurface called recursively!";
   base::AutoReset<bool> auto_reset_in_get_backing_store(
       &in_get_backing_store_, true);
 
-  // We might have a cached backing store that we can reuse!
-  BackingStore* backing_store = NULL;
-  if (TryGetBackingStore(view_size, &backing_store) || !force_create)
-    return backing_store;
+  // We might have a surface that we can use!
+  if (view_->HasAcceleratedSurface(view_size))
+    return;
 
   // We do not have a suitable backing store in the cache, so send out a
   // request to the renderer to paint the view if required.
@@ -875,7 +807,7 @@ BackingStore* RenderWidgetHostImpl::GetBackingStore(bool force_create) {
   TimeDelta max_delay = TimeDelta::FromMilliseconds(kPaintMsgTimeoutMS);
   TimeTicks end_time = TimeTicks::Now() + max_delay;
   do {
-    TRACE_EVENT0("renderer_host", "GetBackingStore::WaitForUpdate");
+    TRACE_EVENT0("renderer_host", "WaitForSurface::WaitForUpdate");
 
     // When we have asked the RenderWidget to resize, and we are still waiting
     // on a response, block for a little while to see if we can't get a response
@@ -891,13 +823,12 @@ BackingStore* RenderWidgetHostImpl::GetBackingStore(bool force_create) {
 
       // Break now if we got a backing store or accelerated surface of the
       // correct size.
-      if (TryGetBackingStore(view_size, &backing_store) ||
-          abort_get_backing_store_) {
+      if (view_->HasAcceleratedSurface(view_size) || abort_get_backing_store_) {
         abort_get_backing_store_ = false;
-        return backing_store;
+        return;
       }
     } else {
-      TRACE_EVENT0("renderer_host", "GetBackingStore::Timeout");
+      TRACE_EVENT0("renderer_host", "WaitForSurface::Timeout");
       break;
     }
 
@@ -907,18 +838,6 @@ BackingStore* RenderWidgetHostImpl::GetBackingStore(bool force_create) {
     // BackingStore messages to get to the latest.
     max_delay = end_time - TimeTicks::Now();
   } while (max_delay > TimeDelta::FromSeconds(0));
-
-  // We have failed to get a backing store of view_size. Fall back on
-  // current_size_ to avoid a white flash while resizing slow pages.
-  if (view_size != current_size_)
-    TryGetBackingStore(current_size_, &backing_store);
-  return backing_store;
-}
-
-BackingStore* RenderWidgetHostImpl::AllocBackingStore(const gfx::Size& size) {
-  if (!view_)
-    return NULL;
-  return view_->AllocBackingStore(size);
 }
 
 void RenderWidgetHostImpl::DonePaintingToBackingStore() {
@@ -1362,8 +1281,6 @@ void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
     view_ = NULL;  // The View should be deleted by RenderProcessGone.
   }
 
-  BackingStoreManager::RemoveBackingStore(this);
-
   synthetic_gesture_controller_.reset();
 }
 
@@ -1680,47 +1597,7 @@ void RenderWidgetHostImpl::OnUpdateRect(
 
   DCHECK(!params.view_size.IsEmpty());
 
-  bool was_async = false;
-
-  // If this is a GPU UpdateRect, params.bitmap is invalid and dib will be NULL.
-  TransportDIB* dib = process_->GetTransportDIB(params.bitmap);
-
-  // If gpu process does painting, scroll_rect and copy_rects are always empty
-  // and backing store is never used.
-  if (dib) {
-    DCHECK(!params.bitmap_rect.IsEmpty());
-    gfx::Size pixel_size = gfx::ToFlooredSize(
-        gfx::ScaleSize(params.bitmap_rect.size(), params.scale_factor));
-    const size_t size = pixel_size.height() * pixel_size.width() * 4;
-    if (dib->size() < size) {
-      DLOG(WARNING) << "Transport DIB too small for given rectangle";
-      RecordAction(base::UserMetricsAction("BadMessageTerminate_RWH1"));
-      GetProcess()->ReceivedBadMessage();
-    } else {
-      // Scroll the backing store.
-      if (!params.scroll_rect.IsEmpty()) {
-        ScrollBackingStoreRect(params.scroll_delta,
-                               params.scroll_rect,
-                               params.view_size);
-      }
-
-      // Paint the backing store. This will update it with the
-      // renderer-supplied bits. The view will read out of the backing store
-      // later to actually draw to the screen.
-      was_async = PaintBackingStoreRect(
-          params.bitmap,
-          params.bitmap_rect,
-          params.copy_rects,
-          params.view_size,
-          params.scale_factor,
-          base::Bind(&RenderWidgetHostImpl::DidUpdateBackingStore,
-                     weak_factory_.GetWeakPtr(), params, paint_start));
-    }
-  }
-
-  if (!was_async) {
-    DidUpdateBackingStore(params, paint_start);
-  }
+  DidUpdateBackingStore(params, paint_start);
 
   if (should_auto_resize_) {
     bool post_callback = new_auto_size_.IsEmpty();
@@ -1988,64 +1865,6 @@ void RenderWidgetHostImpl::OnWindowlessPluginDummyWindowDestroyed(
   NOTREACHED() << "Unknown dummy window";
 }
 #endif
-
-bool RenderWidgetHostImpl::PaintBackingStoreRect(
-    TransportDIB::Id bitmap,
-    const gfx::Rect& bitmap_rect,
-    const std::vector<gfx::Rect>& copy_rects,
-    const gfx::Size& view_size,
-    float scale_factor,
-    const base::Closure& completion_callback) {
-  // The view may be destroyed already.
-  if (!view_)
-    return false;
-
-  if (is_hidden_) {
-    // Don't bother updating the backing store when we're hidden. Just mark it
-    // as being totally invalid. This will cause a complete repaint when the
-    // view is restored.
-    needs_repainting_on_restore_ = true;
-    return false;
-  }
-
-  bool needs_full_paint = false;
-  bool scheduled_completion_callback = false;
-  BackingStoreManager::PrepareBackingStore(this, view_size, bitmap, bitmap_rect,
-                                           copy_rects, scale_factor,
-                                           completion_callback,
-                                           &needs_full_paint,
-                                           &scheduled_completion_callback);
-  if (needs_full_paint) {
-    repaint_start_time_ = TimeTicks::Now();
-    DCHECK(!repaint_ack_pending_);
-    repaint_ack_pending_ = true;
-    TRACE_EVENT_ASYNC_BEGIN0(
-        "renderer_host", "RenderWidgetHostImpl::repaint_ack_pending_", this);
-    Send(new ViewMsg_Repaint(routing_id_, view_size));
-  }
-
-  return scheduled_completion_callback;
-}
-
-void RenderWidgetHostImpl::ScrollBackingStoreRect(const gfx::Vector2d& delta,
-                                                  const gfx::Rect& clip_rect,
-                                                  const gfx::Size& view_size) {
-  if (is_hidden_) {
-    // Don't bother updating the backing store when we're hidden. Just mark it
-    // as being totally invalid. This will cause a complete repaint when the
-    // view is restored.
-    needs_repainting_on_restore_ = true;
-    return;
-  }
-
-  // TODO(darin): do we need to do something else if our backing store is not
-  // the same size as the advertised view?  maybe we just assume there is a
-  // full paint on its way?
-  BackingStore* backing_store = BackingStoreManager::Lookup(this);
-  if (!backing_store || (backing_store->size() != view_size))
-    return;
-  backing_store->ScrollBackingStore(delta, clip_rect, view_size);
-}
 
 void RenderWidgetHostImpl::SetIgnoreInputEvents(bool ignore_input_events) {
   ignore_input_events_ = ignore_input_events;

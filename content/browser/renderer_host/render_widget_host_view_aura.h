@@ -194,7 +194,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   virtual void SelectionBoundsChanged(
       const ViewHostMsg_SelectionBounds_Params& params) OVERRIDE;
   virtual void ScrollOffsetChanged() OVERRIDE;
-  virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
   virtual void CopyFromCompositingSurface(
       const gfx::Rect& src_subrect,
       const gfx::Size& dst_size,

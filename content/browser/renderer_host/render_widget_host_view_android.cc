@@ -613,12 +613,6 @@ void RenderWidgetHostViewAndroid::SelectionRootBoundsChanged(
 void RenderWidgetHostViewAndroid::ScrollOffsetChanged() {
 }
 
-BackingStore* RenderWidgetHostViewAndroid::AllocBackingStore(
-    const gfx::Size& size) {
-  NOTIMPLEMENTED();
-  return NULL;
-}
-
 void RenderWidgetHostViewAndroid::SetBackground(const SkBitmap& background) {
   RenderWidgetHostViewBase::SetBackground(background);
   host_->Send(new ViewMsg_SetBackground(host_->GetRoutingID(), background));

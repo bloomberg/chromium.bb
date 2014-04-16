@@ -106,9 +106,6 @@ class RenderWidgetHostView;
 // the RenderWidgetHost's IPC message map.
 class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
  public:
-  // Returns the size of all the backing stores used for rendering
-  static size_t BackingStoreMemorySize();
-
   // Returns the RenderWidgetHost given its ID and the ID of its render process.
   // Returns NULL if the IDs do not correspond to a live RenderWidgetHost.
   static RenderWidgetHost* FromID(int32 process_id, int32 routing_id);
@@ -190,11 +187,6 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
 #if defined(OS_ANDROID)
   virtual void LockBackingStore() = 0;
   virtual void UnlockBackingStore() = 0;
-#endif
-#if defined(OS_MACOSX)
-  virtual gfx::Size GetBackingStoreSize() = 0;
-  virtual bool CopyFromBackingStoreToCGContext(const CGRect& dest_rect,
-                                               CGContextRef target) = 0;
 #endif
 
   // Send a command to the renderer to turn on full accessibility.
