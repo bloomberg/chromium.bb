@@ -107,6 +107,7 @@ class EventSender : public base::SupportsWeakPtr<EventSender> {
   void UpdateTouchPoint(unsigned index, int x, int y);
   void CancelTouchPoint(unsigned index);
   void SetTouchModifier(const std::string& key_name, bool set_mask);
+  void ThrowTouchPointError();
 
   void DumpFilenameBeingDragged();
 

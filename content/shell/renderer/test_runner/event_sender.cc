@@ -1390,15 +1390,27 @@ void EventSender::ClearTouchPoints() {
   touch_points_.clear();
 }
 
+void EventSender::ThrowTouchPointError() {
+  v8::Isolate* isolate = blink::mainThreadIsolate();
+  isolate->ThrowException(v8::Exception::TypeError(
+      gin::StringToV8(isolate, "Invalid touch point.")));
+}
+
 void EventSender::ReleaseTouchPoint(unsigned index) {
-  DCHECK_LT(index, touch_points_.size());
+  if (index >= touch_points_.size()) {
+    ThrowTouchPointError();
+    return;
+  }
 
   WebTouchPoint* touch_point = &touch_points_[index];
   touch_point->state = WebTouchPoint::StateReleased;
 }
 
 void EventSender::UpdateTouchPoint(unsigned index, int x, int y) {
-  DCHECK_LT(index, touch_points_.size());
+  if (index >= touch_points_.size()) {
+    ThrowTouchPointError();
+    return;
+  }
 
   WebTouchPoint* touch_point = &touch_points_[index];
   touch_point->state = WebTouchPoint::StateMoved;
@@ -1407,7 +1419,10 @@ void EventSender::UpdateTouchPoint(unsigned index, int x, int y) {
 }
 
 void EventSender::CancelTouchPoint(unsigned index) {
-  DCHECK_LT(index, touch_points_.size());
+  if (index >= touch_points_.size()) {
+    ThrowTouchPointError();
+    return;
+  }
 
   WebTouchPoint* touch_point = &touch_points_[index];
   touch_point->state = WebTouchPoint::StateCancelled;
