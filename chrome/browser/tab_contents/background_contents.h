@@ -65,6 +65,7 @@ class BackgroundContents : public content::WebContentsDelegate,
                               const gfx::Rect& initial_pos,
                               bool user_gesture,
                               bool* was_blocked) OVERRIDE;
+  virtual bool IsNeverVisible(content::WebContents* web_contents) OVERRIDE;
 
   // content::WebContentsObserver implementation:
   virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;

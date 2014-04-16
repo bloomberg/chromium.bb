@@ -340,6 +340,7 @@ class CONTENT_EXPORT WebContentsImpl
                                       bool is_reload,
                                       IPC::Message* reply_msg) OVERRIDE;
   virtual WebContents* GetAsWebContents() OVERRIDE;
+  virtual bool IsNeverVisible() OVERRIDE;
 
   // RenderViewHostDelegate ----------------------------------------------------
   virtual RenderViewHostDelegateView* GetDelegateView() OVERRIDE;

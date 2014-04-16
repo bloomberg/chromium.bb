@@ -194,6 +194,7 @@ class CONTENT_EXPORT RenderViewImpl
                                 bool is_renderer_created,
                                 bool swapped_out,
                                 bool hidden,
+                                bool never_visible,
                                 int32 next_page_id,
                                 const blink::WebScreenInfo& screen_info,
                                 AccessibilityMode accessibility_mode);

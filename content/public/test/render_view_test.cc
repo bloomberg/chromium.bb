@@ -195,6 +195,7 @@ void RenderViewTest::SetUp() {
                              false,  // is_renderer_created
                              false,  // swapped_out
                              false,  // hidden
+                             false,  // never_visible
                              1,      // next_page_id
                              blink::WebScreenInfo(),
                              AccessibilityModeOff);

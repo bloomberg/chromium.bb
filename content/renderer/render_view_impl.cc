@@ -642,7 +642,8 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
     : RenderWidget(blink::WebPopupTypeNone,
                    params->screen_info,
                    params->swapped_out,
-                   params->hidden),
+                   params->hidden,
+                   params->never_visible),
       webkit_preferences_(params->webkit_prefs),
       send_content_state_immediately_(false),
       enabled_bindings_(0),
@@ -927,6 +928,7 @@ RenderViewImpl* RenderViewImpl::Create(
     bool is_renderer_created,
     bool swapped_out,
     bool hidden,
+    bool never_visible,
     int32 next_page_id,
     const blink::WebScreenInfo& screen_info,
     AccessibilityMode accessibility_mode) {
@@ -942,6 +944,7 @@ RenderViewImpl* RenderViewImpl::Create(
                               is_renderer_created,
                               swapped_out,
                               hidden,
+                              never_visible,
                               next_page_id,
                               screen_info,
                               accessibility_mode);
@@ -1507,19 +1510,11 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
 
   WebUserGestureIndicator::consumeUserGesture();
 
-  WebPreferences transferred_preferences = webkit_preferences_;
-
-  // Unless accelerated compositing has been explicitly disabled from the
-  // command line (e.g. via the blacklist or about:flags) re-enable it for
-  // new views that get spawned by this view. This gets around the issue that
-  // background extension pages disable accelerated compositing via web prefs
-  // but can themselves spawn a visible render view which should be allowed
-  // use gpu acceleration.
-  if (!webkit_preferences_.accelerated_compositing_enabled) {
-    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-    if (!command_line.HasSwitch(switches::kDisableAcceleratedCompositing))
-      transferred_preferences.accelerated_compositing_enabled = true;
-  }
+  // While this view may be a background extension page, it can spawn a visible
+  // render view. So we just assume that the new one is not another background
+  // page instead of passing on our own value.
+  // TODO(vangelis): Can we tell if the new view will be a background page?
+  bool never_visible = false;
 
   // The initial hidden state for the RenderViewImpl here has to match what the
   // browser will eventually decide for the given disposition. Since we have to
@@ -1529,7 +1524,7 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
   RenderViewImpl* view = RenderViewImpl::Create(
       routing_id_,
       renderer_preferences_,
-      transferred_preferences,
+      webkit_preferences_,
       routing_id,
       main_frame_routing_id,
       surface_id,
@@ -1538,7 +1533,8 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
       true,              // is_renderer_created
       false,             // swapped_out
       params.disposition == NEW_BACKGROUND_TAB,  // hidden
-      1,                                         // next_page_id
+      never_visible,
+      1,  // next_page_id
       screen_info_,
       accessibility_mode_);
   view->opened_by_user_gesture_ = params.user_gesture;

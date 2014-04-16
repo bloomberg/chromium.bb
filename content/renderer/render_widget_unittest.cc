@@ -31,10 +31,12 @@ class RenderWidgetUnittest : public testing::Test {
 
 class TouchableRenderWidget : public RenderWidget {
  public:
-  TouchableRenderWidget() : RenderWidget(blink::WebPopupTypeNone,
-                                         blink::WebScreenInfo(),
-                                         false,
-                                         false) {}
+  TouchableRenderWidget()
+      : RenderWidget(blink::WebPopupTypeNone,
+                     blink::WebScreenInfo(),
+                     false,
+                     false,
+                     false) {}
 
   void SetTouchRegion(const std::vector<gfx::Rect>& rects) {
     rects_ = rects;

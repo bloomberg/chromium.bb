@@ -313,6 +313,7 @@ bool RenderViewHostImpl::CreateRenderView(
   params.opener_route_id = opener_route_id;
   params.swapped_out = !IsRVHStateActive(rvh_state_);
   params.hidden = is_hidden();
+  params.never_visible = delegate_->IsNeverVisible();
   params.next_page_id = next_page_id;
   GetWebScreenInfo(&params.screen_info);
   params.accessibility_mode = accessibility_mode();

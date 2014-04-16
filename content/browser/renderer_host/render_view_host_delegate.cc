@@ -39,4 +39,8 @@ FrameTree* RenderViewHostDelegate::GetFrameTree() {
   return NULL;
 }
 
+bool RenderViewHostDelegate::IsNeverVisible() {
+  return false;
+}
+
 }  // namespace content

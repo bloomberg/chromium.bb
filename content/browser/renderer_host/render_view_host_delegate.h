@@ -308,6 +308,9 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   virtual SessionStorageNamespace* GetSessionStorageNamespace(
       SiteInstance* instance);
 
+  // Returns true if the RenderViewHost will never be visible.
+  virtual bool IsNeverVisible();
+
   // Returns the FrameTree the render view should use. Guaranteed to be constant
   // for the lifetime of the render view.
   //

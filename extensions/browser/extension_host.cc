@@ -427,4 +427,9 @@ void ExtensionHost::RequestMediaAccessPermission(
       web_contents, request, callback, extension());
 }
 
+bool ExtensionHost::IsNeverVisible(content::WebContents* web_contents) {
+  ViewType view_type = extensions::GetViewType(web_contents);
+  return view_type == extensions::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE;
+}
+
 }  // namespace extensions

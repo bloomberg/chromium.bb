@@ -159,6 +159,9 @@ class CONTENT_EXPORT RenderWidget
   virtual void didHandleGestureEvent(const blink::WebGestureEvent& event,
                                      bool event_cancelled);
 
+  // Begins the compositor's scheduler to start producing frames.
+  void StartCompositor();
+
   // Called when a plugin is moved.  These events are queued up and sent with
   // the next paint or scroll message to the host.
   void SchedulePluginMove(const WebPluginGeometry& move);
@@ -275,7 +278,8 @@ class CONTENT_EXPORT RenderWidget
   RenderWidget(blink::WebPopupType popup_type,
                const blink::WebScreenInfo& screen_info,
                bool swapped_out,
-               bool hidden);
+               bool hidden,
+               bool never_visible);
 
   virtual ~RenderWidget();
 
@@ -616,6 +620,9 @@ class CONTENT_EXPORT RenderWidget
 
   // Indicates that we shouldn't bother generated paint events.
   bool is_hidden_;
+
+  // Indicates that we are never visible, so never produce graphical output.
+  bool never_visible_;
 
   // Indicates that we are in fullscreen mode.
   bool is_fullscreen_;

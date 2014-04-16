@@ -3116,6 +3116,12 @@ WebContents* WebContentsImpl::GetAsWebContents() {
   return this;
 }
 
+bool WebContentsImpl::IsNeverVisible() {
+  if (!delegate_)
+    return false;
+  return delegate_->IsNeverVisible(this);
+}
+
 RenderViewHostDelegateView* WebContentsImpl::GetDelegateView() {
   return render_view_host_delegate_view_;
 }

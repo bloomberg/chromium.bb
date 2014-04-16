@@ -101,6 +101,7 @@ class ExtensionHost : public content::WebContentsDelegate,
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback) OVERRIDE;
+  virtual bool IsNeverVisible(content::WebContents* web_contents) OVERRIDE;
 
   // content::NotificationObserver
   virtual void Observe(int type,

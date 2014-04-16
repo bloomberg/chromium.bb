@@ -461,6 +461,9 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual void MoveValidationMessage(WebContents* web_contents,
                                      const gfx::Rect& anchor_in_root_view) {}
 
+  // Returns true if the WebContents is never visible.
+  virtual bool IsNeverVisible(WebContents* web_contents);
+
  protected:
   virtual ~WebContentsDelegate();
 

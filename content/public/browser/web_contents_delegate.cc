@@ -196,4 +196,8 @@ gfx::Size WebContentsDelegate::GetSizeForNewRenderView(
   return gfx::Size();
 }
 
+bool WebContentsDelegate::IsNeverVisible(WebContents* web_contents) {
+  return false;
+}
+
 }  // namespace content

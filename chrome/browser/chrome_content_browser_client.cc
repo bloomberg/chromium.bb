@@ -2355,11 +2355,6 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
 
   if (view_type == extensions::VIEW_TYPE_NOTIFICATION) {
     web_prefs->allow_scripts_to_close_windows = true;
-  } else if (view_type == extensions::VIEW_TYPE_BACKGROUND_CONTENTS) {
-    // Disable all kinds of acceleration for background pages.
-    // See http://crbug.com/96005 and http://crbug.com/96006
-    web_prefs->force_compositing_mode = false;
-    web_prefs->accelerated_compositing_enabled = false;
   }
 
 #if defined(OS_CHROMEOS)

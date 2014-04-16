@@ -27,13 +27,6 @@ void SetPreferences(const extensions::Extension* extension,
     // Tabs aren't typically allowed to close windows. But extensions shouldn't
     // be subject to that.
     webkit_prefs->allow_scripts_to_close_windows = true;
-
-    // Disable gpu acceleration for extension background pages to avoid
-    // unecessarily creating a compositor context for them.
-    if (render_view_type == extensions::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
-      webkit_prefs->accelerated_compositing_enabled = false;
-      webkit_prefs->force_compositing_mode = false;
-    }
   }
 
   if (extension->is_platform_app()) {
