@@ -686,9 +686,6 @@ String UseCounter::deprecationMessage(Feature feature)
     case PrefixedMediaSourceOpen:
         return "'WebKitMediaSource' is deprecated. Please use 'MediaSource' instead.";
 
-    case DOMImplementationCreateCSSStyleSheet:
-        return "'DOMImplementation.createCSSStyleSheet()' is deprecated.";
-
     case MediaErrorEncrypted:
         return "'MediaError.MEDIA_ERR_ENCRYPTED' is deprecated. This error code is never used.";
 

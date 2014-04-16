@@ -235,7 +235,6 @@ public:
         HTMLElementOuterText = 214,
         ReplaceDocumentViaJavaScriptURL = 215,
         ElementPrefixedMatchesSelector = 217,
-        DOMImplementationCreateCSSStyleSheet = 218,
         CSSStyleSheetRules = 219,
         CSSStyleSheetAddRule = 220,
         CSSStyleSheetRemoveRule = 221,

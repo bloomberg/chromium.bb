@@ -36,12 +36,6 @@
                                                  [TreatNullAs=NullString] DOMString qualifiedName,
                                                  [Default=Undefined] optional DocumentType doctype);
 
-    // DOMImplementationCSS interface from DOM Level 2 CSS
-
-    [DeprecateAs=DOMImplementationCreateCSSStyleSheet]
-    CSSStyleSheet createCSSStyleSheet([Default=Undefined] optional DOMString title,
-                                      [Default=Undefined] optional DOMString media);
-
     // HTMLDOMImplementation interface from DOM Level 2 HTML
 
     HTMLDocument createHTMLDocument([Default=NullString] optional DOMString title);

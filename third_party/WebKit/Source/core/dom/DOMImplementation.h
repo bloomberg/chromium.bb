@@ -57,9 +57,6 @@ public:
 
     DOMImplementation* getInterface(const String& feature);
 
-    // From the DOMImplementationCSS interface
-    static PassRefPtrWillBeRawPtr<CSSStyleSheet> createCSSStyleSheet(const String& title, const String& media);
-
     // From the HTMLDOMImplementation interface
     PassRefPtr<HTMLDocument> createHTMLDocument(const String& title);
 

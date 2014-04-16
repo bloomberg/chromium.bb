@@ -537,8 +537,7 @@ void StyleSheetContents::registerClient(CSSStyleSheet* sheet)
 {
     ASSERT(!m_loadingClients.contains(sheet) && !m_completedClients.contains(sheet));
 
-    // InspectorCSSAgent::buildObjectForRule and document.implementation.createCSSStyleSheet
-    // creates CSSStyleSheet without any owner node.
+    // InspectorCSSAgent::buildObjectForRule creates CSSStyleSheet without any owner node.
     if (!sheet->ownerDocument())
         return;
 

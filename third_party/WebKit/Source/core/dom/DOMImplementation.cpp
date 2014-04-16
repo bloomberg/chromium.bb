@@ -236,15 +236,6 @@ PassRefPtr<XMLDocument> DOMImplementation::createDocument(const AtomicString& na
     return doc.release();
 }
 
-PassRefPtrWillBeRawPtr<CSSStyleSheet> DOMImplementation::createCSSStyleSheet(const String&, const String& media)
-{
-    // FIXME: Title should be set.
-    // FIXME: Media could have wrong syntax, in which case we should generate an exception.
-    RefPtrWillBeRawPtr<CSSStyleSheet> sheet = CSSStyleSheet::create(StyleSheetContents::create(strictCSSParserContext()));
-    sheet->setMediaQueries(MediaQuerySet::create(media));
-    return sheet;
-}
-
 bool DOMImplementation::isXMLMIMEType(const String& mimeType)
 {
     if (equalIgnoringCase(mimeType, "text/xml")
