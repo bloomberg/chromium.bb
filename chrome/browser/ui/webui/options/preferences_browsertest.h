@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_vector.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -49,7 +50,6 @@ class PreferencesBrowserTest : public InProcessBrowserTest {
 
   // InProcessBrowserTest implementation:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
-  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE;
 
   // Sets user policies through the mock policy provider.
   void SetUserPolicies(const std::vector<std::string>& names,
@@ -186,8 +186,8 @@ class PreferencesBrowserTest : public InProcessBrowserTest {
   std::vector<std::string> types_;
   std::vector<std::string> pref_names_;
   std::vector<std::string> policy_names_;
-  std::vector<base::Value*> default_values_;
-  std::vector<base::Value*> non_default_values_;
+  ScopedVector<base::Value> default_values_;
+  ScopedVector<base::Value> non_default_values_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PreferencesBrowserTest);
