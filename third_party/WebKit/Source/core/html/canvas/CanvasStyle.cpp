@@ -46,7 +46,8 @@ static ColorParseResult parseColor(RGBA32& parsedColor, const String& colorStrin
 {
     if (equalIgnoringCase(colorString, "currentcolor"))
         return ParsedCurrentColor;
-    if (BisonCSSParser::parseColor(parsedColor, colorString))
+    const bool useStrictParsing = true;
+    if (BisonCSSParser::parseColor(parsedColor, colorString, useStrictParsing))
         return ParsedRGBA;
     if (BisonCSSParser::parseSystemColor(parsedColor, colorString))
         return ParsedSystemColor;
