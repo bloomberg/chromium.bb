@@ -11,15 +11,15 @@ var element = document.getElementById('e');
 var keyframes = [{opacity: '1', offset: 0}, {opacity: '0', offset: 1}];
 
 var animationBasic = new Animation(element, keyframes);
-var specifiedTimingBasic = animationBasic.specified;
+var specifiedTimingBasic = animationBasic.timing;
 
 var timingNumberDuration = {duration: 2};
 var animationNumberDuration = new Animation(element, keyframes, timingNumberDuration);
-var specifiedTimingNumberDuration = animationNumberDuration.specified;
+var specifiedTimingNumberDuration = animationNumberDuration.timing;
 
 var timingNoDuration = {iterations: 3};
 var animationNoDuration = new Animation(element, keyframes, timingNoDuration);
-var specifiedTimingNoDuration = animationNoDuration.specified;
+var specifiedTimingNoDuration = animationNoDuration.timing;
 
 var timingAllFields = {
     delay: 2,
@@ -33,7 +33,7 @@ var timingAllFields = {
     easing: 'step-start'
 };
 var animationAllFields = new Animation(element, keyframes, timingAllFields);
-var specifiedTimingAllFields = animationAllFields.specified;
+var specifiedTimingAllFields = animationAllFields.timing;
 
 test(function() {
     assert_equals(specifiedTimingBasic.constructor, Timing);
@@ -46,15 +46,15 @@ test(function() {
     assert_equals(specifiedTimingBasic.playbackRate, 1);
     assert_equals(specifiedTimingBasic.direction, 'normal');
     assert_equals(specifiedTimingBasic.easing, 'linear');
-}, 'TimedItem.specified should return a TimedItemTiming, which should have a getter for each member of the underlying Timing object.');
+}, 'TimedItem.timing should return a TimedItemTiming, which should have a getter for each member of the underlying Timing object.');
 
 test(function() {
     assert_equals(specifiedTimingNumberDuration.duration, 2);
-}, 'TimedItem.specified.duration should return a number when duration was set as a number.');
+}, 'TimedItem.timing.duration should return a number when duration was set as a number.');
 
 test(function() {
     assert_equals(specifiedTimingNoDuration.duration, 'auto');
-}, 'TimedItem.specified.duration should return "auto" when duration was not specified.');
+}, 'TimedItem.timing.duration should return "auto" when duration was not specified.');
 
 test(function() {
     assert_equals(specifiedTimingAllFields.delay, 2);
@@ -66,5 +66,5 @@ test(function() {
     assert_equals(specifiedTimingAllFields.playbackRate, 2);
     assert_equals(specifiedTimingAllFields.direction, 'reverse');
     assert_equals(specifiedTimingAllFields.easing, 'step-start');
-}, 'TimedItem.specified should have a getter for each member of the underlying Timing object.');
+}, 'TimedItem.timing should have a getter for each member of the underlying Timing object.');
 </script>

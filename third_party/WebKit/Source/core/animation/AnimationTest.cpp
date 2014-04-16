@@ -229,7 +229,7 @@ TEST_F(AnimationAnimationV8Test, SpecifiedGetters)
 
     RefPtr<Animation> animation = createAnimation(element.get(), jsKeyframes, timingInputDictionary, exceptionState);
 
-    RefPtr<TimedItemTiming> specified = animation->specified();
+    RefPtr<TimedItemTiming> specified = animation->timing();
     EXPECT_EQ(2, specified->delay());
     EXPECT_EQ(0.5, specified->endDelay());
     EXPECT_EQ("backwards", specified->fill());
@@ -250,7 +250,7 @@ TEST_F(AnimationAnimationV8Test, SpecifiedDurationGetter)
 
     RefPtr<Animation> animationWithDuration = createAnimation(element.get(), jsKeyframes, timingInputDictionaryWithDuration, exceptionState);
 
-    RefPtr<TimedItemTiming> specifiedWithDuration = animationWithDuration->specified();
+    RefPtr<TimedItemTiming> specifiedWithDuration = animationWithDuration->timing();
     bool isNumber = false;
     double numberDuration = std::numeric_limits<double>::quiet_NaN();
     bool isString = false;
@@ -267,7 +267,7 @@ TEST_F(AnimationAnimationV8Test, SpecifiedDurationGetter)
 
     RefPtr<Animation> animationNoDuration = createAnimation(element.get(), jsKeyframes, timingInputDictionaryNoDuration, exceptionState);
 
-    RefPtr<TimedItemTiming> specifiedNoDuration = animationNoDuration->specified();
+    RefPtr<TimedItemTiming> specifiedNoDuration = animationNoDuration->timing();
     isNumber = false;
     numberDuration = std::numeric_limits<double>::quiet_NaN();
     isString = false;
@@ -286,7 +286,7 @@ TEST_F(AnimationAnimationV8Test, SpecifiedSetters)
     Dictionary timingInputDictionary = Dictionary(v8::Handle<v8::Value>::Cast(timingInput), m_isolate);
     RefPtr<Animation> animation = createAnimation(element.get(), jsKeyframes, timingInputDictionary, exceptionState);
 
-    RefPtr<TimedItemTiming> specified = animation->specified();
+    RefPtr<TimedItemTiming> specified = animation->timing();
 
     EXPECT_EQ(0, specified->delay());
     specified->setDelay(2);
@@ -328,7 +328,7 @@ TEST_F(AnimationAnimationV8Test, SetSpecifiedDuration)
     Dictionary timingInputDictionary = Dictionary(v8::Handle<v8::Value>::Cast(timingInput), m_isolate);
     RefPtr<Animation> animation = createAnimation(element.get(), jsKeyframes, timingInputDictionary, exceptionState);
 
-    RefPtr<TimedItemTiming> specified = animation->specified();
+    RefPtr<TimedItemTiming> specified = animation->timing();
 
     bool isNumber = false;
     double numberDuration = std::numeric_limits<double>::quiet_NaN();

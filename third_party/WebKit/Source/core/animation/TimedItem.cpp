@@ -54,34 +54,34 @@ TimedItem::TimedItem(const Timing& timing, PassOwnPtr<EventDelegate> eventDelega
     : m_parent(0)
     , m_startTime(0)
     , m_player(0)
-    , m_specified(timing)
+    , m_timing(timing)
     , m_eventDelegate(eventDelegate)
     , m_calculated()
     , m_isFirstSample(true)
     , m_needsUpdate(true)
     , m_lastUpdateTime(nullValue())
 {
-    m_specified.assertValid();
+    m_timing.assertValid();
 }
 
 double TimedItem::iterationDuration() const
 {
-    double result = std::isnan(m_specified.iterationDuration) ? intrinsicIterationDuration() : m_specified.iterationDuration;
+    double result = std::isnan(m_timing.iterationDuration) ? intrinsicIterationDuration() : m_timing.iterationDuration;
     ASSERT(result >= 0);
     return result;
 }
 
 double TimedItem::repeatedDuration() const
 {
-    const double result = multiplyZeroAlwaysGivesZero(iterationDuration(), m_specified.iterationCount);
+    const double result = multiplyZeroAlwaysGivesZero(iterationDuration(), m_timing.iterationCount);
     ASSERT(result >= 0);
     return result;
 }
 
 double TimedItem::activeDuration() const
 {
-    const double result = m_specified.playbackRate
-        ? repeatedDuration() / std::abs(m_specified.playbackRate)
+    const double result = m_timing.playbackRate
+        ? repeatedDuration() / std::abs(m_timing.playbackRate)
         : std::numeric_limits<double>::infinity();
     ASSERT(result >= 0);
     return result;
@@ -90,7 +90,7 @@ double TimedItem::activeDuration() const
 void TimedItem::updateSpecifiedTiming(const Timing& timing)
 {
     // FIXME: Test whether the timing is actually different?
-    m_specified = timing;
+    m_timing = timing;
     invalidate();
     if (m_player)
         m_player->setOutdated();
@@ -111,43 +111,43 @@ void TimedItem::updateInheritedTime(double inheritedTime) const
     if (needsUpdate) {
         const double activeDuration = this->activeDuration();
 
-        const Phase currentPhase = calculatePhase(activeDuration, localTime, m_specified);
+        const Phase currentPhase = calculatePhase(activeDuration, localTime, m_timing);
         // FIXME: parentPhase depends on groups being implemented.
         const TimedItem::Phase parentPhase = TimedItem::PhaseActive;
-        const double activeTime = calculateActiveTime(activeDuration, resolvedFillMode(m_specified.fillMode, isAnimation()), localTime, parentPhase, currentPhase, m_specified);
+        const double activeTime = calculateActiveTime(activeDuration, resolvedFillMode(m_timing.fillMode, isAnimation()), localTime, parentPhase, currentPhase, m_timing);
 
         double currentIteration;
         double timeFraction;
         if (const double iterationDuration = this->iterationDuration()) {
-            const double startOffset = multiplyZeroAlwaysGivesZero(m_specified.iterationStart, iterationDuration);
+            const double startOffset = multiplyZeroAlwaysGivesZero(m_timing.iterationStart, iterationDuration);
             ASSERT(startOffset >= 0);
-            const double scaledActiveTime = calculateScaledActiveTime(activeDuration, activeTime, startOffset, m_specified);
-            const double iterationTime = calculateIterationTime(iterationDuration, repeatedDuration(), scaledActiveTime, startOffset, m_specified);
+            const double scaledActiveTime = calculateScaledActiveTime(activeDuration, activeTime, startOffset, m_timing);
+            const double iterationTime = calculateIterationTime(iterationDuration, repeatedDuration(), scaledActiveTime, startOffset, m_timing);
 
-            currentIteration = calculateCurrentIteration(iterationDuration, iterationTime, scaledActiveTime, m_specified);
-            timeFraction = calculateTransformedTime(currentIteration, iterationDuration, iterationTime, m_specified) / iterationDuration;
+            currentIteration = calculateCurrentIteration(iterationDuration, iterationTime, scaledActiveTime, m_timing);
+            timeFraction = calculateTransformedTime(currentIteration, iterationDuration, iterationTime, m_timing) / iterationDuration;
 
             if (!isNull(iterationTime)) {
-                timeToNextIteration = (iterationDuration - iterationTime) / std::abs(m_specified.playbackRate);
+                timeToNextIteration = (iterationDuration - iterationTime) / std::abs(m_timing.playbackRate);
                 if (activeDuration - activeTime < timeToNextIteration)
                     timeToNextIteration = std::numeric_limits<double>::infinity();
             }
         } else {
             const double localIterationDuration = 1;
-            const double localRepeatedDuration = localIterationDuration * m_specified.iterationCount;
+            const double localRepeatedDuration = localIterationDuration * m_timing.iterationCount;
             ASSERT(localRepeatedDuration >= 0);
-            const double localActiveDuration = m_specified.playbackRate ? localRepeatedDuration / std::abs(m_specified.playbackRate) : std::numeric_limits<double>::infinity();
+            const double localActiveDuration = m_timing.playbackRate ? localRepeatedDuration / std::abs(m_timing.playbackRate) : std::numeric_limits<double>::infinity();
             ASSERT(localActiveDuration >= 0);
-            const double localLocalTime = localTime < m_specified.startDelay ? localTime : localActiveDuration + m_specified.startDelay;
-            const TimedItem::Phase localCurrentPhase = calculatePhase(localActiveDuration, localLocalTime, m_specified);
-            const double localActiveTime = calculateActiveTime(localActiveDuration, resolvedFillMode(m_specified.fillMode, isAnimation()), localLocalTime, parentPhase, localCurrentPhase, m_specified);
-            const double startOffset = m_specified.iterationStart * localIterationDuration;
+            const double localLocalTime = localTime < m_timing.startDelay ? localTime : localActiveDuration + m_timing.startDelay;
+            const TimedItem::Phase localCurrentPhase = calculatePhase(localActiveDuration, localLocalTime, m_timing);
+            const double localActiveTime = calculateActiveTime(localActiveDuration, resolvedFillMode(m_timing.fillMode, isAnimation()), localLocalTime, parentPhase, localCurrentPhase, m_timing);
+            const double startOffset = m_timing.iterationStart * localIterationDuration;
             ASSERT(startOffset >= 0);
-            const double scaledActiveTime = calculateScaledActiveTime(localActiveDuration, localActiveTime, startOffset, m_specified);
-            const double iterationTime = calculateIterationTime(localIterationDuration, localRepeatedDuration, scaledActiveTime, startOffset, m_specified);
+            const double scaledActiveTime = calculateScaledActiveTime(localActiveDuration, localActiveTime, startOffset, m_timing);
+            const double iterationTime = calculateIterationTime(localIterationDuration, localRepeatedDuration, scaledActiveTime, startOffset, m_timing);
 
-            currentIteration = calculateCurrentIteration(localIterationDuration, iterationTime, scaledActiveTime, m_specified);
-            timeFraction = calculateTransformedTime(currentIteration, localIterationDuration, iterationTime, m_specified);
+            currentIteration = calculateCurrentIteration(localIterationDuration, iterationTime, scaledActiveTime, m_timing);
+            timeFraction = calculateTransformedTime(currentIteration, localIterationDuration, iterationTime, m_timing);
         }
 
         m_calculated.currentIteration = currentIteration;
@@ -188,7 +188,7 @@ const TimedItem::CalculatedTiming& TimedItem::ensureCalculated() const
     return m_calculated;
 }
 
-PassRefPtr<TimedItemTiming> TimedItem::specified()
+PassRefPtr<TimedItemTiming> TimedItem::timing()
 {
     return TimedItemTiming::create(this);
 }

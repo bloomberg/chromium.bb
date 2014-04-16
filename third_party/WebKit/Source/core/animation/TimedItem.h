@@ -90,8 +90,8 @@ public:
     const AnimationPlayer* player() const { return m_player; }
     AnimationPlayer* player() { return m_player; }
     AnimationPlayer* player(bool& isNull) { isNull = !m_player; return m_player; }
-    const Timing& specifiedTiming() const { return m_specified; }
-    PassRefPtr<TimedItemTiming> specified();
+    const Timing& specifiedTiming() const { return m_timing; }
+    PassRefPtr<TimedItemTiming> timing();
     void updateSpecifiedTiming(const Timing&);
 
     double localTime(bool& isNull) const { isNull = !m_player; return ensureCalculated().localTime; }
@@ -136,7 +136,7 @@ private:
     TimedItem* const m_parent;
     const double m_startTime;
     AnimationPlayer* m_player;
-    Timing m_specified;
+    Timing m_timing;
     OwnPtr<EventDelegate> m_eventDelegate;
 
     mutable struct CalculatedTiming {

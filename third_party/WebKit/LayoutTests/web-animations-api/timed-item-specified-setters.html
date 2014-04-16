@@ -11,7 +11,7 @@ var element = document.getElementById('e');
 var keyframes = [{opacity: '1', offset: 0}, {opacity: '0', offset: 1}];
 
 var animation = new Animation(element, keyframes);
-var specifiedTiming = animation.specified;
+var specifiedTiming = animation.timing;
 
 test(function() {
     specifiedTiming.delay = 2;
@@ -48,5 +48,5 @@ test(function() {
 
     specifiedTiming.easing = "step-start";
     assert_equals(specifiedTiming.easing, 'step-start');
-}, 'TimedItem.specified should have a setter for each member of the underlying Timing object.');
+}, 'TimedItem.timing should have a setter for each member of the underlying Timing object.');
 </script>
