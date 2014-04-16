@@ -447,8 +447,8 @@ class Page24(KeyMobileSitesPage):
     action_runner.RunAction(NavigateAction())
     action_runner.RunAction(WaitAction(
       {
-        'javascript': ('typeof NEWS_telemetryReady !== "undefined" &&'
-                       'NEWS_telemetryReady == True')
+        'javascript': ('typeof NEWS_telemetryReady !== "undefined" && '
+                       'NEWS_telemetryReady == true')
       }))
 
 
