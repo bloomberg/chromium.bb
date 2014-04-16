@@ -30,6 +30,7 @@
 #include "chromeos/dbus/gsm_sms_client.h"
 #include "chromeos/dbus/image_burner_client.h"
 #include "chromeos/dbus/introspectable_client.h"
+#include "chromeos/dbus/lorgnette_manager_client.h"
 #include "chromeos/dbus/modem_messaging_client.h"
 #include "chromeos/dbus/nfc_adapter_client.h"
 #include "chromeos/dbus/nfc_device_client.h"
@@ -88,6 +89,7 @@ class DBusClientBundle {
     cros_disks_client_.reset(CrosDisksClient::Create(client_type));
     cryptohome_client_.reset(CryptohomeClient::Create());
     debug_daemon_client_.reset(DebugDaemonClient::Create());
+    lorgnette_manager_client_.reset(LorgnetteManagerClient::Create());
     shill_manager_client_.reset(ShillManagerClient::Create());
     shill_device_client_.reset(ShillDeviceClient::Create());
     shill_ipconfig_client_.reset(ShillIPConfigClient::Create());
@@ -153,6 +155,9 @@ class DBusClientBundle {
   }
   DebugDaemonClient* debug_daemon_client() {
     return debug_daemon_client_.get();
+  }
+  LorgnetteManagerClient* lorgnette_manager_client() {
+    return lorgnette_manager_client_.get();
   }
   ShillDeviceClient* shill_device_client() {
     return shill_device_client_.get();
@@ -230,6 +235,7 @@ class DBusClientBundle {
   scoped_ptr<CrosDisksClient> cros_disks_client_;
   scoped_ptr<CryptohomeClient> cryptohome_client_;
   scoped_ptr<DebugDaemonClient> debug_daemon_client_;
+  scoped_ptr<LorgnetteManagerClient> lorgnette_manager_client_;
   scoped_ptr<ShillDeviceClient> shill_device_client_;
   scoped_ptr<ShillIPConfigClient> shill_ipconfig_client_;
   scoped_ptr<ShillManagerClient> shill_manager_client_;
@@ -363,6 +369,10 @@ class DBusThreadManagerImpl : public DBusThreadManager {
 
   virtual DebugDaemonClient* GetDebugDaemonClient() OVERRIDE {
     return client_bundle_->debug_daemon_client();
+  }
+
+  virtual LorgnetteManagerClient* GetLorgnetteManagerClient() OVERRIDE {
+    return client_bundle_->lorgnette_manager_client();
   }
 
   virtual ShillDeviceClient* GetShillDeviceClient() OVERRIDE {
@@ -578,6 +588,7 @@ void DBusThreadManager::InitializeClients() {
   InitClient(g_dbus_thread_manager->GetGsmSMSClient());
   InitClient(g_dbus_thread_manager->GetImageBurnerClient());
   InitClient(g_dbus_thread_manager->GetIntrospectableClient());
+  InitClient(g_dbus_thread_manager->GetLorgnetteManagerClient());
   InitClient(g_dbus_thread_manager->GetModemMessagingClient());
   InitClient(g_dbus_thread_manager->GetPermissionBrokerClient());
   InitClient(g_dbus_thread_manager->GetPowerManagerClient());

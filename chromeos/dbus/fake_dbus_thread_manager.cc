@@ -25,6 +25,7 @@
 #include "chromeos/dbus/fake_gsm_sms_client.h"
 #include "chromeos/dbus/fake_image_burner_client.h"
 #include "chromeos/dbus/fake_introspectable_client.h"
+#include "chromeos/dbus/fake_lorgnette_manager_client.h"
 #include "chromeos/dbus/fake_modem_messaging_client.h"
 #include "chromeos/dbus/fake_nfc_adapter_client.h"
 #include "chromeos/dbus/fake_nfc_device_client.h"
@@ -82,6 +83,8 @@ void FakeDBusThreadManager::SetFakeClients() {
   SetCryptohomeClient(scoped_ptr<CryptohomeClient>(new FakeCryptohomeClient));
   SetDebugDaemonClient(
       scoped_ptr<DebugDaemonClient>(new FakeDebugDaemonClient));
+  SetLorgnetteManagerClient(
+      scoped_ptr<LorgnetteManagerClient>(new FakeLorgnetteManagerClient));
 
   SetFakeShillClients();
 
@@ -200,6 +203,11 @@ void FakeDBusThreadManager::SetCryptohomeClient(
 void FakeDBusThreadManager::SetDebugDaemonClient(
     scoped_ptr<DebugDaemonClient> client) {
   debug_daemon_client_ = client.Pass();
+}
+
+void FakeDBusThreadManager::SetLorgnetteManagerClient(
+    scoped_ptr<LorgnetteManagerClient> client) {
+  lorgnette_manager_client_ = client.Pass();
 }
 
 void FakeDBusThreadManager::SetShillDeviceClient(
@@ -381,6 +389,10 @@ CryptohomeClient* FakeDBusThreadManager::GetCryptohomeClient() {
 
 DebugDaemonClient* FakeDBusThreadManager::GetDebugDaemonClient() {
   return debug_daemon_client_.get();
+}
+
+LorgnetteManagerClient* FakeDBusThreadManager::GetLorgnetteManagerClient() {
+  return lorgnette_manager_client_.get();
 }
 
 ShillDeviceClient*

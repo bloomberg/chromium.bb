@@ -43,6 +43,7 @@ class DebugDaemonClient;
 class GsmSMSClient;
 class ImageBurnerClient;
 class IntrospectableClient;
+class LorgnetteManagerClient;
 class ModemMessagingClient;
 class NfcAdapterClient;
 class NfcDeviceClient;
@@ -142,6 +143,7 @@ class CHROMEOS_EXPORT DBusThreadManager {
   virtual GsmSMSClient* GetGsmSMSClient() = 0;
   virtual ImageBurnerClient* GetImageBurnerClient() = 0;
   virtual IntrospectableClient* GetIntrospectableClient() = 0;
+  virtual LorgnetteManagerClient* GetLorgnetteManagerClient() = 0;
   virtual ModemMessagingClient* GetModemMessagingClient() = 0;
   virtual NfcAdapterClient* GetNfcAdapterClient() = 0;
   virtual NfcDeviceClient* GetNfcDeviceClient() = 0;
