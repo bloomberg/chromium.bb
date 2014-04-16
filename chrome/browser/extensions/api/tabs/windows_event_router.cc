@@ -15,7 +15,6 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/event_router.h"
-#include "extensions/browser/extension_system.h"
 
 using content::BrowserContext;
 
@@ -138,7 +137,7 @@ void WindowsEventRouter::OnActiveWindowChanged(
       base::Bind(&WillDispatchWindowFocusedEvent,
                  static_cast<BrowserContext*>(window_profile),
                  window_id);
-  ExtensionSystem::Get(profile_)->event_router()->BroadcastEvent(event.Pass());
+  EventRouter::Get(profile_)->BroadcastEvent(event.Pass());
 }
 
 void WindowsEventRouter::DispatchEvent(const std::string& event_name,
@@ -146,7 +145,7 @@ void WindowsEventRouter::DispatchEvent(const std::string& event_name,
                                       scoped_ptr<base::ListValue> args) {
   scoped_ptr<Event> event(new Event(event_name, args.Pass()));
   event->restrict_to_browser_context = profile;
-  ExtensionSystem::Get(profile)->event_router()->BroadcastEvent(event.Pass());
+  EventRouter::Get(profile)->BroadcastEvent(event.Pass());
 }
 
 }  // namespace extensions

@@ -17,7 +17,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/event_router.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 
 using content::BrowserThread;
@@ -316,8 +315,7 @@ void TabCaptureRegistry::OnRequestUpdate(
 
 void TabCaptureRegistry::DispatchStatusChangeEvent(
     const TabCaptureRequest* request) const {
-  EventRouter* router = profile_ ?
-      extensions::ExtensionSystem::Get(profile_)->event_router() : NULL;
+  EventRouter* router = profile_ ? EventRouter::Get(profile_) : NULL;
   if (!router)
     return;
 

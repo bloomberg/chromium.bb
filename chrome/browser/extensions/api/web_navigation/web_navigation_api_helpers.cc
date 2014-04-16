@@ -19,7 +19,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_transition_types.h"
 #include "extensions/browser/event_router.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/common/event_filtering_info.h"
 #include "net/base/net_errors.h"
 
@@ -46,11 +45,12 @@ void DispatchEvent(content::BrowserContext* browser_context,
   info.SetURL(url);
 
   Profile* profile = Profile::FromBrowserContext(browser_context);
-  if (profile && extensions::ExtensionSystem::Get(profile)->event_router()) {
+  EventRouter* event_router = EventRouter::Get(profile);
+  if (profile && event_router) {
     scoped_ptr<Event> event(new Event(event_name, args.Pass()));
     event->restrict_to_browser_context = profile;
     event->filter_info = info;
-    ExtensionSystem::Get(profile)->event_router()->BroadcastEvent(event.Pass());
+    event_router->BroadcastEvent(event.Pass());
   }
 }
 

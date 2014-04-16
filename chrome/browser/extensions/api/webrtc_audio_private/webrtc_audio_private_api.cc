@@ -80,7 +80,7 @@ void WebrtcAudioPrivateEventService::OnDevicesChanged(
 void WebrtcAudioPrivateEventService::SignalEvent() {
   using api::webrtc_audio_private::OnSinksChanged::kEventName;
 
-  EventRouter* router = ExtensionSystem::Get(browser_context_)->event_router();
+  EventRouter* router = EventRouter::Get(browser_context_);
   if (!router || !router->HasEventListener(kEventName))
     return;
   ExtensionService* extension_service =

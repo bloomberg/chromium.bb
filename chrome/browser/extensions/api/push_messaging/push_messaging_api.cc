@@ -29,7 +29,6 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/event_router.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/extension.h"
@@ -76,10 +75,10 @@ void PushMessagingEventRouter::OnMessage(const std::string& extension_id,
            << "' extension = '" << extension_id << "'";
 
   scoped_ptr<base::ListValue> args(glue::OnMessage::Create(message));
-  scoped_ptr<extensions::Event> event(new extensions::Event(
-      glue::OnMessage::kEventName, args.Pass()));
+  scoped_ptr<extensions::Event> event(
+      new extensions::Event(glue::OnMessage::kEventName, args.Pass()));
   event->restrict_to_browser_context = profile_;
-  ExtensionSystem::Get(profile_)->event_router()->DispatchEventToExtension(
+  EventRouter::Get(profile_)->DispatchEventToExtension(
       extension_id, event.Pass());
 }
 

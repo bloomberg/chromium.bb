@@ -17,8 +17,7 @@ namespace extensions {
 
 TabsWindowsAPI::TabsWindowsAPI(content::BrowserContext* context)
     : browser_context_(context) {
-  EventRouter* event_router =
-      ExtensionSystem::Get(browser_context_)->event_router();
+  EventRouter* event_router = EventRouter::Get(browser_context_);
 
   // Tabs API Events.
   event_router->RegisterObserver(this, api::tabs::OnCreated::kEventName);
@@ -66,8 +65,7 @@ WindowsEventRouter* TabsWindowsAPI::windows_event_router() {
 }
 
 void TabsWindowsAPI::Shutdown() {
-  ExtensionSystem::Get(browser_context_)->event_router()->UnregisterObserver(
-      this);
+  EventRouter::Get(browser_context_)->UnregisterObserver(this);
 }
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<TabsWindowsAPI> >
@@ -82,8 +80,7 @@ void TabsWindowsAPI::OnListenerAdded(const EventListenerInfo& details) {
   // Initialize the event routers.
   tabs_event_router();
   windows_event_router();
-  ExtensionSystem::Get(browser_context_)->event_router()->UnregisterObserver(
-      this);
+  EventRouter::Get(browser_context_)->UnregisterObserver(this);
 }
 
 }  // namespace extensions

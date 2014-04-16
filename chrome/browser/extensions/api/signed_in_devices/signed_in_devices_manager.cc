@@ -26,7 +26,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/event_router.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 
 using browser_sync::DeviceInfo;
@@ -88,7 +87,7 @@ void SignedInDevicesChangeObserver::OnDeviceInfoChange() {
 
   event->restrict_to_browser_context = profile_;
 
-  ExtensionSystem::Get(profile_)->event_router()->DispatchEventToExtension(
+  EventRouter::Get(profile_)->DispatchEventToExtension(
       extension_id_, event.Pass());
 }
 
@@ -107,9 +106,7 @@ SignedInDevicesManager::SignedInDevicesManager()
 
 SignedInDevicesManager::SignedInDevicesManager(content::BrowserContext* context)
     : profile_(Profile::FromBrowserContext(context)) {
-  extensions::EventRouter* router = extensions::ExtensionSystem::Get(
-      profile_)->event_router();
-
+  extensions::EventRouter* router = extensions::EventRouter::Get(profile_);
   if (router) {
     router->RegisterObserver(
         this, api::signed_in_devices::OnDeviceInfoChange::kEventName);

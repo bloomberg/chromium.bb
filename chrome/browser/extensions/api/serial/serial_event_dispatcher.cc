@@ -9,7 +9,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "extensions/browser/event_router.h"
-#include "extensions/browser/extension_system.h"
 
 namespace extensions {
 
@@ -149,7 +148,7 @@ void SerialEventDispatcher::DispatchEvent(void* profile_id,
   if (!g_browser_process->profile_manager()->IsValidProfile(profile))
     return;
 
-  EventRouter* router = ExtensionSystem::Get(profile)->event_router();
+  EventRouter* router = EventRouter::Get(profile);
   if (router)
     router->DispatchEventToExtension(extension_id, event.Pass());
 }

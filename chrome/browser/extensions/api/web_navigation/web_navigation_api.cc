@@ -26,7 +26,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/event_router.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/view_type_utils.h"
 #include "net/base/net_errors.h"
 
@@ -801,8 +800,7 @@ bool WebNavigationGetAllFramesFunction::RunImpl() {
 
 WebNavigationAPI::WebNavigationAPI(content::BrowserContext* context)
     : browser_context_(context) {
-  EventRouter* event_router =
-      ExtensionSystem::Get(browser_context_)->event_router();
+  EventRouter* event_router = EventRouter::Get(browser_context_);
   event_router->RegisterObserver(this,
                                  web_navigation::OnBeforeNavigate::kEventName);
   event_router->RegisterObserver(this, web_navigation::OnCommitted::kEventName);
@@ -825,8 +823,7 @@ WebNavigationAPI::~WebNavigationAPI() {
 }
 
 void WebNavigationAPI::Shutdown() {
-  ExtensionSystem::Get(browser_context_)->event_router()->UnregisterObserver(
-      this);
+  EventRouter::Get(browser_context_)->UnregisterObserver(this);
 }
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<WebNavigationAPI> >
@@ -841,8 +838,7 @@ WebNavigationAPI::GetFactoryInstance() {
 void WebNavigationAPI::OnListenerAdded(const EventListenerInfo& details) {
   web_navigation_event_router_.reset(new WebNavigationEventRouter(
       Profile::FromBrowserContext(browser_context_)));
-  ExtensionSystem::Get(browser_context_)->event_router()->UnregisterObserver(
-      this);
+  EventRouter::Get(browser_context_)->UnregisterObserver(this);
 }
 
 #endif  // OS_ANDROID

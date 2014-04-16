@@ -351,8 +351,7 @@ void RemoveEventListenerOnUI(
   if (!g_browser_process->profile_manager()->IsValidProfile(profile))
     return;
 
-  extensions::EventRouter* event_router =
-      extensions::ExtensionSystem::Get(profile)->event_router();
+  extensions::EventRouter* event_router = extensions::EventRouter::Get(profile);
   if (!event_router)
     return;
 
@@ -380,8 +379,7 @@ void SendOnMessageEventOnUI(
   scoped_ptr<base::ListValue> event_args(new base::ListValue);
   event_args->Append(event_argument.release());
 
-  extensions::EventRouter* event_router =
-      extensions::ExtensionSystem::Get(profile)->event_router();
+  extensions::EventRouter* event_router = extensions::EventRouter::Get(profile);
 
   scoped_ptr<extensions::Event> event(new extensions::Event(
       declarative_keys::kOnMessage, event_args.Pass(), profile,
@@ -404,8 +402,7 @@ namespace extensions {
 
 WebRequestAPI::WebRequestAPI(content::BrowserContext* context)
     : browser_context_(context) {
-  EventRouter* event_router =
-      ExtensionSystem::Get(browser_context_)->event_router();
+  EventRouter* event_router = EventRouter::Get(browser_context_);
   for (size_t i = 0; i < arraysize(kWebRequestEvents); ++i) {
     // Observe the webRequest event.
     std::string event_name = kWebRequestEvents[i];
@@ -418,9 +415,7 @@ WebRequestAPI::WebRequestAPI(content::BrowserContext* context)
 }
 
 WebRequestAPI::~WebRequestAPI() {
-  ExtensionSystem::Get(browser_context_)
-      ->event_router()
-      ->UnregisterObserver(this);
+  EventRouter::Get(browser_context_)->UnregisterObserver(this);
 }
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<WebRequestAPI> >

@@ -84,8 +84,7 @@ void ExtensionIndicatorIcon::OnStatusIconClicked() {
   scoped_ptr<base::ListValue> params(
       api::system_indicator::OnClicked::Create());
 
-  EventRouter* event_router =
-      ExtensionSystem::Get(profile_)->event_router();
+  EventRouter* event_router = EventRouter::Get(profile_);
   scoped_ptr<Event> event(new Event(
       system_indicator::OnClicked::kEventName,
       params.Pass(),

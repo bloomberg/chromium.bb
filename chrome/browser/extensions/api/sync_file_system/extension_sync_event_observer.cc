@@ -14,7 +14,6 @@
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/extension_set.h"
@@ -120,8 +119,7 @@ void ExtensionSyncEventObserver::BroadcastOrDispatchEvent(
   // Check to see whether the event should be broadcasted to all listening
   // extensions or sent to a specific extension ID.
   bool broadcast_mode = app_origin.is_empty();
-  EventRouter* event_router =
-      ExtensionSystem::Get(browser_context_)->event_router();
+  EventRouter* event_router = EventRouter::Get(browser_context_);
   DCHECK(event_router);
 
   scoped_ptr<Event> event(new Event(event_name, values.Pass()));

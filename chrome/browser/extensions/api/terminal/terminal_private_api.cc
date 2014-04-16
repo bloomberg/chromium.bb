@@ -15,7 +15,6 @@
 #include "chromeos/process_proxy/process_proxy_registry.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/event_router.h"
-#include "extensions/browser/extension_system.h"
 
 namespace terminal_private = extensions::api::terminal_private;
 namespace OnTerminalResize =
@@ -62,12 +61,11 @@ void NotifyProcessOutput(Profile* profile,
   args->Append(new base::StringValue(output_type));
   args->Append(new base::StringValue(output));
 
-  if (profile &&
-      extensions::ExtensionSystem::Get(profile)->event_router()) {
+  extensions::EventRouter* event_router = extensions::EventRouter::Get(profile);
+  if (profile && event_router) {
     scoped_ptr<extensions::Event> event(new extensions::Event(
         terminal_private::OnProcessOutput::kEventName, args.Pass()));
-    extensions::ExtensionSystem::Get(profile)->event_router()->
-        DispatchEventToExtension(extension_id, event.Pass());
+        event_router->DispatchEventToExtension(extension_id, event.Pass());
   }
 }
 

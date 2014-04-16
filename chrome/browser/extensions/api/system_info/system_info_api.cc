@@ -21,7 +21,6 @@
 #include "components/storage_monitor/storage_info.h"
 #include "components/storage_monitor/storage_monitor.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/browser/extension_system.h"
 #include "ui/gfx/display_observer.h"
 
 #if defined(OS_CHROMEOS)
@@ -228,7 +227,7 @@ SystemInfoAPI::GetFactoryInstance() {
 
 SystemInfoAPI::SystemInfoAPI(content::BrowserContext* context)
     : browser_context_(context) {
-  EventRouter* router = ExtensionSystem::Get(browser_context_)->event_router();
+  EventRouter* router = EventRouter::Get(browser_context_);
   router->RegisterObserver(this, system_storage::OnAttached::kEventName);
   router->RegisterObserver(this, system_storage::OnDetached::kEventName);
   router->RegisterObserver(this, system_display::OnDisplayChanged::kEventName);
@@ -238,8 +237,7 @@ SystemInfoAPI::~SystemInfoAPI() {
 }
 
 void SystemInfoAPI::Shutdown() {
-  ExtensionSystem::Get(browser_context_)->event_router()->UnregisterObserver(
-      this);
+  EventRouter::Get(browser_context_)->UnregisterObserver(this);
 }
 
 void SystemInfoAPI::OnListenerAdded(const EventListenerInfo& details) {

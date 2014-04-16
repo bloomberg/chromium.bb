@@ -18,7 +18,6 @@
 #include "content/public/browser/stream_handle.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_registry.h"
-#include "extensions/browser/extension_system.h"
 #include "net/http/http_response_headers.h"
 
 namespace {
@@ -88,7 +87,7 @@ void StreamsPrivateAPI::ExecuteMimeTypeHandler(
       new Event(streams_private::OnExecuteMimeTypeHandler::kEventName,
                 streams_private::OnExecuteMimeTypeHandler::Create(info)));
 
-  ExtensionSystem::Get(profile_)->event_router()->DispatchEventToExtension(
+  EventRouter::Get(profile_)->DispatchEventToExtension(
       extension_id, event.Pass());
 
   GURL url = stream->GetURL();
