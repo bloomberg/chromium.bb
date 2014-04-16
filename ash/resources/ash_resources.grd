@@ -17,23 +17,21 @@
       <!-- KEEP THESE IN ALPHABETICAL ORDER!  DO NOT ADD TO RANDOM PLACES JUST
            BECAUSE YOUR RESOURCES ARE FUNCTIONALLY RELATED OR FALL UNDER THE
            SAME CONDITIONALS. -->
-      <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_BACKGROUND" file="common/launcher/launcher_background.png" />
-      <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_CORNER" file="common/launcher/launcher_corner.png" />
-      <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_DIMMING" file="common/launcher/launcher_dimming.png" />
-      <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_ICON_APPLIST" file="common/alt_launcher/status_app_menu_icon.png" />
-      <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_ICON_APPLIST_HOT" file="common/launcher/launcher_appmenu_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_ICON_APPLIST_PUSHED" file="common/launcher/launcher_appmenu_pressed.png" />
-      <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_LIST_BROWSER" file="common/launcher/window_switcher_icon_normal.png" />
-      <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_LIST_INCOGNITO_BROWSER" file="common/launcher/window_switcher_icon_incognito.png" />
-      <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_OVERFLOW" file="common/launcher/launcher_overflow.png" />
-      <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_UNDERLINE_ACTIVE" file="common/alt_launcher/launcher_underline_active.png" />
-      <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_UNDERLINE_RUNNING" file="common/alt_launcher/launcher_underline_running.png" />
-      <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_ICON_TASK_MANAGER" file="common/launcher/task_manager.png" />
+      <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_BACKGROUND" file="common/shelf/shelf_background.png" />
+      <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_CORNER" file="common/shelf/shelf_corner.png" />
+      <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_DIMMING" file="common/shelf/shelf_dimming.png" />
+      <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_ICON_APPLIST" file="common/shelf/status_app_menu_icon.png" />
+      <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_LIST_BROWSER" file="common/shelf/window_switcher_icon_normal.png" />
+      <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_LIST_INCOGNITO_BROWSER" file="common/shelf/window_switcher_icon_incognito.png" />
+      <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_OVERFLOW" file="common/shelf/shelf_overflow.png" />
+      <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_UNDERLINE_ACTIVE" file="common/shelf/shelf_underline_active.png" />
+      <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_UNDERLINE_RUNNING" file="common/shelf/shelf_underline_running.png" />
+      <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_ICON_TASK_MANAGER" file="common/shelf/task_manager.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_MULTI_WINDOW_RESIZE_H" file="common/multi_window_resize_horizontal.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_MULTI_WINDOW_RESIZE_V" file="common/multi_window_resize_vertical.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_BACKGROUND_NORMAL" file="common/alt_launcher/status_icon_background_normal.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_BACKGROUND_ON_BLACK" file="common/alt_launcher/status_icon_background_onblack_normal.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_BACKGROUND_PRESSED" file="common/alt_launcher/status_icon_background_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_BACKGROUND_NORMAL" file="common/shelf/status_icon_background_normal.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_BACKGROUND_ON_BLACK" file="common/shelf/status_icon_background_onblack_normal.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_BACKGROUND_PRESSED" file="common/shelf/status_icon_background_pressed.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_PHANTOM_WINDOW_BOTTOM" file="common/phantom_window_bottom.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_PHANTOM_WINDOW_BOTTOM_LEFT" file="common/phantom_window_bottom_left.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_PHANTOM_WINDOW_BOTTOM_RIGHT" file="common/phantom_window_bottom_right.png" />
@@ -51,24 +49,24 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_RESIZE_SHADOW_TOP" file="common/resize_shadow_top.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_RESIZE_SHADOW_TOP_LEFT" file="common/resize_shadow_top_left.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_RESIZE_SHADOW_TOP_RIGHT" file="common/resize_shadow_top_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_HORIZ_CENTER" file="common/alt_launcher/status_tray_normal_center.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_HORIZ_CENTER_ONBLACK" file="common/alt_launcher/status_tray_normal_onblack_center.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_HORIZ_CENTER_PRESSED" file="common/alt_launcher/status_tray_pressed_center.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_HORIZ_LEFT" file="common/alt_launcher/status_tray_normal_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_HORIZ_LEFT_ONBLACK" file="common/alt_launcher/status_tray_normal_onblack_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_HORIZ_LEFT_PRESSED" file="common/alt_launcher/status_tray_pressed_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_HORIZ_RIGHT" file="common/alt_launcher/status_tray_normal_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_HORIZ_RIGHT_ONBLACK" file="common/alt_launcher/status_tray_normal_onblack_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_HORIZ_RIGHT_PRESSED" file="common/alt_launcher/status_tray_pressed_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_VERTICAL_BOTTOM" file="common/alt_launcher/status_tray_vertical_normal_bottom.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_VERTICAL_BOTTOM_ONBLACK" file="common/alt_launcher/status_tray_vertical_normal_onblack_bottom.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_VERTICAL_BOTTOM_PRESSED" file="common/alt_launcher/status_tray_vertical_pressed_bottom.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_VERTICAL_TOP" file="common/alt_launcher/status_tray_vertical_normal_top.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_VERTICAL_TOP_ONBLACK" file="common/alt_launcher/status_tray_vertical_normal_onblack_top.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_VERTICAL_TOP_PRESSED" file="common/alt_launcher/status_tray_vertical_pressed_top.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_VERTICAL_CENTER" file="common/alt_launcher/status_tray_vertical_normal_center.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_VERTICAL_CENTER_ONBLACK" file="common/alt_launcher/status_tray_vertical_normal_onblack_center.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_VERTICAL_CENTER_PRESSED" file="common/alt_launcher/status_tray_vertical_pressed_center.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_HORIZ_CENTER" file="common/shelf/status_tray_normal_center.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_HORIZ_CENTER_ONBLACK" file="common/shelf/status_tray_normal_onblack_center.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_HORIZ_CENTER_PRESSED" file="common/shelf/status_tray_pressed_center.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_HORIZ_LEFT" file="common/shelf/status_tray_normal_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_HORIZ_LEFT_ONBLACK" file="common/shelf/status_tray_normal_onblack_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_HORIZ_LEFT_PRESSED" file="common/shelf/status_tray_pressed_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_HORIZ_RIGHT" file="common/shelf/status_tray_normal_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_HORIZ_RIGHT_ONBLACK" file="common/shelf/status_tray_normal_onblack_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_HORIZ_RIGHT_PRESSED" file="common/shelf/status_tray_pressed_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_VERTICAL_BOTTOM" file="common/shelf/status_tray_vertical_normal_bottom.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_VERTICAL_BOTTOM_ONBLACK" file="common/shelf/status_tray_vertical_normal_onblack_bottom.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_VERTICAL_BOTTOM_PRESSED" file="common/shelf/status_tray_vertical_pressed_bottom.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_VERTICAL_TOP" file="common/shelf/status_tray_vertical_normal_top.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_VERTICAL_TOP_ONBLACK" file="common/shelf/status_tray_vertical_normal_onblack_top.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_VERTICAL_TOP_PRESSED" file="common/shelf/status_tray_vertical_pressed_top.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_VERTICAL_CENTER" file="common/shelf/status_tray_vertical_normal_center.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_VERTICAL_CENTER_ONBLACK" file="common/shelf/status_tray_vertical_normal_onblack_center.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_VERTICAL_CENTER_PRESSED" file="common/shelf/status_tray_vertical_pressed_center.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_POPUP_LABEL_BUTTON_BORDER" file="common/tray_popup_label_button_border.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_POPUP_LABEL_BUTTON_HOVER_BACKGROUND" file="common/tray_popup_label_button_hover_background.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_POPUP_LABEL_BUTTON_NORMAL_BACKGROUND" file="common/tray_popup_label_button_normal_background.png" />
