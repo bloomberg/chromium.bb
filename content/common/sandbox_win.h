@@ -5,6 +5,7 @@
 #ifndef CONTENT_COMMON_SANDBOX_WIN_H_
 #define CONTENT_COMMON_SANDBOX_WIN_H_
 
+#include "content/common/content_export.h"
 #include "sandbox/win/src/security_level.h"
 
 namespace base {
@@ -33,7 +34,8 @@ bool InitBrokerServices(sandbox::BrokerServices* broker_services);
 
 bool InitTargetServices(sandbox::TargetServices* target_services);
 
-bool ShouldUseDirectWrite();
+// Returns whether DirectWrite font rendering should be used.
+CONTENT_EXPORT bool ShouldUseDirectWrite();
 
 }  // namespace content
 
