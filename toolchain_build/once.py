@@ -74,6 +74,7 @@ class Once(object):
     self._cached_dir_items = {}
     self._print_url = print_url
     self._system_summary = system_summary
+    self._path_hash_cache = {}
 
   def KeyForOutput(self, package, output_hash):
     """Compute the key to store a give output in the data-store.
@@ -310,5 +311,10 @@ class Once(object):
       h.update(str(command))
     for key in sorted(inputs.keys()):
       h.update('item_name:' + key + '\x00')
-      h.update('item:' + pynacl.hashing_tools.StableHashPath(inputs[key]))
+      if inputs[key] in self._path_hash_cache:
+        path_hash = self._path_hash_cache[inputs[key]]
+      else:
+        path_hash = 'item:' + pynacl.hashing_tools.StableHashPath(inputs[key])
+        self._path_hash_cache[inputs[key]] = path_hash
+      h.update(path_hash)
     return h.hexdigest()
