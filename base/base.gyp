@@ -1001,8 +1001,23 @@
       'include_dirs': [
         '..',
       ],
+      # Some targets may want to opt-out from ASan, TSan and MSan and link
+      # without the corresponding runtime libraries. We drop the libc++
+      # dependency and omit the compiler flags to avoid bringing instrumented
+      # code to those targets.
+      'conditions': [
+        ['use_custom_libcxx==1', {
+          'dependencies!': [
+            '../third_party/libc++/libc++.gyp:libc++',
+            '../third_party/libc++abi/libc++abi.gyp:libc++abi',
+          ],
+        }],
+      ],
       'cflags!': [
         '-fsanitize=address',
+        '-fsanitize=thread',
+        '-fsanitize=memory',
+        '-fsanitize-memory-track-origins',
       ],
       'direct_dependent_settings': {
         'ldflags': [
