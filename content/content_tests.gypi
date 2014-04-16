@@ -468,6 +468,11 @@
         'browser/quota/mock_quota_manager_proxy.cc',
         'browser/quota/mock_quota_manager_proxy.h',
         'browser/quota/mock_quota_manager_unittest.cc',
+        'browser/quota/quota_database_unittest.cc',
+        'browser/quota/quota_manager_unittest.cc',
+        'browser/quota/quota_temporary_storage_evictor_unittest.cc',
+        'browser/quota/storage_monitor_unittest.cc',
+        'browser/quota/usage_tracker_unittest.cc',
         'browser/renderer_host/compositing_iosurface_transformer_mac_unittest.cc',
         'browser/renderer_host/input/gesture_event_queue_unittest.cc',
         'browser/renderer_host/input/input_router_impl_unittest.cc',
@@ -658,11 +663,6 @@
         '../webkit/browser/quota/mock_special_storage_policy.h',
         '../webkit/browser/quota/mock_storage_client.cc',
         '../webkit/browser/quota/mock_storage_client.h',
-        '../webkit/browser/quota/quota_database_unittest.cc',
-        '../webkit/browser/quota/quota_manager_unittest.cc',
-        '../webkit/browser/quota/quota_temporary_storage_evictor_unittest.cc',
-        '../webkit/browser/quota/storage_monitor_unittest.cc',
-        '../webkit/browser/quota/usage_tracker_unittest.cc',
       ],
       'conditions': [
         ['OS == "ios"', {

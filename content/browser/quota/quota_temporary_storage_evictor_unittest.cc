@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,11 @@
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/browser/quota/quota_temporary_storage_evictor.h"
 
-namespace quota {
+using quota::QuotaTemporaryStorageEvictor;
+using quota::StorageType;
+using quota::UsageAndQuota;
+
+namespace content {
 
 class QuotaTemporaryStorageEvictorTest;
 
@@ -407,4 +411,4 @@ TEST_F(QuotaTemporaryStorageEvictorTest, DiskSpaceEvictionTest) {
   EXPECT_EQ(0, statistics().num_skipped_eviction_rounds);
 }
 
-}  // namespace quota
+}  // namespace content

@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,12 @@
 #include "webkit/browser/quota/mock_special_storage_policy.h"
 #include "webkit/browser/quota/quota_database.h"
 
-namespace quota {
+using quota::kStorageTypePersistent;
+using quota::kStorageTypeTemporary;
+using quota::MockSpecialStoragePolicy;
+using quota::QuotaDatabase;
+
+namespace content {
 namespace {
 
 const base::Time kZeroTime;
@@ -560,4 +565,4 @@ TEST_F(QuotaDatabaseTest, DumpOriginInfoTable) {
   DumpOriginInfoTable(kDbFile);
   DumpOriginInfoTable(base::FilePath());
 }
-}  // namespace quota
+}  // namespace content

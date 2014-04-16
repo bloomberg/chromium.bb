@@ -17,7 +17,24 @@
 #include "webkit/browser/quota/storage_monitor.h"
 #include "webkit/browser/quota/storage_observer.h"
 
-namespace quota {
+using quota::HostStorageObservers;
+using quota::kQuotaErrorNotSupported;
+using quota::kQuotaStatusOk;
+using quota::kStorageTypePersistent;
+using quota::kStorageTypeTemporary;
+using quota::MockSpecialStoragePolicy;
+using quota::MockStorageClient;
+using quota::QuotaClient;
+using quota::QuotaManager;
+using quota::QuotaStatusCode;
+using quota::SpecialStoragePolicy;
+using quota::StorageMonitor;
+using quota::StorageObserver;
+using quota::StorageObserverList;
+using quota::StorageType;
+using quota::StorageTypeObservers;
+
+namespace content {
 
 namespace {
 
@@ -689,4 +706,4 @@ TEST_F(StorageMonitorIntegrationTest, NotifyUsageEvent) {
   EXPECT_EQ(kTestUsage, event.usage);
 }
 
-}  // namespace quota
+}  // namespace content

@@ -16,6 +16,10 @@
 
 class GURL;
 
+namespace content {
+class QuotaTemporaryStorageEvictorTest;
+}
+
 namespace quota {
 
 class QuotaEvictionHandler;
@@ -84,7 +88,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE QuotaTemporaryStorageEvictor
   }
 
  private:
-  friend class QuotaTemporaryStorageEvictorTest;
+  friend class content::QuotaTemporaryStorageEvictorTest;
 
   void StartEvictionTimerWithDelay(int delay_ms);
   void ConsiderEviction();

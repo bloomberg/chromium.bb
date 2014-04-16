@@ -19,6 +19,10 @@
 #include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/quota/quota_types.h"
 
+namespace content {
+class QuotaDatabaseTest;
+}
+
 namespace sql {
 class Connection;
 class MetaTable;
@@ -172,7 +176,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE QuotaDatabase {
 
   base::OneShotTimer<QuotaDatabase> timer_;
 
-  friend class QuotaDatabaseTest;
+  friend class content::QuotaDatabaseTest;
   friend class QuotaManager;
 
   static const TableSchema kTables[];

@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,16 @@
 #include "webkit/browser/quota/mock_special_storage_policy.h"
 #include "webkit/browser/quota/usage_tracker.h"
 
-namespace quota {
+using quota::kQuotaStatusOk;
+using quota::kStorageTypeTemporary;
+using quota::MockSpecialStoragePolicy;
+using quota::QuotaClient;
+using quota::QuotaClientList;
+using quota::SpecialStoragePolicy;
+using quota::StorageType;
+using quota::UsageTracker;
+
+namespace content {
 
 namespace {
 
@@ -325,4 +334,4 @@ TEST_F(UsageTrackerTest, LimitedGlobalUsageTest) {
 }
 
 
-}  // namespace quota
+}  // namespace content

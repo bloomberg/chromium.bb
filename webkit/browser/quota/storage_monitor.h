@@ -12,6 +12,10 @@
 #include "base/timer/timer.h"
 #include "webkit/browser/quota/storage_observer.h"
 
+namespace content {
+class StorageMonitorTestBase;
+}
+
 namespace quota {
 
 class QuotaManager;
@@ -59,7 +63,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE StorageObserverList {
   base::OneShotTimer<StorageObserverList> notification_timer_;
   StorageObserver::Event pending_event_;
 
-  friend class StorageMonitorTestBase;
+  friend class content::StorageMonitorTestBase;
 
   DISALLOW_COPY_AND_ASSIGN(StorageObserverList);
 };
@@ -107,7 +111,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE HostStorageObservers {
 
   base::WeakPtrFactory<HostStorageObservers> weak_factory_;
 
-  friend class StorageMonitorTestBase;
+  friend class content::StorageMonitorTestBase;
 
   DISALLOW_COPY_AND_ASSIGN(HostStorageObservers);
 };
