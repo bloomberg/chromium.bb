@@ -104,8 +104,10 @@ public:
     void setOutdated();
     bool outdated() { return m_outdated; }
 
+    bool canStartAnimationOnCompositor();
     bool maybeStartAnimationOnCompositor();
     void cancelAnimationOnCompositor();
+    void schedulePendingAnimationOnCompositor();
     bool hasActiveAnimationsOnCompositor();
 
     class SortInfo {

@@ -122,8 +122,12 @@ void Animation::willDetach()
 
 void Animation::specifiedTimingChanged()
 {
-    // FIXME: Restart on compositor.
     cancelAnimationOnCompositor();
+    if (player()) {
+        // FIXME: Needs to consider groups when added.
+        ASSERT(player()->source() == this);
+        player()->schedulePendingAnimationOnCompositor();
+    }
 }
 
 static AnimationStack& ensureAnimationStack(Element* element)

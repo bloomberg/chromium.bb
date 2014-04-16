@@ -201,19 +201,6 @@ TEST_F(AnimationAnimationPlayerTest, SetCurrentTimeUnrestrictedDouble)
     EXPECT_EQ(10, player->currentTime());
 }
 
-TEST_F(AnimationAnimationPlayerTest, SetCurrentTimeBeforeStartTimeSet)
-{
-    player = timeline->createAnimationPlayer(0);
-    player->setSource(makeAnimation().get());
-    player->setCurrentTime(20);
-    EXPECT_EQ(20, player->currentTime());
-    updateTimeline(5);
-    EXPECT_EQ(20, player->currentTime());
-    player->setStartTime(10);
-    EXPECT_EQ(15, player->currentTime());
-}
-
-
 TEST_F(AnimationAnimationPlayerTest, TimeLag)
 {
     player->setCurrentTime(10);
@@ -304,8 +291,7 @@ TEST_F(AnimationAnimationPlayerTest, PauseBeforeTimelineStarted)
 
 TEST_F(AnimationAnimationPlayerTest, PauseBeforeStartTimeSet)
 {
-    player = timeline->createAnimationPlayer(0);
-    player->setSource(makeAnimation().get());
+    player = timeline->createAnimationPlayer(makeAnimation().get());
     updateTimeline(100);
     player->pause();
     updateTimeline(200);
