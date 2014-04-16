@@ -105,7 +105,8 @@ MEDIA_EXPORT SampleFormat
     AVSampleFormatToSampleFormat(AVSampleFormat sample_format);
 
 // Converts FFmpeg's pixel formats to its corresponding supported video format.
-VideoFrame::Format PixelFormatToVideoFormat(PixelFormat pixel_format);
+MEDIA_EXPORT VideoFrame::Format PixelFormatToVideoFormat(
+    PixelFormat pixel_format);
 
 // Converts video formats to its corresponding FFmpeg's pixel formats.
 PixelFormat VideoFormatToPixelFormat(VideoFrame::Format video_format);
