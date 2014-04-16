@@ -45,6 +45,7 @@ function testIt(behavior)
 {
     internals.settings.setEditingBehavior(behavior);
 
+    var macOrUnix = behavior == 'mac' || behavior == 'unix';
     var field = document.getElementById('target');
     var middleX = calculateFieldX(field.value.length / 2);
     var middleY = field.offsetTop + field.offsetHeight / 2;
@@ -53,7 +54,7 @@ function testIt(behavior)
     field.selectionEnd = 0;
 
     expectedValues = ['0,0'];
-    messages = ['start'];
+    messages = ['start ' + behavior];
     document.addEventListener('mousemove', checkSelection);
 
     mouseMoveTo(calculateFieldX(6), middleY, 'move at start of word', '6,6');
@@ -63,14 +64,14 @@ function testIt(behavior)
     eventSender.mouseDown();
     mouseMoveTo(0, middleY, 'move to left', '0,6');
     mouseMoveTo(document.body.offsetWidth, middleY, 'move to right', '6,17');
-    mouseMoveTo(middleX, middleY - 2 * field.offsetHeight, 'way up', behavior == 'mac' ? '0,6' : '6,8');
-    mouseMoveTo(middleX, middleY - field.offsetHeight, 'move to up', behavior == 'mac' ? '0,6' : '6,8');
-    mouseMoveTo(middleX, middleY + field.offsetHeight, 'move to down', behavior == 'mac' ? '6,17' : '6,8');
-    mouseMoveTo(middleX, middleY + 2 * field.offsetHeight, 'way down', behavior == 'mac' ? '6,17' : '6,8');
+    mouseMoveTo(middleX, middleY - 2 * field.offsetHeight, 'way up', macOrUnix ? '0,6' : '6,8');
+    mouseMoveTo(middleX, middleY - field.offsetHeight, 'move to up', macOrUnix ? '0,6' : '6,8');
+    mouseMoveTo(middleX, middleY + field.offsetHeight, 'move to down', macOrUnix ? '6,17' : '6,8');
+    mouseMoveTo(middleX, middleY + 2 * field.offsetHeight, 'way down', macOrUnix ? '6,17' : '6,8');
     eventSender.mouseUp();
     checkSelection();
-    debug('finish');
-    shouldBeEqualToString('selection()', behavior == 'mac' ? '6,17' : '6,8');
+    debug('finish ' + behavior);
+    shouldBeEqualToString('selection()', macOrUnix ? '6,17' : '6,8');
 
     document.removeEventListener('mousemove', checkSelection);
 }

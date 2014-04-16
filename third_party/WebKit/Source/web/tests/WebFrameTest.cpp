@@ -3759,7 +3759,7 @@ TEST_F(WebFrameTest, DISABLED_PositionForPointTest)
     EXPECT_EQ(64, computeOffset(renderer, 1000, 1000));
 }
 
-#if !OS(MACOSX)
+#if !OS(MACOSX) && !OS(LINUX)
 TEST_F(WebFrameTest, SelectRangeStaysHorizontallyAlignedWhenMoved)
 {
     registerMockedHttpURLLoad("move_caret.html");
