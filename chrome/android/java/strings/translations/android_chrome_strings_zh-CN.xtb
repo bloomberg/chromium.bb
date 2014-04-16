@@ -6,6 +6,7 @@
 <translation id="5578795271662203820">在<ph name="SEARCH_ENGINE"/>中搜索此图片</translation>
 <translation id="6831043979455480757">翻译</translation>
 <translation id="7644305409888602715">正在将网页内容翻译成<ph name="SOURCE_LANGUAGE"/>…</translation>
+<translation id="7015922086425404465">从Google Play商店下载应用：<ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">重新加载此页</translation>
 <translation id="641643625718530986">打印…</translation>
 <translation id="7658239707568436148">取消</translation>
@@ -37,6 +38,7 @@
 <translation id="907015151729920253">智能卡</translation>
 <translation id="3063601790762993062">保存视频</translation>
 <translation id="6042308850641462728">更多</translation>
+<translation id="7267430310003164111">提示您从Google Play商店下载应用。应用名称：<ph name="APP_NAME"/>。应用的平均评分：<ph name="APP_RATING"/>。</translation>
 <translation id="4148957013307229264">正在安装...</translation>
 <translation id="3992315671621218278">保存链接</translation>
 <translation id="8034522405403831421">此网页的源语言为<ph name="SOURCE_LANGUAGE"/>，要将其翻译成<ph name="TARGET_LANGUAGE"/>吗？</translation>

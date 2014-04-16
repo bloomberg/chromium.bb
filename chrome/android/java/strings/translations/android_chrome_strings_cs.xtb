@@ -6,6 +6,7 @@
 <translation id="5578795271662203820">Hledat obrázek pomocí <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Přeložit</translation>
 <translation id="7644305409888602715">Překlad stránky do jazyka: <ph name="SOURCE_LANGUAGE"/>...</translation>
+<translation id="7015922086425404465">Nainstalovat aplikaci z Obchodu Google Play: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Načíst tuto stránku znovu</translation>
 <translation id="641643625718530986">Tisk…</translation>
 <translation id="7658239707568436148">Zrušit</translation>
@@ -37,6 +38,7 @@ Přihlašujete se pomocí spravovaného účtu a poskytujete jeho správci kontr
 <translation id="907015151729920253">Čipová karta</translation>
 <translation id="3063601790762993062">Uložit video</translation>
 <translation id="6042308850641462728">Více</translation>
+<translation id="7267430310003164111">Výzva k instalaci aplikace z Obchodu Google Play. Název aplikace: <ph name="APP_NAME"/>. Průměrné hodnocení aplikace: <ph name="APP_RATING"/>.</translation>
 <translation id="4148957013307229264">Instalace...</translation>
 <translation id="3992315671621218278">Uložit odkaz</translation>
 <translation id="8034522405403831421">Stránka je v jazyce <ph name="SOURCE_LANGUAGE"/>. Chcete ji přeložit do jazyka <ph name="TARGET_LANGUAGE"/>?</translation>

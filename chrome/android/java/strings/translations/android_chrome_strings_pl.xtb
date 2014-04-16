@@ -6,6 +6,7 @@
 <translation id="5578795271662203820">Szukaj tej grafiki w <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Tłumacz</translation>
 <translation id="7644305409888602715">Tłumaczę stronę na <ph name="SOURCE_LANGUAGE"/>...</translation>
+<translation id="7015922086425404465">Pobierz aplikację ze Sklepu Google Play: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Załaduj tę stronę ponownie</translation>
 <translation id="641643625718530986">Drukuj…</translation>
 <translation id="7658239707568436148">Anuluj</translation>
@@ -37,6 +38,7 @@ Logujesz się na zarządzane konto i dajesz jego administratorowi kontrolę nad 
 <translation id="907015151729920253">Karta inteligentna</translation>
 <translation id="3063601790762993062">Zapisz film</translation>
 <translation id="6042308850641462728">Więcej</translation>
+<translation id="7267430310003164111">Monit o pobranie aplikacji ze Sklepu Google Play. Nazwa aplikacji: <ph name="APP_NAME"/>. Średnia ocena aplikacji: <ph name="APP_RATING"/>.</translation>
 <translation id="4148957013307229264">Trwa instalowanie...</translation>
 <translation id="3992315671621218278">Zapisz link</translation>
 <translation id="8034522405403831421">Język tej strony to <ph name="SOURCE_LANGUAGE"/>. Przetłumaczyć ją na <ph name="TARGET_LANGUAGE"/>?</translation>

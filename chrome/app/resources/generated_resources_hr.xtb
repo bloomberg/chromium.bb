@@ -3323,6 +3323,7 @@ Ne otkrivajte nikakve osjetljive podatke.</translation>
 <translation id="6003177993629630467"><ph name="PRODUCT_NAME"/> možda se neće moći sam ažurirati.</translation>
 <translation id="8923542159871018393">Proširenje <ph name="EXTENSION_NAME"/> izvršava se na ovoj stranici.</translation>
 <translation id="580886651983547002"><ph name="PRODUCT_NAME"/> ne može dosegnuti web-lokaciju. Uzrok tomu obično su poteškoće s mrežom, ali može biti i loše konfiguriran vatrozid ili proxy poslužitelj.</translation>
+<translation id="4387554346626014084">Omogući sinkronizaciju pokretača aplikacija. Ovime se omogućuju i Mape ondje gdje su dostupne (sustav koji nije OSX).</translation>
 <translation id="5445557969380904478">O prepoznavanju glasa</translation>
 <translation id="4104400246019119780">Hvala!</translation>
 <translation id="3487007233252413104">anonimna funkcija</translation>
@@ -4780,6 +4781,7 @@ Ne otkrivajte nikakve osjetljive podatke.</translation>
 <translation id="8775404590947523323">Vaša se uređivanja spremaju automatski.<ph name="BREAKS"/>Da biste zadržali kopiju izvorne slike, isključite oznaku opcije &quot;Prebriši izvornik&quot;</translation>
 <translation id="5208988882104884956">Usko</translation>
 <translation id="1507170440449692343">Stranici je zabranjen pristup vašoj kameri.</translation>
+<translation id="4189406272289638749">Proširenje &lt;b&gt;<ph name="EXTENSION_NAME"/>&lt;/b&gt; upravlja ovom postavkom.</translation>
 <translation id="803771048473350947">Datoteka</translation>
 <translation id="6206311232642889873">Kop&amp;iraj sliku</translation>
 <translation id="5158983316805876233">Koristi isti proxy za sve protokole</translation>

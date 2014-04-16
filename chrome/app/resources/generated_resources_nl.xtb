@@ -3368,6 +3368,7 @@ Zorg ervoor dat je geen gevoelige informatie weergeeft.</translation>
 <translation id="580886651983547002"><ph name="PRODUCT_NAME"/>
         kan de website niet bereiken. Dit wordt vaak veroorzaakt door netwerkproblemen,
         maar kan ook worden veroorzaakt door een onjuist geconfigureerde firewall of proxyserver.</translation>
+<translation id="4387554346626014084">Synchronisatie van App Launcher inschakelen. Dit schakelt indien beschikbaar ook 'Mappen' in (niet OSX).</translation>
 <translation id="5445557969380904478">Over spraakherkenning</translation>
 <translation id="4104400246019119780">Hartelijk dank!</translation>
 <translation id="3487007233252413104">anonieme functie</translation>
@@ -4831,6 +4832,7 @@ Tijd berekenen tot vol</translation>
 <translation id="8775404590947523323">Je bewerkingen worden automatisch opgeslagen.<ph name="BREAKS"/>Als je een kopie van de oorspronkelijke afbeelding wilt behouden, verwijder je het vinkje uit het selectievakje 'Oorspronkelijk bestand overschrijven'.</translation>
 <translation id="5208988882104884956">Halve breedte</translation>
 <translation id="1507170440449692343">Deze pagina heeft geen toegang tot je camera.</translation>
+<translation id="4189406272289638749">Deze instelling wordt beheerd door de extensie &lt;b&gt;<ph name="EXTENSION_NAME"/>&lt;/b&gt;.</translation>
 <translation id="803771048473350947">Archief</translation>
 <translation id="6206311232642889873">A&amp;fbeelding kopiëren</translation>
 <translation id="5158983316805876233">Dezelfde proxy gebruiken voor alle protocollen</translation>

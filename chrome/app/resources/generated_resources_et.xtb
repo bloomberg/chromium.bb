@@ -3347,6 +3347,7 @@ Veenduge, et te ei avalikustaks tundlikke andmeid.</translation>
 <translation id="580886651983547002"><ph name="PRODUCT_NAME"/>
         ei saa veebisaidiga ühendust. Seda põhjustavad harilikult võrguprobleemid,
         kuid see võib olla ka valesti konfigureeritud tulemüüri või puhverserveri tagajärg.</translation>
+<translation id="4387554346626014084">Lubatakse rakenduste käivitaja sünkroonimine. See lubab võimaluse korral ka rakenduse Kaustad (mitte-OSX).</translation>
 <translation id="5445557969380904478">Teave hääle tuvastamise kohta</translation>
 <translation id="4104400246019119780">Täname!</translation>
 <translation id="3487007233252413104">anonüümne funktsioon</translation>
@@ -4808,6 +4809,7 @@ Täislaadimiseks kuluva aja arvutamine</translation>
 <translation id="8775404590947523323">Teie muudatused salvestatakse automaatselt.<ph name="BREAKS"/>Algse kujutise koopia säilitamiseks tühjendage märkeruut „Kirjuta algne fail üle”</translation>
 <translation id="5208988882104884956">Poolaius</translation>
 <translation id="1507170440449692343">Sellel lehel on juurdepääs teie kaamerale blokeeritud.</translation>
+<translation id="4189406272289638749">Laiendus &lt;b&gt;<ph name="EXTENSION_NAME"/>&lt;/b&gt; juhib seda seadet.</translation>
 <translation id="803771048473350947">Fail</translation>
 <translation id="6206311232642889873">Kop&amp;eeri pilt</translation>
 <translation id="5158983316805876233">Kasuta kõikide protokollide jaoks sama puhverserverit</translation>

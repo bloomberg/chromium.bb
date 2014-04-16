@@ -6,6 +6,7 @@
 <translation id="5578795271662203820"><ph name="SEARCH_ENGINE"/>에서 이 이미지 검색</translation>
 <translation id="6831043979455480757">번역</translation>
 <translation id="7644305409888602715">페이지를 <ph name="SOURCE_LANGUAGE"/>로 번역 중...</translation>
+<translation id="7015922086425404465">Google Play 스토어에서 다음 앱 다운로드: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">페이지 새로고침</translation>
 <translation id="641643625718530986">인쇄…</translation>
 <translation id="7658239707568436148">취소</translation>
@@ -37,6 +38,7 @@
 <translation id="907015151729920253">스마트 카드</translation>
 <translation id="3063601790762993062">동영상 저장</translation>
 <translation id="6042308850641462728">더보기</translation>
+<translation id="7267430310003164111">Google Play 스토어에서 앱을 다운로드할지 묻습니다. 앱 이름: <ph name="APP_NAME"/>, 앱 평점: <ph name="APP_RATING"/></translation>
 <translation id="4148957013307229264">설치 중...</translation>
 <translation id="3992315671621218278">링크 저장</translation>
 <translation id="8034522405403831421">이 페이지는 <ph name="SOURCE_LANGUAGE"/>로 되어 있습니다. <ph name="TARGET_LANGUAGE"/>로 번역하시겠습니까?</translation>

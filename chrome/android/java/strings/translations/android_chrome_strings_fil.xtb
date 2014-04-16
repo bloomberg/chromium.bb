@@ -6,6 +6,7 @@
 <translation id="5578795271662203820">Hanapin sa <ph name="SEARCH_ENGINE"/> ang larawan</translation>
 <translation id="6831043979455480757">Isaling-wika</translation>
 <translation id="7644305409888602715">Isinasalin ang pahina sa <ph name="SOURCE_LANGUAGE"/>...</translation>
+<translation id="7015922086425404465">Kunin ang app mula sa Google Play Store: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">I-reload ang Pahinang Ito</translation>
 <translation id="641643625718530986">I-print…</translation>
 <translation id="7658239707568436148">Kanselahin</translation>
@@ -37,6 +38,7 @@ Nagsa-sign in ka sa isang pinamamahalaang account at nagbibigay sa administrator
 <translation id="907015151729920253">Smart card</translation>
 <translation id="3063601790762993062">I-save ang video</translation>
 <translation id="6042308850641462728">Higit pa</translation>
+<translation id="7267430310003164111">I-prompt na kunin ang app mula sa Google Play Store.  Pangalan ng app: <ph name="APP_NAME"/>.  Average na rating ng app: <ph name="APP_RATING"/>.</translation>
 <translation id="4148957013307229264">Ini-install...</translation>
 <translation id="3992315671621218278">I-save ang link</translation>
 <translation id="8034522405403831421">Nasa <ph name="SOURCE_LANGUAGE"/> ang pahinang ito. Isalin ito sa <ph name="TARGET_LANGUAGE"/>?</translation>

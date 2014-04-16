@@ -3309,6 +3309,7 @@ L'accesso automatico è sempre disattivato se il profilo non è collegato a un a
 <translation id="580886651983547002"><ph name="PRODUCT_NAME"/>
         non riesce ad aprire il sito web.  Questo è generalmente dovuto a problemi di rete
         ma può anche essere il risultato di un firewall o server proxy non configurato correttamente.</translation>
+<translation id="4387554346626014084">Consente di attivare la sincronizzazione di Avvio applicazioni. Consente anche di attivare cartelle ove disponibili (non OS X).</translation>
 <translation id="5445557969380904478">Informazioni sul riconoscimento vocale</translation>
 <translation id="4104400246019119780">Grazie.</translation>
 <translation id="3487007233252413104">funzione anonima</translation>
@@ -4763,6 +4764,7 @@ L'accesso automatico è sempre disattivato se il profilo non è collegato a un a
 <translation id="8775404590947523323">Le modifiche vengono salvate automaticamente.<ph name="BREAKS"/>Per conservare una copia dell'immagine originale, deseleziona l'opzione &quot;Sovrascrivi originale&quot;.</translation>
 <translation id="5208988882104884956">Metà larghezza</translation>
 <translation id="1507170440449692343">A questa pagina è stato impedito l'accesso alla webcam.</translation>
+<translation id="4189406272289638749">Un'estensione, &lt;b&gt;<ph name="EXTENSION_NAME"/>&lt;/b&gt;, sta controllando questa impostazione.</translation>
 <translation id="803771048473350947">Archivio</translation>
 <translation id="6206311232642889873">Cop&amp;ia immagine</translation>
 <translation id="5158983316805876233">Usa lo stesso proxy per tutti i protocolli</translation>

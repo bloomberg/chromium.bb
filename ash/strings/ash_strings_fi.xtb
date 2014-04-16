@@ -74,7 +74,7 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="2688477613306174402">Määritykset</translation>
 <translation id="1272079795634619415">Pysäytä</translation>
 <translation id="4957722034734105353">Lisätietoja...</translation>
-<translation id="2964193600955408481">Wifi pois käytöstä</translation>
+<translation id="2964193600955408481">Wi-Fi pois käytöstä</translation>
 <translation id="4279490309300973883">Peilaus päällä</translation>
 <translation id="7973962044839454485">PPP-todennus epäonnistui virheellisen käyttäjänimen tai salasanan vuoksi</translation>
 <translation id="2509468283778169019">CAPS LOCK on päällä</translation>
@@ -137,7 +137,7 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830">Aktivoidaan <ph name="NAME"/></translation>
 <translation id="4527045527269911712">Bluetooth-laite <ph name="DEVICE_NAME"/> pyytää lupaa laiteparin muodostamiseen.</translation>
-<translation id="8814190375133053267">Wifi</translation>
+<translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">Automaattiset klikkaukset</translation>
 <translation id="1398853756734560583">Suurenna</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: Yhdistetään…</translation>
@@ -149,7 +149,7 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="2805756323405976993">Sovellukset</translation>
 <translation id="1512064327686280138">Aktivointivirhe</translation>
 <translation id="5097002363526479830">Yhteyden muodostaminen verkkoon &quot;<ph name="NAME"/>&quot; epäonnistui: <ph name="DETAILS"/></translation>
-<translation id="1850504506766569011">Wifi ei ole käytössä.</translation>
+<translation id="1850504506766569011">Wi-Fi ei ole käytössä.</translation>
 <translation id="2872961005593481000">Sammuta</translation>
 <translation id="2966449113954629791">Olet saattanut käyttää tiedonsiirtosaldosi loppuun. Käy <ph name="NAME"/>-aktivointiportaalissa ostamassa lisää saldoa.</translation>
 <translation id="8132793192354020517">Yhteys muodostettu verkkoon <ph name="NAME"/></translation>
@@ -185,7 +185,7 @@ Palvelimen viesti: <ph name="SERVER_MSG"/></translation>
 <translation id="9044646465488564462">Yhteyden muodostaminen verkkoon epäonnistui: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">Sulje käyttökerta</translation>
 <translation id="479989351350248267">haku</translation>
-<translation id="8454013096329229812">Wifi on käytössä.</translation>
+<translation id="8454013096329229812">Wi-Fi on käytössä.</translation>
 <translation id="4872237917498892622">Alt + haku tai Shift</translation>
 <translation id="2429753432712299108">Bluetooth-laite <ph name="DEVICE_NAME"/> pyytää lupaa laiteparin muodostamiseen. Ennen kuin hyväksyt pyynnön, varmista, että laitteella näkyy tämä avain: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">Akussa on virtaa <ph name="PERCENTAGE"/> %.</translation>

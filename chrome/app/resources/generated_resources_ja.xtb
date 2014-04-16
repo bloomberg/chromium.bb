@@ -3354,6 +3354,7 @@
 <translation id="580886651983547002"><ph name="PRODUCT_NAME"/>
         にウェブサイトを読み込むことができません。ネットワークに問題がある場合が一般的ですが、
         ファイアウォールまたはプロキシ サーバーの設定が間違っている可能性もあります。</translation>
+<translation id="4387554346626014084">アプリ ランチャーの同期を有効にします。使用できるフォルダがあれば有効になります（OSX 以外）。</translation>
 <translation id="5445557969380904478">音声認識について</translation>
 <translation id="4104400246019119780">ありがとうございました。</translation>
 <translation id="3487007233252413104">無名関数</translation>
@@ -4813,6 +4814,7 @@
 <translation id="8775404590947523323">編集内容は自動的に保存されます。<ph name="BREAKS"/>オリジナルの画像のコピーを残す場合、[オリジナルを上書き] チェックボックスをオフにしてください。</translation>
 <translation id="5208988882104884956">半角</translation>
 <translation id="1507170440449692343">このページはカメラへのアクセスを禁止されています。</translation>
+<translation id="4189406272289638749">拡張機能 &lt;b&gt;<ph name="EXTENSION_NAME"/>&lt;/b&gt; がこの設定を制御しています。</translation>
 <translation id="803771048473350947">ファイル</translation>
 <translation id="6206311232642889873">画像をコピー(&amp;Y)</translation>
 <translation id="5158983316805876233">すべてのプロトコルで同じプロキシを使用する</translation>

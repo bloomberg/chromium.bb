@@ -2855,7 +2855,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="961805664415579088"><ph name="DOMAIN"/> alanındaki herhangi bir bilgisayarla veri değişimi</translation>
 <translation id="4521805507184738876">(süresi doldu)</translation>
 <translation id="111844081046043029">Bu sayfadan ayrılmak istediğinizden emin misiniz?</translation>
-<translation id="4195814663415092787">Bıraktığım yerden devam et</translation>
+<translation id="4195814663415092787">Kaldığım yerden devam et</translation>
 <translation id="7622994733745016847">Özel Bellek Kullanımı</translation>
 <translation id="1951615167417147110">Bir sayfa yukarı kaydır</translation>
 <translation id="6203231073485539293">İnternet bağlantınızı kontrol edin</translation>
@@ -3360,6 +3360,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="580886651983547002"><ph name="PRODUCT_NAME"/>
         web sitesine erişemiyor. Bu, normalde ağdaki sorunlardan kaynaklanır,
         ama yanlış yapılandırılmış bir güvenlik duvarı veya proxy sunucusu da buna yol açabilir.</translation>
+<translation id="4387554346626014084">Uygulama Başlatıcı senkronizasyonunu etkinleştirin. Bu ayrıca, kullanılabildiğinde Klasörleri de etkinleştirir (OSX dışında)</translation>
 <translation id="5445557969380904478">Ses tanıma hakkında</translation>
 <translation id="4104400246019119780">Teşekkür ederiz!</translation>
 <translation id="3487007233252413104">anonim işlev</translation>
@@ -4822,6 +4823,7 @@ Dolana kadar geçecek süre hesaplanıyor</translation>
 <translation id="8775404590947523323">Yaptığınız düzenlemeler otomatik olarak kaydedilir. <ph name="BREAKS"/>Orijinal resmin kopyasını saklamak için &quot;Orijinalin üzerine yaz&quot; seçeneğinin işaretini kaldırın</translation>
 <translation id="5208988882104884956">Yarım genişlik</translation>
 <translation id="1507170440449692343">Bu sayfanın kameranıza erişimi engellenmiştir.</translation>
+<translation id="4189406272289638749">Bir uzantı (&lt;b&gt;<ph name="EXTENSION_NAME"/>&lt;/b&gt;) bu ayarı kontrol ediyor.</translation>
 <translation id="803771048473350947">Dosya</translation>
 <translation id="6206311232642889873">Resmi Kop&amp;yala</translation>
 <translation id="5158983316805876233">Tüm protokoller için aynı proxy'yi kullan</translation>

@@ -6,6 +6,7 @@
 <translation id="5578795271662203820">Bu resmi, <ph name="SEARCH_ENGINE"/> üzerinde ara</translation>
 <translation id="6831043979455480757">Çevir</translation>
 <translation id="7644305409888602715">Sayfa <ph name="SOURCE_LANGUAGE"/> diline çevriliyor...</translation>
+<translation id="7015922086425404465">Uygulamayı Google Play Store'dan alın: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Bu Sayfayı Yeniden Yükle</translation>
 <translation id="641643625718530986">Yazdır…</translation>
 <translation id="7658239707568436148">İptal</translation>
@@ -37,6 +38,7 @@ Yönetilen bir hesapla oturum açıyor ve hesabın yöneticisine Chrome profilin
 <translation id="907015151729920253">Akıllı kart</translation>
 <translation id="3063601790762993062">Videoyu kaydet</translation>
 <translation id="6042308850641462728">Daha fazla</translation>
+<translation id="7267430310003164111">Uygulamanın Google Play Store'dan alınması için istem. Uygulamanın adı: <ph name="APP_NAME"/>. Uygulamanın ortalama kullanıcı oyu: <ph name="APP_RATING"/>.</translation>
 <translation id="4148957013307229264">Yükleniyor...</translation>
 <translation id="3992315671621218278">Bağlantıyı kaydet</translation>
 <translation id="8034522405403831421">Bu sayfa <ph name="SOURCE_LANGUAGE"/> dilinde. <ph name="TARGET_LANGUAGE"/> diline çevrilsin mi?</translation>

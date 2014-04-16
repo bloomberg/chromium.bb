@@ -21,14 +21,14 @@ Sera hii ikiwa imezimwa, mtumiaji kamwe hataombwa na uchukuaji wa sauti upatikan
 Sera hii huathiri aina zote za vifaa vya kuingiza sauti na si tu maikrofoni iliyojengewa ndani.</translation>
 <translation id="7267809745244694722">Vitufe vya media huelekeza kwenye vitufe vya vitendo kwa chaguo-msingi</translation>
 <translation id="9150416707757015439">Sera hii imepitwa na wakati. Tafadhali, tumia IncognitoModeAvailability badala yake.
-      Huwasha modi fiche katika <ph name="PRODUCT_NAME"/>.
+      Huwasha hali fiche katika <ph name="PRODUCT_NAME"/>.
 
-      Ikiwa mpangilio huu umewashwa au haujasanidiwa, watumiaji wanaweza kufungua kurasa za wavuti katika modi fiche.
+      Ikiwa mpangilio huu umewashwa au haujasanidiwa, watumiaji wanaweza kufungua kurasa za wavuti katika hali fiche.
 
-      Ikiwa mpangilio huu umezimwa, watumiaji hawawezi kufungua kurasa za wavuti katika modi fiche.
+      Ikiwa mpangilio huu umezimwa, watumiaji hawawezi kufungua kurasa za wavuti katika hali fiche.
 
 
-       Ikiwa sera hii itawachwa ikiwa haijawekwa, hii itawashwa na mtumiaji ataweza kutumia modi fiche.</translation>
+       Ikiwa sera hii itawachwa ikiwa haijawekwa, hii itawashwa na mtumiaji ataweza kutumia hali fiche.</translation>
 <translation id="4203389617541558220">Pima muda wa kuwaka wa kifaa kwa kuratibu kuwasha tena kiotomatiki.
 Sera hii inapowekwa, inabainisha urefu wa muda wa kuwaka wa kifaa baada ya upi uwashaji tena kiotomatiki utaratibiwa.
 
@@ -885,7 +885,7 @@ Sera hii huathiri aina zote za vifaa vya kuingiza video na si tu kamera iliyojen
 
     Iwapo sera hii haitawekwamu itawekwa kuwa uongo, amri za kuchapisha zitachochea skrini ya ukakiki ya kuchapisha.</translation>
 <translation id="7933141401888114454">Washa uundaji wa watumiaji wanaosimamiwa</translation>
-<translation id="2824715612115726353">Washa modi Fiche</translation>
+<translation id="2824715612115726353">Washa hali Fiche</translation>
 <translation id="1057535219415338480">Inawezesha ubashiri wa mtandao kwenye <ph name="PRODUCT_NAME"/> na kuzuia watumiaji kubadilisha mpangilio huu.
 
       Hii haidhibiti tu uletaji awali wa DNL lakini pia unganishaji awali na uonyeshaji awali wa kurasa za wavuti za TCP na SSL. Jina la sera linarejelea uletaji awali wa DNS kwa sababu za kihistoria.
@@ -1037,7 +1037,7 @@ tafadhali tumia zana kama Telemetry.</translation>
 <translation id="1349276916170108723">Huzima usawazishaji wa Hifadhi ya Google  kwenye programu ya faili za OS za Chrome inapowekwa kwenye Kweli. Katika hali hiyo, hakuna data inayopakiwa kwenye Hifadhi ya Google.
 
           Iwapo haijawekwa au imewekwa kwenye Uongo, basi watumiaji wataweza kuhamisha faili kwenye Hifadhi ya Google.</translation>
-<translation id="1964634611280150550">Modi ya chini kwa chini imezimwa</translation>
+<translation id="1964634611280150550">Hali fiche imezimwa</translation>
 <translation id="5971128524642832825">Huzima Hifadhi katika programu ya Faili za OS za Chrome</translation>
 <translation id="1847960418907100918">Hubainisha vigezo vinavyotumika wakati wa kufanya utafutaji wa papo hapo kwa kutumia POST. Ina vikundi vya jina/thamani vinavyotenganishwa na koma. Kama thamani ni kigezo cha kiolezo, kama {Hoja za utafutaji} katika mfano hapo juu, 
 itabadilishwa na data ya hoja za utafutaji za kweli.
@@ -1076,13 +1076,13 @@ Thamani ya sera inapaswa kubainishwa katika milisekunde. Thamani huwekwa pamoja 
       Sera hii bado haijakuwa tayari kwa matumizi, tafadhali usiitumie.</translation>
 <translation id="8344454543174932833">Leta alamisho kutoka kwenye kivinjari chaguo-msingi wakati wa uendeshaji wa kwanza</translation>
 <translation id="1019101089073227242">Weka saraka ya data ya mtumiaji</translation>
-<translation id="5826047473100157858">Hubainisha iwapo mtumiaji anaweza kufungua kurasa kwenye modi Fiche katika <ph name="PRODUCT_NAME"/>.
+<translation id="5826047473100157858">Hubainisha iwapo mtumiaji anaweza kufungua kurasa katika hali Fiche kwenye <ph name="PRODUCT_NAME"/>.
 
-      Ikiwa hiari ya 'Imewashwa' imechaguliwa au sera haijawekwa, huenda kurasa zikafunguliwa katika modi Fiche.
+      Ikiwa hiari ya 'Imewashwa' imechaguliwa au sera haijawekwa, huenda kurasa zikafunguliwa katika hali Fiche.
 
-      Ikiwa hiari ya 'Imezimwa' imechaguliwa, huenda kurasa zisifunguliwe katika modi Fiche.
+      Ikiwa hiari ya 'Imezimwa' imechaguliwa, huenda kurasa zisifunguliwe katika hali Fiche.
 
-     Ikiwa hiari ya 'Imelazimishwa' imechaguliwa, huenda kurasa zikafunguliwa TU katika modi Fiche.</translation>
+     Ikiwa hiari ya 'Imelazimishwa' imechaguliwa, huenda kurasa zikafunguliwa TU katika hali Fiche.</translation>
 <translation id="2988031052053447965">Ficha programu ya Duka la Wavuti la Chrome na kiungo cha tanbihi kutoka kwa Ukurasa Mpya wa Kichupo na kizindua programu cha Chrome OS.
 
       Sera hii inapowekwa kwenye ndivyo, ikoni hufichwa.
@@ -1598,7 +1598,7 @@ Sera hii inatumika tu kama sera ya 'DefaultSearchProviderEnabled' imewashwa.</tr
           Sera hii ni ya hiari. Isipowekwa, ombi la utafutaji litatumwa kutumia mbinu ya GET.
 
           Sera hii inatumika endapo sera ya 'DefaultSearchProviderEnabled' imewashwa.</translation>
-<translation id="5307432759655324440">Upatikanaji wa modi ya chini kwa chini</translation>
+<translation id="5307432759655324440">Upatikanaji wa hali fiche</translation>
 <translation id="4056910949759281379">Lemaza itifaki ya SPDY</translation>
 <translation id="3808945828600697669">Bainisha orodha ya programu jalizi zilizolemazwa</translation>
 <translation id="4525521128313814366">Inakuruhusu kuweka orodha ya ruwaza za url ambazo zinabainisha tovuti ambazo haziruhusiwi kuonyesha picha.
@@ -1730,7 +1730,7 @@ Sera hii ikiwekwa kuwa sivyo au isiwekwe, kibodi itatoa amri za vitufe vya media
           <ph name="PROXY_HELP_URL"/></translation>
 <translation id="1509692106376861764">Sera hii imeondolewa kutoka toleo la 29 la <ph name="PRODUCT_NAME"/></translation>
 <translation id="5464816904705580310">Sanidi mipangilio ya watumiaji waliodhibitiwa.</translation>
-<translation id="3219421230122020860">Modi chini kwa chini inapatikana</translation>
+<translation id="3219421230122020860">Hali fiche inapatikana</translation>
 <translation id="7690740696284155549">Inasanidi saraka ambayo <ph name="PRODUCT_NAME"/> itatumia kwa kupakua faili.
 
       Ukiweka sera hii, <ph name="PRODUCT_NAME"/> itatumia saraka iliyotolewa bila kujali iwapo mtumiaji amebainisha moja au amewasha alamisho ya kuchochewa kwa eneo la upakuaji kila wakati.
@@ -1891,7 +1891,7 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
       Ikiwa mpangilio huu utawezeshwa au hautasanidiwa, watumiaji wanaweza kuchapisha kwenye <ph name="CLOUD_PRINT_NAME"/> kutoka kwenye <ph name="PRODUCT_NAME"/> kidadisi cha kuchapisha.
 
       Ikiwa mpangilio huu utalemazwa, watumiaji hawawezi kuchapisha kwenye <ph name="CLOUD_PRINT_NAME"/> kutoka kwenye <ph name="PRODUCT_NAME"/> kidadisi cha kuchapisha</translation>
-<translation id="4088589230932595924">Modi ya chini kwa chini imelazimishwa</translation>
+<translation id="4088589230932595924">Hali fiche imelazimishwa</translation>
 <translation id="5862253018042179045">Weka hali ya chaguo msingi ya kipengee cha ufikiaji cha maoni yaliyotamkwa kwenye skrini ya kuingi. 
         Iwapo sera hii imewekwa kuwa kweli, maoni yaliyosemwa yatawashwa skrini ya kuingina katika akaunti itakapoonyeshwa. 
        Iwapo sera hii imewekwa kwa haitumiki, maoni yaliyosemwa yatazimwa skrini ya kuingina katika akaunti itakapoonyeshwa. 

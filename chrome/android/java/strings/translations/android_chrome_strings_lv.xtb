@@ -6,6 +6,7 @@
 <translation id="5578795271662203820">Meklēt šo attēlu ar <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Tulkot</translation>
 <translation id="7644305409888602715">Notiek lapas tulkošana <ph name="SOURCE_LANGUAGE"/> valodā...</translation>
+<translation id="7015922086425404465">Iegūstiet lietotni Google Play veikalā: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Atkārtoti ielādēt šo lapu</translation>
 <translation id="641643625718530986">Drukāt...</translation>
 <translation id="7658239707568436148">Atcelt</translation>
@@ -37,6 +38,7 @@ Jūs pierakstāties, izmantojot pārvaldītu kontu, un ļaujat šī konta admini
 <translation id="907015151729920253">Viedkarte</translation>
 <translation id="3063601790762993062">Saglabāt videoklipu</translation>
 <translation id="6042308850641462728">Vairāk</translation>
+<translation id="7267430310003164111">Aicinājums iegūt lietotni Google Play veikalā. Lietotnes nosaukums: <ph name="APP_NAME"/>. Lietotnes vidējais vērtējums: <ph name="APP_RATING"/>.</translation>
 <translation id="4148957013307229264">Notiek instalēšana...</translation>
 <translation id="3992315671621218278">Saglabāt saiti</translation>
 <translation id="8034522405403831421">Šī lapas saturs ir šādā valodā: <ph name="SOURCE_LANGUAGE"/>. Vai tulkot šādā valodā: <ph name="TARGET_LANGUAGE"/>?</translation>

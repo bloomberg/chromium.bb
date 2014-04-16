@@ -3356,6 +3356,7 @@ Lämna inte ut känsliga uppgifter.</translation>
 <translation id="580886651983547002"><ph name="PRODUCT_NAME"/>
         kan inte nå webbplatsen. Detta beror oftast på nätverksproblem,
         men det kan också bero på att brandväggen eller proxyservern är felaktigt konfigurerad.</translation>
+<translation id="4387554346626014084">Aktivera synkronisering av startprogrammet för appar. Detta aktiverar även Mappar där så är möjligt (ej OS X).</translation>
 <translation id="5445557969380904478">Om röstigenkänning</translation>
 <translation id="4104400246019119780">Tack!</translation>
 <translation id="3487007233252413104">anonym funktion</translation>
@@ -4819,6 +4820,7 @@ hanteraren
 <translation id="8775404590947523323">Dina redigeringar sparas automatiskt.<ph name="BREAKS"/>Om du vill spara en kopia av originalbilden avmarkerar du Ersätt original</translation>
 <translation id="5208988882104884956">Halvbreda</translation>
 <translation id="1507170440449692343">Den här sidan får inte använda din kamera.</translation>
+<translation id="4189406272289638749">Ett tillägg,  &lt;b&gt;<ph name="EXTENSION_NAME"/>&lt;/b&gt;, styr den här inställningen.</translation>
 <translation id="803771048473350947">Arkiv</translation>
 <translation id="6206311232642889873">Kopiera &amp;bild</translation>
 <translation id="5158983316805876233">Använd samma proxy för alla protokoll</translation>

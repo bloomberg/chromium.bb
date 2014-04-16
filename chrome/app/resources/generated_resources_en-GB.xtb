@@ -3355,6 +3355,7 @@ Make sure that you do not expose any sensitive information.</translation>
 <translation id="580886651983547002"><ph name="PRODUCT_NAME"/>
         cannot reach the website.  This is typically caused by network issues,
         but can also be the result of a misconfigured firewall or proxy server.</translation>
+<translation id="4387554346626014084">Enable App Launcher sync. This also enables Folders where available (non OSX).</translation>
 <translation id="5445557969380904478">About voice recognition</translation>
 <translation id="4104400246019119780">Thanks!</translation>
 <translation id="3487007233252413104">anonymous function</translation>
@@ -4817,6 +4818,7 @@ Calculating time until full</translation>
 <translation id="8775404590947523323">Your edits are saved automatically.<ph name="BREAKS"/>To keep a copy of the original image, untick &quot;Overwrite original&quot;</translation>
 <translation id="5208988882104884956">Halfwidth</translation>
 <translation id="1507170440449692343">This page has been blocked from accessing your camera.</translation>
+<translation id="4189406272289638749">An extension, &lt;b&gt;<ph name="EXTENSION_NAME"/>&lt;/b&gt;, is controlling this setting.</translation>
 <translation id="803771048473350947">File</translation>
 <translation id="6206311232642889873">Cop&amp;y Image</translation>
 <translation id="5158983316805876233">Use the same proxy for all protocols</translation>

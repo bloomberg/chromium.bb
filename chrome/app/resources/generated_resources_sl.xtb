@@ -3361,6 +3361,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="580886651983547002"><ph name="PRODUCT_NAME"/>
         ne more doseči spletnega mesta. To navadno povzročijo težave z omrežjem,
         lahko pa je tudi posledica napačno nastavljenega požarnega zidu ali proxyja.</translation>
+<translation id="4387554346626014084">Omogoči sinhronizacijo zaganjalnika aplikacij. S tem se omogočijo tudi Mape, kjer so na voljo (ne v sistemu OS X).</translation>
 <translation id="5445557969380904478">O prepoznavanju govora</translation>
 <translation id="4104400246019119780">Hvala!</translation>
 <translation id="3487007233252413104">anonimna funkcija</translation>
@@ -4822,6 +4823,7 @@ izračun časa do napolnjenosti</translation>
 <translation id="8775404590947523323">Vaši popravki se samodejno shranijo.<ph name="BREAKS"/>Če želite obdržati kopijo izvirne slike, počistite polje »Prepiši izvirno«</translation>
 <translation id="5208988882104884956">Polovična širina</translation>
 <translation id="1507170440449692343">Tej strani je onemogočen dostop do kamere.</translation>
+<translation id="4189406272289638749">Razširitev &lt;b&gt;<ph name="EXTENSION_NAME"/>&lt;/b&gt; nadzira to nastavitev.</translation>
 <translation id="803771048473350947">Datoteka</translation>
 <translation id="6206311232642889873">Kop&amp;iraj sliko</translation>
 <translation id="5158983316805876233">Uporabi isti proxy za vse protokole</translation>

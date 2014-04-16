@@ -6,6 +6,7 @@
 <translation id="5578795271662203820">Søk etter dette bildet i <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Oversett</translation>
 <translation id="7644305409888602715">Oversetter siden til <ph name="SOURCE_LANGUAGE"/> …</translation>
+<translation id="7015922086425404465">Få appen fra Google Play-butikken: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Last inn denne siden på nytt</translation>
 <translation id="641643625718530986">Skriv ut</translation>
 <translation id="7658239707568436148">Avbryt</translation>
@@ -37,6 +38,7 @@ Du logger på med en administrert konto, og gir administratoren kontroll over Ch
 <translation id="907015151729920253">Smartkort</translation>
 <translation id="3063601790762993062">Lagre videoen</translation>
 <translation id="6042308850641462728">Mer</translation>
+<translation id="7267430310003164111">Forespørsel om nedlasting av en app fra Google Play-butikken. Appnavn: <ph name="APP_NAME"/>. Appens gjennomsnittlige vurdering: <ph name="APP_RATING"/>.</translation>
 <translation id="4148957013307229264">Installerer …</translation>
 <translation id="3992315671621218278">Lagre linken</translation>
 <translation id="8034522405403831421">Denne siden er på <ph name="SOURCE_LANGUAGE"/>. Vil du oversette den til <ph name="TARGET_LANGUAGE"/>?</translation>

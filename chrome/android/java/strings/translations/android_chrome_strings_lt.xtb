@@ -6,6 +6,7 @@
 <translation id="5578795271662203820">Ieškoti „<ph name="SEARCH_ENGINE"/>“ šio vaizdo</translation>
 <translation id="6831043979455480757">Vertėjas</translation>
 <translation id="7644305409888602715">Puslapis verčiamas į <ph name="SOURCE_LANGUAGE"/> k...</translation>
+<translation id="7015922086425404465">Gauti programą iš „Google Play“ parduotuvės: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Iš naujo įkelti šį puslapį</translation>
 <translation id="641643625718530986">Spausdinti…</translation>
 <translation id="7658239707568436148">Atšaukti</translation>
@@ -37,6 +38,7 @@ Prisijungiate naudodami valdomą paskyrą ir leidžiate administratoriui valdyti
 <translation id="907015151729920253">Išmanioji kortelė</translation>
 <translation id="3063601790762993062">Išsaugoti vaizdo įrašą</translation>
 <translation id="6042308850641462728">Daugiau</translation>
+<translation id="7267430310003164111">Raginimas gauti programą iš „Google Play“ parduotuvės. Programos pavadinimas: „<ph name="APP_NAME"/>“. Vidutinis programos įvertinimas: <ph name="APP_RATING"/>.</translation>
 <translation id="4148957013307229264">Diegiama...</translation>
 <translation id="3992315671621218278">Išsaugoti nuorodą</translation>
 <translation id="8034522405403831421">Šis puslapis yra <ph name="SOURCE_LANGUAGE"/> k. Išversti į <ph name="TARGET_LANGUAGE"/> k.?</translation>

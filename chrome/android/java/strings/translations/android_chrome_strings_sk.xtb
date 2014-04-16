@@ -6,6 +6,7 @@
 <translation id="5578795271662203820">Hľadať obrázok v službe <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Preložiť</translation>
 <translation id="7644305409888602715">Prebieha preklad stránky do jazyka <ph name="SOURCE_LANGUAGE"/>...</translation>
+<translation id="7015922086425404465">Získať aplikáciu z Obchodu Google Play: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Znova načítať stránku</translation>
 <translation id="641643625718530986">Tlačiť...</translation>
 <translation id="7658239707568436148">Zrušiť</translation>
@@ -37,6 +38,7 @@ Prihlasujete sa pomocou spravovaného účtu a jeho správcovi tak umožňujete 
 <translation id="907015151729920253">Karta Smart card</translation>
 <translation id="3063601790762993062">Uložiť video</translation>
 <translation id="6042308850641462728">Viac</translation>
+<translation id="7267430310003164111">Výzva na získanie aplikácie z Obchodu Google Play. Názov aplikácie: <ph name="APP_NAME"/>. Priemerné hodnotenie aplikácie: <ph name="APP_RATING"/>.</translation>
 <translation id="4148957013307229264">Inštaluje sa...</translation>
 <translation id="3992315671621218278">Uložiť odkaz</translation>
 <translation id="8034522405403831421">Táto stránka je v jazyku <ph name="SOURCE_LANGUAGE"/>. Chcete ju preložiť do jazyka <ph name="TARGET_LANGUAGE"/>?</translation>

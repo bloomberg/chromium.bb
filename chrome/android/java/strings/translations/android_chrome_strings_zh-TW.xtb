@@ -6,6 +6,7 @@
 <translation id="5578795271662203820">透過 <ph name="SEARCH_ENGINE"/> 搜尋這張圖片</translation>
 <translation id="6831043979455480757">翻譯</translation>
 <translation id="7644305409888602715">正在將網頁內容翻譯成<ph name="SOURCE_LANGUAGE"/>...</translation>
+<translation id="7015922086425404465">從 Google Play 商店取得應用程式：<ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">重新載入這個網頁</translation>
 <translation id="641643625718530986">列印…</translation>
 <translation id="7658239707568436148">取消</translation>
@@ -37,6 +38,7 @@
 <translation id="907015151729920253">智慧卡</translation>
 <translation id="3063601790762993062">儲存影片</translation>
 <translation id="6042308850641462728">詳細資訊</translation>
+<translation id="7267430310003164111">提示從 Google Play 商店取得應用程式。應用程式名稱：<ph name="APP_NAME"/>。應用程式平均評分：<ph name="APP_RATING"/>。</translation>
 <translation id="4148957013307229264">安裝中...</translation>
 <translation id="3992315671621218278">儲存連結</translation>
 <translation id="8034522405403831421">這個網頁的內容是<ph name="SOURCE_LANGUAGE"/>，需要翻譯成<ph name="TARGET_LANGUAGE"/>嗎？</translation>

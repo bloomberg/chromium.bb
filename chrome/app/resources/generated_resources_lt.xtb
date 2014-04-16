@@ -3369,6 +3369,7 @@ Sukūrę naują prižiūrimą naudotoją, bet kuriuo metu galite tvarkyti jo nus
 <translation id="580886651983547002">„<ph name="PRODUCT_NAME"/>“
         negali pasiekti svetainės. Įprastai taip yra dėl tinklo problemų,
         tačiau gali būti ir dėl netinkamai sukonfigūruotos užkardos ar įgaliotojo serverio.</translation>
+<translation id="4387554346626014084">Įgalinti programų paleidimo priemonės sinchronizavimą. Tai tai pat įgalina aplankus, kur tai galima padaryti (ne OSX).</translation>
 <translation id="5445557969380904478">Apie balso atpažinimą</translation>
 <translation id="4104400246019119780">Dėkojame.</translation>
 <translation id="3487007233252413104">anoniminė funkcija</translation>
@@ -4831,6 +4832,7 @@ Skaičiuojamas laikas, kol bus įkrauta</translation>
 <translation id="8775404590947523323">Keitimai saugomi automatiškai.<ph name="BREAKS"/>Jei norite išsaugoti originalaus vaizdo kopiją, panaikinkite parinkties „Perrašyti originalą“ žymėjimą</translation>
 <translation id="5208988882104884956">Vidutinio pločio</translation>
 <translation id="1507170440449692343">Šis puslapis užblokuotas, kad nepasiektų jūsų fotoaparato.</translation>
+<translation id="4189406272289638749">Plėtinys (&lt;b&gt;<ph name="EXTENSION_NAME"/>&lt;/b&gt;) valdo šį nustatymą.</translation>
 <translation id="803771048473350947">Failas</translation>
 <translation id="6206311232642889873">Kopijuo&amp;ti vaizdą</translation>
 <translation id="5158983316805876233">Naudoti tą patį visų protokolų tarpinį serverį</translation>

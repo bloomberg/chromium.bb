@@ -3374,6 +3374,7 @@ Pastikan anda tidak mendedahkan sebarang maklumat sensitif.</translation>
 <translation id="580886651983547002"><ph name="PRODUCT_NAME"/>
         tidak dapat mencapai tapak web.  Ini biasanya disebabkan oleh isu rangkaian,
         tetapi juga boleh disebabkan oleh tembok api salah konfigurasi atau pelayan proksi.</translation>
+<translation id="4387554346626014084">Dayakan penyegerakan Pelancar Apl. Ini turut mendayakan Folder, jika ada (bukan OSX).</translation>
 <translation id="5445557969380904478">Mengenai pengecam suara</translation>
 <translation id="4104400246019119780">Terima kasih!</translation>
 <translation id="3487007233252413104">fungsi awanama</translation>
@@ -4836,6 +4837,7 @@ Mengira masa sehingga penuh</translation>
 <translation id="8775404590947523323">Suntingan anda disimpan secara automatik.<ph name="BREAKS"/>Untuk menyimpan salinan imej asal, nyahtandakan &quot;Tulis ganti yang asal&quot;</translation>
 <translation id="5208988882104884956">Kelebaran separa</translation>
 <translation id="1507170440449692343">Halaman ini telah disekat daripada mengakses kamera anda.</translation>
+<translation id="4189406272289638749">Pelanjutan, &lt;b&gt;<ph name="EXTENSION_NAME"/>&lt;/b&gt;, mengawal tetapan ini.</translation>
 <translation id="803771048473350947">Fail</translation>
 <translation id="6206311232642889873">Sal&amp;in Imej</translation>
 <translation id="5158983316805876233">Gunakan proksi yang sama untuk semua protokol</translation>

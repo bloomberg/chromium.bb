@@ -6,6 +6,7 @@
 <translation id="5578795271662203820">Pesquisar a imagem no <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Traduzir</translation>
 <translation id="7644305409888602715">A traduzir a página para <ph name="SOURCE_LANGUAGE"/>...</translation>
+<translation id="7015922086425404465">Obter aplicação da Google Play Store: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Atualizar esta Página</translation>
 <translation id="641643625718530986">Imprimir…</translation>
 <translation id="7658239707568436148">Cancelar</translation>
@@ -37,6 +38,7 @@ Está a iniciar sessão com uma conta gerida e a atribuir ao respetivo administr
 <translation id="907015151729920253">Smart card</translation>
 <translation id="3063601790762993062">Guardar vídeo</translation>
 <translation id="6042308850641462728">Mais</translation>
+<translation id="7267430310003164111">Solicitação para obter aplicação da Google Play Store. Nome da aplicação: <ph name="APP_NAME"/>. Classificação média da aplicação: <ph name="APP_RATING"/>.</translation>
 <translation id="4148957013307229264">A instalar...</translation>
 <translation id="3992315671621218278">Guardar link</translation>
 <translation id="8034522405403831421">Esta página está em <ph name="SOURCE_LANGUAGE"/>. Pretende traduzi-la para <ph name="TARGET_LANGUAGE"/>?</translation>

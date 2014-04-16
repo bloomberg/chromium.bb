@@ -6,6 +6,7 @@
 <translation id="5578795271662203820">इस चित्र के लिए <ph name="SEARCH_ENGINE"/> खोजें</translation>
 <translation id="6831043979455480757">अनुवाद</translation>
 <translation id="7644305409888602715">पृष्ठ का अनुवाद <ph name="SOURCE_LANGUAGE"/> में किया जा रहा है...</translation>
+<translation id="7015922086425404465">Google Play स्टोर से ऐप्स प्राप्त करें: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">यह पृष्ठ पुन: लोड करें</translation>
 <translation id="641643625718530986">प्रिंट करें…</translation>
 <translation id="7658239707568436148">रद्द करें</translation>
@@ -37,6 +38,7 @@
 <translation id="907015151729920253">स्मार्ट कार्ड</translation>
 <translation id="3063601790762993062">वीडियो सहेजें</translation>
 <translation id="6042308850641462728">अधिक</translation>
+<translation id="7267430310003164111">Google Play स्टोर से ऐप्स प्राप्त करने का संकेत.  ऐप्स नाम: <ph name="APP_NAME"/>.  ऐप्स औसत रेटिंग: <ph name="APP_RATING"/>.</translation>
 <translation id="4148957013307229264">इंस्‍टॉल हो रहा है...</translation>
 <translation id="3992315671621218278">लिंक सहेजें</translation>
 <translation id="8034522405403831421">यह पृष्ठ <ph name="SOURCE_LANGUAGE"/> में है. इसका <ph name="TARGET_LANGUAGE"/> में अनुवाद करें?</translation>

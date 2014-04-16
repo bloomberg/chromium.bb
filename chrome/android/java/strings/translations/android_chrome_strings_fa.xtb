@@ -6,6 +6,7 @@
 <translation id="5578795271662203820">جستجوی <ph name="SEARCH_ENGINE"/> برای این تصویر</translation>
 <translation id="6831043979455480757">ترجمه</translation>
 <translation id="7644305409888602715">در حال ترجمه صفحه به <ph name="SOURCE_LANGUAGE"/>…</translation>
+<translation id="7015922086425404465">‏دریافت برنامه از فروشگاه Google Play:‏ <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">بارگیری مجدد این صفحه</translation>
 <translation id="641643625718530986">چاپ...</translation>
 <translation id="7658239707568436148">لغو</translation>
@@ -35,6 +36,7 @@
 <translation id="907015151729920253">کارت هوشمند</translation>
 <translation id="3063601790762993062">ذخیره ویدیو</translation>
 <translation id="6042308850641462728">بیشتر</translation>
+<translation id="7267430310003164111">‏سؤال برای دریافت برنامه از فروشگاه Google Play. نام برنامه: <ph name="APP_NAME"/>. رتبه متوسط برنامه: <ph name="APP_RATING"/>.</translation>
 <translation id="4148957013307229264">در حال نصب...</translation>
 <translation id="3992315671621218278">ذخیره پیوند</translation>
 <translation id="8034522405403831421">این صفحه به زبان <ph name="SOURCE_LANGUAGE"/> است. مایلید آن را به <ph name="TARGET_LANGUAGE"/> ترجمه کنید؟</translation>

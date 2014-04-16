@@ -3347,6 +3347,7 @@ Pārbaudiet, vai nepadarīsiet redzamu sensitīvu informāciju.</translation>
 <translation id="580886651983547002"><ph name="PRODUCT_NAME"/>
         nevar sasniegt vietni. Parasti tam par iemeslu ir problēmas ar
         tīklu, tomēr to var izraisīt arī nepareizi konfigurēts ugunsmūris vai starpniekserveris.</translation>
+<translation id="4387554346626014084">Iespējot lietotņu palaidēja sinhronizāciju. Ja iespējams, tiek iespējotas arī mapes (izņemot OSX).</translation>
 <translation id="5445557969380904478">Par balss atpazīšanu</translation>
 <translation id="4104400246019119780">Paldies!</translation>
 <translation id="3487007233252413104">anonīma funkcija</translation>
@@ -4808,6 +4809,7 @@ Tiek rēķināts atlikušais uzlādes laiks</translation>
 <translation id="8775404590947523323">Izmaiņas tiek saglabātas automātiski.<ph name="BREAKS"/>Lai saglabātu sākotnējā attēla kopiju, noņemiet atzīmi no izvēles rūtiņas “Pārrakstīt sākotnējo”.</translation>
 <translation id="5208988882104884956">Pusplatuma</translation>
 <translation id="1507170440449692343">Šīs lapas piekļuve jūsu kamerai ir bloķēta.</translation>
+<translation id="4189406272289638749">Šo iestatījumu kontrolē paplašinājums &lt;b&gt;<ph name="EXTENSION_NAME"/>&lt;/b&gt;.</translation>
 <translation id="803771048473350947">Fails</translation>
 <translation id="6206311232642889873">Kopēt &amp;attēlu</translation>
 <translation id="5158983316805876233">Izmantojiet vienu starpniekserveri visiem protokoliem</translation>

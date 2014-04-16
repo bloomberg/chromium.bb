@@ -3336,6 +3336,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="580886651983547002">O <ph name="PRODUCT_NAME"/>
         não consegue acessar este site. Normalmente, isso é causado por problemas na rede,
         mas também pode ser resultado de problemas na configuração de um firewall ou servidor proxy.</translation>
+<translation id="4387554346626014084">Ativar sincronização do Acesso rápido aos apps. Também ativa as pastas, quando disponíveis (não para OSX).</translation>
 <translation id="5445557969380904478">Sobre o reconhecimento de voz</translation>
 <translation id="4104400246019119780">Obrigado.</translation>
 <translation id="3487007233252413104">função anônima</translation>
@@ -4792,6 +4793,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="8775404590947523323">Suas edições são salvas automaticamente. <ph name="BREAKS"/>Para manter uma cópia da imagem original, desmarque a opção &quot;Substituir original&quot;</translation>
 <translation id="5208988882104884956">Extensão parcial</translation>
 <translation id="1507170440449692343">Esta página foi impedida de acessar sua câmera.</translation>
+<translation id="4189406272289638749">Uma extensão, &lt;b&gt;<ph name="EXTENSION_NAME"/>&lt;/b&gt;, está controlando esta configuração.</translation>
 <translation id="803771048473350947">Arquivo</translation>
 <translation id="6206311232642889873">&amp;Copiar imagem</translation>
 <translation id="5158983316805876233">Use o mesmo proxy para todos os protocolos</translation>

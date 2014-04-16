@@ -6,6 +6,7 @@
 <translation id="5578795271662203820">Cerca aquesta imatge a <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Tradueix</translation>
 <translation id="7644305409888602715">La pàgina s'està traduint a <ph name="SOURCE_LANGUAGE"/>...</translation>
+<translation id="7015922086425404465">Baixeu aplicacions de Google Play Store: <ph name="APP_ACTION"/>.</translation>
 <translation id="1491151370853475546">Torna a carregar aquesta pàgina</translation>
 <translation id="641643625718530986">Imprimeix…</translation>
 <translation id="7658239707568436148">Cancel·la</translation>
@@ -37,6 +38,7 @@ Inicieu la sessió amb un compte gestionat, de manera que concediu al seu admini
 <translation id="907015151729920253">Targeta intel·ligent</translation>
 <translation id="3063601790762993062">Desa el vídeo</translation>
 <translation id="6042308850641462728">Més</translation>
+<translation id="7267430310003164111">Sol·licitud per baixar l'aplicació de Google Play Store. Nom de l'aplicació: <ph name="APP_NAME"/>. Puntuació mitjana de l'aplicació: <ph name="APP_RATING"/></translation>
 <translation id="4148957013307229264">S'està instal·lant...</translation>
 <translation id="3992315671621218278">Desa l'enllaç</translation>
 <translation id="8034522405403831421">Aquesta pàgina està escrita en <ph name="SOURCE_LANGUAGE"/>. Voleu traduir-la a <ph name="TARGET_LANGUAGE"/>?</translation>

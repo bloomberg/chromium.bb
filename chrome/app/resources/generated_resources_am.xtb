@@ -637,7 +637,7 @@
 <translation id="1363055550067308502">ሙሉ/ግማሽ ስፋት ስልትን ቀይር</translation>
 <translation id="5933265534405972182">የሙከራ አልተመሳሰል ዲ ኤን ኤስ ደንበኛን ያንቁ።</translation>
 <translation id="3108967419958202225">ይምረጡ...</translation>
-<translation id="6451650035642342749">ራስ-ከፋች ቅንብሮችን አስወግድ</translation>
+<translation id="6451650035642342749">ራስ-ከፋች ቅንብሮችን አጽዳ</translation>
 <translation id="5948544841277865110">የግል አውታረ መረብ ያክሉ</translation>
 <translation id="7088434364990739311">የዝማኔ ፍተሻ መጀመር አልተሳካም (የስህተት ኮድ <ph name="ERROR"/>)።</translation>
 <translation id="7113536735712968774">ያነሰ አሳይ...</translation>
@@ -849,7 +849,7 @@
 <translation id="8257950718085972371">የካሜራ መዳረሻ ማገዱን ቀጥል</translation>
 <translation id="5390284375844109566">በመረጃ ጠቋሚ የተሰናዳ የውሂብ ጎታ</translation>
 <translation id="411666854932687641">የግል ማህደረ ትውስታ</translation>
-<translation id="119944043368869598">ሁሉንም አስወግድ</translation>
+<translation id="119944043368869598">ሁሉንም አጽዳ</translation>
 <translation id="3467848195100883852">ፊደል ራስ-ማረምን ያንቁ</translation>
 <translation id="1336254985736398701">የገጽ &amp;መረጃ አሳይ</translation>
 <translation id="5039440886426314758">እነዚህ መተግበሪያዎች እና ቅጥያዎች ይጫኑ?</translation>
@@ -2766,7 +2766,7 @@ nil</translation>
 <translation id="736515969993332243">አውታረ መረቦችን በመቃኘት ላይ።</translation>
 <translation id="7806513705704909664">በአንዲት ጠቅታ የድር ቅጾችን ለመሙላት ራስ-ሙላን ያንቁ።</translation>
 <translation id="8282504278393594142">ምንም የተጫኑ ቅጥያዎች የሉም።</translation>
-<translation id="8026334261755873520">የአሰሳ ውሂብ አስወግድ</translation>
+<translation id="8026334261755873520">የአሰሳ ውሂብ አጽዳ</translation>
 <translation id="605011065011551813">አንድ ተሰኪ (<ph name="PLUGIN_NAME"/>) መልስ እየሰጠ አይደለም።</translation>
 <translation id="1467432559032391204">ግራ</translation>
 <translation id="6395423953133416962"><ph name="BEGIN_LINK1"/>የስርዓት መረጃ<ph name="END_LINK1"/> እና <ph name="BEGIN_LINK2"/>ልኬቶች<ph name="END_LINK2"/> ይላኩ</translation>
@@ -3380,6 +3380,7 @@ nil</translation>
 <translation id="580886651983547002"><ph name="PRODUCT_NAME"/>
         ድር ጣቢያውን ሊደርስበት አልቻለም። ይሄ በተለምዶ በአውታረ መረብ ችግሮች ምክንያት ነው
         የሚከሰተው፣ ግን በአግባቡ ያልተዋቀረ ኬላ ወይም ተኪ አገልጋይ ውጤት ሊሆንም ይችላል።</translation>
+<translation id="4387554346626014084">የመተግበሪያ ማስጀመሪያ አመሳሰልን ያንቁ። ይሄ እንዲሁም ሲገኙ አቃፊዎችንም ያነቃል (OSX ያልሆኑ)።</translation>
 <translation id="5445557969380904478">ስለድምጽ ማወቂያ</translation>
 <translation id="4104400246019119780">እናመሰግናለን!</translation>
 <translation id="3487007233252413104">ስም-አልባ ተግባር</translation>
@@ -4797,7 +4798,7 @@ nil</translation>
 <translation id="741689768643916402">የአጋጣሚ ነገር ሆኖ የአሜሪካ አድራሻ ያላቸው ገዢዎች ብቻ ናቸው Google Walletን በዚህ ነጋዴ ላይ መጠቀም የሚችሉት። የአሜሪካ ነዋሪ ከሆኑ እባክዎ |Wallet ላይ ያለው የቤት አድራሻዎን ይቀይሩ| ወይም Google Walletን ሳይጠቀሙ ይክፈሉ።</translation>
 <translation id="5828633471261496623">በማተም ላይ...</translation>
 <translation id="2420698750843121542">የተመሰጠሩ የማህደረ መረጃ ቅጥያዎችን በቪዲዮ እና ድምጽ ክፍሎች ላይ ያንቁ። ይሄ የቅርብ ጊዜ የተመሰጠሩ የማህደረ መረጃ ቅጥያዎችን ያነቃል።</translation>
-<translation id="5421136146218899937">የአሰሳ ውሂብ አስወግድ…</translation>
+<translation id="5421136146218899937">የአሰሳ ውሂብ አጽዳ…</translation>
 <translation id="5783059781478674569">የድምጽ ማወቂያ አማራጮች</translation>
 <translation id="5441100684135434593">ባለገመድ አውታረ መረብ</translation>
 <translation id="3285322247471302225">አዲስ &amp;ትር</translation>
@@ -4845,6 +4846,7 @@ nil</translation>
 <translation id="8775404590947523323">አርትዖትዎችዎ በራስ-ሰር ተቀምጠዋል።<ph name="BREAKS"/>የመጀመሪያው ምስል ቅጂ ለማስቀመጥ «የመጀመሪያውን ተካ» የሚለው ላይ ያለውን ምልክት ያንሱ</translation>
 <translation id="5208988882104884956">ግማሽ ወርድ</translation>
 <translation id="1507170440449692343">ይህ ገጽ ካሜራዎን እንዳይደርስበት ታግዷል።</translation>
+<translation id="4189406272289638749">አንድ ቅጥያ &lt;b&gt;<ph name="EXTENSION_NAME"/>&lt;/b&gt; ይህን ቅንብር እየተቆጣጠረ ነው።</translation>
 <translation id="803771048473350947">ፋይል</translation>
 <translation id="6206311232642889873">ምስል ቅ&amp;ዳ</translation>
 <translation id="5158983316805876233">ተመሳሳዩን ተኪ ለሁሉም ፕሮቶኮሎች ይጠቀሙ</translation>

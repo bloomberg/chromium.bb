@@ -475,7 +475,7 @@
 <translation id="9050666287014529139">ข้อความรหัสผ่าน</translation>
 <translation id="4880320188904265650">เปิดลิงก์ <ph name="PROTOCOL"/> ทั้งหมดไหม</translation>
 <translation id="5197255632782567636">อินเทอร์เน็ต</translation>
-<translation id="8787254343425541995">อนุญาตให้ใช้พร็อกซีสำหรับเครือข่ายที่แบ่งปันไว้</translation>
+<translation id="8787254343425541995">อนุญาตให้ใช้พร็อกซีสำหรับเครือข่ายที่แชร์ไว้</translation>
 <translation id="4755860829306298968">จัดการการบล็อกปลั๊กอิน...</translation>
 <translation id="8879284080359814990">แ&amp;สดงเป็นแถบ</translation>
 <translation id="4314714876846249089"><ph name="PRODUCT_NAME"/>
@@ -1342,7 +1342,7 @@
 <translation id="2869742291459757746">อนุญาตให้ผู้ใช้ให้ Chrome สร้างรหัสผ่านเมื่อตรวจพบหน้าเว็บการสร้างบัญชี</translation>
 <translation id="833853299050699606">ไม่มีรายละเอียดแผนข้อมูล</translation>
 <translation id="7079038783243627996">&quot;<ph name="EXTENSION"/>&quot; จะสามารถอ่านและลบไฟล์รูปภาพ วิดีโอ และเสียงในโฟลเดอร์ที่เลือกไว้</translation>
-<translation id="1737968601308870607">บั๊กของไฟล์</translation>
+<translation id="1737968601308870607">ข้อบกพร่องของไฟล์</translation>
 <translation id="7326487563595667270">ลูกโป่งติดตั้งแอปพลิเคชันใหม่</translation>
 <translation id="8437238597147034694">&amp;เลิกทำการย้าย</translation>
 <translation id="8670734860857459042">&lt;p&gt;
@@ -1445,7 +1445,7 @@
 <translation id="3574210789297084292">ลงชื่อเข้าใช้</translation>
 <translation id="1146204723345436916">นำเข้าบุ๊กมาร์กจากไฟล์ HTML...</translation>
 <translation id="2113921862428609753">การเข้าถึงข้อมูลผู้ออกใบรับรอง</translation>
-<translation id="9190063653747922532">L2TP/IPsec + คีย์ที่แบ่งปันล่วงหน้า</translation>
+<translation id="9190063653747922532">L2TP/IPsec + คีย์ที่แชร์ล่วงหน้า</translation>
 <translation id="5227536357203429560">เพิ่มเครือข่ายส่วนบุคคล...</translation>
 <translation id="732677191631732447">คัด&amp;ลอก URL เสียง</translation>
 <translation id="7224023051066864079">ซับเน็ตมาสก์:</translation>
@@ -1943,8 +1943,8 @@
 <translation id="4112917766894695549">การตั้งค่าเหล่านี้ถูกบังคับใช้โดยผู้ดูแลระบบของคุณ</translation>
 <translation id="5669267381087807207">กำลังเปิดการใช้งาน</translation>
 <translation id="8825366169884721447">ส่วนขยายนี้ไม่สามารถแก้ไขส่วนหัวคำขอ &quot;<ph name="HEADER_NAME"/>&quot; ของคำขอเครือข่ายได้เนื่องจากการแก้ไขขัดแย้งกับส่วนขยายอื่น (<ph name="EXTENSION_NAME"/>)</translation>
-<translation id="5308845175611284862">การซิงค์ <ph name="PRODUCT_NAME"/> ทำให้คุณสามารถแบ่งปันข้อมูล (เช่น บุ๊กมาร์กและการตั้งค่า) ระหว่างเครื่องคอมพิวเตอร์ของคุณได้ง่ายขึ้น <ph name="PRODUCT_NAME"/> จะซิงค์ข้อมูลของคุณโดยจัดเก็บข้อมูลแบบออนไลน์ไว้กับ Google เมื่อคุณลงชื่อเข้าใช้บัญชี Google ของคุณ</translation>
-<translation id="1707463636381878959">แบ่งปันเครือข่ายนี้กับผู้ใช้อื่น</translation>
+<translation id="5308845175611284862">การซิงค์ <ph name="PRODUCT_NAME"/> ทำให้คุณสามารถแชร์ข้อมูล (เช่น บุ๊กมาร์กและการตั้งค่า) ระหว่างเครื่องคอมพิวเตอร์ของคุณได้ง่ายขึ้น <ph name="PRODUCT_NAME"/> จะซิงค์ข้อมูลของคุณโดยจัดเก็บข้อมูลแบบออนไลน์ไว้กับ Google เมื่อคุณลงชื่อเข้าใช้บัญชี Google ของคุณ</translation>
+<translation id="1707463636381878959">แชร์เครือข่ายนี้กับผู้ใช้อื่น</translation>
 <translation id="2084978867795361905">MS-IME</translation>
 <translation id="7701625482249298476">เปิดใช้ปุ่มค้นหาในแถบอเนกประสงค์</translation>
 <translation id="1818196664359151069">ความละเอียด:</translation>
@@ -2203,7 +2203,7 @@
 <translation id="5512030650494444738">ดอกไม้</translation>
 <translation id="6462080265650314920">แอปพลิเคชันต้องได้รับบริการจากประเภทเนื้อหา &quot;<ph name="CONTENT_TYPE"/>&quot;</translation>
 <translation id="1559235587769913376">ป้อนอักขระ Unicode</translation>
-<translation id="3297788108165652516">เครือข่ายนี้มีการแบ่งปันกับผู้ใช้อื่น</translation>
+<translation id="3297788108165652516">เครือข่ายนี้มีการแชร์กับผู้ใช้อื่น</translation>
 <translation id="4810984886082414856">แคชพื้นฐานสำหรับ HTTP</translation>
 <translation id="1548132948283577726">ไซต์ที่ไม่เคยบันทึกรหัสผ่านจะแสดงขึ้นที่นี่</translation>
 <translation id="583281660410589416">ไม่รู้จัก</translation>
@@ -2420,7 +2420,7 @@
 <translation id="6584878029876017575">การรับรองตลอดชีพของ Microsoft</translation>
 <translation id="562901740552630300">ไปที่
           <ph name="BEGIN_BOLD"/>
-          เริ่ม &gt; แผงควบคุม &gt; เครือข่ายและอินเทอร์เน็ต &gt; เครือข่ายและศูนย์การแบ่งปัน &gt; การแก้ไขปัญหา (ที่ด้านล่าง) &gt; การเชื่อมต่ออินเทอร์เน็ต
+          เริ่ม &gt; แผงควบคุม &gt; เครือข่ายและอินเทอร์เน็ต &gt; เครือข่ายและศูนย์การแชร์ &gt; การแก้ไขปัญหา (ที่ด้านล่าง) &gt; การเชื่อมต่ออินเทอร์เน็ต
           <ph name="END_BOLD"/></translation>
 <translation id="2773223079752808209">การสนับสนุนลูกค้า</translation>
 <translation id="2143915448548023856">การตั้งค่าการแสดงผล</translation>
@@ -2439,7 +2439,7 @@
 <translation id="59174027418879706">เปิดใช้งานแล้ว</translation>
 <translation id="4194415033234465088">Dachen 26</translation>
 <translation id="8725798467599003282">เปิดใช้ลูกโป่งรหัสผ่าน ลูกโป่งรหัสผ่านมอบวิธีง่ายๆ ในการเก็บและจัดการรหัสผ่านสำหรับเว็บไซต์ โดยจะแทนที่แถบข้อมูลสำหรับการบันทึกรหัสผ่าน</translation>
-<translation id="3554751249011484566">จะมีการแบ่งปันรายละเอียดต่อไปนี้กับ <ph name="SITE"/></translation>
+<translation id="3554751249011484566">จะมีการแชร์รายละเอียดต่อไปนี้กับ <ph name="SITE"/></translation>
 <translation id="872537912056138402">โครเอเชีย</translation>
 <translation id="6639554308659482635">หน่วยความจำ SQLite</translation>
 <translation id="7231224339346098802">ใช้ตัวเลขเพื่อระบุจำนวนสำเนาที่ต้องการพิมพ์ (1 หรือมากกว่า)</translation>
@@ -3010,7 +3010,7 @@
 <translation id="1358735829858566124">ไฟล์หรือไดเรกทอรีใช้งานไม่ได้</translation>
 <translation id="175772926354468439">เปิดใช้งานธีม</translation>
 <translation id="3144135466825225871">ไม่สามารถแทนที่ไฟล์ CRX ได้ โปรดตรวจสอบดูว่าไฟล์มีการใช้งานอยู่หรือไม่</translation>
-<translation id="2744221223678373668">ที่แบ่งปัน</translation>
+<translation id="2744221223678373668">ที่แชร์</translation>
 <translation id="9064142312330104323">รูปภาพ Google โปรไฟล์ (กำลังโหลด)</translation>
 <translation id="3930617119570072742">คุณไว้วางใจให้ส่วนขยายนี้ทำงานเหล่านี้ไหม</translation>
 <translation id="4708849949179781599">ออกจาก <ph name="PRODUCT_NAME"/></translation>
@@ -3312,6 +3312,7 @@
 <translation id="580886651983547002"><ph name="PRODUCT_NAME"/>
         ไม่สามารถเข้าถึงเว็บไซต์ โดยทั่วไปแล้ว จะมีสาเหตุมาจากปัญหาเครือข่าย
         แต่อาจเป็นผลมาจากไฟร์วอลล์หรือพร็อกซีเซิร์ฟเวอร์ที่ได้รับการกำหนดค่าไม่ถูกต้อง</translation>
+<translation id="4387554346626014084">เปิดการซิงค์เครื่องเรียกใช้งานแอป โดยจะเปิดใช้โฟลเดอร์ด้วยเมื่อพร้อมใช้งาน (ไม่ใช่ OSX)</translation>
 <translation id="5445557969380904478">เกี่ยวกับการจดจำเสียง</translation>
 <translation id="4104400246019119780">ขอขอบคุณ!</translation>
 <translation id="3487007233252413104">ฟังก์ชันที่ไม่ระบุชื่อ</translation>
@@ -4126,7 +4127,7 @@
 <translation id="6361850914223837199">รายละเอียดข้อผิดพลาด:</translation>
 <translation id="7187948801578913257">แอปพลิเคชันที่แพ็คและคีย์ส่วนตัวจะถูกเขียนในไดเรกทอรีระดับบนสุดของไดเรกทอรีรากของแอปพลิเคชันที่จะแพ็ค ในการอัปเดตแอปพลิเคชัน ให้เลือกไฟล์คีย์ส่วนตัวเพื่อนำมาใช้ใหม่อีกครั้ง</translation>
 <translation id="8948393169621400698">อนุญาตให้ใช้ปลั๊กอินบน <ph name="HOST"/> เสมอ</translation>
-<translation id="6527303717912515753">แบ่งปัน</translation>
+<translation id="6527303717912515753">แชร์</translation>
 <translation id="8731948433915954843">ย้าย URL ออกจากแถบอเนกประสงค์และแสดงชื่อโฮสต์ในชิปเดิมในแถบเครื่องมือ</translation>
 <translation id="8211154138148153396">การแจ้งเตือนการค้นพบอุปกรณ์ในเครือข่ายภายใน</translation>
 <translation id="5039512255859636053">$1 TB</translation>
@@ -4198,7 +4199,7 @@
 <translation id="7583419135027754249">ส่งกิจกรรมการคลิกทันทีเสมอเมื่อมีการแตะ แม้ในกรณีที่การแตะเป็นส่วนหนึ่งของท่าทางสัมผัสแตะสองครั้ง  การดำเนินการนี้ทำให้การนำทางและการทำงานการแตะอื่นๆ เร็วขึ้น 300 มิลลิวินาทีในหน้าเว็บส่วนใหญ่ แต่หมายความว่าต้องหลีกเลี่ยงลิงก์และปุ่มเมื่อแตะสองครั้งเพื่อซูม</translation>
 <translation id="2164561725439241890">เขียนไปยังไฟล์ที่คุณเปิดในแอปพลิเคชัน</translation>
 <translation id="1196944142850240972">เข้าถึงข้อมูลของคุณบนเว็บไซต์ทั้งหมด</translation>
-<translation id="4100843820583867709">คำขอแบ่งปันหน้าจอของ Google Talk</translation>
+<translation id="4100843820583867709">คำขอแชร์หน้าจอของ Google Talk</translation>
 <translation id="2406941037785138796">การปิดการใช้งาน</translation>
 <translation id="5030338702439866405">ออกโดย</translation>
 <translation id="7940103665344164219">การใช้หน่วยความจำที่ใช้ร่วมกัน</translation>
@@ -4768,6 +4769,7 @@
 <translation id="8775404590947523323">การแก้ไขของคุณจะถูกบันทึกไว้โดยอัตโนมัติ<ph name="BREAKS"/>หากต้องการเก็บสำเนาของภาพต้นฉบับ ให้ยกเลิกการทำเครื่องหมาย &quot;เขียนทับต้นฉบับ&quot;</translation>
 <translation id="5208988882104884956">ตัวย่อ</translation>
 <translation id="1507170440449692343">หน้านี้ถูกบล็อกไม่ให้เข้าถึงกล้องของคุณ</translation>
+<translation id="4189406272289638749">ส่วนขยาย &lt;b&gt;<ph name="EXTENSION_NAME"/>&lt;/b&gt; กำลังควบคุมการตั้งค่านี้</translation>
 <translation id="803771048473350947">ไฟล์</translation>
 <translation id="6206311232642889873">คัดลอ&amp;กรูปภาพ</translation>
 <translation id="5158983316805876233">ใช้พร็อกซีเดียวกันสำหรับโปรโตคอลทั้งหมด</translation>
@@ -5078,7 +5080,7 @@
 <translation id="2960316970329790041">หยุดการนำเข้า</translation>
 <translation id="8575286330460702756">ข้อมูลลายเซ็น</translation>
 <translation id="6812841287760418429">เก็บการเปลี่ยนแปลงไว้</translation>
-<translation id="3835522725882634757">แย่แล้ว! เซิร์ฟเวอร์นี้กำลังส่งข้อมูลที่ <ph name="PRODUCT_NAME"/> ไม่เข้าใจ โปรด<ph name="BEGIN_LINK"/>รายงานบั๊ก<ph name="END_LINK"/> และรวม<ph name="BEGIN2_LINK"/>รายการที่ยังไม่ผ่านกระบวนการ<ph name="END2_LINK"/>ไว้ด้วย</translation>
+<translation id="3835522725882634757">แย่แล้ว! เซิร์ฟเวอร์นี้กำลังส่งข้อมูลที่ <ph name="PRODUCT_NAME"/> ไม่เข้าใจ โปรด<ph name="BEGIN_LINK"/>รายงานข้อบกพร่อง<ph name="END_LINK"/> และรวม<ph name="BEGIN2_LINK"/>รายการที่ยังไม่ผ่านกระบวนการ<ph name="END2_LINK"/>ไว้ด้วย</translation>
 <translation id="2989474696604907455">ไม่ได้แนบ</translation>
 <translation id="825340570657769992">เปิดใช้งานการเข้ารหัสการซิงค์แหล่งเก็บคีย์</translation>
 <translation id="3566784263424350852">เข้าถึงอุปกรณ์ USB จาก <ph name="VENDOR_NAME"/></translation>

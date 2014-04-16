@@ -2028,7 +2028,7 @@
 <translation id="1362165759943288856"><ph name="DATE"/> ви придбали необмежений пакет даних</translation>
 <translation id="2078019350989722914">Попереджати перед виходом (<ph name="KEY_EQUIVALENT"/>)</translation>
 <translation id="7965010376480416255">Спільна пам’ять</translation>
-<translation id="6248988683584659830">Налаштування пошуку</translation>
+<translation id="6248988683584659830">Пошук налаштувань</translation>
 <translation id="8323232699731382745">пароль мережі</translation>
 <translation id="7273110280511444812">останнє підключення: <ph name="DATE"/></translation>
 <translation id="6588399906604251380">Увімкнути перевірку орфографії</translation>
@@ -3303,6 +3303,7 @@
 <translation id="6003177993629630467">Можливо <ph name="PRODUCT_NAME"/> не зможе оновлюватись.</translation>
 <translation id="8923542159871018393">На цій сторінці запущено розширення <ph name="EXTENSION_NAME"/>.</translation>
 <translation id="580886651983547002"><ph name="PRODUCT_NAME"/> не може зв'язатися з веб-сайтом. Зазвичай причиною є проблеми мережі, але це також може бути наслідком неправильно налаштованого брандмауера чи проксі-сервера.</translation>
+<translation id="4387554346626014084">Увімкнути синхронізацію панелі запуску додатків. Також вмикає папки, де це можливо (крім OSX).</translation>
 <translation id="5445557969380904478">Про розпізнавання голосу</translation>
 <translation id="4104400246019119780">Дякуємо.</translation>
 <translation id="3487007233252413104">анонімна функція</translation>
@@ -4759,6 +4760,7 @@
 <translation id="8775404590947523323">Ваші зміни зберігаються автоматично.<ph name="BREAKS"/>Щоб зберегти копію оригінального зображення, зніміть прапорець поруч з опцією &quot;Замінити оригінал&quot;</translation>
 <translation id="5208988882104884956">Половинна ширина</translation>
 <translation id="1507170440449692343">Доступ цієї сторінки до вашої камери заблоковано.</translation>
+<translation id="4189406272289638749">Розширення &lt;b&gt;<ph name="EXTENSION_NAME"/>&lt;/b&gt; контролює це налаштування.</translation>
 <translation id="803771048473350947">Файл</translation>
 <translation id="6206311232642889873">Копіюват&amp;и зображення</translation>
 <translation id="5158983316805876233">Використовувати один проксі-сервер для всіх протоколів</translation>

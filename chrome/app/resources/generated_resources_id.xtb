@@ -647,7 +647,7 @@
 <translation id="6380224340023442078">Setelan konten...</translation>
 <translation id="1612129875274679969">Simpan perangkat ini dalam mode kios secara permanen.</translation>
 <translation id="7214227951029819508">Kecerahan:</translation>
-<translation id="3704726585584668805">Aktifkan plug-in PDF dengan proses terpisah.</translation>
+<translation id="3704726585584668805">Aktifkan plugin PDF dengan proses terpisah.</translation>
 <translation id="5486326529110362464">Nilai masukan untuk kunci pribadi harus ada.</translation>
 <translation id="6824725898506587159">Kelola bahasa</translation>
 <translation id="8190907767443402387">Kirim masukan untuk membantu menyempurnakan Chrome</translation>
@@ -2729,7 +2729,7 @@ Pastikan Anda tidak mengekspos informasi penting apa pun.</translation>
 <translation id="7806513705704909664">Aktifkan IsiOtomatis untuk mengisi formulir web dengan sekali klik.</translation>
 <translation id="8282504278393594142">Tidak ada ekstensi yang dipasang.</translation>
 <translation id="8026334261755873520">Hapus data penjelajahan</translation>
-<translation id="605011065011551813">Sebuah plug-in (<ph name="PLUGIN_NAME"/>) tidak menanggapi.</translation>
+<translation id="605011065011551813">Sebuah plugin (<ph name="PLUGIN_NAME"/>) tidak menanggapi.</translation>
 <translation id="1467432559032391204">Kiri</translation>
 <translation id="6395423953133416962">Kirim <ph name="BEGIN_LINK1"/>informasi sistem<ph name="END_LINK1"/> dan <ph name="BEGIN_LINK2"/>metrik<ph name="END_LINK2"/></translation>
 <translation id="1769104665586091481">Buka Tautan di &amp;Jendela Baru</translation>
@@ -3335,6 +3335,7 @@ Pastikan Anda tidak mengekspos informasi penting apa pun.</translation>
 <translation id="580886651983547002"><ph name="PRODUCT_NAME"/>
         tidak dapat menjangkau situs web.  Ini biasanya terjadi karena masalah jaringan,
         tetapi juga bisa disebabkan oleh firewall atau server proxy yang salah dikonfigurasi.</translation>
+<translation id="4387554346626014084">Mengaktifkan sinkronisasi Peluncur Aplikasi. Tindakan ini juga mengaktifkan Folder apabila tersedia (bukan OSX).</translation>
 <translation id="5445557969380904478">Tentang pengenalan suara</translation>
 <translation id="4104400246019119780">Terima kasih!</translation>
 <translation id="3487007233252413104">fungsi anonim</translation>
@@ -4397,7 +4398,7 @@ Pastikan Anda tidak mengekspos informasi penting apa pun.</translation>
 <translation id="2749881179542288782">Periksa Grammar Dengan Ejaaan</translation>
 <translation id="5105855035535475848">Sematkan tab</translation>
 <translation id="5707604204219538797">Kata berikutnya</translation>
-<translation id="5896465938181668686">Hentikan plug-in</translation>
+<translation id="5896465938181668686">Hentikan plugin</translation>
 <translation id="657869111306379099">Menonaktifkan indikator metode masukan yang ditunjukkan dekat tanda sisipan jika beralih di antara metode masukan keyboard.</translation>
 <translation id="6892450194319317066">Pilih menurut Pembuka</translation>
 <translation id="7904402721046740204">Mengautentikasi</translation>
@@ -4722,7 +4723,7 @@ Pastikan Anda tidak mengekspos informasi penting apa pun.</translation>
 <translation id="978146274692397928">Lebar tanda baca awal Penuh</translation>
 <translation id="106701514854093668">Bookmark Desktop</translation>
 <translation id="4775266380558160821">Selalu izinkan plugin yang tidak dikotakpasirkan di <ph name="HOST"/></translation>
-<translation id="6921812972154549137">Cookie serta data plug-in dan situs lainnya</translation>
+<translation id="6921812972154549137">Cookie serta data plugin dan situs lainnya</translation>
 <translation id="6886871292305414135">Buka tautan di &amp;tab baru</translation>
 <translation id="1639192739400715787">Untuk mengakses setelan Keamanan, masukkan PIN kartu SIM</translation>
 <translation id="4499634737431431434">Minggu</translation>
@@ -4792,6 +4793,7 @@ Pastikan Anda tidak mengekspos informasi penting apa pun.</translation>
 <translation id="8775404590947523323">Editan Anda disimpan secara otomatis.<ph name="BREAKS"/>Untuk menyimpan salinan dari gambar asli, hapus centang &quot;Timpa yang asli&quot;</translation>
 <translation id="5208988882104884956">Lebar separuh</translation>
 <translation id="1507170440449692343">Laman ini telah diblokir agar tidak dapat mengakses kamera Anda.</translation>
+<translation id="4189406272289638749">Ekstensi, &lt;b&gt;<ph name="EXTENSION_NAME"/>&lt;/b&gt;, mengontrol setelan ini.</translation>
 <translation id="803771048473350947">File</translation>
 <translation id="6206311232642889873">Sali&amp;n Gambar</translation>
 <translation id="5158983316805876233">Gunakan proxy yang sama untuk semua protokol</translation>

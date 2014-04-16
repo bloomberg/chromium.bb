@@ -6,6 +6,7 @@
 <translation id="5578795271662203820">Шукати зображення в <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Перекласти</translation>
 <translation id="7644305409888602715">Виконується переклад сторінки такою мовою: <ph name="SOURCE_LANGUAGE"/>…</translation>
+<translation id="7015922086425404465">Завантажити додаток із Google Play Маркету: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Перезавантажити цю сторінку</translation>
 <translation id="641643625718530986">Друк…</translation>
 <translation id="7658239707568436148">Скасувати</translation>
@@ -37,6 +38,7 @@
 <translation id="907015151729920253">Смарт-карта</translation>
 <translation id="3063601790762993062">Зберегти відео</translation>
 <translation id="6042308850641462728">Більше</translation>
+<translation id="7267430310003164111">Підказка щодо завантаження додатка з Google Play Маркету. Назва додатка: <ph name="APP_NAME"/>. Середній рейтинг додатка: <ph name="APP_RATING"/>.</translation>
 <translation id="4148957013307229264">Встановлення...</translation>
 <translation id="3992315671621218278">Зберегти посилання</translation>
 <translation id="8034522405403831421">Мова цієї сторінки: <ph name="SOURCE_LANGUAGE"/>. Перекласти її такою мовою: <ph name="TARGET_LANGUAGE"/>?</translation>

@@ -3327,6 +3327,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="580886651983547002"><ph name="PRODUCT_NAME"/>
         nem tud kapcsolódni a webhelyhez.  Ezt általában hálózati problémák okozzák,
         ám lehet rosszul beállított tűzfal vagy proxyszerver eredménye is.</translation>
+<translation id="4387554346626014084">Az Alkalmazásindító szinkronizálásának bekapcsolása. Ezzel bekapcsolja a Mappák szolgáltatást is, ha elérhető (OSX esetében nem).</translation>
 <translation id="5445557969380904478">A hangfelismerés névjegye</translation>
 <translation id="4104400246019119780">Köszönjük!</translation>
 <translation id="3487007233252413104">névtelen funkció</translation>
@@ -4785,6 +4786,7 @@ letiltásához nyomja le a Ctrl+Alt+Z billentyűkombinációt.</translation>
 <translation id="8775404590947523323">A módosításokat automatikusan menti a rendszer.<ph name="BREAKS"/>Az eredeti kép egy másolatának megtartásához törölje az &quot;Eredeti felülírása&quot; jelölőnégyzetet</translation>
 <translation id="5208988882104884956">Fél szélesség</translation>
 <translation id="1507170440449692343">Az oldal nem férhet hozzá az Ön kamerájához.</translation>
+<translation id="4189406272289638749">Egy bővítmény (&lt;b&gt;<ph name="EXTENSION_NAME"/>&lt;/b&gt;) vezérli ezt a beállítást.</translation>
 <translation id="803771048473350947">Fájl</translation>
 <translation id="6206311232642889873">Ké&amp;p másolása</translation>
 <translation id="5158983316805876233">Azonos proxy használata minden protokollhoz</translation>

@@ -3349,6 +3349,7 @@ Uistite sa, že neodhaľujete žiadne citlivé informácie.</translation>
 <translation id="580886651983547002">Aplikácii <ph name="PRODUCT_NAME"/>
         sa nepodarilo pripojiť k webovým stránkam.  Obyčajne to býva spôsobené problémami so sieťou,
         ale môže to byť aj výsledkom nesprávne nakonfigurovanej brány firewall alebo servera proxy.</translation>
+<translation id="4387554346626014084">Povoliť synchronizáciu Spúšťača aplikácií. Ak je k dispozícii funkcia zložiek, bude tiež povolená (platí pre všetky operačné systémy okrem OS X).</translation>
 <translation id="5445557969380904478">O rozpoznávaní hlasu</translation>
 <translation id="4104400246019119780">Ďakujeme!</translation>
 <translation id="3487007233252413104">anonymná funkcia</translation>
@@ -4811,6 +4812,7 @@ Prebieha výpočet času do úplného nabitia</translation>
 <translation id="8775404590947523323">Úpravy sa ukladajú automaticky.<ph name="BREAKS"/>Ak chcete zachovať kópiu pôvodného obrázka, zrušte začiarknutie políčka Prepísať originál</translation>
 <translation id="5208988882104884956">Polovičná šírka</translation>
 <translation id="1507170440449692343">Táto stránka má zablokovaný prístup ku kamere.</translation>
+<translation id="4189406272289638749">Toto nastavenie spravuje rozšírenie &lt;b&gt;<ph name="EXTENSION_NAME"/>&lt;/b&gt;.</translation>
 <translation id="803771048473350947">Súbor</translation>
 <translation id="6206311232642889873">&amp;Kopírovať obrázok</translation>
 <translation id="5158983316805876233">Použiť rovnaký server proxy pre všetky protokoly</translation>

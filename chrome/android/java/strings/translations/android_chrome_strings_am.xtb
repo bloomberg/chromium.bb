@@ -6,6 +6,7 @@
 <translation id="5578795271662203820">ይህንን ምስል <ph name="SEARCH_ENGINE"/> ላይ ይፈልጉት</translation>
 <translation id="6831043979455480757">መተርጎም</translation>
 <translation id="7644305409888602715">ገጹን ወደ <ph name="SOURCE_LANGUAGE"/> በመተርጎም ላይ...</translation>
+<translation id="7015922086425404465">መተግበሪያ ከGoogle Play ሱቅ ያግኙ፦ <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">ይህን ገጽ ዳግም ይጫኑ</translation>
 <translation id="641643625718530986">አትም…</translation>
 <translation id="7658239707568436148">ይቅር</translation>
@@ -37,6 +38,7 @@
 <translation id="907015151729920253">ስማርት ካርድ</translation>
 <translation id="3063601790762993062">ቪዲዮ አስቀምጥ</translation>
 <translation id="6042308850641462728">ተጨማሪ</translation>
+<translation id="7267430310003164111">መተግበሪያ ከGoogle Play ሱቅ እንዲያገኙ የሚጠይቅ። የመተግበሪያ ስም፦ <ph name="APP_NAME"/>።  መተግበሪያ የተሰጠው አማካኝ ደረጃ፦ <ph name="APP_RATING"/>።</translation>
 <translation id="4148957013307229264">በመጫን ላይ...</translation>
 <translation id="3992315671621218278">አገናኝ አስቀምጥ</translation>
 <translation id="8034522405403831421">ይህ ገጽ በ<ph name="SOURCE_LANGUAGE"/> ነው። ወደ <ph name="TARGET_LANGUAGE"/> ይተርጎም?</translation>

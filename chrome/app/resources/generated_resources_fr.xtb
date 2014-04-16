@@ -3363,6 +3363,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="580886651983547002"><ph name="PRODUCT_NAME"/>
         ne parvient pas à atteindre le site Web. Cela vient probablement d'un problème de réseau,
         mais peut également être dû à un pare-feu ou à un serveur proxy mal configuré.</translation>
+<translation id="4387554346626014084">Activer la synchronisation du lanceur d'applications. Cette action active également la synchronisation des dossiers, lorsqu'ils sont disponibles (pas sur OS X).</translation>
 <translation id="5445557969380904478">À propos de la reconnaissance vocale</translation>
 <translation id="4104400246019119780">Merci !</translation>
 <translation id="3487007233252413104">fonction anonyme</translation>
@@ -4821,6 +4822,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="8775404590947523323">Vos modifications sont enregistrées automatiquement.<ph name="BREAKS"/>Pour conserver une copie de l'image d'origine, décochez l'option &quot;Écraser l'original&quot;.</translation>
 <translation id="5208988882104884956">Demi-largeur</translation>
 <translation id="1507170440449692343">L'accès à votre caméra est bloqué pour cette page</translation>
+<translation id="4189406272289638749">L'extension &lt;b&gt;<ph name="EXTENSION_NAME"/>&lt;/b&gt; contrôle ce paramètre.</translation>
 <translation id="803771048473350947">Fichier</translation>
 <translation id="6206311232642889873">Cop&amp;ier l'image</translation>
 <translation id="5158983316805876233">Utiliser le même proxy pour tous les protocoles</translation>

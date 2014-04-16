@@ -6,6 +6,7 @@
 <translation id="5578795271662203820">Sök på <ph name="SEARCH_ENGINE"/> efter denna bild</translation>
 <translation id="6831043979455480757">Översätt</translation>
 <translation id="7644305409888602715">Översätter sidan till <ph name="SOURCE_LANGUAGE"/> ...</translation>
+<translation id="7015922086425404465">Hämta appen från Google Play Butik: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Hämta sidan igen</translation>
 <translation id="641643625718530986">Skriv ut …</translation>
 <translation id="7658239707568436148">Avbryt</translation>
@@ -37,6 +38,7 @@ Du loggar in med ett hanterat konto, vilket innebär att administratören kontro
 <translation id="907015151729920253">Smartkort</translation>
 <translation id="3063601790762993062">Spara video</translation>
 <translation id="6042308850641462728">Mer</translation>
+<translation id="7267430310003164111">Uppmaning att hämta appen från Google Play Butik.  Appens namn: <ph name="APP_NAME"/>.  Appens medelbetyg: <ph name="APP_RATING"/>.</translation>
 <translation id="4148957013307229264">Installerar...</translation>
 <translation id="3992315671621218278">Spara länk</translation>
 <translation id="8034522405403831421">Den här sidan är skriven på <ph name="SOURCE_LANGUAGE"/>. Vill du översätta den till <ph name="TARGET_LANGUAGE"/>?</translation>

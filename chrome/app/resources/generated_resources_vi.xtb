@@ -2875,7 +2875,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="1829129547161959350">Chim cánh cụt</translation>
 <translation id="8988255471271407508">Không tìm thấy trang web này trong bộ nhớ cache. Một số tài nguyên chỉ có thể được tải một cách an toàn từ bộ nhớ cache, chẳng hạn như các trang được tạo từ dữ liệu đã gửi. <ph name="LINE_BREAK"/> Lỗi này cũng có thể do hỏng bộ nhớ cache khi tắt không đúng cách. <ph name="LINE_BREAK"/> Nếu sự cố vẫn tiếp diễn, hãy thử xóa bộ nhớ cache.</translation>
 <translation id="1653828314016431939">OK - Khởi động lại ngay bây giờ</translation>
-<translation id="7364796246159120393">Chọn Tệp tin</translation>
+<translation id="7364796246159120393">Chọn tệp</translation>
 <translation id="6585283250473596934">Đăng nhập vào phiên công khai.</translation>
 <translation id="8915370057835397490">Đang tải đề xuất</translation>
 <translation id="264911923226702984">Mystery Hoa Kỳ</translation>
@@ -3365,6 +3365,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="580886651983547002"><ph name="PRODUCT_NAME"/>
         không thể truy cập trang web.  Điều này thường do sự cố mạng,
         nhưng cũng có thể do việc định cấu hình sai tường lừa hoặc máy chủ proxy.</translation>
+<translation id="4387554346626014084">Bật Đồng bộ hóa trình khởi chạy ứng dụng. Thao tác này cũng bật Thư mục khi có thể (không phải OSX).</translation>
 <translation id="5445557969380904478">Giới thiệu về nhận dạng giọng nói</translation>
 <translation id="4104400246019119780">Cảm ơn bạn!</translation>
 <translation id="3487007233252413104">chức năng ẩn danh</translation>
@@ -4825,6 +4826,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="8775404590947523323">Chỉnh sửa của bạn đã được lưu tự động.<ph name="BREAKS"/>Để giữ bản sao của ảnh gốc, hãy bỏ chọn &quot;Ghi đè tệp gốc&quot;</translation>
 <translation id="5208988882104884956">Nửa độ rộng</translation>
 <translation id="1507170440449692343">Trang này đã bị chặn truy cập máy ảnh của bạn.</translation>
+<translation id="4189406272289638749">Tiện ích mở rộng, &lt;b&gt;<ph name="EXTENSION_NAME"/>&lt;/b&gt;, đang kiểm soát cài đặt này.</translation>
 <translation id="803771048473350947">Tệp</translation>
 <translation id="6206311232642889873">Sao ché&amp;p Hình ảnh</translation>
 <translation id="5158983316805876233">Sử dụng cùng một proxy cho tất cả các giao thức</translation>

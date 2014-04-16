@@ -3361,6 +3361,7 @@ Asigurați-vă că nu expuneți informații confidențiale.</translation>
 <translation id="580886651983547002"><ph name="PRODUCT_NAME"/>
         nu poate accesa site-ul web. Acest fapt este cauzat în mod normal de probleme de rețea,
         dar poate fi rezultatul unei configurări greșite a unui program firewall sau a unui server proxy.</translation>
+<translation id="4387554346626014084">Activează sincronizarea Lansatorului de aplicații. Activează și Dosarele, după caz (non-OSX).</translation>
 <translation id="5445557969380904478">Despre recunoașterea vocală</translation>
 <translation id="4104400246019119780">Vă mulțumim!</translation>
 <translation id="3487007233252413104">funcție anonimă</translation>
@@ -4818,6 +4819,7 @@ Asigurați-vă că nu expuneți informații confidențiale.</translation>
 <translation id="8775404590947523323">Editările dvs. sunt salvate în mod automat.<ph name="BREAKS"/>Pentru a păstra o copie a imaginii originale, debifați „Suprascrieți fișierul original”</translation>
 <translation id="5208988882104884956">Cu jumătate de lățime</translation>
 <translation id="1507170440449692343">Accesul acestei pagini la camera dvs. a fost blocat.</translation>
+<translation id="4189406272289638749">O extensie, &lt;b&gt;<ph name="EXTENSION_NAME"/>&lt;/b&gt;, controlează această setare.</translation>
 <translation id="803771048473350947">Fișier</translation>
 <translation id="6206311232642889873">Cop&amp;iați imaginea</translation>
 <translation id="5158983316805876233">Utilizați același server proxy pentru toate protocoalele.</translation>

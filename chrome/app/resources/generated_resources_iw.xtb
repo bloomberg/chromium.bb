@@ -3324,6 +3324,7 @@ JavaScript ויישומי פלאגין.</translation>
 <translation id="580886651983547002">‏<ph name="PRODUCT_NAME"/>
         לא יכול להתחבר לאתר. מצב זה נגרם בדרך כלל בשל בעיות ברשת,
         אך עלול להיות גם תוצאה של חומת אש או שרת proxy שלא הוגדרו כראוי.</translation>
+<translation id="4387554346626014084">‏הפעל סנכרון של מפעיל היישומים. פעולה זו מפעילה את 'תיקיות' היכן שזמין (לא ל-OSX).</translation>
 <translation id="5445557969380904478">מידע על זיהוי קולי</translation>
 <translation id="4104400246019119780">תודה!</translation>
 <translation id="3487007233252413104">פונקציה אנונימית</translation>
@@ -4785,6 +4786,7 @@ Del</translation>
 <translation id="8775404590947523323">שינויי העריכה שלך נשמרים אוטומטית.<ph name="BREAKS"/>כדי לשמור עותק של התמונה המקורית, בטל את הסימון של &quot;החלף קובץ מקורי&quot;</translation>
 <translation id="5208988882104884956">חצי רוחב</translation>
 <translation id="1507170440449692343">דף זה נחסם לגישה למצלמה שלך.</translation>
+<translation id="4189406272289638749">‏ההגדרה הזו נמצאת בשליטה של תוסף - &lt;b&gt;<ph name="EXTENSION_NAME"/>&lt;/b&gt;.</translation>
 <translation id="803771048473350947">קובץ</translation>
 <translation id="6206311232642889873">העת&amp;ק תמונה</translation>
 <translation id="5158983316805876233">‏השתמש באותו שרת proxy עבור כל הפרוטוקולים</translation>

@@ -3317,6 +3317,7 @@ Achten Sie darauf, dass dadurch keine vertraulichen Informationen offengelegt we
 <translation id="8923542159871018393"><ph name="EXTENSION_NAME"/> wird auf dieser Seite ausgeführt.</translation>
 <translation id="580886651983547002"><ph name="PRODUCT_NAME"/>
         kann die Website nicht erreichen. Dies wird üblicherweise durch Netzwerkprobleme verursacht, kann jedoch auch das Ergebnis einer falsch konfigurierten Firewall bzw. eines falsch konfigurierten Proxyservers sein.</translation>
+<translation id="4387554346626014084">Synchronisierung der App-Übersicht aktivieren. Hierdurch werden gegebenenfalls auch Ordner aktiviert (nicht bei OSX).</translation>
 <translation id="5445557969380904478">Über Spracherkennung</translation>
 <translation id="4104400246019119780">Vielen Dank!</translation>
 <translation id="3487007233252413104">Anonyme Funktion</translation>
@@ -4771,6 +4772,7 @@ Achten Sie darauf, dass dadurch keine vertraulichen Informationen offengelegt we
 <translation id="8775404590947523323">Ihre Änderungen werden automatisch gespeichert.<ph name="BREAKS"/>Um eine Kopie des Originalbilds beizubehalten, deaktivieren Sie die Funktion &quot;Original überschreiben&quot;.</translation>
 <translation id="5208988882104884956">Halbe Breite</translation>
 <translation id="1507170440449692343">Diese Seite darf nicht auf Ihre Kamera zugreifen.</translation>
+<translation id="4189406272289638749">Diese Einstellung wird von einer Erweiterung namens &lt;b&gt;<ph name="EXTENSION_NAME"/>&lt;/b&gt; gesteuert.</translation>
 <translation id="803771048473350947">Datei</translation>
 <translation id="6206311232642889873">Bild kop&amp;ieren</translation>
 <translation id="5158983316805876233">Denselben Proxy für alle Protokolle verwenden</translation>

@@ -3362,6 +3362,7 @@ Tiyaking hindi ka maglalantad ng anumang sensitibong impormasyon.</translation>
 <translation id="580886651983547002"><ph name="PRODUCT_NAME"/>
         hindi maabot ang website.  Ito ay karaniwang sanhi ng mga isyu ng network,
         ngunit maaari ring resulta ng maling na-configure na firewall o proxy server.</translation>
+<translation id="4387554346626014084">I-enable ang pag-sync ng App Launcher. Ine-enable din nito ang Mga Folder kung saan available (hindi OSX).</translation>
 <translation id="5445557969380904478">Tungkol sa pagkilala sa tinig</translation>
 <translation id="4104400246019119780">Salamat!</translation>
 <translation id="3487007233252413104">hindi kilalang function</translation>
@@ -4825,6 +4826,7 @@ Kinakalkula ang oras hanggang sa mapuno</translation>
 <translation id="8775404590947523323">Awtomatikong na-save ang iyong mga pag-edit.<ph name="BREAKS"/>Upang maitago ang kopya ng orihinal na larawan, tanggalan ng check ang &quot;Patungan ang orihinal&quot;</translation>
 <translation id="5208988882104884956">Halfwidth</translation>
 <translation id="1507170440449692343">Na-block ang pahinang ito sa pag-a-access sa iyong camera.</translation>
+<translation id="4189406272289638749">Kinokontrol ng isang extension na &lt;b&gt;<ph name="EXTENSION_NAME"/>&lt;/b&gt; ang setting na ito.</translation>
 <translation id="803771048473350947">File</translation>
 <translation id="6206311232642889873">Kop&amp;yahin ang Imahe</translation>
 <translation id="5158983316805876233">Gumamit ng parehong proxy para sa lahat ng mga protocol</translation>

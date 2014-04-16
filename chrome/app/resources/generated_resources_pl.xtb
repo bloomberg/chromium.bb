@@ -3329,6 +3329,7 @@ Niezależnie od ustawienia tej flagi automatyczne logowanie jest zawsze wyłącz
 <translation id="580886651983547002"><ph name="PRODUCT_NAME"/>
         nie może się połączyć z witryną. Najczęstszą przyczyną takiej sytuacji jest problem z siecią,
         ale może ją również powodować nieprawidłowa konfiguracja zapory sieciowej lub serwera proxy.</translation>
+<translation id="4387554346626014084">Włącz synchronizację Menu z aplikacjami. Włączy to też Foldery (nie w OS X).</translation>
 <translation id="5445557969380904478">Informacje o rozpoznawaniu mowy</translation>
 <translation id="4104400246019119780">Dziękujemy</translation>
 <translation id="3487007233252413104">funkcja anonimowa</translation>
@@ -4786,6 +4787,7 @@ Niezależnie od ustawienia tej flagi automatyczne logowanie jest zawsze wyłącz
 <translation id="8775404590947523323">Twoje zmiany są zapisywane automatycznie.<ph name="BREAKS"/>Aby zachować kopię oryginalnego obrazu, odznacz „Zastąp oryginalny”.</translation>
 <translation id="5208988882104884956">Połowa szerokości</translation>
 <translation id="1507170440449692343">Ta strona ma zablokowany dostęp do kamery.</translation>
+<translation id="4189406272289638749">Kontrolę nad tym ustawieniem ma rozszerzenie &lt;b&gt;<ph name="EXTENSION_NAME"/>&lt;/b&gt;.</translation>
 <translation id="803771048473350947">Plik</translation>
 <translation id="6206311232642889873">Kop&amp;iuj grafikę</translation>
 <translation id="5158983316805876233">Używaj tego samego serwera proxy dla wszystkich protokołów</translation>

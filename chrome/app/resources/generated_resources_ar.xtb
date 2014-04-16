@@ -3322,6 +3322,7 @@
 <translation id="6003177993629630467">قد يكون <ph name="PRODUCT_NAME"/> غير قادر على تحديث نفسه.</translation>
 <translation id="8923542159871018393">يتم تشغيل <ph name="EXTENSION_NAME"/> على هذه الصفحة.</translation>
 <translation id="580886651983547002">لا يستطيع <ph name="PRODUCT_NAME"/> الوصول إلى موقع الويب. يكون هذا في الأغلب الأعم بسبب مشكلات في الشبكة، ولكن ربما ينتج أيضًا عن تهيئة جدار ناري أو خادم وكيل بطريقة غير صحيحة.</translation>
+<translation id="4387554346626014084">‏تمكين مزامنة تطبيقات Launcher. ويؤدي هذا أيضًا إلى تمكين المجلدات متى توفرت (بخلاف OSX).</translation>
 <translation id="5445557969380904478">حول التعرف على الصوت</translation>
 <translation id="4104400246019119780">شكرًا!</translation>
 <translation id="3487007233252413104">وظيفة مجهولة</translation>
@@ -4782,6 +4783,7 @@
 <translation id="8775404590947523323">يتم حفظ التعديلات تلقائيًا.<ph name="BREAKS"/>للاحتفاظ بنسخة من الصورة الأصلية، يجب إلغاء تحديد &quot;استبدال الملف الأصلي&quot;</translation>
 <translation id="5208988882104884956">نصف العرض</translation>
 <translation id="1507170440449692343">تم حظر دخول هذه الصفحة إلى الكاميرا التابعة لك.</translation>
+<translation id="4189406272289638749">‏هناك إضافة، &lt;b&gt;<ph name="EXTENSION_NAME"/>&lt;/b&gt;، تتحكم في هذا الإعداد.</translation>
 <translation id="803771048473350947">ملف</translation>
 <translation id="6206311232642889873">نس&amp;خ صورة</translation>
 <translation id="5158983316805876233">استخدام نفس الخادم الوكيل مع جميع البروتوكولات</translation>

@@ -6,6 +6,7 @@
 <translation id="5578795271662203820">Αναζήτηση <ph name="SEARCH_ENGINE"/> για την εικόνα</translation>
 <translation id="6831043979455480757">Μετάφραση</translation>
 <translation id="7644305409888602715">Μετάφραση σελίδας στα <ph name="SOURCE_LANGUAGE"/>…</translation>
+<translation id="7015922086425404465">Λήψη εφαρμογής από το Google Play Store: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Εκ νέου φόρτωση αυτής της σελίδας</translation>
 <translation id="641643625718530986">Εκτύπωση…</translation>
 <translation id="7658239707568436148">Ακύρωση</translation>
@@ -37,6 +38,7 @@
 <translation id="907015151729920253">Smart card</translation>
 <translation id="3063601790762993062">Αποθήκευση βίντεο</translation>
 <translation id="6042308850641462728">Περισσότερα</translation>
+<translation id="7267430310003164111">Ερώτηση για λήψη εφαρμογής από το Google Play Store.  Όνομα εφαρμογής: <ph name="APP_NAME"/>.  Μέση βαθμολογία εφαρμογής: <ph name="APP_RATING"/>.</translation>
 <translation id="4148957013307229264">Γίνεται εγκατάσταση...</translation>
 <translation id="3992315671621218278">Αποθήκευση συνδέσμου</translation>
 <translation id="8034522405403831421">Αυτή η σελίδα είναι στα <ph name="SOURCE_LANGUAGE"/>. Μετάφρασή της στα <ph name="TARGET_LANGUAGE"/>;</translation>

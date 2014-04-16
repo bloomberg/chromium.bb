@@ -281,7 +281,7 @@
 <translation id="8110513421455578152">指定默认图块高度。</translation>
 <translation id="7002454948392136538">选择此受监管用户的管理员</translation>
 <translation id="4640525840053037973">使用您的 Google 帐户登录</translation>
-<translation id="4923279099980110923">是的，我希望能够提供帮助</translation>
+<translation id="4923279099980110923">我愿意提供帮助</translation>
 <translation id="5255315797444241226">您输入的密码不正确。</translation>
 <translation id="521582610500777512">照片已被舍弃</translation>
 <translation id="762917759028004464">目前的默认浏览器是 <ph name="BROWSER_NAME"/>。</translation>
@@ -3318,6 +3318,7 @@
 <translation id="8923542159871018393"><ph name="EXTENSION_NAME"/> 正在此网页上运行。</translation>
 <translation id="580886651983547002"><ph name="PRODUCT_NAME"/>
         无法访问该网站。这通常是由于网络问题导致的，但也可能是由于防火墙或代理服务器配置不正确导致的。</translation>
+<translation id="4387554346626014084">启用应用启动器同步。如果有Folders的话，Folders也将一并启用（非OSX）。</translation>
 <translation id="5445557969380904478">关于语音识别</translation>
 <translation id="4104400246019119780">谢谢！</translation>
 <translation id="3487007233252413104">匿名函数</translation>
@@ -4770,6 +4771,7 @@
 <translation id="8775404590947523323">系统会自动保存您所做的修改。<ph name="BREAKS"/>要保留原始图像的副本，请取消选中“覆盖原始文件”。</translation>
 <translation id="5208988882104884956">半角</translation>
 <translation id="1507170440449692343">已阻止此网页使用您的摄像头。</translation>
+<translation id="4189406272289638749">此设置目前由扩展程序&lt;b&gt;<ph name="EXTENSION_NAME"/>&lt;/b&gt;控制。</translation>
 <translation id="803771048473350947">文件</translation>
 <translation id="6206311232642889873">复制图片(&amp;Y)</translation>
 <translation id="5158983316805876233">对所有协议使用同一代理</translation>

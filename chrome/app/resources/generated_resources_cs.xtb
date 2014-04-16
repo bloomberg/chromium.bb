@@ -3338,6 +3338,7 @@ Dejte pozor, abyste mu nezpřístupnili žádné citlivé informace.</translatio
         nemůže získat přístup k požadovaným webovým stránkám. To je většinou
         způsobeno potížemi se sítí, příčinou však může být také chybně 
         nakonfigurovaná brána firewall nebo server proxy.</translation>
+<translation id="4387554346626014084">Aktivuje synchronizaci Spouštěče aplikací. Pokud je k dispozici funkce složek, bude povolena také (v systémech OS X nebude povolena).</translation>
 <translation id="5445557969380904478">Informace o rozpoznávání hlasu</translation>
 <translation id="4104400246019119780">Děkujeme</translation>
 <translation id="3487007233252413104">anonymní funkce</translation>
@@ -4797,6 +4798,7 @@ Výpočet času zbývajícího do úplného nabití</translation>
 <translation id="8775404590947523323">Úpravy se ukládají automaticky.<ph name="BREAKS"/>Chcete-li zachovat kopii původního obrázku, zrušte zaškrtnutí políčka Přepsat originál.</translation>
 <translation id="5208988882104884956">Poloviční šířka</translation>
 <translation id="1507170440449692343">Přístup této stránky k vaší kameře je zablokován.</translation>
+<translation id="4189406272289638749">Toto nastavení je spravováno rozšířením &lt;b&gt;<ph name="EXTENSION_NAME"/>&lt;/b&gt;.</translation>
 <translation id="803771048473350947">Soubor</translation>
 <translation id="6206311232642889873">&amp;Kopírovat obrázek</translation>
 <translation id="5158983316805876233">Pro všechny protokoly použít stejný server proxy</translation>

@@ -3343,6 +3343,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="580886651983547002"><ph name="PRODUCT_NAME"/>
         kan ikke oprette forbindelse til websitet. Dette sker typisk pga. netværksproblemer,
         men det kan også skyldes en forkert konfigureret firewall eller proxyserver.</translation>
+<translation id="4387554346626014084">Aktivér synkronisering af Appliste. Dermed aktiveres også Mapper, hvor muligt (ikke OSX).</translation>
 <translation id="5445557969380904478">Om talegenkendelse</translation>
 <translation id="4104400246019119780">Tak</translation>
 <translation id="3487007233252413104">anonym funktion</translation>
@@ -4799,6 +4800,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="8775404590947523323">Din ændringer gemmes automatisk.<ph name="BREAKS"/>Hvis du gemmer en kopi af det oprindelige billede, skal du fjerne markeringen for &quot;Overskriv originalen&quot;</translation>
 <translation id="5208988882104884956">Halv bredde</translation>
 <translation id="1507170440449692343">Denne side er blokeret fra at få adgang til dit kamera.</translation>
+<translation id="4189406272289638749">Udvidelsen &lt;b&gt;<ph name="EXTENSION_NAME"/>&lt;/b&gt; kontrollerer denne indstilling.</translation>
 <translation id="803771048473350947">Fil</translation>
 <translation id="6206311232642889873">Ko&amp;pier billede</translation>
 <translation id="5158983316805876233">Brug samme proxy for alle protokoller</translation>

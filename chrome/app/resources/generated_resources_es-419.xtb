@@ -3335,6 +3335,7 @@ Asegúrate de no revelar información confidencial.</translation>
 <translation id="580886651983547002"><ph name="PRODUCT_NAME"/>
         no puede alcanzar el sitio web. Esto se debe a los problemas de red,
         pero también puede ser el resultado de un firewall o servidor proxy mal configurado.</translation>
+<translation id="4387554346626014084">Habilita la sincronización del Selector de aplicaciones. También habilita las carpetas si están disponibles (no en OS X).</translation>
 <translation id="5445557969380904478">Acerca del reconocimiento de voz</translation>
 <translation id="4104400246019119780">Gracias</translation>
 <translation id="3487007233252413104">función anónima</translation>
@@ -4788,6 +4789,7 @@ Asegúrate de no revelar información confidencial.</translation>
 <translation id="8775404590947523323">Los cambios se guardan automáticamente.<ph name="BREAKS"/>Para mantener una copia de la imagen original, desactiva la opción Sobrescribir en el original.</translation>
 <translation id="5208988882104884956">Ancho medio</translation>
 <translation id="1507170440449692343">Esta página no tiene permiso para acceder a la cámara.</translation>
+<translation id="4189406272289638749">La extensión &lt;b&gt;<ph name="EXTENSION_NAME"/>&lt;/b&gt; controla esta configuración.</translation>
 <translation id="803771048473350947">Archivo</translation>
 <translation id="6206311232642889873">Cop&amp;iar imagen</translation>
 <translation id="5158983316805876233">Utilizar el mismo proxy para todos los protocolos</translation>

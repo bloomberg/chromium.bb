@@ -1276,7 +1276,7 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="6285905808004014074">Poista käytöstä offline-tilan automaattinen sivun päivitys -tila</translation>
 <translation id="1195447618553298278">Tuntematon virhe.</translation>
 <translation id="2617653079636271958">Zoom: <ph name="VALUE"/> %</translation>
-<translation id="7427916543828159271">Wifi ja mobiilitiedonsiirto ovat pois käytöstä.
+<translation id="7427916543828159271">Wi-Fi ja mobiilitiedonsiirto ovat pois käytöstä.
           <ph name="LINE_BREAK"/>
           Sivu voidaan ladata, kun muodostat yhteyden verkkoon.</translation>
 <translation id="1718685839849651010">Tuntemattomasta lokista</translation>
@@ -1333,7 +1333,7 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="3283971109253195306">Jos otat tämän asetuksen käyttöön, verkkosovellukset voivat ladata HTML-tuonteja.</translation>
 <translation id="2462724976360937186">Varmenteen myöntäjän avaimen tunnus</translation>
 <translation id="981121421437150478">Offline</translation>
-<translation id="2964193600955408481">Wifi pois käytöstä</translation>
+<translation id="2964193600955408481">Wi-Fi pois käytöstä</translation>
 <translation id="6786747875388722282">Laajennukset</translation>
 <translation id="2570648609346224037">Virhe ladattaessa palautusnäköistiedostoa.</translation>
 <translation id="5372384633701027870">Poista evästeet ja muut sivuston tiedot, kun suljet selaimen</translation>
@@ -2727,7 +2727,7 @@ Varmista, että et paljasta arkaluonteisia tietoja.</translation>
 <translation id="2724841811573117416">WebRTC-lokit</translation>
 <translation id="8059417245945632445">Tark&amp;ista laitteet</translation>
 <translation id="3391392691301057522">Vanha PIN-koodi</translation>
-<translation id="96421021576709873">Wifi-verkko</translation>
+<translation id="96421021576709873">Wi-Fi-verkko</translation>
 <translation id="1344519653668879001">Poista hyperlinkkien tarkistus käytöstä</translation>
 <translation id="6463795194797719782">M&amp;uokkaa</translation>
 <translation id="8816881387529772083">Täysi MIDI-hallinta</translation>
@@ -2796,7 +2796,7 @@ Varmista, että et paljasta arkaluonteisia tietoja.</translation>
 <translation id="1484387932110662517">Ottaa käyttöön uuden profiilinhallintajärjestelmän, joka sisältää profiileista uloskirjautumisen sekä uuden avatarvalikkokäyttöliittymän.</translation>
 <translation id="2471964272749426546">Tamilin syöttötapa (Tamil99)</translation>
 <translation id="9088917181875854783">Vahvista, että tämä salasana näkyy laitteella <ph name="DEVICE_NAME"/>:</translation>
-<translation id="8814190375133053267">Wifi</translation>
+<translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="5236831943526452400">Poista evästeet ja muut sivuston tiedot, kun suljet selaimen</translation>
 <translation id="1558834950088298812">Esiintymät, kun laajennus päivitettiin</translation>
 <translation id="8410619858754994443">Vahvista salasana:</translation>
@@ -3314,6 +3314,7 @@ Varmista, että et paljasta arkaluonteisia tietoja.</translation>
 <translation id="8923542159871018393"><ph name="EXTENSION_NAME"/> on käynnissä tällä sivulla.</translation>
 <translation id="580886651983547002"><ph name="PRODUCT_NAME"/> 
 ei saa yhteyttä sivustoon. Syynä on yleensä verkon ongelma, mutta ongelma saattaa johtua myös väärin määritetyistä palomuurin tai välityspalvelimen asetuksista.</translation>
+<translation id="4387554346626014084">Ota sovellusten käynnistysohjelman synkronointi käyttöön. Tämä ottaa käyttöön myös Kansiot, jos saatavilla (muissa kuin OSX-järjestelmissä).</translation>
 <translation id="5445557969380904478">Tietoja äänentunnistuksesta</translation>
 <translation id="4104400246019119780">Kiitos.</translation>
 <translation id="3487007233252413104">tuntematon toiminto</translation>
@@ -4768,6 +4769,7 @@ ei saa yhteyttä sivustoon. Syynä on yleensä verkon ongelma, mutta ongelma saa
 <translation id="8775404590947523323">Tekemäsi muutokset tallentuvat automaattisesti.<ph name="BREAKS"/>Säilytä alkuperäisen kuvan kopio poistamalla valinta kohdasta Korvaa alkuperäinen.</translation>
 <translation id="5208988882104884956">Kapea</translation>
 <translation id="1507170440449692343">Tältä sivulta on estetty kameran käyttö.</translation>
+<translation id="4189406272289638749">Laajennus &lt;b&gt;<ph name="EXTENSION_NAME"/>&lt;/b&gt; hallinnoi tätä asetusta.</translation>
 <translation id="803771048473350947">Tiedosto</translation>
 <translation id="6206311232642889873">K&amp;opioi kuva</translation>
 <translation id="5158983316805876233">Käytä samaa välityspalvelinta kaikille protokollille</translation>

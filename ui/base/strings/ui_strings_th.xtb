@@ -24,11 +24,13 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY"/> B</translation>
 <translation id="3660179305079774227">ลูกศรขึ้น</translation>
+<translation id="3969863827134279083">เลื่อนขึ้น</translation>
 <translation id="7062130397825382308">เหลือ <ph name="NUMBER_ONE"/> วินาที</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> MB/วินาที</translation>
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> ชั่วโมง</translation>
 <translation id="3990502903496589789">ขอบขวา</translation>
 <translation id="9038489124413477075">โฟลเดอร์ที่ไม่มีชื่อ</translation>
+<translation id="1940483897317142625">ลบจนถึงท้ายบรรทัด</translation>
 <translation id="8507996248087185956"><ph name="NUMBER_DEFAULT"/> นาที</translation>
 <translation id="3520476450377425184">เหลือ <ph name="NUMBER_MANY"/> วัน</translation>
 <translation id="932327136139879170">Home</translation>
@@ -41,6 +43,7 @@
 <translation id="3353284378027041011"><ph name="NUMBER_FEW"/> วันที่ผ่านมา</translation>
 <translation id="5076340679995252485">&amp;วาง</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY"/> TB</translation>
+<translation id="7139614227326422685">ย้ายคำมาทางขวา</translation>
 <translation id="364720409959344976">เลือกโฟลเดอร์เพื่ออัปโหลด</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> นาทีที่ผ่านมา</translation>
@@ -51,11 +54,13 @@
 <translation id="1860796786778352021">ปิดการแจ้งเตือน</translation>
 <translation id="6364916375976753737">เลื่อนทางซ้าย</translation>
 <translation id="2629089419211541119"><ph name="NUMBER_ONE"/> ชั่วโมงที่ผ่านมา</translation>
+<translation id="4218160142017529598">ลบย้อนหลัง</translation>
 <translation id="2994641463185352298"><ph name="NUMBER_DEFAULT"/> นาที</translation>
 <translation id="6982279413068714821"><ph name="NUMBER_DEFAULT"/> นาทีที่ผ่านมา</translation>
 <translation id="6945221475159498467">เลือก</translation>
 <translation id="6620110761915583480">บันทึกไฟล์</translation>
 <translation id="4349181486102621992"><ph name="NUMBER_ZERO"/> seconds</translation>
+<translation id="8924469368910458384">ลบจนถึงจุดเริ่มต้นบรรทัด</translation>
 <translation id="6719684875142564568"><ph name="NUMBER_ZERO"/> hours</translation>
 <translation id="7836361698254323868">เหลือ <ph name="NUMBER_ONE"/> นาที</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> นาที</translation>
@@ -63,6 +68,7 @@
 <translation id="1572103024875503863"><ph name="NUMBER_MANY"/> วัน</translation>
 <translation id="7163503212501929773">เหลือ <ph name="NUMBER_MANY"/> ชั่วโมง</translation>
 <translation id="5329858601952122676">&amp;ลบ</translation>
+<translation id="6556866813142980365">ทำซ้ำ</translation>
 <translation id="8088823334188264070"><ph name="NUMBER_MANY"/> วินาที</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY"/> KB</translation>
 <translation id="7712011264267466734"><ph name="NUMBER_MANY"/> minutes</translation>
@@ -71,6 +77,7 @@
 <translation id="3424538384153559412"><ph name="NUMBER_TWO"/> minutes</translation>
 <translation id="50960180632766478">เหลือ <ph name="NUMBER_FEW"/> นาที</translation>
 <translation id="5517291721709019259"><ph name="NUMBER_FEW"/> seconds left</translation>
+<translation id="6903282483217634857">ย้ายไปทางขวา</translation>
 <translation id="6659594942844771486">แท็บ</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY"/> MB</translation>
 <translation id="4988273303304146523"><ph name="NUMBER_DEFAULT"/> วันที่ผ่านมา</translation>
@@ -89,17 +96,20 @@
 <translation id="290555789621781773"><ph name="NUMBER_TWO"/> นาที</translation>
 <translation id="5149131957118398098"><ph name="NUMBER_ZERO"/> hours left</translation>
 <translation id="7135556860107312402">อนุญาตให้มีการแจ้งเตือนจากรายการต่อไปนี้</translation>
+<translation id="2479520428668657293">ย้ายไปทางขวาและปรับการเลือก</translation>
 <translation id="8112886015144590373"><ph name="NUMBER_FEW"/> ชั่วโมง</translation>
 <translation id="1398853756734560583">ย่อ</translation>
 <translation id="4250229828105606438">ภาพหน้าจอ</translation>
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/> ชั่วโมง</translation>
 <translation id="5260878308685146029">เหลือ <ph name="NUMBER_TWO"/> นาที</translation>
+<translation id="2557207087669398617">ย้ายไปจุดเริ่มต้นบรรทัด</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY"/> GB</translation>
 <translation id="1901303067676059328">เลือก&amp;ทั้งหมด</translation>
 <translation id="2168039046890040389">เลื่อนหน้าขึ้น</translation>
 <translation id="7363290921156020669"><ph name="NUMBER_ZERO"/> mins</translation>
 <translation id="9107059250669762581"><ph name="NUMBER_DEFAULT"/> วัน</translation>
 <translation id="6463061331681402734"><ph name="NUMBER_MANY"/> นาที</translation>
+<translation id="6122334925474904337">ย้ายคำไปทางขวาและปรับการเลือก</translation>
 <translation id="7634624804467787019"><ph name="NUMBER_ONE"/> นาที</translation>
 <translation id="8448317557906454022"><ph name="NUMBER_ZERO"/> วินาทีที่ผ่านมา</translation>
 <translation id="4927753642311223124">ที่นี่ไม่มีอะไรต้องดู ไปต่อได้</translation>
@@ -107,6 +117,7 @@
 <translation id="6357135709975569075"><ph name="NUMBER_ZERO"/> days</translation>
 <translation id="3183922693828471536">เลื่อนมาที่นี่</translation>
 <translation id="4552416320897244156">PgDwn</translation>
+<translation id="3066573403916685335">เลื่อนลง</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="2052389551707911401"><ph name="NUMBER_MANY"/> ชั่วโมง</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY"/> KB/วินาที</translation>
@@ -123,6 +134,8 @@
 <translation id="7414887922320653780">เหลือ <ph name="NUMBER_ONE"/> ชั่วโมง</translation>
 <translation id="1413622004203049571">ปิดการแจ้งเตือนจาก <ph name="NOTIFIER_NAME"/></translation>
 <translation id="2666092431469916601">ด้านบน</translation>
+<translation id="2538759511191347839">ย้ายไปท้ายบรรทัดและปรับการเลือก</translation>
+<translation id="928465423150706909">ย้ายไปท้ายบรรทัด</translation>
 <translation id="8331626408530291785">เลื่อนขึ้น</translation>
 <translation id="7907591526440419938">เปิดไฟล์</translation>
 <translation id="2864069933652346933"><ph name="NUMBER_ZERO"/> days left</translation>
@@ -132,9 +145,12 @@
 <translation id="6808150112686056157">หยุดสื่อ</translation>
 <translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> mins left</translation>
 <translation id="3157931365184549694">คืนค่า</translation>
+<translation id="5349525451964472598">ย้ายไปทางซ้ายและปรับการเลือก</translation>
+<translation id="1781701194097416995">ย้ายคำไปทางซ้าย</translation>
 <translation id="1243314992276662751">อัปโหลด</translation>
 <translation id="50030952220075532">เหลือ <ph name="NUMBER_ONE"/> วัน</translation>
 <translation id="8179976553408161302">เข้าใช้</translation>
+<translation id="8471049483003785219">ย้ายคำไปทางซ้ายและปรับการเลือก</translation>
 <translation id="945522503751344254">ส่งความคิดเห็น</translation>
 <translation id="9170848237812810038">เ&amp;ลิกทำ</translation>
 <translation id="1285266685456062655"><ph name="NUMBER_FEW"/> ชั่วโมงที่ผ่านมา</translation>
@@ -157,9 +173,11 @@
 <translation id="8788572795284305350"><ph name="NUMBER_ZERO"/> hours ago</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY"/> GB/วินาที</translation>
 <translation id="6644971472240498405"><ph name="NUMBER_ONE"/> วัน</translation>
+<translation id="2704295676501803339">ย้ายไปทางซ้าย</translation>
 <translation id="9098468523912235228"><ph name="NUMBER_DEFAULT"/> วินาทีที่ผ่านมา</translation>
 <translation id="494645311413743213">เหลือ <ph name="NUMBER_TWO"/> วินาที</translation>
 <translation id="4570886800634958009">ขยายการแจ้งเตือน</translation>
+<translation id="566737009157135450">ลบคำย้อนหลัง</translation>
 <translation id="436869212180315161">กด</translation>
 <translation id="4860787810836767172"><ph name="NUMBER_FEW"/> วินาทีที่ผ่านมา</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY"/> TB/วินาที</translation>
@@ -169,9 +187,11 @@
 <translation id="1101671447232096497"><ph name="NUMBER_MANY"/> นาทีที่ผ่านมา</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY"/> B/วินาที</translation>
 <translation id="7649070708921625228">ช่วยเหลือ</translation>
+<translation id="2405367043325750948">ลบไปข้างหน้า</translation>
 <translation id="6699343763173986273">แทร็กถัดไปของสื่อ</translation>
 <translation id="5445120697129764393">เหลือ <ph name="NUMBER_DEFAULT"/> วินาที</translation>
 <translation id="8226233771743600312">ห้ามรบกวนเป็นเวลาหนึ่งวัน</translation>
+<translation id="4252565523989510616">ลบคำไปข้างหน้า</translation>
 <translation id="7457942297256758195">ล้างทั้งหมด</translation>
 <translation id="822618367988303761"><ph name="NUMBER_TWO"/> วันที่ผ่านมา</translation>
 <translation id="4745438305783437565"><ph name="NUMBER_FEW"/> นาที</translation>
@@ -187,6 +207,7 @@
 <translation id="6907759265145635167"><ph name="QUANTITY"/> PB/วินาที</translation>
 <translation id="2743387203779672305">คัดลอกไว้ที่คลิปบอร์ด</translation>
 <translation id="8371695176452482769">เชิญพูดเลย</translation>
+<translation id="1167268268675672572">ย้ายไปจุดเริ่มต้นของบรรทัดและปรับการเลือก</translation>
 <translation id="6965382102122355670">ตกลง</translation>
 <translation id="7850320739366109486">ห้ามรบกวน</translation>
 <translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>

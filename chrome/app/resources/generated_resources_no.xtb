@@ -1087,7 +1087,7 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY"/>) kan være kjekt neste gang
 <translation id="3808873045540128170">Oisann, rusk i maskineriet …</translation>
 <translation id="744341768939279100">Opprett en ny profil</translation>
 <translation id="646727171725540434">HTTP-mellomtjener</translation>
-<translation id="7576690715254076113">Sammenligne</translation>
+<translation id="7576690715254076113">I rekkefølge</translation>
 <translation id="4594569381978438382">Vil du installere disse programmene?</translation>
 <translation id="602369534869631690">Slå av disse varslene</translation>
 <translation id="409504436206021213">Ikke last inn på nytt</translation>
@@ -3342,6 +3342,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="580886651983547002"><ph name="PRODUCT_NAME"/>
         får ikke kontakt med nettstedet. Dette skyldes vanligvis nettverksproblemer,
         men kan også komme av en feilkonfigurert brannmur eller mellomtjener.</translation>
+<translation id="4387554346626014084">Aktiver synkronisering av appvelgeren. Mapper aktiveres også der de er tilgjengelige (ikke på OSX).</translation>
 <translation id="5445557969380904478">Om talegjenkjenning</translation>
 <translation id="4104400246019119780">Takk!</translation>
 <translation id="3487007233252413104">anonym funksjon</translation>
@@ -4798,6 +4799,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="8775404590947523323">Endringene dine lagres automatisk.<ph name="BREAKS"/>For å beholde en kopi av originalbildet, må du fjerne avmerkingen for «Overskriv originalen»</translation>
 <translation id="5208988882104884956">Halv bredde</translation>
 <translation id="1507170440449692343">Kameraet er blokkert for denne siden.</translation>
+<translation id="4189406272289638749">Denne innstillingen kontrolleres av utvidelsen &lt;b&gt;<ph name="EXTENSION_NAME"/>&lt;/b&gt;.</translation>
 <translation id="803771048473350947">Fil</translation>
 <translation id="6206311232642889873">&amp;Kopier bilde</translation>
 <translation id="5158983316805876233">Bruk samme mellomtjener for alle protokoller</translation>

@@ -6,6 +6,7 @@
 <translation id="5578795271662203820">Търсене на изображението със: <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Превод</translation>
 <translation id="7644305409888602715">Страницата се превежда на <ph name="SOURCE_LANGUAGE"/>...</translation>
+<translation id="7015922086425404465">Изтеглете приложението от Google Play Магазин: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Презареждане на тази страница</translation>
 <translation id="641643625718530986">Печат…</translation>
 <translation id="7658239707568436148">Отказ</translation>
@@ -37,6 +38,7 @@
 <translation id="907015151729920253">Смарткарта</translation>
 <translation id="3063601790762993062">Запазване на видеоклипа</translation>
 <translation id="6042308850641462728">Още</translation>
+<translation id="7267430310003164111">Подкана за изтегляне на приложението от Google Play Магазин.  Име на приложението: <ph name="APP_NAME"/>.  Средна оценка на приложението: <ph name="APP_RATING"/>.</translation>
 <translation id="4148957013307229264">Инсталира се...</translation>
 <translation id="3992315671621218278">Запазване на връзката</translation>
 <translation id="8034522405403831421">Тази страница е на <ph name="SOURCE_LANGUAGE"/>. Да се преведе ли на <ph name="TARGET_LANGUAGE"/>?</translation>

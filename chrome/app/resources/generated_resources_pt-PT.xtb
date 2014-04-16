@@ -3346,6 +3346,7 @@ Certifique-se de que não revela informações sensíveis.</translation>
 <translation id="580886651983547002">O <ph name="PRODUCT_NAME"/>
         não consegue aceder ao Web site. Normalmente, isto acontece devido a problemas de rede,
         mas também pode ser resultado de uma firewall ou servidor proxy configurado incorrectamente.</translation>
+<translation id="4387554346626014084">Ativar sincronização do Iniciador de Aplicações. Isto também ativa Pastas quando disponíveis (não OSX).</translation>
 <translation id="5445557969380904478">Acerca do reconhecimento de voz</translation>
 <translation id="4104400246019119780">Obrigado!</translation>
 <translation id="3487007233252413104">função anónima</translation>
@@ -4802,6 +4803,7 @@ Certifique-se de que não revela informações sensíveis.</translation>
 <translation id="8775404590947523323">As suas edições são guardadas automaticamente.<ph name="BREAKS"/>Para manter uma cópia da imagem original, desmarque a opção &quot;Substituir original&quot;</translation>
 <translation id="5208988882104884956">Meia Largura</translation>
 <translation id="1507170440449692343">Esta página foi impedida de aceder à sua câmara.</translation>
+<translation id="4189406272289638749">Uma extensão, &lt;b&gt;<ph name="EXTENSION_NAME"/>&lt;/b&gt;, está a controlar esta definição.</translation>
 <translation id="803771048473350947">Ficheiro</translation>
 <translation id="6206311232642889873">Cop&amp;iar Imagem</translation>
 <translation id="5158983316805876233">Utilizar o mesmo proxy para todos os protocolos</translation>

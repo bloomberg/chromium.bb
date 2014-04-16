@@ -6,6 +6,7 @@
 <translation id="5578795271662203820">A kép keresése a(z) <ph name="SEARCH_ENGINE"/> keresővel</translation>
 <translation id="6831043979455480757">Fordítás</translation>
 <translation id="7644305409888602715">Oldal fordítása <ph name="SOURCE_LANGUAGE"/> nyelvre...</translation>
+<translation id="7015922086425404465">Alkalmazás beszerzése a Google Play Áruházból: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Az oldal újratöltése</translation>
 <translation id="641643625718530986">Nyomtatás…</translation>
 <translation id="7658239707568436148">Mégse</translation>
@@ -37,6 +38,7 @@
 <translation id="907015151729920253">Intelligens kártya</translation>
 <translation id="3063601790762993062">Videó mentése</translation>
 <translation id="6042308850641462728">Hosszabban</translation>
+<translation id="7267430310003164111">Felszólítás az alkalmazás beszerzésére a Google Play Áruházból. Alkalmazás neve: <ph name="APP_NAME"/>. Alkalmazás átlagos értékelése: <ph name="APP_RATING"/>.</translation>
 <translation id="4148957013307229264">Telepítés...</translation>
 <translation id="3992315671621218278">Link mentése</translation>
 <translation id="8034522405403831421">Ez az oldal <ph name="SOURCE_LANGUAGE"/> nyelven van. Lefordítja <ph name="TARGET_LANGUAGE"/> nyelvre?</translation>
