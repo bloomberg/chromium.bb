@@ -43,7 +43,7 @@
         '../gin/gin.gyp:gin_test',
         'mojo_js_lib',
         'mojo_run_all_unittests',
-        'mojo_sample_service',
+        'mojo_public_test_interfaces',
       ],
       'sources': [
         'apps/js/test/run_apps_js_tests.cc',

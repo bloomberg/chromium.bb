@@ -111,7 +111,7 @@
         'mojo_environment_standalone',
         'mojo_public_test_utils',
         'mojo_run_all_unittests',
-        'mojo_sample_service',
+        'mojo_public_test_interfaces',
         'mojo_utility',
       ],
       'sources': [
@@ -124,15 +124,7 @@
         'public/cpp/bindings/tests/router_unittest.cc',
         'public/cpp/bindings/tests/sample_service_unittest.cc',
         'public/cpp/bindings/tests/type_conversion_unittest.cc',
-        'public/interfaces/bindings/tests/math_calculator.mojom',
-        'public/interfaces/bindings/tests/sample_factory.mojom',
-        'public/interfaces/bindings/tests/sample_interfaces.mojom',
-        'public/interfaces/bindings/tests/test_structs.mojom',
       ],
-      'variables': {
-        'mojom_base_output_dir': 'mojo',
-      },
-      'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
     },
     {
       'target_name': 'mojo_public_environment_unittests',
@@ -256,12 +248,16 @@
       ],
     },
     {
-      'target_name': 'mojo_sample_service',
+      'target_name': 'mojo_public_test_interfaces',
       'type': 'static_library',
       'sources': [
-        'public/interfaces/bindings/tests/sample_service.mojom',
+        'public/interfaces/bindings/tests/math_calculator.mojom',
+        'public/interfaces/bindings/tests/sample_factory.mojom',
         'public/interfaces/bindings/tests/sample_import.mojom',
         'public/interfaces/bindings/tests/sample_import2.mojom',
+        'public/interfaces/bindings/tests/sample_interfaces.mojom',
+        'public/interfaces/bindings/tests/sample_service.mojom',
+        'public/interfaces/bindings/tests/test_structs.mojom',
       ],
       'variables': {
         'mojom_base_output_dir': 'mojo',
