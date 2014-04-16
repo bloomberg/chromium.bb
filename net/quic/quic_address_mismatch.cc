@@ -4,6 +4,7 @@
 
 #include "net/quic/quic_address_mismatch.h"
 
+#include "base/logging.h"
 #include "net/base/ip_endpoint.h"
 
 namespace net {

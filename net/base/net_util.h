@@ -23,7 +23,6 @@
 #include "net/base/address_family.h"
 #include "net/base/escape.h"
 #include "net/base/net_export.h"
-#include "net/base/net_log.h"
 
 class GURL;
 

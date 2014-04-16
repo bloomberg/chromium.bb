@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
+#include "net/base/io_buffer.h"
 #include "net/base/net_util.h"
 #include "net/dns/dns_protocol.h"
 

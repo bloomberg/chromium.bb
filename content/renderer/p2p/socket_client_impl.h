@@ -14,6 +14,7 @@
 
 namespace base {
 class MessageLoopProxy;
+class TimeTicks;
 }  // namespace base
 
 namespace content {

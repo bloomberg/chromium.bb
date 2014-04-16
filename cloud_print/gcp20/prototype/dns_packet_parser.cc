@@ -5,6 +5,7 @@
 #include "cloud_print/gcp20/prototype/dns_packet_parser.h"
 
 #include "base/big_endian.h"
+#include "base/logging.h"
 
 DnsPacketParser::DnsPacketParser(const char* packet, size_t length)
     : packet_(packet),

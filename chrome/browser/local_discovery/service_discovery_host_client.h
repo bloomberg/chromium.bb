@@ -9,7 +9,9 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/common/local_discovery/service_discovery_client.h"
 #include "content/public/browser/utility_process_host_client.h"
 
