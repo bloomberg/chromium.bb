@@ -92,9 +92,9 @@ VideoSenderConfig GetVideoSenderConfig() {
   video_config.max_frame_rate = 30;
 
   // Bitrates.
-  video_config.start_bitrate = 50000;
   video_config.max_bitrate = 2500000;
   video_config.min_bitrate = 100000;
+  video_config.start_bitrate = video_config.min_bitrate;
 
   // Codec.
   video_config.codec = transport::kVp8;
@@ -534,8 +534,12 @@ int main(int argc, char** argv) {
   std::string remote_ip_address = cmd->GetSwitchValueASCII(kSwitchAddress);
   if (remote_ip_address.empty())
     remote_ip_address = "127.0.0.1";
-  int remote_port = 2344;
-  base::StringToInt(cmd->GetSwitchValueASCII(kSwitchPort), &remote_port);
+  int remote_port = 0;
+  if (!base::StringToInt(cmd->GetSwitchValueASCII(kSwitchPort),
+                         &remote_port)) {
+    remote_port = 2344;
+  }
+  LOG(INFO) << "Sending to " << remote_ip_address << ":" << remote_port;
 
   media::cast::AudioSenderConfig audio_config =
       media::cast::GetAudioSenderConfig();
