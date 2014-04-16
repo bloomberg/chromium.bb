@@ -438,15 +438,6 @@ static bool ShouldUseAcceleratedCompositingForOverflowScroll(
   return DeviceScaleEnsuresTextQuality(device_scale_factor);
 }
 
-static bool ShouldUseAcceleratedCompositingForScrollableFrames(
-    float device_scale_factor) {
-  if (RenderThreadImpl::current() &&
-      !RenderThreadImpl::current()->is_lcd_text_enabled())
-    return true;
-
-  return DeviceScaleEnsuresTextQuality(device_scale_factor);
-}
-
 static bool ShouldUseCompositedScrollingForFrames(
     float device_scale_factor) {
   if (RenderThreadImpl::current() &&
@@ -772,8 +763,6 @@ void RenderViewImpl::Initialize(
       ShouldUseTransitionCompositing(device_scale_factor_));
   webview()->settings()->setAcceleratedCompositingForFixedRootBackgroundEnabled(
       ShouldUseAcceleratedFixedRootBackground(device_scale_factor_));
-  webview()->settings()->setAcceleratedCompositingForScrollableFramesEnabled(
-      ShouldUseAcceleratedCompositingForScrollableFrames(device_scale_factor_));
   webview()->settings()->setCompositedScrollingForFramesEnabled(
       ShouldUseCompositedScrollingForFrames(device_scale_factor_));
   webview()->settings()
@@ -3891,16 +3880,13 @@ void RenderViewImpl::SetDeviceScaleFactor(float device_scale_factor) {
     webview()->setDeviceScaleFactor(device_scale_factor);
     webview()->settings()->setAcceleratedCompositingForFixedPositionEnabled(
         ShouldUseFixedPositionCompositing(device_scale_factor_));
-  webview()->settings()->setAcceleratedCompositingForOverflowScrollEnabled(
-      ShouldUseAcceleratedCompositingForOverflowScroll(device_scale_factor_));
+    webview()->settings()->setAcceleratedCompositingForOverflowScrollEnabled(
+        ShouldUseAcceleratedCompositingForOverflowScroll(device_scale_factor_));
     webview()->settings()->setAcceleratedCompositingForTransitionEnabled(
         ShouldUseTransitionCompositing(device_scale_factor_));
     webview()->settings()->
         setAcceleratedCompositingForFixedRootBackgroundEnabled(
             ShouldUseAcceleratedFixedRootBackground(device_scale_factor_));
-    webview()->settings()->setAcceleratedCompositingForScrollableFramesEnabled(
-        ShouldUseAcceleratedCompositingForScrollableFrames(
-            device_scale_factor_));
     webview()->settings()->setCompositedScrollingForFramesEnabled(
         ShouldUseCompositedScrollingForFrames(device_scale_factor_));
   }
