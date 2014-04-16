@@ -81,10 +81,48 @@ cr.define('serviceworker', function() {
         }
     }
 
+    function onWorkerStarted(version_id, process_id, thread_id) {
+        update();
+    }
+
+    function onWorkerStopped(version_id, process_id, thread_id) {
+        update();
+    }
+
+    function onErrorReported(version_id,
+                             process_id,
+                             thread_id,
+                             error_info) {
+        var logText = JSON.stringify(error_info);
+        var container = $('serviceworker-list');
+        var logAreas =
+            container.querySelectorAll('textarea.serviceworker-error-log');
+        for (var i = 0; i < logAreas.length; ++i) {
+            var logArea = logAreas[i];
+            if (version_id == logArea.vid && process_id == logArea.pid &&
+                thread_id == logArea.tid) {
+                logArea.value += logText + '\n';
+                return;
+            }
+        }
+        console.error('uncaught error log from version_id:' + version_id +
+                      'process_id:' + process_id +
+                      'thread_id:' + thread_id);
+        console.error(logText);
+    }
+
+    function onVersionStateChanged(version_id) {
+        update();
+    }
+
     return {
         update: update,
         onOperationComplete: onOperationComplete,
         onPartitionData: onPartitionData,
+        onWorkerStarted: onWorkerStarted,
+        onWorkerStopped: onWorkerStopped,
+        onErrorReported: onErrorReported,
+        onVersionStateChanged: onVersionStateChanged,
     };
 });
 

@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
+#include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 
@@ -46,6 +47,10 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
     virtual void OnStopped() = 0;
     virtual void OnMessageReceived(int request_id,
                                    const IPC::Message& message) = 0;
+    virtual void OnReportException(const base::string16& error_message,
+                                   int line_number,
+                                   int column_number,
+                                   const GURL& source_url) = 0;
   };
 
   ~EmbeddedWorkerInstance();
@@ -110,6 +115,12 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   // Called back from Registry when the worker instance sends message
   // to the browser (i.e. EmbeddedWorker observers).
   void OnMessageReceived(int request_id, const IPC::Message& message);
+
+  // Called back from Registry when the worker instance reports the exception.
+  void OnReportException(const base::string16& error_message,
+                         int line_number,
+                         int column_number,
+                         const GURL& source_url);
 
   // Chooses a process to start this worker and populate process_id_.
   // Returns false when no process is available.

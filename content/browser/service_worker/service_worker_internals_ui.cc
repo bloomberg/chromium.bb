@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_version.h"
@@ -116,7 +116,16 @@ ServiceWorkerInternalsUI::ServiceWorkerInternalsUI(WebUI* web_ui)
                  base::Unretained(this)));
 }
 
-ServiceWorkerInternalsUI::~ServiceWorkerInternalsUI() {}
+ServiceWorkerInternalsUI::~ServiceWorkerInternalsUI() {
+  BrowserContext* browser_context =
+      web_ui()->GetWebContents()->GetBrowserContext();
+  // Safe to use base::Unretained(this) because
+  // ForEachStoragePartition is synchronous.
+  BrowserContext::StoragePartitionCallback remove_observer_cb =
+      base::Bind(&ServiceWorkerInternalsUI::RemoveObserverFromStoragePartition,
+                 base::Unretained(this));
+  BrowserContext::ForEachStoragePartition(browser_context, remove_observer_cb);
+}
 
 void ServiceWorkerInternalsUI::GetAllRegistrations(const ListValue* args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -126,10 +135,15 @@ void ServiceWorkerInternalsUI::GetAllRegistrations(const ListValue* args) {
 
   // Safe to use base::Unretained(this) because
   // ForEachStoragePartition is synchronous.
-  BrowserContext::StoragePartitionCallback cb =
+  BrowserContext::StoragePartitionCallback add_context_cb =
       base::Bind(&ServiceWorkerInternalsUI::AddContextFromStoragePartition,
                  base::Unretained(this));
-  BrowserContext::ForEachStoragePartition(browser_context, cb);
+  BrowserContext::ForEachStoragePartition(browser_context, add_context_cb);
+
+  BrowserContext::StoragePartitionCallback add_observer_cb =
+      base::Bind(&ServiceWorkerInternalsUI::AddObserverToStoragePartition,
+                 base::Unretained(this));
+  BrowserContext::ForEachStoragePartition(browser_context, add_observer_cb);
 }
 
 void ServiceWorkerInternalsUI::AddContextFromStoragePartition(
@@ -145,6 +159,27 @@ void ServiceWorkerInternalsUI::AddContextFromStoragePartition(
           new OperationProxy(AsWeakPtr(), scoped_ptr<ListValue>()),
           context,
           partition->GetPath()));
+}
+
+void ServiceWorkerInternalsUI::AddObserverToStoragePartition(
+    StoragePartition* partition) {
+  if (registered_partitions_.find(partition) != registered_partitions_.end())
+    return;
+  registered_partitions_.insert(partition);
+  scoped_refptr<ServiceWorkerContextWrapper> context =
+      static_cast<ServiceWorkerContextWrapper*>(
+          partition->GetServiceWorkerContext());
+  context->AddObserver(this);
+}
+
+void ServiceWorkerInternalsUI::RemoveObserverFromStoragePartition(
+    StoragePartition* partition) {
+  if (registered_partitions_.find(partition) == registered_partitions_.end())
+    return;
+  scoped_refptr<ServiceWorkerContextWrapper> context =
+      static_cast<ServiceWorkerContextWrapper*>(
+          partition->GetServiceWorkerContext());
+  context->RemoveObserver(this);
 }
 
 namespace {
@@ -179,9 +214,9 @@ bool ServiceWorkerInternalsUI::GetRegistrationInfo(
       web_ui()->GetWebContents()->GetBrowserContext();
 
   StoragePartition* result_partition(NULL);
-  BrowserContext::StoragePartitionCallback cb =
+  BrowserContext::StoragePartitionCallback find_context_cb =
       base::Bind(&FindContext, *partition_path, &result_partition, context);
-  BrowserContext::ForEachStoragePartition(browser_context, cb);
+  BrowserContext::ForEachStoragePartition(browser_context, find_context_cb);
 
   if (!result_partition || !(*context))
     return false;
@@ -264,6 +299,50 @@ void ServiceWorkerInternalsUI::StopWorker(const ListValue* args) {
           new OperationProxy(AsWeakPtr(), args_copy.Pass()),
           context,
           scope));
+}
+
+void ServiceWorkerInternalsUI::OnWorkerStarted(int64 version_id,
+                                               int process_id,
+                                               int thread_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  web_ui()->CallJavascriptFunction("serviceworker.onWorkerStarted",
+                                   StringValue(base::Int64ToString(version_id)),
+                                   FundamentalValue(process_id),
+                                   FundamentalValue(thread_id));
+}
+
+void ServiceWorkerInternalsUI::OnWorkerStopped(int64 version_id,
+                                               int process_id,
+                                               int thread_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  web_ui()->CallJavascriptFunction("serviceworker.onWorkerStopped",
+                                   StringValue(base::Int64ToString(version_id)),
+                                   FundamentalValue(process_id),
+                                   FundamentalValue(thread_id));
+}
+
+void ServiceWorkerInternalsUI::OnVersionStateChanged(int64 version_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  web_ui()->CallJavascriptFunction(
+      "serviceworker.onVersionStateChanged",
+      StringValue(base::Int64ToString(version_id)));
+}
+
+void ServiceWorkerInternalsUI::OnErrorReported(int64 version_id,
+                                               int process_id,
+                                               int thread_id,
+                                               const ErrorInfo& info) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DictionaryValue value;
+  value.SetString("message", info.error_message);
+  value.SetInteger("lineNumber", info.line_number);
+  value.SetInteger("columnNumber", info.column_number);
+  value.SetString("sourceURL", info.source_url.spec());
+  web_ui()->CallJavascriptFunction("serviceworker.onErrorReported",
+                                   StringValue(base::Int64ToString(version_id)),
+                                   FundamentalValue(process_id),
+                                   FundamentalValue(thread_id),
+                                   value);
 }
 
 void ServiceWorkerInternalsUI::OperationProxy::GetRegistrationsOnIOThread(
@@ -363,7 +442,7 @@ void UpdateVersionInfo(const ServiceWorkerVersionInfo& version,
       info->SetString("status", "DEACTIVATED");
       break;
   }
-
+  info->SetString("version_id", base::Int64ToString(version.version_id));
   info->SetInteger("process_id", version.process_id);
   info->SetInteger("thread_id", version.thread_id);
 }
@@ -403,7 +482,7 @@ void ServiceWorkerInternalsUI::OperationProxy::OnHaveRegistrations(
 
     if (!registration.pending_version.is_null) {
       DictionaryValue* pending_info = new DictionaryValue();
-      UpdateVersionInfo(registration.active_version, pending_info);
+      UpdateVersionInfo(registration.pending_version, pending_info);
       registration_info->Set("pending", pending_info);
     }
 

@@ -105,6 +105,17 @@ void EmbeddedWorkerInstance::OnMessageReceived(int request_id,
                     OnMessageReceived(request_id, message));
 }
 
+void EmbeddedWorkerInstance::OnReportException(
+    const base::string16& error_message,
+    int line_number,
+    int column_number,
+    const GURL& source_url) {
+  FOR_EACH_OBSERVER(
+      Observer,
+      observer_list_,
+      OnReportException(error_message, line_number, column_number, source_url));
+}
+
 void EmbeddedWorkerInstance::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
 }

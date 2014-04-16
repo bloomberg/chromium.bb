@@ -4,23 +4,28 @@
 
 #include "content/browser/service_worker/service_worker_info.h"
 
+#include "content/common/service_worker/service_worker_types.h"
+
 namespace content {
 
 ServiceWorkerVersionInfo::ServiceWorkerVersionInfo()
     : is_null(true),
       running_status(ServiceWorkerVersion::STOPPED),
       status(ServiceWorkerVersion::NEW),
+      version_id(kInvalidServiceWorkerVersionId),
       process_id(-1),
       thread_id(-1) {}
 
 ServiceWorkerVersionInfo::ServiceWorkerVersionInfo(
     ServiceWorkerVersion::RunningStatus running_status,
     ServiceWorkerVersion::Status status,
+    int64 version_id,
     int process_id,
     int thread_id)
     : is_null(false),
       running_status(running_status),
       status(status),
+      version_id(version_id),
       process_id(process_id),
       thread_id(thread_id) {}
 ServiceWorkerVersionInfo::~ServiceWorkerVersionInfo() {}

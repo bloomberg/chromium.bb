@@ -77,6 +77,16 @@ ServiceWorkerHandle::~ServiceWorkerHandle() {
   // need to re-load the same registration from disk over and over.
 }
 
+void ServiceWorkerHandle::OnWorkerStarted(ServiceWorkerVersion* version) {}
+
+void ServiceWorkerHandle::OnWorkerStopped(ServiceWorkerVersion* version) {}
+
+void ServiceWorkerHandle::OnErrorReported(ServiceWorkerVersion* version,
+                                          const base::string16& error_message,
+                                          int line_number,
+                                          int column_number,
+                                          const GURL& source_url) {}
+
 void ServiceWorkerHandle::OnVersionStateChanged(ServiceWorkerVersion* version) {
   sender_->Send(new ServiceWorkerMsg_ServiceWorkerStateChanged(
       handle_id_, GetWebServiceWorkerState(version)));

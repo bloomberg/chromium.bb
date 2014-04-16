@@ -218,6 +218,7 @@ ServiceWorkerVersionInfo ServiceWorkerVersion::GetInfo() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return ServiceWorkerVersionInfo(running_status(),
                                   status(),
+                                  version_id(),
                                   embedded_worker()->process_id(),
                                   embedded_worker()->thread_id());
 }
@@ -412,6 +413,7 @@ void ServiceWorkerVersion::OnStarted() {
   DCHECK_EQ(RUNNING, running_status());
   // Fire all start callbacks.
   RunCallbacks(this, &start_callbacks_, SERVICE_WORKER_OK);
+  FOR_EACH_OBSERVER(Listener, listeners_, OnWorkerStarted(this));
 }
 
 void ServiceWorkerVersion::OnStopped() {
@@ -434,6 +436,19 @@ void ServiceWorkerVersion::OnStopped() {
     iter.Advance();
   }
   message_callbacks_.Clear();
+  FOR_EACH_OBSERVER(Listener, listeners_, OnWorkerStopped(this));
+}
+
+void ServiceWorkerVersion::OnReportException(
+    const base::string16& error_message,
+    int line_number,
+    int column_number,
+    const GURL& source_url) {
+  FOR_EACH_OBSERVER(
+      Listener,
+      listeners_,
+      OnErrorReported(
+          this, error_message, line_number, column_number, source_url));
 }
 
 void ServiceWorkerVersion::OnMessageReceived(

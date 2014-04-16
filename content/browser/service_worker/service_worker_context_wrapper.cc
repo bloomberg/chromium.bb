@@ -6,13 +6,15 @@
 
 #include "base/files/file_path.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_context_observer.h"
 #include "content/public/browser/browser_thread.h"
 #include "webkit/browser/quota/quota_manager_proxy.h"
 
 namespace content {
 
-ServiceWorkerContextWrapper::ServiceWorkerContextWrapper() {
-}
+ServiceWorkerContextWrapper::ServiceWorkerContextWrapper()
+    : observer_list_(
+          new ObserverListThreadSafe<ServiceWorkerContextObserver>()) {}
 
 ServiceWorkerContextWrapper::~ServiceWorkerContextWrapper() {
 }
@@ -29,9 +31,8 @@ void ServiceWorkerContextWrapper::Init(
     return;
   }
   DCHECK(!context_core_);
-  context_core_.reset(
-      new ServiceWorkerContextCore(
-          user_data_directory, quota_manager_proxy));
+  context_core_.reset(new ServiceWorkerContextCore(
+      user_data_directory, quota_manager_proxy, observer_list_));
 }
 
 void ServiceWorkerContextWrapper::Shutdown() {
@@ -118,6 +119,16 @@ void ServiceWorkerContextWrapper::UnregisterServiceWorker(
       source_process_id,
       NULL /* provider_host */,
       base::Bind(&FinishUnregistrationOnIO, continuation));
+}
+
+void ServiceWorkerContextWrapper::AddObserver(
+    ServiceWorkerContextObserver* observer) {
+  observer_list_->AddObserver(observer);
+}
+
+void ServiceWorkerContextWrapper::RemoveObserver(
+    ServiceWorkerContextObserver* observer) {
+  observer_list_->RemoveObserver(observer);
 }
 
 }  // namespace content

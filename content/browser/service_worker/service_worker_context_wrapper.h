@@ -22,7 +22,7 @@ class QuotaManagerProxy;
 
 namespace content {
 
-class ServiceWorkerContextCore;
+class ServiceWorkerContextObserver;
 
 // A refcounted wrapper class for our core object. Higher level content lib
 // classes keep references to this class on mutliple threads. The inner core
@@ -55,11 +55,16 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
                                        const ResultCallback& continuation)
       OVERRIDE;
 
+  void AddObserver(ServiceWorkerContextObserver* observer);
+  void RemoveObserver(ServiceWorkerContextObserver* observer);
+
  private:
   friend class base::RefCountedThreadSafe<ServiceWorkerContextWrapper>;
   virtual ~ServiceWorkerContextWrapper();
 
   scoped_ptr<ServiceWorkerContextCore> context_core_;
+  scoped_refptr<ObserverListThreadSafe<ServiceWorkerContextObserver> >
+      observer_list_;
 };
 
 }  // namespace content

@@ -17,6 +17,7 @@ class ServiceWorkerVersionInfo {
   ServiceWorkerVersionInfo();
   ServiceWorkerVersionInfo(ServiceWorkerVersion::RunningStatus running_status,
                            ServiceWorkerVersion::Status status,
+                           int64 version_id,
                            int process_id,
                            int thread_id);
   ~ServiceWorkerVersionInfo();
@@ -24,6 +25,7 @@ class ServiceWorkerVersionInfo {
   bool is_null;
   ServiceWorkerVersion::RunningStatus running_status;
   ServiceWorkerVersion::Status status;
+  int64 version_id;
   int process_id;
   int thread_id;
 };

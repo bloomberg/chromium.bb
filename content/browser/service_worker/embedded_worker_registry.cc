@@ -90,6 +90,21 @@ void EmbeddedWorkerRegistry::OnSendMessageToBrowser(
   NOTREACHED() << "Got unexpected message: " << message.type();
 }
 
+void EmbeddedWorkerRegistry::OnReportException(
+    int embedded_worker_id,
+    const base::string16& error_message,
+    int line_number,
+    int column_number,
+    const GURL& source_url) {
+  WorkerInstanceMap::iterator found = worker_map_.find(embedded_worker_id);
+  if (found == worker_map_.end()) {
+    LOG(ERROR) << "Worker " << embedded_worker_id << " not registered";
+    return;
+  }
+  found->second->OnReportException(
+      error_message, line_number, column_number, source_url);
+}
+
 void EmbeddedWorkerRegistry::AddChildProcessSender(
     int process_id, IPC::Sender* sender) {
   process_sender_map_[process_id] = sender;

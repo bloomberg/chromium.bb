@@ -23,7 +23,7 @@ class EmbeddedWorkerInstanceTest : public testing::Test {
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
 
   virtual void SetUp() OVERRIDE {
-    context_.reset(new ServiceWorkerContextCore(base::FilePath(), NULL));
+    context_.reset(new ServiceWorkerContextCore(base::FilePath(), NULL, NULL));
     helper_.reset(new EmbeddedWorkerTestHelper(
         context_.get(), kRenderProcessId));
   }

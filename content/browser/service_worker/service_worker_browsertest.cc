@@ -207,6 +207,10 @@ class EmbeddedWorkerBrowserTest : public ServiceWorkerBrowserTest,
       int request_id, const IPC::Message& message) OVERRIDE {
     NOTREACHED();
   }
+  virtual void OnReportException(const base::string16& error_message,
+                                 int line_number,
+                                 int column_number,
+                                 const GURL& source_url) OVERRIDE {}
 
   scoped_ptr<EmbeddedWorkerInstance> worker_;
   EmbeddedWorkerInstance::Status last_worker_status_;

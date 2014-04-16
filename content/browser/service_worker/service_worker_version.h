@@ -71,7 +71,14 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   class Listener {
    public:
+    virtual void OnWorkerStarted(ServiceWorkerVersion* version) = 0;
+    virtual void OnWorkerStopped(ServiceWorkerVersion* version) = 0;
     virtual void OnVersionStateChanged(ServiceWorkerVersion* version) = 0;
+    virtual void OnErrorReported(ServiceWorkerVersion* version,
+                                 const base::string16& error_message,
+                                 int line_number,
+                                 int column_number,
+                                 const GURL& source_url) = 0;
   };
 
   ServiceWorkerVersion(
@@ -192,6 +199,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   virtual void OnStopped() OVERRIDE;
   virtual void OnMessageReceived(int request_id,
                                  const IPC::Message& message) OVERRIDE;
+  virtual void OnReportException(const base::string16& error_message,
+                                 int line_number,
+                                 int column_number,
+                                 const GURL& source_url) OVERRIDE;
 
  private:
   typedef ServiceWorkerVersion self;

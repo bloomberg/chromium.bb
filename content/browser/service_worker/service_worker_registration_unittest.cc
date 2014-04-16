@@ -21,7 +21,7 @@ class ServiceWorkerRegistrationTest : public testing::Test {
       : io_thread_(BrowserThread::IO, &message_loop_) {}
 
   virtual void SetUp() OVERRIDE {
-    context_.reset(new ServiceWorkerContextCore(base::FilePath(), NULL));
+    context_.reset(new ServiceWorkerContextCore(base::FilePath(), NULL, NULL));
     context_ptr_ = context_->AsWeakPtr();
   }
 

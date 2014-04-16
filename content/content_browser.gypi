@@ -1141,6 +1141,7 @@
     'browser/service_worker/embedded_worker_registry.h',
     'browser/service_worker/service_worker_context_core.cc',
     'browser/service_worker/service_worker_context_core.h',
+    'browser/service_worker/service_worker_context_observer.h',
     'browser/service_worker/service_worker_context_wrapper.cc',
     'browser/service_worker/service_worker_context_wrapper.h',
     'browser/service_worker/service_worker_dispatcher_host.cc',

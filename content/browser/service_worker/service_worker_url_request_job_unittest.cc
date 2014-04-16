@@ -89,7 +89,7 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
   virtual ~ServiceWorkerURLRequestJobTest() {}
 
   virtual void SetUp() OVERRIDE {
-    context_.reset(new ServiceWorkerContextCore(base::FilePath(), NULL));
+    context_.reset(new ServiceWorkerContextCore(base::FilePath(), NULL, NULL));
     helper_.reset(new EmbeddedWorkerTestHelper(context_.get(), kProcessID));
 
     registration_ = new ServiceWorkerRegistration(

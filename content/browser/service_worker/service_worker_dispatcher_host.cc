@@ -334,10 +334,13 @@ void ServiceWorkerDispatcherHost::OnReportException(
     int line_number,
     int column_number,
     const GURL& source_url) {
-  // TODO(horo, nhiroki): Show the error on serviceworker-internals
-  // (http://crbug.com/359517).
-  DVLOG(2) << "[Error] " << error_message << " (" << source_url
-           << ":" << line_number << "," << column_number << ")";
+  if (!context_)
+    return;
+  context_->embedded_worker_registry()->OnReportException(embedded_worker_id,
+                                                          error_message,
+                                                          line_number,
+                                                          column_number,
+                                                          source_url);
 }
 
 void ServiceWorkerDispatcherHost::OnServiceWorkerObjectDestroyed(

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html i18n-values="dir:textdirection;">
 <head>
   <meta charset="utf-8">
@@ -19,6 +19,10 @@
                 <span>Running Status:</span>
                 <span jscontent="$this.running_status"></span>
             </div>
+            <div class="serviceworker-vid">
+                <span>Version ID:</span>
+                <span jscontent="$this.version_id"></span>
+            </div>
             <div class="serviceworker-pid">
                 <span>Renderer process ID:</span>
                 <span jscontent="$this.process_id"></span>
@@ -26,6 +30,12 @@
             <div class="serviceworker-tid">
                 <span>Renderer thread ID:</span>
                 <span jscontent="$this.thread_id"></span>
+            </div>
+            <div>
+                <div>Error Log:</div>
+                <textarea class="serviceworker-error-log"
+                  jsvalues=".vid:$this.version_id;.pid:$this.process_id;.tid:$this.thread_id"
+                  rows="10" cols="120" readonly></textarea>
             </div>
         </div>
         <div id="serviceworker-list-template"
@@ -68,7 +78,7 @@
     </div>
     <h1>ServiceWorker registrations</h1>
     <div class="content">
-        <div id="serviceworker-list">
+        <div id="serviceworker-list"></div>
     </div>
     <script src="chrome://resources/js/util.js"></script>
     <script src="chrome://resources/js/cr.js"></script>

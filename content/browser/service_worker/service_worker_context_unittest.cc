@@ -123,7 +123,7 @@ class ServiceWorkerContextTest : public testing::Test {
         render_process_id_(99) {}
 
   virtual void SetUp() OVERRIDE {
-    context_.reset(new ServiceWorkerContextCore(base::FilePath(), NULL));
+    context_.reset(new ServiceWorkerContextCore(base::FilePath(), NULL, NULL));
     helper_.reset(new EmbeddedWorkerTestHelper(
         context_.get(), render_process_id_));
   }

@@ -13,6 +13,7 @@
 #include "base/id_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list_threadsafe.h"
 #include "content/browser/service_worker/service_worker_info.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_registration_status.h"
@@ -32,6 +33,8 @@ class QuotaManagerProxy;
 namespace content {
 
 class EmbeddedWorkerRegistry;
+class ServiceWorkerContextObserver;
+class ServiceWorkerHandle;
 class ServiceWorkerJobCoordinator;
 class ServiceWorkerProviderHost;
 class ServiceWorkerRegistration;
@@ -43,8 +46,8 @@ class ServiceWorkerStorage;
 // is the root of the containment hierarchy for service worker data
 // associated with a particular partition.
 class CONTENT_EXPORT ServiceWorkerContextCore
-    : NON_EXPORTED_BASE(
-          public base::SupportsWeakPtr<ServiceWorkerContextCore>) {
+    : NON_EXPORTED_BASE(public base::SupportsWeakPtr<ServiceWorkerContextCore>),
+      public ServiceWorkerVersion::Listener {
  public:
   typedef base::Callback<void(ServiceWorkerStatusCode status,
                               int64 registration_id,
@@ -76,10 +79,25 @@ class CONTENT_EXPORT ServiceWorkerContextCore
 
   // This is owned by the StoragePartition, which will supply it with
   // the local path on disk. Given an empty |user_data_directory|,
-  // nothing will be stored on disk.
-  ServiceWorkerContextCore(const base::FilePath& user_data_directory,
-                           quota::QuotaManagerProxy* quota_manager_proxy);
-  ~ServiceWorkerContextCore();
+  // nothing will be stored on disk. |observer_list| is created in
+  // ServiceWorkerContextWrapper. When Notify() of |observer_list| is called in
+  // ServiceWorkerContextCore, the methods of ServiceWorkerContextObserver will
+  // be called on the thread which called AddObserver() of |observer_list|.
+  ServiceWorkerContextCore(
+      const base::FilePath& user_data_directory,
+      quota::QuotaManagerProxy* quota_manager_proxy,
+      ObserverListThreadSafe<ServiceWorkerContextObserver>* observer_list);
+  virtual ~ServiceWorkerContextCore();
+
+  // ServiceWorkerVersion::Listener overrides.
+  virtual void OnWorkerStarted(ServiceWorkerVersion* version) OVERRIDE;
+  virtual void OnWorkerStopped(ServiceWorkerVersion* version) OVERRIDE;
+  virtual void OnVersionStateChanged(ServiceWorkerVersion* version) OVERRIDE;
+  virtual void OnErrorReported(ServiceWorkerVersion* version,
+                               const base::string16& error_message,
+                               int line_number,
+                               int column_number,
+                               const GURL& source_url) OVERRIDE;
 
   ServiceWorkerStorage* storage() { return storage_.get(); }
   EmbeddedWorkerRegistry* embedded_worker_registry() {
@@ -146,6 +164,9 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   std::map<int64, ServiceWorkerRegistration*> live_registrations_;
   std::map<int64, ServiceWorkerVersion*> live_versions_;
   int next_handle_id_;
+
+  scoped_refptr<ObserverListThreadSafe<ServiceWorkerContextObserver> >
+      observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContextCore);
 };
