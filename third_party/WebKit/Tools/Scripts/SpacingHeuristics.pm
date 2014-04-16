@@ -1,5 +1,3 @@
-#!/usr/bin/perl -w
-
 # Copyright (C) 2006 Apple Computer, Inc.  All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
