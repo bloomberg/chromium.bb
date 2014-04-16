@@ -186,9 +186,6 @@
       <structure type="chrome_scaled_image" name="IDR_DEVELOPER_MODE_HIGHLIGHT_TOP_LEFT" file="common/developer_mode_highlight_top_left.png" />
       <structure type="chrome_scaled_image" name="IDR_DEVELOPER_MODE_HIGHLIGHT_TOP" file="common/developer_mode_highlight_top.png" />
       <structure type="chrome_scaled_image" name="IDR_DEVELOPER_MODE_HIGHLIGHT_TOP_RIGHT" file="common/developer_mode_highlight_top_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_DOCK_HIGH" file="dock_tab_high.png" />
-      <structure type="chrome_scaled_image" name="IDR_DOCK_MAX" file="dock_tab_max.png" />
-      <structure type="chrome_scaled_image" name="IDR_DOCK_WIDE" file="dock_tab_wide.png" />
       <structure type="chrome_scaled_image" name="IDR_DOWN_ARROW" file="common/down_arrow.png" />
       <structure type="chrome_scaled_image" name="IDR_DOWNLOADS_FAVICON" file="common/favicon_downloads.png" />
       <structure type="chrome_scaled_image" name="IDR_DOWNLOAD_ANIMATION_BEGIN" file="download_animation_begin.png" />
@@ -243,7 +240,6 @@
       <structure type="chrome_scaled_image" name="IDR_ERROR_NETWORK_OFFLINE" file="common/error_network_offline.png" />
       <if expr="enable_extensions">
         <structure type="chrome_scaled_image" name="IDR_EXTENSIONS_FAVICON" file="common/favicon_extensions.png" />
-        <structure type="chrome_scaled_image" name="IDR_EXTENSIONS_SCRIPT_BUBBLE" file="common/script_bubble.png" />
         <structure type="chrome_scaled_image" name="IDR_EXTENSIONS_RATING_STAR_HALF_LEFT" file="extensions_rating_star_half_left.png" />
         <structure type="chrome_scaled_image" name="IDR_EXTENSIONS_RATING_STAR_HALF_RIGHT" file="extensions_rating_star_half_right.png" />
         <structure type="chrome_scaled_image" name="IDR_EXTENSIONS_RATING_STAR_OFF" file="extensions_rating_star_off.png" />
@@ -255,10 +251,6 @@
       <if expr="chromeos">
         <structure type="chrome_scaled_image" name="IDR_FATAL_ERROR" file="cros/fatal_error.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_FEEDBACK" file="feedback.png" />
-      <structure type="chrome_scaled_image" name="IDR_FEEDBACK_H" file="feedback_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_FEEDBACK_P" file="feedback_pressed.png" />
-
       <structure type="chrome_scaled_image" name="IDR_FILE_FOLDER" file="common/folder.png" />
       <if expr="chromeos">
         <structure type="chrome_scaled_image" name="IDR_FILETYPE_ARCHIVE" file="cros/file_types/archive.png" />
@@ -308,7 +300,6 @@
       </if>
 
       <if expr="chromeos">
-        <structure type="chrome_scaled_image" name="IDR_FILES_APP_ICON" file="common/files_app_icon.png" />
         <if expr="_google_chrome">
           <structure type="chrome_scaled_image" name="IDR_FIRST_RUN_GREETING" file="google_chrome/cros/first_run_greeting.png" />
         </if>
@@ -385,10 +376,6 @@
         <structure type="chrome_scaled_image" name="IDR_ICON_ADD_USER_WHITE" file="icon_add_user_white.png" />
         <structure type="chrome_scaled_image" name="IDR_ICON_GUEST_WHITE" file="icon_guest_white.png" />
         <structure type="chrome_scaled_image" name="IDR_ICON_POWER_WHITE" file="icon_power_white.png" />
-      </if>
-      <if expr="is_win">
-        <structure type="chrome_scaled_image" name="IDR_INCOGNITO_SWITCH_OFF" file="incognito_switch_off.png" />
-        <structure type="chrome_scaled_image" name="IDR_INCOGNITO_SWITCH_ON" file="incognito_switch_on.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_INFO" file="info_small.png" />
       <if expr="toolkit_views">
@@ -548,13 +535,8 @@
       </if>
       <if expr="chromeos">
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_DRIVE" file="cros/notification_drive.png" />
-      </if>
-      <if expr="chromeos">
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_PERIPHERAL_BATTERY_LOW" file="cros/notification_peripheral_battery_low.png" />
-      </if>
-      <if expr="chromeos">
         <structure type="chrome_scaled_image" name="IDR_PORTAL_DETECTION_ALERT" file="cros/captive_portal_icon.png" />
-        <structure type="chrome_scaled_image" name="IDR_PORTAL_DETECTION_GLOBE" file="cros/globe_icon.png" />
       </if>
       <if expr="is_win or desktop_linux">
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_TRAY_DO_NOT_DISTURB_ATTENTION" file="common/notification_tray_do_not_disturb_attention.png" />
@@ -1176,13 +1158,6 @@
       <if expr="chromeos">
         <structure type="chrome_scaled_image" name="IDR_TECHNICAL_ERROR" file="cros/technical_error.png" />
       </if>
-      <if expr="not _google_chrome">
-        <structure type="chrome_scaled_image" name="IDR_TEMPORARY_GOOGLE_PLUS_ICON" file="chromium/ic_gplus_color_16.png" />
-      </if>
-      <if expr="_google_chrome">
-        <structure type="chrome_scaled_image" name="IDR_TEMPORARY_GOOGLE_PLUS_ICON" file="google_chrome/ic_gplus_color_16.png" />
-      </if>
-
       <structure type="chrome_scaled_image" name="IDR_TEXTFIELD_BOTTOM" file="common/textfield_bottom.png" />
       <structure type="chrome_scaled_image" name="IDR_TEXTFIELD_BOTTOM_LEFT" file="common/textfield_bottom_left.png" />
       <structure type="chrome_scaled_image" name="IDR_TEXTFIELD_BOTTOM_RIGHT" file="common/textfield_bottom_right.png" />
@@ -1252,7 +1227,6 @@
       <structure type="chrome_scaled_image" name="IDR_THEME_WINDOW_CONTROL_BACKGROUND" file="notused.png" />
       <structure type="chrome_scaled_image" name="IDR_THROBBER_LIGHT" file="throbber_light.png" />
       <structure type="chrome_scaled_image" name="IDR_THROBBER_WAITING" file="throbber_waiting.png" />
-      <structure type="chrome_scaled_image" name="IDR_THROBBER_WAITING_LIGHT" file="throbber_waiting_light.png" />
       <if expr="use_ash">
         <structure type="chrome_scaled_image" name="IDR_TOOLBAR_SHADE_BOTTOM" file="common/toolbar_shade_bottom.png" />
         <structure type="chrome_scaled_image" name="IDR_TOOLBAR_SHADE_LEFT" file="common/toolbar_shade_left.png" />
@@ -1287,7 +1261,6 @@
         <structure type="chrome_scaled_image" name="IDR_UPDATE_BADGE" file="update_badge.png" />
         <structure type="chrome_scaled_image" name="IDR_UPDATE_BADGE2" file="update_badge2.png" />
         <structure type="chrome_scaled_image" name="IDR_UPDATE_BADGE3" file="update_badge3.png" />
-        <structure type="chrome_scaled_image" name="IDR_UPDATE_BADGE4" file="update_badge4.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_UPDATE_FAILED" file="common/update_failed.png" />
       <structure type="chrome_scaled_image" name="IDR_UPDATE_MENU_SEVERITY_LOW" file="common/update_menu_severity_low.png" />
