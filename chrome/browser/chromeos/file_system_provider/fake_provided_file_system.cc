@@ -6,7 +6,6 @@
 
 #include "base/files/file.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "chrome/browser/chromeos/file_system_provider/request_manager.h"
 #include "extensions/browser/event_router.h"
 
 namespace chromeos {
@@ -30,14 +29,14 @@ const ProvidedFileSystemInfo& FakeProvidedFileSystem::GetFileSystemInfo()
   return file_system_info_;
 }
 
+RequestManager* FakeProvidedFileSystem::GetRequestManager() {
+  NOTREACHED();
+  return NULL;
+}
+
 ProvidedFileSystemInterface* FakeProvidedFileSystem::Create(
     extensions::EventRouter* event_router,
-    RequestManager* request_manager,
     const ProvidedFileSystemInfo& file_system_info) {
-  // TODO(mtomasz): Create a request manager in ProvidedFileSystem, since it is
-  // only used by ProvidedFileSystem, instead of having a profile wide one.
-  // As a result, there will be no need to pass the request manager to the
-  // factory callback.
   return new FakeProvidedFileSystem(file_system_info);
 }
 

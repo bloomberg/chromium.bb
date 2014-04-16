@@ -37,21 +37,15 @@ void OnRequestUnmountSuccess(
 
 ProvidedFileSystem::ProvidedFileSystem(
     extensions::EventRouter* event_router,
-    RequestManager* request_manager,
     const ProvidedFileSystemInfo& file_system_info)
-    : event_router_(event_router),
-      request_manager_(request_manager),
-      file_system_info_(file_system_info) {}
+    : event_router_(event_router), file_system_info_(file_system_info) {}
 
 ProvidedFileSystem::~ProvidedFileSystem() {}
 
 bool ProvidedFileSystem::RequestUnmount(
     const fileapi::AsyncFileUtil::StatusCallback& callback) {
-  int request_id = request_manager_->CreateRequest(
-      file_system_info_.extension_id(),
-      file_system_info_.file_system_id(),
-      base::Bind(&OnRequestUnmountSuccess, callback),
-      callback);
+  int request_id = request_manager_.CreateRequest(
+      base::Bind(&OnRequestUnmountSuccess, callback), callback);
 
   if (!request_id)
     return false;
@@ -70,6 +64,10 @@ bool ProvidedFileSystem::RequestUnmount(
 
 const ProvidedFileSystemInfo& ProvidedFileSystem::GetFileSystemInfo() const {
   return file_system_info_;
+}
+
+RequestManager* ProvidedFileSystem::GetRequestManager() {
+  return &request_manager_;
 }
 
 }  // namespace file_system_provider

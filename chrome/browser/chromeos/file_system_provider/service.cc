@@ -23,16 +23,13 @@ namespace {
 // Maximum number of file systems to be mounted in the same time, per profile.
 const size_t kMaxFileSystems = 16;
 
-// Default factory for provided file systems. The |event_router| nor the
-// |request_manager| arguments must not be NULL.
+// Default factory for provided file systems. The |event_router| must not be
+// NULL.
 ProvidedFileSystemInterface* CreateProvidedFileSystem(
     extensions::EventRouter* event_router,
-    RequestManager* request_manager,
     const ProvidedFileSystemInfo& file_system_info) {
   DCHECK(event_router);
-  DCHECK(request_manager);
-  return new ProvidedFileSystem(
-      event_router, request_manager, file_system_info);
+  return new ProvidedFileSystem(event_router, file_system_info);
 }
 
 }  // namespace
@@ -41,9 +38,7 @@ Service::Service(Profile* profile)
     : profile_(profile),
       file_system_factory_(base::Bind(CreateProvidedFileSystem)),
       next_id_(1),
-      weak_ptr_factory_(this) {
-  AddObserver(&request_manager_);
-}
+      weak_ptr_factory_(this) {}
 
 Service::~Service() { STLDeleteValues(&file_system_map_); }
 
@@ -121,8 +116,8 @@ int Service::MountFileSystem(const std::string& extension_id,
   extensions::EventRouter* event_router =
       extensions::ExtensionSystem::Get(profile_)->event_router();
 
-  ProvidedFileSystemInterface* file_system = file_system_factory_.Run(
-      event_router, &request_manager_, file_system_info);
+  ProvidedFileSystemInterface* file_system =
+      file_system_factory_.Run(event_router, file_system_info);
   DCHECK(file_system);
   file_system_map_[file_system_id] = file_system;
 
@@ -223,7 +218,7 @@ ProvidedFileSystemInterface* Service::GetProvidedFileSystem(
   return file_system_it->second;
 }
 
-void Service::Shutdown() { RemoveObserver(&request_manager_); }
+void Service::Shutdown() {}
 
 void Service::OnRequestUnmountStatus(
     const ProvidedFileSystemInfo& file_system_info,

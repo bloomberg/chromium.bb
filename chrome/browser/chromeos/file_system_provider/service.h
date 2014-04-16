@@ -15,7 +15,6 @@
 #include "base/observer_list.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/file_system_provider/observer.h"
-#include "chrome/browser/chromeos/file_system_provider/request_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/file_system_provider.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -39,7 +38,6 @@ class Service : public KeyedService {
  public:
   typedef base::Callback<ProvidedFileSystemInterface*(
       extensions::EventRouter* event_router,
-      RequestManager* request_manager,
       const ProvidedFileSystemInfo& file_system_info)>
       FileSystemFactoryCallback;
 
@@ -86,10 +84,6 @@ class Service : public KeyedService {
   // BrowserContextKeyedService overrides.
   virtual void Shutdown() OVERRIDE;
 
-  // Getter for the request manager. Used by the extension API to forward
-  // replies. Valid as long as the service.
-  RequestManager* request_manager() { return &request_manager_; }
-
  private:
   typedef std::map<int, ProvidedFileSystemInterface*> ProvidedFileSystemMap;
 
@@ -98,7 +92,6 @@ class Service : public KeyedService {
   void OnRequestUnmountStatus(const ProvidedFileSystemInfo& file_system_info,
                               base::File::Error error);
 
-  RequestManager request_manager_;
   Profile* profile_;
   FileSystemFactoryCallback file_system_factory_;
   ObserverList<Observer> observers_;

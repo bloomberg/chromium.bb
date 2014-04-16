@@ -31,12 +31,12 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
   virtual bool RequestUnmount(
       const fileapi::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
   virtual const ProvidedFileSystemInfo& GetFileSystemInfo() const OVERRIDE;
+  virtual RequestManager* GetRequestManager() OVERRIDE;
 
-  // Factory callback, to be used in Service::SetFileSystemFactory(). Both
-  // |event_router| and |request_manager| arguments can be NULL.
+  // Factory callback, to be used in Service::SetFileSystemFactory(). The
+  // |event_router| argument can be NULL.
   static ProvidedFileSystemInterface* Create(
       extensions::EventRouter* event_router,
-      RequestManager* request_manager,
       const ProvidedFileSystemInfo& file_system_info);
 
  private:

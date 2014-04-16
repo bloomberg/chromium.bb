@@ -11,11 +11,17 @@ namespace file_system_provider {
 
 RequestManager::RequestManager() : next_id_(1) {}
 
-RequestManager::~RequestManager() {}
+RequestManager::~RequestManager() {
+  // Abort all of the active requests.
+  RequestMap::iterator it = requests_.begin();
+  while (it != requests_.end()) {
+    const int request_id = it->first;
+    ++it;
+    RejectRequest(request_id, base::File::FILE_ERROR_ABORT);
+  }
+}
 
-int RequestManager::CreateRequest(const std::string& extension_id,
-                                  int file_system_id,
-                                  const SuccessCallback& success_callback,
+int RequestManager::CreateRequest(const SuccessCallback& success_callback,
                                   const ErrorCallback& error_callback) {
   // The request id is unique per request manager, so per service, thereof
   // per profile.
@@ -26,8 +32,6 @@ int RequestManager::CreateRequest(const std::string& extension_id,
     return 0;
 
   Request request;
-  request.extension_id = extension_id;
-  request.file_system_id = file_system_id;
   request.success_callback = success_callback;
   request.error_callback = error_callback;
   requests_[request_id] = request;
@@ -35,21 +39,13 @@ int RequestManager::CreateRequest(const std::string& extension_id,
   return request_id;
 }
 
-bool RequestManager::FulfillRequest(const std::string& extension_id,
-                                    int file_system_id,
-                                    int request_id,
+bool RequestManager::FulfillRequest(int request_id,
                                     scoped_ptr<base::DictionaryValue> response,
                                     bool has_next) {
   RequestMap::iterator request_it = requests_.find(request_id);
 
   if (request_it == requests_.end())
     return false;
-
-  // Check if the request belongs to the same provided file system.
-  if (request_it->second.file_system_id != file_system_id ||
-      request_it->second.extension_id != extension_id) {
-    return false;
-  }
 
   if (!request_it->second.success_callback.is_null())
     request_it->second.success_callback.Run(response.Pass(), has_next);
@@ -59,20 +55,11 @@ bool RequestManager::FulfillRequest(const std::string& extension_id,
   return true;
 }
 
-bool RequestManager::RejectRequest(const std::string& extension_id,
-                                   int file_system_id,
-                                   int request_id,
-                                   base::File::Error error) {
+bool RequestManager::RejectRequest(int request_id, base::File::Error error) {
   RequestMap::iterator request_it = requests_.find(request_id);
 
   if (request_it == requests_.end())
     return false;
-
-  // Check if the request belongs to the same provided file system.
-  if (request_it->second.file_system_id != file_system_id ||
-      request_it->second.extension_id != extension_id) {
-    return false;
-  }
 
   if (!request_it->second.error_callback.is_null())
     request_it->second.error_callback.Run(error);
@@ -81,34 +68,7 @@ bool RequestManager::RejectRequest(const std::string& extension_id,
   return true;
 }
 
-void RequestManager::OnProvidedFileSystemMount(
-    const ProvidedFileSystemInfo& file_system_info,
-    base::File::Error error) {}
-
-void RequestManager::OnProvidedFileSystemUnmount(
-    const ProvidedFileSystemInfo& file_system_info,
-    base::File::Error error) {
-  // Do not continue on error, since the volume may be still mounted.
-  if (error != base::File::FILE_OK)
-    return;
-
-  // Remove all requests for this provided file system.
-  RequestMap::iterator it = requests_.begin();
-  while (it != requests_.begin()) {
-    if (it->second.file_system_id == file_system_info.file_system_id() &&
-        it->second.extension_id == file_system_info.extension_id()) {
-      RejectRequest(it->second.extension_id,
-                    it->second.file_system_id,
-                    it->first,
-                    base::File::FILE_ERROR_ABORT);
-      requests_.erase(it++);
-    } else {
-      ++it;
-    }
-  }
-}
-
-RequestManager::Request::Request() : file_system_id(0) {}
+RequestManager::Request::Request() {}
 
 RequestManager::Request::~Request() {}
 

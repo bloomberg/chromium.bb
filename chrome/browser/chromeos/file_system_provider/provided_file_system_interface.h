@@ -30,6 +30,9 @@ class ProvidedFileSystemInterface {
 
   // Returns a provided file system info for this file system.
   virtual const ProvidedFileSystemInfo& GetFileSystemInfo() const = 0;
+
+  // Returns a request manager for the file system.
+  virtual RequestManager* GetRequestManager() = 0;
 };
 
 }  // namespace file_system_provider

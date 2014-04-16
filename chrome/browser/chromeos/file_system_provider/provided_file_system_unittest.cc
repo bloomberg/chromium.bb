@@ -84,19 +84,17 @@ class FileSystemProviderProvidedFileSystemTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     profile_.reset(new TestingProfile);
     event_router_.reset(new FakeEventRouter(profile_.get()));
-    request_manager_.reset(new RequestManager());
     base::FilePath mount_path =
         util::GetMountPointPath(profile_.get(), kExtensionId, kFileSystemId);
     file_system_info_.reset(new ProvidedFileSystemInfo(
         kExtensionId, kFileSystemId, kFileSystemName, mount_path));
-    provided_file_system_.reset(new ProvidedFileSystem(
-        event_router_.get(), request_manager_.get(), *file_system_info_.get()));
+    provided_file_system_.reset(
+        new ProvidedFileSystem(event_router_.get(), *file_system_info_.get()));
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<FakeEventRouter> event_router_;
-  scoped_ptr<RequestManager> request_manager_;
   scoped_ptr<ProvidedFileSystemInfo> file_system_info_;
   scoped_ptr<ProvidedFileSystemInterface> provided_file_system_;
 };
@@ -129,12 +127,11 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, RequestUnmount_Success) {
   EXPECT_FALSE(logger.error());
 
   // Simulate sending a success response from the providing extension.
+  RequestManager* request_manager = provided_file_system_->GetRequestManager();
+  ASSERT_TRUE(request_manager);
   scoped_ptr<base::DictionaryValue> response(new base::DictionaryValue());
-  bool reply_result = request_manager_->FulfillRequest(kExtensionId,
-                                                       kFileSystemId,
-                                                       request_id,
-                                                       response.Pass(),
-                                                       false /* has_next */);
+  bool reply_result = request_manager->FulfillRequest(
+      request_id, response.Pass(), false /* has_next */);
   EXPECT_TRUE(reply_result);
 
   // Callback should be called. Verify the error code.
@@ -167,11 +164,10 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, RequestUnmount_Error) {
   EXPECT_EQ(kExpectedRequestId, request_id);
 
   // Simulate sending an error response from the providing extension.
-  bool reply_result =
-      request_manager_->RejectRequest(kExtensionId,
-                                      kFileSystemId,
-                                      request_id,
-                                      base::File::FILE_ERROR_NOT_FOUND);
+  RequestManager* request_manager = provided_file_system_->GetRequestManager();
+  ASSERT_TRUE(request_manager);
+  bool reply_result = request_manager->RejectRequest(
+      request_id, base::File::FILE_ERROR_NOT_FOUND);
   EXPECT_TRUE(reply_result);
 
   // Callback should be called. Verify the error code.
