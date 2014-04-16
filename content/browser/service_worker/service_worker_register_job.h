@@ -38,9 +38,10 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
                               ServiceWorkerVersion* version)>
       RegistrationCallback;
 
-  ServiceWorkerRegisterJob(base::WeakPtr<ServiceWorkerContextCore> context,
-                           const GURL& pattern,
-                           const GURL& script_url);
+  CONTENT_EXPORT ServiceWorkerRegisterJob(
+      base::WeakPtr<ServiceWorkerContextCore> context,
+      const GURL& pattern,
+      const GURL& script_url);
   virtual ~ServiceWorkerRegisterJob();
 
   // Registers a callback to be called when the job completes (whether
@@ -55,6 +56,9 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
   virtual RegistrationJobType GetType() OVERRIDE;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerRegisterJobAndProviderHostTest,
+                           AssociatePendingVersionToDocuments);
+
   enum Phase {
      INITIAL,
      START,
@@ -96,6 +100,9 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
   void RunCallbacks(ServiceWorkerStatusCode status,
                     ServiceWorkerRegistration* registration,
                     ServiceWorkerVersion* version);
+
+  CONTENT_EXPORT void AssociatePendingVersionToDocuments(
+      ServiceWorkerVersion* version);
 
   // The ServiceWorkerContextCore object should always outlive this.
   base::WeakPtr<ServiceWorkerContextCore> context_;

@@ -18,6 +18,60 @@
 
 namespace content {
 
+ServiceWorkerContextCore::ProviderHostIterator::~ProviderHostIterator() {}
+
+ServiceWorkerProviderHost*
+ServiceWorkerContextCore::ProviderHostIterator::GetProviderHost() {
+  DCHECK(!IsAtEnd());
+  return provider_host_iterator_->GetCurrentValue();
+}
+
+void ServiceWorkerContextCore::ProviderHostIterator::Advance() {
+  DCHECK(!IsAtEnd());
+  DCHECK(!provider_host_iterator_->IsAtEnd());
+  DCHECK(!provider_iterator_->IsAtEnd());
+
+  // Advance the inner iterator. If an element is reached, we're done.
+  provider_host_iterator_->Advance();
+  if (!provider_host_iterator_->IsAtEnd())
+    return;
+
+  // Advance the outer iterator until an element is reached, or end is hit.
+  while (true) {
+    provider_iterator_->Advance();
+    if (provider_iterator_->IsAtEnd())
+      return;
+    ProviderMap* provider_map = provider_iterator_->GetCurrentValue();
+    provider_host_iterator_.reset(new ProviderMap::iterator(provider_map));
+    if (!provider_host_iterator_->IsAtEnd())
+      return;
+  }
+}
+
+bool ServiceWorkerContextCore::ProviderHostIterator::IsAtEnd() {
+  return provider_iterator_->IsAtEnd() &&
+         (!provider_host_iterator_ || provider_host_iterator_->IsAtEnd());
+}
+
+ServiceWorkerContextCore::ProviderHostIterator::ProviderHostIterator(
+    ProcessToProviderMap* map)
+    : map_(map) {
+  DCHECK(map);
+  Initialize();
+}
+
+void ServiceWorkerContextCore::ProviderHostIterator::Initialize() {
+  provider_iterator_.reset(new ProcessToProviderMap::iterator(map_));
+  // Advance to the first element.
+  while (!provider_iterator_->IsAtEnd()) {
+    ProviderMap* provider_map = provider_iterator_->GetCurrentValue();
+    provider_host_iterator_.reset(new ProviderMap::iterator(provider_map));
+    if (!provider_host_iterator_->IsAtEnd())
+      return;
+    provider_iterator_->Advance();
+  }
+}
+
 ServiceWorkerContextCore::ServiceWorkerContextCore(
     const base::FilePath& path,
     quota::QuotaManagerProxy* quota_manager_proxy)
@@ -64,6 +118,11 @@ void ServiceWorkerContextCore::RemoveAllProviderHostsForProcess(
     int process_id) {
   if (providers_.Lookup(process_id))
     providers_.Remove(process_id);
+}
+
+scoped_ptr<ServiceWorkerContextCore::ProviderHostIterator>
+ServiceWorkerContextCore::GetProviderHostIterator() {
+  return make_scoped_ptr(new ProviderHostIterator(&providers_));
 }
 
 void ServiceWorkerContextCore::RegisterServiceWorker(

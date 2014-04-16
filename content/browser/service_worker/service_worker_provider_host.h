@@ -48,6 +48,12 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
     return active_version_.get();
   }
 
+  // The service worker version that corresponds with
+  // navigate.serviceWorker.pending for our document.
+  ServiceWorkerVersion* pending_version() const {
+    return pending_version_.get();
+  }
+
   // The version, if any, that this provider is providing resource loads for.
   // This host observes resource loads made by the serviceworker itself.
   ServiceWorkerVersion* hosted_version() const {

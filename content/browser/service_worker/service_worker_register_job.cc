@@ -10,6 +10,7 @@
 #include "content/browser/service_worker/service_worker_job_coordinator.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_storage.h"
+#include "content/browser/service_worker/service_worker_utils.h"
 
 namespace content {
 
@@ -236,8 +237,7 @@ void ServiceWorkerRegisterJob::OnStartWorkerFinished(
   registration()->set_pending_version(pending_version());
   RunCallbacks(status, registration(), pending_version());
 
-  // TODO(kinuko): Iterate over all provider hosts and call SetPendingVersion()
-  // for documents that are in-scope.
+  AssociatePendingVersionToDocuments(pending_version());
 
   InstallAndContinue();
 }
@@ -261,6 +261,7 @@ void ServiceWorkerRegisterJob::OnInstallFinished(
   // unexpectedly terminated) we may want to retry sending the event again.
   if (status != SERVICE_WORKER_OK) {
     registration()->set_pending_version(NULL);
+    AssociatePendingVersionToDocuments(NULL);
     Complete(status);
     return;
   }
@@ -295,6 +296,7 @@ void ServiceWorkerRegisterJob::ActivateAndContinue() {
   // "Set serviceWorkerRegistration.pendingWorker to null."
   // "Set serviceWorkerRegistration.activeWorker to activatingWorker."
   registration()->set_pending_version(NULL);
+  AssociatePendingVersionToDocuments(NULL);
   DCHECK(!registration()->active_version());
   registration()->set_active_version(pending_version());
 
@@ -343,6 +345,19 @@ void ServiceWorkerRegisterJob::RunCallbacks(
     it->Run(status, registration, version);
   }
   callbacks_.clear();
+}
+
+void ServiceWorkerRegisterJob::AssociatePendingVersionToDocuments(
+    ServiceWorkerVersion* version) {
+  for (scoped_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
+           context_->GetProviderHostIterator();
+       !it->IsAtEnd();
+       it->Advance()) {
+    ServiceWorkerProviderHost* provider_host = it->GetProviderHost();
+    if (ServiceWorkerUtils::ScopeMatches(pattern_,
+                                         provider_host->document_url()))
+      provider_host->SetPendingVersion(version);
+  }
 }
 
 }  // namespace content

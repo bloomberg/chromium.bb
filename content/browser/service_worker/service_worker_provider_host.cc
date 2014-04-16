@@ -57,9 +57,11 @@ void ServiceWorkerProviderHost::SetActiveVersion(
   for (std::set<int>::iterator it = script_client_thread_ids_.begin();
        it != script_client_thread_ids_.end();
        ++it) {
-    dispatcher_host_->RegisterServiceWorkerHandle(
-        ServiceWorkerHandle::Create(context_, dispatcher_host_,
-                                    *it, version));
+    if (version) {
+      dispatcher_host_->RegisterServiceWorkerHandle(
+          ServiceWorkerHandle::Create(context_, dispatcher_host_,
+                                      *it, version));
+    }
     // TODO(kinuko): dispatch activechange event to the script clients.
   }
 }
@@ -81,9 +83,11 @@ void ServiceWorkerProviderHost::SetPendingVersion(
   for (std::set<int>::iterator it = script_client_thread_ids_.begin();
        it != script_client_thread_ids_.end();
        ++it) {
-    dispatcher_host_->RegisterServiceWorkerHandle(
-        ServiceWorkerHandle::Create(context_, dispatcher_host_,
-                                    *it, version));
+    if (version) {
+      dispatcher_host_->RegisterServiceWorkerHandle(
+          ServiceWorkerHandle::Create(context_, dispatcher_host_,
+                                      *it, version));
+    }
     // TODO(kinuko): dispatch pendingchange event to the script clients.
   }
 }

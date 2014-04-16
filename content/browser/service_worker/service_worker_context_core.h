@@ -51,6 +51,28 @@ class CONTENT_EXPORT ServiceWorkerContextCore
                               int64 version_id)> RegistrationCallback;
   typedef base::Callback<
       void(ServiceWorkerStatusCode status)> UnregistrationCallback;
+  typedef IDMap<ServiceWorkerProviderHost, IDMapOwnPointer> ProviderMap;
+  typedef IDMap<ProviderMap, IDMapOwnPointer> ProcessToProviderMap;
+
+  // Iterates over ServiceWorkerProviderHost objects in a ProcessToProviderMap.
+  class ProviderHostIterator {
+   public:
+    ~ProviderHostIterator();
+    ServiceWorkerProviderHost* GetProviderHost();
+    void Advance();
+    bool IsAtEnd();
+
+   private:
+    friend class ServiceWorkerContextCore;
+    explicit ProviderHostIterator(ProcessToProviderMap* map);
+    void Initialize();
+
+    ProcessToProviderMap* map_;
+    scoped_ptr<ProcessToProviderMap::iterator> provider_iterator_;
+    scoped_ptr<ProviderMap::iterator> provider_host_iterator_;
+
+    DISALLOW_COPY_AND_ASSIGN(ProviderHostIterator);
+  };
 
   // This is owned by the StoragePartition, which will supply it with
   // the local path on disk. Given an empty |user_data_directory|,
@@ -72,6 +94,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   void AddProviderHost(scoped_ptr<ServiceWorkerProviderHost> provider_host);
   void RemoveProviderHost(int process_id, int provider_id);
   void RemoveAllProviderHostsForProcess(int process_id);
+  scoped_ptr<ProviderHostIterator> GetProviderHostIterator();
 
   // The callback will be called on the IO thread.
   // A child process of |source_process_id| may be used to run the created
@@ -103,8 +126,6 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   int GetNewServiceWorkerHandleId();
 
  private:
-  typedef IDMap<ServiceWorkerProviderHost, IDMapOwnPointer> ProviderMap;
-  typedef IDMap<ProviderMap, IDMapOwnPointer> ProcessToProviderMap;
   typedef std::map<int64, ServiceWorkerRegistration*> RegistrationsMap;
   typedef std::map<int64, ServiceWorkerVersion*> VersionMap;
 
