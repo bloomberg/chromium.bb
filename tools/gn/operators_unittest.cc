@@ -151,3 +151,53 @@ TEST(Operators, ListAppend) {
   ExecuteBinaryOperator(setup.scope(), &node, node.left(), node.right(), &err);
   EXPECT_TRUE(err.has_error());
 }
+
+TEST(Operators, ShortCircuitAnd) {
+  Err err;
+  TestWithScope setup;
+
+  // Set up the operator.
+  BinaryOpNode node;
+  const char token_value[] = "&&";
+  Token op(Location(), Token::BOOLEAN_AND, token_value);
+  node.set_op(op);
+
+  // Set the left to false.
+  const char false_str[] = "false";
+  Token false_tok(Location(), Token::FALSE_TOKEN, false_str);
+  node.set_left(scoped_ptr<ParseNode>(new LiteralNode(false_tok)));
+
+  // Set right as foo, but don't define a value for it.
+  const char foo[] = "foo";
+  Token identifier_token(Location(), Token::IDENTIFIER, foo);
+  node.set_right(scoped_ptr<ParseNode>(new IdentifierNode(identifier_token)));
+
+  Value ret = ExecuteBinaryOperator(setup.scope(), &node, node.left(),
+                                    node.right(), &err);
+  EXPECT_FALSE(err.has_error());
+}
+
+TEST(Operators, ShortCircuitOr) {
+  Err err;
+  TestWithScope setup;
+
+  // Set up the operator.
+  BinaryOpNode node;
+  const char token_value[] = "||";
+  Token op(Location(), Token::BOOLEAN_OR, token_value);
+  node.set_op(op);
+
+  // Set the left to false.
+  const char false_str[] = "true";
+  Token false_tok(Location(), Token::TRUE_TOKEN, false_str);
+  node.set_left(scoped_ptr<ParseNode>(new LiteralNode(false_tok)));
+
+  // Set right as foo, but don't define a value for it.
+  const char foo[] = "foo";
+  Token identifier_token(Location(), Token::IDENTIFIER, foo);
+  node.set_right(scoped_ptr<ParseNode>(new IdentifierNode(identifier_token)));
+
+  Value ret = ExecuteBinaryOperator(setup.scope(), &node, node.left(),
+                                    node.right(), &err);
+  EXPECT_FALSE(err.has_error());
+}

@@ -53,6 +53,25 @@ void AppendFilteredSourcesToValue(const Scope* scope,
   }
 }
 
+Value GetValueOrFillError(const BinaryOpNode* op_node,
+                          const ParseNode* node,
+                          const char* name,
+                          Scope* scope,
+                          Err* err) {
+  Value value = node->Execute(scope, err);
+  if (err->has_error())
+    return Value();
+  if (value.type() == Value::NONE) {
+    *err = Err(op_node->op(),
+               "Operator requires a value.",
+               "This thing on the " + std::string(name) +
+                   " does not evaluate to a value.");
+    err->AppendRange(node->GetRange());
+    return Value();
+  }
+  return value;
+}
+
 void RemoveMatchesFromList(const BinaryOpNode* op_node,
                            Value* list,
                            const Value& to_remove,
@@ -412,34 +431,55 @@ Value ExecuteLess(Scope* scope,
 
 Value ExecuteOr(Scope* scope,
                 const BinaryOpNode* op_node,
-                const Value& left,
-                const Value& right,
+                const ParseNode* left_node,
+                const ParseNode* right_node,
                 Err* err) {
+  Value left = GetValueOrFillError(op_node, left_node, "left", scope, err);
+  if (err->has_error())
+    return Value();
   if (left.type() != Value::BOOLEAN) {
     *err = Err(op_node->left(), "Left side of || operator is not a boolean.",
         "Type is \"" + std::string(Value::DescribeType(left.type())) +
         "\" instead.");
     return Value();
-  } else if (right.type() != Value::BOOLEAN) {
+  }
+  if (left.boolean_value())
+    return Value(op_node, left.boolean_value());
+
+  Value right = GetValueOrFillError(op_node, right_node, "right", scope, err);
+  if (err->has_error())
+    return Value();
+  if (right.type() != Value::BOOLEAN) {
     *err = Err(op_node->right(), "Right side of || operator is not a boolean.",
         "Type is \"" + std::string(Value::DescribeType(right.type())) +
         "\" instead.");
     return Value();
   }
+
   return Value(op_node, left.boolean_value() || right.boolean_value());
 }
 
 Value ExecuteAnd(Scope* scope,
                  const BinaryOpNode* op_node,
-                 const Value& left,
-                 const Value& right,
+                 const ParseNode* left_node,
+                 const ParseNode* right_node,
                  Err* err) {
+  Value left = GetValueOrFillError(op_node, left_node, "left", scope, err);
+  if (err->has_error())
+    return Value();
   if (left.type() != Value::BOOLEAN) {
     *err = Err(op_node->left(), "Left side of && operator is not a boolean.",
         "Type is \"" + std::string(Value::DescribeType(left.type())) +
         "\" instead.");
     return Value();
-  } else if (right.type() != Value::BOOLEAN) {
+  }
+  if (!left.boolean_value())
+    return Value(op_node, left.boolean_value());
+
+  Value right = GetValueOrFillError(op_node, right_node, "right", scope, err);
+  if (err->has_error())
+    return Value();
+  if (right.type() != Value::BOOLEAN) {
     *err = Err(op_node->right(), "Right side of && operator is not a boolean.",
         "Type is \"" + std::string(Value::DescribeType(right.type())) +
         "\" instead.");
@@ -544,28 +584,15 @@ Value ExecuteBinaryOperator(Scope* scope,
     return Value();
   }
 
-  // Left value.
-  Value left_value = left->Execute(scope, err);
-  if (err->has_error())
-    return Value();
-  if (left_value.type() == Value::NONE) {
-    *err = Err(op, "Operator requires a value.",
-               "This thing on the left does not evaluate to a value.");
-    err->AppendRange(left->GetRange());
-    return Value();
-  }
+  // ||, &&. Passed the node instead of the value so that they can avoid
+  // evaluating the RHS on early-out.
+  if (op.type() == Token::BOOLEAN_OR)
+    return ExecuteOr(scope, op_node, left, right, err);
+  if (op.type() == Token::BOOLEAN_AND)
+    return ExecuteAnd(scope, op_node, left, right, err);
 
-  // Right value. Note: don't move this above to share code with the lvalue
-  // version since in this case we want to execute the left side first.
-  Value right_value = right->Execute(scope, err);
-  if (err->has_error())
-    return Value();
-  if (right_value.type() == Value::NONE) {
-    *err = Err(op, "Operator requires a value.",
-               "This thing on the right does not evaluate to a value.");
-    err->AppendRange(right->GetRange());
-    return Value();
-  }
+  Value left_value = GetValueOrFillError(op_node, left, "left", scope, err);
+  Value right_value = GetValueOrFillError(op_node, right, "right", scope, err);
 
   // +, -.
   if (op.type() == Token::MINUS)
@@ -586,12 +613,6 @@ Value ExecuteBinaryOperator(Scope* scope,
     return ExecuteGreater(scope, op_node, left_value, right_value, err);
   if (op.type() == Token::LESS_THAN)
     return ExecuteLess(scope, op_node, left_value, right_value, err);
-
-  // ||, &&.
-  if (op.type() == Token::BOOLEAN_OR)
-    return ExecuteOr(scope, op_node, left_value, right_value, err);
-  if (op.type() == Token::BOOLEAN_AND)
-    return ExecuteAnd(scope, op_node, left_value, right_value, err);
 
   return Value();
 }
