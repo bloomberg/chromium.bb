@@ -1187,6 +1187,7 @@ void BrowserCommandController::UpdateCommandsForBookmarkEditing() {
 void BrowserCommandController::UpdateCommandsForBookmarkBar() {
   command_updater_.UpdateCommandEnabled(IDC_SHOW_BOOKMARK_BAR,
       browser_defaults::bookmarks_enabled &&
+      !profile()->IsGuestSession() &&
       !profile()->GetPrefs()->IsManagedPreference(prefs::kShowBookmarkBar) &&
       IsShowingMainUI());
 }
