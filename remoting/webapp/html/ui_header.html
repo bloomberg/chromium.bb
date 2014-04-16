@@ -12,18 +12,18 @@ found in the LICENSE file.
 
   <div class="box-spacer"></div>
 
-  <div id="top-secondary">
+  <div id="top-secondary" data-ui-mode="home">
     <span id="current-email"></span>
-    <span data-ui-mode="home" class="apps-v1-only">
-      <a id="sign-out" href="#" i18n-content="SIGN_OUT_BUTTON"></a>
-      <!-- TODO(jamiewalch): Add this back in when we support it.
-           <a id="connection-history"
-              i18n-content="CONNECTION_HISTORY_BUTTON"></a> |
-           -->
-    </span> |
-    <a href="https://www.google.com/support/chrome/bin/answer.py?answer=1649523"
-       target="_blank" i18n-content="HELP"></a> |
-    <a id="send-feedback" i18n-content="ACTIONBAR_FEEDBACK"></a>
+    <a id="sign-out" href="#"
+       i18n-content="SIGN_OUT_BUTTON"
+       class="apps-v1-only"></a>
+    <span class="menu-button" id="help-feedback-main">
+      <img src="icon_help.webp" class="menu-button-activator help-icon">
+      <ul class="right-align">
+        <li id="help-main" i18n-content="HELP"></li>
+        <li id="send-feedback-main" i18n-content="ACTIONBAR_FEEDBACK"></li>
+      </ul>
+    </span>
   </div>
 
 </header>

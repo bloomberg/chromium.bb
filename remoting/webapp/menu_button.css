@@ -7,18 +7,24 @@
   position: relative;
 }
 
-.menu-button button + ul {
+.menu-button-activator + ul {
   visibility: hidden;
   position: absolute;
-  top: 22px;
+}
+
+.menu-button-activator + ul:not(.right-align) {
   left: 1px;
 }
 
-.menu-button button.active + ul {
+.menu-button-activator + ul.right-align {
+  right: 1px;
+}
+
+.menu-button-activator.active + ul {
   visibility: visible;
 }
 
-.menu-button button.active {
+.menu-button-activator.active {
   background-color: #EEE;
   background-image: -webkit-gradient(linear, left top, left bottom,
                                      from(#EEE), to(#E0E0E0));
@@ -27,7 +33,7 @@
   color: #333;
 }
 
-.menu-button button .kd-disclosureindicator {
+.menu-button-activator .kd-disclosureindicator {
   vertical-align: middle;
   margin-left: 7px;
   opacity: .8;
@@ -64,4 +70,20 @@
   background-image: url('tick.webp');
   background-position: left center;
   background-repeat: no-repeat;
+}
+
+.help-icon {
+  vertical-align: -4px;
+  border: 1px solid transparent;
+  opacity: 0.35;
+  -webkit-transition: opacity 0.218s;
+}
+
+.help-icon:hover, .help-icon.active {
+  opacity: 0.5;
+}
+
+#help-feedback-toolbar {
+  margin-left: 8px;
+  margin-top: 4px;
 }

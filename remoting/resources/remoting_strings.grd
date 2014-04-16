@@ -500,9 +500,6 @@ First release of Chrome Remote Desktop for Android.
       <message desc="Column header in the connection history table showing the email address of the client end of the connection (the initiator) which may be this or another computer." name="IDS_CONNECTION_FROM_HEADER">
         From
       </message>
-      <message desc="Label for the connection history button. Clicking this button opens a dialog showing recent connections." name="IDS_CONNECTION_HISTORY_BUTTON">
-        Connection history
-      </message>
       <message desc="Title for the connection history dialog. This dialog shows recent connections made to and from this computer" name="IDS_CONNECTION_HISTORY_TITLE">
         Connection History
       </message>

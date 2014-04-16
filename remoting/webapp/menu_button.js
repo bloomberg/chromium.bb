@@ -24,7 +24,8 @@ remoting.MenuButton = function(container, opt_onShow) {
    * @type {HTMLElement}
    * @private
    */
-  this.button_ = /** @type {HTMLElement} */ (container.querySelector('button'));
+  this.button_ = /** @type {HTMLElement} */
+      (container.querySelector('button,.menu-button-activator'));
 
   /**
    * @type {undefined|function():void}

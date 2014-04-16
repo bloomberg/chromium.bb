@@ -82,6 +82,14 @@ remoting.init = function() {
   var sandbox = /** @type {HTMLIFrameElement} */
       document.getElementById('wcs-sandbox');
   remoting.wcsSandbox = new remoting.WcsSandboxContainer(sandbox.contentWindow);
+  var menuFeedback = new remoting.Feedback(
+      document.getElementById('help-feedback-main'),
+      document.getElementById('help-main'),
+      document.getElementById('send-feedback-main'));
+  var toolbarFeedback = new remoting.Feedback(
+      document.getElementById('help-feedback-toolbar'),
+      document.getElementById('help-toolbar'),
+      document.getElementById('send-feedback-toolbar'));
 
   /** @param {remoting.Error} error */
   var onGetEmailError = function(error) {
@@ -102,7 +110,6 @@ remoting.init = function() {
   window.addEventListener('copy', pluginGotCopy_, false);
 
   remoting.initModalDialogs();
-  remoting.initFeedback(document.getElementById('send-feedback'));
 
   if (isHostModeSupported_()) {
     var noShare = document.getElementById('chrome-os-no-share');
