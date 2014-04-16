@@ -19,7 +19,6 @@ config("sdk") {
     "NTDDI_VERSION=0x06020000",
     "PSAPI_VERSION=1",
     "WIN32",
-    "WIN32_LEAN_AND_MEAN",
     "WINVER=0x0602",
   ]
 
@@ -108,4 +107,25 @@ config("incremental_linking") {
 }
 config("no_incremental_linking") {
   ldflags = [ "/INCREMENTAL:NO" ]
+}
+
+# Character set ----------------------------------------------------------------
+
+# Not including this config means "ansi" (8-bit system codepage).
+config("unicode") {
+  defines = [
+    "_UNICODE",
+    "UNICODE",
+  ]
+}
+
+# Lean and mean ----------------------------------------------------------------
+
+# Some third party code might not compile with WIN32_LEAN_AND_MEAN so we have
+# to have a separate config for it. Remove this config from your target to
+# get the "bloaty and accomodating" version of windows.h.
+config("lean_and_mean") {
+  defines = [
+    "WIN32_LEAN_AND_MEAN",
+  ]
 }

@@ -43,11 +43,13 @@ config("compiler") {
     # --------------------------------
     cflags += [
       "-fno-strict-aliasing",  # See http://crbug.com/32204
-      "-fvisibility=hidden",
     ]
     cflags_cc += [
       "-fno-exceptions",
       "-fno-threadsafe-statics",
+      # Not exporting C++ inline functions can generally be applied anywhere
+      # so we do so here. Normal function visibility is controlled by
+      # //build/config/gcc:symbol_visibility_hidden.
       "-fvisibility-inlines-hidden",
     ]
 
@@ -300,8 +302,6 @@ config("runtime_library") {
       "_CRT_RAND_S",
       "_CRT_SECURE_NO_DEPRECATE",
       "_SCL_SECURE_NO_DEPRECATE",
-      "_UNICODE",
-      "UNICODE",
     ]
   }
 
