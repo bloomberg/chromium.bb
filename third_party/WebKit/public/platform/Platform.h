@@ -61,6 +61,7 @@ class WebBlobRegistry;
 class WebContentDecryptionModule;
 class WebClipboard;
 class WebCompositorSupport;
+class WebConvertableToTraceFormat;
 class WebCookieJar;
 class WebCrypto;
 class WebDatabaseObserver;

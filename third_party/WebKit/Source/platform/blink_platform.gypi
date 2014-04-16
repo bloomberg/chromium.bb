@@ -261,6 +261,7 @@
       'exported/WebBlobData.cpp',
       'exported/WebContentDecryptionModule.cpp',
       'exported/WebContentDecryptionModuleSession.cpp',
+      'exported/WebConvertableToTraceFormat.cpp',
       'exported/WebCryptoAlgorithm.cpp',
       'exported/WebCryptoKeyAlgorithm.cpp',
       'exported/WebCryptoKey.cpp',
