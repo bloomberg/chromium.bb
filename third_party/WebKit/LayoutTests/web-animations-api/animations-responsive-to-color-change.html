@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<div id='element'></div>
+
+<script>
+
+var element = document.getElementById('element');
+
+var keyframes = [
+    {backgroundColor: 'currentColor', offset: 0},
+    {backgroundColor: '#004400', offset: 1}
+];
+
+test(function() {
+    element.style.color = '#CC0000';
+    var player = element.animate(keyframes, 10);
+    player.pause();
+    player.currentTime = 5;
+    element.style.color = '#0000CC';
+    assert_equals(getComputedStyle(element).backgroundColor, 'rgb(0, 34, 102)');
+}, 'Colors responsive to style changes');
+
+</script>

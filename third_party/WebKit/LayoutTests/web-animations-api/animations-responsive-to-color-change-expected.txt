@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Colors responsive to style changes assert_equals: expected "rgb(0, 34, 102)" but got "rgb(102, 34, 0)"
+Harness: the test ran to completion.
+

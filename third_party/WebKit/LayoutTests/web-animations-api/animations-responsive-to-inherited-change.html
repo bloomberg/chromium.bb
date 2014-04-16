@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<div id='container'>
+    <div id='element'></div>
+</div>
+
+<script>
+
+var container = document.getElementById('container');
+var element = document.getElementById('element');
+
+var keyframes = [
+    {fontSize: 'inherit', offset: 0},
+    {fontSize: '20px', offset: 1}
+];
+
+test(function() {
+    container.style.fontSize = '10px';
+    var player = element.animate(keyframes, 10);
+    player.pause();
+    player.currentTime = 5;
+    container.style.fontSize = '30px';
+    assert_equals(getComputedStyle(element).fontSize, '25px');
+}, 'Font size responsive to inherited changes');
+
+</script>
