@@ -61,6 +61,7 @@ FontCache::FontCache()
 
     if (s_useDirectWrite) {
         fontManager = SkFontMgr_New_DirectWrite(s_directWriteFactory);
+        s_useSubpixelPositioning = RuntimeEnabledFeatures::subpixelFontScalingEnabled();
     } else {
         fontManager = SkFontMgr_New_GDI();
         // Subpixel text positioning is not supported by the GDI backend.

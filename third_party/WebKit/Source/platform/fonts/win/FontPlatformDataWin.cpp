@@ -56,7 +56,8 @@ void FontPlatformData::setupPaint(SkPaint* paint, GraphicsContext* context) cons
     flags &= ~textFlagsMask;
 
     if (ts >= m_minSizeForAntiAlias) {
-        paint->setSubpixelText(m_useSubpixelPositioning);
+        if (m_useSubpixelPositioning)
+            flags |= SkPaint::kSubpixelText_Flag;
 
         // Only set painting flags when we're actually painting.
         if (context && !context->couldUseLCDRenderedText()) {
@@ -70,9 +71,6 @@ void FontPlatformData::setupPaint(SkPaint* paint, GraphicsContext* context) cons
         }
         SkASSERT(!(textFlags & ~textFlagsMask));
         flags |= textFlags;
-
-    } else {
-        paint->setSubpixelText(false);
     }
 
     paint->setFlags(flags);
