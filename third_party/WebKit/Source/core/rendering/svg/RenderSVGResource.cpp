@@ -186,10 +186,22 @@ static inline void removeFromCacheAndInvalidateDependencies(RenderObject* object
     HashSet<SVGElement*>* dependencies = object->document().accessSVGExtensions().setOfElementsReferencingTarget(toSVGElement(object->node()));
     if (!dependencies)
         return;
+
+    // We allow cycles in SVGDocumentExtensions reference sets in order to avoid expensive
+    // reference graph adjustments on changes, so we need to break possible cycles here.
+    DEFINE_STATIC_LOCAL(HashSet<SVGElement*>, invalidatingDependencies, ());
+
     HashSet<SVGElement*>::iterator end = dependencies->end();
     for (HashSet<SVGElement*>::iterator it = dependencies->begin(); it != end; ++it) {
-        if (RenderObject* renderer = (*it)->renderer())
+        if (RenderObject* renderer = (*it)->renderer()) {
+            if (UNLIKELY(!invalidatingDependencies.add(*it).isNewEntry)) {
+                // Reference cycle: we are in process of invalidating this dependant.
+                continue;
+            }
+
             RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer, needsLayout);
+            invalidatingDependencies.remove(*it);
+        }
     }
 }
 
