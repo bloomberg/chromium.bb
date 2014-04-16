@@ -917,9 +917,6 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
             context_provider));
   }
   if (!context_provider.get()) {
-    if (!command_line.HasSwitch(switches::kEnableSoftwareCompositing))
-      return scoped_ptr<cc::OutputSurface>();
-
     scoped_ptr<cc::SoftwareOutputDevice> software_device(
         new CompositorSoftwareOutputDevice());
 

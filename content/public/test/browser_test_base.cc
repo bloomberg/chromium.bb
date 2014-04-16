@@ -159,7 +159,6 @@ void BrowserTestBase::SetUp() {
 
   if (use_software_compositing_) {
     command_line->AppendSwitch(switches::kDisableGpu);
-    command_line->AppendSwitch(switches::kEnableSoftwareCompositing);
 #if defined(USE_AURA)
     command_line->AppendSwitch(switches::kUIDisableThreadedCompositing);
 #endif

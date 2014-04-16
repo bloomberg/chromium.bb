@@ -530,9 +530,6 @@ const char kEnableSkiaBenchmarking[]        = "enable-skia-benchmarking";
 // On platforms that support it, enables smooth scroll animation.
 const char kEnableSmoothScrolling[]         = "enable-smooth-scrolling";
 
-// Allow the compositor to use its software implementation if GL fails.
-const char kEnableSoftwareCompositing[]     = "enable-software-compositing";
-
 // Enable spatial navigation
 const char kEnableSpatialNavigation[]       = "enable-spatial-navigation";
 

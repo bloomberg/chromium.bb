@@ -1920,9 +1920,7 @@ void PepperPluginInstanceImpl::UpdateLayer() {
     DCHECK_EQ(mailbox.IsZero(), sync_point == 0);
   }
   bool want_3d_layer = !mailbox.IsZero();
-  bool want_2d_layer = bound_graphics_2d_platform_ &&
-                       CommandLine::ForCurrentProcess()->HasSwitch(
-                           switches::kEnableSoftwareCompositing);
+  bool want_2d_layer = !!bound_graphics_2d_platform_;
   bool want_layer = want_3d_layer || want_2d_layer;
 
   if ((want_layer == !!texture_layer_.get()) &&

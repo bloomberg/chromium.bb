@@ -254,8 +254,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   bool gpu_process_accessible_;
 
-  bool use_software_compositor_;
-
   // True if all future Initialize calls should be ignored.
   bool finalized_;
 

@@ -156,7 +156,6 @@ extern const char kEnableSeccompFilterSandbox[];
 extern const char kEnableSharedWorkerMemoryInfo[];
 extern const char kEnableSkiaBenchmarking[];
 CONTENT_EXPORT extern const char kEnableSmoothScrolling[];
-CONTENT_EXPORT extern const char kEnableSoftwareCompositing[];
 CONTENT_EXPORT extern const char kEnableSpatialNavigation[];
 CONTENT_EXPORT extern const char kEnableSpeechSynthesis[];
 CONTENT_EXPORT extern const char kEnableStatsTable[];

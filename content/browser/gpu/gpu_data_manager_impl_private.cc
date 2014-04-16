@@ -653,10 +653,6 @@ void GpuDataManagerImplPrivate::AppendRendererCommandLine(
     command_line->AppendSwitch(switches::kDisableWebRtcHWEncoding);
 #endif
 
-  if (use_software_compositor_ &&
-      !command_line->HasSwitch(switches::kEnableSoftwareCompositing))
-    command_line->AppendSwitch(switches::kEnableSoftwareCompositing);
-
 #if defined(USE_AURA)
   if (!CanUseGpuBrowserCompositor())
     command_line->AppendSwitch(switches::kDisableGpuCompositing);
@@ -752,8 +748,6 @@ void GpuDataManagerImplPrivate::UpdateRendererWebPrefs(
     WebPreferences* prefs) const {
   DCHECK(prefs);
 
-  if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING))
-    prefs->accelerated_compositing_enabled = false;
   if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL)) {
     prefs->experimental_webgl_enabled = false;
     prefs->pepper_3d_enabled = false;
@@ -772,31 +766,13 @@ void GpuDataManagerImplPrivate::UpdateRendererWebPrefs(
       (IsDriverBugWorkaroundActive(gpu::DISABLE_MULTIMONITOR_MULTISAMPLING) &&
           display_count_ > 1))
     prefs->gl_multisampling_enabled = false;
-  if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_3D_CSS)) {
-    prefs->accelerated_compositing_for_3d_transforms_enabled = false;
-    prefs->accelerated_compositing_for_animation_enabled = false;
-  }
-  if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO))
-    prefs->accelerated_compositing_for_video_enabled = false;
 
-  // Accelerated video and animation are slower than regular when using
-  // SwiftShader. 3D CSS or Pepper 3D may also be too slow to be worthwhile.
-  if (ShouldUseSwiftShader()) {
-    prefs->accelerated_compositing_for_video_enabled = false;
-    prefs->accelerated_compositing_for_animation_enabled = false;
-    prefs->accelerated_compositing_for_3d_transforms_enabled = false;
-    prefs->accelerated_compositing_for_plugins_enabled = false;
-    prefs->pepper_3d_enabled = false;
-  }
-
-  if (use_software_compositor_) {
-    prefs->force_compositing_mode = true;
-    prefs->accelerated_compositing_enabled = true;
-    prefs->accelerated_compositing_for_3d_transforms_enabled = true;
-    prefs->accelerated_compositing_for_animation_enabled = true;
-    prefs->accelerated_compositing_for_plugins_enabled = true;
-    prefs->accelerated_compositing_for_video_enabled = true;
-  }
+  prefs->force_compositing_mode = true;
+  prefs->accelerated_compositing_enabled = true;
+  prefs->accelerated_compositing_for_3d_transforms_enabled = true;
+  prefs->accelerated_compositing_for_animation_enabled = true;
+  prefs->accelerated_compositing_for_plugins_enabled = true;
+  prefs->accelerated_compositing_for_video_enabled = true;
 
 #if defined(USE_AURA)
   if (!CanUseGpuBrowserCompositor()) {
@@ -974,7 +950,6 @@ GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(
       owner_(owner),
       display_count_(0),
       gpu_process_accessible_(true),
-      use_software_compositor_(false),
       finalized_(false) {
   DCHECK(owner_);
   CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -984,11 +959,6 @@ GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(
   }
   if (command_line->HasSwitch(switches::kDisableGpu))
     DisableHardwareAcceleration();
-  if (command_line->HasSwitch(switches::kEnableSoftwareCompositing))
-    use_software_compositor_ = true;
-#if defined(USE_AURA) || defined(OS_MACOSX)
-  use_software_compositor_ = true;
-#endif
 
 #if defined(OS_MACOSX)
   CGGetActiveDisplayList (0, NULL, &display_count_);
