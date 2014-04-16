@@ -68,6 +68,8 @@ public:
     static bool processingUserGesture();
     static bool consumeUserGesture();
     static UserGestureToken* currentToken();
+    static void clearProcessedUserGestureInPast();
+    static bool processedUserGestureInPast();
 
     explicit UserGestureIndicator(ProcessingUserGestureState);
     explicit UserGestureIndicator(PassRefPtr<UserGestureToken>);
@@ -77,6 +79,7 @@ public:
 private:
     static ProcessingUserGestureState s_state;
     static UserGestureIndicator* s_topmostIndicator;
+    static bool s_processedUserGestureInPast;
     ProcessingUserGestureState m_previousState;
     RefPtr<UserGestureToken> m_token;
 };

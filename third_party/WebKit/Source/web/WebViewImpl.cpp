@@ -239,6 +239,41 @@ static int webInputEventKeyStateToPlatformEventKeyState(int webInputEventKeyStat
     return platformEventKeyState;
 }
 
+namespace {
+
+class UserGestureNotifier {
+public:
+    // If a UserGestureIndicator is created for a user gesture during the
+    // lifetime of a UserGestureNotifier and *userGestureObserved is false,
+    // the object will notify the client and set *userGestureObserved to true.
+    UserGestureNotifier(WebAutofillClient*, bool* userGestureObserved);
+    ~UserGestureNotifier();
+
+private:
+    WebAutofillClient* const m_client;
+    bool* const m_userGestureObserved;
+};
+
+UserGestureNotifier::UserGestureNotifier(WebAutofillClient* client, bool* userGestureObserved)
+    : m_client(client)
+    , m_userGestureObserved(userGestureObserved)
+{
+    ASSERT(m_userGestureObserved);
+    if (m_client)
+        UserGestureIndicator::clearProcessedUserGestureInPast();
+}
+
+UserGestureNotifier::~UserGestureNotifier()
+{
+    if (!*m_userGestureObserved && UserGestureIndicator::processedUserGestureInPast()) {
+        *m_userGestureObserved = true;
+        if (m_client)
+            m_client->firstUserGestureObserved();
+    }
+}
+
+} // namespace
+
 // WebView ----------------------------------------------------------------
 
 WebView* WebView::create(WebViewClient* client)
@@ -372,6 +407,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_baseBackgroundColor(Color::white)
     , m_backgroundColorOverride(Color::transparent)
     , m_zoomFactorOverride(0)
+    , m_userGestureObserved(false)
 {
     Page::PageClients pageClients;
     pageClients.chromeClient = &m_chromeClientImpl;
@@ -1803,6 +1839,8 @@ const WebInputEvent* WebViewImpl::m_currentInputEvent = 0;
 
 bool WebViewImpl::handleInputEvent(const WebInputEvent& inputEvent)
 {
+    UserGestureNotifier notifier(m_autofillClient, &m_userGestureObserved);
+
     TRACE_EVENT0("input", "WebViewImpl::handleInputEvent");
     // If we've started a drag and drop operation, ignore input events until
     // we're done.
@@ -3185,6 +3223,8 @@ void WebViewImpl::dragTargetDrop(const WebPoint& clientPoint,
 {
     ASSERT(m_currentDragData);
 
+    UserGestureNotifier notifier(m_autofillClient, &m_userGestureObserved);
+
     // If this webview transitions from the "drop accepting" state to the "not
     // accepting" state, then our IPC message reply indicating that may be in-
     // flight, or else delayed by javascript processing in this webview.  If a
@@ -3501,6 +3541,7 @@ void WebViewImpl::didCommitLoad(bool isNewNavigation, bool isNavigationWithinPag
     m_linkHighlights.clear();
     endActiveFlingAnimation();
     resetSavedScrollAndScaleState();
+    m_userGestureObserved = false;
 }
 
 void WebViewImpl::willInsertBody(WebFrameImpl* webframe)

@@ -1133,7 +1133,8 @@ public:
     MockAutofillClient()
         : m_ignoreTextChanges(false)
         , m_textChangesWhileIgnored(0)
-        , m_textChangesWhileNotIgnored(0) { }
+        , m_textChangesWhileNotIgnored(0)
+        , m_userGestureNotificationsCount(0) { }
 
     virtual ~MockAutofillClient() { }
 
@@ -1145,6 +1146,7 @@ public:
         else
             ++m_textChangesWhileNotIgnored;
     }
+    virtual void firstUserGestureObserved() OVERRIDE { ++m_userGestureNotificationsCount; }
 
     void clearChangeCounts()
     {
@@ -1154,11 +1156,13 @@ public:
 
     int textChangesWhileIgnored() { return m_textChangesWhileIgnored; }
     int textChangesWhileNotIgnored() { return m_textChangesWhileNotIgnored; }
+    int getUserGestureNotificationsCount() { return m_userGestureNotificationsCount; }
 
 private:
     bool m_ignoreTextChanges;
     int m_textChangesWhileIgnored;
     int m_textChangesWhileNotIgnored;
+    int m_userGestureNotificationsCount;
 };
 
 
@@ -1870,6 +1874,70 @@ TEST_F(WebViewTest, NonUserInputTextUpdate)
     EXPECT_NE(document->focusedElement(), static_cast<WebCore::Element*>(textAreaElement));
     inputElement->setValue("testB3");
     EXPECT_FALSE(client.textIsUpdated());
+}
+
+// Check that the WebAutofillClient is correctly notified about first user
+// gestures after load, following various input events.
+TEST_F(WebViewTest, FirstUserGestureObservedKeyEvent)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("form.html"));
+    MockAutofillClient client;
+    WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "form.html", true);
+    webView->setAutofillClient(&client);
+    webView->setInitialFocus(false);
+
+    EXPECT_EQ(0, client.getUserGestureNotificationsCount());
+
+    WebKeyboardEvent keyEvent;
+    keyEvent.windowsKeyCode = WebCore::VKEY_SPACE;
+    keyEvent.type = WebInputEvent::RawKeyDown;
+    keyEvent.setKeyIdentifierFromWindowsKeyCode();
+    webView->handleInputEvent(keyEvent);
+    keyEvent.type = WebInputEvent::KeyUp;
+    webView->handleInputEvent(keyEvent);
+
+    EXPECT_EQ(1, client.getUserGestureNotificationsCount());
+    webView->setAutofillClient(0);
+}
+
+TEST_F(WebViewTest, FirstUserGestureObservedMouseEvent)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("form.html"));
+    MockAutofillClient client;
+    WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "form.html", true);
+    webView->setAutofillClient(&client);
+    webView->setInitialFocus(false);
+
+    EXPECT_EQ(0, client.getUserGestureNotificationsCount());
+
+    WebMouseEvent mouseEvent;
+    mouseEvent.button = WebMouseEvent::ButtonLeft;
+    mouseEvent.x = 1;
+    mouseEvent.y = 1;
+    mouseEvent.clickCount = 1;
+    mouseEvent.type = WebInputEvent::MouseDown;
+    webView->handleInputEvent(mouseEvent);
+    mouseEvent.type = WebInputEvent::MouseUp;
+    webView->handleInputEvent(mouseEvent);
+
+    EXPECT_EQ(1, client.getUserGestureNotificationsCount());
+    webView->setAutofillClient(0);
+}
+
+TEST_F(WebViewTest, FirstUserGestureObservedGestureTap)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("longpress_selection.html"));
+    MockAutofillClient client;
+    WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "longpress_selection.html", true);
+    webView->setAutofillClient(&client);
+    webView->setInitialFocus(false);
+
+    EXPECT_EQ(0, client.getUserGestureNotificationsCount());
+
+    EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureTap, WebString::fromUTF8("target")));
+
+    EXPECT_EQ(1, client.getUserGestureNotificationsCount());
+    webView->setAutofillClient(0);
 }
 
 } // namespace

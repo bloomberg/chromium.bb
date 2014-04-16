@@ -112,6 +112,7 @@ static bool isDefinite(ProcessingUserGestureState state)
 
 ProcessingUserGestureState UserGestureIndicator::s_state = DefinitelyNotProcessingUserGesture;
 UserGestureIndicator* UserGestureIndicator::s_topmostIndicator = 0;
+bool UserGestureIndicator::s_processedUserGestureInPast = false;
 
 UserGestureIndicator::UserGestureIndicator(ProcessingUserGestureState state)
     : m_previousState(s_state)
@@ -129,6 +130,8 @@ UserGestureIndicator::UserGestureIndicator(ProcessingUserGestureState state)
             m_token = s_topmostIndicator->currentToken();
         }
         s_state = state;
+        if (state == DefinitelyProcessingNewUserGesture || state == DefinitelyProcessingUserGesture)
+            s_processedUserGestureInPast = true;
     }
 
     if (state == DefinitelyProcessingNewUserGesture)
@@ -158,6 +161,7 @@ UserGestureIndicator::UserGestureIndicator(PassRefPtr<UserGestureToken> token)
             }
         }
         s_state = DefinitelyProcessingUserGesture;
+        s_processedUserGestureInPast = true;
     }
 
     ASSERT(isDefinite(s_state));
@@ -192,6 +196,19 @@ UserGestureToken* UserGestureIndicator::currentToken()
     if (!isMainThread() || !s_topmostIndicator)
         return 0;
     return s_topmostIndicator->m_token.get();
+}
+
+void UserGestureIndicator::clearProcessedUserGestureInPast()
+{
+    if (isMainThread())
+        s_processedUserGestureInPast = true;
+}
+
+bool UserGestureIndicator::processedUserGestureInPast()
+{
+    if (!isMainThread())
+        return false;
+    return s_processedUserGestureInPast;
 }
 
 UserGestureIndicatorDisabler::UserGestureIndicatorDisabler()

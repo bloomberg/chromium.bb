@@ -727,6 +727,8 @@ private:
     WebColor m_baseBackgroundColor;
     WebColor m_backgroundColorOverride;
     float m_zoomFactorOverride;
+
+    bool m_userGestureObserved;
 };
 
 // We have no ways to check if the specified WebView is an instance of
