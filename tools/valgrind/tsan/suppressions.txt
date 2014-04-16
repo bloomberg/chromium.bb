@@ -1068,3 +1068,17 @@
   fun:decode_tiles
   fun:vp9_decode_frame
 }
+{
+  bug_tsan
+  ThreadSanitizer:Race
+  ...
+  fun:base::debug::TraceLog::GetCategoryGroupEnabledInternal
+  fun:base::debug::TraceLog::GetCategoryGroupEnabled
+  fun:gpu::gles2::GLES2DecoderImpl::DoSwapBuffers
+  fun:gpu::gles2::GLES2DecoderImpl::HandleSwapBuffers
+  fun:gpu::gles2::GLES2DecoderImpl::DoCommand
+  fun:gpu::CommandParser::ProcessCommand
+  fun:gpu::GpuScheduler::PutChanged
+  fun:gpu::InProcessCommandBuffer::PumpCommands
+  fun:base::internal::RunnableAdapter::Run
+}
