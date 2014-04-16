@@ -101,7 +101,8 @@ public class AdapterInputConnection extends BaseInputConnection {
         } else if (imeAdapter.getTextInputType() == ImeAdapter.sTextInputTypeNumber) {
             // Number
             outAttrs.inputType = InputType.TYPE_CLASS_NUMBER
-                    | InputType.TYPE_NUMBER_VARIATION_NORMAL;
+                    | InputType.TYPE_NUMBER_VARIATION_NORMAL
+                    | InputType.TYPE_NUMBER_FLAG_DECIMAL;
             outAttrs.imeOptions |= EditorInfo.IME_ACTION_NEXT;
         }
         outAttrs.initialSelStart = Selection.getSelectionStart(mEditable);
