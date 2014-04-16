@@ -296,6 +296,27 @@ class Page19(ToughSchedulingCasesPage):
         "seconds": 3
       }))
 
+class Page20(ToughSchedulingCasesPage):
+
+  """ Why: Simple JS touch dragging """
+
+  def __init__(self, page_set):
+    super(Page20, self).__init__(
+      url='file://tough_scheduling_cases/simple_touch_drag.html',
+      page_set=page_set)
+
+  def RunSmoothness(self, action_runner):
+    action_runner.RunAction(ScrollAction(
+      {
+        'scrollable_element_function': '''
+          function(callback) {
+            callback(document.getElementById('card'));
+          }''',
+        'scroll_requires_touch': True,
+        'direction': 'up',
+        'speed': 150,
+        'scroll_distance_function': 'function() { return 400; }'
+      }))
 
 class ToughSchedulingCasesPageSet(page_set_module.PageSet):
 
@@ -347,4 +368,4 @@ class ToughSchedulingCasesPageSet(page_set_module.PageSet):
     self.AddPage(Page17(self))
     self.AddPage(Page18(self))
     self.AddPage(Page19(self))
-
+    self.AddPage(Page20(self))
