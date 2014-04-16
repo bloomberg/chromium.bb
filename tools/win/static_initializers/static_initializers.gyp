@@ -6,17 +6,23 @@
   'variables': {
     'chromium_code': 1,
   },
-  'targets': [
-    {
-      'target_name': 'static_initializers',
-      'type': 'executable',
-      'sources': [
-        'static_initializers.cc',
+  'conditions': [
+    ['not msvs_express', {
+      'targets': [
+        {
+          'target_name': 'static_initializers',
+          'type': 'executable',
+          'sources': [
+            'static_initializers.cc',
+          ],
+          'include_dirs': [
+            '$(VSInstallDir)/DIA SDK/include',
+          ],
+        },
       ],
-      'include_dirs': [
-        '$(VSInstallDir)/DIA SDK/include',
-      ],
-    },
-  ],
+    }, {
+      'targets': [],
+    }],
+  ]
 }
 
