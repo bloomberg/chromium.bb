@@ -6748,6 +6748,52 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="ExtensionUrlRequest.HashTimeMs" units="milliseconds">
+  <owner>asargent@chromium.org</owner>
+  <summary>
+    The total time taken to compute a cryptographic hash of the content read for
+    a chrome-extension:// URL, logged at the end of each request we load from
+    the corresponding file for that URL in the filesystem.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionUrlRequest.OnReadCompleteError" enum="NetErrorCodes">
+  <owner>asargent@chromium.org</owner>
+  <summary>
+    The error code for failures of incremental reads of a file stream for a
+    chrome-extension:// URL. (See also ExtensionUrlRequest.OnReadCompleteResult
+    for the success case).
+  </summary>
+</histogram>
+
+<histogram name="ExtensionUrlRequest.OnReadCompleteResult">
+  <owner>asargent@chromium.org</owner>
+  <summary>
+    The result of an incremental read of a file stream for a chrome-extension://
+    URL, representing a byte count. Logged in success cases (see also
+    ExtensionUrlRequest.OnReadCompleteError).
+  </summary>
+</histogram>
+
+<histogram name="ExtensionUrlRequest.SeekPosition">
+  <owner>asargent@chromium.org</owner>
+  <summary>
+    When fetching a chrome-extension:// URL, this indicates the first byte
+    position we read from. This will be greater than 0 in cases such as XHR's
+    with a Range header, but will normally be 0 in the typical case of reading
+    the entire file. This helps identify how frequently partial file reads are
+    taking place.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionUrlRequest.TotalKbRead" units="KB">
+  <owner>asargent@chromium.org</owner>
+  <summary>
+    The total number of bytes read for a chrome-extension:// URL, logged when
+    the job is finished (either successfully or not).
+  </summary>
+</histogram>
+
 <histogram name="FileBrowser.Create" enum="FileDialogType">
   <owner>joshwoodward@google.com</owner>
   <summary>Chrome OS File Browser opening mode.</summary>
