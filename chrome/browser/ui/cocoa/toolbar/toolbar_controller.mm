@@ -509,6 +509,14 @@ class NotificationBridge
     // aren't sent correctly.
     DCHECK(autocompleteTextFieldEditor_.get());
     [autocompleteTextFieldEditor_.get() setFieldEditor:YES];
+    if (base::mac::IsOSSnowLeopard()) {
+      // Manually transferring the drawsBackground and backgroundColor
+      // properties is necessary to ensure anti-aliased text on 10.6.
+      [autocompleteTextFieldEditor_
+          setDrawsBackground:[locationBar_ drawsBackground]];
+      [autocompleteTextFieldEditor_
+          setBackgroundColor:[locationBar_ backgroundColor]];
+    }
     return autocompleteTextFieldEditor_.get();
   }
   return nil;
