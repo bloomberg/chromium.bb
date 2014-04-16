@@ -20,6 +20,11 @@
 #include "ui/events/ozone/evdev/device_manager_udev.h"
 #endif
 
+#if defined(USE_EVDEV_GESTURES)
+#include "ui/events/ozone/evdev/libgestures_glue/event_reader_libevdev_cros.h"
+#include "ui/events/ozone/evdev/libgestures_glue/gesture_interpreter_libevdev_cros.h"
+#endif
+
 #ifndef EVIOCSCLOCKID
 #define EVIOCSCLOCKID  _IOW('E', 0xa0, int)
 #endif
@@ -28,16 +33,47 @@ namespace ui {
 
 namespace {
 
-bool IsTouchPad(const EventDeviceInfo& devinfo) {
-  if (!devinfo.HasEventType(EV_ABS))
-    return false;
+bool UseGesturesLibraryForDevice(const EventDeviceInfo& devinfo) {
+  if (devinfo.HasAbsXY() && !devinfo.IsMappedToScreen())
+    return true;  // touchpad
 
-  return devinfo.HasKeyEvent(BTN_LEFT) || devinfo.HasKeyEvent(BTN_MIDDLE) ||
-         devinfo.HasKeyEvent(BTN_RIGHT) || devinfo.HasKeyEvent(BTN_TOOL_FINGER);
+  if (devinfo.HasRelXY())
+    return true;  // mouse
+
+  return false;
 }
 
-bool IsTouchScreen(const EventDeviceInfo& devinfo) {
-  return devinfo.HasEventType(EV_ABS) && !IsTouchPad(devinfo);
+scoped_ptr<EventConverterEvdev> CreateConverter(
+    int fd,
+    const base::FilePath& path,
+    const EventDeviceInfo& devinfo,
+    const EventDispatchCallback& dispatch,
+    EventModifiersEvdev* modifiers,
+    CursorDelegateEvdev* cursor) {
+#if defined(USE_EVDEV_GESTURES)
+  // Touchpad or mouse: use gestures library.
+  // EventReaderLibevdevCros -> GestureInterpreterLibevdevCros -> DispatchEvent
+  if (UseGesturesLibraryForDevice(devinfo)) {
+    scoped_ptr<GestureInterpreterLibevdevCros> gesture_interp = make_scoped_ptr(
+        new GestureInterpreterLibevdevCros(modifiers, cursor, dispatch));
+    scoped_ptr<EventReaderLibevdevCros> libevdev_reader =
+        make_scoped_ptr(new EventReaderLibevdevCros(
+            fd,
+            path,
+            gesture_interp.PassAs<EventReaderLibevdevCros::Delegate>()));
+    return libevdev_reader.PassAs<EventConverterEvdev>();
+  }
+#endif
+
+  // Touchscreen: use TouchEventConverterEvdev.
+  scoped_ptr<EventConverterEvdev> converter;
+  if (devinfo.HasAbsXY())
+    return make_scoped_ptr<EventConverterEvdev>(
+        new TouchEventConverterEvdev(fd, path, devinfo, dispatch));
+
+  // Everything else: use KeyEventConverterEvdev.
+  return make_scoped_ptr<EventConverterEvdev>(
+      new KeyEventConverterEvdev(fd, path, modifiers, dispatch));
 }
 
 // Open an input device. Opening may put the calling thread to sleep, and
@@ -51,6 +87,7 @@ void OpenInputDevice(
     EventModifiersEvdev* modifiers,
     CursorDelegateEvdev* cursor,
     scoped_refptr<base::TaskRunner> reply_runner,
+    const EventDispatchCallback& dispatch,
     base::Callback<void(scoped_ptr<EventConverterEvdev>)> reply_callback) {
   TRACE_EVENT1("ozone", "OpenInputDevice", "path", path.value());
 
@@ -74,26 +111,12 @@ void OpenInputDevice(
     return;
   }
 
-  if (IsTouchPad(devinfo)) {
-    LOG(WARNING) << "touchpad device not supported: " << path.value();
-    close(fd);
-    return;
-  }
+  scoped_ptr<EventConverterEvdev> converter =
+      CreateConverter(fd, path, devinfo, dispatch, modifiers, cursor);
 
-  // TODO(spang) Add more device types.
-  scoped_ptr<EventConverterEvdev> converter;
-  if (IsTouchScreen(devinfo))
-    converter.reset(new TouchEventConverterEvdev(fd, path, devinfo));
-  else if (devinfo.HasEventType(EV_KEY))
-    converter.reset(new KeyEventConverterEvdev(fd, path, modifiers));
-
-  if (converter) {
-    // Reply with the constructed converter.
-    reply_runner->PostTask(
-        FROM_HERE, base::Bind(reply_callback, base::Passed(&converter)));
-  } else {
-    close(fd);
-  }
+  // Reply with the constructed converter.
+  reply_runner->PostTask(FROM_HERE,
+                         base::Bind(reply_callback, base::Passed(&converter)));
 }
 
 // Close an input device. Closing may put the calling thread to sleep, and
@@ -111,15 +134,25 @@ EventFactoryEvdev::EventFactoryEvdev()
     : ui_task_runner_(base::MessageLoopProxy::current()),
       file_task_runner_(base::MessageLoopProxy::current()),
       cursor_(NULL),
+      dispatch_callback_(
+          base::Bind(base::IgnoreResult(&EventFactoryEvdev::DispatchEvent),
+                     base::Unretained(this))),
       weak_ptr_factory_(this) {}
 
 EventFactoryEvdev::EventFactoryEvdev(CursorDelegateEvdev* cursor)
     : ui_task_runner_(base::MessageLoopProxy::current()),
       file_task_runner_(base::MessageLoopProxy::current()),
       cursor_(cursor),
+      dispatch_callback_(
+          base::Bind(base::IgnoreResult(&EventFactoryEvdev::DispatchEvent),
+                     base::Unretained(this))),
       weak_ptr_factory_(this) {}
 
 EventFactoryEvdev::~EventFactoryEvdev() { STLDeleteValues(&converters_); }
+
+void EventFactoryEvdev::DispatchEvent(Event* event) {
+  EventFactoryOzone::DispatchEvent(event);
+}
 
 void EventFactoryEvdev::AttachInputDevice(
     const base::FilePath& path,
@@ -134,9 +167,6 @@ void EventFactoryEvdev::AttachInputDevice(
 
   // Add initialized device to map.
   converters_[path] = converter.release();
-  converters_[path]->SetDispatchCallback(
-      base::Bind(base::IgnoreResult(&EventFactoryEvdev::DispatchEvent),
-                 base::Unretained(this)));
   converters_[path]->Start();
 }
 
@@ -151,6 +181,7 @@ void EventFactoryEvdev::OnDeviceAdded(const base::FilePath& path) {
                  &modifiers_,
                  cursor_,
                  ui_task_runner_,
+                 dispatch_callback_,
                  base::Bind(&EventFactoryEvdev::AttachInputDevice,
                             weak_ptr_factory_.GetWeakPtr(),
                             path)));

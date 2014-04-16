@@ -44,6 +44,16 @@ class EVENTS_EXPORT EventDeviceInfo {
   // Check input device properties.
   bool HasProp(unsigned int code) const;
 
+  // Has absolute X & Y axes.
+  bool HasAbsXY() const;
+
+  // Has relativeX & Y axes.
+  bool HasRelXY() const;
+
+  // Determine whether absolute device X/Y coordinates are mapped onto the
+  // screen. This is the case for touchscreens and tablets but not touchpads.
+  bool IsMappedToScreen() const;
+
  private:
   unsigned long ev_bits_[EVDEV_BITS_TO_LONGS(EV_CNT)];
   unsigned long key_bits_[EVDEV_BITS_TO_LONGS(KEY_CNT)];

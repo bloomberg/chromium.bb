@@ -117,6 +117,14 @@
         'gestures/gesture_types.h',
         'gestures/velocity_calculator.cc',
         'gestures/velocity_calculator.h',
+        'ozone/evdev/libgestures_glue/event_reader_libevdev_cros.cc',
+        'ozone/evdev/libgestures_glue/event_reader_libevdev_cros.h',
+        'ozone/evdev/libgestures_glue/gesture_interpreter_libevdev_cros.cc',
+        'ozone/evdev/libgestures_glue/gesture_interpreter_libevdev_cros.h',
+        'ozone/evdev/libgestures_glue/gesture_logging.cc',
+        'ozone/evdev/libgestures_glue/gesture_logging.h',
+        'ozone/evdev/libgestures_glue/gesture_timer_provider.cc',
+        'ozone/evdev/libgestures_glue/gesture_timer_provider.h',
         'ozone/evdev/device_manager_evdev.cc',
         'ozone/evdev/device_manager_evdev.h',
         'ozone/evdev/device_manager_udev.cc',
@@ -189,6 +197,19 @@
         ['use_ozone_evdev==1 and use_udev==1', {
           'dependencies': [
             '<(DEPTH)/build/linux/system.gyp:udev',
+          ],
+        }],
+        ['use_ozone_evdev==1 and use_evdev_gestures==1', {
+          'dependencies': [
+            '<(DEPTH)/build/linux/system.gyp:libgestures',
+            '<(DEPTH)/build/linux/system.gyp:libevdev-cros',
+          ],
+          'defines': [
+            'USE_EVDEV_GESTURES',
+          ],
+        }, {
+          'sources/': [
+            ['exclude', '^ozone/evdev/libgestures_glue/'],
           ],
         }],
         ['use_udev==0', {

@@ -19,7 +19,10 @@ const char kTestDevicePath[] = "/dev/input/test-device";
 class MockKeyEventConverterEvdev : public KeyEventConverterEvdev {
  public:
   MockKeyEventConverterEvdev(int fd, EventModifiersEvdev* modifiers)
-      : KeyEventConverterEvdev(fd, base::FilePath(kTestDevicePath), modifiers) {
+      : KeyEventConverterEvdev(fd,
+                               base::FilePath(kTestDevicePath),
+                               modifiers,
+                               EventDispatchCallback()) {
     Start();
   }
   virtual ~MockKeyEventConverterEvdev() {};

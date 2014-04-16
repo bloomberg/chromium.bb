@@ -27,6 +27,8 @@ class EVENTS_EXPORT EventFactoryEvdev : public EventFactoryOzone {
   explicit EventFactoryEvdev(CursorDelegateEvdev* cursor);
   virtual ~EventFactoryEvdev();
 
+  void DispatchEvent(Event* event);
+
   // EventFactoryOzone:
   virtual void StartProcessingEvents() OVERRIDE;
   virtual void SetFileTaskRunner(scoped_refptr<base::TaskRunner> task_runner)
@@ -65,6 +67,9 @@ class EVENTS_EXPORT EventFactoryEvdev : public EventFactoryOzone {
 
   // Cursor movement.
   CursorDelegateEvdev* cursor_;
+
+  // Dispatch callback for events.
+  EventDispatchCallback dispatch_callback_;
 
   // Support weak pointers for attach & detach callbacks.
   base::WeakPtrFactory<EventFactoryEvdev> weak_ptr_factory_;

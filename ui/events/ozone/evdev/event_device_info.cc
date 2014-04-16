@@ -149,4 +149,41 @@ int32 EventDeviceInfo::GetAbsMaximum(unsigned int code) const {
   return abs_info_[code].maximum;
 }
 
+bool EventDeviceInfo::HasAbsXY() const {
+  if (HasAbsEvent(ABS_X) && HasAbsEvent(ABS_Y))
+    return true;
+
+  if (HasAbsEvent(ABS_MT_POSITION_X) && HasAbsEvent(ABS_MT_POSITION_Y))
+    return true;
+
+  return false;
+}
+
+bool EventDeviceInfo::HasRelXY() const {
+  return HasRelEvent(REL_X) && HasRelEvent(REL_Y);
+}
+
+bool EventDeviceInfo::IsMappedToScreen() const {
+  // Device position is mapped directly to the screen.
+  if (HasProp(INPUT_PROP_DIRECT))
+    return true;
+
+  // Device position moves the cursor.
+  if (HasProp(INPUT_PROP_POINTER))
+    return false;
+
+  // Tablets are mapped to the screen.
+  if (HasKeyEvent(BTN_TOOL_PEN) || HasKeyEvent(BTN_STYLUS) ||
+      HasKeyEvent(BTN_STYLUS2))
+    return true;
+
+  // Touchpads are not mapped to the screen.
+  if (HasKeyEvent(BTN_LEFT) || HasKeyEvent(BTN_MIDDLE) ||
+      HasKeyEvent(BTN_RIGHT) || HasKeyEvent(BTN_TOOL_FINGER))
+    return false;
+
+  // Touchscreens are mapped to the screen.
+  return true;
+}
+
 }  // namespace ui

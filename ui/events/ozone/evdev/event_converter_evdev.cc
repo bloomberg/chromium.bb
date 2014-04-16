@@ -11,6 +11,9 @@ namespace ui {
 
 EventConverterEvdev::EventConverterEvdev() {}
 
+EventConverterEvdev::EventConverterEvdev(const EventDispatchCallback& callback)
+    : dispatch_callback_(callback) {}
+
 EventConverterEvdev::~EventConverterEvdev() {}
 
 void EventConverterEvdev::DispatchEventToCallback(ui::Event* event) {

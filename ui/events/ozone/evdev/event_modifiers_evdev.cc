@@ -71,4 +71,9 @@ void EventModifiersEvdev::UpdateFlags(unsigned int modifier) {
 
 int EventModifiersEvdev::GetModifierFlags() { return modifier_flags_; }
 
+// static
+int EventModifiersEvdev::GetEventFlagFromModifier(unsigned int modifier) {
+  return kEventFlagFromModifiers[modifier];
+}
+
 }  // namespace ui

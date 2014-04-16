@@ -22,7 +22,8 @@ class EVENTS_EXPORT KeyEventConverterEvdev
  public:
   KeyEventConverterEvdev(int fd,
                          base::FilePath path,
-                         EventModifiersEvdev* modifiers);
+                         EventModifiersEvdev* modifiers,
+                         const EventDispatchCallback& dispatch);
   virtual ~KeyEventConverterEvdev();
 
   // Start & stop watching for events.

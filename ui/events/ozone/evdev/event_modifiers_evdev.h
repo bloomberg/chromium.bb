@@ -53,6 +53,9 @@ class EVENTS_EXPORT EventModifiersEvdev {
   // Return current flags to use for incoming events.
   int GetModifierFlags();
 
+  // Return the mask for the specified modifier.
+  static int GetEventFlagFromModifier(unsigned int modifier);
+
  private:
   // Count of keys pressed for each modifier.
   int modifiers_down_[EVDEV_NUM_MODIFIERS];

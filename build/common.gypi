@@ -1356,6 +1356,9 @@
     # Set to 1 to compile with MSE support for MPEG2 TS
     'enable_mpeg2ts_stream_parser%': 0,
 
+    # Support ChromeOS touchpad gestures with ozone.
+    'use_evdev_gestures%': 0,
+
     'conditions': [
       # Enable the Syzygy optimization step for the official builds.
       ['OS=="win" and buildtype=="Official" and syzyasan!=1', {

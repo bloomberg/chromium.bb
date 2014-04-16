@@ -187,10 +187,15 @@ bool IsLockButton(unsigned int code) { return code == KEY_CAPSLOCK; }
 
 }  // namespace
 
-KeyEventConverterEvdev::KeyEventConverterEvdev(int fd,
-                                               base::FilePath path,
-                                               EventModifiersEvdev* modifiers)
-    : fd_(fd), path_(path), modifiers_(modifiers) {
+KeyEventConverterEvdev::KeyEventConverterEvdev(
+    int fd,
+    base::FilePath path,
+    EventModifiersEvdev* modifiers,
+    const EventDispatchCallback& callback)
+    : EventConverterEvdev(callback),
+      fd_(fd),
+      path_(path),
+      modifiers_(modifiers) {
   // TODO(spang): Initialize modifiers using EVIOCGKEY.
 }
 

@@ -34,10 +34,13 @@ const float kFingerWidth = 25.f;
 
 namespace ui {
 
-TouchEventConverterEvdev::TouchEventConverterEvdev(int fd,
-                                                   base::FilePath path,
-                                                   const EventDeviceInfo& info)
-    : pressure_min_(info.GetAbsMinimum(ABS_MT_PRESSURE)),
+TouchEventConverterEvdev::TouchEventConverterEvdev(
+    int fd,
+    base::FilePath path,
+    const EventDeviceInfo& info,
+    const EventDispatchCallback& callback)
+    : EventConverterEvdev(callback),
+      pressure_min_(info.GetAbsMinimum(ABS_MT_PRESSURE)),
       pressure_max_(info.GetAbsMaximum(ABS_MT_PRESSURE)),
       x_scale_(1.),
       y_scale_(1.),

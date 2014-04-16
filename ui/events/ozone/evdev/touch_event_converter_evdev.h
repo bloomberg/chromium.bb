@@ -28,7 +28,8 @@ class EVENTS_EXPORT TouchEventConverterEvdev
   };
   TouchEventConverterEvdev(int fd,
                            base::FilePath path,
-                           const EventDeviceInfo& info);
+                           const EventDeviceInfo& info,
+                           const EventDispatchCallback& dispatch);
   virtual ~TouchEventConverterEvdev();
 
   // Start & stop watching for events.

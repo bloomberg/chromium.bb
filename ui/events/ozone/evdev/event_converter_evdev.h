@@ -15,15 +15,14 @@ namespace ui {
 class Event;
 class EventModifiersEvdev;
 
+typedef base::Callback<void(Event*)> EventDispatchCallback;
+
 // Base class for device-specific evdev event conversion.
 class EVENTS_EXPORT EventConverterEvdev {
  public:
   EventConverterEvdev();
+  explicit EventConverterEvdev(const EventDispatchCallback& callback);
   virtual ~EventConverterEvdev();
-
-  void SetDispatchCallback(base::Callback<void(void*)> callback) {
-    dispatch_callback_ = callback;
-  }
 
   // Start converting events.
   virtual void Start() = 0;
@@ -37,7 +36,7 @@ class EVENTS_EXPORT EventConverterEvdev {
   virtual void DispatchEventToCallback(ui::Event* event);
 
  private:
-  base::Callback<void(void*)> dispatch_callback_;
+  EventDispatchCallback dispatch_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(EventConverterEvdev);
 };
