@@ -8,22 +8,22 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/app_list/app_list.h"
 #include "chrome/browser/ui/app_list/app_list_factory.h"
-#include "chrome/browser/ui/app_list/keep_alive_service.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/gfx/native_widget_types.h"
-
-class Profile;
 
 namespace app_list {
 class AppListModel;
 }
+
+class AppListShowerUnitTest;
+class Profile;
+class ScopedKeepAlive;
 
 // Creates and shows an AppList as needed for non-Ash desktops. It is owned
 // by AppListService.
 class AppListShower {
  public:
   AppListShower(scoped_ptr<AppListFactory> factory,
-                scoped_ptr<KeepAliveService> keep_alive,
                 AppListService* service);
   ~AppListShower();
 
@@ -47,8 +47,12 @@ class AppListShower {
   bool HasView() const;
 
  private:
+  friend class ::AppListShowerUnitTest;
+
+  void ResetKeepAlive();
+
   scoped_ptr<AppListFactory> factory_;
-  scoped_ptr<KeepAliveService> keep_alive_service_;
+  scoped_ptr<ScopedKeepAlive> keep_alive_;
   scoped_ptr<AppList> app_list_;
   AppListService* service_;  // Weak ptr, owns this.
   Profile* profile_;

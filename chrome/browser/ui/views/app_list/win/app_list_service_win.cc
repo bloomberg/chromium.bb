@@ -34,7 +34,7 @@
 #include "chrome/browser/ui/app_list/app_list_service_impl.h"
 #include "chrome/browser/ui/app_list/app_list_shower.h"
 #include "chrome/browser/ui/app_list/app_list_view_delegate.h"
-#include "chrome/browser/ui/app_list/keep_alive_service_impl.h"
+#include "chrome/browser/ui/app_list/scoped_keep_alive.h"
 #include "chrome/browser/ui/views/app_list/win/activation_tracker_win.h"
 #include "chrome/browser/ui/views/app_list/win/app_list_controller_delegate_win.h"
 #include "chrome/browser/ui/views/app_list/win/app_list_win.h"
@@ -332,7 +332,6 @@ AppListServiceWin::AppListServiceWin()
     : enable_app_list_on_next_init_(false),
       shower_(new AppListShower(
           scoped_ptr<AppListFactory>(new AppListFactoryWin(this)),
-          scoped_ptr<KeepAliveService>(new KeepAliveServiceImpl),
           this)),
       controller_delegate_(new AppListControllerDelegateWin(this)),
       weak_factory_(this) {
@@ -362,7 +361,7 @@ void AppListServiceWin::ShowForProfile(Profile* requested_profile) {
   if (requested_profile->IsManaged())
     return;
 
-  ScopedKeepAlive show_app_list_keepalive;
+  ScopedKeepAlive keep_alive;
 
   content::BrowserThread::PostBlockingPoolTask(
       FROM_HERE, base::Bind(SetDidRunForNDayActiveStats));

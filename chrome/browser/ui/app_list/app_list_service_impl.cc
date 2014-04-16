@@ -18,8 +18,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/app_list/keep_alive_service.h"
-#include "chrome/browser/ui/app_list/keep_alive_service_impl.h"
 #include "chrome/browser/ui/app_list/profile_loader.h"
 #include "chrome/browser/ui/app_list/profile_store.h"
 #include "chrome/common/chrome_constants.h"
@@ -228,28 +226,23 @@ void AppListServiceImpl::SendAppListStats() {
 }
 
 AppListServiceImpl::AppListServiceImpl()
-    : profile_store_(new ProfileStoreImpl(
-          g_browser_process->profile_manager())),
+    : profile_store_(
+          new ProfileStoreImpl(g_browser_process->profile_manager())),
       weak_factory_(this),
       command_line_(*CommandLine::ForCurrentProcess()),
       local_state_(g_browser_process->local_state()),
-      profile_loader_(new ProfileLoader(
-          profile_store_.get(),
-          scoped_ptr<KeepAliveService>(new KeepAliveServiceImpl))) {
+      profile_loader_(new ProfileLoader(profile_store_.get())) {
   profile_store_->AddProfileObserver(this);
 }
 
-AppListServiceImpl::AppListServiceImpl(
-    const CommandLine& command_line,
-    PrefService* local_state,
-    scoped_ptr<ProfileStore> profile_store,
-    scoped_ptr<KeepAliveService> keep_alive_service)
+AppListServiceImpl::AppListServiceImpl(const CommandLine& command_line,
+                                       PrefService* local_state,
+                                       scoped_ptr<ProfileStore> profile_store)
     : profile_store_(profile_store.Pass()),
       weak_factory_(this),
       command_line_(command_line),
       local_state_(local_state),
-      profile_loader_(new ProfileLoader(
-          profile_store_.get(), keep_alive_service.Pass())) {
+      profile_loader_(new ProfileLoader(profile_store_.get())) {
   profile_store_->AddProfileObserver(this);
 }
 

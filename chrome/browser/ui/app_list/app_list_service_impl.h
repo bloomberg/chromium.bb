@@ -15,7 +15,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
-#include "chrome/browser/ui/app_list/keep_alive_service.h"
 #include "chrome/browser/ui/app_list/profile_loader.h"
 
 class ProfileStore;
@@ -33,8 +32,7 @@ class AppListServiceImpl : public AppListService,
   // Constructor used for testing.
   AppListServiceImpl(const base::CommandLine& command_line,
                      PrefService* local_state,
-                     scoped_ptr<ProfileStore> profile_store,
-                     scoped_ptr<KeepAliveService> keep_alive_service);
+                     scoped_ptr<ProfileStore> profile_store);
 
   void RecordAppListLaunch();
   static void RecordAppListAppLaunch();

@@ -13,7 +13,6 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/app_list_service_impl.h"
-#include "chrome/browser/ui/app_list/test/fake_keep_alive_service.h"
 #include "chrome/browser/ui/app_list/test/fake_profile.h"
 #include "chrome/browser/ui/app_list/test/fake_profile_store.h"
 #include "chrome/common/chrome_constants.h"
@@ -25,14 +24,9 @@ class TestingAppListServiceImpl : public AppListServiceImpl {
  public:
   TestingAppListServiceImpl(const CommandLine& command_line,
                             PrefService* local_state,
-                            scoped_ptr<ProfileStore> profile_store,
-                            scoped_ptr<KeepAliveService> keep_alive_service)
-      : AppListServiceImpl(command_line,
-                           local_state,
-                           profile_store.Pass(),
-                           keep_alive_service.Pass()),
-        showing_for_profile_(NULL) {
-  }
+                            scoped_ptr<ProfileStore> profile_store)
+      : AppListServiceImpl(command_line, local_state, profile_store.Pass()),
+        showing_for_profile_(NULL) {}
 
   Profile* showing_for_profile() const {
     return showing_for_profile_;
@@ -100,13 +94,11 @@ class AppListServiceUnitTest : public testing::Test {
     factory.set_user_prefs(make_scoped_refptr(new TestingPrefStore));
     local_state_ = factory.Create(pref_registry).Pass();
 
-    keep_alive_service_ = new FakeKeepAliveService;
     profile_store_ = new FakeProfileStore(user_data_dir_);
     service_.reset(new TestingAppListServiceImpl(
         command_line,
         local_state_.get(),
-        scoped_ptr<ProfileStore>(profile_store_),
-        scoped_ptr<KeepAliveService>(keep_alive_service_)));
+        scoped_ptr<ProfileStore>(profile_store_)));
   }
 
   void EnableAppList() {
@@ -117,7 +109,6 @@ class AppListServiceUnitTest : public testing::Test {
   base::FilePath user_data_dir_;
   scoped_ptr<PrefService> local_state_;
   FakeProfileStore* profile_store_;
-  FakeKeepAliveService* keep_alive_service_;
   scoped_ptr<TestingAppListServiceImpl> service_;
   scoped_ptr<FakeProfile> profile1_;
   scoped_ptr<FakeProfile> profile2_;

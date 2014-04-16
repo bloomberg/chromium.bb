@@ -10,14 +10,15 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/app_list/keep_alive_service.h"
 #include "chrome/browser/ui/app_list/profile_store.h"
 
 namespace base {
 class FilePath;
 }
 
+class ProfileLoaderUnittest;
 class ProfileManager;
+class ScopedKeepAlive;
 
 // This class loads profiles asynchronously and calls the provided callback once
 // the profile is ready. Only the callback for the most recent load request is
@@ -28,8 +29,7 @@ class ProfileManager;
 // TODO(koz): Merge this into AppListServiceImpl.
 class ProfileLoader {
  public:
-  explicit ProfileLoader(ProfileStore* profile_store,
-                         scoped_ptr<KeepAliveService> keep_alive_service);
+  explicit ProfileLoader(ProfileStore* profile_store);
   ~ProfileLoader();
 
   bool IsAnyProfileLoading() const;
@@ -39,6 +39,8 @@ class ProfileLoader {
       base::Callback<void(Profile*)> callback);
 
  private:
+  friend class ::ProfileLoaderUnittest;
+
   void OnProfileLoaded(int profile_load_sequence_id,
                        base::Callback<void(Profile*)> callback,
                        Profile* profile);
@@ -47,7 +49,7 @@ class ProfileLoader {
   void DecrementPendingProfileLoads();
 
   ProfileStore* profile_store_;
-  scoped_ptr<KeepAliveService> keep_alive_service_;
+  scoped_ptr<ScopedKeepAlive> keep_alive_;
   int profile_load_sequence_id_;
   int pending_profile_loads_;
 

@@ -9,14 +9,13 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/app_list/scoped_keep_alive.h"
 
-ProfileLoader::ProfileLoader(ProfileStore* profile_store,
-                             scoped_ptr<KeepAliveService> keep_alive_service)
-  : profile_store_(profile_store),
-    keep_alive_service_(keep_alive_service.Pass()),
-    profile_load_sequence_id_(0),
-    pending_profile_loads_(0),
-    weak_factory_(this) {
+ProfileLoader::ProfileLoader(ProfileStore* profile_store)
+    : profile_store_(profile_store),
+      profile_load_sequence_id_(0),
+      pending_profile_loads_(0),
+      weak_factory_(this) {
 }
 
 ProfileLoader::~ProfileLoader() {
@@ -61,11 +60,11 @@ void ProfileLoader::OnProfileLoaded(int profile_load_sequence_id,
 void ProfileLoader::IncrementPendingProfileLoads() {
   pending_profile_loads_++;
   if (pending_profile_loads_ == 1)
-    keep_alive_service_->EnsureKeepAlive();
+    keep_alive_.reset(new ScopedKeepAlive);
 }
 
 void ProfileLoader::DecrementPendingProfileLoads() {
   pending_profile_loads_--;
   if (pending_profile_loads_ == 0)
-    keep_alive_service_->FreeKeepAlive();
+    keep_alive_.reset();
 }

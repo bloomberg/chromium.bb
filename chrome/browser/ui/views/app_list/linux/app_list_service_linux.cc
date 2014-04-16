@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/app_list/app_list_factory.h"
 #include "chrome/browser/ui/app_list/app_list_shower.h"
 #include "chrome/browser/ui/app_list/app_list_view_delegate.h"
-#include "chrome/browser/ui/app_list/keep_alive_service_impl.h"
+#include "chrome/browser/ui/app_list/scoped_keep_alive.h"
 #include "chrome/browser/ui/views/app_list/linux/app_list_controller_delegate_linux.h"
 #include "chrome/browser/ui/views/app_list/linux/app_list_linux.h"
 #include "content/public/browser/browser_thread.h"
@@ -98,7 +98,7 @@ void AppListServiceLinux::ShowForProfile(Profile* requested_profile) {
   if (requested_profile->IsManaged())
     return;
 
-  ScopedKeepAlive show_app_list_keepalive;
+  ScopedKeepAlive keep_alive;
 
   InvalidatePendingProfileLoads();
   SetProfilePath(requested_profile->GetPath());
@@ -134,7 +134,6 @@ void AppListServiceLinux::CreateShortcut() {
 AppListServiceLinux::AppListServiceLinux()
     : shower_(new AppListShower(
           scoped_ptr<AppListFactory>(new AppListFactoryLinux(this)),
-          scoped_ptr<KeepAliveService>(new KeepAliveServiceImpl),
           this)),
       controller_delegate_(new AppListControllerDelegateLinux(this)) {
 }

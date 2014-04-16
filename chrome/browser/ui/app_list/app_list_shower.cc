@@ -5,12 +5,11 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/ui/app_list/app_list_shower.h"
+#include "chrome/browser/ui/app_list/scoped_keep_alive.h"
 
 AppListShower::AppListShower(scoped_ptr<AppListFactory> factory,
-                             scoped_ptr<KeepAliveService> keep_alive,
                              AppListService* service)
     : factory_(factory.Pass()),
-      keep_alive_service_(keep_alive.Pass()),
       service_(service),
       profile_(NULL),
       can_close_app_list_(true) {
@@ -34,7 +33,7 @@ void AppListShower::ShowForProfile(Profile* requested_profile) {
     app_list_->SetProfile(requested_profile);
   }
 
-  keep_alive_service_->EnsureKeepAlive();
+  keep_alive_.reset(new ScopedKeepAlive);
   if (!IsAppListVisible())
     app_list_->MoveNearCursor();
   app_list_->Show();
@@ -57,7 +56,7 @@ void AppListShower::CreateViewForProfile(Profile* requested_profile) {
 void AppListShower::DismissAppList() {
   if (app_list_ && can_close_app_list_) {
     app_list_->Hide();
-    keep_alive_service_->FreeKeepAlive();
+    keep_alive_.reset();
   }
 }
 
@@ -76,12 +75,12 @@ void AppListShower::CloseAppList() {
   // CloseAllSecondaryWidgets() won't attempt to delete the AppList's Widget
   // again.
   if (base::MessageLoop::current()) {  // NULL in tests.
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-        base::Bind(&KeepAliveService::FreeKeepAlive,
-                   base::Unretained(keep_alive_service_.get())));
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&AppListShower::ResetKeepAlive, base::Unretained(this)));
     return;
   }
-  keep_alive_service_->FreeKeepAlive();
+  keep_alive_.reset();
 }
 
 bool AppListShower::IsAppListVisible() const {
@@ -96,4 +95,8 @@ void AppListShower::WarmupForProfile(Profile* profile) {
 
 bool AppListShower::HasView() const {
   return !!app_list_;
+}
+
+void AppListShower::ResetKeepAlive() {
+  keep_alive_.reset();
 }
