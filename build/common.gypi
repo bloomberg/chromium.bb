@@ -1316,8 +1316,8 @@
     # Contains data about the attached devices for gyp_managed_install.
     'build_device_config_path': '<(PRODUCT_DIR)/build_devices.cfg',
 
-    'sas_dll_exists': '<!(python <(DEPTH)/build/dir_exists.py "<(sas_dll_path)")',
-    'wix_exists': '<!(python <(DEPTH)/build/dir_exists.py "<(wix_path)")',
+    'sas_dll_exists': '<!pymod_do_main(dir_exists "<(sas_dll_path)")',
+    'wix_exists': '<!pymod_do_main(dir_exists "<(wix_path)")',
 
     'windows_sdk_default_path': '<(DEPTH)/third_party/platformsdk_win8/files',
     'directx_sdk_default_path': '<(DEPTH)/third_party/directxsdk/files',
@@ -1419,12 +1419,12 @@
       }, {
         'gcc_version%': 0,
       }],
-      ['OS=="win" and "<!(python <(DEPTH)/build/dir_exists.py <(windows_sdk_default_path))"=="True"', {
+      ['OS=="win" and "<!pymod_do_main(dir_exists <(windows_sdk_default_path))"=="True"', {
         'windows_sdk_path%': '<(windows_sdk_default_path)',
       }, {
         'windows_sdk_path%': 'C:/Program Files (x86)/Windows Kits/8.0',
       }],
-      ['OS=="win" and "<!(python <(DEPTH)/build/dir_exists.py <(directx_sdk_default_path))"=="True"', {
+      ['OS=="win" and "<!pymod_do_main(dir_exists <(directx_sdk_default_path))"=="True"', {
         'directx_sdk_path%': '<(directx_sdk_default_path)',
       }, {
         'directx_sdk_path%': '$(DXSDK_DIR)',
