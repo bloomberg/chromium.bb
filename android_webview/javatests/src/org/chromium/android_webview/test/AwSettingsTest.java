@@ -6,12 +6,14 @@ package org.chromium.android_webview.test;
 
 import android.content.Context;
 import android.graphics.Point;
+import android.net.http.SslError;
 import android.os.Build;
 import android.os.SystemClock;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
+import android.webkit.ValueCallback;
 import android.webkit.WebSettings;
 
 import org.apache.http.Header;
@@ -2632,6 +2634,61 @@ public class AwSettingsTest extends AwTestBase {
                 webServer.getTestWebServer().shutdown();
         }
     }
+
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
+    public void testAllowMixedMode() throws Throwable {
+        final TestAwContentsClient contentClient = new TestAwContentsClient() {
+            @Override
+            public void onReceivedSslError(ValueCallback<Boolean> callback, SslError error) {
+                callback.onReceiveValue(true);
+            }
+        };
+        final AwTestContainerView testContainerView =
+                createAwTestContainerViewOnMainSync(contentClient);
+        final AwContents awContents = testContainerView.getAwContents();
+        final AwSettings awSettings = getAwSettingsOnUiThread(awContents);
+
+        awSettings.setJavaScriptEnabled(true);
+
+        TestWebServer httpsServer = new TestWebServer(true);
+        TestWebServer httpServer = new TestWebServer(false);
+
+        final String JS_URL = "/insecure.js";
+        final String IMG_URL = "/insecure.png";
+        final String SECURE_URL = "/secure.html";
+        httpServer.setResponse(JS_URL, "window.loaded_js = 42;", null);
+        httpServer.setResponseBase64(IMG_URL, CommonResources.FAVICON_DATA_BASE64, null);
+
+        final String JS_HTML = "<script src=\"" + httpServer.getResponseUrl(JS_URL) +
+                "\"></script>";
+        final String IMG_HTML = "<img src=\"" + httpServer.getResponseUrl(IMG_URL) + "\" />";
+        final String SECURE_HTML = "<body>" + IMG_HTML + " " + JS_HTML + "</body>";
+
+        String secureUrl = httpsServer.setResponse(SECURE_URL, SECURE_HTML, null);
+
+        awSettings.setMixedContentMode(AwSettings.MIXED_CONTENT_NEVER_ALLOW);
+        loadUrlSync(awContents, contentClient.getOnPageFinishedHelper(), secureUrl);
+        assertEquals(1, httpsServer.getRequestCount(SECURE_URL));
+        assertEquals(0, httpServer.getRequestCount(JS_URL));
+        assertEquals(0, httpServer.getRequestCount(IMG_URL));
+
+        awSettings.setMixedContentMode(AwSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+        loadUrlSync(awContents, contentClient.getOnPageFinishedHelper(), secureUrl);
+        assertEquals(2, httpsServer.getRequestCount(SECURE_URL));
+        assertEquals(1, httpServer.getRequestCount(JS_URL));
+        assertEquals(1, httpServer.getRequestCount(IMG_URL));
+
+        awSettings.setMixedContentMode(AwSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
+        loadUrlSync(awContents, contentClient.getOnPageFinishedHelper(), secureUrl);
+        assertEquals(3, httpsServer.getRequestCount(SECURE_URL));
+        assertEquals(1, httpServer.getRequestCount(JS_URL));
+        assertEquals(2, httpServer.getRequestCount(IMG_URL));
+
+        httpServer.shutdown();
+        httpsServer.shutdown();
+    }
+
 
     static class ViewPair {
         private final AwTestContainerView mContainer0;

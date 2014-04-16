@@ -14,6 +14,8 @@ import android.util.Log;
 import android.webkit.WebSettings;
 import android.webkit.WebSettings.PluginState;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
@@ -35,6 +37,14 @@ public class AwSettings {
         NARROW_COLUMNS,
         TEXT_AUTOSIZING,
     }
+
+    // These constants must be kept in sync with the Android framework, defined in WebSettimgs.
+    @VisibleForTesting
+    public static final int MIXED_CONTENT_ALWAYS_ALLOW = 0;
+    @VisibleForTesting
+    public static final int MIXED_CONTENT_NEVER_ALLOW = 1;
+    @VisibleForTesting
+    public static final int MIXED_CONTENT_COMPATIBILITY_MODE = 2;
 
     private static final String TAG = "AwSettings";
 
@@ -83,6 +93,7 @@ public class AwSettings {
     private float mInitialPageScalePercent = 0;
     private boolean mSpatialNavigationEnabled;  // Default depends on device features.
     private boolean mEnableSupportedHardwareAcceleratedFeatures = false;
+    private int mMixedContentMode = MIXED_CONTENT_NEVER_ALLOW;
 
     private final boolean mSupportLegacyQuirks;
 
@@ -1428,6 +1439,34 @@ public class AwSettings {
         synchronized (mAwSettingsLock) {
             return mDisplayZoomControls;
         }
+    }
+
+    public void setMixedContentMode(int mode) {
+        synchronized (mAwSettingsLock) {
+            if (mMixedContentMode != mode) {
+                mMixedContentMode = mode;
+                mEventHandler.updateWebkitPreferencesLocked();
+            }
+        }
+    }
+
+    public int getMixedContentMode() {
+        synchronized (mAwSettingsLock) {
+            return mMixedContentMode;
+        }
+    }
+
+    @CalledByNative
+    private boolean getAllowRunningInsecureContentLocked() {
+        assert Thread.holdsLock(mAwSettingsLock);
+        return mMixedContentMode == MIXED_CONTENT_ALWAYS_ALLOW;
+    }
+
+    @CalledByNative
+    private boolean getAllowDisplayingInsecureContentLocked() {
+        assert Thread.holdsLock(mAwSettingsLock);
+        return mMixedContentMode == MIXED_CONTENT_ALWAYS_ALLOW ||
+                mMixedContentMode == MIXED_CONTENT_COMPATIBILITY_MODE;
     }
 
     @CalledByNative

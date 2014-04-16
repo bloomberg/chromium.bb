@@ -68,6 +68,7 @@ public class TestWebServer {
     public static final String SHUTDOWN_PREFIX = "/shutdown";
 
     private static TestWebServer sInstance;
+    private static TestWebServer sSecureInstance;
     private static Hashtable<Integer, String> sReasons;
 
     private final ServerThread mServerThread;
@@ -103,24 +104,21 @@ public class TestWebServer {
      * @throws Exception
      */
     public TestWebServer(boolean ssl) throws Exception {
-        if (sInstance != null) {
-            // attempt to start a new instance while one is still running
-            // shut down the old instance first
-            sInstance.shutdown();
-        }
-        setStaticInstance(this);
         mSsl = ssl;
         if (mSsl) {
+            if (sSecureInstance != null) {
+                sSecureInstance.shutdown();
+            }
             mServerUri = "https://localhost:" + SSL_SERVER_PORT;
         } else {
+            if (sInstance != null) {
+                sInstance.shutdown();
+            }
             mServerUri = "http://localhost:" + SERVER_PORT;
         }
+        setInstance(this, mSsl);
         mServerThread = new ServerThread(this, mSsl);
         mServerThread.start();
-    }
-
-    private static void setStaticInstance(TestWebServer instance) {
-        sInstance = instance;
     }
 
     /**
@@ -155,7 +153,15 @@ public class TestWebServer {
             throw new IllegalStateException(e);
         }
 
-        setStaticInstance(null);
+        setInstance(null, mSsl);
+    }
+
+    private static void setInstance(TestWebServer instance, boolean isSsl) {
+        if (isSsl) {
+            sSecureInstance = instance;
+        } else {
+            sInstance = instance;
+        }
     }
 
     private static final int RESPONSE_STATUS_NORMAL = 0;

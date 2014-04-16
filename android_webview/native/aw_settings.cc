@@ -336,6 +336,11 @@ void AwSettings::PopulateWebPreferencesLocked(
     // Using 100M instead of max int to avoid overflows.
     web_prefs->minimum_accelerated_2d_canvas_size = 100 * 1000 * 1000;
   }
+
+  web_prefs->allow_displaying_insecure_content =
+      Java_AwSettings_getAllowDisplayingInsecureContentLocked(env, obj);
+  web_prefs->allow_running_insecure_content =
+      Java_AwSettings_getAllowRunningInsecureContentLocked(env, obj);
 }
 
 static jlong Init(JNIEnv* env,
