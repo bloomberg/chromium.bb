@@ -6265,3 +6265,11 @@
   ...
   fun:*content*ScreenshotData*EncodeOnWorker*
 }
+{
+  bug_363819
+  Memcheck:Uninitialized
+  fun:strlen
+  fun:*
+  fun:_ZN3net12_GLOBAL__N_114TestHttpClient4ReadEPSs
+  fun:_ZN3net*HttpServerTest*
+}
