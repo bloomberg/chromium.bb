@@ -41,12 +41,9 @@ void FilteredGestureProvider::OnTouchEventAck(bool event_consumed) {
   gesture_filter_.OnTouchEventAck(event_consumed);
 }
 
-void FilteredGestureProvider::ResetGestureDetectors() {
-  gesture_provider_.ResetGestureDetectors();
-}
-
-void FilteredGestureProvider::SetMultiTouchSupportEnabled(bool enabled) {
-  gesture_provider_.SetMultiTouchSupportEnabled(enabled);
+void FilteredGestureProvider::SetMultiTouchZoomSupportEnabled(
+    bool enabled) {
+  gesture_provider_.SetMultiTouchZoomSupportEnabled(enabled);
 }
 
 void FilteredGestureProvider::SetDoubleTapSupportForPlatformEnabled(

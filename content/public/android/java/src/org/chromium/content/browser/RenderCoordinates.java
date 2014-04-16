@@ -14,12 +14,6 @@ package org.chromium.content.browser;
  */
 public class RenderCoordinates {
 
-    // Used to accomodate finite precision when comparing scaled viewport and
-    // content widths in {@link #hasMobileViewport()}.  While this value may
-    // seem large, width=device-width on an N7 V1 saw errors of ~0.065 between
-    // computed window and content widths.
-    private static final float MOBILE_VIEWPORT_WIDTH_EPSILON = 0.15f;
-
     // Scroll offset from the native in CSS.
     private float mScrollXCss;
     private float mScrollYCss;
@@ -271,19 +265,6 @@ public class RenderCoordinates {
      * @return Current device scale factor (maps DIP pixels to physical pixels).
      */
     public float getDeviceScaleFactor() { return mDeviceScaleFactor; }
-
-    /**
-     * @return True if the page doesn't allow zoom-in/zoom-out.
-     */
-    public boolean hasFixedPageScale() { return mMinPageScaleFactor == mMaxPageScaleFactor; }
-
-    /**
-     * @return True if the page has a width=device-width or narrower viewport.
-     */
-    public boolean hasMobileViewport() {
-        final float windowWidthDip = mPageScaleFactor * mLastFrameViewportWidthCss;
-        return mContentWidthCss <= (windowWidthDip + MOBILE_VIEWPORT_WIDTH_EPSILON);
-    }
 
     /**
      * @return Maximum possible horizontal scroll in physical pixels.

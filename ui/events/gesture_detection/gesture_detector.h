@@ -93,10 +93,10 @@ class GestureDetector {
 
   bool OnTouchEvent(const MotionEvent& ev);
 
-  void set_doubletap_listener(DoubleTapListener* double_tap_listener) {
-    DCHECK(!is_double_tapping_ || double_tap_listener_);
-    double_tap_listener_ = double_tap_listener;
-  }
+  // Setting a valid |double_tap_listener| will enable double-tap detection,
+  // wherein calls to |OnSimpleTapConfirmed| are delayed by the tap timeout.
+  // Note: The listener must never be changed while |is_double_tapping| is true.
+  void SetDoubleTapListener(DoubleTapListener* double_tap_listener);
 
   bool has_doubletap_listener() const { return double_tap_listener_ != NULL; }
 

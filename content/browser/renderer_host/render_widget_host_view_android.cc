@@ -40,6 +40,7 @@
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/image_transport_factory_android.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target_android.h"
+#include "content/browser/renderer_host/input/web_input_event_util.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -58,6 +59,8 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/base/android/window_android.h"
 #include "ui/base/android/window_android_compositor.h"
+#include "ui/events/gesture_detection/gesture_config_helper.h"
+#include "ui/events/gesture_detection/motion_event.h"
 #include "ui/gfx/android/device_display_info.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/display.h"
@@ -69,6 +72,12 @@ namespace content {
 namespace {
 
 const int kUndefinedOutputSurfaceId = -1;
+
+// Used to accomodate finite precision when comparing scaled viewport and
+// content widths. While this value may seem large, width=device-width on an N7
+// V1 saw errors of ~0.065 between computed window and content widths.
+const float kMobileViewportWidthEpsilon = 0.15f;
+
 static const char kAsyncReadBackString[] = "Compositing.CopyFromSurfaceTime";
 
 // Sends an acknowledgement to the renderer of a processed IME event.
@@ -133,6 +142,25 @@ OverscrollGlow::DisplayParameters CreateOverscrollDisplayParameters(
   return params;
 }
 
+ui::GestureProvider::Config CreateGestureProviderConfig() {
+  ui::GestureProvider::Config config = ui::DefaultGestureProviderConfig();
+  config.disable_click_delay =
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableClickDelay);
+  return config;
+}
+
+bool HasFixedPageScale(const cc::CompositorFrameMetadata& frame_metadata) {
+  return frame_metadata.min_page_scale_factor ==
+         frame_metadata.max_page_scale_factor;
+}
+
+bool HasMobileViewport(const cc::CompositorFrameMetadata& frame_metadata) {
+  float window_width_dip =
+      frame_metadata.page_scale_factor * frame_metadata.viewport_size.width();
+  float content_width_css = frame_metadata.root_layer_size.width();
+  return content_width_css <= window_width_dip + kMobileViewportWidthEpsilon;
+}
+
 }  // anonymous namespace
 
 RenderWidgetHostViewAndroid::LastFrameInfo::LastFrameInfo(
@@ -156,6 +184,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       overscroll_effect_enabled_(!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableOverscrollEdgeEffect)),
       overscroll_effect_(OverscrollGlow::Create(overscroll_effect_enabled_)),
+      gesture_provider_(CreateGestureProviderConfig(), this),
       flush_input_requested_(false),
       accelerated_surface_route_id_(0),
       using_synchronous_compositor_(SynchronousCompositorImpl::FromID(
@@ -539,6 +568,45 @@ void RenderWidgetHostViewAndroid::OnSmartClipDataExtracted(
     content_view_core_->OnSmartClipDataExtracted(result);
 }
 
+bool RenderWidgetHostViewAndroid::OnTouchEvent(
+    const ui::MotionEvent& event) {
+  if (!host_)
+    return false;
+
+  if (!gesture_provider_.OnTouchEvent(event))
+    return false;
+
+  // Short-circuit touch forwarding if no touch handlers exist.
+  if (!host_->ShouldForwardTouchEvent()) {
+    const bool event_consumed = false;
+    gesture_provider_.OnTouchEventAck(event_consumed);
+    return true;
+  }
+
+  SendTouchEvent(CreateWebTouchEventFromMotionEvent(event));
+  return true;
+}
+
+void RenderWidgetHostViewAndroid::ResetGestureDetection() {
+  const ui::MotionEvent* current_down_event =
+      gesture_provider_.GetCurrentDownEvent();
+  if (!current_down_event)
+    return;
+
+  scoped_ptr<ui::MotionEvent> cancel_event = current_down_event->Cancel();
+  DCHECK(cancel_event);
+  OnTouchEvent(*cancel_event);
+}
+
+void RenderWidgetHostViewAndroid::SetDoubleTapSupportEnabled(bool enabled) {
+  gesture_provider_.SetDoubleTapSupportForPlatformEnabled(enabled);
+}
+
+void RenderWidgetHostViewAndroid::SetMultiTouchZoomSupportEnabled(
+    bool enabled) {
+  gesture_provider_.SetMultiTouchZoomSupportEnabled(enabled);
+}
+
 void RenderWidgetHostViewAndroid::ImeCancelComposition() {
   ime_adapter_android_.CancelComposition();
 }
@@ -835,7 +903,7 @@ void RenderWidgetHostViewAndroid::InternalSwapCompositorFrame(
 
   // Always let ContentViewCore know about the new frame first, so it can decide
   // to schedule a Draw immediately when it sees the texture layer invalidation.
-  UpdateContentViewCoreFrameMetadata(frame->metadata);
+  OnFrameMetadataUpdated(frame->metadata);
 
   if (layer_ && layer_->layer_tree_host()) {
     for (size_t i = 0; i < frame->metadata.latency_info.size(); i++) {
@@ -887,7 +955,7 @@ void RenderWidgetHostViewAndroid::SynchronousFrameMetadata(
     const cc::CompositorFrameMetadata& frame_metadata) {
   // This is a subset of OnSwapCompositorFrame() used in the synchronous
   // compositor flow.
-  UpdateContentViewCoreFrameMetadata(frame_metadata);
+  OnFrameMetadataUpdated(frame_metadata);
   ComputeContentsSize(frame_metadata);
 
   // DevTools ScreenCast support for Android WebView.
@@ -934,8 +1002,18 @@ void RenderWidgetHostViewAndroid::SynchronousCopyContents(
   callback.Run(true, bitmap);
 }
 
-void RenderWidgetHostViewAndroid::UpdateContentViewCoreFrameMetadata(
+void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
     const cc::CompositorFrameMetadata& frame_metadata) {
+
+  // Disable double tap zoom for pages that have a width=device-width or
+  // narrower viewport (indicating that this is a mobile-optimized or responsive
+  // web design, so text will be legible without zooming). Also disable
+  // double tap and pinch for pages that prevent zooming in or out.
+  bool has_mobile_viewport = HasMobileViewport(frame_metadata);
+  bool has_fixed_page_scale = HasFixedPageScale(frame_metadata);
+  gesture_provider_.SetDoubleTapSupportForPageEnabled(
+      !has_fixed_page_scale && !has_mobile_viewport);
+
   if (!content_view_core_)
     return;
   // All offsets and sizes are in CSS pixels.
@@ -1044,8 +1122,8 @@ gfx::GLSurfaceHandle RenderWidgetHostViewAndroid::GetCompositingSurface() {
 
 void RenderWidgetHostViewAndroid::ProcessAckedTouchEvent(
     const TouchEventWithLatencyInfo& touch, InputEventAckState ack_result) {
-  if (content_view_core_)
-    content_view_core_->ConfirmTouchEvent(ack_result);
+  const bool event_consumed = ack_result == INPUT_EVENT_ACK_STATE_CONSUMED;
+  gesture_provider_.OnTouchEventAck(event_consumed);
 }
 
 void RenderWidgetHostViewAndroid::SetHasHorizontalScrollbar(
@@ -1275,6 +1353,11 @@ void RenderWidgetHostViewAndroid::RunAckCallbacks() {
     ack_callbacks_.front().Run();
     ack_callbacks_.pop();
   }
+}
+
+void RenderWidgetHostViewAndroid::OnGestureEvent(
+    const ui::GestureEventData& gesture) {
+  SendGestureEvent(CreateWebGestureEventFromGestureEventData(gesture));
 }
 
 void RenderWidgetHostViewAndroid::OnCompositingDidCommit() {

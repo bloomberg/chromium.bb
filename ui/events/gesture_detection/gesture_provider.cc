@@ -192,12 +192,12 @@ class GestureProvider::ScaleGestureListenerImpl
     scale_gesture_detector_.SetQuickScaleEnabled(enabled);
   }
 
-  void SetMultiTouchEnabled(bool value) {
+  void SetMultiTouchEnabled(bool enabled) {
     // Note that returning false from OnScaleBegin / OnScale makes the
     // gesture detector not to emit further scaling notifications
     // related to this gesture. Thus, if detector events are enabled in
     // the middle of the gesture, we don't need to do anything.
-    ignore_multitouch_events_ = value;
+    ignore_multitouch_events_ = !enabled;
   }
 
   bool IsDoubleTapInProgress() const {
@@ -443,15 +443,8 @@ class GestureProvider::GestureListenerImpl
 
   void SetDoubleTapEnabled(bool enabled) {
     DCHECK(!IsDoubleTapInProgress());
-    if (enabled) {
-      gesture_detector_.set_doubletap_listener(this);
-    } else {
-      // TODO(jdduke): Send GESTURE_TAP if GESTURE_TAP_UNCONFIRMED already sent.
-      gesture_detector_.set_doubletap_listener(NULL);
-    }
+    gesture_detector_.SetDoubleTapListener(enabled ? this : NULL);
   }
-
-  bool IsClickDelayDisabled() const { return disable_click_delay_; }
 
   bool IsDoubleTapInProgress() const {
     return gesture_detector_.is_double_tapping();
@@ -526,24 +519,20 @@ bool GestureProvider::OnTouchEvent(const MotionEvent& event) {
   return true;
 }
 
-void GestureProvider::ResetGestureDetectors() {
-  if (!current_down_event_)
-    return;
-  scoped_ptr<MotionEvent> cancel_event = current_down_event_->Cancel();
-  gesture_listener_->OnTouchEvent(*cancel_event, false);
-  scale_gesture_listener_->OnTouchEvent(*cancel_event);
-}
-
-void GestureProvider::SetMultiTouchSupportEnabled(bool enabled) {
-  scale_gesture_listener_->SetMultiTouchEnabled(!enabled);
+void GestureProvider::SetMultiTouchZoomSupportEnabled(bool enabled) {
+  scale_gesture_listener_->SetMultiTouchEnabled(enabled);
 }
 
 void GestureProvider::SetDoubleTapSupportForPlatformEnabled(bool enabled) {
+  if (double_tap_support_for_platform_ == enabled)
+    return;
   double_tap_support_for_platform_ = enabled;
   UpdateDoubleTapDetectionSupport();
 }
 
 void GestureProvider::SetDoubleTapSupportForPageEnabled(bool enabled) {
+  if (double_tap_support_for_page_ == enabled)
+    return;
   double_tap_support_for_page_ = enabled;
   UpdateDoubleTapDetectionSupport();
 }
@@ -559,14 +548,6 @@ bool GestureProvider::IsPinchInProgress() const { return pinch_in_progress_; }
 bool GestureProvider::IsDoubleTapInProgress() const {
   return gesture_listener_->IsDoubleTapInProgress() ||
          scale_gesture_listener_->IsDoubleTapInProgress();
-}
-
-bool GestureProvider::IsDoubleTapSupported() const {
-  return double_tap_support_for_page_ && double_tap_support_for_platform_;
-}
-
-bool GestureProvider::IsClickDelayDisabled() const {
-  return gesture_listener_->IsClickDelayDisabled();
 }
 
 void GestureProvider::InitGestureDetectors(const Config& config) {
@@ -693,15 +674,6 @@ void GestureProvider::EndTouchScrollIfNecessary(const MotionEvent& event,
   touch_scroll_in_progress_ = false;
 }
 
-void GestureProvider::UpdateDoubleTapDetectionSupport() {
-  if (current_down_event_ || IsDoubleTapInProgress())
-    return;
-
-  const bool supports_double_tap = IsDoubleTapSupported();
-  gesture_listener_->SetDoubleTapEnabled(supports_double_tap);
-  scale_gesture_listener_->SetDoubleTapEnabled(supports_double_tap);
-}
-
 void GestureProvider::OnTouchEventHandlingBegin(const MotionEvent& event) {
   switch (event.GetAction()) {
     case MotionEvent::ACTION_DOWN:
@@ -748,6 +720,19 @@ void GestureProvider::OnTouchEventHandlingEnd(const MotionEvent& event) {
     case MotionEvent::ACTION_MOVE:
       break;
   }
+}
+
+void GestureProvider::UpdateDoubleTapDetectionSupport() {
+  // The GestureDetector requires that any provided DoubleTapListener remain
+  // attached to it for the duration of a touch sequence. Defer any potential
+  // null'ing of the listener until the sequence has ended.
+  if (current_down_event_)
+    return;
+
+  const bool double_tap_enabled = double_tap_support_for_page_ &&
+                                  double_tap_support_for_platform_;
+  gesture_listener_->SetDoubleTapEnabled(double_tap_enabled);
+  scale_gesture_listener_->SetDoubleTapEnabled(double_tap_enabled);
 }
 
 }  //  namespace ui

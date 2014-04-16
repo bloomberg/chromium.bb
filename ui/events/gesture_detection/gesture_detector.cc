@@ -347,6 +347,24 @@ bool GestureDetector::OnTouchEvent(const MotionEvent& ev) {
   return handled;
 }
 
+void GestureDetector::SetDoubleTapListener(
+    DoubleTapListener* double_tap_listener) {
+  if (double_tap_listener == double_tap_listener_)
+    return;
+
+  DCHECK(!is_double_tapping_);
+
+  // Null'ing the double-tap listener should flush an active tap timeout.
+  if (!double_tap_listener) {
+    if (timeout_handler_->HasTimeout(TAP)) {
+      timeout_handler_->StopTimeout(TAP);
+      OnTapTimeout();
+    }
+  }
+
+  double_tap_listener_ = double_tap_listener;
+}
+
 void GestureDetector::Init(const Config& config) {
   DCHECK(listener_);
 

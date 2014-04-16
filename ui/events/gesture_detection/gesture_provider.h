@@ -54,21 +54,15 @@ class GESTURE_DETECTION_EXPORT GestureProvider {
   // be handled.
   bool OnTouchEvent(const MotionEvent& event);
 
-  // Resets all gesture detectors; called on DidStartLoading().
-  void ResetGestureDetectors();
+  // Update whether multi-touch pinch zoom is supported by the platform.
+  void SetMultiTouchZoomSupportEnabled(bool enabled);
 
-  // Update whether multi-touch gestures are supported.
-  void SetMultiTouchSupportEnabled(bool enabled);
-
-  // Update whether double-tap gestures are supported. This allows
-  // double-tap gesture suppression independent of whether or not the page's
-  // viewport and scale would normally prevent double-tap.
-  // Note: This should not be called while a double-tap gesture is in progress.
+  // Update whether double-tap gestures are supported by the platform.
   void SetDoubleTapSupportForPlatformEnabled(bool enabled);
 
-  // Update whether double-tap gesture detection should be suppressed due to
-  // the viewport or scale of the current page. Suppressing double-tap gesture
-  // detection allows for rapid and responsive single-tap gestures.
+  // Update whether double-tap gesture detection should be suppressed, e.g.,
+  // if the page scale is fixed or the page has a mobile viewport. This disables
+  // the tap delay, allowing rapid and responsive single-tap gestures.
   void SetDoubleTapSupportForPageEnabled(bool enabled);
 
   // Whether a scroll gesture is in-progress.
@@ -81,13 +75,6 @@ class GESTURE_DETECTION_EXPORT GestureProvider {
   // Whether a double-tap gesture is in-progress (either double-tap or
   // double-tap drag zoom).
   bool IsDoubleTapInProgress() const;
-
-  // Whether double-tap gesture detection is supported.
-  bool IsDoubleTapSupported() const;
-
-  // Whether the tap gesture delay is explicitly disabled (independent of
-  // whether double-tap is supported), see |Config.disable_click_delay|.
-  bool IsClickDelayDisabled() const;
 
   // May be NULL if there is no currently active touch sequence.
   const ui::MotionEvent* current_down_event() const {

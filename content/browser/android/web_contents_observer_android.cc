@@ -133,11 +133,7 @@ void WebContentsObserverAndroid::DidNavigateMainFrame(
   // See http://crbug.com/251330 for why it's determined this way.
   bool in_page_navigation =
       details.type == NAVIGATION_TYPE_IN_PAGE || details.is_in_page;
-  // TODO(mkosiba): delete once downstream rolls.
-  Java_WebContentsObserverAndroid_didNavigateMainFrameV_JLS_JLS_Z(
-      env, obj.obj(), jstring_url.obj(), jstring_base_url.obj(),
-      details.is_navigation_to_different_page());
-  Java_WebContentsObserverAndroid_didNavigateMainFrameV_JLS_JLS_Z_Z(
+  Java_WebContentsObserverAndroid_didNavigateMainFrame(
       env, obj.obj(), jstring_url.obj(), jstring_base_url.obj(),
       details.is_navigation_to_different_page(), in_page_navigation);
 }

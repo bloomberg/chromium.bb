@@ -727,17 +727,20 @@ public class ContentViewCore
         mContainerView.setContentDescription(contentDescription);
         mWebContentsObserver = new WebContentsObserverAndroid(this) {
             @Override
-            public void didStartLoading(String url) {
+            public void didNavigateMainFrame(String url, String baseUrl,
+                    boolean isNavigationToDifferentPage, boolean isNavigationInPage) {
+                if (!isNavigationToDifferentPage) return;
                 hidePopupDialog();
                 resetScrollInProgress();
-                resetGestureDetectors();
+                resetGestureDetection();
             }
 
             @Override
             public void renderProcessGone(boolean wasOomProtected) {
                 hidePopupDialog();
                 resetScrollInProgress();
-                resetGestureDetectors();
+                // No need to reset gesture detection as the detector will have
+                // been destroyed in the RenderWidgetHostView.
             }
         };
     }
@@ -771,7 +774,6 @@ public class ContentViewCore
         mContainerView.setClickable(true);
 
         mRenderCoordinates.reset();
-        onRenderCoordinatesUpdated();
 
         initPopupZoomer(mContext);
         mImeAdapter = createImeAdapter(mContext);
@@ -1216,8 +1218,7 @@ public class ContentViewCore
     }
 
     public void setIgnoreRemainingTouchEvents() {
-        if (mNativeContentViewCore == 0) return;
-        nativeIgnoreRemainingTouchEvents(mNativeContentViewCore);
+        resetGestureDetection();
     }
 
     public boolean isScrollInProgress() {
@@ -1446,18 +1447,6 @@ public class ContentViewCore
         return mContentSettings;
     }
 
-    private void onRenderCoordinatesUpdated() {
-        if (mNativeContentViewCore == 0) return;
-
-        // We disable double tap zoom for pages that have a width=device-width
-        // or narrower viewport (indicating that this is a mobile-optimized or
-        // responsive web design, so text will be legible without zooming).
-        // We also disable it for pages that disallow the user from zooming in
-        // or out (even if they don't have a device-width or narrower viewport).
-        nativeSetDoubleTapSupportForPageEnabled(mNativeContentViewCore,
-                !mRenderCoordinates.hasMobileViewport() && !mRenderCoordinates.hasFixedPageScale());
-    }
-
     private void hidePopupDialog() {
         hideSelectPopup();
         hideHandles();
@@ -1475,9 +1464,9 @@ public class ContentViewCore
         return mActionMode != null;
     }
 
-    private void resetGestureDetectors() {
+    private void resetGestureDetection() {
         if (mNativeContentViewCore == 0) return;
-        nativeResetGestureDetectors(mNativeContentViewCore);
+        nativeResetGestureDetection(mNativeContentViewCore);
     }
 
     /**
@@ -1655,10 +1644,7 @@ public class ContentViewCore
      * @see View#onWindowFocusChanged(boolean)
      */
     public void onWindowFocusChanged(boolean hasWindowFocus) {
-        if (!hasWindowFocus) {
-            if (mNativeContentViewCore == 0) return;
-            nativeOnWindowFocusLost(mNativeContentViewCore);
-        }
+        if (!hasWindowFocus) resetGestureDetection();
     }
 
     public void onFocusChanged(boolean gainFocus) {
@@ -2334,7 +2320,6 @@ public class ContentViewCore
                 viewportWidth, viewportHeight,
                 pageScaleFactor, minPageScaleFactor, maxPageScaleFactor,
                 contentOffsetYPix);
-        onRenderCoordinatesUpdated();
 
         if (scrollChanged || contentOffsetChanged) {
             for (mGestureStateListenersIterator.rewind();
@@ -3251,14 +3236,7 @@ public class ContentViewCore
 
     private native void nativeMoveCaret(long nativeContentViewCoreImpl, float x, float y);
 
-    private native void nativeResetGestureDetectors(long nativeContentViewCoreImpl);
-
-    private native void nativeIgnoreRemainingTouchEvents(long nativeContentViewCoreImpl);
-
-    private native void nativeOnWindowFocusLost(long nativeContentViewCoreImpl);
-
-    private native void nativeSetDoubleTapSupportForPageEnabled(
-            long nativeContentViewCoreImpl, boolean enabled);
+    private native void nativeResetGestureDetection(long nativeContentViewCoreImpl);
     private native void nativeSetDoubleTapSupportEnabled(
             long nativeContentViewCoreImpl, boolean enabled);
     private native void nativeSetMultiTouchZoomSupportEnabled(

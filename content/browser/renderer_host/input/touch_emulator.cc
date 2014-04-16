@@ -55,7 +55,7 @@ TouchEmulator::TouchEmulator(TouchEmulatorClient* client)
   pointer_cursor_.InitFromCursorInfo(cursor_info);
 
   // TODO(dgozman): Use synthetic secondary touch to support multi-touch.
-  gesture_provider_.SetMultiTouchSupportEnabled(false);
+  gesture_provider_.SetMultiTouchZoomSupportEnabled(false);
   // TODO(dgozman): Enable double tap if requested by the renderer.
   // TODO(dgozman): Don't break double-tap-based pinch with shift handling.
   gesture_provider_.SetDoubleTapSupportForPlatformEnabled(false);

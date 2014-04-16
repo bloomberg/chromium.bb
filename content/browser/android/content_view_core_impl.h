@@ -21,7 +21,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
-#include "ui/events/gesture_detection/filtered_gesture_provider.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_f.h"
 #include "url/gurl.h"
@@ -37,7 +36,6 @@ struct MenuItem;
 
 // TODO(jrg): this is a shell.  Upstream the rest.
 class ContentViewCoreImpl : public ContentViewCore,
-                            public ui::GestureProviderClient,
                             public NotificationObserver,
                             public WebContentsObserver {
  public:
@@ -145,12 +143,7 @@ class ContentViewCoreImpl : public ContentViewCore,
                                 jfloat x2, jfloat y2);
   void MoveCaret(JNIEnv* env, jobject obj, jfloat x, jfloat y);
 
-  void ResetGestureDetectors(JNIEnv* env, jobject obj);
-  void IgnoreRemainingTouchEvents(JNIEnv* env, jobject obj);
-  void OnWindowFocusLost(JNIEnv* env, jobject obj);
-  void SetDoubleTapSupportForPageEnabled(JNIEnv* env,
-                                         jobject obj,
-                                         jboolean enabled);
+  void ResetGestureDetection(JNIEnv* env, jobject obj);
   void SetDoubleTapSupportEnabled(JNIEnv* env, jobject obj, jboolean enabled);
   void SetMultiTouchZoomSupportEnabled(JNIEnv* env,
                                        jobject obj,
@@ -271,7 +264,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   void OnBackgroundColorChanged(SkColor color);
 
   bool HasFocus();
-  void ConfirmTouchEvent(InputEventAckState ack_result);
   void OnGestureEventAck(const blink::WebGestureEvent& event,
                          InputEventAckState ack_result);
   bool FilterInputEvent(const blink::WebInputEvent& event);
@@ -333,9 +325,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   virtual void RenderViewReady() OVERRIDE;
   virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE;
 
-  // ui::GestureProviderClient implementation.
-  virtual void OnGestureEvent(const ui::GestureEventData& gesture) OVERRIDE;
-
   // --------------------------------------------------------------------------
   // Other private methods and data
   // --------------------------------------------------------------------------
@@ -362,10 +351,6 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   // Send device_orientation_ to renderer.
   void SendOrientationChangeEventInternal();
-
-  // Utility method for synthesizing a touch cancel event and dispatching it
-  // through the touch pipeline.
-  void CancelActiveTouchSequenceIfNecessary();
 
   float dpi_scale() const { return dpi_scale_; }
 
@@ -394,10 +379,6 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   // The owning window that has a hold of main application activity.
   ui::WindowAndroid* window_android_;
-
-  // Provides gesture synthesis given a stream of touch events (derived from
-  // Android MotionEvent's) and touch event acks.
-  ui::FilteredGestureProvider gesture_provider_;
 
   // The cache of device's current orientation set from Java side, this value
   // will be sent to Renderer once it is ready.

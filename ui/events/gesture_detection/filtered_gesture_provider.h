@@ -33,8 +33,7 @@ class GESTURE_DETECTION_EXPORT FilteredGestureProvider
   void OnTouchEventAck(bool event_consumed);
 
   // Methods delegated to |gesture_provider_|.
-  void ResetGestureDetectors();
-  void SetMultiTouchSupportEnabled(bool enabled);
+  void SetMultiTouchZoomSupportEnabled(bool enabled);
   void SetDoubleTapSupportForPlatformEnabled(bool enabled);
   void SetDoubleTapSupportForPageEnabled(bool enabled);
   const ui::MotionEvent* GetCurrentDownEvent() const;

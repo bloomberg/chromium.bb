@@ -25,6 +25,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "ui/base/android/window_android_observer.h"
+#include "ui/events/gesture_detection/filtered_gesture_provider.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/vector2d_f.h"
 
@@ -61,6 +62,7 @@ class RenderWidgetHostViewAndroid
       public BrowserAccessibilityDelegate,
       public cc::DelegatedFrameResourceCollectionClient,
       public ImageTransportFactoryAndroidObserver,
+      public ui::GestureProviderClient,
       public ui::WindowAndroidObserver,
       public DelegatedFrameEvictorClient {
  public:
@@ -187,6 +189,9 @@ class RenderWidgetHostViewAndroid
   // cc::DelegatedFrameResourceCollectionClient implementation.
   virtual void UnusedResourcesAreAvailable() OVERRIDE;
 
+  // ui::GestureProviderClient implementation.
+  virtual void OnGestureEvent(const ui::GestureEventData& gesture) OVERRIDE;
+
   // ui::WindowAndroidObserver implementation.
   virtual void OnCompositingDidCommit() OVERRIDE;
   virtual void OnAttachCompositor() OVERRIDE {}
@@ -216,6 +221,11 @@ class RenderWidgetHostViewAndroid
   void OnStartContentIntent(const GURL& content_url);
   void OnSetNeedsBeginFrame(bool enabled);
   void OnSmartClipDataExtracted(const base::string16& result);
+
+  bool OnTouchEvent(const ui::MotionEvent& event);
+  void ResetGestureDetection();
+  void SetDoubleTapSupportEnabled(bool enabled);
+  void SetMultiTouchZoomSupportEnabled(bool enabled);
 
   long GetNativeImeAdapter();
 
@@ -249,7 +259,7 @@ class RenderWidgetHostViewAndroid
   void SendDelegatedFrameAck(uint32 output_surface_id);
   void SendReturnedDelegatedResources(uint32 output_surface_id);
 
-  void UpdateContentViewCoreFrameMetadata(
+  void OnFrameMetadataUpdated(
       const cc::CompositorFrameMetadata& frame_metadata);
   void ComputeContentsSize(const cc::CompositorFrameMetadata& frame_metadata);
   void ResetClipping();
@@ -333,6 +343,10 @@ class RenderWidgetHostViewAndroid
   // Used to render overscroll overlays.
   // Note: |overscroll_effect_| will never be NULL, even if it's never enabled.
   scoped_ptr<OverscrollGlow> overscroll_effect_;
+
+  // Provides gesture synthesis given a stream of touch events (derived from
+  // Android MotionEvent's) and touch event acks.
+  ui::FilteredGestureProvider gesture_provider_;
 
   bool flush_input_requested_;
 
