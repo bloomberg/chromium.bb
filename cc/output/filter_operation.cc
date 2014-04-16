@@ -24,12 +24,18 @@ bool FilterOperation::operator==(const FilterOperation& other) const {
   }
   if (type_ == REFERENCE)
     return image_filter_.get() == other.image_filter_.get();
+  if (type_ == ALPHA_THRESHOLD) {
+    return region_ == other.region_ &&
+        amount_ == other.amount_ &&
+        outer_threshold_ == other.outer_threshold_;
+  }
   return amount_ == other.amount_;
 }
 
 FilterOperation::FilterOperation(FilterType type, float amount)
     : type_(type),
       amount_(amount),
+      outer_threshold_(0),
       drop_shadow_offset_(0, 0),
       drop_shadow_color_(0),
       zoom_inset_(0) {
@@ -45,6 +51,7 @@ FilterOperation::FilterOperation(FilterType type,
                                  SkColor color)
     : type_(type),
       amount_(stdDeviation),
+      outer_threshold_(0),
       drop_shadow_offset_(offset),
       drop_shadow_color_(color),
       zoom_inset_(0) {
@@ -55,6 +62,7 @@ FilterOperation::FilterOperation(FilterType type,
 FilterOperation::FilterOperation(FilterType type, SkScalar matrix[20])
     : type_(type),
       amount_(0),
+      outer_threshold_(0),
       drop_shadow_offset_(0, 0),
       drop_shadow_color_(0),
       zoom_inset_(0) {
@@ -65,6 +73,7 @@ FilterOperation::FilterOperation(FilterType type, SkScalar matrix[20])
 FilterOperation::FilterOperation(FilterType type, float amount, int inset)
     : type_(type),
       amount_(amount),
+      outer_threshold_(0),
       drop_shadow_offset_(0, 0),
       drop_shadow_color_(0),
       zoom_inset_(inset) {
@@ -77,6 +86,7 @@ FilterOperation::FilterOperation(
     const skia::RefPtr<SkImageFilter>& image_filter)
     : type_(type),
       amount_(0),
+      outer_threshold_(0),
       drop_shadow_offset_(0, 0),
       drop_shadow_color_(0),
       image_filter_(image_filter),
@@ -85,13 +95,30 @@ FilterOperation::FilterOperation(
   memset(matrix_, 0, sizeof(matrix_));
 }
 
+FilterOperation::FilterOperation(FilterType type,
+                                 const SkRegion& region,
+                                 float inner_threshold,
+                                 float outer_threshold)
+    : type_(type),
+      amount_(inner_threshold),
+      outer_threshold_(outer_threshold),
+      drop_shadow_offset_(0, 0),
+      drop_shadow_color_(0),
+      zoom_inset_(0),
+      region_(region) {
+  DCHECK_EQ(type_, ALPHA_THRESHOLD);
+  memset(matrix_, 0, sizeof(matrix_));
+}
+
 FilterOperation::FilterOperation(const FilterOperation& other)
     : type_(other.type_),
       amount_(other.amount_),
+      outer_threshold_(other.outer_threshold_),
       drop_shadow_offset_(other.drop_shadow_offset_),
       drop_shadow_color_(other.drop_shadow_color_),
       image_filter_(other.image_filter_),
-      zoom_inset_(other.zoom_inset_) {
+      zoom_inset_(other.zoom_inset_),
+      region_(other.region_) {
   memcpy(matrix_, other.matrix_, sizeof(matrix_));
 }
 
@@ -134,6 +161,8 @@ static FilterOperation CreateNoOpFilter(FilterOperation::FilterType type) {
     case FilterOperation::REFERENCE:
       return FilterOperation::CreateReferenceFilter(
           skia::RefPtr<SkImageFilter>());
+    case FilterOperation::ALPHA_THRESHOLD:
+      return FilterOperation::CreateAlphaThresholdFilter(SkRegion(), 1.f, 0.f);
   }
   NOTREACHED();
   return FilterOperation::CreateEmptyFilter();
@@ -146,6 +175,7 @@ static float ClampAmountForFilterType(float amount,
     case FilterOperation::SEPIA:
     case FilterOperation::INVERT:
     case FilterOperation::OPACITY:
+    case FilterOperation::ALPHA_THRESHOLD:
       return MathUtil::ClampToRange(amount, 0.f, 1.f);
     case FilterOperation::SATURATE:
     case FilterOperation::BRIGHTNESS:
@@ -213,6 +243,13 @@ FilterOperation FilterOperation::Blend(const FilterOperation* from,
         std::max(gfx::Tween::LinearIntValueBetween(
                      from_op.zoom_inset(), to_op.zoom_inset(), progress),
                  0));
+  } else if (to_op.type() == FilterOperation::ALPHA_THRESHOLD) {
+    blended_filter.set_outer_threshold(ClampAmountForFilterType(
+            gfx::Tween::FloatValueBetween(progress,
+                                          from_op.outer_threshold(),
+                                          to_op.outer_threshold()),
+            to_op.type()));
+    blended_filter.set_region(to_op.region());
   }
 
   return blended_filter;
@@ -262,6 +299,19 @@ scoped_ptr<base::Value> FilterOperation::AsValue() const {
       value->SetBoolean("can_filter_image_gpu", can_filter_image_gpu);
       break;
     }
+    case FilterOperation::ALPHA_THRESHOLD: {
+        value->SetDouble("inner_threshold", amount_);
+        value->SetDouble("outer_threshold", outer_threshold_);
+        scoped_ptr<base::ListValue> region_value(new base::ListValue());
+        for (SkRegion::Iterator it(region_); !it.done(); it.next()) {
+          region_value->AppendInteger(it.rect().x());
+          region_value->AppendInteger(it.rect().y());
+          region_value->AppendInteger(it.rect().width());
+          region_value->AppendInteger(it.rect().height());
+        }
+        value->Set("region", region_value.release());
+      }
+      break;
   }
   return value.PassAs<base::Value>();
 }

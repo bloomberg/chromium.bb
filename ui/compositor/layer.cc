@@ -329,6 +329,12 @@ void Layer::SetBackgroundZoom(float zoom, int inset) {
   SetLayerBackgroundFilters();
 }
 
+void Layer::SetAlphaShape(scoped_ptr<SkRegion> region) {
+  alpha_shape_ = region.Pass();
+
+  SetLayerFilters();
+}
+
 void Layer::SetLayerFilters() {
   cc::FilterOperations filters;
   if (layer_saturation_) {
@@ -347,6 +353,10 @@ void Layer::SetLayerFilters() {
   if (layer_brightness_) {
     filters.Append(cc::FilterOperation::CreateSaturatingBrightnessFilter(
         layer_brightness_));
+  }
+  if (alpha_shape_) {
+    filters.Append(cc::FilterOperation::CreateAlphaThresholdFilter(
+            *alpha_shape_, 1.f, 0.f));
   }
 
   cc_layer_->SetFilters(filters);

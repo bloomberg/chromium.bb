@@ -192,6 +192,9 @@ class COMPOSITOR_EXPORT Layer
   // edge across |inset| pixels.
   void SetBackgroundZoom(float zoom, int inset);
 
+  // Set the shape of this layer.
+  void SetAlphaShape(scoped_ptr<SkRegion> region);
+
   // Invert the layer.
   bool layer_inverted() const { return layer_inverted_; }
   void SetLayerInverted(bool inverted);
@@ -446,6 +449,9 @@ class COMPOSITOR_EXPORT Layer
 
   // Width of the border in pixels, where the scaling is blended.
   int zoom_inset_;
+
+  // Shape of the window.
+  scoped_ptr<SkRegion> alpha_shape_;
 
   std::string name_;
 

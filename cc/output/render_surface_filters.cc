@@ -13,12 +13,14 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkFlattenableBuffers.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
+#include "third_party/skia/include/effects/SkAlphaThresholdFilter.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
 #include "third_party/skia/include/effects/SkColorFilterImageFilter.h"
 #include "third_party/skia/include/effects/SkColorMatrixFilter.h"
 #include "third_party/skia/include/effects/SkComposeImageFilter.h"
 #include "third_party/skia/include/effects/SkDropShadowImageFilter.h"
 #include "third_party/skia/include/effects/SkMagnifierImageFilter.h"
+#include "third_party/skia/include/effects/SkRectShaderImageFilter.h"
 #include "third_party/skia/include/gpu/SkGpuDevice.h"
 #include "third_party/skia/include/gpu/SkGrPixelRef.h"
 #include "ui/gfx/size_f.h"
@@ -257,6 +259,18 @@ skia::RefPtr<SkImageFilter> RenderSurfaceFilters::BuildImageFilter(
               op.image_filter().get(), image_filter.get()));
         } else {
           image_filter = op.image_filter();
+        }
+        break;
+      }
+      case FilterOperation::ALPHA_THRESHOLD: {
+        skia::RefPtr<SkImageFilter> alpha_filter = skia::AdoptRef(
+            SkAlphaThresholdFilter::Create(
+                op.region(), op.amount(), op.outer_threshold()));
+        if (image_filter.get()) {
+          image_filter = skia::AdoptRef(new SkComposeImageFilter(
+              alpha_filter.get(), image_filter.get()));
+        } else {
+          image_filter = alpha_filter;
         }
         break;
       }

@@ -47,6 +47,9 @@ void ParamTraits<cc::FilterOperation>::Write(
     case cc::FilterOperation::REFERENCE:
       WriteParam(m, p.image_filter());
       break;
+    case cc::FilterOperation::ALPHA_THRESHOLD:
+      NOTREACHED();
+      break;
   }
 }
 
@@ -122,6 +125,8 @@ bool ParamTraits<cc::FilterOperation>::Read(
       success = true;
       break;
     }
+    case cc::FilterOperation::ALPHA_THRESHOLD:
+      break;
   }
   return success;
 }
@@ -166,6 +171,9 @@ void ParamTraits<cc::FilterOperation>::Log(
       break;
     case cc::FilterOperation::REFERENCE:
       LogParam(p.image_filter(), l);
+      break;
+    case cc::FilterOperation::ALPHA_THRESHOLD:
+      NOTREACHED();
       break;
   }
   l->append(")");

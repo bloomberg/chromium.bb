@@ -102,6 +102,7 @@ bool FilterOperations::HasFilterThatMovesPixels() const {
       case FilterOperation::BRIGHTNESS:
       case FilterOperation::CONTRAST:
       case FilterOperation::SATURATING_BRIGHTNESS:
+      case FilterOperation::ALPHA_THRESHOLD:
         break;
     }
   }
@@ -119,6 +120,7 @@ bool FilterOperations::HasFilterThatAffectsOpacity() const {
       case FilterOperation::DROP_SHADOW:
       case FilterOperation::ZOOM:
       case FilterOperation::REFERENCE:
+      case FilterOperation::ALPHA_THRESHOLD:
         return true;
       case FilterOperation::COLOR_MATRIX: {
         const SkScalar* matrix = op.matrix();
