@@ -44,7 +44,7 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
           "compositing",
           manager->IsFeatureBlacklisted(
               gpu::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING),
-          command_line.HasSwitch(switches::kDisableAcceleratedCompositing),
+          false,
           "Accelerated compositing has been disabled, either via about:flags or"
           " command line. This adversely affects performance of all hardware"
           " accelerated features.",
@@ -65,7 +65,6 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
               gpu::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING) ||
           manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_3D_CSS),
           command_line.HasSwitch(cc::switches::kDisableThreadedAnimation) ||
-          command_line.HasSwitch(switches::kDisableAcceleratedCompositing) ||
           command_line.HasSwitch(switches::kDisableAcceleratedLayers),
           "Accelerated CSS animation has been disabled at the command line.",
           true
@@ -127,8 +126,7 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
           "video",
           manager->IsFeatureBlacklisted(
               gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO),
-          command_line.HasSwitch(switches::kDisableAcceleratedVideo) ||
-          command_line.HasSwitch(switches::kDisableAcceleratedCompositing),
+          command_line.HasSwitch(switches::kDisableAcceleratedVideo),
           "Accelerated video presentation has been disabled, either via"
           " about:flags or command line.",
           true
@@ -177,10 +175,6 @@ bool CanDoAcceleratedCompositing() {
 
   // Check for SwiftShader.
   if (manager->ShouldUseSwiftShader())
-    return false;
-
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kDisableAcceleratedCompositing))
     return false;
 
   return true;
@@ -294,7 +288,6 @@ bool IsForceGpuRasterizationEnabled() {
 }
 
 base::Value* GetFeatureStatus() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   GpuDataManagerImpl* manager = GpuDataManagerImpl::GetInstance();
   std::string gpu_access_blocked_reason;
   bool gpu_access_blocked =
@@ -337,9 +330,8 @@ base::Value* GetFeatureStatus() {
     } else {
       status = "enabled";
       if (gpu_feature_info.name == "webgl" &&
-          (command_line.HasSwitch(switches::kDisableAcceleratedCompositing) ||
-           manager->IsFeatureBlacklisted(
-               gpu::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING)))
+          (manager->IsFeatureBlacklisted(
+              gpu::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING)))
         status += "_readback";
       bool has_thread = IsThreadedCompositingEnabled();
       if (gpu_feature_info.name == "compositing") {

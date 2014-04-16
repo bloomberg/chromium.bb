@@ -277,49 +277,6 @@ class CompositingRenderWidgetHostViewBrowserTest
   DISALLOW_COPY_AND_ASSIGN(CompositingRenderWidgetHostViewBrowserTest);
 };
 
-class NonCompositingRenderWidgetHostViewBrowserTest
-    : public RenderWidgetHostViewBrowserTest {
- public:
-  NonCompositingRenderWidgetHostViewBrowserTest() {}
-
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    // Note: Appending the kDisableAcceleratedCompositing switch here, but there
-    // are some builds that only use compositing and will ignore this switch.
-    // Therefore, the call to SetUpSourceSurface() later on will detect whether
-    // compositing mode is actually off.  If it's on, the tests will pass
-    // blindly, logging a warning message, since we cannot test what the
-    // platform/implementation does not support.
-    command_line->AppendSwitch(switches::kDisableAcceleratedCompositing);
-    RenderWidgetHostViewBrowserTest::SetUpCommandLine(command_line);
-  }
-
-  virtual GURL TestUrl() {
-    return GURL(kAboutBlankURL);
-  }
-
-  virtual bool SetUpSourceSurface(const char* wait_message) OVERRIDE {
-    if (IsForceCompositingModeEnabled())
-      return false;  // See comment in SetUpCommandLine().
-
-    content::DOMMessageQueue message_queue;
-    NavigateToURL(shell(), TestUrl());
-    if (wait_message != NULL) {
-      std::string result(wait_message);
-      if (!message_queue.WaitForMessage(&result)) {
-        EXPECT_TRUE(false) << "WaitForMessage " << result << " failed.";
-        return false;
-      }
-    }
-
-    WaitForCopySourceReady();
-    // Return whether the renderer left accelerated compositing turned off.
-    return !GetRenderWidgetHost()->is_accelerated_compositing_active();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NonCompositingRenderWidgetHostViewBrowserTest);
-};
-
 class FakeFrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
  public:
   FakeFrameSubscriber(
@@ -354,13 +311,6 @@ class FakeFrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
 // The CopyFromBackingStore() API should work on all platforms when compositing
 // is enabled.
 IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
-                       CopyFromBackingStore) {
-  RunBasicCopyFromBackingStoreTest();
-}
-
-// The CopyFromBackingStore() API should work on all platforms when compositing
-// is disabled.
-IN_PROC_BROWSER_TEST_F(NonCompositingRenderWidgetHostViewBrowserTest,
                        CopyFromBackingStore) {
   RunBasicCopyFromBackingStoreTest();
 }
@@ -421,14 +371,6 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
   run_loop.Run();
 
   EXPECT_EQ(1, callback_invoke_count());
-}
-
-// With compositing turned off, no platforms should support the
-// CopyFromCompositingSurfaceToVideoFrame() API.
-IN_PROC_BROWSER_TEST_F(NonCompositingRenderWidgetHostViewBrowserTest,
-                       CopyFromCompositingSurfaceToVideoFrameCallbackTest) {
-  SET_UP_SURFACE_OR_PASS_TEST(NULL);
-  EXPECT_FALSE(GetRenderWidgetHostViewPort()->CanCopyToVideoFrame());
 }
 
 // Test basic frame subscription functionality.  We subscribe, and then run

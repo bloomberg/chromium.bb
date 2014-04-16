@@ -55,7 +55,7 @@ class PhishingClassifierTest : public InProcessBrowserTest {
     command_line->AppendSwitch(switches::kSingleProcess);
 #if defined(OS_WIN)
     // Don't want to try to create a GPU process.
-    command_line->AppendSwitch(switches::kDisableAcceleratedCompositing);
+    command_line->AppendSwitch(switches::kDisableGpu);
 #endif
   }
 

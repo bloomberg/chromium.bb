@@ -155,7 +155,7 @@ void UpdateStats(const gpu::GPUInfo& gpu_info,
   };
   const bool kGpuFeatureUserFlags[] = {
       command_line.HasSwitch(switches::kDisableAccelerated2dCanvas),
-      command_line.HasSwitch(switches::kDisableAcceleratedCompositing),
+      false,
       command_line.HasSwitch(switches::kDisableExperimentalWebGL),
   };
 #if defined(OS_WIN)
@@ -641,9 +641,6 @@ void GpuDataManagerImplPrivate::AppendRendererCommandLine(
     CommandLine* command_line) const {
   DCHECK(command_line);
 
-  if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING) &&
-      !command_line->HasSwitch(switches::kDisableAcceleratedCompositing))
-    command_line->AppendSwitch(switches::kDisableAcceleratedCompositing);
   if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE) &&
       !command_line->HasSwitch(switches::kDisableAcceleratedVideoDecode))
     command_line->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
@@ -733,9 +730,7 @@ void GpuDataManagerImplPrivate::AppendPluginCommandLine(
   // TODO(jbauman): Add proper blacklist support for core animation plugins so
   // special-casing this video card won't be necessary. See
   // http://crbug.com/134015
-  if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING) ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableAcceleratedCompositing)) {
+  if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING)) {
     if (!command_line->HasSwitch(
            switches::kDisableCoreAnimationPlugins))
       command_line->AppendSwitch(
@@ -952,10 +947,6 @@ GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(
       finalized_(false) {
   DCHECK(owner_);
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kDisableAcceleratedCompositing)) {
-    command_line->AppendSwitch(switches::kDisableAccelerated2dCanvas);
-    command_line->AppendSwitch(switches::kDisableAcceleratedLayers);
-  }
   if (command_line->HasSwitch(switches::kDisableGpu))
     DisableHardwareAcceleration();
 

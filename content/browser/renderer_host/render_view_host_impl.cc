@@ -412,9 +412,7 @@ WebPreferences RenderViewHostImpl::GetWebkitPrefs(const GURL& url) {
 
   prefs.show_paint_rects =
       command_line.HasSwitch(switches::kShowPaintRects);
-  prefs.accelerated_compositing_enabled =
-      GpuProcessHost::gpu_enabled() &&
-      !command_line.HasSwitch(switches::kDisableAcceleratedCompositing);
+  prefs.accelerated_compositing_enabled = GpuProcessHost::gpu_enabled();
   prefs.force_compositing_mode = content::IsForceCompositingModeEnabled();
   prefs.accelerated_2d_canvas_enabled =
       GpuProcessHost::gpu_enabled() &&

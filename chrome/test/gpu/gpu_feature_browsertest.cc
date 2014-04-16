@@ -228,28 +228,6 @@ IN_PROC_BROWSER_TEST_F(AcceleratedCompositingBlockedTest,
   RunEventTest(url, kSwapBuffersEvent, false);
 }
 
-class AcceleratedCompositingTest : public GpuFeatureTest {
- public:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    GpuFeatureTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kDisableAcceleratedCompositing);
-  }
-};
-
-#if defined(USE_AURA) || defined(OS_MACOSX)
-// Compositing is always on for Aura and Mac.
-#define MAYBE_AcceleratedCompositingDisabled DISABLED_AcceleratedCompositingDisabled
-#else
-#define MAYBE_AcceleratedCompositingDisabled AcceleratedCompositingDisabled
-#endif
-
-IN_PROC_BROWSER_TEST_F(AcceleratedCompositingTest,
-                       MAYBE_AcceleratedCompositingDisabled) {
-// Compositing is always on for Windows Aura.
-  const base::FilePath url(FILE_PATH_LITERAL("feature_compositing.html"));
-  RunEventTest(url, kSwapBuffersEvent, false);
-}
-
 // Times out: http://crbug.com/166060
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, DISABLED_WebGLAllowed) {
   EXPECT_FALSE(GpuDataManager::GetInstance()->IsFeatureBlacklisted(
