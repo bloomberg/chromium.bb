@@ -32,27 +32,31 @@ import sys
 
 import in_generator
 import make_runtime_features
+import name_utilities
 import template_expander
 
 
 # We want exactly the same parsing as RuntimeFeatureWriter
 # but generate different files.
 class InternalRuntimeFlagsWriter(make_runtime_features.RuntimeFeatureWriter):
-    class_name = "InternalRuntimeFlags"
+    class_name = 'InternalRuntimeFlags'
+    filters = {
+        'enable_conditional': name_utilities.enable_conditional_if_endif,
+    }
 
     def __init__(self, in_file_path):
         super(InternalRuntimeFlagsWriter, self).__init__(in_file_path)
-        self._outputs = {(self.class_name + ".idl"): self.generate_idl,
-                         (self.class_name + ".h"): self.generate_header,
+        self._outputs = {(self.class_name + '.idl'): self.generate_idl,
+                         (self.class_name + '.h'): self.generate_header,
                         }
 
-    @template_expander.use_jinja(class_name + ".idl.tmpl")
+    @template_expander.use_jinja(class_name + '.idl.tmpl')
     def generate_idl(self):
         return {
             'features': self._features,
         }
 
-    @template_expander.use_jinja(class_name + ".h.tmpl")
+    @template_expander.use_jinja(class_name + '.h.tmpl', filters=filters)
     def generate_header(self):
         return {
             'features': self._features,
@@ -60,5 +64,5 @@ class InternalRuntimeFlagsWriter(make_runtime_features.RuntimeFeatureWriter):
         }
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     in_generator.Maker(InternalRuntimeFlagsWriter).main(sys.argv)

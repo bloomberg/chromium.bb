@@ -60,10 +60,27 @@ def lower_first(name):
 
 
 def upper_first(name):
+    """Return name with first letter or initial acronym uppercased."""
     for acronym in ACRONYMS:
         if name.startswith(acronym.lower()):
             return name.replace(acronym.lower(), acronym, 1)
+    return _upper_first(name)
+
+
+def _upper_first(name):
+    """Return name with first letter uppercased."""
+    if not name:
+        return ''
     return name[0].upper() + name[1:]
+
+
+def camelcase_property_name(property_name):
+    """Convert hyphen-separated-name to UpperCamelCase.
+
+    E.g., '-foo-bar' becomes 'FooBar'.
+    Used for CSS property names.
+    """
+    return ''.join(_upper_first(word) for word in property_name.split('-'))
 
 
 def to_macro_style(name):
@@ -72,10 +89,18 @@ def to_macro_style(name):
 
 
 def script_name(entry):
-    return os.path.basename(entry["name"])
+    return os.path.basename(entry['name'])
 
 
 def cpp_name(entry):
-    if entry['ImplementedAs']:
-        return entry['ImplementedAs']
-    return script_name(entry)
+    return entry['ImplementedAs'] or script_name(entry)
+
+
+def enable_conditional_if_endif(code, feature):
+    # Jinja2 filter to generate if/endif directive blocks based on a feature
+    if not feature:
+        return code
+    condition = 'ENABLE(%s)' % feature
+    return ('#if %s\n' % condition +
+            code +
+            '#endif // %s\n' % condition)

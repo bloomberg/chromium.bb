@@ -27,70 +27,65 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+from collections import defaultdict
 import re
 import sys
-from collections import defaultdict
 
 import in_generator
+from name_utilities import camelcase_property_name, lower_first
 import template_expander
+
+
+def _create_css_property_name_enum_value(property_name):
+    return 'CSSProperty' + property_name
 
 
 class StylePropertyShorthandWriter(in_generator.Writer):
     class_name = 'StylePropertyShorthand'
 
     defaults = {
-        'longhands': "",
+        'longhands': '',
         'runtimeEnabledShorthand': None,
     }
 
     def __init__(self, in_files):
         super(StylePropertyShorthandWriter, self).__init__(in_files)
-        self._outputs = {("StylePropertyShorthand.cpp"): self.generate_style_property_shorthand_cpp, ("StylePropertyShorthand.h"): self.generate_style_property_shorthand_h}
+        self._outputs = {
+            ('StylePropertyShorthand.cpp'): self.generate_style_property_shorthand_cpp,
+            ('StylePropertyShorthand.h'): self.generate_style_property_shorthand_h}
 
         self._properties = self.in_file.name_dictionaries
         self._longhand_dictionary = defaultdict(list)
 
         for property in self._properties:
-            cc = self._camelcase_property_name(property["name"])
-            property["property_id"] = self._create_css_property_name_enum_value(cc)
-            cc = cc[0].lower() + cc[1:]
-            property["camel_case_name"] = cc
-            longhands = property["longhands"].split(';')
-            property["camel_case_longhands"] = list()
+            cc = camelcase_property_name(property['name'])
+            property['property_id'] = _create_css_property_name_enum_value(cc)
+            cc = lower_first(cc)
+            property['camel_case_name'] = cc
+            longhands = property['longhands'].split(';')
+            property['camel_case_longhands'] = list()
             for longhand in longhands:
-                longhand = self._camelcase_property_name(longhand)
-                longhand = self._create_css_property_name_enum_value(longhand)
-                property["camel_case_longhands"].append(longhand)
+                longhand = camelcase_property_name(longhand)
+                longhand = _create_css_property_name_enum_value(longhand)
+                property['camel_case_longhands'].append(longhand)
                 self._longhand_dictionary[longhand].append(property)
-            if property["runtimeEnabledShorthand"] is not None:
-                lowerFirstConditional = self._lower_first(property["runtimeEnabledShorthand"])
-                property["runtime_conditional_getter"] = "%sEnabled" % lowerFirstConditional
-        self._properties = dict((property["property_id"], property) for property in self._properties)
+            if property['runtimeEnabledShorthand'] is not None:
+                lowerFirstConditional = lower_first(property['runtimeEnabledShorthand'])
+                property['runtime_conditional_getter'] = '%sEnabled' % lowerFirstConditional
+        self._properties = dict((property['property_id'], property) for property in self._properties)
 
-# FIXME: some of these might be better in a utils file
-    def _camelcase_property_name(self, property_name):
-        return re.sub(r'(^[^-])|-(.)', lambda match: (match.group(1) or match.group(2)).upper(), property_name)
-
-    def _create_css_property_name_enum_value(self, property_name):
-        return "CSSProperty" + property_name
-
-    def _lower_first(self, string):
-        lowered = string[0].lower() + string[1:]
-        lowered = lowered.replace("cSS", "css")
-        return lowered
-
-    @template_expander.use_jinja("StylePropertyShorthand.cpp.tmpl")
+    @template_expander.use_jinja('StylePropertyShorthand.cpp.tmpl')
     def generate_style_property_shorthand_cpp(self):
         return {
-            "properties": self._properties,
-            "longhands_dictionary": self._longhand_dictionary,
+            'properties': self._properties,
+            'longhands_dictionary': self._longhand_dictionary,
         }
 
-    @template_expander.use_jinja("StylePropertyShorthand.h.tmpl")
+    @template_expander.use_jinja('StylePropertyShorthand.h.tmpl')
     def generate_style_property_shorthand_h(self):
         return {
-            "properties": self._properties,
+            'properties': self._properties,
         }
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     in_generator.Maker(StylePropertyShorthandWriter).main(sys.argv)

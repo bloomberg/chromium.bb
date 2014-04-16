@@ -1,5 +1,5 @@
-{% from "macros.tmpl" import wrap_with_condition, license %}
-{{ license() }}
+{% from 'macros.tmpl' import license %}
+{{license()}}
 
 #include "config.h"
 #include "core/css/resolver/StyleBuilder.h"
@@ -17,17 +17,17 @@ bool StyleBuilder::applyProperty(CSSPropertyID property, StyleResolverState& sta
     {% for property_id, property in properties.items() %}
     {% set used_property = properties[property.use_handlers_for] or property %}
     {% set used_property_id = used_property.property_id %}
-    {% call wrap_with_condition(used_property.condition) %}
-    case {{ property_id }}:
+    {% filter enable_conditional(used_property.condition) %}
+    case {{property_id}}:
         if (isInitial)
-            StyleBuilderFunctions::applyInitial{{ used_property_id }}(state);
+            StyleBuilderFunctions::applyInitial{{used_property_id}}(state);
         else if (isInherit)
-            StyleBuilderFunctions::applyInherit{{ used_property_id }}(state);
+            StyleBuilderFunctions::applyInherit{{used_property_id}}(state);
         else
-            StyleBuilderFunctions::applyValue{{ used_property_id }}(state, value);
+            StyleBuilderFunctions::applyValue{{used_property_id}}(state, value);
         return true;
 
-    {% endcall %}
+    {% endfilter %}
     {% endfor %}
     default:
         return false;

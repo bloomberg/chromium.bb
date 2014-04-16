@@ -30,12 +30,16 @@
 import sys
 
 import in_generator
+import name_utilities
 from name_utilities import lower_first
 import template_expander
 
 
 class RuntimeFeatureWriter(in_generator.Writer):
     class_name = 'RuntimeEnabledFeatures'
+    filters = {
+        'enable_conditional': name_utilities.enable_conditional_if_endif,
+    }
 
     # FIXME: valid_values and defaults should probably roll into one object.
     valid_values = {
@@ -50,8 +54,8 @@ class RuntimeFeatureWriter(in_generator.Writer):
 
     def __init__(self, in_file_path):
         super(RuntimeFeatureWriter, self).__init__(in_file_path)
-        self._outputs = {(self.class_name + ".h"): self.generate_header,
-                         (self.class_name + ".cpp"): self.generate_implementation,
+        self._outputs = {(self.class_name + '.h'): self.generate_header,
+                         (self.class_name + '.cpp'): self.generate_implementation,
                         }
 
         self._features = self.in_file.name_dictionaries
@@ -60,9 +64,9 @@ class RuntimeFeatureWriter(in_generator.Writer):
             feature['first_lowered_name'] = lower_first(feature['name'])
             # Most features just check their isFooEnabled bool
             # but some depend on more than one bool.
-            enabled_condition = "is%sEnabled" % feature['name']
+            enabled_condition = 'is%sEnabled' % feature['name']
             for dependant_name in feature['depends_on']:
-                enabled_condition += " && is%sEnabled" % dependant_name
+                enabled_condition += ' && is%sEnabled' % dependant_name
             feature['enabled_condition'] = enabled_condition
         self._non_custom_features = filter(lambda feature: not feature['custom'], self._features)
 
@@ -71,14 +75,14 @@ class RuntimeFeatureWriter(in_generator.Writer):
         # which is how we're referring to them in this generator.
         return self.valid_values['status']
 
-    @template_expander.use_jinja(class_name + ".h.tmpl")
+    @template_expander.use_jinja(class_name + '.h.tmpl', filters=filters)
     def generate_header(self):
         return {
             'features': self._features,
             'feature_sets': self._feature_sets(),
         }
 
-    @template_expander.use_jinja(class_name + ".cpp.tmpl")
+    @template_expander.use_jinja(class_name + '.cpp.tmpl', filters=filters)
     def generate_implementation(self):
         return {
             'features': self._features,
@@ -86,5 +90,5 @@ class RuntimeFeatureWriter(in_generator.Writer):
         }
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     in_generator.Maker(RuntimeFeatureWriter).main(sys.argv)

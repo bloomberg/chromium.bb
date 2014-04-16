@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (C) 2013 Google, Inc.
 #
 # This library is free software; you can redistribute it and/or

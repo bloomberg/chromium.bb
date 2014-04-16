@@ -47,9 +47,10 @@ class EventFactoryWriter(name_macros.Writer):
         'namespace': '',
     }
     filters = {
-        'script_name': name_utilities.script_name,
         'cpp_name': name_utilities.cpp_name,
+        'enable_conditional': name_utilities.enable_conditional_if_endif,
         'lower_first': name_utilities.lower_first,
+        'script_name': name_utilities.script_name,
     }
 
     def __init__(self, in_file_path):

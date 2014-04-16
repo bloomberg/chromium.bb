@@ -1,4 +1,4 @@
-{% from "macros.tmpl" import lower_first %}
+{% from 'macros.tmpl' import license %}
 {#
     This file is for property handlers which use the templating engine to
     reduce (handwritten) code duplication.
@@ -85,7 +85,7 @@ namespace WebCore {
     if (list->isEmpty())
         list->append(CSSAnimationData::create());
     list->animation(0)->set{{attribute}}(CSSAnimationData::initialAnimation{{attribute}}());
-        {% if property_id == "CSSPropertyWebkitTransitionProperty" %}
+        {% if property_id == 'CSSPropertyWebkitTransitionProperty' %}
         list->animation(0)->setAnimationMode(CSSAnimationData::AnimateAll);
         {% endif %}
     for (size_t i = 1; i < list->size(); ++i)
@@ -101,8 +101,8 @@ namespace WebCore {
         ASSERT(list->size() >= i);
         if (list->size() == i)
             list->append(CSSAnimationData::create());
-        list->animation(i)->set{{attribute}}(parentList->animation(i)->{{lower_first(attribute)}}());
-            {% if property_id == "CSSPropertyWebkitTransitionProperty" %}
+        list->animation(i)->set{{attribute}}(parentList->animation(i)->{{attribute|lower_first}}());
+            {% if property_id == 'CSSPropertyWebkitTransitionProperty' %}
             list->animation(i)->setAnimationMode(parentList->animation(i)->animationMode());
             {% endif %}
     }
@@ -391,7 +391,7 @@ namespace WebCore {
             currChild = new FillLayer({{fill_layer_type}});
             prevChild->setNext(currChild);
         }
-        currChild->set{{fill_type}}(currParent->{{lower_first(fill_type)}}());
+        currChild->set{{fill_type}}(currParent->{{fill_type|lower_first}}());
         prevChild = currChild;
         currChild = prevChild->next();
         currParent = currParent->next();

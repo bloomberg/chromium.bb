@@ -1,5 +1,5 @@
-{% from "macros.tmpl" import wrap_with_condition, license %}
-{{ license() }}
+{% from 'macros.tmpl' import license %}
+{{license()}}
 
 #ifndef StyleBuilderFunctions_h
 #define StyleBuilderFunctions_h
@@ -16,11 +16,11 @@ public:
 
     {% for property_id, property in properties.items()
            if not property.use_handlers_for %}
-    {% call wrap_with_condition(property.condition) %}
+    {% filter enable_conditional(property.condition) %}
     static void applyInitial{{property_id}}(StyleResolverState&);
     static void applyInherit{{property_id}}(StyleResolverState&);
     static void applyValue{{property_id}}(StyleResolverState&, CSSValue*);
-    {% endcall %}
+    {% endfilter %}
 
     {% endfor %}
 };
