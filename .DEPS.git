@@ -76,9 +76,9 @@ deps = {
     'src/third_party/libaddressinput/src':
         Var('git_url') + '/external/libaddressinput.git@3f7d76be9f572d8fdf512f4e2085109bc32a6128',
     'src/third_party/libc++/trunk':
-        Var('git_url') + '/chromium/llvm-project/libcxx.git@e3ef8601c853c8c056d96f6c88fd1f2b8e67372d',
+        Var('git_url') + '/chromium/llvm-project/libcxx.git@e785ef19637f88c5e3e9926fabd8a64cd7eac49d',
     'src/third_party/libc++abi/trunk':
-        Var('git_url') + '/chromium/llvm-project/libcxxabi.git@afba0fa03209315a0eb682cf3900d1a4ee141269',
+        Var('git_url') + '/chromium/llvm-project/libcxxabi.git@062ba40d41870a04e0aefb64f8122e91aa824147',
     'src/third_party/libexif/sources':
         Var('git_url') + '/chromium/deps/libexif/sources.git@bd8e7ca8200abba0b57afc2c2e778d3db3fb4d33',
     'src/third_party/libjingle/source/talk':
