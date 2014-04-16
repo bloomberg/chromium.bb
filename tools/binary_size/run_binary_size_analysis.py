@@ -23,6 +23,7 @@ import sys
 import tempfile
 
 
+# TODO(andrewhayden): Only used for legacy reports. Delete.
 def FormatBytes(bytes):
   """Pretty-print a number of bytes."""
   if bytes > 1e6:
@@ -34,6 +35,7 @@ def FormatBytes(bytes):
   return str(bytes)
 
 
+# TODO(andrewhayden): Only used for legacy reports. Delete.
 def SymbolTypeToHuman(type):
   """Convert a symbol type as printed by nm into a human-readable name."""
   return {'b': 'bss',
@@ -70,10 +72,7 @@ def ParseNm(input):
     if match:
       size, type, sym = match.groups()[0:3]
       size = int(size, 16)
-      type = type.lower()
-      if type == 'v':
-        type = 'w'  # just call them all weak
-      if type == 'b':
+      if type.lower() == 'b':
         continue  # skip all BSS for now
       path = match.group(4)
       yield sym, type, size, path
@@ -93,6 +92,66 @@ def ParseNm(input):
     print >>sys.stderr, 'unparsed:', repr(line)
 
 
+def _MkChild(node, name):
+  child = None
+  for test in node['children']:
+    if test['n'] == name:
+      child = test
+      break
+  if not child:
+    child = {'n': name, 'children': []}
+    node['children'].append(child)
+  return child
+
+
+def MakeCompactTree(symbols):
+  result = {'n': '/', 'children': [], 'k': 'p', 'maxDepth': 0}
+  for symbol_name, symbol_type, symbol_size, file_path in symbols:
+
+    if 'vtable for ' in symbol_name:
+      symbol_type = '@' # hack to categorize these separately
+    # Take path like '/foo/bar/baz', convert to ['foo', 'bar', 'baz']
+    if file_path:
+      file_path = os.path.normpath(file_path)
+    else:
+      file_path = '(No Path)'
+
+    if file_path.startswith('/'):
+      file_path = file_path[1:]
+    path_parts = file_path.split('/')
+
+    # Find pre-existing node in tree, or update if it already exists
+    node = result
+    depth = 0
+    while len(path_parts) > 0:
+      path_part = path_parts.pop(0)
+      if len(path_part) == 0:
+        continue
+      depth += 1
+      node = _MkChild(node, path_part);
+      node['k'] = 'p' # p for path
+
+    # 'node' is now the file node. Find the symbol-type bucket.
+    node['lastPathElement'] = True
+    node = _MkChild(node, symbol_type)
+    node['t'] = symbol_type
+    node['k'] = 'b' # b for bucket
+    depth += 1
+
+    # 'node' is now the symbol-type bucket. Make the child entry.
+    node = _MkChild(node, symbol_name)
+    if 'children' in node: # Only possible if we're adding duplicate entries!!!
+      del node['children']
+    node['value'] = symbol_size
+    node['t'] = symbol_type
+    node['k'] = 's' # s for symbol
+    depth += 1
+    result['maxDepth'] = max(result['maxDepth'], depth);
+
+  return result
+
+
+# TODO(andrewhayden): Only used for legacy reports. Delete.
 def TreeifySymbols(symbols):
   """Convert symbols into a path-based tree, calculating size information
   along the way.
@@ -188,6 +247,7 @@ def TreeifySymbols(symbols):
   return dirs
 
 
+# TODO(andrewhayden): Only used for legacy reports. Delete.
 def JsonifyTree(tree, name):
   """Convert TreeifySymbols output to a JSON treemap.
 
@@ -224,7 +284,16 @@ def JsonifyTree(tree, name):
           'data': { '$area': tree['size'] },
           'children': children }
 
+def DumpCompactTree(symbols, outfile):
+  out = open(outfile, 'w')
+  try:
+    out.write('var tree_data = ' + json.dumps(MakeCompactTree(symbols)))
+  finally:
+    out.flush()
+    out.close()
 
+
+# TODO(andrewhayden): Only used for legacy reports. Delete.
 def DumpTreemap(symbols, outfile):
   dirs = TreeifySymbols(symbols)
   out = open(outfile, 'w')
@@ -235,6 +304,7 @@ def DumpTreemap(symbols, outfile):
     out.close()
 
 
+# TODO(andrewhayden): Only used for legacy reports. Delete.
 def DumpLargestSymbols(symbols, outfile, n):
   # a list of (sym, type, size, path); sort by size.
   symbols = sorted(symbols, key=lambda x: -x[2])
@@ -278,6 +348,7 @@ def MakeSourceMap(symbols):
   return sources
 
 
+# TODO(andrewhayden): Only used for legacy reports. Delete.
 def DumpLargestSources(symbols, outfile, n):
   map = MakeSourceMap(symbols)
   sources = sorted(map.values(), key=lambda x: -x['size'])
@@ -300,6 +371,7 @@ def DumpLargestSources(symbols, outfile, n):
     out.close()
 
 
+# TODO(andrewhayden): Only used for legacy reports. Delete.
 def DumpLargestVTables(symbols, outfile, n):
   vtables = []
   for symbol, type, size, path in symbols:
@@ -325,6 +397,7 @@ def DumpLargestVTables(symbols, outfile, n):
     out.close()
 
 
+# TODO(andrewhayden): Switch to Primiano's python-based version.
 def RunParallelAddress2Line(outfile, library, arch, jobs, verbose):
   """Run a parallel addr2line processing engine to dump and resolve symbols."""
   out_dir = os.getenv('CHROMIUM_OUT_DIR', 'out')
@@ -342,15 +415,15 @@ def RunParallelAddress2Line(outfile, library, arch, jobs, verbose):
     cmd.append('--verbose')
   prefix = os.path.join('third_party', 'android_tools', 'ndk', 'toolchains')
   if arch == 'android-arm':
-    prefix = os.path.join(prefix, 'arm-linux-androideabi-4.7', 'prebuilt',
+    prefix = os.path.join(prefix, 'arm-linux-androideabi-4.8', 'prebuilt',
                           'linux-x86_64', 'bin', 'arm-linux-androideabi-')
     cmd.extend(['--nm', prefix + 'nm', '--addr2line', prefix + 'addr2line'])
   elif arch == 'android-mips':
-    prefix = os.path.join(prefix, 'mipsel-linux-android-4.7', 'prebuilt',
+    prefix = os.path.join(prefix, 'mipsel-linux-android-4.8', 'prebuilt',
                           'linux-x86_64', 'bin', 'mipsel-linux-android-')
     cmd.extend(['--nm', prefix + 'nm', '--addr2line', prefix + 'addr2line'])
   elif arch == 'android-x86':
-    prefix = os.path.join(prefix, 'x86-4.7', 'prebuilt',
+    prefix = os.path.join(prefix, 'x86-4.8', 'prebuilt',
                           'linux-x86_64', 'bin', 'i686-linux-android-')
     cmd.extend(['--nm', prefix + 'nm', '--addr2line', prefix + 'addr2line'])
   # else, use whatever is in PATH (don't pass --nm or --addr2line)
@@ -441,6 +514,8 @@ def main():
                     'mapped to source locations. By default, a tempfile is '
                     'used and is deleted when the program terminates.'
                     'This argument is only valid when using --library.')
+  parser.add_option('--legacy', action='store_true',
+                    help='emit legacy binary size report instead of modern')
   opts, args = parser.parse_args()
 
   if ((not opts.library) and (not opts.nm_in)) or (opts.library and opts.nm_in):
@@ -464,24 +539,37 @@ def main():
   if not os.path.exists(opts.destdir):
     os.makedirs(opts.destdir, 0755)
 
-  DumpTreemap(symbols, os.path.join(opts.destdir, 'treemap-dump.js'))
-  DumpLargestSymbols(symbols,
-                       os.path.join(opts.destdir, 'largest-symbols.js'), 100)
-  DumpLargestSources(symbols,
-                       os.path.join(opts.destdir, 'largest-sources.js'), 100)
-  DumpLargestVTables(symbols,
-                       os.path.join(opts.destdir, 'largest-vtables.js'), 100)
 
-  # TODO(andrewhayden): Switch to D3 for greater flexibility
-  treemap_out = os.path.join(opts.destdir, 'webtreemap')
-  if not os.path.exists(treemap_out):
-    os.makedirs(treemap_out, 0755)
-  treemap_src = os.path.join('third_party', 'webtreemap', 'src')
-  shutil.copy(os.path.join(treemap_src, 'COPYING'), treemap_out)
-  shutil.copy(os.path.join(treemap_src, 'webtreemap.js'), treemap_out)
-  shutil.copy(os.path.join(treemap_src, 'webtreemap.css'), treemap_out)
-  shutil.copy(os.path.join('tools', 'binary_size', 'template', 'index.html'),
-              opts.destdir)
+  if opts.legacy: # legacy report
+    DumpTreemap(symbols, os.path.join(opts.destdir, 'treemap-dump.js'))
+    DumpLargestSymbols(symbols,
+                         os.path.join(opts.destdir, 'largest-symbols.js'), 100)
+    DumpLargestSources(symbols,
+                         os.path.join(opts.destdir, 'largest-sources.js'), 100)
+    DumpLargestVTables(symbols,
+                         os.path.join(opts.destdir, 'largest-vtables.js'), 100)
+    treemap_out = os.path.join(opts.destdir, 'webtreemap')
+    if not os.path.exists(treemap_out):
+      os.makedirs(treemap_out, 0755)
+    treemap_src = os.path.join('third_party', 'webtreemap', 'src')
+    shutil.copy(os.path.join(treemap_src, 'COPYING'), treemap_out)
+    shutil.copy(os.path.join(treemap_src, 'webtreemap.js'), treemap_out)
+    shutil.copy(os.path.join(treemap_src, 'webtreemap.css'), treemap_out)
+    shutil.copy(os.path.join('tools', 'binary_size', 'legacy_template',
+                             'index.html'), opts.destdir)
+  else: # modern report
+    DumpCompactTree(symbols, os.path.join(opts.destdir, 'data.js'))
+    d3_out = os.path.join(opts.destdir, 'd3')
+    if not os.path.exists(d3_out):
+      os.makedirs(d3_out, 0755)
+    d3_src = os.path.join('third_party', 'd3', 'src')
+    template_src = os.path.join('tools', 'binary_size',
+                                'template')
+    shutil.copy(os.path.join(d3_src, 'LICENSE'), d3_out)
+    shutil.copy(os.path.join(d3_src, 'd3.js'), d3_out)
+    shutil.copy(os.path.join(template_src, 'index.html'), opts.destdir)
+    shutil.copy(os.path.join(template_src, 'D3SymbolTreeMap.js'), opts.destdir)
+
   if opts.verbose:
     print 'Report saved to ' + opts.destdir + '/index.html'
 

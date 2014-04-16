@@ -116,8 +116,8 @@ The tool is not perfect and has several shortcomings:
 Feature Requests and Bug Reports
 --------------------------------------------------------------------------------
 Please file bugs and feature requests here, making sure to use the label
-"Binary-Size-Tool":
-  https://code.google.com/p/chromium/issues/entry?labels=Binary-Size-Tool
+"Tools-BinarySize":
+  https://code.google.com/p/chromium/issues/entry?labels=Tools-BinarySize
 
 View all open issues here:
-  https://code.google.com/p/chromium/issues/list?can=2&q=label:Binary-Size-Tool
+  https://code.google.com/p/chromium/issues/list?can=2&q=label:Tools-BinarySize

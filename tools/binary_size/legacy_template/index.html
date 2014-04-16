@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<!--
+  Copyright 2014 The Chromium Authors. All rights reserved.
+  Use of this source code is governed by a BSD-style license that can be
+  found in the LICENSE file.
+-->
+<html>
+<head>
+  <title>Binary Size Analysis</title>
+  <link rel='stylesheet' href='webtreemap/webtreemap.css'>
+  <style>
+    body { font-family: sans-serif; }
+    tt, pre { font-family: WebKitWorkaround, monospace; }
+    #map {
+      margin: 0 auto;
+      position: relative;
+      cursor: pointer;
+      -webkit-user-select: none;
+    }
+    #table {
+      border: 1px solid black;
+    }
+    .treemaplegend {
+      margin: 0 auto;
+      position: relative;
+    }
+    .webtreemap-symbol-vtable {
+      background: #FFFFAA;
+    }
+    .webtreemap-node:hover {
+      border-color: red;
+      background: linear-gradient(rgb(240,240,200), rgb(180,180,200));
+    }
+  </style>
+  <script src='webtreemap/webtreemap.js'></script>
+  <script src='treemap-dump.js'></script>
+  <script src='largest-symbols.js'></script>
+  <script src='largest-sources.js'></script>
+  <script src='largest-vtables.js'></script>
+</head>
+<body onload='show_report_treemap()'>
+<div style='text-align: center; margin-bottom: 2em;'>
+  <h1>Binary Size Analysis</h1>
+  <a href='#' onclick='show_report_treemap()'>Spatial Treemap</a>
+  ~
+  <a href='#' onclick='show_report_largest_sources()'>Largest Sources</a>
+  ~
+  <a href='#' onclick='show_report_largest_symbols()'>Largest Symbols</a>
+  ~
+  <a href='#' onclick='show_report_largest_vtables()'>Largest VTables</a>
+</div>
+<div id='report'></div>
+<script>
+function escape(str) { 
+  return str.replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+}
+
+var treemap_width = 800;
+var treemap_height = 450;
+function show_report_treemap() {
+  console.log('displaying treemap')
+  var div = document.getElementById('report');
+  var w = window.treemap_width;
+  var h = window.treemap_height;
+  div.innerHTML = '<div style=\'text-align: center;\'>' +
+                  '<button onclick=\'zoomInTreemap()\'>Bigger (More Detail)</button>' +
+                  ', <button onclick=\'zoomOutTreemap()\'>Smaller (Less Detail)</button>' +
+                  ' or resize to: ' +
+                  '<input type=text size=5 id=treemap_width value=' + w + '>x' +
+                  '<input type=text size=5 id=treemap_height value=' + h + '>' +
+                  '<button onclick=\'resizeTreemap()\'>Go</button>' +
+                  '<br><em>Click on a box to zoom in and reveal more detail. ' +
+                  'Click on the outermost box to zoom out.</em>' +
+                  '<br>Legend: <table border=1 class=\'treemaplegend\' cellborder=1><tr>' +
+                  '<td class=\'webtreemap-symbol-bss\'>BSS</td>' +
+                  '<td class=\'webtreemap-symbol-data\'>Data</td>' +
+                  '<td class=\'webtreemap-symbol-code\'>Code</td>' +
+                  '<td class=\'webtreemap-symbol-read-only_data\'>RO Data</td>' +
+                  '<td class=\'webtreemap-symbol-weak_symbol\'>Weak</td>' +
+                  '<td class=\'webtreemap-symbol-vtable\'>VTable</td>' +
+                  '</tr></table>' +
+                  '<br>' +
+                  '<div id=\'map\' ' +
+                  'style=\'width: ' + w + 'px; height: ' + h + 'px;\'>' +
+                  '</div></div>';
+  var map = document.getElementById('map');
+  appendTreemap(map, kTree);
+}
+
+function zoomInTreemap() {
+  window.treemap_width = Math.round(window.treemap_width * 1.25);
+  window.treemap_height = Math.round(window.treemap_height * 1.25);
+  show_report_treemap();
+}
+
+function zoomOutTreemap() {
+  window.treemap_width = Math.round(window.treemap_width / 1.25);
+  window.treemap_height = Math.round(window.treemap_height / 1.25);
+  show_report_treemap();
+}
+
+function resizeTreemap() {
+  window.treemap_width = document.getElementById('treemap_width').value;
+  window.treemap_height = document.getElementById('treemap_height').value;
+  show_report_treemap();
+}
+
+function show_report_largest_symbols() {
+  console.log('displaying largest-symbols report')
+  var div = document.getElementById('report');
+  div.innerHTML = '<div><table id=\'list\' border=1><tr>' +
+                  '<th>Rank</th><th>Size</th><th>Type</th><th>Source</th>' +
+                  '</tr></table>';
+  var list = document.getElementById('list');
+  for (var i = 0; i < largestSymbols.length; i++) {
+    var record = largestSymbols[i];
+    var link;
+    if (record.location.indexOf('out') == 0) {
+      link = record.location;
+    } else {
+      link = '<a href="https://code.google.com/p/chromium/codesearch#chromium/src/'
+             + record.location + '">' + escape(record.location) + '</a>';
+    }
+    list.innerHTML += '<tr>'
+      + '<td>' + (i+1) + '</td>'
+      + '<td>' + escape(record.size) + '</td>'
+      + '<td style=\'white-space: nowrap;\'>' + escape(record.type) + '</td>'
+      + '<td>' + link + ':<br>'
+      + escape(record.symbol) + '</td>'
+      + '</tr>';
+  }
+}
+
+function show_report_largest_sources() {
+  console.log('displaying largest-sources report')
+  var div = document.getElementById('report');
+  div.innerHTML = '<div><table id=\'list\' border=1><tr>' +
+                  '<th>Rank</th><th>Size</th><th>Symbol Count</th><th>Source</th>' +
+                  '</tr></table>';
+  var list = document.getElementById('list');
+  for (var i = 0; i < largestSources.length; i++) {
+    var record = largestSources[i];
+    var link;
+    if (record.location.indexOf('out') == 0) {
+      link = record.location;
+    } else {
+      link = '<a href="https://code.google.com/p/chromium/codesearch#chromium/src/'
+             + record.location + '">' + escape(record.location) + '</a>';
+    }
+
+    list.innerHTML += '<tr>'
+      + '<td>' + (i+1) + '</td>'
+      + '<td>' + escape(record.size) + '</td>'
+      + '<td>' + escape(record.symbol_count) + '</td>'
+      + '<td>' + link + '</td>'
+      + '</tr>';
+  }
+}
+
+function show_report_largest_vtables() {
+  console.log('displaying largest-vtables report')
+  var div = document.getElementById('report');
+  div.innerHTML = '<div><table id=\'list\' border=1><tr>' +
+                  '<th>Rank</th><th>Size</th><th>Symbol</th><th>Source</th>' +
+                  '</tr></table>';
+  var list = document.getElementById('list');
+  for (var i = 0; i < largestVTables.length; i++) {
+    var record = largestVTables[i];
+    var link;
+    if (record.location.indexOf('out') == 0) {
+      link = record.location;
+    } else {
+      link = '<a href="https://code.google.com/p/chromium/codesearch#chromium/src/'
+             + record.location + '">' + escape(record.location) + '</a>';
+    }
+
+    list.innerHTML += '<tr>'
+      + '<td>' + (i+1) + '</td>'
+      + '<td>' + escape(record.size) + '</td>'
+      + '<td>' + escape(record.symbol) + '</td>'
+      + '<td>' + link + '</td>'
+      + '</tr>';
+  }
+}
+</script>
+</body>
+</html>
