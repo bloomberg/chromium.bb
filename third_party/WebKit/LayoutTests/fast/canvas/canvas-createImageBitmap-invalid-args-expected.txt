@@ -6,6 +6,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 PASS createImageBitmap(image) threw exception InvalidStateError: Failed to execute 'createImageBitmap' on 'Window': No image can be retrieved from the provided element..
 PASS createImageBitmap(video) threw exception InvalidStateError: Failed to execute 'createImageBitmap' on 'Window': No player can be retrieved from the provided video element..
 PASS createImageBitmap(undefined) threw exception TypeError: Failed to execute 'createImageBitmap' on 'Window': No function was found that matched the signature provided..
+PASS createImageBitmap(null) threw exception TypeError: Failed to execute 'createImageBitmap' on 'Window': No function was found that matched the signature provided..
 PASS createImageBitmap(image, 0, 0, 10, 0) threw exception IndexSizeError: Failed to execute 'createImageBitmap' on 'Window': The source height provided is 0..
 PASS createImageBitmap(image, 0, 0, 0, 10) threw exception IndexSizeError: Failed to execute 'createImageBitmap' on 'Window': The source width provided is 0..
 PASS createImageBitmap(video, 0, 0, 10, 0) threw exception IndexSizeError: Failed to execute 'createImageBitmap' on 'Window': The source height provided is 0..

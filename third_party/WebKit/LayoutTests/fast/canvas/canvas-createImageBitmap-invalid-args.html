@@ -114,6 +114,7 @@ function finishIfDone() {
 function loaded() {
     if (imageLoaded && videoLoaded && imageBitmapLoaded && blobLoaded && invalidBlobLoaded) {
         shouldThrow("createImageBitmap(undefined)", "TypeError");
+        shouldThrow("createImageBitmap(null)", "TypeError");
 
         shouldThrow("createImageBitmap(image, 0, 0, 10, 0)");
         shouldThrow("createImageBitmap(image, 0, 0, 0, 10)");
