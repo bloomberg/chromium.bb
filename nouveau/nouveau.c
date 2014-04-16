@@ -351,7 +351,7 @@ nouveau_bo_del(struct nouveau_bo *bo)
 
 	pthread_mutex_lock(&nvdev->lock);
 	if (nvbo->name) {
-		if (atomic_read(&bo->refcnt)) {
+		if (atomic_read(&nvbo->refcnt)) {
 			/*
 			 * bo has been revived by a race with
 			 * nouveau_bo_prime_handle_ref, or nouveau_bo_name_ref.
@@ -416,7 +416,7 @@ nouveau_bo_new(struct nouveau_device *dev, uint32_t flags, uint32_t align,
 	return 0;
 }
 
-int
+static int
 nouveau_bo_wrap_locked(struct nouveau_device *dev, uint32_t handle,
 		       struct nouveau_bo **pbo)
 {
@@ -459,7 +459,7 @@ nouveau_bo_wrap(struct nouveau_device *dev, uint32_t handle,
 	int ret;
 	pthread_mutex_lock(&nvdev->lock);
 	ret = nouveau_bo_wrap_locked(dev, handle, pbo);
-	pthread_mutex_unlock(&ndev->lock);
+	pthread_mutex_unlock(&nvdev->lock);
 	return ret;
 }
 
@@ -499,7 +499,7 @@ nouveau_bo_name_get(struct nouveau_bo *bo, uint32_t *name)
 	struct nouveau_bo_priv *nvbo = nouveau_bo(bo);
 
 	*name = nvbo->name;
-	if (!*name || *name == ~0) {
+	if (!*name || *name == ~0U) {
 		int ret = drmIoctl(bo->device->fd, DRM_IOCTL_GEM_FLINK, &req);
 		if (ret) {
 			*name = 0;
@@ -528,6 +528,7 @@ int
 nouveau_bo_prime_handle_ref(struct nouveau_device *dev, int prime_fd,
 			    struct nouveau_bo **bo)
 {
+	struct nouveau_device_priv *nvdev = nouveau_device(dev);
 	int ret;
 	unsigned int handle;
 
@@ -537,9 +538,16 @@ nouveau_bo_prime_handle_ref(struct nouveau_device *dev, int prime_fd,
 	ret = drmPrimeFDToHandle(dev->fd, prime_fd, &handle);
 	if (ret == 0) {
 		ret = nouveau_bo_wrap_locked(dev, handle, bo);
-		if (!bo->name)
-			// XXX: Force locked DRM_IOCTL_GEM_CLOSE to rule out race conditions
-			bo->name = ~0;
+		if (!ret) {
+			struct nouveau_bo_priv *nvbo = nouveau_bo(*bo);
+			if (!nvbo->name) {
+				/*
+				 * XXX: Force locked DRM_IOCTL_GEM_CLOSE
+				 * to rule out race conditions
+				 */
+				nvbo->name = ~0;
+			}
+		}
 	}
 	pthread_mutex_unlock(&nvdev->lock);
 	return ret;
