@@ -1013,6 +1013,58 @@ def ExpandVariables(input, phase, variables, build_file):
 
   return output
 
+# The same condition is often evaluated over and over again so it
+# makes sense to cache as much as possible between evaluations.
+cached_conditions_asts = {}
+
+def EvalCondition(condition, conditions_key, phase, variables, build_file):
+  """Returns the dict that should be used or None if the result was
+  that nothing should be used."""
+  if not isinstance(condition, list):
+    raise GypError(conditions_key + ' must be a list')
+  if len(condition) != 2 and len(condition) != 3:
+    # It's possible that condition[0] won't work in which case this
+    # attempt will raise its own IndexError.  That's probably fine.
+    raise GypError(conditions_key + ' ' + condition[0] +
+                   ' must be length 2 or 3, not ' + str(len(condition)))
+
+  [cond_expr, true_dict] = condition[0:2]
+  false_dict = None
+  if len(condition) == 3:
+    false_dict = condition[2]
+
+  # Do expansions on the condition itself.  Since the conditon can naturally
+  # contain variable references without needing to resort to GYP expansion
+  # syntax, this is of dubious value for variables, but someone might want to
+  # use a command expansion directly inside a condition.
+  cond_expr_expanded = ExpandVariables(cond_expr, phase, variables,
+                                       build_file)
+  if not isinstance(cond_expr_expanded, str) and \
+     not isinstance(cond_expr_expanded, int):
+    raise ValueError, \
+          'Variable expansion in this context permits str and int ' + \
+            'only, found ' + cond_expr_expanded.__class__.__name__
+
+  try:
+    if cond_expr_expanded in cached_conditions_asts:
+      ast_code = cached_conditions_asts[cond_expr_expanded]
+    else:
+      ast_code = compile(cond_expr_expanded, '<string>', 'eval')
+      cached_conditions_asts[cond_expr_expanded] = ast_code
+    if eval(ast_code, {'__builtins__': None}, variables):
+      return true_dict
+    return false_dict
+  except SyntaxError, e:
+    syntax_error = SyntaxError('%s while evaluating condition \'%s\' in %s '
+                               'at character %d.' %
+                               (str(e.args[0]), e.text, build_file, e.offset),
+                               e.filename, e.lineno, e.offset, e.text)
+    raise syntax_error
+  except NameError, e:
+    gyp.common.ExceptionAppend(e, 'while evaluating condition \'%s\' in %s' %
+                               (cond_expr_expanded, build_file))
+    raise GypError(e)
+
 
 def ProcessConditionsInDict(the_dict, phase, variables, build_file):
   # Process a 'conditions' or 'target_conditions' section in the_dict,
@@ -1048,48 +1100,8 @@ def ProcessConditionsInDict(the_dict, phase, variables, build_file):
   del the_dict[conditions_key]
 
   for condition in conditions_list:
-    if not isinstance(condition, list):
-      raise GypError(conditions_key + ' must be a list')
-    if len(condition) != 2 and len(condition) != 3:
-      # It's possible that condition[0] won't work in which case this
-      # attempt will raise its own IndexError.  That's probably fine.
-      raise GypError(conditions_key + ' ' + condition[0] +
-                     ' must be length 2 or 3, not ' + str(len(condition)))
-
-    [cond_expr, true_dict] = condition[0:2]
-    false_dict = None
-    if len(condition) == 3:
-      false_dict = condition[2]
-
-    # Do expansions on the condition itself.  Since the conditon can naturally
-    # contain variable references without needing to resort to GYP expansion
-    # syntax, this is of dubious value for variables, but someone might want to
-    # use a command expansion directly inside a condition.
-    cond_expr_expanded = ExpandVariables(cond_expr, phase, variables,
-                                         build_file)
-    if not isinstance(cond_expr_expanded, str) and \
-       not isinstance(cond_expr_expanded, int):
-      raise ValueError, \
-            'Variable expansion in this context permits str and int ' + \
-            'only, found ' + expanded.__class__.__name__
-
-    try:
-      ast_code = compile(cond_expr_expanded, '<string>', 'eval')
-
-      if eval(ast_code, {'__builtins__': None}, variables):
-        merge_dict = true_dict
-      else:
-        merge_dict = false_dict
-    except SyntaxError, e:
-      syntax_error = SyntaxError('%s while evaluating condition \'%s\' in %s '
-                                 'at character %d.' %
-                                 (str(e.args[0]), e.text, build_file, e.offset),
-                                 e.filename, e.lineno, e.offset, e.text)
-      raise syntax_error
-    except NameError, e:
-      gyp.common.ExceptionAppend(e, 'while evaluating condition \'%s\' in %s' %
-                                 (cond_expr_expanded, build_file))
-      raise GypError(e)
+    merge_dict = EvalCondition(condition, conditions_key, phase, variables,
+                               build_file)
 
     if merge_dict != None:
       # Expand variables and nested conditinals in the merge_dict before
