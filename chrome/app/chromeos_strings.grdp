@@ -2785,6 +2785,21 @@ Press any key to continue exploring.
   <message name="IDS_RESET_SCREEN_RESET" desc="Reset button text. Button launches powerwash.">
     Reset
   </message>
+  <message name="IDS_RESET_SCREEN_PREPARING_REVERT_PROMISE" desc="Message shown on reset screen after user initiates powerwash with version revert while revert is prepared until reboot.">
+    <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> will restart and reset momentarily.
+  </message>
+  <message name="IDS_RESET_SCREEN_PREPARING_REVERT_SPINNER_MESSAGE" desc="Spinner message shown on reset screen after user initiates powerwash with version revert while revert is prepared until reboot.">
+    Reverting to previous <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> update.
+  </message>
+  <message name="IDS_RESET_SCREEN_REVERT_ERROR" desc="Error message shown when revert was initiated but unavailable to be performed." meaning="Device reset screen revert option context.">
+    Oops, something went wrong.
+  </message>
+  <message name="IDS_RESET_SCREEN_REVERT_ERROR_EXPLANATION" desc="Error description shown when revert was initiated but unavailable to be performed.">
+    <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> is unable to revert to the previous version. Please try again or Powerwash your device.
+  </message>
+  <message name="IDS_RESET_SCREEN_REVERT_ERROR_BUTTON" desc="Reset device dialog, error page, revert error while initiating it, button title.">
+    OK
+  </message>
 
   <message name="IDS_WRONG_HWID_SCREEN_HEADER" desc="Header of message shown on screen notifying about malformed hardware ID.">
     A factory error has been detected
