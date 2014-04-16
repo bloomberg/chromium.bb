@@ -13,9 +13,9 @@
 #include "{{import.module.path}}-internal.h"
 {%- endfor %}
 
-{%- if namespace %}
+{%- for namespace in namespaces_as_array %}
 namespace {{namespace}} {
-{%- endif %}
+{%- endfor %}
 
 {#--- Wrapper forward declarations #}
 {%  for struct in structs %}
@@ -34,8 +34,8 @@ namespace internal {
 #pragma pack(pop)
 
 }  // namespace internal
-{%- if namespace %}
+{%- for namespace in namespaces_as_array|reverse %}
 }  // namespace {{namespace}}
-{%- endif %}
+{%- endfor %}
 
 #endif  // {{header_guard}}

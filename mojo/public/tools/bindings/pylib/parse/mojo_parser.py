@@ -76,6 +76,8 @@ class Parser(object):
     if len(p) > 2:
       p[0] = _ListFromConcat(p[1], p[2])
     else:
+      # Generator expects a module. If one wasn't specified insert one with an
+      # empty name.
       if p[1][0] != 'MODULE':
         p[0] = [('MODULE', '', p[1])]
       else:
@@ -87,7 +89,7 @@ class Parser(object):
     p[0] = ('IMPORT', eval(p[2]))
 
   def p_module(self, p):
-    """module : MODULE NAME LBRACE definitions RBRACE"""
+    """module : MODULE identifier LBRACE definitions RBRACE"""
     p[0] = ('MODULE', p[2], p[4])
 
   def p_definitions(self, p):

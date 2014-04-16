@@ -16,9 +16,9 @@
 #include "{{import.module.path}}.h"
 {%- endfor %}
 
-{%- if namespace %}
+{%- for namespace in namespaces_as_array %}
 namespace {{namespace}} {
-{%- endif %}
+{%- endfor %}
 
 {#--- Enums #}
 {%  for enum in enums %}
@@ -45,8 +45,8 @@ namespace {{namespace}} {
 {%    include "interface_stub_declaration.tmpl" %}
 {%- endfor %}
 
-{%- if namespace %}
+{%- for namespace in namespaces_as_array|reverse %}
 }  // namespace {{namespace}}
-{%- endif %}
+{%- endfor %}
 
 #endif  // {{header_guard}}

@@ -31,10 +31,13 @@ _kind_to_cpp_type = {
 }
 
 
+def NamespaceToArray(namespace):
+  return namespace.split('.')
+
 def GetNameForKind(kind, internal = False):
   parts = []
   if kind.imported_from:
-    parts.append(kind.imported_from["namespace"])
+    parts.extend(NamespaceToArray(kind.imported_from["namespace"]))
     if internal:
       parts.append("internal")
   if kind.parent_kind:
@@ -151,7 +154,7 @@ def TranslateConstants(token, module):
     # Namespace::Struct::FIELD_NAME
     name = []
     if token.imported_from:
-      name.append(token.namespace)
+      name.extend(NamespaceToArray(token.namespace))
     if token.parent_kind:
       name.append(token.parent_kind.name)
     name.append(token.name[1])
@@ -193,6 +196,7 @@ class Generator(mojom_generator.Generator):
     return {
       "module": self.module,
       "namespace": self.module.namespace,
+      "namespaces_as_array": NamespaceToArray(self.module.namespace),
       "imports": self.module.imports,
       "kinds": self.module.kinds,
       "enums": self.module.enums,

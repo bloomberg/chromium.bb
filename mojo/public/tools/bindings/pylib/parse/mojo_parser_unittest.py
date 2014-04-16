@@ -272,6 +272,26 @@ module my_module { struct MyStruct { int32 a_hex @0X0; }; }
             r"Octal and hexadecimal ordinal values not allowed$"):
       mojo_parser.Parse(source5, "my_file.mojom")
 
+  def testNestedNamespace(self):
+    """Tests nested namespaces work."""
+    source = """\
+module my.mod {
+
+struct MyStruct {
+  int32 a;
+};
+
+}  // module my.mod
+"""
+    expected = \
+[('MODULE',
+  'my.mod',
+  [('STRUCT',
+    'MyStruct',
+    None,
+    [('FIELD', 'int32', 'a', None, None)])])]
+    self.assertEquals(mojo_parser.Parse(source, "my_file.mojom"), expected)
+
 
 if __name__ == "__main__":
   unittest.main()
