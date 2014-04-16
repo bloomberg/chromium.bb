@@ -36,6 +36,7 @@
 #if defined(CLD2_DYNAMIC_MODE)
 #include "base/files/file.h"
 #include "base/path_service.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
