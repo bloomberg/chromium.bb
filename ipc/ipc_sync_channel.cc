@@ -411,8 +411,7 @@ SyncChannel::SyncChannel(
     base::SingleThreadTaskRunner* ipc_task_runner,
     bool create_pipe_now,
     WaitableEvent* shutdown_event)
-    : ChannelProxy(new SyncContext(listener, ipc_task_runner, shutdown_event)),
-      sync_messages_with_no_timeout_allowed_(true) {
+    : ChannelProxy(new SyncContext(listener, ipc_task_runner, shutdown_event)) {
   ChannelProxy::Init(channel_handle, mode, create_pipe_now);
   StartWatching();
 }
@@ -421,8 +420,7 @@ SyncChannel::SyncChannel(
     Listener* listener,
     base::SingleThreadTaskRunner* ipc_task_runner,
     WaitableEvent* shutdown_event)
-    : ChannelProxy(new SyncContext(listener, ipc_task_runner, shutdown_event)),
-      sync_messages_with_no_timeout_allowed_(true) {
+    : ChannelProxy(new SyncContext(listener, ipc_task_runner, shutdown_event)) {
   StartWatching();
 }
 
@@ -434,18 +432,13 @@ void SyncChannel::SetRestrictDispatchChannelGroup(int group) {
 }
 
 bool SyncChannel::Send(Message* message) {
-  return SendWithTimeout(message, base::kNoTimeout);
-}
-
-bool SyncChannel::SendWithTimeout(Message* message, int timeout_ms) {
 #ifdef IPC_MESSAGE_LOG_ENABLED
   Logging* logger = Logging::GetInstance();
   std::string name;
   logger->GetMessageText(message->type(), &name, message, NULL);
-  TRACE_EVENT1("toplevel", "SyncChannel::SendWithTimeout",
-               "name", name);
+  TRACE_EVENT1("toplevel", "SyncChannel::Send", "name", name);
 #else
-  TRACE_EVENT2("toplevel", "SyncChannel::SendWithTimeout",
+  TRACE_EVENT2("toplevel", "SyncChannel::Send",
                "class", IPC_MESSAGE_ID_CLASS(message->type()),
                "line", IPC_MESSAGE_ID_LINE(message->type()));
 #endif
@@ -462,24 +455,11 @@ bool SyncChannel::SendWithTimeout(Message* message, int timeout_ms) {
     return false;
   }
 
-  DCHECK(sync_messages_with_no_timeout_allowed_ ||
-         timeout_ms != base::kNoTimeout);
   SyncMessage* sync_msg = static_cast<SyncMessage*>(message);
   context->Push(sync_msg);
-  int message_id = SyncMessage::GetMessageId(*sync_msg);
   WaitableEvent* pump_messages_event = sync_msg->pump_messages_event();
 
   ChannelProxy::Send(message);
-
-  if (timeout_ms != base::kNoTimeout) {
-    // We use the sync message id so that when a message times out, we don't
-    // confuse it with another send that is either above/below this Send in
-    // the call stack.
-    context->ipc_task_runner()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&SyncContext::OnSendTimeout, context.get(), message_id),
-        base::TimeDelta::FromMilliseconds(timeout_ms));
-  }
 
   // Wait for reply, or for any other incoming synchronous messages.
   // *this* might get deleted, so only call static functions at this point.

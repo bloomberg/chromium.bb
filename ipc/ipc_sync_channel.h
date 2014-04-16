@@ -30,7 +30,7 @@ class SyncMessage;
 // Overview of how the sync channel works
 // --------------------------------------
 // When the sending thread sends a synchronous message, we create a bunch
-// of tracking info (created in SendWithTimeout, stored in the PendingSyncMsg
+// of tracking info (created in Send, stored in the PendingSyncMsg
 // structure) associated with the message that we identify by the unique
 // "MessageId" on the SyncMessage. Among the things we save is the
 // "Deserializer" which is provided by the sync message. This object is in
@@ -83,12 +83,6 @@ class IPC_EXPORT SyncChannel : public ChannelProxy {
   virtual ~SyncChannel();
 
   virtual bool Send(Message* message) OVERRIDE;
-  virtual bool SendWithTimeout(Message* message, int timeout_ms);
-
-  // Whether we allow sending messages with no time-out.
-  void set_sync_messages_with_no_timeout_allowed(bool value) {
-    sync_messages_with_no_timeout_allowed_ = value;
-  }
 
   // Sets the dispatch group for this channel, to only allow re-entrant dispatch
   // of messages to other channels in the same group.
@@ -211,8 +205,6 @@ class IPC_EXPORT SyncChannel : public ChannelProxy {
 
   // Starts the dispatch watcher.
   void StartWatching();
-
-  bool sync_messages_with_no_timeout_allowed_;
 
   // Used to signal events between the IPC and listener threads.
   base::WaitableEventWatcher dispatch_watcher_;

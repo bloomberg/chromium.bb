@@ -65,9 +65,6 @@ class Worker : public Listener, public Sender {
   void AddRef() { }
   void Release() { }
   virtual bool Send(Message* msg) OVERRIDE { return channel_->Send(msg); }
-  bool SendWithTimeout(Message* msg, int timeout_ms) {
-    return channel_->SendWithTimeout(msg, timeout_ms);
-  }
   void WaitForChannelCreation() { channel_created_->Wait(); }
   void CloseChannel() {
     DCHECK(base::MessageLoop::current() == ListenerThread()->message_loop());
@@ -96,12 +93,12 @@ class Worker : public Listener, public Sender {
     DCHECK(overrided_thread_ == NULL);
     overrided_thread_ = overrided_thread;
   }
-  bool SendAnswerToLife(bool pump, int timeout, bool succeed) {
+  bool SendAnswerToLife(bool pump, bool succeed) {
     int answer = 0;
     SyncMessage* msg = new SyncChannelTestMsg_AnswerToLife(&answer);
     if (pump)
       msg->EnableMessagePumping();
-    bool result = SendWithTimeout(msg, timeout);
+    bool result = Send(msg);
     DCHECK_EQ(result, succeed);
     DCHECK_EQ(answer, (succeed ? 42 : 0));
     return result;
@@ -280,7 +277,7 @@ class SimpleServer : public Worker {
       : Worker(Channel::MODE_SERVER, "simpler_server"),
         pump_during_send_(pump_during_send) { }
   virtual void Run() OVERRIDE {
-    SendAnswerToLife(pump_during_send_, base::kNoTimeout, true);
+    SendAnswerToLife(pump_during_send_, true);
     Done();
   }
 
@@ -322,7 +319,7 @@ class TwoStepServer : public Worker {
         create_pipe_now_(create_pipe_now) { }
 
   virtual void Run() OVERRIDE {
-    SendAnswerToLife(false, base::kNoTimeout, true);
+    SendAnswerToLife(false, true);
     Done();
   }
 
@@ -408,10 +405,10 @@ class NoHangServer : public Worker {
         got_first_reply_(got_first_reply),
         pump_during_send_(pump_during_send) { }
   virtual void Run() OVERRIDE {
-    SendAnswerToLife(pump_during_send_, base::kNoTimeout, true);
+    SendAnswerToLife(pump_during_send_, true);
     got_first_reply_->Signal();
 
-    SendAnswerToLife(pump_during_send_, base::kNoTimeout, false);
+    SendAnswerToLife(pump_during_send_, false);
     Done();
   }
 
@@ -470,7 +467,7 @@ class UnblockServer : public Worker {
         msg->EnableMessagePumping();
       Send(msg);
     } else {
-      SendAnswerToLife(pump_during_send_, base::kNoTimeout, true);
+      SendAnswerToLife(pump_during_send_, true);
     }
     Done();
   }
@@ -541,7 +538,7 @@ class RecursiveServer : public Worker {
 
   virtual void OnDouble(int in, int* out) OVERRIDE {
     *out = in * 2;
-    SendAnswerToLife(pump_second_, base::kNoTimeout, expected_send_result_);
+    SendAnswerToLife(pump_second_, expected_send_result_);
   }
 
   bool expected_send_result_, pump_first_, pump_second_;
@@ -679,7 +676,7 @@ class MultipleClient2 : public Worker {
 
   virtual void Run() OVERRIDE {
     client1_msg_received_->Wait();
-    SendAnswerToLife(pump_during_send_, base::kNoTimeout, true);
+    SendAnswerToLife(pump_during_send_, true);
     client1_can_reply_->Signal();
     Done();
   }
@@ -879,117 +876,10 @@ TEST_F(IPCSyncChannelTest, ChattyServer) {
 
 //------------------------------------------------------------------------------
 
-class TimeoutServer : public Worker {
- public:
-  TimeoutServer(int timeout_ms,
-                std::vector<bool> timeout_seq,
-                bool pump_during_send)
-      : Worker(Channel::MODE_SERVER, "timeout_server"),
-        timeout_ms_(timeout_ms),
-        timeout_seq_(timeout_seq),
-        pump_during_send_(pump_during_send) {
-  }
-
-  virtual void Run() OVERRIDE {
-    for (std::vector<bool>::const_iterator iter = timeout_seq_.begin();
-         iter != timeout_seq_.end(); ++iter) {
-      SendAnswerToLife(pump_during_send_, timeout_ms_, !*iter);
-    }
-    Done();
-  }
-
- private:
-  int timeout_ms_;
-  std::vector<bool> timeout_seq_;
-  bool pump_during_send_;
-};
-
-class UnresponsiveClient : public Worker {
- public:
-  explicit UnresponsiveClient(std::vector<bool> timeout_seq)
-      : Worker(Channel::MODE_CLIENT, "unresponsive_client"),
-        timeout_seq_(timeout_seq) {
-  }
-
-  virtual void OnAnswerDelay(Message* reply_msg) OVERRIDE {
-    DCHECK(!timeout_seq_.empty());
-    if (!timeout_seq_[0]) {
-      SyncChannelTestMsg_AnswerToLife::WriteReplyParams(reply_msg, 42);
-      Send(reply_msg);
-    } else {
-      // Don't reply.
-      delete reply_msg;
-    }
-    timeout_seq_.erase(timeout_seq_.begin());
-    if (timeout_seq_.empty())
-      Done();
-  }
-
- private:
-  // Whether we should time-out or respond to the various messages we receive.
-  std::vector<bool> timeout_seq_;
-};
-
-void SendWithTimeoutOK(bool pump_during_send) {
-  std::vector<Worker*> workers;
-  std::vector<bool> timeout_seq;
-  timeout_seq.push_back(false);
-  timeout_seq.push_back(false);
-  timeout_seq.push_back(false);
-  workers.push_back(new TimeoutServer(5000, timeout_seq, pump_during_send));
-  workers.push_back(new SimpleClient());
-  RunTest(workers);
-}
-
-void SendWithTimeoutTimeout(bool pump_during_send) {
-  std::vector<Worker*> workers;
-  std::vector<bool> timeout_seq;
-  timeout_seq.push_back(true);
-  timeout_seq.push_back(false);
-  timeout_seq.push_back(false);
-  workers.push_back(new TimeoutServer(100, timeout_seq, pump_during_send));
-  workers.push_back(new UnresponsiveClient(timeout_seq));
-  RunTest(workers);
-}
-
-void SendWithTimeoutMixedOKAndTimeout(bool pump_during_send) {
-  std::vector<Worker*> workers;
-  std::vector<bool> timeout_seq;
-  timeout_seq.push_back(true);
-  timeout_seq.push_back(false);
-  timeout_seq.push_back(false);
-  timeout_seq.push_back(true);
-  timeout_seq.push_back(false);
-  workers.push_back(new TimeoutServer(100, timeout_seq, pump_during_send));
-  workers.push_back(new UnresponsiveClient(timeout_seq));
-  RunTest(workers);
-}
-
-// Tests that SendWithTimeout does not time-out if the response comes back fast
-// enough.
-TEST_F(IPCSyncChannelTest, SendWithTimeoutOK) {
-  SendWithTimeoutOK(false);
-  SendWithTimeoutOK(true);
-}
-
-// Tests that SendWithTimeout does time-out.
-TEST_F(IPCSyncChannelTest, SendWithTimeoutTimeout) {
-  SendWithTimeoutTimeout(false);
-  SendWithTimeoutTimeout(true);
-}
-
-// Sends some message that time-out and some that succeed.
-TEST_F(IPCSyncChannelTest, SendWithTimeoutMixedOKAndTimeout) {
-  SendWithTimeoutMixedOKAndTimeout(false);
-  SendWithTimeoutMixedOKAndTimeout(true);
-}
-
-//------------------------------------------------------------------------------
-
 void NestedCallback(Worker* server) {
   // Sleep a bit so that we wake up after the reply has been received.
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(250));
-  server->SendAnswerToLife(true, base::kNoTimeout, true);
+  server->SendAnswerToLife(true, true);
 }
 
 bool timeout_occurred = false;
@@ -1014,7 +904,7 @@ class DoneEventRaceServer : public Worker {
     // bug, the reply message comes back and is deserialized, however the done
     // event wasn't set.  So we indirectly use the timeout task to notice if a
     // timeout occurred.
-    SendAnswerToLife(true, 10000, true);
+    SendAnswerToLife(true, true);
     DCHECK(!timeout_occurred);
     Done();
   }
