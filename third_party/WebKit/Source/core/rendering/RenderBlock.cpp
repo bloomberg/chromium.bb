@@ -2749,7 +2749,8 @@ bool RenderBlock::nodeAtPoint(const HitTestRequest& request, HitTestResult& resu
 
     if (!isRenderView()) {
         // Check if we need to do anything at all.
-        LayoutRect overflowBox = visualOverflowRect();
+        // If we have clipping, then we can't have any spillout.
+        LayoutRect overflowBox = hasOverflowClip() ? borderBoxRect() : visualOverflowRect();
         flipForWritingMode(overflowBox);
         overflowBox.moveBy(adjustedLocation);
         if (!locationInContainer.intersects(overflowBox))
