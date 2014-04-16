@@ -20,7 +20,7 @@ const int kModifierMask = ui::EF_SHIFT_DOWN;
 // in) and the keyboard driven flag in the OEM manifest is on.
 bool ShouldStripModifiersForArrowKeysAndEnter() {
   if (UserManager::IsInitialized() &&
-      !UserManager::Get()->IsUserLoggedIn()) {
+      !UserManager::Get()->IsSessionStarted()) {
     return system::InputDeviceSettings::Get()
         ->ForceKeyboardDrivenUINavigation();
   }

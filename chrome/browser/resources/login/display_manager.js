@@ -200,7 +200,7 @@ cr.define('cr.ui.login', function() {
       this.forceKeyboardFlow_ = value;
       if (value) {
         keyboard.initializeKeyboardFlow();
-        cr.ui.Dropdown.enableKeyboardFlow();
+        cr.ui.DropDown.enableKeyboardFlow();
       }
     },
 
