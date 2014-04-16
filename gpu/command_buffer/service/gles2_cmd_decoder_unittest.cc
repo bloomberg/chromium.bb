@@ -9167,6 +9167,20 @@ TEST_F(GLES2DecoderRestoreStateTest, DefaultUnit1) {
   GetDecoder()->RestoreAllTextureUnitBindings(&prev_state);
 }
 
+// TODO(vmiura): Tests for VAO restore.
+
+// TODO(vmiura): Tests for ContextState::RestoreAttribute().
+
+// TODO(vmiura): Tests for ContextState::RestoreBufferBindings().
+
+// TODO(vmiura): Tests for ContextState::RestoreProgramBindings().
+
+// TODO(vmiura): Tests for RestoreRenderbufferBindings().
+
+// TODO(vmiura): Tests for RestoreProgramBindings().
+
+// TODO(vmiura): Tests for RestoreGlobalState().
+
 TEST_F(GLES2DecoderManualInitTest, ClearUniformsBeforeFirstProgramUse) {
   CommandLine command_line(0, NULL);
   command_line.AppendSwitchASCII(
