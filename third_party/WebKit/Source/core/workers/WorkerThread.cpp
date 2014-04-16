@@ -138,11 +138,10 @@ void WorkerThread::workerThread()
     // The below assignment will destroy the context, which will in turn notify messaging proxy.
     // We cannot let any objects survive past thread exit, because no other thread will run GC or otherwise destroy them.
     // If Oilpan is enabled, we detach of the context/global scope, with the final heap cleanup below sweeping it out.
-#if ENABLE(OILPAN)
-    m_workerGlobalScope->dispose();
-#else
+#if !ENABLE(OILPAN)
     ASSERT(m_workerGlobalScope->hasOneRef());
 #endif
+    m_workerGlobalScope->dispose();
     m_workerGlobalScope = nullptr;
 
     // Detach the ThreadState, cleaning out the thread's heap by

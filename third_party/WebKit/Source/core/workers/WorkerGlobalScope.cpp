@@ -93,9 +93,6 @@ WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, W
 
 WorkerGlobalScope::~WorkerGlobalScope()
 {
-#if !ENABLE(OILPAN)
-    dispose();
-#endif
 }
 
 void WorkerGlobalScope::applyContentSecurityPolicyFromString(const String& policy, ContentSecurityPolicyHeaderType contentSecurityPolicyType)
