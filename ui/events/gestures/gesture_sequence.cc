@@ -1055,11 +1055,6 @@ void GestureSequence::AppendScrollGestureUpdate(GesturePoint& point,
 
   GestureEventDetails details(ui::ET_GESTURE_SCROLL_UPDATE,
                               d.x(), d.y(), o.x(), o.y());
-  details.SetScrollVelocity(
-      scroll_type_ == ST_VERTICAL ? 0 : point.XVelocity(),
-      scroll_type_ == ST_HORIZONTAL ? 0 : point.YVelocity(),
-      point.XVelocity(),
-      point.YVelocity());
   gestures->push_back(CreateGestureEvent(
       details,
       location,

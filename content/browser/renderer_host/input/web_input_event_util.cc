@@ -287,8 +287,6 @@ WebGestureEvent CreateWebGestureEventFromGestureEventData(
       gesture.type = WebInputEvent::GestureScrollUpdate;
       gesture.data.scrollUpdate.deltaX = data.details.scroll_x();
       gesture.data.scrollUpdate.deltaY = data.details.scroll_y();
-      gesture.data.scrollUpdate.velocityX = data.details.velocity_x();
-      gesture.data.scrollUpdate.velocityY = data.details.velocity_y();
       break;
     case ui::ET_GESTURE_SCROLL_END:
       gesture.type = WebInputEvent::GestureScrollEnd;

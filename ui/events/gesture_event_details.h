@@ -37,9 +37,6 @@ struct EVENTS_BASE_EXPORT GestureEventDetails {
 
   void set_bounding_box(const gfx::RectF& box) { bounding_box_ = box; }
 
-  void SetScrollVelocity(float velocity_x, float velocity_y,
-                         float velocity_x_ordinal, float velocity_y_ordinal);
-
   float scroll_x_hint() const {
     DCHECK_EQ(ui::ET_GESTURE_SCROLL_BEGIN, type_);
     return data.scroll_begin.x_hint;
@@ -61,17 +58,13 @@ struct EVENTS_BASE_EXPORT GestureEventDetails {
   }
 
   float velocity_x() const {
-    DCHECK(type_ == ui::ET_GESTURE_SCROLL_UPDATE ||
-          type_ == ui::ET_SCROLL_FLING_START);
-    return type_ == ui::ET_SCROLL_FLING_START ? data.fling_velocity.x :
-                                                data.scroll_update.velocity_x;
+    DCHECK(type_ == ui::ET_SCROLL_FLING_START);
+    return data.fling_velocity.x;
   }
 
   float velocity_y() const {
-    DCHECK(type_ == ui::ET_GESTURE_SCROLL_UPDATE ||
-          type_ == ui::ET_SCROLL_FLING_START);
-    return type_ == ui::ET_SCROLL_FLING_START ? data.fling_velocity.y :
-                                                data.scroll_update.velocity_y;
+    DCHECK(type_ == ui::ET_SCROLL_FLING_START);
+    return data.fling_velocity.y;
   }
 
   // *_ordinal values are unmodified by rail based clamping.
@@ -86,19 +79,13 @@ struct EVENTS_BASE_EXPORT GestureEventDetails {
   }
 
   float velocity_x_ordinal() const {
-    DCHECK(type_ == ui::ET_GESTURE_SCROLL_UPDATE ||
-          type_ == ui::ET_SCROLL_FLING_START);
-    return type_ == ui::ET_SCROLL_FLING_START ?
-        data.fling_velocity.x_ordinal :
-        data.scroll_update.velocity_x_ordinal;
+    DCHECK(type_ == ui::ET_SCROLL_FLING_START);
+    return data.fling_velocity.x_ordinal;
   }
 
   float velocity_y_ordinal() const {
-    DCHECK(type_ == ui::ET_GESTURE_SCROLL_UPDATE ||
-          type_ == ui::ET_SCROLL_FLING_START);
-    return type_ == ui::ET_SCROLL_FLING_START ?
-        data.fling_velocity.y_ordinal :
-        data.scroll_update.velocity_y_ordinal;
+    DCHECK(type_ == ui::ET_SCROLL_FLING_START);
+    return data.fling_velocity.y_ordinal;
   }
 
   float first_finger_width() const {
@@ -157,12 +144,8 @@ struct EVENTS_BASE_EXPORT GestureEventDetails {
     struct {  // SCROLL delta.
       float x;
       float y;
-      float velocity_x;
-      float velocity_y;
       float x_ordinal;
       float y_ordinal;
-      float velocity_x_ordinal;
-      float velocity_y_ordinal;
     } scroll_update;
 
     float scale;  // PINCH scale.

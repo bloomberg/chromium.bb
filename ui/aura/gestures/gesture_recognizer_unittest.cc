@@ -242,12 +242,8 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
         scroll_update_ = true;
         scroll_x_ += gesture->details().scroll_x();
         scroll_y_ += gesture->details().scroll_y();
-        scroll_velocity_x_ = gesture->details().velocity_x();
-        scroll_velocity_y_ = gesture->details().velocity_y();
         scroll_x_ordinal_ += gesture->details().scroll_x_ordinal();
         scroll_y_ordinal_ += gesture->details().scroll_y_ordinal();
-        scroll_velocity_x_ordinal_ = gesture->details().velocity_x_ordinal();
-        scroll_velocity_y_ordinal_ = gesture->details().velocity_y_ordinal();
         break;
       case ui::ET_GESTURE_SCROLL_END:
         EXPECT_TRUE(velocity_x_ == 0 && velocity_y_ == 0);
@@ -1123,14 +1119,8 @@ TEST_F(GestureRecognizerTest, GestureEventScrollPrediction) {
   tes.SendScrollEvent(event_processor(), 130, 230, kTouchId, delegate.get());
   EXPECT_1_EVENT(delegate->events(),
                  ui::ET_GESTURE_SCROLL_UPDATE);
-  EXPECT_GT(delegate->scroll_velocity_x(), 0);
-  EXPECT_GT(delegate->scroll_velocity_y(), 0);
   total_scroll.set_x(total_scroll.x() + delegate->scroll_x());
   total_scroll.set_y(total_scroll.y() + delegate->scroll_y());
-  EXPECT_EQ((int)(29 + delegate->scroll_velocity_x() * prediction_interval),
-            (int)(total_scroll.x()));
-  EXPECT_EQ((int)(29 + delegate->scroll_velocity_y() * prediction_interval),
-            (int)(total_scroll.y()));
 
   // Move some more to generate a few more scroll updates.
   tes.LeapForward(30);
@@ -1138,20 +1128,12 @@ TEST_F(GestureRecognizerTest, GestureEventScrollPrediction) {
   EXPECT_1_EVENT(delegate->events(), ui::ET_GESTURE_SCROLL_UPDATE);
   total_scroll.set_x(total_scroll.x() + delegate->scroll_x());
   total_scroll.set_y(total_scroll.y() + delegate->scroll_y());
-  EXPECT_EQ((int)(9 + delegate->scroll_velocity_x() * prediction_interval),
-            (int)(total_scroll.x()));
-  EXPECT_EQ((int)(10 + delegate->scroll_velocity_y() * prediction_interval),
-            (int)(total_scroll.y()));
 
   tes.LeapForward(30);
   tes.SendScrollEvent(event_processor(), 140, 215, kTouchId, delegate.get());
   EXPECT_1_EVENT(delegate->events(), ui::ET_GESTURE_SCROLL_UPDATE);
   total_scroll.set_x(total_scroll.x() + delegate->scroll_x());
   total_scroll.set_y(total_scroll.y() + delegate->scroll_y());
-  EXPECT_EQ((int)(39 + delegate->scroll_velocity_x() * prediction_interval),
-            (int)(total_scroll.x()));
-  EXPECT_EQ((int)(14 + delegate->scroll_velocity_y() * prediction_interval),
-            (int)(total_scroll.y()));
 
   // Release the touch. This should end the scroll.
   delegate->Reset();
@@ -1252,10 +1234,6 @@ TEST_F(GestureRecognizerTest, GestureEventHorizontalRailFling) {
                    100, 10, kTouchId, 1,
                    ui::GestureConfiguration::points_buffered_for_velocity(),
                    delegate.get());
-  // The y-velocity during the scroll should be 0 since this is in a horizontal
-  // rail scroll.
-  EXPECT_GT(delegate->scroll_velocity_x(), 0);
-  EXPECT_EQ(0, delegate->scroll_velocity_y());
 
   delegate->Reset();
   ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
@@ -1297,7 +1275,6 @@ TEST_F(GestureRecognizerTest, GestureEventVerticalRailFling) {
   EXPECT_EQ(0, delegate->scroll_x());
   EXPECT_EQ(1, delegate->scroll_x_ordinal());
   EXPECT_EQ(0, delegate->scroll_velocity_x());
-  EXPECT_GT(delegate->scroll_velocity_x_ordinal(), 0);
 
   // Get a high y velocity, while still staying on the rail
   tes.SendScrollEvents(event_processor(), 1, 6,
@@ -1305,7 +1282,6 @@ TEST_F(GestureRecognizerTest, GestureEventVerticalRailFling) {
                        ui::GestureConfiguration::points_buffered_for_velocity(),
                        delegate.get());
   EXPECT_EQ(0, delegate->scroll_velocity_x());
-  EXPECT_GT(delegate->scroll_velocity_y(), 0);
 
   delegate->Reset();
   ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(101, 206),
@@ -1587,10 +1563,6 @@ TEST_F(GestureRecognizerTest, GestureEventHorizontalRailScroll) {
                        6, 100, kTouchId, 1,
                        ui::GestureConfiguration::points_buffered_for_velocity(),
                        delegate.get());
-  // Since the scroll is not longer railing, the velocity should be set for both
-  // axis.
-  EXPECT_GT(delegate->scroll_velocity_x(), 0);
-  EXPECT_GT(delegate->scroll_velocity_y(), 0);
 
   tes.SendScrollEvent(event_processor(), 5, 0, kTouchId, delegate.get());
   tes.SendScrollEvent(event_processor(), 10, 5, kTouchId, delegate.get());
@@ -1641,8 +1613,6 @@ TEST_F(GestureRecognizerTest, GestureEventVerticalRailScroll) {
                        100, 1, kTouchId, 1,
                        ui::GestureConfiguration::points_buffered_for_velocity(),
                        delegate.get());
-  EXPECT_GT(delegate->scroll_velocity_x(), 0);
-  EXPECT_GT(delegate->scroll_velocity_y(), 0);
 
   tes.SendScrollEvent(event_processor(), 0, 5, kTouchId, delegate.get());
   tes.SendScrollEvent(event_processor(), 5, 10, kTouchId, delegate.get());

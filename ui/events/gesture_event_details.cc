@@ -95,17 +95,6 @@ GestureEventDetails::GestureEventDetails(ui::EventType type,
   }
 }
 
-void GestureEventDetails::SetScrollVelocity(float velocity_x,
-                                            float velocity_y,
-                                            float velocity_x_ordinal,
-                                            float velocity_y_ordinal) {
-  CHECK_EQ(ui::ET_GESTURE_SCROLL_UPDATE, type_);
-  data.scroll_update.velocity_x = velocity_x;
-  data.scroll_update.velocity_y = velocity_y;
-  data.scroll_update.velocity_x_ordinal = velocity_x_ordinal;
-  data.scroll_update.velocity_y_ordinal = velocity_y_ordinal;
-}
-
 GestureEventDetails::Details::Details() {
   memset(this, 0, sizeof(Details));
 }
