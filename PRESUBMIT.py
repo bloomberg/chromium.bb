@@ -79,7 +79,7 @@ _BANNED_OBJC_FUNCTIONS = (
       False,
     ),
     (
-      'NSTrackingArea',
+      r'/NSTrackingArea\W',
       (
        'The use of NSTrackingAreas is prohibited. Please use CrTrackingArea',
        'instead.',
@@ -396,7 +396,14 @@ def _CheckNoBannedFunctions(input_api, output_api):
   for f in input_api.AffectedFiles(file_filter=file_filter):
     for line_num, line in f.ChangedContents():
       for func_name, message, error in _BANNED_OBJC_FUNCTIONS:
-        if func_name in line:
+        matched = False
+        if func_name[0:1] == '/':
+          regex = func_name[1:]
+          if input_api.re.search(regex, line):
+            matched = True
+        elif func_name in line:
+            matched = True
+        if matched:
           problems = warnings;
           if error:
             problems = errors;
