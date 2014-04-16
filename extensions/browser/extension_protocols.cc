@@ -18,6 +18,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/path_service.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
@@ -219,7 +220,11 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
   }
 
   virtual void OnReadComplete(net::IOBuffer* buffer, int result) OVERRIDE {
-    UMA_HISTOGRAM_COUNTS("ExtensionUrlRequest.OnReadCompleteResult", result);
+    if (result >= 0)
+      UMA_HISTOGRAM_COUNTS("ExtensionUrlRequest.OnReadCompleteResult", result);
+    else
+      UMA_HISTOGRAM_SPARSE_SLOWLY("ExtensionUrlRequest.OnReadCompleteError",
+                                  -result);
     if (result > 0) {
       bytes_read_ += result;
       if (hash_.get()) {
