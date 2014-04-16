@@ -9468,11 +9468,18 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_ERRORPAGES_SUMMARY_BLOCKED_BY_ADMINISTRATOR" desc="Summary in the error page when an administrator policy blocks a request.">
         Your &lt;strong&gt;system administrator&lt;/strong&gt; has blocked access to this webpage.
       </message>
+       <message name="IDS_ERRORPAGES_SUMMARY_BLOCKED_ENROLLMENT_CHECK_PENDING" desc="Summary in the error page when the user tries to browse before the forced enrollment check has finished.">
+        This device has not finished its first run steps.
+      </message>
       <message name="IDS_ERRORPAGES_DETAILS_BLOCKED" desc="The error message displayed when an extension blocks a request.">
         Requests to the server have been blocked by an extension.
       </message>
       <message name="IDS_ERRORPAGES_DETAILS_BLOCKED_BY_ADMINISTRATOR" desc="The error message displayed when a policy blocks a request.">
         Requests to the server have been blocked by a policy.
+      </message>
+      <message name="IDS_ERRORPAGES_DETAILS_BLOCKED_ENROLLMENT_CHECK_PENDING" desc="The error message displayed when the user tries to browse before the forced enrollment check has finished.">
+        Browsing the Internet is disabled until the enterprise enrollment verification check has finished.
+        You can still use the diagnostic tool presented here to troubleshoot issues with your connectivity.
       </message>
 
       <message name="IDS_ERRORPAGES_HTTP_POST_WARNING" desc="The error message displayed when the user navigates back or forward to a page which would resubmit post data. They can hit reload to send POST data again and load the page.">
