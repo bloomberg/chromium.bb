@@ -166,7 +166,9 @@ int BrowserFrame::GetMinimizeButtonOffset() const {
 }
 
 gfx::Rect BrowserFrame::GetBoundsForTabStrip(views::View* tabstrip) const {
-  return browser_frame_view_->GetBoundsForTabStrip(tabstrip);
+  // This can be invoked before |browser_frame_view_| has been set.
+  return browser_frame_view_ ?
+      browser_frame_view_->GetBoundsForTabStrip(tabstrip) : gfx::Rect();
 }
 
 int BrowserFrame::GetTopInset() const {
