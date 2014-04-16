@@ -69,6 +69,7 @@ ChildProcess::~ChildProcess() {
   }
 
   g_lazy_tls.Pointer()->Set(NULL);
+  io_thread_.Stop();
 }
 
 ChildThread* ChildProcess::main_thread() {

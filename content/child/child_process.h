@@ -16,6 +16,18 @@ class ChildThread;
 
 // Base class for child processes of the browser process (i.e. renderer and
 // plugin host). This is a singleton object for each child process.
+//
+// During process shutdown the following sequence of actions happens in
+// order.
+//
+// 1. ChildProcess::~ChildProcess() is called.
+//   2. Shutdown event is fired. Background threads should stop.
+//   3. ChildThread::Shutdown() is called. ChildThread is also deleted.
+//   4. IO thread is stopped.
+// 5. Main message loop exits.
+// 6. Child process is now fully stopped.
+//
+// Note: IO thread outlives the ChildThread object.
 class CONTENT_EXPORT ChildProcess {
  public:
   // Child processes should have an object that derives from this class.
