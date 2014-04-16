@@ -431,7 +431,7 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
     // with PNaCl.  We can't apply this arbitrary limit outside of
     // PNaCl because it might break existing NaCl apps, and this limit
     // is only useful if the dyncode syscalls are disabled.
-    args->initial_nexe_max_code_bytes = 32 << 20;  // 32 MB
+    args->initial_nexe_max_code_bytes = 64 << 20;  // 64 MB
 
     // Indicate that this is a PNaCl module.
     // TODO(jvoung): Plumb through something indicating that this is PNaCl
