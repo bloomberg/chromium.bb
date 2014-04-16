@@ -374,7 +374,7 @@ void RenderTableCell::computeRectForRepaint(const RenderLayerModelObject* repain
         return;
     r.setY(r.y());
     RenderView* v = view();
-    if ((!v || !v->layoutStateEnabled() || repaintContainer) && parent())
+    if ((!v || !v->canUseLayoutStateForContainer(repaintContainer)) && parent())
         r.moveBy(-parentBox()->location()); // Rows are in the same coordinate space, so don't add their offset in.
     RenderBlockFlow::computeRectForRepaint(repaintContainer, r, fixed);
 }
