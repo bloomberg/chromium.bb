@@ -80,18 +80,11 @@ class PowerMetric(Metric):
     self._StopInternal()
 
   def AddResults(self, _, results):
-    """Add the collected power data into the results object.
-
-    This function needs to be robust in the face of differing power data on
-    various platforms. Therefore data existence needs to be checked when
-    building up the results. Additionally 0 is a valid value for many of the
-    metrics here which is why there are plenty of checks for 'is not None'
-    below.
-    """
     if not self._results:
       return
 
     energy_consumption_mwh = self._results.get('energy_consumption_mwh')
+    # Testing for None, as 0 is a valid value.
     if energy_consumption_mwh is not None:
       results.Add('energy_consumption_mwh', 'mWh', energy_consumption_mwh)
 
@@ -99,6 +92,7 @@ class PowerMetric(Metric):
     # GPU Frequency.
     gpu_power = component_utilization.get('gpu', {})
     gpu_freq_hz = gpu_power.get('average_frequency_hz')
+    # Testing for None, as 0 is a valid value.
     if gpu_freq_hz is not None:
       results.Add('gpu_average_frequency_hz', 'hz', gpu_freq_hz)
 
@@ -106,12 +100,6 @@ class PowerMetric(Metric):
     for (process_type, stats) in self._results.get('cpu_stats', {}).items():
       trace_name_for_process = 'idle_wakeups_%s' % (process_type.lower())
       results.Add(trace_name_for_process, 'count', stats)
-
-    # Add temperature measurements.
-    whole_package_utilization = component_utilization.get('whole_package', {})
-    board_temperature_c = whole_package_utilization.get('average_temperature_c')
-    if board_temperature_c is not None:
-      results.Add('board_temperature', 'celsius', board_temperature_c)
 
     self._results = None
 
