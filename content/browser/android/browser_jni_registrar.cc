@@ -22,6 +22,7 @@
 #include "content/browser/android/surface_texture_peer_browser_impl.h"
 #include "content/browser/android/tracing_controller_android.h"
 #include "content/browser/android/web_contents_observer_android.h"
+#include "content/browser/battery_status/battery_status_manager_android.h"
 #include "content/browser/device_orientation/sensor_manager_android.h"
 #include "content/browser/frame_host/navigation_controller_android.h"
 #include "content/browser/geolocation/location_api_adapter_android.h"
@@ -80,7 +81,9 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
     {"VibrationProvider", content::VibrationProviderAndroid::Register},
     {"WebContentsAndroid", content::WebContentsAndroid::Register},
     {"WebContentsObserverAndroid", content::RegisterWebContentsObserverAndroid},
-    {"WebViewStatics", content::RegisterWebViewStatics}, };
+    {"WebViewStatics", content::RegisterWebViewStatics},
+    {"BatterStatusManagerAndroid",
+     content::BatteryStatusManagerAndroid::Register}, };
 
 }  // namespace
 

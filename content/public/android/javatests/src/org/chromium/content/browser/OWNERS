@@ -9,5 +9,8 @@ per-file LocationProviderTest.java=timvolodine@chromium.org
 # Screen Orientation API related
 per-file ScreenOrientation*.java=mlamouri@chromium.org
 
+# Battery Status API related
+per-file BatteryStatusManagerTest.java=timvolodine@chromium.org
+
 # Input handling related
 jdduke@chromium.org

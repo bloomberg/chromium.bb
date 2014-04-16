@@ -309,6 +309,8 @@
     'browser/appcache/chrome_appcache_service.h',
     'browser/appcache/view_appcache_internals_job.h',
     'browser/appcache/view_appcache_internals_job.cc',
+    'browser/battery_status/battery_status_manager_android.cc',
+    'browser/battery_status/battery_status_manager_android.h',
     'browser/browser_child_process_host_impl.cc',
     'browser/browser_child_process_host_impl.h',
     'browser/browser_context.cc',

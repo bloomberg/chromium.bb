@@ -19,6 +19,7 @@
     'public/android/java/src/org/chromium/content/browser/ContentViewRenderView.java',
     'public/android/java/src/org/chromium/content/browser/ContentViewStatics.java',
     'public/android/java/src/org/chromium/content/browser/DeviceMotionAndOrientation.java',
+    'public/android/java/src/org/chromium/content/browser/BatteryStatusManager.java',
     'public/android/java/src/org/chromium/content/browser/DownloadController.java',
     'public/android/java/src/org/chromium/content/browser/input/ImeAdapter.java',
     'public/android/java/src/org/chromium/content/browser/input/DateTimeChooserAndroid.java',
