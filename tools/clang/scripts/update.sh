@@ -8,7 +8,7 @@
 # Do NOT CHANGE this if you don't know what you're doing -- see
 # https://code.google.com/p/chromium/wiki/UpdatingClang
 # Reverting problematic clang rolls is safe, though.
-CLANG_REVISION=204777
+CLANG_REVISION=206155
 
 THIS_DIR="$(dirname "${0}")"
 LLVM_DIR="${THIS_DIR}/../../../third_party/llvm"
@@ -319,6 +319,9 @@ if [[ -n "${gcc_toolchain}" ]]; then
   # Use the specified gcc installation for building.
   export CC="$gcc_toolchain/bin/gcc"
   export CXX="$gcc_toolchain/bin/g++"
+  # Set LD_LIBRARY_PATH to make auxiliary targets (tablegen, bootstrap compiler,
+  # etc.) find the .so.
+  export LD_LIBRARY_PATH="$(dirname $(${CXX} -print-file-name=libstdc++.so.6))"
 fi
 
 export CFLAGS=""
