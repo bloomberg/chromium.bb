@@ -37,6 +37,7 @@
 #include <stdio.h>
 
 #include <limits>
+#include <set>
 
 #include "common/windows/dia_util.h"
 #include "common/windows/guid_string.h"
@@ -54,9 +55,12 @@
  *
  */
 typedef unsigned char UBYTE;
+
+#if !defined(_WIN64)
 #define UNW_FLAG_EHANDLER  0x01
 #define UNW_FLAG_UHANDLER  0x02
 #define UNW_FLAG_CHAININFO 0x04
+#endif
 
 union UnwindCode {
   struct {
@@ -340,47 +344,59 @@ bool PDBSourceLineWriter::PrintSourceFiles() {
 }
 
 bool PDBSourceLineWriter::PrintFunctions() {
-  CComPtr<IDiaEnumSymbolsByAddr> symbols;
-  if (FAILED(session_->getSymbolsByAddr(&symbols))) {
-    fprintf(stderr, "failed to get symbol enumerator\n");
+  ULONG count = 0;
+  DWORD rva = 0;
+  CComPtr<IDiaSymbol> global;
+  std::set<DWORD> rvas;
+  HRESULT hr;
+
+  if (FAILED(session_->get_globalScope(&global))) {
+    fprintf(stderr, "get_globalScope failed\n");
     return false;
   }
 
-  CComPtr<IDiaSymbol> symbol;
-  if (FAILED(symbols->symbolByAddr(1, 0, &symbol))) {
-    fprintf(stderr, "failed to enumerate symbols\n");
-    return false;
-  }
+  CComPtr<IDiaEnumSymbols> symbols = NULL;
 
-  DWORD rva_last = 0;
-  if (FAILED(symbol->get_relativeVirtualAddress(&rva_last))) {
-    fprintf(stderr, "failed to get symbol rva\n");
-    return false;
-  }
+  // Find all public symbols.
+  hr = global->findChildren(SymTagPublicSymbol, NULL, nsNone, &symbols);
 
-  ULONG count;
-  do {
-    DWORD tag;
-    if (FAILED(symbol->get_symTag(&tag))) {
-      fprintf(stderr, "failed to get symbol tag\n");
-      return false;
+  if (SUCCEEDED(hr)) {
+    CComPtr<IDiaSymbol> symbol = NULL;
+
+    while (SUCCEEDED(symbols->Next(1, &symbol, &count)) && count == 1) {
+      if (!PrintCodePublicSymbol(symbol))
+        return false;
+      symbol.Release();
     }
 
-    // For a given function, DIA seems to give either a symbol with
-    // SymTagFunction or SymTagPublicSymbol, but not both.  This means
-    // that PDBSourceLineWriter will output either a FUNC or PUBLIC line,
-    // but not both.
-    if (tag == SymTagFunction) {
-      if (!PrintFunction(symbol, symbol)) {
+    symbols.Release();
+  }
+
+  // Find all function symbols.
+  hr = global->findChildren(SymTagFunction, NULL, nsNone, &symbols);
+
+  if (SUCCEEDED(hr)) {
+    CComPtr<IDiaSymbol> symbol = NULL;
+
+    while (SUCCEEDED(symbols->Next(1, &symbol, &count)) && count == 1) {
+      if (SUCCEEDED(symbol->get_relativeVirtualAddress(&rva))) {
+        // To maintain existing behavior of one symbol per address, place the
+        // rva onto a set here to uniquify them.
+        if (rvas.count(rva) == 0) {
+          rvas.insert(rva);
+          if (!PrintFunction(symbol, symbol))
+            return false;
+        }
+      } else {
+        fprintf(stderr, "get_relativeVirtualAddress failed on the symbol\n");
         return false;
       }
-    } else if (tag == SymTagPublicSymbol) {
-      if (!PrintCodePublicSymbol(symbol)) {
-        return false;
-      }
+
+      symbol.Release();
     }
-    symbol.Release();
-  } while (SUCCEEDED(symbols->Next(1, &symbol, &count)) && count == 1);
+
+    symbols.Release();
+  }
 
   // When building with PGO, the compiler can split functions into
   // "hot" and "cold" blocks, and move the "cold" blocks out to separate
@@ -389,12 +405,6 @@ bool PDBSourceLineWriter::PrintFunctions() {
   // that are children of them. We can then find the lexical parents
   // of those blocks and print out an extra FUNC line for blocks
   // that are not contained in their parent functions.
-  CComPtr<IDiaSymbol> global;
-  if (FAILED(session_->get_globalScope(&global))) {
-    fprintf(stderr, "get_globalScope failed\n");
-    return false;
-  }
-
   CComPtr<IDiaEnumSymbols> compilands;
   if (FAILED(global->findChildren(SymTagCompiland, NULL,
                                   nsNone, &compilands))) {
@@ -440,6 +450,7 @@ bool PDBSourceLineWriter::PrintFunctions() {
     compiland.Release();
   }
 
+  global.Release();
   return true;
 }
 
