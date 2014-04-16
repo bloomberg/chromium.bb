@@ -10,6 +10,7 @@ crbug.com/316146 [ XP ] http/tests/cache/cached-main-resource.html [ Pass Timeou
 crbug.com/305303 http/tests/security/mixedContent/insecure-sync-post-xhr-allowed.html [ Failure Pass ]
 crbug.com/305303 http/tests/security/mixedContent/insecure-sync-post-xhr-blocked.html [ Failure Pass ]
 crbug.com/305303 http/tests/security/mixedContent/insecure-xhr-in-main-frame.html [ Failure Pass ]
+crbug.com/364267 [ Win Mac ] http/tests/security/webgl-remote-read-remote-image-blocked-no-crossorigin.html [ Pass Timeout ]
 
 crbug.com/289002 http/tests/security/frame-loading-via-document-write.html [ Pass Failure ]
 
