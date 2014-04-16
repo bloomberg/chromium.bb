@@ -245,3 +245,15 @@ race:sctp_express_handle_sack
 
 # http://crbug.com/350982
 race:libvpx/vp9/decoder/vp9_thread.c
+
+# http://crbug.com/361790
+race:workerGlobalScopeDestroyed
+
+# http://crbug.com/363999
+race:v8::internal::EnterDebugger::*EnterDebugger
+
+# http://crbug.com/364006
+race:gfx::ImageFamily::~ImageFamily
+
+# http://crbug.com/364014
+race:WTF::Latin1Encoding()::globalLatin1Encoding
