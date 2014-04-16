@@ -1,16 +1,13 @@
-CONSOLE MESSAGE: line 34: Done.
+CONSOLE MESSAGE: line 12: Done.
 Tests resources initiator for images initiated by IMG tag, static CSS, CSS class added from JavaScript and XHR.
 
-Bug 65105 
-This div has background image set from CSS.
-This div will have background image set from JavaScript.
-Page reloaded.
+Bug 65105  
 http://127.0.0.1:8000/inspector/network/resources/initiator.css: parser
-    http://127.0.0.1:8000/inspector/network/network-initiator.html 3
+    http://127.0.0.1:8000/inspector/network/resources/network-initiator-frame.html 3
 http://127.0.0.1:8000/inspector/network/resources/resource.php?type=image&random=1&size=100: parser
-    http://127.0.0.1:8000/inspector/network/network-initiator.html 107
+    http://127.0.0.1:8000/inspector/network/resources/network-initiator-frame.html 5
 http://127.0.0.1:8000/inspector/network/resources/resource.php?type=image&random=1&size=400: script
-    loadData http://127.0.0.1:8000/inspector/network/network-initiator.html 29
+    loadData http://127.0.0.1:8000/inspector/network/resources/network-initiator-frame.html 23
 http://127.0.0.1:8000/inspector/network/resources/style.css: parser
-    http://127.0.0.1:8000/inspector/network/network-initiator.html 110
+    http://127.0.0.1:8000/inspector/network/resources/network-initiator-frame.html 8
 
