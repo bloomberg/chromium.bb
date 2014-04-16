@@ -46,18 +46,6 @@ function setupTests(tester, plugin) {
     }, false);
     plugin.postMessage('init');
   });
-  tester.addAsyncTest('TestNameService', function(status) {
-    plugin.addEventListener('message', function(message_event) {
-      this.removeEventListener('message', arguments.callee, false);
-      status.assertEqual(message_event.data,
-                         'nbytes = 47\n'
-                         +'KernelService\n'
-                         +'ManifestNameService\n'
-                         +'SecureRandom\n');
-      status.pass();
-    }, false);
-    plugin.postMessage('nameservice');
-  });
   tester.addAsyncTest('TestRng', function(status) {
     plugin.addEventListener('message', function(message_event) {
       this.removeEventListener('message', arguments.callee, false);

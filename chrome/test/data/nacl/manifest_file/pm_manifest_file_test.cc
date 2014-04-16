@@ -95,7 +95,6 @@ class Worker {
   void Enqueue(WorkRequest *req);
 
   void Initialize(nacl::StringBuffer *sb);
-  void NameServiceDump(nacl::StringBuffer *sb);
   void ManifestListTest(nacl::StringBuffer *sb);
   void ManifestOpenTest(nacl::StringBuffer *sb);
 
@@ -169,61 +168,6 @@ class MyInstance : public nacl_ppapi::NaClPpapiPluginInstance {
 
   DISALLOW_COPY_AND_ASSIGN(MyInstance);
 };
-
-// ---------------------------------------------------------------------------
-
-// success/fail
-bool EnumerateNames(NaClSrpcChannel *nschan, nacl::StringBuffer *sb) {
-  char      *buffer;
-  uint32_t  nbytes = 4;
-  uint32_t  in_out_nbytes;
-  char      *new_buffer;
-
-  buffer = reinterpret_cast<char *>(malloc(nbytes));
-  if (NULL == buffer) {
-    sb->Printf("EnumerateNames: initial malloc failed\n");
-    return false;
-  }
-
-  for (;;) {
-    in_out_nbytes = nbytes;
-    if (NACL_SRPC_RESULT_OK != NaClSrpcInvokeBySignature(nschan,
-                                                         NACL_NAME_SERVICE_LIST,
-                                                         &in_out_nbytes,
-                                                         buffer)) {
-      sb->Printf("NaClSrpcInvokeBySignature failed\n");
-      return false;
-    }
-    sb->Printf("EnumerateNames: in_out_nbytes %d\n", in_out_nbytes);
-    if (in_out_nbytes < nbytes) {
-      break;
-    }
-    nbytes *= 2;
-    new_buffer = reinterpret_cast<char *>(realloc(buffer, nbytes));
-    if (NULL == new_buffer) {
-      sb->Printf("EnumerateNames: out of memory during realloc\n");
-      free(buffer);
-      return false;
-    }
-    buffer = new_buffer;
-    new_buffer = NULL;
-  }
-  nbytes = in_out_nbytes;
-  sb->Printf("nbytes = %u\n", (size_t) nbytes);
-  if (nbytes == sizeof buffer) {
-    sb->Printf("Insufficent space for namespace enumeration\n");
-    return false;
-  }
-  size_t name_len;
-  for (char *p = buffer;
-       static_cast<size_t>(p - buffer) < nbytes;
-       p += name_len) {
-    name_len = strlen(p) + 1;
-    sb->Printf("%s\n", p);
-  }
-  free(buffer);
-  return true;
-}
 
 // ---------------------------------------------------------------------------
 
@@ -325,8 +269,6 @@ void Worker::Enqueue(WorkRequest *req) {
 
 Worker::DispatchTable const Worker::kDispatch[] = {
   { "init", &Worker::Initialize },
-  { "name_dump", &Worker::NameServiceDump },
-  { "manifest_list", &Worker::ManifestListTest },
   { "manifest_open", &Worker::ManifestOpenTest },
   { reinterpret_cast<char const *>(NULL), NULL }
 };
@@ -430,73 +372,6 @@ bool Worker::InitializeChannel(nacl::StringBuffer *sb) {
 
 void Worker::Initialize(nacl::StringBuffer *sb) {
   // we just want the log output from the InitializeChannel
-  return;
-}
-
-// return name service output in sb
-void Worker::NameServiceDump(nacl::StringBuffer *sb) {
-  (void) EnumerateNames(&ns_channel_, sb);
-}
-
-void Worker::ManifestListTest(nacl::StringBuffer *sb) {
-  int status;
-  int manifest;
-  // name service lookup for the manifest service descriptor
-  if (NACL_SRPC_RESULT_OK !=
-      NaClSrpcInvokeBySignature(&ns_channel_, NACL_NAME_SERVICE_LOOKUP,
-                                "ManifestNameService", O_RDWR,
-                                &status, &manifest) ||
-      NACL_NAME_SERVICE_SUCCESS != status) {
-    sb->Printf("nameservice lookup failed, status %d\n", status);
-  }
-  sb->Printf("Got manifest descriptor %d\n", manifest);
-  if (-1 == manifest) {
-    return;
-  }
-
-  // connect to manifest name server
-  int manifest_conn = imc_connect(manifest);
-  close(manifest);
-  sb->Printf("got manifest connection %d\n", manifest_conn);
-  if (-1 == manifest_conn) {
-    sb->Printf("could not connect\n");
-    return;
-  }
-
-  // build the SRPC connection (do service discovery)
-  struct NaClSrpcChannel manifest_channel;
-  if (!NaClSrpcClientCtor(&manifest_channel, manifest_conn)) {
-    sb->Printf("could not build srpc client\n");
-    return;
-  }
-  sb->Printf("ManifestListTest: basic connectivity ok\n");
-
-  // list manifest service contents
-  char      buffer[1024];
-  uint32_t  nbytes = sizeof buffer;
-
-  if (NACL_SRPC_RESULT_OK !=
-      NaClSrpcInvokeBySignature(&manifest_channel, NACL_NAME_SERVICE_LIST,
-                                &nbytes, buffer)) {
-    sb->Printf("manifest list RPC failed\n");
-    NaClSrpcDtor(&manifest_channel);
-    return;
-  }
-
-  sb->DiscardOutput();
-  sb->Printf("Manifest Contents:\n");
-  size_t name_len;
-  // Should we explicitly sort the names?  This would ensure that the
-  // test output is easy to compare with expected results.  Currently,
-  // the manifest uses a set to hold the names, so the results will be
-  // sorted anyway, but this is not a guarantee of the API.
-  for (char *p = buffer;
-       static_cast<size_t>(p - buffer) < nbytes;
-       p += name_len + 1) {
-    name_len = strlen(p);
-    sb->Printf("%.*s\n", (int) name_len, p);
-  }
-  NaClSrpcDtor(&manifest_channel);
   return;
 }
 
