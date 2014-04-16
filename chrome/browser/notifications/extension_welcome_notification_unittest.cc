@@ -479,5 +479,3 @@ TEST_F(ExtensionWelcomeNotificationTest, NotificationPreviouslyExpired) {
   EXPECT_TRUE(GetBooleanPref(prefs::kWelcomeNotificationPreviouslyPoppedUp));
   EXPECT_EQ(GetInt64Pref(prefs::kWelcomeNotificationExpirationTimestamp), 1);
 }
-
-// C++ Readability Review Change Trigger

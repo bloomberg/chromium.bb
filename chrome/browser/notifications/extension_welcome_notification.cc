@@ -318,5 +318,3 @@ bool ExtensionWelcomeNotification::IsWelcomeNotificationExpired() const {
   return !expiration_timestamp.is_null() &&
          (expiration_timestamp <= delegate_->GetCurrentTime());
 }
-
-// C++ Readability Review Change Trigger
