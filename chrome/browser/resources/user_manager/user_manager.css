@@ -8,6 +8,10 @@
   background-color: #eee;
 }
 
+#outer-container {
+  min-height: 0;
+}
+
 .bubble.faded {
   opacity: 0;
 }
