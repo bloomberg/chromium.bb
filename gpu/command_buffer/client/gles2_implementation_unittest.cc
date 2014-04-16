@@ -2996,7 +2996,6 @@ TEST_F(GLES2ImplementationTest, BeginEndQueryEXT) {
   // Test GetQueryObjectuivEXT CheckResultsAvailable
   ClearCommands();
   gl_->GetQueryObjectuivEXT(id1, GL_QUERY_RESULT_AVAILABLE_EXT, &available);
-  EXPECT_TRUE(NoCommandsWritten());
   EXPECT_EQ(0u, available);
 }
 

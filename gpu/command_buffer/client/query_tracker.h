@@ -113,7 +113,6 @@ class GLES2_IMPL_EXPORT QueryTracker {
     void MarkAsPending(int32 token) {
       token_ = token;
       state_ = kPending;
-      flushed_ = false;
     }
 
     base::subtle::Atomic32 submit_count() const { return submit_count_; }
@@ -147,7 +146,7 @@ class GLES2_IMPL_EXPORT QueryTracker {
     State state_;
     base::subtle::Atomic32 submit_count_;
     int32 token_;
-    bool flushed_;
+    uint32 flush_count_;
     uint64 client_begin_time_us_; // Only used for latency query target.
     uint32 result_;
   };
