@@ -448,6 +448,9 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   const gfx::Transform& transform() const { return transform_; }
   bool TransformIsAnimating() const;
   bool TransformIsAnimatingOnImplOnly() const;
+  void SetTransformAndInvertibility(const gfx::Transform& transform,
+                                    bool transform_is_invertible);
+  bool transform_is_invertible() const { return transform_is_invertible_; }
 
   // Note this rect is in layer space (not content space).
   void SetUpdateRect(const gfx::RectF& update_rect);
@@ -606,6 +609,9 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   bool draws_content_ : 1;
   bool hide_layer_and_subtree_ : 1;
   bool force_render_surface_ : 1;
+
+  // Cache transform_'s invertibility.
+  bool transform_is_invertible_ : 1;
 
   // Set for the layer that other layers are fixed to.
   bool is_container_for_fixed_position_layers_ : 1;

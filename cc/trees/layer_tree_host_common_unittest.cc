@@ -2942,10 +2942,8 @@ TEST_F(LayerTreeHostCommonTest,
   EXPECT_TRUE(child->visible_content_rect().IsEmpty());
   EXPECT_TRUE(child->drawable_content_rect().IsEmpty());
 
-  // Case 2: a matrix with flattened z, technically uninvertible but still
-  // drawable and visible. In this case, we must assume that the entire layer
-  // bounds are visible since there is no way to inverse-project the surface
-  // bounds to intersect.
+  // Case 2: a matrix with flattened z, uninvertible and not visible according
+  // to the CSS spec.
   uninvertible_matrix.MakeIdentity();
   uninvertible_matrix.matrix().set(2, 2, 0.0);
   ASSERT_FALSE(uninvertible_matrix.IsInvertible());
@@ -2960,12 +2958,10 @@ TEST_F(LayerTreeHostCommonTest,
 
   ExecuteCalculateDrawProperties(root.get());
 
-  EXPECT_RECT_EQ(gfx::Rect(0, 0, 50, 50), child->visible_content_rect());
-  EXPECT_RECT_EQ(gfx::Rect(5, 5, 50, 50), child->drawable_content_rect());
+  EXPECT_TRUE(child->visible_content_rect().IsEmpty());
+  EXPECT_TRUE(child->drawable_content_rect().IsEmpty());
 
-  // Case 3: a matrix with flattened z, technically uninvertible but still
-  // drawable, but not visible. In this case, we don't need to conservatively
-  // assume that the whole layer is visible.
+  // Case 3: a matrix with flattened z, also uninvertible and not visible.
   uninvertible_matrix.MakeIdentity();
   uninvertible_matrix.Translate(500.0, 0.0);
   uninvertible_matrix.matrix().set(2, 2, 0.0);
@@ -2982,7 +2978,7 @@ TEST_F(LayerTreeHostCommonTest,
   ExecuteCalculateDrawProperties(root.get());
 
   EXPECT_TRUE(child->visible_content_rect().IsEmpty());
-  EXPECT_RECT_EQ(gfx::Rect(505, 5, 50, 50), child->drawable_content_rect());
+  EXPECT_TRUE(child->drawable_content_rect().IsEmpty());
 }
 
 TEST_F(LayerTreeHostCommonTest,
@@ -9136,6 +9132,70 @@ TEST_F(LayerTreeHostCommonTest, ClippedByScrollParent) {
   EXPECT_EQ(gfx::Rect(0, 0, 30, 30).ToString(),
             scroll_child->clip_rect().ToString());
   EXPECT_TRUE(scroll_child->is_clipped());
+}
+
+TEST_F(LayerTreeHostCommonTest, SingularTransformSubtreesDoNotDraw) {
+  scoped_refptr<LayerWithForcedDrawsContent> root =
+      make_scoped_refptr(new LayerWithForcedDrawsContent);
+  scoped_refptr<LayerWithForcedDrawsContent> parent =
+      make_scoped_refptr(new LayerWithForcedDrawsContent);
+  scoped_refptr<LayerWithForcedDrawsContent> child =
+      make_scoped_refptr(new LayerWithForcedDrawsContent);
+
+  root->AddChild(parent);
+  parent->AddChild(child);
+
+  gfx::Transform identity_transform;
+  SetLayerPropertiesForTesting(root.get(),
+                               identity_transform,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(50, 50),
+                               true,
+                               true);
+  root->SetForceRenderSurface(true);
+  SetLayerPropertiesForTesting(parent.get(),
+                               identity_transform,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(30, 30),
+                               true,
+                               true);
+  parent->SetForceRenderSurface(true);
+  SetLayerPropertiesForTesting(child.get(),
+                               identity_transform,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(20, 20),
+                               true,
+                               true);
+  child->SetForceRenderSurface(true);
+
+  scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create();
+  host->SetRootLayer(root);
+
+  ExecuteCalculateDrawProperties(root.get());
+
+  EXPECT_EQ(3u, render_surface_layer_list()->size());
+
+  gfx::Transform singular_transform;
+  singular_transform.Scale3d(
+      SkDoubleToMScalar(1.0), SkDoubleToMScalar(1.0), SkDoubleToMScalar(0.0));
+
+  child->SetTransform(singular_transform);
+
+  ExecuteCalculateDrawProperties(root.get());
+
+  EXPECT_EQ(2u, render_surface_layer_list()->size());
+
+  // Ensure that the entire subtree under a layer with singular transform does
+  // not get rendered.
+  parent->SetTransform(singular_transform);
+  child->SetTransform(identity_transform);
+
+  ExecuteCalculateDrawProperties(root.get());
+
+  EXPECT_EQ(1u, render_surface_layer_list()->size());
 }
 
 TEST_F(LayerTreeHostCommonTest, ClippedByOutOfOrderScrollParent) {

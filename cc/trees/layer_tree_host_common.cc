@@ -478,6 +478,13 @@ static bool LayerShouldBeSkipped(LayerType* layer, bool layer_is_drawn) {
 
 static inline bool SubtreeShouldBeSkipped(LayerImpl* layer,
                                           bool layer_is_drawn) {
+  // If the layer transform is not invertible, it should not be drawn.
+  // TODO(ajuma): Correctly process subtrees with singular transform for the
+  // case where we may animate to a non-singular transform and wish to
+  // pre-raster.
+  if (!layer->transform_is_invertible() && !layer->TransformIsAnimating())
+    return true;
+
   // When we need to do a readback/copy of a layer's output, we can not skip
   // it or any of its ancestors.
   if (layer->draw_properties().layer_or_descendant_has_copy_request)
@@ -501,6 +508,10 @@ static inline bool SubtreeShouldBeSkipped(LayerImpl* layer,
 }
 
 static inline bool SubtreeShouldBeSkipped(Layer* layer, bool layer_is_drawn) {
+  // If the layer transform is not invertible, it should not be drawn.
+  if (!layer->transform_is_invertible() && !layer->TransformIsAnimating())
+    return true;
+
   // When we need to do a readback/copy of a layer's output, we can not skip
   // it or any of its ancestors.
   if (layer->draw_properties().layer_or_descendant_has_copy_request)
@@ -1164,6 +1175,12 @@ static void PreCalculateMetaInformation(
     PreCalculateMetaInformationRecursiveData* recursive_data) {
   bool has_delegated_content = layer->HasDelegatedContent();
   int num_descendants_that_draw_content = 0;
+
+  if (!layer->transform_is_invertible()) {
+    // Layers with singular transforms should not be drawn, the whole subtree
+    // can be skipped.
+    return;
+  }
 
   if (has_delegated_content) {
     // Layers with delegated content need to be treated as if they have as

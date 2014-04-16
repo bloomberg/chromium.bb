@@ -386,6 +386,36 @@ TEST(LayerImplTest, SafeOpaqueBackgroundColor) {
   }
 }
 
+TEST(LayerImplTest, TransformInvertibility) {
+  FakeImplProxy proxy;
+  TestSharedBitmapManager shared_bitmap_manager;
+  FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager);
+
+  scoped_ptr<LayerImpl> layer = LayerImpl::Create(host_impl.active_tree(), 1);
+  EXPECT_TRUE(layer->transform().IsInvertible());
+  EXPECT_TRUE(layer->transform_is_invertible());
+
+  gfx::Transform transform;
+  transform.Scale3d(
+      SkDoubleToMScalar(1.0), SkDoubleToMScalar(1.0), SkDoubleToMScalar(0.0));
+  layer->SetTransform(transform);
+  EXPECT_FALSE(layer->transform().IsInvertible());
+  EXPECT_FALSE(layer->transform_is_invertible());
+
+  transform.MakeIdentity();
+  transform.ApplyPerspectiveDepth(SkDoubleToMScalar(100.0));
+  transform.RotateAboutZAxis(75.0);
+  transform.RotateAboutXAxis(32.2);
+  transform.RotateAboutZAxis(-75.0);
+  transform.Translate3d(SkDoubleToMScalar(50.5),
+                        SkDoubleToMScalar(42.42),
+                        SkDoubleToMScalar(-100.25));
+
+  layer->SetTransform(transform);
+  EXPECT_TRUE(layer->transform().IsInvertible());
+  EXPECT_TRUE(layer->transform_is_invertible());
+}
+
 class LayerImplScrollTest : public testing::Test {
  public:
   LayerImplScrollTest()

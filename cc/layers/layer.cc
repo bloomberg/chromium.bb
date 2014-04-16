@@ -59,6 +59,7 @@ Layer::Layer()
       draw_checkerboard_for_missing_tiles_(false),
       force_render_surface_(false),
       is_3d_sorted_(false),
+      transform_is_invertible_(true),
       anchor_point_(0.5f, 0.5f),
       background_color_(0),
       opacity_(1.f),
@@ -605,6 +606,7 @@ void Layer::SetTransform(const gfx::Transform& transform) {
   if (transform_ == transform)
     return;
   transform_ = transform;
+  transform_is_invertible_ = transform.IsInvertible();
   SetNeedsCommit();
 }
 
@@ -920,7 +922,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetIs3dSorted(is_3d_sorted_);
   layer->SetUseParentBackfaceVisibility(use_parent_backface_visibility_);
   if (!layer->TransformIsAnimatingOnImplOnly() && !TransformIsAnimating())
-    layer->SetTransform(transform_);
+    layer->SetTransformAndInvertibility(transform_, transform_is_invertible_);
   DCHECK(!(TransformIsAnimating() && layer->TransformIsAnimatingOnImplOnly()));
 
   layer->SetScrollClipLayer(scroll_clip_layer_id_);

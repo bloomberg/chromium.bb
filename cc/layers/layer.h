@@ -180,6 +180,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void SetTransform(const gfx::Transform& transform);
   const gfx::Transform& transform() const { return transform_; }
   bool TransformIsAnimating() const;
+  bool transform_is_invertible() const { return transform_is_invertible_; }
 
   void SetScrollParent(Layer* parent);
 
@@ -591,6 +592,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   bool draw_checkerboard_for_missing_tiles_ : 1;
   bool force_render_surface_ : 1;
   bool is_3d_sorted_ : 1;
+  bool transform_is_invertible_ : 1;
   Region non_fast_scrollable_region_;
   Region touch_event_handler_region_;
   gfx::PointF position_;
