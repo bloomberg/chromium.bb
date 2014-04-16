@@ -12,7 +12,7 @@ if env.Bit('bitcode') and not env.Bit('pnacl_generate_pexe'):
 infoleak_sources = ['test_infoleak.c']
 if env.Bit('target_arm') and not env.Bit('pnacl_generate_pexe'):
   infoleak_sources.append('test_infoleak_arm.S')
-elif env.Bit('target_mips32'):
+elif env.Bit('target_mips32') and not env.Bit('pnacl_generate_pexe'):
   infoleak_sources.append('test_infoleak_mips.S')
 
 nexe = env.ComponentProgram('test_infoleak', infoleak_sources,

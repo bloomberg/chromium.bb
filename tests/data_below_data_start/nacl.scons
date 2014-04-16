@@ -6,7 +6,7 @@
 Import('env')
 
 # This is MIPS specific test.
-if not env.Bit('target_mips32'):
+if not env.Bit('target_mips32') or env.Bit('pnacl_generate_pexe'):
   Return()
 
 text_segment_start = 0x00020000
