@@ -279,6 +279,8 @@
         'common/message_pump_mojo.cc',
         'common/message_pump_mojo.h',
         'common/message_pump_mojo_handler.h',
+        'common/mojo_channel_init.cc',
+        'common/mojo_channel_init.h',
         'common/time_helper.cc',
         'common/time_helper.h',
       ],

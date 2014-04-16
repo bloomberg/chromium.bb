@@ -6,11 +6,11 @@
 
 #include "base/message_loop/message_loop.h"
 #include "content/child/child_process.h"
-#include "content/common/mojo/mojo_channel_init.h"
 #include "content/common/mojo/mojo_messages.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/renderer/web_ui_mojo.h"
+#include "mojo/common/mojo_channel_init.h"
 
 namespace content {
 
@@ -46,7 +46,7 @@ void MojoRenderProcessObserver::OnChannelCreated(
   base::PlatformFile handle = file;
 #endif
   DCHECK(!channel_init_.get());
-  channel_init_.reset(new MojoChannelInit);
+  channel_init_.reset(new mojo::common::MojoChannelInit);
   channel_init_->Init(handle, ChildProcess::current()->io_message_loop_proxy());
   if (!channel_init_->is_handle_valid())
     return;

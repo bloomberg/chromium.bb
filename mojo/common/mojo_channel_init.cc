@@ -1,14 +1,15 @@
-// Copyright (c) 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/mojo/mojo_channel_init.h"
+#include "mojo/common/mojo_channel_init.h"
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/embedder/embedder.h"
 
-namespace content {
+namespace mojo {
+namespace common {
 
 MojoChannelInit::MojoChannelInit()
     : channel_info_(NULL),
@@ -42,7 +43,7 @@ void MojoChannelInit::Init(
 void MojoChannelInit::OnCreatedChannel(
     base::WeakPtr<MojoChannelInit> host,
     scoped_refptr<base::TaskRunner> io_thread,
-    mojo::embedder::ChannelInfo* channel) {
+    embedder::ChannelInfo* channel) {
   // By the time we get here |host| may have been destroyed. If so, shutdown the
   // channel.
   if (!host.get()) {
@@ -54,5 +55,5 @@ void MojoChannelInit::OnCreatedChannel(
   host->channel_info_ = channel;
 }
 
-
-}  // namespace content
+}  // namespace common
+}  // namespace mojo

@@ -5,10 +5,10 @@
 #include "content/browser/renderer_host/render_process_host_mojo_impl.h"
 
 #include "base/platform_file.h"
-#include "content/common/mojo/mojo_channel_init.h"
 #include "content/common/mojo/mojo_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "mojo/common/mojo_channel_init.h"
 #include "mojo/embedder/platform_channel_pair.h"
 
 namespace content {
@@ -73,7 +73,7 @@ void RenderProcessHostMojoImpl::CreateMojoChannel(
     return;
 
   mojo::embedder::PlatformChannelPair channel_pair;
-  mojo_channel_init_.reset(new MojoChannelInit);
+  mojo_channel_init_.reset(new mojo::common::MojoChannelInit);
   mojo_channel_init_->Init(
       PlatformFileFromScopedPlatformHandle(channel_pair.PassServerHandle()),
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));

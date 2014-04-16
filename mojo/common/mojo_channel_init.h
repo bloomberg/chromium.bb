@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_MOJO_MOJO_CHANNEL_INIT_H_
-#define CONTENT_COMMON_MOJO_MOJO_CHANNEL_INIT_H_
+#ifndef MOJO_COMMON_MOJO_CHANNEL_INIT_H_
+#define MOJO_COMMON_MOJO_CHANNEL_INIT_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
-#include "content/common/content_export.h"
+#include "mojo/common/mojo_common_export.h"
 #include "mojo/public/cpp/system/core.h"
 
 namespace base {
@@ -20,13 +20,12 @@ namespace mojo {
 namespace embedder {
 struct ChannelInfo;
 }
-}
 
-namespace content {
+namespace common {
 
 // MojoChannelInit handle creation (and destruction) of the mojo channel. It is
 // expected that this class is created and destroyed on the main thread.
-class CONTENT_EXPORT MojoChannelInit {
+class MOJO_COMMON_EXPORT MojoChannelInit {
  public:
   MojoChannelInit();
   ~MojoChannelInit();
@@ -46,12 +45,12 @@ class CONTENT_EXPORT MojoChannelInit {
   static void OnCreatedChannel(
       base::WeakPtr<MojoChannelInit> host,
       scoped_refptr<base::TaskRunner> io_thread,
-      mojo::embedder::ChannelInfo* channel);
+      embedder::ChannelInfo* channel);
 
   scoped_refptr<base::TaskRunner> io_thread_task_runner_;
 
   // If non-null the channel has been established.
-  mojo::embedder::ChannelInfo* channel_info_;
+  embedder::ChannelInfo* channel_info_;
 
   // The handle from channel creation.
   mojo::ScopedMessagePipeHandle bootstrap_message_pipe_;
@@ -61,6 +60,7 @@ class CONTENT_EXPORT MojoChannelInit {
   DISALLOW_COPY_AND_ASSIGN(MojoChannelInit);
 };
 
-}  // namespace content
+}  // namespace common
+}  // namespace mojo
 
-#endif  // CONTENT_COMMON_MOJO_MOJO_CHANNEL_INIT_H_
+#endif  // MOJO_COMMON_MOJO_CHANNEL_INIT_H_

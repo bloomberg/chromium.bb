@@ -12,14 +12,16 @@
 #include "mojo/public/cpp/bindings/remote_ptr.h"
 
 namespace mojo {
-namespace embedder{
+namespace common {
+class MojoChannelInit;
+}
+namespace embedder {
 struct ChannelInfo;
 }
 }
 
 namespace content {
 
-class MojoChannelInit;
 class RenderThread;
 
 // RenderProcessObserver implementation that initializes the mojo channel when
@@ -47,7 +49,7 @@ class MojoRenderProcessObserver
 
   content::RenderThread* render_thread_;
 
-  scoped_ptr<MojoChannelInit> channel_init_;
+  scoped_ptr<mojo::common::MojoChannelInit> channel_init_;
 
   mojo::RemotePtr<content::RenderProcessHostMojo> render_process_host_mojo_;
 

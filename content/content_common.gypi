@@ -351,8 +351,6 @@
     'common/message_router.cc',
     'common/message_router.h',
     'common/mime_registry_messages.h',
-    'common/mojo/mojo_channel_init.cc',
-    'common/mojo/mojo_channel_init.h',
     'common/mojo/mojo_messages.h',
     'common/navigation_gesture.h',
     'common/net/url_fetcher.cc',

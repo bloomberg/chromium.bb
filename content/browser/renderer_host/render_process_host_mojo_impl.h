@@ -10,9 +10,14 @@
 #include "content/common/mojo/render_process.mojom.h"
 #include "mojo/public/cpp/bindings/remote_ptr.h"
 
+namespace mojo {
+namespace common {
+class MojoChannelInit;
+}
+}
+
 namespace content {
 
-class MojoChannelInit;
 class RenderProcessHost;
 
 // RenderProcessHostMojoImpl is responsible for initiating and maintaining the
@@ -37,7 +42,7 @@ private:
   RenderProcessHost* host_;
 
   // Used to establish the connection.
-  scoped_ptr<MojoChannelInit> mojo_channel_init_;
+  scoped_ptr<mojo::common::MojoChannelInit> mojo_channel_init_;
 
   mojo::RemotePtr<content::RenderProcessMojo> render_process_mojo_;
 
