@@ -130,7 +130,7 @@ bool JavaBrowserViewRendererHelper::RenderViaAuxilaryBitmap(
 }
 
 bool RegisterJavaBrowserViewRendererHelper(JNIEnv* env) {
-  return RegisterNativesImpl(env) >= 0;
+  return RegisterNativesImpl(env);
 }
 
 bool JavaBrowserViewRendererHelper::RasterizeIntoBitmap(

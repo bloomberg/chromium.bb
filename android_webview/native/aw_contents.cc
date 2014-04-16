@@ -481,7 +481,7 @@ void AwContents::AddVisitedLinks(JNIEnv* env,
 }
 
 bool RegisterAwContents(JNIEnv* env) {
-  return RegisterNativesImpl(env) >= 0;
+  return RegisterNativesImpl(env);
 }
 
 namespace {

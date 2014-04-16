@@ -50,7 +50,7 @@ void AwPicture::Draw(JNIEnv* env, jobject obj, jobject canvas,
 }
 
 bool RegisterAwPicture(JNIEnv* env) {
-  return RegisterNativesImpl(env) >= 0;
+  return RegisterNativesImpl(env);
 }
 
 }  // namespace android_webview

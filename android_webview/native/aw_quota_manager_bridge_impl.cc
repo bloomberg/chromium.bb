@@ -350,7 +350,7 @@ void AwQuotaManagerBridgeImpl::QuotaUsageCallbackImpl(
 }
 
 bool RegisterAwQuotaManagerBridge(JNIEnv* env) {
-  return RegisterNativesImpl(env) >= 0;
+  return RegisterNativesImpl(env);
 }
 
 }  // namespace android_webview
