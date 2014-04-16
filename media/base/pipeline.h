@@ -41,6 +41,7 @@ struct PipelineMetadata {
   bool has_audio;
   bool has_video;
   gfx::Size natural_size;
+  base::Time timeline_offset;
 };
 
 typedef base::Callback<void(PipelineMetadata)> PipelineMetadataCB;

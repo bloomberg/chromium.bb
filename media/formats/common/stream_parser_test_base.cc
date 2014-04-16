@@ -72,6 +72,7 @@ bool StreamParserTestBase::AppendDataInPieces(const uint8* data,
 
 void StreamParserTestBase::OnInitDone(bool success,
                                       base::TimeDelta duration,
+                                      base::Time wallclock_timeline_offset,
                                       bool auto_update_timestamp_offset) {
   EXPECT_TRUE(auto_update_timestamp_offset);
   DVLOG(1) << __FUNCTION__ << "(" << success << ", "

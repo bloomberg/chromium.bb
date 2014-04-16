@@ -98,7 +98,11 @@ class SourceState {
   //                   occurred.
   // Second parameter - Indicates the stream duration. Only contains a valid
   //                    value if the first parameter is true.
-  typedef base::Callback<void(bool, TimeDelta)> InitCB;
+  // Third parameter - Indicates the source Time associated with
+  //                   presentation timestamp 0. A null Time is returned if
+  //                   no mapping to Time exists. Only contains a
+  //                   valid value if the first parameter is true.
+  typedef base::Callback<void(bool, TimeDelta, base::Time)> InitCB;
 
   SourceState(
       scoped_ptr<StreamParser> stream_parser,
@@ -190,6 +194,7 @@ class SourceState {
 
   void OnSourceInitDone(bool success,
                         TimeDelta duration,
+                        base::Time timeline_offset,
                         bool auto_update_timestamp_offset);
 
   CreateDemuxerStreamCB create_demuxer_stream_cb_;
@@ -697,9 +702,11 @@ bool SourceState::OnNewBuffers(
 
 void SourceState::OnSourceInitDone(bool success,
                                    TimeDelta duration,
+                                   base::Time timeline_offset,
                                    bool auto_update_timestamp_offset) {
   auto_update_timestamp_offset_ = auto_update_timestamp_offset;
-  base::ResetAndReturn(&init_cb_).Run(success, duration);
+  base::ResetAndReturn(&init_cb_).Run(
+      success, duration, timeline_offset);
 }
 
 ChunkDemuxerStream::ChunkDemuxerStream(Type type, bool splice_frames_enabled)
@@ -1067,6 +1074,10 @@ DemuxerStream* ChunkDemuxer::GetStream(DemuxerStream::Type type) {
 
 TimeDelta ChunkDemuxer::GetStartTime() const {
   return TimeDelta();
+}
+
+base::Time ChunkDemuxer::GetTimelineOffset() const {
+  return timeline_offset_;
 }
 
 void ChunkDemuxer::StartWaitingForSeek(TimeDelta seek_time) {
@@ -1486,7 +1497,8 @@ bool ChunkDemuxer::IsSeekWaitingForData_Locked() const {
   return false;
 }
 
-void ChunkDemuxer::OnSourceInitDone(bool success, TimeDelta duration) {
+void ChunkDemuxer::OnSourceInitDone(bool success, TimeDelta duration,
+                                    base::Time timeline_offset) {
   DVLOG(1) << "OnSourceInitDone(" << success << ", "
            << duration.InSecondsF() << ")";
   lock_.AssertAcquired();
@@ -1498,6 +1510,18 @@ void ChunkDemuxer::OnSourceInitDone(bool success, TimeDelta duration) {
 
   if (duration != TimeDelta() && duration_ == kNoTimestamp())
     UpdateDuration(duration);
+
+  if (!timeline_offset.is_null()) {
+    if (!timeline_offset_.is_null() &&
+        timeline_offset != timeline_offset_) {
+      MEDIA_LOG(log_cb_)
+          << "Timeline offset is not the same across all SourceBuffers.";
+      ReportError_Locked(DEMUXER_ERROR_COULD_NOT_OPEN);
+      return;
+    }
+
+    timeline_offset_ = timeline_offset;
+  }
 
   // Wait until all streams have initialized.
   if ((!source_id_audio_.empty() && !audio_) ||

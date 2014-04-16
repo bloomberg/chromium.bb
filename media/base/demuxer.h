@@ -87,6 +87,11 @@ class MEDIA_EXPORT Demuxer {
   // Returns the starting time for the media file.
   virtual base::TimeDelta GetStartTime() const = 0;
 
+  // Returns Time represented by presentation timestamp 0.
+  // If the timstamps are not associated with a Time, then
+  // a null Time is returned.
+  virtual base::Time GetTimelineOffset() const = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(Demuxer);
 };

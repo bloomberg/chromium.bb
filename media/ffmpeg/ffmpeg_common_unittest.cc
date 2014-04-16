@@ -97,4 +97,58 @@ TEST_F(FFmpegCommonTest, VerifyFormatSizes) {
   }
 }
 
+TEST_F(FFmpegCommonTest, UTCDateToTime_Valid) {
+  base::Time result;
+  EXPECT_TRUE(FFmpegUTCDateToTime("2012-11-10 12:34:56", &result));
+
+  base::Time::Exploded exploded;
+  result.UTCExplode(&exploded);
+  EXPECT_TRUE(exploded.HasValidValues());
+  EXPECT_EQ(2012, exploded.year);
+  EXPECT_EQ(11, exploded.month);
+  EXPECT_EQ(6, exploded.day_of_week);
+  EXPECT_EQ(10, exploded.day_of_month);
+  EXPECT_EQ(12, exploded.hour);
+  EXPECT_EQ(34, exploded.minute);
+  EXPECT_EQ(56, exploded.second);
+  EXPECT_EQ(0, exploded.millisecond);
+}
+
+TEST_F(FFmpegCommonTest, UTCDateToTime_Invalid) {
+  const char* invalid_date_strings[] = {
+    "",
+    "2012-11-10",
+    "12:34:56",
+    "-- ::",
+    "2012-11-10 12:34:",
+    "2012-11-10 12::56",
+    "2012-11-10 :34:56",
+    "2012-11- 12:34:56",
+    "2012--10 12:34:56",
+    "-11-10 12:34:56",
+    "2012-11 12:34:56",
+    "2012-11-10-12 12:34:56",
+    "2012-11-10 12:34",
+    "2012-11-10 12:34:56:78",
+    "ABCD-11-10 12:34:56",
+    "2012-EF-10 12:34:56",
+    "2012-11-GH 12:34:56",
+    "2012-11-10 IJ:34:56",
+    "2012-11-10 12:JL:56",
+    "2012-11-10 12:34:MN",
+    "2012-11-10 12:34:56.123",
+    "2012-11-1012:34:56",
+    "2012-11-10 12:34:56 UTC",
+  };
+
+  for (size_t i = 0; i < arraysize(invalid_date_strings); ++i) {
+    const char* date_string = invalid_date_strings[i];
+    base::Time result;
+    EXPECT_FALSE(FFmpegUTCDateToTime(date_string, &result))
+        << "date_string '" << date_string << "'";
+    EXPECT_TRUE(result.is_null());
+  }
+}
+
+
 }  // namespace media

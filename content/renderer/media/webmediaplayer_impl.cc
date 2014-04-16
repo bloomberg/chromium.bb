@@ -482,6 +482,15 @@ double WebMediaPlayerImpl::duration() const {
   return GetPipelineDuration();
 }
 
+double WebMediaPlayerImpl::timelineOffset() const {
+  DCHECK(main_loop_->BelongsToCurrentThread());
+
+  if (pipeline_metadata_.timeline_offset.is_null())
+    return std::numeric_limits<double>::quiet_NaN();
+
+  return pipeline_metadata_.timeline_offset.ToJsTime();
+}
+
 double WebMediaPlayerImpl::currentTime() const {
   DCHECK(main_loop_->BelongsToCurrentThread());
   return (paused_ ? paused_time_ : pipeline_.GetMediaTime()).InSecondsF();

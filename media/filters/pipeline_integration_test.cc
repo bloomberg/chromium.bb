@@ -20,6 +20,7 @@
 using testing::_;
 using testing::AnyNumber;
 using testing::AtMost;
+using testing::SaveArg;
 using testing::Values;
 
 namespace media {
@@ -72,6 +73,37 @@ const int k640IsoCencFileDurationMs = 2736;
 const int k1280IsoFileDurationMs = 2736;
 const int k1280IsoAVC3FileDurationMs = 2736;
 #endif  // defined(USE_PROPRIETARY_CODECS)
+
+// Return a timeline offset for bear-320x240-live.webm.
+static base::Time kLiveTimelineOffset() {
+  // The file contians the following UTC timeline offset:
+  // 2012-11-10 12:34:56.789123456
+  // Since base::Time only has a resolution of microseconds,
+  // construct a base::Time for 2012-11-10 12:34:56.789123.
+  base::Time::Exploded exploded_time;
+  exploded_time.year = 2012;
+  exploded_time.month = 11;
+  exploded_time.day_of_month = 10;
+  exploded_time.hour = 12;
+  exploded_time.minute = 34;
+  exploded_time.second = 56;
+  exploded_time.millisecond = 789;
+  base::Time timeline_offset = base::Time::FromUTCExploded(exploded_time);
+
+  timeline_offset += base::TimeDelta::FromMicroseconds(123);
+
+  return timeline_offset;
+}
+
+// FFmpeg only supports time a resolution of seconds so this
+// helper function truncates a base::Time to seconds resolution.
+static base::Time TruncateToFFmpegTimeResolution(base::Time t) {
+  base::Time::Exploded exploded_time;
+  t.UTCExplode(&exploded_time);
+  exploded_time.millisecond = 0;
+
+  return base::Time::FromUTCExploded(exploded_time);
+}
 
 // Note: Tests using this class only exercise the DecryptingDemuxerStream path.
 // They do not exercise the Decrypting{Audio|Video}Decoder path.
@@ -409,7 +441,8 @@ class PipelineIntegrationTest
       public PipelineIntegrationTestBase {
  public:
   void StartPipelineWithMediaSource(MockMediaSource* source) {
-    EXPECT_CALL(*this, OnMetadata(_)).Times(AtMost(1));
+    EXPECT_CALL(*this, OnMetadata(_)).Times(AtMost(1))
+        .WillRepeatedly(SaveArg<0>(&metadata_));
     EXPECT_CALL(*this, OnPrerollCompleted()).Times(AtMost(1));
     pipeline_->Start(
         CreateFilterCollection(source->GetDemuxer(), NULL),
@@ -433,7 +466,8 @@ class PipelineIntegrationTest
   void StartPipelineWithEncryptedMedia(
       MockMediaSource* source,
       FakeEncryptedMedia* encrypted_media) {
-    EXPECT_CALL(*this, OnMetadata(_)).Times(AtMost(1));
+    EXPECT_CALL(*this, OnMetadata(_)).Times(AtMost(1))
+        .WillRepeatedly(SaveArg<0>(&metadata_));
     EXPECT_CALL(*this, OnPrerollCompleted()).Times(AtMost(1));
     pipeline_->Start(
         CreateFilterCollection(source->GetDemuxer(),
@@ -504,6 +538,24 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackHashed) {
 
   EXPECT_EQ("f0be120a90a811506777c99a2cdf7cc1", GetVideoHash());
   EXPECT_EQ("-3.59,-2.06,-0.43,2.15,0.77,-0.95,", GetAudioHash());
+  EXPECT_TRUE(demuxer_->GetTimelineOffset().is_null());
+}
+
+TEST_F(PipelineIntegrationTest, BasicPlaybackLive) {
+  ASSERT_TRUE(Start(
+      GetTestDataFilePath("bear-320x240-live.webm"), PIPELINE_OK, kHashed));
+
+  Play();
+
+  ASSERT_TRUE(WaitUntilOnEnded());
+
+  EXPECT_EQ("f0be120a90a811506777c99a2cdf7cc1", GetVideoHash());
+  EXPECT_EQ("-3.59,-2.06,-0.43,2.15,0.77,-0.95,", GetAudioHash());
+
+  // TODO: Fix FFmpeg code to return higher resolution time values so
+  // we don't have to truncate our expectations here.
+  EXPECT_EQ(TruncateToFFmpegTimeResolution(kLiveTimelineOffset()),
+            demuxer_->GetTimelineOffset());
 }
 
 TEST_F(PipelineIntegrationTest, F32PlaybackHashed) {
@@ -542,6 +594,28 @@ TEST_P(PipelineIntegrationTest, BasicPlayback_MediaSource) {
   Play();
 
   ASSERT_TRUE(WaitUntilOnEnded());
+
+  EXPECT_TRUE(demuxer_->GetTimelineOffset().is_null());
+  source.Abort();
+  Stop();
+}
+
+TEST_P(PipelineIntegrationTest, BasicPlayback_MediaSource_Live) {
+  MockMediaSource source("bear-320x240-live.webm", kWebM, 219221, GetParam());
+  StartPipelineWithMediaSource(&source);
+  source.EndOfStream();
+
+  EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
+  EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
+  EXPECT_EQ(k320WebMFileDurationMs,
+            pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
+
+  Play();
+
+  ASSERT_TRUE(WaitUntilOnEnded());
+
+  EXPECT_EQ(kLiveTimelineOffset(),
+            demuxer_->GetTimelineOffset());
   source.Abort();
   Stop();
 }

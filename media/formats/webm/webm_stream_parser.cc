@@ -219,7 +219,8 @@ int WebMStreamParser::ParseInfoAndTracks(const uint8* data, int size) {
   ChangeState(kParsingClusters);
 
   if (!init_cb_.is_null())
-    base::ResetAndReturn(&init_cb_).Run(true, duration, false);
+    base::ResetAndReturn(&init_cb_).Run(
+        true, duration, info_parser.date_utc(), false);
 
   return bytes_parsed;
 }

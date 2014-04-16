@@ -45,6 +45,7 @@ class StreamParserTestBase {
 
   void OnInitDone(bool success,
                   base::TimeDelta duration,
+                  base::Time wallclock_timeline_offset,
                   bool auto_update_timestamp_offset);
   bool OnNewConfig(const AudioDecoderConfig& audio_config,
                    const VideoDecoderConfig& video_config,

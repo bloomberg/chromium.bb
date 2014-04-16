@@ -111,6 +111,7 @@ class PipelineIntegrationTestBase {
   VideoFrame::Format last_video_frame_format_;
   DummyTickClock dummy_clock_;
   AudioHardwareConfig hardware_config_;
+  PipelineMetadata metadata_;
 
   void OnStatusCallbackChecked(PipelineStatus expected_status,
                                PipelineStatus status);

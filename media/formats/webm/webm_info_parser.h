@@ -6,6 +6,7 @@
 #define MEDIA_FORMATS_WEBM_WEBM_INFO_PARSER_H_
 
 #include "base/compiler_specific.h"
+#include "base/time/time.h"
 #include "media/base/media_export.h"
 #include "media/formats/webm/webm_parser.h"
 
@@ -26,6 +27,7 @@ class MEDIA_EXPORT WebMInfoParser : public WebMParserClient {
 
   int64 timecode_scale() const { return timecode_scale_; }
   double duration() const { return duration_; }
+  base::Time date_utc() const { return date_utc_; }
 
  private:
   // WebMParserClient methods
@@ -38,6 +40,7 @@ class MEDIA_EXPORT WebMInfoParser : public WebMParserClient {
 
   int64 timecode_scale_;
   double duration_;
+  base::Time date_utc_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMInfoParser);
 };

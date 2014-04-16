@@ -59,6 +59,7 @@ class Mp2tStreamParserTest : public testing::Test {
 
   void OnInit(bool init_ok,
               base::TimeDelta duration,
+              base::Time wallclock_timeline_offset,
               bool auto_update_timestamp_offset) {
     DVLOG(1) << "OnInit: ok=" << init_ok
              << ", dur=" << duration.InMilliseconds()

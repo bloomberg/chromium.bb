@@ -20,6 +20,7 @@
 using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::AtMost;
+using ::testing::SaveArg;
 
 namespace media {
 
@@ -103,7 +104,8 @@ void PipelineIntegrationTestBase::OnError(PipelineStatus status) {
 
 bool PipelineIntegrationTestBase::Start(const base::FilePath& file_path,
                                         PipelineStatus expected_status) {
-  EXPECT_CALL(*this, OnMetadata(_)).Times(AtMost(1));
+  EXPECT_CALL(*this, OnMetadata(_)).Times(AtMost(1))
+      .WillRepeatedly(SaveArg<0>(&metadata_));
   EXPECT_CALL(*this, OnPrerollCompleted()).Times(AtMost(1));
   pipeline_->Start(
       CreateFilterCollection(file_path, NULL),
@@ -136,7 +138,8 @@ bool PipelineIntegrationTestBase::Start(const base::FilePath& file_path) {
 
 bool PipelineIntegrationTestBase::Start(const base::FilePath& file_path,
                                         Decryptor* decryptor) {
-  EXPECT_CALL(*this, OnMetadata(_)).Times(AtMost(1));
+  EXPECT_CALL(*this, OnMetadata(_)).Times(AtMost(1))
+      .WillRepeatedly(SaveArg<0>(&metadata_));
   EXPECT_CALL(*this, OnPrerollCompleted()).Times(AtMost(1));
   pipeline_->Start(
       CreateFilterCollection(file_path, decryptor),

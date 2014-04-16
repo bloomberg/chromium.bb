@@ -60,6 +60,7 @@ class MP4StreamParserTest : public testing::Test {
 
   void InitF(bool init_ok,
              base::TimeDelta duration,
+             base::Time wallclock_timeline_offset,
              bool auto_update_timestamp_offset) {
     DVLOG(1) << "InitF: ok=" << init_ok << ", dur=" << duration.InMilliseconds()
              << ", autoTimestampOffset=" << auto_update_timestamp_offset;

@@ -107,6 +107,7 @@ class WebMediaPlayerImpl
   virtual bool paused() const;
   virtual bool seeking() const;
   virtual double duration() const;
+  virtual double timelineOffset() const;
   virtual double currentTime() const;
 
   // Internal states of loading and network.

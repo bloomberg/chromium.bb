@@ -34,6 +34,22 @@
 
 namespace media {
 
+static base::Time ExtractTimelineOffset(AVFormatContext* format_context) {
+  if (strstr(format_context->iformat->name, "webm") ||
+      strstr(format_context->iformat->name, "matroska")) {
+    const AVDictionaryEntry* entry =
+        av_dict_get(format_context->metadata, "creation_time", NULL, 0);
+
+    base::Time timeline_offset;
+    if (entry != NULL && entry->value != NULL &&
+        FFmpegUTCDateToTime(entry->value, &timeline_offset)) {
+      return timeline_offset;
+    }
+  }
+
+  return base::Time();
+}
+
 //
 // FFmpegDemuxerStream
 //
@@ -486,6 +502,10 @@ base::TimeDelta FFmpegDemuxer::GetStartTime() const {
   return start_time_;
 }
 
+base::Time FFmpegDemuxer::GetTimelineOffset() const {
+  return timeline_offset_;
+}
+
 void FFmpegDemuxer::AddTextStreams() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
@@ -673,6 +693,8 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
   // generation so we always get timestamps, see http://crbug.com/169570
   if (strcmp(format_context->iformat->name, "avi") == 0)
     format_context->flags |= AVFMT_FLAG_GENPTS;
+
+  timeline_offset_ = ExtractTimelineOffset(format_context);
 
   // Good to go: set the duration and bitrate and notify we're done
   // initializing.

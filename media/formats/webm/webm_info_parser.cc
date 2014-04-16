@@ -74,6 +74,25 @@ bool WebMInfoParser::OnFloat(int id, double val) {
 }
 
 bool WebMInfoParser::OnBinary(int id, const uint8* data, int size) {
+  if (id == kWebMIdDateUTC) {
+    if (size != 8)
+      return false;
+
+    int64 date_in_nanoseconds = 0;
+    for (int i = 0; i < size; ++i)
+      date_in_nanoseconds = (date_in_nanoseconds << 8) | data[i];
+
+    base::Time::Exploded exploded_epoch;
+    exploded_epoch.year = 2001;
+    exploded_epoch.month = 1;
+    exploded_epoch.day_of_month = 1;
+    exploded_epoch.hour = 0;
+    exploded_epoch.minute = 0;
+    exploded_epoch.second = 0;
+    exploded_epoch.millisecond = 0;
+    date_utc_ = base::Time::FromUTCExploded(exploded_epoch) +
+        base::TimeDelta::FromMicroseconds(date_in_nanoseconds / 1000);
+  }
   return true;
 }
 

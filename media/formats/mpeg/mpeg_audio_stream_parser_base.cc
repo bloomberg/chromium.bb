@@ -208,7 +208,8 @@ int MPEGAudioStreamParserBase::ParseFrame(const uint8* data,
     bool success = config_cb_.Run(config_, video_config, TextTrackConfigMap());
 
     if (!init_cb_.is_null())
-      base::ResetAndReturn(&init_cb_).Run(success, kInfiniteDuration(), true);
+      base::ResetAndReturn(&init_cb_).Run(
+          success, kInfiniteDuration(), base::Time(), true);
 
     if (!success)
       return -1;

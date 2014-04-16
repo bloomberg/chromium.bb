@@ -5,6 +5,7 @@
 #include "media/formats/mp2t/mp2t_stream_parser.h"
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "media/base/audio_decoder_config.h"
@@ -484,7 +485,8 @@ bool Mp2tStreamParser::FinishInitializationIfNeeded() {
 
   // For Mpeg2 TS, the duration is not known.
   DVLOG(1) << "Mpeg2TS stream parser initialization done";
-  init_cb_.Run(true, kInfiniteDuration(), false);
+  base::ResetAndReturn(&init_cb_).Run(
+      true, kInfiniteDuration(), base::Time(), false);
   is_initialized_ = true;
 
   return true;
@@ -619,4 +621,3 @@ bool Mp2tStreamParser::EmitRemainingBuffers() {
 
 }  // namespace mp2t
 }  // namespace media
-

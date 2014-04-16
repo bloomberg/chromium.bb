@@ -111,6 +111,11 @@ MEDIA_EXPORT VideoFrame::Format PixelFormatToVideoFormat(
 // Converts video formats to its corresponding FFmpeg's pixel formats.
 PixelFormat VideoFormatToPixelFormat(VideoFrame::Format video_format);
 
+// Convert FFmpeg UTC representation (YYYY-MM-DD HH:MM:SS) to base::Time.
+// Returns true and sets |*out| if |date_utc| contains a valid
+// date string. Otherwise returns fals and timeline_offset is unmodified.
+MEDIA_EXPORT bool FFmpegUTCDateToTime(const char* date_utc, base::Time* out);
+
 }  // namespace media
 
 #endif  // MEDIA_FFMPEG_FFMPEG_COMMON_H_

@@ -415,6 +415,7 @@ void Pipeline::StateTransitionTask(PipelineStatus status) {
         PipelineMetadata metadata;
         metadata.has_audio = audio_renderer_;
         metadata.has_video = video_renderer_;
+        metadata.timeline_offset = demuxer_->GetTimelineOffset();
         DemuxerStream* stream = demuxer_->GetStream(DemuxerStream::VIDEO);
         if (stream)
           metadata.natural_size = stream->video_decoder_config().natural_size();

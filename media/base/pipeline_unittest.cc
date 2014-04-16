@@ -108,6 +108,9 @@ class PipelineTest : public ::testing::Test {
 
     EXPECT_CALL(*demuxer_, GetStartTime())
         .WillRepeatedly(Return(base::TimeDelta()));
+
+    EXPECT_CALL(*demuxer_, GetTimelineOffset())
+        .WillRepeatedly(Return(base::Time()));
   }
 
   virtual ~PipelineTest() {
@@ -659,7 +662,7 @@ TEST_F(PipelineTest, AudioStreamShorterThanVideo) {
   streams.push_back(audio_stream());
   streams.push_back(video_stream());
 
-  // Replace the clock so we can simulate wallclock time advancing w/o using
+  // Replace the clock so we can simulate wall clock time advancing w/o using
   // Sleep().
   pipeline_->SetClockForTesting(new Clock(&test_tick_clock_));
 
