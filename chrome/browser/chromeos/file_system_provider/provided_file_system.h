@@ -5,41 +5,38 @@
 #ifndef CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_PROVIDED_FILE_SYSTEM_H_
 #define CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_PROVIDED_FILE_SYSTEM_H_
 
-#include <string>
+#include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
+#include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 
-#include "base/files/file_path.h"
+namespace extensions {
+class EventRouter;
+}  // namespace extensions
 
 namespace chromeos {
 namespace file_system_provider {
 
-// Contains information about the provided file system instance.
-class ProvidedFileSystem {
+class RequestManager;
+
+// Provided file system implementation. Forwards requests between providers and
+// clients.
+class ProvidedFileSystem : public ProvidedFileSystemInterface {
  public:
-  ProvidedFileSystem();
-  ProvidedFileSystem(const std::string& extension_id,
-                     int file_system_id,
-                     const std::string& file_system_name,
-                     const base::FilePath& mount_path);
+  ProvidedFileSystem(extensions::EventRouter* event_router,
+                     RequestManager* request_manager,
+                     const ProvidedFileSystemInfo& file_system_info);
+  virtual ~ProvidedFileSystem();
 
-  ~ProvidedFileSystem();
-
-  const std::string& extension_id() const { return extension_id_; }
-  int file_system_id() const { return file_system_id_; }
-  const std::string& file_system_name() const { return file_system_name_; }
-  const base::FilePath& mount_path() const { return mount_path_; }
+  // ProvidedFileSystemInterface overrides.
+  virtual bool RequestUnmount(
+      const fileapi::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
+  virtual const ProvidedFileSystemInfo& GetFileSystemInfo() const OVERRIDE;
 
  private:
-  // ID of the extension providing this file system.
-  std::string extension_id_;
+  extensions::EventRouter* event_router_;
+  RequestManager* request_manager_;
+  ProvidedFileSystemInfo file_system_info_;
 
-  // ID of the file system, used internally.
-  int file_system_id_;
-
-  // Name of the file system, can be rendered in the UI.
-  std::string file_system_name_;
-
-  // Mount path of the underlying file system.
-  base::FilePath mount_path_;
+  DISALLOW_COPY_AND_ASSIGN(ProvidedFileSystem);
 };
 
 }  // namespace file_system_provider

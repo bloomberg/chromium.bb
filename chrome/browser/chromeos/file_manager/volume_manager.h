@@ -176,10 +176,12 @@ class VolumeManager : public KeyedService,
 
   // chromeos::file_system_provider::Observer overrides.
   virtual void OnProvidedFileSystemMount(
-      const chromeos::file_system_provider::ProvidedFileSystem& file_system,
+      const chromeos::file_system_provider::ProvidedFileSystemInfo&
+          file_system_info,
       base::File::Error error) OVERRIDE;
   virtual void OnProvidedFileSystemUnmount(
-      const chromeos::file_system_provider::ProvidedFileSystem& file_system,
+      const chromeos::file_system_provider::ProvidedFileSystemInfo&
+          file_system_info,
       base::File::Error error) OVERRIDE;
 
   // Called on change to kExternalStorageDisabled pref.

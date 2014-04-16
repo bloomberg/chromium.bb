@@ -10,7 +10,7 @@
 
 namespace extensions {
 
-class FileSystemProviderMountFunction : public ChromeAsyncExtensionFunction {
+class FileSystemProviderMountFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileSystemProvider.mount",
                              FILESYSTEMPROVIDER_MOUNT)
@@ -20,7 +20,7 @@ class FileSystemProviderMountFunction : public ChromeAsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class FileSystemProviderUnmountFunction : public ChromeAsyncExtensionFunction {
+class FileSystemProviderUnmountFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileSystemProvider.unmount",
                              FILESYSTEMPROVIDER_UNMOUNT)
@@ -31,7 +31,7 @@ class FileSystemProviderUnmountFunction : public ChromeAsyncExtensionFunction {
 };
 
 class FileSystemProviderInternalUnmountRequestedSuccessFunction
-    : public ChromeAsyncExtensionFunction {
+    : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION(
       "fileSystemProviderInternal.unmountRequestedSuccess",
@@ -43,7 +43,7 @@ class FileSystemProviderInternalUnmountRequestedSuccessFunction
 };
 
 class FileSystemProviderInternalUnmountRequestedErrorFunction
-    : public ChromeAsyncExtensionFunction {
+    : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileSystemProviderInternal.unmountRequestedError",
                              FILESYSTEMPROVIDERINTERNAL_UNMOUNTREQUESTEDERROR)

@@ -11,6 +11,7 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chromeos/file_manager/fake_disk_mount_manager.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager_observer.h"
+#include "chrome/browser/chromeos/file_system_provider/fake_provided_file_system.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -146,12 +147,14 @@ class VolumeManagerTest : public testing::Test {
         : profile_(new TestingProfile),
           file_system_provider_service_(
               new chromeos::file_system_provider::Service(profile_.get())),
-          volume_manager_(new VolumeManager(
-              profile_.get(),
-              NULL,  // DriveIntegrationService
-              power_manager_client,
-              disk_manager,
-              file_system_provider_service_.get())) {
+          volume_manager_(
+              new VolumeManager(profile_.get(),
+                                NULL,  // DriveIntegrationService
+                                power_manager_client,
+                                disk_manager,
+                                file_system_provider_service_.get())) {
+      file_system_provider_service_->SetFileSystemFactoryForTests(base::Bind(
+          &chromeos::file_system_provider::FakeProvidedFileSystem::Create));
     }
 
     Profile* profile() const { return profile_.get(); }

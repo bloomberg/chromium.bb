@@ -13,7 +13,8 @@ RequestManager::RequestManager() : next_id_(1) {}
 
 RequestManager::~RequestManager() {}
 
-int RequestManager::CreateRequest(const ProvidedFileSystem& file_system,
+int RequestManager::CreateRequest(const std::string& extension_id,
+                                  int file_system_id,
                                   const SuccessCallback& success_callback,
                                   const ErrorCallback& error_callback) {
   // The request id is unique per request manager, so per service, thereof
@@ -25,7 +26,8 @@ int RequestManager::CreateRequest(const ProvidedFileSystem& file_system,
     return 0;
 
   Request request;
-  request.file_system = file_system;
+  request.extension_id = extension_id;
+  request.file_system_id = file_system_id;
   request.success_callback = success_callback;
   request.error_callback = error_callback;
   requests_[request_id] = request;
@@ -33,7 +35,8 @@ int RequestManager::CreateRequest(const ProvidedFileSystem& file_system,
   return request_id;
 }
 
-bool RequestManager::FulfillRequest(const ProvidedFileSystem& file_system,
+bool RequestManager::FulfillRequest(const std::string& extension_id,
+                                    int file_system_id,
                                     int request_id,
                                     scoped_ptr<base::DictionaryValue> response,
                                     bool has_next) {
@@ -43,8 +46,8 @@ bool RequestManager::FulfillRequest(const ProvidedFileSystem& file_system,
     return false;
 
   // Check if the request belongs to the same provided file system.
-  if (request_it->second.file_system.file_system_id() !=
-      file_system.file_system_id()) {
+  if (request_it->second.file_system_id != file_system_id ||
+      request_it->second.extension_id != extension_id) {
     return false;
   }
 
@@ -56,7 +59,8 @@ bool RequestManager::FulfillRequest(const ProvidedFileSystem& file_system,
   return true;
 }
 
-bool RequestManager::RejectRequest(const ProvidedFileSystem& file_system,
+bool RequestManager::RejectRequest(const std::string& extension_id,
+                                   int file_system_id,
                                    int request_id,
                                    base::File::Error error) {
   RequestMap::iterator request_it = requests_.find(request_id);
@@ -65,8 +69,8 @@ bool RequestManager::RejectRequest(const ProvidedFileSystem& file_system,
     return false;
 
   // Check if the request belongs to the same provided file system.
-  if (request_it->second.file_system.file_system_id() !=
-      file_system.file_system_id()) {
+  if (request_it->second.file_system_id != file_system_id ||
+      request_it->second.extension_id != extension_id) {
     return false;
   }
 
@@ -78,11 +82,11 @@ bool RequestManager::RejectRequest(const ProvidedFileSystem& file_system,
 }
 
 void RequestManager::OnProvidedFileSystemMount(
-    const ProvidedFileSystem& file_system,
+    const ProvidedFileSystemInfo& file_system_info,
     base::File::Error error) {}
 
 void RequestManager::OnProvidedFileSystemUnmount(
-    const ProvidedFileSystem& file_system,
+    const ProvidedFileSystemInfo& file_system_info,
     base::File::Error error) {
   // Do not continue on error, since the volume may be still mounted.
   if (error != base::File::FILE_OK)
@@ -91,18 +95,20 @@ void RequestManager::OnProvidedFileSystemUnmount(
   // Remove all requests for this provided file system.
   RequestMap::iterator it = requests_.begin();
   while (it != requests_.begin()) {
-    if (it->second.file_system.file_system_id() ==
-        file_system.file_system_id()) {
-      RejectRequest(
-          it->second.file_system, it->first, base::File::FILE_ERROR_ABORT);
+    if (it->second.file_system_id == file_system_info.file_system_id() &&
+        it->second.extension_id == file_system_info.extension_id()) {
+      RejectRequest(it->second.extension_id,
+                    it->second.file_system_id,
+                    it->first,
+                    base::File::FILE_ERROR_ABORT);
       requests_.erase(it++);
     } else {
-      it++;
+      ++it;
     }
   }
 }
 
-RequestManager::Request::Request() {}
+RequestManager::Request::Request() : file_system_id(0) {}
 
 RequestManager::Request::~Request() {}
 

@@ -119,7 +119,6 @@ bool FileSystemProviderMountFunction::RunImpl() {
   // Don't append an error on success.
 
   SetResult(result);
-  SendResponse(true);
   return true;
 }
 
@@ -142,7 +141,6 @@ bool FileSystemProviderUnmountFunction::RunImpl() {
 
   base::ListValue* result = new base::ListValue();
   SetResult(result);
-  SendResponse(true);
   return true;
 }
 
@@ -155,11 +153,12 @@ bool FileSystemProviderInternalUnmountRequestedSuccessFunction::RunImpl() {
       chromeos::file_system_provider::Service::Get(GetProfile());
   DCHECK(service);
 
-  if (!service->FulfillRequest(extension_id(),
-                               params->file_system_id,
-                               params->request_id,
-                               scoped_ptr<base::DictionaryValue>(),
-                               false /* has_more */)) {
+  if (!service->request_manager()->FulfillRequest(
+          extension_id(),
+          params->file_system_id,
+          params->request_id,
+          scoped_ptr<base::DictionaryValue>(),
+          false /* has_more */)) {
     // TODO(mtomasz): Pass more detailed errors, rather than just a bool.
     base::ListValue* result = new base::ListValue();
     result->Append(
@@ -170,7 +169,6 @@ bool FileSystemProviderInternalUnmountRequestedSuccessFunction::RunImpl() {
 
   base::ListValue* result = new base::ListValue();
   SetResult(result);
-  SendResponse(true);
   return true;
 }
 
@@ -183,11 +181,11 @@ bool FileSystemProviderInternalUnmountRequestedErrorFunction::RunImpl() {
       chromeos::file_system_provider::Service::Get(GetProfile());
   DCHECK(service);
 
-  if (!service->RejectRequest(extension_id(),
-                              params->file_system_id,
-                              params->request_id,
-                              ProviderErrorToFileError(params->error))) {
-    // TODO(mtomasz): Pass more detailed errors, rather than just a bool.
+  if (!service->request_manager()->RejectRequest(
+          extension_id(),
+          params->file_system_id,
+          params->request_id,
+          ProviderErrorToFileError(params->error))) {
     base::ListValue* result = new base::ListValue();
     result->Append(
         CreateError(kSecurityErrorName, kResponseFailedErrorMessage));
@@ -197,7 +195,6 @@ bool FileSystemProviderInternalUnmountRequestedErrorFunction::RunImpl() {
 
   base::ListValue* result = new base::ListValue();
   SetResult(result);
-  SendResponse(true);
   return true;
 }
 

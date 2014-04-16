@@ -20,9 +20,6 @@ namespace {
 
 const char kExtensionId[] = "mbflcebpggnecokmikipoihdbecnjfoj";
 const int kFileSystemId = 1;
-const char kFileSystemName[] = "Camera Pictures";
-const base::FilePath::CharType kMountPath[] = FILE_PATH_LITERAL(
-    "/provided/mbflcebpggnecokmikipoihdbecnjfoj-1-testing_profile-hash");
 
 // Logs calls of the success and error callbacks on requests.
 class EventLogger {
@@ -85,23 +82,17 @@ class FileSystemProviderRequestManagerTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     request_manager_.reset(new RequestManager());
-
-    // Configure the testing file system.
-    file_system = ProvidedFileSystem(kExtensionId,
-                                     kFileSystemId,
-                                     kFileSystemName,
-                                     base::FilePath(kMountPath));
   }
 
   scoped_ptr<RequestManager> request_manager_;
-  ProvidedFileSystem file_system;
 };
 
 TEST_F(FileSystemProviderRequestManagerTest, CreateAndFulFill) {
   EventLogger logger;
 
   int request_id = request_manager_->CreateRequest(
-      file_system,
+      kExtensionId,
+      kFileSystemId,
       base::Bind(&EventLogger::OnSuccess, logger.GetWeakPtr()),
       base::Bind(&EventLogger::OnError, logger.GetWeakPtr()));
 
@@ -114,7 +105,7 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndFulFill) {
   response->SetString("path", "i-like-vanilla");
 
   bool result = request_manager_->FulfillRequest(
-      file_system, request_id, response.Pass(), has_next);
+      kExtensionId, kFileSystemId, request_id, response.Pass(), has_next);
   EXPECT_TRUE(result);
 
   // Validate if the callback has correct arguments.
@@ -130,15 +121,16 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndFulFill) {
   // Confirm, that the request is removed. Basically, fulfilling again for the
   // same request, should fail.
   {
+    scoped_ptr<base::DictionaryValue> response;
     bool retry = request_manager_->FulfillRequest(
-        file_system, request_id, response.Pass(), has_next);
+        kExtensionId, kFileSystemId, request_id, response.Pass(), has_next);
     EXPECT_FALSE(retry);
   }
 
   // Rejecting should also fail.
   {
     bool retry = request_manager_->RejectRequest(
-        file_system, request_id, base::File::FILE_ERROR_FAILED);
+        kExtensionId, kFileSystemId, request_id, base::File::FILE_ERROR_FAILED);
     EXPECT_FALSE(retry);
   }
 }
@@ -147,7 +139,8 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndFulFill_WithHasNext) {
   EventLogger logger;
 
   int request_id = request_manager_->CreateRequest(
-      file_system,
+      kExtensionId,
+      kFileSystemId,
       base::Bind(&EventLogger::OnSuccess, logger.GetWeakPtr()),
       base::Bind(&EventLogger::OnError, logger.GetWeakPtr()));
 
@@ -159,7 +152,7 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndFulFill_WithHasNext) {
   const bool has_next = true;
 
   bool result = request_manager_->FulfillRequest(
-      file_system, request_id, response.Pass(), has_next);
+      kExtensionId, kFileSystemId, request_id, response.Pass(), has_next);
   EXPECT_TRUE(result);
 
   // Validate if the callback has correct arguments.
@@ -174,7 +167,7 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndFulFill_WithHasNext) {
   {
     bool new_has_next = false;
     bool retry = request_manager_->FulfillRequest(
-        file_system, request_id, response.Pass(), new_has_next);
+        kExtensionId, kFileSystemId, request_id, response.Pass(), new_has_next);
     EXPECT_TRUE(retry);
   }
 
@@ -183,7 +176,7 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndFulFill_WithHasNext) {
   {
     bool new_has_next = false;
     bool retry = request_manager_->FulfillRequest(
-        file_system, request_id, response.Pass(), new_has_next);
+        kExtensionId, kFileSystemId, request_id, response.Pass(), new_has_next);
     EXPECT_FALSE(retry);
   }
 }
@@ -192,7 +185,8 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndReject) {
   EventLogger logger;
 
   int request_id = request_manager_->CreateRequest(
-      file_system,
+      kExtensionId,
+      kFileSystemId,
       base::Bind(&EventLogger::OnSuccess, logger.GetWeakPtr()),
       base::Bind(&EventLogger::OnError, logger.GetWeakPtr()));
 
@@ -201,7 +195,8 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndReject) {
   EXPECT_EQ(0u, logger.error_events().size());
 
   base::File::Error error = base::File::FILE_ERROR_NO_MEMORY;
-  bool result = request_manager_->RejectRequest(file_system, request_id, error);
+  bool result = request_manager_->RejectRequest(
+      kExtensionId, kFileSystemId, request_id, error);
   EXPECT_TRUE(result);
 
   // Validate if the callback has correct arguments.
@@ -216,14 +211,14 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndReject) {
     scoped_ptr<base::DictionaryValue> response;
     bool has_next = false;
     bool retry = request_manager_->FulfillRequest(
-        file_system, request_id, response.Pass(), has_next);
+        kExtensionId, kFileSystemId, request_id, response.Pass(), has_next);
     EXPECT_FALSE(retry);
   }
 
   // Rejecting should also fail.
   {
-    bool retry =
-        request_manager_->RejectRequest(file_system, request_id, error);
+    bool retry = request_manager_->RejectRequest(
+        kExtensionId, kFileSystemId, request_id, error);
     EXPECT_FALSE(retry);
   }
 }
@@ -233,7 +228,8 @@ TEST_F(FileSystemProviderRequestManagerTest,
   EventLogger logger;
 
   int request_id = request_manager_->CreateRequest(
-      file_system,
+      kExtensionId,
+      kFileSystemId,
       base::Bind(&EventLogger::OnSuccess, logger.GetWeakPtr()),
       base::Bind(&EventLogger::OnError, logger.GetWeakPtr()));
 
@@ -242,8 +238,8 @@ TEST_F(FileSystemProviderRequestManagerTest,
   EXPECT_EQ(0u, logger.error_events().size());
 
   base::File::Error error = base::File::FILE_ERROR_NO_MEMORY;
-  bool result =
-      request_manager_->RejectRequest(file_system, request_id + 1, error);
+  bool result = request_manager_->RejectRequest(
+      kExtensionId, kFileSystemId, request_id + 1, error);
   EXPECT_FALSE(result);
 
   // Callbacks should not be called.
@@ -252,8 +248,8 @@ TEST_F(FileSystemProviderRequestManagerTest,
 
   // Confirm, that the request hasn't been removed, by rejecting it correctly.
   {
-    bool retry =
-        request_manager_->RejectRequest(file_system, request_id, error);
+    bool retry = request_manager_->RejectRequest(
+        kExtensionId, kFileSystemId, request_id, error);
     EXPECT_TRUE(retry);
   }
 }
@@ -263,7 +259,8 @@ TEST_F(FileSystemProviderRequestManagerTest,
   EventLogger logger;
 
   int request_id = request_manager_->CreateRequest(
-      file_system,
+      kExtensionId,
+      kFileSystemId,
       base::Bind(&EventLogger::OnSuccess, logger.GetWeakPtr()),
       base::Bind(&EventLogger::OnError, logger.GetWeakPtr()));
 
@@ -272,8 +269,8 @@ TEST_F(FileSystemProviderRequestManagerTest,
   EXPECT_EQ(0u, logger.error_events().size());
 
   base::File::Error error = base::File::FILE_ERROR_NO_MEMORY;
-  bool result =
-      request_manager_->RejectRequest(file_system, request_id + 1, error);
+  bool result = request_manager_->RejectRequest(
+      kExtensionId, kFileSystemId, request_id + 1, error);
   EXPECT_FALSE(result);
 
   // Callbacks should not be called.
@@ -282,8 +279,8 @@ TEST_F(FileSystemProviderRequestManagerTest,
 
   // Confirm, that the request hasn't been removed, by rejecting it correctly.
   {
-    bool retry =
-        request_manager_->RejectRequest(file_system, request_id, error);
+    bool retry = request_manager_->RejectRequest(
+        kExtensionId, kFileSystemId, request_id, error);
     EXPECT_TRUE(retry);
   }
 }
@@ -293,25 +290,20 @@ TEST_F(FileSystemProviderRequestManagerTest,
   EventLogger logger;
 
   int request_id = request_manager_->CreateRequest(
-      file_system,
+      kExtensionId,
+      kFileSystemId,
       base::Bind(&EventLogger::OnSuccess, logger.GetWeakPtr()),
       base::Bind(&EventLogger::OnError, logger.GetWeakPtr()));
   EXPECT_EQ(1, request_id);
 
-  // Create another file system, which has just a different fiel system id
-  // (1 -> 2).
-  ProvidedFileSystem another_file_system(
-      kExtensionId,
-      2,  // file_system_id
-      "Music",
-      base::FilePath::FromUTF8Unsafe(
-          "/provided/mbflcebpggnecokmikipoihdbecnjfoj-2-testing_profile-hash"));
-
   scoped_ptr<base::DictionaryValue> response;
   const bool has_next = false;
 
-  bool result = request_manager_->FulfillRequest(
-      another_file_system, request_id, response.Pass(), has_next);
+  bool result = request_manager_->FulfillRequest(kExtensionId,
+                                                 2,  // file_system_id
+                                                 request_id,
+                                                 response.Pass(),
+                                                 has_next);
   EXPECT_FALSE(result);
 
   // Callbacks should not be called.
@@ -322,7 +314,7 @@ TEST_F(FileSystemProviderRequestManagerTest,
   // with a correct file system.
   {
     bool retry = request_manager_->FulfillRequest(
-        file_system, request_id, response.Pass(), has_next);
+        kExtensionId, kFileSystemId, request_id, response.Pass(), has_next);
     EXPECT_TRUE(retry);
   }
 }
@@ -331,12 +323,14 @@ TEST_F(FileSystemProviderRequestManagerTest, UniqueIds) {
   EventLogger logger;
 
   int first_request_id = request_manager_->CreateRequest(
-      file_system,
+      kExtensionId,
+      kFileSystemId,
       base::Bind(&EventLogger::OnSuccess, logger.GetWeakPtr()),
       base::Bind(&EventLogger::OnError, logger.GetWeakPtr()));
 
   int second_request_id = request_manager_->CreateRequest(
-      file_system,
+      kExtensionId,
+      kFileSystemId,
       base::Bind(&EventLogger::OnSuccess, logger.GetWeakPtr()),
       base::Bind(&EventLogger::OnError, logger.GetWeakPtr()));
 

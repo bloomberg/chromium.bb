@@ -12,7 +12,7 @@
 namespace chromeos {
 namespace file_system_provider {
 
-class ProvidedFileSystem;
+class ProvidedFileSystemInfo;
 
 // Observes file_system_provider::Service for mounting and unmounting events.
 class Observer {
@@ -20,14 +20,15 @@ class Observer {
   // Called when a file system mounting has been invoked. For success, the
   // |error| argument is set to FILE_OK. Otherwise, |error| contains a specific
   // error code.
-  virtual void OnProvidedFileSystemMount(const ProvidedFileSystem& file_system,
-                                         base::File::Error error) = 0;
+  virtual void OnProvidedFileSystemMount(
+      const ProvidedFileSystemInfo& file_system_info,
+      base::File::Error error) = 0;
 
   // Called when a file system unmounting has been invoked. For success, the
   // |error| argument is set to FILE_OK. Otherwise, |error| contains a specific
   // error code.
   virtual void OnProvidedFileSystemUnmount(
-      const ProvidedFileSystem& file_system,
+      const ProvidedFileSystemInfo& file_system_info,
       base::File::Error error) = 0;
 };
 
