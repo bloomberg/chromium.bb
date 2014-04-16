@@ -13,11 +13,7 @@ static int nacl_irt_tls_init(void *thread_ptr) {
   return -NACL_SYSCALL(tls_init)(thread_ptr);
 }
 
-static void *nacl_irt_tls_get(void) {
-  return NACL_SYSCALL(tls_get)();
-}
-
 const struct nacl_irt_tls nacl_irt_tls = {
   nacl_irt_tls_init,
-  nacl_irt_tls_get,
+  NACL_SYSCALL(tls_get),
 };
