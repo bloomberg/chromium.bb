@@ -49,7 +49,9 @@ MergeResult MergeLocalAndSyncPasswords(
       password_form.preferred == password_specifics.preferred() &&
       password_form.date_created.ToInternalValue() ==
           password_specifics.date_created() &&
-      password_form.blacklisted_by_user == password_specifics.blacklisted()) {
+      password_form.blacklisted_by_user == password_specifics.blacklisted() &&
+      password_form.type == password_specifics.type() &&
+      password_form.times_used == password_specifics.times_used()) {
     return IDENTICAL;
   }
 
@@ -417,6 +419,8 @@ syncer::SyncData SyncDataFromPassword(
   password_specifics->set_date_created(
       password_form.date_created.ToInternalValue());
   password_specifics->set_blacklisted(password_form.blacklisted_by_user);
+  password_specifics->set_type(password_form.type);
+  password_specifics->set_times_used(password_form.times_used);
 
   std::string tag = MakePasswordSyncTag(*password_specifics);
   return syncer::SyncData::CreateLocalData(tag, tag, password_data);
@@ -440,6 +444,9 @@ void PasswordFromSpecifics(const sync_pb::PasswordSpecificsData& password,
   new_password->date_created =
       base::Time::FromInternalValue(password.date_created());
   new_password->blacklisted_by_user = password.blacklisted();
+  new_password->type =
+      static_cast<autofill::PasswordForm::Type>(password.type());
+  new_password->times_used = password.times_used();
 }
 
 std::string MakePasswordSyncTag(

@@ -58,6 +58,8 @@ void PasswordsEqual(const sync_pb::PasswordSpecificsData& expected_password,
   EXPECT_EQ(expected_password.preferred(), actual_password.preferred());
   EXPECT_EQ(expected_password.date_created(), actual_password.date_created());
   EXPECT_EQ(expected_password.blacklisted(), actual_password.blacklisted());
+  EXPECT_EQ(expected_password.type(), actual_password.type());
+  EXPECT_EQ(expected_password.times_used(), actual_password.times_used());
 }
 
 // Creates a sync data consisting of password specifics. The sign on realm is
@@ -67,6 +69,8 @@ SyncData CreateSyncData(const std::string& signon_realm) {
   sync_pb::PasswordSpecificsData* password_specifics =
       password_data.mutable_password()->mutable_client_only_encrypted_data();
   password_specifics->set_signon_realm(signon_realm);
+  password_specifics->set_type(autofill::PasswordForm::TYPE_GENERATED);
+  password_specifics->set_times_used(3);
 
   std::string tag = MakePasswordSyncTag(*password_specifics);
   return syncer::SyncData::CreateLocalData(tag, tag, password_data);
@@ -401,6 +405,8 @@ TEST_F(PasswordSyncableServiceTest, AdditionOnlyInSync) {
 TEST_F(PasswordSyncableServiceTest, AdditionOnlyInPasswordStore) {
   scoped_ptr<autofill::PasswordForm> form1(new autofill::PasswordForm);
   form1->signon_realm = "abc";
+  form1->times_used = 2;
+  form1->type = autofill::PasswordForm::TYPE_GENERATED;
   std::vector<autofill::PasswordForm*> forms;
   forms.push_back(form1.release());
   SetPasswordStoreData(forms, std::vector<autofill::PasswordForm*>());
@@ -424,6 +430,8 @@ TEST_F(PasswordSyncableServiceTest, AdditionOnlyInPasswordStore) {
 TEST_F(PasswordSyncableServiceTest, BothInSync) {
   scoped_ptr<autofill::PasswordForm> form1(new autofill::PasswordForm);
   form1->signon_realm = "abc";
+  form1->times_used = 3;
+  form1->type = autofill::PasswordForm::TYPE_GENERATED;
   std::vector<autofill::PasswordForm*> forms;
   forms.push_back(form1.release());
   SetPasswordStoreData(forms, std::vector<autofill::PasswordForm*>());
@@ -546,6 +554,8 @@ TEST_F(PasswordSyncableServiceTest, GetAllSyncData) {
   scoped_ptr<autofill::PasswordForm> form1(new autofill::PasswordForm);
   form1->signon_realm = "abc";
   form1->action = GURL("http://foo.com");
+  form1->times_used = 5;
+  form1->type = autofill::PasswordForm::TYPE_GENERATED;
   scoped_ptr<autofill::PasswordForm> form2(new autofill::PasswordForm);
   form2->signon_realm = "xyz";
   form2->action = GURL("http://bar.com");

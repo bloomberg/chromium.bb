@@ -223,6 +223,8 @@ base::DictionaryValue* PasswordSpecificsDataToValue(
   SET_BOOL(preferred);
   SET_INT64(date_created);
   SET_BOOL(blacklisted);
+  SET_INT32(type);
+  SET_INT32(times_used);
   return value;
 }
 
