@@ -50,7 +50,7 @@ class WindowSelectorWindow : public WindowSelectorItem,
  private:
   // Creates the close button window if it does not exist and updates the bounds
   // to match the window selector item.
-  void UpdateCloseButtonBounds();
+  void UpdateCloseButtonBounds(aura::Window* root_window);
 
   // The window with a scoped transform represented by this selector item.
   ScopedTransformOverviewWindow transform_window_;

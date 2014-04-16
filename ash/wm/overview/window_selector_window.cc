@@ -4,6 +4,7 @@
 
 #include "ash/wm/overview/window_selector_window.h"
 
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/overview/scoped_transform_overview_window.h"
@@ -107,7 +108,7 @@ void WindowSelectorWindow::SetItemBounds(aura::Window* root_window,
   transform_window_.SetTransform(root_window,
       ScopedTransformOverviewWindow::GetTransformForRect(src_rect, bounds()),
       animate);
-  UpdateCloseButtonBounds();
+  UpdateCloseButtonBounds(root_window);
 }
 
 void WindowSelectorWindow::ButtonPressed(views::Button* sender,
@@ -116,9 +117,9 @@ void WindowSelectorWindow::ButtonPressed(views::Button* sender,
       transform_window_.window())->Close();
 }
 
-void WindowSelectorWindow::UpdateCloseButtonBounds() {
-  aura::Window* root_window = GetRootWindow();
-  gfx::Rect align_bounds(bounds());
+void WindowSelectorWindow::UpdateCloseButtonBounds(aura::Window* root_window) {
+  gfx::Rect align_bounds(
+      ScreenUtil::ConvertRectFromScreen(root_window, bounds()));
   gfx::Transform close_button_transform;
   close_button_transform.Translate(align_bounds.right(), align_bounds.y());
 
