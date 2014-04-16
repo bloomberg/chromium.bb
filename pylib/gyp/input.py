@@ -588,7 +588,7 @@ def LoadTargetBuildFilesParallel(build_files, data, aux_data,
         'multiple_toolsets': globals()['multiple_toolsets']}
 
       if not parallel_state.pool:
-        parallel_state.pool = multiprocessing.Pool(8)
+        parallel_state.pool = multiprocessing.Pool(multiprocessing.cpu_count())
       parallel_state.pool.apply_async(
           CallLoadTargetBuildFile,
           args = (global_flags, dependency,
