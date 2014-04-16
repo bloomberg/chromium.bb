@@ -5,21 +5,15 @@
 #include "chrome/browser/safe_browsing/download_feedback.h"
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/files/file_util_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/task_runner.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "net/base/net_errors.h"
 
 namespace safe_browsing {
 
 namespace {
-
-// The default URL where browser sends download feedback requests.
-const char kSbDefaultFeedbackURL[] =
-    "https://safebrowsing.google.com/safebrowsing/uploads/chrome";
 
 // This enum is used by histograms.  Do not change the ordering or remove items.
 enum UploadResultType {
@@ -118,8 +112,6 @@ void DownloadFeedbackImpl::Start(const base::Closure& finish_callback) {
   DCHECK(CalledOnValidThread());
   DCHECK(!uploader_);
 
-  CommandLine* cmdline = CommandLine::ForCurrentProcess();
-
   ClientDownloadReport report_metadata;
 
   bool r = report_metadata.mutable_download_request()->ParseFromString(
@@ -130,17 +122,13 @@ void DownloadFeedbackImpl::Start(const base::Closure& finish_callback) {
   DCHECK(r);
   file_size_ = report_metadata.download_request().length();
 
-  GURL url = GURL(cmdline->HasSwitch(switches::kSbDownloadFeedbackURL) ?
-      cmdline->GetSwitchValueASCII(switches::kSbDownloadFeedbackURL) :
-      kSbDefaultFeedbackURL);
-
   std::string metadata_string;
   bool ok = report_metadata.SerializeToString(&metadata_string);
   DCHECK(ok);
   uploader_.reset(
       TwoPhaseUploader::Create(request_context_getter_.get(),
                                file_task_runner_.get(),
-                               url,
+                               GURL(kSbFeedbackURL),
                                metadata_string,
                                file_path_,
                                TwoPhaseUploader::ProgressCallback(),
@@ -205,6 +193,10 @@ void DownloadFeedbackImpl::RecordUploadResult(UploadResultType result) {
 
 // static
 const int64 DownloadFeedback::kMaxUploadSize = 50 * 1024 * 1024;
+
+// static
+const char DownloadFeedback::kSbFeedbackURL[] =
+    "https://safebrowsing.google.com/safebrowsing/uploads/chrome";
 
 // static
 DownloadFeedbackFactory* DownloadFeedback::factory_ = NULL;

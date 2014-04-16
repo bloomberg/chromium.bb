@@ -4,14 +4,12 @@
 
 #include "chrome/browser/safe_browsing/download_feedback.h"
 
-#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "chrome/browser/safe_browsing/two_phase_uploader.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -165,10 +163,6 @@ TEST_F(DownloadFeedbackTest, CompleteUpload) {
   std::string ping_response(
       expected_report_metadata.download_response().SerializeAsString());
 
-  const char kTestFeedbackURL[] = "https://example.com/test/upload";
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kSbDownloadFeedbackURL, kTestFeedbackURL);
-
   DownloadFeedback* feedback =
       DownloadFeedback::Create(url_request_context_getter_.get(),
                                file_task_runner_.get(),
@@ -190,7 +184,7 @@ TEST_F(DownloadFeedbackTest, CompleteUpload) {
   EXPECT_EQ(upload_file_path_, uploader()->file_path_);
   EXPECT_EQ(expected_report_metadata.SerializeAsString(),
             uploader()->metadata_);
-  EXPECT_EQ(kTestFeedbackURL, uploader()->base_url_.spec());
+  EXPECT_EQ(DownloadFeedback::kSbFeedbackURL, uploader()->base_url_.spec());
 
   EXPECT_TRUE(base::PathExists(upload_file_path_));
 

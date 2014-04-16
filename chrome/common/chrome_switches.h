@@ -305,7 +305,6 @@ extern const char kSbDisableAutoUpdate[];
 extern const char kSbDisableDownloadProtection[];
 extern const char kSbDisableExtensionBlacklist[];
 extern const char kSbDisableSideEffectFreeWhitelist[];
-extern const char kSbDownloadFeedbackURL[];
 extern const char kServiceProcess[];
 extern const char kSilentDebuggerExtensionAPI[];
 extern const char kSilentLaunch[];

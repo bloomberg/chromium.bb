@@ -1126,9 +1126,6 @@ const char kSbDisableExtensionBlacklist[] =
 const char kSbDisableSideEffectFreeWhitelist[] =
     "safebrowsing-disable-side-effect-free-whitelist";
 
-// URL to send safebrowsing download feedback reports to.
-const char kSbDownloadFeedbackURL[] = "safebrowsing-download-feedback-url";
-
 // Causes the process to run as a service process.
 const char kServiceProcess[]                = "service";
 

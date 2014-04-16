@@ -39,6 +39,9 @@ class DownloadFeedback : public base::NonThreadSafe {
   // SBDownloadFeedback.SizeSuccess and SizeFailure histograms.
   static const int64 kMaxUploadSize;
 
+  // The URL where the browser sends download feedback requests.
+  static const char kSbFeedbackURL[];
+
   virtual ~DownloadFeedback() {}
 
   // Makes the passed |factory| the factory used to instantiate
