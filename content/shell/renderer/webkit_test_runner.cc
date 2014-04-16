@@ -406,8 +406,10 @@ void WebKitTestRunner::clearDevToolsLocalStorage() {
   Send(new ShellViewHostMsg_ClearDevToolsLocalStorage(routing_id()));
 }
 
-void WebKitTestRunner::showDevTools(const std::string& settings) {
-  Send(new ShellViewHostMsg_ShowDevTools(routing_id(), settings));
+void WebKitTestRunner::showDevTools(const std::string& settings,
+                                    const std::string& frontend_url) {
+  Send(new ShellViewHostMsg_ShowDevTools(
+      routing_id(), settings, frontend_url));
 }
 
 void WebKitTestRunner::closeDevTools() {

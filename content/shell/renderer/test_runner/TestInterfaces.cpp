@@ -133,7 +133,7 @@ void TestInterfaces::configureForTestWithURL(const WebURL& testURL, bool generat
                 "{\"lastActivePanel\":\"\\\"%s\\\"\"}",
                 test_path.substr(0, slash_index).c_str());
         }
-        m_testRunner->showDevTools(settings);
+        m_testRunner->showDevTools(settings, string());
     }
     if (spec.find("/viewsource/") != string::npos) {
         m_testRunner->setShouldEnableViewSource(true);

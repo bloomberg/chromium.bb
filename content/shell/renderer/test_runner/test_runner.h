@@ -81,7 +81,8 @@ class TestRunner : public ::WebTestRunner::WebTestRunner,
   bool shouldDumpAsMarkup();
   bool shouldDumpChildFrameScrollPositions() const;
   bool shouldDumpChildFramesAsText() const;
-  void showDevTools(const std::string& settings);
+  void showDevTools(const std::string& settings,
+                    const std::string& frontend_url);
   void clearDevToolsLocalStorage();
   void setShouldDumpAsText(bool);
   void setShouldDumpAsMarkup(bool);
@@ -449,7 +450,8 @@ class TestRunner : public ::WebTestRunner::WebTestRunner,
   // Methods forwarding to the WebTestDelegate
 
   // Shows DevTools window.
-  void ShowWebInspector(const std::string& str);
+  void ShowWebInspector(const std::string& str,
+                        const std::string& frontend_url);
   void CloseWebInspector();
 
   // Inspect chooser state

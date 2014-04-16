@@ -26,7 +26,10 @@
 namespace content {
 
 // DevTools frontend path for inspector LayoutTests.
-GURL GetDevToolsPathAsURL(const std::string& settings) {
+GURL GetDevToolsPathAsURL(const std::string& settings,
+                          const std::string& frontend_url) {
+  if (!frontend_url.empty())
+    return GURL(frontend_url);
   base::FilePath dir_exe;
   if (!PathService::Get(base::DIR_EXE, &dir_exe)) {
     NOTREACHED();
@@ -52,13 +55,14 @@ GURL GetDevToolsPathAsURL(const std::string& settings) {
 // static
 ShellDevToolsFrontend* ShellDevToolsFrontend::Show(
     WebContents* inspected_contents) {
-  return ShellDevToolsFrontend::Show(inspected_contents, "");
+  return ShellDevToolsFrontend::Show(inspected_contents, "", "");
 }
 
 // static
 ShellDevToolsFrontend* ShellDevToolsFrontend::Show(
     WebContents* inspected_contents,
-    const std::string& settings) {
+    const std::string& settings,
+    const std::string& frontend_url) {
   scoped_refptr<DevToolsAgentHost> agent(
       DevToolsAgentHost::GetOrCreateFor(
           inspected_contents->GetRenderViewHost()));
@@ -74,7 +78,7 @@ ShellDevToolsFrontend* ShellDevToolsFrontend::Show(
   ShellDevToolsDelegate* delegate = ShellContentBrowserClient::Get()->
       shell_browser_main_parts()->devtools_delegate();
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
-    shell->LoadURL(GetDevToolsPathAsURL(settings));
+    shell->LoadURL(GetDevToolsPathAsURL(settings, frontend_url));
   else
     shell->LoadURL(delegate->devtools_http_handler()->GetFrontendURL());
 

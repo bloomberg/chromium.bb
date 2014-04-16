@@ -103,7 +103,8 @@ public:
     virtual void clearDevToolsLocalStorage() = 0;
 
     // Opens and closes the inspector.
-    virtual void showDevTools(const std::string& settings) = 0;
+    virtual void showDevTools(const std::string& settings,
+                              const std::string& frontend_url) = 0;
     virtual void closeDevTools() = 0;
 
     // Evaluate the given script in the DevTools agent.

@@ -1104,9 +1104,11 @@ void TestRunnerBindings::SetUseMockTheme(bool use) {
 
 void TestRunnerBindings::ShowWebInspector(gin::Arguments* args) {
   if (runner_) {
-    std::string str;
-    args->GetNext(&str);
-    runner_->ShowWebInspector(str);
+    std::string settings;
+    args->GetNext(&settings);
+    std::string frontend_url;
+    args->GetNext(&frontend_url);
+    runner_->ShowWebInspector(settings, frontend_url);
   }
 }
 
@@ -1732,8 +1734,9 @@ void TestRunner::clearDevToolsLocalStorage() {
   delegate_->clearDevToolsLocalStorage();
 }
 
-void TestRunner::showDevTools(const std::string& settings) {
-  delegate_->showDevTools(settings);
+void TestRunner::showDevTools(const std::string& settings,
+                              const std::string& frontend_url) {
+  delegate_->showDevTools(settings, frontend_url);
 }
 
 class WorkItemBackForward : public TestRunner::WorkItem {
@@ -2463,8 +2466,9 @@ void TestRunner::SetUseMockTheme(bool use) {
   use_mock_theme_ = use;
 }
 
-void TestRunner::ShowWebInspector(const std::string& str) {
-  showDevTools(str);
+void TestRunner::ShowWebInspector(const std::string& str,
+                                  const std::string& frontend_url) {
+  showDevTools(str, frontend_url);
 }
 
 void TestRunner::CloseWebInspector() {

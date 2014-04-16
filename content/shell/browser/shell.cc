@@ -228,16 +228,17 @@ void Shell::UpdateNavigationControls(bool to_different_document) {
 }
 
 void Shell::ShowDevTools() {
-  InnerShowDevTools("");
+  InnerShowDevTools("", "");
 }
 
 void Shell::ShowDevToolsForElementAt(int x, int y) {
-  InnerShowDevTools("");
+  InnerShowDevTools("", "");
   devtools_frontend_->InspectElementAt(x, y);
 }
 
-void Shell::ShowDevToolsForTest(const std::string& settings) {
-  InnerShowDevTools(settings);
+void Shell::ShowDevToolsForTest(const std::string& settings,
+                                const std::string& frontend_url) {
+  InnerShowDevTools(settings, frontend_url);
 }
 
 void Shell::CloseDevTools() {
@@ -377,9 +378,11 @@ void Shell::TitleWasSet(NavigationEntry* entry, bool explicit_set) {
     PlatformSetTitle(entry->GetTitle());
 }
 
-void Shell::InnerShowDevTools(const std::string& settings) {
+void Shell::InnerShowDevTools(const std::string& settings,
+                              const std::string& frontend_url) {
   if (!devtools_frontend_) {
-    devtools_frontend_ = ShellDevToolsFrontend::Show(web_contents(), settings);
+    devtools_frontend_ = ShellDevToolsFrontend::Show(
+        web_contents(), settings, frontend_url);
     devtools_observer_.reset(new DevToolsWebContentsObserver(
         this, devtools_frontend_->frontend_shell()->web_contents()));
   }

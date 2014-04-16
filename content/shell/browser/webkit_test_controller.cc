@@ -570,11 +570,12 @@ void WebKitTestController::OnClearDevToolsLocalStorage() {
   StoragePartition* storage_partition =
       BrowserContext::GetStoragePartition(browser_context, NULL);
   storage_partition->GetDOMStorageContext()->DeleteLocalStorage(
-      content::GetDevToolsPathAsURL("").GetOrigin());
+      content::GetDevToolsPathAsURL("", "").GetOrigin());
 }
 
-void WebKitTestController::OnShowDevTools(const std::string& settings) {
-  main_window_->ShowDevToolsForTest(settings);
+void WebKitTestController::OnShowDevTools(const std::string& settings,
+                                          const std::string& frontend_url) {
+  main_window_->ShowDevToolsForTest(settings, frontend_url);
 }
 
 void WebKitTestController::OnCloseDevTools() {
