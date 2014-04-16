@@ -31,14 +31,13 @@
 #include "config.h"
 #include "platform/graphics/DisplayList.h"
 
-#include "platform/geometry/IntSize.h"
 #include "third_party/skia/include/core/SkPicture.h"
-#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 
 DisplayList::DisplayList(const FloatRect& bounds)
     : m_bounds(bounds)
+    , m_picture(adoptRef(new SkPicture()))
 {
 }
 
@@ -54,25 +53,6 @@ const FloatRect& DisplayList::bounds() const
 SkPicture* DisplayList::picture() const
 {
     return m_picture.get();
-}
-
-SkCanvas* DisplayList::beginRecording(const IntSize& size, uint32_t recordFlags)
-{
-    ASSERT(!isRecording());
-
-    if (!m_recorder)
-        m_recorder = adoptPtr(new SkPictureRecorder);
-    return m_recorder->beginRecording(size.width(), size.height(), recordFlags);
-}
-
-void DisplayList::endRecording()
-{
-    ASSERT(isRecording());
-
-    if (m_recorder) {
-        m_picture = adoptRef(m_recorder->endRecording());
-        m_recorder.clear();
-    }
 }
 
 }

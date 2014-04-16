@@ -493,7 +493,7 @@ void GraphicsContext::beginRecording(const FloatRect& bounds)
 
     if (!paintingDisabled()) {
         IntRect recordingRect = enclosingIntRect(bounds);
-        m_canvas = displayList->beginRecording(recordingRect.size(),
+        m_canvas = displayList->picture()->beginRecording(recordingRect.width(), recordingRect.height(),
             SkPicture::kUsePathBoundsForClip_RecordingFlag);
 
         // We want the bounds offset mapped to (0, 0), such that the display list content
@@ -514,8 +514,8 @@ PassRefPtr<DisplayList> GraphicsContext::endRecording()
 
     RecordingState recording = m_recordingStateStack.last();
     if (!paintingDisabled()) {
-        ASSERT(recording.m_displayList->isRecording());
-        recording.m_displayList->endRecording();
+        ASSERT(recording.m_displayList->picture()->getRecordingCanvas());
+        recording.m_displayList->picture()->endRecording();
     }
 
     m_recordingStateStack.removeLast();
@@ -532,7 +532,7 @@ bool GraphicsContext::isRecording() const
 void GraphicsContext::drawDisplayList(DisplayList* displayList)
 {
     ASSERT(displayList);
-    ASSERT(!displayList->isRecording());
+    ASSERT(!displayList->picture()->getRecordingCanvas());
 
     if (paintingDisabled() || displayList->bounds().isEmpty())
         return;
