@@ -24,7 +24,14 @@ namespace content {
 class BrowserContext;
 }
 
+#if defined(OS_CHROMEOS)
+namespace ui {
+class UserActivityPowerManagerNotifier;
+}
+#endif
+
 namespace wm {
+class UserActivityDetector;
 class WMTestHelper;
 }
 
@@ -60,7 +67,7 @@ class ShellDesktopController
 #if defined(OS_CHROMEOS)
   // ui::DisplayConfigurator::Observer overrides.
   virtual void OnDisplayModeChanged(const std::vector<
-      ui::DisplayConfigurator::DisplayState>& outputs) OVERRIDE;
+      ui::DisplayConfigurator::DisplayState>& displays) OVERRIDE;
 #endif
 
  private:
@@ -82,6 +89,11 @@ class ShellDesktopController
   scoped_ptr<wm::WMTestHelper> wm_test_helper_;
 
   scoped_ptr<aura::TestScreen> test_screen_;
+
+  scoped_ptr<wm::UserActivityDetector> user_activity_detector_;
+#if defined(OS_CHROMEOS)
+  scoped_ptr<ui::UserActivityPowerManagerNotifier> user_activity_notifier_;
+#endif
 
   // The desktop supports a single app window.
   scoped_ptr<ShellAppWindow> app_window_;

@@ -77,6 +77,7 @@
         '<(DEPTH)/extensions/extensions.gyp:extensions_renderer',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink',
+        '<(DEPTH)/ui/wm/wm.gyp:wm',
         '<(DEPTH)/ui/wm/wm.gyp:wm_test_support',
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
       ],
@@ -121,6 +122,13 @@
         'renderer/shell_content_renderer_client.h',
         'renderer/shell_extensions_renderer_client.cc',
         'renderer/shell_extensions_renderer_client.h',
+      ],
+      'conditions': [
+        ['chromeos==1', {
+          'dependencies': [
+            '<(DEPTH)/ui/chromeos/ui_chromeos.gyp:ui_chromeos',
+          ],
+        }],
       ],
     },
     {

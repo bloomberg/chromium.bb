@@ -61,6 +61,7 @@ class ShellBrowserMainParts : public content::BrowserMainParts,
   virtual void PreMainMessageLoopRun() OVERRIDE;
   virtual bool MainMessageLoopRun(int* result_code) OVERRIDE;
   virtual void PostMainMessageLoopRun() OVERRIDE;
+  virtual void PostDestroyThreads() OVERRIDE;
 
   // aura::WindowTreeHostObserver overrides:
   virtual void OnHostCloseRequested(const aura::WindowTreeHost* host) OVERRIDE;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_CHROMEOS_USER_ACTIVITY_NOTIFIER_H_
-#define UI_CHROMEOS_USER_ACTIVITY_NOTIFIER_H_
+#ifndef UI_CHROMEOS_USER_ACTIVITY_POWER_MANAGER_NOTIFIER_H_
+#define UI_CHROMEOS_USER_ACTIVITY_POWER_MANAGER_NOTIFIER_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -18,11 +18,12 @@ class UserActivityDetector;
 namespace ui {
 
 // Notifies the power manager when the user is active.
-class UI_CHROMEOS_EXPORT UserActivityNotifier
+class UI_CHROMEOS_EXPORT UserActivityPowerManagerNotifier
     : public ::wm::UserActivityObserver {
  public:
-  explicit UserActivityNotifier(::wm::UserActivityDetector* detector);
-  virtual ~UserActivityNotifier();
+  explicit UserActivityPowerManagerNotifier(
+      ::wm::UserActivityDetector* detector);
+  virtual ~UserActivityPowerManagerNotifier();
 
   // UserActivityObserver implementation.
   virtual void OnUserActivity(const Event* event) OVERRIDE;
@@ -33,9 +34,9 @@ class UI_CHROMEOS_EXPORT UserActivityNotifier
   // Last time that the power manager was notified.
   base::TimeTicks last_notify_time_;
 
-  DISALLOW_COPY_AND_ASSIGN(UserActivityNotifier);
+  DISALLOW_COPY_AND_ASSIGN(UserActivityPowerManagerNotifier);
 };
 
 }  // namespace ui
 
-#endif  // UI_CHROMEOS_USER_ACTIVITY_NOTIFIER_H_
+#endif  // UI_CHROMEOS_USER_ACTIVITY_POWER_MANAGER_NOTIFIER_H_
