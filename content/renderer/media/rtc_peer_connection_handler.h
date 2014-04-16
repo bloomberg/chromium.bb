@@ -5,10 +5,13 @@
 #ifndef CONTENT_RENDERER_MEDIA_RTC_PEER_CONNECTION_HANDLER_H_
 #define CONTENT_RENDERER_MEDIA_RTC_PEER_CONNECTION_HANDLER_H_
 
+#include <map>
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
-#include "content/renderer/media/peer_connection_handler_base.h"
 #include "content/renderer/media/webrtc/media_stream_track_metrics.h"
 #include "third_party/WebKit/public/platform/WebRTCPeerConnectionHandler.h"
 #include "third_party/WebKit/public/platform/WebRTCStatsRequest.h"
@@ -21,7 +24,10 @@ class WebRTCDataChannelHandler;
 
 namespace content {
 
+class MediaStreamDependencyFactory;
 class PeerConnectionTracker;
+class RemoteMediaStreamImpl;
+class WebRtcMediaStreamAdapter;
 
 // Mockable wrapper for blink::WebRTCStatsResponse
 class CONTENT_EXPORT LocalRTCStatsResponse
@@ -74,8 +80,8 @@ class CONTENT_EXPORT LocalRTCStatsRequest
 // Callbacks to the webrtc::PeerConnectionObserver implementation also occur on
 // the main render thread.
 class CONTENT_EXPORT RTCPeerConnectionHandler
-    : public PeerConnectionHandlerBase,
-      NON_EXPORTED_BASE(public blink::WebRTCPeerConnectionHandler) {
+    : NON_EXPORTED_BASE(public blink::WebRTCPeerConnectionHandler),
+      NON_EXPORTED_BASE(public webrtc::PeerConnectionObserver) {
  public:
   RTCPeerConnectionHandler(
       blink::WebRTCPeerConnectionHandlerClient* client,
@@ -168,6 +174,11 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
 
   PeerConnectionTracker* peer_connection_tracker();
 
+ protected:
+  webrtc::PeerConnectionInterface* native_peer_connection() {
+    return native_peer_connection_.get();
+  }
+
  private:
   webrtc::SessionDescriptionInterface* CreateNativeSessionDescription(
       const blink::WebRTCSessionDescription& description,
@@ -176,7 +187,13 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   // |client_| is a weak pointer, and is valid until stop() has returned.
   blink::WebRTCPeerConnectionHandlerClient* client_;
 
+  // |dependency_factory_| is a raw pointer, and is valid for the lifetime of
+  // RenderThreadImpl.
+  MediaStreamDependencyFactory* dependency_factory_;
+
   blink::WebFrame* frame_;
+
+  ScopedVector<WebRtcMediaStreamAdapter> local_streams_;
 
   PeerConnectionTracker* peer_connection_tracker_;
 
@@ -184,6 +201,13 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
 
   // Counter for a UMA stat reported at destruction time.
   int num_data_channels_created_;
+
+  // |native_peer_connection_| is the libjingle native PeerConnection object.
+  scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection_;
+
+  typedef std::map<webrtc::MediaStreamInterface*,
+      content::RemoteMediaStreamImpl*> RemoteStreamMap;
+  RemoteStreamMap remote_streams_;
 
   DISALLOW_COPY_AND_ASSIGN(RTCPeerConnectionHandler);
 };
