@@ -6,6 +6,8 @@
 
 #include <X11/extensions/XInput2.h>
 #include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <X11/XKBlib.h>
 
 // Generically-named #defines from Xlib that conflict with symbols in GTest.
 #undef Bool
@@ -38,6 +40,23 @@ void InitButtonEvent(XEvent* event,
   button_event->y = location.y();
   button_event->button = button;
   button_event->state = state;
+}
+
+// Initializes the passed-in Xlib event.
+void InitKeyEvent(Display* display,
+                  XEvent* event,
+                  bool is_press,
+                  int keycode,
+                  int state) {
+  memset(event, 0, sizeof(*event));
+
+  // We don't bother setting fields that the event code doesn't use, such as
+  // x_root/y_root and window/root/subwindow.
+  XKeyEvent* key_event = &(event->xkey);
+  key_event->display = display;
+  key_event->type = is_press ? KeyPress : KeyRelease;
+  key_event->keycode = keycode;
+  key_event->state = state;
 }
 
 }  // namespace
@@ -238,4 +257,117 @@ TEST(EventsXTest, TouchEventBasic) {
   EXPECT_FLOAT_EQ(GetTouchForce(scoped_xevent), 0.5f);
 }
 #endif
+
+TEST(EventsXTest, NumpadKeyEvents) {
+  XEvent event;
+  Display* display = gfx::GetXDisplay();
+
+  struct {
+    bool is_numpad_key;
+    int x_keysym;
+    ui::KeyboardCode ui_keycode;
+  } keys[] = {
+    // XK_KP_Space and XK_KP_Equal are the extrema in the conventional
+    // keysymdef.h numbering.
+    { true,  XK_KP_Space },
+    { true,  XK_KP_Equal },
+    // Other numpad keysyms. (This is actually exhaustive in the current list.)
+    { true,  XK_KP_Tab },
+    { true,  XK_KP_Enter },
+    { true,  XK_KP_F1 },
+    { true,  XK_KP_F2 },
+    { true,  XK_KP_F3 },
+    { true,  XK_KP_F4 },
+    { true,  XK_KP_Home },
+    { true,  XK_KP_Left },
+    { true,  XK_KP_Up },
+    { true,  XK_KP_Right },
+    { true,  XK_KP_Down },
+    { true,  XK_KP_Prior },
+    { true,  XK_KP_Page_Up },
+    { true,  XK_KP_Next },
+    { true,  XK_KP_Page_Down },
+    { true,  XK_KP_End },
+    { true,  XK_KP_Begin },
+    { true,  XK_KP_Insert },
+    { true,  XK_KP_Delete },
+    { true,  XK_KP_Multiply },
+    { true,  XK_KP_Add },
+    { true,  XK_KP_Separator },
+    { true,  XK_KP_Subtract },
+    { true,  XK_KP_Decimal },
+    { true,  XK_KP_Divide },
+    { true,  XK_KP_0 },
+    { true,  XK_KP_1 },
+    { true,  XK_KP_2 },
+    { true,  XK_KP_3 },
+    { true,  XK_KP_4 },
+    { true,  XK_KP_5 },
+    { true,  XK_KP_6 },
+    { true,  XK_KP_7 },
+    { true,  XK_KP_8 },
+    { true,  XK_KP_9 },
+    // Largest keysym preceding XK_KP_Space.
+    { false, XK_Num_Lock },
+    // Smallest keysym following XK_KP_Equal.
+    { false, XK_F1 },
+    // Non-numpad analogues of numpad keysyms.
+    { false, XK_Tab },
+    { false, XK_Return },
+    { false, XK_F1 },
+    { false, XK_F2 },
+    { false, XK_F3 },
+    { false, XK_F4 },
+    { false, XK_Home },
+    { false, XK_Left },
+    { false, XK_Up },
+    { false, XK_Right },
+    { false, XK_Down },
+    { false, XK_Prior },
+    { false, XK_Page_Up },
+    { false, XK_Next },
+    { false, XK_Page_Down },
+    { false, XK_End },
+    { false, XK_Insert },
+    { false, XK_Delete },
+    { false, XK_multiply },
+    { false, XK_plus },
+    { false, XK_minus },
+    { false, XK_period },
+    { false, XK_slash },
+    { false, XK_0 },
+    { false, XK_1 },
+    { false, XK_2 },
+    { false, XK_3 },
+    { false, XK_4 },
+    { false, XK_5 },
+    { false, XK_6 },
+    { false, XK_7 },
+    { false, XK_8 },
+    { false, XK_9 },
+    // Miscellaneous other keysyms.
+    { false, XK_BackSpace },
+    { false, XK_Scroll_Lock },
+    { false, XK_Multi_key },
+    { false, XK_Select },
+    { false, XK_Num_Lock },
+    { false, XK_Shift_L },
+    { false, XK_space },
+    { false, XK_A },
+  };
+
+  for (size_t k = 0; k < ARRAYSIZE_UNSAFE(keys); ++k) {
+    int x_keycode = XKeysymToKeycode(display, keys[k].x_keysym);
+    // Exclude keysyms for which the server has no corresponding keycode.
+    if (x_keycode) {
+      InitKeyEvent(display, &event, true, x_keycode, 0);
+      // int keysym = XLookupKeysym(&event.xkey, 0);
+      // if (keysym) {
+      ui::KeyEvent ui_key_event(&event, false);
+      EXPECT_EQ(keys[k].is_numpad_key ? ui::EF_NUMPAD_KEY : 0,
+                ui_key_event.flags() & ui::EF_NUMPAD_KEY);
+    }
+  }
+}
+
 }  // namespace ui

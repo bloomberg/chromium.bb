@@ -9,6 +9,7 @@
 #include <X11/extensions/XInput.h>
 #include <X11/extensions/XInput2.h>
 #include <X11/Xlib.h>
+#include <X11/Xutil.h>
 
 #include "base/logging.h"
 #include "base/memory/singleton.h"
@@ -145,6 +146,11 @@ int GetEventFlagsFromXState(unsigned int state) {
   if (state & Button3Mask)
     flags |= ui::EF_RIGHT_MOUSE_BUTTON;
   return flags;
+}
+
+int GetEventFlagsFromXKeyEvent(XEvent* xevent) {
+  return GetEventFlagsFromXState(xevent->xkey.state) |
+         (IsKeypadKey(XLookupKeysym(&xevent->xkey, 0)) ? ui::EF_NUMPAD_KEY : 0);
 }
 
 // Get the event flag for the button in XButtonEvent. During a ButtonPress
@@ -327,7 +333,7 @@ int EventFlagsFromNative(const base::NativeEvent& native_event) {
     case KeyPress:
     case KeyRelease: {
       XModifierStateWatcher::GetInstance()->UpdateStateFromEvent(native_event);
-      return GetEventFlagsFromXState(native_event->xkey.state);
+      return GetEventFlagsFromXKeyEvent(native_event);
     }
     case ButtonPress:
     case ButtonRelease: {

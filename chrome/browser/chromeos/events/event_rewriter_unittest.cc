@@ -562,7 +562,7 @@ void EventRewriterTest::TestRewriteNumPadKeys() {
 
   // XK_KP_Insert (= NumPad 0 without Num Lock), no modifier.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD0,
-                                      0,
+                                      ui::EF_NUMPAD_KEY,
                                       ui::ET_KEY_PRESSED,
                                       keycode_num_pad_0_,
                                       Mod2Mask,  // Num Lock
@@ -576,7 +576,7 @@ void EventRewriterTest::TestRewriteNumPadKeys() {
 
   // XK_KP_Insert (= NumPad 0 without Num Lock), Alt modifier.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD0,
-                                      ui::EF_ALT_DOWN,
+                                      ui::EF_ALT_DOWN | ui::EF_NUMPAD_KEY,
                                       ui::ET_KEY_PRESSED,
                                       keycode_num_pad_0_,
                                       Mod1Mask | Mod2Mask,
@@ -590,7 +590,7 @@ void EventRewriterTest::TestRewriteNumPadKeys() {
 
   // XK_KP_Delete (= NumPad . without Num Lock), Alt modifier.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_DECIMAL,
-                                      ui::EF_ALT_DOWN,
+                                      ui::EF_ALT_DOWN | ui::EF_NUMPAD_KEY,
                                       ui::ET_KEY_PRESSED,
                                       keycode_num_pad_decimal_,
                                       Mod1Mask | Mod2Mask,
@@ -604,7 +604,7 @@ void EventRewriterTest::TestRewriteNumPadKeys() {
 
   // XK_KP_End (= NumPad 1 without Num Lock), Alt modifier.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD1,
-                                      ui::EF_ALT_DOWN,
+                                      ui::EF_ALT_DOWN | ui::EF_NUMPAD_KEY,
                                       ui::ET_KEY_PRESSED,
                                       keycode_num_pad_1_,
                                       Mod1Mask | Mod2Mask,
@@ -618,7 +618,7 @@ void EventRewriterTest::TestRewriteNumPadKeys() {
 
   // XK_KP_Down (= NumPad 2 without Num Lock), Alt modifier.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD2,
-                                      ui::EF_ALT_DOWN,
+                                      ui::EF_ALT_DOWN | ui::EF_NUMPAD_KEY,
                                       ui::ET_KEY_PRESSED,
                                       keycode_num_pad_2_,
                                       Mod1Mask | Mod2Mask,
@@ -632,7 +632,7 @@ void EventRewriterTest::TestRewriteNumPadKeys() {
 
   // XK_KP_Next (= NumPad 3 without Num Lock), Alt modifier.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD3,
-                                      ui::EF_ALT_DOWN,
+                                      ui::EF_ALT_DOWN | ui::EF_NUMPAD_KEY,
                                       ui::ET_KEY_PRESSED,
                                       keycode_num_pad_3_,
                                       Mod1Mask | Mod2Mask,
@@ -646,7 +646,7 @@ void EventRewriterTest::TestRewriteNumPadKeys() {
 
   // XK_KP_Left (= NumPad 4 without Num Lock), Alt modifier.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD4,
-                                      ui::EF_ALT_DOWN,
+                                      ui::EF_ALT_DOWN | ui::EF_NUMPAD_KEY,
                                       ui::ET_KEY_PRESSED,
                                       keycode_num_pad_4_,
                                       Mod1Mask | Mod2Mask,
@@ -660,7 +660,7 @@ void EventRewriterTest::TestRewriteNumPadKeys() {
 
   // XK_KP_Begin (= NumPad 5 without Num Lock), Alt modifier.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD5,
-                                      ui::EF_ALT_DOWN,
+                                      ui::EF_ALT_DOWN | ui::EF_NUMPAD_KEY,
                                       ui::ET_KEY_PRESSED,
                                       keycode_num_pad_5_,
                                       Mod1Mask | Mod2Mask,
@@ -674,7 +674,7 @@ void EventRewriterTest::TestRewriteNumPadKeys() {
 
   // XK_KP_Right (= NumPad 6 without Num Lock), Alt modifier.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD6,
-                                      ui::EF_ALT_DOWN,
+                                      ui::EF_ALT_DOWN | ui::EF_NUMPAD_KEY,
                                       ui::ET_KEY_PRESSED,
                                       keycode_num_pad_6_,
                                       Mod1Mask | Mod2Mask,
@@ -688,7 +688,7 @@ void EventRewriterTest::TestRewriteNumPadKeys() {
 
   // XK_KP_Home (= NumPad 7 without Num Lock), Alt modifier.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD7,
-                                      ui::EF_ALT_DOWN,
+                                      ui::EF_ALT_DOWN | ui::EF_NUMPAD_KEY,
                                       ui::ET_KEY_PRESSED,
                                       keycode_num_pad_7_,
                                       Mod1Mask | Mod2Mask,
@@ -702,7 +702,7 @@ void EventRewriterTest::TestRewriteNumPadKeys() {
 
   // XK_KP_Up (= NumPad 8 without Num Lock), Alt modifier.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD8,
-                                      ui::EF_ALT_DOWN,
+                                      ui::EF_ALT_DOWN | ui::EF_NUMPAD_KEY,
                                       ui::ET_KEY_PRESSED,
                                       keycode_num_pad_8_,
                                       Mod1Mask | Mod2Mask,
@@ -716,7 +716,7 @@ void EventRewriterTest::TestRewriteNumPadKeys() {
 
   // XK_KP_Prior (= NumPad 9 without Num Lock), Alt modifier.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD9,
-                                      ui::EF_ALT_DOWN,
+                                      ui::EF_ALT_DOWN | ui::EF_NUMPAD_KEY,
                                       ui::ET_KEY_PRESSED,
                                       keycode_num_pad_9_,
                                       Mod1Mask | Mod2Mask,
@@ -730,7 +730,7 @@ void EventRewriterTest::TestRewriteNumPadKeys() {
 
   // XK_KP_0 (= NumPad 0 with Num Lock), Num Lock modifier.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD0,
-                                      0,
+                                      ui::EF_NUMPAD_KEY,
                                       ui::ET_KEY_PRESSED,
                                       keycode_num_pad_0_,
                                       Mod2Mask,
@@ -744,7 +744,7 @@ void EventRewriterTest::TestRewriteNumPadKeys() {
 
   // XK_KP_DECIMAL (= NumPad . with Num Lock), Num Lock modifier.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_DECIMAL,
-                                      0,
+                                      ui::EF_NUMPAD_KEY,
                                       ui::ET_KEY_PRESSED,
                                       keycode_num_pad_decimal_,
                                       Mod2Mask,
@@ -758,7 +758,7 @@ void EventRewriterTest::TestRewriteNumPadKeys() {
 
   // XK_KP_1 (= NumPad 1 with Num Lock), Num Lock modifier.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD1,
-                                      0,
+                                      ui::EF_NUMPAD_KEY,
                                       ui::ET_KEY_PRESSED,
                                       keycode_num_pad_1_,
                                       Mod2Mask,
@@ -772,7 +772,7 @@ void EventRewriterTest::TestRewriteNumPadKeys() {
 
   // XK_KP_2 (= NumPad 2 with Num Lock), Num Lock modifier.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD2,
-                                      0,
+                                      ui::EF_NUMPAD_KEY,
                                       ui::ET_KEY_PRESSED,
                                       keycode_num_pad_2_,
                                       Mod2Mask,
@@ -786,7 +786,7 @@ void EventRewriterTest::TestRewriteNumPadKeys() {
 
   // XK_KP_3 (= NumPad 3 with Num Lock), Num Lock modifier.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD3,
-                                      0,
+                                      ui::EF_NUMPAD_KEY,
                                       ui::ET_KEY_PRESSED,
                                       keycode_num_pad_3_,
                                       Mod2Mask,
@@ -800,7 +800,7 @@ void EventRewriterTest::TestRewriteNumPadKeys() {
 
   // XK_KP_4 (= NumPad 4 with Num Lock), Num Lock modifier.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD4,
-                                      0,
+                                      ui::EF_NUMPAD_KEY,
                                       ui::ET_KEY_PRESSED,
                                       keycode_num_pad_4_,
                                       Mod2Mask,
@@ -814,7 +814,7 @@ void EventRewriterTest::TestRewriteNumPadKeys() {
 
   // XK_KP_5 (= NumPad 5 with Num Lock), Num Lock modifier.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD5,
-                                      0,
+                                      ui::EF_NUMPAD_KEY,
                                       ui::ET_KEY_PRESSED,
                                       keycode_num_pad_5_,
                                       Mod2Mask,
@@ -828,7 +828,7 @@ void EventRewriterTest::TestRewriteNumPadKeys() {
 
   // XK_KP_6 (= NumPad 6 with Num Lock), Num Lock modifier.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD6,
-                                      0,
+                                      ui::EF_NUMPAD_KEY,
                                       ui::ET_KEY_PRESSED,
                                       keycode_num_pad_6_,
                                       Mod2Mask,
@@ -842,7 +842,7 @@ void EventRewriterTest::TestRewriteNumPadKeys() {
 
   // XK_KP_7 (= NumPad 7 with Num Lock), Num Lock modifier.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD7,
-                                      0,
+                                      ui::EF_NUMPAD_KEY,
                                       ui::ET_KEY_PRESSED,
                                       keycode_num_pad_7_,
                                       Mod2Mask,
@@ -856,7 +856,7 @@ void EventRewriterTest::TestRewriteNumPadKeys() {
 
   // XK_KP_8 (= NumPad 8 with Num Lock), Num Lock modifier.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD8,
-                                      0,
+                                      ui::EF_NUMPAD_KEY,
                                       ui::ET_KEY_PRESSED,
                                       keycode_num_pad_8_,
                                       Mod2Mask,
@@ -870,7 +870,7 @@ void EventRewriterTest::TestRewriteNumPadKeys() {
 
   // XK_KP_9 (= NumPad 9 with Num Lock), Num Lock modifier.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD9,
-                                      0,
+                                      ui::EF_NUMPAD_KEY,
                                       ui::ET_KEY_PRESSED,
                                       keycode_num_pad_9_,
                                       Mod2Mask,
@@ -908,7 +908,7 @@ void EventRewriterTest::TestRewriteNumPadKeysOnAppleKeyboard() {
   // XK_KP_End (= NumPad 1 without Num Lock), Win modifier.
   // The result should be "Num Pad 1 with Control + Num Lock modifiers".
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD1,
-                                      ui::EF_CONTROL_DOWN,
+                                      ui::EF_CONTROL_DOWN | ui::EF_NUMPAD_KEY,
                                       ui::ET_KEY_PRESSED,
                                       keycode_num_pad_1_,
                                       ControlMask | Mod2Mask,
@@ -923,7 +923,7 @@ void EventRewriterTest::TestRewriteNumPadKeysOnAppleKeyboard() {
   // XK_KP_1 (= NumPad 1 without Num Lock), Win modifier.
   // The result should also be "Num Pad 1 with Control + Num Lock modifiers".
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NUMPAD1,
-                                      ui::EF_CONTROL_DOWN,
+                                      ui::EF_CONTROL_DOWN | ui::EF_NUMPAD_KEY,
                                       ui::ET_KEY_PRESSED,
                                       keycode_num_pad_1_,
                                       ControlMask | Mod2Mask,
