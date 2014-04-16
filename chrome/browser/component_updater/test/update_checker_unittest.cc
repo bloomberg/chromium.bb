@@ -166,7 +166,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckSuccess) {
       "updatecheck"), test_file("updatecheck_reply_1.xml")));
 
   update_checker_ = UpdateChecker::Create(
-      GURL("http://localhost2/update2"),
+      GURL("https://localhost2/update2"),
       context(),
       base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
                  base::Unretained(this))).Pass();
@@ -209,7 +209,7 @@ TEST_F(UpdateCheckerTest, UpdateNetworkError) {
                                                 test_file("no such file")));
 
   update_checker_ = UpdateChecker::Create(
-      GURL("http://localhost2/update2"),
+      GURL("https://localhost2/update2"),
       context(),
       base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
                  base::Unretained(this))).Pass();

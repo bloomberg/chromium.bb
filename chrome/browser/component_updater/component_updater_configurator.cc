@@ -47,7 +47,7 @@ const char kSwitchUrlSource[] = "url-source";
 const char kDefaultUrlSource[] = "https:" COMPONENT_UPDATER_SERVICE_ENDPOINT;
 
 // The url to send the pings to.
-const char kPingUrl[] = "http:" COMPONENT_UPDATER_SERVICE_ENDPOINT;
+const char kPingUrl[] = "https:" COMPONENT_UPDATER_SERVICE_ENDPOINT;
 
 // Disables differential updates.
 const char kSwitchDisableDeltaUpdates[] = "disable-delta-updates";

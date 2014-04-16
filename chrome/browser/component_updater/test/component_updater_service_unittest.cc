@@ -31,7 +31,7 @@ using ::testing::Mock;
 
 namespace component_updater {
 
-#define POST_INTERCEPT_SCHEME    "http"
+#define POST_INTERCEPT_SCHEME    "https"
 #define POST_INTERCEPT_HOSTNAME  "localhost2"
 #define POST_INTERCEPT_PATH      "/update2"
 
