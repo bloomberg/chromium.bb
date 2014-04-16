@@ -86,8 +86,7 @@ nacl_desc_quota_test_exe = env.ComponentProgram('nacl_desc_quota_test',
 
 # Create a temporary file and close the handle. The nacl_desc_quota_test test
 # will remove the file.
-temp_handle, temp_path = env.MakeTempFile(prefix='tmp_desc')
-os.close(temp_handle)
+temp_path = env.MakeEmptyFile(prefix='tmp_desc')
 
 node = env.CommandTest('nacl_desc_quota_test.out',
                        command=[nacl_desc_quota_test_exe,

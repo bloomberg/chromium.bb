@@ -3,8 +3,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import SCons.Errors
-
 Import('env')
 
 # Do not run these tests with pexes, assuming they are portable, since
@@ -23,7 +21,7 @@ def GetAssemblerFile(env):
   elif env.Bit('build_mips32'):
     return 'sandboxed_mips.S'
   else:
-    raise SCons.Errors.UserError('unknown architecture')
+    raise Exception('unknown architecture')
 
 asm_env = env.Clone()
 use_obj_env = env.Clone()

@@ -12,7 +12,7 @@ env.FilterOut(CFLAGS=['-Wstrict-prototypes'])
 
 # This module shouldn't be built in an environment that uses glibc.
 if env.Bit('nacl_glibc'):
-  raise UserError('src/untrusted/irt/nacl.scons in the wrong environment?')
+  raise Exception('src/untrusted/irt/nacl.scons in the wrong environment?')
 
 blob_env = env.Clone()
 blob_env.Append(LINKFLAGS=['-Wl,-Trodata-segment=${IRT_BLOB_DATA_START}',

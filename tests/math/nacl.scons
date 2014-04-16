@@ -4,7 +4,6 @@
 # found in the LICENSE file.
 
 import os
-import SCons.Errors
 
 Import('env')
 
@@ -101,7 +100,7 @@ elif env.Bit('target_arm'):
 elif env.Bit('target_mips32'):
   asm_helper = 'set_rounding_mips.S'
 else:
-  raise SCons.Errors.UserError('Unknown target')
+  raise Exception('Unknown target')
 
 asm_obj = asm_env.ComponentObject(asm_helper)
 nexe = biased_env.ComponentProgram('float_rounding_mode',
@@ -129,7 +128,7 @@ elif env.Bit('target_arm'):
 elif env.Bit('target_mips32'):
   asm_helper = 'test_snan_no_signal_mips.S'
 else:
-  raise SCons.Errors.UserError('Unknown target')
+  raise Exception('Unknown target')
 
 asm_obj = asm_env.ComponentObject(asm_helper)
 nexe = env.ComponentProgram('snan_no_signal',

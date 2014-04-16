@@ -4,8 +4,6 @@
 # found in the LICENSE file.
 
 import os
-import SCons.Errors
-
 Import('env')
 
 # Preserve debugging info (which is not ABI-stable under PNaCl).
@@ -51,8 +49,8 @@ for crash_in_lib in [0, 1]:
       # Check that the minidump can be decoded.
       minidump_dump = breakpad_tools_dir.File('src/processor/minidump_dump')
       if not os.path.exists(minidump_dump.abspath):
-        raise SCons.Errors.UserError('minidump_dump not available, '
-                    'but breakpad_tools_dir=%s specified' % breakpad_tools_dir)
+        raise Exception('minidump_dump not available, '
+            'but breakpad_tools_dir=%s specified' % breakpad_tools_dir)
       nodes.append(env.AutoDepsCommand(
           [name + '.dump', name + '.dump_errors'],
           [minidump_dump, output_dump_file,
@@ -62,7 +60,7 @@ for crash_in_lib in [0, 1]:
       minidump_stackwalk = breakpad_tools_dir.File(
           'src/processor/minidump_stackwalk')
       if not os.path.exists(minidump_dump.abspath):
-        raise SCons.Errors.UserError('minidump_stackwalk not available, '
+        raise Exception('minidump_stackwalk not available, '
                     'but breakpad_tools_dir=%s specified' % breakpad_tools_dir)
       nodes.append(env.AutoDepsCommand(
           [name + '.stackwalk', name + '.stackwalk_errors'],

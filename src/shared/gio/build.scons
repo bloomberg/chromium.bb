@@ -37,8 +37,7 @@ gio_test_exe = gtest_env.ComponentProgram(
     EXTRA_LIBS=['gio', 'platform', 'gio_test'])
 
 # temp file will be removed by gio_test (if it compiles and test completes).
-temp_handle, temp_path = env.MakeTempFile(prefix='tmp_gio', suffix='.tmp')
-os.close(temp_handle)
+temp_path = env.MakeEmptyFile(prefix='tmp_gio', suffix='.tmp')
 
 node = gtest_env.CommandTest(
     'gio_test_output.xml.out',
@@ -59,8 +58,7 @@ gio_test_exe = gtest_env.ComponentProgram(
     EXTRA_LIBS=['gio', 'platform', 'gio_test'])
 
 # temp file will be removed by gio_pio_test (if it compiles and completes).
-temp_handle, temp_path = env.MakeTempFile(prefix='tmp_gio_pio', suffix='.tmp')
-os.close(temp_handle)
+temp_path = env.MakeEmptyFile(prefix='tmp_gio_pio', suffix='.tmp')
 
 node = gtest_env.CommandTest(
     'gio_pio_test_output.xml.out',

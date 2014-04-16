@@ -69,8 +69,7 @@ if not env.Bit('coverage_enabled') or not env.Bit('windows'):
                   'gio',
                   ])
 
-  temp_handle, temp_path = env.MakeTempFile(prefix='tmp_gio')
-  os.close(temp_handle)
+  temp_path = env.MakeEmptyFile(prefix='tmp_gio')
 
   node = env.CommandTest('gio_nacl_desc_test.out',
                          command = [gio_nacl_desc_test_exe,

@@ -3,8 +3,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import SCons.Errors
-
 Import('env')
 
 # All tests below involve native assembler
@@ -40,7 +38,7 @@ elif env.Bit('target_arm'):
 elif env.Bit('target_mips32'):
   nacl_text_pad_asm = 'arch/mips/nacl_text_pad_test.S'
 else:
-  raise SCons.Errors.UserError('unknown architecture')
+  raise Exception('unknown architecture')
 
 def NewAsmEnv(env, defines, rodata_address, rwdata_address):
 
@@ -66,7 +64,7 @@ def NewAsmEnv(env, defines, rodata_address, rwdata_address):
   elif env.Bit('target_mips32'):
     link_cmd += ' -mmipselelf_nacl'
   else:
-    raise SCons.Errors.UserError('unknown architecture')
+    raise Exception('unknown architecture')
 
   asm_env['LINKCOM'] = link_cmd
 

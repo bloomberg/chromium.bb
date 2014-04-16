@@ -3,8 +3,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import SCons.Errors
-
 Import('env')
 
 egyptian_cotton_nexe = env.ComponentProgram('egyptian_cotton',
@@ -102,10 +100,10 @@ elif env.Bit('target_x86'):
       else:
         high_thread_count_nthreads = 900
     else:
-      raise SCons.Errors.UserError('Unknown host OS: threading limit unknown')
+      raise Exception('Unknown host OS: threading limit unknown')
 else:
-  raise SCons.Errors.UserError('Unknown target architecture -- '
-                               'architecture/host OS thread limits are unknown')
+  raise Exception('Unknown target architecture -- '
+                  'architecture/host OS thread limits are unknown')
 
 if not platform_limits_known:
   Return()

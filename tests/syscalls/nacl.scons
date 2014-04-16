@@ -210,8 +210,7 @@ env.AddNodeToTestSuite(node,
 # infrastructure doesn't like empty files as a patch, so try jobs
 # would always fail.
 
-file_handle, file_path = env.MakeTempFile(prefix='tmp_syscalls')
-os.close(file_handle)
+file_path = env.MakeEmptyFile(prefix='tmp_syscalls')
 
 sysconf_nprocessors_nexe = env.ComponentProgram('sysconf_nprocessors_test',
                                                 ['sysconf_nprocessors.c'],

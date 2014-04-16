@@ -3,8 +3,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import SCons.Errors
-
 Import('env')
 
 capture_nexe = env.ComponentProgram('nacl_thread_capture_test',
@@ -37,7 +35,7 @@ if trusted_env.Bit('linux') or trusted_env.Bit('mac'):
      test_injection_files += [
       'arch/mips/thread_capture_test_injection.c']
   else:
-    raise SCons.Errors.UserError('Unsupported target')
+    raise Exception('Unsupported target')
 
   custom_sel_ldr = trusted_env.ComponentProgram(
       'thread_capture_sel_ldr',

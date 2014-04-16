@@ -3,8 +3,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import SCons.Errors
-
 Import('env')
 
 # This test does not make any sense for pure pnacl
@@ -108,7 +106,7 @@ else:
         clang_flags=['--target=x86_64-unknown-nacl'])
     test_configurations.append((envlist, link_env, ''))
   else:
-    raise SCons.Errors.UserError("Unknown target architecture!")
+    raise Exception("Unknown target architecture!")
 
 
 ######################################################################

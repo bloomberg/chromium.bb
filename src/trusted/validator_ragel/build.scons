@@ -9,8 +9,6 @@ import os
 import platform
 import sys
 
-from SCons.Errors import UserError
-
 Import('env')
 
 # We only want to export validator functions when we build with scons, because
@@ -158,7 +156,7 @@ objdump = env.MakeUntrustedNativeEnv()['OBJDUMP']
 
 if ragel_involved:
   if not env.Bit('host_linux'):
-    raise UserError('Right now DFA generation is only supported on Linux')
+    raise Exception('Right now DFA generation is only supported on Linux')
 
   # Source generation step 1: Build generator of ragel files.
   #

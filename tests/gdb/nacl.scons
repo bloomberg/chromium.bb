@@ -89,8 +89,7 @@ gdb_test_guest_thread = env.GetTranslatedNexe(gdb_test_guest_thread)
 # temporary file argument, and we encapsulate this here for brevity /
 # to avoid code duplication.
 def TempFileArguments():
-  temp_handle, temp_path = env.MakeTempFile(prefix='nacl_gdb_test_')
-  os.close(temp_handle)
+  temp_path = env.MakeEmptyFile(prefix='nacl_gdb_test_')
   return ','.join(['-f', temp_path])
 
 

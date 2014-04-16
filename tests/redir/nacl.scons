@@ -32,10 +32,8 @@ if not env.Bit('host_windows'):
 # we immediately close to ensure that python is not holding on to a
 # file handle, so that on Windows, the Cleanup use of unlink will not
 # fail due to us still having an open file handle.
-(_, outfile) = env.MakeTempFile(prefix='tmp_redir')
-os.close(_)
-(_, errfile) = env.MakeTempFile(prefix='tmp_redir')
-os.close(_)
+outfile = env.MakeEmptyFile(prefix='tmp_redir')
+errfile = env.MakeEmptyFile(prefix='tmp_redir')
 
 node = env.CommandSelLdrTestNacl(
     'redir_test.out',
