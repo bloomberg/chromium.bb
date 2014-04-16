@@ -1493,6 +1493,9 @@ class DependencyGraphNode(object):
     # appear in flat_list after all of its dependencies, and before all of its
     # dependents.
     flat_list = []
+    # flat_set is to make "is in" checks of flat_list. At all times
+    # set(flat_list) == flat_set.
+    flat_set = set()
 
     # in_degree_zeros is the list of DependencyGraphNodes that have no
     # dependencies not in flat_list.  Initially, it is a copy of the children
@@ -1507,13 +1510,17 @@ class DependencyGraphNode(object):
       # always be accessed at a consistent position.
       node = in_degree_zeros.pop()
       flat_list.append(node.ref)
+      flat_set.add(node.ref)
 
       # Look at dependents of the node just added to flat_list.  Some of them
       # may now belong in in_degree_zeros.
       for node_dependent in node.dependents:
         is_in_degree_zero = True
+        # TODO: We want to check through the
+        # node_dependent.dependencies list but if it's long and we
+        # always start at the beginning, then we get O(n^2) behaviour.
         for node_dependent_dependency in node_dependent.dependencies:
-          if not node_dependent_dependency.ref in flat_list:
+          if not node_dependent_dependency.ref in flat_set:
             # The dependent one or more dependencies not in flat_list.  There
             # will be more chances to add it to flat_list when examining
             # it again as a dependent of those other dependencies, provided
