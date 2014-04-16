@@ -51,7 +51,16 @@ class CC_EXPORT InputHandlerClient {
 // interface and bind it to the handler on the compositor thread.
 class CC_EXPORT InputHandler {
  public:
-  enum ScrollStatus { ScrollOnMainThread, ScrollStarted, ScrollIgnored };
+  // Note these are used in a histogram. Do not reorder or delete existing
+  // entries.
+  enum ScrollStatus {
+    ScrollOnMainThread = 0,
+    ScrollStarted,
+    ScrollIgnored,
+    ScrollUnknown,
+    // This must be the last entry.
+    ScrollStatusCount
+  };
   enum ScrollInputType { Gesture, Wheel, NonBubblingGesture };
 
   // Binds a client to this handler to receive notifications. Only one client

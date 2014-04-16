@@ -96,6 +96,11 @@ class CC_EXPORT LayerTreeHostCommon {
   static void CalculateDrawProperties(CalcDrawPropsImplInputs* inputs);
 
   // Performs hit testing for a given render_surface_layer_list.
+  static LayerImpl* FindFirstScrollingLayerThatIsHitByPoint(
+      const gfx::PointF& screen_space_point,
+      const LayerImplList& render_surface_layer_list);
+
+  // Performs hit testing for a given render_surface_layer_list.
   static LayerImpl* FindLayerThatIsHitByPoint(
       const gfx::PointF& screen_space_point,
       const LayerImplList& render_surface_layer_list);

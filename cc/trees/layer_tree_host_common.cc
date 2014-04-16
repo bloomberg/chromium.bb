@@ -2437,6 +2437,50 @@ static bool PointIsClippedBySurfaceOrClipRect(
   return false;
 }
 
+static bool PointHitsLayer(LayerImpl* layer,
+                           const gfx::PointF& screen_space_point) {
+  gfx::RectF content_rect(layer->content_bounds());
+  if (!PointHitsRect(
+          screen_space_point, layer->screen_space_transform(), content_rect))
+    return false;
+
+  // At this point, we think the point does hit the layer, but we need to walk
+  // up the parents to ensure that the layer was not clipped in such a way
+  // that the hit point actually should not hit the layer.
+  if (PointIsClippedBySurfaceOrClipRect(screen_space_point, layer))
+    return false;
+
+  // Skip the HUD layer.
+  if (layer == layer->layer_tree_impl()->hud_layer())
+    return false;
+
+  return true;
+}
+
+LayerImpl* LayerTreeHostCommon::FindFirstScrollingLayerThatIsHitByPoint(
+    const gfx::PointF& screen_space_point,
+    const LayerImplList& render_surface_layer_list) {
+  typedef LayerIterator<LayerImpl> LayerIteratorType;
+  LayerIteratorType end = LayerIteratorType::End(&render_surface_layer_list);
+  for (LayerIteratorType it =
+           LayerIteratorType::Begin(&render_surface_layer_list);
+       it != end;
+       ++it) {
+    // We don't want to consider render_surfaces for hit testing.
+    if (!it.represents_itself())
+      continue;
+
+    LayerImpl* current_layer = (*it);
+    if (!PointHitsLayer(current_layer, screen_space_point))
+      continue;
+
+    if (current_layer->scrollable())
+      return current_layer;
+  }
+
+  return NULL;
+}
+
 LayerImpl* LayerTreeHostCommon::FindLayerThatIsHitByPoint(
     const gfx::PointF& screen_space_point,
     const LayerImplList& render_surface_layer_list) {
@@ -2453,21 +2497,7 @@ LayerImpl* LayerTreeHostCommon::FindLayerThatIsHitByPoint(
       continue;
 
     LayerImpl* current_layer = (*it);
-
-    gfx::RectF content_rect(current_layer->content_bounds());
-    if (!PointHitsRect(screen_space_point,
-                       current_layer->screen_space_transform(),
-                       content_rect))
-      continue;
-
-    // At this point, we think the point does hit the layer, but we need to walk
-    // up the parents to ensure that the layer was not clipped in such a way
-    // that the hit point actually should not hit the layer.
-    if (PointIsClippedBySurfaceOrClipRect(screen_space_point, current_layer))
-      continue;
-
-    // Skip the HUD layer.
-    if (current_layer == current_layer->layer_tree_impl()->hud_layer())
+    if (!PointHitsLayer(current_layer, screen_space_point))
       continue;
 
     found_layer = current_layer;

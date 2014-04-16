@@ -20948,6 +20948,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Renderer4.CompositorScrollHitTestResult"
+    enum="CompositorScrollResult">
+  <owner>vollick@chromium.org</owner>
+  <summary>
+    It's possible for compositor hit testing to determine conclusively that
+    compositor thread scrolling can or cannot be done. It's also possible that
+    the hit testing result is inconclusive. We would like to see the I-don't-
+    know result as little as possible. This histogram tracks the ratios.
+  </summary>
+</histogram>
+
 <histogram name="Renderer4.CompositorThreadImplDrawDelay" units="milliseconds">
   <owner>wiltzius@chromium.org</owner>
   <summary>
@@ -31210,6 +31221,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="0" label="Is scrollable area"/>
   <int value="1" label="Needs to be stacking container"/>
   <int value="2" label="Will use composited scrolling"/>
+</enum>
+
+<enum name="CompositorScrollResult" type="int">
+  <int value="0" label="ScrollOnMainThread"/>
+  <int value="1" label="ScrollStarted"/>
+  <int value="2" label="ScrollIgnored"/>
+  <int value="3" label="ScrollUnknown"/>
 </enum>
 
 <enum name="CompositorType" type="int">
