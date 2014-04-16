@@ -732,9 +732,14 @@ class GitWrapper(SCMWrapper):
     """
     if not self.cache_dir:
       return url
-    mirror_kwargs = { 'print_func': self.filter }
+    mirror_kwargs = {
+        'print_func': self.filter,
+        'refs': []
+    }
     if url == CHROMIUM_SRC_URL or url + '.git' == CHROMIUM_SRC_URL:
-      mirror_kwargs['refs'] = ['refs/tags/lkgr', 'refs/tags/lkcr']
+      mirror_kwargs['refs'].extend(['refs/tags/lkgr', 'refs/tags/lkcr'])
+    if hasattr(options, 'with_branch_heads') and options.with_branch_heads:
+      mirror_kwargs['refs'].append('refs/branch-heads/*')
     mirror = git_cache.Mirror(url, **mirror_kwargs)
     mirror.populate(verbose=options.verbose, bootstrap=True)
     mirror.unlock()
