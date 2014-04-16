@@ -45,8 +45,6 @@ TEST(MediaQueryParserTest, Basic)
     // The second string represents the output string, if present.
     // Otherwise, the output string is identical to the first string.
     TestCase testCases[] = {
-        {"", 0, true},
-        {" ", "", true},
         {"screen", 0, true},
         {"screen and (color)", 0, true},
         {"all and (min-width:500px)", "(min-width: 500px)", true},

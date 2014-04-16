@@ -130,7 +130,6 @@ private:
     AtomicString m_bestFitImageURL;
     float m_imageDevicePixelRatio;
     bool m_formWasSetByParser;
-    int m_effectiveSize;
 };
 
 } //namespace

@@ -27,7 +27,7 @@
 #include "core/html/parser/HTMLDocumentParser.h"
 
 #include "HTMLNames.h"
-#include "core/css/MediaValuesCached.h"
+#include "core/css/MediaValues.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/Element.h"
 #include "core/frame/LocalFrame.h"
@@ -540,8 +540,7 @@ Document* HTMLDocumentParser::contextForParsingSession()
 
 static PassRefPtr<MediaValues> createMediaValues(Document* document)
 {
-    ASSERT(document);
-    RefPtr<MediaValues> mediaValues = MediaValuesCached::create(*document);
+    RefPtr<MediaValues> mediaValues = MediaValues::create(document, MediaValues::CachingMode);
     ASSERT(mediaValues->isSafeToSendToAnotherThread());
     return mediaValues;
 }

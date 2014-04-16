@@ -595,9 +595,6 @@ template<> double CSSPrimitiveValue::computeLength(const CSSToLengthConversionDa
 
 double CSSPrimitiveValue::computeLengthDouble(const CSSToLengthConversionData& conversionData)
 {
-    // The logic in this function is duplicated in MediaValues::computeLength
-    // because MediaValues::computeLength needs nearly identical logic, but we haven't found a way to make
-    // CSSPrimitiveValue::computeLengthDouble more generic (to solve both cases) without hurting performance.
     if (m_primitiveUnitType == CSS_CALC)
         return m_value.calc->computeLengthPx(conversionData);
 
