@@ -119,6 +119,8 @@
         'common/shell_extensions_client.h',
         'renderer/shell_content_renderer_client.cc',
         'renderer/shell_content_renderer_client.h',
+        'renderer/shell_extensions_renderer_client.cc',
+        'renderer/shell_extensions_renderer_client.h',
       ],
     },
     {

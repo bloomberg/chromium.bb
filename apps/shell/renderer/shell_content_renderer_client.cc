@@ -5,6 +5,7 @@
 #include "apps/shell/renderer/shell_content_renderer_client.h"
 
 #include "apps/shell/common/shell_extensions_client.h"
+#include "apps/shell/renderer/shell_extensions_renderer_client.h"
 #include "chrome/renderer/extensions/dispatcher.h"
 #include "chrome/renderer/extensions/extension_helper.h"
 #include "content/public/renderer/render_frame.h"
@@ -71,6 +72,9 @@ void ShellContentRendererClient::RenderThreadStarted() {
 
   extensions_client_.reset(new ShellExtensionsClient);
   extensions::ExtensionsClient::Set(extensions_client_.get());
+
+  extensions_renderer_client_.reset(new ShellExtensionsRendererClient);
+  extensions::ExtensionsRendererClient::Set(extensions_renderer_client_.get());
 }
 
 void ShellContentRendererClient::RenderFrameCreated(

@@ -65,6 +65,8 @@
         'renderer/extensions/blob_native_handler.h',
         'renderer/extensions/cast_streaming_native_handler.cc',
         'renderer/extensions/cast_streaming_native_handler.h',
+        'renderer/extensions/chrome_extensions_renderer_client.cc',
+        'renderer/extensions/chrome_extensions_renderer_client.h',
         'renderer/extensions/chrome_v8_context.cc',
         'renderer/extensions/chrome_v8_context.h',
         'renderer/extensions/chrome_v8_context_set.cc',

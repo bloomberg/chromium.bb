@@ -14,7 +14,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/timer/elapsed_timer.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/extensions/dom_activity_logger.h"
 #include "chrome/renderer/extensions/extension_groups.h"
 #include "chrome/renderer/isolated_world_ids.h"
@@ -25,6 +24,7 @@
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/csp_info.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "extensions/renderer/extensions_renderer_client.h"
 #include "extensions/renderer/script_context.h"
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
@@ -54,7 +54,8 @@ static const char kUserScriptTail[] = "\n})(window);";
 
 int UserScriptSlave::GetIsolatedWorldIdForExtension(const Extension* extension,
                                                     WebFrame* frame) {
-  static int g_next_isolated_world_id = chrome::ISOLATED_WORLD_ID_EXTENSIONS;
+  static int g_next_isolated_world_id =
+      ExtensionsRendererClient::Get()->GetLowestIsolatedWorldId();
 
   IsolatedWorldMap::iterator iter = isolated_world_ids_.find(extension->id());
   if (iter != isolated_world_ids_.end()) {
@@ -119,7 +120,7 @@ bool UserScriptSlave::UpdateScripts(base::SharedMemoryHandle shared_memory) {
   scripts_.clear();
 
   bool only_inject_incognito =
-      ChromeRenderProcessObserver::is_incognito_process();
+      ExtensionsRendererClient::Get()->IsIncognitoProcess();
 
   // Create the shared memory object (read only).
   shared_memory_.reset(new base::SharedMemory(shared_memory, true));

@@ -419,6 +419,8 @@
         'renderer/console.h',
         'renderer/event_bindings.cc',
         'renderer/event_bindings.h',
+        'renderer/extensions_renderer_client.cc',
+        'renderer/extensions_renderer_client.h',
         'renderer/module_system.cc',
         'renderer/module_system.h',
         'renderer/native_handler.cc',

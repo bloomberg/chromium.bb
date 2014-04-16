@@ -31,6 +31,7 @@
 #include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/chrome_render_view_observer.h"
 #include "chrome/renderer/content_settings_observer.h"
+#include "chrome/renderer/extensions/chrome_extensions_renderer_client.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/dispatcher.h"
@@ -361,6 +362,8 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 
   extensions::ExtensionsClient::Set(
       extensions::ChromeExtensionsClient::GetInstance());
+  extensions::ExtensionsRendererClient::Set(
+      ChromeExtensionsRendererClient::GetInstance());
 
 #if defined(OS_WIN)
   // Report if the renderer process has been patched by chrome_elf.
