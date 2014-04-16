@@ -3787,40 +3787,6 @@
             'dependencies': [
               '<(DEPTH)/third_party/instrumented_libraries/instrumented_libraries.gyp:instrumented_libraries',
             ],
-            'conditions': [
-              ['asan==1', {
-                'target_conditions': [
-                  ['_toolset=="target"', {
-                    'ldflags': [
-                      # Add RPATH to result binary to make it linking instrumented libraries ($ORIGIN means relative RPATH)
-                      '-Wl,-R,\$$ORIGIN/instrumented_libraries/asan/lib/:\$$ORIGIN/instrumented_libraries/asan/usr/lib/x86_64-linux-gnu/',
-                      '-Wl,-z,origin',
-                    ],
-                  }],
-                ],
-              }],
-              ['msan==1', {
-                'target_conditions': [
-                  ['_toolset=="target"', {
-                    'ldflags': [
-                      '-Wl,-R,\$$ORIGIN/instrumented_libraries/msan/lib/:\$$ORIGIN/instrumented_libraries/msan/usr/lib/x86_64-linux-gnu/',
-                      '-Wl,-z,origin',
-                    ],
-                  }],
-                ],
-              }],
-              ['tsan==1', {
-                'target_conditions': [
-                  ['_toolset=="target"', {
-                    'ldflags': [
-                      # Add RPATH to result binary to make it linking instrumented libraries ($ORIGIN means relative RPATH)
-                      '-Wl,-R,\$$ORIGIN/instrumented_libraries/tsan/lib/:\$$ORIGIN/instrumented_libraries/tsan/usr/lib/x86_64-linux-gnu/',
-                      '-Wl,-z,origin',
-                    ],
-                  }],
-                ],
-              }],
-            ],
           }],
           ['use_custom_libcxx==1', {
             'dependencies': [
