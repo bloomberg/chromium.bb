@@ -790,6 +790,7 @@ void RenderLayerCompositor::repaintOnCompositingChange(RenderLayer* layer)
         return;
 
     RenderLayerModelObject* repaintContainer = layer->renderer()->containerForRepaint();
+    // FIXME: Repaint container should never be null. crbug.com/363699
     if (!repaintContainer)
         repaintContainer = &m_renderView;
 

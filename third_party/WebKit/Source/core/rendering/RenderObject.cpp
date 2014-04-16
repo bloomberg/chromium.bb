@@ -1331,6 +1331,7 @@ RenderLayerModelObject* RenderObject::containerForRepaint() const
     if (!isRooted())
         return 0;
 
+    // FIXME: Repaint container should never be null when we're rooted. crbug.com/363699
     RenderLayerModelObject* repaintContainer = 0;
 
     RenderView* v = view();
@@ -1367,6 +1368,7 @@ void RenderObject::repaintUsingContainer(const RenderLayerModelObject* repaintCo
         "info", TRACE_STR_COPY(String::format("rect: %d,%d %dx%d, invalidation_reason: %s",
             r.x(), r.y(), r.width(), r.height(), invalidationReasonToString(invalidationReason)).ascii().data()));
 
+    // FIXME: Repaint container should never be null. crbug.com/363699
     if (!repaintContainer) {
         view()->repaintViewRectangle(r);
         return;
@@ -1549,6 +1551,7 @@ bool RenderObject::repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repa
     if (invalidationReason == InvalidationIncremental && newBounds.location() != oldBounds.location())
         invalidationReason = InvalidationBoundsChange;
 
+    // FIXME: Repaint container should never be null. crbug.com/363699
     if (!repaintContainer)
         repaintContainer = v;
 

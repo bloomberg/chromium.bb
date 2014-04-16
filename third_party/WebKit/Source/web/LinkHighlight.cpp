@@ -116,6 +116,7 @@ RenderLayer* LinkHighlight::computeEnclosingCompositingLayer()
     RenderLayerModelObject* repaintContainer;
     do {
         repaintContainer = renderer->containerForRepaint();
+        // FIXME: Repaint container should never be null. crbug.com/363699
         if (!repaintContainer) {
             renderer = renderer->frame()->ownerRenderer();
             if (!renderer)
