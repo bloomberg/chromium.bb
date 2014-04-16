@@ -131,8 +131,4 @@ GPU_BLACKLIST_FEATURE_TEST(PanelFitting,
                            "panel_fitting",
                            GPU_FEATURE_TYPE_PANEL_FITTING)
 
-GPU_BLACKLIST_FEATURE_TEST(ForceCompositingMode,
-                           "force_compositing_mode",
-                           GPU_FEATURE_TYPE_FORCE_COMPOSITING_MODE)
-
 }  // namespace gpu

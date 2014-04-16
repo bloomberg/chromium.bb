@@ -40,8 +40,6 @@ GpuBlacklist* GpuBlacklist::Create() {
                             GPU_FEATURE_TYPE_ACCELERATED_VIDEO);
   list->AddSupportedFeature("panel_fitting",
                             GPU_FEATURE_TYPE_PANEL_FITTING);
-  list->AddSupportedFeature("force_compositing_mode",
-                            GPU_FEATURE_TYPE_FORCE_COMPOSITING_MODE);
   list->set_supports_feature_type_all(true);
   return list;
 }

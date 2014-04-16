@@ -145,12 +145,8 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
 #endif
       {
           "force_compositing_mode",
-          manager->IsFeatureBlacklisted(
-              gpu::GPU_FEATURE_TYPE_FORCE_COMPOSITING_MODE) &&
+          false,
           !IsForceCompositingModeEnabled(),
-          !IsForceCompositingModeEnabled() &&
-          !manager->IsFeatureBlacklisted(
-              gpu::GPU_FEATURE_TYPE_FORCE_COMPOSITING_MODE),
           "Force compositing mode is off, either disabled at the command"
           " line or not supported by the current system.",
           false
@@ -190,11 +186,6 @@ bool CanDoAcceleratedCompositing() {
   return true;
 }
 
-bool IsForceCompositingModeBlacklisted() {
-  return GpuDataManagerImpl::GetInstance()->IsFeatureBlacklisted(
-      gpu::GPU_FEATURE_TYPE_FORCE_COMPOSITING_MODE);
-}
-
 }  // namespace
 
 bool IsThreadedCompositingEnabled() {
@@ -226,7 +217,7 @@ bool IsForceCompositingModeEnabled() {
   if (command_line.HasSwitch(switches::kForceCompositingMode))
     return true;
 
-  if (!CanDoAcceleratedCompositing() || IsForceCompositingModeBlacklisted())
+  if (!CanDoAcceleratedCompositing())
     return false;
 
 #if defined(OS_MACOSX) || defined(OS_WIN)
