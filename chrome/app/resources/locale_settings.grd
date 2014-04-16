@@ -326,11 +326,6 @@
         8
       </message>
 
-      <!-- The minimum width of javascript alert popups. -->
-      <message name="IDS_ALERT_DIALOG_WIDTH_CHARS" use_name_for_id="true">
-        30
-      </message>
-
       <!-- Locale-dependent static encodings string -->
       <message name="IDS_STATIC_ENCODING_LIST" use_name_for_id="true">
         ISO-8859-1,windows-1252
@@ -399,16 +394,6 @@
       <message name="IDS_CREATE_SHORTCUTS_DIALOG_WIDTH_CHARS" use_name_for_id="true">
         65
       </message>
-
-      <!-- The width and height for the "create application shortcuts error" dialog. -->
-      <if expr="is_posix and not is_macosx and not is_ios">
-        <message name="IDS_CREATE_SHORTCUTS_ERROR_DIALOG_WIDTH_CHARS" use_name_for_id="true">
-         60
-        </message>
-        <message name="IDS_CREATE_SHORTCUTS_ERROR_DIALOG_HEIGHT_LINES" use_name_for_id="true">
-         6
-        </message>
-      </if>
 
       <!-- The width of the make-default-in-metro dialog in characters. -->
       <message name="IDS_METRO_FLOW_WIDTH_CHARS" use_name_for_id="true">

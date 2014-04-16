@@ -301,12 +301,6 @@ name="DOMAIN">$1<ex>paypal.com</ex></ph>&lt;/strong&gt;, but the server presente
       <message name="IDS_UNINSTALL_APP_LAUNCHER" desc="The text of the shortcut in the Start Menu for uninstalling App Launcher.">
         Uninstall Google Chrome App Launcher
       </message>
-      <message name="IDS_FIRSTRUN_DLG_TITLE" desc="Dialog title for first-run dialog">
-        Welcome to Google Chrome
-      </message>
-      <message name="IDS_FIRSTRUN_DLG_OK" desc="Text for OK button on first-run dialog">
-        Start Google Chrome
-      </message>
       <message name="IDS_FR_CUSTOMIZE_DEFAULT_BROWSER" desc="Default browser checkbox label">
         Make Google Chrome the default browser
       </message>
@@ -587,13 +581,6 @@ Google Chrome is unable to recover your settings.
         Yes, exit Chrome
       </message>
 
-      <!-- "Create application shortcuts" dialog -->
-      <if expr="is_posix and not is_macosx and not is_ios">
-        <message name="IDS_CREATE_SHORTCUTS_ERROR_LABEL" desc="Contents of the main label in the error dialog box when creating an application shortcut failed for unknown reasons.">
-          Google Chrome could not create an application shortcut.
-        </message>
-      </if>
-
       <!-- Autolaunch infobar -->
       <message name="IDS_AUTO_LAUNCH_INFOBAR_TEXT" desc="The text to show in the infobar when Chrome was automatically launched on startup">
         Google Chrome is configured to automatically launch when you start your computer.
@@ -797,9 +784,6 @@ For Google Chrome, processes used to display diagnostics information (such as th
         </message>
         <message name="IDS_ONE_CLICK_SIGNIN_DIALOG_MESSAGE_NEW" desc="The message of the one click sign-in dialog.">
           You're signed in as <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>. Now you can access your bookmarks, history, and other settings on all your signed in devices.
-        </message>
-        <message name="IDS_ONE_CLICK_SIGNIN_BUBBLE_MESSAGE_FULL" desc="The entire message of the one click sign-in bubble.">
-          You're now signed in to Chrome! Your bookmarks, history, and other settings will be synced to your Google Account.
         </message>
         <message name="IDS_ONE_CLICK_SIGNIN_BUBBLE_MESSAGE_NEW" desc="The body of the sync promo NTP bubble.">
           Now that you're signed in, you can get your tabs, bookmarks and other Chrome stuff across your laptop, phone and tablet. You will also receive more relevant suggestions and features on Google services.
