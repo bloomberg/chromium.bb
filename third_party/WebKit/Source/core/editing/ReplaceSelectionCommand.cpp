@@ -1462,7 +1462,7 @@ void ReplaceSelectionCommand::updateNodesInserted(Node *node)
     if (m_startOfInsertedContent.isNull())
         m_startOfInsertedContent = firstPositionInOrBeforeNode(node);
 
-    m_endOfInsertedContent = lastPositionInOrAfterNode(&node->lastDescendant());
+    m_endOfInsertedContent = lastPositionInOrAfterNode(&node->lastDescendantOrSelf());
 }
 
 // During simple pastes, where we're just pasting a text node into a run of text, we insert the text node

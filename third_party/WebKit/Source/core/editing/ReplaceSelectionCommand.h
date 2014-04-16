@@ -66,8 +66,8 @@ private:
         void didReplaceNode(Node&, Node& newNode);
 
         Node* firstNodeInserted() const { return m_firstNodeInserted.get(); }
-        Node* lastLeafInserted() const { return m_lastNodeInserted ? &m_lastNodeInserted->lastDescendant() : 0; }
-        Node* pastLastLeaf() const { return m_lastNodeInserted ? NodeTraversal::next(m_lastNodeInserted->lastDescendant()) : 0; }
+        Node* lastLeafInserted() const { return m_lastNodeInserted ? &m_lastNodeInserted->lastDescendantOrSelf() : 0; }
+        Node* pastLastLeaf() const { return m_lastNodeInserted ? NodeTraversal::next(m_lastNodeInserted->lastDescendantOrSelf()) : 0; }
 
     private:
         RefPtr<Node> m_firstNodeInserted;

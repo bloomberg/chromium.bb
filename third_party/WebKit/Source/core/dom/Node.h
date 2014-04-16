@@ -205,7 +205,7 @@ public:
     String textContent(bool convertBRsToNewlines = false) const;
     void setTextContent(const String&);
 
-    Node& lastDescendant() const;
+    Node& lastDescendantOrSelf() const;
 
     // Other methods (not part of DOM)
 
@@ -277,7 +277,7 @@ public:
     ContainerNode* parentOrShadowHostNode() const;
     Element* parentOrShadowHostElement() const;
     void setParentOrShadowHostNode(ContainerNode*);
-    Node& highestAncestor() const;
+    Node& highestAncestorOrSelf() const;
 
     // Knows about all kinds of hosts.
     ContainerNode* parentOrShadowHostOrTemplateHostNode() const;

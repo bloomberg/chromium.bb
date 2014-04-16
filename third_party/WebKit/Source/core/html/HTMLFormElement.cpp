@@ -136,13 +136,13 @@ void HTMLFormElement::removedFrom(ContainerNode* insertionPoint)
     // We don't need to take care of form association by 'form' content
     // attribute becuse IdTargetObserver handles it.
     if (m_hasElementsAssociatedByParser) {
-        Node& root = highestAncestor();
+        Node& root = highestAncestorOrSelf();
         if (!m_associatedElementsAreDirty) {
             Vector<FormAssociatedElement*> elements(associatedElements());
             notifyFormRemovedFromTree(elements, root);
         } else {
             Vector<FormAssociatedElement*> elements;
-            collectAssociatedElements(insertionPoint->highestAncestor(), elements);
+            collectAssociatedElements(insertionPoint->highestAncestorOrSelf(), elements);
             notifyFormRemovedFromTree(elements, root);
             collectAssociatedElements(root, elements);
             notifyFormRemovedFromTree(elements, root);
@@ -153,7 +153,7 @@ void HTMLFormElement::removedFrom(ContainerNode* insertionPoint)
             notifyFormRemovedFromTree(images, root);
         } else {
             Vector<HTMLImageElement*> images;
-            collectImageElements(insertionPoint->highestAncestor(), images);
+            collectImageElements(insertionPoint->highestAncestorOrSelf(), images);
             notifyFormRemovedFromTree(images, root);
             collectImageElements(root, images);
             notifyFormRemovedFromTree(images, root);
@@ -564,7 +564,7 @@ const Vector<FormAssociatedElement*>& HTMLFormElement::associatedElements() cons
     HTMLFormElement* mutableThis = const_cast<HTMLFormElement*>(this);
     Node* scope = mutableThis;
     if (m_hasElementsAssociatedByParser)
-        scope = &highestAncestor();
+        scope = &highestAncestorOrSelf();
     if (inDocument() && treeScope().idTargetObserverRegistry().hasObservers(fastGetAttribute(idAttr)))
         scope = &treeScope().rootNode();
     ASSERT(scope);
@@ -586,7 +586,7 @@ const Vector<HTMLImageElement*>& HTMLFormElement::imageElements()
 {
     if (!m_imageElementsAreDirty)
         return m_imageElements;
-    collectImageElements(m_hasElementsAssociatedByParser ? highestAncestor() : *this, m_imageElements);
+    collectImageElements(m_hasElementsAssociatedByParser ? highestAncestorOrSelf() : *this, m_imageElements);
     m_imageElementsAreDirty = false;
     return m_imageElements;
 }

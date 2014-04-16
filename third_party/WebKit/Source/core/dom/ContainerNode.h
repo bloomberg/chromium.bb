@@ -299,7 +299,7 @@ inline Node* Node::lastChild() const
     return toContainerNode(this)->lastChild();
 }
 
-inline Node& Node::highestAncestor() const
+inline Node& Node::highestAncestorOrSelf() const
 {
     Node* node = const_cast<Node*>(this);
     Node* highest = node;

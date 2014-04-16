@@ -127,7 +127,7 @@ HTMLFormElement* HTMLImageElement::formOwner() const
 void HTMLImageElement::formRemovedFromTree(const Node& formRoot)
 {
     ASSERT(m_form);
-    if (highestAncestor() != formRoot)
+    if (highestAncestorOrSelf() != formRoot)
         resetFormOwner();
 }
 
@@ -228,7 +228,7 @@ void HTMLImageElement::attach(const AttachContext& context)
 
 Node::InsertionNotificationRequest HTMLImageElement::insertedInto(ContainerNode* insertionPoint)
 {
-    if (!m_formWasSetByParser || insertionPoint->highestAncestor() != m_form->highestAncestor())
+    if (!m_formWasSetByParser || insertionPoint->highestAncestorOrSelf() != m_form->highestAncestorOrSelf())
         resetFormOwner();
 
     // If we have been inserted from a renderer-less document,
@@ -241,7 +241,7 @@ Node::InsertionNotificationRequest HTMLImageElement::insertedInto(ContainerNode*
 
 void HTMLImageElement::removedFrom(ContainerNode* insertionPoint)
 {
-    if (!m_form || m_form->highestAncestor() != highestAncestor())
+    if (!m_form || m_form->highestAncestorOrSelf() != highestAncestorOrSelf())
         resetFormOwner();
     HTMLElement::removedFrom(insertionPoint);
 }

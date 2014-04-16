@@ -363,7 +363,7 @@ PassRefPtr<NodeList> Node::childNodes()
     return ensureRareData().ensureNodeLists().ensureEmptyChildNodeList(*this);
 }
 
-Node& Node::lastDescendant() const
+Node& Node::lastDescendantOrSelf() const
 {
     Node* n = const_cast<Node*>(this);
     while (n && n->lastChild())

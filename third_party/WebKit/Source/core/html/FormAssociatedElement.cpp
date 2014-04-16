@@ -75,7 +75,7 @@ void FormAssociatedElement::didMoveToNewDocument(Document& oldDocument)
 
 void FormAssociatedElement::insertedInto(ContainerNode* insertionPoint)
 {
-    if (!m_formWasSetByParser || insertionPoint->highestAncestor() != m_form->highestAncestor())
+    if (!m_formWasSetByParser || insertionPoint->highestAncestorOrSelf() != m_form->highestAncestorOrSelf())
         resetFormOwner();
 
     if (!insertionPoint->inDocument())
@@ -93,7 +93,7 @@ void FormAssociatedElement::removedFrom(ContainerNode* insertionPoint)
         m_formAttributeTargetObserver = nullptr;
     // If the form and element are both in the same tree, preserve the connection to the form.
     // Otherwise, null out our form and remove ourselves from the form's list of elements.
-    if (m_form && element->highestAncestor() != m_form->highestAncestor())
+    if (m_form && element->highestAncestorOrSelf() != m_form->highestAncestorOrSelf())
         resetFormOwner();
 }
 
@@ -120,7 +120,7 @@ HTMLFormElement* FormAssociatedElement::findAssociatedForm(const HTMLElement* el
 void FormAssociatedElement::formRemovedFromTree(const Node& formRoot)
 {
     ASSERT(m_form);
-    if (toHTMLElement(this)->highestAncestor() == formRoot)
+    if (toHTMLElement(this)->highestAncestorOrSelf() == formRoot)
         return;
     resetFormOwner();
 }
