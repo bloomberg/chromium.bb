@@ -6273,3 +6273,8 @@
   fun:_ZN3net12_GLOBAL__N_114TestHttpClient4ReadEPSs
   fun:_ZN3net*HttpServerTest*
 }
+{
+  bug_364274
+  Memcheck:Uninitialized
+  fun:_ZN7WebCore21RenderLayerCompositor14updateIfNeededEv
+}
