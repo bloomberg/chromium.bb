@@ -147,6 +147,9 @@ cr.define('print_preview', function() {
               print_preview.Metrics.DestinationSearchBucket.
                   CLOUDPRINT_PROMO_SHOWN);
         }
+        if (this.userInfo_.initialized) {
+          this.onUsersChanged_();
+        }
         this.reflowLists_();
       } else {
         this.getElement().classList.add('transparent');
@@ -224,7 +227,7 @@ cr.define('print_preview', function() {
       this.tracker.add(
           this.destinationStore_,
           print_preview.DestinationStore.EventType.DESTINATION_SEARCH_DONE,
-          this.updateThrobbers_.bind(this));
+          this.onDestinationSearchDone_.bind(this));
 
       this.tracker.add(
           this.localList_,
@@ -312,7 +315,9 @@ cr.define('print_preview', function() {
       var cloudDestinations = [];
       var unregisteredCloudDestinations = [];
 
-      this.destinationStore_.destinations.forEach(function(destination) {
+      var destinations =
+          this.destinationStore_.destinations(this.userInfo_.activeUser);
+      destinations.forEach(function(destination) {
         if (destination.isRecent) {
           recentDestinations.push(destination);
         }
@@ -408,18 +413,16 @@ cr.define('print_preview', function() {
       this.reflowLists_();
     },
 
-
     /**
-     * Updates the account selection UI.
-     * @param {string} email Email of the logged in user.
-     * @param {!Array.<string>} accounts List of logged in user accounts.
+     * Called when user's logged in accounts change. Updates the UI.
+     * @private
      */
-    setAccounts_: function(email, accounts) {
-      var loggedIn = !!email;
+    onUsersChanged_: function() {
+      var loggedIn = this.userInfo_.loggedIn;
       if (loggedIn) {
         var accountSelectEl = this.getChildElement('.account-select');
         accountSelectEl.innerHTML = '';
-        accounts.forEach(function(account) {
+        this.userInfo_.users.forEach(function(account) {
           var option = document.createElement('option');
           option.text = account;
           option.value = account;
@@ -430,7 +433,8 @@ cr.define('print_preview', function() {
         option.value = '';
         accountSelectEl.add(option);
 
-        accountSelectEl.selectedIndex = accounts.indexOf(email);
+        accountSelectEl.selectedIndex =
+            this.userInfo_.users.indexOf(this.userInfo_.activeUser);
       }
 
       setIsVisible(this.getChildElement('.user-info'), loggedIn);
@@ -480,7 +484,8 @@ cr.define('print_preview', function() {
      * @private
      */
     onDestinationStoreSelect_: function() {
-      var destinations = this.destinationStore_.destinations;
+      var destinations =
+          this.destinationStore_.destinations(this.userInfo_.activeUser);
       var recentDestinations = [];
       destinations.forEach(function(destination) {
         if (destination.isRecent) {
@@ -497,6 +502,17 @@ cr.define('print_preview', function() {
      * @private
      */
     onDestinationsInserted_: function() {
+      this.renderDestinations_();
+      this.reflowLists_();
+    },
+
+    /**
+     * Called when destinations are inserted into the store. Rerenders
+     * destinations.
+     * @private
+     */
+    onDestinationSearchDone_: function() {
+      this.updateThrobbers_();
       this.renderDestinations_();
       this.reflowLists_();
     },
@@ -543,6 +559,7 @@ cr.define('print_preview', function() {
           accountSelectEl.options[accountSelectEl.selectedIndex].value;
       if (account) {
         this.userInfo_.activeUser = account;
+        this.destinationStore_.reloadUserCookieBasedDestinations();
       } else {
         cr.dispatchSimpleEvent(this, DestinationSearch.EventType.ADD_ACCOUNT);
         // Set selection back to the active user.
@@ -581,14 +598,6 @@ cr.define('print_preview', function() {
      */
     onAnimationEnd_: function() {
       this.getChildElement('.page').classList.remove('pulse');
-    },
-
-    /**
-     * Called when user's logged in accounts change. Updates the UI.
-     * @private
-     */
-    onUsersChanged_: function() {
-      this.setAccounts_(this.userInfo_.activeUser, this.userInfo_.users);
     },
 
     /**

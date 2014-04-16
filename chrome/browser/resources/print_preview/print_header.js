@@ -132,6 +132,7 @@ cr.define('print_preview', function() {
      */
     updatePrintButtonEnabledState_: function() {
       this.getChildElement('button.print').disabled =
+          this.destinationStore_.selectedDestination == null ||
           !this.isEnabled_ ||
           !this.isPrintButtonEnabled_ ||
           !this.printTicketStore_.isTicketValid();
@@ -222,14 +223,16 @@ cr.define('print_preview', function() {
      * @private
      */
     onDestinationSelect_: function() {
-      var isSaveLabel = this.destinationStore_.selectedDestination.id ==
-          print_preview.Destination.GooglePromotedId.SAVE_AS_PDF ||
-          this.destinationStore_.selectedDestination.id ==
-              print_preview.Destination.GooglePromotedId.DOCS;
-      this.getChildElement('button.print').textContent = isSaveLabel ?
-          localStrings.getString('saveButton') :
-          localStrings.getString('printButton');
-      this.getChildElement('button.print').focus();
+      var isSaveLabel = this.destinationStore_.selectedDestination &&
+          (this.destinationStore_.selectedDestination.id ==
+               print_preview.Destination.GooglePromotedId.SAVE_AS_PDF ||
+           this.destinationStore_.selectedDestination.id ==
+               print_preview.Destination.GooglePromotedId.DOCS);
+      this.getChildElement('button.print').textContent =
+          localStrings.getString(isSaveLabel ? 'saveButton' : 'printButton');
+      if (this.destinationStore_.selectedDestination) {
+        this.getChildElement('button.print').focus();
+      }
     },
 
     /**

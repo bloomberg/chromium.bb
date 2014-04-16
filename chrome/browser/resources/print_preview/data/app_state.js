@@ -35,6 +35,7 @@ cr.define('print_preview', function() {
   AppState.Field = {
     VERSION: 'version',
     SELECTED_DESTINATION_ID: 'selectedDestinationId',
+    SELECTED_DESTINATION_ACCOUNT: 'selectedDestinationAccount',
     SELECTED_DESTINATION_ORIGIN: 'selectedDestinationOrigin',
     SELECTED_DESTINATION_CAPABILITIES: 'selectedDestinationCapabilities',
     SELECTED_DESTINATION_NAME: 'selectedDestinationName',
@@ -70,6 +71,11 @@ cr.define('print_preview', function() {
     /** @return {?string} ID of the selected destination. */
     get selectedDestinationId() {
       return this.state_[AppState.Field.SELECTED_DESTINATION_ID];
+    },
+
+    /** @return {?string} Account the selected destination is registered for. */
+    get selectedDestinationAccount() {
+      return this.state_[AppState.Field.SELECTED_DESTINATION_ACCOUNT];
     },
 
     /** @return {?string} Origin of the selected destination. */
@@ -175,6 +181,7 @@ cr.define('print_preview', function() {
       if (!this.isInitialized_)
         return;
       this.state_[AppState.Field.SELECTED_DESTINATION_ID] = dest.id;
+      this.state_[AppState.Field.SELECTED_DESTINATION_ACCOUNT] = dest.account;
       this.state_[AppState.Field.SELECTED_DESTINATION_ORIGIN] = dest.origin;
       this.state_[AppState.Field.SELECTED_DESTINATION_CAPABILITIES] =
           dest.capabilities;

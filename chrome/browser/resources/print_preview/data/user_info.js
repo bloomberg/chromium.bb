@@ -23,10 +23,10 @@ cr.define('print_preview', function() {
 
     /**
      * Email addresses of the logged in users or empty array if no user is
-     * logged in.
-     * @private {!Array.<string>}
+     * logged in. {@code null} if not known yet.
+     * @private {?Array.<string>}
      */
-    this.users_ = [];
+    this.users_ = null;
   };
 
   /**
@@ -40,6 +40,16 @@ cr.define('print_preview', function() {
 
   UserInfo.prototype = {
     __proto__: cr.EventTarget.prototype,
+
+    /** @return {boolean} Whether user accounts are already retrieved. */
+    get initialized() {
+      return this.users_ != null;
+    },
+
+    /** @return {boolean} Whether user is logged in or not. */
+    get loggedIn() {
+      return !!this.activeUser;
+    },
 
     /**
      * @return {?string} Email address of the logged in user or {@code null} if
@@ -57,10 +67,9 @@ cr.define('print_preview', function() {
       }
     },
 
-
     /**
-     * @return {!Array.<string>} Email addresses of the logged in users or
-     *     empty array if no user is logged in.
+     * @return {?Array.<string>} Email addresses of the logged in users or
+     *     empty array if no user is logged in. {@code null} if not known yet.
      */
     get users() {
       return this.users_;
@@ -68,7 +77,7 @@ cr.define('print_preview', function() {
 
     /**
      * Sets logged in user accounts info.
-     * @param {string} user Currently logged in user (email).
+     * @param {string} activeUser Active user account (email).
      * @param {!Array.<string>} users List of currently logged in accounts.
      */
     setUsers: function(activeUser, users) {

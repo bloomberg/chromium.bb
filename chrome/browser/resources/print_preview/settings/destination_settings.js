@@ -106,38 +106,42 @@ cr.define('print_preview', function() {
      * @private
      */
     onDestinationSelect_: function() {
-      var destination = this.destinationStore_.selectedDestination;
-      var nameEl = this.getElement().getElementsByClassName(
-          DestinationSettings.Classes_.NAME)[0];
-      nameEl.textContent = destination.displayName;
-      nameEl.title = destination.displayName;
-
-      var iconEl = this.getElement().getElementsByClassName(
-          DestinationSettings.Classes_.ICON)[0];
-      iconEl.src = destination.iconUrl;
-
-      var hint = destination.hint;
-      var locationEl = this.getElement().getElementsByClassName(
-          DestinationSettings.Classes_.LOCATION)[0];
-      locationEl.textContent = hint;
-      locationEl.title = hint;
-
-      var offlineStatusText = destination.offlineStatusText;
-      var offlineStatusEl =
-          this.getChildElement('.destination-settings-offline-status');
-      offlineStatusEl.textContent = offlineStatusText;
-      offlineStatusEl.title = offlineStatusText;
-
-      var isOffline = destination.isOffline;
       var destinationSettingsBoxEl =
           this.getChildElement('.destination-settings-box');
-      destinationSettingsBoxEl.classList.toggle(
-          DestinationSettings.Classes_.STALE, isOffline);
-      setIsVisible(locationEl, !isOffline);
-      setIsVisible(offlineStatusEl, isOffline);
 
-      setIsVisible(this.getChildElement('.throbber-container'), false);
-      setIsVisible(destinationSettingsBoxEl, true);
+      var destination = this.destinationStore_.selectedDestination;
+      if (destination != null) {
+        var nameEl = this.getElement().getElementsByClassName(
+            DestinationSettings.Classes_.NAME)[0];
+        nameEl.textContent = destination.displayName;
+        nameEl.title = destination.displayName;
+
+        var iconEl = this.getElement().getElementsByClassName(
+            DestinationSettings.Classes_.ICON)[0];
+        iconEl.src = destination.iconUrl;
+
+        var hint = destination.hint;
+        var locationEl = this.getElement().getElementsByClassName(
+            DestinationSettings.Classes_.LOCATION)[0];
+        locationEl.textContent = hint;
+        locationEl.title = hint;
+
+        var offlineStatusText = destination.offlineStatusText;
+        var offlineStatusEl =
+            this.getChildElement('.destination-settings-offline-status');
+        offlineStatusEl.textContent = offlineStatusText;
+        offlineStatusEl.title = offlineStatusText;
+
+        var isOffline = destination.isOffline;
+        destinationSettingsBoxEl.classList.toggle(
+            DestinationSettings.Classes_.STALE, isOffline);
+        setIsVisible(locationEl, !isOffline);
+        setIsVisible(offlineStatusEl, isOffline);
+      }
+
+      setIsVisible(
+          this.getChildElement('.throbber-container'), destination == null);
+      setIsVisible(destinationSettingsBoxEl, destination != null);
     },
 
     onSelectedDestinationNameSet_: function() {
