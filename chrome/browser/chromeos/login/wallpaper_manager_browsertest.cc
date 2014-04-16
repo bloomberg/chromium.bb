@@ -763,7 +763,8 @@ class TestObserver : public WallpaperManager::Observer {
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
 
-IN_PROC_BROWSER_TEST_P(WallpaperManagerBrowserTest, DisplayChange) {
+// Disabled due to flaky failures. crbug.com/362847
+IN_PROC_BROWSER_TEST_P(WallpaperManagerBrowserTest, DISABLED_DisplayChange) {
   // TODO(derat|oshima|bshe): Host windows can't be resized on Win8.
   if (!ash::test::AshTestHelper::SupportsHostWindowResize())
     return;
