@@ -72,7 +72,7 @@ static void reverseSkipUntilComponentStart(TokenIterator& token, TokenIterator s
     }
 }
 
-bool SizesAttributeParser::mediaConditionMatches(PassRefPtr<MediaQuerySet> mediaCondition)
+bool SizesAttributeParser::mediaConditionMatches(PassRefPtrWillBeRawPtr<MediaQuerySet> mediaCondition)
 {
     // FIXME: How do I handle non-screen media types here?
     MediaQueryEvaluator mediaQueryEvaluator(MediaTypeNames::screen, *m_mediaValues);
@@ -91,7 +91,7 @@ bool SizesAttributeParser::parseMediaConditionAndLength(TokenIterator startToken
     unsigned length;
     if (!calculateLengthInPixels(lengthTokenStart, lengthTokenEnd, length))
         return false;
-    RefPtr<MediaQuerySet> mediaCondition = MediaQueryParser::parseMediaCondition(startToken, endToken);
+    RefPtrWillBeRawPtr<MediaQuerySet> mediaCondition = MediaQueryParser::parseMediaCondition(startToken, endToken);
     if (mediaCondition && mediaConditionMatches(mediaCondition)) {
         m_length = length;
         return true;
