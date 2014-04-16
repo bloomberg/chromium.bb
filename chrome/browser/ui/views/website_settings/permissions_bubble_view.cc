@@ -47,8 +47,7 @@ const int kButtonBorderSize = 2;
 // about any updates to the state of the selection.
 // TODO: refactor PermissionMenuButton to work like this and re-use?
 class PermissionCombobox : public views::MenuButton,
-                           public views::MenuButtonListener,
-                           public PermissionMenuModel::Delegate {
+                           public views::MenuButtonListener {
  public:
   // Get notifications when the selection changes.
   class Listener {
@@ -59,9 +58,7 @@ class PermissionCombobox : public views::MenuButton,
   PermissionCombobox(Listener* listener,
                      int index,
                      const GURL& url,
-                     ContentSettingsType type,
-                     ContentSetting default_setting,
-                     ContentSetting current_setting);
+                     ContentSetting setting);
   virtual ~PermissionCombobox();
 
   int index() const { return index_; }
@@ -72,35 +69,29 @@ class PermissionCombobox : public views::MenuButton,
   virtual void OnMenuButtonClicked(View* source,
                                    const gfx::Point& point) OVERRIDE;
 
-  // PermissionMenuModel::Delegate:
-  virtual void ExecuteCommand(int command_id) OVERRIDE;
-  virtual bool IsCommandIdChecked(int command_id) OVERRIDE;
-
+  // Callback when a permission's setting is changed.
+  void PermissionChanged(const WebsiteSettingsUI::PermissionInfo& permission);
 
  private:
   int index_;
   Listener* listener_;
   scoped_ptr<PermissionMenuModel> model_;
-  int current_command_id_;
   scoped_ptr<views::MenuRunner> menu_runner_;
 };
 
-PermissionCombobox::PermissionCombobox(
-    Listener* listener,
-    int index,
-    const GURL& url,
-    ContentSettingsType type,
-    ContentSetting default_setting,
-    ContentSetting current_setting)
+PermissionCombobox::PermissionCombobox(Listener* listener,
+                                       int index,
+                                       const GURL& url,
+                                       ContentSetting setting)
     : MenuButton(NULL, base::string16(), this, true),
       index_(index),
       listener_(listener),
       model_(new PermissionMenuModel(
-          this, url, type, default_setting, current_setting)),
-      current_command_id_(current_setting == CONTENT_SETTING_ALLOW ?
-                          PermissionMenuModel::COMMAND_SET_TO_ALLOW :
-                          PermissionMenuModel::COMMAND_SET_TO_BLOCK) {
-  SetText(model_->GetLabelAt(model_->GetIndexOfCommandId(current_command_id_)));
+          url,
+          setting,
+          base::Bind(&PermissionCombobox::PermissionChanged,
+                     base::Unretained(this)))) {
+  SetText(model_->GetLabelAt(model_->GetIndexOfCommandId(setting)));
   SizeToPreferredSize();
 }
 
@@ -127,17 +118,13 @@ void PermissionCombobox::OnMenuButtonClicked(View* source,
     return;
 }
 
-void PermissionCombobox::ExecuteCommand(int command_id) {
-  current_command_id_ = command_id;
-  SetText(model_->GetLabelAt(model_->GetIndexOfCommandId(current_command_id_)));
+void PermissionCombobox::PermissionChanged(
+    const WebsiteSettingsUI::PermissionInfo& permission) {
+  SetText(model_->GetLabelAt(model_->GetIndexOfCommandId(permission.setting)));
   SizeToPreferredSize();
 
-  listener_->PermissionSelectionChanged(index_,
-        IsCommandIdChecked(PermissionMenuModel::COMMAND_SET_TO_ALLOW));
-}
-
-bool PermissionCombobox::IsCommandIdChecked(int command_id) {
-  return current_command_id_ == command_id;
+  listener_->PermissionSelectionChanged(
+      index_, permission.setting == CONTENT_SETTING_ALLOW);
 }
 
 // A combobox originating on the Allow button allowing for customization
@@ -280,8 +267,6 @@ PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
           this,
           index,
           requests[index]->GetRequestingHostname(),
-          CONTENT_SETTINGS_TYPE_DEFAULT,
-          CONTENT_SETTING_NUM_SETTINGS,
           accept_state[index] ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
       row_layout->AddView(combobox);
       customize_comboboxes_.push_back(combobox);

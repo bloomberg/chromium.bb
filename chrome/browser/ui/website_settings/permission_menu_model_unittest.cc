@@ -10,15 +10,15 @@
 
 namespace {
 
-class TestDelegate : public PermissionMenuModel::Delegate {
+class TestCallback {
  public:
-  TestDelegate() : current_(-1) {}
+  TestCallback() : current_(-1) {}
 
-  virtual void ExecuteCommand(int command_id) OVERRIDE {
-    current_ = command_id;
+  PermissionMenuModel::ChangeCallback callback() {
+    return base::Bind(&TestCallback::PermissionChanged, base::Unretained(this));
   }
-  virtual bool IsCommandIdChecked(int command_id) OVERRIDE {
-    return (current_ == command_id);
+  void PermissionChanged(const WebsiteSettingsUI::PermissionInfo& permission) {
+    current_ = permission.setting;
   }
 
   int current_;
@@ -27,31 +27,31 @@ class TestDelegate : public PermissionMenuModel::Delegate {
 }  // namespace
 
 TEST(PermissionMenuModelTest, TestDefault) {
-  TestDelegate delegate;
-  PermissionMenuModel model(&delegate,
-                            GURL("http://www.google.com"),
-                            CONTENT_SETTINGS_TYPE_COOKIES,
-                            CONTENT_SETTING_ALLOW,
-                            CONTENT_SETTING_ALLOW);
+  TestCallback callback;
+  WebsiteSettingsUI::PermissionInfo permission;
+  permission.type = CONTENT_SETTINGS_TYPE_COOKIES;
+  permission.setting = CONTENT_SETTING_ALLOW;
+  permission.default_setting = CONTENT_SETTING_ALLOW;
+  PermissionMenuModel model(
+      GURL("http://www.google.com"), permission, callback.callback());
   EXPECT_EQ(3, model.GetItemCount());
 }
 
 TEST(PermissionMenuModelTest, TestDefaultMediaHttp) {
-  TestDelegate delegate;
-  PermissionMenuModel model(&delegate,
-                            GURL("http://www.google.com"),
-                            CONTENT_SETTINGS_TYPE_MEDIASTREAM,
-                            CONTENT_SETTING_ALLOW,
-                            CONTENT_SETTING_ALLOW);
+  TestCallback callback;
+  WebsiteSettingsUI::PermissionInfo permission;
+  permission.type = CONTENT_SETTINGS_TYPE_MEDIASTREAM;
+  permission.setting = CONTENT_SETTING_ALLOW;
+  permission.default_setting = CONTENT_SETTING_ALLOW;
+  PermissionMenuModel model(
+      GURL("http://www.google.com"), permission, callback.callback());
   EXPECT_EQ(2, model.GetItemCount());
 }
 
 TEST(PermissionMenuModelTest, TestAllowBlock) {
-  TestDelegate delegate;
-  PermissionMenuModel model(&delegate,
-                            GURL("http://www.google.com"),
-                            CONTENT_SETTINGS_TYPE_DEFAULT,
-                            CONTENT_SETTING_NUM_SETTINGS,
-                            CONTENT_SETTING_ALLOW);
+  TestCallback callback;
+  PermissionMenuModel model(GURL("http://www.google.com"),
+                            CONTENT_SETTING_ALLOW,
+                            callback.callback());
   EXPECT_EQ(2, model.GetItemCount());
 }

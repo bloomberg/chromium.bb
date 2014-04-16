@@ -60,7 +60,6 @@ class WebsiteSettingsUI {
   // the current website.
   struct PermissionInfo {
     PermissionInfo();
-
     // Site permission |type|.
     ContentSettingsType type;
     // The current value for the permission |type| (e.g. ALLOW or BLOCK).
@@ -123,9 +122,10 @@ class WebsiteSettingsUI {
   static int GetPermissionIconID(ContentSettingsType type,
                                  ContentSetting setting);
 
-  // Returns the icon for the given permission |type| and |setting|.
-  static const gfx::Image& GetPermissionIcon(ContentSettingsType type,
-                                             ContentSetting setting);
+  // Returns the icon for the given permissionInfo |info|.  If |info|'s current
+  // setting is CONTENT_SETTING_DEFAULT, it will return the icon for |info|'s
+  // default setting.
+  static const gfx::Image& GetPermissionIcon(const PermissionInfo& info);
 
   // Returns the identity icon ID for the given identity |status|.
   static int GetIdentityIconID(WebsiteSettings::SiteIdentityStatus status);

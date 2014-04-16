@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBSITE_SETTINGS_PERMISSION_MENU_MODEL_H_
 #define CHROME_BROWSER_UI_WEBSITE_SETTINGS_PERMISSION_MENU_MODEL_H_
 
+#include "chrome/browser/ui/website_settings/website_settings_ui.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -13,29 +14,21 @@
 class PermissionMenuModel : public ui::SimpleMenuModel,
                             public ui::SimpleMenuModel::Delegate {
  public:
-  enum CommandID {
-    COMMAND_SET_TO_DEFAULT,
-    COMMAND_SET_TO_ALLOW,
-    COMMAND_SET_TO_BLOCK,
-  };
+  typedef base::Callback<void(const WebsiteSettingsUI::PermissionInfo&)>
+      ChangeCallback;
 
-  class Delegate {
-   public:
-    // Executes the command with the given |command_id|.
-    virtual void ExecuteCommand(int command_id) = 0;
-    // Returns true if the command with the given |command_id| should be
-    // checked.
-    virtual bool IsCommandIdChecked(int command_id) = 0;
-  };
-
-  // Create a new menu model for permission settings. To restrict to
-  // simple allow/block settings, set the type to CONTENT_SETTINGS_TYPE_DEFAULT
-  // and the default setting to CONTENT_SETTING_NUM_SETTINGS.
-  PermissionMenuModel(Delegate* delegate,
-                      const GURL& url,
-                      ContentSettingsType type,
-                      ContentSetting default_setting,
-                      ContentSetting current_setting);
+  // Create a new menu model for permission settings.
+  PermissionMenuModel(const GURL& url,
+                      const WebsiteSettingsUI::PermissionInfo& info,
+                      const ChangeCallback& callback);
+  // Creates a special-case menu model that only has the allow and block
+  // options.  It does not track a permission type.  |setting| is the
+  // initial selected option.  It must be either CONTENT_SETTING_ALLOW or
+  // CONTENT_SETTING_BLOCK.
+  PermissionMenuModel(const GURL& url,
+                      ContentSetting setting,
+                      const ChangeCallback& callback);
+  virtual ~PermissionMenuModel();
 
   // Overridden from ui::SimpleMenuModel::Delegate:
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
@@ -46,8 +39,11 @@ class PermissionMenuModel : public ui::SimpleMenuModel,
   virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
 
  private:
-  // The delegate of the |PermissionMenuModel|. |delegate_| can be NULL.
-  Delegate* delegate_;
+  // The permission info represented by the menu model.
+  WebsiteSettingsUI::PermissionInfo permission_;
+
+  // Callback to be called when the permission's setting is changed.
+  ChangeCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionMenuModel);
 };

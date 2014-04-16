@@ -65,7 +65,7 @@ class WebsiteSettingsPopupView
 
   // PermissionSelectorViewObserver implementation.
   virtual void OnPermissionChanged(
-      PermissionSelectorView* selector) OVERRIDE;
+      const WebsiteSettingsUI::PermissionInfo& permission) OVERRIDE;
 
   // views::BubbleDelegateView implementation.
   virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;

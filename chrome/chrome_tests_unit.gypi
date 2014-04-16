@@ -1642,6 +1642,7 @@
         'browser/ui/cocoa/view_resizer_pong.h',
         'browser/ui/cocoa/view_resizer_pong.mm',
         'browser/ui/cocoa/website_settings/permission_bubble_controller_unittest.mm',
+        'browser/ui/cocoa/website_settings/permission_selector_button_unittest.mm',
         'browser/ui/cocoa/website_settings_bubble_controller_unittest.mm',
         'browser/ui/cocoa/web_dialog_window_controller_unittest.mm',
         'browser/ui/cocoa/window_size_autosaver_unittest.mm',

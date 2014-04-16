@@ -242,10 +242,12 @@ int WebsiteSettingsUI::GetPermissionIconID(ContentSettingsType type,
 
 // static
 const gfx::Image& WebsiteSettingsUI::GetPermissionIcon(
-    ContentSettingsType type,
-    ContentSetting setting) {
+    const PermissionInfo& info) {
+  ContentSetting setting = info.setting;
+  if (setting == CONTENT_SETTING_DEFAULT)
+    setting = info.default_setting;
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  return rb.GetNativeImageNamed(GetPermissionIconID(type, setting));
+  return rb.GetNativeImageNamed(GetPermissionIconID(info.type, setting));
 }
 
 // static

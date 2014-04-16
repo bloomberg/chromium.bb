@@ -12,6 +12,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/views/website_settings/permission_selector_view_observer.h"
 #include "chrome/browser/ui/website_settings/permission_menu_model.h"
+#include "chrome/browser/ui/website_settings/website_settings_ui.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
 #include "ui/views/controls/button/menu_button_listener.h"
@@ -28,22 +29,14 @@ class MenuRunner;
 
 // A custom view for selecting a permission setting for the given permission
 // |type|.
-class PermissionSelectorView : public views::View,
-                               public PermissionMenuModel::Delegate {
+class PermissionSelectorView : public views::View {
  public:
   PermissionSelectorView(const GURL& url,
-                         ContentSettingsType type,
-                         ContentSetting default_setting,
-                         ContentSetting current_setting,
-                         content_settings::SettingSource source);
+                         const WebsiteSettingsUI::PermissionInfo& permission);
 
   void AddObserver(PermissionSelectorViewObserver* observer);
 
-  // Returns the selected setting.
-  ContentSetting current_setting() const { return current_setting_; }
-
-  // Returns the permission type.
-  ContentSettingsType type() const { return type_; }
+  void PermissionChanged(const WebsiteSettingsUI::PermissionInfo& permission);
 
  protected:
   // Overridden from views::View.
@@ -52,23 +45,11 @@ class PermissionSelectorView : public views::View,
  private:
   virtual ~PermissionSelectorView();
 
-  // Overridden from PermissionMenuModel::Delegate.
-  virtual void ExecuteCommand(int command_id) OVERRIDE;
-  virtual bool IsCommandIdChecked(int command_id) OVERRIDE;
+  // Model for the permission's menu.
+  scoped_ptr<PermissionMenuModel> menu_model_;
 
   views::ImageView* icon_;  // Owned by the views hierachy.
   internal::PermissionMenuButton* menu_button_;  // Owned by the views hierachy.
-  scoped_ptr<PermissionMenuModel> menu_button_model_;
-
-  // The site permission (the |ContentSettingsType|) for which the menu model
-  // provides settings.
-  ContentSettingsType type_;
-
-  // The global default setting for the permission |type_|.
-  ContentSetting default_setting_;
-
-  // The currently active setting for the permission |type_|.
-  ContentSetting current_setting_;
 
   ObserverList<PermissionSelectorViewObserver, false> observer_list_;
 

@@ -5,12 +5,15 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_PERMISSION_SELECTOR_VIEW_OBSERVER_H_
 #define CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_PERMISSION_SELECTOR_VIEW_OBSERVER_H_
 
+#include "chrome/browser/ui/website_settings/website_settings_ui.h"
+
 class PermissionSelectorView;
 
 class PermissionSelectorViewObserver {
  public:
   // This method is called whenever the permission setting is changed.
-  virtual void OnPermissionChanged(PermissionSelectorView* selector) = 0;
+  virtual void OnPermissionChanged(
+      const WebsiteSettingsUI::PermissionInfo& permission) = 0;
 
  protected:
   virtual ~PermissionSelectorViewObserver() {}

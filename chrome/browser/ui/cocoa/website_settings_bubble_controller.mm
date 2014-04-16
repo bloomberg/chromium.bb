@@ -8,6 +8,7 @@
 
 #import <AppKit/AppKit.h>
 
+#include "base/mac/bind_objc_block.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/certificate_viewer.h"
@@ -17,6 +18,8 @@
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
+#import "chrome/browser/ui/cocoa/website_settings/permission_selector_button.h"
+#include "chrome/browser/ui/website_settings/permission_menu_model.h"
 #include "chrome/browser/ui/website_settings/website_settings_utils.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/cert_store.h"
@@ -82,10 +85,6 @@ const CGFloat kPermissionsHeadlineSpacing = 2;
 
 // The amount of horizontal space between a permission label and the popup.
 const CGFloat kPermissionPopUpXSpacing = 3;
-
-// The amount of horizontal space between the permission popup title and the
-// arrow icon.
-const CGFloat kPermissionButtonTitleRightPadding = 4;
 
 // The extra space to the left of the first tab in the tab strip.
 const CGFloat kTabStripXPadding = kFramePadding;
@@ -833,97 +832,35 @@ NSColor* IdentityVerifiedTextColor() {
   return button.get();
 }
 
-// Determine the size of a popup button with the given title.
-- (NSSize)sizeForPopUpButton:(NSPopUpButton*)button
-                   withTitle:(NSString*)title {
-  NSDictionary* textAttributes =
-      [NSDictionary dictionaryWithObject:[button font]
-                                  forKey:NSFontAttributeName];
-  NSSize titleSize = [title sizeWithAttributes:textAttributes];
-
-  NSRect buttonFrame = [button frame];
-  NSRect titleRect = [[button cell] titleRectForBounds:buttonFrame];
-  CGFloat width = titleSize.width + NSWidth(buttonFrame) - NSWidth(titleRect);
-
-  return NSMakeSize(width + kPermissionButtonTitleRightPadding,
-                    NSHeight(buttonFrame));
-}
-
 // Add a pop-up button for |permissionInfo| to the given view.
 - (NSPopUpButton*)addPopUpButtonForPermission:
     (const WebsiteSettingsUI::PermissionInfo&)permissionInfo
                                        toView:(NSView*)view
                                       atPoint:(NSPoint)point {
-  // Use an arbitrary width and height; it will be sized to fit.
-  NSRect frame = NSMakeRect(point.x, point.y, 1, 1);
-  base::scoped_nsobject<NSPopUpButton> button(
-      [[NSPopUpButton alloc] initWithFrame:frame pullsDown:NO]);
-  [button setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-  [button setBordered:NO];
-  [[button cell] setControlSize:NSSmallControlSize];
-  [button setTag:permissionInfo.type];
-  [button setAction:@selector(permissionValueChanged:)];
-  [button setTarget:self];
 
-  // Create the popup menu.
-  // TODO(dubroy): Refactor this code to use PermissionMenuModel.
-
-  // Media stream permission only support "Always allow" for https.
-  if (permissionInfo.type != CONTENT_SETTINGS_TYPE_MEDIASTREAM ||
-      (webContents_ && webContents_->GetURL().SchemeIsSecure())) {
-    [button addItemWithTitle:
-        l10n_util::GetNSString(IDS_WEBSITE_SETTINGS_MENU_ITEM_ALLOW)];
-    [[button lastItem] setTag:CONTENT_SETTING_ALLOW];
-  }
-
-  // Fullscreen does not support "Always block".
-  if (permissionInfo.type != CONTENT_SETTINGS_TYPE_FULLSCREEN) {
-    [button addItemWithTitle:
-        l10n_util::GetNSString(IDS_WEBSITE_SETTINGS_MENU_ITEM_BLOCK)];
-    [[button lastItem] setTag:CONTENT_SETTING_BLOCK];
-  }
-
-  [button addItemWithTitle:l10n_util::GetNSStringF(
-      IDS_WEBSITE_SETTINGS_DEFAULT_PERMISSION_LABEL,
-      WebsiteSettingsUI::PermissionValueToUIString(
-          permissionInfo.default_setting))];
-  [[button lastItem] setTag:CONTENT_SETTING_DEFAULT];
-
-  [button selectItemWithTag:permissionInfo.setting];
-
-  // Set the button title.
-  base::scoped_nsobject<NSMenuItem> titleItem([[NSMenuItem alloc] init]);
-  base::string16 buttonTitle = WebsiteSettingsUI::PermissionActionToUIString(
-      permissionInfo.setting,
-      permissionInfo.default_setting,
-      permissionInfo.source);
-  [titleItem setTitle:base::SysUTF16ToNSString(buttonTitle)];
-  [[button cell] setUsesItemFromMenu:NO];
-  [[button cell] setMenuItem:titleItem.get()];
-  [button sizeToFit];
-
+  GURL url = webContents_ ? webContents_->GetURL() : GURL();
+  // The presenter is guaranteed to outlive the menu model.  It is owned
+  // by this class, created by the WebsiteSettingsUIBridge during Show();
+  WebsiteSettings* blockPresenter = presenter_.get();
+  PermissionMenuModel::ChangeCallback callback =
+      base::BindBlock(^(const WebsiteSettingsUI::PermissionInfo& permission) {
+          blockPresenter->OnSitePermissionChanged(permission.type,
+                                                  permission.setting);
+      });
+  base::scoped_nsobject<PermissionSelectorButton> button(
+      [[PermissionSelectorButton alloc] initWithPermissionInfo:permissionInfo
+                                                        forURL:url
+                                                  withCallback:callback]);
   // Determine the largest possible size for this button.
-  CGFloat maxTitleWidth = 0;
-  for (NSInteger i = 0; i < [button numberOfItems]; ++i) {
-    base::string16 title = WebsiteSettingsUI::PermissionActionToUIString(
-        static_cast<ContentSetting>([[button itemAtIndex:i] tag]),
-        permissionInfo.default_setting,
-        content_settings::SETTING_SOURCE_USER);
-    NSSize size = [self sizeForPopUpButton:button
-                                 withTitle:base::SysUTF16ToNSString(title)];
-    maxTitleWidth = std::max(maxTitleWidth, size.width);
-  }
+  CGFloat maxTitleWidth =
+      [button maxTitleWidthWithDefaultSetting:permissionInfo.default_setting];
+
   // Ensure the containing view is large enough to contain the button with its
   // widest possible title.
   NSRect containerFrame = [view frame];
   containerFrame.size.width = std::max(
       NSWidth(containerFrame), point.x + maxTitleWidth + kFramePadding);
   [view setFrame:containerFrame];
-
-  // Size the button to just fit the title.
-  [button setFrameSize:[self sizeForPopUpButton:button
-                                      withTitle:[button title]]];
-
   [view addSubview:button.get()];
   return button.get();
 }
@@ -933,29 +870,15 @@ NSColor* IdentityVerifiedTextColor() {
   [tabView_ selectTabViewItemAtIndex:[segmentedControl_ selectedSegment]];
 }
 
-// Handler for the permission-changing menus.
-- (void)permissionValueChanged:(id)sender {
-  DCHECK([sender isKindOfClass:[NSPopUpButton class]]);
-  NSPopUpButton* button = static_cast<NSPopUpButton*>(sender);
-  ContentSettingsType type = static_cast<ContentSettingsType>([button tag]);
-  ContentSetting newSetting = static_cast<ContentSetting>(
-      [[button selectedItem] tag]);
-  if (presenter_.get())
-    presenter_->OnSitePermissionChanged(type, newSetting);
-}
-
 // Adds a new row to the UI listing the permissions. Returns the amount of
 // vertical space that was taken up by the row.
 - (NSPoint)addPermission:
     (const WebsiteSettingsUI::PermissionInfo&)permissionInfo
                   toView:(NSView*)view
                  atPoint:(NSPoint)point {
-  // TODO(dubroy): Remove this check by refactoring GetPermissionIcon to take
-  // the PermissionInfo object as its argument.
-  ContentSetting setting = permissionInfo.setting == CONTENT_SETTING_DEFAULT ?
-      permissionInfo.default_setting : permissionInfo.setting;
-  NSImage* image = WebsiteSettingsUI::GetPermissionIcon(
-      permissionInfo.type, setting).ToNSImage();
+  base::scoped_nsobject<NSImage> image(
+      [WebsiteSettingsUI::GetPermissionIcon(permissionInfo).ToNSImage()
+          retain]);
   NSImageView* imageView = [self addImageWithSize:[image size]
                                            toView:view
                                           atPoint:point];
@@ -1019,8 +942,10 @@ NSColor* IdentityVerifiedTextColor() {
     (const WebsiteSettingsUI::CookieInfo&)cookieInfo
                   toView:(NSView*)view
                  atPoint:(NSPoint)point {
-  NSImage* image = WebsiteSettingsUI::GetPermissionIcon(
-      CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_ALLOW).ToNSImage();
+  WebsiteSettingsUI::PermissionInfo info;
+  info.type = CONTENT_SETTINGS_TYPE_COOKIES;
+  info.setting = CONTENT_SETTING_ALLOW;
+  NSImage* image = WebsiteSettingsUI::GetPermissionIcon(info).ToNSImage();
   NSImageView* imageView = [self addImageWithSize:[image size]
                                            toView:view
                                           atPoint:point];

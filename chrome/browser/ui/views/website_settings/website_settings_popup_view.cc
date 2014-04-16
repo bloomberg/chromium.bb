@@ -369,10 +369,8 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
 }
 
 void WebsiteSettingsPopupView::OnPermissionChanged(
-    PermissionSelectorView* permission_selector) {
-  DCHECK(permission_selector);
-  presenter_->OnSitePermissionChanged(permission_selector->type(),
-                                      permission_selector->current_setting());
+    const WebsiteSettingsUI::PermissionInfo& permission) {
+  presenter_->OnSitePermissionChanged(permission.type, permission.setting);
 }
 
 void WebsiteSettingsPopupView::OnWidgetDestroying(views::Widget* widget) {
@@ -459,9 +457,11 @@ void WebsiteSettingsPopupView::SetCookieInfo(
     if (i != cookie_info_list.begin())
       layout->AddPaddingRow(1, kSiteDataSectionRowSpacing);
     layout->StartRow(1, site_data_content_column);
+    WebsiteSettingsUI::PermissionInfo info;
+    info.type = CONTENT_SETTINGS_TYPE_COOKIES;
+    info.setting = CONTENT_SETTING_ALLOW;
     views::ImageView* icon = new views::ImageView();
-    const gfx::Image& image = WebsiteSettingsUI::GetPermissionIcon(
-        CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_ALLOW);
+    const gfx::Image& image = WebsiteSettingsUI::GetPermissionIcon(info);
     icon->SetImage(image.ToImageSkia());
     layout->AddView(icon, 1, 1, views::GridLayout::CENTER,
                     views::GridLayout::CENTER);
@@ -497,10 +497,7 @@ void WebsiteSettingsPopupView::SetPermissionInfo(
     layout->StartRow(1, content_column);
     PermissionSelectorView* selector = new PermissionSelectorView(
         web_contents_ ? web_contents_->GetURL() : GURL::EmptyGURL(),
-        permission->type,
-        permission->default_setting,
-        permission->setting,
-        permission->source);
+        *permission);
     selector->AddObserver(this);
     layout->AddView(selector,
                     1,
