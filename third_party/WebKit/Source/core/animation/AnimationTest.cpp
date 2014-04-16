@@ -455,7 +455,8 @@ TEST_F(AnimationAnimationTest, ElementDestructorClearsAnimationTarget)
     // and Animation are moved to Oilpan. See crbug.com/362404 for context.
     Timing timing;
     timing.iterationDuration = 5;
-    RefPtr<Animation> animation = Animation::create(0, nullptr, timing);
+    RefPtr<Animation> animation = Animation::create(element.get(), nullptr, timing);
+    EXPECT_EQ(element.get(), animation->target());
     RefPtr<AnimationPlayer> player = document->timeline().play(animation.get());
     document.clear();
     element.clear();
