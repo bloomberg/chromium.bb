@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -142,6 +143,7 @@ AppInfoSummaryTab::AppInfoSummaryTab(gfx::NativeWindow parent_window,
     : AppInfoTab(parent_window, profile, app, close_callback),
       app_icon_(NULL),
       view_in_store_link_(NULL),
+      create_shortcuts_button_(NULL),
       uninstall_button_(NULL),
       launch_options_combobox_(NULL),
       weak_ptr_factory_(this) {
@@ -260,12 +262,20 @@ AppInfoSummaryTab::AppInfoSummaryTab(gfx::NativeWindow parent_window,
     layout->AddView(launch_options_combobox_);
   }
 
-  // Add an uninstall button for apps that can be uninstalled.
-  if (CanUninstallApp()) {
-    // Create a column set specifically for the left-aligned uninstall button.
-    static const int kButtonsColumnSet = 2;
+  if (CanCreateShortcuts() || CanUninstallApp()) {
+    // Create a column set specifically for the left-aligned buttons at the
+    // bottom of the dialog.
+    static const int kButtonsColumnSetId = 2;
     views::ColumnSet* buttons_column_set =
-        layout->AddColumnSet(kButtonsColumnSet);
+        layout->AddColumnSet(kButtonsColumnSetId);
+    buttons_column_set->AddColumn(views::GridLayout::LEADING,
+                                  views::GridLayout::LEADING,
+                                  0,
+                                  views::GridLayout::USE_PREF,
+                                  0,  // No fixed width
+                                  0);
+    buttons_column_set->AddPaddingColumn(
+        0, views::kRelatedControlHorizontalSpacing);
     buttons_column_set->AddColumn(views::GridLayout::LEADING,
                                   views::GridLayout::LEADING,
                                   0,
@@ -273,14 +283,28 @@ AppInfoSummaryTab::AppInfoSummaryTab(gfx::NativeWindow parent_window,
                                   0,  // No fixed width
                                   0);
 
-    uninstall_button_ = new views::LabelButton(
-        this,
-        l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_UNINSTALL_BUTTON_TEXT));
-    uninstall_button_->SetStyle(views::Button::STYLE_BUTTON);
-
     layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
-    layout->StartRow(0, kButtonsColumnSet);
-    layout->AddView(uninstall_button_);
+    layout->StartRow(0, kButtonsColumnSetId);
+
+    // Add a Create Shortcuts button for apps that can have shortcuts.
+    if (CanCreateShortcuts()) {
+      create_shortcuts_button_ = new views::LabelButton(
+          this,
+          l10n_util::GetStringUTF16(
+              IDS_APPLICATION_INFO_CREATE_SHORTCUTS_BUTTON_TEXT));
+      create_shortcuts_button_->SetStyle(views::Button::STYLE_BUTTON);
+      layout->AddView(create_shortcuts_button_);
+    }
+
+    // Add an uninstall button for apps that can be uninstalled.
+    if (CanUninstallApp()) {
+      uninstall_button_ = new views::LabelButton(
+          this,
+          l10n_util::GetStringUTF16(
+              IDS_APPLICATION_INFO_UNINSTALL_BUTTON_TEXT));
+      uninstall_button_->SetStyle(views::Button::STYLE_BUTTON);
+      layout->AddView(uninstall_button_);
+    }
   }
 }
 
@@ -310,6 +334,8 @@ void AppInfoSummaryTab::ButtonPressed(views::Button* sender,
                                       const ui::Event& event) {
   if (sender == uninstall_button_) {
     UninstallApp();
+  } else if (sender == create_shortcuts_button_) {
+    CreateShortcuts();
   } else {
     NOTREACHED();
   }
@@ -401,4 +427,19 @@ bool AppInfoSummaryTab::CanUninstallApp() const {
   return extensions::ExtensionSystem::Get(profile_)
       ->management_policy()
       ->UserMayModifySettings(app_, NULL);
+}
+
+void AppInfoSummaryTab::CreateShortcuts() {
+  DCHECK(CanCreateShortcuts());
+  chrome::ShowCreateChromeAppShortcutsDialog(
+      parent_window_, profile_, app_, base::Closure());
+}
+
+bool AppInfoSummaryTab::CanCreateShortcuts() const {
+  // ChromeOS can pin apps to the app launcher, but can't create shortcuts.
+#if defined(OS_CHROMEOS)
+  return false;
+#else
+  return true;
+#endif
 }

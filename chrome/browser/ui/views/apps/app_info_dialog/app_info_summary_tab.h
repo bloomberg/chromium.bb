@@ -86,9 +86,15 @@ class AppInfoSummaryTab : public AppInfoTab,
   void UninstallApp();
   bool CanUninstallApp() const;
 
+  // Create Shortcuts for the app. Must only be called if CanCreateShortcuts()
+  // returns true.
+  void CreateShortcuts();
+  bool CanCreateShortcuts() const;
+
   // UI elements on the dialog.
   views::ImageView* app_icon_;
   views::Link* view_in_store_link_;
+  views::LabelButton* create_shortcuts_button_;
 
   scoped_ptr<ExtensionUninstallDialog> extension_uninstall_dialog_;
   views::LabelButton* uninstall_button_;
