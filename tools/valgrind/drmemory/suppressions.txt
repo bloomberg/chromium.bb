@@ -453,3 +453,8 @@ KERNELBASE.dll!DuplicateHandle
 KERNEL32.dll!DuplicateHandle*
 base.dll!base::`anonymous namespace'::ThreadFunc
 KERNEL32.dll!BaseThreadInitThunk
+
+UNINITIALIZED READ
+...
+v8.dll!*
+net_with_v8.dll!net::ProxyResolverV8::Context::*
