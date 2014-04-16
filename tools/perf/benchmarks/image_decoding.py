@@ -9,5 +9,5 @@ from measurements import image_decoding
 
 class ImageDecodingToughImageCases(test.Test):
   test = image_decoding.ImageDecoding
-  # TODO: Rename this page set to tough_image_cases.json
-  page_set = 'page_sets/image_decoding_measurement.json'
+  # TODO: Rename this page set to tough_image_cases.py
+  page_set = 'page_sets/image_decoding_measurement.py'

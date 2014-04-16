@@ -11,7 +11,7 @@ from telemetry import test
 class SessionRestoreColdTypical25(test.Test):
   tag = 'cold'
   test = session_restore.SessionRestore
-  page_set = 'page_sets/typical_25.json'
+  page_set = 'page_sets/typical_25.py'
   options = {'cold': True,
              'pageset_repeat': 5}
 
@@ -19,6 +19,6 @@ class SessionRestoreColdTypical25(test.Test):
 class SessionRestoreWarmTypical25(test.Test):
   tag = 'warm'
   test = session_restore.SessionRestore
-  page_set = 'page_sets/typical_25.json'
+  page_set = 'page_sets/typical_25.py'
   options = {'warm': True,
              'pageset_repeat': 20}

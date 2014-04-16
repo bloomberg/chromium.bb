@@ -8,7 +8,7 @@ from measurements import memory
 
 class MemoryMobile(test.Test):
   test = memory.Memory
-  page_set = 'page_sets/mobile_memory.json'
+  page_set = 'page_sets/mobile_memory.py'
 
 
 class MemoryTop25(test.Test):

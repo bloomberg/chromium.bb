@@ -9,4 +9,4 @@ from telemetry import test
 class WebRTC(test.Test):
   """Obtains WebRTC metrics for a real-time video tests."""
   test = webrtc.WebRTC
-  page_set = 'page_sets/webrtc_cases.json'
+  page_set = 'page_sets/webrtc_cases.py'
