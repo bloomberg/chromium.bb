@@ -71,7 +71,7 @@ locations to each other as the C11/C++11 standards do.</p>
 <p>Non-atomic memory accesses may be reordered, separated, elided or fused
 according to C and C++&#8217;s memory model before the pexe is created as well
 as after its creation. Accessing atomic memory location through
-non-atomic primitives is <cite>Undefined Behavior &lt;undefined_behavior&gt;</cite>.</p>
+non-atomic primitives is <a class="reference internal" href="/native-client/reference/pnacl-undefined-behavior.html#undefined-behavior"><em>Undefined Behavior</em></a>.</p>
 <p>As in C11/C++11 some atomic accesses may be implemented with locks on
 certain platforms. The <code>ATOMIC_*_LOCK_FREE</code> macros will always be
 <code>1</code>, signifying that all types are sometimes lock-free. The
@@ -183,7 +183,7 @@ for the target architecture has to be respected.</p>
 </section><section id="undefined-behavior">
 <h2 id="undefined-behavior">Undefined Behavior</h2>
 <p>The C and C++ languages expose some undefined behavior which is
-discussed in <cite>PNaCl Undefined Behavior &lt;undefined_behavior&gt;</cite>.</p>
+discussed in <a class="reference internal" href="/native-client/reference/pnacl-undefined-behavior.html#undefined-behavior"><em>PNaCl Undefined Behavior</em></a>.</p>
 </section><section id="floating-point">
 <h2 id="floating-point">Floating-Point</h2>
 <p>PNaCl exposes 32-bit and 64-bit floating point operations which are

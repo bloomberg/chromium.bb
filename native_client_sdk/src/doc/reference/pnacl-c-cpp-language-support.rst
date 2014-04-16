@@ -59,7 +59,7 @@ locations to each other as the C11/C++11 standards do.
 Non-atomic memory accesses may be reordered, separated, elided or fused
 according to C and C++'s memory model before the pexe is created as well
 as after its creation. Accessing atomic memory location through
-non-atomic primitives is `Undefined Behavior <undefined_behavior>`.
+non-atomic primitives is :ref:`Undefined Behavior <undefined_behavior>`.
 
 As in C11/C++11 some atomic accesses may be implemented with locks on
 certain platforms. The ``ATOMIC_*_LOCK_FREE`` macros will always be
@@ -202,7 +202,7 @@ Undefined Behavior
 ==================
 
 The C and C++ languages expose some undefined behavior which is
-discussed in `PNaCl Undefined Behavior <undefined_behavior>`.
+discussed in :ref:`PNaCl Undefined Behavior <undefined_behavior>`.
 
 Floating-Point
 ==============
