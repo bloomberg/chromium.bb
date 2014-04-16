@@ -8,8 +8,10 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
+#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "policy/proto/device_management_backend.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -182,6 +184,7 @@ TEST_F(DeviceSettingsServiceTest, SignAndStoreFailure) {
 }
 
 TEST_F(DeviceSettingsServiceTest, SignAndStoreSuccess) {
+  const base::Time before(base::Time::Now());
   ReloadDeviceSettings();
   EXPECT_EQ(DeviceSettingsService::STORE_SUCCESS,
             device_settings_service_.status());
@@ -199,12 +202,58 @@ TEST_F(DeviceSettingsServiceTest, SignAndStoreSuccess) {
       base::Bind(&DeviceSettingsServiceTest::SetOperationCompleted,
                  base::Unretained(this)));
   FlushDeviceSettings();
+  const base::Time after(base::Time::Now());
+
   EXPECT_TRUE(operation_completed_);
   EXPECT_EQ(DeviceSettingsService::STORE_SUCCESS,
             device_settings_service_.status());
   ASSERT_TRUE(device_settings_service_.device_settings());
   EXPECT_EQ(device_policy_.payload().SerializeAsString(),
             device_settings_service_.device_settings()->SerializeAsString());
+
+   // Check that the loaded policy_data contains the expected values.
+  const em::PolicyData* policy_data = device_settings_service_.policy_data();
+  EXPECT_EQ(policy::dm_protocol::kChromeDevicePolicyType,
+            policy_data->policy_type());
+  EXPECT_LE((before - base::Time::UnixEpoch()).InMilliseconds(),
+            policy_data->timestamp());
+  EXPECT_GE((after - base::Time::UnixEpoch()).InMilliseconds(),
+            policy_data->timestamp());
+  EXPECT_EQ(device_settings_service_.GetUsername(),
+            policy_data->username());
+}
+
+TEST_F(DeviceSettingsServiceTest, SetManagementSettingsSuccess) {
+  ReloadDeviceSettings();
+  EXPECT_EQ(DeviceSettingsService::STORE_SUCCESS,
+            device_settings_service_.status());
+
+  owner_key_util_->SetPrivateKey(device_policy_.GetSigningKey());
+  device_settings_service_.SetUsername(device_policy_.policy_data().username());
+  FlushDeviceSettings();
+
+  device_settings_service_.SetManagementSettings(
+      em::PolicyData::CONSUMER_MANAGED,
+      "fake_request_token",
+      "fake_device_id",
+      base::Bind(&DeviceSettingsServiceTest::SetOperationCompleted,
+                 base::Unretained(this)));
+  FlushDeviceSettings();
+
+  EXPECT_TRUE(operation_completed_);
+  EXPECT_EQ(DeviceSettingsService::STORE_SUCCESS,
+            device_settings_service_.status());
+  ASSERT_TRUE(device_settings_service_.device_settings());
+
+  // Check that the loaded policy_data contains the expected values.
+  const em::PolicyData* policy_data = device_settings_service_.policy_data();
+  EXPECT_EQ(policy::dm_protocol::kChromeDevicePolicyType,
+            policy_data->policy_type());
+  EXPECT_EQ(device_settings_service_.GetUsername(),
+            policy_data->username());
+  EXPECT_EQ(em::PolicyData::CONSUMER_MANAGED, policy_data->management_mode());
+  EXPECT_EQ("fake_request_token", policy_data->request_token());
+  EXPECT_EQ("fake_device_id", policy_data->device_id());
 }
 
 TEST_F(DeviceSettingsServiceTest, StoreFailure) {

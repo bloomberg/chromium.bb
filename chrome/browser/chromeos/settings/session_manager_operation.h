@@ -167,8 +167,7 @@ class SignAndStoreSettingsOperation : public SessionManagerOperation {
   // Creates a new sign-and-store operation.
   SignAndStoreSettingsOperation(
       const Callback& callback,
-      scoped_ptr<enterprise_management::ChromeDeviceSettingsProto> new_settings,
-      const std::string& username);
+      scoped_ptr<enterprise_management::PolicyData> new_policy);
   virtual ~SignAndStoreSettingsOperation();
 
   // SessionManagerOperation:
@@ -180,8 +179,7 @@ class SignAndStoreSettingsOperation : public SessionManagerOperation {
 
   // Builds the policy blob and signs it using the owner key.
   static std::string AssembleAndSignPolicy(
-      scoped_ptr<enterprise_management::ChromeDeviceSettingsProto> settings,
-      const std::string& username,
+      scoped_ptr<enterprise_management::PolicyData> policy,
       scoped_refptr<OwnerKey> owner_key);
 
   // Stores the signed device settings blob.
@@ -190,14 +188,13 @@ class SignAndStoreSettingsOperation : public SessionManagerOperation {
   // Handles the result of the store operation and triggers the load.
   void HandleStoreResult(bool success);
 
-  scoped_ptr<enterprise_management::ChromeDeviceSettingsProto> new_settings_;
-  std::string username_;
+  scoped_ptr<enterprise_management::PolicyData> new_policy_;
 
   base::WeakPtrFactory<SignAndStoreSettingsOperation> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SignAndStoreSettingsOperation);
 };
 
-}  // namespace
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_SETTINGS_SESSION_MANAGER_OPERATION_H_

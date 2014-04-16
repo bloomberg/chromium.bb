@@ -274,6 +274,21 @@ message PolicyData {
   // by the client when requesting Policy Posture assertion through an API
   // call or SAML flow.
   optional string policy_token = 15;
+
+  // Indicates the management mode of the device. Note that old policies do not
+  // have this field.
+  enum ManagementMode {
+    // The device is not managed. The policies are set locally by the owner of
+    // the device.
+    NOT_MANAGED = 0;
+    // The device is enterprise-managed. The policies come from the enterprise
+    // server.
+    ENTERPRISE_MANAGED = 1;
+    // The device is consumer-managed. The policies currently can only be set
+    // locally by the owner of the device.
+    CONSUMER_MANAGED = 2;
+  }
+  optional ManagementMode management_mode = 16;
 }
 
 message PolicyFetchResponse {

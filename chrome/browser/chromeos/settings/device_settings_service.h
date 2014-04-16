@@ -19,6 +19,7 @@
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/tpm_token_loader.h"
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
+#include "policy/proto/device_management_backend.pb.h"
 
 namespace crypto {
 class RSAPrivateKey;
@@ -26,8 +27,6 @@ class RSAPrivateKey;
 
 namespace enterprise_management {
 class ChromeDeviceSettingsProto;
-class PolicyData;
-class PolicyFetchResponse;
 }
 
 namespace chromeos {
@@ -167,6 +166,15 @@ class DeviceSettingsService : public SessionManagerClient::Observer,
       scoped_ptr<enterprise_management::ChromeDeviceSettingsProto> new_settings,
       const base::Closure& callback);
 
+  // Sets the management related settings in PolicyData. Note that if
+  // |management_mode| is NOT_MANAGED, |request_token| and |device_id| should be
+  // empty strings.
+  void SetManagementSettings(
+      enterprise_management::PolicyData::ManagementMode management_mode,
+      const std::string& request_token,
+      const std::string& device_id,
+      const base::Closure& callback);
+
   // Stores a policy blob to session_manager. The result of the operation is
   // reported through |callback|. If successful, the updated device settings are
   // present in policy_data() and device_settings() when the callback runs.
@@ -226,6 +234,11 @@ class DeviceSettingsService : public SessionManagerClient::Observer,
   void HandleCompletedOperation(const base::Closure& callback,
                                 SessionManagerOperation* operation,
                                 Status status);
+
+  // Assembles PolicyData based on |settings| and the current |policy_data_|
+  // and |username_|.
+  scoped_ptr<enterprise_management::PolicyData> AssemblePolicy(
+      const enterprise_management::ChromeDeviceSettingsProto& settings);
 
   SessionManagerClient* session_manager_client_;
   scoped_refptr<OwnerKeyUtil> owner_key_util_;

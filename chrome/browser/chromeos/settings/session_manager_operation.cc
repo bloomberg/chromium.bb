@@ -11,7 +11,6 @@
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "base/time/time.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/chromeos/settings/owner_key_util.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -248,24 +247,29 @@ void StoreSettingsOperation::HandleStoreResult(bool success) {
 
 SignAndStoreSettingsOperation::SignAndStoreSettingsOperation(
     const Callback& callback,
-    scoped_ptr<em::ChromeDeviceSettingsProto> new_settings,
-    const std::string& username)
+    scoped_ptr<em::PolicyData> new_policy)
     : SessionManagerOperation(callback),
-      new_settings_(new_settings.Pass()),
-      username_(username),
+      new_policy_(new_policy.Pass()),
       weak_factory_(this) {
-  DCHECK(new_settings_.get());
+  DCHECK(new_policy_);
 }
 
 SignAndStoreSettingsOperation::~SignAndStoreSettingsOperation() {}
 
 void SignAndStoreSettingsOperation::Run() {
+  if (!new_policy_) {
+    ReportResult(DeviceSettingsService::STORE_POLICY_ERROR);
+    return;
+  }
+
   EnsureOwnerKey(base::Bind(&SignAndStoreSettingsOperation::StartSigning,
                             weak_factory_.GetWeakPtr()));
 }
 
 void SignAndStoreSettingsOperation::StartSigning() {
-  if (!owner_key().get() || !owner_key()->private_key() || username_.empty()) {
+  if (!owner_key().get() ||
+      !owner_key()->private_key() ||
+      new_policy_->username().empty()) {
     ReportResult(DeviceSettingsService::STORE_KEY_UNAVAILABLE);
     return;
   }
@@ -274,25 +278,18 @@ void SignAndStoreSettingsOperation::StartSigning() {
       content::BrowserThread::GetBlockingPool(),
       FROM_HERE,
       base::Bind(&SignAndStoreSettingsOperation::AssembleAndSignPolicy,
-                 base::Passed(&new_settings_), username_, owner_key()),
+                 base::Passed(&new_policy_), owner_key()),
       base::Bind(&SignAndStoreSettingsOperation::StoreDeviceSettingsBlob,
                  weak_factory_.GetWeakPtr()));
 }
 
 // static
 std::string SignAndStoreSettingsOperation::AssembleAndSignPolicy(
-    scoped_ptr<em::ChromeDeviceSettingsProto> device_settings,
-    const std::string& username,
+    scoped_ptr<em::PolicyData> policy,
     scoped_refptr<OwnerKey> owner_key) {
   // Assemble the policy.
   em::PolicyFetchResponse policy_response;
-  em::PolicyData policy;
-  policy.set_policy_type(policy::dm_protocol::kChromeDevicePolicyType);
-  policy.set_timestamp((base::Time::NowFromSystemTime() -
-                        base::Time::UnixEpoch()).InMilliseconds());
-  policy.set_username(username);
-  if (!device_settings->SerializeToString(policy.mutable_policy_value()) ||
-      !policy.SerializeToString(policy_response.mutable_policy_data())) {
+  if (!policy->SerializeToString(policy_response.mutable_policy_data())) {
     LOG(ERROR) << "Failed to encode policy payload.";
     return std::string();
   }

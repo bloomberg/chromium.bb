@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chrome/browser/chromeos/settings/mock_owner_key_util.h"
@@ -228,14 +229,12 @@ TEST_F(SessionManagerOperationTest, StoreSettings) {
 }
 
 TEST_F(SessionManagerOperationTest, SignAndStoreSettings) {
-  base::Time before(base::Time::NowFromSystemTime());
   owner_key_util_->SetPrivateKey(policy_.GetSigningKey());
+  scoped_ptr<em::PolicyData> policy(new em::PolicyData(policy_.policy_data()));
   SignAndStoreSettingsOperation op(
       base::Bind(&SessionManagerOperationTest::OnOperationCompleted,
                  base::Unretained(this)),
-      scoped_ptr<em::ChromeDeviceSettingsProto>(
-          new em::ChromeDeviceSettingsProto(policy_.payload())),
-      policy_.policy_data().username());
+      policy.Pass());
 
   EXPECT_CALL(*this,
               OnOperationCompleted(
@@ -243,7 +242,6 @@ TEST_F(SessionManagerOperationTest, SignAndStoreSettings) {
   op.Start(&device_settings_test_helper_, owner_key_util_, NULL);
   device_settings_test_helper_.Flush();
   Mock::VerifyAndClearExpectations(this);
-  base::Time after(base::Time::NowFromSystemTime());
 
   // The blob should validate.
   scoped_ptr<em::PolicyFetchResponse> policy_response(
@@ -255,9 +253,11 @@ TEST_F(SessionManagerOperationTest, SignAndStoreSettings) {
       policy::DeviceCloudPolicyValidator::Create(
           policy_response.Pass(), message_loop_.message_loop_proxy());
   validator->ValidateUsername(policy_.policy_data().username(), true);
+  const base::Time expected_time = base::Time::UnixEpoch() +
+      base::TimeDelta::FromMilliseconds(policy::PolicyBuilder::kFakeTimestamp);
   validator->ValidateTimestamp(
-      before,
-      after,
+      expected_time,
+      expected_time,
       policy::CloudPolicyValidatorBase::TIMESTAMP_REQUIRED);
   validator->ValidatePolicyType(policy::dm_protocol::kChromeDevicePolicyType);
   validator->ValidatePayload();
@@ -279,16 +279,6 @@ TEST_F(SessionManagerOperationTest, SignAndStoreSettings) {
 
   message_loop_.RunUntilIdle();
   EXPECT_TRUE(validated_);
-
-  // Check that the loaded policy_data contains the expected values.
-  EXPECT_EQ(policy::dm_protocol::kChromeDevicePolicyType,
-            op.policy_data()->policy_type());
-  EXPECT_LE((before - base::Time::UnixEpoch()).InMilliseconds(),
-            op.policy_data()->timestamp());
-  EXPECT_GE((after - base::Time::UnixEpoch()).InMilliseconds(),
-            op.policy_data()->timestamp());
-  EXPECT_FALSE(op.policy_data()->has_request_token());
-  EXPECT_EQ(policy_.policy_data().username(), op.policy_data()->username());
 
   // Loaded device settings should match what the operation received.
   ASSERT_TRUE(op.device_settings().get());
