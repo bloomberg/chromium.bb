@@ -20,7 +20,7 @@ class FakeInvalidationStateTracker
   virtual ~FakeInvalidationStateTracker();
 
   // InvalidationStateTracker implementation.
-  virtual void SetInvalidatorClientId(const std::string& client_id) OVERRIDE;
+  virtual void ClearAndSetNewClientId(const std::string& client_id) OVERRIDE;
   virtual std::string GetInvalidatorClientId() const OVERRIDE;
   virtual void SetBootstrapData(const std::string& data) OVERRIDE;
   virtual std::string GetBootstrapData() const OVERRIDE;

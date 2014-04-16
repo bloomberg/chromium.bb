@@ -7,14 +7,15 @@
 
 #include <string>
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/timer/timer.h"
+#include "base/values.h"
 #include "chrome/browser/invalidation/invalidation_auth_provider.h"
 #include "chrome/browser/invalidation/invalidation_logger.h"
 #include "chrome/browser/invalidation/invalidation_service.h"
-#include "chrome/browser/invalidation/invalidator_storage.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "google_apis/gaia/oauth2_token_service.h"
@@ -24,7 +25,12 @@
 
 class Profile;
 
+namespace net {
+class URLRequestContextGetter;
+}
+
 namespace syncer {
+class InvalidationStateTracker;
 class Invalidator;
 }
 
@@ -49,11 +55,14 @@ class TiclInvalidationService : public base::NonThreadSafe,
     NETWORK_CHANNELS_COUNT = 2
   };
 
-  TiclInvalidationService(scoped_ptr<InvalidationAuthProvider> auth_provider,
-                          Profile* profile);
+  TiclInvalidationService(
+      scoped_ptr<InvalidationAuthProvider> auth_provider,
+      const scoped_refptr<net::URLRequestContextGetter>& request_context,
+      Profile* profile);
   virtual ~TiclInvalidationService();
 
-  void Init();
+  void Init(
+      scoped_ptr<syncer::InvalidationStateTracker> invalidation_state_tracker);
 
   // InvalidationService implementation.
   // It is an error to have registered handlers when Shutdown() is called.
@@ -101,7 +110,9 @@ class TiclInvalidationService : public base::NonThreadSafe,
 
  protected:
   // Initializes with an injected invalidator.
-  void InitForTest(syncer::Invalidator* invalidator);
+  void InitForTest(
+      scoped_ptr<syncer::InvalidationStateTracker> invalidation_state_tracker,
+      syncer::Invalidator* invalidator);
 
   friend class TiclInvalidationServiceTestDelegate;
   friend class TiclInvalidationServiceChannelTest;
@@ -119,7 +130,7 @@ class TiclInvalidationService : public base::NonThreadSafe,
   scoped_ptr<InvalidationAuthProvider> auth_provider_;
 
   scoped_ptr<syncer::InvalidatorRegistrar> invalidator_registrar_;
-  scoped_ptr<InvalidatorStorage> invalidator_storage_;
+  scoped_ptr<syncer::InvalidationStateTracker> invalidation_state_tracker_;
   scoped_ptr<syncer::Invalidator> invalidator_;
 
   // TiclInvalidationService needs to remember access token in order to
@@ -135,6 +146,7 @@ class TiclInvalidationService : public base::NonThreadSafe,
   PrefChangeRegistrar pref_change_registrar_;
   InvalidationNetworkChannel network_channel_type_;
   scoped_ptr<GCMInvalidationBridge> gcm_invalidation_bridge_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_;
 
   // The invalidation logger object we use to record state changes
   // and invalidations.

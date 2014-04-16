@@ -18,7 +18,7 @@ class NullInvalidationStateTracker
   NullInvalidationStateTracker();
   virtual ~NullInvalidationStateTracker();
 
-  virtual void SetInvalidatorClientId(const std::string& data) OVERRIDE;
+  virtual void ClearAndSetNewClientId(const std::string& data) OVERRIDE;
   virtual std::string GetInvalidatorClientId() const OVERRIDE;
 
   virtual std::string GetBootstrapData() const OVERRIDE;

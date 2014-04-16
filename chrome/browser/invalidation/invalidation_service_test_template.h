@@ -74,6 +74,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/invalidation/invalidation_service.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "google/cacheinvalidation/types.pb.h"
 #include "sync/internal_api/public/base/ack_handle.h"
@@ -100,6 +101,7 @@ class InvalidationServiceTest : public testing::Test {
     return this->delegate_.GetInvalidationService();
   }
 
+  content::TestBrowserThreadBundle thread_bundle_;
   InvalidatorTestDelegate delegate_;
 
   const invalidation::ObjectId id1;
