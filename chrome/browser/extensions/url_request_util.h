@@ -41,6 +41,10 @@ net::URLRequestJob* MaybeCreateURLRequestResourceBundleJob(
     const std::string& content_security_policy,
     bool send_cors_header);
 
+// Returns true if |request| corresponds to a resource request from a
+// <webview>.
+bool IsWebViewRequest(net::URLRequest* request);
+
 }  // namespace url_request_util
 }  // namespace extensions
 

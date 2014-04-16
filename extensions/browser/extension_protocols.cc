@@ -411,17 +411,24 @@ ExtensionProtocolHandler::MaybeCreateJob(
   std::string content_security_policy;
   bool send_cors_header = false;
   bool follow_symlinks_anywhere = false;
+
   if (extension) {
     std::string resource_path = request->url().path();
-    content_security_policy =
-        extensions::CSPInfo::GetResourceContentSecurityPolicy(extension,
-                                                              resource_path);
+
+    // Use default CSP for <webview>.
+    if (!ExtensionsBrowserClient::Get()->IsWebViewRequest(request)) {
+      content_security_policy =
+          extensions::CSPInfo::GetResourceContentSecurityPolicy(extension,
+                                                                resource_path);
+    }
+
     if ((extension->manifest_version() >= 2 ||
          extensions::WebAccessibleResourcesInfo::HasWebAccessibleResources(
              extension)) &&
         extensions::WebAccessibleResourcesInfo::IsResourceWebAccessible(
-            extension, resource_path))
+            extension, resource_path)) {
       send_cors_header = true;
+    }
 
     follow_symlinks_anywhere =
         (extension->creation_flags() & Extension::FOLLOW_SYMLINKS_ANYWHERE)

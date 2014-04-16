@@ -14,7 +14,7 @@
       {
         "name": "foobar",
         "accessible_resources": [
-          "guest.html"
+          "guest_with_inline_script.html"
         ]
       }
     ]

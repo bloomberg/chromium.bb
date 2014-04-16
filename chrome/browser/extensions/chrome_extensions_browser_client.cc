@@ -113,6 +113,11 @@ bool ChromeExtensionsBrowserClient::CanExtensionCrossIncognito(
       || util::CanCrossIncognito(extension, context);
 }
 
+bool ChromeExtensionsBrowserClient::IsWebViewRequest(
+    net::URLRequest* request) const {
+  return url_request_util::IsWebViewRequest(request);
+}
+
 net::URLRequestJob*
 ChromeExtensionsBrowserClient::MaybeCreateResourceBundleRequestJob(
     net::URLRequest* request,

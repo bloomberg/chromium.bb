@@ -239,5 +239,15 @@ net::URLRequestJob* MaybeCreateURLRequestResourceBundleJob(
   return NULL;
 }
 
+bool IsWebViewRequest(net::URLRequest* request) {
+  const content::ResourceRequestInfo* info =
+      content::ResourceRequestInfo::ForRequest(request);
+  ExtensionRendererState* renderer_state =
+      ExtensionRendererState::GetInstance();
+  ExtensionRendererState::WebViewInfo webview_info;
+  return renderer_state->GetWebViewInfo(
+      info->GetChildID(), info->GetRouteID(), &webview_info);
+}
+
 }  // namespace url_request_util
 }  // namespace extensions

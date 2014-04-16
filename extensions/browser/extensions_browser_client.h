@@ -96,6 +96,10 @@ class ExtensionsBrowserClient {
       const extensions::Extension* extension,
       content::BrowserContext* context) const = 0;
 
+  // Returns true if |request| corresponds to a resource request from a
+  // <webview>.
+  virtual bool IsWebViewRequest(net::URLRequest* request) const = 0;
+
   // Returns an URLRequestJob to load an extension resource from the embedder's
   // resource bundle (.pak) files. Returns NULL if the request is not for a
   // resource bundle resource or if the embedder does not support this feature.

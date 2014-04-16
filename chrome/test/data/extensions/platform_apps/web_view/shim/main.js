@@ -305,7 +305,7 @@ function testAPIMethodExistence() {
 // This test verifies that the loadstop event fires when loading a webview
 // accessible resource from a partition that is privileged.
 function testChromeExtensionURL() {
-  var localResource = chrome.runtime.getURL('guest.html');
+  var localResource = chrome.runtime.getURL('guest_with_inline_script.html');
   var webview = document.createElement('webview');
   // foobar is a privileged partition according to the manifest file.
   webview.partition = 'foobar';
@@ -332,7 +332,26 @@ function testChromeExtensionRelativePath() {
   webview.addEventListener('loadstop', function(e) {
     embedder.test.succeed();
   });
-  webview.setAttribute('src', 'guest.html');
+  webview.setAttribute('src', 'guest_with_inline_script.html');
+  document.body.appendChild(webview);
+}
+
+// Makes sure inline scripts works inside guest that was loaded from
+// accessible_resources.
+function testInlineScriptFromAccessibleResources() {
+  var webview = document.createElement('webview');
+  // foobar is a privileged partition according to the manifest file.
+  webview.partition = 'foobar';
+  webview.addEventListener('loadabort', function(e) {
+    embedder.test.fail();
+  });
+  webview.addEventListener('consolemessage', function(e) {
+    window.console.log('consolemessage: ' + e.message);
+    if (e.message == 'guest_with_inline_script.html: Inline script ran') {
+      embedder.test.succeed();
+    }
+  });
+  webview.setAttribute('src', 'guest_with_inline_script.html');
   document.body.appendChild(webview);
 }
 
@@ -1502,6 +1521,8 @@ embedder.test.testList = {
   'testAPIMethodExistence': testAPIMethodExistence,
   'testChromeExtensionURL': testChromeExtensionURL,
   'testChromeExtensionRelativePath': testChromeExtensionRelativePath,
+  'testInlineScriptFromAccessibleResources':
+      testInlineScriptFromAccessibleResources,
   'testInvalidChromeExtensionURL': testInvalidChromeExtensionURL,
   'testWebRequestAPIExistence': testWebRequestAPIExistence,
   'testEventName': testEventName,
