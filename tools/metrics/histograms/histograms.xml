@@ -33520,6 +33520,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="57" label="kScreenlockPrivate"/>
   <int value="58" label="kOverrideBookmarksUI"/>
   <int value="59" label="kAutomation"/>
+  <int value="60" label="kAccessibilityFeaturesModify"/>
+  <int value="61" label="kAccessibilityFeaturesRead"/>
+  <int value="62" label="kBluetoothPrivate"/>
 </enum>
 
 <enum name="ExtensionServiceVerifyAllSuccess" type="int">
