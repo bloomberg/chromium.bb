@@ -39,6 +39,7 @@
 #include "core/html/canvas/OESTextureHalfFloatLinear.h"
 #include "core/html/canvas/OESVertexArrayObject.h"
 #include "core/html/canvas/WebGLCompressedTextureATC.h"
+#include "core/html/canvas/WebGLCompressedTextureETC1.h"
 #include "core/html/canvas/WebGLCompressedTexturePVRTC.h"
 #include "core/html/canvas/WebGLCompressedTextureS3TC.h"
 #include "core/html/canvas/WebGLContextAttributes.h"
@@ -141,6 +142,7 @@ void WebGLRenderingContext::registerContextExtensions()
     // Register draft extensions.
     registerExtension<EXTFragDepth>(m_extFragDepth, DraftExtension);
     registerExtension<EXTShaderTextureLOD>(m_extShaderTextureLOD, DraftExtension);
+    registerExtension<WebGLCompressedTextureETC1>(m_webglCompressedTextureETC1, DraftExtension);
 
     // Register privileged extensions.
     registerExtension<WebGLDebugRendererInfo>(m_webglDebugRendererInfo, WebGLDebugRendererInfoExtension);

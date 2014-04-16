@@ -48,6 +48,7 @@
 #include "V8OESVertexArrayObject.h"
 #include "V8WebGLBuffer.h"
 #include "V8WebGLCompressedTextureATC.h"
+#include "V8WebGLCompressedTextureETC1.h"
 #include "V8WebGLCompressedTexturePVRTC.h"
 #include "V8WebGLCompressedTextureS3TC.h"
 #include "V8WebGLDebugRendererInfo.h"
@@ -231,6 +232,10 @@ static v8::Handle<v8::Value> toV8Object(WebGLExtension* extension, v8::Handle<v8
     case WebGLCompressedTextureATCName:
         extensionObject = toV8(static_cast<WebGLCompressedTextureATC*>(extension), contextObject, isolate);
         referenceName = "webGLCompressedTextureATCName";
+        break;
+    case WebGLCompressedTextureETC1Name:
+        extensionObject = toV8(static_cast<WebGLCompressedTextureETC1*>(extension), contextObject, isolate);
+        referenceName = "webGLCompressedTextureETC1Name";
         break;
     case WebGLCompressedTexturePVRTCName:
         extensionObject = toV8(static_cast<WebGLCompressedTexturePVRTC*>(extension), contextObject, isolate);

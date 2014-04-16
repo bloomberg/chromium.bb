@@ -70,6 +70,7 @@ class OESVertexArrayObject;
 class WebGLActiveInfo;
 class WebGLBuffer;
 class WebGLCompressedTextureATC;
+class WebGLCompressedTextureETC1;
 class WebGLCompressedTexturePVRTC;
 class WebGLCompressedTextureS3TC;
 class WebGLContextAttributes;
@@ -352,6 +353,7 @@ protected:
     friend class OESVertexArrayObject;
     friend class WebGLDebugShaders;
     friend class WebGLCompressedTextureATC;
+    friend class WebGLCompressedTextureETC1;
     friend class WebGLCompressedTexturePVRTC;
     friend class WebGLCompressedTextureS3TC;
     friend class WebGLRenderingContextErrorMessageCallback;

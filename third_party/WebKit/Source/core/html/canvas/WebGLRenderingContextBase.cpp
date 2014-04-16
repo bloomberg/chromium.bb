@@ -51,6 +51,7 @@
 #include "core/html/canvas/WebGLActiveInfo.h"
 #include "core/html/canvas/WebGLBuffer.h"
 #include "core/html/canvas/WebGLCompressedTextureATC.h"
+#include "core/html/canvas/WebGLCompressedTextureETC1.h"
 #include "core/html/canvas/WebGLCompressedTexturePVRTC.h"
 #include "core/html/canvas/WebGLCompressedTextureS3TC.h"
 #include "core/html/canvas/WebGLContextAttributes.h"
@@ -4810,6 +4811,7 @@ bool WebGLRenderingContextBase::validateCompressedTexFuncData(const char* functi
         }
         break;
     case GC3D_COMPRESSED_ATC_RGB_AMD:
+    case GL_ETC1_RGB8_OES:
         {
             bytesRequired = floor(static_cast<double>((width + 3) / 4)) * floor(static_cast<double>((height + 3) / 4)) * 8;
         }

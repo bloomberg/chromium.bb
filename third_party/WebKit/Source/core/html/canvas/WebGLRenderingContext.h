@@ -60,6 +60,7 @@ private:
     RefPtr<WebGLDebugShaders> m_webglDebugShaders;
     RefPtr<WebGLDrawBuffers> m_webglDrawBuffers;
     RefPtr<WebGLCompressedTextureATC> m_webglCompressedTextureATC;
+    RefPtr<WebGLCompressedTextureETC1> m_webglCompressedTextureETC1;
     RefPtr<WebGLCompressedTexturePVRTC> m_webglCompressedTexturePVRTC;
     RefPtr<WebGLCompressedTextureS3TC> m_webglCompressedTextureS3TC;
     RefPtr<WebGLDepthTexture> m_webglDepthTexture;
