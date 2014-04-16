@@ -2211,21 +2211,40 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, flo
     if (!fill)
         inflateStrokeRect(textRunPaintInfo.bounds);
 
-    FloatRect dirtyRect;
-    if (!computeDirtyRect(textRunPaintInfo.bounds, &dirtyRect))
-        return;
-
     c->setTextDrawingMode(fill ? TextModeFill : TextModeStroke);
+
+    GraphicsContextStateSaver stateSaver(*c);
     if (useMaxWidth) {
-        GraphicsContextStateSaver stateSaver(*c);
         c->translate(location.x(), location.y());
         // We draw when fontWidth is 0 so compositing operations (eg, a "copy" op) still work.
         c->scale(FloatSize((fontWidth > 0 ? (width / fontWidth) : 0), 1));
-        c->drawBidiText(font, textRunPaintInfo, FloatPoint(0, 0), Font::UseFallbackIfFontNotReady);
-    } else
-        c->drawBidiText(font, textRunPaintInfo, location, Font::UseFallbackIfFontNotReady);
+        location = FloatPoint();
+    }
 
-    didDraw(dirtyRect);
+    FloatRect clipBounds;
+    if (!c->getTransformedClipBounds(&clipBounds)) {
+        return;
+    }
+
+    if (isFullCanvasCompositeMode(state().m_globalComposite)) {
+        c->beginLayer(1, state().m_globalComposite);
+        CompositeOperator previousOperator = c->compositeOperation();
+        c->setCompositeOperation(CompositeSourceOver);
+        c->drawBidiText(font, textRunPaintInfo, location, Font::UseFallbackIfFontNotReady);
+        c->setCompositeOperation(previousOperator);
+        c->endLayer();
+        didDraw(clipBounds);
+    } else if (state().m_globalComposite == CompositeCopy) {
+        clearCanvas();
+        c->drawBidiText(font, textRunPaintInfo, location, Font::UseFallbackIfFontNotReady);
+        didDraw(clipBounds);
+    } else {
+        FloatRect dirtyRect;
+        if (computeDirtyRect(textRunPaintInfo.bounds, clipBounds, &dirtyRect)) {
+            c->drawBidiText(font, textRunPaintInfo, location, Font::UseFallbackIfFontNotReady);
+            didDraw(dirtyRect);
+        }
+    }
 }
 
 void CanvasRenderingContext2D::inflateStrokeRect(FloatRect& rect) const
