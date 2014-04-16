@@ -82,6 +82,11 @@
             'display_types',
           ],
         }],
+        ['use_ozone == 1', {
+          'dependencies': [
+            '../../ui/ozone/ozone.gyp:ozone',
+          ],
+        }],
       ],
     },
     {
