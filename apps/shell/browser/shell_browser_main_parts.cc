@@ -23,10 +23,6 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/resource/resource_bundle.h"
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/dbus/dbus_thread_manager.h"
-#endif
-
 using content::BrowserContext;
 using extensions::Extension;
 using extensions::ExtensionSystem;
@@ -59,9 +55,6 @@ void ShellBrowserMainParts::PreMainMessageLoopStart() {
 }
 
 void ShellBrowserMainParts::PostMainMessageLoopStart() {
-#if defined(OS_CHROMEOS)
-  chromeos::DBusThreadManager::Initialize();
-#endif
 }
 
 void ShellBrowserMainParts::PreEarlyInitialization() {
@@ -140,12 +133,6 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
 
   desktop_controller_->GetWindowTreeHost()->RemoveObserver(this);
   desktop_controller_.reset();
-}
-
-void ShellBrowserMainParts::PostDestroyThreads() {
-#if defined(OS_CHROMEOS)
-  chromeos::DBusThreadManager::Shutdown();
-#endif
 }
 
 void ShellBrowserMainParts::OnHostCloseRequested(

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/chromeos/user_activity_power_manager_notifier.h"
+#include "ui/chromeos/user_activity_notifier.h"
 
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -41,17 +41,16 @@ power_manager::UserActivityType GetUserActivityTypeForEvent(
 
 }  // namespace
 
-UserActivityPowerManagerNotifier::UserActivityPowerManagerNotifier(
-    ::wm::UserActivityDetector* detector)
+UserActivityNotifier::UserActivityNotifier(::wm::UserActivityDetector* detector)
     : detector_(detector) {
   detector_->AddObserver(this);
 }
 
-UserActivityPowerManagerNotifier::~UserActivityPowerManagerNotifier() {
+UserActivityNotifier::~UserActivityNotifier() {
   detector_->RemoveObserver(this);
 }
 
-void UserActivityPowerManagerNotifier::OnUserActivity(const Event* event) {
+void UserActivityNotifier::OnUserActivity(const Event* event) {
   base::TimeTicks now = base::TimeTicks::Now();
   // InSeconds() truncates rather than rounding, so it's fine for this
   // comparison.

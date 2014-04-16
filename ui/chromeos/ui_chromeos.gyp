@@ -19,8 +19,8 @@
         'UI_CHROMEOS_IMPLEMENTATION',
       ],
       'sources': [
-        'user_activity_power_manager_notifier.cc',
-        'user_activity_power_manager_notifier.h',
+        'user_activity_notifier.cc',
+        'user_activity_notifier.h',
       ],
     },
   ],
