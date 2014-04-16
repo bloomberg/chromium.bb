@@ -28,6 +28,12 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     self.Fail('conformance/glsl/misc/shaders-with-mis-matching-uniforms.html',
         bug=351396)
 
+    # Temporary suppressions of failures until bugs are fixed.
+    self.Fail('conformance/context/constants-and-properties.html',
+        bug=363842)
+    self.Fail('conformance/rendering/draw-elements-out-of-bounds.html',
+        bug=363869)
+
     # Win7 / Intel failures
     self.Fail('conformance/rendering/gl-scissor-test.html',
         ['win7', 'intel'], bug=314997)
