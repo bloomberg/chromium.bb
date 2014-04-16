@@ -33,9 +33,9 @@ PASS window.getComputedStyle(gridWithCalcCalc, '').getPropertyValue('grid-templa
 PASS window.getComputedStyle(gridWithCalcAndFixed, '').getPropertyValue('grid-template-columns') is "50% 80px"
 PASS window.getComputedStyle(gridWithCalcAndFixed, '').getPropertyValue('grid-template-rows') is "88px 25%"
 PASS window.getComputedStyle(gridWithCalcAndMinMax, '').getPropertyValue('grid-template-columns') is "calc(30px + 20%) minmax(min-content, 80px)"
-PASS window.getComputedStyle(gridWithCalcAndMinMax, '').getPropertyValue('grid-template-rows') is "minmax(25%, max-content) calc(10% - 7px)"
+PASS window.getComputedStyle(gridWithCalcAndMinMax, '').getPropertyValue('grid-template-rows') is "minmax(25%, max-content) calc(-7px + 10%)"
 PASS window.getComputedStyle(gridWithCalcInsideMinMax, '').getPropertyValue('grid-template-columns') is "minmax(calc(23px + 10%), 400px) 120px"
-PASS window.getComputedStyle(gridWithCalcInsideMinMax, '').getPropertyValue('grid-template-rows') is "150px minmax(5%, calc(50% - 125px))"
+PASS window.getComputedStyle(gridWithCalcInsideMinMax, '').getPropertyValue('grid-template-rows') is "150px minmax(5%, calc(-125px + 50%))"
 
 Test the initial value
 PASS getComputedStyle(element, '').getPropertyValue('grid-template-columns') is 'none'

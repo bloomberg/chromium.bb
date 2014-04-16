@@ -320,14 +320,30 @@ CSSPrimitiveValue::CSSPrimitiveValue(const Length& length, float zoom)
     case ExtendToZoom:
     case Percent:
         init(length);
-        return;
+        break;
     case Fixed:
         m_primitiveUnitType = CSS_PX;
         m_value.num = length.value() / zoom;
-        return;
-    case Calculated:
-        init(CSSCalcValue::create(length.calculationValue(), zoom));
-        return;
+        break;
+    case Calculated: {
+        const CalculationValue& calc = length.calculationValue();
+        if (calc.pixels() && calc.percent()) {
+            init(CSSCalcValue::create(
+                CSSCalcValue::createExpressionNode(calc.pixels() / zoom, calc.percent()),
+                calc.isNonNegative() ? ValueRangeNonNegative : ValueRangeAll));
+            break;
+        }
+        if (calc.percent()) {
+            m_primitiveUnitType = CSS_PERCENTAGE;
+            m_value.num = calc.percent();
+        } else {
+            m_primitiveUnitType = CSS_PX;
+            m_value.num = calc.pixels() / zoom;
+        }
+        if (m_value.num < 0 && calc.isNonNegative())
+            m_value.num = 0;
+        break;
+    }
     case DeviceWidth:
     case DeviceHeight:
     case Undefined:

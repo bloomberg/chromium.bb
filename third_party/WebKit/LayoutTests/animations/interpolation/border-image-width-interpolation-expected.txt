@@ -31,12 +31,12 @@ PASS: border-image-width from [10px 20% 30 40px] to [80px 70% 60 50px] was [80px
 PASS: border-image-width from [10px 20% 30 40px] to [80px 70% 60 50px] was [115px  95%  75  55px] at 1.5
 PASS: border-image-width from [10px 20% 30 40px] to [80px 70% 60 50px] was [360px 270% 180  90px] at 5
 PASS: border-image-width from [10px 20% 30 40px] to [80px 70% 60 50px] was [710px 520% 330 140px] at 10
-FAIL: border-image-width from [10%] to [20px] was [calc(13% + -6px)] at -0.3, expected [calc(13% + -6px)] (parsed as [7px])
+FAIL: border-image-width from [10%] to [20px] was [calc(-6px + 13%)] at -0.3, expected [calc(13% + -6px)] (parsed as [7px])
 PASS: border-image-width from [10%] to [20px] was [10%] at 0
-FAIL: border-image-width from [10%] to [20px] was [calc(7% + 6px)] at 0.3, expected [calc(7% + 6px)] (parsed as [13px])
-FAIL: border-image-width from [10%] to [20px] was [calc(4% + 12px)] at 0.6, expected [calc(4% + 12px)] (parsed as [16px])
+FAIL: border-image-width from [10%] to [20px] was [calc(6px + 7%)] at 0.3, expected [calc(7% + 6px)] (parsed as [13px])
+FAIL: border-image-width from [10%] to [20px] was [calc(12px + 4%)] at 0.6, expected [calc(4% + 12px)] (parsed as [16px])
 PASS: border-image-width from [10%] to [20px] was [20px] at 1
-FAIL: border-image-width from [10%] to [20px] was [calc(-5% + 30px)] at 1.5, expected [calc(-5% + 30px)] (parsed as [25px])
+FAIL: border-image-width from [10%] to [20px] was [calc(30px + -5%)] at 1.5, expected [calc(-5% + 30px)] (parsed as [25px])
 FAIL: border-image-width from [10px] to [20%] was [calc(13px + -6%)] at -0.3, expected [calc(13px + -6%)] (parsed as [7px])
 PASS: border-image-width from [10px] to [20%] was [10px] at 0
 FAIL: border-image-width from [10px] to [20%] was [calc(7px + 6%)] at 0.3, expected [calc(7px + 6%)] (parsed as [13px])
@@ -101,12 +101,12 @@ PASS: borderImageWidth from [10px 20% 30 40px] to [80px 70% 60 50px] was [80px  
 PASS: borderImageWidth from [10px 20% 30 40px] to [80px 70% 60 50px] was [115px  95%  75  55px] at 1.5
 PASS: borderImageWidth from [10px 20% 30 40px] to [80px 70% 60 50px] was [360px 270% 180  90px] at 5
 PASS: borderImageWidth from [10px 20% 30 40px] to [80px 70% 60 50px] was [710px 520% 330 140px] at 10
-FAIL: borderImageWidth from [10%] to [20px] was [calc(13% + -6px)] at -0.3, expected [calc(13% + -6px)] (parsed as [7px])
+FAIL: borderImageWidth from [10%] to [20px] was [calc(-6px + 13%)] at -0.3, expected [calc(13% + -6px)] (parsed as [7px])
 PASS: borderImageWidth from [10%] to [20px] was [10%] at 0
-FAIL: borderImageWidth from [10%] to [20px] was [calc(7% + 6px)] at 0.3, expected [calc(7% + 6px)] (parsed as [13px])
-FAIL: borderImageWidth from [10%] to [20px] was [calc(4% + 12px)] at 0.6, expected [calc(4% + 12px)] (parsed as [16px])
+FAIL: borderImageWidth from [10%] to [20px] was [calc(6px + 7%)] at 0.3, expected [calc(7% + 6px)] (parsed as [13px])
+FAIL: borderImageWidth from [10%] to [20px] was [calc(12px + 4%)] at 0.6, expected [calc(4% + 12px)] (parsed as [16px])
 PASS: borderImageWidth from [10%] to [20px] was [20px] at 1
-FAIL: borderImageWidth from [10%] to [20px] was [calc(-5% + 30px)] at 1.5, expected [calc(-5% + 30px)] (parsed as [25px])
+FAIL: borderImageWidth from [10%] to [20px] was [calc(30px + -5%)] at 1.5, expected [calc(-5% + 30px)] (parsed as [25px])
 FAIL: borderImageWidth from [10px] to [20%] was [calc(13px + -6%)] at -0.3, expected [calc(13px + -6%)] (parsed as [7px])
 PASS: borderImageWidth from [10px] to [20%] was [10px] at 0
 FAIL: borderImageWidth from [10px] to [20%] was [calc(7px + 6%)] at 0.3, expected [calc(7px + 6%)] (parsed as [13px])

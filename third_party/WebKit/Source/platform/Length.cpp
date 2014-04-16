@@ -26,6 +26,7 @@
 #include "platform/Length.h"
 
 #include "platform/CalculationValue.h"
+#include "platform/animation/AnimationUtilities.h"
 #include "wtf/ASCIICType.h"
 #include "wtf/text/StringBuffer.h"
 #include "wtf/text/WTFString.h"
@@ -137,10 +138,10 @@ public:
         m_map.remove(index);
     }
 
-    CalculationValue* get(int index)
+    CalculationValue& get(int index)
     {
         ASSERT(m_map.contains(index));
-        return m_map.get(index);
+        return *m_map.get(index);
     }
 
     void decrementRef(int index)
@@ -177,10 +178,43 @@ Length::Length(PassRefPtr<CalculationValue> calc)
 
 Length Length::blendMixedTypes(const Length& from, double progress, ValueRange range) const
 {
-    return Length(CalculationValue::create(adoptPtr(new CalcExpressionBlendLength(from, *this, progress)), range));
+    ASSERT(from.isSpecified());
+    ASSERT(isSpecified());
+    PixelsAndPercent fromPixelsAndPercent = from.pixelsAndPercent();
+    PixelsAndPercent toPixelsAndPercent = pixelsAndPercent();
+    const float pixels = WebCore::blend(fromPixelsAndPercent.pixels, toPixelsAndPercent.pixels, progress);
+    const float percent = WebCore::blend(fromPixelsAndPercent.percent, toPixelsAndPercent.percent, progress);
+    return Length(CalculationValue::create(PixelsAndPercent(pixels, percent), range));
 }
 
-CalculationValue* Length::calculationValue() const
+PixelsAndPercent Length::pixelsAndPercent() const
+{
+    switch (type()) {
+    case Fixed:
+        return PixelsAndPercent(value(), 0);
+    case Percent:
+        return PixelsAndPercent(0, value());
+    case Calculated:
+        return calculationValue().pixelsAndPercent();
+    default:
+        ASSERT_NOT_REACHED();
+        return PixelsAndPercent(0, 0);
+    }
+}
+
+Length Length::subtractFromOneHundredPercent() const
+{
+    PixelsAndPercent result = pixelsAndPercent();
+    result.pixels = -result.pixels;
+    result.percent = 100 - result.percent;
+    if (result.pixels && result.percent)
+        return Length(CalculationValue::create(result, ValueRangeAll));
+    if (result.percent)
+        return Length(result.percent, Percent);
+    return Length(result.pixels, Fixed);
+}
+
+CalculationValue& Length::calculationValue() const
 {
     ASSERT(isCalculated());
     return calcHandles().get(calculationHandle());
@@ -189,7 +223,7 @@ CalculationValue* Length::calculationValue() const
 void Length::incrementCalculatedRef() const
 {
     ASSERT(isCalculated());
-    calculationValue()->ref();
+    calculationValue().ref();
 }
 
 void Length::decrementCalculatedRef() const
@@ -201,7 +235,7 @@ void Length::decrementCalculatedRef() const
 float Length::nonNanCalculatedValue(int maxValue) const
 {
     ASSERT(isCalculated());
-    float result = calculationValue()->evaluate(maxValue);
+    float result = calculationValue().evaluate(maxValue);
     if (std::isnan(result))
         return 0;
     return result;
@@ -209,7 +243,7 @@ float Length::nonNanCalculatedValue(int maxValue) const
 
 bool Length::isCalculatedEqual(const Length& o) const
 {
-    return isCalculated() && (calculationValue() == o.calculationValue() || *calculationValue() == *o.calculationValue());
+    return isCalculated() && (&calculationValue() == &o.calculationValue() || calculationValue() == o.calculationValue());
 }
 
 struct SameSizeAsLength {

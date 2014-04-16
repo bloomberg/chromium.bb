@@ -30,7 +30,7 @@ PASS: shape-outside from [none] to [ellipse(100% 100% at 0% 0%)] was [ellipse(10
 PASS: shape-outside from [none] to [ellipse(100% 100% at 0% 0%)] was [ellipse(100% 100% at 0% 0%)] at 1
 PASS: shape-outside from [none] to [ellipse(100% 100% at 0% 0%)] was [ellipse(100% 100% at 0% 0%)] at 1.5
 PASS: shape-outside from [circle(20% at right 10% bottom 20px)] to [circle(30% at right 20% bottom 30px)] was [circle(20% at right 10% bottom 20px)] at 0
-FAIL: shape-outside from [circle(20% at right 10% bottom 20px)] to [circle(30% at right 20% bottom 30px)] was [circle(25% at calc(((100% - 10%) * 0.5) + ((100% - 20%) * 0.5)) calc(((100% - 20px) * 0.5) + ((100% - 30px) * 0.5)))] at 0.5, expected [circle(25% at left 85% bottom 25px)]
+FAIL: shape-outside from [circle(20% at right 10% bottom 20px)] to [circle(30% at right 20% bottom 30px)] was [circle(25% at 85% calc(-25px + 100%))] at 0.5, expected [circle(25% at left 85% bottom 25px)]
 PASS: shape-outside from [circle(20% at right 10% bottom 20px)] to [circle(30% at right 20% bottom 30px)] was [circle(30% at right 20% bottom 30px)] at 1
 
 Web Animations API:
@@ -65,6 +65,6 @@ PASS: shapeOutside from [none] to [ellipse(100% 100% at 0% 0%)] was [ellipse(100
 PASS: shapeOutside from [none] to [ellipse(100% 100% at 0% 0%)] was [ellipse(100% 100% at 0% 0%)] at 1
 PASS: shapeOutside from [none] to [ellipse(100% 100% at 0% 0%)] was [ellipse(100% 100% at 0% 0%)] at 1.5
 PASS: shapeOutside from [circle(20% at right 10% bottom 20px)] to [circle(30% at right 20% bottom 30px)] was [circle(20% at right 10% bottom 20px)] at 0
-FAIL: shapeOutside from [circle(20% at right 10% bottom 20px)] to [circle(30% at right 20% bottom 30px)] was [circle(25% at calc(((100% - 10%) * 0.5) + ((100% - 20%) * 0.5)) calc(((100% - 20px) * 0.5) + ((100% - 30px) * 0.5)))] at 0.5, expected [circle(25% at left 85% bottom 25px)]
+FAIL: shapeOutside from [circle(20% at right 10% bottom 20px)] to [circle(30% at right 20% bottom 30px)] was [circle(25% at 85% calc(-25px + 100%))] at 0.5, expected [circle(25% at left 85% bottom 25px)]
 PASS: shapeOutside from [circle(20% at right 10% bottom 20px)] to [circle(30% at right 20% bottom 30px)] was [circle(30% at right 20% bottom 30px)] at 1
 

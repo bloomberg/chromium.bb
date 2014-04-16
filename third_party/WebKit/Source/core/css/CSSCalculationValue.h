@@ -47,6 +47,13 @@ class CalculationValue;
 class CalcExpressionNode;
 class Length;
 
+enum CalcOperator {
+    CalcAdd = '+',
+    CalcSubtract = '-',
+    CalcMultiply = '*',
+    CalcDivide = '/'
+};
+
 enum CalculationCategory {
     CalcNumber = 0,
     CalcLength,
@@ -65,10 +72,10 @@ public:
     };
 
     virtual bool isZero() const = 0;
-    virtual PassOwnPtr<CalcExpressionNode> toCalcValue(const CSSToLengthConversionData&) const = 0;
     virtual double doubleValue() const = 0;
     virtual double computeLengthPx(const CSSToLengthConversionData&) const = 0;
     virtual void accumulateLengthArray(CSSLengthArray&, double multiplier) const = 0;
+    virtual void accumulatePixelsAndPercent(const CSSToLengthConversionData&, PixelsAndPercent&, float multiplier = 1) const = 0;
     virtual String customCSSText() const = 0;
     virtual bool equals(const CSSCalcExpressionNode& other) const { return m_category == other.m_category && m_isInteger == other.m_isInteger; }
     virtual Type type() const = 0;
@@ -94,16 +101,16 @@ class CSSCalcValue : public CSSValue {
 public:
     static PassRefPtrWillBeRawPtr<CSSCalcValue> create(CSSParserString name, CSSParserValueList*, ValueRange);
     static PassRefPtrWillBeRawPtr<CSSCalcValue> create(PassRefPtrWillBeRawPtr<CSSCalcExpressionNode>, ValueRange = ValueRangeAll);
-    static PassRefPtrWillBeRawPtr<CSSCalcValue> create(const CalculationValue* value, float zoom) { return adoptRefWillBeRefCountedGarbageCollected(new CSSCalcValue(value, zoom)); }
 
     static PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> createExpressionNode(PassRefPtrWillBeRawPtr<CSSPrimitiveValue>, bool isInteger = false);
     static PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> createExpressionNode(PassRefPtrWillBeRawPtr<CSSCalcExpressionNode>, PassRefPtrWillBeRawPtr<CSSCalcExpressionNode>, CalcOperator);
-    static PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> createExpressionNode(const CalcExpressionNode*, float zoom);
-    static PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> createExpressionNode(const Length&, float zoom);
+    static PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> createExpressionNode(double pixels, double percent);
 
     PassRefPtr<CalculationValue> toCalcValue(const CSSToLengthConversionData& conversionData) const
     {
-        return CalculationValue::create(m_expression->toCalcValue(conversionData), m_nonNegative ? ValueRangeNonNegative : ValueRangeAll);
+        PixelsAndPercent value(0, 0);
+        m_expression->accumulatePixelsAndPercent(conversionData, value);
+        return CalculationValue::create(value, m_nonNegative ? ValueRangeNonNegative : ValueRangeAll);
     }
     CalculationCategory category() const { return m_expression->category(); }
     bool isInt() const { return m_expression->isInteger(); }
@@ -124,12 +131,6 @@ private:
         : CSSValue(CalculationClass)
         , m_expression(expression)
         , m_nonNegative(range == ValueRangeNonNegative)
-    {
-    }
-    CSSCalcValue(const CalculationValue* value, float zoom)
-        : CSSValue(CalculationClass)
-        , m_expression(createExpressionNode(value->expression(), zoom))
-        , m_nonNegative(value->isNonNegative())
     {
     }
 

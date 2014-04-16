@@ -40,217 +40,30 @@
 
 namespace WebCore {
 
-enum CalcOperator {
-    CalcAdd = '+',
-    CalcSubtract = '-',
-    CalcMultiply = '*',
-    CalcDivide = '/'
-};
-
-enum CalcExpressionNodeType {
-    CalcExpressionNodeUndefined,
-    CalcExpressionNodeNumber,
-    CalcExpressionNodeLength,
-    CalcExpressionNodeBinaryOperation,
-    CalcExpressionNodeBlendLength,
-};
-
-class PLATFORM_EXPORT CalcExpressionNode {
-    WTF_MAKE_FAST_ALLOCATED;
-public:
-    CalcExpressionNode()
-        : m_type(CalcExpressionNodeUndefined)
-    {
-    }
-
-    virtual ~CalcExpressionNode()
-    {
-    }
-
-    virtual float evaluate(float maxValue) const = 0;
-    virtual bool operator==(const CalcExpressionNode&) const = 0;
-
-    CalcExpressionNodeType type() const { return m_type; }
-
-protected:
-    CalcExpressionNodeType m_type;
-};
-
 class PLATFORM_EXPORT CalculationValue : public RefCounted<CalculationValue> {
 public:
-    static PassRefPtr<CalculationValue> create(PassOwnPtr<CalcExpressionNode> value, ValueRange);
-    float evaluate(float maxValue) const;
-
-    bool operator==(const CalculationValue& o) const
+    static PassRefPtr<CalculationValue> create(PixelsAndPercent value, ValueRange range)
     {
-        return *(m_value.get()) == *(o.m_value.get());
+        return adoptRef(new CalculationValue(value, range));
     }
 
+    float evaluate(float maxValue) const { return pixels() + percent() / 100 * maxValue; }
+    bool operator==(const CalculationValue& o) const { return pixels() == o.pixels() && percent() == o.percent(); }
     bool isNonNegative() const { return m_isNonNegative; }
-    const CalcExpressionNode* expression() const { return m_value.get(); }
+    float pixels() const { return m_value.pixels; }
+    float percent() const { return m_value.percent; }
+    PixelsAndPercent pixelsAndPercent() const { return m_value; }
 
 private:
-    CalculationValue(PassOwnPtr<CalcExpressionNode> value, ValueRange range)
+    CalculationValue(PixelsAndPercent value, ValueRange range)
         : m_value(value)
         , m_isNonNegative(range == ValueRangeNonNegative)
     {
     }
 
-    OwnPtr<CalcExpressionNode> m_value;
+    PixelsAndPercent m_value;
     bool m_isNonNegative;
 };
-
-class PLATFORM_EXPORT CalcExpressionNumber : public CalcExpressionNode {
-public:
-    explicit CalcExpressionNumber(float value)
-        : m_value(value)
-    {
-        m_type = CalcExpressionNodeNumber;
-    }
-
-    bool operator==(const CalcExpressionNumber& o) const
-    {
-        return m_value == o.m_value;
-    }
-
-    virtual bool operator==(const CalcExpressionNode& o) const OVERRIDE
-    {
-        return type() == o.type() && *this == static_cast<const CalcExpressionNumber&>(o);
-    }
-
-    virtual float evaluate(float) const OVERRIDE
-    {
-        return m_value;
-    }
-
-    float value() const { return m_value; }
-
-private:
-    float m_value;
-};
-
-inline const CalcExpressionNumber* toCalcExpressionNumber(const CalcExpressionNode* value)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!value || value->type() == CalcExpressionNodeNumber);
-    return static_cast<const CalcExpressionNumber*>(value);
-}
-
-class PLATFORM_EXPORT CalcExpressionLength : public CalcExpressionNode {
-public:
-    explicit CalcExpressionLength(Length length)
-        : m_length(length)
-    {
-        m_type = CalcExpressionNodeLength;
-    }
-
-    bool operator==(const CalcExpressionLength& o) const
-    {
-        return m_length == o.m_length;
-    }
-
-    virtual bool operator==(const CalcExpressionNode& o) const OVERRIDE
-    {
-        return type() == o.type() && *this == static_cast<const CalcExpressionLength&>(o);
-    }
-
-    virtual float evaluate(float maxValue) const OVERRIDE
-    {
-        return floatValueForLength(m_length, maxValue);
-    }
-
-    const Length& length() const { return m_length; }
-
-private:
-    Length m_length;
-};
-
-inline const CalcExpressionLength* toCalcExpressionLength(const CalcExpressionNode* value)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!value || value->type() == CalcExpressionNodeLength);
-    return static_cast<const CalcExpressionLength*>(value);
-}
-
-class PLATFORM_EXPORT CalcExpressionBinaryOperation : public CalcExpressionNode {
-public:
-    CalcExpressionBinaryOperation(PassOwnPtr<CalcExpressionNode> leftSide, PassOwnPtr<CalcExpressionNode> rightSide, CalcOperator op)
-        : m_leftSide(leftSide)
-        , m_rightSide(rightSide)
-        , m_operator(op)
-    {
-        m_type = CalcExpressionNodeBinaryOperation;
-    }
-
-    bool operator==(const CalcExpressionBinaryOperation& o) const
-    {
-        return m_operator == o.m_operator && *m_leftSide == *o.m_leftSide && *m_rightSide == *o.m_rightSide;
-    }
-
-    virtual bool operator==(const CalcExpressionNode& o) const OVERRIDE
-    {
-        return type() == o.type() && *this == static_cast<const CalcExpressionBinaryOperation&>(o);
-    }
-
-    virtual float evaluate(float) const OVERRIDE;
-
-    const CalcExpressionNode* leftSide() const { return m_leftSide.get(); }
-    const CalcExpressionNode* rightSide() const { return m_rightSide.get(); }
-    CalcOperator getOperator() const { return m_operator; }
-
-private:
-    // Disallow the copy constructor. Resolves Windows link errors.
-    CalcExpressionBinaryOperation(const CalcExpressionBinaryOperation&);
-
-    OwnPtr<CalcExpressionNode> m_leftSide;
-    OwnPtr<CalcExpressionNode> m_rightSide;
-    CalcOperator m_operator;
-};
-
-inline const CalcExpressionBinaryOperation* toCalcExpressionBinaryOperation(const CalcExpressionNode* value)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!value || value->type() == CalcExpressionNodeBinaryOperation);
-    return static_cast<const CalcExpressionBinaryOperation*>(value);
-}
-
-class PLATFORM_EXPORT CalcExpressionBlendLength : public CalcExpressionNode {
-public:
-    CalcExpressionBlendLength(Length from, Length to, float progress)
-        : m_from(from)
-        , m_to(to)
-        , m_progress(progress)
-    {
-        m_type = CalcExpressionNodeBlendLength;
-    }
-
-    bool operator==(const CalcExpressionBlendLength& o) const
-    {
-        return m_progress == o.m_progress && m_from == o.m_from && m_to == o.m_to;
-    }
-
-    virtual bool operator==(const CalcExpressionNode& o) const OVERRIDE
-    {
-        return type() == o.type() && *this == static_cast<const CalcExpressionBlendLength&>(o);
-    }
-
-    virtual float evaluate(float maxValue) const OVERRIDE
-    {
-        return (1.0f - m_progress) * floatValueForLength(m_from, maxValue) + m_progress * floatValueForLength(m_to, maxValue);
-    }
-
-    const Length& from() const { return m_from; }
-    const Length& to() const { return m_to; }
-    float progress() const { return m_progress; }
-
-private:
-    Length m_from;
-    Length m_to;
-    float m_progress;
-};
-
-inline const CalcExpressionBlendLength* toCalcExpressionBlendLength(const CalcExpressionNode* value)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!value || value->type() == CalcExpressionNodeBlendLength);
-    return static_cast<const CalcExpressionBlendLength*>(value);
-}
 
 } // namespace WebCore
 

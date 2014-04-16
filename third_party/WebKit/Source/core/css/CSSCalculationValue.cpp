@@ -202,23 +202,19 @@ public:
         return m_value->cssText();
     }
 
-    virtual PassOwnPtr<CalcExpressionNode> toCalcValue(const CSSToLengthConversionData& conversionData) const OVERRIDE
+    virtual void accumulatePixelsAndPercent(const CSSToLengthConversionData& conversionData, PixelsAndPercent& value, float multiplier) const OVERRIDE
     {
         switch (m_category) {
-        case CalcNumber:
-            return adoptPtr(new CalcExpressionNumber(m_value->getFloatValue()));
         case CalcLength:
-            return adoptPtr(new CalcExpressionLength(Length(m_value->computeLength<float>(conversionData), WebCore::Fixed)));
+            value.pixels += m_value->computeLength<float>(conversionData) * multiplier;
+            break;
         case CalcPercent:
-        case CalcPercentLength:
-            return adoptPtr(new CalcExpressionLength(m_value->convertToLength<FixedConversion | PercentConversion>(conversionData)));
-        // Only types that could be part of a Length expression can be converted
-        // to a CalcExpressionNode. CalcPercentNumber makes no sense as a Length.
-        case CalcPercentNumber:
-        case CalcOther:
+            ASSERT(m_value->isPercentage());
+            value.percent += m_value->getDoubleValue() * multiplier;
+            break;
+        default:
             ASSERT_NOT_REACHED();
         }
-        return nullptr;
     }
 
     virtual double doubleValue() const OVERRIDE
@@ -402,15 +398,31 @@ public:
         return !doubleValue();
     }
 
-    virtual PassOwnPtr<CalcExpressionNode> toCalcValue(const CSSToLengthConversionData& conversionData) const OVERRIDE
+    virtual void accumulatePixelsAndPercent(const CSSToLengthConversionData& conversionData, PixelsAndPercent& value, float multiplier) const OVERRIDE
     {
-        OwnPtr<CalcExpressionNode> left(m_leftSide->toCalcValue(conversionData));
-        if (!left)
-            return nullptr;
-        OwnPtr<CalcExpressionNode> right(m_rightSide->toCalcValue(conversionData));
-        if (!right)
-            return nullptr;
-        return adoptPtr(new CalcExpressionBinaryOperation(left.release(), right.release(), m_operator));
+        switch (m_operator) {
+        case CalcAdd:
+            m_leftSide->accumulatePixelsAndPercent(conversionData, value, multiplier);
+            m_rightSide->accumulatePixelsAndPercent(conversionData, value, multiplier);
+            break;
+        case CalcSubtract:
+            m_leftSide->accumulatePixelsAndPercent(conversionData, value, multiplier);
+            m_rightSide->accumulatePixelsAndPercent(conversionData, value, -multiplier);
+            break;
+        case CalcMultiply:
+            ASSERT((m_leftSide->category() == CalcNumber) != (m_rightSide->category() == CalcNumber));
+            if (m_leftSide->category() == CalcNumber)
+                m_rightSide->accumulatePixelsAndPercent(conversionData, value, multiplier * m_leftSide->doubleValue());
+            else
+                m_leftSide->accumulatePixelsAndPercent(conversionData, value, multiplier * m_rightSide->doubleValue());
+            break;
+        case CalcDivide:
+            ASSERT(m_rightSide->category() == CalcNumber);
+            m_leftSide->accumulatePixelsAndPercent(conversionData, value, multiplier / m_rightSide->doubleValue());
+            break;
+        default:
+            ASSERT_NOT_REACHED();
+        }
     }
 
     virtual double doubleValue() const OVERRIDE
@@ -711,67 +723,12 @@ PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> CSSCalcValue::createExpressionNode
     return CSSCalcBinaryOperation::create(leftSide, rightSide, op);
 }
 
-PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> CSSCalcValue::createExpressionNode(const CalcExpressionNode* node, float zoom)
+PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> CSSCalcValue::createExpressionNode(double pixels, double percent)
 {
-    switch (node->type()) {
-    case CalcExpressionNodeNumber: {
-        float value = toCalcExpressionNumber(node)->value();
-        return createExpressionNode(CSSPrimitiveValue::create(value, CSSPrimitiveValue::CSS_NUMBER), value == trunc(value));
-    }
-    case CalcExpressionNodeLength:
-        return createExpressionNode(toCalcExpressionLength(node)->length(), zoom);
-    case CalcExpressionNodeBinaryOperation: {
-        const CalcExpressionBinaryOperation* binaryNode = toCalcExpressionBinaryOperation(node);
-        return createExpressionNode(createExpressionNode(binaryNode->leftSide(), zoom), createExpressionNode(binaryNode->rightSide(), zoom), binaryNode->getOperator());
-    }
-    case CalcExpressionNodeBlendLength: {
-        // FIXME(crbug.com/269320): Create a CSSCalcExpressionNode equivalent of CalcExpressionBlendLength.
-        const CalcExpressionBlendLength* blendNode = toCalcExpressionBlendLength(node);
-        const double progress = blendNode->progress();
-        const bool isInteger = !progress || (progress == 1);
-        return createExpressionNode(
-            createExpressionNode(
-                createExpressionNode(blendNode->from(), zoom),
-                createExpressionNode(CSSPrimitiveValue::create(1 - progress, CSSPrimitiveValue::CSS_NUMBER), isInteger),
-                CalcMultiply),
-            createExpressionNode(
-                createExpressionNode(blendNode->to(), zoom),
-                createExpressionNode(CSSPrimitiveValue::create(progress, CSSPrimitiveValue::CSS_NUMBER), isInteger),
-                CalcMultiply),
-            CalcAdd);
-    }
-    case CalcExpressionNodeUndefined:
-        ASSERT_NOT_REACHED();
-        return nullptr;
-    }
-    ASSERT_NOT_REACHED();
-    return nullptr;
-}
-
-PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> CSSCalcValue::createExpressionNode(const Length& length, float zoom)
-{
-    switch (length.type()) {
-    case Percent:
-    case Fixed:
-        return createExpressionNode(CSSPrimitiveValue::create(length, zoom), length.value() == trunc(length.value()));
-    case Calculated:
-        return createExpressionNode(length.calculationValue()->expression(), zoom);
-    case Auto:
-    case Intrinsic:
-    case MinIntrinsic:
-    case MinContent:
-    case MaxContent:
-    case FillAvailable:
-    case FitContent:
-    case ExtendToZoom:
-    case DeviceWidth:
-    case DeviceHeight:
-    case Undefined:
-        ASSERT_NOT_REACHED();
-        return nullptr;
-    }
-    ASSERT_NOT_REACHED();
-    return nullptr;
+    return createExpressionNode(
+        createExpressionNode(CSSPrimitiveValue::create(pixels, CSSPrimitiveValue::CSS_PX), pixels == trunc(pixels)),
+        createExpressionNode(CSSPrimitiveValue::create(percent, CSSPrimitiveValue::CSS_PERCENTAGE), percent == trunc(percent)),
+        CalcAdd);
 }
 
 PassRefPtrWillBeRawPtr<CSSCalcValue> CSSCalcValue::create(CSSParserString name, CSSParserValueList* parserValueList, ValueRange range)

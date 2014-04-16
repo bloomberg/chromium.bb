@@ -2,7 +2,6 @@
   'variables': {
     'platform_files': [
       'AsyncFileSystemCallbacks.h',
-      'CalculationValue.cpp',
       'CalculationValue.h',
       'CheckedInt.h',
       'Clock.cpp',

@@ -69,8 +69,14 @@ static PassRefPtrWillBeRawPtr<AnimatableValue> createFromLength(const Length& le
         return AnimatableLength::create(adjustFloatForAbsoluteZoom(length.value(), style), CSSPrimitiveValue::UnitTypePixels);
     case Percent:
         return AnimatableLength::create(length.value(), CSSPrimitiveValue::UnitTypePercentage);
-    case Calculated:
-        return AnimatableLength::create(CSSCalcValue::createExpressionNode(length.calculationValue()->expression(), style.effectiveZoom()));
+    case Calculated: {
+        const CalculationValue& calc = length.calculationValue();
+        if (calc.pixels() && calc.percent())
+            return AnimatableLength::create(CSSCalcValue::createExpressionNode(adjustFloatForAbsoluteZoom(calc.pixels(), style), calc.percent()));
+        if (calc.percent())
+            return createFromLength(Length(calc.percent(), Percent), style);
+        return createFromLength(Length(calc.pixels(), Fixed), style);
+    }
     case Auto:
     case Intrinsic:
     case MinIntrinsic:
@@ -180,11 +186,7 @@ inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromBackgroundPositi
 {
     if (!originIsSet || origin == LeftEdge || origin == TopEdge)
         return createFromLength(length, style);
-
-    return AnimatableLength::create(CSSCalcValue::createExpressionNode(
-        CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(100, CSSPrimitiveValue::CSS_PERCENTAGE), true),
-        CSSCalcValue::createExpressionNode(length, style.effectiveZoom()),
-        CalcSubtract));
+    return createFromLength(length.subtractFromOneHundredPercent(), style);
 }
 
 template<CSSPropertyID property>

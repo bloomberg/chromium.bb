@@ -180,36 +180,16 @@ TEST_F(AnimationAnimatableLengthTest, ToLength)
     EXPECT_EQ(Length(0, Percent), create(-5, CSSPrimitiveValue::CSS_PERCENTAGE)->toLength(conversionDataZoom3, NonNegativeValues));
 
     EXPECT_EQ(
-        Length(CalculationValue::create(
-            adoptPtr(new CalcExpressionBinaryOperation(
-                adoptPtr(new CalcExpressionLength(Length(-5, WebCore::Fixed))),
-                adoptPtr(new CalcExpressionLength(Length(-5, Percent))),
-                CalcAdd)),
-            ValueRangeAll)),
+        Length(CalculationValue::create(PixelsAndPercent(-5, -5), ValueRangeAll)),
         create(-5, CSSPrimitiveValue::CSS_PX, -5, CSSPrimitiveValue::CSS_PERCENTAGE)->toLength(conversionDataZoom1));
     EXPECT_EQ(
-        Length(CalculationValue::create(
-            adoptPtr(new CalcExpressionBinaryOperation(
-                adoptPtr(new CalcExpressionLength(Length(-15, WebCore::Fixed))),
-                adoptPtr(new CalcExpressionLength(Length(-5, Percent))),
-                CalcAdd)),
-            ValueRangeAll)),
+        Length(CalculationValue::create(PixelsAndPercent(-15, -5), ValueRangeAll)),
         create(-5, CSSPrimitiveValue::CSS_PX, -5, CSSPrimitiveValue::CSS_PERCENTAGE)->toLength(conversionDataZoom3));
     EXPECT_EQ(
-        Length(CalculationValue::create(
-            adoptPtr(new CalcExpressionBinaryOperation(
-                adoptPtr(new CalcExpressionLength(Length(-5, WebCore::Fixed))),
-                adoptPtr(new CalcExpressionLength(Length(-5, Percent))),
-                CalcAdd)),
-            ValueRangeNonNegative)),
+        Length(CalculationValue::create(PixelsAndPercent(-5, -5), ValueRangeNonNegative)),
         create(-5, CSSPrimitiveValue::CSS_PX, -5, CSSPrimitiveValue::CSS_PERCENTAGE)->toLength(conversionDataZoom1, NonNegativeValues));
     EXPECT_EQ(
-        Length(CalculationValue::create(
-            adoptPtr(new CalcExpressionBinaryOperation(
-                adoptPtr(new CalcExpressionLength(Length(-15, WebCore::Fixed))),
-                adoptPtr(new CalcExpressionLength(Length(-5, Percent))),
-                CalcAdd)),
-            ValueRangeNonNegative)),
+        Length(CalculationValue::create(PixelsAndPercent(-15, -5), ValueRangeNonNegative)),
         create(-5, CSSPrimitiveValue::CSS_PX, -5, CSSPrimitiveValue::CSS_PERCENTAGE)->toLength(conversionDataZoom3, NonNegativeValues));
 }
 

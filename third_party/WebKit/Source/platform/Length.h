@@ -51,6 +51,16 @@ enum ValueRange {
     ValueRangeNonNegative
 };
 
+struct PixelsAndPercent {
+    PixelsAndPercent(float pixels, float percent)
+        : pixels(pixels)
+        , percent(percent)
+    {
+    }
+    float pixels;
+    float percent;
+};
+
 class CalculationValue;
 
 class PLATFORM_EXPORT Length {
@@ -153,8 +163,9 @@ public:
         ASSERT(type() == Percent);
         return getFloatValue();
     }
+    PixelsAndPercent pixelsAndPercent() const;
 
-    CalculationValue* calculationValue() const;
+    CalculationValue& calculationValue() const;
 
     LengthType type() const { return static_cast<LengthType>(m_type); }
     bool quirk() const { return m_quirk; }
@@ -280,6 +291,8 @@ public:
         return m_isFloat ? m_floatValue : m_intValue;
     }
     float nonNanCalculatedValue(int maxValue) const;
+
+    Length subtractFromOneHundredPercent() const;
 
 private:
     int getIntValue() const
