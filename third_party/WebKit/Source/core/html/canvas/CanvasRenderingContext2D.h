@@ -227,6 +227,7 @@ public:
     PassRefPtr<Canvas2DContextAttributes> getContextAttributes() const;
 
     void drawFocusIfNeeded(Element*);
+    void drawFocusIfNeeded(Path2D*, Element*);
     bool drawCustomFocusRing(Element*);
 
     void loseContext();
@@ -329,6 +330,7 @@ private:
     template<class T> void fullCanvasCompositedStroke(const T&);
     template<class T> void fullCanvasCompositedDrawImage(T*, const FloatRect&, const FloatRect&, CompositeOperator);
 
+    void drawFocusIfNeededInternal(const Path&, Element*);
     bool focusRingCallIsValid(const Path&, Element*);
     void updateFocusRingAccessibility(const Path&, Element*);
     void drawFocusRing(const Path&);

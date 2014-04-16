@@ -2324,15 +2324,25 @@ PassRefPtr<Canvas2DContextAttributes> CanvasRenderingContext2D::getContextAttrib
 
 void CanvasRenderingContext2D::drawFocusIfNeeded(Element* element)
 {
-    if (!focusRingCallIsValid(m_path, element))
+    drawFocusIfNeededInternal(m_path, element);
+}
+
+void CanvasRenderingContext2D::drawFocusIfNeeded(Path2D* path2d, Element* element)
+{
+    drawFocusIfNeededInternal(path2d->path(), element);
+}
+
+void CanvasRenderingContext2D::drawFocusIfNeededInternal(const Path& path, Element* element)
+{
+    if (!focusRingCallIsValid(path, element))
         return;
 
-    updateFocusRingAccessibility(m_path, element);
+    updateFocusRingAccessibility(path, element);
     // Note: we need to check document->focusedElement() rather than just calling
     // element->focused(), because element->focused() isn't updated until after
     // focus events fire.
     if (element->document().focusedElement() == element)
-        drawFocusRing(m_path);
+        drawFocusRing(path);
 }
 
 bool CanvasRenderingContext2D::drawCustomFocusRing(Element* element)
@@ -2372,7 +2382,7 @@ void CanvasRenderingContext2D::updateFocusRingAccessibility(const Path& path, El
     if (AXObjectCache* axObjectCache = element->document().existingAXObjectCache()) {
         if (AXObject* obj = axObjectCache->getOrCreate(element)) {
             // Get the bounding rect and apply transformations.
-            FloatRect bounds = m_path.boundingRect();
+            FloatRect bounds = path.boundingRect();
             AffineTransform ctm = state().m_transform;
             FloatRect transformedBounds = ctm.mapRect(bounds);
             LayoutRect elementRect = LayoutRect(transformedBounds);

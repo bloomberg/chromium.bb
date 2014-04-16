@@ -169,6 +169,7 @@ interface CanvasRenderingContext2D {
 
     // Focus rings
     [RuntimeEnabled=ExperimentalCanvasFeatures, StrictTypeChecking] void drawFocusIfNeeded(Element element);
+    [RuntimeEnabled=ExperimentalCanvasFeatures, StrictTypeChecking] void drawFocusIfNeeded(Path2D path, Element element);
     [RuntimeEnabled=ExperimentalCanvasFeatures, StrictTypeChecking] boolean drawCustomFocusRing(Element element);
 
     [ImplementedAs=imageSmoothingEnabled, MeasureAs=PrefixedImageSmoothingEnabled] attribute boolean webkitImageSmoothingEnabled;

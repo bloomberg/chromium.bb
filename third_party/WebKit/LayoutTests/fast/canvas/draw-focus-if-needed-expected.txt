@@ -1,6 +1,6 @@
-PASS canvas.drawFocusIfNeeded(null); threw exception TypeError: Failed to execute 'drawFocusIfNeeded' on 'CanvasRenderingContext2D': parameter 1 is not of type 'Element'..
+PASS canvas.drawFocusIfNeeded(null); threw exception TypeError: Failed to execute 'drawFocusIfNeeded' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
 PASS canvas.drawFocusIfNeeded(); threw exception TypeError: Failed to execute 'drawFocusIfNeeded' on 'CanvasRenderingContext2D': 1 argument required, but only 0 present..
-PASS canvas.drawFocusIfNeeded(null); threw exception TypeError: Failed to execute 'drawFocusIfNeeded' on 'CanvasRenderingContext2D': parameter 1 is not of type 'Element'..
+PASS canvas.drawFocusIfNeeded(null); threw exception TypeError: Failed to execute 'drawFocusIfNeeded' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
 PASS data[0] != 0 || data[1] != 0 || data[2] != 0 is true
 PASS data[0] == 0 && data[1] == 0 && data[2] == 0 is true
 PASS successfullyParsed is true
