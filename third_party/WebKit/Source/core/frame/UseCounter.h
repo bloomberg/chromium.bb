@@ -345,6 +345,17 @@ public:
         SelectionSetPosition = 327,
         AnimationPlayerFinishEvent = 328,
         SVGSVGElementInXMLDocument = 329,
+        CanvasRenderingContext2DSetAlpha = 330,
+        CanvasRenderingContext2DSetCompositeOperation = 331,
+        CanvasRenderingContext2DSetLineWidth = 332,
+        CanvasRenderingContext2DSetLineCap = 333,
+        CanvasRenderingContext2DSetLineJoin = 334,
+        CanvasRenderingContext2DSetMiterLimit = 335,
+        CanvasRenderingContext2DClearShadow = 336,
+        CanvasRenderingContext2DSetStrokeColor = 337,
+        CanvasRenderingContext2DSetFillColor = 338,
+        CanvasRenderingContext2DDrawImageFromRect = 339,
+        CanvasRenderingContext2DSetShadow = 340,
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
         NumberOfFeatures, // This enum value must be last.

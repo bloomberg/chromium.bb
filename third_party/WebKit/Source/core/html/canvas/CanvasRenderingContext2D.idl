@@ -95,37 +95,14 @@ interface CanvasRenderingContext2D {
     attribute DOMString font;
     attribute DOMString textAlign;
     attribute DOMString textBaseline;
+    void fillText(DOMString text, float x, float y, optional float maxWidth);
+    void strokeText(DOMString text, float x, float y, optional float maxWidth);
 
     TextMetrics measureText(DOMString text);
 
     // Context state
     // Should be merged with WebGL counterpart in CanvasRenderingContext, once no-longer experimental
     [RuntimeEnabled=ExperimentalCanvasFeatures] boolean isContextLost();
-
-    // other
-
-    void setAlpha(float alpha);
-    void setCompositeOperation(DOMString compositeOperation);
-
-    void setLineWidth(float width);
-    void setLineCap(DOMString cap);
-    void setLineJoin(DOMString join);
-    void setMiterLimit(float limit);
-
-    void clearShadow();
-
-    void fillText(DOMString text, float x, float y, optional float maxWidth);
-    void strokeText(DOMString text, float x, float y, optional float maxWidth);
-
-    void setStrokeColor([StrictTypeChecking] DOMString color, optional float alpha);
-    void setStrokeColor(float grayLevel, optional float alpha);
-    void setStrokeColor(float r, float g, float b, float a);
-    void setStrokeColor(float c, float m, float y, float k, float a);
-
-    void setFillColor([StrictTypeChecking] DOMString color, optional float alpha);
-    void setFillColor(float grayLevel, optional float alpha);
-    void setFillColor(float r, float g, float b, float a);
-    void setFillColor(float c, float m, float y, float k, float a);
 
     void strokeRect(float x, float y, float width, float height);
 
@@ -141,16 +118,6 @@ interface CanvasRenderingContext2D {
     [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException, StrictTypeChecking] void drawImage(ImageBitmap imageBitmap, float x, float y);
     [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException, StrictTypeChecking] void drawImage(ImageBitmap imageBitmap, float x, float y, float width, float height);
     [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException, StrictTypeChecking] void drawImage(ImageBitmap imageBitmap, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh);
-
-    [StrictTypeChecking] void drawImageFromRect(HTMLImageElement? image,
-                                                optional float sx, optional float sy, optional float sw, optional float sh,
-                                                optional float dx, optional float dy, optional float dw, optional float dh,
-                                                optional DOMString compositeOperation);
-
-    void setShadow(float width, float height, float blur, [StrictTypeChecking] optional DOMString color, optional float alpha);
-    void setShadow(float width, float height, float blur, float grayLevel, optional float alpha);
-    void setShadow(float width, float height, float blur, float r, float g, float b, float a);
-    void setShadow(float width, float height, float blur, float c, float m, float y, float k, float a);
 
     [RaisesException, StrictTypeChecking] void putImageData(ImageData imagedata, float dx, float dy);
     [RaisesException, StrictTypeChecking] void putImageData(ImageData imagedata, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight);
@@ -176,6 +143,30 @@ interface CanvasRenderingContext2D {
     [MeasureAs=UnprefixedImageSmoothingEnabled] attribute boolean imageSmoothingEnabled;
 
     Canvas2DContextAttributes getContextAttributes();
+
+    // Non-standard APIs. Candidates for deprecation
+    [MeasureAs=CanvasRenderingContext2DSetAlpha] void setAlpha(float alpha);
+    [MeasureAs=CanvasRenderingContext2DSetCompositeOperation] void setCompositeOperation(DOMString compositeOperation);
+    [MeasureAs=CanvasRenderingContext2DSetLineWidth] void setLineWidth(float width);
+    [MeasureAs=CanvasRenderingContext2DSetLineCap] void setLineCap(DOMString cap);
+    [MeasureAs=CanvasRenderingContext2DSetLineJoin] void setLineJoin(DOMString join);
+    [MeasureAs=CanvasRenderingContext2DSetMiterLimit] void setMiterLimit(float limit);
+    [MeasureAs=CanvasRenderingContext2DClearShadow] void clearShadow();
+    [MeasureAs=CanvasRenderingContext2DSetStrokeColor] void setStrokeColor([StrictTypeChecking] DOMString color, optional float alpha);
+    [MeasureAs=CanvasRenderingContext2DSetStrokeColor] void setStrokeColor(float grayLevel, optional float alpha);
+    [MeasureAs=CanvasRenderingContext2DSetStrokeColor] void setStrokeColor(float r, float g, float b, float a);
+    [MeasureAs=CanvasRenderingContext2DSetStrokeColor] void setStrokeColor(float c, float m, float y, float k, float a);
+    [MeasureAs=CanvasRenderingContext2DSetFillColor] void setFillColor([StrictTypeChecking] DOMString color, optional float alpha);
+    [MeasureAs=CanvasRenderingContext2DSetFillColor] void setFillColor(float grayLevel, optional float alpha);
+    [MeasureAs=CanvasRenderingContext2DSetFillColor] void setFillColor(float r, float g, float b, float a);
+    [MeasureAs=CanvasRenderingContext2DSetFillColor] void setFillColor(float c, float m, float y, float k, float a);
+    [StrictTypeChecking, MeasureAs=CanvasRenderingContext2DDrawImageFromRect] void drawImageFromRect(
+        HTMLImageElement? image, optional float sx, optional float sy, optional float sw, optional float sh,
+        optional float dx, optional float dy, optional float dw, optional float dh, optional DOMString compositeOperation);
+    [MeasureAs=CanvasRenderingContext2DSetShadow] void setShadow(float width, float height, float blur, [StrictTypeChecking] optional DOMString color, optional float alpha);
+    [MeasureAs=CanvasRenderingContext2DSetShadow] void setShadow(float width, float height, float blur, float grayLevel, optional float alpha);
+    [MeasureAs=CanvasRenderingContext2DSetShadow] void setShadow(float width, float height, float blur, float r, float g, float b, float a);
+    [MeasureAs=CanvasRenderingContext2DSetShadow] void setShadow(float width, float height, float blur, float c, float m, float y, float k, float a);
 };
 
 CanvasRenderingContext2D implements CanvasPathMethods;
