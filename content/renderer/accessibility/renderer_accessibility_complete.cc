@@ -207,13 +207,11 @@ void RendererAccessibilityComplete::SendPendingAccessibilityEvents() {
     event_msgs.push_back(event_msg);
 
 #ifndef NDEBUG
-    ui::AXTree tree;
-    tree.Unserialize(event_msg.update);
     VLOG(0) << "Accessibility update: \n"
             << "routing id=" << routing_id()
             << " event="
             << AccessibilityEventToString(event.event_type)
-            << "\n" << tree.ToString();
+            << "\n" << event_msg.update.ToString();
 #endif
   }
 

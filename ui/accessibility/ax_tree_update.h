@@ -50,6 +50,9 @@ struct AX_EXPORT AXTreeUpdate {
   // A vector of nodes to update, according to the rules above.
   std::vector<AXNodeData> nodes;
 
+  // Return a multi-line indented string representation, for logging.
+  std::string ToString() const;
+
   // TODO(dmazzoni): location changes
 };
 
