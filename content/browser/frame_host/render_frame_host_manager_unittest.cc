@@ -1091,7 +1091,7 @@ TEST_F(RenderFrameHostManagerTest, WebUIInNewTab) {
   manager1->Init(
       browser_context(), blank_instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE);
   // Test the case that new RVH is considered live.
-  manager1->current_host()->CreateRenderView(base::string16(), -1, -1);
+  manager1->current_host()->CreateRenderView(base::string16(), -1, -1, false);
 
   // Navigate to a WebUI page.
   const GURL kUrl1("chrome://foo");
@@ -1126,7 +1126,7 @@ TEST_F(RenderFrameHostManagerTest, WebUIInNewTab) {
       browser_context(), webui_instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE);
   // Make sure the new RVH is considered live.  This is usually done in
   // RenderWidgetHost::Init when opening a new tab from a link.
-  manager2->current_host()->CreateRenderView(base::string16(), -1, -1);
+  manager2->current_host()->CreateRenderView(base::string16(), -1, -1, false);
 
   const GURL kUrl2("chrome://foo/bar");
   NavigationEntryImpl entry2(NULL /* instance */, -1 /* page_id */, kUrl2,
@@ -1328,7 +1328,8 @@ TEST_F(RenderFrameHostManagerTest, CleanUpSwappedOutRVHOnProcessCrash) {
   contents()->SetOpener(opener1.get());
 
   // Make sure the new opener RVH is considered live.
-  opener1_manager->current_host()->CreateRenderView(base::string16(), -1, -1);
+  opener1_manager->current_host()->CreateRenderView(
+      base::string16(), -1, -1, false);
 
   // Use a cross-process navigation in the opener to swap out the old RVH.
   EXPECT_FALSE(opener1_manager->GetSwappedOutRenderViewHost(

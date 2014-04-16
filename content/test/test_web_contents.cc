@@ -104,7 +104,7 @@ bool TestWebContents::CreateRenderViewForRenderManager(
   static_cast<RenderViewHostImpl*>(
       render_view_host)->CreateRenderView(base::string16(),
                                           opener_route_id,
-                                          -1);
+                                          -1, false);
   return true;
 }
 

@@ -488,6 +488,9 @@ IPC_STRUCT_BEGIN(ViewMsg_New_Params)
   // Whether the RenderView will never be visible.
   IPC_STRUCT_MEMBER(bool, never_visible)
 
+  // Whether the window associated with this view was created with an opener.
+  IPC_STRUCT_MEMBER(bool, window_was_created_with_opener)
+
   // The initial page ID to use for this view, which must be larger than any
   // existing navigation that might be loaded in the view.  Page IDs are unique
   // to a view and are only updated by the renderer after this initial value.

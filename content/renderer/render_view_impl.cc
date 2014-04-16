@@ -784,6 +784,10 @@ void RenderViewImpl::Initialize(
   if (!params->frame_name.empty())
     webview()->mainFrame()->setName(params->frame_name);
 
+  // TODO(davidben): Move this state from Blink into content.
+  if (params->window_was_created_with_opener)
+    webview()->setOpenedByDOM();
+
   OnSetRendererPrefs(params->renderer_prefs);
 
 #if defined(ENABLE_WEBRTC)
@@ -909,6 +913,7 @@ void RenderView::ForEach(RenderViewVisitor* visitor) {
 /*static*/
 RenderViewImpl* RenderViewImpl::Create(
     int32 opener_id,
+    bool window_was_created_with_opener,
     const RendererPreferences& renderer_prefs,
     const WebPreferences& webkit_prefs,
     int32 routing_id,
@@ -925,6 +930,7 @@ RenderViewImpl* RenderViewImpl::Create(
     AccessibilityMode accessibility_mode) {
   DCHECK(routing_id != MSG_ROUTING_NONE);
   RenderViewImplParams params(opener_id,
+                              window_was_created_with_opener,
                               renderer_prefs,
                               webkit_prefs,
                               routing_id,
@@ -1514,6 +1520,7 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
   // disagrees.
   RenderViewImpl* view = RenderViewImpl::Create(
       routing_id_,
+      true,  // window_was_created_with_opener
       renderer_preferences_,
       webkit_preferences_,
       routing_id,

@@ -6,6 +6,7 @@
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
@@ -30,10 +31,13 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -67,6 +71,25 @@ class CountRenderViewHosts : public content::NotificationObserver {
   int count_;
 
   DISALLOW_COPY_AND_ASSIGN(CountRenderViewHosts);
+};
+
+class CloseObserver : public content::WebContentsObserver {
+ public:
+  explicit CloseObserver(WebContents* contents)
+      : content::WebContentsObserver(contents) {}
+
+  void Wait() {
+    close_loop_.Run();
+  }
+
+  virtual void WebContentsDestroyed(WebContents* contents) OVERRIDE {
+    close_loop_.Quit();
+  }
+
+ private:
+  base::RunLoop close_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(CloseObserver);
 };
 
 class PopupBlockerBrowserTest : public InProcessBrowserTest {
@@ -386,6 +409,29 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, Opener) {
                "/popup_blocker/popup-opener.html",
                true,
                true);
+}
+
+// Tests that the popup can still close itself after navigating. This tests that
+// the openedByDOM bit is preserved across blocked popups.
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ClosableAfterNavigation) {
+  // Open a popup.
+  WebContents* popup =
+      RunCheckTest(browser(),
+                   "/popup_blocker/popup-opener.html",
+                   true,
+                   true);
+
+  // Navigate it elsewhere.
+  content::TestNavigationObserver nav_observer(popup);
+  popup->GetMainFrame()->ExecuteJavaScript(
+      base::UTF8ToUTF16("location.href = '/empty.html'"));
+  nav_observer.Wait();
+
+  // Have it close itself.
+  CloseObserver close_observer(popup);
+  popup->GetMainFrame()->ExecuteJavaScript(
+      base::UTF8ToUTF16("window.close()"));
+  close_observer.Wait();
 }
 
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, OpenerSuppressed) {

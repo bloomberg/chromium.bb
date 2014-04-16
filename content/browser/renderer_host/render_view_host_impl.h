@@ -240,9 +240,12 @@ class CONTENT_EXPORT RenderViewHostImpl
   // The |opener_route_id| parameter indicates which RenderView created this
   // (MSG_ROUTING_NONE if none). If |max_page_id| is larger than -1, the
   // RenderView is told to start issuing page IDs at |max_page_id| + 1.
+  // |window_was_created_with_opener| is true if this top-level frame was
+  // created with an opener. (The opener may have been closed since.)
   virtual bool CreateRenderView(const base::string16& frame_name,
                                 int opener_route_id,
-                                int32 max_page_id);
+                                int32 max_page_id,
+                                bool window_was_created_with_opener);
 
   base::TerminationStatus render_view_termination_status() const {
     return render_view_termination_status_;

@@ -578,7 +578,8 @@ WebContentsView* InterstitialPageImpl::CreateWebContentsView() {
       GetMaxPageIDForSiteInstance(render_view_host_->GetSiteInstance());
   render_view_host_->CreateRenderView(base::string16(),
                                       MSG_ROUTING_NONE,
-                                      max_page_id);
+                                      max_page_id,
+                                      false);
   controller_->delegate()->RenderFrameForInterstitialPageCreated(
       frame_tree_.root()->current_frame_host());
   view->SetSize(web_contents_view->GetContainerSize());

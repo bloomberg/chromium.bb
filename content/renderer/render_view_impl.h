@@ -182,8 +182,11 @@ class CONTENT_EXPORT RenderViewImpl
       public base::SupportsWeakPtr<RenderViewImpl> {
  public:
   // Creates a new RenderView. |opener_id| is the routing ID of the RenderView
-  // responsible for creating this RenderView.
+  // responsible for creating this RenderView. Note that if the original opener
+  // has been closed, |window_was_created_with_opener| will be true and
+  // |opener_id| will be MSG_ROUTING_NONE.
   static RenderViewImpl* Create(int32 opener_id,
+                                bool window_was_created_with_opener,
                                 const RendererPreferences& renderer_prefs,
                                 const WebPreferences& webkit_prefs,
                                 int32 routing_id,

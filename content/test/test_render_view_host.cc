@@ -238,7 +238,8 @@ TestRenderViewHost::~TestRenderViewHost() {
 bool TestRenderViewHost::CreateRenderView(
     const base::string16& frame_name,
     int opener_route_id,
-    int32 max_page_id) {
+    int32 max_page_id,
+    bool window_was_created_with_opener) {
   DCHECK(!render_view_created_);
   render_view_created_ = true;
   opener_route_id_ = opener_route_id;

@@ -321,6 +321,7 @@ WebContentsImpl::WebContentsImpl(
       controller_(this, browser_context),
       render_view_host_delegate_view_(NULL),
       opener_(opener),
+      created_with_opener_(!!opener),
 #if defined(OS_WIN)
       accessible_parent_(NULL),
 #endif
@@ -3739,7 +3740,8 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
   if (!static_cast<RenderViewHostImpl*>(
           render_view_host)->CreateRenderView(base::string16(),
                                               opener_route_id,
-                                              max_page_id)) {
+                                              max_page_id,
+                                              created_with_opener_)) {
     return false;
   }
 

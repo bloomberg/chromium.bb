@@ -8,6 +8,7 @@ namespace content {
 
 RenderViewImplParams::RenderViewImplParams(
     int32 opener_id,
+    bool window_was_created_with_opener,
     const RendererPreferences& renderer_prefs,
     const WebPreferences& webkit_prefs,
     int32 routing_id,
@@ -23,6 +24,7 @@ RenderViewImplParams::RenderViewImplParams(
     const blink::WebScreenInfo& screen_info,
     AccessibilityMode accessibility_mode)
     : opener_id(opener_id),
+      window_was_created_with_opener(window_was_created_with_opener),
       renderer_prefs(renderer_prefs),
       webkit_prefs(webkit_prefs),
       routing_id(routing_id),

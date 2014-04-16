@@ -1082,6 +1082,7 @@
             'browser/speech/input_tag_speech_browsertest.cc',
             'browser/speech/speech_recognition_browsertest.cc',
             'browser/tracing/tracing_controller_browsertest.cc',
+            'browser/web_contents/opened_by_dom_browsertest.cc',
             'browser/web_contents/touch_editable_impl_aura_browsertest.cc',
             'browser/web_contents/web_contents_impl_browsertest.cc',
             'browser/web_contents/web_contents_view_aura_browsertest.cc',

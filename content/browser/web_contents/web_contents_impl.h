@@ -896,6 +896,10 @@ class CONTENT_EXPORT WebContentsImpl
   // is closed.
   WebContentsImpl* opener_;
 
+  // True if this tab was opened by another tab. This is not unset if the opener
+  // is closed.
+  bool created_with_opener_;
+
 #if defined(OS_WIN)
   gfx::NativeViewAccessible accessible_parent_;
 #endif

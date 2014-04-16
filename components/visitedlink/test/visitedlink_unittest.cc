@@ -686,7 +686,7 @@ TEST_F(VisitedLinkEventsTest, Coalescense) {
 TEST_F(VisitedLinkEventsTest, Basics) {
   RenderViewHostTester::For(rvh())->CreateRenderView(base::string16(),
                                  MSG_ROUTING_NONE,
-                                 -1);
+                                 -1, false);
 
   // Add a few URLs.
   master()->AddURL(GURL("http://acidtests.org/"));
@@ -711,7 +711,7 @@ TEST_F(VisitedLinkEventsTest, Basics) {
 TEST_F(VisitedLinkEventsTest, TabVisibility) {
   RenderViewHostTester::For(rvh())->CreateRenderView(base::string16(),
                                  MSG_ROUTING_NONE,
-                                 -1);
+                                 -1, false);
 
   // Simulate tab becoming inactive.
   RenderViewHostTester::For(rvh())->SimulateWasHidden();

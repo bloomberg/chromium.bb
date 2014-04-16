@@ -185,6 +185,7 @@ void RenderViewTest::SetUp() {
   // This needs to pass the mock render thread to the view.
   RenderViewImpl* view =
       RenderViewImpl::Create(kOpenerId,
+                             false,  // window_was_created_with_opener
                              RendererPreferences(),
                              WebPreferences(),
                              kRouteId,
