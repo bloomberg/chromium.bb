@@ -458,6 +458,9 @@
       'filepath': 'chrome/browser/resources/options/|'\
           'chrome/browser/ui/webui/options/',
     },
+    'overview_mode': {
+      'filepath': 'ash/wm/overview/',
+    },
     'ozone': {
       'filepath': 'ui/ozone/|'\
         'ui/events/ozone/|'\
@@ -831,6 +834,7 @@
             'pedrosimonetti+watch@chromium.org'],
     'omnibox': ['suzhe@chromium.org'],
     'options': ['dbeam+watch-options@chromium.org'],
+    'overview_mode': ['tdanderson+overview@chromium.org'],
     'ozone': ['kalyan.kondapally@intel.com', 'ozone-reviews@chromium.org',
               'rjkroege@chromium.org'],
     'panels': ['dimich@chromium.org', 'jennb@chromium.org',
@@ -899,7 +903,8 @@
     'version_assembly': ['caitkp+watch@chromium.org',
                          'gab+watch@chromium.org'],
     'views': ['tfarina@chromium.org'],
-    'views_core': ['ben+views@chromium.org'],
+    'views_core': ['ben+views@chromium.org',
+                   'tdanderson+views@chromium.org'],
     'views_corewm': ['ben+corewm@chromium.org'],
     'virtual_keyboard': ['dfaden+virtualkb@google.com',
                          'groby+virtualkb@chromium.org'],
