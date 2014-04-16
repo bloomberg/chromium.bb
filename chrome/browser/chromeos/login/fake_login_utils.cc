@@ -5,18 +5,17 @@
 #include "chrome/browser/chromeos/login/fake_login_utils.h"
 
 #include "base/command_line.h"
-#include "base/path_service.h"
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/mock_authenticator.h"
 #include "chrome/browser/chromeos/login/supervised_user_manager.h"
+#include "chrome/browser/chromeos/login/user.h"
+#include "chrome/browser/chromeos/login/user_flow.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/first_run/first_run.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
-#include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
@@ -61,7 +60,12 @@ void FakeLoginUtils::PrepareProfile(const UserContext& user_context,
                                     LoginUtils::Delegate* delegate) {
   UserManager::Get()->UserLoggedIn(
       user_context.username, user_context.username_hash, false);
-  Profile* profile = CreateProfile(user_context.username_hash);
+  User* user = UserManager::Get()->FindUserAndModify(user_context.username);
+  DCHECK(user);
+
+  // Make sure that we get the real Profile instead of the login Profile.
+  user->set_profile_is_created();
+  Profile* profile = UserManager::Get()->GetProfileByUser(user);
 
   if (UserManager::Get()->IsLoggedInAsLocallyManagedUser()) {
     User* active_user = UserManager::Get()->GetActiveUser();
@@ -107,14 +111,6 @@ void FakeLoginUtils::RestoreAuthenticationSession(Profile* profile) {
 
 void FakeLoginUtils::InitRlzDelayed(Profile* user_profile) {
   NOTREACHED() << "Method not implemented.";
-}
-
-Profile* FakeLoginUtils::CreateProfile(const std::string& username_hash) {
-  base::FilePath path;
-  PathService::Get(chrome::DIR_USER_DATA, &path);
-  path = path.AppendASCII(chrome::kProfileDirPrefix + username_hash);
-  Profile* profile = g_browser_process->profile_manager()->GetProfile(path);
-  return profile;
 }
 
 void FakeLoginUtils::SetExpectedCredentials(const std::string& username,

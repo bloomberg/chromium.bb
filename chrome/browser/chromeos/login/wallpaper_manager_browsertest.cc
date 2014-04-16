@@ -33,7 +33,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/dbus/cryptohome_client.h"
 #include "content/public/test/test_utils.h"
 #include "ui/aura/env.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -578,8 +577,7 @@ class WallpaperManagerBrowserTestCrashRestore
     command_line->AppendSwitch(chromeos::switches::kDisableBootAnimation);
     command_line->AppendSwitch(::switches::kMultiProfiles);
     command_line->AppendSwitchASCII(switches::kLoginUser, kTestUser1);
-    command_line->AppendSwitchASCII(switches::kLoginProfile,
-        CryptohomeClient::GetStubSanitizedUsername(kTestUser1));
+    command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
   }
 };
 
@@ -602,8 +600,7 @@ class WallpaperManagerBrowserTestCacheUpdate
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(::switches::kMultiProfiles);
     command_line->AppendSwitchASCII(switches::kLoginUser, kTestUser1);
-    command_line->AppendSwitchASCII(switches::kLoginProfile,
-        CryptohomeClient::GetStubSanitizedUsername(kTestUser1));
+    command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
   }
  protected:
   // Creates a test image of size 1x1.

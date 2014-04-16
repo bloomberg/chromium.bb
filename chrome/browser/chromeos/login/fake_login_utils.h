@@ -42,8 +42,6 @@ class FakeLoginUtils : public LoginUtils {
   }
 
  private:
-  Profile* CreateProfile(const std::string& username_hash);
-
   scoped_refptr<Authenticator> authenticator_;
   std::string expected_username_;
   std::string expected_password_;

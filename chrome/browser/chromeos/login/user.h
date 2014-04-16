@@ -204,6 +204,7 @@ class User {
   friend class UserImageManagerImpl;
   // For testing:
   friend class MockUserManager;
+  friend class FakeLoginUtils;
   friend class FakeUserManager;
   friend class UserAddingScreenTest;
 

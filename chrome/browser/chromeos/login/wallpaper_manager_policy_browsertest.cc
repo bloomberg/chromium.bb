@@ -183,7 +183,7 @@ class WallpaperManagerPolicyTest
     if (GetParam())
       command_line->AppendSwitch(::switches::kMultiProfiles);
     else
-      command_line->AppendSwitchASCII(switches::kLoginProfile, kTestUsers[0]);
+      command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
