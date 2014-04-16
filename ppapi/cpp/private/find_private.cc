@@ -86,12 +86,12 @@ void Find_Private::SelectedFindResultChanged(int32_t index) {
 
 void Find_Private::SetTickmarks(const std::vector<pp::Rect>& tickmarks) {
   if (has_interface<PPB_Find_Private>()) {
-    if (tickmarks.empty())
-      return;
     std::vector<PP_Rect> tickmarks_converted(tickmarks.begin(),
                                              tickmarks.end());
+    PP_Rect* array =
+        tickmarks_converted.empty() ? NULL : &tickmarks_converted[0];
     get_interface<PPB_Find_Private>()->SetTickmarks(
-        associated_instance_.pp_instance(), &tickmarks_converted[0],
+        associated_instance_.pp_instance(), array,
         static_cast<uint32_t>(tickmarks.size()));
   }
 }

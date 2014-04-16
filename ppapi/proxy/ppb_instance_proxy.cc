@@ -959,12 +959,11 @@ void PPB_Instance_Proxy::OnHostMsgSetTickmarks(
     const std::vector<PP_Rect>& tickmarks) {
   if (!dispatcher()->permissions().HasPermission(PERMISSION_PRIVATE))
     return;
-  if (tickmarks.empty())
-    return;
+  const PP_Rect* array = tickmarks.empty() ? NULL : &tickmarks[0];
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded()) {
     enter.functions()->SetTickmarks(instance,
-                                    &tickmarks[0],
+                                    array,
                                     static_cast<uint32_t>(tickmarks.size()));
   }
 }
