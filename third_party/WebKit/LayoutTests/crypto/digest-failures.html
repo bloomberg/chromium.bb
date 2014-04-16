@@ -13,10 +13,13 @@ description("Tests incorrect calls to crypto.subtle.digest()");
 
 jsTestIsAsync = true;
 
-// Called with too few parameters.
-shouldThrow("crypto.subtle.digest({name: 'sha-1'})");
-
 Promise.resolve(null).then(function(result) {
+    // Called with too few parameters.
+    return crypto.subtle.digest({name: 'sha-1'});
+}).then(failAndFinishJSTest, function(result) {
+    error = result;
+    shouldBeTypeError("error");
+
     // "null" is not a valid data argument.
     return crypto.subtle.digest({name: 'sha-1'}, null);
 }).then(failAndFinishJSTest, function(result) {

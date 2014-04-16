@@ -11,9 +11,9 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 PASS error is null
 PASS error is null
-PASS crypto.subtle.unwrapKey('raw', wrappedKey, 'hi', unwrapAlgorithm, null, extractable, 9) threw exception TypeError: The 7th argument is neither an array, nor does it have indexed properties..
+PASS error is: TypeError: The 7th argument is neither an array, nor does it have indexed properties.
 PASS error is null
-PASS crypto.subtle.unwrapKey('raw', wrappedKey, unwrappingKey, unwrapAlgorithm, 3, extractable, keyUsages) threw exception TypeError: Failed to execute 'unwrapKey' on 'SubtleCrypto': parameter 5 ('unwrappedKeyAlgorithm') is not an object..
+PASS error is: TypeError: Failed to execute 'unwrapKey' on 'SubtleCrypto': parameter 5 ('unwrappedKeyAlgorithm') is not an object.
 PASS error is null
 PASS error is null
 PASS error is null

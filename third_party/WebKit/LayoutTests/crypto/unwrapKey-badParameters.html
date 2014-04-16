@@ -43,7 +43,10 @@ importUnwrappingKey().then(function(result) {
     shouldBeNull("error");
 
     // Invalid keyUsages (also, unwrappedKeyAlgorithm is set to null).
-    shouldThrow("crypto.subtle.unwrapKey('raw', wrappedKey, 'hi', unwrapAlgorithm, null, extractable, 9)");
+    return crypto.subtle.unwrapKey('raw', wrappedKey, 'hi', unwrapAlgorithm, null, extractable, 9);
+}).then(failAndFinishJSTest, function(result) {
+    error = result;
+    shouldBeTypeError("error");
 
     // Invalid unwrapAlgorithm
     return crypto.subtle.unwrapKey('raw', wrappedKey, unwrappingKey, null, unwrappedKeyAlgorithm, extractable, keyUsages);
@@ -52,7 +55,10 @@ importUnwrappingKey().then(function(result) {
     shouldBeNull("error");
 
     // Invalid unwrappedKeyAlgorithm (specified but bad).
-    shouldThrow("crypto.subtle.unwrapKey('raw', wrappedKey, unwrappingKey, unwrapAlgorithm, 3, extractable, keyUsages)");
+    return crypto.subtle.unwrapKey('raw', wrappedKey, unwrappingKey, unwrapAlgorithm, 3, extractable, keyUsages);
+}).then(failAndFinishJSTest, function(result) {
+    error = result;
+    shouldBeTypeError("error");
 
     // Invalid format
     return crypto.subtle.unwrapKey('bad-format', wrappedKey, unwrappingKey, unwrapAlgorithm, unwrappedKeyAlgorithm, extractable, keyUsages);

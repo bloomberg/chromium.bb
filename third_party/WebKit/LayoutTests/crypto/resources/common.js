@@ -1,3 +1,13 @@
+function shouldBeTypeError(toEval)
+{
+    var value = eval(toEval);
+    if (value instanceof TypeError) {
+        testPassed(toEval + " is: " + value.toString());
+    } else {
+        testFailed(toEval + " is not a TypeError: " + value);
+    }
+}
+
 // Verifies that the given "bytes" holds the same value as "expectedHexString".
 // "bytes" can be anything recognized by "bytesToHexString()".
 function bytesShouldMatchHexString(testDescription, expectedHexString, bytes)

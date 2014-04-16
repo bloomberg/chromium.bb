@@ -15,11 +15,19 @@ jsTestIsAsync = true;
 extractable = true;
 keyUsages = ['encrypt', 'decrypt'];
 
-// Invalid keyUsages
-shouldThrow("crypto.subtle.generateKey({ name: 'aes-cbc', length: 1024 }, extractable, -1)");
-shouldThrow("crypto.subtle.generateKey({ name: 'aes-cbc', length: 1024 }, extractable, null)");
-
 Promise.resolve(null).then(function() {
+    // Invalid keyUsages
+    return crypto.subtle.generateKey({ name: 'aes-cbc', length: 1024 }, extractable, -1);
+}).then(failAndFinishJSTest, function(result) {
+    error = result
+    shouldBeTypeError("error");
+
+    // Invalid keyUsages
+    return crypto.subtle.generateKey({ name: 'aes-cbc', length: 1024 }, extractable, null);
+}).then(failAndFinishJSTest, function(result) {
+    error = result
+    shouldBeTypeError("error");
+
     // Bad key usage "boo".
     return crypto.subtle.generateKey({ name: 'aes-cbc', length: 1024 }, extractable, ['boo']);
 }).then(failAndFinishJSTest, function(result) {
