@@ -15,6 +15,8 @@ enum WebViewPermissionType {
 
   // Media access (audio/video) permission request type.
   WEB_VIEW_PERMISSION_TYPE_MEDIA,
+
+  WEB_VIEW_PERMISSION_TYPE_DOWNLOAD
 };
 
 #endif  // CHROME_BROWSER_GUESTVIEW_WEBVIEW_WEBVIEW_PERMISSION_TYPES_H_

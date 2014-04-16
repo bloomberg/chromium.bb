@@ -508,7 +508,7 @@ class CONTENT_EXPORT BrowserPluginGuest
   void DidRetrieveDownloadURLFromRequestId(
       const std::string& request_method,
       const base::Callback<void(bool)>& callback,
-      const std::string& url);
+      const GURL& url);
 
   // Forwards all messages from the |pending_messages_| queue to the embedder.
   void SendQueuedMessages();

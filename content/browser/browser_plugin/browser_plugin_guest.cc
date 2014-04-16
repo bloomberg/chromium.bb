@@ -88,25 +88,6 @@ class BrowserPluginGuest::PermissionRequest :
   base::WeakPtr<BrowserPluginGuest> guest_;
 };
 
-class BrowserPluginGuest::DownloadRequest : public PermissionRequest {
- public:
-  DownloadRequest(const base::WeakPtr<BrowserPluginGuest>& guest,
-                  const base::Callback<void(bool)>& callback)
-      : PermissionRequest(guest),
-        callback_(callback) {
-    RecordAction(
-        base::UserMetricsAction("BrowserPlugin.Guest.PermissionRequest.Download"));
-  }
-  virtual void RespondImpl(bool should_allow,
-                           const std::string& user_input) OVERRIDE {
-    callback_.Run(should_allow);
-  }
-
- private:
-  virtual ~DownloadRequest() {}
-  base::Callback<void(bool)> callback_;
-};
-
 class BrowserPluginGuest::NewWindowRequest : public PermissionRequest {
  public:
   NewWindowRequest(const base::WeakPtr<BrowserPluginGuest>& guest,
@@ -216,18 +197,17 @@ std::string JavaScriptMessageTypeToString(JavaScriptMessageType message_type) {
 }
 
 // Called on IO thread.
-static std::string RetrieveDownloadURLFromRequestId(
-    RenderViewHost* render_view_host,
+static GURL RetrieveDownloadURLFromRequestId(
+    int render_process_id,
     int url_request_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  int render_process_id = render_view_host->GetProcess()->GetID();
   GlobalRequestID global_id(render_process_id, url_request_id);
   net::URLRequest* url_request =
       ResourceDispatcherHostImpl::Get()->GetURLRequest(global_id);
   if (url_request)
-    return url_request->url().possibly_invalid_spec();
-  return "";
+    return url_request->url();
+  return GURL();
 }
 
 }  // namespace
@@ -672,10 +652,15 @@ void BrowserPluginGuest::CanDownload(
     int request_id,
     const std::string& request_method,
     const base::Callback<void(bool)>& callback) {
+  if (!delegate_) {
+    callback.Run(false);
+    return;
+  }
+
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&RetrieveDownloadURLFromRequestId,
-                 render_view_host, request_id),
+                 render_view_host->GetProcess()->GetID(), request_id),
       base::Bind(&BrowserPluginGuest::DidRetrieveDownloadURLFromRequestId,
                  weak_ptr_factory_.GetWeakPtr(),
                  request_method,
@@ -1742,21 +1727,13 @@ void BrowserPluginGuest::OnImeCompositionRangeChanged(
 void BrowserPluginGuest::DidRetrieveDownloadURLFromRequestId(
     const std::string& request_method,
     const base::Callback<void(bool)>& callback,
-    const std::string& url) {
-  if (url.empty()) {
+    const GURL& url) {
+  if (!url.is_valid()) {
     callback.Run(false);
     return;
   }
 
-  base::DictionaryValue request_info;
-  request_info.Set(browser_plugin::kRequestMethod,
-                   base::Value::CreateStringValue(request_method));
-  request_info.Set(browser_plugin::kURL, base::Value::CreateStringValue(url));
-
-  RequestPermission(BROWSER_PLUGIN_PERMISSION_TYPE_DOWNLOAD,
-                    new DownloadRequest(weak_ptr_factory_.GetWeakPtr(),
-                                        callback),
-                    request_info);
+  delegate_->CanDownload(request_method, url, callback);
 }
 
 }  // namespace content

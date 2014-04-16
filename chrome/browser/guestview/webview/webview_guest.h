@@ -84,6 +84,9 @@ class WebViewGuest : public GuestView,
   virtual void RequestMediaAccessPermission(
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback) OVERRIDE;
+  virtual void CanDownload(const std::string& request_method,
+                           const GURL& url,
+                           const base::Callback<void(bool)>& callback) OVERRIDE;
 
   // NotificationObserver implementation.
   virtual void Observe(int type,
@@ -129,6 +132,11 @@ class WebViewGuest : public GuestView,
   void OnWebViewMediaPermissionResponse(
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback,
+      bool allow,
+      const std::string& user_input);
+
+  void OnWebViewDownloadPermissionResponse(
+      const base::Callback<void(bool)>& callback,
       bool allow,
       const std::string& user_input);
 

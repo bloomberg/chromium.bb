@@ -33,4 +33,11 @@ void BrowserPluginGuestDelegate::RequestMediaAccessPermission(
                scoped_ptr<MediaStreamUI>());
 }
 
+void BrowserPluginGuestDelegate::CanDownload(
+    const std::string& request_method,
+    const GURL& url,
+    const base::Callback<void(bool)>& callback) {
+  callback.Run(true);
+}
+
 }  // namespace content

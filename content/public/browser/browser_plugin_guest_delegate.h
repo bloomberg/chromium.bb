@@ -110,6 +110,11 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
       const MediaStreamRequest& request,
       const MediaResponseCallback& callback);
 
+  // Asks the delegate if the given tab can download.
+  // Invoking the |callback| synchronously is OK.
+  virtual void CanDownload(const std::string& request_method,
+                           const GURL& url,
+                           const base::Callback<void(bool)>& callback);
 };
 
 }  // namespace content

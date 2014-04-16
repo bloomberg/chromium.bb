@@ -77,8 +77,6 @@ static std::string TerminationStatusToString(base::TerminationStatus status) {
 
 static std::string PermissionTypeToString(BrowserPluginPermissionType type) {
   switch (type) {
-    case BROWSER_PLUGIN_PERMISSION_TYPE_DOWNLOAD:
-      return webview::kPermissionTypeDownload;
     case BROWSER_PLUGIN_PERMISSION_TYPE_NEW_WINDOW:
       return webview::kPermissionTypeNewWindow;
     case BROWSER_PLUGIN_PERMISSION_TYPE_POINTER_LOCK:
@@ -91,6 +89,8 @@ static std::string PermissionTypeToString(BrowserPluginPermissionType type) {
     default: {
       WebViewPermissionType webview = static_cast<WebViewPermissionType>(type);
       switch (webview) {
+        case WEB_VIEW_PERMISSION_TYPE_DOWNLOAD:
+          return webview::kPermissionTypeDownload;
         case WEB_VIEW_PERMISSION_TYPE_GEOLOCATION:
           return webview::kPermissionTypeGeolocation;
         case WEB_VIEW_PERMISSION_TYPE_LOAD_PLUGIN:
@@ -193,10 +193,6 @@ void WebViewGuest::RecordUserInitiatedUMA(const PermissionResponseInfo& info,
     // scenario would be: an embedder allows geolocation request but doesn't
     // have geolocation access on its own.
     switch (info.permission_type) {
-      case BROWSER_PLUGIN_PERMISSION_TYPE_DOWNLOAD:
-        content::RecordAction(
-            UserMetricsAction("BrowserPlugin.PermissionAllow.Download"));
-        break;
       case BROWSER_PLUGIN_PERMISSION_TYPE_POINTER_LOCK:
         content::RecordAction(
             UserMetricsAction("BrowserPlugin.PermissionAllow.PointerLock"));
@@ -226,6 +222,10 @@ void WebViewGuest::RecordUserInitiatedUMA(const PermissionResponseInfo& info,
             content::RecordAction(
                 UserMetricsAction("WebView.PermissionAllow.Media"));
             break;
+          case WEB_VIEW_PERMISSION_TYPE_DOWNLOAD:
+            content::RecordAction(
+                UserMetricsAction("WebView.PermissionAllow.Download"));
+            break;
           default:
             break;
         }
@@ -233,10 +233,6 @@ void WebViewGuest::RecordUserInitiatedUMA(const PermissionResponseInfo& info,
     }
   } else {
     switch (info.permission_type) {
-      case BROWSER_PLUGIN_PERMISSION_TYPE_DOWNLOAD:
-        content::RecordAction(
-            UserMetricsAction("BrowserPlugin.PermissionDeny.Download"));
-        break;
       case BROWSER_PLUGIN_PERMISSION_TYPE_POINTER_LOCK:
         content::RecordAction(
             UserMetricsAction("BrowserPlugin.PermissionDeny.PointerLock"));
@@ -265,6 +261,10 @@ void WebViewGuest::RecordUserInitiatedUMA(const PermissionResponseInfo& info,
           case WEB_VIEW_PERMISSION_TYPE_MEDIA:
             content::RecordAction(
                 UserMetricsAction("WebView.PermissionDeny.Media"));
+            break;
+          case WEB_VIEW_PERMISSION_TYPE_DOWNLOAD:
+            content::RecordAction(
+                UserMetricsAction("WebView.PermissionDeny.Download"));
             break;
           default:
             break;
@@ -609,6 +609,13 @@ void WebViewGuest::OnWebViewMediaPermissionResponse(
       RequestMediaAccessPermission(embedder_web_contents(), request, callback);
 }
 
+void WebViewGuest::OnWebViewDownloadPermissionResponse(
+    const base::Callback<void(bool)>& callback,
+    bool allow,
+    const std::string& user_input) {
+  callback.Run(allow && attached());
+}
+
 WebViewGuest::SetPermissionResult WebViewGuest::SetPermission(
     int request_id,
     PermissionResponseAction action,
@@ -869,6 +876,24 @@ void WebViewGuest::RequestMediaAccessPermission(
                                request,
                                callback),
                     false /* allowed_by_default */);
+}
+
+void WebViewGuest::CanDownload(
+    const std::string& request_method,
+    const GURL& url,
+    const base::Callback<void(bool)>& callback) {
+  base::DictionaryValue request_info;
+  request_info.Set(
+      guestview::kUrl,
+      base::Value::CreateStringValue(url.spec()));
+  RequestPermission(
+      static_cast<BrowserPluginPermissionType>(
+          WEB_VIEW_PERMISSION_TYPE_DOWNLOAD),
+      request_info,
+      base::Bind(&WebViewGuest::OnWebViewDownloadPermissionResponse,
+                 base::Unretained(this),
+                 callback),
+      false /* allowed_by_default */);
 }
 
 #if defined(OS_CHROMEOS)
