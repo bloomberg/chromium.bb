@@ -4,13 +4,9 @@
 
 #include "ui/aura/env.h"
 
-#include "base/command_line.h"
-#include "base/message_loop/message_pump_dispatcher.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/input_state_lookup.h"
-#include "ui/aura/window.h"
 #include "ui/compositor/compositor.h"
-#include "ui/compositor/compositor_switches.h"
 #include "ui/events/event_target_iterator.h"
 
 namespace aura {

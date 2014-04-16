@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 
-#if defined(USE_AURA)
+#if defined(OS_WIN)
 #include "base/message_loop/message_pump_dispatcher.h"
 #endif
 

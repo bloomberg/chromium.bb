@@ -121,7 +121,6 @@ GSourceFuncs WorkSourceFuncs = {
 
 struct MessagePumpGlib::RunState {
   Delegate* delegate;
-  MessagePumpDispatcher* dispatcher;
 
   // Used to flag that the current Run() invocation should return ASAP.
   bool should_quit;
@@ -165,65 +164,6 @@ MessagePumpGlib::~MessagePumpGlib() {
   g_source_unref(work_source_);
   close(wakeup_pipe_read_);
   close(wakeup_pipe_write_);
-}
-
-void MessagePumpGlib::RunWithDispatcher(Delegate* delegate,
-                                        MessagePumpDispatcher* dispatcher) {
-#ifndef NDEBUG
-  // Make sure we only run this on one thread. X/GTK only has one message pump
-  // so we can only have one UI loop per process.
-  static PlatformThreadId thread_id = PlatformThread::CurrentId();
-  DCHECK(thread_id == PlatformThread::CurrentId()) <<
-      "Running MessagePumpGlib on two different threads; "
-      "this is unsupported by GLib!";
-#endif
-
-  RunState state;
-  state.delegate = delegate;
-  state.dispatcher = dispatcher;
-  state.should_quit = false;
-  state.run_depth = state_ ? state_->run_depth + 1 : 1;
-  state.has_work = false;
-
-  RunState* previous_state = state_;
-  state_ = &state;
-
-  // We really only do a single task for each iteration of the loop.  If we
-  // have done something, assume there is likely something more to do.  This
-  // will mean that we don't block on the message pump until there was nothing
-  // more to do.  We also set this to true to make sure not to block on the
-  // first iteration of the loop, so RunUntilIdle() works correctly.
-  bool more_work_is_plausible = true;
-
-  // We run our own loop instead of using g_main_loop_quit in one of the
-  // callbacks.  This is so we only quit our own loops, and we don't quit
-  // nested loops run by others.  TODO(deanm): Is this what we want?
-  for (;;) {
-    // Don't block if we think we have more work to do.
-    bool block = !more_work_is_plausible;
-
-    more_work_is_plausible = g_main_context_iteration(context_, block);
-    if (state_->should_quit)
-      break;
-
-    more_work_is_plausible |= state_->delegate->DoWork();
-    if (state_->should_quit)
-      break;
-
-    more_work_is_plausible |=
-        state_->delegate->DoDelayedWork(&delayed_work_time_);
-    if (state_->should_quit)
-      break;
-
-    if (more_work_is_plausible)
-      continue;
-
-    more_work_is_plausible = state_->delegate->DoIdleWork();
-    if (state_->should_quit)
-      break;
-  }
-
-  state_ = previous_state;
 }
 
 // Return the timeout we want passed to poll.
@@ -291,7 +231,60 @@ void MessagePumpGlib::HandleDispatch() {
 }
 
 void MessagePumpGlib::Run(Delegate* delegate) {
-  RunWithDispatcher(delegate, NULL);
+#ifndef NDEBUG
+  // Make sure we only run this on one thread. X only has one message pump
+  // so we can only have one UI loop per process.
+  static PlatformThreadId thread_id = PlatformThread::CurrentId();
+  DCHECK(thread_id == PlatformThread::CurrentId()) <<
+      "Running MessagePumpGlib on two different threads; "
+      "this is unsupported by GLib!";
+#endif
+
+  RunState state;
+  state.delegate = delegate;
+  state.should_quit = false;
+  state.run_depth = state_ ? state_->run_depth + 1 : 1;
+  state.has_work = false;
+
+  RunState* previous_state = state_;
+  state_ = &state;
+
+  // We really only do a single task for each iteration of the loop.  If we
+  // have done something, assume there is likely something more to do.  This
+  // will mean that we don't block on the message pump until there was nothing
+  // more to do.  We also set this to true to make sure not to block on the
+  // first iteration of the loop, so RunUntilIdle() works correctly.
+  bool more_work_is_plausible = true;
+
+  // We run our own loop instead of using g_main_loop_quit in one of the
+  // callbacks.  This is so we only quit our own loops, and we don't quit
+  // nested loops run by others.  TODO(deanm): Is this what we want?
+  for (;;) {
+    // Don't block if we think we have more work to do.
+    bool block = !more_work_is_plausible;
+
+    more_work_is_plausible = g_main_context_iteration(context_, block);
+    if (state_->should_quit)
+      break;
+
+    more_work_is_plausible |= state_->delegate->DoWork();
+    if (state_->should_quit)
+      break;
+
+    more_work_is_plausible |=
+        state_->delegate->DoDelayedWork(&delayed_work_time_);
+    if (state_->should_quit)
+      break;
+
+    if (more_work_is_plausible)
+      continue;
+
+    more_work_is_plausible = state_->delegate->DoIdleWork();
+    if (state_->should_quit)
+      break;
+  }
+
+  state_ = previous_state;
 }
 
 void MessagePumpGlib::Quit() {
@@ -317,10 +310,6 @@ void MessagePumpGlib::ScheduleDelayedWork(const TimeTicks& delayed_work_time) {
   // adjusted.  This will cause us to try to do work, but that's ok.
   delayed_work_time_ = delayed_work_time;
   ScheduleWork();
-}
-
-MessagePumpDispatcher* MessagePumpGlib::GetDispatcher() {
-  return state_ ? state_->dispatcher : NULL;
 }
 
 bool MessagePumpGlib::ShouldQuit() const {

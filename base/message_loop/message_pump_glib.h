@@ -17,29 +17,12 @@ typedef struct _GSource GSource;
 
 namespace base {
 
-// MessagePumpObserver is notified prior to an event being dispatched. As
-// Observers are notified of every change, they have to be FAST! The platform
-// specific implementation of the class is in message_pump_x.
-class MessagePumpObserver;
-
-// MessagePumpDispatcher is used during a nested invocation of Run to dispatch
-// events. If Run is invoked with a non-NULL MessagePumpDispatcher, MessageLoop
-// does not dispatch events (or invoke gtk_main_do_event), rather every event is
-// passed to Dispatcher's Dispatch method for dispatch. It is up to the
-// Dispatcher to dispatch, or not, the event. The platform specific
-// implementation of the class is in message_pump_x.
-class MessagePumpDispatcher;
-
 // This class implements a base MessagePump needed for TYPE_UI MessageLoops on
 // platforms using GLib.
 class BASE_EXPORT MessagePumpGlib : public MessagePump {
  public:
   MessagePumpGlib();
   virtual ~MessagePumpGlib();
-
-  // Like MessagePump::Run, but events are routed through dispatcher.
-  virtual void RunWithDispatcher(Delegate* delegate,
-                                 MessagePumpDispatcher* dispatcher);
 
   // Internal methods used for processing the pump callbacks.  They are
   // public for simplicity but should not be used directly.  HandlePrepare
@@ -57,13 +40,9 @@ class BASE_EXPORT MessagePumpGlib : public MessagePump {
   virtual void ScheduleWork() OVERRIDE;
   virtual void ScheduleDelayedWork(const TimeTicks& delayed_work_time) OVERRIDE;
 
- protected:
-  // Returns the dispatcher for the current run state (|state_->dispatcher|).
-  MessagePumpDispatcher* GetDispatcher();
-
+ private:
   bool ShouldQuit() const;
 
- private:
   // We may make recursive calls to Run, so we save state that needs to be
   // separate between them in this structure type.
   struct RunState;

@@ -15,7 +15,7 @@ namespace base {
 class MessagePumpForUI;
 #endif
 
-#if defined(USE_AURA)
+#if defined(OS_WIN)
 class MessagePumpDispatcher;
 #endif
 
