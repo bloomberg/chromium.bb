@@ -904,7 +904,7 @@ void NativeAppWindowCocoa::SetContentSizeConstraints(
   shows_resize_controls_ =
       is_resizable_ && !size_constraints_.HasFixedSize();
   shows_fullscreen_controls_ =
-      is_resizable_ && !size_constraints_.HasMaximumSize();
+      is_resizable_ && !size_constraints_.HasMaximumSize() && has_frame_;
 
   if (!is_fullscreen_) {
     [window() setStyleMask:GetWindowStyleMask()];
