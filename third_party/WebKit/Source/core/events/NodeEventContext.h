@@ -64,4 +64,11 @@ private:
 
 }
 
+namespace WTF {
+
+template <>
+struct VectorTraits<WebCore::NodeEventContext> : SimpleClassVectorTraits<WebCore::NodeEventContext> { };
+
+}
+
 #endif // NodeEventContext_h
