@@ -163,25 +163,28 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
     char buf[kExpectedLength];
     const ssize_t len = UnixDomainSocket::RecvMsg(fds[0], buf, sizeof(buf),
                                                   &fds_vec);
-    CHECK(len == kExpectedLength) << "Incorrect zygote magic length";
-    CHECK(0 == strcmp(buf, kZygoteHelloMessage))
-        << "Incorrect zygote hello";
+    CHECK_EQ(kExpectedLength, len) << "Incorrect zygote magic length";
+    CHECK(0 == strcmp(buf, kZygoteHelloMessage)) << "Incorrect zygote hello";
 
     std::string inode_output;
     ino_t inode = 0;
     // Figure out the inode for |dummy_fd|, close |dummy_fd| on our end,
     // and find the zygote process holding |dummy_fd|.
-    if (base::FileDescriptorGetInode(&inode, dummy_fd)) {
-      close(dummy_fd);
-      std::vector<std::string> get_inode_cmdline;
-      get_inode_cmdline.push_back(sandbox_binary_);
-      get_inode_cmdline.push_back(base::kFindInodeSwitch);
-      get_inode_cmdline.push_back(base::Int64ToString(inode));
-      CommandLine get_inode_cmd(get_inode_cmdline);
-      if (base::GetAppOutput(get_inode_cmd, &inode_output)) {
-        base::StringToInt(inode_output, &pid_);
-      }
-    }
+    CHECK(base::FileDescriptorGetInode(&inode, dummy_fd))
+        << "Cannot get inode for dummy_fd " << dummy_fd;
+    close(dummy_fd);
+
+    std::vector<std::string> get_inode_cmdline;
+    get_inode_cmdline.push_back(sandbox_binary_);
+    get_inode_cmdline.push_back(base::kFindInodeSwitch);
+    get_inode_cmdline.push_back(base::Int64ToString(inode));
+    CommandLine get_inode_cmd(get_inode_cmdline);
+    CHECK(base::GetAppOutput(get_inode_cmd, &inode_output))
+        << "Find inode command failed for inode " << inode;
+
+    base::TrimWhitespaceASCII(inode_output, base::TRIM_ALL, &inode_output);
+    CHECK(base::StringToInt(inode_output, &pid_))
+        << "Invalid find inode output: " << inode_output;
     CHECK(pid_ > 0) << "Did not find zygote process (using sandbox binary "
         << sandbox_binary_ << ")";
 
