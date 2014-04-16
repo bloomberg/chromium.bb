@@ -2576,7 +2576,7 @@ recorder_frame_notify(struct wl_listener *listener, void *data)
 		return;
 	}
 
-	vaapi_recorder_frame(output->recorder, fd, output->current->stride / 4);
+	vaapi_recorder_frame(output->recorder, fd, output->current->stride);
 }
 
 static void *
