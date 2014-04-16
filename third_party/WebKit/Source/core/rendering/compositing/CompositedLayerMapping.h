@@ -88,7 +88,7 @@ public:
     // Returns true if layer configuration changed.
     bool updateGraphicsLayerConfiguration(GraphicsLayerUpdater::UpdateType);
     // Update graphics layer position and bounds.
-    void updateGraphicsLayerGeometry(GraphicsLayerUpdater::UpdateType);
+    void updateGraphicsLayerGeometry(GraphicsLayerUpdater::UpdateType, const RenderLayer* compositingContainer);
     // Update whether layer needs blending.
     void updateContentsOpaque();
 
