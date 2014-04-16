@@ -69,6 +69,7 @@ v8.log
 /chrome/app/theme/default_200_percent/google_chrome
 /chrome/app/theme/google_chrome
 /chrome/browser/autofill/internal
+/chrome/browser/extensions/api/ledger/
 /chrome/browser/extensions/default_extensions/chromeos
 /chrome/browser/google/linkdoctor_internal
 /chrome/browser/intents/internal/
@@ -86,6 +87,7 @@ v8.log
 /chrome/chrome_user32_delay_imports.xml
 /chrome/chrome_version_resources.xml
 /chrome/common/extensions/api/api.xml
+/chrome/common/extensions/api/ledger/
 /chrome/Hammer
 /chrome/installer/linux/debian_wheezy_amd64-sysroot/
 /chrome/installer/linux/debian_wheezy_i386-sysroot/
