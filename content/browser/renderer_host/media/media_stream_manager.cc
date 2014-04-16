@@ -1825,8 +1825,6 @@ void MediaStreamManager::NotifyDevicesChanged(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   MediaObserver* media_observer =
       GetContentClient()->browser()->GetMediaObserver();
-  if (media_observer == NULL)
-    return;
 
   // Map the devices to MediaStreamDevices.
   MediaStreamDevices new_devices;
@@ -1838,11 +1836,13 @@ void MediaStreamManager::NotifyDevicesChanged(
   if (IsAudioMediaType(stream_type)) {
     MediaCaptureDevicesImpl::GetInstance()->OnAudioCaptureDevicesChanged(
         new_devices);
-    media_observer->OnAudioCaptureDevicesChanged();
+    if (media_observer)
+      media_observer->OnAudioCaptureDevicesChanged();
   } else if (IsVideoMediaType(stream_type)) {
     MediaCaptureDevicesImpl::GetInstance()->OnVideoCaptureDevicesChanged(
         new_devices);
-    media_observer->OnVideoCaptureDevicesChanged();
+    if (media_observer)
+      media_observer->OnVideoCaptureDevicesChanged();
   } else {
     NOTREACHED();
   }
