@@ -2815,7 +2815,7 @@ driver-install-translator() {
 
 DumpAllRevisions() {
   one-line-rev-info ${NACL_ROOT}
-  for d in ${PNACL_ROOT}/git/*/ ; do
+  for d in ${PNACL_GIT_ROOT}/*/ ; do
     one-line-rev-info $d
   done
 }
@@ -3147,8 +3147,6 @@ show-config() {
   env | grep PNACL
   Banner "uname info for builder:"
   uname -a
-  Banner "Revisions:"
-  DumpAllRevisions
 }
 
 #@ help                  - Usage information.
