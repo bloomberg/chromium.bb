@@ -1789,6 +1789,15 @@ const Experiment kExperiments[] = {
     kOsDesktop,
     SINGLE_VALUE_TYPE(switches::kEnableEmbeddedSharedWorker)
   },
+#if defined(OS_CHROMEOS)
+  {
+    "enable-filemanager-mtp",
+    IDS_FLAGS_ENABLE_FILE_MANAGER_MTP_NAME,
+    IDS_FLAGS_ENABLE_FILE_MANAGER_MTP_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(chromeos::switches::kEnableFileManagerMTP)
+  },
+#endif
 };
 
 const Experiment* experiments = kExperiments;

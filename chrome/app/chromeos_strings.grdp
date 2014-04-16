@@ -117,6 +117,12 @@ Press any key to continue exploring.
   </message>
 
   <!-- File Manager -->
+  <message name="IDS_FLAGS_ENABLE_FILE_MANAGER_MTP_NAME" desc="Name of the about:flag option to enable MTP support in file manager.">
+    Enable MTP support in File Manager.
+  </message>
+  <message name="IDS_FLAGS_ENABLE_FILE_MANAGER_MTP_DESCRIPTION" desc="Description of the about:flag option to the enable MTP support in file manager.">
+    Show MTP devices as a file storage in the file manager.
+  </message>
   <message name="IDS_FLAGS_FILE_MANAGER_ENABLE_NEW_AUDIO_PLAYER_NAME" desc="Name of the about:flag option to enable the new audio player app.">
     Enable the new audio player
   </message>
