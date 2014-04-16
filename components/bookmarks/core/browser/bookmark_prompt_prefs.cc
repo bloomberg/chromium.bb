@@ -1,11 +1,11 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/bookmarks/bookmark_prompt_prefs.h"
+#include "components/bookmarks/core/browser/bookmark_prompt_prefs.h"
 
 #include "base/prefs/pref_service.h"
-#include "chrome/common/pref_names.h"
+#include "components/bookmarks/core/common/bookmark_pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 
 BookmarkPromptPrefs::BookmarkPromptPrefs(PrefService* user_prefs)
