@@ -340,7 +340,7 @@ class EventSenderBindings : public gin::Wrappable<EventSenderBindings> {
   void SetPageScaleFactor(gin::Arguments* args);
   void ClearTouchPoints();
   void ReleaseTouchPoint(unsigned index);
-  void UpdateTouchPoint(unsigned index, int x, int y);
+  void UpdateTouchPoint(unsigned index, double x, double y);
   void CancelTouchPoint(unsigned index);
   void SetTouchModifier(const std::string& key_name, bool set_mask);
   void DumpFilenameBeingDragged();
@@ -587,8 +587,8 @@ void EventSenderBindings::SetPageScaleFactor(gin::Arguments* args) {
   if (!sender_)
     return;
   float scale_factor;
-  int x;
-  int y;
+  double x;
+  double y;
   if (args->PeekNext().IsEmpty())
     return;
   args->GetNext(&scale_factor);
@@ -598,7 +598,8 @@ void EventSenderBindings::SetPageScaleFactor(gin::Arguments* args) {
   if (args->PeekNext().IsEmpty())
     return;
   args->GetNext(&y);
-  sender_->SetPageScaleFactor(scale_factor, x, y);
+  sender_->SetPageScaleFactor(scale_factor,
+                              static_cast<int>(x), static_cast<int>(y));
 }
 
 void EventSenderBindings::ClearTouchPoints() {
@@ -611,9 +612,9 @@ void EventSenderBindings::ReleaseTouchPoint(unsigned index) {
     sender_->ReleaseTouchPoint(index);
 }
 
-void EventSenderBindings::UpdateTouchPoint(unsigned index, int x, int y) {
+void EventSenderBindings::UpdateTouchPoint(unsigned index, double x, double y) {
   if (sender_)
-    sender_->UpdateTouchPoint(index, x, y);
+    sender_->UpdateTouchPoint(index, static_cast<int>(x), static_cast<int>(y));
 }
 
 void EventSenderBindings::CancelTouchPoint(unsigned index) {
@@ -1537,24 +1538,25 @@ void EventSender::BeginDragWithFiles(const std::vector<std::string>& files) {
 }
 
 void EventSender::AddTouchPoint(gin::Arguments* args) {
-  int x;
-  int y;
+  double x;
+  double y;
   args->GetNext(&x);
   args->GetNext(&y);
 
   WebTouchPoint touch_point;
   touch_point.state = WebTouchPoint::StatePressed;
-  touch_point.position = WebFloatPoint(x, y);
+  touch_point.position = WebFloatPoint(static_cast<int>(x),
+                                       static_cast<int>(y));
   touch_point.screenPosition = touch_point.position;
 
   if (!args->PeekNext().IsEmpty()) {
-    int radius_x;
+    double radius_x;
     if (!args->GetNext(&radius_x)) {
       args->ThrowError();
       return;
     }
 
-    int radius_y = radius_x;
+    double radius_y = radius_x;
     if (!args->PeekNext().IsEmpty()) {
       if (!args->GetNext(&radius_y)) {
         args->ThrowError();
@@ -1562,8 +1564,8 @@ void EventSender::AddTouchPoint(gin::Arguments* args) {
       }
     }
 
-    touch_point.radiusX = radius_x;
-    touch_point.radiusY = radius_y;
+    touch_point.radiusX = static_cast<int>(radius_x);
+    touch_point.radiusY = static_cast<int>(radius_y);
   }
 
   int lowest_id = 0;
@@ -1687,11 +1689,11 @@ void EventSender::MouseMoveTo(gin::Arguments* args) {
   if (force_layout_on_events_)
     view_->layout();
 
-  int x;
-  int y;
+  double x;
+  double y;
   args->GetNext(&x);
   args->GetNext(&y);
-  WebPoint mouse_pos(x, y);
+  WebPoint mouse_pos(static_cast<int>(x), static_cast<int>(y));
 
   int modifiers = 0;
   if (!args->PeekNext().IsEmpty())

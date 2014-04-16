@@ -35,7 +35,7 @@ Handle<Value> Converter<int32_t>::ToV8(Isolate* isolate, int32_t val) {
 
 bool Converter<int32_t>::FromV8(Isolate* isolate, Handle<Value> val,
                                 int32_t* out) {
-  if (!val->IsNumber())
+  if (!val->IsInt32())
     return false;
   *out = val->Int32Value();
   return true;
@@ -47,7 +47,7 @@ Handle<Value> Converter<uint32_t>::ToV8(Isolate* isolate, uint32_t val) {
 
 bool Converter<uint32_t>::FromV8(Isolate* isolate, Handle<Value> val,
                                  uint32_t* out) {
-  if (!val->IsNumber())
+  if (!val->IsUint32())
     return false;
   *out = val->Uint32Value();
   return true;

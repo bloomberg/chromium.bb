@@ -89,7 +89,7 @@ TEST_F(ConverterTest, Int32) {
     { Integer::New(instance_->isolate(), 0).As<Value>(), true, 0 },
     { Integer::New(instance_->isolate(), 1).As<Value>(), true, 1 },
     { Number::New(instance_->isolate(), -1).As<Value>(), true, -1 },
-    { Number::New(instance_->isolate(), 1.1).As<Value>(), true, 1 },
+    { Number::New(instance_->isolate(), 1.1).As<Value>(), false, 0 },
     { String::NewFromUtf8(instance_->isolate(), "42").As<Value>(), false, 0 },
     { String::NewFromUtf8(instance_->isolate(), "foo").As<Value>(), false, 0 },
     { Object::New(instance_->isolate()).As<Value>(), false, 0 },
