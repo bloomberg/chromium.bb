@@ -59,6 +59,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool enable_samplers;
     bool ext_draw_buffers;
     bool ext_frag_depth;
+    bool ext_shader_texture_lod;
     bool use_async_readpixels;
     bool map_buffer_range;
     bool ext_discard_framebuffer;

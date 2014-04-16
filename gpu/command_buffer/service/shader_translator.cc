@@ -204,7 +204,9 @@ bool ShaderTranslator::Translate(const char* shader) {
 std::string ShaderTranslator::GetStringForOptionsThatWouldEffectCompilation()
     const {
 
-#if ANGLE_SH_VERSION >= 122
+#if ANGLE_SH_VERSION >= 123
+  const size_t kNumIntFields = 21;
+#elif ANGLE_SH_VERSION >= 122
   const size_t kNumIntFields = 20;
 #else
   const size_t kNumIntFields = 16;
@@ -261,6 +263,10 @@ std::string ShaderTranslator::GetStringForOptionsThatWouldEffectCompilation()
       ":EXT_frag_depth:" +
 #if ANGLE_SH_VERSION >= 122
       base::IntToString(compiler_options_.EXT_frag_depth) +
+#if ANGLE_SH_VERSION >= 123
+      ":EXT_shader_texture_lod:" +
+      base::IntToString(compiler_options_.EXT_shader_texture_lod) +
+#endif
       ":MaxVertexOutputVectors:" +
       base::IntToString(compiler_options_.MaxVertexOutputVectors) +
       ":MaxFragmentInputVectors:" +
@@ -269,7 +275,7 @@ std::string ShaderTranslator::GetStringForOptionsThatWouldEffectCompilation()
       base::IntToString(compiler_options_.MinProgramTexelOffset) +
       ":MaxProgramTexelOffset:" +
       base::IntToString(compiler_options_.MaxProgramTexelOffset));
-#else
+#else   // ANGLE_SH_VERSION < 122
       base::IntToString(compiler_options_.EXT_frag_depth));
 #endif
 }

@@ -127,6 +127,7 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       enable_samplers(false),
       ext_draw_buffers(false),
       ext_frag_depth(false),
+      ext_shader_texture_lod(false),
       use_async_readpixels(false),
       map_buffer_range(false),
       ext_discard_framebuffer(false),
@@ -745,6 +746,12 @@ void FeatureInfo::InitializeFeatures() {
   if (extensions.Contains("GL_EXT_frag_depth") || gfx::HasDesktopGLFeatures()) {
     AddExtensionString("GL_EXT_frag_depth");
     feature_flags_.ext_frag_depth = true;
+  }
+
+  if (extensions.Contains("GL_EXT_shader_texture_lod") ||
+      gfx::HasDesktopGLFeatures()) {
+    AddExtensionString("GL_EXT_shader_texture_lod");
+    feature_flags_.ext_shader_texture_lod = true;
   }
 
   bool ui_gl_fence_works = extensions.Contains("GL_NV_fence") ||
