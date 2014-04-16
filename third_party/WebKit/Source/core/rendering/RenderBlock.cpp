@@ -2190,7 +2190,7 @@ bool RenderBlock::isSelectionRoot() const
         || isPositioned() || isFloating()
         || isTableCell() || isInlineBlockOrInlineTable()
         || hasTransform() || hasReflection() || hasMask() || isWritingModeRoot()
-        || isRenderFlowThread())
+        || isRenderFlowThread() || isFlexItemIncludingDeprecated())
         return true;
 
     if (view() && view()->selectionStart()) {

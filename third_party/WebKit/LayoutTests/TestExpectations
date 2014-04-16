@@ -1002,6 +1002,7 @@ crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/sub-pixel/text-sc
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/bidi-isolate-hang-with-neutral.html [ Skip ]
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/bidi-override-isolate.html [ Skip ]
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/descent-clip-in-scaled-page.html [ Skip ]
+crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/flexbox-selection.html [ Skip ]
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/font-kerning.html [ Skip ]
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/font-variant-ligatures.html [ Skip ]
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/hyphen-min-preferred-width.html [ Skip ]
@@ -1078,6 +1079,10 @@ crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/word-space-nbsp.h
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/word-space-with-kerning-2.html [ Skip ]
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/word-space-with-kerning-3.html [ Skip ]
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/word-space-with-kerning.html [ Skip ]
+
+crbug.com/167341 [ Mac ] editing/selection/3690703.html [ NeedsRebaseline ]
+crbug.com/167341 [ Mac ] editing/selection/3690703-2.html [ NeedsRebaseline ]
+crbug.com/167341 [ Mac ] editing/selection/3690719.html [ NeedsRebaseline ]
 
 crbug.com/361133 fast/frames/remove-frame-during-load-event.html [ Pass Crash ]
 
