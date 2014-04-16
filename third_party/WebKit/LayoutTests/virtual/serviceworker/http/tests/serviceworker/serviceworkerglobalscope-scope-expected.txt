@@ -1,0 +1,8 @@
+
+PASS Verify the scope property: default 
+PASS Verify the scope property: wildcard 
+PASS Verify the scope property: relative path 
+PASS Verify the scope property: relative path with wildcard 
+PASS Verify the scope property: absolute url 
+PASS Verify the scope property: absolute url with wildcard 
+

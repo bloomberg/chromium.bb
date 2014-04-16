@@ -1,0 +1,8 @@
+
+FAIL Verify the scope property: default assert_unreached: Registration should succeed, but failed: DisabledError Reached unreachable code
+FAIL Verify the scope property: wildcard assert_unreached: Registration should succeed, but failed: DisabledError Reached unreachable code
+FAIL Verify the scope property: relative path assert_unreached: Registration should succeed, but failed: DisabledError Reached unreachable code
+FAIL Verify the scope property: relative path with wildcard assert_unreached: Registration should succeed, but failed: DisabledError Reached unreachable code
+FAIL Verify the scope property: absolute url assert_unreached: Registration should succeed, but failed: DisabledError Reached unreachable code
+FAIL Verify the scope property: absolute url with wildcard assert_unreached: Registration should succeed, but failed: DisabledError Reached unreachable code
+
