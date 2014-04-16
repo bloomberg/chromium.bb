@@ -21,18 +21,18 @@
 
 namespace WebCore {
 
-static int calculateViewportWidth(LocalFrame* frame, RenderStyle* style)
+static int calculateViewportWidth(LocalFrame* frame)
 {
-    ASSERT(frame && frame->view() && style);
+    ASSERT(frame && frame->view() && frame->document());
     int viewportWidth = frame->view()->layoutSize(IncludeScrollbars).width();
-    return adjustForAbsoluteZoom(viewportWidth, style);
+    return adjustForAbsoluteZoom(viewportWidth, frame->document()->renderView());
 }
 
-static int calculateViewportHeight(LocalFrame* frame, RenderStyle* style)
+static int calculateViewportHeight(LocalFrame* frame)
 {
-    ASSERT(frame && frame->view() && style);
+    ASSERT(frame && frame->view() && frame->document());
     int viewportHeight = frame->view()->layoutSize(IncludeScrollbars).height();
-    return adjustForAbsoluteZoom(viewportHeight, style);
+    return adjustForAbsoluteZoom(viewportHeight, frame->document()->renderView());
 }
 
 static int calculateDeviceWidth(LocalFrame* frame)
@@ -171,8 +171,8 @@ PassRefPtr<MediaValues> MediaValues::create(LocalFrame* frame, RenderStyle* styl
     RefPtr<MediaValues> mediaValues;
     mediaValues = adoptRef(new MediaValues(frame, style, mode));
     if (mode == CachingMode) {
-        mediaValues->m_viewportWidth = calculateViewportWidth(frame, style);
-        mediaValues->m_viewportHeight = calculateViewportHeight(frame, style),
+        mediaValues->m_viewportWidth = calculateViewportWidth(frame);
+        mediaValues->m_viewportHeight = calculateViewportHeight(frame),
         mediaValues->m_deviceWidth = calculateDeviceWidth(frame),
         mediaValues->m_deviceHeight = calculateDeviceHeight(frame),
         mediaValues->m_devicePixelRatio = calculateDevicePixelRatio(frame),
@@ -236,14 +236,14 @@ bool MediaValues::isSafeToSendToAnotherThread() const
 int MediaValues::viewportWidth() const
 {
     if (m_mode == DynamicMode)
-        return calculateViewportWidth(m_frame, m_style.get());
+        return calculateViewportWidth(m_frame);
     return m_viewportWidth;
 }
 
 int MediaValues::viewportHeight() const
 {
     if (m_mode == DynamicMode)
-        return calculateViewportHeight(m_frame, m_style.get());
+        return calculateViewportHeight(m_frame);
     return m_viewportHeight;
 }
 
