@@ -111,15 +111,19 @@ void UpdateShortcutWorker::DidDownloadFavicon(
                             requested_size,
                             &closest_indices,
                             NULL);
-  size_t closest_index = closest_indices[0];
 
-  if (!bitmaps.empty() && !bitmaps[closest_index].isNull()) {
+  SkBitmap bitmap;
+  if (!bitmaps.empty()) {
+     size_t closest_index = closest_indices[0];
+     bitmap = bitmaps[closest_index];
+  }
+
+  if (!bitmap.isNull()) {
     // Update icon with download image and update shortcut.
-    shortcut_info_.favicon.Add(
-        gfx::Image::CreateFrom1xBitmap(bitmaps[closest_index]));
+    shortcut_info_.favicon.Add(gfx::Image::CreateFrom1xBitmap(bitmap));
     extensions::TabHelper* extensions_tab_helper =
         extensions::TabHelper::FromWebContents(web_contents_);
-    extensions_tab_helper->SetAppIcon(bitmaps[closest_index]);
+    extensions_tab_helper->SetAppIcon(bitmap);
     UpdateShortcuts();
   } else {
     // Try the next icon otherwise.

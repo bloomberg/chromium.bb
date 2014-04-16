@@ -143,7 +143,8 @@ void GetCandidateIndicesWithBestScores(
     float* match_score,
     std::vector<SelectionResult>* results) {
   if (candidate_sizes.empty()) {
-    *match_score = 0.0f;
+    if (match_score)
+      *match_score = 0.0f;
     return;
   }
 
