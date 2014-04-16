@@ -1485,13 +1485,13 @@ def _PostParseCheck(parser, options, args):
                          % default)
 
   # Ensure that all args are legitimate config targets.
-  invalid_target = False
+  invalid_targets = []
   for arg in args:
     build_config = _GetConfig(arg)
 
     if not build_config:
+      invalid_targets.append(arg)
       cros_build_lib.Error('No such configuraton target: "%s".', arg)
-      invalid_target = True
       continue
 
     if options.channels and build_config.build_type != constants.PAYLOADS_TYPE:
@@ -1508,10 +1508,10 @@ def _PostParseCheck(parser, options, args):
       cros_build_lib.Die('Cannot specify --version without --buildbot for an'
                          ' external target (%s).' % arg)
 
-  if invalid_target:
-    print 'Please specify one of:'
-    _PrintValidConfigs()
-    cros_build_lib.Die('One or more invalid configuration targets specified.')
+  if invalid_targets:
+    cros_build_lib.Die('One or more invalid configuration targets specified. '
+                       'You can check the available configs by running '
+                       '`cbuildbot --list --all`')
 
 
 def _ParseCommandLine(parser, argv):
