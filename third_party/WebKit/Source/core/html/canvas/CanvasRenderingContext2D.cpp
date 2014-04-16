@@ -1062,7 +1062,7 @@ void CanvasRenderingContext2D::strokeInternal(const Path& path)
         FloatRect bounds = path.boundingRect();
         inflateStrokeRect(bounds);
         FloatRect dirtyRect;
-        if (computeDirtyRect(bounds, &dirtyRect)) {
+        if (computeDirtyRect(bounds, clipBounds, &dirtyRect)) {
             c->strokePath(path);
             didDraw(dirtyRect);
         }
@@ -1320,7 +1320,7 @@ void CanvasRenderingContext2D::strokeRect(float x, float y, float width, float h
         FloatRect boundingRect = rect;
         boundingRect.inflate(state().m_lineWidth / 2);
         FloatRect dirtyRect;
-        if (computeDirtyRect(boundingRect, &dirtyRect)) {
+        if (computeDirtyRect(boundingRect, clipBounds, &dirtyRect)) {
             c->strokeRect(rect);
             didDraw(dirtyRect);
         }
