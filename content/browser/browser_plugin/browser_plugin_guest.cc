@@ -140,24 +140,6 @@ class BrowserPluginGuest::JavaScriptDialogRequest : public PermissionRequest {
   DialogClosedCallback callback_;
 };
 
-class BrowserPluginGuest::PointerLockRequest : public PermissionRequest {
- public:
-  explicit PointerLockRequest(const base::WeakPtr<BrowserPluginGuest>& guest)
-      : PermissionRequest(guest) {
-    RecordAction(
-        base::UserMetricsAction("BrowserPlugin.Guest.PermissionRequest.PointerLock"));
-  }
-
-  virtual void RespondImpl(bool should_allow,
-                           const std::string& user_input) OVERRIDE {
-    guest_->SendMessageToEmbedder(
-        new BrowserPluginMsg_SetMouseLock(guest_->instance_id(), should_allow));
-  }
-
- private:
-  virtual ~PointerLockRequest() {}
-};
-
 namespace {
 std::string WindowOpenDispositionToString(
   WindowOpenDisposition window_open_disposition) {
@@ -731,6 +713,11 @@ void BrowserPluginGuest::SetZoom(double zoom_factor) {
     delegate_->SetZoom(zoom_factor);
 }
 
+void BrowserPluginGuest::PointerLockPermissionResponse(bool allow) {
+  SendMessageToEmbedder(
+      new BrowserPluginMsg_SetMouseLock(instance_id(), allow));
+}
+
 void BrowserPluginGuest::FindReply(WebContents* contents,
                                    int request_id,
                                    int number_of_matches,
@@ -1285,19 +1272,17 @@ void BrowserPluginGuest::OnLockMouse(bool user_gesture,
     Send(new ViewMsg_LockMouse_ACK(routing_id(), false));
     return;
   }
-  pending_lock_request_ = true;
-  base::DictionaryValue request_info;
-  request_info.Set(browser_plugin::kUserGesture,
-                   base::Value::CreateBooleanValue(user_gesture));
-  request_info.Set(browser_plugin::kLastUnlockedBySelf,
-                   base::Value::CreateBooleanValue(last_unlocked_by_target));
-  request_info.Set(browser_plugin::kURL,
-                   base::Value::CreateStringValue(
-                       web_contents()->GetLastCommittedURL().spec()));
 
-  RequestPermission(BROWSER_PLUGIN_PERMISSION_TYPE_POINTER_LOCK,
-                    new PointerLockRequest(weak_ptr_factory_.GetWeakPtr()),
-                    request_info);
+  if (!delegate_)
+    return;
+
+  pending_lock_request_ = true;
+
+  delegate_->RequestPointerLockPermission(
+      user_gesture,
+      last_unlocked_by_target,
+      base::Bind(&BrowserPluginGuest::PointerLockPermissionResponse,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BrowserPluginGuest::OnLockMouseAck(int instance_id, bool succeeded) {

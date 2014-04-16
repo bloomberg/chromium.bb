@@ -32,6 +32,7 @@ extern const char kEventZoomChange[];
 // Parameters/properties on events.
 extern const char kFindSearchText[];
 extern const char kFindFinalUpdate[];
+extern const char kLastUnlockedBySelf[];
 extern const char kLevel[];
 extern const char kLine[];
 extern const char kMessage[];

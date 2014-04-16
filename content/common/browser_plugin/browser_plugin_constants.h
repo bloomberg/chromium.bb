@@ -65,7 +65,6 @@ extern const char kRequestId[];
 extern const char kRequestMethod[];
 extern const char kTargetURL[];
 extern const char kURL[];
-extern const char kUserGesture[];
 extern const char kWindowID[];
 extern const char kWindowOpenDisposition[];
 

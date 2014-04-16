@@ -79,8 +79,6 @@ static std::string PermissionTypeToString(BrowserPluginPermissionType type) {
   switch (type) {
     case BROWSER_PLUGIN_PERMISSION_TYPE_NEW_WINDOW:
       return webview::kPermissionTypeNewWindow;
-    case BROWSER_PLUGIN_PERMISSION_TYPE_POINTER_LOCK:
-      return webview::kPermissionTypePointerLock;
     case BROWSER_PLUGIN_PERMISSION_TYPE_JAVASCRIPT_DIALOG:
       return webview::kPermissionTypeDialog;
     case BROWSER_PLUGIN_PERMISSION_TYPE_UNKNOWN:
@@ -97,6 +95,8 @@ static std::string PermissionTypeToString(BrowserPluginPermissionType type) {
           return webview::kPermissionTypeLoadPlugin;
         case WEB_VIEW_PERMISSION_TYPE_MEDIA:
           return webview::kPermissionTypeMedia;
+        case WEB_VIEW_PERMISSION_TYPE_POINTER_LOCK:
+          return webview::kPermissionTypePointerLock;
       }
       NOTREACHED();
     }
@@ -193,10 +193,6 @@ void WebViewGuest::RecordUserInitiatedUMA(const PermissionResponseInfo& info,
     // scenario would be: an embedder allows geolocation request but doesn't
     // have geolocation access on its own.
     switch (info.permission_type) {
-      case BROWSER_PLUGIN_PERMISSION_TYPE_POINTER_LOCK:
-        content::RecordAction(
-            UserMetricsAction("BrowserPlugin.PermissionAllow.PointerLock"));
-        break;
       case BROWSER_PLUGIN_PERMISSION_TYPE_NEW_WINDOW:
         content::RecordAction(
             UserMetricsAction("BrowserPlugin.PermissionAllow.NewWindow"));
@@ -211,6 +207,10 @@ void WebViewGuest::RecordUserInitiatedUMA(const PermissionResponseInfo& info,
         WebViewPermissionType webview_permission_type =
             static_cast<WebViewPermissionType>(info.permission_type);
         switch (webview_permission_type) {
+          case WEB_VIEW_PERMISSION_TYPE_DOWNLOAD:
+            content::RecordAction(
+                UserMetricsAction("WebView.PermissionAllow.Download"));
+            break;
           case WEB_VIEW_PERMISSION_TYPE_GEOLOCATION:
             content::RecordAction(
                 UserMetricsAction("WebView.PermissionAllow.Geolocation"));
@@ -222,9 +222,9 @@ void WebViewGuest::RecordUserInitiatedUMA(const PermissionResponseInfo& info,
             content::RecordAction(
                 UserMetricsAction("WebView.PermissionAllow.Media"));
             break;
-          case WEB_VIEW_PERMISSION_TYPE_DOWNLOAD:
+          case WEB_VIEW_PERMISSION_TYPE_POINTER_LOCK:
             content::RecordAction(
-                UserMetricsAction("WebView.PermissionAllow.Download"));
+                UserMetricsAction("WebView.PermissionAllow.PointerLock"));
             break;
           default:
             break;
@@ -233,10 +233,6 @@ void WebViewGuest::RecordUserInitiatedUMA(const PermissionResponseInfo& info,
     }
   } else {
     switch (info.permission_type) {
-      case BROWSER_PLUGIN_PERMISSION_TYPE_POINTER_LOCK:
-        content::RecordAction(
-            UserMetricsAction("BrowserPlugin.PermissionDeny.PointerLock"));
-        break;
       case BROWSER_PLUGIN_PERMISSION_TYPE_NEW_WINDOW:
         content::RecordAction(
             UserMetricsAction("BrowserPlugin.PermissionDeny.NewWindow"));
@@ -251,6 +247,10 @@ void WebViewGuest::RecordUserInitiatedUMA(const PermissionResponseInfo& info,
         WebViewPermissionType webview_permission_type =
             static_cast<WebViewPermissionType>(info.permission_type);
         switch (webview_permission_type) {
+          case WEB_VIEW_PERMISSION_TYPE_DOWNLOAD:
+            content::RecordAction(
+                UserMetricsAction("WebView.PermissionDeny.Download"));
+            break;
           case WEB_VIEW_PERMISSION_TYPE_GEOLOCATION:
             content::RecordAction(
                 UserMetricsAction("WebView.PermissionDeny.Geolocation"));
@@ -262,9 +262,9 @@ void WebViewGuest::RecordUserInitiatedUMA(const PermissionResponseInfo& info,
             content::RecordAction(
                 UserMetricsAction("WebView.PermissionDeny.Media"));
             break;
-          case WEB_VIEW_PERMISSION_TYPE_DOWNLOAD:
+          case WEB_VIEW_PERMISSION_TYPE_POINTER_LOCK:
             content::RecordAction(
-                UserMetricsAction("WebView.PermissionDeny.Download"));
+                UserMetricsAction("WebView.PermissionDeny.PointerLock"));
             break;
           default:
             break;
@@ -616,6 +616,13 @@ void WebViewGuest::OnWebViewDownloadPermissionResponse(
   callback.Run(allow && attached());
 }
 
+void WebViewGuest::OnWebViewPointerLockPermissionResponse(
+    const base::Callback<void(bool)>& callback,
+    bool allow,
+    const std::string& user_input) {
+  callback.Run(allow && attached());
+}
+
 WebViewGuest::SetPermissionResult WebViewGuest::SetPermission(
     int request_id,
     PermissionResponseAction action,
@@ -891,6 +898,29 @@ void WebViewGuest::CanDownload(
           WEB_VIEW_PERMISSION_TYPE_DOWNLOAD),
       request_info,
       base::Bind(&WebViewGuest::OnWebViewDownloadPermissionResponse,
+                 base::Unretained(this),
+                 callback),
+      false /* allowed_by_default */);
+}
+
+void WebViewGuest::RequestPointerLockPermission(
+    bool user_gesture,
+    bool last_unlocked_by_target,
+    const base::Callback<void(bool)>& callback) {
+  base::DictionaryValue request_info;
+  request_info.Set(guestview::kUserGesture,
+                   base::Value::CreateBooleanValue(user_gesture));
+  request_info.Set(webview::kLastUnlockedBySelf,
+                   base::Value::CreateBooleanValue(last_unlocked_by_target));
+  request_info.Set(guestview::kUrl,
+                   base::Value::CreateStringValue(
+                       guest_web_contents()->GetLastCommittedURL().spec()));
+
+  RequestPermission(
+      static_cast<BrowserPluginPermissionType>(
+          WEB_VIEW_PERMISSION_TYPE_POINTER_LOCK),
+      request_info,
+      base::Bind(&WebViewGuest::OnWebViewPointerLockPermissionResponse,
                  base::Unretained(this),
                  callback),
       false /* allowed_by_default */);

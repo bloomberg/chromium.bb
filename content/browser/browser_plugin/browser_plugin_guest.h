@@ -314,6 +314,8 @@ class CONTENT_EXPORT BrowserPluginGuest
 
   void SetZoom(double zoom_factor);
 
+  void PointerLockPermissionResponse(bool allow);
+
  private:
   class EmbedderWebContentsObserver;
   friend class TestBrowserPluginGuest;
@@ -322,7 +324,6 @@ class CONTENT_EXPORT BrowserPluginGuest
   class JavaScriptDialogRequest;
   class NewWindowRequest;
   class PermissionRequest;
-  class PointerLockRequest;
 
   // Tracks the name, and target URL of the new window and whether or not it has
   // changed since the WebContents has been created and before the new window

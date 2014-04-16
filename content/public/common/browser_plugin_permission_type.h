@@ -9,8 +9,6 @@ enum BrowserPluginPermissionType {
   // Unknown type of permission request.
   BROWSER_PLUGIN_PERMISSION_TYPE_UNKNOWN,
 
-  BROWSER_PLUGIN_PERMISSION_TYPE_POINTER_LOCK,
-
   // New window requests.
   // Note: Even though new windows don't use the permission API, the new window
   // API is sufficiently similar that it's convenient to consider it a

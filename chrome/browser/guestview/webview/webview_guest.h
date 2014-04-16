@@ -87,6 +87,10 @@ class WebViewGuest : public GuestView,
   virtual void CanDownload(const std::string& request_method,
                            const GURL& url,
                            const base::Callback<void(bool)>& callback) OVERRIDE;
+  virtual void RequestPointerLockPermission(
+      bool user_gesture,
+      bool last_unlocked_by_target,
+      const base::Callback<void(bool)>& callback) OVERRIDE;
 
   // NotificationObserver implementation.
   virtual void Observe(int type,
@@ -136,6 +140,11 @@ class WebViewGuest : public GuestView,
       const std::string& user_input);
 
   void OnWebViewDownloadPermissionResponse(
+      const base::Callback<void(bool)>& callback,
+      bool allow,
+      const std::string& user_input);
+
+  void OnWebViewPointerLockPermissionResponse(
       const base::Callback<void(bool)>& callback,
       bool allow,
       const std::string& user_input);

@@ -1682,6 +1682,7 @@ should be able to be added at any place in this file.
 <action name="BrowserPlugin.Guest.PermissionRequest.Media">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>This permission has been moved to the chrome layer.</obsolete>
 </action>
 
 <action name="BrowserPlugin.Guest.PermissionRequest.NewWindow">
@@ -1692,6 +1693,7 @@ should be able to be added at any place in this file.
 <action name="BrowserPlugin.Guest.PermissionRequest.PointerLock">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>This permission has been moved to the chrome layer.</obsolete>
 </action>
 
 <action name="BrowserPlugin.Guest.Responsive">
@@ -1740,6 +1742,7 @@ should be able to be added at any place in this file.
 <action name="BrowserPlugin.PermissionAllow.PointerLock">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>This permission has been moved to the chrome layer.</obsolete>
 </action>
 
 <action name="BrowserPlugin.PermissionDeny.Download">
@@ -1772,6 +1775,7 @@ should be able to be added at any place in this file.
 <action name="BrowserPlugin.PermissionDeny.PointerLock">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>This permission has been moved to the chrome layer.</obsolete>
 </action>
 
 <action name="CanCommitURL_BlockedAndKilled">
@@ -10738,6 +10742,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="WebView.PermissionAllow.PointerLock">
+  <owner>fsamuel@chromium.org</owner>
+  <owner>lazyboy@chromium.org</owner>
+  <description>
+    Tracks when the pointerLock permission is explicitly allowed on a webview.
+  </description>
+</action>
+
 <action name="WebView.PermissionDeny.Download">
   <owner>fsamuel@chromium.org</owner>
   <owner>lazyboy@chromium.org</owner>
@@ -10759,6 +10771,14 @@ should be able to be added at any place in this file.
   <owner>lazyboy@chromium.org</owner>
   <description>
     Tracks when the media permission is explicitly denied on a webview.
+  </description>
+</action>
+
+<action name="WebView.PermissionDeny.PointerLock">
+  <owner>fsamuel@chromium.org</owner>
+  <owner>lazyboy@chromium.org</owner>
+  <description>
+    Tracks when the pointerLock permission is explicitly denied on a webview.
   </description>
 </action>
 

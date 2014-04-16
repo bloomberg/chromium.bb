@@ -29,6 +29,7 @@ const char kEventZoomChange[] = "webview.onZoomChange";
 // Parameters/properties on events.
 const char kFindSearchText[] = "searchText";
 const char kFindFinalUpdate[] = "finalUpdate";
+const char kLastUnlockedBySelf[] = "lastUnlockedBySelf";
 const char kLevel[] = "level";
 const char kLine[] = "line";
 const char kMessage[] = "message";

@@ -67,7 +67,6 @@ const char kTargetURL[] = "targetUrl";
 const char kURL[] = "url";
 const char kWindowID[] = "windowId";
 const char kWindowOpenDisposition[] = "windowOpenDisposition";
-const char kUserGesture[] = "userGesture";
 
 // Error messages.
 const char kErrorAlreadyNavigated[] =
