@@ -25,14 +25,16 @@
     xhr.open('GET', 'bear-320x240-video-only.webm');
     xhr.responseType = 'arraybuffer';
     xhr.addEventListener('load', function(e) {
-      srcBuffer.append(new Uint8Array(e.target.response));
-      mediaSource.endOfStream();
+      srcBuffer.appendBuffer(new Uint8Array(e.target.response));
+      srcBuffer.addEventListener('updateend', function(e) {
+        mediaSource.endOfStream();
+      });
     });
     xhr.send();
   }
 
-  var mediaSource = new WebKitMediaSource();
-  mediaSource.addEventListener('webkitsourceopen', onSourceOpen);
+  var mediaSource = new MediaSource();
+  mediaSource.addEventListener('sourceopen', onSourceOpen);
   mediaEl.src = window.URL.createObjectURL(mediaSource);
 </script>
 
