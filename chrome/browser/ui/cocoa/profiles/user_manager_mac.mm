@@ -75,6 +75,7 @@ void HideUserManager() {
                   backing:NSBackingStoreBuffered
                     defer:NO];
   [window setTitle:l10n_util::GetNSString(IDS_USER_MANAGER_SCREEN_TITLE)];
+  [window setMinSize:NSMakeSize(kWindowWidth, kWindowHeight)];
 
   if ((self = [super initWithWindow:window])) {
     userManagerObserver_ = userManagerObserver;
