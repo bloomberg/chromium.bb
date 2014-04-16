@@ -193,21 +193,11 @@ void ContextState::RestoreAttribute(GLuint attrib_index) const {
       vertex_attrib_manager->GetVertexAttrib(attrib_index);
   const void* ptr = reinterpret_cast<const void*>(attrib->offset());
   Buffer* buffer = attrib->buffer();
-  GLuint buffer_service_id = buffer ? buffer->service_id() : 0;
-  glBindBuffer(GL_ARRAY_BUFFER, buffer_service_id);
-
-  if (buffer_service_id || vertex_attrib_manager->service_id() == 0) {
-    // On Adreno driver glVertexAttribPointer with GL_ARRAY_BUFFER == 0
-    // and VAO != 0 causes error GL_INVALID_OPERATION.
-    glVertexAttribPointer(attrib_index,
-                          attrib->size(),
-                          attrib->type(),
-                          attrib->normalized(),
-                          attrib->gl_stride(),
-                          ptr);
-  }
-
-  if (feature_info_->feature_flags().angle_instanced_arrays)
+  glBindBuffer(GL_ARRAY_BUFFER, buffer ? buffer->service_id() : 0);
+  glVertexAttribPointer(
+      attrib_index, attrib->size(), attrib->type(), attrib->normalized(),
+      attrib->gl_stride(), ptr);
+  if (attrib->divisor())
     glVertexAttribDivisorANGLE(attrib_index, attrib->divisor());
   // Never touch vertex attribute 0's state (in particular, never
   // disable it) when running on desktop GL because it will never be
@@ -235,20 +225,10 @@ void ContextState::RestoreState(const ContextState* prev_state) const {
   // TODO: This if should not be needed. RestoreState is getting called
   // before GLES2Decoder::Initialize which is a bug.
   if (vertex_attrib_manager.get()) {
-    if (feature_info_->feature_flags().native_vertex_array_object) {
-      GLuint service_id = vertex_attrib_manager->service_id();
-      glBindVertexArrayOES(service_id);
-      for (size_t attrib = 0; attrib < vertex_attrib_manager->num_attribs();
-           ++attrib) {
-        glVertexAttrib4fv(attrib, attrib_values[attrib].v);
-      }
-    } else {
-      // Emulated VAO, so restore every attribute.
-      // TODO(gman): Move this restoration to VertexAttribManager.
-      for (size_t attrib = 0; attrib < vertex_attrib_manager->num_attribs();
-           ++attrib) {
-        RestoreAttribute(attrib);
-      }
+    // TODO(gman): Move this restoration to VertexAttribManager.
+    for (size_t attrib = 0; attrib < vertex_attrib_manager->num_attribs();
+         ++attrib) {
+      RestoreAttribute(attrib);
     }
   }
 
