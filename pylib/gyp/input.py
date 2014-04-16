@@ -45,18 +45,31 @@ base_path_sections = [
   'outputs',
   'sources',
 ]
-path_sections = []
-
-is_path_section_charset = set('=+?!')
-is_path_section_match_re = re.compile('_(dir|file|path)s?$')
+path_sections = set()
 
 def IsPathSection(section):
-  # If section ends in one of these characters, it's applied to a section
+  # If section ends in one of the '=+?!' characters, it's applied to a section
   # without the trailing characters.  '/' is notably absent from this list,
   # because there's no way for a regular expression to be treated as a path.
-  while section[-1:] in is_path_section_charset:
+  while section[-1:] in '=+?!':
     section = section[:-1]
-  return section in path_sections or is_path_section_match_re.search(section)
+
+  if section in path_sections:
+    return True
+
+  # Sections mathing the regexp '_(dir|file|path)s?$' are also
+  # considered PathSections. Using manual string matching since that
+  # is much faster than the regexp and this can be called hundreds of
+  # thousands of times so micro performance matters.
+  if "_" in section:
+    tail = section[-6:]
+    if tail[-1] == 's':
+      tail = tail[:-1]
+    if tail[-5:] in ('_file', '_path'):
+      return True
+    return tail[-4:] == '_dir'
+
+  return False
 
 # base_non_configuration_keys is a list of key names that belong in the target
 # itself and should not be propagated into its configurations.  It is merged
@@ -2663,8 +2676,8 @@ def SetGeneratorGlobals(generator_input_info):
   # Set up path_sections and non_configuration_keys with the default data plus
   # the generator-specific data.
   global path_sections
-  path_sections = base_path_sections[:]
-  path_sections.extend(generator_input_info['path_sections'])
+  path_sections = set(base_path_sections)
+  path_sections.update(generator_input_info['path_sections'])
 
   global non_configuration_keys
   non_configuration_keys = base_non_configuration_keys[:]
