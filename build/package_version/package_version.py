@@ -747,8 +747,15 @@ def _DoSetRevisionCmd(arguments):
 
   revision_desc = revision_info.RevisionInfo(arguments.packages_desc)
   revision_desc.SetRevisionNumber(revision_num)
-  package_targets = arguments.packages_desc.GetPackageTargetsForPackage(
-      package_name)
+
+  custom_package_targets = GetPackageTargetPackages(package_name, [])
+  if not custom_package_targets:
+    package_targets = arguments.packages_desc.GetPackageTargetsForPackage(
+        package_name)
+  else:
+    package_targets = [target[0] for target in custom_package_targets]
+    first_target = custom_package_targets[0]
+    package_name = first_target[1]
 
   with pynacl.working_directory.TemporaryWorkingDirectory() as work_dir:
     for package_target in package_targets:
