@@ -273,9 +273,7 @@ void ScreenlockPrivateEventRouter::DispatchEvent(
     args->Append(arg);
   scoped_ptr<extensions::Event> event(new extensions::Event(
       event_name, args.Pass()));
-  extensions::ExtensionSystem::Get(browser_context_)
-      ->event_router()
-      ->BroadcastEvent(event.Pass());
+  extensions::EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
 }
 
 static base::LazyInstance<extensions::BrowserContextKeyedAPIFactory<
@@ -308,9 +306,7 @@ void ScreenlockPrivateEventRouter::OnAuthAttempted(
 
   scoped_ptr<extensions::Event> event(new extensions::Event(
       screenlock::OnAuthAttempted::kEventName, args.Pass()));
-  extensions::ExtensionSystem::Get(browser_context_)
-      ->event_router()
-      ->BroadcastEvent(event.Pass());
+  extensions::EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
 }
 
 }  // namespace extensions

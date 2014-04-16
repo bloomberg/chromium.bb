@@ -16,7 +16,6 @@
 #include "extensions/browser/api/storage/local_value_store_cache.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/common/api/storage.h"
 
 using content::BrowserContext;
@@ -49,8 +48,8 @@ class DefaultObserver : public SettingsObserver {
         settings_namespace)));
     scoped_ptr<Event> event(new Event(
         core_api::storage::OnChanged::kEventName, args.Pass()));
-    ExtensionSystem::Get(browser_context_)->event_router()->
-        DispatchEventToExtension(extension_id, event.Pass());
+    EventRouter::Get(browser_context_)
+        ->DispatchEventToExtension(extension_id, event.Pass());
   }
 
  private:

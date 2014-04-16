@@ -13,12 +13,11 @@ namespace extensions {
 
 static void BroadcastEvent(content::BrowserContext* context,
                            const std::string& event_name) {
-  if (context && extensions::ExtensionSystem::Get(context)->event_router()) {
+  if (context && EventRouter::Get(context)) {
     scoped_ptr<base::ListValue> args(new base::ListValue());
     scoped_ptr<extensions::Event> event(new extensions::Event(
         event_name, args.Pass()));
-    extensions::ExtensionSystem::Get(context)->event_router()->BroadcastEvent(
-        event.Pass());
+    EventRouter::Get(context)->BroadcastEvent(event.Pass());
   }
 }
 

@@ -88,7 +88,7 @@ void ExtensionMessageFilter::OnExtensionAddListener(
   RenderProcessHost* process = RenderProcessHost::FromID(render_process_id_);
   if (!process)
     return;
-  EventRouter* router = ExtensionSystem::Get(browser_context_)->event_router();
+  EventRouter* router = EventRouter::Get(browser_context_);
   if (!router)
     return;
   router->AddEventListener(event_name, process, extension_id);
@@ -100,7 +100,7 @@ void ExtensionMessageFilter::OnExtensionRemoveListener(
   RenderProcessHost* process = RenderProcessHost::FromID(render_process_id_);
   if (!process)
     return;
-  EventRouter* router = ExtensionSystem::Get(browser_context_)->event_router();
+  EventRouter* router = EventRouter::Get(browser_context_);
   if (!router)
     return;
   router->RemoveEventListener(event_name, process, extension_id);
@@ -108,7 +108,7 @@ void ExtensionMessageFilter::OnExtensionRemoveListener(
 
 void ExtensionMessageFilter::OnExtensionAddLazyListener(
     const std::string& extension_id, const std::string& event_name) {
-  EventRouter* router = ExtensionSystem::Get(browser_context_)->event_router();
+  EventRouter* router = EventRouter::Get(browser_context_);
   if (!router)
     return;
   router->AddLazyEventListener(event_name, extension_id);
@@ -116,7 +116,7 @@ void ExtensionMessageFilter::OnExtensionAddLazyListener(
 
 void ExtensionMessageFilter::OnExtensionRemoveLazyListener(
     const std::string& extension_id, const std::string& event_name) {
-  EventRouter* router = ExtensionSystem::Get(browser_context_)->event_router();
+  EventRouter* router = EventRouter::Get(browser_context_);
   if (!router)
     return;
   router->RemoveLazyEventListener(event_name, extension_id);
@@ -130,7 +130,7 @@ void ExtensionMessageFilter::OnExtensionAddFilteredListener(
   RenderProcessHost* process = RenderProcessHost::FromID(render_process_id_);
   if (!process)
     return;
-  EventRouter* router = ExtensionSystem::Get(browser_context_)->event_router();
+  EventRouter* router = EventRouter::Get(browser_context_);
   if (!router)
     return;
   router->AddFilteredEventListener(
@@ -145,7 +145,7 @@ void ExtensionMessageFilter::OnExtensionRemoveFilteredListener(
   RenderProcessHost* process = RenderProcessHost::FromID(render_process_id_);
   if (!process)
     return;
-  EventRouter* router = ExtensionSystem::Get(browser_context_)->event_router();
+  EventRouter* router = EventRouter::Get(browser_context_);
   if (!router)
     return;
   router->RemoveFilteredEventListener(

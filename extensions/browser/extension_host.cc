@@ -342,7 +342,7 @@ void ExtensionHost::OnRequest(const ExtensionHostMsg_Request_Params& params) {
 }
 
 void ExtensionHost::OnEventAck() {
-  EventRouter* router = ExtensionSystem::Get(browser_context_)->event_router();
+  EventRouter* router = EventRouter::Get(browser_context_);
   if (router)
     router->OnEventAck(browser_context_, extension_id());
 }

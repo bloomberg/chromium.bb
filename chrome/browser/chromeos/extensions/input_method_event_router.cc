@@ -28,8 +28,7 @@ ExtensionInputMethodEventRouter::~ExtensionInputMethodEventRouter() {
 void ExtensionInputMethodEventRouter::InputMethodChanged(
     input_method::InputMethodManager *manager,
     bool show_message) {
-  extensions::EventRouter *router =
-      extensions::ExtensionSystem::Get(context_)->event_router();
+  extensions::EventRouter* router = extensions::EventRouter::Get(context_);
 
   if (!router->HasEventListener(
           extensions::InputMethodAPI::kOnInputMethodChanged)) {

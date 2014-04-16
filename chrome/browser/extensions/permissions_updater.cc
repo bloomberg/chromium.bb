@@ -17,7 +17,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -92,8 +91,7 @@ void PermissionsUpdater::DispatchEvent(
     const std::string& extension_id,
     const char* event_name,
     const PermissionSet* changed_permissions) {
-  if (!profile_ ||
-      !ExtensionSystem::Get(profile_)->event_router())
+  if (!profile_ || !EventRouter::Get(profile_))
     return;
 
   scoped_ptr<base::ListValue> value(new base::ListValue());
@@ -102,8 +100,8 @@ void PermissionsUpdater::DispatchEvent(
   value->Append(permissions->ToValue().release());
   scoped_ptr<Event> event(new Event(event_name, value.Pass()));
   event->restrict_to_browser_context = profile_;
-  ExtensionSystem::Get(profile_)->event_router()->
-      DispatchEventToExtension(extension_id, event.Pass());
+  EventRouter::Get(profile_)
+      ->DispatchEventToExtension(extension_id, event.Pass());
 }
 
 void PermissionsUpdater::NotifyPermissionsUpdated(

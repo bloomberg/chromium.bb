@@ -10,7 +10,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/event_router.h"
-#include "extensions/browser/extension_system.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
@@ -118,7 +117,7 @@ void EventRouterForwarder::CallEventRouter(
   // Extension does not exist for chromeos login.  This needs to be
   // removed once we have an extension service for login screen.
   // crosbug.com/12856.
-  if (!extensions::ExtensionSystem::Get(profile)->event_router())
+  if (!extensions::EventRouter::Get(profile))
     return;
 #endif
 
@@ -126,10 +125,10 @@ void EventRouterForwarder::CallEventRouter(
   event->restrict_to_browser_context = restrict_to_profile;
   event->event_url = event_url;
   if (extension_id.empty()) {
-    ExtensionSystem::Get(profile)->event_router()->BroadcastEvent(event.Pass());
+    extensions::EventRouter::Get(profile)->BroadcastEvent(event.Pass());
   } else {
-    ExtensionSystem::Get(profile)->event_router()->
-        DispatchEventToExtension(extension_id, event.Pass());
+    extensions::EventRouter::Get(profile)
+        ->DispatchEventToExtension(extension_id, event.Pass());
   }
 }
 

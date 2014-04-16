@@ -67,8 +67,7 @@ const char InputMethodAPI::kOnInputMethodChanged[] =
 
 InputMethodAPI::InputMethodAPI(content::BrowserContext* context)
     : context_(context) {
-  ExtensionSystem::Get(context_)->event_router()->RegisterObserver(
-      this, kOnInputMethodChanged);
+  EventRouter::Get(context_)->RegisterObserver(this, kOnInputMethodChanged);
   ExtensionFunctionRegistry* registry =
       ExtensionFunctionRegistry::GetInstance();
   registry->RegisterFunction<GetInputMethodFunction>();
@@ -91,7 +90,7 @@ std::string InputMethodAPI::GetInputMethodForXkb(const std::string& xkb_id) {
 void InputMethodAPI::Shutdown() {
   // UnregisterObserver may have already been called in OnListenerAdded,
   // but it is safe to call it more than once.
-  ExtensionSystem::Get(context_)->event_router()->UnregisterObserver(this);
+  EventRouter::Get(context_)->UnregisterObserver(this);
 }
 
 void InputMethodAPI::OnListenerAdded(
@@ -99,7 +98,7 @@ void InputMethodAPI::OnListenerAdded(
   DCHECK(!input_method_event_router_.get());
   input_method_event_router_.reset(
       new chromeos::ExtensionInputMethodEventRouter(context_));
-  ExtensionSystem::Get(context_)->event_router()->UnregisterObserver(this);
+  EventRouter::Get(context_)->UnregisterObserver(this);
 }
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<InputMethodAPI> >

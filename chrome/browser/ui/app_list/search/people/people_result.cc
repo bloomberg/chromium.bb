@@ -20,7 +20,6 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/user_metrics.h"
 #include "extensions/browser/event_router.h"
-#include "extensions/browser/extension_system.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -164,9 +163,8 @@ void PeopleResult::OpenChat() {
 
   // TODO(rkc): Change this once we remove the hangoutsPrivate API.
   // See crbug.com/306672
-  extensions::ExtensionSystem::Get(
-      profile_)->event_router()->DispatchEventToExtension(
-          hangouts_extension_id_, event.Pass());
+  extensions::EventRouter::Get(profile_)
+      ->DispatchEventToExtension(hangouts_extension_id_, event.Pass());
 
   content::RecordAction(base::UserMetricsAction("PeopleSearch_OpenChat"));
 }
@@ -185,8 +183,7 @@ void PeopleResult::RefreshHangoutsExtensionId() {
   // TODO(rkc): Change this once we remove the hangoutsPrivate API.
   // See crbug.com/306672
   for (size_t i = 0; i < arraysize(kHangoutsExtensionIds); ++i) {
-    if (extensions::ExtensionSystem::Get(
-        profile_)->event_router()->ExtensionHasEventListener(
+    if (extensions::EventRouter::Get(profile_)->ExtensionHasEventListener(
             kHangoutsExtensionIds[i], OnHangoutRequested::kEventName)) {
       hangouts_extension_id_ = kHangoutsExtensionIds[i];
       return;
