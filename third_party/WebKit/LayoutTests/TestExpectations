@@ -212,6 +212,9 @@ crbug.com/318980 [ Linux ] virtual/deferred/fast/images/imagemap-focus-ring.html
 crbug.com/318980 [ Linux ] virtual/deferred/fast/images/imagemap-focus-ring-zoom-style.html [ ImageOnlyFailure Pass ]
 crbug.com/318980 [ Linux ] virtual/deferred/fast/images/imagemap-focus-ring-zoom.html [ ImageOnlyFailure Pass ]
 
+crbug.com/363890 fast/images/motion-jpeg-single-frame.html [ Failure ]
+crbug.com/363890 virtual/deferred/fast/images/motion-jpeg-single-frame.html [ Failure ]
+
 # Tests that have new baselines but are probably still failing on Linux Aura.
 crbug.com/318980 [ Linux ] editing/selection/7152-1.html [ Pass ]
 crbug.com/318980 [ Linux ] editing/selection/linux_selection_color.html [ Pass ]
