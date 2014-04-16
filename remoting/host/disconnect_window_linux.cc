@@ -12,7 +12,7 @@
 #include "remoting/base/string_resources.h"
 #include "remoting/host/client_session_control.h"
 #include "remoting/host/host_window.h"
-#include "ui/base/gtk/gtk_signal.h"
+#include "ui/base/glib/glib_signal.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace remoting {
@@ -30,12 +30,13 @@ class DisconnectWindowGtk : public HostWindow {
       OVERRIDE;
 
  private:
-  CHROMEGTK_CALLBACK_1(DisconnectWindowGtk, gboolean, OnDelete, GdkEvent*);
-  CHROMEGTK_CALLBACK_0(DisconnectWindowGtk, void, OnClicked);
-  CHROMEGTK_CALLBACK_1(DisconnectWindowGtk, gboolean, OnConfigure,
-                       GdkEventConfigure*);
-  CHROMEGTK_CALLBACK_1(DisconnectWindowGtk, gboolean, OnButtonPress,
-                       GdkEventButton*);
+  CHROMEG_CALLBACK_1(DisconnectWindowGtk, gboolean, OnDelete,
+                     GtkWidget*, GdkEvent*);
+  CHROMEG_CALLBACK_0(DisconnectWindowGtk, void, OnClicked, GtkButton*);
+  CHROMEG_CALLBACK_1(DisconnectWindowGtk, gboolean, OnConfigure,
+                     GtkWidget*, GdkEventConfigure*);
+  CHROMEG_CALLBACK_1(DisconnectWindowGtk, gboolean, OnButtonPress,
+                     GtkWidget*, GdkEventButton*);
 
   // Used to disconnect the client session.
   base::WeakPtr<ClientSessionControl> client_session_control_;
@@ -168,7 +169,7 @@ void DisconnectWindowGtk::Start(
   gtk_window_present(window);
 }
 
-void DisconnectWindowGtk::OnClicked(GtkWidget* button) {
+void DisconnectWindowGtk::OnClicked(GtkButton* button) {
   DCHECK(CalledOnValidThread());
 
   if (client_session_control_.get())

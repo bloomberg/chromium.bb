@@ -9,7 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "remoting/base/string_resources.h"
 #include "remoting/host/continue_window.h"
-#include "ui/base/gtk/gtk_signal.h"
+#include "ui/base/glib/glib_signal.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace remoting {
@@ -27,7 +27,7 @@ class ContinueWindowGtk : public ContinueWindow {
  private:
   void CreateWindow();
 
-  CHROMEGTK_CALLBACK_1(ContinueWindowGtk, void, OnResponse, int);
+  CHROMEG_CALLBACK_1(ContinueWindowGtk, void, OnResponse, GtkDialog*, int);
 
   GtkWidget* continue_window_;
 
@@ -101,7 +101,7 @@ void ContinueWindowGtk::CreateWindow() {
   gtk_widget_show_all(content_area);
 }
 
-void ContinueWindowGtk::OnResponse(GtkWidget* dialog, int response_id) {
+void ContinueWindowGtk::OnResponse(GtkDialog* dialog, int response_id) {
   DCHECK(CalledOnValidThread());
 
   if (response_id == GTK_RESPONSE_OK) {
