@@ -5,24 +5,35 @@ Empty query matches everything
 Query:""
 Input:["a","bc"]
 Output:["a","bc"]
+Selected item index: 0
 
 Case sensitive matching
 Query:"aB"
 Input:["abc","acB"]
 Output:["abc","acB"]
+Selected item index: 0
 
 Case insensitive matching
 Query:"ab"
 Input:["abc","bac","a_B"]
 Output:["abc","a_B"]
+Selected item index: 0
 
 Duplicate symbols in query
 Query:"aab"
 Input:["abab","abaa","caab","baac","fooaab"]
 Output:["abab","caab","fooaab"]
+Selected item index: 0
 
 Dangerous input escaping
 Query:"^[]{}()\\.$*+?|"
 Input:["^[]{}()\\.$*+?|","0123456789abcdef"]
 Output:["^[]{}()\\.$*+?|"]
+Selected item index: 0
+
+Item index is not reported in go-to line
+Query:":1"
+Input:[":1:2:3.js"]
+Output:[":1:2:3.js"]
+Selected item index: null
 

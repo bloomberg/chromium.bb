@@ -8,9 +8,8 @@ function test()
     WebInspector.inspectorView.showPanel("sources");
 
     var overridenInput = [];
-    var overridenTitle = [];
     var overridenQuery = "";
-    var overridenScores = [];
+    var overrideShowMatchingItems = true;
 
     function StubDelegate()
     {
@@ -18,26 +17,27 @@ function test()
     }
     StubDelegate.prototype = {
         itemKeyAt: function(itemIndex) { return overridenInput[itemIndex]; },
-        itemScoreAt: function(itemIndex) { return overridenScores[itemIndex] || 0; },
+        itemScoreAt: function(itemIndex) { return 0; },
         itemCount: function() { return overridenInput.length; },
-        selectItem: function(itemIndex, promptValue) { },
+        selectItem: function(itemIndex, promptValue)
+        {
+            InspectorTest.addResult("Selected item index: " + itemIndex);
+        },
         rewriteQuery: function(query) { return overridenQuery; },
+        shouldShowMatchingItems: function() { return overrideShowMatchingItems; },
 
         __proto__: WebInspector.SelectionDialogContentProvider.prototype
     }
 
     var overridenInput = [];
-    var overridenTitle = [];
     var overridenQuery = "";
-    var overridenScores = [];
     var delegate = new StubDelegate();
 
-    function checkQuery(title, query, input, titles, scores)
+    function checkQuery(title, query, input, hideMatchingItems)
     {
         overridenInput = input;
         overridenQuery = query;
-        overridenTitles = titles || [];
-        overridenScores = scores || [];
+        overrideShowMatchingItems = !hideMatchingItems;
 
         InspectorTest.addResult("\n" + title);
         InspectorTest.addResult("Query:" + JSON.stringify(query));
@@ -50,6 +50,7 @@ function test()
         for (var i = 0; i < items.length; ++i)
             output.push(delegate.itemKeyAt(items[i]));
         InspectorTest.addResult("Output:" + JSON.stringify(output));
+        filteredSelectionDialog.onEnter();
     }
 
     checkQuery("Empty query matches everything", "", ["a", "bc"]);
@@ -57,6 +58,7 @@ function test()
     checkQuery("Case insensitive matching", "ab", ["abc", "bac", "a_B"]);
     checkQuery("Duplicate symbols in query", "aab", ["abab", "abaa", "caab", "baac", "fooaab"]);
     checkQuery("Dangerous input escaping", "^[]{}()\\.$*+?|", ["^[]{}()\\.$*+?|", "0123456789abcdef"]);
+    checkQuery("Item index is not reported in go-to line", ":1", [":1:2:3.js"], true);
     InspectorTest.completeTest();
 }
 
