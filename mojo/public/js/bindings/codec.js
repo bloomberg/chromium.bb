@@ -25,7 +25,7 @@ define("mojo/public/js/bindings/codec",
 
   function store64(memory, pointer, val) {
     store32(memory, pointer, val);
-    var high = (val / 0x10000) | 0;
+    var high = Math.floor(val / 0x100000000);
     store32(memory, pointer + 4, high);
   }
 

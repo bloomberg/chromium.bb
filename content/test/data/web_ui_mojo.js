@@ -27,8 +27,10 @@ define('main', [
     var i;
     for (i = 0; i < iterations; ++i) {
       arg2 = new bindings.EchoArgs();
+      arg2.w = -1;
       arg2.x = -1;
       arg2.y = -1;
+      arg2.z = -1;
       arg2.name = "going";
       this.bindings_.echoResponse(arg, arg2);
     }
