@@ -116,7 +116,7 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndFulFill) {
   std::string response_test_string;
   EXPECT_TRUE(event->result()->GetString("path", &response_test_string));
   EXPECT_EQ("i-like-vanilla", response_test_string);
-  EXPECT_EQ(has_next, event->has_next());
+  EXPECT_FALSE(event->has_next());
 
   // Confirm, that the request is removed. Basically, fulfilling again for the
   // same request, should fail.
@@ -160,7 +160,7 @@ TEST_F(FileSystemProviderRequestManagerTest, CreateAndFulFill_WithHasNext) {
   EXPECT_EQ(0u, logger.error_events().size());
   EventLogger::SuccessEvent* event = logger.success_events()[0];
   EXPECT_FALSE(event->result());
-  EXPECT_EQ(has_next, event->has_next());
+  EXPECT_TRUE(event->has_next());
 
   // Confirm, that the request is not removed (since it has has_next == true).
   // Basically, fulfilling again for the same request, should not fail.
