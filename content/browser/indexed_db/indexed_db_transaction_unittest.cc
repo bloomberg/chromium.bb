@@ -147,6 +147,68 @@ class AbortObserver {
   DISALLOW_COPY_AND_ASSIGN(AbortObserver);
 };
 
+TEST_P(IndexedDBTransactionTestMode, ScheduleNormalTask) {
+  const int64 id = 0;
+  const std::set<int64> scope;
+  const bool commit_failure = false;
+  scoped_refptr<IndexedDBTransaction> transaction = new IndexedDBTransaction(
+      id,
+      new MockIndexedDBDatabaseCallbacks(),
+      scope,
+      GetParam(),
+      db_,
+      new IndexedDBFakeBackingStore::FakeTransaction(commit_failure));
+
+  EXPECT_FALSE(transaction->HasPendingTasks());
+  EXPECT_TRUE(transaction->IsTaskQueueEmpty());
+  EXPECT_TRUE(transaction->task_queue_.empty());
+  EXPECT_TRUE(transaction->preemptive_task_queue_.empty());
+  EXPECT_EQ(0, transaction->diagnostics().tasks_scheduled);
+  EXPECT_EQ(0, transaction->diagnostics().tasks_completed);
+
+  db_->TransactionCreated(transaction);
+
+  EXPECT_FALSE(transaction->HasPendingTasks());
+  EXPECT_TRUE(transaction->IsTaskQueueEmpty());
+  EXPECT_TRUE(transaction->task_queue_.empty());
+  EXPECT_TRUE(transaction->preemptive_task_queue_.empty());
+
+  transaction->ScheduleTask(
+      IndexedDBDatabase::NORMAL_TASK,
+      base::Bind(&IndexedDBTransactionTest::DummyOperation,
+                 base::Unretained(this)));
+
+  EXPECT_EQ(1, transaction->diagnostics().tasks_scheduled);
+  EXPECT_EQ(0, transaction->diagnostics().tasks_completed);
+
+  EXPECT_TRUE(transaction->HasPendingTasks());
+  EXPECT_FALSE(transaction->IsTaskQueueEmpty());
+  EXPECT_FALSE(transaction->task_queue_.empty());
+  EXPECT_TRUE(transaction->preemptive_task_queue_.empty());
+
+  // Pump the message loop so that the transaction completes all pending tasks,
+  // otherwise it will defer the commit.
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_FALSE(transaction->HasPendingTasks());
+  EXPECT_TRUE(transaction->IsTaskQueueEmpty());
+  EXPECT_TRUE(transaction->task_queue_.empty());
+  EXPECT_TRUE(transaction->preemptive_task_queue_.empty());
+  EXPECT_EQ(IndexedDBTransaction::STARTED, transaction->state());
+  EXPECT_EQ(1, transaction->diagnostics().tasks_scheduled);
+  EXPECT_EQ(1, transaction->diagnostics().tasks_completed);
+
+  transaction->Commit();
+
+  EXPECT_EQ(IndexedDBTransaction::FINISHED, transaction->state());
+  EXPECT_FALSE(transaction->HasPendingTasks());
+  EXPECT_FALSE(transaction->IsTimeoutTimerRunning());
+  EXPECT_TRUE(transaction->IsTaskQueueEmpty());
+  EXPECT_TRUE(transaction->task_queue_.empty());
+  EXPECT_TRUE(transaction->preemptive_task_queue_.empty());
+  EXPECT_EQ(1, transaction->diagnostics().tasks_scheduled);
+  EXPECT_EQ(1, transaction->diagnostics().tasks_completed);
+}
+
 TEST_F(IndexedDBTransactionTest, SchedulePreemptiveTask) {
   const int64 id = 0;
   const std::set<int64> scope;
