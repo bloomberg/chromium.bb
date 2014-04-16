@@ -52,12 +52,6 @@ public:
     virtual bool supportsFocus() const OVERRIDE { return hasFocusEventListeners(); }
 
     // 'SVGSVGElement' functions
-    const AtomicString& contentScriptType() const;
-    void setContentScriptType(const AtomicString& type);
-
-    const AtomicString& contentStyleType() const;
-    void setContentStyleType(const AtomicString& type);
-
     PassRefPtr<SVGRectTearOff> viewport() const;
 
     float pixelUnitToMillimeterX() const;

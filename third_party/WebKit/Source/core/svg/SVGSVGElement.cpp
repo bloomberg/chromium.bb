@@ -103,30 +103,6 @@ SVGSVGElement::~SVGSVGElement()
     ASSERT(inDocument() || !accessDocumentSVGExtensions().isSVGRootWithRelativeLengthDescendents(this));
 }
 
-const AtomicString& SVGSVGElement::contentScriptType() const
-{
-    DEFINE_STATIC_LOCAL(const AtomicString, defaultValue, ("text/ecmascript", AtomicString::ConstructFromLiteral));
-    const AtomicString& n = fastGetAttribute(SVGNames::contentScriptTypeAttr);
-    return n.isNull() ? defaultValue : n;
-}
-
-void SVGSVGElement::setContentScriptType(const AtomicString& type)
-{
-    setAttribute(SVGNames::contentScriptTypeAttr, type);
-}
-
-const AtomicString& SVGSVGElement::contentStyleType() const
-{
-    DEFINE_STATIC_LOCAL(const AtomicString, defaultValue, ("text/css", AtomicString::ConstructFromLiteral));
-    const AtomicString& n = fastGetAttribute(SVGNames::contentStyleTypeAttr);
-    return n.isNull() ? defaultValue : n;
-}
-
-void SVGSVGElement::setContentStyleType(const AtomicString& type)
-{
-    setAttribute(SVGNames::contentStyleTypeAttr, type);
-}
-
 PassRefPtr<SVGRectTearOff> SVGSVGElement::viewport() const
 {
     // FIXME: This method doesn't follow the spec and is basically untested. Parent documents are not considered here.
