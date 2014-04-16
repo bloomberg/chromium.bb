@@ -46,8 +46,10 @@ function loadAudioBuffer_(url, callback) {
   request.responseType = 'arraybuffer';
 
   request.onload = function() {
-    voiceSoundBuffer = gContext.createBuffer(request.response, false);
-    callback(voiceSoundBuffer);
+    gContext.decodeAudioData(request.response, function (decodedAudio) {
+          voiceSoundBuffer = decodedAudio;
+          callback(voiceSoundBuffer);
+        });
   }
   request.send();
 }
