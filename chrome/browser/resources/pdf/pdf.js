@@ -278,11 +278,13 @@ PDFViewer.prototype = {
     this.toolbar_.style.bottom = toolbarBottom + 'px';
 
     // Update the page indicator.
-    this.pageIndicator_.index = this.viewport_.getMostVisiblePage() + 1;
-    if (this.documentDimensions_.pageDimensions.length > 1 && hasScrollbars.y)
+    this.pageIndicator_.index = this.viewport_.getMostVisiblePage();
+    if (this.documentDimensions_.pageDimensions.length > 1 &&
+        hasScrollbars.vertical) {
       this.pageIndicator_.style.visibility = 'visible';
-    else
+    } else {
       this.pageIndicator_.style.visibility = 'hidden';
+    }
 
     this.messagingHost_.viewportChanged();
 
