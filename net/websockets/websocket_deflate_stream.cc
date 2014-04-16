@@ -333,9 +333,7 @@ int WebSocketDeflateStream::Inflate(ScopedVector<WebSocketFrame>* frames) {
         scoped_ptr<WebSocketFrame> inflated(
             new WebSocketFrame(WebSocketFrameHeader::kOpCodeText));
         scoped_refptr<IOBufferWithSize> data = inflater_.GetOutput(size);
-        bool is_final = !inflater_.CurrentOutputSize();
-        // |is_final| can't be true if |frame->header.final| is false.
-        DCHECK(!(is_final && !frame->header.final));
+        bool is_final = !inflater_.CurrentOutputSize() && frame->header.final;
         if (!data) {
           DVLOG(1) << "WebSocket protocol error. "
                    << "inflater_.GetOutput() returns an error.";
