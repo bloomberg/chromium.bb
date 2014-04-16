@@ -75,7 +75,7 @@ private:
     virtual bool shouldSpinButtonRespondToWheelEvents() OVERRIDE;
     virtual void spinButtonStepDown() OVERRIDE;
     virtual void spinButtonStepUp() OVERRIDE;
-    virtual void spinButtonDidReleaseMouseCapture() OVERRIDE;
+    virtual void spinButtonDidReleaseMouseCapture(SpinButtonElement::EventDispatch) OVERRIDE;
 
     // PickerIndicatorElement::PickerIndicatorOwner functions
     virtual bool isPickerIndicatorOwnerDisabledOrReadOnly() const OVERRIDE FINAL;

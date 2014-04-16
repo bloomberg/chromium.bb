@@ -565,9 +565,10 @@ bool TextFieldInputType::shouldSpinButtonRespondToWheelEvents()
     return shouldSpinButtonRespondToMouseEvents() && element().focused();
 }
 
-void TextFieldInputType::spinButtonDidReleaseMouseCapture()
+void TextFieldInputType::spinButtonDidReleaseMouseCapture(SpinButtonElement::EventDispatch eventDispatch)
 {
-    element().dispatchFormControlChangeEvent();
+    if (eventDispatch == SpinButtonElement::EventDispatchAllowed)
+        element().dispatchFormControlChangeEvent();
 }
 
 } // namespace WebCore

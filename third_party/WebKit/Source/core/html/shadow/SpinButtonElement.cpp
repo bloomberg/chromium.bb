@@ -60,6 +60,12 @@ PassRefPtr<SpinButtonElement> SpinButtonElement::create(Document& document, Spin
     return element.release();
 }
 
+void SpinButtonElement::detach(const AttachContext& context)
+{
+    releaseCapture(EventDispatchDisallowed);
+    HTMLDivElement::detach(context);
+}
+
 void SpinButtonElement::defaultEventHandler(Event* event)
 {
     if (!event->isMouseEvent()) {
@@ -181,7 +187,7 @@ void SpinButtonElement::doStepAction(int amount)
         m_spinButtonOwner->spinButtonStepDown();
 }
 
-void SpinButtonElement::releaseCapture()
+void SpinButtonElement::releaseCapture(EventDispatch eventDispatch)
 {
     stopRepeatingTimer();
     if (m_capturing) {
@@ -193,7 +199,7 @@ void SpinButtonElement::releaseCapture()
         }
     }
     if (m_spinButtonOwner)
-        m_spinButtonOwner->spinButtonDidReleaseMouseCapture();
+        m_spinButtonOwner->spinButtonDidReleaseMouseCapture(eventDispatch);
 
 }
 

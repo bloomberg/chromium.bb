@@ -40,14 +40,17 @@ public:
         Down,
         Up,
     };
-
+    enum EventDispatch {
+        EventDispatchAllowed,
+        EventDispatchDisallowed,
+    };
     class SpinButtonOwner {
     public:
         virtual ~SpinButtonOwner() { }
         virtual void focusAndSelectSpinButtonOwner() = 0;
         virtual bool shouldSpinButtonRespondToMouseEvents() = 0;
         virtual bool shouldSpinButtonRespondToWheelEvents() = 0;
-        virtual void spinButtonDidReleaseMouseCapture() = 0;
+        virtual void spinButtonDidReleaseMouseCapture(EventDispatch) = 0;
         virtual void spinButtonStepDown() = 0;
         virtual void spinButtonStepUp() = 0;
     };
@@ -57,7 +60,7 @@ public:
     // implementation, e.g. during event handling.
     static PassRefPtr<SpinButtonElement> create(Document&, SpinButtonOwner&);
     UpDownState upDownState() const { return m_upDownState; }
-    void releaseCapture();
+    void releaseCapture(EventDispatch = EventDispatchAllowed);
     void removeSpinButtonOwner() { m_spinButtonOwner = 0; }
 
     void step(int amount);
@@ -70,6 +73,7 @@ public:
 private:
     SpinButtonElement(Document&, SpinButtonOwner&);
 
+    virtual void detach(const AttachContext&) OVERRIDE;
     virtual bool isSpinButtonElement() const OVERRIDE { return true; }
     virtual bool isDisabledFormControl() const OVERRIDE { return shadowHost() && shadowHost()->isDisabledFormControl(); }
     virtual bool matchesReadOnlyPseudoClass() const OVERRIDE;
