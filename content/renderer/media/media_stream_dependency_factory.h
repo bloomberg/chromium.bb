@@ -70,10 +70,6 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   blink::WebRTCPeerConnectionHandler* CreateRTCPeerConnectionHandler(
       blink::WebRTCPeerConnectionHandlerClient* client);
 
-  // Asks the PeerConnection factory to create a Local MediaStream object.
-  virtual scoped_refptr<webrtc::MediaStreamInterface>
-      CreateLocalMediaStream(const std::string& label);
-
   // InitializeMediaStreamAudioSource initialize a MediaStream source object
   // for audio input.
   bool InitializeMediaStreamAudioSource(
@@ -86,6 +82,10 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   virtual WebRtcVideoCapturerAdapter* CreateVideoCapturer(
       bool is_screen_capture);
 
+  // Creates a libjingle representation of a MediaStream.
+  scoped_refptr<webrtc::MediaStreamInterface> CreateNativeLocalMediaStream(
+      const blink::WebMediaStream& web_stream);
+
   // Create an instance of WebRtcLocalAudioTrack and store it
   // in the extraData field of |track|.
   void CreateLocalAudioTrack(const blink::WebMediaStreamTrack& track);
@@ -94,6 +94,16 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   virtual scoped_refptr<webrtc::VideoTrackInterface>
       CreateLocalVideoTrack(const std::string& id,
                             webrtc::VideoSourceInterface* source);
+
+  // Adds a libjingle representation of a MediaStreamTrack to the libjingle
+  // Representation of |stream|.
+  bool AddNativeMediaStreamTrack(const blink::WebMediaStream& stream,
+                                 const blink::WebMediaStreamTrack& track);
+
+  // Removes a libjingle MediaStreamTrack from the libjingle representation of
+  // |stream|.
+  bool RemoveNativeMediaStreamTrack(const blink::WebMediaStream& stream,
+                                    const blink::WebMediaStreamTrack& track);
 
   // Asks the PeerConnection factory to create a Video Source.
   // The video source takes ownership of |capturer|.
@@ -132,6 +142,10 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
       bool is_local_track);
 
  protected:
+  // Asks the PeerConnection factory to create a Local MediaStream object.
+  virtual scoped_refptr<webrtc::MediaStreamInterface>
+      CreateLocalMediaStream(const std::string& label);
+
   // Asks the PeerConnection factory to create a Local Audio Source.
   virtual scoped_refptr<webrtc::AudioSourceInterface>
       CreateLocalAudioSource(
