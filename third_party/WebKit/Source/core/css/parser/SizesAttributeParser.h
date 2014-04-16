@@ -7,13 +7,11 @@
 
 #include "core/css/MediaValues.h"
 #include "core/css/parser/MediaQueryParser.h"
-#include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
 class SizesAttributeParser {
-    STACK_ALLOCATED();
 public:
     static unsigned findEffectiveSize(const String& attribute, PassRefPtr<MediaValues>);
 
@@ -28,10 +26,10 @@ private:
     bool parseMediaConditionAndLength(TokenIterator startToken, TokenIterator endToken);
     unsigned effectiveSize();
     bool calculateLengthInPixels(TokenIterator startToken, TokenIterator endToken, unsigned& result);
-    bool mediaConditionMatches(PassRefPtrWillBeRawPtr<MediaQuerySet> mediaCondition);
+    bool mediaConditionMatches(PassRefPtr<MediaQuerySet> mediaCondition);
     unsigned effectiveSizeDefaultValue();
 
-    RefPtrWillBeMember<MediaQuerySet> m_mediaCondition;
+    RefPtr<MediaQuerySet> m_mediaCondition;
     RefPtr<MediaValues> m_mediaValues;
     unsigned m_length;
 };
