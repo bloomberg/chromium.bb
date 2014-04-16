@@ -133,8 +133,8 @@ def StructFromData(module, data):
   module.kinds[struct.spec] = struct
   struct.enums = map(lambda enum:
       EnumFromData(module, enum, struct), data['enums'])
-  struct.fields = map(lambda field:
-      FieldFromData(module, field, struct), data['fields'])
+  # Stash fields data here temporarily.
+  struct.fields_data = data['fields']
   return struct
 
 def FieldToData(field):
@@ -231,8 +231,8 @@ def InterfaceFromData(module, data):
   module.kinds[interface.spec] = interface
   interface.enums = map(lambda enum:
       EnumFromData(module, enum, interface), data['enums'])
-  interface.methods = map(lambda method:
-      MethodFromData(module, method, interface), data['methods'])
+  # Stash methods data here temporarily.
+  interface.methods_data = data['methods']
   return interface
 
 def EnumFieldFromData(module, enum, data, parent_kind):
@@ -286,6 +286,8 @@ def ModuleFromData(data):
   module.imports = map(
       lambda import_data: ImportFromData(module, import_data),
       data['imports'])
+
+  # First pass collects kinds.
   module.enums = map(
       lambda enum: EnumFromData(module, enum, None), data['enums'])
   module.structs = map(
@@ -293,6 +295,17 @@ def ModuleFromData(data):
   module.interfaces = map(
       lambda interface: InterfaceFromData(module, interface),
       data['interfaces'])
+
+  # Second pass expands fields and methods. This allows fields and parameters
+  # to refer to kinds defined anywhere in the mojom.
+  for struct in module.structs:
+    struct.fields = map(lambda field:
+        FieldFromData(module, field, struct), struct.fields_data)
+    del struct.fields_data
+  for interface in module.interfaces:
+    interface.methods = map(lambda method:
+        MethodFromData(module, method, interface), interface.methods_data)
+    del interface.methods_data
 
   return module
 

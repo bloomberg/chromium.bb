@@ -25,6 +25,15 @@ namespace {{namespace}} {
 {%    include "enum_declaration.tmpl" %}
 {%- endfor %}
 
+{#--- Interface Forward Declarations -#}
+{%  for interface in interfaces %}
+class {{interface.name}};
+// A typesafe variant of MessagePipeHandle:
+typedef mojo::Interface<{{interface.name}}>::Handle {{interface.name}}Handle;
+// A typesafe variant of ScopedMessagePipeHandle:
+typedef mojo::Interface<{{interface.name}}>::ScopedHandle Scoped{{interface.name}}Handle;
+{%  endfor %}
+
 {#--- Structs #}
 {%  for struct in structs %}
 {%    include "wrapper_class_declaration.tmpl" %}

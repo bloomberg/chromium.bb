@@ -26,9 +26,3 @@ class {{interface.name}} {
   virtual void {{method.name}}({{interface_macros.declare_request_params(method)}}) = 0;
 {%- endfor %}
 };
-
-// A typesafe variant of MessagePipeHandle.
-typedef mojo::Interface<{{interface.name}}>::Handle {{interface.name}}Handle;
-
-// A typesafe variant of ScopedMessagePipeHandle.
-typedef mojo::Interface<{{interface.name}}>::ScopedHandle Scoped{{interface.name}}Handle;
