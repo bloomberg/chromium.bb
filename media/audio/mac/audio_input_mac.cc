@@ -9,13 +9,12 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
-#include "media/audio/audio_manager_base.h"
-
+#include "media/audio/mac/audio_manager_mac.h"
 
 namespace media {
 
 PCMQueueInAudioInputStream::PCMQueueInAudioInputStream(
-    AudioManagerBase* manager, const AudioParameters& params)
+    AudioManagerMac* manager, const AudioParameters& params)
     : manager_(manager),
       callback_(NULL),
       audio_queue_(NULL),
@@ -65,6 +64,22 @@ void PCMQueueInAudioInputStream::Start(AudioInputCallback* callback) {
   DLOG_IF(ERROR, !audio_queue_) << "Open() has not been called successfully";
   if (callback_ || !audio_queue_)
     return;
+
+  // Check if we should defer Start() for http://crbug.com/160920.
+  if (manager_->ShouldDeferStreamStart()) {
+    // Use a cancellable closure so that if Stop() is called before Start()
+    // actually runs, we can cancel the pending start.
+    DCHECK(deferred_start_cb_.IsCancelled());
+    deferred_start_cb_.Reset(base::Bind(
+        &PCMQueueInAudioInputStream::Start, base::Unretained(this), callback));
+    manager_->GetTaskRunner()->PostDelayedTask(
+        FROM_HERE,
+        deferred_start_cb_.callback(),
+        base::TimeDelta::FromSeconds(
+            AudioManagerMac::kStartDelayInSecsForPowerEvents));
+    return;
+  }
+
   callback_ = callback;
   OSStatus err = AudioQueueStart(audio_queue_, NULL);
   if (err != noErr) {
@@ -75,6 +90,7 @@ void PCMQueueInAudioInputStream::Start(AudioInputCallback* callback) {
 }
 
 void PCMQueueInAudioInputStream::Stop() {
+  deferred_start_cb_.Cancel();
   if (!audio_queue_ || !started_)
     return;
 

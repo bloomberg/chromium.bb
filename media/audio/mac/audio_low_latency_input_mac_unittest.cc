@@ -5,6 +5,7 @@
 #include "base/basictypes.h"
 #include "base/environment.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "media/audio/audio_io.h"
@@ -22,9 +23,9 @@ using ::testing::NotNull;
 
 namespace media {
 
-ACTION_P3(CheckCountAndPostQuitTask, count, limit, loop) {
+ACTION_P4(CheckCountAndPostQuitTask, count, limit, loop, closure) {
   if (++*count >= limit) {
-    loop->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
+    loop->PostTask(FROM_HERE, closure);
   }
 }
 
@@ -93,8 +94,16 @@ class WriteToFileAudioSink : public AudioInputStream::AudioInputCallback {
 
 class MacAudioInputTest : public testing::Test {
  protected:
-  MacAudioInputTest() : audio_manager_(AudioManager::CreateForTesting()) {}
-  virtual ~MacAudioInputTest() {}
+  MacAudioInputTest()
+      : message_loop_(base::MessageLoop::TYPE_UI),
+        audio_manager_(AudioManager::CreateForTesting()) {
+    // Wait for the AudioManager to finish any initialization on the audio loop.
+    base::RunLoop().RunUntilIdle();
+  }
+
+  virtual ~MacAudioInputTest() {
+    base::RunLoop().RunUntilIdle();
+  }
 
   // Convenience method which ensures that we are not running on the build
   // bots and that at least one valid input device can be found.
@@ -132,6 +141,7 @@ class MacAudioInputTest : public testing::Test {
     return ais;
   }
 
+  base::MessageLoop message_loop_;
   scoped_ptr<AudioManager> audio_manager_;
 };
 
@@ -209,7 +219,6 @@ TEST_F(MacAudioInputTest, AUAudioInputStreamVerifyMonoRecording) {
     return;
 
   int count = 0;
-  base::MessageLoopForUI loop;
 
   // Create an audio input stream which records in mono.
   AudioInputStream* ais = CreateAudioInputStream(CHANNEL_LAYOUT_MONO);
@@ -225,11 +234,13 @@ TEST_F(MacAudioInputTest, AUAudioInputStreamVerifyMonoRecording) {
   // We use 10ms packets and will run the test until ten packets are received.
   // All should contain valid packets of the same size and a valid delay
   // estimate.
+  base::RunLoop run_loop;
   EXPECT_CALL(sink, OnData(ais, NotNull(), bytes_per_packet, _, _))
       .Times(AtLeast(10))
-      .WillRepeatedly(CheckCountAndPostQuitTask(&count, 10, &loop));
+      .WillRepeatedly(CheckCountAndPostQuitTask(
+          &count, 10, &message_loop_, run_loop.QuitClosure()));
   ais->Start(&sink);
-  loop.Run();
+  run_loop.Run();
   ais->Stop();
   ais->Close();
 }
@@ -240,7 +251,6 @@ TEST_F(MacAudioInputTest, AUAudioInputStreamVerifyStereoRecording) {
     return;
 
   int count = 0;
-  base::MessageLoopForUI loop;
 
   // Create an audio input stream which records in stereo.
   AudioInputStream* ais = CreateAudioInputStream(CHANNEL_LAYOUT_STEREO);
@@ -263,11 +273,13 @@ TEST_F(MacAudioInputTest, AUAudioInputStreamVerifyStereoRecording) {
   // parameter #4 does no longer pass. I am removing this restriction here to
   // ensure that we can land the patch but will revisit this test again when
   // more analysis of the delay estimates are done.
+  base::RunLoop run_loop;
   EXPECT_CALL(sink, OnData(ais, NotNull(), bytes_per_packet, _, _))
       .Times(AtLeast(10))
-      .WillRepeatedly(CheckCountAndPostQuitTask(&count, 10, &loop));
+      .WillRepeatedly(CheckCountAndPostQuitTask(
+          &count, 10, &message_loop_, run_loop.QuitClosure()));
   ais->Start(&sink);
-  loop.Run();
+  run_loop.Run();
   ais->Stop();
   ais->Close();
 }

@@ -152,7 +152,7 @@ void AUHALStream::Start(AudioSourceCallback* callback) {
   }
 
   // Check if we should defer Start() for http://crbug.com/160920.
-  if (manager_->ShouldDeferOutputStreamStart()) {
+  if (manager_->ShouldDeferStreamStart()) {
     // Use a cancellable closure so that if Stop() is called before Start()
     // actually runs, we can cancel the pending start.
     DCHECK(deferred_start_cb_.IsCancelled());

@@ -69,11 +69,11 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
   // As a workaround we delay Start() when it occurs after suspend and for a
   // small amount of time after resume.
   //
-  // Output streams should consult ShouldDeferOutputStreamStart() and if true
-  // check the value again after |kStartDelayInSecsForPowerEvents| has elapsed.
-  // If false, the stream may be started immediately.
+  // Streams should consult ShouldDeferStreamStart() and if true check the value
+  // again after |kStartDelayInSecsForPowerEvents| has elapsed. If false, the
+  // stream may be started immediately.
   enum { kStartDelayInSecsForPowerEvents = 1 };
-  bool ShouldDeferOutputStreamStart();
+  bool ShouldDeferStreamStart();
 
  protected:
   virtual ~AudioManagerMac();

@@ -274,6 +274,22 @@ void AUAudioInputStream::Start(AudioInputCallback* callback) {
   DLOG_IF(ERROR, !audio_unit_) << "Open() has not been called successfully";
   if (started_ || !audio_unit_)
     return;
+
+  // Check if we should defer Start() for http://crbug.com/160920.
+  if (manager_->ShouldDeferStreamStart()) {
+    // Use a cancellable closure so that if Stop() is called before Start()
+    // actually runs, we can cancel the pending start.
+    DCHECK(deferred_start_cb_.IsCancelled());
+    deferred_start_cb_.Reset(base::Bind(
+        &AUAudioInputStream::Start, base::Unretained(this), callback));
+    manager_->GetTaskRunner()->PostDelayedTask(
+        FROM_HERE,
+        deferred_start_cb_.callback(),
+        base::TimeDelta::FromSeconds(
+            AudioManagerMac::kStartDelayInSecsForPowerEvents));
+    return;
+  }
+
   sink_ = callback;
   StartAgc();
   OSStatus result = AudioOutputUnitStart(audio_unit_);

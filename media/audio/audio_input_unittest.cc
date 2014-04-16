@@ -6,6 +6,7 @@
 #include "base/environment.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "media/audio/audio_io.h"
@@ -52,9 +53,13 @@ class AudioInputTest : public testing::Test {
       message_loop_(base::MessageLoop::TYPE_UI),
       audio_manager_(AudioManager::CreateForTesting()),
       audio_input_stream_(NULL) {
+    // Wait for the AudioManager to finish any initialization on the audio loop.
+    base::RunLoop().RunUntilIdle();
   }
 
-  virtual ~AudioInputTest() {}
+  virtual ~AudioInputTest() {
+    base::RunLoop().RunUntilIdle();
+  }
 
  protected:
   AudioManager* audio_manager() { return audio_manager_.get(); }

@@ -242,7 +242,7 @@ class AudioManagerMac::AudioPowerObserver : public base::PowerObserver {
     base::PowerMonitor::Get()->RemoveObserver(this);
   }
 
-  bool ShouldDeferOutputStreamStart() {
+  bool ShouldDeferStreamStart() {
     DCHECK(thread_checker_.CalledOnValidThread());
     // Start() should be deferred if the system is in the middle of a suspend or
     // has recently started the process of resuming.
@@ -763,9 +763,9 @@ int AudioManagerMac::ChooseBufferSize(int output_sample_rate) {
   return buffer_size;
 }
 
-bool AudioManagerMac::ShouldDeferOutputStreamStart() {
+bool AudioManagerMac::ShouldDeferStreamStart() {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
-  return power_observer_->ShouldDeferOutputStreamStart();
+  return power_observer_->ShouldDeferStreamStart();
 }
 
 void AudioManagerMac::ReleaseOutputStream(AudioOutputStream* stream) {
