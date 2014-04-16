@@ -70,7 +70,6 @@ TemplateURLData ConvertSearchProvider(
     data.image_url_post_params = *search_provider.image_url_post_params;
   data.favicon_url = GURL(
       SubstituteInstallParam(search_provider.favicon_url, install_parameter));
-  data.show_in_default_list = true;
   data.safe_for_autoreplace = false;
   data.input_encodings.push_back(search_provider.encoding);
   data.date_created = base::Time();
@@ -167,8 +166,15 @@ void SettingsOverridesAPI::Observe(
                   url_list.release());
         }
         if (settings->search_engine) {
-          SetPref(extension->id(), prefs::kDefaultSearchProviderEnabled,
-                  new base::FundamentalValue(true));
+          // Bring the preference to the correct state. Before this code set it
+          // to "true" for all search engines. Thus, we should overwrite it for
+          // all search engines.
+          if (settings->search_engine->is_default) {
+            SetPref(extension->id(), prefs::kDefaultSearchProviderEnabled,
+                    new base::FundamentalValue(true));
+          } else {
+            UnsetPref(extension->id(), prefs::kDefaultSearchProviderEnabled);
+          }
           DCHECK(url_service_);
           if (url_service_->loaded()) {
             RegisterSearchProvider(extension);
@@ -199,7 +205,6 @@ void SettingsOverridesAPI::Observe(
           UnsetPref(extension->id(), prefs::kURLsToRestoreOnStartup);
         }
         if (settings->search_engine) {
-          UnsetPref(extension->id(), prefs::kDefaultSearchProviderEnabled);
           DCHECK(url_service_);
           if (url_service_->loaded())
             url_service_->RemoveExtensionControlledTURL(extension->id());
@@ -245,6 +250,7 @@ void SettingsOverridesAPI::RegisterSearchProvider(
   std::string install_parameter = prefs->GetInstallParam(extension->id());
   TemplateURLData data =
       ConvertSearchProvider(*settings->search_engine, install_parameter);
+  data.show_in_default_list = info->wants_to_be_default_engine;
   url_service_->AddExtensionControlledTURL(new TemplateURL(profile_, data),
                                            info.Pass());
 }

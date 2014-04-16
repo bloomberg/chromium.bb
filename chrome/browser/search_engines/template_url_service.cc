@@ -520,6 +520,8 @@ void TemplateURLService::AddExtensionControlledTURL(
   DCHECK(template_url);
   DCHECK_EQ(kInvalidTemplateURLID, template_url->id());
   DCHECK(info);
+  DCHECK_EQ(info->wants_to_be_default_engine,
+            template_url->show_in_default_list());
   template_url->extension_info_.swap(info);
   DCHECK(!FindTemplateURLForExtension(
       template_url->GetExtensionId(),

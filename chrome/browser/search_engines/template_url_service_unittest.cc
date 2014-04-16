@@ -97,6 +97,7 @@ TemplateURL* CreateKeywordWithDate(
     const std::string& alternate_url,
     const std::string& favicon_url,
     bool safe_for_autoreplace,
+    bool show_in_default_list,
     const std::string& encodings,
     Time date_created,
     Time last_modified) {
@@ -109,6 +110,7 @@ TemplateURL* CreateKeywordWithDate(
     data.alternate_urls.push_back(alternate_url);
   data.favicon_url = GURL(favicon_url);
   data.safe_for_autoreplace = safe_for_autoreplace;
+  data.show_in_default_list = show_in_default_list;
   base::SplitString(encodings, ';', &data.input_encodings);
   data.date_created = date_created;
   data.last_modified = last_modified;
@@ -129,7 +131,7 @@ TemplateURL* AddKeywordWithDate(
     Time last_modified) {
   TemplateURL* t_url = CreateKeywordWithDate(
       model, short_name, keyword, url, suggest_url, alternate_url,favicon_url,
-      safe_for_autoreplace, encodings, date_created, last_modified);
+      safe_for_autoreplace, false, encodings, date_created, last_modified);
   model->Add(t_url);
   EXPECT_NE(0, t_url->id());
   return t_url;
@@ -1589,7 +1591,7 @@ TEST_F(TemplateURLServiceTest, DefaultExtensionEngine) {
   TemplateURL* ext_dse = CreateKeywordWithDate(
       model(), "ext", "ext", "http://www.search.com/s?q={searchTerms}",
       std::string(), std::string(), std::string(),
-      true, "UTF-8", Time(), Time());
+      true, true, "UTF-8", Time(), Time());
   scoped_ptr<AssociatedExtensionInfo> extension_info(
       new AssociatedExtensionInfo);
   extension_info->wants_to_be_default_engine = true;
@@ -1614,7 +1616,7 @@ TEST_F(TemplateURLServiceTest, ExtensionEnginesNotPersist) {
   TemplateURL* ext_dse = CreateKeywordWithDate(
       model(), "ext1", "ext1", "http://www.ext1.com/s?q={searchTerms}",
       std::string(), std::string(), std::string(),
-      true, "UTF-8", Time(), Time());
+      true, false, "UTF-8", Time(), Time());
   scoped_ptr<AssociatedExtensionInfo> extension_info(
       new AssociatedExtensionInfo);
   extension_info->wants_to_be_default_engine = false;
@@ -1625,7 +1627,7 @@ TEST_F(TemplateURLServiceTest, ExtensionEnginesNotPersist) {
   ext_dse = CreateKeywordWithDate(
       model(), "ext2", "ext2", "http://www.ext2.com/s?q={searchTerms}",
       std::string(), std::string(), std::string(),
-      true, "UTF-8", Time(), Time());
+      true, true, "UTF-8", Time(), Time());
   extension_info.reset(new AssociatedExtensionInfo);
   extension_info->wants_to_be_default_engine = true;
   extension_info->extension_id = "ext2";
@@ -1672,7 +1674,7 @@ TEST_F(TemplateURLServiceTest, ExtensionEngineVsPolicy) {
   TemplateURL* ext_dse = CreateKeywordWithDate(
       model(), "ext1", "ext1", "http://www.ext1.com/s?q={searchTerms}",
       std::string(), std::string(), std::string(),
-      true, "UTF-8", Time(), Time());
+      true, true, "UTF-8", Time(), Time());
   scoped_ptr<AssociatedExtensionInfo> extension_info(
       new AssociatedExtensionInfo);
   extension_info->wants_to_be_default_engine = true;
