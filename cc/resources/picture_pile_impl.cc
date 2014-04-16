@@ -330,17 +330,14 @@ skia::RefPtr<SkPicture> PicturePileImpl::GetFlattenedPicture() {
   TRACE_EVENT0("cc", "PicturePileImpl::GetFlattenedPicture");
 
   gfx::Rect tiling_rect(tiling_.tiling_rect());
-  skia::RefPtr<SkPicture> picture = skia::AdoptRef(new SkPicture);
-  if (tiling_rect.IsEmpty())
-    return picture;
-
+  SkPictureRecorder recorder;
   SkCanvas* canvas =
-      picture->beginRecording(tiling_rect.width(),
+      recorder.beginRecording(tiling_rect.width(),
                               tiling_rect.height(),
                               SkPicture::kUsePathBoundsForClip_RecordingFlag);
-
-  RasterToBitmap(canvas, tiling_rect, 1.0, NULL);
-  picture->endRecording();
+  if (!tiling_rect.IsEmpty())
+    RasterToBitmap(canvas, tiling_rect, 1.0, NULL);
+  skia::RefPtr<SkPicture> picture = skia::AdoptRef(recorder.endRecording());
 
   return picture;
 }

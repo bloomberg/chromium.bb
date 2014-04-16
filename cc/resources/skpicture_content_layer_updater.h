@@ -6,6 +6,7 @@
 #define CC_RESOURCES_SKPICTURE_CONTENT_LAYER_UPDATER_H_
 
 #include "cc/resources/content_layer_updater.h"
+#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkPicture.h"
 
 class SkCanvas;
@@ -32,8 +33,7 @@ class SkPictureContentLayerUpdater : public ContentLayerUpdater {
   void DrawPicture(SkCanvas* canvas);
 
  private:
-  // Recording canvas.
-  SkPicture picture_;
+  skia::RefPtr<SkPicture> picture_;
 
   DISALLOW_COPY_AND_ASSIGN(SkPictureContentLayerUpdater);
 };

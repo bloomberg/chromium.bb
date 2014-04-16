@@ -249,17 +249,21 @@ void Picture::Record(ContentLayerClient* painter,
 
   DCHECK(!picture_);
   DCHECK(!tile_grid_info.fTileInterval.isEmpty());
-  picture_ = skia::AdoptRef(new SkTileGridPicture(
-      layer_rect_.width(), layer_rect_.height(), tile_grid_info));
+
+  skia::RefPtr<SkPictureFactory> factory =
+      skia::AdoptRef(new SkTileGridPictureFactory(tile_grid_info));
+  SkPictureRecorder recorder(factory.get());
 
   skia::RefPtr<SkCanvas> canvas;
+  canvas = skia::SharePtr(recorder.beginRecording(
+      layer_rect_.width(),
+      layer_rect_.height(),
+      SkPicture::kUsePathBoundsForClip_RecordingFlag |
+          SkPicture::kOptimizeForClippedPlayback_RecordingFlag));
+
   switch (recording_mode) {
     case RECORD_NORMALLY:
-      canvas = skia::SharePtr(picture_->beginRecording(
-          layer_rect_.width(),
-          layer_rect_.height(),
-          SkPicture::kUsePathBoundsForClip_RecordingFlag |
-              SkPicture::kOptimizeForClippedPlayback_RecordingFlag));
+      // Already setup for normal recording
       break;
     case RECORD_WITH_SK_NULL_CANVAS:
       canvas = skia::AdoptRef(SkCreateNullCanvas());
@@ -267,6 +271,7 @@ void Picture::Record(ContentLayerClient* painter,
     case RECORD_WITH_PAINTING_DISABLED:
       // Blink's GraphicsContext will disable painting when given a NULL
       // canvas.
+      canvas.clear();
       break;
     default:
       NOTREACHED();
@@ -289,8 +294,8 @@ void Picture::Record(ContentLayerClient* painter,
 
   if (canvas)
     canvas->restore();
-  if (picture_->getRecordingCanvas())
-    picture_->endRecording();
+  picture_ = skia::AdoptRef(recorder.endRecording());
+  DCHECK(picture_);
 
   opaque_rect_ = gfx::ToEnclosedRect(opaque_layer_rect);
 
