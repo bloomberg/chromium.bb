@@ -33,6 +33,7 @@
 
 #include "bindings/v8/ScriptPromise.h"
 #include "bindings/v8/ScriptWrappable.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "public/platform/WebServiceWorkerProviderClient.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
@@ -40,16 +41,19 @@
 
 namespace blink {
 class WebServiceWorkerProvider;
+class WebServiceWorker;
 }
 
 namespace WebCore {
 
 class Dictionary;
 class ExecutionContext;
+class ServiceWorker;
 
 class ServiceWorkerContainer FINAL :
     public RefCounted<ServiceWorkerContainer>,
     public ScriptWrappable,
+    public ContextLifecycleObserver,
     public blink::WebServiceWorkerProviderClient {
 public:
     static PassRefPtr<ServiceWorkerContainer> create(ExecutionContext*);
@@ -60,10 +64,14 @@ public:
     ScriptPromise registerServiceWorker(ExecutionContext*, const String& pattern, const Dictionary&);
     ScriptPromise unregisterServiceWorker(ExecutionContext*, const String& scope = String());
 
+    // WebServiceWorkerProviderClient overrides.
+    virtual void setCurrentServiceWorker(blink::WebServiceWorker*) OVERRIDE;
+
 private:
-    ServiceWorkerContainer(ExecutionContext*);
+    explicit ServiceWorkerContainer(ExecutionContext*);
 
     blink::WebServiceWorkerProvider* m_provider;
+    RefPtr<ServiceWorker> m_current;
 };
 
 } // namespace WebCore

@@ -32,17 +32,17 @@
 #define WebServiceWorkerProviderClient_h
 
 namespace blink {
+class WebServiceWorker;
 class WebString;
 
-// This class catches any errors that may originate on the browser
-// side and not via a DOM API call, such as errors that occur when
-// loading resources through the service worker.
+// This class provides interface for embedders to talk to
+// ServiceWorkerContainer.
 class WebServiceWorkerProviderClient {
 public:
-    // FIXME: replace this general error handler with more specific error handlers.
-    virtual void didFailToStart(const WebString& message) { }
-
     virtual ~WebServiceWorkerProviderClient() { }
+
+    // The callee will take ownership of the given WebServiceWorker object.
+    virtual void setCurrentServiceWorker(WebServiceWorker*) = 0;
 };
 
 };

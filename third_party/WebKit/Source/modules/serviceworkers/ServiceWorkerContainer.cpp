@@ -38,6 +38,7 @@
 #include "modules/serviceworkers/ServiceWorker.h"
 #include "modules/serviceworkers/ServiceWorkerContainerClient.h"
 #include "modules/serviceworkers/ServiceWorkerError.h"
+#include "public/platform/WebServiceWorker.h"
 #include "public/platform/WebServiceWorkerProvider.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
@@ -114,8 +115,16 @@ ScriptPromise ServiceWorkerContainer::unregisterServiceWorker(ExecutionContext* 
     return promise;
 }
 
+void ServiceWorkerContainer::setCurrentServiceWorker(blink::WebServiceWorker* serviceWorker)
+{
+    if (!executionContext())
+        return;
+    m_current = ServiceWorker::create(executionContext(), adoptPtr(serviceWorker));
+}
+
 ServiceWorkerContainer::ServiceWorkerContainer(ExecutionContext* executionContext)
-    : m_provider(0)
+    : ContextLifecycleObserver(executionContext)
+    , m_provider(0)
 {
     ScriptWrappable::init(this);
 
