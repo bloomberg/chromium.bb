@@ -62,8 +62,12 @@ def StepBuildSDK():
   else:
     new_script_dir = SCRIPT_DIR
 
+  args = [sys.executable, 'build_sdk.py']
+  if 'bionic' in os.getenv('BUILDBOT_BUILDERNAME', ''):
+    args.append('--bionic')
+
   try:
-    Run([sys.executable, 'build_sdk.py'], cwd=new_script_dir)
+    Run(args, cwd=new_script_dir)
   finally:
     if is_win:
       subprocess.check_call(['subst', '/D', subst_drive])
@@ -107,6 +111,9 @@ def main(args):
     # TODO(sbc): Remove this once buildbot script have been updated
     # to pass --build-only argument.
     if os.getenv('BUILDBOT_BUILDERNAME', '').endswith('build'):
+      options.build_only = True
+    # TODO(noelallen): Enable testing on bionic when we have an ARM solution.
+    if 'bionic' in os.getenv('BUILDBOT_BUILDERNAME', ''):
       options.build_only = True
 
   StepArmRunHooks()

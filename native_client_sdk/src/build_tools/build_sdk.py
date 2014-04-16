@@ -358,7 +358,6 @@ TOOLCHAIN_LIBS = {
     'libnacl_exception.a',
     'libnacl_list_mappings.a',
     'libppapi.a',
-    'libppapi_stub.a',
   ],
   'newlib' : [
     'crti.o',
@@ -942,8 +941,12 @@ def main(args):
     options.tar = True
 
   toolchains = ['newlib', 'glibc', 'arm', 'pnacl', 'host']
+
+  # Changes for experimental bionic builder
   if options.bionic:
     toolchains.append('bionic')
+    options.build_ports = False
+    options.build_app_engine = False
 
   print 'Building: ' + ' '.join(toolchains)
 
@@ -957,7 +960,10 @@ def main(args):
   pepper_old = str(chrome_version - 1)
   pepperdir = os.path.join(OUT_DIR, 'pepper_' + pepper_ver)
   pepperdir_old = os.path.join(OUT_DIR, 'pepper_' + pepper_old)
-  tarname = 'naclsdk_' + getos.GetPlatform() + '.tar.bz2'
+  if options.bionic:
+    tarname = 'naclsdk_bionic.tar.bz2'
+  else:
+    tarname = 'naclsdk_' + getos.GetPlatform() + '.tar.bz2'
   tarfile = os.path.join(OUT_DIR, tarname)
 
   if options.release:
@@ -987,7 +993,8 @@ def main(args):
   GenerateNotice(pepperdir)
 
   # Verify the SDK contains what we expect.
-  BuildStepVerifyFilelist(pepperdir)
+  if not options.bionic:
+    BuildStepVerifyFilelist(pepperdir)
 
   if options.tar:
     BuildStepTarBundle(pepper_ver, tarfile)

@@ -28,8 +28,9 @@ def IsSDKBuilder():
     (win|mac|linux)_nacl_sdk_build
 
   Builder names:
-    (windows|mac|linux)-sdk-multi(rel)?"""
-  return '-sdk-multi' in os.getenv('BUILDBOT_BUILDERNAME', '')
+    (windows|mac|linux)-sdk-multi(bionic)(rel)?"""
+  bot =  os.getenv('BUILDBOT_BUILDERNAME', '')
+  return '-sdk-multi' in bot or '-sdk-bionic-multi' in bot
 
 
 def IsSDKTrybot():
