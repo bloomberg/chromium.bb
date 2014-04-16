@@ -35,6 +35,7 @@ group("root") {
     "//third_party/leveldatabase",
     "//third_party/libpng",
     "//third_party/libusb",
+    "//third_party/libwebp",
     "//third_party/re2",
     "//third_party/smhasher:cityhash",
     "//third_party/smhasher:murmurhash3",
