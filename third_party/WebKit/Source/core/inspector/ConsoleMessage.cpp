@@ -206,7 +206,7 @@ void ConsoleMessage::addToFrontend(InspectorFrontend::Console* frontend, Injecte
         jsonObj->setNetworkRequestId(m_requestId);
     if (m_arguments && m_arguments->argumentCount()) {
         InjectedScript injectedScript = injectedScriptManager->injectedScriptFor(m_arguments->globalState());
-        if (!injectedScript.hasNoValue()) {
+        if (!injectedScript.isEmpty()) {
             RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::RemoteObject> > jsonArgs = TypeBuilder::Array<TypeBuilder::Runtime::RemoteObject>::create();
             if (m_type == TableMessageType && generatePreview && m_arguments->argumentCount()) {
                 ScriptValue table = m_arguments->argumentAt(0);

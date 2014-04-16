@@ -76,7 +76,7 @@ void V8XMLHttpRequest::responseTextAttributeGetterCustom(const v8::PropertyCallb
     ScriptValue text = xmlHttpRequest->responseText(exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
-    if (text.hasNoValue()) {
+    if (text.isEmpty()) {
         v8SetReturnValueString(info, emptyString(), info.GetIsolate());
         return;
     }
@@ -98,7 +98,7 @@ void V8XMLHttpRequest::responseAttributeGetterCustom(const v8::PropertyCallbackI
             v8::Isolate* isolate = info.GetIsolate();
 
             ScriptString jsonSource = xmlHttpRequest->responseJSONSource();
-            if (jsonSource.hasNoValue() || !jsonSource.v8Value()->IsString()) {
+            if (jsonSource.isEmpty() || !jsonSource.v8Value()->IsString()) {
                 v8SetReturnValue(info, v8::Null(isolate));
                 return;
             }

@@ -539,7 +539,7 @@ bool ScriptController::executeScriptIfJavaScriptURL(const KURL& url)
         return true;
 
     String scriptResult;
-    if (!result.getString(scriptResult))
+    if (!result.toString(scriptResult))
         return true;
 
     // We're still in a frame, so there should be a DocumentLoader.

@@ -45,9 +45,9 @@ struct ScriptObjectHash {
 
 struct ScriptObjectHashTraits : WTF::GenericHashTraits<ScriptObject> {
     static const bool emptyValueIsZero = false;
-    static ScriptObject emptyValue() { return ScriptObject(ScriptState::current(), ScriptValue::createNull()); }
+    static ScriptObject emptyValue() { return ScriptObject(); }
     static void constructDeletedValue(ScriptObject& slot) { slot = ScriptObject(); }
-    static bool isDeletedValue(ScriptObject value) { return value.hasNoValue(); }
+    static bool isDeletedValue(ScriptObject value) { return value.isEmpty(); }
 };
 
 } // namespace WebCore

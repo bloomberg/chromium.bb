@@ -84,9 +84,9 @@ public:
         return m_promise.isolate();
     }
 
-    bool hasNoValue() const
+    bool isEmpty() const
     {
-        return m_promise.hasNoValue();
+        return m_promise.isEmpty();
     }
 
     void clear()

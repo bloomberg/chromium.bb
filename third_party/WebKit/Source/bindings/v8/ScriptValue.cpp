@@ -42,26 +42,17 @@ ScriptValue::~ScriptValue()
 {
 }
 
-bool ScriptValue::getString(String& result) const
+bool ScriptValue::toString(String& result) const
 {
-    if (hasNoValue())
+    if (isEmpty())
         return false;
 
-    v8::HandleScope handleScope(m_isolate);
+    v8::HandleScope handleScope(isolate());
     v8::Handle<v8::Value> string = v8Value();
     if (string.IsEmpty() || !string->IsString())
         return false;
-    result = toCoreString(string.As<v8::String>());
+    result = toCoreString(v8::Handle<v8::String>::Cast(string));
     return true;
-}
-
-String ScriptValue::toString() const
-{
-    v8::TryCatch block;
-    v8::Handle<v8::String> string = v8Value()->ToString();
-    if (block.HasCaught())
-        return String();
-    return v8StringToWebCoreString<String>(string, DoNotExternalize);
 }
 
 static PassRefPtr<JSONValue> v8ToJSONValue(v8::Handle<v8::Value> value, int maxDepth, v8::Isolate* isolate)

@@ -77,7 +77,7 @@ TEST_F(ScriptPromiseTest, constructFromNonPromise)
     v8::TryCatch trycatch;
     ScriptPromise promise(v8::Undefined(m_isolate), m_isolate);
     ASSERT_TRUE(trycatch.HasCaught());
-    ASSERT_TRUE(promise.hasNoValue());
+    ASSERT_TRUE(promise.isEmpty());
 }
 
 TEST_F(ScriptPromiseTest, castPromise)
@@ -85,7 +85,7 @@ TEST_F(ScriptPromiseTest, castPromise)
     ScriptPromise promise = ScriptPromiseResolver::create(m_isolate)->promise();
     ScriptPromise newPromise = ScriptPromise::cast(ScriptValue(promise.v8Value(), m_isolate));
 
-    ASSERT_FALSE(promise.hasNoValue());
+    ASSERT_FALSE(promise.isEmpty());
     EXPECT_EQ(V8PromiseCustom::Pending, state(promise));
     EXPECT_EQ(promise.v8Value(), newPromise.v8Value());
 }
@@ -96,8 +96,8 @@ TEST_F(ScriptPromiseTest, castNonPromise)
     ScriptPromise promise1 = ScriptPromise::cast(ScriptValue(value.v8Value(), m_isolate));
     ScriptPromise promise2 = ScriptPromise::cast(ScriptValue(value.v8Value(), m_isolate));
 
-    ASSERT_FALSE(promise1.hasNoValue());
-    ASSERT_FALSE(promise2.hasNoValue());
+    ASSERT_FALSE(promise1.isEmpty());
+    ASSERT_FALSE(promise2.isEmpty());
 
     ASSERT_TRUE(V8PromiseCustom::isPromise(promise1.v8Value(), m_isolate));
     ASSERT_TRUE(V8PromiseCustom::isPromise(promise2.v8Value(), m_isolate));

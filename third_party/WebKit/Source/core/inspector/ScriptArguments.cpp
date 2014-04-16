@@ -33,6 +33,7 @@
 
 #include "bindings/v8/ScriptScope.h"
 #include "bindings/v8/ScriptValue.h"
+#include "bindings/v8/V8Binding.h"
 
 namespace WebCore {
 
@@ -77,7 +78,10 @@ bool ScriptArguments::getFirstArgumentAsString(String& result, bool checkForNull
         return false;
     }
 
-    result = value.toString();
+    // We intentionally ignore an exception that can be thrown in ToString().
+    v8::TryCatch block;
+    v8::Handle<v8::String> string = value.v8Value()->ToString();
+    result = string.IsEmpty() ? String() : toCoreString(string);
     return true;
 }
 

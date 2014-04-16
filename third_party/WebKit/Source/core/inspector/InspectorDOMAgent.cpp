@@ -1673,13 +1673,13 @@ PassRefPtr<TypeBuilder::DOM::EventListener> InspectorDOMAgent::buildObjectForEve
         .setLocation(location);
     if (objectGroupId) {
         ScriptValue functionValue = eventListenerHandler(&document, eventListener.get());
-        if (!functionValue.hasNoValue()) {
+        if (!functionValue.isEmpty()) {
             LocalFrame* frame = document.frame();
             if (frame) {
                 ScriptState* scriptState = eventListenerHandlerScriptState(frame, eventListener.get());
                 if (scriptState) {
                     InjectedScript injectedScript = m_injectedScriptManager->injectedScriptFor(scriptState);
-                    if (!injectedScript.hasNoValue()) {
+                    if (!injectedScript.isEmpty()) {
                         RefPtr<TypeBuilder::Runtime::RemoteObject> valueJson = injectedScript.wrapObject(functionValue, *objectGroupId);
                         value->setHandler(valueJson);
                     }
@@ -2104,7 +2104,7 @@ PassRefPtr<TypeBuilder::Runtime::RemoteObject> InspectorDOMAgent::resolveNode(No
         return nullptr;
 
     InjectedScript injectedScript = m_injectedScriptManager->injectedScriptFor(mainWorldScriptState(frame));
-    if (injectedScript.hasNoValue())
+    if (injectedScript.isEmpty())
         return nullptr;
 
     return injectedScript.wrapNode(node, objectGroup);

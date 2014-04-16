@@ -118,7 +118,7 @@ InjectedScript PageDebuggerAgent::injectedScriptForEval(ErrorString* errorString
         return injectedScriptManager()->injectedScriptFor(scriptState);
     }
     InjectedScript injectedScript = injectedScriptManager()->injectedScriptForId(*executionContextId);
-    if (injectedScript.hasNoValue())
+    if (injectedScript.isEmpty())
         *errorString = "Execution context with given id not found.";
     return injectedScript;
 }

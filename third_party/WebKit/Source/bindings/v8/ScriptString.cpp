@@ -38,7 +38,7 @@ ScriptString ScriptString::concatenateWith(const String& string)
     v8::Isolate* nonNullIsolate = isolate();
     v8::HandleScope handleScope(nonNullIsolate);
     v8::Handle<v8::String> b = v8String(nonNullIsolate, string);
-    if (hasNoValue())
+    if (isEmpty())
         return ScriptString(b, nonNullIsolate);
     v8::Handle<v8::String> a = v8::Handle<v8::String>::Cast(v8Value());
     return ScriptString(v8::String::Concat(a, b), nonNullIsolate);
@@ -46,7 +46,7 @@ ScriptString ScriptString::concatenateWith(const String& string)
 
 String ScriptString::flattenToString() const
 {
-    if (hasNoValue())
+    if (isEmpty())
         return String();
     v8::HandleScope handleScope(isolate());
     v8::Handle<v8::String> value = v8::Handle<v8::String>::Cast(v8Value());

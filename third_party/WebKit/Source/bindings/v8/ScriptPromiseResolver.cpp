@@ -80,7 +80,7 @@ ScriptPromiseResolver::~ScriptPromiseResolver()
 ScriptPromise ScriptPromiseResolver::promise()
 {
     ASSERT(m_isolate->InContext());
-    if (!m_resolver.hasNoValue()) {
+    if (!m_resolver.isEmpty()) {
         v8::Local<v8::Promise::Resolver> v8Resolver = m_resolver.v8Value().As<v8::Promise::Resolver>();
         return ScriptPromise(v8Resolver->GetPromise(), m_isolate);
     }
@@ -103,9 +103,9 @@ PassRefPtr<ScriptPromiseResolver> ScriptPromiseResolver::create(v8::Isolate* iso
 void ScriptPromiseResolver::resolve(v8::Handle<v8::Value> value)
 {
     ASSERT(m_isolate->InContext());
-    if (!m_resolver.hasNoValue()) {
+    if (!m_resolver.isEmpty()) {
         m_resolver.v8Value().As<v8::Promise::Resolver>()->Resolve(value);
-    } else if (!m_promise.hasNoValue()) {
+    } else if (!m_promise.isEmpty()) {
         v8::Local<v8::Object> promise = m_promise.v8Value().As<v8::Object>();
         ASSERT(V8PromiseCustom::isPromise(promise, m_isolate));
         V8PromiseCustom::resolve(promise, value, m_isolate);
@@ -117,9 +117,9 @@ void ScriptPromiseResolver::resolve(v8::Handle<v8::Value> value)
 void ScriptPromiseResolver::reject(v8::Handle<v8::Value> value)
 {
     ASSERT(m_isolate->InContext());
-    if (!m_resolver.hasNoValue()) {
+    if (!m_resolver.isEmpty()) {
         m_resolver.v8Value().As<v8::Promise::Resolver>()->Reject(value);
-    } else if (!m_promise.hasNoValue()) {
+    } else if (!m_promise.isEmpty()) {
         v8::Local<v8::Object> promise = m_promise.v8Value().As<v8::Object>();
         ASSERT(V8PromiseCustom::isPromise(promise, m_isolate));
         V8PromiseCustom::reject(promise, value, m_isolate);

@@ -222,7 +222,7 @@ void ScriptDebugServer::stepCommandWithFrame(const char* functionName, const Scr
     ASSERT(isPaused());
     v8::HandleScope handleScope(m_isolate);
     v8::Handle<v8::Value> callFrame;
-    if (frame.hasNoValue()) {
+    if (frame.isEmpty()) {
         callFrame = v8::Undefined(m_isolate);
     } else {
         JavaScriptCallFrame* impl = V8JavaScriptCallFrame::toNative(v8::Handle<v8::Object>::Cast(frame.v8Value()));

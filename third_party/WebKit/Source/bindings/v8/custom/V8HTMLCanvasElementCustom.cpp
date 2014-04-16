@@ -104,7 +104,7 @@ void V8HTMLCanvasElement::getContextMethodCustom(const v8::FunctionCallbackInfo<
             ScriptState* scriptState = ScriptState::forContext(isolate->GetCurrentContext());
             ScriptObject context(scriptState, v8::Handle<v8::Object>::Cast(v8Result));
             ScriptObject wrapped = InspectorInstrumentation::wrapCanvas2DRenderingContextForInstrumentation(&impl->document(), context);
-            if (!wrapped.hasNoValue()) {
+            if (!wrapped.isEmpty()) {
                 v8SetReturnValue(info, wrapped.v8Value());
                 return;
             }
@@ -118,7 +118,7 @@ void V8HTMLCanvasElement::getContextMethodCustom(const v8::FunctionCallbackInfo<
             ScriptState* scriptState = ScriptState::forContext(isolate->GetCurrentContext());
             ScriptObject glContext(scriptState, v8::Handle<v8::Object>::Cast(v8Result));
             ScriptObject wrapped = InspectorInstrumentation::wrapWebGLRenderingContextForInstrumentation(&impl->document(), glContext);
-            if (!wrapped.hasNoValue()) {
+            if (!wrapped.isEmpty()) {
                 v8SetReturnValue(info, wrapped.v8Value());
                 return;
             }

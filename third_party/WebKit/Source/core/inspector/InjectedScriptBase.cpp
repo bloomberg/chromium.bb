@@ -97,7 +97,7 @@ ScriptValue InjectedScriptBase::callFunctionWithEvalEnabled(ScriptFunctionCall& 
 
 void InjectedScriptBase::makeCall(ScriptFunctionCall& function, RefPtr<JSONValue>* result)
 {
-    if (hasNoValue() || !canAccessInspectedWindow()) {
+    if (isEmpty() || !canAccessInspectedWindow()) {
         *result = JSONValue::null();
         return;
     }

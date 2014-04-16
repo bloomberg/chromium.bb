@@ -62,7 +62,7 @@ void CryptoResultImpl::completeWithError(const blink::WebString& errorDetails)
             // FIXME: Include the line number which started the crypto operation.
             executionContext()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, errorDetails);
         }
-        m_promiseResolver->reject(ScriptValue::createNull());
+        m_promiseResolver->reject(ScriptValue(v8::Null(m_scriptState->isolate()), m_scriptState->isolate()));
     }
 }
 
@@ -89,7 +89,7 @@ void CryptoResultImpl::completeWithBoolean(bool b)
 
     if (canCompletePromise()) {
         NewScriptState::Scope scope(m_scriptState.get());
-        m_promiseResolver->resolve(ScriptValue::createBoolean(b));
+        m_promiseResolver->resolve(ScriptValue(v8Boolean(b, m_scriptState->isolate()), m_scriptState->isolate()));
     }
 
     finish();

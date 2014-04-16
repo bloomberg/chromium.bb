@@ -77,7 +77,7 @@ ScriptObject InjectedScriptCanvasModule::callWrapContextFunction(const String& f
     function.appendArgument(context);
     bool hadException = false;
     ScriptValue resultValue = callFunctionWithEvalEnabled(function, hadException);
-    if (hadException || resultValue.hasNoValue() || !resultValue.isObject()) {
+    if (hadException || resultValue.isEmpty() || !resultValue.isObject()) {
         ASSERT_NOT_REACHED();
         return ScriptObject();
     }

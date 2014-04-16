@@ -211,7 +211,7 @@ void InjectedScript::getInternalProperties(ErrorString* errorString, const Strin
 
 Node* InjectedScript::nodeForObjectId(const String& objectId)
 {
-    if (hasNoValue() || !canAccessInspectedWindow())
+    if (isEmpty() || !canAccessInspectedWindow())
         return 0;
 
     ScriptFunctionCall function(injectedScriptObject(), "nodeForObjectId");
@@ -234,7 +234,7 @@ void InjectedScript::releaseObject(const String& objectId)
 
 PassRefPtr<Array<CallFrame> > InjectedScript::wrapCallFrames(const ScriptValue& callFrames, int asyncOrdinal)
 {
-    ASSERT(!hasNoValue());
+    ASSERT(!isEmpty());
     ScriptFunctionCall function(injectedScriptObject(), "wrapCallFrames");
     function.appendArgument(callFrames);
     function.appendArgument(asyncOrdinal);
@@ -249,7 +249,7 @@ PassRefPtr<Array<CallFrame> > InjectedScript::wrapCallFrames(const ScriptValue& 
 
 PassRefPtr<TypeBuilder::Runtime::RemoteObject> InjectedScript::wrapObject(const ScriptValue& value, const String& groupName, bool generatePreview) const
 {
-    ASSERT(!hasNoValue());
+    ASSERT(!isEmpty());
     ScriptFunctionCall wrapFunction(injectedScriptObject(), "wrapObject");
     wrapFunction.appendArgument(value);
     wrapFunction.appendArgument(groupName);
@@ -265,11 +265,11 @@ PassRefPtr<TypeBuilder::Runtime::RemoteObject> InjectedScript::wrapObject(const 
 
 PassRefPtr<TypeBuilder::Runtime::RemoteObject> InjectedScript::wrapTable(const ScriptValue& table, const ScriptValue& columns) const
 {
-    ASSERT(!hasNoValue());
+    ASSERT(!isEmpty());
     ScriptFunctionCall wrapFunction(injectedScriptObject(), "wrapTable");
     wrapFunction.appendArgument(canAccessInspectedWindow());
     wrapFunction.appendArgument(table);
-    if (columns.hasNoValue())
+    if (columns.isEmpty())
         wrapFunction.appendArgument(false);
     else
         wrapFunction.appendArgument(columns);
@@ -288,7 +288,7 @@ PassRefPtr<TypeBuilder::Runtime::RemoteObject> InjectedScript::wrapNode(Node* no
 
 ScriptValue InjectedScript::findObjectById(const String& objectId) const
 {
-    ASSERT(!hasNoValue());
+    ASSERT(!isEmpty());
     ScriptFunctionCall function(injectedScriptObject(), "findObjectById");
     function.appendArgument(objectId);
 
@@ -306,7 +306,7 @@ ScriptValue InjectedScript::findCallFrameById(ErrorString* errorString, const Sc
     bool hadException = false;
     ScriptValue resultValue = callFunctionWithEvalEnabled(function, hadException);
     ASSERT(!hadException);
-    if (hadException || resultValue.hasNoValue() || !resultValue.isObject()) {
+    if (hadException || resultValue.isEmpty() || !resultValue.isObject()) {
         *errorString = "Internal error";
         return ScriptValue();
     }
@@ -315,7 +315,7 @@ ScriptValue InjectedScript::findCallFrameById(ErrorString* errorString, const Sc
 
 void InjectedScript::inspectNode(Node* node)
 {
-    ASSERT(!hasNoValue());
+    ASSERT(!isEmpty());
     ScriptFunctionCall function(injectedScriptObject(), "inspectNode");
     function.appendArgument(nodeAsScriptValue(node));
     RefPtr<JSONValue> result;
@@ -324,7 +324,7 @@ void InjectedScript::inspectNode(Node* node)
 
 void InjectedScript::releaseObjectGroup(const String& objectGroup)
 {
-    ASSERT(!hasNoValue());
+    ASSERT(!isEmpty());
     ScriptFunctionCall releaseFunction(injectedScriptObject(), "releaseObjectGroup");
     releaseFunction.appendArgument(objectGroup);
     bool hadException = false;

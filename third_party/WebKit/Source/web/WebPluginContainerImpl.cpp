@@ -463,9 +463,9 @@ WebString WebPluginContainerImpl::executeScriptURL(const WebURL& url, bool popup
     ScriptValue result = frame->script().executeScriptInMainWorldAndReturnValue(ScriptSourceCode(script));
 
     // Failure is reported as a null string.
-    String resultStr;
-    result.getString(resultStr);
-    return resultStr;
+    String resultString;
+    result.toString(resultString);
+    return resultString;
 }
 
 void WebPluginContainerImpl::loadFrameRequest(const WebURLRequest& request, const WebString& target, bool notifyNeeded, void* notifyData)

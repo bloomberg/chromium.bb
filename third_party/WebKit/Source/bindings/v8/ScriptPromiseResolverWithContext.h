@@ -69,6 +69,8 @@ public:
         return m_resolver ? m_resolver->promise() : ScriptPromise();
     }
 
+    NewScriptState* scriptState() const { return m_scriptState.get(); }
+
     // ActiveDOMObject implementation.
     virtual void suspend() OVERRIDE;
     virtual void resume() OVERRIDE;

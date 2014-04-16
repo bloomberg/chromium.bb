@@ -435,7 +435,7 @@ void AsyncCallStackTracker::ensureMaxAsyncCallChainDepth(AsyncCallChain* chain, 
 
 bool AsyncCallStackTracker::validateCallFrames(const ScriptValue& callFrames)
 {
-    return !callFrames.hasNoValue();
+    return !callFrames.isEmpty();
 }
 
 AsyncCallStackTracker::ExecutionContextData* AsyncCallStackTracker::createContextDataIfNeeded(ExecutionContext* context)

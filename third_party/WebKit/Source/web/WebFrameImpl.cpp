@@ -1932,7 +1932,7 @@ void WebFrameImpl::loadJavaScriptURL(const KURL& url)
     ScriptValue result = frame()->script().executeScriptInMainWorldAndReturnValue(ScriptSourceCode(script));
 
     String scriptResult;
-    if (!result.getString(scriptResult))
+    if (!result.toString(scriptResult))
         return;
 
     if (!frame()->navigationScheduler().locationChangePending())

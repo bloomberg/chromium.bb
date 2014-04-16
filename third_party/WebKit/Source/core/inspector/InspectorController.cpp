@@ -314,7 +314,7 @@ void InspectorController::inspect(Node* node)
         node = node->parentNode();
 
     InjectedScript injectedScript = m_injectedScriptManager->injectedScriptFor(mainWorldScriptState(frame));
-    if (injectedScript.hasNoValue())
+    if (injectedScript.isEmpty())
         return;
     injectedScript.inspectNode(node);
 }

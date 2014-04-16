@@ -62,7 +62,7 @@ ScriptPromise InstallEvent::reloadAll(ExecutionContext* context)
     // For now this just returns a promise which is already rejected.
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(context);
     ScriptPromise promise = resolver->promise();
-    resolver->reject(ScriptValue::createNull());
+    resolver->reject(ScriptValue(v8::Null(toIsolate(context)), toIsolate(context)));
     return promise;
 }
 

@@ -58,7 +58,7 @@ ScriptPromise::ScriptPromise(v8::Handle<v8::Value> value, v8::Isolate* isolate)
 
 ScriptPromise ScriptPromise::then(PassOwnPtr<ScriptFunction> onFulfilled, PassOwnPtr<ScriptFunction> onRejected)
 {
-    if (m_promise.hasNoValue())
+    if (m_promise.isEmpty())
         return ScriptPromise();
 
     v8::Local<v8::Object> promise = m_promise.v8Value().As<v8::Object>();
@@ -90,7 +90,7 @@ ScriptPromise ScriptPromise::then(PassOwnPtr<ScriptFunction> onFulfilled, PassOw
 
 ScriptPromise ScriptPromise::cast(const ScriptValue& value)
 {
-    if (value.hasNoValue())
+    if (value.isEmpty())
         return ScriptPromise();
     return cast(value.v8Value(), value.isolate());
 }
@@ -110,7 +110,7 @@ ScriptPromise ScriptPromise::cast(v8::Handle<v8::Value> value, v8::Isolate* isol
 
 ScriptPromise ScriptPromise::reject(const ScriptValue& value)
 {
-    if (value.hasNoValue())
+    if (value.isEmpty())
         return ScriptPromise();
     return reject(value.v8Value(), value.isolate());
 }

@@ -76,7 +76,7 @@ static ScriptDebugServer::PauseOnExceptionsState setPauseOnExceptionsState(Scrip
 void InspectorRuntimeAgent::evaluate(ErrorString* errorString, const String& expression, const String* const objectGroup, const bool* const includeCommandLineAPI, const bool* const doNotPauseOnExceptionsAndMuteConsole, const int* executionContextId, const bool* const returnByValue, const bool* generatePreview, RefPtr<TypeBuilder::Runtime::RemoteObject>& result, TypeBuilder::OptOutput<bool>* wasThrown)
 {
     InjectedScript injectedScript = injectedScriptForEval(errorString, executionContextId);
-    if (injectedScript.hasNoValue())
+    if (injectedScript.isEmpty())
         return;
     ScriptDebugServer::PauseOnExceptionsState previousPauseOnExceptionsState = ScriptDebugServer::DontPauseOnExceptions;
     if (asBool(doNotPauseOnExceptionsAndMuteConsole))
@@ -95,7 +95,7 @@ void InspectorRuntimeAgent::evaluate(ErrorString* errorString, const String& exp
 void InspectorRuntimeAgent::callFunctionOn(ErrorString* errorString, const String& objectId, const String& expression, const RefPtr<JSONArray>* const optionalArguments, const bool* const doNotPauseOnExceptionsAndMuteConsole, const bool* const returnByValue, const bool* generatePreview, RefPtr<TypeBuilder::Runtime::RemoteObject>& result, TypeBuilder::OptOutput<bool>* wasThrown)
 {
     InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForObjectId(objectId);
-    if (injectedScript.hasNoValue()) {
+    if (injectedScript.isEmpty()) {
         *errorString = "Inspected frame has gone";
         return;
     }
@@ -120,7 +120,7 @@ void InspectorRuntimeAgent::callFunctionOn(ErrorString* errorString, const Strin
 void InspectorRuntimeAgent::getProperties(ErrorString* errorString, const String& objectId, const bool* ownProperties, const bool* accessorPropertiesOnly, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::PropertyDescriptor> >& result, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::InternalPropertyDescriptor> >& internalProperties)
 {
     InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForObjectId(objectId);
-    if (injectedScript.hasNoValue()) {
+    if (injectedScript.isEmpty()) {
         *errorString = "Inspected frame has gone";
         return;
     }
@@ -141,7 +141,7 @@ void InspectorRuntimeAgent::getProperties(ErrorString* errorString, const String
 void InspectorRuntimeAgent::releaseObject(ErrorString*, const String& objectId)
 {
     InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForObjectId(objectId);
-    if (!injectedScript.hasNoValue())
+    if (!injectedScript.isEmpty())
         injectedScript.releaseObject(objectId);
 }
 

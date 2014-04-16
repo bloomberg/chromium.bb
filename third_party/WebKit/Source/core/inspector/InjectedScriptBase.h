@@ -48,7 +48,7 @@ public:
     virtual ~InjectedScriptBase() { }
 
     const String& name() const { return m_name; }
-    bool hasNoValue() const { return m_injectedScriptObject.hasNoValue(); }
+    bool isEmpty() const { return m_injectedScriptObject.isEmpty(); }
     ScriptState* scriptState() const { return m_injectedScriptObject.scriptState(); }
 
 protected:

@@ -77,7 +77,7 @@ public:
 
     v8::Local<v8::Object> promise()
     {
-        ASSERT(!m_promise.hasNoValue());
+        ASSERT(!m_promise.isEmpty());
         return m_promise.v8Value().As<v8::Object>();
     }
 
