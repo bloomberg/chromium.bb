@@ -34,11 +34,37 @@ class TtsPlatformImpl {
         private final String mLanguage;
     }
 
+    private static class PendingUtterance {
+        private PendingUtterance(TtsPlatformImpl impl, int utteranceId, String text,
+                String lang, float rate, float pitch, float volume) {
+            mImpl = impl;
+            mUtteranceId = utteranceId;
+            mText = text;
+            mLang = lang;
+            mRate = rate;
+            mPitch = pitch;
+            mVolume = volume;
+        }
+
+        private void speak() {
+            mImpl.speak(mUtteranceId, mText, mLang, mRate, mPitch, mVolume);
+        }
+
+        TtsPlatformImpl mImpl;
+        int mUtteranceId;
+        String mText;
+        String mLang;
+        float mRate;
+        float mPitch;
+        float mVolume;
+    }
+
     private long mNativeTtsPlatformImplAndroid;
     private final TextToSpeech mTextToSpeech;
     private boolean mInitialized;
     private ArrayList<TtsVoice> mVoices;
     private String mCurrentLanguage;
+    private PendingUtterance mPendingUtterance;
 
     private TtsPlatformImpl(long nativeTtsPlatformImplAndroid, Context context) {
         mInitialized = false;
@@ -172,7 +198,13 @@ class TtsPlatformImpl {
     @CalledByNative
     private boolean speak(int utteranceId, String text, String lang,
                           float rate, float pitch, float volume) {
-        assert mInitialized == true;
+        if (!mInitialized) {
+            mPendingUtterance = new PendingUtterance(this, utteranceId, text, lang, rate,
+                    pitch, volume);
+            return true;
+        }
+        if (mPendingUtterance != null) mPendingUtterance = null;
+
         if (!lang.equals(mCurrentLanguage)) {
             mTextToSpeech.setLanguage(new Locale(lang));
             mCurrentLanguage = lang;
@@ -194,8 +226,8 @@ class TtsPlatformImpl {
      */
     @CalledByNative
     private void stop() {
-        assert mInitialized == true;
-        mTextToSpeech.stop();
+        if (mInitialized) mTextToSpeech.stop();
+        if (mPendingUtterance != null) mPendingUtterance = null;
     }
 
     /**
@@ -230,6 +262,8 @@ class TtsPlatformImpl {
 
         mInitialized = true;
         nativeVoicesChanged(mNativeTtsPlatformImplAndroid);
+
+        if (mPendingUtterance != null) mPendingUtterance.speak();
     }
 
     private native void nativeVoicesChanged(long nativeTtsPlatformImplAndroid);
