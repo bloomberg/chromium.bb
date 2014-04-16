@@ -138,6 +138,8 @@ void EncodingEventSubscriber::GetEventsAndReset(LogMetadata* metadata,
   metadata->set_first_rtp_timestamp(first_rtp_timestamp_);
   metadata->set_num_frame_events(frame_event_map_.size());
   metadata->set_num_packet_events(packet_event_map_.size());
+  metadata->set_reference_timestamp_ms_at_unix_epoch(
+      (base::TimeTicks::UnixEpoch() - base::TimeTicks()).InMilliseconds());
   frame_events->swap(frame_event_map_);
   packet_events->swap(packet_event_map_);
   Reset();

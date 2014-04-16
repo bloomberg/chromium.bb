@@ -69,12 +69,21 @@ message LogMetadata {
 
   // Number of AggregatedPacketEvent's.
   optional int32 num_packet_events = 4;
+
+  // The internal timestamp value in milliseconds that represents the time
+  // of the Unix epoch. This is used for relating the timestamps in the events
+  // to a real time and date.
+  optional int64 reference_timestamp_ms_at_unix_epoch = 5;
 }
 
 message AggregatedFrameEvent {
   optional uint32 relative_rtp_timestamp = 1;
 
   repeated EventType event_type = 2 [packed = true];
+  
+  // The internal timestamp value in milliseconds. Use
+  // LogMetadata.reference_timestamp_ms_at_unix_epoch to relate to a real time
+  // and date.
   repeated int64 event_timestamp_ms = 3 [packed = true];
 
   // Only set if there is a kAudioFrameEncoded and kVideoFrameEncoded event.
@@ -90,6 +99,10 @@ message AggregatedFrameEvent {
 message BasePacketEvent {
   optional int32 packet_id = 1;
   repeated EventType event_type = 2 [packed = true];
+  
+  // The internal timestamp value in milliseconds. Use
+  // LogMetadata.reference_timestamp_ms_at_unix_epoch to relate to a real time
+  // and date.
   repeated int64 event_timestamp_ms = 3 [packed = true];
 }
 
