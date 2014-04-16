@@ -153,14 +153,14 @@ void SupervisedUserLoginFlow::OnPasswordChangeDataLoaded(
                            base::Bind(&SupervisedUserLoginFlow::OnNewKeyAdded,
                                       weak_factory_.GetWeakPtr(),
                                       Passed(&data_copy)));
-  } else if (SupervisedUserAuthentication::SCHEMA_PLAIN == current_schema) {
+  } else if (SupervisedUserAuthentication::SCHEMA_SALT_HASHED ==
+             current_schema) {
     VLOG(1) << "Updating the key";
 
     if (auth->HasIncompleteKey(user_id())) {
       // We need to use Migrate instead of Authorized Update privilege.
       key.privileges = kCryptohomeManagedUserIncompleteKeyPrivileges;
     }
-
     // Just update the key.
     DCHECK_EQ(context_.key_label, kCryptohomeManagedUserKeyLabel);
     authenticator_->UpdateKeyAuthorized(
