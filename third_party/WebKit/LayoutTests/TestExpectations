@@ -26,6 +26,8 @@ crbug.com/233124 http/tests/inspector/network/network-size.html [ Skip ]
 crbug.com/233124 http/tests/inspector/network/network-size-chunked.html [ Skip ]
 crbug.com/233124 http/tests/inspector/network/network-size-sync.html [ Skip ]
 
+crbug.com/364088 inspector/audits/audits-panel-noimages-functional.html [ Pass Failure ]
+
 # -----------------------------------------------------------------
 # Plugin tests
 # -----------------------------------------------------------------
@@ -987,6 +989,7 @@ crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/whitespace/018.ht
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/text-combine-shrink-to-fit.html [ Skip ]
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/remove-zero-length-run.html [ Skip ]
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/line-break-after-question-mark.html [ Skip ]
+crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/cg-fallback-bolding.html [ Skip ]
 
 # Sub-pixel scaling currently broken for DW.
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/sub-pixel/text-scaling-ltr.html [ Failure ]
