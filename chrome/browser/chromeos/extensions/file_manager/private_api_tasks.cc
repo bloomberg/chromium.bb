@@ -9,14 +9,18 @@
 #include <vector>
 
 #include "chrome/browser/chromeos/drive/file_system_util.h"
-#include "chrome/browser/chromeos/file_manager/file_tasks.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/mime_util.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/browser_thread.h"
+#include "net/base/filename_util.h"
+#include "net/base/mime_sniffer.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 
+using content::BrowserThread;
+using extensions::app_file_handler_util::PathAndMimeTypeSet;
 using fileapi::FileSystemURL;
 
 namespace extensions {
@@ -52,6 +56,33 @@ std::set<std::string> GetUniqueMimeTypes(
       mime_types.insert(mime_type);
   }
   return mime_types;
+}
+
+void SniffMimeType(PathAndMimeTypeSet* path_mime_set,
+                   std::vector<GURL>* file_urls) {
+  PathAndMimeTypeSet sniffed_path_mime_set;
+  std::vector<char> content(net::kMaxBytesToSniff);
+
+  // For each files, sniff its MIME type if it is empty
+  for (PathAndMimeTypeSet::iterator it = path_mime_set->begin();
+       it != path_mime_set->end();
+       ++it) {
+    const base::FilePath& file_path = it->first;
+    std::string mime_type = it->second;
+    // Note: sniff MIME type only for local files.
+    if (mime_type.empty() && !drive::util::IsUnderDriveMountPoint(file_path)) {
+      int bytes_read = base::ReadFile(file_path, &content[0], content.size());
+      if (bytes_read >= 0) {
+        net::SniffMimeType(&content[0],
+                           bytes_read,
+                           net::FilePathToFileURL(file_path),
+                           std::string(),  // type_hint (passes no hint)
+                           &mime_type);
+      }
+    }
+    sniffed_path_mime_set.insert(std::make_pair(file_path, mime_type));
+  }
+  path_mime_set->swap(sniffed_path_mime_set);
 }
 
 }  // namespace
@@ -134,8 +165,8 @@ bool FileBrowserPrivateGetFileTasksFunction::RunImpl() {
 
   // Collect all the URLs, convert them to GURLs, and crack all the urls into
   // file paths.
-  extensions::app_file_handler_util::PathAndMimeTypeSet path_mime_set;
-  std::vector<GURL> file_urls;
+  scoped_ptr<PathAndMimeTypeSet> path_mime_set(new PathAndMimeTypeSet);
+  scoped_ptr<std::vector<GURL> > file_urls(new std::vector<GURL>);
   for (size_t i = 0; i < params->file_urls.size(); ++i) {
     std::string mime_type;
     if (params->mime_types.size() != 0)
@@ -148,21 +179,40 @@ bool FileBrowserPrivateGetFileTasksFunction::RunImpl() {
       continue;
     const base::FilePath file_path = file_system_url.path();
 
-    file_urls.push_back(file_url);
+    file_urls->push_back(file_url);
 
     // If MIME type is not provided, guess it from the file path.
     if (mime_type.empty())
       mime_type = file_manager::util::GetMimeTypeForPath(file_path);
 
-    path_mime_set.insert(std::make_pair(file_path, mime_type));
+    path_mime_set->insert(std::make_pair(file_path, mime_type));
   }
 
+  // In case the MIME type of some files are empty,
+  // try to sniff their MIME type by their content.
+  PathAndMimeTypeSet* path_mime_set_ptr = path_mime_set.get();
+  std::vector<GURL>* file_urls_ptr = file_urls.get();
+
+  BrowserThread::PostBlockingPoolTaskAndReply(
+      FROM_HERE,
+      base::Bind(&SniffMimeType, path_mime_set_ptr, file_urls_ptr),
+      base::Bind(
+          &FileBrowserPrivateGetFileTasksFunction::OnSniffingMimeTypeCompleted,
+          this,
+          base::Passed(&path_mime_set),
+          base::Passed(&file_urls)));
+  return true;
+}
+
+void FileBrowserPrivateGetFileTasksFunction::OnSniffingMimeTypeCompleted(
+    scoped_ptr<PathAndMimeTypeSet> path_mime_set,
+    scoped_ptr<std::vector<GURL> > file_urls) {
   std::vector<file_manager::file_tasks::FullTaskDescriptor> tasks;
   file_manager::file_tasks::FindAllTypesOfTasks(
       GetProfile(),
       drive::util::GetDriveAppRegistryByProfile(GetProfile()),
-      path_mime_set,
-      file_urls,
+      *path_mime_set,
+      *file_urls,
       &tasks);
 
   // Convert the tasks into JSON compatible objects.
@@ -182,7 +232,6 @@ bool FileBrowserPrivateGetFileTasksFunction::RunImpl() {
   results_ = extensions::api::file_browser_private::GetFileTasks::Results::
       Create(results);
   SendResponse(true);
-  return true;
 }
 
 bool FileBrowserPrivateSetDefaultTaskFunction::RunImpl() {
