@@ -732,13 +732,26 @@
           'enable_plugins%': 1,
         }],
 
-        # linux_use_gold_binary: whether to use the binary checked into
-        # third_party/binutils.  Gold is not used for 32-bit linux builds
-        # as it runs out of address space.
+        # linux_use_bundled_gold: whether to use the gold linker binary checked
+        # into third_party/binutils.  Force this off via GYP_DEFINES when you
+        # are using a custom toolchain and need to control -B in ldflags.
+        # Gold is not used for 32-bit linux builds as it runs out of address
+        # space.
         ['OS=="linux" and (target_arch=="x64" or target_arch=="arm")', {
-          'linux_use_gold_binary%': 1,
+          'linux_use_bundled_gold%': 1,
         }, {
-          'linux_use_gold_binary%': 0,
+          'linux_use_bundled_gold%': 0,
+        }],
+
+        # linux_use_bundled_binutils: whether to use the binary binutils
+        # checked into third_party/binutils.  These are not multi-arch so cannot
+        # be used except on x86 and x86-64 (the only two architectures which
+        # are currently checke in).  Force this off via GYP_DEFINES when you
+        # are using a custom toolchain and need to control -B in cflags.
+        ['OS=="linux" and (target_arch=="x64")', {
+          'linux_use_bundled_binutils%': 1,
+        }, {
+          'linux_use_bundled_binutils%': 0,
         }],
 
         # linux_use_gold_flags: whether to use build flags that rely on gold.
@@ -996,7 +1009,8 @@
     'enable_themes%': '<(enable_themes)',
     'enable_autofill_dialog%': '<(enable_autofill_dialog)',
     'enable_background%': '<(enable_background)',
-    'linux_use_gold_binary%': '<(linux_use_gold_binary)',
+    'linux_use_bundled_gold%': '<(linux_use_bundled_gold)',
+    'linux_use_bundled_binutils%': '<(linux_use_bundled_binutils)',
     'linux_use_gold_flags%': '<(linux_use_gold_flags)',
     'use_canvas_skia%': '<(use_canvas_skia)',
     'test_isolation_mode%': '<(test_isolation_mode)',
@@ -1364,17 +1378,15 @@
           ['OS=="android"', {
             'binutils_version%': 222,
           }],
+          ['host_arch=="x64"', {
+            'binutils_dir%': 'third_party/binutils/Linux_x64/Release/bin',
+          }],
+          ['host_arch=="ia32"', {
+            'binutils_dir%': 'third_party/binutils/Linux_ia32/Release/bin',
+          }],
           # Our version of binutils in third_party/binutils
-          ['linux_use_gold_binary==1', {
+          ['linux_use_bundled_binutils==1', {
             'binutils_version%': 224,
-            'conditions': [
-              ['host_arch=="x64"', {
-                'binutils_dir%': 'third_party/binutils/Linux_x64/Release/bin',
-              }],
-              ['host_arch=="ia32"', {
-                'binutils_dir%': 'third_party/binutils/Linux_ia32/Release/bin',
-              }],
-            ],
           }],
         ],
       }, {
@@ -3836,9 +3848,9 @@
             'cflags': [ '-g' ],
             'conditions': [
               # TODO(thestig) We should not need to specify chromeos==0 here,
-              # but somehow ChromeOS uses gold despite linux_use_gold_binary==0.
+              # but somehow ChromeOS uses gold despite linux_use_bundled_gold==0.
               # http://crbug.com./360082
-              ['linux_use_gold_binary==0 and chromeos==0 and OS!="android"', {
+              ['linux_use_bundled_gold==0 and chromeos==0 and OS!="android"', {
                 'target_conditions': [
                   ['_toolset=="target"', {
                     'ldflags': [
@@ -3901,24 +3913,26 @@
               }]
             ],
           }],
-          ['linux_use_gold_binary==1', {
-	    # Put our binutils, which contains gold in the search path. We pass
-	    # the path to gold to the compiler. gyp leaves unspecified what the
-	    # cwd is when running the compiler, so the normal gyp path-munging
-	    # fails us. This hack gets the right path.
+          ['linux_use_bundled_binutils==1', {
             'cflags': [
               '-B<!(cd <(DEPTH) && pwd -P)/<(binutils_dir)',
             ],
+          }],
+          ['linux_use_bundled_gold==1', {
+            # Put our binutils, which contains gold in the search path. We pass
+            # the path to gold to the compiler. gyp leaves unspecified what the
+            # cwd is when running the compiler, so the normal gyp path-munging
+            # fails us. This hack gets the right path.
             'ldflags': [
               '-B<!(cd <(DEPTH) && pwd -P)/<(binutils_dir)',
             ],
           }],
           ['binutils_version>=224', {
-	    # Newer binutils don't set DT_RPATH unless you disable "new" dtags
-	    # and the new DT_RUNPATH doesn't work without --no-as-needed flag.
-	    # FIXME(mithro): Figure out the --as-needed/--no-as-needed flags
-	    # inside this file to allow usage of --no-as-needed and removal of
-	    # this flag.
+            # Newer binutils don't set DT_RPATH unless you disable "new" dtags
+            # and the new DT_RUNPATH doesn't work without --no-as-needed flag.
+            # FIXME(mithro): Figure out the --as-needed/--no-as-needed flags
+            # inside this file to allow usage of --no-as-needed and removal of
+            # this flag.
             'ldflags': [
               '-Wl,--disable-new-dtags',
             ],
