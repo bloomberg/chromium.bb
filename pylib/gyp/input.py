@@ -1622,15 +1622,22 @@ class DependencyGraphNode(object):
   def DeepDependencies(self, dependencies=None):
     """Returns a list of all of a target's dependencies, recursively."""
     if dependencies == None:
-      dependencies = []
+      # Using a list to get ordered output and a set to do fast "is it
+      # already added" checks.
+      dependencies = ([], set())
+
+    dependency_list, dependency_set = dependencies
 
     for dependency in self.dependencies:
       # Check for None, corresponding to the root node.
-      if dependency.ref != None and dependency.ref not in dependencies:
-        dependencies.append(dependency.ref)
+      if dependency.ref is None:
+        continue
+      if dependency.ref not in dependency_set:
+        dependency_list.append(dependency.ref)
+        dependency_set.add(dependency.ref)
         dependency.DeepDependencies(dependencies)
 
-    return dependencies
+    return dependency_list
 
   def _LinkDependenciesInternal(self, targets, include_shared_libraries,
                                 dependencies=None, initial=True):
