@@ -219,13 +219,13 @@ need to be translated for each locale.-->
       </message>
 
       <if expr="lang not in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message name="IDS_TIME_SEC_SINGULAR"
+      <message name="IDS_TIME_SECS_SINGULAR"
                desc="NUMBER_ONE is a one or one-like number: 1 (many European and most Indian languages), 1 and 0 (French, Brazilian Portuguese and Hindi), 1, 21, 31, ... (Russian, Ukrainian, Croatian, Serbian, Latvian, Lithuanian), or 1, 101, 201, ... (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada.">
         <ph name="NUMBER_ONE"><ex>1</ex>#</ph> sec
       </message>
       </if>
       <if expr="lang in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message translateable="false" name="IDS_TIME_SEC_SINGULAR"
+      <message translateable="false" name="IDS_TIME_SECS_SINGULAR"
                desc="">
         NA
       </message>
@@ -290,13 +290,13 @@ need to be translated for each locale.-->
       </message>
 
       <if expr="lang not in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message name="IDS_TIME_LONG_SEC_SINGULAR"
+      <message name="IDS_TIME_LONG_SECS_SINGULAR"
                desc="NUMBER_ONE is a one or one-like number: 1 (many European and most Indian languages), 1 and 0 (French, Brazilian Portuguese and Hindi), 1, 21, 31, ... (Russian, Ukrainian, Croatian, Serbian, Latvian, Lithuanian), or 1, 101, 201, ... (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada.">
         <ph name="NUMBER_ONE"><ex>1</ex>#</ph> second
       </message>
       </if>
       <if expr="lang in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message translateable="false" name="IDS_TIME_LONG_SEC_SINGULAR"
+      <message translateable="false" name="IDS_TIME_LONG_SECS_SINGULAR"
                desc="">
         NA
       </message>
@@ -361,13 +361,13 @@ need to be translated for each locale.-->
       </message>
 
       <if expr="lang not in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message name="IDS_TIME_LONG_SEC_2ND_SINGULAR"
+      <message name="IDS_TIME_LONG_SECS_2ND_SINGULAR"
                desc="Second part of 'xx minutes yy seconds' time format where yy (NUMBER_ONE) is a one or one-like number: 1 (many European and most Indian languages), 1 and 0 (French, Brazilian Portuguese and Hindi), 1, 21, 31, ... (Russian, Ukrainian, Croatian, Serbian, Latvian, Lithuanian), or 1, 101, 201, ... (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada.">
         <ph name="NUMBER_ONE"><ex>1</ex>#</ph> second
       </message>
       </if>
       <if expr="lang in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message translateable="false" name="IDS_TIME_LONG_SEC_2ND_SINGULAR"
+      <message translateable="false" name="IDS_TIME_LONG_SECS_2NDS_SINGULAR"
                desc="">
         NA
       </message>
@@ -432,13 +432,13 @@ need to be translated for each locale.-->
       </message>
 
       <if expr="lang not in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message name="IDS_TIME_MIN_SINGULAR"
+      <message name="IDS_TIME_MINS_SINGULAR"
                desc="NUMBER_ONE is a one or one-like number: 1 (many European and most Indian languages), 1 and 0 (French, Brazilian Portuguese and Hindi), 1, 21, 31, ... (Russian, Ukrainian, Croatian, Serbian, Latvian, Lithuanian), or 1, 101, 201, ... (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada.">
         <ph name="NUMBER_ONE"><ex>1</ex>#</ph> min
       </message>
       </if>
       <if expr="lang in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message translateable="false" name="IDS_TIME_MIN_SINGULAR"
+      <message translateable="false" name="IDS_TIME_MINS_SINGULAR"
                desc="">
         NA
       </message>
@@ -503,13 +503,13 @@ need to be translated for each locale.-->
       </message>
 
       <if expr="lang not in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message name="IDS_TIME_LONG_MIN_SINGULAR"
+      <message name="IDS_TIME_LONG_MINS_SINGULAR"
                desc="NUMBER_ONE is a one or one-like number: 1 (many European and most Indian languages), 1 and 0 (French, Brazilian Portuguese and Hindi), 1, 21, 31, ... (Russian, Ukrainian, Croatian, Serbian, Latvian, Lithuanian), or 1, 101, 201, ... (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada.">
         <ph name="NUMBER_ONE"><ex>1</ex>#</ph> minute
       </message>
       </if>
       <if expr="lang in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message translateable="false" name="IDS_TIME_LONG_MIN_SINGULAR"
+      <message translateable="false" name="IDS_TIME_LONG_MINS_SINGULAR"
                desc="">
         NA
       </message>
@@ -574,13 +574,13 @@ need to be translated for each locale.-->
       </message>
 
       <if expr="lang not in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message name="IDS_TIME_LONG_MIN_1ST_SINGULAR"
+      <message name="IDS_TIME_LONG_MINS_1ST_SINGULAR"
                desc="First part of 'xx minutes yy seconds' time format (including the space between first and second part, if the language requires a space there) where xx (NUMBER_ONE) is a one or one-like number: 1 (many European and most Indian languages), 1 and 0 (French, Brazilian Portuguese and Hindi), 1, 21, 31, ... (Russian, Ukrainian, Croatian, Serbian, Latvian, Lithuanian), or 1, 101, 201, ... (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada.">
         <ph name="NUMBER_ONE"><ex>1</ex>#</ph> minute '''
       </message>
       </if>
       <if expr="lang in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message translateable="false" name="IDS_TIME_LONG_MIN_1ST_SINGULAR"
+      <message translateable="false" name="IDS_TIME_LONG_MINS_1ST_SINGULAR"
                desc="">
         NA
       </message>
@@ -645,13 +645,13 @@ need to be translated for each locale.-->
       </message>
 
       <if expr="lang not in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message name="IDS_TIME_LONG_MIN_2ND_SINGULAR"
+      <message name="IDS_TIME_LONG_MINS_2ND_SINGULAR"
                desc="Second part of 'xx hours yy minutes' time format where yy (NUMBER_ONE) is a one or one-like number: 1 (many European and most Indian languages), 1 and 0 (French, Brazilian Portuguese and Hindi), 1, 21, 31, ... (Russian, Ukrainian, Croatian, Serbian, Latvian, Lithuanian), or 1, 101, 201, ... (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada.">
         <ph name="NUMBER_ONE"><ex>1</ex>#</ph> minute
       </message>
       </if>
       <if expr="lang in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message translateable="false" name="IDS_TIME_LONG_MIN_2ND_SINGULAR"
+      <message translateable="false" name="IDS_TIME_LONG_MINS_2ND_SINGULAR"
                desc="">
         NA
       </message>
@@ -716,13 +716,13 @@ need to be translated for each locale.-->
       </message>
 
       <if expr="lang not in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message name="IDS_TIME_HOUR_SINGULAR"
+      <message name="IDS_TIME_HOURS_SINGULAR"
                desc="NUMBER_ONE is a one or one-like number: 1 (many European and most Indian languages), 1 and 0 (French, Brazilian Portuguese and Hindi), 1, 21, 31, ... (Russian, Ukrainian, Croatian, Serbian, Latvian, Lithuanian), or 1, 101, 201, ... (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada.">
         <ph name="NUMBER_ONE"><ex>1</ex>#</ph> hour
       </message>
       </if>
       <if expr="lang in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message translateable="false" name="IDS_TIME_HOUR_SINGULAR"
+      <message translateable="false" name="IDS_TIME_HOURS_SINGULAR"
                desc="">
         NA
       </message>
@@ -787,13 +787,13 @@ need to be translated for each locale.-->
       </message>
 
       <if expr="lang not in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message name="IDS_TIME_HOUR_1ST_SINGULAR"
+      <message name="IDS_TIME_HOURS_1ST_SINGULAR"
                desc="First part of 'xx hours yy minutes' time format (including the space between first and second part, if the language requires a space there) where xx (NUMBER_ONE) is a one or one-like number: 1 (many European and most Indian languages), 1 and 0 (French, Brazilian Portuguese and Hindi), 1, 21, 31, ... (Russian, Ukrainian, Croatian, Serbian, Latvian, Lithuanian), or 1, 101, 201, ... (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada.">
         <ph name="NUMBER_ONE"><ex>1</ex>#</ph> hour '''
       </message>
       </if>
       <if expr="lang in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message translateable="false" name="IDS_TIME_HOUR_1ST_SINGULAR"
+      <message translateable="false" name="IDS_TIME_HOURS_1ST_SINGULAR"
                desc="">
         NA
       </message>
@@ -858,13 +858,13 @@ need to be translated for each locale.-->
       </message>
 
       <if expr="lang not in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message name="IDS_TIME_HOUR_2ND_SINGULAR"
+      <message name="IDS_TIME_HOURS_2ND_SINGULAR"
                desc="Second part of 'xx days yy hours' time format where yy (NUMBER_ONE) is a one or one-like number: 1 (many European and most Indian languages), 1 and 0 (French, Brazilian Portuguese and Hindi), 1, 21, 31, ... (Russian, Ukrainian, Croatian, Serbian, Latvian, Lithuanian), or 1, 101, 201, ... (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada.">
         <ph name="NUMBER_ONE"><ex>1</ex>#</ph> hour
       </message>
       </if>
       <if expr="lang in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message translateable="false" name="IDS_TIME_HOUR_2ND_SINGULAR"
+      <message translateable="false" name="IDS_TIME_HOURS_2ND_SINGULAR"
                desc="">
         NA
       </message>
@@ -929,13 +929,13 @@ need to be translated for each locale.-->
       </message>
 
       <if expr="lang not in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message name="IDS_TIME_DAY_SINGULAR"
+      <message name="IDS_TIME_DAYS_SINGULAR"
                desc="NUMBER_ONE is a one or one-like number: 1 (many European and most Indian languages), 1 and 0 (French, Brazilian Portuguese and Hindi), 1, 21, 31, ... (Russian, Ukrainian, Croatian, Serbian, Latvian, Lithuanian), or 1, 101, 201, ... (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada.">
         <ph name="NUMBER_ONE"><ex>1</ex>#</ph> day
       </message>
       </if>
       <if expr="lang in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message translateable="false" name="IDS_TIME_DAY_SINGULAR"
+      <message translateable="false" name="IDS_TIME_DAYS_SINGULAR"
                desc="">
         NA
       </message>
@@ -1000,13 +1000,13 @@ need to be translated for each locale.-->
       </message>
 
       <if expr="lang not in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message name="IDS_TIME_DAY_1ST_SINGULAR"
+      <message name="IDS_TIME_DAYS_1ST_SINGULAR"
                desc="First part of 'xx days yy hours' time format (including the space between first and second part, if the language requires a space there) where xx (NUMBER_ONE) is a one or one-like number: 1 (many European and most Indian languages), 1 and 0 (French, Brazilian Portuguese and Hindi), 1, 21, 31, ... (Russian, Ukrainian, Croatian, Serbian, Latvian, Lithuanian), or 1, 101, 201, ... (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada.">
         <ph name="NUMBER_ONE"><ex>1</ex>#</ph> day '''
       </message>
       </if>
       <if expr="lang in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message translateable="false" name="IDS_TIME_DAY_1ST_SINGULAR"
+      <message translateable="false" name="IDS_TIME_DAYS_1ST_SINGULAR"
                desc="">
         NA
       </message>
@@ -1071,13 +1071,13 @@ need to be translated for each locale.-->
       </message>
 
       <if expr="lang not in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message name="IDS_TIME_REMAINING_SEC_SINGULAR"
+      <message name="IDS_TIME_REMAINING_SECS_SINGULAR"
                desc="NUMBER_ONE is a one or one-like number: 1 (many European and most Indian languages), 1 and 0 (French, Brazilian Portuguese and Hindi), 1, 21, 31, ... (Russian, Ukrainian, Croatian, Serbian, Latvian, Lithuanian), or 1, 101, 201, ... (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada.">
         <ph name="NUMBER_ONE"><ex>1</ex>#</ph> sec left
       </message>
       </if>
       <if expr="lang in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message translateable="false" name="IDS_TIME_REMAINING_SEC_SINGULAR"
+      <message translateable="false" name="IDS_TIME_REMAINING_SECS_SINGULAR"
                desc="">
         NA
       </message>
@@ -1142,13 +1142,13 @@ need to be translated for each locale.-->
       </message>
 
       <if expr="lang not in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message name="IDS_TIME_REMAINING_LONG_SEC_SINGULAR"
+      <message name="IDS_TIME_REMAINING_LONG_SECS_SINGULAR"
                desc="NUMBER_ONE is a one or one-like number: 1 (many European and most Indian languages), 1 and 0 (French, Brazilian Portuguese and Hindi), 1, 21, 31, ... (Russian, Ukrainian, Croatian, Serbian, Latvian, Lithuanian), or 1, 101, 201, ... (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada.">
         <ph name="NUMBER_ONE"><ex>1</ex>#</ph> second left
       </message>
       </if>
       <if expr="lang in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message translateable="false" name="IDS_TIME_REMAINING_SEC_SINGULAR"
+      <message translateable="false" name="IDS_TIME_REMAINING_SECS_SINGULAR"
                desc="">
         NA
       </message>
@@ -1213,13 +1213,13 @@ need to be translated for each locale.-->
       </message>
 
       <if expr="lang not in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message name="IDS_TIME_REMAINING_MIN_SINGULAR"
+      <message name="IDS_TIME_REMAINING_MINS_SINGULAR"
                desc="NUMBER_ONE is a one or one-like number: 1 (many European and most Indian languages), 1 and 0 (French, Brazilian Portuguese and Hindi), 1, 21, 31, ... (Russian, Ukrainian, Croatian, Serbian, Latvian, Lithuanian), or 1, 101, 201, ... (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada.">
         <ph name="NUMBER_ONE"><ex>1</ex>#</ph> min left
       </message>
       </if>
       <if expr="lang in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message translateable="false" name="IDS_TIME_REMAINING_MIN_SINGULAR"
+      <message translateable="false" name="IDS_TIME_REMAINING_MINS_SINGULAR"
                desc="">
         NA
       </message>
@@ -1283,13 +1283,13 @@ need to be translated for each locale.-->
       </message>
 
       <if expr="lang not in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message name="IDS_TIME_REMAINING_LONG_MIN_SINGULAR"
+      <message name="IDS_TIME_REMAINING_LONG_MINS_SINGULAR"
                desc="NUMBER_ONE is a one or one-like number: 1 (many European and most Indian languages), 1 and 0 (French, Brazilian Portuguese and Hindi), 1, 21, 31, ... (Russian, Ukrainian, Croatian, Serbian, Latvian, Lithuanian), or 1, 101, 201, ... (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada.">
         <ph name="NUMBER_ONE"><ex>1</ex>#</ph> minute left
       </message>
       </if>
       <if expr="lang in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message translateable="false" name="IDS_TIME_REMAINING_LONG_MIN_SINGULAR"
+      <message translateable="false" name="IDS_TIME_REMAINING_LONG_MINS_SINGULAR"
                desc="">
         NA
       </message>
@@ -1353,13 +1353,13 @@ need to be translated for each locale.-->
       </message>
 
       <if expr="lang not in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message name="IDS_TIME_REMAINING_HOUR_SINGULAR"
+      <message name="IDS_TIME_REMAINING_HOURS_SINGULAR"
                desc="NUMBER_ONE is a one or one-like number: 1 (many European and most Indian languages), 1 and 0 (French, Brazilian Portuguese and Hindi), 1, 21, 31, ... (Russian, Ukrainian, Croatian, Serbian, Latvian, Lithuanian), or 1, 101, 201, ... (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada.">
         <ph name="NUMBER_ONE"><ex>1</ex>#</ph> hour left
       </message>
       </if>
       <if expr="lang in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message translateable="false" name="IDS_TIME_REMAINING_HOUR_SINGULAR"
+      <message translateable="false" name="IDS_TIME_REMAINING_HOURS_SINGULAR"
                desc="">
         NA
       </message>
@@ -1424,13 +1424,13 @@ need to be translated for each locale.-->
       </message>
 
       <if expr="lang not in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message name="IDS_TIME_REMAINING_DAY_SINGULAR"
+      <message name="IDS_TIME_REMAINING_DAYS_SINGULAR"
                desc="NUMBER_ONE is a one or one-like number: 1 (many European and most Indian languages), 1 and 0 (French, Brazilian Portuguese and Hindi), 1, 21, 31, ... (Russian, Ukrainian, Croatian, Serbian, Latvian, Lithuanian), or 1, 101, 201, ... (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada.">
         <ph name="NUMBER_ONE"><ex>1</ex>#</ph> day left
       </message>
       </if>
       <if expr="lang in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message translateable="false" name="IDS_TIME_REMAINING_DAY_SINGULAR"
+      <message translateable="false" name="IDS_TIME_REMAINING_DAYS_SINGULAR"
                desc="">
         NA
       </message>
@@ -1494,13 +1494,13 @@ need to be translated for each locale.-->
       </message>
 
       <if expr="lang not in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message name="IDS_TIME_ELAPSED_SEC_SINGULAR"
+      <message name="IDS_TIME_ELAPSED_SECS_SINGULAR"
                desc="NUMBER_ONE is a one or one-like number: 1 (many European and most Indian languages), 1 and 0 (French, Brazilian Portuguese and Hindi), 1, 21, 31, ... (Russian, Ukrainian, Croatian, Serbian, Latvian, Lithuanian), or 1, 101, 201, ... (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada.">
         <ph name="NUMBER_ONE"><ex>1</ex>#</ph> sec ago
       </message>
       </if>
       <if expr="lang in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message translateable="false" name="IDS_TIME_ELAPSED_SEC_SINGULAR"
+      <message translateable="false" name="IDS_TIME_ELAPSED_SECS_SINGULAR"
                desc="">
         NA
       </message>
@@ -1565,13 +1565,13 @@ need to be translated for each locale.-->
       </message>
 
       <if expr="lang not in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message name="IDS_TIME_ELAPSED_MIN_SINGULAR"
+      <message name="IDS_TIME_ELAPSED_MINS_SINGULAR"
                desc="NUMBER_ONE is a one or one-like number: 1 (many European and most Indian languages), 1 and 0 (French, Brazilian Portuguese and Hindi), 1, 21, 31, ... (Russian, Ukrainian, Croatian, Serbian, Latvian, Lithuanian), or 1, 101, 201, ... (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada.">
         <ph name="NUMBER_ONE"><ex>1</ex>#</ph> min ago
       </message>
       </if>
       <if expr="lang in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message translateable="false" name="IDS_TIME_ELAPSED_MIN_SINGULAR"
+      <message translateable="false" name="IDS_TIME_ELAPSED_MINS_SINGULAR"
                desc="">
         NA
       </message>
@@ -1636,13 +1636,13 @@ need to be translated for each locale.-->
       </message>
 
       <if expr="lang not in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message name="IDS_TIME_ELAPSED_HOUR_SINGULAR"
+      <message name="IDS_TIME_ELAPSED_HOURS_SINGULAR"
                desc="NUMBER_ONE is a one or one-like number: 1 (many European and most Indian languages), 1 and 0 (French, Brazilian Portuguese and Hindi), 1, 21, 31, ... (Russian, Ukrainian, Croatian, Serbian, Latvian, Lithuanian), or 1, 101, 201, ... (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada.">
         <ph name="NUMBER_ONE"><ex>1</ex>#</ph> hour ago
       </message>
       </if>
       <if expr="lang in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message translateable="false" name="IDS_TIME_ELAPSED_HOUR_SINGULAR"
+      <message translateable="false" name="IDS_TIME_ELAPSED_HOURS_SINGULAR"
                desc="">
         NA
       </message>
@@ -1707,13 +1707,13 @@ need to be translated for each locale.-->
       </message>
 
       <if expr="lang not in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message name="IDS_TIME_ELAPSED_DAY_SINGULAR"
+      <message name="IDS_TIME_ELAPSED_DAYS_SINGULAR"
                desc="NUMBER_ONE is a one or one-like number: 1 (many European and most Indian languages), 1 and 0 (French, Brazilian Portuguese and Hindi), 1, 21, 31, ... (Russian, Ukrainian, Croatian, Serbian, Latvian, Lithuanian), or 1, 101, 201, ... (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada.">
         <ph name="NUMBER_ONE"><ex>1</ex>#</ph> day ago
       </message>
       </if>
       <if expr="lang in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message translateable="false" name="IDS_TIME_ELAPSED_DAY_SINGULAR"
+      <message translateable="false" name="IDS_TIME_ELAPSED_DAYS_SINGULAR"
                desc="">
         NA
       </message>
