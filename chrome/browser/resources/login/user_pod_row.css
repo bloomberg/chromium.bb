@@ -69,16 +69,16 @@ podrow[ncolumns='6'] .pod {
 }
 
 .pod .user-image-container {
+  align-items: center;
+  display: flex;
   height: 160px;
-  line-height: 160px;
-  text-align: center;
+  justify-content: center;
   width: 160px;
 }
 
 .pod .user-image {
   height: 160px;
   opacity: 0.7;
-  vertical-align: middle;
   width: 160px;
 }
 
@@ -187,6 +187,7 @@ button.custom-button:focus:hover {
   -webkit-transition: opacity linear 150ms;
   background: white;
   border: none;
+  border-radius: 0; /* override widgets.css rule */
   box-sizing: border-box;
   display: none;
   height: 40px;
