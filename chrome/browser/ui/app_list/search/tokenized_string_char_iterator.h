@@ -20,6 +20,14 @@ namespace app_list {
 // An UTF16 char iterator for a TokenizedString.
 class TokenizedStringCharIterator {
  public:
+  struct State {
+    State();
+    State(size_t token_index, int char_index);
+
+    size_t token_index;
+    int32 char_index;
+  };
+
   // Requires |tokenized| out-lives this iterator.
   explicit TokenizedStringCharIterator(const TokenizedString& tokenized);
   ~TokenizedStringCharIterator();
@@ -43,6 +51,10 @@ class TokenizedStringCharIterator {
 
   // Returns true if the current char is the first char of the current token.
   bool IsFirstCharOfToken() const;
+
+  // Helpers to get and restore the iterator's state.
+  State GetState() const;
+  void SetState(const State& state);
 
   // Returns true if the iterator is at the end.
   bool end() const { return !current_token_iter_; }

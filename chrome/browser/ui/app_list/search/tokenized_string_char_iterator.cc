@@ -10,6 +10,13 @@
 
 namespace app_list {
 
+TokenizedStringCharIterator::State::State() : token_index(0u), char_index(0) {}
+
+TokenizedStringCharIterator::State::State(size_t token_index, int char_index)
+    : token_index(token_index),
+      char_index(char_index) {
+}
+
 TokenizedStringCharIterator::TokenizedStringCharIterator(
     const TokenizedString& tokenized)
     : tokens_(tokenized.tokens()),
@@ -55,6 +62,21 @@ size_t TokenizedStringCharIterator::GetCharSize() const {
 
 bool TokenizedStringCharIterator::IsFirstCharOfToken() const {
   return current_token_iter_ && current_token_iter_->char_pos() == 0;
+}
+
+TokenizedStringCharIterator::State
+TokenizedStringCharIterator::GetState() const {
+  return State(current_token_,
+               current_token_iter_ ? current_token_iter_->char_pos() : 0);
+}
+
+void TokenizedStringCharIterator::SetState(const State& state) {
+  current_token_ = state.token_index;
+  CreateTokenCharIterator();
+  if (current_token_iter_) {
+    while (current_token_iter_->char_pos() < state.char_index)
+      current_token_iter_->Advance();
+  }
 }
 
 void TokenizedStringCharIterator::CreateTokenCharIterator() {

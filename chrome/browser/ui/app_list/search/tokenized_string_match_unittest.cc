@@ -66,6 +66,9 @@ TEST(TokenizedStringMatchTest, Match) {
     { "Cut the rope", "cr", "[C]ut the [r]ope" },
     { "John Doe", "jdoe", "[J]ohn [Doe]" },
     { "John Doe", "johnd", "[John D]oe" },
+    { "Secure Shell", "she", "Secure [She]ll" },
+    { "Simple Secure Shell", "sish", "[Si]mple Secure [Sh]ell" },
+    { "Netflix", "flix", "Net[flix]" },
   };
 
   TokenizedStringMatch match;
@@ -93,6 +96,10 @@ TEST(TokenizedStringMatchTest, Relevance) {
     // Prefix match is better than middle match and acronym match.
     { "Google Chrome", "ch", "go" },
     { "Google Chrome", "gc", "go" },
+    // Substring match has the lowest score.
+    { "Google Chrome", "oo", "gc" },
+    { "Google Chrome", "oo", "go" },
+    { "Google Chrome", "oo", "ch" },
   };
 
   TokenizedStringMatch match_low;

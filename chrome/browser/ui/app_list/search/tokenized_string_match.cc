@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/app_list/search/tokenized_string_match.h"
 
+#include "base/i18n/string_search.h"
+#include "base/logging.h"
 #include "chrome/browser/ui/app_list/search/tokenized_string_char_iterator.h"
 
 namespace app_list {
@@ -28,12 +30,161 @@ namespace {
 //       kIsFrontOfWordMultipler for 'c'.
 //   Query 'ch' would use kIsFrontOfWordMultipler for 'c' and
 //       kIsWeakHitMultiplier for 'h'.
+//   Query 'oo' does not match any prefix and would use the substring match
+//       fallback, thus kIsSubstringMultiplier is used for each char.
 const double kIsPrefixMultiplier = 1.0;
 const double kIsFrontOfWordMultipler = 0.8;
 const double kIsWeakHitMultiplier = 0.6;
+const double kIsSubstringMultiplier = 0.4;
 
 // A relevance score that represents no match.
 const double kNoMatchScore = 0.0;
+
+// PrefixMatcher matches the chars of a given query as prefix of tokens in
+// a given text or as prefix of the acronyms of those text tokens.
+class PrefixMatcher {
+ public:
+  PrefixMatcher(const TokenizedString& query,
+                const TokenizedString& text)
+      : query_iter_(query),
+        text_iter_(text),
+        current_match_(gfx::Range::InvalidRange()),
+        current_relevance_(kNoMatchScore) {
+  }
+
+  // Invokes RunMatch to perform prefix match. Use |states_| as a stack to
+  // perform DFS (depth first search) so that all possible matches are
+  // attempted. Stops on the first full match and returns true. Otherwise,
+  // returns false to indicate no match.
+  bool Match() {
+    while (!RunMatch()) {
+      // No match found and no more states to try. Bail out.
+      if (states_.empty()) {
+        current_relevance_ = kNoMatchScore;
+        current_hits_.clear();
+        return false;
+      }
+
+      PopState();
+
+      // Skip restored match to try other possibilites.
+      AdvanceToNextTextToken();
+    }
+
+    if (current_match_.IsValid())
+      current_hits_.push_back(current_match_);
+
+    return true;
+  }
+
+  double relevance() const { return current_relevance_; }
+  const TokenizedStringMatch::Hits& hits() const { return current_hits_; }
+
+ private:
+  // Context record of a match.
+  struct State {
+    State() : relevance(kNoMatchScore) {}
+    State(double relevance,
+          const gfx::Range& current_match,
+          const TokenizedStringMatch::Hits& hits,
+          const TokenizedStringCharIterator& query_iter,
+          const TokenizedStringCharIterator& text_iter)
+        : relevance(relevance),
+          current_match(current_match),
+          hits(hits.begin(), hits.end()),
+          query_iter_state(query_iter.GetState()),
+          text_iter_state(text_iter.GetState()) {}
+
+    // The current score of the processed query chars.
+    double relevance;
+
+    // Current matching range.
+    gfx::Range current_match;
+
+    // Completed matching ranges of the processed query chars.
+    TokenizedStringMatch::Hits hits;
+
+    // States of the processed query and text chars.
+    TokenizedStringCharIterator::State query_iter_state;
+    TokenizedStringCharIterator::State text_iter_state;
+  };
+  typedef std::vector<State> States;
+
+  // Match chars from the query and text one by one. For each matching char,
+  // calculate relevance and matching ranges. And the current stats is
+  // recorded so that the match could be skipped later to try other
+  // possiblities. Repeat until any of the iterators run out. Return true if
+  // query iterator runs out, i.e. all chars in query are matched.
+  bool RunMatch() {
+    while (!query_iter_.end() && !text_iter_.end()) {
+      if (query_iter_.Get() == text_iter_.Get()) {
+        PushState();
+
+        if (query_iter_.GetArrayPos() == text_iter_.GetArrayPos())
+          current_relevance_ += kIsPrefixMultiplier;
+        else if (text_iter_.IsFirstCharOfToken())
+          current_relevance_ += kIsFrontOfWordMultipler;
+        else
+          current_relevance_ += kIsWeakHitMultiplier;
+
+        if (!current_match_.IsValid())
+          current_match_.set_start(text_iter_.GetArrayPos());
+        current_match_.set_end(text_iter_.GetArrayPos() +
+                              text_iter_.GetCharSize());
+
+        query_iter_.NextChar();
+        text_iter_.NextChar();
+      } else {
+        AdvanceToNextTextToken();
+      }
+    }
+
+    return query_iter_.end();
+  }
+
+  // Skip to the next text token and close current match. Invoked when a
+  // mismatch happens or to skip a restored match.
+  void AdvanceToNextTextToken() {
+    if (current_match_.IsValid()) {
+      current_hits_.push_back(current_match_);
+      current_match_ = gfx::Range::InvalidRange();
+    }
+
+    text_iter_.NextToken();
+  }
+
+  void PushState() {
+    states_.push_back(State(current_relevance_,
+                            current_match_,
+                            current_hits_,
+                            query_iter_,
+                            text_iter_));
+  }
+
+  void PopState() {
+    DCHECK(!states_.empty());
+
+    State& last_match = states_.back();
+    current_relevance_ = last_match.relevance;
+    current_match_ = last_match.current_match;
+    current_hits_.swap(last_match.hits);
+    query_iter_.SetState(last_match.query_iter_state);
+    text_iter_.SetState(last_match.text_iter_state);
+
+    states_.pop_back();
+  }
+
+  TokenizedStringCharIterator query_iter_;
+  TokenizedStringCharIterator text_iter_;
+
+  States states_;
+  gfx::Range current_match_;
+
+  double current_relevance_;
+  TokenizedStringMatch::Hits current_hits_;
+
+  DISALLOW_COPY_AND_ASSIGN(PrefixMatcher);
+};
 
 }  // namespace
 
@@ -47,45 +198,25 @@ bool TokenizedStringMatch::Calculate(const TokenizedString& query,
   relevance_ = kNoMatchScore;
   hits_.clear();
 
-  gfx::Range hit = gfx::Range::InvalidRange();
+  PrefixMatcher matcher(query, text);
+  if (matcher.Match()) {
+    relevance_ = matcher.relevance();
+    hits_.assign(matcher.hits().begin(), matcher.hits().end());
+  }
 
-  TokenizedStringCharIterator query_iter(query);
-  TokenizedStringCharIterator text_iter(text);
-
-  while (!query_iter.end() && !text_iter.end()) {
-    if (query_iter.Get() == text_iter.Get()) {
-      if (query_iter.GetArrayPos() == text_iter.GetArrayPos())
-        relevance_ += kIsPrefixMultiplier;
-      else if (text_iter.IsFirstCharOfToken())
-        relevance_ += kIsFrontOfWordMultipler;
-      else
-        relevance_ += kIsWeakHitMultiplier;
-
-      if (!hit.IsValid())
-        hit.set_start(text_iter.GetArrayPos());
-      hit.set_end(text_iter.GetArrayPos() + text_iter.GetCharSize());
-
-      query_iter.NextChar();
-      text_iter.NextChar();
-    } else {
-      if (hit.IsValid()) {
-        hits_.push_back(hit);
-        hit = gfx::Range::InvalidRange();
-      }
-
-      text_iter.NextToken();
+  // Substring match as a fallback.
+  if (relevance_ == kNoMatchScore) {
+    size_t substr_match_start = 0;
+    size_t substr_match_length = 0;
+    if (base::i18n::StringSearchIgnoringCaseAndAccents(query.text(),
+                                                       text.text(),
+                                                       &substr_match_start,
+                                                       &substr_match_length)) {
+      relevance_ = kIsSubstringMultiplier * substr_match_length;
+      hits_.push_back(gfx::Range(substr_match_start,
+                                 substr_match_start + substr_match_length));
     }
   }
-
-  // No match if query is not fully consumed.
-  if (!query_iter.end()) {
-    relevance_ = kNoMatchScore;
-    hits_.clear();
-    return false;
-  }
-
-  if (hit.IsValid())
-    hits_.push_back(hit);
 
   // Using length() for normalizing is not 100% correct but should be good
   // enough compared with using real char count of the text.

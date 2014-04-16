@@ -39,7 +39,10 @@ class TokenizedStringMatch {
   const Hits& hits() const { return hits_; }
 
  private:
+  // Score in range of [0,1] representing how well the query matches the text.
   double relevance_;
+
+  // Char index ranges in |text| of where matches are found.
   Hits hits_;
 
   DISALLOW_COPY_AND_ASSIGN(TokenizedStringMatch);
