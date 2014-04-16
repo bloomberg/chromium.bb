@@ -13,12 +13,15 @@
 #include "google/cacheinvalidation/types.pb.h"
 #include "jingle/notifier/base/fake_base_task.h"
 #include "net/url_request/url_request_test_util.h"
+#include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/notifier/fake_invalidation_handler.h"
 #include "sync/notifier/invalidation_state_tracker.h"
 #include "sync/notifier/invalidator_test_template.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
+
+namespace {
 
 class NonBlockingInvalidatorTestDelegate {
  public:
@@ -49,7 +52,7 @@ class NonBlockingInvalidatorTestDelegate {
             invalidator_client_id,
             UnackedInvalidationsMap(),
             initial_state,
-            invalidation_state_tracker.get(),
+            MakeWeakHandle(invalidation_state_tracker),
             "fake_client_info",
             request_context_getter_));
   }
@@ -94,5 +97,7 @@ class NonBlockingInvalidatorTestDelegate {
 INSTANTIATE_TYPED_TEST_CASE_P(
     NonBlockingInvalidatorTest, InvalidatorTest,
     NonBlockingInvalidatorTestDelegate);
+
+}  // namespace
 
 }  // namespace syncer

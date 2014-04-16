@@ -13,9 +13,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "jingle/notifier/listener/push_client.h"
-#include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/notifier/gcm_network_channel_delegate.h"
-#include "sync/notifier/invalidation_handler.h"
 #include "sync/notifier/invalidation_notifier.h"
 #include "sync/notifier/object_id_invalidation_map.h"
 #include "sync/notifier/sync_system_resources.h"
@@ -97,9 +95,10 @@ class NonBlockingInvalidator::Core
       // InvalidationHandler to observe the InvalidationNotifier we create.
       public InvalidationHandler {
  public:
-  // Called on parent thread.  |delegate_observer| should be initialized.
+  // Called on parent thread.  |delegate_observer| should be
+  // initialized.
   explicit Core(
-      const WeakHandle<NonBlockingInvalidator>& delegate_observer);
+      const WeakHandle<InvalidationHandler>& delegate_observer);
 
   // Helpers called on I/O thread.
   void Initialize(
@@ -124,7 +123,7 @@ class NonBlockingInvalidator::Core
   virtual ~Core();
 
   // The variables below should be used only on the I/O thread.
-  const WeakHandle<NonBlockingInvalidator> delegate_observer_;
+  const WeakHandle<InvalidationHandler> delegate_observer_;
   scoped_ptr<InvalidationNotifier> invalidation_notifier_;
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
 
@@ -132,7 +131,7 @@ class NonBlockingInvalidator::Core
 };
 
 NonBlockingInvalidator::Core::Core(
-    const WeakHandle<NonBlockingInvalidator>& delegate_observer)
+    const WeakHandle<InvalidationHandler>& delegate_observer)
     : delegate_observer_(delegate_observer) {
   DCHECK(delegate_observer_.IsInitialized());
 }
@@ -186,16 +185,15 @@ void NonBlockingInvalidator::Core::RequestDetailedStatus(
 void NonBlockingInvalidator::Core::OnInvalidatorStateChange(
     InvalidatorState reason) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
-  delegate_observer_.Call(FROM_HERE,
-                          &NonBlockingInvalidator::OnInvalidatorStateChange,
-                          reason);
+  delegate_observer_.Call(
+      FROM_HERE, &InvalidationHandler::OnInvalidatorStateChange, reason);
 }
 
 void NonBlockingInvalidator::Core::OnIncomingInvalidation(
     const ObjectIdInvalidationMap& invalidation_map) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   delegate_observer_.Call(FROM_HERE,
-                          &NonBlockingInvalidator::OnIncomingInvalidation,
+                          &InvalidationHandler::OnIncomingInvalidation,
                           invalidation_map);
 }
 
@@ -208,11 +206,11 @@ NonBlockingInvalidator::NonBlockingInvalidator(
     const std::string& invalidator_client_id,
     const UnackedInvalidationsMap& saved_invalidations,
     const std::string& invalidation_bootstrap_data,
-    InvalidationStateTracker* invalidation_state_tracker,
+    const WeakHandle<InvalidationStateTracker>&
+        invalidation_state_tracker,
     const std::string& client_info,
     const scoped_refptr<net::URLRequestContextGetter>& request_context_getter)
-    : invalidation_state_tracker_(invalidation_state_tracker),
-      parent_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+    : parent_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       network_task_runner_(request_context_getter->GetNetworkTaskRunner()),
       weak_ptr_factory_(this) {
   core_ = new Core(MakeWeakHandle(weak_ptr_factory_.GetWeakPtr()));
@@ -222,7 +220,7 @@ NonBlockingInvalidator::NonBlockingInvalidator(
       invalidator_client_id,
       saved_invalidations,
       invalidation_bootstrap_data,
-      MakeWeakHandle(weak_ptr_factory_.GetWeakPtr()),
+      invalidation_state_tracker,
       client_info,
       request_context_getter);
 
@@ -300,6 +298,19 @@ void NonBlockingInvalidator::RequestDetailedStatus(
   }
 }
 
+void NonBlockingInvalidator::OnInvalidatorStateChange(InvalidatorState state) {
+  DCHECK(parent_task_runner_->BelongsToCurrentThread());
+  registrar_.UpdateInvalidatorState(state);
+}
+
+void NonBlockingInvalidator::OnIncomingInvalidation(
+        const ObjectIdInvalidationMap& invalidation_map) {
+  DCHECK(parent_task_runner_->BelongsToCurrentThread());
+  registrar_.DispatchInvalidationsToHandlers(invalidation_map);
+}
+
+std::string NonBlockingInvalidator::GetOwnerName() const { return "Sync"; }
+
 NetworkChannelCreator
     NonBlockingInvalidator::MakePushClientChannelCreator(
         const notifier::NotifierOptions& notifier_options) {
@@ -314,54 +325,5 @@ NetworkChannelCreator NonBlockingInvalidator::MakeGCMNetworkChannelCreator(
                     request_context_getter,
                     base::Passed(&delegate));
 }
-
-void NonBlockingInvalidator::ClearAndSetNewClientId(const std::string& data) {
-  DCHECK(parent_task_runner_->BelongsToCurrentThread());
-  invalidation_state_tracker_->ClearAndSetNewClientId(data);
-}
-
-std::string NonBlockingInvalidator::GetInvalidatorClientId() const {
-  DCHECK(parent_task_runner_->BelongsToCurrentThread());
-  return invalidation_state_tracker_->GetInvalidatorClientId();
-}
-
-void NonBlockingInvalidator::SetBootstrapData(const std::string& data) {
-  DCHECK(parent_task_runner_->BelongsToCurrentThread());
-  invalidation_state_tracker_->SetBootstrapData(data);
-}
-
-std::string NonBlockingInvalidator::GetBootstrapData() const {
-  DCHECK(parent_task_runner_->BelongsToCurrentThread());
-  return invalidation_state_tracker_->GetBootstrapData();
-}
-
-void NonBlockingInvalidator::SetSavedInvalidations(
-      const UnackedInvalidationsMap& states) {
-  DCHECK(parent_task_runner_->BelongsToCurrentThread());
-  invalidation_state_tracker_->SetSavedInvalidations(states);
-}
-
-UnackedInvalidationsMap NonBlockingInvalidator::GetSavedInvalidations() const {
-  DCHECK(parent_task_runner_->BelongsToCurrentThread());
-  return invalidation_state_tracker_->GetSavedInvalidations();
-}
-
-void NonBlockingInvalidator::Clear() {
-  DCHECK(parent_task_runner_->BelongsToCurrentThread());
-  invalidation_state_tracker_->Clear();
-}
-
-void NonBlockingInvalidator::OnInvalidatorStateChange(InvalidatorState state) {
-  DCHECK(parent_task_runner_->BelongsToCurrentThread());
-  registrar_.UpdateInvalidatorState(state);
-}
-
-void NonBlockingInvalidator::OnIncomingInvalidation(
-        const ObjectIdInvalidationMap& invalidation_map) {
-  DCHECK(parent_task_runner_->BelongsToCurrentThread());
-  registrar_.DispatchInvalidationsToHandlers(invalidation_map);
-}
-
-std::string NonBlockingInvalidator::GetOwnerName() const { return "Sync"; }
 
 }  // namespace syncer

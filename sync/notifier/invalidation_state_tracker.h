@@ -30,16 +30,14 @@ class TaskRunner;
 
 namespace syncer {
 
-class SYNC_EXPORT InvalidationStateTracker {
+class InvalidationStateTracker {
  public:
   InvalidationStateTracker() {}
-  virtual ~InvalidationStateTracker() {}
 
   // The per-client unique ID used to register the invalidation client with the
   // server.  This is used to squelch invalidation notifications that originate
-  // from changes made by this client.  Setting the client ID clears all other
-  // state.
-  virtual void ClearAndSetNewClientId(const std::string& data) = 0;
+  // from changes made by this client.
+  virtual void SetInvalidatorClientId(const std::string& data) = 0;
   virtual std::string GetInvalidatorClientId() const = 0;
 
   // Used by invalidation::InvalidationClient for persistence. |data| is an
@@ -57,6 +55,9 @@ class SYNC_EXPORT InvalidationStateTracker {
 
   // Erases invalidation versions, client ID, and state stored on disk.
   virtual void Clear() = 0;
+
+ protected:
+  virtual ~InvalidationStateTracker() {}
 };
 
 }  // namespace syncer
