@@ -135,7 +135,7 @@ class _PixelValidator(cloud_storage_test_base.ValidatorBase):
 
 class Pixel(cloud_storage_test_base.TestBase):
   test = _PixelValidator
-  page_set = 'page_sets/pixel_tests.json'
+  page_set = 'page_sets/pixel_tests.py'
 
   @classmethod
   def AddTestCommandLineArgs(cls, group):

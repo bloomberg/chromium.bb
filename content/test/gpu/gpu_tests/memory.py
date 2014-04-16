@@ -81,7 +81,7 @@ class _MemoryValidator(page_test.PageTest):
 class Memory(test.Test):
   """Tests GPU memory limits"""
   test = _MemoryValidator
-  page_set = 'page_sets/memory_tests.json'
+  page_set = 'page_sets/memory_tests.py'
 
   def CreatePageSet(self, options):
     page_set = super(Memory, self).CreatePageSet(options)

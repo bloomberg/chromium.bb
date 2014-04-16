@@ -35,7 +35,7 @@ class _GpuProcessValidator(page_test.PageTest):
 class GpuProcess(test.Test):
   """Tests that accelerated content triggers the creation of a GPU process"""
   test = _GpuProcessValidator
-  page_set = 'page_sets/gpu_process_tests.json'
+  page_set = 'page_sets/gpu_process_tests.py'
 
   def CreateExpectations(self, page_set):
     return expectations.GpuProcessExpectations()

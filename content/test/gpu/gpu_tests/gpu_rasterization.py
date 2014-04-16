@@ -67,7 +67,7 @@ class _GpuRasterizationValidator(cloud_storage_test_base.ValidatorBase):
 class GpuRasterization(cloud_storage_test_base.TestBase):
   """Tests that GPU rasterization produces valid content"""
   test = _GpuRasterizationValidator
-  page_set = 'page_sets/gpu_rasterization_tests.json'
+  page_set = 'page_sets/gpu_rasterization_tests.py'
 
   def CreatePageSet(self, options):
     page_set = super(GpuRasterization, self).CreatePageSet(options)
