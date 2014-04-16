@@ -40,7 +40,6 @@ android_envsetup_main() {
   fi
 
   # Add Android SDK tools to system path.
-  export PATH=$PATH:${ANDROID_SDK_ROOT}/tools
   export PATH=$PATH:${ANDROID_SDK_ROOT}/platform-tools
 
   # Add Chromium Android development scripts to system path.
