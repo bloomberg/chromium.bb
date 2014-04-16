@@ -283,6 +283,11 @@
       # on compile-only bots).
       'fastbuild%': 0,
 
+      # Set to 1 to force Visual C++ to use legacy debug information format /Z7.
+      # This is useful for parallel compilation tools which can't support /Zi.
+      # Only used on Windows.
+      'win_z7%' : 0,
+
       # Set to 1 to enable dcheck in release.
       'dcheck_always_on%': 0,
 
@@ -965,6 +970,7 @@
     'use_xi2_mt%':'<(use_xi2_mt)',
     'image_loader_extension%': '<(image_loader_extension)',
     'fastbuild%': '<(fastbuild)',
+    'win_z7%': '<(win_z7)',
     'dcheck_always_on%': '<(dcheck_always_on)',
     'tracing_like_official_build%': '<(tracing_like_official_build)',
     'python_ver%': '<(python_ver)',
@@ -1099,11 +1105,6 @@
 
     # Set to 1 to enable running Android lint on java/class files.
     'android_lint%': 0,
-
-    # Set to 1 to force Visual C++ to use legacy debug information format /Z7.
-    # This is useful for parallel compilation tools which can't support /Zi.
-    # Only used on Windows.
-    'win_z7%' : 0,
 
     # Although base/allocator lets you select a heap library via an
     # environment variable, the libcmt shim it uses sometimes gets in
@@ -2097,8 +2098,8 @@
         'chromium_win_pch': 0,
         # goma doesn't support PDB yet, so win_z7=1 or fastbuild=1.
         'conditions': [
-          ['fastbuild==0', {
-            'win_z7': 1,
+          ['win_z7==0', {
+            'fastbuild': 1,
           }],
         ],
       }],
