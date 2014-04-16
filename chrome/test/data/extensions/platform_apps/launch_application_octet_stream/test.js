@@ -18,7 +18,18 @@ chrome.app.runtime.onLaunched.addListener(function (launchData) {
       chrome.test.assertTrue(
           chrome.fileSystem.retainEntry(launchData.items[0].entry) != null);
 
-      chrome.test.succeed();
+      launchData.items[0].entry.file(function(file) {
+        var reader = new FileReader();
+        reader.onloadend = function(e) {
+          chrome.test.assertEq(
+              reader.result.indexOf("This is a test. Word."), 0);
+          chrome.test.succeed();
+        };
+        reader.onerror = function(e) {
+          chrome.test.fail("Error reading file contents.");
+        };
+        reader.readAsText(file);
+      });
     }
   ]);
 });

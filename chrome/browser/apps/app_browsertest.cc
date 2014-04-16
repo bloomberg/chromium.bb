@@ -652,18 +652,10 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithNoIntent) {
       << message_;
 }
 
-// Tests that launch data is sent through when the file has unknown extension
-// but the MIME type can be sniffed and the sniffed type matches.
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithSniffableType) {
-  SetCommandLineArg("platform_apps/launch_files/test.unknownextension");
-  ASSERT_TRUE(RunPlatformAppTest(
-      "platform_apps/launch_file_by_extension_and_type")) << message_;
-}
-
 // Tests that launch data is sent through with the MIME type set to
 // application/octet-stream if the file MIME type cannot be read.
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchNoType) {
-  SetCommandLineArg("platform_apps/launch_files/test_binary.unknownextension");
+  SetCommandLineArg("platform_apps/launch_files/test.unknownextension");
   ASSERT_TRUE(RunPlatformAppTest(
       "platform_apps/launch_application_octet_stream")) << message_;
 }
