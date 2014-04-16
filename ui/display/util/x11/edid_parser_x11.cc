@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/display/x11/edid_parser_x11.h"
+#include "ui/display/util/x11/edid_parser_x11.h"
 
 #include <X11/extensions/Xrandr.h>
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 
 #include "base/strings/string_util.h"
-#include "ui/display/edid_parser.h"
+#include "ui/display/util/edid_parser.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace ui {
@@ -20,8 +20,7 @@ bool IsRandRAvailable() {
   int randr_version_major = 0;
   int randr_version_minor = 0;
   static bool is_randr_available = XRRQueryVersion(
-      gfx::GetXDisplay(),
-      &randr_version_major, &randr_version_minor);
+      gfx::GetXDisplay(), &randr_version_major, &randr_version_minor);
   return is_randr_available;
 }
 

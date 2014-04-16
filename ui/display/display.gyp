@@ -35,6 +35,7 @@
         '../../base/base.gyp:base',
         '../../ui/gfx/gfx.gyp:gfx',
         '../../ui/gfx/gfx.gyp:gfx_geometry',
+        'display_util',
       ],
       'defines': [
         'DISPLAY_IMPLEMENTATION',
@@ -61,12 +62,6 @@
         'display_export.h',
         'display_switches.cc',
         'display_switches.h',
-        'display_util.cc',
-        'display_util.h',
-        'edid_parser.cc',
-        'edid_parser.h',
-        'x11/edid_parser_x11.cc',
-        'x11/edid_parser_x11.h',
       ],
       'conditions': [
         ['use_x11 == 1', {
@@ -85,6 +80,39 @@
         ['use_ozone == 1', {
           'dependencies': [
             '../../ui/ozone/ozone.gyp:ozone',
+          ],
+        }],
+      ],
+    },
+    {
+      'target_name': 'display_util',
+      'type': '<(component)',
+      'dependencies': [
+        '../../base/base.gyp:base',
+        '../../ui/gfx/gfx.gyp:gfx_geometry',
+      ],
+      'defines': [
+        'DISPLAY_UTIL_IMPLEMENTATION',
+      ],
+      'sources': [
+        'util/display_util.cc',
+        'util/display_util.h',
+        'util/display_util_export.h',
+        'util/edid_parser.cc',
+        'util/edid_parser.h',
+        'util/x11/edid_parser_x11.cc',
+        'util/x11/edid_parser_x11.h',
+      ],
+      'conditions': [
+        ['use_x11 == 1', {
+          'dependencies': [
+            '../../build/linux/system.gyp:xrandr',
+            '../../ui/gfx/gfx.gyp:gfx',
+          ],
+        }],
+        ['chromeos == 1', {
+          'dependencies': [
+            'display_types',
           ],
         }],
       ],

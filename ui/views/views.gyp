@@ -436,7 +436,7 @@
         }],
         ['chromeos==0 and use_x11==1', {
           'dependencies': [
-            '../display/display.gyp:display',
+            '../display/display.gyp:display_util',
           ],
         }],
         ['OS=="linux" and chromeos==0', {

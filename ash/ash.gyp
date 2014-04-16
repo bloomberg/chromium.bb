@@ -718,6 +718,7 @@
             '../device/bluetooth/bluetooth.gyp:device_bluetooth',
             '../ui/chromeos/ui_chromeos.gyp:ui_chromeos',
             '../ui/display/display.gyp:display',
+            '../ui/display/display.gyp:display_util',
           ],
         }, { # else: chromeos!=1
           'sources/': [
