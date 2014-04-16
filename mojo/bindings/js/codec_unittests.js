@@ -10,6 +10,7 @@ define([
   testBar();
   testFoo();
   testAlign();
+  testUtf8();
   this.result = "PASS";
 
   function testBar() {
@@ -157,5 +158,32 @@ define([
     ];
     for (var i = 0; i < aligned.length; ++i)
       expect(codec.align(i)).toBe(aligned[i]);
+  }
+
+  function testUtf8() {
+    var str = "B\u03ba\u1f79";  // some UCS-2 codepoints
+    var messageName = 42;
+    var payloadSize = 24;
+
+    var builder = new codec.MessageBuilder(messageName, payloadSize);
+    var encoder = builder.createEncoder(8);
+    encoder.encodeStringPointer(str);
+    var message = builder.finish();
+    var expectedMemory = new Uint8Array([
+      /*  0: */   16,    0,    0,    0,    2,    0,    0,    0,
+      /*  8: */   42,    0,    0,    0,    0,    0,    0,    0,
+      /* 16: */    8,    0,    0,    0,    0,    0,    0,    0,
+      /* 24: */   14,    0,    0,    0,    6,    0,    0,    0,
+      /* 32: */ 0x42, 0xCE, 0xBA, 0xE1, 0xBD, 0xB9,    0,    0,
+    ]);
+    var actualMemory = new Uint8Array(message.memory.buffer);
+    expect(actualMemory.length).toEqual(expectedMemory.length);
+    expect(actualMemory).toEqual(expectedMemory);
+
+    var reader = new codec.MessageReader(message);
+    expect(reader.payloadSize).toBe(payloadSize);
+    expect(reader.messageName).toBe(messageName);
+    var str2 = reader.decoder.decodeStringPointer();
+    expect(str2).toEqual(str);
   }
 });

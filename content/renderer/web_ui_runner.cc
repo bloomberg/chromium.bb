@@ -9,6 +9,7 @@
 #include "gin/public/context_holder.h"
 #include "mojo/bindings/js/core.h"
 #include "mojo/bindings/js/support.h"
+#include "mojo/bindings/js/unicode.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 
@@ -46,6 +47,10 @@ void WebUIRunner::RegisterBuiltinModules() {
   registry->AddBuiltinModule(context_holder_->isolate(),
                              mojo::js::Support::kModuleName,
                              mojo::js::Support::GetModule(
+                                 context_holder_->isolate()));
+  registry->AddBuiltinModule(context_holder_->isolate(),
+                             mojo::js::Unicode::kModuleName,
+                             mojo::js::Unicode::GetModule(
                                  context_holder_->isolate()));
 }
 

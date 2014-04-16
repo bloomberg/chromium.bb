@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-define("mojo/public/js/bindings/codec", function() {
-
+define("mojo/public/js/bindings/codec",
+       ["mojo/bindings/js/unicode"],
+       function(unicode) {
   // Memory -------------------------------------------------------------------
 
   function store8(memory, pointer, val) {
@@ -154,19 +155,12 @@ define("mojo/public/js/bindings/codec", function() {
   };
 
   Decoder.prototype.decodeString = function() {
-    // TODO(abarth): We should really support UTF-8. We might want to
-    // jump out of the VM to decode the string directly from the array
-    // buffer using v8::String::NewFromUtf8.
     var numberOfBytes = this.read32();
     var numberOfElements = this.read32();
-    var val = new Array(numberOfElements);
-    var memory = this.memory;
     var base = this.next;
-    for (var i = 0; i < numberOfElements; ++i) {
-      val[i] = String.fromCharCode(memory[base + i] & 0x7F);
-    }
     this.next += numberOfElements;
-    return val.join('');
+    return unicode.decodeUtf8String(
+        new Uint8Array(this.memory.buffer, base, numberOfElements));
   };
 
   Decoder.prototype.decodeArray = function(cls) {
@@ -253,20 +247,13 @@ define("mojo/public/js/bindings/codec", function() {
   };
 
   Encoder.prototype.encodeString = function(val) {
-    var numberOfElements = val.length;
+    var base = this.next + kArrayHeaderSize;
+    var numberOfElements = unicode.encodeUtf8String(
+        val, new Uint8Array(this.buffer.memory.buffer, base));
     var numberOfBytes = kArrayHeaderSize + numberOfElements;
     this.write32(numberOfBytes);
     this.write32(numberOfElements);
-    // TODO(abarth): We should really support UTF-8. We might want to
-    // jump out of the VM to encode the string directly from the array
-    // buffer using v8::String::WriteUtf8.
-    var memory = this.buffer.memory;
-    var base = this.next;
-    var len = val.length;
-    for (var i = 0; i < len; ++i) {
-      memory[base + i] = val.charCodeAt(i) & 0x7F;
-    }
-    this.next += len;
+    this.next += numberOfElements;
   };
 
   Encoder.prototype.encodeArray = function(cls, val) {
@@ -291,8 +278,7 @@ define("mojo/public/js/bindings/codec", function() {
   };
 
   Encoder.prototype.encodeStringPointer = function(val) {
-    // TODO(abarth): This won't be right once we support UTF-8.
-    var encodedSize = kArrayHeaderSize + val.length;
+    var encodedSize = kArrayHeaderSize + unicode.utf8Length(val);
     var encoder = this.createAndEncodeEncoder(encodedSize);
     encoder.encodeString(val);
   };

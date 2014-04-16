@@ -59,7 +59,7 @@ bool GetResource(const std::string& id,
 
   std::string contents;
   CHECK(base::ReadFileToString(GetFilePathForJSResource(id), &contents,
-                               std::string::npos));
+                               std::string::npos)) << id;
   base::RefCountedString* ref_contents = new base::RefCountedString;
   ref_contents->data() = contents;
   callback.Run(ref_contents);
