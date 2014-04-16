@@ -4,7 +4,6 @@
 
 #include "base/time/time.h"
 #include "chrome/browser/extensions/activity_log/activity_actions.h"
-#include "chrome/browser/extensions/activity_log/ad_injection_util.h"
 #include "components/rappor/byte_vector_utils.h"
 #include "components/rappor/proto/rappor_metric.pb.h"
 #include "components/rappor/rappor_service.h"
@@ -51,35 +50,33 @@ rappor::RapporReports TestRapporService::GetReports() {
   return result;
 }
 
-TEST(AdInjectionUtilUnittest, CheckActionForAdInjectionTest) {
+// Test that the actions properly upload the URLs to the RAPPOR service if
+// the action may have injected the ad.
+TEST(AdInjectionUnittest, CheckActionForAdInjectionTest) {
   TestRapporService rappor_service;
   rappor::RapporReports reports = rappor_service.GetReports();
   EXPECT_EQ(0, reports.report_size());
 
   scoped_refptr<Action> modify_iframe_src =
       CreateAction("HTMLIFrameElement.src");
-  ad_injection_util::CheckActionForAdInjection(modify_iframe_src,
-                                               &rappor_service);
+  modify_iframe_src->DidInjectAd(&rappor_service);
   reports = rappor_service.GetReports();
   EXPECT_EQ(1, reports.report_size());
 
   scoped_refptr<Action> modify_embed_src =
       CreateAction("HTMLEmbedElement.src");
-  ad_injection_util::CheckActionForAdInjection(modify_embed_src,
-                                               &rappor_service);
+  modify_embed_src->DidInjectAd(&rappor_service);
   reports = rappor_service.GetReports();
   EXPECT_EQ(1, reports.report_size());
 
   scoped_refptr<Action> modify_anchor_href =
       CreateAction("HTMLAnchorElement.href");
-  ad_injection_util::CheckActionForAdInjection(modify_anchor_href,
-                                               &rappor_service);
+  modify_anchor_href->DidInjectAd(&rappor_service);
   reports = rappor_service.GetReports();
   EXPECT_EQ(1, reports.report_size());
 
   scoped_refptr<Action> harmless_action = CreateAction("Location.replace");
-  ad_injection_util::CheckActionForAdInjection(harmless_action,
-                                               &rappor_service);
+  harmless_action->DidInjectAd(&rappor_service);
   reports = rappor_service.GetReports();
   EXPECT_EQ(0, reports.report_size());
 }

@@ -6,6 +6,8 @@
 
 #include <string>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/float_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -126,7 +128,7 @@ base::Value* V8ValueConverterImpl::FromV8Value(
   v8::Context::Scope context_scope(context);
   v8::HandleScope handle_scope(context->GetIsolate());
   FromV8ValueState state(avoid_identity_hash_for_testing_);
-  return FromV8ValueImpl(val, &state, context->GetIsolate());
+  return FromV8ValueImpl(&state, val, context->GetIsolate());
 }
 
 v8::Local<v8::Value> V8ValueConverterImpl::ToV8ValueImpl(
@@ -233,8 +235,8 @@ v8::Handle<v8::Value> V8ValueConverterImpl::ToArrayBuffer(
 }
 
 base::Value* V8ValueConverterImpl::FromV8ValueImpl(
-    v8::Handle<v8::Value> val,
     FromV8ValueState* state,
+    v8::Handle<v8::Value> val,
     v8::Isolate* isolate) const {
   CHECK(!val.IsEmpty());
 
@@ -322,8 +324,14 @@ base::Value* V8ValueConverterImpl::FromV8Array(
     scope.reset(new v8::Context::Scope(val->CreationContext()));
 
   if (strategy_) {
+    // These base::Unretained's are safe, because Strategy::FromV8Value should
+    // be synchronous, so this object can't be out of scope.
+    V8ValueConverter::Strategy::FromV8ValueCallback callback =
+        base::Bind(&V8ValueConverterImpl::FromV8ValueImpl,
+                   base::Unretained(this),
+                   base::Unretained(state));
     base::Value* out = NULL;
-    if (strategy_->FromV8Array(val, &out, isolate))
+    if (strategy_->FromV8Array(val, &out, isolate, callback))
       return out;
   }
 
@@ -341,7 +349,7 @@ base::Value* V8ValueConverterImpl::FromV8Array(
     if (!val->HasRealIndexedProperty(i))
       continue;
 
-    base::Value* child = FromV8ValueImpl(child_v8, state, isolate);
+    base::Value* child = FromV8ValueImpl(state, child_v8, isolate);
     if (child)
       result->Append(child);
     else
@@ -392,8 +400,14 @@ base::Value* V8ValueConverterImpl::FromV8Object(
     scope.reset(new v8::Context::Scope(val->CreationContext()));
 
   if (strategy_) {
+    // These base::Unretained's are safe, because Strategy::FromV8Value should
+    // be synchronous, so this object can't be out of scope.
+    V8ValueConverter::Strategy::FromV8ValueCallback callback =
+        base::Bind(&V8ValueConverterImpl::FromV8ValueImpl,
+                   base::Unretained(this),
+                   base::Unretained(state));
     base::Value* out = NULL;
-    if (strategy_->FromV8Object(val, &out, isolate))
+    if (strategy_->FromV8Object(val, &out, isolate, callback))
       return out;
   }
 
@@ -438,7 +452,7 @@ base::Value* V8ValueConverterImpl::FromV8Object(
       child_v8 = v8::Null(isolate);
     }
 
-    scoped_ptr<base::Value> child(FromV8ValueImpl(child_v8, state, isolate));
+    scoped_ptr<base::Value> child(FromV8ValueImpl(state, child_v8, isolate));
     if (!child)
       // JSON.stringify skips properties whose values don't serialize, for
       // example undefined and functions. Emulate that behavior.

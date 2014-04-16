@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_RENDERER_V8_VALUE_CONVERTER_H_
 #define CONTENT_PUBLIC_RENDERER_V8_VALUE_CONVERTER_H_
 
+#include "base/callback.h"
 #include "content/common/content_export.h"
 #include "v8/include/v8.h"
 
@@ -27,17 +28,28 @@ class CONTENT_EXPORT V8ValueConverter {
   // Extends the default behaviour of V8ValueConverter.
   class CONTENT_EXPORT Strategy {
    public:
+    typedef base::Callback<base::Value*(
+        v8::Handle<v8::Value>, v8::Isolate* isolate)> FromV8ValueCallback;
+
     virtual ~Strategy() {}
+
     // If false is returned, V8ValueConverter proceeds with the default
     // behavior.
+    // Use |callback| to convert any child values, as this will retain
+    // the ValueConverter's internal checks for depth and cycles.
     virtual bool FromV8Object(v8::Handle<v8::Object> value,
                               base::Value** out,
-                              v8::Isolate* isolate) const = 0;
+                              v8::Isolate* isolate,
+                              const FromV8ValueCallback& callback) const = 0;
+
     // If false is returned, V8ValueConverter proceeds with the default
     // behavior.
+    // Use |callback| to convert any child values, as this will retain
+    // the ValueConverter's internal checks for depth and cycles.
     virtual bool FromV8Array(v8::Handle<v8::Array> value,
                              base::Value** out,
-                             v8::Isolate* isolate) const = 0;
+                             v8::Isolate* isolate,
+                             const FromV8ValueCallback& callback) const = 0;
   };
 
   static V8ValueConverter* create();
