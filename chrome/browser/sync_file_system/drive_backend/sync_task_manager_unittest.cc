@@ -2,10 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <deque>
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_task_manager.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_task_token.h"
 #include "chrome/browser/sync_file_system/sync_file_system_test_util.h"
@@ -186,7 +190,7 @@ class BackgroundTask : public SyncTask {
     blocking_factor->app_id = app_id_;
     blocking_factor->paths.push_back(path_);
 
-    SyncTaskManager::MoveTaskToBackground(
+    SyncTaskManager::UpdateBlockingFactor(
         token.Pass(), blocking_factor.Pass(),
         base::Bind(&BackgroundTask::RunAsBackgroundTask,
                    weak_ptr_factory_.GetWeakPtr()));
@@ -218,6 +222,73 @@ class BackgroundTask : public SyncTask {
   base::WeakPtrFactory<BackgroundTask> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundTask);
+};
+
+class BlockerUpdateTestHelper : public SyncTask {
+ public:
+  typedef std::vector<std::string> Log;
+
+  BlockerUpdateTestHelper(const std::string& name,
+                          const std::string& app_id,
+                          const std::vector<std::string>& paths,
+                          Log* log)
+      : name_(name),
+        app_id_(app_id),
+        paths_(paths.begin(), paths.end()),
+        log_(log),
+        weak_ptr_factory_(this) {
+  }
+
+  virtual ~BlockerUpdateTestHelper() {
+  }
+
+  virtual void RunPreflight(scoped_ptr<SyncTaskToken> token) OVERRIDE {
+    UpdateBlocker(token.Pass());
+  }
+
+ private:
+  void UpdateBlocker(scoped_ptr<SyncTaskToken> token) {
+    if (paths_.empty()) {
+      log_->push_back(name_ + ": finished");
+      SyncTaskManager::NotifyTaskDone(token.Pass(), SYNC_STATUS_OK);
+      return;
+    }
+
+    std::string updating_to = paths_.front();
+    paths_.pop_front();
+
+    log_->push_back(name_ + ": updating to " + updating_to);
+
+    scoped_ptr<BlockingFactor> blocking_factor(new BlockingFactor);
+    blocking_factor->app_id = app_id_;
+    blocking_factor->paths.push_back(
+        base::FilePath(fileapi::VirtualPath::GetNormalizedFilePath(
+            base::FilePath::FromUTF8Unsafe(updating_to))));
+
+    SyncTaskManager::UpdateBlockingFactor(
+        token.Pass(), blocking_factor.Pass(),
+        base::Bind(&BlockerUpdateTestHelper::UpdateBlockerSoon,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   updating_to));
+  }
+
+  void UpdateBlockerSoon(const std::string& updated_to,
+                         scoped_ptr<SyncTaskToken> token) {
+    log_->push_back(name_ + ": updated to " + updated_to);
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&BlockerUpdateTestHelper::UpdateBlocker,
+                   weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)));
+  }
+
+  std::string name_;
+  std::string app_id_;
+  std::deque<std::string> paths_;
+  Log* log_;
+
+  base::WeakPtrFactory<BlockerUpdateTestHelper> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(BlockerUpdateTestHelper);
 };
 
 // Arbitrary non-default status values for testing.
@@ -513,6 +584,76 @@ TEST(SyncTaskManagerTest, BackgroundTask_Throttled) {
   EXPECT_EQ(0, stats.running_background_task);
   EXPECT_EQ(3, stats.finished_task);
   EXPECT_EQ(2, stats.max_parallel_task);
+}
+
+TEST(SyncTaskManagerTest, UpdateBlockingFactor) {
+  base::MessageLoop message_loop;
+  SyncTaskManager task_manager(base::WeakPtr<SyncTaskManager::Client>(),
+                               10 /* maximum_background_task */);
+  task_manager.Initialize(SYNC_STATUS_OK);
+
+  SyncStatusCode status = SYNC_STATUS_FAILED;
+  BlockerUpdateTestHelper::Log log;
+
+  {
+    std::vector<std::string> paths;
+    paths.push_back("/foo/bar");
+    paths.push_back("/foo");
+    paths.push_back("/hoge/fuga/piyo");
+    task_manager.ScheduleSyncTask(
+        FROM_HERE,
+        scoped_ptr<SyncTask>(new BlockerUpdateTestHelper(
+            "task1", "app_id", paths, &log)),
+        SyncTaskManager::PRIORITY_MED,
+        CreateResultReceiver(&status));
+  }
+
+  {
+    std::vector<std::string> paths;
+    paths.push_back("/foo");
+    paths.push_back("/foo/bar");
+    paths.push_back("/hoge/fuga/piyo");
+    task_manager.ScheduleSyncTask(
+        FROM_HERE,
+        scoped_ptr<SyncTask>(new BlockerUpdateTestHelper(
+            "task2", "app_id", paths, &log)),
+        SyncTaskManager::PRIORITY_MED,
+        CreateResultReceiver(&status));
+  }
+
+  message_loop.RunUntilIdle();
+
+  EXPECT_EQ(SYNC_STATUS_OK, status);
+
+  ASSERT_EQ(14u, log.size());
+  int i = 0;
+
+  // task1 takes "/foo/bar" first.
+  EXPECT_EQ("task1: updating to /foo/bar", log[i++]);
+  EXPECT_EQ("task1: updated to /foo/bar", log[i++]);
+
+  // task1 blocks task2. task2's update should be pending until task1 update.
+  EXPECT_EQ("task2: updating to /foo", log[i++]);
+
+  // task1 releases "/foo/bar" and tries to take "/foo". Then, pending task2
+  // takes "/foo" and blocks task1.
+  EXPECT_EQ("task1: updating to /foo", log[i++]);
+  EXPECT_EQ("task2: updated to /foo", log[i++]);
+
+  // task2 releases "/foo".
+  EXPECT_EQ("task2: updating to /foo/bar", log[i++]);
+  EXPECT_EQ("task1: updated to /foo", log[i++]);
+
+  // task1 releases "/foo".
+  EXPECT_EQ("task1: updating to /hoge/fuga/piyo", log[i++]);
+  EXPECT_EQ("task1: updated to /hoge/fuga/piyo", log[i++]);
+  EXPECT_EQ("task2: updated to /foo/bar", log[i++]);
+
+  EXPECT_EQ("task1: finished", log[i++]);
+
+  EXPECT_EQ("task2: updating to /hoge/fuga/piyo", log[i++]);
+  EXPECT_EQ("task2: updated to /hoge/fuga/piyo", log[i++]);
+  EXPECT_EQ("task2: finished", log[i++]);
 }
 
 }  // namespace drive_backend

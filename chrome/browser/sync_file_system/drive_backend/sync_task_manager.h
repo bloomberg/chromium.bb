@@ -30,6 +30,13 @@ namespace drive_backend {
 class SyncTaskToken;
 struct BlockingFactor;
 
+// This class manages asynchronous tasks for Sync FileSystem.  Each task must be
+// either a Task or a SyncTask.
+// The instance runs single task as the foreground task, and multiple tasks as
+// background tasks.  Running background task has a BlockingFactor that
+// describes which task can run in parallel.  When a task start running as a
+// background task, SyncTaskManager checks if any running background task
+// doesn't block the new background task, and queues it up if it can't run.
 class SyncTaskManager
     : public base::NonThreadSafe,
       public base::SupportsWeakPtr<SyncTaskManager> {
@@ -86,9 +93,23 @@ class SyncTaskManager
                               scoped_ptr<SyncTask> task,
                               const SyncStatusCallback& callback);
 
+  // Notifies SyncTaskManager that the task associated to |token| has finished
+  // with |status|.
   static void NotifyTaskDone(scoped_ptr<SyncTaskToken> token,
                              SyncStatusCode status);
-  static void MoveTaskToBackground(scoped_ptr<SyncTaskToken> token,
+
+  // Updates |blocking_factor| associated to the current task by specified
+  // |blocking_factor| and turns the current task to a background task if
+  // the current task is running as a foreground task.
+  // If specified |blocking_factor| is blocked by any other blocking factor
+  // associated to an existing background task, this function waits for the
+  // existing background task to finish.
+  // Upon the task is ready to run as a background task, calls |continuation|
+  // with new SyncTaskToken.
+  // Note that this function once releases previous |blocking_factor| before
+  // applying new |blocking_factor|.  So, any other task may be run before
+  // invocation of |continuation|.
+  static void UpdateBlockingFactor(scoped_ptr<SyncTaskToken> current_task_token,
                                    scoped_ptr<BlockingFactor> blocking_factor,
                                    const Continuation& continuation);
 
@@ -114,17 +135,11 @@ class SyncTaskManager
   void NotifyTaskDoneBody(scoped_ptr<SyncTaskToken> token,
                           SyncStatusCode status);
 
-  // Notifies SyncTaskManager that the running task turned to a background task.
-  void NotifyTaskBackgrounded(scoped_ptr<SyncTaskToken> foreground_task_token,
-                              const SyncTaskToken& background_task_token);
-
-  // Non-static version of MoveTaskToBackground.
-  void MoveTaskToBackgroundBody(scoped_ptr<SyncTaskToken> token,
+  // Non-static version of UpdateBlockingFactor.
+  void UpdateBlockingFactorBody(scoped_ptr<SyncTaskToken> foreground_task_token,
+                                scoped_ptr<SyncTaskToken> background_task_token,
                                 scoped_ptr<BlockingFactor> blocking_factor,
                                 const Continuation& continuation);
-
-  // Returns true if no running background task blocks |blocking_factor|.
-  bool CanRunAsBackgroundTask(const BlockingFactor& blocking_factor);
 
   // This should be called when an async task needs to get a task token.
   scoped_ptr<SyncTaskToken> GetToken(const tracked_objects::Location& from_here,

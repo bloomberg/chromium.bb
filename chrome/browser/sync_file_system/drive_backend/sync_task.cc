@@ -29,7 +29,7 @@ void ExclusiveTask::RunPreflight(scoped_ptr<SyncTaskToken> token) {
   scoped_ptr<BlockingFactor> blocking_factor(new BlockingFactor);
   blocking_factor->exclusive = true;
 
-  SyncTaskManager::MoveTaskToBackground(
+  SyncTaskManager::UpdateBlockingFactor(
       token.Pass(), blocking_factor.Pass(),
       base::Bind(&CallRunExclusive, weak_ptr_factory_.GetWeakPtr()));
 }

@@ -66,6 +66,11 @@ SyncStatusCallback SyncTaskToken::WrapToCallback(
   return base::Bind(&SyncTaskManager::NotifyTaskDone, base::Passed(&token));
 }
 
+void SyncTaskToken::set_blocking_factor(
+    scoped_ptr<BlockingFactor> blocking_factor) {
+  blocking_factor_ = blocking_factor.Pass();
+}
+
 const BlockingFactor* SyncTaskToken::blocking_factor() const {
   return blocking_factor_.get();
 }

@@ -44,6 +44,7 @@ class SyncTaskToken {
   const SyncStatusCallback& callback() const { return callback_; }
   void clear_callback() { callback_.Reset(); }
 
+  void set_blocking_factor(scoped_ptr<BlockingFactor> blocking_factor);
   const BlockingFactor* blocking_factor() const;
   void clear_blocking_factor();
 
