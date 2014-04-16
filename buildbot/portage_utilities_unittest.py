@@ -156,6 +156,8 @@ class ProjectAndPathTest(cros_test_lib.MoxTempDirTestCase):
                                'package-9999.ebuild')
     osutils.WriteFile(ebuild_path, fake_ebuild_contents, makedirs=True)
     for p in fake_projects:
+      os.path.isdir(mox.IgnoreArg()).AndReturn(False)
+    for p in fake_projects:
       os.path.isdir(mox.IgnoreArg()).AndReturn(True)
       MANIFEST.FindCheckoutFromPath(mox.IgnoreArg()).AndReturn({ 'name': p })
     self.mox.ReplayAll()
