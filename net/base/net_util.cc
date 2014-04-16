@@ -21,6 +21,7 @@
 #include <fcntl.h>
 #include <netdb.h>
 #include <netinet/in.h>
+#include <unistd.h>
 #if !defined(OS_NACL)
 #include <net/if.h>
 #if !defined(OS_ANDROID)
