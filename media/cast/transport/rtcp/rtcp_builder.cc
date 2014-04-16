@@ -52,22 +52,22 @@ void RtcpBuilder::SendRtcpFromRtpSender(
   }
   ssrc_ = sending_ssrc;
   c_name_ = c_name;
-  Packet packet;
-  packet.reserve(kMaxIpPacketSize);
+  PacketRef packet(new base::RefCountedData<Packet>);
+  packet->data.reserve(kMaxIpPacketSize);
   if (packet_type_flags & kRtcpSr) {
-    if (!BuildSR(sender_info, &packet)) return;
-    if (!BuildSdec(&packet)) return;
+    if (!BuildSR(sender_info, &packet->data)) return;
+    if (!BuildSdec(&packet->data)) return;
   }
   if (packet_type_flags & kRtcpBye) {
-    if (!BuildBye(&packet)) return;
+    if (!BuildBye(&packet->data)) return;
   }
   if (packet_type_flags & kRtcpDlrr) {
-    if (!BuildDlrrRb(dlrr, &packet)) return;
+    if (!BuildDlrrRb(dlrr, &packet->data)) return;
   }
   if (packet_type_flags & kRtcpSenderLog) {
-    if (!BuildSenderLog(sender_log, &packet)) return;
+    if (!BuildSenderLog(sender_log, &packet->data)) return;
   }
-  if (packet.empty())
+  if (packet->data.empty())
     return;  // Sanity - don't send empty packets.
 
   transport_->SendRtcpPacket(packet);

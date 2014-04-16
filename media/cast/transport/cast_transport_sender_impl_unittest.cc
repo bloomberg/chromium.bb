@@ -28,7 +28,9 @@ class FakePacketSender : public transport::PacketSender {
  public:
   FakePacketSender() {}
 
-  virtual bool SendPacket(const Packet& packet) OVERRIDE { return true; }
+  virtual bool SendPacket(PacketRef packet, const base::Closure& cb) OVERRIDE {
+    return true;
+  }
 };
 
 class CastTransportSenderImplTest : public ::testing::Test {

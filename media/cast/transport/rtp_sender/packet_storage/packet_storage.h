@@ -22,7 +22,7 @@ namespace cast {
 namespace transport {
 
 class StoredPacket;
-typedef std::map<uint32, linked_ptr<StoredPacket> > PacketMap;
+typedef std::map<uint32, PacketRef> PacketMap;
 typedef std::multimap<base::TimeTicks, uint32> TimeToPacketMap;
 
 class PacketStorage {
@@ -32,11 +32,12 @@ class PacketStorage {
   PacketStorage(base::TickClock* clock, int max_time_stored_ms);
   virtual ~PacketStorage();
 
-  void StorePacket(uint32 frame_id, uint16 packet_id, const Packet* packet);
+  void StorePacket(uint32 frame_id, uint16 packet_id, PacketRef packet);
 
   // Copies all missing packets into the packet list.
-  PacketList GetPackets(
-      const MissingFramesAndPacketsMap& missing_frames_and_packets);
+  void GetPackets(
+      const MissingFramesAndPacketsMap& missing_frames_and_packets,
+      PacketList* packets_to_resend);
 
   // Copies packet into the packet list.
   bool GetPacket(uint8 frame_id, uint16 packet_id, PacketList* packets);
@@ -48,7 +49,6 @@ class PacketStorage {
   base::TimeDelta max_time_stored_;
   PacketMap stored_packets_;
   TimeToPacketMap time_to_packet_map_;
-  std::list<linked_ptr<StoredPacket> > free_packets_;
 
   DISALLOW_COPY_AND_ASSIGN(PacketStorage);
 };

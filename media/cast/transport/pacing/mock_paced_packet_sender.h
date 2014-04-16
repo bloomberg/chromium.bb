@@ -19,7 +19,7 @@ class MockPacedPacketSender : public PacedPacketSender {
 
   MOCK_METHOD1(SendPackets, bool(const PacketList& packets));
   MOCK_METHOD1(ResendPackets, bool(const PacketList& packets));
-  MOCK_METHOD1(SendRtcpPacket, bool(const Packet& packet));
+  MOCK_METHOD1(SendRtcpPacket, bool(PacketRef packet));
 };
 
 }  // namespace transport

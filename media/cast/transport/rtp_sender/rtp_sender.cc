@@ -96,8 +96,8 @@ void RtpSender::ResendPackets(
           VLOG(3) << "Resend " << static_cast<int>(frame_id) << ":"
                   << packet_id;
           // Set a unique incremental sequence number for every packet.
-          Packet& packet = packets_to_resend.back();
-          UpdateSequenceNumber(&packet);
+          PacketRef packet = packets_to_resend.back();
+          UpdateSequenceNumber(&packet->data);
           // Set the size as correspond to each frame.
           ++packet_id;
         }
@@ -114,8 +114,8 @@ void RtpSender::ResendPackets(
         if (success) {
           VLOG(3) << "Resend " << static_cast<int>(frame_id) << ":"
                   << packet_id;
-          Packet& packet = packets_to_resend.back();
-          UpdateSequenceNumber(&packet);
+          PacketRef packet = packets_to_resend.back();
+          UpdateSequenceNumber(&packet->data);
         }
       }
     }

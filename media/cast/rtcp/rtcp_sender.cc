@@ -209,32 +209,32 @@ void RtcpSender::SendRtcpFromRtpReceiver(
     // Implement these for webrtc interop.
     NOTIMPLEMENTED();
   }
-  Packet packet;
-  packet.reserve(kMaxIpPacketSize);
+  transport::PacketRef packet(new base::RefCountedData<Packet>);
+  packet->data.reserve(kMaxIpPacketSize);
 
   if (packet_type_flags & transport::kRtcpRr) {
-    BuildRR(report_block, &packet);
+    BuildRR(report_block, &packet->data);
     if (!c_name_.empty()) {
-      BuildSdec(&packet);
+      BuildSdec(&packet->data);
     }
   }
   if (packet_type_flags & transport::kRtcpBye) {
-    BuildBye(&packet);
+    BuildBye(&packet->data);
   }
   if (packet_type_flags & transport::kRtcpRrtr) {
     DCHECK(rrtr) << "Invalid argument";
-    BuildRrtr(rrtr, &packet);
+    BuildRrtr(rrtr, &packet->data);
   }
   if (packet_type_flags & transport::kRtcpCast) {
     DCHECK(cast_message) << "Invalid argument";
-    BuildCast(cast_message, target_delay_ms, &packet);
+    BuildCast(cast_message, target_delay_ms, &packet->data);
   }
   if (packet_type_flags & transport::kRtcpReceiverLog) {
     DCHECK(rtcp_events) << "Invalid argument";
-    BuildReceiverLog(*rtcp_events, &packet);
+    BuildReceiverLog(*rtcp_events, &packet->data);
   }
 
-  if (packet.empty())
+  if (packet->data.empty())
     return;  // Sanity don't send empty packets.
 
   transport_->SendRtcpPacket(packet);

@@ -18,25 +18,6 @@ const int kMaxAllowedTimeStoredMs = 4000;
 typedef PacketMap::iterator PacketMapIterator;
 typedef TimeToPacketMap::iterator TimeToPacketIterator;
 
-class StoredPacket {
- public:
-  StoredPacket() { packet_.reserve(kMaxIpPacketSize); }
-
-  void Save(const Packet* packet) {
-    DCHECK_LT(packet->size(), kMaxIpPacketSize) << "Invalid argument";
-    packet_.clear();
-    packet_.insert(packet_.begin(), packet->begin(), packet->end());
-  }
-
-  void GetCopy(PacketList* packets) {
-    packets->push_back(Packet(packet_.begin(), packet_.end()));
-  }
-
- private:
-  Packet packet_;
-
-  DISALLOW_COPY_AND_ASSIGN(StoredPacket);
-};
 
 PacketStorage::PacketStorage(base::TickClock* clock, int max_time_stored_ms)
     : clock_(clock) {
@@ -45,16 +26,6 @@ PacketStorage::PacketStorage(base::TickClock* clock, int max_time_stored_ms)
 }
 
 PacketStorage::~PacketStorage() {
-  time_to_packet_map_.clear();
-
-  PacketMapIterator store_it = stored_packets_.begin();
-  for (; store_it != stored_packets_.end();
-       store_it = stored_packets_.begin()) {
-    stored_packets_.erase(store_it);
-  }
-  while (!free_packets_.empty()) {
-    free_packets_.pop_front();
-  }
 }
 
 void PacketStorage::CleanupOldPackets(base::TimeTicks now) {
@@ -68,10 +39,8 @@ void PacketStorage::CleanupOldPackets(base::TimeTicks now) {
     DCHECK(store_it != stored_packets_.end()) << "Invalid state";
     time_to_packet_map_.erase(time_it);
     // Save the pointer.
-    linked_ptr<StoredPacket> storted_packet = store_it->second;
+    PacketRef storted_packet = store_it->second;
     stored_packets_.erase(store_it);
-    // Add this packet to the free list for later re-use.
-    free_packets_.push_back(storted_packet);
     time_it = time_to_packet_map_.begin();
   }
 
@@ -87,17 +56,15 @@ void PacketStorage::CleanupOldPackets(base::TimeTicks now) {
     DCHECK(store_it != stored_packets_.end()) << "Invalid state";
     time_to_packet_map_.erase(time_it);
     // Save the pointer.
-    linked_ptr<StoredPacket> storted_packet = store_it->second;
+    PacketRef storted_packet = store_it->second;
     stored_packets_.erase(store_it);
-    // Add this packet to the free list for later re-use.
-    free_packets_.push_back(storted_packet);
     time_it = time_to_packet_map_.begin();
   }
 }
 
 void PacketStorage::StorePacket(uint32 frame_id,
                                 uint16 packet_id,
-                                const Packet* packet) {
+                                PacketRef packet) {
   base::TimeTicks now = clock_->NowTicks();
   CleanupOldPackets(now);
 
@@ -109,23 +76,13 @@ void PacketStorage::StorePacket(uint32 frame_id,
     DCHECK(false) << "Invalid state";
     return;
   }
-  linked_ptr<StoredPacket> stored_packet;
-  if (free_packets_.empty()) {
-    // No previous allocated packets allocate one.
-    stored_packet.reset(new StoredPacket());
-  } else {
-    // Re-use previous allocated packet.
-    stored_packet = free_packets_.front();
-    free_packets_.pop_front();
-  }
-  stored_packet->Save(packet);
-  stored_packets_[index] = stored_packet;
+  stored_packets_[index] = packet;
   time_to_packet_map_.insert(std::make_pair(now, index));
 }
 
-PacketList PacketStorage::GetPackets(
-    const MissingFramesAndPacketsMap& missing_frames_and_packets) {
-  PacketList packets_to_resend;
+void PacketStorage::GetPackets(
+    const MissingFramesAndPacketsMap& missing_frames_and_packets,
+    PacketList* packets_to_resend) {
 
   // Iterate over all frames in the list.
   for (MissingFramesAndPacketsMap::const_iterator it =
@@ -141,7 +98,7 @@ PacketList PacketStorage::GetPackets(
       uint16 packet_id = 0;
       do {
         // Get packet from storage.
-        success = GetPacket(frame_id, packet_id, &packets_to_resend);
+        success = GetPacket(frame_id, packet_id, packets_to_resend);
         ++packet_id;
       } while (success);
     } else {
@@ -149,11 +106,10 @@ PacketList PacketStorage::GetPackets(
       for (PacketIdSet::const_iterator set_it = packets_set.begin();
            set_it != packets_set.end();
            ++set_it) {
-        GetPacket(frame_id, *set_it, &packets_to_resend);
+        GetPacket(frame_id, *set_it, packets_to_resend);
       }
     }
   }
-  return packets_to_resend;
 }
 
 bool PacketStorage::GetPacket(uint8 frame_id,
@@ -165,7 +121,19 @@ bool PacketStorage::GetPacket(uint8 frame_id,
   if (it == stored_packets_.end()) {
     return false;
   }
-  it->second->GetCopy(packets);
+  // Minor trickery, the caller (rtp_sender.cc) really wants a copy of the
+  // packet so that it can update the sequence number before it sends it to
+  // the transport. If the packet only has one ref, we can safely let
+  // rtp_sender.cc have our packet and modify it. If it has more references
+  // then we must return a copy of it instead. This should really only happen
+  // when rtp_sender.cc is trying to re-send a packet that is already in the
+  // queue to sent.
+  if (it->second->HasOneRef()) {
+    packets->push_back(it->second);
+  } else {
+    packets->push_back(make_scoped_refptr(
+        new base::RefCountedData<Packet>(it->second->data)));
+  }
   return true;
 }
 

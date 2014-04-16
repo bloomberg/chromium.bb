@@ -114,31 +114,33 @@ void RtpPacketizer::Cast(bool is_key,
   size_t remaining_size = data.size();
   std::string::const_iterator data_iter = data.begin();
   while (remaining_size > 0) {
-    Packet packet;
+    PacketRef packet(new base::RefCountedData<Packet>);
 
     if (remaining_size < payload_length) {
       payload_length = remaining_size;
     }
     remaining_size -= payload_length;
-    BuildCommonRTPheader(&packet, remaining_size == 0, timestamp);
+    BuildCommonRTPheader(&packet->data, remaining_size == 0, timestamp);
 
     // Build Cast header.
-    packet.push_back((is_key ? kCastKeyFrameBitMask : 0) |
-                     kCastReferenceFrameIdBitMask);
-    packet.push_back(frame_id);
-    size_t start_size = packet.size();
-    packet.resize(start_size + 4);
+    packet->data.push_back((is_key ? kCastKeyFrameBitMask : 0) |
+                           kCastReferenceFrameIdBitMask);
+    packet->data.push_back(frame_id);
+    size_t start_size = packet->data.size();
+    packet->data.resize(start_size + 4);
     base::BigEndianWriter big_endian_writer(
-        reinterpret_cast<char*>(&(packet[start_size])), 4);
+        reinterpret_cast<char*>(&(packet->data[start_size])), 4);
     big_endian_writer.WriteU16(packet_id_);
     big_endian_writer.WriteU16(static_cast<uint16>(num_packets - 1));
-    packet.push_back(static_cast<uint8>(reference_frame_id));
+    packet->data.push_back(static_cast<uint8>(reference_frame_id));
 
     // Copy payload data.
-    packet.insert(packet.end(), data_iter, data_iter + payload_length);
+    packet->data.insert(packet->data.end(),
+                        data_iter,
+                        data_iter + payload_length);
 
     // Store packet.
-    packet_storage_->StorePacket(frame_id, packet_id_, &packet);
+    packet_storage_->StorePacket(frame_id, packet_id_, packet);
     ++packet_id_;
     data_iter += payload_length;
 

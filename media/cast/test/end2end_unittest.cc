@@ -176,18 +176,19 @@ class LoopBackTransport : public transport::PacketSender {
     packet_receiver_ = packet_receiver;
   }
 
-  virtual bool SendPacket(const Packet& packet) OVERRIDE {
+  virtual bool SendPacket(transport::PacketRef packet,
+                          const base::Closure& cb) OVERRIDE {
     DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
     if (!send_packets_)
       return false;
 
     if (drop_packets_belonging_to_odd_frames_) {
-      uint32 frame_id = packet[13];
+      uint32 frame_id = packet->data[13];
       if (frame_id % 2 == 1)
         return true;
     }
 
-    scoped_ptr<Packet> packet_copy(new Packet(packet));
+    scoped_ptr<Packet> packet_copy(new Packet(packet->data));
     if (reset_reference_frame_id_) {
       // Reset the is_reference bit in the cast header.
       (*packet_copy)[kCommonRtpHeaderLength] &= kCastReferenceFrameIdBitReset;

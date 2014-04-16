@@ -76,7 +76,7 @@ void LoggingImpl::InsertPacketListEvent(const base::TimeTicks& time_of_event,
   DCHECK(thread_checker_.CalledOnValidThread());
   for (PacketList::const_iterator it = packets.begin(); it != packets.end();
        ++it) {
-    InsertSinglePacketEvent(time_of_event, event, *it);
+    InsertSinglePacketEvent(time_of_event, event, (*it)->data);
   }
 }
 

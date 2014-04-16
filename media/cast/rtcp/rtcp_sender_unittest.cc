@@ -44,9 +44,11 @@ class TestRtcpTransport : public transport::PacedPacketSender {
  public:
   TestRtcpTransport() : packet_count_(0) {}
 
-  virtual bool SendRtcpPacket(const Packet& packet) OVERRIDE {
-    EXPECT_EQ(expected_packet_.size(), packet.size());
-    EXPECT_EQ(0, memcmp(expected_packet_.data(), packet.data(), packet.size()));
+  virtual bool SendRtcpPacket(transport::PacketRef packet) OVERRIDE {
+    EXPECT_EQ(expected_packet_.size(), packet->data.size());
+    EXPECT_EQ(0, memcmp(expected_packet_.data(),
+                        packet->data.data(),
+                        packet->data.size()));
     packet_count_++;
     return true;
   }

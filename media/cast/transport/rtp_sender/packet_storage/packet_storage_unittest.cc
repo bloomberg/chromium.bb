@@ -40,7 +40,9 @@ TEST_F(PacketStorageTest, TimeOut) {
   PacketList packets;
   for (uint32 frame_id = 0; frame_id < 30; ++frame_id) {
     for (uint16 packet_id = 0; packet_id < 10; ++packet_id) {
-      packet_storage_.StorePacket(frame_id, packet_id, &test_123);
+      packet_storage_.StorePacket(frame_id,
+                                  packet_id,
+                                  new base::RefCountedData<Packet>(test_123));
     }
     testing_clock_.Advance(kDeltaBetweenFrames);
   }
@@ -56,7 +58,7 @@ TEST_F(PacketStorageTest, TimeOut) {
   for (uint32 frame_id = 14; frame_id < 30; ++frame_id) {
     for (uint16 packet_id = 0; packet_id < 10; ++packet_id) {
       EXPECT_TRUE(packet_storage_.GetPacket(frame_id, packet_id, &packets));
-      EXPECT_TRUE(packets.front() == test_123);
+      EXPECT_TRUE(packets.front()->data == test_123);
     }
   }
 }
@@ -68,7 +70,9 @@ TEST_F(PacketStorageTest, MaxNumberOfPackets) {
   uint32 frame_id = 0;
   for (uint16 packet_id = 0; packet_id <= PacketStorage::kMaxStoredPackets;
        ++packet_id) {
-    packet_storage_.StorePacket(frame_id, packet_id, &test_123);
+    packet_storage_.StorePacket(frame_id,
+                                packet_id,
+                                new base::RefCountedData<Packet>(test_123));
   }
   Packet packet;
   uint16 packet_id = 0;
@@ -77,7 +81,7 @@ TEST_F(PacketStorageTest, MaxNumberOfPackets) {
   ++packet_id;
   for (; packet_id <= PacketStorage::kMaxStoredPackets; ++packet_id) {
     EXPECT_TRUE(packet_storage_.GetPacket(frame_id, packet_id, &packets));
-    EXPECT_TRUE(packets.back() == test_123);
+    EXPECT_TRUE(packets.back()->data == test_123);
   }
 }
 
@@ -90,9 +94,13 @@ TEST_F(PacketStorageTest, PacketContent) {
     for (uint16 packet_id = 0; packet_id < 10; ++packet_id) {
       // Every other packet.
       if (packet_id % 2 == 0) {
-        packet_storage_.StorePacket(frame_id, packet_id, &test_123);
+        packet_storage_.StorePacket(frame_id,
+                                    packet_id,
+                                    new base::RefCountedData<Packet>(test_123));
       } else {
-        packet_storage_.StorePacket(frame_id, packet_id, &test_234);
+        packet_storage_.StorePacket(frame_id,
+                                    packet_id,
+                                    new base::RefCountedData<Packet>(test_234));
       }
     }
     testing_clock_.Advance(kDeltaBetweenFrames);
@@ -102,9 +110,9 @@ TEST_F(PacketStorageTest, PacketContent) {
       EXPECT_TRUE(packet_storage_.GetPacket(frame_id, packet_id, &packets));
       // Every other packet.
       if (packet_id % 2 == 0) {
-        EXPECT_TRUE(packets.back() == test_123);
+        EXPECT_TRUE(packets.back()->data == test_123);
       } else {
-        EXPECT_TRUE(packets.back() == test_234);
+        EXPECT_TRUE(packets.back()->data == test_234);
       }
     }
   }

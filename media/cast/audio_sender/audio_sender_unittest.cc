@@ -28,8 +28,9 @@ class TestPacketSender : public transport::PacketSender {
  public:
   TestPacketSender() : number_of_rtp_packets_(0), number_of_rtcp_packets_(0) {}
 
-  virtual bool SendPacket(const Packet& packet) OVERRIDE {
-    if (Rtcp::IsRtcpPacket(&packet[0], packet.size())) {
+  virtual bool SendPacket(transport::PacketRef packet,
+                          const base::Closure& cb) OVERRIDE {
+    if (Rtcp::IsRtcpPacket(&packet->data[0], packet->data.size())) {
       ++number_of_rtcp_packets_;
     } else {
       ++number_of_rtp_packets_;

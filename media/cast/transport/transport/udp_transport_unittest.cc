@@ -45,7 +45,8 @@ class MockPacketReceiver {
 };
 
 void SendPacket(UdpTransport* transport, Packet packet) {
-  transport->SendPacket(packet);
+  base::Closure cb;
+  transport->SendPacket(new base::RefCountedData<Packet>(packet), cb);
 }
 
 static void UpdateCastTransportStatus(transport::CastTransportStatus status) {
@@ -84,7 +85,8 @@ TEST(UdpTransport, SendAndReceive) {
   send_transport.StartReceiving(receiver1.packet_receiver());
   recv_transport.StartReceiving(receiver2.packet_receiver());
 
-  send_transport.SendPacket(packet);
+  base::Closure cb;
+  send_transport.SendPacket(new base::RefCountedData<Packet>(packet), cb);
   run_loop.Run();
   EXPECT_TRUE(
       std::equal(packet.begin(), packet.end(), receiver1.packet().begin()));

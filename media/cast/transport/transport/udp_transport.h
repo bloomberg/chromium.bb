@@ -47,7 +47,8 @@ class UdpTransport : public PacketSender {
   void StartReceiving(const PacketReceiverCallback& packet_receiver);
 
   // PacketSender implementations.
-  virtual bool SendPacket(const Packet& packet) OVERRIDE;
+  virtual bool SendPacket(PacketRef packet,
+                          const base::Closure& cb) OVERRIDE;
 
  private:
   // Requests and processes packets from |udp_socket_|.  This method is called
@@ -56,7 +57,10 @@ class UdpTransport : public PacketSender {
   // response from UdpSocket::RecvFrom().
   void ReceiveNextPacket(int length_or_status);
 
-  void OnSent(const scoped_refptr<net::IOBuffer>& buf, int result);
+  void OnSent(const scoped_refptr<net::IOBuffer>& buf,
+              PacketRef packet,
+              const base::Closure& cb,
+              int result);
 
   const scoped_refptr<base::SingleThreadTaskRunner> io_thread_proxy_;
   const net::IPEndPoint local_addr_;
