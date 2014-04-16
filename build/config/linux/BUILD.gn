@@ -77,7 +77,7 @@ config("x11") {
 }
 
 config("libresolv") {
-  libs = [ "libresolv" ]
+  libs = [ "resolv" ]
 }
 
 pkg_config("gconf") {

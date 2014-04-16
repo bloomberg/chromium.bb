@@ -33,10 +33,11 @@ posix_avoid_mmap = is_android && cpu_arch != "x86"
 
 # WebSockets and socket stream code are used everywhere except iOS.
 enable_websockets = !is_ios
-use_v8_in_net = !is_ios
+# TODO(brettw) put back to "!is_ios" when v8 is supported in GN build.
+use_v8_in_net = false  # TODO(brettw)!is_ios
 enable_built_in_dns = !is_ios
 
-disable_ftp_support = !is_ios
+enable_ftp_support = !is_ios
 
 # When OpenSSL is used for SSL and crypto on Unix-like systems, use OpenSSL"s
 # certificate definition.
@@ -49,13 +50,30 @@ config("net_config") {
   }
 }
 
+# Disables Windows warning about size to int truncations.
+# TODO(jschuh): crbug.com/167187 fix this and delete this config.
+config("net_win_size_truncation") {
+  if (is_win) {
+    cflags += [ "/wd4267" ]
+  }
+}
+
 component("net") {
   sources =
     gypi_values.net_nacl_common_sources +
     gypi_values.net_non_nacl_sources
 
   cflags = []
-  defines = [ "NET_IMPLEMENTATION" ]
+  defines = [
+    # TODO(GYP) Note that he GYP file supports linux_link_kerberos (defaults to
+    # 0) which implies that we run pkg_config on kerberos and link to that
+    # rather than setting this define which will dynamically open it. That
+    # doesn't seem to be set in the regular builds, so we're skipping this
+    # capability here.
+    "DLOPEN_KERBEROS",
+    "NET_IMPLEMENTATION"
+  ]
+  configs += [ ":net_win_size_truncation" ]
   direct_dependent_configs = [ ":net_config" ]
   include_dirs = []
 
@@ -94,7 +112,7 @@ component("net") {
     }
   }
 
-  if (disable_ftp_support) {
+  if (!enable_ftp_support) {
     sources -= [
       "ftp/ftp_auth_cache.cc",
       "ftp/ftp_auth_cache.h",
@@ -363,12 +381,9 @@ component("net") {
       "udp/udp_socket_libevent.h",
     ]
     deps += [
-      #"//third_party/nss:nspr",  # TODO(brettw)
-      #"//third_party/nss",
+      "//third_party/nss:nspr",
+      "//third_party/nss",
     ]
-
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    cflags += [ "/wd4267" ]
   } else {  # !is_win
     sources -= [
       "base/winsock_init.cc",
@@ -386,9 +401,8 @@ component("net") {
       "ssl/client_cert_store_nss.h",
     ]
     deps += [
-      # TODO(brettw)
-      #"//third_party/nss:nspr",
-      #"//third_party/nss",
+      "//third_party/nss:nspr",
+      "//third_party/nss",
     ]
     libs = [
       "$SDKROOT/System/Library/Frameworks/Foundation.framework",
@@ -453,120 +467,451 @@ source_set("http_server") {
   ]
 }
 
-#TODO(brettw) enable this wben we've done all deps required by this target.
-#executable("dump_cache") {
-#  sources = [
-#    'tools/dump_cache/cache_dumper.cc',
-#    'tools/dump_cache/cache_dumper.h',
-#    'tools/dump_cache/dump_cache.cc',
-#    'tools/dump_cache/dump_files.cc',
-#    'tools/dump_cache/dump_files.h',
-#    'tools/dump_cache/simple_cache_dumper.cc',
-#    'tools/dump_cache/simple_cache_dumper.h',
-#    'tools/dump_cache/upgrade_win.cc',
-#    'tools/dump_cache/upgrade_win.h',
-#    'tools/dump_cache/url_to_filename_encoder.cc',
-#    'tools/dump_cache/url_to_filename_encoder.h',
-#    'tools/dump_cache/url_utilities.h',
-#    'tools/dump_cache/url_utilities.cc',
-#  ]
-#
-#  deps = [
-#    "//base",
-#    ":net",
-#    ":net_test_support",
-#  ]
-#
-#  if (is_win) {
-#    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-#    cflags += [ "/wd4267" ]
-#  }
-#}
-#
-#source_set("net_test_support") {
-#  sources = [
-#    'base/capturing_net_log.cc',
-#    'base/capturing_net_log.h',
-#    'base/load_timing_info_test_util.cc',
-#    'base/load_timing_info_test_util.h',
-#    'base/mock_file_stream.cc',
-#    'base/mock_file_stream.h',
-#    'base/test_completion_callback.cc',
-#    'base/test_completion_callback.h',
-#    'base/test_data_directory.cc',
-#    'base/test_data_directory.h',
-#    'cert/mock_cert_verifier.cc',
-#    'cert/mock_cert_verifier.h',
-#    'cookies/cookie_monster_store_test.cc',
-#    'cookies/cookie_monster_store_test.h',
-#    'cookies/cookie_store_test_callbacks.cc',
-#    'cookies/cookie_store_test_callbacks.h',
-#    'cookies/cookie_store_test_helpers.cc',
-#    'cookies/cookie_store_test_helpers.h',
-#    'disk_cache/disk_cache_test_base.cc',
-#    'disk_cache/disk_cache_test_base.h',
-#    'disk_cache/disk_cache_test_util.cc',
-#    'disk_cache/disk_cache_test_util.h',
-#    'dns/dns_test_util.cc',
-#    'dns/dns_test_util.h',
-#    'dns/mock_host_resolver.cc',
-#    'dns/mock_host_resolver.h',
-#    'dns/mock_mdns_socket_factory.cc',
-#    'dns/mock_mdns_socket_factory.h',
-#    'proxy/mock_proxy_resolver.cc',
-#    'proxy/mock_proxy_resolver.h',
-#    'proxy/mock_proxy_script_fetcher.cc',
-#    'proxy/mock_proxy_script_fetcher.h',
-#    'proxy/proxy_config_service_common_unittest.cc',
-#    'proxy/proxy_config_service_common_unittest.h',
-#    'socket/socket_test_util.cc',
-#    'socket/socket_test_util.h',
-#    'test/cert_test_util.cc',
-#    'test/cert_test_util.h',
-#    'test/ct_test_util.cc',
-#    'test/ct_test_util.h',
-#    'test/embedded_test_server/embedded_test_server.cc',
-#    'test/embedded_test_server/embedded_test_server.h',
-#    'test/embedded_test_server/http_connection.cc',
-#    'test/embedded_test_server/http_connection.h',
-#    'test/embedded_test_server/http_request.cc',
-#    'test/embedded_test_server/http_request.h',
-#    'test/embedded_test_server/http_response.cc',
-#    'test/embedded_test_server/http_response.h',
-#    'test/net_test_suite.cc',
-#    'test/net_test_suite.h',
-#    'test/python_utils.cc',
-#    'test/python_utils.h',
-#    'test/spawned_test_server/base_test_server.cc',
-#    'test/spawned_test_server/base_test_server.h',
-#    'test/spawned_test_server/local_test_server_posix.cc',
-#    'test/spawned_test_server/local_test_server_win.cc',
-#    'test/spawned_test_server/local_test_server.cc',
-#    'test/spawned_test_server/local_test_server.h',
-#    'test/spawned_test_server/remote_test_server.cc',
-#    'test/spawned_test_server/remote_test_server.h',
-#    'test/spawned_test_server/spawned_test_server.h',
-#    'test/spawned_test_server/spawner_communicator.cc',
-#    'test/spawned_test_server/spawner_communicator.h',
-#    'url_request/test_url_fetcher_factory.cc',
-#    'url_request/test_url_fetcher_factory.h',
-#    'url_request/url_request_test_util.cc',
-#    'url_request/url_request_test_util.h',
-#  ]
-#
-#  deps = [
-#    "//base",
-#    "//base/test:test_support",
-#    "//crypto:platform",
-#    "//net/tools/tld_cleanup",
-#    "//testing/gmock",
-#    "//testing/gtest",
-#    "//url",
-#  ]
-#
-#  # TODO(brettw) conditions from GYP
-#
-#  forward_dependent_configs_from = deps
-#}
+executable("dump_cache") {
+  sources = [
+    "tools/dump_cache/cache_dumper.cc",
+    "tools/dump_cache/cache_dumper.h",
+    "tools/dump_cache/dump_cache.cc",
+    "tools/dump_cache/dump_files.cc",
+    "tools/dump_cache/dump_files.h",
+    "tools/dump_cache/simple_cache_dumper.cc",
+    "tools/dump_cache/simple_cache_dumper.h",
+    "tools/dump_cache/upgrade_win.cc",
+    "tools/dump_cache/upgrade_win.h",
+    "tools/dump_cache/url_to_filename_encoder.cc",
+    "tools/dump_cache/url_to_filename_encoder.h",
+    "tools/dump_cache/url_utilities.h",
+    "tools/dump_cache/url_utilities.cc",
+  ]
 
-# TODO(brettw) remaining targets from GYP file.
+  configs += [ ":net_win_size_truncation" ]
+
+  deps = [
+    "//base",
+    ":net",
+    ":net_test_support",
+  ]
+}
+
+source_set("net_test_support") {
+  sources = [
+    "base/capturing_net_log.cc",
+    "base/capturing_net_log.h",
+    "base/load_timing_info_test_util.cc",
+    "base/load_timing_info_test_util.h",
+    "base/mock_file_stream.cc",
+    "base/mock_file_stream.h",
+    "base/test_completion_callback.cc",
+    "base/test_completion_callback.h",
+    "base/test_data_directory.cc",
+    "base/test_data_directory.h",
+    "cert/mock_cert_verifier.cc",
+    "cert/mock_cert_verifier.h",
+    "cookies/cookie_monster_store_test.cc",
+    "cookies/cookie_monster_store_test.h",
+    "cookies/cookie_store_test_callbacks.cc",
+    "cookies/cookie_store_test_callbacks.h",
+    "cookies/cookie_store_test_helpers.cc",
+    "cookies/cookie_store_test_helpers.h",
+    "disk_cache/disk_cache_test_base.cc",
+    "disk_cache/disk_cache_test_base.h",
+    "disk_cache/disk_cache_test_util.cc",
+    "disk_cache/disk_cache_test_util.h",
+    "dns/dns_test_util.cc",
+    "dns/dns_test_util.h",
+    "dns/mock_host_resolver.cc",
+    "dns/mock_host_resolver.h",
+    "dns/mock_mdns_socket_factory.cc",
+    "dns/mock_mdns_socket_factory.h",
+    "proxy/mock_proxy_resolver.cc",
+    "proxy/mock_proxy_resolver.h",
+    "proxy/mock_proxy_script_fetcher.cc",
+    "proxy/mock_proxy_script_fetcher.h",
+    "proxy/proxy_config_service_common_unittest.cc",
+    "proxy/proxy_config_service_common_unittest.h",
+    "socket/socket_test_util.cc",
+    "socket/socket_test_util.h",
+    "test/cert_test_util.cc",
+    "test/cert_test_util.h",
+    "test/ct_test_util.cc",
+    "test/ct_test_util.h",
+    "test/embedded_test_server/embedded_test_server.cc",
+    "test/embedded_test_server/embedded_test_server.h",
+    "test/embedded_test_server/http_connection.cc",
+    "test/embedded_test_server/http_connection.h",
+    "test/embedded_test_server/http_request.cc",
+    "test/embedded_test_server/http_request.h",
+    "test/embedded_test_server/http_response.cc",
+    "test/embedded_test_server/http_response.h",
+    "test/net_test_suite.cc",
+    "test/net_test_suite.h",
+    "test/python_utils.cc",
+    "test/python_utils.h",
+    "test/spawned_test_server/base_test_server.cc",
+    "test/spawned_test_server/base_test_server.h",
+    "test/spawned_test_server/local_test_server_posix.cc",
+    "test/spawned_test_server/local_test_server_win.cc",
+    "test/spawned_test_server/local_test_server.cc",
+    "test/spawned_test_server/local_test_server.h",
+    "test/spawned_test_server/remote_test_server.cc",
+    "test/spawned_test_server/remote_test_server.h",
+    "test/spawned_test_server/spawned_test_server.h",
+    "test/spawned_test_server/spawner_communicator.cc",
+    "test/spawned_test_server/spawner_communicator.h",
+    "url_request/test_url_fetcher_factory.cc",
+    "url_request/test_url_fetcher_factory.h",
+    "url_request/url_request_test_util.cc",
+    "url_request/url_request_test_util.h",
+  ]
+
+  configs += [ ":net_win_size_truncation" ]
+
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//crypto:platform",
+    "//net/tools/tld_cleanup",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//url",
+  ]
+
+  if (is_ios) {
+    deps += [ "//third_party/nss" ]
+  }
+
+  if (!is_android) {
+    sources -= [
+      "test/spawned_test_server/remote_test_server.cc",
+      "test/spawned_test_server/remote_test_server.h",
+      "test/spawned_test_server/spawner_communicator.cc",
+      "test/spawned_test_server/spawner_communicator.h",
+    ]
+  }
+
+  if (use_v8_in_net) {
+    deps += [ ":net_with_v8" ]
+  }
+
+  if (!enable_mdns) {
+    sources -= [
+      "dns/mock_mdns_socket_factory.cc",
+      "dns/mock_mdns_socket_factory.h",
+    ]
+  }
+
+  forward_dependent_configs_from = deps
+}
+
+if (use_v8_in_net) {
+  component("net_with_v8") {
+    sources = [
+      "proxy/proxy_resolver_v8.cc",
+      "proxy/proxy_resolver_v8.h",
+      "proxy/proxy_resolver_v8_tracing.cc",
+      "proxy/proxy_resolver_v8_tracing.h",
+      "proxy/proxy_service_v8.cc",
+      "proxy/proxy_service_v8.h",
+    ]
+
+    defines = [ "NET_IMPLEMENTATION" ]
+    configs += [
+      ":net_win_size_truncation",
+      "//build/config/compiler:wexit_time_destructors",
+    ]
+
+    deps = [
+      ":net",
+      "//base",
+      "//gin",
+      "//url",
+      "//v8",
+    ]
+  }
+}
+
+if (!is_ios && !is_android) {
+  executable("crash_cache") {
+    sources = [ "tools/crash_cache/crash_cache.cc" ]
+    configs += [ ":net_win_size_truncation" ]
+    deps = [
+      ":net",
+      ":net_test_support",
+      "//base",
+    ]
+  }
+
+  executable("crl_set_dump") {
+    sources = [ "tools/crl_set_dump/crl_set_dump.cc" ]
+    configs += [ ":net_win_size_truncation" ]
+    deps = [
+      ":net",
+      "//base",
+    ]
+  }
+
+  executable("dns_fuzz_stub") {
+    sources = [ "tools/dns_fuzz_stub/dns_fuzz_stub.cc" ]
+    configs += [ ":net_win_size_truncation" ]
+    deps = [
+      ":net",
+      "//base",
+    ]
+  }
+
+  executable("gdig") {
+    sources = [
+      "tools/gdig/file_net_log.cc",
+      "tools/gdig/gdig.cc",
+    ]
+    deps = [
+      ":net",
+      "//base",
+    ]
+  }
+
+  executable("get_server_time") {
+    sources = [ "tools/get_server_time/get_server_time.cc" ]
+    configs += [ ":net_win_size_truncation" ]
+    deps = [
+      ":net",
+      "//base",
+      "//base:i18n",
+      "//url",
+    ]
+  }
+
+  if (use_v8_in_net) {
+    executable("net_watcher") {
+      sources = [ "tools/net_watcher/net_watcher.cc" ]
+      deps = [
+        ":net",
+        ":net_with_v8",
+        "//base",
+      ]
+
+      if (is_linux) {
+        configs += [ "//build/config/linux:gconf" ]
+        deps += [ "//build/config/linux:gio" ]
+      }
+    }
+  }
+
+  executable("run_testserver") {
+    sources = [ "tools/testserver/run_testserver.cc" ]
+    deps = [
+      ":net",  # TODO(brettw) bug 363749: this shouldn't be necessary. It's not
+               # in the GYP build, and can be removed when the bug is fixed.
+      ":net_test_support",
+      "//base",
+      "//base/test:test_support",
+      "//testing/gtest",
+    ]
+  }
+
+  executable("stress_cache") {
+    sources = [ "disk_cache/blockfile/stress_cache.cc" ]
+    configs += [ ":net_win_size_truncation" ]
+    deps = [
+      ":net",
+      ":net_test_support",
+      "//base",
+    ]
+  }
+
+  executable("tld_cleanup") {
+    sources = [ "tools/tld_cleanup/tld_cleanup.cc" ]
+    configs += [ ":net_win_size_truncation" ]
+    deps = [
+      "//base",
+      "//base:i18n",
+      "//net/tools/tld_cleanup",
+    ]
+  }
+}
+
+if (is_linux) {
+  source_set("balsa") {
+    sources = [
+      "tools/balsa/balsa_enums.h",
+      "tools/balsa/balsa_frame.cc",
+      "tools/balsa/balsa_frame.h",
+      "tools/balsa/balsa_headers.cc",
+      "tools/balsa/balsa_headers.h",
+      "tools/balsa/balsa_headers_token_utils.cc",
+      "tools/balsa/balsa_headers_token_utils.h",
+      "tools/balsa/balsa_visitor_interface.h",
+      "tools/balsa/http_message_constants.cc",
+      "tools/balsa/http_message_constants.h",
+      "tools/balsa/noop_balsa_visitor.h",
+      "tools/balsa/simple_buffer.cc",
+      "tools/balsa/simple_buffer.h",
+      "tools/balsa/split.cc",
+      "tools/balsa/split.h",
+      "tools/balsa/string_piece_utils.h",
+    ]
+    deps = [
+      ":net",
+      "//base",
+    ]
+  }
+
+  source_set("epoll_server") {
+    sources = [
+      "tools/epoll_server/epoll_server.cc",
+      "tools/epoll_server/epoll_server.h",
+    ]
+    deps = [
+      ":net",
+      "//base",
+    ]
+  }
+
+  source_set("flip_in_mem_edsm_server_base") {
+    sources = [
+      "tools/dump_cache/url_to_filename_encoder.cc",
+      "tools/dump_cache/url_to_filename_encoder.h",
+      "tools/dump_cache/url_utilities.h",
+      "tools/dump_cache/url_utilities.cc",
+      "tools/flip_server/acceptor_thread.h",
+      "tools/flip_server/acceptor_thread.cc",
+      "tools/flip_server/create_listener.cc",
+      "tools/flip_server/create_listener.h",
+      "tools/flip_server/constants.h",
+      "tools/flip_server/flip_config.cc",
+      "tools/flip_server/flip_config.h",
+      "tools/flip_server/http_interface.cc",
+      "tools/flip_server/http_interface.h",
+      "tools/flip_server/loadtime_measurement.h",
+      "tools/flip_server/mem_cache.h",
+      "tools/flip_server/mem_cache.cc",
+      "tools/flip_server/output_ordering.cc",
+      "tools/flip_server/output_ordering.h",
+      "tools/flip_server/ring_buffer.cc",
+      "tools/flip_server/ring_buffer.h",
+      "tools/flip_server/sm_connection.cc",
+      "tools/flip_server/sm_connection.h",
+      "tools/flip_server/sm_interface.h",
+      "tools/flip_server/spdy_ssl.cc",
+      "tools/flip_server/spdy_ssl.h",
+      "tools/flip_server/spdy_interface.cc",
+      "tools/flip_server/spdy_interface.h",
+      "tools/flip_server/spdy_util.cc",
+      "tools/flip_server/spdy_util.h",
+      "tools/flip_server/streamer_interface.cc",
+      "tools/flip_server/streamer_interface.h",
+    ]
+    deps = [
+      ":balsa",
+      ":epoll_server",
+      ":net",
+      "//base",
+      "//third_party/openssl",
+    ]
+  }
+
+  executable("flip_in_mem_edsm_server_unittests") {
+    sources = [
+      "tools/flip_server/flip_test_utils.cc",
+      "tools/flip_server/flip_test_utils.h",
+      "tools/flip_server/http_interface_test.cc",
+      "tools/flip_server/mem_cache_test.cc",
+      "tools/flip_server/run_all_tests.cc",
+      "tools/flip_server/spdy_interface_test.cc",
+    ]
+    deps = [
+      ":flip_in_mem_edsm_server_base",
+      ":net",
+      ":net_test_support",
+      "//testing/gtest",
+      "//testing/gmock",
+      "//third_party/openssl",
+    ]
+  }
+
+  executable("flip_in_mem_edsm_server") {
+    sources = [ "tools/flip_server/flip_in_mem_edsm_server.cc" ]
+    deps = [
+      ":flip_in_mem_edsm_server_base",
+      ":net",
+      "//base",
+    ]
+  }
+
+  source_set("quic_base") {
+    sources = [
+      "tools/quic/quic_client.cc",
+      "tools/quic/quic_client.h",
+      "tools/quic/quic_client_session.cc",
+      "tools/quic/quic_client_session.h",
+      "tools/quic/quic_default_packet_writer.cc",
+      "tools/quic/quic_default_packet_writer.h",
+      "tools/quic/quic_dispatcher.h",
+      "tools/quic/quic_dispatcher.cc",
+      "tools/quic/quic_epoll_clock.cc",
+      "tools/quic/quic_epoll_clock.h",
+      "tools/quic/quic_epoll_connection_helper.cc",
+      "tools/quic/quic_epoll_connection_helper.h",
+      "tools/quic/quic_in_memory_cache.cc",
+      "tools/quic/quic_in_memory_cache.h",
+      "tools/quic/quic_packet_writer_wrapper.cc",
+      "tools/quic/quic_packet_writer_wrapper.h",
+      "tools/quic/quic_server.cc",
+      "tools/quic/quic_server.h",
+      "tools/quic/quic_server_session.cc",
+      "tools/quic/quic_server_session.h",
+      "tools/quic/quic_socket_utils.cc",
+      "tools/quic/quic_socket_utils.h",
+      "tools/quic/quic_spdy_client_stream.cc",
+      "tools/quic/quic_spdy_client_stream.h",
+      "tools/quic/quic_spdy_server_stream.cc",
+      "tools/quic/quic_spdy_server_stream.h",
+      "tools/quic/quic_time_wait_list_manager.h",
+      "tools/quic/quic_time_wait_list_manager.cc",
+      "tools/quic/spdy_utils.cc",
+      "tools/quic/spdy_utils.h",
+    ]
+    deps = [
+      ":balsa",
+      ":epoll_server",
+      ":net",
+      "//base",
+      "//base/third_party/dynamic_annotations",
+      "//crypto",
+      "//third_party/openssl",
+      "//url",
+    ]
+  }
+
+  executable("quic_client") {
+    sources = [ "tools/quic/quic_client_bin.cc" ]
+    deps = [
+      ":quic_base",
+      ":net",
+      "//base",
+      "//third_party/openssl",
+    ]
+  }
+
+  executable("quic_server") {
+    sources = [ "tools/quic/quic_server_bin.cc" ]
+    deps = [
+      ":quic_base",
+      ":net",
+      "//base",
+      "//third_party/openssl",
+    ]
+  }
+}
+
+# TODO(GYP) Android net_jni_headers target and related.
+
+if (is_android || is_linux) {
+  executable("disk_cache_memory_test") {
+    sources = [ "tools/disk_cache_memory_test/disk_cache_memory_test.cc" ]
+    deps = [
+      ":net",
+      "//base",
+    ]
+  }
+}
