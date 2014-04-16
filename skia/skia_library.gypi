@@ -84,6 +84,8 @@
     '../third_party/skia/src/utils/SkCanvasStateUtils.cpp',
     '../third_party/skia/src/utils/SkEventTracer.cpp',
     '../third_party/skia/src/utils/SkDeferredCanvas.cpp',
+    '../third_party/skia/src/utils/SkMatrix22.cpp',
+    '../third_party/skia/src/utils/SkMatrix22.h',
     '../third_party/skia/src/utils/SkMatrix44.cpp',
     '../third_party/skia/src/utils/SkNullCanvas.cpp',
     '../third_party/skia/include/utils/SkNWayCanvas.h',

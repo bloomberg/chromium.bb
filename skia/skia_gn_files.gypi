@@ -824,6 +824,8 @@
     '<(skia_src_path)/utils/SkGatherPixelRefsAndRects.h',
     '<(skia_src_path)/utils/SkInterpolator.cpp',
     '<(skia_src_path)/utils/SkLayer.cpp',
+    '<(skia_src_path)/utils/SkMatrix22.cpp',
+    '<(skia_src_path)/utils/SkMatrix22.h',
     '<(skia_src_path)/utils/SkMatrix44.cpp',
     '<(skia_src_path)/utils/SkMD5.cpp',
     '<(skia_src_path)/utils/SkMD5.h',
