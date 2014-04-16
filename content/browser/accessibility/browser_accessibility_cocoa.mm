@@ -888,12 +888,17 @@ NSDictionary* attributeToMethodNameMap = nil;
   return nil;
 }
 
-- (NSString*)url {
+- (NSURL*)url {
   StringAttribute urlAttribute =
       [[self role] isEqualToString:@"AXWebArea"] ?
           ui::AX_ATTR_DOC_URL :
           ui::AX_ATTR_URL;
-  return NSStringForStringAttribute(browserAccessibility_, urlAttribute);
+
+  std::string urlStr = browserAccessibility_->GetStringAttribute(urlAttribute);
+  if (urlStr.empty())
+    return nil;
+
+  return [NSURL URLWithString:(base::SysUTF8ToNSString(urlStr))];
 }
 
 - (id)value {
@@ -1287,7 +1292,6 @@ NSDictionary* attributeToMethodNameMap = nil;
       NSAccessibilityTopLevelUIElementAttribute,
       NSAccessibilityValueAttribute,
       NSAccessibilityWindowAttribute,
-      NSAccessibilityURLAttribute,
       @"AXAccessKey",
       @"AXInvalid",
       @"AXRequired",
@@ -1372,6 +1376,13 @@ NSDictionary* attributeToMethodNameMap = nil;
             nil]];
       }
     }
+  }
+
+  // Add the url attribute only if it has a valid url.
+  if ([self url] != nil) {
+    [ret addObjectsFromArray:[NSArray arrayWithObjects:
+        NSAccessibilityURLAttribute,
+        nil]];
   }
 
   // Live regions.
