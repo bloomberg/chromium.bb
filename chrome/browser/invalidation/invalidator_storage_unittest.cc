@@ -32,7 +32,7 @@ TEST_F(InvalidatorStorageTest, Clear) {
   EXPECT_TRUE(storage.GetBootstrapData().empty());
   EXPECT_TRUE(storage.GetInvalidatorClientId().empty());
 
-  storage.SetInvalidatorClientId("fake_id");
+  storage.ClearAndSetNewClientId("fake_id");
   EXPECT_EQ("fake_id", storage.GetInvalidatorClientId());
 
   storage.SetBootstrapData("test");
@@ -48,7 +48,7 @@ TEST_F(InvalidatorStorageTest, SetGetNotifierClientId) {
   InvalidatorStorage storage(&pref_service_);
   const std::string client_id("fK6eDzAIuKqx9A4+93bljg==");
 
-  storage.SetInvalidatorClientId(client_id);
+  storage.ClearAndSetNewClientId(client_id);
   EXPECT_EQ(client_id, storage.GetInvalidatorClientId());
 }
 

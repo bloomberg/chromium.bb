@@ -41,7 +41,6 @@
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/js/js_event_details.h"
 #include "sync/js/js_event_handler.h"
-#include "sync/notifier/invalidation_state_tracker.h"
 #include "sync/notifier/non_blocking_invalidator.h"
 #include "sync/test/fake_encryptor.h"
 #include "sync/tools/null_invalidation_state_tracker.h"
@@ -280,8 +279,7 @@ int SyncClientMain(int argc, char* argv[]) {
       invalidator_id,
       null_invalidation_state_tracker.GetSavedInvalidations(),
       null_invalidation_state_tracker.GetBootstrapData(),
-      WeakHandle<InvalidationStateTracker>(
-          null_invalidation_state_tracker.AsWeakPtr()),
+      &null_invalidation_state_tracker,
       kClientInfo,
       notifier_options.request_context_getter));
 

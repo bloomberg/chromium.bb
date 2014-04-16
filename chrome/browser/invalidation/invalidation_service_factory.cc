@@ -4,6 +4,7 @@
 
 #include "chrome/browser/invalidation/invalidation_service_factory.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_registry.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/invalidation/fake_invalidation_service.h"
@@ -22,6 +23,8 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/user_prefs/pref_registry_syncable.h"
+#include "net/url_request/url_request_context_getter.h"
+#include "sync/notifier/invalidation_state_tracker.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/invalidation/invalidation_controller_android.h"
@@ -115,9 +118,12 @@ KeyedService* InvalidationServiceFactory::BuildServiceInstanceFor(
         LoginUIServiceFactory::GetForProfile(profile)));
   }
 
-  TiclInvalidationService* service =
-      new TiclInvalidationService(auth_provider.Pass(), profile);
-  service->Init();
+  TiclInvalidationService* service = new TiclInvalidationService(
+      auth_provider.Pass(),
+      profile->GetRequestContext(),
+      profile);
+  service->Init(scoped_ptr<syncer::InvalidationStateTracker>(
+      new InvalidatorStorage(profile->GetPrefs())));
   return service;
 #endif
 }

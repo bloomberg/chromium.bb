@@ -17,7 +17,7 @@ namespace syncer {
 NullInvalidationStateTracker::NullInvalidationStateTracker() {}
 NullInvalidationStateTracker::~NullInvalidationStateTracker() {}
 
-void NullInvalidationStateTracker::SetInvalidatorClientId(
+void NullInvalidationStateTracker::ClearAndSetNewClientId(
     const std::string& data) {
   LOG(INFO) << "Setting invalidator client ID to: " << data;
 }

@@ -11,7 +11,6 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
-#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "sync/notifier/invalidation_state_tracker.h"
 #include "sync/notifier/unacked_invalidation_set.h"
@@ -29,8 +28,7 @@ class PrefRegistrySyncable;
 
 namespace invalidation {
 
-class InvalidatorStorage : public base::SupportsWeakPtr<InvalidatorStorage>,
-                           public syncer::InvalidationStateTracker {
+class InvalidatorStorage : public syncer::InvalidationStateTracker {
  public:
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
@@ -39,7 +37,7 @@ class InvalidatorStorage : public base::SupportsWeakPtr<InvalidatorStorage>,
   virtual ~InvalidatorStorage();
 
   // InvalidationStateTracker implementation.
-  virtual void SetInvalidatorClientId(const std::string& client_id) OVERRIDE;
+  virtual void ClearAndSetNewClientId(const std::string& client_id) OVERRIDE;
   virtual std::string GetInvalidatorClientId() const OVERRIDE;
   virtual void SetBootstrapData(const std::string& data) OVERRIDE;
   virtual std::string GetBootstrapData() const OVERRIDE;

@@ -18,7 +18,7 @@ FakeInvalidationStateTracker::FakeInvalidationStateTracker() {}
 
 FakeInvalidationStateTracker::~FakeInvalidationStateTracker() {}
 
-void FakeInvalidationStateTracker::SetInvalidatorClientId(
+void FakeInvalidationStateTracker::ClearAndSetNewClientId(
     const std::string& client_id) {
   Clear();
   invalidator_client_id_ = client_id;

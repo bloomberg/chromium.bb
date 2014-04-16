@@ -192,8 +192,7 @@ int SyncListenNotificationsMain(int argc, char* argv[]) {
           base::RandBytesAsString(8),
           null_invalidation_state_tracker.GetSavedInvalidations(),
           null_invalidation_state_tracker.GetBootstrapData(),
-          WeakHandle<InvalidationStateTracker>(
-              null_invalidation_state_tracker.AsWeakPtr()),
+          &null_invalidation_state_tracker,
           kClientInfo,
           notifier_options.request_context_getter));
 

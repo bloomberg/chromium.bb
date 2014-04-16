@@ -7,6 +7,7 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/invalidation/invalidation_service_factory.h"
 #include "chrome/browser/invalidation/invalidation_service_test_template.h"
+#include "chrome/browser/invalidation/invalidator_storage.h"
 #include "chrome/browser/invalidation/profile_invalidation_auth_provider.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
@@ -14,8 +15,11 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "content/public/test/test_browser_thread_bundle.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "sync/notifier/fake_invalidation_handler.h"
 #include "sync/notifier/fake_invalidator.h"
+#include "sync/notifier/invalidation_state_tracker.h"
 #include "sync/notifier/invalidation_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -43,12 +47,16 @@ class TiclInvalidationServiceTestDelegate {
                 SigninManagerFactory::GetForProfile(profile_.get()),
                 token_service_.get(),
                 NULL)),
+        profile_->GetRequestContext(),
         profile_.get()));
   }
 
   void InitializeInvalidationService() {
     fake_invalidator_ = new syncer::FakeInvalidator();
-    invalidation_service_->InitForTest(fake_invalidator_);
+    invalidation_service_->InitForTest(
+        scoped_ptr<syncer::InvalidationStateTracker>(
+            new InvalidatorStorage(profile_->GetPrefs())),
+        fake_invalidator_);
   }
 
   InvalidationService* GetInvalidationService() {
@@ -95,9 +103,12 @@ class TiclInvalidationServiceChannelTest : public ::testing::Test {
     scoped_ptr<InvalidationAuthProvider> auth_provider(
         new ProfileInvalidationAuthProvider(
             fake_signin_manager_, token_service_.get(), NULL));
-    invalidation_service_.reset(
-        new TiclInvalidationService(auth_provider.Pass(), profile_.get()));
-    invalidation_service_->Init();
+    invalidation_service_.reset(new TiclInvalidationService(
+        auth_provider.Pass(),
+        profile_->GetRequestContext(),
+        profile_.get()));
+    invalidation_service_->Init(scoped_ptr<syncer::InvalidationStateTracker>(
+        new InvalidatorStorage(profile_->GetPrefs())));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -109,6 +120,7 @@ class TiclInvalidationServiceChannelTest : public ::testing::Test {
   }
 
  protected:
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfile> profile_;
   SigninManagerBase* fake_signin_manager_;
   scoped_ptr<FakeProfileOAuth2TokenService> token_service_;
@@ -174,6 +186,8 @@ class FakeCallbackContainer {
 // Test that requesting for detailed status doesn't crash even if the
 // underlying invalidator is not initialized.
 TEST(TiclInvalidationServiceLoggingTest, DetailedStatusCallbacksWork) {
+  content::TestBrowserThreadBundle thread_bundle;
+
   scoped_ptr<TiclInvalidationServiceTestDelegate> delegate (
       new TiclInvalidationServiceTestDelegate());
 

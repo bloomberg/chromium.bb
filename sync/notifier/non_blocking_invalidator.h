@@ -17,11 +17,11 @@
 #include "base/memory/weak_ptr.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "sync/base/sync_export.h"
-#include "sync/internal_api/public/util/weak_handle.h"
-#include "sync/notifier/invalidation_handler.h"
 #include "sync/notifier/invalidation_state_tracker.h"
 #include "sync/notifier/invalidator.h"
 #include "sync/notifier/invalidator_registrar.h"
+#include "sync/notifier/invalidator_state.h"
+#include "sync/notifier/unacked_invalidation_set.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -38,17 +38,15 @@ typedef base::Callback<scoped_ptr<SyncNetworkChannel>(void)>
 
 class SYNC_EXPORT_PRIVATE NonBlockingInvalidator
     : public Invalidator,
-      // InvalidationHandler to "observe" our Core via WeakHandle.
-      public InvalidationHandler {
+      public InvalidationStateTracker {
  public:
-  // |invalidation_state_tracker| must be initialized.
+  // |invalidation_state_tracker| must be initialized and must outlive |this|.
   NonBlockingInvalidator(
       NetworkChannelCreator network_channel_creator,
       const std::string& invalidator_client_id,
       const UnackedInvalidationsMap& saved_invalidations,
       const std::string& invalidation_bootstrap_data,
-      const WeakHandle<InvalidationStateTracker>&
-          invalidation_state_tracker,
+      InvalidationStateTracker* invalidation_state_tracker,
       const std::string& client_info,
       const scoped_refptr<net::URLRequestContextGetter>&
           request_context_getter);
@@ -67,12 +65,6 @@ class SYNC_EXPORT_PRIVATE NonBlockingInvalidator
       base::Callback<void(const base::DictionaryValue&)> callback) const
       OVERRIDE;
 
-  // InvalidationHandler implementation.
-  virtual void OnInvalidatorStateChange(InvalidatorState state) OVERRIDE;
-  virtual void OnIncomingInvalidation(
-      const ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
-  virtual std::string GetOwnerName() const OVERRIDE;
-
   // Static functions to construct callback that creates network channel for
   // SyncSystemResources. The goal is to pass network channel to invalidator at
   // the same time not exposing channel specific parameters to invalidator and
@@ -82,11 +74,29 @@ class SYNC_EXPORT_PRIVATE NonBlockingInvalidator
   static NetworkChannelCreator MakeGCMNetworkChannelCreator(
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       scoped_ptr<GCMNetworkChannelDelegate> delegate);
+
+  // These methods are forwarded to the invalidation_state_tracker_.
+  virtual void ClearAndSetNewClientId(const std::string& data) OVERRIDE;
+  virtual std::string GetInvalidatorClientId() const OVERRIDE;
+  virtual void SetBootstrapData(const std::string& data) OVERRIDE;
+  virtual std::string GetBootstrapData() const OVERRIDE;
+  virtual void SetSavedInvalidations(
+      const UnackedInvalidationsMap& states) OVERRIDE;
+  virtual UnackedInvalidationsMap GetSavedInvalidations() const OVERRIDE;
+  virtual void Clear() OVERRIDE;
+
  private:
+  void OnInvalidatorStateChange(InvalidatorState state);
+  void OnIncomingInvalidation(const ObjectIdInvalidationMap& invalidation_map);
+  std::string GetOwnerName() const;
+
+  friend class NonBlockingInvalidatorTestDelegate;
+
   struct InitializeOptions;
   class Core;
 
   InvalidatorRegistrar registrar_;
+  InvalidationStateTracker* invalidation_state_tracker_;
 
   // The real guts of NonBlockingInvalidator, which allows this class to live
   // completely on the parent thread.
