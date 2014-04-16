@@ -1138,7 +1138,7 @@ scoped_refptr<RasterTask> TileManager::CreateRasterTask(Tile* tile) {
   // Note that this last optimization is a heuristic that ensures that we don't
   // spend too much time analyzing tiles on a multitude of small layers, as it
   // is likely that these layers have some non-solid content.
-  gfx::Size pile_size = tile->picture_pile()->size();
+  gfx::Size pile_size = tile->picture_pile()->tiling_rect().size();
   bool analyze_picture = !tile->use_gpu_rasterization() &&
                          std::min(pile_size.width(), pile_size.height()) >=
                              kMinDimensionsForAnalysis;

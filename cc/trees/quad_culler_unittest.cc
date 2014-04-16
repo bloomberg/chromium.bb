@@ -45,7 +45,7 @@ class QuadCullerTest : public testing::Test {
         TiledLayerImpl::Create(host_impl_.active_tree(), layer_id_++);
     scoped_ptr<LayerTilingData> tiler = LayerTilingData::Create(
         gfx::Size(100, 100), LayerTilingData::NO_BORDER_TEXELS);
-    tiler->SetBounds(layer_rect.size());
+    tiler->SetTilingRect(layer_rect);
     layer->SetTilingData(*tiler);
     layer->set_skips_draw(false);
     layer->SetDrawsContent(true);

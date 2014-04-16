@@ -20,7 +20,7 @@ scoped_refptr<FakePicturePileImpl> FakePicturePileImpl::CreateFilledPile(
     const gfx::Size& tile_size,
     const gfx::Size& layer_bounds) {
   scoped_refptr<FakePicturePileImpl> pile(new FakePicturePileImpl());
-  pile->tiling().SetTotalSize(layer_bounds);
+  pile->tiling().SetTilingRect(gfx::Rect(layer_bounds));
   pile->tiling().SetMaxTextureSize(tile_size);
   pile->SetTileGridSize(ImplSidePaintingSettings().default_tile_size);
   pile->recorded_viewport_ = gfx::Rect(layer_bounds);
@@ -36,7 +36,7 @@ scoped_refptr<FakePicturePileImpl> FakePicturePileImpl::CreateEmptyPile(
     const gfx::Size& tile_size,
     const gfx::Size& layer_bounds) {
   scoped_refptr<FakePicturePileImpl> pile(new FakePicturePileImpl());
-  pile->tiling().SetTotalSize(layer_bounds);
+  pile->tiling().SetTilingRect(gfx::Rect(layer_bounds));
   pile->tiling().SetMaxTextureSize(tile_size);
   pile->SetTileGridSize(ImplSidePaintingSettings().default_tile_size);
   pile->recorded_viewport_ = gfx::Rect();
@@ -49,7 +49,7 @@ FakePicturePileImpl::CreateEmptyPileThatThinksItHasRecordings(
     const gfx::Size& tile_size,
     const gfx::Size& layer_bounds) {
   scoped_refptr<FakePicturePileImpl> pile(new FakePicturePileImpl());
-  pile->tiling().SetTotalSize(layer_bounds);
+  pile->tiling().SetTilingRect(gfx::Rect(layer_bounds));
   pile->tiling().SetMaxTextureSize(tile_size);
   pile->SetTileGridSize(ImplSidePaintingSettings().default_tile_size);
   // This simulates a false positive for this flag.
@@ -63,8 +63,8 @@ FakePicturePileImpl::CreateInfiniteFilledPile() {
   scoped_refptr<FakePicturePileImpl> pile(new FakePicturePileImpl());
   gfx::Size size(std::numeric_limits<int>::max(),
                  std::numeric_limits<int>::max());
-  pile->Resize(size);
-  pile->tiling().SetTotalSize(size);
+  pile->SetTilingRect(gfx::Rect(size));
+  pile->tiling().SetTilingRect(gfx::Rect(size));
   pile->tiling().SetMaxTextureSize(size);
   pile->SetTileGridSize(size);
   pile->recorded_viewport_ = gfx::Rect(size);

@@ -219,10 +219,10 @@ class PictureLayerTilingSetSyncTest : public testing::Test {
 
   void ValidateTiling(const PictureLayerTiling* tiling,
                       const PicturePileImpl* pile) const {
-    if (tiling->ContentRect().IsEmpty())
+    if (tiling->TilingRect().IsEmpty())
       EXPECT_TRUE(tiling->live_tiles_rect().IsEmpty());
     else if (!tiling->live_tiles_rect().IsEmpty())
-      EXPECT_TRUE(tiling->ContentRect().Contains(tiling->live_tiles_rect()));
+      EXPECT_TRUE(tiling->TilingRect().Contains(tiling->live_tiles_rect()));
 
     std::vector<Tile*> tiles = tiling->AllTilesForTesting();
     for (size_t i = 0; i < tiles.size(); ++i) {

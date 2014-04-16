@@ -60,7 +60,7 @@ PictureLayerTiling::PictureLayerTiling(float contents_scale,
       layer_bounds_(layer_bounds),
       resolution_(NON_IDEAL_RESOLUTION),
       client_(client),
-      tiling_data_(gfx::Size(), gfx::Size(), true),
+      tiling_data_(gfx::Size(), gfx::Rect(), true),
       last_impl_frame_time_in_seconds_(0.0),
       eviction_tiles_cache_valid_(false),
       eviction_cache_tree_priority_(SAME_PRIORITY_FOR_BOTH_TREES) {
@@ -74,7 +74,7 @@ PictureLayerTiling::PictureLayerTiling(float contents_scale,
       " Layer bounds: " << layer_bounds.ToString() <<
       " Contents scale: " << contents_scale;
 
-  tiling_data_.SetTotalSize(content_bounds);
+  tiling_data_.SetTilingRect(gfx::Rect(content_bounds));
   tiling_data_.SetMaxTextureSize(tile_size);
 }
 
@@ -85,12 +85,8 @@ void PictureLayerTiling::SetClient(PictureLayerTilingClient* client) {
   client_ = client;
 }
 
-gfx::Rect PictureLayerTiling::ContentRect() const {
-  return gfx::Rect(tiling_data_.total_size());
-}
-
-gfx::SizeF PictureLayerTiling::ContentSizeF() const {
-  return gfx::ScaleSize(layer_bounds_, contents_scale_);
+gfx::Rect PictureLayerTiling::TilingRect() const {
+  return tiling_data_.tiling_rect();
 }
 
 Tile* PictureLayerTiling::CreateTile(int i,
@@ -159,13 +155,12 @@ void PictureLayerTiling::SetLayerBounds(const gfx::Size& layer_bounds) {
 
   gfx::Size old_layer_bounds = layer_bounds_;
   layer_bounds_ = layer_bounds;
-  gfx::Size old_content_bounds = tiling_data_.total_size();
   gfx::Size content_bounds =
       gfx::ToCeiledSize(gfx::ScaleSize(layer_bounds_, contents_scale_));
 
   gfx::Size tile_size = client_->CalculateTileSize(content_bounds);
   if (tile_size != tiling_data_.max_texture_size()) {
-    tiling_data_.SetTotalSize(content_bounds);
+    tiling_data_.SetTilingRect(gfx::Rect(content_bounds));
     tiling_data_.SetMaxTextureSize(tile_size);
     Reset();
     return;
@@ -175,7 +170,7 @@ void PictureLayerTiling::SetLayerBounds(const gfx::Size& layer_bounds) {
   gfx::Rect bounded_live_tiles_rect(live_tiles_rect_);
   bounded_live_tiles_rect.Intersect(gfx::Rect(content_bounds));
   SetLiveTilesRect(bounded_live_tiles_rect);
-  tiling_data_.SetTotalSize(content_bounds);
+  tiling_data_.SetTilingRect(gfx::Rect(content_bounds));
 
   // Create tiles for newly exposed areas.
   Region layer_region((gfx::Rect(layer_bounds_)));
@@ -253,11 +248,6 @@ PictureLayerTiling::CoverageIterator::CoverageIterator(
     return;
 
   dest_to_content_scale_ = tiling_->contents_scale_ / dest_scale;
-  // This is the maximum size that the dest rect can be, given the content size.
-  gfx::Size dest_content_size = gfx::ToCeiledSize(gfx::ScaleSize(
-      tiling_->ContentRect().size(),
-      1 / dest_to_content_scale_,
-      1 / dest_to_content_scale_));
 
   gfx::Rect content_rect =
       gfx::ScaleToEnclosingRect(dest_rect_,
@@ -265,7 +255,7 @@ PictureLayerTiling::CoverageIterator::CoverageIterator(
                                 dest_to_content_scale_);
   // IndexFromSrcCoord clamps to valid tile ranges, so it's necessary to
   // check for non-intersection first.
-  content_rect.Intersect(gfx::Rect(tiling_->tiling_data_.total_size()));
+  content_rect.Intersect(tiling_->TilingRect());
   if (content_rect.IsEmpty())
     return;
 
@@ -367,7 +357,7 @@ gfx::RectF PictureLayerTiling::CoverageIterator::texture_rect() const {
   texture_rect.Scale(dest_to_content_scale_,
                      dest_to_content_scale_);
   texture_rect.Offset(-tex_origin.OffsetFromOrigin());
-  texture_rect.Intersect(tiling_->ContentRect());
+  texture_rect.Intersect(tiling_->TilingRect());
 
   return texture_rect;
 }
@@ -443,7 +433,7 @@ void PictureLayerTiling::UpdateTilePriorities(
   gfx::Rect visible_rect_in_content_space =
       gfx::ScaleToEnclosingRect(visible_layer_rect, contents_scale_);
 
-  if (ContentRect().IsEmpty()) {
+  if (TilingRect().IsEmpty()) {
     last_impl_frame_time_in_seconds_ = current_frame_time_in_seconds;
     last_visible_rect_in_content_space_ = visible_rect_in_content_space;
     return;
@@ -462,10 +452,10 @@ void PictureLayerTiling::UpdateTilePriorities(
   gfx::Rect eventually_rect =
       ExpandRectEquallyToAreaBoundedBy(visible_rect_in_content_space,
                                        eventually_rect_area,
-                                       ContentRect(),
+                                       TilingRect(),
                                        &expansion_cache_);
 
-  DCHECK(eventually_rect.IsEmpty() || ContentRect().Contains(eventually_rect));
+  DCHECK(eventually_rect.IsEmpty() || TilingRect().Contains(eventually_rect));
 
   SetLiveTilesRect(eventually_rect);
 
@@ -541,7 +531,7 @@ void PictureLayerTiling::UpdateTilePriorities(
 void PictureLayerTiling::SetLiveTilesRect(
     const gfx::Rect& new_live_tiles_rect) {
   DCHECK(new_live_tiles_rect.IsEmpty() ||
-         ContentRect().Contains(new_live_tiles_rect));
+         TilingRect().Contains(new_live_tiles_rect));
   if (live_tiles_rect_ == new_live_tiles_rect)
     return;
 
@@ -609,8 +599,7 @@ scoped_ptr<base::Value> PictureLayerTiling::AsValue() const {
   scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
   state->SetInteger("num_tiles", tiles_.size());
   state->SetDouble("content_scale", contents_scale_);
-  state->Set("content_bounds",
-             MathUtil::AsValue(ContentRect().size()).release());
+  state->Set("tiling_rect", MathUtil::AsValue(TilingRect()).release());
   return state.PassAs<base::Value>();
 }
 

@@ -29,8 +29,8 @@ class CC_EXPORT PicturePileBase : public base::RefCounted<PicturePileBase> {
   explicit PicturePileBase(const PicturePileBase* other);
   PicturePileBase(const PicturePileBase* other, unsigned thread_index);
 
-  void Resize(const gfx::Size& size);
-  gfx::Size size() const { return tiling_.total_size(); }
+  void SetTilingRect(const gfx::Rect& tiling_rect);
+  gfx::Rect tiling_rect() const { return tiling_.tiling_rect(); }
   void SetMinContentsScale(float min_contents_scale);
 
   int num_tiles_x() const { return tiling_.num_tiles_x(); }

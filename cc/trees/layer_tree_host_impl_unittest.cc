@@ -1538,7 +1538,7 @@ class DidDrawCheckLayer : public TiledLayerImpl {
     scoped_ptr<LayerTilingData> tiler =
         LayerTilingData::Create(gfx::Size(100, 100),
                                 LayerTilingData::HAS_BORDER_TEXELS);
-    tiler->SetBounds(content_bounds());
+    tiler->SetTilingRect(gfx::Rect(content_bounds()));
     SetTilingData(*tiler.get());
   }
 
@@ -1749,7 +1749,7 @@ class MissingTextureAnimatingLayer : public DidDrawCheckLayer {
     scoped_ptr<LayerTilingData> tiling_data =
         LayerTilingData::Create(gfx::Size(10, 10),
                                 LayerTilingData::NO_BORDER_TEXELS);
-    tiling_data->SetBounds(bounds());
+    tiling_data->SetTilingRect(gfx::Rect(bounds()));
     SetTilingData(*tiling_data.get());
     set_skips_draw(skips_draw);
     if (!tile_missing) {

@@ -44,12 +44,12 @@ class PicturePileTest : public testing::Test {
         min_scale_(0.125),
         frame_number_(0),
         contents_opaque_(false) {
-    pile_->Resize(pile_->tiling().max_texture_size());
+    pile_->SetTilingRect(gfx::Rect(pile_->tiling().max_texture_size()));
     pile_->SetTileGridSize(gfx::Size(1000, 1000));
     pile_->SetMinContentsScale(min_scale_);
   }
 
-  gfx::Rect layer_rect() const { return gfx::Rect(pile_->size()); }
+  gfx::Rect tiling_rect() const { return pile_->tiling_rect(); }
 
   bool Update(const Region& invalidation, const gfx::Rect& visible_layer_rect) {
     frame_number_++;
@@ -63,7 +63,7 @@ class PicturePileTest : public testing::Test {
                          &stats_instrumentation_);
   }
 
-  bool UpdateWholeLayer() { return Update(layer_rect(), layer_rect()); }
+  bool UpdateWholePile() { return Update(tiling_rect(), tiling_rect()); }
 
   FakeContentLayerClient client_;
   FakeRenderingStatsInstrumentation stats_instrumentation_;
@@ -75,11 +75,11 @@ class PicturePileTest : public testing::Test {
 };
 
 TEST_F(PicturePileTest, SmallInvalidateInflated) {
-  UpdateWholeLayer();
+  UpdateWholePile();
 
   // Invalidate something inside a tile.
   gfx::Rect invalidate_rect(50, 50, 1, 1);
-  Update(invalidate_rect, layer_rect());
+  Update(invalidate_rect, tiling_rect());
 
   EXPECT_EQ(1, pile_->tiling().num_tiles_x());
   EXPECT_EQ(1, pile_->tiling().num_tiles_y());
@@ -98,11 +98,11 @@ TEST_F(PicturePileTest, SmallInvalidateInflated) {
 }
 
 TEST_F(PicturePileTest, LargeInvalidateInflated) {
-  UpdateWholeLayer();
+  UpdateWholePile();
 
   // Invalidate something inside a tile.
   gfx::Rect invalidate_rect(50, 50, 100, 100);
-  Update(invalidate_rect, layer_rect());
+  Update(invalidate_rect, tiling_rect());
 
   EXPECT_EQ(1, pile_->tiling().num_tiles_x());
   EXPECT_EQ(1, pile_->tiling().num_tiles_y());
@@ -114,15 +114,16 @@ TEST_F(PicturePileTest, LargeInvalidateInflated) {
   int expected_inflation = pile_->buffer_pixels();
 
   Picture* base_picture = picture_info.GetPicture();
-  gfx::Rect base_picture_rect(pile_->size());
+  gfx::Rect base_picture_rect = pile_->tiling_rect();
   base_picture_rect.Inset(-expected_inflation, -expected_inflation);
   EXPECT_EQ(base_picture_rect.ToString(),
             base_picture->LayerRect().ToString());
 }
 
 TEST_F(PicturePileTest, InvalidateOnTileBoundaryInflated) {
-  gfx::Size layer_size = gfx::ToFlooredSize(gfx::ScaleSize(pile_->size(), 2.f));
-  pile_->Resize(layer_size);
+  gfx::Rect new_tiling_rect =
+      gfx::ToEnclosedRect(gfx::ScaleRect(pile_->tiling_rect(), 2.f));
+  pile_->SetTilingRect(new_tiling_rect);
 
   // Due to border pixels, we should have 3 tiles.
   EXPECT_EQ(3, pile_->tiling().num_tiles_x());
@@ -133,11 +134,11 @@ TEST_F(PicturePileTest, InvalidateOnTileBoundaryInflated) {
   EXPECT_EQ(7, pile_->tiling().border_texels());
 
   // Update the whole layer to create initial pictures.
-  UpdateWholeLayer();
+  UpdateWholePile();
 
   // Invalidate everything again to have a non zero invalidation
   // frequency.
-  UpdateWholeLayer();
+  UpdateWholePile();
 
   // Invalidate something just over a tile boundary by a single pixel.
   // This will invalidate the tile (1, 1), as well as 1 row of pixels in (1, 0).
@@ -146,7 +147,7 @@ TEST_F(PicturePileTest, InvalidateOnTileBoundaryInflated) {
       pile_->tiling().TileBoundsWithBorder(0, 0).bottom() - 1,
       50,
       50);
-  Update(invalidate_rect, layer_rect());
+  Update(invalidate_rect, tiling_rect());
 
   for (int i = 0; i < pile_->tiling().num_tiles_x(); ++i) {
     for (int j = 0; j < pile_->tiling().num_tiles_y(); ++j) {
@@ -171,14 +172,16 @@ TEST_F(PicturePileTest, InvalidateOnTileBoundaryInflated) {
 }
 
 TEST_F(PicturePileTest, StopRecordingOffscreenInvalidations) {
-  gfx::Size layer_size = gfx::ToFlooredSize(gfx::ScaleSize(pile_->size(), 4.f));
-  pile_->Resize(layer_size);
+  gfx::Rect new_tiling_rect =
+      gfx::ToEnclosedRect(gfx::ScaleRect(pile_->tiling_rect(), 4.f));
+  pile_->SetTilingRect(new_tiling_rect);
 
-  gfx::Rect viewport(0, 0, layer_size.width(), 1);
+  gfx::Rect viewport(
+      tiling_rect().x(), tiling_rect().y(), tiling_rect().width(), 1);
 
-  // Update the whole layer until the invalidation frequency is high.
+  // Update the whole pile until the invalidation frequency is high.
   for (int frame = 0; frame < 33; ++frame) {
-    UpdateWholeLayer();
+    UpdateWholePile();
   }
 
   // Make sure we have a high invalidation frequency.
@@ -193,8 +196,9 @@ TEST_F(PicturePileTest, StopRecordingOffscreenInvalidations) {
     }
   }
 
-  // Update once more with a small viewport 0,0 layer_width by 1
-  Update(layer_rect(), viewport);
+  // Update once more with a small viewport tiilng_rect.x(), tiilng_rect.y(),
+  // tiling_rect.width() by 1
+  Update(tiling_rect(), viewport);
 
   for (int i = 0; i < pile_->tiling().num_tiles_x(); ++i) {
     for (int j = 0; j < pile_->tiling().num_tiles_y(); ++j) {
@@ -214,7 +218,7 @@ TEST_F(PicturePileTest, StopRecordingOffscreenInvalidations) {
   }
 
   // Now update with no invalidation and full viewport
-  Update(gfx::Rect(), layer_rect());
+  Update(gfx::Rect(), tiling_rect());
 
   for (int i = 0; i < pile_->tiling().num_tiles_x(); ++i) {
     for (int j = 0; j < pile_->tiling().num_tiles_y(); ++j) {
@@ -238,7 +242,7 @@ TEST_F(PicturePileTest, StopRecordingOffscreenInvalidations) {
 }
 
 TEST_F(PicturePileTest, ClearingInvalidatesRecordedRect) {
-  UpdateWholeLayer();
+  UpdateWholePile();
 
   gfx::Rect rect(0, 0, 5, 5);
   EXPECT_TRUE(pile_->CanRasterLayerRect(rect));
@@ -257,8 +261,9 @@ TEST_F(PicturePileTest, FrequentInvalidationCanRaster) {
   // and doesn't get re-recorded, then CanRaster is not true for any
   // tiles touching it, but is true for adjacent tiles, even if it
   // overlaps on borders (edge case).
-  gfx::Size layer_size = gfx::ToFlooredSize(gfx::ScaleSize(pile_->size(), 4.f));
-  pile_->Resize(layer_size);
+  gfx::Rect new_tiling_rect =
+      gfx::ToEnclosedRect(gfx::ScaleRect(pile_->tiling_rect(), 4.f));
+  pile_->SetTilingRect(new_tiling_rect);
 
   gfx::Rect tile01_borders = pile_->tiling().TileBoundsWithBorder(0, 1);
   gfx::Rect tile02_borders = pile_->tiling().TileBoundsWithBorder(0, 2);
@@ -269,7 +274,7 @@ TEST_F(PicturePileTest, FrequentInvalidationCanRaster) {
   // what the test is trying to repro.
   EXPECT_TRUE(tile01_borders.Intersects(tile02_borders));
   EXPECT_FALSE(tile01_noborders.Intersects(tile02_noborders));
-  UpdateWholeLayer();
+  UpdateWholePile();
   EXPECT_TRUE(pile_->CanRasterLayerRect(tile01_noborders));
   EXPECT_TRUE(pile_->CanRasterSlowTileCheck(tile01_noborders));
   EXPECT_TRUE(pile_->CanRasterLayerRect(tile02_noborders));
@@ -280,12 +285,12 @@ TEST_F(PicturePileTest, FrequentInvalidationCanRaster) {
 
   // Update the whole layer until the invalidation frequency is high.
   for (int frame = 0; frame < 33; ++frame) {
-    UpdateWholeLayer();
+    UpdateWholePile();
   }
 
   // Update once more with a small viewport.
-  gfx::Rect viewport(0, 0, layer_size.width(), 1);
-  Update(layer_rect(), viewport);
+  gfx::Rect viewport(0, 0, tiling_rect().width(), 1);
+  Update(tiling_rect(), viewport);
 
   // Sanity check some pictures exist and others don't.
   EXPECT_TRUE(pile_->picture_map()
@@ -305,15 +310,15 @@ TEST_F(PicturePileTest, NoInvalidationValidViewport) {
   // This test validates that the recorded_viewport cache of full tiles
   // is still valid for some use cases.  If it's not, it's a performance
   // issue because CanRaster checks will go down the slow path.
-  UpdateWholeLayer();
+  UpdateWholePile();
   EXPECT_TRUE(!pile_->recorded_viewport().IsEmpty());
 
   // No invalidation, same viewport.
-  Update(gfx::Rect(), layer_rect());
+  Update(gfx::Rect(), tiling_rect());
   EXPECT_TRUE(!pile_->recorded_viewport().IsEmpty());
 
   // Partial invalidation, same viewport.
-  Update(gfx::Rect(gfx::Rect(0, 0, 1, 1)), layer_rect());
+  Update(gfx::Rect(gfx::Rect(0, 0, 1, 1)), tiling_rect());
   EXPECT_TRUE(!pile_->recorded_viewport().IsEmpty());
 
   // No invalidation, changing viewport.

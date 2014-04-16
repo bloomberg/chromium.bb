@@ -17,9 +17,20 @@ class FakePictureLayerImpl : public PictureLayerImpl {
     return make_scoped_ptr(new FakePictureLayerImpl(tree_impl, id));
   }
 
+  // Create layer from a pile that covers the entire layer.
   static scoped_ptr<FakePictureLayerImpl> CreateWithPile(
       LayerTreeImpl* tree_impl, int id, scoped_refptr<PicturePileImpl> pile) {
     return make_scoped_ptr(new FakePictureLayerImpl(tree_impl, id, pile));
+  }
+
+  // Create layer from a pile that only covers part of the layer.
+  static scoped_ptr<FakePictureLayerImpl> CreateWithPartialPile(
+      LayerTreeImpl* tree_impl,
+      int id,
+      scoped_refptr<PicturePileImpl> pile,
+      const gfx::Size& layer_bounds) {
+    return make_scoped_ptr(
+        new FakePictureLayerImpl(tree_impl, id, pile, layer_bounds));
   }
 
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
@@ -69,6 +80,10 @@ class FakePictureLayerImpl : public PictureLayerImpl {
       LayerTreeImpl* tree_impl,
       int id,
       scoped_refptr<PicturePileImpl> pile);
+  FakePictureLayerImpl(LayerTreeImpl* tree_impl,
+                       int id,
+                       scoped_refptr<PicturePileImpl> pile,
+                       const gfx::Size& layer_bounds);
   FakePictureLayerImpl(LayerTreeImpl* tree_impl, int id);
 
  private:

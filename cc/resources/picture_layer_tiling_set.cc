@@ -77,7 +77,7 @@ void PictureLayerTilingSet::SyncTilings(
       this_tiling->CreateMissingTilesInLiveTilesRect();
 
       DCHECK(this_tiling->tile_size() ==
-             client_->CalculateTileSize(this_tiling->ContentRect().size()));
+             client_->CalculateTileSize(this_tiling->TilingRect().size()));
       continue;
     }
     scoped_ptr<PictureLayerTiling> new_tiling = PictureLayerTiling::Create(

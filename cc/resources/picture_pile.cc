@@ -165,7 +165,7 @@ bool PicturePile::Update(ContentLayerClient* painter,
       -kPixelDistanceToRecord,
       -kPixelDistanceToRecord);
   recorded_viewport_ = interest_rect;
-  recorded_viewport_.Intersect(gfx::Rect(size()));
+  recorded_viewport_.Intersect(tiling_rect());
 
   bool invalidated = false;
   for (Region::Iterator i(invalidation); i.has_rect(); i.next()) {
