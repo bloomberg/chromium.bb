@@ -64,8 +64,6 @@ public:
     virtual void setAcceleratedCompositingForFixedRootBackgroundEnabled(bool) OVERRIDE;
     virtual void setAcceleratedCompositingForGpuRasterizationHintEnabled(bool) OVERRIDE;
     virtual void setAcceleratedCompositingForPluginsEnabled(bool) OVERRIDE;
-    // FIXME: Remove this method after updating Chromium code. crbug.com/304900.
-    virtual void setAcceleratedCompositingForScrollableFramesEnabled(bool) OVERRIDE { }
     virtual void setAcceleratedCompositingForVideoEnabled(bool) OVERRIDE;
     virtual void setAllowDisplayOfInsecureContent(bool) OVERRIDE;
     virtual void setAllowFileAccessFromFileURLs(bool) OVERRIDE;
