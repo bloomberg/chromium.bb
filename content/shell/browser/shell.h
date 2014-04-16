@@ -57,6 +57,9 @@ class Shell : public WebContentsDelegate,
 
   void LoadURL(const GURL& url);
   void LoadURLForFrame(const GURL& url, const std::string& frame_name);
+  void LoadDataWithBaseURL(const GURL& url,
+                           const std::string& data,
+                           const GURL& base_url);
   void GoBackOrForward(int offset);
   void Reload();
   void Stop();

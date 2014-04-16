@@ -176,6 +176,25 @@ void GetRedirectChain(WebDataSource* ds, std::vector<GURL>* result) {
   }
 }
 
+// Returns the original request url. If there is no redirect, the original
+// url is the same as ds->request()->url(). If the WebDataSource belongs to a
+// frame was loaded by loadData, the original url will be ds->unreachableURL()
+static GURL GetOriginalRequestURL(WebDataSource* ds) {
+  // WebDataSource has unreachable URL means that the frame is loaded through
+  // blink::WebFrame::loadData(), and the base URL will be in the redirect
+  // chain. However, we never visited the baseURL. So in this case, we should
+  // use the unreachable URL as the original URL.
+  if (ds->hasUnreachableURL())
+    return ds->unreachableURL();
+
+  std::vector<GURL> redirects;
+  GetRedirectChain(ds, &redirects);
+  if (!redirects.empty())
+    return redirects.at(0);
+
+  return ds->originalRequest().url();
+}
+
 NOINLINE static void CrashIntentionally() {
   // NOTE(shess): Crash directly rather than using NOTREACHED() so
   // that the signature is easier to triage in crash reports.
@@ -2642,7 +2661,6 @@ void RenderFrameImpl::UpdateURL(blink::WebFrame* frame) {
   DCHECK(ds);
 
   const WebURLRequest& request = ds->request();
-  const WebURLRequest& original_request = ds->originalRequest();
   const WebURLResponse& response = ds->response();
 
   DocumentState* document_state = DocumentState::FromDataSource(ds);
@@ -2763,10 +2781,7 @@ void RenderFrameImpl::UpdateURL(blink::WebFrame* frame) {
     // Track the URL of the original request.  We use the first entry of the
     // redirect chain if it exists because the chain may have started in another
     // process.
-    if (params.redirects.size() > 0)
-      params.original_request_url = params.redirects.at(0);
-    else
-      params.original_request_url = original_request.url();
+    params.original_request_url = GetOriginalRequestURL(ds);
 
     params.history_list_was_cleared =
         navigation_state->history_list_was_cleared();

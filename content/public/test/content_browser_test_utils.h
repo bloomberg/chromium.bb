@@ -42,6 +42,10 @@ GURL GetTestUrl(const char* dir, const char* file);
 // Navigates the selected tab of |window| to |url|, blocking until the
 // navigation finishes.
 void NavigateToURL(Shell* window, const GURL& url);
+void LoadDataWithBaseURL(Shell* window,
+                         const GURL& url,
+                         const std::string data,
+                         const GURL& base_url);
 
 // Navigates the selected tab of |window| to |url|, blocking until the given
 // number of navigations finishes.

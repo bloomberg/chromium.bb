@@ -179,6 +179,18 @@ void Shell::LoadURLForFrame(const GURL& url, const std::string& frame_name) {
   web_contents_->GetView()->Focus();
 }
 
+void Shell::LoadDataWithBaseURL(const GURL& url, const std::string& data,
+    const GURL& base_url) {
+  const GURL data_url = GURL("data:text/html;charset=utf-8," + data);
+  NavigationController::LoadURLParams params(data_url);
+  params.load_type = NavigationController::LOAD_TYPE_DATA;
+  params.base_url_for_data_url = base_url;
+  params.virtual_url_for_data_url = url;
+  params.override_user_agent = NavigationController::UA_OVERRIDE_FALSE;
+  web_contents_->GetController().LoadURLWithParams(params);
+  web_contents_->GetView()->Focus();
+}
+
 void Shell::AddNewContents(WebContents* source,
                            WebContents* new_contents,
                            WindowOpenDisposition disposition,
