@@ -40,6 +40,10 @@ cr.define('cr.ui', function() {
     // logged in and the screen is "locked", so we must re-enabled it
     $('add-user-header-bar-item').hidden = false;
 
+    // Disable the context menu, as the Print/Inspect element items don't
+    // make sense when displayed as a widget.
+    document.addEventListener('contextmenu', function(e) {e.preventDefault();});
+
     var hash = window.location.hash;
     if (hash && hash == '#tutorial')
       UserManagerTutorial.startTutorial();
