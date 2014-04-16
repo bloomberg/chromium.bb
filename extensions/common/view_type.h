@@ -20,9 +20,6 @@ enum ViewType {
   VIEW_TYPE_EXTENSION_DIALOG,
   VIEW_TYPE_EXTENSION_INFOBAR,
   VIEW_TYPE_EXTENSION_POPUP,
-  // TODO(jam): remove this once http://crbug.com/137297 is fixed and HTML5
-  // notifications don't use WebContents.
-  VIEW_TYPE_NOTIFICATION,
   VIEW_TYPE_PANEL,
   VIEW_TYPE_TAB_CONTENTS,
   VIEW_TYPE_VIRTUAL_KEYBOARD,
@@ -36,7 +33,6 @@ extern const char kViewTypeAppWindow[];
 extern const char kViewTypeBackgroundPage[];
 extern const char kViewTypeExtensionDialog[];
 extern const char kViewTypeInfobar[];
-extern const char kViewTypeNotification[];
 extern const char kViewTypePanel[];
 extern const char kViewTypePopup[];
 extern const char kViewTypeTabContents[];

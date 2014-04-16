@@ -143,8 +143,6 @@ void RuntimeCustomBindings::GetExtensionViews(
     view_type = VIEW_TYPE_EXTENSION_BACKGROUND_PAGE;
   } else if (view_type_string == kViewTypeInfobar) {
     view_type = VIEW_TYPE_EXTENSION_INFOBAR;
-  } else if (view_type_string == kViewTypeNotification) {
-    view_type = VIEW_TYPE_NOTIFICATION;
   } else if (view_type_string == kViewTypeTabContents) {
     view_type = VIEW_TYPE_TAB_CONTENTS;
   } else if (view_type_string == kViewTypePopup) {

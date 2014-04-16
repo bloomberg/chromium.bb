@@ -2353,10 +2353,6 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
     }
   }
 
-  if (view_type == extensions::VIEW_TYPE_NOTIFICATION) {
-    web_prefs->allow_scripts_to_close_windows = true;
-  }
-
 #if defined(OS_CHROMEOS)
   // Override the default of suppressing HW compositing for WebUI pages for the
   // file manager, which is implemented using WebUI but wants HW acceleration

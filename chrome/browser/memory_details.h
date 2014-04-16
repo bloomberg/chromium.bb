@@ -26,7 +26,6 @@ struct ProcessMemoryInformation {
     RENDERER_EXTENSION,     // chrome-extension://
     RENDERER_DEVTOOLS,      // Web inspector
     RENDERER_INTERSTITIAL,  // malware/phishing interstitial
-    RENDERER_NOTIFICATION,  // HTML notification bubble
     RENDERER_BACKGROUND_APP // hosted app background page
   };
 

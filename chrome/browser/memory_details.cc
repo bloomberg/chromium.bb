@@ -59,8 +59,6 @@ std::string ProcessMemoryInformation::GetRendererTypeNameInEnglish(
       return "Devtools";
     case RENDERER_INTERSTITIAL:
       return "Interstitial";
-    case RENDERER_NOTIFICATION:
-      return "Notification";
     case RENDERER_BACKGROUND_APP:
       return "Background App";
     case RENDERER_UNKNOWN:
@@ -300,13 +298,6 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
         process.titles.push_back(base::UTF8ToUTF16(url.spec()));
         process.renderer_type =
             ProcessMemoryInformation::RENDERER_BACKGROUND_APP;
-        continue;
-      }
-
-      if (type == extensions::VIEW_TYPE_NOTIFICATION) {
-        process.titles.push_back(base::UTF8ToUTF16(url.spec()));
-        process.renderer_type =
-            ProcessMemoryInformation::RENDERER_NOTIFICATION;
         continue;
       }
 
