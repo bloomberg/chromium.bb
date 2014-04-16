@@ -1375,7 +1375,7 @@
           # TODO(glider): set clang to 1 earlier for ASan and TSan builds so
           # that it takes effect here.
           ['clang==0 and asan==0 and lsan==0 and tsan==0 and msan==0', {
-            'binutils_version%': '<!(python <(DEPTH)/build/compiler_version.py assembler)',
+            'binutils_version%': '<!pymod_do_main(compiler_version assembler)', 
           }],
           # On Android we know the binutils version in the toolchain.
           ['OS=="android"', {
@@ -1412,7 +1412,7 @@
               }],
             ],
           }, {
-            'gcc_version%': '<!(python <(DEPTH)/build/compiler_version.py)',
+            'gcc_version%': '<!pymod_do_main(compiler_version)',
           }],
         ],
       }, {

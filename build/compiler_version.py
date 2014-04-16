@@ -15,8 +15,15 @@ import subprocess
 import sys
 
 
+compiler_version_cache = {}  # Map from (compiler, tool) -> version.
+
+
 def GetVersion(compiler, tool):
   tool_output = tool_error = None
+  cache_key = (compiler, tool)
+  cached_version = compiler_version_cache.get(cache_key)
+  if cached_version:
+    return cached_version
   try:
     # Note that compiler could be something tricky like "distcc g++".
     if tool == "compiler":
@@ -43,14 +50,20 @@ def GetVersion(compiler, tool):
     else:
       raise Exception("Unknown tool %s" % tool)
 
-    pipe = subprocess.Popen(compiler, shell=True,
+    # Force the locale to C otherwise the version string could be localized
+    # making regex matching fail.
+    env = os.environ.copy()
+    env["LC_ALL"] = "C"
+    pipe = subprocess.Popen(compiler, shell=True, env=env,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     tool_output, tool_error = pipe.communicate()
     if pipe.returncode:
       raise subprocess.CalledProcessError(pipe.returncode, compiler)
 
-    result = version_re.match(tool_output)
-    return result.group(1) + result.group(2)
+    parsed_output = version_re.match(tool_output)
+    result = parsed_output.group(1) + parsed_output.group(2)
+    compiler_version_cache[cache_key] = result
+    return result
   except Exception, e:
     if tool_error:
       sys.stderr.write(tool_error)
@@ -60,32 +73,37 @@ def GetVersion(compiler, tool):
 
 
 def main(args):
-  # Force the locale to C otherwise the version string could be localized
-  # making regex matching fail.
-  os.environ["LC_ALL"] = "C"
+  ret_code, result = ExtractVersion(args)
+  if ret_code == 0:
+    print result
+  return ret_code
 
+
+def DoMain(args):
+  """Hook to be called from gyp without starting a separate python
+  interpreter."""
+  ret_code, result = ExtractVersion(args)
+  if ret_code == 0:
+    return result
+  raise Exception("Failed to extract compiler version for args: %s" % args)
+
+
+def ExtractVersion(args):
   tool = "compiler"
   if len(args) == 1:
     tool = args[0]
   elif len(args) > 1:
     print "Unknown arguments!"
 
-  # Check if CXX environment variable exists and
-  # if it does use that compiler.
-  cxx = os.getenv("CXX", None)
-  if cxx:
-    cxxversion = GetVersion(cxx, tool)
-    if cxxversion != "":
-      print cxxversion
-      return 0
-  else:
-    # Otherwise we check the g++ version.
-    gccversion = GetVersion("g++", tool)
-    if gccversion != "":
-      print gccversion
-      return 0
+  # Check if CXX environment variable exists and if it does use that
+  # compiler, otherwise check g++.
+  compiler = os.getenv("CXX", "g++")
+  if compiler:
+    compiler_version = GetVersion(compiler, tool)
+    if compiler_version != "":
+      return (0, compiler_version)
 
-  return 1
+  return (1, None)
 
 
 if __name__ == "__main__":
