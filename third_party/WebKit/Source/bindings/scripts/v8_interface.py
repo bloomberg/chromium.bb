@@ -430,7 +430,10 @@ def overload_check_argument(index, argument):
     if idl_type.is_wrapper_type:
         type_check = 'V8{idl_type}::hasInstance({cpp_value}, info.GetIsolate())'.format(idl_type=idl_type.base_type, cpp_value=cpp_value)
         if idl_type.is_nullable:
-            type_check = ' || '.join(['%s->IsNull()' % cpp_value, type_check])
+            if argument['has_default']:
+                type_check = ' || '.join(['isUndefinedOrNull(%s)' % cpp_value, type_check])
+            else:
+                type_check = ' || '.join(['%s->IsNull()' % cpp_value, type_check])
         return type_check
     if idl_type.is_interface_type:
         # Non-wrapper types are just objects: we don't distinguish type

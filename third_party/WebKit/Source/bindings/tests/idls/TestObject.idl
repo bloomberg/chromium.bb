@@ -392,6 +392,8 @@ interface TestObject {
     // overload resolution can't handle this. http://crbug.com/293561
     void overloadedMethodI(Dictionary dictionaryArg); // Non-wrapper type
     void overloadedMethodI(double doubleArg);
+    void overloadedMethodJ(long longArg);
+    void overloadedMethodJ([Default=Null] TestInterfaceEmpty? testInterfaceEmptyNullableArg);
 
 
     [PerWorldBindings] void overloadedPerWorldBindingsMethod();

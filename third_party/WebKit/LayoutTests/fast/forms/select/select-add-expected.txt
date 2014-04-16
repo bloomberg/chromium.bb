@@ -11,6 +11,7 @@ PASS addOption(3) is "0,1,2,X"
 PASS addOption(100) is "0,1,2,X"
 PASS addOption(-100) is "0,1,2,X"
 PASS getSelectOptions() is "0,1,2,X"
+PASS addOption(undefined) is "0,1,2,X"
 PASS addOption(null) is "0,1,2,X"
 PASS addOption(NaN) is "X,0,1,2"
 PASS addOption(Infinity) is "X,0,1,2"
@@ -19,6 +20,8 @@ PASS addOption("foo") is "X,0,1,2"
 PASS select.add() threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': 1 argument required, but only 0 present..
 PASS select.add("foo") threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': No function was found that matched the signature provided..
 PASS select.add("foo", 0) threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': No function was found that matched the signature provided..
+PASS select.add(undefined) threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': No function was found that matched the signature provided..
+PASS select.add(undefined, 0) threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': No function was found that matched the signature provided..
 PASS select.add(null) threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': No function was found that matched the signature provided..
 PASS select.add(null, 0) threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': No function was found that matched the signature provided..
 PASS getSelectOptions() is "0,X,Y,1,2"
@@ -30,6 +33,7 @@ PASS addOption(3) is "0,1,2,X"
 PASS addOption(100) is "0,1,2,X"
 PASS addOption(-100) is "0,1,2,X"
 PASS getSelectOptions() is "0,1,2,X"
+PASS addOption(undefined) is "0,1,2,X"
 PASS addOption(null) is "0,1,2,X"
 PASS addOption(NaN) is "X,0,1,2"
 PASS addOption(Infinity) is "X,0,1,2"
@@ -38,6 +42,8 @@ PASS addOption("foo") is "X,0,1,2"
 PASS select.add() threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': 1 argument required, but only 0 present..
 PASS select.add("foo") threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': No function was found that matched the signature provided..
 PASS select.add("foo", 0) threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': No function was found that matched the signature provided..
+PASS select.add(undefined) threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': No function was found that matched the signature provided..
+PASS select.add(undefined, 0) threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': No function was found that matched the signature provided..
 PASS select.add(null) threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': No function was found that matched the signature provided..
 PASS select.add(null, 0) threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': No function was found that matched the signature provided..
 PASS getSelectOptions() is "0,X,Y,1,2"

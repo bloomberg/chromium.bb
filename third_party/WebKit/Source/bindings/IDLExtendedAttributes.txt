@@ -47,7 +47,7 @@ ConstructorCallWith=ExecutionContext|Document
 Custom=|Getter|Setter|LegacyCallAsFunction|ToV8|VisitDOMWrapper|Wrap|PropertyGetter|PropertyEnumerator|PropertyQuery
 CustomConstructor
 CustomElementCallbacks
-Default=NullString|Undefined
+Default=Null|NullString|Undefined
 DependentLifetime
 DeprecateAs=*
 DoNotCheckConstants

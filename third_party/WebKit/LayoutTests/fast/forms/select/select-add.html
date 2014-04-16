@@ -60,6 +60,9 @@ function test(multiple) {
     shouldBeEqualToString('getSelectOptions()', '0,1,2,X');
 
     resetSelect(multiple);
+    shouldBeEqualToString('addOption(undefined)', '0,1,2,X');
+
+    resetSelect(multiple);
     shouldBeEqualToString('addOption(null)', '0,1,2,X');
 
     resetSelect(multiple);
@@ -78,6 +81,8 @@ function test(multiple) {
     shouldThrow('select.add()');
     shouldThrow('select.add("foo")');
     shouldThrow('select.add("foo", 0)');
+    shouldThrow('select.add(undefined)');
+    shouldThrow('select.add(undefined, 0)');
     shouldThrow('select.add(null)');
     shouldThrow('select.add(null, 0)');
 

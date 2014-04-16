@@ -37,7 +37,7 @@ interface HTMLSelectElement : HTMLElement {
     [RaisesException, StrictTypeChecking] setter HTMLOptionElement (unsigned long index, HTMLOptionElement? value);
     Element namedItem([Default=Undefined] optional DOMString name);
     [RaisesException] void add(HTMLElement element,
-                               [Default=Undefined] optional HTMLElement? before);
+                               [Default=Null] optional HTMLElement? before);
     [RaisesException, ImplementedAs=addBeforeOptionAtIndex] void add(HTMLElement element, long before);
     void remove(long index);
     [RaisesException] void remove();
