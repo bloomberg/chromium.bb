@@ -2597,15 +2597,16 @@ def check_check(clean_lines, line_number, error):
             break
 
 
-def check_for_comparisons_to_zero(clean_lines, line_number, error):
+def check_for_comparisons_to_boolean(clean_lines, line_number, error):
     # Get the line without comments and strings.
     line = clean_lines.elided[line_number]
 
-    # Include NULL here so that users don't have to convert NULL to 0 first and then get this error.
-    if search(r'[=!]=\s*(NULL|0|true|false)[^\w.]', line) or search(r'[^\w.](NULL|0|true|false)\s*[=!]=', line):
+    # Must include NULL here, as otherwise users will convert NULL to 0 and
+    # then we can't catch it, since it looks like a valid integer comparison.
+    if search(r'[=!]=\s*(NULL|nullptr|true|false)[^\w.]', line) or search(r'[^\w.](NULL|nullptr|true|false)\s*[=!]=', line):
         if not search('LIKELY', line) and not search('UNLIKELY', line):
-            error(line_number, 'readability/comparison_to_zero', 5,
-                  'Tests for true/false, null/non-null, and zero/non-zero should all be done without equality comparisons.')
+            error(line_number, 'readability/comparison_to_boolean', 5,
+                  'Tests for true/false and null/non-null should be done without equality comparisons.')
 
 
 def check_for_null(clean_lines, line_number, file_state, error):
@@ -2856,7 +2857,7 @@ def check_style(clean_lines, line_number, file_extension, class_state, file_stat
     check_exit_statement_simplifications(clean_lines, line_number, error)
     check_spacing(file_extension, clean_lines, line_number, error)
     check_check(clean_lines, line_number, error)
-    check_for_comparisons_to_zero(clean_lines, line_number, error)
+    check_for_comparisons_to_boolean(clean_lines, line_number, error)
     check_for_null(clean_lines, line_number, file_state, error)
     check_indentation_amount(clean_lines, line_number, error)
     check_enum_casing(clean_lines, line_number, enum_state, error)
@@ -3977,7 +3978,7 @@ class CppChecker(object):
         'readability/braces',
         'readability/casting',
         'readability/check',
-        'readability/comparison_to_zero',
+        'readability/comparison_to_boolean',
         'readability/constructors',
         'readability/control_flow',
         'readability/enum_casing',

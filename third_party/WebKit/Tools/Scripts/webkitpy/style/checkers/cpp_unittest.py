@@ -4733,39 +4733,39 @@ class WebKitStyleTest(CppStyleTestBase):
         #    false. Objective-C BOOL values should be written as YES and NO.
         # FIXME: Implement this.
 
-        # 3. Tests for true/false, null/non-null, and zero/non-zero should
-        #    all be done without equality comparisons.
-        self.assert_lint(
-            'if (count == 0)',
-            'Tests for true/false, null/non-null, and zero/non-zero should all be done without equality comparisons.'
-            '  [readability/comparison_to_zero] [5]')
+        # 3. Tests for true/false and null/non-null should be done without
+        #    equality comparisons.
         self.assert_lint_one_of_many_errors_re(
             'if (string != NULL)',
-            r'Tests for true/false, null/non-null, and zero/non-zero should all be done without equality comparisons\.')
+            r'Tests for true/false and null/non-null should be done without equality comparisons\.')
+        self.assert_lint(
+            'if (p == nullptr)',
+            'Tests for true/false and null/non-null should be done without equality comparisons.'
+            '  [readability/comparison_to_boolean] [5]')
         self.assert_lint(
             'if (condition == true)',
-            'Tests for true/false, null/non-null, and zero/non-zero should all be done without equality comparisons.'
-            '  [readability/comparison_to_zero] [5]')
+            'Tests for true/false and null/non-null should be done without equality comparisons.'
+            '  [readability/comparison_to_boolean] [5]')
         self.assert_lint(
             'if (myVariable != /* Why would anyone put a comment here? */ false)',
-            'Tests for true/false, null/non-null, and zero/non-zero should all be done without equality comparisons.'
-            '  [readability/comparison_to_zero] [5]')
+            'Tests for true/false and null/non-null should be done without equality comparisons.'
+            '  [readability/comparison_to_boolean] [5]')
 
-        self.assert_lint(
-            'if (0 /* This comment also looks odd to me. */ != aLongerVariableName)',
-            'Tests for true/false, null/non-null, and zero/non-zero should all be done without equality comparisons.'
-            '  [readability/comparison_to_zero] [5]')
         self.assert_lint_one_of_many_errors_re(
             'if (NULL == thisMayBeNull)',
-            r'Tests for true/false, null/non-null, and zero/non-zero should all be done without equality comparisons\.')
+            r'Tests for true/false and null/non-null should be done without equality comparisons\.')
+        self.assert_lint(
+            'if (nullptr /* funny place for a comment */ == p)',
+            'Tests for true/false and null/non-null should be done without equality comparisons.'
+            '  [readability/comparison_to_boolean] [5]')
         self.assert_lint(
             'if (true != anotherCondition)',
-            'Tests for true/false, null/non-null, and zero/non-zero should all be done without equality comparisons.'
-            '  [readability/comparison_to_zero] [5]')
+            'Tests for true/false and null/non-null should be done without equality comparisons.'
+            '  [readability/comparison_to_boolean] [5]')
         self.assert_lint(
             'if (false == myBoolValue)',
-            'Tests for true/false, null/non-null, and zero/non-zero should all be done without equality comparisons.'
-            '  [readability/comparison_to_zero] [5]')
+            'Tests for true/false and null/non-null should be done without equality comparisons.'
+            '  [readability/comparison_to_boolean] [5]')
 
         self.assert_lint(
             'if (fontType == trueType)',
