@@ -28,7 +28,7 @@ class SmoothnessToughWebGLCases(test.Test):
 
 class SmoothnessMaps(test.Test):
   test = smoothness.Smoothness
-  page_set = 'page_sets/maps.py'
+  page_set = 'page_sets/maps.json'
 
 
 class SmoothnessKeyMobileSites(test.Test):

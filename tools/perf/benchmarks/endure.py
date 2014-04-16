@@ -29,15 +29,15 @@ class _EndureBenchmark(test.Test):
 
 
 class EndureCalendarForwardBackward(_EndureBenchmark):
-  page_set = 'page_sets/calendar_forward_backward.py'
+  page_set = 'page_sets/calendar_forward_backward.json'
 
 
 class EndureBrowserControl(_EndureBenchmark):
-  page_set = 'page_sets/browser_control.py'
+  page_set = 'page_sets/browser_control.json'
 
 
 class EndureBrowserControlClick(_EndureBenchmark):
-  page_set = 'page_sets/browser_control_click.py'
+  page_set = 'page_sets/browser_control_click.json'
 
 
 class EndureGmailAltThreadlistConversation(_EndureBenchmark):
@@ -53,11 +53,11 @@ class EndureGmailExpandCollapseConversation(_EndureBenchmark):
 
 
 class EndureIndexedDBOffline(_EndureBenchmark):
-  page_set = 'page_sets/indexeddb_offline.py'
+  page_set = 'page_sets/indexeddb_offline.json'
 
 
 class EndurePlusAltPostsPhotos(_EndureBenchmark):
-  page_set = 'page_sets/plus_alt_posts_photos.py'
+  page_set = 'page_sets/plus_alt_posts_photos.json'
 
 
 class EndureGmailRefresh(test.Test):
