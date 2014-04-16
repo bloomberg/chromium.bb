@@ -137,11 +137,8 @@ void ExternalPopupMenu::didAcceptIndex(int index)
     RefPtr<ExternalPopupMenu> guard(this);
 
     if (m_popupMenuClient) {
+        m_popupMenuClient->popupDidHide();
         m_popupMenuClient->valueChanged(index);
-        // The call to valueChanged above might have lead to a call to
-        // disconnectClient, so we might not have a PopupMenuClient anymore.
-        if (m_popupMenuClient)
-            m_popupMenuClient->popupDidHide();
     }
     m_webExternalPopupMenu = 0;
 }
