@@ -26,7 +26,7 @@
 #include "chrome/browser/sync/profile_sync_service_base.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/sync/protocol_event_observer.h"
-#include "chrome/browser/sync/sessions2/sessions_sync_manager.h"
+#include "chrome/browser/sync/sessions/sessions_sync_manager.h"
 #include "chrome/browser/sync/startup_controller.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/signin_manager_base.h"
@@ -62,7 +62,6 @@ class DeviceInfo;
 class FaviconCache;
 class JsController;
 class OpenTabsUIDelegate;
-class SessionModelAssociator;
 
 namespace sessions {
 class SyncSessionSnapshot;
@@ -314,17 +313,6 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // some point in the future.  This function call does not enable or activate
   // the syncing of this type
   void RegisterNonBlockingType(syncer::ModelType type);
-
-  // Returns the session model associator associated with this type, but only if
-  // the associator is running.  If it is doing anything else, it will return
-  // null.
-  //
-  // *** DONT USE THIS ANYMORE! ***
-  // If you think you want to use this, think again! Can you use
-  // GetOpenTabsUIDelegate instead?
-  // TODO(tim): Remove this method.
-  virtual browser_sync::SessionModelAssociator*
-      GetSessionModelAssociatorDeprecated();
 
   // Return the active OpenTabsUIDelegate. If sessions is not enabled or not
   // currently syncing, returns NULL.

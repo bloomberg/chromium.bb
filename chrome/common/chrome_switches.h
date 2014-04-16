@@ -115,7 +115,6 @@ extern const char kDisableSearchButtonInOmnibox[];
 extern const char kDisableScriptedPrintThrottling[];
 extern const char kDisableSpdy31[];
 extern const char kDisableSync[];
-extern const char kDisableSyncSessionsV2[];
 extern const char kDisableSyncSyncedNotifications[];
 extern const char kDisableSyncTypes[];
 extern const char kDisableTLSChannelID[];

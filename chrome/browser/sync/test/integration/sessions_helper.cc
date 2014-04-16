@@ -13,12 +13,11 @@
 #include "base/test/test_timeouts.h"
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/glue/session_model_associator.h"
 #include "chrome/browser/sync/open_tabs_ui_delegate.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/sync/sessions2/notification_service_sessions_router.h"
-#include "chrome/browser/sync/sessions2/sessions_sync_manager.h"
+#include "chrome/browser/sync/sessions/notification_service_sessions_router.h"
+#include "chrome/browser/sync/sessions/sessions_sync_manager.h"
 #include "chrome/browser/sync/test/integration/multi_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
@@ -180,20 +179,12 @@ bool WaitForTabsToLoad(int index, const std::vector<GURL>& urls) {
         return false;
       }
       if (!found) {
-        if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kDisableSyncSessionsV2)) {
-          ProfileSyncServiceFactory::GetForProfile(test()->GetProfile(index))->
-              GetSessionModelAssociatorDeprecated()->
-              BlockUntilLocalChangeForTest(TestTimeouts::action_max_timeout());
-          content::RunMessageLoop();
-        } else {
-          TabEventHandler handler;
-          browser_sync::NotificationServiceSessionsRouter router(
-              test()->GetProfile(index),
-              syncer::SyncableService::StartSyncFlare());
-          router.StartRoutingTo(&handler);
-          content::RunMessageLoop();
-        }
+        TabEventHandler handler;
+        browser_sync::NotificationServiceSessionsRouter router(
+            test()->GetProfile(index),
+            syncer::SyncableService::StartSyncFlare());
+        router.StartRoutingTo(&handler);
+        content::RunMessageLoop();
       }
     }
   }

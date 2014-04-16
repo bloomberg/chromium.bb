@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_TAB_NODE_POOL_H_
-#define CHROME_BROWSER_SYNC_GLUE_TAB_NODE_POOL_H_
+#ifndef CHROME_BROWSER_SYNC_SESSIONS_TAB_NODE_POOL_H_
+#define CHROME_BROWSER_SYNC_SESSIONS_TAB_NODE_POOL_H_
 
 #include <map>
 #include <set>
@@ -12,8 +12,11 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/sessions/session_id.h"
+#include "sync/api/sync_change_processor.h"
 
-class ProfileSyncService;
+namespace syncer {
+class SyncChangeProcessor;
+}
 
 namespace browser_sync {
 
@@ -32,12 +35,12 @@ namespace browser_sync {
 //                   restart. Nodes are only unassociated temporarily while the
 //                   model associator figures out which tabs belong to which
 //                   nodes. Eventually any remaining unassociated nodes are
-//                   deleted.
+//                   freed.
 // 3. Free         : Sync node is unused.
 
 class TabNodePool {
  public:
-  explicit TabNodePool(ProfileSyncService* sync_service);
+   TabNodePool();
   ~TabNodePool();
   enum InvalidTab {
     kInvalidTabID = -1
@@ -62,10 +65,20 @@ class TabNodePool {
   // Note: The node is considered free until it has been associated. Repeated
   // calls to GetFreeTabNode will return the same id until node has been
   // associated.
-  int GetFreeTabNode();
+  // |change_output| *must* be provided. It is the TabNodePool's link to
+  // the SyncChange pipeline that exists in the caller context. If the need
+  // to create nodes arises in the implementation, associated SyncChanges will
+  // be appended to this list for later application by the caller via the
+  // SyncChangeProcessor.
+  int GetFreeTabNode(syncer::SyncChangeList* change_output);
 
   // Removes association for |tab_node_id| and returns it to the free node pool.
-  void FreeTabNode(int tab_node_id);
+  // |change_output| *must* be provided. It is the TabNodePool's link to
+  // the SyncChange pipeline that exists in the caller's context. If the need
+  // to delete sync nodes arises in the implementation, associated SyncChanges
+  // will be appended to this list for later application by the caller via the
+  // SyncChangeProcessor.
+  void FreeTabNode(int tab_node_id, syncer::SyncChangeList* change_output);
 
   // Associates |tab_node_id| with |tab_id|. |tab_node_id| should either be
   // unassociated or free. If |tab_node_id| is free, |tab_node_id| is removed
@@ -90,8 +103,11 @@ class TabNodePool {
   // Returns true if |tab_node_id| is an unassociated tab node.
   bool IsUnassociatedTabNode(int tab_node_id);
 
-  // Deletes any unassociated nodes.
-  void DeleteUnassociatedTabNodes();
+  // Returns any unassociated nodes to the free node pool.
+  // |change_output| *must* be provided. It is the TabNodePool's link to
+  // the SyncChange pipeline that exists in the caller's context.
+  // See FreeTabNode for more detail.
+  void DeleteUnassociatedTabNodes(syncer::SyncChangeList* change_output);
 
   // Clear tab pool.
   void Clear();
@@ -113,7 +129,11 @@ class TabNodePool {
   typedef std::map<int, SessionID::id_type> TabNodeIDToTabIDMap;
 
   // Adds |tab_node_id| to free node pool.
-  void FreeTabNodeInternal(int tab_node_id);
+  // |change_output| *must* be provided. It is the TabNodePool's link to
+  // the SyncChange pipeline that exists in the caller's context.
+  // See FreeTabNode for more detail.
+  void FreeTabNodeInternal(int tab_node_id,
+                           syncer::SyncChangeList* change_output);
 
   // Stores mapping of node ids associated with tab_ids, these are the used
   // nodes of tab node pool.
@@ -137,12 +157,9 @@ class TabNodePool {
   // sync nodes.
   std::string machine_tag_;
 
-  // Our sync service profile (for making changes to the sync db)
-  ProfileSyncService* sync_service_;
-
   DISALLOW_COPY_AND_ASSIGN(TabNodePool);
 };
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_TAB_NODE_POOL_H_
+#endif  // CHROME_BROWSER_SYNC_SESSIONS_TAB_NODE_POOL_H_

@@ -39,8 +39,6 @@
 #include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 #include "chrome/browser/sync/glue/device_info.h"
 #include "chrome/browser/sync/glue/favicon_cache.h"
-#include "chrome/browser/sync/glue/session_data_type_controller.h"
-#include "chrome/browser/sync/glue/session_model_associator.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/sync_backend_host_impl.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
@@ -48,8 +46,8 @@
 #include "chrome/browser/sync/glue/typed_url_data_type_controller.h"
 #include "chrome/browser/sync/managed_user_signin_manager_wrapper.h"
 #include "chrome/browser/sync/profile_sync_components_factory_impl.h"
-#include "chrome/browser/sync/sessions2/notification_service_sessions_router.h"
-#include "chrome/browser/sync/sessions2/sessions_sync_manager.h"
+#include "chrome/browser/sync/sessions/notification_service_sessions_router.h"
+#include "chrome/browser/sync/sessions/sessions_sync_manager.h"
 #include "chrome/browser/sync/sync_error_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -212,15 +210,12 @@ ProfileSyncService::ProfileSyncService(
     sync_service_url_ = GURL(kSyncServerUrl);
   }
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableSyncSessionsV2)) {
-    syncer::SyncableService::StartSyncFlare flare(
-        sync_start_util::GetFlareForSyncableService(profile->GetPath()));
-    scoped_ptr<browser_sync::LocalSessionEventRouter> router(
-        new NotificationServiceSessionsRouter(profile, flare));
-    sessions_sync_manager_.reset(
-        new SessionsSyncManager(profile, this, router.Pass()));
-  }
+  syncer::SyncableService::StartSyncFlare flare(
+      sync_start_util::GetFlareForSyncableService(profile->GetPath()));
+  scoped_ptr<browser_sync::LocalSessionEventRouter> router(
+      new NotificationServiceSessionsRouter(profile, flare));
+  sessions_sync_manager_.reset(
+      new SessionsSyncManager(profile, this, router.Pass()));
 }
 
 ProfileSyncService::~ProfileSyncService() {
@@ -357,20 +352,6 @@ void ProfileSyncService::RegisterNonBlockingType(syncer::ModelType type) {
   non_blocking_types_.Put(type);
 }
 
-browser_sync::SessionModelAssociator*
-    ProfileSyncService::GetSessionModelAssociatorDeprecated() {
-  if (!IsSessionsDataTypeControllerRunning())
-    return NULL;
-
-  // If we're using sessions V2, there's no model associator.
-  if (sessions_sync_manager_.get())
-    return NULL;
-
-  return static_cast<browser_sync::SessionDataTypeController*>(
-      data_type_controllers_.find(
-      syncer::SESSIONS)->second.get())->GetModelAssociator();
-}
-
 bool ProfileSyncService::IsSessionsDataTypeControllerRunning() const {
   return data_type_controllers_.find(syncer::SESSIONS) !=
       data_type_controllers_.end() &&
@@ -381,26 +362,11 @@ bool ProfileSyncService::IsSessionsDataTypeControllerRunning() const {
 browser_sync::OpenTabsUIDelegate* ProfileSyncService::GetOpenTabsUIDelegate() {
   if (!IsSessionsDataTypeControllerRunning())
     return NULL;
-
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableSyncSessionsV2)) {
-    return sessions_sync_manager_.get();
-  } else {
-    return GetSessionModelAssociatorDeprecated();
-  }
+  return sessions_sync_manager_.get();
 }
 
 browser_sync::FaviconCache* ProfileSyncService::GetFaviconCache() {
-  // TODO(tim): Clean this up (or remove) once there's only one implementation.
-  // Bug 98892.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableSyncSessionsV2)) {
-    return sessions_sync_manager_->GetFaviconCache();
-  } else if (GetSessionModelAssociatorDeprecated()) {
-    return GetSessionModelAssociatorDeprecated()->GetFaviconCache();
-  } else {
-    return NULL;
-  }
+  return sessions_sync_manager_->GetFaviconCache();
 }
 
 scoped_ptr<browser_sync::DeviceInfo>
@@ -983,16 +949,9 @@ void ProfileSyncService::OnSyncCycleCompleted() {
   if (IsSessionsDataTypeControllerRunning()) {
     // Trigger garbage collection of old sessions now that we've downloaded
     // any new session data.
-    if (sessions_sync_manager_) {
-      // Sessions V2.
-      base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-          &browser_sync::SessionsSyncManager::DoGarbageCollection,
-              base::AsWeakPtr(sessions_sync_manager_.get())));
-    } else {
-      base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-          &browser_sync::SessionModelAssociator::DeleteStaleSessions,
-              GetSessionModelAssociatorDeprecated()->AsWeakPtr()));
-    }
+    base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+        &browser_sync::SessionsSyncManager::DoGarbageCollection,
+            base::AsWeakPtr(sessions_sync_manager_.get())));
   }
   DVLOG(2) << "Notifying observers sync cycle completed";
   NotifySyncCycleCompleted();

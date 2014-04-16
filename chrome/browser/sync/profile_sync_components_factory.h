@@ -117,9 +117,6 @@ class ProfileSyncComponentsFactory {
       ProfileSyncService* profile_sync_service,
       history::HistoryBackend* history_backend,
       browser_sync::DataTypeErrorHandler* error_handler) = 0;
-  virtual SyncComponents CreateSessionSyncComponents(
-      ProfileSyncService* profile_sync_service,
-      browser_sync::DataTypeErrorHandler* error_handler) = 0;
 };
 
 #endif  // CHROME_BROWSER_SYNC_PROFILE_SYNC_COMPONENTS_FACTORY_H__

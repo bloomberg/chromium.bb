@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_SESSIONS2_SESSIONS_UTIL_H_
-#define CHROME_BROWSER_SYNC_SESSIONS2_SESSIONS_UTIL_H_
+#ifndef CHROME_BROWSER_SYNC_SESSIONS_SESSIONS_UTIL_H_
+#define CHROME_BROWSER_SYNC_SESSIONS_SESSIONS_UTIL_H_
 
 namespace browser_sync {
 
@@ -24,4 +24,4 @@ bool ShouldSyncWindow(const SyncedWindowDelegate* window);
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_SESSIONS2_SESSIONS_UTIL_H_
+#endif  // CHROME_BROWSER_SYNC_SESSIONS_SESSIONS_UTIL_H_

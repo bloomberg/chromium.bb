@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/sessions2/sessions_sync_manager.h"
+#include "chrome/browser/sync/sessions/sessions_sync_manager.h"
 
 #include "base/strings/string_util.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -13,9 +13,9 @@
 #include "chrome/browser/sync/glue/session_sync_test_helper.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate.h"
 #include "chrome/browser/sync/glue/synced_window_delegate.h"
-#include "chrome/browser/sync/sessions2/notification_service_sessions_router.h"
-#include "chrome/browser/sync/sessions2/sessions_util.h"
-#include "chrome/browser/sync/sessions2/synced_window_delegates_getter.h"
+#include "chrome/browser/sync/sessions/notification_service_sessions_router.h"
+#include "chrome/browser/sync/sessions/sessions_util.h"
+#include "chrome/browser/sync/sessions/synced_window_delegates_getter.h"
 #include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -1059,7 +1059,7 @@ TEST_F(SessionsSyncManagerTest, DeleteForeignSession) {
   EXPECT_EQ(5U, changes.size());
   std::set<std::string> expected_tags(&tag, &tag + 1);
   for (int i = 0; i < 5; i++)
-    expected_tags.insert(TabNodePool2::TabIdToTag(tag, i));
+    expected_tags.insert(TabNodePool::TabIdToTag(tag, i));
 
   for (int i = 0; i < 5; i++) {
     SCOPED_TRACE(changes[i].ToString());
@@ -1194,7 +1194,7 @@ TEST_F(SessionsSyncManagerTest, ProcessRemoteDeleteOfLocalSession) {
   ASSERT_TRUE(out[0].sync_data().GetSpecifics().session().has_header());
   EXPECT_EQ(SyncChange::ACTION_ADD, out[1].change_type());
   int tab_node_id = out[1].sync_data().GetSpecifics().session().tab_node_id();
-  EXPECT_EQ(TabNodePool2::TabIdToTag(
+  EXPECT_EQ(TabNodePool::TabIdToTag(
                 manager()->current_machine_tag(), tab_node_id),
             syncer::SyncDataLocal(out[1].sync_data()).GetTag());
   EXPECT_EQ(SyncChange::ACTION_UPDATE, out[2].change_type());
@@ -1303,7 +1303,7 @@ TEST_F(SessionsSyncManagerTest, MergeDeletesCorruptNode) {
   InitWithSyncDataTakeOutput(in, &changes);
   EXPECT_EQ(1U, FilterOutLocalHeaderChanges(&changes)->size());
   EXPECT_EQ(SyncChange::ACTION_DELETE, changes[0].change_type());
-  EXPECT_EQ(TabNodePool2::TabIdToTag(local_tag, tab_node_id),
+  EXPECT_EQ(TabNodePool::TabIdToTag(local_tag, tab_node_id),
             syncer::SyncDataLocal(changes[0].sync_data()).GetTag());
 }
 
@@ -1402,14 +1402,14 @@ TEST_F(SessionsSyncManagerTest, OnLocalTabModified) {
     } else if (i % 6 == 1) {
       // Next, the TabNodePool should create the tab node.
       EXPECT_EQ(SyncChange::ACTION_ADD, out[i].change_type());
-      EXPECT_EQ(TabNodePool2::TabIdToTag(
+      EXPECT_EQ(TabNodePool::TabIdToTag(
                     manager()->current_machine_tag(),
                     data.GetSpecifics().session().tab_node_id()),
                 syncer::SyncDataLocal(data).GetTag());
     } else if (i % 6 == 2) {
       // Then we see the tab update to the URL.
       EXPECT_EQ(SyncChange::ACTION_UPDATE, out[i].change_type());
-      EXPECT_EQ(TabNodePool2::TabIdToTag(
+      EXPECT_EQ(TabNodePool::TabIdToTag(
                     manager()->current_machine_tag(),
                     data.GetSpecifics().session().tab_node_id()),
                 syncer::SyncDataLocal(data).GetTag());
@@ -1421,7 +1421,7 @@ TEST_F(SessionsSyncManagerTest, OnLocalTabModified) {
     } else if (i % 6 == 4) {
       // Now we move on to NavigateAndCommit.  Update the tab.
       EXPECT_EQ(SyncChange::ACTION_UPDATE, out[i].change_type());
-      EXPECT_EQ(TabNodePool2::TabIdToTag(
+      EXPECT_EQ(TabNodePool::TabIdToTag(
                     manager()->current_machine_tag(),
                     data.GetSpecifics().session().tab_node_id()),
                 syncer::SyncDataLocal(data).GetTag());
@@ -1598,7 +1598,7 @@ TEST_F(SessionsSyncManagerTest, DoGarbageCollection) {
   for (int i = 1; i < 5; i++) {
     EXPECT_EQ(SyncChange::ACTION_DELETE, output[i].change_type());
     const SyncData data(output[i].sync_data());
-    EXPECT_EQ(TabNodePool2::TabIdToTag(tag1, i),
+    EXPECT_EQ(TabNodePool::TabIdToTag(tag1, i),
               syncer::SyncDataLocal(data).GetTag());
   }
 

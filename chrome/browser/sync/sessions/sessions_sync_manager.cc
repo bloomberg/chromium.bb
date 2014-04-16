@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/sessions2/sessions_sync_manager.h"
+#include "chrome/browser/sync/sessions/sessions_sync_manager.h"
 
 #include "chrome/browser/chrome_notification_types.h"
 #if !defined(OS_ANDROID)
@@ -11,8 +11,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate.h"
 #include "chrome/browser/sync/glue/synced_window_delegate.h"
-#include "chrome/browser/sync/sessions2/sessions_util.h"
-#include "chrome/browser/sync/sessions2/synced_window_delegates_getter.h"
+#include "chrome/browser/sync/sessions/sessions_util.h"
+#include "chrome/browser/sync/sessions/synced_window_delegates_getter.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
@@ -56,7 +56,7 @@ SessionsSyncManager::SessionsSyncManager(
       sync_prefs_(profile->GetPrefs()),
       profile_(profile),
       delegate_(delegate),
-      local_session_header_node_id_(TabNodePool2::kInvalidTabNodeID),
+      local_session_header_node_id_(TabNodePool::kInvalidTabNodeID),
       stale_session_threshold_days_(kDefaultStaleSessionThresholdDays),
       local_event_router_(router.Pass()),
       synced_window_getter_(new SyncedWindowDelegatesGetter()) {
@@ -87,7 +87,7 @@ syncer::SyncMergeResult SessionsSyncManager::MergeDataAndStartSyncing(
   error_handler_ = error_handler.Pass();
   sync_processor_ = sync_processor.Pass();
 
-  local_session_header_node_id_ = TabNodePool2::kInvalidTabNodeID;
+  local_session_header_node_id_ = TabNodePool::kInvalidTabNodeID;
   scoped_ptr<DeviceInfo> local_device_info(delegate_->GetLocalDeviceInfo());
   syncer::SyncChangeList new_changes;
 
@@ -199,8 +199,8 @@ void SessionsSyncManager::AssociateWindows(
           // Note: We cannot check if a tab is valid if it has no WebContents.
           // We assume any such tab is valid and leave the contents of
           // corresponding sync node unchanged.
-          if (synced_tab->GetSyncId() > TabNodePool2::kInvalidTabNodeID &&
-              tab_id > TabNodePool2::kInvalidTabID) {
+          if (synced_tab->GetSyncId() > TabNodePool::kInvalidTabNodeID &&
+              tab_id > TabNodePool::kInvalidTabID) {
             AssociateRestoredPlaceholderTab(*synced_tab, tab_id,
                                             restored_tabs, change_output);
             found_tabs = true;
@@ -295,7 +295,7 @@ void SessionsSyncManager::AssociateTab(SyncedTabDelegate* const tab,
     local_tab_map_iter->second->set_tab(tab);
   }
   DCHECK(tab_link);
-  DCHECK_NE(tab_link->tab_node_id(), TabNodePool2::kInvalidTabNodeID);
+  DCHECK_NE(tab_link->tab_node_id(), TabNodePool::kInvalidTabNodeID);
   DVLOG(1) << "Reloading tab " << tab_id << " from window "
            << tab->GetWindowId();
 
@@ -303,7 +303,7 @@ void SessionsSyncManager::AssociateTab(SyncedTabDelegate* const tab,
   sync_pb::EntitySpecifics specifics;
   LocalTabDelegateToSpecifics(*tab, specifics.mutable_session());
   syncer::SyncData data = syncer::SyncData::CreateLocalData(
-      TabNodePool2::TabIdToTag(current_machine_tag_,
+      TabNodePool::TabIdToTag(current_machine_tag_,
                                tab_link->tab_node_id()),
       current_session_name_,
       specifics);
@@ -387,7 +387,7 @@ void SessionsSyncManager::StopSyncing(syncer::ModelType type) {
   local_tab_pool_.Clear();
   current_machine_tag_.clear();
   current_session_name_.clear();
-  local_session_header_node_id_ = TabNodePool2::kInvalidTabNodeID;
+  local_session_header_node_id_ = TabNodePool::kInvalidTabNodeID;
 }
 
 syncer::SyncDataList SessionsSyncManager::GetAllSyncData(
@@ -423,7 +423,7 @@ syncer::SyncDataList SessionsSyncManager::GetAllSyncData(
       DCHECK(tab_map_iter != local_tab_map_.end());
       specifics->set_tab_node_id(tab_map_iter->second->tab_node_id());
       syncer::SyncData data = syncer::SyncData::CreateLocalData(
-          TabNodePool2::TabIdToTag(current_machine_tag_,
+          TabNodePool::TabIdToTag(current_machine_tag_,
                                    specifics->tab_node_id()),
           current_session_name_,
           entity);
@@ -512,7 +512,7 @@ syncer::SyncChange SessionsSyncManager::TombstoneTab(
         FROM_HERE,
         SyncChange::ACTION_DELETE,
         SyncData::CreateLocalDelete(
-            TabNodePool2::TabIdToTag(current_machine_tag(),
+            TabNodePool::TabIdToTag(current_machine_tag(),
                                      tab.tab_node_id()),
             syncer::SESSIONS));
   }
@@ -772,7 +772,7 @@ void SessionsSyncManager::DeleteForeignSessionInternal(
     change_output->push_back(syncer::SyncChange(
         FROM_HERE,
         SyncChange::ACTION_DELETE,
-        SyncData::CreateLocalDelete(TabNodePool2::TabIdToTag(tag, *it),
+        SyncData::CreateLocalDelete(TabNodePool::TabIdToTag(tag, *it),
                                     syncer::SESSIONS)));
   }
   content::NotificationService::current()->Notify(
@@ -857,7 +857,7 @@ void SessionsSyncManager::AssociateRestoredPlaceholderTab(
     SessionID::id_type new_tab_id,
     const syncer::SyncDataList& restored_tabs,
     syncer::SyncChangeList* change_output) {
-  DCHECK_NE(tab_delegate.GetSyncId(), TabNodePool2::kInvalidTabNodeID);
+  DCHECK_NE(tab_delegate.GetSyncId(), TabNodePool::kInvalidTabNodeID);
   // Rewrite the tab using |restored_tabs| to retrieve the specifics.
   if (restored_tabs.empty()) {
     DLOG(WARNING) << "Can't Update tab ID.";
@@ -890,7 +890,7 @@ void SessionsSyncManager::AssociateRestoredPlaceholderTab(
     // The tab_id changed (e.g due to session restore), so update sync.
     specifics->mutable_tab()->set_tab_id(new_tab_id);
     syncer::SyncData data = syncer::SyncData::CreateLocalData(
-        TabNodePool2::TabIdToTag(current_machine_tag_,
+        TabNodePool::TabIdToTag(current_machine_tag_,
                                  specifics->tab_node_id()),
         current_session_name_,
         entity);

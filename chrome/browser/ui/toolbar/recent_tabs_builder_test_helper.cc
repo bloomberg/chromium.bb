@@ -8,9 +8,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/sync/glue/session_model_associator.h"
 #include "chrome/browser/sync/open_tabs_ui_delegate.h"
-#include "chrome/browser/sync/sessions2/sessions_sync_manager.h"
+#include "chrome/browser/sync/sessions/sessions_sync_manager.h"
 #include "sync/api/attachments/attachment_id.h"
 #include "sync/api/attachments/attachment_service_proxy_for_test.h"
 #include "sync/protocol/session_specifics.pb.h"
@@ -217,25 +216,6 @@ void RecentTabsBuilderTestHelper::ExportToSessionsSyncManager(
   }
   manager->ProcessSyncChanges(FROM_HERE, changes);
   VerifyExport(manager);
-}
-
-void RecentTabsBuilderTestHelper::ExportToSessionModelAssociator(
-    browser_sync::SessionModelAssociator* associator) {
-  for (int s = 0; s < GetSessionCount(); ++s) {
-    sync_pb::SessionSpecifics meta;
-    BuildSessionSpecifics(s, &meta);
-    for (int w = 0; w < GetWindowCount(s); ++w) {
-      BuildWindowSpecifics(s, w, &meta);
-      for (int t = 0; t < GetTabCount(s, w); ++t) {
-        sync_pb::SessionSpecifics tab_base;
-        BuildTabSpecifics(s, w, t, &tab_base);
-        associator->AssociateForeignSpecifics(tab_base,
-                                              GetTabTimestamp(s, w, t));
-      }
-    }
-    associator->AssociateForeignSpecifics(meta, GetSessionTimestamp(s));
-  }
-  VerifyExport(associator);
 }
 
 void RecentTabsBuilderTestHelper::VerifyExport(

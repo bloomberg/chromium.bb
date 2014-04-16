@@ -12,10 +12,9 @@
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sessions/persistent_tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
-#include "chrome/browser/sync/glue/session_model_associator.h"
 #include "chrome/browser/sync/glue/synced_session.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
-#include "chrome/browser/sync/sessions2/sessions_sync_manager.h"
+#include "chrome/browser/sync/sessions/sessions_sync_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -113,28 +112,20 @@ class RecentTabsSubMenuModelTest
     : public BrowserWithTestWindowTest,
       public browser_sync::SessionsSyncManager::SyncInternalApiDelegate {
  public:
-   RecentTabsSubMenuModelTest()
-       : sync_service_(&testing_profile_) {
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kDisableSyncSessionsV2)) {
-      manager_.reset(new browser_sync::SessionsSyncManager(
-          &testing_profile_,
-          this,
-          scoped_ptr<browser_sync::LocalSessionEventRouter>(
-              new DummyRouter())));
-      manager_->MergeDataAndStartSyncing(
-          syncer::SESSIONS,
-          syncer::SyncDataList(),
-          scoped_ptr<syncer::SyncChangeProcessor>(
-            new syncer::FakeSyncChangeProcessor),
-          scoped_ptr<syncer::SyncErrorFactory>(
-              new syncer::SyncErrorFactoryMock));
-    } else {
-      associator_.reset(new browser_sync::SessionModelAssociator(
-          &sync_service_, true));
-      associator_->SetCurrentMachineTagForTesting(
-          GetLocalSyncCacheGUID());
-    }
+  RecentTabsSubMenuModelTest()
+      : sync_service_(&testing_profile_) {
+    manager_.reset(new browser_sync::SessionsSyncManager(
+        &testing_profile_,
+        this,
+        scoped_ptr<browser_sync::LocalSessionEventRouter>(
+            new DummyRouter())));
+    manager_->MergeDataAndStartSyncing(
+        syncer::SESSIONS,
+        syncer::SyncDataList(),
+        scoped_ptr<syncer::SyncChangeProcessor>(
+          new syncer::FakeSyncChangeProcessor),
+        scoped_ptr<syncer::SyncErrorFactory>(
+            new syncer::SyncErrorFactoryMock));
   }
 
   void WaitForLoadFromLastSession() {
@@ -152,21 +143,11 @@ class RecentTabsSubMenuModelTest
 
 
   browser_sync::OpenTabsUIDelegate* GetOpenTabsDelegate() {
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kDisableSyncSessionsV2)) {
-      return manager_.get();
-    } else {
-      return associator_.get();
-    }
+    return manager_.get();
   }
 
   void RegisterRecentTabs(RecentTabsBuilderTestHelper* helper) {
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kDisableSyncSessionsV2)) {
-      helper->ExportToSessionsSyncManager(manager_.get());
-    } else {
-      helper->ExportToSessionModelAssociator(associator_.get());
-    }
+    helper->ExportToSessionsSyncManager(manager_.get());
   }
 
   virtual scoped_ptr<browser_sync::DeviceInfo> GetLocalDeviceInfo()
@@ -187,8 +168,6 @@ class RecentTabsSubMenuModelTest
   TestingProfile testing_profile_;
   testing::NiceMock<ProfileSyncServiceMock> sync_service_;
 
-  // TODO(tim): Remove associator_ when sessions V2 is the default, bug 98892.
-  scoped_ptr<browser_sync::SessionModelAssociator> associator_;
   scoped_ptr<browser_sync::SessionsSyncManager> manager_;
 };
 

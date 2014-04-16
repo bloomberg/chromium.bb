@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_SESSIONS2_SESSIONS_SYNC_MANAGER_H_
-#define CHROME_BROWSER_SYNC_SESSIONS2_SESSIONS_SYNC_MANAGER_H_
+#ifndef CHROME_BROWSER_SYNC_SESSIONS_SESSIONS_SYNC_MANAGER_H_
+#define CHROME_BROWSER_SYNC_SESSIONS_SESSIONS_SYNC_MANAGER_H_
 
 #include <map>
 #include <set>
@@ -22,7 +22,7 @@
 #include "chrome/browser/sync/glue/synced_session.h"
 #include "chrome/browser/sync/glue/synced_session_tracker.h"
 #include "chrome/browser/sync/open_tabs_ui_delegate.h"
-#include "chrome/browser/sync/sessions2/tab_node_pool2.h"
+#include "chrome/browser/sync/sessions/tab_node_pool.h"
 #include "components/sync_driver/sync_prefs.h"
 #include "sync/api/syncable_service.h"
 
@@ -336,7 +336,7 @@ class SessionsSyncManager : public syncer::SyncableService,
   FaviconCache favicon_cache_;
 
   // Pool of used/available sync nodes associated with local tabs.
-  TabNodePool2 local_tab_pool_;
+  TabNodePool local_tab_pool_;
 
   // Tracks whether our local representation of which sync nodes map to what
   // tabs (belonging to the current local session) is inconsistent.  This can
@@ -378,4 +378,4 @@ class SessionsSyncManager : public syncer::SyncableService,
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_SESSIONS2_SESSIONS_SYNC_MANAGER_H_
+#endif  // CHROME_BROWSER_SYNC_SESSIONS_SESSIONS_SYNC_MANAGER_H_

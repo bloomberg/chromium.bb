@@ -388,9 +388,6 @@ const char kDisableSpdy31[]                 = "disable-spdy31";
 // Disables syncing browser data to a Google Account.
 const char kDisableSync[]                   = "disable-sync";
 
-// Disables sync/API based session sync implementation (back to legacy).
-const char kDisableSyncSessionsV2[] = "disable-sync-sessions-v2";
-
 // Disable synced notifications.
 const char kDisableSyncSyncedNotifications[] =
     "disable-sync-synced-notifications";

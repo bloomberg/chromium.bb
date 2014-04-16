@@ -65,9 +65,6 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
       ProfileSyncService* profile_sync_service,
       history::HistoryBackend* history_backend,
       browser_sync::DataTypeErrorHandler* error_handler) OVERRIDE;
-  virtual SyncComponents CreateSessionSyncComponents(
-      ProfileSyncService* profile_sync_service,
-      browser_sync::DataTypeErrorHandler* error_handler) OVERRIDE;
 
  private:
   // Register data types which are enabled on desktop platforms only.

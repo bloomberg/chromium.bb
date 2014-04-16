@@ -7,10 +7,9 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/sync/glue/session_model_associator.h"
 #include "chrome/browser/sync/glue/device_info.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/sync/sessions2/sessions_sync_manager.h"
+#include "chrome/browser/sync/sessions/sessions_sync_manager.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/cocoa/run_loop_testing.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
@@ -30,6 +29,7 @@
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 
@@ -67,28 +67,18 @@ class WrenchMenuControllerTest
     controller_.reset([[WrenchMenuController alloc] initWithBrowser:browser()]);
     fake_model_.reset(new MockWrenchMenuModel);
 
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kDisableSyncSessionsV2)) {
-      manager_.reset(new browser_sync::SessionsSyncManager(
-          profile(),
-          this,
-          scoped_ptr<browser_sync::LocalSessionEventRouter>(
-              new DummyRouter())));
-      manager_->MergeDataAndStartSyncing(
-          syncer::SESSIONS,
-          syncer::SyncDataList(),
-          scoped_ptr<syncer::SyncChangeProcessor>(
-              new syncer::FakeSyncChangeProcessor),
-          scoped_ptr<syncer::SyncErrorFactory>(
-              new syncer::SyncErrorFactoryMock));
-    } else {
-      ProfileSyncService* sync_service =
-          ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile());
-      associator_.reset(new browser_sync::SessionModelAssociator(
-          sync_service, true));
-      associator_->SetCurrentMachineTagForTesting(
-          GetLocalSyncCacheGUID());
-    }
+    manager_.reset(new browser_sync::SessionsSyncManager(
+        profile(),
+        this,
+        scoped_ptr<browser_sync::LocalSessionEventRouter>(
+            new DummyRouter())));
+    manager_->MergeDataAndStartSyncing(
+        syncer::SESSIONS,
+        syncer::SyncDataList(),
+        scoped_ptr<syncer::SyncChangeProcessor>(
+            new syncer::FakeSyncChangeProcessor),
+        scoped_ptr<syncer::SyncErrorFactory>(
+            new syncer::SyncErrorFactoryMock));
   }
 
   virtual scoped_ptr<browser_sync::DeviceInfo> GetLocalDeviceInfo()
@@ -106,27 +96,16 @@ class WrenchMenuControllerTest
   }
 
   void RegisterRecentTabs(RecentTabsBuilderTestHelper* helper) {
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kDisableSyncSessionsV2)) {
-      helper->ExportToSessionsSyncManager(manager_.get());
-    } else {
-      helper->ExportToSessionModelAssociator(associator_.get());
-    }
+    helper->ExportToSessionsSyncManager(manager_.get());
   }
 
   browser_sync::OpenTabsUIDelegate* GetOpenTabsDelegate() {
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kDisableSyncSessionsV2)) {
-      return manager_.get();
-    } else {
-      return associator_.get();
-    }
+    return manager_.get();
   }
 
   virtual void TearDown() OVERRIDE {
     fake_model_.reset();
     controller_.reset();
-    associator_.reset();
     manager_.reset();
     CocoaProfileTest::TearDown();
   }
@@ -140,8 +119,6 @@ class WrenchMenuControllerTest
   scoped_ptr<MockWrenchMenuModel> fake_model_;
 
  private:
-  // TODO(tim): Bug 98892. Remove associator_ once sessions2 is the default.
-  scoped_ptr<browser_sync::SessionModelAssociator> associator_;
   scoped_ptr<browser_sync::SessionsSyncManager> manager_;
 };
 

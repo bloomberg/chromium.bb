@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/sessions2/tab_node_pool2.h"
+#include "chrome/browser/sync/sessions/tab_node_pool.h"
 
 #include "base/logging.h"
 #include "sync/api/sync_change.h"
@@ -12,18 +12,18 @@
 
 namespace browser_sync {
 
-class SyncTabNodePool2Test : public testing::Test {
+class SyncTabNodePoolTest : public testing::Test {
  protected:
-  SyncTabNodePool2Test() { pool_.SetMachineTag("tag"); }
+  SyncTabNodePoolTest() { pool_.SetMachineTag("tag"); }
 
   int GetMaxUsedTabNodeId() const { return pool_.max_used_tab_node_id_; }
 
   void AddFreeTabNodes(size_t size, const int node_ids[]);
 
-  TabNodePool2 pool_;
+  TabNodePool pool_;
 };
 
-void SyncTabNodePool2Test::AddFreeTabNodes(
+void SyncTabNodePoolTest::AddFreeTabNodes(
     size_t size, const int node_ids[]) {
   for (size_t i = 0; i < size; ++i) {
     pool_.free_nodes_pool_.insert(node_ids[i]);
@@ -32,7 +32,7 @@ void SyncTabNodePool2Test::AddFreeTabNodes(
 
 namespace {
 
-TEST_F(SyncTabNodePool2Test, TabNodeIdIncreases) {
+TEST_F(SyncTabNodePoolTest, TabNodeIdIncreases) {
   syncer::SyncChangeList changes;
   // max_used_tab_node_ always increases.
   pool_.AddTabNode(10);
@@ -60,7 +60,7 @@ TEST_F(SyncTabNodePool2Test, TabNodeIdIncreases) {
   EXPECT_TRUE(pool_.Empty());
 }
 
-TEST_F(SyncTabNodePool2Test, OldTabNodesAddAndRemove) {
+TEST_F(SyncTabNodePoolTest, OldTabNodesAddAndRemove) {
   syncer::SyncChangeList changes;
   // VerifyOldTabNodes are added.
   pool_.AddTabNode(1);
@@ -93,7 +93,7 @@ TEST_F(SyncTabNodePool2Test, OldTabNodesAddAndRemove) {
   EXPECT_FALSE(pool_.Full());
 }
 
-TEST_F(SyncTabNodePool2Test, OldTabNodesReassociation) {
+TEST_F(SyncTabNodePoolTest, OldTabNodesReassociation) {
   // VerifyOldTabNodes are reassociated correctly.
   pool_.AddTabNode(4);
   pool_.AddTabNode(5);
@@ -135,12 +135,12 @@ TEST_F(SyncTabNodePool2Test, OldTabNodesReassociation) {
   EXPECT_EQ(1u, free_sync_ids.count(6));
 }
 
-TEST_F(SyncTabNodePool2Test, Init) {
+TEST_F(SyncTabNodePoolTest, Init) {
   EXPECT_TRUE(pool_.Empty());
   EXPECT_TRUE(pool_.Full());
 }
 
-TEST_F(SyncTabNodePool2Test, AddGet) {
+TEST_F(SyncTabNodePoolTest, AddGet) {
   syncer::SyncChangeList changes;
   int free_nodes[] = {5, 10};
   AddFreeTabNodes(2, free_nodes);
@@ -155,7 +155,7 @@ TEST_F(SyncTabNodePool2Test, AddGet) {
   EXPECT_EQ(10, pool_.GetFreeTabNode(&changes));
 }
 
-TEST_F(SyncTabNodePool2Test, All) {
+TEST_F(SyncTabNodePoolTest, All) {
   syncer::SyncChangeList changes;
   EXPECT_TRUE(pool_.Empty());
   EXPECT_TRUE(pool_.Full());
@@ -210,7 +210,7 @@ TEST_F(SyncTabNodePool2Test, All) {
   EXPECT_EQ(0U, pool_.Capacity());
 }
 
-TEST_F(SyncTabNodePool2Test, GetFreeTabNodeCreate) {
+TEST_F(SyncTabNodePoolTest, GetFreeTabNodeCreate) {
   syncer::SyncChangeList changes;
   EXPECT_EQ(0, pool_.GetFreeTabNode(&changes));
   EXPECT_TRUE(changes[0].IsValid());
@@ -221,14 +221,14 @@ TEST_F(SyncTabNodePool2Test, GetFreeTabNodeCreate) {
   EXPECT_EQ(0, specifics.tab_node_id());
 }
 
-TEST_F(SyncTabNodePool2Test, TabPoolFreeNodeLimits) {
+TEST_F(SyncTabNodePoolTest, TabPoolFreeNodeLimits) {
   // Allocate TabNodePool::kFreeNodesHighWatermark + 1 nodes and verify that
   // freeing the last node reduces the free node pool size to
   // kFreeNodesLowWatermark.
   syncer::SyncChangeList changes;
   SessionID session_id;
   std::vector<int> used_sync_ids;
-  for (size_t i = 1; i <= TabNodePool2::kFreeNodesHighWatermark + 1; ++i) {
+  for (size_t i = 1; i <= TabNodePool::kFreeNodesHighWatermark + 1; ++i) {
     session_id.set_id(i);
     int sync_id = pool_.GetFreeTabNode(&changes);
     pool_.AssociateTabNode(sync_id, i);
@@ -247,14 +247,14 @@ TEST_F(SyncTabNodePool2Test, TabPoolFreeNodeLimits) {
   EXPECT_FALSE(pool_.Full());
   EXPECT_FALSE(pool_.Empty());
   // Total capacity = 1 Associated Node + kFreeNodesHighWatermark free node.
-  EXPECT_EQ(TabNodePool2::kFreeNodesHighWatermark + 1, pool_.Capacity());
+  EXPECT_EQ(TabNodePool::kFreeNodesHighWatermark + 1, pool_.Capacity());
 
   // Freeing the last sync node should drop the free nodes to
   // kFreeNodesLowWatermark.
   pool_.FreeTabNode(last_sync_id, &changes);
   EXPECT_FALSE(pool_.Empty());
   EXPECT_TRUE(pool_.Full());
-  EXPECT_EQ(TabNodePool2::kFreeNodesLowWatermark, pool_.Capacity());
+  EXPECT_EQ(TabNodePool::kFreeNodesLowWatermark, pool_.Capacity());
 }
 
 }  // namespace

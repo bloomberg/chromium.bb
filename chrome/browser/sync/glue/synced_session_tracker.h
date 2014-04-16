@@ -15,7 +15,7 @@
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sync/glue/synced_session.h"
-#include "chrome/browser/sync/glue/tab_node_pool.h"
+#include "chrome/browser/sync/sessions/tab_node_pool.h"
 
 namespace browser_sync {
 

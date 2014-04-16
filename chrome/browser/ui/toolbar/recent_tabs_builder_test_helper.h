@@ -13,7 +13,6 @@
 
 namespace browser_sync {
 class OpenTabsUIDelegate;
-class SessionModelAssociator;
 class SessionsSyncManager;
 }
 namespace sync_pb {
@@ -51,8 +50,6 @@ class RecentTabsBuilderTestHelper {
                        int window_index,
                        int tab_index);
 
-  void ExportToSessionModelAssociator(
-      browser_sync::SessionModelAssociator* associator);
   void ExportToSessionsSyncManager(
       browser_sync::SessionsSyncManager* manager);
 

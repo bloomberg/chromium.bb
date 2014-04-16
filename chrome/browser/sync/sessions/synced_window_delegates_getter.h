@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_SESSIONS2_SYNCED_WINDOW_DELEGATES_GETTER_H_
-#define CHROME_BROWSER_SYNC_SESSIONS2_SYNCED_WINDOW_DELEGATES_GETTER_H_
+#ifndef CHROME_BROWSER_SYNC_SESSIONS_SYNCED_WINDOW_DELEGATES_GETTER_H_
+#define CHROME_BROWSER_SYNC_SESSIONS_SYNCED_WINDOW_DELEGATES_GETTER_H_
 
 #include <set>
 #include "base/macros.h"
@@ -23,4 +23,4 @@ class SyncedWindowDelegatesGetter {
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_SESSIONS2_SYNCED_WINDOW_DELEGATES_GETTER_H_
+#endif  // CHROME_BROWSER_SYNC_SESSIONS_SYNCED_WINDOW_DELEGATES_GETTER_H_

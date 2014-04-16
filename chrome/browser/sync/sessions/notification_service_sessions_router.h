@@ -1,12 +1,12 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_SESSIONS2_NOTIFICATION_SERVICE_SESSIONS_ROUTER_H_
-#define CHROME_BROWSER_SYNC_SESSIONS2_NOTIFICATION_SERVICE_SESSIONS_ROUTER_H_
+#ifndef CHROME_BROWSER_SYNC_SESSIONS_NOTIFICATION_SERVICE_SESSIONS_ROUTER_H_
+#define CHROME_BROWSER_SYNC_SESSIONS_NOTIFICATION_SERVICE_SESSIONS_ROUTER_H_
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/sync/sessions2/sessions_sync_manager.h"
+#include "chrome/browser/sync/sessions/sessions_sync_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -58,4 +58,4 @@ class NotificationServiceSessionsRouter
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_SESSIONS2_NOTIFICATION_SERVICE_SESSIONS_ROUTER_H_
+#endif  // CHROME_BROWSER_SYNC_SESSIONS_NOTIFICATION_SERVICE_SESSIONS_ROUTER_H_
