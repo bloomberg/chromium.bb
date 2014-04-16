@@ -48,52 +48,11 @@ std::string CreateSalt() {
         sizeof(result)));
 }
 
-std::string BuildPasswordForHashWithSaltSchema(
-  const std::string& salt,
-  const std::string& plain_password) {
-  scoped_ptr<crypto::SymmetricKey> key(
-      crypto::SymmetricKey::DeriveKeyFromPassword(
-          crypto::SymmetricKey::AES,
-          plain_password, salt,
-          kNumIterations, kKeySizeInBits));
-  std::string raw_result, result;
-  key->GetRawKey(&raw_result);
-  base::Base64Encode(raw_result, &result);
-  return result;
-}
-
 std::string BuildRawHMACKey() {
   scoped_ptr<crypto::SymmetricKey> key(crypto::SymmetricKey::GenerateRandomKey(
       crypto::SymmetricKey::AES, kHMACKeySizeInBits));
   std::string raw_result, result;
   key->GetRawKey(&raw_result);
-  base::Base64Encode(raw_result, &result);
-  return result;
-}
-
-std::string BuildPasswordSignature(const std::string& password,
-                                   int revision,
-                                   const std::string& base64_signature_key) {
-  ac::chrome::managedaccounts::account::Secret secret;
-  secret.set_revision(revision);
-  secret.set_secret(password);
-  std::string buffer;
-  if (!secret.SerializeToString(&buffer))
-    LOG(FATAL) << "Protobuf::SerializeToString failed";
-  std::string signature_key;
-  base::Base64Decode(base64_signature_key, &signature_key);
-
-  crypto::HMAC hmac(crypto::HMAC::SHA256);
-  if (!hmac.Init(signature_key))
-    LOG(FATAL) << "HMAC::Init failed";
-
-  unsigned char out_bytes[kSignatureLength];
-  if (!hmac.Sign(buffer, out_bytes, sizeof(out_bytes)))
-    LOG(FATAL) << "HMAC::Sign failed";
-
-  std::string raw_result(out_bytes, out_bytes + sizeof(out_bytes));
-
-  std::string result;
   base::Base64Encode(raw_result, &result);
   return result;
 }
@@ -352,6 +311,50 @@ void SupervisedUserAuthentication::LoadPasswordUpdateData(
       FROM_HERE,
       base::Bind(&LoadPasswordData, profile_path),
       base::Bind(&OnPasswordDataLoaded, success_callback, failure_callback));
+}
+
+// static
+std::string SupervisedUserAuthentication::BuildPasswordForHashWithSaltSchema(
+    const std::string& salt,
+    const std::string& plain_password) {
+  scoped_ptr<crypto::SymmetricKey> key(
+      crypto::SymmetricKey::DeriveKeyFromPassword(crypto::SymmetricKey::AES,
+                                                  plain_password,
+                                                  salt,
+                                                  kNumIterations,
+                                                  kKeySizeInBits));
+  std::string raw_result, result;
+  key->GetRawKey(&raw_result);
+  base::Base64Encode(raw_result, &result);
+  return result;
+}
+
+std::string SupervisedUserAuthentication::BuildPasswordSignature(
+    const std::string& password,
+    int revision,
+    const std::string& base64_signature_key) {
+  ac::chrome::managedaccounts::account::Secret secret;
+  secret.set_revision(revision);
+  secret.set_secret(password);
+  std::string buffer;
+  if (!secret.SerializeToString(&buffer))
+    LOG(FATAL) << "Protobuf::SerializeToString failed";
+  std::string signature_key;
+  base::Base64Decode(base64_signature_key, &signature_key);
+
+  crypto::HMAC hmac(crypto::HMAC::SHA256);
+  if (!hmac.Init(signature_key))
+    LOG(FATAL) << "HMAC::Init failed";
+
+  unsigned char out_bytes[kSignatureLength];
+  if (!hmac.Sign(buffer, out_bytes, sizeof(out_bytes)))
+    LOG(FATAL) << "HMAC::Sign failed";
+
+  std::string raw_result(out_bytes, out_bytes + sizeof(out_bytes));
+
+  std::string result;
+  base::Base64Encode(raw_result, &result);
+  return result;
 }
 
 }  // namespace chromeos

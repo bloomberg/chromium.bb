@@ -105,6 +105,15 @@ class SupervisedUserAuthentication {
   // Utility method that gets schema version for |user_id| from Local State.
   Schema GetPasswordSchema(const std::string& user_id);
 
+  static std::string BuildPasswordForHashWithSaltSchema(
+      const std::string& salt,
+      const std::string& plain_password);
+
+  static std::string BuildPasswordSignature(
+      const std::string& password,
+      int revision,
+      const std::string& base64_signature_key);
+
  private:
   SupervisedUserManager* owner_;
 

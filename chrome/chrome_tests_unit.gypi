@@ -727,6 +727,7 @@
         'browser/chromeos/kiosk_mode/kiosk_mode_settings_unittest.cc',
         'browser/chromeos/login/existing_user_controller_auto_login_unittest.cc',
         'browser/chromeos/login/hwid_checker_unittest.cc',
+        'browser/chromeos/login/managed/supervised_user_authentication_unittest.cc',
         'browser/chromeos/login/merge_session_load_page_unittest.cc',
         'browser/chromeos/login/mock_auth_attempt_state_resolver.cc',
         'browser/chromeos/login/mock_auth_attempt_state_resolver.h',
