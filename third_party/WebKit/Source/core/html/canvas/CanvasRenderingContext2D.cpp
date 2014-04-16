@@ -988,7 +988,7 @@ void CanvasRenderingContext2D::fillInternal(const Path& path, const String& wind
         return;
     }
     FloatRect clipBounds;
-    if (!drawingContext()->getTransformedClipBounds(&clipBounds)) {
+    if (!c->getTransformedClipBounds(&clipBounds)) {
         return;
     }
 
@@ -1270,7 +1270,7 @@ void CanvasRenderingContext2D::fillRect(float x, float y, float width, float hei
     if (!state().m_invertibleCTM)
         return;
     FloatRect clipBounds;
-    if (!drawingContext()->getTransformedClipBounds(&clipBounds))
+    if (!c->getTransformedClipBounds(&clipBounds))
         return;
 
     // from the HTML5 Canvas spec:
@@ -1607,9 +1607,10 @@ template<class T> void  CanvasRenderingContext2D::fullCanvasCompositedDrawImage(
 {
     ASSERT(isFullCanvasCompositeMode(op));
 
-    drawingContext()->beginLayer(1, op);
-    drawImageToContext(image, drawingContext(), dest, src, CompositeSourceOver);
-    drawingContext()->endLayer();
+    GraphicsContext* c = drawingContext();
+    c->beginLayer(1, op);
+    drawImageToContext(image, c, dest, src, CompositeSourceOver);
+    c->endLayer();
 }
 
 static void fillPrimitive(const FloatRect& rect, GraphicsContext* context)
