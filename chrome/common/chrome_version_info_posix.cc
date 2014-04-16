@@ -12,13 +12,8 @@ namespace chrome {
 // static
 std::string VersionInfo::GetVersionStringModifier() {
   char* env = getenv("CHROME_VERSION_EXTRA");
-  if (!env) {
-    std::string modifier;
-#if defined(USE_AURA) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
-    modifier = "aura";
-#endif
-    return modifier;
-  }
+  if (!env)
+    return std::string();
   std::string modifier(env);
 
 #if defined(GOOGLE_CHROME_BUILD)
@@ -32,10 +27,6 @@ std::string VersionInfo::GetVersionStringModifier() {
   } else {
     modifier = "unknown";
   }
-#endif
-
-#if defined(USE_AURA) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  modifier += " aura";
 #endif
 
   return modifier;

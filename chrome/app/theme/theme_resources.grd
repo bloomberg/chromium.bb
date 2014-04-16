@@ -1268,14 +1268,8 @@
         <structure type="chrome_scaled_image" name="IDR_TOOLS_H" file="tools_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_TOOLS_P" file="tools_pressed.png" />
       </if>
-      <if expr="toolkit_views or is_macosx or is_ios">
-        <if expr="desktop_linux">
-          <structure type="chrome_scaled_image" name="IDR_TOOLS_BADGE_AURA" file="common/browser_tools_badge_aura.png" />
-          <structure type="chrome_scaled_image" name="IDR_TOOLS" file="common/browser_tools_normal_aura.png" />
-        </if>
-        <if expr="not desktop_linux">
-          <structure type="chrome_scaled_image" name="IDR_TOOLS" file="common/browser_tools_normal.png" />
-        </if>
+      <if expr="pp_ifdef('toolkit_views') or is_macosx or is_ios">
+        <structure type="chrome_scaled_image" name="IDR_TOOLS" file="common/browser_tools_normal.png" />
         <structure type="chrome_scaled_image" name="IDR_TOOLS_H" file="common/browser_tools_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_TOOLS_P" file="common/browser_tools_pressed.png" />
       </if>

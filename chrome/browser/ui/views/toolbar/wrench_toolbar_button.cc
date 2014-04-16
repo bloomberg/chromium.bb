@@ -26,12 +26,6 @@ void WrenchToolbarButton::SetSeverity(WrenchIconPainter::Severity severity,
 }
 
 void WrenchToolbarButton::OnPaint(gfx::Canvas* canvas) {
-  // Badge linux aura builds so they're quickly identifiable.
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  wrench_icon_painter_->set_badge(
-      *GetThemeProvider()->GetImageSkiaNamed(IDR_TOOLS_BADGE_AURA));
-#endif
-
   wrench_icon_painter_->Paint(
       canvas, GetThemeProvider(), gfx::Rect(size()), GetCurrentBezelType());
   views::Painter::PaintFocusPainter(this, canvas, focus_painter());
