@@ -27,6 +27,7 @@
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_set.h"
+#include "google_apis/drive/gdata_wapi_parser.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 

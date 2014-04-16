@@ -55,91 +55,6 @@ std::string GetMimeTypeFromEntryKind(google_apis::DriveEntryKind kind) {
   }
 }
 
-ScopedVector<std::string> CopyScopedVectorString(
-    const ScopedVector<std::string>& source) {
-  ScopedVector<std::string> result;
-  result.reserve(source.size());
-  for (size_t i = 0; i < source.size(); ++i)
-    result.push_back(new std::string(*source[i]));
-
-  return result.Pass();
-}
-
-// Converts AppIcon (of GData WAPI) to DriveAppIcon.
-scoped_ptr<google_apis::DriveAppIcon>
-ConvertAppIconToDriveAppIcon(const google_apis::AppIcon& app_icon) {
-  scoped_ptr<google_apis::DriveAppIcon> resource(
-      new google_apis::DriveAppIcon);
-  switch (app_icon.category()) {
-    case google_apis::AppIcon::ICON_UNKNOWN:
-      resource->set_category(google_apis::DriveAppIcon::UNKNOWN);
-      break;
-    case google_apis::AppIcon::ICON_DOCUMENT:
-      resource->set_category(google_apis::DriveAppIcon::DOCUMENT);
-      break;
-    case google_apis::AppIcon::ICON_APPLICATION:
-      resource->set_category(google_apis::DriveAppIcon::APPLICATION);
-      break;
-    case google_apis::AppIcon::ICON_SHARED_DOCUMENT:
-      resource->set_category(google_apis::DriveAppIcon::SHARED_DOCUMENT);
-      break;
-    default:
-      NOTREACHED();
-  }
-
-  resource->set_icon_side_length(app_icon.icon_side_length());
-  resource->set_icon_url(app_icon.GetIconURL());
-  return resource.Pass();
-}
-
-// Converts InstalledApp to AppResource.
-scoped_ptr<google_apis::AppResource>
-ConvertInstalledAppToAppResource(
-    const google_apis::InstalledApp& installed_app) {
-  scoped_ptr<google_apis::AppResource> resource(new google_apis::AppResource);
-  resource->set_application_id(installed_app.app_id());
-  resource->set_name(installed_app.app_name());
-  resource->set_object_type(installed_app.object_type());
-  resource->set_supports_create(installed_app.supports_create());
-
-  {
-    ScopedVector<std::string> primary_mimetypes(
-        CopyScopedVectorString(installed_app.primary_mimetypes()));
-    resource->set_primary_mimetypes(primary_mimetypes.Pass());
-  }
-  {
-    ScopedVector<std::string> secondary_mimetypes(
-        CopyScopedVectorString(installed_app.secondary_mimetypes()));
-    resource->set_secondary_mimetypes(secondary_mimetypes.Pass());
-  }
-  {
-    ScopedVector<std::string> primary_file_extensions(
-        CopyScopedVectorString(installed_app.primary_extensions()));
-    resource->set_primary_file_extensions(primary_file_extensions.Pass());
-  }
-  {
-    ScopedVector<std::string> secondary_file_extensions(
-        CopyScopedVectorString(installed_app.secondary_extensions()));
-    resource->set_secondary_file_extensions(secondary_file_extensions.Pass());
-  }
-
-  {
-    const ScopedVector<google_apis::AppIcon>& app_icons =
-        installed_app.app_icons();
-    ScopedVector<google_apis::DriveAppIcon> icons;
-    icons.reserve(app_icons.size());
-    for (size_t i = 0; i < app_icons.size(); ++i) {
-      icons.push_back(ConvertAppIconToDriveAppIcon(*app_icons[i]).release());
-    }
-    resource->set_icons(icons.Pass());
-  }
-
-  // supports_import, installed and authorized are not supported in
-  // InstalledApp.
-
-  return resource.Pass();
-}
-
 // Returns the argument string.
 std::string Identity(const std::string& resource_id) { return resource_id; }
 
@@ -269,40 +184,6 @@ void ParseShareUrlAndRun(const google_apis::GetShareUrlCallback& callback,
       entry->GetLinkByType(google_apis::Link::LINK_SHARE);
   callback.Run(error, share_link ? share_link->href() : GURL());
 }
-
-scoped_ptr<google_apis::AboutResource>
-ConvertAccountMetadataToAboutResource(
-    const google_apis::AccountMetadata& account_metadata,
-    const std::string& root_resource_id) {
-  scoped_ptr<google_apis::AboutResource> resource(
-      new google_apis::AboutResource);
-  resource->set_largest_change_id(account_metadata.largest_changestamp());
-  resource->set_quota_bytes_total(account_metadata.quota_bytes_total());
-  resource->set_quota_bytes_used(account_metadata.quota_bytes_used());
-  resource->set_root_folder_id(root_resource_id);
-  return resource.Pass();
-}
-
-scoped_ptr<google_apis::AppList>
-ConvertAccountMetadataToAppList(
-    const google_apis::AccountMetadata& account_metadata) {
-  scoped_ptr<google_apis::AppList> resource(new google_apis::AppList);
-
-  const ScopedVector<google_apis::InstalledApp>& installed_apps =
-      account_metadata.installed_apps();
-  ScopedVector<google_apis::AppResource> app_resources;
-  app_resources.reserve(installed_apps.size());
-  for (size_t i = 0; i < installed_apps.size(); ++i) {
-    app_resources.push_back(
-        ConvertInstalledAppToAppResource(*installed_apps[i]).release());
-  }
-  resource->set_items(app_resources.Pass());
-
-  // etag is not supported in AccountMetadata.
-
-  return resource.Pass();
-}
-
 
 scoped_ptr<google_apis::FileResource> ConvertResourceEntryToFileResource(
     const google_apis::ResourceEntry& entry) {

@@ -24,7 +24,6 @@ namespace google_apis {
 namespace {
 
 const char kTestUserAgent[] = "test-user-agent";
-const char kTestDownloadPathPrefix[] = "/download/";
 
 class GDataWapiRequestsTest : public testing::Test {
  public:
@@ -43,8 +42,7 @@ class GDataWapiRequestsTest : public testing::Test {
                    base::Unretained(this)));
 
     GURL test_base_url = test_util::GetBaseUrlForTesting(test_server_.port());
-    url_generator_.reset(new GDataWapiUrlGenerator(
-        test_base_url, test_base_url.Resolve(kTestDownloadPathPrefix)));
+    url_generator_.reset(new GDataWapiUrlGenerator(test_base_url));
   }
 
  protected:

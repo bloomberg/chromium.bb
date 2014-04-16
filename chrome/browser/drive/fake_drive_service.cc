@@ -28,7 +28,6 @@
 using content::BrowserThread;
 using google_apis::AboutResource;
 using google_apis::AboutResourceCallback;
-using google_apis::AccountMetadata;
 using google_apis::AppList;
 using google_apis::AppListCallback;
 using google_apis::AuthStatusCallback;

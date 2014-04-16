@@ -292,7 +292,7 @@ DriveAPIService::DriveAPIService(
       url_request_context_getter_(url_request_context_getter),
       blocking_task_runner_(blocking_task_runner),
       url_generator_(base_url, base_download_url),
-      wapi_url_generator_(wapi_base_url, base_download_url),
+      wapi_url_generator_(wapi_base_url),
       custom_user_agent_(custom_user_agent) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }

@@ -153,7 +153,7 @@ TEST_F(DriveAppRegistryTest, MultipleUpdate) {
 }
 
 TEST(DriveAppRegistryUtilTest, FindPreferredIcon_Empty) {
-  google_apis::InstalledApp::IconList icons;
+  DriveAppInfo::IconList icons;
   EXPECT_EQ("",
             util::FindPreferredIcon(icons, util::kPreferredIconSize).spec());
 }
@@ -164,7 +164,7 @@ TEST(DriveAppRegistryUtilTest, FindPreferredIcon_) {
   const char kBiggerIconUrl[] = "http://example.com/bigger.png";
   const int kMediumSize = 16;
 
-  google_apis::InstalledApp::IconList icons;
+  DriveAppInfo::IconList icons;
   // The icons are not sorted by the size.
   icons.push_back(std::make_pair(kMediumSize,
                                  GURL(kMediumIconUrl)));

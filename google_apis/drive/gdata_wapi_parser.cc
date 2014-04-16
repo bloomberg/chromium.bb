@@ -46,23 +46,6 @@ const char kFeedLinkField[] = "gd$feedLink";
 const char kFileNameField[] = "docs$filename.$t";
 const char kHrefField[] = "href";
 const char kIDField[] = "id.$t";
-const char kInstalledAppField[] = "docs$installedApp";
-const char kInstalledAppNameField[] = "docs$installedAppName";
-const char kInstalledAppIdField[] = "docs$installedAppId";
-const char kInstalledAppIconField[] = "docs$installedAppIcon";
-const char kInstalledAppIconCategoryField[] = "docs$installedAppIconCategory";
-const char kInstalledAppIconSizeField[] = "docs$installedAppIconSize";
-const char kInstalledAppObjectTypeField[] = "docs$installedAppObjectType";
-const char kInstalledAppPrimaryFileExtensionField[] =
-    "docs$installedAppPrimaryFileExtension";
-const char kInstalledAppPrimaryMimeTypeField[] =
-    "docs$installedAppPrimaryMimeType";
-const char kInstalledAppSecondaryFileExtensionField[] =
-    "docs$installedAppSecondaryFileExtension";
-const char kInstalledAppSecondaryMimeTypeField[] =
-    "docs$installedAppSecondaryMimeType";
-const char kInstalledAppSupportsCreateField[] =
-    "docs$installedAppSupportsCreate";
 const char kItemsPerPageField[] = "openSearch$itemsPerPage.$t";
 const char kLabelField[] = "label";
 const char kLargestChangestampField[] = "docs$largestChangestamp.value";
@@ -71,8 +54,6 @@ const char kLinkField[] = "link";
 const char kMD5Field[] = "docs$md5Checksum.$t";
 const char kNameField[] = "name.$t";
 const char kPublishedField[] = "published.$t";
-const char kQuotaBytesTotalField[] = "gd$quotaBytesTotal.$t";
-const char kQuotaBytesUsedField[] = "gd$quotaBytesUsed.$t";
 const char kRelField[] = "rel";
 const char kRemovedField[] = "docs$removed";
 const char kResourceIdField[] = "gd$resourceId.$t";
@@ -81,7 +62,6 @@ const char kSizeField[] = "docs$size.$t";
 const char kSrcField[] = "src";
 const char kStartIndexField[] = "openSearch$startIndex.$t";
 const char kSuggestedFileNameField[] = "docs$suggestedFilename.$t";
-const char kTField[] = "$t";
 const char kTermField[] = "term";
 const char kTitleField[] = "title";
 const char kTitleTField[] = "title.$t";
@@ -186,34 +166,12 @@ const CategoryTypeMap kCategoryTypeMap[] = {
     { Category::CATEGORY_LABEL, "http://schemas.google.com/g/2005/labels" },
 };
 
-struct AppIconCategoryMap {
-  AppIcon::IconCategory category;
-  const char* category_name;
-};
-
-const AppIconCategoryMap kAppIconCategoryMap[] = {
-    { AppIcon::ICON_DOCUMENT, "document" },
-    { AppIcon::ICON_APPLICATION, "application" },
-    { AppIcon::ICON_SHARED_DOCUMENT, "documentShared" },
-};
-
 // Converts |url_string| to |result|.  Always returns true to be used
 // for JSONValueConverter::RegisterCustomField method.
 // TODO(mukai): make it return false in case of invalid |url_string|.
 bool GetGURLFromString(const base::StringPiece& url_string, GURL* result) {
   *result = GURL(url_string.as_string());
   return true;
-}
-
-// Converts boolean string values like "true" into bool.
-bool GetBoolFromString(const base::StringPiece& value, bool* result) {
-  *result = (value == "true");
-  return true;
-}
-
-bool SortBySize(const InstalledApp::IconList::value_type& a,
-                const InstalledApp::IconList::value_type& b) {
-  return a.first < b.first;
 }
 
 }  // namespace
@@ -375,49 +333,6 @@ void Content::RegisterJSONConverter(
     base::JSONValueConverter<Content>* converter) {
   converter->RegisterCustomField(kSrcField, &Content::url_, &GetGURLFromString);
   converter->RegisterStringField(kTypeField, &Content::mime_type_);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// AppIcon implementation
-
-AppIcon::AppIcon() : category_(AppIcon::ICON_UNKNOWN), icon_side_length_(0) {
-}
-
-AppIcon::~AppIcon() {
-}
-
-// static
-void AppIcon::RegisterJSONConverter(
-    base::JSONValueConverter<AppIcon>* converter) {
-  converter->RegisterCustomField<AppIcon::IconCategory>(
-      kInstalledAppIconCategoryField,
-      &AppIcon::category_,
-      &AppIcon::GetIconCategory);
-  converter->RegisterCustomField<int>(kInstalledAppIconSizeField,
-                                      &AppIcon::icon_side_length_,
-                                      base::StringToInt);
-  converter->RegisterRepeatedMessage(kLinkField, &AppIcon::links_);
-}
-
-GURL AppIcon::GetIconURL() const {
-  for (size_t i = 0; i < links_.size(); ++i) {
-    if (links_[i]->type() == Link::LINK_ICON)
-      return links_[i]->href();
-  }
-  return GURL();
-}
-
-// static
-bool AppIcon::GetIconCategory(const base::StringPiece& category,
-                              AppIcon::IconCategory* result) {
-  for (size_t i = 0; i < arraysize(kAppIconCategoryMap); i++) {
-    if (category == kAppIconCategoryMap[i].category_name) {
-      *result = kAppIconCategoryMap[i].category;
-      return true;
-    }
-  }
-  DVLOG(1) << "Unknown icon category " << category;
-  return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -746,144 +661,6 @@ bool ResourceList::GetNextFeedURL(GURL* url) const {
 
 void ResourceList::ReleaseEntries(std::vector<ResourceEntry*>* entries) {
   entries_.release(entries);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// InstalledApp implementation
-
-InstalledApp::InstalledApp() : supports_create_(false) {
-}
-
-InstalledApp::~InstalledApp() {
-}
-
-InstalledApp::IconList InstalledApp::GetIconsForCategory(
-    AppIcon::IconCategory category) const {
-  IconList result;
-
-  for (ScopedVector<AppIcon>::const_iterator icon_iter = app_icons_.begin();
-       icon_iter != app_icons_.end(); ++icon_iter) {
-    if ((*icon_iter)->category() != category)
-      continue;
-    GURL icon_url = (*icon_iter)->GetIconURL();
-    if (icon_url.is_empty())
-      continue;
-    result.push_back(std::make_pair((*icon_iter)->icon_side_length(),
-                                    icon_url));
-  }
-
-  // Return a sorted list, smallest to largest.
-  std::sort(result.begin(), result.end(), SortBySize);
-  return result;
-}
-
-GURL InstalledApp::GetProductUrl() const {
-  for (ScopedVector<Link>::const_iterator it = links_.begin();
-       it != links_.end(); ++it) {
-    const Link* link = *it;
-    if (link->type() == Link::LINK_PRODUCT)
-      return link->href();
-  }
-  return GURL();
-}
-
-// static
-bool InstalledApp::GetValueString(const base::Value* value,
-                                  std::string* result) {
-  const base::DictionaryValue* dict = NULL;
-  if (!value->GetAsDictionary(&dict))
-    return false;
-
-  if (!dict->GetString(kTField, result))
-    return false;
-
-  return true;
-}
-
-// static
-void InstalledApp::RegisterJSONConverter(
-    base::JSONValueConverter<InstalledApp>* converter) {
-  converter->RegisterRepeatedMessage(kInstalledAppIconField,
-                                     &InstalledApp::app_icons_);
-  converter->RegisterStringField(kInstalledAppIdField,
-                                 &InstalledApp::app_id_);
-  converter->RegisterStringField(kInstalledAppNameField,
-                                 &InstalledApp::app_name_);
-  converter->RegisterStringField(kInstalledAppObjectTypeField,
-                                 &InstalledApp::object_type_);
-  converter->RegisterCustomField<bool>(kInstalledAppSupportsCreateField,
-                                       &InstalledApp::supports_create_,
-                                       &GetBoolFromString);
-  converter->RegisterRepeatedCustomValue(kInstalledAppPrimaryMimeTypeField,
-                                         &InstalledApp::primary_mimetypes_,
-                                         &GetValueString);
-  converter->RegisterRepeatedCustomValue(kInstalledAppSecondaryMimeTypeField,
-                                         &InstalledApp::secondary_mimetypes_,
-                                         &GetValueString);
-  converter->RegisterRepeatedCustomValue(kInstalledAppPrimaryFileExtensionField,
-                                         &InstalledApp::primary_extensions_,
-                                         &GetValueString);
-  converter->RegisterRepeatedCustomValue(
-      kInstalledAppSecondaryFileExtensionField,
-      &InstalledApp::secondary_extensions_,
-      &GetValueString);
-  converter->RegisterRepeatedMessage(kLinkField, &InstalledApp::links_);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// AccountMetadata implementation
-
-AccountMetadata::AccountMetadata()
-    : quota_bytes_total_(0),
-      quota_bytes_used_(0),
-      largest_changestamp_(0) {
-}
-
-AccountMetadata::~AccountMetadata() {
-}
-
-// static
-void AccountMetadata::RegisterJSONConverter(
-    base::JSONValueConverter<AccountMetadata>* converter) {
-  converter->RegisterCustomField<int64>(
-      kQuotaBytesTotalField,
-      &AccountMetadata::quota_bytes_total_,
-      &base::StringToInt64);
-  converter->RegisterCustomField<int64>(
-      kQuotaBytesUsedField,
-      &AccountMetadata::quota_bytes_used_,
-      &base::StringToInt64);
-  converter->RegisterCustomField<int64>(
-      kLargestChangestampField,
-      &AccountMetadata::largest_changestamp_,
-      &base::StringToInt64);
-  converter->RegisterRepeatedMessage(kInstalledAppField,
-                                     &AccountMetadata::installed_apps_);
-}
-
-// static
-scoped_ptr<AccountMetadata> AccountMetadata::CreateFrom(
-    const base::Value& value) {
-  scoped_ptr<AccountMetadata> metadata(new AccountMetadata());
-  const base::DictionaryValue* dictionary = NULL;
-  const base::Value* entry = NULL;
-  if (!value.GetAsDictionary(&dictionary) ||
-      !dictionary->Get(kEntryField, &entry) ||
-      !metadata->Parse(*entry)) {
-    LOG(ERROR) << "Unable to create: Invalid account metadata feed!";
-    return scoped_ptr<AccountMetadata>();
-  }
-
-  return metadata.Pass();
-}
-
-bool AccountMetadata::Parse(const base::Value& value) {
-  base::JSONValueConverter<AccountMetadata> converter;
-  if (!converter.Convert(value, this)) {
-    LOG(ERROR) << "Unable to parse: Invalid account metadata feed!";
-    return false;
-  }
-  return true;
 }
 
 }  // namespace google_apis

@@ -58,8 +58,8 @@ DriveAppInfo::DriveAppInfo() {
 DriveAppInfo::DriveAppInfo(
     const std::string& app_id,
     const std::string& product_id,
-    const google_apis::InstalledApp::IconList& app_icons,
-    const google_apis::InstalledApp::IconList& document_icons,
+    const IconList& app_icons,
+    const IconList& document_icons,
     const std::string& app_name,
     const GURL& create_url,
     bool is_removable)
@@ -159,8 +159,8 @@ void DriveAppRegistry::UpdateFromAppList(const google_apis::AppList& app_list) {
     const google_apis::AppResource& app = *app_list.items()[i];
     const std::string id = app.application_id();
 
-    google_apis::InstalledApp::IconList app_icons;
-    google_apis::InstalledApp::IconList document_icons;
+    DriveAppInfo::IconList app_icons;
+    DriveAppInfo::IconList document_icons;
     for (size_t j = 0; j < app.icons().size(); ++j) {
       const google_apis::DriveAppIcon& icon = *app.icons()[j];
       if (icon.icon_url().is_empty())
@@ -230,12 +230,12 @@ bool DriveAppRegistry::IsAppUninstallSupported() {
 
 namespace util {
 
-GURL FindPreferredIcon(const google_apis::InstalledApp::IconList& icons,
+GURL FindPreferredIcon(const DriveAppInfo::IconList& icons,
                        int preferred_size) {
   if (icons.empty())
     return GURL();
 
-  google_apis::InstalledApp::IconList sorted_icons = icons;
+  DriveAppInfo::IconList sorted_icons = icons;
   std::sort(sorted_icons.rbegin(), sorted_icons.rend());
 
   // Go forward while the size is larger or equal to preferred_size.
