@@ -620,12 +620,12 @@ void DesktopDragDropClientAuraX11::OnXdndDrop(
 
 void DesktopDragDropClientAuraX11::OnSelectionNotify(
     const XSelectionEvent& xselection) {
-  if (!target_current_context_) {
-    NOTIMPLEMENTED();
-    return;
-  }
+  if (target_current_context_)
+    target_current_context_->OnSelectionNotify(xselection);
 
-  target_current_context_->OnSelectionNotify(xselection);
+  // ICCCM requires us to delete the property passed into SelectionNotify.
+  if (xselection.property != None)
+    XDeleteProperty(xdisplay_, xwindow_, xselection.property);
 }
 
 int DesktopDragDropClientAuraX11::StartDragAndDrop(
