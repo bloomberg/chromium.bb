@@ -806,15 +806,17 @@ function test()
             "samples": [2,16,21,26,35,36,37,2,2,2,2,2,2,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,48,52,52,61,2,37,37,37,37,37,37,37]
           }
     };
+    profileAndExpectations.target = function() {};
     WebInspector.inspectorView.showPanel("profiles");
     var cpuProfileView = new WebInspector.CPUProfileView(profileAndExpectations);
-    var dataProvider = new WebInspector.CPUFlameChartDataProvider(cpuProfileView.profile);
-    var timelineData = dataProvider.timelineData();
-    console.log(Object.values(WebInspector.CPUProfileFlameChart.OverviewPane.calculateDrawData(dataProvider, timelineData, 16)));
-    console.log(Object.values(WebInspector.CPUProfileFlameChart.OverviewPane.calculateDrawData(dataProvider, timelineData, 8)));
-    console.log(Object.values(WebInspector.CPUProfileFlameChart.OverviewPane.calculateDrawData(dataProvider, timelineData, 4)));
-    console.log(Object.values(WebInspector.CPUProfileFlameChart.OverviewPane.calculateDrawData(dataProvider, timelineData, 2)));
-    console.log(Object.values(WebInspector.CPUProfileFlameChart.OverviewPane.calculateDrawData(dataProvider, timelineData, 1)));
+    cpuProfileView.viewSelectComboBox.setSelectedIndex(0);
+    cpuProfileView._changeView();
+    var overviewPane = cpuProfileView._flameChart._overviewPane;
+    console.log(Object.values(overviewPane._calculateDrawData(16)));
+    console.log(Object.values(overviewPane._calculateDrawData(8)));
+    console.log(Object.values(overviewPane._calculateDrawData(4)));
+    console.log(Object.values(overviewPane._calculateDrawData(2)));
+    console.log(Object.values(overviewPane._calculateDrawData(1)));
     InspectorTest.completeTest();
 }
 
