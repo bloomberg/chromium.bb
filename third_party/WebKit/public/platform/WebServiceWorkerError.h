@@ -41,6 +41,7 @@ struct WebServiceWorkerError {
         SecurityError,
         InstallError,
         ActivateError,
+        NotFoundError,
         UnknownError,
         ErrorTypeLast = UnknownError
     };

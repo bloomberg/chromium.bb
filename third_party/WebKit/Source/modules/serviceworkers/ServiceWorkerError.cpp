@@ -45,6 +45,8 @@ String ServiceWorkerError::errorString(WebServiceWorkerError::ErrorType type)
         return "InstallError";
     case WebServiceWorkerError::ActivateError:
         return "ActivateError";
+    case WebServiceWorkerError::NotFoundError:
+        return "NotFoundError";
     case WebServiceWorkerError::UnknownError:
         return "UnknownError";
     }
