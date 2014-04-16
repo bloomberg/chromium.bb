@@ -13,6 +13,7 @@
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/media_stream_audio_processor.h"
 #include "content/renderer/media/media_stream_audio_processor_options.h"
+#include "content/renderer/media/media_stream_audio_source.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/media/webrtc_local_audio_track.h"
 #include "content/renderer/media/webrtc_logging.h"
@@ -131,9 +132,10 @@ class WebRtcAudioCapturer::TrackOwner
 scoped_refptr<WebRtcAudioCapturer> WebRtcAudioCapturer::CreateCapturer(
     int render_view_id, const StreamDeviceInfo& device_info,
     const blink::WebMediaConstraints& constraints,
-    WebRtcAudioDeviceImpl* audio_device) {
+    WebRtcAudioDeviceImpl* audio_device,
+    MediaStreamAudioSource* audio_source) {
   scoped_refptr<WebRtcAudioCapturer> capturer = new WebRtcAudioCapturer(
-      render_view_id, device_info, constraints, audio_device);
+      render_view_id, device_info, constraints, audio_device, audio_source);
   if (capturer->Initialize())
     return capturer;
 
@@ -216,7 +218,8 @@ WebRtcAudioCapturer::WebRtcAudioCapturer(
     int render_view_id,
     const StreamDeviceInfo& device_info,
     const blink::WebMediaConstraints& constraints,
-    WebRtcAudioDeviceImpl* audio_device)
+    WebRtcAudioDeviceImpl* audio_device,
+    MediaStreamAudioSource* audio_source)
     : constraints_(constraints),
       audio_processor_(
           new talk_base::RefCountedObject<MediaStreamAudioProcessor>(
@@ -230,6 +233,7 @@ WebRtcAudioCapturer::WebRtcAudioCapturer(
       key_pressed_(false),
       need_audio_processing_(false),
       audio_device_(audio_device),
+      audio_source_(audio_source),
       audio_power_monitor_(
           device_info_.device.input.sample_rate,
           base::TimeDelta::FromMilliseconds(kPowerMonitorTimeConstantMs)) {
@@ -239,8 +243,8 @@ WebRtcAudioCapturer::WebRtcAudioCapturer(
 WebRtcAudioCapturer::~WebRtcAudioCapturer() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(tracks_.IsEmpty());
-  DCHECK(!running_);
   DVLOG(1) << "WebRtcAudioCapturer::~WebRtcAudioCapturer()";
+  Stop();
 }
 
 void WebRtcAudioCapturer::AddTrack(WebRtcLocalAudioTrack* track) {
@@ -257,25 +261,34 @@ void WebRtcAudioCapturer::AddTrack(WebRtcLocalAudioTrack* track) {
     scoped_refptr<TrackOwner> track_owner(new TrackOwner(track));
     tracks_.AddAndTag(track_owner);
   }
-
-  // Start the source if the first audio track is connected to the capturer.
-  // Start() will do nothing if the capturer has already been started.
-  Start();
-
 }
 
 void WebRtcAudioCapturer::RemoveTrack(WebRtcLocalAudioTrack* track) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  base::AutoLock auto_lock(lock_);
+  DVLOG(1) << "WebRtcAudioCapturer::RemoveTrack()";
+  bool stop_source = false;
+  {
+    base::AutoLock auto_lock(lock_);
 
-  scoped_refptr<TrackOwner> removed_item =
-      tracks_.Remove(TrackOwner::TrackWrapper(track));
+    scoped_refptr<TrackOwner> removed_item =
+        tracks_.Remove(TrackOwner::TrackWrapper(track));
 
-  // Clear the delegate to ensure that no more capture callbacks will
-  // be sent to this sink. Also avoids a possible crash which can happen
-  // if this method is called while capturing is active.
-  if (removed_item.get())
-    removed_item->Reset();
+    // Clear the delegate to ensure that no more capture callbacks will
+    // be sent to this sink. Also avoids a possible crash which can happen
+    // if this method is called while capturing is active.
+    if (removed_item.get()) {
+      removed_item->Reset();
+      stop_source = tracks_.IsEmpty();
+    }
+  }
+  if (stop_source) {
+    // Since WebRtcAudioCapturer does not inherit MediaStreamAudioSource,
+    // and instead MediaStreamAudioSource is composed of a WebRtcAudioCapturer,
+    // we have to call StopSource on the MediaStreamSource. This will call
+    // MediaStreamAudioSource::DoStopSource which in turn call
+    // WebRtcAudioCapturerer::Stop();
+    audio_source_->StopSource();
+  }
 }
 
 void WebRtcAudioCapturer::SetCapturerSource(
@@ -286,7 +299,6 @@ void WebRtcAudioCapturer::SetCapturerSource(
   DVLOG(1) << "SetCapturerSource(channel_layout=" << channel_layout << ","
            << "sample_rate=" << sample_rate << ")";
   scoped_refptr<media::AudioCapturerSource> old_source;
-  bool restart_source = false;
   {
     base::AutoLock auto_lock(lock_);
     if (source_.get() == source.get())
@@ -296,7 +308,6 @@ void WebRtcAudioCapturer::SetCapturerSource(
     source_ = source;
 
     // Reset the flag to allow starting the new source.
-    restart_source = running_;
     running_ = false;
   }
 
@@ -329,8 +340,7 @@ void WebRtcAudioCapturer::SetCapturerSource(
   if (source.get())
     source->Initialize(params, this, session_id());
 
-  if (restart_source)
-    Start();
+  Start();
 }
 
 void WebRtcAudioCapturer::EnablePeerConnectionMode() {

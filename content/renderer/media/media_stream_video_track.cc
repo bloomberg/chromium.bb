@@ -46,7 +46,7 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
 
 MediaStreamVideoTrack::~MediaStreamVideoTrack() {
   DCHECK(sinks_.empty());
-  source_->RemoveTrack(this);
+  Stop();
 }
 
 void MediaStreamVideoTrack::AddSink(MediaStreamVideoSink* sink) {
@@ -86,6 +86,15 @@ void MediaStreamVideoTrack::SetEnabled(bool enabled) {
        it != sinks_.end(); ++it) {
     (*it)->OnEnabledChanged(enabled);
   }
+}
+
+void MediaStreamVideoTrack::Stop() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (source_) {
+    source_->RemoveTrack(this);
+    source_ = NULL;
+  }
+  OnReadyStateChanged(blink::WebMediaStreamSource::ReadyStateEnded);
 }
 
 void MediaStreamVideoTrack::OnVideoFrame(

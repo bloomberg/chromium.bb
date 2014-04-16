@@ -11,6 +11,7 @@
 #include "content/renderer/media/webrtc/webrtc_local_audio_track_adapter.h"
 #include "content/renderer/media/webrtc/webrtc_video_capturer_adapter.h"
 #include "content/renderer/media/webrtc_audio_capturer.h"
+#include "content/renderer/media/webrtc_local_audio_track.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
 #include "third_party/libjingle/source/talk/base/scoped_ref_ptr.h"
@@ -284,7 +285,7 @@ int MockVideoSource::GetFrameNum() const {
 }
 
 MockWebRtcVideoTrack::MockWebRtcVideoTrack(
-    std::string id,
+    const std::string& id,
     webrtc::VideoSourceInterface* source)
     : enabled_(false),
       id_(id),
@@ -430,7 +431,8 @@ class MockIceCandidate : public IceCandidateInterface {
 };
 
 MockMediaStreamDependencyFactory::MockMediaStreamDependencyFactory()
-    : MediaStreamDependencyFactory(NULL) {
+    : MediaStreamDependencyFactory(NULL),
+      fail_to_create_next_audio_capturer_(false) {
 }
 
 MockMediaStreamDependencyFactory::~MockMediaStreamDependencyFactory() {}
@@ -520,14 +522,20 @@ MockMediaStreamDependencyFactory::CreateIceCandidate(
 scoped_refptr<WebRtcAudioCapturer>
 MockMediaStreamDependencyFactory::CreateAudioCapturer(
     int render_view_id, const StreamDeviceInfo& device_info,
-    const blink::WebMediaConstraints& constraints) {
+    const blink::WebMediaConstraints& constraints,
+    MediaStreamAudioSource* audio_source) {
+  if (fail_to_create_next_audio_capturer_) {
+    fail_to_create_next_audio_capturer_ = false;
+    return NULL;
+  }
+  DCHECK(audio_source);
   return WebRtcAudioCapturer::CreateCapturer(-1, device_info,
-                                             constraints, NULL);
+                                             constraints, NULL, audio_source);
 }
 
 void MockMediaStreamDependencyFactory::StartLocalAudioTrack(
       WebRtcLocalAudioTrack* audio_track) {
-  return;
+  audio_track->Start();
 }
 
 }  // namespace content

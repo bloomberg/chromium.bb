@@ -34,18 +34,23 @@ void MediaStreamAudioSource::AddTrack(
     const blink::WebMediaConstraints& constraints,
     const ConstraintsCallback& callback) {
   // TODO(xians): Properly implement for audio sources.
-  if (!factory_)
-    callback.Run(this, false);
-
-  bool result = true;
   if (!local_audio_source_) {
-    result = factory_->InitializeMediaStreamAudioSource(render_view_id_,
-                                                        constraints,
-                                                        this);
+    if (!factory_->InitializeMediaStreamAudioSource(render_view_id_,
+                                                    constraints,
+                                                    this)) {
+      // The source failed to start.
+      // MediaStreamImpl rely on the |stop_callback| to be triggered when the
+      // last track is removed from the source. But in this case, the source is
+      // is not even started. So we need to fail both adding the track and
+      // trigger |stop_callback|.
+      callback.Run(this, false);
+      StopSource();
+      return;
+    }
   }
-  if (result)
-    factory_->CreateLocalAudioTrack(track);
-  callback.Run(this, result);
+
+  factory_->CreateLocalAudioTrack(track);
+  callback.Run(this, true);
 }
 
 }  // namespace content

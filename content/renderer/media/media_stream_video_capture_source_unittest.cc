@@ -21,6 +21,7 @@ class MockVideoCapturerDelegate : public VideoCapturerDelegate {
                void(const media::VideoCaptureParams& params,
                     const NewFrameCallback& new_frame_callback,
                     const StartedCallback& started_callback));
+  MOCK_METHOD0(StopDeliver,void());
 
  private:
   virtual ~MockVideoCapturerDelegate() {}
@@ -42,12 +43,12 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
     webkit_source_.setExtraData(source_);
   }
 
-  void StartSource() {
+  blink::WebMediaStreamTrack StartSource() {
     MockMediaConstraintFactory factory;
     bool enabled = true;
     MediaStreamDependencyFactory* dependency_factory = NULL;
-    // CreateVideoTrack will trigger OnSupportedFormats.
-    MediaStreamVideoTrack::CreateVideoTrack(
+    // CreateVideoTrack will trigger OnConstraintsApplied.
+    return MediaStreamVideoTrack::CreateVideoTrack(
         source_, factory.CreateWebMediaConstraints(),
         base::Bind(
             &MediaStreamVideoCapturerSourceTest::OnConstraintsApplied,
@@ -74,7 +75,9 @@ TEST_F(MediaStreamVideoCapturerSourceTest, TabCaptureAllowResolutionChange) {
       testing::Field(&media::VideoCaptureParams::allow_resolution_change, true),
       testing::_,
       testing::_)).Times(1);
-  StartSource();
+  blink::WebMediaStreamTrack track = StartSource();
+  // When the track goes out of scope, the source will be stopped.
+  EXPECT_CALL(*delegate_, StopDeliver());
 }
 
 TEST_F(MediaStreamVideoCapturerSourceTest,
@@ -87,7 +90,9 @@ TEST_F(MediaStreamVideoCapturerSourceTest,
       testing::Field(&media::VideoCaptureParams::allow_resolution_change, true),
       testing::_,
       testing::_)).Times(1);
-  StartSource();
+  blink::WebMediaStreamTrack track = StartSource();
+  // When the track goes out of scope, the source will be stopped.
+  EXPECT_CALL(*delegate_, StopDeliver());
 }
 
 }  // namespace content

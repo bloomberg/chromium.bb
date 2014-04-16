@@ -99,21 +99,16 @@ class CONTENT_EXPORT MediaStreamImpl
   // Called when |source| has been stopped from JavaScript.
   void OnLocalSourceStopped(const blink::WebMediaStreamSource& source);
 
-  // Called when a MediaStream with label |label| has been ordered to stop from
-  // JavaScript. The implementation must stop all sources that are not used by
-  // other MediaStreams.
-  // TODO(perkj): MediaStream::Stop has been deprecated from the spec and all
-  // applications should move to use MediaStreamTrack::Stop instead and this
-  // method be removed.
-  void OnLocalMediaStreamStop(const std::string& label);
-
-  // This function is virtual for test purposes. A test can override this to
+  // These methods are virtual for test purposes. A test can override them to
   // test requesting local media streams. The function notifies WebKit that the
-  // |request| have completed and generated the MediaStream |stream|.
-  virtual void CompleteGetUserMediaRequest(
-      const blink::WebMediaStream& stream,
+  // |request| have completed.
+  virtual void GetUserMediaRequestSucceeded(
+       const blink::WebMediaStream& stream,
+       blink::WebUserMediaRequest* request_info);
+  virtual void GetUserMediaRequestFailed(
       blink::WebUserMediaRequest* request_info,
       content::MediaStreamRequestResult result);
+
 
   // Returns the WebKit representation of a MediaStream given an URL.
   // This is virtual for test purposes.
@@ -220,7 +215,6 @@ class CONTENT_EXPORT MediaStreamImpl
   UserMediaRequestInfo* FindUserMediaRequestInfo(int request_id);
   UserMediaRequestInfo* FindUserMediaRequestInfo(
       const blink::WebUserMediaRequest& request);
-  UserMediaRequestInfo* FindUserMediaRequestInfo(const std::string& label);
   void DeleteUserMediaRequestInfo(UserMediaRequestInfo* request);
 
   // Returns the source that use a device with |device.session_id|
@@ -228,14 +222,8 @@ class CONTENT_EXPORT MediaStreamImpl
   const blink::WebMediaStreamSource* FindLocalSource(
       const StreamDeviceInfo& device) const;
 
-  // Returns true if |source| exists in |user_media_requests_|
-  bool IsSourceInRequests(const blink::WebMediaStreamSource& source) const;
-
   void StopLocalSource(const blink::WebMediaStreamSource& source,
                        bool notify_dispatcher);
-  // Stops all local sources that don't exist in exist in
-  // |user_media_requests_|.
-  void StopUnreferencedSources(bool notify_dispatcher);
 
   scoped_refptr<WebRtcAudioRenderer> CreateRemoteAudioRenderer(
       webrtc::MediaStreamInterface* stream, int render_frame_id);
@@ -261,9 +249,9 @@ class CONTENT_EXPORT MediaStreamImpl
   // valid for the lifetime of RenderView.
   MediaStreamDispatcher* media_stream_dispatcher_;
 
-  UserMediaRequests user_media_requests_;
-
   LocalStreamSources local_sources_;
+
+  UserMediaRequests user_media_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamImpl);
 };

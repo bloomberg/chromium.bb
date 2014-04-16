@@ -62,6 +62,7 @@ class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
   // where the track is added to a RTCPeerConnection. crbug/323223.
   virtual webrtc::VideoTrackInterface* GetVideoAdapter() OVERRIDE;
   virtual void SetEnabled(bool enabled) OVERRIDE;
+  virtual void Stop() OVERRIDE;
 
   void OnVideoFrame(const scoped_refptr<media::VideoFrame>& frame);
   void OnReadyStateChanged(blink::WebMediaStreamSource::ReadyState state);

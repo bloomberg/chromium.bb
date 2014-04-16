@@ -26,10 +26,8 @@ webrtc::MediaStreamInterface* MediaStream::GetAdapter(
 }
 
 MediaStream::MediaStream(MediaStreamDependencyFactory* factory,
-                         StreamStopCallback stream_stop,
                          const blink::WebMediaStream& stream)
-    : stream_stop_callback_(stream_stop),
-      stream_adapter_(NULL),
+    : stream_adapter_(NULL),
       is_local_(true),
       label_(stream.id().utf8()),
       factory_(factory) {
@@ -44,11 +42,6 @@ MediaStream::MediaStream(webrtc::MediaStreamInterface* stream)
 }
 
 MediaStream::~MediaStream() {
-}
-
-void MediaStream::OnStreamStopped() {
-  if (!stream_stop_callback_.is_null())
-    stream_stop_callback_.Run(label_);
 }
 
 webrtc::MediaStreamInterface* MediaStream::GetWebRtcAdapter(

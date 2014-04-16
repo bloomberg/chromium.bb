@@ -27,14 +27,14 @@ const char MediaStreamVideoSource::kMaxFrameRate[] = "maxFrameRate";
 const char MediaStreamVideoSource::kMinFrameRate[] = "minFrameRate";
 
 const char* kSupportedConstraints[] = {
-    MediaStreamVideoSource::kMaxAspectRatio,
-    MediaStreamVideoSource::kMinAspectRatio,
-    MediaStreamVideoSource::kMaxWidth,
-    MediaStreamVideoSource::kMinWidth,
-    MediaStreamVideoSource::kMaxHeight,
-    MediaStreamVideoSource::kMinHeight,
-    MediaStreamVideoSource::kMaxFrameRate,
-    MediaStreamVideoSource::kMinFrameRate,
+  MediaStreamVideoSource::kMaxAspectRatio,
+  MediaStreamVideoSource::kMinAspectRatio,
+  MediaStreamVideoSource::kMaxWidth,
+  MediaStreamVideoSource::kMinWidth,
+  MediaStreamVideoSource::kMaxHeight,
+  MediaStreamVideoSource::kMinHeight,
+  MediaStreamVideoSource::kMaxFrameRate,
+  MediaStreamVideoSource::kMinFrameRate,
 };
 
 const int MediaStreamVideoSource::kDefaultWidth = 640;
@@ -353,10 +353,13 @@ void MediaStreamVideoSource::AddTrack(
 }
 
 void MediaStreamVideoSource::RemoveTrack(MediaStreamVideoTrack* video_track) {
+  DCHECK(CalledOnValidThread());
   std::vector<MediaStreamVideoTrack*>::iterator it =
       std::find(tracks_.begin(), tracks_.end(), video_track);
   DCHECK(it != tracks_.end());
   tracks_.erase(it);
+  if (tracks_.empty())
+    StopSource();
 }
 
 void MediaStreamVideoSource::InitAdapter() {
@@ -382,6 +385,7 @@ webrtc::VideoSourceInterface* MediaStreamVideoSource::GetAdapter() {
 }
 
 void MediaStreamVideoSource::DoStopSource() {
+  DCHECK(CalledOnValidThread());
   DVLOG(3) << "DoStopSource()";
   StopSourceImpl();
   state_ = ENDED;

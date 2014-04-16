@@ -99,7 +99,7 @@ void VideoCapturerDelegate::StartDeliver(
 
 void VideoCapturerDelegate::StopDeliver() {
   // Immediately make sure we don't provide more frames.
-  DVLOG(3) << "VideoCapturerDelegate::StopCapture()";
+  DVLOG(3) << "VideoCapturerDelegate::StopDeliver()";
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
   capture_engine_->StopCapture(this);
   new_frame_callback_.Reset();

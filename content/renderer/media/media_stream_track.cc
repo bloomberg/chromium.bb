@@ -31,6 +31,15 @@ void MediaStreamTrack::SetEnabled(bool enabled) {
     track_->set_enabled(enabled);
 }
 
+void MediaStreamTrack::Stop() {
+  // Stop means that a track should be stopped permanently. But
+  // since there is no proper way of doing that on a remote track, we can
+  // at least disable the track. Blink will not call down to the content layer
+  // after a track has been stopped.
+  if (track_)
+    track_->set_enabled(false);
+}
+
 webrtc::AudioTrackInterface* MediaStreamTrack::GetAudioAdapter() {
   return static_cast<webrtc::AudioTrackInterface*>(track_.get());
 }

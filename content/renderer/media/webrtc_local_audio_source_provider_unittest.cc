@@ -32,7 +32,7 @@ class WebRtcLocalAudioSourceProviderTest : public testing::Test {
     blink::WebMediaConstraints constraints;
     scoped_refptr<WebRtcAudioCapturer> capturer(
         WebRtcAudioCapturer::CreateCapturer(-1, StreamDeviceInfo(),
-                                            constraints, NULL));
+                                            constraints, NULL, NULL));
     scoped_refptr<WebRtcLocalAudioTrackAdapter> adapter(
         WebRtcLocalAudioTrackAdapter::Create(std::string(), NULL));
     scoped_ptr<WebRtcLocalAudioTrack> native_track(

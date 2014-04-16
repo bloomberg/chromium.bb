@@ -26,11 +26,8 @@ class MediaStreamDependencyFactory;
 class CONTENT_EXPORT MediaStream
     : NON_EXPORTED_BASE(public blink::WebMediaStream::ExtraData) {
  public:
-  typedef base::Callback<void(const std::string& label)> StreamStopCallback;
-
   // Constructor for local MediaStreams.
   MediaStream(MediaStreamDependencyFactory* factory,
-              StreamStopCallback stream_stop,
               const blink::WebMediaStream& stream);
   // Constructor for remote MediaStreams.
   explicit MediaStream(webrtc::MediaStreamInterface* stream);
@@ -51,10 +48,6 @@ class CONTENT_EXPORT MediaStream
   // way regardless if they are local or remote.
   bool is_local() const { return is_local_; }
 
-  // Called by MediaStreamCenter when a stream has been stopped
-  // from JavaScript. Triggers |stream_stop_callback_|.
-  void OnStreamStopped();
-
   // Called by MediaStreamCenter when a track has been added to a stream stream.
   // If a libjingle representation of |stream| exist, the track is added to
   // the libjingle MediaStream.
@@ -72,7 +65,6 @@ class CONTENT_EXPORT MediaStream
       const blink::WebMediaStream& stream);
 
  private:
-  StreamStopCallback stream_stop_callback_;
   scoped_refptr<webrtc::MediaStreamInterface> stream_adapter_;
   const bool is_local_;
   const std::string label_;

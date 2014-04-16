@@ -342,7 +342,6 @@ void MediaStreamImpl::OnStreamGenerated(
   web_stream->setExtraData(
       new MediaStream(
           dependency_factory_,
-          base::Bind(&MediaStreamImpl::OnLocalMediaStreamStop, AsWeakPtr()),
           *web_stream));
 
   // Wait for the tracks to be started successfully or to fail.
@@ -365,9 +364,8 @@ void MediaStreamImpl::OnStreamGenerationFailed(
     DVLOG(1) << "Request ID not found";
     return;
   }
-  CompleteGetUserMediaRequest(request_info->web_stream,
-                              &request_info->request,
-                              result);
+
+  GetUserMediaRequestFailed(&request_info->request, result);
   DeleteUserMediaRequestInfo(request_info);
 }
 
@@ -397,19 +395,6 @@ void MediaStreamImpl::OnDeviceStopped(
     if (device_it->source.id() == source.id()) {
       local_sources_.erase(device_it);
       break;
-    }
-  }
-
-  // Remove the reference to this source from all |user_media_requests_|.
-  // TODO(perkj): The below is not necessary once we don't need to support
-  // MediaStream::Stop().
-  UserMediaRequests::iterator it = user_media_requests_.begin();
-  while (it != user_media_requests_.end()) {
-    (*it)->RemoveSource(source);
-    if ((*it)->AreAllSourcesRemoved()) {
-      it = user_media_requests_.erase(it);
-    } else {
-      ++it;
     }
   }
 }
@@ -533,14 +518,12 @@ void MediaStreamImpl::OnCreateNativeTracksCompleted(
   DVLOG(1) << "MediaStreamImpl::OnCreateNativeTracksComplete("
            << "{request_id = " << request->request_id << "} "
            << "{result = " << result << "})";
-  CompleteGetUserMediaRequest(request->web_stream, &request->request,
-                              result);
-  if (result != MEDIA_DEVICE_OK) {
-    // TODO(perkj): Once we don't support MediaStream::Stop the |request_info|
-    // can be deleted even if the request succeeds.
-    DeleteUserMediaRequestInfo(request);
-    StopUnreferencedSources(true);
-  }
+  if (result == content::MEDIA_DEVICE_OK)
+    GetUserMediaRequestSucceeded(request->web_stream, &request->request);
+  else
+    GetUserMediaRequestFailed(&request->request, result);
+
+  DeleteUserMediaRequestInfo(request);
 }
 
 void MediaStreamImpl::OnDevicesEnumerated(
@@ -566,17 +549,19 @@ void MediaStreamImpl::OnDeviceOpenFailed(int request_id) {
   NOTIMPLEMENTED();
 }
 
-void MediaStreamImpl::CompleteGetUserMediaRequest(
+void MediaStreamImpl::GetUserMediaRequestSucceeded(
     const blink::WebMediaStream& stream,
+    blink::WebUserMediaRequest* request_info) {
+  DVLOG(1) << "MediaStreamImpl::GetUserMediaRequestSucceeded";
+  request_info->requestSucceeded(stream);
+}
+
+void MediaStreamImpl::GetUserMediaRequestFailed(
     blink::WebUserMediaRequest* request_info,
     content::MediaStreamRequestResult result) {
-
-  DVLOG(1) << "MediaStreamImpl::CompleteGetUserMediaRequest("
-           << "result=" << result;
-
   switch (result) {
     case MEDIA_DEVICE_OK:
-      request_info->requestSucceeded(stream);
+      NOTREACHED();
       break;
     case MEDIA_DEVICE_PERMISSION_DENIED:
       request_info->requestDenied();
@@ -627,16 +612,6 @@ const blink::WebMediaStreamSource* MediaStreamImpl::FindLocalSource(
   return NULL;
 }
 
-bool MediaStreamImpl::IsSourceInRequests(
-    const blink::WebMediaStreamSource& source) const {
-  for (UserMediaRequests::const_iterator req_it = user_media_requests_.begin();
-       req_it != user_media_requests_.end(); ++req_it) {
-    if ((*req_it)->IsSourceUsed(source))
-      return true;
-  }
-  return false;
-}
-
 MediaStreamImpl::UserMediaRequestInfo*
 MediaStreamImpl::FindUserMediaRequestInfo(int request_id) {
   UserMediaRequests::iterator it = user_media_requests_.begin();
@@ -653,16 +628,6 @@ MediaStreamImpl::FindUserMediaRequestInfo(
   UserMediaRequests::iterator it = user_media_requests_.begin();
   for (; it != user_media_requests_.end(); ++it) {
     if ((*it)->request == request)
-      return (*it);
-  }
-  return NULL;
-}
-
-MediaStreamImpl::UserMediaRequestInfo*
-MediaStreamImpl::FindUserMediaRequestInfo(const std::string& label) {
-  UserMediaRequests::iterator it = user_media_requests_.begin();
-  for (; it != user_media_requests_.end(); ++it) {
-    if ((*it)->generated && (*it)->web_stream.id() == base::UTF8ToUTF16(label))
       return (*it);
   }
   return NULL;
@@ -720,20 +685,10 @@ void MediaStreamImpl::FrameWillClose(blink::WebFrame* frame) {
   }
 }
 
-void MediaStreamImpl::OnLocalMediaStreamStop(
-    const std::string& label) {
-  DVLOG(1) << "MediaStreamImpl::OnLocalMediaStreamStop(" << label << ")";
-
-  UserMediaRequestInfo* user_media_request = FindUserMediaRequestInfo(label);
-  if (user_media_request) {
-    DeleteUserMediaRequestInfo(user_media_request);
-  }
-  StopUnreferencedSources(true);
-}
-
 void MediaStreamImpl::OnLocalSourceStopped(
     const blink::WebMediaStreamSource& source) {
   DCHECK(CalledOnValidThread());
+  DVLOG(1) << "MediaStreamImpl::OnLocalSourceStopped";
 
   bool device_found = false;
   for (LocalStreamSources::iterator device_it = local_sources_.begin();
@@ -745,19 +700,6 @@ void MediaStreamImpl::OnLocalSourceStopped(
     }
   }
   CHECK(device_found);
-
-  // Remove the reference to this source from all |user_media_requests_|.
-  // TODO(perkj): The below is not necessary once we don't need to support
-  // MediaStream::Stop().
-  UserMediaRequests::iterator it = user_media_requests_.begin();
-  while (it != user_media_requests_.end()) {
-    (*it)->RemoveSource(source);
-    if ((*it)->AreAllSourcesRemoved()) {
-      it = user_media_requests_.erase(it);
-    } else {
-      ++it;
-    }
-  }
 
   MediaStreamSource* source_impl =
       static_cast<MediaStreamSource*> (source.extraData());
@@ -777,18 +719,6 @@ void MediaStreamImpl::StopLocalSource(
 
   source_impl->ResetSourceStoppedCallback();
   source_impl->StopSource();
-}
-
-void MediaStreamImpl::StopUnreferencedSources(bool notify_dispatcher) {
-  LocalStreamSources::iterator source_it = local_sources_.begin();
-  while (source_it != local_sources_.end()) {
-    if (!IsSourceInRequests(source_it->source)) {
-      StopLocalSource(source_it->source, notify_dispatcher);
-      source_it = local_sources_.erase(source_it);
-    } else {
-      ++source_it;
-    }
-  }
 }
 
 scoped_refptr<WebRtcAudioRenderer> MediaStreamImpl::CreateRemoteAudioRenderer(
@@ -912,7 +842,7 @@ void MediaStreamImpl::UserMediaRequestInfo::CallbackOnTracksStarted(
 
 void MediaStreamImpl::UserMediaRequestInfo::OnTrackStarted(
     MediaStreamSource* source, bool success) {
-  DVLOG(1) << "OnTrackStarted";
+  DVLOG(1) << "OnTrackStarted result " << success;
   std::vector<MediaStreamSource*>::iterator it =
       std::find(sources_waiting_for_callback_.begin(),
                 sources_waiting_for_callback_.end(),

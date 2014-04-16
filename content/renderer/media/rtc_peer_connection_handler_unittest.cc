@@ -258,7 +258,6 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
                             video_tracks);
     local_stream.setExtraData(
         new MediaStream(mock_dependency_factory_.get(),
-                        MediaStream::StreamStopCallback(),
                         local_stream));
     return local_stream;
   }

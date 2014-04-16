@@ -117,7 +117,6 @@ class MediaStreamDependencyFactoryTest : public ::testing::Test {
                            video_track_vector);
     stream_desc.setExtraData(
         new content::MediaStream(dependency_factory_.get(),
-                                 content::MediaStream::StreamStopCallback(),
                                  stream_desc));
     return stream_desc;
   }
@@ -181,7 +180,6 @@ TEST_F(MediaStreamDependencyFactoryTest, CreateNativeMediaStreamWithoutSource) {
   stream_desc.initialize("new stream", audio_tracks, video_tracks);
   stream_desc.setExtraData(
       new content::MediaStream(dependency_factory_.get(),
-                               content::MediaStream::StreamStopCallback(),
                                stream_desc));
 
   VerifyMediaStream(stream_desc, 0, 0);

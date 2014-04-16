@@ -47,8 +47,10 @@ void MediaStreamRemoteVideoSource::StartSourceImpl(
 
 void MediaStreamRemoteVideoSource::StopSourceImpl() {
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
-  remote_track_->RemoveRenderer(this);
-  remote_track_->UnregisterObserver(this);
+  if (state() != MediaStreamVideoSource::ENDED) {
+    remote_track_->RemoveRenderer(this);
+    remote_track_->UnregisterObserver(this);
+  }
 }
 
 webrtc::VideoSourceInterface* MediaStreamRemoteVideoSource::GetAdapter() {

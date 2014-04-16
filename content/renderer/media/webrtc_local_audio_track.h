@@ -62,7 +62,7 @@ class CONTENT_EXPORT WebRtcLocalAudioTrack
 
   // Stops the local audio track. Called on the main render thread and
   // should be called only once when audio track going away.
-  void Stop();
+  virtual void Stop() OVERRIDE;
 
   // Method called by the capturer to deliver the capture data.
   // Called on the capture audio thread.

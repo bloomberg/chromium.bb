@@ -28,6 +28,7 @@ class AudioBus;
 namespace content {
 
 class MediaStreamAudioProcessor;
+class MediaStreamAudioSource;
 class WebRtcAudioDeviceImpl;
 class WebRtcLocalAudioRenderer;
 class WebRtcLocalAudioTrack;
@@ -57,7 +58,8 @@ class CONTENT_EXPORT WebRtcAudioCapturer
       int render_view_id,
       const StreamDeviceInfo& device_info,
       const blink::WebMediaConstraints& constraints,
-      WebRtcAudioDeviceImpl* audio_device);
+      WebRtcAudioDeviceImpl* audio_device,
+      MediaStreamAudioSource* audio_source);
 
 
   // Add a audio track to the sinks of the capturer.
@@ -100,8 +102,8 @@ class CONTENT_EXPORT WebRtcAudioCapturer
 
   // Stops recording audio. This method will empty its track lists since
   // stopping the capturer will implicitly invalidate all its tracks.
-  // This method is exposed to the public because the media stream track can
-  // call Stop() on its source.
+  // This method is exposed to the public because the MediaStreamAudioSource can
+  // call Stop()
   void Stop();
 
   // Called by the WebAudioCapturerSource to get the audio processing params.
@@ -129,7 +131,8 @@ class CONTENT_EXPORT WebRtcAudioCapturer
   WebRtcAudioCapturer(int render_view_id,
                       const StreamDeviceInfo& device_info,
                       const blink::WebMediaConstraints& constraints,
-                      WebRtcAudioDeviceImpl* audio_device);
+                      WebRtcAudioDeviceImpl* audio_device,
+                      MediaStreamAudioSource* audio_source);
 
   // AudioCapturerSource::CaptureCallback implementation.
   // Called on the AudioInputDevice audio thread.
@@ -208,7 +211,16 @@ class CONTENT_EXPORT WebRtcAudioCapturer
   // of RenderThread.
   WebRtcAudioDeviceImpl* audio_device_;
 
-  // Audio power monitor for logging audio power level.
+  // Raw pointer to the MediaStreamAudioSource object that holds a reference
+  // to this WebRtcAudioCapturer.
+  // Since |audio_source_| is owned by a blink::WebMediaStreamSource object and
+  // blink guarantees that the blink::WebMediaStreamSource outlives any
+  // blink::WebMediaStreamTrack connected to the source, |audio_source_| is
+  // guaranteed to exist as long as a WebRtcLocalAudioTrack is connected to this
+  // WebRtcAudioCapturer.
+  MediaStreamAudioSource* const audio_source_;
+
+    // Audio power monitor for logging audio power level.
   media::AudioPowerMonitor audio_power_monitor_;
 
   // Records when the last time audio power level is logged.

@@ -157,9 +157,8 @@
   }
 
   // Creates two MediaStream and renders them locally. When the video of both
-  // streams are detected to be rolling, we stop the local stream. Since both
-  // streams have the same source, both video streams should stop. If they do,
-  // the test succeeds.
+  // streams are detected to be rolling, we stop the local video tracks one at
+  // the time.
   function twoGetUserMediaAndStop(constraints) {
     console.log('Calling Two GetUserMedia');
     navigator.webkitGetUserMedia(
@@ -173,18 +172,20 @@
           constraints,
           function(stream) {
             displayIntoVideoElement(stream,
-                stopStreamAndVerifyAllLocalViewsDontPlayVideo, 'local-view-2');
+                                    function() {
+                                      stopBothVideoTracksAndVerify(stream); 
+                                    },
+                                    'local-view-2');
           },
           failedCallback);
     };
 
-    var stopStreamAndVerifyAllLocalViewsDontPlayVideo = function() {
-      gLocalStream.getVideoTracks()[0].stop();
-
-      // Since local-view and local-view-2 are playing the video from the same
-      // source, both of them should stop.
-      waitForVideoToStop('local-view');
+    var stopBothVideoTracksAndVerify = function(streamPlayingInLocalView2) {
+      streamPlayingInLocalView2.getVideoTracks()[0].stop();
       waitForVideoToStop('local-view-2');
+      // Make sure the video track in gLocalStream is still playing in 
+      // 'local-view1' and then stop it.
+      displayAndDetectVideo(gLocalStream, stopVideoTrack);
     };
   }
 
