@@ -15,9 +15,9 @@
 #include "chrome/browser/autocomplete/url_prefix.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/bookmarks/bookmark_title_match.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "components/bookmarks/core/browser/bookmark_title_match.h"
 #include "net/base/net_util.h"
 
 typedef std::vector<BookmarkTitleMatch> TitleMatches;

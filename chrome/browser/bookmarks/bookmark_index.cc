@@ -11,10 +11,10 @@
 #include "base/i18n/case_conversion.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/bookmarks/bookmark_title_match.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/url_database.h"
+#include "components/bookmarks/core/browser/bookmark_title_match.h"
 #include "components/query_parser/query_parser.h"
 #include "third_party/icu/source/common/unicode/normalizer2.h"
 

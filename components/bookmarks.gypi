@@ -19,6 +19,8 @@
       'sources': [
         'bookmarks/core/browser/bookmark_node.cc',
         'bookmarks/core/browser/bookmark_node.h',
+        'bookmarks/core/browser/bookmark_title_match.cc',
+        'bookmarks/core/browser/bookmark_title_match.h',
       ],
     },
     {

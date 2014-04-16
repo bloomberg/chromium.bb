@@ -17,8 +17,8 @@
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/bookmarks/bookmark_title_match.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/bookmarks/core/browser/bookmark_title_match.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // The bookmark corpus against which we will simulate searches.
