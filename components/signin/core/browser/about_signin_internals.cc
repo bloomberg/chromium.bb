@@ -15,6 +15,7 @@
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_internals_util.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/common/profile_management_switches.h"
 #include "google_apis/gaia/gaia_constants.h"
 
 using base::Time;
@@ -345,6 +346,10 @@ scoped_ptr<base::DictionaryValue> AboutSigninInternals::SigninStatus::ToValue(
           : "Signed In";
   AddSectionEntry(basic_info, "Chrome Version", product_version);
   AddSectionEntry(basic_info, "Signin Status", signin_status_string);
+  AddSectionEntry(basic_info, "Web Based Signin Enabled?",
+      switches::IsEnableWebBasedSignin() == true ? "True" : "False");
+  AddSectionEntry(basic_info, "New Profile Management Enabled?",
+      switches::IsNewProfileManagement() == true ? "True" : "False");
 
   // Only add username.  SID and LSID have moved to tokens section.
   const std::string field =

@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,22 +14,22 @@ namespace switches {
 // Enables the web-based sign in flow on Chrome desktop.
 bool IsEnableWebBasedSignin();
 
+// Checks whether the flag for fast user switching is enabled.
+bool IsFastUserSwitching();
+
 // Enables using GAIA information to populate profile name and icon.
 bool IsGoogleProfileInfo();
-
-// Use new profile management system, including profile sign-out and new
-// choosers.
-bool IsNewProfileManagement();
 
 // Whether the new avatar menu is enabled, either because new profile management
 // is enabled or because the new profile management preview UI is enabled.
 bool IsNewAvatarMenu();
 
+// Use new profile management system, including profile sign-out and new
+// choosers.
+bool IsNewProfileManagement();
+
 // Whether the new profile management preview has been enabled.
 bool IsNewProfileManagementPreviewEnabled();
-
-// Checks whether the flag for fast user switching is enabled.
-bool IsFastUserSwitching();
 
 }  // namespace switches
 

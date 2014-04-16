@@ -5,6 +5,7 @@ include_rules = [
   "+components/autofill/core/common",
   "+components/nacl/renderer",
   "+components/plugins/renderer",
+  "+components/signin/core/common",
   "+components/translate/content/common",
   "+components/translate/core/common",
   "+components/translate/language_detection",

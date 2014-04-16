@@ -207,8 +207,6 @@
         'common/favicon/favicon_types.h',
         'common/favicon/favicon_url_parser.cc',
         'common/favicon/favicon_url_parser.h',
-        'common/profile_management_switches.cc',
-        'common/profile_management_switches.h',
         'common/icon_with_badge_image_source.cc',
         'common/icon_with_badge_image_source.h',
         'common/importer/firefox_importer_utils.cc',

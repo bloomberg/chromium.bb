@@ -15,6 +15,8 @@
         'signin/core/common/signin_pref_names.h',
         'signin/core/common/signin_switches.cc',
         'signin/core/common/signin_switches.h',
+        'signin/core/common/profile_management_switches.cc',
+        'signin/core/common/profile_management_switches.h',
       ],
     },
     {
@@ -81,7 +83,6 @@
           ],
         }],
       ],
-      
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [4267, ],
     },

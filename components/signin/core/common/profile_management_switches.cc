@@ -1,12 +1,12 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/profile_management_switches.h"
+#include "components/signin/core/common/profile_management_switches.h"
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
-#include "chrome/common/chrome_switches.h"
+#include "components/signin/core/common/signin_switches.h"
 
 namespace {
 
@@ -45,12 +45,13 @@ bool IsEnableWebBasedSignin() {
   return CheckProfileManagementFlag(switches::kEnableWebBasedSignin, false);
 }
 
-bool IsGoogleProfileInfo() {
-  return CheckProfileManagementFlag(switches::kGoogleProfileInfo, true);
+bool IsFastUserSwitching() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kFastUserSwitching);
 }
 
-bool IsNewProfileManagement() {
-  return CheckProfileManagementFlag(switches::kNewProfileManagement, true);
+bool IsGoogleProfileInfo() {
+  return CheckProfileManagementFlag(switches::kGoogleProfileInfo, true);
 }
 
 bool IsNewAvatarMenu() {
@@ -59,15 +60,14 @@ bool IsNewAvatarMenu() {
   return is_new_avatar_menu || IsNewProfileManagement();
 }
 
+bool IsNewProfileManagement() {
+  return CheckProfileManagementFlag(switches::kNewProfileManagement, true);
+}
+
 bool IsNewProfileManagementPreviewEnabled() {
   bool is_new_avatar_menu =
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewAvatarMenu);
   return is_new_avatar_menu && IsNewProfileManagement();
-}
-
-bool IsFastUserSwitching() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kFastUserSwitching);
 }
 
 }  // namespace switches
