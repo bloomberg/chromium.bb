@@ -249,7 +249,6 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_lastTimeUpdateEventMovieTime(numeric_limits<double>::max())
     , m_loadState(WaitingForSource)
     , m_webLayer(0)
-    , m_opaque(false)
     , m_preload(MediaPlayer::Auto)
     , m_displayMode(Unknown)
     , m_cachedTime(MediaPlayer::invalidTime())
@@ -3629,16 +3628,8 @@ void HTMLMediaElement::mediaPlayerSetWebLayer(blink::WebLayer* webLayer)
         GraphicsLayer::unregisterContentsLayer(m_webLayer);
     m_webLayer = webLayer;
     if (m_webLayer) {
-        m_webLayer->setOpaque(m_opaque);
         GraphicsLayer::registerContentsLayer(m_webLayer);
     }
-}
-
-void HTMLMediaElement::mediaPlayerSetOpaque(bool opaque)
-{
-    m_opaque = opaque;
-    if (m_webLayer)
-        m_webLayer->setOpaque(m_opaque);
 }
 
 void HTMLMediaElement::mediaPlayerMediaSourceOpened(blink::WebMediaSource* webMediaSource)

@@ -330,7 +330,6 @@ private:
     virtual void mediaPlayerRepaint() OVERRIDE FINAL;
     virtual void mediaPlayerSizeChanged() OVERRIDE FINAL;
     virtual void mediaPlayerSetWebLayer(blink::WebLayer*) OVERRIDE FINAL;
-    virtual void mediaPlayerSetOpaque(bool) OVERRIDE FINAL;
     virtual void mediaPlayerMediaSourceOpened(blink::WebMediaSource*) OVERRIDE FINAL;
 
     void loadTimerFired(Timer<HTMLMediaElement>*);
@@ -456,7 +455,6 @@ private:
 
     OwnPtr<MediaPlayer> m_player;
     blink::WebLayer* m_webLayer;
-    bool m_opaque;
 
     MediaPlayer::Preload m_preload;
 

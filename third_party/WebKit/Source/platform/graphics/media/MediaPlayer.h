@@ -91,7 +91,6 @@ public:
     virtual void mediaPlayerSizeChanged() = 0;
 
     virtual void mediaPlayerSetWebLayer(blink::WebLayer*) = 0;
-    virtual void mediaPlayerSetOpaque(bool) = 0;
 
     virtual void mediaPlayerDidAddTextTrack(blink::WebInbandTextTrack*) = 0;
     virtual void mediaPlayerDidRemoveTextTrack(blink::WebInbandTextTrack*) = 0;
