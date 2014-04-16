@@ -223,18 +223,24 @@ bool ContextGroup::Initialize(
     return false;
   }
 
-  // TODO(gman): Use workarounds similar to max_texture_size above to implement.
-  if (gfx::GetGLImplementation() == gfx::kGLImplementationOSMesaGL) {
-    // Some shaders in Skia needed more than the min.
-    max_fragment_uniform_vectors_ =
-       std::min(static_cast<uint32>(kMinFragmentUniformVectors * 2),
-                max_fragment_uniform_vectors_);
-    max_varying_vectors_ =
-       std::min(static_cast<uint32>(kMinVaryingVectors * 2),
-                max_varying_vectors_);
+  // Some shaders in Skia need more than the min available vertex and
+  // fragment shader uniform vectors in case of OSMesa GL Implementation
+  if (feature_info_->workarounds().max_fragment_uniform_vectors) {
+    max_fragment_uniform_vectors_ = std::min(
+        max_fragment_uniform_vectors_,
+        static_cast<uint32>(
+            feature_info_->workarounds().max_fragment_uniform_vectors));
+  }
+  if (feature_info_->workarounds().max_varying_vectors) {
+    max_varying_vectors_ = std::min(
+        max_varying_vectors_,
+        static_cast<uint32>(feature_info_->workarounds().max_varying_vectors));
+  }
+  if (feature_info_->workarounds().max_vertex_uniform_vectors) {
     max_vertex_uniform_vectors_ =
-       std::min(static_cast<uint32>(kMinVertexUniformVectors * 2),
-                max_vertex_uniform_vectors_);
+        std::min(max_vertex_uniform_vectors_,
+                 static_cast<uint32>(
+                     feature_info_->workarounds().max_vertex_uniform_vectors));
   }
 
   program_manager_.reset(new ProgramManager(

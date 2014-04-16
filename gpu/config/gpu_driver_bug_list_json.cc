@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "4.10",
+  "version": "4.11",
   "entries": [
     {
       "id": 1,
@@ -918,6 +918,20 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       },
       "features": [
         "disable_post_sub_buffers_for_onscreen_surfaces"
+      ]
+    },
+    {
+      "id": 69,
+      "description": "Some shaders in Skia need more than the min available vertex and fragment shader uniform vectors in case of OSMesa",
+      "cr_bugs": [174845],
+      "driver_vendor": {
+        "op": "=",
+        "value": "osmesa"
+      },
+      "features": [
+       "max_fragment_uniform_vectors_32",
+       "max_varying_vectors_16",
+       "max_vertex_uniform_vectors_256"
       ]
     }
   ]

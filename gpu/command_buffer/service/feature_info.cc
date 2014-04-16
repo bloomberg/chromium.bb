@@ -95,6 +95,13 @@ void StringToWorkarounds(
     workarounds->max_cube_map_texture_size = 1024;
   if (workarounds->max_cube_map_texture_size_limit_512)
     workarounds->max_cube_map_texture_size = 512;
+
+  if (workarounds->max_fragment_uniform_vectors_32)
+    workarounds->max_fragment_uniform_vectors = 32;
+  if (workarounds->max_varying_vectors_16)
+    workarounds->max_varying_vectors = 16;
+  if (workarounds->max_vertex_uniform_vectors_256)
+    workarounds->max_vertex_uniform_vectors = 256;
 }
 
 }  // anonymous namespace.
@@ -144,7 +151,10 @@ FeatureInfo::Workarounds::Workarounds() :
     GPU_DRIVER_BUG_WORKAROUNDS(GPU_OP)
 #undef GPU_OP
     max_texture_size(0),
-    max_cube_map_texture_size(0) {
+    max_cube_map_texture_size(0),
+    max_fragment_uniform_vectors(0),
+    max_varying_vectors(0),
+    max_vertex_uniform_vectors(0) {
 }
 
 FeatureInfo::FeatureInfo() {

@@ -62,8 +62,14 @@
          max_cube_map_texture_size_limit_4096)               \
   GPU_OP(MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_512,                \
          max_cube_map_texture_size_limit_512)                \
+  GPU_OP(MAX_FRAGMENT_UNIFORM_VECTORS_32,                    \
+         max_fragment_uniform_vectors_32)                    \
   GPU_OP(MAX_TEXTURE_SIZE_LIMIT_4096,                        \
          max_texture_size_limit_4096)                        \
+  GPU_OP(MAX_VARYING_VECTORS_16,                             \
+         max_varying_vectors_16)                             \
+  GPU_OP(MAX_VERTEX_UNIFORM_VECTORS_256,                     \
+         max_vertex_uniform_vectors_256)                     \
   GPU_OP(NEEDS_GLSL_BUILT_IN_FUNCTION_EMULATION,             \
          needs_glsl_built_in_function_emulation)             \
   GPU_OP(NEEDS_OFFSCREEN_BUFFER_WORKAROUND,                  \
