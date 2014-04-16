@@ -410,6 +410,11 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
           "<body>"
             "<form>" + form_inner_html + "</form>"
             "<script>"
+              "var invalidEvents = [];"
+              "function recordInvalid(e) {"
+                "if (e.type != 'invalid') throw 'only invalid events allowed';"
+                "invalidEvents.push(e);"
+              "}"
               "function send(msg) {"
                 "domAutomationController.setAutomationId(0);"
                 "domAutomationController.send(msg);"
@@ -421,6 +426,10 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
                 "send('success');"
               "};"
               "window.onclick = function() {"
+                "var inputs = document.forms[0].querySelectorAll('input');"
+                "for (var i = 0; i < inputs.length; ++i) {"
+                  "inputs[i].oninvalid = recordInvalid;"
+                "}"
                 "document.forms[0].requestAutocomplete();"
                 "send('clicked');"
               "};"
@@ -959,8 +968,8 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
 
   const CreditCard& credit_card = test::GetVerifiedCreditCard();
   ASSERT_TRUE(
-    credit_card.GetRawInfo(CREDIT_CARD_NAME).find(ASCIIToUTF16("zebra")) ==
-        base::string16::npos);
+      credit_card.GetRawInfo(CREDIT_CARD_NAME).find(ASCIIToUTF16("zebra")) ==
+          base::string16::npos);
   AddCreditcardToProfile(controller->profile(), credit_card);
   AddAutofillProfileToProfile(controller->profile(),
                               test::GetVerifiedProfile());
@@ -971,6 +980,18 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   view->SetTextContentsOfSuggestionInput(SECTION_CC, ASCIIToUTF16("123"));
   view->SubmitForTesting();
   ExpectDomMessage("error: invalid");
+
+  int invalid_count = -1;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
+      GetRenderViewHost(), "send(invalidEvents.length);", &invalid_count));
+  EXPECT_EQ(1, invalid_count);
+
+  std::string invalid_type;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      GetRenderViewHost(),
+      "send(invalidEvents[0].target.autocomplete);",
+      &invalid_type));
+  EXPECT_EQ("cc-name", invalid_type);
 }
 
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
