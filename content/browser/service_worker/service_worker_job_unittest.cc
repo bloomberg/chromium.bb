@@ -280,6 +280,20 @@ TEST_F(ServiceWorkerJobTest, Unregister) {
   ASSERT_EQ(scoped_refptr<ServiceWorkerRegistration>(NULL), registration);
 }
 
+TEST_F(ServiceWorkerJobTest, Unregister_NothingRegistered) {
+  GURL pattern("http://www.example.com/*");
+
+  bool called;
+  job_coordinator()->Unregister(
+      pattern,
+      render_process_id_,
+      SaveUnregistration(SERVICE_WORKER_ERROR_NOT_FOUND, &called));
+
+  ASSERT_FALSE(called);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(called);
+}
+
 // Make sure that when a new registration replaces an existing
 // registration, that the old one is cleaned up.
 TEST_F(ServiceWorkerJobTest, RegisterNewScript) {
@@ -565,13 +579,15 @@ TEST_F(ServiceWorkerJobTest, ParallelUnreg) {
   job_coordinator()->Unregister(
       pattern,
       render_process_id_,
-      SaveUnregistration(SERVICE_WORKER_OK, &unregistration1_called));
+      SaveUnregistration(SERVICE_WORKER_ERROR_NOT_FOUND,
+                         &unregistration1_called));
 
   bool unregistration2_called = false;
   job_coordinator()->Unregister(
       pattern,
       render_process_id_,
-      SaveUnregistration(SERVICE_WORKER_OK, &unregistration2_called));
+      SaveUnregistration(SERVICE_WORKER_ERROR_NOT_FOUND,
+                         &unregistration2_called));
 
   ASSERT_FALSE(unregistration1_called);
   ASSERT_FALSE(unregistration2_called);

@@ -48,16 +48,11 @@ void ServiceWorkerUnregisterJob::DeleteExistingRegistration(
     ServiceWorkerStatusCode status,
     const scoped_refptr<ServiceWorkerRegistration>& registration) {
   if (status == SERVICE_WORKER_OK) {
+    DCHECK(registration);
     context_->storage()->DeleteRegistration(
         pattern_,
         base::Bind(&ServiceWorkerUnregisterJob::Complete,
                    weak_factory_.GetWeakPtr()));
-    return;
-  }
-
-  if (status == SERVICE_WORKER_ERROR_NOT_FOUND) {
-    // The previous registration does not exist, which is ok.
-    Complete(SERVICE_WORKER_OK);
     return;
   }
 
