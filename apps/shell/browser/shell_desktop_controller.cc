@@ -10,11 +10,14 @@
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/gfx/screen.h"
+#include "ui/wm/core/user_activity_detector.h"
 #include "ui/wm/test/wm_test_helper.h"
 
 #if defined(OS_CHROMEOS)
+#include "ui/chromeos/user_activity_power_manager_notifier.h"
 #include "ui/display/types/chromeos/display_mode.h"
 #include "ui/display/types/chromeos/display_snapshot.h"
 #endif
@@ -69,6 +72,14 @@ ShellDesktopController::ShellDesktopController() {
 #endif
   CreateRootWindow();
 
+  user_activity_detector_.reset(new wm::UserActivityDetector);
+  GetWindowTreeHost()->event_processor()->GetRootTarget()->AddPreTargetHandler(
+      user_activity_detector_.get());
+#if defined(OS_CHROMEOS)
+  user_activity_notifier_.reset(
+      new ui::UserActivityPowerManagerNotifier(user_activity_detector_.get()));
+#endif
+
   g_instance = this;
 }
 
@@ -76,6 +87,8 @@ ShellDesktopController::~ShellDesktopController() {
   // The app window must be explicitly closed before desktop teardown.
   DCHECK(!app_window_);
   g_instance = NULL;
+  GetWindowTreeHost()->event_processor()->GetRootTarget()
+      ->RemovePreTargetHandler(user_activity_detector_.get());
   DestroyRootWindow();
   aura::Env::DeleteInstance();
 }
@@ -108,7 +121,7 @@ aura::WindowTreeHost* ShellDesktopController::GetWindowTreeHost() {
 
 #if defined(OS_CHROMEOS)
 void ShellDesktopController::OnDisplayModeChanged(
-    const std::vector<ui::DisplayConfigurator::DisplayState>& outputs) {
+    const std::vector<ui::DisplayConfigurator::DisplayState>& displays) {
   gfx::Size size = GetPrimaryDisplaySize();
   if (!size.IsEmpty())
     wm_test_helper_->host()->UpdateRootWindowSize(size);
@@ -143,11 +156,11 @@ void ShellDesktopController::DestroyRootWindow() {
 
 gfx::Size ShellDesktopController::GetPrimaryDisplaySize() {
 #if defined(OS_CHROMEOS)
-  const std::vector<ui::DisplayConfigurator::DisplayState>& states =
+  const std::vector<ui::DisplayConfigurator::DisplayState>& displays =
       display_configurator_->cached_displays();
-  if (states.empty())
+  if (displays.empty())
     return gfx::Size();
-  const ui::DisplayMode* mode = states[0].display->current_mode();
+  const ui::DisplayMode* mode = displays[0].display->current_mode();
   return mode ? mode->size() : gfx::Size();
 #else
   return gfx::Size();
