@@ -65,6 +65,7 @@ public:
     virtual void workerGlobalScopeStarted(WorkerGlobalScope*) OVERRIDE { }
     virtual void workerGlobalScopeClosed() OVERRIDE;
     virtual void workerGlobalScopeDestroyed() OVERRIDE;
+    virtual void willDestroyWorkerGlobalScope() OVERRIDE { }
 
 private:
     WorkerObjectProxy(ExecutionContext*, WorkerMessagingProxy*);

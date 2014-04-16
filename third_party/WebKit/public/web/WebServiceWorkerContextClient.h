@@ -64,11 +64,16 @@ public:
     // This also gives back a proxy to the client to talk to the
     // newly created WorkerGlobalScope. The proxy is held by WorkerGlobalScope
     // and should not be held by the caller. No proxy methods should be called
-    // after workerContextDestroyed() is called.
+    // after willDestroyWorkerContext() is called.
     virtual void workerContextStarted(WebServiceWorkerContextProxy*) { }
 
-    // WorkerGlobalScope is destroyed. The client should clear the
-    // WebServiceWorkerGlobalScopeProxy when this is called.
+    // WorkerGlobalScope is about to be destroyed. The client should clear
+    // the WebServiceWorkerGlobalScopeProxy when this is called.
+    // FIXME: remove the default impl after chromium-side change lands.
+    virtual void willDestroyWorkerContext() { workerContextDestroyed(); }
+
+    // WorkerGlobalScope is destroyed.
+    // FIXME: deprecate this method after chromium-side change lands.
     virtual void workerContextDestroyed() { }
 
     // Starting worker context is failed. This could happen when loading

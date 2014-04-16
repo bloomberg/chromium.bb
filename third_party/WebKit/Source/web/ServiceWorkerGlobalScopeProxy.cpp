@@ -134,10 +134,10 @@ void ServiceWorkerGlobalScopeProxy::workerGlobalScopeClosed()
     m_executionContext.postTask(bind(&WebEmbeddedWorkerImpl::terminateWorkerContext, &m_embeddedWorker));
 }
 
-void ServiceWorkerGlobalScopeProxy::workerGlobalScopeDestroyed()
+void ServiceWorkerGlobalScopeProxy::willDestroyWorkerGlobalScope()
 {
     m_workerGlobalScope = 0;
-    m_client.workerContextDestroyed();
+    m_client.willDestroyWorkerContext();
 }
 
 ServiceWorkerGlobalScopeProxy::ServiceWorkerGlobalScopeProxy(WebEmbeddedWorkerImpl& embeddedWorker, ExecutionContext& executionContext, WebServiceWorkerContextClient& client)

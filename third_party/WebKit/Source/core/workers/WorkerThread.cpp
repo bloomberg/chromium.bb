@@ -133,6 +133,9 @@ void WorkerThread::workerThread()
 
     runEventLoop();
 
+    // This should be called before we start the shutdown procedure.
+    workerReportingProxy().willDestroyWorkerGlobalScope();
+
     ThreadIdentifier threadID = m_threadID;
 
     // The below assignment will destroy the context, which will in turn notify messaging proxy.

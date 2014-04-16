@@ -83,6 +83,7 @@ public:
     virtual void workerGlobalScopeStarted(WebCore::WorkerGlobalScope*) OVERRIDE;
     virtual void workerGlobalScopeClosed() OVERRIDE;
     virtual void workerGlobalScopeDestroyed() OVERRIDE;
+    virtual void willDestroyWorkerGlobalScope() OVERRIDE { }
 
     // WebCore::WorkerLoaderProxy methods:
     virtual void postTaskToLoader(PassOwnPtr<WebCore::ExecutionContextTask>) OVERRIDE;
