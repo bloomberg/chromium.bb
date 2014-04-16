@@ -8429,6 +8429,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="LibraryLoader.NativeLibraryHack" enum="BooleanUsage">
+  <owner>feng@chromium.org</owner>
+  <summary>
+    A boolean that indicates whether the workaround of a Sony framework bug was
+    used. The metric is Android-specific, and is logged when the browser starts.
+    See more details at http://crbug.com/311644.
+  </summary>
+</histogram>
+
 <histogram name="Linux.GlibcVersion" enum="LinuxGlibcVersion">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>The version of glibc used. (Linux only)</summary>
