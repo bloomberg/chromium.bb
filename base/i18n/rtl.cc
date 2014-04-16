@@ -14,10 +14,6 @@
 #include "third_party/icu/source/common/unicode/uscript.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
 
-#if defined(TOOLKIT_GTK)
-#include <gtk/gtk.h>
-#endif
-
 namespace {
 
 // Extract language, country and variant, but ignore keywords.  For example,
@@ -123,12 +119,7 @@ void SetICUDefaultLocale(const std::string& locale_string) {
 }
 
 bool IsRTL() {
-#if defined(TOOLKIT_GTK)
-  GtkTextDirection gtk_dir = gtk_widget_get_default_direction();
-  return gtk_dir == GTK_TEXT_DIR_RTL;
-#else
   return ICUIsRTL();
-#endif
 }
 
 bool ICUIsRTL() {

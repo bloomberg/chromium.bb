@@ -220,8 +220,6 @@
         'message_loop/message_pump_android.h',
         'message_loop/message_pump_glib.cc',
         'message_loop/message_pump_glib.h',
-        'message_loop/message_pump_gtk.cc',
-        'message_loop/message_pump_gtk.h',
         'message_loop/message_pump_io_ios.cc',
         'message_loop/message_pump_io_ios.h',
         'message_loop/message_pump_observer.h',

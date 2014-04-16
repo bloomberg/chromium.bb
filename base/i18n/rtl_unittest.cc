@@ -14,10 +14,6 @@
 #include "testing/platform_test.h"
 #include "third_party/icu/source/i18n/unicode/usearch.h"
 
-#if defined(TOOLKIT_GTK)
-#include <gtk/gtk.h>
-#endif
-
 namespace base {
 namespace i18n {
 
@@ -27,10 +23,6 @@ namespace {
 void SetRTL(bool rtl) {
   // Override the current locale/direction.
   SetICUDefaultLocale(rtl ? "he" : "en");
-#if defined(TOOLKIT_GTK)
-  // Do the same for GTK, which does not rely on the ICU default locale.
-  gtk_widget_set_default_direction(rtl ? GTK_TEXT_DIR_RTL : GTK_TEXT_DIR_LTR);
-#endif
   EXPECT_EQ(rtl, IsRTL());
 }
 

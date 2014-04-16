@@ -33,11 +33,6 @@
 #include "base/message_loop/message_pump_android.h"
 #endif
 
-#if defined(TOOLKIT_GTK)
-#include <gdk/gdk.h>
-#include <gdk/gdkx.h>
-#endif
-
 namespace base {
 
 namespace {
@@ -236,10 +231,6 @@ scoped_ptr<MessagePump> MessageLoop::CreateMessagePumpForType(Type type) {
   }
   if (type == MessageLoop::TYPE_IO)
     return MESSAGE_PUMP_IO;
-#if defined(TOOLKIT_GTK)
-  if (type == MessageLoop::TYPE_GPU)
-    return scoped_ptr<MessagePump>(new MessagePumpX11());
-#endif
 #if defined(OS_ANDROID)
   if (type == MessageLoop::TYPE_JAVA)
     return MESSAGE_PUMP_UI;

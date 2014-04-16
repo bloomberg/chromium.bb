@@ -19,7 +19,7 @@ namespace base {
 
 // MessagePumpObserver is notified prior to an event being dispatched. As
 // Observers are notified of every change, they have to be FAST! The platform
-// specific implementation of the class is in message_pump_gtk/message_pump_x.
+// specific implementation of the class is in message_pump_x.
 class MessagePumpObserver;
 
 // MessagePumpDispatcher is used during a nested invocation of Run to dispatch
@@ -27,7 +27,7 @@ class MessagePumpObserver;
 // does not dispatch events (or invoke gtk_main_do_event), rather every event is
 // passed to Dispatcher's Dispatch method for dispatch. It is up to the
 // Dispatcher to dispatch, or not, the event. The platform specific
-// implementation of the class is in message_pump_gtk/message_pump_x.
+// implementation of the class is in message_pump_x.
 class MessagePumpDispatcher;
 
 // This class implements a base MessagePump needed for TYPE_UI MessageLoops on

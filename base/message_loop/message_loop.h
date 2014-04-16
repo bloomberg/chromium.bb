@@ -103,11 +103,6 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   //   This type of ML also supports native UI events (e.g., Windows messages).
   //   See also MessageLoopForUI.
   //
-  // TYPE_GPU
-  //   This type of ML also supports native UI events for use in the GPU
-  //   process. On Linux this will always be an X11 ML (as compared with the
-  //   sometimes-GTK ML in the browser process).
-  //
   // TYPE_IO
   //   This type of ML also supports asynchronous IO.  See also
   //   MessageLoopForIO.
@@ -125,9 +120,6 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
     TYPE_DEFAULT,
     TYPE_UI,
     TYPE_CUSTOM,
-#if defined(TOOLKIT_GTK)
-    TYPE_GPU,
-#endif
     TYPE_IO,
 #if defined(OS_ANDROID)
     TYPE_JAVA,

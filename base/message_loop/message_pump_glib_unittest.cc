@@ -19,10 +19,6 @@
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(TOOLKIT_GTK)
-#include <gtk/gtk.h>
-#endif
-
 namespace base {
 namespace {
 
@@ -406,42 +402,6 @@ TEST_F(MessagePumpGLibTest, TestDrainingGLib) {
   EXPECT_EQ(3, injector()->processed_events());
 }
 
-
-namespace {
-
-#if defined(TOOLKIT_GTK)
-void AddEventsAndDrainGtk(EventInjector* injector) {
-  // Add a couple of dummy events
-  injector->AddDummyEvent(0);
-  injector->AddDummyEvent(0);
-  // Then add an event that will quit the main loop.
-  injector->AddEvent(0, MessageLoop::QuitWhenIdleClosure());
-
-  // Post a couple of dummy tasks
-  MessageLoop::current()->PostTask(FROM_HERE, Bind(&DoNothing));
-  MessageLoop::current()->PostTask(FROM_HERE, Bind(&DoNothing));
-
-  // Drain the events
-  while (gtk_events_pending()) {
-    gtk_main_iteration();
-  }
-}
-#endif
-
-}  // namespace
-
-#if defined(TOOLKIT_GTK)
-TEST_F(MessagePumpGLibTest, TestDrainingGtk) {
-  // Tests that draining events using Gtk works.
-  loop()->PostTask(
-      FROM_HERE,
-      Bind(&AddEventsAndDrainGtk, Unretained(injector())));
-  loop()->Run();
-
-  EXPECT_EQ(3, injector()->processed_events());
-}
-#endif
-
 namespace {
 
 // Helper class that lets us run the GLib message loop.
@@ -456,15 +416,9 @@ class GLibLoopRunner : public RefCounted<GLibLoopRunner> {
   }
 
   void RunLoop() {
-#if defined(TOOLKIT_GTK)
-    while (!quit_) {
-      gtk_main_iteration();
-    }
-#else
     while (!quit_) {
       g_main_context_iteration(NULL, TRUE);
     }
-#endif
   }
 
   void Quit() {
