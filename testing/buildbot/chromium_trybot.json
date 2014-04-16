@@ -38,6 +38,10 @@
   "ui_unittests",
   "unit_tests",
   {
+    "test": "app_shell_browsertests",
+    "chromium_configs": ["chromium_chromeos", "chromium_chromeos_clang"]
+  },
+  {
     "test": "sandbox_linux_unittests",
     "platforms": ["linux"],
     "args": ["--test-launcher-print-test-stdio=always"]
