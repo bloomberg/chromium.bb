@@ -33,19 +33,15 @@
     <script type="text/javascript" charset="utf-8">
       function testDone()
       {
+        document.getElementById('details').scrollTop = 24;
         if (window.testRunner)
           testRunner.notifyDone();
-      }
-
-      function modifyDocument()
-      {
-        document.getElementById('details').scrollTop = 24;
       }
 
       function doTest()
       {
         var video = document.getElementsByTagName('video')[0];
-        setupVideo(video, 'resources/video', modifyDocument, testDone);
+        setupVideo(video, 'resources/video', testDone);
       }
     </script>
   </head>

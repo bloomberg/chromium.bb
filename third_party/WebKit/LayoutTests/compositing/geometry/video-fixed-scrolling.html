@@ -29,19 +29,15 @@
   <script type="text/javascript" charset="utf-8">
     function testDone()
     {
+      window.scrollBy(50, 50);
       if (window.testRunner)
         testRunner.notifyDone();
-    }
-
-    function modifyDocument()
-    {
-      window.scrollBy(50, 50);
     }
 
     function doTest()
     {
       var video = document.getElementsByTagName('video')[0];
-      setupVideo(video, '../resources/video', modifyDocument, testDone);
+      setupVideo(video, '../resources/video', testDone);
     }
   </script>
 </head>

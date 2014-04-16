@@ -56,19 +56,15 @@
     <script type="text/javascript" charset="utf-8">
       function testDone()
       {
+        document.getElementById('scroller').scrollTop = 50;
         if (window.testRunner)
           testRunner.notifyDone();
-      }
-
-      function modifyDocument()
-      {
-        document.getElementById('scroller').scrollTop = 50;
       }
 
       function doTest()
       {
         var video = document.getElementsByTagName('video')[0];
-        setupVideo(video, '../resources/video', modifyDocument, testDone);
+        setupVideo(video, '../resources/video', testDone);
       }
     </script>
 </head>
