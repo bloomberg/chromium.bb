@@ -148,7 +148,6 @@ bool RenderSVGResourceClipper::applyClippingToContext(RenderObject* target, cons
     const FloatRect& repaintRect, GraphicsContext* context, ClipperContext& clipperContext)
 {
     ASSERT(target);
-    ASSERT(target->node());
     ASSERT(context);
     ASSERT(clipperContext.state == ClipperContext::NotAppliedState);
     ASSERT_WITH_SECURITY_IMPLICATION(!needsLayout());
@@ -161,7 +160,7 @@ bool RenderSVGResourceClipper::applyClippingToContext(RenderObject* target, cons
     // When drawing a clip for non-SVG elements, the CTM does not include the zoom factor.
     // In this case, we need to apply the zoom scale explicitly - but only for clips with
     // userSpaceOnUse units (the zoom is accounted for objectBoundingBox-resolved lengths).
-    if (!target->node()->isSVGElement()
+    if (!target->isSVG()
         && toSVGClipPathElement(element())->clipPathUnits()->currentValue()->enumValue() == SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE) {
         ASSERT(style());
         animatedLocalTransform.scale(style()->effectiveZoom());
