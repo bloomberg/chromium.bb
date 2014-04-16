@@ -106,10 +106,6 @@ class RenderServlet(Servlet):
       return Response.Redirect('/' + request_path.rstrip('/'),
                                permanent=False)
 
-    if not path:
-      # Empty-path request hasn't been redirected by now. It doesn't exist.
-      raise FileNotFoundError('Empty path')
-
     content_and_type = content_provider.GetContentAndType(path).Get()
     if not content_and_type.content:
       logging.error('%s had empty content' % path)

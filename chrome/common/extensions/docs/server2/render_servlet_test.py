@@ -95,10 +95,11 @@ class RenderServletTest(unittest.TestCase):
     self.assertTrue(len(response.content) >
                     len(ReadFile('%s%s.html' % (PUBLIC_TEMPLATES, html_file))))
 
-  def testIndexRedirect(self):
+  def testIndexRender(self):
     response = self._Render('extensions')
-    self.assertEqual(('/extensions/index', False),
-                     response.GetRedirect())
+    self.assertEqual(200, response.status)
+    self.assertEqual(self._Render('extensions/index').content.ToString(),
+                     response.content.ToString())
 
   def testOtherRedirectsJsonRedirect(self):
     response = self._Render('apps/webview_tag')

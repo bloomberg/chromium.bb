@@ -63,6 +63,7 @@ _TEST_DATA = {
   'dir.txt': 'dir.txt content',
   'dir5.html': 'dir5.html content',
   'img.png': 'img.png content',
+  'index.html': 'index.html content',
   'read.txt': 'read.txt content',
   'redirects.json': _REDIRECTS_JSON,
   'noextension': 'noextension content',
@@ -183,6 +184,7 @@ class ContentProviderUnittest(unittest.TestCase):
         self._content_provider.GetContentAndType('oops').Get)
 
   def testIndexRedirect(self):
+    self._assertTemplateContent(u'index.html content', '')
     self._assertTemplateContent(u'index.html content 1', 'dir4')
     self._assertTemplateContent(u'dir5.html content', 'dir5')
     self._assertMarkdownContent(
