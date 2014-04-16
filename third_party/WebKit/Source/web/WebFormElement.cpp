@@ -96,6 +96,11 @@ void WebFormElement::getFormControlElements(WebVector<WebFormControlElement>& re
     result.assign(formControlElements);
 }
 
+bool WebFormElement::checkValidity()
+{
+    return unwrap<HTMLFormElement>()->checkValidity();
+}
+
 bool WebFormElement::checkValidityWithoutDispatchingEvents()
 {
     return unwrap<HTMLFormElement>()->checkValidityWithoutDispatchingEvents();

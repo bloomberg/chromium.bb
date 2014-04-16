@@ -84,6 +84,7 @@ public:
     virtual bool isActivatedSubmit() const { return false; }
     virtual void setActivatedSubmit(bool) { }
 
+    // FIXME: deprecated, do not use.
     enum CheckValidityDispatchEvents { CheckValidityDispatchEventsAllowed, CheckValidityDispatchEventsNone };
 
     virtual bool willValidate() const OVERRIDE;

@@ -645,8 +645,7 @@ HTMLFormControlElement* HTMLFormElement::defaultButton() const
 
 bool HTMLFormElement::checkValidity()
 {
-    Vector<RefPtr<FormAssociatedElement> > controls;
-    return !checkInvalidControlsAndCollectUnhandled(&controls);
+    return !checkInvalidControlsAndCollectUnhandled(0);
 }
 
 bool HTMLFormElement::checkValidityWithoutDispatchingEvents()

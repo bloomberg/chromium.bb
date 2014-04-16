@@ -93,6 +93,7 @@ public:
     HTMLFormControlElement* defaultButton() const;
 
     bool checkValidity();
+    // FIXME: deprecated; will be removed soon.
     bool checkValidityWithoutDispatchingEvents();
 
     enum AutocompleteResult {
