@@ -105,20 +105,11 @@ bool CommandBufferHelper::AllocateRingBuffer() {
   ring_buffer_ = buffer;
   ring_buffer_id_ = id;
   command_buffer_->SetGetBuffer(id);
-
-  // TODO(gman): Do we really need to call GetState here? We know get & put = 0
-  // Also do we need to check state.num_entries?
-  CommandBuffer::State state = command_buffer_->GetState();
   entries_ = static_cast<CommandBufferEntry*>(ring_buffer_->memory());
-  int32 num_ring_buffer_entries =
-      ring_buffer_size_ / sizeof(CommandBufferEntry);
-  if (num_ring_buffer_entries > state.num_entries) {
-    ClearUsable();
-    return false;
-  }
-
-  total_entry_count_ = num_ring_buffer_entries;
-  put_ = state.put_offset;
+  total_entry_count_ = ring_buffer_size_ / sizeof(CommandBufferEntry);
+  // Call to SetGetBuffer(id) above resets get and put offsets to 0.
+  // No need to query it through IPC.
+  put_ = 0;
   CalcImmediateEntries(0);
   return true;
 }
