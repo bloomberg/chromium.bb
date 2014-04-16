@@ -60,7 +60,8 @@ class CONTENT_EXPORT IndexedDBDatabase
       const base::string16& name,
       IndexedDBBackingStore* backing_store,
       IndexedDBFactory* factory,
-      const Identifier& unique_identifier);
+      const Identifier& unique_identifier,
+      leveldb::Status* s);
 
   const Identifier& identifier() const { return identifier_; }
   IndexedDBBackingStore* backing_store() { return backing_store_.get(); }

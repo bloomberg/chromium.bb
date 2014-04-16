@@ -92,12 +92,15 @@ scoped_refptr<IndexedDBDatabase> IndexedDBDatabase::Create(
     const base::string16& name,
     IndexedDBBackingStore* backing_store,
     IndexedDBFactory* factory,
-    const Identifier& unique_identifier) {
+    const Identifier& unique_identifier,
+    leveldb::Status* s) {
   scoped_refptr<IndexedDBDatabase> database =
       new IndexedDBDatabase(name, backing_store, factory, unique_identifier);
-  if (!database->OpenInternal().ok())
-    return 0;
-  return database;
+  *s = database->OpenInternal();
+  if (s->ok())
+    return database;
+  else
+    return NULL;
 }
 
 namespace {
@@ -527,6 +530,7 @@ void IndexedDBDatabase::GetOperation(
 
   const IndexedDBKey* key;
 
+  leveldb::Status s;
   scoped_ptr<IndexedDBBackingStore::Cursor> backing_store_cursor;
   if (key_range->IsOnlyKey()) {
     key = &key_range->lower();
@@ -539,7 +543,8 @@ void IndexedDBDatabase::GetOperation(
           id(),
           object_store_id,
           *key_range,
-          indexed_db::CURSOR_NEXT);
+          indexed_db::CURSOR_NEXT,
+          &s);
     } else if (cursor_type == indexed_db::CURSOR_KEY_ONLY) {
       // Index Value Retrieval Operation
       backing_store_cursor = backing_store_->OpenIndexKeyCursor(
@@ -548,7 +553,8 @@ void IndexedDBDatabase::GetOperation(
           object_store_id,
           index_id,
           *key_range,
-          indexed_db::CURSOR_NEXT);
+          indexed_db::CURSOR_NEXT,
+          &s);
     } else {
       // Index Referenced Value Retrieval Operation
       backing_store_cursor = backing_store_->OpenIndexCursor(
@@ -557,7 +563,18 @@ void IndexedDBDatabase::GetOperation(
           object_store_id,
           index_id,
           *key_range,
-          indexed_db::CURSOR_NEXT);
+          indexed_db::CURSOR_NEXT,
+          &s);
+    }
+
+    if (!s.ok()) {
+      DLOG(ERROR) << "Unable to open cursor operation: " << s.ToString();
+      IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
+                                   "Internal error deleting data in range");
+      if (s.IsCorruption()) {
+        factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
+                                               error);
+      }
     }
 
     if (!backing_store_cursor) {
@@ -569,7 +586,6 @@ void IndexedDBDatabase::GetOperation(
   }
 
   scoped_ptr<IndexedDBKey> primary_key;
-  leveldb::Status s;
   if (index_id == IndexedDBIndexMetadata::kInvalidId) {
     // Object Store Retrieval Operation
     IndexedDBValue value;
@@ -1030,6 +1046,7 @@ void IndexedDBDatabase::OpenCursorOperation(
   if (params->task_type == IndexedDBDatabase::PREEMPTIVE_TASK)
     transaction->AddPreemptiveEvent();
 
+  leveldb::Status s;
   scoped_ptr<IndexedDBBackingStore::Cursor> backing_store_cursor;
   if (params->index_id == IndexedDBIndexMetadata::kInvalidId) {
     if (params->cursor_type == indexed_db::CURSOR_KEY_ONLY) {
@@ -1039,14 +1056,16 @@ void IndexedDBDatabase::OpenCursorOperation(
           id(),
           params->object_store_id,
           *params->key_range,
-          params->direction);
+          params->direction,
+          &s);
     } else {
       backing_store_cursor = backing_store_->OpenObjectStoreCursor(
           transaction->BackingStoreTransaction(),
           id(),
           params->object_store_id,
           *params->key_range,
-        params->direction);
+          params->direction,
+          &s);
     }
   } else {
     DCHECK_EQ(params->task_type, IndexedDBDatabase::NORMAL_TASK);
@@ -1057,7 +1076,8 @@ void IndexedDBDatabase::OpenCursorOperation(
           params->object_store_id,
           params->index_id,
           *params->key_range,
-          params->direction);
+          params->direction,
+          &s);
     } else {
       backing_store_cursor = backing_store_->OpenIndexCursor(
           transaction->BackingStoreTransaction(),
@@ -1065,11 +1085,23 @@ void IndexedDBDatabase::OpenCursorOperation(
           params->object_store_id,
           params->index_id,
           *params->key_range,
-          params->direction);
+          params->direction,
+          &s);
+    }
+  }
+
+  if (!s.ok()) {
+    DLOG(ERROR) << "Unable to open cursor operation: " << s.ToString();
+    IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
+                                 "Internal error opening cursor operation");
+    if (s.IsCorruption()) {
+      factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
+                                             error);
     }
   }
 
   if (!backing_store_cursor) {
+    // Why is Success being called?
     params->callbacks->OnSuccess(static_cast<IndexedDBValue*>(NULL));
     return;
   }
@@ -1114,13 +1146,15 @@ void IndexedDBDatabase::CountOperation(
   uint32 count = 0;
   scoped_ptr<IndexedDBBackingStore::Cursor> backing_store_cursor;
 
+  leveldb::Status s;
   if (index_id == IndexedDBIndexMetadata::kInvalidId) {
     backing_store_cursor = backing_store_->OpenObjectStoreKeyCursor(
         transaction->BackingStoreTransaction(),
         id(),
         object_store_id,
         *key_range,
-        indexed_db::CURSOR_NEXT);
+        indexed_db::CURSOR_NEXT,
+        &s);
   } else {
     backing_store_cursor = backing_store_->OpenIndexKeyCursor(
         transaction->BackingStoreTransaction(),
@@ -1128,7 +1162,17 @@ void IndexedDBDatabase::CountOperation(
         object_store_id,
         index_id,
         *key_range,
-        indexed_db::CURSOR_NEXT);
+        indexed_db::CURSOR_NEXT,
+        &s);
+  }
+  if (!s.ok()) {
+    DLOG(ERROR) << "Unable perform count operation: " << s.ToString();
+    IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
+                                 "Internal error performing count operation");
+    if (s.IsCorruption()) {
+      factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
+                                             error);
+    }
   }
   if (!backing_store_cursor) {
     callbacks->OnSuccess(count);
@@ -1137,7 +1181,9 @@ void IndexedDBDatabase::CountOperation(
 
   do {
     ++count;
-  } while (backing_store_cursor->Continue());
+  } while (backing_store_cursor->Continue(&s));
+
+  // TODO(cmumford): Check for database corruption.
 
   callbacks->OnSuccess(count);
 }
@@ -1169,14 +1215,16 @@ void IndexedDBDatabase::DeleteRangeOperation(
     scoped_refptr<IndexedDBCallbacks> callbacks,
     IndexedDBTransaction* transaction) {
   IDB_TRACE("IndexedDBDatabase::DeleteRangeOperation");
+  leveldb::Status s;
   scoped_ptr<IndexedDBBackingStore::Cursor> backing_store_cursor =
       backing_store_->OpenObjectStoreCursor(
           transaction->BackingStoreTransaction(),
           id(),
           object_store_id,
           *key_range,
-          indexed_db::CURSOR_NEXT);
-  if (backing_store_cursor) {
+          indexed_db::CURSOR_NEXT,
+          &s);
+  if (backing_store_cursor && s.ok()) {
     do {
       if (!backing_store_->DeleteRecord(
                                transaction->BackingStoreTransaction(),
@@ -1189,7 +1237,18 @@ void IndexedDBDatabase::DeleteRangeOperation(
                                    "Internal error deleting data in range"));
         return;
       }
-    } while (backing_store_cursor->Continue());
+    } while (backing_store_cursor->Continue(&s));
+  }
+
+  if (!s.ok()) {
+    IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
+                                 ASCIIToUTF16("Internal error deleting range"));
+    transaction->Abort(error);
+    if (s.IsCorruption()) {
+      factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
+                                             error);
+    }
+    return;
   }
 
   callbacks->OnSuccess();

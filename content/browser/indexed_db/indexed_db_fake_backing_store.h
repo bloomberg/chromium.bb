@@ -22,7 +22,8 @@ class IndexedDBFakeBackingStore : public IndexedDBBackingStore {
   IndexedDBFakeBackingStore();
   IndexedDBFakeBackingStore(IndexedDBFactory* factory,
                             base::TaskRunner* task_runner);
-  virtual std::vector<base::string16> GetDatabaseNames() OVERRIDE;
+  virtual std::vector<base::string16> GetDatabaseNames(leveldb::Status* s)
+      OVERRIDE;
   virtual leveldb::Status GetIDBDatabaseMetaData(const base::string16& name,
                                                  IndexedDBDatabaseMetadata*,
                                                  bool* found) OVERRIDE;
@@ -95,27 +96,30 @@ class IndexedDBFakeBackingStore : public IndexedDBBackingStore {
       int64 database_id,
       int64 object_store_id,
       const IndexedDBKeyRange& key_range,
-      indexed_db::CursorDirection) OVERRIDE;
+      indexed_db::CursorDirection,
+      leveldb::Status*) OVERRIDE;
   virtual scoped_ptr<Cursor> OpenObjectStoreCursor(
       Transaction* transaction,
       int64 database_id,
       int64 object_store_id,
       const IndexedDBKeyRange& key_range,
-      indexed_db::CursorDirection) OVERRIDE;
+      indexed_db::CursorDirection,
+      leveldb::Status*) OVERRIDE;
   virtual scoped_ptr<Cursor> OpenIndexKeyCursor(
       Transaction* transaction,
       int64 database_id,
       int64 object_store_id,
       int64 index_id,
       const IndexedDBKeyRange& key_range,
-      indexed_db::CursorDirection) OVERRIDE;
+      indexed_db::CursorDirection,
+      leveldb::Status*) OVERRIDE;
   virtual scoped_ptr<Cursor> OpenIndexCursor(Transaction* transaction,
                                              int64 database_id,
                                              int64 object_store_id,
                                              int64 index_id,
                                              const IndexedDBKeyRange& key_range,
-                                             indexed_db::CursorDirection)
-      OVERRIDE;
+                                             indexed_db::CursorDirection,
+                                             leveldb::Status*) OVERRIDE;
 
   class FakeTransaction : public IndexedDBBackingStore::Transaction {
    public:

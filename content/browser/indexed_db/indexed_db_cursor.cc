@@ -60,7 +60,11 @@ void IndexedDBCursor::CursorAdvanceOperation(
     scoped_refptr<IndexedDBCallbacks> callbacks,
     IndexedDBTransaction* /*transaction*/) {
   IDB_TRACE("IndexedDBCursor::CursorAdvanceOperation");
-  if (!cursor_ || !cursor_->Advance(count)) {
+  leveldb::Status s;
+  // TODO(cmumford): Handle this error (crbug.com/363397). Although this will
+  //                 properly fail, caller will not know why, and any corruption
+  //                 will be ignored.
+  if (!cursor_ || !cursor_->Advance(count, &s)) {
     cursor_.reset();
     callbacks->OnSuccess(static_cast<IndexedDBValue*>(NULL));
     return;
@@ -75,9 +79,14 @@ void IndexedDBCursor::CursorIterationOperation(
     scoped_refptr<IndexedDBCallbacks> callbacks,
     IndexedDBTransaction* /*transaction*/) {
   IDB_TRACE("IndexedDBCursor::CursorIterationOperation");
-  if (!cursor_ ||
-      !cursor_->Continue(
-           key.get(), primary_key.get(), IndexedDBBackingStore::Cursor::SEEK)) {
+  leveldb::Status s;
+  // TODO(cmumford): Handle this error (crbug.com/363397). Although this will
+  //                 properly fail, caller will not know why, and any corruption
+  //                 will be ignored.
+  if (!cursor_ || !cursor_->Continue(key.get(),
+                                     primary_key.get(),
+                                     IndexedDBBackingStore::Cursor::SEEK,
+                                     &s) || !s.ok()) {
     cursor_.reset();
     callbacks->OnSuccess(static_cast<IndexedDBValue*>(NULL));
     return;
@@ -112,9 +121,13 @@ void IndexedDBCursor::CursorPrefetchIterationOperation(
   saved_cursor_.reset();
   const size_t max_size_estimate = 10 * 1024 * 1024;
   size_t size_estimate = 0;
+  leveldb::Status s;
 
+  // TODO(cmumford): Handle this error (crbug.com/363397). Although this will
+  //                 properly fail, caller will not know why, and any corruption
+  //                 will be ignored.
   for (int i = 0; i < number_to_fetch; ++i) {
-    if (!cursor_ || !cursor_->Continue()) {
+    if (!cursor_ || !cursor_->Continue(&s)) {
       cursor_.reset();
       break;
     }
@@ -158,22 +171,25 @@ void IndexedDBCursor::CursorPrefetchIterationOperation(
       found_keys, found_primary_keys, found_values);
 }
 
-void IndexedDBCursor::PrefetchReset(int used_prefetches,
-                                    int /* unused_prefetches */) {
+leveldb::Status IndexedDBCursor::PrefetchReset(int used_prefetches,
+                                               int /* unused_prefetches */) {
   IDB_TRACE("IndexedDBCursor::PrefetchReset");
   cursor_.swap(saved_cursor_);
   saved_cursor_.reset();
+  leveldb::Status s;
 
   if (closed_)
-    return;
+    return s;
   if (cursor_) {
     // First prefetched result is always used.
     DCHECK_GT(used_prefetches, 0);
     for (int i = 0; i < used_prefetches - 1; ++i) {
-      bool ok = cursor_->Continue();
+      bool ok = cursor_->Continue(&s);
       DCHECK(ok);
     }
   }
+
+  return s;
 }
 
 void IndexedDBCursor::Close() {

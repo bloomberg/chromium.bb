@@ -68,10 +68,10 @@ class CONTENT_EXPORT LevelDBTransaction
     virtual ~DataIterator();
 
     virtual bool IsValid() const OVERRIDE;
-    virtual void SeekToLast() OVERRIDE;
-    virtual void Seek(const base::StringPiece& slice) OVERRIDE;
-    virtual void Next() OVERRIDE;
-    virtual void Prev() OVERRIDE;
+    virtual leveldb::Status SeekToLast() OVERRIDE;
+    virtual leveldb::Status Seek(const base::StringPiece& slice) OVERRIDE;
+    virtual leveldb::Status Next() OVERRIDE;
+    virtual leveldb::Status Prev() OVERRIDE;
     virtual base::StringPiece Key() const OVERRIDE;
     virtual base::StringPiece Value() const OVERRIDE;
     bool IsDeleted() const;
@@ -89,10 +89,10 @@ class CONTENT_EXPORT LevelDBTransaction
         scoped_refptr<LevelDBTransaction> transaction);
 
     virtual bool IsValid() const OVERRIDE;
-    virtual void SeekToLast() OVERRIDE;
-    virtual void Seek(const base::StringPiece& target) OVERRIDE;
-    virtual void Next() OVERRIDE;
-    virtual void Prev() OVERRIDE;
+    virtual leveldb::Status SeekToLast() OVERRIDE;
+    virtual leveldb::Status Seek(const base::StringPiece& target) OVERRIDE;
+    virtual leveldb::Status Next() OVERRIDE;
+    virtual leveldb::Status Prev() OVERRIDE;
     virtual base::StringPiece Key() const OVERRIDE;
     virtual base::StringPiece Value() const OVERRIDE;
     void DataChanged();

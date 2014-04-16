@@ -909,7 +909,11 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnPrefetchReset(
   if (!idb_cursor)
     return;
 
-  idb_cursor->PrefetchReset(used_prefetches, unused_prefetches);
+  leveldb::Status s =
+      idb_cursor->PrefetchReset(used_prefetches, unused_prefetches);
+  // TODO(cmumford): Handle this error (crbug.com/363397)
+  if (!s.ok())
+    DLOG(ERROR) << "Unable to reset prefetch";
 }
 
 void IndexedDBDispatcherHost::CursorDispatcherHost::OnDestroyed(

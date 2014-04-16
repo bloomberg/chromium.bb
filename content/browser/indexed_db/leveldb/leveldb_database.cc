@@ -378,10 +378,10 @@ class IteratorImpl : public LevelDBIterator {
   virtual ~IteratorImpl() {}
 
   virtual bool IsValid() const OVERRIDE;
-  virtual void SeekToLast() OVERRIDE;
-  virtual void Seek(const StringPiece& target) OVERRIDE;
-  virtual void Next() OVERRIDE;
-  virtual void Prev() OVERRIDE;
+  virtual leveldb::Status SeekToLast() OVERRIDE;
+  virtual leveldb::Status Seek(const StringPiece& target) OVERRIDE;
+  virtual leveldb::Status Next() OVERRIDE;
+  virtual leveldb::Status Prev() OVERRIDE;
   virtual StringPiece Key() const OVERRIDE;
   virtual StringPiece Value() const OVERRIDE;
 
@@ -398,33 +398,37 @@ IteratorImpl::IteratorImpl(scoped_ptr<leveldb::Iterator> it)
     : iterator_(it.Pass()) {}
 
 void IteratorImpl::CheckStatus() {
-  const leveldb::Status s = iterator_->status();
+  const leveldb::Status& s = iterator_->status();
   if (!s.ok())
     LOG(ERROR) << "LevelDB iterator error: " << s.ToString();
 }
 
 bool IteratorImpl::IsValid() const { return iterator_->Valid(); }
 
-void IteratorImpl::SeekToLast() {
+leveldb::Status IteratorImpl::SeekToLast() {
   iterator_->SeekToLast();
   CheckStatus();
+  return iterator_->status();
 }
 
-void IteratorImpl::Seek(const StringPiece& target) {
+leveldb::Status IteratorImpl::Seek(const StringPiece& target) {
   iterator_->Seek(MakeSlice(target));
   CheckStatus();
+  return iterator_->status();
 }
 
-void IteratorImpl::Next() {
+leveldb::Status IteratorImpl::Next() {
   DCHECK(IsValid());
   iterator_->Next();
   CheckStatus();
+  return iterator_->status();
 }
 
-void IteratorImpl::Prev() {
+leveldb::Status IteratorImpl::Prev() {
   DCHECK(IsValid());
   iterator_->Prev();
   CheckStatus();
+  return iterator_->status();
 }
 
 StringPiece IteratorImpl::Key() const {

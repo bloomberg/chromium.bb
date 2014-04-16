@@ -130,27 +130,32 @@ bool LevelDBTransaction::DataIterator::IsValid() const {
   return iterator_ != data_->end();
 }
 
-void LevelDBTransaction::DataIterator::SeekToLast() {
+leveldb::Status LevelDBTransaction::DataIterator::SeekToLast() {
   iterator_ = data_->end();
   if (iterator_ != data_->begin())
     --iterator_;
+  return leveldb::Status::OK();
 }
 
-void LevelDBTransaction::DataIterator::Seek(const StringPiece& target) {
+leveldb::Status LevelDBTransaction::DataIterator::Seek(
+    const StringPiece& target) {
   iterator_ = data_->lower_bound(target);
+  return leveldb::Status::OK();
 }
 
-void LevelDBTransaction::DataIterator::Next() {
+leveldb::Status LevelDBTransaction::DataIterator::Next() {
   DCHECK(IsValid());
   ++iterator_;
+  return leveldb::Status::OK();
 }
 
-void LevelDBTransaction::DataIterator::Prev() {
+leveldb::Status LevelDBTransaction::DataIterator::Prev() {
   DCHECK(IsValid());
   if (iterator_ != data_->begin())
     --iterator_;
   else
     iterator_ = data_->end();
+  return leveldb::Status::OK();
 }
 
 StringPiece LevelDBTransaction::DataIterator::Key() const {
@@ -201,29 +206,39 @@ bool LevelDBTransaction::TransactionIterator::IsValid() const {
   return !!current_;
 }
 
-void LevelDBTransaction::TransactionIterator::SeekToLast() {
-  data_iterator_->SeekToLast();
-  db_iterator_->SeekToLast();
+leveldb::Status LevelDBTransaction::TransactionIterator::SeekToLast() {
+  leveldb::Status s = data_iterator_->SeekToLast();
+  DCHECK(s.ok());
+  s = db_iterator_->SeekToLast();
+  if (!s.ok())
+    return s;
   direction_ = REVERSE;
 
   HandleConflictsAndDeletes();
   SetCurrentIteratorToLargestKey();
+  return s;
 }
 
-void LevelDBTransaction::TransactionIterator::Seek(const StringPiece& target) {
-  data_iterator_->Seek(target);
-  db_iterator_->Seek(target);
+leveldb::Status LevelDBTransaction::TransactionIterator::Seek(
+    const StringPiece& target) {
+  leveldb::Status s = data_iterator_->Seek(target);
+  DCHECK(s.ok());
+  s = db_iterator_->Seek(target);
+  if (!s.ok())
+    return s;
   direction_ = FORWARD;
 
   HandleConflictsAndDeletes();
   SetCurrentIteratorToSmallestKey();
+  return s;
 }
 
-void LevelDBTransaction::TransactionIterator::Next() {
+leveldb::Status LevelDBTransaction::TransactionIterator::Next() {
   DCHECK(IsValid());
   if (data_changed_)
     RefreshDataIterator();
 
+  leveldb::Status s;
   if (direction_ != FORWARD) {
     // Ensure the non-current iterator is positioned after Key().
 
@@ -236,7 +251,9 @@ void LevelDBTransaction::TransactionIterator::Next() {
         !comparator_->Compare(non_current->Key(), Key())) {
       // Take an extra step so the non-current key is
       // strictly greater than Key().
-      non_current->Next();
+      s = non_current->Next();
+      if (!s.ok())
+        return s;
     }
     DCHECK(!non_current->IsValid() ||
            comparator_->Compare(non_current->Key(), Key()) > 0);
@@ -244,13 +261,17 @@ void LevelDBTransaction::TransactionIterator::Next() {
     direction_ = FORWARD;
   }
 
-  current_->Next();
+  s = current_->Next();
+  if (!s.ok())
+    return s;
   HandleConflictsAndDeletes();
   SetCurrentIteratorToSmallestKey();
+  return leveldb::Status::OK();
 }
 
-void LevelDBTransaction::TransactionIterator::Prev() {
+leveldb::Status LevelDBTransaction::TransactionIterator::Prev() {
   DCHECK(IsValid());
+  leveldb::Status s;
   if (data_changed_)
     RefreshDataIterator();
 
@@ -261,7 +282,9 @@ void LevelDBTransaction::TransactionIterator::Prev() {
                                        ? data_iterator_.get()
                                        : db_iterator_.get();
 
-    non_current->Seek(Key());
+    s = non_current->Seek(Key());
+    if (!s.ok())
+      return s;
     if (non_current->IsValid()) {
       // Iterator is at first entry >= Key().
       // Step back once to entry < key.
@@ -278,9 +301,12 @@ void LevelDBTransaction::TransactionIterator::Prev() {
     direction_ = REVERSE;
   }
 
-  current_->Prev();
+  s = current_->Prev();
+  if (!s.ok())
+    return s;
   HandleConflictsAndDeletes();
   SetCurrentIteratorToLargestKey();
+  return leveldb::Status::OK();
 }
 
 StringPiece LevelDBTransaction::TransactionIterator::Key() const {

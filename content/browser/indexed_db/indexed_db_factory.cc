@@ -192,7 +192,13 @@ void IndexedDBFactory::GetDatabaseNames(
     return;
   }
 
-  callbacks->OnSuccess(backing_store->GetDatabaseNames());
+  leveldb::Status s;
+  std::vector<base::string16> names = backing_store->GetDatabaseNames(&s);
+  if (!s.ok()) {
+    // TODO(cmumford): Handle this error
+    DLOG(ERROR) << "Internal error getting database names";
+  }
+  callbacks->OnSuccess(names);
   backing_store = NULL;
   ReleaseBackingStore(origin_url, false /* immediate */);
 }
@@ -233,14 +239,18 @@ void IndexedDBFactory::DeleteDatabase(
     return;
   }
 
-  scoped_refptr<IndexedDBDatabase> database =
-      IndexedDBDatabase::Create(name, backing_store, this, unique_identifier);
+  leveldb::Status s;
+  scoped_refptr<IndexedDBDatabase> database = IndexedDBDatabase::Create(
+      name, backing_store, this, unique_identifier, &s);
   if (!database) {
-    callbacks->OnError(IndexedDBDatabaseError(
+    IndexedDBDatabaseError error(
         blink::WebIDBDatabaseExceptionUnknownError,
         ASCIIToUTF16(
             "Internal error creating database backend for "
-            "indexedDB.deleteDatabase.")));
+            "indexedDB.deleteDatabase."));
+    callbacks->OnError(error);
+    if (s.IsCorruption())
+      HandleBackingStoreCorruption(origin_url, error);
     return;
   }
 
@@ -282,9 +292,10 @@ void IndexedDBFactory::HandleBackingStoreCorruption(
   HandleBackingStoreFailure(saved_origin_url);
   // Note: DestroyBackingStore only deletes LevelDB files, leaving all others,
   //       so our corruption info file will remain.
-  if (!IndexedDBBackingStore::DestroyBackingStore(path_base, saved_origin_url)
-           .ok())
-    DLOG(ERROR) << "Unable to delete backing store";
+  leveldb::Status s =
+      IndexedDBBackingStore::DestroyBackingStore(path_base, saved_origin_url);
+  if (!s.ok())
+    DLOG(ERROR) << "Unable to delete backing store: " << s.ToString();
 }
 
 bool IndexedDBFactory::IsDatabaseOpen(const GURL& origin_url,
@@ -389,13 +400,21 @@ void IndexedDBFactory::Open(const base::string16& name,
       return;
     }
 
-    database =
-        IndexedDBDatabase::Create(name, backing_store, this, unique_identifier);
+    leveldb::Status s;
+    database = IndexedDBDatabase::Create(
+        name, backing_store, this, unique_identifier, &s);
     if (!database) {
-      connection.callbacks->OnError(IndexedDBDatabaseError(
-          blink::WebIDBDatabaseExceptionUnknownError,
-          ASCIIToUTF16(
-              "Internal error creating database backend for indexedDB.open.")));
+      DLOG(ERROR) << "Unable to create the database";
+      IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
+                                   ASCIIToUTF16(
+                                       "Internal error creating "
+                                       "database backend for "
+                                       "indexedDB.open."));
+      connection.callbacks->OnError(error);
+      if (s.IsCorruption()) {
+        backing_store = NULL;  // Closes the LevelDB so that it can be deleted
+        HandleBackingStoreCorruption(origin_url, error);
+      }
       return;
     }
   } else {

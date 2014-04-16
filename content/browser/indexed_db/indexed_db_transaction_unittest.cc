@@ -17,12 +17,22 @@ namespace content {
 class IndexedDBTransactionTest : public testing::Test {
  public:
   IndexedDBTransactionTest() {
-    IndexedDBFactory* factory = NULL;
     backing_store_ = new IndexedDBFakeBackingStore();
+    CreateDB();
+  }
+
+  void CreateDB() {
+    // DB is created here instead of the constructor to workaround a
+    // "peculiarity of C++". More info at
+    // https://code.google.com/p/googletest/wiki/FAQ#My_compiler_complains_that_a_constructor_(or_destructor)_cannot
+    IndexedDBFactory* factory = NULL;
+    leveldb::Status s;
     db_ = IndexedDBDatabase::Create(base::ASCIIToUTF16("db"),
                                     backing_store_,
                                     factory,
-                                    IndexedDBDatabase::Identifier());
+                                    IndexedDBDatabase::Identifier(),
+                                    &s);
+    ASSERT_TRUE(s.ok());
   }
 
   void RunPostedTasks() { message_loop_.RunUntilIdle(); }

@@ -26,7 +26,9 @@ IndexedDBFakeBackingStore::IndexedDBFakeBackingStore(
 
 IndexedDBFakeBackingStore::~IndexedDBFakeBackingStore() {}
 
-std::vector<base::string16> IndexedDBFakeBackingStore::GetDatabaseNames() {
+std::vector<base::string16> IndexedDBFakeBackingStore::GetDatabaseNames(
+    leveldb::Status* s) {
+  *s = leveldb::Status::OK();
   return std::vector<base::string16>();
 }
 leveldb::Status IndexedDBFakeBackingStore::GetIDBDatabaseMetaData(
@@ -138,7 +140,8 @@ IndexedDBFakeBackingStore::OpenObjectStoreKeyCursor(
     int64 database_id,
     int64 object_store_id,
     const IndexedDBKeyRange& key_range,
-    indexed_db::CursorDirection) {
+    indexed_db::CursorDirection,
+    leveldb::Status* s) {
   return scoped_ptr<IndexedDBBackingStore::Cursor>();
 }
 scoped_ptr<IndexedDBBackingStore::Cursor>
@@ -147,7 +150,8 @@ IndexedDBFakeBackingStore::OpenObjectStoreCursor(
     int64 database_id,
     int64 object_store_id,
     const IndexedDBKeyRange& key_range,
-    indexed_db::CursorDirection) {
+    indexed_db::CursorDirection,
+    leveldb::Status* s) {
   return scoped_ptr<IndexedDBBackingStore::Cursor>();
 }
 scoped_ptr<IndexedDBBackingStore::Cursor>
@@ -157,7 +161,8 @@ IndexedDBFakeBackingStore::OpenIndexKeyCursor(
     int64 object_store_id,
     int64 index_id,
     const IndexedDBKeyRange& key_range,
-    indexed_db::CursorDirection) {
+    indexed_db::CursorDirection,
+    leveldb::Status* s) {
   return scoped_ptr<IndexedDBBackingStore::Cursor>();
 }
 scoped_ptr<IndexedDBBackingStore::Cursor>
@@ -167,7 +172,8 @@ IndexedDBFakeBackingStore::OpenIndexCursor(
     int64 object_store_id,
     int64 index_id,
     const IndexedDBKeyRange& key_range,
-    indexed_db::CursorDirection) {
+    indexed_db::CursorDirection,
+    leveldb::Status* s) {
   return scoped_ptr<IndexedDBBackingStore::Cursor>();
 }
 

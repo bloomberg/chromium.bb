@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_INDEXED_DB_LEVELDB_LEVELDB_ITERATOR_H_
 
 #include "base/strings/string_piece.h"
+#include "third_party/leveldatabase/src/include/leveldb/status.h"
 
 namespace content {
 
@@ -13,10 +14,10 @@ class LevelDBIterator {
  public:
   virtual ~LevelDBIterator() {}
   virtual bool IsValid() const = 0;
-  virtual void SeekToLast() = 0;
-  virtual void Seek(const base::StringPiece& target) = 0;
-  virtual void Next() = 0;
-  virtual void Prev() = 0;
+  virtual leveldb::Status SeekToLast() = 0;
+  virtual leveldb::Status Seek(const base::StringPiece& target) = 0;
+  virtual leveldb::Status Next() = 0;
+  virtual leveldb::Status Prev() = 0;
   virtual base::StringPiece Key() const = 0;
   virtual base::StringPiece Value() const = 0;
 };

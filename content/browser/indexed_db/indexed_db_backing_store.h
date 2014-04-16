@@ -97,7 +97,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
 
   // Compact is public for testing.
   virtual void Compact();
-  virtual std::vector<base::string16> GetDatabaseNames();
+  virtual std::vector<base::string16> GetDatabaseNames(leveldb::Status*);
   virtual leveldb::Status GetIDBDatabaseMetaData(
       const base::string16& name,
       IndexedDBDatabaseMetadata* metadata,
@@ -260,15 +260,18 @@ class CONTENT_EXPORT IndexedDBBackingStore
     };
 
     const IndexedDBKey& key() const { return *current_key_; }
-    bool Continue() { return Continue(NULL, NULL, SEEK); }
-    bool Continue(const IndexedDBKey* key, IteratorState state) {
-      return Continue(key, NULL, state);
+    bool Continue(leveldb::Status* s) { return Continue(NULL, NULL, SEEK, s); }
+    bool Continue(const IndexedDBKey* key,
+                  IteratorState state,
+                  leveldb::Status* s) {
+      return Continue(key, NULL, state, s);
     }
     bool Continue(const IndexedDBKey* key,
                   const IndexedDBKey* primary_key,
-                  IteratorState state);
-    bool Advance(uint32 count);
-    bool FirstSeek();
+                  IteratorState state,
+                  leveldb::Status*);
+    bool Advance(uint32 count, leveldb::Status*);
+    bool FirstSeek(leveldb::Status*);
 
     virtual Cursor* Clone() = 0;
     virtual const IndexedDBKey& primary_key() const;
@@ -300,27 +303,31 @@ class CONTENT_EXPORT IndexedDBBackingStore
       int64 database_id,
       int64 object_store_id,
       const IndexedDBKeyRange& key_range,
-      indexed_db::CursorDirection);
+      indexed_db::CursorDirection,
+      leveldb::Status*);
   virtual scoped_ptr<Cursor> OpenObjectStoreCursor(
       IndexedDBBackingStore::Transaction* transaction,
       int64 database_id,
       int64 object_store_id,
       const IndexedDBKeyRange& key_range,
-      indexed_db::CursorDirection);
+      indexed_db::CursorDirection,
+      leveldb::Status*);
   virtual scoped_ptr<Cursor> OpenIndexKeyCursor(
       IndexedDBBackingStore::Transaction* transaction,
       int64 database_id,
       int64 object_store_id,
       int64 index_id,
       const IndexedDBKeyRange& key_range,
-      indexed_db::CursorDirection);
+      indexed_db::CursorDirection,
+      leveldb::Status*);
   virtual scoped_ptr<Cursor> OpenIndexCursor(
       IndexedDBBackingStore::Transaction* transaction,
       int64 database_id,
       int64 object_store_id,
       int64 index_id,
       const IndexedDBKeyRange& key_range,
-      indexed_db::CursorDirection);
+      indexed_db::CursorDirection,
+      leveldb::Status*);
 
   class Transaction {
    public:

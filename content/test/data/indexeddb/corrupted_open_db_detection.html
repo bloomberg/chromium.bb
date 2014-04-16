@@ -10,7 +10,10 @@
 <script type="text/javascript" src="common.js"></script>
 <script>
 
+var testType = 'get';
+
 function test() {
+  testType = location.hash.substring(1);
   indexedDBTest(upgradeCallback, openCallback);
 }
 
@@ -92,6 +95,27 @@ function getData() {
   request.onerror = requestError;
 }
 
+function iterateData() {
+  transaction = db.transaction('storeName');
+  db.onclose = databaseClosed;
+  transaction.onabort = transactionAbort;
+  transaction.onerror = transactionError;
+  var store = transaction.objectStore('storeName');
+  var request = store.openCursor();
+  request.oncomplete = unexpectedCompleteCallback;
+  request.onerror = requestError;
+  request.onsuccess = function (event){
+    var cursor = request.result;
+    if (cursor) {
+      // Get an object. Probably shouldn't get this far, but won't call this an error.
+      cursor.continue();
+    } else {
+      // Got the last object. We shouldn't get this far.
+      fail("Should *not* have been able to iterate over database.");
+    }
+  };
+}
+
 function openCallback() {
   var xmlhttp = new window.XMLHttpRequest();
   xmlhttp.open("GET", "/corrupt/test/corruptdb?storeName", false /*sync*/);
@@ -99,7 +123,13 @@ function openCallback() {
       if (xmlhttp.readyState === 4) {
         if (xmlhttp.status === 200) {
           // The database is now corrupt.
-          getData();
+          if (testType === 'get') {
+            getData();
+          } else if (testType === 'iterate') {
+            iterateData();
+          } else {
+            fail('Unknown test: "' + testType + '"');
+          }
         }
       }
     };

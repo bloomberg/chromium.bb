@@ -473,7 +473,7 @@ static scoped_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CorruptedOpenDatabase) {
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CorruptedOpenDatabaseGet) {
   ASSERT_TRUE(embedded_test_server()->Started() ||
               embedded_test_server()->InitializeAndWaitUntilReady());
   const GURL& origin_url = embedded_test_server()->base_url();
@@ -484,7 +484,25 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CorruptedOpenDatabase) {
                  s_corrupt_db_test_prefix));
 
   std::string test_file =
-      s_corrupt_db_test_prefix + "corrupted_open_db_detection.html";
+      s_corrupt_db_test_prefix + "corrupted_open_db_detection.html#get";
+  SimpleTest(embedded_test_server()->GetURL(test_file));
+
+  test_file = s_corrupt_db_test_prefix + "corrupted_open_db_recovery.html";
+  SimpleTest(embedded_test_server()->GetURL(test_file));
+}
+
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CorruptedOpenDatabaseIterate) {
+  ASSERT_TRUE(embedded_test_server()->Started() ||
+              embedded_test_server()->InitializeAndWaitUntilReady());
+  const GURL& origin_url = embedded_test_server()->base_url();
+  embedded_test_server()->RegisterRequestHandler(
+      base::Bind(&CorruptDBRequestHandler,
+                 base::ConstRef(GetContext()),
+                 origin_url,
+                 s_corrupt_db_test_prefix));
+
+  std::string test_file =
+      s_corrupt_db_test_prefix + "corrupted_open_db_detection.html#iterate";
   SimpleTest(embedded_test_server()->GetURL(test_file));
 
   test_file = s_corrupt_db_test_prefix + "corrupted_open_db_recovery.html";
