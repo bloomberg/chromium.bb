@@ -52,7 +52,7 @@ bool RenderSVGTextPath::isChildAllowed(RenderObject* child, RenderStyle*) const
 Path RenderSVGTextPath::layoutPath() const
 {
     SVGTextPathElement* textPathElement = toSVGTextPathElement(node());
-    Element* targetElement = SVGURIReference::targetElementFromIRIString(textPathElement->href()->currentValue()->value(), textPathElement->document());
+    Element* targetElement = SVGURIReference::targetElementFromIRIString(textPathElement->href()->currentValue()->value(), textPathElement->treeScope());
     if (!isSVGPathElement(targetElement))
         return Path();
 

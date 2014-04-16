@@ -39,12 +39,13 @@ bool SVGURIReference::isKnownAttribute(const QualifiedName& attrName)
     return attrName.matches(XLinkNames::hrefAttr);
 }
 
-AtomicString SVGURIReference::fragmentIdentifierFromIRIString(const String& url, const Document& document)
+AtomicString SVGURIReference::fragmentIdentifierFromIRIString(const String& url, const TreeScope& treeScope)
 {
     size_t start = url.find('#');
     if (start == kNotFound)
         return emptyAtom;
 
+    const Document& document = treeScope.document();
     KURL base = start ? KURL(document.baseURI(), url.substring(0, start)) : document.baseURI();
     if (equalIgnoringFragmentIdentifier(base, document.url()))
         return AtomicString(url.substring(start + 1));
@@ -52,11 +53,13 @@ AtomicString SVGURIReference::fragmentIdentifierFromIRIString(const String& url,
     return emptyAtom;
 }
 
-static inline KURL urlFromIRIStringWithFragmentIdentifier(const String& url, const Document& document, AtomicString& fragmentIdentifier)
+static inline KURL urlFromIRIStringWithFragmentIdentifier(const String& url, const TreeScope& treeScope, AtomicString& fragmentIdentifier)
 {
     size_t startOfFragmentIdentifier = url.find('#');
     if (startOfFragmentIdentifier == kNotFound)
         return KURL();
+
+    const Document& document = treeScope.document();
 
     // Exclude the '#' character when determining the fragmentIdentifier.
     fragmentIdentifier = AtomicString(url.substring(startOfFragmentIdentifier + 1));
@@ -68,8 +71,10 @@ static inline KURL urlFromIRIStringWithFragmentIdentifier(const String& url, con
     return KURL(document.baseURI(), url.substring(startOfFragmentIdentifier));
 }
 
-Element* SVGURIReference::targetElementFromIRIString(const String& iri, const Document& document, AtomicString* fragmentIdentifier, Document* externalDocument)
+Element* SVGURIReference::targetElementFromIRIString(const String& iri, const TreeScope& treeScope, AtomicString* fragmentIdentifier, Document* externalDocument)
 {
+    const Document& document = treeScope.document();
+
     // If there's no fragment identifier contained within the IRI string, we can't lookup an element.
     AtomicString id;
     KURL url = urlFromIRIStringWithFragmentIdentifier(iri, document, id);
@@ -92,7 +97,7 @@ Element* SVGURIReference::targetElementFromIRIString(const String& iri, const Do
     if (isExternalURIReference(iri, document))
         return 0;
 
-    return document.getElementById(id);
+    return treeScope.getElementById(id);
 }
 
 void SVGURIReference::addSupportedAttributes(HashSet<QualifiedName>& supportedAttributes)

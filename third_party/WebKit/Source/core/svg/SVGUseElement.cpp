@@ -174,10 +174,10 @@ void SVGUseElement::removedFrom(ContainerNode* rootParent)
         clearResourceReferences();
 }
 
-Document* SVGUseElement::referencedDocument() const
+TreeScope* SVGUseElement::referencedScope() const
 {
     if (!isExternalURIReference(hrefString(), document()))
-        return &document();
+        return &treeScope();
     return externalDocument();
 }
 
@@ -345,7 +345,7 @@ static bool subtreeContainsDisallowedElement(Node* start)
 
 void SVGUseElement::scheduleShadowTreeRecreation()
 {
-    if (!referencedDocument() || isInUserAgentShadowTree())
+    if (!referencedScope() || isInUserAgentShadowTree())
         return;
     m_needsShadowTreeRecreation = true;
     document().scheduleUseShadowTreeUpdate(*this);
@@ -370,14 +370,14 @@ void SVGUseElement::clearResourceReferences()
 
 void SVGUseElement::buildPendingResource()
 {
-    if (!referencedDocument() || isInUserAgentShadowTree())
+    if (!referencedScope() || isInUserAgentShadowTree())
         return;
     clearResourceReferences();
     if (!inDocument())
         return;
 
     AtomicString id;
-    Element* target = SVGURIReference::targetElementFromIRIString(hrefString(), document(), &id, externalDocument());
+    Element* target = SVGURIReference::targetElementFromIRIString(hrefString(), treeScope(), &id, externalDocument());
     if (!target || !target->inDocument()) {
         // If we can't find the target of an external element, just give up.
         // We can't observe if the target somewhen enters the external document, nor should we do it.
@@ -386,7 +386,7 @@ void SVGUseElement::buildPendingResource()
         if (id.isEmpty())
             return;
 
-        referencedDocument()->accessSVGExtensions().addPendingResource(id, this);
+        referencedScope()->document().accessSVGExtensions().addPendingResource(id, this);
         ASSERT(hasPendingResources());
         return;
     }
@@ -608,8 +608,8 @@ void SVGUseElement::buildInstanceTree(SVGElement* target, SVGElementInstance* ta
 
 bool SVGUseElement::hasCycleUseReferencing(SVGUseElement* use, SVGElementInstance* targetInstance, SVGElement*& newTarget)
 {
-    ASSERT(referencedDocument());
-    Element* targetElement = SVGURIReference::targetElementFromIRIString(use->hrefString(), *referencedDocument());
+    ASSERT(referencedScope());
+    Element* targetElement = SVGURIReference::targetElementFromIRIString(use->hrefString(), *referencedScope());
     newTarget = 0;
     if (targetElement && targetElement->isSVGElement())
         newTarget = toSVGElement(targetElement);
@@ -683,15 +683,15 @@ void SVGUseElement::expandUseElementsInShadowTree(Node* element)
         SVGUseElement* use = toSVGUseElement(element);
         ASSERT(!use->resourceIsStillLoading());
 
-        ASSERT(referencedDocument());
-        Element* targetElement = SVGURIReference::targetElementFromIRIString(use->hrefString(), *referencedDocument());
+        ASSERT(referencedScope());
+        Element* targetElement = SVGURIReference::targetElementFromIRIString(use->hrefString(), *referencedScope());
         SVGElement* target = 0;
         if (targetElement && targetElement->isSVGElement())
             target = toSVGElement(targetElement);
 
         // Don't ASSERT(target) here, it may be "pending", too.
         // Setup sub-shadow tree root node
-        RefPtr<SVGGElement> cloneParent = SVGGElement::create(*referencedDocument());
+        RefPtr<SVGGElement> cloneParent = SVGGElement::create(referencedScope()->document());
         use->cloneChildNodes(cloneParent.get());
 
         // Spec: In the generated content, the 'use' will be replaced by 'g', where all attributes from the
@@ -739,8 +739,8 @@ void SVGUseElement::expandSymbolElementsInShadowTree(Node* element)
         // height are provided on the 'use' element, then these attributes will be transferred to
         // the generated 'svg'. If attributes width and/or height are not specified, the generated
         // 'svg' element will use values of 100% for these attributes.
-        ASSERT(referencedDocument());
-        RefPtr<SVGSVGElement> svgElement = SVGSVGElement::create(*referencedDocument());
+        ASSERT(referencedScope());
+        RefPtr<SVGSVGElement> svgElement = SVGSVGElement::create(referencedScope()->document());
 
         // Transfer all data (attributes, etc.) from <symbol> to the new <svg> element.
         svgElement->cloneDataFromElement(*toElement(element));

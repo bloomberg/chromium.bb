@@ -75,7 +75,7 @@ RenderObject* SVGAltGlyphElement::createRenderer(RenderStyle*)
 bool SVGAltGlyphElement::hasValidGlyphElements(Vector<AtomicString>& glyphNames) const
 {
     AtomicString target;
-    Element* element = targetElementFromIRIString(getAttribute(XLinkNames::hrefAttr), document(), &target);
+    Element* element = targetElementFromIRIString(getAttribute(XLinkNames::hrefAttr), treeScope(), &target);
     if (!element)
         return false;
 

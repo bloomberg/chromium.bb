@@ -149,7 +149,7 @@ static inline AtomicString targetReferenceFromResource(SVGElement& element)
     else
         ASSERT_NOT_REACHED();
 
-    return SVGURIReference::fragmentIdentifierFromIRIString(target, element.document());
+    return SVGURIReference::fragmentIdentifierFromIRIString(target, element.treeScope());
 }
 
 static inline bool svgPaintTypeHasURL(SVGPaint::SVGPaintType paintType)
@@ -167,13 +167,13 @@ static inline bool svgPaintTypeHasURL(SVGPaint::SVGPaintType paintType)
     return false;
 }
 
-static inline RenderSVGResourceContainer* paintingResourceFromSVGPaint(Document& document, const SVGPaint::SVGPaintType& paintType, const String& paintUri, AtomicString& id, bool& hasPendingResource)
+static inline RenderSVGResourceContainer* paintingResourceFromSVGPaint(TreeScope& treeScope, const SVGPaint::SVGPaintType& paintType, const String& paintUri, AtomicString& id, bool& hasPendingResource)
 {
     if (!svgPaintTypeHasURL(paintType))
         return 0;
 
-    id = SVGURIReference::fragmentIdentifierFromIRIString(paintUri, document);
-    RenderSVGResourceContainer* container = getRenderSVGResourceContainerById(document, id);
+    id = SVGURIReference::fragmentIdentifierFromIRIString(paintUri, treeScope);
+    RenderSVGResourceContainer* container = getRenderSVGResourceContainerById(treeScope, id);
     if (!container) {
         hasPendingResource = true;
         return 0;
@@ -221,9 +221,9 @@ PassOwnPtr<SVGResources> SVGResources::buildResources(const RenderObject* object
     if (!element)
         return nullptr;
 
-    Document& document = object->document();
+    TreeScope& treeScope = element->treeScope();
 
-    SVGDocumentExtensions& extensions = document.accessSVGExtensions();
+    SVGDocumentExtensions& extensions = object->document().accessSVGExtensions();
 
     const AtomicString& tagName = element->localName();
     if (tagName.isNull())
@@ -233,34 +233,34 @@ PassOwnPtr<SVGResources> SVGResources::buildResources(const RenderObject* object
     if (clipperFilterMaskerTags().contains(tagName)) {
         if (style->hasClipper()) {
             AtomicString id = style->clipperResource();
-            if (!ensureResources(resources)->setClipper(getRenderSVGResourceById<RenderSVGResourceClipper>(document, id)))
+            if (!ensureResources(resources)->setClipper(getRenderSVGResourceById<RenderSVGResourceClipper>(treeScope, id)))
                 registerPendingResource(extensions, id, element);
         }
 
         if (style->hasFilter()) {
             AtomicString id = style->filterResource();
-            if (!ensureResources(resources)->setFilter(getRenderSVGResourceById<RenderSVGResourceFilter>(document, id)))
+            if (!ensureResources(resources)->setFilter(getRenderSVGResourceById<RenderSVGResourceFilter>(treeScope, id)))
                 registerPendingResource(extensions, id, element);
         }
 
         if (style->hasMasker()) {
             AtomicString id = style->maskerResource();
-            if (!ensureResources(resources)->setMasker(getRenderSVGResourceById<RenderSVGResourceMasker>(document, id)))
+            if (!ensureResources(resources)->setMasker(getRenderSVGResourceById<RenderSVGResourceMasker>(treeScope, id)))
                 registerPendingResource(extensions, id, element);
         }
     }
 
     if (style->hasMarkers() && supportsMarkers(*element)) {
         const AtomicString& markerStartId = style->markerStartResource();
-        if (!ensureResources(resources)->setMarkerStart(getRenderSVGResourceById<RenderSVGResourceMarker>(document, markerStartId)))
+        if (!ensureResources(resources)->setMarkerStart(getRenderSVGResourceById<RenderSVGResourceMarker>(treeScope, markerStartId)))
             registerPendingResource(extensions, markerStartId, element);
 
         const AtomicString& markerMidId = style->markerMidResource();
-        if (!ensureResources(resources)->setMarkerMid(getRenderSVGResourceById<RenderSVGResourceMarker>(document, markerMidId)))
+        if (!ensureResources(resources)->setMarkerMid(getRenderSVGResourceById<RenderSVGResourceMarker>(treeScope, markerMidId)))
             registerPendingResource(extensions, markerMidId, element);
 
         const AtomicString& markerEndId = style->markerEndResource();
-        if (!ensureResources(resources)->setMarkerEnd(getRenderSVGResourceById<RenderSVGResourceMarker>(document, style->markerEndResource())))
+        if (!ensureResources(resources)->setMarkerEnd(getRenderSVGResourceById<RenderSVGResourceMarker>(treeScope, style->markerEndResource())))
             registerPendingResource(extensions, markerEndId, element);
     }
 
@@ -268,7 +268,7 @@ PassOwnPtr<SVGResources> SVGResources::buildResources(const RenderObject* object
         if (style->hasFill()) {
             bool hasPendingResource = false;
             AtomicString id;
-            RenderSVGResourceContainer* resource = paintingResourceFromSVGPaint(document, style->fillPaintType(), style->fillPaintUri(), id, hasPendingResource);
+            RenderSVGResourceContainer* resource = paintingResourceFromSVGPaint(treeScope, style->fillPaintType(), style->fillPaintUri(), id, hasPendingResource);
             if (!ensureResources(resources)->setFill(resource) && hasPendingResource) {
                 registerPendingResource(extensions, id, element);
             }
@@ -277,7 +277,7 @@ PassOwnPtr<SVGResources> SVGResources::buildResources(const RenderObject* object
         if (style->hasStroke()) {
             bool hasPendingResource = false;
             AtomicString id;
-            RenderSVGResourceContainer* resource = paintingResourceFromSVGPaint(document, style->strokePaintType(), style->strokePaintUri(), id, hasPendingResource);
+            RenderSVGResourceContainer* resource = paintingResourceFromSVGPaint(treeScope, style->strokePaintType(), style->strokePaintUri(), id, hasPendingResource);
             if (!ensureResources(resources)->setStroke(resource) && hasPendingResource) {
                 registerPendingResource(extensions, id, element);
             }
@@ -286,7 +286,7 @@ PassOwnPtr<SVGResources> SVGResources::buildResources(const RenderObject* object
 
     if (chainableResourceTags().contains(tagName)) {
         AtomicString id = targetReferenceFromResource(*element);
-        if (!ensureResources(resources)->setLinkedResource(getRenderSVGResourceContainerById(document, id)))
+        if (!ensureResources(resources)->setLinkedResource(getRenderSVGResourceContainerById(treeScope, id)))
             registerPendingResource(extensions, id, element);
     }
 

@@ -24,8 +24,9 @@
 #ifndef SVGFEImage_h
 #define SVGFEImage_h
 
-#include "platform/graphics/filters/FilterEffect.h"
+#include "core/dom/TreeScope.h"
 #include "core/svg/SVGPreserveAspectRatio.h"
+#include "platform/graphics/filters/FilterEffect.h"
 
 namespace WebCore {
 
@@ -36,7 +37,7 @@ class RenderObject;
 class FEImage FINAL : public FilterEffect {
 public:
     static PassRefPtr<FEImage> createWithImage(Filter*, PassRefPtr<Image>, PassRefPtr<SVGPreserveAspectRatio>);
-    static PassRefPtr<FEImage> createWithIRIReference(Filter*, Document&, const String&, PassRefPtr<SVGPreserveAspectRatio>);
+    static PassRefPtr<FEImage> createWithIRIReference(Filter*, TreeScope&, const String&, PassRefPtr<SVGPreserveAspectRatio>);
 
     virtual FloatRect determineAbsolutePaintRect(const FloatRect& requestedRect) OVERRIDE;
 
@@ -48,7 +49,7 @@ public:
 private:
     virtual ~FEImage() { }
     FEImage(Filter*, PassRefPtr<Image>, PassRefPtr<SVGPreserveAspectRatio>);
-    FEImage(Filter*, Document&, const String&, PassRefPtr<SVGPreserveAspectRatio>);
+    FEImage(Filter*, TreeScope&, const String&, PassRefPtr<SVGPreserveAspectRatio>);
     RenderObject* referencedRenderer() const;
 
     virtual void applySoftware() OVERRIDE;
@@ -56,8 +57,8 @@ private:
 
     RefPtr<Image> m_image;
 
-    // m_document will never be a dangling reference. See https://bugs.webkit.org/show_bug.cgi?id=99243
-    Document* m_document;
+    // m_treeScope will never be a dangling reference. See https://bugs.webkit.org/show_bug.cgi?id=99243
+    TreeScope* m_treeScope;
     String m_href;
     PassRefPtr<SVGPreserveAspectRatio> m_preserveAspectRatio;
 };

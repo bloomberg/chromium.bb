@@ -38,7 +38,7 @@ AtomicString StyleBuilderConverter::convertFragmentIdentifier(StyleResolverState
 {
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
     if (primitiveValue->isURI())
-        return SVGURIReference::fragmentIdentifierFromIRIString(primitiveValue->getStringValue(), state.document());
+        return SVGURIReference::fragmentIdentifierFromIRIString(primitiveValue->getStringValue(), state.element()->treeScope());
     return nullAtom;
 }
 

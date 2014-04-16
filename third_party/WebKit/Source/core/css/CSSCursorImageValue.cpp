@@ -39,9 +39,9 @@
 
 namespace WebCore {
 
-static inline SVGCursorElement* resourceReferencedByCursorElement(const String& url, Document& document)
+static inline SVGCursorElement* resourceReferencedByCursorElement(const String& url, TreeScope& treeScope)
 {
-    Element* element = SVGURIReference::targetElementFromIRIString(url, document);
+    Element* element = SVGURIReference::targetElementFromIRIString(url, treeScope);
     return isSVGCursorElement(element) ? toSVGCursorElement(element) : 0;
 }
 
@@ -66,7 +66,7 @@ CSSCursorImageValue::~CSSCursorImageValue()
     for (; it != end; ++it) {
         SVGElement* referencedElement = *it;
         referencedElement->cursorImageValueRemoved();
-        if (SVGCursorElement* cursorElement = resourceReferencedByCursorElement(url, referencedElement->document()))
+        if (SVGCursorElement* cursorElement = resourceReferencedByCursorElement(url, referencedElement->treeScope()))
             cursorElement->removeClient(referencedElement);
     }
 }
@@ -93,7 +93,7 @@ bool CSSCursorImageValue::updateIfSVGCursorIsUsed(Element* element)
         return false;
 
     String url = toCSSImageValue(m_imageValue.get())->url();
-    if (SVGCursorElement* cursorElement = resourceReferencedByCursorElement(url, element->document())) {
+    if (SVGCursorElement* cursorElement = resourceReferencedByCursorElement(url, element->treeScope())) {
         // FIXME: This will override hot spot specified in CSS, which is probably incorrect.
         SVGLengthContext lengthContext(0);
         m_hasHotSpot = true;
