@@ -57,16 +57,15 @@ void ObjectBackedNativeHandler::RouteFunction(
   v8::HandleScope handle_scope(isolate);
   v8::Context::Scope context_scope(context_->v8_context());
 
-  v8::Persistent<v8::Object> data(isolate, v8::Object::New(isolate));
-  v8::Local<v8::Object> local_data = v8::Local<v8::Object>::New(isolate, data);
-  local_data->Set(
+  v8::Local<v8::Object> data = v8::Object::New(isolate);
+  data->Set(
       v8::String::NewFromUtf8(isolate, kHandlerFunction),
       v8::External::New(isolate, new HandlerFunction(handler_function)));
   v8::Handle<v8::FunctionTemplate> function_template =
-      v8::FunctionTemplate::New(isolate, Router, local_data);
+      v8::FunctionTemplate::New(isolate, Router, data);
   object_template_.NewHandle(isolate)
       ->Set(isolate, name.c_str(), function_template);
-  router_data_.Append(local_data);
+  router_data_.Append(data);
 }
 
 v8::Isolate* ObjectBackedNativeHandler::GetIsolate() const {
