@@ -5,7 +5,7 @@
 #include "extensions/common/permissions/settings_override_permission.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "grit/generated_resources.h"
+#include "grit/extensions_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace extensions {

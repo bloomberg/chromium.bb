@@ -1,0 +1,32 @@
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="ca">
+<translation id="735746806431426829">Accediu a les vostres dades als llocs web següents:</translation>
+<translation id="8719282907381795632">Accedir a les dades a <ph name="WEBSITE_1"/></translation>
+<translation id="7809034755304591547">L'administrador ha bloquejat l'extensió <ph name="EXTENSION_NAME"/> (amb l'ID d'extensió <ph name="EXTENSION_ID"/>).</translation>
+<translation id="2857834222104759979">El fitxer de manifest no és vàlid.</translation>
+<translation id="6384275966486438344">Canvia la configuració de la cerca a: <ph name="SEARCH_HOST"/></translation>
+<translation id="1938239371608910339">Accedir al dispositiu USB</translation>
+<translation id="5911798608827489036">Intercanvia dades amb un altre ordinador de la xarxa local o d'Internet</translation>
+<translation id="657064425229075395">No s'ha pogut carregar l'script en segon pla &quot;<ph name="BACKGROUND_SCRIPT"/>&quot;.</translation>
+<translation id="3093853184108622112">Accedir a les vostres dades a <ph name="WEBSITE_1"/> i a <ph name="WEBSITE_2"/></translation>
+<translation id="8597109877291678953">Intercanviar dades amb l'ordinador <ph name="HOSTNAME"/></translation>
+<translation id="6914908792814954894">Accedir a les dades a <ph name="NUMBER_OF_WEBSITES"/> llocs web</translation>
+<translation id="5456409301717116725">Aquesta extensió inclou el fitxer de clau &quot;<ph name="KEY_PATH"/>&quot;. És probable que això no sigui convenient.</translation>
+<translation id="6968649314782363508">Accedir a les vostres dades a <ph name="WEBSITE_1"/>, a <ph name="WEBSITE_2"/> i a <ph name="WEBSITE_3"/></translation>
+<translation id="149347756975725155">No s'ha pogut carregar la icona d'extensió &quot;<ph name="ICON"/>&quot;.</translation>
+<translation id="6344170822609224263">Accedir a la llista de connexions de xarxa</translation>
+<translation id="2518849872271000461">Intercanviar dades amb els ordinadors <ph name="HOSTNAMES"/></translation>
+<translation id="5530391389158154052">Accedir a les dades a <ph name="NUMBER_OF_WEBSITES"/> llocs web</translation>
+<translation id="961805664415579088">Intercanviar dades amb un altre ordinador del domini <ph name="DOMAIN"/></translation>
+<translation id="4968399700653439437">Intercanviar  dades amb un altre ordinador dels dominis <ph name="DOMAINS"/></translation>
+<translation id="8662911384982557515">Canvia la pàgina d'inici per: <ph name="HOME_PAGE"/></translation>
+<translation id="2893389635995517838">Accedir a fotos, a música i a altres elements multimèdia de l'ordinador</translation>
+<translation id="8602184400052594090">El fitxer de manifest falta o bé no es pot llegir.</translation>
+<translation id="1196944142850240972">Accedir a les votres dades en tots els llocs web</translation>
+<translation id="7217838517480956708">L'administrador d'aquest equip necessita que s'instal·li <ph name="EXTENSION_NAME"/>. No es pot eliminar o modificar.</translation>
+<translation id="7154130902455071009">Canvia la pàgina d'inici per: <ph name="START_PAGE"/></translation>
+<translation id="1803557475693955505">No s'ha pogut carregar la pàgina en segon pla &quot;<ph name="BACKGROUND_PAGE"/>&quot;.</translation>
+<translation id="1442776214136941057">Accedir al dispositiu USB de <ph name="PRODUCT_NAME"/> de <ph name="VENDOR_NAME"/></translation>
+<translation id="3566784263424350852">Accedir al dispositiu USB de <ph name="VENDOR_NAME"/>.</translation>
+</translationbundle>

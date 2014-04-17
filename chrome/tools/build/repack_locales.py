@@ -101,6 +101,12 @@ def calc_inputs(locale):
     inputs.append(os.path.join(SHARE_INT_DIR, 'ui', 'app_locale_settings',
                   'app_locale_settings_%s.pak' % locale))
 
+    # For example:
+    # '<(SHARED_INTERMEDIATE_DIR)/extensions/strings/extensions_strings_da.pak
+    # TODO(jamescook): When Android stops building extensions code move this
+    # to the OS != 'ios' and OS != 'android' section below.
+    inputs.append(os.path.join(SHARE_INT_DIR, 'extensions', 'strings',
+                  'extensions_strings_%s.pak' % locale))
 
   if OS != 'ios' and OS != 'android':
     #e.g. '<(SHARED_INTERMEDIATE_DIR)/third_party/libaddressinput/

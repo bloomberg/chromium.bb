@@ -7,7 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
-#include "grit/generated_resources.h"
+#include "grit/extensions_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {

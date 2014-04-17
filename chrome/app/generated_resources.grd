@@ -4294,79 +4294,6 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS" desc="Permission string for access to data on all websites.">
         Access your data on all websites
       </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_1_HOST" desc="Permission string for access to data on one website.">
-        Access your data on <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph>
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_2_HOSTS" desc="Permission string for access to data on two websites.">
-        Access your data on <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph> and <ph name="WEBSITE_2">$2<ex>www.reddit.com</ex></ph>
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_3_HOSTS" desc="Permission string for access to data on three websites.">
-        Access your data on <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph>, <ph name="WEBSITE_2">$2<ex>www.reddit.com</ex></ph>, and <ph name="WEBSITE_3">$3<ex>news.ycombinator.com</ex></ph>
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_HOSTS_DEFAULT" desc="Permission string for access to data on four or more websites. This is necessary for every language. This is the default for all the numbers NOT covered by special cases (singular, dual/two, few, many) some languages need. For CJK, Vietnamese, Turkish and Kannada, this is the only string necessary. For languages with singular-plural distinction, this is the generic plural. For Lithuanian, NUMBER_OF_WEBSITES is 11 .. 19.">
-        Access your data on <ph name="NUMBER_OF_WEBSITES">#<ex>5</ex></ph> websites
-      </message>
-
-      <if expr="lang not in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message name="IDS_EXTENSION_PROMPT_WARNING_HOST_SINGULAR" desc="Permission string for access to data on four or more websites. NUMBER_OF_WEBSITES is one or one-like numbers : 1 (many European and most Indian languages), 1 and 0 (French, Brazilian Portuguese and Hindi), 1,21,31, .. (Russian, Ukrainian, Croatian, Serbian, Latvian, Lithuanian), or 1, 101, 201, .. (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada">
-        Access your data on <ph name="NUMBER_OF_WEBSITES">#<ex>1</ex></ph> websites
-      </message>
-      </if>
-      <if expr="lang in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
-      <message translateable="false" name="IDS_EXTENSION_PROMPT_WARNING_HOST_SINGULAR" desc="">
-        NA
-      </message>
-      </if>
-
-      <if expr="lang in ['ar', 'ro', 'lv']">
-      <message name="IDS_EXTENSION_PROMPT_WARNING_HOSTS_ZERO" desc="Permission string for access to data on four or more websites. NUMBER_OF_WEBSITES is 0 (Arabic, Latvian) or 0, 2..19, 101..119, ... (Romanian). For other languages, do NOT translate.">
-        Access your data on <ph name="NUMBER_OF_WEBSITES">#<ex>0</ex></ph> websites
-      </message>
-      </if>
-      <if expr="lang not in ['ar', 'ro', 'lv']">
-      <message translateable="false" name="IDS_EXTENSION_PROMPT_WARNING_HOSTS_ZERO" desc="">
-        NA
-      </message>
-      </if>
-
-      <if expr="lang in ['ga', 'sl', 'ar']">
-      <message name="IDS_EXTENSION_PROMPT_WARNING_HOSTS_TWO" desc="Permission string for access to data on four or more websites. NUMBER_OF_WEBSITES is two or two-like/dual numbers :  2 (Arabic and Irish) or  2, 102, 202 ... (Slovenian). For other languages, do NOT translated.">
-        Access your data on <ph name="NUMBER_OF_WEBSITES">#<ex>2</ex></ph> websites
-      </message>
-      </if>
-      <if expr="lang not in ['ga', 'sl', 'ar']">
-      <message translateable="false" name="IDS_EXTENSION_PROMPT_WARNING_HOSTS_TWO" desc="">
-        NA
-      </message>
-      </if>
-
-      <if expr="lang  in ['ru', 'lt', 'hr', 'uk', 'cs', 'sk', 'pl', 'sl', 'ar']">
-      <message name="IDS_EXTENSION_PROMPT_WARNING_HOSTS_FEW" desc="Permission string for access to data on four or more websites. NUMBER_OF_WEBSITES is few or few-like numbers in Arabic, Russian, Polish, Croatian, Serbian, Ukrainian, Czech, Slovak, Slovenian, Latvian. For other languages, do NOT translate.">
-        Access your data on <ph name="NUMBER_OF_WEBSITES">#<ex>3</ex></ph> websites
-      </message>
-      </if>
-      <if expr="lang not in ['ru', 'lt', 'hr', 'uk', 'cs', 'sk', 'pl', 'sl', 'ar']">
-      <message translateable="false" name="IDS_EXTENSION_PROMPT_WARNING_HOSTS_FEW" desc="">
-        NA
-      </message>
-      </if>
-
-      <if expr="lang == 'ar'">
-      <message name="IDS_EXTENSION_PROMPT_WARNING_HOSTS_MANY" meaning="many" desc="Permission string for access to data on four or more websites. NUMBER_OF_WEBSITES is 11 through 99 in Arabic. For all other languages, do NOT translate.">
-        Access your data on <ph name="NUMBER_OF_WEBSITES">#<ex>23</ex></ph> websites
-      </message>
-      </if>
-      <if expr="lang != 'ar'">
-      <message translateable="false" name="IDS_EXTENSION_PROMPT_WARNING_HOSTS_MANY" desc="">
-        NA
-      </message>
-      </if>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_HOST_LIST" desc="Permission string (heading) for a list of websites.">
-        Access your data on the following websites:
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_HOST_LIST_ENTRY" desc="Single entry in a list of websites.">
-        - <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph>
-      </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_FAVICON" desc="Permission string for access to favicons.">
         Access the icons of the websites you visit.
       </message>
@@ -4418,15 +4345,6 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH_DEVICES" desc="Permission string for implementing Bluetooth profiles.">
         Access Bluetooth devices paired with your system.
       </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE" desc="Permission string for access to a specific USB device.">
-        Access the USB device <ph name="PRODUCT_NAME">$1<ex>SoundKnob</ex></ph> from <ph name="VENDOR_NAME">$2<ex>Griffin Technology</ex></ph>.
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_MISSING_VENDOR" desc="Permission string for access to a specific USB device when a vendor name cannot be established for a USB device.">
-        Access the USB device.
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_MISSING_PRODUCT" desc="Permission string for access to a specific USB device when a product name cannot be established for a USB device.">
-        Access the USB device from <ph name="VENDOR_NAME">$1<ex>Griffin Technology</ex></ph>.
-      </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_AUDIO_CAPTURE" desc="Permission string for access to audio capture devices.">
         Use your microphone
       </message>
@@ -4460,26 +4378,8 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ_DELETE" desc="Permission string for access to read and delete all of the user's media galleries.">
         Access and delete photos, music, and other media from your computer.
       </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ" desc="Permission string for access to read all of the user's media galleries.">
-        Access photos, music, and other media from your computer.
-      </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_SERIAL" desc="Permission string for access to serial devices.">
         Use serial devices attached to your computer
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_SOCKET_ANY_HOST" desc="Permission string for access to any computer on the local network or internet.">
-        Exchange data with any computer on the local network or internet
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_SOCKET_HOSTS_IN_DOMAIN" desc="Permission string for access to any computer within a single domains on the local network or internet.">
-        Exchange data with any computer in the domain <ph name="DOMAIN">$1<ex>example.com</ex></ph>
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_SOCKET_HOSTS_IN_DOMAINS" desc="Permission string for access to any computer within multiple domains on the local network or internet.">
-        Exchange data with any computer in the domains: <ph name="DOMAINS">$1<ex>example.com example.org</ex></ph>
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_SOCKET_SPECIFIC_HOST" desc="Permission string for access to a single specific computers on the local network or internet.">
-        Exchange data with the computer named <ph name="HOSTNAME">$1<ex>foo.example.com</ex></ph>
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_SOCKET_SPECIFIC_HOSTS" desc="Permission string for access to multiple specific computers on the local network or internet.">
-        Exchange data with the computers named: <ph name="HOSTNAMES">$1<ex>foo.example.com bar.example.com</ex></ph>
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_SYSTEM_INDICATOR" desc="Permission string for access to an icon in the system indicator area, such as the taskbar or system tray.">
         Display and manage an icon in the system indicator area.
@@ -4517,23 +4417,11 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH_PRIVATE" desc="Permission string for Bluetooth Private API.">
         Control Bluetooth adapter state and pairing.
       </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_NETWORK_STATE" desc="Permission string for network list access.">
-        Access list of network connections
-      </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_ACCESSIBILITY_FEATURES_MODIFY" desc="Permission string for modifying acccessibility settings via extension API shown when an extension utilizing the API is installed.">
         Modify your accessibility settings
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_ACCESSIBILITY_FEATURES_READ" desc="Permission string for modifying acccessibility settings via extension API shown when a extension utilizing the API is installed.">
         Read your accessibility settings
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_SEARCH_SETTINGS_OVERRIDE" desc="Permission string for search settings override.">
-        Change your search settings to: <ph name="SEARCH_HOST">$1<ex>url.search.com</ex></ph>
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_HOME_PAGE_SETTING_OVERRIDE" desc="Permission string for home page override.">
-        Change your home page to: <ph name="HOME_PAGE">$1<ex>home.page.com/home.html</ex></ph>
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_START_PAGE_SETTING_OVERRIDE" desc="Permission string for start page override.">
-        Change your start page to: <ph name="START_PAGE">$1<ex>start.page.com/start.html</ex></ph>
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_AUTOMATION" desc="Permission string for access to accessibility tree. TODO(aboxhall/dtseng): write more accurate description; write different versions for different permission levels">
         Access and interact with all web pages.
@@ -4615,23 +4503,11 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_WINDOW_SHAPE_NOT_SUPPORTED" desc="Error message when an extension has a requirement for shaped windows that the system does not support.">
         Shaped windows are not supported.
       </message>
-      <message name="IDS_EXTENSION_CANT_INSTALL_POLICY_BLOCKED" desc="Error message when a user tries to install an extension that is blocked by administrator policy.">
-        <ph name="EXTENSION_NAME">$1<ex>Google Talk</ex></ph> (extension ID "<ph name="EXTENSION_ID">$2<ex>nckgahadagoaajjgafhacjanaoiihapd</ex></ph>") is blocked by the administrator.
-      </message>
       <message name="IDS_EXTENSION_CANT_INSTALL_IN_DEVICE_LOCAL_ACCOUNT" desc="Error message when a user tries to install or the administrator tries to force-install through policy an extension that is not allowed in a device-local account.">
         <ph name="EXTENSION_NAME">$1<ex>Google Talk</ex></ph> (extension ID "<ph name="EXTENSION_ID">$2<ex>nckgahadagoaajjgafhacjanaoiihapd</ex></ph>") is not allowed in this type of session.
       </message>
-      <message name="IDS_EXTENSION_CANT_MODIFY_POLICY_REQUIRED" desc="Error message when a user tries to remove or change an extension that is required by administrator policy.">
-        The administrator of this machine requires <ph name="EXTENSION_NAME">$1<ex>Google Talk</ex></ph> to be installed. It cannot be removed or modified.
-      </message>
       <message name="IDS_EXTENSION_MOVE_DIRECTORY_TO_PROFILE_FAILED" desc="">
         Could not move extension directory into profile.
-      </message>
-      <message name="IDS_EXTENSION_MANIFEST_UNREADABLE" desc="">
-        Manifest file is missing or unreadable.
-      </message>
-      <message name="IDS_EXTENSION_MANIFEST_INVALID" desc="">
-        Manifest file is invalid.
       </message>
       <message name="IDS_EXTENSION_INSTALL_NOT_ENABLED" desc="Error displayed during installation of apps or extensions when installation is not enabled.">
         Installation is not enabled.
@@ -4663,14 +4539,8 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_OVERLAPPING_WEB_EXTENT" desc="Error message when a user tries to install an app with a web extent that overlaps another installed app.">
         Could not add application because it conflicts with "<ph name="APP_NAME">$1<ex>Google Mail</ex></ph>".
       </message>
-      <message name="IDS_EXTENSION_LOCALES_NO_DEFAULT_LOCALE_SPECIFIED" desc="">
-        Localization used, but default_locale wasn't specified in the manifest.
-      </message>
       <message name="IDS_EXTENSION_INVALID_IMAGE_PATH" desc="">
         Could not load '<ph name="IMAGE_PATH">$1<ex>/path/to/file</ex></ph>' for theme.
-      </message>
-      <message name="IDS_EXTENSION_LOAD_ICON_FAILED" desc="">
-        Could not load extension icon '<ph name="ICON">$1<ex>icon.png</ex></ph>'.
       </message>
       <message name="IDS_EXTENSION_LOAD_JAVASCRIPT_FAILED" desc="">
         Could not load javascript '<ph name="RELATIVE_PATH">$1<ex>javas.js</ex></ph>' for content script.
@@ -4689,12 +4559,6 @@ Make sure you do not expose any sensitive information.
       </message>
       <message name="IDS_EXTENSION_LOAD_ICON_FOR_BROWSER_ACTION_FAILED" desc="">
         Could not load icon '<ph name="ICON">$1<ex>icon.png</ex></ph>' for browser action.
-      </message>
-      <message name="IDS_EXTENSION_LOAD_BACKGROUND_SCRIPT_FAILED" desc="">
-        Could not load background script '<ph name="BACKGROUND_SCRIPT">$1<ex>script.js</ex></ph>'.
-      </message>
-      <message name="IDS_EXTENSION_LOAD_BACKGROUND_PAGE_FAILED" desc="">
-        Could not load background page '<ph name="BACKGROUND_PAGE">$1<ex>page.html</ex></ph>'.
       </message>
       <message name="IDS_EXTENSION_LOAD_OPTIONS_PAGE_FAILED" desc="">
         Could not load options page '<ph name="OPTIONS_PAGE">$1<ex>page.html</ex></ph>'.
@@ -4723,9 +4587,6 @@ Make sure you do not expose any sensitive information.
       </message>
       <message name="IDS_EXTENSION_INSTALL_PROCESS_CRASHED" desc="Error message in case package fails to install a utility process crashed.">
         Could not install package because a utility process crashed. Try restarting chrome and trying again.
-      </message>
-      <message name="IDS_EXTENSION_CONTAINS_PRIVATE_KEY" desc="Error message when an extension includes a file containing a private key.">
-        This extension includes the key file '<ph name="KEY_PATH">$1<ex>relative/path/to/file.pem</ex></ph>'. You probably don't want to do that.
       </message>
       <message name="IDS_EXTENSION_PACKAGE_DIRECTORY_ERROR" desc="Message for when an error occurs while trying to create the temporary directory needed to unzip a packaged extension or app.">
         Could not create directory for unzipping: '<ph name="DIRECTORY_PATH">$1<ex>profile/Extensions/CRX_INSTALL</ex></ph>'

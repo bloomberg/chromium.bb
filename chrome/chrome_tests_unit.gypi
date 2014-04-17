@@ -1974,6 +1974,7 @@
             '../components/components.gyp:data_reduction_proxy_test_support',
             '../components/components_strings.gyp:components_strings',
             '../device/bluetooth/bluetooth.gyp:device_bluetooth_mocks',
+            '../extensions/extensions_strings.gyp:extensions_strings',
             '../gpu/gpu.gyp:gpu_unittest_utils',
             '../media/media.gyp:media_test_support',
             '../ppapi/ppapi_internal.gyp:ppapi_unittest_shared',

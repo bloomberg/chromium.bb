@@ -11,13 +11,10 @@
       'target_name': 'extensions_common',
       'type': 'static_library',
       'dependencies': [
-        'common/api/api.gyp:extensions_api',
         # TODO(benwells): figure out what to do with the api target and
         # api resources compiled into the chrome resource bundle.
         # http://crbug.com/162530
         '../chrome/chrome_resources.gyp:chrome_resources',
-        # TODO(jamescook|derat): Pull strings into extensions module.
-        '../chrome/chrome_resources.gyp:chrome_strings',
         # Need default icons in theme_resources.grd
         '../chrome/chrome_resources.gyp:theme_resources',
 
@@ -33,6 +30,8 @@
         '../ui/base/ui_base.gyp:ui_base',
         '../ui/gfx/gfx.gyp:gfx_geometry',
         '../url/url.gyp:url_lib',
+        'common/api/api.gyp:extensions_api',
+        'extensions_strings.gyp:extensions_strings',
       ],
       'include_dirs': [
         '..',
@@ -217,14 +216,13 @@
       'target_name': 'extensions_browser',
       'type': 'static_library',
       'dependencies': [
-        'extensions_common',
-        'common/api/api.gyp:extensions_api',
-        # TODO(jamescook|derat): Pull strings into extensions module.
-        '../chrome/chrome_resources.gyp:chrome_strings',
         '../components/components.gyp:keyed_service_content',
         '../content/content.gyp:content_browser',
         '../skia/skia.gyp:skia',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
+        'common/api/api.gyp:extensions_api',
+        'extensions_common',
+        'extensions_strings.gyp:extensions_strings',
       ],
       'include_dirs': [
         '..',
@@ -490,10 +488,10 @@
       'target_name': 'extensions_test_support',
       'type': 'static_library',
       'dependencies': [
-        'extensions_browser',
-        'extensions_common',
         '../base/base.gyp:base',
         '../testing/gtest.gyp:gtest',
+        'extensions_browser',
+        'extensions_common',
       ],
       'include_dirs': [
         '..',
@@ -526,8 +524,10 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:test_support_base',
+        '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         'extensions_common',
+        'extensions_strings.gyp:extensions_strings',
         'extensions_test_support',
       ],
       'sources': [

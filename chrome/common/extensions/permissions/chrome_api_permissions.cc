@@ -11,6 +11,7 @@
 #include "extensions/common/permissions/permissions_info.h"
 #include "extensions/common/permissions/socket_permission.h"
 #include "extensions/common/permissions/usb_device_permission.h"
+#include "grit/extensions_strings.h"
 #include "grit/generated_resources.h"
 
 namespace extensions {

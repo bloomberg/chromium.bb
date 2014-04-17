@@ -30,7 +30,7 @@
 #include "extensions/common/manifest_handler.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/message_bundle.h"
-#include "grit/generated_resources.h"
+#include "grit/extensions_strings.h"
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"

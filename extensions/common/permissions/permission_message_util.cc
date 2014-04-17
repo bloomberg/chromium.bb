@@ -10,7 +10,7 @@
 #include "extensions/common/permissions/permission_message.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/url_pattern_set.h"
-#include "grit/generated_resources.h"
+#include "grit/extensions_strings.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "ui/base/l10n/l10n_util.h"
 

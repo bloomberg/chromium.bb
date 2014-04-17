@@ -33,13 +33,8 @@
 #include "extensions/common/permissions/permissions_info.h"
 #include "extensions/common/switches.h"
 #include "extensions/common/url_pattern_set.h"
-#include "grit/chromium_strings.h"
 #include "net/base/filename_util.h"
 #include "url/url_util.h"
-
-#if defined(OS_WIN)
-#include "grit/generated_resources.h"
-#endif
 
 namespace extensions {
 

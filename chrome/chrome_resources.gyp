@@ -385,6 +385,7 @@
           'dependencies': [
             '<(DEPTH)/content/content_resources.gyp:content_resources',
             '<(DEPTH)/device/bluetooth/bluetooth_strings.gyp:device_bluetooth_strings',
+            '<(DEPTH)/extensions/extensions_strings.gyp:extensions_strings',
             '<(DEPTH)/webkit/webkit_resources.gyp:webkit_resources',
             '<(DEPTH)/webkit/webkit_resources.gyp:webkit_strings',
           ],

@@ -53,6 +53,7 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/user_script.h"
 #include "grit/chromium_strings.h"
+#include "grit/extensions_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"

@@ -165,6 +165,10 @@
   "chrome/common/extensions_api_resources.grd": {
     "includes": [26500],
   },
+  # TODO(jamescook): Add extensions/extensions_resources.grd here.
+  "extensions/extensions_strings.grd": {
+    "messages": [27000],
+  },
   "chrome/browser/resources/memory_internals_resources.grd": {
     "includes": [27500],
   },

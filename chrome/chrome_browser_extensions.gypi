@@ -42,6 +42,7 @@
         '../device/serial/serial.gyp:device_serial',
         '../extensions/common/api/api.gyp:extensions_api',
         '../extensions/extensions.gyp:extensions_browser',
+        '../extensions/extensions_strings.gyp:extensions_strings',
         '../net/net.gyp:net',
         '../skia/skia.gyp:skia',
         '../sync/sync.gyp:sync',

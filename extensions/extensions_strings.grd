@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+  Strings for the extensions module. Used mostly for low-level error messages.
+  Where possible new strings should be kept in Chrome and the extensions module
+  should return an error code, message flag, etc.
+-->
+
+<grit latest_public_release="0" current_release="1"
+      source_lang_id="en" enc_check="möl">
+  <outputs>
+    <output filename="grit/extensions_strings.h" type="rc_header">
+      <emit emit_type='prepend'></emit>
+    </output>
+    <output filename="extensions_strings_am.pak" type="data_package" lang="am" />
+    <output filename="extensions_strings_ar.pak" type="data_package" lang="ar" />
+    <if expr="use_third_party_translations">
+      <output filename="extensions_strings_ast.pak" type="data_package" lang="ast" />
+    </if>
+    <output filename="extensions_strings_bg.pak" type="data_package" lang="bg" />
+    <output filename="extensions_strings_bn.pak" type="data_package" lang="bn" />
+    <if expr="use_third_party_translations">
+      <output filename="extensions_strings_bs.pak" type="data_package" lang="bs" />
+    </if>
+    <output filename="extensions_strings_ca.pak" type="data_package" lang="ca" />
+    <if expr="use_third_party_translations">
+      <output filename="extensions_strings_ca@valencia.pak" type="data_package" lang="ca@valencia" />
+    </if>
+    <output filename="extensions_strings_cs.pak" type="data_package" lang="cs" />
+    <output filename="extensions_strings_da.pak" type="data_package" lang="da" />
+    <output filename="extensions_strings_de.pak" type="data_package" lang="de" />
+    <output filename="extensions_strings_el.pak" type="data_package" lang="el" />
+    <if expr="use_third_party_translations">
+      <output filename="extensions_strings_en-AU.pak" type="data_package" lang="en-AU" />
+    </if>
+    <output filename="extensions_strings_en-GB.pak" type="data_package" lang="en-GB" />
+    <output filename="extensions_strings_en-US.pak" type="data_package" lang="en" />
+    <if expr="use_third_party_translations">
+      <output filename="extensions_strings_eo.pak" type="data_package" lang="eo" />
+    </if>
+    <output filename="extensions_strings_es.pak" type="data_package" lang="es" />
+    <if expr="is_ios">
+      <!-- iOS uses es-MX for es-419 -->
+      <output filename="extensions_strings_es-MX.pak" type="data_package" lang="es-419" />
+    </if>
+    <if expr="not is_ios">
+      <output filename="extensions_strings_es-419.pak" type="data_package" lang="es-419" />
+    </if>
+    <output filename="extensions_strings_et.pak" type="data_package" lang="et" />
+    <if expr="use_third_party_translations">
+      <output filename="extensions_strings_eu.pak" type="data_package" lang="eu" />
+    </if>
+    <output filename="extensions_strings_fa.pak" type="data_package" lang="fa" />
+    <output filename="extensions_strings_fake-bidi.pak" type="data_package" lang="fake-bidi" />
+    <output filename="extensions_strings_fi.pak" type="data_package" lang="fi" />
+    <output filename="extensions_strings_fil.pak" type="data_package" lang="fil" />
+    <output filename="extensions_strings_fr.pak" type="data_package" lang="fr" />
+    <if expr="use_third_party_translations">
+      <output filename="extensions_strings_gl.pak" type="data_package" lang="gl" />
+    </if>
+    <output filename="extensions_strings_gu.pak" type="data_package" lang="gu" />
+    <output filename="extensions_strings_he.pak" type="data_package" lang="he" />
+    <output filename="extensions_strings_hi.pak" type="data_package" lang="hi" />
+    <output filename="extensions_strings_hr.pak" type="data_package" lang="hr" />
+    <output filename="extensions_strings_hu.pak" type="data_package" lang="hu" />
+    <if expr="use_third_party_translations">
+      <output filename="extensions_strings_hy.pak" type="data_package" lang="hy" />
+      <output filename="extensions_strings_ia.pak" type="data_package" lang="ia" />
+    </if>
+    <output filename="extensions_strings_id.pak" type="data_package" lang="id" />
+    <output filename="extensions_strings_it.pak" type="data_package" lang="it" />
+    <output filename="extensions_strings_ja.pak" type="data_package" lang="ja" />
+    <if expr="use_third_party_translations">
+      <output filename="extensions_strings_ka.pak" type="data_package" lang="ka" />
+    </if>
+    <output filename="extensions_strings_kn.pak" type="data_package" lang="kn" />
+    <output filename="extensions_strings_ko.pak" type="data_package" lang="ko" />
+    <if expr="use_third_party_translations">
+      <output filename="extensions_strings_ku.pak" type="data_package" lang="ku" />
+      <output filename="extensions_strings_kw.pak" type="data_package" lang="kw" />
+    </if>
+    <output filename="extensions_strings_lt.pak" type="data_package" lang="lt" />
+    <output filename="extensions_strings_lv.pak" type="data_package" lang="lv" />
+    <output filename="extensions_strings_ml.pak" type="data_package" lang="ml" />
+    <output filename="extensions_strings_mr.pak" type="data_package" lang="mr" />
+    <output filename="extensions_strings_ms.pak" type="data_package" lang="ms" />
+    <output filename="extensions_strings_nl.pak" type="data_package" lang="nl" />
+    <!-- The translation console uses 'no' for Norwegian Bokmål. It should
+         be 'nb'. -->
+    <output filename="extensions_strings_nb.pak" type="data_package" lang="no" />
+    <output filename="extensions_strings_pl.pak" type="data_package" lang="pl" />
+    <if expr="is_ios">
+      <!-- iOS uses pt for pt-BR -->
+      <output filename="extensions_strings_pt.pak" type="data_package" lang="pt-BR" />
+    </if>
+    <if expr="not is_ios">
+      <output filename="extensions_strings_pt-BR.pak" type="data_package" lang="pt-BR" />
+    </if>
+    <output filename="extensions_strings_pt-PT.pak" type="data_package" lang="pt-PT" />
+    <output filename="extensions_strings_ro.pak" type="data_package" lang="ro" />
+    <output filename="extensions_strings_ru.pak" type="data_package" lang="ru" />
+    <output filename="extensions_strings_sk.pak" type="data_package" lang="sk" />
+    <output filename="extensions_strings_sl.pak" type="data_package" lang="sl" />
+    <output filename="extensions_strings_sr.pak" type="data_package" lang="sr" />
+    <output filename="extensions_strings_sv.pak" type="data_package" lang="sv" />
+    <output filename="extensions_strings_sw.pak" type="data_package" lang="sw" />
+    <output filename="extensions_strings_ta.pak" type="data_package" lang="ta" />
+    <output filename="extensions_strings_te.pak" type="data_package" lang="te" />
+    <output filename="extensions_strings_th.pak" type="data_package" lang="th" />
+    <output filename="extensions_strings_tr.pak" type="data_package" lang="tr" />
+    <if expr="use_third_party_translations">
+      <output filename="extensions_strings_ug.pak" type="data_package" lang="ug" />
+    </if>
+    <output filename="extensions_strings_uk.pak" type="data_package" lang="uk" />
+    <output filename="extensions_strings_vi.pak" type="data_package" lang="vi" />
+    <output filename="extensions_strings_zh-CN.pak" type="data_package" lang="zh-CN" />
+    <output filename="extensions_strings_zh-TW.pak" type="data_package" lang="zh-TW" />
+  </outputs>
+  <translations>
+    <file path="strings/extensions_strings_am.xtb" lang="am" />
+    <file path="strings/extensions_strings_ar.xtb" lang="ar" />
+    <file path="strings/extensions_strings_bg.xtb" lang="bg" />
+    <file path="strings/extensions_strings_bn.xtb" lang="bn" />
+    <file path="strings/extensions_strings_ca.xtb" lang="ca" />
+    <file path="strings/extensions_strings_cs.xtb" lang="cs" />
+    <file path="strings/extensions_strings_da.xtb" lang="da" />
+    <file path="strings/extensions_strings_de.xtb" lang="de" />
+    <file path="strings/extensions_strings_el.xtb" lang="el" />
+    <file path="strings/extensions_strings_en-GB.xtb" lang="en-GB" />
+    <file path="strings/extensions_strings_es.xtb" lang="es" />
+    <file path="strings/extensions_strings_es-419.xtb" lang="es-419" />
+    <file path="strings/extensions_strings_et.xtb" lang="et" />
+    <file path="strings/extensions_strings_fa.xtb" lang="fa" />
+    <file path="strings/extensions_strings_fi.xtb" lang="fi" />
+    <file path="strings/extensions_strings_fil.xtb" lang="fil" />
+    <file path="strings/extensions_strings_fr.xtb" lang="fr" />
+    <file path="strings/extensions_strings_gu.xtb" lang="gu" />
+    <file path="strings/extensions_strings_hi.xtb" lang="hi" />
+    <file path="strings/extensions_strings_hr.xtb" lang="hr" />
+    <file path="strings/extensions_strings_hu.xtb" lang="hu" />
+    <file path="strings/extensions_strings_id.xtb" lang="id" />
+    <file path="strings/extensions_strings_it.xtb" lang="it" />
+    <!-- The translation console uses 'iw' for Hebrew, but we use 'he'. -->
+    <file path="strings/extensions_strings_iw.xtb" lang="he" />
+    <file path="strings/extensions_strings_ja.xtb" lang="ja" />
+    <file path="strings/extensions_strings_kn.xtb" lang="kn" />
+    <file path="strings/extensions_strings_ko.xtb" lang="ko" />
+    <file path="strings/extensions_strings_lt.xtb" lang="lt" />
+    <file path="strings/extensions_strings_lv.xtb" lang="lv" />
+    <file path="strings/extensions_strings_ml.xtb" lang="ml" />
+    <file path="strings/extensions_strings_mr.xtb" lang="mr" />
+    <file path="strings/extensions_strings_ms.xtb" lang="ms" />
+    <file path="strings/extensions_strings_nl.xtb" lang="nl" />
+    <file path="strings/extensions_strings_no.xtb" lang="no" />
+    <file path="strings/extensions_strings_pl.xtb" lang="pl" />
+    <file path="strings/extensions_strings_pt-BR.xtb" lang="pt-BR" />
+    <file path="strings/extensions_strings_pt-PT.xtb" lang="pt-PT" />
+    <file path="strings/extensions_strings_ro.xtb" lang="ro" />
+    <file path="strings/extensions_strings_ru.xtb" lang="ru" />
+    <file path="strings/extensions_strings_sk.xtb" lang="sk" />
+    <file path="strings/extensions_strings_sl.xtb" lang="sl" />
+    <file path="strings/extensions_strings_sr.xtb" lang="sr" />
+    <file path="strings/extensions_strings_sv.xtb" lang="sv" />
+    <file path="strings/extensions_strings_sw.xtb" lang="sw" />
+    <file path="strings/extensions_strings_ta.xtb" lang="ta" />
+    <file path="strings/extensions_strings_te.xtb" lang="te" />
+    <file path="strings/extensions_strings_th.xtb" lang="th" />
+    <file path="strings/extensions_strings_tr.xtb" lang="tr" />
+    <file path="strings/extensions_strings_uk.xtb" lang="uk" />
+    <file path="strings/extensions_strings_vi.xtb" lang="vi" />
+    <file path="strings/extensions_strings_zh-CN.xtb" lang="zh-CN" />
+    <file path="strings/extensions_strings_zh-TW.xtb" lang="zh-TW" />
+  </translations>
+  <release seq="1" allow_pseudo="false">
+    <messages fallback_to_english="true">
+
+      <!-- General extensions strings. Please keep alphabetized. -->
+      <message name="IDS_EXTENSION_CONTAINS_PRIVATE_KEY" desc="Error message when an extension includes a file containing a private key.">
+        This extension includes the key file '<ph name="KEY_PATH">$1<ex>relative/path/to/file.pem</ex></ph>'. You probably don't want to do that.
+      </message>
+      <message name="IDS_EXTENSION_LOAD_BACKGROUND_SCRIPT_FAILED" desc="">
+        Could not load background script '<ph name="BACKGROUND_SCRIPT">$1<ex>script.js</ex></ph>'.
+      </message>
+      <message name="IDS_EXTENSION_LOAD_BACKGROUND_PAGE_FAILED" desc="">
+        Could not load background page '<ph name="BACKGROUND_PAGE">$1<ex>page.html</ex></ph>'.
+      </message>
+      <message name="IDS_EXTENSION_LOAD_ICON_FAILED" desc="">
+        Could not load extension icon '<ph name="ICON">$1<ex>icon.png</ex></ph>'.
+      </message>
+      <message name="IDS_EXTENSION_LOCALES_NO_DEFAULT_LOCALE_SPECIFIED" desc="">
+        Localization used, but default_locale wasn't specified in the manifest.
+      </message>
+      <message name="IDS_EXTENSION_MANIFEST_UNREADABLE" desc="">
+        Manifest file is missing or unreadable.
+      </message>
+      <message name="IDS_EXTENSION_MANIFEST_INVALID" desc="">
+        Manifest file is invalid.
+      </message>
+      
+      <!-- Host access permissions. Please keep alphabetized. -->
+      <message name="IDS_EXTENSION_PROMPT_WARNING_1_HOST" desc="Permission string for access to data on one website.">
+        Access your data on <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph>
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_2_HOSTS" desc="Permission string for access to data on two websites.">
+        Access your data on <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph> and <ph name="WEBSITE_2">$2<ex>www.reddit.com</ex></ph>
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_3_HOSTS" desc="Permission string for access to data on three websites.">
+        Access your data on <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph>, <ph name="WEBSITE_2">$2<ex>www.reddit.com</ex></ph>, and <ph name="WEBSITE_3">$3<ex>news.ycombinator.com</ex></ph>
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_HOSTS_DEFAULT" desc="Permission string for access to data on four or more websites. This is necessary for every language. This is the default for all the numbers NOT covered by special cases (singular, dual/two, few, many) some languages need. For CJK, Vietnamese, Turkish and Kannada, this is the only string necessary. For languages with singular-plural distinction, this is the generic plural. For Lithuanian, NUMBER_OF_WEBSITES is 11 .. 19.">
+        Access your data on <ph name="NUMBER_OF_WEBSITES">#<ex>5</ex></ph> websites
+      </message>
+
+      <if expr="lang not in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
+      <message name="IDS_EXTENSION_PROMPT_WARNING_HOST_SINGULAR" desc="Permission string for access to data on four or more websites. NUMBER_OF_WEBSITES is one or one-like numbers : 1 (many European and most Indian languages), 1 and 0 (French, Brazilian Portuguese and Hindi), 1,21,31, .. (Russian, Ukrainian, Croatian, Serbian, Latvian, Lithuanian), or 1, 101, 201, .. (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada">
+        Access your data on <ph name="NUMBER_OF_WEBSITES">#<ex>1</ex></ph> websites
+      </message>
+      </if>
+      <if expr="lang in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
+      <message translateable="false" name="IDS_EXTENSION_PROMPT_WARNING_HOST_SINGULAR" desc="">
+        NA
+      </message>
+      </if>
+
+      <if expr="lang in ['ar', 'ro', 'lv']">
+      <message name="IDS_EXTENSION_PROMPT_WARNING_HOSTS_ZERO" desc="Permission string for access to data on four or more websites. NUMBER_OF_WEBSITES is 0 (Arabic, Latvian) or 0, 2..19, 101..119, ... (Romanian). For other languages, do NOT translate.">
+        Access your data on <ph name="NUMBER_OF_WEBSITES">#<ex>0</ex></ph> websites
+      </message>
+      </if>
+      <if expr="lang not in ['ar', 'ro', 'lv']">
+      <message translateable="false" name="IDS_EXTENSION_PROMPT_WARNING_HOSTS_ZERO" desc="">
+        NA
+      </message>
+      </if>
+
+      <if expr="lang in ['ga', 'sl', 'ar']">
+      <message name="IDS_EXTENSION_PROMPT_WARNING_HOSTS_TWO" desc="Permission string for access to data on four or more websites. NUMBER_OF_WEBSITES is two or two-like/dual numbers :  2 (Arabic and Irish) or  2, 102, 202 ... (Slovenian). For other languages, do NOT translated.">
+        Access your data on <ph name="NUMBER_OF_WEBSITES">#<ex>2</ex></ph> websites
+      </message>
+      </if>
+      <if expr="lang not in ['ga', 'sl', 'ar']">
+      <message translateable="false" name="IDS_EXTENSION_PROMPT_WARNING_HOSTS_TWO" desc="">
+        NA
+      </message>
+      </if>
+
+      <if expr="lang  in ['ru', 'lt', 'hr', 'uk', 'cs', 'sk', 'pl', 'sl', 'ar']">
+      <message name="IDS_EXTENSION_PROMPT_WARNING_HOSTS_FEW" desc="Permission string for access to data on four or more websites. NUMBER_OF_WEBSITES is few or few-like numbers in Arabic, Russian, Polish, Croatian, Serbian, Ukrainian, Czech, Slovak, Slovenian, Latvian. For other languages, do NOT translate.">
+        Access your data on <ph name="NUMBER_OF_WEBSITES">#<ex>3</ex></ph> websites
+      </message>
+      </if>
+      <if expr="lang not in ['ru', 'lt', 'hr', 'uk', 'cs', 'sk', 'pl', 'sl', 'ar']">
+      <message translateable="false" name="IDS_EXTENSION_PROMPT_WARNING_HOSTS_FEW" desc="">
+        NA
+      </message>
+      </if>
+
+      <if expr="lang == 'ar'">
+      <message name="IDS_EXTENSION_PROMPT_WARNING_HOSTS_MANY" meaning="many" desc="Permission string for access to data on four or more websites. NUMBER_OF_WEBSITES is 11 through 99 in Arabic. For all other languages, do NOT translate.">
+        Access your data on <ph name="NUMBER_OF_WEBSITES">#<ex>23</ex></ph> websites
+      </message>
+      </if>
+      <if expr="lang != 'ar'">
+      <message translateable="false" name="IDS_EXTENSION_PROMPT_WARNING_HOSTS_MANY" desc="">
+        NA
+      </message>
+      </if>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_HOST_LIST" desc="Permission string (heading) for a list of websites.">
+        Access your data on the following websites:
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_HOST_LIST_ENTRY" desc="Single entry in a list of websites.">
+        - <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph>
+      </message>
+
+      <!-- Media galleries strings. Please keep alphabetized. -->
+      <message name="IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ" desc="Permission string for access to read all of the user's media galleries.">
+        Access photos, music, and other media from your computer.
+      </message>
+
+      <!-- Policy strings. Please keep alphabetized. -->
+      <message name="IDS_EXTENSION_CANT_INSTALL_POLICY_BLOCKED" desc="Error message when a user tries to install an extension that is blocked by administrator policy.">
+        <ph name="EXTENSION_NAME">$1<ex>Google Talk</ex></ph> (extension ID "<ph name="EXTENSION_ID">$2<ex>nckgahadagoaajjgafhacjanaoiihapd</ex></ph>") is blocked by the administrator.
+      </message>
+      <message name="IDS_EXTENSION_CANT_MODIFY_POLICY_REQUIRED" desc="Error message when a user tries to remove or change an extension that is required by administrator policy.">
+        The administrator of this machine requires <ph name="EXTENSION_NAME">$1<ex>Google Talk</ex></ph> to be installed. It cannot be removed or modified.
+      </message>
+
+      <!-- Settings override strings. Please keep alphabetized. -->
+      <message name="IDS_EXTENSION_PROMPT_WARNING_HOME_PAGE_SETTING_OVERRIDE" desc="Permission string for home page override.">
+        Change your home page to: <ph name="HOME_PAGE">$1<ex>home.page.com/home.html</ex></ph>
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_SEARCH_SETTINGS_OVERRIDE" desc="Permission string for search settings override.">
+        Change your search settings to: <ph name="SEARCH_HOST">$1<ex>url.search.com</ex></ph>
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_START_PAGE_SETTING_OVERRIDE" desc="Permission string for start page override.">
+        Change your start page to: <ph name="START_PAGE">$1<ex>start.page.com/start.html</ex></ph>
+      </message>
+
+      <!-- Sockets API strings. Please keep alphabetized. -->
+      <message name="IDS_EXTENSION_PROMPT_WARNING_NETWORK_STATE" desc="Permission string for network list access.">
+        Access list of network connections
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_SOCKET_ANY_HOST" desc="Permission string for access to any computer on the local network or internet.">
+        Exchange data with any computer on the local network or internet
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_SOCKET_HOSTS_IN_DOMAIN" desc="Permission string for access to any computer within a single domains on the local network or internet.">
+        Exchange data with any computer in the domain <ph name="DOMAIN">$1<ex>example.com</ex></ph>
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_SOCKET_HOSTS_IN_DOMAINS" desc="Permission string for access to any computer within multiple domains on the local network or internet.">
+        Exchange data with any computer in the domains: <ph name="DOMAINS">$1<ex>example.com example.org</ex></ph>
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_SOCKET_SPECIFIC_HOST" desc="Permission string for access to a single specific computers on the local network or internet.">
+        Exchange data with the computer named <ph name="HOSTNAME">$1<ex>foo.example.com</ex></ph>
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_SOCKET_SPECIFIC_HOSTS" desc="Permission string for access to multiple specific computers on the local network or internet.">
+        Exchange data with the computers named: <ph name="HOSTNAMES">$1<ex>foo.example.com bar.example.com</ex></ph>
+      </message>
+      
+      <!-- USB API strings. Please keep alphabetized. -->
+      <message name="IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE" desc="Permission string for access to a specific USB device.">
+        Access the USB device <ph name="PRODUCT_NAME">$1<ex>SoundKnob</ex></ph> from <ph name="VENDOR_NAME">$2<ex>Griffin Technology</ex></ph>.
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_MISSING_PRODUCT" desc="Permission string for access to a specific USB device when a product name cannot be established for a USB device.">
+        Access the USB device from <ph name="VENDOR_NAME">$1<ex>Griffin Technology</ex></ph>.
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_MISSING_VENDOR" desc="Permission string for access to a specific USB device when a vendor name cannot be established for a USB device.">
+        Access the USB device.
+      </message>
+
+    </messages>
+  </release>
+</grit>
