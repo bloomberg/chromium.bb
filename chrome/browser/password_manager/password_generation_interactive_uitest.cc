@@ -138,10 +138,12 @@ class PasswordGenerationInteractiveTest : public InProcessBrowserTest {
 // Enabled on these platforms.
 #define MAYBE_PopupShownAndPasswordSelected PopupShownAndPasswordSelected
 #define MAYBE_PopupShownAndDismissed PopupShownAndDismissed
+#define MAYBE_PopupShownAndDismissedByScrolling PopupShownAndDismissedByScrolling
 #else
 // Popup not enabled for these platforms yet.
 #define MAYBE_PopupShownAndPasswordSelected DISABLED_PopupShownAndPasswordSelected
 #define MAYBE_PopupShownAndDismissed DISABLED_PopupShownAndDismissed
+#define MAYBE_PopupShownAndDismissedByScrolling DISABLED_PopupShownAndDismissedByScrolling
 #endif
 
 IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
@@ -171,5 +173,16 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
   SendKeyToPopup(ui::VKEY_ESCAPE);
 
   // Popup is dismissed.
+  EXPECT_FALSE(GenerationPopupShowing());
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
+                       MAYBE_PopupShownAndDismissedByScrolling) {
+  FocusPasswordField();
+  EXPECT_TRUE(GenerationPopupShowing());
+
+  ASSERT_TRUE(content::ExecuteScript(GetRenderViewHost(),
+                                     "window.scrollTo(100, 0);"));
+
   EXPECT_FALSE(GenerationPopupShowing());
 }

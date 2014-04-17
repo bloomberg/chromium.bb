@@ -36,6 +36,9 @@ class PasswordGenerationAgent : public content::RenderViewObserver {
   // is being offered. Updates the state of the popup if necessary.
   bool TextDidChangeInTextField(const blink::WebInputElement& element);
 
+  // Returns true if the newly focused node caused the generation UI to show.
+  bool FocusedNodeHasChanged(const blink::WebNode& node);
+
  protected:
   // Returns true if this document is one that we should consider analyzing.
   // Virtual so that it can be overriden during testing.
@@ -51,7 +54,6 @@ class PasswordGenerationAgent : public content::RenderViewObserver {
   // RenderViewObserver:
   virtual void DidFinishDocumentLoad(blink::WebLocalFrame* frame) OVERRIDE;
   virtual void DidFinishLoad(blink::WebLocalFrame* frame) OVERRIDE;
-  virtual void FocusedNodeChanged(const blink::WebNode& node) OVERRIDE;
 
   // Message handlers.
   void OnFormNotBlacklisted(const PasswordForm& form);

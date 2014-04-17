@@ -237,6 +237,12 @@ void AutofillAgent::ZoomLevelChanged() {
 }
 
 void AutofillAgent::FocusedNodeChanged(const WebNode& node) {
+  if (password_generation_agent_ &&
+      password_generation_agent_->FocusedNodeHasChanged(node)) {
+    is_popup_possibly_visible_ = true;
+    return;
+  }
+
   if (node.isNull() || !node.isElementNode())
     return;
 
@@ -371,6 +377,7 @@ void AutofillAgent::TextFieldDidChangeImpl(
   if (input_element) {
     if (password_generation_agent_ &&
         password_generation_agent_->TextDidChangeInTextField(*input_element)) {
+      is_popup_possibly_visible_ = true;
       return;
     }
 
