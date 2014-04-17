@@ -92,6 +92,9 @@
              Manufacturer="$(var.Manufacturer)"
              InstallScope="perMachine"/>
 
+    <PropertyRef Id="WIX_ACCOUNT_LOCALSYSTEM" />
+    <PropertyRef Id="WIX_ACCOUNT_ADMINISTRATORS" />
+
     <Condition
       Message="$(var.ChromotingHost) is only supported on Windows XP, Windows Server 2003, or higher.">
       <![CDATA[Installed OR (VersionNT >= 501)]]>
@@ -524,12 +527,11 @@
                  Windows Installer version 4.5 or lower. Also Cannot use
                  PermissionEx in WixUtilExtension because it automatically
                  inherits all the ACLs from the parent. -->
-            <Permission User="SYSTEM"
+            <Permission User="[WIX_ACCOUNT_LOCALSYSTEM]"
                         GenericAll="yes"
                         ChangePermission="yes"
                         TakeOwnership="yes"/>
-            <Permission User="Administrators"
-                        Domain="[LOCAL_MACHINE_NAME]"
+            <Permission User="[WIX_ACCOUNT_ADMINISTRATORS]"
                         GenericAll="yes"
                         ChangePermission="yes"
                         TakeOwnership="yes"/>
