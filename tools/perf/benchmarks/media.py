@@ -71,7 +71,7 @@ class MediaChromeOS(test.Test):
 class MediaSourceExtensions(test.Test):
   """Obtains media metrics for key media source extensions functions."""
   test = _MSEMeasurement
-  page_set = 'page_sets/mse_cases.json'
+  page_set = 'page_sets/mse_cases.py'
 
   def CustomizeBrowserOptions(self, options):
     # Needed to allow XHR requests to return stream objects.

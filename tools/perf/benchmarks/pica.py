@@ -18,4 +18,4 @@ class _PicaMeasurement(page_measurement.PageMeasurement):
 
 class Pica(test.Test):
   test = _PicaMeasurement
-  page_set = 'page_sets/pica.json'
+  page_set = 'page_sets/pica.py'

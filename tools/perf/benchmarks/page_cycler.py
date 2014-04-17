@@ -84,7 +84,7 @@ class PageCyclerNetsimTop10(test.Test):
 
 class PageCyclerTop10Mobile(test.Test):
   test = page_cycler.PageCycler
-  page_set = 'page_sets/top_10_mobile.json'
+  page_set = 'page_sets/top_10_mobile.py'
   options = {'pageset_repeat': 10}
 
 
@@ -105,5 +105,5 @@ class PageCyclerToughLayoutCases(test.Test):
 @test.Disabled('android', 'win')
 class PageCyclerTypical25(test.Test):
   test = page_cycler.PageCycler
-  page_set = 'page_sets/typical_25.json'
+  page_set = 'page_sets/typical_25.py'
   options = {'pageset_repeat': 10}

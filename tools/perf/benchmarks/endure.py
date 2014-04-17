@@ -57,7 +57,7 @@ class EndureIndexedDBOffline(_EndureBenchmark):
 
 
 class EndurePlusAltPostsPhotos(_EndureBenchmark):
-  page_set = 'page_sets/plus_alt_posts_photos.json'
+  page_set = 'page_sets/plus_alt_posts_photos.py'
 
 
 class EndureGmailRefresh(test.Test):
