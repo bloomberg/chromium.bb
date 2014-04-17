@@ -349,7 +349,7 @@ static void Messaging_HandleMessage(PP_Instance instance,
   if (!EnqueueMessage(strdup(buffer))) {
     struct PP_Var var;
     var = PrintfToVar(
-        "Warning: dropped message \"%s\" because the queue was full.", message);
+        "Warning: dropped message \"%s\" because the queue was full.", buffer);
     ppb_messaging_interface->PostMessage(g_instance, var);
   }
 }

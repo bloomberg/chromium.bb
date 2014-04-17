@@ -9,7 +9,7 @@
 
 EXTERN_C_BEGIN
 
-void dbgprintf(const char* format, ...);
+void dbgprintf(const char* format, ...) PRINTF_LIKE(1, 2);
 
 EXTERN_C_END
 

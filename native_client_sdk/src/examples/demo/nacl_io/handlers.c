@@ -379,11 +379,11 @@ int HandleFseek(int num_params, char** params, char** output) {
   offset = ftell(file);
   if (offset < 0) {
     *output = PrintfToNewString(
-        "fseek succeeded, but ftell returned error %d.", offset);
+        "fseek succeeded, but ftell returned error %ld.", offset);
     return 4;
   }
 
-  *output = PrintfToNewString("fseek\1%s\1%d", file_index_string, offset);
+  *output = PrintfToNewString("fseek\1%s\1%ld", file_index_string, offset);
   return 0;
 }
 
@@ -507,7 +507,7 @@ int HandleStat(int num_params, char** params, char** output) {
     return 2;
   }
 
-  *output = PrintfToNewString("stat\1%s\1%d", filename, buf.st_size);
+  *output = PrintfToNewString("stat\1%s\1%lld", filename, buf.st_size);
   return 0;
 }
 
@@ -601,8 +601,8 @@ int HandleReaddir(int num_params, char** params, char** output) {
 
   entry = readdir(dir);
   if (entry != NULL) {
-    *output = PrintfToNewString("readdir\1%s\1%d\1%s", dir_index_string,
-                                entry->d_ino, entry->d_name);
+    *output = PrintfToNewString(
+        "readdir\1%s\1%lld\1%s", dir_index_string, entry->d_ino, entry->d_name);
   } else {
     *output = PrintfToNewString("readdir\1%s\1\1", dir_index_string);
   }

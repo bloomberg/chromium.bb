@@ -46,4 +46,20 @@
     force_link_##x = 1; \
   }
 
+/**
+ * Macro to error out when a printf-like function is passed incorrect arguments.
+ *
+ * Use like this:
+ * void foo(const char* fmt, ...) PRINTF_LIKE(1, 2);
+ *
+ * The first argument is the location of the fmt string (1-based).
+ * The second argument is the location of the first argument to validate (also
+ *   1-based, but can be zero if the function uses a va_list, like vprintf.)
+ */
+#if defined(__GNUC__)
+#define PRINTF_LIKE(a, b) __attribute__ ((format(printf, a, b)))
+#else
+#define PRINTF_LIKE(a, b)
+#endif
+
 #endif  /* LIBRARIES_SDK_UTIL_MACROS_H_ */
