@@ -21,7 +21,7 @@ namespace device {
 // both the BluetoothDevice and BluetoothAdapter that were involved in their
 // creation.  In terms of threading, platform specific implementations may
 // differ slightly, but platform independent consumers must guarantee calling
-// various instances methods on the same thread as the thread used at
+// various instance methods on the same thread as the thread used at
 // construction time -- platform specific implementation are resonsible for
 // marshalling calls to a different thread if required.
 class BluetoothSocket : public base::RefCountedThreadSafe<BluetoothSocket> {
@@ -46,10 +46,11 @@ class BluetoothSocket : public base::RefCountedThreadSafe<BluetoothSocket> {
   virtual void Disconnect(const base::Closure& callback) = 0;
 
   // Receives data from the socket and calls |success_callback| when data is
-  // available. |count| is maximum amount of bytes received. If an error occurs,
-  // calls |error_callback| with a reason and an error message.
+  // available. |buffer_size| specifies the maximum number of bytes that can be
+  // received. If an error occurs, calls |error_callback| with a reason and an
+  // error message.
   virtual void Receive(
-      int count,
+      int buffer_size,
       const ReceiveCompletionCallback& success_callback,
       const ReceiveErrorCompletionCallback& error_callback) = 0;
 

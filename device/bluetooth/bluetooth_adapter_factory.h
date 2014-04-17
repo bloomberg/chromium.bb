@@ -5,17 +5,14 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_FACTORY_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_FACTORY_H_
 
-#include <string>
-
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 
 namespace device {
 
-// BluetoothAdapterFactory is a class that contains static methods, which
-// instantiate either a specific Bluetooth adapter, or the generic "default
-// adapter" which may change depending on availability.
+// A factory class for building a Bluetooth adapter on platforms where Bluetooth
+// is available.
 class BluetoothAdapterFactory {
  public:
   typedef base::Callback<void(scoped_refptr<BluetoothAdapter> adapter)>
@@ -31,10 +28,9 @@ class BluetoothAdapterFactory {
   // use.
   static void GetAdapter(const AdapterCallback& callback);
 
-  // Returns the shared instance of the adapter that has already been created,
-  // but may or may not have been initialized.
-  // It returns NULL if no adapter has been created at the time.
-  static scoped_refptr<BluetoothAdapter> MaybeGetAdapter();
+  // Returns true iff the implementation has a (non-NULL) shared instance of the
+  // adapter. Exposed for testing.
+  static bool HasSharedInstanceForTesting();
 };
 
 }  // namespace device

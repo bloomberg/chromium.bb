@@ -24,7 +24,7 @@ struct BluetoothOutOfBandPairingData;
 
 // BluetoothAdapter represents a local Bluetooth adapter which may be used to
 // interact with remote Bluetooth devices. As well as providing support for
-// determining whether an adapter is present, and whether the radio is powered,
+// determining whether an adapter is present and whether the radio is powered,
 // this class also provides support for obtaining the list of remote devices
 // known to the adapter, discovering new devices, and providing notification of
 // updates to device information.
@@ -35,25 +35,25 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
    public:
     virtual ~Observer() {}
 
-    // Called when the presence of the adapter |adapter| changes, when |present|
+    // Called when the presence of the adapter |adapter| changes. When |present|
     // is true the adapter is now present, false means the adapter has been
     // removed from the system.
     virtual void AdapterPresentChanged(BluetoothAdapter* adapter,
                                        bool present) {}
 
-    // Called when the radio power state of the adapter |adapter| changes, when
+    // Called when the radio power state of the adapter |adapter| changes. When
     // |powered| is true the adapter radio is powered, false means the adapter
     // radio is off.
     virtual void AdapterPoweredChanged(BluetoothAdapter* adapter,
                                        bool powered) {}
 
-    // Called when the discoverability state of the  adapter |adapter| changes,
-    // when |discoverable| is true the adapter is discoverable by other devices,
+    // Called when the discoverability state of the  adapter |adapter| changes.
+    // When |discoverable| is true the adapter is discoverable by other devices,
     // false means the adapter is not discoverable.
     virtual void AdapterDiscoverableChanged(BluetoothAdapter* adapter,
                                            bool discoverable) {}
 
-    // Called when the discovering state of the adapter |adapter| changes, when
+    // Called when the discovering state of the adapter |adapter| changes. When
     // |discovering| is true the adapter is seeking new devices, false means it
     // is not.
     virtual void AdapterDiscoveringChanged(BluetoothAdapter* adapter,
@@ -61,19 +61,20 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
 
     // Called when a new device |device| is added to the adapter |adapter|,
     // either because it has been discovered or a connection made. |device|
-    // should not be cached, instead copy its address.
+    // should not be cached. Instead, copy its Bluetooth address.
     virtual void DeviceAdded(BluetoothAdapter* adapter,
                              BluetoothDevice* device) {}
 
     // Called when properties of the device |device| known to the adapter
-    // |adapter| change. |device| should not be cached, instead copy its
-    // address.
+    // |adapter| change. |device| should not be cached. Instead, copy its
+    // Bluetooth address.
     virtual void DeviceChanged(BluetoothAdapter* adapter,
                                BluetoothDevice* device) {}
 
     // Called when the device |device| is removed from the adapter |adapter|,
     // either as a result of a discovered device being lost between discovering
-    // phases or pairing information deleted. |device| should not be cached.
+    // phases or pairing information deleted. |device| should not be
+    // cached. Instead, copy its Bluetooth address.
     virtual void DeviceRemoved(BluetoothAdapter* adapter,
                                BluetoothDevice* device) {}
   };
@@ -87,14 +88,27 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
   typedef base::Callback<void(const BluetoothOutOfBandPairingData& data)>
       BluetoothOutOfBandPairingDataCallback;
 
-  // Adds and removes observers for events on this bluetooth adapter, if
-  // monitoring multiple adapters check the |adapter| parameter of observer
+  // The InitCallback is used to trigger a callback after asynchronous
+  // initialization, if initialization is asynchronous on the platform.
+  typedef base::Callback<void()> InitCallback;
+
+  // Returns a weak pointer to a new adapter.  For platforms with asynchronous
+  // initialization, the returned adapter will run the |init_callback| once
+  // asynchronous initialization is complete.
+  // Caution: The returned pointer also transfers ownership of the adapter.  The
+  // caller is expected to call |AddRef()| on the returned pointer, typically by
+  // storing it into a |scoped_refptr|.
+  static base::WeakPtr<BluetoothAdapter> CreateAdapter(
+      const InitCallback& init_callback);
+
+  // Adds and removes observers for events on this bluetooth adapter. If
+  // monitoring multiple adapters, check the |adapter| parameter of observer
   // methods to determine which adapter is issuing the event.
   virtual void AddObserver(BluetoothAdapter::Observer* observer) = 0;
   virtual void RemoveObserver(
       BluetoothAdapter::Observer* observer) = 0;
 
-  // The address of this adapter.  The address format is "XX:XX:XX:XX:XX:XX",
+  // The address of this adapter. The address format is "XX:XX:XX:XX:XX:XX",
   // where each XX is a hexadecimal number.
   virtual std::string GetAddress() const = 0;
 
@@ -110,17 +124,17 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
   // Indicates whether the adapter is initialized and ready to use.
   virtual bool IsInitialized() const = 0;
 
-  // Indicates whether the adapter is actually present on the system, for the
-  // default adapter this indicates whether any adapter is present. An adapter
+  // Indicates whether the adapter is actually present on the system. For the
+  // default adapter, this indicates whether any adapter is present. An adapter
   // is only considered present if the address has been obtained.
   virtual bool IsPresent() const = 0;
 
   // Indicates whether the adapter radio is powered.
   virtual bool IsPowered() const = 0;
 
-  // Requests a change to the adapter radio power, setting |powered| to true
-  // will turn on the radio and false will turn it off.  On success, callback
-  // will be called.  On failure, |error_callback| will be called.
+  // Requests a change to the adapter radio power. Setting |powered| to true
+  // will turn on the radio and false will turn it off. On success, |callback|
+  // will be called. On failure, |error_callback| will be called.
   virtual void SetPowered(bool powered,
                           const base::Closure& callback,
                           const ErrorCallback& error_callback) = 0;
@@ -154,16 +168,16 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
   // device discovery may actually be in progress. Clients can call GetDevices()
   // and check for those with IsPaired() as false to obtain the list of devices
   // that have been discovered so far. Otherwise, clients can be notified of all
-  // new and lost devices can by implementing the Observer methods "DeviceAdded"
-  // and "DeviceRemoved".
+  // new and lost devices by implementing the Observer methods "DeviceAdded" and
+  // "DeviceRemoved".
   typedef base::Callback<void(scoped_ptr<BluetoothDiscoverySession>)>
       DiscoverySessionCallback;
   virtual void StartDiscoverySession(const DiscoverySessionCallback& callback,
                                      const ErrorCallback& error_callback);
 
-  // Requests the list of devices from the adapter, all are returned including
-  // those currently connected and those paired. Use the returned device
-  // pointers to determine which they are.
+  // Requests the list of devices from the adapter. All devices are returned,
+  // including those currently connected and those paired. Use the returned
+  // device pointers to determine which they are.
   typedef std::vector<BluetoothDevice*> DeviceList;
   virtual DeviceList GetDevices();
   typedef std::vector<const BluetoothDevice*> ConstDeviceList;
@@ -172,8 +186,7 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
   // Returns a pointer to the device with the given address |address| or NULL if
   // no such device is known.
   virtual BluetoothDevice* GetDevice(const std::string& address);
-  virtual const BluetoothDevice* GetDevice(
-      const std::string& address) const;
+  virtual const BluetoothDevice* GetDevice(const std::string& address) const;
 
   // Requests the local Out Of Band pairing data.
   virtual void ReadLocalOutOfBandPairingData(
@@ -187,9 +200,9 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
     PAIRING_DELEGATE_PRIORITY_HIGH
   };
 
-  // Adds a default pairing delegate with priority |priority|, method calls
+  // Adds a default pairing delegate with priority |priority|. Method calls
   // will be made on |pairing_delegate| for incoming pairing requests if the
-  // priority is higher than any other registered, or for those of the same
+  // priority is higher than any other registered; or for those of the same
   // priority, the first registered.
   //
   // |pairing_delegate| must not be freed without first calling

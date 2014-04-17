@@ -149,7 +149,7 @@ void BluetoothProfileMac::Connect(
 
   std::string device_address = base::SysNSStringToUTF8([device addressString]);
   scoped_refptr<BluetoothSocketMac> socket(
-      BluetoothSocketMac::CreateBluetoothSocket(ui_task_runner, record));
+      BluetoothSocketMac::CreateBluetoothSocket(record));
   OnSocketConnectUI(
       ui_task_runner,
       socket,

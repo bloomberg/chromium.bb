@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/observer_list.h"
 #include "device/bluetooth/bluetooth_device.h"
 
@@ -85,8 +86,7 @@ class BluetoothDeviceMac : public BluetoothDevice {
   ObserverList<Observer> observers_;
 
   scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
-  // (retained)
-  IOBluetoothDevice* device_;
+  base::scoped_nsobject<IOBluetoothDevice> device_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothDeviceMac);
 };

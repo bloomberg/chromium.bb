@@ -30,7 +30,7 @@ class CHROMEOS_EXPORT BluetoothSocketChromeOS
   // Overriden from BluetoothSocket:
   virtual void Close() OVERRIDE;
   virtual void Disconnect(const base::Closure& callback) OVERRIDE;
-  virtual void Receive(int count,
+  virtual void Receive(int buffer_size,
                        const ReceiveCompletionCallback& success_callback,
                        const ReceiveErrorCompletionCallback& error_callback)
       OVERRIDE;

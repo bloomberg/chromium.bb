@@ -124,7 +124,7 @@ void BluetoothSocketWin::Disconnect(const base::Closure& success_callback) {
 }
 
 void BluetoothSocketWin::Receive(
-    int count,
+    int buffer_size,
     const ReceiveCompletionCallback& success_callback,
     const ReceiveErrorCompletionCallback& error_callback) {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
@@ -132,7 +132,7 @@ void BluetoothSocketWin::Receive(
       FROM_HERE,
       base::Bind(&BluetoothSocketWin::DoReceive,
                  this,
-                 count,
+                 buffer_size,
                  base::Bind(&BluetoothSocketWin::PostReceiveCompletion,
                             this,
                             success_callback),
@@ -238,7 +238,7 @@ void BluetoothSocketWin::DoDisconnect(const base::Closure& success_callback) {
 }
 
 void BluetoothSocketWin::DoReceive(
-    int count,
+    int buffer_size,
     const ReceiveCompletionCallback& success_callback,
     const ReceiveErrorCompletionCallback& error_callback) {
   DCHECK(socket_thread_->task_runner()->RunsTasksOnCurrentThread());
@@ -256,7 +256,8 @@ void BluetoothSocketWin::DoReceive(
     return;
   }
 
-  scoped_refptr<net::IOBufferWithSize> buffer(new net::IOBufferWithSize(count));
+  scoped_refptr<net::IOBufferWithSize> buffer(
+      new net::IOBufferWithSize(buffer_size));
   int read_result =
       tcp_socket_->Read(buffer.get(),
                         buffer->size(),

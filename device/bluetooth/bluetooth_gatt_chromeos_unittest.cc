@@ -555,7 +555,7 @@ TEST_F(BluetoothGattChromeOSTest, AdapterAddedAfterGattService) {
   // This unit test tests that all remote GATT objects are created for D-Bus
   // objects that were already exposed.
   adapter_ = NULL;
-  EXPECT_EQ(NULL, device::BluetoothAdapterFactory::MaybeGetAdapter().get());
+  EXPECT_FALSE(device::BluetoothAdapterFactory::HasSharedInstanceForTesting());
 
   // Create the fake D-Bus objects.
   fake_bluetooth_device_client_->CreateDevice(

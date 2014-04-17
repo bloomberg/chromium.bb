@@ -15,6 +15,7 @@
 #include "base/basictypes.h"
 #include "base/callback_helpers.h"
 #include "base/memory/ref_counted.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
@@ -107,45 +108,34 @@ BluetoothSocketMac::ConnectCallbacks::~ConnectCallbacks() {}
 
 // static
 scoped_refptr<BluetoothSocketMac> BluetoothSocketMac::CreateBluetoothSocket(
-    const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
     IOBluetoothSDPServiceRecord* record) {
-  return new BluetoothSocketMac(ui_task_runner, record);
+  return new BluetoothSocketMac(record);
 }
 
 BluetoothSocketMac::BluetoothSocketMac(
-    const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
     IOBluetoothSDPServiceRecord* record)
-    : ui_task_runner_(ui_task_runner),
-      record_(record),
-      delegate_([[BluetoothRFCOMMChannelDelegate alloc] initWithSocket:this]),
-      rfcomm_channel_(nil) {
+    : record_([record retain]),
+      delegate_([[BluetoothRFCOMMChannelDelegate alloc] initWithSocket:this]) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
-  [record_ retain];
 }
 
 BluetoothSocketMac::~BluetoothSocketMac() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
   ReleaseChannel();
-  [delegate_ release];
-  [record_ release];
 }
 
 void BluetoothSocketMac::ReleaseChannel() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
-  if (rfcomm_channel_ != nil) {
+  if (rfcomm_channel_) {
     [rfcomm_channel_ setDelegate:nil];
     [rfcomm_channel_ closeChannel];
-    [rfcomm_channel_ release];
-    rfcomm_channel_ = nil;
+    rfcomm_channel_.reset();
   }
 
   // Closing the channel above prevents the callback delegate from being called
   // so it is now safe to release all callback state.
-  connect_callbacks_.reset(NULL);
-  receive_callbacks_.reset(NULL);
+  connect_callbacks_.reset();
+  receive_callbacks_.reset();
   empty_queue(receive_queue_);
   empty_queue(send_queue_);
 }
@@ -154,14 +144,13 @@ void BluetoothSocketMac::Connect(
     const base::Closure& success_callback,
     const ErrorCompletionCallback& error_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
 
   if (connecting()) {
     error_callback.Run(kSocketConnecting);
     return;
   }
 
-  if (rfcomm_channel_ != nil) {
+  if (rfcomm_channel_) {
     error_callback.Run(kSocketAlreadyConnected);
     return;
   }
@@ -181,9 +170,9 @@ void BluetoothSocketMac::Connect(
                                  delegate:delegate_];
   if (status != kIOReturnSuccess) {
     std::stringstream error;
-    error << std::string("Failed to connect bluetooth socket (")
+    error << "Failed to connect bluetooth socket ("
           << base::SysNSStringToUTF8([device addressString]) << "): (" << status
-          << std::string(")");
+          << ")";
     error_callback.Run(error.str());
     return;
   }
@@ -191,7 +180,7 @@ void BluetoothSocketMac::Connect(
   connect_callbacks_.reset(new ConnectCallbacks());
   connect_callbacks_->success_callback = success_callback;
   connect_callbacks_->error_callback = error_callback;
-  rfcomm_channel_ = rfcomm_channel;
+  rfcomm_channel_.reset(rfcomm_channel);
   [rfcomm_channel_ setDelegate:delegate_];
 }
 
@@ -199,8 +188,7 @@ void BluetoothSocketMac::OnChannelOpened(
     IOBluetoothRFCOMMChannel* rfcomm_channel,
     IOReturn status) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
-  DCHECK(rfcomm_channel_ == rfcomm_channel);
+  DCHECK_EQ(rfcomm_channel_, rfcomm_channel);
   DCHECK(connecting());
 
   scoped_ptr<ConnectCallbacks> temp = connect_callbacks_.Pass();
@@ -219,32 +207,29 @@ void BluetoothSocketMac::OnChannelOpened(
 
 void BluetoothSocketMac::Close() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
 
   ReleaseChannel();
 }
 
 void BluetoothSocketMac::Disconnect(const base::Closure& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
 
   ReleaseChannel();
   callback.Run();
 }
 
 void BluetoothSocketMac::Receive(
-    int count,
+    int /* buffer_size */,
     const ReceiveCompletionCallback& success_callback,
     const ReceiveErrorCompletionCallback& error_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
 
   if (connecting()) {
     error_callback.Run(BluetoothSocket::kSystemError, kSocketConnecting);
     return;
   }
 
-  if (rfcomm_channel_ == nil) {
+  if (!rfcomm_channel_) {
     error_callback.Run(BluetoothSocket::kDisconnected, kSocketNotConnected);
     return;
   }
@@ -274,12 +259,10 @@ void BluetoothSocketMac::OnChannelDataReceived(
     void* data,
     size_t length) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
-  DCHECK(rfcomm_channel_ == rfcomm_channel);
+  DCHECK_EQ(rfcomm_channel_, rfcomm_channel);
   DCHECK(!connecting());
-  CHECK_LT(length, static_cast<size_t>(std::numeric_limits<int>::max()));
 
-  int data_size = static_cast<int>(length);
+  int data_size = base::checked_cast<int>(length);
   scoped_refptr<net::IOBufferWithSize> buffer(
       new net::IOBufferWithSize(data_size));
   memcpy(buffer->data(), data, buffer->size());
@@ -300,14 +283,13 @@ void BluetoothSocketMac::Send(scoped_refptr<net::IOBuffer> buffer,
                               const SendCompletionCallback& success_callback,
                               const ErrorCompletionCallback& error_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
 
   if (connecting()) {
     error_callback.Run(kSocketConnecting);
     return;
   }
 
-  if (rfcomm_channel_ == nil) {
+  if (!rfcomm_channel_) {
     error_callback.Run(kSocketNotConnected);
     return;
   }
@@ -360,13 +342,12 @@ void BluetoothSocketMac::OnChannelWriteComplete(
     void* refcon,
     IOReturn status) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
 
   // Note: We use "CHECK" below to ensure we never run into unforeseen
   // occurrences of asynchronous callbacks, which could lead to data
   // corruption.
-  CHECK(rfcomm_channel_ == rfcomm_channel);
-  CHECK(static_cast<SendRequest*>(refcon) == send_queue_.front().get());
+  CHECK_EQ(rfcomm_channel_, rfcomm_channel);
+  CHECK_EQ(static_cast<SendRequest*>(refcon), send_queue_.front().get());
 
   // Keep a local linked_ptr to avoid releasing the request too early if we end
   // up removing it from the queue.
@@ -403,8 +384,7 @@ void BluetoothSocketMac::OnChannelWriteComplete(
 void BluetoothSocketMac::OnChannelClosed(
     IOBluetoothRFCOMMChannel* rfcomm_channel) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
-  DCHECK(rfcomm_channel_ == rfcomm_channel);
+  DCHECK_EQ(rfcomm_channel_, rfcomm_channel);
 
   if (receive_callbacks_) {
     scoped_ptr<ReceiveCallbacks> temp = receive_callbacks_.Pass();

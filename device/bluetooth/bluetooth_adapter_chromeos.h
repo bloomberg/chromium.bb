@@ -17,12 +17,6 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
 
-namespace device {
-
-class BluetoothAdapterFactory;
-
-}  // namespace device
-
 namespace chromeos {
 
 class BluetoothChromeOSTest;
@@ -38,7 +32,9 @@ class BluetoothAdapterChromeOS
       public chromeos::BluetoothInputClient::Observer,
       public chromeos::BluetoothAgentServiceProvider::Delegate {
  public:
-  // BluetoothAdapter override
+  static base::WeakPtr<BluetoothAdapter> CreateAdapter();
+
+  // BluetoothAdapter:
   virtual void AddObserver(
       device::BluetoothAdapter::Observer* observer) OVERRIDE;
   virtual void RemoveObserver(
@@ -67,12 +63,11 @@ class BluetoothAdapterChromeOS
       const ErrorCallback& error_callback) OVERRIDE;
 
  protected:
-  // BluetoothAdapter override
+  // BluetoothAdapter:
   virtual void RemovePairingDelegateInternal(
       device::BluetoothDevice::PairingDelegate* pairing_delegate) OVERRIDE;
 
  private:
-  friend class device::BluetoothAdapterFactory;
   friend class BluetoothChromeOSTest;
   friend class BluetoothDeviceChromeOS;
   friend class BluetoothProfileChromeOS;
@@ -181,7 +176,7 @@ class BluetoothAdapterChromeOS
                                  const ErrorCallback& error_callback,
                                  bool success);
 
-  // BluetoothAdapter override.
+  // BluetoothAdapter:
   virtual void AddDiscoverySession(
       const base::Closure& callback,
       const ErrorCallback& error_callback) OVERRIDE;

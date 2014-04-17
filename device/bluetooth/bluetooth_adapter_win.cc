@@ -19,6 +19,20 @@
 
 namespace device {
 
+// static
+base::WeakPtr<BluetoothAdapter> BluetoothAdapter::CreateAdapter(
+    const InitCallback& init_callback) {
+  return BluetoothAdapterWin::CreateAdapter(init_callback);
+}
+
+// static
+base::WeakPtr<BluetoothAdapter> BluetoothAdapterWin::CreateAdapter(
+    const InitCallback& init_callback) {
+  BluetoothAdapterWin* adapter = new BluetoothAdapterWin(init_callback);
+  adapter->Init();
+  return adapter->weak_ptr_factory_.GetWeakPtr();
+}
+
 BluetoothAdapterWin::BluetoothAdapterWin(const InitCallback& init_callback)
     : BluetoothAdapter(),
       init_callback_(init_callback),

@@ -54,7 +54,7 @@ void BluetoothSocketChromeOS::Disconnect(const base::Closure& callback) {
 }
 
 void BluetoothSocketChromeOS::Receive(
-    int count,
+    int buffer_size,
     const ReceiveCompletionCallback& success_callback,
     const ReceiveErrorCompletionCallback& error_callback) {
   NOTIMPLEMENTED();

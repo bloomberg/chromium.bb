@@ -52,7 +52,7 @@ class BluetoothSocketWin : public BluetoothSocket {
 
   virtual void Disconnect(const base::Closure& callback) OVERRIDE;
 
-  virtual void Receive(int count,
+  virtual void Receive(int buffer_size,
                        const ReceiveCompletionCallback& success_callback,
                        const ReceiveErrorCompletionCallback& error_callback)
       OVERRIDE;
@@ -81,7 +81,7 @@ class BluetoothSocketWin : public BluetoothSocket {
   void DoConnect(const base::Closure& success_callback,
                  const ErrorCompletionCallback& error_callback);
   void DoDisconnect(const base::Closure& callback);
-  void DoReceive(int count,
+  void DoReceive(int buffer_size,
                  const ReceiveCompletionCallback& success_callback,
                  const ReceiveErrorCompletionCallback& error_callback);
   void DoSend(scoped_refptr<net::IOBuffer> buffer,

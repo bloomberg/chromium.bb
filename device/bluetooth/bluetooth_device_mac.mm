@@ -45,7 +45,6 @@ BluetoothDeviceMac::BluetoothDeviceMac(
       device_([device retain]) {}
 
 BluetoothDeviceMac::~BluetoothDeviceMac() {
-  [device_ release];
 }
 
 void BluetoothDeviceMac::AddObserver(
@@ -72,8 +71,7 @@ std::string BluetoothDeviceMac::GetAddress() const {
   return base::SysNSStringToUTF8([device_ addressString]);
 }
 
-BluetoothDevice::VendorIDSource
-BluetoothDeviceMac::GetVendorIDSource() const {
+BluetoothDevice::VendorIDSource BluetoothDeviceMac::GetVendorIDSource() const {
   return VENDOR_ID_UNKNOWN;
 }
 
@@ -158,9 +156,8 @@ void BluetoothDeviceMac::CancelPairing() {
   NOTIMPLEMENTED();
 }
 
-void BluetoothDeviceMac::Disconnect(
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+void BluetoothDeviceMac::Disconnect(const base::Closure& callback,
+                                    const ErrorCallback& error_callback) {
   NOTIMPLEMENTED();
 }
 
