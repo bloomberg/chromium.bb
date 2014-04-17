@@ -7,11 +7,12 @@
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/prefs/pref_service.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/version.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/chrome_version_service.h"
 #include "chrome/browser/profiles/profile_impl.h"
+#include "chrome/browser/profiles/startup_task_runner_service.h"
+#include "chrome/browser/profiles/startup_task_runner_service_factory.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
@@ -49,23 +50,6 @@ void CheckChromeVersion(Profile *profile, bool is_new) {
   EXPECT_EQ(created_by_version, pref_version);
 }
 
-void BlockThread(
-    base::WaitableEvent* is_blocked,
-    base::WaitableEvent* unblock) {
-  is_blocked->Signal();
-  unblock->Wait();
-}
-
-void SpinThreads() {
-  // Give threads a chance to do their stuff before shutting down (i.e.
-  // deleting scoped temp dir etc).
-  // Should not be necessary anymore once Profile deletion is fixed
-  // (see crbug.com/88586).
-  content::RunAllPendingInMessageLoop();
-  content::RunAllPendingInMessageLoop(content::BrowserThread::DB);
-  content::RunAllPendingInMessageLoop(content::BrowserThread::FILE);
-}
-
 }  // namespace
 
 typedef InProcessBrowserTest ProfileBrowserTest;
@@ -82,14 +66,12 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
   MockProfileDelegate delegate;
   EXPECT_CALL(delegate, OnProfileCreated(testing::NotNull(), true, true));
 
-  {
-    scoped_ptr<Profile> profile(Profile::CreateProfile(
-        temp_dir.path(), &delegate, Profile::CREATE_MODE_SYNCHRONOUS));
-    ASSERT_TRUE(profile.get());
-    CheckChromeVersion(profile.get(), true);
-  }
-
-  SpinThreads();
+  scoped_ptr<Profile> profile(Profile::CreateProfile(
+      temp_dir.path(), &delegate, Profile::CREATE_MODE_SYNCHRONOUS));
+  ASSERT_TRUE(profile.get());
+  CheckChromeVersion(profile.get(), true);
+  StartupTaskRunnerServiceFactory::GetForProfile(profile.get())->
+              StartDeferredTaskRunners();
 }
 
 // Test OnProfileCreate is called with is_new_profile set to false when
@@ -104,14 +86,12 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
   MockProfileDelegate delegate;
   EXPECT_CALL(delegate, OnProfileCreated(testing::NotNull(), true, false));
 
-  {
-    scoped_ptr<Profile> profile(Profile::CreateProfile(
-        temp_dir.path(), &delegate, Profile::CREATE_MODE_SYNCHRONOUS));
-    ASSERT_TRUE(profile.get());
-    CheckChromeVersion(profile.get(), false);
-  }
-
-  SpinThreads();
+  scoped_ptr<Profile> profile(Profile::CreateProfile(
+      temp_dir.path(), &delegate, Profile::CREATE_MODE_SYNCHRONOUS));
+  ASSERT_TRUE(profile.get());
+  CheckChromeVersion(profile.get(), false);
+  StartupTaskRunnerServiceFactory::GetForProfile(profile.get())->
+              StartDeferredTaskRunners();
 }
 
 // Test OnProfileCreate is called with is_new_profile set to true when
@@ -125,21 +105,18 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
   MockProfileDelegate delegate;
   EXPECT_CALL(delegate, OnProfileCreated(testing::NotNull(), true, true));
 
-  {
-    content::WindowedNotificationObserver observer(
-        chrome::NOTIFICATION_PROFILE_CREATED,
-        content::NotificationService::AllSources());
+  scoped_ptr<Profile> profile(Profile::CreateProfile(
+      temp_dir.path(), &delegate, Profile::CREATE_MODE_ASYNCHRONOUS));
+  ASSERT_TRUE(profile.get());
+  StartupTaskRunnerServiceFactory::GetForProfile(profile.get())->
+              StartDeferredTaskRunners();
 
-    scoped_ptr<Profile> profile(Profile::CreateProfile(
-        temp_dir.path(), &delegate, Profile::CREATE_MODE_ASYNCHRONOUS));
-    ASSERT_TRUE(profile.get());
-
-    // Wait for the profile to be created.
-    observer.Wait();
-    CheckChromeVersion(profile.get(), true);
-  }
-
-  SpinThreads();
+  // Wait for the profile to be created.
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_PROFILE_CREATED,
+      content::Source<Profile>(profile.get()));
+  observer.Wait();
+  CheckChromeVersion(profile.get(), true);
 }
 
 // Test OnProfileCreate is called with is_new_profile set to false when
@@ -153,22 +130,18 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
 
   MockProfileDelegate delegate;
   EXPECT_CALL(delegate, OnProfileCreated(testing::NotNull(), true, false));
+  scoped_ptr<Profile> profile(Profile::CreateProfile(
+      temp_dir.path(), &delegate, Profile::CREATE_MODE_ASYNCHRONOUS));
+  ASSERT_TRUE(profile.get());
+  StartupTaskRunnerServiceFactory::GetForProfile(profile.get())->
+              StartDeferredTaskRunners();
 
-  {
-    content::WindowedNotificationObserver observer(
-        chrome::NOTIFICATION_PROFILE_CREATED,
-        content::NotificationService::AllSources());
-
-    scoped_ptr<Profile> profile(Profile::CreateProfile(
-        temp_dir.path(), &delegate, Profile::CREATE_MODE_ASYNCHRONOUS));
-    ASSERT_TRUE(profile.get());
-
-    // Wait for the profile to be created.
-    observer.Wait();
-    CheckChromeVersion(profile.get(), false);
-  }
-
-  SpinThreads();
+  // Wait for the profile to be created.
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_PROFILE_CREATED,
+      content::Source<Profile>(profile.get()));
+  observer.Wait();
+  CheckChromeVersion(profile.get(), false);
 }
 
 // Test that a README file is created for profiles that didn't have it.
@@ -183,27 +156,23 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, DISABLED_ProfileReadmeCreated) {
   // No delay before README creation.
   ProfileImpl::create_readme_delay_ms = 0;
 
-  {
-    content::WindowedNotificationObserver observer(
-        chrome::NOTIFICATION_PROFILE_CREATED,
-        content::NotificationService::AllSources());
+  scoped_ptr<Profile> profile(Profile::CreateProfile(
+      temp_dir.path(), &delegate, Profile::CREATE_MODE_ASYNCHRONOUS));
+  ASSERT_TRUE(profile.get());
+  StartupTaskRunnerServiceFactory::GetForProfile(profile.get())->
+              StartDeferredTaskRunners();
 
-    scoped_ptr<Profile> profile(Profile::CreateProfile(
-        temp_dir.path(), &delegate, Profile::CREATE_MODE_ASYNCHRONOUS));
-    ASSERT_TRUE(profile.get());
+  // Wait for the profile to be created.
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_PROFILE_CREATED,
+      content::Source<Profile>(profile.get()));
+  observer.Wait();
 
-    // Wait for the profile to be created.
-    observer.Wait();
+  content::RunAllPendingInMessageLoop(content::BrowserThread::FILE);
 
-    // Wait for file thread to create the README.
-    content::RunAllPendingInMessageLoop(content::BrowserThread::FILE);
-
-    // Verify that README exists.
-    EXPECT_TRUE(base::PathExists(
-        temp_dir.path().Append(chrome::kReadmeFilename)));
-  }
-
-  SpinThreads();
+  // Verify that README exists.
+  EXPECT_TRUE(base::PathExists(
+      temp_dir.path().Append(chrome::kReadmeFilename)));
 }
 
 // Test that Profile can be deleted before README file is created.
@@ -217,29 +186,18 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, ProfileDeletedBeforeReadmeCreated) {
   // No delay before README creation.
   ProfileImpl::create_readme_delay_ms = 0;
 
-  base::WaitableEvent is_blocked(false, false);
-  base::WaitableEvent* unblock = new base::WaitableEvent(false, false);
-
-  // Block file thread.
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&BlockThread, &is_blocked, base::Owned(unblock)));
-  // Wait for file thread to actually be blocked.
-  is_blocked.Wait();
-
   scoped_ptr<Profile> profile(Profile::CreateProfile(
       temp_dir.path(), &delegate, Profile::CREATE_MODE_SYNCHRONOUS));
   ASSERT_TRUE(profile.get());
+  StartupTaskRunnerServiceFactory::GetForProfile(profile.get())->
+              StartDeferredTaskRunners();
 
-  // Delete the Profile instance before we give the file thread a chance to
-  // create the README.
+  // Delete the Profile instance and run pending tasks (this includes the task
+  // for README creation).
   profile.reset();
-
-  // Now unblock the file thread again and run pending tasks (this includes the
-  // task for README creation).
-  unblock->Signal();
-
-  SpinThreads();
+  content::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop(content::BrowserThread::DB);
+  content::RunAllPendingInMessageLoop(content::BrowserThread::FILE);
 }
 
 // Test that repeated setting of exit type is handled correctly.
@@ -255,30 +213,36 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, MAYBE_ExitType) {
 
   MockProfileDelegate delegate;
   EXPECT_CALL(delegate, OnProfileCreated(testing::NotNull(), true, true));
-  {
-    scoped_ptr<Profile> profile(Profile::CreateProfile(
-        temp_dir.path(), &delegate, Profile::CREATE_MODE_SYNCHRONOUS));
-    ASSERT_TRUE(profile.get());
 
-    PrefService* prefs = profile->GetPrefs();
-    // The initial state is crashed; store for later reference.
-    std::string crash_value(prefs->GetString(prefs::kSessionExitType));
+  scoped_ptr<Profile> profile(Profile::CreateProfile(
+      temp_dir.path(), &delegate, Profile::CREATE_MODE_SYNCHRONOUS));
+  ASSERT_TRUE(profile.get());
+  StartupTaskRunnerServiceFactory::GetForProfile(profile.get())->
+              StartDeferredTaskRunners();
 
-    // The first call to a type other than crashed should change the value.
-    profile->SetExitType(Profile::EXIT_SESSION_ENDED);
-    std::string first_call_value(prefs->GetString(prefs::kSessionExitType));
-    EXPECT_NE(crash_value, first_call_value);
+  PrefService* prefs = profile->GetPrefs();
+  // The initial state is crashed; store for later reference.
+  std::string crash_value(prefs->GetString(prefs::kSessionExitType));
 
-    // Subsequent calls to a non-crash value should be ignored.
-    profile->SetExitType(Profile::EXIT_NORMAL);
-    std::string second_call_value(prefs->GetString(prefs::kSessionExitType));
-    EXPECT_EQ(first_call_value, second_call_value);
+  // The first call to a type other than crashed should change the value.
+  profile->SetExitType(Profile::EXIT_SESSION_ENDED);
+  std::string first_call_value(prefs->GetString(prefs::kSessionExitType));
+  EXPECT_NE(crash_value, first_call_value);
 
-    // Setting back to a crashed value should work.
-    profile->SetExitType(Profile::EXIT_CRASHED);
-    std::string final_value(prefs->GetString(prefs::kSessionExitType));
-    EXPECT_EQ(crash_value, final_value);
-  }
+  // Subsequent calls to a non-crash value should be ignored.
+  profile->SetExitType(Profile::EXIT_NORMAL);
+  std::string second_call_value(prefs->GetString(prefs::kSessionExitType));
+  EXPECT_EQ(first_call_value, second_call_value);
 
-  SpinThreads();
+  // Setting back to a crashed value should work.
+  profile->SetExitType(Profile::EXIT_CRASHED);
+  std::string final_value(prefs->GetString(prefs::kSessionExitType));
+  EXPECT_EQ(crash_value, final_value);
+
+  // This test runs fast enough that the WebDataService may still be
+  // initializing (which uses the temp directory) when the test
+  // ends. Give it a chance to complete.
+  profile.reset();
+  content::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop(content::BrowserThread::DB);
 }
