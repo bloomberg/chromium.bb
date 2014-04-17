@@ -407,14 +407,6 @@
    fun:_ZN3ash5ShellC1EPNS_13ShellDelegateE
    fun:_ZN3ash5Shell14CreateInstanceEPNS_13ShellDelegateE
 }
-{
-   intentional OOM in layout test: fast/js/string-replacement-outofmemory.html
-   Memcheck:Unaddressable
-   fun:_ZN7WebCoreL28reportFatalErrorInMainThreadEPKcS1_
-   fun:_ZN2v88internal2V823FatalProcessOutOfMemoryEPKcb
-   ...
-   fun:_ZN7WebCore16HTMLScriptRunner36executePendingScriptAndDispatchEventERNS_13PendingScriptE
-}
 
 # http://crbug.com/269278 causes really widespread, flaky leaks in
 # value objects that own some memory.  These suppressions will cover

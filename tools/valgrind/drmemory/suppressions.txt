@@ -232,13 +232,6 @@ UNADDRESSABLE ACCESS
 name=::Crasher::Run deliberate crash
 *!base::`anonymous namespace'::Crasher::Run
 
-UNADDRESSABLE ACCESS
-name=intentional OOM in layout test: fast/js/string-replacement-outofmemory.html
-*!WebCore::reportFatalErrorInMainThread
-*!v8::internal::V8::FatalProcessOutOfMemory
-...
-*!WebCore::HTMLScriptRunner::executePendingScriptAndDispatchEvent
-
 ############################
 # Benign issues in Chromium
 
