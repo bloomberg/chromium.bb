@@ -310,10 +310,6 @@
         'type': 'none',
         'variables': {
           'test_suite_name': 'sandbox_linux_jni_unittests',
-          'input_shlib_path':
-              '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)'
-              'sandbox_linux_jni_unittests'
-              '<(SHARED_LIB_SUFFIX)',
         },
         'dependencies': [
           'sandbox_linux_jni_unittests',

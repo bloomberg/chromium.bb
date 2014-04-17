@@ -11,7 +11,6 @@
 #   'type': 'none',
 #   'variables': {
 #     'test_suite_name': 'test_suite_name',  # string
-#     'input_shlib_path' : '/path/to/test_suite.so',  # string
 #     'input_jars_paths': ['/path/to/test_suite.jar', ... ],  # list
 #   },
 #   'includes': ['path/to/this/gypi/file'],

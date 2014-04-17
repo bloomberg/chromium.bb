@@ -1470,7 +1470,6 @@
           ],
           'variables': {
             'test_suite_name': 'content_gl_tests',
-            'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)content_gl_tests<(SHARED_LIB_SUFFIX)',
           },
           'includes': [
             '../build/apk_test.gypi',
@@ -1485,7 +1484,6 @@
           ],
           'variables': {
             'test_suite_name': 'content_unittests',
-            'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)content_unittests<(SHARED_LIB_SUFFIX)',
           },
           'includes': [ '../build/apk_test.gypi' ],
         },
@@ -1525,7 +1523,6 @@
           ],
           'variables': {
             'test_suite_name': 'content_perftests',
-            'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)content_perftests<(SHARED_LIB_SUFFIX)',
           },
           'includes': [ '../build/apk_test.gypi' ],
         },
@@ -1593,7 +1590,6 @@
           ],
           'variables': {
             'test_suite_name': 'video_decode_accelerator_unittest',
-            'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)content_unittests<(SHARED_LIB_SUFFIX)',
           },
           'includes': [ '../build/apk_test.gypi' ],
         },

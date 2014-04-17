@@ -579,7 +579,6 @@
           ],
           'variables': {
             'test_suite_name': 'gl_tests',
-            'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)gl_tests<(SHARED_LIB_SUFFIX)',
           },
           'includes': [
             '../build/apk_test.gypi',

@@ -25,7 +25,6 @@
         ],
         'variables': {
           'test_suite_name': 'env_chromium_unittests',
-          'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)env_chromium_unittests<(SHARED_LIB_SUFFIX)',
         },
         'includes': [ '../../build/apk_test.gypi' ],
       }],

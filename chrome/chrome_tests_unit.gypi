@@ -2767,7 +2767,6 @@
           ],
           'variables': {
             'test_suite_name': 'unit_tests',
-            'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)unit_tests<(SHARED_LIB_SUFFIX)',
             'android_manifest_path': 'test/android/unit_tests_apk/AndroidManifest.xml',
           },
           'includes': [ '../build/apk_test.gypi' ],

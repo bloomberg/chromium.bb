@@ -1511,7 +1511,6 @@
           ],
           'variables': {
             'test_suite_name': 'media_unittests',
-            'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)media_unittests<(SHARED_LIB_SUFFIX)',
           },
           'includes': ['../build/apk_test.gypi'],
         },
@@ -1524,7 +1523,6 @@
           ],
           'variables': {
             'test_suite_name': 'media_perftests',
-            'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)media_perftests<(SHARED_LIB_SUFFIX)',
           },
           'includes': ['../build/apk_test.gypi'],
         },

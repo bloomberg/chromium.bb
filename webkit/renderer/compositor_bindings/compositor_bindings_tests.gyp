@@ -63,7 +63,6 @@
           ],
           'variables': {
             'test_suite_name': 'webkit_compositor_bindings_unittests',
-            'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)webkit_compositor_bindings_unittests<(SHARED_LIB_SUFFIX)',
           },
           'includes': [ '../../../build/apk_test.gypi' ],
         },

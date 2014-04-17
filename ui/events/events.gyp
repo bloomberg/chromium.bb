@@ -382,7 +382,6 @@
           ],
           'variables': {
             'test_suite_name': 'events_unittests',
-            'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)events_unittests<(SHARED_LIB_SUFFIX)',
           },
           'includes': [ '../../build/apk_test.gypi' ],
         },
