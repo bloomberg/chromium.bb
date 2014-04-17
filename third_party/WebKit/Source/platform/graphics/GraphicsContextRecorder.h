@@ -66,6 +66,7 @@ public:
 private:
     RefPtr<SkPicture> m_picture;
     OwnPtr<GraphicsContext> m_context;
+    OwnPtr<SkPictureRecorder> m_recorder;
     bool m_isCertainlyOpaque;
 };
 

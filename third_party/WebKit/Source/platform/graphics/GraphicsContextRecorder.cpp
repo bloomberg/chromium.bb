@@ -39,10 +39,11 @@ namespace WebCore {
 GraphicsContext* GraphicsContextRecorder::record(const IntSize& size, bool isCertainlyOpaque)
 {
     ASSERT(!m_picture);
+    ASSERT(!m_recorder);
     ASSERT(!m_context);
-    m_picture = adoptRef(new SkPicture());
     m_isCertainlyOpaque = isCertainlyOpaque;
-    SkCanvas* canvas = m_picture->beginRecording(size.width(), size.height());
+    m_recorder = adoptPtr(new SkPictureRecorder);
+    SkCanvas* canvas = m_recorder->beginRecording(size.width(), size.height());
     m_context = adoptPtr(new GraphicsContext(canvas));
     m_context->setTrackOpaqueRegion(isCertainlyOpaque);
     m_context->setCertainlyOpaque(isCertainlyOpaque);
@@ -51,8 +52,9 @@ GraphicsContext* GraphicsContextRecorder::record(const IntSize& size, bool isCer
 
 PassRefPtr<GraphicsContextSnapshot> GraphicsContextRecorder::stop()
 {
-    m_picture->endRecording();
     m_context.clear();
+    m_picture = adoptRef(m_recorder->endRecording());
+    m_recorder.clear();
     return adoptRef(new GraphicsContextSnapshot(m_picture.release(), m_isCertainlyOpaque));
 }
 
