@@ -450,11 +450,11 @@ class Page21(KeySilkCasesPage):
       {
         'scroll_distance_function': '''
           function() {
-            return
-              document.getElementById('kno-result')
-                      .getBoundingClientRect().top -
-              document.body.scrollTop;
-          }'''
+            var el = document.getElementById('kno-result');
+            var bound = el.getBoundingClientRect();
+            return bound.top - document.body.scrollTop;
+          }
+        '''
       }))
 
   def ExpandKnowledgeCard(self, action_runner):
