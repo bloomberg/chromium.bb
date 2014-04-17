@@ -22,8 +22,19 @@ cr.define('options', function() {
     // Inherit ClearBrowserDataOverlay from OptionsPage.
     __proto__: OptionsPage.prototype,
 
-    // Whether deleting history and downloads is allowed.
+    /**
+     * Whether deleting history and downloads is allowed.
+     * @type {boolean}
+     * @private
+     */
     allowDeletingHistory_: true,
+
+    /**
+     * Whether or not clearing browsing data is currently in progress.
+     * @type {boolean}
+     * @private
+     */
+    isClearingInProgress_: true,
 
     /**
      * Initialize the page.
@@ -50,7 +61,12 @@ cr.define('options', function() {
       for (var i = 0; i < checkboxes.length; i++) {
         checkboxes[i].onclick = f;
       }
-      this.updateCommitButtonState_();
+
+      // At this point, assume that we are currently in the process of clearing
+      // data, so as to prevent the controls from being hazardously enabled for
+      // a very short time before ClearBrowserDataOverlay.setClearing() is
+      // called by the native side with the authoritative state.
+      this.setClearing(true);
 
       this.createStuffRemainsFooter_();
 
@@ -58,7 +74,7 @@ cr.define('options', function() {
         ClearBrowserDataOverlay.dismiss();
       };
       $('clear-browser-data-commit').onclick = function(event) {
-        ClearBrowserDataOverlay.setClearingState(true);
+        ClearBrowserDataOverlay.setClearing(true);
         chrome.send('performClearBrowserData');
       };
 
@@ -66,8 +82,10 @@ cr.define('options', function() {
       this.showDeleteHistoryCheckboxes_(show);
     },
 
-    // Create a footer that explains that some content is not cleared by the
-    // clear browsing history dialog.
+    /**
+     * Create a footer that explains that some content is not cleared by the
+     * clear browsing history dialog.
+     */
     createStuffRemainsFooter_: function() {
       // The localized string is of the form "Saved [content settings] and
       // {search engines} will not be cleared and may reflect your browsing
@@ -114,7 +132,34 @@ cr.define('options', function() {
       }
     },
 
-    // Set the enabled state of the commit button.
+    /**
+     * Sets the enabled state of the checkboxes and buttons based on whether or
+     * not we are in the process of clearing data.
+     * @param {boolean} clearing Whether the browsing history is currently
+     *     being cleared.
+     */
+    setClearing: function(clearing) {
+      $('delete-browsing-history-checkbox').disabled = clearing;
+      $('delete-download-history-checkbox').disabled = clearing;
+      $('delete-cache-checkbox').disabled = clearing;
+      $('delete-cookies-checkbox').disabled = clearing;
+      $('delete-passwords-checkbox').disabled = clearing;
+      $('delete-form-data-checkbox').disabled = clearing;
+      $('delete-hosted-apps-data-checkbox').disabled = clearing;
+      $('deauthorize-content-licenses-checkbox').disabled = clearing;
+      $('clear-browser-data-time-period').disabled = clearing;
+      $('cbd-throbber').style.visibility = clearing ? 'visible' : 'hidden';
+      $('clear-browser-data-dismiss').disabled = clearing;
+
+      // The enabled state of the commit button is further based on whether or
+      // not any of the check boxes are checked.
+      this.isClearingInProgress_ = clearing;
+      this.updateCommitButtonState_();
+    },
+
+    /**
+     * Sets the enabled state of the commit button.
+     */
     updateCommitButtonState_: function() {
       var checkboxes = document.querySelectorAll(
           '#cbd-content-area input[type=checkbox]');
@@ -125,7 +170,8 @@ cr.define('options', function() {
           break;
         }
       }
-      $('clear-browser-data-commit').disabled = !isChecked;
+      $('clear-browser-data-commit').disabled =
+          !isChecked || this.isClearingInProgress_;
     },
 
     setAllowDeletingHistory: function(allowed) {
@@ -164,23 +210,8 @@ cr.define('options', function() {
     ClearBrowserDataOverlay.getInstance().setAllowDeletingHistory(allowed);
   };
 
-  ClearBrowserDataOverlay.setClearingState = function(state) {
-    $('delete-browsing-history-checkbox').disabled = state;
-    $('delete-download-history-checkbox').disabled = state;
-    $('delete-cache-checkbox').disabled = state;
-    $('delete-cookies-checkbox').disabled = state;
-    $('delete-passwords-checkbox').disabled = state;
-    $('delete-form-data-checkbox').disabled = state;
-    $('delete-hosted-apps-data-checkbox').disabled = state;
-    $('deauthorize-content-licenses-checkbox').disabled = state;
-    $('clear-browser-data-time-period').disabled = state;
-    $('cbd-throbber').style.visibility = state ? 'visible' : 'hidden';
-    $('clear-browser-data-dismiss').disabled = state;
-
-    if (state)
-      $('clear-browser-data-commit').disabled = true;
-    else
-      ClearBrowserDataOverlay.getInstance().updateCommitButtonState_();
+  ClearBrowserDataOverlay.setClearing = function(clearing) {
+    ClearBrowserDataOverlay.getInstance().setClearing(clearing);
   };
 
   ClearBrowserDataOverlay.setBannerVisibility = function(args) {
@@ -201,7 +232,7 @@ cr.define('options', function() {
     var topmostVisiblePage = OptionsPage.getTopmostVisiblePage();
     if (topmostVisiblePage && topmostVisiblePage.name == 'clearBrowserData')
       OptionsPage.closeOverlay();
-    this.setClearingState(false);
+    this.setClearing(false);
   };
 
   // Export

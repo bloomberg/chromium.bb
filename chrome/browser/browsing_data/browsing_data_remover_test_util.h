@@ -28,4 +28,26 @@ class BrowsingDataRemoverCompletionObserver
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataRemoverCompletionObserver);
 };
 
+class BrowsingDataRemoverCompletionInhibitor
+    : public BrowsingDataRemover::CompletionInhibitor {
+ public:
+  BrowsingDataRemoverCompletionInhibitor();
+  virtual ~BrowsingDataRemoverCompletionInhibitor();
+
+  void BlockUntilNearCompletion();
+  void ContinueToCompletion();
+
+ protected:
+  // BrowsingDataRemover::CompletionInhibitor:
+  virtual void OnBrowsingDataRemoverWouldComplete(
+      BrowsingDataRemover* remover,
+      const base::Closure& continue_to_completion) OVERRIDE;
+
+ private:
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+  base::Closure continue_to_completion_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowsingDataRemoverCompletionInhibitor);
+};
+
 #endif  // CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_REMOVER_TEST_UTIL_H_

@@ -679,8 +679,10 @@ class BrowsingDataRemoverTest : public testing::Test,
     registrar_.RemoveAll();
   }
 
- private:
+ protected:
   scoped_ptr<BrowsingDataRemover::NotificationDetails> called_with_details_;
+
+ private:
   content::NotificationRegistrar registrar_;
 
   content::TestBrowserThreadBundle thread_bundle_;
@@ -1538,6 +1540,39 @@ TEST_F(BrowsingDataRemoverTest, AutofillOriginsRemovedWithHistory) {
   EXPECT_TRUE(tester.HasOrigin(std::string()));
   EXPECT_FALSE(tester.HasOrigin(kWebOrigin));
   EXPECT_TRUE(tester.HasOrigin(kChromeOrigin));
+}
+
+TEST_F(BrowsingDataRemoverTest, CompletionInhibition) {
+  // The |completion_inhibitor| on the stack should prevent removal sessions
+  // from completing until after ContinueToCompletion() is called.
+  BrowsingDataRemoverCompletionInhibitor completion_inhibitor;
+
+  called_with_details_.reset(new BrowsingDataRemover::NotificationDetails());
+
+  // BrowsingDataRemover deletes itself when it completes.
+  BrowsingDataRemover* remover = BrowsingDataRemover::CreateForPeriod(
+      GetProfile(), BrowsingDataRemover::EVERYTHING);
+  remover->Remove(BrowsingDataRemover::REMOVE_HISTORY,
+                  BrowsingDataHelper::UNPROTECTED_WEB);
+
+  // Process messages until the inhibitor is notified, and then some, to make
+  // sure we do not complete asynchronously before ContinueToCompletion() is
+  // called.
+  completion_inhibitor.BlockUntilNearCompletion();
+  base::RunLoop().RunUntilIdle();
+
+  // Verify that the completion notification has not yet been broadcasted.
+  EXPECT_EQ(-1, GetRemovalMask());
+  EXPECT_EQ(-1, GetOriginSetMask());
+
+  // Now run the removal process until completion, and verify that observers are
+  // now notified, and the notifications is sent out.
+  BrowsingDataRemoverCompletionObserver completion_observer(remover);
+  completion_inhibitor.ContinueToCompletion();
+  completion_observer.BlockUntilCompletion();
+
+  EXPECT_EQ(BrowsingDataRemover::REMOVE_HISTORY, GetRemovalMask());
+  EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginSetMask());
 }
 
 #if defined(OS_CHROMEOS)

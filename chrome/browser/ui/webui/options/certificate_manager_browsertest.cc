@@ -144,31 +144,16 @@ class CertificateManagerBrowserTest : public options::OptionsUIBrowserTest {
   }
 #endif
 
-  static bool FrameHasSettingsSourceHost(content::RenderFrameHost* frame) {
-    return frame->GetLastCommittedURL().DomainIs(
-        chrome::kChromeUISettingsFrameHost);
-  }
-
-  content::RenderFrameHost* SettingsFrame() {
-    // NB: The utility function content::FrameHasSourceUrl can't be used because
-    // the settings frame navigates itself to chrome://settings-frame/settings
-    // to indicate that it's showing the top-level settings. Therefore, just
-    // match the host.
-    return content::FrameMatchingPredicate(
-        browser()->tab_strip_model()->GetActiveWebContents(),
-        base::Bind(&CertificateManagerBrowserTest::FrameHasSettingsSourceHost));
-  }
-
   void ClickElement(const std::string& selector) {
     EXPECT_TRUE(content::ExecuteScript(
-        SettingsFrame(),
+        GetSettingsFrame(),
         "document.querySelector(\"" + selector + "\").click()"));
   }
 
   bool HasElement(const std::string& selector) {
     bool result;
     EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-        SettingsFrame(),
+        GetSettingsFrame(),
         "window.domAutomationController.send("
         "    !!document.querySelector('" + selector + "'));",
         &result));

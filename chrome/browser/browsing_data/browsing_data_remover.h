@@ -150,6 +150,22 @@ class BrowsingDataRemover
     virtual ~Observer() {}
   };
 
+  // The completion inhibitor can artificially delay completion of the browsing
+  // data removal process. It is used during testing to simulate scenarios in
+  // which the deletion stalls or takes a very long time.
+  class CompletionInhibitor {
+   public:
+    // Invoked when a |remover| is just about to complete clearing browser data,
+    // and will be prevented from completing until after the callback
+    // |continue_to_completion| is run.
+    virtual void OnBrowsingDataRemoverWouldComplete(
+        BrowsingDataRemover* remover,
+        const base::Closure& continue_to_completion) = 0;
+
+   protected:
+    virtual ~CompletionInhibitor() {}
+  };
+
   // Creates a BrowsingDataRemover object that removes data regardless of the
   // time it was last modified. Returns a raw pointer, as BrowsingDataRemover
   // retains ownership of itself, and deletes itself once finished.
@@ -173,6 +189,14 @@ class BrowsingDataRemover
 
   // Is the BrowsingDataRemover currently in the process of removing data?
   static bool is_removing() { return is_removing_; }
+
+  // Sets a CompletionInhibitor, which will be notified each time an instance is
+  // about to complete a browsing data removal process, and will be able to
+  // artificially delay the completion.
+  static void set_completion_inhibitor_for_testing(
+      CompletionInhibitor* inhibitor) {
+    completion_inhibitor_ = inhibitor;
+  }
 
   // Removes the specified items related to browsing for all origins that match
   // the provided |origin_set_mask| (see BrowsingDataHelper::OriginSetMask).
@@ -252,8 +276,10 @@ class BrowsingDataRemover
                   const GURL& origin,
                   int origin_set_mask);
 
-  // If we're not waiting on anything, notifies observers and deletes this
-  // object.
+  // Notifies observers and deletes this object.
+  void NotifyAndDelete();
+
+  // Checks if we are all done, and if so, calls NotifyAndDelete().
   void NotifyAndDeleteIfDone();
 
   // Callback for when the hostname resolution cache has been cleared.
@@ -366,6 +392,11 @@ class BrowsingDataRemover
 
   // True if Remove has been invoked.
   static bool is_removing_;
+
+  // If non-NULL, the |completion_inhibitor_| is notified each time an instance
+  // is about to complete a browsing data removal process, and has the ability
+  // to artificially delay completion. Used for testing.
+  static CompletionInhibitor* completion_inhibitor_;
 
   CacheState next_cache_state_;
   disk_cache::Backend* cache_;

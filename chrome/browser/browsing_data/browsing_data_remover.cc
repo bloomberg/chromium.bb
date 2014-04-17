@@ -94,6 +94,9 @@ using content::DOMStorageContext;
 
 bool BrowsingDataRemover::is_removing_ = false;
 
+BrowsingDataRemover::CompletionInhibitor*
+    BrowsingDataRemover::completion_inhibitor_ = NULL;
+
 // Helper to create callback for BrowsingDataRemover::DoesOriginMatchMask.
 // Static.
 bool DoesOriginMatchMask(int origin_set_mask,
@@ -745,14 +748,7 @@ void BrowsingDataRemover::OnKeywordsLoaded() {
   NotifyAndDeleteIfDone();
 }
 
-void BrowsingDataRemover::NotifyAndDeleteIfDone() {
-  // TODO(brettw) http://crbug.com/305259: This should also observe session
-  // clearing (what about other things such as passwords, etc.?) and wait for
-  // them to complete before continuing.
-
-  if (!AllDone())
-    return;
-
+void BrowsingDataRemover::NotifyAndDelete() {
   set_removing(false);
 
   // Send global notification, then notify any explicit observers.
@@ -768,6 +764,24 @@ void BrowsingDataRemover::NotifyAndDeleteIfDone() {
   // History requests aren't happy if you delete yourself from the callback.
   // As such, we do a delete later.
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+}
+
+void BrowsingDataRemover::NotifyAndDeleteIfDone() {
+  // TODO(brettw) http://crbug.com/305259: This should also observe session
+  // clearing (what about other things such as passwords, etc.?) and wait for
+  // them to complete before continuing.
+
+  if (!AllDone())
+    return;
+
+  if (completion_inhibitor_) {
+    completion_inhibitor_->OnBrowsingDataRemoverWouldComplete(
+        this,
+        base::Bind(&BrowsingDataRemover::NotifyAndDelete,
+                   base::Unretained(this)));
+  } else {
+    NotifyAndDelete();
+  }
 }
 
 void BrowsingDataRemover::OnClearedHostnameResolutionCache() {
