@@ -204,8 +204,9 @@ SettingsEnforcementGroup GetSettingsEnforcementGroup() {
   };
 
   // Use the strongest enforcement setting in the absence of a field trial
-  // config on Windows. Remember to update the OFFICIAL_BUILD section of
-  // pref_hash_browsertest.cc when updating these values.
+  // config on Windows. Remember to update the OFFICIAL_BUILD sections of
+  // pref_hash_browsertest.cc and extension_startup_browsertest.cc when updating
+  // the default value below.
   // TODO(gab): Enforce this on all platforms.
   SettingsEnforcementGroup enforcement_group =
 #if defined(OS_WIN)

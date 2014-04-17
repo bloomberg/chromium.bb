@@ -61,8 +61,8 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
               "%s/%s/",
               chrome_prefs::internals::kSettingsEnforcementTrialName,
               chrome_prefs::internals::kSettingsEnforcementGroupNoEnforcement));
-#if defined(OFFICIAL_BUILD)
-      // In official builds, it is not possible to disable settings
+#if defined(OFFICIAL_BUILD) && defined(OS_WIN)
+      // In Windows official builds, it is not possible to disable settings
       // authentication.
       unauthenticated_load_allowed_ = false;
 #endif
