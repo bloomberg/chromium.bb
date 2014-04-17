@@ -547,29 +547,30 @@ static void cachedResourcesForDocument(Document* document, Vector<Resource*>& re
     }
 }
 
-static Vector<Resource*> cachedResourcesForFrame(LocalFrame* frame)
+static Vector<Document*> importsForFrame(LocalFrame* frame)
 {
-    Vector<Resource*> result;
+    Vector<Document*> result;
     Document* rootDocument = frame->document();
 
-    cachedResourcesForDocument(rootDocument, result);
     if (HTMLImportsController* controller = rootDocument->importsController()) {
-        for (size_t i = 0; i < controller->loaderCount(); ++i)
-            cachedResourcesForDocument(controller->loaderAt(i)->document(), result);
+        for (size_t i = 0; i < controller->loaderCount(); ++i) {
+            if (Document* document = controller->loaderAt(i)->document())
+                result.append(document);
+        }
     }
 
     return result;
 }
 
-static Vector<HTMLImportLoader*> importsForFrame(LocalFrame* frame)
+static Vector<Resource*> cachedResourcesForFrame(LocalFrame* frame)
 {
-    Vector<HTMLImportLoader*> result;
+    Vector<Resource*> result;
     Document* rootDocument = frame->document();
+    Vector<Document*> loaders = importsForFrame(frame);
 
-    if (HTMLImportsController* controller = rootDocument->importsController()) {
-        for (size_t i = 0; i < controller->loaderCount(); ++i)
-            result.append(controller->loaderAt(i));
-    }
+    cachedResourcesForDocument(rootDocument, result);
+    for (size_t i = 0; i < loaders.size(); ++i)
+        cachedResourcesForDocument(loaders[i], result);
 
     return result;
 }
@@ -1109,13 +1110,13 @@ PassRefPtr<TypeBuilder::Page::FrameResourceTree> InspectorPageAgent::buildObject
         subresources->addItem(resourceObject);
     }
 
-    Vector<HTMLImportLoader*> allImports = importsForFrame(frame);
-    for (Vector<HTMLImportLoader*>::const_iterator it = allImports.begin(); it != allImports.end(); ++it) {
-        HTMLImportLoader* import = *it;
+    Vector<Document*> allImports = importsForFrame(frame);
+    for (Vector<Document*>::const_iterator it = allImports.begin(); it != allImports.end(); ++it) {
+        Document* import = *it;
         RefPtr<TypeBuilder::Page::FrameResourceTree::Resources> resourceObject = TypeBuilder::Page::FrameResourceTree::Resources::create()
-            .setUrl(urlWithoutFragment(import->document()->url()).string())
+            .setUrl(urlWithoutFragment(import->url()).string())
             .setType(resourceTypeJson(InspectorPageAgent::DocumentResource))
-            .setMimeType(import->document()->suggestedMIMEType());
+            .setMimeType(import->suggestedMIMEType());
         subresources->addItem(resourceObject);
     }
 
