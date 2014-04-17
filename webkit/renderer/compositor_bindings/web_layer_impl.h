@@ -25,9 +25,6 @@
 
 namespace cc { class Layer; }
 
-// TODO(senorblanco):  Remove this once WebKit changes have landed.
-class SkImageFilter;
-
 namespace blink {
 class WebFilterOperations;
 class WebLayerClient;

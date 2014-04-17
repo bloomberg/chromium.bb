@@ -97,14 +97,6 @@ WebScrollbarLayer* WebCompositorSupportImpl::createSolidColorScrollbarLayer(
                                    is_left_side_vertical_scrollbar);
 }
 
-WebScrollbarLayer* WebCompositorSupportImpl::createSolidColorScrollbarLayer(
-    WebScrollbar::Orientation orientation,
-    int thumb_thickness,
-    bool is_left_side_vertical_scrollbar) {
-  return new WebScrollbarLayerImpl(
-      orientation, thumb_thickness, 0, is_left_side_vertical_scrollbar);
-}
-
 WebAnimation* WebCompositorSupportImpl::createAnimation(
     const blink::WebAnimationCurve& curve,
     blink::WebAnimation::TargetProperty target,
