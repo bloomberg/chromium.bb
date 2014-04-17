@@ -73,8 +73,8 @@ var test = function()
         {
             function dumpSet(set, key1, key2)
             {
-                InspectorTest.addResult("    key1 : " + set.hasItem(key1));
-                InspectorTest.addResult("    key2 : " + set.hasItem(key2));
+                InspectorTest.addResult("    key1 : " + set.contains(key1));
+                InspectorTest.addResult("    key2 : " + set.contains(key2));
                 InspectorTest.addResult("    size : " + set.size());
             }
 
