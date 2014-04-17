@@ -5,7 +5,9 @@
 #include "chrome/browser/chromeos/attestation/platform_verification_dialog.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/url_constants.h"
@@ -13,6 +15,7 @@
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/page_transition_types.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "grit/generated_resources.h"
@@ -46,7 +49,7 @@ void PlatformVerificationDialog::ShowDialog(
   std::string origin = extension ? extension->name() : url.GetOrigin().spec();
 
   PlatformVerificationDialog* dialog = new PlatformVerificationDialog(
-      chrome::FindBrowserWithWebContents(web_contents),
+      web_contents,
       base::UTF8ToUTF16(origin),
       callback);
 
@@ -66,10 +69,10 @@ PlatformVerificationDialog::~PlatformVerificationDialog() {
 }
 
 PlatformVerificationDialog::PlatformVerificationDialog(
-    Browser* browser,
+    content::WebContents* web_contents,
     const base::string16& domain,
     const PlatformVerificationFlow::Delegate::ConsentCallback& callback)
-    : browser_(browser),
+    : web_contents_(web_contents),
       domain_(domain),
       callback_(callback) {
   SetLayoutManager(new views::FillLayout());
@@ -128,8 +131,21 @@ gfx::Size PlatformVerificationDialog::GetPreferredSize() {
 
 void PlatformVerificationDialog::StyledLabelLinkClicked(const gfx::Range& range,
                                                         int event_flags) {
-  chrome::ShowSingletonTab(browser_, GURL(
-      chrome::kEnhancedPlaybackNotificationLearnMoreURL));
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
+  const GURL learn_more_url(chrome::kEnhancedPlaybackNotificationLearnMoreURL);
+
+  // |web_contents_| might not be in a browser in case of v2 apps. In that case,
+  // open a new tab in the usual way.
+  if (!browser) {
+    Profile* profile = Profile::FromBrowserContext(
+        web_contents_->GetBrowserContext());
+    chrome::NavigateParams params(
+        profile, learn_more_url, content::PAGE_TRANSITION_LINK);
+    params.disposition = SINGLETON_TAB;
+    chrome::Navigate(&params);
+  } else {
+    chrome::ShowSingletonTab(browser, learn_more_url);
+  }
 }
 
 }  // namespace attestation
