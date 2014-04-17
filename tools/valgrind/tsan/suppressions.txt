@@ -1044,13 +1044,6 @@
   fun:base::internal::RunnableAdapter::Run
 }
 {
-  bug_330903
-  ThreadSanitizer:Race
-  fun:gcm::GCMClientMock::SetIsLoading
-  fun:gcm::GCMProfileServiceRegisterTest_GCMClientLoadingCompletedAfterReadingRegistration_Test::TestBody
-  fun:testing::internal::HandleSehExceptionsInMethodIfSupported
-}
-{
   bug_344704
   ThreadSanitizer:Race
   fun:base::Thread::message_loop
