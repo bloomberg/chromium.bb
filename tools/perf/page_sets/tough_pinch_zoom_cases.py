@@ -71,7 +71,7 @@ class GoogleCalendarPage(ToughPinchZoomCasesPage):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.RunAction(NavigateAction())
-    action_runner.RunAction(WaitAction({'second':2}))
+    action_runner.RunAction(WaitAction({'seconds':2}))
 
   def RunSmoothness(self, action_runner):
     action_runner.RunAction(PinchAction(
@@ -135,7 +135,7 @@ class YoutubePage(ToughPinchZoomCasesPage):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.RunAction(NavigateAction())
-    action_runner.RunAction(WaitAction({'second':2}))
+    action_runner.RunAction(WaitAction({'seconds':2}))
 
 class BlogSpotPage(ToughPinchZoomCasesPage):
 
@@ -218,7 +218,7 @@ class TwitterPage(ToughPinchZoomCasesPage):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.RunAction(NavigateAction())
-    action_runner.RunAction(WaitAction({'second':2}))
+    action_runner.RunAction(WaitAction({'seconds':2}))
 
 class ESPNPage(ToughPinchZoomCasesPage):
 
@@ -256,7 +256,7 @@ class YahooGamePage(ToughPinchZoomCasesPage):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.RunAction(NavigateAction())
-    action_runner.RunAction(WaitAction({'second':2}))
+    action_runner.RunAction(WaitAction({'seconds':2}))
 
 class ToughPinchZoomCasesPageSet(page_set_module.PageSet):
 
