@@ -241,7 +241,14 @@ namespace WTF {
 
         Node* m_freeList;
         bool m_isDoneWithInitialFreeList;
+#if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
+        // The allocation pool for nodes is one big chunk that ASAN has no
+        // insight into, so it can cloak errors. Make it as small as possible
+        // to force nodes to be allocated individually where ASAN can see them.
+        static const size_t m_poolSize = 1;
+#else
         static const size_t m_poolSize = inlineCapacity;
+#endif
         union {
             char pool[sizeof(Node) * m_poolSize];
             double forAlignment;

@@ -235,11 +235,4 @@ TEST(ArrayBufferBuilder, ShrinkToFitAfterGrowth)
     EXPECT_EQ(dataSize, builder.capacity());
 }
 
-TEST(ArrayBufferBuilder, ArrayBufferAllocationFailure)
-{
-    RefPtr<ArrayBuffer> buffer = ArrayBuffer::create(INT_MAX + 1u, 1);
-
-    EXPECT_EQ(0, buffer.get());
-}
-
 } // namespace WTF
