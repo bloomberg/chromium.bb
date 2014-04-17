@@ -147,12 +147,14 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
 
   [self updateSuggestionState];
 
-  // TODO(groby): "Save in Chrome" handling. http://crbug.com/306203.
-
   if (![[self view] isHidden])
     [self validateFor:autofill::VALIDATE_EDIT];
 
   // Always request re-layout on state change.
+  [self requestRelayout];
+}
+
+- (void)requestRelayout {
   id delegate = [[view_ window] windowController];
   if ([delegate respondsToSelector:@selector(requestRelayout)])
     [delegate performSelector:@selector(requestRelayout)];
@@ -658,6 +660,9 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
     } else {
       base::scoped_nsobject<AutofillTextField> field(
           [[AutofillTextField alloc] init]);
+      [field setIsMultiline:input.IsMultiline()];
+      [[field cell] setLineBreakMode:NSLineBreakByClipping];
+      [[field cell] setScrollable:YES];
       [[field cell] setPlaceholderString:
           l10n_util::FixUpWindowsStyleLabel(input.placeholder_text)];
       NSString* tooltipText =
@@ -705,9 +710,7 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
 
   if (inputs_) {
     [[self view] replaceSubview:inputs_ with:view];
-    id delegate = [[view_ window] windowController];
-    if ([delegate respondsToSelector:@selector(requestRelayout)])
-      [delegate performSelector:@selector(requestRelayout)];
+    [self requestRelayout];
   }
 
   inputs_ = view;

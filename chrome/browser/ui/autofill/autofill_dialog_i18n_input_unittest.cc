@@ -13,11 +13,7 @@ namespace i18ninput {
 
 namespace {
 
-#if defined(OS_MACOSX)
-const size_t kNumberOfAddressLinesUS = 7;
-#else
 const size_t kNumberOfAddressLinesUS = 6;
-#endif
 
 }  // namespace
 
@@ -47,11 +43,7 @@ TEST(AutofillDialogI18nInput, USCityStateAndZipCodeShareInputRow) {
   BuildAddressInputs(common::ADDRESS_TYPE_SHIPPING, "US", &inputs, NULL);
   ASSERT_EQ(kNumberOfAddressLinesUS, inputs.size());
 
-#if defined(OS_MACOSX)
-  int input_index = 3;
-#else
   int input_index = 2;
-#endif
 
   // Inputs before or after [ City ] [ State ] [ Zip ] should be on other lines.
   EXPECT_NE(inputs[input_index - 1].length, DetailInput::SHORT);

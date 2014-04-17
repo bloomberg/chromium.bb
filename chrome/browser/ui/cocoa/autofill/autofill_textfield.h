@@ -25,7 +25,12 @@
   // YES if the field is currently handling a click that caused the field to
   // become first responder.
   BOOL handlingFirstClick_;
+
+  // YES if the field allows input of multiple lines of text.
+  BOOL isMultiline_;
 }
+
+@property(nonatomic, assign) BOOL isMultiline;
 
 // Can be invoked by field editor to forward mouseDown messages from the field
 // editor to the AutofillTextField.

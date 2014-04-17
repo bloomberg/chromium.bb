@@ -45,7 +45,7 @@ bool ServerTypeEncompassesFieldType(ServerFieldType type,
   if (autofill_type.group() != field_type.group())
     return false;
 
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
+#if defined(OS_ANDROID)
   // Street address (all lines) is matched to the first input address line.
   if (server_type == ADDRESS_HOME_STREET_ADDRESS)
     return autofill_type.GetStorableType() == ADDRESS_HOME_LINE1;
