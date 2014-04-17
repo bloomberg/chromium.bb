@@ -1551,6 +1551,13 @@ bool RenderObject::repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repa
     if (invalidationReason == InvalidationIncremental && newBounds.location() != oldBounds.location())
         invalidationReason = InvalidationBoundsChange;
 
+    // If the size is zero on one of our bounds then we know we're going to have
+    // to do a full invalidation of either old bounds or new bounds. If we fall
+    // into the incremental invalidation we'll issue two invalidations instead
+    // of one.
+    if (invalidationReason == InvalidationIncremental && (oldBounds.size().isZero() || newBounds.size().isZero()))
+        invalidationReason = InvalidationBoundsChange;
+
     // FIXME: Repaint container should never be null. crbug.com/363699
     if (!repaintContainer)
         repaintContainer = v;
