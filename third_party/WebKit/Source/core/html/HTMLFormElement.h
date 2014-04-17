@@ -93,8 +93,6 @@ public:
     HTMLFormControlElement* defaultButton() const;
 
     bool checkValidity();
-    // FIXME: deprecated; will be removed soon.
-    bool checkValidityWithoutDispatchingEvents();
 
     enum AutocompleteResult {
         AutocompleteResultSuccess,
@@ -148,7 +146,7 @@ private:
     // Validates each of the controls, and stores controls of which 'invalid'
     // event was not canceled to the specified vector. Returns true if there
     // are any invalid controls in this form.
-    bool checkInvalidControlsAndCollectUnhandled(Vector<RefPtr<FormAssociatedElement> >*, HTMLFormControlElement::CheckValidityDispatchEvents = HTMLFormControlElement::CheckValidityDispatchEventsAllowed);
+    bool checkInvalidControlsAndCollectUnhandled(Vector<RefPtr<FormAssociatedElement> >*);
 
     Element* elementFromPastNamesMap(const AtomicString&);
     void addToPastNamesMap(Element*, const AtomicString& pastName);

@@ -101,11 +101,6 @@ bool WebFormElement::checkValidity()
     return unwrap<HTMLFormElement>()->checkValidity();
 }
 
-bool WebFormElement::checkValidityWithoutDispatchingEvents()
-{
-    return unwrap<HTMLFormElement>()->checkValidityWithoutDispatchingEvents();
-}
-
 void WebFormElement::finishRequestAutocomplete(WebFormElement::AutocompleteResult result)
 {
     unwrap<HTMLFormElement>()->finishRequestAutocomplete(static_cast<HTMLFormElement::AutocompleteResult>(result));

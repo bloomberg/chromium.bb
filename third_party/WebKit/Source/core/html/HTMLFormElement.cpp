@@ -648,12 +648,7 @@ bool HTMLFormElement::checkValidity()
     return !checkInvalidControlsAndCollectUnhandled(0);
 }
 
-bool HTMLFormElement::checkValidityWithoutDispatchingEvents()
-{
-    return !checkInvalidControlsAndCollectUnhandled(0, HTMLFormControlElement::CheckValidityDispatchEventsNone);
-}
-
-bool HTMLFormElement::checkInvalidControlsAndCollectUnhandled(Vector<RefPtr<FormAssociatedElement> >* unhandledInvalidControls, HTMLFormControlElement::CheckValidityDispatchEvents dispatchEvents)
+bool HTMLFormElement::checkInvalidControlsAndCollectUnhandled(Vector<RefPtr<FormAssociatedElement> >* unhandledInvalidControls)
 {
     RefPtr<HTMLFormElement> protector(this);
     // Copy associatedElements because event handlers called from
@@ -667,7 +662,7 @@ bool HTMLFormElement::checkInvalidControlsAndCollectUnhandled(Vector<RefPtr<Form
     for (unsigned i = 0; i < elements.size(); ++i) {
         if (elements[i]->form() == this && elements[i]->isFormControlElement()) {
             HTMLFormControlElement* control = toHTMLFormControlElement(elements[i].get());
-            if (!control->checkValidity(unhandledInvalidControls, dispatchEvents) && control->formOwner() == this)
+            if (!control->checkValidity(unhandledInvalidControls) && control->formOwner() == this)
                 hasInvalidControls = true;
         }
     }

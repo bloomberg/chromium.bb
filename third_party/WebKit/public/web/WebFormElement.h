@@ -72,9 +72,6 @@ namespace blink {
         // NOTE: This function dispatches "invalid" events. Only call this if required by a specification (e.g. requestAutocomplete()).
         BLINK_EXPORT bool checkValidity();
 
-        // FIXME: remove this after Chrome code has been updated.
-        BLINK_EXPORT bool checkValidityWithoutDispatchingEvents();
-
         enum AutocompleteResult {
             AutocompleteResultSuccess,
             AutocompleteResultErrorDisabled,
