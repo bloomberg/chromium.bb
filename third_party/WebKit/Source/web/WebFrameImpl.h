@@ -142,7 +142,6 @@ public:
     virtual void reload(bool ignoreCache) OVERRIDE;
     virtual void reloadWithOverrideURL(const WebURL& overrideUrl, bool ignoreCache) OVERRIDE;
     virtual void loadRequest(const WebURLRequest&) OVERRIDE;
-    virtual void loadHistoryItem(const WebHistoryItem&, WebURLRequest::CachePolicy) OVERRIDE;
     virtual void loadHistoryItem(const WebHistoryItem&, WebHistoryLoadType, WebURLRequest::CachePolicy) OVERRIDE;
     virtual void loadData(
         const WebData&, const WebString& mimeType, const WebString& textEncoding,
@@ -154,8 +153,6 @@ public:
     virtual void stopLoading() OVERRIDE;
     virtual WebDataSource* provisionalDataSource() const OVERRIDE;
     virtual WebDataSource* dataSource() const OVERRIDE;
-    virtual WebHistoryItem previousHistoryItem() const OVERRIDE;
-    virtual WebHistoryItem currentHistoryItem() const OVERRIDE;
     virtual void enableViewSourceMode(bool enable) OVERRIDE;
     virtual bool isViewSourceModeEnabled() const OVERRIDE;
     virtual void setReferrerForRequest(WebURLRequest&, const WebURL& referrer) OVERRIDE;

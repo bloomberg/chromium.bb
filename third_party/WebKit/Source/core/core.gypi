@@ -1386,8 +1386,6 @@
             'page/FocusController.cpp',
             'page/FocusType.h',
             'page/FrameTree.cpp',
-            'page/HistoryController.cpp',
-            'page/HistoryController.h',
             'page/InjectedStyleSheets.cpp',
             'page/InjectedStyleSheets.h',
             'page/MouseEventWithHitTestResults.cpp',

@@ -24,7 +24,6 @@
 #include "core/dom/ViewportDescription.h"
 #include "core/frame/SettingsDelegate.h"
 #include "core/frame/UseCounter.h"
-#include "core/page/HistoryController.h"
 #include "core/page/PageAnimator.h"
 #include "core/page/PageVisibilityState.h"
 #include "platform/LifecycleContext.h"
@@ -128,8 +127,6 @@ public:
     EditorClient& editorClient() const { return *m_editorClient; }
     SpellCheckerClient& spellCheckerClient() const { return *m_spellCheckerClient; }
     UndoStack& undoStack() const { return *m_undoStack; }
-
-    HistoryController& historyController() const { return *m_historyController; }
 
     void setMainFrame(PassRefPtr<LocalFrame>);
     LocalFrame* mainFrame() const { return m_mainFrame.get(); }
@@ -253,8 +250,6 @@ private:
     const OwnPtr<InspectorController> m_inspectorController;
     const OwnPtr<PointerLockController> m_pointerLockController;
     OwnPtr<ScrollingCoordinator> m_scrollingCoordinator;
-
-    const OwnPtr<HistoryController> m_historyController;
     const OwnPtr<UndoStack> m_undoStack;
 
     RefPtr<LocalFrame> m_mainFrame;

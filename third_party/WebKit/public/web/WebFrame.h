@@ -328,11 +328,6 @@ public:
     virtual void loadRequest(const WebURLRequest&) = 0;
 
     // Load the given history state, corresponding to a back/forward
-    // navigation of a whole page.
-    virtual void loadHistoryItem(
-        const WebHistoryItem&,
-        WebURLRequest::CachePolicy = WebURLRequest::UseProtocolCachePolicy) = 0;
-    // Load the given history state, corresponding to a back/forward
     // navigation of a frame. Multiple frames may be navigated via separate calls.
     virtual void loadHistoryItem(
         const WebHistoryItem&,
@@ -370,14 +365,6 @@ public:
 
     // Returns the data source that is currently loaded.
     virtual WebDataSource* dataSource() const = 0;
-
-    // Returns the previous history item.  Check WebHistoryItem::isNull()
-    // before using.
-    virtual WebHistoryItem previousHistoryItem() const = 0;
-
-    // Returns the current history item.  Check WebHistoryItem::isNull()
-    // before using.
-    virtual WebHistoryItem currentHistoryItem() const = 0;
 
     // View-source rendering mode.  Set this before loading an URL to cause
     // it to be rendered in view-source mode.

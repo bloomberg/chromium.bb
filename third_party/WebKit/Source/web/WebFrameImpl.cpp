@@ -911,14 +911,6 @@ void WebFrameImpl::loadRequest(const WebURLRequest& request)
     frame()->loader().load(FrameLoadRequest(0, resourceRequest));
 }
 
-void WebFrameImpl::loadHistoryItem(const WebHistoryItem& item, WebURLRequest::CachePolicy cachePolicy)
-{
-    ASSERT(frame());
-    RefPtr<HistoryItem> historyItem = PassRefPtr<HistoryItem>(item);
-    ASSERT(historyItem);
-    frame()->page()->historyController().goToItem(historyItem.get(), static_cast<ResourceRequestCachePolicy>(cachePolicy));
-}
-
 void WebFrameImpl::loadHistoryItem(const WebHistoryItem& item, WebHistoryLoadType loadType, WebURLRequest::CachePolicy cachePolicy)
 {
     ASSERT(frame());
@@ -986,31 +978,6 @@ WebDataSource* WebFrameImpl::dataSource() const
 {
     ASSERT(frame());
     return DataSourceForDocLoader(frame()->loader().documentLoader());
-}
-
-WebHistoryItem WebFrameImpl::previousHistoryItem() const
-{
-    ASSERT(frame());
-    // We use the previous item here because documentState (filled-out forms)
-    // only get saved to history when it becomes the previous item.  The caller
-    // is expected to query the history item after a navigation occurs, after
-    // the desired history item has become the previous entry.
-    return WebHistoryItem(frame()->page()->historyController().previousItemForExport());
-}
-
-WebHistoryItem WebFrameImpl::currentHistoryItem() const
-{
-    ASSERT(frame());
-
-    // We're shutting down.
-    if (!frame()->loader().documentLoader())
-        return WebHistoryItem();
-
-    // Lazily update the document state if it was dirtied. Doing it here
-    // avoids synchronously serializing forms as they're changing.
-    frame()->loader().saveDocumentState();
-
-    return WebHistoryItem(frame()->page()->historyController().currentItemForExport());
 }
 
 void WebFrameImpl::enableViewSourceMode(bool enable)

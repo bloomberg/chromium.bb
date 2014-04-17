@@ -499,13 +499,6 @@ public:
     virtual void removePageOverlay(WebPageOverlay*) = 0;
 
 
-    // History (TEMPORARY) --------------------------------------------------
-    // These are shims to enable blink's HistoryController to move to content/.
-    virtual void updateForCommit(WebFrame*, const WebHistoryItem&, WebHistoryCommitType, bool navigationWithinPage) { }
-    virtual WebHistoryItem itemForNewChildFrame(WebFrame*) const { return WebHistoryItem(); }
-    virtual void removeChildrenForRedirect(WebFrame*) { }
-
-
     // Testing functionality for TestRunner ---------------------------------
 
 protected:
