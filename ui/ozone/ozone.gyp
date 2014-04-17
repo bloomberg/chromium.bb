@@ -41,6 +41,12 @@
         'ozone_platform.h',
         'ozone_switches.cc',
         'ozone_switches.h',
+        'platform/dri/chromeos/display_mode_dri.cc',
+        'platform/dri/chromeos/display_mode_dri.h',
+        'platform/dri/chromeos/display_snapshot_dri.cc',
+        'platform/dri/chromeos/display_snapshot_dri.h',
+        'platform/dri/chromeos/native_display_delegate_dri.cc',
+        'platform/dri/chromeos/native_display_delegate_dri.h',
         'platform/dri/ozone_platform_dri.cc',
         'platform/dri/ozone_platform_dri.h',
         'platform/dri/cursor_factory_evdev_dri.cc',
@@ -97,6 +103,7 @@
           },
           'dependencies': [
             '../../build/linux/system.gyp:dridrm',
+            '../../ui/display/display.gyp:display_util',
           ],
         }, {  # ozone_platform_dri==0
           'sources/': [

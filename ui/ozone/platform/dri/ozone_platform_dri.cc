@@ -8,7 +8,7 @@
 #include "ui/ozone/ozone_platform.h"
 
 #if defined(OS_CHROMEOS)
-#include "ui/ozone/common/chromeos/native_display_delegate_ozone.h"
+#include "ui/ozone/platform/dri/chromeos/native_display_delegate_dri.h"
 #endif
 
 namespace ui {
@@ -40,7 +40,7 @@ ui::CursorFactoryOzone* OzonePlatformDri::GetCursorFactoryOzone() {
 scoped_ptr<ui::NativeDisplayDelegate>
 OzonePlatformDri::CreateNativeDisplayDelegate() {
   return scoped_ptr<ui::NativeDisplayDelegate>(
-      new NativeDisplayDelegateOzone());
+      new NativeDisplayDelegateDri(&surface_factory_ozone_));
 }
 #endif
 
