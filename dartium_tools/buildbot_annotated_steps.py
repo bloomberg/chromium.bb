@@ -21,7 +21,7 @@ import imp
 BUILDER_NAME = 'BUILDBOT_BUILDERNAME'
 REVISION = 'BUILDBOT_REVISION'
 BUILDER_PATTERN = (r'^dartium-(mac|lucid64|lucid32|win)'
-                   r'-(full|inc|debug)(-ninja)?(-(be|dev|stable))?$')
+                   r'-(full|inc|debug)(-ninja)?(-(be|dev|stable|integration))?$')
 
 if platform.system() == 'Windows':
   GSUTIL = 'e:/b/build/scripts/slave/gsutil.bat'
@@ -330,12 +330,13 @@ def main():
 
   result = 0
 
-  # Always archive to the revision bucket.
-  result = archiveAndUpload(archive_latest=False)
+  # Archive to the revision bucket unless integration build
+  if channel != 'integration':
+    result = archiveAndUpload(archive_latest=False)
 
-  # On dev/stable we archive to the latest bucket as well
-  if channel != 'be':
-    result = archiveAndUpload(archive_latest=True) or result
+    # On dev/stable we archive to the latest bucket as well
+    if channel != 'be':
+      result = archiveAndUpload(archive_latest=True) or result
 
   # Run layout tests
   if mode == 'Release' or platform.system() != 'Darwin':
