@@ -397,6 +397,15 @@ cr.define('options', function() {
         };
       }
 
+      // Security section.
+      if (cr.isChromeOS &&
+          loadTimeData.getBoolean('consumerManagementEnabled')) {
+        $('security-section').hidden = false;
+        $('consumer-management-enroll-button').onclick = function(event) {
+          chrome.send('enrollConsumerManagement');
+        };
+      }
+
       // Easy Unlock section.
       if (loadTimeData.getBoolean('easyUnlockEnabled')) {
         $('easy-unlock-section').hidden = false;

@@ -65,6 +65,10 @@ const char kEchoExtensionPath[]             = "echo-ext-path";
 // Enables switching between different cellular carriers from the UI.
 const char kEnableCarrierSwitching[]        = "enable-carrier-switching";
 
+// Enables consumer management, which allows user to enroll, remotely lock and
+// locate the device.
+const char kEnableConsumerManagement[]      = "enable-consumer-management";
+
 // Enables MTP support in Files.app.
 const char kEnableFileManagerMTP[] = "enable-filemanager-mtp";
 

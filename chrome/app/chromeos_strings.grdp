@@ -5498,4 +5498,15 @@ All users must sign out to continue.
     Failed to submit NDEF:
   </message>
 
+  <!-- About the security section in the settings page -->
+  <message name="IDS_OPTIONS_SECURITY_SECTION_TITLE" desc="The title of the security section in the settings page.">
+    Security
+  </message>
+  <message name="IDS_OPTIONS_CONSUMER_MANAGEMENT_ENROLL_DESCRIPTION" desc="Description of the consumer management enroll button in the settings page.">
+    Let Google help you remotely lock, erase, and locate your device.
+  </message>
+  <message name="IDS_OPTIONS_CONSUMER_MANAGEMENT_ENROLL_BUTTON" desc="The text of the consumer management enroll button in the settings page.">
+    Enroll
+  </message>
+
 </grit-part>

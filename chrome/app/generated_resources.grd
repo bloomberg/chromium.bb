@@ -12006,7 +12006,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_OPTIONS_ADVANCED_SECTION_TITLE_CONTENT">
         Web content
       </message>
-      <message name="IDS_OPTIONS_ADVANCED_SECTION_TITLE_SECURITY">
+      <message name="IDS_OPTIONS_ADVANCED_SECTION_TITLE_CERTIFICATES">
         HTTPS/SSL
       </message>
       <message name="IDS_OPTIONS_ADVANCED_SECTION_TITLE_NETWORK">

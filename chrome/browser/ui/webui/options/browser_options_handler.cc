@@ -181,6 +181,8 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
   static OptionsStringResource resources[] = {
     { "advancedSectionTitleCloudPrint", IDS_GOOGLE_CLOUD_PRINT },
     { "currentUserOnly", IDS_OPTIONS_CURRENT_USER_ONLY },
+    { "advancedSectionTitleCertificates",
+      IDS_OPTIONS_ADVANCED_SECTION_TITLE_CERTIFICATES },
     { "advancedSectionTitleContent",
       IDS_OPTIONS_ADVANCED_SECTION_TITLE_CONTENT },
     { "advancedSectionTitleLanguages",
@@ -189,8 +191,6 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
       IDS_OPTIONS_ADVANCED_SECTION_TITLE_NETWORK },
     { "advancedSectionTitlePrivacy",
       IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY },
-    { "advancedSectionTitleSecurity",
-      IDS_OPTIONS_ADVANCED_SECTION_TITLE_SECURITY },
     { "autofillEnabled", IDS_OPTIONS_AUTOFILL_ENABLE },
     { "autologinEnabled", IDS_OPTIONS_PASSWORDS_AUTOLOGIN },
     { "autoOpenFileTypesInfo", IDS_OPTIONS_OPEN_FILE_TYPES_AUTOMATICALLY },
@@ -368,6 +368,10 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_AUTOCLICK_DELAY_LONG },
     { "autoclickDelayVeryLong",
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_AUTOCLICK_DELAY_VERY_LONG },
+    { "consumerManagementEnrollButton",
+      IDS_OPTIONS_CONSUMER_MANAGEMENT_ENROLL_BUTTON },
+    { "consumerManagementEnrollDescription",
+      IDS_OPTIONS_CONSUMER_MANAGEMENT_ENROLL_DESCRIPTION },
     { "enableContentProtectionAttestation",
       IDS_OPTIONS_ENABLE_CONTENT_PROTECTION_ATTESTATION },
     { "factoryResetHeading", IDS_OPTIONS_FACTORY_RESET_HEADING },
@@ -391,6 +395,7 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
     { "noPointingDevices", IDS_OPTIONS_NO_POINTING_DEVICES },
     { "sectionTitleDevice", IDS_OPTIONS_DEVICE_GROUP_NAME },
     { "sectionTitleInternet", IDS_OPTIONS_INTERNET_OPTIONS_GROUP_LABEL },
+    { "securityTitle", IDS_OPTIONS_SECURITY_SECTION_TITLE },
     { "syncOverview", IDS_SYNC_OVERVIEW },
     { "syncButtonTextStart", IDS_SYNC_SETUP_BUTTON_LABEL },
     { "timezone", IDS_OPTIONS_SETTINGS_TIMEZONE_DESCRIPTION },
@@ -577,6 +582,11 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
       l10n_util::GetStringFUTF16(
           IDS_OPTIONS_EASY_UNLOCK_CHECKBOX_LABEL_CHROMEOS,
           chromeos::GetChromeDeviceType()));
+
+  values->SetBoolean(
+      "consumerManagementEnabled",
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableConsumerManagement));
 #endif
 }
 
@@ -658,6 +668,10 @@ void BrowserOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "performFactoryResetRestart",
       base::Bind(&BrowserOptionsHandler::PerformFactoryResetRestart,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "enrollConsumerManagement",
+      base::Bind(&BrowserOptionsHandler::HandleEnrollConsumerManagement,
                  base::Unretained(this)));
 #else
   web_ui()->RegisterMessageCallback(
@@ -1546,6 +1560,11 @@ void BrowserOptionsHandler::PerformFactoryResetRestart(
   // Perform sign out. Current chrome process will then terminate, new one will
   // be launched (as if it was a restart).
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
+}
+
+void BrowserOptionsHandler::HandleEnrollConsumerManagement(
+    const base::ListValue* args) {
+  // TODO(davidyu): Implement. http://crbug.com/353050.
 }
 
 void BrowserOptionsHandler::SetupAccessibilityFeatures() {
