@@ -8,6 +8,7 @@
 #include <errno.h>
 #include <xf86drm.h>
 
+#include "base/debug/trace_event.h"
 #include "base/message_loop/message_loop.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkDevice.h"
@@ -45,6 +46,7 @@ void HandlePageFlipEvent(int fd,
                          unsigned int seconds,
                          unsigned int useconds,
                          void* controller) {
+  TRACE_EVENT0("dri", "HandlePageFlipEvent");
   static_cast<HardwareDisplayController*>(controller)
       ->OnPageFlipEvent(frame, seconds, useconds);
 }
@@ -258,6 +260,8 @@ bool DriSurfaceFactory::LoadEGLGLES2Bindings(
 }
 
 bool DriSurfaceFactory::SchedulePageFlip(gfx::AcceleratedWidget w) {
+  TRACE_EVENT0("dri", "DriSurfaceFactory::SchedulePageFlip");
+
   CHECK(state_ == INITIALIZED);
   // TODO(dnicoara) Change this CHECK once we're running with the threaded
   // compositor.
@@ -395,6 +399,8 @@ bool DriSurfaceFactory::InitializeControllerForPrimaryDisplay(
 }
 
 void DriSurfaceFactory::WaitForPageFlipEvent(int fd) {
+  TRACE_EVENT0("dri", "WaitForPageFlipEvent");
+
   drmEventContext drm_event;
   drm_event.version = DRM_EVENT_CONTEXT_VERSION;
   drm_event.page_flip_handler = HandlePageFlipEvent;

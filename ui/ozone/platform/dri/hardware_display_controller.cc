@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include "base/basictypes.h"
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -94,6 +95,7 @@ HardwareDisplayController::BindSurfaceToController(
 
 bool HardwareDisplayController::SchedulePageFlip() {
   CHECK(state_ == SURFACE_INITIALIZED || state_ == INITIALIZED);
+  TRACE_EVENT0("dri", "HardwareDisplayController::SchedulePageFlip");
 
   if (state_ == SURFACE_INITIALIZED) {
     // Perform the initial modeset.
