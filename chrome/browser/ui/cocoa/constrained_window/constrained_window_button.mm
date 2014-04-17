@@ -10,6 +10,10 @@
 #import "third_party/molokocacao/NSBezierPath+MCAdditions.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
+@interface ConstrainedWindowButton ()
+- (BOOL)isMouseReallyInside;
+@end
+
 namespace {
 
 enum ButtonState {
@@ -19,22 +23,20 @@ enum ButtonState {
   BUTTON_DISABLED,
 };
 
-const CGFloat kButtonMinWidth = 72;
-
-}  // namespace
-
-@interface ConstrainedWindowButton ()
-- (BOOL)isMouseReallyInside;
-@end
-
-@interface ConstrainedWindowButtonCell ()
-- (ButtonState)buttonState;
-@end
-
-namespace {
-
 const CGFloat kButtonHeight = 28;
 const CGFloat kButtonPaddingX = 14;
+
+ButtonState cellButtonState(id<ConstrainedWindowButtonDrawableCell> cell) {
+  if (!cell)
+    return BUTTON_NORMAL;
+  if (![cell isEnabled])
+    return BUTTON_DISABLED;
+  if ([cell isHighlighted])
+    return BUTTON_PRESSED;
+  if ([cell isMouseInside])
+    return BUTTON_HOVER;
+  return BUTTON_NORMAL;
+}
 
 // The functions below use hex color values to make it easier to compare
 // the code with the spec. Table of hex values are also more readable
@@ -79,9 +81,10 @@ NSColor* GetButtonBorderColor(ButtonState button_state) {
   return gfx::SkColorToCalibratedNSColor(color[button_state]);
 }
 
-NSAttributedString* GetButtonAttributedString(NSString* title,
-                                              NSString* key_equivalent,
-                                              ButtonState button_state) {
+NSAttributedString* GetButtonAttributedString(
+    NSString* title,
+    NSString* key_equivalent,
+    id<ConstrainedWindowButtonDrawableCell> cell) {
   const SkColor text_color[] = {0xFF333333, 0XFF000000, 0xFF000000, 0xFFAAAAAA};
   // The shadow color should be 0xFFF0F0F0 but that doesn't show up so use
   // pure white instead.
@@ -90,7 +93,7 @@ NSAttributedString* GetButtonAttributedString(NSString* title,
 
   base::scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
   [shadow setShadowColor:
-      gfx::SkColorToCalibratedNSColor(shadow_color[button_state])];
+      gfx::SkColorToCalibratedNSColor(shadow_color[cellButtonState(cell)])];
   [shadow setShadowOffset:NSMakeSize(0, -1)];
   [shadow setShadowBlurRadius:0];
 
@@ -106,13 +109,48 @@ NSAttributedString* GetButtonAttributedString(NSString* title,
 
   NSDictionary* attributes = [NSDictionary dictionaryWithObjectsAndKeys:
       font, NSFontAttributeName,
-      gfx::SkColorToCalibratedNSColor(text_color[button_state]),
+      gfx::SkColorToCalibratedNSColor(text_color[cellButtonState(cell)]),
       NSForegroundColorAttributeName,
       shadow.get(), NSShadowAttributeName,
       paragraphStyle.get(), NSParagraphStyleAttributeName,
       nil];
   return [[[NSAttributedString alloc] initWithString:title
                                           attributes:attributes] autorelease];
+}
+
+void DrawBackgroundAndShadow(const NSRect& frame,
+                             id<ConstrainedWindowButtonDrawableCell> cell,
+                             NSView* view) {
+  NSBezierPath* path = [NSBezierPath bezierPathWithRoundedRect:frame
+                                                       xRadius:2
+                                                       yRadius:2];
+  [ConstrainedWindowButton DrawBackgroundAndShadowForPath:path
+                                                 withCell:cell
+                                                   inView:view];
+}
+
+void DrawInnerHighlight(const NSRect& frame,
+                        id<ConstrainedWindowButtonDrawableCell> cell,
+                        NSView* view) {
+  NSBezierPath* path =
+      [NSBezierPath bezierPathWithRoundedRect:NSInsetRect(frame, 1, 1)
+                                      xRadius:2
+                                      yRadius:2];
+  [ConstrainedWindowButton DrawInnerHighlightForPath:path
+                                            withCell:cell
+                                              inView:view];
+}
+
+void DrawBorder(const NSRect& frame,
+                id<ConstrainedWindowButtonDrawableCell> cell,
+                NSView* view) {
+  NSBezierPath* path =
+      [NSBezierPath bezierPathWithRoundedRect:NSInsetRect(frame, 0.5, 0.5)
+                                      xRadius:2
+                                      yRadius:2];
+  [ConstrainedWindowButton DrawBorderForPath:path
+                                    withCell:cell
+                                      inView:view];
 }
 
 }  // namespace
@@ -172,10 +210,39 @@ NSAttributedString* GetButtonAttributedString(NSString* title,
 - (void)sizeToFit {
   [super sizeToFit];
   NSSize size = [self frame].size;
-  if (size.width < kButtonMinWidth) {
-    size.width = kButtonMinWidth;
+  if (size.width < constrained_window_button::kButtonMinWidth) {
+    size.width = constrained_window_button::kButtonMinWidth;
     [self setFrameSize:size];
   }
+}
+
++ (void)DrawBackgroundAndShadowForPath:(NSBezierPath*)path
+                          withCell:(id<ConstrainedWindowButtonDrawableCell>)cell
+                            inView:(NSView*)view {
+  ButtonState buttonState = cellButtonState(cell);
+  {
+    gfx::ScopedNSGraphicsContextSaveGState scopedGState;
+    [GetButtonShadow(buttonState) set];
+    [[[view window] backgroundColor] set];
+    [path fill];
+  }
+  [GetButtonGradient(buttonState) drawInBezierPath:path angle:90.0];
+}
+
++ (void)DrawInnerHighlightForPath:(NSBezierPath*)path
+                         withCell:(id<ConstrainedWindowButtonDrawableCell>)cell
+                           inView:(NSView*)view {
+  [path fillWithInnerShadow:GetButtonHighlight(cellButtonState(cell))];
+}
+
++ (void)DrawBorderForPath:(NSBezierPath*)path
+                 withCell:(id<ConstrainedWindowButtonDrawableCell>)cell
+                   inView:(NSView*)view {
+  if ([[[view window] firstResponder] isEqual:view])
+    [[NSColor colorWithCalibratedRed:0.30 green:0.57 blue:1.0 alpha:1.0] set];
+  else
+    [GetButtonBorderColor(cellButtonState(cell)) set];
+  [path stroke];
 }
 
 @end
@@ -184,64 +251,40 @@ NSAttributedString* GetButtonAttributedString(NSString* title,
 
 @synthesize isMouseInside = isMouseInside_;
 
-- (void)drawWithFrame:(NSRect)frame
-               inView:(NSView *)controlView {
-  NSBezierPath* path = nil;
-  ButtonState buttonState = [self buttonState];
-
+- (void)drawBezelWithFrame:(NSRect)frame inView:(NSView*)controlView {
   // Inset to leave room for shadow.
   --frame.size.height;
 
   // Background and shadow
-  path = [NSBezierPath bezierPathWithRoundedRect:frame
-                                         xRadius:2
-                                         yRadius:2];
-  {
-    gfx::ScopedNSGraphicsContextSaveGState scopedGState;
-    [GetButtonShadow(buttonState) set];
-    [[[controlView window] backgroundColor] set];
-    [path fill];
-  }
-  [GetButtonGradient(buttonState) drawInBezierPath:path angle:90.0];
+  DrawBackgroundAndShadow(frame, self, controlView);
 
   // Inner highlight
-  path = [NSBezierPath bezierPathWithRoundedRect:NSInsetRect(frame, 1, 1)
-                                         xRadius:2
-                                         yRadius:2];
-  [path fillWithInnerShadow:GetButtonHighlight(buttonState)];
+  DrawInnerHighlight(frame, self, controlView);
 
   // Border
-  path = [NSBezierPath bezierPathWithRoundedRect:NSInsetRect(frame, 0.5, 0.5)
-                                         xRadius:2
-                                         yRadius:2];
-  if ([[[controlView window] firstResponder] isEqual:controlView])
-    [[NSColor colorWithCalibratedRed:0.30 green:0.57 blue:1.0 alpha:1.0] set];
-  else
-    [GetButtonBorderColor(buttonState) set];
-  [path stroke];
+  DrawBorder(frame, self, controlView);
+}
 
+- (void)drawInteriorWithFrame:(NSRect)frame inView:(NSView*)controlView {
+  // Inset to leave room for shadow.
+  --frame.size.height;
   NSAttributedString* title = GetButtonAttributedString(
-      [self title], [self keyEquivalent], buttonState);
+     [self title], [self keyEquivalent], self);
   [self drawTitle:title withFrame:frame inView:controlView];
 }
 
 - (NSSize)cellSize {
   NSAttributedString* title = GetButtonAttributedString(
-      [self title], [self keyEquivalent], [self buttonState]);
+      [self title], [self keyEquivalent], self);
   NSSize size = [title size];
   size.height = std::max(size.height, kButtonHeight);
   size.width += kButtonPaddingX * 2;
   return size;
 }
 
-- (ButtonState)buttonState {
-  if (![self isEnabled])
-    return BUTTON_DISABLED;
-  if ([self isHighlighted])
-    return BUTTON_PRESSED;
-  if (isMouseInside_)
-    return BUTTON_HOVER;
-  return BUTTON_NORMAL;
+- (NSAttributedString*)getAttributedTitle {
+  return GetButtonAttributedString(
+      [self title], [self keyEquivalent], self);
 }
 
 @end

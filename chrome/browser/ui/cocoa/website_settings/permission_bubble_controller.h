@@ -7,7 +7,9 @@
 #include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_view.h"
+#include "ui/base/models/simple_menu_model.h"
 
+@class MenuController;
 class PermissionBubbleCocoa;
 class PermissionBubbleRequest;
 
@@ -20,6 +22,9 @@ class PermissionBubbleRequest;
 
   // Delegate to be informed of user actions.
   PermissionBubbleView::Delegate* delegate_;  // Weak.
+
+  // Delegate that receives menu events on behalf of this.
+  scoped_ptr<ui::SimpleMenuModel::Delegate> menuDelegate_;
 
   // Bridge to the C++ class that created this object.
   PermissionBubbleCocoa* bridge_;  // Weak.
@@ -40,5 +45,8 @@ class PermissionBubbleRequest;
           forRequests:(const std::vector<PermissionBubbleRequest*>&)requests
          acceptStates:(const std::vector<bool>&)acceptStates
     customizationMode:(BOOL)customizationMode;
+
+// Called when a menu item is selected.
+- (void)onMenuItemClicked:(int)commandId;
 
 @end

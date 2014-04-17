@@ -1083,6 +1083,8 @@
         'browser/ui/cocoa/website_settings/permission_bubble_controller.mm',
         'browser/ui/cocoa/website_settings/permission_selector_button.h',
         'browser/ui/cocoa/website_settings/permission_selector_button.mm',
+        'browser/ui/cocoa/website_settings/split_block_button.h',
+        'browser/ui/cocoa/website_settings/split_block_button.mm',
         'browser/ui/cocoa/website_settings_bubble_controller.h',
         'browser/ui/cocoa/website_settings_bubble_controller.mm',
         'browser/ui/cocoa/window_restore_utils.h',
