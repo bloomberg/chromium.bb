@@ -74,6 +74,22 @@ def MoveImagesToNonMdpiFolders(res_root):
       shutil.move(src_file, dst_file)
 
 
+def DidCrunchFail(returncode, stderr):
+  """Determines whether aapt crunch failed from its return code and output.
+
+  Because aapt's return code cannot be trusted, any output to stderr is
+  an indication that aapt has failed (http://crbug.com/314885), except
+  lines that contain "libpng warning", which is a known non-error condition
+  (http://crbug.com/364355).
+  """
+  if returncode != 0:
+    return True
+  for line in stderr.splitlines():
+    if line and not 'libpng warning' in line:
+      return True
+  return False
+
+
 def main():
   options = ParseArgs()
   android_jar = os.path.join(options.android_sdk, 'android.jar')
@@ -110,7 +126,7 @@ def main():
               'crunch',
               '-S', options.crunch_input_dir,
               '-C', options.crunch_output_dir]
-  build_utils.CheckOutput(aapt_cmd, fail_if_stderr=True)
+  build_utils.CheckOutput(aapt_cmd, fail_func=DidCrunchFail)
 
   MoveImagesToNonMdpiFolders(options.crunch_output_dir)
 
