@@ -20,5 +20,3 @@ exynos_fimg2d_test_LDADD = \
 exynos_fimg2d_test_SOURCES = \
 	exynos_fimg2d_test.c
 
-run: exynos_fimg2d_test
-	./exynos_fimg2d_test
