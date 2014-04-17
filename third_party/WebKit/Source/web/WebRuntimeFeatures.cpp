@@ -135,6 +135,11 @@ void WebRuntimeFeatures::enableMediaPlayer(bool enable)
     RuntimeEnabledFeatures::setMediaEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableSubpixelFontScaling(bool enable)
+{
+    RuntimeEnabledFeatures::setSubpixelFontScalingEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableWebKitMediaSource(bool enable)
 {
     RuntimeEnabledFeatures::setWebKitMediaSourceEnabled(enable);

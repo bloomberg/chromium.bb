@@ -70,6 +70,8 @@ public:
 
     BLINK_EXPORT static void enableMediaPlayer(bool);
 
+    BLINK_EXPORT static void enableSubpixelFontScaling(bool);
+
     BLINK_EXPORT static void enableWebKitMediaSource(bool);
 
     BLINK_EXPORT static void enableMediaSource(bool);
