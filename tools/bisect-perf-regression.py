@@ -782,7 +782,7 @@ class AndroidBuilder(Builder):
     super(AndroidBuilder, self).__init__(opts)
 
   def _GetTargets(self):
-    return ['chrome_shell', 'cc_perftests_apk', 'android_tools']
+    return ['chrome_shell_apk', 'cc_perftests_apk', 'android_tools']
 
   def Build(self, depot, opts):
     """Builds the android content shell and other necessary tools using options
