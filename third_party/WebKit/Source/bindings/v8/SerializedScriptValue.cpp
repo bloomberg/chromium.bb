@@ -1637,7 +1637,7 @@ public:
             return false;
         switch (tag) {
         case ReferenceCountTag: {
-            if (m_version <= 0)
+            if (!m_version)
                 return false;
             uint32_t referenceTableSize;
             if (!doReadUint32(&referenceTableSize))
@@ -1778,7 +1778,7 @@ public:
             break;
         }
         case ArrayBufferViewTag: {
-            if (m_version <= 0)
+            if (!m_version)
                 return false;
             if (!readArrayBufferView(value, creator))
                 return false;
@@ -1786,7 +1786,7 @@ public:
             break;
         }
         case ArrayBufferTag: {
-            if (m_version <= 0)
+            if (!m_version)
                 return false;
             if (!readArrayBuffer(value))
                 return false;
@@ -1794,14 +1794,14 @@ public:
             break;
         }
         case GenerateFreshObjectTag: {
-            if (m_version <= 0)
+            if (!m_version)
                 return false;
             if (!creator.newObject())
                 return false;
             return true;
         }
         case GenerateFreshSparseArrayTag: {
-            if (m_version <= 0)
+            if (!m_version)
                 return false;
             uint32_t length;
             if (!doReadUint32(&length))
@@ -1811,7 +1811,7 @@ public:
             return true;
         }
         case GenerateFreshDenseArrayTag: {
-            if (m_version <= 0)
+            if (!m_version)
                 return false;
             uint32_t length;
             if (!doReadUint32(&length))
@@ -1821,7 +1821,7 @@ public:
             return true;
         }
         case MessagePortTag: {
-            if (m_version <= 0)
+            if (!m_version)
                 return false;
             uint32_t index;
             if (!doReadUint32(&index))
@@ -1831,7 +1831,7 @@ public:
             break;
         }
         case ArrayBufferTransferTag: {
-            if (m_version <= 0)
+            if (!m_version)
                 return false;
             uint32_t index;
             if (!doReadUint32(&index))
@@ -1841,7 +1841,7 @@ public:
             break;
         }
         case ObjectReferenceTag: {
-            if (m_version <= 0)
+            if (!m_version)
                 return false;
             uint32_t reference;
             if (!doReadUint32(&reference))
