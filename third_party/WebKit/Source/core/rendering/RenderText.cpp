@@ -464,27 +464,6 @@ void RenderText::absoluteQuadsForRange(Vector<FloatQuad>& quads, unsigned start,
     }
 }
 
-InlineTextBox* RenderText::findNextInlineTextBox(int offset, int& pos) const
-{
-    // The text runs point to parts of the RenderText's m_text
-    // (they don't include '\n')
-    // Find the text run that includes the character at offset
-    // and return pos, which is the position of the char in the run.
-
-    if (!m_firstTextBox)
-        return 0;
-
-    InlineTextBox* s = m_firstTextBox;
-    int off = s->len();
-    while (offset > off && s->nextTextBox()) {
-        s = s->nextTextBox();
-        off = s->start() + s->len();
-    }
-    // we are now in the correct text run
-    pos = (offset > off ? s->len() : s->len() - (off - offset) );
-    return s;
-}
-
 enum ShouldAffinityBeDownstream { AlwaysDownstream, AlwaysUpstream, UpstreamIfPositionIsNotAtStart };
 
 static bool lineDirectionPointFitsInBox(int pointLineDirection, InlineTextBox* box, ShouldAffinityBeDownstream& shouldAffinityBeDownstream)

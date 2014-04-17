@@ -377,14 +377,6 @@ Length RenderFlexibleBox::flexBasisForChild(RenderBox* child) const
     return flexLength;
 }
 
-void RenderFlexibleBox::setCrossAxisExtent(LayoutUnit extent)
-{
-    if (isHorizontalFlow())
-        setHeight(extent);
-    else
-        setWidth(extent);
-}
-
 LayoutUnit RenderFlexibleBox::crossAxisExtentForChild(RenderBox* child) const
 {
     return isHorizontalFlow() ? child->height() : child->width();
@@ -603,22 +595,6 @@ LayoutUnit RenderFlexibleBox::flowAwareMarginBeforeForChild(RenderBox* child) co
     return marginTop();
 }
 
-LayoutUnit RenderFlexibleBox::flowAwareMarginAfterForChild(RenderBox* child) const
-{
-    switch (transformedWritingMode()) {
-    case TopToBottomWritingMode:
-        return child->marginBottom();
-    case BottomToTopWritingMode:
-        return child->marginTop();
-    case LeftToRightWritingMode:
-        return child->marginRight();
-    case RightToLeftWritingMode:
-        return child->marginLeft();
-    }
-    ASSERT_NOT_REACHED();
-    return marginBottom();
-}
-
 LayoutUnit RenderFlexibleBox::crossAxisMarginExtentForChild(RenderBox* child) const
 {
     return isHorizontalFlow() ? child->marginHeight() : child->marginWidth();
@@ -645,11 +621,6 @@ void RenderFlexibleBox::setFlowAwareLocationForChild(RenderBox* child, const Lay
 LayoutUnit RenderFlexibleBox::mainAxisBorderAndPaddingExtentForChild(RenderBox* child) const
 {
     return isHorizontalFlow() ? child->borderAndPaddingWidth() : child->borderAndPaddingHeight();
-}
-
-LayoutUnit RenderFlexibleBox::mainAxisScrollbarExtentForChild(RenderBox* child) const
-{
-    return isHorizontalFlow() ? child->verticalScrollbarWidth() : child->horizontalScrollbarHeight();
 }
 
 static inline bool preferredMainAxisExtentDependsOnLayout(const Length& flexBasis, bool hasInfiniteLineLength)

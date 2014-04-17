@@ -441,29 +441,6 @@ const String& RenderListItem::markerText() const
     return nullAtom.string();
 }
 
-String RenderListItem::markerTextWithSuffix() const
-{
-    if (!m_marker)
-        return String();
-
-    // Append the suffix for the marker in the right place depending
-    // on the direction of the text (right-to-left or left-to-right).
-
-    const String& markerText = m_marker->text();
-    const String markerSuffix = m_marker->suffix();
-    StringBuilder result;
-
-    if (!m_marker->style()->isLeftToRightDirection())
-        result.append(markerSuffix);
-
-    result.append(markerText);
-
-    if (m_marker->style()->isLeftToRightDirection())
-        result.append(markerSuffix);
-
-    return result.toString();
-}
-
 void RenderListItem::explicitValueChanged()
 {
     if (m_marker)

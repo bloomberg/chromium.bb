@@ -28,20 +28,6 @@
 
 namespace WebCore {
 
-void KeyframeValue::addProperties(const StylePropertySet* propertySet)
-{
-    if (!propertySet)
-        return;
-    unsigned propertyCount = propertySet->propertyCount();
-    for (unsigned i = 0; i < propertyCount; ++i) {
-        CSSPropertyID property = propertySet->propertyAt(i).id();
-        // Timing-function within keyframes is special, because it is not animated; it just
-        // describes the timing function between this keyframe and the next.
-        if (property != CSSPropertyWebkitAnimationTimingFunction && property != CSSPropertyAnimationTimingFunction)
-            addProperty(property);
-    }
-}
-
 TimingFunction* KeyframeValue::timingFunction(const RenderStyle& keyframeStyle)
 {
     const CSSAnimationDataList* animations = keyframeStyle.animations();

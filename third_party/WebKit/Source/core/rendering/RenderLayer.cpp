@@ -248,28 +248,6 @@ void RenderLayer::setSubpixelAccumulation(const LayoutSize& size)
     m_subpixelAccumulation = size;
 }
 
-LayoutPoint RenderLayer::computeOffsetFromRoot(bool& hasLayerOffset) const
-{
-    hasLayerOffset = true;
-
-    if (!parent())
-        return LayoutPoint();
-
-    // This is similar to root() but we check if an ancestor layer would
-    // prevent the optimization from working.
-    const RenderLayer* rootLayer = 0;
-    for (const RenderLayer* parentLayer = parent(); parentLayer; rootLayer = parentLayer, parentLayer = parentLayer->parent()) {
-        hasLayerOffset = parentLayer->canUseConvertToLayerCoords();
-        if (!hasLayerOffset)
-            return LayoutPoint();
-    }
-    ASSERT(rootLayer == root());
-
-    LayoutPoint offset;
-    parent()->convertToLayerCoords(rootLayer, offset);
-    return offset;
-}
-
 void RenderLayer::updateLayerPositionsAfterLayout(const RenderLayer* rootLayer, UpdateLayerPositionsFlags flags)
 {
     TRACE_EVENT0("blink_rendering", "RenderLayer::updateLayerPositionsAfterLayout");
@@ -1555,20 +1533,6 @@ void RenderLayer::insertOnlyThisLayer()
     m_clipper.clearClipRectsIncludingDescendants();
 }
 
-void RenderLayer::convertToPixelSnappedLayerCoords(const RenderLayer* ancestorLayer, IntPoint& roundedLocation) const
-{
-    LayoutPoint location = roundedLocation;
-    convertToLayerCoords(ancestorLayer, location);
-    roundedLocation = roundedIntPoint(location);
-}
-
-void RenderLayer::convertToPixelSnappedLayerCoords(const RenderLayer* ancestorLayer, IntRect& roundedRect) const
-{
-    LayoutRect rect = roundedRect;
-    convertToLayerCoords(ancestorLayer, rect);
-    roundedRect = pixelSnappedIntRect(rect);
-}
-
 // Returns the layer reached on the walk up towards the ancestor.
 static inline const RenderLayer* accumulateOffsetTowardsAncestor(const RenderLayer* layer, const RenderLayer* ancestorLayer, LayoutPoint& location)
 {
@@ -2734,15 +2698,6 @@ bool RenderLayer::isInTopLayer() const
     return node && node->isElementNode() && toElement(node)->isInTopLayer();
 }
 
-bool RenderLayer::isInTopLayerSubtree() const
-{
-    for (const RenderLayer* layer = this; layer; layer = layer->parent()) {
-        if (layer->isInTopLayer())
-            return true;
-    }
-    return false;
-}
-
 // Compute the z-offset of the point in the transformState.
 // This is effectively projecting a ray normal to the plane of ancestor, finding where that
 // ray intersects target, and computing the z delta between those two points.
@@ -3490,11 +3445,6 @@ bool RenderLayer::isAllowedToQueryCompositingState() const
     if (gCompositingQueryMode == CompositingQueriesAreAllowed)
         return true;
     return renderer()->document().lifecycle().state() >= DocumentLifecycle::InCompositingUpdate;
-}
-
-bool RenderLayer::isInCompositingUpdate() const
-{
-    return renderer()->document().lifecycle().state() == DocumentLifecycle::InCompositingUpdate;
 }
 
 CompositedLayerMappingPtr RenderLayer::compositedLayerMapping() const

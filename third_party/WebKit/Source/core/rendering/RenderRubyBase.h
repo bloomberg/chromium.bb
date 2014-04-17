@@ -59,8 +59,6 @@ private:
     void moveInlineChildren(RenderRubyBase* toBase, RenderObject* beforeChild = 0);
     void moveBlockChildren(RenderRubyBase* toBase, RenderObject* beforeChild = 0);
 
-    RenderRubyRun* rubyRun() const;
-
     // Allow RenderRubyRun to manipulate the children within ruby bases.
     friend class RenderRubyRun;
 };

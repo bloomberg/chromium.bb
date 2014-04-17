@@ -170,11 +170,6 @@ RenderBlockFlow* RenderBlockFlow::createAnonymous(Document* document)
     return renderer;
 }
 
-RenderBlockFlow* RenderBlockFlow::createAnonymousBlockFlow() const
-{
-    return toRenderBlockFlow(createAnonymousWithParentRendererAndDisplay(this, BLOCK));
-}
-
 RenderObject* RenderBlockFlow::layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope& layoutScope)
 {
     RenderMultiColumnFlowThread* flowThread = multiColumnFlowThread();

@@ -612,30 +612,6 @@ void RenderBox::computeSelfHitTestRects(Vector<LayoutRect>& rects, const LayoutP
         rects.append(LayoutRect(layerOffset, size()));
 }
 
-LayoutRect RenderBox::reflectionBox() const
-{
-    LayoutRect result;
-    if (!style()->boxReflect())
-        return result;
-    LayoutRect box = borderBoxRect();
-    result = box;
-    switch (style()->boxReflect()->direction()) {
-        case ReflectionBelow:
-            result.move(0, box.height() + reflectionOffset());
-            break;
-        case ReflectionAbove:
-            result.move(0, -box.height() - reflectionOffset());
-            break;
-        case ReflectionLeft:
-            result.move(-box.width() - reflectionOffset(), 0);
-            break;
-        case ReflectionRight:
-            result.move(box.width() + reflectionOffset(), 0);
-            break;
-    }
-    return result;
-}
-
 int RenderBox::reflectionOffset() const
 {
     if (!style()->boxReflect())
@@ -1460,30 +1436,6 @@ void RenderBox::paintMaskImages(const PaintInfo& paintInfo, const LayoutRect& pa
 
     if (pushTransparencyLayer)
         paintInfo.context->endLayer();
-}
-
-LayoutRect RenderBox::maskClipRect()
-{
-    const NinePieceImage& maskBoxImage = style()->maskBoxImage();
-    if (maskBoxImage.image()) {
-        LayoutRect borderImageRect = borderBoxRect();
-
-        // Apply outsets to the border box.
-        borderImageRect.expand(style()->maskBoxImageOutsets());
-        return borderImageRect;
-    }
-
-    LayoutRect result;
-    LayoutRect borderBox = borderBoxRect();
-    for (const FillLayer* maskLayer = style()->maskLayers(); maskLayer; maskLayer = maskLayer->next()) {
-        if (maskLayer->image()) {
-            BackgroundImageGeometry geometry;
-            // Masks should never have fixed attachment, so it's OK for paintContainer to be null.
-            calculateBackgroundImageGeometry(0, maskLayer, borderBox, geometry);
-            result.unite(geometry.destRect());
-        }
-    }
-    return result;
 }
 
 void RenderBox::paintFillLayers(const PaintInfo& paintInfo, const Color& c, const FillLayer* fillLayer, const LayoutRect& rect,

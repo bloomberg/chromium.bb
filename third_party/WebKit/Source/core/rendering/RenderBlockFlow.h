@@ -54,7 +54,6 @@ public:
     virtual ~RenderBlockFlow();
 
     static RenderBlockFlow* createAnonymous(Document*);
-    RenderBlockFlow* createAnonymousBlockFlow() const;
 
     virtual bool isRenderBlockFlow() const OVERRIDE FINAL { return true; }
 

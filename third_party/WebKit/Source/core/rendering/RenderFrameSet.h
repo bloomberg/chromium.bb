@@ -69,9 +69,6 @@ public:
 
     bool userResize(MouseEvent*);
 
-    bool isResizingRow() const;
-    bool isResizingColumn() const;
-
     bool canResizeRow(const IntPoint&) const;
     bool canResizeColumn(const IntPoint&) const;
 

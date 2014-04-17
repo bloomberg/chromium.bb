@@ -330,7 +330,6 @@ public:
     virtual void absoluteRects(Vector<IntRect>&, const LayoutPoint& accumulatedOffset) const OVERRIDE;
     virtual void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const OVERRIDE;
 
-    LayoutRect reflectionBox() const;
     int reflectionOffset() const;
     // Given a rect in the object's coordinate space, returns the corresponding rect in the reflection.
     LayoutRect reflectedRect(const LayoutRect&) const;
@@ -526,8 +525,6 @@ public:
         updateLogicalHeight();
         return true;
     }
-
-    LayoutRect maskClipRect();
 
     virtual PositionWithAffinity positionForPoint(const LayoutPoint&) OVERRIDE;
 

@@ -63,14 +63,6 @@ LayerType RenderIFrame::layerTypeRequired() const
     return ForcedLayer;
 }
 
-RenderView* RenderIFrame::contentRootRenderer() const
-{
-    // FIXME: Is this always a valid cast? What about plugins?
-    ASSERT(!widget() || widget()->isFrameView());
-    FrameView* childFrameView = toFrameView(widget());
-    return childFrameView ? childFrameView->frame().contentRenderer() : 0;
-}
-
 void RenderIFrame::layout()
 {
     ASSERT(needsLayout());

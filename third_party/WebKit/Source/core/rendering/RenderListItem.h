@@ -46,7 +46,6 @@ public:
     bool notInList() const { return m_notInList; }
 
     const String& markerText() const;
-    String markerTextWithSuffix() const;
 
     void updateListMarkerNumbers();
     void updateMarkerLocation();

@@ -136,8 +136,6 @@ public:
     bool isSecure() const { return style()->textSecurity() != TSNONE; }
     void momentarilyRevealLastTypedCharacter(unsigned lastTypedCharacterOffset);
 
-    InlineTextBox* findNextInlineTextBox(int offset, int& pos) const;
-
     void checkConsistency() const;
 
     bool isAllCollapsibleWhitespace() const;

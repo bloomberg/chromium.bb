@@ -935,14 +935,6 @@ void RenderLayerCompositor::setCompositingParent(RenderLayer* childLayer, Render
     }
 }
 
-void RenderLayerCompositor::removeCompositedChildren(RenderLayer* layer)
-{
-    ASSERT(layer->hasCompositedLayerMapping());
-
-    GraphicsLayer* hostingLayer = layer->compositedLayerMapping()->parentForSublayers();
-    hostingLayer->removeAllChildren();
-}
-
 void RenderLayerCompositor::frameViewDidChangeLocation(const IntPoint& contentsOffset)
 {
     if (m_overflowControlsHostLayer)

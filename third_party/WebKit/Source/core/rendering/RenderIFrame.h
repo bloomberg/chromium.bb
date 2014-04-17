@@ -47,8 +47,6 @@ private:
     virtual const char* renderName() const OVERRIDE { return "RenderPartObject"; } // Lying for now to avoid breaking tests
 
     virtual LayerType layerTypeRequired() const OVERRIDE;
-
-    RenderView* contentRootRenderer() const;
 };
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderIFrame, isRenderIFrame());

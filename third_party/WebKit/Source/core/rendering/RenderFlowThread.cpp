@@ -179,14 +179,6 @@ void RenderFlowThread::computeLogicalHeight(LayoutUnit, LayoutUnit logicalTop, L
     }
 }
 
-LayoutRect RenderFlowThread::computeRegionClippingRect(const LayoutPoint& offset, const LayoutRect& flowThreadPortionRect, const LayoutRect& flowThreadPortionOverflowRect) const
-{
-    LayoutRect regionClippingRect(offset + (flowThreadPortionOverflowRect.location() - flowThreadPortionRect.location()), flowThreadPortionOverflowRect.size());
-    if (style()->isFlippedBlocksWritingMode())
-        regionClippingRect.move(flowThreadPortionRect.size() - flowThreadPortionOverflowRect.size());
-    return regionClippingRect;
-}
-
 bool RenderFlowThread::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
 {
     if (hitTestAction == HitTestBlockBackground)
@@ -239,31 +231,6 @@ RenderRegion* RenderFlowThread::regionAtBlockOffset(LayoutUnit offset, bool exte
         return m_regionList.last();
 
     return adapter.result();
-}
-
-RenderRegion* RenderFlowThread::regionFromAbsolutePointAndBox(IntPoint absolutePoint, const RenderBox* flowedBox)
-{
-    if (!flowedBox)
-        return 0;
-
-    RenderRegion* startRegion = 0;
-    RenderRegion* endRegion = 0;
-    getRegionRangeForBox(flowedBox, startRegion, endRegion);
-
-    if (!startRegion)
-        return 0;
-
-    for (RenderRegionList::iterator iter = m_regionList.find(startRegion); iter != m_regionList.end(); ++iter) {
-        RenderRegion* region = *iter;
-        IntRect regionAbsoluteRect(roundedIntPoint(region->localToAbsolute()), roundedIntSize(region->frameRect().size()));
-        if (regionAbsoluteRect.contains(absolutePoint))
-            return region;
-
-        if (region == endRegion)
-            break;
-    }
-
-    return 0;
 }
 
 LayoutPoint RenderFlowThread::adjustedPositionRelativeToOffsetParent(const RenderBoxModelObject& boxModelObject, const LayoutPoint& startPoint)
@@ -462,21 +429,6 @@ void RenderFlowThread::applyBreakAfterContent(LayoutUnit clientHeight)
     // Simulate a region break at height. If it points inside an auto logical height region,
     // then it may determine the region computed autoheight.
     addForcedRegionBreak(clientHeight, this, false);
-}
-
-bool RenderFlowThread::regionInRange(const RenderRegion* targetRegion, const RenderRegion* startRegion, const RenderRegion* endRegion) const
-{
-    ASSERT(targetRegion);
-
-    for (RenderRegionList::const_iterator it = m_regionList.find(const_cast<RenderRegion*>(startRegion)); it != m_regionList.end(); ++it) {
-        const RenderRegion* currRegion = *it;
-        if (targetRegion == currRegion)
-            return true;
-        if (currRegion == endRegion)
-            break;
-    }
-
-    return false;
 }
 
 void RenderFlowThread::updateRegionsFlowThreadPortionRect()

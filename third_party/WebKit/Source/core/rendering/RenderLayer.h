@@ -263,8 +263,6 @@ public:
         return !renderer()->hasColumns() && !renderer()->hasTransform() && !renderer()->isSVGRoot();
     }
 
-    void convertToPixelSnappedLayerCoords(const RenderLayer* ancestorLayer, IntPoint& location) const;
-    void convertToPixelSnappedLayerCoords(const RenderLayer* ancestorLayer, IntRect&) const;
     void convertToLayerCoords(const RenderLayer* ancestorLayer, LayoutPoint& location) const;
     void convertToLayerCoords(const RenderLayer* ancestorLayer, LayoutRect&) const;
 
@@ -296,9 +294,6 @@ public:
         DoNotApplyBoundsChickenEggHacks,
     };
     LayoutRect boundingBoxForCompositing(const RenderLayer* ancestorLayer = 0, CalculateBoundsOptions = DoNotApplyBoundsChickenEggHacks) const;
-
-    // WARNING: This method returns the offset for the parent as this is what updateLayerPositions expects.
-    LayoutPoint computeOffsetFromRoot(bool& hasLayerOffset) const;
 
     LayoutUnit staticInlinePosition() const { return m_staticInlinePosition; }
     LayoutUnit staticBlockPosition() const { return m_staticBlockPosition; }
@@ -343,9 +338,6 @@ public:
     // This returns true if our document is in a phase of its lifestyle during which
     // compositing state may legally be read.
     bool isAllowedToQueryCompositingState() const;
-
-    // This returns true if our current phase is the compositing update.
-    bool isInCompositingUpdate() const;
 
     CompositedLayerMappingPtr compositedLayerMapping() const;
     CompositedLayerMappingPtr ensureCompositedLayerMapping();
@@ -412,7 +404,6 @@ public:
     Node* enclosingElement() const;
 
     bool isInTopLayer() const;
-    bool isInTopLayerSubtree() const;
 
     enum ViewportConstrainedNotCompositedReason {
         NoNotCompositedReason = 0,

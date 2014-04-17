@@ -134,18 +134,6 @@ LayoutRect RenderLayerClipper::childrenClipRect() const
     return clippingRootLayer->renderer()->localToAbsoluteQuad(FloatQuad(foregroundRect.rect())).enclosingBoundingBox();
 }
 
-LayoutRect RenderLayerClipper::selfClipRect() const
-{
-    // FIXME: border-radius not accounted for.
-    RenderView* renderView = m_renderer->view();
-    RenderLayer* clippingRootLayer = clippingRootForPainting();
-    LayoutRect layerBounds;
-    ClipRect backgroundRect, foregroundRect, outlineRect;
-    ClipRectsContext clipRectsContext(clippingRootLayer, PaintingClipRects);
-    calculateRects(clipRectsContext, renderView->documentRect(), layerBounds, backgroundRect, foregroundRect, outlineRect);
-    return clippingRootLayer->renderer()->localToAbsoluteQuad(FloatQuad(backgroundRect.rect())).enclosingBoundingBox();
-}
-
 LayoutRect RenderLayerClipper::localClipRect() const
 {
     // FIXME: border-radius not accounted for.

@@ -100,8 +100,6 @@ public:
     };
     RenderRegion* regionAtBlockOffset(LayoutUnit, bool extendLastRegion = false, RegionAutoGenerationPolicy = AllowRegionAutoGeneration);
 
-    RenderRegion* regionFromAbsolutePointAndBox(IntPoint, const RenderBox* flowedBox);
-
     bool regionsHaveUniformLogicalHeight() const { return m_regionsHaveUniformLogicalHeight; }
 
     RenderRegion* mapFromFlowToRegion(TransformState&) const;
@@ -142,11 +140,8 @@ protected:
 
     void updateRegionsFlowThreadPortionRect();
     bool shouldRepaint(const LayoutRect&) const;
-    bool regionInRange(const RenderRegion* targetRegion, const RenderRegion* startRegion, const RenderRegion* endRegion) const;
 
-    LayoutRect computeRegionClippingRect(const LayoutPoint&, const LayoutRect&, const LayoutRect&) const;
-
-    virtual void autoGenerateRegionsToBlockOffset(LayoutUnit) { };
+    virtual void autoGenerateRegionsToBlockOffset(LayoutUnit) { }
 
     bool cachedOffsetFromLogicalTopOfFirstRegion(const RenderBox*, LayoutUnit&) const;
     void setOffsetFromLogicalTopOfFirstRegion(const RenderBox*, LayoutUnit);

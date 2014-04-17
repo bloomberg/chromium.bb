@@ -272,7 +272,6 @@ private:
 
     // Hook compositing layers together
     void setCompositingParent(RenderLayer* childLayer, RenderLayer* parentLayer);
-    void removeCompositedChildren(RenderLayer*);
 
     bool hasAnyAdditionalCompositedLayers(const RenderLayer* rootLayer) const;
 

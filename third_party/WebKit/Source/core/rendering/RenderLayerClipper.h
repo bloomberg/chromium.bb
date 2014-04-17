@@ -91,7 +91,6 @@ public:
     void setCompositingClipRectsDirty();
 
     LayoutRect childrenClipRect() const; // Returns the foreground clip rect of the layer in the document's coordinate space.
-    LayoutRect selfClipRect() const; // Returns the background clip rect of the layer in the document's coordinate space.
     LayoutRect localClipRect() const; // Returns the background clip rect of the layer in the local coordinate space.
 
     ClipRect backgroundClipRect(const ClipRectsContext&) const;

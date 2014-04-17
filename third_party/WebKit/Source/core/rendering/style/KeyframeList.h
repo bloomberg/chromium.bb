@@ -47,7 +47,6 @@ public:
     {
     }
 
-    void addProperties(const StylePropertySet*);
     void addProperty(CSSPropertyID prop) { m_properties.add(prop); }
     bool containsProperty(CSSPropertyID prop) const { return m_properties.contains(prop); }
     const HashSet<CSSPropertyID>& properties() const { return m_properties; }

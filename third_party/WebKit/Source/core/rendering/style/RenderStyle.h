@@ -907,9 +907,6 @@ public:
 
     bool hasAnimations() const { return rareNonInheritedData->m_animations && rareNonInheritedData->m_animations->size() > 0; }
 
-    // return the first found Animation (including 'all' transitions)
-    const CSSAnimationData* transitionForProperty(CSSPropertyID) const;
-
     ETransformStyle3D transformStyle3D() const { return static_cast<ETransformStyle3D>(rareNonInheritedData->m_transformStyle3D); }
     bool preserves3D() const { return rareNonInheritedData->m_transformStyle3D == TransformStyle3DPreserve3D; }
 

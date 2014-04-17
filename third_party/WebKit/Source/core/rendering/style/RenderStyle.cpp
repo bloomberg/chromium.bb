@@ -1166,19 +1166,6 @@ CSSAnimationDataList* RenderStyle::accessTransitions()
     return rareNonInheritedData->m_transitions.get();
 }
 
-const CSSAnimationData* RenderStyle::transitionForProperty(CSSPropertyID property) const
-{
-    if (transitions()) {
-        for (size_t i = 0; i < transitions()->size(); ++i) {
-            const CSSAnimationData* p = transitions()->animation(i);
-            if (p->animationMode() == CSSAnimationData::AnimateAll || p->property() == property) {
-                return p;
-            }
-        }
-    }
-    return 0;
-}
-
 const Font& RenderStyle::font() const { return inherited->font; }
 const FontMetrics& RenderStyle::fontMetrics() const { return inherited->font.fontMetrics(); }
 const FontDescription& RenderStyle::fontDescription() const { return inherited->font.fontDescription(); }

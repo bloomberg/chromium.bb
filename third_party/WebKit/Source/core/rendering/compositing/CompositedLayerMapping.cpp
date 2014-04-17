@@ -1693,20 +1693,6 @@ FloatPoint3D CompositedLayerMapping::computeTransformOrigin(const IntRect& borde
     return origin;
 }
 
-FloatPoint CompositedLayerMapping::computePerspectiveOrigin(const IntRect& borderBox) const
-{
-    RenderStyle* style = renderer()->style();
-
-    float boxWidth = borderBox.width();
-    float boxHeight = borderBox.height();
-
-    FloatPoint origin;
-    origin.setX(floatValueForLength(style->perspectiveOriginX(), boxWidth));
-    origin.setY(floatValueForLength(style->perspectiveOriginY(), boxHeight));
-
-    return origin;
-}
-
 // Return the offset from the top-left of this compositing layer at which the renderer's contents are painted.
 LayoutSize CompositedLayerMapping::contentOffsetInCompostingLayer() const
 {

@@ -597,16 +597,6 @@ void RenderFrameSet::setIsResizing(bool isResizing)
         frame->eventHandler().setResizingFrameSet(isResizing ? frameSet() : 0);
 }
 
-bool RenderFrameSet::isResizingRow() const
-{
-    return m_isResizing && m_rows.m_splitBeingResized != noSplit;
-}
-
-bool RenderFrameSet::isResizingColumn() const
-{
-    return m_isResizing && m_cols.m_splitBeingResized != noSplit;
-}
-
 bool RenderFrameSet::canResizeRow(const IntPoint& p) const
 {
     int r = hitTestSplit(m_rows, p.y());
