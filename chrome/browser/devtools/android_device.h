@@ -15,8 +15,9 @@
 #include "crypto/rsa_private_key.h"
 #include "net/socket/stream_socket.h"
 
-class AndroidDeviceManager : public base::RefCounted<AndroidDeviceManager>,
-                             public base::NonThreadSafe {
+class AndroidDeviceManager
+    : public base::RefCountedThreadSafe<AndroidDeviceManager>,
+      public base::NonThreadSafe {
  public:
   typedef base::Callback<void(int, const std::string&)> CommandCallback;
   typedef base::Callback<void(int result, net::StreamSocket*)> SocketCallback;
@@ -129,7 +130,7 @@ class AndroidDeviceManager : public base::RefCounted<AndroidDeviceManager>,
  private:
   AndroidDeviceManager();
 
-  friend class base::RefCounted<AndroidDeviceManager>;
+  friend class base::RefCountedThreadSafe<AndroidDeviceManager>;
 
   virtual ~AndroidDeviceManager();
 
