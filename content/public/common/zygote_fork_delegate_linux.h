@@ -29,7 +29,9 @@ class ZygoteForkDelegate {
 
   // Initialization happens in the zygote after it has been
   // started by ZygoteMain.
-  virtual void Init(int sandboxdesc) = 0;
+  // If |enable_layer1_sandbox| is true, the delegate must enable a
+  // layer-1 sandbox such as the setuid sandbox.
+  virtual void Init(int sandboxdesc, bool enable_layer1_sandbox) = 0;
 
   // After Init, supply a UMA_HISTOGRAM_ENUMERATION the delegate
   // would like to supply on the first fork.

@@ -4,6 +4,7 @@ include_rules = [
   "+crypto",
   "+sandbox/linux/seccomp-bpf",
   "+sandbox/linux/services",
+  "+sandbox/linux/suid",
   "+sandbox/win/src",
   "+ppapi/c",  # header files only
 

@@ -4,6 +4,7 @@
 
 #include "sandbox/linux/suid/client/setuid_sandbox_client.h"
 
+#include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -13,10 +14,13 @@
 #include "base/environment.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/files/scoped_file.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/process/launch.h"
 #include "base/process/process_metrics.h"
 #include "base/strings/string_number_conversions.h"
 #include "sandbox/linux/services/init_process_reaper.h"
@@ -25,11 +29,36 @@
 
 namespace {
 
+bool IsFileSystemAccessDenied() {
+  base::ScopedFD self_exe(HANDLE_EINTR(open(base::kProcSelfExe, O_RDONLY)));
+  return !self_exe.is_valid();
+}
+
 // Set an environment variable that reflects the API version we expect from the
 // setuid sandbox. Old versions of the sandbox will ignore this.
 void SetSandboxAPIEnvironmentVariable(base::Environment* env) {
   env->SetVar(sandbox::kSandboxEnvironmentApiRequest,
               base::IntToString(sandbox::kSUIDSandboxApiNumber));
+}
+
+// Unset environment variables that are expected to be set by the setuid
+// sandbox. This is to allow nesting of one instance of the SUID sandbox
+// inside another.
+void UnsetExpectedEnvironmentVariables(base::EnvironmentMap* env_map) {
+  DCHECK(env_map);
+  const base::NativeEnvironmentString environment_vars[] = {
+      sandbox::kSandboxDescriptorEnvironmentVarName,
+      sandbox::kSandboxHelperPidEnvironmentVarName,
+      sandbox::kSandboxEnvironmentApiProvides,
+      sandbox::kSandboxPIDNSEnvironmentVarName,
+      sandbox::kSandboxNETNSEnvironmentVarName,
+  };
+
+  for (size_t i = 0; i < arraysize(environment_vars); ++i) {
+    // Setting values in EnvironmentMap to an empty-string will make
+    // sure that they get unset from the environment via AlterEnvironment().
+    (*env_map)[environment_vars[i]] = base::NativeEnvironmentString();
+  }
 }
 
 // Wrapper around a shared C function.
@@ -157,6 +186,7 @@ bool SetuidSandboxClient::ChrootMe() {
 
   // We now consider ourselves "fully sandboxed" as far as the
   // setuid sandbox is concerned.
+  CHECK(IsFileSystemAccessDenied());
   sandboxed_ = true;
   return true;
 }
@@ -196,6 +226,12 @@ bool SetuidSandboxClient::IsDisabledViaEnvironment() {
   return false;
 }
 
+int SetuidSandboxClient::GetUniqueToChildFileDescriptor() {
+  // The setuid binary is hard-wired to close this in the helper process it
+  // creates.
+  return kZygoteIdFd;
+}
+
 base::FilePath SetuidSandboxClient::GetSandboxBinaryPath() {
   base::FilePath sandbox_binary;
   base::FilePath exe_dir;
@@ -220,8 +256,8 @@ base::FilePath SetuidSandboxClient::GetSandboxBinaryPath() {
   return sandbox_binary;
 }
 
-void SetuidSandboxClient::PrependWrapper(base::CommandLine* cmd_line) {
-  DCHECK(cmd_line);
+void SetuidSandboxClient::PrependWrapper(base::CommandLine* cmd_line,
+                                         base::LaunchOptions* options) {
   std::string sandbox_binary(GetSandboxBinaryPath().value());
   struct stat st;
   if (sandbox_binary.empty() || stat(sandbox_binary.c_str(), &st) != 0) {
@@ -237,9 +273,16 @@ void SetuidSandboxClient::PrependWrapper(base::CommandLine* cmd_line) {
                   "configured correctly. Rather than run without sandboxing "
                   "I'm aborting now. You need to make sure that "
                << sandbox_binary << " is owned by root and has mode 4755.";
+  }
 
-  } else {
+  if (cmd_line) {
     cmd_line->PrependWrapper(sandbox_binary);
+  }
+
+  if (options) {
+    // Launching a setuid binary requires PR_SET_NO_NEW_PRIVS to not be used.
+    options->allow_new_privs = true;
+    UnsetExpectedEnvironmentVariables(&options->environ);
   }
 }
 

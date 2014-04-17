@@ -59,15 +59,6 @@
 
 namespace content {
 
-namespace {
-
-void InitializeForkDelegate(ZygoteForkDelegate* forkdelegate) {
-  DCHECK(forkdelegate);
-  forkdelegate->Init(GetSandboxFD());
-}
-
-}  // namespace
-
 // See http://code.google.com/p/chromium/wiki/LinuxZygote
 
 static void ProxyLocaltimeCallToBrowser(time_t input, struct tm* output,
@@ -437,7 +428,10 @@ static bool EnterSuidSandbox(sandbox::SetuidSandboxClient* setuid_sandbox) {
   return true;
 }
 
-static void EnterLayerOneSandbox(LinuxSandbox* linux_sandbox) {
+// If |is_suid_sandbox_child|, then make sure that the setuid sandbox is
+// engaged.
+static void EnterLayerOneSandbox(LinuxSandbox* linux_sandbox,
+                                 bool is_suid_sandbox_child) {
   DCHECK(linux_sandbox);
 
   ZygotePreSandboxInit();
@@ -450,7 +444,7 @@ static void EnterLayerOneSandbox(LinuxSandbox* linux_sandbox) {
   sandbox::SetuidSandboxClient* setuid_sandbox =
       linux_sandbox->setuid_sandbox_client();
 
-  if (setuid_sandbox->IsSuidSandboxChild()) {
+  if (is_suid_sandbox_child) {
     CHECK(EnterSuidSandbox(setuid_sandbox)) << "Failed to enter setuid sandbox";
   }
 }
@@ -464,17 +458,22 @@ bool ZygoteMain(const MainFunctionParams& params,
   // This will pre-initialize the various sandboxes that need it.
   linux_sandbox->PreinitializeSandbox();
 
+  const bool must_enable_setuid_sandbox =
+      linux_sandbox->setuid_sandbox_client()->IsSuidSandboxChild();
+
   if (forkdelegate != NULL) {
     VLOG(1) << "ZygoteMain: initializing fork delegate";
-    InitializeForkDelegate(forkdelegate);
+    forkdelegate->Init(GetSandboxFD(), must_enable_setuid_sandbox);
   } else {
     VLOG(1) << "ZygoteMain: fork delegate is NULL";
   }
 
   // Turn on the first layer of the sandbox if the configuration warrants it.
-  EnterLayerOneSandbox(linux_sandbox);
+  EnterLayerOneSandbox(linux_sandbox, must_enable_setuid_sandbox);
 
   int sandbox_flags = linux_sandbox->GetStatus();
+  bool setuid_sandbox_engaged = sandbox_flags & kSandboxLinuxSUID;
+  CHECK_EQ(must_enable_setuid_sandbox, setuid_sandbox_engaged);
 
   Zygote zygote(sandbox_flags, forkdelegate);
   // This function call can return multiple times, once per fork().

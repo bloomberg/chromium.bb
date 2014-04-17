@@ -162,6 +162,14 @@
             '../third_party/WebKit/public/blink.gyp:blink',
             '../webkit/common/webkit_common.gyp:webkit_common',
           ],
+          'conditions': [
+            ['OS=="linux"', {
+              'dependencies': [
+                # Required by nacl_fork_delegate_linux.cc.
+                '../sandbox/sandbox.gyp:suid_sandbox_client',
+              ]
+            }],
+          ],
           'defines': [
             '<@(nacl_defines)',
           ],

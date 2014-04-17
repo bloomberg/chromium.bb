@@ -22,6 +22,7 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/global_descriptors.h"
@@ -35,7 +36,10 @@
 #include "crypto/nss_util.h"
 #include "ipc/ipc_descriptors.h"
 #include "ipc/ipc_switches.h"
+#include "sandbox/linux/services/credentials.h"
 #include "sandbox/linux/services/libc_urandom_override.h"
+#include "sandbox/linux/services/thread_helpers.h"
+#include "sandbox/linux/suid/client/setuid_sandbox_client.h"
 
 namespace {
 
@@ -54,7 +58,30 @@ bool IsSandboxed() {
   return true;
 }
 
-void InitializeSandbox(bool uses_nonsfi_mode) {
+void InitializeLayerOneSandbox() {
+  // Check that IsSandboxed() works. We should not be sandboxed at this point.
+  CHECK(!IsSandboxed()) << "Unexpectedly sandboxed!";
+  scoped_ptr<sandbox::SetuidSandboxClient>
+      setuid_sandbox_client(sandbox::SetuidSandboxClient::Create());
+  PCHECK(0 == IGNORE_EINTR(close(
+                  setuid_sandbox_client->GetUniqueToChildFileDescriptor())));
+  const bool suid_sandbox_child = setuid_sandbox_client->IsSuidSandboxChild();
+  const bool is_init_process = 1 == getpid();
+  CHECK_EQ(is_init_process, suid_sandbox_child);
+
+  if (suid_sandbox_child) {
+    // Make sure that no directory file descriptor is open, as it would bypass
+    // the setuid sandbox model.
+    sandbox::Credentials credentials;
+    CHECK(!credentials.HasOpenDirectory(-1));
+
+    // Get sandboxed.
+    CHECK(setuid_sandbox_client->ChrootMe());
+    CHECK(IsSandboxed());
+  }
+}
+
+void InitializeLayerTwoSandbox(bool uses_nonsfi_mode) {
   if (uses_nonsfi_mode) {
     const bool can_be_no_sandbox = CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kNaClDangerousNoSandboxNonSfi);
@@ -94,7 +121,7 @@ void BecomeNaClLoader(const std::vector<int>& child_fds,
   // don't need zygote FD any more
   if (IGNORE_EINTR(close(kNaClZygoteDescriptor)) != 0)
     LOG(ERROR) << "close(kNaClZygoteDescriptor) failed.";
-  InitializeSandbox(uses_nonsfi_mode);
+  InitializeLayerTwoSandbox(uses_nonsfi_mode);
   base::GlobalDescriptors::GetInstance()->Set(
       kPrimaryIPCChannel,
       child_fds[content::ZygoteForkDelegate::kBrowserFDIndex]);
@@ -408,8 +435,13 @@ int main(int argc, char* argv[]) {
 
   CheckRDebug(argv[0]);
 
-  // Check that IsSandboxed() works. We should not be sandboxed at this point.
-  CHECK(!IsSandboxed()) << "Unexpectedly sandboxed!";
+  // Make sure that the early initialization did not start any spurious
+  // threads.
+#if !defined(THREAD_SANITIZER)
+  CHECK(sandbox::ThreadHelpers::IsSingleThreaded(-1));
+#endif
+
+  InitializeLayerOneSandbox();
 
   const std::vector<int> empty;
   // Send the zygote a message to let it know we are ready to help

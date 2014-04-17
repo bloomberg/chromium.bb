@@ -93,6 +93,7 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
   base::FileHandleMappingVector fds_to_map;
   fds_to_map.push_back(std::make_pair(fds[1], kZygoteSocketPairFd));
 
+  base::LaunchOptions options;
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
   if (browser_command_line.HasSwitch(switches::kZygoteCmdPrefix)) {
     cmd_line.PrependWrapper(
@@ -127,13 +128,6 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
   // A non empty sandbox_cmd means we want a SUID sandbox.
   using_suid_sandbox_ = !sandbox_cmd.empty();
 
-  if (using_suid_sandbox_) {
-    scoped_ptr<sandbox::SetuidSandboxClient>
-        sandbox_client(sandbox::SetuidSandboxClient::Create());
-    sandbox_client->PrependWrapper(&cmd_line);
-    sandbox_client->SetupLaunchEnvironment();
-  }
-
   // Start up the sandbox host process and get the file descriptor for the
   // renderers to talk to it.
   const int sfd = RenderSandboxHostLinux::GetInstance()->GetRendererSocket();
@@ -141,15 +135,19 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
 
   int dummy_fd = -1;
   if (using_suid_sandbox_) {
+    scoped_ptr<sandbox::SetuidSandboxClient>
+        sandbox_client(sandbox::SetuidSandboxClient::Create());
+    sandbox_client->PrependWrapper(&cmd_line, &options);
+    sandbox_client->SetupLaunchEnvironment();
+
+    CHECK_EQ(kZygoteIdFd, sandbox_client->GetUniqueToChildFileDescriptor());
     dummy_fd = socket(PF_UNIX, SOCK_DGRAM, 0);
     CHECK(dummy_fd >= 0);
     fds_to_map.push_back(std::make_pair(dummy_fd, kZygoteIdFd));
   }
 
   base::ProcessHandle process = -1;
-  base::LaunchOptions options;
   options.fds_to_remap = &fds_to_map;
-  options.allow_new_privs = using_suid_sandbox_;  // Don't PR_SET_NO_NEW_PRIVS.
   base::LaunchProcess(cmd_line.argv(), options, &process);
   CHECK(process != -1) << "Failed to launch zygote process";
 
