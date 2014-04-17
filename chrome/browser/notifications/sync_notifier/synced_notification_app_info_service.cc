@@ -161,17 +161,21 @@ void SyncedNotificationAppInfoService::ProcessIncomingAppInfoProtobuf(
   // Build a local app_info object from the sync data.
   scoped_ptr<SyncedNotificationAppInfo> incoming(
       CreateSyncedNotificationAppInfoFromProtobuf(app_info));
-  DCHECK(incoming.get());
+  if (incoming.get() == NULL) {
+    LOG(ERROR) << "Invalid Synced No5tification App Info protobuf";
+    return;
+  }
 
   // Process each incoming app_info protobuf.
-  const std::string& name = incoming->settings_display_name();
-  DCHECK_GT(name.length(), 0U);
-  if (name.length() == 0) {
+  std::string app_info_name = incoming->settings_display_name();
+  DCHECK_GT(app_info_name.length(), 0U);
+  if (app_info_name.length() == 0) {
     // If there is no unique id (name), there is nothing we can do.
     return;
   }
 
-  SyncedNotificationAppInfo* found = FindSyncedNotificationAppInfoByName(name);
+  SyncedNotificationAppInfo* found =
+      FindSyncedNotificationAppInfoByName(app_info_name);
 
   std::vector<std::string> old_app_ids;
   std::vector<std::string> new_app_ids;
@@ -187,7 +191,7 @@ void SyncedNotificationAppInfoService::ProcessIncomingAppInfoProtobuf(
     // Append to lists of added and removed types.
     old_app_ids = found->GetAppIdList();
     new_app_ids = incoming->GetAppIdList();
-    FreeSyncedNotificationAppInfoByName(name);
+    FreeSyncedNotificationAppInfoByName(app_info_name);
 
     // Set up for a set difference by sorting the lists.
     std::sort(old_app_ids.begin(), old_app_ids.end());
@@ -242,7 +246,9 @@ SyncedNotificationAppInfoService::CreateSyncedNotificationAppInfoFromProtobuf(
 
   // Check for mandatory fields in the sync_data object.
   std::string display_name;
-  if (server_app_info.has_settings_display_name()) {
+  if (server_app_info.has_app_name()) {
+    display_name = server_app_info.app_name();
+  } else if (server_app_info.has_settings_display_name()) {
     display_name = server_app_info.settings_display_name();
   }
 

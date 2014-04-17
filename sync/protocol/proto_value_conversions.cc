@@ -250,6 +250,9 @@ base::DictionaryValue* SyncedNotificationAppInfoToValue(
   base::DictionaryValue* value = new base::DictionaryValue();
   SET_STR_REP(app_id);
   SET_STR(settings_display_name);
+  SET_STR(app_name);
+  SET_STR(settings_url);
+  SET_STR(info_url);
   SET(icon, SyncedNotificationImageToValue);
   // TODO(petewil): Add fields for the monochrome icon when it is available.
   return value;
