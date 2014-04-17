@@ -11,6 +11,7 @@ import logging
 import optparse
 import os
 import tempfile
+import time
 import subprocess
 import sys
 import urlparse
@@ -60,8 +61,22 @@ class Lockfile(object):
     f.close()
 
   def _remove_lockfile(self):
-    """Delete the lockfile. Complains (implicitly) if it doesn't exist."""
-    os.remove(self.lockfile)
+    """Delete the lockfile. Complains (implicitly) if it doesn't exist.
+
+    See gclient_utils.py:rmtree docstring for more explanation on the
+    windows case.
+    """
+    if sys.platform == 'win32':
+      lockfile = os.path.normcase(self.lockfile)
+      for _ in xrange(3):
+        exitcode = subprocess.call(['cmd.exe', '/c',
+                                    'del', '/f', '/q', lockfile])
+        if exitcode == 0:
+          return
+        time.sleep(3)
+      raise LockError('Failed to remove lock: %s' % lockfile)
+    else:
+      os.remove(self.lockfile)
 
   def lock(self):
     """Acquire the lock.
