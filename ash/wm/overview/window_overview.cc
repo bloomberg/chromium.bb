@@ -264,7 +264,7 @@ void WindowOverview::OnMouseEvent(ui::MouseEvent* event) {
   if (!target)
     return;
 
-  event->StopPropagation();
+  event->SetHandled();
   if (event->type() != ui::ET_MOUSE_RELEASED)
     return;
 
