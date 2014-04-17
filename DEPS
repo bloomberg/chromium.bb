@@ -279,7 +279,7 @@ deps = {
     "/trunk/tools/deps2git@262731",
 
   "src/third_party/clang_format/script":
-    Var("llvm_url") + "/cfe/trunk/tools/clang-format@202065",
+    Var("llvm_url") + "/cfe/trunk/tools/clang-format@206068",
 
   "src/third_party/webpagereplay":
     (Var("googlecode_url") % "web-page-replay") + "/trunk@544",
