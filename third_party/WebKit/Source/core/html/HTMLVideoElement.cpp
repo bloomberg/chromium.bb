@@ -167,7 +167,9 @@ void HTMLVideoElement::setDisplayMode(DisplayMode mode)
     if (!poster.isEmpty()) {
         // We have a poster path, but only show it until the user triggers display by playing or seeking and the
         // media engine has something to display.
-        if (mode == Video && !hasAvailableVideoFrame())
+        // Don't show the poster if there is a seek operation or
+        // the video has restarted because of loop attribute
+        if (mode == Video && oldMode == Poster && !hasAvailableVideoFrame())
             mode = PosterWaitingForVideo;
     }
 
