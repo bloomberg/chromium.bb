@@ -33,6 +33,7 @@ namespace ui {
 
 namespace {
 
+#if defined(USE_EVDEV_GESTURES)
 bool UseGesturesLibraryForDevice(const EventDeviceInfo& devinfo) {
   if (devinfo.HasAbsXY() && !devinfo.IsMappedToScreen())
     return true;  // touchpad
@@ -42,6 +43,7 @@ bool UseGesturesLibraryForDevice(const EventDeviceInfo& devinfo) {
 
   return false;
 }
+#endif
 
 scoped_ptr<EventConverterEvdev> CreateConverter(
     int fd,
@@ -135,7 +137,7 @@ EventFactoryEvdev::EventFactoryEvdev()
       file_task_runner_(base::MessageLoopProxy::current()),
       cursor_(NULL),
       dispatch_callback_(
-          base::Bind(base::IgnoreResult(&EventFactoryEvdev::DispatchEvent),
+          base::Bind(base::IgnoreResult(&EventFactoryEvdev::DispatchUiEvent),
                      base::Unretained(this))),
       weak_ptr_factory_(this) {}
 
@@ -144,13 +146,13 @@ EventFactoryEvdev::EventFactoryEvdev(CursorDelegateEvdev* cursor)
       file_task_runner_(base::MessageLoopProxy::current()),
       cursor_(cursor),
       dispatch_callback_(
-          base::Bind(base::IgnoreResult(&EventFactoryEvdev::DispatchEvent),
+          base::Bind(base::IgnoreResult(&EventFactoryEvdev::DispatchUiEvent),
                      base::Unretained(this))),
       weak_ptr_factory_(this) {}
 
 EventFactoryEvdev::~EventFactoryEvdev() { STLDeleteValues(&converters_); }
 
-void EventFactoryEvdev::DispatchEvent(Event* event) {
+void EventFactoryEvdev::DispatchUiEvent(Event* event) {
   EventFactoryOzone::DispatchEvent(event);
 }
 

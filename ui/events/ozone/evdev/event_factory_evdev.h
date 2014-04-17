@@ -27,7 +27,7 @@ class EVENTS_EXPORT EventFactoryEvdev : public EventFactoryOzone {
   explicit EventFactoryEvdev(CursorDelegateEvdev* cursor);
   virtual ~EventFactoryEvdev();
 
-  void DispatchEvent(Event* event);
+  void DispatchUiEvent(Event* event);
 
   // EventFactoryOzone:
   virtual void StartProcessingEvents() OVERRIDE;
