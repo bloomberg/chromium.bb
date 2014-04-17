@@ -513,6 +513,9 @@ void WebViewImpl::handleMouseDown(LocalFrame& mainFrame, const WebMouseEvent& ev
 
     PageWidgetEventHandler::handleMouseDown(mainFrame, event);
 
+    if (event.button == WebMouseEvent::ButtonLeft && m_mouseCaptureNode)
+        m_mouseCaptureGestureToken = mainFrame.eventHandler().lastMouseDownGestureToken();
+
     if (m_selectPopup && m_selectPopup == selectPopup) {
         // That click triggered a select popup which is the same as the one that
         // was showing before the click.  It means the user clicked the select
@@ -1870,6 +1873,8 @@ bool WebViewImpl::handleInputEvent(const WebInputEvent& inputEvent)
         if (inputEvent.type == WebInputEvent::MouseUp)
             mouseCaptureLost();
 
+        OwnPtr<UserGestureIndicator> gestureIndicator;
+
         AtomicString eventType;
         switch (inputEvent.type) {
         case WebInputEvent::MouseMove:
@@ -1880,9 +1885,12 @@ bool WebViewImpl::handleInputEvent(const WebInputEvent& inputEvent)
             break;
         case WebInputEvent::MouseDown:
             eventType = EventTypeNames::mousedown;
+            gestureIndicator = adoptPtr(new UserGestureIndicator(DefinitelyProcessingNewUserGesture));
+            m_mouseCaptureGestureToken = gestureIndicator->currentToken();
             break;
         case WebInputEvent::MouseUp:
             eventType = EventTypeNames::mouseup;
+            gestureIndicator = adoptPtr(new UserGestureIndicator(m_mouseCaptureGestureToken.release()));
             break;
         default:
             ASSERT_NOT_REACHED();

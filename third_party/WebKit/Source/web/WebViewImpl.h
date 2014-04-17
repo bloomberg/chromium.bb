@@ -65,6 +65,7 @@ namespace WebCore {
 class DataObject;
 class Frame;
 class RenderLayerCompositor;
+class UserGestureToken;
 }
 
 namespace blink {
@@ -693,6 +694,7 @@ private:
 
     // If set, the (plugin) node which has mouse capture.
     RefPtr<WebCore::Node> m_mouseCaptureNode;
+    RefPtr<WebCore::UserGestureToken> m_mouseCaptureGestureToken;
 
     WebCore::IntRect m_rootLayerScrollDamage;
     WebLayerTreeView* m_layerTreeView;
