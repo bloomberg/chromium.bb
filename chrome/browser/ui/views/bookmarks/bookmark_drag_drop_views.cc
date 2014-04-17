@@ -7,7 +7,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_drag_drop.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/user_prefs.h"
@@ -28,7 +30,7 @@ void DragBookmarks(Profile* profile,
   // Set up our OLE machinery
   ui::OSExchangeData data;
   BookmarkNodeData drag_data(nodes);
-  drag_data.Write(profile, &data);
+  drag_data.Write(profile->GetPath(), &data);
 
   // Allow nested message loop so we get DnD events as we drag this around.
   bool was_nested = base::MessageLoop::current()->IsNested();
@@ -80,14 +82,17 @@ int GetBookmarkDropOperation(Profile* profile,
                              const BookmarkNodeData& data,
                              const BookmarkNode* parent,
                              int index) {
-  if (data.IsFromProfile(profile) && data.size() > 1)
+  const base::FilePath& profile_path = profile->GetPath();
+
+  if (data.IsFromProfilePath(profile_path) && data.size() > 1)
     // Currently only accept one dragged node at a time.
     return ui::DragDropTypes::DRAG_NONE;
 
   if (!IsValidBookmarkDropLocation(profile, data, parent, index))
     return ui::DragDropTypes::DRAG_NONE;
 
-  if (data.GetFirstNode(profile))
+  if (data.GetFirstNode(BookmarkModelFactory::GetForProfile(profile),
+                        profile_path))
     // User is dragging from this profile: move.
     return ui::DragDropTypes::DRAG_MOVE;
 
@@ -108,8 +113,10 @@ bool IsValidBookmarkDropLocation(Profile* profile,
   if (!data.is_valid())
     return false;
 
-  if (data.IsFromProfile(profile)) {
-    std::vector<const BookmarkNode*> nodes = data.GetNodes(profile);
+  const base::FilePath& profile_path = profile->GetPath();
+  if (data.IsFromProfilePath(profile_path)) {
+    std::vector<const BookmarkNode*> nodes = data.GetNodes(
+        BookmarkModelFactory::GetForProfile(profile), profile_path);
     for (size_t i = 0; i < nodes.size(); ++i) {
       // Don't allow the drop if the user is attempting to drop on one of the
       // nodes being dragged.

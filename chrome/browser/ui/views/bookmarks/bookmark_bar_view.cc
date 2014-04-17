@@ -1540,7 +1540,8 @@ void BookmarkBarView::CalculateDropLocation(const DropTargetEvent& event,
   } else if (!GetBookmarkButtonCount()) {
     // No bookmarks, accept the drop.
     location->index = 0;
-    int ops = data.GetFirstNode(profile) ? ui::DragDropTypes::DRAG_MOVE :
+    int ops = data.GetFirstNode(model_, profile->GetPath()) ?
+        ui::DragDropTypes::DRAG_MOVE :
         ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK;
     location->operation = chrome::GetPreferredBookmarkDropOperation(
         event.source_operations(), ops);
@@ -1606,13 +1607,13 @@ void BookmarkBarView::CalculateDropLocation(const DropTargetEvent& event,
     location->operation = chrome::GetBookmarkDropOperation(
         profile, event, data, parent, parent->child_count());
     if (!location->operation && !data.has_single_url() &&
-        data.GetFirstNode(profile) == parent) {
+        data.GetFirstNode(model_, profile->GetPath()) == parent) {
       // Don't open a menu if the node being dragged is the menu to open.
       location->on = false;
     }
   } else {
-    location->operation = chrome::GetBookmarkDropOperation(profile, event,
-        data, model_->bookmark_bar_node(), location->index);
+    location->operation = chrome::GetBookmarkDropOperation(
+        profile, event, data, model_->bookmark_bar_node(), location->index);
   }
 }
 
@@ -1620,7 +1621,7 @@ void BookmarkBarView::WriteBookmarkDragData(const BookmarkNode* node,
                                             ui::OSExchangeData* data) {
   DCHECK(node && data);
   BookmarkNodeData drag_data(node);
-  drag_data.Write(browser_->profile(), data);
+  drag_data.Write(browser_->profile()->GetPath(), data);
 }
 
 void BookmarkBarView::StartThrobbing(const BookmarkNode* node,

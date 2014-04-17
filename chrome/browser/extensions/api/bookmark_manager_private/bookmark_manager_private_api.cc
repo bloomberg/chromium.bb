@@ -144,12 +144,15 @@ CreateApiNodeDataElement(const BookmarkNodeData::Element& element) {
 // Creates a bookmark_manager_private::BookmarkNodeData from a BookmarkNodeData.
 scoped_ptr<bookmark_manager_private::BookmarkNodeData>
 CreateApiBookmarkNodeData(Profile* profile, const BookmarkNodeData& data) {
+  const base::FilePath& profile_path = profile->GetPath();
+
   scoped_ptr<bookmark_manager_private::BookmarkNodeData> node_data(
       new bookmark_manager_private::BookmarkNodeData);
-  node_data->same_profile = data.IsFromProfile(profile);
+  node_data->same_profile = data.IsFromProfilePath(profile_path);
 
   if (node_data->same_profile) {
-    std::vector<const BookmarkNode*> nodes = data.GetNodes(profile);
+    std::vector<const BookmarkNode*> nodes = data.GetNodes(
+        BookmarkModelFactory::GetForProfile(profile), profile_path);
     for (size_t i = 0; i < nodes.size(); ++i) {
       node_data->elements.push_back(
           CreateNodeDataElementFromBookmarkNode(*nodes[i]));

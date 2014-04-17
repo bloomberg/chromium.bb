@@ -26,7 +26,8 @@ BookmarkNodeData::GetBookmarkCustomFormat() {
   return format;
 }
 
-void BookmarkNodeData::Write(Profile* profile, ui::OSExchangeData* data) const {
+void BookmarkNodeData::Write(const base::FilePath& profile_path,
+                             ui::OSExchangeData* data) const {
   DCHECK(data);
 
   // If there is only one element and it is a URL, write the URL to the
@@ -40,7 +41,7 @@ void BookmarkNodeData::Write(Profile* profile, ui::OSExchangeData* data) const {
   }
 
   Pickle data_pickle;
-  WriteToPickle(profile, &data_pickle);
+  WriteToPickle(profile_path, &data_pickle);
 
   data->SetPickledData(GetBookmarkCustomFormat(), data_pickle);
 }

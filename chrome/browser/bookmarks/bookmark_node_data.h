@@ -10,7 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
+#include "components/bookmarks/core/browser/bookmark_node.h"
 #include "ui/base/clipboard/clipboard_types.h"
 
 #include "url/gurl.h"
@@ -18,9 +18,9 @@
 #include "ui/base/dragdrop/os_exchange_data.h"
 #endif
 
+class BookmarkModel;
 class Pickle;
 class PickleIterator;
-class Profile;
 
 // BookmarkNodeData is used to represent the following:
 //
@@ -115,16 +115,17 @@ struct BookmarkNodeData {
   // Writes elements to data. If there is only one element and it is a URL
   // the URL and title are written to the clipboard in a format other apps can
   // use.
-  // |profile| is used to identify which profile the data came from. Use a
-  // value of null to indicate the data is not associated with any profile.
-  void Write(Profile* profile, ui::OSExchangeData* data) const;
+  // |profile_path| is used to identify which profile the data came from. Use an
+  // empty path to indicate that the data is not associated with any profile.
+  void Write(const base::FilePath& profile_path,
+             ui::OSExchangeData* data) const;
 
   // Restores this data from the clipboard, returning true on success.
   bool Read(const ui::OSExchangeData& data);
 #endif
 
   // Writes the data for a drag to |pickle|.
-  void WriteToPickle(Profile* profile, Pickle* pickle) const;
+  void WriteToPickle(const base::FilePath& profile_path, Pickle* pickle) const;
 
   // Reads the data for a drag from a |pickle|.
   bool ReadFromPickle(Pickle* pickle);
@@ -133,11 +134,14 @@ struct BookmarkNodeData {
   // created from the same profile then the nodes from the model are returned.
   // If the nodes can't be found (may have been deleted), an empty vector is
   // returned.
-  std::vector<const BookmarkNode*> GetNodes(Profile* profile) const;
+  std::vector<const BookmarkNode*> GetNodes(
+      BookmarkModel* model,
+      const base::FilePath& profile_path) const;
 
   // Convenience for getting the first node. Returns NULL if the data doesn't
   // match any nodes or there is more than one node.
-  const BookmarkNode* GetFirstNode(Profile* profile) const;
+  const BookmarkNode* GetFirstNode(BookmarkModel* model,
+                                   const base::FilePath& profile_path) const;
 
   // Do we contain valid data?
   bool is_valid() const { return !elements.empty(); }
@@ -151,13 +155,13 @@ struct BookmarkNodeData {
   // Clears the data.
   void Clear();
 
-  // Sets |profile_path_| to that of |profile|. This is useful for the
-  // constructors/readers that don't set it. This should only be called if the
-  // profile path is not already set.
-  void SetOriginatingProfile(Profile* profile);
+  // Sets |profile_path_|. This is useful for the constructors/readers that
+  // don't set it. This should only be called if the profile path is not
+  // already set.
+  void SetOriginatingProfilePath(const base::FilePath& profile_path);
 
-  // Returns true if this data is from the specified profile.
-  bool IsFromProfile(Profile* profile) const;
+  // Returns true if this data is from the specified profile path.
+  bool IsFromProfilePath(const base::FilePath& profile_path) const;
 
   // The actual elements written to the clipboard.
   std::vector<Element> elements;

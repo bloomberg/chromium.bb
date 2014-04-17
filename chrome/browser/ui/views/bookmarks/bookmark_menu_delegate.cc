@@ -173,7 +173,8 @@ bool BookmarkMenuDelegate::CanDrop(MenuItemView* menu,
   if (drop_data_.has_single_url())
     return true;
 
-  const BookmarkNode* drag_node = drop_data_.GetFirstNode(profile_);
+  const BookmarkNode* drag_node =
+      drop_data_.GetFirstNode(GetBookmarkModel(), profile_->GetPath());
   if (!drag_node) {
     // Dragging a folder from another profile, always accept.
     return true;
@@ -230,8 +231,8 @@ int BookmarkMenuDelegate::GetDropOperation(
       break;
   }
   DCHECK(drop_parent);
-  return chrome::GetBookmarkDropOperation(profile_, event, drop_data_,
-                                          drop_parent, index_to_drop_at);
+  return chrome::GetBookmarkDropOperation(
+      profile_, event, drop_data_, drop_parent, index_to_drop_at);
 }
 
 int BookmarkMenuDelegate::OnPerformDrop(
@@ -311,7 +312,7 @@ void BookmarkMenuDelegate::WriteDragData(MenuItemView* sender,
   content::RecordAction(UserMetricsAction("BookmarkBar_DragFromFolder"));
 
   BookmarkNodeData drag_data(menu_id_to_node_map_[sender->GetCommand()]);
-  drag_data.Write(profile_, data);
+  drag_data.Write(profile_->GetPath(), data);
 }
 
 int BookmarkMenuDelegate::GetDragOperations(MenuItemView* sender) {

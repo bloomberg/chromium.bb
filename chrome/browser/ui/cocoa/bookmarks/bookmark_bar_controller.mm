@@ -2416,7 +2416,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   BookmarkNodeData dragData;
   if (dragData.ReadFromClipboard(ui::CLIPBOARD_TYPE_DRAG)) {
     std::vector<const BookmarkNode*> nodes(
-        dragData.GetNodes(browser_->profile()));
+        dragData.GetNodes(bookmarkModel_, browser_->profile()->GetPath()));
     dragDataNodes.assign(nodes.begin(), nodes.end());
   }
   return dragDataNodes;

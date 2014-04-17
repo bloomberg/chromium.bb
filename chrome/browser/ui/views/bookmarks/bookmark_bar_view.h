@@ -31,6 +31,7 @@
 class BookmarkContextMenu;
 class Browser;
 class BrowserView;
+class Profile;
 
 namespace content {
 class PageNavigator;

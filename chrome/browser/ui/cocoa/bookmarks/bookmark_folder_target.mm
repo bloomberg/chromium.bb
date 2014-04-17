@@ -102,7 +102,7 @@ NSString* kBookmarkButtonDragType = @"ChromiumBookmarkButtonDragType";
     [pboard clearContents];
   } else {
     BookmarkNodeData data(node);
-    data.SetOriginatingProfile(profile_);
+    data.SetOriginatingProfilePath(profile_->GetPath());
     data.WriteToClipboard(ui::CLIPBOARD_TYPE_DRAG);
   }
 }

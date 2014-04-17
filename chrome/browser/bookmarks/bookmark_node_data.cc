@@ -11,8 +11,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/profiles/profile.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 
 const char* BookmarkNodeData::kClipboardFormatString =
@@ -180,7 +178,7 @@ void BookmarkNodeData::WriteToClipboard(ui::ClipboardType clipboard_type) {
   }
 
   Pickle pickle;
-  WriteToPickle(NULL, &pickle);
+  WriteToPickle(base::FilePath(), &pickle);
   scw.WritePickledData(pickle,
                        ui::Clipboard::GetFormatType(kClipboardFormatString));
 }
@@ -216,9 +214,9 @@ bool BookmarkNodeData::ReadFromClipboard(ui::ClipboardType type) {
 }
 #endif
 
-void BookmarkNodeData::WriteToPickle(Profile* profile, Pickle* pickle) const {
-  base::FilePath path = profile ? profile->GetPath() : base::FilePath();
-  path.WriteToPickle(pickle);
+void BookmarkNodeData::WriteToPickle(const base::FilePath& profile_path,
+                                     Pickle* pickle) const {
+  profile_path.WriteToPickle(pickle);
   pickle->WriteUInt64(elements.size());
 
   for (size_t i = 0; i < elements.size(); ++i)
@@ -244,15 +242,15 @@ bool BookmarkNodeData::ReadFromPickle(Pickle* pickle) {
 }
 
 std::vector<const BookmarkNode*> BookmarkNodeData::GetNodes(
-    Profile* profile) const {
+    BookmarkModel* model,
+    const base::FilePath& profile_path) const {
   std::vector<const BookmarkNode*> nodes;
 
-  if (!IsFromProfile(profile))
+  if (!IsFromProfilePath(profile_path))
     return nodes;
 
   for (size_t i = 0; i < elements.size(); ++i) {
-    const BookmarkNode* node = BookmarkModelFactory::GetForProfile(
-        profile)->GetNodeByID(elements[i].id_);
+    const BookmarkNode* node = model->GetNodeByID(elements[i].id_);
     if (!node) {
       nodes.clear();
       return nodes;
@@ -262,8 +260,10 @@ std::vector<const BookmarkNode*> BookmarkNodeData::GetNodes(
   return nodes;
 }
 
-const BookmarkNode* BookmarkNodeData::GetFirstNode(Profile* profile) const {
-  std::vector<const BookmarkNode*> nodes = GetNodes(profile);
+const BookmarkNode* BookmarkNodeData::GetFirstNode(
+    BookmarkModel* model,
+    const base::FilePath& profile_path) const {
+  std::vector<const BookmarkNode*> nodes = GetNodes(model, profile_path);
   return nodes.size() == 1 ? nodes[0] : NULL;
 }
 
@@ -272,14 +272,14 @@ void BookmarkNodeData::Clear() {
   elements.clear();
 }
 
-void BookmarkNodeData::SetOriginatingProfile(Profile* profile) {
+void BookmarkNodeData::SetOriginatingProfilePath(
+    const base::FilePath& profile_path) {
   DCHECK(profile_path_.empty());
-
-  if (profile)
-    profile_path_ = profile->GetPath();
+  profile_path_ = profile_path;
 }
 
-bool BookmarkNodeData::IsFromProfile(Profile* profile) const {
+bool BookmarkNodeData::IsFromProfilePath(
+    const base::FilePath& profile_path) const {
   // An empty path means the data is not associated with any profile.
-  return !profile_path_.empty() && profile_path_ == profile->GetPath();
+  return !profile_path_.empty() && profile_path_ == profile_path;
 }
