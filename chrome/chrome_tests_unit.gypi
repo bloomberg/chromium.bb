@@ -842,6 +842,7 @@
         'browser/extensions/api/bluetooth/bluetooth_api_unittest.cc',
         'browser/extensions/api/bluetooth/bluetooth_event_router_unittest.cc',
         'browser/extensions/api/bookmarks/bookmark_api_helpers_unittest.cc',
+        'browser/extensions/api/cast_channel/cast_channel_api_unittest.cc',
         'browser/extensions/api/cast_channel/cast_socket_unittest.cc',
         'browser/extensions/api/content_settings/content_settings_store_unittest.cc',
         'browser/extensions/api/content_settings/content_settings_unittest.cc',

@@ -46,16 +46,40 @@ namespace cast.channel {
     unknown
   };
 
+  // Authentication methods that may be required to connect to a Cast receiver.
+  enum ChannelAuthType {
+    // SSL over TCP.
+    ssl,
+    // SSL over TCP with challenge and receiver signature verification.
+    ssl_verified
+  };
+
+  // Describes the information needed to connect to a Cast receiver.
+  // This replaces the prior use of cast:// and casts:// URLs.
+  dictionary ConnectInfo {
+    // The IPV4 address of the Cast receiver, e.g. '198.1.0.2'.
+    // TODO(mfoltz): Investigate whether IPV6 addresses "just work."
+    DOMString ipAddress;
+
+    // The port number to connect to, 0-65535.
+    long port;
+
+    // The authentication method required for the channel.
+    ChannelAuthType auth;
+  };
+
   // Describes the state of a channel to a Cast receiver.
   dictionary ChannelInfo {
     // Id for the channel.
     long channelId;
 
-    // The URL to the receiver.  The URL should be of the form:
-    // cast://<IP>:<port> (for an unauthenticated channel) or
-    // casts://<IP>:<port> (for an authenticated channel).  Name resolution is
-    // not currently supported for cast:// URLs, but may be added in the future.
+    // DEPRECATED: The URL to the receiver.  This field will be removed in a
+    // future release.
     DOMString url;
+
+    // Connection information that was used to establish the channel to the
+    // receiver.
+    ConnectInfo connectInfo;
 
     // The current state of the channel.
     ReadyState readyState;
@@ -97,13 +121,16 @@ namespace cast.channel {
   callback ChannelInfoCallback = void (ChannelInfo result);
 
   interface Functions {
-    // Opens a new channel to the Cast receiver specified by the URL.  Only one
-    // channel may be connected to the same URL from the same extension at a
-    // time.  If the open request is successful, the callback will be invoked
+    // Opens a new channel to the Cast receiver specified by connectInfo.  Only
+    // one channel may be connected to same receiver from the same extension at
+    // a time.  If the open request is successful, the callback will be invoked
     // with a ChannelInfo with readyState == 'connecting'.  If unsuccessful, the
     // callback will be invoked with a ChannelInfo with channel.readyState ==
     // 'closed' and channel.errorState will be set to the error condition.
-    static void open(DOMString url,
+    //
+    // TODO(mfoltz): Convert 'any' to ConnectInfo once all clients are updated
+    // to not send URLs.
+    static void open(any connectInfo,
                      ChannelInfoCallback callback);
 
     // Sends a message on the channel and invokes callback with the resulting

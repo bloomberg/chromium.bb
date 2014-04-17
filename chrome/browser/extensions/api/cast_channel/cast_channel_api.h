@@ -21,6 +21,10 @@ namespace content {
 class BrowserContext;
 }
 
+namespace net {
+class IPEndPoint;
+}
+
 namespace extensions {
 
 namespace cast_channel = api::cast_channel;
@@ -36,11 +40,12 @@ class CastChannelAPI : public BrowserContextKeyedAPI,
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<CastChannelAPI>* GetFactoryInstance();
 
-  // Returns a new CastSocket that connects to |url| and is to be owned by
-  // |extension_id|.
+  // Returns a new CastSocket that connects to |ip_endpoint| with authentication
+  // |channel_auth| and is to be owned by |extension_id|.
   scoped_ptr<cast_channel::CastSocket> CreateCastSocket(
       const std::string& extension_id,
-      const GURL& gurl);
+      const net::IPEndPoint& ip_endpoint,
+      cast_channel::ChannelAuthType channel_auth);
 
   // Sets the CastSocket instance to be returned by CreateCastSocket for
   // testing.
@@ -128,13 +133,29 @@ class CastChannelOpenFunction : public CastChannelAsyncApiFunction {
  private:
   DECLARE_EXTENSION_FUNCTION("cast.channel.open", CAST_CHANNEL_OPEN)
 
+  // Parses the cast:// or casts:// |url|, fills |connect_info| with the
+  // corresponding details, and returns true. Returns false if |url| is not a
+  // valid Cast URL.
+  static bool ParseChannelUrl(const GURL& url,
+                              api::cast_channel::ConnectInfo* connect_info);
+
+  // Validates that |connect_info| represents a valid IP end point and returns a
+  // new IPEndPoint if so.  Otherwise returns NULL.
+  static net::IPEndPoint* ParseConnectInfo(
+      const api::cast_channel::ConnectInfo& connect_info);
+
   void OnOpen(int result);
 
   scoped_ptr<cast_channel::Open::Params> params_;
   // The id of the newly opened socket.
   int new_channel_id_;
   CastChannelAPI* api_;
+  scoped_ptr<api::cast_channel::ConnectInfo> connect_info_;
+  scoped_ptr<net::IPEndPoint> ip_endpoint_;
+  api::cast_channel::ChannelAuthType channel_auth_;
 
+  FRIEND_TEST_ALL_PREFIXES(CastChannelOpenFunctionTest, TestParseChannelUrl);
+  FRIEND_TEST_ALL_PREFIXES(CastChannelOpenFunctionTest, TestParseConnectInfo);
   DISALLOW_COPY_AND_ASSIGN(CastChannelOpenFunction);
 };
 

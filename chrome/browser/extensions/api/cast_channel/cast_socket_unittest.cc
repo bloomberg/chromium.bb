@@ -12,9 +12,8 @@
 #include "chrome/browser/extensions/api/cast_channel/cast_message_util.h"
 #include "net/base/address_list.h"
 #include "net/base/capturing_net_log.h"
-#include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_log.h"
+#include "net/base/net_util.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/tcp_client_socket.h"
@@ -135,20 +134,23 @@ class TestCastSocket : public CastSocket {
   static scoped_ptr<TestCastSocket> Create(
       MockCastSocketDelegate* delegate) {
     return scoped_ptr<TestCastSocket>(
-        new TestCastSocket(delegate, "cast://192.0.0.1:8009"));
+        new TestCastSocket(delegate, CreateIPEndPoint(),
+                           CHANNEL_AUTH_TYPE_SSL));
   }
 
   static scoped_ptr<TestCastSocket> CreateSecure(
       MockCastSocketDelegate* delegate) {
     return scoped_ptr<TestCastSocket>(
-        new TestCastSocket(delegate, "casts://192.0.0.1:8009"));
+        new TestCastSocket(delegate, CreateIPEndPoint(),
+                           CHANNEL_AUTH_TYPE_SSL_VERIFIED));
   }
 
   explicit TestCastSocket(MockCastSocketDelegate* delegate,
-                          const std::string& url) :
-      CastSocket("abcdefg", GURL(url), delegate,
-                 &capturing_net_log_),
-      ip_(CreateIPEndPoint()),
+                          const net::IPEndPoint& ip_endpoint,
+                          ChannelAuthType channel_auth) :
+        CastSocket("abcdefg", ip_endpoint, channel_auth, delegate,
+                   &capturing_net_log_),
+      ip_(ip_endpoint),
       connect_index_(0),
       extract_cert_result_(true),
       verify_challenge_result_(true) {
@@ -359,32 +361,6 @@ class CastSocketTest : public testing::Test {
   std::string auth_request_;
   std::string auth_reply_;
 };
-
-// Tests URL parsing and validation.
-TEST_F(CastSocketTest, TestCastURLs) {
-  CreateCastSocket();
-  EXPECT_TRUE(socket_->ParseChannelUrl(GURL("cast://192.0.0.1:8009")));
-  EXPECT_FALSE(socket_->auth_required());
-  EXPECT_EQ(socket_->ip_endpoint_.ToString(), "192.0.0.1:8009");
-
-  EXPECT_TRUE(socket_->ParseChannelUrl(GURL("casts://192.0.0.1:12345")));
-  EXPECT_TRUE(socket_->auth_required());
-  EXPECT_EQ(socket_->ip_endpoint_.ToString(), "192.0.0.1:12345");
-
-  EXPECT_FALSE(socket_->ParseChannelUrl(GURL("http://192.0.0.1:12345")));
-  EXPECT_FALSE(socket_->ParseChannelUrl(GURL("cast:192.0.0.1:12345")));
-  EXPECT_FALSE(socket_->ParseChannelUrl(GURL("cast:///192.0.0.1:12345")));
-  EXPECT_FALSE(socket_->ParseChannelUrl(GURL("cast://:12345")));
-  EXPECT_FALSE(socket_->ParseChannelUrl(GURL("cast://abcd:8009")));
-  EXPECT_FALSE(socket_->ParseChannelUrl(GURL("cast://192.0.0.1:abcd")));
-  EXPECT_FALSE(socket_->ParseChannelUrl(GURL("")));
-  EXPECT_FALSE(socket_->ParseChannelUrl(GURL("foo")));
-  EXPECT_FALSE(socket_->ParseChannelUrl(GURL("cast:")));
-  EXPECT_FALSE(socket_->ParseChannelUrl(GURL("cast::")));
-  EXPECT_FALSE(socket_->ParseChannelUrl(GURL("cast://192.0.0.1")));
-  EXPECT_FALSE(socket_->ParseChannelUrl(GURL("cast://:")));
-  EXPECT_FALSE(socket_->ParseChannelUrl(GURL("cast://192.0.0.1:")));
-}
 
 // Tests connecting and closing the socket.
 TEST_F(CastSocketTest, TestConnectAndClose) {

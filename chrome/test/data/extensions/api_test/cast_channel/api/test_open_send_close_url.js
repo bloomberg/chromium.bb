@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,5 +24,4 @@ var onOpen = function(channel) {
   chrome.cast.channel.send(channel, message, onSend);
 };
 
-chrome.cast.channel.open({ipAddress: '192.168.1.1', port: 8009, auth: 'ssl'},
-                         onOpen);
+chrome.cast.channel.open('cast://192.168.1.1:8009', onOpen);

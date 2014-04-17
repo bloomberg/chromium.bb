@@ -4,8 +4,11 @@
 
 #include "chrome/browser/extensions/api/cast_channel/cast_channel_api.h"
 
+#include <limits>
+
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/cast_channel/cast_socket.h"
@@ -13,7 +16,9 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_util.h"
 #include "url/gurl.h"
 
 namespace extensions {
@@ -24,8 +29,10 @@ namespace OnMessage = cast_channel::OnMessage;
 namespace Open = cast_channel::Open;
 namespace Send = cast_channel::Send;
 using cast_channel::CastSocket;
+using cast_channel::ChannelAuthType;
 using cast_channel::ChannelError;
 using cast_channel::ChannelInfo;
+using cast_channel::ConnectInfo;
 using cast_channel::MessageInfo;
 using cast_channel::ReadyState;
 using content::BrowserThread;
@@ -39,6 +46,19 @@ std::string ParamToString(const T& info) {
   std::string out;
   base::JSONWriter::Write(dict.get(), &out);
   return out;
+}
+
+// Fills |channel_info| from the destination and state of |socket|.
+void FillChannelInfo(const CastSocket& socket, ChannelInfo* channel_info) {
+  DCHECK(channel_info);
+  channel_info->channel_id = socket.id();
+  channel_info->url = socket.CastUrl();
+  const net::IPEndPoint& ip_endpoint = socket.ip_endpoint();
+  channel_info->connect_info.ip_address = ip_endpoint.ToStringWithoutPort();
+  channel_info->connect_info.port = ip_endpoint.port();
+  channel_info->connect_info.auth = socket.channel_auth();
+  channel_info->ready_state = socket.ready_state();
+  channel_info->error_state = socket.error_state();
 }
 
 }  // namespace
@@ -63,12 +83,13 @@ CastChannelAPI::GetFactoryInstance() {
 }
 
 scoped_ptr<CastSocket> CastChannelAPI::CreateCastSocket(
-    const std::string& extension_id, const GURL& url) {
+    const std::string& extension_id, const net::IPEndPoint& ip_endpoint,
+    ChannelAuthType channel_auth) {
   if (socket_for_test_.get()) {
     return socket_for_test_.Pass();
   } else {
     return scoped_ptr<CastSocket>(
-        new CastSocket(extension_id, url, this,
+        new CastSocket(extension_id, ip_endpoint, channel_auth, this,
                        g_browser_process->net_log()));
   }
 }
@@ -81,7 +102,7 @@ void CastChannelAPI::OnError(const CastSocket* socket,
                              cast_channel::ChannelError error) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ChannelInfo channel_info;
-  socket->FillChannelInfo(&channel_info);
+  FillChannelInfo(*socket, &channel_info);
   channel_info.error_state = error;
   scoped_ptr<base::ListValue> results = OnError::Create(channel_info);
   scoped_ptr<Event> event(new Event(OnError::kEventName, results.Pass()));
@@ -94,7 +115,7 @@ void CastChannelAPI::OnMessage(const CastSocket* socket,
                                const MessageInfo& message_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ChannelInfo channel_info;
-  socket->FillChannelInfo(&channel_info);
+  FillChannelInfo(*socket, &channel_info);
   scoped_ptr<base::ListValue> results =
     OnMessage::Create(channel_info, message_info);
   VLOG(1) << "Sending message " << ParamToString(message_info)
@@ -150,7 +171,7 @@ void CastChannelAsyncApiFunction::SetResultFromSocket(int channel_id) {
   CastSocket* socket = GetSocket(channel_id);
   DCHECK(socket);
   ChannelInfo channel_info;
-  socket->FillChannelInfo(&channel_info);
+  FillChannelInfo(*socket, &channel_info);
   error_ = socket->error_state();
   SetResultFromChannelInfo(channel_info);
 }
@@ -182,6 +203,69 @@ CastChannelOpenFunction::CastChannelOpenFunction()
 
 CastChannelOpenFunction::~CastChannelOpenFunction() { }
 
+// TODO(mfoltz): Remove URL parsing when clients have converted to use
+// ConnectInfo.
+
+// Allowed schemes for Cast device URLs.
+const char kCastInsecureScheme[] = "cast";
+const char kCastSecureScheme[] = "casts";
+
+bool CastChannelOpenFunction::ParseChannelUrl(const GURL& url,
+                                              ConnectInfo* connect_info) {
+  DCHECK(connect_info);
+  VLOG(2) << "ParseChannelUrl";
+  bool auth_required = false;
+  if (url.SchemeIs(kCastSecureScheme)) {
+    auth_required = true;
+  } else if (!url.SchemeIs(kCastInsecureScheme)) {
+    return false;
+  }
+  // TODO(mfoltz): Test for IPv6 addresses.  Brackets or no brackets?
+  // TODO(mfoltz): Maybe enforce restriction to IPv4 private and IPv6
+  // link-local networks
+  const std::string& path = url.path();
+  // Shortest possible: //A:B
+  if (path.size() < 5) {
+    return false;
+  }
+  if (path.find("//") != 0) {
+    return false;
+  }
+  size_t colon = path.find_last_of(':');
+  if (colon == std::string::npos || colon < 3 || colon > path.size() - 2) {
+    return false;
+  }
+  const std::string& ip_address_str = path.substr(2, colon - 2);
+  const std::string& port_str = path.substr(colon + 1);
+  VLOG(2) << "IP: " << ip_address_str << " Port: " << port_str;
+  int port;
+  if (!base::StringToInt(port_str, &port))
+    return false;
+  connect_info->ip_address = ip_address_str;
+  connect_info->port = port;
+  connect_info->auth = auth_required ?
+    cast_channel::CHANNEL_AUTH_TYPE_SSL_VERIFIED :
+    cast_channel::CHANNEL_AUTH_TYPE_SSL;
+  return true;
+};
+
+net::IPEndPoint* CastChannelOpenFunction::ParseConnectInfo(
+    const ConnectInfo& connect_info) {
+  net::IPAddressNumber ip_address;
+  if (!net::ParseIPLiteralToNumber(connect_info.ip_address, &ip_address)) {
+    return NULL;
+  }
+  if (connect_info.port < 0 || connect_info.port >
+      std::numeric_limits<unsigned short>::max()) {
+    return NULL;
+  }
+  if (connect_info.auth != cast_channel::CHANNEL_AUTH_TYPE_SSL_VERIFIED &&
+      connect_info.auth != cast_channel::CHANNEL_AUTH_TYPE_SSL) {
+    return NULL;
+  }
+  return new net::IPEndPoint(ip_address, connect_info.port);
+}
+
 bool CastChannelOpenFunction::PrePrepare() {
   api_ = CastChannelAPI::Get(browser_context());
   return CastChannelAsyncApiFunction::PrePrepare();
@@ -190,13 +274,36 @@ bool CastChannelOpenFunction::PrePrepare() {
 bool CastChannelOpenFunction::Prepare() {
   params_ = Open::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
-  return true;
+  // The connect_info parameter may be a string URL like cast:// or casts:// or
+  // a ConnectInfo object.
+  std::string cast_url;
+  switch (params_->connect_info->GetType()) {
+    case base::Value::TYPE_STRING:
+      CHECK(params_->connect_info->GetAsString(&cast_url));
+      connect_info_.reset(new ConnectInfo);
+      if (!ParseChannelUrl(GURL(cast_url), connect_info_.get())) {
+        connect_info_.reset();
+      }
+      break;
+    case base::Value::TYPE_DICTIONARY:
+      connect_info_ = ConnectInfo::FromValue(*(params_->connect_info));
+      break;
+    default:
+      break;
+  }
+  if (connect_info_.get()) {
+    channel_auth_ = connect_info_->auth;
+    ip_endpoint_.reset(ParseConnectInfo(*connect_info_));
+    return ip_endpoint_.get() != NULL;
+  }
+  return false;
 }
 
 void CastChannelOpenFunction::AsyncWorkStart() {
   DCHECK(api_);
-  scoped_ptr<CastSocket> socket = api_->CreateCastSocket(extension_->id(),
-                                                         GURL(params_->url));
+  DCHECK(ip_endpoint_.get());
+  scoped_ptr<CastSocket> socket = api_->CreateCastSocket(
+      extension_->id(), *ip_endpoint_, channel_auth_);
   new_channel_id_ = AddSocket(socket.release());
   GetSocket(new_channel_id_)->Connect(
       base::Bind(&CastChannelOpenFunction::OnOpen, this));
