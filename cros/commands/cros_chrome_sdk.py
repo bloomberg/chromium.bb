@@ -769,15 +769,14 @@ class ChromeSDKCommand(cros.CrosCommand):
         ref.SetDefault(goma_dir)
     goma_dir = ref.path
 
+    Log('Starting Goma.', silent=self.silent)
+    cros_build_lib.DebugRunCommand(
+        ['python', 'goma_ctl.py', 'ensure_start'], cwd=goma_dir)
     port = self._GomaPort(goma_dir)
+    Log('Goma is started on port %s', port, silent=self.silent)
     if not port:
-      Log('Starting Goma.', silent=self.silent)
-      cros_build_lib.DebugRunCommand(
-          ['python', 'goma_ctl.py', 'ensure_start'], cwd=goma_dir)
-      port = self._GomaPort(goma_dir)
-      Log('Goma is started on port %s', port, silent=self.silent)
-      if not port:
-        raise GomaError('No Goma port detected')
+      raise GomaError('No Goma port detected')
+
     return goma_dir, port
 
   def _SetupClang(self):
