@@ -48,7 +48,7 @@ function test()
             InspectorTest.waitUntilNthMessageReceived(2, evaluateNext);
         }
 
-        WebInspector.runtimeModel.evaluate(expression, "console", true, undefined, undefined, undefined, didEvaluate);
+        WebInspector.context.flavor(WebInspector.ExecutionContext).evaluate(expression, "console", true, undefined, undefined, undefined, didEvaluate);
     }
 
     function dumpConsoleMessages()

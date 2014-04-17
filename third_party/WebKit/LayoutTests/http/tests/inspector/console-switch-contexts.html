@@ -26,7 +26,7 @@ function test()
         }
         var selectedOption = consoleView._executionContextSelector.selectedOption();
         InspectorTest.addResult("Selected option: " +  (selectedOption ? selectedOption.textContent : "none!"));
-        InspectorTest.assertEquals(WebInspector.runtimeModel.currentExecutionContext(), consoleView._currentExecutionContext());
+        InspectorTest.assertEquals(WebInspector.context.flavor(WebInspector.ExecutionContext), consoleView._executionContextSelector.selectedOption() ? consoleView._executionContextSelector.selectedOption()._executionContext : null);
     }
 
     function addFakeExecutionContext()

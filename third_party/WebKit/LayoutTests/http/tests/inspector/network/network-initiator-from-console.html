@@ -23,7 +23,7 @@ var test = function()
         str += "var s = document.createElement(\"script\");";
         str += "s.src = \"resources/silent_script.js\";";
         str += "document.head.appendChild(s);";
-        WebInspector.runtimeModel.evaluate(str, "console", true, undefined, undefined, undefined, function(){});
+        WebInspector.context.flavor(WebInspector.ExecutionContext).evaluate(str, "console", true, undefined, undefined, undefined, function(){});
     }
 
     function onRequest(event)
