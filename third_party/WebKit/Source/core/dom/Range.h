@@ -161,8 +161,6 @@ private:
     Node* checkNodeWOffset(Node*, int offset, ExceptionState&) const;
     void checkNodeBA(Node*, ExceptionState&) const;
     void checkDeleteExtract(ExceptionState&);
-    int maxStartOffset() const;
-    int maxEndOffset() const;
 
     enum ActionType { DELETE_CONTENTS, EXTRACT_CONTENTS, CLONE_CONTENTS };
     PassRefPtr<DocumentFragment> processContents(ActionType, ExceptionState&);

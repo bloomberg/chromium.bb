@@ -136,12 +136,4 @@ String DOMException::getErrorMessage(ExceptionCode ec)
     return entry->message;
 }
 
-unsigned short DOMException::getLegacyErrorCode(ExceptionCode ec)
-{
-    const CoreException* entry = getErrorEntry(ec);
-    ASSERT(entry);
-
-    return (entry && entry->code) ? entry->code : 0;
-}
-
 } // namespace WebCore

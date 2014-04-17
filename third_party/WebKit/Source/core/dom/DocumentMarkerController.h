@@ -52,8 +52,6 @@ public:
     void addMarker(Range*, DocumentMarker::MarkerType);
     void addMarker(Range*, DocumentMarker::MarkerType, const String& description);
     void addMarker(Range*, DocumentMarker::MarkerType, const String& description, uint32_t hash);
-    void addMarkerToNode(Node*, unsigned startOffset, unsigned length, DocumentMarker::MarkerType);
-    void addMarkerToNode(Node*, unsigned startOffset, unsigned length, DocumentMarker::MarkerType, PassRefPtr<DocumentMarkerDetails>);
     void addTextMatchMarker(const Range*, bool activeMatch);
 
     void copyMarkers(Node* srcNode, unsigned startOffset, int length, Node* dstNode, int delta);

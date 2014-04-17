@@ -208,9 +208,7 @@ private:
 
     int renderedOffset() const;
 
-
     Position previousCharacterPosition(EAffinity) const;
-    Position nextCharacterPosition(EAffinity) const;
 
     static AnchorType anchorTypeForLegacyEditingPosition(Node* anchorNode, int offset);
 

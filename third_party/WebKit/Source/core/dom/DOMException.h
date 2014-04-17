@@ -55,7 +55,6 @@ public:
 
     static String getErrorName(ExceptionCode);
     static String getErrorMessage(ExceptionCode);
-    static unsigned short getLegacyErrorCode(ExceptionCode);
 
 private:
     DOMException(unsigned short m_code, const String& name, const String& sanitizedMessage, const String& unsanitizedMessage);

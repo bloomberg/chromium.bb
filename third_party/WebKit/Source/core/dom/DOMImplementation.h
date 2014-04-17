@@ -55,8 +55,6 @@ public:
     PassRefPtr<DocumentType> createDocumentType(const AtomicString& qualifiedName, const String& publicId, const String& systemId, ExceptionState&);
     PassRefPtr<XMLDocument> createDocument(const AtomicString& namespaceURI, const AtomicString& qualifiedName, DocumentType*, ExceptionState&);
 
-    DOMImplementation* getInterface(const String& feature);
-
     // From the HTMLDOMImplementation interface
     PassRefPtr<HTMLDocument> createHTMLDocument(const String& title);
 

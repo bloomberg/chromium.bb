@@ -198,11 +198,6 @@ PassRefPtr<DocumentType> DOMImplementation::createDocumentType(const AtomicStrin
     return DocumentType::create(&m_document, qualifiedName, publicId, systemId);
 }
 
-DOMImplementation* DOMImplementation::getInterface(const String& /*feature*/)
-{
-    return 0;
-}
-
 PassRefPtr<XMLDocument> DOMImplementation::createDocument(const AtomicString& namespaceURI,
     const AtomicString& qualifiedName, DocumentType* doctype, ExceptionState& exceptionState)
 {
