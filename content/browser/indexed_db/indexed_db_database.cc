@@ -10,9 +10,11 @@
 #include "base/auto_reset.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/browser/indexed_db/indexed_db_blob_info.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_cursor.h"
@@ -25,6 +27,7 @@
 #include "content/common/indexed_db/indexed_db_key_path.h"
 #include "content/common/indexed_db/indexed_db_key_range.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabaseException.h"
+#include "webkit/browser/blob/blob_data_handle.h"
 
 using base::ASCIIToUTF16;
 using base::Int64ToString16;
@@ -195,9 +198,7 @@ scoped_ptr<IndexedDBConnection> IndexedDBDatabase::CreateConnection(
   scoped_ptr<IndexedDBConnection> connection(
       new IndexedDBConnection(this, database_callbacks));
   connections_.insert(connection.get());
-  /* TODO(ericu):  Grant child process permissions here so that the connection
-   * can create Blobs.
-  */
+  backing_store_->GrantChildProcessPermissions(child_process_id);
   return connection.Pass();
 }
 
@@ -718,6 +719,7 @@ struct IndexedDBDatabase::PutOperationParams {
   PutOperationParams() {}
   int64 object_store_id;
   IndexedDBValue value;
+  ScopedVector<webkit_blob::BlobDataHandle> handles;
   scoped_ptr<IndexedDBKey> key;
   IndexedDBDatabase::PutMode put_mode;
   scoped_refptr<IndexedDBCallbacks> callbacks;
@@ -730,6 +732,7 @@ struct IndexedDBDatabase::PutOperationParams {
 void IndexedDBDatabase::Put(int64 transaction_id,
                             int64 object_store_id,
                             IndexedDBValue* value,
+                            ScopedVector<webkit_blob::BlobDataHandle>* handles,
                             scoped_ptr<IndexedDBKey> key,
                             PutMode put_mode,
                             scoped_refptr<IndexedDBCallbacks> callbacks,
@@ -744,9 +747,11 @@ void IndexedDBDatabase::Put(int64 transaction_id,
     return;
 
   DCHECK(key);
+  DCHECK(value);
   scoped_ptr<PutOperationParams> params(new PutOperationParams());
   params->object_store_id = object_store_id;
   params->value.swap(*value);
+  params->handles.swap(*handles);
   params->key = key.Pass();
   params->put_mode = put_mode;
   params->callbacks = callbacks;
@@ -846,6 +851,7 @@ void IndexedDBDatabase::PutOperation(scoped_ptr<PutOperationParams> params,
                                 params->object_store_id,
                                 *key,
                                 params->value,
+                                &params->handles,
                                 &record_identifier);
   if (!s.ok()) {
     IndexedDBDatabaseError error(

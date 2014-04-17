@@ -7,9 +7,11 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/memory/scoped_vector.h"
 #include "base/process/process.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/indexed_db/indexed_db_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
@@ -116,7 +118,8 @@ void IndexedDBDispatcherHost::ResetDispatcherHosts() {
 
 base::TaskRunner* IndexedDBDispatcherHost::OverrideTaskRunnerForMessage(
     const IPC::Message& message) {
-  if (IPC_MESSAGE_CLASS(message) == IndexedDBMsgStart)
+  if (IPC_MESSAGE_CLASS(message) == IndexedDBMsgStart &&
+      message.type() != IndexedDBHostMsg_DatabasePut::ID)
     return indexed_db_context_->TaskRunner();
   return NULL;
 }
@@ -126,7 +129,8 @@ bool IndexedDBDispatcherHost::OnMessageReceived(const IPC::Message& message,
   if (IPC_MESSAGE_CLASS(message) != IndexedDBMsgStart)
     return false;
 
-  DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
+  DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread() ||
+         message.type() == IndexedDBHostMsg_DatabasePut::ID);
 
   bool handled =
       database_dispatcher_host_->OnMessageReceived(message, message_was_ok) ||
@@ -334,6 +338,14 @@ void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
       indexed_db_path);
 }
 
+// OnPutHelper exists only to allow us to hop threads while holding a reference
+// to the IndexedDBDispatcherHost.
+void IndexedDBDispatcherHost::OnPutHelper(
+    const IndexedDBHostMsg_DatabasePut_Params& params,
+    std::vector<webkit_blob::BlobDataHandle*> handles) {
+  database_dispatcher_host_->OnPut(params, handles);
+}
+
 void IndexedDBDispatcherHost::OnAckReceivedBlobs(
     const std::vector<std::string>& uuids) {
   DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
@@ -451,8 +463,11 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::CloseAll() {
 bool IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMessageReceived(
     const IPC::Message& message,
     bool* msg_is_ok) {
+
   DCHECK(
+      (message.type() == IndexedDBHostMsg_DatabasePut::ID) ||
       parent_->indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
+
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(
       IndexedDBDispatcherHost::DatabaseDispatcherHost, message, *msg_is_ok)
@@ -465,7 +480,7 @@ bool IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMessageReceived(
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseClose, OnClose)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseDestroyed, OnDestroyed)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseGet, OnGet)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabasePut, OnPut)
+    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabasePut, OnPutWrapper)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseSetIndexKeys, OnSetIndexKeys)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseSetIndexesReady,
                         OnSetIndexesReady)
@@ -479,6 +494,7 @@ bool IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMessageReceived(
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseCommit, OnCommit)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+
   return handled;
 }
 
@@ -588,10 +604,30 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnGet(
       callbacks);
 }
 
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPut(
+void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPutWrapper(
     const IndexedDBHostMsg_DatabasePut_Params& params) {
+  std::vector<webkit_blob::BlobDataHandle*> handles;
+  for (size_t i = 0; i < params.blob_or_file_info.size(); ++i) {
+    const IndexedDBMsg_BlobOrFileInfo& info = params.blob_or_file_info[i];
+    handles.push_back(parent_->blob_storage_context_->context()
+                          ->GetBlobDataFromUUID(info.uuid)
+                          .release());
+  }
+  parent_->indexed_db_context_->TaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &IndexedDBDispatcherHost::OnPutHelper, parent_, params, handles));
+}
+
+void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPut(
+    const IndexedDBHostMsg_DatabasePut_Params& params,
+    std::vector<webkit_blob::BlobDataHandle*> handles) {
+
   DCHECK(
       parent_->indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
+
+  ScopedVector<webkit_blob::BlobDataHandle> scoped_handles;
+  scoped_handles.swap(handles);
 
   IndexedDBConnection* connection =
       parent_->GetOrTerminateProcess(&map_, params.ipc_database_id);
@@ -601,13 +637,35 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPut(
       parent_, params.ipc_thread_id, params.ipc_callbacks_id));
 
   int64 host_transaction_id = parent_->HostTransactionId(params.transaction_id);
+
+  std::vector<IndexedDBBlobInfo> blob_info(params.blob_or_file_info.size());
+
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+
+  for (size_t i = 0; i < params.blob_or_file_info.size(); ++i) {
+    const IndexedDBMsg_BlobOrFileInfo& info = params.blob_or_file_info[i];
+    if (info.is_file) {
+      base::FilePath path = base::FilePath::FromUTF16Unsafe(info.file_path);
+      if (!policy->CanReadFile(parent_->ipc_process_id_, path)) {
+        parent_->BadMessageReceived();
+        return;
+      }
+      blob_info[i] = IndexedDBBlobInfo(path, info.file_name, info.mime_type);
+    } else {
+      blob_info[i] = IndexedDBBlobInfo(info.uuid, info.mime_type, info.size);
+    }
+  }
+
   // TODO(alecflett): Avoid a copy here.
   IndexedDBValue value;
   value.bits = params.value;
+  value.blob_info.swap(blob_info);
   connection->database()->Put(
       host_transaction_id,
       params.object_store_id,
       &value,
+      &scoped_handles,
       make_scoped_ptr(new IndexedDBKey(params.key)),
       static_cast<IndexedDBDatabase::PutMode>(params.put_mode),
       callbacks,
@@ -824,9 +882,6 @@ IndexedDBDispatcherHost::CursorDispatcherHost::~CursorDispatcherHost() {}
 bool IndexedDBDispatcherHost::CursorDispatcherHost::OnMessageReceived(
     const IPC::Message& message,
     bool* msg_is_ok) {
-  DCHECK(
-      parent_->indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
-
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(
       IndexedDBDispatcherHost::CursorDispatcherHost, message, *msg_is_ok)
@@ -837,6 +892,11 @@ bool IndexedDBDispatcherHost::CursorDispatcherHost::OnMessageReceived(
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorDestroyed, OnDestroyed)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+
+  DCHECK(
+      !handled ||
+      parent_->indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
+
   return handled;
 }
 

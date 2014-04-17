@@ -51,9 +51,10 @@ TEST_F(IndexedDBBackingStoreTest, PutGetConsistency) {
   {
     IndexedDBBackingStore::Transaction transaction1(backing_store_);
     transaction1.Begin();
+    ScopedVector<webkit_blob::BlobDataHandle> handles;
     IndexedDBBackingStore::RecordIdentifier record;
     leveldb::Status s = backing_store_->PutRecord(
-        &transaction1, 1, 1, m_key1, m_value1, &record);
+        &transaction1, 1, 1, m_key1, m_value1, &handles, &record);
     EXPECT_TRUE(s.ok());
     transaction1.Commit();
   }
@@ -86,12 +87,14 @@ TEST_F(IndexedDBBackingStoreTest, HighIds) {
   {
     IndexedDBBackingStore::Transaction transaction1(backing_store_);
     transaction1.Begin();
+    ScopedVector<webkit_blob::BlobDataHandle> handles;
     IndexedDBBackingStore::RecordIdentifier record;
     leveldb::Status s = backing_store_->PutRecord(&transaction1,
                                                   high_database_id,
                                                   high_object_store_id,
                                                   m_key1,
                                                   m_value1,
+                                                  &handles,
                                                   &record);
     EXPECT_TRUE(s.ok());
 
@@ -163,26 +166,29 @@ TEST_F(IndexedDBBackingStoreTest, InvalidIds) {
   IndexedDBBackingStore::Transaction transaction1(backing_store_);
   transaction1.Begin();
 
+  ScopedVector<webkit_blob::BlobDataHandle> handles;
   IndexedDBBackingStore::RecordIdentifier record;
   leveldb::Status s = backing_store_->PutRecord(&transaction1,
                                                 database_id,
                                                 KeyPrefix::kInvalidId,
                                                 m_key1,
                                                 m_value1,
+                                                &handles,
                                                 &record);
   EXPECT_FALSE(s.ok());
   s = backing_store_->PutRecord(
-      &transaction1, database_id, 0, m_key1, m_value1, &record);
+      &transaction1, database_id, 0, m_key1, m_value1, &handles, &record);
   EXPECT_FALSE(s.ok());
   s = backing_store_->PutRecord(&transaction1,
                                 KeyPrefix::kInvalidId,
                                 object_store_id,
                                 m_key1,
                                 m_value1,
+                                &handles,
                                 &record);
   EXPECT_FALSE(s.ok());
   s = backing_store_->PutRecord(
-      &transaction1, 0, object_store_id, m_key1, m_value1, &record);
+      &transaction1, 0, object_store_id, m_key1, m_value1, &handles, &record);
   EXPECT_FALSE(s.ok());
 
   s = backing_store_->GetRecord(

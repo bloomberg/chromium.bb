@@ -12,6 +12,8 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/indexed_db/indexed_db_blob_info.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
 #include "content/browser/indexed_db/indexed_db_metadata.h"
@@ -27,6 +29,7 @@
 #include "third_party/WebKit/public/platform/WebIDBTypes.h"
 #include "third_party/WebKit/public/web/WebSerializedScriptValueVersion.h"
 #include "third_party/leveldatabase/env_chromium.h"
+#include "webkit/browser/blob/blob_data_handle.h"
 #include "webkit/common/database/database_identifier.h"
 
 using base::StringPiece;
@@ -43,6 +46,12 @@ static base::FilePath ComputeFileName(const GURL& origin_url) {
   return base::FilePath()
       .AppendASCII(webkit_database::GetIdentifierFromOrigin(origin_url))
       .AddExtension(FILE_PATH_LITERAL(".indexeddb.leveldb"));
+}
+
+static base::FilePath ComputeBlobPath(const GURL& origin_url) {
+  return base::FilePath()
+      .AppendASCII(webkit_database::GetIdentifierFromOrigin(origin_url))
+      .AddExtension(FILE_PATH_LITERAL(".indexeddb.blob"));
 }
 
 static base::FilePath ComputeCorruptionFileName(const GURL& origin_url) {
@@ -431,11 +440,13 @@ class DefaultLevelDBFactory : public LevelDBFactory {
 IndexedDBBackingStore::IndexedDBBackingStore(
     IndexedDBFactory* indexed_db_factory,
     const GURL& origin_url,
+    const base::FilePath& blob_path,
     scoped_ptr<LevelDBDatabase> db,
     scoped_ptr<LevelDBComparator> comparator,
     base::TaskRunner* task_runner)
     : indexed_db_factory_(indexed_db_factory),
       origin_url_(origin_url),
+      blob_path_(blob_path),
       origin_identifier_(ComputeOriginIdentifier(origin_url)),
       task_runner_(task_runner),
       db_(db.Pass()),
@@ -443,6 +454,16 @@ IndexedDBBackingStore::IndexedDBBackingStore(
       active_blob_registry_(this) {}
 
 IndexedDBBackingStore::~IndexedDBBackingStore() {
+  if (!blob_path_.empty() && !child_process_ids_granted_.empty()) {
+    ChildProcessSecurityPolicyImpl* policy =
+        ChildProcessSecurityPolicyImpl::GetInstance();
+    std::set<int>::const_iterator iter;
+    for (iter = child_process_ids_granted_.begin();
+         iter != child_process_ids_granted_.end();
+         ++iter) {
+      policy->RevokeAllPermissionsForFile(*iter, blob_path_);
+    }
+  }
   // db_'s destructor uses comparator_. The order of destruction is important.
   db_.reset();
   comparator_.reset();
@@ -661,6 +682,8 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
 
   const base::FilePath file_path =
       path_base.Append(ComputeFileName(origin_url));
+  const base::FilePath blob_path =
+      path_base.Append(ComputeBlobPath(origin_url));
 
   if (IsPathTooLong(file_path)) {
     HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_ORIGIN_TOO_LONG,
@@ -756,6 +779,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
 
   return Create(indexed_db_factory,
                 origin_url,
+                blob_path,
                 db.Pass(),
                 comparator.Pass(),
                 task_runner);
@@ -790,6 +814,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::OpenInMemory(
 
   return Create(NULL /* indexed_db_factory */,
                 origin_url,
+                base::FilePath(),
                 db.Pass(),
                 comparator.Pass(),
                 task_runner);
@@ -799,6 +824,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::OpenInMemory(
 scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Create(
     IndexedDBFactory* indexed_db_factory,
     const GURL& origin_url,
+    const base::FilePath& blob_path,
     scoped_ptr<LevelDBDatabase> db,
     scoped_ptr<LevelDBComparator> comparator,
     base::TaskRunner* task_runner) {
@@ -807,6 +833,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Create(
   scoped_refptr<IndexedDBBackingStore> backing_store(
       new IndexedDBBackingStore(indexed_db_factory,
                                 origin_url,
+                                blob_path,
                                 db.Pass(),
                                 comparator.Pass(),
                                 task_runner));
@@ -815,6 +842,14 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Create(
     return scoped_refptr<IndexedDBBackingStore>();
 
   return backing_store;
+}
+
+void IndexedDBBackingStore::GrantChildProcessPermissions(int child_process_id) {
+  if (!child_process_ids_granted_.count(child_process_id)) {
+    child_process_ids_granted_.insert(child_process_id);
+    ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
+        child_process_id, blob_path_);
+  }
 }
 
 std::vector<base::string16> IndexedDBBackingStore::GetDatabaseNames(
@@ -1119,7 +1154,7 @@ leveldb::Status IndexedDBBackingStore::GetObjectStores(
         INTERNAL_CONSISTENCY_ERROR_UNTESTED(GET_OBJECT_STORES);
     }
 
-    s = it->Next();  // Is evicatble.
+    s = it->Next();  // Is evictable.
     if (!s.ok())
       break;
     if (!CheckObjectStoreAndMetaDataType(it.get(),
@@ -1435,7 +1470,8 @@ leveldb::Status IndexedDBBackingStore::PutRecord(
     int64 database_id,
     int64 object_store_id,
     const IndexedDBKey& key,
-    const IndexedDBValue& value,
+    IndexedDBValue& value,
+    ScopedVector<webkit_blob::BlobDataHandle>* handles,
     RecordIdentifier* record_identifier) {
   IDB_TRACE("IndexedDBBackingStore::PutRecord");
   if (!KeyPrefix::ValidIds(database_id, object_store_id))
@@ -1457,6 +1493,12 @@ leveldb::Status IndexedDBBackingStore::PutRecord(
   v.append(value.bits);
 
   leveldb_transaction->Put(object_store_data_key, &v);
+  transaction->PutBlobInfo(database_id,
+                           object_store_id,
+                           object_store_data_key,
+                           &value.blob_info,
+                           handles);
+  DCHECK(!handles->size());
 
   const std::string exists_entry_key =
       ExistsEntryKey::Encode(database_id, object_store_id, key);
@@ -1502,6 +1544,8 @@ leveldb::Status IndexedDBBackingStore::DeleteRecord(
   const std::string object_store_data_key = ObjectStoreDataKey::Encode(
       database_id, object_store_id, record_identifier.primary_key());
   leveldb_transaction->Remove(object_store_data_key);
+  transaction->PutBlobInfo(
+      database_id, object_store_id, object_store_data_key, NULL, NULL);
 
   const std::string exists_entry_key = ExistsEntryKey::Encode(
       database_id, object_store_id, record_identifier.primary_key());
@@ -2879,9 +2923,12 @@ IndexedDBBackingStore::OpenIndexCursor(
 
 IndexedDBBackingStore::Transaction::Transaction(
     IndexedDBBackingStore* backing_store)
-    : backing_store_(backing_store) {}
+    : backing_store_(backing_store), database_id_(-1) {}
 
-IndexedDBBackingStore::Transaction::~Transaction() {}
+IndexedDBBackingStore::Transaction::~Transaction() {
+  STLDeleteContainerPairSecondPointers(
+      blob_change_map_.begin(), blob_change_map_.end());
+}
 
 void IndexedDBBackingStore::Transaction::Begin() {
   IDB_TRACE("IndexedDBBackingStore::Transaction::Begin");
@@ -2904,6 +2951,57 @@ void IndexedDBBackingStore::Transaction::Rollback() {
   DCHECK(transaction_.get());
   transaction_->Rollback();
   transaction_ = NULL;
+}
+
+IndexedDBBackingStore::Transaction::BlobChangeRecord::BlobChangeRecord(
+    const std::string& key, int64 object_store_id)
+    : key_(key), object_store_id_(object_store_id) {
+}
+
+IndexedDBBackingStore::Transaction::BlobChangeRecord::~BlobChangeRecord() {
+}
+
+void IndexedDBBackingStore::Transaction::BlobChangeRecord::SetBlobInfo(
+    std::vector<IndexedDBBlobInfo>* blob_info) {
+  blob_info_.clear();
+  if (blob_info)
+    blob_info_.swap(*blob_info);
+}
+
+void IndexedDBBackingStore::Transaction::BlobChangeRecord::SetHandles(
+    ScopedVector<webkit_blob::BlobDataHandle>* handles) {
+  handles_.clear();
+  if (handles)
+    handles_.swap(*handles);
+}
+
+// This is storing an info, even if empty, even if the previous key had no blob
+// info that we know of.  It duplicates a bunch of information stored in the
+// leveldb transaction, but only w.r.t. the user keys altered--we don't keep the
+// changes to exists or index keys here.
+void IndexedDBBackingStore::Transaction::PutBlobInfo(
+    int64 database_id,
+    int64 object_store_id,
+    const std::string& key,
+    std::vector<IndexedDBBlobInfo>* blob_info,
+    ScopedVector<webkit_blob::BlobDataHandle>* handles) {
+  DCHECK_GT(key.size(), 0UL);
+  if (database_id_ < 0)
+    database_id_ = database_id;
+  DCHECK_EQ(database_id_, database_id);
+
+  BlobChangeMap::iterator it = blob_change_map_.find(key);
+  BlobChangeRecord* record = NULL;
+  if (it == blob_change_map_.end()) {
+    record = new BlobChangeRecord(key, object_store_id);
+    blob_change_map_[key] = record;
+  } else {
+    record = it->second;
+  }
+  DCHECK_EQ(record->object_store_id(), object_store_id);
+  record->SetBlobInfo(blob_info);
+  record->SetHandles(handles);
+  DCHECK(!handles || !handles->size());
 }
 
 }  // namespace content

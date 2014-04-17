@@ -24,6 +24,7 @@
 
 namespace content {
 
+class IndexedDBBlobInfo;
 class IndexedDBConnection;
 class IndexedDBDatabaseCallbacks;
 class IndexedDBFactory;
@@ -129,6 +130,7 @@ class CONTENT_EXPORT IndexedDBDatabase
   void Put(int64 transaction_id,
            int64 object_store_id,
            IndexedDBValue* value,
+           ScopedVector<webkit_blob::BlobDataHandle>* handles,
            scoped_ptr<IndexedDBKey> key,
            PutMode mode,
            scoped_refptr<IndexedDBCallbacks> callbacks,

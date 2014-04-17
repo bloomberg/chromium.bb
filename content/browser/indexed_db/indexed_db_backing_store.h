@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_BACKING_STORE_H_
 #define CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_BACKING_STORE_H_
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -16,6 +17,7 @@
 #include "base/timer/timer.h"
 #include "content/browser/indexed_db/indexed_db.h"
 #include "content/browser/indexed_db/indexed_db_active_blob_registry.h"
+#include "content/browser/indexed_db/indexed_db_blob_info.h"
 #include "content/browser/indexed_db/indexed_db_metadata.h"
 #include "content/browser/indexed_db/leveldb/leveldb_iterator.h"
 #include "content/browser/indexed_db/leveldb/leveldb_transaction.h"
@@ -25,6 +27,7 @@
 #include "content/common/indexed_db/indexed_db_key_range.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 #include "url/gurl.h"
+#include "webkit/browser/blob/blob_data_handle.h"
 
 namespace base {
 class TaskRunner;
@@ -94,6 +97,8 @@ class CONTENT_EXPORT IndexedDBBackingStore
       const GURL& origin_url,
       LevelDBFactory* level_db_factory,
       base::TaskRunner* task_runner);
+
+  void GrantChildProcessPermissions(int child_process_id);
 
   // Compact is public for testing.
   virtual void Compact();
@@ -166,7 +171,8 @@ class CONTENT_EXPORT IndexedDBBackingStore
       int64 database_id,
       int64 object_store_id,
       const IndexedDBKey& key,
-      const IndexedDBValue& value,
+      IndexedDBValue& value,
+      ScopedVector<webkit_blob::BlobDataHandle>* handles,
       RecordIdentifier* record) WARN_UNUSED_RESULT;
   virtual leveldb::Status ClearObjectStore(
       IndexedDBBackingStore::Transaction* transaction,
@@ -340,17 +346,43 @@ class CONTENT_EXPORT IndexedDBBackingStore
       backing_store_ = NULL;
       transaction_ = NULL;
     }
+    void PutBlobInfo(int64 database_id,
+                     int64 object_store_id,
+                     const std::string& key,
+                     std::vector<IndexedDBBlobInfo>*,
+                     ScopedVector<webkit_blob::BlobDataHandle>* handles);
 
     LevelDBTransaction* transaction() { return transaction_; }
 
    private:
+    class BlobChangeRecord {
+     public:
+      BlobChangeRecord(const std::string& key, int64 object_store_id);
+      ~BlobChangeRecord();
+      const std::string& key() const { return key_; }
+      int64 object_store_id() const { return object_store_id_; }
+      void SetBlobInfo(std::vector<IndexedDBBlobInfo>* blob_info);
+      std::vector<IndexedDBBlobInfo>& mutable_blob_info() { return blob_info_; }
+      void SetHandles(ScopedVector<webkit_blob::BlobDataHandle>* handles);
+
+     private:
+      std::string key_;
+      int64 object_store_id_;
+      std::vector<IndexedDBBlobInfo> blob_info_;
+      ScopedVector<webkit_blob::BlobDataHandle> handles_;
+    };
+    typedef std::map<std::string, BlobChangeRecord*> BlobChangeMap;
+
     IndexedDBBackingStore* backing_store_;
     scoped_refptr<LevelDBTransaction> transaction_;
+    BlobChangeMap blob_change_map_;
+    int64 database_id_;
   };
 
  protected:
   IndexedDBBackingStore(IndexedDBFactory* indexed_db_factory,
                         const GURL& origin_url,
+                        const base::FilePath& blob_path,
                         scoped_ptr<LevelDBDatabase> db,
                         scoped_ptr<LevelDBComparator> comparator,
                         base::TaskRunner* task_runner);
@@ -361,6 +393,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
   static scoped_refptr<IndexedDBBackingStore> Create(
       IndexedDBFactory* indexed_db_factory,
       const GURL& origin_url,
+      const base::FilePath& blob_path,
       scoped_ptr<LevelDBDatabase> db,
       scoped_ptr<LevelDBComparator> comparator,
       base::TaskRunner* task_runner);
@@ -384,6 +417,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
 
   IndexedDBFactory* indexed_db_factory_;
   const GURL origin_url_;
+  base::FilePath blob_path_;
 
   // The origin identifier is a key prefix unique to the origin used in the
   // leveldb backing store to partition data by origin. It is a normalized
@@ -393,6 +427,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
   // provides for future flexibility.
   const std::string origin_identifier_;
   base::TaskRunner* task_runner_;
+  std::set<int> child_process_ids_granted_;
 
   scoped_ptr<LevelDBDatabase> db_;
   scoped_ptr<LevelDBComparator> comparator_;

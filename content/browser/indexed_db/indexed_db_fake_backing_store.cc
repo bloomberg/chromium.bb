@@ -4,6 +4,7 @@
 
 #include "content/browser/indexed_db/indexed_db_fake_backing_store.h"
 
+#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace content {
@@ -11,6 +12,7 @@ namespace content {
 IndexedDBFakeBackingStore::IndexedDBFakeBackingStore()
     : IndexedDBBackingStore(NULL,
                             GURL("http://localhost:81"),
+                            base::FilePath(),
                             scoped_ptr<LevelDBDatabase>(),
                             scoped_ptr<LevelDBComparator>(),
                             NULL) {}
@@ -20,6 +22,7 @@ IndexedDBFakeBackingStore::IndexedDBFakeBackingStore(
     base::TaskRunner* task_runner)
     : IndexedDBBackingStore(factory,
                             GURL("http://localhost:81"),
+                            base::FilePath(),
                             scoped_ptr<LevelDBDatabase>(),
                             scoped_ptr<LevelDBComparator>(),
                             task_runner) {}

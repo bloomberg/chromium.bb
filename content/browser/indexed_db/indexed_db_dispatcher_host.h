@@ -116,6 +116,8 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
       const IndexedDBHostMsg_FactoryDeleteDatabase_Params& p);
 
   void OnAckReceivedBlobs(const std::vector<std::string>& uuids);
+  void OnPutHelper(const IndexedDBHostMsg_DatabasePut_Params& params,
+                   std::vector<webkit_blob::BlobDataHandle*> handles);
 
   void ResetDispatcherHosts();
 
@@ -187,7 +189,11 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
     void OnDestroyed(int32 ipc_database_id);
 
     void OnGet(const IndexedDBHostMsg_DatabaseGet_Params& params);
-    void OnPut(const IndexedDBHostMsg_DatabasePut_Params& params);
+    // OnPutWrapper starts on the IO thread so that it can grab BlobDataHandles
+    // before posting to the IDB TaskRunner for the rest of the job.
+    void OnPutWrapper(const IndexedDBHostMsg_DatabasePut_Params& params);
+    void OnPut(const IndexedDBHostMsg_DatabasePut_Params& params,
+               std::vector<webkit_blob::BlobDataHandle*> handles);
     void OnSetIndexKeys(
         const IndexedDBHostMsg_DatabaseSetIndexKeys_Params& params);
     void OnSetIndexesReady(int32 ipc_database_id,
