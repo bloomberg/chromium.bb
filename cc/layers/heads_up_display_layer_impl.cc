@@ -149,7 +149,7 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
     canvas_size.set(0, 0);
 
   if (canvas_size.width() != content_bounds().width() ||
-      canvas_size.width() != content_bounds().height() || !hud_canvas_) {
+      canvas_size.height() != content_bounds().height() || !hud_canvas_) {
     TRACE_EVENT0("cc", "ResizeHudCanvas");
     bool opaque = false;
     hud_canvas_ = make_scoped_ptr(skia::CreateBitmapCanvas(
