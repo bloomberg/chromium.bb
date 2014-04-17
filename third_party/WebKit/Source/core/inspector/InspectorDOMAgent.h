@@ -175,7 +175,6 @@ public:
     void pseudoElementCreated(PseudoElement*);
     void pseudoElementDestroyed(PseudoElement*);
 
-    int pushNodeToFrontend(ErrorString*, int documentNodeId, Node*);
     Node* nodeForId(int nodeId);
     int boundNodeId(Node*);
     void setDOMListener(DOMListener*);

@@ -357,32 +357,6 @@ CSSStyleRule* InspectorCSSAgent::asCSSStyleRule(CSSRule* rule)
     return toCSSStyleRule(rule);
 }
 
-template <typename CharType, size_t bufferLength>
-static size_t vendorPrefixLowerCase(const CharType* string, size_t stringLength, char (&buffer)[bufferLength])
-{
-    static const char lowerCaseOffset = 'a' - 'A';
-
-    if (string[0] != '-')
-        return 0;
-
-    for (size_t i = 0; i < stringLength - 1; i++) {
-        CharType c = string[i + 1];
-        if (c == '-')
-            return i;
-        if (i == bufferLength)
-            break;
-        if (c < 'A' || c > 'z')
-            break;
-        if (c >= 'a')
-            buffer[i] = c;
-        else if (c <= 'Z')
-            buffer[i] = c + lowerCaseOffset;
-        else
-            break;
-    }
-    return 0;
-}
-
 InspectorCSSAgent::InspectorCSSAgent(InspectorDOMAgent* domAgent, InspectorPageAgent* pageAgent, InspectorResourceAgent* resourceAgent)
     : InspectorBaseAgent<InspectorCSSAgent>("CSS")
     , m_frontend(0)

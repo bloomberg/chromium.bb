@@ -47,7 +47,6 @@ enum MagicCommentType {
 };
 
 PassOwnPtr<ScriptRegexp> createSearchRegex(const String& query, bool caseSensitive, bool isRegex);
-int countScriptRegexpMatches(const ScriptRegexp*, const String&);
 PassRefPtr<TypeBuilder::Array<TypeBuilder::Page::SearchMatch> > searchInTextByLines(const String& text, const String& query, const bool caseSensitive, const bool isRegex);
 
 String findSourceURL(const String& content, MagicCommentType, bool* deprecated);

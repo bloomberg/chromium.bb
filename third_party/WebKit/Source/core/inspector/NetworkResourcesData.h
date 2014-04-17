@@ -160,14 +160,12 @@ public:
     void maybeAddResourceData(const String& requestId, const char* data, size_t dataLength);
     void maybeDecodeDataToContent(const String& requestId);
     void addResource(const String& requestId, Resource*);
-    void addResourceSharedBuffer(const String& requestId, PassRefPtr<SharedBuffer>, const String& textEncodingName);
     ResourceData const* data(const String& requestId);
     Vector<String> removeResource(Resource*);
     void clear(const String& preservedLoaderId = String());
 
     void setResourcesDataSizeLimits(size_t maximumResourcesContentSize, size_t maximumSingleResourceContentSize);
     void setXHRReplayData(const String& requestId, XHRReplayData*);
-    void reuseXHRReplayData(const String& requestId, const String& reusedRequestId);
     XHRReplayData* xhrReplayData(const String& requestId);
     Vector<ResourceData*> resources();
 

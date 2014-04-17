@@ -140,11 +140,6 @@ void InspectorDOMDebuggerAgent::discardAgent()
     m_debuggerAgent = 0;
 }
 
-void InspectorDOMDebuggerAgent::discardBindings()
-{
-    m_domBreakpoints.clear();
-}
-
 void InspectorDOMDebuggerAgent::setEventListenerBreakpoint(ErrorString* error, const String& eventName)
 {
     setBreakpoint(error, String(listenerEventCategoryType) + eventName);

@@ -260,15 +260,6 @@ void NetworkResourcesData::addResource(const String& requestId, Resource* cached
     resourceData->setResource(cachedResource);
 }
 
-void NetworkResourcesData::addResourceSharedBuffer(const String& requestId, PassRefPtr<SharedBuffer> buffer, const String& textEncodingName)
-{
-    ResourceData* resourceData = resourceDataForRequestId(requestId);
-    if (!resourceData)
-        return;
-    resourceData->setBuffer(buffer);
-    resourceData->setTextEncodingName(textEncodingName);
-}
-
 NetworkResourcesData::ResourceData const* NetworkResourcesData::data(const String& requestId)
 {
     return resourceDataForRequestId(requestId);
@@ -300,18 +291,6 @@ void NetworkResourcesData::setXHRReplayData(const String& requestId, XHRReplayDa
     }
 
     resourceData->setXHRReplayData(xhrReplayData);
-}
-
-void NetworkResourcesData::reuseXHRReplayData(const String& requestId, const String& reusedRequestId)
-{
-    ResourceData* reusedResourceData = resourceDataForRequestId(reusedRequestId);
-    ResourceData* resourceData = resourceDataForRequestId(requestId);
-    if (!reusedResourceData || !resourceData) {
-        m_reusedXHRReplayDataRequestIds.set(requestId, reusedRequestId);
-        return;
-    }
-
-    resourceData->setXHRReplayData(reusedResourceData->xhrReplayData());
 }
 
 Vector<NetworkResourcesData::ResourceData*> NetworkResourcesData::resources()

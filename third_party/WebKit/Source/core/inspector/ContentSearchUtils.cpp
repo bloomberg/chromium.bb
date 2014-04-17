@@ -95,25 +95,6 @@ PassOwnPtr<ScriptRegexp> createSearchRegex(const String& query, bool caseSensiti
     return adoptPtr(new ScriptRegexp(regexSource, caseSensitive ? TextCaseSensitive : TextCaseInsensitive));
 }
 
-int countScriptRegexpMatches(const ScriptRegexp* regex, const String& content)
-{
-    if (content.isEmpty())
-        return 0;
-
-    int result = 0;
-    int position;
-    unsigned start = 0;
-    int matchLength;
-    while ((position = regex->match(content, start, &matchLength)) != -1) {
-        if (start >= content.length())
-            break;
-        if (matchLength > 0)
-            ++result;
-        start = position + 1;
-    }
-    return result;
-}
-
 PassRefPtr<TypeBuilder::Array<TypeBuilder::Page::SearchMatch> > searchInTextByLines(const String& text, const String& query, const bool caseSensitive, const bool isRegex)
 {
     RefPtr<TypeBuilder::Array<TypeBuilder::Page::SearchMatch> > result = TypeBuilder::Array<TypeBuilder::Page::SearchMatch>::create();
