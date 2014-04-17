@@ -143,7 +143,6 @@ LocalFrame* createWindow(const String& urlString, const AtomicString& frameName,
         newFrame->loader().forceSandboxFlags(openerFrame.document()->sandboxFlags());
 
     newFrame->loader().setOpener(&openerFrame);
-    newFrame->page()->setOpenedByDOM();
 
     if (newFrame->domWindow()->isInsecureScriptAccess(callingWindow, completedURL))
         return newFrame;
@@ -179,7 +178,6 @@ void createWindowForRequest(const FrameLoadRequest& request, LocalFrame& openerF
     LocalFrame* newFrame = createWindow(openerFrame, openerFrame, request, features, policy, shouldSendReferrer, created);
     if (!newFrame)
         return;
-    newFrame->page()->setOpenedByDOM();
     if (shouldSendReferrer == MaybeSendReferrer) {
         newFrame->loader().setOpener(&openerFrame);
         newFrame->document()->setReferrerPolicy(openerFrame.document()->referrerPolicy());
