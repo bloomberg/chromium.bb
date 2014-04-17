@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <sys/mman.h>
 
+#include "base/logging.h"
 #include "components/nacl/loader/nonsfi/irt_interfaces.h"
 #include "components/nacl/loader/nonsfi/irt_util.h"
 #include "native_client/src/trusted/service_runtime/include/machine/_types.h"
@@ -46,10 +47,20 @@ int NaClFlagsToFlags(int nacl_flags) {
 
 int IrtMMap(void** addr, size_t len, int prot, int flags,
             int fd, nacl_abi_off_t off) {
-  void* result =
-      mmap(*addr, len, NaClProtToProt(prot), NaClFlagsToFlags(flags), fd, off);
+  const int host_prot = NaClProtToProt(prot);
+  // On Chrome OS, mmap can fail if PROT_EXEC is set in |host_prot|,
+  // but mprotect will allow changing the permissions later.
+  // This is because Chrome OS mounts writable filesystems with "noexec".
+  void* result = mmap(
+      *addr, len, host_prot & ~PROT_EXEC, NaClFlagsToFlags(flags), fd, off);
   if (result == MAP_FAILED)
     return errno;
+  if (host_prot & PROT_EXEC) {
+    if (mprotect(result, len, host_prot) != 0) {
+      // This aborts here because it cannot easily undo the mmap() call.
+      LOG_ERRNO(FATAL) << "IrtMMap: mprotect to turn on PROT_EXEC failed.";
+    }
+  }
 
   *addr = result;
   return 0;
