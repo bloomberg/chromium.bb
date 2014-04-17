@@ -2038,3 +2038,10 @@ skia.dll!SkBitmapDevice::drawBitmap
 skia.dll!SkCanvas::internalDrawBitmap
 skia.dll!SkCanvas::drawBitmap
 content.dll!content::ScreenshotData::EncodeOnWorker
+
+UNINITIALIZED READ
+name=bug_363487
+blink_web.dll!WebCore::RenderLayerCompositor::updateIfNeeded
+blink_web.dll!WebCore::RenderLayerCompositor::updateIfNeededRecursive
+blink_web.dll!WebCore::FrameView::updateLayoutAndStyleForPainting
+blink_web.dll!WebCore::PageAnimator::updateLayoutAndStyleForPainting
