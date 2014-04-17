@@ -6,9 +6,9 @@
 #define CHROME_RENDERER_EXTENSIONS_API_ACTIVITY_LOGGER_H_
 
 #include <string>
-#include "chrome/renderer/extensions/chrome_v8_extension.h"
-#include "chrome/renderer/extensions/dispatcher.h"
+
 #include "extensions/common/features/feature.h"
+#include "extensions/renderer/object_backed_native_handler.h"
 #include "v8/include/v8.h"
 
 namespace extensions {
@@ -16,9 +16,9 @@ namespace extensions {
 // Used to log extension API calls and events that are implemented with custom
 // bindings.The actions are sent via IPC to extensions::ActivityLog for
 // recording and display.
-class APIActivityLogger : public ChromeV8Extension {
+class APIActivityLogger : public ObjectBackedNativeHandler {
  public:
-  APIActivityLogger(Dispatcher* dispatcher, ChromeV8Context* context);
+  explicit APIActivityLogger(ScriptContext* context);
 
  private:
    // Used to distinguish API calls & events from each other in LogInternal.

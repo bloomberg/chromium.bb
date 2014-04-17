@@ -6,8 +6,7 @@
 
 #include <string>
 
-#include "chrome/common/extensions/extension_constants.h"
-#include "chrome/renderer/extensions/chrome_v8_context.h"
+#include "extensions/renderer/script_context.h"
 #include "third_party/WebKit/public/web/WebDOMFileSystem.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "v8/include/v8.h"
@@ -16,8 +15,8 @@
 namespace extensions {
 
 SyncFileSystemCustomBindings::SyncFileSystemCustomBindings(
-    Dispatcher* dispatcher, ChromeV8Context* context)
-    : ChromeV8Extension(dispatcher, context) {
+    ScriptContext* context)
+    : ObjectBackedNativeHandler(context) {
   RouteFunction(
       "GetSyncFileSystemObject",
       base::Bind(&SyncFileSystemCustomBindings::GetSyncFileSystemObject,

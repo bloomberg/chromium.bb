@@ -3,21 +3,21 @@
 // found in the LICENSE file.
 
 #include <string>
+
 #include "base/bind.h"
-#include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/extensions/activity_log_converter_strategy.h"
 #include "chrome/renderer/extensions/api_activity_logger.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/extension_messages.h"
+#include "extensions/renderer/script_context.h"
 
 using content::V8ValueConverter;
 
 namespace extensions {
 
-APIActivityLogger::APIActivityLogger(
-    Dispatcher* dispatcher, ChromeV8Context* context)
-    : ChromeV8Extension(dispatcher, context) {
+APIActivityLogger::APIActivityLogger(ScriptContext* context)
+    : ObjectBackedNativeHandler(context) {
   RouteFunction("LogEvent", base::Bind(&APIActivityLogger::LogEvent));
   RouteFunction("LogAPICall", base::Bind(&APIActivityLogger::LogAPICall));
 }

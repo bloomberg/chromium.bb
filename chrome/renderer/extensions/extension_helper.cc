@@ -279,26 +279,32 @@ void ExtensionHelper::OnExtensionDispatchOnConnect(
     const ExtensionMsg_ExternalConnectionInfo& info,
     const std::string& tls_channel_id) {
   MessagingBindings::DispatchOnConnect(
-      dispatcher_->v8_context_set().GetAll(),
-      target_port_id, channel_name, source_tab,
-      info.source_id, info.target_id, info.source_url,
-      tls_channel_id, render_view());
+      dispatcher_->script_context_set().GetAll(),
+      target_port_id,
+      channel_name,
+      source_tab,
+      info.source_id,
+      info.target_id,
+      info.source_url,
+      tls_channel_id,
+      render_view());
 }
 
 void ExtensionHelper::OnExtensionDeliverMessage(int target_id,
                                                 const Message& message) {
-  MessagingBindings::DeliverMessage(dispatcher_->v8_context_set().GetAll(),
-                                        target_id,
-                                        message,
-                                        render_view());
+  MessagingBindings::DeliverMessage(dispatcher_->script_context_set().GetAll(),
+                                    target_id,
+                                    message,
+                                    render_view());
 }
 
 void ExtensionHelper::OnExtensionDispatchOnDisconnect(
     int port_id,
     const std::string& error_message) {
   MessagingBindings::DispatchOnDisconnect(
-      dispatcher_->v8_context_set().GetAll(),
-      port_id, error_message,
+      dispatcher_->script_context_set().GetAll(),
+      port_id,
+      error_message,
       render_view());
 }
 
@@ -368,14 +374,14 @@ void ExtensionHelper::OnAddMessageToConsole(ConsoleMessageLevel level,
 
 void ExtensionHelper::OnAppWindowClosed() {
   v8::HandleScope scope(v8::Isolate::GetCurrent());
-  v8::Handle<v8::Context> script_context =
+  v8::Handle<v8::Context> v8_context =
       render_view()->GetWebView()->mainFrame()->mainWorldScriptContext();
-  ChromeV8Context* chrome_v8_context =
-      dispatcher_->v8_context_set().GetByV8Context(script_context);
-  if (!chrome_v8_context)
+  ScriptContext* script_context =
+      dispatcher_->script_context_set().GetByV8Context(v8_context);
+  if (!script_context)
     return;
-  chrome_v8_context->module_system()->CallModuleMethod(
-      "app.window", "onAppWindowClosed");
+  script_context->module_system()->CallModuleMethod("app.window",
+                                                    "onAppWindowClosed");
 }
 
 }  // namespace extensions

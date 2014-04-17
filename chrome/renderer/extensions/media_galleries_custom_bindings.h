@@ -5,15 +5,14 @@
 #ifndef CHROME_RENDERER_EXTENSIONS_MEDIA_GALLERIES_CUSTOM_BINDINGS_H_
 #define CHROME_RENDERER_EXTENSIONS_MEDIA_GALLERIES_CUSTOM_BINDINGS_H_
 
-#include "chrome/renderer/extensions/chrome_v8_extension.h"
+#include "extensions/renderer/object_backed_native_handler.h"
 
 namespace extensions {
 
 // Implements custom bindings for the media galleries API.
-class MediaGalleriesCustomBindings : public ChromeV8Extension {
+class MediaGalleriesCustomBindings : public ObjectBackedNativeHandler {
  public:
-  MediaGalleriesCustomBindings(Dispatcher* dispatcher,
-                               ChromeV8Context* context);
+  explicit MediaGalleriesCustomBindings(ScriptContext* context);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MediaGalleriesCustomBindings);

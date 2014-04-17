@@ -13,7 +13,7 @@
 
 namespace extensions {
 
-PepperRequestNatives::PepperRequestNatives(ChromeV8Context* context)
+PepperRequestNatives::PepperRequestNatives(ScriptContext* context)
     : ObjectBackedNativeHandler(context) {
   RouteFunction(
       "SendResponse",

@@ -461,8 +461,12 @@
         'renderer/scoped_persistent.h',
         'renderer/script_context.cc',
         'renderer/script_context.h',
+        'renderer/script_context_set.cc',
+        'renderer/script_context_set.h',
         'renderer/utils_native_handler.cc',
         'renderer/utils_native_handler.h',
+        'renderer/v8_schema_registry.cc',
+        'renderer/v8_schema_registry.h',
       ],
       'dependencies': [
         '../third_party/WebKit/public/blink.gyp:blink',

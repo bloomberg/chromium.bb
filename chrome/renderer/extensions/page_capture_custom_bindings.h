@@ -5,15 +5,14 @@
 #ifndef CHROME_RENDERER_EXTENSIONS_PAGE_CAPTURE_CUSTOM_BINDINGS_H_
 #define CHROME_RENDERER_EXTENSIONS_PAGE_CAPTURE_CUSTOM_BINDINGS_H_
 
-#include "chrome/renderer/extensions/chrome_v8_extension.h"
+#include "extensions/renderer/object_backed_native_handler.h"
 
 namespace extensions {
 
 // Implements custom bindings for the pageCapture API.
-class PageCaptureCustomBindings : public ChromeV8Extension {
+class PageCaptureCustomBindings : public ObjectBackedNativeHandler {
  public:
-  PageCaptureCustomBindings(Dispatcher* dispatcher,
-                            ChromeV8Context* context);
+  explicit PageCaptureCustomBindings(ScriptContext* context);
 
  private:
   // Creates a Blob with the content of the specified file.

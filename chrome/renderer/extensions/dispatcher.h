@@ -12,15 +12,15 @@
 
 #include "base/memory/shared_memory.h"
 #include "base/timer/timer.h"
-#include "chrome/renderer/extensions/chrome_v8_context.h"
-#include "chrome/renderer/extensions/chrome_v8_context_set.h"
-#include "chrome/renderer/extensions/v8_schema_registry.h"
 #include "chrome/renderer/resource_bundle_source_map.h"
 #include "content/public/renderer/render_process_observer.h"
 #include "extensions/common/event_filter.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/features/feature.h"
+#include "extensions/renderer/script_context.h"
+#include "extensions/renderer/script_context_set.h"
+#include "extensions/renderer/v8_schema_registry.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "v8/include/v8.h"
@@ -70,8 +70,8 @@ class Dispatcher : public content::RenderProcessObserver {
 
   bool is_extension_process() const { return is_extension_process_; }
   const ExtensionSet* extensions() const { return &extensions_; }
-  const ChromeV8ContextSet& v8_context_set() const {
-    return v8_context_set_;
+  const ScriptContextSet& script_context_set() const {
+    return script_context_set_;
   }
   UserScriptSlave* user_script_slave() {
     return user_script_slave_.get();
@@ -220,14 +220,13 @@ class Dispatcher : public content::RenderProcessObserver {
   void AddOrRemoveBindings(const std::string& extension_id);
 
   void RegisterNativeHandlers(ModuleSystem* module_system,
-                              ChromeV8Context* context);
-  void AddOrRemoveBindingsForContext(ChromeV8Context* context);
-  void RegisterBinding(const std::string& api_name,
-                       ChromeV8Context* context);
+                              ScriptContext* context);
+  void AddOrRemoveBindingsForContext(ScriptContext* context);
+  void RegisterBinding(const std::string& api_name, ScriptContext* context);
   v8::Handle<v8::Object> GetOrCreateBindObjectIfAvailable(
       const std::string& api_name,
       std::string* bind_name,
-      ChromeV8Context* context);
+      ScriptContext* context);
 
   // Inserts static source code into |source_map_|.
   void PopulateSourceMap();
@@ -272,7 +271,7 @@ class Dispatcher : public content::RenderProcessObserver {
 
   // All the bindings contexts that are currently loaded for this renderer.
   // There is zero or one for each v8 context.
-  ChromeV8ContextSet v8_context_set_;
+  ScriptContextSet script_context_set_;
 
   scoped_ptr<UserScriptSlave> user_script_slave_;
 

@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "chrome/common/extensions/extension_constants.h"
+#include "extensions/renderer/script_context.h"
 #include "third_party/WebKit/public/web/WebDOMFileSystem.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -45,8 +45,8 @@ void GetMediaFileSystemObject(const v8::FunctionCallbackInfo<v8::Value>& args) {
 }  // namespace
 
 MediaGalleriesCustomBindings::MediaGalleriesCustomBindings(
-    Dispatcher* dispatcher, ChromeV8Context* context)
-    : ChromeV8Extension(dispatcher, context) {
+    ScriptContext* context)
+    : ObjectBackedNativeHandler(context) {
   RouteFunction("GetMediaFileSystemObject",
                 base::Bind(&GetMediaFileSystemObject));
 }

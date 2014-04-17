@@ -8,16 +8,14 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/extension_messages.h"
-#include "grit/renderer_resources.h"
+#include "extensions/renderer/script_context.h"
 #include "third_party/WebKit/public/web/WebBlob.h"
 #include "v8/include/v8.h"
 
 namespace extensions {
 
-PageCaptureCustomBindings::PageCaptureCustomBindings(
-    Dispatcher* dispatcher,
-    ChromeV8Context* context)
-    : ChromeV8Extension(dispatcher, context) {
+PageCaptureCustomBindings::PageCaptureCustomBindings(ScriptContext* context)
+    : ObjectBackedNativeHandler(context) {
   RouteFunction("CreateBlob",
       base::Bind(&PageCaptureCustomBindings::CreateBlob,
                  base::Unretained(this)));
@@ -42,7 +40,7 @@ void PageCaptureCustomBindings::SendResponseAck(
   CHECK(args.Length() == 1);
   CHECK(args[0]->IsInt32());
 
-  content::RenderView* render_view = GetRenderView();
+  content::RenderView* render_view = context()->GetRenderView();
   if (render_view) {
     render_view->Send(new ExtensionHostMsg_ResponseAck(
         render_view->GetRoutingID(), args[0]->Int32Value()));

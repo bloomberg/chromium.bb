@@ -6,15 +6,14 @@
 #define CHROME_RENDERER_EXTENSIONS_FILE_BROWSER_PRIVATE_CUSTOM_BINDINGS_H_
 
 #include "base/compiler_specific.h"
-#include "chrome/renderer/extensions/chrome_v8_extension.h"
+#include "extensions/renderer/object_backed_native_handler.h"
 
 namespace extensions {
 
 // Custom bindings for the fileBrowserPrivate API.
-class FileBrowserPrivateCustomBindings : public ChromeV8Extension {
+class FileBrowserPrivateCustomBindings : public ObjectBackedNativeHandler {
  public:
-  FileBrowserPrivateCustomBindings(Dispatcher* dispatcher,
-                                   ChromeV8Context* context);
+  explicit FileBrowserPrivateCustomBindings(ScriptContext* context);
 
   void GetFileSystem(const v8::FunctionCallbackInfo<v8::Value>& args);
 

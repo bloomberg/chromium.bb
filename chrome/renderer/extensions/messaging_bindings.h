@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "chrome/renderer/extensions/chrome_v8_context_set.h"
+#include "extensions/renderer/script_context_set.h"
 
 namespace base {
 class DictionaryValue;
@@ -22,9 +22,9 @@ class Extension;
 }
 
 namespace extensions {
-class ChromeV8Extension;
 class Dispatcher;
 struct Message;
+class ObjectBackedNativeHandler;
 
 // Manually implements JavaScript bindings for extension messaging.
 //
@@ -34,35 +34,33 @@ struct Message;
 class MessagingBindings {
  public:
   // Creates an instance of the extension.
-  static ChromeV8Extension* Get(Dispatcher* dispatcher,
-                                ChromeV8Context* context);
+  static ObjectBackedNativeHandler* Get(Dispatcher* dispatcher,
+                                        ScriptContext* context);
 
   // Dispatches the onConnect content script messaging event to some contexts
   // in |contexts|. If |restrict_to_render_view| is specified, only contexts in
   // that render view will receive the message.
-  static void DispatchOnConnect(
-      const ChromeV8ContextSet::ContextSet& contexts,
-      int target_port_id,
-      const std::string& channel_name,
-      const base::DictionaryValue& source_tab,
-      const std::string& source_extension_id,
-      const std::string& target_extension_id,
-      const GURL& source_url,
-      const std::string& tls_channel_id,
-      content::RenderView* restrict_to_render_view);
+  static void DispatchOnConnect(const ScriptContextSet::ContextSet& contexts,
+                                int target_port_id,
+                                const std::string& channel_name,
+                                const base::DictionaryValue& source_tab,
+                                const std::string& source_extension_id,
+                                const std::string& target_extension_id,
+                                const GURL& source_url,
+                                const std::string& tls_channel_id,
+                                content::RenderView* restrict_to_render_view);
 
   // Delivers a message sent using content script messaging to some of the
   // contexts in |bindings_context_set|. If |restrict_to_render_view| is
   // specified, only contexts in that render view will receive the message.
-  static void DeliverMessage(
-      const ChromeV8ContextSet::ContextSet& context_set,
-      int target_port_id,
-      const Message& message,
-      content::RenderView* restrict_to_render_view);
+  static void DeliverMessage(const ScriptContextSet::ContextSet& context_set,
+                             int target_port_id,
+                             const Message& message,
+                             content::RenderView* restrict_to_render_view);
 
   // Dispatches the onDisconnect event in response to the channel being closed.
   static void DispatchOnDisconnect(
-      const ChromeV8ContextSet::ContextSet& context_set,
+      const ScriptContextSet::ContextSet& context_set,
       int port_id,
       const std::string& error_message,
       content::RenderView* restrict_to_render_view);

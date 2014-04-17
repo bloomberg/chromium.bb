@@ -5,15 +5,14 @@
 #ifndef CHROME_RENDERER_EXTENSIONS_APP_RUNTIME_CUSTOM_BINDINGS_H_
 #define CHROME_RENDERER_EXTENSIONS_APP_RUNTIME_CUSTOM_BINDINGS_H_
 
-#include "chrome/renderer/extensions/chrome_v8_extension.h"
+#include "extensions/renderer/object_backed_native_handler.h"
 
 namespace extensions {
 
 // The native component of custom bindings for the chrome.app.runtime API.
-class AppRuntimeCustomBindings : public ChromeV8Extension {
+class AppRuntimeCustomBindings : public ObjectBackedNativeHandler {
  public:
-  AppRuntimeCustomBindings(Dispatcher* dispatcher,
-                           ChromeV8Context* context);
+  explicit AppRuntimeCustomBindings(ScriptContext* context);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AppRuntimeCustomBindings);

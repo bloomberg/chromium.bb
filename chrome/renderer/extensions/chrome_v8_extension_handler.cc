@@ -5,14 +5,14 @@
 #include "chrome/renderer/extensions/chrome_v8_extension_handler.h"
 
 #include "base/logging.h"
-#include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "content/public/renderer/render_thread.h"
+#include "extensions/renderer/script_context.h"
 
 using content::RenderThread;
 
 namespace extensions {
 
-ChromeV8ExtensionHandler::ChromeV8ExtensionHandler(ChromeV8Context* context)
+ChromeV8ExtensionHandler::ChromeV8ExtensionHandler(ScriptContext* context)
     : context_(context), routing_id_(MSG_ROUTING_NONE) {
 }
 

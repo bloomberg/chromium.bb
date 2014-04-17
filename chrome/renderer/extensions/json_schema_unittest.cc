@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/v8_schema_registry.h"
 #include "chrome/test/base/module_system_test.h"
+#include "extensions/renderer/v8_schema_registry.h"
 #include "grit/renderer_resources.h"
 
 namespace extensions {

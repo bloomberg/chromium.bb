@@ -27,7 +27,6 @@
 #include "chrome/renderer/extensions/app_runtime_custom_bindings.h"
 #include "chrome/renderer/extensions/app_window_custom_bindings.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
-#include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/dom_activity_logger.h"
 #include "chrome/renderer/extensions/extension_helper.h"
 #include "chrome/renderer/extensions/file_browser_handler_custom_bindings.h"
@@ -82,6 +81,7 @@
 #include "extensions/renderer/request_sender.h"
 #include "extensions/renderer/safe_builtins.h"
 #include "extensions/renderer/script_context.h"
+#include "extensions/renderer/script_context_set.h"
 #include "extensions/renderer/send_request_natives.h"
 #include "extensions/renderer/set_icon_natives.h"
 #include "extensions/renderer/utils_native_handler.h"
@@ -152,7 +152,7 @@ v8::Handle<v8::Object> AsObjectOrEmpty(v8::Handle<v8::Value> value) {
 
 class TestFeaturesNativeHandler : public ObjectBackedNativeHandler {
  public:
-  explicit TestFeaturesNativeHandler(ChromeV8Context* context)
+  explicit TestFeaturesNativeHandler(ScriptContext* context)
       : ObjectBackedNativeHandler(context) {
     RouteFunction("GetAPIFeatures",
         base::Bind(&TestFeaturesNativeHandler::GetAPIFeatures,
@@ -173,7 +173,7 @@ class TestFeaturesNativeHandler : public ObjectBackedNativeHandler {
 
 class UserGesturesNativeHandler : public ObjectBackedNativeHandler {
  public:
-  explicit UserGesturesNativeHandler(ChromeV8Context* context)
+  explicit UserGesturesNativeHandler(ScriptContext* context)
       : ObjectBackedNativeHandler(context) {
     RouteFunction("IsProcessingUserGesture",
         base::Bind(&UserGesturesNativeHandler::IsProcessingUserGesture,
@@ -217,7 +217,7 @@ class UserGesturesNativeHandler : public ObjectBackedNativeHandler {
 
 class V8ContextNativeHandler : public ObjectBackedNativeHandler {
  public:
-  V8ContextNativeHandler(ChromeV8Context* context, Dispatcher* dispatcher)
+  V8ContextNativeHandler(ScriptContext* context, Dispatcher* dispatcher)
       : ObjectBackedNativeHandler(context),
         context_(context),
         dispatcher_(dispatcher) {
@@ -251,18 +251,18 @@ class V8ContextNativeHandler : public ObjectBackedNativeHandler {
     CHECK(args[0]->IsObject());
     v8::Handle<v8::Context> v8_context =
         v8::Handle<v8::Object>::Cast(args[0])->CreationContext();
-    ChromeV8Context* context = dispatcher_->v8_context_set().GetByV8Context(
-        v8_context);
+    ScriptContext* context =
+        dispatcher_->script_context_set().GetByV8Context(v8_context);
     args.GetReturnValue().Set(context->module_system()->NewInstance());
   }
 
-  ChromeV8Context* context_;
+  ScriptContext* context_;
   Dispatcher* dispatcher_;
 };
 
 class ChromeNativeHandler : public ObjectBackedNativeHandler {
  public:
-  explicit ChromeNativeHandler(ChromeV8Context* context)
+  explicit ChromeNativeHandler(ScriptContext* context)
       : ObjectBackedNativeHandler(context) {
     RouteFunction("GetChrome",
         base::Bind(&ChromeNativeHandler::GetChrome, base::Unretained(this)));
@@ -275,7 +275,7 @@ class ChromeNativeHandler : public ObjectBackedNativeHandler {
 
 class PrintNativeHandler : public ObjectBackedNativeHandler {
  public:
-  explicit PrintNativeHandler(ChromeV8Context* context)
+  explicit PrintNativeHandler(ScriptContext* context)
       : ObjectBackedNativeHandler(context) {
     RouteFunction("Print",
         base::Bind(&PrintNativeHandler::Print,
@@ -427,11 +427,11 @@ void InstallWebstoreBindings(ModuleSystem* module_system,
 
 // Calls a method |method_name| in a module |module_name| belonging to the
 // module system from |context|. Intended as a callback target from
-// ChromeV8ContextSet::ForEach.
+// ScriptContextSet::ForEach.
 void CallModuleMethod(const std::string& module_name,
                       const std::string& method_name,
                       const base::ListValue* args,
-                      ChromeV8Context* context) {
+                      ScriptContext* context) {
   v8::HandleScope handle_scope(context->isolate());
   v8::Context::Scope context_scope(context->v8_context());
 
@@ -593,12 +593,15 @@ void Dispatcher::OnDispatchOnConnect(
   source_tab.GetInteger("id", &sender_tab_id);
   port_to_tab_id_map_[target_port_id] = sender_tab_id;
 
-  MessagingBindings::DispatchOnConnect(
-      v8_context_set_.GetAll(),
-      target_port_id, channel_name, source_tab,
-      info.source_id, info.target_id, info.source_url,
-      tls_channel_id,
-      NULL);  // All render views.
+  MessagingBindings::DispatchOnConnect(script_context_set_.GetAll(),
+                                       target_port_id,
+                                       channel_name,
+                                       source_tab,
+                                       info.source_id,
+                                       info.target_id,
+                                       info.source_url,
+                                       tls_channel_id,
+                                       NULL);  // All render views.
 }
 
 void Dispatcher::OnDeliverMessage(int target_port_id,
@@ -611,19 +614,18 @@ void Dispatcher::OnDeliverMessage(int target_port_id,
                                                        it->second));
   }
 
-  MessagingBindings::DeliverMessage(
-      v8_context_set_.GetAll(),
-      target_port_id,
-      message,
-      NULL);  // All render views.
+  MessagingBindings::DeliverMessage(script_context_set_.GetAll(),
+                                    target_port_id,
+                                    message,
+                                    NULL);  // All render views.
 }
 
 void Dispatcher::OnDispatchOnDisconnect(int port_id,
                                         const std::string& error_message) {
-  MessagingBindings::DispatchOnDisconnect(
-      v8_context_set_.GetAll(),
-      port_id, error_message,
-      NULL);  // All render views.
+  MessagingBindings::DispatchOnDisconnect(script_context_set_.GetAll(),
+                                          port_id,
+                                          error_message,
+                                          NULL);  // All render views.
 }
 
 void Dispatcher::OnLoaded(
@@ -658,11 +660,12 @@ void Dispatcher::OnUnloaded(const std::string& id) {
   user_script_slave_->RemoveIsolatedWorld(id);
 
   // Invalidate all of the contexts that were removed.
-  // TODO(kalman): add an invalidation observer interface to ChromeV8Context.
-  ChromeV8ContextSet::ContextSet removed_contexts =
-      v8_context_set_.OnExtensionUnloaded(id);
-  for (ChromeV8ContextSet::ContextSet::iterator it = removed_contexts.begin();
-       it != removed_contexts.end(); ++it) {
+  // TODO(kalman): add an invalidation observer interface to ScriptContext.
+  ScriptContextSet::ContextSet removed_contexts =
+      script_context_set_.OnExtensionUnloaded(id);
+  for (ScriptContextSet::ContextSet::iterator it = removed_contexts.begin();
+       it != removed_contexts.end();
+       ++it) {
     request_sender_->InvalidateSource(*it);
   }
 
@@ -715,7 +718,7 @@ v8::Handle<v8::Object> Dispatcher::GetOrCreateObject(
   return new_object;
 }
 
-void Dispatcher::AddOrRemoveBindingsForContext(ChromeV8Context* context) {
+void Dispatcher::AddOrRemoveBindingsForContext(ScriptContext* context) {
   v8::HandleScope handle_scope(context->isolate());
   v8::Context::Scope context_scope(context->v8_context());
 
@@ -786,7 +789,7 @@ void Dispatcher::AddOrRemoveBindingsForContext(ChromeV8Context* context) {
 v8::Handle<v8::Object> Dispatcher::GetOrCreateBindObjectIfAvailable(
     const std::string& api_name,
     std::string* bind_name,
-    ChromeV8Context* context) {
+    ScriptContext* context) {
   std::vector<std::string> split;
   base::SplitString(api_name, '.', &split);
 
@@ -834,7 +837,7 @@ v8::Handle<v8::Object> Dispatcher::GetOrCreateBindObjectIfAvailable(
 }
 
 void Dispatcher::RegisterBinding(const std::string& api_name,
-                                 ChromeV8Context* context) {
+                                 ScriptContext* context) {
   std::string bind_name;
   v8::Handle<v8::Object> bind_object =
       GetOrCreateBindObjectIfAvailable(api_name, &bind_name, context);
@@ -886,7 +889,7 @@ void Dispatcher::RegisterBinding(const std::string& api_name,
 
 // NOTE: please use the naming convention "foo_natives" for these.
 void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
-                                        ChromeV8Context* context) {
+                                        ScriptContext* context) {
   module_system->RegisterNativeHandler(
       "event_natives",
       scoped_ptr<NativeHandler>(new EventBindings(this, context)));
@@ -902,8 +905,9 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
       "setIcon",
       scoped_ptr<NativeHandler>(
           new SetIconNatives(request_sender_.get(), context)));
-  module_system->RegisterNativeHandler("activityLogger",
-      scoped_ptr<NativeHandler>(new APIActivityLogger(this, context)));
+  module_system->RegisterNativeHandler(
+      "activityLogger",
+      scoped_ptr<NativeHandler>(new APIActivityLogger(context)));
   module_system->RegisterNativeHandler(
       "renderViewObserverNatives",
       scoped_ptr<NativeHandler>(new RenderViewObserverNatives(context)));
@@ -915,9 +919,9 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
   // Custom bindings.
   module_system->RegisterNativeHandler("app",
       scoped_ptr<NativeHandler>(new AppBindings(this, context)));
-  module_system->RegisterNativeHandler("app_runtime",
-      scoped_ptr<NativeHandler>(
-          new AppRuntimeCustomBindings(this, context)));
+  module_system->RegisterNativeHandler(
+      "app_runtime",
+      scoped_ptr<NativeHandler>(new AppRuntimeCustomBindings(context)));
   module_system->RegisterNativeHandler("app_window_natives",
       scoped_ptr<NativeHandler>(
           new AppWindowCustomBindings(this, context)));
@@ -931,38 +935,38 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
   module_system->RegisterNativeHandler(
       "document_natives",
       scoped_ptr<NativeHandler>(new DocumentCustomBindings(context)));
-  module_system->RegisterNativeHandler("sync_file_system",
-      scoped_ptr<NativeHandler>(
-          new SyncFileSystemCustomBindings(this, context)));
-  module_system->RegisterNativeHandler("file_browser_handler",
-      scoped_ptr<NativeHandler>(new FileBrowserHandlerCustomBindings(
-          this, context)));
-  module_system->RegisterNativeHandler("file_browser_private",
-      scoped_ptr<NativeHandler>(new FileBrowserPrivateCustomBindings(
-          this, context)));
+  module_system->RegisterNativeHandler(
+      "sync_file_system",
+      scoped_ptr<NativeHandler>(new SyncFileSystemCustomBindings(context)));
+  module_system->RegisterNativeHandler(
+      "file_browser_handler",
+      scoped_ptr<NativeHandler>(new FileBrowserHandlerCustomBindings(context)));
+  module_system->RegisterNativeHandler(
+      "file_browser_private",
+      scoped_ptr<NativeHandler>(new FileBrowserPrivateCustomBindings(context)));
   module_system->RegisterNativeHandler(
       "i18n", scoped_ptr<NativeHandler>(new I18NCustomBindings(context)));
   module_system->RegisterNativeHandler(
       "id_generator",
       scoped_ptr<NativeHandler>(new IdGeneratorCustomBindings(context)));
-  module_system->RegisterNativeHandler("mediaGalleries",
-      scoped_ptr<NativeHandler>(
-          new MediaGalleriesCustomBindings(this, context)));
-  module_system->RegisterNativeHandler("page_actions",
-      scoped_ptr<NativeHandler>(
-          new PageActionsCustomBindings(this, context)));
-  module_system->RegisterNativeHandler("page_capture",
-      scoped_ptr<NativeHandler>(
-          new PageCaptureCustomBindings(this, context)));
+  module_system->RegisterNativeHandler(
+      "mediaGalleries",
+      scoped_ptr<NativeHandler>(new MediaGalleriesCustomBindings(context)));
+  module_system->RegisterNativeHandler(
+      "page_actions",
+      scoped_ptr<NativeHandler>(new PageActionsCustomBindings(this, context)));
+  module_system->RegisterNativeHandler(
+      "page_capture",
+      scoped_ptr<NativeHandler>(new PageCaptureCustomBindings(context)));
   module_system->RegisterNativeHandler(
       "pepper_request_natives",
       scoped_ptr<NativeHandler>(new PepperRequestNatives(context)));
-  module_system->RegisterNativeHandler("runtime",
-      scoped_ptr<NativeHandler>(new RuntimeCustomBindings(this, context)));
-  module_system->RegisterNativeHandler("tabs",
-      scoped_ptr<NativeHandler>(new TabsCustomBindings(this, context)));
-  module_system->RegisterNativeHandler("webstore",
-      scoped_ptr<NativeHandler>(new WebstoreBindings(this, context)));
+  module_system->RegisterNativeHandler(
+      "runtime", scoped_ptr<NativeHandler>(new RuntimeCustomBindings(context)));
+  module_system->RegisterNativeHandler(
+      "tabs", scoped_ptr<NativeHandler>(new TabsCustomBindings(context)));
+  module_system->RegisterNativeHandler(
+      "webstore", scoped_ptr<NativeHandler>(new WebstoreBindings(context)));
 #if defined(ENABLE_WEBRTC)
   module_system->RegisterNativeHandler("cast_streaming_natives",
       scoped_ptr<NativeHandler>(new CastStreamingNativeHandler(context)));
@@ -1137,9 +1141,9 @@ void Dispatcher::DidCreateScriptContext(
                                 ScriptContext::GetDataSourceURLForFrame(frame),
                                 frame->document().securityOrigin());
 
-  ChromeV8Context* context =
+  ScriptContext* context =
       new ChromeV8Context(v8_context, frame, extension, context_type);
-  v8_context_set_.Add(context);
+  script_context_set_.Add(context);
 
   if (extension)
     InitOriginPermissions(extension, context_type);
@@ -1260,7 +1264,7 @@ void Dispatcher::DidCreateScriptContext(
     }
   }
 
-  VLOG(1) << "Num tracked contexts: " << v8_context_set_.size();
+  VLOG(1) << "Num tracked contexts: " << script_context_set_.size();
 }
 
 std::string Dispatcher::GetExtensionID(const WebFrame* frame, int world_id) {
@@ -1290,16 +1294,16 @@ bool Dispatcher::IsWithinPlatformApp() {
 
 void Dispatcher::WillReleaseScriptContext(
     WebFrame* frame, v8::Handle<v8::Context> v8_context, int world_id) {
-  ChromeV8Context* context = v8_context_set_.GetByV8Context(v8_context);
+  ScriptContext* context = script_context_set_.GetByV8Context(v8_context);
   if (!context)
     return;
 
   context->DispatchOnUnloadEvent();
-  // TODO(kalman): add an invalidation observer interface to ChromeV8Context.
+  // TODO(kalman): add an invalidation observer interface to ScriptContext.
   request_sender_->InvalidateSource(context);
 
-  v8_context_set_.Remove(context);
-  VLOG(1) << "Num tracked contexts: " << v8_context_set_.size();
+  script_context_set_.Remove(context);
+  VLOG(1) << "Num tracked contexts: " << script_context_set_.size();
 }
 
 void Dispatcher::DidCreateDocumentElement(blink::WebFrame* frame) {
@@ -1414,7 +1418,7 @@ void Dispatcher::EnableCustomElementWhiteList() {
 }
 
 void Dispatcher::AddOrRemoveBindings(const std::string& extension_id) {
-  v8_context_set().ForEach(
+  script_context_set().ForEach(
       extension_id,
       NULL,  // all render views
       base::Bind(&Dispatcher::AddOrRemoveBindingsForContext,
@@ -1652,13 +1656,12 @@ void Dispatcher::DispatchEvent(const std::string& extension_id,
 
   // Needed for Windows compilation, since kEventBindings is declared extern.
   const char* local_event_bindings = kEventBindings;
-  v8_context_set_.ForEach(
-      extension_id,
-      NULL,  // all render views
-      base::Bind(&CallModuleMethod,
-                 local_event_bindings,
-                 kEventDispatchFunction,
-                 &args));
+  script_context_set_.ForEach(extension_id,
+                              NULL,  // all render views
+                              base::Bind(&CallModuleMethod,
+                                         local_event_bindings,
+                                         kEventDispatchFunction,
+                                         &args));
 }
 
 void Dispatcher::InvokeModuleSystemMethod(
@@ -1672,7 +1675,7 @@ void Dispatcher::InvokeModuleSystemMethod(
   if (user_gesture)
     web_user_gesture.reset(new WebScopedUserGesture);
 
-  v8_context_set_.ForEach(
+  script_context_set_.ForEach(
       extension_id,
       render_view,
       base::Bind(&CallModuleMethod, module_name, function_name, &args));

@@ -10,14 +10,14 @@
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/renderer/extensions/dispatcher.h"
 #include "extensions/common/extension.h"
-#include "grit/renderer_resources.h"
+#include "extensions/renderer/script_context.h"
 #include "v8/include/v8.h"
 
 namespace extensions {
 
-PageActionsCustomBindings::PageActionsCustomBindings(
-    Dispatcher* dispatcher, ChromeV8Context* context)
-    : ChromeV8Extension(dispatcher, context) {
+PageActionsCustomBindings::PageActionsCustomBindings(Dispatcher* dispatcher,
+                                                     ScriptContext* context)
+    : ObjectBackedNativeHandler(context), dispatcher_(dispatcher) {
   RouteFunction("GetCurrentPageActions",
       base::Bind(&PageActionsCustomBindings::GetCurrentPageActions,
                  base::Unretained(this)));

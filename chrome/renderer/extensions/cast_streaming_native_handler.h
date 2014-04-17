@@ -23,12 +23,10 @@ class DictionaryValue;
 
 namespace extensions {
 
-class ChromeV8Context;
-
 // Native code that handle chrome.webrtc custom bindings.
 class CastStreamingNativeHandler : public ObjectBackedNativeHandler {
  public:
-  explicit CastStreamingNativeHandler(ChromeV8Context* context);
+  explicit CastStreamingNativeHandler(ScriptContext* context);
   virtual ~CastStreamingNativeHandler();
 
  private:

@@ -13,12 +13,11 @@ class Value;
 }
 
 namespace extensions {
-class ChromeV8Context;
 
 // Custom bindings for handling API calls from pepper plugins.
 class PepperRequestNatives : public ObjectBackedNativeHandler {
  public:
-  explicit PepperRequestNatives(ChromeV8Context* context);
+  explicit PepperRequestNatives(ScriptContext* context);
 
  private:
   // Sends a response to an API call to the pepper plugin which made the call.

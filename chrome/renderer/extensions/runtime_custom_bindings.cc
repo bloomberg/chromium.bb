@@ -8,8 +8,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/renderer/extensions/api_activity_logger.h"
-#include "chrome/renderer/extensions/chrome_v8_context.h"
-#include "chrome/renderer/extensions/dispatcher.h"
 #include "chrome/renderer/extensions/extension_helper.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/v8_value_converter.h"
@@ -18,6 +16,7 @@
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/common/manifest.h"
+#include "extensions/renderer/script_context.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -26,9 +25,8 @@ using content::V8ValueConverter;
 
 namespace extensions {
 
-RuntimeCustomBindings::RuntimeCustomBindings(Dispatcher* dispatcher,
-                                             ChromeV8Context* context)
-    : ChromeV8Extension(dispatcher, context) {
+RuntimeCustomBindings::RuntimeCustomBindings(ScriptContext* context)
+    : ObjectBackedNativeHandler(context) {
   RouteFunction("GetManifest",
                 base::Bind(&RuntimeCustomBindings::GetManifest,
                            base::Unretained(this)));
@@ -49,7 +47,7 @@ void RuntimeCustomBindings::OpenChannelToExtension(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   // Get the current RenderView so that we can send a routed IPC message from
   // the correct source.
-  content::RenderView* renderview = GetRenderView();
+  content::RenderView* renderview = context()->GetRenderView();
   if (!renderview)
     return;
 
@@ -81,17 +79,17 @@ void RuntimeCustomBindings::OpenChannelToNativeApp(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   // Verify that the extension has permission to use native messaging.
   Feature::Availability availability =
-      FeatureProvider::GetPermissionFeatures()->
-          GetFeature("nativeMessaging")->IsAvailableToContext(
-              GetExtensionForRenderView(),
-              context()->context_type(),
-              context()->GetURL());
+      FeatureProvider::GetPermissionFeatures()
+          ->GetFeature("nativeMessaging")
+          ->IsAvailableToContext(context()->extension(),
+                                 context()->context_type(),
+                                 context()->GetURL());
   if (!availability.is_available())
     return;
 
   // Get the current RenderView so that we can send a routed IPC message from
   // the correct source.
-  content::RenderView* renderview = GetRenderView();
+  content::RenderView* renderview = context()->GetRenderView();
   if (!renderview)
     return;
 

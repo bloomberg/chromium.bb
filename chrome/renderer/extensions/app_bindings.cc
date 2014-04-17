@@ -11,7 +11,6 @@
 #include "base/values.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/dispatcher.h"
 #include "chrome/renderer/extensions/extension_helper.h"
 #include "content/public/renderer/render_view.h"
@@ -20,7 +19,7 @@
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest.h"
 #include "extensions/renderer/console.h"
-#include "grit/renderer_resources.h"
+#include "extensions/renderer/script_context.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "v8/include/v8.h"
@@ -58,9 +57,10 @@ const char* kInvalidCallbackIdError = "Invalid callbackId";
 
 }  // namespace
 
-AppBindings::AppBindings(Dispatcher* dispatcher, ChromeV8Context* context)
-    : ChromeV8Extension(dispatcher, context),
-      ChromeV8ExtensionHandler(context) {
+AppBindings::AppBindings(Dispatcher* dispatcher, ScriptContext* context)
+    : ObjectBackedNativeHandler(context),
+      ChromeV8ExtensionHandler(context),
+      dispatcher_(dispatcher) {
   RouteFunction("GetIsInstalled",
       base::Bind(&AppBindings::GetIsInstalled, base::Unretained(this)));
   RouteFunction("GetDetails",

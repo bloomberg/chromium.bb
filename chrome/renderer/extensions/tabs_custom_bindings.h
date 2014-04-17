@@ -5,14 +5,14 @@
 #ifndef CHROME_RENDERER_EXTENSIONS_TABS_CUSTOM_BINDINGS_H_
 #define CHROME_RENDERER_EXTENSIONS_TABS_CUSTOM_BINDINGS_H_
 
-#include "chrome/renderer/extensions/chrome_v8_extension.h"
+#include "extensions/renderer/object_backed_native_handler.h"
 
 namespace extensions {
 
 // Implements custom bindings for the tabs API.
-class TabsCustomBindings : public ChromeV8Extension {
+class TabsCustomBindings : public ObjectBackedNativeHandler {
  public:
-  TabsCustomBindings(Dispatcher* dispatcher, ChromeV8Context* context);
+  explicit TabsCustomBindings(ScriptContext* context);
 
  private:
   // Creates a new messaging channel to the tab with the given ID.

@@ -12,7 +12,7 @@
 #include "v8/include/v8.h"
 
 namespace extensions {
-class ChromeV8Context;
+class ScriptContext;
 
 // Base class for context-scoped handlers used with ChromeV8Extension.
 // TODO(koz): Rename/refactor this somehow. Maybe just pull it into
@@ -25,10 +25,10 @@ class ChromeV8ExtensionHandler : public IPC::Listener {
   virtual bool OnMessageReceived(const IPC::Message& message) = 0;
 
  protected:
-  explicit ChromeV8ExtensionHandler(ChromeV8Context* context);
+  explicit ChromeV8ExtensionHandler(ScriptContext* context);
   int GetRoutingID();
   void Send(IPC::Message* message);
-  ChromeV8Context* context_;
+  ScriptContext* context_;
 
  private:
   int routing_id_;

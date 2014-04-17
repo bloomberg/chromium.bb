@@ -63,9 +63,11 @@ PepperExtensionsCommonHost* PepperExtensionsCommonHost::Create(
   if (!frame)
     return NULL;
   v8::HandleScope scope(v8::Isolate::GetCurrent());
+  // TODO(rockot): Remove this downcast. See http://crbug.com/362616.
   extensions::ChromeV8Context* context =
-      dispatcher->v8_context_set().GetByV8Context(
-          frame->mainWorldScriptContext());
+      static_cast<extensions::ChromeV8Context*>(
+          dispatcher->script_context_set().GetByV8Context(
+              frame->mainWorldScriptContext()));
   if (!context)
     return NULL;
 

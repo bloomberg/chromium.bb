@@ -1,15 +1,15 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/v8_schema_registry.h"
+#include "extensions/renderer/v8_schema_registry.h"
 
 #include "base/logging.h"
 #include "base/values.h"
-#include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/extension_api.h"
 #include "extensions/renderer/object_backed_native_handler.h"
+#include "extensions/renderer/script_context.h"
 
 using content::V8ValueConverter;
 
@@ -20,37 +20,39 @@ namespace {
 class SchemaRegistryNativeHandler : public ObjectBackedNativeHandler {
  public:
   SchemaRegistryNativeHandler(V8SchemaRegistry* registry,
-                              scoped_ptr<ChromeV8Context> context)
+                              scoped_ptr<ScriptContext> context)
       : ObjectBackedNativeHandler(context.get()),
         context_(context.Pass()),
         registry_(registry) {
     RouteFunction("GetSchema",
-        base::Bind(&SchemaRegistryNativeHandler::GetSchema,
-                   base::Unretained(this)));
+                  base::Bind(&SchemaRegistryNativeHandler::GetSchema,
+                             base::Unretained(this)));
   }
 
  private:
   void GetSchema(const v8::FunctionCallbackInfo<v8::Value>& args) {
     args.GetReturnValue().Set(
-      registry_->GetSchema(*v8::String::Utf8Value(args[0])));
+        registry_->GetSchema(*v8::String::Utf8Value(args[0])));
   }
 
-  scoped_ptr<ChromeV8Context> context_;
+  scoped_ptr<ScriptContext> context_;
   V8SchemaRegistry* registry_;
 };
 
 }  // namespace
 
-V8SchemaRegistry::V8SchemaRegistry() {}
+V8SchemaRegistry::V8SchemaRegistry() {
+}
 
-V8SchemaRegistry::~V8SchemaRegistry() {}
+V8SchemaRegistry::~V8SchemaRegistry() {
+}
 
 scoped_ptr<NativeHandler> V8SchemaRegistry::AsNativeHandler() {
-  scoped_ptr<ChromeV8Context> context(new ChromeV8Context(
-      GetOrCreateContext(v8::Isolate::GetCurrent()),
-      NULL,  // no frame
-      NULL,  // no extension
-      Feature::UNSPECIFIED_CONTEXT));
+  scoped_ptr<ScriptContext> context(
+      new ScriptContext(GetOrCreateContext(v8::Isolate::GetCurrent()),
+                        NULL,  // no frame
+                        NULL,  // no extension
+                        Feature::UNSPECIFIED_CONTEXT));
   return scoped_ptr<NativeHandler>(
       new SchemaRegistryNativeHandler(this, context.Pass()));
 }
@@ -64,7 +66,8 @@ v8::Handle<v8::Array> V8SchemaRegistry::GetSchemas(
   v8::Local<v8::Array> v8_apis(v8::Array::New(isolate, apis.size()));
   size_t api_index = 0;
   for (std::vector<std::string>::const_iterator i = apis.begin();
-       i != apis.end(); ++i) {
+       i != apis.end();
+       ++i) {
     v8_apis->Set(api_index++, GetSchema(*i));
   }
   return handle_scope.Escape(v8_apis);

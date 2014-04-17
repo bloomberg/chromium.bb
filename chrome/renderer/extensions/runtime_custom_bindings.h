@@ -6,18 +6,15 @@
 #define CHROME_RENDERER_EXTENSIONS_RUNTIME_CUSTOM_BINDINGS_H_
 
 #include "base/compiler_specific.h"
-#include "chrome/renderer/extensions/chrome_v8_extension.h"
+#include "extensions/renderer/object_backed_native_handler.h"
 #include "v8/include/v8.h"
-
-class ExtensionDispatcher;
-class ChromeV8Context;
 
 namespace extensions {
 
 // The native component of custom bindings for the chrome.runtime API.
-class RuntimeCustomBindings : public ChromeV8Extension {
+class RuntimeCustomBindings : public ObjectBackedNativeHandler {
  public:
-  RuntimeCustomBindings(Dispatcher* dispatcher, ChromeV8Context* context);
+  explicit RuntimeCustomBindings(ScriptContext* context);
 
   virtual ~RuntimeCustomBindings();
 

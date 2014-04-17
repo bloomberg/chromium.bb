@@ -12,11 +12,11 @@
 #include "base/message_loop/message_loop.h"
 #include "chrome/common/extensions/api/cast_streaming_rtp_stream.h"
 #include "chrome/common/extensions/api/cast_streaming_udp_transport.h"
-#include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/media/cast_rtp_stream.h"
 #include "chrome/renderer/media/cast_session.h"
 #include "chrome/renderer/media/cast_udp_transport.h"
 #include "content/public/renderer/v8_value_converter.h"
+#include "extensions/renderer/script_context.h"
 #include "net/base/host_port_pair.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/web/WebDOMMediaStreamTrack.h"
@@ -145,7 +145,7 @@ bool ToCastRtpParamsOrThrow(v8::Isolate* isolate,
 
 }  // namespace
 
-CastStreamingNativeHandler::CastStreamingNativeHandler(ChromeV8Context* context)
+CastStreamingNativeHandler::CastStreamingNativeHandler(ScriptContext* context)
     : ObjectBackedNativeHandler(context),
       last_transport_id_(1),
       weak_factory_(this) {

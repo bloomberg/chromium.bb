@@ -12,19 +12,20 @@
 #define CHROME_RENDERER_EXTENSIONS_APP_BINDINGS_H_
 
 #include "base/compiler_specific.h"
-#include "chrome/renderer/extensions/chrome_v8_extension.h"
+#include "chrome/renderer/extensions/chrome_v8_extension_handler.h"
+#include "extensions/renderer/object_backed_native_handler.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 
 namespace extensions {
-class ChromeV8Context;
+class Dispatcher;
 
 // Implements the chrome.app JavaScript object.
 //
 // TODO(aa): Add unit testing for this class.
-class AppBindings : public ChromeV8Extension,
+class AppBindings : public ObjectBackedNativeHandler,
                     public ChromeV8ExtensionHandler {
  public:
-  AppBindings(Dispatcher* dispatcher, ChromeV8Context* context);
+  AppBindings(Dispatcher* dispatcher, ScriptContext* context);
 
  private:
   // IPC::Listener
@@ -39,6 +40,9 @@ class AppBindings : public ChromeV8Extension,
   v8::Handle<v8::Value> GetDetailsForFrameImpl(blink::WebFrame* frame);
 
   void OnAppInstallStateResponse(const std::string& state, int callback_id);
+
+  // Dispatcher handle. Not owned.
+  Dispatcher* dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(AppBindings);
 };

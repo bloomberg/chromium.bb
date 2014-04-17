@@ -13,7 +13,6 @@ class DictionaryValue;
 }
 
 namespace extensions {
-class ChromeV8Context;
 class Dispatcher;
 class EventFilter;
 class EventFilteringInfo;

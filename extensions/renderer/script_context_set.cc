@@ -1,46 +1,33 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/chrome_v8_context_set.h"
+#include "extensions/renderer/script_context_set.h"
 
-#include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "base/tracked_objects.h"
-#include "base/values.h"
-#include "chrome/common/url_constants.h"
-#include "chrome/renderer/extensions/chrome_v8_context.h"
-#include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
-#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/public/platform/WebURLRequest.h"
-#include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
-#include "third_party/WebKit/public/web/WebView.h"
+#include "extensions/renderer/script_context.h"
 #include "v8/include/v8.h"
-
-using content::RenderThread;
 
 namespace extensions {
 
-ChromeV8ContextSet::ChromeV8ContextSet() {
+ScriptContextSet::ScriptContextSet() {
 }
-ChromeV8ContextSet::~ChromeV8ContextSet() {
+ScriptContextSet::~ScriptContextSet() {
 }
 
-int ChromeV8ContextSet::size() const {
+int ScriptContextSet::size() const {
   return static_cast<int>(contexts_.size());
 }
 
-void ChromeV8ContextSet::Add(ChromeV8Context* context) {
+void ScriptContextSet::Add(ScriptContext* context) {
 #if DCHECK_IS_ON
   // It's OK to insert the same context twice, but we should only ever have
-  // one ChromeV8Context per v8::Context.
+  // one ScriptContext per v8::Context.
   for (ContextSet::iterator iter = contexts_.begin(); iter != contexts_.end();
-      ++iter) {
-    ChromeV8Context* candidate = *iter;
+       ++iter) {
+    ScriptContext* candidate = *iter;
     if (candidate != context)
       DCHECK(candidate->v8_context() != context->v8_context());
   }
@@ -48,33 +35,34 @@ void ChromeV8ContextSet::Add(ChromeV8Context* context) {
   contexts_.insert(context);
 }
 
-void ChromeV8ContextSet::Remove(ChromeV8Context* context) {
+void ScriptContextSet::Remove(ScriptContext* context) {
   if (contexts_.erase(context)) {
     context->Invalidate();
     base::MessageLoop::current()->DeleteSoon(FROM_HERE, context);
   }
 }
 
-ChromeV8ContextSet::ContextSet ChromeV8ContextSet::GetAll() const {
+ScriptContextSet::ContextSet ScriptContextSet::GetAll() const {
   return contexts_;
 }
 
-ChromeV8Context* ChromeV8ContextSet::GetCurrent() const {
+ScriptContext* ScriptContextSet::GetCurrent() const {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   return isolate->InContext() ? GetByV8Context(isolate->GetCurrentContext())
                               : NULL;
 }
 
-ChromeV8Context* ChromeV8ContextSet::GetCalling() const {
+ScriptContext* ScriptContextSet::GetCalling() const {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::Local<v8::Context> calling = isolate->GetCallingContext();
   return calling.IsEmpty() ? NULL : GetByV8Context(calling);
 }
 
-ChromeV8Context* ChromeV8ContextSet::GetByV8Context(
+ScriptContext* ScriptContextSet::GetByV8Context(
     v8::Handle<v8::Context> v8_context) const {
   for (ContextSet::const_iterator iter = contexts_.begin();
-       iter != contexts_.end(); ++iter) {
+       iter != contexts_.end();
+       ++iter) {
     if ((*iter)->v8_context() == v8_context)
       return *iter;
   }
@@ -82,17 +70,16 @@ ChromeV8Context* ChromeV8ContextSet::GetByV8Context(
   return NULL;
 }
 
-void ChromeV8ContextSet::ForEach(
+void ScriptContextSet::ForEach(
     const std::string& extension_id,
     content::RenderView* render_view,
-    const base::Callback<void(ChromeV8Context*)>& callback) const {
+    const base::Callback<void(ScriptContext*)>& callback) const {
   // We copy the context list, because calling into javascript may modify it
   // out from under us.
   ContextSet contexts = GetAll();
 
-  for (ContextSet::iterator it = contexts.begin(); it != contexts.end();
-       ++it) {
-    ChromeV8Context* context = *it;
+  for (ContextSet::iterator it = contexts.begin(); it != contexts.end(); ++it) {
+    ScriptContext* context = *it;
 
     // For the same reason as above, contexts may become invalid while we run.
     if (!context->is_valid())
@@ -115,7 +102,7 @@ void ChromeV8ContextSet::ForEach(
   }
 }
 
-ChromeV8ContextSet::ContextSet ChromeV8ContextSet::OnExtensionUnloaded(
+ScriptContextSet::ContextSet ScriptContextSet::OnExtensionUnloaded(
     const std::string& extension_id) {
   ContextSet contexts = GetAll();
   ContextSet removed;
@@ -123,8 +110,7 @@ ChromeV8ContextSet::ContextSet ChromeV8ContextSet::OnExtensionUnloaded(
   // Clean up contexts belonging to the unloaded extension. This is done so
   // that content scripts (which remain injected into the page) don't continue
   // receiving events and sending messages.
-  for (ContextSet::iterator it = contexts.begin(); it != contexts.end();
-       ++it) {
+  for (ContextSet::iterator it = contexts.begin(); it != contexts.end(); ++it) {
     if ((*it)->extension() && (*it)->extension()->id() == extension_id) {
       (*it)->DispatchOnUnloadEvent();
       removed.insert(*it);

@@ -15,9 +15,6 @@
 #include "base/values.h"
 #include "chrome/common/extensions/manifest_handlers/externally_connectable.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/renderer/extensions/chrome_v8_context.h"
-#include "chrome/renderer/extensions/chrome_v8_context_set.h"
-#include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/dispatcher.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
@@ -25,8 +22,10 @@
 #include "extensions/common/api/messaging/message.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/renderer/event_bindings.h"
+#include "extensions/renderer/object_backed_native_handler.h"
 #include "extensions/renderer/scoped_persistent.h"
-#include "grit/renderer_resources.h"
+#include "extensions/renderer/script_context.h"
+#include "extensions/renderer/script_context_set.h"
 #include "third_party/WebKit/public/web/WebScopedMicrotaskSuppression.h"
 #include "third_party/WebKit/public/web/WebScopedUserGesture.h"
 #include "third_party/WebKit/public/web/WebScopedWindowFocusAllowedIndicator.h"
@@ -78,10 +77,10 @@ const char kPortClosedError[] = "Attempting to use a disconnected port object";
 const char kReceivingEndDoesntExistError[] =
     "Could not establish connection. Receiving end does not exist.";
 
-class ExtensionImpl : public ChromeV8Extension {
+class ExtensionImpl : public ObjectBackedNativeHandler {
  public:
-  ExtensionImpl(Dispatcher* dispatcher, ChromeV8Context* context)
-      : ChromeV8Extension(dispatcher, context) {
+  ExtensionImpl(Dispatcher* dispatcher, ScriptContext* context)
+      : ObjectBackedNativeHandler(context), dispatcher_(dispatcher) {
     RouteFunction("CloseChannel",
         base::Bind(&ExtensionImpl::CloseChannel, base::Unretained(this)));
     RouteFunction("PortAddRef",
@@ -97,14 +96,15 @@ class ExtensionImpl : public ChromeV8Extension {
 
   virtual ~ExtensionImpl() {}
 
+ private:
   void ClearPortDataAndNotifyDispatcher(int port_id) {
     ClearPortData(port_id);
-    dispatcher()->ClearPortData(port_id);
+    dispatcher_->ClearPortData(port_id);
   }
 
   // Sends a message along the given channel.
   void PostMessage(const v8::FunctionCallbackInfo<v8::Value>& args) {
-    content::RenderView* renderview = GetRenderView();
+    content::RenderView* renderview = context()->GetRenderView();
     if (!renderview)
       return;
 
@@ -232,19 +232,21 @@ class ExtensionImpl : public ChromeV8Extension {
                      args[1].As<v8::Function>(),
                      args.GetIsolate());
   }
+
+  // Dispatcher handle. Not owned.
+  Dispatcher* dispatcher_;
 };
 
 }  // namespace
 
-ChromeV8Extension* MessagingBindings::Get(
-    Dispatcher* dispatcher,
-    ChromeV8Context* context) {
+ObjectBackedNativeHandler* MessagingBindings::Get(Dispatcher* dispatcher,
+                                                  ScriptContext* context) {
   return new ExtensionImpl(dispatcher, context);
 }
 
 // static
 void MessagingBindings::DispatchOnConnect(
-    const ChromeV8ContextSet::ContextSet& contexts,
+    const ScriptContextSet::ContextSet& contexts,
     int target_port_id,
     const std::string& channel_name,
     const base::DictionaryValue& source_tab,
@@ -261,9 +263,10 @@ void MessagingBindings::DispatchOnConnect(
   bool port_created = false;
   std::string source_url_spec = source_url.spec();
 
-  // TODO(kalman): pass in the full ChromeV8ContextSet; call ForEach.
-  for (ChromeV8ContextSet::ContextSet::const_iterator it = contexts.begin();
-       it != contexts.end(); ++it) {
+  // TODO(kalman): pass in the full ScriptContextSet; call ForEach.
+  for (ScriptContextSet::ContextSet::const_iterator it = contexts.begin();
+       it != contexts.end();
+       ++it) {
     if (restrict_to_render_view &&
         restrict_to_render_view != (*it)->GetRenderView()) {
       continue;
@@ -346,7 +349,7 @@ void MessagingBindings::DispatchOnConnect(
 
 // static
 void MessagingBindings::DeliverMessage(
-    const ChromeV8ContextSet::ContextSet& contexts,
+    const ScriptContextSet::ContextSet& contexts,
     int target_port_id,
     const Message& message,
     content::RenderView* restrict_to_render_view) {
@@ -360,9 +363,10 @@ void MessagingBindings::DeliverMessage(
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
 
-  // TODO(kalman): pass in the full ChromeV8ContextSet; call ForEach.
-  for (ChromeV8ContextSet::ContextSet::const_iterator it = contexts.begin();
-       it != contexts.end(); ++it) {
+  // TODO(kalman): pass in the full ScriptContextSet; call ForEach.
+  for (ScriptContextSet::ContextSet::const_iterator it = contexts.begin();
+       it != contexts.end();
+       ++it) {
     if (restrict_to_render_view &&
         restrict_to_render_view != (*it)->GetRenderView()) {
       continue;
@@ -399,16 +403,17 @@ void MessagingBindings::DeliverMessage(
 
 // static
 void MessagingBindings::DispatchOnDisconnect(
-    const ChromeV8ContextSet::ContextSet& contexts,
+    const ScriptContextSet::ContextSet& contexts,
     int port_id,
     const std::string& error_message,
     content::RenderView* restrict_to_render_view) {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
 
-  // TODO(kalman): pass in the full ChromeV8ContextSet; call ForEach.
-  for (ChromeV8ContextSet::ContextSet::const_iterator it = contexts.begin();
-       it != contexts.end(); ++it) {
+  // TODO(kalman): pass in the full ScriptContextSet; call ForEach.
+  for (ScriptContextSet::ContextSet::const_iterator it = contexts.begin();
+       it != contexts.end();
+       ++it) {
     if (restrict_to_render_view &&
         restrict_to_render_view != (*it)->GetRenderView()) {
       continue;

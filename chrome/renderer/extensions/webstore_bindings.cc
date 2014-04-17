@@ -8,10 +8,9 @@
 #include "chrome/common/extensions/api/webstore/webstore_api_constants.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/extension.h"
-#include "grit/renderer_resources.h"
+#include "extensions/renderer/script_context.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebNode.h"
@@ -49,17 +48,15 @@ int g_next_install_id = 0;
 
 } // anonymous namespace
 
-WebstoreBindings::WebstoreBindings(Dispatcher* dispatcher,
-                                   ChromeV8Context* context)
-    : ChromeV8Extension(dispatcher, context),
-      ChromeV8ExtensionHandler(context) {
+WebstoreBindings::WebstoreBindings(ScriptContext* context)
+    : ObjectBackedNativeHandler(context), ChromeV8ExtensionHandler(context) {
   RouteFunction("Install",
                 base::Bind(&WebstoreBindings::Install, base::Unretained(this)));
 }
 
 void WebstoreBindings::Install(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderView* render_view = GetRenderView();
+  content::RenderView* render_view = context()->GetRenderView();
   if (!render_view)
     return;
 

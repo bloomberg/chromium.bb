@@ -8,8 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "chrome/renderer/extensions/chrome_v8_context.h"
-#include "grit/renderer_resources.h"
+#include "extensions/renderer/script_context.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebDOMFileSystem.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -17,8 +16,8 @@
 namespace extensions {
 
 FileBrowserHandlerCustomBindings::FileBrowserHandlerCustomBindings(
-    Dispatcher* dispatcher, ChromeV8Context* context)
-    : ChromeV8Extension(dispatcher, context) {
+    ScriptContext* context)
+    : ObjectBackedNativeHandler(context) {
   RouteFunction(
       "GetExternalFileEntry",
       base::Bind(&FileBrowserHandlerCustomBindings::GetExternalFileEntry,

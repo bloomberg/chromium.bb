@@ -57,9 +57,8 @@ void CreateBlob(const v8::FunctionCallbackInfo<v8::Value> &args) {
 
 namespace extensions {
 
-AppRuntimeCustomBindings::AppRuntimeCustomBindings(
-    Dispatcher* dispatcher,
-    ChromeV8Context* context) : ChromeV8Extension(dispatcher, context) {
+AppRuntimeCustomBindings::AppRuntimeCustomBindings(ScriptContext* context)
+    : ObjectBackedNativeHandler(context) {
   RouteFunction("DeserializeString", base::Bind(&DeserializeString));
   RouteFunction("SerializeToString", base::Bind(&SerializeToString));
   RouteFunction("CreateBlob", base::Bind(&CreateBlob));

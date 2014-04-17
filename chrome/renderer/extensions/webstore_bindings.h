@@ -6,20 +6,19 @@
 #define CHROME_RENDERER_EXTENSIONS_WEBSTORE_BINDINGS_H_
 
 #include "base/compiler_specific.h"
-#include "chrome/renderer/extensions/chrome_v8_extension.h"
+#include "chrome/renderer/extensions/chrome_v8_extension_handler.h"
+#include "extensions/renderer/object_backed_native_handler.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 
 namespace extensions {
-class ChromeV8Context;
 
 // A V8 extension that creates an object at window.chrome.webstore. This object
 // allows JavaScript to initiate inline installs of apps that are listed in the
 // Chrome Web Store (CWS).
-class WebstoreBindings : public ChromeV8Extension,
+class WebstoreBindings : public ObjectBackedNativeHandler,
                          public ChromeV8ExtensionHandler {
  public:
-  explicit WebstoreBindings(Dispatcher* dispatcher,
-                            ChromeV8Context* context);
+  explicit WebstoreBindings(ScriptContext* context);
 
   // IPC::Listener
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
