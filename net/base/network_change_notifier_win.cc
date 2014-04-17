@@ -54,6 +54,7 @@ class NetworkChangeNotifierWin::DnsConfigServiceThread : public base::Thread {
 NetworkChangeNotifierWin::NetworkChangeNotifierWin()
     : NetworkChangeNotifier(NetworkChangeCalculatorParamsWin()),
       is_watching_(false),
+	  network_change_event_handle_(NULL),
       sequential_failures_(0),
       weak_factory_(this),
       dns_config_service_thread_(new DnsConfigServiceThread()),
@@ -222,10 +223,15 @@ void NetworkChangeNotifierWin::OnObjectSignaled(HANDLE object) {
   DCHECK(is_watching_);
   is_watching_ = false;
 
+  DWORD bytes;
+  BOOL network_changed = GetOverlappedResult(network_change_event_handle_, &addr_overlapped_, &bytes, TRUE);
+
   // Start watching for the next address change.
   WatchForAddressChange();
 
-  NotifyObservers();
+  // If network_changed is 0 an error occured (e.g. GetLastError() = 995 = ERROR_OPERATION_ABORTED).
+  if (network_changed != 0)
+    NotifyObservers();
 }
 
 void NetworkChangeNotifierWin::NotifyObservers() {
@@ -295,8 +301,8 @@ bool NetworkChangeNotifierWin::WatchForAddressChangeInternal() {
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
   }
 
-  HANDLE handle = NULL;
-  DWORD ret = NotifyAddrChange(&handle, &addr_overlapped_);
+
+  DWORD ret = NotifyAddrChange(&network_change_event_handle_, &addr_overlapped_);
   if (ret != ERROR_IO_PENDING)
     return false;
 

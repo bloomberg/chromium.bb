@@ -1148,7 +1148,7 @@
     # flag allows us to have warnings as errors in general to prevent
     # regressions in most modules, while working on the bits that are
     # remaining.
-    'win_third_party_warn_as_error%': 'true',
+    'win_third_party_warn_as_error%': 'false',
 
     # Clang stuff.
     'clang%': '<(clang)',
@@ -2727,6 +2727,7 @@
           }],
           [ 'OS=="mac" or OS=="ios"', {
             'xcode_settings': {
+              'GCC_TREAT_WARNINGS_AS_ERRORS': 'NO',
               'WARNING_CFLAGS!': ['-Wall', '-Wextra'],
             },
             'conditions': [

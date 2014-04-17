@@ -63,6 +63,7 @@ class MimeUtil : public PlatformMimeUtil {
   bool IsSupportedNonImageMimeType(const std::string& mime_type) const;
   bool IsUnsupportedTextMimeType(const std::string& mime_type) const;
   bool IsSupportedJavascriptMimeType(const std::string& mime_type) const;
+  bool IsSupportedDartMimeType(const std::string& mime_type) const;
 
   bool IsSupportedMimeType(const std::string& mime_type) const;
 
@@ -109,6 +110,7 @@ class MimeUtil : public PlatformMimeUtil {
   MimeMappings non_image_map_;
   MimeMappings unsupported_text_map_;
   MimeMappings javascript_map_;
+  MimeMappings dart_map_;
   MimeMappings codecs_map_;
 
   StrictMappings strict_format_map_;
@@ -150,6 +152,7 @@ static const MimeInfo secondary_mappings[] = {
   { "application/pdf", "pdf" },
   { "application/postscript", "ps,eps,ai" },
   { "application/javascript", "js" },
+  { "application/dart", "dart" },
   { "application/font-woff", "woff" },
   { "image/bmp", "bmp" },
   { "image/x-icon", "ico" },
@@ -426,6 +429,10 @@ static bool IsCodecSupportedOnAndroid(const std::string& codec) {
 }
 #endif
 
+static const char* const supported_dart_types[] = {
+  "application/dart",
+};
+
 struct MediaFormatStrict {
   const char* mime_type;
   const char* codecs_list;
@@ -468,6 +475,8 @@ void MimeUtil::InitializeMimeTypeMaps() {
     unsupported_text_map_.insert(unsupported_text_types[i]);
   for (size_t i = 0; i < arraysize(supported_javascript_types); ++i)
     non_image_map_.insert(supported_javascript_types[i]);
+  for (size_t i = 0; i < arraysize(supported_dart_types); ++i)
+    non_image_map_.insert(supported_dart_types[i]);
   for (size_t i = 0; i < arraysize(common_media_types); ++i)
     non_image_map_.insert(common_media_types[i]);
 #if defined(USE_PROPRIETARY_CODECS)
@@ -485,6 +494,8 @@ void MimeUtil::InitializeMimeTypeMaps() {
 
   for (size_t i = 0; i < arraysize(supported_javascript_types); ++i)
     javascript_map_.insert(supported_javascript_types[i]);
+  for (size_t i = 0; i < arraysize(supported_dart_types); ++i)
+    dart_map_.insert(supported_dart_types[i]);
 
   for (size_t i = 0; i < arraysize(common_media_codecs); ++i) {
 #if defined(OS_ANDROID)
@@ -540,6 +551,11 @@ bool MimeUtil::IsUnsupportedTextMimeType(const std::string& mime_type) const {
 bool MimeUtil::IsSupportedJavascriptMimeType(
     const std::string& mime_type) const {
   return javascript_map_.find(mime_type) != javascript_map_.end();
+}
+
+bool MimeUtil::IsSupportedDartMimeType(
+    const std::string& mime_type) const {
+  return dart_map_.find(mime_type) != dart_map_.end();
 }
 
 // Mirrors WebViewImpl::CanShowMIMEType()
@@ -762,6 +778,10 @@ bool IsUnsupportedTextMimeType(const std::string& mime_type) {
 
 bool IsSupportedJavascriptMimeType(const std::string& mime_type) {
   return g_mime_util.Get().IsSupportedJavascriptMimeType(mime_type);
+}
+
+bool IsSupportedDartMimeType(const std::string& mime_type) {
+  return g_mime_util.Get().IsSupportedDartMimeType(mime_type);
 }
 
 bool IsSupportedMimeType(const std::string& mime_type) {

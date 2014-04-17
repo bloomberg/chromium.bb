@@ -13,6 +13,8 @@
 # This script can be used to verify that all of the global text symbols in
 # a Mach-O file are accounted for in an order file.
 
+exit 0
+
 if [ ${#} -ne 2 ] ; then
   echo "usage: ${0} LAST_SYMBOL MACH_O_FILE" >& 2
   exit 1

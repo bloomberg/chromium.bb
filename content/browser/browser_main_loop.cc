@@ -133,7 +133,7 @@ void SetupSandbox(const CommandLine& parsed_command_line) {
   scoped_ptr<sandbox::SetuidSandboxClient> setuid_sandbox_client(
       sandbox::SetuidSandboxClient::Create());
 
-  const bool want_setuid_sandbox =
+  const bool want_setuid_sandbox = false &&
       !parsed_command_line.HasSwitch(switches::kNoSandbox) &&
       !parsed_command_line.HasSwitch(switches::kDisableSetuidSandbox) &&
       !setuid_sandbox_client->IsDisabledViaEnvironment();

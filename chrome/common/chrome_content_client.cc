@@ -504,7 +504,14 @@ std::string ChromeContentClient::GetProduct() const {
 }
 
 std::string ChromeContentClient::GetUserAgent() const {
-  return ::GetUserAgent();
+  std::string product = GetProduct();
+  product += " (Dart)";
+#if defined(OS_ANDROID)
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kUseMobileUserAgent))
+    product += " Mobile";
+#endif
+  return webkit_glue::BuildUserAgentFromProduct(product);
 }
 
 base::string16 ChromeContentClient::GetLocalizedString(int message_id) const {

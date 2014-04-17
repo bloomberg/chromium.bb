@@ -90,6 +90,10 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierWin
   base::win::ObjectWatcher addr_watcher_;
   OVERLAPPED addr_overlapped_;
 
+  // This file handle receives network change notifications and is used for calling
+  // GetOverlappedResult().
+  HANDLE network_change_event_handle_;
+
   base::OneShotTimer<NetworkChangeNotifierWin> timer_;
 
   // Number of times WatchForAddressChange has failed in a row.
