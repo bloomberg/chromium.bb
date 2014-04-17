@@ -1136,10 +1136,10 @@ crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/international/bid
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/international/bidi-menulist.html [ NeedsManualRebaseline ]
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/textIteratorNilRenderer.html [ NeedsManualRebaseline ]
 
-crbug.com/363772 virtual/deferred/fast/images/repaint-subrect-grid.html [ NeedsManualRebaseline ]
-crbug.com/363772 virtual/deferred/fast/images/exif-orientation.html [ NeedsManualRebaseline ]
-crbug.com/363772 [ Mac Linux Android ] virtual/gpu/fast/hidpi/gradient-with-scaled-ancestor.html [ NeedsManualRebaseline ]
-crbug.com/363772 [ Win Release ] virtual/gpu/fast/hidpi/gradient-with-scaled-ancestor.html [ NeedsManualRebaseline ]
+crbug.com/363772 virtual/deferred/fast/images/repaint-subrect-grid.html [ NeedsRebaseline ]
+crbug.com/363772 virtual/deferred/fast/images/exif-orientation.html [ NeedsRebaseline ]
+crbug.com/363772 [ Mac Linux Android ] virtual/gpu/fast/hidpi/gradient-with-scaled-ancestor.html [ NeedsRebaseline ]
+crbug.com/363772 [ Win Release ] virtual/gpu/fast/hidpi/gradient-with-scaled-ancestor.html [ NeedsRebaseline ]
 
 crbug.com/362992 crypto/aes-cbc-generateKey-parseAlgorithm-failures.html [ Skip ]
 crbug.com/362992 crypto/digest-failures.html [ Skip ]
