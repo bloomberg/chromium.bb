@@ -22,6 +22,9 @@ struct URLVisitedDetails : public HistoryDetails {
   virtual ~URLVisitedDetails();
 
   content::PageTransition transition;
+
+  // The affected URLRow. The ID will be set to the value that is currently in
+  // effect in the main history database.
   URLRow row;
 
   // A list of redirects leading up to the URL represented by this struct. If
@@ -36,7 +39,8 @@ struct URLsModifiedDetails : public HistoryDetails {
   URLsModifiedDetails();
   virtual ~URLsModifiedDetails();
 
-  // Lists the information for each of the URLs affected.
+  // Lists the information for each of the URLs affected. The rows will have the
+  // IDs that are currently in effect in the main history database.
   URLRows changed_urls;
 };
 
@@ -53,7 +57,9 @@ struct URLsDeletedDetails : public HistoryDetails {
   bool archived;
 
   // The URLRows of URLs deleted. This is valid only when |all_history| is false
-  // indicating that a subset of history has been deleted.
+  // indicating that a subset of history has been deleted. The rows will have
+  // the IDs that had been in effect before the deletion in the main history
+  // database.
   URLRows rows;
 
   // The list of deleted favicon urls. This is valid only when |all_history| is

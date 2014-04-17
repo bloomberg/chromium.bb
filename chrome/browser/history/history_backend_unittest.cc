@@ -147,8 +147,12 @@ class HistoryBackendTest : public testing::Test {
     return broadcasted_notifications_.size();
   }
 
-  NotificationList& broadcasted_notifications() {
+  const NotificationList& broadcasted_notifications() const {
     return broadcasted_notifications_;
+  }
+
+  void ClearBroadcastedNotifications() {
+    STLDeleteValues(&broadcasted_notifications_);
   }
 
  protected:
@@ -509,6 +513,7 @@ TEST_F(HistoryBackendTest, DeleteAll) {
       bookmark_model_.bookmark_bar_node(), 0, base::string16(), row1.url());
 
   // Now finally clear all history.
+  ClearBroadcastedNotifications();
   backend_->DeleteAllHistory();
 
   // The first URL should be preserved but the time should be cleared.
@@ -570,6 +575,15 @@ TEST_F(HistoryBackendTest, DeleteAll) {
 
   // The first URL should still be bookmarked.
   EXPECT_TRUE(bookmark_model_.IsBookmarked(row1.url()));
+
+  // Check that we fire the notification about all history having been deleted.
+  ASSERT_EQ(1u, broadcasted_notifications().size());
+  ASSERT_EQ(chrome::NOTIFICATION_HISTORY_URLS_DELETED,
+            broadcasted_notifications()[0].first);
+  const URLsDeletedDetails* details = static_cast<const URLsDeletedDetails*>(
+      broadcasted_notifications()[0].second);
+  EXPECT_TRUE(details->all_history);
+  EXPECT_FALSE(details->archived);
 }
 
 // Checks that adding a visit, then calling DeleteAll, and then trying to add
@@ -834,6 +848,9 @@ TEST_F(HistoryBackendTest, AddPagesWithDetails) {
   EXPECT_EQ(0, backend_->archived_db_->GetRowForURL(row3.url(), &stored_row3));
   EXPECT_NE(0, backend_->archived_db_->GetRowForURL(row4.url(), &stored_row4));
 
+  // Ensure that a notification was fired, and further verify that the IDs in
+  // the notification are set to those that are in effect in the main database.
+  // The InMemoryHistoryBackend relies on this for caching.
   ASSERT_EQ(1u, broadcasted_notifications().size());
   ASSERT_EQ(chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
             broadcasted_notifications()[0].first);
@@ -846,12 +863,52 @@ TEST_F(HistoryBackendTest, AddPagesWithDetails) {
       details->changed_urls.end(),
       history::URLRow::URLRowHasURL(row2.url()));
   ASSERT_NE(details->changed_urls.end(), it_row2);
+  EXPECT_EQ(stored_row2.id(), it_row2->id());
 
   URLRows::const_iterator it_row3 = std::find_if(
         details->changed_urls.begin(),
         details->changed_urls.end(),
         history::URLRow::URLRowHasURL(row3.url()));
   ASSERT_NE(details->changed_urls.end(), it_row3);
+  EXPECT_EQ(stored_row3.id(), it_row3->id());
+}
+
+// This verifies that a notification is fired. In-depth testing of logic should
+// be done in HistoryTest.SetTitle.
+TEST_F(HistoryBackendTest, SetPageTitleFiresNotificationWithCorrectDetails) {
+  const char kTestUrlTitle[] = "Google Search";
+
+  ASSERT_TRUE(backend_.get());
+
+  // Add two pages, then change the title of the second one.
+  URLRow row1(GURL("https://news.google.com/"));
+  row1.set_typed_count(1);
+  row1.set_last_visit(Time::Now());
+  URLRow row2(GURL("https://www.google.com/"));
+  row2.set_visit_count(2);
+  row2.set_last_visit(Time::Now());
+
+  URLRows rows;
+  rows.push_back(row1);
+  rows.push_back(row2);
+  backend_->AddPagesWithDetails(rows, history::SOURCE_BROWSED);
+
+  ClearBroadcastedNotifications();
+  backend_->SetPageTitle(row2.url(), base::UTF8ToUTF16(kTestUrlTitle));
+
+  // Ensure that a notification was fired, and further verify that the IDs in
+  // the notification are set to those that are in effect in the main database.
+  // The InMemoryHistoryBackend relies on this for caching.
+  URLRow stored_row2;
+  EXPECT_TRUE(backend_->GetURL(row2.url(), &stored_row2));
+  ASSERT_EQ(1u, broadcasted_notifications().size());
+  ASSERT_EQ(chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
+            broadcasted_notifications()[0].first);
+  const URLsModifiedDetails* details = static_cast<const URLsModifiedDetails*>(
+      broadcasted_notifications()[0].second);
+  ASSERT_EQ(1u, details->changed_urls.size());
+  EXPECT_EQ(base::UTF8ToUTF16(kTestUrlTitle), details->changed_urls[0].title());
+  EXPECT_EQ(stored_row2.id(), details->changed_urls[0].id());
 }
 
 TEST_F(HistoryBackendTest, ImportedFaviconsTest) {
@@ -1040,6 +1097,56 @@ TEST_F(HistoryBackendTest, AddPageVisitNotLastVisit) {
   // visit.
   ASSERT_EQ(2U, visits.size());
   ASSERT_EQ(recent_time, row.last_visit());
+}
+
+TEST_F(HistoryBackendTest, AddPageVisitFiresNotificationWithCorrectDetails) {
+  ASSERT_TRUE(backend_.get());
+
+  GURL url1("http://www.google.com");
+  GURL url2("http://maps.google.com");
+
+  // Clear all history.
+  backend_->DeleteAllHistory();
+  ClearBroadcastedNotifications();
+
+  // Visit two distinct URLs, the second one twice.
+  backend_->AddPageVisit(url1, base::Time::Now(), 0,
+                         content::PAGE_TRANSITION_LINK,
+                         history::SOURCE_BROWSED);
+  for (int i = 0; i < 2; ++i) {
+    backend_->AddPageVisit(url2, base::Time::Now(), 0,
+                           content::PAGE_TRANSITION_TYPED,
+                           history::SOURCE_BROWSED);
+  }
+
+  URLRow stored_row1, stored_row2;
+  EXPECT_NE(0, backend_->db_->GetRowForURL(url1, &stored_row1));
+  EXPECT_NE(0, backend_->db_->GetRowForURL(url2, &stored_row2));
+
+  // Expect that NOTIFICATION_HISTORY_URLS_VISITED has been fired 3x, and that
+  // each time, the URLRows have the correct URLs and IDs set.
+  ASSERT_EQ(3, num_broadcasted_notifications());
+  ASSERT_EQ(chrome::NOTIFICATION_HISTORY_URL_VISITED,
+            broadcasted_notifications()[0].first);
+  const URLVisitedDetails* details = static_cast<const URLVisitedDetails*>(
+      broadcasted_notifications()[0].second);
+  EXPECT_EQ(content::PAGE_TRANSITION_LINK,
+            content::PageTransitionStripQualifier(details->transition));
+  EXPECT_EQ(stored_row1.id(), details->row.id());
+  EXPECT_EQ(stored_row1.url(), details->row.url());
+
+  // No further checking, this case analogous to the first one.
+  ASSERT_EQ(chrome::NOTIFICATION_HISTORY_URL_VISITED,
+            broadcasted_notifications()[1].first);
+
+  ASSERT_EQ(chrome::NOTIFICATION_HISTORY_URL_VISITED,
+            broadcasted_notifications()[2].first);
+  details = static_cast<const URLVisitedDetails*>(
+      broadcasted_notifications()[2].second);
+  EXPECT_EQ(content::PAGE_TRANSITION_TYPED,
+            content::PageTransitionStripQualifier(details->transition));
+  EXPECT_EQ(stored_row2.id(), details->row.id());
+  EXPECT_EQ(stored_row2.url(), details->row.url());
 }
 
 TEST_F(HistoryBackendTest, AddPageArgsSource) {
