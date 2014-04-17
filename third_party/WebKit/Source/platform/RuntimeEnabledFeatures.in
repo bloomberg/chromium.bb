@@ -17,7 +17,7 @@
 
 ApplicationCache status=stable
 AuthorShadowDOMForAnyElement
-BatteryStatus status=test
+BatteryStatus status=experimental
 PrefixedVideoFullscreen status=test
 
 // Enable bleeding-edge code to make Blink draw content faster.
@@ -84,7 +84,7 @@ Path2D status=stable
 PathOpsSVGClipping
 PeerConnection depends_on=MediaStream, status=stable
 PreciseMemoryInfo
-PushMessaging status=test
+PushMessaging status=experimental
 Quota status=stable
 QuotaPromise status=experimental
 OverlayScrollbars
