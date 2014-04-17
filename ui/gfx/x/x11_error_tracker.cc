@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/logging.h"
 #include "ui/gfx/x/x11_error_tracker.h"
 
 #include "ui/gfx/x/x11_types.h"
@@ -9,6 +10,7 @@
 namespace {
 
 unsigned char g_x11_error_code = 0;
+static gfx::X11ErrorTracker* g_handler = NULL;
 
 int X11ErrorHandler(Display* display, XErrorEvent* error) {
   g_x11_error_code = error->error_code;
@@ -19,10 +21,19 @@ int X11ErrorHandler(Display* display, XErrorEvent* error) {
 namespace gfx {
 
 X11ErrorTracker::X11ErrorTracker() {
+  // This is a poor-man's check for incorrect usage. It disallows nested
+  // X11ErrorTracker instances on the same thread.
+  DCHECK(g_handler == NULL);
+  g_handler = this;
+  XSync(GetXDisplay(), False);
   old_handler_ = XSetErrorHandler(X11ErrorHandler);
+  g_x11_error_code = 0;
 }
 
-X11ErrorTracker::~X11ErrorTracker() { XSetErrorHandler(old_handler_); }
+X11ErrorTracker::~X11ErrorTracker() {
+  g_handler = NULL;
+  XSetErrorHandler(old_handler_);
+}
 
 bool X11ErrorTracker::FoundNewError() {
   XSync(GetXDisplay(), False);
