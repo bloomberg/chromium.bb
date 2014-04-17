@@ -193,9 +193,6 @@ class SitePerProcessBrowserTest : public ContentBrowserTest {
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(switches::kSitePerProcess);
-
-    // TODO(creis): Remove this when GTK is no longer a supported platform.
-    command_line->AppendSwitch(switches::kForceCompositingMode);
   }
 };
 

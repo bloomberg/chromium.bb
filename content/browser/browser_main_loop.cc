@@ -924,7 +924,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   // otherwise we'll trigger the assertion about doing IO on the UI thread.
   GpuDataManagerImpl::GetInstance()->Initialize();
 
-  bool always_uses_gpu = IsForceCompositingModeEnabled();
+  bool always_uses_gpu = true;
   bool established_gpu_channel = false;
 #if defined(USE_AURA) || defined(OS_MACOSX)
   if (ShouldInitializeBrowserGpuChannelAndTransportSurface()) {

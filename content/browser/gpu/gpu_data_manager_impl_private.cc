@@ -756,7 +756,6 @@ void GpuDataManagerImplPrivate::UpdateRendererWebPrefs(
           display_count_ > 1))
     prefs->gl_multisampling_enabled = false;
 
-  prefs->force_compositing_mode = true;
   prefs->accelerated_compositing_enabled = true;
   prefs->accelerated_compositing_for_3d_transforms_enabled = true;
   prefs->accelerated_compositing_for_animation_enabled = true;

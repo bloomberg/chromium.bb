@@ -140,7 +140,7 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
       {
           "force_compositing_mode",
           false,
-          !IsForceCompositingModeEnabled(),
+          false,
           "Force compositing mode is off, either disabled at the command"
           " line or not supported by the current system.",
           false
@@ -163,21 +163,6 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
   return kGpuFeatureInfo[index];
 }
 
-bool CanDoAcceleratedCompositing() {
-  const GpuDataManagerImpl* manager = GpuDataManagerImpl::GetInstance();
-
-  // Don't use force compositing mode if gpu access has been blocked or
-  // accelerated compositing is blacklisted.
-  if (!manager->GpuAccessAllowed(NULL))
-    return false;
-
-  // Check for SwiftShader.
-  if (manager->ShouldUseSwiftShader())
-    return false;
-
-  return true;
-}
-
 }  // namespace
 
 bool IsThreadedCompositingEnabled() {
@@ -198,30 +183,6 @@ bool IsThreadedCompositingEnabled() {
 #endif
 }
 
-bool IsForceCompositingModeEnabled() {
-  // Force compositing mode is a subset of threaded compositing mode.
-  if (IsThreadedCompositingEnabled())
-    return true;
-
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-
-  // Command line switches take precedence over blacklisting.
-  if (command_line.HasSwitch(switches::kForceCompositingMode))
-    return true;
-
-  if (!CanDoAcceleratedCompositing())
-    return false;
-
-#if defined(OS_MACOSX) || defined(OS_WIN)
-  // Windows Vista+ has been shipping with TCM enabled at 100% since M24 and
-  // Mac OSX 10.8+ since M28. The blacklist check above takes care of returning
-  // false before this hits on unsupported Win/Mac versions.
-  return true;
-#else
-  return false;
-#endif
-}
-
 bool IsDelegatedRendererEnabled() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   bool enabled = false;
@@ -236,8 +197,7 @@ bool IsDelegatedRendererEnabled() {
   enabled &= !command_line.HasSwitch(switches::kDisableDelegatedRenderer);
 
   // Needs compositing, and thread.
-  if (enabled &&
-      (!IsForceCompositingModeEnabled() || !IsThreadedCompositingEnabled())) {
+  if (enabled && !IsThreadedCompositingEnabled()) {
     enabled = false;
     LOG(ERROR) << "Disabling delegated-rendering because it needs "
                << "force-compositing-mode and threaded-compositing.";
@@ -342,9 +302,6 @@ base::Value* GetFeatureStatus() {
         status += "_readback";
       bool has_thread = IsThreadedCompositingEnabled();
       if (gpu_feature_info.name == "compositing") {
-        bool force_compositing = IsForceCompositingModeEnabled();
-        if (force_compositing)
-          status += "_force";
         if (has_thread)
           status += "_threaded";
       } else if (gpu_feature_info.name == "css_animation") {

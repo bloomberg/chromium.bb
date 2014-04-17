@@ -941,9 +941,6 @@ static void AppendGpuCommandLineFlags(CommandLine* command_line) {
   if (IsThreadedCompositingEnabled())
     command_line->AppendSwitch(switches::kEnableThreadedCompositing);
 
-  if (IsForceCompositingModeEnabled())
-    command_line->AppendSwitch(switches::kForceCompositingMode);
-
   if (IsDelegatedRendererEnabled())
     command_line->AppendSwitch(switches::kEnableDelegatedRenderer);
 
@@ -1094,6 +1091,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableWebAnimationsSVG,
     switches::kEnableWebGLDraftExtensions,
     switches::kEnableWebMIDI,
+    switches::kForceCompositingMode,
     switches::kForceDeviceScaleFactor,
     switches::kFullMemoryCrashReport,
     switches::kJavaScriptFlags,

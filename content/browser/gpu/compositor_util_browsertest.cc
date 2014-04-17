@@ -41,10 +41,6 @@ IN_PROC_BROWSER_TEST_F(CompositorUtilTest, CompositingModeAsExpected) {
     expected_mode = THREADED;
 #endif
 
-  EXPECT_EQ(expected_mode == ENABLED ||
-            expected_mode == THREADED ||
-            expected_mode == DELEGATED,
-            IsForceCompositingModeEnabled());
   EXPECT_EQ(expected_mode == THREADED ||
             expected_mode == DELEGATED,
             IsThreadedCompositingEnabled());

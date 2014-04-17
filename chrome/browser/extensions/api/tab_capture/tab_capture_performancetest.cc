@@ -125,11 +125,8 @@ class TabCapturePerformanceTest
       command_line->AppendSwitchASCII(switches::kWindowSize, "2000,1500");
     }
 
-    if (!HasFlag(kUseGpu)) {
+    if (!HasFlag(kUseGpu))
       command_line->AppendSwitch(switches::kDisableGpu);
-    } else {
-      command_line->AppendSwitch(switches::kForceCompositingMode);
-    }
 
     if (HasFlag(kDisableVsync))
       command_line->AppendSwitch(switches::kDisableGpuVsync);

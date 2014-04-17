@@ -228,24 +228,12 @@ class CompositingRenderWidgetHostViewBrowserTest
     RenderWidgetHostViewBrowserTest::SetUp();
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    // Note: Not appending kForceCompositingMode switch here, since not all bots
-    // support compositing.  Some bots will run with compositing on, and others
-    // won't.  Therefore, the call to SetUpSourceSurface() later on will detect
-    // whether compositing mode is actually on or not.  If not, the tests will
-    // pass blindly, logging a warning message, since we cannot test what the
-    // platform/implementation does not support.
-    RenderWidgetHostViewBrowserTest::SetUpCommandLine(command_line);
-  }
-
   virtual GURL TestUrl() {
     return net::FilePathToFileURL(
         test_dir().AppendASCII("rwhv_compositing_animation.html"));
   }
 
   virtual bool SetUpSourceSurface(const char* wait_message) OVERRIDE {
-    if (!IsForceCompositingModeEnabled())
-      return false;  // See comment in SetUpCommandLine().
 #if defined(OS_MACOSX)
     CHECK(IOSurfaceSupport::Initialize());
 #endif

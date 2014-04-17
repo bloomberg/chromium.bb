@@ -332,7 +332,7 @@ const char kEnableBleedingEdgeRenderingFastPaths[] =
 const char kEnableDeferredFilters[]         = "enable-deferred-filters";
 
 // Enables accelerated compositing for backgrounds of root layers with
-// background-attachment: fixed. Requires kForceCompositingMode.
+// background-attachment: fixed.
 const char kEnableAcceleratedFixedRootBackground[] =
     "enable-accelerated-fixed-root-background";
 
@@ -601,8 +601,7 @@ const char kEnableWebMIDI[]                 = "enable-web-midi";
 // Load NPAPI plugins from the specified directory.
 const char kExtraPluginDir[]                = "extra-plugin-dir";
 
-// If accelerated compositing is supported, always enter compositing mode for
-// the base layer even when compositing is not strictly required.
+// Enable force_compositing_mode in layout tests.
 const char kForceCompositingMode[]          = "force-compositing-mode";
 
 // Some field trials may be randomized in the browser, and the randomly selected

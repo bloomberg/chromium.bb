@@ -16,9 +16,6 @@ namespace content {
 // Returns true if the threaded compositor is on (via flags or field trial).
 CONTENT_EXPORT bool IsThreadedCompositingEnabled();
 
-// Returns true if force-compositing-mode is on (via flags or field trial).
-CONTENT_EXPORT bool IsForceCompositingModeEnabled();
-
 // Returns true if delegated-renderer is on (via flags, or platform default).
 CONTENT_EXPORT bool IsDelegatedRendererEnabled();
 

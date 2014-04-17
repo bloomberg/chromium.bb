@@ -22,7 +22,6 @@ namespace content {
 
 void Shell::PlatformInitialize(const gfx::Size& default_window_size) {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  DCHECK(command_line->HasSwitch(switches::kForceCompositingMode));
   DCHECK(command_line->HasSwitch(switches::kEnableThreadedCompositing));
 }
 
