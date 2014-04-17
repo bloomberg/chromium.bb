@@ -361,5 +361,14 @@ def main():
   if result == 0 and channel == 'be':
     result = archiveAndUpload(archive_latest=True) or result
 
+  # BIG HACK
+  # Normal ninja clobbering does not work due to symlinks/python on windows
+  # Full clobbering before building does not work since it will destroy
+  # the ninja build files
+  # So we basically clobber at the end here
+  if is_full and platform.system() == 'Windows':
+    print '@@@BUILD_STEP Dartium hackish clobber@@@'
+    shutil.rmtree(os.path.join(SRC_PATH, 'out'), ignore_errors=True)
+
 if __name__ == '__main__':
   sys.exit(main())
