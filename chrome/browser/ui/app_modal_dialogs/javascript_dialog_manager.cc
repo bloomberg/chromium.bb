@@ -270,9 +270,13 @@ base::string16 ChromeJavaScriptDialogManager::GetTitle(
                    : IDS_JAVASCRIPT_MESSAGEBOX_DEFAULT_TITLE);
   }
 
+  // For extensions, show the extension name, but only if the origin of
+  // the alert matches the top-level WebContents.
   const Extension* extension = GetExtensionForWebContents(web_contents);
-  if (extension)
+  if (extension &&
+      web_contents->GetLastCommittedURL().GetOrigin() == origin_url) {
     return base::UTF8ToUTF16(extension->name());
+  }
 
   // Otherwise, return the formatted URL.
   // In this case, force URL to have LTR directionality.
