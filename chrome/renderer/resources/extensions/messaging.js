@@ -361,15 +361,15 @@
     return alignedArgs;
   }
 
-var Port = utils.expose('Port', PortImpl, [
+var Port = utils.expose('Port', PortImpl, { functions: [
     'disconnect',
     'postMessage'
   ],
-  [
+  properties: [
     'name',
     'onDisconnect',
     'onMessage'
-  ]);
+  ] });
 
 exports.kRequestChannel = kRequestChannel;
 exports.kMessageChannel = kMessageChannel;

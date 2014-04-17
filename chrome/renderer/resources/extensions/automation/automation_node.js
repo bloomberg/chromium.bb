@@ -177,16 +177,17 @@ AutomationNodeImpl.prototype = {
 
 var AutomationNode = utils.expose('AutomationNode',
                                   AutomationNodeImpl,
-                                  ['parent',
-                                   'firstChild',
-                                   'lastChild',
-                                   'children',
-                                   'previousSibling',
-                                   'nextSibling',
-                                   'doDefault',
-                                   'focus',
-                                   'makeVisible',
-                                   'setSelection',
-                                   'addEventListener',
-                                   'removeEventListener']);
+                                  { functions: ['parent',
+                                                'firstChild',
+                                                'lastChild',
+                                                'children',
+                                                'previousSibling',
+                                                'nextSibling',
+                                                'doDefault',
+                                                'focus',
+                                                'makeVisible',
+                                                'setSelection',
+                                                'addEventListener',
+                                                'removeEventListener'] });
+
 exports.AutomationNode = AutomationNode;

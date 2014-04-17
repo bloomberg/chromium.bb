@@ -19,7 +19,8 @@ AutomationEventImpl.prototype = {
   }
 };
 
-exports.AutomationEvent = utils.expose('AutomationEvent',
-                                       AutomationEventImpl,
-                                       ['stopPropagation'],
-                                       ['type', 'target']);
+exports.AutomationEvent = utils.expose(
+    'AutomationEvent',
+    AutomationEventImpl,
+    { functions: ['stopPropagation'],
+      readonly: ['type', 'target', 'eventPhase'] });

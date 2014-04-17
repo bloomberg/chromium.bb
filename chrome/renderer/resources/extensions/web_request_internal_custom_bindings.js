@@ -175,7 +175,9 @@ binding.registerCustomHook(function(api) {
   });
 });
 
-var WebRequestEvent = utils.expose('WebRequestEvent', WebRequestEventImpl, [
+var WebRequestEvent = utils.expose('WebRequestEvent',
+                                   WebRequestEventImpl,
+                                   { functions: [
   'hasListener',
   'hasListeners',
   'addListener',
@@ -183,7 +185,7 @@ var WebRequestEvent = utils.expose('WebRequestEvent', WebRequestEventImpl, [
   'addRules',
   'removeRules',
   'getRules'
-]);
+] });
 
 webRequestInternal = binding.generate();
 exports.binding = webRequestInternal;

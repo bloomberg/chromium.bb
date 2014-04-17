@@ -120,7 +120,7 @@ WebViewContextMenusImpl.prototype.update = function() {
 
 var WebViewContextMenus = utils.expose(
     'WebViewContextMenus', WebViewContextMenusImpl,
-    ['create', 'remove', 'removeAll', 'update']);
+    { functions: ['create', 'remove', 'removeAll', 'update'] });
 
 /**
  * @private

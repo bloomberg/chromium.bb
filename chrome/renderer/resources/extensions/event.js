@@ -506,7 +506,7 @@
     }
   });
 
-  var Event = utils.expose('Event', EventImpl, [
+  var Event = utils.expose('Event', EventImpl, { functions: [
     'addListener',
     'removeListener',
     'hasListener',
@@ -516,7 +516,7 @@
     'addRules',
     'removeRules',
     'getRules'
-  ]);
+  ] });
 
   // NOTE: Event is (lazily) exposed as chrome.Event from dispatcher.cc.
   exports.Event = Event;

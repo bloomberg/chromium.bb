@@ -184,7 +184,26 @@ var allTests = [
             makeAssertions(tree);
           }, true);
     });
-  }
+  },
+  function cantChangeEventReadonlyParams() {
+    chrome.automation.getTree(function(tree) {
+      var cancelButton = tree.root.firstChild().children()[2];
+      assertEq('Cancel', cancelButton.attributes['ax_attr_name']);
+      cancelButton.addEventListener('focus', function onFocus(event) {
+        assertEq('focus', event.type);
+        assertEq(cancelButton, event.target);
+        assertEq(Event.AT_TARGET, event.eventPhase);
+        event.type = 'bad_type';
+        assertEq('focus', event.type);
+        event.target = tree.root;
+        assertEq(cancelButton, event.target);
+        event.eventPhase = Event.NONE;
+        assertEq(Event.AT_TARGET, event.eventPhase);
+        chrome.test.succeed();
+      });
+      cancelButton.focus();
+    });
+  },
 ];
 
 chrome.test.runTests(allTests);
