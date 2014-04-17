@@ -4,6 +4,7 @@
 
 var Event = require('event_bindings').Event;
 var AutomationNode = require('automationNode').AutomationNode;
+var utils = require('utils');
 
 // Maps an attribute to its default value in an invalidated node.
 // These attributes are taken directly from the Automation idl.
@@ -41,25 +42,13 @@ var AutomationAttributeTypes = [
  * renderer widget host.
  * @constructor
  */
-var AutomationTree = function(processID, routingID) {
-  privates(this).impl = new AutomationTreeImpl(processID, routingID);
-};
-
-
-AutomationTree.prototype = {
-  /**
-   * The root of this automation tree.
-   * @type {Object}
-   */
-  get root() {
-    return privates(this).impl.root;
-  }
-};
-
-
 var AutomationTreeImpl = function(processID, routingID) {
   this.processID = processID;
   this.routingID = routingID;
+
+  this.listeners = {};
+
+  this.root = new AutomationNode(this);
 
   /**
    * Our cache of the native AXTree.
@@ -99,8 +88,28 @@ AutomationTreeImpl.prototype = {
     for (var key in AutomationAttributeDefaults) {
       node[key] = AutomationAttributeDefaults[key];
     }
+    node.loaded = false;
     node.id = id;
     this.axNodeDataCache_[id] = undefined;
+  },
+
+  // TODO(aboxhall): make AutomationTree inherit from AutomationNode (or a
+  // mutual ancestor) and remove this code.
+  addEventListener: function(eventType, callback, capture) {
+    this.removeEventListener(eventType, callback);
+    if (!this.listeners[eventType])
+      this.listeners[eventType] = [];
+    this.listeners[eventType].push({callback: callback, capture: capture});
+  },
+
+  removeEventListener: function(eventType, callback) {
+    if (this.listeners[eventType]) {
+      var listeners = this.listeners[eventType];
+      for (var i = 0; i < listeners.length; i++) {
+        if (callback === listeners[i].callback)
+          listeners.splice(i, 1);
+      }
+    }
   },
 
   /**
@@ -154,13 +163,10 @@ AutomationTreeImpl.prototype = {
         didUpdateRoot = true;
       }
       for (var key in AutomationAttributeDefaults) {
-        // This assumes that we sometimes don't get specific attributes (i.e. in
-        // tests). Better safe than sorry.
-        if (nodeData[key]) {
+        if (key in nodeData)
           node[key] = nodeData[key];
-        } else {
+        else
           node[key] = AutomationAttributeDefaults[key];
-        }
       }
       node.attributes = {};
       for (var attributeTypeIndex = 0;
@@ -173,12 +179,18 @@ AutomationTreeImpl.prototype = {
         }
       }
       privates(node).impl.childIds = newChildIDs;
+      node.loaded = true;
       this.axNodeDataCache_[node.id] = node;
-      privates(node).impl.dispatchEvent(data.eventType);
     }
+    var node = this.get(data.targetID);
+    if (node)
+      privates(node).impl.dispatchEvent(data.eventType);
     return true;
   }
 };
 
-
-exports.AutomationTree = AutomationTree;
+exports.AutomationTree = utils.expose('AutomationTree',
+                                      AutomationTreeImpl,
+                                      { functions: ['addEventListener',
+                                                    'removeEventListener'],
+                                        readonly: ['root'] });

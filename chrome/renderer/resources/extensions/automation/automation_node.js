@@ -20,6 +20,11 @@ var AutomationNodeImpl = function(owner) {
 };
 
 AutomationNodeImpl.prototype = {
+  id: -1,
+  role: '',
+  loaded: false,
+  state: { busy: true },
+
   parent: function() {
     return this.owner.get(this.parentID);
   },
@@ -99,6 +104,7 @@ AutomationNodeImpl.prototype = {
       // TODO(aboxhall/dtseng): handle unloaded parent node
       parent = parent.parent();
     }
+    path.push(this.owner.wrapper);
     var event = new AutomationEvent(eventType, this.wrapper);
 
     // Dispatch the event through the propagation path in three phases:
@@ -144,8 +150,8 @@ AutomationNodeImpl.prototype = {
     var listeners = nodeImpl.listeners[event.type];
     if (!listeners)
       return;
+    var eventPhase = event.eventPhase;
     for (var i = 0; i < listeners.length; i++) {
-      var eventPhase = privates(event).impl.eventPhase;
       if (eventPhase == Event.CAPTURING_PHASE && !listeners[i].capture)
         continue;
       if (eventPhase == Event.BUBBLING_PHASE && listeners[i].capture)
@@ -188,6 +194,10 @@ var AutomationNode = utils.expose('AutomationNode',
                                                 'makeVisible',
                                                 'setSelection',
                                                 'addEventListener',
-                                                'removeEventListener'] });
+                                                'removeEventListener'],
+                                    properties: ['id',
+                                                 'role',
+                                                 'state',
+                                                 'loaded'] });
 
 exports.AutomationNode = AutomationNode;

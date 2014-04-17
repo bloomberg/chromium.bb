@@ -1,0 +1,15 @@
+{
+  "name": "chrome.automation.sanityCheck",
+  "version": "0.1",
+  "manifest_version": 2,
+  "description": "Tests for the Automation API.",
+  "content_scripts": [
+    {
+      "matches": [ "<all_urls>" ],
+      "js": [ "content.js" ],
+      "run_at": "document_end"
+    }
+  ],
+
+  "permissions": ["automation", "tabs", "http://a.com/"]
+}

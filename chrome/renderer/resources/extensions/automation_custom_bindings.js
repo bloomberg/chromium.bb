@@ -28,6 +28,7 @@ var createAutomationTreeID = function(pid, rid) {
 automation.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
+  // TODO(aboxhall/dtseng): Re-work once 'desktop' object is fully specced
   apiFunctions.setHandleRequest('getTree', function(callback) {
     // enableCurrentTab() ensures the renderer for the current tab has
     // accessibility enabled, and fetches its process and routing ids to use as
@@ -70,15 +71,18 @@ automationInternal.onAccessibilityEvent.addListener(function(data) {
   }
   privates(targetTree).impl.update(data);
 
-  // If the tree wasn't available when getTree() was called, the callback will
-  // have been cached in idToCallback, so call and delete it now that we
-  // have the tree.
-  if (id in idToCallback) {
-    for (var i = 0; i < idToCallback[id].length; i++) {
-      var callback = idToCallback[id][i];
-      callback(targetTree);
+  var eventType = data.eventType;
+  if (eventType == 'load_complete' || eventType == 'layout_complete') {
+    // If the tree wasn't available when getTree() was called, the callback will
+    // have been cached in idToCallback, so call and delete it now that we
+    // have the complete tree.
+    if (id in idToCallback) {
+      for (var i = 0; i < idToCallback[id].length; i++) {
+        var callback = idToCallback[id][i];
+        callback(targetTree);
+      }
+      delete idToCallback[id];
     }
-    delete idToCallback[id];
   }
 });
 

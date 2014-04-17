@@ -34,6 +34,9 @@ namespace automationInternal {
     // The routing id of the web contents that this update is for.
     long routingID;
 
+    // ID of the node that the event applies to.
+    long targetID;
+
     // The type of event that this update represents.
     DOMString eventType;
 

@@ -1,0 +1,10 @@
+{
+  "name": "chrome.automation.basic",
+  "version": "0.1",
+  "manifest_version": 2,
+  "description": "Extension which simply calls chrome.automation.getTree().",
+  "background": {
+    "scripts": [ "background.js" ]
+  },
+  "permissions": ["automation", "tabs", "http://a.com/"]
+}

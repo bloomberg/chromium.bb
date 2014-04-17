@@ -81,6 +81,7 @@ class AutomationWebContentsObserver
       ax_tree_update.process_id = event.process_id;
       ax_tree_update.routing_id = event.routing_id;
       ax_tree_update.event_type = ToString(iter->event_type);
+      ax_tree_update.target_id = event.id;
 
       for (size_t i = 0; i < event.nodes.size(); ++i) {
         linked_ptr<api::automation_internal::AXNodeData> out_node(
@@ -221,14 +222,15 @@ bool AutomationInternalEnableCurrentTabFunction::RunImpl() {
   if (!rwh)
     return false;
 
-  AutomationWebContentsObserver::CreateForWebContents(contents);
-
-  rwh->EnableTreeOnlyAccessibilityMode();
-
   results_ = api::automation_internal::EnableCurrentTab::Results::Create(
       rwh->GetProcess()->GetID(), rwh->GetRoutingID());
 
   SendResponse(true);
+
+  AutomationWebContentsObserver::CreateForWebContents(contents);
+
+  rwh->EnableTreeOnlyAccessibilityMode();
+
   return true;
 }
 
