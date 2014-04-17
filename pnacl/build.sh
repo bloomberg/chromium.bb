@@ -3340,7 +3340,6 @@ function-completions() {
 ######################################################################
 
 mkdir -p "${INSTALL_ROOT}"
-PackageCheck
 
 if [ $# = 0 ]; then set -- help; fi  # Avoid reference to undefined $1.
 
