@@ -89,7 +89,7 @@ void ServiceWorkerHandle::OnErrorReported(ServiceWorkerVersion* version,
 
 void ServiceWorkerHandle::OnVersionStateChanged(ServiceWorkerVersion* version) {
   sender_->Send(new ServiceWorkerMsg_ServiceWorkerStateChanged(
-      handle_id_, GetWebServiceWorkerState(version)));
+      thread_id_, handle_id_, GetWebServiceWorkerState(version)));
 }
 
 ServiceWorkerObjectInfo ServiceWorkerHandle::GetObjectInfo() {

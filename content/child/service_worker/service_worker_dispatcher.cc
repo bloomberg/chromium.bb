@@ -183,6 +183,7 @@ void ServiceWorkerDispatcher::OnRegistrationError(
 }
 
 void ServiceWorkerDispatcher::OnServiceWorkerStateChanged(
+    int thread_id,
     int handle_id,
     blink::WebServiceWorkerState state) {
   ServiceWorkerMap::iterator found = service_workers_.find(handle_id);

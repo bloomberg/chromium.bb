@@ -90,7 +90,8 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
                            int request_id,
                            blink::WebServiceWorkerError::ErrorType error_type,
                            const base::string16& message);
-  void OnServiceWorkerStateChanged(int handle_id,
+  void OnServiceWorkerStateChanged(int thread_id,
+                                   int handle_id,
                                    blink::WebServiceWorkerState state);
 
   // Keeps map from handle_id to ServiceWorker object.
