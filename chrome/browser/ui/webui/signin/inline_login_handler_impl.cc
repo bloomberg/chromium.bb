@@ -175,8 +175,7 @@ void InlineSigninHelper::OnSigninOAuthInformationFailure(
 
 InlineLoginHandlerImpl::InlineLoginHandlerImpl()
       : weak_factory_(this),
-        choose_what_to_sync_(false),
-        complete_login_triggered_(false) {
+        choose_what_to_sync_(false) {
 }
 
 InlineLoginHandlerImpl::~InlineLoginHandlerImpl() {}
@@ -256,18 +255,6 @@ void InlineLoginHandlerImpl::HandleSwitchToFullTabMessage(
 }
 
 void InlineLoginHandlerImpl::CompleteLogin(const base::ListValue* args) {
-  if (complete_login_triggered_) {
-    // Gaia is supposed to trigger CompleteLogin by sending a completelogin
-    // message to Chrome, since Gaia does not always do this, Chrome injects
-    // some code into the Gaia page to handle that. This may result in duplicate
-    // completelogin messages when Gaia does send the message.
-    // TODO(guohui): coordinate with Gaia team to only send the completeLogin
-    // message on Chrome versions that do not inject similar code into Gaia.
-    VLOG(1) << "InlineLoginHandlerImpl::CompleteLogin called more than once";
-    return;
-  }
-  complete_login_triggered_ = true;
-
   content::WebContents* contents = web_ui()->GetWebContents();
   const GURL& current_url = contents->GetURL();
 
