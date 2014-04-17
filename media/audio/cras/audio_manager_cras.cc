@@ -4,6 +4,8 @@
 
 #include "media/audio/cras/audio_manager_cras.h"
 
+#include <algorithm>
+
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/logging.h"
@@ -12,6 +14,11 @@
 #include "media/audio/cras/cras_input.h"
 #include "media/audio/cras/cras_unified.h"
 #include "media/base/channel_layout.h"
+
+// cras_util.h headers pull in min/max macros...
+// TODO(dgreid): Fix headers such that these aren't imported.
+#undef min
+#undef max
 
 namespace media {
 
