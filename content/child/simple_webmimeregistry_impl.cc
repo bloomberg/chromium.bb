@@ -40,13 +40,6 @@ WebMimeRegistry::SupportsType
       WebMimeRegistry::IsSupported : WebMimeRegistry::IsNotSupported;
 }
 
-WebMimeRegistry::SupportsType
-    SimpleWebMimeRegistryImpl::supportsDartMIMEType(
-    const WebString& mime_type) {
-  return net::IsSupportedDartMimeType(ToASCIIOrEmpty(mime_type)) ?
-      WebMimeRegistry::IsSupported : WebMimeRegistry::IsNotSupported;
-}
-
 // When debugging layout tests failures in the test shell,
 // see TestShellWebMimeRegistryImpl.
 WebMimeRegistry::SupportsType SimpleWebMimeRegistryImpl::supportsMediaMIMEType(

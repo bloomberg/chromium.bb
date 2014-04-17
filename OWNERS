@@ -1,12 +1,5 @@
-asiva@google.com
-blois@google.com
-iposva@google.com
-jacobr@google.com
-kustermann@google.com
-ricow@google.com
-vsm@google.com
-whesse@google.com
-zra@google.com
+darin@chromium.org
+ben@chromium.org
 per-file .gitignore=*
 per-file .gn=brettw@chromium.org
 per-file BUILD.gn=brettw@chromium.org

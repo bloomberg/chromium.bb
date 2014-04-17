@@ -49,12 +49,10 @@ namespace content {
 
 namespace {
 
-// TODO(jacobr) remove https://www.google.com when the dependency on the
-// Google Charts API is removed from the Dart Observatory.
 // TODO(tsepez) remove unsafe-eval when bidichecker_packaged.js fixed.
 const char kChromeURLContentSecurityPolicyHeaderBase[] =
     "Content-Security-Policy: script-src chrome://resources "
-    "'self' https://www.google.com 'unsafe-eval'; ";
+    "'self' 'unsafe-eval'; ";
 
 const char kChromeURLXFrameOptionsHeader[] = "X-Frame-Options: DENY";
 

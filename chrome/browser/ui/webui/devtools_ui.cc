@@ -95,12 +95,6 @@ std::string GetMimeTypeForPath(const std::string& path) {
     return "image/png";
   } else if (EndsWith(filename, ".gif", false)) {
     return "image/gif";
-  } else if (EndsWith(filename, ".svg", false)) {
-    return "image/svg+xml";
-  } else if (EndsWith(filename, ".ttf", false)) {
-    return "application/octet-stream";
-  } else if (EndsWith(filename, ".woff", false)) {
-    return "application/font-woff";
   } else if (EndsWith(filename, ".manifest", false)) {
     return "text/cache-manifest";
   }
@@ -186,24 +180,11 @@ class DevToolsDataSource : public content::URLDataSource {
   }
 
   virtual bool ShouldAddContentSecurityPolicy() const OVERRIDE {
-    // Required as the Dart Observatory is bundled as its own iframe hosted on
-    // chrome-devtools.
-    return true;
-  }
-
-  virtual bool ShouldDenyXFrameOptions() const OVERRIDE {
-    // Required as the Dart Observatory is bundled as its own iframe hosted on
-    // chrome-devtools.
     return false;
   }
 
   virtual bool ShouldServeMimeTypeAsContentTypeHeader() const OVERRIDE {
     return true;
-  }
-
-  virtual std::string GetContentSecurityPolicyFrameSrc() const OVERRIDE {
-    // The Dart Observatory is bundled as its own iframe.
-    return "frame-src chrome-devtools://devtools/bundled/Observatory/index_devtools.html;";
   }
 
  private:

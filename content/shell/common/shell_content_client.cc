@@ -23,7 +23,6 @@ ShellContentClient::~ShellContentClient() {
 
 std::string ShellContentClient::GetUserAgent() const {
   std::string product = "Chrome/" CONTENT_SHELL_VERSION;
-  product += " (Dart)";
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kUseMobileUserAgent))
     product += " Mobile";

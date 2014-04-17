@@ -44,7 +44,6 @@ NET_EXPORT bool IsSupportedMediaMimeType(const std::string& mime_type);
 NET_EXPORT bool IsSupportedNonImageMimeType(const std::string& mime_type);
 NET_EXPORT bool IsUnsupportedTextMimeType(const std::string& mime_type);
 NET_EXPORT bool IsSupportedJavascriptMimeType(const std::string& mime_type);
-NET_EXPORT bool IsSupportedDartMimeType(const std::string& mime_type);
 NET_EXPORT bool IsSupportedCertificateMimeType(const std::string& mime_type);
 
 // Convenience function.

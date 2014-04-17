@@ -36,8 +36,6 @@
 #include "chrome/browser/ui/webui/version_handler_chromeos.h"
 #endif
 
-#include "dartvm_revision.h"  // NOLINT
-
 namespace {
 
 content::WebUIDataSource* CreateVersionUIDataSource(Profile* profile) {
@@ -56,7 +54,6 @@ content::WebUIDataSource* CreateVersionUIDataSource(Profile* profile) {
   html_source->AddString("blink_version", content::GetWebKitVersion());
   html_source->AddString("js_engine", "V8");
   html_source->AddString("js_version", v8::V8::GetVersion());
-  html_source->AddString("dart_version", DART_VM_REVISION);
 
 #if defined(OS_ANDROID)
   html_source->AddLocalizedString("application_label",

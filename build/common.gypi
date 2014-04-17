@@ -420,7 +420,7 @@
       'enable_extensions%': 1,
 
       # Enable Google Now.
-      'enable_google_now%': 0,
+      'enable_google_now%': 1,
 
       # Enable printing support and UI. This variable is used to configure
       # which parts of printing will be built. 0 disables printing completely,
@@ -1148,7 +1148,7 @@
     # flag allows us to have warnings as errors in general to prevent
     # regressions in most modules, while working on the bits that are
     # remaining.
-    'win_third_party_warn_as_error%': 'false',
+    'win_third_party_warn_as_error%': 'true',
 
     # Clang stuff.
     'clang%': '<(clang)',
@@ -2727,7 +2727,6 @@
           }],
           [ 'OS=="mac" or OS=="ios"', {
             'xcode_settings': {
-              'GCC_TREAT_WARNINGS_AS_ERRORS': 'NO',
               'WARNING_CFLAGS!': ['-Wall', '-Wextra'],
             },
             'conditions': [

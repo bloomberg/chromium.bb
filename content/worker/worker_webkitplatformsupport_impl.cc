@@ -242,12 +242,6 @@ WorkerWebKitPlatformSupportImpl::supportsJavaScriptMIMEType(const WebString&) {
 }
 
 WebMimeRegistry::SupportsType
-WorkerWebKitPlatformSupportImpl::supportsDartMIMEType(const WebString&) {
-  NOTREACHED();
-  return WebMimeRegistry::IsSupported;
-}
-
-WebMimeRegistry::SupportsType
 WorkerWebKitPlatformSupportImpl::supportsMediaMIMEType(
     const WebString&, const WebString&, const WebString&) {
   NOTREACHED();
