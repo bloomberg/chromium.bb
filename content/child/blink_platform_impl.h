@@ -106,6 +106,17 @@ class CONTENT_EXPORT BlinkPlatformImpl
       const unsigned char* arg_types,
       const unsigned long long* arg_values,
       unsigned char flags);
+  virtual TraceEventHandle addTraceEvent(
+      char phase,
+      const unsigned char* category_group_enabled,
+      const char* name,
+      unsigned long long id,
+      int num_args,
+      const char** arg_names,
+      const unsigned char* arg_types,
+      const unsigned long long* arg_values,
+      const blink::WebConvertableToTraceFormat* convertable_values,
+      unsigned char flags);
   virtual void updateTraceEventDuration(
       const unsigned char* category_group_enabled,
       const char* name,

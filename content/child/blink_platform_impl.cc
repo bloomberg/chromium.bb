@@ -43,6 +43,7 @@
 #include "net/base/data_url.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_errors.h"
+#include "third_party/WebKit/public/platform/WebConvertableToTraceFormat.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebWaitableEvent.h"
@@ -135,6 +136,22 @@ class MemoryUsageCache {
   base::Time last_updated_time_;
 
   base::Lock lock_;
+};
+
+class ConvertableToTraceFormatWrapper
+    : public base::debug::ConvertableToTraceFormat {
+ public:
+  explicit ConvertableToTraceFormatWrapper(
+      const blink::WebConvertableToTraceFormat& convertable)
+      : convertable_(convertable) {}
+  virtual void AppendAsTraceFormat(std::string* out) const OVERRIDE {
+    *out += convertable_.asTraceFormat().utf8();
+  }
+
+ private:
+  virtual ~ConvertableToTraceFormatWrapper() {}
+
+  blink::WebConvertableToTraceFormat convertable_;
 };
 
 }  // namespace
@@ -528,6 +545,44 @@ blink::Platform::TraceEventHandle BlinkPlatformImpl::addTraceEvent(
   base::debug::TraceEventHandle handle = TRACE_EVENT_API_ADD_TRACE_EVENT(
       phase, category_group_enabled, name, id,
       num_args, arg_names, arg_types, arg_values, NULL, flags);
+  blink::Platform::TraceEventHandle result;
+  memcpy(&result, &handle, sizeof(result));
+  return result;
+}
+
+blink::Platform::TraceEventHandle BlinkPlatformImpl::addTraceEvent(
+    char phase,
+    const unsigned char* category_group_enabled,
+    const char* name,
+    unsigned long long id,
+    int num_args,
+    const char** arg_names,
+    const unsigned char* arg_types,
+    const unsigned long long* arg_values,
+    const blink::WebConvertableToTraceFormat* convertable_values,
+    unsigned char flags) {
+  scoped_refptr<base::debug::ConvertableToTraceFormat> convertable_wrappers[2];
+  if (convertable_values) {
+    size_t size = std::min(static_cast<size_t>(num_args),
+                           arraysize(convertable_wrappers));
+    for (size_t i = 0; i < size; ++i) {
+      if (arg_types[i] == TRACE_VALUE_TYPE_CONVERTABLE) {
+        convertable_wrappers[i] =
+            new ConvertableToTraceFormatWrapper(convertable_values[i]);
+      }
+    }
+  }
+  base::debug::TraceEventHandle handle =
+      TRACE_EVENT_API_ADD_TRACE_EVENT(phase,
+                                      category_group_enabled,
+                                      name,
+                                      id,
+                                      num_args,
+                                      arg_names,
+                                      arg_types,
+                                      arg_values,
+                                      convertable_wrappers,
+                                      flags);
   blink::Platform::TraceEventHandle result;
   memcpy(&result, &handle, sizeof(result));
   return result;
