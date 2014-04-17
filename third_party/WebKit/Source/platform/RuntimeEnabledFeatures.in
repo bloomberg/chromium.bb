@@ -109,6 +109,11 @@ ServiceWorker status=experimental
 SessionStorage status=stable
 SharedWorker status=stable
 PictureSizes status=experimental
+
+// window.showModalDialog is deprecated and slated for removal from M36
+// Once this ships to stable supporting code can be removed.crbug.com/345831
+ShowModalDialog status=test
+
 SpeechInput status=test
 SpeechSynthesis status=stable
 Stream status=experimental
