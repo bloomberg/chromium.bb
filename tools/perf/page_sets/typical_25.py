@@ -57,7 +57,7 @@ class Typical25PageSet(page_set_module.PageSet):
       'http://premierleague.com',
       'http://www.osubeavers.com/',
       'http://walgreens.com',
-      'http://colorado.ed',
+      'http://colorado.edu',
       ('http://www.ticketmaster.com/JAY-Z-and-Justin-Timberlake-tickets/artist/'
        '1837448?brand=none&tm_link=tm_homeA_rc_name2'),
       # pylint: disable=C0301
