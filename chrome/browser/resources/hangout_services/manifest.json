@@ -16,6 +16,7 @@
     "page": "background.html",
     "persistent": false
   },
+  "incognito": "split",
   "permissions": [
     "alarms",
     "desktopCapture",
