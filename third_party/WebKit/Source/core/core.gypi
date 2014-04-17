@@ -1999,6 +1999,8 @@
             'dom/ElementTraversal.h',
             'dom/EmptyNodeList.cpp',
             'dom/EmptyNodeList.h',
+            'dom/EventHandlerRegistry.cpp',
+            'dom/EventHandlerRegistry.h',
             'dom/ExecutionContext.cpp',
             'dom/ExecutionContextTask.h',
             'dom/FullscreenElementStack.cpp',

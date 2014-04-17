@@ -185,6 +185,7 @@ public:
 
     unsigned activeDOMObjectCount(Document*, ExceptionState&);
     unsigned wheelEventHandlerCount(Document*, ExceptionState&);
+    unsigned scrollEventHandlerCount(Document*, ExceptionState&);
     unsigned touchEventHandlerCount(Document*, ExceptionState&);
     PassRefPtrWillBeRawPtr<LayerRectList> touchEventTargetLayerRects(Document*, ExceptionState&);
 

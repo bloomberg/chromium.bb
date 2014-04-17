@@ -1,0 +1,37 @@
+<div id="scrolltarget">
+<script src="../../resources/js-test.js"></script>
+<script>
+description("This test checks that we correctly update the scroll event handler count as event handlers are added and removed");
+(function() {
+    // Test addEventListener/removeEventListener on the document.
+    var listener = function() { }
+
+    shouldBe('window.internals.scrollEventHandlerCount(document)', '0');
+    document.addEventListener('scroll', listener, true);
+    shouldBe('window.internals.scrollEventHandlerCount(document)', '1');
+    document.addEventListener('scroll', listener, false);
+    shouldBe('window.internals.scrollEventHandlerCount(document)', '2');
+    document.removeEventListener('scroll', listener, true);
+    shouldBe('window.internals.scrollEventHandlerCount(document)', '1');
+
+    // Try removing the capturing listener again.
+    document.removeEventListener('scroll', listener, true);
+    shouldBe('window.internals.scrollEventHandlerCount(document)', '1');
+
+    document.removeEventListener('scroll', listener, false);
+    shouldBe('window.internals.scrollEventHandlerCount(document)', '0');
+})();
+
+(function() {
+    // Test setting onscroll on the document.
+
+    shouldBe('window.internals.scrollEventHandlerCount(document)', '0');
+    document.onscroll = function() { }
+    shouldBe('window.internals.scrollEventHandlerCount(document)', '1');
+    document.onscroll = function() { }
+    shouldBe('window.internals.scrollEventHandlerCount(document)', '1');
+    document.onscroll = null;
+    shouldBe('window.internals.scrollEventHandlerCount(document)', '0');
+})();
+</script>
+</body>

@@ -57,6 +57,7 @@
 #include "core/dom/DocumentMarker.h"
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/Element.h"
+#include "core/dom/EventHandlerRegistry.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/FullscreenElementStack.h"
 #include "core/dom/NodeRenderStyle.h"
@@ -1278,6 +1279,18 @@ unsigned Internals::activeDOMObjectCount(Document* document, ExceptionState& exc
     return document->activeDOMObjectCount();
 }
 
+static unsigned eventHandlerCount(Document& document, EventHandlerRegistry::EventHandlerClass handlerClass)
+{
+    EventHandlerRegistry* registry = EventHandlerRegistry::from(document);
+    unsigned count = 0;
+    const EventTargetSet* targets = registry->eventHandlerTargets(handlerClass);
+    if (targets) {
+        for (EventTargetSet::const_iterator iter = targets->begin(); iter != targets->end(); ++iter)
+            count += iter->value;
+    }
+    return count;
+}
+
 unsigned Internals::wheelEventHandlerCount(Document* document, ExceptionState& exceptionState)
 {
     if (!document) {
@@ -1286,6 +1299,16 @@ unsigned Internals::wheelEventHandlerCount(Document* document, ExceptionState& e
     }
 
     return WheelController::from(*document)->wheelEventHandlerCount();
+}
+
+unsigned Internals::scrollEventHandlerCount(Document* document, ExceptionState& exceptionState)
+{
+    if (!document) {
+        exceptionState.throwDOMException(InvalidAccessError, "No context document is available.");
+        return 0;
+    }
+
+    return eventHandlerCount(*document, EventHandlerRegistry::ScrollEvent);
 }
 
 unsigned Internals::touchEventHandlerCount(Document* document, ExceptionState& exceptionState)

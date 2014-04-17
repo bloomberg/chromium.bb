@@ -42,6 +42,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/ElementRareData.h"
 #include "core/dom/ElementTraversal.h"
+#include "core/dom/EventHandlerRegistry.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/LiveNodeList.h"
 #include "core/dom/NodeRareData.h"
@@ -291,6 +292,7 @@ void Node::willBeDeletedFromDocument()
     if (hasEventTargetData()) {
         clearEventTargetData();
         document.didClearTouchEventHandlers(this);
+        EventHandlerRegistry::from(document)->didRemoveAllEventHandlers(*this);
     }
 
     if (AXObjectCache* cache = document.existingAXObjectCache())
@@ -1941,6 +1943,7 @@ void Node::didMoveToNewDocument(Document& oldDocument)
             document().didAddTouchEventHandler(this);
         }
     }
+    EventHandlerRegistry::from(document())->didMoveFromOtherDocument(*this, oldDocument);
 
     if (Vector<OwnPtr<MutationObserverRegistration> >* registry = mutationObserverRegistry()) {
         for (size_t i = 0; i < registry->size(); ++i) {
@@ -1966,6 +1969,7 @@ static inline bool tryAddEventListener(Node* targetNode, const AtomicString& eve
         WheelController::from(document)->didAddWheelEventHandler(document);
     else if (isTouchEventType(eventType))
         document.didAddTouchEventHandler(targetNode);
+    EventHandlerRegistry::from(document)->didAddEventHandler(*targetNode, eventType);
 
     return true;
 }
@@ -1987,6 +1991,7 @@ static inline bool tryRemoveEventListener(Node* targetNode, const AtomicString& 
         WheelController::from(document)->didRemoveWheelEventHandler(document);
     else if (isTouchEventType(eventType))
         document.didRemoveTouchEventHandler(targetNode);
+    EventHandlerRegistry::from(document)->didRemoveEventHandler(*targetNode, eventType);
 
     return true;
 }
@@ -1998,6 +2003,8 @@ bool Node::removeEventListener(const AtomicString& eventType, EventListener* lis
 
 void Node::removeAllEventListeners()
 {
+    if (hasEventListeners())
+        EventHandlerRegistry::from(document())->didRemoveAllEventHandlers(*this);
     EventTarget::removeAllEventListeners();
     document().didClearTouchEventHandlers(this);
 }
