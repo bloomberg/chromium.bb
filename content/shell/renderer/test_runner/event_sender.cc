@@ -11,7 +11,6 @@
 #include "content/shell/renderer/test_runner/TestInterfaces.h"
 #include "content/shell/renderer/test_runner/WebTestDelegate.h"
 #include "content/shell/renderer/test_runner/WebTestProxy.h"
-#include "content/shell/renderer/test_runner/key_code_mapping.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
@@ -21,15 +20,8 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebView.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 #include "v8/include/v8.h"
-
-#if defined(OS_WIN)
-#include "third_party/WebKit/public/web/win/WebInputEventFactory.h"
-#elif defined(OS_MACOSX)
-#include "third_party/WebKit/public/web/mac/WebInputEventFactory.h"
-#elif defined(OS_ANDROID)
-#include "third_party/WebKit/public/web/android/WebInputEventFactory.h"
-#endif
 
 using blink::WebContextMenuData;
 using blink::WebDragData;
@@ -47,10 +39,6 @@ using blink::WebTouchEvent;
 using blink::WebTouchPoint;
 using blink::WebVector;
 using blink::WebView;
-
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_ANDROID)
-using blink::WebInputEventFactory;
-#endif
 
 namespace content {
 
@@ -286,16 +274,16 @@ bool GetEditCommand(const WebKeyboardEvent& event, std::string* name) {
     return false;
 
   switch (event.windowsKeyCode) {
-    case VKEY_LEFT:
+    case ui::VKEY_LEFT:
       *name = "MoveToBeginningOfLine";
       break;
-    case VKEY_RIGHT:
+    case ui::VKEY_RIGHT:
       *name = "MoveToEndOfLine";
       break;
-    case VKEY_UP:
+    case ui::VKEY_UP:
       *name = "MoveToBeginningOfDocument";
       break;
-    case VKEY_DOWN:
+    case ui::VKEY_DOWN:
       *name = "MoveToEndOfDocument";
       break;
     default:
@@ -308,6 +296,16 @@ bool GetEditCommand(const WebKeyboardEvent& event, std::string* name) {
   return true;
 #else
   return false;
+#endif
+}
+
+bool IsSystemKeyEvent(const WebKeyboardEvent& event) {
+#if defined(OS_MACOSX)
+  return event.modifiers & WebInputEvent::MetaKey &&
+      event.windowsKeyCode != ui::VKEY_B &&
+      event.windowsKeyCode != ui::VKEY_I;
+#else
+  return !!(event.modifiers & WebInputEvent::AltKey);
 #endif
 }
 
@@ -369,7 +367,6 @@ class EventSenderBindings : public gin::Wrappable<EventSenderBindings> {
   void GestureLongTap(gin::Arguments* args);
   void GestureTwoFingerTap(gin::Arguments* args);
   void ContinuousMouseScrollBy(gin::Arguments* args);
-  void DispatchMessage(int msg, int wparam, int lparam);
   void MouseMoveTo(gin::Arguments* args);
   void MouseScrollBy(gin::Arguments* args);
   void MouseMomentumScrollBy(gin::Arguments* args);
@@ -493,7 +490,6 @@ EventSenderBindings::GetObjectTemplateBuilder(v8::Isolate* isolate) {
                  &EventSenderBindings::GestureTwoFingerTap)
       .SetMethod("continuousMouseScrollBy",
                  &EventSenderBindings::ContinuousMouseScrollBy)
-      .SetMethod("dispatchMessage", &EventSenderBindings::DispatchMessage)
       .SetMethod("keyDown", &EventSenderBindings::KeyDown)
       .SetMethod("mouseDown", &EventSenderBindings::MouseDown)
       .SetMethod("mouseMoveTo", &EventSenderBindings::MouseMoveTo)
@@ -761,11 +757,6 @@ void EventSenderBindings::GestureTwoFingerTap(gin::Arguments* args) {
 void EventSenderBindings::ContinuousMouseScrollBy(gin::Arguments* args) {
   if (sender_)
     sender_->ContinuousMouseScrollBy(args);
-}
-
-void EventSenderBindings::DispatchMessage(int msg, int wparam, int lparam) {
-  if (sender_)
-    sender_->DispatchMessage(msg, wparam, lparam);
 }
 
 void EventSenderBindings::MouseMoveTo(gin::Arguments* args) {
@@ -1164,45 +1155,45 @@ void EventSender::KeyDown(const std::string& code_str,
 
   if ("\n" == code_str) {
     generate_char = true;
-    text = code = VKEY_RETURN;
+    text = code = ui::VKEY_RETURN;
   } else if ("rightArrow" == code_str) {
-    code = VKEY_RIGHT;
+    code = ui::VKEY_RIGHT;
   } else if ("downArrow" == code_str) {
-    code = VKEY_DOWN;
+    code = ui::VKEY_DOWN;
   } else if ("leftArrow" == code_str) {
-    code = VKEY_LEFT;
+    code = ui::VKEY_LEFT;
   } else if ("upArrow" == code_str) {
-    code = VKEY_UP;
+    code = ui::VKEY_UP;
   } else if ("insert" == code_str) {
-    code = VKEY_INSERT;
+    code = ui::VKEY_INSERT;
   } else if ("delete" == code_str) {
-    code = VKEY_DELETE;
+    code = ui::VKEY_DELETE;
   } else if ("pageUp" == code_str) {
-    code = VKEY_PRIOR;
+    code = ui::VKEY_PRIOR;
   } else if ("pageDown" == code_str) {
-    code = VKEY_NEXT;
+    code = ui::VKEY_NEXT;
   } else if ("home" == code_str) {
-    code = VKEY_HOME;
+    code = ui::VKEY_HOME;
   } else if ("end" == code_str) {
-    code = VKEY_END;
+    code = ui::VKEY_END;
   } else if ("printScreen" == code_str) {
-    code = VKEY_SNAPSHOT;
+    code = ui::VKEY_SNAPSHOT;
   } else if ("menu" == code_str) {
-    code = VKEY_APPS;
+    code = ui::VKEY_APPS;
   } else if ("leftControl" == code_str) {
-    code = VKEY_LCONTROL;
+    code = ui::VKEY_LCONTROL;
   } else if ("rightControl" == code_str) {
-    code = VKEY_RCONTROL;
+    code = ui::VKEY_RCONTROL;
   } else if ("leftShift" == code_str) {
-    code = VKEY_LSHIFT;
+    code = ui::VKEY_LSHIFT;
   } else if ("rightShift" == code_str) {
-    code = VKEY_RSHIFT;
+    code = ui::VKEY_RSHIFT;
   } else if ("leftAlt" == code_str) {
-    code = VKEY_LMENU;
+    code = ui::VKEY_LMENU;
   } else if ("rightAlt" == code_str) {
-    code = VKEY_RMENU;
+    code = ui::VKEY_RMENU;
   } else if ("numLock" == code_str) {
-    code = VKEY_NUMLOCK;
+    code = ui::VKEY_NUMLOCK;
   } else {
     // Compare the input string with the function-key names defined by the
     // DOM spec (i.e. "F1",...,"F24"). If the input string is a function-key
@@ -1210,7 +1201,7 @@ void EventSender::KeyDown(const std::string& code_str,
     for (int i = 1; i <= 24; ++i) {
       std::string function_key_name = base::StringPrintf("F%d", i);
       if (function_key_name == code_str) {
-        code = VKEY_F1 + (i - 1);
+        code = ui::VKEY_F1 + (i - 1);
         break;
       }
     }
@@ -1248,10 +1239,8 @@ void EventSender::KeyDown(const std::string& code_str,
 
   event_down.setKeyIdentifierFromWindowsKeyCode();
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_ANDROID)
   if (event_down.modifiers != 0)
-    event_down.isSystemKey = WebInputEventFactory::isSystemKeyEvent(event_down);
-#endif
+    event_down.isSystemKey = IsSystemKeyEvent(event_down);
 
   if (needs_shift_key_modifier)
     event_down.modifiers |= WebInputEvent::ShiftKey;
@@ -1279,7 +1268,7 @@ void EventSender::KeyDown(const std::string& code_str,
 
   view_->handleInputEvent(event_down);
 
-  if (code == VKEY_ESCAPE && !current_drag_data_.isNull()) {
+  if (code == ui::VKEY_ESCAPE && !current_drag_data_.isNull()) {
     WebMouseEvent event;
     InitMouseEvent(WebInputEvent::MouseDown,
                    pressed_button_,
@@ -1682,22 +1671,6 @@ void EventSender::ContinuousMouseScrollBy(gin::Arguments* args) {
   WebMouseWheelEvent event;
   InitMouseWheelEvent(args, true, &event);
   view_->handleInputEvent(event);
-}
-
-void EventSender::DispatchMessage(int msg, int wparam, int lparam) {
-#if defined(OS_WIN)
-  // WebKit's version of this function stuffs a MSG struct and uses
-  // TranslateMessage and DispatchMessage. We use a WebKeyboardEvent, which
-  // doesn't need to receive the DeadChar and SysDeadChar messages.
-  if (msg == WM_DEADCHAR || msg == WM_SYSDEADCHAR)
-    return;
-
-  if (force_layout_on_events_)
-    view_->layout();
-
-  view_->handleInputEvent(
-      WebInputEventFactory::keyboardEvent(0, msg, wparam, lparam));
-#endif
 }
 
 void EventSender::MouseMoveTo(gin::Arguments* args) {

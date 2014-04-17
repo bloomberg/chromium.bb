@@ -143,7 +143,6 @@ class EventSender : public base::SupportsWeakPtr<EventSender> {
   void GestureTwoFingerTap(gin::Arguments* args);
 
   void ContinuousMouseScrollBy(gin::Arguments* args);
-  void DispatchMessage(int msg, int wparam, int lparam);
   void MouseMoveTo(gin::Arguments* args);
   void MouseScrollBy(gin::Arguments* args);
   void MouseMomentumScrollBy(gin::Arguments* args);
