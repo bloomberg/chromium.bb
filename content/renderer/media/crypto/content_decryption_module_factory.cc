@@ -52,6 +52,7 @@ scoped_ptr<media::MediaKeys> ContentDecryptionModuleFactory::Create(
 #if defined(ENABLE_PEPPER_CDMS)
   return scoped_ptr<media::MediaKeys>(
       PpapiDecryptor::Create(key_system,
+                             security_origin,
                              create_pepper_cdm_cb,
                              session_created_cb,
                              session_message_cb,

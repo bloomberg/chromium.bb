@@ -49,6 +49,12 @@ WebContentDecryptionModuleImpl* WebContentDecryptionModuleImpl::Create(
   if (!IsConcreteSupportedKeySystem(key_system_ascii))
     return NULL;
 
+  // If unique security origin, don't try to create the CDM.
+  if (security_origin.isUnique() || security_origin.toString() == "null") {
+    DLOG(ERROR) << "CDM use not allowed for unique security origin.";
+    return NULL;
+  }
+
   scoped_refptr<CdmSessionAdapter> adapter(new CdmSessionAdapter());
   GURL security_origin_as_gurl(security_origin.toString());
 

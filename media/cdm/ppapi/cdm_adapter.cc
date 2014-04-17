@@ -261,6 +261,25 @@ void CdmAdapter::Initialize(const std::string& key_system) {
   PP_DCHECK(!key_system.empty());
   PP_DCHECK(key_system_.empty() || (key_system_ == key_system && cdm_));
 
+#if defined(CHECK_DOCUMENT_URL)
+  PP_URLComponents_Dev url_components = {};
+  const pp::URLUtil_Dev* url_util = pp::URLUtil_Dev::Get();
+  if (!url_util)
+    return;
+  pp::Var href = url_util->GetDocumentURL(pp::InstanceHandle(pp_instance()),
+                                          &url_components);
+  PP_DCHECK(href.is_string());
+  std::string url = href.AsString();
+  PP_DCHECK(!url.empty());
+  std::string url_scheme =
+      url.substr(url_components.scheme.begin, url_components.scheme.len);
+  if (url_scheme != "file") {
+    // Skip this check for file:// URLs as they don't have a host component.
+    PP_DCHECK(url_components.host.begin);
+    PP_DCHECK(0 < url_components.host.len);
+  }
+#endif  // defined(CHECK_DOCUMENT_URL)
+
   if (!cdm_ && !CreateCdmInstance(key_system))
     return;
 
@@ -277,21 +296,6 @@ void CdmAdapter::CreateSession(uint32_t session_id,
     OnSessionError(session_id, cdm::kUnknownError, 0);
     return;
   }
-
-#if defined(CHECK_DOCUMENT_URL)
-  PP_URLComponents_Dev url_components = {};
-  const pp::URLUtil_Dev* url_util = pp::URLUtil_Dev::Get();
-  if (!url_util) {
-    OnSessionError(session_id, cdm::kUnknownError, 0);
-    return;
-  }
-  pp::Var href = url_util->GetDocumentURL(
-      pp::InstanceHandle(pp_instance()), &url_components);
-  PP_DCHECK(href.is_string());
-  PP_DCHECK(!href.AsString().empty());
-  PP_DCHECK(url_components.host.begin);
-  PP_DCHECK(0 < url_components.host.len);
-#endif  // defined(CHECK_DOCUMENT_URL)
 
   cdm_->CreateSession(session_id,
                       content_type.data(),

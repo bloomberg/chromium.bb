@@ -16,6 +16,8 @@
 #include "media/base/media_keys.h"
 #include "media/base/video_decoder_config.h"
 
+class GURL;
+
 namespace base {
 class MessageLoopProxy;
 }
@@ -31,6 +33,7 @@ class PpapiDecryptor : public media::MediaKeys, public media::Decryptor {
  public:
   static scoped_ptr<PpapiDecryptor> Create(
       const std::string& key_system,
+      const GURL& security_origin,
       const CreatePepperCdmCB& create_pepper_cdm_cb,
       const media::SessionCreatedCB& session_created_cb,
       const media::SessionMessageCB& session_message_cb,

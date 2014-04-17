@@ -13,6 +13,8 @@
 
 #include "base/callback.h"
 
+class GURL;
+
 namespace content {
 class ContentDecryptorDelegate;
 
@@ -34,7 +36,8 @@ class PepperCdmWrapper {
 // Callback used to create a PepperCdmWrapper. This may return null if the
 // Pepper CDM can not be created.
 typedef base::Callback<scoped_ptr<PepperCdmWrapper>(
-    const std::string& pluginType)> CreatePepperCdmCB;
+    const std::string& pluginType,
+    const GURL& security_origin)> CreatePepperCdmCB;
 
 }  // namespace content
 

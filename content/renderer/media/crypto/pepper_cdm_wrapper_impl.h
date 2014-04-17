@@ -42,7 +42,8 @@ struct WebHelperPluginDeleter {
 class PepperCdmWrapperImpl : public PepperCdmWrapper {
  public:
   static scoped_ptr<PepperCdmWrapper> Create(blink::WebLocalFrame* frame,
-                                             const std::string& pluginType);
+                                             const std::string& pluginType,
+                                             const GURL& security_origin);
 
   virtual ~PepperCdmWrapperImpl();
 

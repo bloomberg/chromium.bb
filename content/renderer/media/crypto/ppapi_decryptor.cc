@@ -25,6 +25,7 @@ namespace content {
 
 scoped_ptr<PpapiDecryptor> PpapiDecryptor::Create(
     const std::string& key_system,
+    const GURL& security_origin,
     const CreatePepperCdmCB& create_pepper_cdm_cb,
     const media::SessionCreatedCB& session_created_cb,
     const media::SessionMessageCB& session_message_cb,
@@ -34,7 +35,7 @@ scoped_ptr<PpapiDecryptor> PpapiDecryptor::Create(
   std::string plugin_type = GetPepperType(key_system);
   DCHECK(!plugin_type.empty());
   scoped_ptr<PepperCdmWrapper> pepper_cdm_wrapper =
-      create_pepper_cdm_cb.Run(plugin_type);
+      create_pepper_cdm_cb.Run(plugin_type, security_origin);
   if (!pepper_cdm_wrapper) {
     DLOG(ERROR) << "Plugin instance creation failed.";
     return scoped_ptr<PpapiDecryptor>();

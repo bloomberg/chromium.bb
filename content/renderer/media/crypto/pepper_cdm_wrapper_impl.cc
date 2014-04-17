@@ -9,9 +9,11 @@
 #include "content/renderer/pepper/pepper_webplugin_impl.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebHelperPlugin.h"
 #include "third_party/WebKit/public/web/WebPlugin.h"
+#include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
 namespace content {
@@ -22,7 +24,8 @@ void WebHelperPluginDeleter::operator()(blink::WebHelperPlugin* plugin) const {
 
 scoped_ptr<PepperCdmWrapper> PepperCdmWrapperImpl::Create(
     blink::WebLocalFrame* frame,
-    const std::string& pluginType) {
+    const std::string& pluginType,
+    const GURL& security_origin) {
   DCHECK(frame);
   ScopedHelperPlugin helper_plugin(blink::WebHelperPlugin::create(
       blink::WebString::fromUTF8(pluginType), frame));
@@ -38,6 +41,10 @@ scoped_ptr<PepperCdmWrapper> PepperCdmWrapperImpl::Create(
       ppapi_plugin->instance();
   if (!plugin_instance)
     return scoped_ptr<PepperCdmWrapper>();
+
+  GURL url(plugin_instance->container()->element().document().url());
+  CHECK_EQ(security_origin.GetOrigin(), url.GetOrigin())
+      << "Pepper instance has a different origin than the EME call.";
 
   if (!plugin_instance->GetContentDecryptorDelegate())
     return scoped_ptr<PepperCdmWrapper>();
