@@ -11,6 +11,18 @@
 
 
 /*
+ * __nacl_read_tp() is only needed on targets that don't have a
+ * fast-path instruction sequence for reading the thread pointer (such
+ * as %gs:0 on x86-32).  Don't define it if we don't need it, to help
+ * ensure that the fast path gets used.
+ */
+#if defined(__x86_64__) || defined(__native_client_nonsfi__)
+# define NEED_NACL_READ_TP
+#endif
+
+#if defined(NEED_NACL_READ_TP)
+
+/*
  * TODO(mseaborn): Use the definition in nacl_config.h instead.
  * nacl_config.h is not #includable here because NACL_BUILD_ARCH
  * etc. are not defined at this point in the PNaCl toolchain build.
@@ -37,7 +49,10 @@ void *__nacl_read_tp(void) {
   return g_nacl_read_tp_func();
 }
 
+#endif
+
 void __pnacl_init_irt(uint32_t *startup_info) {
+#if defined(NEED_NACL_READ_TP)
   Elf32_auxv_t *av = nacl_startup_auxv(startup_info);
 
   for (; av->a_type != AT_NULL; ++av) {
@@ -51,4 +66,5 @@ void __pnacl_init_irt(uint32_t *startup_info) {
       return;
     }
   }
+#endif
 }
