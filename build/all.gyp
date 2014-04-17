@@ -250,7 +250,7 @@
           # '../webkit/webkit.gyp:pull_in_webkit_unit_tests',
           '../chrome/chrome.gyp:chrome',
           '../chrome/chrome.gyp:chromedriver',
-          '../content/content.gyp:content_shell',
+          '../content/content_shell_and_tests.gyp:content_shell',
       ],
     },
     {
