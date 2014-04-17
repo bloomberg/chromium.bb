@@ -50,8 +50,12 @@ void LayerTestCommon::VerifyQuadsExactlyCoverRect(const QuadList& quads,
 
     gfx::Rect quad_rect = gfx::ToEnclosingRect(quad_rectf);
 
-    EXPECT_TRUE(rect.Contains(quad_rect)) << quad_string << i;
-    EXPECT_TRUE(remaining.Contains(quad_rect)) << quad_string << i;
+    EXPECT_TRUE(rect.Contains(quad_rect)) << quad_string << i
+                                          << " rect: " << rect.ToString()
+                                          << " quad: " << quad_rect.ToString();
+    EXPECT_TRUE(remaining.Contains(quad_rect))
+        << quad_string << i << " remaining: " << remaining.ToString()
+        << " quad: " << quad_rect.ToString();
     remaining.Subtract(quad_rect);
   }
 
