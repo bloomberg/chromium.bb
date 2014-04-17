@@ -156,6 +156,7 @@ def FetchUrl(host, path, reqtype='GET', headers=None, body=None,
     else:
       LOGGER.warn('%s\n%s', err_prefix, msg)
 
+    LOGGER.warn('conn.sock.getpeername(): %s', conn.sock.getpeername())
     raise GOBError(response.status, response.reason)
 
   return retry_util.RetryException((socket.error, InternalGOBError), TRY_LIMIT,
