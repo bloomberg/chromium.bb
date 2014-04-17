@@ -1248,9 +1248,17 @@ extern const char kInitializedSyncedNotificationSendingServices[] =
 extern const char kSyncedNotificationFirstRun[] =
     "synced_notification.first_run";
 
-// Boolean pref indicating the welcome notification was dismissed by the user.
+// Boolean pref indicating the Chrome Now welcome notification was dismissed
+// by the user. Syncable.
+// Note: This is now read-only. The welcome notification writes the _local
+// version, below.
 extern const char kWelcomeNotificationDismissed[] =
     "message_center.welcome_notification_dismissed";
+
+// Boolean pref indicating the Chrome Now welcome notification was dismissed
+// by the user on this machine.
+extern const char kWelcomeNotificationDismissedLocal[] =
+    "message_center.welcome_notification_dismissed_local";
 
 // Boolean pref indicating the welcome notification was previously popped up.
 extern const char kWelcomeNotificationPreviouslyPoppedUp[] =

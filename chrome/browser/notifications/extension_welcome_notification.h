@@ -103,6 +103,9 @@ class ExtensionWelcomeNotification : public PrefServiceSyncableObserver {
   // Hides the welcome notification.
   void HideWelcomeNotification();
 
+  // Whether the notification has been dismissed.
+  bool UserHasDismissedWelcomeNotification() const;
+
   // Called when the Welcome Notification Dismissed pref has been changed.
   void OnWelcomeNotificationDismissedChanged();
 
@@ -126,6 +129,10 @@ class ExtensionWelcomeNotification : public PrefServiceSyncableObserver {
 
   // Prefs listener for welcome_notification_dismissed.
   BooleanPrefMember welcome_notification_dismissed_pref_;
+
+  // Prefs listener for welcome_notification_dismissed_local.
+  // Dismissal flag migrated from a synced pref to a local one.
+  BooleanPrefMember welcome_notification_dismissed_local_pref_;
 
   // The notifier for the extension that we're listening for.
   message_center::NotifierId notifier_id_;

@@ -394,6 +394,7 @@ extern const char kEnabledSyncedNotificationSendingServices[];
 extern const char kInitializedSyncedNotificationSendingServices[];
 extern const char kSyncedNotificationFirstRun[];
 extern const char kWelcomeNotificationDismissed[];
+extern const char kWelcomeNotificationDismissedLocal[];
 extern const char kWelcomeNotificationPreviouslyPoppedUp[];
 extern const char kWelcomeNotificationExpirationTimestamp[];
 

@@ -26,7 +26,7 @@
 #include "ui/message_center/notification_delegate.h"
 #include "ui/message_center/notification_types.h"
 
-const int ExtensionWelcomeNotification::kRequestedShowTimeDays = 1;
+const int ExtensionWelcomeNotification::kRequestedShowTimeDays = 14;
 
 namespace {
 
@@ -35,8 +35,12 @@ class NotificationCallbacks
  public:
   NotificationCallbacks(
       Profile* profile,
+      const message_center::NotifierId notifier_id,
+      const std::string& welcome_notification_id,
       ExtensionWelcomeNotification::Delegate* delegate)
       : profile_(profile),
+        notifier_id_(notifier_id.type, notifier_id.id),
+        welcome_notification_id_(welcome_notification_id),
         delegate_(delegate) {
   }
 
@@ -56,13 +60,19 @@ class NotificationCallbacks
 
   virtual void Click() OVERRIDE {}
   virtual void ButtonClick(int index) OVERRIDE {
-    DCHECK_EQ(index, 0);
-    OpenNotificationLearnMoreTab();
+    if (index == 0) {
+      OpenNotificationLearnMoreTab();
+    } else if (index == 1) {
+      DisableNotificationProvider();
+      Close(true);
+    } else {
+      NOTREACHED();
+    }
   }
 
  private:
   void MarkAsDismissed() {
-    profile_->GetPrefs()->SetBoolean(prefs::kWelcomeNotificationDismissed,
+    profile_->GetPrefs()->SetBoolean(prefs::kWelcomeNotificationDismissedLocal,
                                      true);
   }
 
@@ -76,9 +86,23 @@ class NotificationCallbacks
     chrome::Navigate(&params);
   }
 
+  void DisableNotificationProvider() {
+    message_center::Notifier notifier(notifier_id_, base::string16(), true);
+    message_center::MessageCenter* message_center =
+        delegate_->GetMessageCenter();
+    message_center->DisableNotificationsByNotifier(notifier_id_);
+    message_center->RemoveNotification(welcome_notification_id_, true);
+    message_center->GetNotifierSettingsProvider()->SetNotifierEnabled(
+        notifier, false);
+  }
+
   virtual ~NotificationCallbacks() {}
 
   Profile* const profile_;
+
+  const message_center::NotifierId notifier_id_;
+
+  std::string welcome_notification_id_;
 
   // Weak ref owned by ExtensionWelcomeNotification.
   ExtensionWelcomeNotification::Delegate* const delegate_;
@@ -123,6 +147,9 @@ ExtensionWelcomeNotification::ExtensionWelcomeNotification(
       base::Bind(
           &ExtensionWelcomeNotification::OnWelcomeNotificationDismissedChanged,
           base::Unretained(this)));
+  welcome_notification_dismissed_local_pref_.Init(
+      prefs::kWelcomeNotificationDismissedLocal,
+      profile_->GetPrefs());
 }
 
 // static
@@ -169,7 +196,7 @@ void ExtensionWelcomeNotification::ShowWelcomeNotificationIfNecessary(
         PrefServiceSyncable::FromProfile(profile_);
     if (pref_service_syncable->IsSyncing()) {
       PrefService* const pref_service = profile_->GetPrefs();
-      if (!pref_service->GetBoolean(prefs::kWelcomeNotificationDismissed)) {
+      if (!UserHasDismissedWelcomeNotification()) {
         const PopUpRequest pop_up_request =
             pref_service->GetBoolean(
                 prefs::kWelcomeNotificationPreviouslyPoppedUp)
@@ -200,6 +227,9 @@ void ExtensionWelcomeNotification::RegisterProfilePrefs(
   prefs->RegisterBooleanPref(prefs::kWelcomeNotificationDismissed,
                              false,
                              user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kWelcomeNotificationDismissedLocal,
+                             false,
+                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kWelcomeNotificationPreviouslyPoppedUp,
                              false,
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
@@ -220,10 +250,15 @@ void ExtensionWelcomeNotification::ShowWelcomeNotification(
       l10n_util::GetStringUTF16(IDS_NOTIFICATION_WELCOME_BUTTON_LEARN_MORE));
   learn_more.icon = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
       IDR_NOTIFICATION_WELCOME_LEARN_MORE);
+  message_center::ButtonInfo disable(
+      l10n_util::GetStringUTF16(IDS_NOTIFIER_WELCOME_BUTTON));
+  disable.icon = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+      IDR_NOTIFIER_BLOCK_BUTTON);
 
   message_center::RichNotificationData rich_notification_data;
   rich_notification_data.priority = 2;
   rich_notification_data.buttons.push_back(learn_more);
+  rich_notification_data.buttons.push_back(disable);
 
   if (welcome_notification_id_.empty())
     welcome_notification_id_ = base::GenerateGUID();
@@ -240,7 +275,9 @@ void ExtensionWelcomeNotification::ShowWelcomeNotification(
             display_source,
             notifier_id_,
             rich_notification_data,
-            new NotificationCallbacks(profile_, delegate_.get())));
+            new NotificationCallbacks(
+                profile_, notifier_id_, welcome_notification_id_,
+                delegate_.get())));
 
     if (pop_up_request == POP_UP_HIDDEN)
       message_center_notification->set_shown_as_popup(true);
@@ -258,11 +295,21 @@ void ExtensionWelcomeNotification::HideWelcomeNotification() {
   }
 }
 
+bool ExtensionWelcomeNotification::UserHasDismissedWelcomeNotification() const {
+  // This was previously a syncable preference; now it's per-machine.
+  // Only the local pref will be written moving forward, but check for both so
+  // users won't be double-toasted.
+  bool shown_synced = profile_->GetPrefs()->GetBoolean(
+      prefs::kWelcomeNotificationDismissed);
+  bool shown_local = profile_->GetPrefs()->GetBoolean(
+      prefs::kWelcomeNotificationDismissedLocal);
+  return (shown_synced || shown_local);
+}
+
 void ExtensionWelcomeNotification::OnWelcomeNotificationDismissedChanged() {
-  const bool welcome_notification_dismissed =
-      profile_->GetPrefs()->GetBoolean(prefs::kWelcomeNotificationDismissed);
-  if (welcome_notification_dismissed)
+  if (UserHasDismissedWelcomeNotification()) {
     HideWelcomeNotification();
+  }
 }
 
 void ExtensionWelcomeNotification::StartExpirationTimer() {
@@ -292,7 +339,8 @@ void ExtensionWelcomeNotification::StopExpirationTimer() {
 
 void ExtensionWelcomeNotification::ExpireWelcomeNotification() {
   DCHECK(IsWelcomeNotificationExpired());
-  profile_->GetPrefs()->SetBoolean(prefs::kWelcomeNotificationDismissed, true);
+  profile_->GetPrefs()->SetBoolean(
+      prefs::kWelcomeNotificationDismissedLocal, true);
   HideWelcomeNotification();
 }
 
