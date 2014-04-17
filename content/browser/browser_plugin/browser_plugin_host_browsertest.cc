@@ -363,9 +363,13 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, NavigateAfterResize) {
   const char kEmbedderURL[] = "/browser_plugin_embedder.html";
   StartBrowserPluginTest(kEmbedderURL, kHTMLForGuest, true, embedder_code);
 
+  // Wait for the guest to be resized to 100x200.
+  test_guest()->WaitForViewSize(nxt_size);
+
+  // TODO(lazyboy): Instead do the following once it's not flaky.
   // Wait for the guest to receive a damage buffer of size 100x200.
   // This means the guest will be painted properly at that size.
-  test_guest()->WaitForDamageBufferWithSize(nxt_size);
+  // test_guest()->WaitForDamageBufferWithSize(nxt_size);
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, AdvanceFocus) {

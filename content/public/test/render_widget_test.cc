@@ -59,21 +59,11 @@ void RenderWidgetTest::TestOnResize() {
   resize_params.physical_backing_size = size;
   widget->OnResize(resize_params);
   EXPECT_TRUE(widget->next_paint_is_resize_ack());
-  widget->DoDeferredUpdate();
-  ProcessPendingMessages();
 
-  const ViewHostMsg_UpdateRect* msg =
-      static_cast<const ViewHostMsg_UpdateRect*>(
-          render_thread_->sink().GetUniqueMessageMatching(
-              ViewHostMsg_UpdateRect::ID));
-  ASSERT_TRUE(msg);
-  ViewHostMsg_UpdateRect::Schema::Param update_rect_params;
-  EXPECT_TRUE(ViewHostMsg_UpdateRect::Read(msg, &update_rect_params));
-  EXPECT_TRUE(ViewHostMsg_UpdateRect_Flags::is_resize_ack(
-      update_rect_params.a.flags));
-  EXPECT_EQ(size,
-      update_rect_params.a.view_size);
-  render_thread_->sink().ClearMessages();
+  // Clear the flag.
+  // TODO(danakj): How real is this test any more? This flag is only existing
+  // for DCHECKs now.
+  widget->didCompleteSwapBuffers();
 
   // Setting the same size again should not send the ack.
   widget->OnResize(resize_params);

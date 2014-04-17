@@ -499,8 +499,10 @@ void RenderWidget::CompleteInit() {
 
   init_complete_ = true;
 
-  if (webwidget_ && is_threaded_compositing_enabled_) {
-    webwidget_->enterForceCompositingMode(true);
+  if (webwidget_) {
+    if (is_threaded_compositing_enabled_ || ForceCompositingModeEnabled()) {
+      webwidget_->enterForceCompositingMode(true);
+    }
   }
   if (compositor_)
     StartCompositor();
@@ -1446,220 +1448,8 @@ void RenderWidget::DoDeferredUpdateAndSendInputAck() {
   FlushPendingInputEventAck();
 }
 
+// TODO(danakj): Remove this when everything is ForceCompositingMode.
 void RenderWidget::DoDeferredUpdate() {
-  TRACE_EVENT0("renderer", "RenderWidget::DoDeferredUpdate");
-  TRACE_EVENT_SCOPED_SAMPLING_STATE("Chrome", "Paint");
-
-  if (!webwidget_)
-    return;
-
-  if (!init_complete_) {
-    TRACE_EVENT0("renderer", "EarlyOut_InitNotComplete");
-    return;
-  }
-  if (update_reply_pending_) {
-    TRACE_EVENT0("renderer", "EarlyOut_UpdateReplyPending");
-    return;
-  }
-  if (is_accelerated_compositing_active_ &&
-      num_swapbuffers_complete_pending_ >= kMaxSwapBuffersPending) {
-    TRACE_EVENT0("renderer", "EarlyOut_MaxSwapBuffersPending");
-    return;
-  }
-
-  // Suppress updating when we are hidden.
-  if (is_hidden_ || size_.IsEmpty() || is_swapped_out_) {
-    paint_aggregator_.ClearPendingUpdate();
-    needs_repainting_on_restore_ = true;
-    TRACE_EVENT0("renderer", "EarlyOut_NotVisible");
-    return;
-  }
-
-  // Tracking of frame rate jitter
-  base::TimeTicks frame_begin_ticks = gfx::FrameTime::Now();
-  InstrumentWillBeginFrame(0);
-  AnimateIfNeeded();
-
-  // Layout may generate more invalidation.  It may also enable the
-  // GPU acceleration, so make sure to run layout before we send the
-  // GpuRenderingActivated message.
-  webwidget_->layout();
-
-  // Check for whether we need to track swap buffers. We need to do that after
-  // layout() because it may have switched us to accelerated compositing.
-  if (is_accelerated_compositing_active_)
-    using_asynchronous_swapbuffers_ = SupportsAsynchronousSwapBuffers();
-
-  // The following two can result in further layout and possibly
-  // enable GPU acceleration so they need to be called before any painting
-  // is done.
-  UpdateTextInputType();
-#if defined(OS_ANDROID)
-  UpdateSelectionRootBounds();
-#endif
-  UpdateSelectionBounds();
-
-  // Suppress painting if nothing is dirty.  This has to be done after updating
-  // animations running layout as these may generate further invalidations.
-  if (!paint_aggregator_.HasPendingUpdate()) {
-    TRACE_EVENT0("renderer", "EarlyOut_NoPendingUpdate");
-    InstrumentDidCancelFrame();
-    return;
-  }
-
-  if (!is_accelerated_compositing_active_ &&
-      !is_threaded_compositing_enabled_ &&
-      (ForceCompositingModeEnabled() ||
-          was_accelerated_compositing_ever_active_)) {
-    webwidget_->enterForceCompositingMode(true);
-  }
-
-  if (!last_do_deferred_update_time_.is_null()) {
-    base::TimeDelta delay = frame_begin_ticks - last_do_deferred_update_time_;
-    if (is_accelerated_compositing_active_) {
-      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.AccelDoDeferredUpdateDelay",
-                                 delay,
-                                 base::TimeDelta::FromMilliseconds(1),
-                                 base::TimeDelta::FromMilliseconds(120),
-                                 60);
-    } else {
-      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.SoftwareDoDeferredUpdateDelay",
-                                 delay,
-                                 base::TimeDelta::FromMilliseconds(1),
-                                 base::TimeDelta::FromMilliseconds(120),
-                                 60);
-    }
-
-    // Calculate filtered time per frame:
-    float frame_time_elapsed = static_cast<float>(delay.InSecondsF());
-    filtered_time_per_frame_ =
-        0.9f * filtered_time_per_frame_ + 0.1f * frame_time_elapsed;
-  }
-  last_do_deferred_update_time_ = frame_begin_ticks;
-
-  if (!is_accelerated_compositing_active_) {
-    legacy_software_mode_stats_->IncrementFrameCount(1, true);
-    cc::BenchmarkInstrumentation::IssueMainThreadRenderingStatsEvent(
-        legacy_software_mode_stats_->main_thread_rendering_stats());
-    legacy_software_mode_stats_->AccumulateAndClearMainThreadStats();
-  }
-
-  // OK, save the pending update to a local since painting may cause more
-  // invalidation.  Some WebCore rendering objects only layout when painted.
-  PaintAggregator::PendingUpdate update;
-  paint_aggregator_.PopPendingUpdate(&update);
-
-  gfx::Rect scroll_damage = update.GetScrollDamage();
-  gfx::Rect bounds = gfx::UnionRects(update.GetPaintBounds(), scroll_damage);
-
-  DCHECK(!pending_update_params_.get());
-  pending_update_params_.reset(new ViewHostMsg_UpdateRect_Params);
-  pending_update_params_->scroll_delta = update.scroll_delta;
-  pending_update_params_->scroll_rect = update.scroll_rect;
-  pending_update_params_->view_size = size_;
-  pending_update_params_->plugin_window_moves.swap(plugin_window_moves_);
-  pending_update_params_->flags = next_paint_flags_;
-  pending_update_params_->scroll_offset = GetScrollOffset();
-  pending_update_params_->needs_ack = true;
-  pending_update_params_->scale_factor = device_scale_factor_;
-  next_paint_flags_ = 0;
-  need_update_rect_for_auto_resize_ = false;
-
-  if (!is_accelerated_compositing_active_)
-    pending_update_params_->latency_info.swap(latency_info_);
-
-  latency_info_.clear();
-
-  if (!is_accelerated_compositing_active_) {
-    // Compute a buffer for painting and cache it.
-
-    bool fractional_scale = device_scale_factor_ -
-        static_cast<int>(device_scale_factor_) != 0;
-    if (fractional_scale) {
-      // Damage might not be DIP aligned. Inflate damage to compensate.
-      bounds.Inset(-1, -1);
-      bounds.Intersect(gfx::Rect(size_));
-    }
-
-    gfx::Rect pixel_bounds = gfx::ToEnclosingRect(
-        gfx::ScaleRect(bounds, device_scale_factor_));
-
-    scoped_ptr<skia::PlatformCanvas> canvas(
-        RenderProcess::current()->GetDrawingCanvas(&current_paint_buf_,
-                                                   pixel_bounds));
-    if (!canvas) {
-      NOTREACHED();
-      return;
-    }
-
-    // We may get back a smaller canvas than we asked for.
-    // TODO(darin): This seems like it could cause painting problems!
-    DCHECK_EQ(pixel_bounds.width(), canvas->getDevice()->width());
-    DCHECK_EQ(pixel_bounds.height(), canvas->getDevice()->height());
-    pixel_bounds.set_width(canvas->getDevice()->width());
-    pixel_bounds.set_height(canvas->getDevice()->height());
-    bounds.set_width(pixel_bounds.width() / device_scale_factor_);
-    bounds.set_height(pixel_bounds.height() / device_scale_factor_);
-
-    HISTOGRAM_COUNTS_100("MPArch.RW_PaintRectCount", update.paint_rects.size());
-
-    pending_update_params_->bitmap = current_paint_buf_->id();
-    pending_update_params_->bitmap_rect = bounds;
-
-    std::vector<gfx::Rect>& copy_rects = pending_update_params_->copy_rects;
-    // The scroll damage is just another rectangle to paint and copy.
-    copy_rects.swap(update.paint_rects);
-    if (!scroll_damage.IsEmpty())
-      copy_rects.push_back(scroll_damage);
-
-    for (size_t i = 0; i < copy_rects.size(); ++i) {
-      gfx::Rect rect = copy_rects[i];
-      if (fractional_scale) {
-        // Damage might not be DPI aligned.  Inflate rect to compensate.
-        rect.Inset(-1, -1);
-      }
-      PaintRect(rect, pixel_bounds.origin(), canvas.get());
-    }
-
-    // Software FPS tick for performance tests. The accelerated path traces the
-    // frame events in didCommitAndDrawCompositorFrame. See
-    // tab_capture_performancetest.cc.
-    // NOTE: Tests may break if this event is renamed or moved.
-    UNSHIPPED_TRACE_EVENT_INSTANT0("test_fps", "TestFrameTickSW",
-                                   TRACE_EVENT_SCOPE_THREAD);
-  } else {  // Accelerated compositing path
-    // Begin painting.
-    // If painting is done via the gpu process then we don't set any damage
-    // rects to save the browser process from doing unecessary work.
-    pending_update_params_->bitmap_rect = bounds;
-    pending_update_params_->scroll_rect = gfx::Rect();
-    // We don't need an ack, because we're not sharing a DIB with the browser.
-    // If it needs to (e.g. composited UI), the GPU process does its own ACK
-    // with the browser for the GPU surface.
-    pending_update_params_->needs_ack = false;
-    Composite(frame_begin_ticks);
-  }
-
-  // If we're holding a pending input event ACK, send the ACK before sending the
-  // UpdateReply message so we can receive another input event before the
-  // UpdateRect_ACK on platforms where the UpdateRect_ACK is sent from within
-  // the UpdateRect IPC message handler.
-  FlushPendingInputEventAck();
-
-  // If Composite() called SwapBuffers, pending_update_params_ will be reset (in
-  // OnSwapBuffersPosted), meaning a message has been added to the
-  // updates_pending_swap_ queue, that will be sent later. Otherwise, we send
-  // the message now.
-  if (pending_update_params_) {
-    // sending an ack to browser process that the paint is complete...
-    update_reply_pending_ = pending_update_params_->needs_ack;
-    Send(new ViewHostMsg_UpdateRect(routing_id_, *pending_update_params_));
-    pending_update_params_.reset();
-  }
-
-  // If we're software rendering then we're done initiating the paint.
-  if (!is_accelerated_compositing_active_)
-    DidInitiatePaint();
 }
 
 void RenderWidget::Composite(base::TimeTicks frame_begin_time) {
@@ -1854,7 +1644,7 @@ void RenderWidget::didDeactivateCompositor() {
   // DoDeferredUpdate() if appropriate. In threaded compositing mode,
   // DoDeferredUpdate() is bypassed and WebKit is responsible for exiting and
   // entering force compositing mode at the appropriate times.
-  if (!is_threaded_compositing_enabled_)
+  if (!is_threaded_compositing_enabled_ && !ForceCompositingModeEnabled())
     webwidget_->enterForceCompositingMode(false);
 }
 
