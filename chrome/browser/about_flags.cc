@@ -1672,15 +1672,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(autofill::switches::kDisableIgnoreAutocompleteOff)
   },
-#if defined(USE_AURA)
   {
     "enable-permissions-bubbles",
     IDS_FLAGS_ENABLE_PERMISSIONS_BUBBLES_NAME,
     IDS_FLAGS_ENABLE_PERMISSIONS_BUBBLES_DESCRIPTION,
-    kOsCrOS | kOsWin,
+    kOsCrOS | kOsMac | kOsWin,
     SINGLE_VALUE_TYPE(switches::kEnablePermissionsBubbles)
   },
-#endif
   {
     "notification-center-tray-behavior",
     IDS_FLAGS_NOTIFICATION_TRAY_BEHAVIOR_NAME,
