@@ -109,7 +109,7 @@ gfx::Transform WindowTreeHost::GetInverseRootTransform() const {
 void WindowTreeHost::UpdateRootWindowSize(const gfx::Size& host_size) {
   gfx::Rect bounds(host_size);
   gfx::RectF new_bounds(ui::ConvertRectToDIP(window()->layer(), bounds));
-  GetRootTransform().TransformRect(&new_bounds);
+  window()->layer()->transform().TransformRect(&new_bounds);
   window()->SetBounds(gfx::Rect(gfx::ToFlooredSize(new_bounds.size())));
 }
 
