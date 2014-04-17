@@ -61,10 +61,17 @@ struct wl_connection {
 	int want_flush;
 };
 
-static void
+static int
 wl_buffer_put(struct wl_buffer *b, const void *data, size_t count)
 {
 	uint32_t head, size;
+
+	if (count > sizeof(b->data)) {
+		wl_log("Data too big for buffer (%d > %d).\n",
+		       count, sizeof(b->data));
+		errno = E2BIG;
+		return -1;
+	}
 
 	head = MASK(b->head);
 	if (head + count <= sizeof b->data) {
@@ -76,6 +83,8 @@ wl_buffer_put(struct wl_buffer *b, const void *data, size_t count)
 	}
 
 	b->head += count;
+
+	return 0;
 }
 
 static void
@@ -243,8 +252,8 @@ decode_cmsg(struct wl_buffer *buffer, struct msghdr *msg)
 			size /= sizeof(int32_t);
 			for (i = 0; i < size; i++)
 				close(((int*)CMSG_DATA(cmsg))[i]);
-		} else {
-			wl_buffer_put(buffer, CMSG_DATA(cmsg), size);
+		} else if (wl_buffer_put(buffer, CMSG_DATA(cmsg), size) < 0) {
+				return -1;
 		}
 	}
 
@@ -350,7 +359,9 @@ wl_connection_write(struct wl_connection *connection,
 			return -1;
 	}
 
-	wl_buffer_put(&connection->out, data, count);
+	if (wl_buffer_put(&connection->out, data, count) < 0)
+		return -1;
+
 	connection->want_flush = 1;
 
 	return 0;
@@ -367,7 +378,7 @@ wl_connection_queue(struct wl_connection *connection,
 			return -1;
 	}
 
-	wl_buffer_put(&connection->out, data, count);
+	return wl_buffer_put(&connection->out, data, count);
 
 	return 0;
 }
@@ -394,9 +405,7 @@ wl_connection_put_fd(struct wl_connection *connection, int32_t fd)
 			return -1;
 	}
 
-	wl_buffer_put(&connection->fds_out, &fd, sizeof fd);
-
-	return 0;
+	return wl_buffer_put(&connection->fds_out, &fd, sizeof fd);
 }
 
 const char *

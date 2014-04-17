@@ -235,6 +235,27 @@ expected_fail_marshal(int expected_error, const char *format, ...)
 	assert(errno == expected_error);
 }
 
+static void
+expected_fail_marshal_send(struct marshal_data *data, int expected_error,
+			   const char *format, ...)
+{
+	struct wl_closure *closure;
+	static const uint32_t opcode = 4444;
+	static struct wl_object sender = { NULL, NULL, 1234 };
+	struct wl_message message = { "test", format, NULL };
+	va_list ap;
+
+	va_start(ap, format);
+	closure = wl_closure_vmarshal(&sender, opcode, ap, &message);
+	va_end(ap);
+
+	assert(closure);
+	assert(wl_closure_send(closure, data->write_connection) < 0);
+	assert(errno == expected_error);
+
+	wl_closure_destroy(closure);
+}
+
 TEST(connection_marshal_nullables)
 {
 	struct marshal_data data;
@@ -488,6 +509,22 @@ TEST(connection_marshal_alot)
 	}
 
 	release_marshal_data(&data);
+}
+
+TEST(connection_marshal_too_big)
+{
+	struct marshal_data data;
+	char *big_string = malloc(5000);
+
+	memset(big_string, ' ', 4999);
+	big_string[4999] = '\0';
+
+	setup_marshal_data(&data);
+
+	expected_fail_marshal_send(&data, E2BIG, "s", big_string);
+
+	release_marshal_data(&data);
+	free(big_string);
 }
 
 static void
