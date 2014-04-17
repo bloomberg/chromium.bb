@@ -25,6 +25,8 @@ class HardwareDisplayController;
 // path.
 class OZONE_EXPORT DriSurfaceFactory : public gfx::SurfaceFactoryOzone {
  public:
+  static const gfx::AcceleratedWidget kDefaultWidgetHandle;
+
   DriSurfaceFactory();
   virtual ~DriSurfaceFactory();
 

@@ -11,7 +11,9 @@ namespace ui {
 
 CursorFactoryEvdevDri::CursorFactoryEvdevDri(DriSurfaceFactory* dri)
     : dri_(dri) {
-  cursor_window_ = dri_->GetAcceleratedWidget();
+  // TODO(dnicoara) Assume the first widget since at this point there are no
+  // widgets initialized.
+  cursor_window_ = DriSurfaceFactory::kDefaultWidgetHandle;
   cursor_bounds_ = gfx::RectF(0, 0, 2560, 1700);  // TODO(spang): Argh!
   cursor_location_ =
       gfx::PointF(cursor_bounds_.width() / 2, cursor_bounds_.height() / 2);
@@ -19,7 +21,7 @@ CursorFactoryEvdevDri::CursorFactoryEvdevDri(DriSurfaceFactory* dri)
   // The DRI cursor is invisible unless explicitly set. Therefore, set the
   // pointer cursor on initialization.
   // TODO(spang): Move this to DRI window initialization.
-  SetCursor(dri->GetAcceleratedWidget(), GetDefaultCursor(kCursorPointer));
+  SetCursor(cursor_window_, GetDefaultCursor(kCursorPointer));
 }
 
 CursorFactoryEvdevDri::~CursorFactoryEvdevDri() {}

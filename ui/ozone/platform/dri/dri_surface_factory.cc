@@ -26,8 +26,6 @@ namespace {
 const char kDefaultGraphicsCardPath[] = "/dev/dri/card0";
 const char kDPMSProperty[] = "DPMS";
 
-const gfx::AcceleratedWidget kDefaultWidgetHandle = 1;
-
 // TODO(dnicoara) Read the cursor plane size from the hardware.
 const gfx::Size kCursorSize(64, 64);
 
@@ -151,6 +149,9 @@ class DriSurfaceAdapter : public gfx::SurfaceOzoneCanvas {
 };
 
 }  // namespace
+
+// static
+const gfx::AcceleratedWidget DriSurfaceFactory::kDefaultWidgetHandle = 1;
 
 DriSurfaceFactory::DriSurfaceFactory()
     : drm_(),
