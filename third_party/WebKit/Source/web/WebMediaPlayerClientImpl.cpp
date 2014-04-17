@@ -106,11 +106,6 @@ void WebMediaPlayerClientImpl::sizeChanged()
     m_client->mediaPlayerSizeChanged();
 }
 
-void WebMediaPlayerClientImpl::setOpaque(bool opaque)
-{
-    // FIXME: Remove once calls on the Chromium-side have been removed
-}
-
 double WebMediaPlayerClientImpl::volume() const
 {
     return mediaElement().playerVolume();

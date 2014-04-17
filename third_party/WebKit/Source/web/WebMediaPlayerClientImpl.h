@@ -74,7 +74,6 @@ public:
     virtual void repaint() OVERRIDE;
     virtual void durationChanged() OVERRIDE;
     virtual void sizeChanged() OVERRIDE;
-    virtual void setOpaque(bool) OVERRIDE;
     virtual double volume() const OVERRIDE;
     virtual void playbackStateChanged() OVERRIDE;
     virtual WebMediaPlayer::Preload preload() const OVERRIDE;

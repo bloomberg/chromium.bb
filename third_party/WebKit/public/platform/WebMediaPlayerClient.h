@@ -60,8 +60,6 @@ public:
     virtual void durationChanged() = 0;
     virtual void sizeChanged() = 0;
     // FIXME: Remove once calls on the Chromium-side have been removed.
-    virtual void setOpaque(bool) = 0;
-    // FIXME: Remove once calls on the Chromium-side have been removed.
     virtual double volume() const = 0;
     virtual void playbackStateChanged() = 0;
     virtual WebMediaPlayer::Preload preload() const = 0;
