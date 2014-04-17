@@ -1,11 +1,11 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_CHANGE_PROCESSOR_MOCK_H__
-#define CHROME_BROWSER_SYNC_GLUE_CHANGE_PROCESSOR_MOCK_H__
+#ifndef COMPONENTS_SYNC_DRIVER_CHANGE_PROCESSOR_MOCK_H_
+#define COMPONENTS_SYNC_DRIVER_CHANGE_PROCESSOR_MOCK_H_
 
-#include "chrome/browser/sync/glue/change_processor.h"
+#include "components/sync_driver/change_processor.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -21,7 +21,7 @@ class ChangeProcessorMock
                void(const syncer::BaseTransaction*, int64,
                     const syncer::ImmutableChangeRecordList&));
   MOCK_METHOD0(CommitChangesFromSyncModel, void());
-  MOCK_METHOD1(StartImpl, void(Profile*));
+  MOCK_METHOD0(StartImpl, void());
   MOCK_CONST_METHOD0(IsRunning, bool());
   MOCK_METHOD2(OnUnrecoverableError, void(const tracked_objects::Location&,
                                           const std::string&));
@@ -37,4 +37,4 @@ class ChangeProcessorMock
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_CHANGE_PROCESSOR_MOCK_H__
+#endif  // COMPONENTS_SYNC_DRIVER_CHANGE_PROCESSOR_MOCK_H_

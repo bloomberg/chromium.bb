@@ -13,11 +13,11 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/browser_thread_model_worker.h"
-#include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/history_model_worker.h"
 #include "chrome/browser/sync/glue/password_model_worker.h"
 #include "chrome/browser/sync/glue/ui_model_worker.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/sync_driver/change_processor.h"
 #include "content/public/browser/browser_thread.h"
 #include "sync/internal_api/public/engine/passive_model_worker.h"
 #include "sync/internal_api/public/user_share.h"
@@ -219,7 +219,7 @@ void SyncBackendRegistrar::ActivateDataType(
   processors_[type] = change_processor;
 
   // Start the change processor.
-  change_processor->Start(profile_, user_share);
+  change_processor->Start(user_share);
   DCHECK(GetProcessorUnsafe(type));
 }
 

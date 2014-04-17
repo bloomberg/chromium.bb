@@ -16,6 +16,7 @@
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/read_node.h"
 #include "sync/internal_api/public/read_transaction.h"
+#include "sync/internal_api/public/sync_encryption_handler.h"
 #include "sync/internal_api/public/test/test_user_share.h"
 #include "sync/internal_api/public/user_share.h"
 #include "sync/internal_api/public/write_node.h"

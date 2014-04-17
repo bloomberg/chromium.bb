@@ -1,9 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/change_processor.h"
-#include "chrome/browser/profiles/profile.h"
+#include "components/sync_driver/change_processor.h"
 
 namespace browser_sync {
 
@@ -14,11 +13,10 @@ ChangeProcessor::ChangeProcessor(DataTypeErrorHandler* error_handler)
 ChangeProcessor::~ChangeProcessor() {
 }
 
-void ChangeProcessor::Start(Profile* profile,
-                            syncer::UserShare* share_handle) {
+void ChangeProcessor::Start(syncer::UserShare* share_handle) {
   DCHECK(!share_handle_);
   share_handle_ = share_handle;
-  StartImpl(profile);
+  StartImpl();
 }
 
 // Not implemented by default.

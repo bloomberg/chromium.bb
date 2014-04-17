@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
+#include "components/sync_driver/change_processor.h"
 #include "components/sync_driver/model_associator.h"
 
 using browser_sync::AssociatorInterface;

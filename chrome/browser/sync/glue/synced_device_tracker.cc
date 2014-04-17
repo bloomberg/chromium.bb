@@ -38,7 +38,7 @@ SyncedDeviceTracker::SyncedDeviceTracker(syncer::UserShare* user_share,
 SyncedDeviceTracker::~SyncedDeviceTracker() {
 }
 
-void SyncedDeviceTracker::StartImpl(Profile* profile) { }
+void SyncedDeviceTracker::StartImpl() { }
 
 void SyncedDeviceTracker::ApplyChangesFromSyncModel(
       const syncer::BaseTransaction* trans,

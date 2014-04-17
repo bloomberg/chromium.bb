@@ -7,7 +7,6 @@
 #include "base/location.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/public/browser/browser_thread.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_error.h"
 #include "sync/api/syncable_service.h"
@@ -19,8 +18,6 @@
 #include "sync/internal_api/public/write_node.h"
 #include "sync/internal_api/public/write_transaction.h"
 #include "sync/syncable/entry.h"  // TODO(tim): Bug 123674.
-
-using content::BrowserThread;
 
 namespace browser_sync {
 
@@ -655,7 +652,7 @@ bool GenericChangeProcessor::CryptoReadyIfNecessary(syncer::ModelType type) {
          trans.GetCryptographer()->is_ready();
 }
 
-void GenericChangeProcessor::StartImpl(Profile* profile) {
+void GenericChangeProcessor::StartImpl() {
   DCHECK(CalledOnValidThread());
 }
 

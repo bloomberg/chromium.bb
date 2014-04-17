@@ -12,7 +12,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list_threadsafe.h"
-#include "chrome/browser/sync/glue/change_processor.h"
+#include "components/sync_driver/change_processor.h"
 
 namespace syncer {
 struct UserShare;
@@ -35,7 +35,7 @@ class SyncedDeviceTracker : public ChangeProcessor {
   };
 
   // ChangeProcessor methods
-  virtual void StartImpl(Profile* profile) OVERRIDE;
+  virtual void StartImpl() OVERRIDE;
   virtual void ApplyChangesFromSyncModel(
       const syncer::BaseTransaction* trans,
       int64 model_version,

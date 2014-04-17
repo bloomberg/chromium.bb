@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
-#include "chrome/browser/sync/glue/change_processor.h"
+#include "components/sync_driver/change_processor.h"
 #include "components/sync_driver/data_type_controller.h"
 #include "components/sync_driver/data_type_error_handler.h"
 #include "sync/api/attachments/attachment_service.h"
@@ -96,7 +96,7 @@ class GenericChangeProcessor : public ChangeProcessor,
 
  protected:
   // ChangeProcessor interface.
-  virtual void StartImpl(Profile* profile) OVERRIDE;           // Does nothing.
+  virtual void StartImpl() OVERRIDE;  // Does nothing.
   virtual syncer::UserShare* share_handle() const OVERRIDE;
 
  private:

@@ -51,7 +51,7 @@ class SyncedDeviceTrackerTest : public ::testing::Test {
     // NULL here.  Constructing a TestingProfile can take over a 100ms, so this
     // optimization can be the difference between 'tests run with a noticeable
     // delay' and 'tests run instantaneously'.
-    synced_device_tracker_->Start(NULL, user_share());
+    synced_device_tracker_->Start(user_share());
   }
 
   virtual void TearDown() {

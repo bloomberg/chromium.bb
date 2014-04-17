@@ -336,9 +336,8 @@ void TypedUrlChangeProcessor::Disconnect() {
   disconnected_ = true;
 }
 
-void TypedUrlChangeProcessor::StartImpl(Profile* profile) {
+void TypedUrlChangeProcessor::StartImpl() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(profile, profile_);
   DCHECK(history_backend_);
   DCHECK(backend_loop_);
   backend_loop_->PostTask(FROM_HERE,

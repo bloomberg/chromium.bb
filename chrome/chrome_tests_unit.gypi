@@ -1295,8 +1295,6 @@
         'browser/sync/glue/autofill_data_type_controller_unittest.cc',
         'browser/sync/glue/bookmark_data_type_controller_unittest.cc',
         'browser/sync/glue/browser_thread_model_worker_unittest.cc',
-        'browser/sync/glue/change_processor_mock.cc',
-        'browser/sync/glue/change_processor_mock.h',
         'browser/sync/glue/data_type_manager_impl_unittest.cc',
         'browser/sync/glue/extensions_activity_monitor_unittest.cc',
         'browser/sync/glue/fake_generic_change_processor.cc',

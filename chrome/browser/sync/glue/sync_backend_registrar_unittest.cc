@@ -4,9 +4,9 @@
 
 #include "chrome/browser/sync/glue/sync_backend_registrar.h"
 
-#include "chrome/browser/sync/glue/change_processor_mock.h"
 #include "chrome/browser/sync/glue/ui_model_worker.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/sync_driver/change_processor_mock.h"
 #include "content/public/test/test_browser_thread.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/test/test_user_share.h"
@@ -193,7 +193,7 @@ TEST_F(SyncBackendRegistrarTest, ActivateDeactivateUIDataType) {
   TriggerChanges(registrar_.get(), BOOKMARKS);
 
   StrictMock<ChangeProcessorMock> change_processor_mock;
-  EXPECT_CALL(change_processor_mock, StartImpl(&profile_));
+  EXPECT_CALL(change_processor_mock, StartImpl());
   EXPECT_CALL(change_processor_mock, IsRunning())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(change_processor_mock, ApplyChangesFromSyncModel(NULL, _, _));
@@ -234,7 +234,7 @@ TEST_F(SyncBackendRegistrarTest, ActivateDeactivateNonUIDataType) {
   TriggerChanges(registrar_.get(), AUTOFILL);
 
   StrictMock<ChangeProcessorMock> change_processor_mock;
-  EXPECT_CALL(change_processor_mock, StartImpl(&profile_));
+  EXPECT_CALL(change_processor_mock, StartImpl());
   EXPECT_CALL(change_processor_mock, IsRunning())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(change_processor_mock, ApplyChangesFromSyncModel(NULL, _, _));

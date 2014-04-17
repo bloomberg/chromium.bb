@@ -528,9 +528,10 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
 
     // Set up change processor.
     change_processor_.reset(
-        new BookmarkChangeProcessor(model_associator_.get(),
+        new BookmarkChangeProcessor(&profile_,
+                                    model_associator_.get(),
                                     &mock_error_handler_));
-    change_processor_->Start(&profile_, test_user_share_.user_share());
+    change_processor_->Start(test_user_share_.user_share());
   }
 
   void StopSync() {

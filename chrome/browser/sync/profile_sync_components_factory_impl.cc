@@ -605,7 +605,8 @@ ProfileSyncComponentsFactory::SyncComponents
                                   error_handler,
                                   kExpectMobileBookmarksFolder);
   BookmarkChangeProcessor* change_processor =
-      new BookmarkChangeProcessor(model_associator,
+      new BookmarkChangeProcessor(profile_sync_service->profile(),
+                                  model_associator,
                                   error_handler);
   return SyncComponents(model_associator, change_processor);
 }

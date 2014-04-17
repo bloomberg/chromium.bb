@@ -18,6 +18,8 @@
       'sources': [
         'sync_driver/backend_data_type_configurer.cc',
         'sync_driver/backend_data_type_configurer.h',
+        'sync_driver/change_processor.cc',
+        'sync_driver/change_processor.h',
         'sync_driver/data_type_controller.cc',
         'sync_driver/data_type_controller.h',
         'sync_driver/data_type_encryption_handler.cc',
@@ -58,6 +60,8 @@
         '..',
       ],
       'sources': [
+        'sync_driver/change_processor_mock.cc',
+        'sync_driver/change_processor_mock.h',
         'sync_driver/data_type_controller_mock.cc',
         'sync_driver/data_type_controller_mock.h',
         'sync_driver/data_type_error_handler_mock.cc',

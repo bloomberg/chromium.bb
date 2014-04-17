@@ -44,13 +44,16 @@ namespace browser_sync {
 static const char kMobileBookmarksTag[] = "synced_bookmarks";
 
 BookmarkChangeProcessor::BookmarkChangeProcessor(
+    Profile* profile,
     BookmarkModelAssociator* model_associator,
     DataTypeErrorHandler* error_handler)
     : ChangeProcessor(error_handler),
       bookmark_model_(NULL),
+      profile_(profile),
       model_associator_(model_associator) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(model_associator);
+  DCHECK(profile);
   DCHECK(error_handler);
 }
 
@@ -59,12 +62,10 @@ BookmarkChangeProcessor::~BookmarkChangeProcessor() {
     bookmark_model_->RemoveObserver(this);
 }
 
-void BookmarkChangeProcessor::StartImpl(Profile* profile) {
+void BookmarkChangeProcessor::StartImpl() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(profile);
-  profile_ = profile;
   DCHECK(!bookmark_model_);
-  bookmark_model_ = BookmarkModelFactory::GetForProfile(profile);
+  bookmark_model_ = BookmarkModelFactory::GetForProfile(profile_);
   DCHECK(bookmark_model_->loaded());
   bookmark_model_->AddObserver(this);
 }

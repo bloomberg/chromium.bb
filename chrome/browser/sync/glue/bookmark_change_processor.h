@@ -10,9 +10,11 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/sync/glue/bookmark_model_associator.h"
-#include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
+#include "components/sync_driver/change_processor.h"
 #include "components/sync_driver/data_type_error_handler.h"
+
+class Profile;
 
 namespace base {
 class RefCountedMemory;
@@ -32,7 +34,8 @@ namespace browser_sync {
 class BookmarkChangeProcessor : public BookmarkModelObserver,
                                 public ChangeProcessor {
  public:
-  BookmarkChangeProcessor(BookmarkModelAssociator* model_associator,
+  BookmarkChangeProcessor(Profile* profile,
+                          BookmarkModelAssociator* model_associator,
                           DataTypeErrorHandler* error_handler);
   virtual ~BookmarkChangeProcessor();
 
@@ -134,7 +137,7 @@ class BookmarkChangeProcessor : public BookmarkModelObserver,
       const std::vector<const BookmarkNode*>& nodes);
 
  protected:
-  virtual void StartImpl(Profile* profile) OVERRIDE;
+  virtual void StartImpl() OVERRIDE;
 
  private:
   enum MoveOrCreate {

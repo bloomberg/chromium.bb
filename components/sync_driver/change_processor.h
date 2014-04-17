@@ -1,15 +1,14 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_CHANGE_PROCESSOR_H_
-#define CHROME_BROWSER_SYNC_GLUE_CHANGE_PROCESSOR_H_
+#ifndef COMPONENTS_SYNC_DRIVER_CHANGE_PROCESSOR_H_
+#define COMPONENTS_SYNC_DRIVER_CHANGE_PROCESSOR_H_
 
-#include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "components/sync_driver/data_type_error_handler.h"
+#include "sync/internal_api/public/base_transaction.h"
 #include "sync/internal_api/public/change_record.h"
-
-class Profile;
+#include "sync/internal_api/public/user_share.h"
 
 namespace syncer {
 class UnrecoverableErrorHandler;
@@ -27,17 +26,14 @@ class ChangeProcessor {
   virtual ~ChangeProcessor();
 
   // Call when the processor should accept changes from either provided model
-  // and apply them to the other.  Both the chrome model and sync_api are
+  // and apply them to the other.  Both the native model and sync_api are
   // expected to be initialized and loaded.  You must have set a valid
   // ModelAssociator and UnrecoverableErrorHandler before using this method, and
   // the two models should be associated w.r.t the ModelAssociator provided.
-  // Subclasses can extract their associated chrome model from |profile| in
-  // |StartImpl|.
-  void Start(Profile* profile, syncer::UserShare* share_handle);
+  void Start(syncer::UserShare* share_handle);
 
   // Changes have been applied to the backend model and are ready to be
-  // applied to the frontend model. See syncapi.h for detailed instructions on
-  // how to interpret and process |changes|.
+  // applied to the frontend model.
   virtual void ApplyChangesFromSyncModel(
       const syncer::BaseTransaction* trans,
       int64 model_version,
@@ -73,7 +69,7 @@ class ChangeProcessor {
  protected:
   // These methods are invoked by Start() and Stop() to do
   // implementation-specific work.
-  virtual void StartImpl(Profile* profile) = 0;
+  virtual void StartImpl() = 0;
 
   DataTypeErrorHandler* error_handler() const;
   virtual syncer::UserShare* share_handle() const;
@@ -89,4 +85,4 @@ class ChangeProcessor {
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_CHANGE_PROCESSOR_H_
+#endif  // COMPONENTS_SYNC_DRIVER_CHANGE_PROCESSOR_H_
