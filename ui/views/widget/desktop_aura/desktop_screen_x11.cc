@@ -141,7 +141,9 @@ DesktopScreenX11::DesktopScreenX11()
       ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
     XRRSelectInput(xdisplay_,
                    x_root_window_,
-                   RRScreenChangeNotifyMask | RROutputChangeNotifyMask);
+                   RRScreenChangeNotifyMask |
+                   RROutputChangeNotifyMask |
+                   RRCrtcChangeNotifyMask);
 
     displays_ = BuildDisplaysFromXRandRInfo();
   } else {
