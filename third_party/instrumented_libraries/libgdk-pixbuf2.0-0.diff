@@ -1,0 +1,14 @@
+diff -rupN ./gdk-pixbuf/Makefile.am ../gdk-pixbuf-2.26.1-patched/gdk-pixbuf/Makefile.am
+--- ./gdk-pixbuf/Makefile.am	2012-04-14 22:11:34.000000000 +0400
++++ ../gdk-pixbuf-2.26.1-patched/gdk-pixbuf/Makefile.am	2014-04-17 19:37:22.105253318 +0400
+@@ -782,7 +782,9 @@ loaders.cache: $(loader_LTLIBRARIES) gdk
+ 	LOADERS=`echo libpixbufloader-*.la` ; \
+ 	if test "x$$LOADERS" != 'xlibpixbufloader-*.la' ; then \
+           echo "Writing a loaders.cache file to use when running examples before installing gdk-pixbuf."; \
+-	  $(top_builddir)/gdk-pixbuf/gdk-pixbuf-query-loaders $$LOADERS > ./loaders.cache ;\
++    # Use the system-installed gdk-pixbuf-query-loaders. The just-built one \
++    # won't work. \
++	  gdk-pixbuf-query-loaders $$LOADERS > ./loaders.cache ;\
+ 	else \
+           echo "No dynamic modules found; will use only static modules for uninstalled example programs."; \
+ 	  touch loaders.cache; \
