@@ -188,14 +188,6 @@ class CBuildbotMetadata(object):
     if not platform_tag:
       platform_tag = verinfo.VersionString()
     metadata = {
-        # Version of the metadata format.
-        'metadata-version': '2',
-        # Data for this build.
-        'bot-config': config['name'],
-        'bot-hostname': cros_build_lib.GetHostName(fully_qualified=True),
-        'boards': config['boards'],
-        'build-number': builder_run.buildnumber,
-        'builder-name': os.environ.get('BUILDBOT_BUILDERNAME', ''),
         'status': {
             'current-time': current_time_stamp,
             'status': final_status if final_status else 'running',

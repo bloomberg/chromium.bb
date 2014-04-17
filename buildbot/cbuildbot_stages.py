@@ -4212,6 +4212,44 @@ class PublishUprevChangesStage(bs.BuilderStage):
     commands.UprevPush(self._build_root, push_overlays, self._run.options.debug)
 
 
+class ReportBuildStartStage(bs.BuilderStage, ArchivingStageMixin):
+  """Uploads partial metadata artifact describing what will be built.
+
+  This stage should be the first stage run after the final cbuildbot
+  bootstrap/reexecution. By the time this stage is run, all sync stages
+  are complete and version numbers of chrome and chromeos are known.
+
+  Where possible, metadata that is already known at this time should be
+  written at this time rather than in ReportStage.
+  """
+  def init(self, builder_run, **kwargs):
+    super(ReportBuildStartStage, self).__init__(builder_run, **kwargs)
+
+  def PerformStage(self):
+    config = self._run.config
+
+    # Flat list of all child config boards. Since child configs
+    # are not allowed to have children, it is not necessary to search
+    # deeper than one generation.
+    child_configs = [{'name': c['name'], 'boards' : c['boards']}
+                     for c in config['child_configs']]
+    metadata = {
+        # Version of the metadata format.
+        'metadata-version': '2',
+        # Data for this build.
+        'bot-config': config['name'],
+        'bot-hostname': cros_build_lib.GetHostName(fully_qualified=True),
+        'boards': config['boards'],
+        'build-number': self._run.buildnumber,
+        'builder-name': os.environ.get('BUILDBOT_BUILDERNAME', ''),
+        'child-configs': child_configs
+    }
+
+    logging.info('Metadata being written: %s', metadata)
+    self._run.attrs.metadata.UpdateWithDict(metadata)
+    self.UploadMetadata(filename=constants.PARTIAL_METADATA_JSON)
+
+
 class ReportStage(bs.BuilderStage, ArchivingStageMixin):
   """Summarize all the builds."""
 
