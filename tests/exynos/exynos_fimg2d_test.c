@@ -682,7 +682,7 @@ err_free_src:
 		exynos_destroy_buffer(src);
 
 err_rm_fb:
-	drmModeRmFB(fb_id, bo->handle);
+	drmModeRmFB(dev->fd, fb_id);
 
 err_destroy_buffer:
 	exynos_destroy_buffer(bo);
