@@ -2148,6 +2148,15 @@ bool View::ProcessMousePressed(const ui::MouseEvent& event) {
       context_menu_controller_ : 0;
   View::DragInfo* drag_info = GetDragInfo();
 
+  // TODO(sky): for debugging 360238.
+  int storage_id = 0;
+  if (event.IsOnlyRightMouseButton() && context_menu_controller &&
+      kContextMenuOnMousePress && HitTestPoint(event.location())) {
+    ViewStorage* view_storage = ViewStorage::GetInstance();
+    storage_id = view_storage->CreateStorageID();
+    view_storage->StoreView(storage_id, this);
+  }
+
   const bool enabled = enabled_;
   const bool result = OnMousePressed(event);
 
@@ -2160,6 +2169,8 @@ bool View::ProcessMousePressed(const ui::MouseEvent& event) {
     // from mouse pressed.
     gfx::Point location(event.location());
     if (HitTestPoint(location)) {
+      if (storage_id != 0)
+        CHECK_EQ(this, ViewStorage::GetInstance()->RetrieveView(storage_id));
       ConvertPointToScreen(this, &location);
       ShowContextMenu(location, ui::MENU_SOURCE_MOUSE);
       return true;
