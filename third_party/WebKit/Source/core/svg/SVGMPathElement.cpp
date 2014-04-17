@@ -136,7 +136,7 @@ void SVGMPathElement::svgAttributeChanged(const QualifiedName& attrName)
 
 SVGPathElement* SVGMPathElement::pathElement()
 {
-    Element* target = targetElementFromIRIString(hrefString(), document());
+    Element* target = targetElementFromIRIString(hrefString(), treeScope());
     return isSVGPathElement(target) ? toSVGPathElement(target) : 0;
 }
 

@@ -1005,6 +1005,13 @@ bool SVGElement::isKeyboardFocusable() const
     return isFocusable();
 }
 
+bool SVGElement::isInUserAgentShadowTree() const
+{
+    if (ShadowRoot* shadowRoot = containingShadowRoot())
+        return shadowRoot->type() == ShadowRoot::UserAgentShadowRoot;
+    return false;
+}
+
 #ifndef NDEBUG
 bool SVGElement::isAnimatableAttribute(const QualifiedName& name) const
 {

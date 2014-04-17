@@ -99,8 +99,6 @@ private:
     void transferUseAttributesToReplacedElement(SVGElement* from, SVGElement* to) const;
     void transferEventListenersToShadowTree(SVGElementInstance* target);
 
-    bool isInUserAgentShadowTree() const;
-
     RefPtr<SVGAnimatedLength> m_x;
     RefPtr<SVGAnimatedLength> m_y;
     RefPtr<SVGAnimatedLength> m_width;

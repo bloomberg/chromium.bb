@@ -87,7 +87,7 @@ void SVGFEImageElement::buildPendingResource()
         return;
 
     AtomicString id;
-    Element* target = SVGURIReference::targetElementFromIRIString(hrefString(), document(), &id);
+    Element* target = SVGURIReference::targetElementFromIRIString(hrefString(), treeScope(), &id);
     if (!target) {
         if (id.isEmpty())
             fetchImageResource();

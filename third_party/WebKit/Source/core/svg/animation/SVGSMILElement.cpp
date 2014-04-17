@@ -230,7 +230,7 @@ void SVGSMILElement::buildPendingResource()
     if (href.isEmpty())
         target = parentNode() && parentNode()->isElementNode() ? toElement(parentNode()) : 0;
     else
-        target = SVGURIReference::targetElementFromIRIString(href, document(), &id);
+        target = SVGURIReference::targetElementFromIRIString(href, treeScope(), &id);
     SVGElement* svgTarget = target && target->isSVGElement() ? toSVGElement(target) : 0;
 
     if (svgTarget && !svgTarget->inDocument())
@@ -302,11 +302,9 @@ void SVGSMILElement::reset()
 Node::InsertionNotificationRequest SVGSMILElement::insertedInto(ContainerNode* rootParent)
 {
     SVGElement::insertedInto(rootParent);
+
     if (!rootParent->inDocument())
         return InsertionDone;
-
-    // Verify we are not in <use> instance tree.
-    ASSERT(!isInShadowTree() || !parentOrShadowHostElement() || !parentOrShadowHostElement()->isSVGElement());
 
     setAttributeName(constructQualifiedName(this, fastGetAttribute(SVGNames::attributeNameAttr)));
     SVGSVGElement* owner = ownerSVGElement();

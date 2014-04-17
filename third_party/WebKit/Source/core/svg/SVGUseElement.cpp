@@ -890,13 +890,6 @@ void SVGUseElement::transferUseAttributesToReplacedElement(SVGElement* from, SVG
     to->removeAttribute(XLinkNames::hrefAttr);
 }
 
-bool SVGUseElement::isInUserAgentShadowTree() const
-{
-    if (ShadowRoot* shadowRoot = containingShadowRoot())
-        return shadowRoot->type() == ShadowRoot::UserAgentShadowRoot;
-    return false;
-}
-
 bool SVGUseElement::selfHasRelativeLengths() const
 {
     if (m_x->currentValue()->isRelative()
