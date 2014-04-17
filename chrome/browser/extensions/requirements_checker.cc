@@ -64,14 +64,6 @@ void RequirementsChecker::Check(scoped_refptr<const Extension> extension,
                  AsWeakPtr()));
   }
 
-  if (requirements.css3d) {
-    ++pending_requirement_checks_;
-    css3d_checker_ = new GPUFeatureChecker(
-      gpu::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING,
-      base::Bind(&RequirementsChecker::SetCSS3DAvailability,
-                 AsWeakPtr()));
-  }
-
   if (pending_requirement_checks_ == 0) {
     content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
                                      base::Bind(callback_, errors_));
@@ -83,22 +75,12 @@ void RequirementsChecker::Check(scoped_refptr<const Extension> extension,
   // from the use of pending_requirement_checks_.
   if (webgl_checker_.get())
     webgl_checker_->CheckGPUFeatureAvailability();
-  if (css3d_checker_.get())
-    css3d_checker_->CheckGPUFeatureAvailability();
 }
 
 void RequirementsChecker::SetWebGLAvailability(bool available) {
   if (!available) {
     errors_.push_back(
         l10n_util::GetStringUTF8(IDS_EXTENSION_WEBGL_NOT_SUPPORTED));
-  }
-  MaybeRunCallback();
-}
-
-void RequirementsChecker::SetCSS3DAvailability(bool available) {
-  if (!available) {
-    errors_.push_back(
-        l10n_util::GetStringUTF8(IDS_EXTENSION_CSS3D_NOT_SUPPORTED));
   }
   MaybeRunCallback();
 }

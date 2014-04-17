@@ -145,25 +145,20 @@ void UpdateStats(const gpu::GPUInfo& gpu_info,
 
   const gpu::GpuFeatureType kGpuFeatures[] = {
       gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS,
-      gpu::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING,
-      gpu::GPU_FEATURE_TYPE_WEBGL
-  };
+      gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING, gpu::GPU_FEATURE_TYPE_WEBGL};
   const std::string kGpuBlacklistFeatureHistogramNames[] = {
       "GPU.BlacklistFeatureTestResults.Accelerated2dCanvas",
-      "GPU.BlacklistFeatureTestResults.AcceleratedCompositing",
-      "GPU.BlacklistFeatureTestResults.Webgl",
-  };
+      "GPU.BlacklistFeatureTestResults.GpuCompositing",
+      "GPU.BlacklistFeatureTestResults.Webgl", };
   const bool kGpuFeatureUserFlags[] = {
       command_line.HasSwitch(switches::kDisableAccelerated2dCanvas),
-      false,
-      command_line.HasSwitch(switches::kDisableExperimentalWebGL),
-  };
+      command_line.HasSwitch(switches::kDisableGpu),
+      command_line.HasSwitch(switches::kDisableExperimentalWebGL), };
 #if defined(OS_WIN)
   const std::string kGpuBlacklistFeatureHistogramNamesWin[] = {
       "GPU.BlacklistFeatureTestResultsWindows.Accelerated2dCanvas",
-      "GPU.BlacklistFeatureTestResultsWindows.AcceleratedCompositing",
-      "GPU.BlacklistFeatureTestResultsWindows.Webgl",
-  };
+      "GPU.BlacklistFeatureTestResultsWindows.GpuCompositing",
+      "GPU.BlacklistFeatureTestResultsWindows.Webgl", };
 #endif
   const size_t kNumFeatures =
       sizeof(kGpuFeatures) / sizeof(gpu::GpuFeatureType);
@@ -672,11 +667,10 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
     if (swiftshader_path.empty())
       swiftshader_path = swiftshader_path_;
   } else if ((IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL) ||
-              IsFeatureBlacklisted(
-                  gpu::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING) ||
+              IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING) ||
               IsFeatureBlacklisted(
                   gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS)) &&
-      (use_gl == "any")) {
+             (use_gl == "any")) {
     command_line->AppendSwitchASCII(
         switches::kUseGL, gfx::kGLImplementationOSMesaName);
   } else if (!use_gl.empty()) {
@@ -730,7 +724,7 @@ void GpuDataManagerImplPrivate::AppendPluginCommandLine(
   // TODO(jbauman): Add proper blacklist support for core animation plugins so
   // special-casing this video card won't be necessary. See
   // http://crbug.com/134015
-  if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING)) {
+  if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING)) {
     if (!command_line->HasSwitch(
            switches::kDisableCoreAnimationPlugins))
       command_line->AppendSwitch(
@@ -894,8 +888,11 @@ bool GpuDataManagerImplPrivate::UpdateActiveGpu(
 }
 
 bool GpuDataManagerImplPrivate::CanUseGpuBrowserCompositor() const {
-  return !ShouldUseSwiftShader() &&
-      !IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING);
+  if (ShouldUseSwiftShader())
+    return false;
+  if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING))
+    return false;
+  return true;
 }
 
 void GpuDataManagerImplPrivate::BlockDomainFrom3DAPIs(
@@ -1010,9 +1007,8 @@ void GpuDataManagerImplPrivate::UpdateBlacklistedFeatures(
   // Force disable using the GPU for these features, even if they would
   // otherwise be allowed.
   if (card_blacklisted_ ||
-      command_line->HasSwitch(switches::kBlacklistAcceleratedCompositing)) {
-    blacklisted_features_.insert(
-        gpu::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING);
+      command_line->HasSwitch(switches::kBlacklistGpuCompositing)) {
+    blacklisted_features_.insert(gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING);
   }
   if (card_blacklisted_ ||
       command_line->HasSwitch(switches::kBlacklistWebGL)) {

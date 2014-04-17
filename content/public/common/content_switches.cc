@@ -38,9 +38,8 @@ const char kAuditAllHandles[]               = "enable-handle-auditing-all";
 // is terminated.
 const char kAuditHandles[]                  = "enable-handle-auditing";
 
-// Blacklist the GPU for accelerated compositing.
-const char kBlacklistAcceleratedCompositing[] =
-    "blacklist-accelerated-compositing";
+// Blacklist the GPU for GPU compositing, to force software compositing.
+const char kBlacklistGpuCompositing[] = "blacklist-gpu-compositing";
 
 // Blacklist the GPU for WebGL.
 const char kBlacklistWebGL[]                = "blacklist-webgl";

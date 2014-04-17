@@ -118,27 +118,6 @@ IN_PROC_BROWSER_TEST_F(RequirementsCheckerBrowserTest,
   content::BrowserThread::GetBlockingPool()->FlushForTesting();
 }
 
-IN_PROC_BROWSER_TEST_F(RequirementsCheckerBrowserTest, DisallowCSS3D) {
-  scoped_refptr<const Extension> extension(
-      LoadExtensionFromDirName("require_3d"));
-  ASSERT_TRUE(extension.get());
-
-  // Blacklist css3d
-  std::vector<std::string> blacklisted_features;
-  blacklisted_features.push_back("accelerated_compositing");
-  BlackListGPUFeatures(blacklisted_features);
-  content::BrowserThread::GetBlockingPool()->FlushForTesting();
-
-  std::vector<std::string> expected_errors;
-  expected_errors.push_back(l10n_util::GetStringUTF8(
-      IDS_EXTENSION_CSS3D_NOT_SUPPORTED));
-
-  checker_.Check(extension, base::Bind(
-      &RequirementsCheckerBrowserTest::ValidateRequirementErrors,
-      base::Unretained(this), expected_errors));
-  content::BrowserThread::GetBlockingPool()->FlushForTesting();
-}
-
 IN_PROC_BROWSER_TEST_F(RequirementsCheckerBrowserTest, DisallowWebGL) {
   scoped_refptr<const Extension> extension(
       LoadExtensionFromDirName("require_3d"));
@@ -160,30 +139,6 @@ IN_PROC_BROWSER_TEST_F(RequirementsCheckerBrowserTest, DisallowWebGL) {
   content::BrowserThread::GetBlockingPool()->FlushForTesting();
 }
 
-IN_PROC_BROWSER_TEST_F(RequirementsCheckerBrowserTest, DisallowGPUFeatures) {
-  scoped_refptr<const Extension> extension(
-      LoadExtensionFromDirName("require_3d"));
-  ASSERT_TRUE(extension.get());
-
-  // Backlist both webgl and css3d
-  std::vector<std::string> blacklisted_features;
-  blacklisted_features.push_back("webgl");
-  blacklisted_features.push_back("accelerated_compositing");
-  BlackListGPUFeatures(blacklisted_features);
-  content::BrowserThread::GetBlockingPool()->FlushForTesting();
-
-  std::vector<std::string> expected_errors;
-  expected_errors.push_back(l10n_util::GetStringUTF8(
-      IDS_EXTENSION_WEBGL_NOT_SUPPORTED));
-  expected_errors.push_back(l10n_util::GetStringUTF8(
-      IDS_EXTENSION_CSS3D_NOT_SUPPORTED));
-
-  checker_.Check(extension, base::Bind(
-      &RequirementsCheckerBrowserTest::ValidateRequirementErrors,
-      base::Unretained(this), expected_errors));
-  content::BrowserThread::GetBlockingPool()->FlushForTesting();
-}
-
 IN_PROC_BROWSER_TEST_F(RequirementsCheckerBrowserTest, Check3DExtension) {
   scoped_refptr<const Extension> extension(
       LoadExtensionFromDirName("require_3d"));
@@ -194,8 +149,6 @@ IN_PROC_BROWSER_TEST_F(RequirementsCheckerBrowserTest, Check3DExtension) {
   if (!content::GpuDataManager::GetInstance()->GpuAccessAllowed(NULL)) {
     expected_errors.push_back(l10n_util::GetStringUTF8(
         IDS_EXTENSION_WEBGL_NOT_SUPPORTED));
-    expected_errors.push_back(l10n_util::GetStringUTF8(
-        IDS_EXTENSION_CSS3D_NOT_SUPPORTED));
   }
 
   checker_.Check(extension, base::Bind(

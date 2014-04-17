@@ -91,9 +91,9 @@ GPU_BLACKLIST_FEATURE_TEST(Accelerated2DCanvas,
                            "accelerated_2d_canvas",
                            GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS)
 
-GPU_BLACKLIST_FEATURE_TEST(AcceleratedCompositing,
-                           "accelerated_compositing",
-                           GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING)
+GPU_BLACKLIST_FEATURE_TEST(GpuCompositing,
+                           "gpu_compositing",
+                           GPU_FEATURE_TYPE_GPU_COMPOSITING)
 
 GPU_BLACKLIST_FEATURE_TEST(WebGL,
                            "webgl",

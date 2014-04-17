@@ -20,8 +20,8 @@ GpuBlacklist* GpuBlacklist::Create() {
   GpuBlacklist* list = new GpuBlacklist();
   list->AddSupportedFeature("accelerated_2d_canvas",
                             GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS);
-  list->AddSupportedFeature("accelerated_compositing",
-                            GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING);
+  list->AddSupportedFeature("gpu_compositing",
+                            GPU_FEATURE_TYPE_GPU_COMPOSITING);
   list->AddSupportedFeature("webgl",
                             GPU_FEATURE_TYPE_WEBGL);
   list->AddSupportedFeature("flash_3d",

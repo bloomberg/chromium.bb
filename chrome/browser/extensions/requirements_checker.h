@@ -37,7 +37,6 @@ class RequirementsChecker : public base::SupportsWeakPtr<RequirementsChecker> {
  private:
   // Callbacks for the GPUFeatureChecker.
   void SetWebGLAvailability(bool available);
-  void SetCSS3DAvailability(bool available);
 
   void MaybeRunCallback();
 
@@ -48,7 +47,6 @@ class RequirementsChecker : public base::SupportsWeakPtr<RequirementsChecker> {
   int pending_requirement_checks_;
 
   scoped_refptr<GPUFeatureChecker> webgl_checker_;
-  scoped_refptr<GPUFeatureChecker> css3d_checker_;
 
   base::Callback<void(std::vector<std::string> requirement_errorss)> callback_;
 };

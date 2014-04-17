@@ -41,19 +41,17 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
           true
       },
       {
-          "compositing",
+          "gpu_compositing",
           manager->IsFeatureBlacklisted(
-              gpu::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING),
+              gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING),
           false,
-          "Accelerated compositing has been disabled, either via about:flags or"
-          " command line. This adversely affects performance of all hardware"
-          " accelerated features.",
+          "Gpu compositing has been disabled, either via about:flags or"
+          " command line. The browser will fall back to software compositing"
+          " and hardware acceleration will be unavailable.",
           true
       },
       {
           "3d_css",
-          manager->IsFeatureBlacklisted(
-              gpu::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING) ||
           manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_3D_CSS),
           command_line.HasSwitch(switches::kDisableAcceleratedLayers),
           "Accelerated layers have been disabled at the command line.",
@@ -61,8 +59,6 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
       },
       {
           "css_animation",
-          manager->IsFeatureBlacklisted(
-              gpu::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING) ||
           manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_3D_CSS),
           command_line.HasSwitch(cc::switches::kDisableThreadedAnimation) ||
           command_line.HasSwitch(switches::kDisableAcceleratedLayers),
@@ -172,9 +168,7 @@ bool CanDoAcceleratedCompositing() {
 
   // Don't use force compositing mode if gpu access has been blocked or
   // accelerated compositing is blacklisted.
-  if (!manager->GpuAccessAllowed(NULL) ||
-      manager->IsFeatureBlacklisted(
-          gpu::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING))
+  if (!manager->GpuAccessAllowed(NULL))
     return false;
 
   // Check for SwiftShader.
@@ -344,8 +338,7 @@ base::Value* GetFeatureStatus() {
     } else {
       status = "enabled";
       if (gpu_feature_info.name == "webgl" &&
-          (manager->IsFeatureBlacklisted(
-              gpu::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING)))
+          manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING))
         status += "_readback";
       bool has_thread = IsThreadedCompositingEnabled();
       if (gpu_feature_info.name == "compositing") {

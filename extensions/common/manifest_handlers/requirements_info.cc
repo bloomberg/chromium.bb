@@ -18,7 +18,6 @@ namespace errors = manifest_errors;
 
 RequirementsInfo::RequirementsInfo(const Manifest* manifest)
     : webgl(false),
-      css3d(false),
       npapi(false),
       window_shape(false) {
   // Before parsing requirements from the manifest, automatically default the
@@ -121,7 +120,8 @@ bool RequirementsHandler::Parse(Extension* extension, base::string16* error) {
           if (feature == "webgl") {
             requirements->webgl = true;
           } else if (feature == "css3d") {
-            requirements->css3d = true;
+            // css3d is always available, so no check is needed, but no error is
+            // generated.
           } else {
             *error = ErrorUtils::FormatErrorMessageUTF16(
                 errors::kInvalidRequirement, iter.key());
