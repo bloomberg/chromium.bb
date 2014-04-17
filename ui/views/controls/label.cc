@@ -323,7 +323,7 @@ void Label::PaintText(gfx::Canvas* canvas,
                       int flags) {
   gfx::ShadowValues shadows;
   if (has_shadow_)
-    shadows.push_back(gfx::ShadowValue(shadow_offset_, 0,
+    shadows.push_back(gfx::ShadowValue(shadow_offset_, shadow_blur_,
         enabled() ? enabled_shadow_color_ : disabled_shadow_color_));
   canvas->DrawStringRectWithShadows(text, font_list_,
       enabled() ? actual_enabled_color_ : actual_disabled_color_,
@@ -398,6 +398,7 @@ void Label::Init(const base::string16& text, const gfx::FontList& font_list) {
   disabled_shadow_color_ = 0;
   shadow_offset_.SetPoint(1, 1);
   has_shadow_ = false;
+  shadow_blur_ = 0;
   cached_heights_.resize(kCachedSizeLimit);
   ResetCachedSize();
 

@@ -47,10 +47,6 @@ views::Widget* CreateCloseWindowButton(aura::Window* root_window,
   return widget;
 }
 
-// The time for the close button to fade in when initially shown on entering
-// overview mode.
-const int kCloseButtonFadeInMilliseconds = 80;
-
 }  // namespace
 
 WindowSelectorWindow::WindowSelectorWindow(aura::Window* window)
@@ -104,10 +100,13 @@ void WindowSelectorWindow::SetItemBounds(aura::Window* root_window,
                                          bool animate) {
   gfx::Rect src_rect = transform_window_.GetBoundsInScreen();
   set_bounds(ScopedTransformOverviewWindow::
-      ShrinkRectToFitPreservingAspectRatio(src_rect, target_bounds));
+        ShrinkRectToFitPreservingAspectRatio(src_rect, target_bounds));
   transform_window_.SetTransform(root_window,
       ScopedTransformOverviewWindow::GetTransformForRect(src_rect, bounds()),
       animate);
+  // TODO move close button management to WindowSelectorItem, so that we can
+  // also handle panels.
+  // See http://crbug.com/352143
   UpdateCloseButtonBounds(root_window);
 }
 
@@ -154,7 +153,7 @@ void WindowSelectorWindow::UpdateCloseButtonBounds(aura::Window* root_window) {
       settings.SetPreemptionStrategy(
           ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
       settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
-            kCloseButtonFadeInMilliseconds));
+            WindowSelectorItem::kFadeInMilliseconds));
       layer->SetOpacity(1);
     }
   } else {

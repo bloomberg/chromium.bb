@@ -8,6 +8,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
+#include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shelf_test_api.h"
 #include "ash/test/shelf_view_test_api.h"
@@ -16,6 +17,7 @@
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/window_selector.h"
 #include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/overview/window_selector_item.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
@@ -35,6 +37,8 @@
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/transform.h"
+#include "ui/views/controls/label.h"
+#include "ui/views/widget/native_widget_aura.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_delegate.h"
 
@@ -225,6 +229,15 @@ class WindowSelectorTest : public test::AshTestBase {
   aura::Window* GetFocusedWindow() {
     return aura::client::GetFocusClient(
         Shell::GetPrimaryRootWindow())->GetFocusedWindow();
+    }
+
+  ScopedVector<WindowSelectorItem>* GetWindowItems() {
+    return &(ash::Shell::GetInstance()->window_selector_controller()->
+        window_selector_->windows_);
+    }
+
+  views::Widget* GetLabelWidget(ash::WindowSelectorItem* window) {
+    return window->window_label_.get();
   }
 
   test::ShelfViewTestAPI* shelf_view_test() {
@@ -1085,6 +1098,50 @@ TEST_F(WindowSelectorTest, HitTestingInOverview) {
                 targeter->FindTargetForEvent(root_target, &event));
     }
   }
+}
+
+// Test that a label is created under the window on entering overview mode.
+TEST_F(WindowSelectorTest, CreateLabelUnderWindow) {
+  scoped_ptr<aura::Window> window(CreateWindow(gfx::Rect(0, 0, 100, 100)));
+  base::string16 window_title = base::UTF8ToUTF16("My window");
+  window->set_title(window_title);
+  ToggleOverview();
+  WindowSelectorItem* window_item = GetWindowItems()->back();
+  views::Widget* widget = GetLabelWidget(window_item);
+  // Has the label widget been created?
+  ASSERT_TRUE(widget);
+  views::Label* label = static_cast<views::Label*>(widget->GetContentsView());
+  // Verify the label matches the window title.
+  EXPECT_EQ(label->text(), window_title);
+  // Labels are located based on target_bounds, not the actual window item
+  // bounds.
+  gfx::Rect target_bounds(window_item->target_bounds());
+  gfx::Rect expected_label_bounds(target_bounds.x(),
+                                  target_bounds.bottom(),
+                                  target_bounds.width(),
+                                  label->GetPreferredSize().height());
+  gfx::Rect real_label_bounds = widget->GetNativeWindow()->bounds();
+  EXPECT_EQ(widget->GetNativeWindow()->bounds(), real_label_bounds);
+}
+
+// Tests that a label is created for the active panel in a group of panels in
+// overview mode.
+TEST_F(WindowSelectorTest, CreateLabelUnderPanel) {
+  scoped_ptr<aura::Window> panel1(CreatePanelWindow(gfx::Rect(0, 0, 100, 100)));
+  scoped_ptr<aura::Window> panel2(CreatePanelWindow(gfx::Rect(0, 0, 100, 100)));
+  base::string16 panel1_title = base::UTF8ToUTF16("My panel");
+  base::string16 panel2_title = base::UTF8ToUTF16("Another panel");
+  panel1->set_title(panel1_title);
+  panel2->set_title(panel2_title);
+  wm::ActivateWindow(panel1.get());
+  ToggleOverview();
+  WindowSelectorItem* window_item = GetWindowItems()->back();
+  views::Widget* widget = GetLabelWidget(window_item);
+  // Has the label widget been created?
+  ASSERT_TRUE(widget);
+  views::Label* label = static_cast<views::Label*>(widget->GetContentsView());
+  // Verify the label matches the active window title.
+  EXPECT_EQ(label->text(), panel1_title);
 }
 
 }  // namespace ash

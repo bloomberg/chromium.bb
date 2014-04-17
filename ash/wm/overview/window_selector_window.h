@@ -8,7 +8,6 @@
 #include "ash/wm/overview/scoped_transform_overview_window.h"
 #include "ash/wm/overview/window_selector_item.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/controls/button/button.h"
 
@@ -46,7 +45,6 @@ class WindowSelectorWindow : public WindowSelectorItem,
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
-
  private:
   // Creates the close button window if it does not exist and updates the bounds
   // to match the window selector item.

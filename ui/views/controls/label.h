@@ -94,6 +94,9 @@ class VIEWS_EXPORT Label : public View {
   // Sets the drop shadow's offset from the text.
   void SetShadowOffset(int x, int y);
 
+  // Sets the shadow blur. Default is zero.
+  void set_shadow_blur(double shadow_blur) { shadow_blur_ = shadow_blur; }
+
   // Disables shadows.
   void ClearEmbellishing();
 
@@ -267,6 +270,8 @@ class VIEWS_EXPORT Label : public View {
   bool auto_color_readability_;
   mutable gfx::Size text_size_;
   mutable bool text_size_valid_;
+  // Indicates the level of shadow blurring. Default is zero.
+  double shadow_blur_;
   int line_height_;
   bool is_multi_line_;
   bool is_obscured_;
