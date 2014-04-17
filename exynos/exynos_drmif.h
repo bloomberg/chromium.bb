@@ -41,7 +41,6 @@ struct exynos_device {
  * @dev: exynos device object allocated.
  * @handle: a gem handle to gem object created.
  * @flags: indicate memory allocation and cache attribute types.
- * @fd: file descriptor exported into dmabuf.
  * @size: size to the buffer created.
  * @vaddr: user space address to a gem buffer mmaped.
  * @name: a gem global handle from flink request.
@@ -50,7 +49,6 @@ struct exynos_bo {
 	struct exynos_device	*dev;
 	uint32_t		handle;
 	uint32_t		flags;
-	int			fd;
 	size_t			size;
 	void			*vaddr;
 	uint32_t		name;
