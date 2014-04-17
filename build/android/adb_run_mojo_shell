@@ -8,7 +8,8 @@ if [ $# -gt 0 ] ; then
    INTENT_ARGS="-d \"$1\""  # e.g. a URL
 fi
 
-adb shell am start \
+adb logcat -c
+adb shell am start -S \
   -a android.intent.action.VIEW \
   -n org.chromium.mojo_shell_apk/.MojoShellActivity \
   $INTENT_ARGS

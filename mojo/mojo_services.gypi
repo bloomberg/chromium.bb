@@ -60,7 +60,8 @@
     },
     {
       'target_name': 'mojo_native_viewport_service',
-      'type': 'shared_library',
+      # This is linked directly into the embedder, so we make it a component.
+      'type': '<(component)',
       'dependencies': [
         '../base/base.gyp:base',
         '../ui/events/events.gyp:events',
