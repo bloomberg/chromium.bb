@@ -6016,6 +6016,29 @@ TEST_F(LayerTreeHostCommonTest,
   LayerImpl* result_layer =
       LayerTreeHostCommon::FindLayerThatIsHitByPointInTouchHandlerRegion(
           test_point, render_surface_layer_list);
+
+  // We should have passed through the no-touch layer and found the layer
+  // behind it.
+  EXPECT_TRUE(result_layer);
+
+  host_impl.active_tree()->LayerById(1234)->SetContentsOpaque(true);
+  result_layer =
+      LayerTreeHostCommon::FindLayerThatIsHitByPointInTouchHandlerRegion(
+          test_point, render_surface_layer_list);
+
+  // In this case we should abort searching for touch handlers at the opaque
+  // occluder and not find the region behind it.
+  EXPECT_FALSE(result_layer);
+
+  host_impl.active_tree()->LayerById(1234)->SetContentsOpaque(true);
+  host_impl.active_tree()->LayerById(1234)->SetScrollClipLayer(1);
+
+  result_layer =
+      LayerTreeHostCommon::FindLayerThatIsHitByPointInTouchHandlerRegion(
+          test_point, render_surface_layer_list);
+
+  // In this case we should abort searching for touch handlers at the scroller
+  // (which is opaque to hit testing) and not find the region behind it.
   EXPECT_FALSE(result_layer);
 
   test_point = gfx::Point(35, 15);

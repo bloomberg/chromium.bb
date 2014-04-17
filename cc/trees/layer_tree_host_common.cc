@@ -2526,24 +2526,37 @@ LayerImpl* LayerTreeHostCommon::FindLayerThatIsHitByPoint(
   return found_layer;
 }
 
+// This may be generalized in the future, but we know at the very least that
+// hits cannot pass through scrolling nor opaque layers.
+static bool OpaqueToHitTesting(const LayerImpl* layer) {
+  return layer->scrollable() || layer->contents_opaque();
+}
+
 LayerImpl* LayerTreeHostCommon::FindLayerThatIsHitByPointInTouchHandlerRegion(
     const gfx::PointF& screen_space_point,
     const LayerImplList& render_surface_layer_list) {
-  // First find out which layer was hit from the saved list of visible layers
-  // in the most recent frame.
-  LayerImpl* layer_impl = LayerTreeHostCommon::FindLayerThatIsHitByPoint(
-      screen_space_point,
-      render_surface_layer_list);
+  typedef LayerIterator<LayerImpl> LayerIteratorType;
+  LayerIteratorType end = LayerIteratorType::End(&render_surface_layer_list);
+  for (LayerIteratorType it =
+           LayerIteratorType::Begin(&render_surface_layer_list);
+       it != end;
+       ++it) {
+    // We don't want to consider render_surfaces for hit testing.
+    if (!it.represents_itself())
+      continue;
 
-  // Walk up the hierarchy and look for a layer with a touch event handler
-  // region that the given point hits.
-  // This walk may not be necessary anymore: http://crbug.com/310817
-  for (; layer_impl; layer_impl = layer_impl->parent()) {
+    LayerImpl* current_layer = (*it);
+    if (!PointHitsLayer(current_layer, screen_space_point))
+      continue;
+
     if (LayerTreeHostCommon::LayerHasTouchEventHandlersAt(screen_space_point,
-                                                          layer_impl))
+                                                          current_layer))
+      return current_layer;
+
+    if (OpaqueToHitTesting(current_layer))
       break;
   }
-  return layer_impl;
+  return NULL;
 }
 
 bool LayerTreeHostCommon::LayerHasTouchEventHandlersAt(
