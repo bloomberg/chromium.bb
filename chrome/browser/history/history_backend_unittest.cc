@@ -24,6 +24,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_test_helpers.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -110,14 +111,16 @@ class HistoryBackendCancelableRequest
 
 class HistoryBackendTest : public testing::Test {
  public:
+  typedef std::vector<std::pair<int, HistoryDetails*> > NotificationList;
+
   HistoryBackendTest()
       : bookmark_model_(NULL),
         loaded_(false),
-        num_broadcasted_notifications_(0),
         ui_thread_(content::BrowserThread::UI, &message_loop_) {
   }
 
   virtual ~HistoryBackendTest() {
+    STLDeleteValues(&broadcasted_notifications_);
   }
 
   // Callback for QueryMostVisited.
@@ -141,7 +144,11 @@ class HistoryBackendTest : public testing::Test {
   }
 
   int num_broadcasted_notifications() const {
-    return num_broadcasted_notifications_;
+    return broadcasted_notifications_.size();
+  }
+
+  NotificationList& broadcasted_notifications() {
+    return broadcasted_notifications_;
   }
 
  protected:
@@ -358,6 +365,16 @@ class HistoryBackendTest : public testing::Test {
   BookmarkModel bookmark_model_;
 
  protected:
+  void BroadcastNotifications(int type, scoped_ptr<HistoryDetails> details) {
+    // Send the notifications directly to the in-memory database.
+    content::Details<HistoryDetails> det(details.get());
+    mem_backend_->Observe(type, content::Source<HistoryBackendTest>(NULL), det);
+
+    // The backend passes ownership of the details pointer to us.
+    broadcasted_notifications_.push_back(
+        std::make_pair(type, details.release()));
+  }
+
   bool loaded_;
 
  private:
@@ -387,16 +404,8 @@ class HistoryBackendTest : public testing::Test {
     mem_backend_.swap(backend);
   }
 
-  void BroadcastNotifications(int type, scoped_ptr<HistoryDetails> details) {
-    ++num_broadcasted_notifications_;
-
-    // Send the notifications directly to the in-memory database.
-    content::Details<HistoryDetails> det(details.get());
-    mem_backend_->Observe(type, content::Source<HistoryBackendTest>(NULL), det);
-  }
-
-  // The number of notifications which were broadcasted.
-  int num_broadcasted_notifications_;
+  // The types and details of notifications which were broadcasted.
+  NotificationList broadcasted_notifications_;
 
   base::MessageLoop message_loop_;
   base::FilePath test_dir_;
@@ -785,6 +794,65 @@ TEST_F(HistoryBackendTest, ClientRedirect) {
                     &transition1, &transition2);
   EXPECT_FALSE(transition1 & content::PAGE_TRANSITION_CHAIN_END);
   EXPECT_TRUE(transition2 & content::PAGE_TRANSITION_CHAIN_END);
+}
+
+TEST_F(HistoryBackendTest, AddPagesWithDetails) {
+  ASSERT_TRUE(backend_.get());
+
+  // Import one non-typed URL, two non-archived and one archived typed URLs.
+  URLRow row1(GURL("https://news.google.com/"));
+  row1.set_visit_count(1);
+  row1.set_last_visit(Time::Now());
+  URLRow row2(GURL("https://www.google.com/"));
+  row2.set_typed_count(1);
+  row2.set_last_visit(Time::Now());
+  URLRow row3(GURL("https://mail.google.com/"));
+  row3.set_visit_count(1);
+  row3.set_typed_count(1);
+  row3.set_last_visit(Time::Now() - base::TimeDelta::FromDays(7 - 1));
+  URLRow row4(GURL("https://maps.google.com/"));
+  row4.set_visit_count(1);
+  row4.set_typed_count(1);
+  row4.set_last_visit(Time::Now() - base::TimeDelta::FromDays(365 + 2));
+
+  URLRows rows;
+  rows.push_back(row1);
+  rows.push_back(row2);
+  rows.push_back(row3);
+  rows.push_back(row4);
+  backend_->AddPagesWithDetails(rows, history::SOURCE_BROWSED);
+
+  // Verify that recent URLs have ended up in the main |db_|, while expired URLs
+  // have ended up in the |archived_db_|.
+  URLRow stored_row1, stored_row2, stored_row3, stored_row4;
+  EXPECT_NE(0, backend_->db_->GetRowForURL(row1.url(), &stored_row1));
+  EXPECT_NE(0, backend_->db_->GetRowForURL(row2.url(), &stored_row2));
+  EXPECT_NE(0, backend_->db_->GetRowForURL(row3.url(), &stored_row3));
+  EXPECT_EQ(0, backend_->db_->GetRowForURL(row4.url(), &stored_row4));
+
+  EXPECT_EQ(0, backend_->archived_db_->GetRowForURL(row1.url(), &stored_row1));
+  EXPECT_EQ(0, backend_->archived_db_->GetRowForURL(row2.url(), &stored_row2));
+  EXPECT_EQ(0, backend_->archived_db_->GetRowForURL(row3.url(), &stored_row3));
+  EXPECT_NE(0, backend_->archived_db_->GetRowForURL(row4.url(), &stored_row4));
+
+  ASSERT_EQ(1u, broadcasted_notifications().size());
+  ASSERT_EQ(chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
+            broadcasted_notifications()[0].first);
+  const URLsModifiedDetails* details = static_cast<const URLsModifiedDetails*>(
+      broadcasted_notifications()[0].second);
+  EXPECT_EQ(2u, details->changed_urls.size());
+
+  URLRows::const_iterator it_row2 = std::find_if(
+      details->changed_urls.begin(),
+      details->changed_urls.end(),
+      history::URLRow::URLRowHasURL(row2.url()));
+  ASSERT_NE(details->changed_urls.end(), it_row2);
+
+  URLRows::const_iterator it_row3 = std::find_if(
+        details->changed_urls.begin(),
+        details->changed_urls.end(),
+        history::URLRow::URLRowHasURL(row3.url()));
+  ASSERT_NE(details->changed_urls.end(), it_row3);
 }
 
 TEST_F(HistoryBackendTest, ImportedFaviconsTest) {

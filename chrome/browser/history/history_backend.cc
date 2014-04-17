@@ -801,13 +801,14 @@ void HistoryBackend::AddPagesWithDetails(const URLRows& urls,
     return;
 
   scoped_ptr<URLsModifiedDetails> modified(new URLsModifiedDetails);
+  scoped_ptr<URLsModifiedDetails> modified_in_archive(new URLsModifiedDetails);
   for (URLRows::const_iterator i = urls.begin(); i != urls.end(); ++i) {
     DCHECK(!i->last_visit().is_null());
 
     // We will add to either the archived database or the main one depending on
     // the date of the added visit.
-    URLDatabase* url_database;
-    VisitDatabase* visit_database;
+    URLDatabase* url_database = NULL;
+    VisitDatabase* visit_database = NULL;
     if (IsExpiredVisitTime(i->last_visit())) {
       if (!archived_db_)
         return;  // No archived database to save it to, just forget this.
@@ -829,8 +830,16 @@ void HistoryBackend::AddPagesWithDetails(const URLRows& urls,
       }
 
       if (i->typed_count() > 0) {
-        modified->changed_urls.push_back(*i);
-        modified->changed_urls.back().set_id(url_id);  // *i likely has |id_| 0.
+        // Collect expired URLs that belong to |archived_db_| separately; we
+        // want to fire NOTIFICATION_HISTORY_URLS_MODIFIED only for changes that
+        // take place in the main |db_|.
+        if (url_database == db_.get()) {
+          modified->changed_urls.push_back(*i);
+          modified->changed_urls.back().set_id(url_id);  // i->id_ is likely 0.
+        } else {
+          modified_in_archive->changed_urls.push_back(*i);
+          modified_in_archive->changed_urls.back().set_id(url_id);
+        }
       }
     }
 
@@ -853,8 +862,11 @@ void HistoryBackend::AddPagesWithDetails(const URLRows& urls,
     }
   }
 
-  if (typed_url_syncable_service_.get())
+  if (typed_url_syncable_service_.get()) {
+    typed_url_syncable_service_->OnUrlsModified(
+        &modified_in_archive->changed_urls);
     typed_url_syncable_service_->OnUrlsModified(&modified->changed_urls);
+  }
 
   // Broadcast a notification for typed URLs that have been modified. This
   // will be picked up by the in-memory URL database on the main thread.
