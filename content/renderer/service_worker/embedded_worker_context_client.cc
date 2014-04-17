@@ -145,7 +145,7 @@ void EmbeddedWorkerContextClient::workerContextStarted(
                  weak_factory_.GetWeakPtr()));
 }
 
-void EmbeddedWorkerContextClient::workerContextDestroyed() {
+void EmbeddedWorkerContextClient::willDestroyWorkerContext() {
   // At this point OnWorkerRunLoopStopped is already called, so
   // worker_task_runner_->RunsTasksOnCurrentThread() returns false
   // (while we're still on the worker thread).
