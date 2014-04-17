@@ -51,6 +51,8 @@ protected:
 
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const OVERRIDE FINAL;
 
+    virtual LayoutUnit intrinsicContentLogicalHeight() const { return intrinsicLogicalHeight(); }
+
     virtual LayoutUnit minimumReplacedHeight() const { return LayoutUnit(); }
 
     virtual void setSelectionState(SelectionState) OVERRIDE FINAL;

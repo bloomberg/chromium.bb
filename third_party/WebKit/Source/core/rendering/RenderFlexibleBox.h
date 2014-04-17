@@ -91,6 +91,9 @@ private:
     Length flexBasisForChild(RenderBox* child) const;
     void setCrossAxisExtent(LayoutUnit);
     LayoutUnit crossAxisExtentForChild(RenderBox* child) const;
+    LayoutUnit crossAxisIntrinsicExtentForChild(RenderBox* child) const;
+    LayoutUnit childIntrinsicHeight(RenderBox* child) const;
+    LayoutUnit childIntrinsicWidth(RenderBox* child) const;
     LayoutUnit mainAxisExtentForChild(RenderBox* child) const;
     LayoutUnit crossAxisExtent() const;
     LayoutUnit mainAxisExtent() const;
@@ -121,6 +124,7 @@ private:
     LayoutUnit mainAxisScrollbarExtentForChild(RenderBox* child) const;
     LayoutUnit preferredMainAxisContentExtentForChild(RenderBox* child, bool hasInfiniteLineLength, bool relayoutChildren = false);
     bool childPreferredMainAxisContentExtentRequiresLayout(RenderBox* child, bool hasInfiniteLineLength) const;
+    bool needToStretchChildLogicalHeight(RenderBox* child) const;
 
     void layoutFlexItems(bool relayoutChildren);
     LayoutUnit autoMarginOffsetInMainAxis(const OrderedFlexItemList&, LayoutUnit& availableFreeSpace);
@@ -133,6 +137,7 @@ private:
     void repaintChildrenDuringLayoutIfMoved(const ChildFrameRects&);
 
     LayoutUnit availableAlignmentSpaceForChild(LayoutUnit lineCrossAxisExtent, RenderBox*);
+    LayoutUnit availableAlignmentSpaceForChildBeforeStretching(LayoutUnit lineCrossAxisExtent, RenderBox*);
     LayoutUnit marginBoxAscentForChild(RenderBox*);
 
     LayoutUnit computeChildMarginValue(Length margin);

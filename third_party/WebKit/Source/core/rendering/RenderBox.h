@@ -434,6 +434,7 @@ public:
     virtual LayoutSize intrinsicSize() const { return LayoutSize(); }
     LayoutUnit intrinsicLogicalWidth() const { return style()->isHorizontalWritingMode() ? intrinsicSize().width() : intrinsicSize().height(); }
     LayoutUnit intrinsicLogicalHeight() const { return style()->isHorizontalWritingMode() ? intrinsicSize().height() : intrinsicSize().width(); }
+    virtual LayoutUnit intrinsicContentLogicalHeight() const { return m_intrinsicContentLogicalHeight; }
 
     // Whether or not the element shrinks to its intrinsic width (rather than filling the width
     // of a containing block).  HTML4 buttons, <select>s, <input>s, legends, and floating/compact elements do this.
@@ -665,6 +666,8 @@ protected:
     virtual void addLayerHitTestRects(LayerHitTestRects&, const RenderLayer* currentCompositedLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const OVERRIDE;
     virtual void computeSelfHitTestRects(Vector<LayoutRect>&, const LayoutPoint& layerOffset) const OVERRIDE;
 
+    void updateIntrinsicContentLogicalHeight(LayoutUnit intrinsicContentLogicalHeight) const { m_intrinsicContentLogicalHeight = intrinsicContentLogicalHeight; }
+
 private:
     void updateShapeOutsideInfoAfterStyleChange(const RenderStyle&, const RenderStyle* oldStyle);
     void updateGridPositionAfterStyleChange(const RenderStyle*);
@@ -721,7 +724,7 @@ private:
     // Our intrinsic height, used for min-height: min-content etc. Maintained by
     // updateLogicalHeight. This is logicalHeight() before it is clamped to
     // min/max.
-    LayoutUnit m_intrinsicContentLogicalHeight;
+    mutable LayoutUnit m_intrinsicContentLogicalHeight;
 
 protected:
     LayoutBoxExtent m_marginBox;

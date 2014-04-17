@@ -390,6 +390,31 @@ LayoutUnit RenderFlexibleBox::crossAxisExtentForChild(RenderBox* child) const
     return isHorizontalFlow() ? child->height() : child->width();
 }
 
+static inline LayoutUnit constrainedChildIntrinsicContentLogicalHeight(RenderBox* child)
+{
+    LayoutUnit childIntrinsicContentLogicalHeight = child->intrinsicContentLogicalHeight();
+    return child->constrainLogicalHeightByMinMax(childIntrinsicContentLogicalHeight + child->borderAndPaddingLogicalHeight(), childIntrinsicContentLogicalHeight);
+}
+
+LayoutUnit RenderFlexibleBox::childIntrinsicHeight(RenderBox* child) const
+{
+    if (child->isHorizontalWritingMode() && needToStretchChildLogicalHeight(child))
+        return constrainedChildIntrinsicContentLogicalHeight(child);
+    return child->height();
+}
+
+LayoutUnit RenderFlexibleBox::childIntrinsicWidth(RenderBox* child) const
+{
+    if (!child->isHorizontalWritingMode() && needToStretchChildLogicalHeight(child))
+        return constrainedChildIntrinsicContentLogicalHeight(child);
+    return child->width();
+}
+
+LayoutUnit RenderFlexibleBox::crossAxisIntrinsicExtentForChild(RenderBox* child) const
+{
+    return isHorizontalFlow() ? childIntrinsicHeight(child) : childIntrinsicWidth(child);
+}
+
 LayoutUnit RenderFlexibleBox::mainAxisExtentForChild(RenderBox* child) const
 {
     return isHorizontalFlow() ? child->width() : child->height();
@@ -766,6 +791,13 @@ LayoutUnit RenderFlexibleBox::availableAlignmentSpaceForChild(LayoutUnit lineCro
     return lineCrossAxisExtent - childCrossExtent;
 }
 
+LayoutUnit RenderFlexibleBox::availableAlignmentSpaceForChildBeforeStretching(LayoutUnit lineCrossAxisExtent, RenderBox* child)
+{
+    ASSERT(!child->isOutOfFlowPositioned());
+    LayoutUnit childCrossExtent = crossAxisMarginExtentForChild(child) + crossAxisIntrinsicExtentForChild(child);
+    return lineCrossAxisExtent - childCrossExtent;
+}
+
 bool RenderFlexibleBox::updateAutoMarginsInCrossAxis(RenderBox* child, LayoutUnit availableAlignmentSpace)
 {
     ASSERT(!child->isOutOfFlowPositioned());
@@ -1075,6 +1107,14 @@ void RenderFlexibleBox::resetAutoMarginsAndLogicalTopInCrossAxis(RenderBox* chil
     }
 }
 
+bool RenderFlexibleBox::needToStretchChildLogicalHeight(RenderBox* child) const
+{
+    if (alignmentForChild(child) != ItemPositionStretch)
+        return false;
+
+    return isHorizontalFlow() && child->style()->height().isAuto();
+}
+
 void RenderFlexibleBox::layoutAndPlaceChildren(LayoutUnit& crossAxisOffset, const OrderedFlexItemList& children, const Vector<LayoutUnit, 16>& childSizes, LayoutUnit availableFreeSpace, bool relayoutChildren, Vector<LineContext>& lineContexts, bool hasInfiniteLineLength)
 {
     ASSERT(childSizes.size() == children.size());
@@ -1123,8 +1163,9 @@ void RenderFlexibleBox::layoutAndPlaceChildren(LayoutUnit& crossAxisOffset, cons
             maxDescent = std::max(maxDescent, descent);
 
             childCrossAxisMarginBoxExtent = maxAscent + maxDescent;
-        } else
-            childCrossAxisMarginBoxExtent = crossAxisExtentForChild(child) + crossAxisMarginExtentForChild(child);
+        } else {
+            childCrossAxisMarginBoxExtent = crossAxisIntrinsicExtentForChild(child) + crossAxisMarginExtentForChild(child);
+        }
         if (!isColumnFlow())
             setLogicalHeight(std::max(logicalHeight(), crossAxisOffset + flowAwareBorderAfter() + flowAwarePaddingAfter() + childCrossAxisMarginBoxExtent + crossAxisScrollbarExtent()));
         maxChildCrossAxisExtent = std::max(maxChildCrossAxisExtent, childCrossAxisMarginBoxExtent);
@@ -1344,9 +1385,10 @@ void RenderFlexibleBox::applyStretchAlignmentToChild(RenderBox* child, LayoutUni
     if (!isColumnFlow() && child->style()->logicalHeight().isAuto()) {
         // FIXME: If the child has orthogonal flow, then it already has an override height set, so use it.
         if (!hasOrthogonalFlow(child)) {
-            LayoutUnit stretchedLogicalHeight = child->logicalHeight() + availableAlignmentSpaceForChild(lineCrossAxisExtent, child);
+            LayoutUnit heightBeforeStretching = needToStretchChildLogicalHeight(child) ? constrainedChildIntrinsicContentLogicalHeight(child) : child->logicalHeight();
+            LayoutUnit stretchedLogicalHeight = heightBeforeStretching + availableAlignmentSpaceForChildBeforeStretching(lineCrossAxisExtent, child);
             ASSERT(!child->needsLayout());
-            LayoutUnit desiredLogicalHeight = child->constrainLogicalHeightByMinMax(stretchedLogicalHeight, child->logicalHeight() - child->borderAndPaddingLogicalHeight());
+            LayoutUnit desiredLogicalHeight = child->constrainLogicalHeightByMinMax(stretchedLogicalHeight, heightBeforeStretching - child->borderAndPaddingLogicalHeight());
 
             // FIXME: Can avoid laying out here in some cases. See https://webkit.org/b/87905.
             if (desiredLogicalHeight != child->logicalHeight()) {

@@ -132,12 +132,18 @@ void RenderTextControl::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUni
     ASSERT(innerText);
     if (RenderBox* innerTextBox = innerText->renderBox()) {
         LayoutUnit nonContentHeight = innerTextBox->borderAndPaddingHeight() + innerTextBox->marginHeight();
-        logicalHeight = computeControlLogicalHeight(innerTextBox->lineHeight(true, HorizontalLine, PositionOfInteriorLineBoxes), nonContentHeight) + borderAndPaddingHeight();
+        logicalHeight = computeControlLogicalHeight(innerTextBox->lineHeight(true, HorizontalLine, PositionOfInteriorLineBoxes), nonContentHeight);
 
         // We are able to have a horizontal scrollbar if the overflow style is scroll, or if its auto and there's no word wrap.
         if ((isHorizontalWritingMode() && (style()->overflowX() == OSCROLL ||  (style()->overflowX() == OAUTO && innerText->renderer()->style()->overflowWrap() == NormalOverflowWrap)))
             || (!isHorizontalWritingMode() && (style()->overflowY() == OSCROLL ||  (style()->overflowY() == OAUTO && innerText->renderer()->style()->overflowWrap() == NormalOverflowWrap))))
             logicalHeight += scrollbarThickness();
+
+        // FIXME: The logical height of the inner text box should have been added before calling computeLogicalHeight to
+        // avoid this hack.
+        updateIntrinsicContentLogicalHeight(logicalHeight);
+
+        logicalHeight += borderAndPaddingHeight();
     }
 
     RenderBox::computeLogicalHeight(logicalHeight, logicalTop, computedValues);

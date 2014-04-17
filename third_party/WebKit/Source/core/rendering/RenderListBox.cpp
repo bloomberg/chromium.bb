@@ -291,7 +291,12 @@ LayoutUnit RenderListBox::listHeight() const
 
 void RenderListBox::computeLogicalHeight(LayoutUnit, LayoutUnit logicalTop, LogicalExtentComputedValues& computedValues) const
 {
-    LayoutUnit height = itemHeight() * size() - rowSpacing + borderAndPaddingHeight();
+    LayoutUnit height = itemHeight() * size() - rowSpacing;
+    // FIXME: The item height should have been added before updateLogicalHeight was called to avoid this hack.
+    updateIntrinsicContentLogicalHeight(height);
+
+    height += borderAndPaddingHeight();
+
     RenderBox::computeLogicalHeight(height, logicalTop, computedValues);
 }
 
