@@ -496,20 +496,39 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
         new_doc.writexml(manifest_file)
 
       gerrit_patch = mock.MagicMock()
+      gerrit_patch.remote = 'cros-internal'
+      gerrit_patch.gerrit_number = '12345'
       gerrit_patch.project = 'chromite/tacos'
+      gerrit_patch.project_url = 'https://host/chromite/tacos'
+      gerrit_patch.ref = 'refs/changes/11/12345/4'
+      gerrit_patch.tracking_branch = 'master'
       gerrit_patch.change_id = '1234567890'
       gerrit_patch.commit = '0987654321'
+      gerrit_patch.patch_number = '4'
       self.manager._AddPatchesToManifest(tmp_manifest, [gerrit_patch])
 
       new_doc = minidom.parse(tmp_manifest)
       element = new_doc.getElementsByTagName(
           lkgm_manager.PALADIN_COMMIT_ELEMENT)[0]
       self.assertEqual(element.getAttribute(
-          lkgm_manager.PALADIN_CHANGE_ID_ATTR), '1234567890')
+          lkgm_manager.PALADIN_CHANGE_ID_ATTR), gerrit_patch.change_id)
       self.assertEqual(element.getAttribute(
-          lkgm_manager.PALADIN_COMMIT_ATTR), '0987654321')
+          lkgm_manager.PALADIN_COMMIT_ATTR), gerrit_patch.commit)
       self.assertEqual(element.getAttribute(lkgm_manager.PALADIN_PROJECT_ATTR),
-                       'chromite/tacos')
+                       gerrit_patch.project)
+      self.assertEqual(element.getAttribute(lkgm_manager.PALADIN_REMOTE_ATTR),
+                       gerrit_patch.remote)
+      self.assertEqual(element.getAttribute(lkgm_manager.PALADIN_BRANCH_ATTR),
+                       gerrit_patch.tracking_branch)
+      self.assertEqual(element.getAttribute(lkgm_manager.PALADIN_REF_ATTR),
+                       gerrit_patch.ref)
+      self.assertEqual(
+          element.getAttribute(lkgm_manager.PALADIN_PROJECT_URL_ATTR),
+          gerrit_patch.project_url)
+      self.assertEqual(
+          element.getAttribute(lkgm_manager.PALADIN_PATCH_NUMBER_ATTR),
+          gerrit_patch.patch_number)
+
     finally:
       os.remove(tmp_manifest)
 

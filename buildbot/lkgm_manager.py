@@ -21,9 +21,15 @@ from chromite.lib import git
 
 # Paladin constants for manifest names.
 PALADIN_COMMIT_ELEMENT = 'pending_commit'
+PALADIN_REMOTE_ATTR = 'remote'
+PALADIN_GERRIT_NUMBER_ATTR = 'gerrit_number'
 PALADIN_PROJECT_ATTR = 'project'
+PALADIN_BRANCH_ATTR = 'branch'
+PALADIN_PROJECT_URL_ATTR = 'project_url'
+PALADIN_REF_ATTR = 'ref'
 PALADIN_CHANGE_ID_ATTR = 'change_id'
 PALADIN_COMMIT_ATTR = 'commit'
+PALADIN_PATCH_NUMBER_ATTR = 'patch_number'
 
 MANIFEST_ELEMENT = 'manifest'
 DEFAULT_ELEMENT = 'default'
@@ -217,9 +223,16 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     manifest_dom = minidom.parse(manifest)
     for patch in patches:
       pending_commit = manifest_dom.createElement(PALADIN_COMMIT_ELEMENT)
+      pending_commit.setAttribute(PALADIN_REMOTE_ATTR, patch.remote)
+      pending_commit.setAttribute(
+          PALADIN_GERRIT_NUMBER_ATTR, patch.gerrit_number)
       pending_commit.setAttribute(PALADIN_PROJECT_ATTR, patch.project)
+      pending_commit.setAttribute(PALADIN_PROJECT_URL_ATTR, patch.project_url)
+      pending_commit.setAttribute(PALADIN_REF_ATTR, patch.ref)
+      pending_commit.setAttribute(PALADIN_BRANCH_ATTR, patch.tracking_branch)
       pending_commit.setAttribute(PALADIN_CHANGE_ID_ATTR, patch.change_id)
       pending_commit.setAttribute(PALADIN_COMMIT_ATTR, patch.commit)
+      pending_commit.setAttribute(PALADIN_PATCH_NUMBER_ATTR, patch.patch_number)
       manifest_dom.documentElement.appendChild(pending_commit)
 
     with open(manifest, 'w+') as manifest_file:
