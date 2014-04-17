@@ -23,6 +23,7 @@ class SyncableService;
 namespace dom_distiller {
 
 class DistilledArticleProto;
+class DistilledContentStore;
 class DistillerFactory;
 class DomDistillerObserver;
 class DomDistillerStoreInterface;
@@ -115,6 +116,7 @@ class DomDistillerService : public DomDistillerServiceInterface {
   TaskTracker* GetOrCreateTaskTrackerForEntry(const ArticleEntry& entry);
 
   scoped_ptr<DomDistillerStoreInterface> store_;
+  scoped_ptr<DistilledContentStore> content_store_;
   scoped_ptr<DistillerFactory> distiller_factory_;
 
   typedef ScopedVector<TaskTracker> TaskList;

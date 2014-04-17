@@ -7,6 +7,7 @@
 #include "base/run_loop.h"
 #include "components/dom_distiller/core/article_distillation_update.h"
 #include "components/dom_distiller/core/article_entry.h"
+#include "components/dom_distiller/core/distilled_content_store.h"
 #include "components/dom_distiller/core/fake_distiller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -23,6 +24,16 @@ class FakeViewRequestDelegate : public ViewRequestDelegate {
                void(const DistilledArticleProto* article_proto));
   MOCK_METHOD1(OnArticleUpdated,
                void(ArticleDistillationUpdate article_update));
+};
+
+class MockContentStore : public DistilledContentStore {
+ public:
+  MOCK_CONST_METHOD2(LoadContent,
+                     void(const ArticleEntry& entry, LoadCallback callback));
+  MOCK_METHOD3(SaveContent,
+               void(const ArticleEntry& entry,
+                    const DistilledArticleProto& proto,
+                    SaveCallback callback));
 };
 
 class TestCancelCallback {
@@ -73,7 +84,8 @@ class DomDistillerTaskTrackerTest : public testing::Test {
 TEST_F(DomDistillerTaskTrackerTest, TestHasEntryId) {
   MockDistillerFactory distiller_factory;
   TestCancelCallback cancel_callback;
-  TaskTracker task_tracker(GetDefaultEntry(), cancel_callback.GetCallback());
+  TaskTracker task_tracker(
+      GetDefaultEntry(), cancel_callback.GetCallback(), NULL);
   EXPECT_TRUE(task_tracker.HasEntryId(entry_id_));
   EXPECT_FALSE(task_tracker.HasEntryId("other_id"));
 }
@@ -81,7 +93,8 @@ TEST_F(DomDistillerTaskTrackerTest, TestHasEntryId) {
 TEST_F(DomDistillerTaskTrackerTest, TestHasUrl) {
   MockDistillerFactory distiller_factory;
   TestCancelCallback cancel_callback;
-  TaskTracker task_tracker(GetDefaultEntry(), cancel_callback.GetCallback());
+  TaskTracker task_tracker(
+      GetDefaultEntry(), cancel_callback.GetCallback(), NULL);
   EXPECT_TRUE(task_tracker.HasUrl(page_0_url_));
   EXPECT_TRUE(task_tracker.HasUrl(page_1_url_));
   EXPECT_FALSE(task_tracker.HasUrl(GURL("http://other.url/")));
@@ -90,7 +103,8 @@ TEST_F(DomDistillerTaskTrackerTest, TestHasUrl) {
 TEST_F(DomDistillerTaskTrackerTest, TestViewerCancelled) {
   MockDistillerFactory distiller_factory;
   TestCancelCallback cancel_callback;
-  TaskTracker task_tracker(GetDefaultEntry(), cancel_callback.GetCallback());
+  TaskTracker task_tracker(
+      GetDefaultEntry(), cancel_callback.GetCallback(), NULL);
 
   FakeViewRequestDelegate viewer_delegate;
   FakeViewRequestDelegate viewer_delegate2;
@@ -107,7 +121,8 @@ TEST_F(DomDistillerTaskTrackerTest, TestViewerCancelled) {
 TEST_F(DomDistillerTaskTrackerTest, TestViewerCancelledWithSaveRequest) {
   MockDistillerFactory distiller_factory;
   TestCancelCallback cancel_callback;
-  TaskTracker task_tracker(GetDefaultEntry(), cancel_callback.GetCallback());
+  TaskTracker task_tracker(
+      GetDefaultEntry(), cancel_callback.GetCallback(), NULL);
 
   FakeViewRequestDelegate viewer_delegate;
   scoped_ptr<ViewerHandle> handle(task_tracker.AddViewer(&viewer_delegate));
@@ -128,7 +143,8 @@ TEST_F(DomDistillerTaskTrackerTest, TestViewerNotifiedOnDistillationComplete) {
   EXPECT_CALL(distiller_factory, CreateDistillerImpl())
       .WillOnce(Return(distiller));
   TestCancelCallback cancel_callback;
-  TaskTracker task_tracker(GetDefaultEntry(), cancel_callback.GetCallback());
+  TaskTracker task_tracker(
+      GetDefaultEntry(), cancel_callback.GetCallback(), NULL);
 
   FakeViewRequestDelegate viewer_delegate;
   scoped_ptr<ViewerHandle> handle(task_tracker.AddViewer(&viewer_delegate));
@@ -149,7 +165,8 @@ TEST_F(DomDistillerTaskTrackerTest,
   EXPECT_CALL(distiller_factory, CreateDistillerImpl())
       .WillOnce(Return(distiller));
   TestCancelCallback cancel_callback;
-  TaskTracker task_tracker(GetDefaultEntry(), cancel_callback.GetCallback());
+  TaskTracker task_tracker(
+      GetDefaultEntry(), cancel_callback.GetCallback(), NULL);
 
   MockSaveCallback save_callback;
   task_tracker.AddSaveCallback(
@@ -162,6 +179,193 @@ TEST_F(DomDistillerTaskTrackerTest,
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(cancel_callback.Cancelled());
+}
+
+DistilledArticleProto CreateDistilledArticleForEntry(
+    const ArticleEntry& entry) {
+  DistilledArticleProto article;
+  for (int i = 0; i < entry.pages_size(); ++i) {
+    DistilledPageProto* page = article.add_pages();
+    page->set_url(entry.pages(i).url());
+    page->set_html("<div>" + entry.pages(i).url() + "</div>");
+  }
+  return article;
+}
+
+TEST_F(DomDistillerTaskTrackerTest, TestBlobFetcher) {
+  ArticleEntry entry_with_blob = GetDefaultEntry();
+  DistilledArticleProto stored_distilled_article =
+      CreateDistilledArticleForEntry(entry_with_blob);
+  InMemoryContentStore content_store;
+  content_store.InjectContent(entry_with_blob, stored_distilled_article);
+  TestCancelCallback cancel_callback;
+
+  TaskTracker task_tracker(
+      entry_with_blob, cancel_callback.GetCallback(), &content_store);
+
+  FakeViewRequestDelegate viewer_delegate;
+  scoped_ptr<ViewerHandle> handle(task_tracker.AddViewer(&viewer_delegate));
+  base::RunLoop().RunUntilIdle();
+
+  const DistilledArticleProto* distilled_article;
+
+  EXPECT_CALL(viewer_delegate, OnArticleReady(_))
+      .WillOnce(testing::SaveArg<0>(&distilled_article));
+
+  task_tracker.StartBlobFetcher();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(stored_distilled_article.SerializeAsString(),
+            distilled_article->SerializeAsString());
+
+  EXPECT_FALSE(cancel_callback.Cancelled());
+}
+
+TEST_F(DomDistillerTaskTrackerTest, TestBlobFetcherFinishesFirst) {
+  MockDistillerFactory distiller_factory;
+  FakeDistiller* distiller = new FakeDistiller(false);
+  EXPECT_CALL(distiller_factory, CreateDistillerImpl())
+      .WillOnce(Return(distiller));
+
+  ArticleEntry entry_with_blob = GetDefaultEntry();
+  DistilledArticleProto stored_distilled_article =
+      CreateDistilledArticleForEntry(entry_with_blob);
+  InMemoryContentStore content_store;
+  content_store.InjectContent(entry_with_blob, stored_distilled_article);
+  TestCancelCallback cancel_callback;
+  TaskTracker task_tracker(
+      entry_with_blob, cancel_callback.GetCallback(), &content_store);
+
+  FakeViewRequestDelegate viewer_delegate;
+  scoped_ptr<ViewerHandle> handle(task_tracker.AddViewer(&viewer_delegate));
+  base::RunLoop().RunUntilIdle();
+
+  DistilledArticleProto distilled_article;
+
+  EXPECT_CALL(viewer_delegate, OnArticleReady(_))
+      .WillOnce(testing::SaveArgPointee<0>(&distilled_article));
+  bool distiller_destroyed = false;
+  EXPECT_CALL(*distiller, Die())
+      .WillOnce(testing::Assign(&distiller_destroyed, true));
+
+  task_tracker.StartDistiller(&distiller_factory);
+  task_tracker.StartBlobFetcher();
+  base::RunLoop().RunUntilIdle();
+
+  testing::Mock::VerifyAndClearExpectations(&viewer_delegate);
+  EXPECT_EQ(stored_distilled_article.SerializeAsString(),
+            distilled_article.SerializeAsString());
+
+  EXPECT_TRUE(distiller_destroyed);
+  EXPECT_FALSE(cancel_callback.Cancelled());
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(DomDistillerTaskTrackerTest, TestBlobFetcherWithoutBlob) {
+  MockDistillerFactory distiller_factory;
+  FakeDistiller* distiller = new FakeDistiller(false);
+  EXPECT_CALL(distiller_factory, CreateDistillerImpl())
+      .WillOnce(Return(distiller));
+
+  ArticleEntry entry(GetDefaultEntry());
+  InMemoryContentStore content_store;
+  scoped_ptr<DistilledArticleProto> distilled_article(
+      new DistilledArticleProto(CreateDistilledArticleForEntry(entry)));
+
+  TestCancelCallback cancel_callback;
+  TaskTracker task_tracker(
+      GetDefaultEntry(), cancel_callback.GetCallback(), &content_store);
+
+  FakeViewRequestDelegate viewer_delegate;
+  scoped_ptr<ViewerHandle> handle(task_tracker.AddViewer(&viewer_delegate));
+  base::RunLoop().RunUntilIdle();
+
+  task_tracker.StartBlobFetcher();
+  task_tracker.StartDistiller(&distiller_factory);
+
+  // OnArticleReady shouldn't be called until distillation finishes (i.e. the
+  // blob fetcher shouldn't return distilled content).
+  EXPECT_CALL(viewer_delegate, OnArticleReady(_)).Times(0);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_CALL(viewer_delegate, OnArticleReady(_));
+  distiller->RunDistillerCallback(distilled_article.Pass());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(cancel_callback.Cancelled());
+}
+
+TEST_F(DomDistillerTaskTrackerTest, TestDistillerFailsFirst) {
+  MockDistillerFactory distiller_factory;
+  FakeDistiller* distiller = new FakeDistiller(false);
+  EXPECT_CALL(distiller_factory, CreateDistillerImpl())
+      .WillOnce(Return(distiller));
+
+  ArticleEntry entry(GetDefaultEntry());
+  MockContentStore content_store;
+
+  TestCancelCallback cancel_callback;
+  TaskTracker task_tracker(
+      GetDefaultEntry(), cancel_callback.GetCallback(), &content_store);
+
+  FakeViewRequestDelegate viewer_delegate;
+  scoped_ptr<ViewerHandle> handle(task_tracker.AddViewer(&viewer_delegate));
+
+  DistilledContentStore::LoadCallback content_store_load_callback;
+  EXPECT_CALL(content_store, LoadContent(_, _)).WillOnce(
+      testing::SaveArg<1>(&content_store_load_callback));
+
+  task_tracker.StartDistiller(&distiller_factory);
+  task_tracker.StartBlobFetcher();
+
+  EXPECT_CALL(viewer_delegate, OnArticleReady(_)).Times(0);
+  distiller->RunDistillerCallback(
+      scoped_ptr<DistilledArticleProto>(new DistilledArticleProto));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_CALL(viewer_delegate, OnArticleReady(_));
+  content_store_load_callback.Run(
+      true,
+      scoped_ptr<DistilledArticleProto>(
+          new DistilledArticleProto(CreateDistilledArticleForEntry(entry))));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(cancel_callback.Cancelled());
+}
+
+TEST_F(DomDistillerTaskTrackerTest, ContentIsSaved) {
+  MockDistillerFactory distiller_factory;
+  FakeDistiller* distiller = new FakeDistiller(false);
+  EXPECT_CALL(distiller_factory, CreateDistillerImpl())
+      .WillOnce(Return(distiller));
+
+  ArticleEntry entry(GetDefaultEntry());
+  DistilledArticleProto distilled_article =
+      CreateDistilledArticleForEntry(entry);
+
+  MockContentStore content_store;
+  TestCancelCallback cancel_callback;
+  TaskTracker task_tracker(
+      GetDefaultEntry(), cancel_callback.GetCallback(), &content_store);
+
+  FakeViewRequestDelegate viewer_delegate;
+  scoped_ptr<ViewerHandle> handle(task_tracker.AddViewer(&viewer_delegate));
+
+  DistilledArticleProto stored_distilled_article;
+  DistilledContentStore::LoadCallback content_store_load_callback;
+  EXPECT_CALL(content_store, SaveContent(_, _, _))
+      .WillOnce(testing::SaveArg<1>(&stored_distilled_article));
+
+  task_tracker.StartDistiller(&distiller_factory);
+
+  EXPECT_CALL(viewer_delegate, OnArticleReady(_));
+  distiller->RunDistillerCallback(scoped_ptr<DistilledArticleProto>(
+      new DistilledArticleProto(distilled_article)));
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_EQ(stored_distilled_article.SerializeAsString(),
+            distilled_article.SerializeAsString());
+  EXPECT_FALSE(cancel_callback.Cancelled());
 }
 
 }  // namespace test

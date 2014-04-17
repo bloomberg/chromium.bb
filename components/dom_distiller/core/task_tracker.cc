@@ -6,6 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/message_loop/message_loop.h"
+#include "components/dom_distiller/core/distilled_content_store.h"
 #include "components/dom_distiller/core/proto/distilled_article.pb.h"
 #include "components/dom_distiller/core/proto/distilled_page.pb.h"
 
@@ -20,8 +21,12 @@ ViewerHandle::~ViewerHandle() {
   }
 }
 
-TaskTracker::TaskTracker(const ArticleEntry& entry, CancelCallback callback)
+TaskTracker::TaskTracker(const ArticleEntry& entry,
+                         CancelCallback callback,
+                         DistilledContentStore* content_store)
     : cancel_callback_(callback),
+      content_store_(content_store),
+      blob_fetcher_running_(false),
       entry_(entry),
       distilled_article_(),
       content_ready_(false),
@@ -40,7 +45,6 @@ void TaskTracker::StartDistiller(DistillerFactory* factory) {
   if (entry_.pages_size() == 0) {
     return;
   }
-
   GURL url(entry_.pages(0).url());
   DCHECK(url.is_valid());
 
@@ -53,9 +57,11 @@ void TaskTracker::StartDistiller(DistillerFactory* factory) {
 }
 
 void TaskTracker::StartBlobFetcher() {
-  // TODO(cjhopman): There needs to be some local storage for the distilled
-  // blob. When that happens, this should start some task to fetch the blob for
-  // |entry_| and asynchronously notify |this| when it is done.
+  if (content_store_) {
+    content_store_->LoadContent(entry_,
+                                base::Bind(&TaskTracker::OnBlobFetched,
+                                           weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void TaskTracker::AddSaveCallback(const SaveCallback& callback) {
@@ -111,6 +117,8 @@ void TaskTracker::MaybeCancel() {
     return;
   }
 
+  CancelPendingSources();
+
   base::AutoReset<bool> dont_delete_this_in_callback(&destruction_allowed_,
                                                      false);
   cancel_callback_.Run(this);
@@ -126,52 +134,96 @@ void TaskTracker::ScheduleSaveCallbacks(bool distillation_succeeded) {
                  distillation_succeeded));
 }
 
-void TaskTracker::DoSaveCallbacks(bool distillation_succeeded) {
-  if (!save_callbacks_.empty()) {
-    for (size_t i = 0; i < save_callbacks_.size(); ++i) {
-      DCHECK(!save_callbacks_[i].is_null());
-      save_callbacks_[i].Run(
-          entry_, distilled_article_.get(), distillation_succeeded);
-    }
+void TaskTracker::OnDistillerFinished(
+    scoped_ptr<DistilledArticleProto> distilled_article) {
+  if (content_ready_) {
+    return;
+  }
 
-    save_callbacks_.clear();
-    MaybeCancel();
+  DistilledArticleReady(distilled_article.Pass());
+  if (content_ready_) {
+    AddDistilledContentToStore(*distilled_article_);
+  }
+
+  ContentSourceFinished();
+}
+
+void TaskTracker::CancelPendingSources() {
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, distiller_.release());
+}
+
+void TaskTracker::OnBlobFetched(
+    bool success,
+    scoped_ptr<DistilledArticleProto> distilled_article) {
+  blob_fetcher_running_ = false;
+
+  if (content_ready_) {
+    return;
+  }
+
+  DistilledArticleReady(distilled_article.Pass());
+
+  ContentSourceFinished();
+}
+
+bool TaskTracker::IsAnySourceRunning() const {
+  return distiller_ || blob_fetcher_running_;
+}
+
+void TaskTracker::ContentSourceFinished() {
+  if (content_ready_) {
+    CancelPendingSources();
+  } else if (!IsAnySourceRunning()) {
+    distilled_article_.reset(new DistilledArticleProto());
+    NotifyViewersAndCallbacks();
   }
 }
 
-void TaskTracker::NotifyViewer(ViewRequestDelegate* delegate) {
-  DCHECK(content_ready_);
-  delegate->OnArticleReady(distilled_article_.get());
-}
-
-void TaskTracker::OnDistillerFinished(
+void TaskTracker::DistilledArticleReady(
     scoped_ptr<DistilledArticleProto> distilled_article) {
-  OnDistilledArticleReady(distilled_article.Pass());
-}
+  DCHECK(!content_ready_);
 
-void TaskTracker::OnDistilledArticleReady(
-    scoped_ptr<DistilledArticleProto> distilled_article) {
-  distilled_article_ = distilled_article.Pass();
-  bool distillation_successful = false;
-  if (distilled_article_->pages_size() > 0) {
-    distillation_successful = true;
-    entry_.set_title(distilled_article_->title());
-    // Reset the pages.
-    entry_.clear_pages();
-    for (int i = 0; i < distilled_article_->pages_size(); ++i) {
-      sync_pb::ArticlePage* page = entry_.add_pages();
-      page->set_url(distilled_article_->pages(i).url());
-    }
+  if (distilled_article->pages_size() == 0) {
+    return;
   }
 
   content_ready_ = true;
 
+  distilled_article_ = distilled_article.Pass();
+  entry_.set_title(distilled_article_->title());
+  entry_.clear_pages();
+  for (int i = 0; i < distilled_article_->pages_size(); ++i) {
+    sync_pb::ArticlePage* page = entry_.add_pages();
+    page->set_url(distilled_article_->pages(i).url());
+  }
+
+  NotifyViewersAndCallbacks();
+}
+
+void TaskTracker::NotifyViewersAndCallbacks() {
   for (size_t i = 0; i < viewers_.size(); ++i) {
     NotifyViewer(viewers_[i]);
   }
 
   // Already inside a callback run SaveCallbacks directly.
-  DoSaveCallbacks(distillation_successful);
+  DoSaveCallbacks(content_ready_);
+}
+
+void TaskTracker::NotifyViewer(ViewRequestDelegate* delegate) {
+  delegate->OnArticleReady(distilled_article_.get());
+}
+
+void TaskTracker::DoSaveCallbacks(bool success) {
+  if (!save_callbacks_.empty()) {
+    for (size_t i = 0; i < save_callbacks_.size(); ++i) {
+      DCHECK(!save_callbacks_[i].is_null());
+      save_callbacks_[i].Run(
+          entry_, distilled_article_.get(), success);
+    }
+
+    save_callbacks_.clear();
+    MaybeCancel();
+  }
 }
 
 void TaskTracker::OnArticleDistillationUpdated(
@@ -180,5 +232,14 @@ void TaskTracker::OnArticleDistillationUpdated(
     viewers_[i]->OnArticleUpdated(article_update);
   }
 }
+
+void TaskTracker::AddDistilledContentToStore(
+    const DistilledArticleProto& content) {
+  if (content_store_) {
+    content_store_->SaveContent(
+        entry_, content, DistilledContentStore::SaveCallback());
+  }
+}
+
 
 }  // namespace dom_distiller

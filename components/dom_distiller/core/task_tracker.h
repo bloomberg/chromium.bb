@@ -21,6 +21,7 @@ class GURL;
 namespace dom_distiller {
 
 class DistilledArticleProto;
+class DistilledContentStore;
 
 // A handle to a request to view a DOM distiller entry or URL. The request will
 // be cancelled when the handle is destroyed.
@@ -75,7 +76,9 @@ class TaskTracker {
       void(const ArticleEntry&, const DistilledArticleProto*, bool)>
       SaveCallback;
 
-  TaskTracker(const ArticleEntry& entry, CancelCallback callback);
+  TaskTracker(const ArticleEntry& entry,
+              CancelCallback callback,
+              DistilledContentStore* content_store);
   ~TaskTracker();
 
   // |factory| will not be stored after this call.
@@ -94,32 +97,46 @@ class TaskTracker {
   bool HasUrl(const GURL& url) const;
 
  private:
-  void OnDistillerFinished(scoped_ptr<DistilledArticleProto> distilled_article);
-
-  void OnDistilledArticleReady(
-      scoped_ptr<DistilledArticleProto> distilled_article);
   void OnArticleDistillationUpdated(
       const ArticleDistillationUpdate& article_update);
+
+  void OnDistillerFinished(scoped_ptr<DistilledArticleProto> distilled_article);
+  void OnBlobFetched(bool success,
+                     scoped_ptr<DistilledArticleProto> distilled_article);
+
+  void RemoveViewer(ViewRequestDelegate* delegate);
+
+  void DistilledArticleReady(
+      scoped_ptr<DistilledArticleProto> distilled_article);
+
   // Posts a task to run DoSaveCallbacks with |distillation_succeeded|.
   void ScheduleSaveCallbacks(bool distillation_succeeded);
 
-  // Runs all callbacks passing |distillation_succeeded| and clears them. Should
-  // be called through ScheduleSaveCallbacks.
+  // Runs all callbacks passing |distillation_succeeded| and clears them.
   void DoSaveCallbacks(bool distillation_succeeded);
 
-  void RemoveViewer(ViewRequestDelegate* delegate);
+  void AddDistilledContentToStore(const DistilledArticleProto& content);
+
+  void NotifyViewersAndCallbacks();
   void NotifyViewer(ViewRequestDelegate* delegate);
 
+  bool IsAnySourceRunning() const;
+  void ContentSourceFinished();
+
+  void CancelPendingSources();
   void MaybeCancel();
 
   CancelCallback cancel_callback_;
+
+  DistilledContentStore* content_store_;
+
   std::vector<SaveCallback> save_callbacks_;
-
-  scoped_ptr<Distiller> distiller_;
-
   // A ViewRequestDelegate will be added to this list when a view request is
   // made and removed when the corresponding ViewerHandle is destroyed.
   std::vector<ViewRequestDelegate*> viewers_;
+
+  scoped_ptr<Distiller> distiller_;
+  bool blob_fetcher_running_;
 
   ArticleEntry entry_;
   scoped_ptr<DistilledArticleProto> distilled_article_;
