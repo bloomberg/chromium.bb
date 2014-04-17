@@ -234,6 +234,8 @@ const OmniboxEditModel::State OmniboxEditModel::GetStateForTabSwitch() {
     }
   }
 
+  UMA_HISTOGRAM_BOOLEAN("Omnibox.SaveStateForTabSwitch.UserInputInProgress",
+                        user_input_in_progress_);
   return State(
       user_input_in_progress_, user_text_, view_->GetGrayTextAutocompletion(),
       keyword_, is_keyword_hint_,

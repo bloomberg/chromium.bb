@@ -16301,6 +16301,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Omnibox.SaveStateForTabSwitch.UserInputInProgress"
+    units="count">
+  <owner>mpearson@chromium.org</owner>
+  <summary>
+    When a user switches tabs, whether the omnibox had an edit in progress.
+  </summary>
+</histogram>
+
 <histogram name="Omnibox.SearchEngine" enum="OmniboxSearchEngine">
   <obsolete>
     Made obsolete around Chrome 32.  Use Omnibox.SearchEngineType instead.
