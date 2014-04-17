@@ -45,6 +45,7 @@
 #include "chrome/browser/guestview/guestview.h"
 #include "chrome/browser/guestview/guestview_constants.h"
 #include "chrome/browser/guestview/webview/webview_guest.h"
+#include "chrome/browser/local_discovery/storage/privet_filesystem_backend.h"
 #include "chrome/browser/media/cast_transport_host_filter.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.h"
@@ -164,7 +165,6 @@
 #elif defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
 #include "chrome/browser/chromeos/drive/fileapi/file_system_backend_delegate.h"
-#include "chrome/browser/chromeos/file_system_provider/fileapi/backend_delegate.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -2547,12 +2547,12 @@ void ChromeContentBrowserClient::GetAdditionalFileSystemBackends(
   fileapi::ExternalMountPoints* external_mount_points =
       content::BrowserContext::GetMountPoints(browser_context);
   DCHECK(external_mount_points);
-  chromeos::FileSystemBackend* backend = new chromeos::FileSystemBackend(
-      new drive::FileSystemBackendDelegate,
-      new chromeos::file_system_provider::BackendDelegate,
-      browser_context->GetSpecialStoragePolicy(),
-      external_mount_points,
-      fileapi::ExternalMountPoints::GetSystemInstance());
+  chromeos::FileSystemBackend* backend =
+      new chromeos::FileSystemBackend(
+          new drive::FileSystemBackendDelegate,
+          browser_context->GetSpecialStoragePolicy(),
+          external_mount_points,
+          fileapi::ExternalMountPoints::GetSystemInstance());
   backend->AddSystemMountPoints();
   DCHECK(backend->CanHandleType(fileapi::kFileSystemTypeExternal));
   additional_backends->push_back(backend);
