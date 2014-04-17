@@ -437,8 +437,10 @@ void MediaStreamVideoSource::OnSupportedFormats(
                                      &current_format_,
                                      &max_frame_output_size_,
                                      &current_constraints_)) {
-    FinalizeAddTrack();
     SetReadyState(blink::WebMediaStreamSource::ReadyStateEnded);
+    // This object can be deleted after calling FinalizeAddTrack. See comment
+    // in the header file.
+    FinalizeAddTrack();
     return;
   }
 
@@ -493,6 +495,8 @@ void MediaStreamVideoSource::OnStartDone(bool success) {
     StopSourceImpl();
   }
 
+  // This object can be deleted after calling FinalizeAddTrack. See comment in
+  // the header file.
   FinalizeAddTrack();
 }
 

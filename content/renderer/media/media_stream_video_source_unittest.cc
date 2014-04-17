@@ -120,6 +120,11 @@ class MediaStreamVideoSourceTest
     EXPECT_EQ(expected_width, adapter->GetLastFrameHeight());
   }
 
+  void ReleaseTrackAndSourceOnAddTrackCallback(
+      const blink::WebMediaStreamTrack& track_to_release) {
+    track_to_release_ = track_to_release;
+  }
+
  private:
   void OnConstraintsApplied(MediaStreamSource* source, bool success) {
     ASSERT_EQ(source, webkit_source_.extraData());
@@ -128,8 +133,15 @@ class MediaStreamVideoSourceTest
       ++number_of_successful_constraints_applied_;
     else
       ++number_of_failed_constraints_applied_;
+
+    if (!track_to_release_.isNull()) {
+      mock_source_ = NULL;
+      webkit_source_.reset();
+      track_to_release_.reset();
+    }
   }
 
+  blink::WebMediaStreamTrack track_to_release_;
   int number_of_successful_constraints_applied_;
   int number_of_failed_constraints_applied_;
   MockMediaStreamDependencyFactory factory_;
@@ -233,6 +245,34 @@ TEST_F(MediaStreamVideoSourceTest, MandatoryAspectRatioTooHigh) {
   factory.AddMandatory(MediaStreamVideoSource::kMinAspectRatio, 2);
   blink::WebMediaStreamTrack track = CreateTrack(
       "123", factory.CreateWebMediaConstraints());
+  mock_source()->CompleteGetSupportedFormats();
+  EXPECT_EQ(1, NumberOfFailedConstraintsCallbacks());
+}
+
+// Test that its safe to release the last reference of a blink track and the
+// source during the callback if adding a track succeeds.
+TEST_F(MediaStreamVideoSourceTest, ReleaseTrackAndSourceOnSuccessCallBack) {
+  MockMediaConstraintFactory factory;
+  {
+    blink::WebMediaStreamTrack track =
+        CreateTrack("123", factory.CreateWebMediaConstraints());
+    ReleaseTrackAndSourceOnAddTrackCallback(track);
+  }
+  mock_source()->CompleteGetSupportedFormats();
+  mock_source()->StartMockedSource();
+  EXPECT_EQ(1, NumberOfSuccessConstraintsCallbacks());
+}
+
+// Test that its safe to release the last reference of a blink track and the
+// source during the callback if adding a track fails.
+TEST_F(MediaStreamVideoSourceTest, ReleaseTrackAndSourceOnFailureCallBack) {
+  MockMediaConstraintFactory factory;
+  factory.AddMandatory(MediaStreamVideoSource::kMinAspectRatio, 2);
+  {
+    blink::WebMediaStreamTrack track =
+        CreateTrack("123", factory.CreateWebMediaConstraints());
+    ReleaseTrackAndSourceOnAddTrackCallback(track);
+  }
   mock_source()->CompleteGetSupportedFormats();
   EXPECT_EQ(1, NumberOfFailedConstraintsCallbacks());
 }

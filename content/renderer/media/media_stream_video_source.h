@@ -150,6 +150,10 @@ class CONTENT_EXPORT MediaStreamVideoSource
   // Trigger all cached callbacks from AddTrack. AddTrack is successful
   // if the capture delegate has started and the constraints provided in
   // AddTrack match the format that was used to start the device.
+  // Note that it must be ok to delete the MediaStreamVideoSource object
+  // in the context of the callback. If gUM fail, the implementation will
+  // simply drop the references to the blink source and track which will lead
+  // to that this object is deleted.
   void FinalizeAddTrack();
 
   State state_;
