@@ -73,15 +73,6 @@ FileManager.prototype = {
 };
 
 /**
- * Unload the file manager.
- * Used by background.js (when running in the packaged mode).
- */
-function unload() {
-  fileManager.onBeforeUnload_();
-  fileManager.onUnload_();
-}
-
-/**
  * List of dialog types.
  *
  * Keep this in sync with FileManagerDialog::GetDialogTypeAsString, except
@@ -572,6 +563,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
                               'initVolumeManager');
 
     this.initializeQueue_.run();
+    window.addEventListener('pagehide', function() {
+      this.onBeforeUnload_();
+      this.onUnload_();
+    }.bind(this));
   };
 
   FileManager.prototype.initializeUI = function(dialogDom, callback) {
@@ -2373,12 +2368,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * Unload handler for the page.  May be called manually for the file picker
-   * dialog, because it closes by calling extension API functions that do not
-   * return.
-   *
-   * TODO(hirono): This method is not called when Files.app is opend as a dialog
-   *     and is closed by the close button in the dialog frame. crbug.com/309967
+   * Unload handler for the page.
    * @private
    */
   FileManager.prototype.onUnload_ = function() {
@@ -2404,7 +2394,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       }
     }
     window.closing = true;
-    if (this.backgroundPage_ && util.platform.runningInBrowser())
+    if (this.backgroundPage_)
       this.backgroundPage_.background.tryClose();
   };
 
@@ -3041,7 +3031,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    */
   FileManager.prototype.onCancel_ = function(event) {
     chrome.fileBrowserPrivate.cancelDialog();
-    this.onUnload_();
     window.close();
   };
 
@@ -3076,7 +3065,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   FileManager.prototype.callSelectFilesApiAndClose_ = function(selection) {
     var self = this;
     function callback() {
-      self.onUnload_();
       window.close();
     }
     if (selection.multiple) {

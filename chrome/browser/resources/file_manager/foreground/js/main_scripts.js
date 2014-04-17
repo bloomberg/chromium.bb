@@ -126,7 +126,4 @@ window.fileManager = fileManager;
 
 // Exports
 window.util = util;
-
-window.unload = unload;
-
 })();
