@@ -9,8 +9,9 @@
       'type': 'shared_library',
       'dependencies': [
         # TODO(darin): we should not be linking against these libraries!
-        '../ui/events/events.gyp:events',
+        '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
+        '../ui/gl/gl.gyp:gl',
         'mojo_bindings',
         'mojo_environment_standalone',
         'mojo_gles2',
