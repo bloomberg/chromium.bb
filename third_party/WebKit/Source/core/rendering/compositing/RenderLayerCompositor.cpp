@@ -113,7 +113,6 @@ RenderLayerCompositor::RenderLayerCompositor(RenderView& renderView)
     , m_compositingReasonFinder(renderView)
     , m_pendingUpdateType(CompositingUpdateNone)
     , m_hasAcceleratedCompositing(true)
-    , m_showRepaintCounter(false)
     , m_needsToRecomputeCompositingRequirements(false)
     , m_compositing(false)
     , m_compositingLayersNeedRebuild(false)
@@ -183,11 +182,10 @@ void RenderLayerCompositor::updateAcceleratedCompositingSettings()
 
     Settings* settings = m_renderView.document().settings();
     bool hasAcceleratedCompositing = settings->acceleratedCompositingEnabled() && m_compositingReasonFinder.hasTriggers();
-    if (hasAcceleratedCompositing != m_hasAcceleratedCompositing || settings->showRepaintCounter() != m_showRepaintCounter)
+    if (hasAcceleratedCompositing != m_hasAcceleratedCompositing)
         setCompositingLayersNeedRebuild();
 
     m_hasAcceleratedCompositing = hasAcceleratedCompositing;
-    m_showRepaintCounter = settings->showRepaintCounter();
     m_forceCompositingModeDirty = true;
 }
 

@@ -70,9 +70,6 @@ shouldClearDocumentBackground initial=true
 textAreasAreResizable initial=false, invalidate=Style
 acceleratedCompositingEnabled initial=true, invalidate=AcceleratedCompositing
 
-# Debugging feature used for accelerated compositing layers.
-showRepaintCounter initial=false, invalidate=AcceleratedCompositing
-
 shrinksStandaloneImagesToFit initial=true
 
 # FIXME: Does this do anything now that we don't support page cache?

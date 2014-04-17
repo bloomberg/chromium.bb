@@ -320,17 +320,13 @@ private:
     CompositingUpdateType m_pendingUpdateType;
 
     bool m_hasAcceleratedCompositing;
-    bool m_showRepaintCounter;
-
     bool m_needsToRecomputeCompositingRequirements;
-
     bool m_compositing;
     bool m_compositingLayersNeedRebuild;
     bool m_forceCompositingMode;
     bool m_forceCompositingModeDirty;
     bool m_needsUpdateCompositingRequirementsState;
     bool m_needsUpdateFixedBackground;
-
     bool m_isTrackingRepaints; // Used for testing.
 
     RootLayerAttachment m_rootLayerAttachment;
