@@ -372,7 +372,7 @@ class ChromeSDKCommand(cros.CrosCommand):
 
   # Note, this URL is not accessible outside of corp.
   _GOMA_URL = ('https://clients5.google.com/cxx-compiler-service/'
-               'download/goma_ctl.sh')
+               'download/goma_ctl.py')
 
   _CLANG_DIR = 'third_party/llvm-build/Release+Asserts/bin'
   _CLANG_UPDATE_SH = 'tools/clang/scripts/update.sh'
@@ -650,7 +650,7 @@ class ChromeSDKCommand(cros.CrosCommand):
       user_rc: User-supplied rc file.
     """
     user_env = osutils.SourceEnvironment(user_rc, ['PATH'])
-    goma_ctl = osutils.Which('goma_ctl.sh', user_env.get('PATH'))
+    goma_ctl = osutils.Which('goma_ctl.py', user_env.get('PATH'))
     if goma_ctl is not None:
       logging.warning(
           '%s is adding Goma to the PATH.  Using that Goma instead of the '
@@ -687,7 +687,7 @@ class ChromeSDKCommand(cros.CrosCommand):
     clang_bin = osutils.Which('clang', user_env.get('PATH'))
     if clang_bin is not None:
       clang_dir = os.path.dirname(clang_bin)
-      if not osutils.Which('goma_ctl.sh', clang_dir):
+      if not osutils.Which('goma_ctl.py', clang_dir):
         logging.warning(
             '%s is adding Clang to the PATH.  Because of this, Goma is being '
             'bypassed.  Remove it from the PATH to use Goma with the default '
@@ -752,7 +752,7 @@ class ChromeSDKCommand(cros.CrosCommand):
     common_path = os.path.join(self.options.cache_dir, constants.COMMON_CACHE)
     common_cache = cache.DiskCache(common_path)
 
-    ref = common_cache.Lookup(('goma',))
+    ref = common_cache.Lookup(('goma', '2'))
     if not ref.Exists():
       Log('Installing Goma.', silent=self.silent)
       with osutils.TempDir() as tempdir:
@@ -762,16 +762,23 @@ class ChromeSDKCommand(cros.CrosCommand):
             self.FETCH_GOMA_CMD, cwd=goma_dir, error_code_ok=True)
         if result.returncode:
           raise GomaError('Failed to fetch Goma')
+       # Update to latest version of goma. We choose the outside-chroot version
+       # ('goobuntu') over the chroot version ('chromeos') by supplying
+       # input='1' to the following prompt:
+       #
+       # What is your platform?
+       #  1. Goobuntu  2. Precise (32bit)  3. Lucid (32bit)  4. Debian
+       #  5. Chrome OS  6. MacOS ? -->
         cros_build_lib.DebugRunCommand(
-            ['bash', 'goma_ctl.sh', 'update'], cwd=goma_dir, input='2\n')
+            ['python', 'goma_ctl.py', 'update'], cwd=goma_dir, input='1\n')
         ref.SetDefault(goma_dir)
-    goma_dir =  os.path.join(ref.path, 'goma')
+    goma_dir = ref.path
 
     port = self._GomaPort(goma_dir)
     if not port:
       Log('Starting Goma.', silent=self.silent)
       cros_build_lib.DebugRunCommand(
-          ['./goma_ctl.sh', 'ensure_start'], cwd=goma_dir)
+          ['python', 'goma_ctl.py', 'ensure_start'], cwd=goma_dir)
       port = self._GomaPort(goma_dir)
       Log('Goma is started on port %s', port, silent=self.silent)
       if not port:
