@@ -38,7 +38,7 @@ views::View* TrayEnterprise::CreateDefaultView(user::LoginStatus status) {
   // instead.
   if (status == ash::user::LOGGED_IN_PUBLIC)
     return NULL;
-  tray_view_ = new LabelTrayView(this, IDR_AURA_UBER_TRAY_ENTERPRISE_DARK);
+  tray_view_ = new LabelTrayView(this, IDR_AURA_UBER_TRAY_ENTERPRISE);
   UpdateEnterpriseMessage();
   return tray_view_;
 }
