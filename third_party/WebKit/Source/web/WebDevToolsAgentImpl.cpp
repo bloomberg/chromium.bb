@@ -664,9 +664,7 @@ bool WebDevToolsAgent::shouldInterruptForMessage(const WebString& message)
         || commandName == InspectorBackendDispatcher::commandName(InspectorBackendDispatcher::kDebugger_setBreakpointCmd)
         || commandName == InspectorBackendDispatcher::commandName(InspectorBackendDispatcher::kDebugger_setBreakpointByUrlCmd)
         || commandName == InspectorBackendDispatcher::commandName(InspectorBackendDispatcher::kDebugger_removeBreakpointCmd)
-        || commandName == InspectorBackendDispatcher::commandName(InspectorBackendDispatcher::kDebugger_setBreakpointsActiveCmd)
-        || commandName == InspectorBackendDispatcher::commandName(InspectorBackendDispatcher::kProfiler_startCmd)
-        || commandName == InspectorBackendDispatcher::commandName(InspectorBackendDispatcher::kProfiler_stopCmd);
+        || commandName == InspectorBackendDispatcher::commandName(InspectorBackendDispatcher::kDebugger_setBreakpointsActiveCmd);
 }
 
 void WebDevToolsAgent::processPendingMessages()
