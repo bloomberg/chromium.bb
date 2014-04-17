@@ -3,9 +3,14 @@ include_rules = [
   "+content/public/common",
   "+content/public/renderer",
 
+  "+third_party/skia/include/core",
+
+  "+third_party/WebKit/public/platform",
   "+third_party/WebKit/public/web",
 
   "-v8",
   "+v8/include",
+
+  "+webkit/common/fileapi",
 ]
 

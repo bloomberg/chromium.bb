@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_EXTENSIONS_LOGGING_NATIVE_HANDLER_H_
-#define CHROME_RENDERER_EXTENSIONS_LOGGING_NATIVE_HANDLER_H_
+#ifndef EXTENSIONS_RENDERER_LOGGING_NATIVE_HANDLER_H_
+#define EXTENSIONS_RENDERER_LOGGING_NATIVE_HANDLER_H_
 
 #include <string>
 
@@ -53,4 +53,4 @@ class LoggingNativeHandler : public ObjectBackedNativeHandler {
 
 }  // namespace extensions
 
-#endif  // CHROME_RENDERER_EXTENSIONS_LOGGING_NATIVE_HANDLER_H_
+#endif  // EXTENSIONS_RENDERER_LOGGING_NATIVE_HANDLER_H_

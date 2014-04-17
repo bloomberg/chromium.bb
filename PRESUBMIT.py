@@ -918,8 +918,7 @@ def _CheckSpamLogging(input_api, output_api):
                  r"^chrome[\\\/]browser[\\\/]ui[\\\/]startup[\\\/]"
                      r"startup_browser_creator\.cc$",
                  r"^chrome[\\\/]installer[\\\/]setup[\\\/].*",
-                 r"^chrome[\\\/]renderer[\\\/]extensions[\\\/]"
-                     r"logging_native_handler\.cc$",
+                 r"^extensions[\\\/]renderer[\\\/]logging_native_handler\.cc$",
                  r"^content[\\\/]common[\\\/]gpu[\\\/]client[\\\/]"
                      r"gl_helper_benchmark\.cc$",
                  r"^native_client_sdk[\\\/]",

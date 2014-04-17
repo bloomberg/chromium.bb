@@ -1,20 +1,20 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_EXTENSIONS_FILE_SYSTEM_NATIVES_H_
-#define CHROME_RENDERER_EXTENSIONS_FILE_SYSTEM_NATIVES_H_
+#ifndef EXTENSIONS_RENDERER_FILE_SYSTEM_NATIVES_H_
+#define EXTENSIONS_RENDERER_FILE_SYSTEM_NATIVES_H_
 
 #include "base/compiler_specific.h"
 #include "extensions/renderer/object_backed_native_handler.h"
 
 namespace extensions {
-class ChromeV8Context;
+class ScriptContext;
 
 // Custom bindings for the nativeFileSystem API.
 class FileSystemNatives : public ObjectBackedNativeHandler {
  public:
-  explicit FileSystemNatives(ChromeV8Context* context);
+  explicit FileSystemNatives(ScriptContext* context);
 
  private:
   void GetFileEntry(const v8::FunctionCallbackInfo<v8::Value>& args);
@@ -29,4 +29,4 @@ class FileSystemNatives : public ObjectBackedNativeHandler {
 
 }  // namespace extensions
 
-#endif  // CHROME_RENDERER_EXTENSIONS_FILE_SYSTEM_NATIVES_H_
+#endif  // EXTENSIONS_RENDERER_FILE_SYSTEM_NATIVES_H_

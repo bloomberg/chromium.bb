@@ -1,23 +1,22 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/i18n_custom_bindings.h"
+#include "extensions/renderer/i18n_custom_bindings.h"
 
 #include "base/bind.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/message_bundle.h"
-#include "grit/renderer_resources.h"
-#include "v8/include/v8.h"
+#include "extensions/renderer/script_context.h"
 
 namespace extensions {
 
-I18NCustomBindings::I18NCustomBindings(Dispatcher* dispatcher,
-                                       ChromeV8Context* context)
-    : ChromeV8Extension(dispatcher, context) {
-  RouteFunction("GetL10nMessage",
+I18NCustomBindings::I18NCustomBindings(ScriptContext* context)
+    : ObjectBackedNativeHandler(context) {
+  RouteFunction(
+      "GetL10nMessage",
       base::Bind(&I18NCustomBindings::GetL10nMessage, base::Unretained(this)));
   RouteFunction("GetL10nUILanguage",
                 base::Bind(&I18NCustomBindings::GetL10nUILanguage,
@@ -44,14 +43,14 @@ void I18NCustomBindings::GetL10nMessage(
   if (!l10n_messages) {
     // Get the current RenderView so that we can send a routed IPC message
     // from the correct source.
-    content::RenderView* renderview = GetRenderView();
+    content::RenderView* renderview = context()->GetRenderView();
     if (!renderview)
       return;
 
     L10nMessagesMap messages;
     // A sync call to load message catalogs for current extension.
-    renderview->Send(new ExtensionHostMsg_GetMessageBundle(
-        extension_id, &messages));
+    renderview->Send(
+        new ExtensionHostMsg_GetMessageBundle(extension_id, &messages));
 
     // Save messages we got.
     ExtensionToL10nMessagesMap& l10n_messages_map =
@@ -83,9 +82,9 @@ void I18NCustomBindings::GetL10nMessage(
     substitutions.push_back(*v8::String::Utf8Value(args[1]->ToString()));
   }
 
-  args.GetReturnValue().Set(
-      v8::String::NewFromUtf8(isolate, ReplaceStringPlaceholders(
-        message, substitutions, NULL).c_str()));
+  args.GetReturnValue().Set(v8::String::NewFromUtf8(
+      isolate,
+      ReplaceStringPlaceholders(message, substitutions, NULL).c_str()));
 }
 
 void I18NCustomBindings::GetL10nUILanguage(

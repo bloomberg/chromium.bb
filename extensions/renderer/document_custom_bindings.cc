@@ -1,25 +1,24 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/document_custom_bindings.h"
+#include "extensions/renderer/document_custom_bindings.h"
 
 #include <string>
 
 #include "base/bind.h"
-#include "chrome/renderer/extensions/chrome_v8_context.h"
+#include "extensions/renderer/script_context.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "v8/include/v8.h"
 
 namespace extensions {
 
-DocumentCustomBindings::DocumentCustomBindings(
-    Dispatcher* dispatcher, ChromeV8Context* context)
-    : ChromeV8Extension(dispatcher, context) {
+DocumentCustomBindings::DocumentCustomBindings(ScriptContext* context)
+    : ObjectBackedNativeHandler(context) {
   RouteFunction("RegisterElement",
-      base::Bind(&DocumentCustomBindings::RegisterElement,
-                 base::Unretained(this)));
+                base::Bind(&DocumentCustomBindings::RegisterElement,
+                           base::Unretained(this)));
 }
 
 // Attach an event name to an object.
@@ -35,9 +34,8 @@ void DocumentCustomBindings::RegisterElement(
 
   blink::WebExceptionCode ec = 0;
   blink::WebDocument document = context()->web_frame()->document();
-  v8::Handle<v8::Value> constructor =
-      document.registerEmbedderCustomElement(
-          blink::WebString::fromUTF8(element_name), options, ec);
+  v8::Handle<v8::Value> constructor = document.registerEmbedderCustomElement(
+      blink::WebString::fromUTF8(element_name), options, ec);
   args.GetReturnValue().Set(constructor);
 }
 

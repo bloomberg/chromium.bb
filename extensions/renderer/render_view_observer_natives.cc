@@ -1,10 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/render_view_observer_natives.h"
+#include "extensions/renderer/render_view_observer_natives.h"
 
-#include "chrome/renderer/extensions/dispatcher.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "extensions/common/extension_api.h"
@@ -28,9 +27,9 @@ class LoadWatcher : public content::RenderViewObserver {
     CallbackAndDie(true);
   }
 
-  virtual void DidFailProvisionalLoad(
-      blink::WebLocalFrame* frame,
-      const blink::WebURLError& error) OVERRIDE {
+  virtual void DidFailProvisionalLoad(blink::WebLocalFrame* frame,
+                                      const blink::WebURLError& error)
+      OVERRIDE {
     CallbackAndDie(false);
   }
 
@@ -38,7 +37,7 @@ class LoadWatcher : public content::RenderViewObserver {
   void CallbackAndDie(bool succeeded) {
     v8::Isolate* isolate = context_->isolate();
     v8::HandleScope handle_scope(isolate);
-    v8::Handle<v8::Value> args[] = { v8::Boolean::New(isolate, succeeded) };
+    v8::Handle<v8::Value> args[] = {v8::Boolean::New(isolate, succeeded)};
     context_->CallFunction(callback_.NewHandle(isolate), 1, args);
     delete this;
   }
@@ -49,10 +48,8 @@ class LoadWatcher : public content::RenderViewObserver {
 };
 }  // namespace
 
-
-RenderViewObserverNatives::RenderViewObserverNatives(Dispatcher* dispatcher,
-                                                     ChromeV8Context* context)
-    : ChromeV8Extension(dispatcher, context) {
+RenderViewObserverNatives::RenderViewObserverNatives(ScriptContext* context)
+    : ObjectBackedNativeHandler(context) {
   RouteFunction("OnDocumentElementCreated",
                 base::Bind(&RenderViewObserverNatives::OnDocumentElementCreated,
                            base::Unretained(this)));

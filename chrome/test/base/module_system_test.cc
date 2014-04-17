@@ -14,10 +14,10 @@
 #include "base/strings/string_piece.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
-#include "chrome/renderer/extensions/logging_native_handler.h"
-#include "chrome/renderer/extensions/utils_native_handler.h"
+#include "extensions/renderer/logging_native_handler.h"
 #include "extensions/renderer/object_backed_native_handler.h"
 #include "extensions/renderer/safe_builtins.h"
+#include "extensions/renderer/utils_native_handler.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #include <map>

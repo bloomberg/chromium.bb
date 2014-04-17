@@ -18,7 +18,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/renderer/extensions/extension_groups.h"
 #include "chrome/renderer/isolated_world_ids.h"
 #include "components/translate/content/common/translate_messages.h"
 #include "components/translate/core/common/translate_constants.h"
@@ -27,6 +26,7 @@
 #include "components/translate/language_detection/language_detection_util.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/constants.h"
+#include "extensions/renderer/extension_groups.h"
 #include "ipc/ipc_platform_file.h"
 #if defined(CLD2_DYNAMIC_MODE)
 #include "content/public/common/url_constants.h"

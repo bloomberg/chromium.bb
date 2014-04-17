@@ -1,28 +1,26 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_EXTENSIONS_SET_ICON_NATIVES_H_
-#define CHROME_RENDERER_EXTENSIONS_SET_ICON_NATIVES_H_
+#ifndef EXTENSIONS_RENDERER_SET_ICON_NATIVES_H_
+#define EXTENSIONS_RENDERER_SET_ICON_NATIVES_H_
 
-#include "chrome/renderer/extensions/chrome_v8_extension.h"
-#include "chrome/renderer/extensions/dispatcher.h"
-
+#include "extensions/renderer/object_backed_native_handler.h"
 #include "v8/include/v8.h"
 
 namespace base {
+class DictionaryValue;
 class Value;
 }
 
 namespace extensions {
 class RequestSender;
+class ScriptContext;
 
 // Functions exposed to extension JS to implement the setIcon extension API.
-class SetIconNatives : public ChromeV8Extension {
+class SetIconNatives : public ObjectBackedNativeHandler {
  public:
-  SetIconNatives(Dispatcher* dispatcher,
-                 RequestSender* request_sender,
-                 ChromeV8Context* context);
+  SetIconNatives(RequestSender* request_sender, ScriptContext* context);
 
  private:
   bool ConvertImageDataToBitmapValue(const v8::Local<v8::Object> image_data,
@@ -39,4 +37,4 @@ class SetIconNatives : public ChromeV8Extension {
 
 }  // namespace extensions
 
-#endif  // CHROME_RENDERER_EXTENSIONS_SET_ICON_NATIVES_H_
+#endif  // EXTENSIONS_RENDERER_SET_ICON_NATIVES_H_

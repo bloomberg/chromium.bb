@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/content_watcher.h"
+#include "extensions/renderer/content_watcher.h"
 
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_visitor.h"
@@ -106,14 +106,15 @@ void ContentWatcher::NotifyBrowserOfChange(
     }
   }
   std::vector<std::string> selector_strings;
-  for (std::set<base::StringPiece>::const_iterator
-           it = transitive_selectors.begin();
-       it != transitive_selectors.end(); ++it)
+  for (std::set<base::StringPiece>::const_iterator it =
+           transitive_selectors.begin();
+       it != transitive_selectors.end();
+       ++it)
     selector_strings.push_back(it->as_string());
   content::RenderView* view =
       content::RenderView::FromWebView(top_frame->view());
-  view->Send(new ExtensionHostMsg_OnWatchedPageChange(
-      view->GetRoutingID(), selector_strings));
+  view->Send(new ExtensionHostMsg_OnWatchedPageChange(view->GetRoutingID(),
+                                                      selector_strings));
 }
 
 }  // namespace extensions

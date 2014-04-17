@@ -1,37 +1,36 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/send_request_natives.h"
+#include "extensions/renderer/send_request_natives.h"
 
 #include "base/json/json_reader.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "extensions/renderer/request_sender.h"
+#include "extensions/renderer/script_context.h"
 
 using content::V8ValueConverter;
 
 namespace extensions {
 
-SendRequestNatives::SendRequestNatives(Dispatcher* dispatcher,
-                                       RequestSender* request_sender,
-                                       ChromeV8Context* context)
-    : ChromeV8Extension(dispatcher, context),
-      request_sender_(request_sender) {
+SendRequestNatives::SendRequestNatives(RequestSender* request_sender,
+                                       ScriptContext* context)
+    : ObjectBackedNativeHandler(context), request_sender_(request_sender) {
   RouteFunction("GetNextRequestId",
                 base::Bind(&SendRequestNatives::GetNextRequestId,
                            base::Unretained(this)));
-  RouteFunction("StartRequest",
-                base::Bind(&SendRequestNatives::StartRequest,
-                           base::Unretained(this)));
-  RouteFunction("GetGlobal",
-                base::Bind(&SendRequestNatives::GetGlobal,
-                           base::Unretained(this)));
+  RouteFunction(
+      "StartRequest",
+      base::Bind(&SendRequestNatives::StartRequest, base::Unretained(this)));
+  RouteFunction(
+      "GetGlobal",
+      base::Bind(&SendRequestNatives::GetGlobal, base::Unretained(this)));
 }
 
 void SendRequestNatives::GetNextRequestId(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  args.GetReturnValue().Set(static_cast<int32_t>(
-      request_sender_->GetNextRequestId()));
+  args.GetReturnValue().Set(
+      static_cast<int32_t>(request_sender_->GetNextRequestId()));
 }
 
 // Starts an API request to the browser, with an optional callback.  The
@@ -62,7 +61,11 @@ void SendRequestNatives::StartRequest(
   }
 
   request_sender_->StartRequest(
-      context(), name, request_id, has_callback, for_io_thread,
+      context(),
+      name,
+      request_id,
+      has_callback,
+      for_io_thread,
       static_cast<base::ListValue*>(value_args.get()));
 }
 

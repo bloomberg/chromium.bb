@@ -1,19 +1,13 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/file_system_natives.h"
+#include "extensions/renderer/file_system_natives.h"
 
 #include <string>
 
-#include "base/basictypes.h"
-#include "base/logging.h"
-#include "chrome/common/url_constants.h"
-#include "chrome/renderer/extensions/chrome_v8_context.h"
-#include "chrome/renderer/extensions/user_script_slave.h"
 #include "extensions/common/constants.h"
 #include "extensions/renderer/script_context.h"
-#include "grit/renderer_resources.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebDOMError.h"
 #include "third_party/WebKit/public/web/WebDOMFileSystem.h"
@@ -23,19 +17,20 @@
 
 namespace extensions {
 
-FileSystemNatives::FileSystemNatives(ChromeV8Context* context)
+FileSystemNatives::FileSystemNatives(ScriptContext* context)
     : ObjectBackedNativeHandler(context) {
-  RouteFunction("GetFileEntry",
+  RouteFunction(
+      "GetFileEntry",
       base::Bind(&FileSystemNatives::GetFileEntry, base::Unretained(this)));
   RouteFunction("GetIsolatedFileSystem",
-      base::Bind(&FileSystemNatives::GetIsolatedFileSystem,
-                 base::Unretained(this)));
+                base::Bind(&FileSystemNatives::GetIsolatedFileSystem,
+                           base::Unretained(this)));
   RouteFunction("CrackIsolatedFileSystemName",
-      base::Bind(&FileSystemNatives::CrackIsolatedFileSystemName,
-                 base::Unretained(this)));
-  RouteFunction("GetDOMError",
-      base::Bind(&FileSystemNatives::GetDOMError,
-                 base::Unretained(this)));
+                base::Bind(&FileSystemNatives::CrackIsolatedFileSystemName,
+                           base::Unretained(this)));
+  RouteFunction(
+      "GetDOMError",
+      base::Bind(&FileSystemNatives::GetDOMError, base::Unretained(this)));
 }
 
 void FileSystemNatives::GetIsolatedFileSystem(
@@ -63,16 +58,13 @@ void FileSystemNatives::GetIsolatedFileSystem(
   }
 
   GURL root_url(fileapi::GetIsolatedFileSystemRootURIString(
-      context_url.GetOrigin(),
-      file_system_id,
-      optional_root_name));
+      context_url.GetOrigin(), file_system_id, optional_root_name));
 
   args.GetReturnValue().Set(
-      blink::WebDOMFileSystem::create(
-          webframe,
-          blink::WebFileSystemTypeIsolated,
-          blink::WebString::fromUTF8(name),
-          root_url).toV8Value());
+      blink::WebDOMFileSystem::create(webframe,
+                                      blink::WebFileSystemTypeIsolated,
+                                      blink::WebString::fromUTF8(name),
+                                      root_url).toV8Value());
 }
 
 void FileSystemNatives::GetFileEntry(
@@ -97,20 +89,21 @@ void FileSystemNatives::GetFileEntry(
   DCHECK(fileapi::VirtualPath::IsAbsolute(file_path.value()));
 
   DCHECK(args[4]->IsBoolean());
-  blink::WebDOMFileSystem::EntryType entry_type = args[4]->BooleanValue()
-      ? blink::WebDOMFileSystem::EntryTypeDirectory
-      : blink::WebDOMFileSystem::EntryTypeFile;
+  blink::WebDOMFileSystem::EntryType entry_type =
+      args[4]->BooleanValue() ? blink::WebDOMFileSystem::EntryTypeDirectory
+                              : blink::WebDOMFileSystem::EntryTypeFile;
 
   blink::WebLocalFrame* webframe =
       blink::WebLocalFrame::frameForContext(context()->v8_context());
   DCHECK(webframe);
   args.GetReturnValue().Set(
       blink::WebDOMFileSystem::create(
-          webframe, type,
+          webframe,
+          type,
           blink::WebString::fromUTF8(file_system_name),
-          file_system_root_url).createV8Entry(
-              blink::WebString::fromUTF8(file_path_string),
-              entry_type));
+          file_system_root_url)
+          .createV8Entry(blink::WebString::fromUTF8(file_path_string),
+                         entry_type));
 }
 
 void FileSystemNatives::CrackIsolatedFileSystemName(
@@ -152,8 +145,7 @@ void FileSystemNatives::GetDOMError(
   // message is optional hence empty is fine.
 
   blink::WebDOMError dom_error = blink::WebDOMError::create(
-      blink::WebString::fromUTF8(name),
-      blink::WebString::fromUTF8(message));
+      blink::WebString::fromUTF8(name), blink::WebString::fromUTF8(message));
   args.GetReturnValue().Set(dom_error.toV8Value());
 }
 

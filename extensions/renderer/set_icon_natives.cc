@@ -1,20 +1,21 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/set_icon_natives.h"
+#include "extensions/renderer/set_icon_natives.h"
 
 #include <limits>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/common/render_messages.h"
+#include "content/public/common/common_param_traits.h"
 #include "extensions/renderer/request_sender.h"
+#include "extensions/renderer/script_context.h"
+#include "ipc/ipc_message_utils.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkColor.h"
 
 namespace {
 
-const char* kImageSizeKeys[] = { "19", "38" };
+const char* kImageSizeKeys[] = {"19", "38"};
 const char kInvalidDimensions[] = "ImageData has invalid dimensions.";
 const char kInvalidData[] = "ImageData data length does not match dimensions.";
 const char kNoMemory[] = "Chrome was unable to initialize icon.";
@@ -23,11 +24,9 @@ const char kNoMemory[] = "Chrome was unable to initialize icon.";
 
 namespace extensions {
 
-SetIconNatives::SetIconNatives(Dispatcher* dispatcher,
-                               RequestSender* request_sender,
-                               ChromeV8Context* context)
-    : ChromeV8Extension(dispatcher, context),
-      request_sender_(request_sender) {
+SetIconNatives::SetIconNatives(RequestSender* request_sender,
+                               ScriptContext* context)
+    : ObjectBackedNativeHandler(context), request_sender_(request_sender) {
   RouteFunction(
       "SetIconCommon",
       base::Bind(&SetIconNatives::SetIconCommon, base::Unretained(this)));
@@ -77,16 +76,16 @@ bool SetIconNatives::ConvertImageDataToBitmapValue(
   bitmap.eraseARGB(0, 0, 0, 0);
 
   uint32_t* pixels = bitmap.getAddr32(0, 0);
-  for (int t = 0; t < width*height; t++) {
+  for (int t = 0; t < width * height; t++) {
     // |data| is RGBA, pixels is ARGB.
     pixels[t] = SkPreMultiplyColor(
-        ((data->Get(v8::Integer::New(isolate, 4*t + 3))->Int32Value() & 0xFF)
+        ((data->Get(v8::Integer::New(isolate, 4 * t + 3))->Int32Value() & 0xFF)
          << 24) |
-        ((data->Get(v8::Integer::New(isolate, 4*t + 0))->Int32Value() & 0xFF)
+        ((data->Get(v8::Integer::New(isolate, 4 * t + 0))->Int32Value() & 0xFF)
          << 16) |
-        ((data->Get(v8::Integer::New(isolate, 4*t + 1))->Int32Value() & 0xFF)
+        ((data->Get(v8::Integer::New(isolate, 4 * t + 1))->Int32Value() & 0xFF)
          << 8) |
-        ((data->Get(v8::Integer::New(isolate, 4*t + 2))->Int32Value() & 0xFF)
+        ((data->Get(v8::Integer::New(isolate, 4 * t + 2))->Int32Value() & 0xFF)
          << 0));
   }
 
@@ -103,8 +102,9 @@ bool SetIconNatives::ConvertImageDataSetToBitmapValueSet(
     const v8::FunctionCallbackInfo<v8::Value>& args,
     base::DictionaryValue* bitmap_set_value) {
   v8::Local<v8::Object> extension_args = args[1]->ToObject();
-  v8::Local<v8::Object> details = extension_args
-      ->Get(v8::String::NewFromUtf8(args.GetIsolate(), "0"))->ToObject();
+  v8::Local<v8::Object> details =
+      extension_args->Get(v8::String::NewFromUtf8(args.GetIsolate(), "0"))
+          ->ToObject();
   v8::Local<v8::Object> image_data_set =
       details->Get(v8::String::NewFromUtf8(args.GetIsolate(), "imageData"))
           ->ToObject();
@@ -114,9 +114,10 @@ bool SetIconNatives::ConvertImageDataSetToBitmapValueSet(
     if (!image_data_set->Has(
             v8::String::NewFromUtf8(args.GetIsolate(), kImageSizeKeys[i])))
       continue;
-    v8::Local<v8::Object> image_data = image_data_set
-        ->Get(v8::String::NewFromUtf8(args.GetIsolate(), kImageSizeKeys[i]))
-        ->ToObject();
+    v8::Local<v8::Object> image_data =
+        image_data_set->Get(v8::String::NewFromUtf8(args.GetIsolate(),
+                                                    kImageSizeKeys[i]))
+            ->ToObject();
     base::Value* image_data_bitmap = NULL;
     if (!ConvertImageDataToBitmapValue(image_data, &image_data_bitmap))
       return false;
@@ -133,16 +134,18 @@ void SetIconNatives::SetIconCommon(
     return;
 
   v8::Local<v8::Object> extension_args = args[1]->ToObject();
-  v8::Local<v8::Object> details = extension_args
-      ->Get(v8::String::NewFromUtf8(args.GetIsolate(), "0"))->ToObject();
+  v8::Local<v8::Object> details =
+      extension_args->Get(v8::String::NewFromUtf8(args.GetIsolate(), "0"))
+          ->ToObject();
 
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->Set("imageData", bitmap_set_value.release());
 
   if (details->Has(v8::String::NewFromUtf8(args.GetIsolate(), "tabId"))) {
-    dict->SetInteger("tabId",
-                     details->Get(v8::String::NewFromUtf8(
-                         args.GetIsolate(), "tabId"))->Int32Value());
+    dict->SetInteger(
+        "tabId",
+        details->Get(v8::String::NewFromUtf8(args.GetIsolate(), "tabId"))
+            ->Int32Value());
   }
 
   base::ListValue list_value;
@@ -153,12 +156,8 @@ void SetIconNatives::SetIconCommon(
   bool has_callback = args[3]->BooleanValue();
   bool for_io_thread = args[4]->BooleanValue();
 
-  request_sender_->StartRequest(context(),
-                                name,
-                                request_id,
-                                has_callback,
-                                for_io_thread,
-                                &list_value);
+  request_sender_->StartRequest(
+      context(), name, request_id, has_callback, for_io_thread, &list_value);
 }
 
 }  // namespace extensions

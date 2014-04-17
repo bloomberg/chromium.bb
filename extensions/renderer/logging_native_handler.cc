@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/logging_native_handler.h"
+#include "extensions/renderer/logging_native_handler.h"
 
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
@@ -11,15 +11,19 @@ namespace extensions {
 
 LoggingNativeHandler::LoggingNativeHandler(ScriptContext* context)
     : ObjectBackedNativeHandler(context) {
-  RouteFunction("DCHECK",
+  RouteFunction(
+      "DCHECK",
       base::Bind(&LoggingNativeHandler::Dcheck, base::Unretained(this)));
-  RouteFunction("CHECK",
+  RouteFunction(
+      "CHECK",
       base::Bind(&LoggingNativeHandler::Check, base::Unretained(this)));
-  RouteFunction("DCHECK_IS_ON",
+  RouteFunction(
+      "DCHECK_IS_ON",
       base::Bind(&LoggingNativeHandler::DcheckIsOn, base::Unretained(this)));
   RouteFunction("LOG",
-      base::Bind(&LoggingNativeHandler::Log, base::Unretained(this)));
-  RouteFunction("WARNING",
+                base::Bind(&LoggingNativeHandler::Log, base::Unretained(this)));
+  RouteFunction(
+      "WARNING",
       base::Bind(&LoggingNativeHandler::Warning, base::Unretained(this)));
 }
 
@@ -65,8 +69,7 @@ void LoggingNativeHandler::ParseArgs(
   CHECK_LE(args.Length(), 2);
   *check_value = args[0]->BooleanValue();
   if (args.Length() == 2) {
-    *error_message = "Error: " + std::string(
-        *v8::String::Utf8Value(args[1]));
+    *error_message = "Error: " + std::string(*v8::String::Utf8Value(args[1]));
   }
 
   v8::Handle<v8::StackTrace> stack_trace =
@@ -74,10 +77,11 @@ void LoggingNativeHandler::ParseArgs(
   if (stack_trace.IsEmpty() || stack_trace->GetFrameCount() <= 0) {
     *error_message += "\n    <no stack trace>";
   } else {
-    for (size_t i = 0; i < (size_t) stack_trace->GetFrameCount(); ++i) {
+    for (size_t i = 0; i < (size_t)stack_trace->GetFrameCount(); ++i) {
       v8::Handle<v8::StackFrame> frame = stack_trace->GetFrame(i);
       CHECK(!frame.IsEmpty());
-      *error_message += base::StringPrintf("\n    at %s (%s:%d:%d)",
+      *error_message += base::StringPrintf(
+          "\n    at %s (%s:%d:%d)",
           ToStringOrDefault(frame->GetFunctionName(), "<anonymous>").c_str(),
           ToStringOrDefault(frame->GetScriptName(), "<anonymous>").c_str(),
           frame->GetLineNumber(),

@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/utils_native_handler.h"
+#include "extensions/renderer/utils_native_handler.h"
 
 #include "base/strings/stringprintf.h"
-#include "chrome/renderer/extensions/chrome_v8_context.h"
+#include "extensions/renderer/script_context.h"
 #include "third_party/WebKit/public/web/WebScopedMicrotaskSuppression.h"
 
 namespace extensions {
 
-UtilsNativeHandler::UtilsNativeHandler(ChromeV8Context* context)
+UtilsNativeHandler::UtilsNativeHandler(ScriptContext* context)
     : ObjectBackedNativeHandler(context) {
   RouteFunction("createClassWrapper",
-      base::Bind(&UtilsNativeHandler::CreateClassWrapper,
-                 base::Unretained(this)));
+                base::Bind(&UtilsNativeHandler::CreateClassWrapper,
+                           base::Unretained(this)));
 }
 
 UtilsNativeHandler::~UtilsNativeHandler() {}
@@ -39,10 +39,10 @@ void UtilsNativeHandler::CreateClassWrapper(
           "  $Function.apply(cls, privateObj, arguments);\n"
           "  privateObj.wrapper = this;\n"
           "  privates(this).impl = privateObj;\n"
-          "}})", name.c_str()).c_str());
-  v8::Handle<v8::Value> func_as_value =
-      context()->module_system()->RunString(source,
-          v8::String::NewFromUtf8(GetIsolate(), name.c_str()));
+          "}})",
+          name.c_str()).c_str());
+  v8::Handle<v8::Value> func_as_value = context()->module_system()->RunString(
+      source, v8::String::NewFromUtf8(GetIsolate(), name.c_str()));
   if (func_as_value.IsEmpty() || func_as_value->IsUndefined()) {
     args.GetReturnValue().SetUndefined();
     return;
@@ -57,8 +57,7 @@ void UtilsNativeHandler::CreateClassWrapper(
       context()->safe_builtins()->GetFunction(),
       natives->Get(v8::String::NewFromUtf8(
           GetIsolate(), "privates", v8::String::kInternalizedString)),
-      obj
-  };
+      obj};
   v8::Local<v8::Value> result;
   {
     v8::TryCatch try_catch;
