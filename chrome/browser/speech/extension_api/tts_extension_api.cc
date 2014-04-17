@@ -15,7 +15,6 @@
 #include "chrome/browser/speech/tts_controller.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_registry.h"
-#include "extensions/browser/extension_system.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace constants = tts_extension_api_constants;
@@ -129,13 +128,12 @@ void TtsExtensionEventHandler::OnTtsEvent(Utterance* utterance,
       new extensions::Event(events::kOnEvent, arguments.Pass()));
   event->restrict_to_browser_context = utterance->profile();
   event->event_url = utterance->src_url();
-  extensions::ExtensionSystem::Get(utterance->profile())->event_router()->
-      DispatchEventToExtension(utterance->src_extension_id(), event.Pass());
+  extensions::EventRouter::Get(utterance->profile())
+      ->DispatchEventToExtension(utterance->src_extension_id(), event.Pass());
 
   if (utterance->finished())
     delete this;
 }
-
 
 bool TtsSpeakFunction::RunImpl() {
   std::string text;

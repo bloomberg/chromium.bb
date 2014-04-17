@@ -759,8 +759,8 @@ void DesktopNotificationService::FirePermissionLevelChangedEvent(
   scoped_ptr<extensions::Event> event(new extensions::Event(
       extensions::api::notifications::OnPermissionLevelChanged::kEventName,
       args.Pass()));
-  extensions::ExtensionSystem::Get(profile_)->event_router()->
-      DispatchEventToExtension(notifier_id.id, event.Pass());
+  extensions::EventRouter::Get(profile_)
+      ->DispatchEventToExtension(notifier_id.id, event.Pass());
 
   // Tell the IO thread that this extension's permission for notifications
   // has changed.

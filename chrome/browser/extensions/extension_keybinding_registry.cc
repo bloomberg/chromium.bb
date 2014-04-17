@@ -119,8 +119,8 @@ void ExtensionKeybindingRegistry::CommandExecuted(
   scoped_ptr<Event> event(new Event("commands.onCommand", args.Pass()));
   event->restrict_to_browser_context = profile_;
   event->user_gesture = EventRouter::USER_GESTURE_ENABLED;
-  ExtensionSystem::Get(profile_)->event_router()->
-      DispatchEventToExtension(extension_id, event.Pass());
+  EventRouter::Get(profile_)
+      ->DispatchEventToExtension(extension_id, event.Pass());
 }
 
 bool ExtensionKeybindingRegistry::IsAcceleratorRegistered(

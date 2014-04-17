@@ -164,8 +164,7 @@ void AshKeyboardControllerProxy::SetUpdateInputType(ui::TextInputType type) {
   // TODO(bshe): Need to check the affected window's profile once multi-profile
   // is supported.
   content::BrowserContext* context = GetBrowserContext();
-  extensions::EventRouter* router =
-      extensions::ExtensionSystem::Get(context)->event_router();
+  extensions::EventRouter* router = extensions::EventRouter::Get(context);
 
   if (!router->HasEventListener(
           virtual_keyboard_private::OnTextInputBoxFocused::kEventName)) {

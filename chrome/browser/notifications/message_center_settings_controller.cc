@@ -392,8 +392,7 @@ bool MessageCenterSettingsController::NotifierHasAdvancedSettings(
     return false;
   Profile* profile = notifier_groups_[current_notifier_group_]->profile();
 
-  extensions::EventRouter* event_router =
-      extensions::ExtensionSystem::Get(profile)->event_router();
+  extensions::EventRouter* event_router = extensions::EventRouter::Get(profile);
 
   return event_router->ExtensionHasEventListener(
       extension_id, extensions::api::notifications::OnShowSettings::kEventName);
@@ -413,8 +412,7 @@ void MessageCenterSettingsController::OnNotifierAdvancedSettingsRequested(
     return;
   Profile* profile = notifier_groups_[current_notifier_group_]->profile();
 
-  extensions::EventRouter* event_router =
-      extensions::ExtensionSystem::Get(profile)->event_router();
+  extensions::EventRouter* event_router = extensions::EventRouter::Get(profile);
   scoped_ptr<base::ListValue> args(new base::ListValue());
 
   scoped_ptr<extensions::Event> event(new extensions::Event(
