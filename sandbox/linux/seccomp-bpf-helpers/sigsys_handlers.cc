@@ -13,11 +13,6 @@
 #include "build/build_config.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 
-#define SECCOMP_MESSAGE_COMMON_CONTENT "seccomp-bpf failure"
-#define SECCOMP_MESSAGE_CLONE_CONTENT "clone() failure"
-#define SECCOMP_MESSAGE_PRCTL_CONTENT "prctl() failure"
-#define SECCOMP_MESSAGE_IOCTL_CONTENT "ioctl() failure"
-
 namespace {
 
 inline bool IsArchitectureX86_64() {
@@ -59,7 +54,7 @@ void PrintSyscallError(uint32_t sysno) {
     sysno_base10[i] = '0' + mod;
   }
   static const char kSeccompErrorPrefix[] =
-      __FILE__":**CRASHING**:" SECCOMP_MESSAGE_COMMON_CONTENT " in syscall ";
+      __FILE__":**CRASHING**:seccomp-bpf failure in syscall ";
   static const char kSeccompErrorPostfix[] = "\n";
   WriteToStdErr(kSeccompErrorPrefix, sizeof(kSeccompErrorPrefix) - 1);
   WriteToStdErr(sysno_base10, sizeof(sysno_base10));
@@ -100,7 +95,7 @@ intptr_t CrashSIGSYS_Handler(const struct arch_seccomp_data& args, void* aux) {
 
 intptr_t SIGSYSCloneFailure(const struct arch_seccomp_data& args, void* aux) {
   static const char kSeccompCloneError[] =
-      __FILE__":**CRASHING**:" SECCOMP_MESSAGE_CLONE_CONTENT "\n";
+      __FILE__":**CRASHING**:clone() failure\n";
   WriteToStdErr(kSeccompCloneError, sizeof(kSeccompCloneError) - 1);
   // "flags" is the first argument in the kernel's clone().
   // Mark as volatile to be able to find the value on the stack in a minidump.
@@ -120,7 +115,7 @@ intptr_t SIGSYSCloneFailure(const struct arch_seccomp_data& args, void* aux) {
 intptr_t SIGSYSPrctlFailure(const struct arch_seccomp_data& args,
                             void* /* aux */) {
   static const char kSeccompPrctlError[] =
-      __FILE__":**CRASHING**:" SECCOMP_MESSAGE_PRCTL_CONTENT "\n";
+      __FILE__":**CRASHING**:prctl() failure\n";
   WriteToStdErr(kSeccompPrctlError, sizeof(kSeccompPrctlError) - 1);
   // Mark as volatile to be able to find the value on the stack in a minidump.
   volatile uint64_t option = args.args[0];
@@ -134,7 +129,7 @@ intptr_t SIGSYSPrctlFailure(const struct arch_seccomp_data& args,
 intptr_t SIGSYSIoctlFailure(const struct arch_seccomp_data& args,
                             void* /* aux */) {
   static const char kSeccompIoctlError[] =
-      __FILE__":**CRASHING**:" SECCOMP_MESSAGE_IOCTL_CONTENT "\n";
+      __FILE__":**CRASHING**:ioctl() failure\n";
   WriteToStdErr(kSeccompIoctlError, sizeof(kSeccompIoctlError) - 1);
   // Make "request" volatile so that we can see it on the stack in a minidump.
   volatile uint64_t request = args.args[1];
@@ -145,22 +140,6 @@ intptr_t SIGSYSIoctlFailure(const struct arch_seccomp_data& args,
   *addr = '\0';
   for (;;)
     _exit(1);
-}
-
-const char* GetErrorMessageContentForTests() {
-  return SECCOMP_MESSAGE_COMMON_CONTENT;
-}
-
-const char* GetCloneErrorMessageContentForTests() {
-  return SECCOMP_MESSAGE_CLONE_CONTENT;
-}
-
-const char* GetPrctlErrorMessageContentForTests() {
-  return SECCOMP_MESSAGE_PRCTL_CONTENT;
-}
-
-const char* GetIoctlErrorMessageContentForTests() {
-  return SECCOMP_MESSAGE_IOCTL_CONTENT;
 }
 
 }  // namespace sandbox.

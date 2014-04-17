@@ -32,7 +32,6 @@
 #include "components/nacl/common/nacl_switches.h"
 #include "components/nacl/loader/nacl_listener.h"
 #include "components/nacl/loader/nacl_sandbox_linux.h"
-#include "components/nacl/loader/nonsfi/nonsfi_sandbox.h"
 #include "content/public/common/zygote_fork_delegate_linux.h"
 #include "crypto/nss_util.h"
 #include "ipc/ipc_descriptors.h"
@@ -93,7 +92,7 @@ void InitializeLayerTwoSandbox(bool uses_nonsfi_mode) {
       else
         LOG(FATAL) << "SUID sandbox is mandatory for non-SFI NaCl";
     }
-    const bool bpf_sandbox_initialized = nacl::nonsfi::InitializeBPFSandbox();
+    const bool bpf_sandbox_initialized = InitializeBPFSandbox();
     if (!bpf_sandbox_initialized) {
       if (can_be_no_sandbox) {
         LOG(ERROR)

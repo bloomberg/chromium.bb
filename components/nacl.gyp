@@ -189,22 +189,15 @@
               'include_dirs': [
                 '..',
               ],
-              'sources': [
-                'nacl/loader/nacl_helper_linux.cc',
-                'nacl/loader/nacl_helper_linux.h',
-              ],
               'dependencies': [
-                'nacl_loader',
-              ],
-              'cflags': ['-fPIE'],
-              'link_settings': {
-                'ldflags': ['-pie'],
-              },
-            }, {
-              'target_name': 'nacl_loader',
-              'type': 'static_library',
-              'include_dirs': [
-                '..',
+                'nacl',
+                'nacl_common',
+                'nacl_switches',
+                '../components/tracing.gyp:tracing',
+                '../crypto/crypto.gyp:crypto',
+                '../sandbox/sandbox.gyp:libc_urandom_override',
+                '../sandbox/sandbox.gyp:sandbox',
+                '../ppapi/ppapi_internal.gyp:ppapi_proxy',
               ],
               'ldflags!': [
                 # Do not pick the default ASan options from
@@ -219,6 +212,8 @@
                 'IN_NACL_HELPER=1',
               ],
               'sources': [
+                'nacl/loader/nacl_helper_linux.cc',
+                'nacl/loader/nacl_helper_linux.h',
                 'nacl/loader/nacl_sandbox_linux.cc',
                 'nacl/loader/nonsfi/abi_conversion.cc',
                 'nacl/loader/nonsfi/abi_conversion.h',
@@ -237,24 +232,12 @@
                 'nacl/loader/nonsfi/irt_util.h',
                 'nacl/loader/nonsfi/nonsfi_main.cc',
                 'nacl/loader/nonsfi/nonsfi_main.h',
-                'nacl/loader/nonsfi/nonsfi_sandbox.cc',
-                'nacl/loader/nonsfi/nonsfi_sandbox.h',
                 '../ppapi/nacl_irt/plugin_main.cc',
                 '../ppapi/nacl_irt/plugin_main.h',
                 '../ppapi/nacl_irt/plugin_startup.cc',
                 '../ppapi/nacl_irt/plugin_startup.h',
                 '../ppapi/nacl_irt/ppapi_dispatcher.cc',
                 '../ppapi/nacl_irt/ppapi_dispatcher.h',
-              ],
-              'dependencies': [
-                'nacl',
-                'nacl_common',
-                'nacl_switches',
-                '../components/tracing.gyp:tracing',
-                '../crypto/crypto.gyp:crypto',
-                '../sandbox/sandbox.gyp:libc_urandom_override',
-                '../sandbox/sandbox.gyp:sandbox',
-                '../ppapi/ppapi_internal.gyp:ppapi_proxy',
               ],
               'conditions': [
                 ['toolkit_uses_gtk == 1', {
@@ -287,6 +270,9 @@
                 }],
               ],
               'cflags': ['-fPIE'],
+              'link_settings': {
+                'ldflags': ['-pie'],
+              },
             },
           ],
         }],
