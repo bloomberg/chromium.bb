@@ -1888,7 +1888,7 @@ void Element::childrenChanged(bool changedByParser, Node* beforeChange, Node* af
 void Element::finishParsingChildren()
 {
     setIsFinishedParsingChildren(true);
-    checkForSiblingStyleChanges(this, lastChild(), 0, 0);
+    checkForSiblingStyleChanges(true, lastChild(), 0, 0);
 }
 
 #ifndef NDEBUG
