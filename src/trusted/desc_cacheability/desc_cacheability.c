@@ -11,7 +11,6 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
-#include "native_client/src/trusted/fault_injection/fault_injection.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/validator/nacl_file_info.h"
 #include "native_client/src/trusted/validator/rich_file_info.h"
@@ -105,9 +104,7 @@ void NaClReplaceDescIfValidationCacheAssertsMappable(
   struct NaClDesc *replacement;
   struct NaClFileToken file_token;
 
-  if (NACL_FI("validation_cache_replacement_bypass", 0, 1)) {
-    NaClDescMarkSafeForMmap(desc);
-  } else if (!NaClDescGetFileToken(desc, &file_token)) {
+  if (!NaClDescGetFileToken(desc, &file_token)) {
     NaClLog(4,
             "NaClReplaceDescIfValidationCacheAssertsMappable: no valid"
             " file token\n");

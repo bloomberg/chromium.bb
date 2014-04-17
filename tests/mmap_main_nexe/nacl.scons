@@ -36,18 +36,3 @@ node = env.CommandSelLdrTestNacl(
 env.AddNodeToTestSuite(node, ['small_tests', 'nonpexe_tests'],
                        'run_mmap_main_nexe_test',
                        is_broken=env.Bit('running_on_valgrind'))
-
-node = env.SelUniversalTest(
-  'mmap_main_nexe_rpc_test.out',
-  env.File('${STAGING_DIR}/hello_world.nexe'),
-  sel_universal_flags=['--no_app_channel'],
-  osenv=['NACL_FAULT_INJECTION=' +
-         'validation_cache_replacement_bypass=GF1/9999',
-         'NACLVERBOSITY=1'],
-  filter_regex='"(NaClElfFileMapSegment: EXERCISING MMAP LOAD PATH)"',
-  filter_group_only='true',
-  stderr_golden=env.File('mmap_main_nexe_rpc.stderr'))
-
-env.AddNodeToTestSuite(node, ['small_tests', 'nonpexe_tests'],
-                       'run_mmap_main_nexe_rpc_test',
-                       is_broken=env.Bit('running_on_valgrind'))

@@ -1051,15 +1051,18 @@ void NaClAppLoadModule(struct NaClApp   *nap,
           ("Entered NaClAppLoadModule: nap 0x%"NACL_PRIxPTR","
            " nexe 0x%"NACL_PRIxPTR"\n"),
           (uintptr_t) nap, (uintptr_t) nexe);
+  /*
+   * Ref was passed by value into |nexe| parameter, so up the refcount.
+   * Be sure to unref when the parameter's copy goes out of scope
+   * (when returning).
+   */
+  NaClDescRef(nexe);
 
   /*
    * TODO(bsy): consider doing the processing below after sending the
    * RPC reply to increase parallelism.
    */
   NaClXMutexLock(&nap->mu);
-  CHECK(nap->main_nexe_desc == NULL);
-  NaClDescRef(nexe);
-  nap->main_nexe_desc = nexe;
   if (nap->module_initialization_state != NACL_MODULE_UNINITIALIZED) {
     NaClLog(LOG_ERROR, "NaClAppLoadModule: repeated invocation\n");
     status = LOAD_DUP_LOAD_MODULE;
@@ -1067,6 +1070,7 @@ void NaClAppLoadModule(struct NaClApp   *nap,
     if (NULL != load_cb) {
       (*load_cb)(instance_data, status);
     }
+    NaClDescUnref(nexe);
     return;
   }
   nap->module_initialization_state = NACL_MODULE_LOADING;
@@ -1090,9 +1094,13 @@ void NaClAppLoadModule(struct NaClApp   *nap,
   NaClDescMarkUnsafeForMmap(nexe);
   NaClReplaceDescIfValidationCacheAssertsMappable(&nexe,
                                                   nap->validation_cache);
+  /* Transfer ownership from nexe to nap->main_nexe_desc. */
+  CHECK(nap->main_nexe_desc == NULL);
+  nap->main_nexe_desc = nexe;
+  nexe = NULL;
 
   status = NACL_FI_VAL("load_module", NaClErrorCode,
-                       NaClAppLoadFile(nexe, nap));
+                       NaClAppLoadFile(nap->main_nexe_desc, nap));
 
   if (LOAD_OK != status) {
     nap->module_load_status = status;
@@ -1101,6 +1109,8 @@ void NaClAppLoadModule(struct NaClApp   *nap,
   }
   NaClXMutexUnlock(&nap->mu);  /* NaClAppPrepareToLaunch takes mu */
   if (LOAD_OK != status) {
+    NaClDescUnref(nap->main_nexe_desc);
+    nap->main_nexe_desc = NULL;
     return;
   }
 
