@@ -420,7 +420,7 @@
       'enable_extensions%': 1,
 
       # Enable Google Now.
-      'enable_google_now%': 0,
+      'enable_google_now%': 1,
 
       # Enable printing support and UI. This variable is used to configure
       # which parts of printing will be built. 0 disables printing completely,

@@ -27,7 +27,7 @@ namespace android_webview {
 
 std::string GetUserAgent() {
   // "Version/4.0" had been hardcoded in the legacy WebView.
-  std::string product = "Version/4.0 (Dart) " + GetProduct();
+  std::string product = "Version/4.0 " + GetProduct();
   if (CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kUseMobileUserAgent)) {
     product += " Mobile";
