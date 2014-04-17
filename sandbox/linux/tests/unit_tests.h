@@ -19,6 +19,12 @@ bool IsArchitectureArm();
 // Is Valgrind currently being used?
 bool IsRunningOnValgrind();
 
+#if defined(ADDRESS_SANITIZER)
+#define DISABLE_ON_ASAN(test_name) DISABLED_##test_name
+#else
+#define DISABLE_ON_ASAN(test_name) test_name
+#endif  // defined(ADDRESS_SANITIZER)
+
 #if defined(THREAD_SANITIZER)
 #define DISABLE_ON_TSAN(test_name) DISABLED_##test_name
 #else

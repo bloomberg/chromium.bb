@@ -39,6 +39,13 @@ SANDBOX_EXPORT intptr_t
 SANDBOX_EXPORT intptr_t
     SIGSYSIoctlFailure(const struct arch_seccomp_data& args, void* aux);
 
+// Following four functions return substrings of error messages used
+// in the above four functions. They are useful in death tests.
+SANDBOX_EXPORT const char* GetErrorMessageContentForTests();
+SANDBOX_EXPORT const char* GetCloneErrorMessageContentForTests();
+SANDBOX_EXPORT const char* GetPrctlErrorMessageContentForTests();
+SANDBOX_EXPORT const char* GetIoctlErrorMessageContentForTests();
+
 }  // namespace sandbox.
 
 #endif  // SANDBOX_LINUX_SECCOMP_BPF_HELPERS_SIGSYS_HANDLERS_H_

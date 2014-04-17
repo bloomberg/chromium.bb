@@ -350,6 +350,16 @@
                 'nacl.gyp:nacl_common',
               ],
             }],
+            ['disable_nacl==0 and OS=="linux"', {
+              'sources': [
+                'nacl/loader/nonsfi/nonsfi_sandbox_unittest.cc',
+                'nacl/loader/nonsfi/nonsfi_sandbox_sigsys_unittest.cc',
+              ],
+              'dependencies': [
+                'nacl.gyp:nacl_loader',
+                '../sandbox/sandbox.gyp:sandbox_linux_test_utils',
+              ],
+            }],
             ['OS == "mac"', {
               'link_settings': {
                 'libraries': [
