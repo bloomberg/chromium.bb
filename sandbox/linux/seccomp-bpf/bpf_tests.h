@@ -44,6 +44,12 @@ namespace sandbox {
 
 // Assertions are handled exactly the same as with a normal SANDBOX_TEST()
 #define BPF_ASSERT SANDBOX_ASSERT
+#define BPF_ASSERT_EQ(x, y) BPF_ASSERT((x) == (y))
+#define BPF_ASSERT_NE(x, y) BPF_ASSERT((x) != (y))
+#define BPF_ASSERT_LT(x, y) BPF_ASSERT((x) < (y))
+#define BPF_ASSERT_GT(x, y) BPF_ASSERT((x) > (y))
+#define BPF_ASSERT_LE(x, y) BPF_ASSERT((x) <= (y))
+#define BPF_ASSERT_GE(x, y) BPF_ASSERT((x) >= (y))
 
 // The "Aux" type is optional. We use an "empty" type by default, so that if
 // the caller doesn't provide any type, all the BPF_AUX related data compiles

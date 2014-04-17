@@ -57,6 +57,22 @@
       ],
     },
     {
+      'target_name': 'sandbox_linux_test_utils',
+      'type': 'static_library',
+      'dependencies': [
+        '../testing/gtest.gyp:gtest',
+      ],
+      'include_dirs': [
+        '../..',
+      ],
+      'sources': [
+        'tests/test_utils.cc',
+        'tests/test_utils.h',
+        'tests/unit_tests.cc',
+        'tests/unit_tests.h',
+      ],
+    },
+    {
       # The main sandboxing test target.
       'target_name': 'sandbox_linux_unittests',
       'includes': [
