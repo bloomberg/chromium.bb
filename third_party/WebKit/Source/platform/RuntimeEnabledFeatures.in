@@ -18,7 +18,10 @@
 ApplicationCache status=stable
 AuthorShadowDOMForAnyElement
 BatteryStatus status=experimental
-PrefixedVideoFullscreen status=test
+
+// This feature is deprecated and we are evangalizing affected sites.
+// See https://crbug.com/346236 for current status.
+PrefixedVideoFullscreen status=stable
 
 // Enable bleeding-edge code to make Blink draw content faster.
 // The changes enabled behind this flag are very likely to break lots of content.
