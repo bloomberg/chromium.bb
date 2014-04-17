@@ -32,7 +32,11 @@
 #include "platform/graphics/GraphicsContextRecorder.h"
 
 #include "platform/graphics/ImageBuffer.h"
+#include "platform/graphics/ImageSource.h"
+#include "platform/image-decoders/ImageDecoder.h"
+#include "platform/image-decoders/ImageFrame.h"
 #include "third_party/skia/include/core/SkBitmapDevice.h"
+#include "third_party/skia/include/core/SkStream.h"
 
 namespace WebCore {
 
@@ -155,6 +159,28 @@ private:
     Vector<double>* m_currentTimings;
 };
 
+static bool decodeBitmap(const void* data, size_t length, SkBitmap* result)
+{
+    RefPtr<SharedBuffer> buffer = SharedBuffer::create(static_cast<const char*>(data), length);
+    OwnPtr<ImageDecoder> imageDecoder = ImageDecoder::create(*buffer, ImageSource::AlphaPremultiplied, ImageSource::GammaAndColorProfileIgnored);
+    if (!imageDecoder)
+        return false;
+    imageDecoder->setData(buffer.get(), true);
+    ImageFrame* frame = imageDecoder->frameBufferAtIndex(0);
+    if (!frame)
+        return true;
+    *result = frame->getSkBitmap();
+    return true;
+}
+
+PassRefPtr<GraphicsContextSnapshot> GraphicsContextSnapshot::load(const char* data, size_t size)
+{
+    SkMemoryStream stream(data, size);
+    RefPtr<SkPicture> picture = adoptRef(SkPicture::CreateFromStream(&stream, decodeBitmap));
+    if (!picture)
+        return nullptr;
+    return adoptRef(new GraphicsContextSnapshot(picture, false));
+}
 
 PassOwnPtr<ImageBuffer> GraphicsContextSnapshot::replay(unsigned fromStep, unsigned toStep) const
 {

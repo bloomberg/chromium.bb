@@ -43,6 +43,8 @@ WTF_MAKE_NONCOPYABLE(GraphicsContextSnapshot);
 public:
     typedef Vector<Vector<double> > Timings;
 
+    static PassRefPtr<GraphicsContextSnapshot> load(const char*, size_t);
+
     PassOwnPtr<ImageBuffer> replay(unsigned fromStep = 0, unsigned toStep = 0) const;
     PassOwnPtr<Timings> profile(unsigned minIterations, double minDuration) const;
 

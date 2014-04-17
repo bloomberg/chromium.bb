@@ -42,12 +42,11 @@
 
 namespace WebCore {
 
+class GraphicsContextSnapshot;
 class InspectorDOMAgent;
 class InstrumentingAgents;
 class Page;
 class RenderLayerCompositor;
-
-struct LayerSnapshot;
 
 typedef String ErrorString;
 
@@ -76,6 +75,7 @@ public:
     virtual void disable(ErrorString*) OVERRIDE;
     virtual void compositingReasons(ErrorString*, const String& layerId, RefPtr<TypeBuilder::Array<String> >&) OVERRIDE;
     virtual void makeSnapshot(ErrorString*, const String& layerId, String* snapshotId) OVERRIDE;
+    virtual void loadSnapshot(ErrorString*, const String& data, String* snapshotId) OVERRIDE;
     virtual void releaseSnapshot(ErrorString*, const String& snapshotId) OVERRIDE;
     virtual void replaySnapshot(ErrorString*, const String& snapshotId, const int* fromStep, const int* toStep, String* dataURL) OVERRIDE;
     virtual void profileSnapshot(ErrorString*, const String& snapshotId, const int* minRepeatCount, const double* minDuration, RefPtr<TypeBuilder::Array<TypeBuilder::Array<double> > >&) OVERRIDE;
@@ -90,7 +90,7 @@ private:
 
     RenderLayerCompositor* renderLayerCompositor();
     GraphicsLayer* layerById(ErrorString*, const String& layerId);
-    const LayerSnapshot* snapshotById(ErrorString*, const String& snapshotId);
+    const GraphicsContextSnapshot* snapshotById(ErrorString*, const String& snapshotId);
 
     typedef HashMap<int, int> LayerIdToNodeIdMap;
     void buildLayerIdToNodeIdMap(RenderLayer*, const String& nodeGroup, LayerIdToNodeIdMap&);
@@ -102,7 +102,7 @@ private:
     InspectorDOMAgent* m_domAgent;
     Vector<int, 2> m_pageOverlayLayerIds;
 
-    typedef HashMap<String, LayerSnapshot> SnapshotById;
+    typedef HashMap<String, RefPtr<GraphicsContextSnapshot> > SnapshotById;
     SnapshotById m_snapshotById;
 };
 

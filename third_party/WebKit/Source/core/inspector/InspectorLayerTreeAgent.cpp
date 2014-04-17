@@ -49,6 +49,7 @@
 #include "platform/transforms/TransformationMatrix.h"
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebLayer.h"
+#include "wtf/text/Base64.h"
 
 namespace {
 const char LayerTreeAgentObjectGroup[] = "layerTreeAgent";
@@ -57,20 +58,6 @@ const char LayerTreeAgentObjectGroup[] = "layerTreeAgent";
 namespace WebCore {
 
 unsigned InspectorLayerTreeAgent::s_lastSnapshotId;
-
-struct LayerSnapshot {
-    LayerSnapshot()
-        : layerId(0)
-    {
-    }
-    LayerSnapshot(int layerId, PassRefPtr<GraphicsContextSnapshot> graphicsSnapshot)
-        : layerId(layerId)
-        , graphicsSnapshot(graphicsSnapshot)
-    {
-    }
-    int layerId;
-    RefPtr<GraphicsContextSnapshot> graphicsSnapshot;
-};
 
 inline String idForLayer(const GraphicsLayer* graphicsLayer)
 {
@@ -331,7 +318,24 @@ void InspectorLayerTreeAgent::makeSnapshot(ErrorString* errorString, const Strin
     layer->paint(*context, IntRect(IntPoint(0, 0), size));
     RefPtr<GraphicsContextSnapshot> snapshot = recorder.stop();
     *snapshotId = String::number(++s_lastSnapshotId);
-    bool newEntry = m_snapshotById.add(*snapshotId, LayerSnapshot(layer->platformLayer()->id(), snapshot)).isNewEntry;
+    bool newEntry = m_snapshotById.add(*snapshotId, snapshot).isNewEntry;
+    ASSERT_UNUSED(newEntry, newEntry);
+}
+
+void InspectorLayerTreeAgent::loadSnapshot(ErrorString* errorString, const String& data, String* snapshotId)
+{
+    Vector<char> snapshotData;
+    if (!base64Decode(data, snapshotData)) {
+        *errorString = "Invalid base64 encoding";
+        return;
+    }
+    RefPtr<GraphicsContextSnapshot> snapshot = GraphicsContextSnapshot::load(snapshotData.data(), snapshotData.size());
+    if (!snapshot) {
+        *errorString = "Invalida snapshot format";
+        return;
+    }
+    *snapshotId = String::number(++s_lastSnapshotId);
+    bool newEntry = m_snapshotById.add(*snapshotId, snapshot).isNewEntry;
     ASSERT_UNUSED(newEntry, newEntry);
 }
 
@@ -345,31 +349,31 @@ void InspectorLayerTreeAgent::releaseSnapshot(ErrorString* errorString, const St
     m_snapshotById.remove(it);
 }
 
-const LayerSnapshot* InspectorLayerTreeAgent::snapshotById(ErrorString* errorString, const String& snapshotId)
+const GraphicsContextSnapshot* InspectorLayerTreeAgent::snapshotById(ErrorString* errorString, const String& snapshotId)
 {
     SnapshotById::iterator it = m_snapshotById.find(snapshotId);
     if (it == m_snapshotById.end()) {
         *errorString = "Snapshot not found";
         return 0;
     }
-    return &it->value;
+    return it->value.get();
 }
 
 void InspectorLayerTreeAgent::replaySnapshot(ErrorString* errorString, const String& snapshotId, const int* fromStep, const int* toStep, String* dataURL)
 {
-    const LayerSnapshot* snapshot = snapshotById(errorString, snapshotId);
+    const GraphicsContextSnapshot* snapshot = snapshotById(errorString, snapshotId);
     if (!snapshot)
         return;
-    OwnPtr<ImageBuffer> imageBuffer = snapshot->graphicsSnapshot->replay(fromStep ? *fromStep : 0, toStep ? *toStep : 0);
+    OwnPtr<ImageBuffer> imageBuffer = snapshot->replay(fromStep ? *fromStep : 0, toStep ? *toStep : 0);
     *dataURL = imageBuffer->toDataURL("image/png");
 }
 
 void InspectorLayerTreeAgent::profileSnapshot(ErrorString* errorString, const String& snapshotId, const int* minRepeatCount, const double* minDuration, RefPtr<TypeBuilder::Array<TypeBuilder::Array<double> > >& outTimings)
 {
-    const LayerSnapshot* snapshot = snapshotById(errorString, snapshotId);
+    const GraphicsContextSnapshot* snapshot = snapshotById(errorString, snapshotId);
     if (!snapshot)
         return;
-    OwnPtr<GraphicsContextSnapshot::Timings> timings = snapshot->graphicsSnapshot->profile(minRepeatCount ? *minRepeatCount : 1, minDuration ? *minDuration : 0);
+    OwnPtr<GraphicsContextSnapshot::Timings> timings = snapshot->profile(minRepeatCount ? *minRepeatCount : 1, minDuration ? *minDuration : 0);
     outTimings = TypeBuilder::Array<TypeBuilder::Array<double> >::create();
     for (size_t i = 0; i < timings->size(); ++i) {
         const Vector<double>& row = (*timings)[i];
