@@ -207,8 +207,9 @@ gfx::NativeViewId ScreenCaptureNotificationUIViews::OnStarted(
       work_area.y() + work_area.height() - size.height(),
       size.width(), size.height());
   widget->SetBounds(bounds);
-  widget->SetOpacity(0xFF * kWindowAlphaValue);
   widget->Show();
+  // This has to be called after Show() to have effect.
+  widget->SetOpacity(0xFF * kWindowAlphaValue);
 
 #if defined(OS_WIN)
   return gfx::NativeViewId(views::HWNDForWidget(widget));
