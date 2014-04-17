@@ -61,6 +61,19 @@ static void
 show_input_panel_surface(struct input_panel_surface *ipsurf)
 {
 	struct desktop_shell *shell = ipsurf->shell;
+	struct weston_seat *seat;
+	struct weston_surface *focus;
+	float x, y;
+
+	wl_list_for_each(seat, &shell->compositor->seat_list, link) {
+		if (!seat->keyboard)
+			continue;
+		focus = weston_surface_get_main_surface(seat->keyboard->focus);
+		ipsurf->output = focus->output;
+		x = ipsurf->output->x + (ipsurf->output->width - ipsurf->surface->width) / 2;
+		y = ipsurf->output->y + ipsurf->output->height - ipsurf->surface->height;
+		weston_view_set_position(ipsurf->view, x, y);
+	}
 
 	wl_list_insert(&shell->input_panel_layer.view_list,
 		       &ipsurf->view->layer_link);
