@@ -5680,16 +5680,6 @@
    fun:_ZN7content20ChildProcessLauncher25GetChildTerminationStatusEbPi
 }
 {
-   bug_288787
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN10extensions22ManagedValueStoreCache16ExtensionTracker7ObserveEiRKN7content18NotificationSourceERKNS2_19NotificationDetailsE
-   fun:_ZN7content23NotificationServiceImpl6NotifyEiRKNS_18NotificationSourceERKNS_19NotificationDetailsE
-   fun:_ZN16ExtensionService23NotifyExtensionUnloadedEPKN10extensions9ExtensionEN14extension_misc23UnloadedExtensionReasonE
-   fun:_ZN16ExtensionService16DisableExtensionERKSsN10extensions9Extension13DisableReasonE
-   fun:_ZN22theme_service_internal40ThemeServiceTest_DisableUnusedTheme_Test8TestBodyEv
-}
-{
    bug_288804
    Memcheck:Leak
    fun:_Znw*
