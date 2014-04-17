@@ -13,7 +13,7 @@ TEST SUCCEEDED: Exception (NoModificationAllowedError: Failed to set the 'outerH
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLElement.accessKey]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLElement.title]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLElement.lang]
-TEST SUCCEEDED: The value was the string 'null'. [tested HTMLElement.dir]
+TEST SUCCEEDED: The value was the empty string. [tested HTMLElement.dir]
 TEST SUCCEEDED: The value was the empty string. [tested HTMLElement.innerText]
 TEST SUCCEEDED: Exception (NoModificationAllowedError: Failed to set the 'outerText' property on 'HTMLElement': The element has no parent.) was thrown as expected. [tested HTMLElement.outerText]
 TEST SUCCEEDED: Exception (SyntaxError: Failed to set the 'contentEditable' property on 'HTMLElement': The value provided ('null') is not one of 'true', 'false', 'plaintext-only', or 'inherit'.) was thrown as expected. [tested HTMLElement.contentEditable]

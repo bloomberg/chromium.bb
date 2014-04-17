@@ -65,6 +65,9 @@ public:
     bool translate() const;
     void setTranslate(bool);
 
+    const AtomicString& dir();
+    void setDir(const AtomicString&);
+
     void click();
 
     virtual void accessKeyAction(bool sendMouseEvents) OVERRIDE;

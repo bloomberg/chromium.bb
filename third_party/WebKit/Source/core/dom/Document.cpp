@@ -125,6 +125,7 @@
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLHeadElement.h"
+#include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLLinkElement.h"
@@ -1394,10 +1395,8 @@ void Document::removeTitle(Element* titleElement)
 const AtomicString& Document::dir()
 {
     Element* rootElement = documentElement();
-    if (isHTMLHtmlElement(rootElement)) {
-        // FIXME(crbug.com/363628): document.dir should only return known values.
-        return rootElement->getAttribute(dirAttr);
-    }
+    if (isHTMLHtmlElement(rootElement))
+        return toHTMLHtmlElement(rootElement)->dir();
     return nullAtom;
 }
 
@@ -1405,7 +1404,7 @@ void Document::setDir(const AtomicString& value)
 {
     Element* rootElement = documentElement();
     if (isHTMLHtmlElement(rootElement))
-        rootElement->setAttribute(dirAttr, value);
+        toHTMLHtmlElement(rootElement)->setDir(value);
 }
 
 PageVisibilityState Document::pageVisibilityState() const
