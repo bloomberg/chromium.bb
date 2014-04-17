@@ -49,6 +49,10 @@ bool ExtractInt(AVDictionaryEntry* tag, const char* expected_key,
 
 }  // namespace
 
+AudioVideoMetadataExtractor::StreamInfo::StreamInfo() {}
+
+AudioVideoMetadataExtractor::StreamInfo::~StreamInfo() {}
+
 AudioVideoMetadataExtractor::AudioVideoMetadataExtractor()
     : extracted_(false),
       duration_(-1),
@@ -85,23 +89,27 @@ bool AudioVideoMetadataExtractor::Extract(DataSource* source) {
   if (format_context->duration != AV_NOPTS_VALUE)
     duration_ = static_cast<double>(format_context->duration) / AV_TIME_BASE;
 
-  ExtractDictionary(format_context->metadata);
+  stream_infos_.push_back(StreamInfo());
+  StreamInfo& container_info = stream_infos_.back();
+  container_info.type = format_context->iformat->name;
+  ExtractDictionary(format_context->metadata, &container_info.tags);
 
   for (unsigned int i = 0; i < format_context->nb_streams; ++i) {
+    stream_infos_.push_back(StreamInfo());
+    StreamInfo& info = stream_infos_.back();
+
     AVStream* stream = format_context->streams[i];
     if (!stream)
       continue;
 
-    // Ignore attached pictures for metadata extraction.
-    if ((stream->disposition & AV_DISPOSITION_ATTACHED_PIC) != 0)
-      continue;
-
     // Extract dictionary from streams also. Needed for containers that attach
     // metadata to contained streams instead the container itself, like OGG.
-    ExtractDictionary(stream->metadata);
+    ExtractDictionary(stream->metadata, &info.tags);
 
     if (!stream->codec)
       continue;
+
+    info.type = avcodec_get_name(stream->codec->codec_id);
 
     // Extract dimensions of largest stream that's not an attached picture.
     if (stream->codec->width > 0 && stream->codec->width > width_ &&
@@ -195,20 +203,21 @@ int AudioVideoMetadataExtractor::track() const {
   return track_;
 }
 
-const std::map<std::string, std::string>&
-AudioVideoMetadataExtractor::raw_tags() const {
+const std::vector<AudioVideoMetadataExtractor::StreamInfo>&
+AudioVideoMetadataExtractor::stream_infos() const {
   DCHECK(extracted_);
-  return raw_tags_;
+  return stream_infos_;
 }
 
-void AudioVideoMetadataExtractor::ExtractDictionary(AVDictionary* metadata) {
+void AudioVideoMetadataExtractor::ExtractDictionary(
+    AVDictionary* metadata, TagDictionary* raw_tags) {
   if (!metadata)
     return;
 
   AVDictionaryEntry* tag = NULL;
   while ((tag = av_dict_get(metadata, "", tag, AV_DICT_IGNORE_SUFFIX))) {
-    if (raw_tags_.find(tag->key) == raw_tags_.end())
-      raw_tags_[tag->key] = tag->value;
+    if (raw_tags->find(tag->key) == raw_tags->end())
+      (*raw_tags)[tag->key] = tag->value;
 
     if (ExtractInt(tag, "rotate", &rotation_)) continue;
     if (ExtractString(tag, "album", &album_)) continue;

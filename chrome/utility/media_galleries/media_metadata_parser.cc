@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/memory/linked_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
@@ -14,6 +15,8 @@
 #include "chrome/utility/media_galleries/image_metadata_extractor.h"
 #include "media/base/audio_video_metadata_extractor.h"
 #include "media/base/data_source.h"
+
+namespace MediaGalleries = extensions::api::media_galleries;
 
 namespace metadata {
 
@@ -76,10 +79,21 @@ scoped_ptr<MediaMetadataParser::MediaMetadata> ParseAudioVideoMetadata(
   SetStringScopedPtr(extractor.title(), &metadata->title);
   SetIntScopedPtr(extractor.track(), &metadata->track);
 
-  for (std::map<std::string, std::string>::const_iterator it =
-           extractor.raw_tags().begin();
-       it != extractor.raw_tags().end(); ++it) {
-    metadata->raw_tags.additional_properties.SetString(it->first, it->second);
+  for (media::AudioVideoMetadataExtractor::StreamInfoVector::const_iterator it =
+           extractor.stream_infos().begin();
+       it != extractor.stream_infos().end(); ++it) {
+    linked_ptr<MediaGalleries::StreamInfo> stream_info(
+        new MediaGalleries::StreamInfo);
+    stream_info->type = it->type;
+
+    for (std::map<std::string, std::string>::const_iterator tag_it =
+             it->tags.begin();
+         tag_it != it->tags.end(); ++tag_it) {
+      stream_info->tags.additional_properties.SetString(tag_it->first,
+                                                        tag_it->second);
+    }
+
+    metadata->raw_tags.push_back(stream_info);
   }
 
   return metadata.Pass();

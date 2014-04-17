@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "media/base/media_export.h"
@@ -21,6 +22,17 @@ class DataSource;
 // files. It also provides the format name.
 class MEDIA_EXPORT AudioVideoMetadataExtractor {
  public:
+  typedef std::map<std::string, std::string> TagDictionary;
+
+  struct StreamInfo {
+    StreamInfo();
+    ~StreamInfo();
+    std::string type;
+    TagDictionary tags;
+  };
+
+  typedef std::vector<StreamInfo> StreamInfoVector;
+
   AudioVideoMetadataExtractor();
   ~AudioVideoMetadataExtractor();
 
@@ -52,10 +64,11 @@ class MEDIA_EXPORT AudioVideoMetadataExtractor {
   const std::string& title() const;
   int track() const;
 
-  const std::map<std::string, std::string>& raw_tags() const;
+  // First element is the container. Subsequent elements are the child streams.
+  const StreamInfoVector& stream_infos() const;
 
  private:
-  void ExtractDictionary(AVDictionary* metadata);
+  void ExtractDictionary(AVDictionary* metadata, TagDictionary* raw_tags);
 
   bool extracted_;
 
@@ -77,7 +90,7 @@ class MEDIA_EXPORT AudioVideoMetadataExtractor {
   std::string title_;
   int track_;
 
-  std::map<std::string, std::string> raw_tags_;
+  StreamInfoVector stream_infos_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioVideoMetadataExtractor);
 };

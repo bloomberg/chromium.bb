@@ -73,13 +73,20 @@ function MP3TagsTest() {
     chrome.test.assertEq(1, metadata.track);
     chrome.test.assertEq("Alternative", metadata.genre);
 
-    chrome.test.assertEq("OK Computer", metadata.rawTags["album"]);
-    chrome.test.assertEq("Radiohead", metadata.rawTags["artist"]);
-    chrome.test.assertEq("1997", metadata.rawTags["date"]);
-    chrome.test.assertEq("Lavf54.4.100", metadata.rawTags["encoder"]);
-    chrome.test.assertEq("Alternative", metadata.rawTags["genre"]);
-    chrome.test.assertEq("Airbag", metadata.rawTags["title"]);
-    chrome.test.assertEq("1", metadata.rawTags["track"]);
+    chrome.test.assertEq(3, metadata.rawTags.length);
+
+    chrome.test.assertEq("mp3", metadata.rawTags[0].type);
+    chrome.test.assertEq("OK Computer", metadata.rawTags[0].tags["album"]);
+    chrome.test.assertEq("Radiohead", metadata.rawTags[0].tags["artist"]);
+    chrome.test.assertEq("1997", metadata.rawTags[0].tags["date"]);
+    chrome.test.assertEq("Lavf54.4.100", metadata.rawTags[0].tags["encoder"]);
+    chrome.test.assertEq("Alternative", metadata.rawTags[0].tags["genre"]);
+    chrome.test.assertEq("Airbag", metadata.rawTags[0].tags["title"]);
+    chrome.test.assertEq("1", metadata.rawTags[0].tags["track"]);
+
+    chrome.test.assertEq("mp3", metadata.rawTags[1].type);
+
+    chrome.test.assertEq("png", metadata.rawTags[2].type);
 
     chrome.test.succeed();
   }
@@ -92,14 +99,30 @@ function RotatedVideoTest() {
     chrome.test.assertEq("video/mp4", metadata.mimeType);
     chrome.test.assertEq(90, metadata.rotation);
 
-    chrome.test.assertEq("isom3gp4", metadata.rawTags["compatible_brands"]);
+    chrome.test.assertEq(3, metadata.rawTags.length);
+
+    chrome.test.assertEq("mov,mp4,m4a,3gp,3g2,mj2", metadata.rawTags[0].type);
+    chrome.test.assertEq("isom3gp4",
+                         metadata.rawTags[0].tags["compatible_brands"]);
     chrome.test.assertEq("2014-02-11 00:39:25",
-                         metadata.rawTags["creation_time"]);
-    chrome.test.assertEq("VideoHandle", metadata.rawTags["handler_name"]);
-    chrome.test.assertEq("eng", metadata.rawTags["language"]);
-    chrome.test.assertEq("isom", metadata.rawTags["major_brand"]);
-    chrome.test.assertEq("0", metadata.rawTags["minor_version"]);
-    chrome.test.assertEq("90", metadata.rawTags["rotate"]);
+                         metadata.rawTags[0].tags["creation_time"]);
+    chrome.test.assertEq("isom", metadata.rawTags[0].tags["major_brand"]);
+    chrome.test.assertEq("0", metadata.rawTags[0].tags["minor_version"]);
+
+    chrome.test.assertEq("h264", metadata.rawTags[1].type);
+    chrome.test.assertEq("2014-02-11 00:39:25",
+                         metadata.rawTags[1].tags["creation_time"]);
+    chrome.test.assertEq("VideoHandle",
+                         metadata.rawTags[1].tags["handler_name"]);
+    chrome.test.assertEq("eng", metadata.rawTags[1].tags["language"]);
+    chrome.test.assertEq("90", metadata.rawTags[1].tags["rotate"]);
+
+    chrome.test.assertEq("aac", metadata.rawTags[2].type);
+    chrome.test.assertEq("2014-02-11 00:39:25",
+                         metadata.rawTags[2].tags["creation_time"]);
+    chrome.test.assertEq("SoundHandle",
+                         metadata.rawTags[2].tags["handler_name"]);
+    chrome.test.assertEq("eng", metadata.rawTags[2].tags["language"]);
 
     chrome.test.succeed();
   }

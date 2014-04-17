@@ -98,6 +98,14 @@ namespace mediaGalleries {
   callback MediaFileSystemsMetadataCallback =
       void (MediaFileSystemMetadata[] metadata);
 
+  dictionary StreamInfo {
+    // Describes format of container or codec of stream, i.e. "mp3", "h264".
+    DOMString type;
+    
+    // An unfiltered string->string dictionary of tags for the stream.
+    object tags;
+  };
+
   dictionary MediaMetadata {
     // The browser sniffed mime type.
     DOMString mimeType;
@@ -136,9 +144,9 @@ namespace mediaGalleries {
     DOMString? title;
     long? track;
 
-    // A dictionary of all the metadata in the media file. This metadata is in
-    // string form, and neither the key nor value is normalized.
-    object rawTags;
+    // All the metadata in the media file. For formats with multiple streams,
+    // stream order will be preserved. Container metadata is the first element.
+    StreamInfo[] rawTags;
   };
 
   callback MediaMetadataCallback = void (MediaMetadata metadata);
