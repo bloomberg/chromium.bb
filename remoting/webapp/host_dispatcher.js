@@ -334,8 +334,7 @@ remoting.HostDispatcher.prototype.getUsageStatsConsent =
 remoting.HostDispatcher.prototype.installHost = function(onDone, onError) {
   switch (this.state_) {
     case remoting.HostDispatcher.State.UNKNOWN:
-      this.pendingRequests_.push(
-          this.startDaemon.bind(this, config, consent, onDone, onError));
+      this.pendingRequests_.push(this.installHost.bind(this, onDone, onError));
       break;
     case remoting.HostDispatcher.State.NATIVE_MESSAGING:
       // Host already installed, no action needed.
