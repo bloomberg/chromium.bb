@@ -32,8 +32,7 @@ void GetServiceWorkerRegistrationStatusResponse(
       return;
 
     case SERVICE_WORKER_ERROR_NOT_FOUND:
-      // FIXME(dominicc): Make this NotFoundError when Blink adds it.
-      *error_type = WebServiceWorkerError::UnknownError;
+      *error_type = WebServiceWorkerError::NotFoundError;
       return;
 
     case SERVICE_WORKER_ERROR_ABORT:
