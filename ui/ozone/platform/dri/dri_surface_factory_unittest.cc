@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,13 +9,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/gfx/ozone/dri/dri_buffer.h"
-#include "ui/gfx/ozone/dri/dri_surface.h"
-#include "ui/gfx/ozone/dri/dri_surface_factory.h"
-#include "ui/gfx/ozone/dri/dri_wrapper.h"
-#include "ui/gfx/ozone/dri/hardware_display_controller.h"
 #include "ui/gfx/ozone/surface_factory_ozone.h"
 #include "ui/gfx/ozone/surface_ozone_canvas.h"
+#include "ui/ozone/platform/dri/dri_buffer.h"
+#include "ui/ozone/platform/dri/dri_surface.h"
+#include "ui/ozone/platform/dri/dri_surface_factory.h"
+#include "ui/ozone/platform/dri/dri_wrapper.h"
+#include "ui/ozone/platform/dri/hardware_display_controller.h"
 
 namespace {
 
@@ -36,11 +36,11 @@ const uint32_t kDPMSPropertyId = 1;
 const gfx::AcceleratedWidget kDefaultWidgetHandle = 1;
 
 // The real DriWrapper makes actual DRM calls which we can't use in unit tests.
-class MockDriWrapper : public gfx::DriWrapper {
+class MockDriWrapper : public ui::DriWrapper {
  public:
   MockDriWrapper(int fd) : DriWrapper(""),
-                                add_framebuffer_expectation_(true),
-                                page_flip_expectation_(true) {
+                           add_framebuffer_expectation_(true),
+                           page_flip_expectation_(true) {
     fd_ = fd;
   }
 
@@ -79,7 +79,7 @@ class MockDriWrapper : public gfx::DriWrapper {
   virtual bool PageFlip(uint32_t crtc_id,
                         uint32_t framebuffer,
                         void* data) OVERRIDE {
-    static_cast<gfx::HardwareDisplayController*>(data)->get_surface()
+    static_cast<ui::HardwareDisplayController*>(data)->get_surface()
         ->SwapBuffers();
     return page_flip_expectation_;
   }
@@ -112,9 +112,9 @@ class MockDriWrapper : public gfx::DriWrapper {
   DISALLOW_COPY_AND_ASSIGN(MockDriWrapper);
 };
 
-class MockDriBuffer : public gfx::DriBuffer {
+class MockDriBuffer : public ui::DriBuffer {
  public:
-  MockDriBuffer(gfx::DriWrapper* dri) : DriBuffer(dri) {}
+  MockDriBuffer(ui::DriWrapper* dri) : DriBuffer(dri) {}
   virtual ~MockDriBuffer() {
     surface_.clear();
   }
@@ -130,23 +130,23 @@ class MockDriBuffer : public gfx::DriBuffer {
   DISALLOW_COPY_AND_ASSIGN(MockDriBuffer);
 };
 
-class MockDriSurface : public gfx::DriSurface {
+class MockDriSurface : public ui::DriSurface {
  public:
-  MockDriSurface(gfx::DriWrapper* dri, const gfx::Size& size)
+  MockDriSurface(ui::DriWrapper* dri, const gfx::Size& size)
       : DriSurface(dri, size), dri_(dri) {}
   virtual ~MockDriSurface() {}
 
   const std::vector<MockDriBuffer*>& bitmaps() const { return bitmaps_; }
 
  private:
-  virtual gfx::DriBuffer* CreateBuffer() OVERRIDE {
+  virtual ui::DriBuffer* CreateBuffer() OVERRIDE {
     MockDriBuffer* bitmap = new MockDriBuffer(dri_);
     bitmaps_.push_back(bitmap);
 
     return bitmap;
   }
 
-  gfx::DriWrapper* dri_;                 // Not owned.
+  ui::DriWrapper* dri_;                  // Not owned.
   std::vector<MockDriBuffer*> bitmaps_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(MockDriSurface);
@@ -156,8 +156,7 @@ class MockDriSurface : public gfx::DriSurface {
 // backend to allocate and display our buffers. Thus, we replace these
 // resources with stubs. For DRM calls, we simply use stubs that do nothing and
 // for buffers we use the default SkBitmap allocator.
-class MockDriSurfaceFactory
-    : public gfx::DriSurfaceFactory {
+class MockDriSurfaceFactory : public ui::DriSurfaceFactory {
  public:
   MockDriSurfaceFactory()
       : DriSurfaceFactory(),
@@ -181,13 +180,13 @@ class MockDriSurfaceFactory
   const std::vector<MockDriSurface*>& get_surfaces() const { return surfaces_; }
 
  private:
-  virtual gfx::DriSurface* CreateSurface(const gfx::Size& size) OVERRIDE {
+  virtual ui::DriSurface* CreateSurface(const gfx::Size& size) OVERRIDE {
     MockDriSurface* surface = new MockDriSurface(mock_drm_, size);
     surfaces_.push_back(surface);
     return surface;
   }
 
-  virtual gfx::DriWrapper* CreateWrapper() OVERRIDE {
+  virtual ui::DriWrapper* CreateWrapper() OVERRIDE {
     if (drm_wrapper_expectation_)
       mock_drm_ = new MockDriWrapper(kFd);
     else
@@ -199,8 +198,8 @@ class MockDriSurfaceFactory
   // Normally we'd use DRM to figure out the controller configuration. But we
   // can't use DRM in unit tests, so we just create a fake configuration.
   virtual bool InitializeControllerForPrimaryDisplay(
-      gfx::DriWrapper* drm,
-      gfx::HardwareDisplayController* controller) OVERRIDE {
+      ui::DriWrapper* drm,
+      ui::HardwareDisplayController* controller) OVERRIDE {
     if (initialize_controller_expectation_) {
       controller->SetControllerInfo(drm,
                                     kConnectorId,

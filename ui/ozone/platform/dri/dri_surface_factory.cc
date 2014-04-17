@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/ozone/dri/dri_surface_factory.h"
+#include "ui/ozone/platform/dri/dri_surface_factory.h"
 
 #include <drm.h>
 #include <errno.h>
@@ -12,13 +12,13 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkDevice.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/ozone/dri/dri_surface.h"
-#include "ui/gfx/ozone/dri/dri_vsync_provider.h"
-#include "ui/gfx/ozone/dri/dri_wrapper.h"
-#include "ui/gfx/ozone/dri/hardware_display_controller.h"
 #include "ui/gfx/ozone/surface_ozone_canvas.h"
+#include "ui/ozone/platform/dri/dri_surface.h"
+#include "ui/ozone/platform/dri/dri_vsync_provider.h"
+#include "ui/ozone/platform/dri/dri_wrapper.h"
+#include "ui/ozone/platform/dri/hardware_display_controller.h"
 
-namespace gfx {
+namespace ui {
 
 namespace {
 
@@ -122,13 +122,13 @@ void UpdateCursorImage(DriSurface* cursor, const SkBitmap& image) {
 // the compositor merely owns this proxy object.
 //
 // TODO(spang): Should the compositor own any bits of the DriSurface?
-class DriSurfaceAdapter : public SurfaceOzoneCanvas {
+class DriSurfaceAdapter : public gfx::SurfaceOzoneCanvas {
  public:
   DriSurfaceAdapter(gfx::AcceleratedWidget w, DriSurfaceFactory* dri)
       : widget_(w), dri_(dri) {}
   virtual ~DriSurfaceAdapter() {}
 
-  // SurfaceOzoneCanvas overrides:
+  // gfx::SurfaceOzoneCanvas overrides:
   virtual skia::RefPtr<SkCanvas> GetCanvas() OVERRIDE {
     return skia::SharePtr(dri_->GetCanvasForWidget(widget_));
   }
@@ -161,7 +161,7 @@ DriSurfaceFactory::~DriSurfaceFactory() {
     ShutdownHardware();
 }
 
-SurfaceFactoryOzone::HardwareState
+gfx::SurfaceFactoryOzone::HardwareState
 DriSurfaceFactory::InitializeHardware() {
   CHECK(state_ == UNINITIALIZED);
 
@@ -210,7 +210,7 @@ gfx::AcceleratedWidget DriSurfaceFactory::GetAcceleratedWidget() {
   return kDefaultWidgetHandle;
 }
 
-scoped_ptr<SurfaceOzoneCanvas> DriSurfaceFactory::CreateCanvasForWidget(
+scoped_ptr<gfx::SurfaceOzoneCanvas> DriSurfaceFactory::CreateCanvasForWidget(
     gfx::AcceleratedWidget w) {
   CHECK(state_ == INITIALIZED);
   // TODO(dnicoara) Once we can handle multiple displays this needs to be
@@ -224,17 +224,17 @@ scoped_ptr<SurfaceOzoneCanvas> DriSurfaceFactory::CreateCanvasForWidget(
   // hardware display.
   if (!InitializeControllerForPrimaryDisplay(drm_.get(), controller_.get())) {
     LOG(ERROR) << "Failed to initialize controller";
-    return scoped_ptr<SurfaceOzoneCanvas>();
+    return scoped_ptr<gfx::SurfaceOzoneCanvas>();
   }
 
   // Create a surface suitable for the current controller.
   scoped_ptr<DriSurface> surface(CreateSurface(
-      Size(controller_->get_mode().hdisplay,
-           controller_->get_mode().vdisplay)));
+      gfx::Size(controller_->get_mode().hdisplay,
+                controller_->get_mode().vdisplay)));
 
   if (!surface->Initialize()) {
     LOG(ERROR) << "Failed to initialize surface";
-    return scoped_ptr<SurfaceOzoneCanvas>();
+    return scoped_ptr<gfx::SurfaceOzoneCanvas>();
   }
 
   // Bind the surface to the controller. This will register the backing buffers
@@ -242,13 +242,13 @@ scoped_ptr<SurfaceOzoneCanvas> DriSurfaceFactory::CreateCanvasForWidget(
   // takes ownership of the surface.
   if (!controller_->BindSurfaceToController(surface.Pass())) {
     LOG(ERROR) << "Failed to bind surface to controller";
-    return scoped_ptr<SurfaceOzoneCanvas>();
+    return scoped_ptr<gfx::SurfaceOzoneCanvas>();
   }
 
   // Initial cursor set.
   ResetCursor();
 
-  return make_scoped_ptr<SurfaceOzoneCanvas>(new DriSurfaceAdapter(w, this));
+  return scoped_ptr<gfx::SurfaceOzoneCanvas>(new DriSurfaceAdapter(w, this));
 }
 
 bool DriSurfaceFactory::LoadEGLGLES2Bindings(
@@ -299,7 +299,8 @@ SkCanvas* DriSurfaceFactory::GetCanvasForWidget(
 scoped_ptr<gfx::VSyncProvider> DriSurfaceFactory::CreateVSyncProvider(
     gfx::AcceleratedWidget w) {
   CHECK(state_ == INITIALIZED);
-  return scoped_ptr<VSyncProvider>(new DriVSyncProvider(controller_.get()));
+  return scoped_ptr<gfx::VSyncProvider>(
+      new DriVSyncProvider(controller_.get()));
 }
 
 void DriSurfaceFactory::SetHardwareCursor(gfx::AcceleratedWidget window,
@@ -418,4 +419,4 @@ void DriSurfaceFactory::ResetCursor() {
 }
 
 
-}  // namespace gfx
+}  // namespace ui

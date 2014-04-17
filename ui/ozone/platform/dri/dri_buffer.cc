@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/ozone/dri/dri_buffer.h"
+#include "ui/ozone/platform/dri/dri_buffer.h"
 
 #include <errno.h>
 #include <sys/mman.h>
@@ -11,9 +11,9 @@
 
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "ui/gfx/ozone/dri/dri_wrapper.h"
+#include "ui/ozone/platform/dri/dri_wrapper.h"
 
-namespace gfx {
+namespace ui {
 
 namespace {
 
@@ -121,4 +121,4 @@ uint8_t DriBuffer::GetColorDepth() const {
   }
 }
 
-}  // namespace gfx
+}  // namespace ui

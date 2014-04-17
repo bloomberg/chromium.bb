@@ -1,25 +1,29 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_OZONE_DRI_DRI_SURFACE_FACTORY_H_
-#define UI_GFX_OZONE_DRI_DRI_SURFACE_FACTORY_H_
+#ifndef UI_OZONE_PLATFORM_DRI_DRI_SURFACE_FACTORY_H_
+#define UI_OZONE_PLATFORM_DRI_DRI_SURFACE_FACTORY_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/ozone/surface_factory_ozone.h"
+#include "ui/ozone/ozone_export.h"
 
 namespace gfx {
+class SurfaceOzoneCanvas;
+}
+
+namespace ui {
 
 class DriSurface;
 class DriWrapper;
 class HardwareDisplayController;
-class SurfaceOzoneCanvas;
 
 // SurfaceFactoryOzone implementation on top of DRM/KMS using dumb buffers.
 // This implementation is used in conjunction with the software rendering
 // path.
-class GFX_EXPORT DriSurfaceFactory : public SurfaceFactoryOzone {
+class OZONE_EXPORT DriSurfaceFactory : public gfx::SurfaceFactoryOzone {
  public:
   DriSurfaceFactory();
   virtual ~DriSurfaceFactory();
@@ -29,7 +33,7 @@ class GFX_EXPORT DriSurfaceFactory : public SurfaceFactoryOzone {
 
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
 
-  virtual scoped_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
+  virtual scoped_ptr<gfx::SurfaceOzoneCanvas> CreateCanvasForWidget(
       gfx::AcceleratedWidget w) OVERRIDE;
 
   virtual bool LoadEGLGLES2Bindings(
@@ -43,13 +47,14 @@ class GFX_EXPORT DriSurfaceFactory : public SurfaceFactoryOzone {
   virtual scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider(
       gfx::AcceleratedWidget w);
 
-  void SetHardwareCursor(AcceleratedWidget window,
+  void SetHardwareCursor(gfx::AcceleratedWidget window,
                          const SkBitmap& image,
                          const gfx::Point& location);
 
-  void MoveHardwareCursor(AcceleratedWidget window, const gfx::Point& location);
+  void MoveHardwareCursor(gfx::AcceleratedWidget window,
+                          const gfx::Point& location);
 
-  void UnsetHardwareCursor(AcceleratedWidget window);
+  void UnsetHardwareCursor(gfx::AcceleratedWidget window);
 
  private:
   virtual DriSurface* CreateSurface(const gfx::Size& size);
@@ -84,6 +89,6 @@ class GFX_EXPORT DriSurfaceFactory : public SurfaceFactoryOzone {
   DISALLOW_COPY_AND_ASSIGN(DriSurfaceFactory);
 };
 
-}  // namespace gfx
+}  // namespace ui
 
-#endif  // UI_GFX_OZONE_DRI_DRI_SURFACE_FACTORY_H_
+#endif  // UI_OZONE_PLATFORM_DRI_DRI_SURFACE_FACTORY_H_

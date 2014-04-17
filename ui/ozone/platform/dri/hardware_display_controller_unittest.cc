@@ -1,13 +1,13 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "ui/gfx/ozone/dri/dri_buffer.h"
-#include "ui/gfx/ozone/dri/dri_surface.h"
-#include "ui/gfx/ozone/dri/dri_wrapper.h"
-#include "ui/gfx/ozone/dri/hardware_display_controller.h"
+#include "ui/ozone/platform/dri/dri_buffer.h"
+#include "ui/ozone/platform/dri/dri_surface.h"
+#include "ui/ozone/platform/dri/dri_wrapper.h"
+#include "ui/ozone/platform/dri/hardware_display_controller.h"
 
 namespace {
 
@@ -29,7 +29,7 @@ const uint32_t kCrtcId = 1;
 const uint32_t kDPMSPropertyId = 1;
 
 // The real DriWrapper makes actual DRM calls which we can't use in unit tests.
-class MockDriWrapper : public gfx::DriWrapper {
+class MockDriWrapper : public ui::DriWrapper {
  public:
   MockDriWrapper(int fd) : DriWrapper(""),
                                 get_crtc_call_count_(0),
@@ -147,9 +147,9 @@ class MockDriWrapper : public gfx::DriWrapper {
   DISALLOW_COPY_AND_ASSIGN(MockDriWrapper);
 };
 
-class MockDriBuffer : public gfx::DriBuffer {
+class MockDriBuffer : public ui::DriBuffer {
  public:
-  MockDriBuffer(gfx::DriWrapper* dri) : DriBuffer(dri) {}
+  MockDriBuffer(ui::DriWrapper* dri) : DriBuffer(dri) {}
   virtual ~MockDriBuffer() {
     surface_.clear();
   }
@@ -165,18 +165,18 @@ class MockDriBuffer : public gfx::DriBuffer {
   DISALLOW_COPY_AND_ASSIGN(MockDriBuffer);
 };
 
-class MockDriSurface : public gfx::DriSurface {
+class MockDriSurface : public ui::DriSurface {
  public:
-  MockDriSurface(gfx::DriWrapper* dri, const gfx::Size& size)
+  MockDriSurface(ui::DriWrapper* dri, const gfx::Size& size)
       : DriSurface(dri, size), dri_(dri) {}
   virtual ~MockDriSurface() {}
 
  private:
-  virtual gfx::DriBuffer* CreateBuffer() OVERRIDE {
+  virtual ui::DriBuffer* CreateBuffer() OVERRIDE {
     return new MockDriBuffer(dri_);
   }
 
-  gfx::DriWrapper* dri_;
+  ui::DriWrapper* dri_;
 
   DISALLOW_COPY_AND_ASSIGN(MockDriSurface);
 };
@@ -191,7 +191,7 @@ class HardwareDisplayControllerTest : public testing::Test {
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
  protected:
-  scoped_ptr<gfx::HardwareDisplayController> controller_;
+  scoped_ptr<ui::HardwareDisplayController> controller_;
   scoped_ptr<MockDriWrapper> drm_;
 
  private:
@@ -199,7 +199,7 @@ class HardwareDisplayControllerTest : public testing::Test {
 };
 
 void HardwareDisplayControllerTest::SetUp() {
-  controller_.reset(new gfx::HardwareDisplayController());
+  controller_.reset(new ui::HardwareDisplayController());
   drm_.reset(new MockDriWrapper(kFd));
 }
 
@@ -209,7 +209,7 @@ void HardwareDisplayControllerTest::TearDown() {
 }
 
 TEST_F(HardwareDisplayControllerTest, CheckInitialState) {
-  EXPECT_EQ(gfx::HardwareDisplayController::UNASSOCIATED,
+  EXPECT_EQ(ui::HardwareDisplayController::UNASSOCIATED,
             controller_->get_state());
 }
 
@@ -219,21 +219,21 @@ TEST_F(HardwareDisplayControllerTest,
       drm_.get(), kConnectorId, kCrtcId, kDPMSPropertyId, kDefaultMode);
 
   EXPECT_EQ(1, drm_->get_get_crtc_call_count());
-  EXPECT_EQ(gfx::HardwareDisplayController::UNINITIALIZED,
+  EXPECT_EQ(ui::HardwareDisplayController::UNINITIALIZED,
             controller_->get_state());
 }
 
 TEST_F(HardwareDisplayControllerTest, CheckStateAfterSurfaceIsBound) {
   controller_->SetControllerInfo(
       drm_.get(), kConnectorId, kCrtcId, kDPMSPropertyId, kDefaultMode);
-  scoped_ptr<gfx::DriSurface> surface(
+  scoped_ptr<ui::DriSurface> surface(
       new MockDriSurface(drm_.get(), kDefaultModeSize));
 
   EXPECT_TRUE(surface->Initialize());
   EXPECT_TRUE(controller_->BindSurfaceToController(surface.Pass()));
 
   EXPECT_EQ(2, drm_->get_add_framebuffer_call_count());
-  EXPECT_EQ(gfx::HardwareDisplayController::SURFACE_INITIALIZED,
+  EXPECT_EQ(ui::HardwareDisplayController::SURFACE_INITIALIZED,
             controller_->get_state());
 }
 
@@ -242,21 +242,21 @@ TEST_F(HardwareDisplayControllerTest, CheckStateIfBindingFails) {
 
   controller_->SetControllerInfo(
       drm_.get(), kConnectorId, kCrtcId, kDPMSPropertyId, kDefaultMode);
-  scoped_ptr<gfx::DriSurface> surface(
+  scoped_ptr<ui::DriSurface> surface(
       new MockDriSurface(drm_.get(), kDefaultModeSize));
 
   EXPECT_TRUE(surface->Initialize());
   EXPECT_FALSE(controller_->BindSurfaceToController(surface.Pass()));
 
   EXPECT_EQ(1, drm_->get_add_framebuffer_call_count());
-  EXPECT_EQ(gfx::HardwareDisplayController::FAILED,
+  EXPECT_EQ(ui::HardwareDisplayController::FAILED,
             controller_->get_state());
 }
 
 TEST_F(HardwareDisplayControllerTest, CheckStateAfterPageFlip) {
   controller_->SetControllerInfo(
       drm_.get(), kConnectorId, kCrtcId, kDPMSPropertyId, kDefaultMode);
-  scoped_ptr<gfx::DriSurface> surface(
+  scoped_ptr<ui::DriSurface> surface(
       new MockDriSurface(drm_.get(), kDefaultModeSize));
 
   EXPECT_TRUE(surface->Initialize());
@@ -264,7 +264,7 @@ TEST_F(HardwareDisplayControllerTest, CheckStateAfterPageFlip) {
 
   controller_->SchedulePageFlip();
 
-  EXPECT_EQ(gfx::HardwareDisplayController::INITIALIZED,
+  EXPECT_EQ(ui::HardwareDisplayController::INITIALIZED,
             controller_->get_state());
 }
 
@@ -273,7 +273,7 @@ TEST_F(HardwareDisplayControllerTest, CheckStateIfModesetFails) {
 
   controller_->SetControllerInfo(
       drm_.get(), kConnectorId, kCrtcId, kDPMSPropertyId, kDefaultMode);
-  scoped_ptr<gfx::DriSurface> surface(
+  scoped_ptr<ui::DriSurface> surface(
       new MockDriSurface(drm_.get(), kDefaultModeSize));
 
   EXPECT_TRUE(surface->Initialize());
@@ -281,7 +281,7 @@ TEST_F(HardwareDisplayControllerTest, CheckStateIfModesetFails) {
 
   controller_->SchedulePageFlip();
 
-  EXPECT_EQ(gfx::HardwareDisplayController::FAILED,
+  EXPECT_EQ(ui::HardwareDisplayController::FAILED,
             controller_->get_state());
 }
 
@@ -290,7 +290,7 @@ TEST_F(HardwareDisplayControllerTest, CheckStateIfPageFlipFails) {
 
   controller_->SetControllerInfo(
       drm_.get(), kConnectorId, kCrtcId, kDPMSPropertyId, kDefaultMode);
-  scoped_ptr<gfx::DriSurface> surface(
+  scoped_ptr<ui::DriSurface> surface(
       new MockDriSurface(drm_.get(), kDefaultModeSize));
 
   EXPECT_TRUE(surface->Initialize());
@@ -298,20 +298,20 @@ TEST_F(HardwareDisplayControllerTest, CheckStateIfPageFlipFails) {
 
   controller_->SchedulePageFlip();
 
-  EXPECT_EQ(gfx::HardwareDisplayController::FAILED,
+  EXPECT_EQ(ui::HardwareDisplayController::FAILED,
             controller_->get_state());
 }
 
 TEST_F(HardwareDisplayControllerTest, CheckProperDestruction) {
   controller_->SetControllerInfo(
       drm_.get(), kConnectorId, kCrtcId, kDPMSPropertyId, kDefaultMode);
-  scoped_ptr<gfx::DriSurface> surface(
+  scoped_ptr<ui::DriSurface> surface(
       new MockDriSurface(drm_.get(), kDefaultModeSize));
 
   EXPECT_TRUE(surface->Initialize());
   EXPECT_TRUE(controller_->BindSurfaceToController(surface.Pass()));
 
-  EXPECT_EQ(gfx::HardwareDisplayController::SURFACE_INITIALIZED,
+  EXPECT_EQ(ui::HardwareDisplayController::SURFACE_INITIALIZED,
             controller_->get_state());
 
   controller_.reset();

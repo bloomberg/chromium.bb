@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/ozone/dri/dri_wrapper.h"
+#include "ui/ozone/platform/dri/dri_wrapper.h"
 
 #include <fcntl.h>
 #include <unistd.h>
@@ -10,7 +10,7 @@
 
 #include "base/logging.h"
 
-namespace gfx {
+namespace ui {
 
 DriWrapper::DriWrapper(const char* device_path) {
   fd_ = open(device_path, O_RDWR | O_CLOEXEC);
@@ -103,4 +103,4 @@ bool DriWrapper::MoveCursor(uint32_t crtc_id, int x, int y) {
   return !drmModeMoveCursor(fd_, crtc_id, x, y);
 }
 
-}  // namespace gfx
+}  // namespace ui

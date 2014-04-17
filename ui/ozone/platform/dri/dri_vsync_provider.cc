@@ -1,13 +1,13 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/ozone/dri/dri_vsync_provider.h"
+#include "ui/ozone/platform/dri/dri_vsync_provider.h"
 
 #include "base/time/time.h"
-#include "ui/gfx/ozone/dri/hardware_display_controller.h"
+#include "ui/ozone/platform/dri/hardware_display_controller.h"
 
-namespace gfx {
+namespace ui {
 
 DriVSyncProvider::DriVSyncProvider(HardwareDisplayController* controller)
     : controller_(controller) {}
@@ -29,4 +29,4 @@ void DriVSyncProvider::GetVSyncParameters(const UpdateVSyncCallback& callback) {
   callback.Run(timebase, interval);
 }
 
-}  // namespace gfx
+}  // namespace ui

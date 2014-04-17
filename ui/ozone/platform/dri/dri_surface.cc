@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/ozone/dri/dri_surface.h"
+#include "ui/ozone/platform/dri/dri_surface.h"
 
 #include <errno.h>
 #include <sys/mman.h>
@@ -12,11 +12,11 @@
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/ozone/dri/dri_buffer.h"
-#include "ui/gfx/ozone/dri/dri_wrapper.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/ozone/platform/dri/dri_buffer.h"
+#include "ui/ozone/platform/dri/dri_wrapper.h"
 
-namespace gfx {
+namespace ui {
 
 namespace {
 
@@ -91,7 +91,7 @@ void DriSurface::SwapBuffers() {
 
   SkIRect device_damage;
   frontbuffer()->canvas()->getClipDeviceBounds(&device_damage);
-  CopyRect(backbuffer(), frontbuffer(), SkIRectToRect(device_damage));
+  CopyRect(backbuffer(), frontbuffer(), gfx::SkIRectToRect(device_damage));
 }
 
 SkCanvas* DriSurface::GetDrawableForWidget() {
@@ -101,4 +101,4 @@ SkCanvas* DriSurface::GetDrawableForWidget() {
 
 DriBuffer* DriSurface::CreateBuffer() { return new DriBuffer(dri_); }
 
-}  // namespace gfx
+}  // namespace ui

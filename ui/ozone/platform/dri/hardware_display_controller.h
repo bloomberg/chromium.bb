@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_OZONE_DRI_HARDWARE_DISPLAY_CONTROLLER_H_
-#define UI_GFX_OZONE_DRI_HARDWARE_DISPLAY_CONTROLLER_H_
+#ifndef UI_OZONE_PLATFORM_DRI_HARDWARE_DISPLAY_CONTROLLER_H_
+#define UI_OZONE_PLATFORM_DRI_HARDWARE_DISPLAY_CONTROLLER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -12,13 +12,16 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/gfx/gfx_export.h"
-#include "ui/gfx/ozone/dri/dri_wrapper.h"
+#include "ui/ozone/ozone_export.h"
+#include "ui/ozone/platform/dri/dri_wrapper.h"
 
 namespace gfx {
+class Point;
+}
+
+namespace ui {
 
 class DriSurface;
-class Point;
 
 // The HDCOz will handle modesettings and scannout operations for hardware
 // devices.
@@ -77,7 +80,7 @@ class Point;
 //
 // TODO(dnicoara) Need to have a way to detect events (such as monitor
 // connected or disconnected).
-class GFX_EXPORT HardwareDisplayController {
+class OZONE_EXPORT HardwareDisplayController {
  public:
   // Controller states. The state transitions will happen from top to bottom.
   enum State {
@@ -194,6 +197,6 @@ class GFX_EXPORT HardwareDisplayController {
   DISALLOW_COPY_AND_ASSIGN(HardwareDisplayController);
 };
 
-}  // namespace gfx
+}  // namespace ui
 
-#endif  // UI_GFX_OZONE_DRI_HARDWARE_DISPLAY_CONTROLLER_H_
+#endif  // UI_OZONE_PLATFORM_DRI_HARDWARE_DISPLAY_CONTROLLER_H_

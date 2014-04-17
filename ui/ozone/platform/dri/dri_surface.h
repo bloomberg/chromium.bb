@@ -1,19 +1,19 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_OZONE_DRI_DRI_SURFACE_H_
-#define UI_GFX_OZONE_DRI_DRI_SURFACE_H_
+#ifndef UI_OZONE_PLATFORM_DRI_DRI_SURFACE_H_
+#define UI_OZONE_PLATFORM_DRI_DRI_SURFACE_H_
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/gfx_export.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/ozone/ozone_export.h"
 
 class SkCanvas;
 
-namespace gfx {
+namespace ui {
 
 class DriBuffer;
 class DriWrapper;
@@ -117,7 +117,7 @@ class DriWrapper;
 // to the backbuffer.
 //
 // At this point we're back to step 1 and can start a new draw iteration.
-class GFX_EXPORT DriSurface {
+class OZONE_EXPORT DriSurface {
  public:
   DriSurface(DriWrapper* dri, const gfx::Size& size);
 
@@ -168,6 +168,6 @@ class GFX_EXPORT DriSurface {
   DISALLOW_COPY_AND_ASSIGN(DriSurface);
 };
 
-}  // namespace gfx
+}  // namespace ui
 
-#endif  // UI_GFX_OZONE_DRI_DRI_SURFACE_H_
+#endif  // UI_OZONE_PLATFORM_DRI_DRI_SURFACE_H_

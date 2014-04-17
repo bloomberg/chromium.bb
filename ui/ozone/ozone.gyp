@@ -45,6 +45,18 @@
         'platform/dri/ozone_platform_dri.h',
         'platform/dri/cursor_factory_evdev_dri.cc',
         'platform/dri/cursor_factory_evdev_dri.h',
+        'platform/dri/dri_buffer.cc',
+        'platform/dri/dri_buffer.h',
+        'platform/dri/dri_surface.cc',
+        'platform/dri/dri_surface.h',
+        'platform/dri/dri_surface_factory.cc',
+        'platform/dri/dri_surface_factory.h',
+        'platform/dri/dri_vsync_provider.cc',
+        'platform/dri/dri_vsync_provider.h',
+        'platform/dri/dri_wrapper.cc',
+        'platform/dri/dri_wrapper.h',
+        'platform/dri/hardware_display_controller.cc',
+        'platform/dri/hardware_display_controller.h',
         'platform/test/ozone_platform_test.cc',
         'platform/test/ozone_platform_test.h',
         '<@(external_ozone_platform_files)',
@@ -80,7 +92,10 @@
             'ozone_platforms': [
               'dri'
             ]
-          }
+          },
+          'dependencies': [
+            '../../build/linux/system.gyp:dridrm',
+          ],
         }, {  # ozone_platform_dri==0
           'sources/': [
             ['exclude', '^platform/dri/'],

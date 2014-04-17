@@ -5,11 +5,11 @@
 #include "ui/ozone/platform/dri/cursor_factory_evdev_dri.h"
 
 #include "ui/gfx/geometry/point_conversions.h"
-#include "ui/gfx/ozone/dri/dri_surface_factory.h"
+#include "ui/ozone/platform/dri/dri_surface_factory.h"
 
 namespace ui {
 
-CursorFactoryEvdevDri::CursorFactoryEvdevDri(gfx::DriSurfaceFactory* dri)
+CursorFactoryEvdevDri::CursorFactoryEvdevDri(DriSurfaceFactory* dri)
     : dri_(dri) {
   cursor_window_ = dri_->GetAcceleratedWidget();
   cursor_bounds_ = gfx::RectF(0, 0, 2560, 1700);  // TODO(spang): Argh!

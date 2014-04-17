@@ -201,18 +201,6 @@
         'nine_image_painter.cc',
         'nine_image_painter.h',
         'overlay_transform.h',
-        'ozone/dri/dri_buffer.cc',
-        'ozone/dri/dri_buffer.h',
-        'ozone/dri/dri_surface.cc',
-        'ozone/dri/dri_surface.h',
-        'ozone/dri/dri_surface_factory.cc',
-        'ozone/dri/dri_surface_factory.h',
-        'ozone/dri/dri_vsync_provider.cc',
-        'ozone/dri/dri_vsync_provider.h',
-        'ozone/dri/dri_wrapper.cc',
-        'ozone/dri/dri_wrapper.h',
-        'ozone/dri/hardware_display_controller.cc',
-        'ozone/dri/hardware_display_controller.h',
         'ozone/impl/file_surface_factory.cc',
         'ozone/impl/file_surface_factory.h',
         'ozone/surface_factory_ozone.cc',
@@ -400,11 +388,6 @@
           'sources!': [
             'platform_font_ozone.cc',
             'render_text_ozone.cc',
-          ],
-        }],
-        ['ozone_platform_dri==1', {
-          'dependencies': [
-          '<(DEPTH)/build/linux/system.gyp:dridrm',
           ],
         }],
         ['desktop_linux==1 or chromeos==1', {

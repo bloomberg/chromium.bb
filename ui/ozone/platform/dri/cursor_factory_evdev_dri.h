@@ -12,7 +12,7 @@
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace gfx {
+namespace ui {
 class DriSurfaceFactory;
 }
 
@@ -21,7 +21,7 @@ namespace ui {
 class CursorFactoryEvdevDri : public BitmapCursorFactoryOzone,
                               public CursorDelegateEvdev {
  public:
-  CursorFactoryEvdevDri(gfx::DriSurfaceFactory* dri);
+  CursorFactoryEvdevDri(DriSurfaceFactory* dri);
   virtual ~CursorFactoryEvdevDri();
 
   // BitmapCursorFactoryOzone:
@@ -41,7 +41,7 @@ class CursorFactoryEvdevDri : public BitmapCursorFactoryOzone,
   gfx::Point bitmap_location();
 
   // The DRI implementation for setting the hardware cursor.
-  gfx::DriSurfaceFactory* dri_;
+  DriSurfaceFactory* dri_;
 
   // The current cursor bitmap.
   scoped_refptr<BitmapCursorOzone> cursor_;

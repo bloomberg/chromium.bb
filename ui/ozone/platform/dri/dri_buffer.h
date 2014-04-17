@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_OZONE_DRI_DRI_BUFFER_H_
-#define UI_GFX_OZONE_DRI_DRI_BUFFER_H_
+#ifndef UI_OZONE_PLATFORM_DRI_DRI_BUFFER_H_
+#define UI_OZONE_PLATFORM_DRI_DRI_BUFFER_H_
 
 #include "base/macros.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkSurface.h"
-#include "ui/gfx/gfx_export.h"
+#include "ui/ozone/ozone_export.h"
 
 class SkCanvas;
 
-namespace gfx {
+namespace ui {
 
 class DriWrapper;
 
 // Wrapper for a DRM allocated buffer. Keeps track of the native properties of
 // the buffer and wraps the pixel memory into a SkSurface which can be used to
 // draw into using Skia.
-class GFX_EXPORT DriBuffer {
+class OZONE_EXPORT DriBuffer {
  public:
   DriBuffer(DriWrapper* dri);
   virtual ~DriBuffer();
@@ -59,6 +59,6 @@ class GFX_EXPORT DriBuffer {
   DISALLOW_COPY_AND_ASSIGN(DriBuffer);
 };
 
-}  // namespace gfx
+}  // namespace ui
 
-#endif  // UI_GFX_OZONE_DRI_DRI_BUFFER_H_
+#endif  // UI_OZONE_PLATFORM_DRI_DRI_BUFFER_H_

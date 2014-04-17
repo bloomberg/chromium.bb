@@ -1,24 +1,24 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_OZONE_DRI_DRI_WRAPPER_H_
-#define UI_GFX_OZONE_DRI_DRI_WRAPPER_H_
+#ifndef UI_OZONE_PLATFORM_DRI_DRI_WRAPPER_H_
+#define UI_OZONE_PLATFORM_DRI_DRI_WRAPPER_H_
 
 #include <stdint.h>
 
 #include "base/basictypes.h"
-#include "ui/gfx/gfx_export.h"
+#include "ui/ozone/ozone_export.h"
 
 typedef struct _drmModeCrtc drmModeCrtc;
 typedef struct _drmModeModeInfo drmModeModeInfo;
 
-namespace gfx {
+namespace ui {
 
 // Wraps DRM calls into a nice interface. Used to provide different
 // implementations of the DRM calls. For the actual implementation the DRM API
 // would be called. In unit tests this interface would be stubbed.
-class GFX_EXPORT DriWrapper {
+class OZONE_EXPORT DriWrapper {
  public:
   DriWrapper(const char* device_path);
   virtual ~DriWrapper();
@@ -92,6 +92,6 @@ class GFX_EXPORT DriWrapper {
   DISALLOW_COPY_AND_ASSIGN(DriWrapper);
 };
 
-}  // namespace gfx
+}  // namespace ui
 
-#endif  // UI_GFX_OZONE_DRI_DRI_WRAPPER_H_
+#endif  // UI_OZONE_PLATFORM_DRI_DRI_WRAPPER_H_

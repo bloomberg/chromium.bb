@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,9 +6,9 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkDevice.h"
-#include "ui/gfx/ozone/dri/dri_buffer.h"
-#include "ui/gfx/ozone/dri/dri_surface.h"
-#include "ui/gfx/ozone/dri/hardware_display_controller.h"
+#include "ui/ozone/platform/dri/dri_buffer.h"
+#include "ui/ozone/platform/dri/dri_surface.h"
+#include "ui/ozone/platform/dri/hardware_display_controller.h"
 
 namespace {
 
@@ -28,7 +28,7 @@ const uint32_t kCrtcId = 1;
 // Mock DPMS property ID.
 const uint32_t kDPMSPropertyId = 1;
 
-class MockDriWrapper : public gfx::DriWrapper {
+class MockDriWrapper : public ui::DriWrapper {
  public:
   MockDriWrapper() : DriWrapper(""), id_(1) { fd_ = kFd; }
   virtual ~MockDriWrapper() { fd_ = -1; }
@@ -66,9 +66,9 @@ class MockDriWrapper : public gfx::DriWrapper {
   DISALLOW_COPY_AND_ASSIGN(MockDriWrapper);
 };
 
-class MockDriBuffer : public gfx::DriBuffer {
+class MockDriBuffer : public ui::DriBuffer {
  public:
-  MockDriBuffer(gfx::DriWrapper* dri, bool initialize_expectation)
+  MockDriBuffer(ui::DriWrapper* dri, bool initialize_expectation)
       : DriBuffer(dri), initialize_expectation_(initialize_expectation) {}
   virtual ~MockDriBuffer() {
     surface_.clear();
@@ -90,9 +90,9 @@ class MockDriBuffer : public gfx::DriBuffer {
   DISALLOW_COPY_AND_ASSIGN(MockDriBuffer);
 };
 
-class MockDriSurface : public gfx::DriSurface {
+class MockDriSurface : public ui::DriSurface {
  public:
-  MockDriSurface(gfx::DriWrapper* dri, const gfx::Size& size)
+  MockDriSurface(ui::DriWrapper* dri, const gfx::Size& size)
       : DriSurface(dri, size), dri_(dri), initialize_expectation_(true) {}
   virtual ~MockDriSurface() {}
 
@@ -101,11 +101,11 @@ class MockDriSurface : public gfx::DriSurface {
   }
 
  private:
-  virtual gfx::DriBuffer* CreateBuffer() OVERRIDE {
+  virtual ui::DriBuffer* CreateBuffer() OVERRIDE {
     return new MockDriBuffer(dri_, initialize_expectation_);
   }
 
-  gfx::DriWrapper* dri_;
+  ui::DriWrapper* dri_;
   bool initialize_expectation_;
 
   DISALLOW_COPY_AND_ASSIGN(MockDriSurface);
@@ -122,7 +122,7 @@ class DriSurfaceTest : public testing::Test {
 
  protected:
   scoped_ptr<MockDriWrapper> drm_;
-  scoped_ptr<gfx::HardwareDisplayController> controller_;
+  scoped_ptr<ui::HardwareDisplayController> controller_;
   scoped_ptr<MockDriSurface> surface_;
 
  private:
@@ -131,7 +131,7 @@ class DriSurfaceTest : public testing::Test {
 
 void DriSurfaceTest::SetUp() {
   drm_.reset(new MockDriWrapper());
-  controller_.reset(new gfx::HardwareDisplayController());
+  controller_.reset(new ui::HardwareDisplayController());
   controller_->SetControllerInfo(
       drm_.get(), kConnectorId, kCrtcId, kDPMSPropertyId, kDefaultMode);
 
@@ -157,8 +157,7 @@ TEST_F(DriSurfaceTest, SuccessfulInitialization) {
 
 TEST_F(DriSurfaceTest, CheckFBIDOnSwap) {
   EXPECT_TRUE(surface_->Initialize());
-  controller_->BindSurfaceToController(
-      surface_.PassAs<gfx::DriSurface>());
+  controller_->BindSurfaceToController(surface_.PassAs<ui::DriSurface>());
 
   // Check that the framebuffer ID is correct.
   EXPECT_EQ(2u, controller_->get_surface()->GetFramebufferId());

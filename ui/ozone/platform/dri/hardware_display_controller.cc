@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/ozone/dri/hardware_display_controller.h"
+#include "ui/ozone/platform/dri/hardware_display_controller.h"
 
 #include <errno.h>
 #include <string.h>
@@ -12,11 +12,11 @@
 #include "base/time/time.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/gfx/ozone/dri/dri_buffer.h"
-#include "ui/gfx/ozone/dri/dri_surface.h"
-#include "ui/gfx/ozone/dri/dri_wrapper.h"
+#include "ui/ozone/platform/dri/dri_buffer.h"
+#include "ui/ozone/platform/dri/dri_surface.h"
+#include "ui/ozone/platform/dri/dri_wrapper.h"
 
-namespace gfx {
+namespace ui {
 
 HardwareDisplayController::HardwareDisplayController()
     : drm_(NULL),
@@ -155,4 +155,4 @@ bool HardwareDisplayController::MoveCursor(const gfx::Point& location) {
   return drm_->MoveCursor(crtc_id_, location.x(), location.y());
 }
 
-}  // namespace gfx
+}  // namespace ui

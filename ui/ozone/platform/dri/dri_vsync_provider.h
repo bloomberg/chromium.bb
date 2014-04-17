@@ -1,17 +1,17 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_OZONE_IMPL_DRI_VSYNC_PROVIDER_H_
-#define UI_GFX_OZONE_IMPL_DRI_VSYNC_PROVIDER_H_
+#ifndef UI_OZONE_PLATFORM_IMPL_DRI_VSYNC_PROVIDER_H_
+#define UI_OZONE_PLATFORM_IMPL_DRI_VSYNC_PROVIDER_H_
 
 #include "ui/gfx/vsync_provider.h"
 
-namespace gfx {
+namespace ui {
 
 class HardwareDisplayController;
 
-class DriVSyncProvider : public VSyncProvider {
+class DriVSyncProvider : public gfx::VSyncProvider {
  public:
   DriVSyncProvider(HardwareDisplayController* controller);
   virtual ~DriVSyncProvider();
@@ -24,6 +24,6 @@ class DriVSyncProvider : public VSyncProvider {
   DISALLOW_COPY_AND_ASSIGN(DriVSyncProvider);
 };
 
-}  // namespace gfx
+}  // namespace ui
 
-#endif  // UI_GFX_OZONE_IMPL_DRI_VSYNC_PROVIDER_H_
+#endif  // UI_OZONE_PLATFORM_IMPL_DRI_VSYNC_PROVIDER_H_
