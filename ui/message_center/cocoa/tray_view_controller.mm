@@ -14,6 +14,7 @@
 #import "ui/base/cocoa/hover_image_button.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
+#import "ui/message_center/cocoa/opaque_views.h"
 #import "ui/message_center/cocoa/notification_controller.h"
 #import "ui/message_center/cocoa/settings_controller.h"
 #include "ui/message_center/message_center.h"
@@ -398,19 +399,12 @@ const CGFloat kTrayBottomMargin = 75;
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   NSView* view = [self view];
 
-  auto configureLabel = ^(NSTextField* textField) {
-      [textField setAutoresizingMask:NSViewMinYMargin];
-      [textField setBezeled:NO];
-      [textField setBordered:NO];
-      [textField setDrawsBackground:NO];
-      [textField setEditable:NO];
-      [textField setSelectable:NO];
-  };
-
   // Create the "Notifications" label at the top of the tray.
   NSFont* font = [NSFont labelFontOfSize:message_center::kTitleFontSize];
-  title_.reset([[NSTextField alloc] initWithFrame:NSZeroRect]);
-  configureLabel(title_);
+  NSColor* color = gfx::SkColorToCalibratedNSColor(
+      message_center::kMessageCenterBackgroundColor);
+  title_.reset(
+      [[MCTextField alloc] initWithFrame:NSZeroRect backgroundColor:color]);
 
   [title_ setFont:font];
   [title_ setStringValue:
@@ -541,8 +535,8 @@ const CGFloat kTrayBottomMargin = 75;
 
   // Create the description field for the empty message center.  Initially it is
   // invisible.
-  emptyDescription_.reset([[NSTextField alloc] initWithFrame:NSZeroRect]);
-  configureLabel(emptyDescription_);
+  emptyDescription_.reset(
+      [[MCTextField alloc] initWithFrame:NSZeroRect backgroundColor:color]);
 
   NSFont* smallFont =
       [NSFont labelFontOfSize:message_center::kEmptyCenterFontSize];

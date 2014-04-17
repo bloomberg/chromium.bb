@@ -13,6 +13,7 @@
 #include "grit/ui_strings.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/l10n/l10n_util.h"
+#import "ui/message_center/cocoa/opaque_views.h"
 #import "ui/message_center/cocoa/settings_entry_view.h"
 #import "ui/message_center/cocoa/tray_view_controller.h"
 #include "ui/message_center/message_center_style.h"
@@ -104,12 +105,11 @@ void NotifierSettingsObserverMac::NotifierGroupChanged() {
 }
 
 - (NSTextField*)newLabelWithFrame:(NSRect)frame {
-  NSTextField* label = [[NSTextField alloc] initWithFrame:frame];
-  [label setDrawsBackground:NO];
-  [label setBezeled:NO];
-  [label setEditable:NO];
-  [label setSelectable:NO];
-  [label setAutoresizingMask:NSViewMinYMargin];
+  NSColor* color = gfx::SkColorToCalibratedNSColor(
+      message_center::kMessageCenterBackgroundColor);
+  MCTextField* label =
+      [[MCTextField alloc] initWithFrame:frame backgroundColor:color];
+
   return label;
 }
 
@@ -141,7 +141,6 @@ void NotifierSettingsObserverMac::NotifierGroupChanged() {
                                   NSWidth(fullFrame),
                                   NSHeight(fullFrame));
   settingsText_.reset([self newLabelWithFrame:headerFrame]);
-  [settingsText_ setAutoresizingMask:NSViewMinYMargin];
   [settingsText_ setTextColor:
           gfx::SkColorToCalibratedNSColor(message_center::kRegularTextColor)];
   [settingsText_
@@ -161,7 +160,6 @@ void NotifierSettingsObserverMac::NotifierGroupChanged() {
                                      NSWidth(fullFrame),
                                      NSHeight(fullFrame));
   detailsText_.reset([self newLabelWithFrame:subheaderFrame]);
-  [detailsText_ setAutoresizingMask:NSViewMinYMargin];
   [detailsText_ setTextColor:
       gfx::SkColorToCalibratedNSColor(message_center::kDimTextColor)];
   [detailsText_
@@ -186,8 +184,10 @@ void NotifierSettingsObserverMac::NotifierGroupChanged() {
                                      NSWidth(fullFrame),
                                      NSHeight(fullFrame));
     groupDropDownButton_.reset(
-        [[NSPopUpButton alloc] initWithFrame:dropDownButtonFrame
-                                   pullsDown:YES]);
+        [[MCDropDown alloc] initWithFrame:dropDownButtonFrame pullsDown:YES]);
+    [groupDropDownButton_
+        setBackgroundColor:gfx::SkColorToCalibratedNSColor(
+                               message_center::kMessageCenterBackgroundColor)];
     [groupDropDownButton_ setAction:@selector(notifierGroupSelectionChanged:)];
     [groupDropDownButton_ setTarget:self];
     // Add a dummy item for pull-down.

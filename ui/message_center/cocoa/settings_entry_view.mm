@@ -56,6 +56,23 @@ const int kCorrectedIconTextPadding =
 const int kCorrectedEntryRightPadding =
     kInternalHorizontalSpacing - kIntrinsicLearnMorePadding;
 
+////////////////////////////////////////////////////////////////////////////////
+
+@interface MCSettingsButton : NSButton
+@end
+
+@implementation MCSettingsButton
+// drawRect: needs to fill the button with a background, otherwise we don't get
+// subpixel antialiasing.
+- (void)drawRect:(NSRect)dirtyRect {
+  NSColor* color = gfx::SkColorToCalibratedNSColor(
+      message_center::kMessageCenterBackgroundColor);
+  [color set];
+  NSRectFill(dirtyRect);
+  [super drawRect:dirtyRect];
+}
+@end
+
 @interface MCSettingsButtonCell : NSButtonCell {
   // A checkbox's regular image is the checkmark image. This additional image
   // is used for the favicon or app icon shown next to the checkmark.
@@ -65,6 +82,10 @@ const int kCorrectedEntryRightPadding =
 @end
 
 @implementation MCSettingsButtonCell
+- (BOOL)isOpaque {
+  return YES;
+}
+
 - (void)setExtraImage:(NSImage*)extraImage {
   extraImage_.reset([extraImage retain]);
 }
@@ -133,7 +154,6 @@ const int kCorrectedEntryRightPadding =
 @end
 
 @implementation MCSettingsEntryView
-
 - (id)initWithController:(MCSettingsController*)controller
                 notifier:(message_center::Notifier*)notifier
                    frame:(NSRect)frame
@@ -218,7 +238,7 @@ const int kCorrectedEntryRightPadding =
   }
 
   if (!checkbox_.get()) {
-    checkbox_.reset([[NSButton alloc] initWithFrame:checkboxFrame]);
+    checkbox_.reset([[MCSettingsButton alloc] initWithFrame:checkboxFrame]);
     [self addSubview:checkbox_];
   } else {
     [checkbox_ setFrame:checkboxFrame];

@@ -9,6 +9,7 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
+#import "ui/message_center/cocoa/opaque_views.h"
 #import "ui/message_center/cocoa/settings_entry_view.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/notifier_settings.h"
@@ -53,7 +54,7 @@ MESSAGE_CENTER_EXPORT
   base::scoped_nsobject<NSTextField> detailsText_;
 
   // The profile switcher.
-  base::scoped_nsobject<NSPopUpButton> groupDropDownButton_;
+  base::scoped_nsobject<MCDropDown> groupDropDownButton_;
 
   // Container for all the checkboxes.
   base::scoped_nsobject<NSScrollView> scrollView_;

@@ -28,6 +28,8 @@
       'sources': [
         'cocoa/notification_controller.h',
         'cocoa/notification_controller.mm',
+        'cocoa/opaque_views.h',
+        'cocoa/opaque_views.mm',
         'cocoa/popup_collection.h',
         'cocoa/popup_collection.mm',
         'cocoa/popup_controller.h',
