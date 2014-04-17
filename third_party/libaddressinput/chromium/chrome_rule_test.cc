@@ -51,7 +51,7 @@ TEST(RuleTest, CanonicalizeSubKeyTest) {
     const std::string expected_output(base::WideToUTF8(expectations[i].output));
     std::string output;
     EXPECT_EQ(!expected_output.empty(),
-              rule.CanonicalizeSubKey(input, &output))
+              rule.CanonicalizeSubKey(input, true, &output))
         << "Failed for input " << input;
     EXPECT_EQ(expected_output, output);
   }

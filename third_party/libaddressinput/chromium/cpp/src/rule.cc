@@ -197,6 +197,25 @@ int GetPostalCodeMessageId(const std::string& postal_code_type, bool error) {
   return INVALID_MESSAGE_ID;
 }
 
+// Finds |target| in |values_to_compare| and sets |selected_value| to the
+// associated value from |values_to_select|. Returns true if |target| is in
+// |values_to_compare|. |selected_value| should not be NULL. |values_to_compare|
+// should not be larger than |values_to_select|.
+bool GetMatchingValue(const std::string& target,
+                      const std::vector<std::string>& values_to_compare,
+                      const std::vector<std::string>& values_to_select,
+                      std::string* selected_value) {
+  assert(selected_value != NULL);
+  assert(values_to_select.size() >= values_to_compare.size());
+  for (size_t i = 0; i < values_to_compare.size(); ++i) {
+    if (LooseStringCompare(values_to_compare[i], target)) {
+      *selected_value = values_to_select[i];
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace
 
 FormatElement::FormatElement(AddressField field)
@@ -376,27 +395,20 @@ int Rule::GetInvalidFieldMessageId(AddressField field) const {
 }
 
 bool Rule::CanonicalizeSubKey(const std::string& user_input,
+                              bool keep_input_latin,
                               std::string* sub_key) const {
+  assert(sub_key != NULL);
+
   if (sub_keys_.empty()) {
     *sub_key = user_input;
     return true;
   }
 
-  return GetMatchingSubKey(user_input, sub_keys_, sub_key) ||
-      GetMatchingSubKey(user_input, sub_names_, sub_key) ||
-      GetMatchingSubKey(user_input, sub_lnames_, sub_key);
-}
-
-bool Rule::GetMatchingSubKey(const std::string& target,
-                             const std::vector<std::string>& values,
-                             std::string* sub_key) const {
-  for (size_t i = 0; i < values.size(); ++i) {
-    if (LooseStringCompare(values[i], target)) {
-      *sub_key = sub_keys_[i];
-      return true;
-    }
-  }
-  return false;
+  return GetMatchingValue(user_input, sub_keys_, sub_keys_, sub_key) ||
+      GetMatchingValue(user_input, sub_names_, sub_keys_, sub_key) ||
+      (keep_input_latin &&
+       GetMatchingValue(user_input, sub_lnames_, sub_lnames_, sub_key)) ||
+      GetMatchingValue(user_input, sub_lnames_, sub_keys_, sub_key);
 }
 
 }  // namespace addressinput

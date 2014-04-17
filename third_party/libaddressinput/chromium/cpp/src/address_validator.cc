@@ -220,7 +220,7 @@ class AddressValidatorImpl : public AddressValidator {
       const std::string& user_input = address.GetFieldValue(sub_field_type);
       if (!user_input.empty() &&
           FilterAllows(filter, sub_field_type, AddressProblem::UNKNOWN_VALUE) &&
-          !rule.CanonicalizeSubKey(user_input, &sub_key)) {
+          !rule.CanonicalizeSubKey(user_input, false, &sub_key)) {
         problems->push_back(AddressProblem(
             sub_field_type,
             AddressProblem::UNKNOWN_VALUE,
@@ -443,6 +443,7 @@ class AddressValidatorImpl : public AddressValidator {
         ruleset_it->second->GetLanguageCodeRule(address_data->language_code);
 
     return rule.CanonicalizeSubKey(address_data->administrative_area,
+                                   true,  // Keep input latin.
                                    &address_data->administrative_area);
   }
 

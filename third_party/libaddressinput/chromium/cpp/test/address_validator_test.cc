@@ -556,5 +556,39 @@ TEST_F(AddressValidatorTest, SuggestOnlyForAdministrativeAreasAndPostalCode) {
   }
 }
 
+TEST_F(AddressValidatorTest, CanonicalizeUsAdminAreaName) {
+  AddressData address;
+  address.country_code = "US";
+  address.administrative_area = "cALIFORNIa";
+  EXPECT_TRUE(validator_->CanonicalizeAdministrativeArea(&address));
+  EXPECT_EQ("CA", address.administrative_area);
+}
+
+TEST_F(AddressValidatorTest, CanonicalizeUsAdminAreaKey) {
+  AddressData address;
+  address.country_code = "US";
+  address.administrative_area = "CA";
+  EXPECT_TRUE(validator_->CanonicalizeAdministrativeArea(&address));
+  EXPECT_EQ("CA", address.administrative_area);
+}
+
+TEST_F(AddressValidatorTest, CanonicalizeJpAdminAreaKey) {
+  validator_->LoadRules("JP");
+  AddressData address;
+  address.country_code = "JP";
+  address.administrative_area = "東京都";
+  EXPECT_TRUE(validator_->CanonicalizeAdministrativeArea(&address));
+  EXPECT_EQ("東京都", address.administrative_area);
+}
+
+TEST_F(AddressValidatorTest, CanonicalizeJpAdminAreaLatinName) {
+  validator_->LoadRules("JP");
+  AddressData address;
+  address.country_code = "JP";
+  address.administrative_area = "tOKYo";
+  EXPECT_TRUE(validator_->CanonicalizeAdministrativeArea(&address));
+  EXPECT_EQ("TOKYO", address.administrative_area);
+}
+
 }  // namespace addressinput
 }  // namespace i18n

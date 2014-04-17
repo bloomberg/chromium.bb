@@ -329,19 +329,25 @@ TEST(RuleTest, ParseSubKeyTest) {
   EXPECT_EQ(3U, rule.GetSubKeys().size());
 
   std::string sub_key;
-  EXPECT_TRUE(rule.CanonicalizeSubKey("BAR", &sub_key));
+  EXPECT_TRUE(rule.CanonicalizeSubKey("BAR", false, &sub_key));
   EXPECT_EQ("BAR", sub_key);
   sub_key.clear();
 
-  EXPECT_TRUE(rule.CanonicalizeSubKey("Bartopolis", &sub_key));
+  EXPECT_TRUE(rule.CanonicalizeSubKey("Bartopolis", false, &sub_key));
   EXPECT_EQ("BAR", sub_key);
   sub_key.clear();
 
-  EXPECT_TRUE(rule.CanonicalizeSubKey("Bartopolis2", &sub_key));
+  // Unlatinize.
+  EXPECT_TRUE(rule.CanonicalizeSubKey("Bartopolis2", false, &sub_key));
   EXPECT_EQ("BAR", sub_key);
   sub_key.clear();
 
-  EXPECT_FALSE(rule.CanonicalizeSubKey("Beertopia", &sub_key));
+  // Keep input latin.
+  EXPECT_TRUE(rule.CanonicalizeSubKey("Bartopolis2", true, &sub_key));
+  EXPECT_EQ("Bartopolis2", sub_key);
+  sub_key.clear();
+
+  EXPECT_FALSE(rule.CanonicalizeSubKey("Beertopia", false, &sub_key));
   EXPECT_EQ("", sub_key);
 }
 

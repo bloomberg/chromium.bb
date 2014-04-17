@@ -166,16 +166,18 @@ class Rule {
 
   // Outputs the sub key for a given user input. For example, Texas will map to
   // TX.
+  //
+  // If |keep_input_latin| is true, then does not convert a latinized region
+  // name into a sub key. For example, tOKYo will change to TOKYO. If
+  // |keep_input_latin| is false, then converts a latinized region name into a
+  // sub key. For example, tOKYo becomes 東京都.
+  //
+  // |sub_key| should not be NULL.
   bool CanonicalizeSubKey(const std::string& user_input,
+                          bool keep_input_latin,
                           std::string* sub_key) const;
 
  private:
-  // Finds |target| in |values| and sets |sub_key| to the associated value from
-  // |sub_keys_|, or returns false if |target| is not in |values|.
-  bool GetMatchingSubKey(const std::string& target,
-                         const std::vector<std::string>& values,
-                         std::string* sub_key) const;
-
   std::string key_;
   std::string name_;
   std::string latin_name_;
