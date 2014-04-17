@@ -560,10 +560,9 @@ void OpenTypeVerticalData::substituteWithVerticalGlyphs(const SimpleFontData* fo
         return;
 
     for (unsigned index = offset, end = offset + length; index < end; ++index) {
-        Glyph glyph = glyphPage->glyphAt(index);
-        if (glyph) {
-            ASSERT(glyphPage->glyphDataForIndex(index).fontData == font);
-            Glyph to = map.get(glyph);
+        GlyphData glyphData = glyphPage->glyphDataForIndex(index);
+        if (glyphData.glyph && glyphData.fontData == font) {
+            Glyph to = map.get(glyphData.glyph);
             if (to)
                 glyphPage->setGlyphDataForIndex(index, to, font);
         }
