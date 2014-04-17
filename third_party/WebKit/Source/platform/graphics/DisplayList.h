@@ -53,9 +53,11 @@ public:
     ~DisplayList();
 
     const FloatRect& bounds() const;
-    // The recorded picture is only valid (i.e., non-0) after an endRecording
-    // call. It will be held on to (and returned) by this object until the next
-    // endRecording call.
+
+    // This entry point will return 0 when the DisplayList is in the
+    // midst of recording (i.e., between a beginRecording/endRecording pair)
+    // and if no recording has ever been completed. Otherwise it will return
+    // the picture created by the last endRecording call.
     SkPicture* picture() const;
 
     SkCanvas* beginRecording(const IntSize&, uint32_t recordFlags = 0);

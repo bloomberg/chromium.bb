@@ -58,8 +58,7 @@ SkPicture* DisplayList::picture() const
 
 SkCanvas* DisplayList::beginRecording(const IntSize& size, uint32_t recordFlags)
 {
-    ASSERT(!isRecording());
-
+    m_picture.clear();
     if (!m_recorder)
         m_recorder = adoptPtr(new SkPictureRecorder);
     return m_recorder->beginRecording(size.width(), size.height(), recordFlags);
@@ -67,8 +66,6 @@ SkCanvas* DisplayList::beginRecording(const IntSize& size, uint32_t recordFlags)
 
 void DisplayList::endRecording()
 {
-    ASSERT(isRecording());
-
     if (m_recorder) {
         m_picture = adoptRef(m_recorder->endRecording());
         m_recorder.clear();
