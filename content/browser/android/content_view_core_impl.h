@@ -215,7 +215,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   void ShowInterstitialPage(JNIEnv* env,
                             jobject obj,
                             jstring jurl,
-                            jint delegate);
+                            jlong delegate);
   jboolean IsShowingInterstitialPage(JNIEnv* env, jobject obj);
 
   void SetAccessibilityEnabled(JNIEnv* env, jobject obj, bool enabled);
