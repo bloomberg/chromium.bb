@@ -131,4 +131,8 @@ GPU_BLACKLIST_FEATURE_TEST(PanelFitting,
                            "panel_fitting",
                            GPU_FEATURE_TYPE_PANEL_FITTING)
 
+GPU_BLACKLIST_FEATURE_TEST(GpuRasterization,
+                           "gpu_rasterization",
+                           GPU_FEATURE_TYPE_GPU_RASTERIZATION)
+
 }  // namespace gpu
