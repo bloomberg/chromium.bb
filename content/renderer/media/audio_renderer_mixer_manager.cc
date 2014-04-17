@@ -67,7 +67,7 @@ media::AudioRendererMixer* AudioRendererMixerManager::GetMixer(
   // know that works well for WebAudio and WebRTC.
   media::AudioParameters output_params(
       media::AudioParameters::AUDIO_PCM_LOW_LATENCY, params.channel_layout(),
-      sample_rate, 16, hardware_config_->GetOutputBufferSize());
+      sample_rate, 16, hardware_config_->GetHighLatencyBufferSize());
 
   // If we've created invalid output parameters, simply pass on the input params
   // and let the browser side handle automatic fallback.

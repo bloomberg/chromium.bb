@@ -41,6 +41,10 @@ class MEDIA_EXPORT AudioHardwareConfig {
   void UpdateInputConfig(const media::AudioParameters& input_params);
   void UpdateOutputConfig(const media::AudioParameters& output_params);
 
+  // For clients which don't need low latency, a larger buffer size should be
+  // used to save power and CPU resources.
+  int GetHighLatencyBufferSize() const;
+
  private:
   // Cached values; access is protected by |config_lock_|.
   mutable base::Lock config_lock_;

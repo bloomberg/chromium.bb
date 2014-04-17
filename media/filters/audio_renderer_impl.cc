@@ -278,7 +278,14 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
     buffer_converter_.reset();
   } else {
     // TODO(rileya): Support hardware config changes
-    audio_parameters_ = hardware_config_->GetOutputConfig();
+    const AudioParameters& hw_params = hardware_config_->GetOutputConfig();
+    audio_parameters_.Reset(hw_params.format(),
+                            hw_params.channel_layout(),
+                            hw_params.channels(),
+                            hw_params.input_channels(),
+                            hw_params.sample_rate(),
+                            hw_params.bits_per_sample(),
+                            hardware_config_->GetHighLatencyBufferSize());
   }
 
   audio_buffer_stream_.Initialize(
