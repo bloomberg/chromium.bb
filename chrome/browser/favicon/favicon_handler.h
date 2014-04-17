@@ -73,10 +73,12 @@ class NavigationEntry;
 // favicon.
 //
 // When the renderer downloads favicons, it considers the entire list of
-// favicon candidates and chooses the one that best matches the preferred size
-// (or the first one if there is no preferred size). Once the matching favicon
-// has been determined, SetFavicon is called which updates the favicon of the
-// NavigationEntry and notifies the database to save the favicon.
+// favicon candidates, if |download_largest_favicon_| is true, the largest
+// favicon will be used, otherwise the one that best matches the preferred size
+// is chosen (or the first one if there is no preferred  size). Once the
+// matching favicon has been determined, SetFavicon is called which updates
+// the favicon of the NavigationEntry and notifies the database to save the
+// favicon.
 
 class FaviconHandler {
  public:
@@ -88,7 +90,8 @@ class FaviconHandler {
   FaviconHandler(Profile* profile,
                  FaviconClient* client,
                  FaviconHandlerDelegate* delegate,
-                 Type icon_type);
+                 Type icon_type,
+                 bool download_largest_icon);
   virtual ~FaviconHandler();
 
   // Initiates loading the favicon for the specified url.
@@ -115,7 +118,7 @@ class FaviconHandler {
       const std::vector<gfx::Size>& original_bitmap_sizes);
 
   // For testing.
-  const std::deque<content::FaviconURL>& image_urls() const {
+  const std::vector<content::FaviconURL>& image_urls() const {
     return image_urls_;
   }
 
@@ -249,13 +252,16 @@ class FaviconHandler {
 
   // Returns the preferred size of the image. 0 means no preference (any size
   // will do).
-  int preferred_icon_size() {
-#if defined(OS_ANDROID)
-    return 0;
-#else
+  int preferred_icon_size() const {
+    if (download_largest_icon_)
+      return 0;
     return icon_types_ == favicon_base::FAVICON ? gfx::kFaviconSize : 0;
-#endif
   }
+
+  // Sorts the entries in |image_urls_| by icon size in descending order.
+  // Additionally removes any entries whose sizes are all greater than the max
+  // allowed size.
+  void SortAndPruneImageUrls();
 
   // Used for FaviconService requests.
   base::CancelableTaskTracker cancelable_task_tracker_;
@@ -279,8 +285,11 @@ class FaviconHandler {
   // The combination of the supported icon types.
   const int icon_types_;
 
+  // Whether the largest icon should be downloaded.
+  const bool download_largest_icon_;
+
   // The prioritized favicon candidates from the page back from the renderer.
-  std::deque<content::FaviconURL> image_urls_;
+  std::vector<content::FaviconURL> image_urls_;
 
   // The FaviconBitmapResults from history.
   std::vector<favicon_base::FaviconBitmapResult> history_results_;

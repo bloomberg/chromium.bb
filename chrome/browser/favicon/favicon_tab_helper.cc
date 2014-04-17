@@ -39,11 +39,18 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(FaviconTabHelper);
 FaviconTabHelper::FaviconTabHelper(WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())) {
+#if defined(OS_ANDROID)
+  bool download_largest_icon = true;
+#else
+  bool download_largest_icon = false;
+#endif
   favicon_handler_.reset(
-      new FaviconHandler(profile_, this, this, FaviconHandler::FAVICON));
+      new FaviconHandler(profile_, this, this, FaviconHandler::FAVICON,
+                         download_largest_icon));
   if (chrome::kEnableTouchIcon)
     touch_icon_handler_.reset(
-        new FaviconHandler(profile_, this, this, FaviconHandler::TOUCH));
+        new FaviconHandler(profile_, this, this, FaviconHandler::TOUCH,
+                           download_largest_icon));
 }
 
 FaviconTabHelper::~FaviconTabHelper() {
