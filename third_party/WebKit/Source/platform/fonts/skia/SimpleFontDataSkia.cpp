@@ -36,7 +36,9 @@
 #include "SkPath.h"
 #include "SkTypeface.h"
 #include "SkTypes.h"
+#include "SkUtils.h"
 #include "platform/fonts/FontDescription.h"
+#include "platform/fonts/GlyphPage.h"
 #include "platform/fonts/VDMXParser.h"
 #include "platform/geometry/FloatRect.h"
 #include "wtf/unicode/Unicode.h"
@@ -277,5 +279,27 @@ bool SimpleFontData::canRenderCombiningCharacterSequence(const UChar* characters
     return false;
 }
 #endif
+
+bool SimpleFontData::fillGlyphPage(GlyphPage* pageToFill, unsigned offset, unsigned length, UChar* buffer, unsigned bufferLength) const
+{
+    if (SkUTF16_IsHighSurrogate(buffer[bufferLength-1])) {
+        SkDebugf("%s last char is high-surrogate", __FUNCTION__);
+        return false;
+    }
+
+    SkAutoSTMalloc<GlyphPage::size, uint16_t> glyphStorage(length);
+
+    uint16_t* glyphs = glyphStorage.get();
+    SkTypeface* typeface = platformData().typeface();
+    typeface->charsToGlyphs(buffer, SkTypeface::kUTF16_Encoding, glyphs, length);
+
+    unsigned allGlyphs = 0; // track if any of the glyphIDs are non-zero
+    for (unsigned i = 0; i < length; i++) {
+        pageToFill->setGlyphDataForIndex(offset + i, glyphs[i], glyphs[i] ? this : 0);
+        allGlyphs |= glyphs[i];
+    }
+
+    return allGlyphs;
+}
 
 } // namespace WebCore

@@ -174,11 +174,15 @@ public:
 
     PassRefPtr<CustomFontData> customFontData() const { return m_customFontData; }
 
-private:
+    // Implemented by the platform.
+    virtual bool fillGlyphPage(GlyphPage* pageToFill, unsigned offset, unsigned length, UChar* buffer, unsigned bufferLength) const;
+
+protected:
     SimpleFontData(const FontPlatformData&, PassRefPtr<CustomFontData> customData, bool isTextOrientationFallback = false);
 
     SimpleFontData(PassRefPtr<CustomFontData> customData, float fontSize, bool syntheticBold, bool syntheticItalic);
 
+private:
     void platformInit();
     void platformGlyphInit();
     void platformCharWidthInit();

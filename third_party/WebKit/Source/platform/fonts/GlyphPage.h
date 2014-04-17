@@ -174,9 +174,6 @@ public:
 
     GlyphPageTreeNode* owner() const { return m_owner; }
 
-    // Implemented by the platform.
-    bool fill(unsigned offset, unsigned length, UChar* characterBuffer, unsigned bufferLength, const SimpleFontData*);
-
 private:
     explicit GlyphPage(GlyphPageTreeNode* owner, const SimpleFontData* fontDataForAllGlyphs = 0)
         : m_fontDataForAllGlyphs(fontDataForAllGlyphs)

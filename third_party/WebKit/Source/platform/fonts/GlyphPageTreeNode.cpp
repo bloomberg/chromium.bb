@@ -124,7 +124,7 @@ static bool fill(GlyphPage* pageToFill, unsigned offset, unsigned length, UChar*
     if (fontData->isSVGFont())
         return fontData->customFontData()->fillSVGGlyphPage(pageToFill, offset, length, buffer, bufferLength, fontData);
 #endif
-    bool hasGlyphs = pageToFill->fill(offset, length, buffer, bufferLength, fontData);
+    bool hasGlyphs = fontData->fillGlyphPage(pageToFill, offset, length, buffer, bufferLength);
 #if ENABLE(OPENTYPE_VERTICAL)
     if (hasGlyphs && fontData->verticalData())
         fontData->verticalData()->substituteWithVerticalGlyphs(fontData, pageToFill, offset, length);

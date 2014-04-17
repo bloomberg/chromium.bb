@@ -306,7 +306,6 @@
           # Some of these are used instead of Chromium platform files, see
           # the specific exclusions in the "exclude" list below.
           ['include', 'audio/mac/FFTFrameMac\\.cpp$'],
-          ['include', 'fonts/mac/GlyphPageTreeNodeMac\\.cpp$'],
           ['include', 'fonts/mac/ComplexTextControllerCoreText\\.mm$'],
           ['include', 'mac/ColorMac\\.mm$'],
           ['include', 'mac/BlockExceptions\\.mm$'],
@@ -328,7 +327,6 @@
           ['exclude', 'fonts/skia/FontCustomPlatformDataSkia\\.cpp$'],
 
           ['exclude', 'fonts/skia/FontCacheSkia\\.cpp$'],
-          ['exclude', 'fonts/skia/GlyphPageTreeNodeSkia\\.cpp$'],
           ['exclude', 'fonts/skia/SimpleFontDataSkia\\.cpp$'],
 
           # Mac uses Harfbuzz.
@@ -381,7 +379,6 @@
           ['include', 'fonts/opentype/'],
           ['include', 'fonts/skia/FontCustomPlatformDataSkia\\.cpp$'],
           ['include', 'fonts/skia/FontCustomPlatformDataSkia\\.cpp$'],
-          ['include', 'fonts/skia/GlyphPageTreeNodeSkia\\.cpp$'],
           ['include', 'fonts/skia/SimpleFontDataSkia\\.cpp$'],
           ['include', 'fonts/win/FontCacheSkiaWin\\.cpp$'],
           ['include', 'fonts/win/FontFallbackWin\\.(cpp|h)$'],
