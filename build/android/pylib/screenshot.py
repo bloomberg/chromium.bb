@@ -4,41 +4,12 @@
 
 import os
 import tempfile
-import time
 
 from pylib import cmd_helper
 
 # TODO(jbudorick) Remove once telemetry gets switched over.
 import pylib.android_commands
 import pylib.device.device_utils
-
-
-def _GetTimestamp():
-  return time.strftime('%Y-%m-%d-%H%M%S', time.localtime())
-
-
-def _EnsureHostDirectory(host_file):
-  host_dir = os.path.dirname(os.path.abspath(host_file))
-  if not os.path.exists(host_dir):
-    os.makedirs(host_dir)
-
-
-def TakeScreenshot(device, host_file):
-  """Saves a screenshot image to |host_file| on the host.
-
-  Args:
-    device: DeviceUtils instance.
-    host_file: Path to the image file to store on the host.
-  """
-  host_file = os.path.abspath(host_file or
-                              'screenshot-%s.png' % _GetTimestamp())
-  _EnsureHostDirectory(host_file)
-  device_file = '%s/screenshot.png' % device.old_interface.GetExternalStorage()
-  device.old_interface.RunShellCommand(
-      '/system/bin/screencap -p %s' % device_file)
-  device.old_interface.PullFileFromDevice(device_file, host_file)
-  device.old_interface.RunShellCommand('rm -f "%s"' % device_file)
-  return host_file
 
 
 class VideoRecorder(object):
@@ -61,7 +32,8 @@ class VideoRecorder(object):
     self._device = device
     self._device_file = (
         '%s/screen-recording.mp4' % device.old_interface.GetExternalStorage())
-    self._host_file = host_file or 'screen-recording-%s.mp4' % _GetTimestamp()
+    self._host_file = host_file or ('screen-recording-%s.mp4' %
+                                    device.old_interface.GetTimestamp())
     self._host_file = os.path.abspath(self._host_file)
     self._recorder = None
     self._recorder_pids = None
@@ -81,7 +53,7 @@ class VideoRecorder(object):
 
   def Start(self):
     """Start recording video."""
-    _EnsureHostDirectory(self._host_file)
+    self._device.old_interface.EnsureHostDirectory(self._host_file)
     self._recorder_stdout = tempfile.mkstemp()[1]
     self._recorder = cmd_helper.Popen(
         self._args, stdout=open(self._recorder_stdout, 'w'))

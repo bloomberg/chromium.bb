@@ -24,10 +24,8 @@ import time
 
 import cmd_helper
 import constants
-import screenshot
 import system_properties
 from utils import host_utils
-from device import device_utils
 
 try:
   from pylib import pexpect
@@ -1712,7 +1710,17 @@ class AndroidCommands(object):
 
       return False
 
-  def TakeScreenshot(self, host_file):
+  @staticmethod
+  def GetTimestamp():
+    return time.strftime('%Y-%m-%d-%H%M%S', time.localtime())
+
+  @staticmethod
+  def EnsureHostDirectory(host_file):
+    host_dir = os.path.dirname(os.path.abspath(host_file))
+    if not os.path.exists(host_dir):
+      os.makedirs(host_dir)
+
+  def TakeScreenshot(self, host_file=None):
     """Saves a screenshot image to |host_file| on the host.
 
     Args:
@@ -1722,7 +1730,15 @@ class AndroidCommands(object):
     Returns:
       Resulting host file name of the screenshot.
     """
-    return screenshot.TakeScreenshot(device_utils.DeviceUtils(self), host_file)
+    host_file = os.path.abspath(host_file or
+                                'screenshot-%s.png' % self.GetTimestamp())
+    self.EnsureHostDirectory(host_file)
+    device_file = '%s/screenshot.png' % self.GetExternalStorage()
+    self.RunShellCommand(
+        '/system/bin/screencap -p %s' % device_file)
+    self.PullFileFromDevice(device_file, host_file)
+    self.RunShellCommand('rm -f "%s"' % device_file)
+    return host_file
 
   def PullFileFromDevice(self, device_file, host_file):
     """Download |device_file| on the device from to |host_file| on the host.
