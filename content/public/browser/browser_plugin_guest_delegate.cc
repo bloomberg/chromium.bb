@@ -40,4 +40,9 @@ void BrowserPluginGuestDelegate::CanDownload(
   callback.Run(true);
 }
 
+JavaScriptDialogManager*
+BrowserPluginGuestDelegate::GetJavaScriptDialogManager() {
+  return NULL;
+}
+
 }  // namespace content

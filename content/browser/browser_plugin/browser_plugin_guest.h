@@ -29,7 +29,6 @@
 #include "content/common/edit_command.h"
 #include "content/port/common/input_event_ack_state.h"
 #include "content/public/browser/browser_plugin_guest_delegate.h"
-#include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/browser_plugin_permission_type.h"
@@ -93,8 +92,7 @@ struct MediaStreamRequest;
 // CreateNewWindow. The newly created guest will live in the same partition,
 // which means it can share storage and can script this guest.
 class CONTENT_EXPORT BrowserPluginGuest
-    : public JavaScriptDialogManager,
-      public WebContentsDelegate,
+    : public WebContentsDelegate,
       public WebContentsObserver {
  public:
   virtual ~BrowserPluginGuest();
@@ -237,29 +235,6 @@ class CONTENT_EXPORT BrowserPluginGuest
       content::WebContents* source,
       const blink::WebGestureEvent& event) OVERRIDE;
 
-  // JavaScriptDialogManager implementation.
-  virtual void RunJavaScriptDialog(
-      WebContents* web_contents,
-      const GURL& origin_url,
-      const std::string& accept_lang,
-      JavaScriptMessageType javascript_message_type,
-      const base::string16& message_text,
-      const base::string16& default_prompt_text,
-      const DialogClosedCallback& callback,
-      bool* did_suppress_message) OVERRIDE;
-  virtual void RunBeforeUnloadDialog(
-      WebContents* web_contents,
-      const base::string16& message_text,
-      bool is_reload,
-      const DialogClosedCallback& callback) OVERRIDE;
-  virtual bool HandleJavaScriptDialog(
-      WebContents* web_contents,
-      bool accept,
-      const base::string16* prompt_override) OVERRIDE;
-  virtual void CancelActiveAndPendingDialogs(
-      WebContents* web_contents) OVERRIDE;
-  virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE;
-
   // Exposes the protected web_contents() from WebContentsObserver.
   WebContentsImpl* GetWebContents();
 
@@ -321,7 +296,6 @@ class CONTENT_EXPORT BrowserPluginGuest
   friend class TestBrowserPluginGuest;
 
   class DownloadRequest;
-  class JavaScriptDialogRequest;
   class NewWindowRequest;
   class PermissionRequest;
 

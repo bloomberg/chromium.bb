@@ -8,7 +8,9 @@
 #include "base/observer_list.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/guestview/guestview.h"
+#include "chrome/browser/guestview/webview/javascript_dialog_helper.h"
 #include "chrome/browser/guestview/webview/webview_find_helper.h"
+#include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/WebKit/public/web/WebFindOptions.h"
@@ -91,6 +93,8 @@ class WebViewGuest : public GuestView,
       bool user_gesture,
       bool last_unlocked_by_target,
       const base::Callback<void(bool)>& callback) OVERRIDE;
+  virtual content::JavaScriptDialogManager*
+      GetJavaScriptDialogManager() OVERRIDE;
 
   // NotificationObserver implementation.
   virtual void Observe(int type,
@@ -302,6 +306,9 @@ class WebViewGuest : public GuestView,
 
   // Handles find requests and replies for the webview find API.
   WebviewFindHelper find_helper_;
+
+  // Handles the JavaScript dialog requests.
+  JavaScriptDialogHelper javascript_dialog_helper_;
 
   friend void WebviewFindHelper::DispatchFindUpdateEvent(bool canceled,
                                                          bool final_update);

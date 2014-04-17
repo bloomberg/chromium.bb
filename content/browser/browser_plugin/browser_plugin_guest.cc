@@ -120,26 +120,6 @@ class BrowserPluginGuest::NewWindowRequest : public PermissionRequest {
   int instance_id_;
 };
 
-class BrowserPluginGuest::JavaScriptDialogRequest : public PermissionRequest {
- public:
-  JavaScriptDialogRequest(const base::WeakPtr<BrowserPluginGuest>& guest,
-                          const DialogClosedCallback& callback)
-      : PermissionRequest(guest),
-        callback_(callback) {
-    RecordAction(
-        base::UserMetricsAction("BrowserPlugin.Guest.PermissionRequest.JSDialog"));
-  }
-
-  virtual void RespondImpl(bool should_allow,
-                           const std::string& user_input) OVERRIDE {
-    callback_.Run(should_allow, base::UTF8ToUTF16(user_input));
-  }
-
- private:
-  virtual ~JavaScriptDialogRequest() {}
-  DialogClosedCallback callback_;
-};
-
 namespace {
 std::string WindowOpenDispositionToString(
   WindowOpenDisposition window_open_disposition) {
@@ -161,20 +141,6 @@ std::string WindowOpenDispositionToString(
     default:
       NOTREACHED() << "Unknown Window Open Disposition";
       return "ignore";
-  }
-}
-
-std::string JavaScriptMessageTypeToString(JavaScriptMessageType message_type) {
-  switch (message_type) {
-    case JAVASCRIPT_MESSAGE_TYPE_ALERT:
-      return "alert";
-    case JAVASCRIPT_MESSAGE_TYPE_CONFIRM:
-      return "confirm";
-    case JAVASCRIPT_MESSAGE_TYPE_PROMPT:
-      return "prompt";
-    default:
-      NOTREACHED() << "Unknown JavaScript Message Type.";
-      return "unknown";
   }
 }
 
@@ -663,7 +629,9 @@ void BrowserPluginGuest::CloseContents(WebContents* source) {
 }
 
 JavaScriptDialogManager* BrowserPluginGuest::GetJavaScriptDialogManager() {
-  return this;
+  if (!delegate_)
+    return NULL;
+  return delegate_->GetJavaScriptDialogManager();
 }
 
 ColorChooser* BrowserPluginGuest::OpenColorChooser(
@@ -1561,60 +1529,6 @@ bool BrowserPluginGuest::PreHandleGestureEvent(
   return event.type == blink::WebGestureEvent::GesturePinchBegin ||
       event.type == blink::WebGestureEvent::GesturePinchUpdate ||
       event.type == blink::WebGestureEvent::GesturePinchEnd;
-}
-
-void BrowserPluginGuest::RunJavaScriptDialog(
-    WebContents* web_contents,
-    const GURL& origin_url,
-    const std::string& accept_lang,
-    JavaScriptMessageType javascript_message_type,
-    const base::string16& message_text,
-    const base::string16& default_prompt_text,
-    const DialogClosedCallback& callback,
-    bool* did_suppress_message) {
-  base::DictionaryValue request_info;
-  request_info.Set(
-      browser_plugin::kDefaultPromptText,
-      base::Value::CreateStringValue(base::UTF16ToUTF8(default_prompt_text)));
-  request_info.Set(
-      browser_plugin::kMessageText,
-      base::Value::CreateStringValue(base::UTF16ToUTF8(message_text)));
-  request_info.Set(
-      browser_plugin::kMessageType,
-      base::Value::CreateStringValue(
-          JavaScriptMessageTypeToString(javascript_message_type)));
-  request_info.Set(
-      browser_plugin::kURL,
-      base::Value::CreateStringValue(origin_url.spec()));
-
-  RequestPermission(BROWSER_PLUGIN_PERMISSION_TYPE_JAVASCRIPT_DIALOG,
-                    new JavaScriptDialogRequest(weak_ptr_factory_.GetWeakPtr(),
-                                                callback),
-                    request_info);
-}
-
-void BrowserPluginGuest::RunBeforeUnloadDialog(
-    WebContents* web_contents,
-    const base::string16& message_text,
-    bool is_reload,
-    const DialogClosedCallback& callback) {
-  // This is called if the guest has a beforeunload event handler.
-  // This callback allows navigation to proceed.
-  callback.Run(true, base::string16());
-}
-
-bool BrowserPluginGuest::HandleJavaScriptDialog(
-    WebContents* web_contents,
-    bool accept,
-    const base::string16* prompt_override) {
-  return false;
-}
-
-void BrowserPluginGuest::CancelActiveAndPendingDialogs(
-    WebContents* web_contents) {
-}
-
-void BrowserPluginGuest::WebContentsDestroyed(WebContents* web_contents) {
 }
 
 void BrowserPluginGuest::OnUpdateRect(

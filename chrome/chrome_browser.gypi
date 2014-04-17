@@ -741,6 +741,8 @@
         'browser/guestview/guestview.h',
         'browser/guestview/webview/context_menu_content_type_webview.cc',
         'browser/guestview/webview/context_menu_content_type_webview.h',
+        'browser/guestview/webview/javascript_dialog_helper.cc',
+        'browser/guestview/webview/javascript_dialog_helper.h',
         'browser/guestview/webview/plugin_permission_helper.cc',
         'browser/guestview/webview/plugin_permission_helper.h',
         'browser/guestview/webview/webview_constants.cc',

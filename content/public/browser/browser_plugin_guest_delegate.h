@@ -18,6 +18,7 @@
 
 namespace content {
 
+class JavaScriptDialogManager;
 struct NativeWebKeyboardEvent;
 
 // Objects implement this interface to get notified about changes in the guest
@@ -122,6 +123,10 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
       bool user_gesture,
       bool last_unlocked_by_target,
       const base::Callback<void(bool)>& callback) {}
+
+  // Returns a pointer to a service to manage JavaScript dialogs. May return
+  // NULL in which case dialogs aren't shown.
+  virtual JavaScriptDialogManager* GetJavaScriptDialogManager();
 };
 
 }  // namespace content

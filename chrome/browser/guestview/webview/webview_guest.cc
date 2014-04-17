@@ -79,8 +79,6 @@ static std::string PermissionTypeToString(BrowserPluginPermissionType type) {
   switch (type) {
     case BROWSER_PLUGIN_PERMISSION_TYPE_NEW_WINDOW:
       return webview::kPermissionTypeNewWindow;
-    case BROWSER_PLUGIN_PERMISSION_TYPE_JAVASCRIPT_DIALOG:
-      return webview::kPermissionTypeDialog;
     case BROWSER_PLUGIN_PERMISSION_TYPE_UNKNOWN:
       NOTREACHED();
       break;
@@ -91,6 +89,8 @@ static std::string PermissionTypeToString(BrowserPluginPermissionType type) {
           return webview::kPermissionTypeDownload;
         case WEB_VIEW_PERMISSION_TYPE_GEOLOCATION:
           return webview::kPermissionTypeGeolocation;
+        case WEB_VIEW_PERMISSION_TYPE_JAVASCRIPT_DIALOG:
+          return webview::kPermissionTypeDialog;
         case WEB_VIEW_PERMISSION_TYPE_LOAD_PLUGIN:
           return webview::kPermissionTypeLoadPlugin;
         case WEB_VIEW_PERMISSION_TYPE_MEDIA:
@@ -139,7 +139,8 @@ WebViewGuest::WebViewGuest(WebContents* guest_web_contents,
       pending_reload_on_attachment_(false),
       main_frame_id_(0),
       chromevox_injected_(false),
-      find_helper_(this) {
+      find_helper_(this),
+      javascript_dialog_helper_(this) {
   notification_registrar_.Add(
       this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
       content::Source<WebContents>(guest_web_contents));
@@ -197,10 +198,6 @@ void WebViewGuest::RecordUserInitiatedUMA(const PermissionResponseInfo& info,
         content::RecordAction(
             UserMetricsAction("BrowserPlugin.PermissionAllow.NewWindow"));
         break;
-      case BROWSER_PLUGIN_PERMISSION_TYPE_JAVASCRIPT_DIALOG:
-        content::RecordAction(
-            UserMetricsAction("BrowserPlugin.PermissionAllow.JSDialog"));
-        break;
       case BROWSER_PLUGIN_PERMISSION_TYPE_UNKNOWN:
         break;
       default: {
@@ -214,6 +211,10 @@ void WebViewGuest::RecordUserInitiatedUMA(const PermissionResponseInfo& info,
           case WEB_VIEW_PERMISSION_TYPE_GEOLOCATION:
             content::RecordAction(
                 UserMetricsAction("WebView.PermissionAllow.Geolocation"));
+            break;
+          case WEB_VIEW_PERMISSION_TYPE_JAVASCRIPT_DIALOG:
+            content::RecordAction(
+                UserMetricsAction("WebView.PermissionAllow.JSDialog"));
             break;
           case WEB_VIEW_PERMISSION_TYPE_LOAD_PLUGIN:
             content::RecordAction(
@@ -237,10 +238,6 @@ void WebViewGuest::RecordUserInitiatedUMA(const PermissionResponseInfo& info,
         content::RecordAction(
             UserMetricsAction("BrowserPlugin.PermissionDeny.NewWindow"));
         break;
-      case BROWSER_PLUGIN_PERMISSION_TYPE_JAVASCRIPT_DIALOG:
-        content::RecordAction(
-            UserMetricsAction("BrowserPlugin.PermissionDeny.JSDialog"));
-        break;
       case BROWSER_PLUGIN_PERMISSION_TYPE_UNKNOWN:
         break;
       default: {
@@ -254,6 +251,10 @@ void WebViewGuest::RecordUserInitiatedUMA(const PermissionResponseInfo& info,
           case WEB_VIEW_PERMISSION_TYPE_GEOLOCATION:
             content::RecordAction(
                 UserMetricsAction("WebView.PermissionDeny.Geolocation"));
+            break;
+          case WEB_VIEW_PERMISSION_TYPE_JAVASCRIPT_DIALOG:
+            content::RecordAction(
+                UserMetricsAction("WebView.PermissionDeny.JSDialog"));
             break;
           case WEB_VIEW_PERMISSION_TYPE_LOAD_PLUGIN:
             content::RecordAction(
@@ -926,6 +927,11 @@ void WebViewGuest::RequestPointerLockPermission(
       false /* allowed_by_default */);
 }
 
+content::JavaScriptDialogManager*
+    WebViewGuest::GetJavaScriptDialogManager() {
+  return &javascript_dialog_helper_;
+}
+
 #if defined(OS_CHROMEOS)
 void WebViewGuest::OnAccessibilityStatusChanged(
     const chromeos::AccessibilityStatusEventDetails& details) {
@@ -992,13 +998,13 @@ int WebViewGuest::RequestPermissionInternal(
       PermissionResponseInfo(callback, permission_type, allowed_by_default);
   scoped_ptr<base::DictionaryValue> args(request_info.DeepCopy());
   args->SetInteger(webview::kRequestId, request_id);
-  switch (permission_type) {
+  switch (static_cast<int>(permission_type)) {
     case BROWSER_PLUGIN_PERMISSION_TYPE_NEW_WINDOW: {
       DispatchEvent(new GuestView::Event(webview::kEventNewWindow,
                                          args.Pass()));
       break;
     }
-    case BROWSER_PLUGIN_PERMISSION_TYPE_JAVASCRIPT_DIALOG: {
+    case WEB_VIEW_PERMISSION_TYPE_JAVASCRIPT_DIALOG: {
       DispatchEvent(new GuestView::Event(webview::kEventDialog,
                                          args.Pass()));
       break;

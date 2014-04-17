@@ -13,6 +13,12 @@ enum WebViewPermissionType {
 
   WEB_VIEW_PERMISSION_TYPE_GEOLOCATION,
 
+  // JavaScript Dialogs: prompt, alert, confirm
+  // Note: Even through dialogs do not use the permission API, the dialog API
+  // is sufficiently similiar that it's convenient to consider it a permission
+  // type for code reuse.
+  WEB_VIEW_PERMISSION_TYPE_JAVASCRIPT_DIALOG,
+
   WEB_VIEW_PERMISSION_TYPE_LOAD_PLUGIN,
 
   // Media access (audio/video) permission request type.
