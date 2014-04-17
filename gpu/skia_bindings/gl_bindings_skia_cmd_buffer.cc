@@ -74,6 +74,8 @@ GrGLInterface* CreateCommandBufferSkiaGLBinding() {
   functions->fInsertEventMarker = glInsertEventMarkerEXT;
   functions->fLineWidth = glLineWidth;
   functions->fLinkProgram = glLinkProgram;
+  functions->fMapBufferSubData = glMapBufferSubDataCHROMIUM;
+  functions->fMapTexSubImage2D = glMapTexSubImage2DCHROMIUM;
   functions->fPixelStorei = glPixelStorei;
   functions->fPopGroupMarker = glPopGroupMarkerEXT;
   functions->fPushGroupMarker = glPushGroupMarkerEXT;
@@ -110,6 +112,8 @@ GrGLInterface* CreateCommandBufferSkiaGLBinding() {
   functions->fUniformMatrix2fv = glUniformMatrix2fv;
   functions->fUniformMatrix3fv = glUniformMatrix3fv;
   functions->fUniformMatrix4fv = glUniformMatrix4fv;
+  functions->fUnmapBufferSubData = glUnmapBufferSubDataCHROMIUM;
+  functions->fUnmapTexSubImage2D = glUnmapTexSubImage2DCHROMIUM;
   functions->fUseProgram = glUseProgram;
   functions->fVertexAttrib4fv = glVertexAttrib4fv;
   functions->fVertexAttribPointer = glVertexAttribPointer;
