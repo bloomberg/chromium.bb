@@ -46,8 +46,6 @@
       'JSONValues.cpp',
       'JSONValues.h',
       'KeyboardCodes.h',
-      'KeyCodeConversion.h',
-      'KeyCodeConversionAndroid.cpp',
       'KillRing.h',
       'KillRingNone.cpp',
       'Language.cpp',
