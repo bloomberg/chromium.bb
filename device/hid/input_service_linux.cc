@@ -44,75 +44,35 @@ bool GetBoolProperty(udev_device* device, const char* key) {
   return (value != 0);
 }
 
-}  // namespace
+class InputServiceLinuxImpl : public InputServiceLinux,
+                              public DeviceMonitorLinux::Observer {
+ public:
+  // Implements DeviceMonitorLinux::Observer:
+  virtual void OnDeviceAdded(udev_device* device) OVERRIDE;
+  virtual void OnDeviceRemoved(udev_device* device) OVERRIDE;
 
-InputServiceLinux::InputDeviceInfo::InputDeviceInfo()
-    : subsystem(SUBSYSTEM_UNKNOWN),
-      is_accelerometer(false),
-      is_joystick(false),
-      is_key(false),
-      is_keyboard(false),
-      is_mouse(false),
-      is_tablet(false),
-      is_touchpad(false),
-      is_touchscreen(false) {}
+ private:
+  friend class InputServiceLinux;
 
-InputServiceLinux::InputServiceLinux() {
-  base::ThreadRestrictions::AssertIOAllowed();
-  base::MessageLoop::current()->AddDestructionObserver(this);
+  InputServiceLinuxImpl();
+  virtual ~InputServiceLinuxImpl();
+
+  DISALLOW_COPY_AND_ASSIGN(InputServiceLinuxImpl);
+};
+
+InputServiceLinuxImpl::InputServiceLinuxImpl() {
   DeviceMonitorLinux::GetInstance()->AddObserver(this);
-  DeviceMonitorLinux::GetInstance()->Enumerate(
-      base::Bind(&InputServiceLinux::OnDeviceAdded, base::Unretained(this)));
+  DeviceMonitorLinux::GetInstance()->Enumerate(base::Bind(
+      &InputServiceLinuxImpl::OnDeviceAdded, base::Unretained(this)));
 }
 
-// static
-InputServiceLinux* InputServiceLinux::GetInstance() {
-  if (!HasInstance())
-    g_input_service_linux_ptr.Get().reset(new InputServiceLinux());
-  return g_input_service_linux_ptr.Get().get();
+InputServiceLinuxImpl::~InputServiceLinuxImpl() {
+  if (DeviceMonitorLinux::HasInstance())
+    DeviceMonitorLinux::GetInstance()->RemoveObserver(this);
 }
 
-// static
-bool InputServiceLinux::HasInstance() {
-  return g_input_service_linux_ptr.Get().get();
-}
-
-void InputServiceLinux::AddObserver(Observer* observer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (observer)
-    observers_.AddObserver(observer);
-}
-
-void InputServiceLinux::RemoveObserver(Observer* observer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (observer)
-    observers_.RemoveObserver(observer);
-}
-
-void InputServiceLinux::GetDevices(std::vector<InputDeviceInfo>* devices) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  for (DeviceMap::iterator it = devices_.begin(), ie = devices_.end(); it != ie;
-       ++it)
-    devices->push_back(it->second);
-}
-
-bool InputServiceLinux::GetDeviceInfo(const std::string& id,
-                                      InputDeviceInfo* info) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DeviceMap::const_iterator it = devices_.find(id);
-  if (it == devices_.end())
-    return false;
-  *info = it->second;
-  return true;
-}
-
-void InputServiceLinux::WillDestroyCurrentMessageLoop() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  g_input_service_linux_ptr.Get().reset(NULL);
-}
-
-void InputServiceLinux::OnDeviceAdded(udev_device* device) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+void InputServiceLinuxImpl::OnDeviceAdded(udev_device* device) {
+  DCHECK(CalledOnValidThread());
   if (!device)
     return;
   const char* path = udev_device_get_syspath(device);
@@ -145,26 +105,106 @@ void InputServiceLinux::OnDeviceAdded(udev_device* device) {
   info.is_touchpad = GetBoolProperty(device, kIdInputTouchpad);
   info.is_touchscreen = GetBoolProperty(device, kIdInputTouchscreen);
 
-  devices_[info.id] = info;
-  FOR_EACH_OBSERVER(Observer, observers_, OnInputDeviceAdded(info));
+  AddDevice(info);
 }
 
-void InputServiceLinux::OnDeviceRemoved(udev_device* device) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+void InputServiceLinuxImpl::OnDeviceRemoved(udev_device* device) {
+  DCHECK(CalledOnValidThread());
   if (!device)
     return;
   const char* path = udev_device_get_syspath(device);
   if (!path)
     return;
-  devices_.erase(path);
-  FOR_EACH_OBSERVER(Observer, observers_, OnInputDeviceRemoved(path));
+  RemoveDevice(path);
+}
+
+}  // namespace
+
+InputServiceLinux::InputDeviceInfo::InputDeviceInfo()
+    : subsystem(SUBSYSTEM_UNKNOWN),
+      is_accelerometer(false),
+      is_joystick(false),
+      is_key(false),
+      is_keyboard(false),
+      is_mouse(false),
+      is_tablet(false),
+      is_touchpad(false),
+      is_touchscreen(false) {}
+
+InputServiceLinux::InputServiceLinux() {
+  base::ThreadRestrictions::AssertIOAllowed();
+  base::MessageLoop::current()->AddDestructionObserver(this);
 }
 
 InputServiceLinux::~InputServiceLinux() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   base::MessageLoop::current()->RemoveDestructionObserver(this);
-  if (DeviceMonitorLinux::HasInstance())
-    DeviceMonitorLinux::GetInstance()->RemoveObserver(this);
+}
+
+// static
+InputServiceLinux* InputServiceLinux::GetInstance() {
+  if (!HasInstance())
+    g_input_service_linux_ptr.Get().reset(new InputServiceLinux());
+  return g_input_service_linux_ptr.Get().get();
+}
+
+// static
+bool InputServiceLinux::HasInstance() {
+  return g_input_service_linux_ptr.Get().get();
+}
+
+// static
+void InputServiceLinux::SetForTesting(InputServiceLinux* service) {
+  g_input_service_linux_ptr.Get().reset(service);
+}
+
+void InputServiceLinux::AddObserver(Observer* observer) {
+  DCHECK(CalledOnValidThread());
+  if (observer)
+    observers_.AddObserver(observer);
+}
+
+void InputServiceLinux::RemoveObserver(Observer* observer) {
+  DCHECK(CalledOnValidThread());
+  if (observer)
+    observers_.RemoveObserver(observer);
+}
+
+void InputServiceLinux::GetDevices(std::vector<InputDeviceInfo>* devices) {
+  DCHECK(CalledOnValidThread());
+  for (DeviceMap::iterator it = devices_.begin(), ie = devices_.end(); it != ie;
+       ++it) {
+    devices->push_back(it->second);
+  }
+}
+
+bool InputServiceLinux::GetDeviceInfo(const std::string& id,
+                                      InputDeviceInfo* info) const {
+  DCHECK(CalledOnValidThread());
+  DeviceMap::const_iterator it = devices_.find(id);
+  if (it == devices_.end())
+    return false;
+  *info = it->second;
+  return true;
+}
+
+void InputServiceLinux::WillDestroyCurrentMessageLoop() {
+  DCHECK(CalledOnValidThread());
+  g_input_service_linux_ptr.Get().reset(NULL);
+}
+
+void InputServiceLinux::AddDevice(const InputDeviceInfo& info) {
+  devices_[info.id] = info;
+  FOR_EACH_OBSERVER(Observer, observers_, OnInputDeviceAdded(info));
+}
+
+void InputServiceLinux::RemoveDevice(const std::string& id) {
+  devices_.erase(id);
+  FOR_EACH_OBSERVER(Observer, observers_, OnInputDeviceRemoved(id));
+}
+
+bool InputServiceLinux::CalledOnValidThread() const {
+  return thread_checker_.CalledOnValidThread();
 }
 
 }  // namespace device

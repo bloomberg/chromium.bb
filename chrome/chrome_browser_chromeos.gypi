@@ -62,6 +62,7 @@
         '../crypto/crypto.gyp:crypto',
         '../dbus/dbus.gyp:dbus',
         '../device/bluetooth/bluetooth.gyp:device_bluetooth',
+        '../device/hid/hid.gyp:device_hid',
         '../media/media.gyp:media',
         '../net/net.gyp:net',
         '../ppapi/ppapi_internal.gyp:ppapi_ipc',  # For PpapiMsg_LoadPlugin
@@ -200,6 +201,8 @@
         'browser/chromeos/dbus/proxy_resolution_service_provider.h',
         'browser/chromeos/dbus/screen_lock_service_provider.cc',
         'browser/chromeos/dbus/screen_lock_service_provider.h',
+        'browser/chromeos/device/input_service_proxy.cc',
+        'browser/chromeos/device/input_service_proxy.h',
         'browser/chromeos/device_hierarchy_observer.h',
         'browser/chromeos/device_uma.cc',
         'browser/chromeos/device_uma.h',

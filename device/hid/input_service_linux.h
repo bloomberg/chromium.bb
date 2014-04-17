@@ -22,8 +22,7 @@ namespace device {
 // This class provides information and notifications about
 // connected/disconnected input/HID devices. This class is *NOT*
 // thread-safe and all methods must be called from the FILE thread.
-class InputServiceLinux : public base::MessageLoop::DestructionObserver,
-                          public DeviceMonitorLinux::Observer {
+class InputServiceLinux : public base::MessageLoop::DestructionObserver {
  public:
   struct InputDeviceInfo {
     enum Subsystem { SUBSYSTEM_HID, SUBSYSTEM_INPUT, SUBSYSTEM_UNKNOWN };
@@ -55,6 +54,7 @@ class InputServiceLinux : public base::MessageLoop::DestructionObserver,
 
   static InputServiceLinux* GetInstance();
   static bool HasInstance();
+  static void SetForTesting(InputServiceLinux* service);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -70,15 +70,18 @@ class InputServiceLinux : public base::MessageLoop::DestructionObserver,
   // Implements base::MessageLoop::DestructionObserver
   virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
 
-  // Implements DeviceMonitorLinux::Observer:
-  virtual void OnDeviceAdded(udev_device* device) OVERRIDE;
-  virtual void OnDeviceRemoved(udev_device* device) OVERRIDE;
+ protected:
+  virtual ~InputServiceLinux();
+
+  void AddDevice(const InputDeviceInfo& info);
+  void RemoveDevice(const std::string& id);
+
+  bool CalledOnValidThread() const;
 
  private:
   friend struct base::DefaultDeleter<InputServiceLinux>;
 
   typedef base::hash_map<std::string, InputDeviceInfo> DeviceMap;
-  virtual ~InputServiceLinux();
 
   DeviceMap devices_;
   ObserverList<Observer> observers_;
