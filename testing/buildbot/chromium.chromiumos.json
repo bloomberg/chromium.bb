@@ -39,7 +39,8 @@
     "gtest_tests": [
       "interactive_ui_tests",
       "browser_tests",
-      "content_browsertests"
+      "content_browsertests",
+      "apps_browsertests"
     ]
   },
   "Linux ChromiumOS Tests (dbg)(1)": {
@@ -80,7 +81,8 @@
   "Linux ChromiumOS Tests (dbg)(2)": {
     "gtest_tests": [
       "browser_tests",
-      "content_browsertests"
+      "content_browsertests",
+      "apps_browsertests"
     ]
   },
   "Linux ChromiumOS Tests (dbg)(3)": {
