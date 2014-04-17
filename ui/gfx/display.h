@@ -73,6 +73,8 @@ class GFX_EXPORT Display {
 
   Rotation rotation() const { return rotation_; }
   void set_rotation(Rotation rotation) { rotation_ = rotation; }
+  int RotationAsDegree() const;
+  void SetRotationAsDegree(int rotation);
 
   TouchSupport touch_support() const { return touch_support_; }
   void set_touch_support(TouchSupport support) { touch_support_ = support; }

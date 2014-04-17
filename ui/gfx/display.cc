@@ -85,6 +85,42 @@ Display::Display(int64 id, const gfx::Rect& bounds)
 Display::~Display() {
 }
 
+int Display::RotationAsDegree() const {
+  switch (rotation_) {
+    case ROTATE_0:
+      return 0;
+    case ROTATE_90:
+      return 90;
+    case ROTATE_180:
+      return 180;
+    case ROTATE_270:
+      return 270;
+  }
+
+  NOTREACHED();
+  return 0;
+}
+
+void Display::SetRotationAsDegree(int rotation) {
+  switch (rotation) {
+    case 0:
+      rotation_ = ROTATE_0;
+      break;
+    case 90:
+      rotation_ = ROTATE_90;
+      break;
+    case 180:
+      rotation_ = ROTATE_180;
+      break;
+    case 270:
+      rotation_ = ROTATE_270;
+      break;
+  }
+
+  // We should not reach that but we will just ignore the call if we do.
+  NOTREACHED();
+}
+
 Insets Display::GetWorkAreaInsets() const {
   return gfx::Insets(work_area_.y() - bounds_.y(),
                      work_area_.x() - bounds_.x(),
