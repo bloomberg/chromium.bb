@@ -227,18 +227,6 @@ bool debugging_child = false;
       debugging_child = true;
     }
   }
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDebugChildren)) {
-    // Look to pass-on the kDebugOnStart flag.
-    std::string value = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-        switches::kDebugChildren);
-    if (value.empty() || value == switches::kWorkerProcess) {
-      // launches a new xterm, and runs the worker process in gdb, reading
-      // optional commands from gdb_chrome file in the working directory.
-      cmd_line->PrependWrapper("xterm -e gdb -x gdb_chrome --args");
-      debugging_child = true;
-    }
-  }
 #endif
 
   process_->Launch(

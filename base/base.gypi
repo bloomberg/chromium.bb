@@ -130,8 +130,6 @@
           'debug/alias.h',
           'debug/crash_logging.cc',
           'debug/crash_logging.h',
-          'debug/debug_on_start_win.cc',
-          'debug/debug_on_start_win.h',
           'debug/debugger.cc',
           'debug/debugger.h',
           'debug/debugger_posix.cc',

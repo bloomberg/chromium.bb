@@ -14,7 +14,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include <string>
 #include <vector>
 
 #if defined(__GLIBCXX__)
@@ -41,7 +40,6 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/safe_strerror_posix.h"
 #include "base/strings/string_piece.h"
-#include "base/strings/stringprintf.h"
 
 #if defined(USE_SYMBOLIZE)
 #include "base/third_party/symbolize/symbolize.h"
@@ -53,22 +51,6 @@
 
 namespace base {
 namespace debug {
-
-bool SpawnDebuggerOnProcess(unsigned process_id) {
-#if OS_ANDROID || OS_NACL
-  NOTIMPLEMENTED();
-  return false;
-#else
-  const std::string debug_cmd =
-      StringPrintf("xterm -e 'gdb --pid=%u' &", process_id);
-  LOG(WARNING) << "Starting debugger on pid " << process_id
-               << " with command `" << debug_cmd << "`";
-  int ret = system(debug_cmd.c_str());
-  if (ret == -1)
-    return false;
-  return true;
-#endif
-}
 
 #if defined(OS_MACOSX) || defined(OS_BSD)
 

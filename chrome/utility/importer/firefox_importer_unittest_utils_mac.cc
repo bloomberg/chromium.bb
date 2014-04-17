@@ -21,7 +21,6 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_multiprocess_test.h"
-#include "ipc/ipc_switches.h"
 #include "testing/multiprocess_func_list.h"
 
 #define IPC_MESSAGE_IMPL
@@ -56,10 +55,7 @@ bool LaunchNSSDecrypterChildProcess(const base::FilePath& nss_path,
   fds_to_map.push_back(std::pair<int,int>(ipcfd.get(),
       kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor));
 
-  bool debug_on_start = CommandLine::ForCurrentProcess()->HasSwitch(
-                            switches::kDebugChildren);
   options.fds_to_remap = &fds_to_map;
-  options.wait = debug_on_start;
   return base::LaunchProcess(cl.argv(), options, handle);
 }
 

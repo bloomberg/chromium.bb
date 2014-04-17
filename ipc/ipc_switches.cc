@@ -15,10 +15,5 @@ namespace switches {
 // IPC channel the browser expects to use to communicate with it.
 const char kProcessChannelID[]              = "channel";
 
-// Will add kDebugOnStart to every child processes. If a value is passed, it
-// will be used as a filter to determine if the child process should have the
-// kDebugOnStart flag passed on or not.
-const char kDebugChildren[]                 = "debug-children";
-
 }  // namespace switches
 

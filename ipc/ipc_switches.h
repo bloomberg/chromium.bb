@@ -12,7 +12,6 @@
 namespace switches {
 
 IPC_EXPORT extern const char kProcessChannelID[];
-IPC_EXPORT extern const char kDebugChildren[];
 
 }  // namespace switches
 

@@ -8,7 +8,6 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
-#include "base/debug/debugger.h"
 #include "base/debug/profiler.h"
 #include "base/debug/trace_event.h"
 #include "base/file_util.h"
@@ -25,7 +24,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_init.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
-#include "ipc/ipc_switches.h"
 #include "sandbox/win/src/process_mitigations.h"
 #include "sandbox/win/src/sandbox.h"
 #include "sandbox/win/src/sandbox_nt_util.h"
@@ -368,25 +366,11 @@ bool AddPolicyForSandboxedProcess(sandbox::TargetPolicy* policy) {
 
 // Updates the command line arguments with debug-related flags. If debug flags
 // have been used with this process, they will be filtered and added to
-// command_line as needed. is_in_sandbox must be true if the child process will
-// be in a sandbox.
-//
-// Returns true if the caller should "help" the child process by calling the JIT
-// debugger on it. It may only happen if is_in_sandbox is true.
-bool ProcessDebugFlags(CommandLine* command_line, bool is_in_sandbox) {
-  bool should_help_child = false;
+// command_line as needed.
+void ProcessDebugFlags(CommandLine* command_line) {
   const CommandLine& current_cmd_line = *CommandLine::ForCurrentProcess();
   std::string type = command_line->GetSwitchValueASCII(switches::kProcessType);
-  if (current_cmd_line.HasSwitch(switches::kDebugChildren)) {
-    // Look to pass-on the kDebugOnStart flag.
-    std::string value = current_cmd_line.GetSwitchValueASCII(
-        switches::kDebugChildren);
-    if (value.empty() || value == type) {
-      command_line->AppendSwitch(switches::kDebugOnStart);
-      should_help_child = true;
-    }
-    command_line->AppendSwitchASCII(switches::kDebugChildren, value);
-  } else if (current_cmd_line.HasSwitch(switches::kWaitForDebuggerChildren)) {
+  if (current_cmd_line.HasSwitch(switches::kWaitForDebuggerChildren)) {
     // Look to pass-on the kWaitForDebugger flag.
     std::string value = current_cmd_line.GetSwitchValueASCII(
         switches::kWaitForDebuggerChildren);
@@ -395,7 +379,6 @@ bool ProcessDebugFlags(CommandLine* command_line, bool is_in_sandbox) {
     }
     command_line->AppendSwitchASCII(switches::kWaitForDebuggerChildren, value);
   }
-  return should_help_child;
 }
 
 // This code is test only, and attempts to catch unsafe uses of
@@ -589,31 +572,22 @@ base::ProcessHandle StartSandboxedProcess(
 
   TRACE_EVENT_BEGIN_ETW("StartProcessWithAccess", 0, type_str);
 
-  bool in_sandbox = true;
-  if (delegate)
-    in_sandbox = delegate->ShouldSandbox();
-
-  if (browser_command_line.HasSwitch(switches::kNoSandbox) ||
-      cmd_line->HasSwitch(switches::kNoSandbox)) {
-    // The user or the caller has explicity opted-out from all sandboxing.
-    in_sandbox = false;
-  }
-
-
   // Propagate the --allow-no-job flag if present.
   if (browser_command_line.HasSwitch(switches::kAllowNoSandboxJob) &&
       !cmd_line->HasSwitch(switches::kAllowNoSandboxJob)) {
     cmd_line->AppendSwitch(switches::kAllowNoSandboxJob);
   }
 
-  bool child_needs_help = ProcessDebugFlags(cmd_line, in_sandbox);
+  ProcessDebugFlags(cmd_line);
 
   // Prefetch hints on windows:
   // Using a different prefetch profile per process type will allow Windows
   // to create separate pretetch settings for browser, renderer etc.
   cmd_line->AppendArg(base::StringPrintf("/prefetch:%d", base::Hash(type_str)));
 
-  if (!in_sandbox) {
+  if ((delegate && !delegate->ShouldSandbox()) ||
+      browser_command_line.HasSwitch(switches::kNoSandbox) ||
+      cmd_line->HasSwitch(switches::kNoSandbox)) {
     base::ProcessHandle process = 0;
     base::LaunchProcess(*cmd_line, base::LaunchOptions(), &process);
     g_broker_services->AddTargetPeer(process);
@@ -721,12 +695,6 @@ base::ProcessHandle StartSandboxedProcess(
     delegate->PostSpawnTarget(target.process_handle());
 
   ResumeThread(target.thread_handle());
-
-  // Help the process a little. It can't start the debugger by itself if
-  // the process is in a sandbox.
-  if (child_needs_help)
-    base::debug::SpawnDebuggerOnProcess(target.process_id());
-
   return target.TakeProcessHandle();
 }
 

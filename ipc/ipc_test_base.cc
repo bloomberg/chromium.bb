@@ -7,7 +7,6 @@
 #include "ipc/ipc_test_base.h"
 
 #include "base/command_line.h"
-#include "base/debug/debug_on_start_win.h"
 #include "base/process/kill.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
