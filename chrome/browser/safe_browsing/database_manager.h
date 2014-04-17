@@ -277,8 +277,6 @@ class SafeBrowsingDatabaseManager
 
   void DeleteDatabaseChunks(std::vector<SBChunkDelete>* chunk_deletes);
 
-  static SBThreatType GetThreatTypeFromListname(const std::string& list_name);
-
   void NotifyClientBlockingComplete(Client* client, bool proceed);
 
   void DatabaseUpdateFinished(bool update_succeeded);

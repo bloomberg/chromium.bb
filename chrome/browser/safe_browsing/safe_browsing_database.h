@@ -47,6 +47,16 @@ class SafeBrowsingDatabaseFactory {
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingDatabaseFactory);
 };
 
+// Contains full_hash elements which are cached in memory.  Differs from
+// SBAddFullHash in deriving |list_id| from |chunk_id|.  Differs from
+// SBFullHashResult in adding |received| for later expiration.
+// TODO(shess): Remove/refactor this as part of converting to v2.3 caching
+// semantics.
+struct SBFullHashCached {
+  SBFullHash hash;
+  int list_id;  // TODO(shess): Use safe_browsing_util::ListType.
+  int received;  // time_t like SBAddFullHash.
+};
 
 // Encapsulates on-disk databases that for safebrowsing. There are
 // four databases: browse, download, download whitelist and
@@ -399,7 +409,7 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
 
   // Lock for protecting access to variables that may be used on the
   // IO thread.  This includes |prefix_set_|, |full_browse_hashes_|,
-  // |pending_browse_hashes_|, |prefix_miss_cache_|, |csd_whitelist_|.
+  // |cached_browse_hashes_|, |prefix_miss_cache_|, |csd_whitelist_|.
   base::Lock lookup_lock_;
 
   // Underlying persistent store for chunk data.
@@ -443,10 +453,10 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   // Cached browse store related full-hash items, ordered by prefix for
   // efficient scanning.
   // |full_browse_hashes_| are items from |browse_store_|,
-  // |pending_browse_hashes_| are items from |CacheHashResults()|, which
-  // will be pushed to the store on the next update.
-  std::vector<SBAddFullHash> full_browse_hashes_;
-  std::vector<SBAddFullHash> pending_browse_hashes_;
+  // |cached_browse_hashes_| are items from |CacheHashResults()|, which will be
+  // discarded on next update.
+  std::vector<SBFullHashCached> full_browse_hashes_;
+  std::vector<SBFullHashCached> cached_browse_hashes_;
 
   // Cache of prefixes that returned empty results (no full hash
   // match) to |CacheHashResults()|.  Cached to prevent asking for

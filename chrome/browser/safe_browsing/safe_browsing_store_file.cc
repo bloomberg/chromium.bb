@@ -434,12 +434,6 @@ bool prefix_bounder(SBPrefix val, const T& elt) {
 // aggregate operations on same.
 class StateInternal {
  public:
-  explicit StateInternal(const std::vector<SBAddFullHash>& pending_adds)
-    : add_full_hashes_(pending_adds.begin(), pending_adds.end()) {
-  }
-
-  StateInternal() {}
-
   // Append indicated amount of data from |fp|.
   bool AppendData(size_t add_prefix_count, size_t sub_prefix_count,
                   size_t add_hash_count, size_t sub_hash_count,
@@ -907,7 +901,6 @@ bool SafeBrowsingStoreFile::FinishChunk() {
 }
 
 bool SafeBrowsingStoreFile::DoUpdate(
-    const std::vector<SBAddFullHash>& pending_adds,
     safe_browsing::PrefixSetBuilder* builder,
     std::vector<SBAddFullHash>* add_full_hashes_result) {
   DCHECK(file_.get() || empty_);
@@ -931,7 +924,7 @@ bool SafeBrowsingStoreFile::DoUpdate(
                        std::max(static_cast<int>(update_size / 1024), 1));
 
   // Chunk updates to integrate.
-  StateInternal new_state(pending_adds);
+  StateInternal new_state;
 
   // Read update chunks.
   for (int i = 0; i < chunks_written_; ++i) {
@@ -1173,13 +1166,12 @@ bool SafeBrowsingStoreFile::DoUpdate(
 }
 
 bool SafeBrowsingStoreFile::FinishUpdate(
-    const std::vector<SBAddFullHash>& pending_adds,
     safe_browsing::PrefixSetBuilder* builder,
     std::vector<SBAddFullHash>* add_full_hashes_result) {
   DCHECK(builder);
   DCHECK(add_full_hashes_result);
 
-  if (!DoUpdate(pending_adds, builder, add_full_hashes_result)) {
+  if (!DoUpdate(builder, add_full_hashes_result)) {
     CancelUpdate();
     return false;
   }

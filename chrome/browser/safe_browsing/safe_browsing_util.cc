@@ -494,22 +494,6 @@ int GetUrlHashIndex(const GURL& url,
   return -1;
 }
 
-bool IsPhishingList(const std::string& list_name) {
-  return list_name.compare(kPhishingList) == 0;
-}
-
-bool IsMalwareList(const std::string& list_name) {
-  return list_name.compare(kMalwareList) == 0;
-}
-
-bool IsBadbinurlList(const std::string& list_name) {
-  return list_name.compare(kBinUrlList) == 0;
-}
-
-bool IsExtensionList(const std::string& list_name) {
-  return list_name.compare(kExtensionBlacklist) == 0;
-}
-
 GURL GeneratePhishingReportUrl(const std::string& report_page,
                                const std::string& url_to_report,
                                bool is_client_side_detection) {

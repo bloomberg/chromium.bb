@@ -68,6 +68,28 @@ bool IsExpectedThreat(
                                              threat_type);
 }
 
+// |list_id| is from |safe_browsing_util::ListType|.
+SBThreatType GetThreatTypeFromListId(int list_id) {
+  if (list_id == safe_browsing_util::PHISH) {
+    return SB_THREAT_TYPE_URL_PHISHING;
+  }
+
+  if (list_id == safe_browsing_util::MALWARE) {
+    return SB_THREAT_TYPE_URL_MALWARE;
+  }
+
+  if (list_id == safe_browsing_util::BINURL) {
+    return SB_THREAT_TYPE_BINARY_MALWARE_URL;
+  }
+
+  if (list_id == safe_browsing_util::EXTENSIONBLACKLIST) {
+    return SB_THREAT_TYPE_EXTENSION;
+  }
+
+  DVLOG(1) << "Unknown safe browsing list id " << list_id;
+  return SB_THREAT_TYPE_SAFE;
+}
+
 }  // namespace
 
 SafeBrowsingDatabaseManager::SafeBrowsingCheck::SafeBrowsingCheck(
@@ -784,28 +806,6 @@ void SafeBrowsingDatabaseManager::DeleteDatabaseChunks(
   }
 }
 
-SBThreatType SafeBrowsingDatabaseManager::GetThreatTypeFromListname(
-    const std::string& list_name) {
-  if (safe_browsing_util::IsPhishingList(list_name)) {
-    return SB_THREAT_TYPE_URL_PHISHING;
-  }
-
-  if (safe_browsing_util::IsMalwareList(list_name)) {
-    return SB_THREAT_TYPE_URL_MALWARE;
-  }
-
-  if (safe_browsing_util::IsBadbinurlList(list_name)) {
-    return SB_THREAT_TYPE_BINARY_MALWARE_URL;
-  }
-
-  if (safe_browsing_util::IsExtensionList(list_name)) {
-    return SB_THREAT_TYPE_EXTENSION;
-  }
-
-  DVLOG(1) << "Unknown safe browsing list " << list_name;
-  return SB_THREAT_TYPE_SAFE;
-}
-
 void SafeBrowsingDatabaseManager::DatabaseUpdateFinished(
     bool update_succeeded) {
   DCHECK_EQ(base::MessageLoop::current(),
@@ -891,7 +891,7 @@ bool SafeBrowsingDatabaseManager::HandleOneCheck(
     if (index == -1)
       continue;
     SBThreatType threat =
-        GetThreatTypeFromListname(full_hashes[index].list_name);
+        GetThreatTypeFromListId(full_hashes[index].list_id);
     if (threat != SB_THREAT_TYPE_SAFE &&
         IsExpectedThreat(threat, check->expected_threats)) {
       check->url_results[i] = threat;
@@ -905,7 +905,7 @@ bool SafeBrowsingDatabaseManager::HandleOneCheck(
     if (index == -1)
       continue;
     SBThreatType threat =
-        GetThreatTypeFromListname(full_hashes[index].list_name);
+        GetThreatTypeFromListId(full_hashes[index].list_id);
     if (threat != SB_THREAT_TYPE_SAFE &&
         IsExpectedThreat(threat, check->expected_threats)) {
       check->full_hash_results[i] = threat;

@@ -74,7 +74,7 @@ typedef std::deque<SBSubPrefix> SBSubPrefixes;
 
 struct SBAddFullHash {
   int32 chunk_id;
-  int32 received;
+  int32 received;  // TODO(shess): Deprecate and remove.
   SBFullHash full_hash;
 
   SBAddFullHash(int32 id, base::Time r, const SBFullHash& h)
@@ -220,12 +220,7 @@ class SafeBrowsingStore {
   // Pass the collected chunks through SBPRocessSubs() and commit to
   // permanent storage.  The resulting add prefixes and hashes will be
   // stored in |add_prefixes_result| and |add_full_hashes_result|.
-  // |pending_adds| is the set of full hashes which have been received
-  // since the previous update, and is provided as a convenience
-  // (could be written via WriteAddHash(), but that would flush the
-  // chunk to disk).
   virtual bool FinishUpdate(
-      const std::vector<SBAddFullHash>& pending_adds,
       safe_browsing::PrefixSetBuilder* builder,
       std::vector<SBAddFullHash>* add_full_hashes_result) = 0;
 

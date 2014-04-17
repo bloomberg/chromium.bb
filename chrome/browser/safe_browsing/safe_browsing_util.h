@@ -105,8 +105,8 @@ class SBChunkList {
 // Used when we get a gethash response.
 struct SBFullHashResult {
   SBFullHash hash;
-  std::string list_name;
-  int add_chunk_id;
+  // TODO(shess): Refactor to allow ListType here.
+  int list_id;
 };
 
 // Contains information about a list in the database.
@@ -352,11 +352,6 @@ int GetHashIndex(const SBFullHash& hash,
 // otherwise.
 int GetUrlHashIndex(const GURL& url,
                     const std::vector<SBFullHashResult>& full_hashes);
-
-bool IsPhishingList(const std::string& list_name);
-bool IsMalwareList(const std::string& list_name);
-bool IsBadbinurlList(const std::string& list_name);
-bool IsExtensionList(const std::string& list_name);
 
 GURL GeneratePhishingReportUrl(const std::string& report_page,
                                const std::string& url_to_report,

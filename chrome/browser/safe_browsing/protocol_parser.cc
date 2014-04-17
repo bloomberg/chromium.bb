@@ -65,12 +65,13 @@ bool SafeBrowsingProtocolParser::ParseGetHash(
       return false;
 
     SBFullHashResult full_hash;
-    full_hash.list_name = cmd_parts[0];
-    full_hash.add_chunk_id = atoi(cmd_parts[1].c_str());
+    full_hash.list_id = safe_browsing_util::GetListId(cmd_parts[0]);
+    // Ignore cmd_parts[1] (add_chunk_id), as we no longer use it with SB 2.3
+    // caching rules.
     int full_hash_len = atoi(cmd_parts[2].c_str());
 
     // Ignore hash results from lists we don't recognize.
-    if (safe_browsing_util::GetListId(full_hash.list_name) < 0) {
+    if (full_hash.list_id < 0) {
       data += full_hash_len;
       length -= full_hash_len;
       continue;

@@ -47,8 +47,7 @@ bool SafeBrowsingDatabaseManagerTest::RunSBHashTest(
 
   const SBFullHashResult full_hash_result = {
       same_full_hash,
-      result_list,
-      0
+      safe_browsing_util::GetListId(result_list)
   };
 
   std::vector<SBFullHashResult> fake_results(1, full_hash_result);

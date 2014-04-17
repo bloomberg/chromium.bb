@@ -152,10 +152,7 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
   virtual bool FinishChunk() OVERRIDE;
 
   virtual bool BeginUpdate() OVERRIDE;
-  // Store updates with pending add full hashes in file store and
-  // return |add_prefixes_result| and |add_full_hashes_result|.
   virtual bool FinishUpdate(
-      const std::vector<SBAddFullHash>& pending_adds,
       safe_browsing::PrefixSetBuilder* builder,
       std::vector<SBAddFullHash>* add_full_hashes_result) OVERRIDE;
   virtual bool CancelUpdate() OVERRIDE;
@@ -185,9 +182,9 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
   static bool DeleteStore(const base::FilePath& basename);
 
  private:
-  // Update store file with pending full hashes.
-  virtual bool DoUpdate(const std::vector<SBAddFullHash>& pending_adds,
-                        safe_browsing::PrefixSetBuilder* builder,
+  // Does the actual update for FinishUpdate(), so that FinishUpdate() can clean
+  // up correctly in case of error.
+  virtual bool DoUpdate(safe_browsing::PrefixSetBuilder* builder,
                         std::vector<SBAddFullHash>* add_full_hashes_result);
 
   // Some very lucky users have an original-format file still in their

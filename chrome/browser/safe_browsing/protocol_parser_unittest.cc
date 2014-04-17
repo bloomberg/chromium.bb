@@ -439,15 +439,15 @@ TEST(SafeBrowsingProtocolParsingTest, TestGetHash) {
   EXPECT_EQ(memcmp(&full_hashes[0].hash,
                    "00112233445566778899aabbccddeeff",
                    sizeof(SBFullHash)), 0);
-  EXPECT_EQ(full_hashes[0].list_name, "goog-phish-shavar");
+  EXPECT_EQ(full_hashes[0].list_id, safe_browsing_util::PHISH);
   EXPECT_EQ(memcmp(&full_hashes[1].hash,
                    "00001111222233334444555566667777",
                    sizeof(SBFullHash)), 0);
-  EXPECT_EQ(full_hashes[1].list_name, "goog-phish-shavar");
+  EXPECT_EQ(full_hashes[1].list_id, safe_browsing_util::PHISH);
   EXPECT_EQ(memcmp(&full_hashes[2].hash,
                    "ffffeeeeddddccccbbbbaaaa99998888",
                    sizeof(SBFullHash)), 0);
-  EXPECT_EQ(full_hashes[2].list_name, "goog-phish-shavar");
+  EXPECT_EQ(full_hashes[2].list_id, safe_browsing_util::PHISH);
 
   // Test multiple lists in the GetHash results.
   std::string get_hash2("goog-phish-shavar:19:32\n"
@@ -463,15 +463,15 @@ TEST(SafeBrowsingProtocolParsingTest, TestGetHash) {
   EXPECT_EQ(memcmp(&full_hashes[0].hash,
                    "00112233445566778899aabbccddeeff",
                    sizeof(SBFullHash)), 0);
-  EXPECT_EQ(full_hashes[0].list_name, "goog-phish-shavar");
+  EXPECT_EQ(full_hashes[0].list_id, safe_browsing_util::PHISH);
   EXPECT_EQ(memcmp(&full_hashes[1].hash,
                    "cafebeefcafebeefdeaddeaddeaddead",
                    sizeof(SBFullHash)), 0);
-  EXPECT_EQ(full_hashes[1].list_name, "goog-malware-shavar");
+  EXPECT_EQ(full_hashes[1].list_id, safe_browsing_util::MALWARE);
   EXPECT_EQ(memcmp(&full_hashes[2].hash,
                    "zzzzyyyyxxxxwwwwvvvvuuuuttttssss",
                    sizeof(SBFullHash)), 0);
-  EXPECT_EQ(full_hashes[2].list_name, "goog-malware-shavar");
+  EXPECT_EQ(full_hashes[2].list_id, safe_browsing_util::MALWARE);
 }
 
 TEST(SafeBrowsingProtocolParsingTest, TestGetHashWithUnknownList) {
@@ -488,8 +488,7 @@ TEST(SafeBrowsingProtocolParsingTest, TestGetHashWithUnknownList) {
   EXPECT_EQ(full_hashes.size(), 1U);
   EXPECT_EQ(memcmp("12345678901234567890123456789012",
                    &full_hashes[0].hash, sizeof(SBFullHash)), 0);
-  EXPECT_EQ(full_hashes[0].list_name, "goog-phish-shavar");
-  EXPECT_EQ(full_hashes[0].add_chunk_id, 1);
+  EXPECT_EQ(full_hashes[0].list_id, safe_browsing_util::PHISH);
 
   hash_response += "goog-malware-shavar:7:32\n"
                    "abcdefghijklmnopqrstuvwxyz123457";
@@ -501,12 +500,10 @@ TEST(SafeBrowsingProtocolParsingTest, TestGetHashWithUnknownList) {
   EXPECT_EQ(full_hashes.size(), 2U);
   EXPECT_EQ(memcmp("12345678901234567890123456789012",
                    &full_hashes[0].hash, sizeof(SBFullHash)), 0);
-  EXPECT_EQ(full_hashes[0].list_name, "goog-phish-shavar");
-  EXPECT_EQ(full_hashes[0].add_chunk_id, 1);
+  EXPECT_EQ(full_hashes[0].list_id, safe_browsing_util::PHISH);
   EXPECT_EQ(memcmp("abcdefghijklmnopqrstuvwxyz123457",
                    &full_hashes[1].hash, sizeof(SBFullHash)), 0);
-  EXPECT_EQ(full_hashes[1].list_name, "goog-malware-shavar");
-  EXPECT_EQ(full_hashes[1].add_chunk_id, 7);
+  EXPECT_EQ(full_hashes[1].list_id, safe_browsing_util::MALWARE);
 }
 
 TEST(SafeBrowsingProtocolParsingTest, TestFormatHash) {
