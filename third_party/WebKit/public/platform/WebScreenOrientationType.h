@@ -8,7 +8,8 @@
 namespace blink {
 
 enum WebScreenOrientationType {
-    WebScreenOrientationPortraitPrimary = 1,
+    WebScreenOrientationUndefined = 0,
+    WebScreenOrientationPortraitPrimary,
     WebScreenOrientationPortraitSecondary,
     WebScreenOrientationLandscapePrimary,
     WebScreenOrientationLandscapeSecondary

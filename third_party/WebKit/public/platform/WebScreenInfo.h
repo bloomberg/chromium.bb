@@ -82,6 +82,7 @@ struct WebScreenInfo {
         , depth(0)
         , depthPerComponent(0)
         , isMonochrome(false)
+        , orientationType(WebScreenOrientationUndefined)
         , orientationAngle(0) { }
 };
 
