@@ -51,6 +51,8 @@
         'platform/dri/dri_surface.h',
         'platform/dri/dri_surface_factory.cc',
         'platform/dri/dri_surface_factory.h',
+        'platform/dri/dri_util.cc',
+        'platform/dri/dri_util.h',
         'platform/dri/dri_vsync_provider.cc',
         'platform/dri/dri_vsync_provider.h',
         'platform/dri/dri_wrapper.cc',

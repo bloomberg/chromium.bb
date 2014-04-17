@@ -26,8 +26,6 @@ const uint32_t kConnectorId = 1;
 // Mock CRTC ID.
 const uint32_t kCrtcId = 1;
 
-const uint32_t kDPMSPropertyId = 1;
-
 // The real DriWrapper makes actual DRM calls which we can't use in unit tests.
 class MockDriWrapper : public ui::DriWrapper {
  public:
@@ -88,9 +86,20 @@ class MockDriWrapper : public ui::DriWrapper {
     return page_flip_expectation_;
   }
 
-  virtual bool ConnectorSetProperty(uint32_t connector_id,
-                                    uint32_t property_id,
-                                    uint64_t value) OVERRIDE { return true; }
+  virtual bool SetProperty(uint32_t connector_id,
+                           uint32_t property_id,
+                           uint64_t value) OVERRIDE { return true; }
+
+  virtual void FreeProperty(drmModePropertyRes* prop) OVERRIDE { delete prop; }
+
+  virtual drmModePropertyBlobRes* GetPropertyBlob(drmModeConnector* connector,
+                                                  const char* name) OVERRIDE {
+    return new drmModePropertyBlobRes;
+  }
+
+  virtual void FreePropertyBlob(drmModePropertyBlobRes* blob) OVERRIDE {
+    delete blob;
+  }
 
   virtual bool SetCursor(uint32_t crtc_id,
                          uint32_t handle,
@@ -199,8 +208,9 @@ class HardwareDisplayControllerTest : public testing::Test {
 };
 
 void HardwareDisplayControllerTest::SetUp() {
-  controller_.reset(new ui::HardwareDisplayController());
   drm_.reset(new MockDriWrapper(kFd));
+  controller_.reset(new ui::HardwareDisplayController(
+      drm_.get(), kConnectorId, kCrtcId, kDefaultMode));
 }
 
 void HardwareDisplayControllerTest::TearDown() {
@@ -208,24 +218,7 @@ void HardwareDisplayControllerTest::TearDown() {
   drm_.reset();
 }
 
-TEST_F(HardwareDisplayControllerTest, CheckInitialState) {
-  EXPECT_EQ(ui::HardwareDisplayController::UNASSOCIATED,
-            controller_->get_state());
-}
-
-TEST_F(HardwareDisplayControllerTest,
-       CheckStateAfterControllerIsInitialized) {
-  controller_->SetControllerInfo(
-      drm_.get(), kConnectorId, kCrtcId, kDPMSPropertyId, kDefaultMode);
-
-  EXPECT_EQ(1, drm_->get_get_crtc_call_count());
-  EXPECT_EQ(ui::HardwareDisplayController::UNINITIALIZED,
-            controller_->get_state());
-}
-
 TEST_F(HardwareDisplayControllerTest, CheckStateAfterSurfaceIsBound) {
-  controller_->SetControllerInfo(
-      drm_.get(), kConnectorId, kCrtcId, kDPMSPropertyId, kDefaultMode);
   scoped_ptr<ui::DriSurface> surface(
       new MockDriSurface(drm_.get(), kDefaultModeSize));
 
@@ -233,15 +226,12 @@ TEST_F(HardwareDisplayControllerTest, CheckStateAfterSurfaceIsBound) {
   EXPECT_TRUE(controller_->BindSurfaceToController(surface.Pass()));
 
   EXPECT_EQ(2, drm_->get_add_framebuffer_call_count());
-  EXPECT_EQ(ui::HardwareDisplayController::SURFACE_INITIALIZED,
-            controller_->get_state());
+  EXPECT_TRUE(controller_->get_surface() != NULL);
 }
 
 TEST_F(HardwareDisplayControllerTest, CheckStateIfBindingFails) {
   drm_->set_add_framebuffer_expectation(false);
 
-  controller_->SetControllerInfo(
-      drm_.get(), kConnectorId, kCrtcId, kDPMSPropertyId, kDefaultMode);
   scoped_ptr<ui::DriSurface> surface(
       new MockDriSurface(drm_.get(), kDefaultModeSize));
 
@@ -249,74 +239,51 @@ TEST_F(HardwareDisplayControllerTest, CheckStateIfBindingFails) {
   EXPECT_FALSE(controller_->BindSurfaceToController(surface.Pass()));
 
   EXPECT_EQ(1, drm_->get_add_framebuffer_call_count());
-  EXPECT_EQ(ui::HardwareDisplayController::FAILED,
-            controller_->get_state());
+  EXPECT_EQ(NULL, controller_->get_surface());
 }
 
 TEST_F(HardwareDisplayControllerTest, CheckStateAfterPageFlip) {
-  controller_->SetControllerInfo(
-      drm_.get(), kConnectorId, kCrtcId, kDPMSPropertyId, kDefaultMode);
   scoped_ptr<ui::DriSurface> surface(
       new MockDriSurface(drm_.get(), kDefaultModeSize));
 
   EXPECT_TRUE(surface->Initialize());
   EXPECT_TRUE(controller_->BindSurfaceToController(surface.Pass()));
 
-  controller_->SchedulePageFlip();
-
-  EXPECT_EQ(ui::HardwareDisplayController::INITIALIZED,
-            controller_->get_state());
+  EXPECT_TRUE(controller_->SchedulePageFlip());
+  EXPECT_TRUE(controller_->get_surface() != NULL);
 }
 
 TEST_F(HardwareDisplayControllerTest, CheckStateIfModesetFails) {
   drm_->set_set_crtc_expectation(false);
 
-  controller_->SetControllerInfo(
-      drm_.get(), kConnectorId, kCrtcId, kDPMSPropertyId, kDefaultMode);
   scoped_ptr<ui::DriSurface> surface(
       new MockDriSurface(drm_.get(), kDefaultModeSize));
 
   EXPECT_TRUE(surface->Initialize());
-  EXPECT_TRUE(controller_->BindSurfaceToController(surface.Pass()));
-
-  controller_->SchedulePageFlip();
-
-  EXPECT_EQ(ui::HardwareDisplayController::FAILED,
-            controller_->get_state());
+  EXPECT_FALSE(controller_->BindSurfaceToController(surface.Pass()));
+  EXPECT_EQ(NULL, controller_->get_surface());
 }
 
 TEST_F(HardwareDisplayControllerTest, CheckStateIfPageFlipFails) {
   drm_->set_page_flip_expectation(false);
 
-  controller_->SetControllerInfo(
-      drm_.get(), kConnectorId, kCrtcId, kDPMSPropertyId, kDefaultMode);
   scoped_ptr<ui::DriSurface> surface(
       new MockDriSurface(drm_.get(), kDefaultModeSize));
 
   EXPECT_TRUE(surface->Initialize());
   EXPECT_TRUE(controller_->BindSurfaceToController(surface.Pass()));
-
-  controller_->SchedulePageFlip();
-
-  EXPECT_EQ(ui::HardwareDisplayController::FAILED,
-            controller_->get_state());
+  EXPECT_FALSE(controller_->SchedulePageFlip());
 }
 
 TEST_F(HardwareDisplayControllerTest, CheckProperDestruction) {
-  controller_->SetControllerInfo(
-      drm_.get(), kConnectorId, kCrtcId, kDPMSPropertyId, kDefaultMode);
   scoped_ptr<ui::DriSurface> surface(
       new MockDriSurface(drm_.get(), kDefaultModeSize));
 
   EXPECT_TRUE(surface->Initialize());
   EXPECT_TRUE(controller_->BindSurfaceToController(surface.Pass()));
-
-  EXPECT_EQ(ui::HardwareDisplayController::SURFACE_INITIALIZED,
-            controller_->get_state());
+  EXPECT_TRUE(controller_->get_surface() != NULL);
 
   controller_.reset();
 
   EXPECT_EQ(2, drm_->get_remove_framebuffer_call_count());
-  EXPECT_EQ(1, drm_->get_restore_crtc_call_count());
-  EXPECT_EQ(1, drm_->get_free_crtc_call_count());
 }

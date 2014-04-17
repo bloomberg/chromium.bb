@@ -15,6 +15,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/ozone/surface_ozone_canvas.h"
 #include "ui/ozone/platform/dri/dri_surface.h"
+#include "ui/ozone/platform/dri/dri_util.h"
 #include "ui/ozone/platform/dri/dri_vsync_provider.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
@@ -24,7 +25,6 @@ namespace ui {
 namespace {
 
 const char kDefaultGraphicsCardPath[] = "/dev/dri/card0";
-const char kDPMSProperty[] = "DPMS";
 
 // TODO(dnicoara) Read the cursor plane size from the hardware.
 const gfx::Size kCursorSize(64, 64);
@@ -47,56 +47,6 @@ void HandlePageFlipEvent(int fd,
   TRACE_EVENT0("dri", "HandlePageFlipEvent");
   static_cast<HardwareDisplayController*>(controller)
       ->OnPageFlipEvent(frame, seconds, useconds);
-}
-
-uint32_t GetDriProperty(int fd, drmModeConnector* connector, const char* name) {
-  for (int i = 0; i < connector->count_props; ++i) {
-    drmModePropertyPtr property = drmModeGetProperty(fd, connector->props[i]);
-    if (!property)
-      continue;
-
-    if (strcmp(property->name, name) == 0) {
-      uint32_t id = property->prop_id;
-      drmModeFreeProperty(property);
-      return id;
-    }
-
-    drmModeFreeProperty(property);
-  }
-  return 0;
-}
-
-uint32_t GetCrtc(int fd, drmModeRes* resources, drmModeConnector* connector) {
-  // If the connector already has an encoder try to re-use.
-  if (connector->encoder_id) {
-    drmModeEncoder* encoder = drmModeGetEncoder(fd, connector->encoder_id);
-    if (encoder) {
-      if (encoder->crtc_id) {
-        uint32_t crtc = encoder->crtc_id;
-        drmModeFreeEncoder(encoder);
-        return crtc;
-      }
-      drmModeFreeEncoder(encoder);
-    }
-  }
-
-  // Try to find an encoder for the connector.
-  for (int i = 0; i < connector->count_encoders; ++i) {
-    drmModeEncoder* encoder = drmModeGetEncoder(fd, connector->encoders[i]);
-    if (!encoder)
-      continue;
-
-    for (int j = 0; j < resources->count_crtcs; ++j) {
-      // Check if the encoder is compatible with this CRTC
-      if (!(encoder->possible_crtcs & (1 << j)))
-        continue;
-
-      drmModeFreeEncoder(encoder);
-      return resources->crtcs[j];
-    }
-  }
-
-  return 0;
 }
 
 void UpdateCursorImage(DriSurface* cursor, const SkBitmap& image) {
@@ -156,7 +106,8 @@ const gfx::AcceleratedWidget DriSurfaceFactory::kDefaultWidgetHandle = 1;
 DriSurfaceFactory::DriSurfaceFactory()
     : drm_(),
       state_(UNINITIALIZED),
-      controller_() {
+      controllers_(),
+      allocated_widgets_(0) {
 }
 
 DriSurfaceFactory::~DriSurfaceFactory() {
@@ -166,7 +117,8 @@ DriSurfaceFactory::~DriSurfaceFactory() {
 
 gfx::SurfaceFactoryOzone::HardwareState
 DriSurfaceFactory::InitializeHardware() {
-  CHECK(state_ == UNINITIALIZED);
+  if (state_ != UNINITIALIZED)
+    return state_;
 
   // TODO(dnicoara): Short-cut right now. What we want is to look at all the
   // graphics devices available and select the primary one.
@@ -192,7 +144,7 @@ DriSurfaceFactory::InitializeHardware() {
 void DriSurfaceFactory::ShutdownHardware() {
   CHECK(state_ == INITIALIZED);
 
-  controller_.reset();
+  controllers_.clear();
   drm_.reset();
 
   state_ = UNINITIALIZED;
@@ -201,55 +153,24 @@ void DriSurfaceFactory::ShutdownHardware() {
 gfx::AcceleratedWidget DriSurfaceFactory::GetAcceleratedWidget() {
   CHECK(state_ != FAILED);
 
-  // TODO(dnicoara) When there's more information on which display we want,
-  // then we can return the widget associated with the display.
-  // For now just assume we have 1 display device and return it.
-  if (!controller_.get())
-    controller_.reset(new HardwareDisplayController());
-
-  // TODO(dnicoara) We only have 1 display for now, so only 1 AcceleratedWidget.
-  // When we'll support multiple displays this needs to be changed to return a
-  // different handle for every display.
-  return kDefaultWidgetHandle;
+  // We're not using 0 since other code assumes that a 0 AcceleratedWidget is an
+  // invalid widget.
+  return ++allocated_widgets_;
 }
 
 scoped_ptr<gfx::SurfaceOzoneCanvas> DriSurfaceFactory::CreateCanvasForWidget(
     gfx::AcceleratedWidget w) {
   CHECK(state_ == INITIALIZED);
-  // TODO(dnicoara) Once we can handle multiple displays this needs to be
-  // changed.
-  CHECK(w == kDefaultWidgetHandle);
-
-  CHECK(controller_->get_state() ==
-        HardwareDisplayController::UNASSOCIATED);
-
-  // Until now the controller is just a stub. Initializing it will link it to a
-  // hardware display.
-  if (!InitializeControllerForPrimaryDisplay(drm_.get(), controller_.get())) {
-    LOG(ERROR) << "Failed to initialize controller";
-    return scoped_ptr<gfx::SurfaceOzoneCanvas>();
-  }
-
-  // Create a surface suitable for the current controller.
-  scoped_ptr<DriSurface> surface(CreateSurface(
-      gfx::Size(controller_->get_mode().hdisplay,
-                controller_->get_mode().vdisplay)));
-
-  if (!surface->Initialize()) {
-    LOG(ERROR) << "Failed to initialize surface";
-    return scoped_ptr<gfx::SurfaceOzoneCanvas>();
-  }
-
-  // Bind the surface to the controller. This will register the backing buffers
-  // with the hardware CRTC such that we can show the buffers. The controller
-  // takes ownership of the surface.
-  if (!controller_->BindSurfaceToController(surface.Pass())) {
-    LOG(ERROR) << "Failed to bind surface to controller";
-    return scoped_ptr<gfx::SurfaceOzoneCanvas>();
+  // When running with content_shell, a default Display gets created. But we
+  // can't just create a surface without a backing native display. This forces
+  // initialization of a display.
+  if (controllers_.size() == 0 && !InitializePrimaryDisplay()) {
+      LOG(ERROR) << "Failed forced initialization of primary display";
+      return scoped_ptr<gfx::SurfaceOzoneCanvas>();
   }
 
   // Initial cursor set.
-  ResetCursor();
+  ResetCursor(w);
 
   return scoped_ptr<gfx::SurfaceOzoneCanvas>(new DriSurfaceAdapter(w, this));
 }
@@ -268,11 +189,7 @@ bool DriSurfaceFactory::SchedulePageFlip(gfx::AcceleratedWidget w) {
   // compositor.
   CHECK(base::MessageLoopForUI::IsCurrent());
 
-  // TODO(dnicoara) Once we can handle multiple displays this needs to be
-  // changed.
-  CHECK(w == kDefaultWidgetHandle);
-
-  if (!controller_->SchedulePageFlip())
+  if (!GetControllerForWidget(w)->SchedulePageFlip())
     return false;
 
   // Only wait for the page flip event to finish if it was properly scheduled.
@@ -297,15 +214,44 @@ bool DriSurfaceFactory::SchedulePageFlip(gfx::AcceleratedWidget w) {
 SkCanvas* DriSurfaceFactory::GetCanvasForWidget(
     gfx::AcceleratedWidget w) {
   CHECK(state_ == INITIALIZED);
-  CHECK_EQ(kDefaultWidgetHandle, w);
-  return controller_->get_surface()->GetDrawableForWidget();
+  return GetControllerForWidget(w)->get_surface()->GetDrawableForWidget();
 }
 
 scoped_ptr<gfx::VSyncProvider> DriSurfaceFactory::CreateVSyncProvider(
     gfx::AcceleratedWidget w) {
   CHECK(state_ == INITIALIZED);
-  return scoped_ptr<gfx::VSyncProvider>(
-      new DriVSyncProvider(controller_.get()));
+  return scoped_ptr<gfx::VSyncProvider>(new DriVSyncProvider(
+      GetControllerForWidget(w)));
+}
+
+bool DriSurfaceFactory::CreateHardwareDisplayController(
+    uint32_t connector, uint32_t crtc, const drmModeModeInfo& mode) {
+  scoped_ptr<HardwareDisplayController> controller(
+      new HardwareDisplayController(drm_.get(), connector, crtc, mode));
+
+  // Create a surface suitable for the current controller.
+  scoped_ptr<DriSurface> surface(CreateSurface(
+      gfx::Size(mode.hdisplay, mode.vdisplay)));
+
+  if (!surface->Initialize()) {
+    LOG(ERROR) << "Failed to initialize surface";
+    return false;
+  }
+
+  // Bind the surface to the controller. This will register the backing buffers
+  // with the hardware CRTC such that we can show the buffers and performs the
+  // initial modeset. The controller takes ownership of the surface.
+  if (!controller->BindSurfaceToController(surface.Pass())) {
+    LOG(ERROR) << "Failed to bind surface to controller";
+    return false;
+  }
+
+  controllers_.push_back(controller.release());
+  return true;
+}
+
+bool DriSurfaceFactory::DisableHardwareDisplayController(uint32_t crtc) {
+  return drm_->DisableCrtc(crtc);
 }
 
 void DriSurfaceFactory::SetHardwareCursor(gfx::AcceleratedWidget window,
@@ -317,7 +263,7 @@ void DriSurfaceFactory::SetHardwareCursor(gfx::AcceleratedWidget window,
   if (state_ != INITIALIZED)
     return;
 
-  ResetCursor();
+  ResetCursor(window);
 }
 
 void DriSurfaceFactory::MoveHardwareCursor(gfx::AcceleratedWidget window,
@@ -327,7 +273,7 @@ void DriSurfaceFactory::MoveHardwareCursor(gfx::AcceleratedWidget window,
   if (state_ != INITIALIZED)
     return;
 
-  controller_->MoveCursor(location);
+  GetControllerForWidget(window)->MoveCursor(location);
 }
 
 void DriSurfaceFactory::UnsetHardwareCursor(gfx::AcceleratedWidget window) {
@@ -336,7 +282,7 @@ void DriSurfaceFactory::UnsetHardwareCursor(gfx::AcceleratedWidget window) {
   if (state_ != INITIALIZED)
     return;
 
-  ResetCursor();
+  ResetCursor(window);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -350,53 +296,28 @@ DriWrapper* DriSurfaceFactory::CreateWrapper() {
   return new DriWrapper(kDefaultGraphicsCardPath);
 }
 
-bool DriSurfaceFactory::InitializeControllerForPrimaryDisplay(
-    DriWrapper* drm,
-    HardwareDisplayController* controller) {
-  CHECK(state_ == SurfaceFactoryOzone::INITIALIZED);
+bool DriSurfaceFactory::InitializePrimaryDisplay() {
+  drmModeRes* resources = drmModeGetResources(drm_->get_fd());
+  DCHECK(resources) << "Failed to get DRM resources";
+  ScopedVector<HardwareDisplayControllerInfo> displays =
+      GetAvailableDisplayControllerInfos(drm_->get_fd(), resources);
+  drmModeFreeResources(resources);
 
-  drmModeRes* resources = drmModeGetResources(drm->get_fd());
+  if (displays.size() == 0)
+    return false;
 
-  // Search for an active connector.
-  for (int i = 0; i < resources->count_connectors; ++i) {
-    drmModeConnector* connector = drmModeGetConnector(
-        drm->get_fd(),
-        resources->connectors[i]);
+  drmModePropertyRes* dpms = drm_->GetProperty(displays[0]->connector(),
+                                               "DPMS");
+  if (dpms)
+    drm_->SetProperty(displays[0]->connector()->connector_id,
+                      dpms->prop_id,
+                      DRM_MODE_DPMS_ON);
 
-    if (!connector)
-      continue;
-
-    if (connector->connection != DRM_MODE_CONNECTED ||
-        connector->count_modes == 0) {
-      drmModeFreeConnector(connector);
-      continue;
-    }
-
-    uint32_t crtc = GetCrtc(drm->get_fd(), resources, connector);
-
-    if (!crtc)
-      continue;
-
-    uint32_t dpms_property_id = GetDriProperty(drm->get_fd(),
-                                               connector,
-                                               kDPMSProperty);
-
-    // TODO(dnicoara) Select one mode for now. In the future we may need to
-    // save all the modes and allow the user to choose a specific mode. Or
-    // even some fullscreen applications may need to change the mode.
-    controller->SetControllerInfo(
-        drm,
-        connector->connector_id,
-        crtc,
-        dpms_property_id,
-        connector->modes[0]);
-
-    drmModeFreeConnector(connector);
-
-    return true;
-  }
-
-  return false;
+  CreateHardwareDisplayController(
+      displays[0]->connector()->connector_id,
+      displays[0]->crtc()->crtc_id,
+      displays[0]->connector()->modes[0]);
+  return true;
 }
 
 void DriSurfaceFactory::WaitForPageFlipEvent(int fd) {
@@ -411,19 +332,26 @@ void DriSurfaceFactory::WaitForPageFlipEvent(int fd) {
   drmHandleEvent(fd, &drm_event);
 }
 
-void DriSurfaceFactory::ResetCursor() {
+void DriSurfaceFactory::ResetCursor(gfx::AcceleratedWidget w) {
   if (!cursor_bitmap_.empty()) {
     // Draw new cursor into backbuffer.
     UpdateCursorImage(cursor_surface_.get(), cursor_bitmap_);
 
     // Reset location & buffer.
-    controller_->MoveCursor(cursor_location_);
-    controller_->SetCursor(cursor_surface_.get());
+    GetControllerForWidget(w)->MoveCursor(cursor_location_);
+    GetControllerForWidget(w)->SetCursor(cursor_surface_.get());
   } else {
     // No cursor set.
-    controller_->UnsetCursor();
+    GetControllerForWidget(w)->UnsetCursor();
   }
 }
 
+HardwareDisplayController* DriSurfaceFactory::GetControllerForWidget(
+    gfx::AcceleratedWidget w) {
+  CHECK_GE(w, 1);
+  CHECK_LE(static_cast<size_t>(w), controllers_.size());
+
+  return controllers_[w - 1];
+}
 
 }  // namespace ui

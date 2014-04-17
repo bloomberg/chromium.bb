@@ -82,41 +82,12 @@ class DriSurface;
 // connected or disconnected).
 class OZONE_EXPORT HardwareDisplayController {
  public:
-  // Controller states. The state transitions will happen from top to bottom.
-  enum State {
-    // When we allocate a HDCO as a stub. At this point there is no connector
-    // and CRTC associated with this device.
-    UNASSOCIATED,
-
-    // When |SetControllerInfo| is called and the HDCO has the information of
-    // the hardware it will control. At this point it knows everything it needs
-    // to control the hardware but doesn't have a surface.
-    UNINITIALIZED,
-
-    // A surface is associated with the HDCO. This means that the controller can
-    // potentially display the backing surface to the display. Though the
-    // surface framebuffer still needs to be registered with the CRTC.
-    SURFACE_INITIALIZED,
-
-    // The CRTC now knows about the surface attributes.
-    INITIALIZED,
-
-    // Error state if any of the initialization steps fail.
-    FAILED,
-  };
-
-  HardwareDisplayController();
+  HardwareDisplayController(DriWrapper* drm,
+                            uint32_t connector_id,
+                            uint32_t crtc_id,
+                            drmModeModeInfo mode);
 
   ~HardwareDisplayController();
-
-  // Set the hardware configuration for this HDCO. Once this is set, the HDCO is
-  // responsible for keeping track of the connector and CRTC and cleaning up
-  // when it is destroyed.
-  void SetControllerInfo(DriWrapper* drm,
-                         uint32_t connector_id,
-                         uint32_t crtc_id,
-                         uint32_t dpms_property_id,
-                         drmModeModeInfo mode);
 
   // Associate the HDCO with a surface implementation and initialize it.
   bool BindSurfaceToController(scoped_ptr<DriSurface> surface);
@@ -157,8 +128,6 @@ class OZONE_EXPORT HardwareDisplayController {
   // Moves the hardware cursor to |location|.
   bool MoveCursor(const gfx::Point& location);
 
-  State get_state() const { return state_; };
-
   int get_fd() const { return drm_->get_fd(); };
 
   const drmModeModeInfo& get_mode() const { return mode_; };
@@ -179,16 +148,8 @@ class OZONE_EXPORT HardwareDisplayController {
 
   uint32_t crtc_id_;
 
-  uint32_t dpms_property_id_;
-
   // TODO(dnicoara) Need to store all the modes.
   drmModeModeInfo mode_;
-
-  // Saved CRTC state from before we used it. Need it to restore state once we
-  // are finished using this device.
-  drmModeCrtc* saved_crtc_;
-
-  State state_;
 
   scoped_ptr<DriSurface> surface_;
 

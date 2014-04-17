@@ -10,8 +10,11 @@
 #include "base/basictypes.h"
 #include "ui/ozone/ozone_export.h"
 
+typedef struct _drmModeConnector drmModeConnector;
 typedef struct _drmModeCrtc drmModeCrtc;
 typedef struct _drmModeModeInfo drmModeModeInfo;
+typedef struct _drmModeProperty drmModePropertyRes;
+typedef struct _drmModePropertyBlob drmModePropertyBlobRes;
 
 namespace ui {
 
@@ -45,6 +48,8 @@ class OZONE_EXPORT DriWrapper {
   // its original configuration.
   virtual bool SetCrtc(drmModeCrtc* crtc, uint32_t* connectors);
 
+  virtual bool DisableCrtc(uint32_t crtc_id);
+
   // Register a buffer with the CRTC. On successful registration, the CRTC will
   // assign a framebuffer ID to |framebuffer|.
   virtual bool AddFramebuffer(const drmModeModeInfo& mode,
@@ -64,11 +69,32 @@ class OZONE_EXPORT DriWrapper {
   // will receive when processing the pageflip event.
   virtual bool PageFlip(uint32_t crtc_id, uint32_t framebuffer, void* data);
 
+  // Returns the property with name |name| associated with |connector|. Returns
+  // NULL if property not found. If the returned value is valid, it must be
+  // released using FreeProperty().
+  virtual drmModePropertyRes* GetProperty(drmModeConnector* connector,
+                                          const char* name);
+
   // Sets the value of property with ID |property_id| to |value|. The property
   // is applied to the connector with ID |connector_id|.
-  virtual bool ConnectorSetProperty(uint32_t connector_id,
-                                    uint32_t property_id,
-                                    uint64_t value);
+  virtual bool SetProperty(uint32_t connector_id,
+                           uint32_t property_id,
+                           uint64_t value);
+
+  // Frees |prop| and any resources it allocated when it was created. |prop|
+  // must be a valid object.
+  virtual void FreeProperty(drmModePropertyRes* prop);
+
+  // Return a binary blob associated with |connector|. The binary blob is
+  // associated with the property with name |name|. Return NULL if the property
+  // could not be found or if the property does not have a binary blob. If valid
+  // the returned object must be freed using FreePropertyBlob().
+  virtual drmModePropertyBlobRes* GetPropertyBlob(drmModeConnector* connector,
+                                                  const char* name);
+
+  // Frees |blob| and any resources allocated when it was created. |blob| must
+  // be a valid object.
+  virtual void FreePropertyBlob(drmModePropertyBlobRes* blob);
 
   // Set the cursor to be displayed in CRTC |crtc_id|. (width, height) is the
   // cursor size pointed by |handle|.

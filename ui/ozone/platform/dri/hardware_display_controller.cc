@@ -19,43 +19,21 @@
 
 namespace ui {
 
-HardwareDisplayController::HardwareDisplayController()
-    : drm_(NULL),
-      connector_id_(0),
-      crtc_id_(0),
-      mode_(),
-      saved_crtc_(NULL),
-      state_(UNASSOCIATED),
-      surface_(),
-      time_of_last_flip_(0) {}
-
-void HardwareDisplayController::SetControllerInfo(
+HardwareDisplayController::HardwareDisplayController(
     DriWrapper* drm,
     uint32_t connector_id,
     uint32_t crtc_id,
-    uint32_t dpms_property_id,
-    drmModeModeInfo mode) {
-  drm_ = drm;
-  connector_id_ = connector_id;
-  crtc_id_ = crtc_id;
-  dpms_property_id_ = dpms_property_id;
-  mode_ = mode;
-  saved_crtc_ = drm_->GetCrtc(crtc_id_);
-  state_ = UNINITIALIZED;
-}
+    drmModeModeInfo mode)
+    : drm_(drm),
+      connector_id_(connector_id),
+      crtc_id_(crtc_id),
+      mode_(mode),
+      surface_(),
+      time_of_last_flip_(0) {}
 
 HardwareDisplayController::~HardwareDisplayController() {
-  if (state_ == UNASSOCIATED)
-    return;
-
   // Reset the cursor.
   UnsetCursor();
-
-  if (saved_crtc_) {
-    if (!drm_->SetCrtc(saved_crtc_, &connector_id_))
-      DLOG(ERROR) << "Failed to restore CRTC state: " << strerror(errno);
-    drm_->FreeCrtc(saved_crtc_);
-  }
 
   if (surface_.get()) {
     // Unregister the buffers.
@@ -69,8 +47,7 @@ HardwareDisplayController::~HardwareDisplayController() {
 bool
 HardwareDisplayController::BindSurfaceToController(
     scoped_ptr<DriSurface> surface) {
-  CHECK(state_ == UNINITIALIZED);
-
+  CHECK(surface);
   // Register the buffers.
   for (size_t i = 0; i < arraysize(surface->bitmaps_); ++i) {
     uint32_t fb_id;
@@ -82,44 +59,31 @@ HardwareDisplayController::BindSurfaceToController(
             surface->bitmaps_[i]->handle(),
             &fb_id)) {
       DLOG(ERROR) << "Failed to register framebuffer: " << strerror(errno);
-      state_ = FAILED;
       return false;
     }
     surface->bitmaps_[i]->set_framebuffer(fb_id);
   }
 
+  if (!drm_->SetCrtc(crtc_id_,
+                     surface->GetFramebufferId(),
+                     &connector_id_,
+                     &mode_)) {
+    LOG(ERROR) << "Failed to modeset: crtc=" << crtc_id_ << " connector="
+               << connector_id_ << " framebuffer_id="
+               << surface->GetFramebufferId();
+    return false;
+  }
+
   surface_.reset(surface.release());
-  state_ = SURFACE_INITIALIZED;
   return true;
 }
 
 bool HardwareDisplayController::SchedulePageFlip() {
-  CHECK(state_ == SURFACE_INITIALIZED || state_ == INITIALIZED);
-  TRACE_EVENT0("dri", "HardwareDisplayController::SchedulePageFlip");
-
-  if (state_ == SURFACE_INITIALIZED) {
-    // Perform the initial modeset.
-    if (!drm_->SetCrtc(crtc_id_,
-                       surface_->GetFramebufferId(),
-                       &connector_id_,
-                       &mode_)) {
-      DLOG(ERROR) << "Cannot set CRTC: " << strerror(errno);
-      state_ = FAILED;
-      return false;
-    } else {
-      state_ = INITIALIZED;
-    }
-
-    if (dpms_property_id_)
-      drm_->ConnectorSetProperty(connector_id_,
-                                 dpms_property_id_,
-                                 DRM_MODE_DPMS_ON);
-  }
+  CHECK(surface_);
 
   if (!drm_->PageFlip(crtc_id_,
                       surface_->GetFramebufferId(),
                       this)) {
-    state_ = FAILED;
     LOG(ERROR) << "Cannot page flip: " << strerror(errno);
     return false;
   }
@@ -138,7 +102,6 @@ void HardwareDisplayController::OnPageFlipEvent(unsigned int frame,
 }
 
 bool HardwareDisplayController::SetCursor(DriSurface* surface) {
-  CHECK(state_ != UNASSOCIATED);
   bool ret = drm_->SetCursor(crtc_id_,
                          surface->GetHandle(),
                          surface->size().width(),
@@ -148,12 +111,10 @@ bool HardwareDisplayController::SetCursor(DriSurface* surface) {
 }
 
 bool HardwareDisplayController::UnsetCursor() {
-  CHECK(state_ != UNASSOCIATED);
   return drm_->SetCursor(crtc_id_, 0, 0, 0);
 }
 
 bool HardwareDisplayController::MoveCursor(const gfx::Point& location) {
-  CHECK(state_ != UNASSOCIATED);
   return drm_->MoveCursor(crtc_id_, location.x(), location.y());
 }
 

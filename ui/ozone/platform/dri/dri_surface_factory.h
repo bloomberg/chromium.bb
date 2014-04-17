@@ -6,9 +6,12 @@
 #define UI_OZONE_PLATFORM_DRI_DRI_SURFACE_FACTORY_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/ozone/surface_factory_ozone.h"
 #include "ui/ozone/ozone_export.h"
+
+typedef struct _drmModeModeInfo drmModeModeInfo;
 
 namespace gfx {
 class SurfaceOzoneCanvas;
@@ -30,6 +33,7 @@ class OZONE_EXPORT DriSurfaceFactory : public gfx::SurfaceFactoryOzone {
   DriSurfaceFactory();
   virtual ~DriSurfaceFactory();
 
+  // SurfaceFactoryOzone overrides:
   virtual HardwareState InitializeHardware() OVERRIDE;
   virtual void ShutdownHardware() OVERRIDE;
 
@@ -58,14 +62,26 @@ class OZONE_EXPORT DriSurfaceFactory : public gfx::SurfaceFactoryOzone {
 
   void UnsetHardwareCursor(gfx::AcceleratedWidget window);
 
+  // Called to initialize a new display. The display is then added to
+  // |controllers_|. When GetAcceleratedWidget() is called it will get the next
+  // available display from |controllers_|.
+  bool CreateHardwareDisplayController(uint32_t connector,
+                                       uint32_t crtc,
+                                       const drmModeModeInfo& mode);
+
+  bool DisableHardwareDisplayController(uint32_t crtc);
+
+  DriWrapper* drm() const { return drm_.get(); }
+
  private:
   virtual DriSurface* CreateSurface(const gfx::Size& size);
 
   virtual DriWrapper* CreateWrapper();
 
-  virtual bool InitializeControllerForPrimaryDisplay(
-    DriWrapper* drm,
-    HardwareDisplayController* controller);
+  // On non CrOS builds there is no display configurator to look-up available
+  // displays and initialize the HDCs. In such cases this is called internally
+  // to initialize a display.
+  virtual bool InitializePrimaryDisplay();
 
   // Blocks until a DRM event is read.
   // TODO(dnicoara) Remove once we can safely move DRM event processing in the
@@ -74,14 +90,19 @@ class OZONE_EXPORT DriSurfaceFactory : public gfx::SurfaceFactoryOzone {
   virtual void WaitForPageFlipEvent(int fd);
 
   // Draw the last set cursor & update the cursor plane.
-  void ResetCursor();
+  void ResetCursor(gfx::AcceleratedWidget w);
+
+  // Returns the controller in |controllers_| associated with |w|.
+  HardwareDisplayController* GetControllerForWidget(
+      gfx::AcceleratedWidget w);
 
   scoped_ptr<DriWrapper> drm_;
 
   HardwareState state_;
 
-  // Active output.
-  scoped_ptr<HardwareDisplayController> controller_;
+  // Active outputs.
+  ScopedVector<HardwareDisplayController> controllers_;
+  int allocated_widgets_;
 
   scoped_ptr<DriSurface> cursor_surface_;
 

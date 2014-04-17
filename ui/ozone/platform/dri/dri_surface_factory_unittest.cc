@@ -31,8 +31,6 @@ const uint32_t kConnectorId = 1;
 // Mock CRTC ID.
 const uint32_t kCrtcId = 1;
 
-const uint32_t kDPMSPropertyId = 1;
-
 const gfx::AcceleratedWidget kDefaultWidgetHandle = 1;
 
 // The real DriWrapper makes actual DRM calls which we can't use in unit tests.
@@ -84,9 +82,20 @@ class MockDriWrapper : public ui::DriWrapper {
     return page_flip_expectation_;
   }
 
-  virtual bool ConnectorSetProperty(uint32_t connector_id,
-                                    uint32_t property_id,
-                                    uint64_t value) OVERRIDE { return true; }
+  virtual bool SetProperty(uint32_t connector_id,
+                           uint32_t property_id,
+                           uint64_t value) OVERRIDE { return true; }
+
+  virtual void FreeProperty(drmModePropertyRes* prop) OVERRIDE { delete prop; }
+
+  virtual drmModePropertyBlobRes* GetPropertyBlob(drmModeConnector* connector,
+                                                  const char* name) OVERRIDE {
+    return new drmModePropertyBlobRes;
+  }
+
+  virtual void FreePropertyBlob(drmModePropertyBlobRes* blob) OVERRIDE {
+    delete blob;
+  }
 
   virtual bool SetCursor(uint32_t crtc_id,
                          uint32_t handle,
@@ -197,16 +206,10 @@ class MockDriSurfaceFactory : public ui::DriSurfaceFactory {
 
   // Normally we'd use DRM to figure out the controller configuration. But we
   // can't use DRM in unit tests, so we just create a fake configuration.
-  virtual bool InitializeControllerForPrimaryDisplay(
-      ui::DriWrapper* drm,
-      ui::HardwareDisplayController* controller) OVERRIDE {
+  virtual bool InitializePrimaryDisplay() OVERRIDE {
     if (initialize_controller_expectation_) {
-      controller->SetControllerInfo(drm,
-                                    kConnectorId,
-                                    kCrtcId,
-                                    kDPMSPropertyId,
-                                    kDefaultMode);
-      return true;
+      return CreateHardwareDisplayController(
+          kConnectorId, kCrtcId, kDefaultMode);
     } else {
       return false;
     }

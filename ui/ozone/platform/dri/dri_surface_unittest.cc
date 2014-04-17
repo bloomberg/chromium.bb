@@ -25,9 +25,6 @@ const uint32_t kConnectorId = 1;
 // Mock CRTC ID.
 const uint32_t kCrtcId = 1;
 
-// Mock DPMS property ID.
-const uint32_t kDPMSPropertyId = 1;
-
 class MockDriWrapper : public ui::DriWrapper {
  public:
   MockDriWrapper() : DriWrapper(""), id_(1) { fd_ = kFd; }
@@ -57,9 +54,17 @@ class MockDriWrapper : public ui::DriWrapper {
                         void* data) OVERRIDE {
     return true;
   }
-  virtual bool ConnectorSetProperty(uint32_t connector_id,
-                                    uint32_t property_id,
-                                    uint64_t value) OVERRIDE { return true; }
+  virtual bool SetProperty(uint32_t connector_id,
+                           uint32_t property_id,
+                           uint64_t value) OVERRIDE { return true; }
+  virtual void FreeProperty(drmModePropertyRes* prop) OVERRIDE { delete prop; }
+  virtual drmModePropertyBlobRes* GetPropertyBlob(drmModeConnector* connector,
+                                                  const char* name) OVERRIDE {
+    return new drmModePropertyBlobRes;
+  }
+  virtual void FreePropertyBlob(drmModePropertyBlobRes* blob) OVERRIDE {
+    delete blob;
+  }
 
  private:
   int id_;
@@ -131,9 +136,8 @@ class DriSurfaceTest : public testing::Test {
 
 void DriSurfaceTest::SetUp() {
   drm_.reset(new MockDriWrapper());
-  controller_.reset(new ui::HardwareDisplayController());
-  controller_->SetControllerInfo(
-      drm_.get(), kConnectorId, kCrtcId, kDPMSPropertyId, kDefaultMode);
+  controller_.reset(new ui::HardwareDisplayController(
+      drm_.get(), kConnectorId, kCrtcId, kDefaultMode));
 
   surface_.reset(new MockDriSurface(drm_.get(),
                                     gfx::Size(kDefaultMode.hdisplay,
