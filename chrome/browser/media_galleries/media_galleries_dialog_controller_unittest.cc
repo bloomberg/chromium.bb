@@ -142,6 +142,8 @@ class MediaGalleriesDialogControllerTest : public ::testing::Test {
     return gallery_prefs_.get();
   }
 
+  GalleryDialogId GetDialogIdFromPrefId(MediaGalleryPrefId pref_id);
+
   void TestForgottenType(MediaGalleryPrefInfo::Type type);
 
  protected:
@@ -197,6 +199,12 @@ class MediaGalleriesDialogControllerTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(MediaGalleriesDialogControllerTest);
 };
 
+GalleryDialogId
+MediaGalleriesDialogControllerTest::GetDialogIdFromPrefId(
+    MediaGalleryPrefId pref_id) {
+  return controller_->GetDialogId(pref_id);
+}
+
 void MediaGalleriesDialogControllerTest::TestForgottenType(
     MediaGalleryPrefInfo::Type type) {
   EXPECT_EQ(0U, gallery_prefs()->GalleriesForExtension(*extension()).size());
@@ -210,14 +218,14 @@ void MediaGalleriesDialogControllerTest::TestForgottenType(
   EXPECT_EQ(mock_gallery_locations_.num_galleries() + 2U,
             controller()->AttachedPermissions().size());
   EXPECT_EQ(0U, controller()->UnattachedPermissions().size());
-  controller()->DidToggleGalleryId(forgotten1, true);
-  controller()->DidToggleGalleryId(forgotten2, true);
+  controller()->DidToggleGallery(GetDialogIdFromPrefId(forgotten1), true);
+  controller()->DidToggleGallery(GetDialogIdFromPrefId(forgotten2), true);
   controller()->DialogFinished(true);
   EXPECT_EQ(2U, gallery_prefs()->GalleriesForExtension(*extension()).size());
 
   // Forget one and cancel to see that it's still there.
   StartDialog();
-  controller()->DidForgetGallery(forgotten1);
+  controller()->DidForgetGallery(GetDialogIdFromPrefId(forgotten1));
   EXPECT_EQ(mock_gallery_locations_.num_galleries() + 1U,
             controller()->AttachedPermissions().size());
   controller()->DialogFinished(false);
@@ -225,7 +233,7 @@ void MediaGalleriesDialogControllerTest::TestForgottenType(
 
   // Forget one and confirm to see that it's gone.
   StartDialog();
-  controller()->DidForgetGallery(forgotten1);
+  controller()->DidForgetGallery(GetDialogIdFromPrefId(forgotten1));
   EXPECT_EQ(mock_gallery_locations_.num_galleries() + 1U,
             controller()->AttachedPermissions().size());
   controller()->DialogFinished(true);
@@ -238,8 +246,8 @@ void MediaGalleriesDialogControllerTest::TestForgottenType(
   EXPECT_EQ(mock_gallery_locations_.num_galleries() + 2U,
             controller()->AttachedPermissions().size());
   EXPECT_EQ(0U, controller()->UnattachedPermissions().size());
-  controller()->DidToggleGalleryId(forgotten3, true);
-  controller()->DidForgetGallery(forgotten3);
+  controller()->DidToggleGallery(GetDialogIdFromPrefId(forgotten3), true);
+  controller()->DidForgetGallery(GetDialogIdFromPrefId(forgotten3));
   EXPECT_EQ(mock_gallery_locations_.num_galleries() + 1U,
             controller()->AttachedPermissions().size());
   controller()->DialogFinished(true);

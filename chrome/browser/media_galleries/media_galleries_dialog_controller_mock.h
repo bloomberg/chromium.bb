@@ -17,14 +17,14 @@ class MediaGalleriesDialogControllerMock
 
   MOCK_CONST_METHOD0(GetHeader, base::string16());
   MOCK_CONST_METHOD0(GetSubtext, base::string16());
-  MOCK_CONST_METHOD0(HasPermittedGalleries, bool());
+  MOCK_CONST_METHOD0(IsAcceptAllowed, bool());
   MOCK_CONST_METHOD0(AttachedPermissions, GalleryPermissionsVector());
   MOCK_CONST_METHOD0(UnattachedPermissions, GalleryPermissionsVector());
   MOCK_METHOD0(web_contents, content::WebContents*());
 
   MOCK_METHOD0(OnAddFolderClicked, void());
-  MOCK_METHOD2(DidToggleGalleryId, void(MediaGalleryPrefId pref_id,
-                                        bool enabled));
+  MOCK_METHOD2(DidToggleGallery, void(GalleryDialogId gallery_id,
+                                      bool enabled));
   MOCK_METHOD1(DialogFinished, void(bool));
 };
 

@@ -47,7 +47,7 @@ class MediaGalleriesDialogCocoa : public ConstrainedWindowMacDelegate,
   virtual void OnConstrainedWindowClosed(
       ConstrainedWindowMac* window) OVERRIDE;
 
-  ui::MenuModel* GetContextMenu(MediaGalleryPrefId prefid);
+  ui::MenuModel* GetContextMenu(GalleryDialogId gallery_id);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogBrowserTest, Close);
@@ -56,17 +56,13 @@ class MediaGalleriesDialogCocoa : public ConstrainedWindowMacDelegate,
   FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogTest, UpdateAdds);
   FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogTest, ForgetDeletes);
 
-  void UpdateGalleryCheckbox(const MediaGalleryPrefInfo& gallery,
-                             bool permitted,
-                             CGFloat y_pos);
+  void UpdateGalleryCheckbox(
+      const MediaGalleriesDialogController::GalleryPermission& gallery,
+      CGFloat y_pos);
 
   void InitDialogControls();
   CGFloat CreateAddFolderButton();
-  CGFloat CreateAttachedCheckboxes(
-      CGFloat y_pos,
-      const MediaGalleriesDialogController::GalleryPermissionsVector&
-          permissions);
-  CGFloat CreateUnattachedCheckboxes(
+  CGFloat CreateCheckboxes(
       CGFloat y_pos,
       const MediaGalleriesDialogController::GalleryPermissionsVector&
           permissions);

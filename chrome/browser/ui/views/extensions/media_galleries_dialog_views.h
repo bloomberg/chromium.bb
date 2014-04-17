@@ -65,22 +65,20 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
   FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogTest, UpdateAdds);
   FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogTest, ForgetDeletes);
 
-  typedef std::map<MediaGalleryPrefId, MediaGalleryCheckboxView*> CheckboxMap;
-  typedef std::map<MediaGalleryCheckboxView*, MediaGalleryPrefInfo>
-      NewCheckboxMap;
+  typedef std::map<GalleryDialogId, MediaGalleryCheckboxView*> CheckboxMap;
 
   void InitChildViews();
 
   // Adds a checkbox or updates an existing checkbox. Returns true if a new one
   // was added.
-  bool AddOrUpdateGallery(const MediaGalleryPrefInfo& gallery,
-                          bool permitted,
-                          views::View* container,
-                          int trailing_vertical_space);
+  bool AddOrUpdateGallery(
+      const MediaGalleriesDialogController::GalleryPermission& gallery,
+      views::View* container,
+      int trailing_vertical_space);
 
   void ShowContextMenu(const gfx::Point& point,
                        ui::MenuSourceType source_type,
-                       MediaGalleryPrefId id);
+                       GalleryDialogId id);
 
   // Whether |controller_| has a valid WebContents or not.
   // In unit tests, it may not.
@@ -94,10 +92,8 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
   // The contents of the dialog. Owned by |window_|'s RootView except for tests.
   views::View* contents_;
 
-  // A map from media gallery ID to views::Checkbox view.
+  // A map from gallery ID to views::Checkbox view.
   CheckboxMap checkbox_map_;
-
-  NewCheckboxMap new_checkbox_map_;
 
   // Pointer to the button to add a new gallery. Owned by parent in
   // the dialog views tree.

@@ -146,57 +146,50 @@ base::string16 MediaGalleriesDialogController::GetUnattachedLocationsHeader()
   return l10n_util::GetStringUTF16(IDS_MEDIA_GALLERIES_UNATTACHED_LOCATIONS);
 }
 
-// TODO(gbillock): Call this something a bit more connected to the
-// messaging in the dialog.
-bool MediaGalleriesDialogController::HasPermittedGalleries() const {
-  for (KnownGalleryPermissions::const_iterator iter = known_galleries_.begin();
-       iter != known_galleries_.end(); ++iter) {
+bool MediaGalleriesDialogController::IsAcceptAllowed() const {
+  if (!toggled_galleries_.empty() || !forgotten_galleries_.empty())
+    return true;
+
+  for (GalleryPermissionsMap::const_iterator iter = new_galleries_.begin();
+       iter != new_galleries_.end();
+       ++iter) {
     if (iter->second.allowed)
       return true;
   }
-
-  // Do this? Views did.
-  if (new_galleries_.size() > 0)
-    return true;
 
   return false;
 }
 
 // Note: sorts by display criterion: GalleriesVectorComparator.
-void MediaGalleriesDialogController::FillPermissions(
-    bool attached,
-    MediaGalleriesDialogController::GalleryPermissionsVector* permissions)
-    const {
-  for (KnownGalleryPermissions::const_iterator iter = known_galleries_.begin();
+MediaGalleriesDialogController::GalleryPermissionsVector
+MediaGalleriesDialogController::FillPermissions(bool attached) const {
+  GalleryPermissionsVector result;
+  for (GalleryPermissionsMap::const_iterator iter = known_galleries_.begin();
        iter != known_galleries_.end(); ++iter) {
-    if (!ContainsKey(forgotten_gallery_ids_, iter->first) &&
+    if (!ContainsKey(forgotten_galleries_, iter->first) &&
         attached == iter->second.pref_info.IsGalleryAvailable()) {
-      permissions->push_back(iter->second);
+      result.push_back(iter->second);
     }
   }
-  for (GalleryPermissionsVector::const_iterator iter = new_galleries_.begin();
+  for (GalleryPermissionsMap::const_iterator iter = new_galleries_.begin();
        iter != new_galleries_.end(); ++iter) {
-    if (attached == iter->pref_info.IsGalleryAvailable()) {
-      permissions->push_back(*iter);
+    if (attached == iter->second.pref_info.IsGalleryAvailable()) {
+      result.push_back(iter->second);
     }
   }
 
-  std::sort(permissions->begin(), permissions->end(),
-            GalleriesVectorComparator);
+  std::sort(result.begin(), result.end(), GalleriesVectorComparator);
+  return result;
 }
 
 MediaGalleriesDialogController::GalleryPermissionsVector
 MediaGalleriesDialogController::AttachedPermissions() const {
-  GalleryPermissionsVector attached;
-  FillPermissions(true, &attached);
-  return attached;
+  return FillPermissions(true);
 }
 
 MediaGalleriesDialogController::GalleryPermissionsVector
 MediaGalleriesDialogController::UnattachedPermissions() const {
-  GalleryPermissionsVector unattached;
-  FillPermissions(false, &unattached);
-  return unattached;
+  return FillPermissions(false);
 }
 
 void MediaGalleriesDialogController::OnAddFolderClicked() {
@@ -218,12 +211,10 @@ void MediaGalleriesDialogController::OnAddFolderClicked() {
       NULL);
 }
 
-void MediaGalleriesDialogController::DidToggleGalleryId(
-    MediaGalleryPrefId gallery_id,
-    bool enabled) {
+void MediaGalleriesDialogController::DidToggleGallery(
+    GalleryDialogId gallery_id, bool enabled) {
   // Check known galleries.
-  KnownGalleryPermissions::iterator iter =
-      known_galleries_.find(gallery_id);
+  GalleryPermissionsMap::iterator iter = known_galleries_.find(gallery_id);
   if (iter != known_galleries_.end()) {
     if (iter->second.allowed == enabled)
       return;
@@ -236,31 +227,22 @@ void MediaGalleriesDialogController::DidToggleGalleryId(
     return;
   }
 
+  iter = new_galleries_.find(gallery_id);
+  if (iter != new_galleries_.end())
+    iter->second.allowed = enabled;
+
   // Don't sort -- the dialog is open, and we don't want to adjust any
   // positions for future updates to the dialog contents until they are
   // redrawn.
 }
 
-void MediaGalleriesDialogController::DidToggleNewGallery(
-    const MediaGalleryPrefInfo& gallery,
-    bool enabled) {
-  for (GalleryPermissionsVector::iterator iter = new_galleries_.begin();
-       iter != new_galleries_.end(); ++iter) {
-    if (iter->pref_info.path == gallery.path &&
-        iter->pref_info.device_id == gallery.device_id) {
-      iter->allowed = enabled;
-      return;
-    }
-  }
-}
-
 void MediaGalleriesDialogController::DidForgetGallery(
-    MediaGalleryPrefId pref_id) {
-  // TODO(scr): remove from new_galleries_ if it's in there.  Should
-  // new_galleries be a set? Why don't new_galleries allow context clicking?
-  DCHECK(ContainsKey(known_galleries_, pref_id));
+    GalleryDialogId gallery_id) {
   media_galleries::UsageCount(media_galleries::DIALOG_FORGET_GALLERY);
-  forgotten_gallery_ids_.insert(pref_id);
+  if (!new_galleries_.erase(gallery_id)) {
+    DCHECK(ContainsKey(known_galleries_, gallery_id));
+    forgotten_galleries_.insert(gallery_id);
+  }
   dialog_->UpdateGalleries();
 }
 
@@ -299,18 +281,21 @@ void MediaGalleriesDialogController::FileSelected(const base::FilePath& path,
     // The prefs are in sync with |known_galleries_|, so it should exist in
     // |known_galleries_| as well. User selecting a known gallery effectively
     // just sets the gallery to permitted.
-    DCHECK(ContainsKey(known_galleries_, gallery.pref_id));
-    forgotten_gallery_ids_.erase(gallery.pref_id);
+    GalleryDialogId gallery_id = GetDialogId(gallery.pref_id);
+    GalleryPermissionsMap::iterator iter = known_galleries_.find(gallery_id);
+    DCHECK(iter != known_galleries_.end());
+    iter->second.allowed = true;
+    forgotten_galleries_.erase(gallery_id);
     dialog_->UpdateGalleries();
     return;
   }
 
   // Try to find it in |new_galleries_| (user added same folder twice).
-  for (GalleryPermissionsVector::iterator iter = new_galleries_.begin();
+  for (GalleryPermissionsMap::iterator iter = new_galleries_.begin();
        iter != new_galleries_.end(); ++iter) {
-    if (iter->pref_info.path == gallery.path &&
-        iter->pref_info.device_id == gallery.device_id) {
-      iter->allowed = true;
+    if (iter->second.pref_info.path == gallery.path &&
+        iter->second.pref_info.device_id == gallery.device_id) {
+      iter->second.allowed = true;
       dialog_->UpdateGalleries();
       return;
     }
@@ -318,7 +303,8 @@ void MediaGalleriesDialogController::FileSelected(const base::FilePath& path,
 
   // Lastly, if not found, add a new gallery to |new_galleries_|.
   // Note that it will have prefId = kInvalidMediaGalleryPrefId.
-  new_galleries_.push_back(GalleryPermission(gallery, true));
+  GalleryDialogId gallery_id = GetDialogId(gallery.pref_id);
+  new_galleries_[gallery_id] = GalleryPermission(gallery_id, gallery, true);
   dialog_->UpdateGalleries();
 }
 
@@ -387,7 +373,9 @@ void MediaGalleriesDialogController::InitializePermissions() {
     if (gallery.IsBlackListedType())
       continue;
 
-    known_galleries_[iter->first] = GalleryPermission(gallery, false);
+    GalleryDialogId gallery_id = GetDialogId(gallery.pref_id);
+    known_galleries_[gallery_id] =
+        GalleryPermission(gallery_id, gallery, false);
   }
 
   MediaGalleryPrefIdSet permitted =
@@ -395,23 +383,25 @@ void MediaGalleriesDialogController::InitializePermissions() {
 
   for (MediaGalleryPrefIdSet::iterator iter = permitted.begin();
        iter != permitted.end(); ++iter) {
-    if (ContainsKey(toggled_galleries_, *iter))
+    GalleryDialogId gallery_id = GetDialogId(*iter);
+    if (ContainsKey(toggled_galleries_, gallery_id))
       continue;
-    DCHECK(ContainsKey(known_galleries_, *iter));
-    known_galleries_[*iter].allowed = true;
+    DCHECK(ContainsKey(known_galleries_, gallery_id));
+    known_galleries_[gallery_id].allowed = true;
   }
 }
 
 void MediaGalleriesDialogController::SavePermissions() {
   DCHECK(preferences_);
   media_galleries::UsageCount(media_galleries::SAVE_DIALOG);
-  for (KnownGalleryPermissions::const_iterator iter = known_galleries_.begin();
+  for (GalleryPermissionsMap::const_iterator iter = known_galleries_.begin();
        iter != known_galleries_.end(); ++iter) {
-    if (ContainsKey(forgotten_gallery_ids_, iter->first)) {
-      preferences_->ForgetGalleryById(iter->first);
+    MediaGalleryPrefId pref_id = iter->second.pref_info.pref_id;
+    if (ContainsKey(forgotten_galleries_, iter->first)) {
+      preferences_->ForgetGalleryById(pref_id);
     } else {
       bool changed = preferences_->SetGalleryPermissionForExtension(
-          *extension_, iter->first, iter->second.allowed);
+          *extension_, pref_id, iter->second.allowed);
       if (changed) {
         if (iter->second.allowed) {
           media_galleries::UsageCount(
@@ -424,15 +414,14 @@ void MediaGalleriesDialogController::SavePermissions() {
     }
   }
 
-  for (GalleryPermissionsVector::const_iterator iter = new_galleries_.begin();
+  for (GalleryPermissionsMap::const_iterator iter = new_galleries_.begin();
        iter != new_galleries_.end(); ++iter) {
     media_galleries::UsageCount(media_galleries::DIALOG_GALLERY_ADDED);
     // If the user added a gallery then unchecked it, forget about it.
-    if (!iter->allowed)
+    if (!iter->second.allowed)
       continue;
 
-    // TODO(gbillock): Should be adding volume metadata during FileSelected.
-    const MediaGalleryPrefInfo& gallery = iter->pref_info;
+    const MediaGalleryPrefInfo& gallery = iter->second.pref_info;
     MediaGalleryPrefId id = preferences_->AddGallery(
         gallery.device_id, gallery.path, MediaGalleryPrefInfo::kUserAdded,
         gallery.volume_label, gallery.vendor_name, gallery.model_name,
@@ -447,24 +436,31 @@ void MediaGalleriesDialogController::UpdateGalleriesOnPreferencesEvent() {
   // but the code below will put |known_galleries_| back in a consistent state.
   InitializePermissions();
 
+  std::set<GalleryDialogId> new_galleries_to_remove;
   // Look for duplicate entries in |new_galleries_| in case one was added
   // in another dialog.
-  for (KnownGalleryPermissions::iterator it = known_galleries_.begin();
+  for (GalleryPermissionsMap::iterator it = known_galleries_.begin();
        it != known_galleries_.end();
        ++it) {
     GalleryPermission& gallery = it->second;
-    for (GalleryPermissionsVector::iterator new_it = new_galleries_.begin();
+    for (GalleryPermissionsMap::iterator new_it = new_galleries_.begin();
          new_it != new_galleries_.end();
          ++new_it) {
-      if (new_it->pref_info.path == gallery.pref_info.path &&
-          new_it->pref_info.device_id == gallery.pref_info.device_id) {
+      if (new_it->second.pref_info.path == gallery.pref_info.path &&
+          new_it->second.pref_info.device_id == gallery.pref_info.device_id) {
         // Found duplicate entry. Get the existing permission from it and then
         // remove it.
-        gallery.allowed = new_it->allowed;
-        new_galleries_.erase(new_it);
+        gallery.allowed = new_it->second.allowed;
+        new_galleries_to_remove.insert(new_it->first);
         break;
       }
     }
+  }
+  for (std::set<GalleryDialogId>::const_iterator it =
+           new_galleries_to_remove.begin();
+       it != new_galleries_to_remove.end();
+       ++it) {
+    new_galleries_.erase(*it);
   }
 
   dialog_->UpdateGalleries();
@@ -476,13 +472,39 @@ void MediaGalleriesDialogController::UpdateGalleriesOnDeviceEvent(
 }
 
 ui::MenuModel* MediaGalleriesDialogController::GetContextMenu(
-    MediaGalleryPrefId id) {
-  context_menu_->set_pref_id(id);
+    GalleryDialogId gallery_id) {
+  context_menu_->set_pref_id(gallery_id);
   return context_menu_.get();
+}
+
+GalleryDialogId MediaGalleriesDialogController::GetDialogId(
+    MediaGalleryPrefId pref_id) {
+  return id_map_.GetDialogId(pref_id);
 }
 
 Profile* MediaGalleriesDialogController::GetProfile() {
   return Profile::FromBrowserContext(web_contents_->GetBrowserContext());
+}
+
+MediaGalleriesDialogController::DialogIdMap::DialogIdMap()
+    : next_dialog_id_(1) {
+}
+
+MediaGalleriesDialogController::DialogIdMap::~DialogIdMap() {
+}
+
+GalleryDialogId
+MediaGalleriesDialogController::DialogIdMap::GetDialogId(
+    MediaGalleryPrefId pref_id) {
+  std::map<GalleryDialogId, MediaGalleryPrefId>::const_iterator it =
+      mapping_.find(pref_id);
+  if (it != mapping_.end())
+    return it->second;
+
+  GalleryDialogId result = next_dialog_id_++;
+  if (pref_id != kInvalidMediaGalleryPrefId)
+    mapping_[pref_id] = result;
+  return result;
 }
 
 // MediaGalleries dialog -------------------------------------------------------

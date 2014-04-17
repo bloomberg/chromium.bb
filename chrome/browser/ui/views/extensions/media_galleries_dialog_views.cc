@@ -138,15 +138,13 @@ void MediaGalleriesDialogViews::InitChildViews() {
 
   // Add attached galleries checkboxes.
   checkbox_map_.clear();
-  new_checkbox_map_.clear();
   GalleryPermissionsVector permissions = controller_->AttachedPermissions();
   for (GalleryPermissionsVector::const_iterator iter = permissions.begin();
        iter != permissions.end(); ++iter) {
     int spacing = 0;
     if (iter + 1 == permissions.end())
       spacing = views::kRelatedControlSmallVerticalSpacing;
-    AddOrUpdateGallery(iter->pref_info, iter->allowed, scroll_container,
-                       spacing);
+    AddOrUpdateGallery(*iter, scroll_container, spacing);
   }
 
   GalleryPermissionsVector unattached_permissions =
@@ -174,11 +172,11 @@ void MediaGalleriesDialogViews::InitChildViews() {
     for (GalleryPermissionsVector::const_iterator iter =
              unattached_permissions.begin();
          iter != unattached_permissions.end(); ++iter) {
-      AddOrUpdateGallery(iter->pref_info, iter->allowed, scroll_container, 0);
+      AddOrUpdateGallery(*iter, scroll_container, 0);
     }
   }
 
-  confirm_available_ = controller_->HasPermittedGalleries();
+  confirm_available_ = controller_->IsAcceptAllowed();
 
   // Add the scrollable area to the outer dialog view. It will squeeze against
   // the title/subtitle and buttons to occupy all available space in the dialog.
@@ -198,19 +196,17 @@ void MediaGalleriesDialogViews::UpdateGalleries() {
 }
 
 bool MediaGalleriesDialogViews::AddOrUpdateGallery(
-    const MediaGalleryPrefInfo& gallery,
-    bool permitted,
+    const MediaGalleriesDialogController::GalleryPermission& gallery,
     views::View* container,
     int trailing_vertical_space) {
-  base::string16 label = gallery.GetGalleryDisplayName();
-  base::string16 tooltip_text = gallery.GetGalleryTooltip();
-  base::string16 details = gallery.GetGalleryAdditionalDetails();
+  base::string16 label = gallery.pref_info.GetGalleryDisplayName();
+  base::string16 tooltip_text = gallery.pref_info.GetGalleryTooltip();
+  base::string16 details = gallery.pref_info.GetGalleryAdditionalDetails();
 
-  CheckboxMap::iterator iter = checkbox_map_.find(gallery.pref_id);
-  if (iter != checkbox_map_.end() &&
-      gallery.pref_id != kInvalidMediaGalleryPrefId) {
+  CheckboxMap::iterator iter = checkbox_map_.find(gallery.gallery_id);
+  if (iter != checkbox_map_.end()) {
     views::Checkbox* checkbox = iter->second->checkbox();
-    checkbox->SetChecked(permitted);
+    checkbox->SetChecked(gallery.allowed);
     checkbox->SetText(label);
     checkbox->SetTooltipText(tooltip_text);
     iter->second->secondary_text()->SetText(details);
@@ -218,21 +214,12 @@ bool MediaGalleriesDialogViews::AddOrUpdateGallery(
     return false;
   }
 
-  views::ContextMenuController* menu_controller = NULL;
-  if (gallery.pref_id != kInvalidMediaGalleryPrefId)
-    menu_controller = this;
-
   MediaGalleryCheckboxView* gallery_view =
       new MediaGalleryCheckboxView(label, tooltip_text, details, false,
-                                   trailing_vertical_space, this,
-                                   menu_controller);
-  gallery_view->checkbox()->SetChecked(permitted);
+                                   trailing_vertical_space, this, this);
+  gallery_view->checkbox()->SetChecked(gallery.allowed);
   container->AddChildView(gallery_view);
-
-  if (gallery.pref_id != kInvalidMediaGalleryPrefId)
-    checkbox_map_[gallery.pref_id] = gallery_view;
-  else
-    new_checkbox_map_[gallery_view] = gallery;
+  checkbox_map_[gallery.gallery_id] = gallery_view;
 
   return true;
 }
@@ -310,16 +297,9 @@ void MediaGalleriesDialogViews::ButtonPressed(views::Button* sender,
   for (CheckboxMap::const_iterator iter = checkbox_map_.begin();
        iter != checkbox_map_.end(); ++iter) {
     if (sender == iter->second->checkbox()) {
-      controller_->DidToggleGalleryId(iter->first,
-                                      iter->second->checkbox()->checked());
+      controller_->DidToggleGallery(iter->first,
+                                    iter->second->checkbox()->checked());
       return;
-    }
-  }
-  for (NewCheckboxMap::const_iterator iter = new_checkbox_map_.begin();
-       iter != new_checkbox_map_.end(); ++iter) {
-    if (sender == iter->first->checkbox()) {
-      controller_->DidToggleNewGallery(iter->second,
-                                       iter->first->checkbox()->checked());
     }
   }
 }
@@ -339,7 +319,7 @@ void MediaGalleriesDialogViews::ShowContextMenuForView(
 
 void MediaGalleriesDialogViews::ShowContextMenu(const gfx::Point& point,
                                                 ui::MenuSourceType source_type,
-                                                MediaGalleryPrefId id) {
+                                                GalleryDialogId id) {
   context_menu_runner_.reset(new views::MenuRunner(
       controller_->GetContextMenu(id)));
 
