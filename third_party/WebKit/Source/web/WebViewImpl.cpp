@@ -952,6 +952,19 @@ bool WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event)
 
     RefPtr<LocalFrame> frame = toLocalFrame(focusedFrame.get());
 
+    PlatformKeyboardEventBuilder evt(event);
+
+    if (frame->eventHandler().keyEvent(evt)) {
+        if (WebInputEvent::RawKeyDown == event.type) {
+            // Suppress the next keypress event unless the focused node is a plug-in node.
+            // (Flash needs these keypress events to handle non-US keyboards.)
+            Element* element = focusedElement();
+            if (!element || !element->renderer() || !element->renderer()->isEmbeddedObject())
+                m_suppressNextKeypressEvent = true;
+        }
+        return true;
+    }
+
 #if !OS(MACOSX)
     const WebInputEvent::Type contextMenuTriggeringEventType =
 #if OS(WIN)
@@ -967,19 +980,6 @@ bool WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event)
         return true;
     }
 #endif // !OS(MACOSX)
-
-    PlatformKeyboardEventBuilder evt(event);
-
-    if (frame->eventHandler().keyEvent(evt)) {
-        if (WebInputEvent::RawKeyDown == event.type) {
-            // Suppress the next keypress event unless the focused node is a plug-in node.
-            // (Flash needs these keypress events to handle non-US keyboards.)
-            Element* element = focusedElement();
-            if (!element || !element->renderer() || !element->renderer()->isEmbeddedObject())
-                m_suppressNextKeypressEvent = true;
-        }
-        return true;
-    }
 
     return keyEventDefault(event);
 }
