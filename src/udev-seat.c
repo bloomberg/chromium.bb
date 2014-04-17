@@ -125,7 +125,9 @@ device_added(struct udev_device *udev_device, struct udev_input *input)
 		wl_list_for_each(output, &c->output_list, link)
 			if (strcmp(output->name, device->output_name) == 0)
 				evdev_device_set_output(device, output);
-	} else if (device->output == NULL) {
+	}
+
+	if (device->output == NULL) {
 		output = container_of(c->output_list.next,
 				      struct weston_output, link);
 		evdev_device_set_output(device, output);
