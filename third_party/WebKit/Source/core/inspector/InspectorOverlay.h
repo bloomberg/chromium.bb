@@ -130,7 +130,7 @@ public:
     void setInspectModeEnabled(bool);
 
     void hideHighlight();
-    void highlightNode(Node*, Node* eventTarget, const HighlightConfig&);
+    void highlightNode(Node*, Node* eventTarget, const HighlightConfig&, bool omitTooltip);
     void highlightQuad(PassOwnPtr<FloatQuad>, const HighlightConfig&);
     void showAndHideViewSize(bool showGrid);
 
@@ -177,6 +177,7 @@ private:
     IntSize m_size;
     bool m_drawViewSize;
     bool m_drawViewSizeWithGrid;
+    bool m_omitTooltip;
     Timer<InspectorOverlay> m_timer;
     int m_activeProfilerCount;
 };

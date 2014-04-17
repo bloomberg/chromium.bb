@@ -1100,7 +1100,7 @@ bool InspectorDOMAgent::handleGestureEvent(LocalFrame* frame, const PlatformGest
         return false;
     Node* node = hoveredNodeForEvent(frame, event, false);
     if (node && m_inspectModeHighlightConfig) {
-        m_overlay->highlightNode(node, 0 /* eventTarget */, *m_inspectModeHighlightConfig);
+        m_overlay->highlightNode(node, 0 /* eventTarget */, *m_inspectModeHighlightConfig, false);
         inspect(node);
         return true;
     }
@@ -1113,7 +1113,7 @@ bool InspectorDOMAgent::handleTouchEvent(LocalFrame* frame, const PlatformTouchE
         return false;
     Node* node = hoveredNodeForEvent(frame, event, false);
     if (node && m_inspectModeHighlightConfig) {
-        m_overlay->highlightNode(node, 0 /* eventTarget */, *m_inspectModeHighlightConfig);
+        m_overlay->highlightNode(node, 0 /* eventTarget */, *m_inspectModeHighlightConfig, false);
         inspect(node);
         return true;
     }
@@ -1165,7 +1165,7 @@ void InspectorDOMAgent::handleMouseMove(LocalFrame* frame, const PlatformMouseEv
         eventTarget = 0;
 
     if (node && m_inspectModeHighlightConfig)
-        m_overlay->highlightNode(node, eventTarget, *m_inspectModeHighlightConfig);
+        m_overlay->highlightNode(node, eventTarget, *m_inspectModeHighlightConfig, event.ctrlKey() || event.metaKey());
 }
 
 void InspectorDOMAgent::setSearchingForNode(ErrorString* errorString, SearchMode searchMode, JSONObject* highlightInspectorObject)
@@ -1258,7 +1258,7 @@ void InspectorDOMAgent::highlightNode(ErrorString* errorString, const RefPtr<JSO
     if (!highlightConfig)
         return;
 
-    m_overlay->highlightNode(node, 0 /* eventTarget */, *highlightConfig);
+    m_overlay->highlightNode(node, 0 /* eventTarget */, *highlightConfig, false);
 }
 
 void InspectorDOMAgent::highlightFrame(
@@ -1273,7 +1273,7 @@ void InspectorDOMAgent::highlightFrame(
         highlightConfig->showInfo = true; // Always show tooltips for frames.
         highlightConfig->content = parseColor(color);
         highlightConfig->contentOutline = parseColor(outlineColor);
-        m_overlay->highlightNode(frame->ownerElement(), 0 /* eventTarget */, *highlightConfig);
+        m_overlay->highlightNode(frame->ownerElement(), 0 /* eventTarget */, *highlightConfig, false);
     }
 }
 
