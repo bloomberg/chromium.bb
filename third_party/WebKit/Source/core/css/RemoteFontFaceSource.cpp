@@ -93,13 +93,16 @@ void RemoteFontFaceSource::corsFailed(FontResource*)
         Document* document = m_face->fontSelector() ? m_face->fontSelector()->document() : 0;
         if (document) {
             FetchRequest request(ResourceRequest(m_font->url()), FetchInitiatorTypeNames::css);
-            m_font->removeClient(this);
-            m_font = document->fetcher()->fetchFont(request);
-            m_font->addClient(this);
-            m_face->fontSelector()->beginLoadingFontSoon(m_font.get());
-        } else {
-            m_face->fontLoaded(this);
+            ResourcePtr<FontResource> newFontResource = document->fetcher()->fetchFont(request);
+            if (newFontResource) {
+                m_font->removeClient(this);
+                m_font = newFontResource;
+                m_font->addClient(this);
+                m_face->fontSelector()->beginLoadingFontSoon(m_font.get());
+                return;
+            }
         }
+        m_face->fontLoaded(this);
     }
 }
 
