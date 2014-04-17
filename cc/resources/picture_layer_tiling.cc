@@ -356,8 +356,10 @@ gfx::RectF PictureLayerTiling::CoverageIterator::texture_rect() const {
   gfx::RectF texture_rect(current_geometry_rect_);
   texture_rect.Scale(dest_to_content_scale_,
                      dest_to_content_scale_);
-  texture_rect.Offset(-tex_origin.OffsetFromOrigin());
   texture_rect.Intersect(tiling_->TilingRect());
+  if (texture_rect.IsEmpty())
+    return texture_rect;
+  texture_rect.Offset(-tex_origin.OffsetFromOrigin());
 
   return texture_rect;
 }
