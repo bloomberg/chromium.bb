@@ -243,6 +243,17 @@
       ],
     }, # target_name: All_syzygy
     {
+      'target_name': 'dartium_builder',
+      'type': 'none',
+      'dependencies': [
+          '../dart/pkg/pkg.gyp:pkg_packages',
+          # '../webkit/webkit.gyp:pull_in_webkit_unit_tests',
+          '../chrome/chrome.gyp:chrome',
+          '../chrome/chrome.gyp:chromedriver',
+          '../content/content_shell_and_tests.gyp:content_shell',
+      ],
+    },
+    {
       # Note: Android uses android_builder_tests below.
       # TODO: Consider merging that with this target.
       'target_name': 'chromium_builder_tests',
