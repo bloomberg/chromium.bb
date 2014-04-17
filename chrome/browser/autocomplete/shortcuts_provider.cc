@@ -159,9 +159,9 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
       matches_.back().ComputeStrippedDestinationURL(profile_);
     }
   }
-  // Remove duplicates.
-  // TODO(hfung): Check whether the false below, which does not store duplicates
-  // in the matches, is correct.
+  // Remove duplicates.  Duplicates don't need to be preserved in the matches
+  // because they are only used for deletions, and shortcuts deletes matches
+  // based on the URL.
   AutocompleteResult::DedupMatchesByDestination(
       input.current_page_classification(), false, &matches_);
   // Find best matches.
