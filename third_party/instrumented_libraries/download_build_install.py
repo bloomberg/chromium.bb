@@ -103,12 +103,11 @@ def destdir_configure_make_install(parsed_arguments, environment,
   configure_command = './configure %s' % parsed_arguments.custom_configure_flags
   configure_command += ' --libdir=/lib/'
   shell_call(configure_command, parsed_arguments.verbose, environment)
-  shell_call('make -j%s' % parsed_arguments.jobs,
-      parsed_arguments.verbose, environment)
   # Some makefiles use BUILDROOT instead of DESTDIR.
-  shell_call('make -j%s DESTDIR=%s BUILDROOT=%s install' % \
-        (parsed_arguments.jobs, install_prefix, install_prefix),
-      parsed_arguments.verbose, environment)
+  make_command = 'make -j%s DESTDIR=%s BUILDROOT=%s' % (
+      parsed_arguments.jobs, install_prefix, install_prefix),
+  shell_call(make_command, parsed_arguments.verbose, environment)
+  shell_call('%s install' % make_command, parsed_arguments.verbose, environment)
   # Kill the .la files. They contain absolute paths, and will cause build errors
   # in dependent libraries.
   shell_call('rm %s/lib/*.la -f' % install_prefix)

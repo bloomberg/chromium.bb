@@ -88,6 +88,7 @@
         '<(_sanitizer_type)-libudev0',
         '<(_sanitizer_type)-libtasn1-3',
         '<(_sanitizer_type)-libgnome-keyring0',
+        '<(_sanitizer_type)-libgtk2.0-0',
       ],
       'conditions': [
         ['asan==1', {
@@ -423,6 +424,21 @@
       ],
       'custom_linker_flags': '-Wl,--as-needed',
       'dependencies=': [],
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'libgtk2.0-0',
+      'custom_c_compiler_flags': '-Wno-return-type',
+      'custom_configure_flags': [
+          # From debian/rules.
+          '--prefix=/usr',
+          '--sysconfdir=/etc',
+          '--enable-test-print-backend',
+          '--enable-introspection=no',
+          '--with-xinput=yes',
+      ],
+      'dependencies=': [],
+      'run_before_build': 'libgtk2.0-0.sh',
       'includes': ['standard_instrumented_library_target.gypi'],
     },
   ],
