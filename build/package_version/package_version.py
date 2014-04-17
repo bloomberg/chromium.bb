@@ -593,7 +593,7 @@ def _DoArchiveCmd(arguments):
       arguments.package_target_packages
   )
   if not package_target_packages:
-    raise TypeError('Unknown package: %s.' % arguments.archive__package
+    raise NameError('Unknown package: %s.' % arguments.archive__package
                     + ' Did you forget to add "$PACKAGE_TARGET/"?')
 
   for package_target, package_name in package_target_packages:
@@ -649,7 +649,7 @@ def _DoUploadCmd(arguments):
       arguments.package_target_packages
   )
   if not package_target_packages:
-    raise TypeError('Unknown package: %s.' % arguments.upload__package
+    raise NameError('Unknown package: %s.' % arguments.upload__package
                     + ' Did you forget to add "$PACKAGE_TARGET/"?')
 
   for package_target, package_name in package_target_packages:
@@ -792,6 +792,32 @@ def _DoSetRevisionCmd(arguments):
   CleanTempFiles(arguments.revisions_dir)
 
 
+def _GetRevisionCmdArgParser(subparser):
+  subparser.description = 'Get the revision of a package.'
+  subparser.add_argument(
+    '--revision-package', metavar='NAME', dest='getrevision__package',
+    required=True,
+    help='Package name to get revision of.')
+
+
+def _DoGetRevisionCmd(arguments):
+  package_name = arguments.getrevision__package
+
+  custom_package_targets = GetPackageTargetPackages(package_name, [])
+  if custom_package_targets:
+    custom_target, package_name = custom_package_targets[0]
+
+  revision_file = package_locations.GetRevisionFile(arguments.revisions_dir,
+                                                    package_name)
+
+  if not os.path.isfile(revision_file):
+    raise NameError('No revision set for package: %s.' % package_name)
+
+  revision_desc = revision_info.RevisionInfo(arguments.packages_desc,
+                                             revision_file)
+  print revision_desc.GetRevisionNumber()
+
+
 CommandFuncs = collections.namedtuple(
     'CommandFuncs',
     ['parse_func', 'do_cmd_func'])
@@ -804,6 +830,7 @@ COMMANDS = {
     'upload': CommandFuncs(_UploadCmdArgParser, _DoUploadCmd),
     'sync': CommandFuncs(_SyncCmdArgParser, _DoSyncCmd),
     'setrevision': CommandFuncs(_SetRevisionCmdArgParser, _DoSetRevisionCmd),
+    'getrevision': CommandFuncs(_GetRevisionCmdArgParser, _DoGetRevisionCmd),
 }
 
 
@@ -907,7 +934,7 @@ def ParseArgs(args):
     for package_target in package_targets:
       packages = packages_desc.GetPackages(package_target)
       if packages is None:
-        raise TypeError('No packages defined for Package Target: %s.' %
+        raise NameError('No packages defined for Package Target: %s.' %
                         package_target)
       packages_set.update(packages)
   else:
@@ -936,7 +963,7 @@ def ParseArgs(args):
     if package_targets is None:
       custom_package_targets = GetPackageTargetPackages(package, [])
       if not custom_package_targets:
-        raise TypeError('Invalid custom package: "%s".' % package
+        raise NameError('Invalid custom package: "%s".' % package
                         + ' Expected $PACKAGE_TARGET'
                         + os.path.sep
                         + '$PACKAGE')
