@@ -33,4 +33,8 @@ ServiceWorkerResponse::ServiceWorkerResponse(
 
 ServiceWorkerResponse::~ServiceWorkerResponse() {}
 
+ServiceWorkerObjectInfo::ServiceWorkerObjectInfo()
+    : handle_id(kInvalidServiceWorkerHandleId),
+      state(blink::WebServiceWorkerStateUnknown) {}
+
 }  // namespace content

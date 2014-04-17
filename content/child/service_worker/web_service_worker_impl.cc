@@ -34,6 +34,8 @@ WebServiceWorkerImpl::WebServiceWorkerImpl(
 }
 
 WebServiceWorkerImpl::~WebServiceWorkerImpl() {
+  if (handle_id_ == kInvalidServiceWorkerHandleId)
+    return;
   thread_safe_sender_->Send(
       new ServiceWorkerHostMsg_ServiceWorkerObjectDestroyed(handle_id_));
   ServiceWorkerDispatcher* dispatcher =

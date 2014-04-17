@@ -13,6 +13,21 @@
 
 namespace content {
 
+namespace {
+
+// Sends a ServiceWorkerObjectDestroyed message to the browser so it can delete
+// the ServiceWorker handle.
+void SendServiceWorkerObjectDestroyed(
+    scoped_refptr<ThreadSafeSender> sender,
+    int handle_id) {
+  if (handle_id == kInvalidServiceWorkerHandleId)
+    return;
+  sender->Send(
+      new ServiceWorkerHostMsg_ServiceWorkerObjectDestroyed(handle_id));
+}
+
+}  // namespace
+
 ServiceWorkerMessageFilter::ServiceWorkerMessageFilter(ThreadSafeSender* sender)
     : main_thread_loop_proxy_(base::MessageLoopProxy::current()),
       thread_safe_sender_(sender) {}
@@ -46,17 +61,23 @@ void ServiceWorkerMessageFilter::OnStaleMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(ServiceWorkerMessageFilter, msg)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerRegistered,
                         OnStaleRegistered)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SetCurrentServiceWorker,
+                        OnStaleSetCurrentServiceWorker)
   IPC_END_MESSAGE_MAP()
 }
 
 void ServiceWorkerMessageFilter::OnStaleRegistered(
-    int32 thread_id,
-    int32 request_id,
+    int thread_id,
+    int request_id,
     const ServiceWorkerObjectInfo& info) {
-  // Inform the browser that the context seems to have been destroyed
-  // (so that it can delete the corresponding ServiceWorker handle).
-  thread_safe_sender_->Send(
-      new ServiceWorkerHostMsg_ServiceWorkerObjectDestroyed(info.handle_id));
+  SendServiceWorkerObjectDestroyed(thread_safe_sender_, info.handle_id);
+}
+
+void ServiceWorkerMessageFilter::OnStaleSetCurrentServiceWorker(
+    int thread_id,
+    int provider_id,
+    const ServiceWorkerObjectInfo& info) {
+  SendServiceWorkerObjectDestroyed(thread_safe_sender_, info.handle_id);
 }
 
 }  // namespace content

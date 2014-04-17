@@ -10,6 +10,7 @@
 #include "content/browser/service_worker/service_worker_handle.h"
 #include "content/browser/service_worker/service_worker_utils.h"
 #include "content/browser/service_worker/service_worker_version.h"
+#include "content/common/service_worker/service_worker_messages.h"
 
 namespace content {
 
@@ -57,12 +58,15 @@ void ServiceWorkerProviderHost::SetActiveVersion(
   for (std::set<int>::iterator it = script_client_thread_ids_.begin();
        it != script_client_thread_ids_.end();
        ++it) {
-    if (version) {
-      dispatcher_host_->RegisterServiceWorkerHandle(
-          ServiceWorkerHandle::Create(context_, dispatcher_host_,
-                                      *it, version));
+    ServiceWorkerObjectInfo info;
+    if (context_ && version) {
+      scoped_ptr<ServiceWorkerHandle> handle =
+          ServiceWorkerHandle::Create(context_, dispatcher_host_, *it, version);
+      info = handle->GetObjectInfo();
+      dispatcher_host_->RegisterServiceWorkerHandle(handle.Pass());
     }
-    // TODO(kinuko): dispatch activechange event to the script clients.
+    dispatcher_host_->Send(
+        new ServiceWorkerMsg_SetCurrentServiceWorker(*it, provider_id(), info));
   }
 }
 
@@ -83,11 +87,6 @@ void ServiceWorkerProviderHost::SetPendingVersion(
   for (std::set<int>::iterator it = script_client_thread_ids_.begin();
        it != script_client_thread_ids_.end();
        ++it) {
-    if (version) {
-      dispatcher_host_->RegisterServiceWorkerHandle(
-          ServiceWorkerHandle::Create(context_, dispatcher_host_,
-                                      *it, version));
-    }
     // TODO(kinuko): dispatch pendingchange event to the script clients.
   }
 }

@@ -52,6 +52,8 @@ void ServiceWorkerDispatcher::OnMessageReceived(const IPC::Message& msg) {
                         OnRegistrationError)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerStateChanged,
                         OnServiceWorkerStateChanged)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SetCurrentServiceWorker,
+                        OnSetCurrentServiceWorker)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled) << "Unhandled message:" << msg.type();
@@ -190,6 +192,23 @@ void ServiceWorkerDispatcher::OnServiceWorkerStateChanged(
   if (found == service_workers_.end())
     return;
   found->second->SetState(state);
+}
+
+void ServiceWorkerDispatcher::OnSetCurrentServiceWorker(
+    int thread_id,
+    int provider_id,
+    const ServiceWorkerObjectInfo& info) {
+  scoped_ptr<WebServiceWorkerImpl> worker(
+      new WebServiceWorkerImpl(info, thread_safe_sender_));
+  ScriptClientMap::iterator found = script_clients_.find(provider_id);
+  if (found == script_clients_.end()) {
+    // Note that |worker|'s destructor sends a ServiceWorkerObjectDestroyed
+    // message so the browser-side can clean up the ServiceWorkerHandle it
+    // created when sending us this message.
+    return;
+  }
+  // TODO(falken): Call client->setCurrentServiceWorker(worker) when the Blink
+  // change to add that function rolls in.
 }
 
 void ServiceWorkerDispatcher::AddServiceWorker(

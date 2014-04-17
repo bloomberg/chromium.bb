@@ -93,6 +93,9 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
   void OnServiceWorkerStateChanged(int thread_id,
                                    int handle_id,
                                    blink::WebServiceWorkerState state);
+  void OnSetCurrentServiceWorker(int thread_id,
+                                 int provider_id,
+                                 const ServiceWorkerObjectInfo& info);
 
   // Keeps map from handle_id to ServiceWorker object.
   void AddServiceWorker(int handle_id, WebServiceWorkerImpl* worker);
