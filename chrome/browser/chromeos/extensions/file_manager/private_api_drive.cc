@@ -29,6 +29,7 @@ using file_manager::util::EntryDefinitionList;
 using file_manager::util::EntryDefinitionListCallback;
 using file_manager::util::FileDefinition;
 using file_manager::util::FileDefinitionList;
+using extensions::api::file_browser_private::DriveEntryProperties;
 
 namespace extensions {
 namespace {
@@ -47,10 +48,9 @@ const char kDriveConnectionReasonNoService[] = "no_service";
 
 // Copies properties from |entry_proto| to |properties|. |shared_with_me| is
 // given from the running profile.
-void FillDriveEntryPropertiesValue(
-    const drive::ResourceEntry& entry_proto,
-    bool shared_with_me,
-    api::file_browser_private::DriveEntryProperties* properties) {
+void FillDriveEntryPropertiesValue(const drive::ResourceEntry& entry_proto,
+                                   bool shared_with_me,
+                                   DriveEntryProperties* properties) {
   properties->shared_with_me.reset(new bool(shared_with_me));
   properties->shared.reset(new bool(entry_proto.shared()));
 
@@ -106,196 +106,280 @@ void ConvertSearchResultInfoListToEntryDefinitionList(
       callback);
 }
 
+class SingleDriveEntryPropertiesGetter {
+ public:
+  typedef base::Callback<void(drive::FileError error)> ResultCallback;
+
+  // Creates an instance and starts the process.
+  static void Start(const base::FilePath local_path,
+                    linked_ptr<DriveEntryProperties> properties,
+                    Profile* const profile,
+                    const ResultCallback& callback) {
+
+    SingleDriveEntryPropertiesGetter* instance =
+        new SingleDriveEntryPropertiesGetter(
+            local_path, properties, profile, callback);
+    instance->StartProcess();
+
+    // The instance will be destroyed by itself.
+  }
+
+  virtual ~SingleDriveEntryPropertiesGetter() {}
+
+ private:
+  // Given parameters.
+  const ResultCallback callback_;
+  const base::FilePath local_path_;
+  const linked_ptr<DriveEntryProperties> properties_;
+  Profile* const running_profile_;
+
+  // Values used in the process.
+  Profile* file_owner_profile_;
+  base::FilePath file_path_;
+  scoped_ptr<drive::ResourceEntry> owner_resource_entry_;
+
+  base::WeakPtrFactory<SingleDriveEntryPropertiesGetter> weak_ptr_factory_;
+
+  SingleDriveEntryPropertiesGetter(const base::FilePath local_path,
+                                   linked_ptr<DriveEntryProperties> properties,
+                                   Profile* const profile,
+                                   const ResultCallback& callback)
+      : callback_(callback),
+        local_path_(local_path),
+        properties_(properties),
+        running_profile_(profile),
+        file_owner_profile_(NULL),
+        weak_ptr_factory_(this) {
+    DCHECK(!callback_.is_null());
+    DCHECK(profile);
+  }
+
+  base::WeakPtr<SingleDriveEntryPropertiesGetter> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
+  void StartProcess() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+    file_path_ = drive::util::ExtractDrivePath(local_path_);
+    file_owner_profile_ = drive::util::ExtractProfileFromPath(local_path_);
+
+    if (!file_owner_profile_ ||
+        !g_browser_process->profile_manager()->IsValidProfile(
+            file_owner_profile_)) {
+      CompleteGetFileProperties(drive::FILE_ERROR_FAILED);
+      return;
+    }
+
+    // Start getting the file info.
+    drive::FileSystemInterface* const file_system =
+        drive::util::GetFileSystemByProfile(file_owner_profile_);
+    if (!file_system) {
+      // |file_system| is NULL if Drive is disabled or not mounted.
+      CompleteGetFileProperties(drive::FILE_ERROR_FAILED);
+      return;
+    }
+
+    file_system->GetResourceEntry(
+        file_path_,
+        base::Bind(&SingleDriveEntryPropertiesGetter::OnGetFileInfo,
+                   GetWeakPtr()));
+  }
+
+  void OnGetFileInfo(drive::FileError error,
+                     scoped_ptr<drive::ResourceEntry> entry) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+    if (error != drive::FILE_ERROR_OK) {
+      CompleteGetFileProperties(error);
+      return;
+    }
+
+    DCHECK(entry);
+    owner_resource_entry_.swap(entry);
+
+    if (running_profile_->IsSameProfile(file_owner_profile_)) {
+      StartParseFileInfo(owner_resource_entry_->shared_with_me());
+      return;
+    }
+
+    // If the running profile does not own the file, obtain the shared_with_me
+    // flag from the running profile's value.
+    drive::FileSystemInterface* const file_system =
+        drive::util::GetFileSystemByProfile(running_profile_);
+    if (!file_system) {
+      CompleteGetFileProperties(drive::FILE_ERROR_FAILED);
+      return;
+    }
+    file_system->GetPathFromResourceId(
+        owner_resource_entry_->resource_id(),
+        base::Bind(&SingleDriveEntryPropertiesGetter::OnGetRunningPath,
+                   GetWeakPtr()));
+  }
+
+  void OnGetRunningPath(drive::FileError error,
+                        const base::FilePath& file_path) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+    if (error != drive::FILE_ERROR_OK) {
+      // The running profile does not know the file.
+      StartParseFileInfo(false);
+      return;
+    }
+
+    drive::FileSystemInterface* const file_system =
+        drive::util::GetFileSystemByProfile(running_profile_);
+    if (!file_system) {
+      // The drive is disable for the running profile.
+      StartParseFileInfo(false);
+      return;
+    }
+
+    file_system->GetResourceEntry(
+        file_path,
+        base::Bind(&SingleDriveEntryPropertiesGetter::OnGetShareInfo,
+                   GetWeakPtr()));
+  }
+
+  void OnGetShareInfo(drive::FileError error,
+                      scoped_ptr<drive::ResourceEntry> entry) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+    if (error != drive::FILE_ERROR_OK) {
+      CompleteGetFileProperties(error);
+      return;
+    }
+
+    DCHECK(entry);
+    StartParseFileInfo(entry->shared_with_me());
+  }
+
+  void StartParseFileInfo(bool shared_with_me) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+    FillDriveEntryPropertiesValue(
+        *owner_resource_entry_, shared_with_me, properties_.get());
+
+    drive::FileSystemInterface* const file_system =
+        drive::util::GetFileSystemByProfile(file_owner_profile_);
+    drive::DriveAppRegistry* const app_registry =
+        drive::util::GetDriveAppRegistryByProfile(file_owner_profile_);
+    if (!file_system || !app_registry) {
+      // |file_system| or |app_registry| is NULL if Drive is disabled.
+      CompleteGetFileProperties(drive::FILE_ERROR_FAILED);
+      return;
+    }
+
+    // The properties meaningful for directories are already filled in
+    // FillDriveEntryPropertiesValue().
+    if (!owner_resource_entry_->has_file_specific_info()) {
+      CompleteGetFileProperties(drive::FILE_ERROR_OK);
+      return;
+    }
+
+    const drive::FileSpecificInfo& file_specific_info =
+        owner_resource_entry_->file_specific_info();
+
+    // Get drive WebApps that can accept this file. We just need to extract the
+    // doc icon for the drive app, which is set as default.
+    std::vector<drive::DriveAppInfo> drive_apps;
+    app_registry->GetAppsForFile(file_path_.Extension(),
+                                 file_specific_info.content_mime_type(),
+                                 &drive_apps);
+    if (!drive_apps.empty()) {
+      std::string default_task_id =
+          file_manager::file_tasks::GetDefaultTaskIdFromPrefs(
+              *file_owner_profile_->GetPrefs(),
+              file_specific_info.content_mime_type(),
+              file_path_.Extension());
+      file_manager::file_tasks::TaskDescriptor default_task;
+      file_manager::file_tasks::ParseTaskID(default_task_id, &default_task);
+      DCHECK(default_task_id.empty() || !default_task.app_id.empty());
+      for (size_t i = 0; i < drive_apps.size(); ++i) {
+        const drive::DriveAppInfo& app_info = drive_apps[i];
+        if (default_task.app_id == app_info.app_id) {
+          // The drive app is set as default. Files.app should use the doc icon.
+          const GURL doc_icon = drive::util::FindPreferredIcon(
+              app_info.document_icons, drive::util::kPreferredIconSize);
+          properties_->custom_icon_url.reset(new std::string(doc_icon.spec()));
+        }
+      }
+    }
+
+    file_system->GetCacheEntry(
+        file_path_,
+        base::Bind(&SingleDriveEntryPropertiesGetter::CacheStateReceived,
+                   GetWeakPtr()));
+  }
+
+  void CacheStateReceived(bool /* success */,
+                          const drive::FileCacheEntry& cache_entry) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+    // In case of an error (i.e. success is false), cache_entry.is_*() all
+    // returns false.
+    properties_->is_pinned.reset(new bool(cache_entry.is_pinned()));
+    properties_->is_present.reset(new bool(cache_entry.is_present()));
+
+    CompleteGetFileProperties(drive::FILE_ERROR_OK);
+  }
+
+  void CompleteGetFileProperties(drive::FileError error) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK(!callback_.is_null());
+    callback_.Run(error);
+
+    delete this;
+  }
+};  // class SingleDriveEntryPropertiesGetter
+
 }  // namespace
 
 FileBrowserPrivateGetDriveEntryPropertiesFunction::
     FileBrowserPrivateGetDriveEntryPropertiesFunction()
-    : properties_(
-          new extensions::api::file_browser_private::DriveEntryProperties) {}
+    : processed_count_(0) {}
 
 FileBrowserPrivateGetDriveEntryPropertiesFunction::
-    ~FileBrowserPrivateGetDriveEntryPropertiesFunction() {
-}
+    ~FileBrowserPrivateGetDriveEntryPropertiesFunction() {}
 
 bool FileBrowserPrivateGetDriveEntryPropertiesFunction::RunImpl() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  using extensions::api::file_browser_private::GetDriveEntryProperties::Params;
+  using api::file_browser_private::GetDriveEntryProperties::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  const GURL file_url = GURL(params->file_url);
-  const base::FilePath local_path = file_manager::util::GetLocalPathFromURL(
-      render_view_host(), GetProfile(), file_url);
-  file_path_ = drive::util::ExtractDrivePath(local_path);
-  file_owner_profile_ = drive::util::ExtractProfileFromPath(local_path);
+  properties_list_.resize(params->file_urls.size());
 
-  // Owner not found.
-  if (!file_owner_profile_) {
-    CompleteGetFileProperties(drive::FILE_ERROR_FAILED);
-    return true;
+  for (size_t i = 0; i < params->file_urls.size(); i++) {
+    const GURL url = GURL(params->file_urls[i]);
+    const base::FilePath local_path = file_manager::util::GetLocalPathFromURL(
+        render_view_host(), GetProfile(), url);
+    properties_list_[i] = make_linked_ptr(new DriveEntryProperties);
+
+    SingleDriveEntryPropertiesGetter::Start(
+        local_path,
+        properties_list_[i],
+        GetProfile(),
+        base::Bind(&FileBrowserPrivateGetDriveEntryPropertiesFunction::
+                       CompleteGetFileProperties,
+                   this));
   }
 
-  // Start getting the file info.
-  drive::FileSystemInterface* const file_system =
-      drive::util::GetFileSystemByProfile(file_owner_profile_);
-  if (!file_system) {
-    // |file_system| is NULL if Drive is disabled or not mounted.
-    CompleteGetFileProperties(drive::FILE_ERROR_FAILED);
-    return true;
-  }
-
-  file_system->GetResourceEntry(
-      file_path_,
-      base::Bind(
-          &FileBrowserPrivateGetDriveEntryPropertiesFunction::OnGetFileInfo,
-          this));
   return true;
-}
-
-void FileBrowserPrivateGetDriveEntryPropertiesFunction::OnGetFileInfo(
-    drive::FileError error,
-    scoped_ptr<drive::ResourceEntry> entry) {
-  if (error != drive::FILE_ERROR_OK) {
-    CompleteGetFileProperties(error);
-    return;
-  }
-  DCHECK(entry);
-  owner_resource_entry_.swap(entry);
-
-  if (GetProfile()->IsSameProfile(file_owner_profile_)) {
-    StartParseFileInfo(owner_resource_entry_->shared_with_me());
-    return;
-  }
-
-  // If the running profile does not own the file, obtain the shared_with_me
-  // flag from the running profile's value.
-  drive::FileSystemInterface* const file_system =
-      drive::util::GetFileSystemByProfile(GetProfile());
-  if (!file_system) {
-    CompleteGetFileProperties(drive::FILE_ERROR_FAILED);
-    return;
-  }
-  file_system->GetPathFromResourceId(
-      owner_resource_entry_->resource_id(),
-      base::Bind(
-          &FileBrowserPrivateGetDriveEntryPropertiesFunction::OnGetRunningPath,
-          this));
-}
-
-void FileBrowserPrivateGetDriveEntryPropertiesFunction::OnGetRunningPath(
-    drive::FileError error,
-    const base::FilePath& file_path) {
-  if (error != drive::FILE_ERROR_OK) {
-    // The running profile does not know the file.
-    StartParseFileInfo(false);
-    return;
-  }
-
-  drive::FileSystemInterface* const file_system =
-      drive::util::GetFileSystemByProfile(GetProfile());
-  if (!file_system) {
-    // The drive is disable for the running profile.
-    StartParseFileInfo(false);
-    return;
-  }
-  file_system->GetResourceEntry(
-      file_path,
-      base::Bind(
-          &FileBrowserPrivateGetDriveEntryPropertiesFunction::OnGetShareInfo,
-          this));
-}
-
-void FileBrowserPrivateGetDriveEntryPropertiesFunction::OnGetShareInfo(
-    drive::FileError error,
-    scoped_ptr<drive::ResourceEntry> entry) {
-  if (error != drive::FILE_ERROR_OK) {
-    CompleteGetFileProperties(error);
-    return;
-  }
-  DCHECK(entry);
-  StartParseFileInfo(entry->shared_with_me());
-}
-
-void FileBrowserPrivateGetDriveEntryPropertiesFunction::StartParseFileInfo(
-    bool shared_with_me) {
-  if (!g_browser_process->profile_manager()->IsValidProfile(
-          file_owner_profile_)) {
-    CompleteGetFileProperties(drive::FILE_ERROR_FAILED);
-    return;
-  }
-
-  FillDriveEntryPropertiesValue(
-      *owner_resource_entry_, shared_with_me, properties_.get());
-
-  drive::FileSystemInterface* const file_system =
-      drive::util::GetFileSystemByProfile(file_owner_profile_);
-  drive::DriveAppRegistry* const app_registry =
-      drive::util::GetDriveAppRegistryByProfile(file_owner_profile_);
-  if (!file_system || !app_registry) {
-    // |file_system| or |app_registry| is NULL if Drive is disabled.
-    CompleteGetFileProperties(drive::FILE_ERROR_FAILED);
-    return;
-  }
-
-  // The properties meaningful for directories are already filled in
-  // FillDriveEntryPropertiesValue().
-  if (!owner_resource_entry_->has_file_specific_info()) {
-    CompleteGetFileProperties(drive::FILE_ERROR_OK);
-    return;
-  }
-
-  const drive::FileSpecificInfo& file_specific_info =
-      owner_resource_entry_->file_specific_info();
-
-  // Get drive WebApps that can accept this file. We just need to extract the
-  // doc icon for the drive app, which is set as default.
-  std::vector<drive::DriveAppInfo> drive_apps;
-  app_registry->GetAppsForFile(file_path_.Extension(),
-                               file_specific_info.content_mime_type(),
-                               &drive_apps);
-  if (!drive_apps.empty()) {
-    std::string default_task_id =
-        file_manager::file_tasks::GetDefaultTaskIdFromPrefs(
-            *file_owner_profile_->GetPrefs(),
-            file_specific_info.content_mime_type(),
-            file_path_.Extension());
-    file_manager::file_tasks::TaskDescriptor default_task;
-    file_manager::file_tasks::ParseTaskID(default_task_id, &default_task);
-    DCHECK(default_task_id.empty() || !default_task.app_id.empty());
-    for (size_t i = 0; i < drive_apps.size(); ++i) {
-      const drive::DriveAppInfo& app_info = drive_apps[i];
-      if (default_task.app_id == app_info.app_id) {
-        // The drive app is set as default. Files.app should use the doc icon.
-        const GURL doc_icon =
-            drive::util::FindPreferredIcon(app_info.document_icons,
-                                           drive::util::kPreferredIconSize);
-        properties_->custom_icon_url.reset(new std::string(doc_icon.spec()));
-      }
-    }
-  }
-
-  file_system->GetCacheEntry(
-      file_path_,
-      base::Bind(&FileBrowserPrivateGetDriveEntryPropertiesFunction::
-                     CacheStateReceived, this));
-}
-
-void FileBrowserPrivateGetDriveEntryPropertiesFunction::CacheStateReceived(
-    bool /* success */,
-    const drive::FileCacheEntry& cache_entry) {
-  // In case of an error (i.e. success is false), cache_entry.is_*() all
-  // returns false.
-  properties_->is_pinned.reset(new bool(cache_entry.is_pinned()));
-  properties_->is_present.reset(new bool(cache_entry.is_present()));
-
-  CompleteGetFileProperties(drive::FILE_ERROR_OK);
 }
 
 void FileBrowserPrivateGetDriveEntryPropertiesFunction::
     CompleteGetFileProperties(drive::FileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(0 <= processed_count_ && processed_count_ < properties_list_.size());
+
+  processed_count_++;
+  if (processed_count_ < properties_list_.size())
+    return;
+
   results_ = extensions::api::file_browser_private::GetDriveEntryProperties::
-      Results::Create(*properties_);
+      Results::Create(properties_list_);
   SendResponse(true);
 }
 

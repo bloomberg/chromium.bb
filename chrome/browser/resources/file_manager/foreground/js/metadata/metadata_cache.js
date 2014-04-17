@@ -772,17 +772,16 @@ DriveProvider.prototype.callApi_ = function() {
   this.callbacks_ = [];
   var self = this;
 
-  var task = function(entry, callback) {
-    // TODO(mtomasz): Make getDriveEntryProperties accept Entry instead of URL.
-    var entryURL = entry.toURL();
-    chrome.fileBrowserPrivate.getDriveEntryProperties(entryURL,
-        function(properties) {
-          callback(self.convert_(properties, entry));
-        });
-  };
-
-  for (var i = 0; i < entries.length; i++)
-    task(entries[i], callbacks[i]);
+  // TODO(mtomasz): Make getDriveEntryProperties accept Entry instead of URL.
+  var entryURLs = util.entriesToURLs(entries);
+  chrome.fileBrowserPrivate.getDriveEntryProperties(
+      entryURLs,
+      function(propertiesList) {
+        console.assert(propertiesList.length === callbacks.length);
+        for (var i = 0; i < callbacks.length; i++) {
+          callbacks[i](self.convert_(propertiesList[i], entries[i]));
+        }
+      });
 };
 
 /**

@@ -437,9 +437,9 @@ callback RemoveFileWatchCallback = void(optional boolean success);
 // |the caller has no appropriate permissions.
 callback RequestFileSystemCallback = void(optional object fileSystem);
 
-// |fileProperties| A dictionary containing properties of the requested entry.
+// |fileProperties| A dictionary containing properties of the requested entries.
 callback GetDriveEntryPropertiesCallback =
-    void(DriveEntryProperties fileProperties);
+    void(DriveEntryProperties[] entryProperties);
 
 // |localFilePaths| An array of the local file paths for the requested files,
 // one entry for each file in fileUrls.
@@ -583,11 +583,12 @@ interface Functions {
                          boolean shouldReturnLocalPath,
                          SimpleCallback callback);
 
-  // Requests Drive file properties for a file.
-  // |fileUrl| URL of a file
+  // Requests Drive file properties for files.
+  // |fileUrls| list of URLs of files
   // |callback|
-  static void getDriveEntryProperties(DOMString fileUrl,
-                                      GetDriveEntryPropertiesCallback callback);
+  static void getDriveEntryProperties(
+      DOMString[] fileUrls,
+      GetDriveEntryPropertiesCallback callback);
 
   // Pins/unpins a Drive file in the cache.
   // |fileUrl| URL of a file to pin/unpin.
