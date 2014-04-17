@@ -303,59 +303,31 @@ void *exynos_bo_map(struct exynos_bo *bo)
 /*
  * Export gem object to dmabuf as file descriptor.
  *
- * @dev: a exynos device object.
- * @handle: gem handle to be exported into dmabuf as file descriptor.
- * @fd: file descriptor to dmabuf exported from gem handle and
- *	returned by kernel side.
+ * @dev: exynos device object
+ * @handle: gem handle to export as file descriptor of dmabuf
+ * @fd: file descriptor returned from kernel
  *
- * if true, return 0 else negative.
+ * @return: 0 on success, -1 on error, and errno will be set
  */
 int exynos_prime_handle_to_fd(struct exynos_device *dev, uint32_t handle,
 					int *fd)
 {
-	int ret;
-	struct drm_prime_handle req = {
-		.handle	= handle,
-	};
-
-	ret = drmIoctl(dev->fd, DRM_IOCTL_PRIME_HANDLE_TO_FD, &req);
-	if (ret) {
-		fprintf(stderr, "failed to mmap[%s].\n",
-			strerror(errno));
-		return ret;
-	}
-
-	*fd = req.fd;
-	return 0;
+	return drmPrimeHandleToFD(dev->fd, handle, 0, fd);
 }
 
 /*
  * Import file descriptor into gem handle.
  *
- * @dev: a exynos device object.
- * @fd: file descriptor exported into dmabuf.
- * @handle: gem handle to gem object imported from file descriptor
- *	and returned by kernel side.
+ * @dev: exynos device object
+ * @fd: file descriptor of dmabuf to import
+ * @handle: gem handle returned from kernel
  *
- * if true, return 0 else negative.
+ * @return: 0 on success, -1 on error, and errno will be set
  */
 int exynos_prime_fd_to_handle(struct exynos_device *dev, int fd,
 					uint32_t *handle)
 {
-	int ret;
-	struct drm_prime_handle req = {
-		.fd	= fd,
-	};
-
-	ret = drmIoctl(dev->fd, DRM_IOCTL_PRIME_FD_TO_HANDLE, &req);
-	if (ret) {
-		fprintf(stderr, "failed to mmap[%s].\n",
-			strerror(errno));
-		return ret;
-	}
-
-	*handle = req.handle;
-	return 0;
+	return drmPrimeFDToHandle(dev->fd, fd, handle);
 }
 
 
