@@ -541,19 +541,6 @@ static int drmOpenByName(const char *name)
     int           fd;
     drmVersionPtr version;
     char *        id;
-    
-    if (!drmAvailable()) {
-	if (!drm_server_info) {
-	    return -1;
-	}
-	else {
-	    /* try to load the kernel module now */
-	    if (!drm_server_info->load_module(name)) {
-		drmMsg("[drm] failed to load kernel module \"%s\"\n", name);
-		return -1;
-	    }
-	}
-    }
 
     /*
      * Open the first minor number that matches the driver name and isn't
