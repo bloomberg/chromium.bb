@@ -29,7 +29,7 @@ const char kEnableExperimentalAppListPosition[] =
 const char kEnableSyncAppList[] = "enable-sync-app-list";
 
 bool IsAppListSyncEnabled() {
-#if defined(OS_CHROMEOS)
+#if defined(TOOLKIT_VIEWS)
   return !CommandLine::ForCurrentProcess()->HasSwitch(kDisableSyncAppList);
 #else
   return CommandLine::ForCurrentProcess()->HasSwitch(kEnableSyncAppList);
