@@ -130,7 +130,6 @@ class StatusBubbleViews : public StatusBubble {
   // We use a HWND for the popup so that it may float above any HWNDs in our
   // UI (the location bar, for example).
   scoped_ptr<views::Widget> popup_;
-  double opacity_;
 
   views::View* base_view_;
   StatusView* view_;

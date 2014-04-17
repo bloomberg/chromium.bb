@@ -384,7 +384,7 @@ void LocationBarView::Init() {
   zoom_view_->set_id(VIEW_ID_ZOOM_BUTTON);
   AddChildView(zoom_view_);
 
-  open_pdf_in_reader_view_ = new OpenPDFInReaderView(this);
+  open_pdf_in_reader_view_ = new OpenPDFInReaderView();
   AddChildView(open_pdf_in_reader_view_);
 
   manage_passwords_icon_view_ = new ManagePasswordsIconView(delegate_);

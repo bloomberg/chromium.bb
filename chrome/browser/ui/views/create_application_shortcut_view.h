@@ -135,7 +135,6 @@ class CreateChromeApplicationShortcutView
   void OnShortcutInfoLoaded(
       const web_app::ShortcutInfo& shortcut_info);
 
-  const extensions::Extension* app_;
   base::Closure close_callback_;
 
   base::WeakPtrFactory<CreateChromeApplicationShortcutView> weak_ptr_factory_;

@@ -57,8 +57,6 @@ class SignedCertificateTimestampsViews : public views::DialogDelegateView,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  content::WebContents* web_contents_;
-
   SignedCertificateTimestampInfoView* sct_info_view_;
 
   scoped_ptr<SCTListModel> sct_list_model_;

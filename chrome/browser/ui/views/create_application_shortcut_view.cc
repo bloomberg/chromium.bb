@@ -521,7 +521,6 @@ CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
     const extensions::Extension* app,
     const base::Closure& close_callback)
         : CreateApplicationShortcutView(profile),
-          app_(app),
           close_callback_(close_callback),
           weak_ptr_factory_(this) {
   // Required by InitControls().

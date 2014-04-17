@@ -55,7 +55,6 @@ class CryptoModulePasswordDialogView : public views::DialogDelegateView,
             const std::string& slot_name,
             CryptoModulePasswordReason reason);
 
-  views::Label* title_label_;
   views::Label* reason_label_;
   views::Label* password_label_;
   views::Textfield* password_entry_;

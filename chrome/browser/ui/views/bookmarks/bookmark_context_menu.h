@@ -82,9 +82,6 @@ class BookmarkContextMenu : public BookmarkContextMenuControllerDelegate,
   // Responsible for running the menu.
   scoped_ptr<views::MenuRunner> menu_runner_;
 
-  // The node we're showing the menu for.
-  const BookmarkNode* parent_node_;
-
   BookmarkContextMenuObserver* observer_;
 
   // Should the menu close when a node is removed.

@@ -42,7 +42,6 @@ WebDialogView::WebDialogView(
     WebContentsHandler* handler)
     : ClientView(NULL, NULL),
       WebDialogWebContentsDelegate(context, handler),
-      initialized_(false),
       delegate_(delegate),
       web_view_(new views::WebView(context)),
       is_attempting_close_dialog_(false),

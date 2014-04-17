@@ -256,9 +256,6 @@ class Gtk2UI : public views::LinuxUI {
   // Image cache of lazily created images.
   mutable ImageCache gtk_images_;
 
-  // Whether to use the Gtk2 version of the native theme.
-  bool use_gtk_;
-
   DISALLOW_COPY_AND_ASSIGN(Gtk2UI);
 };
 

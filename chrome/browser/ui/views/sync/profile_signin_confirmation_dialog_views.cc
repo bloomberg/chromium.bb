@@ -52,11 +52,9 @@ void ShowProfileSigninConfirmationDialog(
 
 ProfileSigninConfirmationDialogViews::ProfileSigninConfirmationDialogViews(
     Browser* browser,
-    Profile* profile,
     const std::string& username,
     ui::ProfileSigninConfirmationDelegate* delegate)
   : browser_(browser),
-    profile_(profile),
     username_(username),
     delegate_(delegate),
     prompt_for_new_profile_(true),
@@ -73,7 +71,7 @@ void ProfileSigninConfirmationDialogViews::ShowDialog(
     ui::ProfileSigninConfirmationDelegate* delegate) {
   ProfileSigninConfirmationDialogViews* dialog =
       new ProfileSigninConfirmationDialogViews(
-          browser, profile, username, delegate);
+          browser, username, delegate);
   ui::CheckShouldPromptForNewProfile(
       profile,
       // This callback is guaranteed to be invoked, and once it is, the dialog

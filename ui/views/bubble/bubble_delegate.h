@@ -184,9 +184,6 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   // Insets applied to the |anchor_view_| bounds.
   gfx::Insets anchor_view_insets_;
 
-  // The widget hosting the border for this bubble (non-Aura Windows only).
-  Widget* border_widget_;
-
   // If true, the bubble does not take focus on display; default is false.
   bool use_focusless_;
 

@@ -8,7 +8,6 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/widget/widget_observer.h"
 
-class LocationBarView;
 class OpenPDFInReaderBubbleView;
 class OpenPDFInReaderPromptDelegate;
 
@@ -20,7 +19,7 @@ class WebContents;
 class OpenPDFInReaderView : public views::ImageView,
                             public views::WidgetObserver {
  public:
-  explicit OpenPDFInReaderView(LocationBarView* location_bar_view);
+  OpenPDFInReaderView();
   virtual ~OpenPDFInReaderView();
 
   void Update(content::WebContents* web_contents);
@@ -36,9 +35,6 @@ class OpenPDFInReaderView : public views::ImageView,
 
   // views::WidgetObserver:
   virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
-
-  // The LocationBarView hosting this view.
-  LocationBarView* location_bar_view_;
 
   OpenPDFInReaderBubbleView* bubble_;
 

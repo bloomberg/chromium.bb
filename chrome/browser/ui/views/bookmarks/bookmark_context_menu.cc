@@ -46,7 +46,6 @@ BookmarkContextMenu::BookmarkContextMenu(
       parent_widget_(parent_widget),
       menu_(new views::MenuItemView(this)),
       menu_runner_(new views::MenuRunner(menu_)),
-      parent_node_(parent),
       observer_(NULL),
       close_on_remove_(close_on_remove) {
 

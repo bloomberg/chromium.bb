@@ -79,7 +79,6 @@ TreeView::TreeView()
       editable_(true),
       controller_(NULL),
       root_shown_(true),
-      has_custom_icons_(false),
       row_height_(font_list_.GetHeight() + kTextVerticalPadding * 2) {
   SetFocusable(true);
   closed_icon_ = *ui::ResourceBundle::GetSharedInstance().GetImageNamed(

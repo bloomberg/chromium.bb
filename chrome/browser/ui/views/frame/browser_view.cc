@@ -2493,7 +2493,6 @@ void BrowserView::ShowPasswordGenerationBubble(
       web_contents->GetRenderViewHost(),
       ChromePasswordManagerClient::GetManagerFromWebContents(web_contents),
       password_generator,
-      browser_.get(),
       GetWidget()->GetThemeProvider());
 
   views::BubbleDelegateView::CreateBubble(bubble);

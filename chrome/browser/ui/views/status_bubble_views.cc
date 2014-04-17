@@ -128,8 +128,7 @@ class StatusBubbleViews::StatusView : public views::View {
     STYLE_STANDARD_RIGHT
   };
 
-  StatusView(StatusBubble* status_bubble,
-             views::Widget* popup,
+  StatusView(views::Widget* popup,
              ui::ThemeProvider* theme_provider);
   virtual ~StatusView();
 
@@ -183,9 +182,6 @@ class StatusBubbleViews::StatusView : public views::View {
 
   scoped_ptr<StatusViewAnimation> animation_;
 
-  // Manager, owns us.
-  StatusBubble* status_bubble_;
-
   // Handle to the widget that contains us.
   views::Widget* popup_;
 
@@ -198,14 +194,12 @@ class StatusBubbleViews::StatusView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(StatusView);
 };
 
-StatusBubbleViews::StatusView::StatusView(StatusBubble* status_bubble,
-                                          views::Widget* popup,
+StatusBubbleViews::StatusView::StatusView(views::Widget* popup,
                                           ui::ThemeProvider* theme_provider)
     : state_(BUBBLE_HIDDEN),
       style_(STYLE_STANDARD),
       timer_factory_(this),
       animation_(new StatusViewAnimation(this, 0, 0)),
-      status_bubble_(status_bubble),
       popup_(popup),
       theme_service_(theme_provider) {
 }
@@ -589,7 +583,6 @@ const int StatusBubbleViews::kShadowThickness = 1;
 StatusBubbleViews::StatusBubbleViews(views::View* base_view)
     : contains_mouse_(false),
       offset_(0),
-      opacity_(0),
       base_view_(base_view),
       view_(NULL),
       download_shelf_is_visible_(false),
@@ -609,7 +602,7 @@ void StatusBubbleViews::Init() {
     popup_.reset(new views::Widget);
     views::Widget* frame = base_view_->GetWidget();
     if (!view_)
-      view_ = new StatusView(this, popup_.get(), frame->GetThemeProvider());
+      view_ = new StatusView(popup_.get(), frame->GetThemeProvider());
     if (!expand_view_.get())
       expand_view_.reset(new StatusViewExpander(this, view_));
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);

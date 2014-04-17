@@ -90,11 +90,9 @@ class InstalledBubbleContent : public views::View,
   InstalledBubbleContent(Browser* browser,
                          const Extension* extension,
                          ExtensionInstalledBubble::BubbleType type,
-                         const SkBitmap* icon,
-                         ExtensionInstalledBubbleView* bubble)
+                         const SkBitmap* icon)
       : browser_(browser),
         extension_id_(extension->id()),
-        bubble_(bubble),
         type_(type),
         flavors_(NONE),
         height_of_signin_promo_(0u),
@@ -482,9 +480,6 @@ class InstalledBubbleContent : public views::View,
   // The id of the extension just installed.
   const std::string extension_id_;
 
-  // The ExtensionInstalledBubbleView showing us.
-  ExtensionInstalledBubbleView* bubble_;
-
   // The string that contains the link text at the beginning of the sign-in
   // promo text.
   base::string16 signin_promo_link_text_;
@@ -577,7 +572,7 @@ bool ExtensionInstalledBubbleView::MaybeShowNow() {
   SetLayoutManager(new views::FillLayout());
   AddChildView(new InstalledBubbleContent(
       bubble_.browser(), bubble_.extension(), bubble_.type(),
-      &bubble_.icon(), this));
+      &bubble_.icon()));
 
   views::BubbleDelegateView::CreateBubble(this)->Show();
 

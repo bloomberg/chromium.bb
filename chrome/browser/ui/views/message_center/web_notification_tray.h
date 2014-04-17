@@ -100,7 +100,6 @@ class WebNotificationTray : public message_center::MessageCenterTrayDelegate,
 
   StatusIcon* status_icon_;
   StatusIconMenuModel* status_icon_menu_;
-  bool message_center_visible_;
   scoped_ptr<MessageCenterTray> message_center_tray_;
   gfx::Point mouse_click_point_;
 

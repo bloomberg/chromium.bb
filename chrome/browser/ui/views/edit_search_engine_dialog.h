@@ -71,9 +71,6 @@ class EditSearchEngineDialog : public views::TextfieldController,
                        bool is_valid,
                        int invalid_message_id);
 
-  // View containing the buttons, text fields ...
-  views::View* view_;
-
   // Text fields.
   views::Textfield* title_tf_;
   views::Textfield* keyword_tf_;

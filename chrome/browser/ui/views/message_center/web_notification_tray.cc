@@ -128,7 +128,6 @@ WebNotificationTray::WebNotificationTray()
     : message_center_delegate_(NULL),
       status_icon_(NULL),
       status_icon_menu_(NULL),
-      message_center_visible_(false),
       should_update_tray_content_(true) {
   message_center_tray_.reset(
       new MessageCenterTray(this, g_browser_process->message_center()));

@@ -375,8 +375,7 @@ class AutofillDialogViews : public AutofillDialogView,
     DISALLOW_COPY_AND_ASSIGN(DetailsContainerView);
   };
 
-  // A view that contains a suggestion (such as a known address) and a link to
-  // edit the suggestion.
+  // A view that contains a suggestion (such as a known address).
   class SuggestionView : public views::View {
    public:
     explicit SuggestionView(AutofillDialogViews* autofill_dialog);
@@ -429,8 +428,6 @@ class AutofillDialogViews : public AutofillDialogView,
     views::ImageView* icon_;
     // The input set by ShowTextfield.
     ExpandingTextfield* textfield_;
-    // An "Edit" link that flips to editable inputs rather than suggestion text.
-    views::Link* edit_link_;
 
     DISALLOW_COPY_AND_ASSIGN(SuggestionView);
   };

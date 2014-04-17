@@ -122,11 +122,6 @@ class WEBVIEW_EXPORT WebDialogView : public views::ClientView,
   // Initializes the contents of the dialog.
   void InitDialog();
 
-  // Whether the view is initialized. That is, dialog accelerators is registered
-  // and FreezeUpdates property is set to prevent WM from showing the window
-  // until the property is removed.
-  bool initialized_;
-
   // This view is a delegate to the HTML content since it needs to get notified
   // about when the dialog is closing. For all other actions (besides dialog
   // closing) we delegate to the creator of this view, which we keep track of

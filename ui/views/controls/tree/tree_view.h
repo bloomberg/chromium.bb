@@ -374,9 +374,6 @@ class VIEWS_EXPORT TreeView : public ui::TreeModelObserver,
   // Whether or not the root is shown in the tree.
   bool root_shown_;
 
-  // Did the model return a non-empty set of icons from GetIcons?
-  bool has_custom_icons_;
-
   // Cached preferred size.
   gfx::Size preferred_size_;
 

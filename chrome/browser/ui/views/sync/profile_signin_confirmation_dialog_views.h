@@ -39,7 +39,6 @@ class ProfileSigninConfirmationDialogViews : public views::DialogDelegateView,
  private:
   ProfileSigninConfirmationDialogViews(
       Browser* browser,
-      Profile* profile,
       const std::string& username,
       ui::ProfileSigninConfirmationDelegate* delegate);
   virtual ~ProfileSigninConfirmationDialogViews();
@@ -74,9 +73,6 @@ class ProfileSigninConfirmationDialogViews : public views::DialogDelegateView,
 
   // Weak ptr to parent view.
   Browser* browser_;
-
-  // The profile being signed in.
-  Profile* profile_;
 
   // The GAIA username being signed in.
   std::string username_;

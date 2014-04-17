@@ -14,10 +14,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/widget/widget.h"
 
-OpenPDFInReaderView::OpenPDFInReaderView(LocationBarView* location_bar_view)
-    : location_bar_view_(location_bar_view),
-      bubble_(NULL),
-      model_(NULL) {
+OpenPDFInReaderView::OpenPDFInReaderView() : bubble_(NULL), model_(NULL) {
   SetAccessibilityFocusable(true);
   SetImage(ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       IDR_OMNIBOX_PDF_ICON));

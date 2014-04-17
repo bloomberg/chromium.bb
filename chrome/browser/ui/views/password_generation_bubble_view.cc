@@ -12,7 +12,6 @@
 #include "components/autofill/core/browser/password_generator.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/password_manager/core/browser/password_manager.h"
-#include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_view_host.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -123,7 +122,6 @@ PasswordGenerationBubbleView::PasswordGenerationBubbleView(
     content::RenderViewHost* render_view_host,
     password_manager::PasswordManager* password_manager,
     autofill::PasswordGenerator* password_generator,
-    content::PageNavigator* navigator,
     ui::ThemeProvider* theme_provider)
     : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT),
       title_label_(NULL),
@@ -136,7 +134,6 @@ PasswordGenerationBubbleView::PasswordGenerationBubbleView(
       render_view_host_(render_view_host),
       password_manager_(password_manager),
       password_generator_(password_generator),
-      navigator_(navigator),
       theme_provider_(theme_provider) {}
 
 PasswordGenerationBubbleView::~PasswordGenerationBubbleView() {}

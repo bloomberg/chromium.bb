@@ -19,7 +19,6 @@ class PasswordGenerator;
 }
 
 namespace content {
-class PageNavigator;
 class RenderViewHost;
 }
 
@@ -48,7 +47,6 @@ class PasswordGenerationBubbleView : public views::BubbleDelegateView,
       content::RenderViewHost* render_view_host,
       password_manager::PasswordManager* password_manager,
       autofill::PasswordGenerator* password_generator,
-      content::PageNavigator* navigator,
       ui::ThemeProvider* theme_provider);
   virtual ~PasswordGenerationBubbleView();
 
@@ -96,10 +94,6 @@ class PasswordGenerationBubbleView : public views::BubbleDelegateView,
 
   // Object to generate passwords. The class won't take the ownership of it.
   autofill::PasswordGenerator* password_generator_;
-
-  // An object used to handle page loads that originate from link clicks
-  // within this UI.
-  content::PageNavigator* navigator_;
 
   // Theme provider used to draw the regenerate button.
   ui::ThemeProvider* theme_provider_;
