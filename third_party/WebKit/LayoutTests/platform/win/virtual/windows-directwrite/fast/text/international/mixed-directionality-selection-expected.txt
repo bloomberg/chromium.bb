@@ -7,9 +7,9 @@ layer at (0,0) size 800x142
         RenderTextControl {INPUT} at (0,2) size 204x80 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {P} at (0,100) size 784x18
-        RenderText {#text} at (0,0) size 548x17
-          text run at (0,0) width 358: "The last character (and only the last character) should be "
-          text run at (358,0) width 190: "selected in the text box above."
+        RenderText {#text} at (0,0) size 560x17
+          text run at (0,0) width 367: "The last character (and only the last character) should be "
+          text run at (366,0) width 194: "selected in the text box above."
 layer at (10,13) size 200x74
   RenderBlock {DIV} at (2,3) size 200x74
     RenderText {#text} at (34,1) size 166x72

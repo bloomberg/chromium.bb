@@ -1,0 +1,5 @@
+This tests text with characters that have multiple glyphs.
+
+[คำผ]
+[คำ]
+FAIL: width was 53 instead of 54

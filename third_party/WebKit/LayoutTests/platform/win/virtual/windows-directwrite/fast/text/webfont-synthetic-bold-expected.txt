@@ -10,10 +10,10 @@ layer at (0,0) size 800x600
         RenderBlock {P} at (0,51.91) size 784x44
           RenderText {#text} at (0,0) size 32x22
             text run at (0,0) width 32: "The "
-          RenderInline {B} at (0,0) size 156x21
-            RenderText {#text} at (32,0) size 156x21
-              text run at (32,0) width 156: "bold part of this text"
-          RenderText {#text} at (188,0) size 755x44
-            text run at (188,0) width 272: " as well as the header above should "
-            text run at (460,0) width 295: "not be rendered nice and crisp without"
-            text run at (0,22) width 146: "being overly blurry."
+          RenderInline {B} at (0,0) size 158x21
+            RenderText {#text} at (31,0) size 158x21
+              text run at (31,0) width 158: "bold part of this text"
+          RenderText {#text} at (188,0) size 748x44
+            text run at (188,0) width 270: " as well as the header above should "
+            text run at (457,0) width 291: "not be rendered nice and crisp without"
+            text run at (0,22) width 145: "being overly blurry."
