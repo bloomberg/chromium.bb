@@ -317,81 +317,35 @@ class ArchivingStageMixin(object):
       # Treat gsutil flake as a warning if it's the only problem.
       self._HandleExceptionAsWarning(sys.exc_info())
 
-  def GetMetadata(self, config=None, stage=None, final_status=None,
-                  sync_instance=None, completion_instance=None):
-    """Constructs the metadata json object.
+  def UploadMetadata(self, upload_queue=None, filename=None):
+    """Create and upload JSON file of the builder run's metadata.
+
+    This uses the existing metadata stored in the builder run. The default
+    metadata.json file should only be uploaded once, at the end of the run,
+    and considered immutable. During the build, intermediate metadata snapshots
+    can be uploaded to other files, such as partial-metadata.json.
 
     Args:
-      config: The build config for this run.  Defaults to self._run.config.
-      stage: The stage name that this metadata file is being uploaded for.
-      final_status: Whether the build passed or failed. If None, the build
-        will be treated as still running.
-      sync_instance: The stage instance that was used for syncing the source
-        code. This should be a derivative of SyncStage. If None, the list of
-        commit queue patches will not be included in the metadata.
-      completion_instance: The stage instance that was used to wait for slave
-        completion. Used to add slave build information to master builder's
-        metadata. If None, no such status information will be included. It not
-        None, this should be a derivative of MasterSlaveSyncCompletionStage.
-    """
-    builder_run = self._run
-    build_root = self._build_root
-    config = config or builder_run.config
-
-    commit_queue_stages = (CommitQueueSyncStage, PreCQSyncStage)
-    get_changes_from_pool = (sync_instance and
-                             isinstance(sync_instance, commit_queue_stages) and
-                             sync_instance.pool)
-
-    get_statuses_from_slaves = (config['master'] and
-                                completion_instance and
-                                isinstance(completion_instance,
-                                           MasterSlaveSyncCompletionStage))
-
-    return cbuildbot_metadata.CBuildbotMetadata.GetMetadataDict(
-        builder_run, build_root, get_changes_from_pool,
-        get_statuses_from_slaves, config, stage, final_status, sync_instance,
-        completion_instance)
-
-  def UploadMetadata(self, config=None, stage=None, upload_queue=None,
-                     **kwargs):
-    """Create and upload JSON of various metadata describing this run.
-
-    Args:
-      config: Build config to use.  Passed to GetMetadata.
-      stage: Stage to upload metadata for.  If None the metadata is for the
-        entire run.
       upload_queue: If specified then put the artifact file to upload on
         this queue.  If None then upload it directly now.
-      kwargs: Pass to self.GetMetadata.
+      filename: Name of file to dump metadata to.
+                Defaults to constants.METADATA_JSON
     """
-    metadata_for = '[no config]'
-    if config is not None:
-      metadata_for = config.name
-      if stage is not None:
-        metadata_for = '%s:%s' % (metadata_for, stage)
+    filename = filename or constants.METADATA_JSON
 
-    cros_build_lib.Info('Creating metadata for %s run now.', metadata_for)
-    metadata_dict = self.GetMetadata(config=config, stage=stage, **kwargs)
-    self._run.attrs.metadata.UpdateWithDict(metadata_dict)
-
-    filename = constants.METADATA_JSON
-    if stage is not None:
-      filename = constants.METADATA_STAGE_JSON % { 'stage': stage }
     metadata_json = os.path.join(self.archive_path, filename)
 
     # Stages may run in parallel, so we have to do atomic updates on this.
-    cros_build_lib.Info('Writing metadata for %s to %s.', metadata_for,
-                        metadata_json)
+    cros_build_lib.Info('Writing metadata to %s.', metadata_json)
     osutils.WriteFile(metadata_json, self._run.attrs.metadata.GetJSON(),
-                      atomic=True)
+                      atomic=True, makedirs=True)
 
     if upload_queue is not None:
-      cros_build_lib.Info('Adding metadata for %s to upload queue.',
-                          metadata_for)
+      cros_build_lib.Info('Adding metadata file %s to upload queue.',
+                          metadata_json)
       upload_queue.put([filename])
     else:
-      cros_build_lib.Info('Uploading metadata for %s now.', metadata_for)
+      cros_build_lib.Info('Uploading metadata file %s now.', metadata_json)
       self.UploadArtifact(filename, archive=False)
 
 
@@ -2614,6 +2568,10 @@ class ChromeSDKStage(BoardSpecificBuilderStage, ArchivingStageMixin):
                    '--staging-only', '--staging-dir', tempdir])
       self._VerifyChromeDeployed(tempdir)
 
+  def _GenerateAndUploadMetadata(self):
+    self.UploadMetadata(upload_queue=self._upload_queue,
+                        filename=constants.PARTIAL_METADATA_JSON)
+
   def PerformStage(self):
     if platform.dist()[-1] == 'lucid':
       # Chrome no longer builds on Lucid. See crbug.com/276311
@@ -2622,10 +2580,8 @@ class ChromeSDKStage(BoardSpecificBuilderStage, ArchivingStageMixin):
       cros_build_lib.PrintBuildbotStepWarnings()
       return
 
-    upload_metadata = functools.partial(
-        self.UploadMetadata, upload_queue=self._upload_queue)
     steps = [self._BuildAndArchiveChromeSysroot, self._ArchiveChromeEbuildEnv,
-             upload_metadata]
+             self._GenerateAndUploadMetadata]
     with self.ArtifactUploader(self._upload_queue, archive=False):
       parallel.RunParallelSteps(steps)
 
@@ -4253,6 +4209,44 @@ class PublishUprevChangesStage(bs.BuilderStage):
     commands.UprevPush(self._build_root, push_overlays, self._run.options.debug)
 
 
+class ReportBuildStartStage(bs.BuilderStage, ArchivingStageMixin):
+  """Uploads partial metadata artifact describing what will be built.
+
+  This stage should be the first stage run after the final cbuildbot
+  bootstrap/reexecution. By the time this stage is run, all sync stages
+  are complete and version numbers of chrome and chromeos are known.
+
+  Where possible, metadata that is already known at this time should be
+  written at this time rather than in ReportStage.
+  """
+  def init(self, builder_run, **kwargs):
+    super(ReportBuildStartStage, self).__init__(builder_run, **kwargs)
+
+  def PerformStage(self):
+    config = self._run.config
+
+    # Flat list of all child config boards. Since child configs
+    # are not allowed to have children, it is not necessary to search
+    # deeper than one generation.
+    child_configs = [{'name': c['name'], 'boards' : c['boards']}
+                     for c in config['child_configs']]
+    metadata = {
+        # Version of the metadata format.
+        'metadata-version': '2',
+        # Data for this build.
+        'bot-config': config['name'],
+        'bot-hostname': cros_build_lib.GetHostName(fully_qualified=True),
+        'boards': config['boards'],
+        'build-number': self._run.buildnumber,
+        'builder-name': os.environ.get('BUILDBOT_BUILDERNAME', ''),
+        'child-configs': child_configs
+    }
+
+    logging.info('Metadata being written: %s', metadata)
+    self._run.attrs.metadata.UpdateWithDict(metadata)
+    self.UploadMetadata(filename=constants.PARTIAL_METADATA_JSON)
+
+
 class ReportStage(bs.BuilderStage, ArchivingStageMixin):
   """Summarize all the builds."""
 
@@ -4342,17 +4336,15 @@ class ReportStage(bs.BuilderStage, ArchivingStageMixin):
     return 'The builder named %s has failed %i consecutive times. See %s' % (
         self._run.config['name'], fail_count, self.ConstructDashboardURL())
 
-  def _UploadMetadataForRun(self, builder_run, final_status):
+  def _UploadMetadataForRun(self, final_status):
     """Upload metadata.json for this entire run.
 
     Args:
-      builder_run: BuilderRun object for this run.
       final_status: Final status string for this run.
     """
-    self.UploadMetadata(
-        config=builder_run.config, final_status=final_status,
-        sync_instance=self._sync_instance,
-        completion_instance=self._completion_instance)
+    self._run.attrs.metadata.UpdateWithDict(
+        self.GetReportMetadata(final_status=final_status))
+    self.UploadMetadata()
 
   def _UploadArchiveIndex(self, builder_run):
     """Upload an HTML index for the artifacts at remote archive location.
@@ -4411,6 +4403,45 @@ class ReportStage(bs.BuilderStage, ArchivingStageMixin):
           debug=self._run.debug, acl=self.acl)
       return dict((b, archive.download_url + '/index.html') for b in boards)
 
+  def GetReportMetadata(self, config=None, stage=None, final_status=None,
+                        sync_instance=None, completion_instance=None):
+    """Generate ReportStage metadata.
+
+   Args:
+      config: The build config for this run.  Defaults to self._run.config.
+      stage: The stage name that this metadata file is being uploaded for.
+      final_status: Whether the build passed or failed. If None, the build
+        will be treated as still running.
+      sync_instance: The stage instance that was used for syncing the source
+        code. This should be a derivative of SyncStage. If None, the list of
+        commit queue patches will not be included in the metadata.
+      completion_instance: The stage instance that was used to wait for slave
+        completion. Used to add slave build information to master builder's
+        metadata. If None, no such status information will be included. It not
+        None, this should be a derivative of MasterSlaveSyncCompletionStage.
+
+    Returns:
+      A JSON-able dictionary representation of the metadata object.
+    """
+    builder_run = self._run
+    build_root = self._build_root
+    config = config or builder_run.config
+
+    commit_queue_stages = (CommitQueueSyncStage, PreCQSyncStage)
+    get_changes_from_pool = (sync_instance and
+                             isinstance(sync_instance, commit_queue_stages) and
+                             sync_instance.pool)
+
+    get_statuses_from_slaves = (config['master'] and
+                                completion_instance and
+                                isinstance(completion_instance,
+                                           MasterSlaveSyncCompletionStage))
+
+    return cbuildbot_metadata.CBuildbotMetadata.GetReportMetadataDict(
+        builder_run, build_root, get_changes_from_pool,
+        get_statuses_from_slaves, config, stage, final_status, sync_instance,
+        completion_instance)
+
   def PerformStage(self):
     # Make sure local archive directory is prepared, if it was not already.
     # TODO(mtennant): It is not clear how this happens, but a CQ master run
@@ -4426,7 +4457,7 @@ class ReportStage(bs.BuilderStage, ArchivingStageMixin):
 
     # Upload metadata, and update the pass/fail streak counter for the main
     # run only. These aren't needed for the child builder runs.
-    self._UploadMetadataForRun(self._run, final_status)
+    self._UploadMetadataForRun(final_status)
     self._UpdateRunStreak(self._run, final_status)
 
     # Iterate through each builder run, whether there is just the main one

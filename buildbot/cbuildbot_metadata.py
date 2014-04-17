@@ -135,14 +135,14 @@ class CBuildbotMetadata(object):
              'internal': change.internal}
 
   @staticmethod
-  def GetMetadataDict(builder_run, build_root, get_changes_from_pool,
-                      get_statuses_from_slaves, config=None, stage=None,
-                      final_status=None, sync_instance=None,
-                      completion_instance=None):
+  def GetReportMetadataDict(builder_run, build_root, get_changes_from_pool,
+                            get_statuses_from_slaves, config=None, stage=None,
+                            final_status=None, sync_instance=None,
+                            completion_instance=None):
     """Return a metadata dictionary summarizing a build.
 
     This method replaces code that used to exist in the ArchivingStageMixin
-    class from cbuildbot_stage. It contains all the Archive-stage-time
+    class from cbuildbot_stage. It contains all the Report-stage-time
     metadata construction logic. The logic here is intended to be gradually
     refactored out so that the metadata is constructed gradually by the
     stages that are responsible for pieces of data, as they run.
@@ -188,14 +188,6 @@ class CBuildbotMetadata(object):
     if not platform_tag:
       platform_tag = verinfo.VersionString()
     metadata = {
-        # Version of the metadata format.
-        'metadata-version': '2',
-        # Data for this build.
-        'bot-config': config['name'],
-        'bot-hostname': cros_build_lib.GetHostName(fully_qualified=True),
-        'boards': config['boards'],
-        'build-number': builder_run.buildnumber,
-        'builder-name': os.environ.get('BUILDBOT_BUILDERNAME', ''),
         'status': {
             'current-time': current_time_stamp,
             'status': final_status if final_status else 'running',
