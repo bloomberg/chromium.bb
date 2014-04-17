@@ -320,7 +320,6 @@ notify_output_create(struct wl_listener *listener, void *data)
 		if (device->output_name &&
 		    strcmp(output->name, device->output_name) == 0) {
 			evdev_device_set_output(device, output);
-			break;
 		}
 }
 
