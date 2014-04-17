@@ -251,6 +251,13 @@ udev_input_enable(struct udev_input *input)
 	return 0;
 }
 
+static void
+libinput_log_func(enum libinput_log_priority priority, void *user_data,
+		     const char *format, va_list args)
+{
+	weston_vlog(format, args);
+}
+
 int
 udev_input_init(struct udev_input *input, struct weston_compositor *c, struct udev *udev,
 		const char *seat_id)
@@ -258,6 +265,8 @@ udev_input_init(struct udev_input *input, struct weston_compositor *c, struct ud
 	memset(input, 0, sizeof *input);
 
 	input->compositor = c;
+
+	libinput_log_set_handler(&libinput_log_func, NULL);
 
 	input->libinput = libinput_udev_create_for_seat(&libinput_interface, input,
 							udev, seat_id);
