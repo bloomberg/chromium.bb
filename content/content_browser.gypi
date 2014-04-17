@@ -1146,6 +1146,8 @@
     'browser/service_worker/service_worker_context_observer.h',
     'browser/service_worker/service_worker_context_wrapper.cc',
     'browser/service_worker/service_worker_context_wrapper.h',
+    'browser/service_worker/service_worker_database.cc',
+    'browser/service_worker/service_worker_database.h',
     'browser/service_worker/service_worker_dispatcher_host.cc',
     'browser/service_worker/service_worker_dispatcher_host.h',
     'browser/service_worker/service_worker_fetch_dispatcher.cc',
