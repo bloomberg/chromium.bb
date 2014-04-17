@@ -175,11 +175,9 @@ HTMLCollection::~HTMLCollection()
 {
     if (hasValidIdNameCache())
         unregisterIdNameCacheFromDocument(document());
-    // HTMLNameCollection, ClassCollection and TagCollection remove cache by themselves.
-    if (type() != WindowNamedItems && type() != DocumentNamedItems && type() != ClassCollectionType
-        && type() != HTMLTagCollectionType && type() != TagCollectionType) {
+    // Named HTMLCollection types remove cache by themselves.
+    if (isUnnamedHTMLCollectionType(type()))
         ownerNode().nodeLists()->removeCache(this, type());
-    }
 }
 
 void HTMLCollection::invalidateCache(Document* oldDocument) const
