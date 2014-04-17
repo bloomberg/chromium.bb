@@ -386,6 +386,7 @@ crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/blendmode-transition
 crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/cubic-bezier-overflow-svg-length.html [ Pass Timeout ]
 crbug.com/248938 [ Win Debug ] virtual/threaded/animations/compositor-start-event-timing.html [ Pass Timeout ]
 crbug.com/248938 [ Debug ] virtual/threaded/animations/animation-hit-test-transform.html [ Pass Failure Timeout ]
+crbug.com/364640 animations/compositor-start-event-timing.html [ Pass Failure ]
 
 crbug.com/320477 [ Debug ] inspector/sources/debugger/debugger-pause-in-internal.html [ Pass Crash ]
 crbug.com/347484 [ Debug ] inspector/profiler/canvas2d/canvas-replay-log-grid.html [ Timeout ]
