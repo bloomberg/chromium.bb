@@ -12290,7 +12290,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.Ping_ResponseStartedTime" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <obsolete>
+    Deprecated 4/16/2014. No longer tracked.
+  </obsolete>
+  <owner>davidben@chromium.org</owner>
   <summary>
     How long it took for an &lt;a ping&gt; request to receive a response. Only
     recorded if a response was received.
@@ -12298,7 +12301,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.Ping_Result" enum="PingResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <obsolete>
+    Deprecated 4/16/2014. No longer tracked.
+  </obsolete>
+  <owner>davidben@chromium.org</owner>
   <summary>
     The result of an &lt;a ping&gt; request, whether it received a response or
     timed out or failed for some other reason.

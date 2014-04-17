@@ -10,11 +10,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "base/timer/elapsed_timer.h"
 #include "base/timer/timer.h"
 #include "content/browser/loader/resource_handler.h"
 #include "content/public/browser/resource_controller.h"
-#include "net/url_request/url_request_status.h"
 
 namespace net {
 class IOBuffer;
@@ -82,8 +80,6 @@ class DetachableResourceHandler : public ResourceHandler,
   virtual void CancelWithError(int error_code) OVERRIDE;
 
  private:
-  void TimedOut();
-
   scoped_ptr<ResourceHandler> next_handler_;
   scoped_refptr<net::IOBuffer> read_buffer_;
 
@@ -92,14 +88,6 @@ class DetachableResourceHandler : public ResourceHandler,
 
   bool is_deferred_;
   bool is_finished_;
-  bool timed_out_;
-
-  bool response_started_;
-  base::ElapsedTimer time_since_start_;
-
-  // The status recorded from OnResponseCompleted. Value is
-  // net::URLRequestStatus::IO_PENDING if OnResponseCompleted is never received.
-  net::URLRequestStatus::Status status_;
 
   DISALLOW_COPY_AND_ASSIGN(DetachableResourceHandler);
 };
