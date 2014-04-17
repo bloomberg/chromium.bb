@@ -412,6 +412,9 @@ SyncChannel::SyncChannel(
     bool create_pipe_now,
     WaitableEvent* shutdown_event)
     : ChannelProxy(new SyncContext(listener, ipc_task_runner, shutdown_event)) {
+  // The current (listener) thread must be distinct from the IPC thread, or else
+  // sending synchronous messages will deadlock.
+  DCHECK_NE(ipc_task_runner, base::ThreadTaskRunnerHandle::Get());
   ChannelProxy::Init(channel_handle, mode, create_pipe_now);
   StartWatching();
 }
@@ -421,6 +424,9 @@ SyncChannel::SyncChannel(
     base::SingleThreadTaskRunner* ipc_task_runner,
     WaitableEvent* shutdown_event)
     : ChannelProxy(new SyncContext(listener, ipc_task_runner, shutdown_event)) {
+  // The current (listener) thread must be distinct from the IPC thread, or else
+  // sending synchronous messages will deadlock.
+  DCHECK_NE(ipc_task_runner, base::ThreadTaskRunnerHandle::Get());
   StartWatching();
 }
 

@@ -145,6 +145,15 @@ ChannelProxy::Context::Context(Listener* listener,
       message_filter_router_(new MessageFilterRouter()),
       peer_pid_(base::kNullProcessId) {
   DCHECK(ipc_task_runner_.get());
+  // The Listener thread where Messages are handled must be a separate thread
+  // to avoid oversubscribing the IO thread. If you trigger this error, you
+  // need to either:
+  // 1) Create the ChannelProxy on a different thread, or
+  // 2) Just use Channel
+  // Note, we currently make an exception for a NULL listener. That usage
+  // basically works, but is outside the intent of ChannelProxy. This support
+  // will disappear, so please don't rely on it. See crbug.com/364241
+  DCHECK(!listener || (ipc_task_runner_.get() != listener_task_runner_.get()));
 }
 
 ChannelProxy::Context::~Context() {
