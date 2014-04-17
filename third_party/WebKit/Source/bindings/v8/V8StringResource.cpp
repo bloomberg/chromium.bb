@@ -32,24 +32,6 @@
 
 namespace WebCore {
 
-WebCoreStringResourceBase* WebCoreStringResourceBase::toWebCoreStringResourceBase(v8::Handle<v8::String> string)
-{
-    v8::String::Encoding encoding;
-    v8::String::ExternalStringResourceBase* resource = string->GetExternalStringResourceBase(&encoding);
-    if (!resource)
-        return 0;
-    if (encoding == v8::String::ONE_BYTE_ENCODING)
-        return static_cast<WebCoreStringResource8*>(resource);
-    return static_cast<WebCoreStringResource16*>(resource);
-}
-
-void WebCoreStringResourceBase::visitStrings(ExternalStringVisitor* visitor)
-{
-    visitor->visitJSExternalString(m_plainString.impl());
-    if (m_plainString.impl() != m_atomicString.impl() && !m_atomicString.isNull())
-        visitor->visitJSExternalString(m_atomicString.impl());
-}
-
 template<class StringClass> struct StringTraits {
     static const StringClass& fromStringResource(WebCoreStringResourceBase*);
     template <typename V8StringTrait>
@@ -122,7 +104,6 @@ template<typename StringType>
 StringType v8StringToWebCoreString(v8::Handle<v8::String> v8String, ExternalMode external)
 {
     {
-        // A lot of WebCoreStringResourceBase::toWebCoreStringResourceBase is copied here by hand for performance reasons.
         // This portion of this function is very hot in certain Dromeao benchmarks.
         v8::String::Encoding encoding;
         v8::String::ExternalStringResourceBase* resource = v8String->GetExternalStringResourceBase(&encoding);

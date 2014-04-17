@@ -39,8 +39,6 @@ class ExternalStringVisitor;
 // to manage the life-cycle of the underlying buffer of the external string.
 class WebCoreStringResourceBase {
 public:
-    static WebCoreStringResourceBase* toWebCoreStringResourceBase(v8::Handle<v8::String>);
-
     explicit WebCoreStringResourceBase(const String& string)
         : m_plainString(string)
     {
@@ -88,8 +86,6 @@ public:
         }
         return m_atomicString;
     }
-
-    void visitStrings(ExternalStringVisitor*);
 
 protected:
     // A shallow copy of the string. Keeps the string buffer alive until the V8 engine garbage collects it.

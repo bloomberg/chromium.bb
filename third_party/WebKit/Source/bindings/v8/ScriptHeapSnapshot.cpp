@@ -51,11 +51,6 @@ String ScriptHeapSnapshot::title() const
     return toCoreString(m_snapshot->GetTitle());
 }
 
-unsigned ScriptHeapSnapshot::uid() const
-{
-    return m_snapshot->GetUid();
-}
-
 namespace {
 
 class OutputStreamAdapter FINAL : public v8::OutputStream {

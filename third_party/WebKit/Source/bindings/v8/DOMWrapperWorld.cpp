@@ -164,12 +164,6 @@ void DOMWrapperWorld::setIsolatedWorldSecurityOrigin(int worldId, PassRefPtr<Sec
         isolatedWorldSecurityOrigins().remove(worldId);
 }
 
-void DOMWrapperWorld::clearIsolatedWorldSecurityOrigin(int worldId)
-{
-    ASSERT(isIsolatedWorldId(worldId));
-    isolatedWorldSecurityOrigins().remove(worldId);
-}
-
 typedef HashMap<int, bool> IsolatedWorldContentSecurityPolicyMap;
 static IsolatedWorldContentSecurityPolicyMap& isolatedWorldContentSecurityPolicies()
 {
@@ -193,12 +187,6 @@ void DOMWrapperWorld::setIsolatedWorldContentSecurityPolicy(int worldId, const S
         isolatedWorldContentSecurityPolicies().set(worldId, true);
     else
         isolatedWorldContentSecurityPolicies().remove(worldId);
-}
-
-void DOMWrapperWorld::clearIsolatedWorldContentSecurityPolicy(int worldId)
-{
-    ASSERT(isIsolatedWorldId(worldId));
-    isolatedWorldContentSecurityPolicies().remove(worldId);
 }
 
 } // namespace WebCore

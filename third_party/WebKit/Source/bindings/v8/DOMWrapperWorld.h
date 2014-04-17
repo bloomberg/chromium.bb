@@ -92,7 +92,6 @@ public:
     // origin. XMLHttpRequest instances used in that world will be considered
     // to come from that origin, not the frame's.
     static void setIsolatedWorldSecurityOrigin(int worldID, PassRefPtr<SecurityOrigin>);
-    static void clearIsolatedWorldSecurityOrigin(int worldID);
     SecurityOrigin* isolatedWorldSecurityOrigin();
 
     // Associated an isolated world with a Content Security Policy. Resources
@@ -104,7 +103,6 @@ public:
     // DOM. More work is necessary to allow the isolated world's policy to be
     // applied correctly.
     static void setIsolatedWorldContentSecurityPolicy(int worldID, const String& policy);
-    static void clearIsolatedWorldContentSecurityPolicy(int worldID);
     bool isolatedWorldHasContentSecurityPolicy();
 
     bool isMainWorld() const { return m_worldId == MainWorldId; }

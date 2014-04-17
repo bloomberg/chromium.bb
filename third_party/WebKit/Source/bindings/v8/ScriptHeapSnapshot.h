@@ -56,7 +56,6 @@ public:
     ~ScriptHeapSnapshot();
 
     String title() const;
-    unsigned uid() const;
     void writeJSON(OutputStream* stream);
 
 private:
