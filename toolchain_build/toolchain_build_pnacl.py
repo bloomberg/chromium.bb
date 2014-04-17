@@ -47,7 +47,7 @@ import argparse
 # into TOOL_REVISIONS (i.e. before the tests would pass on the main NaCl
 # buildbots/trybots).  If you are adding a test that depends on a toolchain
 # change, you can increment this version number manually.
-FEATURE_VERSION = 4
+FEATURE_VERSION = 5
 
 # For backward compatibility, these key names match the directory names
 # previously used with gclient

@@ -23,6 +23,7 @@ def AddTest(env, src, exit_status='0', golden_file=None, test_suffix='',
       node, ['toolchain_tests', 'small_tests'], 'run_' + name + '_test',
       is_broken=is_broken)
 
+c_flags = ['-std=gnu99']
 cxx_flags = (['-Wc++11-narrowing', '-std=gnu++11']
              if env.Bit('bitcode') else ['-std=gnu++0x'])
 
@@ -37,13 +38,23 @@ elif env.Bit('target_arm'):
   native_flags = ['--target=armv7a-unknown-nacl-gnueabi','-mfloat-abi=hard']
 elif env.Bit('target_mips32'):
   native_flags = []
-native_env.Append(CCFLAGS=native_flags + cxx_flags)
+native_env.Append(CFLAGS=c_flags)
+native_env.Append(CXXFLAGS=cxx_flags)
+native_env.Append(CCFLAGS=native_flags)
 
 ref_env = env.Clone()
 ref_flags = ['-DVREFIMPL']
-ref_env.Append(CCFLAGS=ref_flags + cxx_flags)
+ref_env.Append(CFLAGS=c_flags)
+ref_env.Append(CXXFLAGS=cxx_flags)
+ref_env.Append(CCFLAGS=ref_flags)
 
 # TODO(jfb): The native environment currently doesn't compile.
 if env.Bit('bitcode'):
   AddTest(native_env, 'simd.cc', test_suffix='_native')
 AddTest(ref_env, 'simd.cc', test_suffix='_ref')
+
+# GCC 4.4 doesn't support all features of the vector extensions in C.
+# TODO(jfb) Re-enable testing when we migrate to a newer GCC.
+if env.Bit('bitcode') and env['TOOLCHAIN_FEATURE_VERSION'] >= 5:
+  AddTest(ref_env, 'vector_extension.c',
+          golden_file=ref_env.File('vector_extension.stdout'))

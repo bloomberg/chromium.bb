@@ -2747,7 +2747,7 @@ feature-version-file-install() {
   #
   # If you are adding a test that depends on a toolchain change, you
   # can increment this version number manually.
-  echo 4 > "${INSTALL_ROOT}/FEATURE_VERSION"
+  echo 5 > "${INSTALL_ROOT}/FEATURE_VERSION"
 }
 
 # The driver is a simple python script which changes its behavior
