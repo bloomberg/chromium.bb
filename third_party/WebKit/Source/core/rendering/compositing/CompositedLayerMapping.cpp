@@ -476,7 +476,7 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration(GraphicsLayerUpdat
     bool hasPerspective = false;
     if (RenderStyle* style = renderer->style())
         hasPerspective = style->hasPerspective();
-    bool needsChildTransformLayer = hasPerspective && (layerForChildrenTransform() == m_childTransformLayer.get());
+    bool needsChildTransformLayer = hasPerspective && (layerForChildrenTransform() == m_childTransformLayer.get()) && renderer->isBox();
     if (updateChildTransformLayer(needsChildTransformLayer))
         layerConfigChanged = true;
 
