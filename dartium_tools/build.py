@@ -11,6 +11,7 @@ import utils
 ALL_TARGETS = [
     'content_shell',
     'chrome',
+    'blink_tests',
     'pkg_packages',
 ]
 

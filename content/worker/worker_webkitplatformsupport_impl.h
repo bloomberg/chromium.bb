@@ -84,7 +84,7 @@ class WorkerWebKitPlatformSupportImpl : public BlinkPlatformImpl,
   virtual blink::WebMimeRegistry::SupportsType supportsJavaScriptMIMEType(
       const blink::WebString&);
   virtual blink::WebMimeRegistry::SupportsType supportsDartMIMEType(
-      const WebKit::WebString&);
+      const blink::WebString&);
   virtual blink::WebMimeRegistry::SupportsType supportsMediaMIMEType(
       const blink::WebString&,
       const blink::WebString&,

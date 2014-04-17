@@ -20,8 +20,8 @@ from time import strptime
 #  (b) Checkout a copy of the DEPS for the updater to process / update:
 #      > svn co https://dart.googlecode.com/svn/branches/bleeding_edge/deps/dartium.deps
 #
-#  (c) Checkout dartium_tools (with this script) using the current branch instead of 1650:
-#      > svn co svn://svn.chromium.org/chrome/branches/dart/1650/src/dartium_tools
+#  (c) Checkout dartium_tools (with this script) using the current branch instead of 1750:
+#      > svn co svn://svn.chromium.org/chrome/branches/dart/1750/src/dartium_tools
 #
 #  (d) If your home directory is remote, consider redefining it for this shell/script:
 #      > cp -R $HOME/.subversion /usr/local/google/home/$USER
@@ -50,11 +50,11 @@ from time import strptime
 # used to generated the commit message.
 REPOSITORY_INFO = {
     'webkit': (
-        'http://src.chromium.org/blink/branches/dart/1650',
-        'http://src.chromium.org/viewvc/blink/branches/dart/1650?view=rev&revision=%s'),
+        'http://src.chromium.org/blink/branches/dart/1750',
+        'http://src.chromium.org/viewvc/blink/branches/dart/1750?view=rev&revision=%s'),
     'chromium': (
-        'http://src.chromium.org/chrome/branches/dart/1650/src',
-        'http://src.chromium.org/viewvc/chrome/branches/dart/1650/src?view=rev&revision=%s'),
+        'http://src.chromium.org/chrome/branches/dart/1750/src',
+        'http://src.chromium.org/viewvc/chrome/branches/dart/1750/src?view=rev&revision=%s'),
 }
 
 REPOSITORIES = REPOSITORY_INFO.keys()
