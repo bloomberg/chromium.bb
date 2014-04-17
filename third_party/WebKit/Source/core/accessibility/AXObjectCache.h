@@ -158,10 +158,6 @@ public:
     AXID platformGenerateAXID() const;
     AXObject* objectFromAXID(AXID id) const { return m_objects.get(id); }
 
-    // Text marker utilities.
-    void textMarkerDataForVisiblePosition(TextMarkerData&, const VisiblePosition&);
-    VisiblePosition visiblePositionForTextMarkerData(TextMarkerData&);
-
     enum AXNotification {
         AXActiveDescendantChanged,
         AXAlert,
