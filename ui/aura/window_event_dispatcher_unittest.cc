@@ -431,6 +431,7 @@ class EventFilterRecorder : public ui::EventHandler {
  public:
   typedef std::vector<ui::EventType> Events;
   typedef std::vector<gfx::Point> EventLocations;
+  typedef std::vector<int> EventFlags;
 
   EventFilterRecorder()
       : wait_until_event_(ui::ET_UNKNOWN) {
@@ -441,6 +442,7 @@ class EventFilterRecorder : public ui::EventHandler {
   const EventLocations& mouse_locations() const { return mouse_locations_; }
   gfx::Point mouse_location(int i) const { return mouse_locations_[i]; }
   const EventLocations& touch_locations() const { return touch_locations_; }
+  const EventFlags& mouse_event_flags() const { return mouse_event_flags_; }
 
   void WaitUntilReceivedEvent(ui::EventType type) {
     wait_until_event_ = type;
@@ -458,6 +460,7 @@ class EventFilterRecorder : public ui::EventHandler {
     events_.clear();
     mouse_locations_.clear();
     touch_locations_.clear();
+    mouse_event_flags_.clear();
   }
 
   // ui::EventHandler overrides:
@@ -472,6 +475,7 @@ class EventFilterRecorder : public ui::EventHandler {
 
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
     mouse_locations_.push_back(event->location());
+    mouse_event_flags_.push_back(event->flags());
   }
 
   virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
@@ -485,6 +489,7 @@ class EventFilterRecorder : public ui::EventHandler {
   Events events_;
   EventLocations mouse_locations_;
   EventLocations touch_locations_;
+  EventFlags mouse_event_flags_;
 
   DISALLOW_COPY_AND_ASSIGN(EventFilterRecorder);
 };
@@ -836,6 +841,91 @@ TEST_F(WindowEventDispatcherTest, DispatchSyntheticMouseEvents) {
   // Dispatch a synthetic mouse event when mouse events are disabled.
   cursor_client.DisableMouseEvents();
   DispatchEventUsingWindowDispatcher(&mouse2);
+  EXPECT_TRUE(filter->events().empty());
+}
+
+// Tests synthetic mouse events generated when window bounds changes such that
+// the cursor previously outside the window becomes inside, or vice versa.
+// - Synthesize MOVED events when the mouse button is up;
+// - Synthesize DRAGGED events with correct flags when mouse button is down;
+// - Do not synthesize events if the window ignores events or is invisible.
+TEST_F(WindowEventDispatcherTest, SynthesizeMouseEventsOnWindowBoundsChanged) {
+  test::TestWindowDelegate delegate;
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      &delegate, 1234, gfx::Rect(5, 5, 100, 100), root_window()));
+  window->Show();
+  window->SetCapture();
+
+  EventFilterRecorder* filter = new EventFilterRecorder;
+  window->SetEventFilter(filter);  // passes ownership
+
+  // Dispatch a non-synthetic mouse event to place cursor inside window bounds.
+  ui::MouseEvent mouse(ui::ET_MOUSE_MOVED, gfx::Point(10, 10),
+                       gfx::Point(10, 10), 0, 0);
+  DispatchEventUsingWindowDispatcher(&mouse);
+  EXPECT_FALSE(filter->events().empty());
+  filter->Reset();
+
+  // Update the window bounds so that cursor is now outside the window.
+  // This should trigger a synthetic MOVED event.
+  gfx::Rect bounds1(20, 20, 100, 100);
+  window->SetBounds(bounds1);
+  RunAllPendingInMessageLoop();
+  ASSERT_FALSE(filter->events().empty());
+  ASSERT_FALSE(filter->mouse_event_flags().empty());
+  EXPECT_EQ(ui::ET_MOUSE_MOVED, filter->events().back());
+  EXPECT_EQ(ui::EF_IS_SYNTHESIZED, filter->mouse_event_flags().back());
+  filter->Reset();
+
+  // Hold down the LEFT mouse button.
+  Env::GetInstance()->set_mouse_button_flags(ui::EF_LEFT_MOUSE_BUTTON);
+
+  // Update the window bounds so that cursor is back inside the window.
+  // This should trigger a synthetic DRAGGED event with the left button flag.
+  gfx::Rect bounds2(5, 5, 100, 100);
+  window->SetBounds(bounds2);
+  RunAllPendingInMessageLoop();
+  ASSERT_FALSE(filter->events().empty());
+  ASSERT_FALSE(filter->mouse_event_flags().empty());
+  EXPECT_EQ(ui::ET_MOUSE_DRAGGED, filter->events().back());
+  EXPECT_EQ(ui::EF_IS_SYNTHESIZED | ui::EF_LEFT_MOUSE_BUTTON,
+            filter->mouse_event_flags().back());
+  filter->Reset();
+
+  // Hold down the RIGHT mouse button.
+  Env::GetInstance()->set_mouse_button_flags(ui::EF_RIGHT_MOUSE_BUTTON);
+
+  // Update the window bounds so that cursor is outside the window.
+  // This should trigger a synthetic DRAGGED event with the right button flag.
+  window->SetBounds(bounds1);
+  RunAllPendingInMessageLoop();
+  ASSERT_FALSE(filter->events().empty());
+  ASSERT_FALSE(filter->mouse_event_flags().empty());
+  EXPECT_EQ(ui::ET_MOUSE_DRAGGED, filter->events().back());
+  EXPECT_EQ(ui::EF_IS_SYNTHESIZED | ui::EF_RIGHT_MOUSE_BUTTON,
+            filter->mouse_event_flags().back());
+  filter->Reset();
+
+  // Release mouse button and set window to ignore events.
+  Env::GetInstance()->set_mouse_button_flags(0);
+  window->set_ignore_events(true);
+
+  // Update the window bounds so that cursor is back inside the window.
+  // This should not trigger a synthetic event.
+  window->SetBounds(bounds2);
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(filter->events().empty());
+  filter->Reset();
+
+  // Set window to accept events but invisible.
+  window->set_ignore_events(false);
+  window->Hide();
+  filter->Reset();
+
+  // Update the window bounds so that cursor is outside the window.
+  // This should not trigger a synthetic event.
+  window->SetBounds(bounds1);
+  RunAllPendingInMessageLoop();
   EXPECT_TRUE(filter->events().empty());
 }
 

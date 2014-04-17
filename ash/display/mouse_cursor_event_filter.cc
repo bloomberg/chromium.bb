@@ -98,10 +98,8 @@ void MouseCursorEventFilter::OnMouseEvent(ui::MouseEvent* event) {
       return;
   }
 
-  if (!(event->flags() & ui::EF_IS_SYNTHESIZED)) {
-    Shell::GetInstance()->display_controller()->
-        cursor_window_controller()->UpdateLocation();
-  }
+  Shell::GetInstance()->display_controller()->
+      cursor_window_controller()->UpdateLocation();
 
   gfx::Point point_in_screen(event->location());
   wm::ConvertPointToScreen(target, &point_in_screen);

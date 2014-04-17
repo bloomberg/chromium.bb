@@ -121,7 +121,7 @@ void WindowEventDispatcher::RepostEvent(const ui::LocatedEvent& event) {
 void WindowEventDispatcher::OnMouseEventsEnableStateChanged(bool enabled) {
   // Send entered / exited so that visual state can be updated to match
   // mouse events state.
-  PostSynthesizeMouseMove();
+  PostSynthesizeMouseMove(ui::EF_NONE);
   // TODO(mazda): Add code to disable mouse events when |enabled| == false.
 }
 
@@ -379,7 +379,7 @@ void WindowEventDispatcher::UpdateCapture(Window* old_capture,
       mouse_moved_handler_ = new_capture;
   } else {
     // Make sure mouse_moved_handler gets updated.
-    DispatchDetails details = SynthesizeMouseMoveEvent();
+    DispatchDetails details = SynthesizeMouseMoveEvent(ui::EF_NONE);
     if (details.dispatcher_destroyed)
       return;
   }
@@ -562,7 +562,7 @@ void WindowEventDispatcher::OnWindowVisibilityChanged(Window* window,
     return;
 
   if (window->ContainsPointInRoot(GetLastMouseLocationInRoot()))
-    PostSynthesizeMouseMove();
+    PostSynthesizeMouseMove(ui::EF_NONE);
 
   // Hiding the window releases capture which can implicitly destroy the window
   // so the window may no longer be valid after this call.
@@ -594,7 +594,7 @@ void WindowEventDispatcher::OnWindowBoundsChanged(Window* window,
     synthesize_mouse_move_ = false;
   }
 
-  if (window->IsVisible()) {
+  if (window->IsVisible() && !window->ignore_events()) {
     gfx::Rect old_bounds_in_root = old_bounds, new_bounds_in_root = new_bounds;
     Window::ConvertRectToTarget(window->parent(), host_->window(),
                                 &old_bounds_in_root);
@@ -603,7 +603,7 @@ void WindowEventDispatcher::OnWindowBoundsChanged(Window* window,
     gfx::Point last_mouse_location = GetLastMouseLocationInRoot();
     if (old_bounds_in_root.Contains(last_mouse_location) !=
         new_bounds_in_root.Contains(last_mouse_location)) {
-      PostSynthesizeMouseMove();
+      PostSynthesizeMouseMove(Env::GetInstance()->mouse_button_flags());
     }
   }
 }
@@ -669,7 +669,7 @@ ui::EventDispatchDetails WindowEventDispatcher::DispatchHeldEvents() {
   return dispatch_details;
 }
 
-void WindowEventDispatcher::PostSynthesizeMouseMove() {
+void WindowEventDispatcher::PostSynthesizeMouseMove(int mouse_button_flags) {
   if (synthesize_mouse_move_)
     return;
   synthesize_mouse_move_ = true;
@@ -677,18 +677,20 @@ void WindowEventDispatcher::PostSynthesizeMouseMove() {
       FROM_HERE,
       base::Bind(base::IgnoreResult(
           &WindowEventDispatcher::SynthesizeMouseMoveEvent),
-          held_event_factory_.GetWeakPtr()));
+          held_event_factory_.GetWeakPtr(),
+          mouse_button_flags));
 }
 
 void WindowEventDispatcher::SynthesizeMouseMoveAfterChangeToWindow(
     Window* window) {
   if (window->IsVisible() &&
       window->ContainsPointInRoot(GetLastMouseLocationInRoot())) {
-    PostSynthesizeMouseMove();
+    PostSynthesizeMouseMove(ui::EF_NONE);
   }
 }
 
-ui::EventDispatchDetails WindowEventDispatcher::SynthesizeMouseMoveEvent() {
+ui::EventDispatchDetails WindowEventDispatcher::SynthesizeMouseMoveEvent(
+    int mouse_button_flags) {
   DispatchDetails details;
   if (!synthesize_mouse_move_)
     return details;
@@ -698,11 +700,12 @@ ui::EventDispatchDetails WindowEventDispatcher::SynthesizeMouseMoveEvent() {
     return details;
   gfx::Point host_mouse_location = root_mouse_location;
   host_->ConvertPointToHost(&host_mouse_location);
-  ui::MouseEvent event(ui::ET_MOUSE_MOVED,
-                       host_mouse_location,
-                       host_mouse_location,
-                       ui::EF_IS_SYNTHESIZED,
-                       0);
+  ui::MouseEvent event(
+      mouse_button_flags ? ui::ET_MOUSE_DRAGGED : ui::ET_MOUSE_MOVED,
+      host_mouse_location,
+      host_mouse_location,
+      ui::EF_IS_SYNTHESIZED | mouse_button_flags,
+      0);
   return OnEventFromSource(&event);
 }
 

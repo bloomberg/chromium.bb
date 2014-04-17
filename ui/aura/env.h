@@ -36,6 +36,7 @@ class AURA_EXPORT Env : public ui::EventTarget {
   void AddObserver(EnvObserver* observer);
   void RemoveObserver(EnvObserver* observer);
 
+  const int mouse_button_flags() const { return mouse_button_flags_; }
   void set_mouse_button_flags(int mouse_button_flags) {
     mouse_button_flags_ = mouse_button_flags;
   }
