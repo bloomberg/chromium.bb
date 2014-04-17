@@ -26,7 +26,8 @@
 [
     ActiveDOMObject,
     RuntimeEnabled=EncryptedMedia,
-    WillBeGarbageCollected
+    WillBeGarbageCollected,
+    StrictTypeChecking
 ] interface MediaKeySession : EventTarget {
     // error state
     readonly attribute MediaKeyError error;

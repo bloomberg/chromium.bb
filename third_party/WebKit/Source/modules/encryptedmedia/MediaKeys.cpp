@@ -58,7 +58,7 @@ PassRefPtrWillBeRawPtr<MediaKeys> MediaKeys::create(ExecutionContext* context, c
     // From <http://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#dom-media-keys-constructor>:
     // The MediaKeys(keySystem) constructor must run the following steps:
 
-    // 1. If keySystem is null or an empty string, throw an InvalidAccessError exception and abort these steps.
+    // 1. If keySystem is an empty string, throw an InvalidAccessError exception and abort these steps.
     if (keySystem.isEmpty()) {
         exceptionState.throwDOMException(InvalidAccessError, "The key system provided is invalid.");
         return nullptr;
@@ -115,8 +115,8 @@ PassRefPtrWillBeRawPtr<MediaKeySession> MediaKeys::createSession(ExecutionContex
         return nullptr;
     }
 
-    if (!initData || !initData->length()) {
-        exceptionState.throwDOMException(InvalidAccessError, "The initData provided is null or empty.");
+    if (!initData->length()) {
+        exceptionState.throwDOMException(InvalidAccessError, "The initData provided is empty.");
         return nullptr;
     }
 
@@ -149,7 +149,7 @@ bool MediaKeys::isTypeSupported(const String& keySystem, const String& contentTy
 {
     WTF_LOG(Media, "MediaKeys::isTypeSupported(%s, %s)", keySystem.ascii().data(), contentType.ascii().data());
 
-    // 1. If keySystem is null or an empty string, return false and abort these steps.
+    // 1. If keySystem is an empty string, return false and abort these steps.
     if (keySystem.isEmpty())
         return false;
 
@@ -158,7 +158,7 @@ bool MediaKeys::isTypeSupported(const String& keySystem, const String& contentTy
     if (!isKeySystemSupportedWithContentType(keySystem, ""))
         return false;
 
-    // 3. If contentType is null or an empty string, return true and abort these steps.
+    // 3. If contentType is an empty string, return true and abort these steps.
     if (contentType.isEmpty())
         return true;
 

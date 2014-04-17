@@ -53,10 +53,10 @@
                 assert_throws(typeError, function() { mediaKeys.createSession(new Uint8Array(0)); });
                 assert_throws(typeError, function() { mediaKeys.createSession(initData); });
                 // Invalid parameters.
-                assert_throws('InvalidAccessError', function() { mediaKeys.createSession('video/webm', ''); });
-                assert_throws('InvalidAccessError', function() { mediaKeys.createSession('video/webm', null); });
-                assert_throws('InvalidAccessError', function() { mediaKeys.createSession('video/webm', undefined); });
-                assert_throws('InvalidAccessError', function() { mediaKeys.createSession('video/webm', 1); });
+                assert_throws(typeError, function() { mediaKeys.createSession('video/webm', ''); });
+                assert_throws(typeError, function() { mediaKeys.createSession('video/webm', null); });
+                assert_throws(typeError, function() { mediaKeys.createSession('video/webm', undefined); });
+                assert_throws(typeError, function() { mediaKeys.createSession('video/webm', 1); });
                 assert_throws('InvalidAccessError', function() { mediaKeys.createSession('video/webm', new Uint8Array(0)); });
                 assert_throws('InvalidAccessError', function() { mediaKeys.createSession('', initData); });
                 // Not supported contentTypes.
@@ -91,10 +91,10 @@
                 // Too few parameters.
                 assert_throws(typeError, function() { mediaKeySession.update(); });
                 // Invalid parameters.
-                assert_throws('InvalidAccessError', function() { mediaKeySession.update(''); });
-                assert_throws('InvalidAccessError', function() { mediaKeySession.update(null); });
-                assert_throws('InvalidAccessError', function() { mediaKeySession.update(undefined); });
-                assert_throws('InvalidAccessError', function() { mediaKeySession.update(1); });
+                assert_throws(typeError, function() { mediaKeySession.update(''); });
+                assert_throws(typeError, function() { mediaKeySession.update(null); });
+                assert_throws(typeError, function() { mediaKeySession.update(undefined); });
+                assert_throws(typeError, function() { mediaKeySession.update(1); });
                 assert_throws('InvalidAccessError', function() { mediaKeySession.update(new Uint8Array(0)); });
             }, 'Test MediaKeySession update() exceptions.');
 

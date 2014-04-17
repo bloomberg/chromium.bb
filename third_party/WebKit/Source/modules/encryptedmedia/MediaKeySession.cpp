@@ -111,9 +111,9 @@ void MediaKeySession::update(Uint8Array* response, ExceptionState& exceptionStat
 
     // From <https://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#dom-update>:
     // The update(response) method must run the following steps:
-    // 1. If response is null or an empty array, throw an INVALID_ACCESS_ERR
+    // 1. If response is an empty array, throw an INVALID_ACCESS_ERR
     //    exception and abort these steps.
-    if (!response || !response->length()) {
+    if (!response->length()) {
         exceptionState.throwDOMException(InvalidAccessError, String::format("The response argument provided is %s.", response ? "an empty array" : "invalid"));
         return;
     }
