@@ -406,8 +406,10 @@ ImageView.prototype.load = function(entry, metadata, effect,
       self.replace(
           canvas,
           effect,
-          metadata.media.width || metadata.drive.imageWidth,
-          metadata.media.height || metadata.drive.imageHeight,
+          (metadata.media && metadata.media.width) ||
+              metadata.drive.imageWidth,
+          (metadata.media && metadata.media.height) ||
+              metadata.drive.imageHeight,
           true /* preview */);
       if (displayCallback) displayCallback();
     }

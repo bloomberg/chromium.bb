@@ -581,7 +581,7 @@ MetadataCache.prototype.mergeProperties_ = function(entry, data) {
   if (data === null) return;
   var properties = this.cache_[entry.toURL()].properties;
   for (var type in data) {
-    if (data.hasOwnProperty(type) && !properties.hasOwnProperty(type)) {
+    if (data.hasOwnProperty(type)) {
       properties[type] = data[type];
       this.notifyObservers_(entry, type);
     }
@@ -838,24 +838,24 @@ DriveProvider.prototype.convert_ = function(data, entry) {
     shared: data.shared
   };
 
-  if (!data.isPresent) {
-    // Block the local fetch for drive files, which require downloading.
-    result.thumbnail = {url: '', transform: null};
-    result.media = {};
-  }
-
   if ('thumbnailUrl' in data) {
     result.thumbnail = {
       url: data.thumbnailUrl,
       transform: null
     };
+  } else if (data.isPresent) {
+    result.thumbnail = null;
+  } else {
+    // Block the local fetch for drive files, which require downloading.
+    result.thumbnail = {url: '', transform: null};
   }
-  if (!data.isPresent) {
-    // Indicate that the data is not available in local cache.
-    // It used to have a field 'url' for streaming play, but it is
-    // derprecated. See crbug.com/174560.
-    result.streaming = {};
-  }
+
+  result.media = data.isPresent ? null : {};
+  // Indicate that the data is not available in local cache.
+  // It used to have a field 'url' for streaming play, but it is
+  // derprecated. See crbug.com/174560.
+  result.streaming = data.isPresent ? null : {};
+
   return result;
 };
 
