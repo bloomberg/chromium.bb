@@ -302,6 +302,14 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
           self.assertTrue(child_config.build_packages_in_background,
               msg % (child_config.name, build_name))
 
+  def testNoGrandChildConfigs(self):
+    """Verify that no child configs have a child config."""
+    for build_name, config in cbuildbot_config.config.iteritems():
+      for child_config in config.child_configs:
+        for grandchild_config in child_config.child_configs:
+          self.fail('Config %s has grandchild %s' % (build_name,
+                                                     grandchild_config.name))
+
   def testUseChromeLKGMImpliesInternal(self):
     """Currently use_chrome_lkgm refers only to internal manifests."""
     for build_name, config in cbuildbot_config.config.iteritems():
