@@ -30,6 +30,8 @@ from third_party import upload
 import third_party.oauth2client.client as oa2client
 from third_party import httplib2
 
+# Appengine replies with 302 when authentication fails (sigh.)
+oa2client.REFRESH_STATUS_CODES.append(302)
 upload.LOGGER.setLevel(logging.WARNING)  # pylint: disable=E1103
 
 
