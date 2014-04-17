@@ -39,7 +39,7 @@ CSSTouchAction status=stable
 CSSTouchActionDelay status=test
 CSSTransformsUnprefixed status=stable
 CSSViewport status=experimental
-CSSWillChange status=experimental
+CSSWillChange status=stable
 CSS3Text status=experimental
 CSS3TextDecorations status=experimental
 CustomSchemeHandler depends_on=NavigatorContentUtils, status=experimental

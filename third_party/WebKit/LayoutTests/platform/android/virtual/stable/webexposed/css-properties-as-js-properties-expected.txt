@@ -359,6 +359,7 @@ webkitWritingMode
 whiteSpace
 widows
 width
+willChange
 wordBreak
 wordSpacing
 wordWrap
