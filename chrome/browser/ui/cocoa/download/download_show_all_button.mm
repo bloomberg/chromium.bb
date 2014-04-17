@@ -6,6 +6,8 @@
 
 #include "base/logging.h"
 #import "chrome/browser/ui/cocoa/download/download_show_all_cell.h"
+#import "chrome/browser/ui/cocoa/nsview_additions.h"
+#import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -33,6 +35,18 @@
   newRect.size.height = oldRect.size.height;
 
   [self setFrame:newRect];
+}
+
+- (BOOL)isOpaque {
+  // Make this control opaque so that sub-pixel anti-aliasing works when
+  // CoreAnimation is enabled.
+  return YES;
+}
+
+- (void)drawRect:(NSRect)rect {
+  NSView* downloadShelfView = [self ancestorWithViewID:VIEW_ID_DOWNLOAD_SHELF];
+  [self cr_drawUsingAncestor:downloadShelfView inRect:rect];
+  [super drawRect:rect];
 }
 
 @end

@@ -86,4 +86,11 @@ NSView* GetView(NSWindow* window, ViewID viewID) {
   return iter != map->end() ? iter->second : VIEW_ID_NONE;
 }
 
+- (NSView*)ancestorWithViewID:(ViewID)viewID {
+  NSView* ancestor = self;
+  while (ancestor && [ancestor viewID] != viewID)
+    ancestor = [ancestor superview];
+  return ancestor;
+}
+
 @end

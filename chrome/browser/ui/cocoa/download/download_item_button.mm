@@ -9,6 +9,8 @@
 #import "chrome/browser/ui/cocoa/download/download_item_cell.h"
 #import "chrome/browser/ui/cocoa/download/download_item_controller.h"
 #import "chrome/browser/ui/cocoa/download/download_shelf_context_menu_controller.h"
+#import "chrome/browser/ui/cocoa/nsview_additions.h"
+#import "chrome/browser/ui/cocoa/view_id_util.h"
 
 @implementation DownloadItemButton
 
@@ -58,6 +60,18 @@
 
 - (BOOL)shouldDelayWindowOrderingForEvent:(NSEvent*)event {
   return YES;
+}
+
+- (BOOL)isOpaque {
+  // Make this control opaque so that sub-pixel anti-aliasing works when
+  // CoreAnimation is enabled.
+  return YES;
+}
+
+- (void)drawRect:(NSRect)rect {
+  NSView* downloadShelfView = [self ancestorWithViewID:VIEW_ID_DOWNLOAD_SHELF];
+  [self cr_drawUsingAncestor:downloadShelfView inRect:rect];
+  [super drawRect:rect];
 }
 
 @end

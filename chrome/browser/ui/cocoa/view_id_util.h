@@ -46,6 +46,10 @@ NSView* GetView(NSWindow* window, ViewID viewID);
 // override this method to return its fixed ViewID.
 - (ViewID)viewID;
 
+// Returns the ancestor view with a specific ViewID, or nil if no ancestor
+// view has that ViewID.
+- (NSView*)ancestorWithViewID:(ViewID)viewID;
+
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_VIEW_ID_UTIL_H_

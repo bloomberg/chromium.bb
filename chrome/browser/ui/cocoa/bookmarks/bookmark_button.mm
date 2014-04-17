@@ -405,14 +405,14 @@ BookmarkButton* gDraggedButton = nil; // Weak
 }
 
 - (BOOL)isOpaque {
-  // Make this control opaque so that sub pixel anti aliasing works when core
-  // animation is enabled.
+  // Make this control opaque so that sub-pixel anti-aliasing works when
+  // CoreAnimation is enabled.
   return YES;
 }
 
 - (void)drawRect:(NSRect)rect {
-  NSView* toolbarView = [[self superview] superview];
-  [self cr_drawUsingAncestor:toolbarView inRect:(NSRect)rect];
+  NSView* bookmarkBarToolbarView = [[self superview] superview];
+  [self cr_drawUsingAncestor:bookmarkBarToolbarView inRect:(NSRect)rect];
   [super drawRect:rect];
 }
 
