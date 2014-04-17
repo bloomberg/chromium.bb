@@ -5743,50 +5743,14 @@ static void nodeFilterMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Va
 
 static void promiseMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "promiseMethod", "TestObject", info.Holder(), info.GetIsolate());
-    if (UNLIKELY(info.Length() < 3)) {
-        v8SetReturnValue(info, ScriptPromise::rejectWithArityTypeError(exceptionState, 3, info.Length()).v8Value());
-        return;
-    }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID_EXCEPTIONSTATE_ASYNC(int, arg1, toInt32(info[0], exceptionState), exceptionState, info);
-    TONATIVE_VOID_ASYNC(Dictionary, arg2, Dictionary(info[1], info.GetIsolate()), info);
-    if (!arg2.isUndefinedOrNull() && !arg2.isObject()) {
-        exceptionState.throwTypeError("parameter 2 ('arg2') is not an object.");
-        v8SetReturnValue(info, exceptionState.reject().v8Value());
-        return;
-    }
-    TOSTRING_VOID_ASYNC(V8StringResource<>, arg3, info[2], info);
-    TONATIVE_VOID_ASYNC(Vector<String>, variadic, toNativeArguments<String>(info, 3), info);
-    v8SetReturnValue(info, impl->promiseMethod(arg1, arg2, arg3, variadic).v8Value());
+    v8SetReturnValue(info, impl->promiseMethod().v8Value());
 }
 
 static void promiseMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestObjectV8Internal::promiseMethodMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-
-static void promiseMethodWithoutExceptionStateMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (UNLIKELY(info.Length() < 1)) {
-        v8SetReturnValue(info, ScriptPromise::rejectWithArityTypeErrorForMethod("promiseMethodWithoutExceptionState", "TestObject", 1, info.Length(), info.GetIsolate()).v8Value());
-        return;
-    }
-    TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID_ASYNC(Dictionary, arg1, Dictionary(info[0], info.GetIsolate()), info);
-    if (!arg1.isUndefinedOrNull() && !arg1.isObject()) {
-        v8SetReturnValue(info, ScriptPromise::rejectWithTypeError(ExceptionMessages::failedToExecute("promiseMethodWithoutExceptionState", "TestObject", "parameter 1 ('arg1') is not an object."), info.GetIsolate()).v8Value());
-        return;
-    }
-    v8SetReturnValue(info, impl->promiseMethodWithoutExceptionState(arg1).v8Value());
-}
-
-static void promiseMethodWithoutExceptionStateMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestObjectV8Internal::promiseMethodWithoutExceptionStateMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
@@ -5908,10 +5872,8 @@ static void voidMethodSerializedScriptValueArgMethod(const v8::FunctionCallbackI
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
     RefPtr<SerializedScriptValue> serializedScriptValueArg = SerializedScriptValue::create(info[0], 0, 0, exceptionState, info.GetIsolate());
-    if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
+    if (exceptionState.throwIfNeeded())
         return;
-    }
     impl->voidMethodSerializedScriptValueArg(serializedScriptValueArg);
 }
 
@@ -7639,10 +7601,8 @@ static void raisesExceptionVoidMethodMethod(const v8::FunctionCallbackInfo<v8::V
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "raisesExceptionVoidMethod", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toNative(info.Holder());
     impl->raisesExceptionVoidMethod(exceptionState);
-    if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
+    if (exceptionState.throwIfNeeded())
         return;
-    }
 }
 
 static void raisesExceptionVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -7657,10 +7617,8 @@ static void raisesExceptionStringMethodMethod(const v8::FunctionCallbackInfo<v8:
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "raisesExceptionStringMethod", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toNative(info.Holder());
     String result = impl->raisesExceptionStringMethod(exceptionState);
-    if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
+    if (exceptionState.throwIfNeeded())
         return;
-    }
     v8SetReturnValueString(info, result, info.GetIsolate());
 }
 
@@ -7677,18 +7635,14 @@ static void raisesExceptionVoidMethodOptionalLongArgMethod(const v8::FunctionCal
     TestObject* impl = V8TestObject::toNative(info.Holder());
     if (UNLIKELY(info.Length() <= 0)) {
         impl->raisesExceptionVoidMethodOptionalLongArg(exceptionState);
-        if (exceptionState.hadException()) {
-            exceptionState.throwIfNeeded();
+        if (exceptionState.throwIfNeeded())
             return;
-        }
         return;
     }
     TONATIVE_VOID_EXCEPTIONSTATE(int, optionalLongArg, toInt32(info[0], exceptionState), exceptionState);
     impl->raisesExceptionVoidMethodOptionalLongArg(optionalLongArg, exceptionState);
-    if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
+    if (exceptionState.throwIfNeeded())
         return;
-    }
 }
 
 static void raisesExceptionVoidMethodOptionalLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -7713,10 +7667,8 @@ static void raisesExceptionVoidMethodTestCallbackInterfaceArgMethod(const v8::Fu
     }
     OwnPtr<TestCallbackInterface> testCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), currentExecutionContext(info.GetIsolate()));
     impl->raisesExceptionVoidMethodTestCallbackInterfaceArg(testCallbackInterfaceArg.release(), exceptionState);
-    if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
+    if (exceptionState.throwIfNeeded())
         return;
-    }
 }
 
 static void raisesExceptionVoidMethodTestCallbackInterfaceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -7740,10 +7692,8 @@ static void raisesExceptionVoidMethodOptionalTestCallbackInterfaceArgMethod(cons
         optionalTestCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), currentExecutionContext(info.GetIsolate()));
     }
     impl->raisesExceptionVoidMethodOptionalTestCallbackInterfaceArg(optionalTestCallbackInterfaceArg.release(), exceptionState);
-    if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
+    if (exceptionState.throwIfNeeded())
         return;
-    }
 }
 
 static void raisesExceptionVoidMethodOptionalTestCallbackInterfaceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -7758,10 +7708,8 @@ static void raisesExceptionTestInterfaceEmptyVoidMethodMethod(const v8::Function
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "raisesExceptionTestInterfaceEmptyVoidMethod", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toNative(info.Holder());
     RefPtr<TestInterfaceEmpty> result = impl->raisesExceptionTestInterfaceEmptyVoidMethod(exceptionState);
-    if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
+    if (exceptionState.throwIfNeeded())
         return;
-    }
     v8SetReturnValue(info, result.release());
 }
 
@@ -7783,10 +7731,8 @@ static void callWithExecutionContextRaisesExceptionVoidMethodLongArgMethod(const
     TONATIVE_VOID_EXCEPTIONSTATE(int, longArg, toInt32(info[0], exceptionState), exceptionState);
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     impl->callWithExecutionContextRaisesExceptionVoidMethodLongArg(scriptContext, longArg, exceptionState);
-    if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
+    if (exceptionState.throwIfNeeded())
         return;
-    }
 }
 
 static void callWithExecutionContextRaisesExceptionVoidMethodLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -8248,8 +8194,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"voidMethodTestEnumArg", TestObjectV8Internal::voidMethodTestEnumArgMethodCallback, 0, 1},
     {"dictionaryMethod", TestObjectV8Internal::dictionaryMethodMethodCallback, 0, 0},
     {"nodeFilterMethod", TestObjectV8Internal::nodeFilterMethodMethodCallback, 0, 0},
-    {"promiseMethod", TestObjectV8Internal::promiseMethodMethodCallback, 0, 4},
-    {"promiseMethodWithoutExceptionState", TestObjectV8Internal::promiseMethodWithoutExceptionStateMethodCallback, 0, 1},
+    {"promiseMethod", TestObjectV8Internal::promiseMethodMethodCallback, 0, 0},
     {"serializedScriptValueMethod", TestObjectV8Internal::serializedScriptValueMethodMethodCallback, 0, 0},
     {"xPathNSResolverMethod", TestObjectV8Internal::xPathNSResolverMethodMethodCallback, 0, 0},
     {"voidMethodDictionaryArg", TestObjectV8Internal::voidMethodDictionaryArgMethodCallback, 0, 1},

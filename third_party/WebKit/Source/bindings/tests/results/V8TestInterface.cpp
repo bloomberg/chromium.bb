@@ -812,10 +812,8 @@ static void implementsComplexMethodMethod(const v8::FunctionCallbackInfo<v8::Val
     TONATIVE_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[1]));
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     RefPtr<TestInterfaceEmpty> result = impl->implementsComplexMethod(scriptContext, strArg, testInterfaceEmptyArg, exceptionState);
-    if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
+    if (exceptionState.throwIfNeeded())
         return;
-    }
     v8SetReturnValue(info, result.release());
 }
 
@@ -951,10 +949,8 @@ static void partialCallWithExecutionContextRaisesExceptionVoidMethodMethod(const
     ASSERT(impl);
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     TestPartialInterface::partialCallWithExecutionContextRaisesExceptionVoidMethod(scriptContext, *impl, exceptionState);
-    if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
+    if (exceptionState.throwIfNeeded())
         return;
-    }
 }
 #endif // ENABLE(PARTIAL_CONDITION)
 

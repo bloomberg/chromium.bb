@@ -58,10 +58,8 @@ static void itemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     TestInterface2* impl = V8TestInterface2::toNative(info.Holder());
     TONATIVE_VOID_EXCEPTIONSTATE(unsigned, index, toUInt32(info[0], exceptionState), exceptionState);
     RefPtr<TestInterfaceEmpty> result = impl->item(index, exceptionState);
-    if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
+    if (exceptionState.throwIfNeeded())
         return;
-    }
     v8SetReturnValue(info, result.release());
 }
 
@@ -83,10 +81,8 @@ static void setItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     TONATIVE_VOID_EXCEPTIONSTATE(unsigned, index, toUInt32(info[0], exceptionState), exceptionState);
     TOSTRING_VOID(V8StringResource<>, value, info[1]);
     String result = impl->setItem(index, value, exceptionState);
-    if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
+    if (exceptionState.throwIfNeeded())
         return;
-    }
     v8SetReturnValueString(info, result, info.GetIsolate());
 }
 
@@ -107,10 +103,8 @@ static void deleteItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     TestInterface2* impl = V8TestInterface2::toNative(info.Holder());
     TONATIVE_VOID_EXCEPTIONSTATE(unsigned, index, toUInt32(info[0], exceptionState), exceptionState);
     bool result = impl->deleteItem(index, exceptionState);
-    if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
+    if (exceptionState.throwIfNeeded())
         return;
-    }
     v8SetReturnValueBool(info, result);
 }
 
@@ -131,10 +125,8 @@ static void namedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     TestInterface2* impl = V8TestInterface2::toNative(info.Holder());
     TOSTRING_VOID(V8StringResource<>, name, info[0]);
     RefPtr<TestInterfaceEmpty> result = impl->namedItem(name, exceptionState);
-    if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
+    if (exceptionState.throwIfNeeded())
         return;
-    }
     v8SetReturnValue(info, result.release());
 }
 
@@ -156,10 +148,8 @@ static void setNamedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     TOSTRING_VOID(V8StringResource<>, name, info[0]);
     TOSTRING_VOID(V8StringResource<>, value, info[1]);
     String result = impl->setNamedItem(name, value, exceptionState);
-    if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
+    if (exceptionState.throwIfNeeded())
         return;
-    }
     v8SetReturnValueString(info, result, info.GetIsolate());
 }
 
@@ -180,10 +170,8 @@ static void deleteNamedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& inf
     TestInterface2* impl = V8TestInterface2::toNative(info.Holder());
     TOSTRING_VOID(V8StringResource<>, name, info[0]);
     bool result = impl->deleteNamedItem(name, exceptionState);
-    if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
+    if (exceptionState.throwIfNeeded())
         return;
-    }
     v8SetReturnValueBool(info, result);
 }
 

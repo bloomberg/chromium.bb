@@ -335,8 +335,7 @@ interface TestObject {
     // Exceptional types
     Dictionary dictionaryMethod();
     NodeFilter nodeFilterMethod();
-    Promise promiseMethod(long arg1, Dictionary arg2, DOMString arg3, DOMString... variadic);
-    Promise promiseMethodWithoutExceptionState(Dictionary arg1);
+    Promise promiseMethod();
     SerializedScriptValue serializedScriptValueMethod();
     XPathNSResolver xPathNSResolverMethod();
     void voidMethodDictionaryArg(Dictionary dictionaryArg);
