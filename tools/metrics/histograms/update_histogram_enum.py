@@ -31,16 +31,6 @@ def Log(message):
   logging.info(message)
 
 
-def ExtractRegexGroup(line, regex):
-  m = re.match(regex, line)
-  if m:
-    # TODO(ahernandez.miralles): This can throw an IndexError
-    # if no groups are present; enclose in try catch block
-    return m.group(1)
-  else:
-    return None
-
-
 def ReadHistogramValues(filename, start_marker, end_marker):
   """Reads in values from |filename|, returning a list of (label, value) pairs
   corresponding to the enum framed by |start_marker| and |end_marker|.
@@ -49,56 +39,101 @@ def ReadHistogramValues(filename, start_marker, end_marker):
   with open(filename) as f:
     content = f.readlines()
 
+  START_REGEX = re.compile(start_marker)
+  ITEM_REGEX = re.compile(r'^(\w+)')
+  ITEM_REGEX_WITH_INIT = re.compile(r'(\w+)\s*=\s*(\d+)')
+  END_REGEX = re.compile(end_marker)
+
   # Locate the enum definition and collect all entries in it
   inside_enum = False # We haven't found the enum definition yet
-  result = []
+  result = {}
   for line in content:
     line = line.strip()
     if inside_enum:
       # Exit condition: we reached last enum value
-      if re.match(end_marker, line):
+      if END_REGEX.match(line):
         inside_enum = False
       else:
         # Inside enum: generate new xml entry
-        label = ExtractRegexGroup(line.strip(), "^([\w]+)")
-        if label:
-          result.append((label, enum_value))
-          enum_value += 1
+        m = ITEM_REGEX_WITH_INIT.match(line)
+        if m:
+          enum_value = int(m.group(2))
+          label = m.group(1)
+        else:
+          m = ITEM_REGEX.match(line)
+          if m:
+            label = m.group(1)
+          else:
+            continue
+        result[enum_value] = label
+        enum_value += 1
     else:
-      if re.match(start_marker, line):
+      if START_REGEX.match(line):
         inside_enum = True
-        enum_value = 0 # Start at 'UNKNOWN'
+        enum_value = 0
   return result
+
+
+def CreateEnumItemNode(document, value, label):
+  """Creates an int element to append to an enum."""
+  item_node = document.createElement('int')
+  item_node.attributes['value'] = str(value)
+  item_node.attributes['label'] = label
+  return item_node
 
 
 def UpdateHistogramDefinitions(histogram_enum_name, source_enum_values,
                                source_enum_path, document):
-  """Sets the children of <enum name=|histogram_enum_name| ...> node in
-  |document| to values generated from (label, value) pairs contained in
-  |source_enum_values|.
+  """Updates the enum node named |histogram_enum_name| based on the definition
+  stored in |source_enum_values|. Existing items for which |source_enum_values|
+  doesn't contain any corresponding data will be preserved. |source_enum_path|
+  will be used to insert a comment.
   """
-  # Find ExtensionFunctions enum.
+  # Get a dom of <enum name=|name| ...> node in |document|.
   for enum_node in document.getElementsByTagName('enum'):
     if enum_node.attributes['name'].value == histogram_enum_name:
-      histogram_enum_node = enum_node
       break
   else:
-    raise UserError('No {0} enum node found'.format(histogram_enum_name))
+    raise UserError('No {0} enum node found'.format(name))
 
-  # Remove existing values.
-  while histogram_enum_node.hasChildNodes():
-    histogram_enum_node.removeChild(histogram_enum_node.lastChild)
+  new_children = []
 
-  # Add a "Generated from (...)" comment
-  comment = ' Generated from {0} '.format(source_enum_path)
-  histogram_enum_node.appendChild(document.createComment(comment))
+  # Add a "Generated from (...)" comment.
+  new_children.append(
+      document.createComment(' Generated from {0} '.format(source_enum_path)))
 
-  # Add values generated from policy templates.
-  for (label, value) in source_enum_values:
-    node = document.createElement('int')
-    node.attributes['value'] = str(value)
-    node.attributes['label'] = label
-    histogram_enum_node.appendChild(node)
+  # Scan existing nodes in |enum_node| and build |new_children|.
+  # - For each int node in |enum_node|, if there is a corresponding entry in
+  #   |source_enum_values|, drop the existing node and add a node newly created
+  #   from |source_enum_values| to |new_children|.
+  # - Drop existing "Generated from (...)" comment in |enum_node|.
+  # - Copy anything else.
+  SOURCE_COMMENT_REGEX = re.compile('^ Generated from ')
+  for child in enum_node.childNodes:
+    if child.nodeName == 'int':
+      value = int(child.attributes['value'].value)
+      if source_enum_values.has_key(value):
+        new_children.append(
+            CreateEnumItemNode(document, value, source_enum_values[value]))
+        del source_enum_values[value]
+      else:
+        new_children.append(child)
+    # Drop existing source comments if any.
+    elif (child.nodeType != minidom.Node.COMMENT_NODE or
+          SOURCE_COMMENT_REGEX.match(child.data) is None):
+      new_children.append(child)
+
+  # Add remaining entries i.e. new enum values, in the |source_enum_values| to
+  # the |new_children|.
+  for value in sorted(source_enum_values.iterkeys()):
+    new_children.append(
+        CreateEnumItemNode(document, value, source_enum_values[value]))
+
+  # Update |enum_node|.
+  while enum_node.hasChildNodes():
+    enum_node.removeChild(enum_node.lastChild)
+  for child in new_children:
+    enum_node.appendChild(child)
 
 
 def UpdateHistogramEnum(histogram_enum_name, source_enum_path,
@@ -110,11 +145,6 @@ def UpdateHistogramEnum(histogram_enum_name, source_enum_path,
   # TODO(ahernandez.miralles): The line below is present in nearly every
   # file in this directory; factor out into a central location
   HISTOGRAMS_PATH = 'histograms.xml'
-
-  if len(sys.argv) > 1:
-    print >>sys.stderr, 'No arguments expected!'
-    sys.stderr.write(__doc__)
-    sys.exit(1)
 
   Log('Reading histogram enum definition from "{0}".'.format(source_enum_path))
   source_enum_values = ReadHistogramValues(source_enum_path, start_marker,
@@ -132,8 +162,12 @@ def UpdateHistogramEnum(histogram_enum_name, source_enum_path,
 
   Log('Writing out new histograms file.')
   new_xml = print_style.GetPrintStyle().PrettyPrintNode(histograms_doc)
-  if PromptUserToAcceptDiff(xml, new_xml, 'Is the updated version acceptable?'):
-    with open(HISTOGRAMS_PATH, 'wb') as f:
-      f.write(new_xml)
+  if not PromptUserToAcceptDiff(
+      xml, new_xml, 'Is the updated version acceptable?'):
+    Log('Cancelled.')
+    return
+
+  with open(HISTOGRAMS_PATH, 'wb') as f:
+    f.write(new_xml)
 
   Log('Done.')
