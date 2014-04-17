@@ -6314,3 +6314,16 @@
   fun:_ZN7content21ContentMainRunnerImpl3RunEv
   fun:_ZN7content11ContentMainERKNS_17ContentMainParamsE
 }
+{
+   bug_364724
+   Memcheck:Param
+   write(buf)
+   obj:/lib/x86_64-linux-gnu/libpthread-2.15.so
+   fun:_ZN3IPC7Channel11ChannelImpl23ProcessOutgoingMessagesEv
+   fun:_ZN3IPC7Channel11ChannelImpl29OnFileCanWriteWithoutBlockingEi
+   fun:_ZN4base19MessagePumpLibevent21FileDescriptorWatcher29OnFileCanWriteWithoutBlockingEiPS0_
+   ...
+   fun:event_process_active
+   fun:event_base_loop
+}
+
