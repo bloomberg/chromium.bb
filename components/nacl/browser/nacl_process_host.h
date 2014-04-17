@@ -125,8 +125,10 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
 
   // Sends the reply message to the renderer who is waiting for the plugin
   // to load. Returns true on success.
-  bool ReplyToRenderer(const IPC::ChannelHandle& ppapi_channel_handle,
-                       const IPC::ChannelHandle& trusted_channel_handle);
+  bool ReplyToRenderer(
+      const IPC::ChannelHandle& ppapi_channel_handle,
+      const IPC::ChannelHandle& trusted_channel_handle,
+      const IPC::ChannelHandle& manifest_service_channel_handle);
 
   // Sends the reply with error message to the renderer.
   void SendErrorToRenderer(const std::string& error_message);
@@ -168,7 +170,8 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   void OnPpapiChannelsCreated(
       const IPC::ChannelHandle& browser_channel_handle,
       const IPC::ChannelHandle& ppapi_renderer_channel_handle,
-      const IPC::ChannelHandle& trusted_renderer_channel_handle);
+      const IPC::ChannelHandle& trusted_renderer_channel_handle,
+      const IPC::ChannelHandle& manifest_service_channel_handle);
 
   GURL manifest_url_;
   ppapi::PpapiPermissions permissions_;

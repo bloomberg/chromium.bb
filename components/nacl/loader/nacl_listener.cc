@@ -292,6 +292,7 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
 
   IPC::ChannelHandle browser_handle;
   IPC::ChannelHandle ppapi_renderer_handle;
+  IPC::ChannelHandle manifest_service_handle;
 
   if (params.enable_ipc_proxy) {
     browser_handle = IPC::Channel::GenerateVerifiedChannelID("nacl");
@@ -299,6 +300,9 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
 
 #if defined(OS_LINUX)
     if (uses_nonsfi_mode_) {
+      manifest_service_handle =
+          IPC::Channel::GenerateVerifiedChannelID("nacl");
+
       // In non-SFI mode, we neither intercept nor rewrite the message using
       // NaClIPCAdapter, and the channels are connected between the plugin and
       // the hosts directly. So, the IPC::Channel instances will be created in
@@ -311,23 +315,31 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
       int browser_client_ppapi_fd;
       int renderer_server_ppapi_fd;
       int renderer_client_ppapi_fd;
+      int manifest_service_server_fd;
+      int manifest_service_client_fd;
       if (!IPC::SocketPair(
               &browser_server_ppapi_fd, &browser_client_ppapi_fd) ||
           !IPC::SocketPair(
-              &renderer_server_ppapi_fd, &renderer_client_ppapi_fd)) {
+              &renderer_server_ppapi_fd, &renderer_client_ppapi_fd) ||
+          !IPC::SocketPair(
+              &manifest_service_server_fd, &manifest_service_client_fd)) {
         LOG(ERROR) << "Failed to create sockets for IPC.";
         return;
       }
 
       // Set the plugin IPC channel FDs.
-      ppapi::SetIPCFileDescriptors(
-          browser_server_ppapi_fd, renderer_server_ppapi_fd);
+      ppapi::SetIPCFileDescriptors(browser_server_ppapi_fd,
+                                   renderer_server_ppapi_fd,
+                                   manifest_service_server_fd);
+      ppapi::StartUpPlugin();
 
       // Send back to the client side IPC channel FD to the host.
       browser_handle.socket =
           base::FileDescriptor(browser_client_ppapi_fd, true);
       ppapi_renderer_handle.socket =
           base::FileDescriptor(renderer_client_ppapi_fd, true);
+      manifest_service_handle.socket =
+          base::FileDescriptor(manifest_service_client_fd, true);
     } else {
 #endif
       // Create the PPAPI IPC channels between the NaCl IRT and the host
@@ -355,7 +367,8 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
       trusted_listener_->TakeClientFileDescriptor(), true);
 #endif
   if (!Send(new NaClProcessHostMsg_PpapiChannelsCreated(
-          browser_handle, ppapi_renderer_handle, trusted_renderer_handle)))
+          browser_handle, ppapi_renderer_handle,
+          trusted_renderer_handle, manifest_service_handle)))
     LOG(ERROR) << "Failed to send IPC channel handle to NaClProcessHost.";
 
   std::vector<nacl::FileDescriptor> handles = params.handles;

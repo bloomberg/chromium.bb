@@ -18,7 +18,7 @@ namespace ppapi {
 // numbers. This will be used for non-SFI mode. Must be called before
 // PpapiPluginMain is called.
 PPAPI_PROXY_EXPORT void SetIPCFileDescriptors(
-    int browser_ipc_fd, int renderer_ipc_fd);
+    int browser_ipc_fd, int renderer_ipc_fd, int manifest_service_fd);
 
 // Runs start up procedure for the plugin.
 // Specifically, start background IO thread for IPC, and prepare

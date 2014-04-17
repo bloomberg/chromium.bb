@@ -19,6 +19,7 @@ class PepperPluginInstance;
 
 namespace nacl {
 
+class ManifestServiceChannel;
 class TrustedPluginChannel;
 
 // NexeLoadManager provides methods for reporting the progress of loading a
@@ -77,6 +78,8 @@ class NexeLoadManager {
   };
   void DispatchEvent(const ProgressEvent &event);
   void set_trusted_plugin_channel(scoped_ptr<TrustedPluginChannel> channel);
+  void set_manifest_service_channel(
+      scoped_ptr<ManifestServiceChannel> channel);
 
   PP_NaClReadyState nacl_ready_state();
   void set_nacl_ready_state(PP_NaClReadyState ready_state);
@@ -141,6 +144,7 @@ class NexeLoadManager {
   content::PepperPluginInstance* plugin_instance_;
 
   scoped_ptr<TrustedPluginChannel> trusted_plugin_channel_;
+  scoped_ptr<ManifestServiceChannel> manifest_service_channel_;
   base::WeakPtrFactory<NexeLoadManager> weak_factory_;
 };
 

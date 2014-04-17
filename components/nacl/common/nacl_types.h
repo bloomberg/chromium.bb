@@ -89,11 +89,13 @@ struct NaClLaunchParams {
 
 struct NaClLaunchResult {
   NaClLaunchResult();
-  NaClLaunchResult(FileDescriptor imc_channel_handle,
-                   const IPC::ChannelHandle& ppapi_ipc_channel_handle,
-                   const IPC::ChannelHandle& trusted_ipc_channel_handle,
-                   base::ProcessId plugin_pid,
-                   int plugin_child_id);
+  NaClLaunchResult(
+      FileDescriptor imc_channel_handle,
+      const IPC::ChannelHandle& ppapi_ipc_channel_handle,
+      const IPC::ChannelHandle& trusted_ipc_channel_handle,
+      const IPC::ChannelHandle& manifest_service_ipc_channel_handle,
+      base::ProcessId plugin_pid,
+      int plugin_child_id);
   ~NaClLaunchResult();
 
   // For plugin loader <-> renderer IMC communication.
@@ -105,6 +107,10 @@ struct NaClLaunchResult {
   // For plugin loader <-> renderer control communication (loading and
   // starting nexe).
   IPC::ChannelHandle trusted_ipc_channel_handle;
+
+  // For plugin <-> renderer ManifestService communication.
+  IPC::ChannelHandle manifest_service_ipc_channel_handle;
+
   base::ProcessId plugin_pid;
   int plugin_child_id;
 };

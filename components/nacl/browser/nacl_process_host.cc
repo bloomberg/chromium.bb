@@ -669,7 +669,8 @@ void NaClProcessHost::OnResourcesReady() {
 
 bool NaClProcessHost::ReplyToRenderer(
     const IPC::ChannelHandle& ppapi_channel_handle,
-    const IPC::ChannelHandle& trusted_channel_handle) {
+    const IPC::ChannelHandle& trusted_channel_handle,
+    const IPC::ChannelHandle& manifest_service_channel_handle) {
 #if defined(OS_WIN)
   // If we are on 64-bit Windows, the NaCl process's sandbox is
   // managed by a different process from the renderer's sandbox.  We
@@ -715,6 +716,7 @@ bool NaClProcessHost::ReplyToRenderer(
       NaClLaunchResult(imc_handle_for_renderer,
                        ppapi_channel_handle,
                        trusted_channel_handle,
+                       manifest_service_channel_handle,
                        base::GetProcId(data.handle),
                        data.id),
       std::string() /* error_message */);
@@ -854,9 +856,12 @@ bool NaClProcessHost::StartNaClExecution() {
 void NaClProcessHost::OnPpapiChannelsCreated(
     const IPC::ChannelHandle& browser_channel_handle,
     const IPC::ChannelHandle& ppapi_renderer_channel_handle,
-    const IPC::ChannelHandle& trusted_renderer_channel_handle) {
+    const IPC::ChannelHandle& trusted_renderer_channel_handle,
+    const IPC::ChannelHandle& manifest_service_channel_handle) {
   if (!enable_ppapi_proxy()) {
-    ReplyToRenderer(IPC::ChannelHandle(), trusted_renderer_channel_handle);
+    ReplyToRenderer(IPC::ChannelHandle(),
+                    trusted_renderer_channel_handle,
+                    manifest_service_channel_handle);
     return;
   }
 
@@ -910,7 +915,8 @@ void NaClProcessHost::OnPpapiChannelsCreated(
 
     // Let the renderer know that the IPC channels are established.
     ReplyToRenderer(ppapi_renderer_channel_handle,
-                    trusted_renderer_channel_handle);
+                    trusted_renderer_channel_handle,
+                    manifest_service_channel_handle);
   } else {
     // Attempt to open more than 1 browser channel is not supported.
     // Shut down the NaCl process.

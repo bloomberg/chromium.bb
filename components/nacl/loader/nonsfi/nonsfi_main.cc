@@ -43,7 +43,6 @@ class PluginMainDelegate : public base::PlatformThread::Delegate {
     // This will only happen once per process, so we give the permission to
     // create Singletons.
     base::ThreadRestrictions::SetSingletonAllowed(true);
-    ppapi::StartUpPlugin();
     uintptr_t info[] = {
       0,  // Do not use fini.
       0,  // envc.

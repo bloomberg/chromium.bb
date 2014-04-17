@@ -143,6 +143,8 @@
           'target_name': 'nacl_renderer',
           'type': 'static_library',
           'sources': [
+            'nacl/renderer/manifest_service_channel.cc',
+            'nacl/renderer/manifest_service_channel.h',
             'nacl/renderer/nexe_load_manager.cc',
             'nacl/renderer/nexe_load_manager.h',
             'nacl/renderer/pnacl_translation_resource_host.cc',
@@ -232,6 +234,8 @@
                 'nacl/loader/nonsfi/irt_util.h',
                 'nacl/loader/nonsfi/nonsfi_main.cc',
                 'nacl/loader/nonsfi/nonsfi_main.h',
+                '../ppapi/nacl_irt/manifest_service.cc',
+                '../ppapi/nacl_irt/manifest_service.h',
                 '../ppapi/nacl_irt/plugin_main.cc',
                 '../ppapi/nacl_irt/plugin_main.h',
                 '../ppapi/nacl_irt/plugin_startup.cc',

@@ -10,6 +10,7 @@
 #include "base/strings/string_tokenizer.h"
 #include "components/nacl/common/nacl_host_messages.h"
 #include "components/nacl/common/nacl_types.h"
+#include "components/nacl/renderer/manifest_service_channel.h"
 #include "components/nacl/renderer/pnacl_translation_resource_host.h"
 #include "components/nacl/renderer/sandbox_arch.h"
 #include "components/nacl/renderer/trusted_plugin_channel.h"
@@ -491,6 +492,11 @@ void NexeLoadManager::DispatchEvent(const ProgressEvent &event) {
 void NexeLoadManager::set_trusted_plugin_channel(
     scoped_ptr<TrustedPluginChannel> channel) {
   trusted_plugin_channel_ = channel.Pass();
+}
+
+void NexeLoadManager::set_manifest_service_channel(
+    scoped_ptr<ManifestServiceChannel> channel) {
+  manifest_service_channel_ = channel.Pass();
 }
 
 PP_NaClReadyState NexeLoadManager::nacl_ready_state() {
