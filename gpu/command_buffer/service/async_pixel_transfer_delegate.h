@@ -21,8 +21,6 @@ class SharedMemory;
 
 namespace gpu {
 
-class ScopedSafeSharedMemory;
-
 struct AsyncTexImage2DParams {
   GLenum target;
   GLint level;
