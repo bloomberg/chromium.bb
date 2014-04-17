@@ -59,8 +59,6 @@
             'sources': [
               '../components/nacl/common/nacl_paths.cc',
               '../components/nacl/common/nacl_paths.h',
-              '../components/nacl/zygote/nacl_fork_delegate_linux.cc',
-              '../components/nacl/zygote/nacl_fork_delegate_linux.h',
             ],
           },],
         ],
@@ -138,6 +136,18 @@
           ],
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [4267, ],
+          'conditions': [
+            ['OS=="linux"', {
+              'sources': [
+                '../components/nacl/zygote/nacl_fork_delegate_linux.cc',
+                '../components/nacl/zygote/nacl_fork_delegate_linux.h',
+              ],
+              'dependencies': [
+                # Required by nacl_fork_delegate_linux.cc.
+                '../sandbox/sandbox.gyp:suid_sandbox_client',
+              ]
+            }],
+          ],
         },
         {
           'target_name': 'nacl_renderer',
@@ -163,14 +173,6 @@
             '../content/content.gyp:content_renderer',
             '../third_party/WebKit/public/blink.gyp:blink',
             '../webkit/common/webkit_common.gyp:webkit_common',
-          ],
-          'conditions': [
-            ['OS=="linux"', {
-              'dependencies': [
-                # Required by nacl_fork_delegate_linux.cc.
-                '../sandbox/sandbox.gyp:suid_sandbox_client',
-              ]
-            }],
           ],
           'defines': [
             '<@(nacl_defines)',
