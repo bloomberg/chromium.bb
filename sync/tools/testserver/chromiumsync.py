@@ -1196,12 +1196,7 @@ class SyncDataModel(object):
     entity.parent_id_string = self._ServerTagToId(
         'google_chrome_synced_notifications')
     entity.name = 'Synced notification added for testing'
-
-    # Set the version to one more than the greatest version number already seen.
-    entries = sorted(self._entries.values(), key=operator.attrgetter('version'))
-    if len(entries) < 1:
-      raise ClientNotConnectedError
-    entity.version = entries[-1].version + 1
+    entity.version = self._GetNextVersionNumber()
 
     entity.client_defined_unique_tag = self._CreateSyncedNotificationClientTag(
         specifics.synced_notification.coalesced_notification.key)
@@ -1211,6 +1206,13 @@ class SyncDataModel(object):
     self._entries[entity.id_string] = copy.deepcopy(entity)
 
     return google.protobuf.text_format.MessageToString(entity)
+
+  def _GetNextVersionNumber(self):
+    """Set the version to one more than the greatest version number seen."""
+    entries = sorted(self._entries.values(), key=operator.attrgetter('version'))
+    if len(entries) < 1:
+      raise ClientNotConnectedError
+    return entries[-1].version + 1
 
   def _CreateSyncedNotificationEntitySpecifics(self, unique_id,
                                                serialized_notification):
@@ -1243,6 +1245,66 @@ class SyncDataModel(object):
     serialized_type.synced_notification.CopyFrom(specifics)
     hash_input = serialized_type.SerializeToString() + key
     return base64.b64encode(hashlib.sha1(hash_input).digest())
+
+  def AddSyncedNotificationAppInfo(self, app_info):
+    """Adds an app info struct to the server data.
+
+    The notification will be delivered to the client on the next GetUpdates
+    call.
+
+    Args:
+      app_info: A serialized AppInfo.
+
+    Returns:
+      The string representation of the added SyncEntity.
+
+    Raises:
+      ClientNotConnectedError: if the client has not yet connected to this
+      server
+    """
+    specifics = self._CreateSyncedNotificationAppInfoEntitySpecifics(app_info)
+
+    # Create the root SyncEntity representing a single app info protobuf.
+    entity = sync_pb2.SyncEntity()
+    entity.specifics.CopyFrom(specifics)
+    entity.parent_id_string = self._ServerTagToId(
+        'google_chrome_synced_notification_app_info')
+    entity.name = 'App info added for testing'
+    entity.version = self._GetNextVersionNumber()
+
+    # App Infos do not have a strong id, it only needs to be unique.
+    entity.client_defined_unique_tag = "foo"
+    entity.id_string = "foo"
+
+    self._entries[entity.id_string] = copy.deepcopy(entity)
+
+    print "entity before exit is ", entity
+
+    return google.protobuf.text_format.MessageToString(entity)
+
+  def _CreateSyncedNotificationAppInfoEntitySpecifics(
+    self, synced_notification_app_info):
+    """Create the EntitySpecifics proto for a synced notification app info."""
+    # Create a single, empty app_info object
+    app_info = \
+      synced_notification_app_info_specifics_pb2.SyncedNotificationAppInfo()
+    # Fill the app_info object from the text format protobuf.
+    google.protobuf.text_format.Merge(synced_notification_app_info, app_info)
+
+    # Create a new specifics object with a contained app_info
+    specifics = sync_pb2.EntitySpecifics()
+    app_info_specifics = \
+        synced_notification_app_info_specifics_pb2.\
+        SyncedNotificationAppInfoSpecifics()
+
+    # Copy the app info from the text format protobuf
+    contained_app_info = app_info_specifics.synced_notification_app_info.add()
+    contained_app_info.CopyFrom(app_info)
+
+    # And put the new app_info_specifics into the specifics before returning.
+    specifics.synced_notification_app_info.CopyFrom(app_info_specifics)
+
+    return specifics
 
 class TestServer(object):
   """An object to handle requests for one (and only one) Chrome Sync account.

@@ -156,6 +156,8 @@ class SyncPageHandler(testserver_base.BasePageHandler):
                     self.GaiaSetOAuth2TokenResponseHandler,
                     self.TriggerSyncedNotificationHandler,
                     self.SyncedNotificationsPageHandler,
+                    self.TriggerSyncedNotificationAppInfoHandler,
+                    self.SyncedNotificationsAppInfoPageHandler,
                     self.CustomizeClientCommandHandler]
 
     post_handlers = [self.ChromiumSyncCommandHandler,
@@ -532,6 +534,37 @@ class SyncPageHandler(testserver_base.BasePageHandler):
     self.wfile.write(reply)
     return True
 
+  def TriggerSyncedNotificationAppInfoHandler(self):
+    test_name = "/triggersyncednotificationappinfo"
+    if not self._ShouldHandleRequest(test_name):
+      return False
+
+    query = urlparse.urlparse(self.path)[4]
+    query_params = urlparse.parse_qs(query)
+
+    app_info = ''
+
+    if 'synced_notification_app_info' in query_params:
+      app_info = query_params['synced_notification_app_info'][0]
+
+    try:
+      app_info_string = self.server._sync_handler.account \
+          .AddSyncedNotificationAppInfo(app_info)
+      reply = "A synced notification app info was sent:\n\n"
+      reply += "<code>{}</code>.".format(app_info_string)
+      response_code = 200
+    except chromiumsync.ClientNotConnectedError:
+      reply = ('The client is not connected to the server, so the app info'
+               ' could not be created.')
+      response_code = 400
+
+    self.send_response(response_code)
+    self.send_header('Content-Type', 'text/html')
+    self.send_header('Content-Length', len(reply))
+    self.end_headers()
+    self.wfile.write(reply)
+    return True
+
   def CustomizeClientCommandHandler(self):
     test_name = "/customizeclientcommand"
     if not self._ShouldHandleRequest(test_name):
@@ -576,6 +609,21 @@ class SyncPageHandler(testserver_base.BasePageHandler):
     self.wfile.write(html)
     return True
 
+  def SyncedNotificationsAppInfoPageHandler(self):
+    test_name = "/syncednotificationsappinfo"
+    if not self._ShouldHandleRequest(test_name):
+      return False
+
+    html = \
+      open('sync/tools/testserver/synced_notification_app_info.html', 'r').\
+      read()
+
+    self.send_response(200)
+    self.send_header('Content-Type', 'text/html')
+    self.send_header('Content-Length', len(html))
+    self.end_headers()
+    self.wfile.write(html)
+    return True
 
 class SyncServerRunner(testserver_base.TestServerRunner):
   """TestServerRunner for the net test servers."""

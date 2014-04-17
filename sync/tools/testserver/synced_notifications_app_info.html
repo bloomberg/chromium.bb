@@ -1,0 +1,49 @@
+<html>
+  <head>
+    <title>Synced notification App Info</title>
+
+    <script type="text/javascript">
+      // Creates link (appended to the bottom of the page body) to trigger a
+      // new synced notification app info.  The link's title will be |title|
+      // and the ASCII-serialized app info will be
+      // |synced_notification_app_info|.
+      function appendSyncedNotificationAppInfoLink(title, app_info) {
+        var link = document.createElement('a');
+        link.innerHTML = title;
+        link.setAttribute('target', '_blank');
+        link.setAttribute('href', 'triggersyncednotificationappinfo?' +
+        'synced_notification_app_info=' +
+        encodeURIComponent(app_info));
+        document.body.appendChild(link);
+      }
+    </script>
+  </head>
+
+  <body>
+    <h1>Synced Notification App Info</h1>
+
+    <h2>Step 0: Sign in to the browser and set up Sync</h2>
+
+    <h2>Step 1: Click this link (only required once per server lifetime)</h2>
+
+    <a href="/customizeclientcommand?sessions_commit_delay_seconds=0">
+        Make synced notification app info triggering instant</a>
+
+    <h2>Step 2: Ctrl-Click the link below to send a synced notification app info</h2>
+
+    <script type="text/javascript">
+      // JSON version of an app info protobuf
+      appendSyncedNotificationAppInfoLink(
+        'Simple SyncedNotificationAppInfo',
+        'settings_display_name: \"Google Maps\"\n' +
+        'icon: {\n' +
+        '  alt_text: \"Google Maps\"\n' +
+        '  preferred_height: 80\n' +
+        '  preferred_width: 80\n' +
+        '  url: \"https://ssl.gstatic.com/s2/oz/images/notifications/app_icons/system-gplus_62d72f2ec5e1ef193f0dfa600eabcfeb.png\"\n' +
+        '}\n' +
+        'app_id: \"maps_street_view\"\n' +
+        'app_id: \"maps_earth_view\"\n');
+    </script>
+  </body>
+</html>
