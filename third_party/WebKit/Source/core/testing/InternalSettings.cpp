@@ -192,12 +192,6 @@ void InternalSettings::setOverlayScrollbarsEnabled(bool enabled)
     RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(enabled);
 }
 
-void InternalSettings::setTouchEventEmulationEnabled(bool enabled, ExceptionState& exceptionState)
-{
-    InternalSettingsGuardForSettings();
-    settings()->setTouchEventEmulationEnabled(enabled);
-}
-
 void InternalSettings::setViewportEnabled(bool enabled, ExceptionState& exceptionState)
 {
     InternalSettingsGuardForSettings();

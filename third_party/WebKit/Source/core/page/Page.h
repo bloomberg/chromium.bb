@@ -197,7 +197,7 @@ public:
     PageVisibilityState visibilityState() const;
     void setVisibilityState(PageVisibilityState, bool);
 
-    bool isCursorVisible() const { return m_isCursorVisible; }
+    bool isCursorVisible() const;
     void setIsCursorVisible(bool isVisible) { m_isCursorVisible = isVisible; }
 
 #ifndef NDEBUG

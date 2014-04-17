@@ -1160,8 +1160,7 @@ void InspectorPageAgent::updateViewMetrics(int width, int height, double deviceS
 void InspectorPageAgent::updateTouchEventEmulationInPage(bool enabled)
 {
     m_state->setBoolean(PageAgentState::touchEventEmulationEnabled, enabled);
-    if (mainFrame() && mainFrame()->settings())
-        mainFrame()->settings()->setTouchEventEmulationEnabled(enabled);
+    m_client->setTouchEventEmulationEnabled(enabled);
 }
 
 void InspectorPageAgent::setTouchEmulationEnabled(ErrorString*, bool enabled)

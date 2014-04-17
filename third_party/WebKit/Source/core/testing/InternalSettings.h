@@ -99,7 +99,6 @@ public:
     void setTextAutosizingEnabled(bool, ExceptionState&);
     void setAccessibilityFontScaleFactor(float fontScaleFactor, ExceptionState&);
     void setTextAutosizingWindowSizeOverride(int width, int height, ExceptionState&);
-    void setTouchEventEmulationEnabled(bool, ExceptionState&);
     void setViewportEnabled(bool, ExceptionState&);
 
     // FIXME: This is a temporary flag and should be removed once accelerated

@@ -1336,7 +1336,7 @@ IntPoint FrameView::lastKnownMousePosition() const
 bool FrameView::shouldSetCursor() const
 {
     Page* page = frame().page();
-    return page && page->visibilityState() != PageVisibilityStateHidden && page->focusController().isActive();
+    return page && page->visibilityState() != PageVisibilityStateHidden && page->focusController().isActive() && page->settings().deviceSupportsMouse();
 }
 
 void FrameView::scrollContentsIfNeededRecursive()
@@ -3192,6 +3192,8 @@ AXObjectCache* FrameView::axObjectCache() const
 
 void FrameView::setCursor(const Cursor& cursor)
 {
+    if (!shouldSetCursor())
+        return;
     Page* page = frame().page();
     if (!page)
         return;

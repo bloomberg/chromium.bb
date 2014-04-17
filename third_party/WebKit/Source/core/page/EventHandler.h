@@ -243,13 +243,9 @@ private:
     // absolutePoint - For wheel scrolls - the location, in absolute coordinates, where the event occured.
     bool scroll(ScrollDirection, ScrollGranularity, Node* startNode = 0, Node** stopNode = 0, float delta = 1.0f, IntPoint absolutePoint = IntPoint());
 
-    bool dispatchSyntheticTouchEventIfEnabled(const PlatformMouseEvent&);
-
     TouchAction intersectTouchAction(const TouchAction, const TouchAction);
     TouchAction computeEffectiveTouchAction(const LayoutPoint&);
 
-    bool handleMouseEventAsEmulatedGesture(const PlatformMouseEvent&);
-    bool handleWheelEventAsEmulatedGesture(const PlatformWheelEvent&);
     HitTestResult hitTestResultInFrame(LocalFrame*, const LayoutPoint&, HitTestRequest::HitTestRequestType hitType = HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::ConfusingAndOftenMisusedDisallowShadowContent);
 
     void invalidateClick();
@@ -389,10 +385,6 @@ private:
     bool m_didStartDrag;
 
     bool m_longTapShouldInvokeContextMenu;
-    OwnPtr<IntPoint> m_lastSyntheticPinchAnchorCss;
-    OwnPtr<IntPoint> m_lastSyntheticPinchAnchorDip;
-    OwnPtr<IntPoint> m_lastSyntheticPanLocation;
-    float m_syntheticPageScaleFactor;
 
     Timer<EventHandler> m_activeIntervalTimer;
     double m_lastShowPressTimestamp;

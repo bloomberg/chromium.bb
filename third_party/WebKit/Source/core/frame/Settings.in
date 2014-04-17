@@ -266,7 +266,6 @@ viewportMetaEnabled initial=false
 
 dnsPrefetchingEnabled initial=false, invalidate=DNSPrefetching
 
-touchEventEmulationEnabled initial=false
 
 # FIXME: This is a temporary flag and should be removed once
 # accelerated overflow scroll is ready (crbug.com/254111).

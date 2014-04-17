@@ -51,6 +51,7 @@
 #include "core/fetch/MemoryCache.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InspectorController.h"
 #include "core/page/Page.h"
@@ -205,6 +206,9 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     , m_emulateViewportEnabled(false)
     , m_originalViewportEnabled(false)
     , m_isOverlayScrollbarsEnabled(false)
+    , m_touchEventEmulationEnabled(false)
+    , m_originalTouchEnabled(false)
+    , m_originalDeviceSupportsMouse(false)
 {
     ASSERT(m_hostId > 0);
     ClientMessageLoopAdapter::ensureClientMessageLoopCreated(m_client);
@@ -298,6 +302,32 @@ bool WebDevToolsAgentImpl::handleInputEvent(WebCore::Page* page, const WebInputE
     if (!m_attached && !m_generatingEvent)
         return false;
 
+    // FIXME: This workaround is required for touch emulation on Mac, where
+    // compositor-side pinch handling is not enabled. See http://crbug.com/138003.
+    bool isPinch = inputEvent.type == WebInputEvent::GesturePinchBegin || inputEvent.type == WebInputEvent::GesturePinchUpdate || inputEvent.type == WebInputEvent::GesturePinchEnd;
+    if (isPinch && m_touchEventEmulationEnabled && m_emulateViewportEnabled) {
+        FrameView* frameView = page->mainFrame()->view();
+        PlatformGestureEventBuilder gestureEvent(frameView, *static_cast<const WebGestureEvent*>(&inputEvent));
+        float pageScaleFactor = page->pageScaleFactor();
+        if (gestureEvent.type() == PlatformEvent::GesturePinchBegin) {
+            m_lastPinchAnchorCss = adoptPtr(new WebCore::IntPoint(frameView->scrollPosition() + gestureEvent.position()));
+            m_lastPinchAnchorDip = adoptPtr(new WebCore::IntPoint(gestureEvent.position()));
+            m_lastPinchAnchorDip->scale(pageScaleFactor, pageScaleFactor);
+        }
+        if (gestureEvent.type() == PlatformEvent::GesturePinchUpdate && m_lastPinchAnchorCss) {
+            float newPageScaleFactor = pageScaleFactor * gestureEvent.scale();
+            WebCore::IntPoint anchorCss(*m_lastPinchAnchorDip.get());
+            anchorCss.scale(1.f / newPageScaleFactor, 1.f / newPageScaleFactor);
+            m_webViewImpl->setPageScaleFactor(newPageScaleFactor);
+            m_webViewImpl->setMainFrameScrollOffset(*m_lastPinchAnchorCss.get() - toIntSize(anchorCss));
+        }
+        if (gestureEvent.type() == PlatformEvent::GesturePinchEnd) {
+            m_lastPinchAnchorCss.clear();
+            m_lastPinchAnchorDip.clear();
+        }
+        return true;
+    }
+
     InspectorController* ic = inspectorController();
     if (!ic)
         return false;
@@ -352,6 +382,24 @@ void WebDevToolsAgentImpl::overrideDeviceMetrics(int width, int height, float de
     }
 }
 
+void WebDevToolsAgentImpl::setTouchEventEmulationEnabled(bool enabled)
+{
+    if (m_touchEventEmulationEnabled == enabled)
+        return;
+
+    if (!m_touchEventEmulationEnabled) {
+        m_originalTouchEnabled = RuntimeEnabledFeatures::touchEnabled();
+        if (m_webViewImpl->page())
+            m_originalDeviceSupportsMouse = m_webViewImpl->page()->settings().deviceSupportsMouse();
+    }
+    RuntimeEnabledFeatures::setTouchEnabled(enabled ? true : m_originalTouchEnabled);
+    if (m_webViewImpl->page())
+        m_webViewImpl->page()->settings().setDeviceSupportsMouse(enabled ? false : m_originalDeviceSupportsMouse);
+    m_client->setTouchEventEmulationEnabled(enabled, m_emulateViewportEnabled);
+    m_touchEventEmulationEnabled = enabled;
+    m_webViewImpl->mainFrameImpl()->frame()->view()->layout();
+}
+
 void WebDevToolsAgentImpl::enableViewportEmulation()
 {
     if (m_emulateViewportEnabled)
@@ -367,6 +415,9 @@ void WebDevToolsAgentImpl::enableViewportEmulation()
     m_webViewImpl->setIgnoreViewportTagScaleLimits(true);
     m_webViewImpl->setPageScaleFactorLimits(-1, -1);
     m_webViewImpl->setZoomFactorOverride(1);
+    // FIXME: with touch and viewport emulation enabled, we may want to disable overscroll navigation.
+    if (m_touchEventEmulationEnabled)
+        m_client->setTouchEventEmulationEnabled(m_touchEventEmulationEnabled, m_emulateViewportEnabled);
 }
 
 void WebDevToolsAgentImpl::disableViewportEmulation()
@@ -382,6 +433,8 @@ void WebDevToolsAgentImpl::disableViewportEmulation()
     m_webViewImpl->setPageScaleFactorLimits(1, 1);
     m_webViewImpl->setZoomFactorOverride(0);
     m_emulateViewportEnabled = false;
+    if (m_touchEventEmulationEnabled)
+        m_client->setTouchEventEmulationEnabled(m_touchEventEmulationEnabled, m_emulateViewportEnabled);
 }
 
 void WebDevToolsAgentImpl::getAllocatedObjects(HashSet<const void*>& set)

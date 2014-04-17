@@ -108,6 +108,7 @@ public:
     virtual void clearBrowserCookies() OVERRIDE;
 
     virtual void overrideDeviceMetrics(int width, int height, float deviceScaleFactor, bool emulateViewport, bool fitWindow) OVERRIDE;
+    virtual void setTouchEventEmulationEnabled(bool) OVERRIDE;
 
     virtual void getAllocatedObjects(HashSet<const void*>&) OVERRIDE;
     virtual void dumpUncountedAllocatedObjects(const HashMap<const void*, size_t>&) OVERRIDE;
@@ -140,10 +141,18 @@ private:
     WebViewImpl* m_webViewImpl;
     bool m_attached;
     bool m_generatingEvent;
+
     bool m_deviceMetricsEnabled;
     bool m_emulateViewportEnabled;
     bool m_originalViewportEnabled;
     bool m_isOverlayScrollbarsEnabled;
+
+    bool m_touchEventEmulationEnabled;
+    bool m_originalTouchEnabled;
+    bool m_originalDeviceSupportsMouse;
+    OwnPtr<WebCore::IntPoint> m_lastPinchAnchorCss;
+    OwnPtr<WebCore::IntPoint> m_lastPinchAnchorDip;
+
     typedef Vector<RefPtr<WebCore::JSONObject> > FrontendMessageQueue;
     FrontendMessageQueue m_frontendMessageQueue;
 };

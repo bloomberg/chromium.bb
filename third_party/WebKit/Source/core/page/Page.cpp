@@ -437,6 +437,11 @@ PageVisibilityState Page::visibilityState() const
     return m_visibilityState;
 }
 
+bool Page::isCursorVisible() const
+{
+    return m_isCursorVisible && settings().deviceSupportsMouse();
+}
+
 void Page::addMultisamplingChangedObserver(MultisamplingChangedObserver* observer)
 {
     m_multisamplingChangedObservers.add(observer);

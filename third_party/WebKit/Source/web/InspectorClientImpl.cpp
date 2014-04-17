@@ -108,6 +108,12 @@ void InspectorClientImpl::overrideDeviceMetrics(int width, int height, float dev
         agent->overrideDeviceMetrics(width, height, deviceScaleFactor, emulateViewport, fitWindow);
 }
 
+void InspectorClientImpl::setTouchEventEmulationEnabled(bool enabled)
+{
+    if (WebDevToolsAgentImpl* agent = devToolsAgent())
+        agent->setTouchEventEmulationEnabled(enabled);
+}
+
 bool InspectorClientImpl::overridesShowPaintRects()
 {
     return m_inspectedWebView->isAcceleratedCompositingActive();

@@ -60,6 +60,7 @@ public:
     virtual void clearBrowserCookies() OVERRIDE;
 
     virtual void overrideDeviceMetrics(int, int, float, bool, bool) OVERRIDE;
+    virtual void setTouchEventEmulationEnabled(bool) OVERRIDE;
 
     virtual bool overridesShowPaintRects() OVERRIDE;
     virtual void setShowPaintRects(bool) OVERRIDE;

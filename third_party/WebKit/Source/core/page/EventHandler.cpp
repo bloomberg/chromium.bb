@@ -175,71 +175,6 @@ private:
     double m_start;
 };
 
-class SyntheticTouchPoint : public PlatformTouchPoint {
-public:
-
-    // The default values are based on http://dvcs.w3.org/hg/webevents/raw-file/tip/touchevents.html
-    explicit SyntheticTouchPoint(const PlatformMouseEvent& event)
-    {
-        const static int idDefaultValue = 0;
-        const static int radiusYDefaultValue = 1;
-        const static int radiusXDefaultValue = 1;
-        const static float rotationAngleDefaultValue = 0.0f;
-        const static float forceDefaultValue = 1.0f;
-
-        m_id = idDefaultValue; // There is only one active TouchPoint.
-        m_screenPos = event.globalPosition();
-        m_pos = event.position();
-        m_radiusY = radiusYDefaultValue;
-        m_radiusX = radiusXDefaultValue;
-        m_rotationAngle = rotationAngleDefaultValue;
-        m_force = forceDefaultValue;
-
-        PlatformEvent::Type type = event.type();
-        ASSERT(type == PlatformEvent::MouseMoved || type == PlatformEvent::MousePressed || type == PlatformEvent::MouseReleased);
-
-        switch (type) {
-        case PlatformEvent::MouseMoved:
-            m_state = TouchMoved;
-            break;
-        case PlatformEvent::MousePressed:
-            m_state = TouchPressed;
-            break;
-        case PlatformEvent::MouseReleased:
-            m_state = TouchReleased;
-            break;
-        default:
-            ASSERT_NOT_REACHED();
-            break;
-        }
-    }
-};
-
-class SyntheticSingleTouchEvent : public PlatformTouchEvent {
-public:
-    explicit SyntheticSingleTouchEvent(const PlatformMouseEvent& event)
-    {
-        switch (event.type()) {
-        case PlatformEvent::MouseMoved:
-            m_type = TouchMove;
-            break;
-        case PlatformEvent::MousePressed:
-            m_type = TouchStart;
-            break;
-        case PlatformEvent::MouseReleased:
-            m_type = TouchEnd;
-            break;
-        default:
-            ASSERT_NOT_REACHED();
-            m_type = NoType;
-            break;
-        }
-        m_timestamp = event.timestamp();
-        m_modifiers = event.modifiers();
-        m_touchPoints.append(SyntheticTouchPoint(event));
-    }
-};
-
 static inline ScrollGranularity wheelGranularityToScrollGranularity(unsigned deltaMode)
 {
     switch (deltaMode) {
@@ -295,7 +230,6 @@ EventHandler::EventHandler(LocalFrame* frame)
     , m_baseEventType(PlatformEvent::NoType)
     , m_didStartDrag(false)
     , m_longTapShouldInvokeContextMenu(false)
-    , m_syntheticPageScaleFactor(0)
     , m_activeIntervalTimer(this, &EventHandler::activeIntervalTimerFired)
     , m_lastShowPressTimestamp(0)
 {
@@ -1264,10 +1198,6 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
 
     RefPtr<FrameView> protector(m_frame->view());
 
-    bool defaultPrevented = dispatchSyntheticTouchEventIfEnabled(mouseEvent);
-    if (defaultPrevented)
-        return true;
-
     UserGestureIndicator gestureIndicator(DefinitelyProcessingUserGesture);
     m_frame->tree().top()->eventHandler().m_lastMouseDownUserGestureToken = gestureIndicator.currentToken();
 
@@ -1455,22 +1385,10 @@ void EventHandler::handleMouseLeaveEvent(const PlatformMouseEvent& event)
     handleMouseMoveOrLeaveEvent(event);
 }
 
-static Cursor& syntheticTouchCursor()
-{
-    DEFINE_STATIC_LOCAL(Cursor, c, (Image::loadPlatformResource("syntheticTouchCursor").get(), IntPoint(10, 10)));
-    return c;
-}
-
 bool EventHandler::handleMouseMoveOrLeaveEvent(const PlatformMouseEvent& mouseEvent, HitTestResult* hoveredNode, bool onlyUpdateScrollbars)
 {
     ASSERT(m_frame);
     ASSERT(m_frame->view());
-
-    bool defaultPrevented = dispatchSyntheticTouchEventIfEnabled(mouseEvent);
-    if (defaultPrevented) {
-        m_frame->view()->setCursor(syntheticTouchCursor());
-        return true;
-    }
 
     setLastKnownMousePosition(mouseEvent);
 
@@ -1594,10 +1512,6 @@ bool EventHandler::handleMouseReleaseEvent(const PlatformMouseEvent& mouseEvent)
     RefPtr<FrameView> protector(m_frame->view());
 
     m_frame->selection().setCaretBlinkingSuspended(false);
-
-    bool defaultPrevented = dispatchSyntheticTouchEventIfEnabled(mouseEvent);
-    if (defaultPrevented)
-        return true;
 
     OwnPtr<UserGestureIndicator> gestureIndicator;
 
@@ -2110,9 +2024,6 @@ bool EventHandler::handleWheelEvent(const PlatformWheelEvent& e)
     FrameView* view = m_frame->view();
     if (!view)
         return false;
-
-    if (handleWheelEventAsEmulatedGesture(e))
-        return true;
 
     LayoutPoint vPoint = view->windowToContents(e.position());
 
@@ -3750,125 +3661,6 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
     }
 
     return swallowedEvent;
-}
-
-bool EventHandler::dispatchSyntheticTouchEventIfEnabled(const PlatformMouseEvent& event)
-{
-    if (!m_frame || !m_frame->settings() || !m_frame->settings()->touchEventEmulationEnabled())
-        return false;
-
-    PlatformEvent::Type eventType = event.type();
-    if (eventType != PlatformEvent::MouseMoved && eventType != PlatformEvent::MousePressed && eventType != PlatformEvent::MouseReleased)
-        return false;
-
-    HitTestRequest request(HitTestRequest::Active | HitTestRequest::ConfusingAndOftenMisusedDisallowShadowContent);
-    MouseEventWithHitTestResults mev = prepareMouseEvent(request, event);
-    if (mev.scrollbar() || subframeForHitTestResult(mev))
-        return false;
-
-    // The order is important. This check should follow the subframe test: http://webkit.org/b/111292.
-    if (eventType == PlatformEvent::MouseMoved && event.button() == NoButton)
-        return true;
-
-    SyntheticSingleTouchEvent touchEvent(event);
-    if (handleTouchEvent(touchEvent))
-        return true;
-
-    return handleMouseEventAsEmulatedGesture(event);
-}
-
-bool EventHandler::handleMouseEventAsEmulatedGesture(const PlatformMouseEvent& event)
-{
-    PlatformEvent::Type eventType = event.type();
-    if (event.button() != LeftButton || !m_frame->isMainFrame())
-        return false;
-
-    // Simulate pinch / scroll gesture.
-    const IntPoint& position = event.position();
-    bool swallowEvent = false;
-
-    FrameView* view = m_frame->view();
-    if (event.shiftKey()) {
-        // Shift pressed - consider it gesture.
-        swallowEvent = true;
-        Page* page = m_frame->page();
-        float pageScaleFactor = page->pageScaleFactor();
-        switch (eventType) {
-        case PlatformEvent::MousePressed:
-            m_lastSyntheticPinchAnchorCss = adoptPtr(new IntPoint(view->scrollPosition() + position));
-            m_lastSyntheticPinchAnchorDip = adoptPtr(new IntPoint(position));
-            m_lastSyntheticPinchAnchorDip->scale(pageScaleFactor, pageScaleFactor);
-            m_syntheticPageScaleFactor = pageScaleFactor;
-            break;
-        case PlatformEvent::MouseMoved:
-            {
-                if (!m_lastSyntheticPinchAnchorCss)
-                    break;
-
-                float dy = m_lastSyntheticPinchAnchorDip->y() - position.y() * pageScaleFactor;
-                float magnifyDelta = exp(dy * 0.002f);
-                float newPageScaleFactor = m_syntheticPageScaleFactor * magnifyDelta;
-
-                IntPoint anchorCss(*m_lastSyntheticPinchAnchorDip.get());
-                anchorCss.scale(1.f / newPageScaleFactor, 1.f / newPageScaleFactor);
-                page->inspectorController().requestPageScaleFactor(newPageScaleFactor, *m_lastSyntheticPinchAnchorCss.get() - toIntSize(anchorCss));
-                break;
-            }
-        case PlatformEvent::MouseReleased:
-            m_lastSyntheticPinchAnchorCss.clear();
-            m_lastSyntheticPinchAnchorDip.clear();
-        default:
-            break;
-        }
-    } else {
-        switch (eventType) {
-        case PlatformEvent::MouseMoved:
-            {
-                // Always consume move events.
-                swallowEvent = true;
-                int dx = m_lastSyntheticPanLocation ? position.x() - m_lastSyntheticPanLocation->x() : 0;
-                int dy = m_lastSyntheticPanLocation ? position.y() - m_lastSyntheticPanLocation->y() : 0;
-                if (dx || dy)
-                    view->scrollBy(IntSize(-dx, -dy));
-                // Mouse dragged - consider it gesture.
-                m_lastSyntheticPanLocation = adoptPtr(new IntPoint(position));
-                break;
-            }
-        case PlatformEvent::MouseReleased:
-            // There was a drag -> gesture.
-            swallowEvent = !!m_lastSyntheticPanLocation;
-            m_lastSyntheticPanLocation.clear();
-        default:
-            break;
-        }
-    }
-
-    return swallowEvent;
-}
-
-bool EventHandler::handleWheelEventAsEmulatedGesture(const PlatformWheelEvent& event)
-{
-    if (!m_frame || !m_frame->settings() || !m_frame->settings()->touchEventEmulationEnabled())
-        return false;
-
-    // Only convert vertical wheel w/ shift into pinch for touch-enabled device convenience.
-    if (!event.shiftKey() || !event.deltaY())
-        return false;
-
-    Page* page = m_frame->page();
-    FrameView* view = m_frame->view();
-    float pageScaleFactor = page->pageScaleFactor();
-    IntPoint anchorBeforeCss(view->scrollPosition() + event.position());
-    IntPoint anchorBeforeDip(event.position());
-    anchorBeforeDip.scale(pageScaleFactor, pageScaleFactor);
-
-    float magnifyDelta = exp(event.deltaY() * 0.002f);
-    float newPageScaleFactor = pageScaleFactor * magnifyDelta;
-
-    IntPoint anchorAfterCss(anchorBeforeDip);
-    anchorAfterCss.scale(1.f / newPageScaleFactor, 1.f / newPageScaleFactor);
-    page->inspectorController().requestPageScaleFactor(newPageScaleFactor, anchorBeforeCss - toIntSize(anchorAfterCss));
-    return true;
 }
 
 TouchAction EventHandler::intersectTouchAction(TouchAction action1, TouchAction action2)

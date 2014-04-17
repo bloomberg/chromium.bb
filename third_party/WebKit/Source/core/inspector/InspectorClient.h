@@ -57,6 +57,7 @@ public:
     virtual void stopGPUEventsRecording() { }
 
     virtual void overrideDeviceMetrics(int /*width*/, int /*height*/, float /*deviceScaleFactor*/, bool /*emulateViewport*/, bool /*fitWindow*/) { }
+    virtual void setTouchEventEmulationEnabled(bool) { }
 
     virtual bool overridesShowPaintRects() { return false; }
     virtual void setShowPaintRects(bool) { }
