@@ -16,64 +16,6 @@ if (build_cpu_arch == "x64") {
   assert(false, "Need Android toolchain support for your build OS.")
 }
 
-if (is_gyp) {
-  # Set the compilers for GYP to use. This logic is only relevant to GYP where
-  # there is "a" target compiler. In native GN builds, we have separate
-  # compilers for the toolchains below, any or all of which could be active in
-  # any given build.
-  if (is_clang) {
-    # Set the GYP header for all toolchains when running under Clang.
-    make_global_settings = make_clang_global_settings
-  } else {
-    # Find the compiler for GYP for non-Clang Android.
-    if (cpu_arch == "x86") {
-      android_toolchain_arch = "x86-4.6"
-    } else if (cpu_arch == "arm") {
-      android_toolchain_arch = "arm-linux-androideabi-4.6"
-    } else if (cpu_arch == "mipsel") {
-      android_toolchain_arch = "mipsel-linux-android-4.6"
-    } else {
-      assert(false, "Need Android toolchain support for your platform.")
-    }
-
-    # The extra slash before "toolchains" is because GYP generates this and we
-    # have to match the make_global_settings character-for-character,
-    # TODO(brettw) remove extra slash before toolchains when GYP compat is no
-    # longer necessary.
-    android_toolchain =
-      "$android_ndk_root//toolchains/$android_toolchain_arch/prebuilt/$build_os-$android_host_arch/bin"
-
-    # This script will find the compilers for the given Android toolchain
-    # directory.
-    android_compilers = exec_script("find_android_compiler.py",
-                                    [android_toolchain], "value")
-    make_global_settings =
-      "['CC', '" + android_compilers[0] + "']," +
-      "['CXX', '" + android_compilers[1] + "']," +
-      "['CC.host', '" + android_compilers[2] + "']," +
-      "['CXX.host', '" + android_compilers[3] + "'],"
-  }
-
-  if (use_goma) {
-    # There is a TODO(yyanagisawa) in common.gypi about the make generator not
-    # supporting CC_wrapper without CC. As a result, we must add a condition
-    # when on the generator when we're not explicitly setting the variables
-    # above (which happens when gyp_header is empty at this point).
-    #
-    # GYP will interpret the file once for each generator, so we have to write
-    # this condition into the GYP file since the user could have more than one
-    # generator set.
-    gyp_header =
-      "'conditions': [" +
-      "['\"<(GENERATOR)\"==\"ninja\"', { 'make_global_settings': [" +
-      make_global_settings +
-      make_goma_global_settings +
-      "]}]],"
-  } else {
-    gyp_header = "'make_global_settings': [" + make_global_settings + "],"
-  }
-}
-
 gcc_toolchain("x86") {
   prefix = "$android_ndk_root/toolchains/x86-4.6/prebuilt/$build_os-$android_host_arch/bin/i686-linux-android-"
   cc  = prefix + "gcc"

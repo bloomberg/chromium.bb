@@ -110,7 +110,7 @@ class GestureProviderTest : public testing::Test, public GestureProviderClient {
     return gestures_.back();
   }
 
-  const EventType GetMostRecentGestureEventType() const {
+  EventType GetMostRecentGestureEventType() const {
     EXPECT_FALSE(gestures_.empty());
     return gestures_.back().type;
   }

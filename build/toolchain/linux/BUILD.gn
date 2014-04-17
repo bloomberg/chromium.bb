@@ -7,46 +7,6 @@ import("//build/toolchain/clang.gni")
 import("//build/toolchain/gcc_toolchain.gni")
 import("//build/toolchain/goma.gni")
 
-if (is_gyp) {
-  # Set the compilers for GYP to use. This logic is only relevant to GYP where
-  # there is "a" target compiler. In native GN builds, we have separate
-  # compilers for the toolchains below, any or all of which could be active in
-  # any given build.
-  if (is_clang) {
-    # Set the GYP header for all toolchains when running under Clang.
-    make_global_settings = make_clang_global_settings
-  } else {
-    if (cpu_arch == "mipsel") {
-      make_global_settings =
-        "['CC', '$sysroot/../bin/mipsel-linux-gnu-gcc']," +
-        "['CXX', '$sysroot/../bin/mipsel-linux-gnu-g++']," +
-        "['CC.host', '/usr/bin/gcc']," +
-        "['CXX.host', '/usr/bin/g++'],"
-    } else {
-      make_global_settings = ""
-    }
-  }
-
-  if (use_goma) {
-    # There is a TODO(yyanagisawa) in common.gypi about the make generator not
-    # supporting CC_wrapper without CC. As a result, we must add a condition
-    # when on the generator when we're not explicitly setting the variables
-    # above (which happens when gyp_header is empty at this point).
-    #
-    # GYP will interpret the file once for each generator, so we have to write
-    # this condition into the GYP file since the user could have more than one
-    # generator set.
-    gyp_header =
-      "'conditions':" +
-      "[['\"<(GENERATOR)\"==\"ninja\"', { 'make_global_settings': [" +
-      make_global_settings +
-      make_goma_global_settings +
-      "]}]],"
-  } else {
-    gyp_header = "'make_global_settings': [" + make_global_settings + "],"
-  }
-}
-
 gcc_toolchain("arm") {
   cc = "arm-linux-gnueabi-gcc"
   cxx = "arm-linux-gnueabi-g++"

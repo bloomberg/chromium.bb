@@ -347,13 +347,20 @@ component("gfx") {
     sources -= [
       "nine_image_painter.cc",
       "nine_image_painter.h",
+      "path_aura.cc",
     ]
   }
+
   if (use_x11) {
     deps += [
       ":gfx_x11",
     ]
+  } else {
+    sources -= [
+      "path_x11.cc",
+    ]
   }
+
   if (use_pango) {
     sources -= [
       "platform_font_ozone.cc",

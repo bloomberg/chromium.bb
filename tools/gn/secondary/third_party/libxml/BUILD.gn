@@ -175,6 +175,13 @@ static_library("libxml") {
       # See http://crbug.com/138571#c8
       "-Wno-ignored-attributes",
     ]
+    if (is_mac) {
+      # Mac Clang warnings.
+      cflags += [
+        # debugXML.c compares array 'arg' to NULL.
+        "-Wno-tautological-pointer-compare",
+      ]
+    }
   }
 
   include_dirs = [

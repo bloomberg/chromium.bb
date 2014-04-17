@@ -517,12 +517,8 @@ config("default_warnings") {
       ]
     }
 
-    # TODO(brettw) Ones below here should be clang-only when we have a flag
-    # for it.
     if (is_clang) {
       cflags += [
-        "-Wheader-hygiene",
-
         # This warns on using ints as initializers for floats in
         # initializer lists (e.g. |int a = f(); CGSize s = { a, a };|),
         # which happens in several places in chrome code. Not sure if
@@ -545,9 +541,6 @@ config("default_warnings") {
 
         # Clang spots more unused functions.
         "-Wno-unused-function",
-
-        # Warns when a const char[] is converted to bool.
-        "-Wstring-conversion",
       ]
     }
 

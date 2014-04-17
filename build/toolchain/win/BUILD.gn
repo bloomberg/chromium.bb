@@ -22,11 +22,6 @@ exec_script("setup_toolchain.py",
 stamp_command = "$python_path gyp-win-tool stamp \$out"
 copy_command = "$python_path gyp-win-tool recursive-mirror \$in \$out"
 
-if (use_goma) {
-  # Add the Goma compiler prefixes to the GYP file.
-  gyp_header = "'make_global_settings': [ $make_goma_global_settings ],"
-}
-
 # 32-bit toolchain -------------------------------------------------------------
 
 toolchain("32") {

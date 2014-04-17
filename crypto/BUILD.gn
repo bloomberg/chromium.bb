@@ -106,17 +106,11 @@ component("crypto") {
     ]
   }
 
-  if (!is_linux) {
+  if (use_openssl || !is_linux) {
     sources -= [
       "openpgp_symmetric_encryption.cc",
       "openpgp_symmetric_encryption.h",
     ]
-    if (use_nss) {  # Removed for non-NSS in all cases below.
-      sources -= [
-        "openpgp_symmetric_encryption.cc",
-        "openpgp_symmetric_encryption.h",
-      ]
-    }
   }
   if (!is_mac) {
     sources -= [
@@ -133,7 +127,8 @@ component("crypto") {
     ]
   }
 
-  if (!use_nss) {
+  if (use_openssl) {
+    # Remove NSS files when using OpenSSL
     sources -= [
       "ec_private_key_nss.cc",
       "ec_signature_creator_nss.cc",
@@ -153,8 +148,8 @@ component("crypto") {
       "third_party/nss/rsawrapr.c",
       "third_party/nss/secsign.cc",
     ]
-  }
-  if (!use_openssl) {
+  } else {
+    # Remove OpenSSL when using NSS.
     sources -= [
       "ec_private_key_openssl.cc",
       "ec_signature_creator_openssl.cc",

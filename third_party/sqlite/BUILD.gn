@@ -65,7 +65,7 @@ source_set("sqlite") {
     ]
     libs = [ "dl" ]
   } else if (is_mac || is_ios) {
-    libs += [ "CoreFoundation.framework" ]
+    libs = [ "CoreFoundation.framework" ]
   } else if (is_android) {
     defines += [
       "HAVE_USLEEP=1",

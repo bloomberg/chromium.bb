@@ -65,7 +65,8 @@ static_library("minizip") {
       "contrib/minizip/iowin32.c",
       "contrib/minizip/iowin32.h",
     ]
-  } else if (is_mac || is_ios || is_android) {
+  }
+  if (is_mac || is_ios || is_android) {
     # Mac, Android and the BSDs don't have fopen64, ftello64, or fseeko64. We
     # use fopen, ftell, and fseek instead on these systems.
     defines = [ "USE_FILE32API" ]

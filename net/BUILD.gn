@@ -281,7 +281,7 @@ component("net") {
     ]
   }
 
-  if (!use_nss) {
+  if (use_openssl) {
     sources -= [
       "cert/cert_verify_proc_nss.cc",
       "cert/cert_verify_proc_nss.h",
@@ -396,19 +396,15 @@ component("net") {
   }
 
   if (is_mac) {
-    sources -= [
-      "ssl/client_cert_store_nss.cc",
-      "ssl/client_cert_store_nss.h",
-    ]
     deps += [
       "//third_party/nss:nspr",
       "//third_party/nss",
     ]
     libs = [
-      "$SDKROOT/System/Library/Frameworks/Foundation.framework",
-      "$SDKROOT/System/Library/Frameworks/Security.framework",
-      "$SDKROOT/System/Library/Frameworks/SystemConfiguration.framework",
-      "$SDKROOT/usr/lib/libresolv.dylib",
+      "Foundation.framework",
+      "Security.framework",
+      "SystemConfiguration.framework",
+      "resolv",
     ]
   }
 
@@ -418,11 +414,11 @@ component("net") {
       "//third_party/nss",
     ]
     libs = [
-      "$SDKROOT/System/Library/Frameworks/CFNetwork.framework",
-      "$SDKROOT/System/Library/Frameworks/MobileCoreServices.framework",
-      "$SDKROOT/System/Library/Frameworks/Security.framework",
-      "$SDKROOT/System/Library/Frameworks/SystemConfiguration.framework",
-      "$SDKROOT/usr/lib/libresolv.dylib",
+      "CFNetwork.framework",
+      "MobileCoreServices.framework",
+      "Security.framework",
+      "SystemConfiguration.framework",
+      "resolv",
     ]
   }
 

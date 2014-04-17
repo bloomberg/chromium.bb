@@ -102,11 +102,10 @@ config("feature_flags") {
   if (use_glib) {
     defines += [ "USE_GLIB=1" ]
   }
-  if (use_nss) {
-    defines += [ "USE_NSS=1" ]
-  }
   if (use_openssl) {
     defines += [ "USE_OPENSSL=1" ]
+  } else {
+    defines += [ "USE_NSS=1" ]
   }
   if (use_ozone) {
     defines += [ "USE_OZONE=1" ]

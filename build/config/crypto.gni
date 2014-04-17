@@ -12,9 +12,3 @@ declare_args() {
   # code, and is experimental in other cases (see http://crbug.com/62803).
   use_openssl = is_android || is_nacl
 }
-
-if (is_linux && !use_openssl) {
-  use_nss = true
-} else {
-  use_nss = false
-}

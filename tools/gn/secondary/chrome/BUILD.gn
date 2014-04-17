@@ -81,7 +81,7 @@ static_library("browser") {
 }
 
 static_library("common") {
-  if (use_nss && is_linux) {
+  if (!use_openssl && is_linux) {
     # common/net uses NSS.
     # TODO(brettw) have a better way to express this without having to do
     # "if (use_nss)" everywhere.

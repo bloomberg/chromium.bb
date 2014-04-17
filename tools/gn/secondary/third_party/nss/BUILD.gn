@@ -213,11 +213,16 @@ if (is_linux) {
 
     configs -= [
       "//build/config/compiler:chromium_code",
-      "//build/config/win:unicode",  # Requires 8-bit mode.
-      "//build/config/win:lean_and_mean",  # Won"t compile with lean and mean.
     ]
+    if (is_win) {
+      configs -= [
+        "//build/config/win:unicode",  # Requires 8-bit mode.
+        "//build/config/win:lean_and_mean",  # Won"t compile with lean and mean.
+      ]
+    }
     configs += [ "//build/config/compiler:no_chromium_code" ]
 
+    cflags = []
     defines = [
       "_NSPR_BUILD",
       "FORCE_PR_LOG",
@@ -430,8 +435,13 @@ if (is_linux) {
 
     configs -= [
       "//build/config/compiler:chromium_code"
-      "//build/config/win:unicode",  # Requires 8-bit mode.
     ]
+
+    if (is_win) {
+      configs -= [
+        "//build/config/win:unicode",  # Requires 8-bit mode.
+      ]
+    }
     configs += [ "//build/config/compiler:no_chromium_code" ]
 
     include_dirs = [ "nss/lib/ckfw" ]
@@ -828,8 +838,12 @@ if (is_linux) {
 
     configs -= [
       "//build/config/compiler:chromium_code"
-      "//build/config/win:unicode",  # Requires 8-bit mode.
     ]
+    if (is_win) {
+      configs -= [
+        "//build/config/win:unicode",  # Requires 8-bit mode.
+      ]
+    }
     configs += [ "//build/config/compiler:no_chromium_code" ]
     direct_dependent_configs = [ ":nss_static_config" ]
 

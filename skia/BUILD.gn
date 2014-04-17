@@ -74,11 +74,19 @@ config("skia_config") {
   }
 }
 
-config("skia_dependent_config") {
-}
-
 # Internal-facing config for Skia library code.
 config("skia_library_config") {
+  # These include directories are only included for Skia code and are not
+  # exported to dependents. It's not clear if this is on purpose, but this
+  # matches the GYP build.
+  include_dirs = []
+  if (is_mac || is_ios) {
+    include_dirs += [ "//third_party/skia/include/utils/mac" ]
+  }
+  if (is_mac) {
+    include_dirs += [ "//third_party/skia/include/utils/ios" ]
+  }
+
   defines = [
     #skia_export_defines ???) TODO
 
@@ -250,8 +258,6 @@ component("skia") {
       "//third_party/skia/src/ports/SkOSFile_posix.cpp",
       "//third_party/skia/src/ports/SkTime_Unix.cpp",
       "//third_party/skia/src/ports/SkTLS_pthread.cpp",
-      "//third_party/skia/src/ports/SkFontConfigInterface_direct.cpp",
-      "//third_party/skia/src/fonts/SkFontMgr_fontconfig.cpp",
     ]
   } else {
     sources -= [
@@ -277,6 +283,8 @@ component("skia") {
   }
   if (!is_linux) {
     sources -= [
+      "//third_party/skia/src/fonts/SkFontMgr_fontconfig.cpp",
+      "//third_party/skia/src/ports/SkFontConfigInterface_direct.cpp",
       "//third_party/skia/src/ports/SkFontHost_FreeType.cpp",
       "//third_party/skia/src/ports/SkFontHost_FreeType_common.cpp",
       "//third_party/skia/src/ports/SkFontHost_fontconfig.cpp",
@@ -300,6 +308,13 @@ component("skia") {
       "ext/bitmap_platform_device_cairo.cc",
       "ext/bitmap_platform_device_cairo.h",
     ]
+  }
+
+  if (is_clang) {
+    # Skia won't compile with some of the more strict clang warnings.
+    # e.g. it does:
+    #  SkASSERT(!"sk_out_of_memory");
+    configs -= [ "//build/config/clang:extra_warnings" ]
   }
 
   configs -= [ "//build/config/compiler:chromium_code" ]

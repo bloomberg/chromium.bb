@@ -42,10 +42,6 @@ declare_args() {
   # the default toolchain to 64-bit.
   force_win64 = false
 
-  # Set to true on the command line when invoked by GYP. Build files can key
-  # off of this to make any GYP-output-specific changes to the build.
-  is_gyp = false
-
   # Selects the desired build flavor. Official builds get additional
   # processing to prepare for release. Normally you will want to develop and
   # test with this flag off.
@@ -67,13 +63,6 @@ declare_args() {
 
   # Compile for Thread Sanitizer to find threading bugs.
   is_tsan = false
-
-  # When running in gyp-generating mode, this is the root of the build tree.
-  gyp_output_dir = "out"
-
-  # When running in gyp-generating mode, this flag indicates if the current GYP
-  # generator is xcode. Can only be true when building for iOS).
-  is_gyp_xcode_generator = false
 }
 
 # =============================================================================
@@ -365,7 +354,10 @@ if (!is_win) {
   native_compiler_configs += [ "//build/config/gcc:symbol_visibility_hidden" ]
 }
 if (is_clang) {
-  native_compiler_configs += [ "//build/config/clang:find_bad_constructs" ]
+  native_compiler_configs += [
+    "//build/config/clang:find_bad_constructs",
+    "//build/config/clang:extra_warnings",
+  ]
 }
 
 # Optimizations and debug checking.

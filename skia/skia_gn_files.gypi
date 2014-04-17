@@ -801,7 +801,6 @@
     '<(skia_src_path)/utils/debugger/SkDrawCommand.h',
     '<(skia_src_path)/utils/debugger/SkObjectParser.cpp',
     '<(skia_src_path)/utils/debugger/SkObjectParser.h',
-    '<(skia_src_path)/utils/mac/SkCreateCGImageRef.cpp',
     '<(skia_src_path)/utils/SkBase64.cpp',
     '<(skia_src_path)/utils/SkBase64.h',
     '<(skia_src_path)/utils/SkBitmapHasher.cpp',
