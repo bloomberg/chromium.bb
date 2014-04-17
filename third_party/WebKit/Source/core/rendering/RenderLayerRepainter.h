@@ -69,12 +69,12 @@ public:
     LayoutRect repaintRect() const { return m_repaintRect; }
     LayoutRect repaintRectIncludingNonCompositingDescendants() const;
 
-    void repaintAfterLayout(RenderGeometryMap*, bool shouldCheckForRepaint);
+    void repaintAfterLayout(bool shouldCheckForRepaint);
     void repaintIncludingNonCompositingDescendants(RenderLayerModelObject* repaintContainer);
 
     void setRepaintStatus(RepaintStatus status) { m_repaintStatus = status; }
 
-    void computeRepaintRects(const RenderLayerModelObject* repaintContainer, const RenderGeometryMap* = 0);
+    void computeRepaintRects(const RenderLayerModelObject* repaintContainer);
     void computeRepaintRectsIncludingDescendants();
 
     // Indicate that the layer contents need to be repainted. Only has an effect

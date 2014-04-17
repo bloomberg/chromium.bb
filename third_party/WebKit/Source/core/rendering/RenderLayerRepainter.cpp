@@ -57,7 +57,7 @@ RenderLayerRepainter::RenderLayerRepainter(RenderLayerModelObject* renderer)
 {
 }
 
-void RenderLayerRepainter::repaintAfterLayout(RenderGeometryMap* geometryMap, bool shouldCheckForRepaint)
+void RenderLayerRepainter::repaintAfterLayout(bool shouldCheckForRepaint)
 {
     if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
         return;
@@ -75,7 +75,7 @@ void RenderLayerRepainter::repaintAfterLayout(RenderGeometryMap* geometryMap, bo
 
         RenderLayerModelObject* repaintContainer = m_renderer->containerForRepaint();
         LayoutRect oldRepaintRect = m_repaintRect;
-        computeRepaintRects(repaintContainer, geometryMap);
+        computeRepaintRects(repaintContainer);
         shouldCheckForRepaint &= shouldRepaintLayer();
 
         if (shouldCheckForRepaint) {
@@ -104,7 +104,7 @@ void RenderLayerRepainter::clearRepaintRects()
     m_repaintRect = IntRect();
 }
 
-void RenderLayerRepainter::computeRepaintRects(const RenderLayerModelObject* repaintContainer, const RenderGeometryMap* geometryMap)
+void RenderLayerRepainter::computeRepaintRects(const RenderLayerModelObject* repaintContainer)
 {
     if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
         return;

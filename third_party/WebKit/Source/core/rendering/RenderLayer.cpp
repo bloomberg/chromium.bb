@@ -316,7 +316,7 @@ void RenderLayer::updateLayerPositions(RenderGeometryMap* geometryMap, UpdateLay
         m_enclosingPaginationLayer = 0;
     }
 
-    repainter().repaintAfterLayout(geometryMap, flags & CheckForRepaint);
+    repainter().repaintAfterLayout(flags & CheckForRepaint);
 
     // Go ahead and update the reflection's position and size.
     if (m_reflectionInfo)
@@ -503,7 +503,7 @@ void RenderLayer::updateLayerPositionsAfterScroll(RenderGeometryMap* geometryMap
 
     if ((flags & IsOverflowScroll) && (flags & HasSeenAncestorWithOverflowClip) && !m_canSkipRepaintRectsUpdateOnScroll) {
         // FIXME: We could track the repaint container as we walk down the tree.
-        repainter().computeRepaintRects(renderer()->containerForRepaint(), geometryMap);
+        repainter().computeRepaintRects(renderer()->containerForRepaint());
     } else {
         // Check that RenderLayerRepainter's cached rects are correct.
         // FIXME: re-enable these assertions when the issue with table cells is resolved: https://bugs.webkit.org/show_bug.cgi?id=103432
