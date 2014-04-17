@@ -106,6 +106,7 @@ protected:
     void updateInheritedTime(double inheritedTime) const;
     void invalidate() const { m_needsUpdate = true; };
     bool hasEvents() const { return m_eventDelegate; }
+    void clearEventDelegate() { m_eventDelegate = nullptr; }
 
 private:
 

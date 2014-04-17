@@ -233,6 +233,7 @@ void Animation::notifyElementDestroyed()
     // destructor called when we call SampledEffect::clear(), so we need to
     // clear m_sampledEffect first.
     m_target = 0;
+    clearEventDelegate();
     SampledEffect* sampledEffect = m_sampledEffect;
     m_sampledEffect = 0;
     if (sampledEffect)
