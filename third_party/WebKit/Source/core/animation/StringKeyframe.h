@@ -62,7 +62,6 @@ private:
 
     StringKeyframe(const StringKeyframe& copyFrom);
 
-    void setPropertyCSSValue(CSSPropertyID, CSSValue*);
     virtual PassRefPtrWillBeRawPtr<Keyframe> clone() const OVERRIDE;
     virtual PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> createPropertySpecificKeyframe(CSSPropertyID) const OVERRIDE;
 
