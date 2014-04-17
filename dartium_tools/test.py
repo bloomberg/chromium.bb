@@ -167,7 +167,7 @@ def main():
         'dart',
       ),
       'linux': ('out', 'content_shell', 'chrome', 'dart'),
-      'win': ('build', 'content_shell.exe', 'chrome.exe', 'dart.exe'),
+      'win': ('out', 'content_shell.exe', 'chrome.exe', 'dart.exe'),
       'win-ninja': ('out', 'content_shell.exe', 'chrome.exe', 'dart.exe'),
   }[host_os]
 
