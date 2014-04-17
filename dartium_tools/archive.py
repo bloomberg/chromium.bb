@@ -22,7 +22,8 @@ if HOST_OS == 'mac':
 elif HOST_OS == 'linux':
   VERSION_FILE = 'VERSION'
   CONTENTSHELL_FILES = ['content_shell', 'content_shell.pak', 'fonts.conf',
-                        'libffmpegsumo.so', 'libosmesa.so', 'lib']
+                        'libffmpegsumo.so', 'libosmesa.so', 'lib',
+                        'icudtl.dat']
   CHROMEDRIVER_FILES = ['chromedriver']
 elif HOST_OS == 'win':
   VERSION_FILE = 'VERSION'
