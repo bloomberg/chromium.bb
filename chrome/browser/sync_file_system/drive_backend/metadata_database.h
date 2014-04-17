@@ -141,7 +141,8 @@ class MetadataDatabase {
   // If |env_override| is non-NULL, internal LevelDB uses |env_override| instead
   // of leveldb::Env::Default().  Use leveldb::MemEnv in test code for faster
   // testing.
-  static void Create(base::SequencedTaskRunner* task_runner,
+  static void Create(base::SequencedTaskRunner* worker_task_runner,
+                     base::SequencedTaskRunner* file_task_runner,
                      const base::FilePath& database_path,
                      leveldb::Env* env_override,
                      const CreateCallback& callback);
@@ -354,16 +355,16 @@ class MetadataDatabase {
 
  private:
   friend class MetadataDatabaseTest;
+  struct CreateParam;
 
-  MetadataDatabase(base::SequencedTaskRunner* task_runner,
+  MetadataDatabase(base::SequencedTaskRunner* worker_task_runner,
+                   base::SequencedTaskRunner* file_task_runner,
                    const base::FilePath& database_path,
                    leveldb::Env* env_override);
-  static void CreateOnTaskRunner(base::SingleThreadTaskRunner* callback_runner,
-                                 base::SequencedTaskRunner* task_runner,
-                                 const base::FilePath& database_path,
-                                 leveldb::Env* env_override,
-                                 const CreateCallback& callback);
-  SyncStatusCode InitializeOnTaskRunner();
+  static void CreateOnFileTaskRunner(
+      scoped_ptr<CreateParam> create_param,
+      const CreateCallback& callback);
+  SyncStatusCode InitializeOnFileTaskRunner();
   void BuildIndexes(DatabaseContents* contents);
 
   // Database manipulation methods.
@@ -423,7 +424,8 @@ class MetadataDatabase {
                                   const std::string& file_id,
                                   leveldb::WriteBatch* batch);
 
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> worker_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
   base::FilePath database_path_;
   leveldb::Env* env_override_;
   scoped_ptr<leveldb::DB> db_;

@@ -105,9 +105,17 @@ scoped_ptr<FileTracker> CreateInitialAppRootTracker(
   return app_root_tracker.Pass();
 }
 
-void AdaptLevelDBStatusToSyncStatusCode(const SyncStatusCallback& callback,
-                                        const leveldb::Status& status) {
-  callback.Run(LevelDBStatusToSyncStatusCode(status));
+void WriteOnFileTaskRunner(
+    leveldb::DB* db,
+    scoped_ptr<leveldb::WriteBatch> batch,
+    scoped_refptr<base::SequencedTaskRunner> worker_task_runner,
+    const SyncStatusCallback& callback) {
+  DCHECK(db);
+  DCHECK(batch);
+  leveldb::Status status = db->Write(leveldb::WriteOptions(), batch.get());
+  worker_task_runner->PostTask(
+      FROM_HERE,
+      base::Bind(callback, LevelDBStatusToSyncStatusCode(status)));
 }
 
 std::string GetTrackerTitle(const FileTracker& tracker) {
@@ -351,11 +359,6 @@ SyncStatusCode RemoveUnreachableItems(DatabaseContents* contents,
   contents->file_metadata = referred_file_metadata.Pass();
 
   return SYNC_STATUS_OK;
-}
-
-void RunSoon(const tracked_objects::Location& from_here,
-             const base::Closure& closure) {
-  base::MessageLoopProxy::current()->PostTask(from_here, closure);
 }
 
 bool HasInvalidTitle(const std::string& title) {
@@ -609,19 +612,40 @@ void RemoveFileTracker(int64 tracker_id,
 
 }  // namespace
 
+struct MetadataDatabase::CreateParam {
+  scoped_refptr<base::SequencedTaskRunner> worker_task_runner;
+  scoped_refptr<base::SequencedTaskRunner> file_task_runner;
+  base::FilePath database_path;
+  leveldb::Env* env_override;
+
+  CreateParam(base::SequencedTaskRunner* worker_task_runner,
+              base::SequencedTaskRunner* file_task_runner,
+              const base::FilePath& database_path,
+              leveldb::Env* env_override)
+      : worker_task_runner(worker_task_runner),
+        file_task_runner(file_task_runner),
+        database_path(database_path),
+        env_override(env_override) {
+  }
+};
+
 DatabaseContents::DatabaseContents() {}
 DatabaseContents::~DatabaseContents() {}
 
 // static
-void MetadataDatabase::Create(base::SequencedTaskRunner* task_runner,
+void MetadataDatabase::Create(base::SequencedTaskRunner* worker_task_runner,
+                              base::SequencedTaskRunner* file_task_runner,
                               const base::FilePath& database_path,
                               leveldb::Env* env_override,
                               const CreateCallback& callback) {
-  task_runner->PostTask(FROM_HERE, base::Bind(
-      &CreateOnTaskRunner,
-      base::MessageLoopProxy::current(),
-      make_scoped_refptr(task_runner),
-      database_path, env_override, callback));
+  file_task_runner->PostTask(FROM_HERE, base::Bind(
+      &MetadataDatabase::CreateOnFileTaskRunner,
+      base::Passed(make_scoped_ptr(new CreateParam(
+          worker_task_runner,
+          file_task_runner,
+          database_path,
+          env_override))),
+      callback));
 }
 
 // static
@@ -630,30 +654,31 @@ SyncStatusCode MetadataDatabase::CreateForTesting(
     scoped_ptr<MetadataDatabase>* metadata_database_out) {
   scoped_ptr<MetadataDatabase> metadata_database(
       new MetadataDatabase(base::MessageLoopProxy::current(),
+                           base::MessageLoopProxy::current(),
                            base::FilePath(), NULL));
   metadata_database->db_ = db.Pass();
   SyncStatusCode status =
-      metadata_database->InitializeOnTaskRunner();
+      metadata_database->InitializeOnFileTaskRunner();
   if (status == SYNC_STATUS_OK)
     *metadata_database_out = metadata_database.Pass();
   return status;
 }
 
 MetadataDatabase::~MetadataDatabase() {
-  task_runner_->DeleteSoon(FROM_HERE, db_.release());
+  file_task_runner_->DeleteSoon(FROM_HERE, db_.release());
 }
 
 // static
 void MetadataDatabase::ClearDatabase(
     scoped_ptr<MetadataDatabase> metadata_database) {
   DCHECK(metadata_database);
-  scoped_refptr<base::SequencedTaskRunner> task_runner =
-      metadata_database->task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> file_task_runner =
+      metadata_database->file_task_runner_;
   base::FilePath database_path = metadata_database->database_path_;
   DCHECK(!database_path.empty());
   metadata_database.reset();
 
-  task_runner->PostTask(
+  file_task_runner->PostTask(
       FROM_HERE,
       base::Bind(base::IgnoreResult(base::DeleteFile),
                  database_path, true /* recursive */));
@@ -715,13 +740,17 @@ void MetadataDatabase::RegisterApp(const std::string& app_id,
                                    const SyncStatusCallback& callback) {
   if (index_->GetAppRootTracker(app_id)) {
     // The app-root is already registered.
-    RunSoon(FROM_HERE, base::Bind(callback, SYNC_STATUS_OK));
+    worker_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(callback, SYNC_STATUS_OK));
     return;
   }
 
   TrackerIDSet trackers = index_->GetFileTrackerIDsByFileID(folder_id);
   if (trackers.empty()) {
-    RunSoon(FROM_HERE, base::Bind(callback, SYNC_DATABASE_ERROR_NOT_FOUND));
+    worker_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(callback, SYNC_DATABASE_ERROR_NOT_FOUND));
     return;
   }
 
@@ -729,7 +758,9 @@ void MetadataDatabase::RegisterApp(const std::string& app_id,
     // The folder is tracked by another tracker.
     util::Log(logging::LOG_WARNING, FROM_HERE,
               "Failed to register App for %s", app_id.c_str());
-    RunSoon(FROM_HERE, base::Bind(callback, SYNC_STATUS_HAS_CONFLICT));
+    worker_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(callback, SYNC_STATUS_HAS_CONFLICT));
     return;
   }
 
@@ -737,7 +768,9 @@ void MetadataDatabase::RegisterApp(const std::string& app_id,
   if (!sync_root_tracker_id) {
     util::Log(logging::LOG_WARNING, FROM_HERE,
               "Sync-root needs to be set up before registering app-root");
-    RunSoon(FROM_HERE, base::Bind(callback, SYNC_DATABASE_ERROR_NOT_FOUND));
+    worker_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(callback, SYNC_DATABASE_ERROR_NOT_FOUND));
     return;
   }
 
@@ -745,7 +778,9 @@ void MetadataDatabase::RegisterApp(const std::string& app_id,
       CloneFileTracker(FilterFileTrackersByParent(*index_, trackers,
                                                   sync_root_tracker_id));
   if (!tracker) {
-    RunSoon(FROM_HERE, base::Bind(callback, SYNC_DATABASE_ERROR_NOT_FOUND));
+    worker_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(callback, SYNC_DATABASE_ERROR_NOT_FOUND));
     return;
   }
 
@@ -767,12 +802,16 @@ void MetadataDatabase::DisableApp(const std::string& app_id,
   scoped_ptr<FileTracker> tracker =
       CloneFileTracker(index_->GetFileTracker(tracker_id));
   if (!tracker) {
-    RunSoon(FROM_HERE, base::Bind(callback, SYNC_DATABASE_ERROR_NOT_FOUND));
+    worker_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(callback, SYNC_DATABASE_ERROR_NOT_FOUND));
     return;
   }
 
   if (tracker->tracker_kind() == TRACKER_KIND_DISABLED_APP_ROOT) {
-    RunSoon(FROM_HERE, base::Bind(callback, SYNC_STATUS_OK));
+    worker_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(callback, SYNC_STATUS_OK));
     return;
   }
 
@@ -796,12 +835,16 @@ void MetadataDatabase::EnableApp(const std::string& app_id,
   scoped_ptr<FileTracker> tracker =
       CloneFileTracker(index_->GetFileTracker(tracker_id));
   if (!tracker) {
-    RunSoon(FROM_HERE, base::Bind(callback, SYNC_DATABASE_ERROR_NOT_FOUND));
+    worker_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(callback, SYNC_DATABASE_ERROR_NOT_FOUND));
     return;
   }
 
   if (tracker->tracker_kind() == TRACKER_KIND_APP_ROOT) {
-    RunSoon(FROM_HERE, base::Bind(callback, SYNC_STATUS_OK));
+    worker_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(callback, SYNC_STATUS_OK));
     return;
   }
 
@@ -824,7 +867,9 @@ void MetadataDatabase::UnregisterApp(const std::string& app_id,
   scoped_ptr<FileTracker> tracker =
       CloneFileTracker(index_->GetFileTracker(tracker_id));
   if (!tracker || tracker->tracker_kind() == TRACKER_KIND_REGULAR) {
-    RunSoon(FROM_HERE, base::Bind(callback, SYNC_STATUS_OK));
+    worker_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(callback, SYNC_STATUS_OK));
     return;
   }
 
@@ -1096,7 +1141,9 @@ void MetadataDatabase::ReplaceActiveTrackerWithNewResource(
                                  resource.file_id());
   if (!to_be_activated) {
     NOTREACHED();
-    RunSoon(FROM_HERE, base::Bind(callback, SYNC_STATUS_FAILED));
+    worker_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(callback, SYNC_STATUS_FAILED));
     return;
   }
 
@@ -1121,7 +1168,9 @@ void MetadataDatabase::PopulateFolderByChildList(
   if (!trackers.has_active()) {
     // It's OK that there is no folder to populate its children.
     // Inactive folders should ignore their contents updates.
-    RunSoon(FROM_HERE, base::Bind(callback, SYNC_STATUS_OK));
+    worker_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(callback, SYNC_STATUS_OK));
     return;
   }
 
@@ -1129,7 +1178,9 @@ void MetadataDatabase::PopulateFolderByChildList(
       CloneFileTracker(index_->GetFileTracker(trackers.active_tracker()));
   if (!folder_tracker) {
     NOTREACHED();
-    RunSoon(FROM_HERE, base::Bind(callback, SYNC_STATUS_FAILED));
+    worker_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(callback, SYNC_STATUS_FAILED));
     return;
   }
 
@@ -1165,7 +1216,9 @@ void MetadataDatabase::UpdateTracker(int64 tracker_id,
                                      const SyncStatusCallback& callback) {
   const FileTracker* tracker = index_->GetFileTracker(tracker_id);
   if (!tracker) {
-    RunSoon(FROM_HERE, base::Bind(callback, SYNC_DATABASE_ERROR_NOT_FOUND));
+    worker_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(callback, SYNC_DATABASE_ERROR_NOT_FOUND));
     return;
   }
   DCHECK(tracker);
@@ -1267,7 +1320,9 @@ MetadataDatabase::ActivationStatus MetadataDatabase::TryActivateTracker(
   const FileMetadata* metadata = index_->GetFileMetadata(file_id);
   if (!metadata) {
     NOTREACHED();
-    RunSoon(FROM_HERE, base::Bind(callback, SYNC_STATUS_FAILED));
+    worker_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(callback, SYNC_STATUS_FAILED));
     return ACTIVATION_PENDING;
   }
   std::string title = metadata->details().title();
@@ -1421,38 +1476,44 @@ void MetadataDatabase::GetRegisteredAppIDs(std::vector<std::string>* app_ids) {
   *app_ids = index_->GetRegisteredAppIDs();
 }
 
-MetadataDatabase::MetadataDatabase(base::SequencedTaskRunner* task_runner,
-                                   const base::FilePath& database_path,
-                                   leveldb::Env* env_override)
-    : task_runner_(task_runner),
+MetadataDatabase::MetadataDatabase(
+    base::SequencedTaskRunner* worker_task_runner,
+    base::SequencedTaskRunner* file_task_runner,
+    const base::FilePath& database_path,
+    leveldb::Env* env_override)
+    : worker_task_runner_(worker_task_runner),
+      file_task_runner_(file_task_runner),
       database_path_(database_path),
       env_override_(env_override),
       largest_known_change_id_(0),
       weak_ptr_factory_(this) {
-  DCHECK(task_runner);
+  DCHECK(worker_task_runner);
+  DCHECK(file_task_runner);
 }
 
 // static
-void MetadataDatabase::CreateOnTaskRunner(
-    base::SingleThreadTaskRunner* callback_runner,
-    base::SequencedTaskRunner* task_runner,
-    const base::FilePath& database_path,
-    leveldb::Env* env_override,
+void MetadataDatabase::CreateOnFileTaskRunner(
+    scoped_ptr<CreateParam> create_param,
     const CreateCallback& callback) {
   scoped_ptr<MetadataDatabase> metadata_database(
-      new MetadataDatabase(task_runner, database_path, env_override));
+      new MetadataDatabase(create_param->worker_task_runner.get(),
+                           create_param->file_task_runner.get(),
+                           create_param->database_path,
+                           create_param->env_override));
   SyncStatusCode status =
-      metadata_database->InitializeOnTaskRunner();
+      metadata_database->InitializeOnFileTaskRunner();
   if (status != SYNC_STATUS_OK)
     metadata_database.reset();
 
-  callback_runner->PostTask(FROM_HERE, base::Bind(
-      callback, status, base::Passed(&metadata_database)));
+  create_param->worker_task_runner->PostTask(
+      FROM_HERE,
+      base::Bind(
+          callback, status, base::Passed(&metadata_database)));
 }
 
-SyncStatusCode MetadataDatabase::InitializeOnTaskRunner() {
+SyncStatusCode MetadataDatabase::InitializeOnFileTaskRunner() {
   base::ThreadRestrictions::AssertIOAllowed();
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
 
   SyncStatusCode status = SYNC_STATUS_UNKNOWN;
   bool created = false;
@@ -1736,18 +1797,19 @@ void MetadataDatabase::UpdateByFileMetadata(
 void MetadataDatabase::WriteToDatabase(scoped_ptr<leveldb::WriteBatch> batch,
                                        const SyncStatusCallback& callback) {
   if (!batch) {
-    RunSoon(FROM_HERE, base::Bind(callback, SYNC_STATUS_OK));
+    worker_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(callback, SYNC_STATUS_OK));
     return;
   }
 
-  base::PostTaskAndReplyWithResult(
-      task_runner_.get(),
+  file_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&leveldb::DB::Write,
+      base::Bind(&WriteOnFileTaskRunner,
                  base::Unretained(db_.get()),
-                 leveldb::WriteOptions(),
-                 base::Owned(batch.release())),
-      base::Bind(&AdaptLevelDBStatusToSyncStatusCode, callback));
+                 base::Passed(&batch),
+                 worker_task_runner_,
+                 callback));
 }
 
 scoped_ptr<base::ListValue> MetadataDatabase::DumpFiles(

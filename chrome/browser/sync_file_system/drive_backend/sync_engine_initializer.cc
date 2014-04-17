@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "chrome/browser/drive/drive_api_service.h"
 #include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
@@ -108,7 +109,12 @@ void SyncEngineInitializer::RunPreflight(scoped_ptr<SyncTaskToken> token) {
     return;
   }
 
+  // TODO(tzik): Stop using MessageLoopProxy before moving out from UI thread.
+  scoped_refptr<base::SequencedTaskRunner> worker_task_runner(
+      base::MessageLoopProxy::current());
+
   MetadataDatabase::Create(
+      worker_task_runner.get(),
       task_runner_.get(), database_path_, env_override_,
       base::Bind(&SyncEngineInitializer::DidCreateMetadataDatabase,
                  weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)));

@@ -108,6 +108,7 @@ class SyncEngineInitializerTest : public testing::Test {
     scoped_ptr<MetadataDatabase> database;
     MetadataDatabase::Create(
         base::MessageLoopProxy::current(),
+        base::MessageLoopProxy::current(),
         database_path(),
         in_memory_env_.get(),
         CreateResultReceiver(&status, &database));
