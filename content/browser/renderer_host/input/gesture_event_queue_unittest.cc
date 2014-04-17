@@ -663,6 +663,224 @@ TEST_F(GestureEventQueueTest, CoalescesMultiplePinchEventSequences) {
   EXPECT_EQ(1, merged_event.modifiers);
 }
 
+TEST_F(GestureEventQueueTest, CoalescesPinchSequencesWithEarlyAck) {
+  // Turn off debounce handling for test isolation.
+  DisableDebounce();
+
+  SimulateGestureEvent(WebInputEvent::GestureScrollBegin,
+                       WebGestureEvent::Touchscreen);
+  SendInputEventACK(WebInputEvent::GestureScrollBegin,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  SimulateGestureEvent(WebInputEvent::GesturePinchBegin,
+                       WebGestureEvent::Touchscreen);
+  SendInputEventACK(WebInputEvent::GesturePinchBegin,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  // ScrollBegin and PinchBegin have been sent
+  EXPECT_EQ(2U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(0U, GestureEventQueueSize());
+
+  SimulateGestureScrollUpdateEvent(5, 5, 1);
+  EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(WebInputEvent::GestureScrollUpdate,
+            GestureEventLastQueueEvent().type);
+  EXPECT_EQ(1U, GestureEventQueueSize());
+
+
+  SimulateGesturePinchUpdateEvent(2, 60, 60, 1);
+  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(WebInputEvent::GesturePinchUpdate,
+            GestureEventLastQueueEvent().type);
+  EXPECT_EQ(2U, GestureEventQueueSize());
+
+  SimulateGesturePinchUpdateEvent(3, 60, 60, 1);
+  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(WebInputEvent::GesturePinchUpdate,
+            GestureEventLastQueueEvent().type);
+  EXPECT_EQ(2U, GestureEventQueueSize());
+
+  SimulateGestureScrollUpdateEvent(5, 5, 1);
+  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
+  // The coalesced pinch/scroll pair will have been re-arranged, with the
+  // pinch following the scroll.
+  EXPECT_EQ(WebInputEvent::GesturePinchUpdate,
+            GestureEventLastQueueEvent().type);
+  EXPECT_EQ(3U, GestureEventQueueSize());
+
+  SimulateGesturePinchUpdateEvent(4, 60, 60, 1);
+  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(3U, GestureEventQueueSize());
+
+  SendInputEventACK(WebInputEvent::GestureScrollUpdate,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(2U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(2U, GestureEventQueueSize());
+
+  SendInputEventACK(WebInputEvent::GestureScrollUpdate,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(WebInputEvent::GestureScrollUpdate, last_acked_event().type);
+
+  SendInputEventACK(WebInputEvent::GesturePinchUpdate,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(WebInputEvent::GesturePinchUpdate, last_acked_event().type);
+  EXPECT_EQ(2.f * 3.f * 4.f, last_acked_event().data.pinchUpdate.scale);
+
+  EXPECT_EQ(0U, GestureEventQueueSize());
+}
+
+TEST_F(GestureEventQueueTest,
+       DoesNotCoalescePinchGestureEventsWithDifferentModifiers) {
+  // Turn off debounce handling for test isolation.
+  DisableDebounce();
+
+  // Insert an event to force queueing of gestures.
+  SimulateGestureEvent(WebInputEvent::GestureTapCancel,
+                       WebGestureEvent::Touchscreen);
+  EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(1U, GestureEventQueueSize());
+
+  SimulateGestureScrollUpdateEvent(5, 5, 1);
+  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(2U, GestureEventQueueSize());
+
+  SimulateGesturePinchUpdateEvent(3, 60, 60, 1);
+  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(3U, GestureEventQueueSize());
+
+  SimulateGestureScrollUpdateEvent(10, 15, 1);
+  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(3U, GestureEventQueueSize());
+
+  SimulateGesturePinchUpdateEvent(4, 60, 60, 1);
+  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(3U, GestureEventQueueSize());
+
+  // Using different modifiers should prevent coalescing.
+  SimulateGesturePinchUpdateEvent(5, 60, 60, 2);
+  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(4U, GestureEventQueueSize());
+
+  SimulateGesturePinchUpdateEvent(6, 60, 60, 3);
+  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(5U, GestureEventQueueSize());
+
+  SendInputEventACK(WebInputEvent::GestureTapCancel,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(2U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(4U, GestureEventQueueSize());
+
+  SendInputEventACK(WebInputEvent::GestureScrollUpdate,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(WebInputEvent::GestureScrollUpdate, last_acked_event().type);
+  EXPECT_EQ(3U, GestureEventQueueSize());
+
+  SendInputEventACK(WebInputEvent::GesturePinchUpdate,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(WebInputEvent::GesturePinchUpdate, last_acked_event().type);
+  EXPECT_EQ(3.f * 4.f, last_acked_event().data.pinchUpdate.scale);
+  EXPECT_EQ(2U, GestureEventQueueSize());
+  EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
+
+  SendInputEventACK(WebInputEvent::GesturePinchUpdate,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(WebInputEvent::GesturePinchUpdate, last_acked_event().type);
+  EXPECT_EQ(5.f, last_acked_event().data.pinchUpdate.scale);
+  EXPECT_EQ(1U, GestureEventQueueSize());
+  EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
+
+  SendInputEventACK(WebInputEvent::GesturePinchUpdate,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(WebInputEvent::GesturePinchUpdate, last_acked_event().type);
+  EXPECT_EQ(6.f, last_acked_event().data.pinchUpdate.scale);
+  EXPECT_EQ(0U, GestureEventQueueSize());
+}
+
+TEST_F(GestureEventQueueTest, CoalescesScrollAndPinchEventsIdentity) {
+  // Turn off debounce handling for test isolation.
+  DisableDebounce();
+
+  // Insert an event to force queueing of gestures.
+  SimulateGestureEvent(WebInputEvent::GestureTapCancel,
+                       WebGestureEvent::Touchscreen);
+  EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(1U, GestureEventQueueSize());
+
+  // Ensure that coalescing yields an identity transform for any pinch/scroll
+  // pair combined with its inverse.
+  SimulateGestureScrollUpdateEvent(5, 5, 1);
+  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(2U, GestureEventQueueSize());
+
+  SimulateGesturePinchUpdateEvent(5, 10, 10, 1);
+  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(3U, GestureEventQueueSize());
+
+  SimulateGesturePinchUpdateEvent(.2f, 10, 10, 1);
+  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(3U, GestureEventQueueSize());
+
+  SimulateGestureScrollUpdateEvent(-5, -5, 1);
+  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(3U, GestureEventQueueSize());
+
+  SendInputEventACK(WebInputEvent::GestureTapCancel,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(2U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(2U, GestureEventQueueSize());
+
+  SendInputEventACK(WebInputEvent::GestureScrollUpdate,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(WebInputEvent::GestureScrollUpdate, last_acked_event().type);
+  EXPECT_EQ(0.f, last_acked_event().data.scrollUpdate.deltaX);
+  EXPECT_EQ(0.f, last_acked_event().data.scrollUpdate.deltaY);
+
+  SendInputEventACK(WebInputEvent::GesturePinchUpdate,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(WebInputEvent::GesturePinchUpdate, last_acked_event().type);
+  EXPECT_EQ(1.f, last_acked_event().data.pinchUpdate.scale);
+  EXPECT_EQ(0U, GestureEventQueueSize());
+
+  // Insert an event to force queueing of gestures.
+  SimulateGestureEvent(WebInputEvent::GestureTapCancel,
+                       WebGestureEvent::Touchscreen);
+  EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(1U, GestureEventQueueSize());
+
+  // Ensure that coalescing yields an identity transform for any pinch/scroll
+  // pair combined with its inverse.
+  SimulateGesturePinchUpdateEvent(2, 10, 10, 1);
+  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(2U, GestureEventQueueSize());
+
+  SimulateGestureScrollUpdateEvent(20, 20, 1);
+  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(3U, GestureEventQueueSize());
+
+  SimulateGesturePinchUpdateEvent(0.5f, 20, 20, 1);
+  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(3U, GestureEventQueueSize());
+
+  SimulateGestureScrollUpdateEvent(-5, -5, 1);
+  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(3U, GestureEventQueueSize());
+
+  SendInputEventACK(WebInputEvent::GestureTapCancel,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(2U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(2U, GestureEventQueueSize());
+
+  SendInputEventACK(WebInputEvent::GestureScrollUpdate,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(WebInputEvent::GestureScrollUpdate, last_acked_event().type);
+  EXPECT_EQ(0.f, last_acked_event().data.scrollUpdate.deltaX);
+  EXPECT_EQ(0.f, last_acked_event().data.scrollUpdate.deltaY);
+
+  SendInputEventACK(WebInputEvent::GesturePinchUpdate,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(WebInputEvent::GesturePinchUpdate, last_acked_event().type);
+  EXPECT_EQ(1.f, last_acked_event().data.pinchUpdate.scale);
+}
+
 // Tests a single event with an synchronous ack.
 TEST_F(GestureEventQueueTest, SimpleSyncAck) {
   set_synchronous_ack(INPUT_EVENT_ACK_STATE_CONSUMED);

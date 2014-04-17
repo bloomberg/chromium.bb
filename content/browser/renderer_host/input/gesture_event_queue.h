@@ -165,9 +165,9 @@ class CONTENT_EXPORT GestureEventQueue {
   gfx::Transform GetTransformForEvent(
       const GestureEventWithLatencyInfo& gesture_event) const;
 
-  // Adds |gesture_event| to the |coalesced_gesture_events_|, resetting the
-  // accumulation of |combined_scroll_pinch_|.
-  void EnqueueEvent(const GestureEventWithLatencyInfo& gesture_event);
+  // The number of sent events for which we're awaiting an ack.  These events
+  // remain at the head of the queue until ack'ed.
+  size_t EventsInFlightCount() const;
 
   // The receiver of all forwarded gesture events.
   GestureEventQueueClient* client_;
@@ -182,10 +182,6 @@ class CONTENT_EXPORT GestureEventQueue {
   // True if two related gesture events were sent before without waiting
   // for an ACK, so the next gesture ACK should be ignored.
   bool ignore_next_ack_;
-
-  // Transform that holds the combined transform matrix for the current
-  // scroll-pinch sequence at the end of the queue.
-  gfx::Transform combined_scroll_pinch_;
 
   // An object tracking the state of touchpad on the delivery of mouse events to
   // the renderer to filter mouse immediately after a touchpad fling canceling

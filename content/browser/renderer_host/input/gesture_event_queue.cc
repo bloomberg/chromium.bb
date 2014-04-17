@@ -32,7 +32,6 @@ GestureEventQueue::GestureEventQueue(
        fling_in_progress_(false),
        scrolling_in_progress_(false),
        ignore_next_ack_(false),
-       combined_scroll_pinch_(gfx::Transform()),
        touchpad_tap_suppression_controller_(
            new TouchpadTapSuppressionController(touchpad_client)),
        touchscreen_tap_suppression_controller_(
@@ -164,7 +163,7 @@ bool GestureEventQueue::ShouldForwardForCoalescing(
     default:
       break;
   }
-  EnqueueEvent(gesture_event);
+  coalesced_gesture_events_.push_back(gesture_event);
   return ShouldHandleEventNow();
 }
 
@@ -278,25 +277,24 @@ void GestureEventQueue::SendScrollEndingEventsNow() {
 
 void GestureEventQueue::MergeOrInsertScrollAndPinchEvent(
     const GestureEventWithLatencyInfo& gesture_event) {
-  if (coalesced_gesture_events_.size() <= 1) {
-    EnqueueEvent(gesture_event);
+  const size_t unsent_events_count =
+      coalesced_gesture_events_.size() - EventsInFlightCount();
+  if (!unsent_events_count) {
+    coalesced_gesture_events_.push_back(gesture_event);
     return;
   }
+
   GestureEventWithLatencyInfo* last_event = &coalesced_gesture_events_.back();
   if (last_event->CanCoalesceWith(gesture_event)) {
     last_event->CoalesceWith(gesture_event);
-    if (!combined_scroll_pinch_.IsIdentity()) {
-      combined_scroll_pinch_.ConcatTransform(
-          GetTransformForEvent(gesture_event));
-    }
     return;
   }
-  if (coalesced_gesture_events_.size() == 2 ||
-      (coalesced_gesture_events_.size() == 3 && ignore_next_ack_) ||
-      !ShouldTryMerging(gesture_event, *last_event)) {
-    EnqueueEvent(gesture_event);
+
+  if (!ShouldTryMerging(gesture_event, *last_event)) {
+    coalesced_gesture_events_.push_back(gesture_event);
     return;
   }
+
   GestureEventWithLatencyInfo scroll_event;
   GestureEventWithLatencyInfo pinch_event;
   scroll_event.event.modifiers |= gesture_event.event.modifiers;
@@ -315,28 +313,32 @@ void GestureEventQueue::MergeOrInsertScrollAndPinchEvent(
       WebInputEvent::GesturePinchUpdate ?
           gesture_event.event.y : last_event->event.y;
 
-  combined_scroll_pinch_.ConcatTransform(GetTransformForEvent(gesture_event));
-  GestureEventWithLatencyInfo* second_last_event = &coalesced_gesture_events_
-      [coalesced_gesture_events_.size() - 2];
-  if (ShouldTryMerging(gesture_event, *second_last_event)) {
-    // Keep the oldest LatencyInfo.
-    DCHECK_LE(second_last_event->latency.trace_id,
-              scroll_event.latency.trace_id);
-    scroll_event.latency = second_last_event->latency;
-    pinch_event.latency = second_last_event->latency;
-    coalesced_gesture_events_.pop_back();
-  } else {
-    DCHECK(combined_scroll_pinch_ == GetTransformForEvent(gesture_event));
-    combined_scroll_pinch_.
-        PreconcatTransform(GetTransformForEvent(*last_event));
+  gfx::Transform combined_scroll_pinch = GetTransformForEvent(*last_event);
+  // Only include the second-to-last event in the coalesced pair if it exists
+  // and can be combined with the new event.
+  if (unsent_events_count > 1) {
+    const GestureEventWithLatencyInfo& second_last_event =
+        coalesced_gesture_events_[coalesced_gesture_events_.size() - 2];
+    if (ShouldTryMerging(gesture_event, second_last_event)) {
+      // Keep the oldest LatencyInfo.
+      DCHECK_LE(second_last_event.latency.trace_id,
+                scroll_event.latency.trace_id);
+      scroll_event.latency = second_last_event.latency;
+      pinch_event.latency = second_last_event.latency;
+      combined_scroll_pinch.PreconcatTransform(
+          GetTransformForEvent(second_last_event));
+      coalesced_gesture_events_.pop_back();
+    }
   }
+  combined_scroll_pinch.ConcatTransform(GetTransformForEvent(gesture_event));
   coalesced_gesture_events_.pop_back();
+
   float combined_scale =
-      SkMScalarToFloat(combined_scroll_pinch_.matrix().get(0, 0));
+      SkMScalarToFloat(combined_scroll_pinch.matrix().get(0, 0));
   float combined_scroll_pinch_x =
-      SkMScalarToFloat(combined_scroll_pinch_.matrix().get(0, 3));
+      SkMScalarToFloat(combined_scroll_pinch.matrix().get(0, 3));
   float combined_scroll_pinch_y =
-      SkMScalarToFloat(combined_scroll_pinch_.matrix().get(1, 3));
+      SkMScalarToFloat(combined_scroll_pinch.matrix().get(1, 3));
   scroll_event.event.data.scrollUpdate.deltaX =
       (combined_scroll_pinch_x + pinch_event.event.x) / combined_scale -
       pinch_event.event.x;
@@ -363,7 +365,7 @@ bool GestureEventQueue::ShouldTryMerging(
 
 gfx::Transform GestureEventQueue::GetTransformForEvent(
     const GestureEventWithLatencyInfo& gesture_event) const {
-  gfx::Transform gesture_transform = gfx::Transform();
+  gfx::Transform gesture_transform;
   if (gesture_event.event.type == WebInputEvent::GestureScrollUpdate) {
     gesture_transform.Translate(gesture_event.event.data.scrollUpdate.deltaX,
                                 gesture_event.event.data.scrollUpdate.deltaY);
@@ -376,12 +378,15 @@ gfx::Transform GestureEventQueue::GetTransformForEvent(
   return gesture_transform;
 }
 
-void GestureEventQueue::EnqueueEvent(
-    const GestureEventWithLatencyInfo& gesture_event) {
-  coalesced_gesture_events_.push_back(gesture_event);
-  // Scroll and pinch events contributing to |combined_scroll_pinch_| will be
-  // manually added to the queue in |MergeOrInsertScrollAndPinchEvent()|.
-  combined_scroll_pinch_ = gfx::Transform();
+size_t GestureEventQueue::EventsInFlightCount() const {
+  if (coalesced_gesture_events_.empty())
+    return 0;
+
+  if (!ignore_next_ack_)
+    return 1;
+
+  DCHECK_GT(coalesced_gesture_events_.size(), 1U);
+  return 2;
 }
 
 }  // namespace content
