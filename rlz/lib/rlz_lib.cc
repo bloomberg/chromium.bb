@@ -30,6 +30,7 @@ bool IsAccessPointSupported(rlz_lib::AccessPoint point) {
   switch (point) {
   case rlz_lib::NO_ACCESS_POINT:
   case rlz_lib::LAST_ACCESS_POINT:
+  case rlz_lib::CHROME_IOS_RESERVED:
 
   case rlz_lib::MOBILE_IDLE_SCREEN_BLACKBERRY:
   case rlz_lib::MOBILE_IDLE_SCREEN_WINMOB:

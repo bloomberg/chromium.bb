@@ -32,8 +32,13 @@ TEST(LibValuesUnittest, GetAccessPointFromName) {
 
   EXPECT_FALSE(rlz_lib::GetAccessPointFromName("T4 ", &point));
   EXPECT_EQ(rlz_lib::NO_ACCESS_POINT, point);
-}
 
+  for (int ap = rlz_lib::NO_ACCESS_POINT + 1;
+       ap < rlz_lib::LAST_ACCESS_POINT; ++ap) {
+    rlz_lib::AccessPoint point = static_cast<rlz_lib::AccessPoint>(ap);
+    EXPECT_TRUE(GetAccessPointName(point) != NULL);
+  }
+}
 
 TEST(LibValuesUnittest, GetEventFromName) {
   rlz_lib::SetExpectedAssertion("GetEventFromName: event is NULL");
