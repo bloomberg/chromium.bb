@@ -2023,3 +2023,18 @@ gpu.dll!gpu::gles2::GLES2DecoderImpl::DoDrawElements
 gpu.dll!gpu::gles2::GLES2DecoderImpl::HandleDrawElements
 gpu.dll!gpu::gles2::GLES2DecoderImpl::DoCommand
 gpu.dll!gpu::CommandParser::ProcessCommand
+
+UNINITIALIZED READ
+name=bug_361594
+...
+skia.dll!SkA8_Shader_Blitter::blitH
+skia.dll!SkBlitter::blitRect
+skia.dll!blitrect
+skia.dll!SkScan::FillIRect
+...
+skia.dll!SkDraw::drawRect
+skia.dll!SkDraw::drawBitmap
+skia.dll!SkBitmapDevice::drawBitmap
+skia.dll!SkCanvas::internalDrawBitmap
+skia.dll!SkCanvas::drawBitmap
+content.dll!content::ScreenshotData::EncodeOnWorker
