@@ -29989,14 +29989,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="WebRTC.DataChannelCounters" enum="DataChannelCounters">
-  <owner>tommi@chromium.org</owner>
+  <owner>perkj@chromium.org</owner>
   <summary>
     Counters on creation, opening, and a few main attributes of data channels.
   </summary>
 </histogram>
 
 <histogram name="WebRTC.NumDataChannelsPerPeerConnection">
-  <owner>tommi@chromium.org</owner>
+  <owner>perkj@chromium.org</owner>
   <summary>
     Number of data channels created per PeerConnection. Sample added to the
     histogram when the PeerConnection is destroyed. Note that this is done
@@ -30025,7 +30025,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="WebRTC.ReliableDataChannelMessageSize" units="bytes">
-  <owner>tommi@chromium.org</owner>
+  <owner>perkj@chromium.org</owner>
   <summary>
     Sizes of messages sent over reliable data channels. The size of an
     individual message is added to the histogram as a sample immediately when a
@@ -30061,17 +30061,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="WebRTC.webkitApiCount" enum="JavaScriptAPIName">
-  <owner>tommi@chromium.org</owner>
+  <owner>perkj@chromium.org</owner>
   <summary>Counts number of calls to WebRTC APIs from JavaScript.</summary>
 </histogram>
 
 <histogram name="WebRTC.webkitApiCountPerSession" enum="JavaScriptAPIName">
-  <owner>tommi@chromium.org</owner>
+  <owner>perkj@chromium.org</owner>
   <summary>
-    Counts number of calls to WebRTC APIs from JavaScript, once   per
-    &quot;session&quot; which is demarcated by the total number of MediaStreams
-    within a renderer process that are being sent over a PeerConnection
-    transitioning from or to 0.
+    Counts the number of calls to WebRTC APIs from JavaScript once per session.
+    A session is a crude estimate since its implemented as the lifetime of the
+    render process that called the WebRTC API.
   </summary>
 </histogram>
 
