@@ -700,6 +700,7 @@ class TestCoreLogic(MoxBase):
 
   def setUp(self):
     self.mox.StubOutWithMock(validation_pool.PatchSeries, 'Apply')
+    self.mox.StubOutWithMock(validation_pool.PatchSeries, 'ApplyChange')
     self.patch_mock = self.StartPatcher(MockPatchSeries())
     funcs = ['SendNotification', '_SubmitChange']
     for func in funcs:
@@ -747,6 +748,20 @@ class TestCoreLogic(MoxBase):
     pool._test_data = (changes, applied, tot, inflight)
 
     return pool
+
+  def testApplySlavePool(self):
+    """Verifies that slave calls ApplyChange() directly for each patch."""
+    slave_pool = self.MakePool(is_master=False)
+    patches = self.GetPatches(3)
+    slave_pool.changes = patches
+    for patch in patches:
+      # pylint: disable=E1120
+      validation_pool.PatchSeries.ApplyChange(
+          patch, dryrun=mox.IgnoreArg())
+
+    self.mox.ReplayAll()
+    self.assertEqual(True, slave_pool.ApplyPoolIntoRepo())
+    self.mox.VerifyAll()
 
   def runApply(self, pool, result):
     self.assertEqual(result, pool.ApplyPoolIntoRepo())

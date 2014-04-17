@@ -1238,7 +1238,60 @@ class UploadedLocalPatch(GitRepoPatch):
     return s
 
 
-class GerritPatch(GitRepoPatch):
+class GerritFetchOnlyPatch(GitRepoPatch):
+  """Object that contains information to cherry-pick a Gerrit CL."""
+
+  def __init__(self, project_url, project, ref, tracking_branch, remote,
+               sha1, change_id, gerrit_number, patch_number, owner=None):
+    """Initializes a GerritFetchOnlyPatch object."""
+    super(GerritFetchOnlyPatch, self).__init__(
+        project_url, project, ref, tracking_branch, remote,
+        change_id=change_id, sha1=sha1)
+    self.gerrit_number = gerrit_number
+    self.patch_number = patch_number
+    # TODO: Do we need three variables for the commit hash?
+    self.revision = self.commit = self.sha1
+
+    # Set owner and url for printing the CL link.
+    self.owner = owner
+    self.url = gob_util.GetChangePageUrl(
+        constants.GERRIT_HOSTS[self.remote], int(self.gerrit_number))
+
+  def _EnsureId(self, commit_message):
+    """Ensure we have a usable Change-Id
+
+    Validate what we received from gerrit against what the commit message
+    states.
+    """
+    # GerritPatch instances get their Change-Id from gerrit
+    # directly; for this to fail, there is an internal bug.
+    assert self.id is not None
+
+    # For GerritPatches, we still parse the ID- this is
+    # primarily so we can throw an appropriate warning,
+    # and also validate our parsing against gerrit's in
+    # the process.
+    try:
+      parsed_id = self._ParseChangeId(commit_message)
+      if parsed_id != self.change_id:
+        raise AssertionError(
+            'For Change-Id %s, sha %s, our parsing of the Change-Id did not '
+            'match what gerrit told us.  This is an internal bug: either our '
+            "parsing no longer matches gerrit's, or somehow this instance's "
+            'stored change_id was invalidly modified.  Our parsing of the '
+            'Change-Id yielded: %s'
+            % (self.change_id, self.sha1, parsed_id))
+
+    except BrokenChangeID:
+      cros_build_lib.Warning(
+          'Change %s, Change-Id %s, sha1 %s lacks a change-id in its commit '
+          'message.  This can break the ability for any children to depend on '
+          'this Change as a parent.  Please add the appropriate '
+          'Change-Id into the commit message to resolve this.',
+          self, self.change_id, self.sha1)
+
+
+class GerritPatch(GerritFetchOnlyPatch):
   """Object that represents a Gerrit CL."""
 
   def __init__(self, patch_dict, remote, url_prefix):
@@ -1256,26 +1309,26 @@ class GerritPatch(GitRepoPatch):
     self.patch_dict = patch_dict
     self.url_prefix = url_prefix
     current_patch_set = patch_dict.get('currentPatchSet', {})
+    # id - The CL's ChangeId
+    # revision - The CL's SHA1 hash.
+    # number - The CL's gerrit number.
     super(GerritPatch, self).__init__(
         os.path.join(url_prefix, patch_dict['project']),
         patch_dict['project'],
         current_patch_set.get('ref'),
         patch_dict['branch'],
         remote,
-        sha1=current_patch_set.get('revision'),
-        change_id=patch_dict['id'])
+        current_patch_set.get('revision'),
+        patch_dict['id'],
+        ParseGerritNumber(str(patch_dict['number'])),
+        current_patch_set.get('number'))
 
-    # id - The CL's ChangeId
-    # revision - The CL's SHA1 hash.
-    self.revision = current_patch_set.get('revision')
-    self.patch_number = current_patch_set.get('number')
-    self.commit = self.revision
     self.owner_email = patch_dict['owner']['email']
     if self.owner_email:
       self.owner, _, _ = self.owner_email.partition('@')
     else:
       self.owner = None
-    self.gerrit_number = ParseGerritNumber(str(patch_dict['number']))
+
     prefix_str = constants.CHANGE_PREFIX[self.remote]
     self.gerrit_number_str = '%s%s' % (prefix_str, self.gerrit_number)
     self.url = patch_dict['url']
@@ -1428,39 +1481,6 @@ class GerritPatch(GitRepoPatch):
     # All approvals default to '0', so use that if there's no matches.
     type_approvals = [x['value'] for x in self._approvals if x['type'] == field]
     return type_approvals[-1] if type_approvals else '0'
-
-  def _EnsureId(self, commit_message):
-    """Ensure we have a usable Change-Id
-
-    Validate what we received from gerrit against what the commit message
-    states.
-    """
-    # GerritPatch instances get their Change-Id from gerrit
-    # directly; for this to fail, there is an internal bug.
-    assert self.id is not None
-
-    # For GerritPatches, we still parse the ID- this is
-    # primarily so we can throw an appropriate warning,
-    # and also validate our parsing against gerrit's in
-    # the process.
-    try:
-      parsed_id = self._ParseChangeId(commit_message)
-      if parsed_id != self.change_id:
-        raise AssertionError(
-            'For Change-Id %s, sha %s, our parsing of the Change-Id did not '
-            'match what gerrit told us.  This is an internal bug: either our '
-            "parsing no longer matches gerrit's, or somehow this instance's "
-            'stored change_id was invalidly modified.  Our parsing of the '
-            'Change-Id yielded: %s'
-            % (self.change_id, self.sha1, parsed_id))
-
-    except BrokenChangeID:
-      cros_build_lib.Warning(
-          'Change %s, Change-Id %s, sha1 %s lacks a change-id in its commit '
-          'message.  This can break the ability for any children to depend on '
-          'this Change as a parent.  Please add the appropriate '
-          'Change-Id into the commit message to resolve this.',
-          self, self.change_id, self.sha1)
 
   def PatchLink(self):
     """Return a CL link for this patch."""

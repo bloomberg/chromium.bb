@@ -1600,20 +1600,18 @@ class ValidationPool(object):
     pending_commits = manifest_dom.getElementsByTagName(
         lkgm_manager.PALADIN_COMMIT_ELEMENT)
     for pending_commit in pending_commits:
-      project = pending_commit.getAttribute(lkgm_manager.PALADIN_PROJECT_ATTR)
-      change = pending_commit.getAttribute(lkgm_manager.PALADIN_CHANGE_ID_ATTR)
-      commit = pending_commit.getAttribute(lkgm_manager.PALADIN_COMMIT_ATTR)
-
-      for helper in cls.GetGerritHelpersForOverlays(overlays):
-        try:
-          patch = helper.GrabPatchFromGerrit(project, change, commit)
-          pool.changes.append(patch)
-          break
-        except gerrit.QueryHasNoResults:
-          pass
-      else:
-        raise NoMatchingChangeFoundException(
-            'Could not find change defined by %s' % pending_commit)
+      patch = cros_patch.GerritFetchOnlyPatch(
+          pending_commit.getAttribute(lkgm_manager.PALADIN_PROJECT_URL_ATTR),
+          pending_commit.getAttribute(lkgm_manager.PALADIN_PROJECT_ATTR),
+          pending_commit.getAttribute(lkgm_manager.PALADIN_REF_ATTR),
+          pending_commit.getAttribute(lkgm_manager.PALADIN_BRANCH_ATTR),
+          pending_commit.getAttribute(lkgm_manager.PALADIN_REMOTE_ATTR),
+          pending_commit.getAttribute(lkgm_manager.PALADIN_COMMIT_ATTR),
+          pending_commit.getAttribute(lkgm_manager.PALADIN_CHANGE_ID_ATTR),
+          pending_commit.getAttribute(lkgm_manager.PALADIN_GERRIT_NUMBER_ATTR),
+          pending_commit.getAttribute(lkgm_manager.PALADIN_PATCH_NUMBER_ATTR),
+          owner=pending_commit.getAttribute(lkgm_manager.PALADIN_OWNER_ATTR),)
+      pool.changes.append(patch)
 
     pool.RecordPatchesInMetadata()
     return pool
@@ -1745,34 +1743,52 @@ class ValidationPool(object):
   def ApplyPoolIntoRepo(self, manifest=None):
     """Applies changes from pool into the directory specified by the buildroot.
 
-    This method applies changes in the order specified.  It also respects
-    dependency order.
+    This method applies changes in the order specified. If the build
+    is running as the master, it also respects the dependency
+    order. Otherwise, the changes should already be listed in an order
+    that will not break the dependency order.
 
     Returns:
       True if we managed to apply any changes.
     """
+    applied = []
+    failed_tot = failed_inflight = {}
     patch_series = PatchSeries(self.build_root, helper_pool=self._helper_pool)
-    try:
-      # pylint: disable=E1123
-      applied, failed_tot, failed_inflight = patch_series.Apply(
-          self.changes, dryrun=self.dryrun, manifest=manifest)
-    except (KeyboardInterrupt, RuntimeError, SystemExit):
-      raise
-    except Exception as e:
-      if mox is not None and isinstance(e, mox.Error):
+    if self.is_master:
+      try:
+        # pylint: disable=E1123
+        applied, failed_tot, failed_inflight = patch_series.Apply(
+            self.changes, dryrun=self.dryrun, manifest=manifest)
+      except (KeyboardInterrupt, RuntimeError, SystemExit):
         raise
+      except Exception as e:
+        if mox is not None and isinstance(e, mox.Error):
+          raise
 
-      msg = (
-          'Unhandled exception occurred while applying changes: %s\n\n'
-          'To be safe, we have kicked out all of the CLs, so that the '
-          'commit queue does not go into an infinite loop retrying '
-          'patches.' % (e,)
-      )
-      links = ', '.join('CL:%s' % x.gerrit_number_str for x in self.changes)
-      cros_build_lib.Error('%s\nAffected Patches are: %s', msg, links)
-      errors = [InternalCQError(patch, msg) for patch in self.changes]
-      self._HandleApplyFailure(errors)
-      raise
+        msg = (
+            'Unhandled exception occurred while applying changes: %s\n\n'
+            'To be safe, we have kicked out all of the CLs, so that the '
+            'commit queue does not go into an infinite loop retrying '
+            'patches.' % (e,)
+        )
+        links = ', '.join('CL:%s' % x.gerrit_number_str for x in self.changes)
+        cros_build_lib.Error('%s\nAffected Patches are: %s', msg, links)
+        errors = [InternalCQError(patch, msg) for patch in self.changes]
+        self._HandleApplyFailure(errors)
+        raise
+    else:
+      # Slaves do not need to create transactions and should simply
+      # apply the changes serially, based on the order that the
+      # changes were listed on the manifest.
+      for change in self.changes:
+        try:
+          patch_series.ApplyChange(change, dryrun=self.dryrun)
+        except cros_patch.PatchException as e:
+          # Fail if any patch cannot be applied.
+          self._HandleApplyFailure([InternalCQError(change, e)])
+          raise
+        else:
+          applied.append(change)
 
     self.PrintLinksToChanges(applied)
 
