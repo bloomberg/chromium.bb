@@ -345,7 +345,7 @@ static bool subtreeContainsDisallowedElement(Node* start)
 
 void SVGUseElement::scheduleShadowTreeRecreation()
 {
-    if (!referencedScope() || isInUserAgentShadowTree())
+    if (!referencedScope() || inUseShadowTree())
         return;
     m_needsShadowTreeRecreation = true;
     document().scheduleUseShadowTreeUpdate(*this);
@@ -370,7 +370,7 @@ void SVGUseElement::clearResourceReferences()
 
 void SVGUseElement::buildPendingResource()
 {
-    if (!referencedScope() || isInUserAgentShadowTree())
+    if (!referencedScope() || inUseShadowTree())
         return;
     clearResourceReferences();
     if (!inDocument())
@@ -406,7 +406,7 @@ void SVGUseElement::buildShadowAndInstanceTree(SVGElement* target)
     // <use> creates a "user agent" shadow root. Do not build the shadow/instance tree for <use>
     // elements living in a user agent shadow tree because they will get expanded in a second
     // pass -- see expandUseElementsInShadowTree().
-    if (isInUserAgentShadowTree())
+    if (inUseShadowTree())
         return;
 
     // Do not allow self-referencing.

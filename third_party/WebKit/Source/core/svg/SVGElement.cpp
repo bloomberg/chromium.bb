@@ -130,7 +130,7 @@ void SVGElement::willRecalcStyle(StyleRecalcChange change)
 void SVGElement::buildPendingResourcesIfNeeded()
 {
     Document& document = this->document();
-    if (!needsPendingResourceHandling() || !inDocument() || isInShadowTree())
+    if (!needsPendingResourceHandling() || !inDocument() || inUseShadowTree())
         return;
 
     SVGDocumentExtensions& extensions = document.accessSVGExtensions();
@@ -198,7 +198,7 @@ bool SVGElement::isOutermostSVGSVGElement() const
     // If we're living in a shadow tree, we're a <svg> element that got created as replacement
     // for a <symbol> element or a cloned <svg> element in the referenced tree. In that case
     // we're always an inner <svg> element.
-    if (isInShadowTree() && parentOrShadowHostElement() && parentOrShadowHostElement()->isSVGElement())
+    if (inUseShadowTree() && parentOrShadowHostElement() && parentOrShadowHostElement()->isSVGElement())
         return false;
 
     // This is true whenever this is the outermost SVG, even if there are HTML elements outside it
@@ -233,17 +233,10 @@ String SVGElement::title() const
     if (isOutermostSVGSVGElement())
         return String();
 
-    // Walk up the tree, to find out whether we're inside a <use> shadow tree, to find the right title.
-    if (isInShadowTree()) {
-        Element* shadowHostElement = toShadowRoot(treeScope().rootNode()).host();
-        if (isSVGUseElement(shadowHostElement)) {
-            SVGUseElement& useElement = toSVGUseElement(*shadowHostElement);
-
-            // If the <use> title is not empty we found the title to use.
-            String useTitle(useElement.title());
-            if (!useTitle.isEmpty())
-                return useTitle;
-        }
+    if (inUseShadowTree()) {
+        String useTitle(shadowHost()->title());
+        if (!useTitle.isEmpty())
+            return useTitle;
     }
 
     // If we aren't an instance in a <use> or the <use> title was not found, then find the first
@@ -604,6 +597,13 @@ SVGElement* SVGElement::correspondingElement()
 void SVGElement::setCorrespondingElement(SVGElement* correspondingElement)
 {
     ensureSVGRareData()->setCorrespondingElement(correspondingElement);
+}
+
+bool SVGElement::inUseShadowTree() const
+{
+    if (ShadowRoot* root = containingShadowRoot())
+        return isSVGUseElement(root->host()) && (root->type() == ShadowRoot::UserAgentShadowRoot);
+    return false;
 }
 
 void SVGElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
@@ -1003,13 +1003,6 @@ bool SVGElement::hasFocusEventListeners() const
 bool SVGElement::isKeyboardFocusable() const
 {
     return isFocusable();
-}
-
-bool SVGElement::isInUserAgentShadowTree() const
-{
-    if (ShadowRoot* shadowRoot = containingShadowRoot())
-        return shadowRoot->type() == ShadowRoot::UserAgentShadowRoot;
-    return false;
 }
 
 #ifndef NDEBUG

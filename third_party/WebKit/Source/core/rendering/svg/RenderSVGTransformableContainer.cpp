@@ -25,6 +25,7 @@
 
 #include "SVGNames.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
+#include "core/svg/SVGGElement.h"
 #include "core/svg/SVGGraphicsElement.h"
 #include "core/svg/SVGUseElement.h"
 
@@ -80,7 +81,7 @@ bool RenderSVGTransformableContainer::calculateLocalTransform()
     SVGUseElement* useElement = 0;
     if (isSVGUseElement(*element)) {
         useElement = toSVGUseElement(element);
-    } else if (element->isInShadowTree() && isSVGGElement(*element)) {
+    } else if (isSVGGElement(*element) && toSVGGElement(element)->inUseShadowTree()) {
         SVGElement* correspondingElement = element->correspondingElement();
         if (isSVGUseElement(correspondingElement))
             useElement = toSVGUseElement(correspondingElement);

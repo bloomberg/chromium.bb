@@ -147,6 +147,8 @@ public:
 
     SVGAnimatedString* className() { return m_className.get(); }
 
+    bool inUseShadowTree() const;
+
 protected:
     SVGElement(const QualifiedName&, Document&, ConstructionType = CreateSVGElement);
 
@@ -180,7 +182,6 @@ protected:
     friend class SVGFitToViewBox;
     void reportAttributeParsingError(SVGParsingError, const QualifiedName&, const AtomicString&);
     bool hasFocusEventListeners() const;
-    bool isInUserAgentShadowTree() const;
 
 private:
     friend class SVGElementInstance;
