@@ -74,10 +74,12 @@ void V8CanvasRenderingContext2D::strokeStyleAttributeGetterCustom(const v8::Prop
 void V8CanvasRenderingContext2D::strokeStyleAttributeSetterCustom(v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     CanvasRenderingContext2D* impl = V8CanvasRenderingContext2D::toNative(info.Holder());
-    if (value->IsString())
-        impl->setStrokeColor(toCoreString(value.As<v8::String>()));
-    else
-        impl->setStrokeStyle(toCanvasStyle(value, info.GetIsolate()));
+    if (RefPtr<CanvasStyle> canvasStyle = toCanvasStyle(value, info.GetIsolate())) {
+        impl->setStrokeStyle(canvasStyle);
+    } else {
+        TOSTRING_VOID(V8StringResource<>, colorString, value);
+        impl->setStrokeColor(colorString);
+    }
 }
 
 void V8CanvasRenderingContext2D::fillStyleAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -89,10 +91,12 @@ void V8CanvasRenderingContext2D::fillStyleAttributeGetterCustom(const v8::Proper
 void V8CanvasRenderingContext2D::fillStyleAttributeSetterCustom(v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     CanvasRenderingContext2D* impl = V8CanvasRenderingContext2D::toNative(info.Holder());
-    if (value->IsString())
-        impl->setFillColor(toCoreString(value.As<v8::String>()));
-    else
-        impl->setFillStyle(toCanvasStyle(value, info.GetIsolate()));
+    if (RefPtr<CanvasStyle> canvasStyle = toCanvasStyle(value, info.GetIsolate())) {
+        impl->setFillStyle(canvasStyle);
+    } else {
+        TOSTRING_VOID(V8StringResource<>, colorString, value);
+        impl->setFillColor(colorString);
+    }
 }
 
 } // namespace WebCore
