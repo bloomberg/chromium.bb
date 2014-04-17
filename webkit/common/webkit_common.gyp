@@ -53,12 +53,6 @@
       ],
 
       'conditions': [
-        ['toolkit_uses_gtk == 1', {
-          'dependencies': [
-            '<(DEPTH)/build/linux/system.gyp:gtk',
-          ],
-          'sources/': [['exclude', '_x11\\.cc$']],
-        }],
         ['use_aura==1 and use_x11==1', {
           'dependencies': [
             '<(DEPTH)/build/linux/system.gyp:xcursor',

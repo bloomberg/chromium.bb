@@ -49,12 +49,6 @@
 #error Please add support for your platform in build/build_config.h
 #endif
 
-// Use TOOLKIT_GTK on X11 if TOOLKIT_VIEWS and USE_AURA aren't defined.
-#if defined(USE_X11) && !defined(TOOLKIT_VIEWS) && !defined(USE_AURA) && \
-    !defined(OS_NACL)
-#define TOOLKIT_GTK
-#endif
-
 #if defined(USE_OPENSSL) && defined(USE_NSS)
 #error Cannot use both OpenSSL and NSS
 #endif

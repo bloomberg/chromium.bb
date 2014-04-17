@@ -71,13 +71,6 @@
         ['exclude', '(^|/)x/'],
       ],
     }],
-    ['<(toolkit_uses_gtk)!=1 or >(nacl_untrusted_build)==1', {
-      'sources/': [
-        ['exclude', '_gtk(_browsertest|_unittest)?\\.(h|cc)$'],
-        ['exclude', '(^|/)gtk/'],
-        ['exclude', '(^|/)gtk_[^/]*\\.(h|cc)$'],
-      ],
-    }],
     ['<(toolkit_views)==0 or >(nacl_untrusted_build)==1', {
       'sources/': [ ['exclude', '_views\\.(h|cc)$'] ]
     }],

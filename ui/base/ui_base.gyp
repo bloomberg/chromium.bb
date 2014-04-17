@@ -376,7 +376,6 @@
         }],
         ['use_glib == 1', {
           'dependencies': [
-            # font_gtk.cc uses fontconfig.
             '../../build/linux/system.gyp:fontconfig',
             '../../build/linux/system.gyp:glib',
           ],

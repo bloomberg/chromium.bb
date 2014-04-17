@@ -40,14 +40,6 @@
             ['chromeos==1', {
               'sources/': [ ['include', '_chromeos\\.cc$'] ]
             }],
-            ['toolkit_uses_gtk==1', {
-              'dependencies': [
-                '../build/linux/system.gyp:gtk',
-              ],
-              'export_dependent_settings': [
-                '../build/linux/system.gyp:gtk',
-              ],
-            }],
           ],
           'dependencies': [
             'symbolize',
@@ -251,12 +243,6 @@
         '../third_party/icu/icu.gyp:icuuc',
       ],
       'conditions': [
-        ['toolkit_uses_gtk==1', {
-          'dependencies': [
-            # i18n/rtl.cc uses gtk
-            '../build/linux/system.gyp:gtk',
-          ],
-        }],
         ['OS == "win"', {
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [
@@ -694,13 +680,10 @@
             'file_version_info_unittest.cc',
           ],
           'conditions': [
-            [ 'toolkit_uses_gtk==1', {
+            [ 'desktop_linux==1', {
               'sources': [
                 'nix/xdg_util_unittest.cc',
               ],
-              'dependencies': [
-                '../build/linux/system.gyp:gtk',
-              ]
             }],
           ],
         }],
@@ -831,12 +814,6 @@
         'base',
       ],
       'conditions': [
-        ['toolkit_uses_gtk==1', {
-          'dependencies': [
-            # test_suite initializes GTK.
-            '../build/linux/system.gyp:gtk',
-          ],
-        }],
         ['os_posix==0', {
           'sources!': [
             'test/scoped_locale.cc',
@@ -972,17 +949,6 @@
           'PERF_TEST',
         ],
       },
-      'conditions': [
-        ['toolkit_uses_gtk==1', {
-          'dependencies': [
-            # Needed to handle the #include chain:
-            #   base/test/perf_test_suite.h
-            #   base/test/test_suite.h
-            #   gtk/gtk.h
-            '../build/linux/system.gyp:gtk',
-          ],
-        }],
-      ],
     },
     {
       'target_name': 'sanitizer_options',

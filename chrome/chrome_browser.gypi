@@ -3087,45 +3087,6 @@
             'browser/net/nss_context.h',
           ],
         }],
-        ['toolkit_uses_gtk == 1', {
-          'dependencies': [
-            '../build/linux/system.gyp:dbus',
-            '../build/linux/system.gyp:gconf',
-            '../build/linux/system.gyp:gtk',
-            '../build/linux/system.gyp:gtkprint',
-            '../build/linux/system.gyp:ssl',
-            '../build/linux/system.gyp:x11',
-            '../dbus/dbus.gyp:dbus',
-            '../third_party/undoview/undoview.gyp:undoview',
-          ],
-          'conditions': [
-            ['OS=="linux"', {
-              'link_settings': {
-                'libraries': [
-                  # For dlsym() in 'browser/zygote_main_linux.cc'
-                  '-ldl',
-                ],
-              },
-            }],
-          ],
-        }, {
-          'sources!': [
-            'browser/notifications/balloon_collection.cc',
-            'browser/notifications/balloon_collection.h',
-            'browser/notifications/balloon_collection_base.cc',
-            'browser/notifications/balloon_collection_base.h',
-            'browser/notifications/balloon_collection_impl.cc',
-            'browser/notifications/balloon_collection_impl.h',
-            'browser/notifications/balloon_host.cc',
-            'browser/notifications/balloon_host.h',
-            'browser/notifications/balloon_notification_ui_manager.cc',
-            'browser/notifications/balloon_notification_ui_manager.h',
-            'browser/notifications/notification_options_menu_model.cc',
-            'browser/notifications/notification_options_menu_model.h',
-            'browser/task_manager/notification_resource_provider.cc',
-            'browser/task_manager/notification_resource_provider.h',
-          ]
-        }],
         ['input_speech==0', {
           'sources/': [
             ['exclude', '^browser/speech/chrome_speech_recognition_manager_delegate_bubble_ui'],

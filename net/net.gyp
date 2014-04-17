@@ -300,11 +300,6 @@
             ],
           },
         ],
-        [ 'toolkit_uses_gtk == 1', {
-          'dependencies': [
-            '../build/linux/system.gyp:gdk',
-          ],
-        }],
         [ 'use_nss != 1', {
             'sources!': [
               'cert/cert_verify_proc_nss.cc',
@@ -536,12 +531,6 @@
             }],
           ],
         }],
-        [ 'toolkit_uses_gtk == 1', {
-            'dependencies': [
-              '../build/linux/system.gyp:gtk',
-            ],
-          },
-        ],
         [ 'os_posix == 1 and OS != "mac" and OS != "android" and OS != "ios"', {
           'conditions': [
             # TODO(dmikurube): Kill linux_use_tcmalloc. http://crbug.com/345554

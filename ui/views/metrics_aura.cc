@@ -11,7 +11,6 @@
 namespace {
 
 // Default double click interval in milliseconds.
-// Same as what gtk uses.
 const int kDefaultDoubleClickInterval = 500;
 
 }  // namespace

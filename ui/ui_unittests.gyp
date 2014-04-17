@@ -237,14 +237,6 @@
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
         }],
-        ['toolkit_uses_gtk == 1', {
-          'sources': [
-            'base/dragdrop/gtk_dnd_util_unittest.cc',
-          ],
-          'dependencies': [
-            '../build/linux/system.gyp:gtk',
-          ],
-        }],
         ['OS=="android" or OS=="ios"', {
           'sources!': [
             'gfx/render_text_unittest.cc',

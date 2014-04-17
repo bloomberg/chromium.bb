@@ -62,11 +62,6 @@
         'unix_domain_socket_util_unittest.cc',
       ],
       'conditions': [
-        ['toolkit_uses_gtk == 1', {
-          'dependencies': [
-            '../build/linux/system.gyp:gtk',
-          ],
-        }],
         ['OS == "win" or OS == "ios"', {
           'sources!': [
             'unix_domain_socket_util_unittest.cc',
@@ -111,11 +106,6 @@
         'ipc_test_base.h',
       ],
       'conditions': [
-        ['toolkit_uses_gtk == 1', {
-          'dependencies': [
-            '../build/linux/system.gyp:gtk',
-          ],
-        }],
         ['OS == "android" and gtest_target_type == "shared_library"', {
           'dependencies': [
             '../testing/android/native_test.gyp:native_test_native_code',

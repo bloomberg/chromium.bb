@@ -15,10 +15,6 @@
 #include "ui/base/base_window.h"
 #include "ui/gfx/rect.h"
 
-#ifdef TOOLKIT_GTK
-#include "content/public/test/test_utils.h"
-#endif
-
 using apps::AppWindow;
 
 namespace {

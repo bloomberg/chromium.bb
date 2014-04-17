@@ -129,15 +129,6 @@
             }],
           ],
         }],
-        [ 'toolkit_uses_gtk == 1', {
-          'dependencies': [
-            # Workaround for gyp bug 69.
-            # Needed to handle the #include chain:
-            #   base/test_suite.h
-            #   gtk/gtk.h
-            '../build/linux/system.gyp:gtk',
-          ],
-        }],
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [4267, ],
@@ -156,17 +147,6 @@
         '../base/base.gyp:base_i18n',
         '../base/base.gyp:test_support_base',
         '../testing/gtest.gyp:gtest',
-      ],
-      'conditions': [
-        [ 'toolkit_uses_gtk == 1', {
-          'dependencies': [
-            # Workaround for gyp bug 69.
-            # Needed to handle the #include chain:
-            #   base/test_suite.h
-            #   gtk/gtk.h
-            '../build/linux/system.gyp:gtk',
-          ],
-        }],
       ],
     },
   ],

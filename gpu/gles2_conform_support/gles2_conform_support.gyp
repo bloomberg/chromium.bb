@@ -83,11 +83,6 @@
         'egl_native',
         '../../third_party/khronos/khronos.gyp:khronos_headers',
       ],
-      'conditions': [
-        ['toolkit_uses_gtk == 1', {
-          'dependencies': ['../../build/linux/system.gyp:gtk'],
-        }],
-      ],
       'sources': [
         'native/main.cc',
         'native/egl_native.cc',
@@ -111,9 +106,6 @@
         '../../third_party/expat/expat.gyp:expat',
       ],
       'conditions': [
-        ['toolkit_uses_gtk == 1', {
-          'dependencies': ['../../build/linux/system.gyp:gtk'],
-        }],
         # See http://crbug.com/162998#c4 for why this is needed.
         # TODO(dmikurube): Kill linux_use_tcmalloc. http://crbug.com/345554
         ['OS=="linux" and ((use_allocator!="none" and use_allocator!="see_use_tcmalloc") or (use_allocator=="see_use_tcmalloc" and linux_use_tcmalloc==1))', {

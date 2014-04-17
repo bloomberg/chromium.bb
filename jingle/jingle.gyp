@@ -99,13 +99,6 @@
           'export_dependent_settings': [
             '../third_party/libjingle/libjingle.gyp:libjingle',
           ],
-          'conditions': [
-            ['toolkit_uses_gtk == 1', {
-              'dependencies': [
-                '../build/linux/system.gyp:gtk'
-              ],
-            }],
-          ],
         },
         {
           'target_name': 'notifier_test_util',

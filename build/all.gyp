@@ -152,11 +152,6 @@
             '../tools/xdisplaycheck/xdisplaycheck.gyp:*',
           ],
         }],
-        ['toolkit_uses_gtk==1', {
-          'dependencies': [
-            '../tools/gtk_clipboard_dump/gtk_clipboard_dump.gyp:*',
-          ],
-        }],
         ['OS=="win"', {
           'conditions': [
             ['win_use_allocator_shim==1', {

@@ -259,7 +259,7 @@
         <structure type="chrome_scaled_image" name="IDR_COMBOBOX_BUTTON_F_H_TOP_RIGHT" file="common/combobox_button_top_right_focused_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_COMBOBOX_BUTTON_F_P_TOP_RIGHT" file="common/combobox_button_top_right_focused_pressed.png" />
       </if>
-      <if expr="toolkit_uses_gtk or toolkit_views">
+      <if expr="toolkit_views">
         <structure type="chrome_scaled_image" name="IDR_CONTENT_BOTTOM_CENTER" file="content_bottom_center.png" />
         <structure type="chrome_scaled_image" name="IDR_CONTENT_BOTTOM_LEFT_CORNER" file="content_bottom_left_corner.png" />
         <structure type="chrome_scaled_image" name="IDR_CONTENT_BOTTOM_RIGHT_CORNER" file="content_bottom_right_corner.png" />
@@ -484,7 +484,7 @@
         <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_THUMB_BASE_PRESSED_TOP_LEFT" file="common/aura_scrollbar_thumb_base_pressed_top_left.png" />
         <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_THUMB_BASE_PRESSED_TOP_RIGHT" file="common/aura_scrollbar_thumb_base_pressed_top_right.png" />
       </if>
-      <if expr="toolkit_uses_gtk or toolkit_views">
+      <if expr="toolkit_views">
         <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_HOVER_BOTTOM" file="common/textbutton_hover_bottom.png" />
         <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_HOVER_BOTTOM_LEFT" file="common/textbutton_hover_bottom_left.png" />
         <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_HOVER_BOTTOM_RIGHT" file="common/textbutton_hover_bottom_right.png" />
@@ -524,7 +524,7 @@
         <structure type="chrome_scaled_image" name="IDR_TRAY_EMPTY" file="mac/notification_tray_empty.png"/>
         <structure type="chrome_scaled_image" name="IDR_TRAY_EMPTY_PRESSED" file="mac/notification_tray_empty_pressed.png"/>
       </if>
-      <if expr="toolkit_uses_gtk or toolkit_views">
+      <if expr="toolkit_views">
         <structure type="chrome_scaled_image" name="IDR_WINDOW_BOTTOM_CENTER" file="common/window_bottom_center.png" />
         <structure type="chrome_scaled_image" name="IDR_WINDOW_BOTTOM_LEFT_CORNER" file="common/window_bottom_left_corner.png" />
         <structure type="chrome_scaled_image" name="IDR_WINDOW_BOTTOM_RIGHT_CORNER" file="common/window_bottom_right_corner.png" />

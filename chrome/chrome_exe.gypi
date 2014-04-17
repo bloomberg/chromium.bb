@@ -174,31 +174,6 @@
                 },
               ],
             }],
-            ['toolkit_uses_gtk == 1', {
-              'dependencies': [
-                # On Linux, link the dependencies (libraries) that make up actual
-                # Chromium functionality directly into the executable.
-                '<@(chromium_browser_dependencies)',
-                '<@(chromium_child_dependencies)',
-                '../content/content.gyp:content_app_both',
-                # Needed for chrome_main.cc initialization of libraries.
-                '../build/linux/system.gyp:gtk',
-                # Needed to use the master_preferences functions
-                'installer_util',
-              ],
-            }, { # else toolkit_uses_gtk == 1
-              'dependencies': [
-                # On Linux, link the dependencies (libraries) that make up actual
-                # Chromium functionality directly into the executable.
-                '<@(chromium_browser_dependencies)',
-                '<@(chromium_child_dependencies)',
-                '../content/content.gyp:content_app_both',
-                # Needed for chrome_main.cc initialization of libraries.
-                '../build/linux/system.gyp:pangocairo',
-                # Needed to use the master_preferences functions
-                'installer_util',
-              ],
-            }],
             # x11 build. Needed for chrome_main.cc initialization of libraries.
             ['use_x11==1', {
               'dependencies': [
@@ -212,6 +187,17 @@
             'app/chrome_main.cc',
             'app/chrome_main_delegate.cc',
             'app/chrome_main_delegate.h',
+          ],
+          'dependencies': [
+            # On Linux, link the dependencies (libraries) that make up actual
+            # Chromium functionality directly into the executable.
+            '<@(chromium_browser_dependencies)',
+            '<@(chromium_child_dependencies)',
+            '../content/content.gyp:content_app_both',
+            # Needed for chrome_main.cc initialization of libraries.
+            '../build/linux/system.gyp:pangocairo',
+            # Needed to use the master_preferences functions
+            'installer_util',
           ],
         }],
         ['OS=="mac"', {

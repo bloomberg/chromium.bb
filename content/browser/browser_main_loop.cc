@@ -182,8 +182,6 @@ static void GLibLogHandler(const gchar* log_domain,
   } else if (strstr(message, "Unable to create Ubuntu Menu Proxy") &&
              strstr(log_domain, "<unknown>")) {
     LOG(ERROR) << "GTK menu proxy create failed";
-  } else if (strstr(message, "gtk_drag_dest_leave: assertion")) {
-    LOG(ERROR) << "Drag destination deleted: http://crbug.com/18557";
   } else if (strstr(message, "Out of memory") &&
              strstr(log_domain, "<unknown>")) {
     LOG(ERROR) << "DBus call timeout or out of memory: "

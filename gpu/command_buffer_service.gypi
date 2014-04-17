@@ -131,11 +131,6 @@
     'command_buffer/service/vertex_attrib_manager.cc',
   ],
   'conditions': [
-    ['toolkit_uses_gtk == 1', {
-      'dependencies': [
-        '../build/linux/system.gyp:gtk',
-      ],
-    }],
     ['ui_compositor_image_transport==1', {
       'include_dirs': [
         '../third_party/khronos',

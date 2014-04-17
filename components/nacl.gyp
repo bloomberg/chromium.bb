@@ -244,11 +244,6 @@
                 '../ppapi/nacl_irt/ppapi_dispatcher.h',
               ],
               'conditions': [
-                ['toolkit_uses_gtk == 1', {
-                  'dependencies': [
-                    '../build/linux/system.gyp:gtk',
-                  ],
-                }],
                 ['use_glib == 1', {
                   'dependencies': [
                     '../build/linux/system.gyp:glib',

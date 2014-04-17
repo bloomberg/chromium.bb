@@ -7,11 +7,9 @@
 namespace {
 
 // Default horizontal drag threshold in pixels.
-// Same as what gtk uses.
 const int kDefaultHorizontalDragThreshold = 8;
 
 // Default vertical drag threshold in pixels.
-// Same as what gtk uses.
 const int kDefaultVerticalDragThreshold = 8;
 
 }  // namespace

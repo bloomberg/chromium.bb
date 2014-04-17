@@ -194,13 +194,6 @@
             'toolkit_views%': 0,
           }],
 
-          # Set toolkit_uses_gtk for the Chromium browser on Linux.
-          ['desktop_linux==1 and use_aura==0 and use_ozone==0', {
-            'toolkit_uses_gtk%': 1,
-          }, {
-            'toolkit_uses_gtk%': 0,
-          }],
-
           # Enable HiDPI on Mac OS, Chrome OS and Windows.
           ['OS=="mac" or chromeos==1 or OS=="win"', {
             'enable_hidpi%': 1,
@@ -253,7 +246,6 @@
       'target_arch%': '<(target_arch)',
       'target_subarch%': '<(target_subarch)',
       'toolkit_views%': '<(toolkit_views)',
-      'toolkit_uses_gtk%': '<(toolkit_uses_gtk)',
       'desktop_linux%': '<(desktop_linux)',
       'use_aura%': '<(use_aura)',
       'use_ash%': '<(use_ash)',
@@ -634,8 +626,8 @@
           'use_gnome_keyring%': 1,
         }],
 
-        ['toolkit_uses_gtk==1 or OS=="mac" or OS=="ios"', {
-          # GTK+, Mac and iOS want Title Case strings
+        ['OS=="mac" or OS=="ios"', {
+          # Mac and iOS want Title Case strings
           'use_titlecase_in_grd_files%': 1,
         }],
 
@@ -956,7 +948,6 @@
     'use_ozone_evdev%': '<(use_ozone_evdev)',
     'use_clipboard_aurax11%': '<(use_clipboard_aurax11)',
     'use_system_fontconfig%': '<(use_system_fontconfig)',
-    'toolkit_uses_gtk%': '<(toolkit_uses_gtk)',
     'desktop_linux%': '<(desktop_linux)',
     'use_x11%': '<(use_x11)',
     'use_gnome_keyring%': '<(use_gnome_keyring)',
@@ -1826,9 +1817,6 @@
       ['toolkit_views==1', {
         'grit_defines': ['-D', 'toolkit_views'],
       }],
-      ['toolkit_uses_gtk==1', {
-        'grit_defines': ['-D', 'toolkit_uses_gtk'],
-      }],
       ['use_aura==1', {
         'grit_defines': ['-D', 'use_aura'],
       }],
@@ -2331,11 +2319,6 @@
       }],
       ['enable_one_click_signin==1', {
         'defines': ['ENABLE_ONE_CLICK_SIGNIN'],
-      }],
-      ['toolkit_uses_gtk==1 and toolkit_views==0', {
-        # TODO(erg): We are progressively sealing up use of deprecated features
-        # in gtk in preparation for an eventual porting to gtk3.
-        'defines': ['GTK_DISABLE_SINGLE_INCLUDES=1'],
       }],
       ['chromeos==1', {
         'defines': ['OS_CHROMEOS=1'],
