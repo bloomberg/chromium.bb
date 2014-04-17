@@ -380,15 +380,15 @@ TEST_F(CachingCorrectnessTest, FreshWithStaleRedirect)
 
     ResourcePtr<Resource> firstResource = new Resource(ResourceRequest(redirectUrl), Resource::Raw);
 
-    ResourceResponse stale302Response;
-    stale302Response.setURL(redirectUrl);
-    stale302Response.setHTTPStatusCode(301);
-    stale302Response.setHTTPHeaderField("Date", kOriginalRequestDateAsString);
-    stale302Response.setHTTPHeaderField("Location", redirectTargetUrlString);
+    ResourceResponse stale301Response;
+    stale301Response.setURL(redirectUrl);
+    stale301Response.setHTTPStatusCode(301);
+    stale301Response.setHTTPHeaderField("Date", kOriginalRequestDateAsString);
+    stale301Response.setHTTPHeaderField("Location", redirectTargetUrlString);
 
     // Add the redirect to our request.
     ResourceRequest redirectRequest = ResourceRequest(redirectTargetUrl);
-    firstResource->willSendRequest(redirectRequest, stale302Response);
+    firstResource->willSendRequest(redirectRequest, stale301Response);
 
     // Add the final response to our request.
     ResourceResponse fresh200Response;
@@ -421,6 +421,111 @@ TEST_F(CachingCorrectnessTest, PostToSameURLTwice)
 
     EXPECT_EQ(resource2, memoryCache()->resourceForURL(request2.url()));
     EXPECT_NE(resource1, resource2);
+}
+
+TEST_F(CachingCorrectnessTest, 302RedirectNotImplicitlyFresh)
+{
+    KURL redirectUrl(ParsedURLString, kResourceURL);
+    const char redirectTargetUrlString[] = "http://redirect-target.com";
+    KURL redirectTargetUrl(ParsedURLString, redirectTargetUrlString);
+
+    ResourcePtr<Resource> firstResource = new Resource(ResourceRequest(redirectUrl), Resource::Raw);
+
+    ResourceResponse fresh302Response;
+    fresh302Response.setURL(redirectUrl);
+    fresh302Response.setHTTPStatusCode(302);
+    fresh302Response.setHTTPHeaderField("Date", kOriginalRequestDateAsString);
+    fresh302Response.setHTTPHeaderField("Last-Modified", kOneDayBeforeOriginalRequest);
+    fresh302Response.setHTTPHeaderField("Location", redirectTargetUrlString);
+
+    // Add the redirect to our request.
+    ResourceRequest redirectRequest = ResourceRequest(redirectTargetUrl);
+    firstResource->willSendRequest(redirectRequest, fresh302Response);
+
+    // Add the final response to our request.
+    ResourceResponse fresh200Response;
+    fresh200Response.setURL(redirectTargetUrl);
+    fresh200Response.setHTTPStatusCode(200);
+    fresh200Response.setHTTPHeaderField("Date", kOriginalRequestDateAsString);
+    fresh200Response.setHTTPHeaderField("Expires", kOneDayAfterOriginalRequest);
+
+    firstResource->setResponse(fresh200Response);
+    memoryCache()->add(firstResource.get());
+
+    advanceClock(500.);
+
+    ResourcePtr<Resource> fetched = fetch();
+    EXPECT_NE(firstResource, fetched);
+}
+
+TEST_F(CachingCorrectnessTest, 302RedirectExplicitlyFreshMaxAge)
+{
+    KURL redirectUrl(ParsedURLString, kResourceURL);
+    const char redirectTargetUrlString[] = "http://redirect-target.com";
+    KURL redirectTargetUrl(ParsedURLString, redirectTargetUrlString);
+
+    ResourcePtr<Resource> firstResource = new Resource(ResourceRequest(redirectUrl), Resource::Raw);
+
+    ResourceResponse fresh302Response;
+    fresh302Response.setURL(redirectUrl);
+    fresh302Response.setHTTPStatusCode(302);
+    fresh302Response.setHTTPHeaderField("Date", kOriginalRequestDateAsString);
+    fresh302Response.setHTTPHeaderField("Cache-Control", "max-age=600");
+    fresh302Response.setHTTPHeaderField("Location", redirectTargetUrlString);
+
+    // Add the redirect to our request.
+    ResourceRequest redirectRequest = ResourceRequest(redirectTargetUrl);
+    firstResource->willSendRequest(redirectRequest, fresh302Response);
+
+    // Add the final response to our request.
+    ResourceResponse fresh200Response;
+    fresh200Response.setURL(redirectTargetUrl);
+    fresh200Response.setHTTPStatusCode(200);
+    fresh200Response.setHTTPHeaderField("Date", kOriginalRequestDateAsString);
+    fresh200Response.setHTTPHeaderField("Expires", kOneDayAfterOriginalRequest);
+
+    firstResource->setResponse(fresh200Response);
+    memoryCache()->add(firstResource.get());
+
+    advanceClock(500.);
+
+    ResourcePtr<Resource> fetched = fetch();
+    EXPECT_EQ(firstResource, fetched);
+}
+
+TEST_F(CachingCorrectnessTest, 302RedirectExplicitlyFreshExpires)
+{
+    KURL redirectUrl(ParsedURLString, kResourceURL);
+    const char redirectTargetUrlString[] = "http://redirect-target.com";
+    KURL redirectTargetUrl(ParsedURLString, redirectTargetUrlString);
+
+    ResourcePtr<Resource> firstResource = new Resource(ResourceRequest(redirectUrl), Resource::Raw);
+
+    ResourceResponse fresh302Response;
+    fresh302Response.setURL(redirectUrl);
+    fresh302Response.setHTTPStatusCode(302);
+    fresh302Response.setHTTPHeaderField("Date", kOriginalRequestDateAsString);
+    fresh302Response.setHTTPHeaderField("Expires", kOneDayAfterOriginalRequest);
+    fresh302Response.setHTTPHeaderField("Location", redirectTargetUrlString);
+
+    // Add the redirect to our request.
+    ResourceRequest redirectRequest = ResourceRequest(redirectTargetUrl);
+    firstResource->willSendRequest(redirectRequest, fresh302Response);
+
+    // Add the final response to our request.
+    ResourceResponse fresh200Response;
+    fresh200Response.setURL(redirectTargetUrl);
+    fresh200Response.setHTTPStatusCode(200);
+    fresh200Response.setHTTPHeaderField("Date", kOriginalRequestDateAsString);
+    fresh200Response.setHTTPHeaderField("Expires", kOneDayAfterOriginalRequest);
+
+    firstResource->setResponse(fresh200Response);
+    memoryCache()->add(firstResource.get());
+
+    advanceClock(500.);
+
+    ResourcePtr<Resource> fetched = fetch();
+    EXPECT_EQ(firstResource, fetched);
 }
 
 } // namespace
