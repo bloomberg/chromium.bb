@@ -1902,8 +1902,6 @@ void FrameView::setBaseBackgroundColor(const Color& backgroundColor)
 {
     m_baseBackgroundColor = backgroundColor;
 
-    // FIXME: http://code.google.com/p/chromium/issues/detail?id=362750
-    DisableCompositingQueryAsserts disabler;
     if (renderView() && renderView()->layer()->hasCompositedLayerMapping()) {
         CompositedLayerMappingPtr compositedLayerMapping = renderView()->layer()->compositedLayerMapping();
         compositedLayerMapping->updateContentsOpaque();

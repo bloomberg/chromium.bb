@@ -510,7 +510,6 @@ struct ScopedFramePaintingState {
         : frame(frame)
         , node(node)
         , paintBehavior(frame->view()->paintBehavior())
-        , backgroundColor(frame->view()->baseBackgroundColor())
     {
         ASSERT(!node || node->renderer());
         if (node)
@@ -522,14 +521,12 @@ struct ScopedFramePaintingState {
         if (node && node->renderer())
             node->renderer()->updateDragState(false);
         frame->view()->setPaintBehavior(paintBehavior);
-        frame->view()->setBaseBackgroundColor(backgroundColor);
         frame->view()->setNodeToDraw(0);
     }
 
     LocalFrame* frame;
     Node* node;
     PaintBehavior paintBehavior;
-    Color backgroundColor;
 };
 
 PassOwnPtr<DragImage> LocalFrame::nodeImage(Node& node)
@@ -542,9 +539,6 @@ PassOwnPtr<DragImage> LocalFrame::nodeImage(Node& node)
     m_view->updateLayoutAndStyleForPainting();
 
     m_view->setPaintBehavior(state.paintBehavior | PaintBehaviorFlattenCompositingLayers);
-
-    // When generating the drag image for an element, ignore the document background.
-    m_view->setBaseBackgroundColor(Color::transparent);
 
     m_view->setNodeToDraw(&node); // Enable special sub-tree drawing mode.
 
