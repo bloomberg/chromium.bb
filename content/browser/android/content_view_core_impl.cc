@@ -910,6 +910,8 @@ void ContentViewCoreImpl::LoadUrl(
     jstring url,
     jint load_url_type,
     jint transition_type,
+    jstring j_referrer_url,
+    jint referrer_policy,
     jint ua_override_option,
     jstring extra_headers,
     jbyteArray post_data,
@@ -948,6 +950,11 @@ void ContentViewCoreImpl::LoadUrl(
   }
 
   params.can_load_local_resources = can_load_local_resources;
+  if (j_referrer_url) {
+    params.referrer = content::Referrer(
+        GURL(ConvertJavaStringToUTF8(env, j_referrer_url)),
+        static_cast<blink::WebReferrerPolicy>(referrer_policy));
+  }
 
   LoadUrl(params);
 }
