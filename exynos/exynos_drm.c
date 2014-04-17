@@ -294,7 +294,7 @@ void *exynos_bo_map(struct exynos_bo *bo)
 			return NULL;
 		}
 
-		bo->vaddr = req.mapped;
+		bo->vaddr = (void *)(uintptr_t)req.mapped;
 	}
 
 	return bo->vaddr;
@@ -381,7 +381,7 @@ int exynos_vidi_connection(struct exynos_device *dev, uint32_t connect,
 	struct drm_exynos_vidi_connection req = {
 		.connection	= connect,
 		.extensions	= ext,
-		.edid		= edid,
+		.edid		= (uint64_t)(uintptr_t)edid,
 	};
 	int ret;
 
