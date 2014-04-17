@@ -1334,8 +1334,6 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
   switch (xev->type) {
     case EnterNotify:
     case LeaveNotify: {
-      if (!g_current_capture)
-        X11DesktopHandler::get()->ProcessXEvent(xev);
       ui::MouseEvent mouse_event(xev);
       DispatchMouseEvent(&mouse_event);
       break;
@@ -1383,6 +1381,7 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
       if (xev->xfocus.mode != NotifyGrab) {
         ReleaseCapture();
         OnHostLostWindowCapture();
+        X11DesktopHandler::get()->ProcessXEvent(xev);
       } else {
         dispatcher()->OnHostLostMouseGrab();
       }
