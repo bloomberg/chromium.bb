@@ -351,7 +351,7 @@ unsigned Locale::matchedDecimalSymbolIndex(const String& input, unsigned& positi
 String Locale::convertFromLocalizedNumber(const String& localized)
 {
     initializeLocaleData();
-    String input = localized.stripWhiteSpace();
+    String input = localized.removeCharacters(isASCIISpace);
     if (!m_hasLocaleData || input.isEmpty())
         return input;
 
