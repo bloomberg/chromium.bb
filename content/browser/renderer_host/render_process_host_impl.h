@@ -52,6 +52,9 @@ class ScreenOrientationDispatcherHost;
 class StoragePartition;
 class StoragePartitionImpl;
 
+typedef base::Thread* (*RendererMainThreadFactoryFunction)(
+    const std::string& id);
+
 // Implements a concrete RenderProcessHost for the browser process for talking
 // to actual renderer processes (as opposed to mocks).
 //
@@ -213,6 +216,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // This forces a renderer that is running "in process" to shut down.
   static void ShutDownInProcessRenderer();
+
+  static void RegisterRendererMainThreadFactory(
+      RendererMainThreadFactoryFunction create);
 
 #if defined(OS_ANDROID)
   const scoped_refptr<BrowserDemuxerAndroid>& browser_demuxer_android() {

@@ -324,11 +324,6 @@ class RendererSandboxedProcessLauncherDelegate
 
 RendererMainThreadFactoryFunction g_renderer_main_thread_factory = NULL;
 
-void RenderProcessHost::RegisterRendererMainThreadFactory(
-    RendererMainThreadFactoryFunction create) {
-  g_renderer_main_thread_factory = create;
-}
-
 base::MessageLoop* g_in_process_thread;
 
 base::MessageLoop*
@@ -465,6 +460,11 @@ void RenderProcessHostImpl::ShutDownInProcessRenderer() {
       NOTREACHED() << "There should be only one RenderProcessHost when running "
                    << "in-process.";
   }
+}
+
+void RenderProcessHostImpl::RegisterRendererMainThreadFactory(
+    RendererMainThreadFactoryFunction create) {
+  g_renderer_main_thread_factory = create;
 }
 
 RenderProcessHostImpl::~RenderProcessHostImpl() {

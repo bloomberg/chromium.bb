@@ -20,9 +20,6 @@ namespace content {
 class UtilityProcessHostClient;
 struct ChildProcessData;
 
-typedef base::Thread* (*UtilityMainThreadFactoryFunction)(
-    const std::string& id);
-
 // This class acts as the browser-side host to a utility child process.  A
 // utility process is a short-lived process that is created to run a specific
 // task.  This class lives solely on the IO thread.
@@ -72,9 +69,6 @@ class UtilityProcessHost : public IPC::Sender,
 #if defined(OS_POSIX)
   virtual void SetEnv(const base::EnvironmentMap& env) = 0;
 #endif
-
-  CONTENT_EXPORT static void RegisterUtilityMainThreadFactory(
-      UtilityMainThreadFactoryFunction create);
 };
 
 };  // namespace content

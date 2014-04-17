@@ -27,6 +27,8 @@
 #include "base/strings/stringprintf.h"
 #include "content/browser/browser_main.h"
 #include "content/browser/gpu/gpu_process_host.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/browser/utility_process_host_impl.h"
 #include "content/common/set_process_title.h"
 #include "content/common/url_schemes.h"
 #include "content/gpu/in_process_gpu_thread.h"
@@ -34,8 +36,6 @@
 #include "content/public/app/content_main_delegate.h"
 #include "content/public/app/startup_helper_win.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/render_process_host.h"
-#include "content/public/browser/utility_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_paths.h"
@@ -403,9 +403,9 @@ int RunZygote(const MainFunctionParams& main_function_params,
 #if !defined(OS_IOS)
 static void RegisterMainThreadFactories() {
 #if !defined(CHROME_MULTIPLE_DLL_BROWSER)
-  UtilityProcessHost::RegisterUtilityMainThreadFactory(
+  UtilityProcessHostImpl::RegisterUtilityMainThreadFactory(
       CreateInProcessUtilityThread);
-  RenderProcessHost::RegisterRendererMainThreadFactory(
+  RenderProcessHostImpl::RegisterRendererMainThreadFactory(
       CreateInProcessRendererThread);
   GpuProcessHost::RegisterGpuMainThreadFactory(
       CreateInProcessGpuThread);

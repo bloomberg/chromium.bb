@@ -91,7 +91,7 @@ UtilityProcessHost* UtilityProcessHost::Create(
   return new UtilityProcessHostImpl(client, client_task_runner);
 }
 
-void UtilityProcessHost::RegisterUtilityMainThreadFactory(
+void UtilityProcessHostImpl::RegisterUtilityMainThreadFactory(
     UtilityMainThreadFactoryFunction create) {
   g_utility_main_thread_factory = create;
 }

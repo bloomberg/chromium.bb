@@ -31,9 +31,6 @@ class RenderWidgetHost;
 class StoragePartition;
 struct GlobalRequestID;
 
-typedef base::Thread* (*RendererMainThreadFactoryFunction)(
-    const std::string& id);
-
 // Interface that represents the browser side of the browser <-> renderer
 // communication channel. There will generally be one RenderProcessHost per
 // renderer process.
@@ -285,9 +282,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // Returns the current max number of renderer processes used by the content
   // module.
   static size_t GetMaxRendererProcessCount();
-
-  static void RegisterRendererMainThreadFactory(
-      RendererMainThreadFactoryFunction create);
 };
 
 }  // namespace content.

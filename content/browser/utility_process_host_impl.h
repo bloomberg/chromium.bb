@@ -25,10 +25,16 @@ class Thread;
 namespace content {
 class BrowserChildProcessHostImpl;
 
+typedef base::Thread* (*UtilityMainThreadFactoryFunction)(
+    const std::string& id);
+
 class CONTENT_EXPORT UtilityProcessHostImpl
     : public NON_EXPORTED_BASE(UtilityProcessHost),
       public BrowserChildProcessHostDelegate {
  public:
+  static void RegisterUtilityMainThreadFactory(
+      UtilityMainThreadFactoryFunction create);
+
   UtilityProcessHostImpl(UtilityProcessHostClient* client,
                          base::SequencedTaskRunner* client_task_runner);
   virtual ~UtilityProcessHostImpl();
