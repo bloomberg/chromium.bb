@@ -530,7 +530,7 @@ class ChromeSDKCommand(cros.CrosCommand):
     gold_path = os.path.join(toolchain_path, gold_path.lstrip('/'))
     return '%s -B%s' % (cmd, gold_path)
 
-  def _SetupTCEnvironment(self, sdk_ctx, options, env, goma_dir=None):
+  def _SetupTCEnvironment(self, sdk_ctx, options, env):
     """Sets up toolchain-related environment variables."""
     target_tc = sdk_ctx.key_map[self.sdk.TARGET_TOOLCHAIN_KEY].path
     tc_bin = os.path.join(target_tc, 'bin')
@@ -565,10 +565,6 @@ class ChromeSDKCommand(cros.CrosCommand):
       clang_path = os.path.join(options.chrome_src, self._CLANG_DIR)
       env['PATH'] = '%s:%s' % (clang_path, env['PATH'])
 
-    # The Goma path must appear before all the local compiler paths.
-    if goma_dir:
-      env['PATH'] = '%s:%s' % (goma_dir, env['PATH'])
-
   def _SetupEnvironment(self, board, sdk_ctx, options, goma_dir=None,
                         goma_port=None):
     """Sets environment variables to export to the SDK shell."""
@@ -583,7 +579,7 @@ class ChromeSDKCommand(cros.CrosCommand):
     environment = os.path.join(sdk_ctx.key_map[constants.CHROME_ENV_TAR].path,
                                'environment')
     env = osutils.SourceEnvironment(environment, self.EBUILD_ENV)
-    self._SetupTCEnvironment(sdk_ctx, options, env, goma_dir=goma_dir)
+    self._SetupTCEnvironment(sdk_ctx, options, env)
 
     # Add managed components to the PATH.
     env['PATH'] = '%s:%s' % (constants.CHROMITE_BIN_DIR, env['PATH'])
@@ -624,6 +620,11 @@ class ChromeSDKCommand(cros.CrosCommand):
       gyp_dict.pop('branding', None)
       gyp_dict.pop('buildtype', None)
 
+    # Enable goma if requested.
+    if goma_dir:
+      gyp_dict['use_goma'] = 1
+      gyp_dict['gomadir'] = goma_dir
+
     env['GYP_DEFINES'] = chrome_util.DictToGypDefines(gyp_dict)
 
     # PS1 sets the command line prompt and xterm window caption.
@@ -655,12 +656,6 @@ class ChromeSDKCommand(cros.CrosCommand):
       logging.warning(
           '%s is adding Goma to the PATH.  Using that Goma instead of the '
           'managed Goma install.', user_rc)
-      manifest = os.path.join(os.path.dirname(goma_ctl), 'MANIFEST')
-      platform_env = osutils.SourceEnvironment(manifest, ['PLATFORM'])
-      platform = platform_env.get('PLATFORM')
-      if platform is not None and platform != 'chromeos':
-        logging.warning('Found %s version of Goma in PATH.', platform)
-        logging.warning('Goma will not work')
 
   @staticmethod
   def _VerifyChromiteBin(user_rc):
