@@ -1527,7 +1527,7 @@ leveldb::Status IndexedDBBackingStore::ClearObjectStore(
   leveldb::Status s =
       DeleteRange(transaction->transaction(), start_key, stop_key);
   if (!s.ok())
-    INTERNAL_WRITE_ERROR_UNTESTED(CLEAR_OBJECT_STORE);
+    INTERNAL_WRITE_ERROR(CLEAR_OBJECT_STORE);
   return s;
 }
 

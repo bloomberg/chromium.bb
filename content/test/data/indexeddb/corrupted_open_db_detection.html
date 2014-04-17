@@ -14,6 +14,10 @@ var testType = 'get';
 
 function test() {
   testType = location.hash.substring(1);
+  if (testType == 'testCommon') {
+    fail('"testCommon" is a reserved test name');
+    return;
+  }
   indexedDBTest(upgradeCallback, openCallback);
 }
 
@@ -62,7 +66,7 @@ function transactionError(event) {
   }
 }
 
-function transactionAbort() {
+function transactionAbort(event) {
   if (event.target.error) {
     numTransactionAborts += 1;
   } else {
@@ -83,38 +87,43 @@ function databaseClosed(event) {
   done("Closed as expected");
 }
 
-function getData() {
-  transaction = db.transaction('storeName');
-  db.onclose = databaseClosed;
-  transaction.onabort = transactionAbort;
-  transaction.onerror = transactionError;
-  request.oncomplete = unexpectedCompleteCallback;
-  store = transaction.objectStore('storeName');
-  request = store.get('key-0');
-  request.onsuccess = unexpectedSuccessCallback;
-  request.onerror = requestError;
-}
-
-function iterateData() {
-  transaction = db.transaction('storeName');
-  db.onclose = databaseClosed;
-  transaction.onabort = transactionAbort;
-  transaction.onerror = transactionError;
-  var store = transaction.objectStore('storeName');
-  var request = store.openCursor();
-  request.oncomplete = unexpectedCompleteCallback;
-  request.onerror = requestError;
-  request.onsuccess = function (event){
-    var cursor = request.result;
-    if (cursor) {
-      // Get an object. Probably shouldn't get this far, but won't call this an error.
-      cursor.continue();
-    } else {
-      // Got the last object. We shouldn't get this far.
-      fail("Should *not* have been able to iterate over database.");
-    }
-  };
-}
+var tests = {
+  // Common setup tasks for the other tests in this object
+  testCommon: function(mode) {
+    transaction = db.transaction('storeName', mode);
+    db.onclose = databaseClosed;
+    transaction.onabort = transactionAbort;
+    transaction.onerror = transactionError;
+    objectStore = transaction.objectStore('storeName');
+  },
+  get: function() {
+    tests.testCommon('readonly');
+    request = objectStore.get('key-0');
+    request.onsuccess = unexpectedSuccessCallback;
+    request.onerror = requestError;
+  },
+  iterate: function() {
+    tests.testCommon('readonly');
+    request = objectStore.openCursor();
+    request.onerror = requestError;
+    request.onsuccess = function (event){
+      var cursor = request.result;
+      if (cursor) {
+        // Get an object. Probably shouldn't get this far, but won't call this an error.
+        cursor.continue();
+      } else {
+        // Got the last object. We shouldn't get this far.
+        fail("Should *not* have been able to iterate over database.");
+      }
+    };
+  },
+  clearObjectStore: function() {
+    tests.testCommon('readwrite');
+    request = objectStore.clear();
+    request.onerror = requestError;
+    request.onsuccess = unexpectedSuccessCallback
+  }
+};
 
 function openCallback() {
   var xmlhttp = new window.XMLHttpRequest();
@@ -123,10 +132,8 @@ function openCallback() {
       if (xmlhttp.readyState === 4) {
         if (xmlhttp.status === 200) {
           // The database is now corrupt.
-          if (testType === 'get') {
-            getData();
-          } else if (testType === 'iterate') {
-            iterateData();
+          if (testType in tests) {
+            tests[testType]();
           } else {
             fail('Unknown test: "' + testType + '"');
           }

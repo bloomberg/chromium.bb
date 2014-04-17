@@ -473,7 +473,12 @@ static scoped_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CorruptedOpenDatabaseGet) {
+class IndexedDBBrowserCorruptionTest
+    : public IndexedDBBrowserTest,
+      public ::testing::WithParamInterface<const char*> {};
+
+IN_PROC_BROWSER_TEST_P(IndexedDBBrowserCorruptionTest,
+                       OperationOnCorruptedOpenDatabase) {
   ASSERT_TRUE(embedded_test_server()->Started() ||
               embedded_test_server()->InitializeAndWaitUntilReady());
   const GURL& origin_url = embedded_test_server()->base_url();
@@ -483,31 +488,19 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CorruptedOpenDatabaseGet) {
                  origin_url,
                  s_corrupt_db_test_prefix));
 
-  std::string test_file =
-      s_corrupt_db_test_prefix + "corrupted_open_db_detection.html#get";
+  std::string test_file = s_corrupt_db_test_prefix +
+                          "corrupted_open_db_detection.html#" + GetParam();
   SimpleTest(embedded_test_server()->GetURL(test_file));
 
   test_file = s_corrupt_db_test_prefix + "corrupted_open_db_recovery.html";
   SimpleTest(embedded_test_server()->GetURL(test_file));
 }
 
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CorruptedOpenDatabaseIterate) {
-  ASSERT_TRUE(embedded_test_server()->Started() ||
-              embedded_test_server()->InitializeAndWaitUntilReady());
-  const GURL& origin_url = embedded_test_server()->base_url();
-  embedded_test_server()->RegisterRequestHandler(
-      base::Bind(&CorruptDBRequestHandler,
-                 base::ConstRef(GetContext()),
-                 origin_url,
-                 s_corrupt_db_test_prefix));
-
-  std::string test_file =
-      s_corrupt_db_test_prefix + "corrupted_open_db_detection.html#iterate";
-  SimpleTest(embedded_test_server()->GetURL(test_file));
-
-  test_file = s_corrupt_db_test_prefix + "corrupted_open_db_recovery.html";
-  SimpleTest(embedded_test_server()->GetURL(test_file));
-}
+INSTANTIATE_TEST_CASE_P(IndexedDBBrowserCorruptionTestInstantiation,
+                        IndexedDBBrowserCorruptionTest,
+                        ::testing::Values("get",
+                                          "iterate",
+                                          "clearObjectStore"));
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DeleteCompactsBackingStore) {
   const GURL test_url = GetTestUrl("indexeddb", "delete_compact.html");

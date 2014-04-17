@@ -1281,12 +1281,16 @@ void IndexedDBDatabase::ClearOperation(
     scoped_refptr<IndexedDBCallbacks> callbacks,
     IndexedDBTransaction* transaction) {
   IDB_TRACE("IndexedDBDatabase::ObjectStoreClearOperation");
-  if (!backing_store_->ClearObjectStore(transaction->BackingStoreTransaction(),
-                                        id(),
-                                        object_store_id).ok()) {
-    callbacks->OnError(
-        IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionUnknownError,
-                               "Internal error clearing object store"));
+  leveldb::Status s = backing_store_->ClearObjectStore(
+      transaction->BackingStoreTransaction(), id(), object_store_id);
+  if (!s.ok()) {
+    IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
+                                 "Internal error clearing object store");
+    callbacks->OnError(error);
+    if (s.IsCorruption()) {
+      factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
+                                             error);
+    }
     return;
   }
   callbacks->OnSuccess();
