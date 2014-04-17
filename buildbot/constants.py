@@ -440,7 +440,7 @@ VM_MEM_PREFIX = 'chromiumos_qemu_mem.bin'
 VM_TEST_RESULTS = 'vm_test_results_%(attempt)s'
 
 METADATA_JSON = 'metadata.json'
-METADATA_STAGE_JSON = 'metadata_%(stage)s.json'
+PARTIAL_METADATA_JSON = 'partial-metadata.json'
 DELTA_SYSROOT_TAR = 'delta_sysroot.tar.xz'
 DELTA_SYSROOT_BATCH = 'batch'
 
