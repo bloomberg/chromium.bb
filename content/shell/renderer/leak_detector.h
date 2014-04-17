@@ -7,29 +7,32 @@
 
 #include "base/basictypes.h"
 #include "content/shell/common/leak_detection_result.h"
-// TODO(dcheng): Temporary. Convert back to a forward declare.
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/WebKit/public/web/WebLeakDetector.h"
 
 namespace content {
 
+class WebKitTestRunner;
+
 // LeakDetector counts DOM objects and compare them between two pages.
-class LeakDetector {
+class LeakDetector : public blink::WebLeakDetectorClient {
  public:
-  LeakDetector();
+  explicit LeakDetector(WebKitTestRunner* test_runner);
+  virtual ~LeakDetector();
 
   // Counts DOM objects, compare the previous status and returns the result of
   // leak detection. It is assumed that this method is always called when a
   // specific page, like about:blank is loaded to compare the previous
   // circumstance of DOM objects. If the number of objects increses, there
   // should be a leak.
-  LeakDetectionResult TryLeakDetection(blink::WebLocalFrame* frame);
+  void TryLeakDetection(blink::WebLocalFrame* frame);
+
+  // WebLeakDetectorClient:
+  virtual void onLeakDetectionComplete(const Result& result) OVERRIDE;
 
  private:
-  // The number of the live documents last time.
-  unsigned previous_number_of_live_documents_;
-
-  // The number of the live nodes last time.
-  unsigned previous_number_of_live_nodes_;
+  WebKitTestRunner* test_runner_;
+  scoped_ptr<blink::WebLeakDetector> web_leak_detector_;
+  blink::WebLeakDetectorClient::Result previous_result_;
 
   DISALLOW_COPY_AND_ASSIGN(LeakDetector);
 };

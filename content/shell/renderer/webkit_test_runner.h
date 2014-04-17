@@ -33,6 +33,7 @@ class WebTestProxyBase;
 namespace content {
 
 class LeakDetector;
+struct LeakDetectionResult;
 
 // This is the renderer side of the webkit test runner.
 class WebKitTestRunner : public RenderViewObserver,
@@ -120,6 +121,8 @@ class WebKitTestRunner : public RenderViewObserver,
   void set_proxy(::WebTestRunner::WebTestProxyBase* proxy) { proxy_ = proxy; }
   ::WebTestRunner::WebTestProxyBase* proxy() const { return proxy_; }
 
+  void ReportLeakDetectionResult(const LeakDetectionResult& result);
+
  private:
   // Message handlers.
   void OnSetTestConfiguration(const ShellTestConfiguration& params);
@@ -134,8 +137,6 @@ class WebKitTestRunner : public RenderViewObserver,
   // After finishing the test, retrieves the audio, text, and pixel dumps from
   // the TestRunner library and sends them to the browser process.
   void CaptureDump();
-
-  void TryLeakDetection();
 
   ::WebTestRunner::WebTestProxyBase* proxy_;
 

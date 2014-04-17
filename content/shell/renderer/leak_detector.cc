@@ -7,6 +7,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/values.h"
+#include "content/shell/renderer/webkit_test_runner.h"
 #include "third_party/WebKit/public/web/WebLeakDetector.h"
 
 using blink::WebLeakDetector;
@@ -23,45 +24,46 @@ namespace content {
 const int kInitialNumberOfLiveDocuments = 1;
 const int kInitialNumberOfLiveNodes = 4;
 
-LeakDetector::LeakDetector()
-    : previous_number_of_live_documents_(kInitialNumberOfLiveDocuments),
-      previous_number_of_live_nodes_(kInitialNumberOfLiveNodes) {
+LeakDetector::LeakDetector(WebKitTestRunner* test_runner)
+    : test_runner_(test_runner),
+      web_leak_detector_(blink::WebLeakDetector::create(this)) {
+  previous_result_.numberOfLiveDocuments = kInitialNumberOfLiveDocuments;
+  previous_result_.numberOfLiveNodes = kInitialNumberOfLiveNodes;
 }
 
-LeakDetectionResult LeakDetector::TryLeakDetection(
-    blink::WebLocalFrame* frame) {
-  LeakDetectionResult result;
-  unsigned number_of_live_documents = 0;
-  unsigned number_of_live_nodes = 0;
+LeakDetector::~LeakDetector() {
+}
 
-  WebLeakDetector::collectGarbargeAndGetDOMCounts(
-      frame, &number_of_live_documents, &number_of_live_nodes);
+void LeakDetector::TryLeakDetection(blink::WebLocalFrame* frame) {
+  web_leak_detector_->collectGarbageAndGetDOMCounts(frame);
+}
 
-  result.leaked =
-      (previous_number_of_live_documents_ < number_of_live_documents ||
-       previous_number_of_live_nodes_ < number_of_live_nodes);
+void LeakDetector::onLeakDetectionComplete(
+    const WebLeakDetectorClient::Result& result) {
+  LeakDetectionResult report;
+  report.leaked =
+      (previous_result_.numberOfLiveDocuments < result.numberOfLiveDocuments ||
+       previous_result_.numberOfLiveNodes < result.numberOfLiveNodes);
 
-  if (result.leaked) {
+  if (report.leaked) {
     base::DictionaryValue detail;
     base::ListValue* list = new base::ListValue();
-    list->AppendInteger(previous_number_of_live_documents_);
-    list->AppendInteger(number_of_live_documents);
+    list->AppendInteger(previous_result_.numberOfLiveDocuments);
+    list->AppendInteger(result.numberOfLiveDocuments);
     detail.Set("numberOfLiveDocuments", list);
 
     list = new base::ListValue();
-    list->AppendInteger(previous_number_of_live_nodes_);
-    list->AppendInteger(number_of_live_nodes);
+    list->AppendInteger(previous_result_.numberOfLiveNodes);
+    list->AppendInteger(result.numberOfLiveNodes);
     detail.Set("numberOfLiveNodes", list);
 
     std::string detail_str;
     base::JSONWriter::Write(&detail, &detail_str);
-    result.detail = detail_str;
+    report.detail = detail_str;
   }
 
-  previous_number_of_live_documents_ = number_of_live_documents;
-  previous_number_of_live_nodes_ = number_of_live_nodes;
-
-  return result;
+  previous_result_ = result;
+  test_runner_->ReportLeakDetectionResult(report);
 }
 
 }  // namespace content
