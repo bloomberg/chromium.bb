@@ -18,10 +18,16 @@ cr.define('inline.login', function() {
   var authExtHost;
 
   /**
+   * Whether the auth ready event has been fired, for testing purpose.
+   */
+  var authReadyFired;
+
+  /**
    * Handler of auth host 'ready' event.
    */
   function onAuthReady() {
     $('contents').classList.toggle('loading', false);
+    authReadyFired = true;
   }
 
   /**
@@ -69,7 +75,23 @@ cr.define('inline.login', function() {
     $('contents').classList.toggle('loading', true);
   }
 
+  /**
+   * Returns the auth host instance, for testing purpose.
+   */
+  function getAuthExtHost() {
+    return authExtHost;
+  }
+
+  /**
+   * Returns whether the auth UI is ready, for testing purpose.
+   */
+  function isAuthReady() {
+    return authReadyFired;
+  }
+
   return {
+    getAuthExtHost: getAuthExtHost,
+    isAuthReady: isAuthReady,
     initialize: initialize,
     loadAuthExtension: loadAuthExtension,
     closeDialog: closeDialog,
