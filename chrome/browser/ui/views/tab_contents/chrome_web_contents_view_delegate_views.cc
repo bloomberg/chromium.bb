@@ -122,17 +122,24 @@ void ChromeWebContentsViewDelegateViews::RestoreFocus() {
 scoped_ptr<RenderViewContextMenu> ChromeWebContentsViewDelegateViews::BuildMenu(
     content::WebContents* web_contents,
     const content::ContextMenuParams& params) {
-  scoped_ptr<RenderViewContextMenu> menu(
-      RenderViewContextMenuViews::Create(web_contents->GetFocusedFrame(),
-                                         params));
-  menu->Init();
+  scoped_ptr<RenderViewContextMenu> menu;
+  content::RenderFrameHost* focused_frame = web_contents->GetFocusedFrame();
+  // If the frame tree does not have a focused frame at this point, do not
+  // bother creating RenderViewContextMenuViews.
+  // This happens if the frame has navigated to a different page before
+  // ContextMenu message was received by the current RenderFrameHost.
+  if (focused_frame) {
+    menu.reset(RenderViewContextMenuViews::Create(focused_frame, params));
+    menu->Init();
+  }
   return menu.Pass();
 }
 
 void ChromeWebContentsViewDelegateViews::ShowMenu(
     scoped_ptr<RenderViewContextMenu> menu) {
-  DCHECK(menu.get());
   context_menu_.reset(static_cast<RenderViewContextMenuViews*>(menu.release()));
+  if (!context_menu_.get())
+    return;
 
   // Menus need a Widget to work. If we're not the active tab we won't
   // necessarily be in a widget.

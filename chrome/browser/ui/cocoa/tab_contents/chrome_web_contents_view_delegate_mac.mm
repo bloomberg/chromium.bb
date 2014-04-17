@@ -44,8 +44,9 @@ void ChromeWebContentsViewDelegateMac::ShowContextMenu(
 
 void ChromeWebContentsViewDelegateMac::ShowMenu(
     scoped_ptr<RenderViewContextMenu> menu) {
-  DCHECK(menu.get());
   context_menu_.reset(static_cast<RenderViewContextMenuMac*>(menu.release()));
+  if (!context_menu_.get())
+    return;
 
   // The renderer may send the "show context menu" message multiple times, one
   // for each right click mouse event it receives. Normally, this doesn't happen
@@ -64,10 +65,20 @@ void ChromeWebContentsViewDelegateMac::ShowMenu(
 scoped_ptr<RenderViewContextMenu> ChromeWebContentsViewDelegateMac::BuildMenu(
     content::WebContents* web_contents,
     const content::ContextMenuParams& params) {
-  content::RenderWidgetHostView* widget_view = GetActiveRenderWidgetHostView();
-  scoped_ptr<RenderViewContextMenuMac> menu(new RenderViewContextMenuMac(
-      web_contents->GetFocusedFrame(), params, widget_view->GetNativeView()));
-  menu->Init();
+  scoped_ptr<RenderViewContextMenuMac> menu;
+  content::RenderFrameHost* focused_frame = web_contents->GetFocusedFrame();
+  // If the frame tree does not have a focused frame at this point, do not
+  // bother creating RenderViewContextMenuMac.
+  // This happens if the frame has navigated to a different page before
+  // ContextMenu message was received by the current RenderFrameHost.
+  if (focused_frame) {
+    content::RenderWidgetHostView* widget_view =
+        GetActiveRenderWidgetHostView();
+    menu.reset(new RenderViewContextMenuMac(
+        focused_frame, params, widget_view->GetNativeView()));
+    menu->Init();
+  }
+
   return menu.PassAs<RenderViewContextMenu>();
 }
 
