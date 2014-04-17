@@ -28647,6 +28647,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="UpdateEngine.Rollback.Result" enum="BooleanSuccess">
+  <owner>zeuthen@chromium.org</owner>
+  <summary>
+    Whether rollback worked.
+
+    This is reported every time there's a rollback request.
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
 <histogram name="UpdateEngine.SuccessfulUpdate.AttemptCount" units="count">
   <owner>zeuthen@chromium.org</owner>
   <summary>
