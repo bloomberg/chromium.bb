@@ -868,7 +868,7 @@ TEST_P(PipelineIntegrationTest, MediaSource_MP3) {
 
   EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
   EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
-  EXPECT_EQ(339, pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
+  EXPECT_EQ(313, pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
 
   Play();
 
@@ -878,7 +878,7 @@ TEST_P(PipelineIntegrationTest, MediaSource_MP3) {
 TEST_P(PipelineIntegrationTest, MediaSource_MP3_TimestampOffset) {
   MockMediaSource source("sfx.mp3", kMP3, kAppendWholeFile, GetParam());
   StartPipelineWithMediaSource(&source);
-  EXPECT_EQ(339, source.last_timestamp_offset().InMilliseconds());
+  EXPECT_EQ(313, source.last_timestamp_offset().InMilliseconds());
 
   scoped_refptr<DecoderBuffer> second_file = ReadTestDataFile("sfx.mp3");
   source.AppendAtTime(
@@ -887,10 +887,10 @@ TEST_P(PipelineIntegrationTest, MediaSource_MP3_TimestampOffset) {
       second_file->data_size());
   source.EndOfStream();
 
-  EXPECT_EQ(669, source.last_timestamp_offset().InMilliseconds());
+  EXPECT_EQ(616, source.last_timestamp_offset().InMilliseconds());
   EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
   EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
-  EXPECT_EQ(669, pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
+  EXPECT_EQ(616, pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
 
   Play();
 

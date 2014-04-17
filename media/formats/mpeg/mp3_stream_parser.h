@@ -23,7 +23,8 @@ class MEDIA_EXPORT MP3StreamParser : public MPEGAudioStreamParserBase {
                                int* frame_size,
                                int* sample_rate,
                                ChannelLayout* channel_layout,
-                               int* sample_count) const OVERRIDE;
+                               int* sample_count,
+                               bool* metadata_frame) const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(MP3StreamParser);
 };

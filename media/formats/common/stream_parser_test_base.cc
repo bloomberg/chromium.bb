@@ -29,22 +29,7 @@ static std::string BufferQueueToString(
 
 StreamParserTestBase::StreamParserTestBase(
     scoped_ptr<StreamParser> stream_parser)
-    : parser_(stream_parser.Pass()) {}
-
-StreamParserTestBase::~StreamParserTestBase() {}
-
-std::string StreamParserTestBase::ParseFile(const std::string& filename,
-                                            int append_bytes) {
-  results_stream_.clear();
-  InitializeParser();
-
-  scoped_refptr<DecoderBuffer> buffer = ReadTestDataFile(filename);
-  EXPECT_TRUE(
-      AppendDataInPieces(buffer->data(), buffer->data_size(), append_bytes));
-  return results_stream_.str();
-}
-
-void StreamParserTestBase::InitializeParser() {
+    : parser_(stream_parser.Pass()) {
   parser_->Init(
       base::Bind(&StreamParserTestBase::OnInitDone, base::Unretained(this)),
       base::Bind(&StreamParserTestBase::OnNewConfig, base::Unretained(this)),
@@ -54,6 +39,23 @@ void StreamParserTestBase::InitializeParser() {
       base::Bind(&StreamParserTestBase::OnNewSegment, base::Unretained(this)),
       base::Bind(&StreamParserTestBase::OnEndOfSegment, base::Unretained(this)),
       LogCB());
+}
+
+StreamParserTestBase::~StreamParserTestBase() {}
+
+std::string StreamParserTestBase::ParseFile(const std::string& filename,
+                                            int append_bytes) {
+  results_stream_.clear();
+  scoped_refptr<DecoderBuffer> buffer = ReadTestDataFile(filename);
+  EXPECT_TRUE(
+      AppendDataInPieces(buffer->data(), buffer->data_size(), append_bytes));
+  return results_stream_.str();
+}
+
+std::string StreamParserTestBase::ParseData(const uint8* data, size_t length) {
+  results_stream_.clear();
+  EXPECT_TRUE(AppendDataInPieces(data, length, length));
+  return results_stream_.str();
 }
 
 bool StreamParserTestBase::AppendDataInPieces(const uint8* data,
@@ -88,6 +90,7 @@ bool StreamParserTestBase::OnNewConfig(
            << video_config.IsValidConfig() << ")";
   EXPECT_TRUE(audio_config.IsValidConfig());
   EXPECT_FALSE(video_config.IsValidConfig());
+  last_audio_config_ = audio_config;
   return true;
 }
 

@@ -75,6 +75,10 @@ static const int kSampleRateMap[4][4] = {
   { 0, 0, 0, 0 }
 };
 
+// Offset in bytes from the end of the MP3 header to "Xing" or "Info" tags which
+// indicate a frame is silent metadata frame.  Values taken from FFmpeg.
+static const int kXingHeaderMap[2][2] = {{32, 17}, {17, 9}};
+
 // Frame header field constants.
 static const int kVersion2 = 2;
 static const int kVersionReserved = 1;
@@ -97,7 +101,8 @@ int MP3StreamParser::ParseFrameHeader(const uint8* data,
                                       int* frame_size,
                                       int* sample_rate,
                                       ChannelLayout* channel_layout,
-                                      int* sample_count) const {
+                                      int* sample_count,
+                                      bool* metadata_frame) const {
   DCHECK(data);
   DCHECK_GE(size, 0);
   DCHECK(frame_size);
@@ -233,7 +238,42 @@ int MP3StreamParser::ParseFrameHeader(const uint8* data,
         (channel_mode == 3) ? CHANNEL_LAYOUT_MONO : CHANNEL_LAYOUT_STEREO;
   }
 
-  return 4;
+  if (metadata_frame)
+    *metadata_frame = false;
+
+  const int header_bytes_read = reader.bits_read() / 8;
+  if (layer != kLayer3)
+    return header_bytes_read;
+
+  // Check if this is a XING frame and tell the base parser to skip it if so.
+  const int xing_header_index =
+      kXingHeaderMap[version == kVersion2 ||
+                     version == kVersion2_5][channel_mode == 3];
+  uint32_t tag = 0;
+
+  // It's not a XING frame if the frame isn't big enough to be one.
+  if (*frame_size <
+      header_bytes_read + xing_header_index + static_cast<int>(sizeof(tag))) {
+    return header_bytes_read;
+  }
+
+  // If we don't have enough data available to check, return 0 so frame parsing
+  // will be retried once more data is available.
+  if (!reader.SkipBits(xing_header_index * 8) ||
+      !reader.ReadBits(sizeof(tag) * 8, &tag)) {
+    return 0;
+  }
+
+  // Check to see if the tag contains 'Xing' or 'Info'
+  if (tag == 0x496e666f || tag == 0x58696e67) {
+    MEDIA_LOG(log_cb()) << "Skipping XING header.";
+    if (metadata_frame)
+      *metadata_frame = true;
+    return reader.bits_read() / 8;
+  }
+
+  // If it wasn't a XING frame, just return the number consumed bytes.
+  return header_bytes_read;
 }
 
 }  // namespace media
