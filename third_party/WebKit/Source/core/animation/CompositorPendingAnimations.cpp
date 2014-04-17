@@ -44,7 +44,7 @@ void CompositorPendingAnimations::add(AnimationPlayer* player)
     Page* page = player->timeline()->document()->page();
     bool visible = page && page->visibilityState() == PageVisibilityStateVisible;
     if (!player->hasStartTime() && !visible)
-        player->setStartTime(player->timeline()->currentTime(), true);
+        player->setStartTime(player->timeline()->currentTime());
 
     m_pending.append(player);
 }
@@ -69,7 +69,8 @@ bool CompositorPendingAnimations::startPendingAnimations()
     } else {
         for (size_t i = 0; i < m_pending.size(); ++i) {
             if (!m_pending[i]->hasStartTime()) {
-                m_pending[i]->setStartTime(m_pending[i]->timeline()->currentTime(), true);
+                m_pending[i]->setStartTime(m_pending[i]->timeline()->currentTime());
+                m_pending[i]->update(AnimationPlayer::UpdateOnDemand);
             }
         }
     }
@@ -94,6 +95,7 @@ void CompositorPendingAnimations::notifyCompositorAnimationStarted(double monoto
     for (size_t i = 0; i < m_waitingForCompositorAnimationStart.size(); ++i) {
         AnimationPlayer* player = m_waitingForCompositorAnimationStart[i].get();
         player->setStartTime(monotonicAnimationStartTime - player->timeline()->zeroTime(), true);
+        player->update(AnimationPlayer::UpdateOnDemand);
     }
 
     m_waitingForCompositorAnimationStart.clear();
