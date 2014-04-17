@@ -227,6 +227,7 @@ evdev_device_process_event(struct libinput_event *event)
 	case LIBINPUT_EVENT_TOUCH_UP:
 		handle_touch_up(libinput_device,
 				libinput_event_get_touch_event(event));
+		break;
 	default:
 		handled = 0;
 		weston_log("unknown libinput event %d\n",
