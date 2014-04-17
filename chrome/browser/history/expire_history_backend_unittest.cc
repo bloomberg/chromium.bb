@@ -77,9 +77,8 @@ class ExpireHistoryTest : public testing::Test,
                                chrome::IconType icon_type);
 
   // EXPECTs that each URL-specific history thing (basically, everything but
-  // favicons) is gone, the reason being either that it was |archived|, or
-  // manually deleted.
-  void EnsureURLInfoGone(const URLRow& row, bool archived);
+  // favicons) is gone.
+  void EnsureURLInfoGone(const URLRow& row);
 
   // Clears the list of notifications received.
   void ClearLastNotifications() {
@@ -315,11 +314,7 @@ bool ExpireHistoryTest::HasThumbnail(URLID url_id) {
   return top_sites_->GetPageThumbnail(url, false, &data);
 }
 
-void ExpireHistoryTest::EnsureURLInfoGone(const URLRow& row, bool archived) {
-  // The passed in |row| must originate from |main_db_| so that its ID will be
-  // set to what had been in effect in |main_db_| before the deletion.
-  ASSERT_NE(0, row.id());
-
+void ExpireHistoryTest::EnsureURLInfoGone(const URLRow& row) {
   // Verify the URL no longer exists.
   URLRow temp_row;
   EXPECT_FALSE(main_db_->GetURLRow(row.id(), &temp_row));
@@ -338,15 +333,10 @@ void ExpireHistoryTest::EnsureURLInfoGone(const URLRow& row, bool archived) {
     if (notifications_[i].first == chrome::NOTIFICATION_HISTORY_URLS_DELETED) {
       URLsDeletedDetails* details = reinterpret_cast<URLsDeletedDetails*>(
           notifications_[i].second);
-      EXPECT_EQ(archived, details->archived);
+      EXPECT_FALSE(details->archived);
       const history::URLRows& rows(details->rows);
-      history::URLRows::const_iterator it_row = std::find_if(
-          rows.begin(), rows.end(), history::URLRow::URLRowHasURL(row.url()));
-      if (it_row != rows.end()) {
-        // Further verify that the ID is set to what had been in effect in the
-        // main database before the deletion. The InMemoryHistoryBackend relies
-        // on this to delete its cached copy of the row.
-        EXPECT_EQ(row.id(), it_row->id());
+      if (std::find_if(rows.begin(), rows.end(),
+          history::URLRow::URLRowHasURL(row.url())) != rows.end()) {
         found_delete_notification = true;
       }
     } else {
@@ -429,7 +419,7 @@ TEST_F(ExpireHistoryTest, DISABLED_DeleteURLAndFavicon) {
   expirer_.DeleteURL(last_row.url());
 
   // All the normal data + the favicon should be gone.
-  EnsureURLInfoGone(last_row, false /* archived */);
+  EnsureURLInfoGone(last_row);
   EXPECT_FALSE(GetFavicon(last_row.url(), chrome::FAVICON));
   EXPECT_FALSE(HasFavicon(favicon_id));
 }
@@ -457,7 +447,7 @@ TEST_F(ExpireHistoryTest, DeleteURLWithoutFavicon) {
   expirer_.DeleteURL(last_row.url());
 
   // All the normal data except the favicon should be gone.
-  EnsureURLInfoGone(last_row, false /* archived */);
+  EnsureURLInfoGone(last_row);
   EXPECT_TRUE(HasFavicon(favicon_id));
 }
 
@@ -498,7 +488,7 @@ TEST_F(ExpireHistoryTest, DontDeleteStarredURL) {
   expirer_.DeleteURL(url);
 
   // Now it should be completely deleted.
-  EnsureURLInfoGone(url_row, false /* archived */);
+  EnsureURLInfoGone(url_row);
 }
 
 // Deletes multiple URLs at once.  The favicon for the third one but
@@ -531,8 +521,8 @@ TEST_F(ExpireHistoryTest, DeleteURLs) {
 
   // First one should still be around (since it was starred).
   ASSERT_TRUE(main_db_->GetRowForURL(rows[0].url(), &rows[0]));
-  EnsureURLInfoGone(rows[1], false /* archived */);
-  EnsureURLInfoGone(rows[2], false /* archived */);
+  EnsureURLInfoGone(rows[1]);
+  EnsureURLInfoGone(rows[2]);
   EXPECT_TRUE(HasFavicon(favicon_ids[0]));
   EXPECT_TRUE(HasFavicon(favicon_ids[1]));
   EXPECT_FALSE(HasFavicon(favicon_ids[2]));
@@ -581,7 +571,7 @@ TEST_F(ExpireHistoryTest, FlushRecentURLsUnstarred) {
 
   // Verify that the last URL was deleted.
   chrome::FaviconID favicon_id2 = GetFavicon(url_row2.url(), chrome::FAVICON);
-  EnsureURLInfoGone(url_row2, false /* archived */);
+  EnsureURLInfoGone(url_row2);
   EXPECT_FALSE(HasFavicon(favicon_id2));
 }
 
@@ -628,7 +618,7 @@ TEST_F(ExpireHistoryTest, FlushURLsForTimes) {
 
   // Verify that the last URL was deleted.
   chrome::FaviconID favicon_id2 = GetFavicon(url_row2.url(), chrome::FAVICON);
-  EnsureURLInfoGone(url_row2, false /* archived */);
+  EnsureURLInfoGone(url_row2);
   EXPECT_FALSE(HasFavicon(favicon_id2));
 }
 
@@ -733,8 +723,7 @@ TEST_F(ExpireHistoryTest, ArchiveHistoryBeforeUnstarred) {
   Time visit_times[4];
   AddExampleData(url_ids, visit_times);
 
-  URLRow url_row0, url_row1, url_row2;
-  ASSERT_TRUE(main_db_->GetURLRow(url_ids[0], &url_row0));
+  URLRow url_row1, url_row2;
   ASSERT_TRUE(main_db_->GetURLRow(url_ids[1], &url_row1));
   ASSERT_TRUE(main_db_->GetURLRow(url_ids[2], &url_row2));
 
@@ -744,7 +733,7 @@ TEST_F(ExpireHistoryTest, ArchiveHistoryBeforeUnstarred) {
 
   // The first URL should be deleted, the second should not be affected.
   URLRow temp_row;
-  EnsureURLInfoGone(url_row0, true /* archived */);
+  EXPECT_FALSE(main_db_->GetURLRow(url_ids[0], &temp_row));
   EXPECT_TRUE(main_db_->GetURLRow(url_ids[1], &temp_row));
   EXPECT_TRUE(main_db_->GetURLRow(url_ids[2], &temp_row));
 
@@ -755,8 +744,6 @@ TEST_F(ExpireHistoryTest, ArchiveHistoryBeforeUnstarred) {
   // Now archive one more visit so that the middle URL should be removed. This
   // one will actually be archived instead of deleted.
   expirer_.ArchiveHistoryBefore(visit_times[2]);
-  // TODO(engedy): This should fire delete notifications, but currently doesn't.
-  // This should not matter as the archived database is going away anyway.
   EXPECT_FALSE(main_db_->GetURLRow(url_ids[1], &temp_row));
   EXPECT_TRUE(main_db_->GetURLRow(url_ids[2], &temp_row));
 
