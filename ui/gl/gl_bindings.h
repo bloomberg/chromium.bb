@@ -128,6 +128,9 @@
 #define GL_ASYNC_PIXEL_UNPACK_COMPLETED_CHROMIUM         0x84F5
 #define GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM           0x84F6
 
+// GL_CHROMIUM_sync_query
+#define GL_COMMANDS_COMPLETED_CHROMIUM                   0x84F7
+
 // GL_OES_texure_3D
 #define GL_SAMPLER_3D_OES                                0x8B5F
 

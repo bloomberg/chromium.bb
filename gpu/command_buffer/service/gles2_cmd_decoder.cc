@@ -9535,6 +9535,14 @@ error::Error GLES2DecoderImpl::HandleBeginQueryEXT(
     case GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM:
     case GL_GET_ERROR_QUERY_CHROMIUM:
       break;
+    case GL_COMMANDS_COMPLETED_CHROMIUM:
+      if (!features().chromium_sync_query) {
+        LOCAL_SET_GL_ERROR(
+            GL_INVALID_OPERATION, "glBeginQueryEXT",
+            "not enabled for commands completed queries");
+        return error::kNoError;
+      }
+      break;
     default:
       if (!features().occlusion_query_boolean) {
         LOCAL_SET_GL_ERROR(

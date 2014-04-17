@@ -7112,6 +7112,7 @@ const QueryType kQueryTypes[] = {
   { GL_ASYNC_PIXEL_UNPACK_COMPLETED_CHROMIUM, false },
   { GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM, false },
   { GL_GET_ERROR_QUERY_CHROMIUM, false },
+  { GL_COMMANDS_COMPLETED_CHROMIUM, false },
   { GL_ANY_SAMPLES_PASSED_EXT, true },
 };
 
@@ -7125,7 +7126,7 @@ static void CheckBeginEndQueryBadMemoryFails(
   // We need to reset the decoder on each iteration, because we lose the
   // context every time.
   GLES2DecoderTestBase::InitState init;
-  init.extensions = "GL_EXT_occlusion_query_boolean";
+  init.extensions = "GL_EXT_occlusion_query_boolean GL_ARB_sync";
   init.gl_version = "opengl es 2.0";
   init.has_alpha = true;
   init.request_alpha = true;
@@ -7160,6 +7161,13 @@ static void CheckBeginEndQueryBadMemoryFails(
         .WillOnce(Return(GL_NO_ERROR))
         .RetiresOnSaturation();
   }
+  GLsync kGlSync = reinterpret_cast<GLsync>(0xdeadbeef);
+  if (query_type.type == GL_COMMANDS_COMPLETED_CHROMIUM) {
+    EXPECT_CALL(*gl, Flush()).RetiresOnSaturation();
+    EXPECT_CALL(*gl, FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0))
+        .WillOnce(Return(kGlSync))
+        .RetiresOnSaturation();
+  }
 
   EndQueryEXT end_cmd;
   end_cmd.Init(query_type.type, 1);
@@ -7173,6 +7181,11 @@ static void CheckBeginEndQueryBadMemoryFails(
     EXPECT_CALL(*gl,
         GetQueryObjectuivARB(service_id, GL_QUERY_RESULT_EXT, _))
         .WillOnce(SetArgumentPointee<2>(1))
+        .RetiresOnSaturation();
+  }
+  if (query_type.type == GL_COMMANDS_COMPLETED_CHROMIUM) {
+    EXPECT_CALL(*gl, ClientWaitSync(kGlSync, _, _))
+        .WillOnce(Return(GL_ALREADY_SIGNALED))
         .RetiresOnSaturation();
   }
 
@@ -7189,6 +7202,8 @@ static void CheckBeginEndQueryBadMemoryFails(
         .Times(1)
         .RetiresOnSaturation();
   }
+  if (query_type.type == GL_COMMANDS_COMPLETED_CHROMIUM)
+    EXPECT_CALL(*gl, DeleteSync(kGlSync)).Times(1).RetiresOnSaturation();
   test->ResetDecoder();
 }
 
@@ -7274,6 +7289,65 @@ TEST_F(GLES2DecoderTest, BeginEndQueryEXTGetErrorQueryCHROMIUM) {
   EXPECT_FALSE(query->pending());
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE),
             static_cast<GLenum>(sync->result));
+}
+
+TEST_F(GLES2DecoderManualInitTest, BeginEndQueryEXTCommandsCompletedCHROMIUM) {
+  InitState init;
+  init.extensions = "GL_EXT_occlusion_query_boolean GL_ARB_sync";
+  init.gl_version = "opengl es 2.0";
+  init.has_alpha = true;
+  init.request_alpha = true;
+  init.bind_generates_resource = true;
+  InitDecoder(init);
+
+  GenHelper<GenQueriesEXTImmediate>(kNewClientId);
+
+  BeginQueryEXT begin_cmd;
+  begin_cmd.Init(GL_COMMANDS_COMPLETED_CHROMIUM,
+                 kNewClientId,
+                 kSharedMemoryId,
+                 kSharedMemoryOffset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(begin_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  QueryManager* query_manager = decoder_->GetQueryManager();
+  ASSERT_TRUE(query_manager != NULL);
+  QueryManager::Query* query = query_manager->GetQuery(kNewClientId);
+  ASSERT_TRUE(query != NULL);
+  EXPECT_FALSE(query->pending());
+
+  GLsync kGlSync = reinterpret_cast<GLsync>(0xdeadbeef);
+  EXPECT_CALL(*gl_, Flush()).RetiresOnSaturation();
+  EXPECT_CALL(*gl_, FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0))
+      .WillOnce(Return(kGlSync))
+      .RetiresOnSaturation();
+
+  EndQueryEXT end_cmd;
+  end_cmd.Init(GL_COMMANDS_COMPLETED_CHROMIUM, 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(end_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_TRUE(query->pending());
+
+  EXPECT_CALL(*gl_, ClientWaitSync(kGlSync, _, _))
+      .WillOnce(Return(GL_TIMEOUT_EXPIRED))
+      .RetiresOnSaturation();
+  bool process_success = query_manager->ProcessPendingQueries();
+
+  EXPECT_TRUE(process_success);
+  EXPECT_TRUE(query->pending());
+
+  EXPECT_CALL(*gl_, ClientWaitSync(kGlSync, _, _))
+      .WillOnce(Return(GL_ALREADY_SIGNALED))
+      .RetiresOnSaturation();
+  process_success = query_manager->ProcessPendingQueries();
+
+  EXPECT_TRUE(process_success);
+  EXPECT_FALSE(query->pending());
+  QuerySync* sync = static_cast<QuerySync*>(shared_memory_address_);
+  EXPECT_EQ(static_cast<GLenum>(0), static_cast<GLenum>(sync->result));
+
+  EXPECT_CALL(*gl_, DeleteSync(kGlSync)).Times(1).RetiresOnSaturation();
+  ResetDecoder();
 }
 
 TEST_F(GLES2DecoderTest, ProduceAndConsumeTextureCHROMIUM) {
