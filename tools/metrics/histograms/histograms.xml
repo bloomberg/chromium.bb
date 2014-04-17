@@ -15036,6 +15036,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Chrome OS connection manager service errors seen.</summary>
 </histogram>
 
+<histogram name="Network.Shill.ServicesOnSameNetwork">
+  <owner>zqiu@chromium.org</owner>
+  <summary>
+    Chrome OS network metric sampling the number of services that are connected
+    to the currently connected network.
+  </summary>
+</histogram>
+
 <histogram name="Network.Shill.TerminationActionResult"
     enum="ShillTerminationActionResult">
   <obsolete>
@@ -15169,6 +15177,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     Chrome OS network usage metric.  The AP mode setting for each successful
     WiFi connection.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.WiFi.AutoConnectableServices">
+  <owner>zqiu@chromium.org</owner>
+  <summary>
+    Chrome OS network metric sampling the number of wifi services available for
+    auto-connect when auto-connect is initiated for wifi device.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.WiFi.AvailableBSSesAtConnect">
+  <owner>zqiu@chromium.org</owner>
+  <summary>
+    Chrome OS network metric sampling the number of BSSes (endpoints) available
+    for the currently connecting wifi service.
   </summary>
 </histogram>
 
