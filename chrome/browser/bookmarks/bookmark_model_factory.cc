@@ -16,7 +16,7 @@
 #include "chrome/browser/undo/bookmark_undo_service.h"
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
+#include "components/bookmarks/core/common/bookmark_pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 

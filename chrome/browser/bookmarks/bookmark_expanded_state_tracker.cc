@@ -9,7 +9,7 @@
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/common/pref_names.h"
+#include "components/bookmarks/core/common/bookmark_pref_names.h"
 
 BookmarkExpandedStateTracker::BookmarkExpandedStateTracker(
     BookmarkModel* bookmark_model,
