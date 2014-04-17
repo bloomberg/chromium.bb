@@ -62,7 +62,7 @@
 #include "net/ssl/ssl_config_service.h"
 #include "ui/base/clipboard/clipboard.h"
 
-#if defined(USE_AURA)
+#if defined(USE_AURA) || (defined(OS_MACOSX) && !defined(OS_IOS))
 #include "content/browser/compositor/image_transport_factory.h"
 #endif
 
@@ -221,6 +221,16 @@ static void SetUpGLibLogHandler() {
 void OnStoppedStartupTracing(const base::FilePath& trace_file) {
   VLOG(0) << "Completed startup tracing to " << trace_file.value();
 }
+
+#if defined(USE_AURA)
+bool ShouldInitializeBrowserGpuChannelAndTransportSurface() {
+  return true;
+}
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+bool ShouldInitializeBrowserGpuChannelAndTransportSurface() {
+  return IsDelegatedRendererEnabled();
+}
+#endif
 
 }  // namespace
 
@@ -918,17 +928,18 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 
   bool always_uses_gpu = IsForceCompositingModeEnabled();
   bool established_gpu_channel = false;
-#if defined(USE_AURA) || defined(OS_ANDROID)
-  established_gpu_channel = true;
-#if defined(USE_AURA)
-  if (!GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor()) {
-    established_gpu_channel = always_uses_gpu = false;
+#if defined(USE_AURA) || defined(OS_MACOSX)
+  if (ShouldInitializeBrowserGpuChannelAndTransportSurface()) {
+    established_gpu_channel = true;
+    if (!GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor()) {
+      established_gpu_channel = always_uses_gpu = false;
+    }
+    BrowserGpuChannelHostFactory::Initialize(established_gpu_channel);
+    ImageTransportFactory::Initialize();
   }
-  BrowserGpuChannelHostFactory::Initialize(established_gpu_channel);
-  ImageTransportFactory::Initialize();
 #elif defined(OS_ANDROID)
+  established_gpu_channel = true;
   BrowserGpuChannelHostFactory::Initialize(established_gpu_channel);
-#endif
 #endif
 
 #if defined(OS_LINUX) && defined(USE_UDEV)
