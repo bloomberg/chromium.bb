@@ -262,11 +262,18 @@ int
 udev_input_init(struct udev_input *input, struct weston_compositor *c, struct udev *udev,
 		const char *seat_id)
 {
+	const char *log_priority = NULL;
+
 	memset(input, 0, sizeof *input);
 
 	input->compositor = c;
 
 	libinput_log_set_handler(&libinput_log_func, NULL);
+
+	log_priority = getenv("WESTON_LIBINPUT_LOG_PRIORITY");
+	if (log_priority) {
+		libinput_log_set_priority(strtol(log_priority, NULL, 10));
+	}
 
 	input->libinput = libinput_udev_create_for_seat(&libinput_interface, input,
 							udev, seat_id);
