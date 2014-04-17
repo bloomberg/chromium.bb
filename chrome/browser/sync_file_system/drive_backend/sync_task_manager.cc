@@ -160,7 +160,7 @@ bool SyncTaskManager::IsRunningTask(int64 token_id) const {
   if (token_id == SyncTaskToken::kForegroundTaskTokenID)
     return true;
 
-  return ContainsKey(running_background_task_, token_id);
+  return ContainsKey(running_background_tasks_, token_id);
 }
 
 void SyncTaskManager::NotifyTaskDoneBody(scoped_ptr<SyncTaskToken> token,
@@ -181,9 +181,9 @@ void SyncTaskManager::NotifyTaskDoneBody(scoped_ptr<SyncTaskToken> token,
   token->clear_callback();
   if (token->token_id() == SyncTaskToken::kForegroundTaskTokenID) {
     token_ = token.Pass();
-    task = running_task_.Pass();
+    task = running_foreground_task_.Pass();
   } else {
-    task = running_background_task_.take_and_erase(token->token_id());
+    task = running_background_tasks_.take_and_erase(token->token_id());
   }
 
   bool task_used_network = false;
@@ -244,10 +244,10 @@ void SyncTaskManager::UpdateBlockingFactorBody(
   // task, wait for any other task to finish.
   bool task_number_limit_exceeded =
       !background_task_token &&
-      running_background_task_.size() >= maximum_background_task_;
+      running_background_tasks_.size() >= maximum_background_task_;
   if (task_number_limit_exceeded ||
       !dependency_manager_.Insert(blocking_factor.get())) {
-    DCHECK(!running_background_task_.empty());
+    DCHECK(!running_background_tasks_.empty());
     DCHECK(pending_backgrounding_task_.is_null());
 
     // Wait for NotifyTaskDone to release a |blocking_factor|.
@@ -274,8 +274,8 @@ void SyncTaskManager::UpdateBlockingFactorBody(
             task_token_seq_++,
             blocking_factor.Pass());
     background_task_token->UpdateTask(from_here, callback);
-    running_background_task_.set(background_task_token->token_id(),
-                                 running_task_.Pass());
+    running_background_tasks_.set(background_task_token->token_id(),
+                                  running_foreground_task_.Pass());
   }
 
   token_ = foreground_task_token.Pass();
@@ -299,9 +299,9 @@ void SyncTaskManager::PushPendingTask(
 
 void SyncTaskManager::RunTask(scoped_ptr<SyncTaskToken> token,
                               scoped_ptr<SyncTask> task) {
-  DCHECK(!running_task_);
-  running_task_ = task.Pass();
-  running_task_->RunPreflight(token.Pass());
+  DCHECK(!running_foreground_task_);
+  running_foreground_task_ = task.Pass();
+  running_foreground_task_->RunPreflight(token.Pass());
 }
 
 void SyncTaskManager::StartNextTask() {

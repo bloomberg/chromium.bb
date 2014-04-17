@@ -160,11 +160,11 @@ class SyncTaskManager
   base::WeakPtr<Client> client_;
 
   // Owns running SyncTask to cancel the task on SyncTaskManager deletion.
-  scoped_ptr<SyncTask> running_task_;
+  scoped_ptr<SyncTask> running_foreground_task_;
 
   // Owns running backgrounded SyncTask to cancel the task on SyncTaskManager
   // deletion.
-  base::ScopedPtrHashMap<int64, SyncTask> running_background_task_;
+  base::ScopedPtrHashMap<int64, SyncTask> running_background_tasks_;
 
   size_t maximum_background_task_;
 
