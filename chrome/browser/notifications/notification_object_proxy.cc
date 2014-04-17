@@ -3,23 +3,18 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/notifications/notification_object_proxy.h"
-
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/tab_contents/tab_util.h"
 #include "content/public/browser/render_view_host.h"
 
 using content::RenderViewHost;
 
-NotificationObjectProxy::NotificationObjectProxy(int process_id, int route_id,
-    int notification_id, bool worker)
+NotificationObjectProxy::NotificationObjectProxy(
+    int process_id, int route_id, int notification_id)
     : process_id_(process_id),
       route_id_(route_id),
       notification_id_(notification_id),
-      worker_(worker),
       displayed_(false) {
-  if (worker_) {
-    // TODO(johnnyg): http://crbug.com/23065  Worker support coming soon.
-    NOTREACHED();
-  }
 }
 
 void NotificationObjectProxy::Display() {
@@ -53,14 +48,14 @@ void NotificationObjectProxy::Click() {
 }
 
 std::string NotificationObjectProxy::id() const {
-  return base::StringPrintf("%d:%d:%d:%d", process_id_, route_id_,
-                            notification_id_, worker_);
+  return base::StringPrintf("%d:%d:%d", process_id_, route_id_,
+                            notification_id_);
 }
 
 int NotificationObjectProxy::process_id() const {
   return process_id_;
 }
 
-RenderViewHost* NotificationObjectProxy::GetRenderViewHost() const {
-  return RenderViewHost::FromID(process_id_, route_id_);
+content::WebContents* NotificationObjectProxy::GetWebContents() const {
+  return tab_util::GetWebContentsByID(process_id_, route_id_);
 }

@@ -561,21 +561,19 @@ void DesktopNotificationService::ShowNotification(
 bool DesktopNotificationService::CancelDesktopNotification(
     int process_id, int route_id, int notification_id) {
   scoped_refptr<NotificationObjectProxy> proxy(
-      new NotificationObjectProxy(process_id, route_id, notification_id,
-                                  false));
+      new NotificationObjectProxy(process_id, route_id, notification_id));
   return GetUIManager()->CancelById(proxy->id());
 }
 #endif  // OS_WIN
 
 bool DesktopNotificationService::ShowDesktopNotification(
     const content::ShowDesktopNotificationHostMsgParams& params,
-    int process_id, int route_id, DesktopNotificationSource source) {
+    int process_id, int route_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   const GURL& origin = params.origin;
   NotificationObjectProxy* proxy =
       new NotificationObjectProxy(process_id, route_id,
-                                  params.notification_id,
-                                  source == WorkerNotification);
+                                  params.notification_id);
 
   base::string16 display_source =
       DisplayNameForOriginInProcessId(origin, process_id);

@@ -48,7 +48,7 @@ class ChromeNotifierDelegate : public NotificationDelegate {
   virtual void ButtonClick(int button_index) OVERRIDE;
   virtual std::string id() const OVERRIDE;
 
-  virtual content::RenderViewHost* GetRenderViewHost() const OVERRIDE;
+  virtual content::WebContents* GetWebContents() const OVERRIDE;
 
   void CollectAction(SyncedNotificationActionType type);
 

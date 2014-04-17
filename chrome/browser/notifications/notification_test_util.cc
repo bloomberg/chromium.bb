@@ -11,7 +11,7 @@ MockNotificationDelegate::~MockNotificationDelegate() {}
 
 std::string MockNotificationDelegate::id() const { return id_; }
 
-content::RenderViewHost* MockNotificationDelegate::GetRenderViewHost() const {
+content::WebContents* MockNotificationDelegate::GetWebContents() const {
   return NULL;
 }
 

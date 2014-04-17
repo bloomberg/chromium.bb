@@ -61,7 +61,7 @@ std::string ChromeNotifierDelegate::id() const {
   return notification_id_;
 }
 
-content::RenderViewHost* ChromeNotifierDelegate::GetRenderViewHost() const {
+content::WebContents* ChromeNotifierDelegate::GetWebContents() const {
   return NULL;
 }
 

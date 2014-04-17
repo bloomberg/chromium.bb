@@ -377,8 +377,7 @@ blink::WebNotificationPresenter::Permission
 void AwContentBrowserClient::ShowDesktopNotification(
     const content::ShowDesktopNotificationHostMsgParams& params,
     int render_process_id,
-    int render_view_id,
-    bool worker) {
+    int render_view_id) {
   NOTREACHED() << "Android WebView does not support desktop notifications.";
 }
 

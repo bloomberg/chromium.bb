@@ -204,8 +204,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual void ShowDesktopNotification(
       const content::ShowDesktopNotificationHostMsgParams& params,
       int render_process_id,
-      int render_view_id,
-      bool worker) OVERRIDE;
+      int render_view_id) OVERRIDE;
   virtual void CancelDesktopNotification(
       int render_process_id,
       int render_view_id,

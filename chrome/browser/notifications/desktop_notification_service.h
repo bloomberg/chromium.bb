@@ -49,11 +49,6 @@ class PrefRegistrySyncable;
 class DesktopNotificationService : public KeyedService,
                                    public content::NotificationObserver {
  public:
-  enum DesktopNotificationSource {
-    PageNotification,
-    WorkerNotification
-  };
-
   // Register profile-specific prefs of notifications.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* prefs);
 
@@ -71,14 +66,12 @@ class DesktopNotificationService : public KeyedService,
                          content::WebContents* tab);
 
   // ShowNotification is called on the UI thread handling IPCs from a child
-  // process, identified by |process_id| and |route_id|.  |source| indicates
-  // whether the script is in a worker or page. |params| contains all the
-  // other parameters supplied by the worker or page.
+  // process, identified by |process_id| and |route_id|. |params| contains all
+  // the other parameters supplied by the worker or page.
   bool ShowDesktopNotification(
       const content::ShowDesktopNotificationHostMsgParams& params,
       int process_id,
-      int route_id,
-      DesktopNotificationSource source);
+      int route_id);
 
   // Cancels a notification.  If it has already been shown, it will be
   // removed from the screen.  If it hasn't been shown yet, it won't be

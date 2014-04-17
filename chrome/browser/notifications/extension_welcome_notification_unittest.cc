@@ -215,7 +215,7 @@ class ExtensionWelcomeNotificationTest : public testing::Test {
 
     virtual std::string id() const OVERRIDE { return id_; }
 
-    virtual content::RenderViewHost* GetRenderViewHost() const OVERRIDE {
+    virtual content::WebContents* GetWebContents() const OVERRIDE {
       return NULL;
     }
 

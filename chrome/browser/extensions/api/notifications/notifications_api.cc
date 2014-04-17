@@ -19,6 +19,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/web_contents.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
@@ -175,14 +176,17 @@ class NotificationsApiDelegate : public NotificationDelegate {
     return process_id_;
   }
 
-  virtual content::RenderViewHost* GetRenderViewHost() const OVERRIDE {
+  virtual content::WebContents* GetWebContents() const OVERRIDE {
     // We're holding a reference to api_function_, so we know it'll be valid
     // until ReleaseRVH is called, and api_function_ (as a
     // UIThreadExtensionFunction) will zero out its copy of render_view_host
     // when the RVH goes away.
     if (!api_function_.get())
       return NULL;
-    return api_function_->render_view_host();
+    content::RenderViewHost* rvh = api_function_->render_view_host();
+    if (!rvh)
+      return NULL;
+    return content::WebContents::FromRenderViewHost(rvh);
   }
 
   virtual void ReleaseRenderViewHost() OVERRIDE {

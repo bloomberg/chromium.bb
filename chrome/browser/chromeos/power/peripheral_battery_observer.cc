@@ -80,7 +80,7 @@ class PeripheralBatteryNotificationDelegate : public NotificationDelegate {
   virtual std::string id() const OVERRIDE { return id_; }
   // A NULL return value prevents loading image from URL. It is OK since our
   // implementation loads image from system resource bundle.
-  virtual content::RenderViewHost* GetRenderViewHost() const OVERRIDE {
+  virtual content::WebContents* GetWebContents() const OVERRIDE {
     return NULL;
   }
 

@@ -8,9 +8,6 @@
 #include "chrome/browser/notifications/notification_delegate.h"
 #include "ui/message_center/notifier_settings.h"
 
-namespace content {
-class RenderViewHost;
-}
 class Profile;
 
 namespace notifier {
@@ -32,7 +29,7 @@ class WelcomeDelegate : public NotificationDelegate {
   virtual void Click() OVERRIDE;
   virtual bool HasClickedListener() OVERRIDE;
   virtual void ButtonClick(int button_index) OVERRIDE;
-  virtual content::RenderViewHost* GetRenderViewHost() const OVERRIDE;
+  virtual content::WebContents* GetWebContents() const OVERRIDE;
   virtual std::string id() const OVERRIDE;
 
  private:

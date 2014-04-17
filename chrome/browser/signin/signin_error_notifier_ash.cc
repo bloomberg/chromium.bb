@@ -56,7 +56,7 @@ class SigninNotificationDelegate : public NotificationDelegate {
   virtual void Click() OVERRIDE;
   virtual void ButtonClick(int button_index) OVERRIDE;
   virtual std::string id() const OVERRIDE;
-  virtual content::RenderViewHost* GetRenderViewHost() const OVERRIDE;
+  virtual content::WebContents* GetWebContents() const OVERRIDE;
 
  protected:
   virtual ~SigninNotificationDelegate();
@@ -120,7 +120,7 @@ std::string SigninNotificationDelegate::id() const {
   return id_;
 }
 
-content::RenderViewHost* SigninNotificationDelegate::GetRenderViewHost() const {
+content::WebContents* SigninNotificationDelegate::GetWebContents() const {
   return NULL;
 }
 

@@ -2045,8 +2045,7 @@ blink::WebNotificationPresenter::Permission
 void ChromeContentBrowserClient::ShowDesktopNotification(
     const content::ShowDesktopNotificationHostMsgParams& params,
     int render_process_id,
-    int render_view_id,
-    bool worker) {
+    int render_view_id) {
 #if defined(ENABLE_NOTIFICATIONS)
   RenderViewHost* rvh = RenderViewHost::FromID(
       render_process_id, render_view_id);
@@ -2060,9 +2059,7 @@ void ChromeContentBrowserClient::ShowDesktopNotification(
   DesktopNotificationService* service =
       DesktopNotificationServiceFactory::GetForProfile(profile);
   service->ShowDesktopNotification(
-    params, render_process_id, render_view_id,
-    worker ? DesktopNotificationService::WorkerNotification :
-        DesktopNotificationService::PageNotification);
+    params, render_process_id, render_view_id);
 #else
   NOTIMPLEMENTED();
 #endif

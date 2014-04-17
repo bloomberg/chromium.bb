@@ -18,7 +18,7 @@ class NotificationObjectProxy
  public:
   // Creates a Proxy object with the necessary callback information.
   NotificationObjectProxy(int process_id, int route_id,
-                          int notification_id, bool worker);
+                          int notification_id);
 
   // NotificationDelegate implementation.
   virtual void Display() OVERRIDE;
@@ -27,7 +27,7 @@ class NotificationObjectProxy
   virtual void Click() OVERRIDE;
   virtual std::string id() const OVERRIDE;
   virtual int process_id() const OVERRIDE;
-  virtual content::RenderViewHost* GetRenderViewHost() const OVERRIDE;
+  virtual content::WebContents* GetWebContents() const OVERRIDE;
 
  protected:
   friend class base::RefCountedThreadSafe<NotificationObjectProxy>;
@@ -39,7 +39,6 @@ class NotificationObjectProxy
   int process_id_;
   int route_id_;
   int notification_id_;
-  bool worker_;
   bool displayed_;
 };
 

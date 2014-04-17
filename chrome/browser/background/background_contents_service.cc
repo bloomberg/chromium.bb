@@ -144,7 +144,7 @@ class CrashNotificationDelegate : public NotificationDelegate {
     return kNotificationPrefix + extension_id_;
   }
 
-  virtual content::RenderViewHost* GetRenderViewHost() const OVERRIDE {
+  virtual content::WebContents* GetWebContents() const OVERRIDE {
     return NULL;
   }
 

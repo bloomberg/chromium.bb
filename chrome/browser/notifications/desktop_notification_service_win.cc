@@ -15,8 +15,7 @@
 bool DesktopNotificationService::CancelDesktopNotification(
     int process_id, int route_id, int notification_id) {
   scoped_refptr<NotificationObjectProxy> proxy(
-      new NotificationObjectProxy(process_id, route_id, notification_id,
-                                  false));
+      new NotificationObjectProxy(process_id, route_id, notification_id));
   if (win8::IsSingleWindowMetroMode()) {
     base::win::MetroCancelNotification cancel_metro_notification =
         reinterpret_cast<base::win::MetroCancelNotification>(GetProcAddress(

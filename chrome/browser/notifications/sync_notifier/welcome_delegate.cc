@@ -106,7 +106,7 @@ void WelcomeDelegate::ButtonClick(int button_index) {
 
 std::string WelcomeDelegate::id() const { return notification_id_; }
 
-content::RenderViewHost* WelcomeDelegate::GetRenderViewHost() const {
+content::WebContents* WelcomeDelegate::GetWebContents() const {
   return NULL;
 }
 

@@ -1694,7 +1694,7 @@ void RenderViewHostImpl::OnRequestDesktopNotificationPermission(
 void RenderViewHostImpl::OnShowDesktopNotification(
     const ShowDesktopNotificationHostMsgParams& params) {
   GetContentClient()->browser()->ShowDesktopNotification(
-      params, GetProcess()->GetID(), GetRoutingID(), false);
+      params, GetProcess()->GetID(), GetRoutingID());
 }
 
 void RenderViewHostImpl::OnCancelDesktopNotification(int notification_id) {

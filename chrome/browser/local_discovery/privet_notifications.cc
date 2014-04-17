@@ -363,7 +363,7 @@ std::string PrivetNotificationDelegate::id() const {
   return kPrivetNotificationID;
 }
 
-content::RenderViewHost* PrivetNotificationDelegate::GetRenderViewHost() const {
+content::WebContents* PrivetNotificationDelegate::GetWebContents() const {
   return NULL;
 }
 

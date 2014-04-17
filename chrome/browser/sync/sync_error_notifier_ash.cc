@@ -51,7 +51,7 @@ class SyncNotificationDelegate : public NotificationDelegate {
   virtual void Click() OVERRIDE;
   virtual void ButtonClick(int button_index) OVERRIDE;
   virtual std::string id() const OVERRIDE;
-  virtual content::RenderViewHost* GetRenderViewHost() const OVERRIDE;
+  virtual content::WebContents* GetWebContents() const OVERRIDE;
 
  protected:
   virtual ~SyncNotificationDelegate();
@@ -95,7 +95,7 @@ std::string SyncNotificationDelegate::id() const {
   return id_;
 }
 
-content::RenderViewHost* SyncNotificationDelegate::GetRenderViewHost() const {
+content::WebContents* SyncNotificationDelegate::GetWebContents() const {
   return NULL;
 }
 

@@ -468,8 +468,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void ShowDesktopNotification(
       const ShowDesktopNotificationHostMsgParams& params,
       int render_process_id,
-      int render_view_id,
-      bool worker) {}
+      int render_view_id) {}
 
   // Cancels a displayed desktop notification.
   virtual void CancelDesktopNotification(

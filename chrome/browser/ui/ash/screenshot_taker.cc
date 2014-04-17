@@ -166,7 +166,7 @@ class ScreenshotTakerNotificationDelegate : public NotificationDelegate {
   virtual std::string id() const OVERRIDE {
     return std::string(kNotificationId);
   }
-  virtual content::RenderViewHost* GetRenderViewHost() const OVERRIDE {
+  virtual content::WebContents* GetWebContents() const OVERRIDE {
     return NULL;
   }
 

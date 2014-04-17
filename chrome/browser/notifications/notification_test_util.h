@@ -27,7 +27,7 @@ class MockNotificationDelegate : public NotificationDelegate {
   virtual void Close(bool by_user) OVERRIDE {}
   virtual void Click() OVERRIDE {}
   virtual std::string id() const OVERRIDE;
-  virtual content::RenderViewHost* GetRenderViewHost() const OVERRIDE;
+  virtual content::WebContents* GetWebContents() const OVERRIDE;
 
  private:
   virtual ~MockNotificationDelegate();
@@ -72,7 +72,7 @@ class LoggingNotificationDelegate : public NotificationDelegate {
   virtual std::string id() const OVERRIDE {
     return notification_id_;
   }
-  virtual content::RenderViewHost* GetRenderViewHost() const OVERRIDE {
+  virtual content::WebContents* GetWebContents() const OVERRIDE {
     return NULL;
   }
 
