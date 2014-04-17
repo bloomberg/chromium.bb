@@ -15,9 +15,9 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/favicon/favicon_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/favicon_base/favicon_types.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -255,9 +255,8 @@ void BackForwardMenuModel::FetchFavicon(NavigationEntry* entry) {
     return;
 
   favicon_service->GetFaviconImageForURL(
-      FaviconService::FaviconForURLParams(entry->GetURL(),
-                                          chrome::FAVICON,
-                                          gfx::kFaviconSize),
+      FaviconService::FaviconForURLParams(
+          entry->GetURL(), favicon_base::FAVICON, gfx::kFaviconSize),
       base::Bind(&BackForwardMenuModel::OnFavIconDataAvailable,
                  base::Unretained(this),
                  entry->GetUniqueID()),
@@ -266,7 +265,7 @@ void BackForwardMenuModel::FetchFavicon(NavigationEntry* entry) {
 
 void BackForwardMenuModel::OnFavIconDataAvailable(
     int navigation_entry_unique_id,
-    const chrome::FaviconImageResult& image_result) {
+    const favicon_base::FaviconImageResult& image_result) {
   if (!image_result.image.IsEmpty()) {
     // Find the current model_index for the unique id.
     NavigationEntry* entry = NULL;

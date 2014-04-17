@@ -5,7 +5,7 @@
 #include "chrome/common/favicon/favicon_url_parser.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/common/favicon/favicon_types.h"
+#include "components/favicon_base/favicon_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/layout.h"
 
@@ -35,7 +35,7 @@ class FaviconUrlParserTest : public testing::Test {
 // Test parsing path with no extra parameters.
 TEST_F(FaviconUrlParserTest, ParsingNoExtraParams) {
   const std::string url("https://www.google.ca/imghp?hl=en&tab=wi");
-  int icon_types = chrome::TOUCH_PRECOMPOSED_ICON;
+  int icon_types = favicon_base::TOUCH_PRECOMPOSED_ICON;
   chrome::ParsedFaviconPath parsed;
 
   const std::string path1 = url;
@@ -49,7 +49,7 @@ TEST_F(FaviconUrlParserTest, ParsingNoExtraParams) {
 // Test parsing path with a 'size' parameter.
 TEST_F(FaviconUrlParserTest, ParsingSizeParam) {
   const std::string url("https://www.google.ca/imghp?hl=en&tab=wi");
-  int icon_types = chrome::TOUCH_PRECOMPOSED_ICON;
+  int icon_types = favicon_base::TOUCH_PRECOMPOSED_ICON;
   chrome::ParsedFaviconPath parsed;
 
   // Test that we can still parse the legacy 'size' parameter format.
@@ -97,7 +97,7 @@ TEST_F(FaviconUrlParserTest, ParsingSizeParam) {
 // Test parsing path with the 'largest' parameter.
 TEST_F(FaviconUrlParserTest, ParsingLargestParam) {
   const std::string url("https://www.google.ca/imghp?hl=en&tab=wi");
-  int icon_types = chrome::TOUCH_PRECOMPOSED_ICON;
+  int icon_types = favicon_base::TOUCH_PRECOMPOSED_ICON;
   chrome::ParsedFaviconPath parsed;
 
   const std::string path9 = "largest/" + url;
@@ -111,7 +111,7 @@ TEST_F(FaviconUrlParserTest, ParsingLargestParam) {
 // Test parsing path with 'iconurl' parameter.
 TEST_F(FaviconUrlParserTest, ParsingIconUrlParam) {
   const std::string url("https://www.google.ca/imghp?hl=en&tab=wi");
-  int icon_types = chrome::TOUCH_PRECOMPOSED_ICON;
+  int icon_types = favicon_base::TOUCH_PRECOMPOSED_ICON;
   chrome::ParsedFaviconPath parsed;
 
   const std::string path10 = "iconurl/http://www.google.com/favicon.ico";
@@ -125,7 +125,7 @@ TEST_F(FaviconUrlParserTest, ParsingIconUrlParam) {
 // Test parsing path with 'origin' parameter.
 TEST_F(FaviconUrlParserTest, ParsingOriginParam) {
   const std::string url("https://www.google.ca/imghp?hl=en&tab=wi");
-  int icon_types = chrome::TOUCH_PRECOMPOSED_ICON;
+  int icon_types = favicon_base::TOUCH_PRECOMPOSED_ICON;
   chrome::ParsedFaviconPath parsed;
 
   const std::string path11 = "origin/" + url;
@@ -147,7 +147,7 @@ TEST_F(FaviconUrlParserTest, ParsingOriginParam) {
 // parameter.
 TEST_F(FaviconUrlParserTest, ParsingSizeParamAndUrlModifier) {
   const std::string url("https://www.google.ca/imghp?hl=en&tab=wi");
-  int icon_types = chrome::TOUCH_PRECOMPOSED_ICON;
+  int icon_types = favicon_base::TOUCH_PRECOMPOSED_ICON;
   chrome::ParsedFaviconPath parsed;
 
   const std::string path13 = "size/32@1.4x/origin/" + url;

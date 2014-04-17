@@ -37,7 +37,7 @@ namespace {
 
 void OnLocalFaviconAvailable(
     ScopedJavaGlobalRef<jobject>* j_favicon_image_callback,
-    const chrome::FaviconImageResult& favicon_image_result) {
+    const favicon_base::FaviconImageResult& favicon_image_result) {
   JNIEnv* env = AttachCurrentThread();
 
   // Convert favicon_image_result to java objects.

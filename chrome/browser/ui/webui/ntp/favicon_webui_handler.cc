@@ -114,9 +114,7 @@ void FaviconWebUIHandler::HandleGetFaviconDominantColor(
   dom_id_map_[id_] = dom_id;
   favicon_service->GetRawFaviconForURL(
       FaviconService::FaviconForURLParams(
-          url,
-          chrome::FAVICON,
-          gfx::kFaviconSize),
+          url, favicon_base::FAVICON, gfx::kFaviconSize),
       ui::SCALE_FACTOR_100P,
       base::Bind(&FaviconWebUIHandler::OnFaviconDataAvailable,
                  base::Unretained(this),
@@ -126,7 +124,7 @@ void FaviconWebUIHandler::HandleGetFaviconDominantColor(
 
 void FaviconWebUIHandler::OnFaviconDataAvailable(
     int id,
-    const chrome::FaviconBitmapResult& bitmap_result) {
+    const favicon_base::FaviconBitmapResult& bitmap_result) {
   scoped_ptr<base::StringValue> color_value;
 
   if (bitmap_result.is_valid())

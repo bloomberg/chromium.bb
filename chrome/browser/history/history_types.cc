@@ -392,10 +392,7 @@ bool RowQualifiesAsSignificant(const URLRow& row,
 // IconMapping ----------------------------------------------------------------
 
 IconMapping::IconMapping()
-    : mapping_id(0),
-      icon_id(0),
-      icon_type(chrome::INVALID_ICON) {
-}
+    : mapping_id(0), icon_id(0), icon_type(favicon_base::INVALID_ICON) {}
 
 IconMapping::~IconMapping() {}
 

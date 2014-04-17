@@ -11,7 +11,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "chrome/common/favicon/favicon_types.h"
+#include "components/favicon_base/favicon_types.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "ui/base/layout.h"
 
@@ -55,13 +55,13 @@ class FaviconService : public KeyedService {
   // |image| originate from.
   // TODO(pkotwicz): Enable constructing |image| from bitmaps from several
   // icon URLs.
-  typedef base::Callback<void(const chrome::FaviconImageResult&)>
+  typedef base::Callback<void(const favicon_base::FaviconImageResult&)>
       FaviconImageCallback;
 
   // Callback for GetRawFavicon(), GetRawFaviconForURL() and
   // GetLargestRawFavicon().
   // See function for details on value.
-  typedef base::Callback<void(const chrome::FaviconBitmapResult&)>
+  typedef base::Callback<void(const favicon_base::FaviconBitmapResult&)>
       FaviconRawCallback;
 
   // Callback for GetFavicon() and GetFaviconForURL().
@@ -72,14 +72,14 @@ class FaviconService : public KeyedService {
   // platform (eg MacOS) in addition to 1x. The vector has at most one result
   // for each of the scale factors. There are less entries if a single result
   // is the best bitmap to use for several scale factors.
-  typedef base::Callback<void(const std::vector<chrome::FaviconBitmapResult>&)>
-      FaviconResultsCallback;
+  typedef base::Callback<void(const std::vector<
+      favicon_base::FaviconBitmapResult>&)> FaviconResultsCallback;
 
   // We usually pass parameters with pointer to avoid copy. This function is a
   // helper to run FaviconResultsCallback with pointer parameters.
   static void FaviconResultsCallbackRunner(
       const FaviconResultsCallback& callback,
-      const std::vector<chrome::FaviconBitmapResult>* results);
+      const std::vector<favicon_base::FaviconBitmapResult>* results);
 
   // Requests the favicon at |icon_url| of |icon_type| whose size most closely
   // matches |desired_size_in_dip|. If |desired_size_in_dip| is 0, the largest
@@ -91,14 +91,14 @@ class FaviconService : public KeyedService {
   // current platform (eg MacOS) are requested for GetFaviconImage().
   base::CancelableTaskTracker::TaskId GetFaviconImage(
       const GURL& icon_url,
-      chrome::IconType icon_type,
+      favicon_base::IconType icon_type,
       int desired_size_in_dip,
       const FaviconImageCallback& callback,
       base::CancelableTaskTracker* tracker);
 
   base::CancelableTaskTracker::TaskId GetRawFavicon(
       const GURL& icon_url,
-      chrome::IconType icon_type,
+      favicon_base::IconType icon_type,
       int desired_size_in_dip,
       ui::ScaleFactor desired_scale_factor,
       const FaviconRawCallback& callback,
@@ -106,7 +106,7 @@ class FaviconService : public KeyedService {
 
   base::CancelableTaskTracker::TaskId GetFavicon(
       const GURL& icon_url,
-      chrome::IconType icon_type,
+      favicon_base::IconType icon_type,
       int desired_size_in_dip,
       const FaviconResultsCallback& callback,
       base::CancelableTaskTracker* tracker);
@@ -180,7 +180,7 @@ class FaviconService : public KeyedService {
   // multiple favicon bitmaps for |favicon_id|, the largest favicon bitmap is
   // returned.
   base::CancelableTaskTracker::TaskId GetLargestRawFaviconForID(
-      chrome::FaviconID favicon_id,
+      favicon_base::FaviconID favicon_id,
       const FaviconRawCallback& callback,
       base::CancelableTaskTracker* tracker);
 
@@ -207,7 +207,7 @@ class FaviconService : public KeyedService {
   // known.
   void MergeFavicon(const GURL& page_url,
                     const GURL& icon_url,
-                    chrome::IconType icon_type,
+                    favicon_base::IconType icon_type,
                     scoped_refptr<base::RefCountedMemory> bitmap_data,
                     const gfx::Size& pixel_size);
 
@@ -223,7 +223,7 @@ class FaviconService : public KeyedService {
   // thumbnail database.
   void SetFavicons(const GURL& page_url,
                    const GURL& icon_url,
-                   chrome::IconType icon_type,
+                   favicon_base::IconType icon_type,
                    const gfx::Image& image);
 
   // Avoid repeated requests to download missing favicon.
@@ -247,21 +247,24 @@ class FaviconService : public KeyedService {
 
   // Intermediate callback for GetFaviconImage() and GetFaviconImageForURL()
   // so that history service can deal solely with FaviconResultsCallback.
-  // Builds chrome::FaviconImageResult from |favicon_bitmap_results| and runs
+  // Builds favicon_base::FaviconImageResult from |favicon_bitmap_results| and
+  // runs
   // |callback|.
   void RunFaviconImageCallbackWithBitmapResults(
       const FaviconImageCallback& callback,
       int desired_size_in_dip,
-      const std::vector<chrome::FaviconBitmapResult>& favicon_bitmap_results);
+      const std::vector<favicon_base::FaviconBitmapResult>&
+          favicon_bitmap_results);
 
   // Intermediate callback for GetRawFavicon() and GetRawFaviconForURL()
   // so that history service can deal solely with FaviconResultsCallback.
-  // Resizes chrome::FaviconBitmapResult if necessary and runs |callback|.
+  // Resizes favicon_base::FaviconBitmapResult if necessary and runs |callback|.
   void RunFaviconRawCallbackWithBitmapResults(
       const FaviconRawCallback& callback,
       int desired_size_in_dip,
       ui::ScaleFactor desired_scale_factor,
-      const std::vector<chrome::FaviconBitmapResult>& favicon_bitmap_results);
+      const std::vector<favicon_base::FaviconBitmapResult>&
+          favicon_bitmap_results);
 
   DISALLOW_COPY_AND_ASSIGN(FaviconService);
 };

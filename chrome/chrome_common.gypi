@@ -206,8 +206,6 @@
         'common/extensions/sync_helper.h',
         'common/extensions/update_manifest.cc',
         'common/extensions/update_manifest.h',
-        'common/favicon/favicon_types.cc',
-        'common/favicon/favicon_types.h',
         'common/favicon/favicon_url_parser.cc',
         'common/favicon/favicon_url_parser.h',
         'common/icon_with_badge_image_source.cc',

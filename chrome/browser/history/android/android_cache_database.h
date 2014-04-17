@@ -42,7 +42,7 @@ class AndroidCacheDatabase {
 
   // Set the given |url_id|'s favicon column to |favicon_id|. Returns true on
   // success.
-  bool SetFaviconID(URLID url_id, chrome::FaviconID favicon_id);
+  bool SetFaviconID(URLID url_id, favicon_base::FaviconID favicon_id);
 
   // The search_terms table -------------------------------------------------
   //

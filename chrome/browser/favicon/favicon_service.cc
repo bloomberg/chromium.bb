@@ -12,9 +12,9 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/select_favicon_frames.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
-#include "chrome/common/favicon/favicon_types.h"
 #include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/common/url_constants.h"
+#include "components/favicon_base/favicon_types.h"
 #include "extensions/common/constants.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -28,7 +28,7 @@ namespace {
 void CancelOrRunFaviconResultsCallback(
     const base::CancelableTaskTracker::IsCanceledCallback& is_canceled,
     const FaviconService::FaviconResultsCallback& callback,
-    const std::vector<chrome::FaviconBitmapResult>& results) {
+    const std::vector<favicon_base::FaviconBitmapResult>& results) {
   if (is_canceled.Run())
     return;
   callback.Run(results);
@@ -42,7 +42,7 @@ base::CancelableTaskTracker::TaskId RunWithEmptyResultAsync(
   return tracker->PostTask(
       base::MessageLoopProxy::current().get(),
       FROM_HERE,
-      Bind(callback, std::vector<chrome::FaviconBitmapResult>()));
+      Bind(callback, std::vector<favicon_base::FaviconBitmapResult>()));
 }
 
 // Return the TaskId to retreive the favicon from chrome specific URL.
@@ -73,13 +73,13 @@ FaviconService::FaviconService(Profile* profile)
 // static
 void FaviconService::FaviconResultsCallbackRunner(
     const FaviconResultsCallback& callback,
-    const std::vector<chrome::FaviconBitmapResult>* results) {
+    const std::vector<favicon_base::FaviconBitmapResult>* results) {
   callback.Run(*results);
 }
 
 base::CancelableTaskTracker::TaskId FaviconService::GetFaviconImage(
     const GURL& icon_url,
-    chrome::IconType icon_type,
+    favicon_base::IconType icon_type,
     int desired_size_in_dip,
     const FaviconImageCallback& callback,
     base::CancelableTaskTracker* tracker) {
@@ -99,7 +99,7 @@ base::CancelableTaskTracker::TaskId FaviconService::GetFaviconImage(
 
 base::CancelableTaskTracker::TaskId FaviconService::GetRawFavicon(
     const GURL& icon_url,
-    chrome::IconType icon_type,
+    favicon_base::IconType icon_type,
     int desired_size_in_dip,
     ui::ScaleFactor desired_scale_factor,
     const FaviconRawCallback& callback,
@@ -125,7 +125,7 @@ base::CancelableTaskTracker::TaskId FaviconService::GetRawFavicon(
 
 base::CancelableTaskTracker::TaskId FaviconService::GetFavicon(
     const GURL& icon_url,
-    chrome::IconType icon_type,
+    favicon_base::IconType icon_type,
     int desired_size_in_dip,
     const FaviconResultsCallback& callback,
     base::CancelableTaskTracker* tracker) {
@@ -223,7 +223,7 @@ base::CancelableTaskTracker::TaskId FaviconService::GetFaviconForURL(
 }
 
 base::CancelableTaskTracker::TaskId FaviconService::GetLargestRawFaviconForID(
-    chrome::FaviconID favicon_id,
+    favicon_base::FaviconID favicon_id,
     const FaviconRawCallback& callback,
     base::CancelableTaskTracker* tracker) {
   // Use 0 as |desired_size_in_dip| to get the largest bitmap for |favicon_id|
@@ -264,7 +264,7 @@ void FaviconService::SetImportedFavicons(
 void FaviconService::MergeFavicon(
     const GURL& page_url,
     const GURL& icon_url,
-    chrome::IconType icon_type,
+    favicon_base::IconType icon_type,
     scoped_refptr<base::RefCountedMemory> bitmap_data,
     const gfx::Size& pixel_size) {
   if (history_service_) {
@@ -275,7 +275,7 @@ void FaviconService::MergeFavicon(
 
 void FaviconService::SetFavicons(const GURL& page_url,
                                  const GURL& icon_url,
-                                 chrome::IconType icon_type,
+                                 favicon_base::IconType icon_type,
                                  const gfx::Image& image) {
   if (!history_service_)
     return;
@@ -283,7 +283,7 @@ void FaviconService::SetFavicons(const GURL& page_url,
   gfx::ImageSkia image_skia = image.AsImageSkia();
   image_skia.EnsureRepsForSupportedScales();
   const std::vector<gfx::ImageSkiaRep>& image_reps = image_skia.image_reps();
-  std::vector<chrome::FaviconBitmapData> favicon_bitmap_data;
+  std::vector<favicon_base::FaviconBitmapData> favicon_bitmap_data;
   for (size_t i = 0; i < image_reps.size(); ++i) {
     scoped_refptr<base::RefCountedBytes> bitmap_data(
         new base::RefCountedBytes());
@@ -292,7 +292,7 @@ void FaviconService::SetFavicons(const GURL& page_url,
                                           &bitmap_data->data())) {
       gfx::Size pixel_size(image_reps[i].pixel_width(),
                            image_reps[i].pixel_height());
-      chrome::FaviconBitmapData bitmap_data_element;
+      favicon_base::FaviconBitmapData bitmap_data_element;
       bitmap_data_element.bitmap_data = bitmap_data;
       bitmap_data_element.pixel_size = pixel_size;
       bitmap_data_element.icon_url = icon_url;
@@ -343,8 +343,9 @@ base::CancelableTaskTracker::TaskId FaviconService::GetFaviconForURLImpl(
 void FaviconService::RunFaviconImageCallbackWithBitmapResults(
     const FaviconImageCallback& callback,
     int desired_size_in_dip,
-    const std::vector<chrome::FaviconBitmapResult>& favicon_bitmap_results) {
-  chrome::FaviconImageResult image_result;
+    const std::vector<favicon_base::FaviconBitmapResult>&
+        favicon_bitmap_results) {
+  favicon_base::FaviconImageResult image_result;
   image_result.image = FaviconUtil::SelectFaviconFramesFromPNGs(
       favicon_bitmap_results,
       FaviconUtil::GetFaviconScaleFactors(),
@@ -360,14 +361,15 @@ void FaviconService::RunFaviconRawCallbackWithBitmapResults(
     const FaviconRawCallback& callback,
     int desired_size_in_dip,
     ui::ScaleFactor desired_scale_factor,
-    const std::vector<chrome::FaviconBitmapResult>& favicon_bitmap_results) {
+    const std::vector<favicon_base::FaviconBitmapResult>&
+        favicon_bitmap_results) {
   if (favicon_bitmap_results.empty() || !favicon_bitmap_results[0].is_valid()) {
-    callback.Run(chrome::FaviconBitmapResult());
+    callback.Run(favicon_base::FaviconBitmapResult());
     return;
   }
 
   DCHECK_EQ(1u, favicon_bitmap_results.size());
-  chrome::FaviconBitmapResult bitmap_result = favicon_bitmap_results[0];
+  favicon_base::FaviconBitmapResult bitmap_result = favicon_bitmap_results[0];
 
   // If the desired size is 0, SelectFaviconFrames() will return the largest
   // bitmap without doing any resizing. As |favicon_bitmap_results| has bitmap
@@ -398,7 +400,7 @@ void FaviconService::RunFaviconRawCallbackWithBitmapResults(
   std::vector<unsigned char> resized_bitmap_data;
   if (!gfx::PNGCodec::EncodeBGRASkBitmap(resized_image.AsBitmap(), false,
                                          &resized_bitmap_data)) {
-    callback.Run(chrome::FaviconBitmapResult());
+    callback.Run(favicon_base::FaviconBitmapResult());
     return;
   }
 

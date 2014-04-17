@@ -706,7 +706,7 @@ class HistoryService : public CancelableRequestProvider,
   // with |favicon_id| from the history backend. If |desired_size_in_dip| is 0,
   // the largest favicon bitmap for |favicon_id| is returned.
   base::CancelableTaskTracker::TaskId GetFaviconForID(
-      chrome::FaviconID favicon_id,
+      favicon_base::FaviconID favicon_id,
       int desired_size_in_dip,
       ui::ScaleFactor desired_scale_factor,
       const FaviconService::FaviconResultsCallback& callback,
@@ -762,7 +762,7 @@ class HistoryService : public CancelableRequestProvider,
   // TODO(pkotwicz): Remove once no longer required by sync.
   void MergeFavicon(const GURL& page_url,
                     const GURL& icon_url,
-                    chrome::IconType icon_type,
+                    favicon_base::IconType icon_type,
                     scoped_refptr<base::RefCountedMemory> bitmap_data,
                     const gfx::Size& pixel_size);
 
@@ -779,8 +779,8 @@ class HistoryService : public CancelableRequestProvider,
   // criteria for |favicon_bitmap_data| to be valid.
   void SetFavicons(
       const GURL& page_url,
-      chrome::IconType icon_type,
-      const std::vector<chrome::FaviconBitmapData>& favicon_bitmap_data);
+      favicon_base::IconType icon_type,
+      const std::vector<favicon_base::FaviconBitmapData>& favicon_bitmap_data);
 
   // Used by the FaviconService to mark the favicon for the page as being out
   // of date.

@@ -670,29 +670,29 @@ class BookmarkIconFetchTask : public FaviconServiceTask {
                            cancelable_consumer,
                            cancelable_tracker) {}
 
-  chrome::FaviconBitmapResult Run(const GURL& url) {
+  favicon_base::FaviconBitmapResult Run(const GURL& url) {
     RunAsyncRequestOnUIThreadBlocking(
         base::Bind(&FaviconService::GetRawFaviconForURL,
                    base::Unretained(service()),
                    FaviconService::FaviconForURLParams(
                        url,
-                       chrome::FAVICON | chrome::TOUCH_ICON,
+                       favicon_base::FAVICON | favicon_base::TOUCH_ICON,
                        gfx::kFaviconSize),
                    ResourceBundle::GetSharedInstance().GetMaxScaleFactor(),
-                   base::Bind(
-                       &BookmarkIconFetchTask::OnFaviconRetrieved,
-                       base::Unretained(this)),
+                   base::Bind(&BookmarkIconFetchTask::OnFaviconRetrieved,
+                              base::Unretained(this)),
                    cancelable_tracker()));
     return result_;
   }
 
  private:
-  void OnFaviconRetrieved(const chrome::FaviconBitmapResult& bitmap_result) {
+  void OnFaviconRetrieved(
+      const favicon_base::FaviconBitmapResult& bitmap_result) {
     result_ = bitmap_result;
     RequestCompleted();
   }
 
-  chrome::FaviconBitmapResult result_;
+  favicon_base::FaviconBitmapResult result_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkIconFetchTask);
 };
@@ -1548,7 +1548,7 @@ ScopedJavaLocalRef<jbyteArray> ChromeBrowserProvider::GetFaviconOrTouchIcon(
                                      profile_,
                                      &favicon_consumer_,
                                      &cancelable_task_tracker_);
-  chrome::FaviconBitmapResult bitmap_result = favicon_task.Run(url);
+  favicon_base::FaviconBitmapResult bitmap_result = favicon_task.Run(url);
 
   if (!bitmap_result.is_valid() || !bitmap_result.bitmap_data.get())
     return ScopedJavaLocalRef<jbyteArray>();

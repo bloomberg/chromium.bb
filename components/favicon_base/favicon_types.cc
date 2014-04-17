@@ -1,10 +1,10 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/favicon/favicon_types.h"
+#include "components/favicon_base/favicon_types.h"
 
-namespace chrome {
+namespace favicon_base {
 
 // FaviconImageResult ---------------------------------------------------------
 
@@ -15,8 +15,7 @@ FaviconImageResult::~FaviconImageResult() {}
 // FaviconBitmapResult --------------------------------------------------------
 
 FaviconBitmapResult::FaviconBitmapResult()
-    : expired(false),
-      icon_type(INVALID_ICON) {}
+    : expired(false), icon_type(INVALID_ICON) {}
 
 FaviconBitmapResult::~FaviconBitmapResult() {}
 

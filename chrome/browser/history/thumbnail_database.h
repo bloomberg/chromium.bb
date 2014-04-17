@@ -68,12 +68,12 @@ class ThumbnailDatabase {
   // favicon_bitmaps table. The pixel sizes are a subset of the sizes in the
   // 'sizes' field of the favicons table for |icon_id|.
   bool GetFaviconBitmapIDSizes(
-      chrome::FaviconID icon_id,
+      favicon_base::FaviconID icon_id,
       std::vector<FaviconBitmapIDSize>* bitmap_id_sizes);
 
   // Returns true if there are any matched bitmaps for the given |icon_id|. All
   // matched results are returned if |favicon_bitmaps| is not NULL.
-  bool GetFaviconBitmaps(chrome::FaviconID icon_id,
+  bool GetFaviconBitmaps(favicon_base::FaviconID icon_id,
                          std::vector<FaviconBitmap>* favicon_bitmaps);
 
   // Gets the last updated time, bitmap data, and pixel size of the favicon
@@ -92,7 +92,7 @@ class ThumbnailDatabase {
   // |pixel_size| is the pixel dimensions of |icon_data|.
   // Returns the id of the added bitmap or 0 if unsuccessful.
   FaviconBitmapID AddFaviconBitmap(
-      chrome::FaviconID icon_id,
+      favicon_base::FaviconID icon_id,
       const scoped_refptr<base::RefCountedMemory>& icon_data,
       base::Time time,
       const gfx::Size& pixel_size);
@@ -117,7 +117,7 @@ class ThumbnailDatabase {
 
   // Sets the the favicon as out of date. This will set |last_updated| for all
   // of the bitmaps for |icon_id| to be out of date.
-  bool SetFaviconOutOfDate(chrome::FaviconID icon_id);
+  bool SetFaviconOutOfDate(favicon_base::FaviconID icon_id);
 
   // Returns the id of the entry in the favicon database with the specified url
   // and icon type. If |required_icon_type| contains multiple icon types and
@@ -126,31 +126,32 @@ class ThumbnailDatabase {
   // FAVICON, and the icon type is returned in icon_type parameter if it is not
   // NULL.
   // Returns 0 if no entry exists for the specified url.
-  chrome::FaviconID GetFaviconIDForFaviconURL(const GURL& icon_url,
-                                              int required_icon_type,
-                                              chrome::IconType* icon_type);
+  favicon_base::FaviconID GetFaviconIDForFaviconURL(
+      const GURL& icon_url,
+      int required_icon_type,
+      favicon_base::IconType* icon_type);
 
   // Gets the icon_url, icon_type and sizes for the specified |icon_id|.
-  bool GetFaviconHeader(chrome::FaviconID icon_id,
+  bool GetFaviconHeader(favicon_base::FaviconID icon_id,
                         GURL* icon_url,
-                        chrome::IconType* icon_type);
+                        favicon_base::IconType* icon_type);
 
   // Adds favicon with |icon_url|, |icon_type| and |favicon_sizes| to the
   // favicon db, returning its id.
-  chrome::FaviconID AddFavicon(const GURL& icon_url,
-                               chrome::IconType icon_type);
+  favicon_base::FaviconID AddFavicon(const GURL& icon_url,
+                                     favicon_base::IconType icon_type);
 
   // Adds a favicon with a single bitmap. This call is equivalent to calling
   // AddFavicon and AddFaviconBitmap.
-  chrome::FaviconID AddFavicon(
+  favicon_base::FaviconID AddFavicon(
       const GURL& icon_url,
-      chrome::IconType icon_type,
+      favicon_base::IconType icon_type,
       const scoped_refptr<base::RefCountedMemory>& icon_data,
       base::Time time,
       const gfx::Size& pixel_size);
 
   // Delete the favicon with the provided id. Returns false on failure
-  bool DeleteFavicon(chrome::FaviconID id);
+  bool DeleteFavicon(favicon_base::FaviconID id);
 
   // Icon Mapping --------------------------------------------------------------
   //
@@ -178,12 +179,14 @@ class ThumbnailDatabase {
 
   // Adds a mapping between the given page_url and icon_id.
   // Returns the new mapping id if the adding succeeds, otherwise 0 is returned.
-  IconMappingID AddIconMapping(const GURL& page_url, chrome::FaviconID icon_id);
+  IconMappingID AddIconMapping(const GURL& page_url,
+                               favicon_base::FaviconID icon_id);
 
   // Updates the page and icon mapping for the given mapping_id with the given
   // icon_id.
   // Returns true if the update succeeded.
-  bool UpdateIconMapping(IconMappingID mapping_id, chrome::FaviconID icon_id);
+  bool UpdateIconMapping(IconMappingID mapping_id,
+                         favicon_base::FaviconID icon_id);
 
   // Deletes the icon mapping entries for the given page url.
   // Returns true if the deletion succeeded.
@@ -194,7 +197,7 @@ class ThumbnailDatabase {
   bool DeleteIconMapping(IconMappingID mapping_id);
 
   // Checks whether a favicon is used by any URLs in the database.
-  bool HasMappingFor(chrome::FaviconID id);
+  bool HasMappingFor(favicon_base::FaviconID id);
 
   // Clones the existing mappings from |old_page_url| if |new_page_url| has no
   // mappings. Otherwise, will leave mappings alone.
@@ -221,7 +224,7 @@ class ThumbnailDatabase {
   };
 
   // Return all icon mappings of the given |icon_type|.
-  bool InitIconMappingEnumerator(chrome::IconType type,
+  bool InitIconMappingEnumerator(favicon_base::IconType type,
                                  IconMappingEnumerator* enumerator);
 
   // Remove all data except that associated with the passed page urls.

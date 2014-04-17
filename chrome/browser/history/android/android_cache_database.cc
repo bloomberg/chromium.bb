@@ -93,7 +93,7 @@ bool AndroidCacheDatabase::MarkURLsAsBookmarked(
 }
 
 bool AndroidCacheDatabase::SetFaviconID(URLID url_id,
-                                        chrome::FaviconID favicon_id) {
+                                        favicon_base::FaviconID favicon_id) {
   sql::Statement update_statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "UPDATE android_cache_db.bookmark_cache "
       "SET favicon_id = ? WHERE url_id = ? "));

@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "chrome/common/favicon/favicon_types.h"
+#include "components/favicon_base/favicon_types.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 class ExtensionIconColorManager;
@@ -41,8 +41,9 @@ class FaviconWebUIHandler : public content::WebUIMessageHandler {
 
  private:
   // Called when favicon data is available from the history backend.
-  void OnFaviconDataAvailable(int request_handle,
-                              const chrome::FaviconBitmapResult& bitmap_result);
+  void OnFaviconDataAvailable(
+      int request_handle,
+      const favicon_base::FaviconBitmapResult& bitmap_result);
 
   base::CancelableTaskTracker cancelable_task_tracker_;
 

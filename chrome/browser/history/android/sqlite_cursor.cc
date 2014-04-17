@@ -172,7 +172,7 @@ void SQLiteCursor::DestroyOnUIThread() {
   delete this;
 }
 
-bool SQLiteCursor::GetFavicon(chrome::FaviconID id,
+bool SQLiteCursor::GetFavicon(favicon_base::FaviconID id,
                               std::vector<unsigned char>* image_data) {
   if (id) {
     BrowserThread::PostTask(
@@ -201,7 +201,7 @@ bool SQLiteCursor::GetFavicon(chrome::FaviconID id,
 }
 
 void SQLiteCursor::GetFaviconForIDInUIThread(
-    chrome::FaviconID id,
+    favicon_base::FaviconID id,
     const FaviconService::FaviconRawCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!tracker_.get())
@@ -209,9 +209,8 @@ void SQLiteCursor::GetFaviconForIDInUIThread(
   favicon_service_->GetLargestRawFaviconForID(id, callback, tracker_.get());
 }
 
-
 void SQLiteCursor::OnFaviconData(
-    const chrome::FaviconBitmapResult& bitmap_result) {
+    const favicon_base::FaviconBitmapResult& bitmap_result) {
   favicon_bitmap_result_ = bitmap_result;
   event_.Signal();
   if (test_observer_)

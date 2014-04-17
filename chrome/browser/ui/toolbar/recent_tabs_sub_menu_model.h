@@ -23,7 +23,7 @@ namespace browser_sync {
 class OpenTabsUIDelegate;
 }
 
-namespace chrome {
+namespace favicon_base {
 struct FaviconImageResult;
 }
 
@@ -107,8 +107,9 @@ class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
   // Add the favicon for a local or other devices' tab asynchronously,
   // OnFaviconDataAvailable() will be invoked when the favicon is ready.
   void AddTabFavicon(int command_id, const GURL& url);
-  void OnFaviconDataAvailable(int command_id,
-                              const chrome::FaviconImageResult& image_result);
+  void OnFaviconDataAvailable(
+      int command_id,
+      const favicon_base::FaviconImageResult& image_result);
 
   // Clear all recently closed tabs and windows.
   void ClearLocalEntries();

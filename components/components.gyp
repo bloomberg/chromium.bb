@@ -20,6 +20,7 @@
     'dom_distiller.gypi',
     'domain_reliability.gypi',
     'favicon.gypi',
+    'favicon_base.gypi',
     'json_schema.gypi',
     'keyed_service.gypi',
     'language_usage_metrics.gypi',

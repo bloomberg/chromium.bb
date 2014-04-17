@@ -28,7 +28,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/extensions/api/notifications.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/favicon/favicon_types.h"
+#include "components/favicon_base/favicon_types.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/event_router.h"
@@ -286,7 +286,7 @@ void MessageCenterSettingsController::GetNotifierList(
     patterns_[name] = iter->primary_pattern;
     FaviconService::FaviconForURLParams favicon_params(
         url,
-        chrome::FAVICON | chrome::TOUCH_ICON,
+        favicon_base::FAVICON | favicon_base::TOUCH_ICON,
         message_center::kSettingsIconSize);
     // Note that favicon service obtains the favicon from history. This means
     // that it will fail to obtain the image if there are no history data for
@@ -422,7 +422,7 @@ void MessageCenterSettingsController::OnNotifierAdvancedSettingsRequested(
 
 void MessageCenterSettingsController::OnFaviconLoaded(
     const GURL& url,
-    const chrome::FaviconImageResult& favicon_result) {
+    const favicon_base::FaviconImageResult& favicon_result) {
   FOR_EACH_OBSERVER(message_center::NotifierSettingsObserver,
                     observers_,
                     UpdateIconImage(NotifierId(url), favicon_result.image));

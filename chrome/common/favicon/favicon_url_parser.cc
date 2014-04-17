@@ -5,7 +5,7 @@
 #include "chrome/common/favicon/favicon_url_parser.h"
 
 #include "base/strings/string_number_conversions.h"
-#include "chrome/common/favicon/favicon_types.h"
+#include "components/favicon_base/favicon_types.h"
 #include "net/url_request/url_request.h"
 #include "ui/base/layout.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -88,7 +88,7 @@ bool ParseFaviconPath(const std::string& path,
     //   where scale factor is one of FaviconUtil::GetFaviconScaleFactors().
     // - the largest TOUCH_ICON / TOUCH_PRECOMPOSED_ICON
     if (parsed->size_in_dip != gfx::kFaviconSize &&
-        icon_types == chrome::FAVICON)
+        icon_types == favicon_base::FAVICON)
       return false;
 
     parsed_index = slash + 1;

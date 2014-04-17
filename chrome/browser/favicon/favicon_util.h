@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "components/favicon_base/favicon_types.h"
 #include "ui/base/layout.h"
 
 namespace chrome {
@@ -36,7 +37,7 @@ class FaviconUtil {
   // Takes a vector of png-encoded frames, decodes them, and converts them to
   // a favicon of size favicon_size (in DIPs) at the desired ui scale factors.
   static gfx::Image SelectFaviconFramesFromPNGs(
-      const std::vector<chrome::FaviconBitmapResult>& png_data,
+      const std::vector<favicon_base::FaviconBitmapResult>& png_data,
       const std::vector<ui::ScaleFactor>& scale_factors,
       int favicon_size);
 };

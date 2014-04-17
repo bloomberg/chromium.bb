@@ -20,8 +20,8 @@
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #import "chrome/browser/ui/cocoa/history_menu_cocoa_controller.h"
-#include "chrome/common/favicon/favicon_types.h"
 #include "chrome/common/url_constants.h"
+#include "components/favicon_base/favicon_types.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
@@ -458,7 +458,7 @@ void HistoryMenuBridge::GetFaviconForHistoryItem(HistoryItem* item) {
       FaviconServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   base::CancelableTaskTracker::TaskId task_id = service->GetFaviconImageForURL(
       FaviconService::FaviconForURLParams(
-          item->url, chrome::FAVICON, gfx::kFaviconSize),
+          item->url, favicon_base::FAVICON, gfx::kFaviconSize),
       base::Bind(
           &HistoryMenuBridge::GotFaviconData, base::Unretained(this), item),
       &cancelable_task_tracker_);
@@ -468,7 +468,7 @@ void HistoryMenuBridge::GetFaviconForHistoryItem(HistoryItem* item) {
 
 void HistoryMenuBridge::GotFaviconData(
     HistoryItem* item,
-    const chrome::FaviconImageResult& image_result) {
+    const favicon_base::FaviconImageResult& image_result) {
   // Since we're going to do Cocoa-y things, make sure this is the main thread.
   DCHECK([NSThread isMainThread]);
 

@@ -75,13 +75,12 @@ static const char* kHistoryThreadName = "Chrome_HistoryThread";
 
 void RunWithFaviconResults(
     const FaviconService::FaviconResultsCallback& callback,
-    std::vector<chrome::FaviconBitmapResult>* bitmap_results) {
+    std::vector<favicon_base::FaviconBitmapResult>* bitmap_results) {
   callback.Run(*bitmap_results);
 }
 
-void RunWithFaviconResult(
-    const FaviconService::FaviconRawCallback& callback,
-    chrome::FaviconBitmapResult* bitmap_result) {
+void RunWithFaviconResult(const FaviconService::FaviconRawCallback& callback,
+                          favicon_base::FaviconBitmapResult* bitmap_result) {
   callback.Run(*bitmap_result);
 }
 
@@ -564,8 +563,8 @@ base::CancelableTaskTracker::TaskId HistoryService::GetFavicons(
     base::CancelableTaskTracker* tracker) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  std::vector<chrome::FaviconBitmapResult>* results =
-      new std::vector<chrome::FaviconBitmapResult>();
+  std::vector<favicon_base::FaviconBitmapResult>* results =
+      new std::vector<favicon_base::FaviconBitmapResult>();
   return tracker->PostTaskAndReply(
       thread_->message_loop_proxy().get(),
       FROM_HERE,
@@ -588,8 +587,8 @@ base::CancelableTaskTracker::TaskId HistoryService::GetFaviconsForURL(
     base::CancelableTaskTracker* tracker) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  std::vector<chrome::FaviconBitmapResult>* results =
-      new std::vector<chrome::FaviconBitmapResult>();
+  std::vector<favicon_base::FaviconBitmapResult>* results =
+      new std::vector<favicon_base::FaviconBitmapResult>();
   return tracker->PostTaskAndReply(
       thread_->message_loop_proxy().get(),
       FROM_HERE,
@@ -611,7 +610,8 @@ base::CancelableTaskTracker::TaskId HistoryService::GetLargestFaviconForURL(
     base::CancelableTaskTracker* tracker) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  chrome::FaviconBitmapResult* result = new chrome::FaviconBitmapResult();
+  favicon_base::FaviconBitmapResult* result =
+      new favicon_base::FaviconBitmapResult();
   return tracker->PostTaskAndReply(
       thread_->message_loop_proxy().get(),
       FROM_HERE,
@@ -625,15 +625,15 @@ base::CancelableTaskTracker::TaskId HistoryService::GetLargestFaviconForURL(
 }
 
 base::CancelableTaskTracker::TaskId HistoryService::GetFaviconForID(
-    chrome::FaviconID favicon_id,
+    favicon_base::FaviconID favicon_id,
     int desired_size_in_dip,
     ui::ScaleFactor desired_scale_factor,
     const FaviconService::FaviconResultsCallback& callback,
     base::CancelableTaskTracker* tracker) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  std::vector<chrome::FaviconBitmapResult>* results =
-      new std::vector<chrome::FaviconBitmapResult>();
+  std::vector<favicon_base::FaviconBitmapResult>* results =
+      new std::vector<favicon_base::FaviconBitmapResult>();
   return tracker->PostTaskAndReply(
       thread_->message_loop_proxy().get(),
       FROM_HERE,
@@ -657,8 +657,8 @@ HistoryService::UpdateFaviconMappingsAndFetch(
     base::CancelableTaskTracker* tracker) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  std::vector<chrome::FaviconBitmapResult>* results =
-      new std::vector<chrome::FaviconBitmapResult>();
+  std::vector<favicon_base::FaviconBitmapResult>* results =
+      new std::vector<favicon_base::FaviconBitmapResult>();
   return tracker->PostTaskAndReply(
       thread_->message_loop_proxy().get(),
       FROM_HERE,
@@ -676,7 +676,7 @@ HistoryService::UpdateFaviconMappingsAndFetch(
 void HistoryService::MergeFavicon(
     const GURL& page_url,
     const GURL& icon_url,
-    chrome::IconType icon_type,
+    favicon_base::IconType icon_type,
     scoped_refptr<base::RefCountedMemory> bitmap_data,
     const gfx::Size& pixel_size) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -689,8 +689,8 @@ void HistoryService::MergeFavicon(
 
 void HistoryService::SetFavicons(
     const GURL& page_url,
-    chrome::IconType icon_type,
-    const std::vector<chrome::FaviconBitmapData>& favicon_bitmap_data) {
+    favicon_base::IconType icon_type,
+    const std::vector<favicon_base::FaviconBitmapData>& favicon_bitmap_data) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!CanAddURL(page_url))
     return;

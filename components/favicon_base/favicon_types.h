@@ -1,16 +1,16 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_FAVICON_FAVICON_TYPES_H_
-#define CHROME_COMMON_FAVICON_FAVICON_TYPES_H_
+#ifndef COMPONENTS_FAVICON_BASE_FAVICON_TYPES_H_
+#define COMPONENTS_FAVICON_BASE_FAVICON_TYPES_H_
 
 #include "base/memory/ref_counted_memory.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/size.h"
 #include "url/gurl.h"
 
-namespace chrome {
+namespace favicon_base {
 
 typedef int64 FaviconID;
 
@@ -74,4 +74,4 @@ typedef FaviconBitmapResult FaviconBitmapData;
 
 }  // namespace chrome
 
-#endif  // CHROME_COMMON_FAVICON_FAVICON_TYPES_H_
+#endif  // COMPONENTS_FAVICON_BASE_FAVICON_TYPES_H_

@@ -15,7 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
-#include "chrome/common/favicon/favicon_types.h"
+#include "components/favicon_base/favicon_types.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -96,13 +96,15 @@ class ModelEntry {
     }
     load_state_ = LOADING;
     favicon_service->GetFaviconImage(
-        favicon_url, chrome::FAVICON, gfx::kFaviconSize,
-        base::Bind(&ModelEntry::OnFaviconDataAvailable,
-                   base::Unretained(this)),
+        favicon_url,
+        favicon_base::FAVICON,
+        gfx::kFaviconSize,
+        base::Bind(&ModelEntry::OnFaviconDataAvailable, base::Unretained(this)),
         &tracker_);
   }
 
-  void OnFaviconDataAvailable(const chrome::FaviconImageResult& image_result) {
+  void OnFaviconDataAvailable(
+      const favicon_base::FaviconImageResult& image_result) {
     load_state_ = LOADED;
     if (!image_result.image.IsEmpty()) {
       favicon_ = image_result.image.AsImageSkia();

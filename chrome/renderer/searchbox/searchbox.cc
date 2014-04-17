@@ -10,12 +10,12 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/favicon/favicon_types.h"
 #include "chrome/common/favicon/favicon_url_parser.h"
 #include "chrome/common/omnibox_focus_state.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/searchbox/searchbox_extension.h"
+#include "components/favicon_base/favicon_types.h"
 #include "content/public/renderer/render_view.h"
 #include "grit/renderer_resources.h"
 #include "net/base/escape.h"
@@ -85,7 +85,7 @@ bool GetRestrictedIDFromFaviconUrl(int render_view_id,
   raw_path = raw_path.substr(1);
 
   chrome::ParsedFaviconPath parsed;
-  if (!chrome::ParseFaviconPath(raw_path, chrome::FAVICON, &parsed))
+  if (!chrome::ParseFaviconPath(raw_path, favicon_base::FAVICON, &parsed))
     return false;
 
   // The part of the URL which details the favicon parameters should be returned

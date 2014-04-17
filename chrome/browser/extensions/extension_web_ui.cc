@@ -89,8 +89,8 @@ void UnregisterAndReplaceOverrideForWebContents(const std::string& page,
 void RunFaviconCallbackAsync(
     const FaviconService::FaviconResultsCallback& callback,
     const gfx::Image& image) {
-  std::vector<chrome::FaviconBitmapResult>* favicon_bitmap_results =
-      new std::vector<chrome::FaviconBitmapResult>();
+  std::vector<favicon_base::FaviconBitmapResult>* favicon_bitmap_results =
+      new std::vector<favicon_base::FaviconBitmapResult>();
 
   const std::vector<gfx::ImageSkiaRep>& image_reps =
       image.AsImageSkia().image_reps();
@@ -101,12 +101,12 @@ void RunFaviconCallbackAsync(
     if (gfx::PNGCodec::EncodeBGRASkBitmap(image_rep.sk_bitmap(),
                                           false,
                                           &bitmap_data->data())) {
-      chrome::FaviconBitmapResult bitmap_result;
+      favicon_base::FaviconBitmapResult bitmap_result;
       bitmap_result.bitmap_data = bitmap_data;
       bitmap_result.pixel_size = gfx::Size(image_rep.pixel_width(),
                                             image_rep.pixel_height());
       // Leave |bitmap_result|'s icon URL as the default of GURL().
-      bitmap_result.icon_type = chrome::FAVICON;
+      bitmap_result.icon_type = favicon_base::FAVICON;
 
       favicon_bitmap_results->push_back(bitmap_result);
     } else {

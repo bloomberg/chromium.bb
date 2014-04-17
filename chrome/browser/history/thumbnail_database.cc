@@ -94,7 +94,7 @@ void FillIconMapping(const sql::Statement& statement,
   icon_mapping->mapping_id = statement.ColumnInt64(0);
   icon_mapping->icon_id = statement.ColumnInt64(1);
   icon_mapping->icon_type =
-      static_cast<chrome::IconType>(statement.ColumnInt(2));
+      static_cast<favicon_base::IconType>(statement.ColumnInt(2));
   icon_mapping->icon_url = GURL(statement.ColumnString(3));
   icon_mapping->page_url = page_url;
 }
@@ -646,7 +646,7 @@ void ThumbnailDatabase::TrimMemory(bool aggressively) {
 }
 
 bool ThumbnailDatabase::GetFaviconBitmapIDSizes(
-    chrome::FaviconID icon_id,
+    favicon_base::FaviconID icon_id,
     std::vector<FaviconBitmapIDSize>* bitmap_id_sizes) {
   DCHECK(icon_id);
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
@@ -669,7 +669,7 @@ bool ThumbnailDatabase::GetFaviconBitmapIDSizes(
 }
 
 bool ThumbnailDatabase::GetFaviconBitmaps(
-    chrome::FaviconID icon_id,
+    favicon_base::FaviconID icon_id,
     std::vector<FaviconBitmap>* favicon_bitmaps) {
   DCHECK(icon_id);
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
@@ -731,7 +731,7 @@ bool ThumbnailDatabase::GetFaviconBitmap(
 }
 
 FaviconBitmapID ThumbnailDatabase::AddFaviconBitmap(
-    chrome::FaviconID icon_id,
+    favicon_base::FaviconID icon_id,
     const scoped_refptr<base::RefCountedMemory>& icon_data,
     base::Time time,
     const gfx::Size& pixel_size) {
@@ -792,7 +792,7 @@ bool ThumbnailDatabase::DeleteFaviconBitmap(FaviconBitmapID bitmap_id) {
   return statement.Run();
 }
 
-bool ThumbnailDatabase::SetFaviconOutOfDate(chrome::FaviconID icon_id) {
+bool ThumbnailDatabase::SetFaviconOutOfDate(favicon_base::FaviconID icon_id) {
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
       "UPDATE favicon_bitmaps SET last_updated=? WHERE icon_id=?"));
   statement.BindInt64(0, 0);
@@ -801,10 +801,10 @@ bool ThumbnailDatabase::SetFaviconOutOfDate(chrome::FaviconID icon_id) {
   return statement.Run();
 }
 
-chrome::FaviconID ThumbnailDatabase::GetFaviconIDForFaviconURL(
+favicon_base::FaviconID ThumbnailDatabase::GetFaviconIDForFaviconURL(
     const GURL& icon_url,
     int required_icon_type,
-    chrome::IconType* icon_type) {
+    favicon_base::IconType* icon_type) {
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
       "SELECT id, icon_type FROM favicons WHERE url=? AND (icon_type & ? > 0) "
       "ORDER BY icon_type DESC"));
@@ -815,13 +815,13 @@ chrome::FaviconID ThumbnailDatabase::GetFaviconIDForFaviconURL(
     return 0;  // not cached
 
   if (icon_type)
-    *icon_type = static_cast<chrome::IconType>(statement.ColumnInt(1));
+    *icon_type = static_cast<favicon_base::IconType>(statement.ColumnInt(1));
   return statement.ColumnInt64(0);
 }
 
-bool ThumbnailDatabase::GetFaviconHeader(chrome::FaviconID icon_id,
+bool ThumbnailDatabase::GetFaviconHeader(favicon_base::FaviconID icon_id,
                                          GURL* icon_url,
-                                         chrome::IconType* icon_type) {
+                                         favicon_base::IconType* icon_type) {
   DCHECK(icon_id);
 
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
@@ -834,14 +834,14 @@ bool ThumbnailDatabase::GetFaviconHeader(chrome::FaviconID icon_id,
   if (icon_url)
     *icon_url = GURL(statement.ColumnString(0));
   if (icon_type)
-    *icon_type = static_cast<chrome::IconType>(statement.ColumnInt(1));
+    *icon_type = static_cast<favicon_base::IconType>(statement.ColumnInt(1));
 
   return true;
 }
 
-chrome::FaviconID ThumbnailDatabase::AddFavicon(
+favicon_base::FaviconID ThumbnailDatabase::AddFavicon(
     const GURL& icon_url,
-    chrome::IconType icon_type) {
+    favicon_base::IconType icon_type) {
 
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
       "INSERT INTO favicons (url, icon_type) VALUES (?, ?)"));
@@ -853,20 +853,20 @@ chrome::FaviconID ThumbnailDatabase::AddFavicon(
   return db_.GetLastInsertRowId();
 }
 
-chrome::FaviconID ThumbnailDatabase::AddFavicon(
+favicon_base::FaviconID ThumbnailDatabase::AddFavicon(
     const GURL& icon_url,
-    chrome::IconType icon_type,
+    favicon_base::IconType icon_type,
     const scoped_refptr<base::RefCountedMemory>& icon_data,
     base::Time time,
     const gfx::Size& pixel_size) {
-  chrome::FaviconID icon_id = AddFavicon(icon_url, icon_type);
+  favicon_base::FaviconID icon_id = AddFavicon(icon_url, icon_type);
   if (!icon_id || !AddFaviconBitmap(icon_id, icon_data, time, pixel_size))
     return 0;
 
   return icon_id;
 }
 
-bool ThumbnailDatabase::DeleteFavicon(chrome::FaviconID id) {
+bool ThumbnailDatabase::DeleteFavicon(favicon_base::FaviconID id) {
   sql::Statement statement;
   statement.Assign(db_.GetCachedStatement(SQL_FROM_HERE,
       "DELETE FROM favicons WHERE id = ?"));
@@ -933,8 +933,9 @@ bool ThumbnailDatabase::GetIconMappingsForPageURL(
   return result;
 }
 
-IconMappingID ThumbnailDatabase::AddIconMapping(const GURL& page_url,
-                                                chrome::FaviconID icon_id) {
+IconMappingID ThumbnailDatabase::AddIconMapping(
+    const GURL& page_url,
+    favicon_base::FaviconID icon_id) {
   const char kSql[] =
       "INSERT INTO icon_mapping (page_url, icon_id) VALUES (?, ?)";
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE, kSql));
@@ -948,7 +949,7 @@ IconMappingID ThumbnailDatabase::AddIconMapping(const GURL& page_url,
 }
 
 bool ThumbnailDatabase::UpdateIconMapping(IconMappingID mapping_id,
-                                          chrome::FaviconID icon_id) {
+                                          favicon_base::FaviconID icon_id) {
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
       "UPDATE icon_mapping SET icon_id=? WHERE id=?"));
   statement.BindInt64(0, icon_id);
@@ -973,7 +974,7 @@ bool ThumbnailDatabase::DeleteIconMapping(IconMappingID mapping_id) {
   return statement.Run();
 }
 
-bool ThumbnailDatabase::HasMappingFor(chrome::FaviconID id) {
+bool ThumbnailDatabase::HasMappingFor(favicon_base::FaviconID id) {
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
       "SELECT id FROM icon_mapping "
       "WHERE icon_id=?"));
@@ -1006,7 +1007,7 @@ bool ThumbnailDatabase::CloneIconMappings(const GURL& old_page_url,
 }
 
 bool ThumbnailDatabase::InitIconMappingEnumerator(
-    chrome::IconType type,
+    favicon_base::IconType type,
     IconMappingEnumerator* enumerator) {
   DCHECK(!enumerator->statement_.is_valid());
   enumerator->statement_.Assign(db_.GetCachedStatement(

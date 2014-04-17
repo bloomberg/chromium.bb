@@ -20,6 +20,7 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/bookmarks/bookmark_service.h"
 #include "components/bookmarks/core/browser/bookmark_node.h"
+#include "components/favicon_base/favicon_types.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -317,8 +318,9 @@ class BookmarkModel : public content::NotificationObserver,
 
   // Notification that a favicon has finished loading. If we can decode the
   // favicon, FaviconLoaded is invoked.
-  void OnFaviconDataAvailable(BookmarkNode* node,
-                              const chrome::FaviconImageResult& image_result);
+  void OnFaviconDataAvailable(
+      BookmarkNode* node,
+      const favicon_base::FaviconImageResult& image_result);
 
   // Invoked from the node to load the favicon. Requests the favicon from the
   // favicon service.

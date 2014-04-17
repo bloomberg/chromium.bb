@@ -131,7 +131,7 @@ class FaviconCache : public syncer::SyncableService,
   // available. Does nothing if no favicon data was available.
   void OnFaviconDataAvailable(
       const GURL& page_url,
-      const std::vector<chrome::FaviconBitmapResult>& bitmap_result);
+      const std::vector<favicon_base::FaviconBitmapResult>& bitmap_result);
 
   // Helper method to update the sync state of the favicon at |icon_url|. If
   // either |image_change_type| or |tracking_change_type| is ACTION_INVALID,

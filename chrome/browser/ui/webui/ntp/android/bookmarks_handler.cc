@@ -450,11 +450,11 @@ void BookmarksHandler::HandleCreateHomeScreenBookmarkShortcut(
   FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
       profile, Profile::EXPLICIT_ACCESS);
   favicon_service->GetRawFaviconForURL(
-      FaviconService::FaviconForURLParams(
-          node->url(),
-          chrome::TOUCH_PRECOMPOSED_ICON | chrome::TOUCH_ICON |
-              chrome::FAVICON,
-          0),  // request the largest icon.
+      FaviconService::FaviconForURLParams(node->url(),
+                                          favicon_base::TOUCH_PRECOMPOSED_ICON |
+                                              favicon_base::TOUCH_ICON |
+                                              favicon_base::FAVICON,
+                                          0),  // request the largest icon.
       ui::SCALE_FACTOR_100P,  // density doesn't matter for the largest icon.
       base::Bind(&BookmarksHandler::OnShortcutFaviconDataAvailable,
                  base::Unretained(this),
@@ -464,7 +464,7 @@ void BookmarksHandler::HandleCreateHomeScreenBookmarkShortcut(
 
 void BookmarksHandler::OnShortcutFaviconDataAvailable(
     const BookmarkNode* node,
-    const chrome::FaviconBitmapResult& bitmap_result) {
+    const favicon_base::FaviconBitmapResult& bitmap_result) {
   if (!AreModelsLoaded())
     return;
 

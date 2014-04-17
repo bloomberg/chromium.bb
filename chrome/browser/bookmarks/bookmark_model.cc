@@ -23,8 +23,8 @@
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/favicon/favicon_types.h"
 #include "components/bookmarks/core/browser/bookmark_title_match.h"
+#include "components/favicon_base/favicon_types.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
@@ -871,7 +871,7 @@ BookmarkPermanentNode* BookmarkModel::CreatePermanentNode(
 
 void BookmarkModel::OnFaviconDataAvailable(
     BookmarkNode* node,
-    const chrome::FaviconImageResult& image_result) {
+    const favicon_base::FaviconImageResult& image_result) {
   DCHECK(node);
   node->set_favicon_load_task_id(base::CancelableTaskTracker::kBadTaskId);
   node->set_favicon_state(BookmarkNode::LOADED_FAVICON);
@@ -894,7 +894,7 @@ void BookmarkModel::LoadFavicon(BookmarkNode* node) {
   base::CancelableTaskTracker::TaskId taskId =
       favicon_service->GetFaviconImageForURL(
           FaviconService::FaviconForURLParams(
-              node->url(), chrome::FAVICON, gfx::kFaviconSize),
+              node->url(), favicon_base::FAVICON, gfx::kFaviconSize),
           base::Bind(&BookmarkModel::OnFaviconDataAvailable,
                      base::Unretained(this),
                      node),

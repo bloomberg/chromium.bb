@@ -198,8 +198,9 @@ class ExpireHistoryBackend {
   // care about favicons so much, so don't want to stop everything if it fails).
   // Fills |expired_favicons| with the set of favicon urls that no longer
   // have associated visits and were therefore expired.
-  void DeleteFaviconsIfPossible(const std::set<chrome::FaviconID>& favicon_id,
-                                std::set<GURL>* expired_favicons);
+  void DeleteFaviconsIfPossible(
+      const std::set<favicon_base::FaviconID>& favicon_id,
+      std::set<GURL>* expired_favicons);
 
   // Enum representing what type of action resulted in the history DB deletion.
   enum DeletionType {

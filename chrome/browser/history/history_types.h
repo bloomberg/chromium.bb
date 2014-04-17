@@ -18,9 +18,9 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "chrome/browser/search_engines/template_url_id.h"
-#include "chrome/common/favicon/favicon_types.h"
 #include "chrome/common/ref_counted_util.h"
 #include "chrome/common/thumbnail_score.h"
+#include "components/favicon_base/favicon_types.h"
 #include "components/query_parser/snippet.h"
 #include "content/public/common/page_transition_types.h"
 #include "ui/gfx/image/image.h"
@@ -685,13 +685,13 @@ struct IconMapping {
   GURL page_url;
 
   // The unique id of the icon.
-  chrome::FaviconID icon_id;
+  favicon_base::FaviconID icon_id;
 
   // The url of the icon.
   GURL icon_url;
 
   // The type of icon.
-  chrome::IconType icon_type;
+  favicon_base::IconType icon_type;
 };
 
 // Defines a favicon bitmap and its associated pixel size.
@@ -715,7 +715,7 @@ struct FaviconBitmap {
   FaviconBitmapID bitmap_id;
 
   // The id of the favicon to which the bitmap belongs to.
-  chrome::FaviconID icon_id;
+  favicon_base::FaviconID icon_id;
 
   // Time at which |bitmap_data| was last updated.
   base::Time last_updated;

@@ -25,8 +25,8 @@
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/favicon/favicon_types.h"
 #include "chrome/common/url_constants.h"
+#include "components/favicon_base/favicon_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/chromium_strings.h"
@@ -398,16 +398,14 @@ void JumpList::StartLoadingFavicon() {
   FaviconService* favicon_service =
       FaviconServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   task_id_ = favicon_service->GetFaviconImageForURL(
-      FaviconService::FaviconForURLParams(url,
-                                          chrome::FAVICON,
-                                          gfx::kFaviconSize),
-      base::Bind(&JumpList::OnFaviconDataAvailable,
-                 base::Unretained(this)),
+      FaviconService::FaviconForURLParams(
+          url, favicon_base::FAVICON, gfx::kFaviconSize),
+      base::Bind(&JumpList::OnFaviconDataAvailable, base::Unretained(this)),
       &cancelable_task_tracker_);
 }
 
 void JumpList::OnFaviconDataAvailable(
-    const chrome::FaviconImageResult& image_result) {
+    const favicon_base::FaviconImageResult& image_result) {
   // If there is currently a favicon request in progress, it is now outdated,
   // as we have received another, so nullify the handle from the old request.
   task_id_ = base::CancelableTaskTracker::kBadTaskId;

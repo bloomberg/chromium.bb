@@ -110,7 +110,7 @@ class ExtensionIconSource : public content::URLDataSource,
   // FaviconService callback
   void OnFaviconDataAvailable(
       int request_id,
-      const chrome::FaviconBitmapResult& bitmap_result);
+      const favicon_base::FaviconBitmapResult& bitmap_result);
 
   // ImageLoader callback
   void OnImageLoaded(int request_id, const gfx::Image& image);

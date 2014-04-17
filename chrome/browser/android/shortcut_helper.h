@@ -12,9 +12,9 @@
 #include "chrome/browser/android/tab_android.h"
 #include "content/public/browser/web_contents_observer.h"
 
-namespace chrome {
+namespace favicon_base {
 struct FaviconBitmapResult;
-}  // namespace chrome
+}  // namespace favicon_base
 
 namespace content {
 class WebContents;
@@ -52,7 +52,8 @@ class ShortcutBuilder : public content::WebContentsObserver {
                                       bool is_apple_mobile_webapp_capable,
                                       const GURL& expected_url);
 
-  void FinishAddingShortcut(const chrome::FaviconBitmapResult& bitmap_result);
+  void FinishAddingShortcut(
+      const favicon_base::FaviconBitmapResult& bitmap_result);
 
   // WebContentsObserver
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -84,7 +85,7 @@ class ShortcutHelper {
       const GURL& url,
       const base::string16& title,
       ShortcutBuilder::ShortcutType shortcut_type,
-      const chrome::FaviconBitmapResult& bitmap_result);
+      const favicon_base::FaviconBitmapResult& bitmap_result);
 
   // Registers JNI hooks.
   static bool RegisterShortcutHelper(JNIEnv* env);

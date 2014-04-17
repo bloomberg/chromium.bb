@@ -27,7 +27,7 @@ class ExtensionService;
 class PrefChangeRegistrar;
 class Profile;
 
-namespace chrome {
+namespace favicon_base {
 struct FaviconImageResult;
 }
 
@@ -136,7 +136,7 @@ class AppLauncherHandler : public content::WebUIMessageHandler,
 
   // Continuation for installing a bookmark app after favicon lookup.
   void OnFaviconForApp(scoped_ptr<AppInstallInfo> install_info,
-                       const chrome::FaviconImageResult& image_result);
+                       const favicon_base::FaviconImageResult& image_result);
 
   // Sends |highlight_app_id_| to the js.
   void SetAppToBeHighlighted();

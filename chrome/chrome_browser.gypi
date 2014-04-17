@@ -32,6 +32,7 @@
         '../components/components.gyp:cloud_devices',
         '../components/components.gyp:data_reduction_proxy_browser',
         '../components/components.gyp:domain_reliability',
+        '../components/components.gyp:favicon_base',
         '../components/components.gyp:favicon_core',
         '../components/components.gyp:navigation_metrics',
         '../components/components.gyp:os_crypt',

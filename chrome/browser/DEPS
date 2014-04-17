@@ -18,6 +18,7 @@ include_rules = [
   "+components/data_reduction_proxy",
   "+components/dom_distiller",
   "+components/domain_reliability",
+  "+components/favicon_base",
   "+components/keyed_service",
   "+components/language_usage_metrics",
   "+components/nacl/browser",

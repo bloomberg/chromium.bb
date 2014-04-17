@@ -15,6 +15,7 @@
 #include "base/observer_list.h"
 #include "chrome/browser/extensions/app_icon_loader.h"
 #include "chrome/common/content_settings.h"
+#include "components/favicon_base/favicon_types.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -32,7 +33,7 @@ namespace base {
 class CancelableTaskTracker;
 }
 
-namespace chrome {
+namespace favicon_base {
 struct FaviconImageResult;
 }
 
@@ -93,7 +94,7 @@ class MessageCenterSettingsController
                        const content::NotificationDetails& details) OVERRIDE;
 
   void OnFaviconLoaded(const GURL& url,
-                       const chrome::FaviconImageResult& favicon_result);
+                       const favicon_base::FaviconImageResult& favicon_result);
 
 #if defined(OS_CHROMEOS)
   // Sets up the notifier group for the guest session. This needs to be

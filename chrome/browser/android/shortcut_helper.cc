@@ -75,8 +75,9 @@ void ShortcutBuilder::OnDidRetrieveWebappInformation(
   // TODO(dfalcantara): Try combining with the new BookmarksHandler once its
   //                    rewrite is further along.
   std::vector<int> icon_types;
-  icon_types.push_back(chrome::FAVICON);
-  icon_types.push_back(chrome::TOUCH_PRECOMPOSED_ICON | chrome::TOUCH_ICON);
+  icon_types.push_back(favicon_base::FAVICON);
+  icon_types.push_back(favicon_base::TOUCH_PRECOMPOSED_ICON |
+                       favicon_base::TOUCH_ICON);
   FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
       profile, Profile::EXPLICIT_ACCESS);
 
@@ -91,7 +92,7 @@ void ShortcutBuilder::OnDidRetrieveWebappInformation(
 }
 
 void ShortcutBuilder::FinishAddingShortcut(
-    const chrome::FaviconBitmapResult& bitmap_result) {
+    const favicon_base::FaviconBitmapResult& bitmap_result) {
   base::WorkerPool::PostTask(
       FROM_HERE,
       base::Bind(&ShortcutHelper::AddShortcutInBackground,
@@ -139,7 +140,7 @@ void ShortcutHelper::AddShortcutInBackground(
     const GURL& url,
     const base::string16& title,
     ShortcutBuilder::ShortcutType shortcut_type,
-    const chrome::FaviconBitmapResult& bitmap_result) {
+    const favicon_base::FaviconBitmapResult& bitmap_result) {
   DCHECK(base::WorkerPool::RunsTasksOnCurrentThread());
 
   // Grab the average color from the bitmap.

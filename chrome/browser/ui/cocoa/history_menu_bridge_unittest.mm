@@ -15,8 +15,8 @@
 #include "chrome/browser/sessions/persistent_tab_restore_service.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/cocoa/history_menu_bridge.h"
-#include "chrome/common/favicon/favicon_types.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/favicon_base/favicon_types.h"
 #include "components/sessions/serialized_navigation_entry_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -107,9 +107,8 @@ class HistoryMenuBridgeTest : public CocoaProfileTest {
     bridge_->GetFaviconForHistoryItem(item);
   }
 
-  void GotFaviconData(
-      HistoryMenuBridge::HistoryItem* item,
-      const chrome::FaviconImageResult& image_result) {
+  void GotFaviconData(HistoryMenuBridge::HistoryItem* item,
+                      const favicon_base::FaviconImageResult& image_result) {
     bridge_->GotFaviconData(item, image_result);
   }
 
@@ -354,7 +353,7 @@ TEST_F(HistoryMenuBridgeTest, GotFaviconData) {
   GetFaviconForHistoryItem(&item);
 
   // Pretend to be called back.
-  chrome::FaviconImageResult image_result;
+  favicon_base::FaviconImageResult image_result;
   image_result.image = gfx::Image::CreateFrom1xBitmap(bitmap);
   GotFaviconData(&item, image_result);
 

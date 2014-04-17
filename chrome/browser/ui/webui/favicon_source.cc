@@ -45,17 +45,17 @@ FaviconSource::IconRequest::~IconRequest() {
 
 FaviconSource::FaviconSource(Profile* profile, IconType type)
     : profile_(profile->GetOriginalProfile()),
-      icon_types_(type == FAVICON ? chrome::FAVICON :
-          chrome::TOUCH_PRECOMPOSED_ICON | chrome::TOUCH_ICON |
-          chrome::FAVICON) {
-}
+      icon_types_(type == FAVICON ? favicon_base::FAVICON
+                                  : favicon_base::TOUCH_PRECOMPOSED_ICON |
+                                        favicon_base::TOUCH_ICON |
+                                        favicon_base::FAVICON) {}
 
 FaviconSource::~FaviconSource() {
 }
 
 std::string FaviconSource::GetSource() const {
-  return icon_types_ == chrome::FAVICON ?
-      chrome::kChromeUIFaviconHost : chrome::kChromeUITouchIconHost;
+  return icon_types_ == favicon_base::FAVICON ? chrome::kChromeUIFaviconHost
+                                              : chrome::kChromeUITouchIconHost;
 }
 
 void FaviconSource::StartDataRequest(
@@ -84,15 +84,13 @@ void FaviconSource::StartDataRequest(
     // IconType.
     favicon_service->GetRawFavicon(
         url,
-        chrome::FAVICON,
+        favicon_base::FAVICON,
         parsed.size_in_dip,
         parsed.scale_factor,
         base::Bind(&FaviconSource::OnFaviconDataAvailable,
                    base::Unretained(this),
-                   IconRequest(callback,
-                               url,
-                               parsed.size_in_dip,
-                               parsed.scale_factor)),
+                   IconRequest(
+                       callback, url, parsed.size_in_dip, parsed.scale_factor)),
         &cancelable_task_tracker_);
   } else {
     // Intercept requests for prepopulated pages.
@@ -158,7 +156,7 @@ bool FaviconSource::HandleMissingResource(const IconRequest& request) {
 
 void FaviconSource::OnFaviconDataAvailable(
     const IconRequest& request,
-    const chrome::FaviconBitmapResult& bitmap_result) {
+    const favicon_base::FaviconBitmapResult& bitmap_result) {
   if (bitmap_result.is_valid()) {
     // Forward the data along to the networking system.
     request.callback.Run(bitmap_result.bitmap_data.get());

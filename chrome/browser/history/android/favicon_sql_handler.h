@@ -26,7 +26,7 @@ class FaviconSQLHandler : public SQLHandler {
  private:
   // Deletes the given favicons if they are not used by any pages. Returns
   // true if all unused favicons are deleted.
-  bool DeleteUnusedFavicon(const std::vector<chrome::FaviconID>& ids);
+  bool DeleteUnusedFavicon(const std::vector<favicon_base::FaviconID>& ids);
 
   ThumbnailDatabase* thumbnail_db_;
 
