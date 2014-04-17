@@ -17,6 +17,7 @@ This directory contains the source code of ICU 52.1 for C/C++
    - packaging
    - source/layout
    - source/layoutex
+   - source/data/xml
 
   patches/configure.patch is applied to get runConfigureICU work in the 
   icudata generation step without layout and layoutex directory by removing the

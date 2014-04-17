@@ -20,7 +20,7 @@ LANG_SYNTHETIC_ALIAS =
 # All aliases (to not be included under 'installed'), but not including root.
 LANG_ALIAS_SOURCE = $(LANG_SYNTHETIC_ALIAS)\
  zh_CN.txt zh_TW.txt zh_HK.txt zh_SG.txt\
- no.txt in.txt iw.txt
+ no.txt in.txt iw.txt tl.txt sh.txt
 
 # Ordinary resources
 LANG_SOURCE =\
@@ -79,10 +79,12 @@ LANG_SOURCE =\
  af.txt\
  ak.txt\
  az.txt\
- bem.txt\
  be.txt\
+ bem.txt\
+ br.txt\
  bs.txt\
  cy.txt\
+ ee.txt\
  eo.txt\
  eu.txt\
  fo.txt\
@@ -96,12 +98,17 @@ LANG_SOURCE =\
  ka.txt\
  kk.txt\
  km.txt\
+ ky.txt\
  lg.txt\
+ ln.txt\
+ lo.txt\
  mfe.txt\
  mg.txt\
  mk.txt\
+ mn.txt\
  mo.txt\
  mt.txt\
+ my.txt\
  ne.txt\
  nn.txt\
  nyn.txt\
@@ -110,14 +117,15 @@ LANG_SOURCE =\
  pa.txt\
  ps.txt\
  rm.txt\
+ rn.txt\
  rw.txt\
  si.txt\
  sn.txt\
  so.txt\
  sq.txt\
+ sr_Latn.txt\
  tg.txt\
  ti.txt\
- tl.txt\
  to.txt\
  ur.txt\
  uz.txt\

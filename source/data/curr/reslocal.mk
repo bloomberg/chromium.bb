@@ -20,7 +20,7 @@ CURR_SYNTHETIC_ALIAS =
 # All aliases (to not be included under 'installed'), but not including root.
 CURR_ALIAS_SOURCE = $(CURR_SYNTHETIC_ALIAS)\
  zh_CN.txt zh_TW.txt zh_HK.txt zh_SG.txt\
- no.txt in.txt iw.txt
+ no.txt in.txt iw.txt tl.txt
 
 # Ordinary resources
 CURR_SOURCE =\
