@@ -20,7 +20,7 @@ class AppListServiceLinux : public AppListServiceImpl {
 
   static AppListServiceLinux* GetInstance();
   void set_can_close(bool can_close);
-  void OnAppListClosing();
+  void OnViewBeingDestroyed();
 
   // AppListService overrides:
   virtual void Init(Profile* initial_profile) OVERRIDE;

@@ -81,8 +81,8 @@ void AppListServiceLinux::set_can_close(bool can_close) {
   shower_->set_can_close(can_close);
 }
 
-void AppListServiceLinux::OnAppListClosing() {
-  shower_->CloseAppList();
+void AppListServiceLinux::OnViewBeingDestroyed() {
+  shower_->HandleViewBeingDestroyed();
 }
 
 void AppListServiceLinux::Init(Profile* initial_profile) {

@@ -26,7 +26,7 @@ bool AppListControllerDelegateWin::ForceNativeDesktop() const {
 }
 
 void AppListControllerDelegateWin::ViewClosing() {
-  service_->OnAppListClosing();
+  service_->OnViewBeingDestroyed();
 }
 
 gfx::ImageSkia AppListControllerDelegateWin::GetWindowIcon() {

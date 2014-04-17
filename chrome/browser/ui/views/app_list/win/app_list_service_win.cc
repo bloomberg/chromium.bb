@@ -9,8 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
-#include "base/lazy_instance.h"
-#include "base/memory/weak_ptr.h"
+#include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
@@ -18,7 +17,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "base/win/shortcut.h"
 #include "base/win/windows_version.h"
 #include "chrome/app/chrome_dll_resource.h"
@@ -31,10 +29,10 @@
 #include "chrome/browser/ui/app_list/app_list.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_factory.h"
-#include "chrome/browser/ui/app_list/app_list_service_impl.h"
 #include "chrome/browser/ui/app_list/app_list_shower.h"
 #include "chrome/browser/ui/app_list/app_list_view_delegate.h"
 #include "chrome/browser/ui/app_list/scoped_keep_alive.h"
+#include "chrome/browser/ui/ash/app_list/app_list_service_ash.h"
 #include "chrome/browser/ui/views/app_list/win/activation_tracker_win.h"
 #include "chrome/browser/ui/views/app_list/win/app_list_controller_delegate_win.h"
 #include "chrome/browser/ui/views/app_list/win/app_list_win.h"
@@ -43,58 +41,26 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/installer/launcher_support/chrome_launcher_support.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
-#include "chrome/installer/util/util_constants.h"
 #include "content/public/browser/browser_thread.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
-#include "grit/google_chrome_strings.h"
-#include "grit/theme_resources.h"
-#include "ui/app_list/app_list_model.h"
-#include "ui/app_list/pagination_model.h"
 #include "ui/app_list/views/app_list_view.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/win/shell.h"
-#include "ui/gfx/display.h"
-#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/screen.h"
-#include "ui/views/bubble/bubble_border.h"
-#include "ui/views/widget/widget.h"
-
-#if defined(USE_AURA)
-#include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
-#endif
-
-#if defined(USE_ASH)
-#include "chrome/browser/ui/app_list/app_list_service_ash.h"
-#include "chrome/browser/ui/host_desktop.h"
-#endif
-
-#if defined(GOOGLE_CHROME_BUILD)
-#include "chrome/installer/util/install_util.h"
-#endif
 
 // static
 AppListService* AppListService::Get(chrome::HostDesktopType desktop_type) {
-#if defined(USE_ASH)
   if (desktop_type == chrome::HOST_DESKTOP_TYPE_ASH)
-    return chrome::GetAppListServiceAsh();
-#endif
+    return AppListServiceAsh::GetInstance();
 
-  return chrome::GetAppListServiceWin();
+  return AppListServiceWin::GetInstance();
 }
 
 // static
 void AppListService::InitAll(Profile* initial_profile) {
-#if defined(USE_ASH)
-  chrome::GetAppListServiceAsh()->Init(initial_profile);
-#endif
-  chrome::GetAppListServiceWin()->Init(initial_profile);
+  AppListServiceAsh::GetInstance()->Init(initial_profile);
+  AppListServiceWin::GetInstance()->Init(initial_profile);
 }
 
 namespace {
@@ -333,8 +299,7 @@ AppListServiceWin::AppListServiceWin()
       shower_(new AppListShower(
           scoped_ptr<AppListFactory>(new AppListFactoryWin(this)),
           this)),
-      controller_delegate_(new AppListControllerDelegateWin(this)),
-      weak_factory_(this) {
+      controller_delegate_(new AppListControllerDelegateWin(this)) {
 }
 
 AppListServiceWin::~AppListServiceWin() {
@@ -376,8 +341,8 @@ void AppListServiceWin::DismissAppList() {
   shower_->DismissAppList();
 }
 
-void AppListServiceWin::OnAppListClosing() {
-  shower_->CloseAppList();
+void AppListServiceWin::OnViewBeingDestroyed() {
+  shower_->HandleViewBeingDestroyed();
 }
 
 void AppListServiceWin::OnLoadProfileForWarmup(Profile* initial_profile) {
@@ -411,29 +376,6 @@ void AppListServiceWin::Init(Profile* initial_profile) {
     EnableAppList(initial_profile, ENABLE_ON_REINSTALL);
     CreateShortcut();
   }
-
-  // Migrate from legacy app launcher if we are on a non-canary and non-chromium
-  // build.
-#if defined(GOOGLE_CHROME_BUILD)
-  if (!InstallUtil::IsChromeSxSProcess() &&
-      !chrome_launcher_support::GetAnyAppHostPath().empty()) {
-    chrome_launcher_support::InstallationState state =
-        chrome_launcher_support::GetAppLauncherInstallationState();
-    if (state == chrome_launcher_support::NOT_INSTALLED) {
-      // If app_host.exe is found but can't be located in the registry,
-      // skip the migration as this is likely a developer build.
-      return;
-    } else if (state == chrome_launcher_support::INSTALLED_AT_SYSTEM_LEVEL) {
-      chrome_launcher_support::UninstallLegacyAppLauncher(
-          chrome_launcher_support::SYSTEM_LEVEL_INSTALLATION);
-    } else if (state == chrome_launcher_support::INSTALLED_AT_USER_LEVEL) {
-      chrome_launcher_support::UninstallLegacyAppLauncher(
-          chrome_launcher_support::USER_LEVEL_INSTALLATION);
-    }
-    EnableAppList(initial_profile, ENABLE_ON_REINSTALL);
-    CreateShortcut();
-  }
-#endif
 
   ScheduleWarmup();
 
@@ -476,7 +418,7 @@ void AppListServiceWin::ScheduleWarmup() {
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&AppListServiceWin::LoadProfileForWarmup,
-                 weak_factory_.GetWeakPtr()),
+                 base::Unretained(this)),
       base::TimeDelta::FromSeconds(kInitWindowDelay));
 }
 
@@ -501,13 +443,5 @@ void AppListServiceWin::LoadProfileForWarmup() {
   profile_loader().LoadProfileInvalidatingOtherLoads(
       profile_path,
       base::Bind(&AppListServiceWin::OnLoadProfileForWarmup,
-                 weak_factory_.GetWeakPtr()));
+                 base::Unretained(this)));
 }
-
-namespace chrome {
-
-AppListService* GetAppListServiceWin() {
-  return AppListServiceWin::GetInstance();
-}
-
-}  // namespace chrome

@@ -6,9 +6,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
-#include "base/memory/weak_ptr.h"
-#include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/app_list/profile_store.h"
 #include "chrome/browser/ui/app_list/scoped_keep_alive.h"
 
 ProfileLoader::ProfileLoader(ProfileStore* profile_store)

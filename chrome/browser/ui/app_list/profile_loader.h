@@ -6,18 +6,15 @@
 #define CHROME_BROWSER_UI_APP_LIST_PROFILE_LOADER_H_
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/app_list/profile_store.h"
 
 namespace base {
 class FilePath;
 }
 
+class Profile;
 class ProfileLoaderUnittest;
-class ProfileManager;
+class ProfileStore;
 class ScopedKeepAlive;
 
 // This class loads profiles asynchronously and calls the provided callback once

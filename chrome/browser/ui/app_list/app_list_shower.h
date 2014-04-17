@@ -41,7 +41,7 @@ class AppListShower {
   void CreateViewForProfile(Profile* requested_profile);
 
   void DismissAppList();
-  void CloseAppList();
+  void HandleViewBeingDestroyed();
   bool IsAppListVisible() const;
   void WarmupForProfile(Profile* profile);
   bool HasView() const;

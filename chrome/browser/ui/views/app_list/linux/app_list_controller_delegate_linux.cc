@@ -15,7 +15,7 @@ AppListControllerDelegateLinux::AppListControllerDelegateLinux(
 AppListControllerDelegateLinux::~AppListControllerDelegateLinux() {}
 
 void AppListControllerDelegateLinux::ViewClosing() {
-  service_->OnAppListClosing();
+  service_->OnViewBeingDestroyed();
 }
 
 void AppListControllerDelegateLinux::OnShowExtensionPrompt() {

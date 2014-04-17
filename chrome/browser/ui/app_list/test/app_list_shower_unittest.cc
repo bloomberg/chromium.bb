@@ -134,14 +134,14 @@ TEST_F(AppListShowerUnitTest, HideAndShowReusesView) {
 
 TEST_F(AppListShowerUnitTest, CloseAndShowRecreatesView) {
   shower_->ShowForProfile(profile1_.get());
-  shower_->CloseAppList();
+  shower_->HandleViewBeingDestroyed();
   shower_->ShowForProfile(profile1_.get());
   EXPECT_EQ(2, factory_->views_created_);
 }
 
 TEST_F(AppListShowerUnitTest, CloseRemovesView) {
   shower_->ShowForProfile(profile1_.get());
-  shower_->CloseAppList();
+  shower_->HandleViewBeingDestroyed();
   EXPECT_FALSE(shower_->IsAppListVisible());
   EXPECT_FALSE(shower_->HasView());
   EXPECT_FALSE(HasKeepAlive());
@@ -151,7 +151,7 @@ TEST_F(AppListShowerUnitTest, CloseAppListClearsProfile) {
   EXPECT_EQ(NULL, shower_->profile());
   shower_->ShowForProfile(profile1_.get());
   EXPECT_EQ(profile1_.get(), shower_->profile());
-  shower_->CloseAppList();
+  shower_->HandleViewBeingDestroyed();
   EXPECT_EQ(NULL, shower_->profile());
 }
 

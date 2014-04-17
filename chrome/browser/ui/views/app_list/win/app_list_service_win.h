@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_VIEWS_APP_LIST_WIN_APP_LIST_SERVICE_WIN_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/singleton.h"
 #include "chrome/browser/ui/app_list/app_list_service_impl.h"
 
 namespace app_list{
@@ -15,6 +14,7 @@ class AppListModel;
 
 class AppListControllerDelegateWin;
 class AppListShower;
+template <typename T> struct DefaultSingletonTraits;
 
 class AppListServiceWin : public AppListServiceImpl {
  public:
@@ -23,7 +23,7 @@ class AppListServiceWin : public AppListServiceImpl {
 
   static AppListServiceWin* GetInstance();
   void set_can_close(bool can_close);
-  void OnAppListClosing();
+  void OnViewBeingDestroyed();
 
   // AppListService overrides:
   virtual void SetAppListNextPaintCallback(void (*callback)()) OVERRIDE;
@@ -60,15 +60,7 @@ class AppListServiceWin : public AppListServiceImpl {
 
   scoped_ptr<AppListControllerDelegateWin> controller_delegate_;
 
-  base::WeakPtrFactory<AppListServiceWin> weak_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(AppListServiceWin);
 };
-
-namespace chrome {
-
-AppListService* GetAppListServiceWin();
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_VIEWS_APP_LIST_WIN_APP_LIST_SERVICE_WIN_H_

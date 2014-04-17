@@ -60,7 +60,7 @@ void AppListShower::DismissAppList() {
   }
 }
 
-void AppListShower::CloseAppList() {
+void AppListShower::HandleViewBeingDestroyed() {
   app_list_.reset();
   profile_ = NULL;
   can_close_app_list_ = true;

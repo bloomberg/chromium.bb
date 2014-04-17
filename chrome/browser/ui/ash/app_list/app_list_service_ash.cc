@@ -2,49 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/app_list/app_list_service_ash.h"
+#include "chrome/browser/ui/ash/app_list/app_list_service_ash.h"
 
 #include "ash/shell.h"
 #include "base/files/file_path.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/app_list_service_impl.h"
 #include "chrome/browser/ui/ash/app_list/app_list_controller_ash.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 
-namespace {
-
-class AppListServiceAsh : public AppListServiceImpl {
- public:
-  static AppListServiceAsh* GetInstance() {
-    return Singleton<AppListServiceAsh,
-                     LeakySingletonTraits<AppListServiceAsh> >::get();
-  }
-
- private:
-  friend struct DefaultSingletonTraits<AppListServiceAsh>;
-
-  AppListServiceAsh();
-  virtual ~AppListServiceAsh();
-
-  // AppListService overrides:
-  virtual base::FilePath GetProfilePath(
-      const base::FilePath& user_data_dir) OVERRIDE;
-  virtual void CreateForProfile(Profile* default_profile) OVERRIDE;
-  virtual void ShowForProfile(Profile* default_profile) OVERRIDE;
-  virtual bool IsAppListVisible() const OVERRIDE;
-  virtual void DismissAppList() OVERRIDE;
-  virtual void EnableAppList(Profile* initial_profile,
-                             AppListEnableSource enable_source) OVERRIDE;
-  virtual gfx::NativeWindow GetAppListWindow() OVERRIDE;
-  virtual Profile* GetCurrentAppListProfile() OVERRIDE;
-  virtual AppListControllerDelegate* GetControllerDelegate() OVERRIDE;
-
-  scoped_ptr<AppListControllerDelegateAsh> controller_delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppListServiceAsh);
-};
+// static
+AppListServiceAsh* AppListServiceAsh::GetInstance() {
+  return Singleton<AppListServiceAsh,
+                   LeakySingletonTraits<AppListServiceAsh> >::get();
+}
 
 AppListServiceAsh::AppListServiceAsh()
     : controller_delegate_(new AppListControllerDelegateAsh()) {
@@ -94,22 +65,12 @@ AppListControllerDelegate* AppListServiceAsh::GetControllerDelegate() {
   return controller_delegate_.get();
 }
 
-}  // namespace
-
-namespace chrome {
-
-AppListService* GetAppListServiceAsh() {
-  return AppListServiceAsh::GetInstance();
-}
-
-}  // namespace chrome
-
 // Windows Ash additionally supports a native UI. See app_list_service_win.cc.
 #if !defined(OS_WIN)
 
 // static
 AppListService* AppListService::Get(chrome::HostDesktopType desktop_type) {
-  return chrome::GetAppListServiceAsh();
+  return AppListServiceAsh::GetInstance();
 }
 
 // static
