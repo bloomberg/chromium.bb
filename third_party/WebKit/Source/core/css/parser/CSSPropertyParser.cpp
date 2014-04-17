@@ -127,7 +127,6 @@ public:
     AnimationParseContext()
         : m_animationPropertyKeywordAllowed(true)
         , m_firstAnimationCommitted(false)
-        , m_hasSeenAnimationPropertyKeyword(false)
     {
     }
 
@@ -151,20 +150,9 @@ public:
         return m_animationPropertyKeywordAllowed;
     }
 
-    bool hasSeenAnimationPropertyKeyword() const
-    {
-        return m_hasSeenAnimationPropertyKeyword;
-    }
-
-    void sawAnimationPropertyKeyword()
-    {
-        m_hasSeenAnimationPropertyKeyword = true;
-    }
-
 private:
     bool m_animationPropertyKeywordAllowed;
     bool m_firstAnimationCommitted;
-    bool m_hasSeenAnimationPropertyKeyword;
 };
 
 CSSPropertyParser::CSSPropertyParser(OwnPtr<CSSParserValueList>& valueList,
@@ -3120,13 +3108,10 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAnimationProperty(Anima
     CSSPropertyID result = cssPropertyID(value->string);
     if (result && RuntimeCSSEnabled::isCSSPropertyEnabled(result))
         return cssValuePool().createIdentifierValue(result);
-    if (equalIgnoringCase(value, "all")) {
-        context.sawAnimationPropertyKeyword();
+    if (equalIgnoringCase(value, "all"))
         return cssValuePool().createIdentifierValue(CSSValueAll);
-    }
     if (equalIgnoringCase(value, "none")) {
         context.commitAnimationPropertyKeyword();
-        context.sawAnimationPropertyKeyword();
         return cssValuePool().createIdentifierValue(CSSValueNone);
     }
     return nullptr;
@@ -6162,7 +6147,6 @@ public:
         m_allowFinalCommit = true;
     }
 
-    void setAllowFinalCommit() { m_allowFinalCommit = true; }
     void setTop(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> val) { m_top = val; }
 
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> commitBorderImageQuad()
@@ -7279,19 +7263,6 @@ bool CSSPropertyParser::parseWillChange(bool important)
 
     addProperty(CSSPropertyWillChange, values.release(), important);
     return true;
-}
-
-bool CSSPropertyParser::isBlendMode(CSSValueID valueID)
-{
-    return (valueID >= CSSValueMultiply && valueID <= CSSValueLuminosity)
-        || valueID == CSSValueNormal
-        || valueID == CSSValueOverlay;
-}
-
-bool CSSPropertyParser::isCompositeOperator(CSSValueID valueID)
-{
-    // FIXME: Add CSSValueDestination and CSSValueLighter when the Compositing spec updates.
-    return valueID >= CSSValueClear && valueID <= CSSValueXor;
 }
 
 static void filterInfoForName(const CSSParserString& name, CSSFilterValue::FilterOperationType& filterType, unsigned& maximumArgumentCount)

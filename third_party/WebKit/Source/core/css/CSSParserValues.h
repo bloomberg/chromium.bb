@@ -77,8 +77,6 @@ struct CSSParserString {
         m_is8Bit = true;
     }
 
-    void trimTrailingWhitespace();
-
     bool is8Bit() const { return m_is8Bit; }
     const LChar* characters8() const { ASSERT(is8Bit()); return m_data.characters8; }
     const UChar* characters16() const { ASSERT(!is8Bit()); return m_data.characters16; }
@@ -120,8 +118,6 @@ struct CSSParserString {
 
     operator String() const { return is8Bit() ? String(m_data.characters8, m_length) : StringImpl::create8BitIfPossible(m_data.characters16, m_length); }
     operator AtomicString() const { return is8Bit() ? AtomicString(m_data.characters8, m_length) : AtomicString(m_data.characters16, m_length); }
-
-    AtomicString atomicSubstring(unsigned position, unsigned length) const;
 
     bool isFunction() const { return length() > 0 && (*this)[length() - 1] == '('; }
 
@@ -177,7 +173,6 @@ public:
 
     void addValue(const CSSParserValue&);
     void insertValueAt(unsigned, const CSSParserValue&);
-    void deleteValueAt(unsigned);
     void stealValues(CSSParserValueList&);
 
     unsigned size() const { return m_values.size(); }
