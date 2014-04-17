@@ -48,16 +48,14 @@ CloudPrintPrinterList::GetDetailsFor(const std::string& id) {
   return NULL;
 }
 
-void CloudPrintPrinterList::OnCloudPrintAPIFlowError(
-      CloudPrintBaseApiFlow* flow,
-      CloudPrintBaseApiFlow::Status status) {
+void CloudPrintPrinterList::OnGCDAPIFlowError(GCDBaseApiFlow* flow,
+                                              GCDBaseApiFlow::Status status) {
   delegate_->OnCloudPrintPrinterListUnavailable();
 }
 
-
-void CloudPrintPrinterList::OnCloudPrintAPIFlowComplete(
-      CloudPrintBaseApiFlow* flow,
-      const base::DictionaryValue* value) {
+void CloudPrintPrinterList::OnGCDAPIFlowComplete(
+    GCDBaseApiFlow* flow,
+    const base::DictionaryValue* value) {
   const base::ListValue* printers;
 
   if (!value->GetList(cloud_print::kPrinterListValue, &printers)) {
@@ -87,6 +85,8 @@ void CloudPrintPrinterList::OnCloudPrintAPIFlowComplete(
 
   delegate_->OnCloudPrintPrinterListReady();
 }
+
+bool CloudPrintPrinterList::GCDIsCloudPrint() { return true; }
 
 bool CloudPrintPrinterList::FillPrinterDetails(
     const base::DictionaryValue* printer_value,

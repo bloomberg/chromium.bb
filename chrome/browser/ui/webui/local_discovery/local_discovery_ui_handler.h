@@ -115,7 +115,7 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
 
   // For when the confirm operation on the cloudprint server has finished
   // executing.
-  void OnConfirmDone(CloudPrintBaseApiFlow::Status status);
+  void OnConfirmDone(GCDBaseApiFlow::Status status);
 
   // Signal to the web interface an error has ocurred while registering.
   void SendRegisterError();

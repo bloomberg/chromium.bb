@@ -9,11 +9,11 @@
 #include <string>
 #include <vector>
 
-#include "chrome/browser/local_discovery/cloud_print_base_api_flow.h"
+#include "chrome/browser/local_discovery/gcd_base_api_flow.h"
 
 namespace local_discovery {
 
-class CloudPrintPrinterList : public CloudPrintBaseApiFlow::Delegate {
+class CloudPrintPrinterList : public GCDBaseApiFlow::Delegate {
  public:
   class Delegate {
    public:
@@ -45,22 +45,21 @@ class CloudPrintPrinterList : public CloudPrintBaseApiFlow::Delegate {
 
   void Start();
 
-  virtual void OnCloudPrintAPIFlowError(
-      CloudPrintBaseApiFlow* flow,
-      CloudPrintBaseApiFlow::Status status) OVERRIDE;
+  virtual void OnGCDAPIFlowError(GCDBaseApiFlow* flow,
+                                 GCDBaseApiFlow::Status status) OVERRIDE;
 
-  virtual void OnCloudPrintAPIFlowComplete(
-      CloudPrintBaseApiFlow* flow,
-      const base::DictionaryValue* value) OVERRIDE;
+  virtual void OnGCDAPIFlowComplete(GCDBaseApiFlow* flow,
+                                    const base::DictionaryValue* value)
+      OVERRIDE;
+
+  virtual bool GCDIsCloudPrint() OVERRIDE;
 
   const PrinterDetails* GetDetailsFor(const std::string& id);
 
   iterator begin() { return printer_list_.begin(); }
   iterator end() { return printer_list_.end(); }
 
-  CloudPrintBaseApiFlow* GetOAuth2ApiFlowForTests() {
-    return &api_flow_;
-  }
+  GCDBaseApiFlow* GetOAuth2ApiFlowForTests() { return &api_flow_; }
 
  private:
   typedef std::map<std::string /*ID*/, int /* index in printer_list_ */>
@@ -74,7 +73,7 @@ class CloudPrintPrinterList : public CloudPrintBaseApiFlow::Delegate {
   PrinterIDMap printer_id_map_;
   PrinterList printer_list_;
   Delegate* delegate_;
-  CloudPrintBaseApiFlow api_flow_;
+  GCDBaseApiFlow api_flow_;
 };
 
 }  // namespace local_discovery

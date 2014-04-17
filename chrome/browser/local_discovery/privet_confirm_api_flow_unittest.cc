@@ -34,11 +34,16 @@ const char kFailedConfirmResponseBadJson[] = "["
     "   \"success\""
     "]";
 
+const char kGCDConfirmResponse[] =
+    "{"
+    "   \"kind\": \"clouddevices#registrationTicket\""
+    "}";
+
 const char kAccountId[] = "account_id";
 
 class MockableConfirmCallback {
  public:
-  MOCK_METHOD1(ConfirmCallback, void(CloudPrintBaseApiFlow::Status));
+  MOCK_METHOD1(ConfirmCallback, void(GCDBaseApiFlow::Status));
 
   PrivetConfirmApiCallFlow::ResponseCallback callback() {
     return base::Bind(&MockableConfirmCallback::ConfirmCallback,
@@ -76,17 +81,20 @@ TEST_F(PrivetConfirmApiFlowTest, SuccessOAuth2) {
   PrivetConfirmApiCallFlow confirm_flow(request_context_.get(),
                                         &token_service_,
                                         account_id_,
-                                        GURL("http://SoMeUrL.com"),
+                                        true,
+                                        GURL("http://SoMeUrL.com/cloudprint"),
+                                        "SomeCloudprintToken",
                                         callback_.callback());
-  CloudPrintBaseApiFlow* cloudprint_flow =
-      confirm_flow.GetBaseApiFlowForTests();
+  GCDBaseApiFlow* cloudprint_flow = confirm_flow.GetBaseApiFlowForTests();
 
   confirm_flow.Start();
 
   cloudprint_flow->OnGetTokenSuccess(NULL, "SomeToken", base::Time());
   net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
 
-  EXPECT_EQ(GURL("http://SoMeUrL.com"), fetcher->GetOriginalURL());
+  EXPECT_EQ(
+      GURL("http://SoMeUrL.com/cloudprint/confirm?token=SomeCloudprintToken"),
+      fetcher->GetOriginalURL());
 
   net::HttpRequestHeaders headers;
   fetcher->GetExtraRequestHeaders(&headers);
@@ -102,37 +110,7 @@ TEST_F(PrivetConfirmApiFlowTest, SuccessOAuth2) {
                                             net::OK));
   fetcher->set_response_code(200);
 
-  EXPECT_CALL(callback_, ConfirmCallback(CloudPrintBaseApiFlow::SUCCESS));
-
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
-}
-
-TEST_F(PrivetConfirmApiFlowTest, SuccessCookies) {
-  PrivetConfirmApiCallFlow confirm_flow(request_context_.get(),
-                                        1,
-                                        "SomeToken",
-                                        GURL("http://SoMeUrL.com?token=tkn"),
-                                        callback_.callback());
-
-  confirm_flow.Start();
-
-  net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
-
-  EXPECT_EQ(GURL("http://SoMeUrL.com?token=tkn&xsrf=SomeToken&user=1"),
-            fetcher->GetOriginalURL());
-
-  net::HttpRequestHeaders headers;
-  fetcher->GetExtraRequestHeaders(&headers);
-  std::string proxy;
-  EXPECT_TRUE(headers.GetHeader("X-Cloudprint-Proxy", &proxy));
-  EXPECT_EQ("Chrome", proxy);
-
-  fetcher->SetResponseString(kSampleConfirmResponse);
-  fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::SUCCESS,
-                                            net::OK));
-  fetcher->set_response_code(200);
-
-  EXPECT_CALL(callback_, ConfirmCallback(CloudPrintBaseApiFlow::SUCCESS));
+  EXPECT_CALL(callback_, ConfirmCallback(GCDBaseApiFlow::SUCCESS));
 
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 }
@@ -141,16 +119,16 @@ TEST_F(PrivetConfirmApiFlowTest, BadToken) {
   PrivetConfirmApiCallFlow confirm_flow(request_context_.get(),
                                         &token_service_,
                                         account_id_,
-                                        GURL("http://SoMeUrL.com"),
+                                        true,
+                                        GURL("http://SoMeUrL.com/cloudprint"),
+                                        "SomeCloudprintToken",
                                         callback_.callback());
 
   confirm_flow.Start();
 
-  CloudPrintBaseApiFlow* cloudprint_flow =
-      confirm_flow.GetBaseApiFlowForTests();
+  GCDBaseApiFlow* cloudprint_flow = confirm_flow.GetBaseApiFlowForTests();
 
-  EXPECT_CALL(callback_,
-              ConfirmCallback(CloudPrintBaseApiFlow::ERROR_TOKEN));
+  EXPECT_CALL(callback_, ConfirmCallback(GCDBaseApiFlow::ERROR_TOKEN));
   cloudprint_flow->OnGetTokenFailure(NULL, GoogleServiceAuthError(
       GoogleServiceAuthError::USER_NOT_SIGNED_UP));
 }
@@ -159,26 +137,28 @@ TEST_F(PrivetConfirmApiFlowTest, ServerFailure) {
   PrivetConfirmApiCallFlow confirm_flow(request_context_.get(),
                                         &token_service_,
                                         account_id_,
-                                        GURL("http://SoMeUrL.com"),
+                                        true,
+                                        GURL("http://SoMeUrL.com/cloudprint"),
+                                        "SomeCloudprintToken",
                                         callback_.callback());
 
   confirm_flow.Start();
 
-  CloudPrintBaseApiFlow* cloudprint_flow =
-      confirm_flow.GetBaseApiFlowForTests();
+  GCDBaseApiFlow* cloudprint_flow = confirm_flow.GetBaseApiFlowForTests();
 
   cloudprint_flow->OnGetTokenSuccess(NULL, "SomeToken", base::Time());
   net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
 
-  EXPECT_EQ(GURL("http://SoMeUrL.com"), fetcher->GetOriginalURL());
+  EXPECT_EQ(
+      GURL("http://SoMeUrL.com/cloudprint/confirm?token=SomeCloudprintToken"),
+      fetcher->GetOriginalURL());
 
   fetcher->SetResponseString(kFailedConfirmResponse);
   fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::SUCCESS,
                                             net::OK));
   fetcher->set_response_code(200);
 
-  EXPECT_CALL(callback_,
-              ConfirmCallback(CloudPrintBaseApiFlow::ERROR_FROM_SERVER));
+  EXPECT_CALL(callback_, ConfirmCallback(GCDBaseApiFlow::ERROR_FROM_SERVER));
 
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 }
@@ -187,18 +167,21 @@ TEST_F(PrivetConfirmApiFlowTest, BadJson) {
   PrivetConfirmApiCallFlow confirm_flow(request_context_.get(),
                                         &token_service_,
                                         account_id_,
-                                        GURL("http://SoMeUrL.com"),
+                                        true,
+                                        GURL("http://SoMeUrL.com/cloudprint"),
+                                        "SomeCloudprintToken",
                                         callback_.callback());
 
   confirm_flow.Start();
 
-  CloudPrintBaseApiFlow* cloudprint_flow =
-      confirm_flow.GetBaseApiFlowForTests();
+  GCDBaseApiFlow* cloudprint_flow = confirm_flow.GetBaseApiFlowForTests();
 
   cloudprint_flow->OnGetTokenSuccess(NULL, "SomeToken", base::Time());
   net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
 
-  EXPECT_EQ(GURL("http://SoMeUrL.com"), fetcher->GetOriginalURL());
+  EXPECT_EQ(
+      GURL("http://SoMeUrL.com/cloudprint/confirm?token=SomeCloudprintToken"),
+      fetcher->GetOriginalURL());
 
   fetcher->SetResponseString(kFailedConfirmResponseBadJson);
   fetcher->set_status(net::URLRequestStatus(
@@ -206,8 +189,48 @@ TEST_F(PrivetConfirmApiFlowTest, BadJson) {
       net::OK));
   fetcher->set_response_code(200);
 
-  EXPECT_CALL(callback_, ConfirmCallback
-              (CloudPrintBaseApiFlow::ERROR_MALFORMED_RESPONSE));
+  EXPECT_CALL(callback_,
+              ConfirmCallback(GCDBaseApiFlow::ERROR_MALFORMED_RESPONSE));
+
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+}
+
+TEST_F(PrivetConfirmApiFlowTest, SuccessGCD) {
+  PrivetConfirmApiCallFlow confirm_flow(request_context_.get(),
+                                        &token_service_,
+                                        account_id_,
+                                        false,
+                                        GURL("http://SoMeUrL.com/gcd"),
+                                        "SomeGcdToken",
+                                        callback_.callback());
+  GCDBaseApiFlow* gcd_flow = confirm_flow.GetBaseApiFlowForTests();
+
+  confirm_flow.Start();
+
+  gcd_flow->OnGetTokenSuccess(NULL, "SomeToken", base::Time());
+  net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
+
+  EXPECT_EQ(GURL(
+                "http://SoMeUrL.com/gcd/registrationTickets/"
+                "SomeGcdToken"),
+            fetcher->GetOriginalURL());
+
+  EXPECT_EQ("{ \"userEmail\": \"me\" }", fetcher->upload_data());
+
+  net::HttpRequestHeaders headers;
+  fetcher->GetExtraRequestHeaders(&headers);
+  std::string oauth_header;
+  std::string proxy;
+  EXPECT_TRUE(headers.GetHeader("Authorization", &oauth_header));
+  EXPECT_EQ("Bearer SomeToken", oauth_header);
+  EXPECT_FALSE(headers.GetHeader("X-Cloudprint-Proxy", &proxy));
+
+  fetcher->SetResponseString(kGCDConfirmResponse);
+  fetcher->set_status(
+      net::URLRequestStatus(net::URLRequestStatus::SUCCESS, net::OK));
+  fetcher->set_response_code(200);
+
+  EXPECT_CALL(callback_, ConfirmCallback(GCDBaseApiFlow::SUCCESS));
 
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 }

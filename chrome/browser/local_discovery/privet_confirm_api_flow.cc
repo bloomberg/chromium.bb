@@ -2,40 +2,43 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/values.h"
-#include "chrome/browser/local_discovery/cloud_print_base_api_flow.h"
 #include "chrome/browser/local_discovery/privet_confirm_api_flow.h"
+
+#include "base/strings/stringprintf.h"
+#include "base/values.h"
+#include "chrome/browser/local_discovery/gcd_base_api_flow.h"
+#include "chrome/browser/local_discovery/gcd_constants.h"
+#include "chrome/browser/local_discovery/privet_constants.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
 
 namespace local_discovery {
+
+namespace {
+const char kCloudPrintAutomatedClaimURLFormat[] = "%s/confirm?token=%s";
+const char kGCDAutomatedClaimURLFormat[] = "%s/registrationTickets/%s";
+const char kGCDAutomatedClaimUploadData[] = "{ \"userEmail\": \"me\" }";
+const char kGCDKindRegistrationTicket[] = "clouddevices#registrationTicket";
+}
 
 PrivetConfirmApiCallFlow::PrivetConfirmApiCallFlow(
     net::URLRequestContextGetter* request_context,
     OAuth2TokenService* token_service,
     const std::string& account_id,
-    const GURL& automated_claim_url,
+    bool is_cloud_print,
+    const GURL& base_url,
+    const std::string& token,
     const ResponseCallback& callback)
-    : flow_(request_context,
+    : is_cloud_print_(is_cloud_print),
+      flow_(request_context,
             token_service,
             account_id,
-            automated_claim_url,
+            GURL(base::StringPrintf((is_cloud_print)
+                                        ? kCloudPrintAutomatedClaimURLFormat
+                                        : kGCDAutomatedClaimURLFormat,
+                                    base_url.spec().c_str(),
+                                    token.c_str())),
             this),
-      callback_(callback) {
-}
-
-PrivetConfirmApiCallFlow::PrivetConfirmApiCallFlow(
-    net::URLRequestContextGetter* request_context,
-    int  user_index,
-    const std::string& xsrf_token,
-    const GURL& automated_claim_url,
-    const ResponseCallback& callback)
-    : flow_(request_context,
-            user_index,
-            xsrf_token,
-            automated_claim_url,
-            this),
-      callback_(callback) {
-}
+      callback_(callback) {}
 
 PrivetConfirmApiCallFlow::~PrivetConfirmApiCallFlow() {
 }
@@ -44,26 +47,49 @@ void PrivetConfirmApiCallFlow::Start() {
   flow_.Start();
 }
 
-void PrivetConfirmApiCallFlow::OnCloudPrintAPIFlowError(
-    CloudPrintBaseApiFlow* flow,
-    CloudPrintBaseApiFlow::Status status) {
+void PrivetConfirmApiCallFlow::OnGCDAPIFlowError(
+    GCDBaseApiFlow* flow,
+    GCDBaseApiFlow::Status status) {
   callback_.Run(status);
 }
 
-void PrivetConfirmApiCallFlow::OnCloudPrintAPIFlowComplete(
-    CloudPrintBaseApiFlow* flow,
+void PrivetConfirmApiCallFlow::OnGCDAPIFlowComplete(
+    GCDBaseApiFlow* flow,
     const base::DictionaryValue* value) {
   bool success = false;
 
-  if (!value->GetBoolean(cloud_print::kSuccessValue, &success)) {
-    callback_.Run(CloudPrintBaseApiFlow::ERROR_MALFORMED_RESPONSE);
-    return;
+  if (is_cloud_print_) {
+    if (!value->GetBoolean(cloud_print::kSuccessValue, &success)) {
+      callback_.Run(GCDBaseApiFlow::ERROR_MALFORMED_RESPONSE);
+      return;
+    }
+  } else {
+    std::string kind;
+    value->GetString(kGCDKeyKind, &kind);
+    success = (kind == kGCDKindRegistrationTicket);
   }
 
   if (success) {
-    callback_.Run(CloudPrintBaseApiFlow::SUCCESS);
+    callback_.Run(GCDBaseApiFlow::SUCCESS);
   } else {
-    callback_.Run(CloudPrintBaseApiFlow::ERROR_FROM_SERVER);
+    callback_.Run(GCDBaseApiFlow::ERROR_FROM_SERVER);
+  }
+}
+
+bool PrivetConfirmApiCallFlow::GCDIsCloudPrint() { return is_cloud_print_; }
+
+net::URLFetcher::RequestType PrivetConfirmApiCallFlow::GetRequestType() {
+  return (is_cloud_print_) ? net::URLFetcher::GET : net::URLFetcher::PATCH;
+}
+
+void PrivetConfirmApiCallFlow::GetUploadData(std::string* upload_type,
+                                             std::string* upload_data) {
+  if (is_cloud_print_) {
+    *upload_type = "";
+    *upload_data = "";
+  } else {
+    *upload_type = cloud_print::kContentTypeJSON;
+    *upload_data = kGCDAutomatedClaimUploadData;
   }
 }
 

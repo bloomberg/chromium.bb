@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/local_discovery/gcd_url.h"
 #include "chrome/browser/local_discovery/privet_confirm_api_flow.h"
 #include "chrome/browser/local_discovery/privet_constants.h"
 #include "chrome/browser/local_discovery/privet_device_lister_impl.h"
@@ -49,8 +50,7 @@
 namespace local_discovery {
 
 namespace {
-const char kPrivetAutomatedClaimURLFormat[] = "%s/confirm?token=%s";
-
+const char kDeviceTypePrinter[] = "printer";
 int g_num_visible = 0;
 }  // namespace
 
@@ -256,12 +256,9 @@ void LocalDiscoveryUIHandler::OnPrivetRegisterClaimToken(
     return;
   }
 
-  std::string base_url = GetCloudPrintBaseUrl();
-
-  GURL automated_claim_url(base::StringPrintf(
-      kPrivetAutomatedClaimURLFormat,
-      base_url.c_str(),
-      token.c_str()));
+  bool is_cloud_print =
+      device_descriptions_[current_http_client_->GetName()].type ==
+      kDeviceTypePrinter;
 
   Profile* profile = Profile::FromWebUI(web_ui());
 
@@ -280,11 +277,15 @@ void LocalDiscoveryUIHandler::OnPrivetRegisterClaimToken(
     return;
   }
 
+  GURL base_url = (is_cloud_print) ? GURL(GetCloudPrintBaseUrl()) : GetGcdURL();
+
   confirm_api_call_flow_.reset(new PrivetConfirmApiCallFlow(
       profile->GetRequestContext(),
       token_service,
       signin_manager->GetAuthenticatedAccountId(),
-      automated_claim_url,
+      is_cloud_print,
+      base_url,
+      token,
       base::Bind(&LocalDiscoveryUIHandler::OnConfirmDone,
                  base::Unretained(this))));
   confirm_api_call_flow_->Start();
@@ -338,9 +339,8 @@ void LocalDiscoveryUIHandler::OnPrivetRegisterDone(
   SendRegisterDone(found->first, found->second);
 }
 
-void LocalDiscoveryUIHandler::OnConfirmDone(
-    CloudPrintBaseApiFlow::Status status) {
-  if (status == CloudPrintBaseApiFlow::SUCCESS) {
+void LocalDiscoveryUIHandler::OnConfirmDone(GCDBaseApiFlow::Status status) {
+  if (status == GCDBaseApiFlow::SUCCESS) {
     confirm_api_call_flow_.reset();
     current_register_operation_->CompleteRegistration();
   } else {

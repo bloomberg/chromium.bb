@@ -93,8 +93,7 @@ TEST_F(CloudPrintPrinterListTest, SuccessOAuth2) {
       net::HTTP_OK,
       net::URLRequestStatus::SUCCESS);
 
-  CloudPrintBaseApiFlow* cloudprint_flow =
-      printer_list_->GetOAuth2ApiFlowForTests();
+  GCDBaseApiFlow* cloudprint_flow = printer_list_->GetOAuth2ApiFlowForTests();
 
   printer_list_->Start();
 

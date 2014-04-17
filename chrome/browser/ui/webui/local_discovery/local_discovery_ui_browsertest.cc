@@ -97,13 +97,14 @@ const uint8 kAnnouncePacket[] = {
   0x00, 0x01,        // CLASS is IN.
   0x00, 0x00,        // TTL (4 bytes) is 32768 seconds.
   0x01, 0x00,
-  0x00, 0x34,        // RDLENGTH is 69 bytes.
+  0x00, 0x41,        // RDLENGTH is 69 bytes.
   0x03, 'i', 'd', '=',
   0x10, 't', 'y', '=', 'S', 'a', 'm', 'p', 'l', 'e', ' ',
         'd', 'e', 'v', 'i', 'c', 'e',
   0x1e, 'n', 'o', 't', 'e', '=',
         'S', 'a', 'm', 'p', 'l', 'e', ' ', 'd', 'e', 'v', 'i', 'c', 'e', ' ',
         'd', 'e', 's', 'c', 'r', 'i', 'p', 't', 'i', 'o', 'n',
+  0x0c, 't', 'y', 'p', 'e', '=', 'p', 'r', 'i', 'n', 't', 'e', 'r',
 
   0x09, 'm', 'y', 'S', 'e', 'r', 'v', 'i', 'c', 'e',
   0xc0, 0x0c,

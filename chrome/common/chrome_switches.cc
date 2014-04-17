@@ -153,6 +153,9 @@ const char kCheckCloudPrintConnectorPolicy[] =
 // Comma-separated list of SSL cipher suites to disable.
 const char kCipherSuiteBlacklist[]          = "cipher-suite-blacklist";
 
+// The URL of the cloud devices service to use.
+const char kGCDServiceURL[] = "gcd-url";
+
 // Tells chrome to display the cloud print dialog and upload the specified file
 // for printing.
 const char kCloudPrintFile[]                = "cloud-print-file";
