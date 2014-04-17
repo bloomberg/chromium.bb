@@ -628,14 +628,10 @@ class CC_EXPORT LayerTreeHostImpl
   // - external_viewport_ is used DrawProperties, tile management and
   // glViewport/window projection matrix.
   // - external_clip_ specifies a top-level clip rect
-  // - external_stencil_test_enabled_ tells CC to respect existing stencil bits
-  // (When these are specified, device_viewport_size_ remains used only for
-  // scrollable size.)
   gfx::Transform external_transform_;
   gfx::Rect external_viewport_;
   gfx::Rect external_clip_;
   bool device_viewport_valid_for_tile_management_;
-  bool external_stencil_test_enabled_;
 
   gfx::Rect viewport_damage_rect_;
 
