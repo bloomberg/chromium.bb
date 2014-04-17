@@ -158,8 +158,8 @@ static int g2d_flush(struct g2d_context *ctx)
 
 	memset(&cmdlist, 0, sizeof(struct drm_exynos_g2d_set_cmdlist));
 
-	cmdlist.cmd = (unsigned int)&ctx->cmd[0];
-	cmdlist.cmd_buf = (unsigned int)&ctx->cmd_buf[0];
+	cmdlist.cmd = (uint64_t)(uintptr_t)&ctx->cmd[0];
+	cmdlist.cmd_buf = (uint64_t)(uintptr_t)&ctx->cmd_buf[0];
 	cmdlist.cmd_nr = ctx->cmd_nr;
 	cmdlist.cmd_buf_nr = ctx->cmd_buf_nr;
 	cmdlist.event_type = G2D_EVENT_NOT;
