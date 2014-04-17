@@ -40,7 +40,7 @@
 #include "core/css/CSSToLengthConversionData.h"
 #include "core/css/MediaList.h"
 #include "core/css/MediaQuery.h"
-#include "core/css/MediaValues.h"
+#include "core/css/MediaValuesDynamic.h"
 #include "core/css/resolver/MediaQueryResult.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/frame/FrameHost.h"
@@ -85,7 +85,7 @@ MediaQueryEvaluator::MediaQueryEvaluator(const char* acceptedMediaType, bool med
 MediaQueryEvaluator::MediaQueryEvaluator(const String& acceptedMediaType, LocalFrame* frame, RenderStyle* style)
     : m_mediaType(acceptedMediaType)
     , m_expectedResult(false) // Doesn't matter when we have m_frame and m_style.
-    , m_mediaValues(MediaValues::create(frame, style, MediaValues::DynamicMode))
+    , m_mediaValues(MediaValuesDynamic::create(frame, style))
 {
 }
 
@@ -331,28 +331,7 @@ static bool gridMediaFeatureEval(CSSValue* value, MediaFeaturePrefix op, const M
     return false;
 }
 
-static bool computeLengthWithoutStyle(CSSPrimitiveValue* primitiveValue, int defaultFontSize, int& result)
-{
-    // We're running in a background thread, so RenderStyle is not available.
-    // Nevertheless, we can evaluate length MQs with em, rem or px units.
-    // FIXME: Learn to support more units here, or teach CSSPrimitiveValue about MediaValues.
-    unsigned short type = primitiveValue->primitiveType();
-    int factor = 0;
-    if (type == CSSPrimitiveValue::CSS_EMS || type == CSSPrimitiveValue::CSS_REMS) {
-        if (defaultFontSize > 0)
-            factor = defaultFontSize;
-        else
-            return false;
-    } else if (type == CSSPrimitiveValue::CSS_PX) {
-        factor = 1;
-    } else {
-        return false;
-    }
-    result = roundForImpreciseConversion<int>(primitiveValue->getDoubleValue()*factor);
-    return true;
-}
-
-static bool computeLength(CSSValue* value, bool strict, RenderStyle* initialStyle, int defaultFontSize, int& result)
+static bool computeLength(CSSValue* value, const MediaValues& mediaValues, int& result)
 {
     if (!value->isPrimitiveValue())
         return false;
@@ -361,20 +340,11 @@ static bool computeLength(CSSValue* value, bool strict, RenderStyle* initialStyl
 
     if (primitiveValue->isNumber()) {
         result = primitiveValue->getIntValue();
-        return !strict || !result;
+        return !mediaValues.strictMode() || !result;
     }
 
-    if (primitiveValue->isLength()) {
-        if (initialStyle) {
-            // Relative (like EM) and root relative (like REM) units are always resolved against
-            // the initial values for media queries, hence the two initialStyle parameters.
-            // FIXME: We need to plumb viewport unit support down to here.
-            result = primitiveValue->computeLength<int>(CSSToLengthConversionData(initialStyle, initialStyle, 0, 1.0 /* zoom */, true /* computingFontSize */));
-        } else {
-            return computeLengthWithoutStyle(primitiveValue, defaultFontSize, result);
-        }
-        return true;
-    }
+    if (primitiveValue->isLength())
+        return mediaValues.computeLength(primitiveValue->getDoubleValue(), primitiveValue->primitiveType(), result);
 
     return false;
 }
@@ -383,8 +353,7 @@ static bool deviceHeightMediaFeatureEval(CSSValue* value, MediaFeaturePrefix op,
 {
     if (value) {
         int length;
-        return computeLength(value, mediaValues.strictMode(), mediaValues.style(), mediaValues.defaultFontSize(), length)
-            && compareValue(static_cast<int>(mediaValues.deviceHeight()), length, op);
+        return computeLength(value, mediaValues, length) && compareValue(static_cast<int>(mediaValues.deviceHeight()), length, op);
     }
     // ({,min-,max-}device-height)
     // assume if we have a device, assume non-zero
@@ -395,8 +364,7 @@ static bool deviceWidthMediaFeatureEval(CSSValue* value, MediaFeaturePrefix op, 
 {
     if (value) {
         int length;
-        return computeLength(value, mediaValues.strictMode(), mediaValues.style(), mediaValues.defaultFontSize(), length)
-            && compareValue(static_cast<int>(mediaValues.deviceWidth()), length, op);
+        return computeLength(value, mediaValues, length) && compareValue(static_cast<int>(mediaValues.deviceWidth()), length, op);
     }
     // ({,min-,max-}device-width)
     // assume if we have a device, assume non-zero
@@ -408,8 +376,7 @@ static bool heightMediaFeatureEval(CSSValue* value, MediaFeaturePrefix op, const
     int height = mediaValues.viewportHeight();
     if (value) {
         int length;
-        return computeLength(value, mediaValues.strictMode(), mediaValues.style(), mediaValues.defaultFontSize(), length)
-            && compareValue(height, length, op);
+        return computeLength(value, mediaValues, length) && compareValue(height, length, op);
     }
 
     return height;
@@ -420,8 +387,7 @@ static bool widthMediaFeatureEval(CSSValue* value, MediaFeaturePrefix op, const 
     int width = mediaValues.viewportWidth();
     if (value) {
         int length;
-        return computeLength(value, mediaValues.strictMode(), mediaValues.style(), mediaValues.defaultFontSize(), length)
-            && compareValue(width, length, op);
+        return computeLength(value, mediaValues, length) && compareValue(width, length, op);
     }
 
     return width;
@@ -666,7 +632,7 @@ static void createFunctionMap()
 
 bool MediaQueryEvaluator::eval(const MediaQueryExp* expr) const
 {
-    if (!m_mediaValues)
+    if (!m_mediaValues || !m_mediaValues->hasValues())
         return m_expectedResult;
 
     if (!gFunctionMap)

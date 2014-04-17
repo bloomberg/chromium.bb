@@ -215,6 +215,8 @@ PassOwnPtrWillBeRawPtr<MediaQueryExp> MediaQueryExp::createIfValid(const String&
 {
     ASSERT(!mediaFeature.isNull());
 
+    // FIXME - Creation of CSSValue here may not be thread safe.
+    // It should be replaced by a different way to pass the values to MediaQueryEvaluator.
     RefPtrWillBeRawPtr<CSSValue> cssValue = nullptr;
     bool isValid = false;
     String lowerMediaFeature = attemptStaticStringCreation(mediaFeature.lower());

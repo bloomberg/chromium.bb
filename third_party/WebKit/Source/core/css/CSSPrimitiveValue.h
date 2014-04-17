@@ -196,11 +196,12 @@ public:
             || m_primitiveUnitType == CSS_REMS
             || m_primitiveUnitType == CSS_CHS;
     }
-    bool isLength() const
+    static bool isViewportPercentageLength(unsigned short type) { return type >= CSS_VW && type <= CSS_VMAX; }
+    static bool isLength(unsigned short type)
     {
-        unsigned short type = primitiveType();
-        return (type >= CSS_EMS && type <= CSS_PC) || type == CSS_REMS || type == CSS_CHS || isViewportPercentageLength();
+        return (type >= CSS_EMS && type <= CSS_PC) || type == CSS_REMS || type == CSS_CHS || isViewportPercentageLength(type);
     }
+    bool isLength() const { return isLength(primitiveType()); }
     bool isNumber() const { return primitiveType() == CSS_NUMBER; }
     bool isPercentage() const { return primitiveType() == CSS_PERCENTAGE; }
     bool isPx() const { return primitiveType() == CSS_PX; }
@@ -221,7 +222,6 @@ public:
         unsigned short type = primitiveType();
         return type >= CSS_DPPX && type <= CSS_DPCM;
     }
-    bool isViewportPercentageLength() const { return m_primitiveUnitType >= CSS_VW && m_primitiveUnitType <= CSS_VMAX; }
     bool isFlex() const { return primitiveType() == CSS_FR; }
     bool isValueID() const { return m_primitiveUnitType == CSS_VALUE_ID; }
     bool colorIsDerivedFromElement() const;

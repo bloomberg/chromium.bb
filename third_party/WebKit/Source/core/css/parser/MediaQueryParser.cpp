@@ -38,7 +38,8 @@ const MediaQueryParser::State MediaQueryParser::SkipUntilBlockEnd = &MediaQueryP
 const MediaQueryParser::State MediaQueryParser::Done = &MediaQueryParser::done;
 
 MediaQueryParser::MediaQueryParser(ParserType parserType)
-    : m_querySet(MediaQuerySet::create())
+    : m_parserType(parserType)
+    , m_querySet(MediaQuerySet::create())
 {
     if (parserType == MediaQuerySetParser)
         m_state = &MediaQueryParser::readRestrictor;
@@ -86,7 +87,7 @@ void MediaQueryParser::readAnd(MediaQueryTokenType type, const MediaQueryToken& 
 {
     if (type == IdentToken && equalIgnoringCase(token.value(), "and")) {
         m_state = ReadFeatureStart;
-    } else if (type == CommaToken) {
+    } else if (type == CommaToken && m_parserType != MediaConditionParser) {
         m_querySet->addMediaQuery(m_mediaQueryData.takeMediaQuery());
         m_state = ReadRestrictor;
     } else if (type == EOFToken) {
@@ -191,7 +192,7 @@ PassRefPtrWillBeRawPtr<MediaQuerySet> MediaQueryParser::parseImpl(TokenIterator 
     for (; token != endToken; ++token)
         processToken(*token);
 
-    if (m_state != ReadAnd && m_state != ReadRestrictor && m_state != Done)
+    if (m_state != ReadAnd && m_state != ReadRestrictor && m_state != Done && (m_parserType != MediaConditionParser || m_state != ReadFeatureStart))
         m_querySet->addMediaQuery(MediaQuery::createNotAll());
     else if (m_mediaQueryData.currentMediaQueryChanged())
         m_querySet->addMediaQuery(m_mediaQueryData.takeMediaQuery());
