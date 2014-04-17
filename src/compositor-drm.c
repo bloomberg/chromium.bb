@@ -2783,9 +2783,15 @@ drm_compositor_create(struct wl_display *display,
 	wl_list_init(&ec->sprite_list);
 	create_sprites(ec);
 
+	if (udev_input_init(&ec->input,
+			    &ec->base, ec->udev, param->seat_id) < 0) {
+		weston_log("failed to create input devices\n");
+		goto err_sprite;
+	}
+
 	if (create_outputs(ec, param->connector, drm_device) < 0) {
 		weston_log("failed to create output for %s\n", path);
-		goto err_sprite;
+		goto err_udev_input;
 	}
 
 	/* A this point we have some idea of whether or not we have a working
@@ -2794,12 +2800,6 @@ drm_compositor_create(struct wl_display *display,
 		ec->base.capabilities |= WESTON_CAP_CURSOR_PLANE;
 
 	path = NULL;
-
-	if (udev_input_init(&ec->input,
-			    &ec->base, ec->udev, param->seat_id) < 0) {
-		weston_log("failed to create input devices\n");
-		goto err_sprite;
-	}
 
 	loop = wl_display_get_event_loop(ec->base.wl_display);
 	ec->drm_source =
@@ -2843,6 +2843,7 @@ err_udev_monitor:
 	udev_monitor_unref(ec->udev_monitor);
 err_drm_source:
 	wl_event_source_remove(ec->drm_source);
+err_udev_input:
 	udev_input_destroy(&ec->input);
 err_sprite:
 	ec->base.renderer->destroy(&ec->base);
