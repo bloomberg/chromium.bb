@@ -17,6 +17,8 @@
 #include "native_client/src/include/nacl_string.h"
 #include "third_party/jsoncpp/source/include/json/value.h"
 
+struct PP_PNaClOptions;
+
 namespace pp {
 class URLUtil_Dev;
 }  // namespace pp
@@ -24,7 +26,6 @@ class URLUtil_Dev;
 namespace plugin {
 
 class ErrorInfo;
-class PnaclOptions;
 
 class Manifest {
  public:
@@ -42,7 +43,7 @@ class Manifest {
   // manifest file.  Fills in |pnacl_options| if the program requires
   // PNaCl translation.
   virtual bool GetProgramURL(nacl::string* full_url,
-                             PnaclOptions* pnacl_options,
+                             PP_PNaClOptions* pnacl_options,
                              bool* uses_nonsfi_mode,
                              ErrorInfo* error_info) const = 0;
 
@@ -60,7 +61,7 @@ class Manifest {
   // If there was an error, details are reported via error_info.
   virtual bool ResolveKey(const nacl::string& key,
                           nacl::string* full_url,
-                          PnaclOptions* pnacl_options,
+                          PP_PNaClOptions* pnacl_options,
                           ErrorInfo* error_info) const = 0;
 
  protected:

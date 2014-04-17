@@ -50,7 +50,6 @@
 #include "ppapi/native_client/src/trusted/plugin/manifest.h"
 #include "ppapi/native_client/src/trusted/plugin/plugin.h"
 #include "ppapi/native_client/src/trusted/plugin/plugin_error.h"
-#include "ppapi/native_client/src/trusted/plugin/pnacl_options.h"
 #include "ppapi/native_client/src/trusted/plugin/pnacl_resources.h"
 #include "ppapi/native_client/src/trusted/plugin/sel_ldr_launcher_chrome.h"
 #include "ppapi/native_client/src/trusted/plugin/srpc_client.h"
@@ -216,7 +215,7 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
   NaClLog(4, "Entered OpenManifestEntry_MainThreadContinuation\n");
 
   std::string mapped_url;
-  PnaclOptions pnacl_options;
+  PP_PNaClOptions pnacl_options = {PP_FALSE, PP_FALSE, 2};
   ErrorInfo error_info;
   if (!manifest_->ResolveKey(p->url, &mapped_url,
                              &pnacl_options, &error_info)) {
@@ -236,9 +235,9 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
   NaClLog(4,
           "OpenManifestEntry_MainThreadContinuation: "
           "ResolveKey: %s -> %s (pnacl_translate(%d))\n",
-          p->url.c_str(), mapped_url.c_str(), pnacl_options.translate());
+          p->url.c_str(), mapped_url.c_str(), pnacl_options.translate);
 
-  if (pnacl_options.translate()) {
+  if (pnacl_options.translate) {
     // Requires PNaCl translation, but that's not supported.
     NaClLog(4,
             "OpenManifestEntry_MainThreadContinuation: "

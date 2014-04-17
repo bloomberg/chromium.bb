@@ -18,6 +18,8 @@
 #include "ppapi/native_client/src/trusted/plugin/manifest.h"
 #include "third_party/jsoncpp/source/include/json/value.h"
 
+struct PP_PNaClOptions;
+
 namespace pp {
 class URLUtil_Dev;
 }  // namespace pp
@@ -25,7 +27,6 @@ class URLUtil_Dev;
 namespace plugin {
 
 class ErrorInfo;
-class PnaclOptions;
 
 class JsonManifest : public Manifest {
  public:
@@ -49,7 +50,7 @@ class JsonManifest : public Manifest {
   // Gets the full program URL for the current sandbox ISA from the
   // manifest file.
   virtual bool GetProgramURL(nacl::string* full_url,
-                             PnaclOptions* pnacl_options,
+                             PP_PNaClOptions* pnacl_options,
                              bool* uses_nonsfi_mode,
                              ErrorInfo* error_info) const;
 
@@ -65,7 +66,7 @@ class JsonManifest : public Manifest {
   // If there was an error, details are reported via error_info.
   virtual bool ResolveKey(const nacl::string& key,
                           nacl::string* full_url,
-                          PnaclOptions* pnacl_options,
+                          PP_PNaClOptions* pnacl_options,
                           ErrorInfo* error_info) const;
 
  private:
@@ -84,13 +85,13 @@ class JsonManifest : public Manifest {
   bool GetKeyUrl(const Json::Value& dictionary,
                  const nacl::string& key,
                  nacl::string* full_url,
-                 PnaclOptions* pnacl_options,
+                 PP_PNaClOptions* pnacl_options,
                  ErrorInfo* error_info) const;
 
   bool GetURLFromISADictionary(const Json::Value& dictionary,
                                const nacl::string& parent_key,
                                nacl::string* url,
-                               PnaclOptions* pnacl_options,
+                               PP_PNaClOptions* pnacl_options,
                                bool* uses_nonsfi_mode,
                                ErrorInfo* error_info) const;
 

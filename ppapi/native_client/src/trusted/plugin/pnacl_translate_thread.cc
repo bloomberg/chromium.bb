@@ -15,6 +15,25 @@
 #include "ppapi/native_client/src/trusted/plugin/utility.h"
 
 namespace plugin {
+namespace {
+
+nacl::string GetOptCommandLine(int32_t opt_level, bool is_debug) {
+  nacl::string str;
+  nacl::stringstream ss;
+  ss << "-O" << opt_level;
+  str = ss.str();
+  str += '\x00';
+
+  // Debug info is only available in LLVM format pexes,
+  // not in PNaCl format pexes.
+  if (is_debug) {
+    str += "-bitcode-format=llvm";
+    str += '\x00';
+  }
+  return str;
+}
+
+}  // namespace
 
 PnaclTranslateThread::PnaclTranslateThread() : llc_subprocess_active_(false),
                                                ld_subprocess_active_(false),
@@ -40,7 +59,7 @@ void PnaclTranslateThread::RunTranslate(
     nacl::DescWrapper* invalid_desc_wrapper,
     ErrorInfo* error_info,
     PnaclResources* resources,
-    PnaclOptions* pnacl_options,
+    PP_PNaClOptions* pnacl_options,
     PnaclCoordinator* coordinator,
     Plugin* plugin) {
   PLUGIN_PRINTF(("PnaclStreamingTranslateThread::RunTranslate)\n"));
@@ -187,7 +206,8 @@ void PnaclTranslateThread::DoTranslate() {
   nacl::string split_arg = ss.str();
   std::copy(split_arg.begin(), split_arg.end(), std::back_inserter(split_args));
   split_args.push_back('\x00');
-  std::vector<char> options = pnacl_options_->GetOptCommandline();
+  nacl::string options = GetOptCommandLine(pnacl_options_->opt_level,
+                                           pnacl_options_->is_debug);
   std::copy(options.begin(), options.end(), std::back_inserter(split_args));
   init_success = llc_subprocess_->InvokeSrpcMethod(
       "StreamInitWithSplit",

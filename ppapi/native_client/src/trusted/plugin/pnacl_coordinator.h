@@ -21,9 +21,9 @@
 #include "ppapi/native_client/src/trusted/plugin/file_downloader.h"
 #include "ppapi/native_client/src/trusted/plugin/nacl_subprocess.h"
 #include "ppapi/native_client/src/trusted/plugin/plugin_error.h"
-#include "ppapi/native_client/src/trusted/plugin/pnacl_options.h"
 #include "ppapi/native_client/src/trusted/plugin/pnacl_resources.h"
 
+struct PP_PNaClOptions;
 
 namespace plugin {
 
@@ -86,7 +86,7 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
   static PnaclCoordinator* BitcodeToNative(
       Plugin* plugin,
       const nacl::string& pexe_url,
-      const PnaclOptions& pnacl_options,
+      const PP_PNaClOptions& pnacl_options,
       const pp::CompletionCallback& translate_notify_callback);
 
   // Call this to take ownership of the FD of the translated nexe after
@@ -144,7 +144,7 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
   // Therefore the constructor is private.
   PnaclCoordinator(Plugin* plugin,
                    const nacl::string& pexe_url,
-                   const PnaclOptions& pnacl_options,
+                   const PP_PNaClOptions& pnacl_options,
                    const pp::CompletionCallback& translate_notify_callback);
 
   // Invoke to issue a GET request for bitcode.
@@ -211,7 +211,7 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
   // The URL for the pexe file.
   nacl::string pexe_url_;
   // Options for translation.
-  PnaclOptions pnacl_options_;
+  PP_PNaClOptions pnacl_options_;
 
   // Object file, produced by the translator and consumed by the linker.
   std::vector<TempFile*> obj_files_;

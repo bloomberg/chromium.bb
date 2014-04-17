@@ -13,7 +13,6 @@
       'nacl_subprocess.cc',
       'plugin.cc',
       'pnacl_coordinator.cc',
-      'pnacl_options.cc',
       'pnacl_resources.cc',
       'pnacl_translate_thread.cc',
       'sel_ldr_launcher_chrome.cc',

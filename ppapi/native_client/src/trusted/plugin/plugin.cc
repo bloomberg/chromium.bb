@@ -796,7 +796,7 @@ void Plugin::ProcessNaClManifest(const nacl::string& manifest_json) {
   }
 
   nacl::string program_url;
-  PnaclOptions pnacl_options;
+  PP_PNaClOptions pnacl_options = {PP_FALSE, PP_FALSE, 2};
   bool uses_nonsfi_mode;
   if (manifest_->GetProgramURL(
           &program_url, &pnacl_options, &uses_nonsfi_mode, &error_info)) {
@@ -811,7 +811,7 @@ void Plugin::ProcessNaClManifest(const nacl::string& manifest_json) {
                                        PP_NACL_READY_STATE_LOADING);
     // Inform JavaScript that we found a nexe URL to load.
     EnqueueProgressEvent(PP_NACL_EVENT_PROGRESS);
-    if (pnacl_options.translate()) {
+    if (pnacl_options.translate) {
       pp::CompletionCallback translate_callback =
           callback_factory_.NewCallback(&Plugin::BitcodeDidTranslate);
       // Will always call the callback on success or failure.

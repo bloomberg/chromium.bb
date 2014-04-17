@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Tue Apr 15 09:24:03 2014. */
+/* From private/ppb_nacl_private.idl modified Tue Apr 15 14:43:25 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -147,6 +147,19 @@ typedef enum {
    */
   PP_NACL_READY_STATE_DONE = 4
 } PP_NaClReadyState;
+/**
+ * @}
+ */
+
+/**
+ * @addtogroup Structs
+ * @{
+ */
+struct PP_PNaClOptions {
+  PP_Bool translate;
+  PP_Bool is_debug;
+  int32_t opt_level;
+};
 /**
  * @}
  */

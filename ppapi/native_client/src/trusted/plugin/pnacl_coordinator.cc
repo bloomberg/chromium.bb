@@ -42,7 +42,7 @@ class PnaclManifest : public Manifest {
   virtual ~PnaclManifest() { }
 
   virtual bool GetProgramURL(nacl::string* full_url,
-                             PnaclOptions* pnacl_options,
+                             PP_PNaClOptions* pnacl_options,
                              bool* uses_nonsfi_mode,
                              ErrorInfo* error_info) const {
     // Does not contain program urls.
@@ -65,10 +65,10 @@ class PnaclManifest : public Manifest {
 
   virtual bool ResolveKey(const nacl::string& key,
                           nacl::string* full_url,
-                          PnaclOptions* pnacl_options,
+                          PP_PNaClOptions* pnacl_options,
                           ErrorInfo* error_info) const {
     // All of the component files are native (do not require pnacl translate).
-    pnacl_options->set_translate(false);
+    pnacl_options->translate = PP_FALSE;
     // We can only resolve keys in the files/ namespace.
     const nacl::string kFilesPrefix = "files/";
     size_t files_prefix_pos = key.find(kFilesPrefix);
@@ -181,7 +181,7 @@ CallbackSource<FileStreamData>::~CallbackSource() {}
 PnaclCoordinator* PnaclCoordinator::BitcodeToNative(
     Plugin* plugin,
     const nacl::string& pexe_url,
-    const PnaclOptions& pnacl_options,
+    const PP_PNaClOptions& pnacl_options,
     const pp::CompletionCallback& translate_notify_callback) {
   PLUGIN_PRINTF(("PnaclCoordinator::BitcodeToNative (plugin=%p, pexe=%s)\n",
                  static_cast<void*>(plugin), pexe_url.c_str()));
@@ -207,7 +207,7 @@ PnaclCoordinator* PnaclCoordinator::BitcodeToNative(
 PnaclCoordinator::PnaclCoordinator(
     Plugin* plugin,
     const nacl::string& pexe_url,
-    const PnaclOptions& pnacl_options,
+    const PP_PNaClOptions& pnacl_options,
     const pp::CompletionCallback& translate_notify_callback)
   : translate_finish_error_(PP_OK),
     plugin_(plugin),
@@ -325,7 +325,7 @@ void PnaclCoordinator::TranslateFinished(int32_t pp_error) {
   }
 
   // If there are no errors, report stats from this thread (the main thread).
-  HistogramOptLevel(plugin_->uma_interface(), pnacl_options_.opt_level());
+  HistogramOptLevel(plugin_->uma_interface(), pnacl_options_.opt_level);
   HistogramKBPerSec(plugin_->uma_interface(),
                     "NaCl.Perf.PNaClLoadTime.CompileKBPerSec",
                     pexe_size_ / 1024.0,
@@ -483,7 +483,7 @@ void PnaclCoordinator::ResourcesDidLoad(int32_t pp_error) {
           // TODO(dschuff): Get this value from the pnacl json file after it
           // rolls in from NaCl.
           1,
-          pnacl_options_.opt_level(),
+          pnacl_options_.opt_level,
           headers.c_str(),
           "", // No extra compile flags yet.
           &is_cache_hit_,

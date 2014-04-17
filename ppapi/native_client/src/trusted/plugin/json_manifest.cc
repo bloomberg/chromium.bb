@@ -15,10 +15,10 @@
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_check.h"
+#include "ppapi/c/private/ppb_nacl_private.h"
 #include "ppapi/cpp/dev/url_util_dev.h"
 #include "ppapi/cpp/var.h"
 #include "ppapi/native_client/src/trusted/plugin/plugin_error.h"
-#include "ppapi/native_client/src/trusted/plugin/pnacl_options.h"
 #include "ppapi/native_client/src/trusted/plugin/utility.h"
 #include "third_party/jsoncpp/source/include/json/reader.h"
 
@@ -381,15 +381,20 @@ bool IsValidISADictionary(const Json::Value& dictionary,
   return true;
 }
 
-void GrabUrlAndPnaclOptions(const Json::Value& url_spec,
+void GrabUrlAndPNaClOptions(const Json::Value& url_spec,
                             nacl::string* url,
-                            PnaclOptions* pnacl_options) {
+                            PP_PNaClOptions* pnacl_options) {
   *url = url_spec[kUrlKey].asString();
-  pnacl_options->set_translate(true);
+  pnacl_options->translate = PP_TRUE;
   if (url_spec.isMember(kOptLevelKey)) {
     int32_t opt_raw = url_spec[kOptLevelKey].asInt();
-    // set_opt_level will normalize the values.
-    pnacl_options->set_opt_level(opt_raw);
+    int32_t opt_level;
+    // Currently only allow 0 or 2, since that is what we test.
+    if (opt_raw <= 0)
+      opt_level = 0;
+    else
+      opt_level = 2;
+    pnacl_options->opt_level = opt_level;
   }
 }
 
@@ -503,7 +508,7 @@ bool JsonManifest::MatchesSchema(ErrorInfo* error_info) {
 bool JsonManifest::GetURLFromISADictionary(const Json::Value& dictionary,
                                            const nacl::string& parent_key,
                                            nacl::string* url,
-                                           PnaclOptions* pnacl_options,
+                                           PP_PNaClOptions* pnacl_options,
                                            bool* uses_nonsfi_mode,
                                            ErrorInfo* error_info) const {
   DCHECK(url != NULL && pnacl_options != NULL && error_info != NULL);
@@ -546,14 +551,14 @@ bool JsonManifest::GetURLFromISADictionary(const Json::Value& dictionary,
   // If found, mark that it is a debug URL. Otherwise, fall back to
   // checking for pnacl-translate URLs, etc. and don't mark it as a debug URL.
   if (pnacl_debug_ && isa_spec.isMember(kPnaclDebugKey)) {
-    GrabUrlAndPnaclOptions(isa_spec[kPnaclDebugKey], url, pnacl_options);
-    pnacl_options->set_debug(true);
+    GrabUrlAndPNaClOptions(isa_spec[kPnaclDebugKey], url, pnacl_options);
+    pnacl_options->is_debug = PP_TRUE;
   } else if (isa_spec.isMember(kPnaclTranslateKey)) {
-    GrabUrlAndPnaclOptions(isa_spec[kPnaclTranslateKey], url, pnacl_options);
+    GrabUrlAndPNaClOptions(isa_spec[kPnaclTranslateKey], url, pnacl_options);
   } else {
     // NaCl
     *url = isa_spec[kUrlKey].asString();
-    pnacl_options->set_translate(false);
+    pnacl_options->translate = PP_FALSE;
   }
 
   return true;
@@ -562,7 +567,7 @@ bool JsonManifest::GetURLFromISADictionary(const Json::Value& dictionary,
 bool JsonManifest::GetKeyUrl(const Json::Value& dictionary,
                              const nacl::string& key,
                              nacl::string* full_url,
-                             PnaclOptions* pnacl_options,
+                             PP_PNaClOptions* pnacl_options,
                              ErrorInfo* error_info) const {
   DCHECK(full_url != NULL && pnacl_options != NULL && error_info != NULL);
   if (!dictionary.isMember(key)) {
@@ -581,7 +586,7 @@ bool JsonManifest::GetKeyUrl(const Json::Value& dictionary,
 }
 
 bool JsonManifest::GetProgramURL(nacl::string* full_url,
-                                 PnaclOptions* pnacl_options,
+                                 PP_PNaClOptions* pnacl_options,
                                  bool* uses_nonsfi_mode,
                                  ErrorInfo* error_info) const {
   if (full_url == NULL || pnacl_options == NULL || error_info == NULL)
@@ -620,7 +625,7 @@ bool JsonManifest::GetFileKeys(std::set<nacl::string>* keys) const {
 
 bool JsonManifest::ResolveKey(const nacl::string& key,
                               nacl::string* full_url,
-                              PnaclOptions* pnacl_options,
+                              PP_PNaClOptions* pnacl_options,
                               ErrorInfo* error_info) const {
   NaClLog(3, "JsonManifest::ResolveKey(%s)\n", key.c_str());
   // key must be one of kProgramKey or kFileKey '/' file-section-key

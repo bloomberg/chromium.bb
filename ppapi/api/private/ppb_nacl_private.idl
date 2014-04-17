@@ -133,6 +133,12 @@ enum PP_NaClReadyState {
   PP_NACL_READY_STATE_DONE = 4
 };
 
+struct PP_PNaClOptions {
+  PP_Bool translate;
+  PP_Bool is_debug;
+  int32_t opt_level;
+};
+
 /* PPB_NaCl_Private */
 interface PPB_NaCl_Private {
   /* Launches NaCl's sel_ldr process.  Returns PP_EXTERNAL_PLUGIN_OK on success

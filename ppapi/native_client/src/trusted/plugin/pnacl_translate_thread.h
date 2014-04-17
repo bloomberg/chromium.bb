@@ -19,6 +19,8 @@
 #include "ppapi/native_client/src/trusted/plugin/plugin_error.h"
 #include "ppapi/native_client/src/trusted/plugin/service_runtime.h"
 
+struct PP_PNaClOptions;
+
 namespace nacl {
 class DescWrapper;
 }
@@ -30,7 +32,6 @@ class Manifest;
 class NaClSubprocess;
 class Plugin;
 class PnaclCoordinator;
-class PnaclOptions;
 class PnaclResources;
 class TempFile;
 
@@ -48,7 +49,7 @@ class PnaclTranslateThread {
                     nacl::DescWrapper* invalid_desc_wrapper,
                     ErrorInfo* error_info,
                     PnaclResources* resources,
-                    PnaclOptions* pnacl_options,
+                    PP_PNaClOptions* pnacl_options,
                     PnaclCoordinator* coordinator,
                     Plugin* plugin);
 
@@ -119,7 +120,7 @@ class PnaclTranslateThread {
   nacl::DescWrapper* invalid_desc_wrapper_;
   ErrorInfo* coordinator_error_info_;
   PnaclResources* resources_;
-  PnaclOptions* pnacl_options_;
+  PP_PNaClOptions* pnacl_options_;
   PnaclCoordinator* coordinator_;
   Plugin* plugin_;
  private:
