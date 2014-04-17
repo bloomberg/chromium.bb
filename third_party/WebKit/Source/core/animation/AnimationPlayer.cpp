@@ -156,6 +156,8 @@ void AnimationPlayer::setCurrentTime(double newCurrentTime)
 
 void AnimationPlayer::setStartTime(double newStartTime, bool isUpdateFromCompositor)
 {
+    ASSERT(!isUpdateFromCompositor || !hasStartTime());
+
     if (!std::isfinite(newStartTime))
         return;
     if (newStartTime == m_startTime)
@@ -165,10 +167,11 @@ void AnimationPlayer::setStartTime(double newStartTime, bool isUpdateFromComposi
     m_sortInfo.m_startTime = newStartTime;
     if (!isUpdateFromCompositor)
         cancelAnimationOnCompositor();
+    if (isUpdateFromCompositor || !m_held)
+        setOutdated();
     if (m_held)
         return;
     updateCurrentTimingState();
-    setOutdated();
     if (!isUpdateFromCompositor)
         schedulePendingAnimationOnCompositor();
 }
