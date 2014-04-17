@@ -33,6 +33,7 @@
 #include "ash/touch/touch_observer_hud.h"
 #include "ash/wm/always_on_top_controller.h"
 #include "ash/wm/dock/docked_window_layout_manager.h"
+#include "ash/wm/panels/attached_panel_window_targeter.h"
 #include "ash/wm/panels/panel_layout_manager.h"
 #include "ash/wm/panels/panel_window_event_handler.h"
 #include "ash/wm/root_window_layout_manager.h"
@@ -415,6 +416,9 @@ void RootWindowController::OnShelfCreated() {
     if (shelf_->shelf_layout_manager())
       docked_layout_manager_->AddObserver(shelf_->shelf_layout_manager());
   }
+
+  // Notify shell observers that the shelf has been created.
+  Shell::GetInstance()->OnShelfCreatedForRootWindow(GetRootWindow());
 }
 
 void RootWindowController::UpdateAfterLoginStatusChange(
@@ -785,6 +789,20 @@ void RootWindowController::InitLayoutManagers() {
   panel_container->SetLayoutManager(panel_layout_manager_);
   panel_container_handler_.reset(new PanelWindowEventHandler);
   panel_container->AddPreTargetHandler(panel_container_handler_.get());
+
+  // Install an AttachedPanelWindowTargeter on the panel container to make it
+  // easier to correctly target shelf buttons with touch.
+  gfx::Insets mouse_extend(-kResizeOutsideBoundsSize,
+                           -kResizeOutsideBoundsSize,
+                           -kResizeOutsideBoundsSize,
+                           -kResizeOutsideBoundsSize);
+  gfx::Insets touch_extend = mouse_extend.Scale(
+      kResizeOutsideBoundsScaleForTouch);
+  panel_container->SetEventTargeter(scoped_ptr<ui::EventTargeter>(
+      new AttachedPanelWindowTargeter(panel_container,
+                                      mouse_extend,
+                                      touch_extend,
+                                      panel_layout_manager_)));
 }
 
 void RootWindowController::InitTouchHuds() {
@@ -894,7 +912,6 @@ void RootWindowController::CreateContainersInRootWindow(
       "PanelContainer",
       non_lock_screen_containers);
   SetUsesScreenCoordinates(panel_container);
-  SetUsesEasyResizeTargeter(panel_container);
 
   aura::Window* shelf_bubble_container =
       CreateContainer(kShellWindowId_ShelfBubbleContainer,

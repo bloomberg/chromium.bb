@@ -307,6 +307,9 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // Initializes |shelf_|.  Does nothing if it's already initialized.
   void CreateShelf();
 
+  // Called when the shelf is created for |root_window|.
+  void OnShelfCreatedForRootWindow(aura::Window* root_window);
+
   // Creates a virtual keyboard. Deletes the old virtual keyboard if it already
   // exists.
   void CreateKeyboard();

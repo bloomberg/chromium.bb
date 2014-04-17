@@ -606,6 +606,8 @@
         'wm/overview/window_selector_panels.h',
         'wm/overview/window_selector_window.cc',
         'wm/overview/window_selector_window.h',
+        'wm/panels/attached_panel_window_targeter.cc',
+        'wm/panels/attached_panel_window_targeter.h',
         'wm/panels/panel_frame_view.cc',
         'wm/panels/panel_frame_view.h',
         'wm/panels/panel_layout_manager.cc',

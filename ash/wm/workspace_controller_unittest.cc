@@ -1461,8 +1461,8 @@ TEST_F(WorkspaceControllerTest, WindowEdgeHitTest) {
   }
 }
 
-// Verifies events targeting just outside the window edges for panels.
-TEST_F(WorkspaceControllerTest, WindowEdgeHitTestPanel) {
+// Verifies mouse event targeting just outside the window edges for panels.
+TEST_F(WorkspaceControllerTest, WindowEdgeMouseHitTestPanel) {
   aura::test::TestWindowDelegate delegate;
   scoped_ptr<Window> window(CreateTestPanel(&delegate,
                                            gfx::Rect(20, 10, 100, 50)));
@@ -1491,10 +1491,38 @@ TEST_F(WorkspaceControllerTest, WindowEdgeHitTestPanel) {
       EXPECT_EQ(window.get(), target);
     else
       EXPECT_NE(window.get(), target);
+  }
+}
 
+// Verifies touch event targeting just outside the window edges for panels.
+// The shelf is aligned to the bottom by default, and so touches just below
+// the bottom edge of the panel should not target the panel itself because
+// an AttachedPanelWindowTargeter is installed on the panel container.
+TEST_F(WorkspaceControllerTest, WindowEdgeTouchHitTestPanel) {
+  aura::test::TestWindowDelegate delegate;
+  scoped_ptr<Window> window(CreateTestPanel(&delegate,
+                                            gfx::Rect(20, 10, 100, 50)));
+  ui::EventTarget* root = window->GetRootWindow();
+  ui::EventTargeter* targeter = root->GetEventTargeter();
+  const gfx::Rect bounds = window->bounds();
+  const int kNumPoints = 5;
+  struct {
+    const char* direction;
+    gfx::Point location;
+    bool is_target_hit;
+  } points[kNumPoints] = {
+    { "left", gfx::Point(bounds.x() - 2, bounds.y() + 10), true },
+    { "top", gfx::Point(bounds.x() + 10, bounds.y() - 2), true },
+    { "right", gfx::Point(bounds.right() + 2, bounds.y() + 10), true },
+    { "bottom", gfx::Point(bounds.x() + 10, bounds.bottom() + 2), false },
+    { "outside", gfx::Point(bounds.x() + 10, bounds.y() - 31), false },
+  };
+  for (int i = 0; i < kNumPoints; ++i) {
+    SCOPED_TRACE(points[i].direction);
+    const gfx::Point& location = points[i].location;
     ui::TouchEvent touch(ui::ET_TOUCH_PRESSED, location, 0,
                          ui::EventTimeForNow());
-    target = targeter->FindTargetForEvent(root, &touch);
+    ui::EventTarget* target = targeter->FindTargetForEvent(root, &touch);
     if (points[i].is_target_hit)
       EXPECT_EQ(window.get(), target);
     else

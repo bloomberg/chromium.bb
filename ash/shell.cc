@@ -407,6 +407,12 @@ void Shell::CreateShelf() {
     (*iter)->shelf()->CreateShelf();
 }
 
+void Shell::OnShelfCreatedForRootWindow(aura::Window* root_window) {
+  FOR_EACH_OBSERVER(ShellObserver,
+                    observers_,
+                    OnShelfCreatedForRootWindow(root_window));
+}
+
 void Shell::CreateKeyboard() {
   // TODO(bshe): Primary root window controller may not be the controller to
   // attach virtual keyboard. See http://crbug.com/303429
