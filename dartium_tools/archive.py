@@ -159,7 +159,8 @@ def Archive(srcpath, mode, dartium_target, contentshell_target,
       releaseDir = os.path.join(srcpath, 'out', mode)
     else:
       releaseDir = os.path.join(srcpath, 'build', mode)
-    extra_files = []
+    # issue(16760) - we _need_ to fix our parsing of the FILES.cfg
+    extra_files = [file for file in os.listdir(releaseDir) if file.endswith('manifest')]
   else:
     raise Exception('Unsupported platform')
   os.chdir(releaseDir)
