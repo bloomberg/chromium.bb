@@ -251,6 +251,7 @@
           '../chrome/chrome.gyp:chrome',
           '../chrome/chrome.gyp:chromedriver',
           '../content/content_shell_and_tests.gyp:content_shell',
+          'blink_tests',
       ],
     },
     {
