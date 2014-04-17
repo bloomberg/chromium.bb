@@ -298,9 +298,6 @@
       # Disable image loader component extension by default.
       'image_loader_extension%': 0,
 
-      # Python version.
-      'python_ver%': '2.6',
-
       # Set NEON compilation flags.
       'arm_neon%': 1,
 
@@ -973,7 +970,6 @@
     'win_z7%': '<(win_z7)',
     'dcheck_always_on%': '<(dcheck_always_on)',
     'tracing_like_official_build%': '<(tracing_like_official_build)',
-    'python_ver%': '<(python_ver)',
     'arm_version%': '<(arm_version)',
     'arm_neon%': '<(arm_neon)',
     'arm_neon_optional%': '<(arm_neon_optional)',
