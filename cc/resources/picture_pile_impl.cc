@@ -98,7 +98,7 @@ void PicturePileImpl::RasterToBitmap(
     float contents_scale,
     RenderingStatsInstrumentation* rendering_stats_instrumentation) {
   if (clear_canvas_with_debug_color_) {
-    // Any non-painted areas will be left in this color.
+    // Any non-painted areas in the content bounds will be left in this color.
     canvas->clear(DebugColors::NonPaintedFillColor());
   }
 
@@ -119,6 +119,20 @@ void PicturePileImpl::RasterToBitmap(
     gfx::Rect deflated_content_tiling_rect = content_tiling_rect;
     deflated_content_tiling_rect.Inset(0, 0, 1, 1);
     if (!deflated_content_tiling_rect.Contains(canvas_rect)) {
+      if (clear_canvas_with_debug_color_) {
+        // Any non-painted areas outside of the content bounds are left in
+        // this color.  If this is seen then it means that cc neglected to
+        // rerasterize a tile that used to intersect with the content rect
+        // after the content bounds grew.
+        canvas->save();
+        canvas->translate(-canvas_rect.x(), -canvas_rect.y());
+        canvas->clipRect(gfx::RectToSkRect(content_tiling_rect),
+                         SkRegion::kDifference_Op);
+        canvas->drawColor(DebugColors::MissingResizeInvalidations(),
+                          SkXfermode::kSrc_Mode);
+        canvas->restore();
+      }
+
       // Drawing at most 2 x 2 x (canvas width + canvas height) texels is 2-3X
       // faster than clearing, so special case this.
       canvas->save();

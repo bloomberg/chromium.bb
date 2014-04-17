@@ -117,6 +117,7 @@ class DebugColors {
 
   static SkColor NonPaintedFillColor();
   static SkColor MissingPictureFillColor();
+  static SkColor MissingResizeInvalidations();
   static SkColor PictureBorderColor();
 
   static SkColor HUDBackgroundColor();
