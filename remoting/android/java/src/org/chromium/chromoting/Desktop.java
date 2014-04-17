@@ -19,7 +19,7 @@ import org.chromium.chromoting.jni.JniInterface;
 /**
  * A simple screen that does nothing except display a DesktopView and notify it of rotations.
  */
-public class Desktop extends Activity {
+public class Desktop extends Activity implements View.OnSystemUiVisibilityChangeListener {
     /** Web page to be displayed in the Help screen when launched from this activity. */
     private static final String HELP_URL =
             "http://support.google.com/chrome/?p=mobile_crd_connecthost";
@@ -41,6 +41,9 @@ public class Desktop extends Activity {
 
         // Ensure the button is initially hidden.
         showActionBar();
+
+        View decorView = getWindow().getDecorView();
+        decorView.setOnSystemUiVisibilityChangeListener(this);
     }
 
     /** Called when the activity is finally finished. */
@@ -64,14 +67,33 @@ public class Desktop extends Activity {
         return super.onCreateOptionsMenu(menu);
     }
 
+    /** Called whenever the visibility of the system status bar or navigation bar changes. */
+    @Override
+    public void onSystemUiVisibilityChange(int visibility) {
+        // Ensure the action-bar's visibility matches that of the system controls. This
+        // minimizes the number of states the UI can be in, to keep things simple for the user.
+        if ((visibility & View.SYSTEM_UI_FLAG_LOW_PROFILE) != 0) {
+            hideActionBar();
+        } else {
+            showActionBar();
+        }
+    }
+
     public void showActionBar() {
         mOverlayButton.setVisibility(View.INVISIBLE);
         getActionBar().show();
+
+        View decorView = getWindow().getDecorView();
+        decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
     }
 
     public void hideActionBar() {
         mOverlayButton.setVisibility(View.VISIBLE);
         getActionBar().hide();
+
+        View decorView = getWindow().getDecorView();
+        decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE
+                | View.SYSTEM_UI_FLAG_FULLSCREEN);
     }
 
     /** The overlay button's onClick handler. */
