@@ -26,7 +26,11 @@ except ImportError:
   from ply import lex
   from ply import yacc
 
+import mojo_ast as ast
 from mojo_lexer import Lexer
+
+
+_MAX_ORDINAL_VALUE = 0xffffffff
 
 
 def _ListFromConcat(*items):
@@ -45,18 +49,18 @@ def _ListFromConcat(*items):
 
 class ParseError(Exception):
 
-  def __init__(self, filename, lineno=None, snippet=None, bad_char=None,
-               eof=False):
+  def __init__(self, filename, message, lineno=None, snippet=None):
     self.filename = filename
+    self.message = message
     self.lineno = lineno
     self.snippet = snippet
-    self.bad_char = bad_char
-    self.eof = eof
 
   def __str__(self):
-    return "%s: Error: Unexpected end of file" % self.filename if self.eof \
-        else "%s:%d: Error: Unexpected %r:\n%s" % (
-            self.filename, self.lineno, self.bad_char, self.snippet)
+    if self.lineno is None:
+      return "%s: Error: %s" % (self.filename, self.message)
+
+    s = "%s:%d: Error: %s" % (self.filename, self.lineno, self.message)
+    return s if self.snippet is None else s + "\n" + self.snippet
 
   def __repr__(self):
     return str(self)
@@ -213,7 +217,14 @@ class Parser(object):
     """ordinal : ORDINAL
                | """
     if len(p) > 1:
-      p[0] = p[1]
+      value = int(p[1][1:])
+      if value > _MAX_ORDINAL_VALUE:
+        raise ParseError(self.filename, "Ordinal value %d too large:" % value,
+                         lineno=p.lineno(1),
+                         snippet=self._GetSnippet(p.lineno(1)))
+      p[0] = ast.Ordinal(value, filename=self.filename, lineno=p.lineno(1))
+    else:
+      p[0] = ast.Ordinal(None)
 
   def p_enum(self, p):
     """enum : ENUM NAME LBRACE enum_fields RBRACE SEMI"""
@@ -334,11 +345,13 @@ class Parser(object):
     if e is None:
       # Unexpected EOF.
       # TODO(vtl): Can we figure out what's missing?
-      raise ParseError(self.filename, eof=True)
+      raise ParseError(self.filename, "Unexpected end of file")
 
-    snippet = self.source.split('\n')[e.lineno - 1]
-    raise ParseError(self.filename, lineno=e.lineno, snippet=snippet,
-                     bad_char=e.value)
+    raise ParseError(self.filename, "Unexpected %r:" % e.value, lineno=e.lineno,
+                     snippet=self._GetSnippet(e.lineno))
+
+  def _GetSnippet(self, lineno):
+    return self.source.split('\n')[lineno - 1]
 
 
 def Parse(source, filename):

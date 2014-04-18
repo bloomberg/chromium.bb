@@ -9,6 +9,8 @@
 import os
 import sys
 
+import mojo_ast as ast
+
 
 def MapTree(func, tree, name):
   if not tree:
@@ -39,11 +41,6 @@ def MapKind(kind):
     return map_to_kind[kind]
   return 'x:' + kind
 
-def MapOrdinal(ordinal):
-  if ordinal == None:
-    return None
-  return int(ordinal[1:])  # Strip leading '@'
-
 def GetAttribute(attributes, name):
   out = None
   if attributes:
@@ -53,20 +50,23 @@ def GetAttribute(attributes, name):
   return out
 
 def MapField(tree):
+  assert type(tree[3]) is ast.Ordinal
   return {'name': tree[2],
           'kind': MapKind(tree[1]),
-          'ordinal': MapOrdinal(tree[3]),
+          'ordinal': tree[3].value,
           'default': tree[4]}
 
 def MapParameter(tree):
+  assert type(tree[3]) is ast.Ordinal
   return {'name': tree[2],
           'kind': MapKind(tree[1]),
-          'ordinal': MapOrdinal(tree[3])}
+          'ordinal': tree[3].value}
 
 def MapMethod(tree):
+  assert type(tree[3]) is ast.Ordinal
   method = {'name': tree[1],
             'parameters': MapTree(MapParameter, tree[2], 'PARAM'),
-            'ordinal': MapOrdinal(tree[3])}
+            'ordinal': tree[3].value}
   if tree[4] != None:
     method['response_parameters'] = MapTree(MapParameter, tree[4], 'PARAM')
   return method

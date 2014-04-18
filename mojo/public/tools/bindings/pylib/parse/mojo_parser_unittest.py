@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import mojo_ast as ast
 import mojo_lexer
 import mojo_parser
 import unittest
@@ -57,8 +58,8 @@ struct MyStruct {
   [('STRUCT',
     'MyStruct',
     None,
-    [('FIELD', 'int32', 'a', None, None),
-     ('FIELD', 'double', 'b', None, None)])])]
+    [('FIELD', 'int32', 'a', ast.Ordinal(None), None),
+     ('FIELD', 'double', 'b', ast.Ordinal(None), None)])])]
     self.assertEquals(mojo_parser.Parse(source, "my_file.mojom"), expected)
 
   def testSimpleStructWithoutModule(self):
@@ -75,8 +76,8 @@ struct MyStruct {
   [('STRUCT',
     'MyStruct',
     None,
-    [('FIELD', 'int32', 'a', None, None),
-     ('FIELD', 'double', 'b', None, None)])])]
+    [('FIELD', 'int32', 'a', ast.Ordinal(None), None),
+     ('FIELD', 'double', 'b', ast.Ordinal(None), None)])])]
     self.assertEquals(mojo_parser.Parse(source, "my_file.mojom"), expected)
 
   def testMissingModuleName(self):
@@ -204,14 +205,14 @@ struct MyStruct {
   [('STRUCT',
     'MyStruct',
     None,
-    [('FIELD', 'int32', 'a0', '@0', None),
-     ('FIELD', 'int32', 'a1', '@1', None),
-     ('FIELD', 'int32', 'a2', '@2', None),
-     ('FIELD', 'int32', 'a9', '@9', None),
-     ('FIELD', 'int32', 'a10', '@10', None),
-     ('FIELD', 'int32', 'a11', '@11', None),
-     ('FIELD', 'int32', 'a29', '@29', None),
-     ('FIELD', 'int32', 'a1234567890', '@1234567890', None)])])]
+    [('FIELD', 'int32', 'a0', ast.Ordinal(0), None),
+     ('FIELD', 'int32', 'a1', ast.Ordinal(1), None),
+     ('FIELD', 'int32', 'a2', ast.Ordinal(2), None),
+     ('FIELD', 'int32', 'a9', ast.Ordinal(9), None),
+     ('FIELD', 'int32', 'a10', ast.Ordinal(10), None),
+     ('FIELD', 'int32', 'a11', ast.Ordinal(11), None),
+     ('FIELD', 'int32', 'a29', ast.Ordinal(29), None),
+     ('FIELD', 'int32', 'a1234567890', ast.Ordinal(1234567890), None)])])]
     self.assertEquals(mojo_parser.Parse(source, "my_file.mojom"), expected)
 
   def testInvalidOrdinals(self):
@@ -272,6 +273,18 @@ module my_module { struct MyStruct { int32 a_hex @0X0; }; }
             r"Octal and hexadecimal ordinal values not allowed$"):
       mojo_parser.Parse(source5, "my_file.mojom")
 
+    source6 = """\
+struct MyStruct {
+  int32 a_too_big @999999999999;
+};
+"""
+    with self.assertRaisesRegexp(
+        mojo_parser.ParseError,
+        r"^my_file\.mojom:2: Error: "
+            r"Ordinal value 999999999999 too large:\n"
+            r"  int32 a_too_big @999999999999;$"):
+      mojo_parser.Parse(source6, "my_file.mojom")
+
   def testNestedNamespace(self):
     """Tests nested namespaces work."""
     source = """\
@@ -289,7 +302,7 @@ struct MyStruct {
   [('STRUCT',
     'MyStruct',
     None,
-    [('FIELD', 'int32', 'a', None, None)])])]
+    [('FIELD', 'int32', 'a', ast.Ordinal(None), None)])])]
     self.assertEquals(mojo_parser.Parse(source, "my_file.mojom"), expected)
 
 
