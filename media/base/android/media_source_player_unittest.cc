@@ -41,7 +41,8 @@ class MockMediaPlayerManager : public MediaPlayerManager {
       : message_loop_(message_loop),
         playback_completed_(false),
         num_resources_requested_(0),
-        num_resources_released_(0) {}
+        num_resources_released_(0),
+        timestamp_updated_(false) {}
   virtual ~MockMediaPlayerManager() {}
 
   // MediaPlayerManager implementation.
@@ -49,7 +50,9 @@ class MockMediaPlayerManager : public MediaPlayerManager {
     return NULL;
   }
   virtual void OnTimeUpdate(int player_id,
-                            base::TimeDelta current_time) OVERRIDE {}
+                            base::TimeDelta current_time) OVERRIDE {
+    timestamp_updated_ = true;
+  }
   virtual void OnMediaMetadataChanged(
       int player_id, base::TimeDelta duration, int width, int height,
       bool success) OVERRIDE {}
@@ -104,6 +107,14 @@ class MockMediaPlayerManager : public MediaPlayerManager {
     num_resources_released_++;
   }
 
+  bool timestamp_updated() const {
+    return timestamp_updated_;
+  }
+
+  void ResetTimestampUpdated() {
+    timestamp_updated_ = false;
+  }
+
  private:
   base::MessageLoop* message_loop_;
   bool playback_completed_;
@@ -111,6 +122,8 @@ class MockMediaPlayerManager : public MediaPlayerManager {
   int num_resources_requested_;
   // The number of released resources.
   int num_resources_released_;
+  // Playback timestamp was updated.
+  bool timestamp_updated_;
 
   DISALLOW_COPY_AND_ASSIGN(MockMediaPlayerManager);
 };
@@ -337,6 +350,30 @@ class MediaSourcePlayerTest : public testing::Test {
               GetMediaDecoderJob(true) != NULL);
     EXPECT_EQ(expect_player_requests_data && has_video,
               GetMediaDecoderJob(false) != NULL);
+  }
+
+  // Keeps decoding audio data until the decoder starts to output samples.
+  // Gives up if no audio output after decoding 10 frames.
+  void DecodeAudioDataUntilOutputBecomesAvailable() {
+    EXPECT_TRUE(player_.IsPlaying());
+    base::TimeDelta current_time = player_.GetCurrentTime();
+    base::TimeDelta start_timestamp = current_time;
+    for (int i = 0; i < 10; ++i) {
+      manager_.ResetTimestampUpdated();
+      player_.OnDemuxerDataAvailable(
+          CreateReadFromDemuxerAckForAudio(i > 3 ? 3 : i));
+      WaitForAudioDecodeDone();
+      base::TimeDelta new_current_time = player_.GetCurrentTime();
+      EXPECT_LE(current_time.InMilliseconds(),
+                new_current_time.InMilliseconds());
+      current_time = new_current_time;
+      if (manager_.timestamp_updated()) {
+        EXPECT_LT(start_timestamp.InMillisecondsF(),
+                  new_current_time.InMillisecondsF());
+        return;
+      }
+    }
+    EXPECT_TRUE(false);
   }
 
   AccessUnit CreateAccessUnitWithData(bool is_audio, int audio_packet_id) {
@@ -1077,24 +1114,14 @@ TEST_F(MediaSourcePlayerTest, StartTimeTicksResetAfterDecoderUnderruns) {
   // Test start time ticks will reset after decoder job underruns.
   StartAudioDecoderJob(true);
 
-  // For the first couple chunks, the decoder job may return
-  // DECODE_FORMAT_CHANGED status instead of DECODE_SUCCEEDED status. Decode
-  // more frames to guarantee that DECODE_SUCCEEDED will be returned.
-  for (int i = 0; i < 4; ++i) {
-    player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForAudio(i));
-    EXPECT_TRUE(GetMediaDecoderJob(true)->is_decoding());
-    // Decode data until decoder started requesting new data again.
-    WaitForAudioDecodeDone();
-  }
+  DecodeAudioDataUntilOutputBecomesAvailable();
 
   // The decoder job should finish and a new request will be sent.
-  EXPECT_EQ(5, demuxer_->num_data_requests());
-  EXPECT_TRUE(GetMediaDecoderJob(true)->is_decoding());
   base::TimeTicks previous = StartTimeTicks();
+  player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForAudio(3));
 
   // Let the decoder starve.
   TriggerPlayerStarvation();
-  player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForAudio(3));
   WaitForAudioDecodeDone();
 
   // Verify the start time ticks is cleared at this point because the
@@ -1472,12 +1499,7 @@ TEST_F(MediaSourcePlayerTest, SeekingAfterCompletingPrerollRestartsPreroll) {
   EXPECT_TRUE(IsPrerolling(true));
 
   // Complete the initial preroll by feeding data to the decoder.
-  for (int i = 0; i < 4; ++i) {
-    player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForAudio(i));
-    EXPECT_TRUE(GetMediaDecoderJob(true)->is_decoding());
-    WaitForAudioDecodeDone();
-  }
-  EXPECT_LT(0.0, player_.GetCurrentTime().InMillisecondsF());
+  DecodeAudioDataUntilOutputBecomesAvailable();
   EXPECT_FALSE(IsPrerolling(true));
 
   SeekPlayerWithAbort(true, base::TimeDelta::FromMilliseconds(500));
@@ -2062,6 +2084,41 @@ TEST_F(MediaSourcePlayerTest, SurfaceChangeClearedEvenIfMediaCryptoAbsent) {
   CreateNextTextureAndSetVideoSurface();
   EXPECT_FALSE(IsPendingSurfaceChange());
   EXPECT_FALSE(GetMediaDecoderJob(false));
+}
+
+TEST_F(MediaSourcePlayerTest, CurrentTimeUpdatedWhileDecoderStarved) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Test that current time is updated while decoder is starved.
+  StartAudioDecoderJob(true);
+  DecodeAudioDataUntilOutputBecomesAvailable();
+
+  // Trigger starvation while the decoder is decoding.
+  player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForAudio(3));
+  manager_.ResetTimestampUpdated();
+  TriggerPlayerStarvation();
+  WaitForAudioDecodeDone();
+
+  // Current time should be updated.
+  EXPECT_TRUE(manager_.timestamp_updated());
+}
+
+TEST_F(MediaSourcePlayerTest, CurrentTimeKeepsIncreasingAfterConfigChange) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Test current time keep on increasing after audio config change.
+  // Test that current time is updated while decoder is starved.
+  StartAudioDecoderJob(true);
+
+  DecodeAudioDataUntilOutputBecomesAvailable();
+
+  DemuxerData data = CreateReadFromDemuxerAckWithConfigChanged(true, 0);
+  player_.OnDemuxerDataAvailable(data);
+  WaitForAudioDecodeDone();
+
+  // Simulate arrival of new configs.
+  player_.OnDemuxerConfigsAvailable(CreateAudioDemuxerConfigs(kCodecVorbis));
+  DecodeAudioDataUntilOutputBecomesAvailable();
 }
 
 }  // namespace media

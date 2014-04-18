@@ -80,7 +80,7 @@ void MediaDecoderJob::OnDataReceived(const DemuxerData& data) {
 
   if (stop_decode_pending_) {
     DCHECK(is_decoding());
-    OnDecodeCompleted(MEDIA_CODEC_STOPPED, kNoTimestamp(), 0);
+    OnDecodeCompleted(MEDIA_CODEC_STOPPED, kNoTimestamp(), kNoTimestamp());
     return;
   }
 
@@ -275,8 +275,7 @@ void MediaDecoderJob::DecodeCurrentAccessUnit(
                               base::Bind(&MediaDecoderJob::OnDecodeCompleted,
                                          base::Unretained(this),
                                          MEDIA_CODEC_DEQUEUE_INPUT_AGAIN_LATER,
-                                         kNoTimestamp(),
-                                         0));
+                                         kNoTimestamp(), kNoTimestamp()));
     return;
   }
 
@@ -305,7 +304,7 @@ void MediaDecoderJob::DecodeInternal(
     output_eos_encountered_ = false;
     MediaCodecStatus reset_status = media_codec_bridge_->Reset();
     if (MEDIA_CODEC_OK != reset_status) {
-      callback.Run(reset_status, kNoTimestamp(), 0);
+      callback.Run(reset_status, kNoTimestamp(), kNoTimestamp());
       return;
     }
   }
@@ -318,7 +317,7 @@ void MediaDecoderJob::DecodeInternal(
   // For aborted access unit, just skip it and inform the player.
   if (unit.status == DemuxerStream::kAborted) {
     // TODO(qinmin): use a new enum instead of MEDIA_CODEC_STOPPED.
-    callback.Run(MEDIA_CODEC_STOPPED, kNoTimestamp(), 0);
+    callback.Run(MEDIA_CODEC_STOPPED, kNoTimestamp(), kNoTimestamp());
     return;
   }
 
@@ -326,7 +325,8 @@ void MediaDecoderJob::DecodeInternal(
     if (unit.end_of_stream || unit.data.empty()) {
       input_eos_encountered_ = true;
       output_eos_encountered_ = true;
-      callback.Run(MEDIA_CODEC_OUTPUT_END_OF_STREAM, kNoTimestamp(), 0);
+      callback.Run(MEDIA_CODEC_OUTPUT_END_OF_STREAM, kNoTimestamp(),
+                   kNoTimestamp());
       return;
     }
 
@@ -339,7 +339,7 @@ void MediaDecoderJob::DecodeInternal(
     if (input_status == MEDIA_CODEC_INPUT_END_OF_STREAM) {
       input_eos_encountered_ = true;
     } else if (input_status != MEDIA_CODEC_OK) {
-      callback.Run(input_status, kNoTimestamp(), 0);
+      callback.Run(input_status, kNoTimestamp(), kNoTimestamp());
       return;
     }
   }
@@ -366,7 +366,7 @@ void MediaDecoderJob::DecodeInternal(
         !media_codec_bridge_->GetOutputBuffers()) {
       status = MEDIA_CODEC_ERROR;
     }
-    callback.Run(status, kNoTimestamp(), 0);
+    callback.Run(status, kNoTimestamp(), kNoTimestamp());
     return;
   }
 
@@ -393,7 +393,8 @@ void MediaDecoderJob::DecodeInternal(
                    buffer_index,
                    size,
                    render_output,
-                   base::Bind(callback, status, presentation_timestamp)),
+                   presentation_timestamp,
+                   base::Bind(callback, status)),
         time_to_render);
     return;
   }
@@ -412,13 +413,14 @@ void MediaDecoderJob::DecodeInternal(
     presentation_timestamp = kNoTimestamp();
   }
   ReleaseOutputCompletionCallback completion_callback = base::Bind(
-      callback, status, presentation_timestamp);
-  ReleaseOutputBuffer(buffer_index, size, render_output, completion_callback);
+      callback, status);
+  ReleaseOutputBuffer(buffer_index, size, render_output, presentation_timestamp,
+                      completion_callback);
 }
 
 void MediaDecoderJob::OnDecodeCompleted(
-    MediaCodecStatus status, base::TimeDelta presentation_timestamp,
-    size_t audio_output_bytes) {
+    MediaCodecStatus status, base::TimeDelta current_presentation_timestamp,
+    base::TimeDelta max_presentation_timestamp) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
   if (destroy_pending_) {
@@ -430,7 +432,7 @@ void MediaDecoderJob::OnDecodeCompleted(
   DCHECK(!decode_cb_.is_null());
 
   // If output was queued for rendering, then we have completed prerolling.
-  if (presentation_timestamp != kNoTimestamp())
+  if (current_presentation_timestamp != kNoTimestamp())
     prerolling_ = false;
 
   switch (status) {
@@ -453,8 +455,8 @@ void MediaDecoderJob::OnDecodeCompleted(
   };
 
   stop_decode_pending_ = false;
-  base::ResetAndReturn(&decode_cb_).Run(status, presentation_timestamp,
-                                        audio_output_bytes);
+  base::ResetAndReturn(&decode_cb_).Run(
+      status, current_presentation_timestamp, max_presentation_timestamp);
 }
 
 const AccessUnit& MediaDecoderJob::CurrentAccessUnit() const {
