@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import datetime
+import os
+
 from telemetry.page import page_measurement
 from metrics import network
 
@@ -12,6 +15,27 @@ class ChromeProxyMetricException(page_measurement.MeasurementFailure):
 
 CHROME_PROXY_VIA_HEADER = 'Chrome-Compression-Proxy'
 CHROME_PROXY_VIA_HEADER_DEPRECATED = '1.1 Chrome Compression Proxy'
+
+ALL_PROXIES = ['compress.googlezip.net:80', 'https://proxy.googlezip.net:443']
+
+# The default Chrome Proxy bypass time is a range from one to five mintues.
+# See ProxyList::UpdateRetryInfoOnFallback in net/proxy/proxy_list.cc.
+DEFAULT_BYPASS_MIN_SECONDS = 60
+DEFAULT_BYPASS_MAX_SECONDS = 5 * 60
+
+def GetProxyInfoFromNetworkInternals(tab):
+  tab.Navigate('chrome://net-internals#proxy')
+  with open(os.path.join(os.path.dirname(__file__), 'chrome_proxy.js')) as f:
+    js = f.read()
+    tab.ExecuteJavaScript(js)
+  tab.WaitForJavaScriptExpression('performance.timing.loadEventStart', 300)
+  info = tab.EvaluateJavaScript('window.__getChromeProxyInfo()')
+  return info
+
+
+def ProxyRetryTimeInRange(retry_time, low, high, grace_seconds=30):
+  return (retry_time >= low and
+          (retry_time < high + datetime.timedelta(seconds=grace_seconds)))
 
 
 class ChromeProxyResponse(network.HTTPResponse):
@@ -100,6 +124,39 @@ class ChromeProxyMetric(network.NetworkMetric):
                 r.url, r.GetHeader('Via'), r.GetHeader('Referer'), r.status))
     results.Add('checked_via_header', 'count', via_count)
 
+  @staticmethod
+  def VerifyBadProxies(
+      badProxies, expected_proxies,
+      retry_seconds_low = DEFAULT_BYPASS_MIN_SECONDS,
+      retry_seconds_high = DEFAULT_BYPASS_MAX_SECONDS):
+    """."""
+    if not badProxies or (len(badProxies) != len(expected_proxies)):
+      return False
+
+    # Check all expected proxies.
+    proxies = [p['proxy'] for p in badProxies]
+    expected_proxies.sort()
+    proxies.sort()
+    if not expected_proxies == proxies:
+      raise ChromeProxyMetricException, (
+          'Bad proxies: got %s want %s' % (
+              str(badProxies), str(expected_proxies)))
+
+    # Check retry time
+    for p in badProxies:
+      retry_time_low = (datetime.datetime.now() +
+                        datetime.timedelta(seconds=retry_seconds_low))
+      retry_time_high = (datetime.datetime.now() +
+                        datetime.timedelta(seconds=retry_seconds_high))
+      got_retry_time = datetime.datetime.fromtimestamp(int(p['retry'])/1000)
+      if not ProxyRetryTimeInRange(
+          got_retry_time, retry_time_low, retry_time_high):
+        raise ChromeProxyMetricException, (
+            'Bad proxy %s retry time (%s) should be within range (%s-%s).' % (
+                p['proxy'], str(got_retry_time), str(retry_time_low),
+                str(retry_time_high)))
+    return True
+
   def AddResultsForBypass(self, tab, results):
     bypass_count = 0
     for resp in self.IterResponses(tab):
@@ -109,6 +166,14 @@ class ChromeProxyMetric(network.NetworkMetric):
             '%s: Should not have Via header (%s) (refer=%s, status=%d)' % (
                 r.url, r.GetHeader('Via'), r.GetHeader('Referer'), r.status))
       bypass_count += 1
+
+    if tab:
+      info = GetProxyInfoFromNetworkInternals(tab)
+      if not info['enabled']:
+        raise ChromeProxyMetricException, (
+            "Chrome proxy should be enabled. proxy info: %s" % info)
+      self.VerifyBadProxies(info['badProxies'], ALL_PROXIES)
+
     results.Add('bypass', 'count', bypass_count)
 
   def AddResultsForSafebrowsing(self, tab, results):
