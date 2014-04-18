@@ -15,6 +15,7 @@
 # image. The image will normally need to be rebuilt every time chrome's build
 # dependancies are changed.
 
+import hashlib
 import platform
 import optparse
 import os
@@ -27,11 +28,25 @@ import sys
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 URL_PREFIX = 'https://commondatastorage.googleapis.com'
 URL_PATH = 'chrome-linux-sysroot/toolchain'
-REVISION = 259398
+REVISION = 264817
 TARBALL_AMD64 = 'debian_wheezy_amd64_sysroot.tgz'
 TARBALL_I386 = 'debian_wheezy_i386_sysroot.tgz'
+TARBALL_AMD64_SHA1SUM = '74b7231e12aaf45c5c5489d9aebb56bd6abb3653'
+TARBALL_I386_SHA1SUM = 'fe3d284926839683b00641bc66c9023f872ea4b4'
 SYSROOT_DIR_AMD64 = 'debian_wheezy_amd64-sysroot'
 SYSROOT_DIR_I386 = 'debian_wheezy_i386-sysroot'
+
+
+def get_sha1(filename):
+  sha1 = hashlib.sha1()
+  with open(filename, 'rb') as f:
+    while True:
+      # Read in 1mb chunks, so it doesn't all have to be loaded into memory.
+      chunk = f.read(1024*1024)
+      if not chunk:
+        break
+      sha1.update(chunk)
+  return sha1.hexdigest()
 
 
 def main(args):
@@ -81,9 +96,11 @@ def main(args):
   if options.arch == 'amd64':
     sysroot = os.path.join(linux_dir, SYSROOT_DIR_AMD64)
     tarball_filename = TARBALL_AMD64
+    tarball_sha1sum = TARBALL_AMD64_SHA1SUM
   else:
     sysroot = os.path.join(linux_dir, SYSROOT_DIR_I386)
     tarball_filename = TARBALL_I386
+    tarball_sha1sum = TARBALL_I386_SHA1SUM
   url = '%s/%s/%s/%s' % (URL_PREFIX, URL_PATH, REVISION, tarball_filename)
 
   stamp = os.path.join(sysroot, '.stamp')
@@ -100,6 +117,11 @@ def main(args):
   os.mkdir(sysroot)
   tarball = os.path.join(sysroot, tarball_filename)
   subprocess.check_call(['curl', '-L', url, '-o', tarball])
+  sha1sum = get_sha1(tarball)
+  if sha1sum != tarball_sha1sum:
+    print 'Tarball sha1sum is wrong.'
+    print 'Expected %s, actual: %s' % (tarball_sha1sum, sha1sum)
+    return 1
   subprocess.check_call(['tar', 'xf', tarball, '-C', sysroot])
   os.remove(tarball)
 
