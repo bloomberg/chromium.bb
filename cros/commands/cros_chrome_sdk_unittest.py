@@ -17,6 +17,7 @@ from chromite.buildbot import constants
 from chromite.cros.commands import cros_chrome_sdk
 from chromite.cros.commands import init_unittest
 from chromite.lib import cache
+from chromite.lib import chrome_util
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import gs
@@ -283,8 +284,11 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
     self.SetupCommandMock(extra_args)
     self.cmd_mock.inst.Run()
 
-    assert_fn = self.assertFalse if inverted else self.assertTrue
-    assert_fn(self.FindInPath(self.cmd_mock.env['PATH'], 'goma'))
+    assert_fn = self.assertNotIn if inverted else self.assertIn
+    gyp_defines_str = self.cmd_mock.env['GYP_DEFINES']
+    gyp_defines = chrome_util.ProcessGypDefines(gyp_defines_str)
+    assert_fn('gomadir', gyp_defines)
+    assert_fn('use_goma', gyp_defines)
 
   def testNoGoma(self):
     """Verify that we do not add Goma to the PATH."""
@@ -344,7 +348,7 @@ class GomaTest(cros_test_lib.MockTempDirTestCase,
     """Test that we start Goma if it's not already started."""
     # Duplicate return values.
     self.PatchObject(cros_chrome_sdk.ChromeSDKCommand, '_GomaPort',
-                     side_effect=['', 'XXXX', 'XXXX'])
+                     side_effect=['XXXX', 'XXXX'])
     # Run it twice to exercise caching.
     for _ in range(2):
       goma_dir, goma_port = self.cmd_mock.inst._FetchGoma()
@@ -484,7 +488,7 @@ class PathVerifyTest(cros_test_lib.MockTempDirTestCase,
     self.PatchObject(osutils, 'SourceEnvironment',
                      side_effect=SourceEnvironmentMock)
     file_list = (
-      'goma/goma_ctl.sh',
+      'goma/goma_ctl.py',
       'clang/clang',
       'chromite/parallel_emerge',
     )
