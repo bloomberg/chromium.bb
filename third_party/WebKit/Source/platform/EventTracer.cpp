@@ -32,6 +32,7 @@
 #include "platform/EventTracer.h"
 
 #include "public/platform/Platform.h"
+#include "public/platform/WebConvertableToTraceFormat.h"
 #include "wtf/Assertions.h"
 #include <stdio.h>
 
@@ -64,10 +65,29 @@ const unsigned char* EventTracer::getTraceCategoryEnabledFlag(const char* catego
 }
 
 TraceEvent::TraceEventHandle EventTracer::addTraceEvent(char phase, const unsigned char* categoryEnabledFlag,
-    const char* name, unsigned long long id, int numArgs, const char** argNames,
-    const unsigned char* argTypes, const unsigned long long* argValues, unsigned char flags)
+    const char* name, unsigned long long id, int numArgs, const char* argNames[],
+    const unsigned char argTypes[], const unsigned long long argValues[],
+    TraceEvent::ConvertableToTraceFormat* convertableValues[],
+    unsigned char flags)
 {
-    return blink::Platform::current()->addTraceEvent(phase, categoryEnabledFlag, name, id, numArgs, argNames, argTypes, argValues, flags);
+    blink::WebConvertableToTraceFormat webConvertableValues[2];
+    if (numArgs <= static_cast<int>(WTF_ARRAY_LENGTH(webConvertableValues))) {
+        for (int i = 0; i < numArgs; ++i) {
+            if (convertableValues[i])
+                webConvertableValues[i] = blink::WebConvertableToTraceFormat(convertableValues[i]);
+        }
+    } else {
+        ASSERT_NOT_REACHED();
+    }
+    return blink::Platform::current()->addTraceEvent(phase, categoryEnabledFlag, name, id, numArgs, argNames, argTypes, argValues, webConvertableValues, flags);
+}
+
+TraceEvent::TraceEventHandle EventTracer::addTraceEvent(char phase, const unsigned char* categoryEnabledFlag,
+    const char* name, unsigned long long id, int numArgs, const char** argNames,
+    const unsigned char* argTypes, const unsigned long long* argValues,
+    unsigned char flags)
+{
+    return blink::Platform::current()->addTraceEvent(phase, categoryEnabledFlag, name, id, numArgs, argNames, argTypes, argValues, 0, flags);
 }
 
 void EventTracer::updateTraceEventDuration(const unsigned char* categoryEnabledFlag, const char* name, TraceEvent::TraceEventHandle handle)

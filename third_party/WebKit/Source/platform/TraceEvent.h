@@ -166,6 +166,7 @@
 #include "platform/EventTracer.h"
 
 #include "wtf/DynamicAnnotations.h"
+#include "wtf/PassRefPtr.h"
 #include "wtf/text/CString.h"
 
 // By default, const char* argument values are assumed to have long-lived scope
@@ -541,6 +542,7 @@
 //                    const char** arg_names,
 //                    const unsigned char* arg_types,
 //                    const unsigned long long* arg_values,
+//                    const RefPtr<ConvertableToTraceFormat>* convertableValues
 //                    unsigned char flags)
 #define TRACE_EVENT_API_ADD_TRACE_EVENT \
     WebCore::EventTracer::addTraceEvent
@@ -657,6 +659,7 @@
 #define TRACE_VALUE_TYPE_POINTER      (static_cast<unsigned char>(5))
 #define TRACE_VALUE_TYPE_STRING       (static_cast<unsigned char>(6))
 #define TRACE_VALUE_TYPE_COPY_STRING  (static_cast<unsigned char>(7))
+#define TRACE_VALUE_TYPE_CONVERTABLE  (static_cast<unsigned char>(8))
 
 // These values must be in sync with base::debug::TraceLog::CategoryGroupEnabledFlags.
 #define ENABLED_FOR_RECORDING (1 << 0)
@@ -793,6 +796,52 @@ static inline void setTraceValue(const WTF::CString& arg, unsigned char* type, u
     *value = typeValue.m_uint;
 }
 
+static inline void setTraceValue(ConvertableToTraceFormat*, unsigned char* type, unsigned long long*)
+{
+    *type = TRACE_VALUE_TYPE_CONVERTABLE;
+}
+
+template<typename T> static inline void setTraceValue(const PassRefPtr<T>& ptr, unsigned char* type, unsigned long long* value)
+{
+    setTraceValue(ptr.get(), type, value);
+}
+
+template<typename T> struct ConvertableToTraceFormatTraits {
+    static const bool isConvertable = false;
+    static void assignIfConvertable(ConvertableToTraceFormat*&, const T&)
+    {
+    }
+};
+
+template<typename T> struct ConvertableToTraceFormatTraits<T*> {
+    static const bool isConvertable = WTF::IsSubclass<T, TraceEvent::ConvertableToTraceFormat>::value;
+    static void assignIfConvertable(ConvertableToTraceFormat*&, ...)
+    {
+    }
+    static void assignIfConvertable(ConvertableToTraceFormat*& left, ConvertableToTraceFormat*& right)
+    {
+        left = right;
+    }
+};
+
+template<typename T> struct ConvertableToTraceFormatTraits<PassRefPtr<T> > {
+    static const bool isConvertable = WTF::IsSubclass<T, TraceEvent::ConvertableToTraceFormat>::value;
+    static void assignIfConvertable(ConvertableToTraceFormat*& left, const PassRefPtr<T> &right)
+    {
+        ConvertableToTraceFormatTraits<T*>::assignIfConvertable(left, right.get());
+    }
+};
+
+template<typename T> bool isConvertableToTraceFormat(const T&)
+{
+    return ConvertableToTraceFormatTraits<T>::isConvertable;
+}
+
+template<typename T> void assignIfConvertableToTraceFormat(ConvertableToTraceFormat*& left, const T& right)
+{
+    ConvertableToTraceFormatTraits<T>::assignIfConvertable(left, right);
+}
+
 // These addTraceEvent template functions are defined here instead of in the
 // macro, because the arg values could be temporary string objects. In order to
 // store pointers to the internal c_str and pass through to the tracing API, the
@@ -811,7 +860,7 @@ static inline TraceEventHandle addTraceEvent(
         flags);
 }
 
-template<class ARG1_TYPE>
+template<typename ARG1_TYPE>
 static inline TraceEventHandle addTraceEvent(
     char phase,
     const unsigned char* categoryEnabled,
@@ -825,13 +874,22 @@ static inline TraceEventHandle addTraceEvent(
     unsigned char argTypes[1];
     unsigned long long argValues[1];
     setTraceValue(arg1Val, &argTypes[0], &argValues[0]);
+    if (isConvertableToTraceFormat(arg1Val)) {
+        ConvertableToTraceFormat* convertableValues[1];
+        assignIfConvertableToTraceFormat(convertableValues[0], arg1Val);
+        return TRACE_EVENT_API_ADD_TRACE_EVENT(
+            phase, categoryEnabled, name, id,
+            numArgs, &arg1Name, argTypes, argValues,
+            convertableValues,
+            flags);
+    }
     return TRACE_EVENT_API_ADD_TRACE_EVENT(
         phase, categoryEnabled, name, id,
         numArgs, &arg1Name, argTypes, argValues,
         flags);
 }
 
-template<class ARG1_TYPE, class ARG2_TYPE>
+template<typename ARG1_TYPE, typename ARG2_TYPE>
 static inline TraceEventHandle addTraceEvent(
     char phase,
     const unsigned char* categoryEnabled,
@@ -849,6 +907,16 @@ static inline TraceEventHandle addTraceEvent(
     unsigned long long argValues[2];
     setTraceValue(arg1Val, &argTypes[0], &argValues[0]);
     setTraceValue(arg2Val, &argTypes[1], &argValues[1]);
+    if (isConvertableToTraceFormat(arg1Val) || isConvertableToTraceFormat(arg2Val)) {
+        ConvertableToTraceFormat* convertableValues[2];
+        assignIfConvertableToTraceFormat(convertableValues[0], arg1Val);
+        assignIfConvertableToTraceFormat(convertableValues[1], arg2Val);
+        return TRACE_EVENT_API_ADD_TRACE_EVENT(
+            phase, categoryEnabled, name, id,
+            numArgs, argNames, argTypes, argValues,
+            convertableValues,
+            flags);
+    }
     return TRACE_EVENT_API_ADD_TRACE_EVENT(
         phase, categoryEnabled, name, id,
         numArgs, argNames, argTypes, argValues,

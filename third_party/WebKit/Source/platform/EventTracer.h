@@ -67,9 +67,19 @@ public:
         const char* name,
         unsigned long long id,
         int numArgs,
-        const char** argNames,
-        const unsigned char* argTypes,
-        const unsigned long long* argValues,
+        const char* argNames[],
+        const unsigned char argTypes[],
+        const unsigned long long argValues[],
+        WebCore::TraceEvent::ConvertableToTraceFormat*[],
+        unsigned char flags);
+    static TraceEvent::TraceEventHandle addTraceEvent(char phase,
+        const unsigned char* categoryEnabledFlag,
+        const char* name,
+        unsigned long long id,
+        int numArgs,
+        const char* argNames[],
+        const unsigned char argTypes[],
+        const unsigned long long argValues[],
         unsigned char flags);
     static void updateTraceEventDuration(const unsigned char* categoryEnabledFlag, const char* name, TraceEvent::TraceEventHandle);
 };
