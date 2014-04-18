@@ -10,9 +10,6 @@
 #
 # Macros for TOOLS
 #
-# We always link with the C++ compiler but include -Wl,-as-needed flag
-# in LDFLAGS so the linker should drop libc++ unless it's actually needed.
-#
 ifneq ($(TOOLCHAIN),bionic)
 X86_32_CC := $(NACL_COMPILER_PREFIX) $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a x86_32 --tool=cc)
 X86_32_CXX := $(NACL_COMPILER_PREFIX) $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a x86_32 --tool=c++)
@@ -40,6 +37,17 @@ endif
 
 NCVAL ?= python $(NACL_SDK_ROOT)/tools/ncval.py
 
+# Architecture-specific variables
+ifeq (,$(MULTI_PLATFORM))
+X86_32_OUTDIR ?= $(OUTDIR)
+X86_64_OUTDIR ?= $(OUTDIR)
+ARM_OUTDIR ?= $(OUTDIR)
+else
+X86_32_OUTDIR ?= $(OUTDIR)/_platform_specific/x86-32
+X86_64_OUTDIR ?= $(OUTDIR)/_platform_specific/x86-64
+ARM_OUTDIR ?= $(OUTDIR)/_platform_specific/arm
+endif
+
 # Architecture-specific flags
 X86_32_CFLAGS ?=
 X86_64_CFLAGS ?=
@@ -55,9 +63,15 @@ ARM_CFLAGS ?=
 ARM_CXXFLAGS ?=
 endif
 
+ifeq (,$(MULTI_PLATFORM))
 X86_32_LDFLAGS ?= -Wl,-Map,$(OUTDIR)/$(TARGET)_x86_32.map
 X86_64_LDFLAGS ?= -Wl,-Map,$(OUTDIR)/$(TARGET)_x86_64.map
 ARM_LDFLAGS ?= -Wl,-Map,$(OUTDIR)/$(TARGET)_arm.map
+else
+X86_32_LDFLAGS ?= -Wl,-Map,$(X86_32_OUTDIR)/$(TARGET)_x86_32.map
+X86_64_LDFLAGS ?= -Wl,-Map,$(X86_64_OUTDIR)/$(TARGET)_x86_64.map
+ARM_LDFLAGS ?= -Wl,-Map,$(ARM_OUTDIR)/$(TARGET)_arm.map
+endif
 
 LDFLAGS_SHARED = -shared
 
@@ -185,52 +199,55 @@ GLIBC_REMAP :=
 #
 define SO_LINKER_RULE
 ifneq (,$(findstring x86_32,$(ARCHES)))
-all: $(OUTDIR)/lib$(1)_x86_32.so
-$(OUTDIR)/lib$(1)_x86_32.so: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_x86_32_pic)) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
+all: $(X86_32_OUTDIR)/lib$(1)_x86_32.so
+$(X86_32_OUTDIR)/lib$(1)_x86_32.so: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_x86_32_pic)) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
+	$(MKDIR) -p $$(dir $$@)
 	$(call LOG,LINK,$$@,$(X86_32_LINK) -o $$@ $$(filter %.o,$$^) $(LDFLAGS_SHARED) -m32 $(NACL_LDFLAGS) $(X86_32_LDFLAGS) $(LDFLAGS) $(foreach path,$(5),-L$(path)/$(TOOLCHAIN)_x86_32/$(CONFIG)) $(foreach lib,$(3),-l$(lib)))
 	$(call LOG,VALIDATE,$$@,$(NCVAL) $$@)
 
 $(STAMPDIR)/$(1).stamp: $(LIBDIR)/$(TOOLCHAIN)_x86_32/$(CONFIG)/lib$(1).so
 install: $(LIBDIR)/$(TOOLCHAIN)_x86_32/$(CONFIG)/lib$(1).so
-$(LIBDIR)/$(TOOLCHAIN)_x86_32/$(CONFIG)/lib$(1).so: $(OUTDIR)/lib$(1)_x86_32.so
+$(LIBDIR)/$(TOOLCHAIN)_x86_32/$(CONFIG)/lib$(1).so: $(X86_32_OUTDIR)/lib$(1)_x86_32.so
 	$(MKDIR) -p $$(dir $$@)
 	$(call LOG,CP  ,$$@,$(OSHELPERS) cp $$^ $$@)
 ifneq ($(6),1)
-GLIBC_SO_LIST += $(OUTDIR)/lib$(1)_x86_32.so
+GLIBC_SO_LIST += $(X86_32_OUTDIR)/lib$(1)_x86_32.so
 GLIBC_REMAP += -n lib$(1)_x86_32.so,lib$(1).so
 endif
 endif
 
 ifneq (,$(findstring x86_64,$(ARCHES)))
-all: $(OUTDIR)/lib$(1)_x86_64.so
-$(OUTDIR)/lib$(1)_x86_64.so: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_x86_64_pic)) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
+all: $(X86_64_OUTDIR)/lib$(1)_x86_64.so
+$(X86_64_OUTDIR)/lib$(1)_x86_64.so: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_x86_64_pic)) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
+	$(MKDIR) -p $$(dir $$@)
 	$(call LOG,LINK,$$@,$(X86_32_LINK) -o $$@ $$(filter %.o,$$^) $(LDFLAGS_SHARED) -m64 $(NACL_LDFLAGS) $(X86_64_LDFLAGS) $(LDFLAGS) $(foreach path,$(5),-L$(path)/$(TOOLCHAIN)_x86_64/$(CONFIG)) $(foreach lib,$(3),-l$(lib)))
 	$(call LOG,VALIDATE,$$@,$(NCVAL) $$@)
 
 $(STAMPDIR)/$(1).stamp: $(LIBDIR)/$(TOOLCHAIN)_x86_64/$(CONFIG)/lib$(1).so
 install: $(LIBDIR)/$(TOOLCHAIN)_x86_64/$(CONFIG)/lib$(1).so
-$(LIBDIR)/$(TOOLCHAIN)_x86_64/$(CONFIG)/lib$(1).so: $(OUTDIR)/lib$(1)_x86_64.so
+$(LIBDIR)/$(TOOLCHAIN)_x86_64/$(CONFIG)/lib$(1).so: $(X86_64_OUTDIR)/lib$(1)_x86_64.so
 	$(MKDIR) -p $$(dir $$@)
 	$(call LOG,CP  ,$$@,$(OSHELPERS) cp $$^ $$@)
 ifneq ($(6),1)
-GLIBC_SO_LIST += $(OUTDIR)/lib$(1)_x86_64.so
+GLIBC_SO_LIST += $(X86_64_OUTDIR)/lib$(1)_x86_64.so
 GLIBC_REMAP += -n lib$(1)_x86_64.so,lib$(1).so
 endif
 endif
 
 ifneq (,$(findstring arm,$(ARCHES)))
-all: $(OUTDIR)/lib$(1)_arm.so
-$(OUTDIR)/lib$(1)_arm.so: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_arm_pic)) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
+all: $(ARM_OUTDIR)/lib$(1)_arm.so
+$(ARM_OUTDIR)/lib$(1)_arm.so: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_arm_pic)) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
+	$(MKDIR) -p $$(dir $$@)
 	$(call LOG,LINK,$$@,$(ARM_LINK) -o $$@ $$(filter %.o,$$^) $(LDFLAGS_SHARED) -marm $(NACL_LDFLAGS) $(ARM_LDFLAGS) $(LDFLAGS) $(foreach path,$(5),-L$(path)/$(TOOLCHAIN)_arm/$(CONFIG)) $(foreach lib,$(3),-l$(lib)))
 	$(call LOG,VALIDATE,$$@,$(NCVAL) $$@)
 
 $(STAMPDIR)/$(1).stamp: $(LIBDIR)/$(TOOLCHAIN)_arm/$(CONFIG)/lib$(1).so
 install: $(LIBDIR)/$(TOOLCHAIN)_arm/$(CONFIG)/lib$(1).so
-$(LIBDIR)/$(TOOLCHAIN)_arm/$(CONFIG)/lib$(1).so: $(OUTDIR)/lib$(1)_arm.so
+$(LIBDIR)/$(TOOLCHAIN)_arm/$(CONFIG)/lib$(1).so: $(ARM_OUTDIR)/lib$(1)_arm.so
 	$(MKDIR) -p $$(dir $$@)
 	$(call LOG,CP  ,$$@,$(OSHELPERS) cp $$^ $$@)
 ifneq ($(6),1)
-GLIBC_SO_LIST += $(OUTDIR)/lib$(1)_arm.so
+GLIBC_SO_LIST += $(ARM_OUTDIR)/lib$(1)_arm.so
 GLIBC_REMAP += -n lib$(1)_arm.so,lib$(1).so
 endif
 endif
@@ -261,45 +278,45 @@ $(STAMPDIR)/$(1).stamp:
 	@echo "TOUCHED $$@" > $(STAMPDIR)/$(1).stamp
 
 ifneq (,$(findstring x86_32,$(ARCHES)))
-all: $(OUTDIR)/lib$(1)_x86_32.a
-$(OUTDIR)/lib$(1)_x86_32.a: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_x86_32))
+all: $(X86_32_OUTDIR)/lib$(1)_x86_32.a
+$(X86_32_OUTDIR)/lib$(1)_x86_32.a: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_x86_32))
 	$(MKDIR) -p $$(dir $$@)
 	$(RM) -f $$@
 	$(call LOG,LIB ,$$@,$(X86_32_LIB) -cr $$@ $$^)
 
 $(STAMPDIR)/$(1).stamp: $(LIBDIR)/$(TOOLCHAIN)_x86_32/$(CONFIG)/lib$(1).a
 install: $(LIBDIR)/$(TOOLCHAIN)_x86_32/$(CONFIG)/lib$(1).a
-$(LIBDIR)/$(TOOLCHAIN)_x86_32/$(CONFIG)/lib$(1).a: $(OUTDIR)/lib$(1)_x86_32.a
+$(LIBDIR)/$(TOOLCHAIN)_x86_32/$(CONFIG)/lib$(1).a: $(X86_32_OUTDIR)/lib$(1)_x86_32.a
 	$(MKDIR) -p $$(dir $$@)
 	$(RM) -f $$@
 	$(call LOG,CP  ,$$@,$(OSHELPERS) cp $$^ $$@)
 endif
 
 ifneq (,$(findstring x86_64,$(ARCHES)))
-all: $(OUTDIR)/lib$(1)_x86_64.a
-$(OUTDIR)/lib$(1)_x86_64.a: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_x86_64))
+all: $(X86_64_OUTDIR)/lib$(1)_x86_64.a
+$(X86_64_OUTDIR)/lib$(1)_x86_64.a: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_x86_64))
 	$(MKDIR) -p $$(dir $$@)
 	$(RM) -f $$@
 	$(call LOG,LIB ,$$@,$(X86_64_LIB) -cr $$@ $$^)
 
 $(STAMPDIR)/$(1).stamp: $(LIBDIR)/$(TOOLCHAIN)_x86_64/$(CONFIG)/lib$(1).a
 install: $(LIBDIR)/$(TOOLCHAIN)_x86_64/$(CONFIG)/lib$(1).a
-$(LIBDIR)/$(TOOLCHAIN)_x86_64/$(CONFIG)/lib$(1).a: $(OUTDIR)/lib$(1)_x86_64.a
+$(LIBDIR)/$(TOOLCHAIN)_x86_64/$(CONFIG)/lib$(1).a: $(X86_64_OUTDIR)/lib$(1)_x86_64.a
 	$(MKDIR) -p $$(dir $$@)
 	$(call LOG,CP  ,$$@,$(OSHELPERS) cp $$^ $$@)
 endif
 
 ifneq (,$(findstring arm,$(ARCHES)))
 ifneq ($(TOOLCHAIN),glibc)
-all: $(OUTDIR)/lib$(1)_arm.a
-$(OUTDIR)/lib$(1)_arm.a: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_arm))
+all: $(ARM_OUTDIR)/lib$(1)_arm.a
+$(ARM_OUTDIR)/lib$(1)_arm.a: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_arm))
 	$(MKDIR) -p $$(dir $$@)
 	$(RM) -f $$@
 	$(call LOG,LIB ,$$@,$(ARM_LIB) -cr $$@ $$^)
 
 $(STAMPDIR)/$(1).stamp: $(LIBDIR)/$(TOOLCHAIN)_arm/$(CONFIG)/lib$(1).a
 install: $(LIBDIR)/$(TOOLCHAIN)_arm/$(CONFIG)/lib$(1).a
-$(LIBDIR)/$(TOOLCHAIN)_arm/$(CONFIG)/lib$(1).a: $(OUTDIR)/lib$(1)_arm.a
+$(LIBDIR)/$(TOOLCHAIN)_arm/$(CONFIG)/lib$(1).a: $(ARM_OUTDIR)/lib$(1)_arm.a
 	$(MKDIR) -p $$(dir $$@)
 	$(call LOG,CP  ,$$@,$(OSHELPERS) cp $$^ $$@)
 endif
@@ -319,22 +336,25 @@ endef
 #
 define LINKER_RULE
 ifneq (,$(findstring x86_32,$(ARCHES)))
-all: $(OUTDIR)/$(1)_x86_32.nexe
-$(OUTDIR)/$(1)_x86_32.nexe: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_x86_32)) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
+all: $(X86_32_OUTDIR)/$(1)_x86_32.nexe
+$(X86_32_OUTDIR)/$(1)_x86_32.nexe: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_x86_32)) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
+	$(MKDIR) -p $$(dir $$@)
 	$(call LOG,LINK,$$@,$(X86_32_LINK) -o $$@ $$(filter %.o,$$^) $(NACL_LDFLAGS) $(X86_32_LDFLAGS) $(foreach path,$(6),-L$(path)/$(TOOLCHAIN)_x86_32/$(CONFIG)) $(foreach lib,$(3),-l$(lib)) $(5))
 	$(call LOG,VALIDATE,$$@,$(NCVAL) $$@)
 endif
 
 ifneq (,$(findstring x86_64,$(ARCHES)))
-all: $(OUTDIR)/$(1)_x86_64.nexe
-$(OUTDIR)/$(1)_x86_64.nexe: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_x86_64)) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
+all: $(X86_64_OUTDIR)/$(1)_x86_64.nexe
+$(X86_64_OUTDIR)/$(1)_x86_64.nexe: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_x86_64)) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
+	$(MKDIR) -p $$(dir $$@)
 	$(call LOG,LINK,$$@,$(X86_64_LINK) -o $$@ $$(filter %.o,$$^) $(NACL_LDFLAGS) $(X86_64_LDFLAGS) $(foreach path,$(6),-L$(path)/$(TOOLCHAIN)_x86_64/$(CONFIG)) $(foreach lib,$(3),-l$(lib)) $(5))
 	$(call LOG,VALIDATE,$$@,$(NCVAL) $$@)
 endif
 
 ifneq (,$(findstring arm,$(ARCHES)))
-all: $(OUTDIR)/$(1)_arm.nexe
-$(OUTDIR)/$(1)_arm.nexe: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_arm)) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
+all: $(ARM_OUTDIR)/$(1)_arm.nexe
+$(ARM_OUTDIR)/$(1)_arm.nexe: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_arm)) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
+	$(MKDIR) -p $$(dir $$@)
 	$(call LOG,LINK,$$@,$(ARM_LINK) -static -o $$@ $$(filter %.o,$$^) $(NACL_LDFLAGS) $(ARM_LDFLAGS) $(foreach path,$(6),-L$(path)/$(TOOLCHAIN)_arm/$(CONFIG)) $(foreach lib,$(3),-l$(lib)) $(5))
 	$(call LOG,VALIDATE,$$@,$(NCVAL) $$@)
 endif
@@ -364,17 +384,17 @@ endef
 #
 define STRIP_ALL_RULE
 ifneq (,$(findstring x86_32,$(ARCHES)))
-$(OUTDIR)/$(1)_x86_32.nexe: $(OUTDIR)/$(2)_x86_32.nexe
+$(X86_32_OUTDIR)/$(1)_x86_32.nexe: $(X86_32_OUTDIR)/$(2)_x86_32.nexe
 	$(call LOG,STRIP,$$@,$(X86_32_STRIP) -o $$@ $$^)
 endif
 
 ifneq (,$(findstring x86_64,$(ARCHES)))
-$(OUTDIR)/$(1)_x86_64.nexe: $(OUTDIR)/$(2)_x86_64.nexe
+$(X86_64_OUTDIR)/$(1)_x86_64.nexe: $(X86_64_OUTDIR)/$(2)_x86_64.nexe
 	$(call LOG,STRIP,$$@,$(X86_64_STRIP) -o $$@ $$^)
 endif
 
 ifneq (,$(findstring arm,$(ARCHES)))
-$(OUTDIR)/$(1)_arm.nexe: $(OUTDIR)/$(2)_arm.nexe
+$(ARM_OUTDIR)/$(1)_arm.nexe: $(ARM_OUTDIR)/$(2)_arm.nexe
 	$(call LOG,STRIP,$$@,$(ARM_STRIP) -o $$@ $$^)
 endif
 endef
@@ -399,20 +419,20 @@ endef
 #
 define MAP_ALL_RULE
 ifneq (,$(findstring x86_32,$(ARCHES)))
-all: $(OUTDIR)/$(1)_x86_32.map
-$(OUTDIR)/$(1)_x86_32.map: $(OUTDIR)/$(2)_x86_32.nexe
+all: $(X86_32_OUTDIR)/$(1)_x86_32.map
+$(X86_32_OUTDIR)/$(1)_x86_32.map: $(X86_32_OUTDIR)/$(2)_x86_32.nexe
 	$(call LOG,MAP,$$@,$(X86_32_NM) -l $$^ > $$@)
 endif
 
 ifneq (,$(findstring x86_64,$(ARCHES)))
-all: $(OUTDIR)/$(1)_x86_64.map
-$(OUTDIR)/$(1)_x86_64.map: $(OUTDIR)/$(2)_x86_64.nexe
+all: $(X86_64_OUTDIR)/$(1)_x86_64.map
+$(X86_64_OUTDIR)/$(1)_x86_64.map: $(X86_64_OUTDIR)/$(2)_x86_64.nexe
 	$(call LOG,MAP,$$@,$(X86_64_NM) -l $$^ > $$@)
 endif
 
 ifneq (,$(findstring arm,$(ARCHES)))
-all: $(OUTDIR)/$(1)_arm.map
-$(OUTDIR)/$(1)_arm.map: $(OUTDIR)/$(2)_arm.nexe
+all: $(ARM_OUTDIR)/$(1)_arm.map
+$(ARM_OUTDIR)/$(1)_arm.map: $(ARM_OUTDIR)/$(2)_arm.nexe
 	$(call LOG,MAP,$$@,$(ARM_NM) -l $$^ > $$@ )
 endif
 endef
@@ -430,21 +450,14 @@ endef
 
 
 #
-# Generate ARCH_SUFFIXES, a list of suffixes for executables corresponding to all
-# the architectures in the current build.
-#
-ARCH_SUFFIXES := $(foreach arch,$(ARCHES),_$(arch).nexe)
-
-
-#
-# NMF Manifest generation
+# NMF Manifiest generation
 #
 # Use the python script create_nmf to scan the binaries for dependencies using
 # objdump.  Pass in the (-L) paths to the default library toolchains so that we
 # can find those libraries and have it automatically copy the files (-s) to
 # the target directory for us.
 #
-# $1 = Target Name (the basename of the nmf)
+# $1 = Target Name (the basename of the nmf
 # $2 = Additional create_nmf.py arguments
 #
 NMF := python $(NACL_SDK_ROOT)/tools/create_nmf.py
@@ -453,12 +466,47 @@ NMF_FLAGS += --debug-libs
 HTML_FLAGS += --debug-libs
 endif
 
-EXECUTABLES=$(foreach arch,$(ARCH_SUFFIXES),$(OUTDIR)/$(1)$(arch)) $(GLIBC_SO_LIST)
+EXECUTABLES = $(GLIBC_SO_LIST)
+ifneq (,$(findstring x86_32,$(ARCHES)))
+EXECUTABLES += $(X86_32_OUTDIR)/$(1)_x86_32.nexe
+endif
+ifneq (,$(findstring x86_64,$(ARCHES)))
+EXECUTABLES += $(X86_64_OUTDIR)/$(1)_x86_64.nexe
+endif
+ifneq (,$(findstring arm,$(ARCHES)))
+EXECUTABLES += $(ARM_OUTDIR)/$(1)_arm.nexe
+endif
+
+ifneq (,$(MULTI_PLATFORM))
+# When building a multi-platform package, stage all dependent shared libraries
+# in the same directory as the .nexe (which will be an architecture-specific
+# directory under _platform_specific).
+NMF_FLAGS += -s $(OUTDIR) --no-arch-prefix
+else
+# Otherwise stage dependent libraries the normal way, under lib32 for x86_32
+# libraries, and lib64 for x86_64 libraries.
+NMF_FLAGS += -s $(OUTDIR)
+endif
+
+ifneq (,$(MULTI_PLATFORM))
+# This script fixes the manifest.json file for this App to point to:
+#
+#   <toolchain>/<config>/_platform_specific/<arch>/
+#
+# instead of
+#
+#   _platform_specific/<arch>
+FIX_MANIFEST := python $(NACL_SDK_ROOT)/tools/fix_manifest.py
+MANIFEST_JSON ?= manifest.json
+endif
 
 define NMF_RULE
 all: $(OUTDIR)/$(1).nmf
-$(OUTDIR)/$(1).nmf: $(EXECUTABLES)
-	$(call LOG,CREATE_NMF,$$@,$(NMF) $(NMF_FLAGS) -o $$@ $$^ $(GLIBC_PATHS) -s $(OUTDIR) $(2) $(GLIBC_REMAP))
+$(OUTDIR)/$(1).nmf $(MANIFEST_JSON): $(EXECUTABLES)
+	$(call LOG,CREATE_NMF,$$@,$(NMF) $(NMF_FLAGS) -o $$@ $$^ $(GLIBC_PATHS) $(2) $(GLIBC_REMAP))
+ifneq (,$(MULTI_PLATFORM))
+	$(call LOG,FIX_MANIFEST,$(MANIFEST_JSON),$(FIX_MANIFEST) $(MANIFEST_JSON)) -p "$(TOOLCHAIN)/$(CONFIG)"
+endif
 endef
 
 #

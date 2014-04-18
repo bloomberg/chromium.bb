@@ -34,6 +34,12 @@ NACL_SDK_ROOT ?= $(abspath $(CURDIR)/{{rel_sdk}})
 EXTRA_INC_PATHS={{' '.join(targets[0]['INCLUDES'])}}
 [[]]
 
+[[if multi_platform:]]
+# Build with platform-specific subdirectories, to reduce the download size of
+# the app.
+MULTI_PLATFORM = 1
+[[]]
+
 include $(NACL_SDK_ROOT)/tools/common.mk
 
 [[if desc.get('SOCKET_PERMISSIONS'):]]

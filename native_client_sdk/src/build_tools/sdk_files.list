@@ -40,6 +40,7 @@ examples/Makefile
 examples/tutorial/debugging/*
 examples/tutorial/dlopen/*
 examples/tutorial/load_progress/*
+examples/tutorial/multi_platform/*
 [win]examples/tutorial/make.bat
 examples/tutorial/Makefile
 examples/tutorial/testing/*
@@ -415,6 +416,7 @@ tools/create_nmf.py
 tools/decode_dump.py
 [linux,mac]tools/dump_syms
 tools/fix_deps.py
+tools/fix_manifest.py
 tools/genhttpfs.py
 tools/getos.py
 tools/host_gcc.mk

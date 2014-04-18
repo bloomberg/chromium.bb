@@ -26,5 +26,21 @@
 [[]]
     "scopes": ["https://www.googleapis.com/auth/drive"]
   },
+[[if multi_platform:]]
+  "platforms": [
+    {
+      "nacl_arch": "x86-64",
+      "sub_package_path": "_platform_specific/x86-64"
+    },
+    {
+      "nacl_arch": "x86-32",
+      "sub_package_path": "_platform_specific/x86-32"
+    },
+    {
+      "nacl_arch": "arm",
+      "sub_package_path": "_platform_specific/arm"
+    }
+  ],
+[[]]
   "permissions": {{permissions}}
 }

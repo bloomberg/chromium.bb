@@ -159,6 +159,7 @@ def GenerateManifest(srcroot, dstroot, desc):
       'key': True,
       'channel': None,
       'permissions': pretty_permissions,
+      'multi_platform': desc.get('MULTI_PLATFORM', False),
       'version': build_version.ChromeVersionNoTrunk()
   }
   RunTemplateFileIfChanged(srcpath, dstpath, replace)
@@ -262,6 +263,7 @@ def ProcessProject(pepperdir, srcroot, dstroot, desc, toolchains, configs=None,
     'tools': tools,
     'sel_ldr': desc.get('SEL_LDR'),
     'targets': desc['TARGETS'],
+    'multi_platform': desc.get('MULTI_PLATFORM', False),
   }
   RunTemplateFileIfChanged(template, make_path, template_dict)
 
