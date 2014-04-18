@@ -375,6 +375,10 @@ CL_ACTIONS = [CL_ACTION_PICKED_UP,
               CL_ACTION_KICKED_OUT,
               CL_ACTION_SUBMIT_FAILED]
 
+# CQ types.
+CQ = 'cq'
+PRE_CQ = 'pre-cq'
+
 # Environment variables that should be exposed to all children processes
 # invoked via cros_build_lib.RunCommand.
 ENV_PASSTHRU = ('CROS_SUDO_KEEP_ALIVE', SHARED_CACHE_ENVVAR)

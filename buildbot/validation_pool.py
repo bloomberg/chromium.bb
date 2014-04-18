@@ -46,8 +46,8 @@ except ImportError:
   mox = None
 
 
-PRE_CQ = 'pre-cq'
-CQ = 'cq'
+PRE_CQ = constants.PRE_CQ
+CQ = constants.CQ
 
 # The gerrit-on-borg team tells us that delays up to 2 minutes can be
 # normal.  Setting timeout to 3 minutes to be safe-ish.

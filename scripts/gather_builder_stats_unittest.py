@@ -24,6 +24,7 @@ import mock
 
 
 REASON_BAD_CL = gather_builder_stats.CLStats.REASON_BAD_CL
+CQ = constants.CQ
 
 
 class TestCLActionLogic(unittest.TestCase):
@@ -94,7 +95,7 @@ class TestCLActionLogic(unittest.TestCase):
     with cros_build_lib.ContextManagerStack() as stack:
       test_builddata = self._getTestBuildData()
       stack.Add(mock.patch.object, gather_builder_stats.StatsManager,
-                '_FetchBuildData', return_value=test_builddata)
+                '_FetchBuildData', side_effect=[test_builddata, []])
       stack.Add(mock.patch.object, gather_builder_stats, '_PrepareCreds')
       stack.Add(mock.patch.object, gather_builder_stats.CLStats,
                 'GatherFailureReasons')
@@ -113,12 +114,13 @@ class TestCLActionLogic(unittest.TestCase):
           'submit_fails': 0,
           'unique_cls': 2,
           'median_handling_time': -1, # This will be ignored in comparison
-          'bad_cl_candidates': [
+          'bad_cl_candidates': {CQ: [
               cbuildbot_metadata.GerritChangeTuple(gerrit_number=2,
-                                                   internal=True)],
+                                                   internal=True)]},
           'rejections': 2}
       # Ignore handling time in comparison.
       summary['median_handling_time'] = expected['median_handling_time']
+      self.maxDiff = None
       self.assertEqual(summary, expected)
 
 if __name__ == '__main__':

@@ -25,6 +25,10 @@ from chromite.lib import table
 CQ_MASTER = constants.CQ_MASTER
 PRE_CQ_GROUP = constants.PRE_CQ_GROUP
 
+# Bot types
+CQ = constants.CQ
+PRE_CQ = constants.PRE_CQ
+
 # Number of parallel processes used when uploading/downloading GS files.
 MAX_PARALLEL = 40
 
@@ -436,6 +440,11 @@ class StatsManager(object):
   # Subclasses can overwrite any of these.
   TABLE_CLASS = None
   CARBON_FUNCS_BY_VERSION = None
+  BOT_TYPE = None
+
+  # Whether to grab a count of what data has been written to sheets before.
+  # This is needed if you are writing data to the Google Sheets spreadsheet.
+  GET_SHEETS_VERSION = True
 
   def __init__(self, config_target):
     self.builds = []
@@ -469,8 +478,50 @@ class StatsManager(object):
       self.builds = filter(lambda b: b.build_number >= starting_build_number,
                            self.builds)
 
-  @staticmethod
-  def _FetchBuildData(start_date, config_target, gs_ctx):
+  def CollectActions(self):
+    """Collects the CL actions from the set of gathered builds.
+
+    Returns a list of CLActionWithBuildTuple for all the actions in the
+    gathered builds.
+    """
+    actions = []
+    for b in self.builds:
+      if not 'cl_actions' in b.metadata_dict:
+        logging.warn('No cl_actions for metadata at %s.', b.metadata_url)
+        continue
+      for a in b.metadata_dict['cl_actions']:
+        actions.append(cbuildbot_metadata.CLActionWithBuildTuple(*a,
+            bot_type=self.BOT_TYPE, bot_id=self.config_target,
+            build_number=b.build_number))
+
+    return actions
+
+  def CollateActions(self, actions):
+    """Collates a list of actions into per-patch and per-cl actions.
+
+    Returns a tuple (per_patch_actions, per_cl_actions) where each are
+    a dictionary mapping patches or cls to a list of CLActionWithBuildTuple
+    sorted in order of ascending timestamp.
+    """
+    per_patch_actions = {}
+    per_cl_actions = {}
+    for a in actions:
+      change_dict = a.change.copy()
+      change_with_patch = cbuildbot_metadata.GerritPatchTuple(**change_dict)
+      change_dict.pop('patch_number')
+      change_no_patch = cbuildbot_metadata.GerritChangeTuple(**change_dict)
+
+      per_patch_actions.setdefault(change_with_patch, []).append(a)
+      per_cl_actions.setdefault(change_no_patch, []).append(a)
+
+    for p in [per_cl_actions, per_patch_actions]:
+      for k, v in p.iteritems():
+        p[k] = sorted(v, key=lambda x: x.timestamp)
+
+    return (per_patch_actions, per_cl_actions)
+
+  @classmethod
+  def _FetchBuildData(cls, start_date, config_target, gs_ctx):
     """Fetches BuildData for builds of |config_target| since |start_date|.
 
     Args:
@@ -488,7 +539,8 @@ class StatsManager(object):
     cros_build_lib.Info('Found %d metadata.json URLs to process.\n'
                         '  From: %s\n  To  : %s', len(urls), urls[0], urls[-1])
 
-    builds = cbuildbot_metadata.BuildData.ReadMetadataURLs(urls, gs_ctx)
+    builds = cbuildbot_metadata.BuildData.ReadMetadataURLs(
+        urls, gs_ctx, get_sheets_version=cls.GET_SHEETS_VERSION)
     cros_build_lib.Info('Read %d total metadata files.', len(builds))
     return builds
 
@@ -580,6 +632,7 @@ class CQSlaveStats(StatsManager):
   """Stats manager for all CQ slaves."""
   # TODO(mtennant): Add Sheets support for each CQ slave.
   TABLE_CLASS = None
+  GET_SHEETS_VERSION = True
 
   def __init__(self, slave_target):
     super(CQSlaveStats, self).__init__(slave_target)
@@ -607,6 +660,8 @@ class CQSlaveStats(StatsManager):
 class CQMasterStats(StatsManager):
   """Manager stats gathering for the Commit Queue Master."""
   TABLE_CLASS = CQMasterTable
+  BOT_TYPE = CQ
+  GET_SHEETS_VERSION = True
 
   def __init__(self):
     super(CQMasterStats, self).__init__(CQ_MASTER)
@@ -639,6 +694,8 @@ class CQMasterStats(StatsManager):
 class PreCQStats(StatsManager):
   """Manager stats gathering for the Pre Commit Queue."""
   TABLE_CLASS = None
+  BOT_TYPE = PRE_CQ
+  GET_SHEETS_VERSION = False
 
   def __init__(self):
     super(PreCQStats, self).__init__(PRE_CQ_GROUP)
@@ -649,6 +706,8 @@ class CLStats(StatsManager):
   TABLE_CLASS = None
   COL_FAILURE_CATEGORY = 'failure category'
   REASON_BAD_CL = 'Bad CL'
+  BOT_TYPE = CQ
+  GET_SHEETS_VERSION = False
 
   def __init__(self, email):
     super(CLStats, self).__init__(CQ_MASTER)
@@ -657,6 +716,7 @@ class CLStats(StatsManager):
     self.per_cl_actions = {}
     self.email = email
     self.reasons = {}
+    self.pre_cq_stats = PreCQStats()
 
   def GatherFailureReasons(self, creds):
     """Gather the reasons why our builds failed.
@@ -677,57 +737,29 @@ class CLStats(StatsManager):
       else:
         self.reasons[b.build_number] = str(row[ss_failure_category])
 
-  def Gather(self, *args, **kwargs):
+  def Gather(self, start_date, sort_by_build_number=True,
+             starting_build_number=0):
     """Fetches build data and failure reasons.
 
     Args:
-      *args, **kwargs: See StatsManager.Gather.
+      start_date: A datetime.date instance for the earliest build to
+                  examine.
+      sort_by_build_number: Optional boolean. If True, builds will be
+                            sorted by build number.
+      starting_build_number: The lowest build number from the CQ to include in
+                             the results.
     """
     creds = _PrepareCreds(self.email)
-    super(CLStats, self).Gather(*args, **kwargs)
+    super(CLStats, self).Gather(start_date,
+                                sort_by_build_number=sort_by_build_number,
+                                starting_build_number=starting_build_number)
     self.GatherFailureReasons(creds)
 
-  def CollectActions(self):
-    """Collects the CL actions from the set of gathered builds.
-
-    Returns a list of CLActionWithBuildTuple for all the actions in the
-    gathered builds.
-    """
-    actions = []
-    for b in self.builds:
-      if not 'cl_actions' in b.metadata_dict:
-        logging.warn('No cl_actions for metadata at %s.', b.metadata_url)
-        continue
-      for a in b.metadata_dict['cl_actions']:
-        actions.append(cbuildbot_metadata.CLActionWithBuildTuple(*a,
-            build_number=b.build_number))
-
-    return actions
-
-  def CollateActions(self, actions):
-    """Collates a list of actions into per-patch and per-cl actions.
-
-    Returns a tuple (per_patch_actions, per_cl_actions) where each are
-    a dictionary mapping patches or cls to a list of CLActionWithBuildTuple
-    sorted in order of ascending timestamp.
-    """
-    per_patch_actions = {}
-    per_cl_actions = {}
-    for a in actions:
-      change_dict = a.change.copy()
-      change_with_patch = cbuildbot_metadata.GerritPatchTuple(**change_dict)
-      change_dict.pop('patch_number')
-      change_no_patch = cbuildbot_metadata.GerritChangeTuple(**change_dict)
-
-      per_patch_actions.setdefault(change_with_patch, []).append(a)
-      per_cl_actions.setdefault(change_no_patch, []).append(a)
-
-    for p in [per_cl_actions, per_patch_actions]:
-      for k, v in p.iteritems():
-        p[k] = sorted(v, key=lambda x: x.timestamp)
-
-    return (per_patch_actions, per_cl_actions)
-
+    # Gather the pre-cq stats as well. The build number won't apply here since
+    # the pre-cq has different build numbers. We intentionally represent the
+    # Pre-CQ stats in a different object to help keep things simple.
+    self.pre_cq_stats.Gather(start_date,
+                             sort_by_build_number=sort_by_build_number)
 
   def Summarize(self):
     """Process, print, and return a summary of cl action statistics.
@@ -737,7 +769,8 @@ class CLStats(StatsManager):
     """
     super_summary = super(CLStats, self).Summarize()
 
-    self.actions = self.CollectActions()
+    self.actions = (self.CollectActions() +
+                    self.pre_cq_stats.CollectActions())
 
     (self.per_patch_actions,
      self.per_cl_actions) = self.CollateActions(self.actions)
@@ -751,7 +784,8 @@ class CLStats(StatsManager):
 
     build_reason_counts = {}
     for reason in self.reasons.values():
-      build_reason_counts[reason] = build_reason_counts.get(reason, 0) + 1
+      if reason != 'None':
+        build_reason_counts[reason] = build_reason_counts.get(reason, 0) + 1
 
     patch_reason_counts = {}
     rejected_then_submitted = {}
@@ -760,7 +794,7 @@ class CLStats(StatsManager):
           any(a.action == constants.CL_ACTION_SUBMITTED for a in v)):
         rejected_then_submitted[k] = v
         for a in v:
-          if a.action == constants.CL_ACTION_KICKED_OUT:
+          if a.action == constants.CL_ACTION_KICKED_OUT and a.bot_type == CQ:
             reason = self.reasons[a.build_number]
             patch_reason_counts[reason] = patch_reason_counts.get(reason, 0) + 1
 
@@ -783,23 +817,29 @@ class CLStats(StatsManager):
                            for v in submitted_patches.values()]
 
     # Count CLs that were rejected, then a subsequent patch was submitted.
-    # These are good candidates for bad CLs.
+    # These are good candidates for bad CLs. We track them in a dict, setting
+    # submitted_after_new_patch[bot_type][patch] = actions for each bad patch.
     submitted_after_new_patch = {}
-    for k, v in submitted_changes.iteritems():
+    for patch, actions in submitted_changes.iteritems():
       # The last action taken on a CL should be submit.
-      if v[-1].action != constants.CL_ACTION_SUBMITTED:
+      if actions[-1].action != constants.CL_ACTION_SUBMITTED:
         logging.warn('CL %s was submitted but submit was not the final '
-                     'action.', k)
+                     'action.', patch)
         continue
-      submitted_patch_number = v[-1].change['patch_number']
-      if any(a.action == constants.CL_ACTION_KICKED_OUT and
-             a.change['patch_number'] != submitted_patch_number for a in v):
-        submitted_after_new_patch[k] = v
+      submitted_patch_number = actions[-1].change['patch_number']
+      for a in actions:
+        if (a.action == constants.CL_ACTION_KICKED_OUT and
+            a.change['patch_number'] != submitted_patch_number):
+          d = submitted_after_new_patch.setdefault(a.bot_type, {})
+          d[patch] = actions
+          break
 
     # Sort the candidate bad CLs in order of submit time.
-    bad_cl_candidates = [x[0] for x in
-                         sorted(submitted_after_new_patch.items(),
-                               key=lambda x: x[1][-1].timestamp)]
+    bad_cl_candidates = {}
+    for bot_type, patch_actions in submitted_after_new_patch.items():
+      bad_cl_candidates[bot_type] = [
+        k for k, _ in sorted(patch_actions.items(),
+                             key=lambda x: x[1][-1].timestamp)]
 
     summary = {'total_cl_actions'      : len(self.actions),
                'unique_cls'            : len(self.per_cl_actions),
@@ -834,13 +874,14 @@ class CLStats(StatsManager):
     logging.info('         handling time: %.2f hours',
                  summary['median_handling_time']/3600.0)
 
-    logging.info('  Possibly bad patches: %s',
-                 len(summary['bad_cl_candidates']))
-    for k in summary['bad_cl_candidates']:
-      logging.info('Bad patch candidate in: CL:%s%s',
-                   constants.INTERNAL_CHANGE_PREFIX
-                   if k.internal else constants.EXTERNAL_CHANGE_PREFIX,
-                   k.gerrit_number)
+    for bot_type, patches in summary['bad_cl_candidates'].items():
+      logging.info('%d bad patch candidates were rejected by the %s',
+                   len(patches), bot_type)
+      for k in patches:
+        logging.info('Bad patch candidate in: CL:%s%s',
+                     constants.INTERNAL_CHANGE_PREFIX
+                     if k.internal else constants.EXTERNAL_CHANGE_PREFIX,
+                     k.gerrit_number)
 
     def PrintCounts(d, desc):
       for cnt, reason in sorted(((v, k) for (k, v) in d.items()), reverse=True):

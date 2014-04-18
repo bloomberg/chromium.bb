@@ -6,7 +6,6 @@
 
 import collections
 import datetime
-import functools
 import json
 import logging
 import math
@@ -327,7 +326,8 @@ class BuildData(object):
   CARBON_VER_KEY = 'carbon_version'
 
   @staticmethod
-  def ReadMetadataURLs(urls, gs_ctx=None, exclude_running=True):
+  def ReadMetadataURLs(urls, gs_ctx=None, exclude_running=True,
+                       get_sheets_version=False):
     """Read a list of metadata.json URLs and return BuildData objects.
 
     Args:
@@ -336,6 +336,10 @@ class BuildData(object):
         be called to get a GSContext to use.
       exclude_running: If True the metadata for builds that are still running
         will be skipped.
+      get_sheets_version: Whether to try to figure out the last sheets version
+        and the last carbon version that was gathered. This requires an extra
+        gsutil request and is only needed if you are writing the metadata to
+        to the Google Sheets spreadsheet.
 
     Returns:
       List of BuildData objects.
@@ -351,14 +355,17 @@ class BuildData(object):
 
       # Read the file next to url which indicates whether the metadata has
       # been gathered before, and with what stats version.
-      gathered_dict = {}
-      gathered_url = url + '.gathered'
-      if gs_ctx.Exists(gathered_url, print_cmd=False):
-        gathered_dict = json.loads(gs_ctx.Cat(gathered_url,
-                                              print_cmd=False).output)
+      if get_sheets_version:
+        gathered_dict = {}
+        gathered_url = url + '.gathered'
+        if gs_ctx.Exists(gathered_url, print_cmd=False):
+          gathered_dict = json.loads(gs_ctx.Cat(gathered_url,
+                                                print_cmd=False).output)
 
-      sheets_version = gathered_dict.get(BuildData.SHEETS_VER_KEY)
-      carbon_version = gathered_dict.get(BuildData.CARBON_VER_KEY)
+        sheets_version = gathered_dict.get(BuildData.SHEETS_VER_KEY)
+        carbon_version = gathered_dict.get(BuildData.CARBON_VER_KEY)
+      else:
+        sheets_version, carbon_version = None, None
 
       bd = BuildData(url, metadata_dict, sheets_version=sheets_version,
                      carbon_version=carbon_version)
@@ -727,4 +734,5 @@ CLActionTuple = collections.namedtuple('CLActionTuple',
                                        'change action timestamp reason')
 CLActionWithBuildTuple = collections.namedtuple('CLActionWithBuildTuple',
                                                 'change action timestamp '
-                                                'reason build_number')
+                                                'reason bot_type bot_id '
+                                                'build_number')
