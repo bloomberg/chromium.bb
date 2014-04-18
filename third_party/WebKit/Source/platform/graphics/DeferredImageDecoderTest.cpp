@@ -136,7 +136,6 @@ protected:
     // Don't own this but saves the pointer to query states.
     MockImageDecoder* m_actualDecoder;
     OwnPtr<DeferredImageDecoder> m_lazyDecoder;
-    SkPicture m_picture;
     SkAutoTUnref<SkCanvas> m_canvas;
     int m_frameBufferRequestCount;
     RefPtr<SharedBuffer> m_data;
@@ -156,12 +155,13 @@ TEST_F(DeferredImageDecoderTest, drawIntoSkPicture)
     EXPECT_FALSE(image->bitmap().isNull());
     EXPECT_TRUE(image->bitmap().isImmutable());
 
-    SkCanvas* tempCanvas = m_picture.beginRecording(100, 100);
+    SkPictureRecorder recorder;
+    SkCanvas* tempCanvas = recorder.beginRecording(100, 100);
     tempCanvas->drawBitmap(image->bitmap(), 0, 0);
-    m_picture.endRecording();
+    RefPtr<SkPicture> picture = adoptRef(recorder.endRecording());
     EXPECT_EQ(0, m_frameBufferRequestCount);
 
-    m_canvas->drawPicture(m_picture);
+    m_canvas->drawPicture(*picture);
     EXPECT_EQ(0, m_frameBufferRequestCount);
 
     SkBitmap canvasBitmap;
@@ -178,18 +178,19 @@ TEST_F(DeferredImageDecoderTest, drawIntoSkPictureProgressive)
     // Received only half the file.
     m_lazyDecoder->setData(partialData.get(), false);
     RefPtr<NativeImageSkia> image = m_lazyDecoder->frameBufferAtIndex(0)->asNewNativeImage();
-    SkCanvas* tempCanvas = m_picture.beginRecording(100, 100);
+    SkPictureRecorder recorder;
+    SkCanvas* tempCanvas = recorder.beginRecording(100, 100);
     tempCanvas->drawBitmap(image->bitmap(), 0, 0);
-    m_picture.endRecording();
-    m_canvas->drawPicture(m_picture);
+    RefPtr<SkPicture> picture = adoptRef(recorder.endRecording());
+    m_canvas->drawPicture(*picture);
 
     // Fully received the file and draw the SkPicture again.
     m_lazyDecoder->setData(m_data.get(), true);
     image = m_lazyDecoder->frameBufferAtIndex(0)->asNewNativeImage();
-    tempCanvas = m_picture.beginRecording(100, 100);
+    tempCanvas = recorder.beginRecording(100, 100);
     tempCanvas->drawBitmap(image->bitmap(), 0, 0);
-    m_picture.endRecording();
-    m_canvas->drawPicture(m_picture);
+    picture = adoptRef(recorder.endRecording());
+    m_canvas->drawPicture(*picture);
 
     SkBitmap canvasBitmap;
     ASSERT_TRUE(canvasBitmap.allocN32Pixels(100, 100));
@@ -212,14 +213,15 @@ TEST_F(DeferredImageDecoderTest, decodeOnOtherThread)
     EXPECT_FALSE(image->bitmap().isNull());
     EXPECT_TRUE(image->bitmap().isImmutable());
 
-    SkCanvas* tempCanvas = m_picture.beginRecording(100, 100);
+    SkPictureRecorder recorder;
+    SkCanvas* tempCanvas = recorder.beginRecording(100, 100);
     tempCanvas->drawBitmap(image->bitmap(), 0, 0);
-    m_picture.endRecording();
+    RefPtr<SkPicture> picture = adoptRef(recorder.endRecording());
     EXPECT_EQ(0, m_frameBufferRequestCount);
 
     // Create a thread to rasterize SkPicture.
     OwnPtr<blink::WebThread> thread = adoptPtr(blink::Platform::current()->createThread("RasterThread"));
-    thread->postTask(new Task(WTF::bind(&rasterizeMain, m_canvas.get(), &m_picture)));
+    thread->postTask(new Task(WTF::bind(&rasterizeMain, m_canvas.get(), picture.get())));
     thread.clear();
     EXPECT_EQ(0, m_frameBufferRequestCount);
 
@@ -317,11 +319,12 @@ TEST_F(DeferredImageDecoderTest, decodedSize)
     useMockImageDecoderFactory();
 
     // The following code should not fail any assert.
-    SkCanvas* tempCanvas = m_picture.beginRecording(100, 100);
+    SkPictureRecorder recorder;
+    SkCanvas* tempCanvas = recorder.beginRecording(100, 100);
     tempCanvas->drawBitmap(image->bitmap(), 0, 0);
-    m_picture.endRecording();
+    RefPtr<SkPicture> picture = adoptRef(recorder.endRecording());
     EXPECT_EQ(0, m_frameBufferRequestCount);
-    m_canvas->drawPicture(m_picture);
+    m_canvas->drawPicture(*picture);
     EXPECT_EQ(1, m_frameBufferRequestCount);
 }
 
