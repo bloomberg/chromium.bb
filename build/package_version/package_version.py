@@ -170,7 +170,7 @@ def GetPackageTargetPackages(custom_package_name, package_target_packages):
 
 
 def DownloadPackageArchives(tar_dir, package_target, package_name, package_desc,
-                            downloader=None):
+                            downloader=None, revision_num=None):
   """Downloads package archives from the cloud to the tar directory.
 
   Args:
@@ -214,6 +214,7 @@ def DownloadPackageArchives(tar_dir, package_target, package_name, package_desc,
   # archives described in the information file. Also keep track of what
   # new package names matches old package names. We will have to delete
   # stale package names after we are finished.
+  update_archives = []
   for archive_obj in package_desc.GetArchiveList():
     archive_desc = archive_obj.GetArchiveData()
     old_hash = old_archives.get(archive_desc.name, None)
@@ -222,31 +223,38 @@ def DownloadPackageArchives(tar_dir, package_target, package_name, package_desc,
       if archive_desc.hash == old_hash:
         logging.debug('Skipping matching archive: %s', archive_desc.name)
         continue
+    update_archives.append(archive_obj)
 
-    local_archive_file = package_locations.GetLocalPackageArchiveFile(
-        tar_dir,
-        package_target,
-        package_name,
-        archive_desc.name
-    )
-    pynacl.file_tools.MakeParentDirectoryIfAbsent(local_archive_file)
+  if update_archives:
+    logging.info('--Syncing %s to revision %s--' % (package_name, revision_num))
+    num_archives = len(update_archives)
+    for index, archive_obj in enumerate(update_archives):
+      archive_desc = archive_obj.GetArchiveData()
+      local_archive_file = package_locations.GetLocalPackageArchiveFile(
+          tar_dir,
+          package_target,
+          package_name,
+          archive_desc.name
+      )
+      pynacl.file_tools.MakeParentDirectoryIfAbsent(local_archive_file)
 
-    if archive_desc.url is None:
-      raise IOError('Error, no URL for archive: %s' % archive_desc.name)
+      if archive_desc.url is None:
+        raise IOError('Error, no URL for archive: %s' % archive_desc.name)
 
-    logging.info('Downloading package archive: %s', archive_desc.name)
-    try:
-      downloader(archive_desc.url, local_archive_file)
-    except Exception as e:
-      raise IOError('Could not download URL (%s): %s' %
-                    (archive_desc.url, e))
+      logging.info('Downloading package archive: %s (%d/%d)' %
+                   (archive_desc.name, index+1, num_archives))
+      try:
+        downloader(archive_desc.url, local_archive_file)
+      except Exception as e:
+        raise IOError('Could not download URL (%s): %s' %
+                      (archive_desc.url, e))
 
-    verified_hash = archive_info.GetArchiveHash(local_archive_file)
-    if verified_hash != archive_desc.hash:
-      raise IOError('Package hash check failed: %s != %s' %
-                    (verified_hash, archive_desc.hash))
+      verified_hash = archive_info.GetArchiveHash(local_archive_file)
+      if verified_hash != archive_desc.hash:
+        raise IOError('Package hash check failed: %s != %s' %
+                      (verified_hash, archive_desc.hash))
 
-    downloaded_files.append(local_archive_file)
+      downloaded_files.append(local_archive_file)
 
   # Delete any stale left over packages.
   for old_archive in old_archives:
@@ -493,7 +501,9 @@ def ExtractPackageTargets(package_target_packages, tar_dir, dest_dir,
 
     logging.info('Extracting package (%s) to directory: %s',
                  package_name, dest_package_dir)
-    for archive_obj in package_desc.GetArchiveList():
+    archive_list = package_desc.GetArchiveList()
+    num_archives = len(archive_list)
+    for index, archive_obj in enumerate(archive_list):
       archive_desc = archive_obj.GetArchiveData()
       archive_file = package_locations.GetLocalPackageArchiveFile(
           tar_dir,
@@ -521,8 +531,8 @@ def ExtractPackageTargets(package_target_packages, tar_dir, dest_dir,
                         (archive_file, archive_desc.hash, archive_hash))
 
       destination_dir = os.path.join(dest_package_dir, archive_desc.extract_dir)
-      logging.debug('Extracting %s to %s...',
-                    archive_desc.name, destination_dir)
+      logging.info('Extracting %s (%d/%d)' %
+                   (archive_desc.name, index+1, num_archives))
 
       temp_dir = os.path.join(destination_dir, '.tmp')
       pynacl.file_tools.RemoveDir(temp_dir)
@@ -694,9 +704,11 @@ def _DoSyncCmd(arguments):
           arguments.packages_desc,
           revision_file)
       package_desc = revision_desc.GetPackageInfo(package_target)
+      revision_num = revision_desc.GetRevisionNumber()
     else:
       # When the sync revision number is specified, find the package to
       # download remotely using the revision.
+      revision_num = arguments.sync__revision
       remote_package_key = package_locations.GetRemotePackageKey(
           arguments.packages_desc.IsSharedPackage(package_name),
           arguments.sync__revision,
@@ -718,7 +730,8 @@ def _DoSyncCmd(arguments):
         arguments.tar_dir,
         package_target,
         package_name,
-        package_desc)
+        package_desc,
+        revision_num=revision_num)
 
   CleanTempFiles(arguments.tar_dir)
 
