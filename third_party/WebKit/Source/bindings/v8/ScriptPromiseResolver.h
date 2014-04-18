@@ -31,11 +31,8 @@
 #ifndef ScriptPromiseResolver_h
 #define ScriptPromiseResolver_h
 
-#include "bindings/v8/DOMWrapperWorld.h"
-#include "bindings/v8/ScopedPersistent.h"
-#include "bindings/v8/ScriptObject.h"
+#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScriptPromise.h"
-#include "bindings/v8/ScriptState.h"
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/V8Binding.h"
 #include "wtf/RefPtr.h"
@@ -58,8 +55,8 @@ class ExecutionContext;
 //
 // Most methods including constructors must be called within a v8 context.
 // To use ScriptPromiseResolver out of a v8 context the caller must
-// enter a v8 context. ScriptPromiseResolverWithContext provides such
-// functionality.
+// enter a v8 context. Please use ScriptPromiseResolverWithContext
+// in such cases.
 //
 // To prevent memory leaks, you should release the reference manually
 // by calling resolve or reject.
@@ -85,56 +82,44 @@ public:
     // is called.
     ScriptPromise promise();
 
-    // To use following template methods, T must be a DOM class.
     template<typename T>
-    void resolve(T* value, v8::Handle<v8::Object> creationContext) { resolve(toV8NoInline(value, creationContext, m_isolate)); }
+    void resolve(const T& value, ExecutionContext* executionContext)
+    {
+        ASSERT(m_isolate->InContext());
+        // You should use ScriptPromiseResolverWithContext when you want
+        // to resolve a Promise in a non-original V8 context.
+        return resolve(value);
+    }
     template<typename T>
-    void reject(T* value, v8::Handle<v8::Object> creationContext) { reject(toV8NoInline(value, creationContext, m_isolate)); }
-
+    void reject(const T& value, ExecutionContext* executionContext)
+    {
+        ASSERT(m_isolate->InContext());
+        // You should use ScriptPromiseResolverWithContext when you want
+        // to reject a Promise in a non-original V8 context.
+        return reject(value);
+    }
     template<typename T>
-    void resolve(PassRefPtr<T> value, v8::Handle<v8::Object> creationContext) { resolve(value.get(), creationContext); }
+    void resolve(const T& value)
+    {
+        ASSERT(m_isolate->InContext());
+        resolve(toV8Value(value));
+    }
     template<typename T>
-    void resolve(RawPtr<T> value, v8::Handle<v8::Object> creationContext) { resolve(value.get(), creationContext); }
-    template<typename T>
-    void reject(PassRefPtr<T> value, v8::Handle<v8::Object> creationContext) { reject(value.get(), creationContext); }
-    template<typename T>
-    void reject(RawPtr<T> value, v8::Handle<v8::Object> creationContext) { reject(value.get(), creationContext); }
-
-    template<typename T>
-    inline void resolve(T* value, ExecutionContext*);
-    template<typename T>
-    inline void reject(T* value, ExecutionContext*);
-
-    template<typename T>
-    void resolve(PassRefPtr<T> value, ExecutionContext* context) { resolve(value.get(), context); }
-    template<typename T>
-    void resolve(RawPtr<T> value, ExecutionContext* context) { resolve(value.get(), context); }
-    template<typename T>
-    void reject(PassRefPtr<T> value, ExecutionContext* context) { reject(value.get(), context); }
-    template<typename T>
-    void reject(RawPtr<T> value, ExecutionContext* context) { reject(value.get(), context); }
-
-    template<typename T>
-    inline void resolve(T* value);
-    template<typename T>
-    inline void reject(T* value);
-
-    template<typename T, size_t inlineCapacity>
-    void resolve(const Vector<T, inlineCapacity>& iterator) { resolve(v8ArrayNoInline(iterator, m_isolate)); }
-    template<typename T, size_t inlineCapacity>
-    void reject(const Vector<T, inlineCapacity>& iterator) { reject(v8ArrayNoInline(iterator, m_isolate)); }
-
-    template<typename T>
-    void resolve(PassRefPtr<T> value) { resolve(value.get()); }
-    template<typename T>
-    void resolve(RawPtr<T> value) { resolve(value.get()); }
-    template<typename T>
-    void reject(PassRefPtr<T> value) { reject(value.get()); }
-    template<typename T>
-    void reject(RawPtr<T> value) { reject(value.get()); }
-
-    void resolve(ScriptValue);
-    void reject(ScriptValue);
+    void reject(const T& value)
+    {
+        ASSERT(m_isolate->InContext());
+        reject(toV8Value(value));
+    }
+    template<typename T> void resolve(const T& value, v8::Handle<v8::Object> creationContext)
+    {
+        ASSERT(m_isolate->InContext());
+        resolve(toV8Value(value, creationContext));
+    }
+    template<typename T> void reject(const T& value, v8::Handle<v8::Object> creationContext)
+    {
+        ASSERT(m_isolate->InContext());
+        reject(toV8Value(value, creationContext));
+    }
 
     v8::Isolate* isolate() const { return m_isolate; }
 
@@ -142,6 +127,55 @@ public:
     void reject(v8::Handle<v8::Value>);
 
 private:
+    template<typename T>
+    v8::Handle<v8::Value> toV8Value(const T& value, v8::Handle<v8::Object>)
+    {
+        // Default implementaion: for types that don't need the
+        // creation context.
+        return toV8Value(value);
+    }
+    template<typename T>
+    v8::Handle<v8::Value> toV8Value(const T& value)
+    {
+        return V8ValueTraits<T>::toV8Value(value, m_isolate);
+    }
+
+    // Pointer specializations.
+    template<typename T>
+    v8::Handle<v8::Value> toV8Value(T* value, v8::Handle<v8::Object> creationContext)
+    {
+        return toV8NoInline(value, creationContext, m_isolate);
+    }
+    template<typename T>
+    v8::Handle<v8::Value> toV8Value(T* value)
+    {
+        return toV8Value(value, NewScriptState::current(m_isolate)->context()->Global());
+    }
+    template<typename T>
+    v8::Handle<v8::Value> toV8Value(RefPtr<T> value, v8::Handle<v8::Object> creationContext) { return toV8Value(value.get(), creationContext); }
+    template<typename T>
+    v8::Handle<v8::Value> toV8Value(PassRefPtr<T> value, v8::Handle<v8::Object> creationContext) { return toV8Value(value.get(), creationContext); }
+    template<typename T>
+    v8::Handle<v8::Value> toV8Value(OwnPtr<T> value, v8::Handle<v8::Object> creationContext) { return toV8Value(value.get(), creationContext); }
+    template<typename T>
+    v8::Handle<v8::Value> toV8Value(PassOwnPtr<T> value, v8::Handle<v8::Object> creationContext) { return toV8Value(value.get(), creationContext); }
+    template<typename T>
+    v8::Handle<v8::Value> toV8Value(RawPtr<T> value, v8::Handle<v8::Object> creationContext) { return toV8Value(value.get(), creationContext); }
+    template<typename T> v8::Handle<v8::Value> toV8Value(RefPtr<T> value) { return toV8Value(value.get()); }
+    template<typename T> v8::Handle<v8::Value> toV8Value(PassRefPtr<T> value) { return toV8Value(value.get()); }
+    template<typename T> v8::Handle<v8::Value> toV8Value(OwnPtr<T> value) { return toV8Value(value.get()); }
+    template<typename T> v8::Handle<v8::Value> toV8Value(PassOwnPtr<T> value) { return toV8Value(value.get()); }
+    template<typename T> v8::Handle<v8::Value> toV8Value(RawPtr<T> value) { return toV8Value(value.get()); }
+
+    // const char* should use V8ValueTraits.
+    v8::Handle<v8::Value> toV8Value(const char* value, v8::Handle<v8::Object>) { return toV8Value(value); }
+    v8::Handle<v8::Value> toV8Value(const char* value) { return V8ValueTraits<const char*>::toV8Value(value, m_isolate); }
+
+    template<typename T, size_t inlineCapacity>
+    v8::Handle<v8::Value> toV8Value(const Vector<T, inlineCapacity>& value)
+    {
+        return v8ArrayNoInline(value, m_isolate);
+    }
     ScriptPromiseResolver(ExecutionContext*);
     ScriptPromiseResolver(v8::Isolate*);
 
@@ -151,36 +185,6 @@ private:
     // Used when scriptPromiseOnV8Promise is enabled.
     ScriptValue m_resolver;
 };
-
-template<typename T>
-void ScriptPromiseResolver::resolve(T* value, ExecutionContext* context)
-{
-    ASSERT(m_isolate->InContext());
-    v8::Handle<v8::Context> v8Context = toV8Context(context, DOMWrapperWorld::current(m_isolate));
-    resolve(value, v8Context->Global());
-}
-
-template<typename T>
-void ScriptPromiseResolver::reject(T* value, ExecutionContext* context)
-{
-    ASSERT(m_isolate->InContext());
-    v8::Handle<v8::Context> v8Context = toV8Context(context, DOMWrapperWorld::current(m_isolate));
-    reject(value, v8Context->Global());
-}
-
-template<typename T>
-void ScriptPromiseResolver::resolve(T* value)
-{
-    ASSERT(m_isolate->InContext());
-    resolve(value, v8::Object::New(m_isolate));
-}
-
-template<typename T>
-void ScriptPromiseResolver::reject(T* value)
-{
-    ASSERT(m_isolate->InContext());
-    reject(value, v8::Object::New(m_isolate));
-}
 
 } // namespace WebCore
 

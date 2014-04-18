@@ -34,6 +34,7 @@
 
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ExceptionMessages.h"
+#include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/V8BindingMacros.h"
 #include "bindings/v8/V8PerIsolateData.h"
 #include "bindings/v8/V8StringResource.h"
@@ -218,7 +219,10 @@ inline v8::Handle<v8::Value> v8Undefined()
 
 template <class T>
 struct V8ValueTraits {
-    static inline v8::Handle<v8::Value> arrayV8Value(const T& value, v8::Isolate* isolate)
+    // FIXME: This function requires the associated generated header to be
+    // included. Also, this function does not match with other V8ValueTraits
+    // classes. Remove this V8ValueTraits if possible.
+    static inline v8::Handle<v8::Value> toV8Value(const T& value, v8::Isolate* isolate)
     {
         return toV8(WTF::getPtr(value), v8::Handle<v8::Object>(), isolate);
     }
@@ -226,7 +230,7 @@ struct V8ValueTraits {
 
 template<>
 struct V8ValueTraits<String> {
-    static inline v8::Handle<v8::Value> arrayV8Value(const String& value, v8::Isolate* isolate)
+    static inline v8::Handle<v8::Value> toV8Value(const String& value, v8::Isolate* isolate)
     {
         return v8String(isolate, value);
     }
@@ -234,15 +238,47 @@ struct V8ValueTraits<String> {
 
 template<>
 struct V8ValueTraits<AtomicString> {
-    static inline v8::Handle<v8::Value> arrayV8Value(const AtomicString& value, v8::Isolate* isolate)
+    static inline v8::Handle<v8::Value> toV8Value(const AtomicString& value, v8::Isolate* isolate)
+    {
+        return v8String(isolate, value);
+    }
+};
+
+template<size_t n>
+struct V8ValueTraits<char[n]> {
+    static inline v8::Handle<v8::Value> toV8Value(char const (&value)[n], v8::Isolate* isolate)
     {
         return v8String(isolate, value);
     }
 };
 
 template<>
+struct V8ValueTraits<const char*> {
+    static inline v8::Handle<v8::Value> toV8Value(const char* const& value, v8::Isolate* isolate)
+    {
+        return v8String(isolate, value);
+    }
+};
+
+template<>
+struct V8ValueTraits<int> {
+    static inline v8::Handle<v8::Value> toV8Value(const int& value, v8::Isolate* isolate)
+    {
+        return v8::Integer::New(isolate, value);
+    }
+};
+
+template<>
+struct V8ValueTraits<long> {
+    static inline v8::Handle<v8::Value> toV8Value(const long& value, v8::Isolate* isolate)
+    {
+        return v8::Integer::New(isolate, value);
+    }
+};
+
+template<>
 struct V8ValueTraits<unsigned> {
-    static inline v8::Handle<v8::Value> arrayV8Value(const unsigned& value, v8::Isolate* isolate)
+    static inline v8::Handle<v8::Value> toV8Value(const unsigned& value, v8::Isolate* isolate)
     {
         return v8::Integer::NewFromUnsigned(isolate, value);
     }
@@ -250,7 +286,7 @@ struct V8ValueTraits<unsigned> {
 
 template<>
 struct V8ValueTraits<unsigned long> {
-    static inline v8::Handle<v8::Value> arrayV8Value(const unsigned long& value, v8::Isolate* isolate)
+    static inline v8::Handle<v8::Value> toV8Value(const unsigned long& value, v8::Isolate* isolate)
     {
         return v8::Integer::NewFromUnsigned(isolate, value);
     }
@@ -258,7 +294,7 @@ struct V8ValueTraits<unsigned long> {
 
 template<>
 struct V8ValueTraits<float> {
-    static inline v8::Handle<v8::Value> arrayV8Value(const float& value, v8::Isolate* isolate)
+    static inline v8::Handle<v8::Value> toV8Value(const float& value, v8::Isolate* isolate)
     {
         return v8::Number::New(isolate, value);
     }
@@ -266,9 +302,61 @@ struct V8ValueTraits<float> {
 
 template<>
 struct V8ValueTraits<double> {
-    static inline v8::Handle<v8::Value> arrayV8Value(const double& value, v8::Isolate* isolate)
+    static inline v8::Handle<v8::Value> toV8Value(const double& value, v8::Isolate* isolate)
     {
         return v8::Number::New(isolate, value);
+    }
+};
+
+template<>
+struct V8ValueTraits<bool> {
+    static inline v8::Handle<v8::Value> toV8Value(const bool& value, v8::Isolate* isolate)
+    {
+        return v8::Boolean::New(isolate, value);
+    }
+};
+
+// V8NullType and V8UndefinedType are used only for the value conversion.
+class V8NullType { };
+class V8UndefinedType { };
+
+template<>
+struct V8ValueTraits<V8NullType> {
+    static inline v8::Handle<v8::Value> toV8Value(const V8NullType&, v8::Isolate* isolate)
+    {
+        return v8::Null(isolate);
+    }
+};
+
+template<>
+struct V8ValueTraits<V8UndefinedType> {
+    static inline v8::Handle<v8::Value> toV8Value(const V8UndefinedType&, v8::Isolate* isolate)
+    {
+        return v8::Undefined(isolate);
+    }
+};
+
+template<>
+struct V8ValueTraits<ScriptValue> {
+    static inline v8::Handle<v8::Value> toV8Value(const ScriptValue& value, v8::Isolate*)
+    {
+        return value.v8Value();
+    }
+};
+
+template<>
+struct V8ValueTraits<v8::Handle<v8::Value> > {
+    static inline v8::Handle<v8::Value> toV8Value(const v8::Handle<v8::Value>& value, v8::Isolate*)
+    {
+        return value;
+    }
+};
+
+template<>
+struct V8ValueTraits<v8::Local<v8::Value> > {
+    static inline v8::Handle<v8::Value> toV8Value(const v8::Local<v8::Value>& value, v8::Isolate*)
+    {
+        return value;
     }
 };
 
@@ -280,7 +368,7 @@ v8::Handle<v8::Value> v8Array(const Vector<T, inlineCapacity>& iterator, v8::Iso
     typename Vector<T, inlineCapacity>::const_iterator end = iterator.end();
     typedef V8ValueTraits<T> TraitsType;
     for (typename Vector<T, inlineCapacity>::const_iterator iter = iterator.begin(); iter != end; ++iter)
-        result->Set(v8::Integer::New(isolate, index++), TraitsType::arrayV8Value(*iter, isolate));
+        result->Set(v8::Integer::New(isolate, index++), TraitsType::toV8Value(*iter, isolate));
     return result;
 }
 
@@ -292,7 +380,7 @@ v8::Handle<v8::Value> v8Array(const HeapVector<T, inlineCapacity>& iterator, v8:
     typename HeapVector<T, inlineCapacity>::const_iterator end = iterator.end();
     typedef V8ValueTraits<T> TraitsType;
     for (typename HeapVector<T, inlineCapacity>::const_iterator iter = iterator.begin(); iter != end; ++iter)
-        result->Set(v8::Integer::New(isolate, index++), TraitsType::arrayV8Value(*iter, isolate));
+        result->Set(v8::Integer::New(isolate, index++), TraitsType::toV8Value(*iter, isolate));
     return result;
 }
 

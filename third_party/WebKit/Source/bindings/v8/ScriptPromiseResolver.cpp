@@ -128,16 +128,4 @@ void ScriptPromiseResolver::reject(v8::Handle<v8::Value> value)
     m_resolver.clear();
 }
 
-void ScriptPromiseResolver::resolve(ScriptValue value)
-{
-    ASSERT(m_isolate->InContext());
-    resolve(value.v8Value());
-}
-
-void ScriptPromiseResolver::reject(ScriptValue value)
-{
-    ASSERT(m_isolate->InContext());
-    reject(value.v8Value());
-}
-
 } // namespace WebCore

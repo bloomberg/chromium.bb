@@ -38,6 +38,7 @@ public:
         return resolver.release();
     }
 
+    // Anything that can be passed to toV8Value can be passed to this function.
     template <typename T>
     void resolve(T value)
     {
@@ -45,11 +46,12 @@ public:
             return;
         m_state = Resolving;
         NewScriptState::Scope scope(m_scriptState.get());
-        m_value.set(m_scriptState->isolate(), toV8(value));
+        m_value.set(m_scriptState->isolate(), toV8Value(value));
         if (!executionContext()->activeDOMObjectsAreSuspended())
             resolveOrRejectImmediately(&m_timer);
     }
 
+    // Anything that can be passed to toV8Value can be passed to this function.
     template <typename T>
     void reject(T value)
     {
@@ -57,7 +59,7 @@ public:
             return;
         m_state = Rejecting;
         NewScriptState::Scope scope(m_scriptState.get());
-        m_value.set(m_scriptState->isolate(), toV8(value));
+        m_value.set(m_scriptState->isolate(), toV8Value(value));
         if (!executionContext()->activeDOMObjectsAreSuspended())
             resolveOrRejectImmediately(&m_timer);
     }
@@ -86,24 +88,34 @@ private:
 
     explicit ScriptPromiseResolverWithContext(NewScriptState*);
 
-    template <typename T>
-    v8::Handle<v8::Value> toV8(T* value)
+    template<typename T>
+    v8::Handle<v8::Value> toV8Value(const T& value)
     {
-        ASSERT(m_scriptState);
+        // Default implementaion: for types that don't need the
+        // creation context.
+        return V8ValueTraits<T>::toV8Value(value, m_scriptState->isolate());
+    }
+
+    // Pointer specializations.
+    template <typename T>
+    v8::Handle<v8::Value> toV8Value(T* value)
+    {
         ASSERT(!m_scriptState->contextIsEmpty());
         return toV8NoInline(value, m_scriptState->context()->Global(), m_scriptState->isolate());
     }
-    template <typename T> v8::Handle<v8::Value> toV8(PassRefPtr<T> value) { return toV8(value.get()); }
-    template <typename T> v8::Handle<v8::Value> toV8(RawPtr<T> value) { return toV8(value.get()); }
-    template <typename T, size_t inlineCapacity>
-    v8::Handle<v8::Value> toV8(const Vector<T, inlineCapacity>& value)
+    template<typename T> v8::Handle<v8::Value> toV8Value(RefPtr<T> value) { return toV8Value(value.get()); }
+    template<typename T> v8::Handle<v8::Value> toV8Value(PassRefPtr<T> value) { return toV8Value(value.get()); }
+    template<typename T> v8::Handle<v8::Value> toV8Value(OwnPtr<T> value) { return toV8Value(value.get()); }
+    template<typename T> v8::Handle<v8::Value> toV8Value(PassOwnPtr<T> value) { return toV8Value(value.get()); }
+    template<typename T> v8::Handle<v8::Value> toV8Value(RawPtr<T> value) { return toV8Value(value.get()); }
+
+    // const char* should use V8ValueTraits.
+    v8::Handle<v8::Value> toV8Value(const char* value) { return V8ValueTraits<const char*>::toV8Value(value, m_scriptState->isolate()); }
+
+    template<typename T, size_t inlineCapacity>
+    v8::Handle<v8::Value> toV8Value(const Vector<T, inlineCapacity>& value)
     {
-        ASSERT(m_scriptState);
         return v8ArrayNoInline(value, m_scriptState->isolate());
-    }
-    v8::Handle<v8::Value> toV8(ScriptValue value)
-    {
-        return value.v8Value();
     }
 
     void resolveOrRejectImmediately(Timer<ScriptPromiseResolverWithContext>*);
