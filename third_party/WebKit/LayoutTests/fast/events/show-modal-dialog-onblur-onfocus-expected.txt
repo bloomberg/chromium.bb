@@ -1,4 +1,4 @@
-CONSOLE WARNING: Chromium is considering deprecating showModalDialog. Please use window.open and postMessage instead.
+CONSOLE WARNING: showModalDialog is deprecated. Please use window.open and postMessage instead.
 Pop up a modal dialog. Verifies that focus events are not fired while inside the message loop.
 
 

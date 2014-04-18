@@ -660,7 +660,7 @@ String UseCounter::deprecationMessage(Feature feature)
         return "FileError is deprecated. Please use the 'name' or 'message' attributes of DOMError rather than 'code'.";
 
     case ShowModalDialog:
-        return "Chromium is considering deprecating showModalDialog. Please use window.open and postMessage instead.";
+        return "showModalDialog is deprecated. Please use window.open and postMessage instead.";
 
     case CSSStyleSheetInsertRuleOptionalArg:
         return "Calling CSSStyleSheet.insertRule() with one argument is deprecated. Please pass the index argument as well: insertRule(x, 0).";

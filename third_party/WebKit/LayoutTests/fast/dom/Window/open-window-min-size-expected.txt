@@ -1,4 +1,4 @@
-CONSOLE WARNING: Chromium is considering deprecating showModalDialog. Please use window.open and postMessage instead.
+CONSOLE WARNING: showModalDialog is deprecated. Please use window.open and postMessage instead.
 PASS successfullyParsed is true
 
 TEST COMPLETE
