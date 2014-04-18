@@ -2675,7 +2675,8 @@ void RenderObject::willBeRemovedFromTree()
     RenderLayer* layer = 0;
     if (parent()->style()->visibility() != VISIBLE && style()->visibility() == VISIBLE && !hasLayer()) {
         layer = parent()->enclosingLayer();
-        layer->dirtyVisibleContentStatus();
+        if (layer)
+            layer->dirtyVisibleContentStatus();
     }
 
     // Keep our layer hierarchy updated.
