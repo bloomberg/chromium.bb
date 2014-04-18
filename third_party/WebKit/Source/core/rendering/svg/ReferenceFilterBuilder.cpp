@@ -114,7 +114,7 @@ PassRefPtr<FilterEffect> ReferenceFilterBuilder::build(Filter* parentFilter, Ren
     if (!renderer)
         return nullptr;
 
-    Document* document = &renderer->document();
+    TreeScope* treeScope = &renderer->node()->treeScope();
 
     if (DocumentResourceReference* documentResourceRef = documentResourceReference(filterOperation)) {
         DocumentResource* cachedSVGDocument = documentResourceRef->document();
@@ -122,18 +122,18 @@ PassRefPtr<FilterEffect> ReferenceFilterBuilder::build(Filter* parentFilter, Ren
         // If we have an SVG document, this is an external reference. Otherwise
         // we look up the referenced node in the current document.
         if (cachedSVGDocument)
-            document = cachedSVGDocument->document();
+            treeScope = cachedSVGDocument->document();
     }
 
-    if (!document)
+    if (!treeScope)
         return nullptr;
 
-    Element* filter = document->getElementById(filterOperation->fragment());
+    Element* filter = treeScope->getElementById(filterOperation->fragment());
 
     if (!filter) {
         // Although we did not find the referenced filter, it might exist later
-        // in the document
-        document->accessSVGExtensions().addPendingResource(filterOperation->fragment(), toElement(renderer->node()));
+        // in the document.
+        treeScope->document().accessSVGExtensions().addPendingResource(filterOperation->fragment(), toElement(renderer->node()));
         return nullptr;
     }
 
