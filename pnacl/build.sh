@@ -246,13 +246,13 @@ setup-biased-bitcode-env() {
       LIB_CPP_INSTALL_DIR="${INSTALL_ROOT}/usr-bc-${arch}"
       ;;
     x86-32)
-      BIASED_BC_CFLAGS="--target=i686-nacl"
+      BIASED_BC_CFLAGS="--target=i686-unknown-nacl"
       NEWLIB_INSTALL_DIR="${INSTALL_ROOT}/usr-bc-${arch}"
       INSTALL_LIB="${INSTALL_ROOT}/lib-bc-${arch}"
       LIB_CPP_INSTALL_DIR="${INSTALL_ROOT}/usr-bc-${arch}"
       ;;
     x86-64)
-      BIASED_BC_CFLAGS="--target=x86_64-nacl"
+      BIASED_BC_CFLAGS="--target=x86_64-unknown-nacl"
       NEWLIB_INSTALL_DIR="${INSTALL_ROOT}/usr-bc-${arch}"
       INSTALL_LIB="${INSTALL_ROOT}/lib-bc-${arch}"
       LIB_CPP_INSTALL_DIR="${INSTALL_ROOT}/usr-bc-${arch}"
