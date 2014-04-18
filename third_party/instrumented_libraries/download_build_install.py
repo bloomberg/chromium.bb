@@ -98,6 +98,10 @@ def shell_call(command, verbose=False, environment=None):
   if child.returncode:
     raise Exception("Failed to run: %s" % command)
 
+def run_shell_commands(commands, verbose=False, environment=None):
+  for command in commands:
+    shell_call(command, verbose, environment)
+
 def destdir_configure_make_install(parsed_arguments, environment,
                                    install_prefix):
   configure_command = './configure %s' % parsed_arguments.custom_configure_flags
@@ -173,9 +177,41 @@ def libcap2_make_install(parsed_arguments, environment, install_prefix):
   shell_call('make -j%s install %s' % (parsed_arguments.jobs,
     ' '.join(install_args)), parsed_arguments.verbose, environment)
 
+def libpci3_make_install(parsed_arguments, environment, install_prefix):
+  # pciutils doesn't have a configure script
+  # This build script follows debian/rules.
+  
+  # `make install' will create a "$(DESTDIR)-udeb" directory alongside destdir.
+  # We don't want that in our product dir, so we use an intermediate directory.
+  destdir = 'debian/pciutils'
+  make_args = ['%s="%s"' % (name, environment[name]) for name in ['CC', 'CXX',
+    'CFLAGS', 'CXXFLAGS', 'LDFLAGS']]
+  make_args.append('SHARED=yes')
+  paths = [
+    'LIBDIR=/lib/',
+    'PREFIX=/usr',
+    'SBINDIR=/usr/bin',
+    'IDSDIR=/usr/share/misc',
+  ]
+  install_args = ['DESTDIR=%s' % destdir]
+  run_shell_commands([
+      'mkdir -p %s-udeb/usr/bin' % destdir,
+      'make -j%s %s' % (parsed_arguments.jobs, ' '.join(make_args + paths)),
+      'make -j%s %s install' % (
+          parsed_arguments.jobs,
+          ' '.join(install_args + paths))],
+      parsed_arguments.verbose, environment)
+  # Now move the contents of the temporary destdir to their final place.
+  run_shell_commands([
+      'cp %s/* %s/ -rd' % (destdir, install_prefix),
+      'install -m 644 lib/libpci.so* %s/lib/' % install_prefix,
+      'ln -s libpci.so.3.1.8 %s/lib/libpci.so.3' % install_prefix],
+      parsed_arguments.verbose, environment)
+
 def build_and_install(parsed_arguments, environment, install_prefix):
   if parsed_arguments.build_method == 'destdir':
-    destdir_configure_make_install(parsed_arguments, environment, install_prefix)
+    destdir_configure_make_install(
+        parsed_arguments, environment, install_prefix)
   elif parsed_arguments.build_method == 'prefix':
     prefix_configure_make_install(parsed_arguments, environment, install_prefix)
   elif parsed_arguments.build_method == 'custom_nss':
@@ -188,6 +224,8 @@ def build_and_install(parsed_arguments, environment, install_prefix):
     parsed_arguments.custom_configure_flags += \
       ' --x-includes=%s/include' % install_prefix
     prefix_configure_make_install(parsed_arguments, environment, install_prefix)
+  elif parsed_arguments.build_method == 'custom_libpci3':
+    libpci3_make_install(parsed_arguments, environment, install_prefix)
   else:
     raise Exception('Unrecognized build method: %s' %
         parsed_arguments.build_method)

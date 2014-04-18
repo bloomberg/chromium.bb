@@ -90,6 +90,7 @@
         '<(_sanitizer_type)-libgnome-keyring0',
         '<(_sanitizer_type)-libgtk2.0-0',
         '<(_sanitizer_type)-libgdk-pixbuf2.0-0',
+        '<(_sanitizer_type)-libpci3',
       ],
       'conditions': [
         ['asan==1', {
@@ -453,6 +454,13 @@
       ],
       'dependencies=': [],
       'run_before_build': 'libgdk-pixbuf2.0-0.sh',
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'libpci3',
+      'dependencies=': [],
+      'build_method': 'custom_libpci3',
+      'jobs': 1,
       'includes': ['standard_instrumented_library_target.gypi'],
     },
   ],
