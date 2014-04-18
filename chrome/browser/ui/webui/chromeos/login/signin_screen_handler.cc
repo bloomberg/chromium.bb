@@ -1455,7 +1455,7 @@ void SigninScreenHandler::HandleLoginWebuiReady() {
     // Do this only once. Any subsequent call would relod GAIA frame.
     focus_stolen_ = false;
     const char code[] =
-        "if (typeof gWindowOnLoad != 'undefined) gWindowOnLoad();";
+        "if (typeof gWindowOnLoad != 'undefined') gWindowOnLoad();";
     content::RenderFrameHost* frame =
         LoginDisplayHostImpl::GetGaiaAuthIframe(web_ui()->GetWebContents());
     frame->ExecuteJavaScript(base::ASCIIToUTF16(code));
