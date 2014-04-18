@@ -152,12 +152,12 @@ SuspiciousExtensionBubbleController::~SuspiciousExtensionBubbleController() {
 }
 
 bool SuspiciousExtensionBubbleController::ShouldShow() {
-  return !g_shown_for_profiles.Get().count(profile_) &&
+  return !g_shown_for_profiles.Get().count(profile_->GetOriginalProfile()) &&
       !GetExtensionList().empty();
 }
 
 void SuspiciousExtensionBubbleController::Show(ExtensionMessageBubble* bubble) {
-  g_shown_for_profiles.Get().insert(profile_);
+  g_shown_for_profiles.Get().insert(profile_->GetOriginalProfile());
   ExtensionMessageBubbleController::Show(bubble);
 }
 
