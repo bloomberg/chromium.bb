@@ -140,12 +140,17 @@ void PepperView::SetView(const pp::View& view) {
     DCHECK(result) << "Couldn't bind the device context.";
   }
 
-  pp::Rect pp_clip = view.GetClipRect();
-  webrtc::DesktopRect new_clip = webrtc::DesktopRect::MakeLTRB(
-      floorf(pp_clip.x() * dips_to_view_scale_),
-      floorf(pp_clip.y() * dips_to_view_scale_),
-      ceilf(pp_clip.right() * dips_to_view_scale_),
-      ceilf(pp_clip.bottom() * dips_to_view_scale_));
+  // Ignore clip rectangle provided by the browser because it may not be
+  // correct. See crbug.com/360240 . In case when the plugin is not visible
+  // (e.g. another tab is selected) |clip_area_| is set to empty rectangle,
+  // otherwise it's set to a rectangle that covers the whole plugin.
+  //
+  // TODO(sergeyu): Use view.GetClipRect() here after bug 360240 is fixed.
+  webrtc::DesktopRect new_clip =
+      view.IsVisible() ? webrtc::DesktopRect::MakeWH(
+                             ceilf(pp_size.width() * dips_to_view_scale_),
+                             ceilf(pp_size.height() * dips_to_view_scale_))
+                       : webrtc::DesktopRect();
   if (!clip_area_.equals(new_clip)) {
     view_changed = true;
 
