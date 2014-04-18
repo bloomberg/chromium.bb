@@ -50,7 +50,7 @@ function test()
 
         function checkLayer(layerInfo)
         {
-            if (layerInfo.layer.id() === InspectorTest.layers3DView._lastOutlinedLayerId[type])
+            if (InspectorTest.layers3DView._lastActiveObject[type] && layerInfo.layer.id() === InspectorTest.layers3DView._lastActiveObject[type].layer.id())
                 outlined = layerInfo.name;
         }
 
