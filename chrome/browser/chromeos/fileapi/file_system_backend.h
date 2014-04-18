@@ -70,11 +70,9 @@ class FileSystemBackend : public fileapi::ExternalFileSystemBackend {
   // FileSystemBackend will take an ownership of a |mount_points|
   // reference. On the other hand, |system_mount_points| will be kept as a raw
   // pointer and it should outlive FileSystemBackend instance.
-  // The ownerships of |drive_delegate| and |file_system_provider_delegate| are
-  // also taken.
+  // The ownership of |drive_delegate| is also taken.
   FileSystemBackend(
       FileSystemBackendDelegate* drive_delegate,
-      FileSystemBackendDelegate* file_system_provider_delegate,
       scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy,
       scoped_refptr<fileapi::ExternalMountPoints> mount_points,
       fileapi::ExternalMountPoints* system_mount_points);
@@ -137,11 +135,8 @@ class FileSystemBackend : public fileapi::ExternalFileSystemBackend {
   scoped_ptr<FileAccessPermissions> file_access_permissions_;
   scoped_ptr<fileapi::AsyncFileUtil> local_file_util_;
 
-  // The delegate instance for the drive file system related operations.
+  // The Delegate instance for the drive file system related operation.
   scoped_ptr<FileSystemBackendDelegate> drive_delegate_;
-
-  // The delegate instance for the provided file system related operations.
-  scoped_ptr<FileSystemBackendDelegate> file_system_provider_delegate_;
 
   // Mount points specific to the owning context (i.e. per-profile mount
   // points).
