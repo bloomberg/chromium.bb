@@ -20,6 +20,7 @@
 #include "url/gurl.h"
 
 namespace content {
+class IndexedDBBlobInfo;
 class IndexedDBConnection;
 class IndexedDBCursor;
 class IndexedDBDatabase;
@@ -82,7 +83,7 @@ class CONTENT_EXPORT IndexedDBCallbacks
   virtual void OnSuccessWithPrefetch(
       const std::vector<IndexedDBKey>& keys,
       const std::vector<IndexedDBKey>& primary_keys,
-      const std::vector<IndexedDBValue>& values);
+      std::vector<IndexedDBValue>& values);
 
   // IndexedDBDatabase::Get (with key injection)
   virtual void OnSuccess(IndexedDBValue* value,
@@ -109,6 +110,9 @@ class CONTENT_EXPORT IndexedDBCallbacks
   virtual ~IndexedDBCallbacks();
 
  private:
+  void RegisterBlobsAndSend(const std::vector<IndexedDBBlobInfo>& blob_info,
+                            const base::Closure& callback);
+
   friend class base::RefCounted<IndexedDBCallbacks>;
 
   // Originally from IndexedDBCallbacks:
