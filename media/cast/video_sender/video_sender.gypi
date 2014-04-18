@@ -16,6 +16,9 @@
       'sources': [
         'external_video_encoder.h',
         'external_video_encoder.cc',
+        'fake_software_video_encoder.h',
+        'fake_software_video_encoder.cc',
+        'software_video_encoder.h',
         'video_encoder.h',
         'video_encoder_impl.h',
         'video_encoder_impl.cc',

@@ -6,9 +6,11 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/json/json_reader.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "base/values.h"
 #include "media/base/video_util.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/cast_environment.h"
@@ -175,11 +177,55 @@ class VideoDecoder::Vp8Impl : public VideoDecoder::ImplBase {
   DISALLOW_COPY_AND_ASSIGN(Vp8Impl);
 };
 
+#ifndef OFFICIAL_BUILD
+// A fake video decoder that always output 2x2 black frames.
+class VideoDecoder::FakeImpl : public VideoDecoder::ImplBase {
+ public:
+  explicit FakeImpl(const scoped_refptr<CastEnvironment>& cast_environment)
+      : ImplBase(cast_environment, transport::kFakeSoftwareVideo),
+        last_decoded_id_(-1) {
+    if (ImplBase::cast_initialization_status_ != STATUS_VIDEO_UNINITIALIZED)
+      return;
+    ImplBase::cast_initialization_status_ = STATUS_VIDEO_INITIALIZED;
+  }
+
+ private:
+  virtual ~FakeImpl() {}
+
+  virtual scoped_refptr<VideoFrame> Decode(uint8* data, int len) OVERRIDE {
+    base::JSONReader reader;
+    scoped_ptr<base::Value> values(reader.Read(
+        base::StringPiece(reinterpret_cast<char*>(data), len)));
+    base::DictionaryValue* dict = NULL;
+    values->GetAsDictionary(&dict);
+
+    bool key = false;
+    int id = 0;
+    int ref = 0;
+    dict->GetBoolean("key", &key);
+    dict->GetInteger("id", &id);
+    dict->GetInteger("ref", &ref);
+    DCHECK(id == last_decoded_id_ + 1);
+    last_decoded_id_ = id;
+    return media::VideoFrame::CreateBlackFrame(gfx::Size(2, 2));
+  }
+
+  int last_decoded_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeImpl);
+};
+#endif
+
 VideoDecoder::VideoDecoder(
     const scoped_refptr<CastEnvironment>& cast_environment,
     const VideoReceiverConfig& video_config)
     : cast_environment_(cast_environment) {
   switch (video_config.codec) {
+#ifndef OFFICIAL_BUILD
+    case transport::kFakeSoftwareVideo:
+      impl_ = new FakeImpl(cast_environment);
+      break;
+#endif
     case transport::kVp8:
       impl_ = new Vp8Impl(cast_environment);
       break;

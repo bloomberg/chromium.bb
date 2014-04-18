@@ -27,7 +27,9 @@ class PacketPipe {
   PacketPipe();
   virtual ~PacketPipe();
   virtual void Send(scoped_ptr<transport::Packet> packet) = 0;
-  virtual void InitOnIOThread();
+  // Allows injection of fake test runner for testing.
+  virtual void InitOnIOThread(
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
   virtual void AppendToPipe(scoped_ptr<PacketPipe> pipe);
  protected:
   scoped_ptr<PacketPipe> pipe_;
@@ -77,17 +79,15 @@ scoped_ptr<PacketPipe> NewRandomUnsortedDelay(double delay);
 // packet is asically |min_delay| + random( |random_delay| )
 // However, every now and then a delay of |big_delay| will be
 // inserted (roughly every |seconds_between_big_delay| seconds).
-scoped_ptr<PacketPipe> NewRandomSortedDelay(
-    double random_delay,
-    double big_delay,
-    double seconds_between_big_delay);
+scoped_ptr<PacketPipe> NewRandomSortedDelay(double random_delay,
+                                            double big_delay,
+                                            double seconds_between_big_delay);
 
 // This PacketPipe emulates network outages. It basically waits
 // for 0-2*|average_work_time| seconds, then kills the network for
 // 0-|2*average_outage_time| seconds. Then it starts over again.
-scoped_ptr<PacketPipe> NewNetworkGlitchPipe(
-    double average_work_time,
-    double average_outage_time);
+scoped_ptr<PacketPipe> NewNetworkGlitchPipe(double average_work_time,
+                                            double average_outage_time);
 
 // This method builds a stack of PacketPipes to emulate a reasonably
 // good wifi network. ~5mbit, 1% packet loss, ~3ms latency.

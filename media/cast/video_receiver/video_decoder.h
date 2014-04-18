@@ -47,6 +47,7 @@ class VideoDecoder {
                    const DecodeFrameCallback& callback);
 
  private:
+  class FakeImpl;
   class ImplBase;
   class Vp8Impl;
 

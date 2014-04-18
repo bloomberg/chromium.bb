@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
-#include "media/cast/video_sender/codecs/vp8/vp8_encoder.h"
+#include "media/cast/video_sender/software_video_encoder.h"
 #include "media/cast/video_sender/video_encoder.h"
 
 namespace media {
@@ -65,7 +65,7 @@ class VideoEncoderImpl : public VideoEncoder {
   // dereferenced on the main thread. We manage the lifetime of this member
   // manually because it needs to be initialize, used and destroyed on the
   // video encoder thread and video encoder thread can out-live the main thread.
-  scoped_ptr<Vp8Encoder> vp8_encoder_;
+  scoped_ptr<SoftwareVideoEncoder> encoder_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoEncoderImpl);
 };

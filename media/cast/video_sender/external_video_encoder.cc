@@ -104,6 +104,9 @@ class LocalVideoEncodeAcceleratorClient
       case transport::kH264:
         output_profile = media::H264PROFILE_MAIN;
         break;
+      case transport::kFakeSoftwareVideo:
+        NOTREACHED() << "Fake software video encoder cannot be external";
+        break;
     }
     codec_ = video_config.codec;
     max_frame_rate_ = video_config.max_frame_rate;

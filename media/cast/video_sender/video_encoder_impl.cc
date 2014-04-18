@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/cast/video_sender/video_encoder.h"
+#include "media/cast/video_sender/video_encoder_impl.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -11,7 +11,8 @@
 #include "base/message_loop/message_loop.h"
 #include "media/base/video_frame.h"
 #include "media/cast/cast_defines.h"
-#include "media/cast/video_sender/video_encoder_impl.h"
+#include "media/cast/video_sender/codecs/vp8/vp8_encoder.h"
+#include "media/cast/video_sender/fake_software_video_encoder.h"
 
 namespace media {
 namespace cast {
@@ -20,31 +21,31 @@ namespace {
 
 typedef base::Callback<void(Vp8Encoder*)> PassEncoderCallback;
 
-void InitializeVp8EncoderOnEncoderThread(
+void InitializeEncoderOnEncoderThread(
     const scoped_refptr<CastEnvironment>& environment,
-    Vp8Encoder* vp8_encoder) {
+    SoftwareVideoEncoder* encoder) {
   DCHECK(environment->CurrentlyOn(CastEnvironment::VIDEO));
-  vp8_encoder->Initialize();
+  encoder->Initialize();
 }
 
 void EncodeVideoFrameOnEncoderThread(
     scoped_refptr<CastEnvironment> environment,
-    Vp8Encoder* vp8_encoder,
+    SoftwareVideoEncoder* encoder,
     const scoped_refptr<media::VideoFrame>& video_frame,
     const base::TimeTicks& capture_time,
     const VideoEncoderImpl::CodecDynamicConfig& dynamic_config,
     const VideoEncoderImpl::FrameEncodedCallback& frame_encoded_callback) {
   DCHECK(environment->CurrentlyOn(CastEnvironment::VIDEO));
   if (dynamic_config.key_frame_requested) {
-    vp8_encoder->GenerateKeyFrame();
+    encoder->GenerateKeyFrame();
   }
-  vp8_encoder->LatestFrameIdToReference(
+  encoder->LatestFrameIdToReference(
       dynamic_config.latest_frame_id_to_reference);
-  vp8_encoder->UpdateRates(dynamic_config.bit_rate);
+  encoder->UpdateRates(dynamic_config.bit_rate);
 
   scoped_ptr<transport::EncodedVideoFrame> encoded_frame(
       new transport::EncodedVideoFrame());
-  bool retval = vp8_encoder->Encode(video_frame, encoded_frame.get());
+  bool retval = encoder->Encode(video_frame, encoded_frame.get());
 
   encoded_frame->rtp_timestamp = transport::GetVideoRtpTimestamp(capture_time);
 
@@ -73,12 +74,16 @@ VideoEncoderImpl::VideoEncoderImpl(
       skip_next_frame_(false),
       skip_count_(0) {
   if (video_config.codec == transport::kVp8) {
-    vp8_encoder_.reset(new Vp8Encoder(video_config, max_unacked_frames));
+    encoder_.reset(new Vp8Encoder(video_config, max_unacked_frames));
     cast_environment_->PostTask(CastEnvironment::VIDEO,
                                 FROM_HERE,
-                                base::Bind(&InitializeVp8EncoderOnEncoderThread,
+                                base::Bind(&InitializeEncoderOnEncoderThread,
                                            cast_environment,
-                                           vp8_encoder_.get()));
+                                           encoder_.get()));
+#ifndef OFFICIAL_BUILD
+  } else if (video_config.codec == transport::kFakeSoftwareVideo) {
+    encoder_.reset(new FakeSoftwareVideoEncoder());
+#endif
   } else {
     DCHECK(false) << "Invalid config";  // Codec not supported.
   }
@@ -90,11 +95,12 @@ VideoEncoderImpl::VideoEncoderImpl(
 
 VideoEncoderImpl::~VideoEncoderImpl() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  if (vp8_encoder_) {
+  if (encoder_) {
     cast_environment_->PostTask(
         CastEnvironment::VIDEO,
         FROM_HERE,
-        base::Bind(&base::DeletePointer<Vp8Encoder>, vp8_encoder_.release()));
+        base::Bind(&base::DeletePointer<SoftwareVideoEncoder>,
+                   encoder_.release()));
   }
 }
 
@@ -103,9 +109,6 @@ bool VideoEncoderImpl::EncodeVideoFrame(
     const base::TimeTicks& capture_time,
     const FrameEncodedCallback& frame_encoded_callback) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  if (video_config_.codec != transport::kVp8)
-    return false;
-
   if (skip_next_frame_) {
     ++skip_count_;
     return false;
@@ -121,7 +124,7 @@ bool VideoEncoderImpl::EncodeVideoFrame(
                               FROM_HERE,
                               base::Bind(&EncodeVideoFrameOnEncoderThread,
                                          cast_environment_,
-                                         vp8_encoder_.get(),
+                                         encoder_.get(),
                                          video_frame,
                                          capture_time,
                                          dynamic_config_,

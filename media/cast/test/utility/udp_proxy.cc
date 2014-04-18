@@ -21,10 +21,11 @@ const size_t kMaxPacketSize = 65536;
 
 PacketPipe::PacketPipe() {}
 PacketPipe::~PacketPipe() {}
-void PacketPipe::InitOnIOThread() {
-  task_runner_ = base::MessageLoopProxy::current();
+void PacketPipe::InitOnIOThread(
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
+  task_runner_ = task_runner;
   if (pipe_) {
-    pipe_->InitOnIOThread();
+    pipe_->InitOnIOThread(task_runner);
   }
 }
 void PacketPipe::AppendToPipe(scoped_ptr<PacketPipe> pipe) {
@@ -181,8 +182,9 @@ class RandomSortedDelay : public PacketPipe {
       Schedule();
     }
   }
-  virtual void InitOnIOThread() OVERRIDE {
-    PacketPipe::InitOnIOThread();
+  virtual void InitOnIOThread(
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) OVERRIDE {
+    PacketPipe::InitOnIOThread(task_runner);
     // As we start the stream, assume that we are in a random
     // place between two extra delays, thus multiplier = 1.0;
     ScheduleExtraDelay(1.0);
@@ -261,8 +263,9 @@ class NetworkGlitchPipe : public PacketPipe {
         max_outage_time_(average_outage_time * 2),
         weak_factory_(this) {}
 
-  virtual void InitOnIOThread() OVERRIDE {
-    PacketPipe::InitOnIOThread();
+  virtual void InitOnIOThread(
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) OVERRIDE {
+    PacketPipe::InitOnIOThread(task_runner);
     Flip();
   }
 
@@ -444,8 +447,8 @@ class UDPProxyImpl : public UDPProxy {
     BuildPipe(&to_dest_pipe_, new PacketSender(socket_.get(), &destination_));
     BuildPipe(&from_dest_pipe_,
               new PacketSender(socket_.get(), &return_address_));
-    to_dest_pipe_->InitOnIOThread();
-    from_dest_pipe_->InitOnIOThread();
+    to_dest_pipe_->InitOnIOThread(base::MessageLoopProxy::current());
+    from_dest_pipe_->InitOnIOThread(base::MessageLoopProxy::current());
 
     VLOG(0) << "From:" << local_port_.ToString();
     VLOG(0) << "To:" << destination_.ToString();
@@ -463,8 +466,7 @@ class UDPProxyImpl : public UDPProxy {
     stop_event->Signal();
   }
 
-  void ProcessPacket(scoped_refptr<net::IOBuffer> recv_buf,
-                     int len) {
+  void ProcessPacket(scoped_refptr<net::IOBuffer> recv_buf, int len) {
     DCHECK_NE(len, net::ERR_IO_PENDING);
     VLOG(1) << "Got packet, len = " << len;
     if (len < 0) {
@@ -481,8 +483,7 @@ class UDPProxyImpl : public UDPProxy {
     }
   }
 
-  void ReadCallback(scoped_refptr<net::IOBuffer> recv_buf,
-                    int len) {
+  void ReadCallback(scoped_refptr<net::IOBuffer> recv_buf, int len) {
     ProcessPacket(recv_buf, len);
     PollRead();
   }

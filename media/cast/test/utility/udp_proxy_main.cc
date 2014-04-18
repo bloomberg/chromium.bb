@@ -15,7 +15,7 @@
 int main(int argc, char** argv) {
   if (argc < 5) {
     fprintf(stderr,
-            "Usage: udp_proxy <localport> <remotehost> <remoteport> <type>\n",
+            "Usage: udp_proxy <localport> <remotehost> <remoteport> <type>\n"
             "Where type is one of: perfect, wifi, evil\n");
     exit(1);
   }

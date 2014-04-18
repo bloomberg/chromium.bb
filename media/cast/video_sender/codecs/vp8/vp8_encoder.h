@@ -10,6 +10,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "media/cast/cast_config.h"
+#include "media/cast/video_sender/software_video_encoder.h"
 #include "third_party/libvpx/source/libvpx/vpx/vpx_encoder.h"
 
 namespace media {
@@ -24,27 +25,27 @@ namespace cast {
 
 const int kNumberOfVp8VideoBuffers = 3;
 
-class Vp8Encoder {
+class Vp8Encoder : public SoftwareVideoEncoder {
  public:
   Vp8Encoder(const VideoSenderConfig& video_config, uint8 max_unacked_frames);
 
-  ~Vp8Encoder();
+  virtual ~Vp8Encoder();
 
   // Initialize the encoder before Encode() can be called. This method
   // must be called on the thread that Encode() is called.
-  void Initialize();
+  virtual void Initialize() OVERRIDE;
 
   // Encode a raw image (as a part of a video stream).
-  bool Encode(const scoped_refptr<media::VideoFrame>& video_frame,
-              transport::EncodedVideoFrame* encoded_image);
+  virtual bool Encode(const scoped_refptr<media::VideoFrame>& video_frame,
+                      transport::EncodedVideoFrame* encoded_image) OVERRIDE;
 
   // Update the encoder with a new target bit rate.
-  void UpdateRates(uint32 new_bitrate);
+  virtual void UpdateRates(uint32 new_bitrate) OVERRIDE;
 
   // Set the next frame to be a key frame.
-  void GenerateKeyFrame();
+  virtual void GenerateKeyFrame() OVERRIDE;
 
-  void LatestFrameIdToReference(uint32 frame_id);
+  virtual void LatestFrameIdToReference(uint32 frame_id) OVERRIDE;
 
  private:
   enum Vp8Buffers {
