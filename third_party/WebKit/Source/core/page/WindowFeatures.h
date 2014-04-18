@@ -38,9 +38,13 @@ class FloatRect;
 
 struct WindowFeatures {
     WindowFeatures()
-        : xSet(false)
+        : x(0.0f)
+        , xSet(false)
+        , y(0.0f)
         , ySet(false)
+        , width(0.0f)
         , widthSet(false)
+        , height(0.0f)
         , heightSet(false)
         , menuBarVisible(true)
         , statusBarVisible(true)
