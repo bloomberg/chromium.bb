@@ -79,9 +79,6 @@ class Page4(KeyMobileSitesPage):
       url='http://www.theverge.com/2012/10/28/3568746/amazon-7-inch-fire-hd-ipad-mini-ad-ballsy',
       page_set=page_set)
 
-    self.disabled = ('Does not work with rasterize_and_record benchmark on N5;'
-                     'crbug.com/317141')
-
   def RunNavigateSteps(self, action_runner):
     action_runner.RunAction(NavigateAction())
     action_runner.RunAction(WaitAction(
