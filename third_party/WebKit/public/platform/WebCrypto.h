@@ -199,14 +199,11 @@ public:
 
     // This is the exception to the "Completing the request" guarantees
     // outlined above. This is useful for Blink internal crypto and is not part
-    // of the WebCrypto standard. digestSynchronous returns |true| if the
-    // digest was successfully computed and put into result. Otherwise, returns
-    // |false|. It must compute the digest or fail synchronously.
-    // createDigestor must provide the result via the WebCryptoDigestor object
-    // synchronously. createDigestor may return 0 if it fails to create a
-    // WebCryptoDigestor. If it succeeds, the WebCryptoDigestor returned by
-    // createDigestor must be freed by the caller.
-    virtual bool digestSynchronous(const WebCryptoAlgorithmId algorithmId, const unsigned char* data, unsigned dataSize, WebArrayBuffer& result) { return false; }
+    // of the WebCrypto standard. createDigestor must provide the result via
+    // the WebCryptoDigestor object synchronously. createDigestor may return 0
+    // if it fails to create a WebCryptoDigestor. If it succeeds, the
+    // WebCryptoDigestor returned by createDigestor must be freed by the
+    // caller.
     virtual WebCryptoDigestor* createDigestor(WebCryptoAlgorithmId algorithmId) { return 0; }
 
     // -----------------------
