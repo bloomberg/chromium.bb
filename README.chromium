@@ -98,6 +98,8 @@ This directory contains the source code of ICU 52.1 for C/C++
       b. Trim the locale data for non-UI languages to the bare minimum :
         ExemplarCharacters, LocaleScript, layout, and the name of the
         language for a locale in its native language.
+      c. Remove the legacy Chinese character set-based collation 
+         (big5han/gb2312han) that don't make any sense and nobdoy uses.
 
   - android/patch_locale.sh (to be run for Android build only):
       Makes changes to source/data/{curr,region,lang} to exclude these data
@@ -107,13 +109,7 @@ This directory contains the source code of ICU 52.1 for C/C++
     data necessary for the spellchecker. In both directories, add tg.txt to
     reslocal.mk
 
-6. Removal of unihan collation tables from data/coll/{zh,ja,ko}.txt
-
-  - run scripts/remove_unihan.sh
-    unihan collation tables are never used in Chrome/Blink, but it takes
-    about 1MB in the uncompressed ICU data file in ICU.
-
-7. Timezone data update
+6. Timezone data update
   - Grab the latest version of the following timezone data files and
     put them in source/data/misc.
 
@@ -126,14 +122,14 @@ This directory contains the source code of ICU 52.1 for C/C++
    are available at
    http://source.icu-project.org/repos/icu/data/trunk/tzdata/icunew/2014b/44/
 
-8. Transliterator customization
+7. Transliterator customization
 
    - Also add css3transform.txt to source/data/trnslit.
    - Put the following line in trnslocal.mk
 
      TRANSLIT_SOURCE=css3transform.txt
 
-9. Build-related changes
+8. Build-related changes
 
   - patches/wpo.patch
     Upstream bugs : http://bugs.icu-project.org/trac/ticket/8043
@@ -147,7 +143,7 @@ This directory contains the source code of ICU 52.1 for C/C++
       Windows-only data build patch. Add a new target DATALIB to makedata.mak
   - add an empty file (stubdatabuilt.txt) to source/stubdata
 
-10. Pre-built data files are checked in with the following steps on Linux:
+9. Pre-built data files are checked in with the following steps on Linux:
 
     a. Make a icu data build directory outside the Chromium source tree.
     b. Run 'runConfigureICU Linux' outside the source tree.
@@ -174,11 +170,12 @@ This directory contains the source code of ICU 52.1 for C/C++
       dll name to avoind having to update our build scripts/configuration
       files everytime ICU is upgraded to a new version.
 
-    - {mac,linux}/icudt52l_dat.S : Built on Linux with all the
+    - {mac,linux}/icudtl_dat.S : Built on Linux with all the
       patches above (except android/brkitr.patch) applied and checked in.
-      This file will be generated in {BUILD_DIR_ROOT}/data/out/tmp.
+      This file will be generated in {BUILD_DIR_ROOT}/data/out/tmp as
+      icudt52l_dat.S, but '52' is dropped while copying.
 
-      mac/icudt52l_dat.S is identical to linux/icudt52l_dat.S. It's made
+      mac/icudtl_dat.S is identical to linux/icudtl_dat.S. It's made
       by changing the header portion of the Linux version to read as following
       (no leading whitespace) :
 
@@ -192,13 +189,14 @@ This directory contains the source code of ICU 52.1 for C/C++
           _icudt52_dat:
 
 
-    - android/icudt52l_dat.S : Built on Linux with all the patches above and
-      android/brkitr.patch applied and android/patch_locale.sh executed, and
-      checked in.
+    - android/icudtl_dat.S : Built on Linux with all the patches above and
+      android/brkitr.patch applied and android/patch_locale.sh executed.
+      '52' is dropped from the name generated in the build tree.
+
     - android/icudtl.dat : Generated as icudt52l.dat in
       {BUILD_DIR_ROOT}/data/out/tmp along with icudt52l_dat.S and
       copied to the above location with '52' dropped in its name.
 
 
-11. Change export of U_ICUDATA_ENTRY_POINT from U_IMPORT to U_EXPORT.
+10. Change export of U_ICUDATA_ENTRY_POINT from U_IMPORT to U_EXPORT.
     - patches/declspec.patch

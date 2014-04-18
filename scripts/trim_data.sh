@@ -106,6 +106,14 @@ function remove_exemplar_cities {
   done
 }
 
+# big5han and gb2312han collation do not make any sense and nobody uses them.
+function remove_legacy_chinese_codepoint_collation {
+  echo "Removing Big5 / GB2312 collation data from Chinese locale"
+  target="${dataroot}/coll/zh.txt"
+  echo "Overwriting ${target}"
+  sed -r -i '/^        (big5|gb2312)han\{$/,/^        \}$/ d' ${target}
+}
+
 dataroot="$(dirname $0)/../source/data"
 localedatapath="${dataroot}/locales"
 langdatapath="${dataroot}/lang"
@@ -122,9 +130,12 @@ filter_display_language_names
 abridge_locale_data_for_non_ui_languages
 filter_currency_data
 filter_region_data
+remove_legacy_chinese_codepoint_collation
 
 # Chromium OS needs exemplar cities for timezones, but not Chromium.
 # It'll save 400kB (uncompressed), but the size difference in
 # 7z compressed installer is <= 100kB.
 # TODO(jshin): Make separate data files for CrOS and Chromium.
 #fremove_exemplar_cities
+
+
