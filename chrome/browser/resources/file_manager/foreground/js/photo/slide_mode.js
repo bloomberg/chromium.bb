@@ -798,16 +798,6 @@ SlideMode.prototype.onUnload = function(exiting) {
 };
 
 /**
- * beforeunload handler, to be called from the top frame.
- * @return {string} Message to show if there are unsaved changes.
- */
-SlideMode.prototype.onBeforeUnload = function() {
-  if (this.editor_.isBusy())
-    return this.displayStringFunction_('GALLERY_UNSAVED_CHANGES');
-  return null;
-};
-
-/**
  * Click handler for the image container.
  *
  * @param {Event} event Mouse click event.

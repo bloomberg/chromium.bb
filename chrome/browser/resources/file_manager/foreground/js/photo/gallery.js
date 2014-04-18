@@ -6,12 +6,6 @@
 
 /**
  * Called from the main frame when unloading.
- * @return {string?} User-visible message on null if it is OK to close.
- */
-function beforeunload() { return Gallery.instance.onBeforeUnload() }
-
-/**
- * Called from the main frame when unloading.
  * @param {boolean=} opt_exiting True if the app is exiting.
  */
 function unload(opt_exiting) { Gallery.instance.onUnload(opt_exiting) }
@@ -140,14 +134,6 @@ Gallery.prototype.onExternallyUnmounted_ = function(event) {
       event.volumeInfo) {
     this.onBack_();
   }
-};
-
-/**
- * Beforeunload handler.
- * @return {string?} User-visible message on null if it is OK to close.
- */
-Gallery.prototype.onBeforeUnload = function() {
-  return this.slideMode_.onBeforeUnload();
 };
 
 /**

@@ -563,10 +563,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
                               'initVolumeManager');
 
     this.initializeQueue_.run();
-    window.addEventListener('pagehide', function() {
-      this.onBeforeUnload_();
-      this.onUnload_();
-    }.bind(this));
+    window.addEventListener('pagehide', this.onUnload_.bind(this));
   };
 
   FileManager.prototype.initializeUI = function(dialogDom, callback) {
@@ -3671,21 +3668,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     this.defaultActionMenuItem_.hidden = !defaultItem;
     defaultActionSeparator.hidden = !defaultItem;
-  };
-
-  /**
-   * Window beforeunload handler.
-   * @return {string} Message to show. Ignored when running as a packaged app.
-   * @private
-   */
-  FileManager.prototype.onBeforeUnload_ = function() {
-    if (this.filePopup_ &&
-        this.filePopup_.contentWindow &&
-        this.filePopup_.contentWindow.beforeunload) {
-      // The gallery might want to prevent the unload if it is busy.
-      return this.filePopup_.contentWindow.beforeunload();
-    }
-    return null;
   };
 
   /**
