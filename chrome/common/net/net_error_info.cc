@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "chrome/common/net/net_error_info.h"
 
 namespace chrome_common_net {
@@ -34,6 +35,11 @@ const char* DnsProbeStatusToString(int status) {
 bool DnsProbeStatusIsFinished(DnsProbeStatus status) {
   return status >= DNS_PROBE_FINISHED_INCONCLUSIVE &&
          status < DNS_PROBE_MAX;
+}
+
+void RecordEvent(NetworkErrorPageEvent event) {
+  UMA_HISTOGRAM_ENUMERATION("Net.ErrorPageCounts", event,
+                            NETWORK_ERROR_PAGE_EVENT_MAX);
 }
 
 }  // namespace chrome_common_net

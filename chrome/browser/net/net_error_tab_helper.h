@@ -46,6 +46,10 @@ class NetErrorTabHelper
   }
 
   // content::WebContentsObserver implementation.
+  virtual void DidStartNavigationToPendingEntry(
+      const GURL& url,
+      content::NavigationController::ReloadType reload_type) OVERRIDE;
+
   virtual void DidStartProvisionalLoadForFrame(
       int64 frame_id,
       int64 parent_frame_id,

@@ -39,6 +39,13 @@ class NetErrorHelperCore {
     ERROR_PAGE,
   };
 
+  enum Button {
+    NO_BUTTON,
+    RELOAD_BUTTON,
+    LOAD_STALE_BUTTON,
+    MORE_BUTTON,
+  };
+
   // The Delegate handles all interaction with the RenderView, WebFrame, and
   // the network, as well as the generation of error pages.
   class Delegate {
@@ -48,6 +55,8 @@ class NetErrorHelperCore {
         const blink::WebURLError& error,
         bool is_failed_post,
         scoped_ptr<LocalizedError::ErrorPageParams> params,
+        bool* reload_button_shown,
+        bool* load_stale_button_shown,
         std::string* html) const = 0;
 
     // Loads the given HTML in the main frame for use as an error page.
@@ -55,7 +64,7 @@ class NetErrorHelperCore {
                                           const GURL& failed_url) = 0;
 
     // Create extra Javascript bindings in the error page.
-    virtual void EnableStaleLoadBindings(const GURL& page_url) = 0;
+    virtual void EnablePageHelperFunctions() = 0;
 
     // Updates the currently displayed error page with a new error code.  The
     // currently displayed error page must have finished loading, and must have
@@ -76,6 +85,9 @@ class NetErrorHelperCore {
 
     // Starts a reload of the page in the observed frame.
     virtual void ReloadPage() = 0;
+
+    // Load the original page from cache.
+    virtual void LoadPageFromCache(const GURL& page_url) = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -145,6 +157,11 @@ class NetErrorHelperCore {
     auto_reload_timer_.reset(timer.release());
   }
 
+  // Execute the effect of pressing the specified button.
+  // Note that the visual effects of the 'MORE' button are taken
+  // care of in JavaScript.
+  void ExecuteButtonPress(Button button);
+
  private:
   struct ErrorPageInfo;
 
@@ -195,6 +212,10 @@ class NetErrorHelperCore {
 
   int auto_reload_count_;
   bool can_auto_reload_page_;
+
+  // Non-NO_BUTTON only when a navigation has been initiated from the error
+  // page.  Used to detect when such navigations result in errors.
+  Button navigation_from_button_;
 };
 
 #endif  // CHROME_RENDERER_NET_NET_ERROR_HELPER_CORE_H_

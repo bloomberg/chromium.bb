@@ -119,7 +119,8 @@ class NetErrorHelperCoreTest : public testing::Test,
                              update_count_(0),
                              error_html_update_count_(0),
                              reload_count_(0),
-                             enable_stale_load_bindings_count_(0) {
+                             load_stale_count_(0),
+                             enable_page_helper_functions_count_(0) {
     core_.set_auto_reload_enabled(false);
     core_.set_timer_for_testing(scoped_ptr<base::Timer>(timer_));
   }
@@ -138,8 +139,16 @@ class NetErrorHelperCoreTest : public testing::Test,
     return reload_count_;
   }
 
-  int enable_stale_load_bindings_count() const {
-    return enable_stale_load_bindings_count_;
+  int load_stale_count() const {
+    return load_stale_count_;
+  }
+
+  const GURL& load_stale_url() const {
+    return load_stale_url_;
+  }
+
+  int enable_page_helper_functions_count() const {
+    return enable_page_helper_functions_count_;
   }
 
   const std::string& last_update_string() const { return last_update_string_; }
@@ -225,8 +234,12 @@ class NetErrorHelperCoreTest : public testing::Test,
       const WebURLError& error,
       bool is_failed_post,
       scoped_ptr<LocalizedError::ErrorPageParams> params,
+      bool* reload_button_shown,
+      bool* load_stale_button_shown,
       std::string* html) const OVERRIDE {
     last_error_page_params_.reset(params.release());
+    *reload_button_shown = false;
+    *load_stale_button_shown = false;
     *html = ErrorToString(error, is_failed_post);
   }
 
@@ -236,8 +249,8 @@ class NetErrorHelperCoreTest : public testing::Test,
     last_error_html_ = html;
   }
 
-  virtual void EnableStaleLoadBindings(const GURL& page_url) OVERRIDE {
-    enable_stale_load_bindings_count_++;
+  virtual void EnablePageHelperFunctions() OVERRIDE {
+    enable_page_helper_functions_count_++;
   }
 
   virtual void UpdateErrorPage(const WebURLError& error,
@@ -267,6 +280,11 @@ class NetErrorHelperCoreTest : public testing::Test,
     reload_count_++;
   }
 
+  virtual void LoadPageFromCache(const GURL& error_url) OVERRIDE {
+    load_stale_count_++;
+    load_stale_url_ = error_url;
+  }
+
   base::MockTimer* timer_;
 
   NetErrorHelperCore core_;
@@ -289,8 +307,10 @@ class NetErrorHelperCoreTest : public testing::Test,
   mutable scoped_ptr<LocalizedError::ErrorPageParams> last_error_page_params_;
 
   int reload_count_;
+  int load_stale_count_;
+  GURL load_stale_url_;
 
-  int enable_stale_load_bindings_count_;
+  int enable_page_helper_functions_count_;
 };
 
 //------------------------------------------------------------------------------
@@ -334,14 +354,14 @@ TEST_F(NetErrorHelperCoreTest, MainFrameNonDnsError) {
   EXPECT_EQ(NetErrorString(net::ERR_CONNECTION_RESET), html);
 
   // Error page loads.
-  EXPECT_EQ(0, enable_stale_load_bindings_count());
+  EXPECT_EQ(0, enable_page_helper_functions_count());
   core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
   core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME);
   core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_EQ(0, update_count());
   EXPECT_EQ(0, error_html_update_count());
-  EXPECT_EQ(1, enable_stale_load_bindings_count());
+  EXPECT_EQ(1, enable_page_helper_functions_count());
 }
 
 TEST_F(NetErrorHelperCoreTest, MainFrameNonDnsErrorWithCorrections) {
@@ -739,13 +759,13 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbePost) {
             html);
 
   // Error page loads.
-  EXPECT_EQ(0, enable_stale_load_bindings_count());
+  EXPECT_EQ(0, enable_page_helper_functions_count());
   core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::ERROR_PAGE);
   core().OnCommitLoad(NetErrorHelperCore::MAIN_FRAME);
   core().OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_EQ(0, update_count());
-  EXPECT_EQ(0, enable_stale_load_bindings_count());
+  EXPECT_EQ(1, enable_page_helper_functions_count());
 
   core().OnNetErrorInfo(chrome_common_net::DNS_PROBE_STARTED);
   EXPECT_EQ(1, update_count());
@@ -1984,3 +2004,20 @@ TEST_F(NetErrorHelperCoreTest, ShouldSuppressErrorPage) {
   EXPECT_TRUE(core().ShouldSuppressErrorPage(NetErrorHelperCore::MAIN_FRAME,
                                              GURL(kFailedUrl)));
 }
+
+TEST_F(NetErrorHelperCoreTest, ExplicitReloadSucceeds) {
+  DoErrorLoad(net::ERR_CONNECTION_RESET);
+  EXPECT_EQ(0, reload_count());
+  core().ExecuteButtonPress(NetErrorHelperCore::RELOAD_BUTTON);
+  EXPECT_EQ(1, reload_count());
+}
+
+TEST_F(NetErrorHelperCoreTest, ExplicitLoadStaleSucceeds) {
+  DoErrorLoad(net::ERR_CONNECTION_RESET);
+  EXPECT_EQ(0, load_stale_count());
+  core().ExecuteButtonPress(NetErrorHelperCore::LOAD_STALE_BUTTON);
+  EXPECT_EQ(1, load_stale_count());
+  EXPECT_EQ(GURL(kFailedUrl), load_stale_url());
+}
+
+

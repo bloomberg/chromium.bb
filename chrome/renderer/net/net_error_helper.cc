@@ -16,7 +16,7 @@
 #include "chrome/common/localized_error.h"
 #include "chrome/common/net/net_error_info.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/renderer/net/error_cache_load.h"
+#include "chrome/renderer/net/net_error_page_controller.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/content_renderer_client.h"
@@ -95,6 +95,18 @@ NetErrorHelper::~NetErrorHelper() {
   RenderThread::Get()->RemoveObserver(this);
 }
 
+void NetErrorHelper::ReloadButtonPressed() {
+  core_.ExecuteButtonPress(NetErrorHelperCore::RELOAD_BUTTON);
+}
+
+void NetErrorHelper::LoadStaleButtonPressed() {
+  core_.ExecuteButtonPress(NetErrorHelperCore::LOAD_STALE_BUTTON);
+}
+
+void NetErrorHelper::MoreButtonPressed() {
+  core_.ExecuteButtonPress(NetErrorHelperCore::MORE_BUTTON);
+}
+
 void NetErrorHelper::DidStartProvisionalLoad() {
   blink::WebFrame* frame = render_frame()->GetWebFrame();
   core_.OnStartLoad(GetFrameType(frame), GetLoadingPageType(frame));
@@ -148,6 +160,8 @@ void NetErrorHelper::GenerateLocalizedErrorPage(
     const blink::WebURLError& error,
     bool is_failed_post,
     scoped_ptr<LocalizedError::ErrorPageParams> params,
+    bool* reload_button_shown,
+    bool* load_stale_button_shown,
     std::string* error_html) const {
   error_html->clear();
 
@@ -160,11 +174,14 @@ void NetErrorHelper::GenerateLocalizedErrorPage(
     base::DictionaryValue error_strings;
     LocalizedError::GetStrings(error.reason, error.domain.utf8(),
                                error.unreachableURL, is_failed_post,
-                               error.staleCopyInCache,
+                               error.staleCopyInCache && !is_failed_post,
                                RenderThread::Get()->GetLocale(),
                                render_frame()->GetRenderView()->
                                    GetAcceptLanguages(),
                                params.Pass(), &error_strings);
+    *reload_button_shown = error_strings.Get("reloadButton", NULL);
+    *load_stale_button_shown = error_strings.Get("staleLoadButton", NULL);
+
     // "t" is the id of the template's root node.
     *error_html = webui::GetTemplatesHtml(template_html, &error_strings, "t");
   }
@@ -179,8 +196,8 @@ void NetErrorHelper::LoadErrorPageInMainFrame(const std::string& html,
   frame->loadHTMLString(html, GURL(kUnreachableWebDataURL), failed_url, true);
 }
 
-void NetErrorHelper::EnableStaleLoadBindings(const GURL& page_url) {
-  ErrorCacheLoad::Install(render_frame(), page_url);
+void NetErrorHelper::EnablePageHelperFunctions() {
+  NetErrorPageController::Install(render_frame());
 }
 
 void NetErrorHelper::UpdateErrorPage(const blink::WebURLError& error,
@@ -190,7 +207,7 @@ void NetErrorHelper::UpdateErrorPage(const blink::WebURLError& error,
                              error.domain.utf8(),
                              error.unreachableURL,
                              is_failed_post,
-                             error.staleCopyInCache,
+                             error.staleCopyInCache && !is_failed_post,
                              RenderThread::Get()->GetLocale(),
                              render_frame()->GetRenderView()->
                                  GetAcceptLanguages(),
@@ -241,6 +258,16 @@ void NetErrorHelper::CancelFetchNavigationCorrections() {
 
 void NetErrorHelper::ReloadPage() {
   render_frame()->GetWebFrame()->reload(false);
+}
+
+void NetErrorHelper::LoadPageFromCache(const GURL& page_url) {
+  blink::WebFrame* web_frame = render_frame()->GetWebFrame();
+  DCHECK(!EqualsASCII(web_frame->dataSource()->request().httpMethod(), "POST"));
+
+  blink::WebURLRequest request(page_url);
+  request.setCachePolicy(blink::WebURLRequest::ReturnCacheDataDontLoad);
+
+  web_frame->loadRequest(request);
 }
 
 void NetErrorHelper::OnNetErrorInfo(int status_num) {

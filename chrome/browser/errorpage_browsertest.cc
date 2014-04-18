@@ -34,6 +34,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/test/net/url_request_failed_job.h"
 #include "content/test/net/url_request_mock_http_job.h"
+#include "grit/generated_resources.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/http/failing_http_transaction_factory.h"
@@ -46,6 +47,7 @@
 #include "net/url_request/url_request_job_factory.h"
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
 using content::NavigationController;
@@ -134,6 +136,10 @@ void ExpectDisplayingNavigationCorrections(Browser* browser,
           "domAutomationController.send(searchText == 'search query');",
       &search_box_populated));
   EXPECT_TRUE(search_box_populated);
+}
+
+std::string GetLoadStaleButtonLabel() {
+  return l10n_util::GetStringUTF8(IDS_ERRORPAGES_BUTTON_LOAD_STALE);
 }
 
 // A protocol handler that fails a configurable number of requests, then
@@ -249,12 +255,13 @@ class ErrorPageTest : public InProcessBrowserTest {
   }
 
   // Confirms that the javascript variable indicating whether or not we have
-  // a stale copy in the cache has been set to |expected|.
-  bool ProbeStaleCopyValue(bool expected) {
+  // a stale copy in the cache has been set to |expected|, and that the
+  // stale load button is or isn't there based on the same expectation.
+  testing::AssertionResult ProbeStaleCopyValue(bool expected) {
     const char* js_cache_probe =
         "try {\n"
         "    domAutomationController.send(\n"
-        "        templateData.staleCopyInCache ? 'yes' : 'no');\n"
+        "        'staleLoadButton' in templateData ? 'yes' : 'no');\n"
         "} catch (e) {\n"
         "    domAutomationController.send(e.message);\n"
         "}\n";
@@ -265,17 +272,21 @@ class ErrorPageTest : public InProcessBrowserTest {
             browser()->tab_strip_model()->GetActiveWebContents(),
             js_cache_probe,
             &result);
-    EXPECT_TRUE(ret);
-    if (!ret)
-      return false;
-    EXPECT_EQ(expected ? "yes" : "no", result);
-    return ((expected ? "yes" : "no") == result);
+    if (!ret) {
+      return testing::AssertionFailure()
+          << "Failing return from ExecuteScriptAndExtractString.";
+    }
+
+    if ((expected && "yes" == result) || (!expected && "no" == result))
+      return testing::AssertionSuccess();
+
+    return testing::AssertionFailure() << "Cache probe result is " << result;
   }
 
   testing::AssertionResult ReloadStaleCopyFromCache() {
     const char* js_reload_script =
         "try {\n"
-        "    errorCacheLoad.reloadStaleInstance();\n"
+        "    document.getElementById('stale-load-button').click();\n"
         "    domAutomationController.send('success');\n"
         "} catch (e) {\n"
         "    domAutomationController.send(e.message);\n"
@@ -681,6 +692,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, StaleCacheStatus) {
       // With no navigation corrections to load, there's only one navigation.
       browser(), test_url, 1);
   EXPECT_TRUE(ProbeStaleCopyValue(true));
+  EXPECT_TRUE(IsDisplayingText(browser(), GetLoadStaleButtonLabel()));
   EXPECT_NE(base::ASCIIToUTF16("Nocache Test Page"),
             browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
 
@@ -701,6 +713,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, StaleCacheStatus) {
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
       browser(), test_url, 1);
   EXPECT_TRUE(ProbeStaleCopyValue(false));
+  EXPECT_FALSE(IsDisplayingText(browser(), GetLoadStaleButtonLabel()));
 }
 
 class ErrorPageAutoReloadTest : public InProcessBrowserTest {
@@ -862,7 +875,8 @@ IN_PROC_BROWSER_TEST_F(ErrorPageNavigationCorrectionsFailTest,
 
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
       browser(), test_url, 2);
-  ProbeStaleCopyValue(true);
+  EXPECT_TRUE(IsDisplayingText(browser(), GetLoadStaleButtonLabel()));
+  EXPECT_TRUE(ProbeStaleCopyValue(true));
 
   // Confirm that loading the stale copy from the cache works.
   content::TestNavigationObserver same_tab_observer(
@@ -880,7 +894,8 @@ IN_PROC_BROWSER_TEST_F(ErrorPageNavigationCorrectionsFailTest,
                   BrowsingDataHelper::UNPROTECTED_WEB);
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
       browser(), test_url, 2);
-  ProbeStaleCopyValue(false);
+  EXPECT_TRUE(ProbeStaleCopyValue(false));
+  EXPECT_FALSE(IsDisplayingText(browser(), GetLoadStaleButtonLabel()));
 }
 
 // A test fixture that simulates failing requests for an IDN domain name.

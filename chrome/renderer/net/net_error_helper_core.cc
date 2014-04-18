@@ -12,6 +12,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
@@ -253,6 +254,8 @@ struct NetErrorHelperCore::ErrorPageInfo {
       : error(error),
         was_failed_post(was_failed_post),
         needs_dns_updates(false),
+        reload_button_in_page(false),
+        load_stale_button_in_page(false),
         is_finished_loading(false) {
   }
 
@@ -278,6 +281,10 @@ struct NetErrorHelperCore::ErrorPageInfo {
   //                the blank page is loading, to get rid of these.
   std::string navigation_correction_request_body;
 
+  // Track if specific buttons are included in an error page, for statistics.
+  bool reload_button_in_page;
+  bool load_stale_button_in_page;
+
   // True if a page has completed loading, at which point it can receive
   // updates.
   bool is_finished_loading;
@@ -298,7 +305,8 @@ NetErrorHelperCore::NetErrorHelperCore(Delegate* delegate)
       // TODO(ellyjones): Make online_ accurate at object creation.
       online_(true),
       auto_reload_count_(0),
-      can_auto_reload_page_(false) {
+      can_auto_reload_page_(false),
+      navigation_from_button_(NO_BUTTON) {
 }
 
 NetErrorHelperCore::~NetErrorHelperCore() {
@@ -356,6 +364,24 @@ void NetErrorHelperCore::OnCommitLoad(FrameType frame_type) {
   if (frame_type != MAIN_FRAME)
     return;
 
+  // Track if an error occurred due to a page button press.
+  // This isn't perfect; if (for instance), the server is slow responding
+  // to a request generated from the page reload button, and the user hits
+  // the browser reload button, this code will still believe the
+  // result is from the page reload button.
+  if (committed_error_page_info_ && pending_error_page_info_ &&
+      navigation_from_button_ != NO_BUTTON &&
+      committed_error_page_info_->error.unreachableURL ==
+          pending_error_page_info_->error.unreachableURL) {
+    DCHECK(navigation_from_button_ == RELOAD_BUTTON ||
+           navigation_from_button_ == LOAD_STALE_BUTTON);
+    chrome_common_net::RecordEvent(
+        navigation_from_button_ == RELOAD_BUTTON ?
+            chrome_common_net::NETWORK_ERROR_PAGE_RELOAD_BUTTON_ERROR :
+            chrome_common_net::NETWORK_ERROR_PAGE_LOAD_STALE_BUTTON_ERROR);
+  }
+  navigation_from_button_ = NO_BUTTON;
+
   if (committed_error_page_info_ && !pending_error_page_info_ &&
       can_auto_reload_page_) {
     int reason = committed_error_page_info_->error.reason;
@@ -384,11 +410,17 @@ void NetErrorHelperCore::OnFinishLoad(FrameType frame_type) {
 
   committed_error_page_info_->is_finished_loading = true;
 
-  // Only enable stale cache JS bindings if this wasn't a post.
-  if (!committed_error_page_info_->was_failed_post) {
-    delegate_->EnableStaleLoadBindings(
-        committed_error_page_info_->error.unreachableURL);
+  chrome_common_net::RecordEvent(chrome_common_net::NETWORK_ERROR_PAGE_SHOWN);
+  if (committed_error_page_info_->reload_button_in_page) {
+    chrome_common_net::RecordEvent(
+        chrome_common_net::NETWORK_ERROR_PAGE_RELOAD_BUTTON_SHOWN);
   }
+  if (committed_error_page_info_->load_stale_button_in_page) {
+    chrome_common_net::RecordEvent(
+        chrome_common_net::NETWORK_ERROR_PAGE_LOAD_STALE_BUTTON_SHOWN);
+  }
+
+  delegate_->EnablePageHelperFunctions();
 
   if (committed_error_page_info_->navigation_correction_url.is_valid()) {
     // If there is another pending error page load, |fix_url| should have been
@@ -466,14 +498,24 @@ void NetErrorHelperCore::GenerateLocalErrorPage(
 
       delegate_->GenerateLocalizedErrorPage(
           GetUpdatedError(error), is_failed_post, params.Pass(),
+          &pending_error_page_info_->reload_button_in_page,
+          &pending_error_page_info_->load_stale_button_in_page,
           error_html);
       pending_error_page_info_->needs_dns_updates = true;
       return;
     }
   }
 
-  delegate_->GenerateLocalizedErrorPage(error, is_failed_post,
-                                        params.Pass(), error_html);
+  bool reload_button_in_page = false;
+  bool load_stale_button_in_page = false;
+  delegate_->GenerateLocalizedErrorPage(
+      error, is_failed_post, params.Pass(),
+      &reload_button_in_page, &load_stale_button_in_page, error_html);
+  if (pending_error_page_info_ && frame_type == MAIN_FRAME) {
+    pending_error_page_info_->reload_button_in_page = reload_button_in_page;
+    pending_error_page_info_->load_stale_button_in_page =
+        load_stale_button_in_page;
+  }
 }
 
 void NetErrorHelperCore::OnNetErrorInfo(
@@ -518,6 +560,9 @@ void NetErrorHelperCore::UpdateErrorPage() {
   if (last_probe_status_ != chrome_common_net::DNS_PROBE_STARTED)
     committed_error_page_info_->needs_dns_updates = false;
 
+  // There is no need to worry about the button display statistics here because
+  // the presentation of the reload and load stale buttons can't be changed
+  // by a DNS error update.
   delegate_->UpdateErrorPage(
       GetUpdatedError(committed_error_page_info_->error),
       committed_error_page_info_->was_failed_post);
@@ -650,3 +695,30 @@ bool NetErrorHelperCore::ShouldSuppressErrorPage(FrameType frame_type,
   MaybeStartAutoReloadTimer();
   return true;
 }
+
+void NetErrorHelperCore::ExecuteButtonPress(Button button) {
+  switch (button) {
+    case RELOAD_BUTTON:
+      chrome_common_net::RecordEvent(
+          chrome_common_net::NETWORK_ERROR_PAGE_RELOAD_BUTTON_CLICKED);
+      navigation_from_button_ = RELOAD_BUTTON;
+      Reload();
+      return;
+    case LOAD_STALE_BUTTON:
+      chrome_common_net::RecordEvent(
+          chrome_common_net::NETWORK_ERROR_PAGE_LOAD_STALE_BUTTON_CLICKED);
+      navigation_from_button_ = LOAD_STALE_BUTTON;
+      delegate_->LoadPageFromCache(
+          committed_error_page_info_->error.unreachableURL);
+      return;
+    case MORE_BUTTON:
+      // Visual effects on page are handled in Javascript code.
+      chrome_common_net::RecordEvent(
+          chrome_common_net::NETWORK_ERROR_PAGE_MORE_BUTTON_CLICKED);
+      return;
+    case NO_BUTTON:
+      NOTREACHED();
+      return;
+  }
+}
+

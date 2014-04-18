@@ -40,6 +40,11 @@ class NetErrorHelper
   explicit NetErrorHelper(content::RenderFrame* render_view);
   virtual ~NetErrorHelper();
 
+  // Button press notification from error page.
+  void ReloadButtonPressed();
+  void LoadStaleButtonPressed();
+  void MoreButtonPressed();
+
   // RenderFrameObserver implementation.
   virtual void DidStartProvisionalLoad() OVERRIDE;
   virtual void DidCommitProvisionalLoad(bool is_new_navigation) OVERRIDE;
@@ -75,10 +80,12 @@ class NetErrorHelper
       const blink::WebURLError& error,
       bool is_failed_post,
       scoped_ptr<LocalizedError::ErrorPageParams> params,
+      bool* reload_button_shown,
+      bool* load_stale_button_shown,
       std::string* html) const OVERRIDE;
   virtual void LoadErrorPageInMainFrame(const std::string& html,
                                         const GURL& failed_url) OVERRIDE;
-  virtual void EnableStaleLoadBindings(const GURL& page_url) OVERRIDE;
+  virtual void EnablePageHelperFunctions() OVERRIDE;
   virtual void UpdateErrorPage(const blink::WebURLError& error,
                                bool is_failed_post) OVERRIDE;
   virtual void FetchNavigationCorrections(
@@ -86,6 +93,7 @@ class NetErrorHelper
       const std::string& navigation_correction_request_body) OVERRIDE;
   virtual void CancelFetchNavigationCorrections() OVERRIDE;
   virtual void ReloadPage() OVERRIDE;
+  virtual void LoadPageFromCache(const GURL& page_url) OVERRIDE;
 
   void OnNetErrorInfo(int status);
   void OnSetNavigationCorrectionInfo(const GURL& navigation_correction_url,

@@ -21,12 +21,16 @@
         </h1>
         <div id="buttons">
           <button id="reload-button" class="blue-button text-button"
-              onclick="location = this.url"
-              jsselect="reload" jsvalues=".url:reloadUrl"
+              onclick="reloadButtonClick(this.url);"
+              jsselect="reloadButton" jsvalues=".url:reloadUrl"
               jscontent="msg"></button>
+          <button id="stale-load-button" class="blue-button text-button"
+              onclick="loadStaleButtonClick()"
+              jsselect="staleLoadButton"
+              jscontent="msg" jsvalues="title:title"></button>
           <button id="more-less-button" class="text-button"
-              onclick="toggleHelpBox()" jsdisplay="more"
-              jsvalues=".moreText:more; .lessText:less;"
+              onclick="moreButtonClick(); toggleHelpBox()"
+              jsdisplay="more" jsvalues=".moreText:more; .lessText:less;"
               jscontent="more"></button>
         </div>
       </div>
@@ -53,7 +57,7 @@
               <button type="submit" id="search-button" class="blue-button"
                   jsvalues="aria-label:searchHeader">
                 <img id="search-image">
-  	          </button>
+              </button>
             </div>
           </form>
           <div class="error-code" jscontent="errorCode"></div>

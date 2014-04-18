@@ -5,6 +5,7 @@
 #include "chrome/browser/net/net_error_tab_helper.h"
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
@@ -74,6 +75,21 @@ NetErrorTabHelper::~NetErrorTabHelper() {
 // static
 void NetErrorTabHelper::set_state_for_testing(TestingState state) {
   testing_state_ = state;
+}
+
+void NetErrorTabHelper::DidStartNavigationToPendingEntry(
+    const GURL& url,
+    content::NavigationController::ReloadType reload_type) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (!is_error_page_)
+    return;
+
+  // Only record reloads.
+  if (reload_type != content::NavigationController::NO_RELOAD) {
+    chrome_common_net::RecordEvent(
+        chrome_common_net::NETWORK_ERROR_PAGE_BROWSER_INITIATED_RELOAD);
+  }
 }
 
 void NetErrorTabHelper::DidStartProvisionalLoadForFrame(

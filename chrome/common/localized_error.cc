@@ -500,7 +500,7 @@ void LocalizedError::GetStrings(int error_code,
                                 const std::string& error_domain,
                                 const GURL& failed_url,
                                 bool is_post,
-                                bool stale_copy_in_cache,
+                                bool show_stale_load_button,
                                 const std::string& locale,
                                 const std::string& accept_languages,
                                 scoped_ptr<ErrorPageParams> params,
@@ -648,10 +648,10 @@ void LocalizedError::GetStrings(int error_code,
   if (params->suggest_reload) {
     if (!is_post) {
       base::DictionaryValue* reload_button = new base::DictionaryValue;
-      reload_button->SetString("msg",
-          l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_RELOAD));
+      reload_button->SetString(
+          "msg", l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_RELOAD));
       reload_button->SetString("reloadUrl", failed_url.spec());
-      error_strings->Set("reload", reload_button);
+      error_strings->Set("reloadButton", reload_button);
     } else {
       // If the page was created by a post, it can't be reloaded in the same
       // way, so just add a suggestion instead.
@@ -674,7 +674,15 @@ void LocalizedError::GetStrings(int error_code,
   if (!use_default_suggestions)
     return;
 
-  error_strings->SetBoolean("staleCopyInCache", stale_copy_in_cache);
+  if (show_stale_load_button) {
+    base::DictionaryValue* stale_load_button = new base::DictionaryValue;
+    stale_load_button->SetString(
+        "msg", l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_LOAD_STALE));
+    stale_load_button->SetString(
+        "title",
+        l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_LOAD_STALE_HELP));
+    error_strings->Set("staleLoadButton", stale_load_button);
+  }
 
 #if defined(OS_CHROMEOS)
   error_strings->SetString(
