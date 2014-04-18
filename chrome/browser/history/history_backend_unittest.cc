@@ -70,13 +70,14 @@ bool FaviconBitmapLessThan(const history::FaviconBitmap& a,
 
 namespace history {
 
-class HistoryBackendTest;
+class HistoryBackendTestBase;
 
 // This must be a separate object since HistoryBackend manages its lifetime.
 // This just forwards the messages we're interested in to the test object.
 class HistoryBackendTestDelegate : public HistoryBackend::Delegate {
  public:
-  explicit HistoryBackendTestDelegate(HistoryBackendTest* test) : test_(test) {}
+  explicit HistoryBackendTestDelegate(HistoryBackendTestBase* test)
+      : test_(test) {}
 
   virtual void NotifyProfileError(sql::InitStatus init_status) OVERRIDE {}
   virtual void SetInMemoryBackend(
@@ -90,7 +91,7 @@ class HistoryBackendTestDelegate : public HistoryBackend::Delegate {
 
  private:
   // Not owned by us.
-  HistoryBackendTest* test_;
+  HistoryBackendTestBase* test_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryBackendTestDelegate);
 };
@@ -109,19 +110,109 @@ class HistoryBackendCancelableRequest
   }
 };
 
-class HistoryBackendTest : public testing::Test {
+class HistoryBackendTestBase : public testing::Test {
  public:
   typedef std::vector<std::pair<int, HistoryDetails*> > NotificationList;
 
-  HistoryBackendTest()
+  HistoryBackendTestBase()
       : bookmark_model_(NULL),
         loaded_(false),
         ui_thread_(content::BrowserThread::UI, &message_loop_) {
   }
 
-  virtual ~HistoryBackendTest() {
+  virtual ~HistoryBackendTestBase() {
     STLDeleteValues(&broadcasted_notifications_);
   }
+
+ protected:
+  int num_broadcasted_notifications() const {
+    return broadcasted_notifications_.size();
+  }
+
+  const NotificationList& broadcasted_notifications() const {
+    return broadcasted_notifications_;
+  }
+
+  void ClearBroadcastedNotifications() {
+    STLDeleteValues(&broadcasted_notifications_);
+  }
+
+  base::FilePath test_dir() {
+    return test_dir_;
+  }
+
+  void BroadcastNotifications(int type, scoped_ptr<HistoryDetails> details) {
+    // Send the notifications directly to the in-memory database.
+    content::Details<HistoryDetails> det(details.get());
+    mem_backend_->Observe(
+        type, content::Source<HistoryBackendTestBase>(NULL), det);
+
+    // The backend passes ownership of the details pointer to us.
+    broadcasted_notifications_.push_back(
+        std::make_pair(type, details.release()));
+  }
+
+  scoped_refptr<HistoryBackend> backend_;  // Will be NULL on init failure.
+  scoped_ptr<InMemoryHistoryBackend> mem_backend_;
+  BookmarkModel bookmark_model_;
+  bool loaded_;
+
+ private:
+  friend class HistoryBackendTestDelegate;
+
+  // testing::Test
+  virtual void SetUp() {
+    if (!base::CreateNewTempDirectory(FILE_PATH_LITERAL("BackendTest"),
+                                      &test_dir_))
+      return;
+    backend_ = new HistoryBackend(test_dir_,
+                                  new HistoryBackendTestDelegate(this),
+                                  &bookmark_model_);
+    backend_->Init(std::string(), false);
+  }
+
+  virtual void TearDown() {
+    if (backend_.get())
+      backend_->Closing();
+    backend_ = NULL;
+    mem_backend_.reset();
+    base::DeleteFile(test_dir_, true);
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void SetInMemoryBackend(scoped_ptr<InMemoryHistoryBackend> backend) {
+    mem_backend_.swap(backend);
+  }
+
+  // The types and details of notifications which were broadcasted.
+  NotificationList broadcasted_notifications_;
+
+  base::MessageLoop message_loop_;
+  base::FilePath test_dir_;
+  content::TestBrowserThread ui_thread_;
+
+  DISALLOW_COPY_AND_ASSIGN(HistoryBackendTestBase);
+};
+
+void HistoryBackendTestDelegate::SetInMemoryBackend(
+    scoped_ptr<InMemoryHistoryBackend> backend) {
+  test_->SetInMemoryBackend(backend.Pass());
+}
+
+void HistoryBackendTestDelegate::BroadcastNotifications(
+    int type,
+    scoped_ptr<HistoryDetails> details) {
+  test_->BroadcastNotifications(type, details.Pass());
+}
+
+void HistoryBackendTestDelegate::DBLoaded() {
+  test_->loaded_ = true;
+}
+
+class HistoryBackendTest : public HistoryBackendTestBase {
+ public:
+  HistoryBackendTest() {}
+  virtual ~HistoryBackendTest() {}
 
   // Callback for QueryMostVisited.
   void OnQueryMostVisited(CancelableRequestProvider::Handle handle,
@@ -135,6 +226,7 @@ class HistoryBackendTest : public testing::Test {
     filtered_list_ = data;
   }
 
+ protected:
   const history::MostVisitedURLList& get_most_visited_list() const {
     return most_visited_list_;
   }
@@ -142,22 +234,6 @@ class HistoryBackendTest : public testing::Test {
   const history::FilteredURLList& get_filtered_list() const {
     return filtered_list_;
   }
-
-  int num_broadcasted_notifications() const {
-    return broadcasted_notifications_.size();
-  }
-
-  const NotificationList& broadcasted_notifications() const {
-    return broadcasted_notifications_;
-  }
-
-  void ClearBroadcastedNotifications() {
-    STLDeleteValues(&broadcasted_notifications_);
-  }
-
- protected:
-  scoped_refptr<HistoryBackend> backend_;  // Will be NULL on init failure.
-  scoped_ptr<InMemoryHistoryBackend> mem_backend_;
 
   void AddRedirectChain(const char* sequence[], int page_id) {
     AddRedirectChainWithTransitionAndTime(sequence, page_id,
@@ -206,11 +282,11 @@ class HistoryBackendTest : public testing::Test {
         history::SOURCE_BROWSED, did_replace);
     backend_->AddPage(request);
 
-    *transition1 = getTransition(url1);
-    *transition2 = getTransition(url2);
+    *transition1 = GetTransition(url1);
+    *transition2 = GetTransition(url2);
   }
 
-  int getTransition(const GURL& url) {
+  int GetTransition(const GURL& url) {
     if (!url.is_valid())
       return 0;
     URLRow row;
@@ -218,10 +294,6 @@ class HistoryBackendTest : public testing::Test {
     VisitVector visits;
     EXPECT_TRUE(backend_->db()->GetVisitsForURL(id, &visits));
     return visits[0].transition;
-  }
-
-  base::FilePath getTestDir() {
-    return test_dir_;
   }
 
   // Returns a gfx::Size vector with small size.
@@ -366,72 +438,102 @@ class HistoryBackendTest : public testing::Test {
            *bitmap_data->front() == expected_data;
   }
 
-  BookmarkModel bookmark_model_;
-
- protected:
-  void BroadcastNotifications(int type, scoped_ptr<HistoryDetails> details) {
-    // Send the notifications directly to the in-memory database.
-    content::Details<HistoryDetails> det(details.get());
-    mem_backend_->Observe(type, content::Source<HistoryBackendTest>(NULL), det);
-
-    // The backend passes ownership of the details pointer to us.
-    broadcasted_notifications_.push_back(
-        std::make_pair(type, details.release()));
-  }
-
-  bool loaded_;
-
  private:
-  friend class HistoryBackendTestDelegate;
-
-  // testing::Test
-  virtual void SetUp() {
-    if (!base::CreateNewTempDirectory(FILE_PATH_LITERAL("BackendTest"),
-                                      &test_dir_))
-      return;
-    backend_ = new HistoryBackend(test_dir_,
-                                  new HistoryBackendTestDelegate(this),
-                                  &bookmark_model_);
-    backend_->Init(std::string(), false);
-  }
-
-  virtual void TearDown() {
-    if (backend_.get())
-      backend_->Closing();
-    backend_ = NULL;
-    mem_backend_.reset();
-    base::DeleteFile(test_dir_, true);
-    base::RunLoop().RunUntilIdle();
-  }
-
-  void SetInMemoryBackend(scoped_ptr<InMemoryHistoryBackend> backend) {
-    mem_backend_.swap(backend);
-  }
-
-  // The types and details of notifications which were broadcasted.
-  NotificationList broadcasted_notifications_;
-
-  base::MessageLoop message_loop_;
-  base::FilePath test_dir_;
   history::MostVisitedURLList most_visited_list_;
   history::FilteredURLList filtered_list_;
-  content::TestBrowserThread ui_thread_;
+
+  DISALLOW_COPY_AND_ASSIGN(HistoryBackendTest);
 };
 
-void HistoryBackendTestDelegate::SetInMemoryBackend(
-    scoped_ptr<InMemoryHistoryBackend> backend) {
-  test_->SetInMemoryBackend(backend.Pass());
-}
+class InMemoryHistoryBackendTest : public HistoryBackendTestBase {
+ public:
+  InMemoryHistoryBackendTest() {}
+  virtual ~InMemoryHistoryBackendTest() {}
 
-void HistoryBackendTestDelegate::BroadcastNotifications(
-    int type,
-    scoped_ptr<HistoryDetails> details) {
-  test_->BroadcastNotifications(type, details.Pass());
-}
+ protected:
+  void SimulateNotification(int type,
+                            const URLRow* row1,
+                            const URLRow* row2 = NULL,
+                            const URLRow* row3 = NULL) {
+    URLRows rows;
+    rows.push_back(*row1);
+    if (row2) rows.push_back(*row2);
+    if (row3) rows.push_back(*row3);
 
-void HistoryBackendTestDelegate::DBLoaded() {
-  test_->loaded_ = true;
-}
+    if (type == chrome::NOTIFICATION_HISTORY_URLS_MODIFIED) {
+      scoped_ptr<URLsModifiedDetails> details(new URLsModifiedDetails());
+      details->changed_urls.swap(rows);
+      BroadcastNotifications(type, details.PassAs<HistoryDetails>());
+    } else if (type == chrome::NOTIFICATION_HISTORY_URL_VISITED) {
+      for (URLRows::const_iterator it = rows.begin(); it != rows.end(); ++it) {
+        scoped_ptr<URLVisitedDetails> details(new URLVisitedDetails());
+        details->row = *it;
+        BroadcastNotifications(type, details.PassAs<HistoryDetails>());
+      }
+    } else if (type == chrome::NOTIFICATION_HISTORY_URLS_DELETED) {
+      scoped_ptr<URLsDeletedDetails> details(new URLsDeletedDetails());
+      details->rows = rows;
+      BroadcastNotifications(type, details.PassAs<HistoryDetails>());
+    } else {
+      NOTREACHED();
+    }
+  }
+
+  size_t GetNumberOfMatchingSearchTerms(const int keyword_id,
+                                        const base::string16& prefix) {
+    std::vector<KeywordSearchTermVisit> matching_terms;
+    mem_backend_->db()->GetMostRecentKeywordSearchTerms(
+        keyword_id, prefix, 1, &matching_terms);
+    return matching_terms.size();
+  }
+
+  static URLRow CreateTestTypedURL() {
+    URLRow url_row(GURL("https://www.google.com/"));
+    url_row.set_id(10);
+    url_row.set_title(base::UTF8ToUTF16("Google Search"));
+    url_row.set_typed_count(1);
+    url_row.set_visit_count(1);
+    url_row.set_last_visit(Time::Now() - base::TimeDelta::FromHours(1));
+    return url_row;
+  }
+
+  static URLRow CreateAnotherTestTypedURL() {
+    URLRow url_row(GURL("https://maps.google.com/"));
+    url_row.set_id(20);
+    url_row.set_title(base::UTF8ToUTF16("Google Maps"));
+    url_row.set_typed_count(2);
+    url_row.set_visit_count(3);
+    url_row.set_last_visit(Time::Now() - base::TimeDelta::FromHours(2));
+    return url_row;
+  }
+
+  static URLRow CreateTestNonTypedURL() {
+    URLRow url_row(GURL("https://news.google.com/"));
+    url_row.set_id(30);
+    url_row.set_title(base::UTF8ToUTF16("Google News"));
+    url_row.set_visit_count(5);
+    url_row.set_last_visit(Time::Now() - base::TimeDelta::FromHours(3));
+    return url_row;
+  }
+
+  void PopulateTestURLsAndSearchTerms(URLRow* row1,
+                                      URLRow* row2,
+                                      const base::string16& term1,
+                                      const base::string16& term2);
+
+  void TestAddingAndChangingURLRows(int notification_type);
+
+  static const TemplateURLID kTestKeywordId;
+  static const char kTestSearchTerm1[];
+  static const char kTestSearchTerm2[];
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(InMemoryHistoryBackendTest);
+};
+
+const TemplateURLID InMemoryHistoryBackendTest::kTestKeywordId = 42;
+const char InMemoryHistoryBackendTest::kTestSearchTerm1[] = "banana";
+const char InMemoryHistoryBackendTest::kTestSearchTerm2[] = "orange";
 
 // http://crbug.com/114287
 #if defined(OS_WIN)
@@ -1375,7 +1477,7 @@ TEST_F(HistoryBackendTest, MigrationVisitSource) {
 
   // Copy history database file to current directory so that it will be deleted
   // in Teardown.
-  base::FilePath new_history_path(getTestDir());
+  base::FilePath new_history_path(test_dir());
   base::DeleteFile(new_history_path, true);
   base::CreateDirectory(new_history_path);
   base::FilePath new_history_file =
@@ -2775,7 +2877,7 @@ TEST_F(HistoryBackendTest, MigrationVisitDuration) {
 
   // Copy history database file to current directory so that it will be deleted
   // in Teardown.
-  base::FilePath new_history_path(getTestDir());
+  base::FilePath new_history_path(test_dir());
   base::DeleteFile(new_history_path, true);
   base::CreateDirectory(new_history_path);
   base::FilePath new_history_file =
@@ -3048,7 +3150,7 @@ TEST_F(HistoryBackendTest, RemoveNotification) {
 TEST_F(HistoryBackendTest, DeleteFTSIndexDatabases) {
   ASSERT_TRUE(backend_.get());
 
-  base::FilePath history_path(getTestDir());
+  base::FilePath history_path(test_dir());
   base::FilePath db1(history_path.AppendASCII("History Index 2013-05"));
   base::FilePath db1_journal(db1.InsertBeforeExtensionASCII("-journal"));
   base::FilePath db1_wal(db1.InsertBeforeExtensionASCII("-wal"));
@@ -3073,6 +3175,219 @@ TEST_F(HistoryBackendTest, DeleteFTSIndexDatabases) {
   EXPECT_FALSE(base::PathExists(db1_journal));
   EXPECT_FALSE(base::PathExists(db2_symlink));
   EXPECT_TRUE(base::PathExists(db2_actual));  // Symlinks shouldn't be followed.
+}
+
+// Common implementation for the two tests below, given that the only difference
+// between them is the type of the notification sent out.
+void InMemoryHistoryBackendTest::TestAddingAndChangingURLRows(
+    int notification_type) {
+  const char kTestTypedURLAlternativeTitle[] = "Google Search Again";
+  const char kTestNonTypedURLAlternativeTitle[] = "Google News Again";
+
+  // Notify the in-memory database that a typed and non-typed URLRow (which were
+  // never before seen by the cache) have been modified.
+  URLRow row1(CreateTestTypedURL());
+  URLRow row2(CreateTestNonTypedURL());
+  SimulateNotification(notification_type, &row1, &row2);
+
+  // The in-memory database should only pick up the typed URL, and should ignore
+  // the non-typed one. The typed URL should retain the ID that was present in
+  // the notification.
+  URLRow cached_row1, cached_row2;
+  EXPECT_NE(0, mem_backend_->db()->GetRowForURL(row1.url(), &cached_row1));
+  EXPECT_EQ(0, mem_backend_->db()->GetRowForURL(row2.url(), &cached_row2));
+  EXPECT_EQ(row1.id(), cached_row1.id());
+
+  // Try changing attributes (other than typed_count) for existing URLRows.
+  row1.set_title(base::UTF8ToUTF16(kTestTypedURLAlternativeTitle));
+  row2.set_title(base::UTF8ToUTF16(kTestNonTypedURLAlternativeTitle));
+  SimulateNotification(notification_type, &row1, &row2);
+
+  // URLRows that are cached by the in-memory database should be updated.
+  EXPECT_NE(0, mem_backend_->db()->GetRowForURL(row1.url(), &cached_row1));
+  EXPECT_EQ(0, mem_backend_->db()->GetRowForURL(row2.url(), &cached_row2));
+  EXPECT_EQ(base::UTF8ToUTF16(kTestTypedURLAlternativeTitle),
+            cached_row1.title());
+
+  // Now decrease the typed count for the typed URLRow, and increase it for the
+  // previously non-typed URLRow.
+  row1.set_typed_count(0);
+  row2.set_typed_count(2);
+  SimulateNotification(notification_type, &row1, &row2);
+
+  // The in-memory database should stop caching the first URLRow, and start
+  // caching the second URLRow.
+  EXPECT_EQ(0, mem_backend_->db()->GetRowForURL(row1.url(), &cached_row1));
+  EXPECT_NE(0, mem_backend_->db()->GetRowForURL(row2.url(), &cached_row2));
+  EXPECT_EQ(row2.id(), cached_row2.id());
+  EXPECT_EQ(base::UTF8ToUTF16(kTestNonTypedURLAlternativeTitle),
+            cached_row2.title());
+}
+
+TEST_F(InMemoryHistoryBackendTest, OnURLsModified) {
+  TestAddingAndChangingURLRows(chrome::NOTIFICATION_HISTORY_URLS_MODIFIED);
+}
+
+TEST_F(InMemoryHistoryBackendTest, OnURLsVisisted) {
+  TestAddingAndChangingURLRows(chrome::NOTIFICATION_HISTORY_URL_VISITED);
+}
+
+TEST_F(InMemoryHistoryBackendTest, OnURLsDeletedPiecewise) {
+  // Add two typed and one non-typed URLRow to the in-memory database.
+  URLRow row1(CreateTestTypedURL());
+  URLRow row2(CreateAnotherTestTypedURL());
+  URLRow row3(CreateTestNonTypedURL());
+  SimulateNotification(chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
+                       &row1, &row2, &row3);
+
+  // Notify the in-memory database that the second typed URL and the non-typed
+  // URL has been deleted.
+  SimulateNotification(chrome::NOTIFICATION_HISTORY_URLS_DELETED,
+                       &row2, &row3);
+
+  // Expect that the first typed URL remains intact, the second typed URL is
+  // correctly removed, and the non-typed URL does not magically appear.
+  URLRow cached_row1;
+  EXPECT_NE(0, mem_backend_->db()->GetRowForURL(row1.url(), &cached_row1));
+  EXPECT_EQ(0, mem_backend_->db()->GetRowForURL(row2.url(), NULL));
+  EXPECT_EQ(0, mem_backend_->db()->GetRowForURL(row3.url(), NULL));
+  EXPECT_EQ(row1.id(), cached_row1.id());
+}
+
+TEST_F(InMemoryHistoryBackendTest, OnURLsDeletedEnMasse) {
+  // Add two typed and one non-typed URLRow to the in-memory database.
+  URLRow row1(CreateTestTypedURL());
+  URLRow row2(CreateAnotherTestTypedURL());
+  URLRow row3(CreateTestNonTypedURL());
+  SimulateNotification(chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
+                       &row1, &row2, &row3);
+
+  // Now notify the in-memory database that all history has been deleted.
+  scoped_ptr<URLsDeletedDetails> details(new URLsDeletedDetails());
+  details->all_history = true;
+  BroadcastNotifications(chrome::NOTIFICATION_HISTORY_URLS_DELETED,
+                         details.PassAs<HistoryDetails>());
+
+  // Expect that everything goes away.
+  EXPECT_EQ(0, mem_backend_->db()->GetRowForURL(row1.url(), NULL));
+  EXPECT_EQ(0, mem_backend_->db()->GetRowForURL(row2.url(), NULL));
+  EXPECT_EQ(0, mem_backend_->db()->GetRowForURL(row3.url(), NULL));
+}
+
+void InMemoryHistoryBackendTest::PopulateTestURLsAndSearchTerms(
+    URLRow* row1,
+    URLRow* row2,
+    const base::string16& term1,
+    const base::string16& term2) {
+  // Add a typed and a non-typed URLRow to the in-memory database. This time,
+  // though, do it through the history backend...
+  URLRows rows;
+  rows.push_back(*row1);
+  rows.push_back(*row2);
+  backend_->AddPagesWithDetails(rows, history::SOURCE_BROWSED);
+  backend_->db()->GetRowForURL(row1->url(), row1);  // Get effective IDs from
+  backend_->db()->GetRowForURL(row2->url(), row2);  // the database.
+
+  // ... so that we can also use that for adding the search terms. This way, we
+  // not only test that the notifications involved are handled correctly, but
+  // also that they are fired correctly (in the history backend).
+  backend_->SetKeywordSearchTermsForURL(row1->url(), kTestKeywordId, term1);
+  backend_->SetKeywordSearchTermsForURL(row2->url(), kTestKeywordId, term2);
+}
+
+TEST_F(InMemoryHistoryBackendTest, SetKeywordSearchTerms) {
+  URLRow row1(CreateTestTypedURL());
+  URLRow row2(CreateTestNonTypedURL());
+  base::string16 term1(base::UTF8ToUTF16(kTestSearchTerm1));
+  base::string16 term2(base::UTF8ToUTF16(kTestSearchTerm2));
+  PopulateTestURLsAndSearchTerms(&row1, &row2, term1, term2);
+
+  // Both URLs now have associated search terms, so the in-memory database
+  // should cache both of them, regardless whether they have been typed or not.
+  URLRow cached_row1, cached_row2;
+  EXPECT_NE(0, mem_backend_->db()->GetRowForURL(row1.url(), &cached_row1));
+  EXPECT_NE(0, mem_backend_->db()->GetRowForURL(row2.url(), &cached_row2));
+  EXPECT_EQ(row1.id(), cached_row1.id());
+  EXPECT_EQ(row2.id(), cached_row2.id());
+
+  // Verify that lookups will actually return both search terms; and also check
+  // at the low level that the rows are there.
+  EXPECT_EQ(1u, GetNumberOfMatchingSearchTerms(kTestKeywordId, term1));
+  EXPECT_EQ(1u, GetNumberOfMatchingSearchTerms(kTestKeywordId, term2));
+  EXPECT_TRUE(mem_backend_->db()->GetKeywordSearchTermRow(row1.id(), NULL));
+  EXPECT_TRUE(mem_backend_->db()->GetKeywordSearchTermRow(row2.id(), NULL));
+}
+
+TEST_F(InMemoryHistoryBackendTest, DeleteKeywordSearchTerms) {
+  URLRow row1(CreateTestTypedURL());
+  URLRow row2(CreateTestNonTypedURL());
+  base::string16 term1(base::UTF8ToUTF16(kTestSearchTerm1));
+  base::string16 term2(base::UTF8ToUTF16(kTestSearchTerm2));
+  PopulateTestURLsAndSearchTerms(&row1, &row2, term1, term2);
+
+  // Delete both search terms. This should be reflected in the in-memory DB.
+  backend_->DeleteKeywordSearchTermForURL(row1.url());
+  backend_->DeleteKeywordSearchTermForURL(row2.url());
+
+  // The typed URL should remain intact.
+  // Note: we do not need to guarantee anything about the non-typed URL.
+  URLRow cached_row1;
+  EXPECT_NE(0, mem_backend_->db()->GetRowForURL(row1.url(), &cached_row1));
+  EXPECT_EQ(row1.id(), cached_row1.id());
+
+  // Verify that the search terms are no longer returned as results, and also
+  // check at the low level that they are gone for good.
+  EXPECT_EQ(0u, GetNumberOfMatchingSearchTerms(kTestKeywordId, term1));
+  EXPECT_EQ(0u, GetNumberOfMatchingSearchTerms(kTestKeywordId, term2));
+  EXPECT_FALSE(mem_backend_->db()->GetKeywordSearchTermRow(row1.id(), NULL));
+  EXPECT_FALSE(mem_backend_->db()->GetKeywordSearchTermRow(row2.id(), NULL));
+}
+
+TEST_F(InMemoryHistoryBackendTest, DeleteAllSearchTermsForKeyword) {
+  URLRow row1(CreateTestTypedURL());
+  URLRow row2(CreateTestNonTypedURL());
+  base::string16 term1(base::UTF8ToUTF16(kTestSearchTerm1));
+  base::string16 term2(base::UTF8ToUTF16(kTestSearchTerm2));
+  PopulateTestURLsAndSearchTerms(&row1, &row2, term1, term2);
+
+  // Removing a keyword should cause all corresponding search terms to be
+  // deleted from the in-memory database (and also the main database).
+  TemplateURLID id = kTestKeywordId;
+  mem_backend_->Observe(chrome::NOTIFICATION_TEMPLATE_URL_REMOVED,
+                        content::Source<HistoryBackendTestBase>(NULL),
+                        content::Details<TemplateURLID>(&id));
+
+  // The typed URL should remain intact.
+  // Note: we do not need to guarantee anything about the non-typed URL.
+  URLRow cached_row1;
+  EXPECT_NE(0, mem_backend_->db()->GetRowForURL(row1.url(), &cached_row1));
+  EXPECT_EQ(row1.id(), cached_row1.id());
+
+  // Verify that the search terms are no longer returned as results, and also
+  // check at the low level that they are gone for good.
+  EXPECT_EQ(0u, GetNumberOfMatchingSearchTerms(kTestKeywordId, term1));
+  EXPECT_EQ(0u, GetNumberOfMatchingSearchTerms(kTestKeywordId, term2));
+  EXPECT_FALSE(mem_backend_->db()->GetKeywordSearchTermRow(row1.id(), NULL));
+  EXPECT_FALSE(mem_backend_->db()->GetKeywordSearchTermRow(row2.id(), NULL));
+}
+
+TEST_F(InMemoryHistoryBackendTest, OnURLsDeletedWithSearchTerms) {
+  URLRow row1(CreateTestTypedURL());
+  URLRow row2(CreateTestNonTypedURL());
+  base::string16 term1(base::UTF8ToUTF16(kTestSearchTerm1));
+  base::string16 term2(base::UTF8ToUTF16(kTestSearchTerm2));
+  PopulateTestURLsAndSearchTerms(&row1, &row2, term1, term2);
+
+  // Notify the in-memory database that the second typed URL has been deleted.
+  SimulateNotification(chrome::NOTIFICATION_HISTORY_URLS_DELETED, &row2);
+
+  // Verify that the second term is no longer returned as result, and also check
+  // at the low level that it is gone for good. The term corresponding to the
+  // first URLRow should not be affected.
+  EXPECT_EQ(1u, GetNumberOfMatchingSearchTerms(kTestKeywordId, term1));
+  EXPECT_EQ(0u, GetNumberOfMatchingSearchTerms(kTestKeywordId, term2));
+  EXPECT_TRUE(mem_backend_->db()->GetKeywordSearchTermRow(row1.id(), NULL));
+  EXPECT_FALSE(mem_backend_->db()->GetKeywordSearchTermRow(row2.id(), NULL));
 }
 
 }  // namespace history

@@ -1104,19 +1104,19 @@ void HistoryBackend::SetKeywordSearchTermsForURL(const GURL& url,
     return;
 
   // Get the ID for this URL.
-  URLID url_id = db_->GetRowForURL(url, NULL);
-  if (!url_id) {
+  URLRow row;
+  if (!db_->GetRowForURL(url, &row)) {
     // There is a small possibility the url was deleted before the keyword
     // was added. Ignore the request.
     return;
   }
 
-  db_->SetKeywordSearchTermsForURL(url_id, keyword_id, term);
+  db_->SetKeywordSearchTermsForURL(row.id(), keyword_id, term);
 
   BroadcastNotifications(
       chrome::NOTIFICATION_HISTORY_KEYWORD_SEARCH_TERM_UPDATED,
       scoped_ptr<HistoryDetails>(
-          new KeywordSearchUpdatedDetails(url, keyword_id, term)));
+          new KeywordSearchUpdatedDetails(row, keyword_id, term)));
   ScheduleCommit();
 }
 
@@ -1156,7 +1156,7 @@ void HistoryBackend::DeleteKeywordSearchTermForURL(const GURL& url) {
 
   BroadcastNotifications(
       chrome::NOTIFICATION_HISTORY_KEYWORD_SEARCH_TERM_DELETED,
-      scoped_ptr<HistoryDetails>(new KeywordSearchDeletedDetails(url)));
+      scoped_ptr<HistoryDetails>(new KeywordSearchDeletedDetails(url_id)));
   ScheduleCommit();
 }
 

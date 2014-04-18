@@ -69,22 +69,25 @@ struct URLsDeletedDetails : public HistoryDetails {
 
 // Details for HISTORY_KEYWORD_SEARCH_TERM_UPDATED.
 struct KeywordSearchUpdatedDetails : public HistoryDetails {
-  KeywordSearchUpdatedDetails(const GURL& url,
+  KeywordSearchUpdatedDetails(const URLRow& url_row,
                               TemplateURLID keyword_id,
                               const base::string16& term);
   virtual ~KeywordSearchUpdatedDetails();
 
-  GURL url;
+  // The affected URLRow. The ID will be set to the value that is currently in
+  // effect in the main history database.
+  URLRow url_row;
   TemplateURLID keyword_id;
   base::string16 term;
 };
 
 // Details for HISTORY_KEYWORD_SEARCH_TERM_DELETED.
 struct KeywordSearchDeletedDetails : public HistoryDetails {
-  explicit KeywordSearchDeletedDetails(const GURL& url);
+  explicit KeywordSearchDeletedDetails(URLID url_row_id);
   virtual ~KeywordSearchDeletedDetails();
 
-  GURL url;
+  // The ID of the corresponding URLRow in the main history database.
+  URLID url_row_id;
 };
 
 }  // namespace history

@@ -23,18 +23,18 @@ URLsDeletedDetails::URLsDeletedDetails()
 URLsDeletedDetails::~URLsDeletedDetails() {}
 
 KeywordSearchUpdatedDetails::KeywordSearchUpdatedDetails(
-    const GURL& url,
+    const URLRow& url_row,
     TemplateURLID keyword_id,
     const base::string16& term)
-    : url(url),
+    : url_row(url_row),
       keyword_id(keyword_id),
       term(term) {
 }
 
 KeywordSearchUpdatedDetails::~KeywordSearchUpdatedDetails() {}
 
-KeywordSearchDeletedDetails::KeywordSearchDeletedDetails(const GURL& url)
-    : url(url) {
+KeywordSearchDeletedDetails::KeywordSearchDeletedDetails(URLID url_row_id)
+    : url_row_id(url_row_id) {
 }
 
 KeywordSearchDeletedDetails::~KeywordSearchDeletedDetails() {}
