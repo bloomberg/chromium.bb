@@ -13,7 +13,11 @@
 #include "base/logging.h"
 #include "base/md5.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/path_service.h"
 #include "base/rand_util.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
+#include "chrome/common/chrome_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -163,6 +167,33 @@ class PrefixSetTest : public PlatformTest {
     int64 new_size_64;
     ASSERT_TRUE(base::GetFileSize(filename, &new_size_64));
     ASSERT_EQ(new_size_64, size_64);
+  }
+
+  // Fill |prefixes| with values read from a reference file.  The reference file
+  // was generated from a specific |shared_prefixes_|.
+  bool ReadReferencePrefixes(std::vector<SBPrefix>* prefixes) {
+    const char kRefname[] = "PrefixSetRef";
+    base::FilePath ref_path;
+    if (!PathService::Get(chrome::DIR_TEST_DATA, &ref_path))
+      return false;
+    ref_path = ref_path.AppendASCII("SafeBrowsing");
+    ref_path = ref_path.AppendASCII(kRefname);
+
+    base::ScopedFILE file(base::OpenFile(ref_path, "r"));
+    if (!file.get())
+      return false;
+    char buf[1024];
+    while (fgets(buf, sizeof(buf), file.get())) {
+      std::string trimmed;
+      if (base::TRIM_TRAILING !=
+          base::TrimWhitespace(buf, base::TRIM_ALL, &trimmed))
+        return false;
+      unsigned prefix;
+      if (!base::StringToUint(trimmed, &prefix))
+        return false;
+      prefixes->push_back(prefix);
+    }
+    return true;
   }
 
   // Tests should not modify this shared resource.
@@ -391,7 +422,7 @@ TEST_F(PrefixSetTest, CorruptionHelpers) {
   ASSERT_TRUE(prefix_set.get());
 }
 
-// Bad |index_| size is caught by the sanity check.
+// Bad magic is caught by the sanity check.
 TEST_F(PrefixSetTest, CorruptionMagic) {
   base::FilePath filename;
   ASSERT_TRUE(GetPrefixSetFile(&filename));
@@ -403,13 +434,13 @@ TEST_F(PrefixSetTest, CorruptionMagic) {
   ASSERT_FALSE(prefix_set.get());
 }
 
-// Bad |index_| size is caught by the sanity check.
+// Bad version is caught by the sanity check.
 TEST_F(PrefixSetTest, CorruptionVersion) {
   base::FilePath filename;
   ASSERT_TRUE(GetPrefixSetFile(&filename));
 
   ASSERT_NO_FATAL_FAILURE(
-      ModifyAndCleanChecksum(filename, kVersionOffset, 1));
+      ModifyAndCleanChecksum(filename, kVersionOffset, 10));
   scoped_ptr<safe_browsing::PrefixSet> prefix_set =
       safe_browsing::PrefixSet::LoadFile(filename);
   ASSERT_FALSE(prefix_set.get());
@@ -589,5 +620,26 @@ TEST_F(PrefixSetTest, ReadWriteSigned) {
   EXPECT_EQ(prefixes_copy[2], static_cast<uint32>(-1000));
   EXPECT_EQ(prefixes_copy[3], static_cast<uint32>(-1000 + 23));
 }
+
+// Test that a golden v2 file can be read by the current code.  All platforms
+// generating v2 files are little-endian, so there is no point to testing this
+// transition if/when a big-endian port is added.
+#if defined(ARCH_CPU_LITTLE_ENDIAN)
+TEST_F(PrefixSetTest, Version2) {
+  std::vector<SBPrefix> ref_prefixes;
+  ASSERT_TRUE(ReadReferencePrefixes(&ref_prefixes));
+
+  const char kBasename[] = "PrefixSetVersion2";
+  base::FilePath golden_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &golden_path));
+  golden_path = golden_path.AppendASCII("SafeBrowsing");
+  golden_path = golden_path.AppendASCII(kBasename);
+
+  scoped_ptr<safe_browsing::PrefixSet> prefix_set =
+      safe_browsing::PrefixSet::LoadFile(golden_path);
+  ASSERT_TRUE(prefix_set.get());
+  CheckPrefixes(*prefix_set, ref_prefixes);
+}
+#endif
 
 }  // namespace
