@@ -71,6 +71,7 @@ readonly DEBIAN_PACKAGES="\
   libdbus-1-3 \
   libdbus-1-dev \
   libdbus-glib-1-2 \
+  libdrm2 \
   libelf1 \
   libelf-dev \
   libexif12 \
@@ -91,6 +92,9 @@ readonly DEBIAN_PACKAGES="\
   libgcrypt11-dev \
   libgdk-pixbuf2.0-0 \
   libgdk-pixbuf2.0-dev \
+  libgl1-mesa-dev \
+  libgl1-mesa-glx \
+  libglapi-mesa \
   libglib2.0-0 \
   libglib2.0-dev \
   libgnome-keyring0 \
@@ -151,10 +155,12 @@ readonly DEBIAN_PACKAGES="\
   libudev-dev \
   libx11-6 \
   libx11-dev \
+  libx11-xcb1 \
   libxau6 \
   libxau-dev \
   libxcb1 \
   libxcb1-dev \
+  libxcb-glx0 \
   libxcb-render0 \
   libxcb-render0-dev \
   libxcb-shm0 \
@@ -184,7 +190,9 @@ readonly DEBIAN_PACKAGES="\
   libxt-dev \
   libxtst6 \
   libxtst-dev \
+  libxxf86vm1 \
   linux-libc-dev \
+  mesa-common-dev \
   speech-dispatcher \
   x11proto-composite-dev \
   x11proto-core-dev \
