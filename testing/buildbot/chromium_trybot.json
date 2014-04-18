@@ -1,7 +1,10 @@
 [
   "app_list_unittests",
   "base_unittests",
-  "browser_tests",
+  {
+    "test": "browser_tests",
+    "exclude_builders": ["tryserver.chromium:win_chromium_x64_rel"]
+  },
   "cacheinvalidation_unittests",
   "cc_unittests",
   "chromedriver_unittests",
@@ -14,7 +17,10 @@
   "gfx_unittests",
   "google_apis_unittests",
   "gpu_unittests",
-  "interactive_ui_tests",
+  {
+    "test": "interactive_ui_tests",
+    "exclude_builders": ["tryserver.chromium:win_chromium_x64_rel"]
+  },
   "ipc_tests",
   "jingle_unittests",
   "media_unittests",
