@@ -6,6 +6,7 @@
 
 #include <map>
 
+#include "base/strings/stringprintf.h"
 #include "components/variations/processed_study.h"
 #include "components/variations/proto/study.pb.h"
 #include "components/variations/variations_associated_data.h"
@@ -77,13 +78,7 @@ Study_Experiment_Param* AddExperimentParam(const std::string& param_name,
   return param;
 }
 
-// Uses a VariationsSeedSimulator to simulate the differences between |studies|
-// and the current field trial state.
-int SimulateDifferences(const std::vector<ProcessedStudy>& studies) {
-  TestEntropyProvider provider(0.5);
-  VariationsSeedSimulator seed_simulator(provider);
-  return seed_simulator.ComputeDifferences(studies);
-}
+}  // namespace
 
 class VariationsSeedSimulatorTest : public ::testing::Test {
  public:
@@ -97,69 +92,137 @@ class VariationsSeedSimulatorTest : public ::testing::Test {
     testing::ClearAllVariationParams();
   }
 
+  // Uses a VariationsSeedSimulator to simulate the differences between
+  // |studies| and the current field trial state.
+  VariationsSeedSimulator::Result SimulateDifferences(
+      const std::vector<ProcessedStudy>& studies) {
+    TestEntropyProvider provider(0.5);
+    VariationsSeedSimulator seed_simulator(provider);
+    return seed_simulator.ComputeDifferences(studies);
+  }
+
+  // Simulates the differences between |study| and the current field trial
+  // state, returning a string like "1 2 3", where 1 is the number of regular
+  // group changes, 2 is the number of "kill best effort" group changes and 3
+  // is the number of "kill critical" group changes.
+  std::string SimulateStudyDifferences(const Study* study) {
+    std::vector<ProcessedStudy> studies;
+    if (!ProcessedStudy::ValidateAndAppendStudy(study, false, &studies))
+      return "invalid study";
+    return ConvertSimulationResultToString(SimulateDifferences(studies));
+
+  }
+
+  // Simulates the differences between expired |study| and the current field
+  // trial state, returning a string like "1 2 3", where 1 is the number of
+  // regular group changes, 2 is the number of "kill best effort" group changes
+  // and 3 is the number of "kill critical" group changes.
+  std::string SimulateStudyDifferencesExpired(const Study* study) {
+    std::vector<ProcessedStudy> studies;
+    if (!ProcessedStudy::ValidateAndAppendStudy(study, true, &studies))
+      return "invalid study";
+    if (!studies[0].is_expired())
+      return "not expired";
+    return ConvertSimulationResultToString(SimulateDifferences(studies));
+  }
+
+  // Formats |result| as a string with format "1 2 3", where 1 is the number of
+  // regular group changes, 2 is the number of "kill best effort" group changes
+  // and 3 is the number of "kill critical" group changes.
+  std::string ConvertSimulationResultToString(
+      const VariationsSeedSimulator::Result& result) {
+    return base::StringPrintf("%d %d %d",
+                              result.normal_group_change_count,
+                              result.kill_best_effort_group_change_count,
+                              result.kill_critical_group_change_count);
+  }
+
  private:
   base::FieldTrialList field_trial_list_;
 
   DISALLOW_COPY_AND_ASSIGN(VariationsSeedSimulatorTest);
 };
 
-}  // namespace
-
 TEST_F(VariationsSeedSimulatorTest, PermanentNoChanges) {
   CreateTrial("A", "B", NULL);
 
   std::vector<ProcessedStudy> processed_studies;
   Study study = CreateStudy("A", Study_Consistency_PERMANENT);
-  AddExperiment("B", 100, &study);
+  Study_Experiment* experiment = AddExperiment("B", 100, &study);
 
-  std::vector<ProcessedStudy> studies;
-  EXPECT_TRUE(ProcessedStudy::ValidateAndAppendStudy(&study, false, &studies));
+  EXPECT_EQ("0 0 0", SimulateStudyDifferences(&study));
 
-  EXPECT_EQ(0, SimulateDifferences(studies));
+  experiment->set_type(Study_Experiment_Type_NORMAL);
+  EXPECT_EQ("0 0 0", SimulateStudyDifferences(&study));
+  experiment->set_type(Study_Experiment_Type_IGNORE_CHANGE);
+  EXPECT_EQ("0 0 0", SimulateStudyDifferences(&study));
+  experiment->set_type(Study_Experiment_Type_KILL_BEST_EFFORT);
+  EXPECT_EQ("0 0 0", SimulateStudyDifferences(&study));
+  experiment->set_type(Study_Experiment_Type_KILL_CRITICAL);
+  EXPECT_EQ("0 0 0", SimulateStudyDifferences(&study));
 }
 
 TEST_F(VariationsSeedSimulatorTest, PermanentGroupChange) {
   CreateTrial("A", "B", NULL);
 
   Study study = CreateStudy("A", Study_Consistency_PERMANENT);
-  AddExperiment("C", 100, &study);
+  Study_Experiment* experiment = AddExperiment("C", 100, &study);
 
-  std::vector<ProcessedStudy> studies;
-  EXPECT_TRUE(ProcessedStudy::ValidateAndAppendStudy(&study, false, &studies));
+  EXPECT_EQ("1 0 0", SimulateStudyDifferences(&study));
 
-  EXPECT_EQ(1, SimulateDifferences(studies));
+  // Changing "C" group type should not affect the type of change. (Since the
+  // type is evaluated for the "old" group.)
+  experiment->set_type(Study_Experiment_Type_NORMAL);
+  EXPECT_EQ("1 0 0", SimulateStudyDifferences(&study));
+  experiment->set_type(Study_Experiment_Type_IGNORE_CHANGE);
+  EXPECT_EQ("1 0 0", SimulateStudyDifferences(&study));
+  experiment->set_type(Study_Experiment_Type_KILL_BEST_EFFORT);
+  EXPECT_EQ("1 0 0", SimulateStudyDifferences(&study));
+  experiment->set_type(Study_Experiment_Type_KILL_CRITICAL);
+  EXPECT_EQ("1 0 0", SimulateStudyDifferences(&study));
 }
 
 TEST_F(VariationsSeedSimulatorTest, PermanentExpired) {
   CreateTrial("A", "B", NULL);
 
   Study study = CreateStudy("A", Study_Consistency_PERMANENT);
-  AddExperiment("B", 1, &study);
+  Study_Experiment* experiment = AddExperiment("B", 1, &study);
   AddExperiment("C", 0, &study);
 
-  std::vector<ProcessedStudy> studies;
-  EXPECT_TRUE(ProcessedStudy::ValidateAndAppendStudy(&study, true, &studies));
-  EXPECT_TRUE(studies[0].is_expired());
-
   // There should be a difference because the study is expired, which should
-  // result in the default group "D" being chosen.
-  EXPECT_EQ(1, SimulateDifferences(studies));
+  // result in the default group "C" being chosen.
+  EXPECT_EQ("1 0 0", SimulateStudyDifferencesExpired(&study));
+
+  experiment->set_type(Study_Experiment_Type_NORMAL);
+  EXPECT_EQ("1 0 0", SimulateStudyDifferencesExpired(&study));
+  experiment->set_type(Study_Experiment_Type_IGNORE_CHANGE);
+  EXPECT_EQ("0 0 0", SimulateStudyDifferencesExpired(&study));
+  experiment->set_type(Study_Experiment_Type_KILL_BEST_EFFORT);
+  EXPECT_EQ("0 1 0", SimulateStudyDifferencesExpired(&study));
+  experiment->set_type(Study_Experiment_Type_KILL_CRITICAL);
+  EXPECT_EQ("0 0 1", SimulateStudyDifferencesExpired(&study));
 }
 
 TEST_F(VariationsSeedSimulatorTest, SessionRandomized) {
   CreateTrial("A", "B", NULL);
 
   Study study = CreateStudy("A", Study_Consistency_SESSION);
-  AddExperiment("B", 1, &study);
+  Study_Experiment* experiment = AddExperiment("B", 1, &study);
   AddExperiment("C", 1, &study);
   AddExperiment("D", 1, &study);
 
-  std::vector<ProcessedStudy> studies;
-  EXPECT_TRUE(ProcessedStudy::ValidateAndAppendStudy(&study, false, &studies));
-
   // There should be no differences, since a session randomized study can result
   // in any of the groups being chosen on startup.
-  EXPECT_EQ(0, SimulateDifferences(studies));
+  EXPECT_EQ("0 0 0", SimulateStudyDifferences(&study));
+
+  experiment->set_type(Study_Experiment_Type_NORMAL);
+  EXPECT_EQ("0 0 0", SimulateStudyDifferences(&study));
+  experiment->set_type(Study_Experiment_Type_IGNORE_CHANGE);
+  EXPECT_EQ("0 0 0", SimulateStudyDifferences(&study));
+  experiment->set_type(Study_Experiment_Type_KILL_BEST_EFFORT);
+  EXPECT_EQ("0 0 0", SimulateStudyDifferences(&study));
+  experiment->set_type(Study_Experiment_Type_KILL_CRITICAL);
+  EXPECT_EQ("0 0 0", SimulateStudyDifferences(&study));
 }
 
 TEST_F(VariationsSeedSimulatorTest, SessionRandomizedGroupRemoved) {
@@ -169,43 +232,51 @@ TEST_F(VariationsSeedSimulatorTest, SessionRandomizedGroupRemoved) {
   AddExperiment("C", 1, &study);
   AddExperiment("D", 1, &study);
 
-  std::vector<ProcessedStudy> studies;
-  EXPECT_TRUE(ProcessedStudy::ValidateAndAppendStudy(&study, false, &studies));
-
   // There should be a difference since there is no group "B" in the new config.
-  EXPECT_EQ(1, SimulateDifferences(studies));
+  EXPECT_EQ("1 0 0", SimulateStudyDifferences(&study));
 }
 
 TEST_F(VariationsSeedSimulatorTest, SessionRandomizedGroupProbabilityZero) {
   CreateTrial("A", "B", NULL);
 
   Study study = CreateStudy("A", Study_Consistency_SESSION);
-  AddExperiment("B", 0, &study);
+  Study_Experiment* experiment = AddExperiment("B", 0, &study);
   AddExperiment("C", 1, &study);
   AddExperiment("D", 1, &study);
 
-  std::vector<ProcessedStudy> studies;
-  EXPECT_TRUE(ProcessedStudy::ValidateAndAppendStudy(&study, false, &studies));
+  // There should be a difference since group "B" has probability 0.
+  EXPECT_EQ("1 0 0", SimulateStudyDifferences(&study));
 
-  // There should be a difference since there is group "B" has probability 0.
-  EXPECT_EQ(1, SimulateDifferences(studies));
+  experiment->set_type(Study_Experiment_Type_NORMAL);
+  EXPECT_EQ("1 0 0", SimulateStudyDifferences(&study));
+  experiment->set_type(Study_Experiment_Type_IGNORE_CHANGE);
+  EXPECT_EQ("0 0 0", SimulateStudyDifferences(&study));
+  experiment->set_type(Study_Experiment_Type_KILL_BEST_EFFORT);
+  EXPECT_EQ("0 1 0", SimulateStudyDifferences(&study));
+  experiment->set_type(Study_Experiment_Type_KILL_CRITICAL);
+  EXPECT_EQ("0 0 1", SimulateStudyDifferences(&study));
 }
 
 TEST_F(VariationsSeedSimulatorTest, SessionRandomizedExpired) {
   CreateTrial("A", "B", NULL);
 
   Study study = CreateStudy("A", Study_Consistency_SESSION);
-  AddExperiment("B", 1, &study);
+  Study_Experiment* experiment = AddExperiment("B", 1, &study);
   AddExperiment("C", 1, &study);
   AddExperiment("D", 1, &study);
 
-  std::vector<ProcessedStudy> studies;
-  EXPECT_TRUE(ProcessedStudy::ValidateAndAppendStudy(&study, true, &studies));
-  EXPECT_TRUE(studies[0].is_expired());
-
   // There should be a difference because the study is expired, which should
   // result in the default group "D" being chosen.
-  EXPECT_EQ(1, SimulateDifferences(studies));
+  EXPECT_EQ("1 0 0", SimulateStudyDifferencesExpired(&study));
+
+  experiment->set_type(Study_Experiment_Type_NORMAL);
+  EXPECT_EQ("1 0 0", SimulateStudyDifferencesExpired(&study));
+  experiment->set_type(Study_Experiment_Type_IGNORE_CHANGE);
+  EXPECT_EQ("0 0 0", SimulateStudyDifferencesExpired(&study));
+  experiment->set_type(Study_Experiment_Type_KILL_BEST_EFFORT);
+  EXPECT_EQ("0 1 0", SimulateStudyDifferencesExpired(&study));
+  experiment->set_type(Study_Experiment_Type_KILL_CRITICAL);
+  EXPECT_EQ("0 0 1", SimulateStudyDifferencesExpired(&study));
 }
 
 TEST_F(VariationsSeedSimulatorTest, ParamsUnchanged) {
@@ -222,10 +293,16 @@ TEST_F(VariationsSeedSimulatorTest, ParamsUnchanged) {
   AddExperimentParam("p1", "x", experiment);
   AddExperimentParam("p3", "z", experiment);
 
-  std::vector<ProcessedStudy> studies;
-  EXPECT_TRUE(ProcessedStudy::ValidateAndAppendStudy(&study, false, &studies));
+  EXPECT_EQ("0 0 0", SimulateStudyDifferences(&study));
 
-  EXPECT_EQ(0, SimulateDifferences(studies));
+  experiment->set_type(Study_Experiment_Type_NORMAL);
+  EXPECT_EQ("0 0 0", SimulateStudyDifferences(&study));
+  experiment->set_type(Study_Experiment_Type_IGNORE_CHANGE);
+  EXPECT_EQ("0 0 0", SimulateStudyDifferences(&study));
+  experiment->set_type(Study_Experiment_Type_KILL_BEST_EFFORT);
+  EXPECT_EQ("0 0 0", SimulateStudyDifferences(&study));
+  experiment->set_type(Study_Experiment_Type_KILL_CRITICAL);
+  EXPECT_EQ("0 0 0", SimulateStudyDifferences(&study));
 }
 
 TEST_F(VariationsSeedSimulatorTest, ParamsChanged) {
@@ -242,11 +319,17 @@ TEST_F(VariationsSeedSimulatorTest, ParamsChanged) {
   AddExperimentParam("p1", "x", experiment);
   AddExperimentParam("p3", "z", experiment);
 
-  std::vector<ProcessedStudy> studies;
-  EXPECT_TRUE(ProcessedStudy::ValidateAndAppendStudy(&study, false, &studies));
-
   // The param lists differ.
-  EXPECT_EQ(1, SimulateDifferences(studies));
+  EXPECT_EQ("1 0 0", SimulateStudyDifferences(&study));
+
+  experiment->set_type(Study_Experiment_Type_NORMAL);
+  EXPECT_EQ("1 0 0", SimulateStudyDifferences(&study));
+  experiment->set_type(Study_Experiment_Type_IGNORE_CHANGE);
+  EXPECT_EQ("0 0 0", SimulateStudyDifferences(&study));
+  experiment->set_type(Study_Experiment_Type_KILL_BEST_EFFORT);
+  EXPECT_EQ("0 1 0", SimulateStudyDifferences(&study));
+  experiment->set_type(Study_Experiment_Type_KILL_CRITICAL);
+  EXPECT_EQ("0 0 1", SimulateStudyDifferences(&study));
 }
 
 TEST_F(VariationsSeedSimulatorTest, ParamsRemoved) {
@@ -258,13 +341,19 @@ TEST_F(VariationsSeedSimulatorTest, ParamsRemoved) {
 
   std::vector<ProcessedStudy> processed_studies;
   Study study = CreateStudy("A", Study_Consistency_PERMANENT);
-  AddExperiment("B", 100, &study);
-
-  std::vector<ProcessedStudy> studies;
-  EXPECT_TRUE(ProcessedStudy::ValidateAndAppendStudy(&study, false, &studies));
+  Study_Experiment* experiment = AddExperiment("B", 100, &study);
 
   // The current group has params, but the new config doesn't have any.
-  EXPECT_EQ(1, SimulateDifferences(studies));
+  EXPECT_EQ("1 0 0", SimulateStudyDifferences(&study));
+
+  experiment->set_type(Study_Experiment_Type_NORMAL);
+  EXPECT_EQ("1 0 0", SimulateStudyDifferences(&study));
+  experiment->set_type(Study_Experiment_Type_IGNORE_CHANGE);
+  EXPECT_EQ("0 0 0", SimulateStudyDifferences(&study));
+  experiment->set_type(Study_Experiment_Type_KILL_BEST_EFFORT);
+  EXPECT_EQ("0 1 0", SimulateStudyDifferences(&study));
+  experiment->set_type(Study_Experiment_Type_KILL_CRITICAL);
+  EXPECT_EQ("0 0 1", SimulateStudyDifferences(&study));
 }
 
 TEST_F(VariationsSeedSimulatorTest, ParamsAdded) {
@@ -277,11 +366,17 @@ TEST_F(VariationsSeedSimulatorTest, ParamsAdded) {
   AddExperimentParam("p1", "x", experiment);
   AddExperimentParam("p3", "z", experiment);
 
-  std::vector<ProcessedStudy> studies;
-  EXPECT_TRUE(ProcessedStudy::ValidateAndAppendStudy(&study, false, &studies));
-
   // The current group has no params, but the config has added some.
-  EXPECT_EQ(1, SimulateDifferences(studies));
+  EXPECT_EQ("1 0 0", SimulateStudyDifferences(&study));
+
+  experiment->set_type(Study_Experiment_Type_NORMAL);
+  EXPECT_EQ("1 0 0", SimulateStudyDifferences(&study));
+  experiment->set_type(Study_Experiment_Type_IGNORE_CHANGE);
+  EXPECT_EQ("0 0 0", SimulateStudyDifferences(&study));
+  experiment->set_type(Study_Experiment_Type_KILL_BEST_EFFORT);
+  EXPECT_EQ("0 1 0", SimulateStudyDifferences(&study));
+  experiment->set_type(Study_Experiment_Type_KILL_CRITICAL);
+  EXPECT_EQ("0 0 1", SimulateStudyDifferences(&study));
 }
 
 }  // namespace chrome_variations

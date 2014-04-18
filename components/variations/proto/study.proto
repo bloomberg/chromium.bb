@@ -43,7 +43,7 @@ message Study {
 
   // An experiment within the study.
   //
-  // Next tag: 7
+  // Next tag: 8
   message Experiment {
     // A named parameter value for this experiment.
     //
@@ -79,6 +79,30 @@ message Study {
 
     // Parameter values for this experiment.
     repeated Param param = 6;
+
+    enum Type {
+      // Regular experiment group. This is the default value and can be omitted.
+      NORMAL = 0;
+
+      // Changes to this experiment group are ignored for the purposes of
+      // kill-switch triggering. Included to allow the flexibility to not
+      // trigger this logic for specific cases (e.g. a group rename without
+      // any functionality changes).
+      IGNORE_CHANGE = 1;
+
+      // This is a kill-switch group that should be killed at "best effort"
+      // priority, e.g. with a hot dog menu badge. The experiment must have a
+      // probability_weight of 0.
+      KILL_BEST_EFFORT = 2;
+
+      // This is a kill-switch group that should be killed with "critical"
+      // priority. Depending on platform this may result in showing a
+      // non-dismissible restart prompt with a timer. This should only be used
+      // in very serious emergency circumstances. The experiment must have a
+      // probability_weight of 0.
+      KILL_CRITICAL = 3;
+    }
+    optional Type type = 7 [default = NORMAL];
   }
 
   // List of experiments in this study. This list should include the default /

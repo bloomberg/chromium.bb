@@ -9,6 +9,7 @@
 #include "base/metrics/field_trial.h"
 #include "components/variations/processed_study.h"
 #include "components/variations/proto/study.pb.h"
+#include "components/variations/study_filtering.h"
 #include "components/variations/variations_associated_data.h"
 
 namespace chrome_variations {
@@ -90,6 +91,15 @@ bool VariationParamsAreEqual(const Study& study,
 
 }  // namespace
 
+VariationsSeedSimulator::Result::Result()
+    : normal_group_change_count(0),
+      kill_best_effort_group_change_count(0),
+      kill_critical_group_change_count(0) {
+}
+
+VariationsSeedSimulator::Result::~Result() {
+}
+
 VariationsSeedSimulator::VariationsSeedSimulator(
     const base::FieldTrial::EntropyProvider& entropy_provider)
     : entropy_provider_(entropy_provider) {
@@ -98,12 +108,26 @@ VariationsSeedSimulator::VariationsSeedSimulator(
 VariationsSeedSimulator::~VariationsSeedSimulator() {
 }
 
-int VariationsSeedSimulator::ComputeDifferences(
+VariationsSeedSimulator::Result VariationsSeedSimulator::SimulateSeedStudies(
+    const VariationsSeed& seed,
+    const std::string& locale,
+    const base::Time& reference_date,
+    const base::Version& version,
+    Study_Channel channel,
+    Study_FormFactor form_factor) {
+  std::vector<ProcessedStudy> filtered_studies;
+  FilterAndValidateStudies(seed, locale, reference_date, version, channel,
+                           form_factor, &filtered_studies);
+
+  return ComputeDifferences(filtered_studies);
+}
+
+VariationsSeedSimulator::Result VariationsSeedSimulator::ComputeDifferences(
     const std::vector<ProcessedStudy>& processed_studies) {
   std::map<std::string, std::string> current_state;
   GetCurrentTrialState(&current_state);
-  int group_change_count = 0;
 
+  Result result;
   for (size_t i = 0; i < processed_studies.size(); ++i) {
     const Study& study = *processed_studies[i].study();
     std::map<std::string, std::string>::const_iterator it =
@@ -124,12 +148,27 @@ int VariationsSeedSimulator::ComputeDifferences(
     // Note: The logic below does the right thing if study consistency changes,
     // as it doesn't rely on the previous study consistency.
     const std::string& selected_group = it->second;
+    ChangeType change_type = NO_CHANGE;
     if (study.consistency() == Study_Consistency_PERMANENT) {
-      if (PermanentStudyGroupChanged(processed_studies[i], selected_group))
-        ++group_change_count;
+      change_type = PermanentStudyGroupChanged(processed_studies[i],
+                                               selected_group);
     } else if (study.consistency() == Study_Consistency_SESSION) {
-      if (SessionStudyGroupChanged(processed_studies[i], selected_group))
-        ++group_change_count;
+      change_type = SessionStudyGroupChanged(processed_studies[i],
+                                             selected_group);
+    }
+
+    switch (change_type) {
+      case NO_CHANGE:
+        break;
+      case CHANGED:
+        ++result.normal_group_change_count;
+        break;
+      case CHANGED_KILL_BEST_EFFORT:
+        ++result.kill_best_effort_group_change_count;
+        break;
+      case CHANGED_KILL_CRITICAL:
+        ++result.kill_critical_group_change_count;
+        break;
     }
   }
 
@@ -137,10 +176,27 @@ int VariationsSeedSimulator::ComputeDifferences(
   // old seed, but were removed). This will require tracking the set of studies
   // that were created from the original seed.
 
-  return group_change_count;
+  return result;
 }
 
-bool VariationsSeedSimulator::PermanentStudyGroupChanged(
+VariationsSeedSimulator::ChangeType
+VariationsSeedSimulator::ConvertExperimentTypeToChangeType(
+    Study_Experiment_Type type) {
+  switch (type) {
+    case Study_Experiment_Type_NORMAL:
+      return CHANGED;
+    case Study_Experiment_Type_IGNORE_CHANGE:
+      return NO_CHANGE;
+    case Study_Experiment_Type_KILL_BEST_EFFORT:
+      return CHANGED_KILL_BEST_EFFORT;
+    case Study_Experiment_Type_KILL_CRITICAL:
+      return CHANGED_KILL_CRITICAL;
+  }
+  return CHANGED;
+}
+
+VariationsSeedSimulator::ChangeType
+VariationsSeedSimulator::PermanentStudyGroupChanged(
     const ProcessedStudy& processed_study,
     const std::string& selected_group) {
   const Study& study = *processed_study.study();
@@ -148,40 +204,48 @@ bool VariationsSeedSimulator::PermanentStudyGroupChanged(
 
   const std::string simulated_group = SimulateGroupAssignment(entropy_provider_,
                                                               processed_study);
-  // TODO(asvitkine): Sometimes group names are changed without changing any
-  // behavior (e.g. if the behavior is controlled entirely via params). Support
-  // a mechanism to bypass this check.
-  if (simulated_group != selected_group)
-    return true;
-
   const Study_Experiment* experiment = FindExperiment(study, selected_group);
+  if (simulated_group != selected_group) {
+    if (experiment)
+      return ConvertExperimentTypeToChangeType(experiment->type());
+    return CHANGED;
+  }
+
+  // Current group exists in the study - check whether its params changed.
   DCHECK(experiment);
-  return !VariationParamsAreEqual(study, *experiment);
+  if (!VariationParamsAreEqual(study, *experiment))
+    return ConvertExperimentTypeToChangeType(experiment->type());
+  return NO_CHANGE;
 }
 
-bool VariationsSeedSimulator::SessionStudyGroupChanged(
+VariationsSeedSimulator::ChangeType
+VariationsSeedSimulator::SessionStudyGroupChanged(
     const ProcessedStudy& processed_study,
     const std::string& selected_group) {
   const Study& study = *processed_study.study();
   DCHECK_EQ(Study_Consistency_SESSION, study.consistency());
 
+  const Study_Experiment* experiment = FindExperiment(study, selected_group);
   if (processed_study.is_expired() &&
       selected_group != study.default_experiment_name()) {
     // An expired study will result in the default group being selected - mark
     // it as changed if the current group differs from the default.
-    return true;
+    if (experiment)
+      return ConvertExperimentTypeToChangeType(experiment->type());
+    return CHANGED;
   }
 
-  const Study_Experiment* experiment = FindExperiment(study, selected_group);
   if (!experiment)
-    return true;
+    return CHANGED;
   if (experiment->probability_weight() == 0 &&
       !experiment->has_forcing_flag()) {
-    return true;
+    return ConvertExperimentTypeToChangeType(experiment->type());
   }
 
   // Current group exists in the study - check whether its params changed.
-  return !VariationParamsAreEqual(study, *experiment);
+  if (!VariationParamsAreEqual(study, *experiment))
+    return ConvertExperimentTypeToChangeType(experiment->type());
+  return NO_CHANGE;
 }
 
 }  // namespace chrome_variations
