@@ -35,10 +35,8 @@ class HTMLSourceElement FINAL : public HTMLElement {
 public:
     static PassRefPtr<HTMLSourceElement> create(Document&);
 
-    const AtomicString& media() const;
     const AtomicString& type() const;
     void setSrc(const String&);
-    void setMedia(const AtomicString&);
     void setType(const AtomicString&);
 
     void scheduleErrorEvent();

@@ -264,7 +264,6 @@ public:
         FormNameAccessForImageElement = 246,
         FormNameAccessForPastNamesMap = 247,
         FormAssociationByParser = 248,
-        HTMLSourceElementMedia = 249,
         SVGSVGElementInDocument = 250,
         SVGDocumentRootElement = 251,
         DocumentCreateEventOptionalArgument = 252,

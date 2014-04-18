@@ -74,16 +74,6 @@ void HTMLSourceElement::setSrc(const String& url)
     setAttribute(srcAttr, AtomicString(url));
 }
 
-const AtomicString& HTMLSourceElement::media() const
-{
-    return getAttribute(mediaAttr);
-}
-
-void HTMLSourceElement::setMedia(const AtomicString& media)
-{
-    setAttribute(mediaAttr, media);
-}
-
 const AtomicString& HTMLSourceElement::type() const
 {
     return getAttribute(typeAttr);
