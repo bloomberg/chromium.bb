@@ -5,7 +5,7 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.4.4'
+__version__ = '0.4.5'
 
 import datetime
 import getpass
@@ -41,6 +41,9 @@ TOOLS_PATH = os.path.join(ROOT_DIR, 'tools')
 
 # The default time to wait for a shard to finish running.
 DEFAULT_SHARD_WAIT_TIME = 80 * 60.
+
+# How often to print status updates to stdout in 'collect'.
+STATUS_UPDATE_INTERVAL = 15 * 60.
 
 
 NO_OUTPUT_FOUND = (
@@ -248,10 +251,13 @@ def retrieve_results(base_url, task_key, timeout, should_stop):
       return {}
 
 
-def yield_results(swarm_base_url, task_keys, timeout, max_threads):
+def yield_results(
+    swarm_base_url, task_keys, timeout, max_threads, print_status_updates):
   """Yields swarming task results from the swarming server as (index, result).
 
-  Duplicate shards are ignored, the first one to complete is returned.
+  Duplicate shards are ignored. Shards are yielded in order of completion.
+  Timed out shards are NOT yielded at all. Caller can compare number of yielded
+  shards with len(task_keys) to verify all shards completed.
 
   max_threads is optional and is used to limit the number of parallel fetches
   done. Since in general the number of task_keys is in the range <=10, it's not
@@ -265,15 +271,28 @@ def yield_results(swarm_base_url, task_keys, timeout, max_threads):
   number_threads = (
       min(max_threads, len(task_keys)) if max_threads else len(task_keys))
   should_stop = threading_utils.Bit()
-  results_remaining = len(task_keys)
+  results_channel = threading_utils.TaskChannel()
+  active_task_count = len(task_keys)
   with threading_utils.ThreadPool(number_threads, number_threads, 0) as pool:
     try:
       for task_key in task_keys:
         pool.add_task(
-            0, retrieve_results, swarm_base_url, task_key, timeout, should_stop)
-      while shards_remaining and results_remaining:
-        result = pool.get_one_result()
-        results_remaining -= 1
+            0, results_channel.wrap_task(retrieve_results),
+            swarm_base_url, task_key, timeout, should_stop)
+      while active_task_count:
+        try:
+          result = results_channel.pull(timeout=STATUS_UPDATE_INTERVAL)
+        except threading_utils.TaskChannel.Timeout:
+          if print_status_updates:
+            print(
+                'Waiting for results from the following shards: %s' %
+                ', '.join(map(str, shards_remaining)))
+            sys.stdout.flush()
+          continue
+        except Exception:
+          logging.exception('Unexpected exception in retrieve_results')
+          result = None
+        active_task_count -= 1
         if not result:
           # Failed to retrieve one key.
           logging.error('Failed to retrieve the results for a swarming key')
@@ -284,10 +303,8 @@ def yield_results(swarm_base_url, task_keys, timeout, max_threads):
           yield shard_index, result
         else:
           logging.warning('Ignoring duplicate shard index %d', shard_index)
-          # Pop the last entry, there's no such shard.
-          shards_remaining.pop()
     finally:
-      # Done, kill the remaining threads.
+      # Done or aborted with Ctrl+C, kill the remaining threads.
       should_stop.set()
 
 
@@ -504,7 +521,7 @@ def decorate_shard_output(result, shard_exit_code):
     ) % (tag, result['output'] or NO_OUTPUT_FOUND, tag, shard_exit_code)
 
 
-def collect(url, task_name, timeout, decorate):
+def collect(url, task_name, timeout, decorate, print_status_updates):
   """Retrieves results of a Swarming task."""
   logging.info('Collecting %s', task_name)
   task_keys = get_task_keys(url, task_name)
@@ -512,7 +529,10 @@ def collect(url, task_name, timeout, decorate):
     raise Failure('No task keys to get results with.')
 
   exit_code = None
-  for _index, output in yield_results(url, task_keys, timeout, None):
+  seen_shards = set()
+  for index, output in yield_results(
+      url, task_keys, timeout, None, print_status_updates):
+    seen_shards.add(index)
     shard_exit_codes = (output['exit_codes'] or '1').split(',')
     shard_exit_code = max(int(i) for i in shard_exit_codes)
     if decorate:
@@ -525,6 +545,11 @@ def collect(url, task_name, timeout, decorate):
               output['exit_codes']))
       print(''.join('  %s\n' % l for l in output['output'].splitlines()))
     exit_code = exit_code or shard_exit_code
+  if len(seen_shards) != len(task_keys):
+    missing_shards = [x for x in range(len(task_keys)) if x not in seen_shards]
+    print >> sys.stderr, ('Results from some shards are missing: %s' %
+        ', '.join(map(str, missing_shards)))
+    exit_code = exit_code or 1
   return exit_code if exit_code is not None else 1
 
 
@@ -592,6 +617,9 @@ def add_collect_options(parser):
            '%default s')
   parser.group_logging.add_option(
       '--decorate', action='store_true', help='Decorate output')
+  parser.group_logging.add_option(
+      '--print-status-updates', action='store_true',
+      help='Print periodic status updates')
 
 
 @subcommand.usage('task_name')
@@ -609,7 +637,12 @@ def CMDcollect(parser, args):
     parser.error('Must specify only one task name.')
 
   try:
-    return collect(options.swarming, args[0], options.timeout, options.decorate)
+    return collect(
+        options.swarming,
+        args[0],
+        options.timeout,
+        options.decorate,
+        options.print_status_updates)
   except Failure as e:
     tools.report_error(e)
     return 1
@@ -711,7 +744,8 @@ def CMDrun(parser, args):
         options.swarming,
         task_name,
         options.timeout,
-        options.decorate)
+        options.decorate,
+        options.print_status_updates)
   except Failure as e:
     tools.report_error(e)
     return 1

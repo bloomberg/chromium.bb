@@ -139,7 +139,8 @@ def get_swarm_results(keys):
 
   The timeout is hard-coded to 10 seconds.
   """
-  return list(swarming.yield_results('http://host:9001', keys, 10., None))
+  return list(
+      swarming.yield_results('http://host:9001', keys, 10., None, True))
 
 
 def main(args):
@@ -390,10 +391,11 @@ class TestGetSwarmResults(TestCase):
     self.mock(swarming, 'get_task_keys', lambda *_: [1, 2])
     self.mock(swarming, 'yield_results', lambda *_: [])
     self.assertEqual(
-        1, swarming.collect('url', 'test_name', 'timeout', 'decorate'))
+        1, swarming.collect('url', 'test_name', 'timeout', 'decorate', True))
+    self._check_output('', 'Results from some shards are missing: 0, 1\n')
 
   def test_collect_success(self):
-    self.mock(swarming, 'get_task_keys', lambda *_: [1, 2])
+    self.mock(swarming, 'get_task_keys', lambda *_: [1])
     data = {
       'config_instance_index': 0,
       'exit_codes': '0',
@@ -402,7 +404,7 @@ class TestGetSwarmResults(TestCase):
     }
     self.mock(swarming, 'yield_results', lambda *_: [(0, data)])
     self.assertEqual(
-        0, swarming.collect('url', 'test_name', 'timeout', 'decorate'))
+        0, swarming.collect('url', 'test_name', 'timeout', 'decorate', True))
     self._check_output(
         '\n================================================================\n'
         'Begin output from shard index 0 (machine tag: 0, id: unknown)\n'
@@ -414,7 +416,7 @@ class TestGetSwarmResults(TestCase):
         '')
 
   def test_collect_fail(self):
-    self.mock(swarming, 'get_task_keys', lambda *_: [1, 2])
+    self.mock(swarming, 'get_task_keys', lambda *_: [1])
     data = {
       'config_instance_index': 0,
       'exit_codes': '0,8',
@@ -423,7 +425,7 @@ class TestGetSwarmResults(TestCase):
     }
     self.mock(swarming, 'yield_results', lambda *_: [(0, data)])
     self.assertEqual(
-        8, swarming.collect('url', 'test_name', 'timeout', 'decorate'))
+        8, swarming.collect('url', 'test_name', 'timeout', 'decorate', True))
     self._check_output(
         '\n================================================================\n'
         'Begin output from shard index 0 (machine tag: 0, id: unknown)\n'
@@ -433,6 +435,27 @@ class TestGetSwarmResults(TestCase):
           '\n'
         '================================================================\n\n',
         '')
+
+  def test_collect_one_missing(self):
+    self.mock(swarming, 'get_task_keys', lambda *_: [1, 2])
+    data = {
+      'config_instance_index': 0,
+      'exit_codes': '0',
+      'machine_id': 0,
+      'output': 'Foo',
+    }
+    self.mock(swarming, 'yield_results', lambda *_: [(0, data)])
+    self.assertEqual(
+        1, swarming.collect('url', 'test_name', 'timeout', 'decorate', True))
+    self._check_output(
+        '\n================================================================\n'
+        'Begin output from shard index 0 (machine tag: 0, id: unknown)\n'
+        '================================================================\n\n'
+        'Foo================================================================\n'
+        'End output from shard index 0 (machine tag: 0, id: unknown). Return 0'
+          '\n'
+        '================================================================\n\n',
+        'Results from some shards are missing: 1\n')
 
 
 def chromium_tasks(retrieval_url, file_hash):

@@ -700,6 +700,9 @@ class Bit(object):
 class TaskChannel(object):
   """Queue of results of async task execution."""
 
+  class Timeout(Exception):
+    """Raised by 'pull' in case of timeout."""
+
   _ITEM_RESULT = 0
   _ITEM_EXCEPTION = 1
 
@@ -720,11 +723,35 @@ class TaskChannel(object):
     """
     exc_info = exc_info or sys.exc_info()
     assert isinstance(exc_info, tuple) and len(exc_info) == 3
+    # Transparently passing Timeout will break 'pull' contract, since a caller
+    # has no way to figure out that's an exception from the task and not from
+    # 'pull' itself. Transform Timeout into generic RuntimeError with
+    # explanation.
+    if isinstance(exc_info[1], TaskChannel.Timeout):
+      exc_info = (
+          RuntimeError,
+          RuntimeError('Task raised Timeout exception'),
+          exc_info[2])
     self._queue.put((self._ITEM_EXCEPTION, exc_info))
 
-  def pull(self):
-    """Dequeues available result or exception."""
-    item_type, value = self._queue.get()
+  def pull(self, timeout=None):
+    """Dequeues available result or exception.
+
+    Args:
+      timeout: if not None will block no longer than |timeout| seconds and will
+          raise TaskChannel.Timeout exception if no results are available.
+
+    Returns:
+      Whatever task pushes to the queue by calling 'send_result'.
+
+    Raises:
+      TaskChannel.Timeout: waiting longer than |timeout|.
+      Whatever exception task raises.
+    """
+    try:
+      item_type, value = self._queue.get(timeout=timeout)
+    except Queue.Empty:
+      raise TaskChannel.Timeout()
     if item_type == self._ITEM_RESULT:
       return value
     if item_type == self._ITEM_EXCEPTION:

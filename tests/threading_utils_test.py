@@ -567,6 +567,30 @@ class TaskChannelTest(unittest.TestCase):
         exc_traceback = traceback.format_exc()
       self.assertIn('function_with_some_unusual_name', exc_traceback)
 
+  def test_pull_timeout(self):
+    with threading_utils.ThreadPool(1, 1, 0) as tp:
+      channel = threading_utils.TaskChannel()
+      def task_func():
+        # This test ultimately relies on the condition variable primitive
+        # provided by pthreads. There's no easy way to mock time for it.
+        # Increase this duration if the test is flaky.
+        time.sleep(0.2)
+        return 123
+      tp.add_task(0, channel.wrap_task(task_func))
+      with self.assertRaises(threading_utils.TaskChannel.Timeout):
+        channel.pull(timeout=0.001)
+      self.assertEqual(123, channel.pull())
+
+  def test_timeout_exception_from_task(self):
+    with threading_utils.ThreadPool(1, 1, 0) as tp:
+      channel = threading_utils.TaskChannel()
+      def task_func():
+        raise threading_utils.TaskChannel.Timeout()
+      tp.add_task(0, channel.wrap_task(task_func))
+      # 'Timeout' raised by task gets transformed into 'RuntimeError'.
+      with self.assertRaises(RuntimeError):
+        channel.pull()
+
 
 if __name__ == '__main__':
   VERBOSE = '-v' in sys.argv
