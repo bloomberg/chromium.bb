@@ -150,21 +150,15 @@ void ChildNaClLoaderInit(const std::vector<int>& child_fds,
   // sandbox does) until then, because that can interfere with the
   // parent's discovery of our PID.
   const ssize_t nread = HANDLE_EINTR(read(parent_fd, buffer, kMaxReadSize));
-  const std::string switch_prefix = std::string("--") +
-      switches::kProcessChannelID + std::string("=");
-  const size_t len = switch_prefix.length();
 
   if (nread < 0) {
     perror("read");
     LOG(ERROR) << "read returned " << nread;
-  } else if (static_cast<size_t>(nread) > len) {
-    if (switch_prefix.compare(0, len, buffer, 0, len) == 0) {
-      VLOG(1) << "NaCl loader is synchronised with Chrome zygote";
-      CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-          switches::kProcessChannelID,
-          std::string(&buffer[len], nread - len));
-      validack = true;
-    }
+  } else if (nread > 0) {
+    VLOG(1) << "NaCl loader is synchronised with Chrome zygote";
+    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kProcessChannelID, std::string(buffer, nread));
+    validack = true;
   }
   if (IGNORE_EINTR(close(dummy_fd)) != 0)
     LOG(ERROR) << "close(dummy_fd) failed";

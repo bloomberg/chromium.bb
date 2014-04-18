@@ -296,7 +296,7 @@ void Zygote::HandleGetTerminationStatus(int fd,
 
 int Zygote::ForkWithRealPid(const std::string& process_type,
                             const base::GlobalDescriptors::Mapping& fd_mapping,
-                            const std::string& channel_switch,
+                            const std::string& channel_id,
                             std::string* uma_name,
                             int* uma_sample,
                             int* uma_boundary_value) {
@@ -411,7 +411,7 @@ int Zygote::ForkWithRealPid(const std::string& process_type,
     process_info_map_[real_pid].started_from_helper = use_helper;
 
     if (use_helper) {
-      if (!helper_->AckChild(pipe_fds[1], channel_switch)) {
+      if (!helper_->AckChild(pipe_fds[1], channel_id)) {
         LOG(ERROR) << "Failed to synchronise with zygote fork helper";
         goto error;
       }
@@ -467,7 +467,7 @@ base::ProcessId Zygote::ReadArgsAndFork(const Pickle& pickle,
       return -1;
     args.push_back(arg);
     if (arg.compare(0, channel_id_prefix.length(), channel_id_prefix) == 0)
-      channel_id = arg;
+      channel_id = arg.substr(channel_id_prefix.length());
   }
 
   if (!pickle.ReadInt(&iter, &numfds))

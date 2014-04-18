@@ -329,11 +329,10 @@ pid_t NaClForkDelegate::Fork(const std::string& process_type,
   return nacl_child;
 }
 
-bool NaClForkDelegate::AckChild(const int fd,
-                                const std::string& channel_switch) {
-  int nwritten = HANDLE_EINTR(write(fd, channel_switch.c_str(),
-                                    channel_switch.length()));
-  if (nwritten != static_cast<int>(channel_switch.length())) {
+bool NaClForkDelegate::AckChild(const int fd, const std::string& channel_id) {
+  ssize_t nwritten =
+      HANDLE_EINTR(write(fd, channel_id.c_str(), channel_id.length()));
+  if (static_cast<size_t>(nwritten) != channel_id.length()) {
     return false;
   }
   return true;

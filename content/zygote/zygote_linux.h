@@ -79,7 +79,7 @@ class Zygote {
   // UMA_HISTOGRAM_ENUMERATION.
   int ForkWithRealPid(const std::string& process_type,
                       const base::GlobalDescriptors::Mapping& fd_mapping,
-                      const std::string& channel_switch,
+                      const std::string& channel_id,
                       std::string* uma_name,
                       int* uma_sample,
                       int* uma_boundary_value);

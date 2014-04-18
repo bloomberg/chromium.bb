@@ -66,8 +66,8 @@ class ZygoteForkDelegate {
 
   // After a successful fork, signal the child to indicate that
   // the child's PID has been received. Also communicate the
-  // channel switch as a part of acknowledgement message.
-  virtual bool AckChild(int fd, const std::string& channel_switch) = 0;
+  // channel ID as a part of acknowledgement message.
+  virtual bool AckChild(int fd, const std::string& channel_id) = 0;
 
   // The fork delegate must also assume the role of waiting for its children
   // since the caller will not be their parents and cannot do it. |pid| here
