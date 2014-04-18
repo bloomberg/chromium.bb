@@ -513,26 +513,26 @@ static const struct nacl_irt_tls irt_tls = {
   tls_get,
 };
 
-const static struct nacl_irt_thread irt_thread = {
+static const struct nacl_irt_thread irt_thread = {
   thread_create,
   thread_exit,
   thread_nice,
 };
 
 #if defined(__linux__)
-const static struct nacl_irt_futex irt_futex = {
+static const struct nacl_irt_futex irt_futex = {
   futex_wait_abs,
   futex_wake,
 };
 
-const static struct nacl_irt_clock irt_clock = {
+static const struct nacl_irt_clock irt_clock = {
   irt_clock_getres,
   irt_clock_gettime,
 };
 #else
 DEFINE_STUB(futex_wait_abs)
 DEFINE_STUB(futex_wake)
-const static struct nacl_irt_futex irt_futex = {
+static const struct nacl_irt_futex irt_futex = {
   USE_STUB(irt_futex, futex_wait_abs),
   USE_STUB(irt_futex, futex_wake),
 };
@@ -547,7 +547,7 @@ DEFINE_STUB(chmod)
 DEFINE_STUB(access)
 DEFINE_STUB(readlink)
 DEFINE_STUB(utimes)
-const static struct nacl_irt_dev_filename irt_dev_filename = {
+static const struct nacl_irt_dev_filename irt_dev_filename = {
   irt_open,
   irt_stat,
   irt_mkdir,
@@ -566,7 +566,7 @@ const static struct nacl_irt_dev_filename irt_dev_filename = {
   USE_STUB(irt_dev_filename, utimes),
 };
 
-const static struct nacl_irt_dev_getpid irt_dev_getpid = {
+static const struct nacl_irt_dev_getpid irt_dev_getpid = {
   irt_getpid,
 };
 
@@ -630,8 +630,8 @@ int main(int argc, char **argv, char **environ) {
   data[pos++] = env_count;
   data[pos++] = argc;
   /* Copy arrays, with terminators. */
-  int i;
-  for (i = 0; i < argc; i++)
+  size_t i;
+  for (i = 0; i < (size_t) argc; i++)
     data[pos++] = (uintptr_t) argv[i];
   data[pos++] = 0;
   for (i = 0; i < env_count; i++)
