@@ -20,13 +20,13 @@
 
 interface HTMLDocument : Document {
     [Custom, CustomElementCallbacks] void open();
-    void close();
+    [RaisesException] void close();
 
     // We support multiple DOMString arguments to match FF / IE, e.g.:
     // document.write("a", "b", "c") --> document.write("abc")
     // document.write() --> document.write("")
-    [CallWith=ActiveWindow, PerWorldBindings, ActivityLogging=ForIsolatedWorlds, CustomElementCallbacks] void write(DOMString... text);
-    [CallWith=ActiveWindow, PerWorldBindings, ActivityLogging=ForIsolatedWorlds, CustomElementCallbacks] void writeln(DOMString... text);
+    [CallWith=ActiveWindow, PerWorldBindings, ActivityLogging=ForIsolatedWorlds, CustomElementCallbacks, RaisesException] void write(DOMString... text);
+    [CallWith=ActiveWindow, PerWorldBindings, ActivityLogging=ForIsolatedWorlds, CustomElementCallbacks, RaisesException] void writeln(DOMString... text);
 
     // Extensions
 

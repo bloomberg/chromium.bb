@@ -28,6 +28,7 @@
 #ifndef Document_h
 #define Document_h
 
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "bindings/v8/ScriptValue.h"
 #include "core/animation/CompositorPendingAnimations.h"
 #include "core/dom/ContainerNode.h"
@@ -521,11 +522,11 @@ public:
 
     DocumentLoader* loader() const;
 
-    void open(Document* ownerDocument = 0);
+    void open(Document* ownerDocument = 0, ExceptionState& = ASSERT_NO_EXCEPTION);
     PassRefPtr<DocumentParser> implicitOpen();
 
     // close() is the DOM API document.close()
-    void close();
+    void close(ExceptionState& = ASSERT_NO_EXCEPTION);
     // In some situations (see the code), we ignore document.close().
     // explicitClose() bypass these checks and actually tries to close the
     // input stream.
@@ -546,9 +547,9 @@ public:
 
     void cancelParsing();
 
-    void write(const SegmentedString& text, Document* ownerDocument = 0);
-    void write(const String& text, Document* ownerDocument = 0);
-    void writeln(const String& text, Document* ownerDocument = 0);
+    void write(const SegmentedString& text, Document* ownerDocument = 0, ExceptionState& = ASSERT_NO_EXCEPTION);
+    void write(const String& text, Document* ownerDocument = 0, ExceptionState& = ASSERT_NO_EXCEPTION);
+    void writeln(const String& text, Document* ownerDocument = 0, ExceptionState& = ASSERT_NO_EXCEPTION);
 
     bool wellFormed() const { return m_wellFormed; }
 

@@ -2280,8 +2280,13 @@ ScriptableDocumentParser* Document::scriptableDocumentParser() const
     return parser() ? parser()->asScriptableDocumentParser() : 0;
 }
 
-void Document::open(Document* ownerDocument)
+void Document::open(Document* ownerDocument, ExceptionState& exceptionState)
 {
+    if (importLoader()) {
+        exceptionState.throwDOMException(InvalidStateError, "Imported document doesn't support open().");
+        return;
+    }
+
     if (ownerDocument) {
         setURL(ownerDocument->url());
         m_cookieURL = ownerDocument->cookieURL();
@@ -2424,10 +2429,15 @@ Element* Document::viewportDefiningElement(RenderStyle* rootStyle) const
     return rootElement;
 }
 
-void Document::close()
+void Document::close(ExceptionState& exceptionState)
 {
     // FIXME: We should follow the specification more closely:
     //        http://www.whatwg.org/specs/web-apps/current-work/#dom-document-close
+
+    if (importLoader()) {
+        exceptionState.throwDOMException(InvalidStateError, "Imported document doesn't support close().");
+        return;
+    }
 
     if (!scriptableDocumentParser() || !scriptableDocumentParser()->wasCreatedByScript() || !scriptableDocumentParser()->isParsing())
         return;
@@ -2673,8 +2683,13 @@ int Document::elapsedTime() const
     return static_cast<int>((currentTime() - m_startTime) * 1000);
 }
 
-void Document::write(const SegmentedString& text, Document* ownerDocument)
+void Document::write(const SegmentedString& text, Document* ownerDocument, ExceptionState& exceptionState)
 {
+    if (importLoader()) {
+        exceptionState.throwDOMException(InvalidStateError, "Imported document doesn't support write().");
+        return;
+    }
+
     NestingLevelIncrementer nestingLevelIncrementer(m_writeRecursionDepth);
 
     m_writeRecursionIsTooDeep = (m_writeRecursionDepth > 1) && m_writeRecursionIsTooDeep;
@@ -2697,14 +2712,16 @@ void Document::write(const SegmentedString& text, Document* ownerDocument)
     m_parser->insert(text);
 }
 
-void Document::write(const String& text, Document* ownerDocument)
+void Document::write(const String& text, Document* ownerDocument, ExceptionState& exceptionState)
 {
-    write(SegmentedString(text), ownerDocument);
+    write(SegmentedString(text), ownerDocument, exceptionState);
 }
 
-void Document::writeln(const String& text, Document* ownerDocument)
+void Document::writeln(const String& text, Document* ownerDocument, ExceptionState& exceptionState)
 {
-    write(text, ownerDocument);
+    write(text, ownerDocument, exceptionState);
+    if (exceptionState.hadException())
+        return;
     write("\n", ownerDocument);
 }
 
