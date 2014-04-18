@@ -123,6 +123,7 @@ public:
 
     void updateAfterLayout();
     void updateAfterStyleChange(const RenderStyle*);
+    void updateAfterOverflowRecalc();
 
     virtual void updateAfterCompositingChange() OVERRIDE;
 

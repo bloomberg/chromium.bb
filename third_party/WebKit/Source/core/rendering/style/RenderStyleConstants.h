@@ -52,8 +52,6 @@ enum PrintColorAdjust {
 // - StyleDifferenceRepaint - The object just needs to be repainted.
 // - StyleDifferenceRepaintLayer - The layer and its descendant layers need to be repainted.
 // - StyleDifferenceLayoutPositionedMovementOnly - Only the position of this positioned object has been updated.
-// - StyleDifferenceSimplifiedLayout - Only overflow needs to be recomputed.
-// - StyleDifferenceSimplifiedLayoutAndPositionedMovement - Both positioned movement and simplified layout updates are required.
 // - StyleDifferenceLayout - A full layout is required.
 enum StyleDifference {
     StyleDifferenceEqual,
@@ -61,8 +59,6 @@ enum StyleDifference {
     StyleDifferenceRepaint,
     StyleDifferenceRepaintLayer,
     StyleDifferenceLayoutPositionedMovementOnly,
-    StyleDifferenceSimplifiedLayout,
-    StyleDifferenceSimplifiedLayoutAndPositionedMovement,
     StyleDifferenceLayout
 };
 

@@ -263,6 +263,10 @@ public:
     // (grid items, flex items) require this behavior as well, and this function exists as a helper for them.
     // It is expected that the caller will call this function independent of the value of paintInfo.phase.
     static void paintAsInlineBlock(RenderObject*, PaintInfo&, const LayoutPoint&);
+
+    bool recalcChildOverflowAfterStyleChange();
+    bool recalcOverflowAfterStyleChange();
+
 protected:
     virtual void willBeDestroyed() OVERRIDE;
 
