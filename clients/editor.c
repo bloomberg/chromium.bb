@@ -110,6 +110,47 @@ utf8_next_char(const char *p)
 	return NULL;
 }
 
+static void
+move_up(const char *p, uint32_t *cursor)
+{
+	const char *posr, *posr_i;
+	char text[16];
+
+	xkb_keysym_to_utf8(XKB_KEY_Return, text, sizeof(text));
+
+	posr = strstr(p, text);
+	while (posr) {
+		if (*cursor > (unsigned)(posr-p)) {
+			posr_i = strstr(posr+1, text);
+			if (!posr_i || !(*cursor > (unsigned)(posr_i-p))) {
+				*cursor = posr-p;
+				break;
+			}
+			posr = posr_i;
+		} else {
+			break;
+		}
+	}
+}
+
+static void
+move_down(const char *p, uint32_t *cursor)
+{
+	const char *posr;
+	char text[16];
+
+	xkb_keysym_to_utf8(XKB_KEY_Return, text, sizeof(text));
+
+	posr = strstr(p, text);
+	while (posr) {
+		if (*cursor <= (unsigned)(posr-p)) {
+			*cursor = posr-p + 1;
+			break;
+		}
+		posr = strstr(posr+1, text);
+	}
+}
+
 static void text_entry_redraw_handler(struct widget *widget, void *data);
 static void text_entry_button_handler(struct widget *widget,
 				      struct input *input, uint32_t time,
@@ -374,6 +415,23 @@ text_input_keysym(void *data,
 		return;
 	}
 
+	if (key == XKB_KEY_Up ||
+	    key == XKB_KEY_Down) {
+		if (state != WL_KEYBOARD_KEY_STATE_RELEASED)
+			return;
+
+		if (key == XKB_KEY_Up)
+			move_up(entry->text, &entry->cursor);
+		else
+			move_down(entry->text, &entry->cursor);
+
+		if (!(modifiers & entry->keysym.shift_mask))
+			entry->anchor = entry->cursor;
+		widget_schedule_redraw(entry->widget);
+
+		return;
+	}
+
 	if (key == XKB_KEY_BackSpace) {
 		const char *start, *end;
 
@@ -395,17 +453,20 @@ text_input_keysym(void *data,
 		return;
 	}
 
-	switch (key) {
-		case XKB_KEY_Tab:
-			key_label = "Tab";
-			break;
-		case XKB_KEY_KP_Enter:
-		case XKB_KEY_Return:
-			key_label = "Enter";
-			break;
-	}
+	if (key == XKB_KEY_Tab ||
+	    key == XKB_KEY_KP_Enter ||
+	    key == XKB_KEY_Return) {
+		char text[16];
 
-	fprintf(stderr, "%s key was %s.\n", key_label, state_label);
+		if (state != WL_KEYBOARD_KEY_STATE_RELEASED)
+			return;
+
+		xkb_keysym_to_utf8(key, text, sizeof(text));
+
+		text_entry_insert_at_cursor(entry, text, 0, 0);
+
+		return;
+	}
 }
 
 static void
@@ -1207,6 +1268,22 @@ key_handler(struct window *window,
 					entry->anchor = entry->cursor;
 				widget_schedule_redraw(entry->widget);
 			}
+			break;
+		case XKB_KEY_Up:
+			text_entry_commit_and_reset(entry);
+
+			move_up(entry->text, &entry->cursor);
+			if (!(input_get_modifiers(input) & MOD_SHIFT_MASK))
+				entry->anchor = entry->cursor;
+			widget_schedule_redraw(entry->widget);
+			break;
+		case XKB_KEY_Down:
+			text_entry_commit_and_reset(entry);
+
+			move_down(entry->text, &entry->cursor);
+			if (!(input_get_modifiers(input) & MOD_SHIFT_MASK))
+				entry->anchor = entry->cursor;
+			widget_schedule_redraw(entry->widget);
 			break;
 		case XKB_KEY_Escape:
 			break;
