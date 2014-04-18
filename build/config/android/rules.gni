@@ -1,0 +1,61 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Declare a jni target
+#
+# This target generates the native jni bindings for a set of .java files.
+#
+# See base/android/jni_generator/jni_generator.py for more info about the
+# format of generating JNI bindings.
+#
+# Variables
+#   sources: list of .java files to generate jni for
+#   jni_package: subdirectory path for generated bindings
+#
+# Example
+#   generate_jni("foo_jni") {
+#     sources = [
+#       "android/java/src/org/chromium/foo/Foo.java",
+#       "android/java/src/org/chromium/foo/FooUtil.java",
+#     ]
+#     jni_package = "foo"
+#   }
+template("generate_jni") {
+  assert(defined(invoker.sources))
+  assert(defined(invoker.jni_package))
+  jni_package = invoker.jni_package
+  base_output_dir = "${root_gen_dir}/${target_name}/${jni_package}"
+  jni_output_dir = "${base_output_dir}/jni"
+
+  jni_generator_includes =
+      rebase_path("//base/android/jni_generator/jni_generator_helper.h")
+
+  config("jni_includes_${target_name}") {
+    include_dirs = [ base_output_dir ]
+  }
+
+  action_foreach(target_name) {
+    script = "//base/android/jni_generator/jni_generator.py"
+    direct_dependent_configs = [ ":jni_includes_${target_name}" ]
+    sources = invoker.sources
+    outputs = [
+      "${jni_output_dir}/{{source_name_part}}_jni.h"
+    ]
+
+    args = [
+      "--input_file={{source}}",
+      "--optimize_generation=1",
+      "--ptr_type=long",
+      "--output_dir", rebase_path(jni_output_dir),
+      "--includes=${jni_generator_includes}",
+    ]
+    if (defined(invoker.jni_generator_jarjar_file)) {
+      args += [
+        "--jarjar", rebase_path(jni_generator_jarjar_file)
+      ]
+    }
+
+    hard_dep = true
+  }
+}

@@ -128,209 +128,211 @@ static_library("leveldatabase") {
   }
 }
 
-test("env_chromium_unittests") {
-  sources = [
-    "env_chromium_unittest.cc",
-  ]
-  deps = [
-    ":leveldatabase",
-    "//base/test:test_support",
-    "//testing/gtest",
-  ]
-}
+if (!is_android) {
+  test("env_chromium_unittests") {
+    sources = [
+      "env_chromium_unittest.cc",
+    ]
+    deps = [
+      ":leveldatabase",
+      "//base/test:test_support",
+      "//testing/gtest",
+    ]
+  }
 
-static_library("leveldb_testutil") {
-  sources = [
-    "src/util/histogram.cc",
-    "src/util/histogram.h",
-    "src/util/testharness.cc",
-    "src/util/testharness.h",
-    "src/util/testutil.cc",
-    "src/util/testutil.h",
-  ]
+  static_library("leveldb_testutil") {
+    sources = [
+      "src/util/histogram.cc",
+      "src/util/histogram.h",
+      "src/util/testharness.cc",
+      "src/util/testharness.h",
+      "src/util/testutil.cc",
+      "src/util/testutil.h",
+    ]
 
-  forward_dependent_configs_from = [ ":leveldatabase" ]
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
+    forward_dependent_configs_from = [ ":leveldatabase" ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
 
-  deps = [
-    ":leveldatabase",
-    "//base",
-  ]
-}
+    deps = [
+      ":leveldatabase",
+      "//base",
+    ]
+  }
 
-test("leveldb_arena_test") {
-  sources = [
-    "src/util/arena_test.cc",
-  ]
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
-  deps = [
-    ":leveldb_testutil",
-  ]
-}
+  test("leveldb_arena_test") {
+    sources = [
+      "src/util/arena_test.cc",
+    ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+    deps = [
+      ":leveldb_testutil",
+    ]
+  }
 
-test("leveldb_bloom_test") {
-  sources = [
-    "src/util/bloom_test.cc",
-  ]
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
-  deps = [
-    ":leveldb_testutil",
-  ]
-}
+  test("leveldb_bloom_test") {
+    sources = [
+      "src/util/bloom_test.cc",
+    ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+    deps = [
+      ":leveldb_testutil",
+    ]
+  }
 
-test("leveldb_cache_test") {
-  sources = [
-    "src/util/cache_test.cc",
-  ]
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
-  deps = [
-    ":leveldb_testutil",
-  ]
-}
+  test("leveldb_cache_test") {
+    sources = [
+      "src/util/cache_test.cc",
+    ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+    deps = [
+      ":leveldb_testutil",
+    ]
+  }
 
-test("leveldb_corruption_test") {
-  sources = [
-    "src/db/corruption_test.cc",
-  ]
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
-  deps = [
-    ":leveldb_testutil",
-  ]
-}
+  test("leveldb_corruption_test") {
+    sources = [
+      "src/db/corruption_test.cc",
+    ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+    deps = [
+      ":leveldb_testutil",
+    ]
+  }
 
-test("leveldb_crc32c_test") {
-  sources = [
-    "src/util/crc32c_test.cc"
-  ]
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
-  deps = [
-    ":leveldb_testutil",
-  ]
-}
+  test("leveldb_crc32c_test") {
+    sources = [
+      "src/util/crc32c_test.cc"
+    ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+    deps = [
+      ":leveldb_testutil",
+    ]
+  }
 
-test("leveldb_db_bench") {
-  sources = [
-    "src/db/db_bench.cc",
-  ]
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
-  deps = [
-    ":leveldb_testutil",
-  ]
-}
+  test("leveldb_db_bench") {
+    sources = [
+      "src/db/db_bench.cc",
+    ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+    deps = [
+      ":leveldb_testutil",
+    ]
+  }
 
-test("leveldb_db_test") {
-  sources = [
-    "src/db/db_test.cc",
-  ]
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
-  deps = [
-    ":leveldb_testutil",
-  ]
-}
+  test("leveldb_db_test") {
+    sources = [
+      "src/db/db_test.cc",
+    ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+    deps = [
+      ":leveldb_testutil",
+    ]
+  }
 
-test("leveldb_dbformat_test") {
-  sources = [
-    "src/db/dbformat_test.cc",
-  ]
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
-  deps = [
-    ":leveldb_testutil",
-  ]
-}
+  test("leveldb_dbformat_test") {
+    sources = [
+      "src/db/dbformat_test.cc",
+    ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+    deps = [
+      ":leveldb_testutil",
+    ]
+  }
 
-test("leveldb_env_test") {
-  sources = [
-    "src/util/env_test.cc",
-  ]
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
-  deps = [
-    ":leveldb_testutil",
-  ]
-}
+  test("leveldb_env_test") {
+    sources = [
+      "src/util/env_test.cc",
+    ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+    deps = [
+      ":leveldb_testutil",
+    ]
+  }
 
-test("leveldb_filename_test") {
-  sources = [
-    "src/db/filename_test.cc",
-  ]
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
-  deps = [
-    ":leveldb_testutil",
-  ]
-}
+  test("leveldb_filename_test") {
+    sources = [
+      "src/db/filename_test.cc",
+    ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+    deps = [
+      ":leveldb_testutil",
+    ]
+  }
 
-test("leveldb_filter_block_test") {
-  sources = [
-    "src/table/filter_block_test.cc",
-  ]
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
-  deps = [
-    ":leveldb_testutil",
-  ]
-}
+  test("leveldb_filter_block_test") {
+    sources = [
+      "src/table/filter_block_test.cc",
+    ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+    deps = [
+      ":leveldb_testutil",
+    ]
+  }
 
-test("leveldb_log_test") {
-  sources = [
-    "src/db/log_test.cc",
-  ]
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
-  deps = [
-    ":leveldb_testutil",
-  ]
-}
+  test("leveldb_log_test") {
+    sources = [
+      "src/db/log_test.cc",
+    ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+    deps = [
+      ":leveldb_testutil",
+    ]
+  }
 
-test("leveldb_skiplist_test") {
-  sources = [
-    "src/db/skiplist_test.cc",
-  ]
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
-  deps = [
-    ":leveldb_testutil",
-  ]
-}
+  test("leveldb_skiplist_test") {
+    sources = [
+      "src/db/skiplist_test.cc",
+    ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+    deps = [
+      ":leveldb_testutil",
+    ]
+  }
 
-test("leveldb_table_test") {
-  sources = [
-    "src/table/table_test.cc",
-  ]
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
-  deps = [
-    ":leveldb_testutil",
-  ]
-}
+  test("leveldb_table_test") {
+    sources = [
+      "src/table/table_test.cc",
+    ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+    deps = [
+      ":leveldb_testutil",
+    ]
+  }
 
-test("leveldb_version_edit_test") {
-  sources = [
-    "src/db/version_edit_test.cc",
-  ]
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
-  deps = [
-    ":leveldb_testutil",
-  ]
-}
+  test("leveldb_version_edit_test") {
+    sources = [
+      "src/db/version_edit_test.cc",
+    ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+    deps = [
+      ":leveldb_testutil",
+    ]
+  }
 
-test("leveldb_write_batch_test") {
-  sources = [
-    "src/db/write_batch_test.cc",
-  ]
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
-  deps = [
-    ":leveldb_testutil",
-  ]
+  test("leveldb_write_batch_test") {
+    sources = [
+      "src/db/write_batch_test.cc",
+    ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+    deps = [
+      ":leveldb_testutil",
+    ]
+  }
 }

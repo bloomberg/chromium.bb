@@ -84,17 +84,19 @@ static_library("minizip") {
   direct_dependent_configs = [ ":zlib_config" ]
 }
 
-static_library("zip") {
-  sources = [
-    "google/zip.cc",
-    "google/zip.h",
-    "google/zip_internal.cc",
-    "google/zip_internal.h",
-    "google/zip_reader.cc",
-    "google/zip_reader.h",
-  ]
-  deps = [
-    ":minizip",
-    "//base",
-  ]
+if (!is_android) {
+  static_library("zip") {
+    sources = [
+      "google/zip.cc",
+      "google/zip.h",
+      "google/zip_internal.cc",
+      "google/zip_internal.h",
+      "google/zip_reader.cc",
+      "google/zip_reader.h",
+    ]
+    deps = [
+      ":minizip",
+      "//base",
+    ]
+  }
 }

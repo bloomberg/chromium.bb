@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/ui.gni")
+import("//build/config/android/rules.gni")
 
 component("base") {
   sources = [
@@ -16,12 +17,16 @@ component("base") {
     "allocator/allocator_extension.h",
     "allocator/type_profiler_control.cc",
     "allocator/type_profiler_control.h",
-    "android/activity_status.cc",
-    "android/activity_status.h",
+    "android/application_status_listener.cc",
+    "android/application_status_listener.h",
     "android/base_jni_registrar.cc",
     "android/base_jni_registrar.h",
     "android/build_info.cc",
     "android/build_info.h",
+    "android/command_line_android.cc",
+    "android/command_line_android.h",
+    "android/content_uri_utils.cc",
+    "android/content_uri_utils.h",
     "android/cpu_features.cc",
     "android/fifo_utils.cc",
     "android/fifo_utils.h",
@@ -39,8 +44,12 @@ component("base") {
     "android/jni_registrar.h",
     "android/jni_string.cc",
     "android/jni_string.h",
+    "android/library_loader/library_loader_hooks.cc",
+    "android/library_loader/library_loader_hooks.h",
     "android/memory_pressure_listener_android.cc",
     "android/memory_pressure_listener_android.h",
+    "android/java_handler_thread.cc",
+    "android/java_handler_thread.h",
     "android/path_service_android.cc",
     "android/path_service_android.h",
     "android/path_utils.cc",
@@ -680,32 +689,6 @@ component("base") {
     "win/wrapped_window_proc.h",
   ]
 
-  if (is_android) {
-    sources -= [
-      "debug/stack_trace_posix.cc",
-    ]
-
-    # TODO(dpranke): crbug.com/360936.
-    # These are disabled until we have JNI support on Android.
-    sources -= [
-      "android/activity_status.cc",
-      "android/base_jni_registrar.cc",
-      "android/base_jni_registrar.h",
-      "android/build_info.cc",
-      "android/build_info.h",
-      "android/cpu_features.cc",
-      "android/important_file_writer_android.cc",
-      "android/memory_pressure_listener_android.cc",
-      "android/path_service_android.cc",
-      "android/path_utils.cc",
-      "android/sys_utils.cc",
-      "android/trace_event_binding.cc",
-      "message_loop/message_pump_android.cc",
-      "power_monitor/power_monitor_device_source_android.cc",
-      "threading/platform_thread_android.cc",
-    ]
-  }
-
   # TODO(brettw) I don't understand the conditions this file is used.
   sources -= [ "files/file_path_watcher_stub.cc" ]
 
@@ -731,6 +714,17 @@ component("base") {
     "//base/third_party/nspr",
     "//third_party/modp_b64",
   ]
+
+  if (is_android) {
+    deps += [
+      ":base_jni_headers",
+      "//third_party/android_tools:cpu_features"
+    ]
+
+    sources -= [
+      "debug/stack_trace_posix.cc",
+    ]
+  }
 
   if (is_nacl) {
     # These things would otherwise be built on a Posix build but aren't
@@ -915,4 +909,28 @@ component("i18n") {
   #'variables': {
   #  'optimize': 'max',
   #},
+}
+
+if (is_android) {
+  generate_jni("base_jni_headers") {
+    sources = [
+      "android/java/src/org/chromium/base/ApplicationStatus.java",
+      "android/java/src/org/chromium/base/BuildInfo.java",
+      "android/java/src/org/chromium/base/CommandLine.java",
+      "android/java/src/org/chromium/base/ContentUriUtils.java",
+      "android/java/src/org/chromium/base/CpuFeatures.java",
+      "android/java/src/org/chromium/base/ImportantFileWriterAndroid.java",
+      "android/java/src/org/chromium/base/library_loader/LibraryLoader.java",
+      "android/java/src/org/chromium/base/MemoryPressureListener.java",
+      "android/java/src/org/chromium/base/JavaHandlerThread.java",
+      "android/java/src/org/chromium/base/PathService.java",
+      "android/java/src/org/chromium/base/PathUtils.java",
+      "android/java/src/org/chromium/base/PowerMonitor.java",
+      "android/java/src/org/chromium/base/SystemMessageHandler.java",
+      "android/java/src/org/chromium/base/SysUtils.java",
+      "android/java/src/org/chromium/base/ThreadUtils.java",
+      "android/java/src/org/chromium/base/TraceEvent.java",
+    ]
+    jni_package = "base"
+  }
 }

@@ -56,11 +56,12 @@ source_set("libwebp_dsp") {
   all_dependent_configs = [
     ":libwebp_config"
   ]
+  deps = []
+  if (is_android) {
+    deps += [ "//third_party/android_tools:cpu_features" ]
+  }
 # TODO(GYP):
 #      'conditions': [
-#        ['OS == "android"', {
-#          'includes': [ '../../build/android/cpufeatures.gypi' ],
-#        }],
 #        ['order_profiling != 0', {
 #          'target_conditions' : [
 #            ['_toolset=="target"', {

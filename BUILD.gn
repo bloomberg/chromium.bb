@@ -56,6 +56,8 @@ group("root") {
 
   if (is_android) {
     deps -= [
+      "//crypto",
+      "//net",
       "//skia",
       "//third_party/libusb",
       "//tools/gn",
