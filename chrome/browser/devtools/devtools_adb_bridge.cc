@@ -25,6 +25,7 @@
 #include "base/values.h"
 #include "chrome/browser/devtools/adb/android_rsa.h"
 #include "chrome/browser/devtools/adb_client_socket.h"
+#include "chrome/browser/devtools/browser_list_tabcontents_provider.h"
 #include "chrome/browser/devtools/devtools_protocol.h"
 #include "chrome/browser/devtools/devtools_target_impl.h"
 #include "chrome/browser/devtools/devtools_window.h"
@@ -37,6 +38,7 @@
 #include "content/public/browser/devtools_external_agent_proxy_delegate.h"
 #include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/common/content_switches.h"
 #include "crypto/rsa_private_key.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
@@ -1303,7 +1305,17 @@ void DevToolsAdbBridge::ReceivedDeviceCount(int count) {
 void DevToolsAdbBridge::CreateDeviceProviders() {
   device_providers_.clear();
 #if defined(DEBUG_DEVTOOLS)
-  device_providers_.push_back(AndroidDeviceManager::GetSelfAsDeviceProvider());
+  if (CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kRemoteDebuggingPort)) {
+    std::string port_str = CommandLine::ForCurrentProcess()->
+        GetSwitchValueASCII(switches::kRemoteDebuggingPort);
+    int port;
+    if (base::StringToInt(port_str, &port)) {
+      BrowserListTabContentsProvider::EnableTethering();
+      device_providers_.push_back(
+          AndroidDeviceManager::GetSelfAsDeviceProvider(port));
+    }
+  }
 #endif
   device_providers_.push_back(AndroidDeviceManager::GetAdbDeviceProvider());
 
