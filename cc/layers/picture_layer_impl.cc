@@ -149,7 +149,11 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
 
     gfx::Rect geometry_rect = rect;
     gfx::Rect opaque_rect = contents_opaque() ? geometry_rect : gfx::Rect();
-    gfx::Rect visible_geometry_rect = geometry_rect;
+    gfx::Rect visible_geometry_rect =
+        quad_sink->UnoccludedContentRect(geometry_rect, draw_transform());
+    if (visible_geometry_rect.IsEmpty())
+      return;
+
     gfx::Size texture_size = rect.size();
     gfx::RectF texture_rect = gfx::RectF(texture_size);
     gfx::Rect quad_content_rect = rect;
@@ -166,8 +170,8 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
                  quad_content_rect,
                  contents_scale,
                  pile_);
-    if (quad_sink->MaybeAppend(quad.PassAs<DrawQuad>()))
-      append_quads_data->num_missing_tiles++;
+    quad_sink->Append(quad.PassAs<DrawQuad>());
+    append_quads_data->num_missing_tiles++;
     return;
   }
 
@@ -216,7 +220,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
                                 visible_geometry_rect,
                                 color,
                                 width);
-      quad_sink->MaybeAppend(debug_border_quad.PassAs<DrawQuad>());
+      quad_sink->Append(debug_border_quad.PassAs<DrawQuad>());
     }
   }
 
@@ -229,16 +233,18 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
        iter;
        ++iter) {
     gfx::Rect geometry_rect = iter.geometry_rect();
-    gfx::Rect visible_geometry_rect = geometry_rect;
+    gfx::Rect visible_geometry_rect =
+        quad_sink->UnoccludedContentRect(geometry_rect, draw_transform());
+    if (visible_geometry_rect.IsEmpty())
+      continue;
+
     if (!*iter || !iter->IsReadyToDraw()) {
       if (draw_checkerboard_for_missing_tiles()) {
-        // TODO(enne): Figure out how to show debug "invalidated checker" color
         scoped_ptr<CheckerboardDrawQuad> quad = CheckerboardDrawQuad::Create();
         SkColor color = DebugColors::DefaultCheckerboardColor();
         quad->SetNew(
             shared_quad_state, geometry_rect, visible_geometry_rect, color);
-        if (quad_sink->MaybeAppend(quad.PassAs<DrawQuad>()))
-          append_quads_data->num_missing_tiles++;
+        quad_sink->Append(quad.PassAs<DrawQuad>());
       } else {
         SkColor color = SafeOpaqueBackgroundColor();
         scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
@@ -247,10 +253,10 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
                      visible_geometry_rect,
                      color,
                      false);
-        if (quad_sink->MaybeAppend(quad.PassAs<DrawQuad>()))
-          append_quads_data->num_missing_tiles++;
+        quad_sink->Append(quad.PassAs<DrawQuad>());
       }
 
+      append_quads_data->num_missing_tiles++;
       append_quads_data->had_incomplete_tile = true;
       continue;
     }
@@ -315,7 +321,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
     }
 
     DCHECK(draw_quad);
-    quad_sink->MaybeAppend(draw_quad.Pass());
+    quad_sink->Append(draw_quad.Pass());
 
     if (seen_tilings.empty() || seen_tilings.back() != iter.CurrentTiling())
       seen_tilings.push_back(iter.CurrentTiling());
