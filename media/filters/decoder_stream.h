@@ -89,9 +89,6 @@ class MEDIA_EXPORT DecoderStream {
 
   // Allows callers to register for notification of splice buffers from the
   // demuxer.  I.e., DecoderBuffer::splice_timestamp() is not kNoTimestamp().
-  //
-  // The observer will be notified of all buffers with a splice_timestamp() and
-  // the first buffer after which has a splice_timestamp() of kNoTimestamp().
   typedef base::Callback<void(base::TimeDelta)> SpliceObserverCB;
   void set_splice_observer(const SpliceObserverCB& splice_observer) {
     splice_observer_cb_ = splice_observer;
@@ -182,10 +179,6 @@ class MEDIA_EXPORT DecoderStream {
 
   SpliceObserverCB splice_observer_cb_;
   ConfigChangeObserverCB config_change_observer_cb_;
-
-  // If a splice_timestamp() has been seen, this is true until a
-  // splice_timestamp() of kNoTimestamp() is encountered.
-  bool active_splice_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<DecoderStream<StreamType> > weak_factory_;

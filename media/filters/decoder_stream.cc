@@ -50,7 +50,6 @@ DecoderStream<StreamType>::DecoderStream(
           new DecoderSelector<StreamType>(task_runner,
                                           decoders.Pass(),
                                           set_decryptor_ready_cb)),
-      active_splice_(false),
       weak_factory_(this) {}
 
 template <DemuxerStream::Type StreamType>
@@ -409,12 +408,9 @@ void DecoderStream<StreamType>::OnBufferReady(
     return;
   }
 
-  if (!splice_observer_cb_.is_null() && !buffer->end_of_stream()) {
-    const bool has_splice_ts = buffer->splice_timestamp() != kNoTimestamp();
-    if (active_splice_ || has_splice_ts) {
-      splice_observer_cb_.Run(buffer->splice_timestamp());
-      active_splice_ = has_splice_ts;
-    }
+  if (!splice_observer_cb_.is_null() && !buffer->end_of_stream() &&
+      buffer->splice_timestamp() != kNoTimestamp()) {
+    splice_observer_cb_.Run(buffer->splice_timestamp());
   }
 
   DCHECK(status == DemuxerStream::kOk) << status;
