@@ -1,6 +1,7 @@
 # Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+import collections
 
 from measurements import startup
 from metrics import cpu
@@ -35,15 +36,18 @@ class SessionRestore(startup.Startup):
     pass
 
   def ValidatePageSet(self, page_set):
-    # Reject any pageset that contains more than one WPR archive.
-    wpr_archives = {}
+    wpr_archive_names_to_page_urls = collections.defaultdict(list)
+    # Construct the map from pages' wpr archive names to pages' urls.
     for page in page_set:
-      if not page.is_local:
-        wpr_archives[page_set.WprFilePathForPage(page)] = True
+      if page.is_local:
+        continue
+      wpr_archive_name = page_set.WprFilePathForPage(page)
+      wpr_archive_names_to_page_urls[wpr_archive_name].append(page.url)
 
-    if len(wpr_archives.keys()) > 1:
+    # Reject any pageset that contains more than one WPR archive.
+    if len(wpr_archive_names_to_page_urls.keys()) > 1:
       raise Exception("Invalid pageset: more than 1 WPR archive found.: " +
-          ', '.join(wpr_archives.keys()))
+          repr(wpr_archive_names_to_page_urls))
 
   def DidStartBrowser(self, browser):
     self._cpu_metric = cpu.CpuMetric(browser)
