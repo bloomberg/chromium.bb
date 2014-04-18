@@ -151,7 +151,7 @@ class FileSystemProviderProviderAsyncFileUtilTest : public testing::Test {
     profile_.reset(new TestingProfile);
     async_file_util_.reset(new internal::ProviderAsyncFileUtil);
     const base::FilePath mount_path =
-        util::GetMountPath(profile_.get(), kExtensionId, kFileSystemId);
+        util::GetMountPointPath(profile_.get(), kExtensionId, kFileSystemId);
     file_system_context_ =
         content::CreateFileSystemContextForTesting(NULL, data_dir_.path());
 
