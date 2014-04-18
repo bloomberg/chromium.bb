@@ -576,11 +576,18 @@ void ThreadWatcherList::ParseCommandLine(
     return;
   }
 
+  const char* kFieldTrialName = "ThreadWatcher";
+
+  // Nothing else to be done if the trial has already been set (i.e., when
+  // StartWatchingAll() has been already called once).
+  if (base::FieldTrialList::TrialExists(kFieldTrialName))
+    return;
+
   // Set up a field trial for 100% of the users to crash if either UI or IO
   // thread is not responsive for 30 seconds (or 15 pings).
   scoped_refptr<base::FieldTrial> field_trial(
       base::FieldTrialList::FactoryGetFieldTrial(
-          "ThreadWatcher", 100, "default_hung_threads",
+          kFieldTrialName, 100, "default_hung_threads",
           2014, 10, 30, base::FieldTrial::SESSION_RANDOMIZED, NULL));
   int hung_thread_group = field_trial->AppendGroup("hung_thread", 100);
   if (field_trial->group() == hung_thread_group) {
