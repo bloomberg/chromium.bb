@@ -920,13 +920,6 @@ cr.define('options', function() {
       customizeSyncButton.disabled =
           syncData.hasUnrecoverableError ||
           (!syncData.setupCompleted && !$('sync-action-link').hidden);
-
-      // Move #enable-auto-login-checkbox to a different location on CrOS.
-      if (cr.isChromeOs) {
-        $('sync-general').insertBefore($('sync-status').nextSibling,
-                                       $('enable-auto-login-checkbox'));
-      }
-      $('enable-auto-login-checkbox').hidden = !syncData.autoLoginVisible;
     },
 
     /**

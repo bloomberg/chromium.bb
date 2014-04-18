@@ -87,6 +87,8 @@
         'browser/ui/android/content_settings/popup_blocked_infobar_delegate.h',
         'browser/ui/android/infobars/auto_login_infobar_delegate_android.cc',
         'browser/ui/android/infobars/auto_login_infobar_delegate_android.h',
+        'browser/ui/android/infobars/auto_login_prompter.cc',
+        'browser/ui/android/infobars/auto_login_prompter.h',
         'browser/ui/android/infobars/confirm_infobar.cc',
         'browser/ui/android/infobars/confirm_infobar.h',
         'browser/ui/android/infobars/infobar_android.cc',
@@ -411,8 +413,6 @@
         'browser/ui/autofill/tab_autofill_manager_delegate.h',
         'browser/ui/auto_login_infobar_delegate.cc',
         'browser/ui/auto_login_infobar_delegate.h',
-        'browser/ui/auto_login_prompter.cc',
-        'browser/ui/auto_login_prompter.h',
         'browser/ui/blocked_content/blocked_window_params.cc',
         'browser/ui/blocked_content/blocked_window_params.h',
         'browser/ui/blocked_content/popup_blocker_tab_helper.cc',
@@ -2475,6 +2475,12 @@
         ['OS == "android"', {
           'dependencies': [
             '../third_party/openssl/openssl.gyp:openssl',
+          ],
+        }],
+        ['OS!="android" and OS!="ios"', {
+          'sources!': [
+            'browser/ui/auto_login_infobar_delegate.cc',
+            'browser/ui/auto_login_infobar_delegate.h',
           ],
         }],
         ['enable_one_click_signin==0', {
