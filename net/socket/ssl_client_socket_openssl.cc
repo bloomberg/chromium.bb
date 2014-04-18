@@ -271,13 +271,11 @@ class SSLClientSocketOpenSSL::SSLContext {
     SSL_CTX_set_client_cert_cb(ssl_ctx_.get(), ClientCertCallback);
     SSL_CTX_set_channel_id_cb(ssl_ctx_.get(), ChannelIDCallback);
     SSL_CTX_set_verify(ssl_ctx_.get(), SSL_VERIFY_PEER, NULL);
-#if defined(OPENSSL_NPN_NEGOTIATED)
     // TODO(kristianm): Only select this if ssl_config_.next_proto is not empty.
     // It would be better if the callback were not a global setting,
     // but that is an OpenSSL issue.
     SSL_CTX_set_next_proto_select_cb(ssl_ctx_.get(), SelectNextProtoCallback,
                                      NULL);
-#endif
   }
 
   static std::string GetSessionCacheKey(const SSL* ssl) {
@@ -821,22 +819,16 @@ bool SSLClientSocketOpenSSL::Init() {
   bool tls1_enabled = (ssl_config_.version_min <= SSL_PROTOCOL_VERSION_TLS1 &&
                        ssl_config_.version_max >= SSL_PROTOCOL_VERSION_TLS1);
   options.ConfigureFlag(SSL_OP_NO_TLSv1, !tls1_enabled);
-#if defined(SSL_OP_NO_TLSv1_1)
   bool tls1_1_enabled =
       (ssl_config_.version_min <= SSL_PROTOCOL_VERSION_TLS1_1 &&
        ssl_config_.version_max >= SSL_PROTOCOL_VERSION_TLS1_1);
   options.ConfigureFlag(SSL_OP_NO_TLSv1_1, !tls1_1_enabled);
-#endif
-#if defined(SSL_OP_NO_TLSv1_2)
   bool tls1_2_enabled =
       (ssl_config_.version_min <= SSL_PROTOCOL_VERSION_TLS1_2 &&
        ssl_config_.version_max >= SSL_PROTOCOL_VERSION_TLS1_2);
   options.ConfigureFlag(SSL_OP_NO_TLSv1_2, !tls1_2_enabled);
-#endif
 
-#if defined(SSL_OP_NO_COMPRESSION)
   options.ConfigureFlag(SSL_OP_NO_COMPRESSION, true);
-#endif
 
   // TODO(joth): Set this conditionally, see http://crbug.com/55410
   options.ConfigureFlag(SSL_OP_LEGACY_SERVER_CONNECT, true);
@@ -847,13 +839,7 @@ bool SSLClientSocketOpenSSL::Init() {
   // Same as above, this time for the SSL mode.
   SslSetClearMask mode;
 
-#if defined(SSL_MODE_RELEASE_BUFFERS)
   mode.ConfigureFlag(SSL_MODE_RELEASE_BUFFERS, true);
-#endif
-
-#if defined(SSL_MODE_SMALL_BUFFERS)
-  mode.ConfigureFlag(SSL_MODE_SMALL_BUFFERS, true);
-#endif
 
   SSL_set_mode(ssl_, mode.set_mask);
   SSL_clear_mode(ssl_, mode.clear_mask);
@@ -1535,7 +1521,6 @@ int SSLClientSocketOpenSSL::SelectNextProtoCallback(unsigned char** out,
                                                     unsigned char* outlen,
                                                     const unsigned char* in,
                                                     unsigned int inlen) {
-#if defined(OPENSSL_NPN_NEGOTIATED)
   if (ssl_config_.next_protos.empty()) {
     *out = reinterpret_cast<uint8*>(
         const_cast<char*>(kDefaultSupportedNPNProtocol));
@@ -1575,7 +1560,6 @@ int SSLClientSocketOpenSSL::SelectNextProtoCallback(unsigned char** out,
   npn_proto_.assign(reinterpret_cast<const char*>(*out), *outlen);
   server_protos_.assign(reinterpret_cast<const char*>(in), inlen);
   DVLOG(2) << "next protocol: '" << npn_proto_ << "' status: " << npn_status_;
-#endif
   return SSL_TLSEXT_ERR_OK;
 }
 
