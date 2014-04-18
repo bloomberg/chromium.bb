@@ -57,9 +57,9 @@ const char kWlanScan[] = "WlanScan";
 const char kWlanSetProfile[] = "WlanSetProfile";
 
 // WlanApi function definitions
-typedef DWORD (WINAPI* WlanConnectFunction)(
+typedef DWORD(WINAPI* WlanConnectFunction)(
     HANDLE hClientHandle,
-    CONST GUID *pInterfaceGuid,
+    CONST GUID* pInterfaceGuid,
     CONST PWLAN_CONNECTION_PARAMETERS pConnectionParameters,
     PVOID pReserved);
 
@@ -67,31 +67,29 @@ typedef DWORD (WINAPI* WlanCloseHandleFunction)(
     HANDLE hClientHandle,
     PVOID pReserved);
 
-typedef DWORD (WINAPI* WlanDeleteProfileFunction)(
-    HANDLE hClientHandle,
-    const GUID *pInterfaceGuid,
-    LPCWSTR strProfileName,
-    PVOID pReserved);
+typedef DWORD(WINAPI* WlanDeleteProfileFunction)(HANDLE hClientHandle,
+                                                 const GUID* pInterfaceGuid,
+                                                 LPCWSTR strProfileName,
+                                                 PVOID pReserved);
 
-typedef DWORD (WINAPI* WlanDisconnectFunction)(
-    HANDLE hClientHandle,
-    CONST GUID *pInterfaceGuid,
-    PVOID pReserved);
+typedef DWORD(WINAPI* WlanDisconnectFunction)(HANDLE hClientHandle,
+                                              CONST GUID* pInterfaceGuid,
+                                              PVOID pReserved);
 
-typedef DWORD (WINAPI* WlanEnumInterfacesFunction)(
+typedef DWORD(WINAPI* WlanEnumInterfacesFunction)(
     HANDLE hClientHandle,
     PVOID pReserved,
-    PWLAN_INTERFACE_INFO_LIST *ppInterfaceList);
+    PWLAN_INTERFACE_INFO_LIST* ppInterfaceList);
 
 typedef VOID (WINAPI* WlanFreeMemoryFunction)(
     _In_ PVOID pMemory);
 
-typedef DWORD (WINAPI* WlanGetAvailableNetworkListFunction)(
+typedef DWORD(WINAPI* WlanGetAvailableNetworkListFunction)(
     HANDLE hClientHandle,
-    CONST GUID *pInterfaceGuid,
+    CONST GUID* pInterfaceGuid,
     DWORD dwFlags,
     PVOID pReserved,
-    PWLAN_AVAILABLE_NETWORK_LIST *ppAvailableNetworkList);
+    PWLAN_AVAILABLE_NETWORK_LIST* ppAvailableNetworkList);
 
 typedef DWORD (WINAPI* WlanGetNetworkBssListFunction)(
     HANDLE hClientHandle,
@@ -102,14 +100,13 @@ typedef DWORD (WINAPI* WlanGetNetworkBssListFunction)(
     PVOID pReserved,
     PWLAN_BSS_LIST* ppWlanBssList);
 
-typedef DWORD (WINAPI* WlanGetProfileFunction)(
-    HANDLE hClientHandle,
-    CONST GUID *pInterfaceGuid,
-    LPCWSTR strProfileName,
-    PVOID pReserved,
-    LPWSTR *pstrProfileXml,
-    DWORD *pdwFlags,
-    DWORD *pdwGrantedAccess);
+typedef DWORD(WINAPI* WlanGetProfileFunction)(HANDLE hClientHandle,
+                                              CONST GUID* pInterfaceGuid,
+                                              LPCWSTR strProfileName,
+                                              PVOID pReserved,
+                                              LPWSTR* pstrProfileXml,
+                                              DWORD* pdwFlags,
+                                              DWORD* pdwGrantedAccess);
 
 typedef DWORD (WINAPI* WlanOpenHandleFunction)(
     DWORD dwClientVersion,
@@ -117,13 +114,13 @@ typedef DWORD (WINAPI* WlanOpenHandleFunction)(
     PDWORD pdwNegotiatedVersion,
     PHANDLE phClientHandle);
 
-typedef DWORD (WINAPI* WlanQueryInterfaceFunction)(
+typedef DWORD(WINAPI* WlanQueryInterfaceFunction)(
     HANDLE hClientHandle,
-    const GUID *pInterfaceGuid,
+    const GUID* pInterfaceGuid,
     WLAN_INTF_OPCODE OpCode,
     PVOID pReserved,
     PDWORD pdwDataSize,
-    PVOID *ppData,
+    PVOID* ppData,
     PWLAN_OPCODE_VALUE_TYPE pWlanOpcodeValueType);
 
 typedef DWORD (WINAPI* WlanRegisterNotificationFunction)(
@@ -144,22 +141,20 @@ typedef DWORD (WINAPI* WlanSaveTemporaryProfileFunction)(
     BOOL bOverWrite,
     PVOID pReserved);
 
-typedef DWORD (WINAPI* WlanScanFunction)(
-    HANDLE hClientHandle,
-    CONST GUID *pInterfaceGuid,
-    CONST PDOT11_SSID pDot11Ssid,
-    CONST PWLAN_RAW_DATA pIeData,
-    PVOID pReserved);
+typedef DWORD(WINAPI* WlanScanFunction)(HANDLE hClientHandle,
+                                        CONST GUID* pInterfaceGuid,
+                                        CONST PDOT11_SSID pDot11Ssid,
+                                        CONST PWLAN_RAW_DATA pIeData,
+                                        PVOID pReserved);
 
-typedef DWORD (WINAPI* WlanSetProfileFunction)(
-    HANDLE hClientHandle,
-    const GUID *pInterfaceGuid,
-    DWORD dwFlags,
-    LPCWSTR strProfileXml,
-    LPCWSTR strAllUserProfileSecurity,
-    BOOL bOverwrite,
-    PVOID pReserved,
-    DWORD* pdwReasonCode);
+typedef DWORD(WINAPI* WlanSetProfileFunction)(HANDLE hClientHandle,
+                                              const GUID* pInterfaceGuid,
+                                              DWORD dwFlags,
+                                              LPCWSTR strProfileXml,
+                                              LPCWSTR strAllUserProfileSecurity,
+                                              BOOL bOverwrite,
+                                              PVOID pReserved,
+                                              DWORD* pdwReasonCode);
 
 // Values for WLANProfile XML.
 const char kAuthenticationOpen[] = "open";
@@ -555,8 +550,17 @@ void WiFiServiceImpl::SetProperties(
     *error = kWiFiServiceError;
     return;
   }
-  connect_properties_.SetWithoutPathExpansion(network_guid,
-                                              properties.release());
+
+  base::DictionaryValue* existing_properties;
+  // If the network properties already exist, don't override previously set
+  // properties, unless they are set in |properties|.
+  if (connect_properties_.GetDictionaryWithoutPathExpansion(
+          network_guid, &existing_properties)) {
+    existing_properties->MergeDictionary(properties.get());
+  } else {
+    connect_properties_.SetWithoutPathExpansion(network_guid,
+                                                properties.release());
+  }
 }
 
 void WiFiServiceImpl::CreateNetwork(
