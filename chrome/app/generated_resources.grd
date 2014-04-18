@@ -6128,7 +6128,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Enable TouchView maximizing UI for testing
       </message>
       <message name="IDS_FLAGS_ASH_ENABLE_TOUCH_VIEW_TESTING_DESCRIPTION" desc="Description for the flag to enable the TouchView testing mode.">
-        Enable Ctrl+Alt+Shift+D to toggle the TouchView maximizing mode.
+        Enable Ctrl+Alt+Shift+8 to toggle the TouchView maximizing mode.
       </message>
       <message name="IDS_FLAGS_ENABLE_FULL_MULTI_PROFILE_MODE" desc="Title for the full multi profile mode flag.">
         Enable side-by-side multi profile mode
