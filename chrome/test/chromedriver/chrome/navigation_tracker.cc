@@ -8,21 +8,23 @@
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
 #include "chrome/test/chromedriver/chrome/status.h"
+#include "chrome/test/chromedriver/chrome/version.h"
 
-NavigationTracker::NavigationTracker(DevToolsClient* client, int blink_revision)
+NavigationTracker::NavigationTracker(DevToolsClient* client,
+                                     const BrowserInfo* browser_info)
     : client_(client),
       loading_state_(kUnknown),
-      blink_revision_(blink_revision),
+      browser_info_(browser_info),
       num_frames_pending_(0) {
   client_->AddListener(this);
 }
 
 NavigationTracker::NavigationTracker(DevToolsClient* client,
                                      LoadingState known_state,
-                                     int blink_revision)
+                                     const BrowserInfo* browser_info)
     : client_(client),
       loading_state_(known_state),
-      blink_revision_(blink_revision),
+      browser_info_(browser_info),
       num_frames_pending_(0) {
   client_->AddListener(this);
 }
@@ -88,18 +90,30 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
     loading_state_ = kLoading;
     num_frames_pending_++;
   } else if (method == "Page.frameStoppedLoading") {
-    // Chrome 35.0.1916.x and earlier does not send Page.frameStoppedLoading
-    // until all frames have run their onLoad handlers (including frames created
-    // during the handlers).  When it does, it only sends one stopped event for
-    // all frames.
+    // Versions of Blink before revision 170248 sent a single
+    // Page.frameStoppedLoading event per page, but 170248 and newer revisions
+    // only send one event for each frame on the page.
     //
-    // This was introduced in blink revision 170248, which was rolled into the
-    // chromium tree in revision 260203.
-    //
-    // TODO(samuong): we can get rid of this once we stop supporting Chrome 35,
-    // which will be when Chrome 39 is released.
+    // This change was rolled into the Chromium tree in revision 260203.
+    // Versions of Chrome with build number 1916 and earlier do not contain this
+    // change.
+    bool expecting_single_stop_event = false;
+
+    if (browser_info_->browser_name == "chrome") {
+      // If we're talking to a version of Chrome with an old build number, we
+      // are using a branched version of Blink which does not contain 170248
+      // (even if blink_revision > 170248).
+      expecting_single_stop_event = browser_info_->build_no <= 1916;
+    } else {
+      // If we're talking to a non-Chrome embedder (e.g. Content Shell, Android
+      // WebView), assume that the browser does not use a branched version of
+      // Blink.
+      expecting_single_stop_event = browser_info_->blink_revision < 170248;
+    }
+
     num_frames_pending_--;
-    if (num_frames_pending_ <= 0 || blink_revision_ < 170248) {
+
+    if (num_frames_pending_ <= 0 || expecting_single_stop_event) {
       num_frames_pending_ = 0;
       loading_state_ = kNotLoading;
     }

@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/test/chromedriver/chrome/devtools_event_listener.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 
@@ -17,6 +18,7 @@ namespace base {
 class DictionaryValue;
 }
 
+struct BrowserInfo;
 class DevToolsClient;
 class Status;
 
@@ -29,10 +31,12 @@ class NavigationTracker : public DevToolsEventListener {
     kNotLoading,
   };
 
-  NavigationTracker(DevToolsClient* client, int blink_revision);
+  NavigationTracker(DevToolsClient* client, const BrowserInfo* browser_info);
+
   NavigationTracker(DevToolsClient* client,
                     LoadingState known_state,
-                    int blink_revision);
+                    const BrowserInfo* browser_info);
+
   virtual ~NavigationTracker();
 
   // Gets whether a navigation is pending for the specified frame. |frame_id|
@@ -50,7 +54,7 @@ class NavigationTracker : public DevToolsEventListener {
  private:
   DevToolsClient* client_;
   LoadingState loading_state_;
-  int blink_revision_;
+  const BrowserInfo* browser_info_;
   int num_frames_pending_;
   std::set<std::string> scheduled_frame_set_;
 

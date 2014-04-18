@@ -164,7 +164,7 @@ Status WaitForDevToolsAndCheckVersion(
   Status status = client->Init(deadline - base::TimeTicks::Now());
   if (status.IsError())
     return status;
-  if (client->build_no() < kMinimumSupportedChromeBuildNo) {
+  if (client->browser_info()->build_no < kMinimumSupportedChromeBuildNo) {
     return Status(kUnknownError, "Chrome version must be >= " +
         GetMinimumSupportedChromeVersion());
   }

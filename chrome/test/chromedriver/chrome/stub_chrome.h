@@ -8,7 +8,9 @@
 #include <list>
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/test/chromedriver/chrome/chrome.h"
+#include "chrome/test/chromedriver/chrome/version.h"
 
 class Status;
 class WebView;
@@ -20,9 +22,7 @@ class StubChrome : public Chrome {
 
   // Overridden from Chrome:
   virtual ChromeDesktopImpl* GetAsDesktop() OVERRIDE;
-  virtual std::string GetVersion() OVERRIDE;
-  virtual int GetBuildNo() OVERRIDE;
-  virtual int GetBlinkRevision() OVERRIDE;
+  virtual const BrowserInfo* GetBrowserInfo() OVERRIDE;
   virtual bool HasCrashedWebView() OVERRIDE;
   virtual Status GetWebViewIds(std::list<std::string>* web_view_ids) OVERRIDE;
   virtual Status GetWebViewById(const std::string& id,
@@ -31,6 +31,9 @@ class StubChrome : public Chrome {
   virtual Status ActivateWebView(const std::string& id) OVERRIDE;
   virtual std::string GetOperatingSystemName() OVERRIDE;
   virtual Status Quit() OVERRIDE;
+
+ private:
+  BrowserInfo browser_info_;
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROME_STUB_CHROME_H_

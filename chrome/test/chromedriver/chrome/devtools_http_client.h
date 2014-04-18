@@ -10,6 +10,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/test/chromedriver/chrome/version.h"
 #include "chrome/test/chromedriver/net/sync_websocket_factory.h"
 
 namespace base {
@@ -76,9 +77,7 @@ class DevToolsHttpClient {
 
   Status ActivateWebView(const std::string& id);
 
-  const std::string& version() const;
-  int build_no() const;
-  int blink_revision() const;
+  const BrowserInfo* browser_info();
 
  private:
   Status GetVersion(std::string* browser_version, std::string* blink_version);
@@ -91,9 +90,7 @@ class DevToolsHttpClient {
   SyncWebSocketFactory socket_factory_;
   std::string server_url_;
   std::string web_socket_url_prefix_;
-  std::string version_;
-  int build_no_;
-  int blink_revision_;
+  BrowserInfo browser_info_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsHttpClient);
 };

@@ -20,6 +20,7 @@
 #include "chrome/test/chromedriver/chrome/js.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/ui_events.h"
+#include "chrome/test/chromedriver/chrome/version.h"
 #include "chrome/test/chromedriver/chrome/web_view.h"
 #include "chrome/test/chromedriver/element_util.h"
 #include "chrome/test/chromedriver/session.h"
@@ -202,7 +203,7 @@ Status ExecuteTouchSingleTap(
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
   // Fall back to javascript atom for pre-m30 Chrome.
-  if (session->chrome->GetBuildNo() < 1576)
+  if (session->chrome->GetBrowserInfo()->build_no < 1576)
     return ExecuteTouchSingleTapAtom(
         session, web_view, element_id, params, value);
 

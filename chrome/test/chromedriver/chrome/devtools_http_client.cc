@@ -109,19 +109,14 @@ Status DevToolsHttpClient::Init(const base::TimeDelta& timeout) {
                   "unrecognized Blink revision: " + blink_revision_string);
   }
 
-  blink_revision_ = blink_revision_int;
+  browser_info_.blink_revision = blink_revision_int;
 
-  int kToTBuildNo = 9999;
   if (browser_version.empty()) {
-    // Content Shell has an empty product version and a fake user agent.
-    // There's no way to detect the actual version, so assume it is tip of tree.
-    version_ = "content shell";
-    build_no_ = kToTBuildNo;
+    browser_info_.browser_name = "content shell";
     return Status(kOk);
   }
   if (browser_version.find("Version/") == 0u) {
-    version_ = "webview";
-    build_no_ = kToTBuildNo;
+    browser_info_.browser_name = "webview";
     return Status(kOk);
   }
   std::string prefix = "Chrome/";
@@ -140,8 +135,9 @@ Status DevToolsHttpClient::Init(const base::TimeDelta& timeout) {
                   "unrecognized Chrome version: " + browser_version);
   }
 
-  version_ = stripped_version;
-  build_no_ = temp_build_no;
+  browser_info_.browser_name = "chrome";
+  browser_info_.browser_version = stripped_version;
+  browser_info_.build_no = temp_build_no;
 
   return Status(kOk);
 }
@@ -196,16 +192,8 @@ Status DevToolsHttpClient::ActivateWebView(const std::string& id) {
   return Status(kOk);
 }
 
-const std::string& DevToolsHttpClient::version() const {
-  return version_;
-}
-
-int DevToolsHttpClient::build_no() const {
-  return build_no_;
-}
-
-int DevToolsHttpClient::blink_revision() const {
-  return blink_revision_;
+const BrowserInfo* DevToolsHttpClient::browser_info() {
+  return &browser_info_;
 }
 
 Status DevToolsHttpClient::GetVersion(std::string* browser_version,
@@ -260,7 +248,7 @@ Status DevToolsHttpClient::CloseFrontends(const std::string& for_client_id) {
         *it,
         base::Bind(&FakeCloseFrontends)));
     scoped_ptr<WebViewImpl> web_view(
-        new WebViewImpl(*it, build_no_, blink_revision_, client.Pass()));
+        new WebViewImpl(*it, &browser_info_, client.Pass()));
 
     status = web_view->ConnectIfNecessary();
     // Ignore disconnected error, because the debugger might have closed when

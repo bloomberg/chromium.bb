@@ -14,6 +14,7 @@
 #include "chrome/test/chromedriver/chrome/chrome.h"
 #include "chrome/test/chromedriver/chrome/js.h"
 #include "chrome/test/chromedriver/chrome/status.h"
+#include "chrome/test/chromedriver/chrome/version.h"
 #include "chrome/test/chromedriver/chrome/web_view.h"
 #include "chrome/test/chromedriver/session.h"
 #include "third_party/webdriver/atoms.h"
@@ -393,8 +394,8 @@ Status GetElementClickableLocation(
     return status;
 
   std::string tmp_element_id = element_id;
-  if (tag_name == "area" && session->chrome->GetBuildNo() < 1799 &&
-      session->chrome->GetBuildNo() >= 1666) {
+  int build_no = session->chrome->GetBrowserInfo()->build_no;
+  if (tag_name == "area" && build_no < 1799 && build_no >= 1666) {
     // This is to skip clickable verification for <area>.
     // The problem is caused by document.ElementFromPoint(crbug.com/338601).
     // It was introduced by blink r159012, which rolled into chromium r227489.

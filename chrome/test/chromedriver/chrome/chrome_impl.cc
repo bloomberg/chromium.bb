@@ -8,6 +8,7 @@
 #include "chrome/test/chromedriver/chrome/devtools_event_listener.h"
 #include "chrome/test/chromedriver/chrome/devtools_http_client.h"
 #include "chrome/test/chromedriver/chrome/status.h"
+#include "chrome/test/chromedriver/chrome/version.h"
 #include "chrome/test/chromedriver/chrome/web_view_impl.h"
 #include "chrome/test/chromedriver/net/port_server.h"
 
@@ -20,16 +21,8 @@ ChromeDesktopImpl* ChromeImpl::GetAsDesktop() {
   return NULL;
 }
 
-std::string ChromeImpl::GetVersion() {
-  return devtools_http_client_->version();
-}
-
-int ChromeImpl::GetBuildNo() {
-  return devtools_http_client_->build_no();
-}
-
-int ChromeImpl::GetBlinkRevision() {
-  return devtools_http_client_->blink_revision();
+const BrowserInfo* ChromeImpl::GetBrowserInfo() {
+  return devtools_http_client_->browser_info();
 }
 
 bool ChromeImpl::HasCrashedWebView() {
@@ -67,7 +60,7 @@ Status ChromeImpl::GetWebViewIds(std::list<std::string>* web_view_ids) {
     // being returned as active windows for some builds of Chrome.
     // TODO(bustamante): Once Chrome builds < 1755 are no longer
     //   supported this check can be removed.
-    int kBuildNumber = GetBuildNo();
+    int kBuildNumber = devtools_http_client_->browser_info()->build_no;
     if (kBuildNumber < 1755 && view.type == WebViewInfo::kApp &&
         view.url.find("_generated_background") != std::string::npos)
       continue;
@@ -90,7 +83,7 @@ Status ChromeImpl::GetWebViewIds(std::list<std::string>* web_view_ids) {
         // OnConnected will fire when DevToolsClient connects later.
       }
       web_views_.push_back(make_linked_ptr(new WebViewImpl(
-          view.id, GetBuildNo(), GetBlinkRevision(), client.Pass())));
+          view.id, devtools_http_client_->browser_info(), client.Pass())));
     }
   }
 

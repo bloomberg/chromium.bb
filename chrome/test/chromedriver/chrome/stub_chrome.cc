@@ -4,6 +4,7 @@
 
 #include "chrome/test/chromedriver/chrome/stub_chrome.h"
 #include "chrome/test/chromedriver/chrome/status.h"
+#include "chrome/test/chromedriver/chrome/version.h"
 #include "chrome/test/chromedriver/chrome/web_view.h"
 
 StubChrome::StubChrome() {}
@@ -14,16 +15,8 @@ ChromeDesktopImpl* StubChrome::GetAsDesktop() {
   return NULL;
 }
 
-std::string StubChrome::GetVersion() {
-  return std::string();
-}
-
-int StubChrome::GetBuildNo() {
-  return 9999;
-}
-
-int StubChrome::GetBlinkRevision() {
-  return 999999;
+const BrowserInfo* StubChrome::GetBrowserInfo() {
+  return &browser_info_;
 }
 
 bool StubChrome::HasCrashedWebView() {

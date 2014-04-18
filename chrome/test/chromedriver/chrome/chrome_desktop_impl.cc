@@ -116,8 +116,7 @@ Status ChromeDesktopImpl::WaitForPageToLoad(const std::string& url,
 
   scoped_ptr<WebView> web_view_tmp(
       new WebViewImpl(id,
-                      GetBuildNo(),
-                      GetBlinkRevision(),
+                      devtools_http_client_->browser_info(),
                       devtools_http_client_->CreateClient(id)));
   Status status = web_view_tmp->ConnectIfNecessary();
   if (status.IsError())

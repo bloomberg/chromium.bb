@@ -24,6 +24,7 @@
 #include "chrome/test/chromedriver/chrome/navigation_tracker.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/ui_events.h"
+#include "chrome/test/chromedriver/chrome/version.h"
 
 namespace {
 
@@ -112,14 +113,13 @@ const char* GetAsString(KeyEventType type) {
 }  // namespace
 
 WebViewImpl::WebViewImpl(const std::string& id,
-                         int build_no,
-                         int blink_revision,
+                         const BrowserInfo* browser_info,
                          scoped_ptr<DevToolsClient> client)
     : id_(id),
-      build_no_(build_no),
+      browser_info_(browser_info),
       dom_tracker_(new DomTracker(client.get())),
       frame_tracker_(new FrameTracker(client.get())),
-      navigation_tracker_(new NavigationTracker(client.get(), blink_revision)),
+      navigation_tracker_(new NavigationTracker(client.get(), browser_info)),
       dialog_manager_(new JavaScriptDialogManager(client.get())),
       geolocation_override_manager_(
           new GeolocationOverrideManager(client.get())),
@@ -245,7 +245,7 @@ Status WebViewImpl::DispatchMouseEvents(const std::list<MouseEvent>& events,
     Status status = client_->SendCommand("Input.dispatchMouseEvent", params);
     if (status.IsError())
       return status;
-    if (build_no_ < 1569 && it->button == kRightMouseButton &&
+    if (browser_info_->build_no < 1569 && it->button == kRightMouseButton &&
         it->type == kReleasedMouseEventType) {
       base::ListValue args;
       args.AppendInteger(it->x);

@@ -8,6 +8,7 @@
 #include <list>
 #include <string>
 
+struct BrowserInfo;
 class ChromeDesktopImpl;
 class Status;
 class WebView;
@@ -18,11 +19,7 @@ class Chrome {
 
   virtual ChromeDesktopImpl* GetAsDesktop() = 0;
 
-  virtual std::string GetVersion() = 0;
-
-  virtual int GetBuildNo() = 0;
-
-  virtual int GetBlinkRevision() = 0;
+  virtual const BrowserInfo* GetBrowserInfo() = 0;
 
   virtual bool HasCrashedWebView() = 0;
 

@@ -21,6 +21,7 @@
 #include "chrome/test/chromedriver/capabilities.h"
 #include "chrome/test/chromedriver/chrome/chrome.h"
 #include "chrome/test/chromedriver/chrome/status.h"
+#include "chrome/test/chromedriver/chrome/version.h"
 #include "chrome/test/chromedriver/logging.h"
 #include "chrome/test/chromedriver/session.h"
 #include "chrome/test/chromedriver/session_thread_map.h"
@@ -178,8 +179,9 @@ void ExecuteSessionCommandOnSessionThread(
       }
     }
     if (status.IsError()) {
-      status.AddDetails(
-          "Session info: chrome=" + session->chrome->GetVersion());
+      const BrowserInfo* browser_info = session->chrome->GetBrowserInfo();
+      status.AddDetails("Session info: " + browser_info->browser_name + "=" +
+                        browser_info->browser_version);
     }
   }
 

@@ -19,6 +19,7 @@ class ListValue;
 class Value;
 }
 
+struct BrowserInfo;
 class DebuggerTracker;
 class DevToolsClient;
 class DomTracker;
@@ -33,8 +34,7 @@ class Status;
 class WebViewImpl : public WebView {
  public:
   WebViewImpl(const std::string& id,
-              int build_no,
-              int blink_revision,
+              const BrowserInfo* browser_info,
               scoped_ptr<DevToolsClient> client);
   virtual ~WebViewImpl();
 
@@ -100,7 +100,7 @@ class WebViewImpl : public WebView {
   Status IsNotPendingNavigation(const std::string& frame_id,
                                 bool* is_not_pending);
   std::string id_;
-  int build_no_;
+  const BrowserInfo* browser_info_;
   scoped_ptr<DomTracker> dom_tracker_;
   scoped_ptr<FrameTracker> frame_tracker_;
   scoped_ptr<NavigationTracker> navigation_tracker_;
