@@ -176,17 +176,14 @@ void RenderImage::imageChanged(WrappedImagePtr newImage, const IntRect* rect)
     if (m_imageResource->errorOccurred() || !newImage)
         imageSizeChanged = setImageSizeForAltText(m_imageResource->cachedImage());
 
-    imageDimensionsChanged(imageSizeChanged, rect);
+    repaintOrMarkForLayout(imageSizeChanged, rect);
 }
 
-bool RenderImage::updateIntrinsicSizeIfNeeded(const LayoutSize& newSize, bool imageSizeChanged)
+void RenderImage::updateIntrinsicSizeIfNeeded(const LayoutSize& newSize)
 {
-    if (newSize == intrinsicSize() && !imageSizeChanged)
-        return false;
     if (m_imageResource->errorOccurred() || !m_imageResource->hasImage())
-        return imageSizeChanged;
+        return;
     setIntrinsicSize(newSize);
-    return true;
 }
 
 void RenderImage::updateInnerContentRect()
@@ -198,9 +195,11 @@ void RenderImage::updateInnerContentRect()
         m_imageResource->setContainerSizeForRenderer(containerSize);
 }
 
-void RenderImage::imageDimensionsChanged(bool imageSizeChanged, const IntRect* rect)
+void RenderImage::repaintOrMarkForLayout(bool imageSizeChangedToAccomodateAltText, const IntRect* rect)
 {
-    bool intrinsicSizeChanged = updateIntrinsicSizeIfNeeded(m_imageResource->intrinsicSize(style()->effectiveZoom()), imageSizeChanged);
+    LayoutSize oldIntrinsicSize = intrinsicSize();
+    LayoutSize newIntrinsicSize = m_imageResource->intrinsicSize(style()->effectiveZoom());
+    updateIntrinsicSizeIfNeeded(newIntrinsicSize);
 
     // In the case of generated image content using :before/:after/content, we might not be
     // in the render tree yet. In that case, we just need to update our intrinsic size.
@@ -209,37 +208,25 @@ void RenderImage::imageDimensionsChanged(bool imageSizeChanged, const IntRect* r
     if (!containingBlock())
         return;
 
-    bool shouldRepaint = true;
-    if (intrinsicSizeChanged) {
-        if (!preferredLogicalWidthsDirty())
-            setPreferredLogicalWidthsDirty();
+    bool imageSourceHasChangedSize = oldIntrinsicSize != newIntrinsicSize || imageSizeChangedToAccomodateAltText;
+    if (imageSourceHasChangedSize)
+        setPreferredLogicalWidthsDirty();
 
-        bool hasOverrideSize = hasOverrideHeight() || hasOverrideWidth();
-        if (!hasOverrideSize && !imageSizeChanged) {
-            LogicalExtentComputedValues computedValues;
-            computeLogicalWidth(computedValues);
-            LayoutUnit newWidth = computedValues.m_extent;
-            computeLogicalHeight(height(), 0, computedValues);
-            LayoutUnit newHeight = computedValues.m_extent;
+    // If the actual area occupied by the image has changed and it is not constrained by style then a layout is required.
+    bool imageSizeIsConstrained = style()->logicalWidth().isSpecified() && style()->logicalHeight().isSpecified();
+    bool needsLayout = !imageSizeIsConstrained && imageSourceHasChangedSize;
 
-            imageSizeChanged = width() != newWidth || height() != newHeight;
-        }
+    // FIXME: We only need to recompute the containing block's preferred size if the containing block's size
+    // depends on the image's size (i.e., the container uses shrink-to-fit sizing).
+    // There's no easy way to detect that shrink-to-fit is needed, always force a layout.
+    bool containingBlockNeedsToRecomputePreferredSize =  style()->logicalWidth().isPercent() || style()->logicalMaxWidth().isPercent()  || style()->logicalMinWidth().isPercent();
 
-        // FIXME: We only need to recompute the containing block's preferred size
-        // if the containing block's size depends on the image's size (i.e., the container uses shrink-to-fit sizing).
-        // There's no easy way to detect that shrink-to-fit is needed, always force a layout.
-        bool containingBlockNeedsToRecomputePreferredSize =
-            style()->logicalWidth().isPercent()
-            || style()->logicalMaxWidth().isPercent()
-            || style()->logicalMinWidth().isPercent();
-
-        if (imageSizeChanged || hasOverrideSize || containingBlockNeedsToRecomputePreferredSize) {
-            shouldRepaint = false;
-            if (!selfNeedsLayout())
-                setNeedsLayout();
-        }
+    if (needsLayout || containingBlockNeedsToRecomputePreferredSize) {
+        setNeedsLayout();
+        return;
     }
 
+    // The image hasn't changed in size or its style constrains its size, so a repaint will suffice.
     if (everHadLayout() && !selfNeedsLayout()) {
         // The inner content rectangle is calculated during layout, but may need an update now
         // (unless the box has already been scheduled for layout). In order to calculate it, we
@@ -248,26 +235,25 @@ void RenderImage::imageDimensionsChanged(bool imageSizeChanged, const IntRect* r
         updateInnerContentRect();
     }
 
-    if (shouldRepaint) {
-        LayoutRect repaintRect;
-        if (rect) {
-            // The image changed rect is in source image coordinates (pre-zooming),
-            // so map from the bounds of the image to the contentsBox.
-            repaintRect = enclosingIntRect(mapRect(*rect, FloatRect(FloatPoint(), m_imageResource->imageSize(1.0f)), contentBoxRect()));
-            // Guard against too-large changed rects.
-            repaintRect.intersect(contentBoxRect());
-        } else
-            repaintRect = contentBoxRect();
-
-        {
-            // FIXME: We should not be allowing repaint during layout. crbug.com/339584
-            AllowRepaintScope scoper(frameView());
-            repaintRectangle(repaintRect);
-        }
-
-        // Tell any potential compositing layers that the image needs updating.
-        contentChanged(ImageChanged);
+    LayoutRect repaintRect;
+    if (rect) {
+        // The image changed rect is in source image coordinates (pre-zooming),
+        // so map from the bounds of the image to the contentsBox.
+        repaintRect = enclosingIntRect(mapRect(*rect, FloatRect(FloatPoint(), m_imageResource->imageSize(1.0f)), contentBoxRect()));
+        // Guard against too-large changed rects.
+        repaintRect.intersect(contentBoxRect());
+    } else {
+        repaintRect = contentBoxRect();
     }
+
+    {
+        // FIXME: We should not be allowing repaint during layout. crbug.com/339584
+        AllowRepaintScope scoper(frameView());
+        repaintRectangle(repaintRect);
+    }
+
+    // Tell any potential compositing layers that the image needs updating.
+    contentChanged(ImageChanged);
 }
 
 void RenderImage::notifyFinished(Resource* newImage)
