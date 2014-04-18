@@ -40,7 +40,7 @@ deps = {
   "tools/clang":
     Var("chromium_trunk") + "/src/tools/clang@" + Var("chrome_rev"),
   "tools/gyp":
-    ((Var("googlecode_url") % "gyp") + "/trunk@" + Var("gyp_rev"),
+    (Var("googlecode_url") % "gyp") + "/trunk@" + Var("gyp_rev"),
   "tools/valgrind":
     Var("chromium_trunk") + "/src/tools/valgrind@" + Var("chrome_rev"),
 }
