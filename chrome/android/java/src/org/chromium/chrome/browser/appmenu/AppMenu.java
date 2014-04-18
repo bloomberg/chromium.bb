@@ -33,7 +33,6 @@ import java.util.List;
  */
 public class AppMenu implements OnItemClickListener {
     private static final float LAST_ITEM_SHOW_FRACTION = 0.5f;
-    private static final int DIVIDER_HEIGHT_DP = 1;
 
     private final Menu mMenu;
     private final int mItemRowHeight;
@@ -50,10 +49,12 @@ public class AppMenu implements OnItemClickListener {
      * Creates and sets up the App Menu.
      * @param menu Original menu created by the framework.
      * @param itemRowHeight Desired height for each app menu row.
+     * @param itemDividerHeight Desired height for the divider between app menu items.
      * @param handler AppMenuHandler receives callbacks from AppMenu.
      * @param res Resources object used to get dimensions and style attributes.
      */
-    AppMenu(Menu menu, int itemRowHeight, AppMenuHandler handler, Resources res) {
+    AppMenu(Menu menu, int itemRowHeight, int itemDividerHeight, AppMenuHandler handler,
+            Resources res) {
         mMenu = menu;
 
         mItemRowHeight = itemRowHeight;
@@ -61,8 +62,8 @@ public class AppMenu implements OnItemClickListener {
 
         mHandler = handler;
 
-        final float dpToPx = res.getDisplayMetrics().density;
-        mItemDividerHeight = Math.round(DIVIDER_HEIGHT_DP * dpToPx);
+        mItemDividerHeight = itemDividerHeight;
+        assert mItemDividerHeight > 0;
 
         mAdditionalVerticalOffset = res.getDimensionPixelSize(R.dimen.menu_vertical_offset);
         mVerticalFadeDistance = res.getDimensionPixelSize(R.dimen.menu_vertical_fade_distance);
@@ -118,7 +119,6 @@ public class AppMenu implements OnItemClickListener {
         setPopupOffset(mPopup, mCurrentScreenRotation, visibleDisplayFrame);
         mPopup.setOnItemClickListener(this);
         mPopup.show();
-        mPopup.getListView().setDividerHeight(mItemDividerHeight);
         mPopup.getListView().setItemsCanFocus(true);
 
         mHandler.onMenuVisibilityChanged(true);

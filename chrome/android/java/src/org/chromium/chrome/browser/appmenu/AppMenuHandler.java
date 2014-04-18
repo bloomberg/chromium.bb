@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.appmenu;
 import android.app.Activity;
 import android.content.res.TypedArray;
 import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.view.ContextThemeWrapper;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -74,11 +75,14 @@ public class AppMenuHandler {
         mDelegate.prepareMenu(mMenu);
 
         if (mAppMenu == null) {
-            TypedArray a = mActivity.obtainStyledAttributes(
-                    new int[] {android.R.attr.listPreferredItemHeightSmall});
+            TypedArray a = mActivity.obtainStyledAttributes(new int[]
+                    {android.R.attr.listPreferredItemHeightSmall, android.R.attr.listDivider});
             int itemRowHeight = a.getDimensionPixelSize(0, 0);
+            Drawable itemDivider = a.getDrawable(1);
+            int itemDividerHeight = itemDivider.getIntrinsicHeight();
             a.recycle();
-            mAppMenu = new AppMenu(mMenu, itemRowHeight, this, mActivity.getResources());
+            mAppMenu = new AppMenu(mMenu, itemRowHeight, itemDividerHeight, this,
+                    mActivity.getResources());
             mAppMenuDragHelper = new AppMenuDragHelper(mActivity, mAppMenu, itemRowHeight);
         }
 
