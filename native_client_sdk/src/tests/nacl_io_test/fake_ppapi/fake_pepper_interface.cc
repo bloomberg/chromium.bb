@@ -24,6 +24,9 @@ FakePepperInterface::FakePepperInterface()
      var_array_interface_(&var_manager_),
      var_array_buffer_interface_(&var_manager_),
      var_interface_(&var_manager_),
+     var_dictionary_interface_(&var_manager_,
+                               &var_interface_,
+                               &var_array_interface_),
      resolver_interface_(this),
      net_address_interface_(this) {
   FakeInstanceResource* instance_resource = new FakeInstanceResource;
@@ -46,6 +49,10 @@ VarArrayInterface* FakePepperInterface::GetVarArrayInterface() {
 
 VarArrayBufferInterface* FakePepperInterface::GetVarArrayBufferInterface() {
   return &var_array_buffer_interface_;
+}
+
+VarDictionaryInterface* FakePepperInterface::GetVarDictionaryInterface() {
+  return &var_dictionary_interface_;
 }
 
 VarInterface* FakePepperInterface::GetVarInterface() {

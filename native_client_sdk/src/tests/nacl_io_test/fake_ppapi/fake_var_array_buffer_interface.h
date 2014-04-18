@@ -5,11 +5,6 @@
 #ifndef TESTS_NACL_IO_TEST_FAKE_VAR_ARRAY_BUFFER_INTERFACE_H_
 #define TESTS_NACL_IO_TEST_FAKE_VAR_ARRAY_BUFFER_INTERFACE_H_
 
-#include <map>
-#include <string>
-
-#include <ppapi/c/pp_var.h>
-
 #include "nacl_io/pepper_interface.h"
 #include "sdk_util/macros.h"
 

@@ -29,6 +29,7 @@
 #include <ppapi/c/ppb_var.h>
 #include <ppapi/c/ppb_var_array.h>
 #include <ppapi/c/ppb_var_array_buffer.h>
+#include <ppapi/c/ppb_var_dictionary.h>
 
 #include <sdk_util/macros.h>
 

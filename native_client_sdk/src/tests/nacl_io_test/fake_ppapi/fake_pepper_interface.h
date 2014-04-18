@@ -12,6 +12,7 @@
 #include "fake_ppapi/fake_resource_manager.h"
 #include "fake_ppapi/fake_var_array_buffer_interface.h"
 #include "fake_ppapi/fake_var_array_interface.h"
+#include "fake_ppapi/fake_var_dictionary_interface.h"
 #include "fake_ppapi/fake_var_interface.h"
 #include "fake_ppapi/fake_var_manager.h"
 #include "nacl_io/pepper_interface_dummy.h"
@@ -25,6 +26,7 @@ class FakePepperInterface : public nacl_io::PepperInterfaceDummy {
   virtual nacl_io::MessagingInterface* GetMessagingInterface();
   virtual nacl_io::VarArrayInterface* GetVarArrayInterface();
   virtual nacl_io::VarArrayBufferInterface* GetVarArrayBufferInterface();
+  virtual nacl_io::VarDictionaryInterface* GetVarDictionaryInterface();
   virtual nacl_io::VarInterface* GetVarInterface();
   virtual nacl_io::HostResolverInterface* GetHostResolverInterface();
   virtual nacl_io::NetAddressInterface* GetNetAddressInterface();
@@ -43,6 +45,7 @@ class FakePepperInterface : public nacl_io::PepperInterfaceDummy {
   FakeVarArrayInterface var_array_interface_;
   FakeVarArrayBufferInterface var_array_buffer_interface_;
   FakeVarInterface var_interface_;
+  FakeVarDictionaryInterface var_dictionary_interface_;
   FakeHostResolverInterface resolver_interface_;
   FakeNetAddressInterface net_address_interface_;
 

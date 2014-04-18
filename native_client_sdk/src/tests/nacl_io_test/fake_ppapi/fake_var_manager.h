@@ -12,12 +12,16 @@
 
 #include "sdk_util/macros.h"
 
+typedef std::vector<PP_Var> FakeArrayType;
+typedef std::map<std::string, PP_Var> FakeDictType;
+
 struct FakeVarData {
   uint64_t id;
   uint64_t type;
   int32_t ref_count;
   std::string string_value;
-  std::vector<PP_Var> array_value;
+  FakeArrayType array_value;
+  FakeDictType dict_value;
   struct {
     void* ptr;
     uint32_t length;

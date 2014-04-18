@@ -29,6 +29,8 @@
         'fake_ppapi/fake_var_array_buffer_interface.h',
         'fake_ppapi/fake_var_array_interface.cc',
         'fake_ppapi/fake_var_array_interface.h',
+        'fake_ppapi/fake_var_dictionary_interface.cc',
+        'fake_ppapi/fake_var_dictionary_interface.h',
         'fake_ppapi/fake_var_interface.cc',
         'fake_ppapi/fake_var_interface.h',
         'fake_ppapi/fake_var_manager.cc',

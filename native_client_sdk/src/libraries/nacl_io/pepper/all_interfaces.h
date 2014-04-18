@@ -112,6 +112,14 @@ BEGIN_INTERFACE(VarArrayBufferInterface, PPB_VarArrayBuffer_1_0,
   METHOD1(VarArrayBufferInterface, void, Unmap, PP_Var)
 END_INTERFACE(VarArrayBufferInterface, PPB_VarArrayBuffer_1_0)
 
+BEGIN_INTERFACE(VarDictionaryInterface, PPB_VarDictionary_1_0,
+                PPB_VAR_DICTIONARY_INTERFACE_1_0)
+  METHOD0(VarDictionaryInterface, PP_Var, Create)
+  METHOD3(VarDictionaryInterface, PP_Bool, Set, PP_Var, PP_Var, PP_Var)
+  METHOD2(VarDictionaryInterface, PP_Var, Get, PP_Var, PP_Var)
+  METHOD1(VarDictionaryInterface, PP_Var, GetKeys, PP_Var)
+END_INTERFACE(VarDictionaryInterface, PPB_VarDictionary_1_0)
+
 /* Chrome M18 required */
 BEGIN_INTERFACE(VarInterface, PPB_Var_1_1, PPB_VAR_INTERFACE_1_1)
   METHOD1(VarInterface, void, AddRef, PP_Var)

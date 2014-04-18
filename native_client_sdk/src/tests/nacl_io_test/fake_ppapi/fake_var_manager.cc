@@ -74,18 +74,29 @@ void FakeVarManager::DestroyVarData(FakeVarData* var_data) {
 
   switch (var_data->type) {
     case PP_VARTYPE_ARRAY: {
-      std::vector<PP_Var>& vector = var_data->array_value;
-      for (std::vector<PP_Var>::iterator it = vector.begin();
-          it != vector.end(); ++it) {
+      FakeArrayType& vector = var_data->array_value;
+      for (FakeArrayType::iterator it = vector.begin();
+           it != vector.end(); ++it) {
         Release(*it);
       }
       vector.clear();
       break;
     }
-    case PP_VARTYPE_ARRAY_BUFFER:
+    case PP_VARTYPE_ARRAY_BUFFER: {
       free(var_data->buffer_value.ptr);
       var_data->buffer_value.ptr = NULL;
       var_data->buffer_value.length = 0;
+      break;
+    }
+    case PP_VARTYPE_DICTIONARY: {
+      FakeDictType& dict = var_data->dict_value;
+      for (FakeDictType::iterator it = dict.begin();
+           it != dict.end(); it++) {
+        Release(it->second);
+      }
+      dict.clear();
+      break;
+    }
     default:
       break;
   }
@@ -95,7 +106,10 @@ FakeVarData* FakeVarManager::GetVarData(PP_Var var) {
   VarMap::iterator iter = var_map_.find(var.value.as_id);
   if (iter == var_map_.end())
     return NULL;
-  return &iter->second;
+  FakeVarData* var_data = &iter->second;
+  EXPECT_GT(var_data->ref_count, 0)
+      << "Accessing freed " << Describe(*var_data);
+  return var_data;
 }
 
 void FakeVarManager::Release(PP_Var var) {
