@@ -721,6 +721,7 @@ void Internals::setFormControlStateOfHistoryItem(const Vector<String>& state, Ex
         exceptionState.throwDOMException(InvalidAccessError, "No history item is available.");
         return;
     }
+    mainItem->clearDocumentState();
     mainItem->setDocumentState(state);
 }
 
@@ -2061,8 +2062,7 @@ PassRefPtrWillBeRawPtr<TypeConversions> Internals::typeConversions() const
 
 Vector<String> Internals::getReferencedFilePaths() const
 {
-    frame()->loader().saveDocumentState();
-    return FormController::getReferencedFilePaths(frame()->loader().currentItem()->documentState());
+    return frame()->loader().currentItem()->getReferencedFilePaths();
 }
 
 void Internals::startTrackingRepaints(Document* document, ExceptionState& exceptionState)

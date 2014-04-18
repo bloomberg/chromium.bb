@@ -36,6 +36,7 @@
 namespace WebCore {
 
 class Document;
+class DocumentState;
 class FormData;
 class HistoryItem;
 class Image;
@@ -69,8 +70,10 @@ public:
     float pageScaleFactor() const;
     void setPageScaleFactor(float);
 
-    const Vector<String>& documentState() const;
+    Vector<String> getReferencedFilePaths();
+    const Vector<String>& documentState();
     void setDocumentState(const Vector<String>&);
+    void setDocumentState(DocumentState*);
     void clearDocumentState();
 
     void setURL(const KURL&);
@@ -109,7 +112,8 @@ private:
 
     IntPoint m_scrollPoint;
     float m_pageScaleFactor;
-    Vector<String> m_documentState;
+    Vector<String> m_documentStateVector;
+    RefPtr<DocumentState> m_documentState;
 
     HistoryItemVector m_children;
 

@@ -29,6 +29,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/forms/FormController.h"
+#include "core/loader/FrameLoaderClient.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 
@@ -70,13 +71,13 @@ void HTMLFormControlElementWithState::notifyFormStateChanged()
     // selection before the document is active (or even in a frame).
     if (!document().isActive())
         return;
-    document().frame()->loader().markDocumentStateDirty();
+    document().frame()->loader().client()->didUpdateCurrentHistoryItem();
 }
 
 bool HTMLFormControlElementWithState::shouldSaveAndRestoreFormControlState() const
 {
     // We don't save/restore control state in a form with autocomplete=off.
-    return inActiveDocument() && shouldAutocomplete();
+    return inDocument() && shouldAutocomplete();
 }
 
 FormControlState HTMLFormControlElementWithState::saveFormControlState() const

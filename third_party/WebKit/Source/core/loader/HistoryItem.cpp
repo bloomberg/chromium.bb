@@ -27,6 +27,7 @@
 #include "core/loader/HistoryItem.h"
 
 #include "core/dom/Document.h"
+#include "core/html/forms/FormController.h"
 #include "platform/network/ResourceRequest.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/text/CString.h"
@@ -87,7 +88,6 @@ void HistoryItem::setURLString(const String& urlString)
 void HistoryItem::setURL(const KURL& url)
 {
     setURLString(url.string());
-    clearDocumentState();
 }
 
 void HistoryItem::setReferrer(const Referrer& referrer)
@@ -128,17 +128,31 @@ void HistoryItem::setPageScaleFactor(float scaleFactor)
 
 void HistoryItem::setDocumentState(const Vector<String>& state)
 {
+    ASSERT(!m_documentState);
+    m_documentStateVector = state;
+}
+
+void HistoryItem::setDocumentState(DocumentState* state)
+{
     m_documentState = state;
 }
 
-const Vector<String>& HistoryItem::documentState() const
+const Vector<String>& HistoryItem::documentState()
 {
-    return m_documentState;
+    if (m_documentState)
+        m_documentStateVector = m_documentState->toStateVector();
+    return m_documentStateVector;
+}
+
+Vector<String> HistoryItem::getReferencedFilePaths()
+{
+    return FormController::getReferencedFilePaths(documentState());
 }
 
 void HistoryItem::clearDocumentState()
 {
     m_documentState.clear();
+    m_documentStateVector.clear();
 }
 
 void HistoryItem::setStateObject(PassRefPtr<SerializedScriptValue> object)

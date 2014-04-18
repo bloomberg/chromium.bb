@@ -89,6 +89,7 @@ class DocumentLifecycleObserver;
 class DocumentLoader;
 class DocumentMarkerController;
 class DocumentParser;
+class DocumentState;
 class DocumentTimeline;
 class DocumentType;
 class Element;
@@ -457,7 +458,7 @@ public:
     void evaluateMediaQueryList();
 
     FormController& formController();
-    Vector<String> formElementsState() const;
+    DocumentState* formElementsState() const;
     void setStateForNewFormElements(const Vector<String>&);
 
     FrameView* view() const; // can be null
@@ -610,9 +611,6 @@ public:
 
     void setParsing(bool);
     bool parsing() const { return m_isParsing; }
-
-    void setHistoryItemDocumentStateDirty(bool dirty) { m_historyItemDocumentStateDirty = dirty; }
-    bool historyItemDocumentStateDirty() const { return m_historyItemDocumentStateDirty; }
 
     bool shouldScheduleLayout() const;
     int elapsedTime() const;
@@ -1244,7 +1242,6 @@ private:
     bool m_visuallyOrdered;
     ReadyState m_readyState;
     bool m_isParsing;
-    bool m_historyItemDocumentStateDirty;
 
     bool m_gotoAnchorNeededAfterStylesheetsLoad;
     bool m_isDNSPrefetchEnabled;

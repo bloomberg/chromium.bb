@@ -33,7 +33,6 @@
 
 #include "WebSerializedScriptValue.h"
 #include "bindings/v8/SerializedScriptValue.h"
-#include "core/html/forms/FormController.h"
 #include "core/loader/HistoryItem.h"
 #include "platform/network/FormData.h"
 #include "platform/weborigin/KURL.h"
@@ -59,7 +58,7 @@ void addReferencedFilePaths(HistoryItem* item, HashSet<String>& results)
         }
     }
 
-    const Vector<String>& filePaths = FormController::getReferencedFilePaths(item->documentState());
+    const Vector<String>& filePaths = item->getReferencedFilePaths();
     for (size_t i = 0; i < filePaths.size(); ++i)
         results.add(filePaths[i]);
 

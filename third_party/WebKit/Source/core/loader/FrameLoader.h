@@ -186,8 +186,6 @@ public:
     void updateForSameDocumentNavigation(const KURL&, SameDocumentNavigationSource, PassRefPtr<SerializedScriptValue>, UpdateBackForwardListPolicy);
 
     HistoryItem* currentItem() const { return m_currentItem.get(); }
-    void markDocumentStateDirty();
-    void saveDocumentState();
     void saveScrollState();
     void clearScrollPositionAndViewState();
 

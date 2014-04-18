@@ -173,25 +173,6 @@ void FrameLoader::stopLoading()
     m_frame->navigationScheduler().cancel();
 }
 
-void FrameLoader::markDocumentStateDirty()
-{
-    Document* document = m_frame->document();
-    document->setHistoryItemDocumentStateDirty(true);
-    m_client->didUpdateCurrentHistoryItem();
-}
-
-void FrameLoader::saveDocumentState()
-{
-    Document* document = m_frame->document();
-    if (!m_currentItem || !document->historyItemDocumentStateDirty())
-        return;
-
-    if (m_currentItem->isCurrentDocument(document) && document->isActive())
-        m_currentItem->setDocumentState(document->formElementsState());
-
-    document->setHistoryItemDocumentStateDirty(false);
-}
-
 void FrameLoader::saveScrollState()
 {
     if (!m_currentItem || !m_frame->view())
@@ -219,7 +200,6 @@ void FrameLoader::clearScrollPositionAndViewState()
 
 bool FrameLoader::closeURL()
 {
-    saveDocumentState();
     saveScrollState();
 
     // Should only send the pagehide event here if the current document exists.
@@ -282,6 +262,7 @@ void FrameLoader::setHistoryItemStateForCommit(HistoryCommitType historyCommitTy
     else if (!isPushOrReplaceState && m_documentLoader->url() != m_currentItem->url())
         m_currentItem->generateNewSequenceNumbers();
     m_currentItem->setURL(m_documentLoader->urlForHistory());
+    m_currentItem->setDocumentState(m_frame->document()->formElementsState());
     m_currentItem->setTarget(m_frame->tree().uniqueName());
     if (isPushOrReplaceState)
         m_currentItem->setStateObject(stateObject);
@@ -558,7 +539,6 @@ void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScrip
             m_provisionalDocumentLoader->detachFromFrame();
         m_provisionalDocumentLoader = nullptr;
     }
-    saveDocumentState();
     saveScrollState();
 
     KURL oldURL = m_frame->document()->url();

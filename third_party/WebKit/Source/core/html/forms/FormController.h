@@ -71,6 +71,22 @@ inline void FormControlState::append(const String& value)
     m_values.append(value);
 }
 
+typedef HashMap<AtomicString, OwnPtr<SavedFormState> > SavedFormStateMap;
+
+class DocumentState : public RefCounted<DocumentState> {
+public:
+    static PassRefPtr<DocumentState> create();
+    ~DocumentState();
+
+    void addControl(HTMLFormControlElementWithState*);
+    void removeControl(HTMLFormControlElementWithState*);
+    Vector<String> toStateVector();
+
+private:
+    typedef ListHashSet<RefPtr<HTMLFormControlElementWithState>, 64> FormElementListHashSet;
+    FormElementListHashSet m_formControls;
+};
+
 class FormController {
     WTF_MAKE_FAST_ALLOCATED;
 public:
@@ -85,7 +101,7 @@ public:
     void registerStatefulFormControl(HTMLFormControlElementWithState&);
     void unregisterStatefulFormControl(HTMLFormControlElementWithState&);
     // This should be callled only by Document::formElementsState().
-    Vector<String> formElementsState() const;
+    DocumentState* formElementsState() const;
     // This should be callled only by Document::setStateForNewFormElements().
     void setStateForNewFormElements(const Vector<String>&);
     void willDeleteForm(HTMLFormElement*);
@@ -95,16 +111,12 @@ public:
     static Vector<String> getReferencedFilePaths(const Vector<String>& stateVector);
 
 private:
-    typedef ListHashSet<RefPtr<HTMLFormControlElementWithState>, 64> FormElementListHashSet;
-    typedef HashMap<AtomicString, OwnPtr<SavedFormState> > SavedFormStateMap;
-
     FormController();
-    static PassOwnPtr<SavedFormStateMap> createSavedFormStateMap(const FormElementListHashSet&);
     FormControlState takeStateForFormElement(const HTMLFormControlElementWithState&);
     static void formStatesFromStateVector(const Vector<String>&, SavedFormStateMap&);
 
     RadioButtonGroupScope m_radioButtonGroupScope;
-    FormElementListHashSet m_formControls;
+    RefPtr<DocumentState> m_documentState;
     SavedFormStateMap m_savedFormStateMap;
     OwnPtr<FormKeyGenerator> m_formKeyGenerator;
 };

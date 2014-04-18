@@ -428,7 +428,6 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_visuallyOrdered(false)
     , m_readyState(Complete)
     , m_isParsing(false)
-    , m_historyItemDocumentStateDirty(false)
     , m_gotoAnchorNeededAfterStylesheetsLoad(false)
     , m_containsValidityStyleRules(false)
     , m_updateFocusAppearanceRestoresSelection(false)
@@ -1464,15 +1463,18 @@ Node::NodeType Document::nodeType() const
 
 FormController& Document::formController()
 {
-    if (!m_formController)
+    if (!m_formController) {
         m_formController = FormController::create();
+        if (m_frame && m_frame->loader().currentItem() && m_frame->loader().currentItem()->isCurrentDocument(this))
+            m_frame->loader().currentItem()->setDocumentState(m_formController->formElementsState());
+    }
     return *m_formController;
 }
 
-Vector<String> Document::formElementsState() const
+DocumentState* Document::formElementsState() const
 {
     if (!m_formController)
-        return Vector<String>();
+        return 0;
     return m_formController->formElementsState();
 }
 
