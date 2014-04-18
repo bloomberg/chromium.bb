@@ -340,8 +340,13 @@ base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   // (using both is redundant).
   ErrorConsole* error_console =
       ErrorConsole::Get(extension_service_->profile());
-  if (error_console->IsEnabledForChromeExtensionsPage() &&
-      extension->location() == Manifest::UNPACKED) {
+  bool error_console_is_enabled =
+      error_console->IsEnabledForChromeExtensionsPage();
+  extension_data->SetBoolean("wantsErrorCollection", error_console_is_enabled);
+  if (error_console_is_enabled) {
+    extension_data->SetBoolean("errorCollectionEnabled",
+                               error_console->IsReportingEnabledForExtension(
+                                   extension->id()));
     const ErrorList& errors =
         error_console->GetErrorsForExtension(extension->id());
     if (!errors.empty()) {
@@ -426,6 +431,8 @@ void ExtensionSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_REMOVE));
   source->AddString("extensionSettingsEnableIncognito",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_ENABLE_INCOGNITO));
+  source->AddString("extensionSettingsEnableErrorCollection",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_ENABLE_ERROR_COLLECTION));
   source->AddString("extensionSettingsAllowFileAccess",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_ALLOW_FILE_ACCESS));
   source->AddString("extensionSettingsIncognitoWarning",
@@ -533,6 +540,9 @@ void ExtensionSettingsHandler::RegisterMessages() {
                  AsWeakPtr()));
   web_ui()->RegisterMessageCallback("extensionSettingsEnableIncognito",
       base::Bind(&ExtensionSettingsHandler::HandleEnableIncognitoMessage,
+                 AsWeakPtr()));
+  web_ui()->RegisterMessageCallback("extensionSettingsEnableErrorCollection",
+      base::Bind(&ExtensionSettingsHandler::HandleEnableErrorCollectionMessage,
                  AsWeakPtr()));
   web_ui()->RegisterMessageCallback("extensionSettingsAllowFileAccess",
       base::Bind(&ExtensionSettingsHandler::HandleAllowFileAccessMessage,
@@ -976,6 +986,18 @@ void ExtensionSettingsHandler::HandleEnableIncognitoMessage(
   util::SetIsIncognitoEnabled(extension->id(),
                               extension_service_->profile(),
                               enable_str == "true");
+}
+
+void ExtensionSettingsHandler::HandleEnableErrorCollectionMessage(
+    const base::ListValue* args) {
+  CHECK_EQ(2u, args->GetSize());
+  std::string extension_id;
+  std::string enable_str;
+  CHECK(args->GetString(0, &extension_id));
+  CHECK(args->GetString(1, &enable_str));
+  bool enabled = enable_str == "true";
+  ErrorConsole::Get(Profile::FromWebUI(web_ui()))
+      ->SetReportingAllForExtension(extension_id, enabled);
 }
 
 void ExtensionSettingsHandler::HandleAllowFileAccessMessage(

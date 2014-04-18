@@ -228,6 +228,10 @@ html[dir='rtl'] .extension-list-item {
   margin: 0;
 }
 
+.error-collection-control {
+  -webkit-margin-start: 5px;
+}
+
 #font-measuring-div {
   /* Remove from the flow and hide. */
   position: absolute;

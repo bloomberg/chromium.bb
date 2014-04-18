@@ -180,6 +180,9 @@ class ExtensionSettingsHandler
   // Callback for "enableIncognito" message.
   void HandleEnableIncognitoMessage(const base::ListValue* args);
 
+  // Callback for "enableErrorCollection" message.
+  void HandleEnableErrorCollectionMessage(const base::ListValue* args);
+
   // Callback for "allowFileAcces" message.
   void HandleAllowFileAccessMessage(const base::ListValue* args);
 

@@ -25,7 +25,8 @@ class ExtensionError {
  public:
   enum Type {
     MANIFEST_ERROR,
-    RUNTIME_ERROR
+    RUNTIME_ERROR,
+    NUM_ERROR_TYPES  // Put new values above this.
   };
 
   virtual ~ExtensionError();

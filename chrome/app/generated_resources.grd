@@ -4820,6 +4820,9 @@ Make sure you do not expose any sensitive information.
         <message name="IDS_EXTENSIONS_ENABLE_INCOGNITO" desc="The checkbox for enabling an extension in incognito.">
           Allow in incognito
         </message>
+        <message name="IDS_EXTENSIONS_ENABLE_ERROR_COLLECTION" desc="The checkbox for enabling error collection for an extension.">
+          Collect errors
+        </message>
         <message name="IDS_EXTENSIONS_ALLOW_FILE_ACCESS" desc="The checkbox for allowing an extension access to run scripts on file URLs.">
           Allow access to file URLs
         </message>

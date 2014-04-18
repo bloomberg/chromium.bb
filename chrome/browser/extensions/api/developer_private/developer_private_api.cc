@@ -388,6 +388,9 @@ DeveloperPrivateGetItemsInfoFunction::CreateItemInfo(const Extension& item,
               info->runtime_errors.push_back(make_linked_ptr(value.release()));
               break;
             }
+            case ExtensionError::NUM_ERROR_TYPES:
+              NOTREACHED();
+              break;
           }
         }
       }

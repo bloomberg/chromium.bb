@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/error_console/error_console.h"
 
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -128,6 +129,8 @@ TEST_F(ErrorConsoleUnitTest, EnableAndDisableErrorConsole) {
 TEST_F(ErrorConsoleUnitTest, ReportErrors) {
   const size_t kNumTotalErrors = 6;
   const std::string kId = id_util::GenerateId("id");
+  error_console_->set_default_reporting_for_test(ExtensionError::MANIFEST_ERROR,
+                                                 true);
   ASSERT_EQ(0u, error_console_->GetErrorsForExtension(kId).size());
 
   for (size_t i = 0; i < kNumTotalErrors; ++i) {
@@ -139,9 +142,12 @@ TEST_F(ErrorConsoleUnitTest, ReportErrors) {
 }
 
 TEST_F(ErrorConsoleUnitTest, DontStoreErrorsWithoutEnablingType) {
-  // Disable default runtime error reporting.
+  // Disable default runtime error reporting, and enable default manifest error
+  // reporting.
   error_console_->set_default_reporting_for_test(ExtensionError::RUNTIME_ERROR,
-                                                false);
+                                                 false);
+  error_console_->set_default_reporting_for_test(ExtensionError::MANIFEST_ERROR,
+                                                 true);
 
   const std::string kId = id_util::GenerateId("id");
 
@@ -183,6 +189,76 @@ TEST_F(ErrorConsoleUnitTest, DontStoreErrorsWithoutEnablingType) {
   ASSERT_EQ(4u, error_console_->GetErrorsForExtension(kId).size());
   error_console_->ReportError(CreateNewRuntimeError(kId, "i"));
   ASSERT_EQ(4u, error_console_->GetErrorsForExtension(kId).size());
+}
+
+// Test that we only store errors by default for unpacked extensions, and that
+// assigning a preference to any extension overrides the defaults.
+TEST_F(ErrorConsoleUnitTest, TestDefaultStoringPrefs) {
+  // For this, we need actual extensions.
+  scoped_refptr<const Extension> unpacked_extension =
+      ExtensionBuilder()
+          .SetManifest(DictionaryBuilder().Set("name", "unpacked")
+                                          .Set("version", "0.0.1")
+                                          .Set("manifest_version", 2)
+                                          .Build())
+          .SetLocation(Manifest::UNPACKED)
+          .SetID(id_util::GenerateId("unpacked"))
+          .Build();
+  scoped_refptr<const Extension> packed_extension =
+      ExtensionBuilder()
+          .SetManifest(DictionaryBuilder().Set("name", "packed")
+                                          .Set("version", "0.0.1")
+                                          .Set("manifest_version", 2)
+                                          .Build())
+          .SetLocation(Manifest::INTERNAL)
+          .SetID(id_util::GenerateId("packed"))
+          .Build();
+
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile_.get());
+  registry->AddEnabled(unpacked_extension);
+  registry->AddEnabled(packed_extension);
+
+  // We should start with a clean slate.
+  EXPECT_EQ(0u, error_console_->GetErrorsForExtension(
+      unpacked_extension->id()).size());
+  EXPECT_EQ(0u, error_console_->GetErrorsForExtension(
+      packed_extension->id()).size());
+
+  // Errors should be ignored by default for the packed extension.
+  error_console_->ReportError(
+      CreateNewManifestError(packed_extension->id(), "manifest error 1"));
+  error_console_->ReportError(
+      CreateNewRuntimeError(packed_extension->id(), "runtime error 1"));
+  EXPECT_EQ(0u, error_console_->GetErrorsForExtension(
+      packed_extension->id()).size());
+
+  // Errors should be reported by default for the unpacked extension.
+  error_console_->ReportError(
+      CreateNewManifestError(unpacked_extension->id(), "manifest error 2"));
+  error_console_->ReportError(
+      CreateNewRuntimeError(unpacked_extension->id(), "runtime error 2"));
+  EXPECT_EQ(2u, error_console_->GetErrorsForExtension(
+      unpacked_extension->id()).size());
+
+  // Registering a preference should override this for both types of extensions
+  // (should be able to enable errors for packed, or disable errors for
+  // unpacked).
+  error_console_->SetReportingForExtension(packed_extension->id(),
+                                           ExtensionError::RUNTIME_ERROR,
+                                           true);
+  error_console_->ReportError(
+      CreateNewRuntimeError(packed_extension->id(), "runtime error 3"));
+  EXPECT_EQ(1u, error_console_->GetErrorsForExtension(
+      packed_extension->id()).size());
+
+  error_console_->SetReportingForExtension(unpacked_extension->id(),
+                                           ExtensionError::RUNTIME_ERROR,
+                                           false);
+  error_console_->ReportError(
+      CreateNewRuntimeError(packed_extension->id(), "runtime error 4"));
+  EXPECT_EQ(2u,  // We should still have the first two errors.
+            error_console_->GetErrorsForExtension(
+                unpacked_extension->id()).size());
 }
 
 }  // namespace extensions

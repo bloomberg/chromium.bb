@@ -148,6 +148,20 @@ cr.define('options', function() {
       var butterBar = node.querySelector('.butter-bar');
       butterBar.hidden = !butterBarVisibility[extension.id];
 
+      // The 'collect errors' checkbox. This should only be visible if the
+      // error console is enabled - we can detect this by the existence of the
+      // |errorCollectionEnabled| property.
+      if (extension.wantsErrorCollection) {
+        node.querySelector('.error-collection-control').hidden = false;
+        var errorCollection =
+            node.querySelector('.error-collection-control input');
+        errorCollection.checked = extension.errorCollectionEnabled;
+        errorCollection.addEventListener('change', function(e) {
+          chrome.send('extensionSettingsEnableErrorCollection',
+                      [extension.id, String(e.target.checked)]);
+        });
+      }
+
       // The 'allow file:// access' checkbox.
       if (extension.wantsFileAccess) {
         var fileAccess = node.querySelector('.file-access-control');
