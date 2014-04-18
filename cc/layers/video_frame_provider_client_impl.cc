@@ -4,6 +4,7 @@
 
 #include "cc/layers/video_frame_provider_client_impl.h"
 
+#include "base/debug/trace_event.h"
 #include "cc/base/math_util.h"
 #include "cc/layers/video_layer_impl.h"
 #include "media/base/video_frame.h"
@@ -73,6 +74,10 @@ void VideoFrameProviderClientImpl::StopUsingProvider() {
 }
 
 void VideoFrameProviderClientImpl::DidReceiveFrame() {
+  TRACE_EVENT1("cc",
+               "VideoFrameProviderClientImpl::DidReceiveFrame",
+               "active_video_layer",
+               !!active_video_layer_);
   if (active_video_layer_)
     active_video_layer_->SetNeedsRedraw();
 }
