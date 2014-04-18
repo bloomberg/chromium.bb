@@ -18,6 +18,8 @@
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
+#include "net/base/url_util.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -123,6 +125,27 @@ class InlineLoginUISafeIframeBrowserTest : public InProcessBrowserTest {
  public:
   FooWebUIProvider& foo_provider() { return foo_provider_; }
 
+  void WaitUntilUIReady() {
+    ASSERT_TRUE(content::ExecuteScript(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        "if (!inline.login.getAuthExtHost())"
+        "  inline.login.initialize();"
+        "var handler = function() {"
+        "  window.domAutomationController.setAutomationId(0);"
+        "  window.domAutomationController.send('ready');"
+        "};"
+        "if (inline.login.isAuthReady())"
+        "  handler();"
+        "else"
+        "  inline.login.getAuthExtHost().addEventListener('ready', handler);"));
+
+    content::DOMMessageQueue message_queue;
+    std::string message;
+    // TODO(guohui): this timeouts on trybot sometimes.
+    ASSERT_TRUE(message_queue.WaitForMessage(&message));
+    EXPECT_EQ("\"ready\"", message);
+  }
+
  private:
   virtual void SetUpOnMainThread() OVERRIDE {
     content::WebUIControllerFactory::UnregisterFactoryForTesting(
@@ -160,4 +183,25 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest, NoWebUIInIframe) {
       Resolve("?source=0&frameUrl=chrome://foo");
   EXPECT_CALL(foo_provider(), NewWebUI(_, _)).Times(0);
   ui_test_utils::NavigateToURL(browser(), url);
+}
+
+// Make sure that the gaia iframe cannot trigger top-frame navigation.
+// TODO(guohui): flaky on trybot crbug/364759.
+IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest,
+    DISABLED_TopFrameNavigationDisallowed) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  // Loads into gaia iframe a web page that attempts to deframe on load.
+  GURL deframe_url(embedded_test_server()->GetURL("/login/deframe.html"));
+  GURL url(net::AppendOrReplaceQueryParameter(
+      signin::GetPromoURL(signin::SOURCE_START_PAGE, false),
+      "frameUrl", deframe_url.spec()));
+  ui_test_utils::NavigateToURL(browser(), url);
+  WaitUntilUIReady();
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(url, contents->GetVisibleURL());
+
+  content::NavigationController& controller = contents->GetController();
+  EXPECT_TRUE(controller.GetPendingEntry() == NULL);
 }
