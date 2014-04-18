@@ -248,7 +248,7 @@ CloudPrintDataSender::~CloudPrintDataSender() {}
 // JavaScript to that location, and make sure it gets deleted when not
 // needed. - 4/1/2010
 void CloudPrintDataSender::SendPrintData() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!data_.get() || !data_->size())
     return;
 
@@ -299,7 +299,7 @@ void CloudPrintFlowHandler::SetDialogDelegate(
     CloudPrintWebDialogDelegate* delegate) {
   // Even if setting a new WebUI, it means any previous task needs
   // to be canceled, its now invalid.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CancelAnyRunningTask();
   dialog_delegate_ = delegate;
 }
@@ -308,7 +308,7 @@ void CloudPrintFlowHandler::SetDialogDelegate(
 // reference to it, so when the task that is calling it finishes and
 // removes its reference, it goes away.
 void CloudPrintFlowHandler::CancelAnyRunningTask() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (print_data_sender_.get()) {
     print_data_sender_->CancelPrintDataFile();
     print_data_sender_ = NULL;
@@ -402,7 +402,7 @@ CloudPrintFlowHandler::CreateCloudPrintDataSender() {
 }
 
 void CloudPrintFlowHandler::HandleSendPrintData(const base::ListValue* args) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // This will cancel any ReadPrintDataFile() or SendPrintDataFile()
   // requests in flight (this is anticipation of when setting page
   // setup parameters becomes asynchronous and may be set while some
@@ -528,7 +528,7 @@ void GetDialogWidthAndHeightFromPrefs(content::BrowserContext* browser_context,
 void CloudPrintWebDialogDelegate::Init(content::BrowserContext* browser_context,
                                        const std::string& json_arguments) {
   // This information is needed to show the dialog HTML content.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   params_.url = GURL(chrome::kChromeUICloudPrintResourcesURL);
   GetDialogWidthAndHeightFromPrefs(browser_context,
@@ -546,7 +546,7 @@ void CloudPrintWebDialogDelegate::Init(content::BrowserContext* browser_context,
 CloudPrintWebDialogDelegate::~CloudPrintWebDialogDelegate() {
   // If the flow_handler_ is about to outlive us because we don't own
   // it anymore, we need to have it remove its reference to us.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   flow_handler_->SetDialogDelegate(NULL);
   if (owns_flow_handler_) {
     delete flow_handler_;
@@ -620,7 +620,7 @@ void CreateDialogImpl(content::BrowserContext* browser_context,
                       const base::string16& print_job_title,
                       const base::string16& print_ticket,
                       const std::string& file_type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   WebDialogDelegate* dialog_delegate =
       new internal_cloud_print_helpers::CloudPrintWebDialogDelegate(
           browser_context, modal_parent, data, std::string(), print_job_title,
@@ -652,7 +652,7 @@ void CreateDialogForFileImpl(content::BrowserContext* browser_context,
                              const base::string16& print_job_title,
                              const base::string16& print_ticket,
                              const std::string& file_type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   scoped_refptr<base::RefCountedMemory> data;
   int64 file_size = 0;
   if (base::GetFileSize(path_to_file, &file_size) && file_size != 0) {
@@ -711,7 +711,7 @@ void CreatePrintDialogForFile(content::BrowserContext* browser_context,
 void CreateCloudPrintSigninTab(Browser* browser,
                                bool add_account,
                                const base::Closure& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CloudPrintURL cp_url(browser->profile());
   content::WebContents* web_contents =
       browser->OpenURL(

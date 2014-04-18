@@ -45,7 +45,7 @@ CloudPrintProxyService::~CloudPrintProxyService() {
 }
 
 void CloudPrintProxyService::Initialize() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceEvents",
                             ServiceProcessControl::SERVICE_EVENT_INITIALIZE,
                             ServiceProcessControl::SERVICE_EVENT_MAX);
@@ -73,14 +73,14 @@ void CloudPrintProxyService::Initialize() {
 }
 
 void CloudPrintProxyService::RefreshStatusFromService() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   InvokeServiceTask(
       base::Bind(&CloudPrintProxyService::RefreshCloudPrintProxyStatus,
                  weak_factory_.GetWeakPtr()));
 }
 
 bool CloudPrintProxyService::EnforceCloudPrintConnectorPolicyAndQuit() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   enforcing_connector_policy_ = true;
   if (ApplyCloudPrintConnectorPolicy())
     return true;
@@ -92,7 +92,7 @@ void CloudPrintProxyService::EnableForUserWithRobot(
     const std::string& robot_email,
     const std::string& user_email,
     const base::DictionaryValue& user_preferences) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceEvents",
                             ServiceProcessControl::SERVICE_EVENT_ENABLE,
                             ServiceProcessControl::SERVICE_EVENT_MAX);
@@ -105,7 +105,7 @@ void CloudPrintProxyService::EnableForUserWithRobot(
 }
 
 void CloudPrintProxyService::DisableForUser() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceEvents",
                             ServiceProcessControl::SERVICE_EVENT_DISABLE,
                             ServiceProcessControl::SERVICE_EVENT_MAX);
@@ -115,7 +115,7 @@ void CloudPrintProxyService::DisableForUser() {
 }
 
 bool CloudPrintProxyService::ApplyCloudPrintConnectorPolicy() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!profile_->GetPrefs()->GetBoolean(prefs::kCloudPrintProxyEnabled)) {
     std::string email =
         profile_->GetPrefs()->GetString(prefs::kCloudPrintEmail);
@@ -142,7 +142,7 @@ bool CloudPrintProxyService::ApplyCloudPrintConnectorPolicy() {
 }
 
 void CloudPrintProxyService::GetPrinters(const PrintersCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!profile_->GetPrefs()->GetBoolean(prefs::kCloudPrintProxyEnabled))
     return;
 
@@ -176,14 +176,14 @@ void CloudPrintProxyService::GetPrinters(const PrintersCallback& callback) {
 
 void CloudPrintProxyService::GetCloudPrintProxyPrinters(
     const PrintersCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ServiceProcessControl* process_control = GetServiceProcessControl();
   DCHECK(process_control->IsConnected());
   process_control->GetPrinters(callback);
 }
 
 void CloudPrintProxyService::RefreshCloudPrintProxyStatus() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ServiceProcessControl* process_control = GetServiceProcessControl();
   DCHECK(process_control->IsConnected());
   ServiceProcessControl::CloudPrintProxyInfoCallback callback = base::Bind(

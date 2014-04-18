@@ -49,7 +49,7 @@ void BackgroundPrintingManager::Observer::WebContentsDestroyed(
 }
 
 BackgroundPrintingManager::BackgroundPrintingManager() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 BackgroundPrintingManager::~BackgroundPrintingManager() {

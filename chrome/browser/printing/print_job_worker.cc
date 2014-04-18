@@ -178,7 +178,7 @@ void PrintJobWorker::GetSettingsWithUI(
     scoped_ptr<PrintingUIWebContentsObserver> web_contents_observer,
     int document_page_count,
     bool has_selection) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   gfx::NativeView parent_view = web_contents_observer->GetParentView();
   if (!parent_view) {

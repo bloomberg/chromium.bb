@@ -103,7 +103,7 @@ void PrintViewManager::PrintPreviewForWebNode() {
 }
 
 void PrintViewManager::PrintPreviewDone() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_NE(NOT_PREVIEWING, print_preview_state_);
 
   if (print_preview_state_ == SCRIPTED_PREVIEW) {
@@ -135,7 +135,7 @@ void PrintViewManager::OnDidShowPrintDialog() {
 }
 
 void PrintViewManager::OnSetupScriptedPrintPreview(IPC::Message* reply_msg) {
-  BrowserThread::CurrentlyOn(BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ScriptedPrintPreviewClosureMap& map =
       g_scripted_print_preview_closure_map.Get();
   content::RenderProcessHost* rph = web_contents()->GetRenderProcessHost();
@@ -185,7 +185,7 @@ void PrintViewManager::OnShowScriptedPrintPreview(bool source_is_modifiable) {
 }
 
 void PrintViewManager::OnScriptedPrintPreviewReply(IPC::Message* reply_msg) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   Send(reply_msg);
 }
 
