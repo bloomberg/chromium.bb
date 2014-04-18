@@ -20,7 +20,6 @@
 #include "content/common/cursors/webcursor.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/input/synthetic_gesture_params.h"
-#include "content/renderer/paint_aggregator.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
@@ -570,7 +569,7 @@ class CONTENT_EXPORT RenderWidget
   // The TransportDIB that is being used to transfer an image to the browser.
   TransportDIB* current_paint_buf_;
 
-  PaintAggregator paint_aggregator_;
+  bool has_frame_pending_;
 
   // The size of the view's backing surface in non-DPI-adjusted pixels.
   gfx::Size physical_backing_size_;

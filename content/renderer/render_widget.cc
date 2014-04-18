@@ -356,6 +356,7 @@ RenderWidget::RenderWidget(blink::WebPopupType popup_type,
       opener_id_(MSG_ROUTING_NONE),
       init_complete_(false),
       current_paint_buf_(NULL),
+      has_frame_pending_(false),
       overdraw_bottom_height_(0.f),
       next_paint_flags_(0),
       filtered_time_per_frame_(0.0f),
@@ -682,7 +683,7 @@ void RenderWidget::Resize(const gfx::Size& new_size,
 
     size_ = new_size;
 
-    paint_aggregator_.ClearPendingUpdate();
+    has_frame_pending_ = false;
 
     // When resizing, we want to wait to paint before ACK'ing the resize.  This
     // ensures that we only resize as fast as we can paint.  We only need to
@@ -692,7 +693,7 @@ void RenderWidget::Resize(const gfx::Size& new_size,
     if (resizing_mode_selector_->NeverUsesSynchronousResize()) {
       // Resize should have caused an invalidation of the entire view.
       DCHECK(new_size.IsEmpty() || is_accelerated_compositing_active_ ||
-             paint_aggregator_.HasPendingUpdate());
+             has_frame_pending_);
     }
   } else if (!resizing_mode_selector_->is_synchronous_mode()) {
     resize_ack = NO_RESIZE_ACK;
@@ -778,11 +779,11 @@ void RenderWidget::OnChangeResizeRect(const gfx::Rect& resizer_rect) {
 
     gfx::Rect old_damage_rect = gfx::IntersectRects(view_rect, resizer_rect_);
     if (!old_damage_rect.IsEmpty())
-      paint_aggregator_.InvalidateRect(old_damage_rect);
+      has_frame_pending_ = true;
 
     gfx::Rect new_damage_rect = gfx::IntersectRects(view_rect, resizer_rect);
     if (!new_damage_rect.IsEmpty())
-      paint_aggregator_.InvalidateRect(new_damage_rect);
+      has_frame_pending_ = true;
 
     resizer_rect_ = resizer_rect;
 
@@ -1033,7 +1034,7 @@ void RenderWidget::OnSwapBuffersComplete() {
   // a real invalidation. This prevents rendering in response to a swapbuffers
   // callback coming back after we've navigated away from the page that
   // generated it.
-  if (!animation_update_pending_ && !paint_aggregator_.HasPendingUpdate()) {
+  if (!animation_update_pending_ && !has_frame_pending_) {
     TRACE_EVENT0("renderer", "EarlyOut_NoPendingUpdate");
     return;
   }
@@ -1182,7 +1183,7 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
       input_event->type == WebInputEvent::MouseWheel ||
       input_event->type == WebInputEvent::TouchMove;
 
-  bool frame_pending = paint_aggregator_.HasPendingUpdate();
+  bool frame_pending = has_frame_pending_;
   if (is_accelerated_compositing_active_) {
     frame_pending = compositor_ &&
                     compositor_->BeginMainFrameRequested();
@@ -1468,12 +1469,10 @@ void RenderWidget::didInvalidateRect(const WebRect& rect) {
   if (damaged_rect.IsEmpty())
     return;
 
-  paint_aggregator_.InvalidateRect(damaged_rect);
+  has_frame_pending_ = true;
 
   // We may not need to schedule another call to DoDeferredUpdate.
   if (invalidation_task_posted_)
-    return;
-  if (!paint_aggregator_.HasPendingUpdate())
     return;
   if (update_reply_pending_ ||
       num_swapbuffers_complete_pending_ >= kMaxSwapBuffersPending)
@@ -1509,12 +1508,10 @@ void RenderWidget::didScrollRect(int dx, int dy,
   if (damaged_rect.IsEmpty())
     return;
 
-  paint_aggregator_.ScrollRect(gfx::Vector2d(dx, dy), damaged_rect);
+  has_frame_pending_ = true;
 
   // We may not need to schedule another call to DoDeferredUpdate.
   if (invalidation_task_posted_)
-    return;
-  if (!paint_aggregator_.HasPendingUpdate())
     return;
   if (update_reply_pending_ ||
       num_swapbuffers_complete_pending_ >= kMaxSwapBuffersPending)
@@ -1541,11 +1538,11 @@ void RenderWidget::didAutoResize(const WebSize& new_size) {
   if (size_.width() != new_size.width || size_.height() != new_size.height) {
     size_ = new_size;
 
-    // If we don't clear PaintAggregator after changing autoResize state, then
-    // we might end up in a situation where bitmap_rect is larger than the
-    // view_size. By clearing PaintAggregator, we ensure that we don't end up
+    // If we don't clear has_frame_pending_ after changing autoResize state,
+    // then we might end up in a situation where bitmap_rect is larger than the
+    // view_size. By clearing has_frame_pending_, we ensure that we don't end up
     // with invalid damage rects.
-    paint_aggregator_.ClearPendingUpdate();
+    has_frame_pending_ = false;
 
     if (resizing_mode_selector_->is_synchronous_mode()) {
       WebRect new_pos(rootWindowRect().x,

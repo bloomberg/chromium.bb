@@ -323,8 +323,6 @@
     'renderer/npapi/webplugin_delegate_proxy.h',
     'renderer/npapi/webplugin_impl.cc',
     'renderer/npapi/webplugin_impl.h',
-    'renderer/paint_aggregator.cc',
-    'renderer/paint_aggregator.h',
     'renderer/pepper/audio_helper.cc',
     'renderer/pepper/audio_helper.h',
     'renderer/pepper/common.h',
