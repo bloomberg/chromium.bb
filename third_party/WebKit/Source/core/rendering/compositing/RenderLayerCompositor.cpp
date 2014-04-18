@@ -190,12 +190,8 @@ void RenderLayerCompositor::updateAcceleratedCompositingSettings()
 
 bool RenderLayerCompositor::layerSquashingEnabled() const
 {
-    if (RuntimeEnabledFeatures::bleedingEdgeFastPathsEnabled())
-        return true;
-    if (Settings* settings = m_renderView.document().settings())
-        return settings->layerSquashingEnabled();
-
-    return false;
+    // FIXME: Check Settings::layerSquashingEnabled once we enable layer squashing on the Chromium side.
+    return true;
 }
 
 bool RenderLayerCompositor::legacyOrCurrentAcceleratedCompositingForOverflowScrollEnabled() const

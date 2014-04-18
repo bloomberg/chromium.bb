@@ -382,7 +382,9 @@ void RenderSVGRoot::computeFloatRectForRepaint(const RenderLayerModelObject* rep
 void RenderSVGRoot::mapLocalToContainer(const RenderLayerModelObject* repaintContainer, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed) const
 {
     ASSERT(mode & ~IsFixed); // We should have no fixed content in the SVG rendering tree.
-    ASSERT(mode & UseTransforms); // mapping a point through SVG w/o respecting trasnforms is useless.
+    // We used to have this ASSERT here, but we removed it when enabling layer squashing.
+    // See http://crbug.com/364901
+    // ASSERT(mode & UseTransforms); // mapping a point through SVG w/o respecting trasnforms is useless.
 
     RenderReplaced::mapLocalToContainer(repaintContainer, transformState, mode | ApplyContainerFlip, wasFixed);
 }
