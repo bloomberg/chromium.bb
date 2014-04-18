@@ -1462,7 +1462,7 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
       return self._HandleExceptionAsWarning(exc_info)
     else:
       return super(CommitQueueCompletionStage, self)._HandleStageException(
-          self, exc_info)
+          exc_info)
 
   def HandleSuccess(self):
     if self._run.config.master:
