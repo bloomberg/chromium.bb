@@ -46,8 +46,6 @@ public:
 
     virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
 
-    void cancelManualPluginLoad();
-
     bool shouldLoadPluginManually() { return m_shouldLoadPluginManually; }
 
 private:

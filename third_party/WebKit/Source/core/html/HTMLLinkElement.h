@@ -144,7 +144,6 @@ public:
     bool styleSheetIsLoading() const;
 
     bool isImport() const { return linkImport(); }
-    bool importOwnsLoader() const;
     bool isDisabled() const { return linkStyle() && linkStyle()->isDisabled(); }
     bool isEnabledViaScript() const { return linkStyle() && linkStyle()->isEnabledViaScript(); }
     DOMSettableTokenList* sizes() const;

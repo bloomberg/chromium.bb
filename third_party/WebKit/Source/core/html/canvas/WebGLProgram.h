@@ -46,7 +46,6 @@ public:
     bool isUsingVertexAttrib0();
 
     bool linkStatus();
-    void setLinkStatus(bool);
 
     unsigned linkCount() const { return m_linkCount; }
 

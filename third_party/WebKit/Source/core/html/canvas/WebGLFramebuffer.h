@@ -75,8 +75,6 @@ public:
     WebGLSharedObject* getAttachmentObject(GLenum) const;
 
     GLenum colorBufferFormat() const;
-    GLsizei colorBufferWidth() const;
-    GLsizei colorBufferHeight() const;
 
     // This should always be called before drawArray, drawElements, clear,
     // readPixels, copyTexImage2D, copyTexSubImage2D if this framebuffer is

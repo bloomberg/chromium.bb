@@ -389,14 +389,6 @@ bool HTMLPlugInElement::isImageType()
     return Image::supportsType(m_serviceType);
 }
 
-const String HTMLPlugInElement::loadedMimeType() const
-{
-    String mimeType = m_serviceType;
-    if (mimeType.isEmpty())
-        mimeType = mimeTypeFromURL(m_loadedUrl);
-    return mimeType;
-}
-
 RenderEmbeddedObject* HTMLPlugInElement::renderEmbeddedObject() const
 {
     // HTMLObjectElement and HTMLEmbedElement may return arbitrary renderers

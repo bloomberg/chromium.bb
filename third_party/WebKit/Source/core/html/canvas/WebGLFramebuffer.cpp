@@ -455,28 +455,6 @@ void WebGLFramebuffer::removeAttachmentFromBoundFramebuffer(WebGLSharedObject* a
     }
 }
 
-GLsizei WebGLFramebuffer::colorBufferWidth() const
-{
-    if (!object())
-        return 0;
-    WebGLAttachment* attachment = getAttachment(GL_COLOR_ATTACHMENT0);
-    if (!attachment)
-        return 0;
-
-    return attachment->width();
-}
-
-GLsizei WebGLFramebuffer::colorBufferHeight() const
-{
-    if (!object())
-        return 0;
-    WebGLAttachment* attachment = getAttachment(GL_COLOR_ATTACHMENT0);
-    if (!attachment)
-        return 0;
-
-    return attachment->height();
-}
-
 GLenum WebGLFramebuffer::colorBufferFormat() const
 {
     if (!object())

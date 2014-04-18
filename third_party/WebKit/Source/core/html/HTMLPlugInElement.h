@@ -126,7 +126,6 @@ private:
     };
     DisplayState displayState() const { return m_displayState; }
     void setDisplayState(DisplayState state) { m_displayState = state; }
-    const String loadedMimeType() const;
     bool loadPlugin(const KURL&, const String& mimeType, const Vector<String>& paramNames, const Vector<String>& paramValues, bool useFallback, bool requireRenderer);
     bool pluginIsLoadable(const KURL&, const String& mimeType);
     bool wouldLoadAsNetscapePlugin(const String& url, const String& serviceType);

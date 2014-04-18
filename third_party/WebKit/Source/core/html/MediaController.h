@@ -50,7 +50,6 @@ public:
 
     void addMediaElement(HTMLMediaElement*);
     void removeMediaElement(HTMLMediaElement*);
-    bool containsMediaElement(HTMLMediaElement*) const;
 
     PassRefPtr<TimeRanges> buffered() const;
     PassRefPtr<TimeRanges> seekable() const;

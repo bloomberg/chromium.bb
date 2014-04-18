@@ -182,16 +182,4 @@ void PluginDocument::detach(const AttachContext& context)
     HTMLDocument::detach(context);
 }
 
-void PluginDocument::cancelManualPluginLoad()
-{
-    // PluginDocument::cancelManualPluginLoad should only be called once, but there are issues
-    // with how many times we call beforeload on object elements. <rdar://problem/8441094>.
-    if (!shouldLoadPluginManually())
-        return;
-
-    DocumentLoader* documentLoader = frame()->loader().documentLoader();
-    documentLoader->cancelMainResourceLoad(ResourceError::cancelledError(documentLoader->request().url()));
-    setShouldLoadPluginManually(false);
-}
-
 }

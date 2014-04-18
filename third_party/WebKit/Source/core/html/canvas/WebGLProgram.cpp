@@ -94,12 +94,6 @@ bool WebGLProgram::linkStatus()
     return m_linkStatus;
 }
 
-void WebGLProgram::setLinkStatus(bool status)
-{
-    cacheInfoIfNeeded();
-    m_linkStatus = status;
-}
-
 void WebGLProgram::increaseLinkCount()
 {
     ++m_linkCount;

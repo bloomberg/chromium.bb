@@ -231,14 +231,6 @@ LinkImport* HTMLLinkElement::linkImport() const
     return static_cast<LinkImport*>(m_link.get());
 }
 
-bool HTMLLinkElement::importOwnsLoader() const
-{
-    LinkImport* import = linkImport();
-    if (!import)
-        return false;
-    return import->ownsLoader();
-}
-
 Document* HTMLLinkElement::import() const
 {
     if (LinkImport* link = linkImport())
