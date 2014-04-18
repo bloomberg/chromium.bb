@@ -36,6 +36,10 @@ class TcpCubicSenderPeer : public TcpCubicSender {
     return congestion_window_;
   }
 
+  const HybridSlowStart& hybrid_slow_start() const {
+    return hybrid_slow_start_;
+  }
+
   RttStats rtt_stats_;
   QuicConnectionStats stats_;
 
@@ -193,6 +197,11 @@ TEST_F(TcpCubicSenderTest, SlowStartAckTrain) {
   AckNPackets(2);
   expected_send_window += kDefaultTCPMSS;
   EXPECT_EQ(expected_send_window, sender_->GetCongestionWindow());
+
+  // Now RTO and ensure slow start gets reset.
+  EXPECT_TRUE(sender_->hybrid_slow_start().started());
+  sender_->OnRetransmissionTimeout(true);
+  EXPECT_FALSE(sender_->hybrid_slow_start().started());
 }
 
 TEST_F(TcpCubicSenderTest, SlowStartPacketLoss) {
@@ -255,6 +264,11 @@ TEST_F(TcpCubicSenderTest, SlowStartPacketLoss) {
   AckNPackets(1);
   expected_send_window += kDefaultTCPMSS;
   EXPECT_EQ(expected_send_window, sender_->GetCongestionWindow());
+
+  // Now RTO and ensure slow start gets reset.
+  EXPECT_TRUE(sender_->hybrid_slow_start().started());
+  sender_->OnRetransmissionTimeout(true);
+  EXPECT_FALSE(sender_->hybrid_slow_start().started());
 }
 
 TEST_F(TcpCubicSenderTest, SlowStartPacketLossPRR) {

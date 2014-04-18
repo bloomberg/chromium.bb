@@ -269,12 +269,12 @@ void TcpCubicSender::OnRetransmissionTimeout(bool packets_retransmitted) {
   largest_sent_at_last_cutback_ = 0;
   if (packets_retransmitted) {
     cubic_.Reset();
+    hybrid_slow_start_.Restart();
     congestion_window_ = kMinimumCongestionWindow;
   }
 }
 
 void TcpCubicSender::UpdateRtt(QuicTime::Delta rtt) {
-  // Hybrid start triggers when cwnd is larger than some threshold.
   if (InSlowStart() &&
       hybrid_slow_start_.ShouldExitSlowStart(rtt_stats_, congestion_window_)) {
      slowstart_threshold_ = congestion_window_;

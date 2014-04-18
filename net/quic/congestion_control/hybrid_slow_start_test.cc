@@ -61,8 +61,7 @@ TEST_F(HybridSlowStartTest, AckTrain) {
     slowStart_->Reset(end_sequence_number);
     do {
       clock_.AdvanceTime(one_ms_);
-      slowStart_->Update(rtt_, rtt_);
-      EXPECT_FALSE(slowStart_->Exit());
+      EXPECT_FALSE(slowStart_->UpdateAndMaybeExit(rtt_, rtt_));
     }  while (!slowStart_->IsEndOfRound(sequence_number++));
     end_sequence_number *= 2;  // Exponential growth.
   }
@@ -70,12 +69,10 @@ TEST_F(HybridSlowStartTest, AckTrain) {
 
   for (int n = 0; n < 29 && !slowStart_->IsEndOfRound(sequence_number++); ++n) {
     clock_.AdvanceTime(one_ms_);
-    slowStart_->Update(rtt_, rtt_);
-    EXPECT_FALSE(slowStart_->Exit());
+    EXPECT_FALSE(slowStart_->UpdateAndMaybeExit(rtt_, rtt_));
   }
   clock_.AdvanceTime(one_ms_);
-  slowStart_->Update(rtt_, rtt_);
-  EXPECT_TRUE(slowStart_->Exit());
+  EXPECT_TRUE(slowStart_->UpdateAndMaybeExit(rtt_, rtt_));
 }
 
 TEST_F(HybridSlowStartTest, Delay) {
@@ -89,19 +86,18 @@ TEST_F(HybridSlowStartTest, Delay) {
   // Will not trigger since our lowest RTT in our burst is the same as the long
   // term RTT provided.
   for (int n = 0; n < kHybridStartMinSamples; ++n) {
-    slowStart_->Update(rtt_.Add(QuicTime::Delta::FromMilliseconds(n)), rtt_);
-    EXPECT_FALSE(slowStart_->Exit());
+    EXPECT_FALSE(slowStart_->UpdateAndMaybeExit(
+        rtt_.Add(QuicTime::Delta::FromMilliseconds(n)), rtt_));
   }
   slowStart_->Reset(end_sequence_number++);
   for (int n = 1; n < kHybridStartMinSamples; ++n) {
-    slowStart_->Update(rtt_.Add(QuicTime::Delta::FromMilliseconds(n + 4)),
-                       rtt_);
-    EXPECT_FALSE(slowStart_->Exit());
+    EXPECT_FALSE(slowStart_->UpdateAndMaybeExit(rtt_.Add(
+        QuicTime::Delta::FromMilliseconds(n + 4)), rtt_));
   }
   // Expect to trigger since all packets in this burst was above the long term
   // RTT provided.
-  slowStart_->Update(rtt_.Add(QuicTime::Delta::FromMilliseconds(4)), rtt_);
-  EXPECT_TRUE(slowStart_->Exit());
+  EXPECT_TRUE(slowStart_->UpdateAndMaybeExit(rtt_.Add(
+      QuicTime::Delta::FromMilliseconds(4)), rtt_));
 }
 
 }  // namespace test

@@ -140,7 +140,8 @@ void QuicSentPacketManager::OnIncomingAck(
 
 void QuicSentPacketManager::DiscardUnackedPacket(
     QuicPacketSequenceNumber sequence_number) {
-  MarkPacketHandled(sequence_number, NOT_RECEIVED_BY_PEER);
+  MarkPacketHandled(sequence_number, QuicTime::Delta::Zero(),
+                    NOT_RECEIVED_BY_PEER);
 }
 
 void QuicSentPacketManager::HandleAckForSentPackets(
@@ -155,11 +156,14 @@ void QuicSentPacketManager::HandleAckForSentPackets(
       break;
     }
 
+    QuicTime::Delta delta_largest_observed =
+        received_info.delta_time_largest_observed;
     if (IsAwaitingPacket(received_info, sequence_number)) {
       // Remove any packets not being tracked by the send algorithm, allowing
       // the high water mark to be raised if necessary.
       if (QuicUnackedPacketMap::IsSentAndNotPending(it->second)) {
-        it = MarkPacketHandled(sequence_number, NOT_RECEIVED_BY_PEER);
+        it = MarkPacketHandled(sequence_number, delta_largest_observed,
+                               NOT_RECEIVED_BY_PEER);
       } else {
         ++it;
       }
@@ -170,7 +174,8 @@ void QuicSentPacketManager::HandleAckForSentPackets(
     DVLOG(1) << ENDPOINT <<"Got an ack for packet " << sequence_number;
     // If data is associated with the most recent transmission of this
     // packet, then inform the caller.
-    it = MarkPacketHandled(sequence_number, RECEIVED_BY_PEER);
+    it = MarkPacketHandled(sequence_number, delta_largest_observed,
+                           RECEIVED_BY_PEER);
   }
 
   // Discard any retransmittable frames associated with revived packets.
@@ -210,7 +215,8 @@ void QuicSentPacketManager::RetransmitUnackedPackets(
     // pending retransmissions which would be cleared.
     if (frames == NULL && unacked_it->second.all_transmissions->size() == 1 &&
         retransmission_type == ALL_PACKETS) {
-      unacked_it = MarkPacketHandled(unacked_it->first, NOT_RECEIVED_BY_PEER);
+      unacked_it = MarkPacketHandled(unacked_it->first, QuicTime::Delta::Zero(),
+                                     NOT_RECEIVED_BY_PEER);
       continue;
     }
     // If it had no other transmissions, we handle it above.  If it has
@@ -278,10 +284,9 @@ QuicSentPacketManager::PendingRetransmission
                                transmission_info.sequence_number_length);
 }
 
-QuicUnackedPacketMap::const_iterator
-QuicSentPacketManager::MarkPacketHandled(
+QuicUnackedPacketMap::const_iterator QuicSentPacketManager::MarkPacketHandled(
     QuicPacketSequenceNumber sequence_number,
-    ReceivedByPeer received_by_peer) {
+    QuicTime::Delta delta_largest_observed, ReceivedByPeer received_by_peer) {
   if (!unacked_packets_.IsUnacked(sequence_number)) {
     LOG(DFATAL) << "Packet is not unacked: " << sequence_number;
     return unacked_packets_.end();
@@ -311,7 +316,8 @@ QuicSentPacketManager::MarkPacketHandled(
 
   // The AckNotifierManager needs to be notified about the most recent
   // transmission, since that's the one only one it tracks.
-  ack_notifier_manager_.OnPacketAcked(newest_transmission);
+  ack_notifier_manager_.OnPacketAcked(newest_transmission,
+                                      delta_largest_observed);
 
   bool has_crypto_handshake = HasCryptoHandshake(
       unacked_packets_.GetTransmissionInfo(newest_transmission));

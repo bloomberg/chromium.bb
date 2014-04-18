@@ -184,8 +184,4 @@ bool QuicDataStream::FinishedReadingHeaders() {
   return headers_decompressed_ && decompressed_headers_.empty();
 }
 
-bool QuicDataStream::IsFlowControlEnabled() const {
-  return version() >= QUIC_VERSION_17;
-}
-
 }  // namespace net

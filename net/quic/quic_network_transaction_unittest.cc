@@ -138,13 +138,6 @@ class QuicNetworkTransactionTest
     HttpStreamFactory::SetNextProtos(std::vector<NextProto>());
   }
 
-  scoped_ptr<QuicEncryptedPacket> ConstructRstPacket(
-      QuicPacketSequenceNumber num,
-      QuicStreamId stream_id) {
-    return maker_.MakeRstPacket(
-        num, false, stream_id, QUIC_STREAM_NO_ERROR);
-  }
-
   scoped_ptr<QuicEncryptedPacket> ConstructConnectionClosePacket(
       QuicPacketSequenceNumber num) {
     return maker_.MakeConnectionClosePacket(num);

@@ -234,6 +234,7 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // iterator to the next remaining unacked packet.
   QuicUnackedPacketMap::const_iterator MarkPacketHandled(
       QuicPacketSequenceNumber sequence_number,
+      QuicTime::Delta delta_largest_observed,
       ReceivedByPeer received_by_peer);
 
   // Request that |sequence_number| be retransmitted after the other pending

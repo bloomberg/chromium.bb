@@ -39,50 +39,7 @@ bool ReliableQuicStreamPeer::RstSent(ReliableQuicStream* stream) {
   return stream->rst_sent_;
 }
 
-// static
-void ReliableQuicStreamPeer::SetFlowControlSendOffset(
-    ReliableQuicStream* stream,
-    QuicStreamOffset offset) {
-  stream->flow_control_send_limit_ = offset;
-}
 
-// static
-void ReliableQuicStreamPeer::SetFlowControlReceiveOffset(
-    ReliableQuicStream* stream,
-    QuicStreamOffset offset) {
-  stream->flow_control_receive_window_offset_bytes_ = offset;
-}
-
-// static
-void ReliableQuicStreamPeer::SetFlowControlMaxReceiveWindow(
-    ReliableQuicStream* stream,
-    uint64 window_size) {
-  stream->max_flow_control_receive_window_bytes_ = window_size;
-}
-
-// static
-QuicStreamOffset ReliableQuicStreamPeer::SendWindowOffset(
-    ReliableQuicStream* stream) {
-  return stream->flow_control_send_limit_;
-}
-
-// static
-QuicStreamOffset ReliableQuicStreamPeer::SendWindowSize(
-    ReliableQuicStream* stream) {
-  return stream->SendWindowSize();
-}
-
-// static
-QuicStreamOffset ReliableQuicStreamPeer::ReceiveWindowOffset(
-    ReliableQuicStream* stream) {
-  return stream->flow_control_receive_window_offset_bytes_;
-}
-
-// static
-uint64 ReliableQuicStreamPeer::ReceiveWindowSize(ReliableQuicStream* stream) {
-  return stream->flow_control_receive_window_offset_bytes_ -
-         stream->TotalReceivedBytes();
-}
 
 // static
 uint32 ReliableQuicStreamPeer::SizeOfQueuedData(ReliableQuicStream* stream) {

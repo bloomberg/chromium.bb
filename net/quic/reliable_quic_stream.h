@@ -17,6 +17,7 @@
 #include "net/base/iovec.h"
 #include "net/base/net_export.h"
 #include "net/quic/quic_ack_notifier.h"
+#include "net/quic/quic_flow_controller.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_stream_sequencer.h"
 
@@ -93,9 +94,6 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   // Adjust our flow control windows according to new offset in |frame|.
   virtual void OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame);
 
-  // True if this stream is blocked from writing due to flow control limits.
-  bool IsFlowControlBlocked() const;
-
   // Updates our send window offset (if offset larger).
   void UpdateFlowControlSendLimit(QuicStreamOffset offset);
 
@@ -107,6 +105,8 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   int num_frames_received();
 
   int num_duplicate_frames_received();
+
+  QuicFlowController* flow_controller() { return &flow_controller_; }
 
  protected:
   // Sends as much of 'data' to the connection as the connection will consume,
@@ -143,8 +143,9 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   const QuicStreamSequencer* sequencer() const { return &sequencer_; }
   QuicStreamSequencer* sequencer() { return &sequencer_; }
 
-  // Returns true if flow control is enabled for this stream.
-  virtual bool IsFlowControlEnabled() const = 0;
+  void DisableFlowControl() {
+    flow_controller_.Disable();
+  }
 
  private:
   friend class test::ReliableQuicStreamPeer;
@@ -186,23 +187,6 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   // should check |connection_error_|.
   QuicErrorCode connection_error_;
 
-  // Stream level flow control.
-  // This stream is allowed to send up to flow_control_send_limit_ bytes. Once
-  // it has reached this limit it must not send more data until it receives a
-  // suitable WINDOW_UPDATE frame from the peer.
-  QuicStreamOffset flow_control_send_limit_;
-
-  // Stream level flow control.
-  // The maximum size of the stream receive window. Used to determine by how
-  // much we should increase the window offset when sending a WINDOW_UPDATE.
-  uint64 max_flow_control_receive_window_bytes_;
-
-  // Stream level flow control.
-  // This stream expects to receive up to receive_window_offset_bytes_.
-  // If the peer sends more than this (without sending us a WINDOW_UPDATE frame
-  // first), then this is a flow control error.
-  QuicStreamOffset flow_control_receive_window_offset_bytes_;
-
   // True if the read side is closed and further frames should be rejected.
   bool read_side_closed_;
   // True if the write side is closed, and further writes should fail.
@@ -217,6 +201,8 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
 
   // True if the session this stream is running under is a server session.
   bool is_server_;
+
+  QuicFlowController flow_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ReliableQuicStream);
 };

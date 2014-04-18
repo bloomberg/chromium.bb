@@ -22,6 +22,7 @@ QuicCryptoStream::QuicCryptoStream(QuicSession* session)
       encryption_established_(false),
       handshake_confirmed_(false) {
   crypto_framer_.set_visitor(this);
+  DisableFlowControl();
 }
 
 void QuicCryptoStream::OnError(CryptoFramer* framer) {
@@ -67,10 +68,6 @@ void QuicCryptoStream::SendHandshakeMessage(
 const QuicCryptoNegotiatedParameters&
 QuicCryptoStream::crypto_negotiated_params() const {
   return crypto_negotiated_params_;
-}
-
-bool QuicCryptoStream::IsFlowControlEnabled() const {
-  return false;
 }
 
 }  // namespace net

@@ -580,9 +580,9 @@ TEST_P(QuicSessionTest, HandshakeUnblocksFlowControlBlockedStream) {
   // Create a stream, and send enough data to make it flow control blocked.
   TestStream* stream2 = session_.CreateOutgoingDataStream();
   string body(kDefaultFlowControlSendWindow, '.');
-  EXPECT_FALSE(stream2->IsFlowControlBlocked());
+  EXPECT_FALSE(stream2->flow_controller()->IsBlocked());
   stream2->SendBody(body, false);
-  EXPECT_TRUE(stream2->IsFlowControlBlocked());
+  EXPECT_TRUE(stream2->flow_controller()->IsBlocked());
 
   // Now complete the crypto handshake, resulting in an increased flow control
   // send window.
@@ -590,7 +590,7 @@ TEST_P(QuicSessionTest, HandshakeUnblocksFlowControlBlockedStream) {
   session_.GetCryptoStream()->OnHandshakeMessage(msg);
 
   // Stream is now unblocked.
-  EXPECT_FALSE(stream2->IsFlowControlBlocked());
+  EXPECT_FALSE(stream2->flow_controller()->IsBlocked());
 }
 
 TEST_P(QuicSessionTest, InvalidFlowControlWindowInHandshake) {

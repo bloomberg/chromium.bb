@@ -11,6 +11,19 @@ namespace net {
 namespace test {
 namespace {
 
+TEST(QuicProtocolTest, AdjustErrorForVersion) {
+  ASSERT_EQ(8, QUIC_STREAM_LAST_ERROR)
+      << "Any additions to QuicRstStreamErrorCode require an addition to "
+      << "AdjustErrorForVersion and this associated test.";
+
+  EXPECT_EQ(QUIC_STREAM_NO_ERROR,
+            AdjustErrorForVersion(QUIC_RST_FLOW_CONTROL_ACCOUNTING,
+                                  QUIC_VERSION_17));
+  EXPECT_EQ(QUIC_RST_FLOW_CONTROL_ACCOUNTING, AdjustErrorForVersion(
+      QUIC_RST_FLOW_CONTROL_ACCOUNTING,
+      static_cast<QuicVersion>(QUIC_VERSION_17 + 1)));
+}
+
 TEST(QuicProtocolTest, MakeQuicTag) {
   QuicTag tag = MakeQuicTag('A', 'B', 'C', 'D');
   char bytes[4];

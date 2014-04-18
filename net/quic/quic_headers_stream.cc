@@ -174,6 +174,7 @@ QuicHeadersStream::QuicHeadersStream(QuicSession* session)
       spdy_framer_visitor_(new SpdyFramerVisitor(this)) {
   spdy_framer_.set_visitor(spdy_framer_visitor_.get());
   spdy_framer_.set_debug_visitor(spdy_framer_visitor_.get());
+  DisableFlowControl();
 }
 
 QuicHeadersStream::~QuicHeadersStream() {}
@@ -206,10 +207,6 @@ uint32 QuicHeadersStream::ProcessRawData(const char* data,
 }
 
 QuicPriority QuicHeadersStream::EffectivePriority() const { return 0; }
-
-bool QuicHeadersStream::IsFlowControlEnabled() const {
-  return false;
-}
 
 void QuicHeadersStream::OnSynStream(SpdyStreamId stream_id,
                                     SpdyPriority priority,

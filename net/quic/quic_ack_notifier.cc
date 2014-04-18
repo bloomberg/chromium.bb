@@ -46,7 +46,8 @@ void QuicAckNotifier::AddSequenceNumber(
   original_byte_count_ += packet_payload_size;
 }
 
-bool QuicAckNotifier::OnAck(QuicPacketSequenceNumber sequence_number) {
+bool QuicAckNotifier::OnAck(QuicPacketSequenceNumber sequence_number,
+                            QuicTime::Delta delta_largest_observed) {
   DCHECK(ContainsKey(sequence_numbers_, sequence_number));
   sequence_numbers_.erase(sequence_number);
   if (IsEmpty()) {
@@ -54,7 +55,8 @@ bool QuicAckNotifier::OnAck(QuicPacketSequenceNumber sequence_number) {
     // callback notification.
     delegate_->OnAckNotification(
         original_packet_count_, original_byte_count_,
-        retransmitted_packet_count_, retransmitted_byte_count_);
+        retransmitted_packet_count_, retransmitted_byte_count_,
+        delta_largest_observed);
     return true;
   }
   return false;

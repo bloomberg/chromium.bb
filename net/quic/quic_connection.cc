@@ -985,8 +985,8 @@ void QuicConnection::SendRstStream(QuicStreamId id,
                                    QuicStreamOffset bytes_written) {
   // Opportunistically bundle an ack with this outgoing packet.
   ScopedPacketBundler ack_bundler(this, BUNDLE_PENDING_ACK);
-  packet_generator_.AddControlFrame(
-      QuicFrame(new QuicRstStreamFrame(id, error, bytes_written)));
+  packet_generator_.AddControlFrame(QuicFrame(new QuicRstStreamFrame(
+      id, AdjustErrorForVersion(error, version()), bytes_written)));
 }
 
 void QuicConnection::SendWindowUpdate(QuicStreamId id,

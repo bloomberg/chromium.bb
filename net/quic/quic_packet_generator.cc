@@ -146,6 +146,8 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
   // Ensure the FEC group is closed at the end of this method if not in batch
   // mode.
   if (!InBatchMode() && packet_creator_->ShouldSendFec(true)) {
+    // TODO(jri): SerializeFec can return a NULL packet, and this should
+    // cause an early return, with a call to delegate_->OnPacketGenerationError.
     SerializedPacket serialized_fec = packet_creator_->SerializeFec();
     DCHECK(serialized_fec.packet);
     delegate_->OnSerializedPacket(serialized_fec);
@@ -185,6 +187,9 @@ void QuicPacketGenerator::SendQueuedFrames(bool flush) {
     // Ensure the FEC group is closed at the end of this method unless other
     // writes are pending.
     if (packet_creator_->ShouldSendFec(true)) {
+      // TODO(jri): SerializeFec can return a NULL packet, and this should
+      // cause an early return, with a call to
+      // delegate_->OnPacketGenerationError.
       SerializedPacket serialized_fec = packet_creator_->SerializeFec();
       DCHECK(serialized_fec.packet);
       delegate_->OnSerializedPacket(serialized_fec);
@@ -271,6 +276,8 @@ void QuicPacketGenerator::SerializeAndSendPacket() {
   delegate_->OnSerializedPacket(serialized_packet);
 
   if (packet_creator_->ShouldSendFec(false)) {
+    // TODO(jri): SerializeFec can return a NULL packet, and this should
+    // cause an early return, with a call to delegate_->OnPacketGenerationError.
     SerializedPacket serialized_fec = packet_creator_->SerializeFec();
     DCHECK(serialized_fec.packet);
     delegate_->OnSerializedPacket(serialized_fec);

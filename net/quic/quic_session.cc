@@ -285,7 +285,7 @@ void QuicSession::OnCanWrite() {
       has_pending_handshake_ = false;  // We just popped it.
     }
     ReliableQuicStream* stream = GetStream(stream_id);
-    if (stream != NULL && !stream->IsFlowControlBlocked()) {
+    if (stream != NULL && !stream->flow_controller()->IsBlocked()) {
       // If the stream can't write all bytes, it'll re-add itself to the blocked
       // list.
       stream->OnCanWrite();
@@ -389,7 +389,8 @@ void QuicSession::OnConfigNegotiated() {
     }
     DataStreamMap::iterator it = stream_map_.begin();
     while (it != stream_map_.end()) {
-      it->second->UpdateFlowControlSendLimit(new_flow_control_send_window);
+      it->second->flow_controller()->UpdateSendWindowOffset(
+          new_flow_control_send_window);
       it++;
     }
   }
@@ -558,10 +559,12 @@ void QuicSession::MarkWriteBlocked(QuicStreamId id, QuicPriority priority) {
 #ifndef NDEBUG
   ReliableQuicStream* stream = GetStream(id);
   if (stream != NULL) {
-    if (stream->IsFlowControlBlocked()) {
-      LOG(DFATAL) << "Stream " << id << " is flow control blocked.";
+    if (stream->flow_controller()->IsBlocked()) {
+      LOG(DFATAL) << ENDPOINT << "Stream " << id
+                  << " is flow control blocked and write blocked!";
     }
     LOG_IF(DFATAL, priority != stream->EffectivePriority())
+        << ENDPOINT << "Stream " << id
         << "Priorities do not match.  Got: " << priority
         << " Expected: " << stream->EffectivePriority();
   } else {

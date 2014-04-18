@@ -109,9 +109,6 @@ class NET_EXPORT_PRIVATE QuicDataStream : public ReliableQuicStream {
   // Gets the SSL connection information.
   bool GetSSLInfo(SSLInfo* ssl_info);
 
-  // Override base class to enable flow control for data streams.
-  virtual bool IsFlowControlEnabled() const OVERRIDE;
-
  protected:
   // Sets priority_ to priority.  This should only be called before bytes are
   // written to the server.

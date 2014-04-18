@@ -85,7 +85,7 @@ TEST_P(QuicServerSessionTest, CloseStreamDueToReset) {
   QuicRstStreamFrame rst1(stream_id, QUIC_STREAM_NO_ERROR, 0);
   if (version() > QUIC_VERSION_13) {
     EXPECT_CALL(*connection_,
-                SendRstStream(stream_id, QUIC_STREAM_NO_ERROR, 0));
+                SendRstStream(stream_id, QUIC_RST_FLOW_CONTROL_ACCOUNTING, 0));
   }
   visitor_->OnRstStream(rst1);
   EXPECT_EQ(0u, session_->GetNumOpenStreams());
@@ -104,7 +104,7 @@ TEST_P(QuicServerSessionTest, NeverOpenStreamDueToReset) {
   QuicRstStreamFrame rst1(stream_id, QUIC_STREAM_NO_ERROR, 0);
   if (version() > QUIC_VERSION_13) {
     EXPECT_CALL(*connection_,
-                SendRstStream(stream_id, QUIC_STREAM_NO_ERROR, 0));
+                SendRstStream(stream_id, QUIC_RST_FLOW_CONTROL_ACCOUNTING, 0));
   }
   visitor_->OnRstStream(rst1);
   EXPECT_EQ(0u, session_->GetNumOpenStreams());
@@ -134,7 +134,7 @@ TEST_P(QuicServerSessionTest, AcceptClosedStream) {
   QuicRstStreamFrame rst(stream_id, QUIC_STREAM_NO_ERROR, 0);
   if (version() > QUIC_VERSION_13) {
     EXPECT_CALL(*connection_,
-                SendRstStream(stream_id, QUIC_STREAM_NO_ERROR, 0));
+                SendRstStream(stream_id, QUIC_RST_FLOW_CONTROL_ACCOUNTING, 0));
   }
   visitor_->OnRstStream(rst);
 

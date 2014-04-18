@@ -170,7 +170,9 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
 
   scoped_ptr<QuicEncryptedPacket> ConstructRstPacket() {
     QuicStreamId stream_id = 5;
-    return maker_.MakeRstPacket(1, true, stream_id, QUIC_STREAM_NO_ERROR);
+    return maker_.MakeRstPacket(
+        1, true, stream_id,
+        AdjustErrorForVersion(QUIC_RST_FLOW_CONTROL_ACCOUNTING, GetParam()));
   }
 
   MockHostResolver host_resolver_;

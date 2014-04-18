@@ -275,6 +275,21 @@ QuicCongestionFeedbackFrame::QuicCongestionFeedbackFrame() : type(kTCP) {}
 
 QuicCongestionFeedbackFrame::~QuicCongestionFeedbackFrame() {}
 
+QuicRstStreamErrorCode AdjustErrorForVersion(
+    QuicRstStreamErrorCode error_code,
+    QuicVersion version) {
+  switch (error_code) {
+    case QUIC_RST_FLOW_CONTROL_ACCOUNTING:
+      if (version <= QUIC_VERSION_17) {
+        return QUIC_STREAM_NO_ERROR;
+      }
+      break;
+    default:
+      return error_code;
+  }
+  return error_code;
+}
+
 QuicRstStreamFrame::QuicRstStreamFrame()
     : stream_id(0),
       error_code(QUIC_STREAM_NO_ERROR) {
@@ -720,6 +735,11 @@ ostream& operator<<(ostream& os, const QuicConsumedData& s) {
   os << "bytes_consumed: " << s.bytes_consumed
      << " fin_consumed: " << s.fin_consumed;
   return os;
+}
+
+WriteResult::WriteResult()
+    : status(WRITE_STATUS_ERROR),
+      bytes_written(0) {
 }
 
 WriteResult::WriteResult(WriteStatus status,

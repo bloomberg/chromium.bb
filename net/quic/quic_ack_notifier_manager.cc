@@ -23,7 +23,8 @@ AckNotifierManager::~AckNotifierManager() {
 }
 
 void AckNotifierManager::OnPacketAcked(
-    QuicPacketSequenceNumber sequence_number) {
+    QuicPacketSequenceNumber sequence_number,
+    QuicTime::Delta delta_largest_observed) {
   // Inform all the registered AckNotifiers of the new ACK.
   AckNotifierMap::iterator map_it = ack_notifier_map_.find(sequence_number);
   if (map_it == ack_notifier_map_.end()) {
@@ -36,7 +37,7 @@ void AckNotifierManager::OnPacketAcked(
   for (AckNotifierSet::iterator set_it = map_it->second.begin();
        set_it != map_it->second.end(); ++set_it) {
     QuicAckNotifier* ack_notifier = *set_it;
-    ack_notifier->OnAck(sequence_number);
+    ack_notifier->OnAck(sequence_number, delta_largest_observed);
 
     // If this has resulted in an empty AckNotifer, erase it.
     if (ack_notifier->IsEmpty()) {

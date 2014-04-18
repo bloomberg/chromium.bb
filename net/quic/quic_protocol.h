@@ -349,10 +349,19 @@ enum QuicRstStreamErrorCode {
   QUIC_STREAM_PEER_GOING_AWAY,
   // The stream has been cancelled.
   QUIC_STREAM_CANCELLED,
+  // Sending a RST to allow for proper flow control accounting.
+  QUIC_RST_FLOW_CONTROL_ACCOUNTING,
 
   // No error. Used as bound while iterating.
   QUIC_STREAM_LAST_ERROR,
 };
+
+// Because receiving an unknown QuicRstStreamErrorCode results in connection
+// teardown, we use this to make sure any errors predating a given version are
+// downgraded to the most appropriate existing error.
+NET_EXPORT_PRIVATE QuicRstStreamErrorCode AdjustErrorForVersion(
+    QuicRstStreamErrorCode error_code,
+    QuicVersion version);
 
 // These values must remain stable as they are uploaded to UMA histograms.
 // To add a new error code, use the current value of QUIC_LAST_ERROR and
@@ -1014,6 +1023,7 @@ enum WriteStatus {
 // of bytes written or the error code, depending upon the status.
 struct NET_EXPORT_PRIVATE WriteResult {
   WriteResult(WriteStatus status, int bytes_written_or_error_code);
+  WriteResult();
 
   WriteStatus status;
   union {

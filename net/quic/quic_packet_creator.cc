@@ -89,9 +89,7 @@ bool QuicPacketCreator::ShouldSendFec(bool force_close) const {
 }
 
 InFecGroup QuicPacketCreator::MaybeStartFEC() {
-  // Don't send FEC until QUIC_VERSION_15.
-  if (framer_->version() != QUIC_VERSION_13 &&
-      options_.max_packets_per_fec_group > 0 && fec_group_.get() == NULL) {
+  if (IsFecEnabled() && fec_group_.get() == NULL) {
     DCHECK(queued_frames_.empty());
     // Set the fec group number to the sequence number of the next packet.
     fec_group_number_ = sequence_number() + 1;
@@ -133,11 +131,9 @@ bool QuicPacketCreator::HasRoomForStreamFrame(QuicStreamId id,
   // TODO(jri): This is a simple safe decision for now, but make
   // is_in_fec_group a parameter. Same as with all public methods in
   // QuicPacketCreator.
-  InFecGroup is_in_fec_group = options_.max_packets_per_fec_group == 0 ?
-                               NOT_IN_FEC_GROUP : IN_FEC_GROUP;
   return BytesFree() >
       QuicFramer::GetMinStreamFrameSize(framer_->version(), id, offset, true,
-                                        is_in_fec_group);
+                                        IsFecEnabled());
 }
 
 // static
@@ -277,6 +273,12 @@ size_t QuicPacketCreator::BytesFree() const {
                                   + ExpansionOnNewFrame());
 }
 
+InFecGroup QuicPacketCreator::IsFecEnabled() const {
+  return (framer_->version() == QUIC_VERSION_13 ||
+          options_.max_packets_per_fec_group == 0) ?
+          NOT_IN_FEC_GROUP : IN_FEC_GROUP;
+}
+
 size_t QuicPacketCreator::PacketSize() const {
   if (queued_frames_.empty()) {
     // Only adjust the sequence number length when the FEC group is not open,
@@ -288,8 +290,7 @@ size_t QuicPacketCreator::PacketSize() const {
     packet_size_ = GetPacketHeaderSize(options_.send_connection_id_length,
                                        send_version_in_packet_,
                                        sequence_number_length_,
-                                       options_.max_packets_per_fec_group == 0 ?
-                                           NOT_IN_FEC_GROUP : IN_FEC_GROUP);
+                                       IsFecEnabled());
   }
   return packet_size_;
 }
@@ -333,7 +334,12 @@ SerializedPacket QuicPacketCreator::SerializePacket() {
 }
 
 SerializedPacket QuicPacketCreator::SerializeFec() {
-  DCHECK_LT(0u, fec_group_->NumReceivedPackets());
+  if (fec_group_.get() == NULL || fec_group_->NumReceivedPackets() <= 0) {
+    LOG(DFATAL) << "SerializeFEC called but no group or zero packets in group.";
+    // TODO(jri): Make this a public method of framer?
+    SerializedPacket kNoPacket(0, PACKET_1BYTE_SEQUENCE_NUMBER, NULL, 0, NULL);
+    return kNoPacket;
+  }
   DCHECK_EQ(0u, queued_frames_.size());
   QuicPacketHeader header;
   FillPacketHeader(fec_group_number_, true, &header);

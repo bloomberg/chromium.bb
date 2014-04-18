@@ -40,7 +40,8 @@ class NET_EXPORT_PRIVATE AckNotifierManager {
   // Called when the connection receives a new AckFrame.  If |sequence_number|
   // exists in ack_notifier_map_ then the corresponding AckNotifiers will have
   // their OnAck method called.
-  void OnPacketAcked(QuicPacketSequenceNumber sequence_number);
+  void OnPacketAcked(QuicPacketSequenceNumber sequence_number,
+                     QuicTime::Delta delta_largest_observed);
 
   // If a packet has been retransmitted with a new sequence number, then this
   // will be called. It updates the mapping in ack_notifier_map_, and also

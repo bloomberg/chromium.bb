@@ -257,7 +257,8 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
   scoped_ptr<QuicEncryptedPacket> ConstructRstStreamPacket(
       QuicPacketSequenceNumber sequence_number) {
     return maker_.MakeRstPacket(
-        sequence_number, true, stream_id_, QUIC_STREAM_NO_ERROR);
+        sequence_number, true, stream_id_,
+        AdjustErrorForVersion(QUIC_RST_FLOW_CONTROL_ACCOUNTING, GetParam()));
   }
 
   scoped_ptr<QuicEncryptedPacket> ConstructAckAndRstStreamPacket(

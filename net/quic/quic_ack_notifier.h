@@ -30,7 +30,8 @@ class NET_EXPORT_PRIVATE QuicAckNotifier {
     virtual void OnAckNotification(int num_original_packets,
                                    int num_original_bytes,
                                    int num_retransmitted_packets,
-                                   int num_retransmitted_bytes) = 0;
+                                   int num_retransmitted_bytes,
+                                   QuicTime::Delta delta_largest_observed) = 0;
    protected:
     friend class base::RefCounted<DelegateInterface>;
 
@@ -54,7 +55,8 @@ class NET_EXPORT_PRIVATE QuicAckNotifier {
   //
   // Returns true if the provided sequence_number caused the delegate to be
   // called, false otherwise.
-  bool OnAck(QuicPacketSequenceNumber sequence_number);
+  bool OnAck(QuicPacketSequenceNumber sequence_number,
+             QuicTime::Delta delta_largest_observed);
 
   bool IsEmpty() { return sequence_numbers_.empty(); }
 

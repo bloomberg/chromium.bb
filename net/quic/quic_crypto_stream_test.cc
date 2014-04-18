@@ -104,7 +104,7 @@ TEST_F(QuicCryptoStreamTest, ProcessBadData) {
 
 TEST_F(QuicCryptoStreamTest, NoFlowControl) {
   ValueRestore<bool> old_flag(&FLAGS_enable_quic_stream_flow_control, true);
-  EXPECT_FALSE(stream_.IsFlowControlEnabled());
+  EXPECT_FALSE(stream_.flow_controller()->IsEnabled());
 }
 
 }  // namespace
