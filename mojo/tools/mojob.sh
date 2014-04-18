@@ -61,9 +61,7 @@ do_perftests() {
 }
 
 do_pytests() {
-  echo "Running Python unit tests under mojo/public/tools/bindings/pylib ..."
-  python -m unittest \
-      discover -s mojo/public/tools/bindings/pylib -p "*_unittest.py"
+  python mojo/tools/run_mojo_python_tests.py || exit 1
 }
 
 do_gyp() {
