@@ -439,8 +439,12 @@ interface InspectorInstrumentation {
     [ApplicationCache, Inline=FastReturn]
     void updateApplicationCacheStatus([Keep] LocalFrame*);
 
+    [Timeline, Inline=FastReturn]
+    void willUpdateLayerTree(LocalFrame*);
     [Timeline, LayerTree, Inline=FastReturn]
-    void layerTreeDidChange(Page*);
+    void layerTreeDidChange(LocalFrame*);
+    [Timeline, Inline=FastReturn]
+    void didUpdateLayerTree(LocalFrame*);
 
     [DOM, Inline=FastReturn]
     void pseudoElementCreated([Keep] PseudoElement*);

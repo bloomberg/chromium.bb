@@ -510,8 +510,24 @@ void InspectorTimelineAgent::didLayout(RenderObject* root)
 
 void InspectorTimelineAgent::layerTreeDidChange()
 {
-    RefPtr<JSONValue> layerTree = m_layerTreeAgent->buildLayerTree(BackendNodeIdGroup);
-    appendRecord(TimelineRecordFactory::createLayerTreeData(layerTree), TimelineRecordType::UpdateLayerTree, false, 0);
+    ASSERT(!m_pendingLayerTreeData);
+    m_pendingLayerTreeData = m_layerTreeAgent->buildLayerTree(BackendNodeIdGroup);
+}
+
+void InspectorTimelineAgent::willUpdateLayerTree()
+{
+    pushCurrentRecord(JSONObject::create(), TimelineRecordType::UpdateLayerTree, false, 0);
+}
+
+void InspectorTimelineAgent::didUpdateLayerTree()
+{
+    if (m_recordStack.isEmpty())
+        return;
+    TimelineRecordEntry& entry = m_recordStack.last();
+    ASSERT(entry.type == TimelineRecordType::UpdateLayerTree);
+    if (m_pendingLayerTreeData)
+        TimelineRecordFactory::setLayerTreeData(entry.data.get(), m_pendingLayerTreeData.release());
+    didCompleteCurrentRecord(TimelineRecordType::UpdateLayerTree);
 }
 
 void InspectorTimelineAgent::willAutosizeText(RenderObject* renderer)

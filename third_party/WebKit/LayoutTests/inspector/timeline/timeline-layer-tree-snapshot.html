@@ -19,38 +19,28 @@ function addLayer()
     document.body.appendChild(element);
 }
 
-function pageStep0()
+function pageStep0(doneCallback)
 {
-    requestAnimationFrame(pageStep1);
+    requestAnimationFrame(pageStep1.bind(this, doneCallback));
 }
 
-function pageStep1()
+function pageStep1(doneCallback)
 {
     addLayer();
-    requestAnimationFrame(pageStep2);
+    requestAnimationFrame(pageStep2.bind(this, doneCallback));
 }
 
-function pageStep2()
+function pageStep2(doneCallback)
 {
     addLayer();
-    console.timeStamp("DONE");
+    requestAnimationFrame(doneCallback);
 }
 
 function test()
 {
-    InspectorTest.startTimeline(step1);
-    function step1()
-    {
-        InspectorTest.waitForRecordType(WebInspector.TimelineModel.RecordType.TimeStamp, step2);
-        InspectorTest.evaluateInPage("pageStep0()");
-    }
+    InspectorTest.invokeAsyncWithTimeline("pageStep0", onTimelineStopped);
 
-    function step2()
-    {
-        InspectorTest.stopTimeline(step3);
-    }
-
-    function step3()
+    function onTimelineStopped()
     {
         InspectorTest.layerTreeModel.addEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, onLayerTreeChanged);
         InspectorTest.printTimelineRecords(null, loadSnapshot);
@@ -60,6 +50,9 @@ function test()
     function loadSnapshot(record)
     {
         if (record.type !== WebInspector.TimelineModel.RecordType.UpdateLayerTree)
+            return;
+        // Some updates may not produce new layer tree snapshot
+        if (!record.data["layerTree"])
             return;
         ++pendingEventCount;
         InspectorTest.layerTreeModel.setSnapshot(new WebInspector.LayerTreeSnapshot(record.data["layerTree"]));

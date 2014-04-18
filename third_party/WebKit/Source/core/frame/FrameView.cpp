@@ -2790,7 +2790,9 @@ void FrameView::updateLayoutAndStyleForPainting()
     updateLayoutAndStyleIfNeededRecursive();
 
     if (RenderView* view = renderView()) {
+        InspectorInstrumentation::willUpdateLayerTree(view->frame());
         view->compositor()->updateIfNeededRecursive();
+        InspectorInstrumentation::didUpdateLayerTree(view->frame());
 
         // FIXME: we should not have any dirty bits left at this point. Unfortunately, this is not yet the case because
         // the code in updateCompositingLayers sometimes creates new dirty bits when updating direct compositing reasons.

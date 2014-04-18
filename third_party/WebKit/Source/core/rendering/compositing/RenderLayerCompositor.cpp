@@ -496,7 +496,7 @@ void RenderLayerCompositor::updateIfNeeded()
 
     // Inform the inspector that the layer tree has changed.
     if (m_renderView.frame()->isMainFrame())
-        InspectorInstrumentation::layerTreeDidChange(page());
+        InspectorInstrumentation::layerTreeDidChange(m_renderView.frame());
 }
 
 void RenderLayerCompositor::addOutOfFlowPositionedLayer(RenderLayer* layer)

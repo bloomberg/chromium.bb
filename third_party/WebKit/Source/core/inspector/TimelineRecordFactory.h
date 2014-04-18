@@ -74,12 +74,12 @@ public:
     static PassRefPtr<JSONObject> createAnimationFrameData(int callbackId);
     static PassRefPtr<JSONObject> createNodeData(long long nodeId);
     static PassRefPtr<JSONObject> createLayerData(long long layerRootNodeId);
-    static PassRefPtr<JSONObject> createLayerTreeData(PassRefPtr<JSONValue> layerTree);
     static PassRefPtr<JSONObject> createFrameData(int frameId);
     static PassRefPtr<JSONObject> createGPUTaskData(bool foreign);
 
     static void setNodeData(JSONObject* data, long long nodeId);
     static void setLayerData(JSONObject* data, long long layerRootNodeId);
+    static void setLayerTreeData(JSONObject* data, PassRefPtr<JSONValue> layerTree);
     static void setPaintData(JSONObject* data, const FloatQuad&, long long layerRootNodeId, int graphicsLayerId);
     static void setLayoutRoot(JSONObject* data, const FloatQuad&, long long rootNodeId);
     static void setStyleRecalcDetails(JSONObject* data, unsigned elementCount);

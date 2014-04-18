@@ -153,7 +153,9 @@ public:
     bool willLayout(LocalFrame*);
     void didLayout(RenderObject*);
 
+    void willUpdateLayerTree();
     void layerTreeDidChange();
+    void didUpdateLayerTree();
 
     void willAutosizeText(RenderObject*);
     void didAutosizeText(RenderObject*);
@@ -318,6 +320,7 @@ private:
     double m_paintSetupStart;
     double m_paintSetupEnd;
     RefPtr<JSONObject> m_gpuTask;
+    RefPtr<JSONValue> m_pendingLayerTreeData;
     unsigned m_styleRecalcElementCounter;
     typedef HashMap<ThreadIdentifier, TimelineThreadState> ThreadStateMap;
     ThreadStateMap m_threadStates;

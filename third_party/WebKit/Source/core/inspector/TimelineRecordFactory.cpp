@@ -266,11 +266,9 @@ PassRefPtr<JSONObject> TimelineRecordFactory::createLayerData(long long rootNode
     return createNodeData(rootNodeId);
 }
 
-PassRefPtr<JSONObject> TimelineRecordFactory::createLayerTreeData(PassRefPtr<JSONValue> layerTree)
+void TimelineRecordFactory::setLayerTreeData(JSONObject* data, PassRefPtr<JSONValue> layerTree)
 {
-    RefPtr<JSONObject> data = JSONObject::create();
     data->setValue("layerTree", layerTree);
-    return data.release();
 }
 
 void TimelineRecordFactory::setNodeData(JSONObject* data, long long nodeId)
