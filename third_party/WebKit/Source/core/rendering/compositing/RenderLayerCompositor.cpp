@@ -1180,12 +1180,14 @@ void RenderLayerCompositor::updateRootLayerPosition()
 void RenderLayerCompositor::updateStyleDeterminedCompositingReasons(RenderLayer* layer)
 {
     CompositingReasons reasons = m_compositingReasonFinder.styleDeterminedReasons(layer->renderer());
-    layer->setCompositingReasons(reasons, CompositingReasonComboAllStyleDeterminedReasons);
+    layer->setStyleDeterminedCompositingReasons(reasons);
 }
 
 void RenderLayerCompositor::updateDirectCompositingReasons(RenderLayer* layer)
 {
     CompositingReasons reasons = m_compositingReasonFinder.directReasons(layer, &m_needsToRecomputeCompositingRequirements);
+    if (layer->suppressingCompositedLayerCreation())
+        reasons = m_compositingReasonFinder.suppressWillChangeAndAnimationForGpuRasterization(layer, reasons);
     layer->setCompositingReasons(reasons, CompositingReasonComboAllDirectReasons);
 }
 

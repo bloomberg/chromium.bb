@@ -232,7 +232,7 @@ public:
     // Will ensure that hasUnclippedDescendant and hasNonCompositiedChild are up to date.
     void updateScrollingStateAfterCompositingChange();
     bool hasVisibleNonLayerContent() const { return m_hasVisibleNonLayerContent; }
-    bool hasNonCompositedChild() const { return m_compositingProperties.hasNonCompositedChild; }
+    bool hasNonCompositedChild() const { return compositingProperties().hasNonCompositedChild; }
 
     bool usedTransparency() const { return m_usedTransparency; }
 
@@ -419,8 +419,8 @@ public:
         ViewportConstrainedNotCompositedReasonBits = 3
     };
 
-    void setViewportConstrainedNotCompositedReason(ViewportConstrainedNotCompositedReason reason) { m_compositingProperties.viewportConstrainedNotCompositedReason = reason; }
-    ViewportConstrainedNotCompositedReason viewportConstrainedNotCompositedReason() const { return static_cast<ViewportConstrainedNotCompositedReason>(m_compositingProperties.viewportConstrainedNotCompositedReason); }
+    void setViewportConstrainedNotCompositedReason(ViewportConstrainedNotCompositedReason reason) { compositingProperties().viewportConstrainedNotCompositedReason = reason; }
+    ViewportConstrainedNotCompositedReason viewportConstrainedNotCompositedReason() const { return static_cast<ViewportConstrainedNotCompositedReason>(compositingProperties().viewportConstrainedNotCompositedReason); }
 
     bool isOutOfFlowRenderFlowThread() const { return renderer()->isOutOfFlowRenderFlowThread(); }
 
@@ -452,13 +452,15 @@ public:
 
     RenderLayerBlendInfo& blendInfo() { return m_blendInfo; }
 
-    void setOffsetFromSquashingLayerOrigin(IntSize offset) { m_compositingProperties.offsetFromSquashingLayerOrigin = offset; }
-    IntSize offsetFromSquashingLayerOrigin() const { return m_compositingProperties.offsetFromSquashingLayerOrigin; }
+    void setOffsetFromSquashingLayerOrigin(IntSize offset) { compositingProperties().offsetFromSquashingLayerOrigin = offset; }
+    IntSize offsetFromSquashingLayerOrigin() const { return compositingProperties().offsetFromSquashingLayerOrigin; }
 
     bool scrollsOverflow() const;
 
     bool hasDirectReasonsForCompositing() const { return compositingReasons() & CompositingReasonComboAllDirectReasons; }
-    CompositingReasons styleDeterminedCompositingReasons() const { return compositingReasons() & CompositingReasonComboAllStyleDeterminedReasons; }
+
+    CompositingReasons styleDeterminedCompositingReasons() const { return m_styleDeterminedCompositingReasons; }
+    void setStyleDeterminedCompositingReasons(CompositingReasons reasons) { ASSERT(reasons == (reasons & CompositingReasonComboAllStyleDeterminedReasons)); m_styleDeterminedCompositingReasons = reasons; }
 
     class AncestorDependentProperties {
     public:
@@ -483,17 +485,20 @@ public:
 
     const AncestorDependentProperties& ancestorDependentProperties() const { ASSERT(!m_needsToUpdateAncestorDependentProperties); return m_ancestorDependentProperties; }
 
-    bool lostGroupedMapping() const { return m_compositingProperties.lostGroupedMapping; }
-    void setLostGroupedMapping(bool b) { m_compositingProperties.lostGroupedMapping = b; }
+    bool lostGroupedMapping() const { return compositingProperties().lostGroupedMapping; }
+    void setLostGroupedMapping(bool b) { compositingProperties().lostGroupedMapping = b; }
 
-    CompositingReasons compositingReasons() const { return m_compositingProperties.compositingReasons; }
+    CompositingReasons compositingReasons() const { return compositingProperties().compositingReasons; }
     void setCompositingReasons(CompositingReasons, CompositingReasons mask = CompositingReasonAll);
 
-    bool hasCompositingDescendant() const { return m_compositingProperties.hasCompositingDescendant; }
-    void setHasCompositingDescendant(bool b)  { m_compositingProperties.hasCompositingDescendant = b; }
+    bool hasCompositingDescendant() const { return compositingProperties().hasCompositingDescendant; }
+    void setHasCompositingDescendant(bool b)  { compositingProperties().hasCompositingDescendant = b; }
 
-    bool shouldIsolateCompositedDescendants() const { return m_compositingProperties.shouldIsolateCompositedDescendants; }
-    void setShouldIsolateCompositedDescendants(bool b)  { m_compositingProperties.shouldIsolateCompositedDescendants = b; }
+    bool shouldIsolateCompositedDescendants() const { return compositingProperties().shouldIsolateCompositedDescendants; }
+    void setShouldIsolateCompositedDescendants(bool b)  { compositingProperties().shouldIsolateCompositedDescendants = b; }
+
+    bool suppressingCompositedLayerCreation() const { return compositingProperties().suppressingCompositedLayerCreation; }
+    void setSuppressingCompositedLayerCreation(bool b) { compositingProperties().suppressingCompositedLayerCreation = b; }
 
     void updateDescendantDependentFlags();
 
@@ -709,6 +714,10 @@ private:
     // Pointer to the enclosing RenderLayer that caused us to be paginated. It is 0 if we are not paginated.
     RenderLayer* m_enclosingPaginationLayer;
 
+    // These compositing reasons are updated whenever style changes, not while updating compositing layers.
+    // They should not be used to infer the compositing state of this layer.
+    CompositingReasons m_styleDeterminedCompositingReasons;
+
     // Properties that are computed while updating compositing layers. These values may be dirty/invalid if
     // compositing status is not up-to-date before using them.
     struct CompositingProperties {
@@ -717,6 +726,7 @@ private:
             , hasNonCompositedChild(false)
             , shouldIsolateCompositedDescendants(false)
             , lostGroupedMapping(false)
+            , suppressingCompositedLayerCreation(false)
             , viewportConstrainedNotCompositedReason(NoNotCompositedReason)
             , compositingReasons(CompositingReasonNone)
         { }
@@ -735,6 +745,9 @@ private:
         // and we don't yet know to what graphics layer this RenderLayer will be assigned.
         bool lostGroupedMapping : 1;
 
+        // Whether this render layer is trying to avoid becoming composited, if possible.
+        bool suppressingCompositedLayerCreation : 1;
+
         // The reason, if any exists, that a fixed-position layer is chosen not to be composited.
         unsigned viewportConstrainedNotCompositedReason : ViewportConstrainedNotCompositedReasonBits;
 
@@ -744,6 +757,9 @@ private:
         // Used for invalidating this layer's contents on the squashing GraphicsLayer.
         IntSize offsetFromSquashingLayerOrigin;
     };
+
+    CompositingProperties& compositingProperties() { ASSERT(isAllowedToQueryCompositingState()); return m_compositingProperties; }
+    const CompositingProperties& compositingProperties() const { ASSERT(isAllowedToQueryCompositingState()); return m_compositingProperties; }
 
     AncestorDependentProperties m_ancestorDependentProperties;
 

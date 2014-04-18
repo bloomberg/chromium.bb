@@ -783,10 +783,10 @@ void RenderLayer::updateScrollingStateAfterCompositingChange()
         }
     }
 
-    m_compositingProperties.hasNonCompositedChild = false;
+    compositingProperties().hasNonCompositedChild = false;
     for (RenderLayer* child = firstChild(); child; child = child->nextSibling()) {
         if (child->compositingState() == NotComposited) {
-            m_compositingProperties.hasNonCompositedChild = true;
+            compositingProperties().hasNonCompositedChild = true;
             return;
         }
     }
@@ -1181,9 +1181,9 @@ void RenderLayer::clearChildNeedsToUpdateAncestorDependantProperties()
 void RenderLayer::setCompositingReasons(CompositingReasons reasons, CompositingReasons mask)
 {
     ASSERT(reasons == (reasons & mask));
-    if ((m_compositingProperties.compositingReasons & mask) == (reasons & mask))
+    if ((compositingProperties().compositingReasons & mask) == (reasons & mask))
         return;
-    m_compositingProperties.compositingReasons = (reasons & mask) | (m_compositingProperties.compositingReasons & ~mask);
+    compositingProperties().compositingReasons = (reasons & mask) | (compositingProperties().compositingReasons & ~mask);
     m_clipper.setCompositingClipRectsDirty();
 }
 

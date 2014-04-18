@@ -89,6 +89,19 @@ bool CompositingReasonFinder::isMainFrame() const
     return !m_renderView.document().ownerElement();
 }
 
+CompositingReasons CompositingReasonFinder::suppressWillChangeAndAnimationForGpuRasterization(const RenderLayer* layer, CompositingReasons styleReasons) const
+{
+    CompositingReasons adjustedReasons = styleReasons;
+    adjustedReasons &= ~(CompositingReasonWillChangeCompositingHint | CompositingReasonWillChangeGpuRasterizationHint);
+
+    // We can suppress layer creation for animations before animations start, but not
+    // once they're already running on the compositor.
+    if (!layer->renderer()->style()->isRunningAnimationOnCompositor())
+        adjustedReasons &= ~CompositingReasonActiveAnimation;
+
+    return adjustedReasons;
+}
+
 CompositingReasons CompositingReasonFinder::directReasons(const RenderLayer* layer, bool* needToRecomputeCompositingRequirements) const
 {
     CompositingReasons styleReasons = layer->styleDeterminedCompositingReasons();
@@ -127,8 +140,11 @@ CompositingReasons CompositingReasonFinder::styleDeterminedReasons(RenderObject*
     if (requiresCompositingForFilters(renderer))
         directReasons |= CompositingReasonFilters;
 
-    if (requiresCompositingForWillChange(renderer))
-        directReasons |= CompositingReasonWillChange;
+    if (requiresCompositingForWillChangeCompositingHint(renderer))
+        directReasons |= CompositingReasonWillChangeCompositingHint;
+
+    if (requiresCompositingForWillChangeGpuRasterizationHint(renderer))
+        directReasons |= CompositingReasonWillChangeGpuRasterizationHint;
 
     ASSERT(!(directReasons & ~CompositingReasonComboAllStyleDeterminedReasons));
     return directReasons;
@@ -160,11 +176,13 @@ bool CompositingReasonFinder::requiresCompositingForFilters(RenderObject* render
     return renderer->hasFilter();
 }
 
-bool CompositingReasonFinder::requiresCompositingForWillChange(const RenderObject* renderer) const
+bool CompositingReasonFinder::requiresCompositingForWillChangeCompositingHint(const RenderObject* renderer) const
 {
-    if (renderer->style()->hasWillChangeCompositingHint())
-        return true;
+    return renderer->style()->hasWillChangeCompositingHint();
+}
 
+bool CompositingReasonFinder::requiresCompositingForWillChangeGpuRasterizationHint(const RenderObject* renderer) const
+{
     if (!(m_compositingTriggers & GPURasterizationTrigger))
         return false;
 

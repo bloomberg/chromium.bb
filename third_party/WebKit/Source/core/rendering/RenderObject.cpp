@@ -1852,6 +1852,8 @@ void RenderObject::handleDynamicFloatPositionChange()
 
 StyleDifference RenderObject::adjustStyleDifference(StyleDifference diff, unsigned contextSensitiveProperties) const
 {
+    // FIXME: The calls to hasDirectReasonsForCompositing are using state that may not be up to date.
+    DisableCompositingQueryAsserts disabler;
     // If transform changed, and the layer does not paint into its own separate backing, then we need to do a layout.
     // FIXME: The comment above is what the code does, but it is technically not following spec. This means we will
     // not to layout for 3d transforms, but we should be invoking a simplified relayout. Is it possible we are avoiding

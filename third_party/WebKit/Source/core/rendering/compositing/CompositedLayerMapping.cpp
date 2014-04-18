@@ -183,6 +183,9 @@ CompositedLayerMapping::CompositedLayerMapping(RenderLayer& layer)
 
 CompositedLayerMapping::~CompositedLayerMapping()
 {
+    // Hits in compositing/squashing/squash-onto-nephew.html.
+    DisableCompositingQueryAsserts disabler;
+
     // Do not leave the destroyed pointer dangling on any RenderLayers that painted to this mapping's squashing layer.
     for (size_t i = 0; i < m_squashedLayers.size(); ++i) {
         RenderLayer* oldSquashedLayer = m_squashedLayers[i].renderLayer;

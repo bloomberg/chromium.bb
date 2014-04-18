@@ -388,6 +388,8 @@ void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
     bool requiresRepaint = true;
 
     if (m_box->view()->compositor()->inCompositingMode()) {
+        // Hits in virtual/gpu/fast/canvas/canvas-scroll-path-into-view.html.
+        DisableCompositingQueryAsserts disabler;
         bool onlyScrolledCompositedLayers = scrollsOverflow()
             && !layer()->hasVisibleNonLayerContent()
             && !layer()->hasNonCompositedChild()
