@@ -42,8 +42,7 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
       },
       {
           "gpu_compositing",
-          manager->IsFeatureBlacklisted(
-              gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING),
+          manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING),
           false,
           "Gpu compositing has been disabled, either via about:flags or"
           " command line. The browser will fall back to software compositing"
@@ -137,14 +136,6 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
           false
       },
 #endif
-      {
-          "force_compositing_mode",
-          false,
-          false,
-          "Force compositing mode is off, either disabled at the command"
-          " line or not supported by the current system.",
-          false
-      },
       {
           "rasterization",
           manager->IsFeatureBlacklisted(
@@ -266,10 +257,6 @@ base::Value* GetFeatureStatus() {
   bool eof = false;
   for (size_t i = 0; !eof; ++i) {
     const GpuFeatureInfo gpu_feature_info = GetGpuFeatureInfo(i, &eof);
-    // force_compositing_mode status is part of the compositing status.
-    if (gpu_feature_info.name == "force_compositing_mode")
-      continue;
-
     std::string status;
     if (gpu_feature_info.disabled) {
       status = "disabled";
@@ -300,12 +287,8 @@ base::Value* GetFeatureStatus() {
       if (gpu_feature_info.name == "webgl" &&
           manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING))
         status += "_readback";
-      bool has_thread = IsThreadedCompositingEnabled();
-      if (gpu_feature_info.name == "compositing") {
-        if (has_thread)
-          status += "_threaded";
-      } else if (gpu_feature_info.name == "css_animation") {
-        if (has_thread)
+      if (gpu_feature_info.name == "css_animation") {
+        if (IsThreadedCompositingEnabled())
           status = "accelerated_threaded";
         else
           status = "accelerated";
@@ -313,6 +296,10 @@ base::Value* GetFeatureStatus() {
         if (IsForceGpuRasterizationEnabled())
           status += "_force";
       }
+    }
+    if (gpu_feature_info.name == "gpu_compositing") {
+      if (IsThreadedCompositingEnabled())
+        status += "_threaded";
     }
     feature_status_dict->SetString(
         gpu_feature_info.name.c_str(), status.c_str());

@@ -84,7 +84,7 @@ cr.define('gpu', function() {
         '2d_canvas': 'Canvas',
         '3d_css': '3D CSS',
         'css_animation': 'CSS Animation',
-        'compositing': 'Compositing',
+        'gpu_compositing': 'Compositing',
         'webgl': 'WebGL',
         'multisampling': 'WebGL multisampling',
         'flash_3d': 'Flash 3D',
@@ -97,22 +97,22 @@ cr.define('gpu', function() {
         // GPU Switching
         'gpu_switching': 'GPU Switching',
         'panel_fitting': 'Panel Fitting',
-        'force_compositing_mode': 'Force Compositing Mode',
         'rasterization': 'Rasterization',
       };
       var statusLabelMap = {
         'disabled_software': 'Software only. Hardware acceleration disabled.',
         'disabled_software_animated': 'Software animated.',
+        'disabled_software_multithreaded': 'Software only, multi-threaded',
         'disabled_off': 'Unavailable. Hardware acceleration disabled.',
         'software': 'Software rendered. Hardware acceleration not enabled.',
         'unavailable_off': 'Unavailable. Hardware acceleration unavailable',
         'unavailable_software':
             'Software only, hardware acceleration unavailable',
+        'unavailable_software_threaded':
+            'Software only and threaded. Hardware acceleration unavailable.',
         'enabled_readback': 'Hardware accelerated, but at reduced performance',
-        'enabled_force': 'Hardware accelerated on all pages',
-        'enabled_threaded': 'Hardware accelerated on demand and threaded',
-        'enabled_force_threaded':
-            'Hardware accelerated on all pages and threaded',
+        'enabled_force': 'Hardware accelerated',
+        'enabled_threaded': 'Hardware accelerated and threaded.',
         'enabled': 'Hardware accelerated',
         'accelerated': 'Accelerated',
         'accelerated_threaded': 'Accelerated and threaded',
@@ -120,20 +120,20 @@ cr.define('gpu', function() {
         'gpu_switching_automatic': 'Automatic switching',
         'gpu_switching_force_discrete': 'Always on discrete GPU',
         'gpu_switching_force_integrated': 'Always on integrated GPU',
-        'disabled_software_multithreaded': 'Software only, multi-threaded',
       };
 
       var statusClassMap = {
         'disabled_software': 'feature-yellow',
         'disabled_software_animated': 'feature-yellow',
+        'disabled_software_multithreaded': 'feature-yellow',
         'disabled_off': 'feature-red',
         'software': 'feature-yellow',
         'unavailable_off': 'feature-red',
         'unavailable_software': 'feature-yellow',
+        'unavailable_software_threaded': 'feature-yellow',
         'enabled_force': 'feature-green',
         'enabled_readback': 'feature-yellow',
         'enabled_threaded': 'feature-green',
-        'enabled_force_threaded': 'feature-green',
         'enabled': 'feature-green',
         'accelerated': 'feature-green',
         'accelerated_threaded': 'feature-green',
@@ -141,7 +141,6 @@ cr.define('gpu', function() {
         'gpu_switching_automatic': 'feature-green',
         'gpu_switching_force_discrete': 'feature-red',
         'gpu_switching_force_integrated': 'feature-red',
-        'disabled_software_multithreaded': 'feature-yellow',
       };
 
       // GPU info, basic
