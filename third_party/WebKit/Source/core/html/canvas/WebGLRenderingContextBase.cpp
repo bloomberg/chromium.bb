@@ -4847,13 +4847,13 @@ bool WebGLRenderingContextBase::validateCompressedTexFuncData(const char* functi
     case GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
     case GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
         {
-            bytesRequired = max(width, 8) * max(height, 8) / 2;
+            bytesRequired = (max(width, 8) * max(height, 8) * 4 + 7) / 8;
         }
         break;
     case GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
     case GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
         {
-            bytesRequired = max(width, 8) * max(height, 8) / 4;
+            bytesRequired = (max(width, 16) * max(height, 8) * 2 + 7) / 8;
         }
         break;
     default:
@@ -4874,24 +4874,47 @@ bool WebGLRenderingContextBase::validateCompressedTexDimensions(const char* func
     if (!validateTexFuncDimensions(functionName, functionType, target, level, width, height))
         return false;
 
+    bool widthValid = false;
+    bool heightValid = false;
+
     switch (format) {
+    case GC3D_COMPRESSED_ATC_RGB_AMD:
+    case GC3D_COMPRESSED_ATC_RGBA_EXPLICIT_ALPHA_AMD:
+    case GC3D_COMPRESSED_ATC_RGBA_INTERPOLATED_ALPHA_AMD:
     case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
     case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
     case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
     case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT: {
         const int kBlockWidth = 4;
         const int kBlockHeight = 4;
-        bool widthValid = (level && width == 1) || (level && width == 2) || !(width % kBlockWidth);
-        bool heightValid = (level && height == 1) || (level && height == 2) || !(height % kBlockHeight);
-        if (!widthValid || !heightValid) {
-            synthesizeGLError(GL_INVALID_OPERATION, functionName, "width or height invalid for level");
-            return false;
-        }
-        return true;
+        widthValid = (level && width == 1) || (level && width == 2) || !(width % kBlockWidth);
+        heightValid = (level && height == 1) || (level && height == 2) || !(height % kBlockHeight);
+        break;
+    }
+    case GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
+    case GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
+    case GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
+    case GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG: {
+        // Must be a power of two
+        widthValid = (width & (width - 1)) == 0;
+        heightValid = (height & (height - 1)) == 0;
+        break;
+    }
+    case GL_ETC1_RGB8_OES: {
+        widthValid = true;
+        heightValid = true;
+        break;
     }
     default:
         return false;
     }
+
+    if (!widthValid || !heightValid) {
+        synthesizeGLError(GL_INVALID_OPERATION, functionName, "width or height invalid for level");
+        return false;
+    }
+
+    return true;
 }
 
 bool WebGLRenderingContextBase::validateCompressedTexSubDimensions(const char* functionName, GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, WebGLTexture* tex)
@@ -4918,6 +4941,28 @@ bool WebGLRenderingContextBase::validateCompressedTexSubDimensions(const char* f
             return false;
         }
         return validateCompressedTexDimensions(functionName, TexSubImage2D, target, level, width, height, format);
+    }
+    case GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
+    case GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
+    case GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
+    case GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG: {
+        if ((xoffset != 0) || (yoffset != 0)) {
+            synthesizeGLError(GL_INVALID_OPERATION, functionName, "xoffset and yoffset must be zero");
+            return false;
+        }
+        if (width != tex->getWidth(target, level)
+            || height != tex->getHeight(target, level)) {
+            synthesizeGLError(GL_INVALID_OPERATION, functionName, "dimensions must match existing level");
+            return false;
+        }
+        return validateCompressedTexDimensions(functionName, TexSubImage2D, target, level, width, height, format);
+    }
+    case GC3D_COMPRESSED_ATC_RGB_AMD:
+    case GC3D_COMPRESSED_ATC_RGBA_EXPLICIT_ALPHA_AMD:
+    case GC3D_COMPRESSED_ATC_RGBA_INTERPOLATED_ALPHA_AMD:
+    case GL_ETC1_RGB8_OES: {
+        synthesizeGLError(GL_INVALID_OPERATION, functionName, "unable to update sub-images with this format");
+        return false;
     }
     default:
         return false;
