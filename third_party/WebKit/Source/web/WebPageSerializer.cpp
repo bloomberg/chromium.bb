@@ -33,7 +33,7 @@
 
 #include "HTMLNames.h"
 #include "WebFrame.h"
-#include "WebFrameImpl.h"
+#include "WebLocalFrameImpl.h"
 #include "WebPageSerializerClient.h"
 #include "WebPageSerializerImpl.h"
 #include "WebView.h"
@@ -210,7 +210,7 @@ bool WebPageSerializer::retrieveAllResources(WebView* view,
                                              const WebVector<WebCString>& supportedSchemes,
                                              WebVector<WebURL>* resourceURLs,
                                              WebVector<WebURL>* frameURLs) {
-    WebFrameImpl* mainFrame = toWebFrameImpl(view->mainFrame());
+    WebLocalFrameImpl* mainFrame = toWebLocalFrameImpl(view->mainFrame());
     if (!mainFrame)
         return false;
 

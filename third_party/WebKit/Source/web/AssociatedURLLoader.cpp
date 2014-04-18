@@ -32,7 +32,7 @@
 #include "AssociatedURLLoader.h"
 
 #include "WebDataSource.h"
-#include "WebFrameImpl.h"
+#include "WebLocalFrameImpl.h"
 #include "core/fetch/CrossOriginAccessControl.h"
 #include "core/loader/DocumentThreadableLoader.h"
 #include "core/loader/DocumentThreadableLoaderClient.h"
@@ -290,7 +290,7 @@ void AssociatedURLLoader::ClientAdapter::notifyError(Timer<ClientAdapter>* timer
     m_client->didFail(m_loader, m_error);
 }
 
-AssociatedURLLoader::AssociatedURLLoader(PassRefPtr<WebFrameImpl> frameImpl, const WebURLLoaderOptions& options)
+AssociatedURLLoader::AssociatedURLLoader(PassRefPtr<WebLocalFrameImpl> frameImpl, const WebURLLoaderOptions& options)
     : m_frameImpl(frameImpl)
     , m_options(options)
     , m_client(0)

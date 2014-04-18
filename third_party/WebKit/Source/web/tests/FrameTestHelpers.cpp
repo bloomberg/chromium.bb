@@ -32,8 +32,7 @@
 #include "FrameTestHelpers.h"
 
 #include "URLTestHelpers.h"
-#include "wtf/StdLibExtras.h"
-#include "WebFrameImpl.h"
+#include "WebLocalFrameImpl.h"
 #include "WebSettings.h"
 #include "WebViewClient.h"
 #include "public/platform/Platform.h"
@@ -42,6 +41,7 @@
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/WebUnitTestSupport.h"
+#include "wtf/StdLibExtras.h"
 
 namespace blink {
 namespace FrameTestHelpers {
@@ -122,7 +122,7 @@ WebViewImpl* WebViewHelper::initialize(bool enableJavascript, WebFrameClient* we
         m_webView->settings()->setForceCompositingMode(true);
     }
 
-    m_webView->setMainFrame(WebFrameImpl::create(webFrameClient));
+    m_webView->setMainFrame(WebLocalFrameImpl::create(webFrameClient));
 
     return m_webView;
 }

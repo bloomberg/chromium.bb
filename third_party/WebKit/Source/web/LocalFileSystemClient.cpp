@@ -31,7 +31,7 @@
 #include "config.h"
 #include "LocalFileSystemClient.h"
 
-#include "WebFrameImpl.h"
+#include "WebLocalFrameImpl.h"
 #include "WorkerPermissionClient.h"
 #include "core/dom/Document.h"
 #include "core/workers/WorkerGlobalScope.h"
@@ -59,7 +59,7 @@ bool LocalFileSystemClient::allowFileSystem(ExecutionContext* context)
     ASSERT(context);
     if (context->isDocument()) {
         Document* document = toDocument(context);
-        WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
+        WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(document->frame());
         return !webFrame->permissionClient() || webFrame->permissionClient()->allowFileSystem();
     }
     ASSERT(context->isWorkerGlobalScope());
@@ -71,7 +71,7 @@ void LocalFileSystemClient::requestFileSystemAccess(ExecutionContext* context, P
     ASSERT(context);
     if (context->isDocument()) {
         Document* document = toDocument(context);
-        WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
+        WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(document->frame());
         if (!webFrame->permissionClient()) {
             callbacks->onAllowed();
             return;

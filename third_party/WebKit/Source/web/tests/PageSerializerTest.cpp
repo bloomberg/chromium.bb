@@ -32,7 +32,7 @@
 
 #include "FrameTestHelpers.h"
 #include "URLTestHelpers.h"
-#include "WebFrameImpl.h"
+#include "WebLocalFrameImpl.h"
 #include "WebSettings.h"
 #include "WebViewImpl.h"
 #include <gtest/gtest.h>

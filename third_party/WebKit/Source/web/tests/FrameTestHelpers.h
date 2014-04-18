@@ -38,7 +38,7 @@
 
 namespace blink {
 
-class WebFrameImpl;
+class WebLocalFrameImpl;
 class WebSettings;
 class WebViewClient;
 

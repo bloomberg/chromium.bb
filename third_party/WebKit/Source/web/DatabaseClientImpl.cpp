@@ -31,7 +31,7 @@
 #include "config.h"
 #include "DatabaseClientImpl.h"
 
-#include "WebFrameImpl.h"
+#include "WebLocalFrameImpl.h"
 #include "WebPermissionClient.h"
 #include "WorkerPermissionClient.h"
 #include "core/dom/Document.h"
@@ -57,7 +57,7 @@ bool DatabaseClientImpl::allowDatabase(ExecutionContext* executionContext, const
     ASSERT(executionContext->isDocument() || executionContext->isWorkerGlobalScope());
     if (executionContext->isDocument()) {
         Document* document = toDocument(executionContext);
-        WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
+        WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(document->frame());
         if (!webFrame)
             return false;
         if (webFrame->permissionClient())

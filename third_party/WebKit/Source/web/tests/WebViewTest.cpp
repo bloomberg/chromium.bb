@@ -41,9 +41,9 @@
 #include "WebElement.h"
 #include "WebFrame.h"
 #include "WebFrameClient.h"
-#include "WebFrameImpl.h"
 #include "WebHitTestResult.h"
 #include "WebInputEvent.h"
+#include "WebLocalFrameImpl.h"
 #include "WebSettings.h"
 #include "WebSettingsImpl.h"
 #include "WebViewClient.h"
@@ -304,7 +304,7 @@ TEST_F(WebViewTest, FocusIsInactive)
 
     webView->setFocus(true);
     webView->setIsActive(true);
-    WebFrameImpl* frame = toWebFrameImpl(webView->mainFrame());
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(webView->mainFrame());
     EXPECT_TRUE(frame->frame()->document()->isHTMLDocument());
 
     WebCore::HTMLDocument* document = WebCore::toHTMLDocument(frame->frame()->document());
@@ -373,7 +373,7 @@ void WebViewTest::testAutoResize(const WebSize& minAutoResize, const WebSize& ma
     WebView* webView = m_webViewHelper.initializeAndLoad(url, true, 0, &client);
     client.testData().setWebView(webView);
 
-    WebFrameImpl* frame = toWebFrameImpl(webView->mainFrame());
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(webView->mainFrame());
     WebCore::FrameView* frameView = frame->frame()->view();
     frameView->layout();
     EXPECT_FALSE(frameView->layoutPending());
@@ -511,7 +511,7 @@ TEST_F(WebViewTest, SetEditableSelectionOffsetsAndTextInputInfo)
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("input_field_populated.html"));
     WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "input_field_populated.html");
     webView->setInitialFocus(false);
-    WebFrameImpl* frame = toWebFrameImpl(webView->mainFrame());
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(webView->mainFrame());
     frame->setEditableSelectionOffsets(5, 13);
     EXPECT_EQ("56789abc", frame->selectionAsText());
     WebTextInputInfo info = webView->textInputInfo();
@@ -524,7 +524,7 @@ TEST_F(WebViewTest, SetEditableSelectionOffsetsAndTextInputInfo)
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("content_editable_populated.html"));
     webView = m_webViewHelper.initializeAndLoad(m_baseURL + "content_editable_populated.html");
     webView->setInitialFocus(false);
-    frame = toWebFrameImpl(webView->mainFrame());
+    frame = toWebLocalFrameImpl(webView->mainFrame());
     frame->setEditableSelectionOffsets(8, 19);
     EXPECT_EQ("89abcdefghi", frame->selectionAsText());
     info = webView->textInputInfo();
@@ -585,7 +585,7 @@ TEST_F(WebViewTest, InsertNewLinePlacementAfterConfirmComposition)
 
     WebVector<WebCompositionUnderline> emptyUnderlines;
 
-    WebFrameImpl* frame = toWebFrameImpl(webView->mainFrame());
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(webView->mainFrame());
     frame->setEditableSelectionOffsets(4, 4);
     frame->setCompositionFromExistingText(8, 12, emptyUnderlines);
 
@@ -617,7 +617,7 @@ TEST_F(WebViewTest, ExtendSelectionAndDelete)
 {
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("input_field_populated.html"));
     WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "input_field_populated.html");
-    WebFrameImpl* frame = toWebFrameImpl(webView->mainFrame());
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(webView->mainFrame());
     webView->setInitialFocus(false);
     frame->setEditableSelectionOffsets(10, 10);
     frame->extendSelectionAndDelete(5, 8);
@@ -637,7 +637,7 @@ TEST_F(WebViewTest, SetCompositionFromExistingText)
     webView->setInitialFocus(false);
     WebVector<WebCompositionUnderline> underlines(static_cast<size_t>(1));
     underlines[0] = blink::WebCompositionUnderline(0, 4, 0, false);
-    WebFrameImpl* frame = toWebFrameImpl(webView->mainFrame());
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(webView->mainFrame());
     frame->setEditableSelectionOffsets(4, 10);
     frame->setCompositionFromExistingText(8, 12, underlines);
     WebVector<WebCompositionUnderline> underlineResults = toWebViewImpl(webView)->compositionUnderlines();
@@ -664,7 +664,7 @@ TEST_F(WebViewTest, SetCompositionFromExistingTextInTextArea)
     webView->setInitialFocus(false);
     WebVector<WebCompositionUnderline> underlines(static_cast<size_t>(1));
     underlines[0] = blink::WebCompositionUnderline(0, 4, 0, false);
-    WebFrameImpl* frame = toWebFrameImpl(webView->mainFrame());
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(webView->mainFrame());
     frame->setEditableSelectionOffsets(27, 27);
     std::string newLineText("\n");
     webView->confirmComposition(WebString::fromUTF8(newLineText.c_str()));
@@ -713,7 +713,7 @@ TEST_F(WebViewTest, SetEditableSelectionOffsetsKeepsComposition)
     EXPECT_EQ(6, info.compositionStart);
     EXPECT_EQ(11, info.compositionEnd);
 
-    WebFrameImpl* frame = toWebFrameImpl(webView->mainFrame());
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(webView->mainFrame());
     frame->setEditableSelectionOffsets(6, 6);
     info = webView->textInputInfo();
     EXPECT_EQ("hello world", std::string(info.value.utf8().data()));
@@ -1046,7 +1046,7 @@ TEST_F(WebViewTest, LongPressSelection)
 
     WebString target = WebString::fromUTF8("target");
     WebString onselectstartfalse = WebString::fromUTF8("onselectstartfalse");
-    WebFrameImpl* frame = toWebFrameImpl(webView->mainFrame());
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(webView->mainFrame());
 
     EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureLongPress, onselectstartfalse));
     EXPECT_EQ("", std::string(frame->selectionAsText().utf8().data()));
@@ -1065,7 +1065,7 @@ TEST_F(WebViewTest, SelectionOnDisabledInput)
 
     std::string testWord = "This text should be selected.";
 
-    WebFrameImpl* frame = toWebFrameImpl(webView->mainFrame());
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(webView->mainFrame());
     EXPECT_EQ(testWord, std::string(frame->selectionAsText().utf8().data()));
 
     size_t location;
@@ -1085,7 +1085,7 @@ TEST_F(WebViewTest, SelectionOnReadOnlyInput)
 
     std::string testWord = "This text should be selected.";
 
-    WebFrameImpl* frame = toWebFrameImpl(webView->mainFrame());
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(webView->mainFrame());
     EXPECT_EQ(testWord, std::string(frame->selectionAsText().utf8().data()));
 
     size_t location;
@@ -1176,7 +1176,7 @@ TEST_F(WebViewTest, LosingFocusDoesNotTriggerAutofillTextChange)
 
     // Set up a composition that needs to be committed.
     WebVector<WebCompositionUnderline> emptyUnderlines;
-    WebFrameImpl* frame = toWebFrameImpl(webView->mainFrame());
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(webView->mainFrame());
     frame->setEditableSelectionOffsets(4, 10);
     frame->setCompositionFromExistingText(8, 12, emptyUnderlines);
     WebTextInputInfo info = webView->textInputInfo();
@@ -1234,7 +1234,7 @@ TEST_F(WebViewTest, SetCompositionFromExistingTextTriggersAutofillTextChange)
     WebVector<WebCompositionUnderline> emptyUnderlines;
 
     client.clearChangeCounts();
-    WebFrameImpl* frame = toWebFrameImpl(webView->mainFrame());
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(webView->mainFrame());
     frame->setCompositionFromExistingText(8, 12, emptyUnderlines);
 
     WebTextInputInfo info = webView->textInputInfo();
@@ -1304,7 +1304,7 @@ TEST_F(WebViewTest, FocusExistingFrameOnNavigate)
     FrameTestHelpers::WebViewHelper m_webViewHelper;
     WebViewImpl* webViewImpl = m_webViewHelper.initialize(true, 0, &client);
     webViewImpl->page()->settings().setJavaScriptCanOpenWindowsAutomatically(true);
-    WebFrameImpl* frame = toWebFrameImpl(webViewImpl->mainFrame());
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(webViewImpl->mainFrame());
     frame->setName("_start");
 
     // Make a request that will open a new window
@@ -1687,7 +1687,7 @@ void WebViewTest::testSelectionRootBounds(const char* htmlFile, float pageScaleF
     webView->layout();
     runPendingTasks();
 
-    WebFrameImpl* frame = toWebFrameImpl(webView->mainFrame());
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(webView->mainFrame());
     EXPECT_TRUE(frame->frame()->document()->isHTMLDocument());
     WebCore::HTMLDocument* document = WebCore::toHTMLDocument(frame->frame()->document());
 
@@ -1763,7 +1763,7 @@ TEST_F(WebViewTest, GetSelectionRootBoundsBrokenHeight)
     webView->layout();
     runPendingTasks();
 
-    WebFrameImpl* frame = toWebFrameImpl(webView->mainFrame());
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(webView->mainFrame());
     EXPECT_TRUE(frame->frame()->document()->isHTMLDocument());
 
     WebRect expectedRootBounds = WebRect(0, 0, contentSize.width, contentSize.height);
@@ -1806,7 +1806,7 @@ TEST_F(WebViewTest, NonUserInputTextUpdate)
     WebViewImpl* webViewImpl = m_webViewHelper.initializeAndLoad(url, true, 0, &client);
     webViewImpl->setInitialFocus(false);
 
-    WebFrameImpl* frame = toWebFrameImpl(webViewImpl->mainFrame());
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(webViewImpl->mainFrame());
     WebCore::HTMLDocument* document = WebCore::toHTMLDocument(frame->frame()->document());
 
     // (A) <input>

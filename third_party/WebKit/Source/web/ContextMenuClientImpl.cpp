@@ -37,7 +37,7 @@
 #include "WebDataSourceImpl.h"
 #include "WebFormElement.h"
 #include "WebFrameClient.h"
-#include "WebFrameImpl.h"
+#include "WebLocalFrameImpl.h"
 #include "WebMenuItemInfo.h"
 #include "WebPlugin.h"
 #include "WebPluginContainerImpl.h"
@@ -131,7 +131,7 @@ static String selectMisspelledWord(LocalFrame* selectedFrame)
     if (pos.isNull())
         return misspelledWord; // It is empty.
 
-    WebFrameImpl::selectWordAroundPosition(selectedFrame, pos);
+    WebLocalFrameImpl::selectWordAroundPosition(selectedFrame, pos);
     misspelledWord = selectedFrame->selectedText().stripWhiteSpace();
 
 #if OS(MACOSX)
@@ -367,7 +367,7 @@ void ContextMenuClientImpl::showContextMenu(const WebCore::ContextMenu* defaultM
 
     data.node = r.innerNonSharedNode();
 
-    WebFrameImpl* selectedWebFrame = WebFrameImpl::fromFrame(selectedFrame);
+    WebLocalFrameImpl* selectedWebFrame = WebLocalFrameImpl::fromFrame(selectedFrame);
     if (selectedWebFrame->client())
         selectedWebFrame->client()->showContextMenu(data);
 }
@@ -379,7 +379,7 @@ void ContextMenuClientImpl::clearContextMenu()
     if (!selectedFrame)
         return;
 
-    WebFrameImpl* selectedWebFrame = WebFrameImpl::fromFrame(selectedFrame);
+    WebLocalFrameImpl* selectedWebFrame = WebLocalFrameImpl::fromFrame(selectedFrame);
     if (selectedWebFrame->client())
         selectedWebFrame->client()->clearContextMenu();
 }

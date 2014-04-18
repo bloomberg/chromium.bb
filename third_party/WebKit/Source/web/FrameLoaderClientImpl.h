@@ -39,16 +39,16 @@
 
 namespace blink {
 
-class WebFrameImpl;
+class WebLocalFrameImpl;
 class WebPluginContainerImpl;
 class WebPluginLoadObserver;
 
 class FrameLoaderClientImpl FINAL : public WebCore::FrameLoaderClient {
 public:
-    FrameLoaderClientImpl(WebFrameImpl* webFrame);
+    FrameLoaderClientImpl(WebLocalFrameImpl* webFrame);
     virtual ~FrameLoaderClientImpl();
 
-    WebFrameImpl* webFrame() const { return m_webFrame; }
+    WebLocalFrameImpl* webFrame() const { return m_webFrame; }
 
     // WebCore::FrameLoaderClient ----------------------------------------------
 
@@ -166,7 +166,7 @@ private:
 
     // The WebFrame that owns this object and manages its lifetime. Therefore,
     // the web frame object is guaranteed to exist.
-    WebFrameImpl* m_webFrame;
+    WebLocalFrameImpl* m_webFrame;
 };
 
 DEFINE_TYPE_CASTS(FrameLoaderClientImpl, WebCore::FrameLoaderClient, client, client->isFrameLoaderClientImpl(), client.isFrameLoaderClientImpl());

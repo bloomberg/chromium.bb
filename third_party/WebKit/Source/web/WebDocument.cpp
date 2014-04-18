@@ -37,7 +37,7 @@
 #include "WebElement.h"
 #include "WebElementCollection.h"
 #include "WebFormElement.h"
-#include "WebFrameImpl.h"
+#include "WebLocalFrameImpl.h"
 #include "WebNodeList.h"
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ExceptionState.h"
@@ -104,7 +104,7 @@ WebURL WebDocument::openSearchDescriptionURL() const
 
 WebLocalFrame* WebDocument::frame() const
 {
-    return WebFrameImpl::fromFrame(constUnwrap<Document>()->frame());
+    return WebLocalFrameImpl::fromFrame(constUnwrap<Document>()->frame());
 }
 
 bool WebDocument::isHTMLDocument() const

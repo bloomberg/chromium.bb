@@ -29,7 +29,7 @@
 
 #include "FrameTestHelpers.h"
 #include "WebFrame.h"
-#include "WebFrameImpl.h"
+#include "WebLocalFrameImpl.h"
 #include "WebView.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
@@ -60,7 +60,7 @@ protected:
 
     static Document* document()
     {
-        return toWebFrameImpl(s_webViewHelper->webView()->mainFrame())->frame()->document();
+        return toWebLocalFrameImpl(s_webViewHelper->webView()->mainFrame())->frame()->document();
     }
 
     virtual void SetUp()

@@ -36,7 +36,7 @@
 #include "V8MouseEvent.h"
 #include "V8Node.h"
 #include "WebDevToolsFrontendClient.h"
-#include "WebFrameImpl.h"
+#include "WebLocalFrameImpl.h"
 #include "WebScriptSource.h"
 #include "WebViewImpl.h"
 #include "bindings/v8/ScriptController.h"
@@ -133,7 +133,7 @@ void WebDevToolsFrontendImpl::maybeDispatch(WebCore::Timer<WebDevToolsFrontendIm
 
 void WebDevToolsFrontendImpl::doDispatchOnInspectorFrontend(const WebString& message)
 {
-    WebFrameImpl* frame = m_webViewImpl->mainFrameImpl();
+    WebLocalFrameImpl* frame = m_webViewImpl->mainFrameImpl();
     if (!frame->frame())
         return;
     v8::Isolate* isolate = toIsolate(frame->frame());

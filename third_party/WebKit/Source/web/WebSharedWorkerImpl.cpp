@@ -36,7 +36,7 @@
 #include "RuntimeEnabledFeatures.h"
 #include "WebDataSourceImpl.h"
 #include "WebFrame.h"
-#include "WebFrameImpl.h"
+#include "WebLocalFrameImpl.h"
 #include "WebSettings.h"
 #include "WebView.h"
 #include "WorkerPermissionClient.h"
@@ -166,7 +166,7 @@ WebSharedWorkerImpl::~WebSharedWorkerImpl()
 {
     ASSERT(m_webView);
     // Detach the client before closing the view to avoid getting called back.
-    toWebFrameImpl(m_mainFrame)->setClient(0);
+    toWebLocalFrameImpl(m_mainFrame)->setClient(0);
 
     m_webView->close();
     m_mainFrame->close();
@@ -196,7 +196,7 @@ void WebSharedWorkerImpl::initializeLoader(const WebURL& url)
     m_mainFrame = WebLocalFrame::create(this);
     m_webView->setMainFrame(m_mainFrame);
 
-    WebFrameImpl* webFrame = toWebFrameImpl(m_webView->mainFrame());
+    WebLocalFrameImpl* webFrame = toWebLocalFrameImpl(m_webView->mainFrame());
 
     // Construct substitute data source for the 'shadow page'. We only need it
     // to have same origin as the worker so the loading checks work correctly.
@@ -218,7 +218,7 @@ void WebSharedWorkerImpl::didFinishDocumentLoad(WebLocalFrame* frame)
     ASSERT(!m_loadingDocument);
     ASSERT(!m_mainScriptLoader);
     m_mainScriptLoader = Loader::create();
-    m_loadingDocument = toWebFrameImpl(frame)->frame()->document();
+    m_loadingDocument = toWebLocalFrameImpl(frame)->frame()->document();
     m_mainScriptLoader->load(
         m_loadingDocument.get(),
         m_url,
@@ -290,7 +290,7 @@ void WebSharedWorkerImpl::workerGlobalScopeDestroyedOnMainThread()
 
 void WebSharedWorkerImpl::postTaskToLoader(PassOwnPtr<ExecutionContextTask> task)
 {
-    toWebFrameImpl(m_mainFrame)->frame()->document()->postTask(task);
+    toWebLocalFrameImpl(m_mainFrame)->frame()->document()->postTask(task);
 }
 
 bool WebSharedWorkerImpl::postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask> task)

@@ -38,7 +38,7 @@
 #include "WebDocument.h"
 #include "WebElement.h"
 #include "WebElementCollection.h"
-#include "WebFrameImpl.h"
+#include "WebLocalFrameImpl.h"
 #include "WebNodeList.h"
 #include "WebPluginContainer.h"
 #include "WebPluginContainerImpl.h"

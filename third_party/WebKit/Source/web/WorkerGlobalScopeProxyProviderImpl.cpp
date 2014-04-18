@@ -33,7 +33,7 @@
 
 #include "DatabaseClientImpl.h"
 #include "LocalFileSystemClient.h"
-#include "WebFrameImpl.h"
+#include "WebLocalFrameImpl.h"
 #include "WebPermissionClient.h"
 #include "WebViewImpl.h"
 #include "WorkerPermissionClient.h"
@@ -56,7 +56,7 @@ WebCore::WorkerGlobalScopeProxy* WorkerGlobalScopeProxyProviderImpl::createWorke
 {
     if (worker->executionContext()->isDocument()) {
         Document* document = toDocument(worker->executionContext());
-        WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
+        WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(document->frame());
         OwnPtrWillBeRawPtr<WorkerClients> workerClients = WorkerClients::create();
         provideLocalFileSystemToWorker(workerClients.get(), LocalFileSystemClient::create());
         provideDatabaseClientToWorker(workerClients.get(), DatabaseClientImpl::create());

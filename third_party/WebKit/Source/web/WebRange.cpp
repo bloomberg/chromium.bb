@@ -32,7 +32,7 @@
 #include "WebRange.h"
 
 #include "WebExceptionCode.h"
-#include "WebFrameImpl.h"
+#include "WebLocalFrameImpl.h"
 #include "WebNode.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
@@ -110,7 +110,7 @@ WebRange WebRange::expandedToParagraph() const
 // static
 WebRange WebRange::fromDocumentRange(WebLocalFrame* frame, int start, int length)
 {
-    WebCore::LocalFrame* webFrame = toWebFrameImpl(frame)->frame();
+    WebCore::LocalFrame* webFrame = toWebLocalFrameImpl(frame)->frame();
     Element* selectionRoot = webFrame->selection().rootEditableElement();
     ContainerNode* scope = selectionRoot ? selectionRoot : webFrame->document()->documentElement();
     return PlainTextRange(start, start + length).createRange(*scope);

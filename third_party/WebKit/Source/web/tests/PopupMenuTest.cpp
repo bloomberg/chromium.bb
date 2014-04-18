@@ -39,8 +39,8 @@
 #include "WebElement.h"
 #include "WebFrame.h"
 #include "WebFrameClient.h"
-#include "WebFrameImpl.h"
 #include "WebInputEvent.h"
+#include "WebLocalFrameImpl.h"
 #include "WebPopupMenuImpl.h"
 #include "WebSettings.h"
 #include "WebView.h"
@@ -264,7 +264,7 @@ protected:
     }
 
     WebViewImpl* webView() const { return m_helper.webViewImpl(); }
-    WebFrameImpl* mainFrame() const { return m_helper.webViewImpl()->mainFrameImpl(); }
+    WebLocalFrameImpl* mainFrame() const { return m_helper.webViewImpl()->mainFrameImpl(); }
 
 protected:
     TestWebViewClient m_webviewClient;

@@ -45,7 +45,7 @@ class HTMLObjectElement;
 
 namespace blink {
 
-class WebFrameImpl;
+class WebLocalFrameImpl;
 class WebPluginContainerImpl;
 
 // Utility class to host helper plugins for media. Internally, it creates a detached
@@ -65,7 +65,7 @@ private:
     WebHelperPluginImpl();
     virtual ~WebHelperPluginImpl();
 
-    bool initialize(const String& pluginType, WebFrameImpl*);
+    bool initialize(const String& pluginType, WebLocalFrameImpl*);
     void reallyDestroy(WebCore::Timer<WebHelperPluginImpl>*);
 
     WebCore::Timer<WebHelperPluginImpl> m_destructionTimer;

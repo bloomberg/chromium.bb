@@ -6,7 +6,7 @@
 #include "MediaKeysClientImpl.h"
 
 #include "WebFrameClient.h"
-#include "WebFrameImpl.h"
+#include "WebLocalFrameImpl.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "public/platform/WebContentDecryptionModule.h"
@@ -22,7 +22,7 @@ MediaKeysClientImpl::MediaKeysClientImpl()
 PassOwnPtr<WebContentDecryptionModule> MediaKeysClientImpl::createContentDecryptionModule(WebCore::ExecutionContext* executionContext, const String& keySystem)
 {
     Document* document = toDocument(executionContext);
-    WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
+    WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(document->frame());
     WebSecurityOrigin securityOrigin(executionContext->securityOrigin());
     return adoptPtr(webFrame->client()->createContentDecryptionModule(webFrame, securityOrigin, keySystem));
 }

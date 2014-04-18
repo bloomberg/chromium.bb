@@ -34,7 +34,7 @@
 #include "URLTestHelpers.h"
 #include "V8Event.h"
 #include "WebFrame.h"
-#include "WebFrameImpl.h"
+#include "WebLocalFrameImpl.h"
 #include "WebView.h"
 #include "WebViewImpl.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
@@ -103,7 +103,7 @@ TEST(CustomEventTest, InitWithSerializedScriptValue)
 
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(baseURL.c_str()), WebString::fromUTF8(path.c_str()));
     FrameTestHelpers::WebViewHelper webViewHelper;
-    WebFrameImpl* frame = toWebFrameImpl(webViewHelper.initializeAndLoad(baseURL + path)->mainFrame());
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(webViewHelper.initializeAndLoad(baseURL + path)->mainFrame());
     WebDOMEvent event = frame->frame()->document()->createEvent("CustomEvent", IGNORE_EXCEPTION);
     WebDOMCustomEvent customEvent = event.to<WebDOMCustomEvent>();
 

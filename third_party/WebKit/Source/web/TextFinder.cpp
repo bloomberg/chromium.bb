@@ -35,7 +35,7 @@
 #include "FindInPageCoordinates.h"
 #include "WebFindOptions.h"
 #include "WebFrameClient.h"
-#include "WebFrameImpl.h"
+#include "WebLocalFrameImpl.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
 #include "core/dom/DocumentMarker.h"
@@ -97,7 +97,7 @@ bool TextFinder::find(int identifier, const WebString& searchText, const WebFind
     if (!m_ownerFrame.frame() || !m_ownerFrame.frame()->page())
         return false;
 
-    WebFrameImpl* mainFrameImpl = m_ownerFrame.viewImpl()->mainFrameImpl();
+    WebLocalFrameImpl* mainFrameImpl = m_ownerFrame.viewImpl()->mainFrameImpl();
 
     if (!options.findNext)
         m_ownerFrame.frame()->page()->unmarkAllTextMatches();
@@ -141,7 +141,7 @@ bool TextFinder::find(int identifier, const WebString& searchText, const WebFind
 #endif
 
     setMarkerActive(m_activeMatch.get(), true);
-    WebFrameImpl* oldActiveFrame = mainFrameImpl->ensureTextFinder().m_currentActiveMatchFrame;
+    WebLocalFrameImpl* oldActiveFrame = mainFrameImpl->ensureTextFinder().m_currentActiveMatchFrame;
     mainFrameImpl->ensureTextFinder().m_currentActiveMatchFrame = &m_ownerFrame;
 
     // Make sure no node is focused. See http://crbug.com/38700.
@@ -232,7 +232,7 @@ void TextFinder::scopeStringMatches(int identifier, const WebString& searchText,
         return;
     }
 
-    WebFrameImpl* mainFrameImpl = m_ownerFrame.viewImpl()->mainFrameImpl();
+    WebLocalFrameImpl* mainFrameImpl = m_ownerFrame.viewImpl()->mainFrameImpl();
     RefPtrWillBeRawPtr<Range> searchRange(rangeOfContents(m_ownerFrame.frame()->document()));
 
     Node* originalEndContainer = searchRange->endContainer();
@@ -364,7 +364,7 @@ void TextFinder::flushCurrentScopingEffort(int identifier)
     if (!m_ownerFrame.frame() || !m_ownerFrame.frame()->page())
         return;
 
-    WebFrameImpl* mainFrameImpl = m_ownerFrame.viewImpl()->mainFrameImpl();
+    WebLocalFrameImpl* mainFrameImpl = m_ownerFrame.viewImpl()->mainFrameImpl();
     mainFrameImpl->ensureTextFinder().decrementFramesScopingCount(identifier);
 }
 
@@ -432,8 +432,8 @@ void TextFinder::clearFindMatchesCache()
 
 bool TextFinder::isActiveMatchFrameValid() const
 {
-    WebFrameImpl* mainFrameImpl = m_ownerFrame.viewImpl()->mainFrameImpl();
-    WebFrameImpl* activeMatchFrame = mainFrameImpl->activeMatchFrame();
+    WebLocalFrameImpl* mainFrameImpl = m_ownerFrame.viewImpl()->mainFrameImpl();
+    WebLocalFrameImpl* activeMatchFrame = mainFrameImpl->activeMatchFrame();
     return activeMatchFrame && activeMatchFrame->activeMatch() && activeMatchFrame->frame()->tree().isDescendantOf(mainFrameImpl->frame());
 }
 
@@ -472,7 +472,7 @@ void TextFinder::updateFindMatchRects()
     // Invalidate the rects in child frames. Will be updated later during traversal.
     if (!m_findMatchRectsAreValid)
         for (WebFrame* child = m_ownerFrame.firstChild(); child; child = child->nextSibling())
-            toWebFrameImpl(child)->ensureTextFinder().m_findMatchRectsAreValid = false;
+            toWebLocalFrameImpl(child)->ensureTextFinder().m_findMatchRectsAreValid = false;
 
     m_findMatchRectsAreValid = true;
 }
@@ -488,7 +488,7 @@ WebFloatRect TextFinder::activeFindMatchRect()
 void TextFinder::findMatchRects(WebVector<WebFloatRect>& outputRects)
 {
     Vector<WebFloatRect> matchRects;
-    for (WebFrameImpl* frame = &m_ownerFrame; frame; frame = toWebFrameImpl(frame->traverseNext(false)))
+    for (WebLocalFrameImpl* frame = &m_ownerFrame; frame; frame = toWebLocalFrameImpl(frame->traverseNext(false)))
         frame->ensureTextFinder().appendFindMatchRects(matchRects);
 
     outputRects = matchRects;
@@ -510,7 +510,7 @@ int TextFinder::selectNearestFindMatch(const WebFloatPoint& point, WebRect* sele
     int indexInBestFrame = -1;
     float distanceInBestFrame = FLT_MAX;
 
-    for (WebFrameImpl* frame = &m_ownerFrame; frame; frame = toWebFrameImpl(frame->traverseNext(false))) {
+    for (WebLocalFrameImpl* frame = &m_ownerFrame; frame; frame = toWebLocalFrameImpl(frame->traverseNext(false))) {
         float distanceInFrame;
         TextFinder& finder = frame->ensureTextFinder();
         int indexInFrame = finder.nearestFindMatch(point, distanceInFrame);
@@ -557,7 +557,7 @@ int TextFinder::selectFindMatch(unsigned index, WebRect* selectionRect)
 
     // Check if the match is already selected.
     TextFinder& mainFrameTextFinder = m_ownerFrame.viewImpl()->mainFrameImpl()->ensureTextFinder();
-    WebFrameImpl* activeMatchFrame = mainFrameTextFinder.m_currentActiveMatchFrame;
+    WebLocalFrameImpl* activeMatchFrame = mainFrameTextFinder.m_currentActiveMatchFrame;
     if (&m_ownerFrame != activeMatchFrame || !m_activeMatch || !areRangesEqual(m_activeMatch.get(), range.get())) {
         if (isActiveMatchFrameValid())
             activeMatchFrame->ensureTextFinder().setMatchMarkerActive(false);
@@ -598,12 +598,12 @@ int TextFinder::selectFindMatch(unsigned index, WebRect* selectionRect)
     return ordinalOfFirstMatch() + m_activeMatchIndexInCurrentFrame + 1;
 }
 
-PassOwnPtr<TextFinder> TextFinder::create(WebFrameImpl& ownerFrame)
+PassOwnPtr<TextFinder> TextFinder::create(WebLocalFrameImpl& ownerFrame)
 {
     return adoptPtr(new TextFinder(ownerFrame));
 }
 
-TextFinder::TextFinder(WebFrameImpl& ownerFrame)
+TextFinder::TextFinder(WebLocalFrameImpl& ownerFrame)
     : m_ownerFrame(ownerFrame)
     , m_currentActiveMatchFrame(0)
     , m_activeMatchIndexInCurrentFrame(-1)
@@ -638,13 +638,13 @@ void TextFinder::setMarkerActive(Range* range, bool active)
     m_ownerFrame.frame()->document()->markers().setMarkersActive(range, active);
 }
 
-int TextFinder::ordinalOfFirstMatchForFrame(WebFrameImpl* frame) const
+int TextFinder::ordinalOfFirstMatchForFrame(WebLocalFrameImpl* frame) const
 {
     int ordinal = 0;
-    WebFrameImpl* mainFrameImpl = m_ownerFrame.viewImpl()->mainFrameImpl();
+    WebLocalFrameImpl* mainFrameImpl = m_ownerFrame.viewImpl()->mainFrameImpl();
     // Iterate from the main frame up to (but not including) |frame| and
     // add up the number of matches found so far.
-    for (WebFrameImpl* it = mainFrameImpl; it != frame; it = toWebFrameImpl(it->traverseNext(true))) {
+    for (WebLocalFrameImpl* it = mainFrameImpl; it != frame; it = toWebLocalFrameImpl(it->traverseNext(true))) {
         TextFinder& finder = it->ensureTextFinder();
         if (finder.m_lastMatchCount > 0)
             ordinal += finder.m_lastMatchCount;

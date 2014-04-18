@@ -28,13 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebFrameImpl_h
-#define WebFrameImpl_h
-
-#include "WebLocalFrame.h"
+#ifndef WebLocalFrameImpl_h
+#define WebLocalFrameImpl_h
 
 #include "FrameLoaderClientImpl.h"
 #include "NotificationPresenterImpl.h"
+#include "WebLocalFrame.h"
 #include "core/frame/LocalFrame.h"
 #include "platform/geometry/FloatRect.h"
 #include "public/platform/WebFileSystemType.h"
@@ -74,12 +73,15 @@ struct WebPrintParams;
 template <typename T> class WebVector;
 
 // Implementation of WebFrame, note that this is a reference counted object.
-class WebFrameImpl FINAL
+class WebLocalFrameImpl FINAL
     : public WebLocalFrame
-    , public RefCounted<WebFrameImpl> {
+    , public RefCounted<WebLocalFrameImpl> {
 public:
     // WebFrame methods:
-    virtual WebLocalFrame* toWebLocalFrame() OVERRIDE { return this; }
+    virtual bool isWebLocalFrame() const OVERRIDE;
+    virtual WebLocalFrame* toWebLocalFrame() OVERRIDE;
+    virtual bool isWebRemoteFrame() const OVERRIDE;
+    virtual WebRemoteFrame* toWebRemoteFrame() OVERRIDE;
     virtual void close() OVERRIDE;
     virtual WebString uniqueName() const OVERRIDE;
     virtual WebString assignedName() const OVERRIDE;
@@ -195,12 +197,13 @@ public:
     virtual bool isPrintScalingDisabledForPlugin(const WebNode&) OVERRIDE;
     virtual bool hasCustomPageSizeStyle(int pageIndex) OVERRIDE;
     virtual bool isPageBoxVisible(int pageIndex) OVERRIDE;
-    virtual void pageSizeAndMarginsInPixels(int pageIndex,
-                                            WebSize& pageSize,
-                                            int& marginTop,
-                                            int& marginRight,
-                                            int& marginBottom,
-                                            int& marginLeft) OVERRIDE;
+    virtual void pageSizeAndMarginsInPixels(
+        int pageIndex,
+        WebSize& pageSize,
+        int& marginTop,
+        int& marginRight,
+        int& marginBottom,
+        int& marginLeft) OVERRIDE;
     virtual WebString pageProperty(const WebString& propertyName, int pageIndex) OVERRIDE;
     virtual void printPagesWithBoundaries(WebCanvas*, const WebSize&) OVERRIDE;
     virtual bool find(
@@ -236,8 +239,8 @@ public:
 
     void willDetachParent();
 
-    static WebFrameImpl* create(WebFrameClient*);
-    virtual ~WebFrameImpl();
+    static WebLocalFrameImpl* create(WebFrameClient*);
+    virtual ~WebLocalFrameImpl();
 
     // Called by the WebViewImpl to initialize the main frame for the page.
     void initializeAsMainFrame(WebCore::Page*);
@@ -249,8 +252,8 @@ public:
 
     void createFrameView();
 
-    static WebFrameImpl* fromFrame(WebCore::LocalFrame* frame);
-    static WebFrameImpl* fromFrameOwnerElement(WebCore::Element* element);
+    static WebLocalFrameImpl* fromFrame(WebCore::LocalFrame*);
+    static WebLocalFrameImpl* fromFrameOwnerElement(WebCore::Element*);
 
     // If the frame hosts a PluginDocument, this method returns the WebPluginContainerImpl
     // that hosts the plugin.
@@ -273,7 +276,7 @@ public:
     // Returns which frame has an active match. This function should only be
     // called on the main frame, as it is the only frame keeping track. Returned
     // value can be 0 if no frame has an active match.
-    WebFrameImpl* activeMatchFrame() const;
+    WebLocalFrameImpl* activeMatchFrame() const;
 
     // Returns the active match in the current frame. Could be a null range if
     // the local frame has no active match.
@@ -289,7 +292,7 @@ public:
 
     void didFail(const WebCore::ResourceError&, bool wasProvisional);
 
-    // Sets whether the WebFrameImpl allows its document to be scrolled.
+    // Sets whether the WebLocalFrameImpl allows its document to be scrolled.
     // If the parameter is true, allow the document to be scrolled.
     // Otherwise, disallow scrolling.
     virtual void setCanHaveScrollbars(bool) OVERRIDE;
@@ -318,7 +321,7 @@ public:
 private:
     friend class FrameLoaderClientImpl;
 
-    explicit WebFrameImpl(WebFrameClient*);
+    explicit WebLocalFrameImpl(WebFrameClient*);
 
     // Sets the local WebCore frame and registers destruction observers.
     void setWebCoreFrame(PassRefPtr<WebCore::LocalFrame>);
@@ -339,14 +342,14 @@ private:
     // reference is released when the frame is removed from the DOM or the entire page is closed.
     // FIXME: These will need to change to WebFrame when we introduce WebFrameProxy.
     RefPtr<WebCore::LocalFrame> m_frame;
-    WebFrameImpl* m_parent;
-    WebFrameImpl* m_previousSibling;
-    WebFrameImpl* m_nextSibling;
-    WebFrameImpl* m_firstChild;
-    WebFrameImpl* m_lastChild;
+    WebLocalFrameImpl* m_parent;
+    WebLocalFrameImpl* m_previousSibling;
+    WebLocalFrameImpl* m_nextSibling;
+    WebLocalFrameImpl* m_firstChild;
+    WebLocalFrameImpl* m_lastChild;
 
-    WebFrameImpl* m_opener;
-    WTF::HashSet<WebFrameImpl*> m_openedFrames;
+    WebLocalFrameImpl* m_opener;
+    WTF::HashSet<WebLocalFrameImpl*> m_openedFrames;
 
     // Indicate whether the current LocalFrame is local or remote. Remote frames are
     // rendered in a different process from their parent frames.
@@ -371,7 +374,7 @@ private:
     NotificationPresenterImpl m_notificationPresenter;
 };
 
-DEFINE_TYPE_CASTS(WebFrameImpl, WebFrame, frame, true, true);
+DEFINE_TYPE_CASTS(WebLocalFrameImpl, WebFrame, frame, frame->isWebLocalFrame(), frame.isWebLocalFrame());
 
 } // namespace blink
 

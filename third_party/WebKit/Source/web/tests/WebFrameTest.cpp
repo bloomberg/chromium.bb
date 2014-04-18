@@ -46,8 +46,8 @@
 #include "WebFindOptions.h"
 #include "WebFormElement.h"
 #include "WebFrameClient.h"
-#include "WebFrameImpl.h"
 #include "WebHistoryItem.h"
+#include "WebLocalFrameImpl.h"
 #include "WebRange.h"
 #include "WebScriptSource.h"
 #include "WebSearchableFormData.h"
@@ -3188,7 +3188,7 @@ TEST_F(WebFrameTest, FindInPageMatchRects)
 
     WebFindOptions options;
     WebString searchText = WebString::fromUTF8(kFindString);
-    WebFrameImpl* mainFrame = toWebFrameImpl(webViewHelper.webView()->mainFrame());
+    WebLocalFrameImpl* mainFrame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame());
     EXPECT_TRUE(mainFrame->find(kFindIdentifier, searchText, options, false, 0));
 
     mainFrame->resetMatchCount();
@@ -3305,7 +3305,7 @@ TEST_F(WebFrameTest, FindInPageSkipsHiddenFrames)
 
     WebFindOptions options;
     WebString searchText = WebString::fromUTF8(kFindString);
-    WebFrameImpl* mainFrame = toWebFrameImpl(webViewHelper.webView()->mainFrame());
+    WebLocalFrameImpl* mainFrame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame());
     EXPECT_TRUE(mainFrame->find(kFindIdentifier, searchText, options, false, 0));
 
     mainFrame->resetMatchCount();
@@ -3335,8 +3335,8 @@ TEST_F(WebFrameTest, FindOnDetachedFrame)
 
     WebFindOptions options;
     WebString searchText = WebString::fromUTF8(kFindString);
-    WebFrameImpl* mainFrame = toWebFrameImpl(webViewHelper.webView()->mainFrame());
-    RefPtr<WebFrameImpl> secondFrame = toWebFrameImpl(mainFrame->traverseNext(false));
+    WebLocalFrameImpl* mainFrame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame());
+    RefPtr<WebLocalFrameImpl> secondFrame = toWebLocalFrameImpl(mainFrame->traverseNext(false));
     RefPtr<WebCore::LocalFrame> holdSecondFrame = secondFrame->frame();
 
     // Detach the frame before finding.
@@ -3376,8 +3376,8 @@ TEST_F(WebFrameTest, FindDetachFrameBeforeScopeStrings)
 
     WebFindOptions options;
     WebString searchText = WebString::fromUTF8(kFindString);
-    WebFrameImpl* mainFrame = toWebFrameImpl(webViewHelper.webView()->mainFrame());
-    WebFrameImpl* secondFrame = toWebFrameImpl(mainFrame->traverseNext(false));
+    WebLocalFrameImpl* mainFrame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame());
+    WebLocalFrameImpl* secondFrame = toWebLocalFrameImpl(mainFrame->traverseNext(false));
     RefPtr<WebCore::LocalFrame> holdSecondFrame = secondFrame->frame();
 
     for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false))
@@ -3417,8 +3417,8 @@ TEST_F(WebFrameTest, FindDetachFrameWhileScopingStrings)
 
     WebFindOptions options;
     WebString searchText = WebString::fromUTF8(kFindString);
-    WebFrameImpl* mainFrame = toWebFrameImpl(webViewHelper.webView()->mainFrame());
-    WebFrameImpl* secondFrame = toWebFrameImpl(mainFrame->traverseNext(false));
+    WebLocalFrameImpl* mainFrame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame());
+    WebLocalFrameImpl* secondFrame = toWebLocalFrameImpl(mainFrame->traverseNext(false));
     RefPtr<WebCore::LocalFrame> holdSecondFrame = secondFrame->frame();
 
     for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false))
@@ -3457,7 +3457,7 @@ TEST_F(WebFrameTest, SetTickmarks)
 
     WebFindOptions options;
     WebString searchText = WebString::fromUTF8(kFindString);
-    WebFrameImpl* mainFrame = toWebFrameImpl(webViewHelper.webView()->mainFrame());
+    WebLocalFrameImpl* mainFrame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame());
     EXPECT_TRUE(mainFrame->find(kFindIdentifier, searchText, options, false, 0));
 
     mainFrame->resetMatchCount();
@@ -3746,14 +3746,14 @@ TEST_F(WebFrameTest, DISABLED_PositionForPointTest)
     registerMockedHttpURLLoad("select_range_span_editable.html");
     FrameTestHelpers::WebViewHelper webViewHelper;
     initializeTextSelectionWebView(m_baseURL + "select_range_span_editable.html", &webViewHelper);
-    WebFrameImpl* mainFrame = toWebFrameImpl(webViewHelper.webView()->mainFrame());
+    WebLocalFrameImpl* mainFrame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame());
     WebCore::RenderObject* renderer = mainFrame->frame()->selection().rootEditableElement()->renderer();
     EXPECT_EQ(0, computeOffset(renderer, -1, -1));
     EXPECT_EQ(64, computeOffset(renderer, 1000, 1000));
 
     registerMockedHttpURLLoad("select_range_div_editable.html");
     initializeTextSelectionWebView(m_baseURL + "select_range_div_editable.html", &webViewHelper);
-    mainFrame = toWebFrameImpl(webViewHelper.webView()->mainFrame());
+    mainFrame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame());
     renderer = mainFrame->frame()->selection().rootEditableElement()->renderer();
     EXPECT_EQ(0, computeOffset(renderer, -1, -1));
     EXPECT_EQ(64, computeOffset(renderer, 1000, 1000));
@@ -3766,7 +3766,7 @@ TEST_F(WebFrameTest, SelectRangeStaysHorizontallyAlignedWhenMoved)
 
     FrameTestHelpers::WebViewHelper webViewHelper;
     initializeTextSelectionWebView(m_baseURL + "move_caret.html", &webViewHelper);
-    WebFrameImpl* frame = toWebFrameImpl(webViewHelper.webView()->mainFrame());
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame());
 
     WebRect initialStartRect;
     WebRect initialEndRect;
@@ -3806,12 +3806,12 @@ TEST_F(WebFrameTest, SelectRangeStaysHorizontallyAlignedWhenMoved)
 
 TEST_F(WebFrameTest, MoveCaretStaysHorizontallyAlignedWhenMoved)
 {
-    WebFrameImpl* frame;
+    WebLocalFrameImpl* frame;
     registerMockedHttpURLLoad("move_caret.html");
 
     FrameTestHelpers::WebViewHelper webViewHelper;
     initializeTextSelectionWebView(m_baseURL + "move_caret.html", &webViewHelper);
-    frame = (WebFrameImpl*)webViewHelper.webView()->mainFrame();
+    frame = (WebLocalFrameImpl*)webViewHelper.webView()->mainFrame();
 
     WebRect initialStartRect;
     WebRect initialEndRect;
@@ -4208,7 +4208,7 @@ TEST_F(WebFrameTest, ReplaceMisspelledRange)
     SpellCheckClient spellcheck;
     webViewHelper.webView()->setSpellCheckClient(&spellcheck);
 
-    WebFrameImpl* frame = toWebFrameImpl(webViewHelper.webView()->mainFrame());
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame());
     Document* document = frame->frame()->document();
     Element* element = document->getElementById("data");
 
@@ -4239,7 +4239,7 @@ TEST_F(WebFrameTest, RemoveSpellingMarkers)
     SpellCheckClient spellcheck;
     webViewHelper.webView()->setSpellCheckClient(&spellcheck);
 
-    WebFrameImpl* frame = toWebFrameImpl(webViewHelper.webView()->mainFrame());
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame());
     Document* document = frame->frame()->document();
     Element* element = document->getElementById("data");
 
@@ -4269,7 +4269,7 @@ TEST_F(WebFrameTest, MarkerHashIdentifiers) {
     SpellCheckClient spellcheck(kHash);
     webViewHelper.webView()->setSpellCheckClient(&spellcheck);
 
-    WebFrameImpl* frame = toWebFrameImpl(webViewHelper.webView()->mainFrame());
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame());
     Document* document = frame->frame()->document();
     Element* element = document->getElementById("data");
 
@@ -4344,7 +4344,7 @@ TEST_F(WebFrameTest, SlowSpellcheckMarkerPosition)
     StubbornSpellCheckClient spellcheck;
     webViewHelper.webView()->setSpellCheckClient(&spellcheck);
 
-    WebFrameImpl* frame = toWebFrameImpl(webViewHelper.webView()->mainFrame());
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame());
     WebInputElement webInputElement = frame->document().getElementById("data").to<WebInputElement>();
     Document* document = frame->frame()->document();
     Element* element = document->getElementById("data");
@@ -4374,7 +4374,7 @@ TEST_F(WebFrameTest, CancelSpellingRequestCrash)
     webViewHelper.initializeAndLoad(m_baseURL + "spell.html");
     webViewHelper.webView()->setSpellCheckClient(0);
 
-    WebFrameImpl* frame = toWebFrameImpl(webViewHelper.webView()->mainFrame());
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame());
     Document* document = frame->frame()->document();
     Element* element = document->getElementById("data");
 
@@ -4396,7 +4396,7 @@ TEST_F(WebFrameTest, SpellcheckResultErasesMarkers)
     StubbornSpellCheckClient spellcheck;
     webViewHelper.webView()->setSpellCheckClient(&spellcheck);
 
-    WebFrameImpl* frame = toWebFrameImpl(webViewHelper.webView()->mainFrame());
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame());
     WebInputElement webInputElement = frame->document().getElementById("data").to<WebInputElement>();
     Document* document = frame->frame()->document();
     Element* element = document->getElementById("data");
@@ -4425,7 +4425,7 @@ TEST_F(WebFrameTest, SpellcheckResultsSavedInDocument)
     StubbornSpellCheckClient spellcheck;
     webViewHelper.webView()->setSpellCheckClient(&spellcheck);
 
-    WebFrameImpl* frame = toWebFrameImpl(webViewHelper.webView()->mainFrame());
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame());
     WebInputElement webInputElement = frame->document().getElementById("data").to<WebInputElement>();
     Document* document = frame->frame()->document();
     Element* element = document->getElementById("data");
@@ -4626,7 +4626,7 @@ public:
         if (frame->parent())
             return;
         EXPECT_FALSE(m_didScrollMainFrame);
-        WebCore::FrameView* view = toWebFrameImpl(frame)->frameView();
+        WebCore::FrameView* view = toWebLocalFrameImpl(frame)->frameView();
         // FrameView can be scrolled in FrameView::setFixedVisibleContentRect
         // which is called from LocalFrame::createView (before the frame is associated
         // with the the view).
@@ -4680,7 +4680,7 @@ TEST_F(WebFrameTest, CompositorScrollIsUserScrollLongPage)
     client.reset();
 
     // Programmatic scroll.
-    WebFrameImpl* frameImpl = webViewHelper.webViewImpl()->mainFrameImpl();
+    WebLocalFrameImpl* frameImpl = webViewHelper.webViewImpl()->mainFrameImpl();
     frameImpl->executeScript(WebScriptSource("window.scrollTo(0, 20);"));
     EXPECT_FALSE(client.wasUserScroll());
     EXPECT_TRUE(client.wasProgrammaticScroll());
@@ -4968,8 +4968,8 @@ TEST_F(WebFrameTest, ReloadIframe)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "iframe_reload.html", true, &mainClient);
 
-    WebFrameImpl* mainFrame = webViewHelper.webViewImpl()->mainFrameImpl();
-    RefPtr<WebFrameImpl> childFrame = toWebFrameImpl(mainFrame->firstChild());
+    WebLocalFrameImpl* mainFrame = webViewHelper.webViewImpl()->mainFrameImpl();
+    RefPtr<WebLocalFrameImpl> childFrame = toWebLocalFrameImpl(mainFrame->firstChild());
     ASSERT_EQ(childFrame->client(), &childClient);
     EXPECT_EQ(mainClient.childFrameCreationCount(), 1);
     EXPECT_EQ(childClient.willSendRequestCallCount(), 1);
@@ -4979,8 +4979,8 @@ TEST_F(WebFrameTest, ReloadIframe)
     Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
 
     // A new WebFrame should have been created, but the child WebFrameClient should be reused.
-    ASSERT_NE(childFrame, toWebFrameImpl(mainFrame->firstChild()));
-    ASSERT_EQ(toWebFrameImpl(mainFrame->firstChild())->client(), &childClient);
+    ASSERT_NE(childFrame, toWebLocalFrameImpl(mainFrame->firstChild()));
+    ASSERT_EQ(toWebLocalFrameImpl(mainFrame->firstChild())->client(), &childClient);
 
     EXPECT_EQ(mainClient.childFrameCreationCount(), 2);
     EXPECT_EQ(childClient.willSendRequestCallCount(), 2);
@@ -4996,7 +4996,7 @@ public:
 
     virtual void willSendRequest(WebLocalFrame* frame, unsigned, WebURLRequest&, const WebURLResponse&)
     {
-        if (toWebFrameImpl(frame)->frame()->loader().loadType() == WebCore::FrameLoadTypeSame)
+        if (toWebLocalFrameImpl(frame)->frame()->loader().loadType() == WebCore::FrameLoadTypeSame)
             m_frameLoadTypeSameSeen = true;
     }
 
@@ -5227,7 +5227,7 @@ TEST_F(WebFrameTest, overflowHiddenRewrite)
     ASSERT_FALSE(webScrollLayer->userScrollableVertical());
 
     // Call javascript to make the layer scrollable, and verify it.
-    WebFrameImpl* frame = (WebFrameImpl*)webViewHelper.webView()->mainFrame();
+    WebLocalFrameImpl* frame = (WebLocalFrameImpl*)webViewHelper.webView()->mainFrame();
     frame->executeScript(WebScriptSource("allowScroll();"));
     webViewHelper.webView()->layout();
     ASSERT_TRUE(webScrollLayer->userScrollableHorizontal());
@@ -5300,7 +5300,7 @@ TEST_F(WebFrameTest, fixedPositionInFixedViewport)
     webView->resize(WebSize(100, 100));
     webView->layout();
 
-    Document* document = toWebFrameImpl(webView->mainFrame())->frame()->document();
+    Document* document = toWebLocalFrameImpl(webView->mainFrame())->frame()->document();
     Element* bottomFixed = document->getElementById("bottom-fixed");
     Element* topBottomFixed = document->getElementById("top-bottom-fixed");
     Element* rightFixed = document->getElementById("right-fixed");
@@ -5350,7 +5350,7 @@ TEST_F(WebFrameTest, FullscreenLayerNonScrollable)
     webViewImpl->resize(WebSize(viewportWidth, viewportHeight));
     webViewImpl->layout();
 
-    Document* document = toWebFrameImpl(webViewImpl->mainFrame())->frame()->document();
+    Document* document = toWebLocalFrameImpl(webViewImpl->mainFrame())->frame()->document();
     WebCore::UserGestureIndicator gesture(WebCore::DefinitelyProcessingUserGesture);
     Element* divFullscreen = document->getElementById("div1");
     divFullscreen->webkitRequestFullscreen();
@@ -5382,7 +5382,7 @@ TEST_F(WebFrameTest, RenderBlockPercentHeightDescendants)
     webView->resize(WebSize(800, 800));
     webView->layout();
 
-    Document* document = toWebFrameImpl(webView->mainFrame())->frame()->document();
+    Document* document = toWebLocalFrameImpl(webView->mainFrame())->frame()->document();
     WebCore::RenderBlock* container = WebCore::toRenderBlock(document->getElementById("container")->renderer());
     WebCore::RenderBox* percentHeightInAnonymous = WebCore::toRenderBox(document->getElementById("percent-height-in-anonymous")->renderer());
     WebCore::RenderBox* percentHeightDirectChild = WebCore::toRenderBox(document->getElementById("percent-height-direct-child")->renderer());

@@ -26,7 +26,7 @@
 #include "config.h"
 #include "StorageClientImpl.h"
 
-#include "WebFrameImpl.h"
+#include "WebLocalFrameImpl.h"
 #include "WebViewImpl.h"
 #include "core/storage/StorageNamespace.h"
 #include "public/platform/WebStorageNamespace.h"
@@ -47,7 +47,7 @@ PassOwnPtr<WebCore::StorageNamespace> StorageClientImpl::createSessionStorageNam
 
 bool StorageClientImpl::canAccessStorage(WebCore::LocalFrame* frame, WebCore::StorageType type) const
 {
-    WebFrameImpl* webFrame = WebFrameImpl::fromFrame(frame);
+    WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(frame);
     return !webFrame->permissionClient() || webFrame->permissionClient()->allowStorage(type == WebCore::LocalStorage);
 }
 

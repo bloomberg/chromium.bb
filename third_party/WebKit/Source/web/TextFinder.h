@@ -48,13 +48,13 @@ class Range;
 }
 
 namespace blink {
-class WebFrameImpl;
+class WebLocalFrameImpl;
 
 template <typename T> class WebVector;
 
 class TextFinder {
 public:
-    static PassOwnPtr<TextFinder> create(WebFrameImpl& ownerFrame);
+    static PassOwnPtr<TextFinder> create(WebLocalFrameImpl& ownerFrame);
 
     bool find(
         int identifier, const WebString& searchText, const WebFindOptions&,
@@ -74,7 +74,7 @@ public:
     // Returns which frame has an active match. This function should only be
     // called on the main frame, as it is the only frame keeping track. Returned
     // value can be 0 if no frame has an active match.
-    WebFrameImpl* activeMatchFrame() const { return m_currentActiveMatchFrame; }
+    WebLocalFrameImpl* activeMatchFrame() const { return m_currentActiveMatchFrame; }
 
     // Returns the active match in the current frame. Could be a null range if
     // the local frame has no active match.
@@ -111,7 +111,7 @@ private:
     class DeferredScopeStringMatches;
     friend class DeferredScopeStringMatches;
 
-    explicit TextFinder(WebFrameImpl& ownerFrame);
+    explicit TextFinder(WebLocalFrameImpl& ownerFrame);
 
     // Notifies the delegate about a new selection rect.
     void reportFindInPageSelection(
@@ -153,7 +153,7 @@ private:
     // function enumerates the frames, starting with the main frame and up to (but
     // not including) the frame passed in as a parameter and counts how many
     // matches have been found.
-    int ordinalOfFirstMatchForFrame(WebFrameImpl*) const;
+    int ordinalOfFirstMatchForFrame(WebLocalFrameImpl*) const;
 
     // Determines whether the scoping effort is required for a particular frame.
     // It is not necessary if the frame is invisible, for example, or if this
@@ -190,11 +190,11 @@ private:
     // Returns the ordinal of the first match in the owner frame.
     int ordinalOfFirstMatch() const;
 
-    WebFrameImpl& m_ownerFrame;
+    WebLocalFrameImpl& m_ownerFrame;
 
     // A way for the main frame to keep track of which frame has an active
     // match. Should be 0 for all other frames.
-    WebFrameImpl* m_currentActiveMatchFrame;
+    WebLocalFrameImpl* m_currentActiveMatchFrame;
 
     // The range of the active match for the current frame.
     RefPtrWillBePersistent<WebCore::Range> m_activeMatch;

@@ -44,7 +44,7 @@
 #include "WebDocument.h"
 #include "WebFormElement.h"
 #include "WebFrameClient.h"
-#include "WebFrameImpl.h"
+#include "WebLocalFrameImpl.h"
 #include "WebNode.h"
 #include "WebPermissionClient.h"
 #include "WebPlugin.h"
@@ -103,7 +103,7 @@ using namespace WebCore;
 
 namespace blink {
 
-FrameLoaderClientImpl::FrameLoaderClientImpl(WebFrameImpl* frame)
+FrameLoaderClientImpl::FrameLoaderClientImpl(WebLocalFrameImpl* frame)
     : m_webFrame(frame)
 {
 }
@@ -242,49 +242,49 @@ bool FrameLoaderClientImpl::hasWebView() const
 
 Frame* FrameLoaderClientImpl::opener() const
 {
-    WebFrameImpl* opener = toWebFrameImpl(m_webFrame->opener());
+    WebLocalFrameImpl* opener = toWebLocalFrameImpl(m_webFrame->opener());
     return opener ? opener->frame() : 0;
 }
 
 void FrameLoaderClientImpl::setOpener(Frame* opener)
 {
     // FIXME: Temporary hack to stage converting locations that really should be Frame.
-    m_webFrame->setOpener(WebFrameImpl::fromFrame(toLocalFrame(opener)));
+    m_webFrame->setOpener(WebLocalFrameImpl::fromFrame(toLocalFrame(opener)));
 }
 
 Frame* FrameLoaderClientImpl::parent() const
 {
-    WebFrameImpl* frame = toWebFrameImpl(m_webFrame->parent());
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(m_webFrame->parent());
     return frame ? frame->frame() : 0;
 }
 
 Frame* FrameLoaderClientImpl::top() const
 {
-    WebFrameImpl* frame = toWebFrameImpl(m_webFrame->top());
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(m_webFrame->top());
     return frame ? frame->frame() : 0;
 }
 
 Frame* FrameLoaderClientImpl::previousSibling() const
 {
-    WebFrameImpl* frame = toWebFrameImpl(m_webFrame->previousSibling());
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(m_webFrame->previousSibling());
     return frame ? frame->frame() : 0;
 }
 
 Frame* FrameLoaderClientImpl::nextSibling() const
 {
-    WebFrameImpl* frame = toWebFrameImpl(m_webFrame->nextSibling());
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(m_webFrame->nextSibling());
     return frame ? frame->frame() : 0;
 }
 
 Frame* FrameLoaderClientImpl::firstChild() const
 {
-    WebFrameImpl* frame = toWebFrameImpl(m_webFrame->firstChild());
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(m_webFrame->firstChild());
     return frame ? frame->frame() : 0;
 }
 
 Frame* FrameLoaderClientImpl::lastChild() const
 {
-    WebFrameImpl* frame = toWebFrameImpl(m_webFrame->lastChild());
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(m_webFrame->lastChild());
     return frame ? frame->frame() : 0;
 }
 
@@ -292,7 +292,7 @@ void FrameLoaderClientImpl::detachedFromParent()
 {
     // Alert the client that the frame is being detached. This is the last
     // chance we have to communicate with the client.
-    RefPtr<WebFrameImpl> protector(m_webFrame);
+    RefPtr<WebLocalFrameImpl> protector(m_webFrame);
 
     WebFrameClient* client = m_webFrame->client();
     if (!client)
@@ -730,7 +730,7 @@ bool FrameLoaderClientImpl::willCheckAndDispatchMessageEvent(
 
     WebLocalFrame* source = 0;
     if (event && event->source() && event->source()->toDOMWindow() && event->source()->toDOMWindow()->document())
-        source = WebFrameImpl::fromFrame(event->source()->toDOMWindow()->document()->frame());
+        source = WebLocalFrameImpl::fromFrame(event->source()->toDOMWindow()->document()->frame());
     return m_webFrame->client()->willCheckAndDispatchMessageEvent(
         source, m_webFrame, WebSecurityOrigin(target), WebDOMMessageEvent(event));
 }

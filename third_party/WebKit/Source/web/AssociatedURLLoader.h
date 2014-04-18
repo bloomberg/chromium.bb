@@ -41,13 +41,13 @@ namespace WebCore { class DocumentThreadableLoader; }
 
 namespace blink {
 
-class WebFrameImpl;
+class WebLocalFrameImpl;
 
 // This class is used to implement WebFrame::createAssociatedURLLoader.
 class AssociatedURLLoader FINAL : public WebURLLoader {
     WTF_MAKE_NONCOPYABLE(AssociatedURLLoader);
 public:
-    AssociatedURLLoader(PassRefPtr<WebFrameImpl>, const WebURLLoaderOptions&);
+    AssociatedURLLoader(PassRefPtr<WebLocalFrameImpl>, const WebURLLoaderOptions&);
     ~AssociatedURLLoader();
 
     // WebURLLoader methods:
@@ -60,7 +60,7 @@ private:
 
     class ClientAdapter;
 
-    RefPtr<WebFrameImpl> m_frameImpl;
+    RefPtr<WebLocalFrameImpl> m_frameImpl;
     WebURLLoaderOptions m_options;
     WebURLLoaderClient* m_client;
     OwnPtr<ClientAdapter> m_clientAdapter;

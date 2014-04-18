@@ -29,8 +29,8 @@
 #include "config.h"
 #include "IndexedDBClientImpl.h"
 
-#include "WebFrameImpl.h"
 #include "WebKit.h"
+#include "WebLocalFrameImpl.h"
 #include "WebPermissionClient.h"
 #include "WebSecurityOrigin.h"
 #include "WorkerPermissionClient.h"
@@ -56,7 +56,7 @@ bool IndexedDBClientImpl::allowIndexedDB(ExecutionContext* context, const String
     if (context->isDocument()) {
         WebSecurityOrigin origin(context->securityOrigin());
         Document* document = toDocument(context);
-        WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
+        WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(document->frame());
         // FIXME: webFrame->permissionClient() returns 0 in test_shell and content_shell http://crbug.com/137269
         return !webFrame->permissionClient() || webFrame->permissionClient()->allowIndexedDB(name, origin);
     }

@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WebHelperPluginImpl.h"
 
-#include "WebFrameImpl.h"
+#include "WebLocalFrameImpl.h"
 #include "WebPlugin.h"
 #include "WebPluginContainerImpl.h"
 #include "core/html/HTMLObjectElement.h"
@@ -47,7 +47,7 @@ DEFINE_TYPE_CASTS(WebHelperPluginImpl, WebHelperPlugin, plugin, true, true);
 WebHelperPlugin* WebHelperPlugin::create(const WebString& pluginType, WebLocalFrame* frame)
 {
     OwnPtr<WebHelperPlugin> plugin = adoptPtr<WebHelperPlugin>(new WebHelperPluginImpl());
-    if (!toWebHelperPluginImpl(plugin.get())->initialize(pluginType, toWebFrameImpl(frame)))
+    if (!toWebHelperPluginImpl(plugin.get())->initialize(pluginType, toWebLocalFrameImpl(frame)))
         return 0;
     return plugin.leakPtr();
 }
@@ -61,7 +61,7 @@ WebHelperPluginImpl::~WebHelperPluginImpl()
 {
 }
 
-bool WebHelperPluginImpl::initialize(const String& pluginType, WebFrameImpl* frame)
+bool WebHelperPluginImpl::initialize(const String& pluginType, WebLocalFrameImpl* frame)
 {
     ASSERT(!m_objectElement && !m_pluginContainer);
     if (!frame->frame()->loader().client())

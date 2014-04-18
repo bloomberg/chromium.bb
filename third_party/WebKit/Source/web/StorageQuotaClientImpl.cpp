@@ -32,7 +32,7 @@
 #include "StorageQuotaClientImpl.h"
 
 #include "WebFrameClient.h"
-#include "WebFrameImpl.h"
+#include "WebLocalFrameImpl.h"
 #include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScriptPromise.h"
 #include "bindings/v8/ScriptPromiseResolverWithContext.h"
@@ -67,7 +67,7 @@ void StorageQuotaClientImpl::requestQuota(ExecutionContext* executionContext, We
 
     if (executionContext->isDocument()) {
         Document* document = toDocument(executionContext);
-        WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
+        WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(document->frame());
         OwnPtr<StorageQuotaCallbacks> callbacks = DeprecatedStorageQuotaCallbacksImpl::create(successCallback, errorCallback);
         webFrame->client()->requestStorageQuota(webFrame, storageType, newQuotaInBytes, callbacks.release());
     } else {
@@ -85,7 +85,7 @@ ScriptPromise StorageQuotaClientImpl::requestPersistentQuota(ExecutionContext* e
 
     if (executionContext->isDocument()) {
         Document* document = toDocument(executionContext);
-        WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
+        WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(document->frame());
         OwnPtr<StorageQuotaCallbacks> callbacks = StorageQuotaCallbacksImpl::create(resolver);
         webFrame->client()->requestStorageQuota(webFrame, WebStorageQuotaTypePersistent, newQuotaInBytes, callbacks.release());
     } else {

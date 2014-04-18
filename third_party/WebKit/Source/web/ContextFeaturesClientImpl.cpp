@@ -32,7 +32,7 @@
 #include "ContextFeaturesClientImpl.h"
 
 #include "WebDocument.h"
-#include "WebFrameImpl.h"
+#include "WebLocalFrameImpl.h"
 #include "WebPermissionClient.h"
 #include "core/dom/Document.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -140,7 +140,7 @@ void ContextFeaturesClientImpl::urlDidChange(Document* document)
 
 bool ContextFeaturesClientImpl::askIfIsEnabled(Document* document, ContextFeatures::FeatureType type, bool defaultValue)
 {
-    WebFrameImpl* frame = WebFrameImpl::fromFrame(document->frame());
+    WebLocalFrameImpl* frame = WebLocalFrameImpl::fromFrame(document->frame());
     if (!frame || !frame->permissionClient())
         return defaultValue;
 

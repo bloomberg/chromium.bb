@@ -28,8 +28,8 @@
 #include "LinkHighlight.h"
 
 #include "SkMatrix44.h"
-#include "WebFrameImpl.h"
 #include "WebKit.h"
+#include "WebLocalFrameImpl.h"
 #include "WebViewImpl.h"
 #include "core/dom/Node.h"
 #include "core/frame/FrameView.h"

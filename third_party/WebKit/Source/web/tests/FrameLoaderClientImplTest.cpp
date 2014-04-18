@@ -33,7 +33,7 @@
 #include "FrameLoaderClientImpl.h"
 
 #include "WebFrameClient.h"
-#include "WebFrameImpl.h"
+#include "WebLocalFrameImpl.h"
 #include "WebView.h"
 #include "core/loader/FrameLoader.h"
 #include "platform/weborigin/KURL.h"
@@ -72,7 +72,7 @@ public:
         m_webView = WebView::create(0);
         m_mainFrame = WebLocalFrame::create(&m_webFrameClient);
         m_webView->setMainFrame(m_mainFrame);
-        m_frameLoaderClientImpl = toFrameLoaderClientImpl(toWebFrameImpl(m_webView->mainFrame())->frame()->loader().client());
+        m_frameLoaderClientImpl = toFrameLoaderClientImpl(toWebLocalFrameImpl(m_webView->mainFrame())->frame()->loader().client());
     }
 
     void TearDown()

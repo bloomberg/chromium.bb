@@ -75,7 +75,7 @@ class PopupContainer;
 class UserMediaClientImpl;
 class WebActiveGestureAnimation;
 class WebDevToolsAgentPrivate;
-class WebFrameImpl;
+class WebLocalFrameImpl;
 class WebImage;
 class WebPagePopupImpl;
 class WebPlugin;
@@ -318,7 +318,7 @@ public:
 
     // Returns the main frame associated with this view. This may be null when
     // the page is shutting down, but will be valid at all other times.
-    WebFrameImpl* mainFrameImpl();
+    WebLocalFrameImpl* mainFrameImpl();
 
     // Event related methods:
     void mouseContextMenu(const WebMouseEvent&);
@@ -352,9 +352,9 @@ public:
     //   2) Calling layout() is a no-op.
     // After calling WebWidget::layout(), expect to get this notification
     // unless the view did not need a layout.
-    void layoutUpdated(WebFrameImpl*);
+    void layoutUpdated(WebLocalFrameImpl*);
 
-    void willInsertBody(WebFrameImpl*);
+    void willInsertBody(WebLocalFrameImpl*);
     void didChangeContentsSize();
     void deviceOrPageScaleFactorChanged();
 

@@ -39,7 +39,7 @@
 #include "WebElement.h"
 #include "WebFrame.h"
 #include "WebFrameClient.h"
-#include "WebFrameImpl.h"
+#include "WebLocalFrameImpl.h"
 #include "WebPluginContainerImpl.h"
 #include "WebPluginParams.h"
 #include "WebSettings.h"

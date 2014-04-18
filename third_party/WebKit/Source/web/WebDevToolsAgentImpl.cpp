@@ -38,8 +38,8 @@
 #include "WebDataSource.h"
 #include "WebDevToolsAgentClient.h"
 #include "WebDeviceEmulationParams.h"
-#include "WebFrameImpl.h"
 #include "WebInputEventConversion.h"
+#include "WebLocalFrameImpl.h"
 #include "WebMemoryUsageInfo.h"
 #include "WebSettings.h"
 #include "WebViewClient.h"
@@ -282,7 +282,7 @@ void WebDevToolsAgentImpl::didComposite()
         ic->didComposite();
 }
 
-void WebDevToolsAgentImpl::didCreateScriptContext(WebFrameImpl* webframe, int worldId)
+void WebDevToolsAgentImpl::didCreateScriptContext(WebLocalFrameImpl* webframe, int worldId)
 {
     // Skip non main world contexts.
     if (worldId)

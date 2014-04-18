@@ -32,7 +32,7 @@
 #include "WebDOMMessageEvent.h"
 
 #include "WebFrame.h"
-#include "WebFrameImpl.h"
+#include "WebLocalFrameImpl.h"
 #include "WebSerializedScriptValue.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "core/dom/Document.h"
@@ -51,7 +51,7 @@ void WebDOMMessageEvent::initMessageEvent(const WebString& type, bool canBubble,
     ASSERT(isMessageEvent());
     DOMWindow* window = 0;
     if (sourceFrame)
-        window = toWebFrameImpl(sourceFrame)->frame()->domWindow();
+        window = toWebLocalFrameImpl(sourceFrame)->frame()->domWindow();
     OwnPtr<MessagePortArray> ports;
     if (sourceFrame)
         ports = MessagePort::toMessagePortArray(window->document(), webChannels);

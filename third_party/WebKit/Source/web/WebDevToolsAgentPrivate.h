@@ -38,7 +38,7 @@ class Page;
 }
 
 namespace blink {
-class WebFrameImpl;
+class WebLocalFrameImpl;
 class WebInputEvent;
 struct WebSize;
 
@@ -49,7 +49,7 @@ public:
     // New context has been created for a given world in given frame. Any
     // processing hat needs to happen before the first script is evaluated
     // in this context should be done here.
-    virtual void didCreateScriptContext(WebFrameImpl*, int worldId) = 0;
+    virtual void didCreateScriptContext(WebLocalFrameImpl*, int worldId) = 0;
 
     // WebViewImpl has been resized.
     virtual void webViewResized(const WebSize&) = 0;

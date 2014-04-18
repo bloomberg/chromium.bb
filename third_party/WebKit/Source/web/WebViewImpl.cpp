@@ -55,10 +55,10 @@
 #include "WebAutofillClient.h"
 #include "WebDevToolsAgentImpl.h"
 #include "WebDevToolsAgentPrivate.h"
-#include "WebFrameImpl.h"
 #include "WebHitTestResult.h"
 #include "WebInputElement.h"
 #include "WebInputEventConversion.h"
+#include "WebLocalFrameImpl.h"
 #include "WebMediaPlayerAction.h"
 #include "WebNode.h"
 #include "WebPagePopupImpl.h"
@@ -318,7 +318,7 @@ void WebView::didExitModalLoop()
 
 void WebViewImpl::setMainFrame(WebFrame* frame)
 {
-    toWebFrameImpl(frame)->initializeAsMainFrame(page());
+    toWebLocalFrameImpl(frame)->initializeAsMainFrame(page());
 }
 
 void WebViewImpl::setAutofillClient(WebAutofillClient* autofillClient)
@@ -457,9 +457,9 @@ WebViewImpl::~WebViewImpl()
     ASSERT(!m_page);
 }
 
-WebFrameImpl* WebViewImpl::mainFrameImpl()
+WebLocalFrameImpl* WebViewImpl::mainFrameImpl()
 {
-    return m_page ? WebFrameImpl::fromFrame(m_page->mainFrame()) : 0;
+    return m_page ? WebLocalFrameImpl::fromFrame(m_page->mainFrame()) : 0;
 }
 
 bool WebViewImpl::tabKeyCyclesThroughElements() const
@@ -944,7 +944,7 @@ bool WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event)
 
     RefPtr<Frame> focusedFrame = focusedWebCoreFrame();
     if (focusedFrame && focusedFrame->isRemoteFrameTemporary()) {
-        WebFrameImpl* webFrame = WebFrameImpl::fromFrame(toLocalFrameTemporary(focusedFrame.get()));
+        WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(toLocalFrameTemporary(focusedFrame.get()));
         webFrame->client()->forwardInputEvent(&event);
         return true;
     }
@@ -1570,7 +1570,7 @@ void WebViewImpl::willStartLiveResize()
         mainFrameImpl()->frameView()->willStartLiveResize();
 
     LocalFrame* frame = mainFrameImpl()->frame();
-    WebPluginContainerImpl* pluginContainer = WebFrameImpl::pluginContainerFromFrame(frame);
+    WebPluginContainerImpl* pluginContainer = WebLocalFrameImpl::pluginContainerFromFrame(frame);
     if (pluginContainer)
         pluginContainer->willStartLiveResize();
 }
@@ -1614,7 +1614,7 @@ void WebViewImpl::resize(const WebSize& newSize)
         WebDevToolsAgentPrivate* agentPrivate = devToolsAgentPrivate();
         if (agentPrivate)
             agentPrivate->webViewResized(newSize);
-        WebFrameImpl* webFrame = mainFrameImpl();
+        WebLocalFrameImpl* webFrame = mainFrameImpl();
         if (webFrame->frameView()) {
             webFrame->frameView()->resize(m_size);
             if (pinchVirtualViewportEnabled())
@@ -1654,7 +1654,7 @@ void WebViewImpl::willEndLiveResize()
         mainFrameImpl()->frameView()->willEndLiveResize();
 
     LocalFrame* frame = mainFrameImpl()->frame();
-    WebPluginContainerImpl* pluginContainer = WebFrameImpl::pluginContainerFromFrame(frame);
+    WebPluginContainerImpl* pluginContainer = WebLocalFrameImpl::pluginContainerFromFrame(frame);
     if (pluginContainer)
         pluginContainer->willEndLiveResize();
 }
@@ -2259,7 +2259,7 @@ InputMethodContext* WebViewImpl::inputMethodContext()
 
 WebPlugin* WebViewImpl::focusedPluginIfInputMethodSupported(LocalFrame* frame)
 {
-    WebPluginContainerImpl* container = WebFrameImpl::pluginContainerFromNode(frame, WebNode(focusedElement()));
+    WebPluginContainerImpl* container = WebLocalFrameImpl::pluginContainerFromNode(frame, WebNode(focusedElement()));
     if (container && container->supportsInputMethod())
         return container->plugin();
     return 0;
@@ -2462,14 +2462,14 @@ WebFrame* WebViewImpl::findFrameByName(
 {
     if (!relativeToFrame)
         relativeToFrame = mainFrame();
-    LocalFrame* frame = toWebFrameImpl(relativeToFrame)->frame();
+    LocalFrame* frame = toWebLocalFrameImpl(relativeToFrame)->frame();
     frame = frame->tree().find(name);
-    return WebFrameImpl::fromFrame(frame);
+    return WebLocalFrameImpl::fromFrame(frame);
 }
 
 WebFrame* WebViewImpl::focusedFrame()
 {
-    return WebFrameImpl::fromFrame(toLocalFrame(focusedWebCoreFrame()));
+    return WebLocalFrameImpl::fromFrame(toLocalFrame(focusedWebCoreFrame()));
 }
 
 void WebViewImpl::setFocusedFrame(WebFrame* frame)
@@ -2481,7 +2481,7 @@ void WebViewImpl::setFocusedFrame(WebFrame* frame)
             toLocalFrame(focusedFrame)->selection().setFocused(false);
         return;
     }
-    LocalFrame* webcoreFrame = toWebFrameImpl(frame)->frame();
+    LocalFrame* webcoreFrame = toWebLocalFrameImpl(frame)->frame();
     webcoreFrame->page()->focusController().setFocusedFrame(webcoreFrame);
 }
 
@@ -2633,7 +2633,7 @@ double WebViewImpl::setZoomLevel(double zoomLevel)
         m_zoomLevel = zoomLevel;
 
     LocalFrame* frame = mainFrameImpl()->frame();
-    WebPluginContainerImpl* pluginContainer = WebFrameImpl::pluginContainerFromFrame(frame);
+    WebPluginContainerImpl* pluginContainer = WebLocalFrameImpl::pluginContainerFromFrame(frame);
     if (pluginContainer)
         pluginContainer->plugin()->setZoomLevel(m_zoomLevel, false);
     else {
@@ -2660,7 +2660,7 @@ float WebViewImpl::textZoomFactor()
 float WebViewImpl::setTextZoomFactor(float textZoomFactor)
 {
     LocalFrame* frame = mainFrameImpl()->frame();
-    if (WebFrameImpl::pluginContainerFromFrame(frame))
+    if (WebLocalFrameImpl::pluginContainerFromFrame(frame))
         return 1;
 
     frame->setTextZoomFactor(textZoomFactor);
@@ -3533,7 +3533,7 @@ void WebViewImpl::didCommitLoad(bool isNewNavigation, bool isNavigationWithinPag
     m_userGestureObserved = false;
 }
 
-void WebViewImpl::willInsertBody(WebFrameImpl* webframe)
+void WebViewImpl::willInsertBody(WebLocalFrameImpl* webframe)
 {
     if (webframe != mainFrameImpl())
         return;
@@ -3554,7 +3554,7 @@ void WebViewImpl::resumeTreeViewCommits()
     }
 }
 
-void WebViewImpl::layoutUpdated(WebFrameImpl* webframe)
+void WebViewImpl::layoutUpdated(WebLocalFrameImpl* webframe)
 {
     if (!m_client || webframe != mainFrameImpl())
         return;
@@ -3606,7 +3606,7 @@ void WebViewImpl::startDragging(LocalFrame* frame,
         return;
     ASSERT(!m_doingDragAndDrop);
     m_doingDragAndDrop = true;
-    m_client->startDragging(WebFrameImpl::fromFrame(frame), dragData, mask, dragImage, dragImageOffset);
+    m_client->startDragging(WebLocalFrameImpl::fromFrame(frame), dragData, mask, dragImage, dragImageOffset);
 }
 
 void WebViewImpl::setIgnoreInputEvents(bool newValue)

@@ -34,7 +34,7 @@
 #include "ServiceWorkerGlobalScopeClientImpl.h"
 #include "ServiceWorkerGlobalScopeProxy.h"
 #include "WebDataSourceImpl.h"
-#include "WebFrameImpl.h"
+#include "WebLocalFrameImpl.h"
 #include "WebServiceWorkerContextClient.h"
 #include "WebServiceWorkerNetworkProvider.h"
 #include "WebView.h"
@@ -113,7 +113,7 @@ public:
 
     virtual void postTaskToLoader(PassOwnPtr<ExecutionContextTask> task) OVERRIDE
     {
-        toWebFrameImpl(m_embeddedWorker.m_mainFrame)->frame()->document()->postTask(task);
+        toWebLocalFrameImpl(m_embeddedWorker.m_mainFrame)->frame()->document()->postTask(task);
     }
 
     virtual bool postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask> task) OVERRIDE
@@ -156,7 +156,7 @@ WebEmbeddedWorkerImpl::~WebEmbeddedWorkerImpl()
     ASSERT(m_webView);
 
     // Detach the client before closing the view to avoid getting called back.
-    toWebFrameImpl(m_mainFrame)->setClient(0);
+    toWebLocalFrameImpl(m_mainFrame)->setClient(0);
 
     m_webView->close();
     m_mainFrame->close();
@@ -196,7 +196,7 @@ void WebEmbeddedWorkerImpl::prepareShadowPageForLoader()
     m_mainFrame = WebLocalFrame::create(this);
     m_webView->setMainFrame(m_mainFrame);
 
-    WebFrameImpl* webFrame = toWebFrameImpl(m_webView->mainFrame());
+    WebLocalFrameImpl* webFrame = toWebLocalFrameImpl(m_webView->mainFrame());
 
     // Construct substitute data source for the 'shadow page'. We only need it
     // to have same origin as the worker so the loading checks work correctly.
@@ -223,7 +223,7 @@ void WebEmbeddedWorkerImpl::didFinishDocumentLoad(WebLocalFrame* frame)
     m_networkProvider = adoptPtr(m_workerContextClient->createServiceWorkerNetworkProvider(frame->dataSource()));
     m_mainScriptLoader = Loader::create();
     m_mainScriptLoader->load(
-        toWebFrameImpl(m_mainFrame)->frame()->document(),
+        toWebLocalFrameImpl(m_mainFrame)->frame()->document(),
         m_workerStartData.scriptURL,
         bind(&WebEmbeddedWorkerImpl::onScriptLoaderFinished, this));
 }
@@ -264,7 +264,7 @@ void WebEmbeddedWorkerImpl::onScriptLoaderFinished()
 
     m_mainScriptLoader.clear();
 
-    m_workerGlobalScopeProxy = ServiceWorkerGlobalScopeProxy::create(*this, *toWebFrameImpl(m_mainFrame)->frame()->document(), *contextClient);
+    m_workerGlobalScopeProxy = ServiceWorkerGlobalScopeProxy::create(*this, *toWebLocalFrameImpl(m_mainFrame)->frame()->document(), *contextClient);
     m_loaderProxy = LoaderProxy::create(*this);
 
     m_workerThread = ServiceWorkerThread::create(*m_loaderProxy, *m_workerGlobalScopeProxy, startupData.release());

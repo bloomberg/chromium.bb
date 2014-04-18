@@ -34,7 +34,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "WebFrameImpl.h"
+#include "WebLocalFrameImpl.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -149,7 +149,7 @@ NSAttributedString* WebSubstringUtil::attributedWordAtPoint(WebView* view, WebPo
 
 NSAttributedString* WebSubstringUtil::attributedSubstringInRange(WebLocalFrame* webFrame, size_t location, size_t length)
 {
-    LocalFrame* frame = toWebFrameImpl(webFrame)->frame();
+    LocalFrame* frame = toWebLocalFrameImpl(webFrame)->frame();
     if (frame->view()->needsLayout())
         frame->view()->layout();
 

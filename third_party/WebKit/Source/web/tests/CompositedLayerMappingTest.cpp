@@ -32,7 +32,7 @@
 #include "WebDocument.h"
 #include "WebElement.h"
 #include "WebFrameClient.h"
-#include "WebFrameImpl.h"
+#include "WebLocalFrameImpl.h"
 #include "WebSettings.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"

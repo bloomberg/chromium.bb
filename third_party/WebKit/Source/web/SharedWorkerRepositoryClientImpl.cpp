@@ -33,8 +33,8 @@
 
 #include "WebContentSecurityPolicy.h"
 #include "WebFrameClient.h"
-#include "WebFrameImpl.h"
 #include "WebKit.h"
+#include "WebLocalFrameImpl.h"
 #include "WebSharedWorker.h"
 #include "WebSharedWorkerRepositoryClient.h"
 #include "bindings/v8/ExceptionMessages.h"

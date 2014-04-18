@@ -58,7 +58,7 @@ namespace blink {
 
 class WebDevToolsAgentClient;
 class WebFrame;
-class WebFrameImpl;
+class WebLocalFrameImpl;
 class WebString;
 class WebURLRequest;
 class WebURLResponse;
@@ -78,7 +78,7 @@ public:
     virtual ~WebDevToolsAgentImpl();
 
     // WebDevToolsAgentPrivate implementation.
-    virtual void didCreateScriptContext(WebFrameImpl*, int worldId) OVERRIDE;
+    virtual void didCreateScriptContext(WebLocalFrameImpl*, int worldId) OVERRIDE;
     virtual void webViewResized(const WebSize&) OVERRIDE;
     virtual bool handleInputEvent(WebCore::Page*, const WebInputEvent&) OVERRIDE;
 

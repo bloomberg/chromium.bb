@@ -34,7 +34,7 @@
 #include "V8DOMFileSystem.h"
 #include "V8DirectoryEntry.h"
 #include "V8FileEntry.h"
-#include "WebFrameImpl.h"
+#include "WebLocalFrameImpl.h"
 #include "bindings/v8/WrapperTypeInfo.h"
 #include "core/dom/Document.h"
 #include "modules/filesystem/DOMFileSystem.h"
@@ -63,8 +63,8 @@ WebDOMFileSystem WebDOMFileSystem::create(
     const WebURL& rootURL,
     SerializableType serializableType)
 {
-    ASSERT(frame && toWebFrameImpl(frame)->frame());
-    RefPtrWillBeRawPtr<DOMFileSystem> domFileSystem = DOMFileSystem::create(toWebFrameImpl(frame)->frame()->document(), name, static_cast<WebCore::FileSystemType>(type), rootURL);
+    ASSERT(frame && toWebLocalFrameImpl(frame)->frame());
+    RefPtrWillBeRawPtr<DOMFileSystem> domFileSystem = DOMFileSystem::create(toWebLocalFrameImpl(frame)->frame()->document(), name, static_cast<WebCore::FileSystemType>(type), rootURL);
     if (serializableType == SerializableTypeSerializable)
         domFileSystem->makeClonable();
     return WebDOMFileSystem(domFileSystem);

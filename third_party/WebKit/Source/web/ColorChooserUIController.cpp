@@ -29,7 +29,7 @@
 #include "WebColorChooser.h"
 #include "WebColorSuggestion.h"
 #include "WebFrameClient.h"
-#include "WebFrameImpl.h"
+#include "WebLocalFrameImpl.h"
 #include "platform/ColorChooserClient.h"
 #include "platform/graphics/Color.h"
 #include "public/platform/WebColor.h"
@@ -82,7 +82,7 @@ void ColorChooserUIController::didEndChooser()
 void ColorChooserUIController::openColorChooser()
 {
     ASSERT(!m_chooser);
-    WebFrameImpl* frame = WebFrameImpl::fromFrame(m_frame);
+    WebLocalFrameImpl* frame = WebLocalFrameImpl::fromFrame(m_frame);
     WebFrameClient* webFrameClient = frame->client();
     if (!webFrameClient)
         return;

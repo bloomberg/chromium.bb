@@ -67,6 +67,7 @@ class WebLocalFrame;
 class WebPerformance;
 class WebPermissionClient;
 class WebRange;
+class WebRemoteFrame;
 class WebSecurityOrigin;
 class WebSharedWorkerRepositoryClient;
 class WebString;
@@ -106,7 +107,10 @@ public:
     // Returns the number of live WebFrame objects, used for leak checking.
     BLINK_EXPORT static int instanceCount();
 
+    virtual bool isWebLocalFrame() const = 0;
     virtual WebLocalFrame* toWebLocalFrame() = 0;
+    virtual bool isWebRemoteFrame() const = 0;
+    virtual WebRemoteFrame* toWebRemoteFrame() = 0;
 
     // This method closes and deletes the WebFrame.
     virtual void close() = 0;
