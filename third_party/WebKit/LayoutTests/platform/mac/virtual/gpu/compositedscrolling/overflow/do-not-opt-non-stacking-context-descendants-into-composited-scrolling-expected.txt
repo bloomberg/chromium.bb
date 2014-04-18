@@ -7,7 +7,7 @@ This test ensures that the descendants of children of non-stacking context overf
       (bounds 1832.00 1682.00)
       (contentsOpaque 1)
       (drawsContent 1)
-      (children 4
+      (children 3
         (GraphicsLayer
           (position 28.00 320.00)
           (bounds 402.00 402.00)
@@ -39,34 +39,27 @@ This test ensures that the descendants of children of non-stacking context overf
           )
         )
         (GraphicsLayer
-          (position 39.00 331.00)
-          (bounds 180.00 300.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #808080)
-        )
-        (GraphicsLayer
-          (position 39.00 961.00)
-          (bounds 180.00 300.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #0000FF)
-        )
-        (GraphicsLayer
-          (position 39.00 641.00)
-          (bounds 180.00 300.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #808080)
-          (children 1
+          (children 2
             (GraphicsLayer
-              (position 0.00 -200.00)
-              (bounds 100.00 100.00)
+              (position 39.00 331.00)
+              (bounds 180.00 300.00)
               (contentsOpaque 1)
               (drawsContent 1)
-              (backgroundColor #000000)
+              (backgroundColor #808080)
+            )
+            (GraphicsLayer
+              (position 39.00 641.00)
+              (bounds 180.00 620.00)
+              (drawsContent 1)
             )
           )
+        )
+        (GraphicsLayer
+          (position 39.00 441.00)
+          (bounds 100.00 100.00)
+          (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #000000)
         )
       )
     )

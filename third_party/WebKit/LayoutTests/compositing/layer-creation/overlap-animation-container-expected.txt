@@ -6,37 +6,40 @@ Before:
       (bounds 785.00 802.00)
       (contentsOpaque 1)
       (drawsContent 1)
-      (children 3
+      (children 2
         (GraphicsLayer
-          (position 18.00 120.00)
-          (bounds 100.00 100.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #0000FF)
-          (transform ...)
+          (children 2
+            (GraphicsLayer
+              (position 18.00 120.00)
+              (bounds 100.00 100.00)
+              (contentsOpaque 1)
+              (drawsContent 1)
+              (backgroundColor #0000FF)
+              (transform ...)
+            )
+            (GraphicsLayer
+              (position 46.00 230.00)
+              (bounds 146.00 452.00)
+              (drawsContent 1)
+            )
+          )
         )
         (GraphicsLayer
-          (position 47.00 230.00)
-          (bounds 144.00 452.00)
-          (drawsContent 1)
-          (backgroundColor #FFFFFF)
-          (children 1
+          (children 2
             (GraphicsLayer
-              (position 22.00 11.00)
+              (position 69.00 241.00)
               (bounds 100.00 100.00)
               (contentsOpaque 1)
               (drawsContent 1)
               (backgroundColor #808080)
               (transform ...)
             )
+            (GraphicsLayer
+              (position 18.00 692.00)
+              (bounds 100.00 100.00)
+              (drawsContent 1)
+            )
           )
-        )
-        (GraphicsLayer
-          (position 18.00 692.00)
-          (bounds 100.00 100.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #FFFF00)
         )
       )
     )
@@ -51,24 +54,28 @@ After:
       (bounds 785.00 802.00)
       (contentsOpaque 1)
       (drawsContent 1)
-      (children 3
+      (children 2
         (GraphicsLayer
-          (position 18.00 120.00)
-          (bounds 100.00 100.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #0000FF)
-          (transform ...)
+          (children 2
+            (GraphicsLayer
+              (position 18.00 120.00)
+              (bounds 100.00 100.00)
+              (contentsOpaque 1)
+              (drawsContent 1)
+              (backgroundColor #0000FF)
+              (transform ...)
+            )
+            (GraphicsLayer
+              (position 46.00 230.00)
+              (bounds 146.00 452.00)
+              (drawsContent 1)
+            )
+          )
         )
         (GraphicsLayer
-          (position 58.00 230.00)
-          (bounds 122.00 452.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #FFFFFF)
-          (children 4
+          (children 2
             (GraphicsLayer
-              (position 11.00 11.00)
+              (position 69.00 241.00)
               (bounds 100.00 100.00)
               (contentsOpaque 1)
               (drawsContent 1)
@@ -76,33 +83,11 @@ After:
               (transform ...)
             )
             (GraphicsLayer
-              (position 10.00 120.00)
-              (bounds 102.00 102.00)
+              (position 18.00 328.00)
+              (bounds 174.00 464.00)
               (drawsContent 1)
-              (backgroundColor #008000)
-              (transform ...)
-            )
-            (GraphicsLayer
-              (position 10.00 230.00)
-              (bounds 102.00 102.00)
-              (drawsContent 1)
-              (backgroundColor #008000)
-              (transform ...)
-            )
-            (GraphicsLayer
-              (position 10.00 340.00)
-              (bounds 102.00 102.00)
-              (drawsContent 1)
-              (backgroundColor #008000)
             )
           )
-        )
-        (GraphicsLayer
-          (position 18.00 692.00)
-          (bounds 100.00 100.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #FFFF00)
         )
       )
     )

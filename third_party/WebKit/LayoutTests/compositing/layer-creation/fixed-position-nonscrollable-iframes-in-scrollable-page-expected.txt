@@ -6,7 +6,7 @@ In all iframes, the green fixed-position element should not be composited.
       (bounds 785.00 4016.00)
       (contentsOpaque 1)
       (drawsContent 1)
-      (children 3
+      (children 2
         (GraphicsLayer
           (position 50.00 360.00)
           (bounds 300.00 100.00)
@@ -15,14 +15,18 @@ In all iframes, the green fixed-position element should not be composited.
           (backgroundColor #00FFFF)
         )
         (GraphicsLayer
-          (position 10.00 200.00)
-          (bounds 154.00 154.00)
-          (drawsContent 1)
-        )
-        (GraphicsLayer
-          (position 10.00 380.00)
-          (bounds 154.00 154.00)
-          (drawsContent 1)
+          (children 2
+            (GraphicsLayer
+              (position 10.00 200.00)
+              (bounds 154.00 154.00)
+              (drawsContent 1)
+            )
+            (GraphicsLayer
+              (position 10.00 380.00)
+              (bounds 154.00 154.00)
+              (drawsContent 1)
+            )
+          )
         )
       )
     )

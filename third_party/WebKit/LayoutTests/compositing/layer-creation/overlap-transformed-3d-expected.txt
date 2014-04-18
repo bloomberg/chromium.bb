@@ -28,42 +28,23 @@ After:
       (bounds 800.00 600.00)
       (contentsOpaque 1)
       (drawsContent 1)
-      (children 5
+      (children 1
         (GraphicsLayer
-          (position 108.00 108.00)
-          (bounds 100.00 100.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #008000)
-          (transform [0.71 0.71 0.00 0.00] [-0.71 0.71 0.00 0.00] [0.00 0.00 1.00 0.00] [0.00 0.00 -1.00 1.00])
-        )
-        (GraphicsLayer
-          (position 8.00 8.00)
-          (bounds 100.00 150.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #808080)
-        )
-        (GraphicsLayer
-          (position 208.00 8.00)
-          (bounds 100.00 150.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #808080)
-        )
-        (GraphicsLayer
-          (position 8.00 158.00)
-          (bounds 100.00 150.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #808080)
-        )
-        (GraphicsLayer
-          (position 208.00 158.00)
-          (bounds 100.00 150.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #808080)
+          (children 2
+            (GraphicsLayer
+              (position 108.00 108.00)
+              (bounds 100.00 100.00)
+              (contentsOpaque 1)
+              (drawsContent 1)
+              (backgroundColor #008000)
+              (transform [0.71 0.71 0.00 0.00] [-0.71 0.71 0.00 0.00] [0.00 0.00 1.00 0.00] [0.00 0.00 -1.00 1.00])
+            )
+            (GraphicsLayer
+              (position 8.00 8.00)
+              (bounds 300.00 300.00)
+              (drawsContent 1)
+            )
+          )
         )
       )
     )

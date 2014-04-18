@@ -7,7 +7,7 @@
       (bounds 800.00 600.00)
       (contentsOpaque 1)
       (drawsContent 1)
-      (children 5
+      (children 3
         (GraphicsLayer
           (anchor 0.10 0.20)
           (bounds 500.00 250.00)
@@ -20,28 +20,24 @@
           )
         )
         (GraphicsLayer
-          (position 0.00 250.00)
-          (anchor 0.33 0.33)
-          (bounds 150.00 150.00)
-          (drawsContent 1)
-          (children 1
+          (children 2
             (GraphicsLayer
+              (position 0.00 250.00)
+              (anchor 0.33 0.33)
               (bounds 150.00 150.00)
+              (drawsContent 1)
+              (children 1
+                (GraphicsLayer
+                  (bounds 150.00 150.00)
+                  (drawsContent 1)
+                )
+              )
+            )
+            (GraphicsLayer
+              (bounds 792.00 100.00)
               (drawsContent 1)
             )
           )
-        )
-        (GraphicsLayer
-          (position 8.00 8.00)
-          (bounds 784.00 15.00)
-          (opacity 0.00)
-          (drawsContent 1)
-        )
-        (GraphicsLayer
-          (bounds 100.00 100.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #008000)
         )
         (GraphicsLayer
           (position 0.00 250.00)

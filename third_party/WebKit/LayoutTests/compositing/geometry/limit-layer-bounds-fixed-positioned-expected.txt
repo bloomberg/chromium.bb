@@ -6,17 +6,19 @@ Text here
       (bounds 785.00 1021.00)
       (contentsOpaque 1)
       (drawsContent 1)
-      (children 3
+      (children 2
         (GraphicsLayer
-          (position 29.00 134.00)
-          (bounds 100.00 100.00)
-        )
-        (GraphicsLayer
-          (position 29.00 134.00)
-          (bounds 100.00 100.00)
-          (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #FF0000)
+          (children 2
+            (GraphicsLayer
+              (position 29.00 134.00)
+              (bounds 100.00 100.00)
+            )
+            (GraphicsLayer
+              (position 29.00 134.00)
+              (bounds 100.00 100.00)
+              (drawsContent 1)
+            )
+          )
         )
         (GraphicsLayer
           (position 0.00 113.00)

@@ -24,7 +24,7 @@
             (GraphicsLayer
               (position 1.00 1.00)
               (bounds 120.00 460.00)
-              (children 3
+              (children 2
                 (GraphicsLayer
                   (position 10.00 10.00)
                   (bounds 100.00 100.00)
@@ -34,19 +34,21 @@
                   (transform ...)
                 )
                 (GraphicsLayer
-                  (position 10.00 230.00)
-                  (bounds 100.00 100.00)
-                  (contentsOpaque 1)
-                  (drawsContent 1)
-                  (backgroundColor #0000FF)
-                  (transform ...)
-                )
-                (GraphicsLayer
-                  (position 10.00 340.00)
-                  (bounds 100.00 100.00)
-                  (contentsOpaque 1)
-                  (drawsContent 1)
-                  (backgroundColor #FFFF00)
+                  (children 2
+                    (GraphicsLayer
+                      (position 10.00 230.00)
+                      (bounds 100.00 100.00)
+                      (contentsOpaque 1)
+                      (drawsContent 1)
+                      (backgroundColor #0000FF)
+                      (transform ...)
+                    )
+                    (GraphicsLayer
+                      (position 10.00 340.00)
+                      (bounds 100.00 100.00)
+                      (drawsContent 1)
+                    )
+                  )
                 )
               )
             )
