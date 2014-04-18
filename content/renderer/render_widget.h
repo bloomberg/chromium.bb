@@ -410,12 +410,6 @@ class CONTENT_EXPORT RenderWidget
   virtual void DidInitiatePaint() {}
   virtual void DidFlushPaint() {}
 
-  // Override and return true when the widget is rendered with a graphics
-  // context that supports asynchronous swapbuffers. When returning true, the
-  // subclass must call OnSwapBuffersPosted() when swap is posted,
-  // OnSwapBuffersComplete() when swaps complete, and OnSwapBuffersAborted if
-  // the context is lost.
-  virtual bool SupportsAsynchronousSwapBuffers();
   virtual GURL GetURLForGraphicsContext3D();
 
   virtual bool ForceCompositingModeEnabled();
@@ -599,21 +593,6 @@ class CONTENT_EXPORT RenderWidget
   // an already-completed auto-resize.
   bool need_update_rect_for_auto_resize_;
 
-  // True if the underlying graphics context supports asynchronous swap.
-  // Cached on the RenderWidget because determining support is costly.
-  bool using_asynchronous_swapbuffers_;
-
-  // Number of OnSwapBuffersComplete we are expecting. Incremented each time
-  // WebWidget::composite has been been performed when the RenderWidget subclass
-  // SupportsAsynchronousSwapBuffers. Decremented in OnSwapBuffers. Will block
-  // rendering.
-  int num_swapbuffers_complete_pending_;
-
-  // When accelerated rendering is on, is the maximum number of swapbuffers that
-  // can be outstanding before we start throttling based on
-  // OnSwapBuffersComplete callback.
-  static const int kMaxSwapBuffersPending = 2;
-
   // Set to true if we should ignore RenderWidget::Show calls.
   bool did_show_;
 
@@ -730,17 +709,6 @@ class CONTENT_EXPORT RenderWidget
 
   // Stats for legacy software mode
   scoped_ptr<cc::RenderingStatsInstrumentation> legacy_software_mode_stats_;
-
-  // UpdateRect parameters for the current compositing pass. This is used to
-  // pass state between DoDeferredUpdate and OnSwapBuffersPosted.
-  scoped_ptr<ViewHostMsg_UpdateRect_Params> pending_update_params_;
-
-  // Queue of UpdateRect messages corresponding to a SwapBuffers. We want to
-  // delay sending of UpdateRect until the corresponding SwapBuffers has been
-  // executed. Since we can have several in flight, we need to keep them in a
-  // queue. Note: some SwapBuffers may not correspond to an update, in which
-  // case NULL is added to the queue.
-  std::deque<ViewHostMsg_UpdateRect*> updates_pending_swap_;
 
   // Properties of the screen hosting this RenderWidget instance.
   blink::WebScreenInfo screen_info_;

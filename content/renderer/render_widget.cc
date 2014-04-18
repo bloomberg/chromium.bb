@@ -363,8 +363,6 @@ RenderWidget::RenderWidget(blink::WebPopupType popup_type,
       update_reply_pending_(false),
       auto_resize_mode_(false),
       need_update_rect_for_auto_resize_(false),
-      using_asynchronous_swapbuffers_(false),
-      num_swapbuffers_complete_pending_(0),
       did_show_(false),
       is_hidden_(hidden),
       never_visible_(never_visible),
@@ -415,7 +413,6 @@ RenderWidget::RenderWidget(blink::WebPopupType popup_type,
 
 RenderWidget::~RenderWidget() {
   DCHECK(!webwidget_) << "Leaking our WebWidget!";
-  STLDeleteElements(&updates_pending_swap_);
   if (current_paint_buf_) {
     if (RenderProcess::current()) {
       // If the RenderProcess is already gone, it will have released all DIBs
@@ -850,13 +847,6 @@ void RenderWidget::OnUpdateRectAck() {
     current_paint_buf_ = NULL;
   }
 
-  // If swapbuffers is still pending, then defer the update until the
-  // swapbuffers occurs.
-  if (num_swapbuffers_complete_pending_ >= kMaxSwapBuffersPending) {
-    TRACE_EVENT0("renderer", "EarlyOut_SwapStillPending");
-    return;
-  }
-
   // Notify subclasses that software rendering was flushed to the screen.
   if (!is_accelerated_compositing_active_) {
     DidFlushPaint();
@@ -864,15 +854,6 @@ void RenderWidget::OnUpdateRectAck() {
 
   // Continue painting if necessary...
   DoDeferredUpdateAndSendInputAck();
-}
-
-bool RenderWidget::SupportsAsynchronousSwapBuffers() {
-  // Contexts using the command buffer support asynchronous swapbuffers.
-  // See RenderWidget::CreateOutputSurface().
-  if (RenderThreadImpl::current()->compositor_message_loop_proxy().get())
-    return false;
-
-  return true;
 }
 
 GURL RenderWidget::GetURLForGraphicsContext3D() {
@@ -962,35 +943,12 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
 
 void RenderWidget::OnSwapBuffersAborted() {
   TRACE_EVENT0("renderer", "RenderWidget::OnSwapBuffersAborted");
-  while (!updates_pending_swap_.empty()) {
-    ViewHostMsg_UpdateRect* msg = updates_pending_swap_.front();
-    updates_pending_swap_.pop_front();
-    // msg can be NULL if the swap doesn't correspond to an DoDeferredUpdate
-    // compositing pass, hence doesn't require an UpdateRect message.
-    if (msg)
-      Send(msg);
-  }
-  num_swapbuffers_complete_pending_ = 0;
-  using_asynchronous_swapbuffers_ = false;
   // Schedule another frame so the compositor learns about it.
   scheduleComposite();
 }
 
 void RenderWidget::OnSwapBuffersPosted() {
   TRACE_EVENT0("renderer", "RenderWidget::OnSwapBuffersPosted");
-
-  if (using_asynchronous_swapbuffers_) {
-    ViewHostMsg_UpdateRect* msg = NULL;
-    // pending_update_params_ can be NULL if the swap doesn't correspond to an
-    // DoDeferredUpdate compositing pass, hence doesn't require an UpdateRect
-    // message.
-    if (pending_update_params_) {
-      msg = new ViewHostMsg_UpdateRect(routing_id_, *pending_update_params_);
-      pending_update_params_.reset();
-    }
-    updates_pending_swap_.push_back(msg);
-    num_swapbuffers_complete_pending_++;
-  }
 }
 
 void RenderWidget::OnSwapBuffersComplete() {
@@ -998,49 +956,6 @@ void RenderWidget::OnSwapBuffersComplete() {
 
   // Notify subclasses that composited rendering was flushed to the screen.
   DidFlushPaint();
-
-  // When compositing deactivates, we reset the swapbuffers pending count.  The
-  // swapbuffers acks may still arrive, however.
-  if (num_swapbuffers_complete_pending_ == 0) {
-    TRACE_EVENT0("renderer", "EarlyOut_ZeroSwapbuffersPending");
-    return;
-  }
-  DCHECK(!updates_pending_swap_.empty());
-  ViewHostMsg_UpdateRect* msg = updates_pending_swap_.front();
-  updates_pending_swap_.pop_front();
-  // msg can be NULL if the swap doesn't correspond to an DoDeferredUpdate
-  // compositing pass, hence doesn't require an UpdateRect message.
-  if (msg)
-    Send(msg);
-  num_swapbuffers_complete_pending_--;
-
-  // If update reply is still pending, then defer the update until that reply
-  // occurs.
-  if (update_reply_pending_) {
-    TRACE_EVENT0("renderer", "EarlyOut_UpdateReplyPending");
-    return;
-  }
-
-  // If we are not accelerated rendering, then this is a stale swapbuffers from
-  // when we were previously rendering. However, if an invalidation task is not
-  // posted, there may be software rendering work pending. In that case, don't
-  // early out.
-  if (!is_accelerated_compositing_active_ && invalidation_task_posted_) {
-    TRACE_EVENT0("renderer", "EarlyOut_AcceleratedCompositingOff");
-    return;
-  }
-
-  // Do not call DoDeferredUpdate unless there's animation work to be done or
-  // a real invalidation. This prevents rendering in response to a swapbuffers
-  // callback coming back after we've navigated away from the page that
-  // generated it.
-  if (!animation_update_pending_ && !has_frame_pending_) {
-    TRACE_EVENT0("renderer", "EarlyOut_NoPendingUpdate");
-    return;
-  }
-
-  // Continue painting if necessary...
-  DoDeferredUpdateAndSendInputAck();
 }
 
 void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
@@ -1389,7 +1304,7 @@ void RenderWidget::AnimateIfNeeded() {
   // animation_floor_time_ is the earliest time that we should animate when
   // using the dead reckoning software scheduler. If we're using swapbuffers
   // complete callbacks to rate limit, we can ignore this floor.
-  if (now >= animation_floor_time_ || num_swapbuffers_complete_pending_ > 0) {
+  if (now >= animation_floor_time_) {
     TRACE_EVENT0("renderer", "RenderWidget::AnimateIfNeeded")
     animation_floor_time_ = now + animationInterval;
     // Set a timer to call us back after animationInterval before
@@ -1474,8 +1389,7 @@ void RenderWidget::didInvalidateRect(const WebRect& rect) {
   // We may not need to schedule another call to DoDeferredUpdate.
   if (invalidation_task_posted_)
     return;
-  if (update_reply_pending_ ||
-      num_swapbuffers_complete_pending_ >= kMaxSwapBuffersPending)
+  if (update_reply_pending_)
     return;
 
   // When GPU rendering, combine pending animations and invalidations into
@@ -1513,8 +1427,7 @@ void RenderWidget::didScrollRect(int dx, int dy,
   // We may not need to schedule another call to DoDeferredUpdate.
   if (invalidation_task_posted_)
     return;
-  if (update_reply_pending_ ||
-      num_swapbuffers_complete_pending_ >= kMaxSwapBuffersPending)
+  if (update_reply_pending_)
     return;
 
   // When GPU rendering, combine pending animations and invalidations into
@@ -1633,9 +1546,6 @@ void RenderWidget::didDeactivateCompositor() {
   is_accelerated_compositing_active_ = false;
   Send(new ViewHostMsg_DidActivateAcceleratedCompositing(
       routing_id_, is_accelerated_compositing_active_));
-
-  if (using_asynchronous_swapbuffers_)
-    using_asynchronous_swapbuffers_ = false;
 
   // In single-threaded mode, we exit force compositing mode and re-enter in
   // DoDeferredUpdate() if appropriate. In threaded compositing mode,
