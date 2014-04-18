@@ -230,7 +230,6 @@ private:
     float multiplierFromBlock(const RenderBlock*);
     void applyMultiplier(RenderObject*, float, RelayoutBehavior = AlreadyInLayout);
     bool isWiderOrNarrowerDescendant(Cluster*);
-    bool isLayoutRoot(const RenderBlock*) const;
 
     Cluster* currentCluster() const;
 

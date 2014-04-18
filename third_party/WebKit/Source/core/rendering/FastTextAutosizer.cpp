@@ -246,10 +246,24 @@ static bool mightBeWiderOrNarrowerDescendant(const RenderBlock* block)
 
 // Before a block enters layout we don't know for sure if it will become a cluster.
 // Note: clusters are also created for blocks that do become autosizing clusters!
-static bool blockMightBecomeAutosizingCluster(const RenderBlock* block)
+static bool blockMightBecomeIndependentCluster(const RenderBlock* block)
 {
     ASSERT(isPotentialClusterRoot(block));
     return isIndependentDescendant(block) || mightBeWiderOrNarrowerDescendant(block) || block->isTable();
+}
+
+// Returns a best-guess for whether a block will become a cluster without querying
+// state based on layout.
+static bool blockMightBecomeCluster(const RenderBlock* block)
+{
+    if (!isPotentialClusterRoot(block))
+        return false;
+
+    if (blockSuppressesAutosizing(block))
+        return true;
+
+    // FIXME: Unify this with blockMightBecomeIndependentCluster(block).
+    return isIndependentDescendant(block) || block->isTable();
 }
 
 FastTextAutosizer::FastTextAutosizer(const Document* document)
@@ -280,7 +294,7 @@ void FastTextAutosizer::record(const RenderBlock* block)
     if (!isPotentialClusterRoot(block))
         return;
 
-    if (!blockMightBecomeAutosizingCluster(block))
+    if (!blockMightBecomeIndependentCluster(block))
         return;
 
     if (Fingerprint fingerprint = computeFingerprint(block))
@@ -404,7 +418,7 @@ void FastTextAutosizer::inflateTable(RenderTable* table)
                 if (shouldAutosize) {
                     RenderObject* child = cell;
                     while (child) {
-                        if (child->needsLayout() && !child->isTable()) {
+                        if (child->needsLayout() && (child->isTableCell() || !child->isRenderBlock() || !blockMightBecomeCluster(toRenderBlock(child)))) {
                             if (child->isText()) {
                                 applyMultiplier(child, multiplier);
                                 applyMultiplier(child->parent(), multiplier); // Parent handles line spacing.
@@ -595,16 +609,9 @@ bool FastTextAutosizer::clusterHasEnoughTextToAutosize(Cluster* cluster, const R
     RenderObject* descendant = root->nextInPreOrder(root);
     while (descendant) {
         if (descendant->isRenderBlock()) {
-            RenderBlock* block = toRenderBlock(descendant);
-
-            // Note: Ideally we would check isWiderOrNarrowerDescendant here but we only know that
-            //       after the block has entered layout, which may not be the case.
-            if (isPotentialClusterRoot(block)) {
-                bool isAutosizingClusterRoot = isIndependentDescendant(block) || block->isTable();
-                if ((isAutosizingClusterRoot && !block->isTableCell()) || blockSuppressesAutosizing(block)) {
-                    descendant = descendant->nextInPreOrderAfterChildren(root);
-                    continue;
-                }
+            if (!descendant->isTableCell() && blockMightBecomeCluster(toRenderBlock(descendant))) {
+                descendant = descendant->nextInPreOrderAfterChildren(root);
+                continue;
             }
         } else if (descendant->isText()) {
             // Note: Using text().stripWhiteSpace().length() instead of renderedTextLength() because
@@ -678,7 +685,7 @@ FastTextAutosizer::Cluster* FastTextAutosizer::maybeCreateCluster(const RenderBl
     Cluster* parentCluster = m_clusterStack.isEmpty() ? 0 : currentCluster();
     ASSERT(parentCluster || block->isRenderView());
 
-    bool mightAutosize = blockMightBecomeAutosizingCluster(block);
+    bool mightAutosize = blockMightBecomeIndependentCluster(block);
     bool suppressesAutosizing = blockSuppressesAutosizing(block);
 
     // If the block would not alter the m_autosize bit, it doesn't need to be a cluster.
