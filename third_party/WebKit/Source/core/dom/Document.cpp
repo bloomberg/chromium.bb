@@ -1906,10 +1906,13 @@ void Document::updateLayout()
 
     updateRenderTreeIfNeeded();
 
-    // Only do a layout if changes have occurred that make it necessary.
-    if (isActive() && frameView && renderView() && (frameView->layoutPending() || renderView()->needsLayout()))
+    if (!isActive())
+        return;
+
+    if (frameView->needsLayout())
         frameView->layout();
-    else if (lifecycle().state() < DocumentLifecycle::LayoutClean)
+
+    if (lifecycle().state() < DocumentLifecycle::LayoutClean)
         lifecycle().advanceTo(DocumentLifecycle::LayoutClean);
 }
 
