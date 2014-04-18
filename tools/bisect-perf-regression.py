@@ -520,8 +520,9 @@ def ExtractZip(filename, output_dir, verbose=True):
 
 
 def RunProcess(command):
-  """Run an arbitrary command. If output from the call is needed, use
-  RunProcessAndRetrieveOutput instead.
+  """Runs an arbitrary command.
+
+  If output from the call is needed, use RunProcessAndRetrieveOutput instead.
 
   Args:
     command: A list containing the command and args to execute.
@@ -535,22 +536,32 @@ def RunProcess(command):
 
 
 def RunProcessAndRetrieveOutput(command, cwd=None):
-  """Run an arbitrary command, returning its output and return code. Since
-  output is collected via communicate(), there will be no output until the
-  call terminates. If you need output while the program runs (ie. so
+  """Runs an arbitrary command, returning its output and return code.
+
+  Since output is collected via communicate(), there will be no output until
+  the call terminates. If you need output while the program runs (ie. so
   that the buildbot doesn't terminate the script), consider RunProcess().
 
   Args:
     command: A list containing the command and args to execute.
+    cwd: A directory to change to while running the command. The command can be
+        relative to this directory. If this is None, the command will be run in
+        the current directory.
 
   Returns:
     A tuple of the output and return code.
   """
+  if cwd:
+    original_cwd = os.getcwd()
+    os.chdir(cwd)
+
   # On Windows, use shell=True to get PATH interpretation.
   shell = IsWindows()
-  proc = subprocess.Popen(command, shell=shell, stdout=subprocess.PIPE, cwd=cwd)
-
+  proc = subprocess.Popen(command, shell=shell, stdout=subprocess.PIPE)
   (output, _) = proc.communicate()
+
+  if cwd:
+    os.chdir(original_cwd)
 
   return (output, proc.returncode)
 
@@ -560,6 +571,7 @@ def RunGit(command, cwd=None):
 
   Args:
     command: A list containing the args to git.
+    cwd: A directory to change to while running the git command (optional).
 
   Returns:
     A tuple of the output and return code.
@@ -1172,10 +1184,13 @@ class GitSourceControl(SourceControl):
 
     return [o for o in output.split('\n') if o]
 
+
 class BisectPerformanceMetrics(object):
-  """BisectPerformanceMetrics performs a bisection against a list of range
-  of revisions to narrow down where performance regressions may have
-  occurred."""
+  """This class contains functionality to perform a bisection of a range of
+  revisions to narrow down where performance regressions may have occurred.
+
+  The main entry-point is the Run method.
+  """
 
   def __init__(self, source_control, opts):
     super(BisectPerformanceMetrics, self).__init__()
@@ -1335,7 +1350,6 @@ class BisectPerformanceMetrics(object):
     Returns:
       A dict in the format {depot:revision} if successful, otherwise None.
     """
-
     cwd = os.getcwd()
     self.ChangeToDepotWorkingDirectory(depot)
 
@@ -1444,7 +1458,7 @@ class BisectPerformanceMetrics(object):
     return None
 
   def DownloadCurrentBuild(self, revision, build_type='Release', patch=None):
-    """Download the build archive for the given revision.
+    """Downloads the build archive for the given revision.
 
     Args:
       revision: The SVN revision to build.
@@ -1825,7 +1839,7 @@ class BisectPerformanceMetrics(object):
     return values_list
 
   def TryParseResultValuesFromOutput(self, metric, text):
-    """Attempts to parse a metric in the format RESULT <graph: <trace>.
+    """Attempts to parse a metric in the format RESULT <graph>: <trace>= ...
 
     Args:
       metric: The metric as a list of [<trace>, <value>] strings.
@@ -1931,22 +1945,37 @@ class BisectPerformanceMetrics(object):
       return False
     return True
 
-  def RunPerformanceTestAndParseResults(self, command_to_run, metric,
-      reset_on_first_run=False, upload_on_last_run=False, results_label=None):
-    """Runs a performance test on the current revision by executing the
-    'command_to_run' and parses the results.
+  def RunPerformanceTestAndParseResults(
+      self, command_to_run, metric, reset_on_first_run=False,
+      upload_on_last_run=False, results_label=None):
+    """Runs a performance test on the current revision and parses the results.
 
     Args:
       command_to_run: The command to be run to execute the performance test.
       metric: The metric to parse out from the results of the performance test.
+          This is the result chart name and trace name, separated by slash.
+      reset_on_first_run: If True, pass the flag --reset-results on first run.
+      upload_on_last_run: If True, pass the flag --upload-results on last run.
+      results_label: A value for the option flag --results-label.
+          The arguments reset_on_first_run, upload_on_last_run and results_label
+          are all ignored if the test is not a Telemetry test.
 
     Returns:
-      On success, it will return a tuple of the average value of the metric,
-      and a success code of 0.
+      (values dict, 0) if --debug_ignore_perf_test was passed.
+      (values dict, 0, test output) if the test was run successfully.
+      (error message, -1) if the test couldn't be run.
+      (error message, -1, test output) if the test ran but there was an error.
     """
+    success_code, failure_code = 0, -1
 
     if self.opts.debug_ignore_perf_test:
-      return ({'mean': 0.0, 'std_err': 0.0, 'std_dev': 0.0, 'values': [0.0]}, 0)
+      fake_results = {
+          'mean': 0.0,
+          'std_err': 0.0,
+          'std_dev': 0.0,
+          'values': [0.0]
+      }
+      return (fake_results, success_code)
 
     if IsWindows():
       command_to_run = command_to_run.replace('/', r'\\')
@@ -1954,17 +1983,15 @@ class BisectPerformanceMetrics(object):
     args = shlex.split(command_to_run)
 
     if not self._GenerateProfileIfNecessary(args):
-      return ('Failed to generate profile for performance test.', -1)
+      err_text = 'Failed to generate profile for performance test.'
+      return (err_text, failure_code)
 
-    # If running a telemetry test for cros, insert the remote ip, and
+    # If running a Telemetry test for Chrome OS, insert the remote IP and
     # identity parameters.
     is_telemetry = bisect_utils.IsTelemetryCommand(command_to_run)
     if self.opts.target_platform == 'cros' and is_telemetry:
       args.append('--remote=%s' % self.opts.cros_remote_ip)
       args.append('--identity=%s' % CROS_TEST_KEY_PATH)
-
-    cwd = os.getcwd()
-    os.chdir(self.src_cwd)
 
     start_time = time.time()
 
@@ -1981,18 +2008,19 @@ class BisectPerformanceMetrics(object):
             current_args.append('--upload-results')
           if results_label:
             current_args.append('--results-label=%s' % results_label)
-        (output, return_code) = RunProcessAndRetrieveOutput(current_args)
+        (output, return_code) = RunProcessAndRetrieveOutput(current_args,
+                                                            cwd=self.src_cwd)
       except OSError, e:
         if e.errno == errno.ENOENT:
-          err_text  = ("Something went wrong running the performance test. "
-              "Please review the command line:\n\n")
+          err_text  = ('Something went wrong running the performance test. '
+                       'Please review the command line:\n\n')
           if 'src/' in ' '.join(args):
-            err_text += ("Check that you haven't accidentally specified a path "
-                "with src/ in the command.\n\n")
+            err_text += ('Check that you haven\'t accidentally specified a '
+                         'path with src/ in the command.\n\n')
           err_text += ' '.join(args)
           err_text += '\n'
 
-          return (err_text, -1)
+          return (err_text, failure_code)
         raise
 
       output_of_all_runs += output
@@ -2006,29 +2034,29 @@ class BisectPerformanceMetrics(object):
       if elapsed_minutes >= self.opts.max_time_minutes or not metric_values:
         break
 
-    os.chdir(cwd)
+    if len(metric_values) == 0:
+      err_text = 'Metric %s was not found in the test output.' % metric
+      # TODO(qyearsley): Consider also getting and displaying a list of metrics
+      # that were found in the output here.
+      return (err_text, failure_code, output_of_all_runs)
 
     # Need to get the average value if there were multiple values.
-    if metric_values:
-      truncated_mean = CalculateTruncatedMean(metric_values,
-          self.opts.truncate_percent)
-      standard_err = CalculateStandardError(metric_values)
-      standard_dev = CalculateStandardDeviation(metric_values)
+    truncated_mean = CalculateTruncatedMean(metric_values,
+        self.opts.truncate_percent)
+    standard_err = CalculateStandardError(metric_values)
+    standard_dev = CalculateStandardDeviation(metric_values)
 
-      values = {
-        'mean': truncated_mean,
-        'std_err': standard_err,
-        'std_dev': standard_dev,
-        'values': metric_values,
-      }
+    values = {
+      'mean': truncated_mean,
+      'std_err': standard_err,
+      'std_dev': standard_dev,
+      'values': metric_values,
+    }
 
-      print 'Results of performance test: %12f %12f' % (
-          truncated_mean, standard_err)
-      print
-      return (values, 0, output_of_all_runs)
-    else:
-      return ('Invalid metric specified, or no values returned from '
-          'performance test.', -1, output_of_all_runs)
+    print 'Results of performance test: %12f %12f' % (
+        truncated_mean, standard_err)
+    print
+    return (values, success_code, output_of_all_runs)
 
   def FindAllRevisionsToSync(self, revision, depot):
     """Finds all dependant revisions and depots that need to be synced for a
