@@ -437,14 +437,14 @@ ARCH_SUFFIXES := $(foreach arch,$(ARCHES),_$(arch).nexe)
 
 
 #
-# NMF Manifiest generation
+# NMF Manifest generation
 #
 # Use the python script create_nmf to scan the binaries for dependencies using
 # objdump.  Pass in the (-L) paths to the default library toolchains so that we
 # can find those libraries and have it automatically copy the files (-s) to
 # the target directory for us.
 #
-# $1 = Target Name (the basename of the nmf
+# $1 = Target Name (the basename of the nmf)
 # $2 = Additional create_nmf.py arguments
 #
 NMF := python $(NACL_SDK_ROOT)/tools/create_nmf.py

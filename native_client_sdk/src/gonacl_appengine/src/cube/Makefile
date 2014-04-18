@@ -23,7 +23,9 @@ SOURCES = \
 
 $(foreach src,$(SOURCES),$(eval $(call COMPILE_RULE,$(src),$(CFLAGS))))
 
-ifeq ($(CONFIG),Release)
+# The PNaCl workflow uses both an unstripped and finalized/stripped binary.
+# On NaCl, only produce a stripped binary for Release configs (not Debug).
+ifneq (,$(or $(findstring pnacl,$(TOOLCHAIN)),$(findstring Release,$(CONFIG))))
 $(eval $(call LINK_RULE,$(TARGET)_unstripped,$(SOURCES),$(LIBS),$(DEPS)))
 $(eval $(call STRIP_RULE,$(TARGET),$(TARGET)_unstripped))
 else

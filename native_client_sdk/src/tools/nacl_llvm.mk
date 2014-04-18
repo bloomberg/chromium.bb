@@ -121,10 +121,8 @@ endef
 #
 # Strip Macro
 #
-# NOTE: pnacl-strip does not currently support stripping finalized pexes (in a
-# sense, they are already stripped). So we just copy the file instead.
-#
-# See https://code.google.com/p/nativeclient/issues/detail?id=3534
+# NOTE: pnacl-strip does not really do much for finalized pexes (in a
+# sense, they are already stripped), but set this rule up for uniformity.
 #
 # $1 = Target Name
 # $2 = Input Name
@@ -132,19 +130,19 @@ endef
 define STRIP_RULE
 all: $(OUTDIR)/$(1).pexe
 $(OUTDIR)/$(1).pexe: $(OUTDIR)/$(2).pexe
-	$(CP) $$^ $$@
+	$(call LOG,STRIP,$$@,$(PNACL_STRIP) $$^ -o $$@)
 endef
 
 
 #
-# NMF Manifiest generation
+# NMF Manifest generation
 #
 # Use the python script create_nmf to scan the binaries for dependencies using
 # objdump.  Pass in the (-L) paths to the default library toolchains so that we
 # can find those libraries and have it automatically copy the files (-s) to
 # the target directory for us.
 #
-# $1 = Target Name (the basename of the nmf
+# $1 = Target Name (the basename of the nmf)
 # $2 = Additional create_nmf.py arguments
 #
 NMF:=python $(NACL_SDK_ROOT)/tools/create_nmf.py

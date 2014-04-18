@@ -76,7 +76,9 @@ SOURCES = hello_tutorial.cc
 
 $(foreach src,$(SOURCES),$(eval $(call COMPILE_RULE,$(src),$(CFLAGS))))
 
-ifeq ($(CONFIG),Release)
+# The PNaCl workflow uses both an unstripped and finalized/stripped binary.
+# On NaCl, only produce a stripped binary for Release configs (not Debug).
+ifneq (,$(or $(findstring pnacl,$(TOOLCHAIN)),$(findstring Release,$(CONFIG))))
 $(eval $(call LINK_RULE,$(TARGET)_unstripped,$(SOURCES),$(LIBS),$(DEPS)))
 $(eval $(call STRIP_RULE,$(TARGET),$(TARGET)_unstripped))
 else
@@ -168,7 +170,7 @@ will use the variables we&#8217;ve defined above.</p>
 <pre class="prettyprint">
 $(foreach src,$(SOURCES),$(eval $(call COMPILE_RULE,$(src),$(CFLAGS))))
 
-ifeq ($(CONFIG),Release)
+ifneq (,$(or $(findstring pnacl,$(TOOLCHAIN)),$(findstring Release,$(CONFIG))))
 $(eval $(call LINK_RULE,$(TARGET)_unstripped,$(SOURCES),$(LIBS),$(DEPS)))
 $(eval $(call STRIP_RULE,$(TARGET),$(TARGET)_unstripped))
 else
@@ -189,9 +191,11 @@ there will be three executables generated, one for each architecture: in the
 example above, <code>part2_arm.nexe</code>, <code>part2_x86_32.nexe</code> and
 <code>part2_x86_64.nexe</code>.</p>
 <p>When <code>CONFIG</code> is <code>Release</code>, each executable is also stripped to remove
-debug information and reduce the file size:</p>
+debug information and reduce the file size. Otherwise, when the <code>TOOLCHAIN</code>
+is <code>pnacl</code>, the workflow involves creating an unstripped binary for debugging
+and then finalizing it and stripping it for publishing.</p>
 <pre class="prettyprint">
-ifeq ($(CONFIG),Release)
+ifneq (,$(or $(findstring pnacl,$(TOOLCHAIN)),$(findstring Release,$(CONFIG))))
 $(eval $(call LINK_RULE,$(TARGET)_unstripped,$(SOURCES),$(LIBS),$(DEPS)))
 $(eval $(call STRIP_RULE,$(TARGET),$(TARGET)_unstripped))
 else

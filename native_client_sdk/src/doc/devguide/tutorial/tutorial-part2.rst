@@ -69,7 +69,9 @@ Glibc NaCl) and two configurations (Debug, Release).
 
     $(foreach src,$(SOURCES),$(eval $(call COMPILE_RULE,$(src),$(CFLAGS))))
 
-    ifeq ($(CONFIG),Release)
+    # The PNaCl workflow uses both an unstripped and finalized/stripped binary.
+    # On NaCl, only produce a stripped binary for Release configs (not Debug).
+    ifneq (,$(or $(findstring pnacl,$(TOOLCHAIN)),$(findstring Release,$(CONFIG))))
     $(eval $(call LINK_RULE,$(TARGET)_unstripped,$(SOURCES),$(LIBS),$(DEPS)))
     $(eval $(call STRIP_RULE,$(TARGET),$(TARGET)_unstripped))
     else
@@ -182,7 +184,7 @@ will use the variables we've defined above.
 
     $(foreach src,$(SOURCES),$(eval $(call COMPILE_RULE,$(src),$(CFLAGS))))
 
-    ifeq ($(CONFIG),Release)
+    ifneq (,$(or $(findstring pnacl,$(TOOLCHAIN)),$(findstring Release,$(CONFIG))))
     $(eval $(call LINK_RULE,$(TARGET)_unstripped,$(SOURCES),$(LIBS),$(DEPS)))
     $(eval $(call STRIP_RULE,$(TARGET),$(TARGET)_unstripped))
     else
@@ -206,11 +208,13 @@ example above, ``part2_arm.nexe``, ``part2_x86_32.nexe`` and
 ``part2_x86_64.nexe``.
 
 When ``CONFIG`` is ``Release``, each executable is also stripped to remove
-debug information and reduce the file size:
+debug information and reduce the file size. Otherwise, when the ``TOOLCHAIN``
+is ``pnacl``, the workflow involves creating an unstripped binary for debugging
+and then finalizing it and stripping it for publishing.
 
 .. naclcode::
 
-    ifeq ($(CONFIG),Release)
+    ifneq (,$(or $(findstring pnacl,$(TOOLCHAIN)),$(findstring Release,$(CONFIG))))
     $(eval $(call LINK_RULE,$(TARGET)_unstripped,$(SOURCES),$(LIBS),$(DEPS)))
     $(eval $(call STRIP_RULE,$(TARGET),$(TARGET)_unstripped))
     else
