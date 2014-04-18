@@ -42,6 +42,8 @@ int CountThreads() {
 
 namespace sandbox {
 
+extern bool kAllowForkWithThreads;
+
 bool IsAndroid() {
 #if defined(OS_ANDROID)
   return true;
@@ -126,18 +128,25 @@ void UnitTests::RunTestInProcess(UnitTests::Test test,
   // appear as still running in /proc.
   // We poll /proc, with an exponential back-off. At most, we'll sleep around
   // 2^iterations nanoseconds in nanosleep().
-  for (unsigned int iteration = 0; iteration < 30; iteration++) {
-    struct timespec ts = {0, 1L << iteration /* nanoseconds */};
-    PCHECK(0 == HANDLE_EINTR(nanosleep(&ts, &ts)));
-    num_threads = CountThreads();
-    if (kNumExpectedThreads == num_threads)
-      break;
+  if (!kAllowForkWithThreads) {
+    for (unsigned int iteration = 0; iteration < 30; iteration++) {
+      struct timespec ts = {0, 1L << iteration /* nanoseconds */};
+      PCHECK(0 == HANDLE_EINTR(nanosleep(&ts, &ts)));
+      num_threads = CountThreads();
+      if (kNumExpectedThreads == num_threads)
+        break;
+    }
   }
 
-  ASSERT_EQ(kNumExpectedThreads, num_threads)
-      << "Running sandbox tests with multiple threads "
-      << "is not supported and will make the tests "
-      << "flaky.\n";
+  const std::string multiple_threads_error =
+      "Running sandbox tests with multiple threads "
+      "is not supported and will make the tests flaky.";
+  if (!kAllowForkWithThreads) {
+    ASSERT_EQ(kNumExpectedThreads, num_threads) << multiple_threads_error;
+  } else {
+    LOG(ERROR) << multiple_threads_error;
+  }
+
   int fds[2];
   ASSERT_EQ(0, pipe(fds));
   // Check that our pipe is not on one of the standard file descriptor.

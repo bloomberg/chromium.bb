@@ -29,6 +29,11 @@
 #include "sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h"
 #include "sandbox/linux/seccomp-bpf/bpf_tests.h"
 
+// This is a hack. TODO(hamaji), fix crbug.com/364751.
+namespace sandbox {
+extern const bool kAllowForkWithThreads = true;
+}
+
 namespace {
 
 void DoPipe(base::ScopedFD* fds) {
