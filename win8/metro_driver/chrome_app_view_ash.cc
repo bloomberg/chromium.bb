@@ -919,16 +919,18 @@ void ChromeAppViewAsh::OnImePopupChanged(ImePopupObserver::EventType event) {
 // window which ensures that the chrome application tile does not show up in
 // the running metro apps list on the top left corner.
 void ChromeAppViewAsh::OnMetroExit(MetroTerminateMethod method) {
-  HWND core_window = core_window_hwnd();
-  if (method == TERMINATE_USING_KEY_SEQUENCE && core_window != NULL &&
-      core_window == ::GetForegroundWindow()) {
-    DVLOG(1) << "We are in the foreground. Exiting via Alt F4";
-    SendKeySequence(VK_F4, ALT);
-    if (ui_channel_)
-      ui_channel_->Close();
-  } else {
-    globals.app_exit->Exit();
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+    HWND core_window = core_window_hwnd();
+    if (method == TERMINATE_USING_KEY_SEQUENCE && core_window != NULL &&
+        core_window == ::GetForegroundWindow()) {
+      DVLOG(1) << "We are in the foreground. Exiting via Alt F4";
+      SendKeySequence(VK_F4, ALT);
+    }
   }
+  if (ui_channel_)
+    ui_channel_->Close();
+
+  globals.app_exit->Exit();
 }
 
 void ChromeAppViewAsh::OnInputSourceChanged() {

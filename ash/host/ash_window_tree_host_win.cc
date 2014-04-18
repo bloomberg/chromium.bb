@@ -108,7 +108,7 @@ class ASH_EXPORT AshWindowTreeHostWin : public AshWindowTreeHost,
 }  // namespace
 
 AshWindowTreeHost* AshWindowTreeHost::Create(const gfx::Rect& initial_bounds) {
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
+  if (base::win::GetVersion() >= base::win::VERSION_WIN7 &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
           ash::switches::kForceAshToDesktop))
     return AshRemoteWindowTreeHostWin::GetInstance();

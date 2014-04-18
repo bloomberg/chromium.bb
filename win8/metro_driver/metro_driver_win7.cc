@@ -8,22 +8,31 @@
 #include "base/logging.h"
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
+int g_window_count = 0;
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message,
                          WPARAM wparam, LPARAM lparam) {
   PAINTSTRUCT ps;
   HDC hdc;
   switch (message) {
+    case WM_CREATE:
+      ++g_window_count;
+      break;
     case WM_PAINT:
       hdc = ::BeginPaint(hwnd, &ps);
-      EndPaint(hwnd, &ps);
+      ::EndPaint(hwnd, &ps);
       break;
     case WM_LBUTTONUP:
       //  TODO(cpu): Remove this test code.
       ::InvalidateRect(hwnd, NULL, TRUE);
       break;
+    case WM_CLOSE:
+      ::DestroyWindow(hwnd);
+      break;
     case WM_DESTROY:
-      PostQuitMessage(0);
+      --g_window_count;
+      if (!g_window_count)
+        ::PostQuitMessage(0);
       break;
     default:
       return ::DefWindowProc(hwnd, message, wparam, lparam);
@@ -51,7 +60,7 @@ HWND CreateMetroTopLevelWindow() {
                                 MAKEINTATOM(::RegisterClassExW(&wcex)),
                                 L"metro_win7",
                                 WS_POPUP | WS_VISIBLE,
-                                0, 0, 1024, 1024,
+                                0, 0, 1600, 900,
                                 NULL, NULL, hInst, NULL);
   return hwnd;
 }
@@ -146,7 +155,7 @@ class CoreDispacherEmulation :
       return E_FAIL;
 
     MSG msg = {0};
-    while(::GetMessage(&msg, NULL, 0, 0) != 0) {
+    while((::GetMessage(&msg, NULL, 0, 0) != 0) && g_window_count > 0) {
       ::TranslateMessage(&msg);
       ::DispatchMessage(&msg);
     }
@@ -194,7 +203,8 @@ class CoreWindowEmulation
   }
 
   ~CoreWindowEmulation() {
-    ::DestroyWindow(core_hwnd_);
+    if (core_hwnd_)
+      ::DestroyWindow(core_hwnd_);
   }
 
   // ICoreWindow implementation:
@@ -269,6 +279,8 @@ class CoreWindowEmulation
   }
 
   virtual HRESULT STDMETHODCALLTYPE Close(void) {
+    ::PostMessage(core_hwnd_, WM_CLOSE, 0, 0);
+    core_hwnd_ = NULL;
     return S_OK;
   }
 
@@ -550,6 +562,10 @@ class CoreApplicationViewEmulation
     }
   }
 
+  HRESULT Close() {
+    return core_window_->Close();
+  }
+
   // ICoreApplicationView implementation:
   virtual HRESULT STDMETHODCALLTYPE get_CoreWindow(
     winui::Core::ICoreWindow** value) {
@@ -585,7 +601,7 @@ class CoreApplicationViewEmulation
   }
 
  private:
-  mswr::ComPtr<winui::Core::ICoreWindow> core_window_;
+  mswr::ComPtr<CoreWindowEmulation> core_window_;
   mswr::ComPtr<ActivatedHandler> activated_handler_;
 };
 
@@ -665,7 +681,7 @@ class CoreApplicationWin7Emulation
   // ICoreApplicationExit implementation:
 
   virtual HRESULT STDMETHODCALLTYPE Exit(void) {
-    return S_OK;
+    return view_emulation_->Close();
   }
 
   virtual HRESULT STDMETHODCALLTYPE add_Exiting(

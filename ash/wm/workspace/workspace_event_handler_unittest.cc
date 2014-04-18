@@ -142,7 +142,7 @@ TEST_F(WorkspaceEventHandlerTest, DoubleClickSingleAxisResizeEdge) {
 
 #if defined(OS_WIN)
   // Multi display test does not run on Win8 bot. crbug.com/247427.
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+  if (!SupportsMultipleDisplays())
     return;
 #endif
 

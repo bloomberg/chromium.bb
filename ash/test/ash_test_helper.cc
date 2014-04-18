@@ -154,7 +154,7 @@ aura::Window* AshTestHelper::CurrentContext() {
 // static
 bool AshTestHelper::SupportsMultipleDisplays() {
 #if defined(OS_WIN)
-  return base::win::GetVersion() < base::win::VERSION_WIN8;
+  return false;
 #else
   return true;
 #endif
@@ -163,7 +163,7 @@ bool AshTestHelper::SupportsMultipleDisplays() {
 // static
 bool AshTestHelper::SupportsHostWindowResize() {
 #if defined(OS_WIN)
-  return base::win::GetVersion() < base::win::VERSION_WIN8;
+  return false;
 #else
   return true;
 #endif

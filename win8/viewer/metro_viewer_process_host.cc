@@ -10,12 +10,14 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/path_service.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
 #include "base/win/scoped_comptr.h"
+#include "base/win/windows_version.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "ui/aura/remote_window_tree_host_win.h"
@@ -87,17 +89,27 @@ bool MetroViewerProcessHost::LaunchViewerAndWaitForConnection(
   message_filter_ = new InternalMessageFilter(this);
   channel_->AddFilter(message_filter_);
 
-  base::win::ScopedComPtr<IApplicationActivationManager> activator;
-  HRESULT hr = activator.CreateInstance(CLSID_ApplicationActivationManager);
-  if (SUCCEEDED(hr)) {
-    DWORD pid = 0;
-    // Use the "connect" verb to
-    hr = activator->ActivateApplication(
-        app_user_model_id.c_str(), kMetroViewerConnectVerb, AO_NONE, &pid);
-  }
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+    base::win::ScopedComPtr<IApplicationActivationManager> activator;
+    HRESULT hr = activator.CreateInstance(CLSID_ApplicationActivationManager);
+    if (SUCCEEDED(hr)) {
+      DWORD pid = 0;
+      // Use the "connect" verb to
+      hr = activator->ActivateApplication(
+          app_user_model_id.c_str(), kMetroViewerConnectVerb, AO_NONE, &pid);
+    }
 
-  LOG_IF(ERROR, FAILED(hr)) << "Tried and failed to launch Metro Chrome. "
-                            << "hr=" << std::hex << hr;
+    LOG_IF(ERROR, FAILED(hr)) << "Tried and failed to launch Metro Chrome. "
+                              << "hr=" << std::hex << hr;
+  } else {
+    // For Windows 7 we need to launch the viewer ourselves.
+    base::FilePath chrome_path;
+    if (!PathService::Get(base::DIR_EXE, &chrome_path))
+      return false;
+    // TODO(cpu): launch with "-ServerName:DefaultBrowserServer"
+    // note that the viewer might try to launch chrome again.
+    CHECK(false);
+  }
 
   // Having launched the viewer process, now we wait for it to connect.
   bool success =

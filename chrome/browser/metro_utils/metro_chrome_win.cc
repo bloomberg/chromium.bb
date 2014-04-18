@@ -12,6 +12,7 @@
 #include "base/win/metro.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_comptr.h"
+#include "base/win/windows_version.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/shell_util.h"
@@ -19,6 +20,10 @@
 namespace chrome {
 
 bool ActivateMetroChrome() {
+  // TODO(cpu): For Win7 we need to activate differently.
+  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+    return true;
+
   base::FilePath chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
     NOTREACHED() << "Failed to get chrome exe path";

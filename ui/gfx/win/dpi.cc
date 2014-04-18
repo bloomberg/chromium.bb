@@ -44,6 +44,10 @@ float GetUnforcedDeviceScaleFactor() {
 
 float GetModernUIScaleWrapper() {
   float result = 1.0f;
+  // TODO(cpu) : Fix scale for Win7.
+  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+    return result;
+
   typedef float(WINAPI *GetModernUIScalePtr)(VOID);
   HMODULE lib = LoadLibraryA("metro_driver.dll");
   if (lib) {
