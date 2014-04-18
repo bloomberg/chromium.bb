@@ -202,8 +202,6 @@ readonly DEBIAN_PACKAGES="\
 
 readonly DEBIAN_DEP_LIST_AMD64="${SCRIPT_DIR}/packagelist.debian.wheezy.amd64"
 readonly DEBIAN_DEP_LIST_I386="${SCRIPT_DIR}/packagelist.debian.wheezy.i386"
-readonly DEBIAN_DEP_FILES_AMD64="$(cat ${DEBIAN_DEP_LIST_AMD64})"
-readonly DEBIAN_DEP_FILES_I386="$(cat ${DEBIAN_DEP_LIST_I386})"
 
 ######################################################################
 # Helper
@@ -310,14 +308,14 @@ ChangeDirectory() {
 
 
 ClearInstallDir() {
-  Banner "clearing dirs in ${INSTALL_ROOT}"
+  Banner "Clearing dirs in ${INSTALL_ROOT}"
   rm -rf ${INSTALL_ROOT}/*
 }
 
 
 CreateTarBall() {
   local tarball=$1
-  Banner "creating tar ball ${tarball}"
+  Banner "Creating tar ball ${tarball}"
   tar zcf ${tarball} -C ${INSTALL_ROOT} .
 }
 
@@ -329,6 +327,46 @@ CheckBuildSysrootArgs() {
 
   if [ -z "$1" ]; then
     echo "ERROR: tarball name required"
+    exit 1
+  fi
+}
+
+ExtractPackageBz2() {
+  bzcat "$1" | egrep '^(Package:|Filename:|SHA256:) ' > "$2"
+}
+
+GeneratePackageListAmd64() {
+  local output_file="$1"
+  local package_list="${TMP}/Packages.wheezy_amd64.bz2"
+  DownloadOrCopy ${PACKAGE_LIST_AMD64} ${package_list}
+  VerifyPackageListing ${PACKAGE_FILE_AMD64} ${package_list}
+  ExtractPackageBz2 "$package_list" "${TMP}/Packages"
+
+  GeneratePackageList "$output_file" "${DEBIAN_PACKAGES}"
+}
+
+GeneratePackageListI386() {
+  local output_file="$1"
+  local package_list="${TMP}/Packages.wheezy_i386.bz2"
+  DownloadOrCopy ${PACKAGE_LIST_I386} ${package_list}
+  VerifyPackageListing ${PACKAGE_FILE_I386} ${package_list}
+  ExtractPackageBz2 "$package_list" "${TMP}/Packages"
+
+  GeneratePackageList "$output_file" "${DEBIAN_PACKAGES}"
+}
+
+StripChecksumsFromPackageList() {
+  local package_file="$1"
+  sed -i 's/ [a-f0-9]\{64\}$//' "$package_file"
+}
+
+VerifyPackageFilesMatch() {
+  local downloaded_package_file="$1"
+  local stored_package_file="$2"
+  diff -u "$downloaded_package_file" "$stored_package_file"
+  if [ "$?" -ne "0" ]; then
+    echo "ERROR: downloaded package files does not match $2."
+    echo "You may need to run UpdatePackageLists."
     exit 1
   fi
 }
@@ -390,16 +428,27 @@ InstallIntoSysroot() {
 
   mkdir -p ${TMP}/debian-packages
   mkdir -p ${INSTALL_ROOT}
-  for file in $@ ; do
+  while (( "$#" )); do
+    local file="$1"
     local package="${TMP}/debian-packages/${file##*/}"
-    Banner "installing ${file}"
+    shift
+    local sha256sum="$1"
+    shift
+    if [ "${#sha256sum}" -ne "64" ]; then
+      echo "Bad sha256sum from package list"
+      exit 1
+    fi
+
+    Banner "Installing ${file}"
     DownloadOrCopy ${DEBIAN_REPO}/pool/${file} ${package}
-    SubBanner "extracting to ${INSTALL_ROOT}"
     if [ ! -s "${package}" ] ; then
       echo
       echo "ERROR: bad package ${package}"
       exit 1
     fi
+    echo "${sha256sum}  ${package}" | sha256sum --quiet -c
+
+    SubBanner "Extracting to ${INSTALL_ROOT}"
     dpkg --fsys-tarfile ${package}\
       | tar -xvf - --exclude=./usr/share -C ${INSTALL_ROOT}
   done
@@ -407,7 +456,7 @@ InstallIntoSysroot() {
 
 
 CleanupJailSymlinks() {
-  Banner "jail symlink cleanup"
+  Banner "Jail symlink cleanup"
 
   SAVEDPWD=$(pwd)
   cd ${INSTALL_ROOT}
@@ -453,7 +502,12 @@ CleanupJailSymlinks() {
 BuildSysrootAmd64() {
   CheckBuildSysrootArgs $@
   ClearInstallDir
-  InstallIntoSysroot ${DEBIAN_DEP_FILES_AMD64}
+  local package_file="$TMP/package_with_sha256sum_amd64"
+  GeneratePackageListAmd64 "$package_file"
+  local files_and_sha256sums="$(cat ${package_file})"
+  StripChecksumsFromPackageList "$package_file"
+  VerifyPackageFilesMatch "$package_file" "$DEBIAN_DEP_LIST_AMD64"
+  InstallIntoSysroot ${files_and_sha256sums}
   CleanupJailSymlinks
   HacksAndPatchesAmd64
   CreateTarBall "$1"
@@ -466,7 +520,12 @@ BuildSysrootAmd64() {
 BuildSysrootI386() {
   CheckBuildSysrootArgs $@
   ClearInstallDir
-  InstallIntoSysroot ${DEBIAN_DEP_FILES_I386}
+  local package_file="$TMP/package_with_sha256sum_amd64"
+  GeneratePackageListI386 "$package_file"
+  local files_and_sha256sums="$(cat ${package_file})"
+  StripChecksumsFromPackageList "$package_file"
+  VerifyPackageFilesMatch "$package_file" "$DEBIAN_DEP_LIST_I386"
+  InstallIntoSysroot ${files_and_sha256sums}
   CleanupJailSymlinks
   HacksAndPatchesI386
   CreateTarBall "$1"
@@ -507,25 +566,13 @@ VerifyPackageListing() {
 
   echo "Verifying: ${output_file}"
   local checksums=$(grep ${file_path} ${release_file} | cut -d " " -f 2)
-  local md5sum=$(echo ${checksums} | cut -d " " -f 1)
-  local sha1sum=$(echo ${checksums} | cut -d " " -f 2)
   local sha256sum=$(echo ${checksums} | cut -d " " -f 3)
 
-  if [ "${#md5sum}" -ne "32" ]; then
-    echo "Bad md5sum from ${RELEASE_LIST}"
-    exit 1
-  fi
-  if [ "${#sha1sum}" -ne "40" ]; then
-    echo "Bad sha1sum from ${RELEASE_LIST}"
-    exit 1
-  fi
   if [ "${#sha256sum}" -ne "64" ]; then
     echo "Bad sha256sum from ${RELEASE_LIST}"
     exit 1
   fi
 
-  echo "${md5sum}  ${output_file}" | md5sum --quiet -c
-  echo "${sha1sum}  ${output_file}" | sha1sum --quiet -c
   echo "${sha256sum}  ${output_file}" | sha256sum --quiet -c
 }
 
@@ -536,20 +583,28 @@ VerifyPackageListing() {
 #     to output file.
 #
 GeneratePackageList() {
-  local output_file=$1
+  local output_file="$1"
   echo "Updating: ${output_file}"
-  /bin/rm -f ${output_file}
+  /bin/rm -f "${output_file}"
   shift
   for pkg in $@ ; do
-    local pkg_full=$(grep -A 1 " ${pkg}\$" ${TMP}/Packages | egrep -o "pool/.*")
+    local pkg_full=$(grep -A 1 " ${pkg}\$" "${TMP}/Packages" | \
+      egrep -o "pool/.*")
     if [ -z "${pkg_full}" ]; then
         echo "ERROR: missing package: $pkg"
         exit 1
     fi
-    echo $pkg_full | sed "s/^pool\///" >> $output_file
+    local pkg_nopool=$(echo "$pkg_full" | sed "s/^pool\///")
+    local sha256sum=$(grep -A 4 " ${pkg}\$" "${TMP}/Packages" | \
+      grep ^SHA256: | sed 's/^SHA256: //')
+    if [ "${#sha256sum}" -ne "64" ]; then
+      echo "Bad sha256sum from Packages"
+      exit 1
+    fi
+    echo $pkg_nopool $sha256sum >> "$output_file"
   done
   # sort -o does an in-place sort of this file
-  sort $output_file -o $output_file
+  sort "$output_file" -o "$output_file"
 }
 
 #@
@@ -558,12 +613,8 @@ GeneratePackageList() {
 #@     Regenerate the package lists such that they contain an up-to-date
 #@     list of URLs within the Debian archive. (For amd64)
 UpdatePackageListsAmd64() {
-  local package_list="${TMP}/Packages.wheezy_amd64.bz2"
-  DownloadOrCopy ${PACKAGE_LIST_AMD64} ${package_list}
-  VerifyPackageListing ${PACKAGE_FILE_AMD64} ${package_list}
-  bzcat ${package_list} | egrep '^(Package:|Filename:)' > ${TMP}/Packages
-
-  GeneratePackageList ${DEBIAN_DEP_LIST_AMD64} "${DEBIAN_PACKAGES}"
+  GeneratePackageListAmd64 "$DEBIAN_DEP_LIST_AMD64"
+  StripChecksumsFromPackageList "$DEBIAN_DEP_LIST_AMD64"
 }
 
 #@
@@ -572,12 +623,8 @@ UpdatePackageListsAmd64() {
 #@     Regenerate the package lists such that they contain an up-to-date
 #@     list of URLs within the Debian archive. (For i386)
 UpdatePackageListsI386() {
-  local package_list="${TMP}/Packages.wheezy_i386.bz2"
-  DownloadOrCopy ${PACKAGE_LIST_I386} ${package_list}
-  VerifyPackageListing ${PACKAGE_FILE_I386} ${package_list}
-  bzcat ${package_list} | egrep '^(Package:|Filename:)' > ${TMP}/Packages
-
-  GeneratePackageList ${DEBIAN_DEP_LIST_I386} "${DEBIAN_PACKAGES}"
+  GeneratePackageListI386 "$DEBIAN_DEP_LIST_I386"
+  StripChecksumsFromPackageList "$DEBIAN_DEP_LIST_I386"
 }
 
 if [ $# -eq 0 ] ; then
