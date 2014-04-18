@@ -12,22 +12,20 @@ Should be composited
           (position 8.00 8.00)
           (bounds 262.00 212.00)
           (drawsContent 1)
-          (children 1
+          (children 2
             (GraphicsLayer
-              (children 2
-                (GraphicsLayer
-                  (position 6.00 6.00)
-                  (bounds 250.00 50.00)
-                  (contentsOpaque 1)
-                  (drawsContent 1)
-                  (backgroundColor #C0C0C0)
-                )
-                (GraphicsLayer
-                  (position 11.00 21.00)
-                  (bounds 100.00 100.00)
-                  (drawsContent 1)
-                )
-              )
+              (position 6.00 6.00)
+              (bounds 250.00 50.00)
+              (contentsOpaque 1)
+              (drawsContent 1)
+              (backgroundColor #C0C0C0)
+            )
+            (GraphicsLayer
+              (position 11.00 21.00)
+              (bounds 100.00 100.00)
+              (contentsOpaque 1)
+              (drawsContent 1)
+              (backgroundColor #FFA500)
             )
           )
         )

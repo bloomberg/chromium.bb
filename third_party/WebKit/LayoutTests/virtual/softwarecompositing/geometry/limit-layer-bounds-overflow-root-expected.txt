@@ -1,4 +1,3 @@
-middle
 (GraphicsLayer
   (bounds 800.00 600.00)
   (children 1
@@ -10,12 +9,11 @@ middle
         (GraphicsLayer
           (children 2
             (GraphicsLayer
-              (position 129.00 29.00)
+              (position 21.00 21.00)
               (bounds 100.00 100.00)
             )
             (GraphicsLayer
-              (position 108.00 8.00)
-              (bounds 242.00 162.00)
+              (bounds 216.00 142.00)
               (drawsContent 1)
             )
           )
