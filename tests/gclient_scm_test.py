@@ -233,6 +233,9 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.scm.SVN.CaptureStatus(
         None, self.base_path, no_ignore=False).AndReturn([])
     gclient_scm.os.path.isdir(self.base_path).AndReturn(True)
+    gclient_scm.gclient_utils.CheckCallAndFilterAndHeader(['svn',
+      'cleanup', self.base_path],
+      always=True, cwd=self.base_path)
     gclient_scm.scm.SVN.RunAndGetFileList(
         options.verbose,
         ['update', '--revision', 'BASE', '--ignore-externals'],
@@ -254,6 +257,9 @@ class SVNWrapperTestCase(BaseTestCase):
     ]
     gclient_scm.scm.SVN.CaptureStatus(
         None, self.base_path, no_ignore=False).AndReturn(items)
+    gclient_scm.gclient_utils.CheckCallAndFilterAndHeader(['svn',
+      'cleanup', self.base_path],
+      always=True, cwd=self.base_path)
     file_path = join(self.base_path, 'a')
     gclient_scm.os.path.exists(file_path).AndReturn(True)
     gclient_scm.os.path.isfile(file_path).AndReturn(False)
@@ -293,6 +299,9 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.gclient_utils.rmtree(file_path)
     # pylint: disable=E1120
     gclient_scm.os.path.isdir(self.base_path).AndReturn(False)
+    gclient_scm.gclient_utils.CheckCallAndFilterAndHeader(['svn',
+      'cleanup', self.base_path],
+      always=True, cwd=self.base_path)
     gclient_scm.SVNWrapper.update(options, [], ['.'])
 
     self.mox.ReplayAll()
@@ -367,9 +376,6 @@ class SVNWrapperTestCase(BaseTestCase):
     dotted_path = join(self.base_path, '.')
     gclient_scm.scm.SVN._CaptureInfo([], dotted_path).AndReturn(file_info)
 
-    # Verify no locked files.
-    gclient_scm.scm.SVN.CaptureStatus(None, dotted_path).AndReturn([])
-
     # Cheat a bit here.
     gclient_scm.scm.SVN._CaptureInfo([file_info['URL']], None
         ).AndReturn(file_info)
@@ -386,6 +392,9 @@ class SVNWrapperTestCase(BaseTestCase):
       additional_args = ['--revision', str(file_info['Revision'])]
     additional_args.extend(['--force', '--ignore-externals'])
     files_list = []
+    gclient_scm.gclient_utils.CheckCallAndFilterAndHeader(['svn',
+      'cleanup', self.base_path],
+      always=True, cwd=self.base_path)
     gclient_scm.scm.SVN.RunAndGetFileList(
         options.verbose,
         ['update', self.base_path] + additional_args,
@@ -415,14 +424,15 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.scm.SVN._CaptureInfo([], dotted_path).AndReturn(file_info)
 
     # Create an untracked file and directory.
-    gclient_scm.scm.SVN.CaptureStatus(None, dotted_path
-        ).AndReturn([['?  ', 'dir'], ['?  ', 'file']])
-
     gclient_scm.scm.SVN._CaptureInfo([file_info['URL']], None
         ).AndReturn(file_info)
 
     gclient_scm.scm.SVN._CaptureInfo([], self.base_path+'/.'
         ).AndReturn({'Revision': 100})
+
+    gclient_scm.gclient_utils.CheckCallAndFilterAndHeader(['svn',
+      'cleanup', self.base_path],
+      always=True, cwd=self.base_path)
 
     self.mox.ReplayAll()
     files_list = []
@@ -442,18 +452,19 @@ class SVNWrapperTestCase(BaseTestCase):
       'UUID': 'ABC',
       'Revision': 42,
     }
+
     gclient_scm.os.path.exists(join(self.base_path, '.hg')).AndReturn(False)
     self.mox.StubOutWithMock(gclient_scm.scm.GIT, 'IsGitSvn', True)
     gclient_scm.scm.GIT.IsGitSvn(self.base_path).AndReturn(False)
     gclient_scm.os.path.exists(self.base_path).AndReturn(True)
 
+    gclient_scm.gclient_utils.CheckCallAndFilterAndHeader(['svn',
+      'cleanup', self.base_path],
+      always=True, cwd=self.base_path)
+
     # Checkout or update.
     dotted_path = join(self.base_path, '.')
     gclient_scm.scm.SVN._CaptureInfo([], dotted_path).AndReturn(file_info)
-
-    # Create an untracked file and directory.
-    gclient_scm.scm.SVN.CaptureStatus(None, dotted_path
-        ).AndReturn([['?  ', 'dir'], ['?  ', 'file']])
 
     gclient_scm.scm.SVN._CaptureInfo([file_info['URL']], None
         ).AndReturn(file_info)
@@ -461,6 +472,7 @@ class SVNWrapperTestCase(BaseTestCase):
     # Confirm that the untracked file is removed.
     gclient_scm.scm.SVN.CaptureStatus(None, self.base_path
         ).AndReturn([['?  ', 'dir'], ['?  ', 'file']])
+
     gclient_scm.os.path.isdir(join(self.base_path, 'dir')).AndReturn(True)
     gclient_scm.os.path.isdir(join(self.base_path, 'file')).AndReturn(False)
     gclient_scm.os.path.islink(join(self.base_path, 'dir')).AndReturn(False)
@@ -492,9 +504,7 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.os.path.exists(join(self.base_path, '.svn')).AndReturn(False)
     gclient_scm.os.path.exists(join(self.base_path, 'DEPS')).AndReturn(False)
 
-    # Verify no locked files.
     dotted_path = join(self.base_path, '.')
-    gclient_scm.scm.SVN.CaptureStatus(None, dotted_path).AndReturn([])
 
     # When checking out a single file, we issue an svn checkout and svn update.
     files_list = self.mox.CreateMockAnything()
@@ -502,6 +512,9 @@ class SVNWrapperTestCase(BaseTestCase):
         ['svn', 'checkout', '--depth', 'empty', self.url, self.base_path],
         always=True,
         cwd=self.root_dir)
+    gclient_scm.gclient_utils.CheckCallAndFilterAndHeader(['svn',
+      'cleanup', self.base_path],
+      always=True, cwd=self.base_path)
     gclient_scm.scm.SVN.RunAndGetFileList(
         options.verbose,
         ['update', 'DEPS', '--ignore-externals'],
@@ -563,16 +576,17 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.os.path.exists(join(self.base_path, 'DEPS')).AndReturn(True)
     gclient_scm.os.remove(join(self.base_path, 'DEPS'))
 
-    # Verify no locked files.
-    gclient_scm.scm.SVN.CaptureStatus(
-        None, join(self.base_path, '.')).AndReturn([])
-
     # When checking out a single file, we issue an svn checkout and svn update.
     files_list = self.mox.CreateMockAnything()
     gclient_scm.gclient_utils.CheckCallAndFilterAndHeader(
         ['svn', 'checkout', '--depth', 'empty', self.url, self.base_path],
         always=True,
         cwd=self.root_dir)
+
+    gclient_scm.gclient_utils.CheckCallAndFilterAndHeader(['svn',
+      'cleanup', self.base_path],
+      always=True, cwd=self.base_path)
+
     gclient_scm.scm.SVN.RunAndGetFileList(
         options.verbose,
         ['update', 'DEPS', '--ignore-externals'],
@@ -611,9 +625,9 @@ class SVNWrapperTestCase(BaseTestCase):
         ).AndReturn('1.5.1')
     gclient_scm.os.path.exists(join(self.base_path, '.svn')).AndReturn(True)
 
-    # Verify no locked files.
-    gclient_scm.scm.SVN.CaptureStatus(None, join(self.base_path, '.')
-        ).AndReturn([])
+    gclient_scm.gclient_utils.CheckCallAndFilterAndHeader(['svn',
+      'cleanup', self.base_path],
+      always=True, cwd=self.base_path)
 
     # Now we fall back on scm.update().
     files_list = self.mox.CreateMockAnything()
