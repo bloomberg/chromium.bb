@@ -126,11 +126,11 @@ tc-archive() {
     ${label} pnacl-toolchain.tgz
 
   echo @@@BUILD_STEP upload_pnacl_toolchain_package_info@@@
-  python build/package_version/package_version.py archive \
+  ${NATIVE_PYTHON} build/package_version/package_version.py archive \
       --archive-package=pnacl_newlib \
       pnacl-toolchain.tgz@https://storage.googleapis.com/nativeclient-archive2/toolchain/${BUILDBOT_GOT_REVISION}/naclsdk_${label}.tgz
 
-  python build/package_version/package_version.py --annotate upload \
+  ${NATIVE_PYTHON} build/package_version/package_version.py --annotate upload \
       --upload-package=pnacl_newlib --revision=${BUILDBOT_GOT_REVISION}
 }
 
@@ -146,11 +146,11 @@ tc-archive-translator() {
       pnacl_translator pnacl-translator.tgz
 
   echo @@@BUILD_STEP upload_translator_package_info@@@
-  python build/package_version/package_version.py archive \
+  ${NATIVE_PYTHON} build/package_version/package_version.py archive \
       --archive-package=pnacl_translator \
       pnacl-translator.tgz@https://storage.googleapis.com/nativeclient-archive2/toolchain/${BUILDBOT_GOT_REVISION}/naclsdk_pnacl_translator.tgz
 
-  python build/package_version/package_version.py --annotate upload \
+  ${NATIVE_PYTHON} build/package_version/package_version.py --annotate upload \
       --upload-package=pnacl_translator --revision=${BUILDBOT_GOT_REVISION}
 }
 
@@ -172,7 +172,7 @@ tc-build-all() {
   # Run checkdeps so that the PNaCl toolchain trybots catch mistakes
   # that would cause the normal NaCl bots to fail.
   echo "@@@BUILD_STEP checkdeps @@@"
-  python tools/checkdeps/checkdeps.py
+  ${NATIVE_PYTHON} tools/checkdeps/checkdeps.py
 
   tc-show-config
   # For now only linux64 (which also builds the translator) builds a fat
