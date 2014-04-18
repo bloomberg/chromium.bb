@@ -30,8 +30,7 @@ namespace {
 bool ShouldHideCursorOnTouch(const ui::TouchEvent& event) {
 #if defined(OS_WIN)
   return true;
-#endif  // defind(OS_WIN)
-#if defined(OS_CHROMEOS)
+#elif defined(OS_CHROMEOS)
 #if defined(USE_X11)
   int device_id = event.source_device_id();
   if (device_id >= 0 &&
