@@ -8,10 +8,10 @@
 #include <new>
 
 #include "mojo/public/cpp/bindings/buffer.h"
+#include "mojo/public/cpp/bindings/interface.h"
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 #include "mojo/public/cpp/bindings/lib/bindings_serialization.h"
 #include "mojo/public/cpp/bindings/passable.h"
-#include "mojo/public/cpp/system/core.h"
 
 namespace mojo {
 template <typename T> class Array;
@@ -97,9 +97,11 @@ struct ArrayDataTraits<bool> {
 // are two interesting cases: arrays of primitives and arrays of objects.
 // Arrays of objects are represented as arrays of pointers to objects.
 
+template <typename T, bool kIsHandle> struct ArraySerializationHelper;
+
 template <typename T>
-struct ArraySerializationHelper {
-  typedef T ElementType;
+struct ArraySerializationHelper<T, false> {
+  typedef typename ArrayDataTraits<T>::StorageType ElementType;
 
   static size_t ComputeSizeOfElements(const ArrayHeader* header,
                                       const ElementType* elements) {
@@ -109,6 +111,13 @@ struct ArraySerializationHelper {
   static void CloneElements(const ArrayHeader* header,
                             ElementType* elements,
                             Buffer* buf) {
+  }
+
+  static void ClearHandles(const ArrayHeader* header, ElementType* elements) {
+  }
+
+  static void CloseHandles(const ArrayHeader* header,
+                           ElementType* elements) {
   }
 
   static void EncodePointersAndHandles(const ArrayHeader* header,
@@ -124,8 +133,8 @@ struct ArraySerializationHelper {
 };
 
 template <>
-struct ArraySerializationHelper<Handle> {
-  typedef Handle ElementType;
+struct ArraySerializationHelper<Handle, true> {
+  typedef ArrayDataTraits<Handle>::StorageType ElementType;
 
   static size_t ComputeSizeOfElements(const ArrayHeader* header,
                                       const ElementType* elements) {
@@ -137,6 +146,10 @@ struct ArraySerializationHelper<Handle> {
                             Buffer* buf) {
   }
 
+  static void ClearHandles(const ArrayHeader* header, ElementType* elements);
+
+  static void CloseHandles(const ArrayHeader* header, ElementType* elements);
+
   static void EncodePointersAndHandles(const ArrayHeader* header,
                                        ElementType* elements,
                                        std::vector<Handle>* handles);
@@ -146,9 +159,46 @@ struct ArraySerializationHelper<Handle> {
                                        Message* message);
 };
 
+template <typename H>
+struct ArraySerializationHelper<H, true> {
+  typedef typename ArrayDataTraits<H>::StorageType ElementType;
+
+  static size_t ComputeSizeOfElements(const ArrayHeader* header,
+                                      const ElementType* elements) {
+    return 0;
+  }
+
+  static void CloneElements(const ArrayHeader* header,
+                            ElementType* elements,
+                            Buffer* buf) {
+  }
+
+  static void ClearHandles(const ArrayHeader* header, ElementType* elements) {
+    ArraySerializationHelper<Handle, true>::ClearHandles(header, elements);
+  }
+
+  static void CloseHandles(const ArrayHeader* header, ElementType* elements) {
+    ArraySerializationHelper<Handle, true>::CloseHandles(header, elements);
+  }
+
+  static void EncodePointersAndHandles(const ArrayHeader* header,
+                                       ElementType* elements,
+                                       std::vector<Handle>* handles) {
+    ArraySerializationHelper<Handle, true>::EncodePointersAndHandles(
+        header, elements, handles);
+  }
+
+  static bool DecodePointersAndHandles(const ArrayHeader* header,
+                                       ElementType* elements,
+                                       Message* message) {
+    return ArraySerializationHelper<Handle, true>::DecodePointersAndHandles(
+        header, elements, message);
+  }
+};
+
 template <typename P>
-struct ArraySerializationHelper<P*> {
-  typedef StructPointer<P> ElementType;
+struct ArraySerializationHelper<P*, false> {
+  typedef typename ArrayDataTraits<P*>::StorageType ElementType;
 
   static size_t ComputeSizeOfElements(const ArrayHeader* header,
                                       const ElementType* elements) {
@@ -166,6 +216,17 @@ struct ArraySerializationHelper<P*> {
     for (uint32_t i = 0; i < header->num_elements; ++i) {
       if (elements[i].ptr)
         elements[i].ptr = elements[i].ptr->Clone(buf);
+    }
+  }
+
+  static void ClearHandles(const ArrayHeader* header, ElementType* elements) {
+  }
+
+  static void CloseHandles(const ArrayHeader* header,
+                           ElementType* elements) {
+    for (uint32_t i = 0; i < header->num_elements; ++i) {
+      if (elements[i].ptr)
+        elements[i].ptr->CloseHandles();
     }
   }
 
@@ -195,12 +256,18 @@ class Array_Data {
   typedef typename Traits::Wrapper Wrapper;
   typedef typename Traits::Ref Ref;
   typedef typename Traits::ConstRef ConstRef;
+  typedef ArraySerializationHelper<T, TypeTraits<T>::kIsHandle> Helper;
 
-  static Array_Data<T>* New(size_t num_elements, Buffer* buf) {
+  static Array_Data<T>* New(size_t num_elements, Buffer* buf,
+                            Buffer::Destructor dtor = NULL) {
     size_t num_bytes = sizeof(Array_Data<T>) +
                        Traits::GetStorageSize(num_elements);
-    return new (buf->Allocate(num_bytes)) Array_Data<T>(num_bytes,
-                                                        num_elements);
+    return new (buf->Allocate(num_bytes, dtor)) Array_Data<T>(num_bytes,
+                                                              num_elements);
+  }
+
+  static void Destructor(void* address) {
+    static_cast<Array_Data*>(address)->CloseHandles();
   }
 
   size_t size() const { return header_.num_elements; }
@@ -227,33 +294,32 @@ class Array_Data {
 
   size_t ComputeSize() const {
     return Align(header_.num_bytes) +
-        ArraySerializationHelper<T>::ComputeSizeOfElements(&header_, storage());
+        Helper::ComputeSizeOfElements(&header_, storage());
   }
 
-  Array_Data<T>* Clone(Buffer* buf) const {
+  Array_Data<T>* Clone(Buffer* buf) {
     Array_Data<T>* clone = New(header_.num_elements, buf);
     memcpy(clone->storage(),
            storage(),
            header_.num_bytes - sizeof(Array_Data<T>));
+    Helper::CloneElements(&clone->header_, clone->storage(), buf);
 
-    ArraySerializationHelper<T>::CloneElements(&clone->header_,
-                                               clone->storage(), buf);
+    // Zero-out handles in the original storage as they have been transferred
+    // to the clone.
+    Helper::ClearHandles(&header_, storage());
     return clone;
   }
 
   void CloseHandles() {
-    // TODO(darin): Implement!
+    Helper::CloseHandles(&header_, storage());
   }
 
   void EncodePointersAndHandles(std::vector<Handle>* handles) {
-    ArraySerializationHelper<T>::EncodePointersAndHandles(&header_, storage(),
-                                                          handles);
+    Helper::EncodePointersAndHandles(&header_, storage(), handles);
   }
 
   bool DecodePointersAndHandles(Message* message) {
-    return ArraySerializationHelper<T>::DecodePointersAndHandles(&header_,
-                                                                 storage(),
-                                                                 message);
+    return Helper::DecodePointersAndHandles(&header_, storage(), message);
   }
 
  private:
@@ -272,12 +338,16 @@ MOJO_COMPILE_ASSERT(sizeof(Array_Data<char>) == 8, bad_sizeof_Array_Data);
 // UTF-8 encoded
 typedef Array_Data<char> String_Data;
 
-template <typename T, bool kIsObject> struct ArrayTraits {};
+template <typename T, bool kIsObject, bool kIsHandle> struct ArrayTraits {};
 
-template <typename T> struct ArrayTraits<T, true> {
+// When T is an object type:
+template <typename T> struct ArrayTraits<T, true, false> {
   typedef Array_Data<typename T::Data*> DataType;
   typedef const T& ConstRef;
   typedef T& Ref;
+  static Buffer::Destructor GetDestructor() {
+    return NULL;
+  }
   static typename T::Data* ToArrayElement(const T& value) {
     return Unwrap(value);
   }
@@ -290,10 +360,14 @@ template <typename T> struct ArrayTraits<T, true> {
   }
 };
 
-template <typename T> struct ArrayTraits<T, false> {
+// When T is a primitive (non-bool) type:
+template <typename T> struct ArrayTraits<T, false, false> {
   typedef Array_Data<T> DataType;
   typedef const T& ConstRef;
   typedef T& Ref;
+  static Buffer::Destructor GetDestructor() {
+    return NULL;
+  }
   static T ToArrayElement(const T& value) {
     return value;
   }
@@ -301,10 +375,14 @@ template <typename T> struct ArrayTraits<T, false> {
   static ConstRef ToConstRef(const T& data) { return data; }
 };
 
-template <> struct ArrayTraits<bool, false> {
+// When T is a bool type:
+template <> struct ArrayTraits<bool, false, false> {
   typedef Array_Data<bool> DataType;
   typedef bool ConstRef;
   typedef ArrayDataTraits<bool>::Ref Ref;
+  static Buffer::Destructor GetDestructor() {
+    return NULL;
+  }
   static bool ToArrayElement(const bool& value) {
     return value;
   }
@@ -312,57 +390,20 @@ template <> struct ArrayTraits<bool, false> {
   static ConstRef ToConstRef(ConstRef data) { return data; }
 };
 
-template <> struct ArrayTraits<Handle, false> {
-  typedef Array_Data<Handle> DataType;
-  typedef Passable<Handle> ConstRef;
-  typedef AssignableAndPassable<Handle> Ref;
-  static Handle ToArrayElement(const Handle& value) {
+// When T is a handle type:
+template <typename H> struct ArrayTraits<H, false, true> {
+  typedef Array_Data<H> DataType;
+  typedef Passable<H> ConstRef;
+  typedef AssignableAndPassable<H> Ref;
+  static Buffer::Destructor GetDestructor() {
+    return &DataType::Destructor;
+  }
+  static H ToArrayElement(const H& value) {
     return value;
   }
-  static Ref ToRef(Handle& data) { return Ref(&data); }
-  static ConstRef ToConstRef(const Handle& data) {
-    return ConstRef(const_cast<Handle*>(&data));
-  }
-};
-
-template <> struct ArrayTraits<DataPipeConsumerHandle, false> {
-  typedef Array_Data<DataPipeConsumerHandle> DataType;
-  typedef Passable<DataPipeConsumerHandle> ConstRef;
-  typedef AssignableAndPassable<DataPipeConsumerHandle> Ref;
-  static DataPipeConsumerHandle ToArrayElement(
-      const DataPipeConsumerHandle& value) {
-    return value;
-  }
-  static Ref ToRef(DataPipeConsumerHandle& data) { return Ref(&data); }
-  static ConstRef ToConstRef(const DataPipeConsumerHandle& data) {
-    return ConstRef(const_cast<DataPipeConsumerHandle*>(&data));
-  }
-};
-
-template <> struct ArrayTraits<DataPipeProducerHandle, false> {
-  typedef Array_Data<DataPipeProducerHandle> DataType;
-  typedef Passable<DataPipeProducerHandle> ConstRef;
-  typedef AssignableAndPassable<DataPipeProducerHandle> Ref;
-  static DataPipeProducerHandle ToArrayElement(
-      const DataPipeProducerHandle& value) {
-    return value;
-  }
-  static Ref ToRef(DataPipeProducerHandle& data) { return Ref(&data); }
-  static ConstRef ToConstRef(const DataPipeProducerHandle& data) {
-    return ConstRef(const_cast<DataPipeProducerHandle*>(&data));
-  }
-};
-
-template <> struct ArrayTraits<MessagePipeHandle, false> {
-  typedef Array_Data<MessagePipeHandle> DataType;
-  typedef Passable<MessagePipeHandle> ConstRef;
-  typedef AssignableAndPassable<MessagePipeHandle> Ref;
-  static MessagePipeHandle ToArrayElement(const MessagePipeHandle& value) {
-    return value;
-  }
-  static Ref ToRef(MessagePipeHandle& data) { return Ref(&data); }
-  static ConstRef ToConstRef(const MessagePipeHandle& data) {
-    return ConstRef(const_cast<MessagePipeHandle*>(&data));
+  static Ref ToRef(H& data) { return Ref(&data); }
+  static ConstRef ToConstRef(const H& data) {
+    return ConstRef(const_cast<H*>(&data));
   }
 };
 

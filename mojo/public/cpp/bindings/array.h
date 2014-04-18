@@ -20,7 +20,9 @@ namespace mojo {
 template <typename T>
 class Array {
  public:
-  typedef internal::ArrayTraits<T, internal::TypeTraits<T>::kIsObject> Traits_;
+  typedef internal::ArrayTraits<T,
+                                internal::TypeTraits<T>::kIsObject,
+                                internal::TypeTraits<T>::kIsHandle> Traits_;
   typedef typename Traits_::DataType Data;
   typedef typename Traits_::ConstRef ConstRef;
 
@@ -65,7 +67,7 @@ class Array {
     typedef typename Traits_::Ref Ref;
 
     explicit Builder(size_t num_elements, Buffer* buf = mojo::Buffer::current())
-        : data_(Data::New(num_elements, buf)) {
+        : data_(Data::New(num_elements, buf, Traits_::GetDestructor())) {
     }
 
     size_t size() const { return data_->size(); }

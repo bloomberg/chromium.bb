@@ -231,6 +231,39 @@ TEST_F(HandlePassingTest, DataPipe) {
   EXPECT_TRUE(factory_client.got_response());
 }
 
+TEST_F(HandlePassingTest, PipesAreClosed) {
+  InterfacePipe<sample::Factory> pipe;
+  RemotePtr<sample::Factory> factory(pipe.handle_to_self.Pass(), NULL);
+
+  MessagePipe extra_pipe;
+
+  MojoHandle handle0_value = extra_pipe.handle0.get().value();
+  MojoHandle handle1_value = extra_pipe.handle1.get().value();
+
+  {
+    AllocationScope scope;
+
+    Array<MessagePipeHandle>::Builder pipes(2);
+    pipes[0] = extra_pipe.handle0.Pass();
+    pipes[1] = extra_pipe.handle1.Pass();
+
+    sample::Request::Builder request_builder;
+    request_builder.set_more_pipes(pipes.Finish());
+
+    sample::Request request = request_builder.Finish();
+
+    factory->DoStuff(request, ScopedMessagePipeHandle());
+
+    // The handles should have been transferred to the underlying Message.
+    EXPECT_EQ(MOJO_HANDLE_INVALID, request.more_pipes()[0].get().value());
+    EXPECT_EQ(MOJO_HANDLE_INVALID, request.more_pipes()[1].get().value());
+  }
+
+  // We expect the pipes to have been closed.
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(handle0_value));
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(handle1_value));
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace mojo

@@ -35,7 +35,25 @@ ArrayDataTraits<bool>::BitRef::operator bool() const {
 }
 
 // static
-void ArraySerializationHelper<Handle>::EncodePointersAndHandles(
+void ArraySerializationHelper<Handle, true>::ClearHandles(
+    const ArrayHeader* header,
+    ElementType* elements) {
+  for (uint32_t i = 0; i < header->num_elements; ++i)
+    elements[i].set_value(MOJO_HANDLE_INVALID);
+}
+
+// static
+void ArraySerializationHelper<Handle, true>::CloseHandles(
+    const ArrayHeader* header,
+    ElementType* elements) {
+  for (uint32_t i = 0; i < header->num_elements; ++i) {
+    if (elements[i].is_valid())
+      CloseRaw(elements[i]);
+  }
+}
+
+// static
+void ArraySerializationHelper<Handle, true>::EncodePointersAndHandles(
     const ArrayHeader* header,
     ElementType* elements,
     std::vector<Handle>* handles) {
@@ -44,7 +62,7 @@ void ArraySerializationHelper<Handle>::EncodePointersAndHandles(
 }
 
 // static
-bool ArraySerializationHelper<Handle>::DecodePointersAndHandles(
+bool ArraySerializationHelper<Handle, true>::DecodePointersAndHandles(
     const ArrayHeader* header,
     ElementType* elements,
     Message* message) {

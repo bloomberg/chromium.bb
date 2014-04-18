@@ -68,7 +68,7 @@ interface ServiceClient {
 // This interface is referenced above where it is defined. It also refers to
 // itself from a method.
 interface Port {
-  PostMessage@0(string message_text @0, Port extra_port@1);
+  PostMessage@0(string message_text @0, Port[] extra_ports@1);
 };
 
 }

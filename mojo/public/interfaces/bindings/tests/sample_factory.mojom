@@ -10,6 +10,7 @@ module sample {
 struct Request {
   int32 x;
   handle<message_pipe> pipe;
+  handle<message_pipe>[] more_pipes;
 };
 
 struct Response {

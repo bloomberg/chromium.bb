@@ -4,9 +4,11 @@
 
 #include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/public/cpp/bindings/array.h"
+#include "mojo/public/cpp/bindings/interface.h"
 #include "mojo/public/cpp/bindings/lib/fixed_buffer.h"
 #include "mojo/public/cpp/bindings/lib/scratch_buffer.h"
 #include "mojo/public/cpp/environment/environment.h"
+#include "mojo/public/interfaces/bindings/tests/sample_service.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -82,6 +84,86 @@ TEST(ArrayTest, Handle) {
   pipe0 = handles[0].Pass();
   EXPECT_TRUE(pipe0.is_valid());
   EXPECT_FALSE(handles[0].is_valid());
+}
+
+// Tests that Array<Handle> supports closing handles.
+TEST(ArrayTest, HandlesAreClosed) {
+  Environment env;
+
+  ScopedMessagePipeHandle msg_pipe0, msg_pipe1;
+  CreateMessagePipe(&msg_pipe0, &msg_pipe1);
+
+  ScopedHandle pipe0 = ScopedHandle::From(msg_pipe0.Pass());
+  ScopedHandle pipe1 = ScopedHandle::From(msg_pipe1.Pass());
+
+  MojoHandle pipe0_value = pipe0.get().value();
+  MojoHandle pipe1_value = pipe1.get().value();
+
+  {
+    AllocationScope scope;
+
+    Array<Handle>::Builder handles_builder(2);
+    handles_builder[0] = pipe0.Pass();
+    handles_builder[1].reset(pipe1.release());
+
+    MOJO_ALLOW_UNUSED Array<Handle> handles =
+        handles_builder.Finish();
+  }
+
+  // We expect the pipes to have been closed.
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(pipe0_value));
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(pipe1_value));
+}
+
+// Tests that Array<MessagePipeHandle> supports closing handles.
+TEST(ArrayTest, MessagePipeHandlesAreClosed) {
+  Environment env;
+
+  ScopedMessagePipeHandle pipe0, pipe1;
+  CreateMessagePipe(&pipe0, &pipe1);
+
+  MojoHandle pipe0_value = pipe0.get().value();
+  MojoHandle pipe1_value = pipe1.get().value();
+
+  {
+    AllocationScope scope;
+
+    Array<MessagePipeHandle>::Builder handles_builder(2);
+    handles_builder[0] = pipe0.Pass();
+    handles_builder[1].reset(pipe1.release());
+
+    MOJO_ALLOW_UNUSED Array<MessagePipeHandle> handles =
+        handles_builder.Finish();
+  }
+
+  // We expect the pipes to have been closed.
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(pipe0_value));
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(pipe1_value));
+}
+
+// Tests that Array<InterfaceHandle<S>> supports closing handles.
+TEST(ArrayTest, InterfaceHandlesAreClosed) {
+  Environment env;
+
+  InterfacePipe<sample::Port, sample::Port> pipe;
+
+  MojoHandle pipe0_value = pipe.handle_to_self.get().value();
+  MojoHandle pipe1_value = pipe.handle_to_peer.get().value();
+
+  {
+    AllocationScope scope;
+
+    Array<sample::PortHandle>::Builder handles_builder(2);
+    handles_builder[0] = pipe.handle_to_self.Pass();
+    handles_builder[1].reset(pipe.handle_to_peer.release());
+
+    MOJO_ALLOW_UNUSED Array<sample::PortHandle> handles =
+        handles_builder.Finish();
+  }
+
+  // We expect the pipes to have been closed.
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(pipe0_value));
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(pipe1_value));
 }
 
 }  // namespace
