@@ -83,10 +83,6 @@ bez{
             "£",
             "Lupila lwa Huuingereza",
         }
-        GHC{
-            "GHC",
-            "Lupila lwa Hughana",
-        }
         GMD{
             "GMD",
             "Lupila lwa Hugambia",
@@ -142,10 +138,6 @@ bez{
         MWK{
             "MWK",
             "Lupila lwa Humalawi",
-        }
-        MZM{
-            "MZM",
-            "Lupila lwa Humsumbiji",
         }
         NAD{
             "NAD",
@@ -219,17 +211,9 @@ bez{
             "ZAR",
             "Lupila lwa Huafriaka ya Hukusini",
         }
-        ZMK{
-            "ZMK",
-            "Lupila lwa Huzambia (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Lupila lwa Huzambia",
-        }
-        ZWD{
-            "ZWD",
-            "Lupila lwa Huzimbabwe",
         }
     }
     Version{"2.0.92.87"}

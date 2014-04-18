@@ -9,35 +9,6 @@
 es_MX{
     %%Parent{"es_419"}
     Countries{
-        001{"Mundo"}
-        002{"África"}
-        003{"América del Norte"}
-        005{"Sudamérica"}
-        009{"Oceanía"}
-        011{"África Occidental"}
-        013{"Centroamérica"}
-        014{"África Oriental"}
-        015{"África del Norte"}
-        017{"África Central"}
-        018{"África del Sur"}
-        019{"Américas"}
-        021{"América Septentrional"}
-        029{"Caribe"}
-        030{"Asia Oriental"}
-        034{"Asia del Sur"}
-        035{"Sudeste Asiático"}
-        039{"Europa del Sur"}
-        053{"Australasia"}
-        054{"Melanesia"}
-        057{"Región de Micronesia"}
-        061{"Polinesia"}
-        142{"Asia"}
-        143{"Asia Central"}
-        145{"Asia Occidental"}
-        150{"Europa"}
-        151{"Europa Oriental"}
-        154{"Europa del Norte"}
-        155{"Europa Occidental"}
         419{"Latinoamérica"}
         AC{"Isla Ascensión"}
         AD{"Andorra"}

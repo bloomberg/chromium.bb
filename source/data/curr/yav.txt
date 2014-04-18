@@ -75,10 +75,6 @@ yav{
             "£",
             "lífilɛ sitelelíiŋ",
         }
-        GHC{
-            "GHC",
-            "setí",
-        }
         GMD{
             "GMD",
             "talasí u kaambí",

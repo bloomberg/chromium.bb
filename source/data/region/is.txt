@@ -11,35 +11,6 @@
  */
 is{
     Countries{
-        001{"Heimurinn"}
-        002{"Afríka"}
-        003{"Norður-Ameríka"}
-        005{"Suður-Ameríka"}
-        009{"Eyjaálfa"}
-        011{"Vestur-Afríka"}
-        013{"Mið-Ameríka"}
-        014{"Austur-Afríka"}
-        015{"Norður-Afríka"}
-        017{"Mið-Afríka"}
-        018{"Suðurhluti Afríku"}
-        019{"Ameríka"}
-        021{"Ameríka norðan Mexikó"}
-        029{"Karabíska hafið"}
-        030{"Austur-Asía"}
-        034{"Suður-Asía"}
-        035{"Suðaustur-Asía"}
-        039{"Suður-Evrópa"}
-        053{"Ástralasía"}
-        054{"Melanesía"}
-        057{"Míkrónesía"}
-        061{"Pólýnesía"}
-        142{"Asía"}
-        143{"Mið-Asía"}
-        145{"Vestur-Asía"}
-        150{"Evrópa"}
-        151{"Austur-Evrópa"}
-        154{"Norður-Evrópa"}
-        155{"Vestur-Evrópa"}
         419{"Rómanska Ameríka"}
         AC{"Ascension-eyja"}
         AD{"Andorra"}

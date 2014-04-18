@@ -83,10 +83,6 @@ ebu{
             "£",
             "Pauni ya Uingereza",
         }
-        GHC{
-            "GHC",
-            "Sedi ya Ghana",
-        }
         GMD{
             "GMD",
             "Dalasi ya Gambia",
@@ -142,10 +138,6 @@ ebu{
         MWK{
             "MWK",
             "Kwacha ya Malawi",
-        }
-        MZM{
-            "MZM",
-            "Metikali ya Msumbiji",
         }
         NAD{
             "NAD",
@@ -219,17 +211,9 @@ ebu{
             "ZAR",
             "Randi ya Afrika Kusini",
         }
-        ZMK{
-            "ZMK",
-            "Kwacha ya Zambia (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Kwacha ya Zambia",
-        }
-        ZWD{
-            "ZWD",
-            "Dola ya Zimbabwe",
         }
     }
     Version{"2.0.92.87"}

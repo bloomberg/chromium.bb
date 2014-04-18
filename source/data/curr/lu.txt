@@ -83,10 +83,6 @@ lu{
             "£",
             "Pauni wa Angeletele",
         }
-        GHC{
-            "GHC",
-            "Sedi wa Ngana",
-        }
         GMD{
             "GMD",
             "Ndalasi wa Ngambi",
@@ -143,10 +139,6 @@ lu{
             "MWK",
             "Kwasha wa Malawi",
         }
-        MZM{
-            "MZM",
-            "Metikali wa Mozambiki",
-        }
         NAD{
             "NAD",
             "Ndola wa Namibi",
@@ -170,10 +162,6 @@ lu{
         SDG{
             "SDG",
             "Ndina wa Suda",
-        }
-        SDP{
-            "SDP",
-            "Pauni wa Suda",
         }
         SHP{
             "SHP",
@@ -223,17 +211,9 @@ lu{
             "ZAR",
             "Rande wa Afrika wa Mwinshi",
         }
-        ZMK{
-            "ZMK",
-            "Kwasha wa Zambi (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Kwasha wa Zambi",
-        }
-        ZWD{
-            "ZWD",
-            "Ndola wa Zimbabwe",
         }
     }
     Version{"2.0.92.87"}

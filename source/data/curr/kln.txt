@@ -83,10 +83,6 @@ kln{
             "£",
             "pounditab Uingereza",
         }
-        GHC{
-            "GHC",
-            "Rabisiekab Ghana",
-        }
         GMD{
             "GMD",
             "Rabisiekab Gambia",
@@ -142,10 +138,6 @@ kln{
         MWK{
             "MWK",
             "Rabisiekaby Malawi",
-        }
-        MZM{
-            "MZM",
-            "Rabisiekab Msumbiji",
         }
         NAD{
             "NAD",
@@ -219,17 +211,9 @@ kln{
             "ZAR",
             "Randitab Afrika nebo murot tai",
         }
-        ZMK{
-            "ZMK",
-            "Kwachaitab Zambia (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Kwachaitab Zambia",
-        }
-        ZWD{
-            "ZWD",
-            "Dolaitab ya Zimbabwe",
         }
     }
     Version{"2.0.92.87"}

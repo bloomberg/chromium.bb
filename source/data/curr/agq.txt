@@ -83,10 +83,6 @@ agq{
             "£",
             "Bɔ̀ŋ Sɨ̀telè è Bèletì",
         }
-        GHC{
-            "GHC",
-            "Sɛ̀di è Gaanà",
-        }
         GMD{
             "GMD",
             "Dàlasì è Gambìa",
@@ -142,10 +138,6 @@ agq{
         MWK{
             "MWK",
             "Kwachà è Màlawè",
-        }
-        MZM{
-            "MZM",
-            "Mètikà è Mùzàmbî",
         }
         NAD{
             "NAD",
@@ -219,17 +211,9 @@ agq{
             "ZAR",
             "Lân è Afɨlekà ghɨ Emàm ghò",
         }
-        ZMK{
-            "ZMK",
-            "Kwachà è Zambìa (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Kwachà è Zambìa",
-        }
-        ZWD{
-            "ZWD",
-            "Dɔlà è Zìmbagbɛ̀",
         }
     }
     Version{"2.0.92.87"}

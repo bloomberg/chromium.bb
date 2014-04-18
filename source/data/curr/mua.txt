@@ -83,10 +83,6 @@ mua{
             "£",
             "solai Britaniya",
         }
-        GHC{
-            "GHC",
-            "solai Gana",
-        }
         GMD{
             "GMD",
             "solai Gambiya",
@@ -143,10 +139,6 @@ mua{
             "MWK",
             "Solai Malawi",
         }
-        MZM{
-            "MZM",
-            "Solai Mozambika",
-        }
         NAD{
             "NAD",
             "Solai Namibiya",
@@ -170,10 +162,6 @@ mua{
         SDG{
             "SDG",
             "Solai Sudaŋ ma dii ne dinar",
-        }
-        SDP{
-            "SDP",
-            "Solai Sudaŋ ma dii ne livre",
         }
         SHP{
             "SHP",
@@ -223,17 +211,9 @@ mua{
             "ZAR",
             "Solai Africa nekǝsǝŋ",
         }
-        ZMK{
-            "ZMK",
-            "Solai Zambiya (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Solai Zambiya",
-        }
-        ZWD{
-            "ZWD",
-            "Solai Zimbabwe",
         }
     }
     Version{"2.0.92.87"}

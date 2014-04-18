@@ -39,10 +39,6 @@ ro{
             "AOA",
             "kwanza angoleză",
         }
-        ARP{
-            "ARP",
-            "peso argentinian (1983–1985)",
-        }
         ARS{
             "ARS",
             "peso argentinian",
@@ -59,17 +55,9 @@ ro{
             "AWG",
             "florin din Aruba",
         }
-        AZM{
-            "AZM",
-            "manat azer (1993–2006)",
-        }
         AZN{
             "AZN",
             "manat azer",
-        }
-        BAD{
-            "BAD",
-            "dinar Bosnia-Herțegovina (1992–1994)",
         }
         BAM{
             "BAM",
@@ -127,17 +115,9 @@ ro{
             "BOV",
             "mvdol bolivian",
         }
-        BRE{
-            "BRE",
-            "cruzeiro brazilian (1990–1993)",
-        }
         BRL{
             "BRL",
             "real brazilian",
-        }
-        BRR{
-            "BRR",
-            "cruzeiro brazilian (1993–1994)",
         }
         BSD{
             "BSD",
@@ -298,10 +278,6 @@ ro{
         GEL{
             "GEL",
             "lari georgian",
-        }
-        GHC{
-            "GHC",
-            "cedi Ghana (1979–2007)",
         }
         GHS{
             "GHS",
@@ -555,10 +531,6 @@ ro{
             "MXN",
             "peso mexican",
         }
-        MXP{
-            "MXP",
-            "peso mexican de argint (1861–1992)",
-        }
         MYR{
             "MYR",
             "ringgit malaiezian",
@@ -566,10 +538,6 @@ ro{
         MZE{
             "MZE",
             "escudo Mozambic",
-        }
-        MZM{
-            "MZM",
-            "metical Mozambic vechi",
         }
         MZN{
             "MZN",
@@ -582,10 +550,6 @@ ro{
         NGN{
             "NGN",
             "naira nigeriană",
-        }
-        NIC{
-            "NIC",
-            "cordoba nicaraguană (1988–1991)",
         }
         NIO{
             "NIO",
@@ -623,10 +587,6 @@ ro{
             "PEN",
             "sol nou peruvian",
         }
-        PES{
-            "PES",
-            "sol peruvian (1863–1965)",
-        }
         PGK{
             "PGK",
             "kina din Papua-Noua Guinee",
@@ -643,10 +603,6 @@ ro{
             "PLN",
             "zlot polonez",
         }
-        PLZ{
-            "PLZ",
-            "zlot polonez (1950–1995)",
-        }
         PYG{
             "PYG",
             "guarani paraguayan",
@@ -658,10 +614,6 @@ ro{
         RHD{
             "RHD",
             "dolar rhodesian",
-        }
-        ROL{
-            "ROL",
-            "leu românesc (1952–2006)",
         }
         RON{
             "RON",
@@ -691,17 +643,9 @@ ro{
             "SCR",
             "rupie din Seychelles",
         }
-        SDD{
-            "SDD",
-            "dinar sudanez",
-        }
         SDG{
             "SDG",
             "liră sudaneză",
-        }
-        SDP{
-            "SDP",
-            "liră sudaneză (1957–1998)",
         }
         SEK{
             "SEK",
@@ -775,10 +719,6 @@ ro{
             "TJS",
             "somoni tadjic",
         }
-        TMM{
-            "TMM",
-            "manat turkmen (1993–2009)",
-        }
         TMT{
             "TMT",
             "manat turkmen",
@@ -790,10 +730,6 @@ ro{
         TOP{
             "TOP",
             "pa’anga tongană",
-        }
-        TRL{
-            "TRL",
-            "liră turcească (1922–2005)",
         }
         TRY{
             "TRY",
@@ -819,10 +755,6 @@ ro{
             "UAK",
             "carboavă ucraineană",
         }
-        UGS{
-            "UGS",
-            "șiling ugandez (1966–1987)",
-        }
         UGX{
             "UGX",
             "șiling ugandez",
@@ -839,10 +771,6 @@ ro{
             "USS",
             "dolar american (aceeași zi)",
         }
-        UYP{
-            "UYP",
-            "peso Uruguay (1975–1993)",
-        }
         UYU{
             "UYU",
             "peso uruguayan",
@@ -850,10 +778,6 @@ ro{
         UZS{
             "UZS",
             "sum Uzbekistan",
-        }
-        VEB{
-            "VEB",
-            "bolivar Venezuela (1871–2008)",
         }
         VEF{
             "VEF",
@@ -951,18 +875,6 @@ ro{
             "YER",
             "rial yemenit",
         }
-        YUD{
-            "YUD",
-            "dinar iugoslav greu",
-        }
-        YUM{
-            "YUM",
-            "dinar iugoslav nou",
-        }
-        YUN{
-            "YUN",
-            "dinar iugoslav convertibil",
-        }
         ZAL{
             "ZAL",
             "rand sud-african (financiar)",
@@ -971,21 +883,9 @@ ro{
             "ZAR",
             "rand sud-african",
         }
-        ZMK{
-            "ZMK",
-            "kwacha zambian (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "kwacha zambian",
-        }
-        ZRN{
-            "ZRN",
-            "zair nou",
-        }
-        ZWD{
-            "ZWD",
-            "dolar Zimbabwe (1980–2008)",
         }
         ZWL{
             "ZWL",
@@ -1032,11 +932,6 @@ ro{
             one{"kwanza angoleză"}
             other{"kwanze angoleze"}
         }
-        ARP{
-            few{"pesos argentinieni (1983–1985)"}
-            one{"peso argentinian (1983–1985)"}
-            other{"pesos argentinieni (1983–1985)"}
-        }
         ARS{
             few{"pesos argentinieni"}
             one{"peso argentinian"}
@@ -1061,11 +956,6 @@ ro{
             few{"manați azeri"}
             one{"manat azer"}
             other{"manați Azerbaidjan"}
-        }
-        BAD{
-            few{"dinari Bosnia-Herțegovina"}
-            one{"dinar Bosnia-Herțegovina (1992–1994)"}
-            other{"dinari Bosnia-Herțegovina (1992–1994)"}
         }
         BAM{
             few{"mărci convertibile bosniace"}
@@ -1627,11 +1517,6 @@ ro{
             one{"peso mexican"}
             other{"pesos mexicani"}
         }
-        MXP{
-            few{"pesos mexicani de argint (1861–1992"}
-            one{"peso mexican de argint (1861–1992)"}
-            other{"pesos mexicani de argint (1861–1992)"}
-        }
         MYR{
             few{"ringgit malaiezieni"}
             one{"ringgit malaiezian"}
@@ -1692,11 +1577,6 @@ ro{
             one{"sol nou peruvian"}
             other{"soli noi Peru"}
         }
-        PES{
-            few{"soli Peru (1863–1965)"}
-            one{"sol peruvian (1863–1965)"}
-            other{"soli Peru (1863–1965)"}
-        }
         PGK{
             few{"kina din Papua-Noua Guinee"}
             one{"kina din Papua-Noua Guinee"}
@@ -1717,11 +1597,6 @@ ro{
             one{"zlot polonez"}
             other{"zloți noi polonezi"}
         }
-        PLZ{
-            few{"zloți polonezi (1950–1995)"}
-            one{"zlot polonez (1950–1995)"}
-            other{"zloți polonezi (1950–1995)"}
-        }
         PYG{
             few{"guarani paraguayeni"}
             one{"guarani paraguayan"}
@@ -1736,11 +1611,6 @@ ro{
             few{"dolari rhodesieni"}
             one{"dolar rhodesian"}
             other{"dolari rhodesieni"}
-        }
-        ROL{
-            few{"lei românești (1952–2006)"}
-            one{"leu românesc (1952–2006)"}
-            other{"lei românești (1952–2006)"}
         }
         RON{
             few{"lei românești"}
@@ -1777,20 +1647,10 @@ ro{
             one{"rupie din Seychelles"}
             other{"rupii Seychelles"}
         }
-        SDD{
-            few{"dinari sudanezi"}
-            one{"dinar sudanez"}
-            other{"dinari sudanezi"}
-        }
         SDG{
             few{"lire sudaneze"}
             one{"liră sudaneză"}
             other{"lire Sudan"}
-        }
-        SDP{
-            few{"lire sudaneze (1957–1998)"}
-            one{"liră sudaneză (1957–1998)"}
-            other{"lire sudaneze (1957–1998)"}
         }
         SEK{
             few{"coroane suedeze"}
@@ -1882,11 +1742,6 @@ ro{
             one{"somoni tajdic"}
             other{"somoni Tadjikistan"}
         }
-        TMM{
-            few{"manat turkmeni (1993–2009)"}
-            one{"manat turkmen (1993–2009)"}
-            other{"manat turkmeni (1993–2009)"}
-        }
         TMT{
             few{"manat turkmeni"}
             one{"manat turkmen"}
@@ -1901,11 +1756,6 @@ ro{
             few{"pa’anga tongane"}
             one{"pa’anga tongană"}
             other{"pa’anga tongane"}
-        }
-        TRL{
-            few{"liră turcească (1922–2005)"}
-            one{"liră turcească (1922–2005)"}
-            other{"lire turcești (1922–2005)"}
         }
         TRY{
             few{"lire turcești"}
@@ -1937,11 +1787,6 @@ ro{
             one{"carboavă ucraineană"}
             other{"carboave ucrainiene"}
         }
-        UGS{
-            few{"șilingi ugandezi (1966–1987)"}
-            one{"șiling ugandez (1966–1987)"}
-            other{"șilingi ugandezi (1966–1987)"}
-        }
         UGX{
             few{"șilingi ugandezi"}
             one{"șiling ugandez"}
@@ -1962,11 +1807,6 @@ ro{
             one{"dolar american (aceeași zi)"}
             other{"dolari americani (aceeași zi)"}
         }
-        UYP{
-            few{"pesos Uruguay (1975–1993)"}
-            one{"peso Uruguay (1975–1993)"}
-            other{"pesos Uruguay (1975–1993)"}
-        }
         UYU{
             few{"pesos uruguayeni"}
             one{"peso uruguayan"}
@@ -1976,11 +1816,6 @@ ro{
             few{"sum Uzbekistan"}
             one{"sum Uzbekistan"}
             other{"sum Uzbekistan"}
-        }
-        VEB{
-            few{"bolivari Venezuela (1871–2008)"}
-            one{"bolivar Venezuela (1871–2008)"}
-            other{"bolivari Venezuela (1871–2008)"}
         }
         VEF{
             few{"bolivari venezueleni"}
@@ -2042,45 +1877,15 @@ ro{
             one{"rial yemenit"}
             other{"riyali Yemen"}
         }
-        YUD{
-            few{"dinari iugoslavi grei"}
-            one{"dinar iugoslav greu"}
-            other{"dinari iugoslavi grei"}
-        }
-        YUM{
-            few{"dinari iugoslavi noi"}
-            one{"dinar iugoslav nou"}
-            other{"dinari iugoslavi noi"}
-        }
-        YUN{
-            few{"dinari iugoslavi convertibili"}
-            one{"dinar iugoslav convertibil"}
-            other{"dinari iugoslavi convertibili"}
-        }
         ZAR{
             few{"ranzi sud-africani"}
             one{"rand sud-african"}
             other{"ranzi sud-africani"}
         }
-        ZMK{
-            few{"kwache zambiene (1968–2012)"}
-            one{"kwacha zambiană (1968–2012)"}
-            other{"kwache zambiene (1968–2012)"}
-        }
         ZMW{
             few{"kwache zambiene"}
             one{"kwacha zambian"}
             other{"kwache zambiene"}
-        }
-        ZRN{
-            few{"zairi noi"}
-            one{"zair nou"}
-            other{"zairi noi"}
-        }
-        ZWD{
-            few{"dolari Zimbabwe (1980–2008)"}
-            one{"dolar Zimbabwe (1980–2008)"}
-            other{"dolari Zimbabwe (1980–2008)"}
         }
     }
     CurrencyUnitPatterns{

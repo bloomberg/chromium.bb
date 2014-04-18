@@ -11,35 +11,6 @@
  */
 ca{
     Countries{
-        001{"Món"}
-        002{"Àfrica"}
-        003{"Amèrica del Nord"}
-        005{"Amèrica del Sud"}
-        009{"Oceania"}
-        011{"Àfrica Occidental"}
-        013{"Amèrica Central"}
-        014{"Àfrica Oriental"}
-        015{"Àfrica Septentrional"}
-        017{"Àfrica Central"}
-        018{"Àfrica Meridional"}
-        019{"Amèrica"}
-        021{"Amèrica Septentrional"}
-        029{"Carib"}
-        030{"Àsia Oriental"}
-        034{"Àsia Meridional"}
-        035{"Àsia Sud-oriental"}
-        039{"Europa Meridional"}
-        053{"Australàsia"}
-        054{"Melanèsia"}
-        057{"Regió de la Micronèsia"}
-        061{"Polinèsia"}
-        142{"Àsia"}
-        143{"Àsia Central"}
-        145{"Àsia Occidental"}
-        150{"Europa"}
-        151{"Europa Oriental"}
-        154{"Europa Septentrional"}
-        155{"Europa Occidental"}
         419{"Amèrica Llatina"}
         AC{"Illa de l'Ascensió"}
         AD{"Andorra"}

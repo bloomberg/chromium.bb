@@ -83,10 +83,6 @@ kde{
             "£",
             "Pauni ya Uingereza",
         }
-        GHC{
-            "GHC",
-            "Sedi ya Ghana",
-        }
         GMD{
             "GMD",
             "Dalasi ya Gambia",
@@ -143,10 +139,6 @@ kde{
             "MWK",
             "Kwacha ya Malawi",
         }
-        MZM{
-            "MZM",
-            "Metikali ya Msumbiji",
-        }
         NAD{
             "NAD",
             "Dola ya Namibia",
@@ -170,10 +162,6 @@ kde{
         SDG{
             "SDG",
             "Dinari ya Sudani",
-        }
-        SDP{
-            "SDP",
-            "Pauni ya Sudani",
         }
         SHP{
             "SHP",
@@ -223,17 +211,9 @@ kde{
             "ZAR",
             "Randi ya Afrika Kusini",
         }
-        ZMK{
-            "ZMK",
-            "Kwacha ya Zambia (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Kwacha ya Zambia",
-        }
-        ZWD{
-            "ZWD",
-            "Dola ya Zimbabwe",
         }
     }
     Version{"2.0.92.87"}

@@ -83,10 +83,6 @@ nmg{
             "£",
             "Mɔn Ngɛ̄lɛ̄n",
         }
-        GHC{
-            "GHC",
-            "Mɔn Gana",
-        }
         GMD{
             "GMD",
             "Mɔn Gambia",
@@ -143,10 +139,6 @@ nmg{
             "MWK",
             "Mɔn Malawi",
         }
-        MZM{
-            "MZM",
-            "Mɔn Mozambik",
-        }
         NAD{
             "NAD",
             "Dɔ́llɔ Namibia",
@@ -170,10 +162,6 @@ nmg{
         SDG{
             "SDG",
             "Mɔn Sudan",
-        }
-        SDP{
-            "SDP",
-            "Mɔn Sudan (1957–1998)",
         }
         SHP{
             "SHP",
@@ -223,17 +211,9 @@ nmg{
             "ZAR",
             "Mɔn Afrik yí sí",
         }
-        ZMK{
-            "ZMK",
-            "Mɔn Zambia (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Mɔn Zambia",
-        }
-        ZWD{
-            "ZWD",
-            "Dɔ́llɔ Zimbabwǝ (1980–2008)",
         }
     }
     Version{"2.0.92.87"}

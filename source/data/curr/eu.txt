@@ -648,10 +648,6 @@ eu{
             "ZAR",
             "Hegoafrikako randa",
         }
-        ZMK{
-            "ZMK",
-            "Zambiako kwacha (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Zambiako kwacha",

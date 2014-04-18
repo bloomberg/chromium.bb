@@ -13,5 +13,4 @@ fo{
     Languages{
         fo{"føroyskt"}
     }
-    Version{"2.0.92.87"}
 }

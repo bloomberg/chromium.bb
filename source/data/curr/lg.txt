@@ -83,10 +83,6 @@ lg{
             "£",
             "Pawundi ey'eBungereza",
         }
-        GHC{
-            "GHC",
-            "Sedi ey'eGana",
-        }
         GMD{
             "GMD",
             "Dalasi ey'eGambya",
@@ -143,10 +139,6 @@ lg{
             "MWK",
             "Kwaca ey'eMalawi",
         }
-        MZM{
-            "MZM",
-            "Metikaali ey'eMozambiiki",
-        }
         NAD{
             "NAD",
             "Doola ey'eNamibiya",
@@ -170,10 +162,6 @@ lg{
         SDG{
             "SDG",
             "Dinaali ey'eSudaani",
-        }
-        SDP{
-            "SDP",
-            "Pawundi ey'eSudaani",
         }
         SHP{
             "SHP",
@@ -223,17 +211,9 @@ lg{
             "ZAR",
             "Randi ey'eSawusafirika",
         }
-        ZMK{
-            "ZMK",
-            "Kwaca ey'eZambya (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Kwaca ey'eZambya",
-        }
-        ZWD{
-            "ZWD",
-            "Doola ey'eZimbabwe",
         }
     }
     Version{"2.0.92.87"}

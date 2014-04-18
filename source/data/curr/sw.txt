@@ -203,10 +203,6 @@ sw{
             "GEL",
             "Lari ya Georgia",
         }
-        GHC{
-            "GHC",
-            "sedi ya Ghana",
-        }
         GHS{
             "GHS",
             "Cedi ya Ghana",
@@ -411,10 +407,6 @@ sw{
             "MYR",
             "Ringgit ya Malaysia",
         }
-        MZM{
-            "MZM",
-            "metikali ya Msumbiji (1980–2006)",
-        }
         MZN{
             "MZN",
             "Metikali ya Msumbiji",
@@ -510,10 +502,6 @@ sw{
         SDG{
             "SDG",
             "dinari ya Sudani",
-        }
-        SDP{
-            "SDP",
-            "pauni ya Sudani",
         }
         SEK{
             "SEK",
@@ -655,27 +643,15 @@ sw{
             "ZAR",
             "randi ya Afrika Kusini",
         }
-        ZMK{
-            "ZMK",
-            "kwacha ya Zambia (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "kwacha ya Zambia",
-        }
-        ZWD{
-            "ZWD",
-            "dola ya Zimbabwe",
         }
     }
     CurrencyPlurals{
         BMD{
             one{"Dola ya Bermuda"}
             other{"Dola ya Bermuda"}
-        }
-        MZM{
-            one{"metikali ya Msumbiji (1980–2006)"}
-            other{"metikali ya Msumbiji (1980–2006)"}
         }
     }
     CurrencyUnitPatterns{

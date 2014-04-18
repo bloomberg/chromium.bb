@@ -11,35 +11,6 @@
  */
 to{
     Countries{
-        001{"Māmani"}
-        002{"ʻAfilika"}
-        003{"ʻAmelika tokelau"}
-        005{"ʻAmelika tonga"}
-        009{"ʻOsēnia"}
-        011{"ʻAfilika fakahihifo"}
-        013{"ʻAmelika lotoloto"}
-        014{"ʻAfilika fakahahake"}
-        015{"ʻAfilika fakatokelau"}
-        017{"ʻAfilika lotoloto"}
-        018{"ʻAfilika fakatonga"}
-        019{"Ongo ʻAmelika"}
-        021{"ʻAmelika fakatokelau"}
-        029{"Kalipiane"}
-        030{"ʻĒsia fakahahake"}
-        034{"ʻĒsia fakatonga"}
-        035{"ʻĒsia fakatongahahake"}
-        039{"ʻIulope fakatonga"}
-        053{"ʻAositelēlēsia"}
-        054{"Melanisia"}
-        057{"Potu fonua Mikolonisia"}
-        061{"Polinīsia"}
-        142{"ʻĒsia"}
-        143{"ʻĒsia lotoloto"}
-        145{"ʻĒsia fakahihifo"}
-        150{"ʻIulope"}
-        151{"ʻIulope fakahahake"}
-        154{"ʻIulope fakatokelau"}
-        155{"ʻIulope fakahihifo"}
         419{"ʻAmelika fakalatina"}
         AC{"Motu ʻAsenisini"}
         AD{"ʻEnitola"}

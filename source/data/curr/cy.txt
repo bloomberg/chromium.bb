@@ -635,10 +635,6 @@ cy{
             "ZAR",
             "Rand De Affrica",
         }
-        ZMK{
-            "ZMK",
-            "Kwacha Zambia (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Kwacha Zambia",
@@ -1892,14 +1888,6 @@ cy{
             other{"Rand De Affrica"}
             two{"Rand De Affrica"}
             zero{"Rand De Affrica"}
-        }
-        ZMK{
-            few{"Kwacha Zambia (1968–2012)"}
-            many{"Kwacha Zambia (1968–2012)"}
-            one{"Kwacha Zambia (1968–2012)"}
-            other{"Kwacha Zambia (1968–2012)"}
-            two{"Kwacha Zambia (1968–2012)"}
-            zero{"Kwacha Zambia (1968–2012)"}
         }
         ZMW{
             few{"Kwacha Zambia"}

@@ -80,10 +80,6 @@ yo_BJ{
             "£",
             "Pɔɔn ti Orílɛ́ède Bírítísì",
         }
-        GHC{
-            "GHC",
-            "shidi ti Orílɛ́ède Gana",
-        }
         GMD{
             "GMD",
             "Dalasi ti Orílɛ́ède Gamibia",
@@ -140,10 +136,6 @@ yo_BJ{
             "MWK",
             "Kasha ti Orílɛ́ède Malawi",
         }
-        MZM{
-            "MZM",
-            "Metika ti Orílɛ́ède Mosamibiki",
-        }
         NAD{
             "NAD",
             "Dɔla ti Orílɛ́ède Namibia",
@@ -167,10 +159,6 @@ yo_BJ{
         SDG{
             "SDG",
             "Dina ti Orílɛ́ède Sudani",
-        }
-        SDP{
-            "SDP",
-            "Pɔɔun ti Orílɛ́ède Sudani",
         }
         SHP{
             "SHP",
@@ -220,17 +208,9 @@ yo_BJ{
             "ZAR",
             "Randi ti Orílɛ́ède Ariwa Afirika",
         }
-        ZMK{
-            "ZMK",
-            "Kawasha ti Orílɛ́ède Saabia (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Kawasha ti Orílɛ́ède Saabia",
-        }
-        ZWD{
-            "ZWD",
-            "Dɔla ti Orílɛ́ède Siibabuwe",
         }
     }
     Version{"2.0.93.9"}

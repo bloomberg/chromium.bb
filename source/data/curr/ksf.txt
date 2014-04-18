@@ -83,10 +83,6 @@ ksf{
             "£",
             "mɔni mǝ á ingɛrís",
         }
-        GHC{
-            "GHC",
-            "mɔni mǝ á gána",
-        }
         GMD{
             "GMD",
             "mɔni mǝ á gambí",
@@ -142,10 +138,6 @@ ksf{
         MWK{
             "MWK",
             "mɔni mǝ á malawi",
-        }
-        MZM{
-            "MZM",
-            "mɔni mǝ á mosambík",
         }
         NAD{
             "NAD",
@@ -219,17 +211,9 @@ ksf{
             "ZAR",
             "mɔni mǝ á afrik anǝ a sud",
         }
-        ZMK{
-            "ZMK",
-            "mɔni mǝ á zambí (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "mɔni mǝ á zambí",
-        }
-        ZWD{
-            "ZWD",
-            "mɔni mǝ á zimbabwɛ́",
         }
     }
     Version{"2.0.92.87"}

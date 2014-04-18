@@ -11,35 +11,6 @@
  */
 sq{
     Countries{
-        001{"Botë"}
-        002{"Afrikë"}
-        003{"Amerika e Veriut"}
-        005{"Amerika e Jugut"}
-        009{"Oqeani"}
-        011{"Afrika Perëndimore"}
-        013{"Amerika Qendrore"}
-        014{"Afrika Lindore"}
-        015{"Afrika Veriore"}
-        017{"Afrika e Mesme"}
-        018{"Afrika Jugore"}
-        019{"Amerikë"}
-        021{"Amerika Veriore"}
-        029{"Karaibe"}
-        030{"Azia Lindore"}
-        034{"Azia Jugore"}
-        035{"Azia Jug-Lindore"}
-        039{"Europa Jugore"}
-        053{"Australazia"}
-        054{"Melanezia"}
-        057{"Rajoni Mikronezian"}
-        061{"Polinezia"}
-        142{"Azi"}
-        143{"Azia Qendrore"}
-        145{"Azia Perëndimore"}
-        150{"Europë"}
-        151{"Europa Lindore"}
-        154{"Europa Veriore"}
-        155{"Europa Perëndimore"}
         419{"Amerika Latine"}
         AC{"Ishulli Asenshion"}
         AD{"Andorrë"}

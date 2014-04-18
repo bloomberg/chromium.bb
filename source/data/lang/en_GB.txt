@@ -8,15 +8,7 @@
 // ***************************************************************************
 en_GB{
     %%Parent{"en_001"}
-    Keys{
-        colCaseLevel{"Case-Sensitive Sorting"}
-        colNormalization{"Normalised Sorting"}
-    }
     Languages{
-        arn{"Araucanian"}
-        bax{"Bamum"}
-        tzm{"Central Morocco Tamazight"}
-        wal{"Walamo"}
     }
     LanguagesShort{
         en_GB{"UK English"}
@@ -24,15 +16,6 @@ en_GB{
     }
     Scripts{
         Thai{"Thai"}
-    }
-    Types{
-        colNormalization{
-            no{"Sort Without Normalisation"}
-            yes{"Sort Unicode Normalised"}
-        }
-        numbers{
-            fullwide{"Full-Width Digits"}
-        }
     }
     Version{"2.0.92.80"}
 }

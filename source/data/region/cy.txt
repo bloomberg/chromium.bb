@@ -11,35 +11,6 @@
  */
 cy{
     Countries{
-        001{"Y Byd"}
-        002{"Affrica"}
-        003{"Gogledd America"}
-        005{"De America"}
-        009{"Oceania"}
-        011{"Gorllewin Affrica"}
-        013{"Canolbarth America"}
-        014{"Dwyrain Affrica"}
-        015{"Gogledd Affrica"}
-        017{"Canol Affrica"}
-        018{"Deheudir Affrica"}
-        019{"Yr Amerig"}
-        021{"America i'r Gogledd o Mecsico"}
-        029{"Y Caribî"}
-        030{"Dwyrain Asia"}
-        034{"De Asia"}
-        035{"De-Ddwyrain Asia"}
-        039{"De Ewrop"}
-        053{"Awstralasia"}
-        054{"Melanesia"}
-        057{"Rhanbarth Micronesia"}
-        061{"Polynesia"}
-        142{"Asia"}
-        143{"Canol Asia"}
-        145{"Gorllewin Asia"}
-        150{"Ewrop"}
-        151{"Dwyrain Ewrop"}
-        154{"Gogledd Ewrop"}
-        155{"Gorllewin Ewrop"}
         419{"America Ladin"}
         AC{"Ynys Ascension"}
         AD{"Andorra"}

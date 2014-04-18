@@ -79,10 +79,6 @@ ak{
             "£",
             "Breten Pɔn",
         }
-        GHC{
-            "GHC",
-            "Ghana Sidi (1979–2007)",
-        }
         GHS{
             "GH₵",
             "Ghana Sidi",
@@ -143,10 +139,6 @@ ak{
             "MWK",
             "Malawi Kwacha",
         }
-        MZM{
-            "MZM",
-            "Mozambik Metical",
-        }
         NAD{
             "NAD",
             "Namibia Dɔla",
@@ -170,10 +162,6 @@ ak{
         SDG{
             "SDG",
             "Sudan Dina",
-        }
-        SDP{
-            "SDP",
-            "Sudan Pɔn",
         }
         SHP{
             "SHP",
@@ -219,17 +207,9 @@ ak{
             "ZAR",
             "Afrika Anaafo Rand",
         }
-        ZMK{
-            "ZMK",
-            "Zambia Kwacha (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Zambia Kwacha",
-        }
-        ZWD{
-            "ZWD",
-            "Zimbabwe Dɔla",
         }
     }
     Version{"2.0.92.87"}

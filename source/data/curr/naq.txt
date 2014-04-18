@@ -83,10 +83,6 @@ naq{
             "£",
             "British Ponds",
         }
-        GHC{
-            "GHC",
-            "Ghana Cedi",
-        }
         GMD{
             "GMD",
             "Gambia Dalasi",
@@ -143,10 +139,6 @@ naq{
             "MWK",
             "Malawian Kwachab",
         }
-        MZM{
-            "MZM",
-            "Mozambique Metical",
-        }
         NAD{
             "$",
             "Namibia Dollari",
@@ -170,10 +162,6 @@ naq{
         SDG{
             "SDG",
             "Sudanese Dinar",
-        }
-        SDP{
-            "SDP",
-            "Sudanese Ponds",
         }
         SHP{
             "SHP",
@@ -223,17 +211,9 @@ naq{
             "ZAR",
             "South African Randi",
         }
-        ZMK{
-            "ZMK",
-            "Zambian Kwachab (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Zambian Kwachab",
-        }
-        ZWD{
-            "ZWD",
-            "Zimbabwe Dollari",
         }
     }
     Version{"2.0.92.87"}

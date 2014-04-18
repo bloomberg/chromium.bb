@@ -83,10 +83,6 @@ cgg{
             "£",
             "Paundi ya Bungyereza",
         }
-        GHC{
-            "GHC",
-            "Cedi ya Ghana",
-        }
         GMD{
             "GMD",
             "Dalasi ya Gambia",
@@ -143,10 +139,6 @@ cgg{
             "MWK",
             "Kwaca ya Malawi",
         }
-        MZM{
-            "MZM",
-            "Metikari ya Mozambikwi",
-        }
         NAD{
             "NAD",
             "Doora ya Namibiya",
@@ -170,10 +162,6 @@ cgg{
         SDG{
             "SDG",
             "Dinari ya Sudani",
-        }
-        SDP{
-            "SDP",
-            "Paundi ya Sudan",
         }
         SHP{
             "SHP",
@@ -219,17 +207,9 @@ cgg{
             "ZAR",
             "Randi ya Sausi Afirika",
         }
-        ZMK{
-            "ZMK",
-            "Kwacha ya Zambia (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Kwacha ya Zambia",
-        }
-        ZWD{
-            "ZWD",
-            "Doora ya Zimbabwe",
         }
     }
     Version{"2.0.92.87"}

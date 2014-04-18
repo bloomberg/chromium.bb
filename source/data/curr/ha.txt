@@ -83,10 +83,6 @@ ha{
             "£",
             "Fam kin Ingila",
         }
-        GHC{
-            "GHC",
-            "Cedi",
-        }
         GMD{
             "GMD",
             "Kuɗin Gambiya",
@@ -142,10 +138,6 @@ ha{
         MWK{
             "MWK",
             "Kuɗin Malawi",
-        }
-        MZM{
-            "MZM",
-            "Kuɗin Mozambik",
         }
         NAD{
             "NAD",
@@ -219,17 +211,9 @@ ha{
             "ZAR",
             "Kuɗin Afirka Ta Kudu",
         }
-        ZMK{
-            "ZMK",
-            "Kuɗin Zambiya (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Kuɗin Zambiya",
-        }
-        ZWD{
-            "ZWD",
-            "Dalar zimbabuwe",
         }
     }
     Version{"2.0.92.87"}

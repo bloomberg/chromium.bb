@@ -11,35 +11,6 @@
  */
 sw{
     Countries{
-        001{"Dunia"}
-        002{"Afrika"}
-        003{"Amerika Kaskazini"}
-        005{"Amerika Kusini"}
-        009{"Oceania"}
-        011{"Afrika ya Magharibi"}
-        013{"Amerika ya Kati"}
-        014{"Afrika ya Mashariki"}
-        015{"Afrika ya Kaskazini"}
-        017{"Afrika ya Kati"}
-        018{"Afrika ya Kusini"}
-        019{"Amerika"}
-        021{"Amerika ya Kaskazini"}
-        029{"Karibi"}
-        030{"Asia Mashariki"}
-        034{"Asia ya Kusini"}
-        035{"Asia ya Kusini Mashariki"}
-        039{"Ulaya ya Kusini"}
-        053{"Australasia"}
-        054{"Melanesia"}
-        057{"Eneo la Mikronesia"}
-        061{"Polynesia"}
-        142{"Asia"}
-        143{"Asia ya Kati"}
-        145{"Asia ya Magharibi"}
-        150{"Ulaya"}
-        151{"Ulaya ya Mashariki"}
-        154{"Ulaya ya Kaskazini"}
-        155{"Ulaya ya Magharibi"}
         419{"Amerika ya Kilatini"}
         AC{"Kisiwa cha Ascension"}
         AD{"Andora"}

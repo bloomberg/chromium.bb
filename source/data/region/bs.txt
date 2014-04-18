@@ -11,35 +11,6 @@
  */
 bs{
     Countries{
-        001{"Svet"}
-        002{"Afrika"}
-        003{"Severnoamerički kontinent"}
-        005{"Južna Amerika"}
-        009{"Okeanija"}
-        011{"Zapadna Afrika"}
-        013{"Centralna Amerika"}
-        014{"Istočna Afrika"}
-        015{"Severna Afrika"}
-        017{"Centralna Afrika"}
-        018{"Južna Afrika"}
-        019{"Amerike"}
-        021{"Severna Amerika"}
-        029{"Karibi"}
-        030{"Istočna Azija"}
-        034{"Južna Azija"}
-        035{"Jugoistočna Azija"}
-        039{"Južna Evropa"}
-        053{"Australija i Novi Zeland"}
-        054{"Melanezija"}
-        057{"Micronezija"}
-        061{"Polinezija"}
-        142{"Azija"}
-        143{"Centralna Azija"}
-        145{"Zapadna Azija"}
-        150{"Evropa"}
-        151{"Istočna Evropa"}
-        154{"Severna Evropa"}
-        155{"Zapadna Evropa"}
         419{"Latinska Amerika"}
         AD{"Andora"}
         AE{"Ujedinjeni Arapski Emirati"}

@@ -11,34 +11,6 @@
  */
 rm{
     Countries{
-        001{"mund"}
-        002{"Africa"}
-        003{"America dal Nord"}
-        005{"America dal Sid"}
-        009{"Oceania"}
-        011{"Africa dal Vest"}
-        013{"America Centrala"}
-        014{"Africa da l'Ost"}
-        015{"Africa dal Nord"}
-        017{"Africa Centrala"}
-        018{"Africa Meridiunala"}
-        019{"America dal Nord, America Centrala ed America dal Sid"}
-        029{"Caribica"}
-        030{"Asia da l'Ost"}
-        034{"Asia dal Sid"}
-        035{"Asia dal Sidost"}
-        039{"Europa dal Sid"}
-        053{"Australia e Nova Zelanda"}
-        054{"Melanesia"}
-        057{"Regiun Micronesica"}
-        061{"Polinesia"}
-        142{"Asia"}
-        143{"Asia Centrala"}
-        145{"Asia dal Vest"}
-        150{"Europa"}
-        151{"Europa Orientala"}
-        154{"Europa dal Nord"}
-        155{"Europa dal Vest"}
         419{"America Latina"}
         AD{"Andorra"}
         AE{"Emirats Arabs Unids"}

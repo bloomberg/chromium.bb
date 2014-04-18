@@ -83,10 +83,6 @@ rof{
             "£",
             "heleri sa Uingereza",
         }
-        GHC{
-            "GHC",
-            "heleri sa Ghana",
-        }
         GMD{
             "GMD",
             "heleri sa Gambia",
@@ -142,10 +138,6 @@ rof{
         MWK{
             "MWK",
             "heleri sa Malawi",
-        }
-        MZM{
-            "MZM",
-            "heleri sa Msumbiji",
         }
         NAD{
             "NAD",
@@ -219,17 +211,9 @@ rof{
             "ZAR",
             "heleri sa Afrika Kusini",
         }
-        ZMK{
-            "ZMK",
-            "heleri sa Zambia (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "heleri sa Zambia",
-        }
-        ZWD{
-            "ZWD",
-            "heleri sa Zimbabwe",
         }
     }
     Version{"2.0.92.87"}

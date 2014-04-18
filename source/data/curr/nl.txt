@@ -19,10 +19,6 @@ nl{
             "AED",
             "Verenigde Arabische Emiraten-dirham",
         }
-        AFA{
-            "AFA",
-            "Afghani (1927–2002)",
-        }
         AFN{
             "AFN",
             "Afghaanse afghani",
@@ -43,33 +39,9 @@ nl{
             "AOA",
             "Angolese kwanza",
         }
-        AOK{
-            "AOK",
-            "Angolese kwanza (1977–1990)",
-        }
-        AON{
-            "AON",
-            "Angolese nieuwe kwanza (1990–2000)",
-        }
-        AOR{
-            "AOR",
-            "Angolese kwanza reajustado (1995–1999)",
-        }
         ARA{
             "ARA",
             "Argentijnse austral",
-        }
-        ARL{
-            "ARL",
-            "Argentijnse peso ley (1970–1983)",
-        }
-        ARM{
-            "ARM",
-            "Argentijnse peso (1881–1970)",
-        }
-        ARP{
-            "ARP",
-            "Argentijnse peso (1983–1985)",
         }
         ARS{
             "ARS",
@@ -87,25 +59,13 @@ nl{
             "AWG",
             "Arubaanse gulden",
         }
-        AZM{
-            "AZM",
-            "Azerbeidzjaanse manat (1993–2006)",
-        }
         AZN{
             "AZN",
             "Azerbeidzjaanse manat",
         }
-        BAD{
-            "BAD",
-            "Bosnische dinar",
-        }
         BAM{
             "BAM",
             "Bosnische convertibele mark",
-        }
-        BAN{
-            "BAN",
-            "Nieuwe Bosnische dinar (1994–1997)",
         }
         BBD{
             "BBD",
@@ -139,10 +99,6 @@ nl{
             "BGN",
             "Bulgaarse lev",
         }
-        BGO{
-            "BGO",
-            "Bulgaarse lev (1879–1952)",
-        }
         BHD{
             "BHD",
             "Bahreinse dinar",
@@ -163,10 +119,6 @@ nl{
             "BOB",
             "Boliviaanse boliviano",
         }
-        BOL{
-            "BOL",
-            "Boliviaanse boliviano (1863–1963)",
-        }
         BOP{
             "BOP",
             "Boliviaanse peso",
@@ -175,33 +127,9 @@ nl{
             "BOV",
             "Boliviaanse mvdol",
         }
-        BRB{
-            "BRB",
-            "Braziliaanse cruzeiro novo (1967–1986)",
-        }
-        BRC{
-            "BRC",
-            "Braziliaanse cruzado",
-        }
-        BRE{
-            "BRE",
-            "Braziliaanse cruzeiro (1990–1993)",
-        }
         BRL{
             "R$",
             "Braziliaanse real",
-        }
-        BRN{
-            "BRN",
-            "Braziliaanse cruzado novo",
-        }
-        BRR{
-            "BRR",
-            "Braziliaanse cruzeiro",
-        }
-        BRZ{
-            "BRZ",
-            "Braziliaanse cruzeiro (1942–1967)",
         }
         BSD{
             "BSD",
@@ -218,10 +146,6 @@ nl{
         BWP{
             "BWP",
             "Botswaanse pula",
-        }
-        BYB{
-            "BYB",
-            "Wit-Russische nieuwe roebel (1994–1999)",
         }
         BYR{
             "BYR",
@@ -399,10 +323,6 @@ nl{
             "GEL",
             "Georgische lari",
         }
-        GHC{
-            "GHC",
-            "Ghanese cedi (1979–2007)",
-        }
         GHS{
             "GHS",
             "Ghanese cedi",
@@ -539,14 +459,6 @@ nl{
             "KPW",
             "Noord-Koreaanse won",
         }
-        KRH{
-            "KRH",
-            "Zuid-Koreaanse hwan (1953–1962)",
-        }
-        KRO{
-            "KRO",
-            "Oude Zuid-Koreaanse won (1945–1953)",
-        }
         KRW{
             "₩",
             "Zuid-Koreaanse won",
@@ -647,10 +559,6 @@ nl{
             "MKD",
             "Macedonische denar",
         }
-        MKN{
-            "MKN",
-            "Macedonische denar (1992–1993)",
-        }
         MLF{
             "MLF",
             "Malinese franc",
@@ -695,10 +603,6 @@ nl{
             "MX$",
             "Mexicaanse peso",
         }
-        MXP{
-            "MXP",
-            "Mexicaanse zilveren peso (1861–1992)",
-        }
         MXV{
             "MXV",
             "Mexicaanse unidad de inversion (UDI)",
@@ -711,10 +615,6 @@ nl{
             "MZE",
             "Mozambikaanse escudo",
         }
-        MZM{
-            "MZM",
-            "Oude Mozambikaanse metical",
-        }
         MZN{
             "MZN",
             "Mozambikaanse metical",
@@ -726,10 +626,6 @@ nl{
         NGN{
             "NGN",
             "Nigeriaanse naira",
-        }
-        NIC{
-            "NIC",
-            "Nicaraguaanse córdoba (1988–1991)",
         }
         NIO{
             "NIO",
@@ -767,10 +663,6 @@ nl{
             "PEN",
             "Peruaanse nieuwe sol",
         }
-        PES{
-            "PES",
-            "Peruaanse sol",
-        }
         PGK{
             "PGK",
             "Papuaanse kina",
@@ -786,10 +678,6 @@ nl{
         PLN{
             "PLN",
             "Poolse zloty",
-        }
-        PLZ{
-            "PLZ",
-            "Poolse zloty (1950–1995)",
         }
         PTE{
             "PTE",
@@ -807,10 +695,6 @@ nl{
             "RHD",
             "Rhodesische dollar",
         }
-        ROL{
-            "ROL",
-            "Oude Roemeense leu",
-        }
         RON{
             "RON",
             "Roemeense leu",
@@ -822,10 +706,6 @@ nl{
         RUB{
             "RUB",
             "Russische roebel",
-        }
-        RUR{
-            "RUR",
-            "Russische roebel (1991–1998)",
         }
         RWF{
             "RWF",
@@ -843,17 +723,9 @@ nl{
             "SCR",
             "Seychelse roepie",
         }
-        SDD{
-            "SDD",
-            "Soedanese dinar",
-        }
         SDG{
             "SDG",
             "Soedanees pond",
-        }
-        SDP{
-            "SDP",
-            "Soedanees pond (1957–1998)",
         }
         SEK{
             "SEK",
@@ -927,10 +799,6 @@ nl{
             "TJS",
             "Tadzjikistaanse somoni",
         }
-        TMM{
-            "TMM",
-            "Turkmeense manat (1993–2009)",
-        }
         TMT{
             "TMT",
             "Turkmeense manat",
@@ -946,10 +814,6 @@ nl{
         TPE{
             "TPE",
             "Timorese escudo",
-        }
-        TRL{
-            "TRL",
-            "Turkse lire",
         }
         TRY{
             "TRY",
@@ -975,10 +839,6 @@ nl{
             "UAK",
             "Oekraïense karbovanetz",
         }
-        UGS{
-            "UGS",
-            "Oegandese shilling (1966–1987)",
-        }
         UGX{
             "UGX",
             "Oegandese shilling",
@@ -999,10 +859,6 @@ nl{
             "UYI",
             "Uruguayaanse peso en geïndexeerde eenheden",
         }
-        UYP{
-            "UYP",
-            "Uruguayaanse peso (1975–1993)",
-        }
         UYU{
             "UYU",
             "Uruguayaanse peso",
@@ -1011,10 +867,6 @@ nl{
             "UZS",
             "Oezbekistaanse sum",
         }
-        VEB{
-            "VEB",
-            "Venezolaanse bolivar (1871–2008)",
-        }
         VEF{
             "VEF",
             "Venezolaanse bolivar",
@@ -1022,10 +874,6 @@ nl{
         VND{
             "₫",
             "Vietnamese dong",
-        }
-        VNN{
-            "VNN",
-            "Oude Vietnamese dong (1978–1985)",
         }
         VUV{
             "VUV",
@@ -1127,22 +975,6 @@ nl{
             "YER",
             "Jemenitische rial",
         }
-        YUD{
-            "YUD",
-            "Joegoslavische harde dinar",
-        }
-        YUM{
-            "YUM",
-            "Joegoslavische noviy-dinar",
-        }
-        YUN{
-            "YUN",
-            "Joegoslavische convertibele dinar",
-        }
-        YUR{
-            "YUR",
-            "Joegoslavische hervormde dinar (1992–1993)",
-        }
         ZAL{
             "ZAL",
             "Zuid-Afrikaanse rand (financieel)",
@@ -1151,25 +983,9 @@ nl{
             "ZAR",
             "Zuid-Afrikaanse rand",
         }
-        ZMK{
-            "ZMK",
-            "Zambiaanse kwacha (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Zambiaanse kwacha",
-        }
-        ZRN{
-            "ZRN",
-            "Zaïrese nieuwe zaïre",
-        }
-        ZRZ{
-            "ZRZ",
-            "Zaïrese zaïre",
-        }
-        ZWD{
-            "ZWD",
-            "Zimbabwaanse dollar",
         }
         ZWL{
             "ZWL",
@@ -1188,10 +1004,6 @@ nl{
         AED{
             one{"VAE-dirham"}
             other{"VAE-dirham"}
-        }
-        AFA{
-            one{"Afghani (AFA)"}
-            other{"Afghani (AFA)"}
         }
         AFN{
             one{"Afghaanse afghani"}
@@ -1213,33 +1025,9 @@ nl{
             one{"Angolese kwanza"}
             other{"Angolese kwanza"}
         }
-        AOK{
-            one{"Angolese kwanza (1977–1990)"}
-            other{"Angolese kwanza (1977–1990)"}
-        }
-        AON{
-            one{"Angolese nieuwe kwanza (1990–2000)"}
-            other{"Angolese nieuwe kwanza (1990–2000)"}
-        }
-        AOR{
-            one{"Angolese kwanza reajustado (1995–1999)"}
-            other{"Angolese kwanza reajustado (1995–1999)"}
-        }
         ARA{
             one{"Argentijnse austral"}
             other{"Argentijnse austral"}
-        }
-        ARL{
-            one{"Argentijnse peso ley (1970–1983)"}
-            other{"Argentijnse peso ley (1970–1983)"}
-        }
-        ARM{
-            one{"Argentijnse peso (1881–1970)"}
-            other{"Argentijnse peso (1881–1970)"}
-        }
-        ARP{
-            one{"Argentijnse peso (1983–1985)"}
-            other{"Argentijnse peso (1983–1985)"}
         }
         ARS{
             one{"Argentijnse peso"}
@@ -1257,25 +1045,13 @@ nl{
             one{"Arubaanse gulden"}
             other{"Arubaanse gulden"}
         }
-        AZM{
-            one{"Azerbeidzjaanse manat (1993–2006)"}
-            other{"Azerbeidzjaanse manat (1993–2006)"}
-        }
         AZN{
             one{"Azerbeidzjaanse manat"}
             other{"Azerbeidzjaanse manat"}
         }
-        BAD{
-            one{"Bosnische dinar"}
-            other{"Bosnische dinar"}
-        }
         BAM{
             one{"Bosnische convertibele mark"}
             other{"Bosnische convertibele mark"}
-        }
-        BAN{
-            one{"Nieuwe Bosnische dinar (1994–1997)"}
-            other{"Nieuwe Bosnische dinar (1994–1997)"}
         }
         BBD{
             one{"Barbadaanse dollar"}
@@ -1309,10 +1085,6 @@ nl{
             one{"Bulgaarse lev"}
             other{"Bulgaarse leva"}
         }
-        BGO{
-            one{"Bulgaarse lev (1879–1952)"}
-            other{"Bulgaarse lev (1879–1952)"}
-        }
         BHD{
             one{"Bahreinse dinar"}
             other{"Bahreinse dinar"}
@@ -1333,10 +1105,6 @@ nl{
             one{"Boliviaanse boliviano"}
             other{"Boliviaanse boliviano"}
         }
-        BOL{
-            one{"Boliviaanse boliviano (1863–1963)"}
-            other{"Boliviaanse boliviano (1863–1963)"}
-        }
         BOP{
             one{"Boliviaanse peso"}
             other{"Boliviaanse peso"}
@@ -1345,33 +1113,9 @@ nl{
             one{"Boliviaanse mvdol"}
             other{"Boliviaanse mvdol"}
         }
-        BRB{
-            one{"Braziliaanse cruzeiro novo (1967–1986)"}
-            other{"Braziliaanse cruzeiro novo (1967–1986)"}
-        }
-        BRC{
-            one{"Braziliaanse cruzado"}
-            other{"Braziliaanse cruzado"}
-        }
-        BRE{
-            one{"Braziliaanse cruzeiro (1990–1993)"}
-            other{"Braziliaanse cruzeiro (1990–1993)"}
-        }
         BRL{
             one{"Braziliaanse real"}
             other{"Braziliaanse real"}
-        }
-        BRN{
-            one{"Braziliaanse cruzado novo"}
-            other{"Braziliaanse cruzado novo"}
-        }
-        BRR{
-            one{"Braziliaanse cruzeiro"}
-            other{"Braziliaanse cruzeiro"}
-        }
-        BRZ{
-            one{"Braziliaanse cruzeiro (1942–1967)"}
-            other{"Braziliaanse cruzeiro (1942–1967)"}
         }
         BSD{
             one{"Bahamaanse dollar"}
@@ -1388,10 +1132,6 @@ nl{
         BWP{
             one{"Botswaanse pula"}
             other{"Botswaanse pula"}
-        }
-        BYB{
-            one{"Wit-Russische nieuwe roebel (1994–1999)"}
-            other{"Wit-Russische nieuwe roebel (1994–1999)"}
         }
         BYR{
             one{"Wit-Russische roebel"}
@@ -1569,10 +1309,6 @@ nl{
             one{"Georgische lari"}
             other{"Georgische lari"}
         }
-        GHC{
-            one{"Ghanese cedi (1979–2007)"}
-            other{"Ghanese cedi (1979–2007)"}
-        }
         GHS{
             one{"Ghanese cedi"}
             other{"Ghanese cedi"}
@@ -1709,14 +1445,6 @@ nl{
             one{"Noord-Koreaanse won"}
             other{"Noord-Koreaanse won"}
         }
-        KRH{
-            one{"Zuid-Koreaanse hwan (1953–1962)"}
-            other{"Zuid-Koreaanse hwan (1953–1962)"}
-        }
-        KRO{
-            one{"oude Zuid-Koreaanse won (1945–1953)"}
-            other{"oude Zuid-Koreaanse won (1945–1953)"}
-        }
         KRW{
             one{"Zuid-Koreaanse won"}
             other{"Zuid-Koreaanse won"}
@@ -1817,10 +1545,6 @@ nl{
             one{"Macedonische denar"}
             other{"Macedonische denar"}
         }
-        MKN{
-            one{"Macedonische denar (1992–1993)"}
-            other{"Macedonische denar (1992–1993)"}
-        }
         MLF{
             one{"Malinese franc"}
             other{"Malinese franc"}
@@ -1865,10 +1589,6 @@ nl{
             one{"Mexicaanse peso"}
             other{"Mexicaanse peso"}
         }
-        MXP{
-            one{"Mexicaanse zilveren peso (1861–1992)"}
-            other{"Mexicaanse zilveren peso (1861–1992)"}
-        }
         MXV{
             one{"Mexicaanse unidad de inversion (UDI)"}
             other{"Mexicaanse unidad de inversion (UDI)"}
@@ -1881,10 +1601,6 @@ nl{
             one{"Mozambikaanse escudo"}
             other{"Mozambikaanse escudo"}
         }
-        MZM{
-            one{"Oude Mozambikaanse metical"}
-            other{"Oude Mozambikaanse metical"}
-        }
         MZN{
             one{"Mozambikaanse metical"}
             other{"Mozambikaanse metical"}
@@ -1896,10 +1612,6 @@ nl{
         NGN{
             one{"Nigeriaanse naira"}
             other{"Nigeriaanse naira"}
-        }
-        NIC{
-            one{"Nicaraguaanse córdoba (1988–1991)"}
-            other{"Nicaraguaanse córdoba (1988–1991)"}
         }
         NIO{
             one{"Nicaraguaanse córdoba"}
@@ -1937,10 +1649,6 @@ nl{
             one{"Peruaanse nieuwe sol"}
             other{"Peruaanse nieuwe sol"}
         }
-        PES{
-            one{"Peruaanse sol"}
-            other{"Peruaanse sol"}
-        }
         PGK{
             one{"Papuaanse kina"}
             other{"Papuaanse kina"}
@@ -1956,10 +1664,6 @@ nl{
         PLN{
             one{"Poolse zloty"}
             other{"Poolse zloty"}
-        }
-        PLZ{
-            one{"Poolse zloty (1950–1995)"}
-            other{"Poolse zloty (1950–1995)"}
         }
         PTE{
             one{"Portugese escudo"}
@@ -1977,10 +1681,6 @@ nl{
             one{"Rhodesische dollar"}
             other{"Rhodesische dollar"}
         }
-        ROL{
-            one{"Oude Roemeense leu"}
-            other{"Oude Roemeense leu"}
-        }
         RON{
             one{"Roemeense leu"}
             other{"Roemeense leu"}
@@ -1992,10 +1692,6 @@ nl{
         RUB{
             one{"Russische roebel"}
             other{"Russische roebel"}
-        }
-        RUR{
-            one{"Russische roebel (1991–1998)"}
-            other{"Russische roebel (1991–1998)"}
         }
         RWF{
             one{"Rwandese frank"}
@@ -2013,17 +1709,9 @@ nl{
             one{"Seychelse roepie"}
             other{"Seychelse roepie"}
         }
-        SDD{
-            one{"Soedanese dinar"}
-            other{"Soedanese dinar"}
-        }
         SDG{
             one{"Soedanees pond"}
             other{"Soedanees pond"}
-        }
-        SDP{
-            one{"Soedanees pond (1957–1998)"}
-            other{"Soedanees pond (1957–1998)"}
         }
         SEK{
             one{"Zweedse kroon"}
@@ -2097,10 +1785,6 @@ nl{
             one{"Tadzjikistaanse somoni"}
             other{"Tadzjikistaanse somoni"}
         }
-        TMM{
-            one{"Turkmeense manat (1993–2009)"}
-            other{"Turkmeense manat (1993–2009)"}
-        }
         TMT{
             one{"Turkmeense manat"}
             other{"Turkmeense manat"}
@@ -2116,10 +1800,6 @@ nl{
         TPE{
             one{"Timorese escudo"}
             other{"Timorese escudo"}
-        }
-        TRL{
-            one{"oude Turkse lira"}
-            other{"oude Turkse lira"}
         }
         TRY{
             one{"Turkse lira"}
@@ -2145,10 +1825,6 @@ nl{
             one{"Oekraïense karbovanetz"}
             other{"Oekraïense karbovanetz"}
         }
-        UGS{
-            one{"Oegandese shilling (1966–1987)"}
-            other{"Oegandese shilling (1966–1987)"}
-        }
         UGX{
             one{"Oegandese shilling"}
             other{"Oegandese shilling"}
@@ -2169,10 +1845,6 @@ nl{
             one{"Uruguayaanse peso en geïndexeerde eenheden"}
             other{"Uruguayaanse peso en geïndexeerde eenheden"}
         }
-        UYP{
-            one{"Uruguayaanse peso (1975–1993)"}
-            other{"Uruguayaanse peso (1975–1993)"}
-        }
         UYU{
             one{"Uruguayaanse peso"}
             other{"Uruguayaanse peso"}
@@ -2181,10 +1853,6 @@ nl{
             one{"Oezbekistaanse sum"}
             other{"Oezbekistaanse sum"}
         }
-        VEB{
-            one{"Venezolaanse bolivar (1871–2008)"}
-            other{"Venezolaanse bolivar (1871–2008)"}
-        }
         VEF{
             one{"Venezolaanse bolivar"}
             other{"Venezolaanse bolivar"}
@@ -2192,10 +1860,6 @@ nl{
         VND{
             one{"Vietnamese dong"}
             other{"Vietnamese dong"}
-        }
-        VNN{
-            one{"oude Vietnamese dong (1978–1985)"}
-            other{"oude Vietnamese dong (1978–1985)"}
         }
         VUV{
             one{"Vanuatuaanse vatu"}
@@ -2297,22 +1961,6 @@ nl{
             one{"Jemenitische rial"}
             other{"Jemenitische rial"}
         }
-        YUD{
-            one{"Joegoslavische harde dinar"}
-            other{"Joegoslavische harde dinar"}
-        }
-        YUM{
-            one{"Joegoslavische noviy-dinar"}
-            other{"Joegoslavische noviy-dinar"}
-        }
-        YUN{
-            one{"Joegoslavische convertibele dinar"}
-            other{"Joegoslavische convertibele dinar"}
-        }
-        YUR{
-            one{"Joegoslavische hervormde dinar (1992–1993)"}
-            other{"Joegoslavische hervormde dinar (1992–1993)"}
-        }
         ZAL{
             one{"Zuid-Afrikaanse rand (financieel)"}
             other{"Zuid-Afrikaanse rand (financieel)"}
@@ -2321,25 +1969,9 @@ nl{
             one{"Zuid-Afrikaanse rand"}
             other{"Zuid-Afrikaanse rand"}
         }
-        ZMK{
-            one{"Zambiaanse kwacha (1968–2012)"}
-            other{"Zambiaanse kwacha (1968–2012)"}
-        }
         ZMW{
             one{"Zambiaanse kwacha"}
             other{"Zambiaanse kwacha"}
-        }
-        ZRN{
-            one{"Zaïrese nieuwe zaïre"}
-            other{"Zaïrese nieuwe zaïre"}
-        }
-        ZRZ{
-            one{"Zaïrese zaïre"}
-            other{"Zaïrese zaïre"}
-        }
-        ZWD{
-            one{"Zimbabwaanse dollar"}
-            other{"Zimbabwaanse dollar"}
         }
         ZWL{
             one{"Zimbabwaanse dollar (2009)"}

@@ -83,10 +83,6 @@ sbp{
             "£",
             "Ihela ya Uwingelesa",
         }
-        GHC{
-            "GHC",
-            "Ihela ya Ghana",
-        }
         GMD{
             "GMD",
             "Ihela ya Gambiya",
@@ -142,10 +138,6 @@ sbp{
         MWK{
             "MWK",
             "Ihela ya Malawi",
-        }
-        MZM{
-            "MZM",
-            "Ihela ya Musumbiji",
         }
         NAD{
             "NAD",
@@ -219,17 +211,9 @@ sbp{
             "ZAR",
             "Ihela ya Afilika Kusini",
         }
-        ZMK{
-            "ZMK",
-            "Ihela ya Sambiya (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Ihela ya Sambiya",
-        }
-        ZWD{
-            "ZWD",
-            "Ihela ya Simbabwe",
         }
     }
     Version{"2.0.92.87"}

@@ -83,10 +83,6 @@ asa{
             "£",
             "pauni ya Uingeredha",
         }
-        GHC{
-            "GHC",
-            "thedi ya Ghana",
-        }
         GMD{
             "GMD",
             "dalathi ya Gambia",
@@ -143,10 +139,6 @@ asa{
             "MWK",
             "kwacha ya Malawi",
         }
-        MZM{
-            "MZM",
-            "metikali ya Mthumbiji",
-        }
         NAD{
             "NAD",
             "dola ya Namibia",
@@ -170,10 +162,6 @@ asa{
         SDG{
             "SDG",
             "dinari ya Thudani",
-        }
-        SDP{
-            "SDP",
-            "pauni ya Thudani",
         }
         SHP{
             "SHP",
@@ -223,17 +211,9 @@ asa{
             "ZAR",
             "randi ya Afrika Kuthini",
         }
-        ZMK{
-            "ZMK",
-            "kwacha ya Dhambia (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "kwacha ya Dhambia",
-        }
-        ZWD{
-            "ZWD",
-            "dola ya Dhimbabwe",
         }
     }
     Version{"2.0.92.87"}

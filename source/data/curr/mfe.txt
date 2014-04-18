@@ -83,10 +83,6 @@ mfe{
             "£",
             "liv sterlin",
         }
-        GHC{
-            "GHC",
-            "sedi ganeen",
-        }
         GMD{
             "GMD",
             "dalasi gambien",
@@ -143,10 +139,6 @@ mfe{
             "MWK",
             "kwacha malawit",
         }
-        MZM{
-            "MZM",
-            "metikal mozanbikin",
-        }
         NAD{
             "NAD",
             "dolar namibien",
@@ -170,10 +162,6 @@ mfe{
         SDG{
             "SDG",
             "dinar soudane",
-        }
-        SDP{
-            "SDP",
-            "liv soudane",
         }
         SHP{
             "SHP",
@@ -223,17 +211,9 @@ mfe{
             "ZAR",
             "rand sid-afrikin",
         }
-        ZMK{
-            "ZMK",
-            "kwacha zanbien (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "kwacha zanbien",
-        }
-        ZWD{
-            "ZWD",
-            "dolar zimbawe",
         }
     }
     Version{"2.0.92.75"}

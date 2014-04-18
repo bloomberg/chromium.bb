@@ -11,35 +11,6 @@
  */
 hu{
     Countries{
-        001{"Világ"}
-        002{"Afrika"}
-        003{"Észak-Amerika"}
-        005{"Dél-Amerika"}
-        009{"Óceánia"}
-        011{"Nyugat-Afrika"}
-        013{"Közép-Amerika"}
-        014{"Kelet-Afrika"}
-        015{"Észak-Afrika"}
-        017{"Közép-Afrika"}
-        018{"Afrika déli része"}
-        019{"Amerika"}
-        021{"Amerika északi része"}
-        029{"Karib-térség"}
-        030{"Kelet-Ázsia"}
-        034{"Dél-Ázsia"}
-        035{"Délkelet-Ázsia"}
-        039{"Dél-Európa"}
-        053{"Ausztrálázsia"}
-        054{"Melanézia"}
-        057{"Mikronéziai régió"}
-        061{"Polinézia"}
-        142{"Ázsia"}
-        143{"Közép-Ázsia"}
-        145{"Nyugat-Ázsia"}
-        150{"Európa"}
-        151{"Kelet-Európa"}
-        154{"Észak-Európa"}
-        155{"Nyugat-Európa"}
         419{"Latin-Amerika"}
         AC{"Ascension-sziget"}
         AD{"Andorra"}

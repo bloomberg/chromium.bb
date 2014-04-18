@@ -37,10 +37,6 @@ es_MX{
             "ARA",
             "austral argentino",
         }
-        ARP{
-            "ARP",
-            "peso argentino (1983–1985)",
-        }
         ARS{
             "AR$",
             "peso argentino",
@@ -93,10 +89,6 @@ es_MX{
             "BOB",
             "boliviano",
         }
-        BOL{
-            "BOL",
-            "BOL",
-        }
         BOP{
             "BOP",
             "peso boliviano",
@@ -105,33 +97,9 @@ es_MX{
             "BOV",
             "MVDOL boliviano",
         }
-        BRB{
-            "BRB",
-            "nuevo cruceiro brasileño (1967–1986)",
-        }
-        BRC{
-            "BRC",
-            "cruzado brasileño",
-        }
-        BRE{
-            "BRE",
-            "cruceiro brasileño (1990–1993)",
-        }
         BRL{
             "BRL",
             "real brasileño",
-        }
-        BRN{
-            "BRN",
-            "nuevo cruzado brasileño",
-        }
-        BRR{
-            "BRR",
-            "cruceiro brasileño",
-        }
-        BRZ{
-            "BRZ",
-            "BRZ",
         }
         BSD{
             "BSD",
@@ -457,10 +425,6 @@ es_MX{
             "$",
             "peso mexicano",
         }
-        MXP{
-            "MXP",
-            "peso de plata mexicano (1861–1992)",
-        }
         MYR{
             "MYR",
             "ringgit malasio",
@@ -476,10 +440,6 @@ es_MX{
         NGN{
             "NGN",
             "naira nigeriano",
-        }
-        NIC{
-            "NIC",
-            "córdoba nicaragüense (1988–1991)",
         }
         NIO{
             "NIO",
@@ -512,10 +472,6 @@ es_MX{
         PEN{
             "PEN",
             "nuevo sol peruano",
-        }
-        PES{
-            "PES",
-            "sol peruano",
         }
         PGK{
             "PGK",
@@ -767,10 +723,6 @@ es_MX{
             one{"austral argentino"}
             other{"australes argentinos"}
         }
-        ARP{
-            one{"peso argentino (ARP)"}
-            other{"pesos argentinos (ARP)"}
-        }
         ARS{
             one{"peso argentino"}
             other{"pesos argentinos"}
@@ -819,17 +771,9 @@ es_MX{
             one{"MVDOL boliviano"}
             other{"MVDOL bolivianos"}
         }
-        BRC{
-            one{"cruzado brasileño"}
-            other{"cruzados brasileños"}
-        }
         BRL{
             one{"real brasileño"}
             other{"reales brasileños"}
-        }
-        BRN{
-            one{"nuevo cruzado brasileño"}
-            other{"nuevos cruzados brasileños"}
         }
         BTN{
             one{"ngultrum butanés"}
@@ -1095,10 +1039,6 @@ es_MX{
             one{"peso mexicano"}
             other{"pesos mexicanos"}
         }
-        MXP{
-            one{"peso de plata mexicano (MXP)"}
-            other{"pesos de plata mexicanos (MXP)"}
-        }
         MZN{
             one{"metical mozambiqueño"}
             other{"meticales mozambiqueños"}
@@ -1106,10 +1046,6 @@ es_MX{
         NGN{
             one{"naira nigeriano"}
             other{"nairas nigerianos"}
-        }
-        NIC{
-            one{"córdoba nicaragüense (1988–1991)"}
-            other{"córdobas nicaragüenses (1988–1991)"}
         }
         NIO{
             one{"córdoba nicaragüense"}
@@ -1138,10 +1074,6 @@ es_MX{
         PEN{
             one{"nuevo sol peruano"}
             other{"nuevos soles peruanos"}
-        }
-        PES{
-            one{"sol peruano"}
-            other{"soles peruanos"}
         }
         PGK{
             one{"kina de Papúa Nueva Guinea"}

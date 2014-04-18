@@ -11,35 +11,6 @@
  */
 id{
     Countries{
-        001{"Dunia"}
-        002{"Afrika"}
-        003{"Amerika Utara"}
-        005{"Amerika Selatan"}
-        009{"Oseania"}
-        011{"Afrika Barat"}
-        013{"Amerika Tengah"}
-        014{"Afrika Timur"}
-        015{"Afrika Utara"}
-        017{"Afrika Tengah"}
-        018{"Afrika Bagian Selatan"}
-        019{"Amerika"}
-        021{"Amerika Bagian Utara"}
-        029{"Kepulauan Karibia"}
-        030{"Asia Timur"}
-        034{"Asia Selatan"}
-        035{"Asia Tenggara"}
-        039{"Eropa Selatan"}
-        053{"Australasia"}
-        054{"Melanesia"}
-        057{"Wilayah Mikronesia"}
-        061{"Polinesia"}
-        142{"Asia"}
-        143{"Asia Tengah"}
-        145{"Asia Barat"}
-        150{"Eropa"}
-        151{"Eropa Timur"}
-        154{"Eropa Utara"}
-        155{"Eropa Barat"}
         419{"Amerika Latin"}
         AC{"Pulau Ascension"}
         AD{"Andorra"}

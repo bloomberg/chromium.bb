@@ -11,35 +11,6 @@
  */
 vi{
     Countries{
-        001{"Thế giới"}
-        002{"Châu Phi"}
-        003{"Bắc Mỹ"}
-        005{"Nam Mỹ"}
-        009{"Châu Đại Dương"}
-        011{"Tây Phi"}
-        013{"Trung Mỹ"}
-        014{"Đông Phi"}
-        015{"Bắc Phi"}
-        017{"Trung Phi"}
-        018{"Miền Nam Châu Phi"}
-        019{"Châu Mỹ"}
-        021{"Miền Bắc Châu Mỹ"}
-        029{"Ca-ri-bê"}
-        030{"Đông Á"}
-        034{"Nam Á"}
-        035{"Đông Nam Á"}
-        039{"Nam Âu"}
-        053{"Úc và New Zealand"}
-        054{"Melanesia"}
-        057{"Vùng Micronesian"}
-        061{"Polynesia"}
-        142{"Châu Á"}
-        143{"Trung Á"}
-        145{"Tây Á"}
-        150{"Âu Châu"}
-        151{"Đông Âu"}
-        154{"Miền Bắc Châu Âu"}
-        155{"Tây Âu"}
         419{"Châu Mỹ La-tinh"}
         AC{"Đảo Ascension"}
         AD{"Andorra"}

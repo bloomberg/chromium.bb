@@ -71,10 +71,6 @@ dyo{
             "€",
             "euro",
         }
-        GHC{
-            "GHC",
-            "cedi yati Gaana",
-        }
         GMD{
             "GMD",
             "dalasi yati Gambi",

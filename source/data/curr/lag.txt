@@ -83,10 +83,6 @@ lag{
             "£",
             "Páundi ya Ʉɨngɨréesa",
         }
-        GHC{
-            "GHC",
-            "Séedi ya Gáana",
-        }
         GMD{
             "GMD",
             "Daláasi ya Gámbia",
@@ -142,10 +138,6 @@ lag{
         MWK{
             "MWK",
             "Kwáacha ya Maláawi",
-        }
-        MZM{
-            "MZM",
-            "Metikáali ya Musumbíiji",
         }
         NAD{
             "NAD",
@@ -219,17 +211,9 @@ lag{
             "ZAR",
             "Ráandi ya Afɨrɨka ya Saame",
         }
-        ZMK{
-            "ZMK",
-            "Kwácha ya Sámbia (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Kwácha ya Sámbia",
-        }
-        ZWD{
-            "ZWD",
-            "Dóola ya Simbáabwe",
         }
     }
     Version{"2.0.92.75"}

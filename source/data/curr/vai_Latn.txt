@@ -84,10 +84,6 @@ vai_Latn{
             "£",
             "Jengési Pɔɔ̃ Sitɛ́liŋ",
         }
-        GHC{
-            "GHC",
-            "Gana Sidi",
-        }
         GMD{
             "GMD",
             "Gambiya Dalasi",
@@ -143,10 +139,6 @@ vai_Latn{
         MWK{
             "MWK",
             "Malawi Kuwacha",
-        }
-        MZM{
-            "MZM",
-            "Mozambiki Mɛtikali",
         }
         NAD{
             "NAD",
@@ -216,17 +208,9 @@ vai_Latn{
             "ZAR",
             "Afirika Kɔi Leŋŋɛ lɔ Randi",
         }
-        ZMK{
-            "ZMK",
-            "Zambiya Kuwacha (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Zambiya Kuwacha",
-        }
-        ZWD{
-            "ZWD",
-            "Zimbhabhuwe Dala",
         }
     }
     Version{"2.0.92.87"}

@@ -83,10 +83,6 @@ teo{
             "£",
             "Epaunt lok' Uingereza",
         }
-        GHC{
-            "GHC",
-            "Sedi ya Ghana",
-        }
         GMD{
             "GMD",
             "Dalasi ya Gambia",
@@ -142,10 +138,6 @@ teo{
         MWK{
             "MWK",
             "Ango'otol lok' Malawi",
-        }
-        MZM{
-            "MZM",
-            "Ango'otol lok' Msumbiji",
         }
         NAD{
             "NAD",
@@ -219,17 +211,9 @@ teo{
             "ZAR",
             "Ango'otol lok' Afrika Kusini",
         }
-        ZMK{
-            "ZMK",
-            "Ango'otol lok' Zambia (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Ango'otol lok' Zambia",
-        }
-        ZWD{
-            "ZWD",
-            "Edola lok'Zimbabwe",
         }
     }
     Version{"2.0.92.87"}

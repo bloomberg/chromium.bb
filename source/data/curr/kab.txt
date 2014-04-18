@@ -83,10 +83,6 @@ kab{
             "£",
             "Apund Sterling Aglizi",
         }
-        GHC{
-            "GHC",
-            "Asidi Aɣani",
-        }
         GMD{
             "GMD",
             "Adalasi Agambi",
@@ -142,10 +138,6 @@ kab{
         MWK{
             "MWK",
             "Akwaca Amalawi",
-        }
-        MZM{
-            "MZM",
-            "Amitikal Amuzembiqi",
         }
         NAD{
             "NAD",
@@ -219,17 +211,9 @@ kab{
             "ZAR",
             "Arand Afriqi n Wadda",
         }
-        ZMK{
-            "ZMK",
-            "Akwaca Azambi (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Akwaca Azambi",
-        }
-        ZWD{
-            "ZWD",
-            "Adular Azimbabwi",
         }
     }
     Version{"2.0.92.87"}

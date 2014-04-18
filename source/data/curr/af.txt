@@ -203,10 +203,6 @@ af{
             "GEL",
             "Georgiese lari",
         }
-        GHC{
-            "GHC",
-            "Ghanese cedi (1979–2007)",
-        }
         GHS{
             "GHS",
             "Ghanese cedi",
@@ -411,10 +407,6 @@ af{
             "MYR",
             "Maleisiese ringgit",
         }
-        MZM{
-            "MZM",
-            "Mosambiekse metical (1980–2006)",
-        }
         MZN{
             "MZN",
             "Mosambiekse metical",
@@ -511,10 +503,6 @@ af{
             "SDG",
             "Soedannese pond",
         }
-        SDP{
-            "SDP",
-            "Soedannese pond (1957–1998)",
-        }
         SEK{
             "SEK",
             "Sweedse kroon",
@@ -574,10 +562,6 @@ af{
         TOP{
             "TOP",
             "Tongaanse pa'anga",
-        }
-        TRL{
-            "TRL",
-            "Turkse lier (1922–2005)",
         }
         TRY{
             "TRY",
@@ -659,17 +643,9 @@ af{
             "R",
             "Suid-Afrikaanse rand",
         }
-        ZMK{
-            "ZMK",
-            "Zambiese kwacha (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Zambiese kwacha",
-        }
-        ZWD{
-            "ZWD",
-            "Zimbabwiese dollar",
         }
     }
     CurrencyPlurals{

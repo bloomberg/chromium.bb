@@ -51,10 +51,6 @@ lv{
             "AWG",
             "Arubas guldenis",
         }
-        AZM{
-            "AZM",
-            "Azerbaidžānas manats (1993–2006)",
-        }
         AZN{
             "AZN",
             "Azerbaidžānas manats",
@@ -479,10 +475,6 @@ lv{
             "MZE",
             "Mozambikas eskudo",
         }
-        MZM{
-            "MZM",
-            "Mozambikas vecais metikals",
-        }
         MZN{
             "MZN",
             "Mozambikas metikals",
@@ -554,10 +546,6 @@ lv{
         QAR{
             "QAR",
             "Kataras riāls",
-        }
-        ROL{
-            "ROL",
-            "Rumānijas vecā leja",
         }
         RON{
             "RON",
@@ -655,10 +643,6 @@ lv{
             "TJS",
             "Tadžikistānas somons",
         }
-        TMM{
-            "TMM",
-            "Turkmenistānas manats",
-        }
         TMT{
             "TMT",
             "Turkmenistānas jaunais manats",
@@ -670,10 +654,6 @@ lv{
         TOP{
             "TOP",
             "Tongas paanga",
-        }
-        TRL{
-            "TRL",
-            "Turcijas lira",
         }
         TRY{
             "TRY",
@@ -710,10 +690,6 @@ lv{
         UZS{
             "UZS",
             "Uzbekistānas sums",
-        }
-        VEB{
-            "VEB",
-            "Venecuēlas bolivārs (1871–2008)",
         }
         VEF{
             "VEF",
@@ -811,17 +787,9 @@ lv{
             "ZAR",
             "Dienvidāfrikas rands",
         }
-        ZMK{
-            "ZMK",
-            "Zambijas kvača (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Zambijas kvača",
-        }
-        ZWD{
-            "ZWD",
-            "Zimbabves dolārs",
         }
         ZWL{
             "ZWL",
@@ -873,11 +841,6 @@ lv{
             one{"Arubas guldenis"}
             other{"Arubas guldeņi"}
             zero{"Arubas guldeņi"}
-        }
-        AZM{
-            one{"Azerbaidžānas manats (1993–2006)"}
-            other{"Azerbaidžānas manati (1993–2006)"}
-            zero{"Azerbaidžānas manati (1993–2006)"}
         }
         AZN{
             one{"Azerbaidžānas manats"}
@@ -1324,11 +1287,6 @@ lv{
             other{"Malaizijas ringiti"}
             zero{"Malaizijas ringiti"}
         }
-        MZM{
-            one{"Mozambikas vecais metikals"}
-            other{"Mozambikas vecie metikali"}
-            zero{"Mozambikas vecie metikali"}
-        }
         MZN{
             one{"Mozambikas metikals"}
             other{"Mozambikas metikali"}
@@ -1408,11 +1366,6 @@ lv{
             one{"Kataras riāls"}
             other{"Kataras riāli"}
             zero{"Kataras riāli"}
-        }
-        ROL{
-            one{"Rumānijas vecā leva"}
-            other{"Rumānijas vecās levas"}
-            zero{"Rumānijas vecās levas"}
         }
         RON{
             one{"Rumānijas leja"}
@@ -1574,11 +1527,6 @@ lv{
             other{"Uzbekistānas sumi"}
             zero{"Uzbekistānas sumi"}
         }
-        VEB{
-            one{"Venecuēlas bolivārs (1871–2008)"}
-            other{"Venecuēlas bolivāri (1871–2008)"}
-            zero{"Venecuēlas bolivāri (1871–2008)"}
-        }
         VEF{
             one{"Venecuēlas bolivārs"}
             other{"Venecuēlas bolivāri"}
@@ -1653,11 +1601,6 @@ lv{
             one{"Dienvidāfrikas rands"}
             other{"Dienvidāfrikas randi"}
             zero{"Dienvidāfrikas randi"}
-        }
-        ZMK{
-            one{"Zambijas kvača (1968–2012)"}
-            other{"Zambijas kvačas (1968–2012)"}
-            zero{"Zambijas kvačas (1968–2012)"}
         }
         ZMW{
             one{"Zambijas kvača"}

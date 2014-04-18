@@ -83,10 +83,6 @@ sg{
             "£",
             "pôndo tî Anglëe",
         }
-        GHC{
-            "GHC",
-            "sêdi tî Ganäa",
-        }
         GMD{
             "GMD",
             "dalasi tî gambïi",
@@ -142,10 +138,6 @@ sg{
         MWK{
             "MWK",
             "kwâtia tî Malawïi",
-        }
-        MZM{
-            "MZM",
-            "metikala tî Mozambîka",
         }
         NAD{
             "NAD",
@@ -219,17 +211,9 @@ sg{
             "ZAR",
             "rânde tî Mbongo-Afrîka",
         }
-        ZMK{
-            "ZMK",
-            "kwâtia tî Zambïi (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "kwâtia tî Zambïi",
-        }
-        ZWD{
-            "ZWD",
-            "dolära tî Zimbäbwe",
         }
     }
     Version{"2.0.92.87"}

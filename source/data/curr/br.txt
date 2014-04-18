@@ -47,10 +47,6 @@ br{
             "AWG",
             "florin Aruba",
         }
-        AZM{
-            "AZM",
-            "manat Azerbaidjan (1993–2006)",
-        }
         AZN{
             "AZN",
             "manat Azerbaidjan",
@@ -435,10 +431,6 @@ br{
             "MYR",
             "ringgit Malaysia",
         }
-        MZM{
-            "MZM",
-            "metical Mozambik (1980–2006)",
-        }
         MZN{
             "MZN",
             "metical Mozambik",
@@ -502,10 +494,6 @@ br{
         QAR{
             "QAR",
             "rial Qatar",
-        }
-        ROL{
-            "ROL",
-            "leu Roumania (1952–2006)",
         }
         RON{
             "RON",
@@ -602,10 +590,6 @@ br{
         TJS{
             "TJS",
             "somoni Tadjikistan",
-        }
-        TMM{
-            "TMM",
-            "manat Turkmenistan (1993–2009)",
         }
         TMT{
             "TMT",
@@ -751,17 +735,9 @@ br{
             "ZAR",
             "rand Suafrika",
         }
-        ZMK{
-            "ZMK",
-            "kwacha Zambia (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "kwacha Zambia",
-        }
-        ZWD{
-            "ZWD",
-            "dollar Zimbabwe (1980–2008)",
         }
         ZWL{
             "ZWL",
@@ -1175,13 +1151,6 @@ br{
             other{"peso Mecʼhiko"}
             two{"beso Mecʼhiko"}
         }
-        MZM{
-            few{"metical Mozambik (1980–2006)"}
-            many{"metical Mozambik (1980–2006)"}
-            one{"metical Mozambik (1980–2006)"}
-            other{"metical Mozambik (1980–2006)"}
-            two{"vetical Mozambik (1980–2006)"}
-        }
         MZN{
             few{"metical Mozambik"}
             many{"metical Mozambik"}
@@ -1244,13 +1213,6 @@ br{
             one{"guarani Paraguay"}
             other{"guarani Paraguay"}
             two{"uarani Paraguay"}
-        }
-        ROL{
-            few{"leu Roumania (1952–2006)"}
-            many{"leu Roumania (1952–2006)"}
-            one{"leu Roumania (1952–2006)"}
-            other{"leu Roumania (1952–2006)"}
-            two{"leu Roumania (1952–2006)"}
         }
         RON{
             few{"leu Roumania"}
@@ -1343,13 +1305,6 @@ br{
             other{"roubl Tadjikistan"}
             two{"roubl Tadjikistan"}
         }
-        TMM{
-            few{"manat Turkmenistan (1993–2009)"}
-            many{"manat Turkmenistan (1993–2009)"}
-            one{"manat Turkmenistan (1993–2009)"}
-            other{"manat Turkmenistan (1993–2009)"}
-            two{"vanat Turkmenistan (1993–2009)"}
-        }
         TMT{
             few{"manat Turkmenistan"}
             many{"manat Turkmenistan"}
@@ -1434,26 +1389,12 @@ br{
             other{"dinar Yemen"}
             two{"zinar Yemen"}
         }
-        ZMK{
-            few{"kwacha Zambia (1968–2012)"}
-            many{"kwacha Zambia (1968–2012)"}
-            one{"c'hwacha Zambia (1968–2012)"}
-            other{"kwacha Zambia (1968–2012)"}
-            two{"gwacha Zambia (1968–2012)"}
-        }
         ZMW{
             few{"kwacha Zambia"}
             many{"kwacha Zambia"}
             one{"c'hwacha Zambia"}
             other{"kwacha Zambia"}
             two{"gwacha Zambia"}
-        }
-        ZWD{
-            few{"dollar Zimbabwe (1980–2008)"}
-            many{"dollar Zimbabwe (1980–2008)"}
-            one{"dollar Zimbabwe (1980–2008)"}
-            other{"dollar Zimbabwe (1980–2008)"}
-            two{"zollar Zimbabwe"}
         }
         ZWL{
             few{"dollar Zimbabwe (2009)"}

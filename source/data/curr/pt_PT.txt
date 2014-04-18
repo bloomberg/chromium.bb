@@ -12,10 +12,6 @@ pt_PT{
             "AED",
             "Dirham dos Emirados Árabes Unidos",
         }
-        AFA{
-            "AFA",
-            "Afeghani (1927–2002)",
-        }
         AFN{
             "AFN",
             "Afegani do Afeganistão",
@@ -51,10 +47,6 @@ pt_PT{
         AZN{
             "AZN",
             "Manat do Azerbaijão",
-        }
-        BAD{
-            "BAD",
-            "Dinar da Bósnia-Herzegóvina",
         }
         BAM{
             "BAM",
@@ -111,10 +103,6 @@ pt_PT{
         BWP{
             "BWP",
             "Pula de Botswana",
-        }
-        BYB{
-            "BYB",
-            "Rublo novo bielorusso (1994–1999)",
         }
         BYR{
             "BYR",
@@ -416,10 +404,6 @@ pt_PT{
             "MX$",
             "Peso mexicano",
         }
-        MXP{
-            "MXP",
-            "Peso Plata mexicano (1861–1992)",
-        }
         MXV{
             "MXV",
             "Unidad de Inversion (UDI) mexicana",
@@ -439,10 +423,6 @@ pt_PT{
         NGN{
             "NGN",
             "Naira nigeriana",
-        }
-        NIC{
-            "NIC",
-            "Córdoba nicaraguano",
         }
         NIO{
             "NIO",
@@ -676,10 +656,6 @@ pt_PT{
         ZAR{
             "ZAR",
             "Rand sul-africano",
-        }
-        ZMK{
-            "ZMK",
-            "Kwacha zambiano (1968–2012)",
         }
         ZMW{
             "ZMW",
@@ -1310,10 +1286,6 @@ pt_PT{
         ZAR{
             one{"Rand sul-africano"}
             other{"Rands sul-africanos"}
-        }
-        ZMK{
-            one{"Kwacha zambiano (1968–2012)"}
-            other{"Kwachas zambianos (1968–2012)"}
         }
         ZMW{
             one{"Kwacha zambiano"}

@@ -631,10 +631,6 @@ ms{
             "ZAR",
             "Rand Afrika Selatan",
         }
-        ZMK{
-            "ZMK",
-            "Kwacha Zambia (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Kwacha Zambia",

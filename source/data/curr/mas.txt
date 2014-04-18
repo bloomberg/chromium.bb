@@ -83,10 +83,6 @@ mas{
             "£",
             "Iropiyianí e Nkɨ́resa",
         }
-        GHC{
-            "GHC",
-            "Iropiyianí e Ghana",
-        }
         GMD{
             "GMD",
             "Iropiyianí e Gambia",
@@ -142,10 +138,6 @@ mas{
         MWK{
             "MWK",
             "Iropiyianí e Malawi",
-        }
-        MZM{
-            "MZM",
-            "Iropiyianí e Msumbiji",
         }
         NAD{
             "NAD",
@@ -219,17 +211,9 @@ mas{
             "ZAR",
             "Iropiyianí e Afrika Kusini",
         }
-        ZMK{
-            "ZMK",
-            "Iropiyianí e Sambia (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Iropiyianí e Sambia",
-        }
-        ZWD{
-            "ZWD",
-            "Iropiyianí e Simbabwe",
         }
     }
     Version{"2.0.92.87"}

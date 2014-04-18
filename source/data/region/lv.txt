@@ -11,35 +11,6 @@
  */
 lv{
     Countries{
-        001{"pasaule"}
-        002{"Āfrika"}
-        003{"Ziemeļamerika"}
-        005{"Dienvidamerika"}
-        009{"Okeānija"}
-        011{"Rietumāfrika"}
-        013{"Centrālamerika"}
-        014{"Austrumāfrika"}
-        015{"Ziemeļāfrika"}
-        017{"Vidusāfrika"}
-        018{"Dienvidāfrika"}
-        019{"Amerika"}
-        021{"Amerikas ziemeļu daļa"}
-        029{"Karību jūras reģions"}
-        030{"Austrumāzija"}
-        034{"Dienvidāzija"}
-        035{"Centrālaustrumāzija"}
-        039{"Dienvideiropa"}
-        053{"Austrālāzija"}
-        054{"Melanēzija"}
-        057{"Mikronēzijas reģions"}
-        061{"Polinēzija"}
-        142{"Āzija"}
-        143{"Centrālāzija"}
-        145{"Rietumāzija"}
-        150{"Eiropa"}
-        151{"Austrumeiropa"}
-        154{"Ziemeļeiropa"}
-        155{"Rietumeiropa"}
         419{"Latīņamerika"}
         AC{"Debesbraukšanas sala"}
         AD{"Andora"}

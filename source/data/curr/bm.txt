@@ -83,10 +83,6 @@ bm{
             "£",
             "angilɛ Livri Siterlingi",
         }
-        GHC{
-            "GHC",
-            "gana Sedi",
-        }
         GMD{
             "GMD",
             "gambi Dalasi",
@@ -143,10 +139,6 @@ bm{
             "MWK",
             "malawi Kwaca",
         }
-        MZM{
-            "MZM",
-            "mozanbiki Metikali",
-        }
         NAD{
             "NAD",
             "namibi Dolar",
@@ -170,10 +162,6 @@ bm{
         SDG{
             "SDG",
             "sudani Dinar",
-        }
-        SDP{
-            "SDP",
-            "sudani Livri",
         }
         SHP{
             "SHP",
@@ -223,17 +211,9 @@ bm{
             "ZAR",
             "sudafriki Randi",
         }
-        ZMK{
-            "ZMK",
-            "zambi Kwaca (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "zambi Kwaca",
-        }
-        ZWD{
-            "ZWD",
-            "zimbabuwe Dolar",
         }
     }
     Version{"2.0.92.87"}

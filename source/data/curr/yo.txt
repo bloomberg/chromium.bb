@@ -83,10 +83,6 @@ yo{
             "£",
             "Pọọn ti Orílẹ́ède Bírítísì",
         }
-        GHC{
-            "GHC",
-            "ṣidi ti Orílẹ́ède Gana",
-        }
         GMD{
             "GMD",
             "Dalasi ti Orílẹ́ède Gamibia",
@@ -143,10 +139,6 @@ yo{
             "MWK",
             "Kaṣa ti Orílẹ́ède Malawi",
         }
-        MZM{
-            "MZM",
-            "Metika ti Orílẹ́ède Mosamibiki",
-        }
         NAD{
             "NAD",
             "Dọla ti Orílẹ́ède Namibia",
@@ -170,10 +162,6 @@ yo{
         SDG{
             "SDG",
             "Dina ti Orílẹ́ède Sudani",
-        }
-        SDP{
-            "SDP",
-            "Pọọun ti Orílẹ́ède Sudani",
         }
         SHP{
             "SHP",
@@ -223,17 +211,9 @@ yo{
             "ZAR",
             "Randi ti Orílẹ́ède Ariwa Afirika",
         }
-        ZMK{
-            "ZMK",
-            "Kawaṣa ti Orílẹ́ède Saabia (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Kawaṣa ti Orílẹ́ède Saabia",
-        }
-        ZWD{
-            "ZWD",
-            "Dọla ti Orílẹ́ède Siibabuwe",
         }
     }
     Version{"2.0.92.87"}

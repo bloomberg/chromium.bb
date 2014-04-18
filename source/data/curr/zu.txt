@@ -639,10 +639,6 @@ zu{
             "R",
             "i-South African Rand",
         }
-        ZMK{
-            "ZMK",
-            "i-Zambian Kwacha (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "i-Zambian Kwacha",

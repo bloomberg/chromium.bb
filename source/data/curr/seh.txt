@@ -83,10 +83,6 @@ seh{
             "£",
             "Libra esterlina britânica",
         }
-        GHC{
-            "GHC",
-            "Cedi de Gana (1979–2007)",
-        }
         GMD{
             "GMD",
             "Dalasi de Gâmbia",
@@ -143,10 +139,6 @@ seh{
             "MWK",
             "Cuacha do Maláui",
         }
-        MZM{
-            "MZM",
-            "Metical antigo de Moçambique",
-        }
         MZN{
             "MTn",
             "Metical de Moçambique",
@@ -174,10 +166,6 @@ seh{
         SDG{
             "SDG",
             "Dinar sudanês",
-        }
-        SDP{
-            "SDP",
-            "Libra sudanesa antiga",
         }
         SHP{
             "SHP",
@@ -227,17 +215,9 @@ seh{
             "ZAR",
             "Rand sul-africano",
         }
-        ZMK{
-            "ZMK",
-            "Cuacha zambiano (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Cuacha zambiano",
-        }
-        ZWD{
-            "ZWD",
-            "Dólar do Zimbábue",
         }
     }
     Version{"2.0.92.87"}

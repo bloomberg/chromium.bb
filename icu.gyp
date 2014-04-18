@@ -62,12 +62,12 @@
           ],
           'sources': [
              # These are hand-generated, but will do for now.  The linux
-             # version is an identical copy of the (mac) icudt52l_dat.S file,
+             # version is an identical copy of the (mac) icudtl_dat.S file,
              # modulo removal of the .private_extern and .const directives and
              # with no leading underscore on the icudt52_dat symbol.
-             'android/icudt52l_dat.S',
-             'linux/icudt52l_dat.S',
-             'mac/icudt52l_dat.S',
+             'android/icudtl_dat.S',
+             'linux/icudtl_dat.S',
+             'mac/icudtl_dat.S',
           ],
           'conditions': [
             [ 'use_system_icu==1 and want_separate_host_toolset==1', {
@@ -92,7 +92,7 @@
             }],
             [ 'icu_use_data_file_flag==1', {
               # Remove any assembly data file.
-              'sources/': [['exclude', 'icudt52l_dat']],
+              'sources/': [['exclude', 'icudtl_dat']],
               # Compile in the stub data symbol.
               'sources': ['source/stubdata/stubdata.c'],
              
@@ -127,15 +127,15 @@
             [ 'OS == "win" or OS == "mac" or OS == "ios" or '
               '(OS == "android" and (_toolset != "host" or host_os != "linux")) or '
               '(OS == "qnx" and (_toolset == "host" and host_os != "linux"))', {
-              'sources!': ['linux/icudt52l_dat.S'],
+              'sources!': ['linux/icudtl_dat.S'],
             }],
             [ 'OS != "android" or _toolset == "host"', {
-              'sources!': ['android/icudt52l_dat.S'],
+              'sources!': ['android/icudtl_dat.S'],
             }],
             [ 'OS != "mac" and OS != "ios" and '
               '((OS != "android" and OS != "qnx") or '
               '_toolset != "host" or host_os != "mac")', {
-              'sources!': ['mac/icudt52l_dat.S'],
+              'sources!': ['mac/icudtl_dat.S'],
             }],
           ], # target_conditions
         },

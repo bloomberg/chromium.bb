@@ -83,10 +83,6 @@ rn{
             "£",
             "Ipawundi ryo mu Bwongereza",
         }
-        GHC{
-            "GHC",
-            "Icedi ryo muri Gana",
-        }
         GMD{
             "GMD",
             "Idalasi ryo muri Gambiya",
@@ -142,10 +138,6 @@ rn{
         MWK{
             "MWK",
             "Ikwaca ryo muri Malawi",
-        }
-        MZM{
-            "MZM",
-            "Irimetikali ryo muri Mozambike",
         }
         NAD{
             "NAD",
@@ -211,17 +203,9 @@ rn{
             "ZAR",
             "Irandi ryo muri Afurika y'Epfo",
         }
-        ZMK{
-            "ZMK",
-            "Ikwaca ryo muri Zambiya (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Ikwaca ryo muri Zambiya",
-        }
-        ZWD{
-            "ZWD",
-            "Idolari ryo muri Zimbabwe",
         }
     }
     Version{"2.0.92.87"}

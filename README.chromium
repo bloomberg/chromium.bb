@@ -87,20 +87,17 @@ This directory contains the source code of ICU 52.1 for C/C++
       b. Minor fixes for Korean, a few Indic (AmPmMarkers) and 
       others (datetime format)
 
-  - patches/locale2.patch :
-      The minimum locale data Chrome needs for 47 languages Chrome is
-      not localized to. Each locale data file has ExemplarCharacters,
-      LocaleScript, layout, and the name of the language for a locale
-      in its native language.
-
   - Locale build configuration files: To include the full locale data
     for Chrome's UI languages and the minimum locale data for other locales,
     add reslocal.mk or {trns,sprep,rbnf,coll}local.mk files to
     source/data/{coll,curr,lang.locale,curr,region,translit,zone,rbnf,sprep}.
 
-  - In source/data/region, run the following command to get rid of numeric region
-    display names we don't use (everything other than 419).
-     $ sed -i  '/[0-35-9][0-9][0-9]{/ d' *.txt
+  - Run scripts/trimdata.sh
+      a. Trim the locale data for Chrome's UI langauges :
+         locales, lang, region, currency
+      b. Trim the locale data for non-UI languages to the bare minimum :
+        ExemplarCharacters, LocaleScript, layout, and the name of the
+        language for a locale in its native language.
 
   - android/patch_locale.sh (to be run for Android build only):
       Makes changes to source/data/{curr,region,lang} to exclude these data

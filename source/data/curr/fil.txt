@@ -615,10 +615,6 @@ fil{
             "UZS",
             "Uzbekistan Som",
         }
-        VEB{
-            "VEB",
-            "Venezuelan Bolívar (1871–2008)",
-        }
         VEF{
             "VEF",
             "Venezuelan Bolívar",
@@ -662,10 +658,6 @@ fil{
         ZAR{
             "ZAR",
             "South African Rand",
-        }
-        ZMK{
-            "ZMK",
-            "Zambian Kwacha (1968–2012)",
         }
         ZMW{
             "ZMW",

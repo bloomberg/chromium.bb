@@ -11,35 +11,6 @@
  */
 uz{
     Countries{
-        001{"Dunyo"}
-        002{"Afrika"}
-        003{"Shimoliy Amerika"}
-        005{"Janubiy Amerika"}
-        009{"Okeaniya"}
-        011{"Gʻarbiy Afrika"}
-        013{"Markaziy Amerika"}
-        014{"Sharqiy Afrika"}
-        015{"Shimoliy Afrika"}
-        017{"Markaziy Afrika"}
-        018{"Janubi-Afrika"}
-        019{"Amerika"}
-        021{"Shimoli-Amerika"}
-        029{"Karib havzasi"}
-        030{"Sharqiy Osiyo"}
-        034{"Janubiy Osiyo"}
-        035{"Janubiy-Sharqiy Osiyo"}
-        039{"Janubiy Yevropa"}
-        053{"Avstralaziya"}
-        054{"Melaneziya"}
-        057{"Mikroneziya mintaqasi"}
-        061{"Polineziya"}
-        142{"Osiyo"}
-        143{"Markaziy Osiyo"}
-        145{"Gʻarbiy Osiyo"}
-        150{"Yevropa"}
-        151{"Sharqiy Yevropa"}
-        154{"Shimoliy Yevropa"}
-        155{"Gʻarbiy Yevropa"}
         419{"Lotin Amerikasi"}
         AC{"Vozneseniye oroli"}
         AD{"Andorra"}

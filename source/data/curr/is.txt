@@ -43,10 +43,6 @@ is{
             "ARA",
             "Argentine Austral",
         }
-        ARP{
-            "ARP",
-            "Argentískur pesi (1983–1985)",
-        }
         ARS{
             "ARS",
             "Argentínskur pesi",
@@ -527,10 +523,6 @@ is{
             "MXN",
             "Mexíkóskur pesi",
         }
-        MXP{
-            "MXP",
-            "Mexíkóskur silfurpesi (1861–1992)",
-        }
         MXV{
             "MXV",
             "Mexíkóskur pesi, UDI",
@@ -603,10 +595,6 @@ is{
             "PLN",
             "Pólskt slot",
         }
-        PLZ{
-            "PLZ",
-            "Slot",
-        }
         PTE{
             "PTE",
             "Portúgalskur skúti",
@@ -619,10 +607,6 @@ is{
             "QAR",
             "Katarskt ríal",
         }
-        ROL{
-            "ROL",
-            "Rúmenskt lei (1952–2006)",
-        }
         RON{
             "RON",
             "Rúmenskt lei",
@@ -634,10 +618,6 @@ is{
         RUB{
             "RUB",
             "Rússnesk rúbla",
-        }
-        RUR{
-            "RUR",
-            "Rússnesk rúbla (1991–1998)",
         }
         RWF{
             "RWF",
@@ -655,17 +635,9 @@ is{
             "SCR",
             "Seychellesrúpía",
         }
-        SDD{
-            "SDD",
-            "Súdanskur denari",
-        }
         SDG{
             "SDG",
             "Súdanskt pund",
-        }
-        SDP{
-            "SDP",
-            "Súdanskt pund (1957–1998)",
         }
         SEK{
             "SEK",
@@ -739,10 +711,6 @@ is{
             "TJS",
             "Tadsjikskur sómóni",
         }
-        TMM{
-            "TMM",
-            "Túrkmenskt manat (1993–2009)",
-        }
         TMT{
             "TMT",
             "Túrkmenskt manat",
@@ -758,10 +726,6 @@ is{
         TPE{
             "TPE",
             "Tímorskur skúti",
-        }
-        TRL{
-            "TRL",
-            "Tyrknesk líra (1922–2005)",
         }
         TRY{
             "TRY",
@@ -810,10 +774,6 @@ is{
         UZS{
             "UZS",
             "Úsbekskt súm",
-        }
-        VEB{
-            "VEB",
-            "Bolívar í Venesúela (1871–2008)",
         }
         VEF{
             "VEF",
@@ -871,10 +831,6 @@ is{
             "YER",
             "Jemenskt ríal",
         }
-        YUM{
-            "YUM",
-            "Júgóslavneskur denari",
-        }
         ZAL{
             "ZAL",
             "Rand (viðskipta)",
@@ -883,17 +839,9 @@ is{
             "ZAR",
             "Suðurafrískt rand",
         }
-        ZMK{
-            "ZMK",
-            "Zambian Kwacha (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Sambísk kvaka",
-        }
-        ZWD{
-            "ZWD",
-            "Simbabveskur dalur",
         }
     }
     CurrencyPlurals{
@@ -1349,10 +1297,6 @@ is{
             one{"katarskt ríal"}
             other{"katörsk ríöl"}
         }
-        ROL{
-            one{"Rúmenskt lei (1952–2006)"}
-            other{"Rúmenskt lei (1952–2006)"}
-        }
         RON{
             one{"rúmenskt lei"}
             other{"rúmensk lei"}
@@ -1436,10 +1380,6 @@ is{
         TJS{
             one{"tadsjikskur sómóni"}
             other{"tadsjikskir sómónar"}
-        }
-        TMM{
-            one{"Túrkmenskt manat (1993–2009)"}
-            other{"Túrkmenskt manat (1993–2009)"}
         }
         TMT{
             one{"túrkmenskt manat"}

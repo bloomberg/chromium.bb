@@ -84,10 +84,6 @@ shi_Latn{
             "£",
             "ajnih astrlini n nngliz",
         }
-        GHC{
-            "GHC",
-            "sidi n ɣana",
-        }
         GMD{
             "GMD",
             "dalasi n gambya",
@@ -144,10 +140,6 @@ shi_Latn{
             "MWK",
             "kwaca n malawi",
         }
-        MZM{
-            "MZM",
-            "amitikl n muznbiq",
-        }
         NAD{
             "NAD",
             "adular n namibya",
@@ -171,10 +163,6 @@ shi_Latn{
         SDG{
             "SDG",
             "adinar n ssudan",
-        }
-        SDP{
-            "SDP",
-            "ajnih n ssudan",
         }
         SHP{
             "SHP",
@@ -224,17 +212,9 @@ shi_Latn{
             "ZAR",
             "arand n afriqya n iffus",
         }
-        ZMK{
-            "ZMK",
-            "akwaca n zambya (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "akwaca n zambya",
-        }
-        ZWD{
-            "ZWD",
-            "adular n zimbabwi",
         }
     }
     Version{"2.0.92.87"}

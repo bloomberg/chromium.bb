@@ -39,10 +39,6 @@ gl{
             "AOA",
             "Kwanza angoleño",
         }
-        ARP{
-            "ARP",
-            "Peso arxentino (1983–1985)",
-        }
         ARS{
             "ARS",
             "Peso arxentino",
@@ -115,29 +111,9 @@ gl{
             "BOV",
             "MVDOL boliviano",
         }
-        BRB{
-            "BRB",
-            "Cruzeiro novo brasileiro (1967–1986)",
-        }
-        BRC{
-            "BRC",
-            "Cruzado brasileiro",
-        }
-        BRE{
-            "BRE",
-            "Cruzeiro brasileiro (1990–1993)",
-        }
         BRL{
             "R$",
             "Real brasileiro",
-        }
-        BRN{
-            "BRN",
-            "Cruzado novo brasileiro",
-        }
-        BRR{
-            "BRR",
-            "Cruzeiro brasileiro",
         }
         BSD{
             "BSD",
@@ -520,10 +496,6 @@ gl{
             "$MX",
             "Peso mexicano",
         }
-        MXP{
-            "MXP",
-            "Peso de prata mexicano (1861–1992)",
-        }
         MXV{
             "MXV",
             "Unidade de inversión mexicana",
@@ -543,10 +515,6 @@ gl{
         NGN{
             "NGN",
             "Naira nixeriano",
-        }
-        NIC{
-            "NIC",
-            "Córdoba nicaragüense",
         }
         NIO{
             "NIO",
@@ -583,10 +551,6 @@ gl{
         PEN{
             "PEN",
             "Sol novo peruano",
-        }
-        PES{
-            "PES",
-            "Sol peruano",
         }
         PGK{
             "PGK",
@@ -627,10 +591,6 @@ gl{
         RUB{
             "RUB",
             "Rublo ruso",
-        }
-        RUR{
-            "RUR",
-            "Rublo ruso (1991–1998)",
         }
         RWF{
             "RWF",
@@ -752,10 +712,6 @@ gl{
             "UYI",
             "Peso en unidades indexadas uruguaio",
         }
-        UYP{
-            "UYP",
-            "Peso uruguaio (1975–1993)",
-        }
         UYU{
             "UYU",
             "Peso uruguaio",
@@ -763,10 +719,6 @@ gl{
         UZS{
             "UZS",
             "Som usbeco",
-        }
-        VEB{
-            "VEB",
-            "Bolívar venezolano (1871–2008)",
         }
         VEF{
             "VEF",
@@ -828,10 +780,6 @@ gl{
             "ZAR",
             "Rand sudafricano",
         }
-        ZMK{
-            "ZMK",
-            "Kwacha zambiano (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Kwacha zambiano",
@@ -841,10 +789,6 @@ gl{
         ADP{
             one{"peseta andorrana"}
             other{"pesetas andorranas"}
-        }
-        ARP{
-            one{"peso arxentino (ARP)"}
-            other{"pesos arxentinos (ARP)"}
         }
         ARS{
             one{"peso arxentino"}
@@ -874,29 +818,9 @@ gl{
             one{"peso boliviano"}
             other{"pesos bolivianos"}
         }
-        BRB{
-            one{"cruzeiro novo brasileiro"}
-            other{"cruzeiros novos brasileiros"}
-        }
-        BRC{
-            one{"cruzado brasileiro"}
-            other{"cruzados brasileiros"}
-        }
-        BRE{
-            one{"cruzeiro brasileiro (BRE)"}
-            other{"cruzeiros brasileiros (BRE)"}
-        }
         BRL{
             one{"real brasileiro"}
             other{"reais brasileiros"}
-        }
-        BRN{
-            one{"cruzado novo brasileiro"}
-            other{"cruzados novos brasileiros"}
-        }
-        BRR{
-            one{"cruzeiro brasileiro"}
-            other{"cruzeiros brasileiros"}
         }
         CAD{
             one{"dólar canadiano"}
@@ -1061,10 +985,6 @@ gl{
         UYU{
             one{"peso uruguaio"}
             other{"pesos uruguaios"}
-        }
-        VEB{
-            one{"bolívar venezolano (1871–2008)"}
-            other{"bolívares venezolanos (1871–2008)"}
         }
         VEF{
             one{"bolívar venezolano"}

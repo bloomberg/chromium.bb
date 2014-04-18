@@ -19,10 +19,6 @@ et{
             "AED",
             "Araabia Ühendemiraatide dirhem",
         }
-        AFA{
-            "AFA",
-            "Afganistani afgaani, 1927-2002",
-        }
         AFN{
             "AFN",
             "Afganistani afgaani",
@@ -43,25 +39,9 @@ et{
             "AOA",
             "Angola kvanza",
         }
-        AOK{
-            "AOK",
-            "Angola kvanza, 1977-1990",
-        }
-        AON{
-            "AON",
-            "Angola kvanza, 1990-2000",
-        }
-        AOR{
-            "AOR",
-            "Angola reformitud kvanza, 1995-1999",
-        }
         ARA{
             "ARA",
             "Argentina austral",
-        }
-        ARP{
-            "ARP",
-            "Argentina peeso, 1983-1985",
         }
         ARS{
             "ARS",
@@ -79,17 +59,9 @@ et{
             "AWG",
             "Aruba guilder",
         }
-        AZM{
-            "AZM",
-            "Aserbaidžaani manat, 1993-2006",
-        }
         AZN{
             "AZN",
             "Aserbaidžaani manat",
-        }
-        BAD{
-            "BAD",
-            "Bosnia-Hertsegoviina dinaar",
         }
         BAM{
             "BAM",
@@ -147,10 +119,6 @@ et{
             "BOP",
             "Boliivia peeso",
         }
-        BRC{
-            "BRC",
-            "Brasiilia krusado",
-        }
         BRL{
             "R$",
             "Brasiilia reaal",
@@ -170,10 +138,6 @@ et{
         BWP{
             "BWP",
             "Botswana pula",
-        }
-        BYB{
-            "BYB",
-            "Valgevene uus rubla, 1994-1999",
         }
         BYR{
             "BYR",
@@ -311,10 +275,6 @@ et{
         GEL{
             "GEL",
             "Gruusia lari",
-        }
-        GHC{
-            "GHC",
-            "Ghana sedi",
         }
         GHS{
             "GHS",
@@ -544,10 +504,6 @@ et{
             "MX$",
             "Mehhiko peeso",
         }
-        MXP{
-            "MXP",
-            "Mehhiko peeso, 1861-1990",
-        }
         MYR{
             "MYR",
             "Malaisia ringgit",
@@ -563,10 +519,6 @@ et{
         NGN{
             "NGN",
             "Nigeeria naira",
-        }
-        NIC{
-            "NIC",
-            "Nicaragua kordoba",
         }
         NIO{
             "NIO",
@@ -604,10 +556,6 @@ et{
             "PEN",
             "Peruu uus soll",
         }
-        PES{
-            "PES",
-            "Peruu soll",
-        }
         PGK{
             "PGK",
             "Paapua Uus-Guinea kina",
@@ -624,10 +572,6 @@ et{
             "PLN",
             "Poola zlott",
         }
-        PLZ{
-            "PLZ",
-            "Poola zlott, 1950-1995",
-        }
         PTE{
             "PTE",
             "Portugali eskuudo",
@@ -640,10 +584,6 @@ et{
             "QAR",
             "Quatari riaal",
         }
-        ROL{
-            "ROL",
-            "Rumeenia lei, -2005",
-        }
         RON{
             "RON",
             "Rumeenia lei",
@@ -655,10 +595,6 @@ et{
         RUB{
             "RUB",
             "Venemaa rubla",
-        }
-        RUR{
-            "RUR",
-            "Venemaa rubla, 1991-1998",
         }
         RWF{
             "RWF",
@@ -679,10 +615,6 @@ et{
         SDG{
             "SDG",
             "Sudaani nael",
-        }
-        SDP{
-            "SDP",
-            "Sudaani nael, 1957-1998",
         }
         SEK{
             "SEK",
@@ -752,10 +684,6 @@ et{
             "TJS",
             "Tadžikistani somoni",
         }
-        TMM{
-            "TMM",
-            "Türkmenistani manat, 1993-2009",
-        }
         TMT{
             "TMT",
             "Türkmenistani manat",
@@ -771,10 +699,6 @@ et{
         TPE{
             "TPE",
             "Timori eskuudo",
-        }
-        TRL{
-            "TRL",
-            "Türgi liir",
         }
         TRY{
             "TRY",
@@ -823,10 +747,6 @@ et{
         UZS{
             "UZS",
             "Usbekistani somm",
-        }
-        VEB{
-            "VEB",
-            "Venezuela bolívar (1871–2008)",
         }
         VEF{
             "VEF",
@@ -924,33 +844,13 @@ et{
             "YER",
             "Jeemeni riaal",
         }
-        YUM{
-            "YUM",
-            "Jugoslaavia uus dinaar",
-        }
-        YUN{
-            "YUN",
-            "Jugoslaavia konverteeritav dinaar",
-        }
         ZAR{
             "ZAR",
             "Lõuna-Aafrika rand",
         }
-        ZMK{
-            "ZMK",
-            "Sambia kvatša (1968–2012)",
-        }
         ZMW{
             "ZMW",
             "Sambia kvatša",
-        }
-        ZRZ{
-            "ZRZ",
-            "Sairi zaire",
-        }
-        ZWD{
-            "ZWD",
-            "Zimbabwe dollar",
         }
     }
     CurrencyPlurals{
@@ -1542,10 +1442,6 @@ et{
             one{"Usbekistani somm"}
             other{"Usbekistani sommi"}
         }
-        VEB{
-            one{"Venezuela bolívar (1871–2008)"}
-            other{"Venezuela boliivarit (1871–2008)"}
-        }
         VEF{
             one{"Venezuela bolívar"}
             other{"Venezuela boliivarit"}
@@ -1605,10 +1501,6 @@ et{
         ZAR{
             one{"Lõuna-Aafrika rand"}
             other{"LAVi randi"}
-        }
-        ZMK{
-            one{"Sambia kvatša (1968–2012)"}
-            other{"Sambia kvatšat (1968–2012)"}
         }
         ZMW{
             one{"Sambia kvatša"}
