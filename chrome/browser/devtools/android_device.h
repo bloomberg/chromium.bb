@@ -90,8 +90,9 @@ class AndroidDeviceManager
  public:
   static scoped_refptr<DeviceProvider> GetAdbDeviceProvider();
   static scoped_refptr<DeviceProvider> GetUsbDeviceProvider(Profile* profile);
-  // Use only in a test and/or when DEBUG_DEVTOOLS is defined.
-  static scoped_refptr<DeviceProvider> GetSelfAsDeviceProvider(int port);
+#if defined(DEBUG_DEVTOOLS)
+  static scoped_refptr<DeviceProvider> GetSelfAsDeviceProvider();
+#endif
   // Implemented in browser_tests.
   static scoped_refptr<DeviceProvider> GetMockDeviceProviderForTest();
 

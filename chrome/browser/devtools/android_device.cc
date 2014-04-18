@@ -26,6 +26,7 @@ const char kLocalAbstractCommand[] = "localabstract:%s";
 const int kAdbPort = 5037;
 const int kBufferSize = 16 * 1024;
 
+#if defined(DEBUG_DEVTOOLS)
 const char kDeviceModelCommand[] = "shell:getprop ro.product.model";
 const char kOpenedUnixSocketsCommand[] = "shell:cat /proc/net/unix";
 const char kOpenedUnixSocketsResponse[] =
@@ -34,6 +35,8 @@ const char kOpenedUnixSocketsResponse[] =
 const char kRemoteDebuggingSocket[] = "chrome_devtools_remote";
 const char kLocalChrome[] = "Local Chrome";
 const char kLocalhost[] = "127.0.0.1";
+const int kLocalDebuggingPort = 9222;
+#endif
 
 // AdbDeviceImpl --------------------------------------------------------------
 
@@ -315,10 +318,10 @@ scoped_refptr<AndroidDeviceManager::DeviceProvider>
 }
 
 
+#if defined(DEBUG_DEVTOOLS)
 class SelfAsDevice : public AndroidDeviceManager::Device {
  public:
-  explicit SelfAsDevice(int port);
-
+  SelfAsDevice();
   virtual void RunCommand(const std::string& command,
                           const CommandCallback& callback) OVERRIDE;
   virtual void OpenSocket(const std::string& socket_name,
@@ -332,13 +335,10 @@ class SelfAsDevice : public AndroidDeviceManager::Device {
                          net::StreamSocket* socket,
                          int result);
   virtual ~SelfAsDevice() {}
-
-  int port_;
 };
 
-SelfAsDevice::SelfAsDevice(int port)
-    : Device("local", true),
-      port_(port)
+SelfAsDevice::SelfAsDevice()
+    : Device("local", true)
 {}
 
 void SelfAsDevice::RunCommandCallback(const CommandCallback& callback,
@@ -379,7 +379,7 @@ void SelfAsDevice::OpenSocket(const std::string& socket_name,
 
   int port = 0;
   if (socket_name == kRemoteDebuggingSocket)
-    port = port_;
+    port = kLocalDebuggingPort;
   else
     base::StringToInt(socket_name, &port);
 
@@ -393,30 +393,23 @@ void SelfAsDevice::OpenSocket(const std::string& socket_name,
 
 class SelfAsDeviceProvider : public AndroidDeviceManager::DeviceProvider {
  public:
-  explicit SelfAsDeviceProvider(int port);
-
   virtual void QueryDevices(const QueryDevicesCallback& callback) OVERRIDE;
  private:
   virtual ~SelfAsDeviceProvider(){}
-
-  int port_;
 };
-
-SelfAsDeviceProvider::SelfAsDeviceProvider(int port)
-    : port_(port) {
-}
 
 void SelfAsDeviceProvider::QueryDevices(const QueryDevicesCallback& callback) {
   AndroidDeviceManager::Devices result;
-  result.push_back(new SelfAsDevice(port_));
+  result.push_back(new SelfAsDevice());
   callback.Run(result);
 }
 
 // static
 scoped_refptr<AndroidDeviceManager::DeviceProvider>
-AndroidDeviceManager::GetSelfAsDeviceProvider(int port) {
-  return new SelfAsDeviceProvider(port);
+AndroidDeviceManager::GetSelfAsDeviceProvider() {
+  return new SelfAsDeviceProvider();
 }
+#endif
 
 // static
 scoped_refptr<AndroidDeviceManager> AndroidDeviceManager::Create() {
