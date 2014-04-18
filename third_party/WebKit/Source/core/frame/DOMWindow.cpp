@@ -1604,6 +1604,8 @@ bool DOMWindow::dispatchEvent(PassRefPtrWillBeRawPtr<Event> prpEvent, PassRefPtr
     event->setCurrentTarget(this);
     event->setEventPhase(Event::AT_TARGET);
 
+    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools-timeline"), "DOMWindow::dispatchEvent", "type", event->type().ascii());
+    // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willDispatchEventOnWindow(frame(), *event, this);
 
     bool result = fireEventListeners(event.get());

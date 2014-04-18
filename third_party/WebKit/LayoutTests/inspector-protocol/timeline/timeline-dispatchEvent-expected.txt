@@ -1,0 +1,9 @@
+
+Recording started
+Recording stopped
+Tracing complete
+SUCCESS: found click event
+SUCCESS: found one beforeunload event
+SUCCESS: found one unload event
+SUCCESS: found one load event
+
