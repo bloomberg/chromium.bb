@@ -203,6 +203,9 @@ void ShadowRoot::removedFrom(ContainerNode* insertionPoint)
 void ShadowRoot::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
 {
     ContainerNode::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
+
+    checkForSiblingStyleChanges(false, beforeChange, afterChange, childCountDelta);
+
     if (InsertionPoint* point = shadowInsertionPointOfYoungerShadowRoot()) {
         if (ShadowRoot* root = point->containingShadowRoot())
             root->owner()->setNeedsDistributionRecalc();
