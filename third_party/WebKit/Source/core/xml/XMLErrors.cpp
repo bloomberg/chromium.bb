@@ -126,6 +126,12 @@ void XMLErrors::insertErrorMessageBlock()
         documentElement = body.get();
     } else if (documentElement->namespaceURI() == SVGNames::svgNamespaceURI) {
         RefPtr<Element> rootElement = m_document->createElement(htmlTag, true);
+        RefPtr<Element> head = m_document->createElement(headTag, true);
+        RefPtr<Element> style = m_document->createElement(styleTag, true);
+        head->parserAppendChild(style);
+        style->parserAppendChild(m_document->createTextNode("html, body { height: 100% } parsererror + svg { width: 100%; height: 100% }"));
+        style->finishParsingChildren();
+        rootElement->parserAppendChild(head);
         RefPtr<Element> body = m_document->createElement(bodyTag, true);
         rootElement->parserAppendChild(body);
 

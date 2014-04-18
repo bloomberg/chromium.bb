@@ -162,7 +162,7 @@ IntSize SVGImage::containerSize() const
     ASSERT(renderer->style()->effectiveZoom() == 1);
 
     FloatSize currentSize;
-    if (rootElement->intrinsicWidth().isFixed() && rootElement->intrinsicHeight().isFixed())
+    if (rootElement->hasIntrinsicWidth() && rootElement->hasIntrinsicHeight())
         currentSize = rootElement->currentViewportSize();
     else
         currentSize = rootElement->currentViewBoxRect().size();
@@ -309,22 +309,6 @@ FrameView* SVGImage::frameView() const
         return 0;
 
     return m_page->mainFrame()->view();
-}
-
-bool SVGImage::hasRelativeWidth() const
-{
-    SVGSVGElement* rootElement = svgRootElement(m_page.get());
-    if (!rootElement)
-        return false;
-    return rootElement->intrinsicWidth().isPercent();
-}
-
-bool SVGImage::hasRelativeHeight() const
-{
-    SVGSVGElement* rootElement = svgRootElement(m_page.get());
-    if (!rootElement)
-        return false;
-    return rootElement->intrinsicHeight().isPercent();
 }
 
 void SVGImage::computeIntrinsicDimensions(Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio)

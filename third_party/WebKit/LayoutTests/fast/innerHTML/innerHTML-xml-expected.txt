@@ -22,4 +22,4 @@ PASS element.firstChild.namespaceURI is "http://test/foo"
 PASS successfullyParsed is true
 
 TEST COMPLETE
-
+ 

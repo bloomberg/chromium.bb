@@ -62,14 +62,8 @@ public:
     bool useCurrentView() const { return m_useCurrentView; }
     SVGViewSpec* currentView();
 
-    enum ConsiderCSSMode {
-        RespectCSSProperties,
-        IgnoreCSSProperties
-    };
-
-    // RenderSVGRoot wants to query the intrinsic size, by only examining the width/height attributes.
-    Length intrinsicWidth(ConsiderCSSMode = RespectCSSProperties) const;
-    Length intrinsicHeight(ConsiderCSSMode = RespectCSSProperties) const;
+    Length intrinsicWidth() const;
+    Length intrinsicHeight() const;
     FloatSize currentViewportSize() const;
     FloatRect currentViewBoxRect() const;
 
@@ -116,8 +110,8 @@ public:
 
     Element* getElementById(const AtomicString&) const;
 
-    bool widthAttributeEstablishesViewport() const;
-    bool heightAttributeEstablishesViewport() const;
+    bool hasIntrinsicWidth() const;
+    bool hasIntrinsicHeight() const;
 
     SVGAnimatedLength* x() const { return m_x.get(); }
     SVGAnimatedLength* y() const { return m_y.get(); }
@@ -129,6 +123,8 @@ private:
     virtual ~SVGSVGElement();
 
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
+    virtual bool isPresentationAttribute(const QualifiedName&) const OVERRIDE;
+    virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) OVERRIDE;
 
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE;
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;

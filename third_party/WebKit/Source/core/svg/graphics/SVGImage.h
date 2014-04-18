@@ -56,9 +56,6 @@ public:
 
     virtual bool currentFrameHasSingleSecurityOrigin() const OVERRIDE;
 
-    virtual bool hasRelativeWidth() const OVERRIDE;
-    virtual bool hasRelativeHeight() const OVERRIDE;
-
     virtual void startAnimation(CatchUpAnimation = CatchUp) OVERRIDE;
     virtual void stopAnimation() OVERRIDE;
     virtual void resetAnimation() OVERRIDE;
