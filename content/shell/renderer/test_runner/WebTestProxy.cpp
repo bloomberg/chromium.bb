@@ -767,6 +767,13 @@ void WebTestProxyBase::didAutoResize(const WebSize&)
 
 void WebTestProxyBase::postAccessibilityEvent(const blink::WebAXObject& obj, blink::WebAXEvent event)
 {
+    // Only hook the accessibility events occured during the test run.
+    // This check prevents false positives in WebLeakDetector.
+    // The pending tasks in browser/renderer message queue may trigger accessibility events,
+    // and AccessibilityController will hold on to their target nodes if we don't ignore them here.
+    if (!m_testInterfaces->testRunner()->TestIsRunning())
+        return;
+
     if (event == blink::WebAXEventFocus)
         m_testInterfaces->accessibilityController()->SetFocusedElement(obj);
 
