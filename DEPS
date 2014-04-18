@@ -25,7 +25,7 @@ deps = {
     ((Var("googlecode_url") % "google-breakpad") + "/trunk@" +
      Var('breakpad_rev')),
   "testing/gtest":
-    "http://googletest.googlecode.com/svn/trunk@" + Var("gtest_rev"),
+    (Var("googlecode_url") % "googletest") + "/trunk@" + Var("gtest_rev"),
   "third_party":
     Var("native_client_trunk") + "/src/third_party@" + Var("tools_rev"),
   "validator_snapshots":
@@ -40,7 +40,7 @@ deps = {
   "tools/clang":
     Var("chromium_trunk") + "/src/tools/clang@" + Var("chrome_rev"),
   "tools/gyp":
-    "http://gyp.googlecode.com/svn/trunk@" + Var("gyp_rev"),
+    ((Var("googlecode_url") % "gyp") + "/trunk@" + Var("gyp_rev"),
   "tools/valgrind":
     Var("chromium_trunk") + "/src/tools/valgrind@" + Var("chrome_rev"),
 }
