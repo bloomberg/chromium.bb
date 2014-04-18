@@ -288,7 +288,8 @@ bool NaClForkDelegate::CanHelp(const std::string& process_type,
 }
 
 pid_t NaClForkDelegate::Fork(const std::string& process_type,
-                             const std::vector<int>& fds) {
+                             const std::vector<int>& fds,
+                             const std::string& channel_id) {
   VLOG(1) << "NaClForkDelegate::Fork";
 
   DCHECK(fds.size() == kNumPassedFDs);
@@ -306,6 +307,7 @@ pid_t NaClForkDelegate::Fork(const std::string& process_type,
   const bool uses_nonsfi_mode =
     process_type == switches::kNaClLoaderNonSfiProcess;
   write_pickle.WriteBool(uses_nonsfi_mode);
+  write_pickle.WriteString(channel_id);
 
   char reply_buf[kNaClMaxIPCMessageLength];
   ssize_t reply_size = 0;
@@ -327,15 +329,6 @@ pid_t NaClForkDelegate::Fork(const std::string& process_type,
   }
   VLOG(1) << "nacl_child is " << nacl_child;
   return nacl_child;
-}
-
-bool NaClForkDelegate::AckChild(const int fd, const std::string& channel_id) {
-  ssize_t nwritten =
-      HANDLE_EINTR(write(fd, channel_id.c_str(), channel_id.length()));
-  if (static_cast<size_t>(nwritten) != channel_id.length()) {
-    return false;
-  }
-  return true;
 }
 
 bool NaClForkDelegate::GetTerminationStatus(pid_t pid, bool known_dead,

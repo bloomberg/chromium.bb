@@ -28,6 +28,7 @@
 #include "base/posix/global_descriptors.h"
 #include "base/posix/unix_domain_socket_linux.h"
 #include "base/process/kill.h"
+#include "base/process/process_handle.h"
 #include "base/rand_util.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "components/nacl/loader/nacl_listener.h"
@@ -139,27 +140,34 @@ void BecomeNaClLoader(const std::vector<int>& child_fds,
 // Start the NaCl loader in a child created by the NaCl loader Zygote.
 void ChildNaClLoaderInit(const std::vector<int>& child_fds,
                          const NaClLoaderSystemInfo& system_info,
-                         bool uses_nonsfi_mode) {
+                         bool uses_nonsfi_mode,
+                         const std::string& channel_id) {
   const int parent_fd = child_fds[content::ZygoteForkDelegate::kParentFDIndex];
   const int dummy_fd = child_fds[content::ZygoteForkDelegate::kDummyFDIndex];
+
   bool validack = false;
-  const size_t kMaxReadSize = 1024;
-  char buffer[kMaxReadSize];
+  base::ProcessId real_pid;
   // Wait until the parent process has discovered our PID.  We
   // should not fork any child processes (which the seccomp
   // sandbox does) until then, because that can interfere with the
   // parent's discovery of our PID.
-  const ssize_t nread = HANDLE_EINTR(read(parent_fd, buffer, kMaxReadSize));
+  const ssize_t nread =
+      HANDLE_EINTR(read(parent_fd, &real_pid, sizeof(real_pid)));
+  if (static_cast<size_t>(nread) == sizeof(real_pid)) {
+    // Make sure the parent didn't accidentally send us our real PID.
+    // We don't want it to be discoverable anywhere in our address space
+    // when we start running untrusted code.
+    CHECK(real_pid == 0);
 
-  if (nread < 0) {
-    perror("read");
-    LOG(ERROR) << "read returned " << nread;
-  } else if (nread > 0) {
-    VLOG(1) << "NaCl loader is synchronised with Chrome zygote";
     CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kProcessChannelID, std::string(buffer, nread));
+        switches::kProcessChannelID, channel_id);
     validack = true;
+  } else {
+    if (nread < 0)
+      perror("read");
+    LOG(ERROR) << "read returned " << nread;
   }
+
   if (IGNORE_EINTR(close(dummy_fd)) != 0)
     LOG(ERROR) << "close(dummy_fd) failed";
   if (IGNORE_EINTR(close(parent_fd)) != 0)
@@ -185,6 +193,12 @@ bool HandleForkRequest(const std::vector<int>& child_fds,
     return false;
   }
 
+  std::string channel_id;
+  if (!input_iter->ReadString(&channel_id)) {
+    LOG(ERROR) << "Could not read channel_id string";
+    return false;
+  }
+
   if (content::ZygoteForkDelegate::kNumPassedFDs != child_fds.size()) {
     LOG(ERROR) << "nacl_helper: unexpected number of fds, got "
         << child_fds.size();
@@ -198,7 +212,7 @@ bool HandleForkRequest(const std::vector<int>& child_fds,
   }
 
   if (child_pid == 0) {
-    ChildNaClLoaderInit(child_fds, system_info, uses_nonsfi_mode);
+    ChildNaClLoaderInit(child_fds, system_info, uses_nonsfi_mode, channel_id);
     NOTREACHED();
   }
 

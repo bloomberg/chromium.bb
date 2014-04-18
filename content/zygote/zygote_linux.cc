@@ -333,7 +333,7 @@ int Zygote::ForkWithRealPid(const std::string& process_type,
     fds.push_back(ipc_channel_fd);  // kBrowserFDIndex
     fds.push_back(dummy_fd);  // kDummyFDIndex
     fds.push_back(pipe_fds[0]);  // kParentFDIndex
-    pid = helper_->Fork(process_type, fds);
+    pid = helper_->Fork(process_type, fds, channel_id);
   } else {
     pid = fork();
   }
@@ -410,18 +410,14 @@ int Zygote::ForkWithRealPid(const std::string& process_type,
     process_info_map_[real_pid].internal_pid = pid;
     process_info_map_[real_pid].started_from_helper = use_helper;
 
-    if (use_helper) {
-      if (!helper_->AckChild(pipe_fds[1], channel_id)) {
-        LOG(ERROR) << "Failed to synchronise with zygote fork helper";
-        goto error;
-      }
-    } else {
-      int written =
-          HANDLE_EINTR(write(pipe_fds[1], &real_pid, sizeof(real_pid)));
-      if (written != sizeof(real_pid)) {
-        LOG(ERROR) << "Failed to synchronise with child process";
-        goto error;
-      }
+    // If we're using a helper, we still need to let the child process know
+    // we've discovered its real PID, but we don't actually reveal the PID.
+    const base::ProcessId pid_for_child = use_helper ? 0 : real_pid;
+    ssize_t written =
+        HANDLE_EINTR(write(pipe_fds[1], &pid_for_child, sizeof(pid_for_child)));
+    if (written != sizeof(pid_for_child)) {
+      LOG(ERROR) << "Failed to synchronise with child process";
+      goto error;
     }
     close(pipe_fds[1]);
     return real_pid;
