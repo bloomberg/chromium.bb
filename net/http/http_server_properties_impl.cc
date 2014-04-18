@@ -313,6 +313,16 @@ void HttpServerPropertiesImpl::SetBrokenAlternateProtocol(
   }
 }
 
+bool HttpServerPropertiesImpl::WasAlternateProtocolRecentlyBroken(
+    const HostPortPair& server) {
+  return ContainsKey(broken_alternate_protocol_map_, server);
+}
+
+void HttpServerPropertiesImpl::ConfirmAlternateProtocol(
+    const HostPortPair& server) {
+  broken_alternate_protocol_map_.erase(server);
+}
+
 void HttpServerPropertiesImpl::ClearAlternateProtocol(
     const HostPortPair& server) {
   AlternateProtocolMap::iterator it = alternate_protocol_map_.Peek(server);

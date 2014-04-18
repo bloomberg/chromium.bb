@@ -183,6 +183,20 @@ void HttpServerPropertiesManager::SetBrokenAlternateProtocol(
   ScheduleUpdatePrefsOnIO();
 }
 
+bool HttpServerPropertiesManager::WasAlternateProtocolRecentlyBroken(
+    const net::HostPortPair& server) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  return http_server_properties_impl_->WasAlternateProtocolRecentlyBroken(
+      server);
+}
+
+void HttpServerPropertiesManager::ConfirmAlternateProtocol(
+    const net::HostPortPair& server) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  http_server_properties_impl_->ConfirmAlternateProtocol(server);
+  ScheduleUpdatePrefsOnIO();
+}
+
 void HttpServerPropertiesManager::ClearAlternateProtocol(
     const net::HostPortPair& server) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));

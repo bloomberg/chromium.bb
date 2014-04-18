@@ -144,6 +144,13 @@ class NET_EXPORT HttpServerProperties {
   // Sets the Alternate-Protocol for |server| to be BROKEN.
   virtual void SetBrokenAlternateProtocol(const HostPortPair& server) = 0;
 
+  // Returns true if Alternate-Protocol for |server| was recently BROKEN.
+  virtual bool WasAlternateProtocolRecentlyBroken(
+      const HostPortPair& server) = 0;
+
+  // Confirms that Alternate-Protocol for |server| is working.
+  virtual void ConfirmAlternateProtocol(const HostPortPair& server) = 0;
+
   // Clears the Alternate-Protocol for |server|.
   virtual void ClearAlternateProtocol(const HostPortPair& server) = 0;
 

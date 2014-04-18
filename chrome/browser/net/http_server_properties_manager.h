@@ -114,6 +114,14 @@ class HttpServerPropertiesManager
   virtual void SetBrokenAlternateProtocol(
       const net::HostPortPair& server) OVERRIDE;
 
+  // Returns true if Alternate-Protocol for |server| was recently BROKEN.
+  virtual bool WasAlternateProtocolRecentlyBroken(
+      const net::HostPortPair& server) OVERRIDE;
+
+  // Confirms that Alternate-Protocol for |server| is working.
+  virtual void ConfirmAlternateProtocol(
+      const net::HostPortPair& server) OVERRIDE;
+
   // Clears the Alternate-Protocol for |server|.
   virtual void ClearAlternateProtocol(const net::HostPortPair& server) OVERRIDE;
 
