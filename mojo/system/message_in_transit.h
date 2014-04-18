@@ -54,9 +54,11 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   // Subtypes for type |kTypeMessagePipeEndpoint|:
   static const Subtype kSubtypeMessagePipeEndpointData = 0;
   // Subtypes for type |kTypeMessagePipe|:
-  static const Subtype kSubtypeMessagePipePeerClosed = 0;
+  // Nothing currently.
   // Subtypes for type |kTypeChannel|:
   static const Subtype kSubtypeChannelRunMessagePipeEndpoint = 0;
+  static const Subtype kSubtypeChannelRemoveMessagePipeEndpoint = 1;
+  static const Subtype kSubtypeChannelRemoveMessagePipeEndpointAck = 2;
 
   typedef uint32_t EndpointId;
   // Never a valid endpoint ID.

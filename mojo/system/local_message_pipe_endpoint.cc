@@ -27,13 +27,7 @@ MessagePipeEndpoint::Type LocalMessagePipeEndpoint::GetType() const {
   return kTypeLocal;
 }
 
-void LocalMessagePipeEndpoint::Close() {
-  DCHECK(is_open_);
-  is_open_ = false;
-  message_queue_.Clear();
-}
-
-void LocalMessagePipeEndpoint::OnPeerClose() {
+bool LocalMessagePipeEndpoint::OnPeerClose() {
   DCHECK(is_open_);
   DCHECK(is_peer_open_);
 
@@ -48,6 +42,8 @@ void LocalMessagePipeEndpoint::OnPeerClose() {
     waiter_list_.AwakeWaitersForStateChange(new_satisfied_flags,
                                             new_satisfiable_flags);
   }
+
+  return true;
 }
 
 void LocalMessagePipeEndpoint::EnqueueMessage(
@@ -61,6 +57,12 @@ void LocalMessagePipeEndpoint::EnqueueMessage(
     waiter_list_.AwakeWaitersForStateChange(SatisfiedFlags(),
                                             SatisfiableFlags());
   }
+}
+
+void LocalMessagePipeEndpoint::Close() {
+  DCHECK(is_open_);
+  is_open_ = false;
+  message_queue_.Clear();
 }
 
 void LocalMessagePipeEndpoint::CancelAllWaiters() {

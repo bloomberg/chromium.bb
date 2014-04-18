@@ -73,8 +73,21 @@ scoped_refptr<MessagePipeDispatcher> MessagePipeDispatcher::Deserialize(
 
   MessageInTransit::EndpointId remote_id =
       static_cast<const SerializedMessagePipeDispatcher*>(source)->endpoint_id;
+  if (remote_id == MessageInTransit::kInvalidEndpointId) {
+    // This means that the other end was closed, and there were no messages
+    // enqueued for us.
+    // TODO(vtl): This is wrong. We should produce a "dead" message pipe
+    // dispatcher.
+    NOTIMPLEMENTED();
+    return scoped_refptr<MessagePipeDispatcher>();
+  }
   MessageInTransit::EndpointId local_id =
       channel->AttachMessagePipeEndpoint(remote_message_pipe.second, 1);
+  if (local_id == MessageInTransit::kInvalidEndpointId) {
+    LOG(ERROR) << "Failed to deserialize message pipe dispatcher (failed to "
+                  "attach; remote ID = " << remote_id << ")";
+    return scoped_refptr<MessagePipeDispatcher>();
+  }
   DVLOG(2) << "Deserializing message pipe dispatcher (remote ID = "
            << remote_id << ", new local ID = " << local_id << ")";
 
@@ -199,8 +212,11 @@ bool MessagePipeDispatcher::EndSerializeAndCloseImplNoLock(
   // Attach the new proxy endpoint to the channel.
   MessageInTransit::EndpointId endpoint_id =
       channel->AttachMessagePipeEndpoint(message_pipe_, port_);
-  DCHECK_NE(endpoint_id, MessageInTransit::kInvalidEndpointId);
-
+  // Note: It's okay to get an endpoint ID of |kInvalidEndpointId|. (It's
+  // possible that the other endpoint -- the one that we're not sending -- was
+  // closed in the intervening time.) In that case, we need to deserialize a
+  // "dead" message pipe dispatcher on the other end. (Note that this is
+  // different from just producing |MOJO_HANDLE_INVALID|.)
   DVLOG(2) << "Serializing message pipe dispatcher (local ID = " << endpoint_id
            << ")";
 

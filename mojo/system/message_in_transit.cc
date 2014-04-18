@@ -49,7 +49,11 @@ STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Type
 STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
     MessageInTransit::kSubtypeMessagePipeEndpointData;
 STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
-    MessageInTransit::kSubtypeMessagePipePeerClosed;
+    MessageInTransit::kSubtypeChannelRunMessagePipeEndpoint;
+STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
+    MessageInTransit::kSubtypeChannelRemoveMessagePipeEndpoint;
+STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
+    MessageInTransit::kSubtypeChannelRemoveMessagePipeEndpointAck;
 STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::EndpointId
     MessageInTransit::kInvalidEndpointId;
 STATIC_CONST_MEMBER_DEFINITION const size_t MessageInTransit::kMessageAlignment;

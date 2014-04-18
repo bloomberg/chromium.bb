@@ -44,6 +44,8 @@ static void CreateChannelOnIOThread(
   // Attach the message pipe endpoint.
   system::MessageInTransit::EndpointId endpoint_id =
       channel_info->channel->AttachMessagePipeEndpoint(message_pipe, 1);
+  // We shouldn't get |kInvalidEndpointId| here -- since |CreateChannel()| is
+  // responsible for the local endpoint, and won't close it.
   DCHECK_EQ(endpoint_id, system::Channel::kBootstrapEndpointId);
   success = channel_info->channel->RunMessagePipeEndpoint(
       system::Channel::kBootstrapEndpointId,

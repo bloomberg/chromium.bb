@@ -72,11 +72,12 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   // which it returns. The first message pipe endpoint attached will always have
   // |kBootstrapEndpointId| as its local ID. (For bootstrapping, this occurs on
   // both sides, so one should use |kBootstrapEndpointId| for the remote ID for
-  // the first message pipe across a channel.)
-  // TODO(vtl): Maybe limit the number of attached message pipes and allow this
-  // to fail.
+  // the first message pipe across a channel.) Returns |kInvalidEndpointId| on
+  // failure.
+  // TODO(vtl): Maybe limit the number of attached message pipes.
   MessageInTransit::EndpointId AttachMessagePipeEndpoint(
-      scoped_refptr<MessagePipe> message_pipe, unsigned port);
+      scoped_refptr<MessagePipe> message_pipe,
+      unsigned port);
 
   // Runs the message pipe with the given |local_id| (previously attached), with
   // the given |remote_id| (negotiated using some other means, e.g., over an
@@ -103,10 +104,12 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   // |FlushWriteBufferAndShutdown()| or something like that.
   bool IsWriteBufferEmpty();
 
-  // This removes the message pipe/port's endpoint (with the given local ID,
+  // This removes the message pipe/port's endpoint (with the given local ID and
+  // given remote ID, which should be |kInvalidEndpointId| if not yet running),
   // returned by |AttachMessagePipeEndpoint()| from this channel. After this is
   // called, |local_id| may be reused for another message pipe.
-  void DetachMessagePipeEndpoint(MessageInTransit::EndpointId local_id);
+  void DetachMessagePipeEndpoint(MessageInTransit::EndpointId local_id,
+                                 MessageInTransit::EndpointId remote_id);
 
  private:
   friend class base::RefCountedThreadSafe<Channel>;
@@ -122,16 +125,42 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   void OnReadMessageForDownstream(const MessageInTransit::View& message_view);
   void OnReadMessageForChannel(const MessageInTransit::View& message_view);
 
+  // Removes the message pipe endpoint with the given local ID, which must exist
+  // and be a zombie, and given remote ID. Returns false on failure, in
+  // particular if no message pipe with |local_id| is attached.
+  bool RemoveMessagePipeEndpoint(MessageInTransit::EndpointId local_id,
+                                 MessageInTransit::EndpointId remote_id);
+
   // Handles errors (e.g., invalid messages) from the remote side.
   void HandleRemoteError(const base::StringPiece& error_message);
   // Handles internal errors/failures from the local side.
   void HandleLocalError(const base::StringPiece& error_message);
 
+  // Helper to send channel control messages. Returns true on success. Should be
+  // called *without* |lock_| held.
+  bool SendControlMessage(MessageInTransit::Subtype subtype,
+                          MessageInTransit::EndpointId source_id,
+                          MessageInTransit::EndpointId destination_id);
+
   struct EndpointInfo {
+    enum State {
+      // Attached, possibly running or not.
+      STATE_NORMAL,
+      // "Zombie" states:
+      // Waiting for |DetachMessagePipeEndpoint()| before removing.
+      STATE_WAIT_LOCAL_DETACH,
+      // Waiting for a |kSubtypeChannelRemoveMessagePipeEndpointAck| before
+      // removing.
+      STATE_WAIT_REMOTE_REMOVE_ACK,
+      // Waiting for both of the above conditions before removing.
+      STATE_WAIT_LOCAL_DETACH_AND_REMOTE_REMOVE_ACK,
+    };
+
     EndpointInfo();
     EndpointInfo(scoped_refptr<MessagePipe> message_pipe, unsigned port);
     ~EndpointInfo();
 
+    State state;
     scoped_refptr<MessagePipe> message_pipe;
     unsigned port;
   };

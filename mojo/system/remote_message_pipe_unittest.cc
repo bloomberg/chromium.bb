@@ -138,10 +138,13 @@ class RemoteMessagePipeTest : public testing::Test {
 
     unsigned port = channel_index ^ 1u;
 
-    // Important: If we don't boot
     CreateAndInitChannel(channel_index);
-    CHECK_EQ(channels_[channel_index]->AttachMessagePipeEndpoint(mp, port),
-             Channel::kBootstrapEndpointId);
+    MessageInTransit::EndpointId endpoint_id =
+        channels_[channel_index]->AttachMessagePipeEndpoint(mp, port);
+    if (endpoint_id == MessageInTransit::kInvalidEndpointId)
+      return;
+
+    CHECK_EQ(endpoint_id, Channel::kBootstrapEndpointId);
     CHECK(channels_[channel_index]->RunMessagePipeEndpoint(
         Channel::kBootstrapEndpointId, Channel::kBootstrapEndpointId));
   }
@@ -561,7 +564,8 @@ TEST_F(RemoteMessagePipeTest, HandlePassing) {
 TEST_F(RemoteMessagePipeTest, RacingClosesStress) {
   base::TimeDelta delay = base::TimeDelta::FromMilliseconds(5);
 
-  for (unsigned i = 0u; i < 256u; i++) {
+  for (unsigned i = 0; i < 256; i++) {
+    DVLOG(2) << "---------------------------------------- " << i;
     scoped_refptr<MessagePipe> mp0(new MessagePipe(
         scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint()),
         scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint())));

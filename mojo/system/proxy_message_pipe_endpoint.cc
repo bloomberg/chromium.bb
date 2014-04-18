@@ -17,7 +17,6 @@ namespace system {
 ProxyMessagePipeEndpoint::ProxyMessagePipeEndpoint()
     : local_id_(MessageInTransit::kInvalidEndpointId),
       remote_id_(MessageInTransit::kInvalidEndpointId),
-      is_open_(true),
       is_peer_open_(true) {
 }
 
@@ -26,7 +25,6 @@ ProxyMessagePipeEndpoint::ProxyMessagePipeEndpoint(
     bool is_peer_open)
     : local_id_(MessageInTransit::kInvalidEndpointId),
       remote_id_(MessageInTransit::kInvalidEndpointId),
-      is_open_(true),
       is_peer_open_(is_peer_open),
       paused_message_queue_(MessageInTransitQueue::PassContents(),
                             local_message_pipe_endpoint->message_queue()) {
@@ -44,27 +42,26 @@ MessagePipeEndpoint::Type ProxyMessagePipeEndpoint::GetType() const {
   return kTypeProxy;
 }
 
-void ProxyMessagePipeEndpoint::Close() {
-  DCHECK(is_open_);
-  is_open_ = false;
-
-  DCHECK(is_attached());
-  channel_->DetachMessagePipeEndpoint(local_id_);
-  channel_ = NULL;
-  local_id_ = MessageInTransit::kInvalidEndpointId;
-  remote_id_ = MessageInTransit::kInvalidEndpointId;
-  paused_message_queue_.Clear();
-}
-
-void ProxyMessagePipeEndpoint::OnPeerClose() {
-  DCHECK(is_open_);
+bool ProxyMessagePipeEndpoint::OnPeerClose() {
   DCHECK(is_peer_open_);
 
   is_peer_open_ = false;
-  EnqueueMessage(make_scoped_ptr(
-      new MessageInTransit(MessageInTransit::kTypeMessagePipe,
-                           MessageInTransit::kSubtypeMessagePipePeerClosed,
-                           0, 0, NULL)));
+
+  // If our outgoing message queue isn't empty, we shouldn't be destroyed yet.
+  if (!paused_message_queue_.IsEmpty())
+    return true;
+
+  if (is_attached()) {
+    if (!is_running()) {
+      // If we're not running yet, we can't be destroyed yet, because we're
+      // still waiting for the "run" message from the other side.
+      return true;
+    }
+
+    Detach();
+  }
+
+  return false;
 }
 
 // Note: We may have to enqueue messages even when our (local) peer isn't open
@@ -72,8 +69,6 @@ void ProxyMessagePipeEndpoint::OnPeerClose() {
 // This case is handled in |Run()| (which will call us).
 void ProxyMessagePipeEndpoint::EnqueueMessage(
     scoped_ptr<MessageInTransit> message) {
-  DCHECK(is_open_);
-
   if (is_running()) {
     message->SerializeAndCloseDispatchers(channel_.get());
 
@@ -99,7 +94,7 @@ void ProxyMessagePipeEndpoint::Attach(scoped_refptr<Channel> channel,
   AssertConsistentState();
 }
 
-void ProxyMessagePipeEndpoint::Run(MessageInTransit::EndpointId remote_id) {
+bool ProxyMessagePipeEndpoint::Run(MessageInTransit::EndpointId remote_id) {
   // Assertions about arguments:
   DCHECK_NE(remote_id, MessageInTransit::kInvalidEndpointId);
 
@@ -113,6 +108,29 @@ void ProxyMessagePipeEndpoint::Run(MessageInTransit::EndpointId remote_id) {
 
   while (!paused_message_queue_.IsEmpty())
     EnqueueMessage(paused_message_queue_.GetMessage());
+
+  if (is_peer_open_)
+    return true;  // Stay alive.
+
+  // We were just waiting to die.
+  Detach();
+  return false;
+}
+
+void ProxyMessagePipeEndpoint::OnRemove() {
+  Detach();
+}
+
+void ProxyMessagePipeEndpoint::Detach() {
+  DCHECK(is_attached());
+
+  AssertConsistentState();
+  channel_->DetachMessagePipeEndpoint(local_id_, remote_id_);
+  channel_ = NULL;
+  local_id_ = MessageInTransit::kInvalidEndpointId;
+  remote_id_ = MessageInTransit::kInvalidEndpointId;
+  paused_message_queue_.Clear();
+  AssertConsistentState();
 }
 
 #ifndef NDEBUG

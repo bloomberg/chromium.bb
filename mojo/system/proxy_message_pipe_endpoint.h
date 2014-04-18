@@ -53,14 +53,22 @@ class MOJO_SYSTEM_IMPL_EXPORT ProxyMessagePipeEndpoint
 
   // |MessagePipeEndpoint| implementation:
   virtual Type GetType() const OVERRIDE;
-  virtual void Close() OVERRIDE;
-  virtual void OnPeerClose() OVERRIDE;
+  virtual bool OnPeerClose() OVERRIDE;
   virtual void EnqueueMessage(scoped_ptr<MessageInTransit> message) OVERRIDE;
   virtual void Attach(scoped_refptr<Channel> channel,
                       MessageInTransit::EndpointId local_id) OVERRIDE;
-  virtual void Run(MessageInTransit::EndpointId remote_id) OVERRIDE;
+  virtual bool Run(MessageInTransit::EndpointId remote_id) OVERRIDE;
+  virtual void OnRemove() OVERRIDE;
 
  private:
+  void Detach();
+
+#ifdef NDEBUG
+  void AssertConsistentState() const {}
+#else
+  void AssertConsistentState() const;
+#endif
+
   bool is_attached() const {
     return !!channel_.get();
   }
@@ -68,12 +76,6 @@ class MOJO_SYSTEM_IMPL_EXPORT ProxyMessagePipeEndpoint
   bool is_running() const {
     return remote_id_ != MessageInTransit::kInvalidEndpointId;
   }
-
-#ifdef NDEBUG
-  void AssertConsistentState() const {}
-#else
-  void AssertConsistentState() const;
-#endif
 
   // This should only be set if we're attached.
   scoped_refptr<Channel> channel_;
@@ -88,7 +90,6 @@ class MOJO_SYSTEM_IMPL_EXPORT ProxyMessagePipeEndpoint
   // we're attached.
   MessageInTransit::EndpointId remote_id_;
 
-  bool is_open_;
   bool is_peer_open_;
 
   // This queue is only used while we're detached, to store messages while we're

@@ -42,8 +42,8 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeEndpoint {
   virtual Type GetType() const = 0;
 
   // All implementations must implement these.
-  virtual void Close() = 0;
-  virtual void OnPeerClose() = 0;
+  // Returns false if the endpoint should be closed and destroyed, else true.
+  virtual bool OnPeerClose() = 0;
   // Implements |MessagePipe::EnqueueMessage()|. The major differences are that:
   //  a) Dispatchers have been vetted and cloned/attached to the message.
   //  b) At this point, we cannot report failure (if, e.g., a channel is torn
@@ -58,6 +58,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeEndpoint {
   // These methods implement the methods of the same name in |MessagePipe|,
   // though |MessagePipe|'s implementation may have to do a little more if the
   // operation involves both endpoints.
+  virtual void Close();
   virtual void CancelAllWaiters();
   virtual MojoResult ReadMessage(
       void* bytes, uint32_t* num_bytes,
@@ -74,7 +75,9 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeEndpoint {
   // they should never be called.
   virtual void Attach(scoped_refptr<Channel> channel,
                       MessageInTransit::EndpointId local_id);
-  virtual void Run(MessageInTransit::EndpointId remote_id);
+  // Returns false if the endpoint should be closed and destroyed, else true.
+  virtual bool Run(MessageInTransit::EndpointId remote_id);
+  virtual void OnRemove();
 
  protected:
   MessagePipeEndpoint() {}

@@ -81,10 +81,11 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipe :
                             std::vector<DispatcherTransport>* transports);
 
   // These are used by |Channel|.
-  void Attach(unsigned port,
+  bool Attach(unsigned port,
               scoped_refptr<Channel> channel,
               MessageInTransit::EndpointId local_id);
   void Run(unsigned port, MessageInTransit::EndpointId remote_id);
+  void OnRemove(unsigned port);
 
  private:
   friend class base::RefCountedThreadSafe<MessagePipe>;

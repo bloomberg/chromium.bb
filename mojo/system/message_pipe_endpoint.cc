@@ -10,6 +10,10 @@
 namespace mojo {
 namespace system {
 
+void MessagePipeEndpoint::Close() {
+  NOTREACHED();
+}
+
 void MessagePipeEndpoint::CancelAllWaiters() {
   NOTREACHED();
 }
@@ -39,7 +43,12 @@ void MessagePipeEndpoint::Attach(scoped_refptr<Channel> /*channel*/,
   NOTREACHED();
 }
 
-void MessagePipeEndpoint::Run(MessageInTransit::EndpointId /*remote_id*/) {
+bool MessagePipeEndpoint::Run(MessageInTransit::EndpointId /*remote_id*/) {
+  NOTREACHED();
+  return true;
+}
+
+void MessagePipeEndpoint::OnRemove() {
   NOTREACHED();
 }
 

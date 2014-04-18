@@ -24,12 +24,12 @@ class MOJO_SYSTEM_IMPL_EXPORT LocalMessagePipeEndpoint
 
   // |MessagePipeEndpoint| implementation:
   virtual Type GetType() const OVERRIDE;
-  virtual void Close() OVERRIDE;
-  virtual void OnPeerClose() OVERRIDE;
+  virtual bool OnPeerClose() OVERRIDE;
   virtual void EnqueueMessage(scoped_ptr<MessageInTransit> message) OVERRIDE;
 
   // There's a dispatcher for |LocalMessagePipeEndpoint|s, so we have to
   // implement/override these:
+  virtual void Close() OVERRIDE;
   virtual void CancelAllWaiters() OVERRIDE;
   virtual MojoResult ReadMessage(
       void* bytes, uint32_t* num_bytes,
