@@ -9,7 +9,6 @@ function foo() {
     var frame = frames[0];
     var sel = frame.getSelection();
     var doc = frame.document;
-    sel.setPosition(doc.body, 0);
     doc.execCommand("SelectAll");
     doc.execCommand("Copy");
 
