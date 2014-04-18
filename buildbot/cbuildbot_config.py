@@ -1762,6 +1762,8 @@ internal_paladin.add_config('winky-paladin',
 internal_paladin.add_config('wolf-paladin',
   boards=['wolf'],
   paladin_builder_name='wolf paladin',
+  hw_tests=HWTestConfig.DefaultListCQ(),
+  upload_hw_test_artifacts=True,
 )
 
 internal_paladin.add_config('x86-zgb-paladin',
@@ -1800,6 +1802,8 @@ internal_arm_paladin.add_config('daisy_spring-paladin',
 internal_arm_paladin.add_config('peach_pit-paladin',
   boards=['peach_pit'],
   paladin_builder_name='peach_pit paladin',
+  hw_tests=HWTestConfig.DefaultListCQ(),
+  upload_hw_test_artifacts=True,
 )
 
 internal_arm_paladin.add_config('nyan-paladin',

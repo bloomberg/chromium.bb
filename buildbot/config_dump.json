@@ -24190,7 +24190,9 @@
         "gs_path": "default",
         "health_alert_recipients": [],
         "health_threshold": 0,
-        "hw_tests": [],
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"suite\": \"bvt\",\n    \"timeout\": 7200\n}"
+        ],
         "hwqual": false,
         "images": [
             "test"
@@ -24227,7 +24229,7 @@
         "trybot_list": true,
         "unittest_blacklist": [],
         "unittests": false,
-        "upload_hw_test_artifacts": false,
+        "upload_hw_test_artifacts": true,
         "upload_standalone_images": false,
         "upload_symbols": false,
         "uprev": true,
@@ -39749,7 +39751,9 @@
         "gs_path": "default",
         "health_alert_recipients": [],
         "health_threshold": 0,
-        "hw_tests": [],
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"suite\": \"bvt\",\n    \"timeout\": 7200\n}"
+        ],
         "hwqual": false,
         "images": [
             "test"
@@ -39786,7 +39790,7 @@
         "trybot_list": true,
         "unittest_blacklist": [],
         "unittests": true,
-        "upload_hw_test_artifacts": false,
+        "upload_hw_test_artifacts": true,
         "upload_standalone_images": false,
         "upload_symbols": false,
         "uprev": true,
