@@ -1181,3 +1181,4 @@ crbug.com/362503 http/tests/xmlhttprequest/xmlhttprequest-responseXML-exception.
 
 crbug.com/363025 virtual/serviceworker/http/tests/serviceworker/state.html [ Failure Pass ]
 crbug.com/364250 [ Debug ] virtual/threaded/animations/interpolation/webkit-transform-interpolation.html [ Pass Crash Timeout ]
+crbug.com/364013 [ Mac ] inspector-protocol/input/dispatchMouseEvent.html [ NeedsRebaseline ]

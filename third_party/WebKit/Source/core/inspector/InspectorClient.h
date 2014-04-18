@@ -35,7 +35,6 @@
 namespace WebCore {
 
 class IntPoint;
-class Page;
 class PlatformKeyboardEvent;
 class PlatformMouseEvent;
 
@@ -72,8 +71,6 @@ public:
 
     virtual void dispatchKeyEvent(const PlatformKeyboardEvent&) { }
     virtual void dispatchMouseEvent(const PlatformMouseEvent&) { }
-
-    static bool doDispatchMessageOnFrontendPage(Page* frontendPage, const String& message);
 
 protected:
     virtual ~InspectorClient() { }

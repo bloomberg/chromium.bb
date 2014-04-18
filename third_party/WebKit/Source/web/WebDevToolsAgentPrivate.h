@@ -33,6 +33,10 @@
 
 #include "WebDevToolsAgent.h"
 
+namespace WebCore {
+class Page;
+}
+
 namespace blink {
 class WebFrameImpl;
 class WebInputEvent;

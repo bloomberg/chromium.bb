@@ -28,7 +28,6 @@
 #include "Internals.h"
 
 #include <v8.h>
-#include "InspectorFrontendClientLocal.h"
 #include "InternalProfilers.h"
 #include "InternalRuntimeFlags.h"
 #include "InternalSettings.h"
@@ -143,27 +142,6 @@ namespace WebCore {
 static MockPagePopupDriver* s_pagePopupDriver = 0;
 
 using namespace HTMLNames;
-
-class InspectorFrontendChannelDummy : public InspectorFrontendChannel {
-public:
-    explicit InspectorFrontendChannelDummy(Page*);
-    virtual ~InspectorFrontendChannelDummy() { }
-    virtual void sendMessageToFrontend(PassRefPtr<JSONObject> message) OVERRIDE;
-    virtual void flush() OVERRIDE { }
-
-private:
-    Page* m_frontendPage;
-};
-
-InspectorFrontendChannelDummy::InspectorFrontendChannelDummy(Page* page)
-    : m_frontendPage(page)
-{
-}
-
-void InspectorFrontendChannelDummy::sendMessageToFrontend(PassRefPtr<JSONObject> message)
-{
-    InspectorClient::doDispatchMessageOnFrontendPage(m_frontendPage, message->toJSONString());
-}
 
 static bool markerTypesFrom(const String& markerType, DocumentMarker::MarkerTypes& result)
 {
@@ -1593,45 +1571,6 @@ Vector<String> Internals::consoleMessageArgumentCounts(Document* document) const
     return result;
 }
 
-PassRefPtrWillBeRawPtr<DOMWindow> Internals::openDummyInspectorFrontend(const String& url)
-{
-    Page* page = contextDocument()->frame()->page();
-    ASSERT(page);
-
-    DOMWindow* window = page->mainFrame()->domWindow();
-    ASSERT(window);
-
-    m_frontendWindow = window->open(url, "", "", window, window);
-    ASSERT(m_frontendWindow);
-
-    Page* frontendPage = m_frontendWindow->document()->page();
-    ASSERT(frontendPage);
-
-    OwnPtr<InspectorFrontendClientLocal> frontendClient = adoptPtr(new InspectorFrontendClientLocal(page->inspectorController(), frontendPage));
-
-    frontendPage->inspectorController().setInspectorFrontendClient(frontendClient.release());
-
-    m_frontendChannel = adoptPtr(new InspectorFrontendChannelDummy(frontendPage));
-
-    page->inspectorController().connectFrontend(m_frontendChannel.get());
-
-    return m_frontendWindow;
-}
-
-void Internals::closeDummyInspectorFrontend()
-{
-    Page* page = contextDocument()->frame()->page();
-    ASSERT(page);
-    ASSERT(m_frontendWindow);
-
-    page->inspectorController().disconnectFrontend();
-
-    m_frontendChannel.release();
-
-    m_frontendWindow->close(m_frontendWindow->executionContext());
-    m_frontendWindow.release();
-}
-
 Vector<unsigned long> Internals::setMemoryCacheCapacities(unsigned long minDeadBytes, unsigned long maxDeadBytes, unsigned long totalBytes)
 {
     Vector<unsigned long> result;
@@ -2467,7 +2406,6 @@ ScriptPromise Internals::addOneToPromise(ExecutionContext* context, ScriptPromis
 
 void Internals::trace(Visitor* visitor)
 {
-    visitor->trace(m_frontendWindow);
     visitor->trace(m_runtimeFlags);
     visitor->trace(m_profilers);
 }

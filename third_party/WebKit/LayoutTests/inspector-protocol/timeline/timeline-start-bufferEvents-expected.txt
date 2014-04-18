@@ -1,11 +1,6 @@
 Recording started
-    Event recorded: TimerFire
 Recording stopped
 Events:
-FunctionCall
-    TimeStamp
-    TimerInstall
-TimerFire
     FunctionCall
         TimeStamp
 

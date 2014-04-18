@@ -25,15 +25,272 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 <html>
 <head>
 <script>
-window.addEventListener("message", function(event) {
-    try {
-        eval(event.data);
-    } catch (e) {
-        alert(e.stack);
-        InspectorTest.completeTest();
-        throw e;
+
+InspectorFrontendAPI = {};
+
+InspectorTest = {};
+InspectorTest._dispatchTable = [];
+InspectorTest._requestId = -1;
+InspectorTest.eventHandler = {};
+
+/**
+ * @param {string} method
+ * @param {object} params
+ * @param {function({object} messageObject)=} handler
+ */
+InspectorTest.sendCommand = function(method, params, handler)
+{
+    this._dispatchTable[++this._requestId] = handler;
+
+    var messageObject = { "method": method,
+                          "params": params,
+                          "id": this._requestId };
+
+    InspectorFrontendHost.sendMessageToBackend(JSON.stringify(messageObject));
+
+    return this._requestId;
+}
+
+InspectorTest.sendCommandOrDie = function(command, properties, callback)
+{
+    InspectorTest.sendCommand(command, properties || {}, commandCallback);
+    function commandCallback(msg)
+    {
+        if (msg.error) {
+            InspectorTest.log("ERROR: " + msg.error.message);
+            InspectorTest.completeTest();
+            return;
+        }
+        if (callback)
+            callback(msg.result);
     }
-});
+}
+
+InspectorTest.domUndo = function(callback)
+{
+    InspectorTest.sendCommandOrDie("DOM.undo", {}, callback);
+}
+
+InspectorTest.undoAndNext = function(next)
+{
+    return InspectorTest.domUndo.bind(InspectorTest, next);
+}
+
+InspectorTest.runTestSuite = function(testSuite)
+{
+    function nextTest()
+    {
+        if (!testSuite.length) {
+            InspectorTest.completeTest();
+            return;
+        }
+        var fun = testSuite.shift();
+        InspectorTest.log("\nRunning test: " + fun.name);
+        fun(nextTest);
+    }
+
+    nextTest();
+}
+
+/**
+ * @param {function(object)=} callback
+ */
+InspectorTest.wrapCallback = function(callback)
+{
+    /**
+     * @param {object} message
+     */
+    function callbackWrapper(message)
+    {
+        if (InspectorTest.completeTestIfError(message))
+            return;
+        if (!callback)
+            return;
+        try {
+            callback(message["result"]);
+        } catch (e) {
+            InspectorTest.log("Exception " + e + " while invoking callback: " + callback);
+            InspectorTest.completeTest();
+        }
+    }
+    return callbackWrapper;
+}
+
+/**
+ * @param {string} command
+ * @param {function({object} messageObject)=} handler
+ */
+InspectorTest.sendRawCommand = function(command, handler)
+{
+    this._dispatchTable[++this._requestId] = handler;
+    InspectorFrontendHost.sendMessageToBackend(command);
+    return this._requestId;
+}
+
+/**
+ * @param {string} message
+ */
+InspectorFrontendAPI.dispatchMessage = function(message)
+{
+    var messageObject = JSON.parse(message);
+    var messageId = messageObject["id"];
+    if (typeof messageId === "number") {
+        var handler = InspectorTest._dispatchTable[messageId];
+        if (handler && typeof handler === "function")
+            handler(messageObject);
+    } else {
+        var eventName = messageObject["method"];
+        var eventHandler = InspectorTest.eventHandler[eventName];
+        if (eventHandler)
+            eventHandler(messageObject);
+    }
+}
+
+/**
+* Logs message to document.
+* @param {string} message
+*/
+InspectorTest.log = function(message)
+{
+    this.sendCommand("Runtime.evaluate", { "expression": "log(" + JSON.stringify(message) + ")" } );
+}
+
+/**
+* Formats and logs object to document.
+* @param {Object} object
+* @param {string=} title
+*/
+InspectorTest.logObject = function(object, title)
+{
+    var lines = [];
+
+    function dumpValue(value, prefix, prefixWithName)
+    {
+        if (typeof value === "object" && value !== null) {
+            if (value instanceof Array)
+                dumpItems(value, prefix, prefixWithName);
+            else
+                dumpProperties(value, prefix, prefixWithName);
+        } else {
+            lines.push(prefixWithName + String(value).replace(/\n/g, " "));
+        }
+    }
+
+    function dumpProperties(object, prefix, firstLinePrefix)
+    {
+        prefix = prefix || "";
+        firstLinePrefix = firstLinePrefix || prefix;
+        lines.push(firstLinePrefix + "{");
+
+        var propertyNames = Object.keys(object);
+        propertyNames.sort();
+        for (var i = 0; i < propertyNames.length; ++i) {
+            var name = propertyNames[i];
+            if (typeof object.hasOwnProperty === "function" && !object.hasOwnProperty(name))
+                continue;
+            var prefixWithName = "    " + prefix + name + " : ";
+            dumpValue(object[name], "    " + prefix, prefixWithName);
+        }
+        lines.push(prefix + "}");
+    }
+
+    function dumpItems(object, prefix, firstLinePrefix)
+    {
+        prefix = prefix || "";
+        firstLinePrefix = firstLinePrefix || prefix;
+        lines.push(firstLinePrefix + "[");
+        for (var i = 0; i < object.length; ++i)
+            dumpValue(object[i], "    " + prefix, "    " + prefix + "[" + i + "] : ");
+        lines.push(prefix + "]");
+    }
+
+    dumpValue(object, "", title);
+    InspectorTest.log(lines.join("\n"));
+}
+
+/**
+* Logs message directly to process stdout via alert function (hopefully followed by flush call).
+* This message should survive process crash or kill by timeout.
+* @param {string} message
+*/
+InspectorTest.debugLog = function(message)
+{
+    this.sendCommand("Runtime.evaluate", { "expression": "debugLog(" + JSON.stringify(message) + ")" } );
+}
+
+InspectorTest.completeTest = function()
+{
+    this.sendCommand("Runtime.evaluate", { "expression": "closeTest();"} );
+}
+
+InspectorTest.completeTestIfError = function(messageObject)
+{
+    if (messageObject.error) {
+        InspectorTest.log(messageObject.error.message);
+        InspectorTest.completeTest();
+        return true;
+    }
+    return false;
+}
+
+InspectorTest.checkExpectation = function(fail, name, messageObject)
+{
+    if (fail === !!messageObject.error) {
+        InspectorTest.log("PASS: " + name);
+        return true;
+    }
+
+    InspectorTest.log("FAIL: " + name + ": " + JSON.stringify(messageObject));
+    InspectorTest.completeTest();
+    return false;
+}
+InspectorTest.expectedSuccess = InspectorTest.checkExpectation.bind(null, false);
+InspectorTest.expectedError = InspectorTest.checkExpectation.bind(null, true);
+
+InspectorTest.assert = function(condition, message)
+{
+    if (condition)
+        return;
+    InspectorTest.log("FAIL: assertion failed: " + message);
+    InspectorTest.completeTest();
+}
+
+InspectorTest.assertEquals = function(expected, actual, message)
+{
+    if (expected === actual)
+        return;
+    InspectorTest.assert(false, "expected: `" + expected + "', actual: `" + actual + "'" + (message ? ", " + message : ""));
+}
+
+/**
+ * @param {string} scriptName
+ */
+InspectorTest.importScript = function(scriptName)
+{
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", scriptName, false);
+    xhr.send(null);
+    window.eval(xhr.responseText + "\n//@ sourceURL=" + scriptName);
+}
+
+
+InspectorTest.eventHandler["Inspector.evaluateForTestInFrontend"] = function(message)
+{
+    try {
+        eval(message.params.script);
+    } catch (e) {
+        InspectorTest.log("FAIL: exception in evaluateForTestInFrontend: " + e);
+        InspectorTest.completeTest();
+    }
+};
+
+function enableInspectorAgent()
+{
+    InspectorTest.sendCommand("Inspector.enable", { });
+}
+
+window.addEventListener("load", enableInspectorAgent, false);
+
 </script>
 </head>
 </html>

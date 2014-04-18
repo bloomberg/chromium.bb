@@ -54,7 +54,6 @@ class ExceptionState;
 class ExecutionContext;
 class GCObservation;
 class HTMLMediaElement;
-class InspectorFrontendChannelDummy;
 class InternalProfilers;
 class InternalRuntimeFlags;
 class InternalSettings;
@@ -334,8 +333,6 @@ private:
     PassRefPtrWillBeRawPtr<ClientRectList> annotatedRegions(Document*, bool draggable, ExceptionState&);
 
     DocumentMarker* markerAt(Node*, const String& markerType, unsigned index, ExceptionState&);
-    RefPtrWillBeMember<DOMWindow> m_frontendWindow;
-    OwnPtr<InspectorFrontendChannelDummy> m_frontendChannel;
     RefPtrWillBeMember<InternalRuntimeFlags> m_runtimeFlags;
     RefPtrWillBeMember<InternalProfilers> m_profilers;
 };

@@ -50,6 +50,7 @@ class GraphicsContext;
 class InspectorClient;
 class InspectorController;
 class Node;
+class Page;
 class PlatformKeyboardEvent;
 }
 
