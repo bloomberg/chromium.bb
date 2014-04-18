@@ -35,7 +35,7 @@ class BroadcastNotificationDelegate {
   virtual void BroadcastNotifications(int type,
                                       scoped_ptr<HistoryDetails> details) = 0;
 
-  // Trigger handling of deleted urls in typed url sync code
+  // Tells typed url sync code to handle URL deletions.
   virtual void NotifySyncURLsDeleted(bool all_history,
                                      bool archived,
                                      URLRows* rows) = 0;
@@ -121,13 +121,34 @@ class ExpireHistoryBackend {
   FRIEND_TEST_ALL_PREFIXES(ExpireHistoryTest, ArchiveSomeOldHistoryWithSource);
   friend class ::TestingProfile;
 
-  struct DeleteDependencies;
+  struct DeleteEffects {
+    DeleteEffects();
+    ~DeleteEffects();
+
+    // The time range affected. These can be is_null() to be unbounded in one
+    // or both directions.
+    base::Time begin_time, end_time;
+
+    // The unique URL rows affected by this delete.
+    std::map<URLID, URLRow> affected_urls;
+
+    // The URLs deleted during this operation.
+    URLRows deleted_urls;
+
+    // All favicon IDs that the deleted URLs had. Favicons will be shared
+    // between all URLs with the same favicon, so this is the set of IDs that we
+    // will need to check when the delete operations are complete.
+    std::set<favicon_base::FaviconID> affected_favicons;
+
+    // All favicon urls that were actually deleted from the thumbnail db.
+    std::set<GURL> deleted_favicons;
+  };
 
   // Deletes the visit-related stuff for all the visits in the given list, and
   // adds the rows for unique URLs affected to the affected_urls list in
   // the dependencies structure.
   void DeleteVisitRelatedInfo(const VisitVector& visits,
-                              DeleteDependencies* dependencies);
+                              DeleteEffects* effects);
 
   // Moves the given visits from the main database to the archived one.
   void ArchiveVisits(const VisitVector& visits);
@@ -151,7 +172,7 @@ class ExpireHistoryBackend {
   // favicons and thumbnails.
   void DeleteOneURL(const URLRow& url_row,
                     bool is_bookmarked,
-                    DeleteDependencies* dependencies);
+                    DeleteEffects* effects);
 
   // Adds or merges the given URL row with the archived database, returning the
   // ID of the URL in the archived database, or 0 on failure. The main (source)
@@ -162,8 +183,7 @@ class ExpireHistoryBackend {
 
   // Deletes all the URLs in the given vector and handles their dependencies.
   // This will delete starred URLs
-  void DeleteURLs(const URLRows& urls,
-                  DeleteDependencies* dependencies);
+  void DeleteURLs(const URLRows& urls, DeleteEffects* effects);
 
   // Expiration involves removing visits, then propagating the visits out from
   // there and delete any orphaned URLs. These will be added to the deleted URLs
@@ -182,25 +202,18 @@ class ExpireHistoryBackend {
   // Starred URLs will not be deleted. The information in the dependencies that
   // DeleteOneURL fills in will be updated, and this function will also delete
   // any now-unused favicons.
-  void ExpireURLsForVisits(const VisitVector& visits,
-                           DeleteDependencies* dependencies);
+  void ExpireURLsForVisits(const VisitVector& visits, DeleteEffects* effects);
 
   // Creates entries in the archived database for the unique URLs referenced
   // by the given visits. It will then add versions of the visits to that
   // database. The source database WILL NOT BE MODIFIED. The source URLs and
   // visits will have to be deleted in another pass.
-  //
-  // The affected URLs will be filled into the given dependencies structure.
-  void ArchiveURLsAndVisits(const VisitVector& visits,
-                            DeleteDependencies* dependencies);
+  void ArchiveURLsAndVisits(const VisitVector& visits);
 
-  // Deletes the favicons listed in the set if unused. Fails silently (we don't
-  // care about favicons so much, so don't want to stop everything if it fails).
-  // Fills |expired_favicons| with the set of favicon urls that no longer
-  // have associated visits and were therefore expired.
-  void DeleteFaviconsIfPossible(
-      const std::set<favicon_base::FaviconID>& favicon_id,
-      std::set<GURL>* expired_favicons);
+  // Deletes the favicons listed in effects->affected_favicons if unused.
+  // Fills effects->deleted_favicons with the set of favicon urls that were
+  // actually deleted.
+  void DeleteFaviconsIfPossible(DeleteEffects* effects);
 
   // Enum representing what type of action resulted in the history DB deletion.
   enum DeletionType {
@@ -211,9 +224,8 @@ class ExpireHistoryBackend {
     DELETION_ARCHIVED
   };
 
-  // Broadcast the URL deleted notification.
-  void BroadcastDeleteNotifications(DeleteDependencies* dependencies,
-                                    DeletionType type);
+  // Broadcasts URL deleted notifications.
+  void BroadcastDeleteNotifications(DeleteEffects* effects, DeletionType type);
 
   // Schedules a call to DoArchiveIteration.
   void ScheduleArchive();

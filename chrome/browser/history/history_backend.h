@@ -763,11 +763,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Release all tasks in history_db_tasks_ and clears it.
   void ReleaseDBTasks();
 
-  // Schedules a broadcast of the given notification on the main thread.
   virtual void BroadcastNotifications(
       int type,
       scoped_ptr<HistoryDetails> details) OVERRIDE;
-
   virtual void NotifySyncURLsDeleted(bool all_history,
                                      bool archived,
                                      URLRows* rows) OVERRIDE;

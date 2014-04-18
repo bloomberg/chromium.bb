@@ -160,7 +160,7 @@ class ExpireHistoryTest : public testing::Test,
     thumb_db_.reset();
   }
 
-  // BroadcastNotificationDelegate implementation.
+  // BroadcastNotificationDelegate:
   virtual void BroadcastNotifications(
       int type,
       scoped_ptr<HistoryDetails> details) OVERRIDE {
@@ -350,11 +350,15 @@ void ExpireHistoryTest::EnsureURLInfoGone(const URLRow& row, bool archived) {
         EXPECT_EQ(row.id(), it_row->id());
         found_delete_notification = true;
       }
-    } else {
-      EXPECT_NE(notifications_[i].first,
-                chrome::NOTIFICATION_HISTORY_URL_VISITED);
-      EXPECT_NE(notifications_[i].first,
-                chrome::NOTIFICATION_HISTORY_URLS_MODIFIED);
+    } else if (notifications_[i].first ==
+        chrome::NOTIFICATION_HISTORY_URLS_MODIFIED) {
+      const history::URLRows& rows =
+          static_cast<URLsModifiedDetails*>(notifications_[i].second)->
+              changed_urls;
+      EXPECT_TRUE(
+          std::find_if(rows.begin(), rows.end(),
+                        history::URLRow::URLRowHasURL(row.url())) ==
+              rows.end());
     }
   }
   EXPECT_TRUE(found_delete_notification);
@@ -369,13 +373,14 @@ TEST_F(ExpireHistoryTest, DeleteFaviconsIfPossible) {
   EXPECT_TRUE(HasFavicon(icon_id));
 
   // The favicon should be deletable with no users.
-  std::set<favicon_base::FaviconID> favicon_set;
-  std::set<GURL> expired_favicons;
-  favicon_set.insert(icon_id);
-  expirer_.DeleteFaviconsIfPossible(favicon_set, &expired_favicons);
-  EXPECT_FALSE(HasFavicon(icon_id));
-  EXPECT_EQ(1U, expired_favicons.size());
-  EXPECT_EQ(1U, expired_favicons.count(favicon_url));
+  {
+    ExpireHistoryBackend::DeleteEffects effects;
+    effects.affected_favicons.insert(icon_id);
+    expirer_.DeleteFaviconsIfPossible(&effects);
+    EXPECT_FALSE(HasFavicon(icon_id));
+    EXPECT_EQ(1U, effects.deleted_favicons.size());
+    EXPECT_EQ(1U, effects.deleted_favicons.count(favicon_url));
+  }
 
   // Add back the favicon.
   icon_id = thumb_db_->AddFavicon(favicon_url, favicon_base::TOUCH_ICON);
@@ -389,12 +394,13 @@ TEST_F(ExpireHistoryTest, DeleteFaviconsIfPossible) {
   thumb_db_->AddIconMapping(row.url(), icon_id);
 
   // Favicon should not be deletable.
-  favicon_set.clear();
-  favicon_set.insert(icon_id);
-  expired_favicons.clear();
-  expirer_.DeleteFaviconsIfPossible(favicon_set, &expired_favicons);
-  EXPECT_TRUE(HasFavicon(icon_id));
-  EXPECT_TRUE(expired_favicons.empty());
+  {
+    ExpireHistoryBackend::DeleteEffects effects;
+    effects.affected_favicons.insert(icon_id);
+    expirer_.DeleteFaviconsIfPossible(&effects);
+    EXPECT_TRUE(HasFavicon(icon_id));
+    EXPECT_TRUE(effects.deleted_favicons.empty());
+  }
 }
 
 // static
@@ -498,6 +504,7 @@ TEST_F(ExpireHistoryTest, DontDeleteStarredURL) {
 
   // Unstar the URL and delete again.
   bookmark_utils::RemoveAllBookmarks(&bookmark_model_, url);
+  ClearLastNotifications();
   expirer_.DeleteURL(url);
 
   // Now it should be completely deleted.
@@ -716,7 +723,7 @@ TEST_F(ExpireHistoryTest, FlushRecentURLsStarred) {
   EXPECT_TRUE(new_url_row1.last_visit() == visit_times[1]);
   EXPECT_TRUE(new_url_row2.last_visit().is_null());  // No last visit time.
 
-  // Visit/typed count should not be updated for bookmarks.
+  // Visit/typed count should be updated.
   EXPECT_EQ(0, new_url_row1.typed_count());
   EXPECT_EQ(1, new_url_row1.visit_count());
   EXPECT_EQ(0, new_url_row2.typed_count());
@@ -748,10 +755,10 @@ TEST_F(ExpireHistoryTest, ArchiveHistoryBeforeUnstarred) {
   ASSERT_TRUE(main_db_->GetURLRow(url_ids[2], &url_row2));
 
   // Archive the oldest two visits. This will actually result in deleting them
-  // since their transition types are empty (not important).
+  // since their transition types are empty.
   expirer_.ArchiveHistoryBefore(visit_times[1]);
 
-  // The first URL should be deleted, the second should not be affected.
+  // The first URL should be deleted, the second should not.
   URLRow temp_row;
   EnsureURLInfoGone(url_row0, true /* archived */);
   EXPECT_TRUE(main_db_->GetURLRow(url_ids[1], &temp_row));
@@ -792,7 +799,7 @@ TEST_F(ExpireHistoryTest, ArchiveHistoryBeforeStarred) {
   StarURL(url_row1.url());
 
   // Now archive the first three visits (first two URLs). The first two visits
-  // should be, the third deleted, but the URL records should not.
+  // should be, the third archived.
   expirer_.ArchiveHistoryBefore(visit_times[2]);
 
   // The first URL should have its visit deleted, but it should still be present
