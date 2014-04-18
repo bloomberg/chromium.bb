@@ -1413,7 +1413,7 @@ TEST_F(TraceEventTestFixture, DataCapturedManyThreads) {
   Thread* threads[num_threads];
   WaitableEvent* task_complete_events[num_threads];
   for (int i = 0; i < num_threads; i++) {
-    threads[i] = new Thread(StringPrintf("Thread %d", i).c_str());
+    threads[i] = new Thread(StringPrintf("Thread %d", i));
     task_complete_events[i] = new WaitableEvent(false, false);
     threads[i]->Start();
     threads[i]->message_loop()->PostTask(
@@ -1453,7 +1453,7 @@ TEST_F(TraceEventTestFixture, ThreadNames) {
   Thread* threads[num_threads];
   PlatformThreadId thread_ids[num_threads];
   for (int i = 0; i < num_threads; i++)
-    threads[i] = new Thread(StringPrintf("Thread %d", i).c_str());
+    threads[i] = new Thread(StringPrintf("Thread %d", i));
 
   // Enable tracing.
   BeginTrace();

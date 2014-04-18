@@ -63,7 +63,7 @@ Thread::Options::Options(MessageLoop::Type type,
 Thread::Options::~Options() {
 }
 
-Thread::Thread(const char* name)
+Thread::Thread(const std::string& name)
     :
 #if defined(OS_WIN)
       com_status_(NONE),

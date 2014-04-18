@@ -314,11 +314,8 @@ MultiThreadedProxyResolver::Executor::Executor(
   DCHECK(coordinator);
   DCHECK(resolver);
   // Start up the thread.
-  // Note that it is safe to pass a temporary C-String to Thread(), as it will
-  // make a copy.
-  std::string thread_name =
-      base::StringPrintf("PAC thread #%d", thread_number);
-  thread_.reset(new base::Thread(thread_name.c_str()));
+  thread_.reset(new base::Thread(base::StringPrintf("PAC thread #%d",
+                                                    thread_number)));
   CHECK(thread_->Start());
 }
 

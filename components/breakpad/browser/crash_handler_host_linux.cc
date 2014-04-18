@@ -114,7 +114,7 @@ CrashHandlerHostLinux::~CrashHandlerHostLinux() {
 
 void CrashHandlerHostLinux::StartUploaderThread() {
   uploader_thread_.reset(
-      new base::Thread(std::string(process_type_ + "_crash_uploader").c_str()));
+      new base::Thread(process_type_ + "_crash_uploader"));
   uploader_thread_->Start();
 }
 

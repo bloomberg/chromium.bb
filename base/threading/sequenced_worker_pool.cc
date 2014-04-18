@@ -480,8 +480,7 @@ SequencedWorkerPool::Worker::Worker(
     const scoped_refptr<SequencedWorkerPool>& worker_pool,
     int thread_number,
     const std::string& prefix)
-    : SimpleThread(
-          prefix + StringPrintf("Worker%d", thread_number).c_str()),
+    : SimpleThread(prefix + StringPrintf("Worker%d", thread_number)),
       worker_pool_(worker_pool),
       running_shutdown_behavior_(CONTINUE_ON_SHUTDOWN) {
   Start();

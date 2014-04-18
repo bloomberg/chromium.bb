@@ -56,7 +56,7 @@ void ExecuteCreateSession(
   if (new_id.empty())
     new_id = GenerateId();
   scoped_ptr<Session> session(new Session(new_id));
-  scoped_ptr<base::Thread> thread(new base::Thread(new_id.c_str()));
+  scoped_ptr<base::Thread> thread(new base::Thread(new_id));
   if (!thread->Start()) {
     callback.Run(
         Status(kUnknownError, "failed to start a thread for the new session"),

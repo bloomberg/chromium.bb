@@ -58,7 +58,7 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
 
   // Constructor.
   // name is a display string to identify the thread.
-  explicit Thread(const char* name);
+  explicit Thread(const std::string& name);
 
   // Destroys the thread, stopping it if necessary.
   //

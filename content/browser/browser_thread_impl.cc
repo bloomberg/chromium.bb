@@ -69,7 +69,7 @@ BrowserThreadImpl::BrowserThreadImpl(ID identifier)
 
 BrowserThreadImpl::BrowserThreadImpl(ID identifier,
                                      base::MessageLoop* message_loop)
-    : Thread(message_loop->thread_name().c_str()), identifier_(identifier) {
+    : Thread(message_loop->thread_name()), identifier_(identifier) {
   set_message_loop(message_loop);
   Initialize();
 }
