@@ -225,7 +225,7 @@ print_output_info(void *data)
 	       output->geometry.physical_height);
 	printf("\tmake: '%s', model: '%s',\n",
 	       output->geometry.make, output->geometry.model);
-	printf("\tsubpixel_orientation: %s, output_tranform: %s,\n",
+	printf("\tsubpixel_orientation: %s, output_transform: %s,\n",
 	       subpixel_orientation, transform);
 
 	wl_list_for_each(mode, &output->modes, link) {
