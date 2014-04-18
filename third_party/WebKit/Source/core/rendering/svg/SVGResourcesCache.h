@@ -20,7 +20,7 @@
 #ifndef SVGResourcesCache_h
 #define SVGResourcesCache_h
 
-#include "core/rendering/style/RenderStyleConstants.h"
+#include "core/rendering/style/StyleDifference.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"

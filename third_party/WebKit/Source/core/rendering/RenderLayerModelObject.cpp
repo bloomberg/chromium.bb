@@ -98,14 +98,14 @@ void RenderLayerModelObject::styleWillChange(StyleDifference diff, const RenderS
     if (oldStyle) {
         // Do a repaint with the old style first through RenderLayerRepainter.
         // RenderObject::styleWillChange takes care of repainting objects without RenderLayers.
-        if (parent() && diff == StyleDifferenceRepaintLayer) {
+        if (parent() && diff.needsRepaintLayer()) {
             layer()->repainter().repaintIncludingNonCompositingDescendants(containerForRepaint());
             if (oldStyle->hasClip() != newStyle.hasClip()
                 || oldStyle->clip() != newStyle.clip())
                 layer()->clipper().clearClipRectsIncludingDescendants();
         }
 
-        if (diff == StyleDifferenceLayout) {
+        if (diff.needsFullLayout()) {
             // When a layout hint happens, we go ahead and do a repaint of the layer, since the layer could
             // end up being destroyed.
             if (hasLayer()) {

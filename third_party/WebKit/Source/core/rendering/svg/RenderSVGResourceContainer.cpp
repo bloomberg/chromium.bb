@@ -227,7 +227,10 @@ void RenderSVGResourceContainer::registerResource()
         RenderObject* renderer = (*it)->renderer();
         if (!renderer)
             continue;
-        SVGResourcesCache::clientStyleChanged(renderer, StyleDifferenceLayout, renderer->style());
+
+        StyleDifference diff;
+        diff.setNeedsFullLayout();
+        SVGResourcesCache::clientStyleChanged(renderer, diff, renderer->style());
         renderer->setNeedsLayout();
     }
 }

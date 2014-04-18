@@ -151,7 +151,7 @@ void RenderScrollbarPart::styleDidChange(StyleDifference diff, const RenderStyle
     clearPositionedState();
     setFloating(false);
     setHasOverflowClip(false);
-    if (oldStyle && m_scrollbar && m_part != NoPart && diff >= StyleDifferenceRepaint)
+    if (oldStyle && m_scrollbar && m_part != NoPart && (diff.needsRepaint() || diff.needsLayout()))
         m_scrollbar->theme()->invalidatePart(m_scrollbar, m_part);
 }
 

@@ -1818,7 +1818,7 @@ void RenderBlockFlow::styleWillChange(StyleDifference diff, const RenderStyle& n
 {
     RenderStyle* oldStyle = style();
     s_canPropagateFloatIntoSibling = oldStyle ? !isFloatingOrOutOfFlowPositioned() && !avoidsFloats() : false;
-    if (oldStyle && parent() && diff == StyleDifferenceLayout && oldStyle->position() != newStyle.position()
+    if (oldStyle && parent() && diff.needsFullLayout() && oldStyle->position() != newStyle.position()
         && containsFloats() && !isFloating() && !isOutOfFlowPositioned() && newStyle.hasOutOfFlowPosition())
             markAllDescendantsWithFloatsForLayout();
 
@@ -1834,7 +1834,7 @@ void RenderBlockFlow::styleDidChange(StyleDifference diff, const RenderStyle* ol
     // then mark its descendants with floats for layout and clear all floats from its next
     // sibling blocks that exist in our floating objects list. See bug 56299 and 62875.
     bool canPropagateFloatIntoSibling = !isFloatingOrOutOfFlowPositioned() && !avoidsFloats();
-    if (diff == StyleDifferenceLayout && s_canPropagateFloatIntoSibling && !canPropagateFloatIntoSibling && hasOverhangingFloats()) {
+    if (diff.needsFullLayout() && s_canPropagateFloatIntoSibling && !canPropagateFloatIntoSibling && hasOverhangingFloats()) {
         RenderBlockFlow* parentBlockFlow = this;
         const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
         FloatingObjectSetIterator end = floatingObjectSet.end();
@@ -1859,7 +1859,7 @@ void RenderBlockFlow::styleDidChange(StyleDifference diff, const RenderStyle* ol
         parentBlockFlow->markSiblingsWithFloatsForLayout();
     }
 
-    if (diff == StyleDifferenceLayout || !oldStyle)
+    if (diff.needsFullLayout() || !oldStyle)
         createOrDestroyMultiColumnFlowThreadIfNeeded();
 }
 
