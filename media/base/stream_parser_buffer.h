@@ -54,8 +54,9 @@ class MEDIA_EXPORT StreamParserBuffer : public DecoderBuffer {
   // have any  EOS buffers and must not have any nested splice buffers.
   //
   // |pre_splice_buffers| will be deep copied and each copy's splice_timestamp()
-  // will be set to this buffer's splice_timestamp().  A copy of |this| will be
-  // added to the end of |splice_buffers_|.
+  // will be set to this buffer's splice_timestamp().  A copy of |this|, with a
+  // splice_timestamp() of kNoTimestamp(), will be added to the end of
+  // |splice_buffers_|.
   //
   // See the Audio Splice Frame Algorithm in the MSE specification for details.
   typedef StreamParser::BufferQueue BufferQueue;
