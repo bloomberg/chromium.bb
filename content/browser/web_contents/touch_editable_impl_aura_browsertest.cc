@@ -204,9 +204,6 @@ class TouchEditableImplAuraTest : public ContentBrowserTest {
     view_aura->SetTouchEditableForTest(touch_editable);
     RenderWidgetHostViewAura* rwhva = static_cast<RenderWidgetHostViewAura*>(
         web_contents->GetRenderWidgetHostView());
-    aura::Window* content = web_contents->GetView()->GetContentNativeView();
-    aura::test::EventGenerator generator(content->GetRootWindow(), content);
-    gfx::Rect bounds = content->GetBoundsInRootWindow();
     EXPECT_EQ(touch_editable->rwhva_, rwhva);
 
     // Long press to select word.
@@ -246,9 +243,6 @@ class TouchEditableImplAuraTest : public ContentBrowserTest {
     view_aura->SetTouchEditableForTest(touch_editable);
     RenderWidgetHostViewAura* rwhva = static_cast<RenderWidgetHostViewAura*>(
         web_contents->GetRenderWidgetHostView());
-    aura::Window* content = web_contents->GetView()->GetContentNativeView();
-    aura::test::EventGenerator generator(content->GetRootWindow(), content);
-    gfx::Rect bounds = content->GetBoundsInRootWindow();
     EXPECT_EQ(touch_editable->rwhva_, rwhva);
 
     // Long press to select word.
@@ -357,6 +351,17 @@ class TouchEditableImplAuraTest : public ContentBrowserTest {
     EXPECT_NE(new_cursor_pos, cursor_pos);
   }
 
+ protected:
+  RenderWidgetHostViewAura* GetRenderWidgetHostViewAura(
+      TouchEditableImplAura* touch_editable) {
+    return touch_editable->rwhva_;
+  }
+
+  ui::TouchSelectionController* GetTouchSelectionController(
+      TouchEditableImplAura* touch_editable) {
+    return touch_editable->touch_selection_controller_.get();
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(TouchEditableImplAuraTest);
 };
@@ -374,6 +379,42 @@ IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
 IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
                        TouchSelectionOnLongPressTest) {
   TestTouchSelectionOnLongPress();
+}
+
+IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
+                       TouchSelectionOnDoubleTapTest) {
+  ASSERT_NO_FATAL_FAILURE(StartTestWithPage("files/touch_selection.html"));
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHost* main_frame = web_contents->GetMainFrame();
+  WebContentsViewAura* view_aura =
+      static_cast<WebContentsViewAura*>(web_contents->GetView());
+  TestTouchEditableImplAura* touch_editable = new TestTouchEditableImplAura;
+  view_aura->SetTouchEditableForTest(touch_editable);
+  RenderWidgetHostViewAura* rwhva = static_cast<RenderWidgetHostViewAura*>(
+      web_contents->GetRenderWidgetHostView());
+  EXPECT_EQ(GetRenderWidgetHostViewAura(touch_editable), rwhva);
+
+  // Double-tap to select word.
+  ui::GestureEvent double_tap(ui::ET_GESTURE_TAP,
+                              10,
+                              10,
+                              0,
+                              ui::EventTimeForNow(),
+                              ui::GestureEventDetails(ui::ET_GESTURE_TAP, 2, 0),
+                              1);
+  touch_editable->Reset();
+  rwhva->OnGestureEvent(&double_tap);
+  touch_editable->WaitForSelectionChangeCallback();
+
+  // Check if selection handles are showing.
+  EXPECT_TRUE(GetTouchSelectionController(touch_editable));
+
+  scoped_ptr<base::Value> value =
+      content::ExecuteScriptAndGetValue(main_frame, "get_selection()");
+  std::string selection;
+  value->GetAsString(&selection);
+  EXPECT_STREQ("Some", selection.c_str());
 }
 
 IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,

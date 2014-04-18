@@ -101,14 +101,9 @@ class CONTENT_EXPORT TouchEditableImplAura
   // Set to true when the page starts an overscroll.
   bool overscroll_in_progress_;
 
-  // Used to track if the current tap gesture is on a focused textfield.
-  bool is_tap_on_focused_textfield_;
-
-  // When we receive ack for a ET_GESTURE_TAP, we do not know if the ack is for
-  // a tap or a double tap (we only get the event type in the ack). So we have
-  // this queue to keep track of the the tap count so that we can distinguish
-  // between double and single tap when we get the ack.
-  std::queue<int> tap_gesture_tap_count_queue_;
+  // Used to track if a textfield was focused when the current tap gesture
+  // happened.
+  bool textfield_was_focused_on_tap_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchEditableImplAura);
 };

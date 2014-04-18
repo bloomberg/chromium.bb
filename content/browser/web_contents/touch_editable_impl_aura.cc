@@ -51,14 +51,6 @@ void TouchEditableImplAura::UpdateEditingController() {
   if (!rwhva_ || !rwhva_->HasFocus())
     return;
 
-  // If touch editing handles were not visible, we bring them up only if
-  // there is non-zero selection on the page. And the current event is a
-  // gesture event (we dont want to show handles if the user is selecting
-  // using mouse or keyboard).
-  if (selection_gesture_in_process_ && !scroll_in_progress_ &&
-      selection_anchor_rect_ != selection_focus_rect_)
-    StartTouchEditing();
-
   if (text_input_type_ != ui::TEXT_INPUT_TYPE_NONE ||
       selection_anchor_rect_ != selection_focus_rect_) {
     if (touch_selection_controller_)
@@ -122,6 +114,18 @@ void TouchEditableImplAura::OnSelectionOrCursorChanged(const gfx::Rect& anchor,
                                                        const gfx::Rect& focus) {
   selection_anchor_rect_ = anchor;
   selection_focus_rect_ = focus;
+
+  // If touch editing handles were not visible, we bring them up only if
+  // there is non-zero selection on the page. And the current event is a
+  // gesture event (we dont want to show handles if the user is selecting
+  // using mouse or keyboard).
+  if (selection_gesture_in_process_ && !scroll_in_progress_ &&
+      !overscroll_in_progress_ &&
+      selection_anchor_rect_ != selection_focus_rect_) {
+    StartTouchEditing();
+    selection_gesture_in_process_ = false;
+  }
+
   UpdateEditingController();
 }
 
@@ -135,6 +139,7 @@ bool TouchEditableImplAura::HandleInputEvent(const ui::Event* event) {
     return false;
 
   if (!event->IsGestureEvent()) {
+    selection_gesture_in_process_ = false;
     EndTouchEditing(false);
     return false;
   }
@@ -143,7 +148,6 @@ bool TouchEditableImplAura::HandleInputEvent(const ui::Event* event) {
       static_cast<const ui::GestureEvent*>(event);
   switch (event->type()) {
     case ui::ET_GESTURE_TAP:
-      tap_gesture_tap_count_queue_.push(gesture_event->details().tap_count());
       if (gesture_event->details().tap_count() > 1)
         selection_gesture_in_process_ = true;
       // When the user taps, we want to show touch editing handles if user
@@ -162,10 +166,10 @@ bool TouchEditableImplAura::HandleInputEvent(const ui::Event* event) {
       }
       // For single taps, not inside selected region, we want to show handles
       // only when the tap is on an already focused textfield.
-      is_tap_on_focused_textfield_ = false;
+      textfield_was_focused_on_tap_ = false;
       if (gesture_event->details().tap_count() == 1 &&
           text_input_type_ != ui::TEXT_INPUT_TYPE_NONE)
-        is_tap_on_focused_textfield_ = true;
+        textfield_was_focused_on_tap_ = true;
       break;
     case ui::ET_GESTURE_LONG_PRESS:
       selection_gesture_in_process_ = true;
@@ -173,8 +177,7 @@ bool TouchEditableImplAura::HandleInputEvent(const ui::Event* event) {
     case ui::ET_GESTURE_SCROLL_BEGIN:
       // If selection handles are currently visible, we want to get them back up
       // when scrolling ends. So we set |handles_hidden_due_to_scroll_| so that
-      // we can re-start touch editing when we call |UpdateEditingController()|
-      // on scroll end gesture.
+      // we can re-start touch editing on scroll end gesture.
       scroll_in_progress_ = true;
       handles_hidden_due_to_scroll_ = false;
       if (touch_selection_controller_)
@@ -204,18 +207,9 @@ void TouchEditableImplAura::GestureEventAck(int gesture_event_type) {
   DCHECK(rwhva_);
   if (gesture_event_type == blink::WebInputEvent::GestureTap &&
       text_input_type_ != ui::TEXT_INPUT_TYPE_NONE &&
-      is_tap_on_focused_textfield_) {
+      textfield_was_focused_on_tap_) {
     StartTouchEditing();
-    if (touch_selection_controller_)
-      touch_selection_controller_->SelectionChanged();
-  }
-
-  if (gesture_event_type == blink::WebInputEvent::GestureLongPress)
-    selection_gesture_in_process_ = false;
-  if (gesture_event_type == blink::WebInputEvent::GestureTap) {
-    if (tap_gesture_tap_count_queue_.front() > 1)
-      selection_gesture_in_process_ = false;
-    tap_gesture_tap_count_queue_.pop();
+    UpdateEditingController();
   }
 }
 
@@ -369,7 +363,7 @@ TouchEditableImplAura::TouchEditableImplAura()
       handles_hidden_due_to_scroll_(false),
       scroll_in_progress_(false),
       overscroll_in_progress_(false),
-      is_tap_on_focused_textfield_(false) {
+      textfield_was_focused_on_tap_(false) {
 }
 
 void TouchEditableImplAura::Cleanup() {
@@ -379,6 +373,7 @@ void TouchEditableImplAura::Cleanup() {
   }
   text_input_type_ = ui::TEXT_INPUT_TYPE_NONE;
   EndTouchEditing(true);
+  selection_gesture_in_process_ = false;
   handles_hidden_due_to_scroll_ = false;
   scroll_in_progress_ = false;
   overscroll_in_progress_ = false;
