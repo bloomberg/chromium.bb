@@ -425,11 +425,13 @@ int QuicHttpStream::DoSendHeaders() {
   // Log the actual request with the URL Request's net log.
   stream_net_log_.AddEvent(
       NetLog::TYPE_HTTP_TRANSACTION_QUIC_SEND_REQUEST_HEADERS,
-      base::Bind(&QuicRequestNetLogCallback, &request_headers_, priority_));
+      base::Bind(&QuicRequestNetLogCallback, stream_->id(), &request_headers_,
+                 priority_));
   // Also log to the QuicSession's net log.
   stream_->net_log().AddEvent(
       NetLog::TYPE_QUIC_HTTP_STREAM_SEND_REQUEST_HEADERS,
-      base::Bind(&QuicRequestNetLogCallback, &request_headers_, priority_));
+      base::Bind(&QuicRequestNetLogCallback, stream_->id(), &request_headers_,
+                 priority_));
 
   bool has_upload_data = request_body_stream_ != NULL;
 

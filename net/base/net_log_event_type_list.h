@@ -1000,6 +1000,7 @@ EVENT_TYPE(HTTP_TRANSACTION_SPDY_SEND_REQUEST_HEADERS)
 //   {
 //     "headers": <The list of header:value pairs>,
 //     "quic_priority": <Integer representing the priority of this request>,
+//     "quic_stream_id": <Id of the QUIC stream sending this request>,
 //   }
 EVENT_TYPE(HTTP_TRANSACTION_QUIC_SEND_REQUEST_HEADERS)
 

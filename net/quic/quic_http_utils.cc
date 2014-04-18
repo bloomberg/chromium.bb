@@ -21,12 +21,14 @@ NET_EXPORT_PRIVATE RequestPriority ConvertQuicPriorityToRequestPriority(
 }
 
 base::Value* QuicRequestNetLogCallback(
+    QuicStreamId stream_id,
     const SpdyHeaderBlock* headers,
     QuicPriority priority,
     NetLog::LogLevel log_level) {
   base::DictionaryValue* dict = static_cast<base::DictionaryValue*>(
       SpdyHeaderBlockNetLogCallback(headers, log_level));
   dict->SetInteger("quic_priority", static_cast<int>(priority));
+  dict->SetInteger("quic_stream_id", static_cast<int>(stream_id));
   return dict;
 }
 
