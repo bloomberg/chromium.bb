@@ -481,14 +481,14 @@ class OAuthRpcServer(object):
                     "OAuth2 support requires it.")
       logging.error("Installing pyopenssl will probably solve this issue.")
       raise RuntimeError('No OpenSSL support')
-    creds = oa2client.SignedJwtAssertionCredentials(
+    self.creds = oa2client.SignedJwtAssertionCredentials(
       client_email,
       client_private_key,
       'https://www.googleapis.com/auth/userinfo.email',
       private_key_password=private_key_password,
       user_agent=user_agent)
 
-    self._http = creds.authorize(httplib2.Http(timeout=timeout))
+    self._http = self.creds.authorize(httplib2.Http(timeout=timeout))
 
   def Send(self,
            request_path,
@@ -525,17 +525,30 @@ class OAuthRpcServer(object):
       if kwargs:
         url += "?" + urllib.urlencode(kwargs)
 
-      ret = self._http.request(url,
-                               method=method,
-                               body=payload,
-                               headers=headers)
+      # This weird loop is there to detect when the OAuth2 token has expired.
+      # This is specific to appengine *and* rietveld. It relies on the
+      # assumption that a 302 is triggered only by an expired OAuth2 token. This
+      # prevents any usage of redirections in pages accessed this way.
 
-      if (method == 'GET'
-          and not ret[0]['content-location'].startswith(self.host)):
-        upload.logging.warning('Redirection to host %s detected: '
-                               'login may have failed/expired.'
-                               % urlparse.urlparse(
-                                     ret[0]['content-location']).netloc)
+      # This variable is used to make sure the following loop runs only twice.
+      redirect_caught = False
+      while True:
+        try:
+          ret = self._http.request(url,
+                                   method=method,
+                                   body=payload,
+                                   headers=headers,
+                                   redirections=0)
+        except httplib2.RedirectLimit:
+          if redirect_caught or method != 'GET':
+            logging.error('Redirection detected after logging in. Giving up.')
+            raise
+          redirect_caught = True
+          logging.debug('Redirection detected. Trying to log in again...')
+          self.creds.access_token = None
+          continue
+        break
+
       return ret[1]
 
     finally:
