@@ -2274,6 +2274,10 @@ WebGLGetInfo WebGLRenderingContextBase::getParameter(GLenum pname)
         return getUnsignedIntParameter(pname);
     case GL_GREEN_BITS:
         return getIntParameter(pname);
+    case GL_IMPLEMENTATION_COLOR_READ_FORMAT:
+        return getIntParameter(pname);
+    case GL_IMPLEMENTATION_COLOR_READ_TYPE:
+        return getIntParameter(pname);
     case GL_LINE_WIDTH:
         return getFloatParameter(pname);
     case GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS:
@@ -3026,23 +3030,41 @@ void WebGLRenderingContextBase::readPixels(GLint x, GLint y, GLsizei width, GLsi
         synthesizeGLError(GL_INVALID_ENUM, "readPixels", "invalid format");
         return;
     }
+
+    ArrayBufferView::ViewType expectedViewType;
+
     switch (type) {
     case GL_UNSIGNED_BYTE:
+        expectedViewType = ArrayBufferView::TypeUint8;
+        break;
     case GL_UNSIGNED_SHORT_5_6_5:
     case GL_UNSIGNED_SHORT_4_4_4_4:
     case GL_UNSIGNED_SHORT_5_5_5_1:
+        expectedViewType = ArrayBufferView::TypeUint16;
+        break;
+    case GL_FLOAT:
+        expectedViewType = ArrayBufferView::TypeFloat32;
+        break;
+    case GL_HALF_FLOAT_OES:
+        expectedViewType = ArrayBufferView::TypeUint16;
         break;
     default:
         synthesizeGLError(GL_INVALID_ENUM, "readPixels", "invalid type");
         return;
     }
     if (format != GL_RGBA || type != GL_UNSIGNED_BYTE) {
-        synthesizeGLError(GL_INVALID_OPERATION, "readPixels", "format not RGBA or type not UNSIGNED_BYTE");
-        return;
+        // Check against the implementation color read format and type.
+        blink::WGC3Dint implFormat = 0, implType = 0;
+        webContext()->getIntegerv(GL_IMPLEMENTATION_COLOR_READ_FORMAT, &implFormat);
+        webContext()->getIntegerv(GL_IMPLEMENTATION_COLOR_READ_TYPE, &implType);
+        if (!implFormat || !implType || format != static_cast<GLenum>(implFormat) || type != static_cast<GLenum>(implType)) {
+            synthesizeGLError(GL_INVALID_OPERATION, "readPixels", "format/type not RGBA/UNSIGNED_BYTE or implementation-defined values");
+            return;
+        }
     }
     // Validate array type against pixel type.
-    if (pixels->type() != ArrayBufferView::TypeUint8) {
-        synthesizeGLError(GL_INVALID_OPERATION, "readPixels", "ArrayBufferView not Uint8Array");
+    if (pixels->type() != expectedViewType) {
+        synthesizeGLError(GL_INVALID_OPERATION, "readPixels", "ArrayBufferView was the wrong type for the pixel format");
         return;
     }
     const char* reason = "framebuffer incomplete";
