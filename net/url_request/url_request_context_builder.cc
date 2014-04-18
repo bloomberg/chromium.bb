@@ -124,45 +124,36 @@ class BasicNetworkDelegate : public NetworkDelegate {
 class BasicURLRequestContext : public URLRequestContext {
  public:
   BasicURLRequestContext()
-      : cache_thread_("Cache Thread"),
-        file_thread_("File Thread"),
-        storage_(this) {}
+      : storage_(this) {}
 
   URLRequestContextStorage* storage() {
     return &storage_;
   }
 
-  void StartCacheThread() {
-    cache_thread_.StartWithOptions(
-        base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
+  base::Thread* GetCacheThread() {
+    if (!cache_thread_) {
+      cache_thread_.reset(new base::Thread("Cache Thread"));
+      cache_thread_->StartWithOptions(
+          base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
+    }
+    return cache_thread_.get();
   }
 
-  scoped_refptr<base::MessageLoopProxy> cache_message_loop_proxy() {
-    DCHECK(cache_thread_.IsRunning());
-    return cache_thread_.message_loop_proxy();
-  }
-
-  void StartFileThread() {
-    file_thread_.StartWithOptions(
-        base::Thread::Options(base::MessageLoop::TYPE_DEFAULT, 0));
-  }
-
-  base::MessageLoop* file_message_loop() {
-    DCHECK(file_thread_.IsRunning());
-    return file_thread_.message_loop();
-  }
-
-  scoped_refptr<base::MessageLoopProxy> file_message_loop_proxy() {
-    DCHECK(file_thread_.IsRunning());
-    return file_thread_.message_loop_proxy();
+  base::Thread* GetFileThread() {
+    if (!file_thread_) {
+      file_thread_.reset(new base::Thread("File Thread"));
+      file_thread_->StartWithOptions(
+          base::Thread::Options(base::MessageLoop::TYPE_DEFAULT, 0));
+    }
+    return file_thread_.get();
   }
 
  protected:
   virtual ~BasicURLRequestContext() {}
 
  private:
-  base::Thread cache_thread_;
-  base::Thread file_thread_;
+  scoped_ptr<base::Thread> cache_thread_;
+  scoped_ptr<base::Thread> file_thread_;
   URLRequestContextStorage storage_;
   DISALLOW_COPY_AND_ASSIGN(BasicURLRequestContext);
 };
@@ -217,7 +208,7 @@ URLRequestContext* URLRequestContextBuilder::Build() {
     host_resolver_ = net::HostResolver::CreateDefaultResolver(NULL);
   storage->set_host_resolver(host_resolver_.Pass());
 
-  context->StartFileThread();
+  storage->set_net_log(new net::NetLog);
 
   // TODO(willchan): Switch to using this code when
   // ProxyService::CreateSystemProxyConfigService()'s signature doesn't suck.
@@ -231,7 +222,7 @@ URLRequestContext* URLRequestContextBuilder::Build() {
     proxy_config_service =
         ProxyService::CreateSystemProxyConfigService(
             base::ThreadTaskRunnerHandle::Get().get(),
-            context->file_message_loop());
+            context->GetFileThread()->message_loop());
   }
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
   storage->set_proxy_service(
@@ -283,13 +274,12 @@ URLRequestContext* URLRequestContextBuilder::Build() {
         context->server_bound_cert_service();
     HttpCache::BackendFactory* http_cache_backend = NULL;
     if (http_cache_params_.type == HttpCacheParams::DISK) {
-      context->StartCacheThread();
       http_cache_backend = new HttpCache::DefaultBackend(
           DISK_CACHE,
           net::CACHE_BACKEND_DEFAULT,
           http_cache_params_.path,
           http_cache_params_.max_size,
-          context->cache_message_loop_proxy().get());
+          context->GetCacheThread()->message_loop_proxy().get());
     } else {
       http_cache_backend =
           HttpCache::DefaultBackend::InMemory(http_cache_params_.max_size);
@@ -308,9 +298,11 @@ URLRequestContext* URLRequestContextBuilder::Build() {
   URLRequestJobFactoryImpl* job_factory = new URLRequestJobFactoryImpl;
   if (data_enabled_)
     job_factory->SetProtocolHandler("data", new DataProtocolHandler);
-  if (file_enabled_)
+  if (file_enabled_) {
     job_factory->SetProtocolHandler(
-        "file", new FileProtocolHandler(context->file_message_loop_proxy()));
+    "file",
+    new FileProtocolHandler(context->GetFileThread()->message_loop_proxy()));
+  }
 #if !defined(DISABLE_FTP_SUPPORT)
   if (ftp_enabled_) {
     ftp_transaction_factory_.reset(

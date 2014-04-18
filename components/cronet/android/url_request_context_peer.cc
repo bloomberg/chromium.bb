@@ -15,6 +15,7 @@
 #include "net/proxy/proxy_service.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/url_request/static_http_user_agent_settings.h"
+#include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_context_storage.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 
@@ -104,21 +105,6 @@ class BasicNetworkDelegate : public net::NetworkDelegate {
   DISALLOW_COPY_AND_ASSIGN(BasicNetworkDelegate);
 };
 
-class BasicURLRequestContext : public net::URLRequestContext {
- public:
-  BasicURLRequestContext() : storage_(this) {}
-
-  net::URLRequestContextStorage* storage() { return &storage_; }
-
- protected:
-  virtual ~BasicURLRequestContext() {}
-
- private:
-  net::URLRequestContextStorage storage_;
-
-  DISALLOW_COPY_AND_ASSIGN(BasicURLRequestContext);
-};
-
 }  // namespace
 
 URLRequestContextPeer::URLRequestContextPeer(
@@ -144,62 +130,19 @@ void URLRequestContextPeer::Initialize() {
 }
 
 void URLRequestContextPeer::InitializeURLRequestContext() {
-  BasicURLRequestContext* context = new BasicURLRequestContext;
-  net::URLRequestContextStorage* storage = context->storage();
+  net::URLRequestContextBuilder context_builder;
+  context_builder.set_network_delegate(new BasicNetworkDelegate());
+  context_builder.set_proxy_config_service(
+      new net::ProxyConfigServiceFixed(net::ProxyConfig()));
+  context_builder.DisableHttpCache();
 
-  net::NetworkDelegate* network_delegate = new BasicNetworkDelegate;
-  storage->set_network_delegate(network_delegate);
-
-  storage->set_host_resolver(net::HostResolver::CreateDefaultResolver(NULL));
-  storage->set_net_log(new net::NetLog);
-
-  net::ProxyConfigService* proxy_config_service =
-      new net::ProxyConfigServiceFixed(net::ProxyConfig());
-  storage->set_proxy_service(net::ProxyService::CreateUsingSystemProxyResolver(
-      proxy_config_service,
-      4,  // TODO(willchan): Find a better constant somewhere.
-      context->net_log()));
-  storage->set_ssl_config_service(new net::SSLConfigServiceDefaults);
-  storage->set_http_auth_handler_factory(
-      net::HttpAuthHandlerRegistryFactory::CreateDefault(
-          context->host_resolver()));
-  storage->set_transport_security_state(new net::TransportSecurityState());
-  storage->set_http_server_properties(scoped_ptr<net::HttpServerProperties>(
-      new net::HttpServerPropertiesImpl()));
-  storage->set_cert_verifier(net::CertVerifier::CreateDefault());
-
-  net::HttpNetworkSession::Params network_session_params;
-  network_session_params.host_resolver = context->host_resolver();
-  network_session_params.cert_verifier = context->cert_verifier();
-  network_session_params.transport_security_state =
-      context->transport_security_state();
-  network_session_params.proxy_service = context->proxy_service();
-  network_session_params.ssl_config_service = context->ssl_config_service();
-  network_session_params.http_auth_handler_factory =
-      context->http_auth_handler_factory();
-  network_session_params.network_delegate = network_delegate;
-  network_session_params.http_server_properties =
-      context->http_server_properties();
-  network_session_params.net_log = context->net_log();
-
-  scoped_refptr<net::HttpNetworkSession> network_session(
-      new net::HttpNetworkSession(network_session_params));
-
-  net::HttpTransactionFactory* http_transaction_factory =
-      new net::HttpNetworkLayer(network_session.get());
-  storage->set_http_transaction_factory(http_transaction_factory);
-
-  net::URLRequestJobFactoryImpl* job_factory =
-      new net::URLRequestJobFactoryImpl;
-  storage->set_job_factory(job_factory);
+  context_.reset(context_builder.Build());
 
   if (VLOG_IS_ON(2)) {
     net_log_observer_.reset(new NetLogObserver(logging_level_));
-    context->net_log()->AddThreadSafeObserver(net_log_observer_.get(),
-                                              net::NetLog::LOG_ALL_BUT_BYTES);
+    context_->net_log()->AddThreadSafeObserver(net_log_observer_.get(),
+                                               net::NetLog::LOG_ALL_BUT_BYTES);
   }
-
-  context_.reset(context);
 
   net::HttpStreamFactory::EnableNpnSpdy31();
 
