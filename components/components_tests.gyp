@@ -131,6 +131,7 @@
             'storage_monitor/storage_monitor_mac_unittest.mm',
             'storage_monitor/storage_monitor_unittest.cc',
             'storage_monitor/storage_monitor_win_unittest.cc',
+            'sync_driver/generic_change_processor_unittest.cc',
             'sync_driver/model_association_manager_unittest.cc',
             'sync_driver/sync_prefs_unittest.cc',
             'sync_driver/system_encryptor_unittest.cc',

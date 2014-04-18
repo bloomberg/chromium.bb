@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_GENERIC_CHANGE_PROCESSOR_H_
-#define CHROME_BROWSER_SYNC_GLUE_GENERIC_CHANGE_PROCESSOR_H_
+#ifndef COMPONENTS_SYNC_DRIVER_GENERIC_CHANGE_PROCESSOR_H_
+#define COMPONENTS_SYNC_DRIVER_GENERIC_CHANGE_PROCESSOR_H_
 
 #include <vector>
 
@@ -29,8 +29,6 @@ typedef std::vector<syncer::SyncData> SyncDataList;
 
 namespace browser_sync {
 
-// TODO(sync): deprecate all change processors and have them replaced by
-// instances of this.
 // Datatype agnostic change processor. One instance of GenericChangeProcessor
 // is created for each datatype and lives on the datatype's thread. It then
 // handles all interaction with the sync api, both translating pushes from the
@@ -147,4 +145,4 @@ class GenericChangeProcessor : public ChangeProcessor,
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_GENERIC_CHANGE_PROCESSOR_H_
+#endif  // COMPONENTS_SYNC_DRIVER_GENERIC_CHANGE_PROCESSOR_H_

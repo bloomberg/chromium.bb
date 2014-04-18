@@ -4,9 +4,9 @@
 
 #include "chrome/browser/sync/glue/shared_change_processor.h"
 
-#include "chrome/browser/sync/glue/generic_change_processor.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "components/sync_driver/generic_change_processor.h"
 #include "content/public/browser/browser_thread.h"
 #include "sync/api/sync_change.h"
 

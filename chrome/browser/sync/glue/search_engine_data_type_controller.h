@@ -10,8 +10,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/search_engines/template_url_service.h"
-#include "chrome/browser/sync/glue/generic_change_processor.h"
 #include "chrome/browser/sync/glue/ui_data_type_controller.h"
+#include "components/sync_driver/generic_change_processor.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 

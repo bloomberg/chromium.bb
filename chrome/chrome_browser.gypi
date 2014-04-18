@@ -2215,8 +2215,6 @@
         'browser/sync/glue/favicon_cache.h',
         'browser/sync/glue/frontend_data_type_controller.cc',
         'browser/sync/glue/frontend_data_type_controller.h',
-        'browser/sync/glue/generic_change_processor.cc',
-        'browser/sync/glue/generic_change_processor.h',
         'browser/sync/glue/history_model_worker.cc',
         'browser/sync/glue/history_model_worker.h',
         'browser/sync/glue/non_frontend_data_type_controller.cc',
