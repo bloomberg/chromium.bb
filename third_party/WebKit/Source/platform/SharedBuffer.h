@@ -83,7 +83,8 @@ public:
     unsigned getSomeData(const char*& data, unsigned position = 0) const;
 
     // Creates an ArrayBuffer and copies this SharedBuffer's contents to that
-    // ArrayBuffer without merging segmented buffers into a flat buffer.
+    // ArrayBuffer without merging segmented buffers into a flat buffer. If
+    // allocation of an ArrayBuffer fails, returns 0.
     PassRefPtr<ArrayBuffer> getAsArrayBuffer() const;
 
     // Creates an SkData and copies this SharedBuffer's contents to that

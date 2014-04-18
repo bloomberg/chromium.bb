@@ -366,6 +366,9 @@ PassRefPtr<ArrayBuffer> SharedBuffer::getAsArrayBuffer() const
 {
     RefPtr<ArrayBuffer> arrayBuffer = ArrayBuffer::createUninitialized(static_cast<unsigned>(size()), 1);
 
+    if (!arrayBuffer)
+        return nullptr;
+
     const char* segment = 0;
     unsigned position = 0;
     while (unsigned segmentSize = getSomeData(segment, position)) {

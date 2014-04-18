@@ -55,6 +55,7 @@
 #include "public/platform/Platform.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/ArrayBufferView.h"
+#include "wtf/Assertions.h"
 #include "wtf/RefCountedLeakCounter.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/CString.h"
@@ -309,6 +310,12 @@ ArrayBuffer* XMLHttpRequest::responseArrayBuffer()
     if (!m_responseArrayBuffer.get()) {
         if (m_binaryResponseBuilder.get() && m_binaryResponseBuilder->size() > 0) {
             m_responseArrayBuffer = m_binaryResponseBuilder->getAsArrayBuffer();
+            if (!m_responseArrayBuffer) {
+                // m_binaryResponseBuilder failed to allocate an ArrayBuffer.
+                // We need to crash the renderer since there's no way defined in
+                // the spec to tell this to the user.
+                CRASH();
+            }
             m_binaryResponseBuilder.clear();
         } else {
             m_responseArrayBuffer = ArrayBuffer::create(static_cast<void*>(0), 0);
