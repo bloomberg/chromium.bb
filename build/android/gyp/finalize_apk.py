@@ -8,7 +8,6 @@
 """
 
 import optparse
-import os
 import shutil
 import sys
 import tempfile
@@ -29,9 +28,9 @@ def SignApk(key_path, key_name, key_passwd, unsigned_path, signed_path):
   build_utils.CheckOutput(sign_cmd)
 
 
-def AlignApk(android_sdk_root, unaligned_path, final_path):
+def AlignApk(zipalign_path, unaligned_path, final_path):
   align_cmd = [
-      os.path.join(android_sdk_root, 'tools', 'zipalign'),
+      zipalign_path,
       '-f', '4',  # 4 bytes
       unaligned_path,
       final_path,
@@ -42,7 +41,7 @@ def AlignApk(android_sdk_root, unaligned_path, final_path):
 def main():
   parser = optparse.OptionParser()
 
-  parser.add_option('--android-sdk-root', help='Android sdk root directory.')
+  parser.add_option('--zipalign-path', help='Path to the zipalign tool.')
   parser.add_option('--unsigned-apk-path', help='Path to input unsigned APK.')
   parser.add_option('--final-apk-path',
       help='Path to output signed and aligned APK.')
@@ -57,7 +56,7 @@ def main():
     signed_apk_path = intermediate_file.name
     SignApk(options.key_path, options.key_name, options.key_passwd,
             options.unsigned_apk_path, signed_apk_path)
-    AlignApk(options.android_sdk_root, signed_apk_path, options.final_apk_path)
+    AlignApk(options.zipalign_path, signed_apk_path, options.final_apk_path)
 
   if options.stamp:
     build_utils.Touch(options.stamp)
