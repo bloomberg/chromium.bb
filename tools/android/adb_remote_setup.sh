@@ -50,6 +50,12 @@ fi
 remote_host="$1"
 remote_adb="${2:-adb}"
 
+# Ensure adb is in the local machine's path.
+if ! which adb >/dev/null; then
+  echo "error: adb must be in your local machine's path."
+  exit 1
+fi
+
 if which kinit >/dev/null; then
   # Allow ssh to succeed without typing your password multiple times.
   kinit -R || kinit
