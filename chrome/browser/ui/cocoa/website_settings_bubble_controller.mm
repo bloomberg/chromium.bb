@@ -839,13 +839,10 @@ NSColor* IdentityVerifiedTextColor() {
                                       atPoint:(NSPoint)point {
 
   GURL url = webContents_ ? webContents_->GetURL() : GURL();
-  // The presenter is guaranteed to outlive the menu model.  It is owned
-  // by this class, created by the WebsiteSettingsUIBridge during Show();
-  WebsiteSettings* blockPresenter = presenter_.get();
+  __block WebsiteSettingsBubbleController* weakSelf = self;
   PermissionMenuModel::ChangeCallback callback =
       base::BindBlock(^(const WebsiteSettingsUI::PermissionInfo& permission) {
-          blockPresenter->OnSitePermissionChanged(permission.type,
-                                                  permission.setting);
+          [weakSelf onPermissionChanged:permission.type to:permission.setting];
       });
   base::scoped_nsobject<PermissionSelectorButton> button(
       [[PermissionSelectorButton alloc] initWithPermissionInfo:permissionInfo
@@ -863,6 +860,13 @@ NSColor* IdentityVerifiedTextColor() {
   [view setFrame:containerFrame];
   [view addSubview:button.get()];
   return button.get();
+}
+
+// Called when the user changes the setting of a permission.
+- (void)onPermissionChanged:(ContentSettingsType)permissionType
+                         to:(ContentSetting)newSetting {
+  if (presenter_)
+    presenter_->OnSitePermissionChanged(permissionType, newSetting);
 }
 
 // Called when the user changes the selected segment in the segmented control.
