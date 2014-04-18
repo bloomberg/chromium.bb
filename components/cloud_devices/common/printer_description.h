@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CLOUD_DEVICES_CLOUD_PRINTER_DESCRIPTION_H_
-#define COMPONENTS_CLOUD_DEVICES_CLOUD_PRINTER_DESCRIPTION_H_
+#ifndef COMPONENTS_CLOUD_DEVICES_COMMON_CLOUD_PRINTER_DESCRIPTION_H_
+#define COMPONENTS_CLOUD_DEVICES_COMMON_CLOUD_PRINTER_DESCRIPTION_H_
 
 #include <string>
 
 #include "base/logging.h"
-#include "components/cloud_devices/description_items.h"
+#include "components/cloud_devices/common/description_items.h"
 
 // Defines printer options, CDD and CJT items.
 // https://developers.google.com/cloud-print/docs/cdd
@@ -19,12 +19,7 @@ namespace printer {
 
 typedef std::string ContentType;
 
-enum DocumentSheetBack {
-  NORMAL,
-  ROTATED,
-  MANUAL_TUMBLE,
-  FLIPPED
-};
+enum DocumentSheetBack { NORMAL, ROTATED, MANUAL_TUMBLE, FLIPPED };
 
 struct PwgRasterConfig {
   PwgRasterConfig();
@@ -48,9 +43,7 @@ struct Color {
 
   bool IsValid() const;
   bool operator==(const Color& other) const;
-  bool operator!=(const Color& other) const {
-    return !(*this == other);
-  }
+  bool operator!=(const Color& other) const { return !(*this == other); }
 
   ColorType type;
   std::string vendor_id;
@@ -84,9 +77,7 @@ struct Margins {
           int32 left_um);
 
   bool operator==(const Margins& other) const;
-  bool operator!=(const Margins& other) const {
-    return !(*this == other);
-  }
+  bool operator!=(const Margins& other) const { return !(*this == other); }
 
   MarginsType type;
   int32 top_um;
@@ -101,9 +92,7 @@ struct Dpi {
 
   bool IsValid() const;
   bool operator==(const Dpi& other) const;
-  bool operator!=(const Dpi& other) const {
-    return !(*this == other);
-  }
+  bool operator!=(const Dpi& other) const { return !(*this == other); }
 
   int32 horizontal;
   int32 vertical;
@@ -301,15 +290,14 @@ struct Media {
   Media(MediaType type, int32 width_um, int32 height_um);
 
   Media(const std::string& custom_display_name,
-        int32 width_um, int32 height_um);
+        int32 width_um,
+        int32 height_um);
 
   bool MatchBySize();
 
   bool IsValid() const;
   bool operator==(const Media& other) const;
-  bool operator!=(const Media& other) const {
-    return !(*this == other);
-  }
+  bool operator!=(const Media& other) const { return !(*this == other); }
 
   MediaType type;
   int32 width_um;
@@ -324,9 +312,7 @@ struct Interval {
   Interval(int32 start);
 
   bool operator==(const Interval& other) const;
-  bool operator!=(const Interval& other) const {
-    return !(*this == other);
-  }
+  bool operator!=(const Interval& other) const { return !(*this == other); }
 
   int32 start;
   int32 end;
@@ -352,8 +338,8 @@ typedef ValueCapability<PwgRasterConfig, PwgRasterConfigTraits>
     PwgRasterConfigCapability;
 typedef SelectionCapability<Color, ColorTraits> ColorCapability;
 typedef SelectionCapability<DuplexType, DuplexTraits> DuplexCapability;
-typedef SelectionCapability<OrientationType,
-                            OrientationTraits> OrientationCapability;
+typedef SelectionCapability<OrientationType, OrientationTraits>
+    OrientationCapability;
 typedef SelectionCapability<Margins, MarginsTraits> MarginsCapability;
 typedef SelectionCapability<Dpi, DpiTraits> DpiCapability;
 typedef SelectionCapability<FitToPageType, FitToPageTraits> FitToPageCapability;
@@ -381,4 +367,4 @@ typedef TicketItem<bool, ReverseTraits> ReverseTicketItem;
 
 }  // namespace cloud_devices
 
-#endif  // COMPONENTS_CLOUD_DEVICES_CLOUD_PRINTER_DESCRIPTION_H_
+#endif  // COMPONENTS_CLOUD_DEVICES_COMMON_CLOUD_PRINTER_DESCRIPTION_H_

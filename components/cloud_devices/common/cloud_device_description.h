@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CLOUD_DEVICES_CLOUD_DEVICE_DESCRIPTION_H_
-#define COMPONENTS_CLOUD_DEVICES_CLOUD_DEVICE_DESCRIPTION_H_
+#ifndef COMPONENTS_CLOUD_DEVICES_COMMON_CLOUD_DEVICE_DESCRIPTION_H_
+#define COMPONENTS_CLOUD_DEVICES_COMMON_CLOUD_DEVICE_DESCRIPTION_H_
 
 #include <string>
 
@@ -55,4 +55,4 @@ class CloudDeviceDescription {
 
 }  // namespace cloud_devices
 
-#endif  // COMPONENTS_CLOUD_DEVICES_CLOUD_DEVICE_DESCRIPTION_H_
+#endif  // COMPONENTS_CLOUD_DEVICES_COMMON_CLOUD_DEVICE_DESCRIPTION_H_

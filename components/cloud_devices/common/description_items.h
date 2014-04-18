@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CLOUD_DEVICES_CAPABILITY_INTERFACES_H_
-#define COMPONENTS_CLOUD_DEVICES_CAPABILITY_INTERFACES_H_
+#ifndef COMPONENTS_CLOUD_DEVICES_COMMON_CAPABILITY_INTERFACES_H_
+#define COMPONENTS_CLOUD_DEVICES_COMMON_CAPABILITY_INTERFACES_H_
 
 // Defines common templates that could be used to create device specific
 // capabilities and print tickets.
@@ -12,7 +12,7 @@
 
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
-#include "components/cloud_devices/cloud_device_description.h"
+#include "components/cloud_devices/common/cloud_device_description.h"
 
 namespace base {
 class DictionaryValue;
@@ -48,32 +48,22 @@ class ListCapability {
   bool LoadFrom(const CloudDeviceDescription& description);
   void SaveTo(CloudDeviceDescription* description) const;
 
-  void Reset() {
-    options_.clear();
-  }
+  void Reset() { options_.clear(); }
 
   bool IsValid() const;
 
-  bool empty() const {
-    return options_.empty();
-  }
+  bool empty() const { return options_.empty(); }
 
-  size_t size() const {
-    return options_.size();
-  }
+  size_t size() const { return options_.size(); }
 
-  const Option& operator[](size_t i) const {
-    return options_[i];
-  }
+  const Option& operator[](size_t i) const { return options_[i]; }
 
-  bool Contains(const Option& option) const{
+  bool Contains(const Option& option) const {
     return std::find(options_.begin(), options_.end(), option) !=
            options_.end();
   }
 
-  void AddOption(const Option& option) {
-    options_.push_back(option);
-  }
+  void AddOption(const Option& option) { options_.push_back(option); }
 
  private:
   typedef std::vector<Option> OptionVector;
@@ -103,19 +93,13 @@ class SelectionCapability {
 
   bool IsValid() const;
 
-  bool empty() const {
-    return options_.empty();
-  }
+  bool empty() const { return options_.empty(); }
 
-  size_t size() const {
-    return options_.size();
-  }
+  size_t size() const { return options_.size(); }
 
-  const Option& operator[](size_t i) const {
-    return options_[i];
-  }
+  const Option& operator[](size_t i) const { return options_[i]; }
 
-  bool Contains(const Option& option) const{
+  bool Contains(const Option& option) const {
     return std::find(options_.begin(), options_.end(), option) !=
            options_.end();
   }
@@ -125,9 +109,7 @@ class SelectionCapability {
     return options_[default_idx_];
   }
 
-  void AddOption(const Option& option) {
-    AddDefaultOption(option, false);
-  }
+  void AddOption(const Option& option) { AddDefaultOption(option, false); }
 
   void AddDefaultOption(const Option& option, bool is_default) {
     if (is_default) {
@@ -159,17 +141,11 @@ class BooleanCapability {
   bool LoadFrom(const CloudDeviceDescription& description);
   void SaveTo(CloudDeviceDescription* description) const;
 
-  void Reset() {
-    default_value_ = false;
-  }
+  void Reset() { default_value_ = false; }
 
-  void set_default_value(bool value) {
-    default_value_ = value;
-  }
+  void set_default_value(bool value) { default_value_ = value; }
 
-  bool default_value() const {
-    return default_value_;
-  }
+  bool default_value() const { return default_value_; }
 
  private:
   bool default_value_;
@@ -233,19 +209,13 @@ class TicketItem {
   bool LoadFrom(const CloudDeviceDescription& description);
   void SaveTo(CloudDeviceDescription* description) const;
 
-  void Reset() {
-    value_ = Option();
-  }
+  void Reset() { value_ = Option(); }
 
   bool IsValid() const;
 
-  const Option& value() const {
-    return value_;
-  }
+  const Option& value() const { return value_; }
 
-  void set_value(const Option& value) {
-    value_ = value;
-  }
+  void set_value(const Option& value) { value_ = value; }
 
  private:
   Option value_;
@@ -255,4 +225,4 @@ class TicketItem {
 
 }  // namespace cloud_devices
 
-#endif  // COMPONENTS_CLOUD_DEVICES_CAPABILITY_INTERFACES_H_
+#endif  // COMPONENTS_CLOUD_DEVICES_COMMON_CAPABILITY_INTERFACES_H_

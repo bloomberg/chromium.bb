@@ -64,7 +64,7 @@
             'autofill/core/common/form_field_data_unittest.cc',
             'autofill/core/common/password_form_fill_data_unittest.cc',
             'autofill/core/common/save_password_progress_logger_unittest.cc',
-            'cloud_devices/printer_description_unittest.cc',
+            'cloud_devices/common/printer_description_unittest.cc',
             'data_reduction_proxy/browser/data_reduction_proxy_metrics_unittest.cc',
             'data_reduction_proxy/browser/data_reduction_proxy_settings_unittest.cc',
             'data_reduction_proxy/browser/http_auth_handler_data_reduction_proxy_unittest.cc',
@@ -189,7 +189,7 @@
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
 
             # Dependencies of cloud_devices
-            'components.gyp:cloud_devices',
+            'components.gyp:cloud_devices_common',
 
             # Dependencies of data_reduction_proxy
             'components.gyp:data_reduction_proxy_browser',

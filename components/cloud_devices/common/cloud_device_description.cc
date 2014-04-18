@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/cloud_devices/cloud_device_description.h"
+#include "components/cloud_devices/common/cloud_device_description.h"
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/values.h"
-#include "components/cloud_devices/cloud_device_description_consts.h"
+#include "components/cloud_devices/common/cloud_device_description_consts.h"
 
 namespace cloud_devices {
 
@@ -46,9 +46,8 @@ bool CloudDeviceDescription::InitFromString(const std::string& json) {
 
 std::string CloudDeviceDescription::ToString() const {
   std::string json;
-  base::JSONWriter::WriteWithOptions(root_.get(),
-                                     base::JSONWriter::OPTIONS_PRETTY_PRINT,
-                                     &json);
+  base::JSONWriter::WriteWithOptions(
+      root_.get(), base::JSONWriter::OPTIONS_PRETTY_PRINT, &json);
   return json;
 }
 

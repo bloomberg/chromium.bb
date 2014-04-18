@@ -14,7 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/local_discovery/privet_constants.h"
-#include "components/cloud_devices/printer_description.h"
+#include "components/cloud_devices/common/printer_description.h"
 #include "net/base/url_util.h"
 #include "printing/pwg_raster_settings.h"
 #include "printing/units.h"

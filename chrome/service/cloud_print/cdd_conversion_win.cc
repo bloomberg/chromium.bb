@@ -4,7 +4,7 @@
 
 #include "chrome/service/cloud_print/cdd_conversion_win.h"
 
-#include "components/cloud_devices/printer_description.h"
+#include "components/cloud_devices/common/printer_description.h"
 #include "printing/backend/print_backend.h"
 #include "printing/backend/win_helper.h"
 

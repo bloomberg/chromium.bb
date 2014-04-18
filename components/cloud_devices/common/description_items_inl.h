@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CLOUD_DEVICES_DESCRIPTION_DESCRIPTION_ITEMS_INL_H_
-#define COMPONENTS_CLOUD_DEVICES_DESCRIPTION_DESCRIPTION_ITEMS_INL_H_
+#ifndef COMPONENTS_CLOUD_DEVICES_COMMON_DESCRIPTION_DESCRIPTION_ITEMS_INL_H_
+#define COMPONENTS_CLOUD_DEVICES_COMMON_DESCRIPTION_DESCRIPTION_ITEMS_INL_H_
 
 #include <vector>
 
 #include "base/numerics/safe_conversions.h"
-#include "components/cloud_devices/description_items.h"
+#include "components/cloud_devices/common/description_items.h"
 
 // Implementation of templates defined in header file.
 // This file should be included from CC file with implementation of device
@@ -22,7 +22,8 @@ ListCapability<Option, Traits>::ListCapability() {
 }
 
 template <class Option, class Traits>
-ListCapability<Option, Traits>::~ListCapability() { }
+ListCapability<Option, Traits>::~ListCapability() {
+}
 
 template <class Option, class Traits>
 bool ListCapability<Option, Traits>::IsValid() const {
@@ -74,7 +75,8 @@ SelectionCapability<Option, Traits>::SelectionCapability() {
 }
 
 template <class Option, class Traits>
-SelectionCapability<Option, Traits>::~SelectionCapability() { }
+SelectionCapability<Option, Traits>::~SelectionCapability() {
+}
 
 template <class Option, class Traits>
 bool SelectionCapability<Option, Traits>::IsValid() const {
@@ -120,8 +122,8 @@ void SelectionCapability<Option, Traits>::SaveTo(
     CloudDeviceDescription* description) const {
   DCHECK(IsValid());
   base::ListValue* options_list = new base::ListValue;
-  description->CreateItem(Traits::GetCapabilityPath())->Set(json::kKeyOption,
-                                                            options_list);
+  description->CreateItem(Traits::GetCapabilityPath())
+      ->Set(json::kKeyOption, options_list);
   for (size_t i = 0; i < options_.size(); ++i) {
     base::DictionaryValue* option_value = new base::DictionaryValue;
     options_list->Append(option_value);
@@ -137,7 +139,8 @@ BooleanCapability<Traits>::BooleanCapability() {
 }
 
 template <class Traits>
-BooleanCapability<Traits>::~BooleanCapability() { }
+BooleanCapability<Traits>::~BooleanCapability() {
+}
 
 template <class Traits>
 bool BooleanCapability<Traits>::LoadFrom(
@@ -179,7 +182,8 @@ ValueCapability<Option, Traits>::ValueCapability() {
 }
 
 template <class Option, class Traits>
-ValueCapability<Option, Traits>::~ValueCapability() {}
+ValueCapability<Option, Traits>::~ValueCapability() {
+}
 
 template <class Option, class Traits>
 bool ValueCapability<Option, Traits>::IsValid() const {
@@ -214,7 +218,8 @@ TicketItem<Option, Traits>::TicketItem() {
 }
 
 template <class Option, class Traits>
-TicketItem<Option, Traits>::~TicketItem() { }
+TicketItem<Option, Traits>::~TicketItem() {
+}
 
 template <class Option, class Traits>
 bool TicketItem<Option, Traits>::IsValid() const {
@@ -245,4 +250,4 @@ void TicketItem<Option, Traits>::SaveTo(
 
 }  // namespace cloud_devices
 
-#endif  // COMPONENTS_CLOUD_DEVICES_DESCRIPTION_DESCRIPTION_ITEMS_INL_H_
+#endif  // COMPONENTS_CLOUD_DEVICES_COMMON_DESCRIPTION_DESCRIPTION_ITEMS_INL_H_

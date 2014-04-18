@@ -29,7 +29,7 @@
         'suggestions_proto',
         '../components/components.gyp:autofill_core_browser',
         '../components/components.gyp:bookmarks_core_browser',
-        '../components/components.gyp:cloud_devices',
+        '../components/components.gyp:cloud_devices_common',
         '../components/components.gyp:data_reduction_proxy_browser',
         '../components/components.gyp:domain_reliability',
         '../components/components.gyp:favicon_base',

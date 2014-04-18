@@ -15,6 +15,7 @@ include_rules = [
   "+components/bookmarks/core/browser",
   "+components/bookmarks/core/common",
   "+components/breakpad",
+  "+components/cloud_devices/common",
   "+components/data_reduction_proxy",
   "+components/dom_distiller",
   "+components/domain_reliability",

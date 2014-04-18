@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/local_discovery/privet_http.h"
-#include "components/cloud_devices/cloud_device_description.h"
+#include "components/cloud_devices/common/cloud_device_description.h"
 #include "printing/pdf_render_settings.h"
 
 namespace printing {

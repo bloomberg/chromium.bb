@@ -5,7 +5,7 @@
 {
   'targets': [
     {
-      'target_name': 'cloud_devices',
+      'target_name': 'cloud_devices_common',
       'type': 'static_library',
       'include_dirs': [
         '..',
@@ -14,14 +14,14 @@
         '../base/base.gyp:base',
       ],
       'sources': [
-        'cloud_devices/cloud_device_description.cc',
-        'cloud_devices/cloud_device_description.h',
-        'cloud_devices/cloud_device_description_consts.cc',
-        'cloud_devices/cloud_device_description_consts.h',
-        'cloud_devices/description_items.h',
-        'cloud_devices/description_items_inl.h',
-        'cloud_devices/printer_description.cc',
-        'cloud_devices/printer_description.h',
+        'cloud_devices/common/cloud_device_description.cc',
+        'cloud_devices/common/cloud_device_description.h',
+        'cloud_devices/common/cloud_device_description_consts.cc',
+        'cloud_devices/common/cloud_device_description_consts.h',
+        'cloud_devices/common/description_items.h',
+        'cloud_devices/common/description_items_inl.h',
+        'cloud_devices/common/printer_description.cc',
+        'cloud_devices/common/printer_description.h',
       ],
     },
   ],

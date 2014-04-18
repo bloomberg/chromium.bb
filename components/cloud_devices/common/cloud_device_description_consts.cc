@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/cloud_devices/cloud_device_description_consts.h"
+#include "components/cloud_devices/common/cloud_device_description_consts.h"
 
 namespace cloud_devices {
 
