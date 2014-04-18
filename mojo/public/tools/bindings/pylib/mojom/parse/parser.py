@@ -1,13 +1,13 @@
 #!/usr/bin/env python
-# Copyright 2013 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 """Generates a syntax tree from a Mojo IDL file."""
 
 
-import sys
 import os.path
+import sys
 
 # Try to load the ply module, if not, then assume it is in the third_party
 # directory.
@@ -17,17 +17,18 @@ try:
   from ply import lex
   from ply import yacc
 except ImportError:
-  # This assumes this file is in src/mojo/public/tools/bindings/pylib/parse/.
-  module_path, module_name = os.path.split(__file__)
-  third_party = os.path.join(module_path, os.pardir, os.pardir, os.pardir,
-                             os.pardir, os.pardir, os.pardir, 'third_party')
-  sys.path.append(third_party)
+  # This assumes we're under some src/ directory.
+  path = os.path.abspath(__file__)
+  while os.path.split(path)[1] != "src":
+    path = os.path.split(path)[0]
+  sys.path.append(os.path.join(path, "third_party"))
+  del path
   # pylint: disable=F0401
   from ply import lex
   from ply import yacc
 
-import mojo_ast as ast
-from mojo_lexer import Lexer
+import ast
+from lexer import Lexer
 
 
 _MAX_ORDINAL_VALUE = 0xffffffff

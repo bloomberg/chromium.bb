@@ -2,14 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import mojo_ast as ast
-import mojo_lexer
-import mojo_parser
 import unittest
 
+import ast
+import lexer
+import parser
 
-class MojoParserTest(unittest.TestCase):
-  """Tests mojo_parser (in particular, Parse())."""
+
+class ParserTest(unittest.TestCase):
+  """Tests |parser.Parse()|."""
 
   def testTrivialValidSource(self):
     """Tests a trivial, but valid, .mojom source."""
@@ -19,13 +20,13 @@ class MojoParserTest(unittest.TestCase):
 module my_module {
 }
 """
-    self.assertEquals(mojo_parser.Parse(source, "my_file.mojom"),
+    self.assertEquals(parser.Parse(source, "my_file.mojom"),
                       [("MODULE", "my_module", None)])
 
   def testSourceWithCrLfs(self):
     """Tests a .mojom source with CR-LFs instead of LFs."""
     source = "// This is a comment.\r\n\r\nmodule my_module {\r\n}\r\n";
-    self.assertEquals(mojo_parser.Parse(source, "my_file.mojom"),
+    self.assertEquals(parser.Parse(source, "my_file.mojom"),
                       [("MODULE", "my_module", None)])
 
   def testUnexpectedEOF(self):
@@ -36,9 +37,9 @@ module my_module {
 module my_module {
 """
     with self.assertRaisesRegexp(
-        mojo_parser.ParseError,
+        parser.ParseError,
         r"^my_file\.mojom: Error: Unexpected end of file$"):
-      mojo_parser.Parse(source, "my_file.mojom")
+      parser.Parse(source, "my_file.mojom")
 
   def testSimpleStruct(self):
     """Tests a simple .mojom source that just defines a struct."""
@@ -60,7 +61,7 @@ struct MyStruct {
     None,
     [('FIELD', 'int32', 'a', ast.Ordinal(None), None),
      ('FIELD', 'double', 'b', ast.Ordinal(None), None)])])]
-    self.assertEquals(mojo_parser.Parse(source, "my_file.mojom"), expected)
+    self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
 
   def testSimpleStructWithoutModule(self):
     """Tests a simple struct without an enclosing module."""
@@ -78,7 +79,7 @@ struct MyStruct {
     None,
     [('FIELD', 'int32', 'a', ast.Ordinal(None), None),
      ('FIELD', 'double', 'b', ast.Ordinal(None), None)])])]
-    self.assertEquals(mojo_parser.Parse(source, "my_file.mojom"), expected)
+    self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
 
   def testMissingModuleName(self):
     """Tests an (invalid) .mojom with a missing module name."""
@@ -91,9 +92,9 @@ struct MyStruct {
 }
 """
     with self.assertRaisesRegexp(
-        mojo_parser.ParseError,
+        parser.ParseError,
         r"^my_file\.mojom:2: Error: Unexpected '{':\nmodule {$"):
-      mojo_parser.Parse(source1, "my_file.mojom")
+      parser.Parse(source1, "my_file.mojom")
 
     # Another similar case, but make sure that line-number tracking/reporting
     # is correct.
@@ -105,9 +106,9 @@ module
 }
 """
     with self.assertRaisesRegexp(
-        mojo_parser.ParseError,
+        parser.ParseError,
         r"^my_file\.mojom:4: Error: Unexpected '{':\n{$"):
-      mojo_parser.Parse(source2, "my_file.mojom")
+      parser.Parse(source2, "my_file.mojom")
 
   def testEnumExpressions(self):
     """Tests an enum with values calculated using simple expressions."""
@@ -161,7 +162,7 @@ enum MyEnum {
      ('ENUM_FIELD',
       'MY_ENUM_MINUS_1',
       ('EXPRESSION', ['~', ('EXPRESSION', ['0'])]))])])]
-    self.assertEquals(mojo_parser.Parse(source, "my_file.mojom"), expected)
+    self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
 
   def testNoConditionals(self):
     """Tests that ?: is not allowed."""
@@ -175,9 +176,9 @@ enum MyEnum {
 }  // my_module
 """
     with self.assertRaisesRegexp(
-        mojo_lexer.LexError,
+        lexer.LexError,
         r"^my_file\.mojom:4: Error: Illegal character '\?'$"):
-      mojo_parser.Parse(source, "my_file.mojom")
+      parser.Parse(source, "my_file.mojom")
 
   def testSimpleOrdinals(self):
     """Tests that (valid) ordinal values are scanned correctly."""
@@ -213,7 +214,7 @@ struct MyStruct {
      ('FIELD', 'int32', 'a11', ast.Ordinal(11), None),
      ('FIELD', 'int32', 'a29', ast.Ordinal(29), None),
      ('FIELD', 'int32', 'a1234567890', ast.Ordinal(1234567890), None)])])]
-    self.assertEquals(mojo_parser.Parse(source, "my_file.mojom"), expected)
+    self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
 
   def testInvalidOrdinals(self):
     """Tests that (lexically) invalid ordinals are correctly detected."""
@@ -227,9 +228,9 @@ struct MyStruct {
 }  // module my_module
 """
     with self.assertRaisesRegexp(
-        mojo_lexer.LexError,
+        lexer.LexError,
         r"^my_file\.mojom:4: Error: Missing ordinal value$"):
-      mojo_parser.Parse(source1, "my_file.mojom")
+      parser.Parse(source1, "my_file.mojom")
 
     source2 = """\
 module my_module {
@@ -241,37 +242,37 @@ struct MyStruct {
 }  // module my_module
 """
     with self.assertRaisesRegexp(
-        mojo_lexer.LexError,
+        lexer.LexError,
         r"^my_file\.mojom:4: Error: "
             r"Octal and hexadecimal ordinal values not allowed$"):
-      mojo_parser.Parse(source2, "my_file.mojom")
+      parser.Parse(source2, "my_file.mojom")
 
     source3 = """\
 module my_module { struct MyStruct { int32 a_invalid_octal @08; }; }
 """
     with self.assertRaisesRegexp(
-        mojo_lexer.LexError,
+        lexer.LexError,
         r"^my_file\.mojom:1: Error: "
             r"Octal and hexadecimal ordinal values not allowed$"):
-      mojo_parser.Parse(source3, "my_file.mojom")
+      parser.Parse(source3, "my_file.mojom")
 
     source4 = """\
 module my_module { struct MyStruct { int32 a_hex @0x1aB9; }; }
 """
     with self.assertRaisesRegexp(
-        mojo_lexer.LexError,
+        lexer.LexError,
         r"^my_file\.mojom:1: Error: "
             r"Octal and hexadecimal ordinal values not allowed$"):
-      mojo_parser.Parse(source4, "my_file.mojom")
+      parser.Parse(source4, "my_file.mojom")
 
     source5 = """\
 module my_module { struct MyStruct { int32 a_hex @0X0; }; }
 """
     with self.assertRaisesRegexp(
-        mojo_lexer.LexError,
+        lexer.LexError,
         r"^my_file\.mojom:1: Error: "
             r"Octal and hexadecimal ordinal values not allowed$"):
-      mojo_parser.Parse(source5, "my_file.mojom")
+      parser.Parse(source5, "my_file.mojom")
 
     source6 = """\
 struct MyStruct {
@@ -279,11 +280,11 @@ struct MyStruct {
 };
 """
     with self.assertRaisesRegexp(
-        mojo_parser.ParseError,
+        parser.ParseError,
         r"^my_file\.mojom:2: Error: "
             r"Ordinal value 999999999999 too large:\n"
             r"  int32 a_too_big @999999999999;$"):
-      mojo_parser.Parse(source6, "my_file.mojom")
+      parser.Parse(source6, "my_file.mojom")
 
   def testNestedNamespace(self):
     """Tests nested namespaces work."""
@@ -303,7 +304,7 @@ struct MyStruct {
     'MyStruct',
     None,
     [('FIELD', 'int32', 'a', ast.Ordinal(None), None)])])]
-    self.assertEquals(mojo_parser.Parse(source, "my_file.mojom"), expected)
+    self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
 
 
 if __name__ == "__main__":

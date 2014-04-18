@@ -2,7 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import mojo_lexer
+import os.path
+import sys
 import unittest
 
 # Try to load the ply module, if not, then assume it is in the third_party
@@ -12,13 +13,16 @@ try:
   # pylint: disable=F0401
   from ply import lex
 except ImportError:
-  # This assumes this file is in src/mojo/public/tools/bindings/pylib/parse/.
-  module_path, module_name = os.path.split(__file__)
-  third_party = os.path.join(module_path, os.pardir, os.pardir, os.pardir,
-                             os.pardir, os.pardir, os.pardir, 'third_party')
-  sys.path.append(third_party)
+  # This assumes we're under some src/ directory.
+  path = os.path.abspath(__file__)
+  while os.path.split(path)[1] != "src":
+    path = os.path.split(path)[0]
+  sys.path.append(os.path.join(path, "third_party"))
+  del path
   # pylint: disable=F0401
   from ply import lex
+
+import lexer
 
 
 # This (monkey-patching LexToken to make comparison value-based) is evil, but
@@ -43,13 +47,13 @@ def _MakeLexTokenForKeyword(keyword, **kwargs):
   return _MakeLexToken(keyword.upper(), keyword.lower(), **kwargs)
 
 
-class MojoLexerTest(unittest.TestCase):
-  """Tests mojo_lexer (in particular, Lexer)."""
+class LexerTest(unittest.TestCase):
+  """Tests |lexer.Lexer|."""
 
   def __init__(self, *args, **kwargs):
     unittest.TestCase.__init__(self, *args, **kwargs)
     # Clone all lexer instances from this one, since making a lexer is slow.
-    self._zygote_lexer = lex.lex(mojo_lexer.Lexer("my_file.mojom"))
+    self._zygote_lexer = lex.lex(lexer.Lexer("my_file.mojom"))
 
   def testValidSingleKeywords(self):
     """Tests valid, single keywords."""

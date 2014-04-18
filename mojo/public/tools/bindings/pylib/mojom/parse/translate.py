@@ -1,15 +1,15 @@
 #!/usr/bin/env python
-# Copyright 2013 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Translate parse tree to Mojom IR"""
+"""Translates parse tree to Mojom IR."""
 
 
-import os
+import os.path
 import sys
 
-import mojo_ast as ast
+import ast
 
 
 def MapTree(func, tree, name):
