@@ -32,22 +32,6 @@ OptInManager.HOTWORD_EXTENSION_ID_ = 'bepbmhgboaologfdajaanbcjmnhjmhfn';
 
 
 /**
- * @const {string}
- * @private
- */
-OptInManager.RESET_HOTWORD_PREF_ = 'resetHotwordPref';
-
-/**
- * Commands sent from this helper extension to the hotword extension.
- * @enum {string}
- */
-OptInManager.CommandFromHelper = {
-  DISABLE: 'ds',
-  ENABLE: 'en'
-};
-
-
-/**
  * Commands sent from the page to this content script.
  * @enum {string}
  */
@@ -60,59 +44,27 @@ OptInManager.CommandFromPage = {
   AUDIO_LOGGING_ON: 'alon',
   // Audio logging is opted out.
   AUDIO_LOGGING_OFF: 'aloff',
-};
-
-
-/**
- * Handles a tab being activated / focused on.
- * @param {{tabId: number}} info Information about the activated tab.
- * @private
- */
-OptInManager.prototype.handleActivatedTab_ = function(info) {
-  chrome.tabs.get(info.tabId, this.preInjectTab_.bind(this));
-};
-
-
-/**
- * Handles an updated tab.
- * @param {number} tabId Id of the updated tab.
- * @param {{status: string}} info Change info of the tab.
- * @param {!Tab} tab Updated tab.
- * @private
- */
-OptInManager.prototype.handleUpdatedTab_ = function(tabId, info, tab) {
-  //  Chrome fires multiple update events: undefined, loading and completed.
-  // We perform content injection on loading state.
-  if ('loading' !== info['status'])
-    return;
-  this.preInjectTab_(tab);
-};
-
-
-/**
- * @param {Tab} tab Tab to consider.
- * @private
- */
-OptInManager.prototype.preInjectTab_ = function(tab) {
-  if (!tab || !this.isEligibleUrl(tab.url))
-    return;
-  if (chrome.hotwordPrivate && chrome.hotwordPrivate.getStatus)
-    chrome.hotwordPrivate.getStatus(this.injectTab_.bind(this, tab));
+  // User visited an eligible page.
+  PAGE_WAKEUP: 'wu'
 };
 
 
 /**
  * @param {Tab} tab Tab to inject.
+ * @param {function(HotwordStatus)} sendResponse Callback function to respond
+ *     to sender.
  * @param {HotwordStatus} hotwordStatus Status of the hotword extension.
  * @private
  */
-OptInManager.prototype.injectTab_ = function(tab, hotwordStatus) {
-  if (hotwordStatus.available) {
-    if (hotwordStatus.enabled)
-      chrome.tabs.executeScript(tab.id, {'file': 'audio_client.js'});
-    else if (!hotwordStatus.enabledSet)
-      chrome.tabs.executeScript(tab.id, {'file': 'optin_client.js'});
-  }
+OptInManager.prototype.injectTab_ = function(
+    tab, sendResponse, hotwordStatus) {
+  if (!hotwordStatus.available)
+    return;
+  if (hotwordStatus.enabled)
+    chrome.tabs.executeScript(tab.id, {'file': 'audio_client.js'});
+  else if (!hotwordStatus.enabledSet)
+    chrome.tabs.executeScript(tab.id, {'file': 'optin_client.js'});
+  sendResponse(hotwordStatus);
 };
 
 
@@ -120,62 +72,57 @@ OptInManager.prototype.injectTab_ = function(tab, hotwordStatus) {
  * Handles messages from the helper content script.
  * @param {*} request Message from the sender.
  * @param {MessageSender} sender Information about the sender.
- * @param {function(*)} sendResponse Callback function to respond to sender.
+ * @param {function(HotwordStatus)} sendResponse Callback function to respond
+ *     to sender.
+ * @return {boolean} Whether to maintain the port open to call sendResponse.
  * @private
  */
 OptInManager.prototype.handleMessage_ = function(
     request, sender, sendResponse) {
-  if (request.type) {
-    if (request.type === OptInManager.CommandFromPage.CLICKED_OPTIN) {
-      if (chrome.hotwordPrivate && chrome.hotwordPrivate.setEnabled) {
-        chrome.hotwordPrivate.setEnabled(true);
-        this.preInjectTab_(sender.tab);
+  switch (request.type) {
+    case OptInManager.CommandFromPage.PAGE_WAKEUP:
+      if (((sender.tab && this.isEligibleUrl(sender.tab.url)) ||
+          sender.id == OptInManager.HOTWORD_EXTENSION_ID_) &&
+          chrome.hotwordPrivate && chrome.hotwordPrivate.getStatus) {
+        chrome.hotwordPrivate.getStatus(
+            this.injectTab_.bind(this, request.tab || sender.tab,
+                                 sendResponse));
+        return true;
       }
-    }
+      break;
+    case OptInManager.CommandFromPage.CLICKED_OPTIN:
+      if (chrome.hotwordPrivate && chrome.hotwordPrivate.setEnabled &&
+          chrome.hotwordPrivate.getStatus) {
+        chrome.hotwordPrivate.setEnabled(true);
+        chrome.hotwordPrivate.getStatus(
+            this.injectTab_.bind(this, sender.tab, sendResponse));
+        return true;
+      }
+      break;
     // User has explicitly clicked 'no thanks'.
-    if (request.type === OptInManager.CommandFromPage.CLICKED_NO_OPTIN) {
+    case OptInManager.CommandFromPage.CLICKED_NO_OPTIN:
       if (chrome.hotwordPrivate && chrome.hotwordPrivate.setEnabled) {
         chrome.hotwordPrivate.setEnabled(false);
       }
-    }
+      break;
     // Information regarding the audio logging preference was sent.
-    if (request.type === OptInManager.CommandFromPage.AUDIO_LOGGING_ON) {
+    case OptInManager.CommandFromPage.AUDIO_LOGGING_ON:
       if (chrome.hotwordPrivate &&
           chrome.hotwordPrivate.setAudioLoggingEnabled) {
         chrome.hotwordPrivate.setAudioLoggingEnabled(true);
-        chrome.runtime.sendMessage(
-            OptInManager.HOTWORD_EXTENSION_ID_,
-            {'cmd': OptInManager.CommandFromHelper.AUDIO_LOGGING_ON});
       }
-    }
-    if (request.type === OptInManager.CommandFromPage.AUDIO_LOGGING_OFF) {
+      break;
+    case OptInManager.CommandFromPage.AUDIO_LOGGING_OFF:
       if (chrome.hotwordPrivate &&
           chrome.hotwordPrivate.setAudioLoggingEnabled) {
         chrome.hotwordPrivate.setAudioLoggingEnabled(false);
-        chrome.runtime.sendMessage(
-            OptInManager.HOTWORD_EXTENSION_ID_,
-            {'cmd': OptInManager.CommandFromHelper.AUDIO_LOGGING_OFF});
       }
-    }
+      break;
+    default:
+      break;
   }
+  return false;
 };
-
-
-/**
- * Sets a flag to indicate that the hotword preference has been reset
- * to disabled. See crbug.com/357845.
- * @param {HotwordStatus} hotwordStatus Status of the hotword extension.
- * @private
- */
-OptInManager.prototype.resetHotwordPref_ = function(hotwordStatus) {
-  if (hotwordStatus.enabledSet &&
-      !localStorage.getItem(OptInManager.RESET_HOTWORD_PREF_) &&
-      chrome.hotwordPrivate && chrome.hotwordPrivate.setEnabled) {
-    chrome.hotwordPrivate.setEnabled(false);
-  }
-  localStorage.setItem(OptInManager.RESET_HOTWORD_PREF_, 'true');
-};
-
 
 
 /**
@@ -185,9 +132,8 @@ OptInManager.prototype.resetHotwordPref_ = function(hotwordStatus) {
  * @return {boolean} True if url is eligible hotword url.
  */
 OptInManager.prototype.isEligibleUrl = function(url) {
-  if (!url) {
+  if (!url)
     return false;
-  }
 
   var baseUrls = [
     'https://www.google.com',
@@ -214,14 +160,12 @@ OptInManager.prototype.isEligibleUrl = function(url) {
  * Initializes the extension.
  */
 OptInManager.prototype.initialize = function() {
-  chrome.tabs.onActivated.addListener(this.handleActivatedTab_.bind(this));
-  chrome.tabs.onUpdated.addListener(this.handleUpdatedTab_.bind(this));
+  // TODO(rlp): Possibly remove the next line. It's proably not used, but
+  // leaving for now to be safe. We should remove it once all messsage
+  // relaying is removed form the content scripts.
   chrome.runtime.onMessage.addListener(this.handleMessage_.bind(this));
-
-  // Reset the preference to deal with crbug.com/357845.
-  // TODO(rlp): remove this reset once we hit M36. See crbug.com/358392.
-  if (chrome.hotwordPrivate && chrome.hotwordPrivate.getStatus)
-    chrome.hotwordPrivate.getStatus(this.resetHotwordPref_.bind(this));
+  chrome.runtime.onMessageExternal.addListener(
+      this.handleMessage_.bind(this));
 };
 
 

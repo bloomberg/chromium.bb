@@ -18,5 +18,12 @@
     "tabs"
   ],
 
+  "externally_connectable": {
+    "matches": [
+      "*://*.google.com/*",
+      "chrome://newtab/"
+    ]
+  },
+
   "minimum_chrome_version": "32"
 }
