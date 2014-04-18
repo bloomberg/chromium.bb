@@ -38,7 +38,7 @@ from file_update import Mkdir, Rmdir, Symlink
 from file_update import NeedsUpdate, UpdateFromTo, UpdateText
 
 
-BIONIC_VERSION = 'ec1a1cf8fac60ccd179efb19f67b528503bea572'
+BIONIC_VERSION = '4ecda34b18f73cf28cda57dd777c7b60f5326428'
 ARCHES = ['arm']
 TOOLCHAIN_BUILD_SRC = os.path.join(TOOLCHAIN_BUILD, 'src')
 TOOLCHAIN_BUILD_OUT = os.path.join(TOOLCHAIN_BUILD, 'out')
@@ -637,6 +637,13 @@ def main(argv):
   # We can run only off buildbots
   if not options.buildbot:
     MakeBionicProject('tests', ['run'])
+
+  dst = os.path.join(TOOLCHAIN_BUILD_OUT, 'linux_arm_bionic', 'log.txt')
+  with open(dst, 'w') as dstf:
+    process.Run(['git', 'log', '-n', '1'],
+                cwd=os.path.join(TOOLCHAIN_BUILD_SRC, 'bionic'),
+                outfile=dstf,
+                verbose=False)
 
   if options.buildbot or options.upload:
     zipname = 'naclsdk_linux_arm_bionic.tgz'
