@@ -1908,6 +1908,8 @@ void Document::updateLayout()
     // Only do a layout if changes have occurred that make it necessary.
     if (isActive() && frameView && renderView() && (frameView->layoutPending() || renderView()->needsLayout()))
         frameView->layout();
+    else if (lifecycle().state() < DocumentLifecycle::LayoutClean)
+        lifecycle().advanceTo(DocumentLifecycle::LayoutClean);
 }
 
 void Document::setNeedsFocusedElementCheck()
