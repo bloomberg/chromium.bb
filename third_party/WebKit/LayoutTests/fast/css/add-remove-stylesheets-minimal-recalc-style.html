@@ -70,7 +70,7 @@ if (window.internals) {
     barSheet.remove();
     bazSheet.remove();
     // Recalc 6 elements + documentElement.
-    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "7");
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "6");
 
     // Add two sheets that each match one node. Add one to the beginning of the stylesheet list.
     document.documentElement.offsetTop;
@@ -78,14 +78,14 @@ if (window.internals) {
     var bazSheet = createSheet('.baz');
     document.head.insertBefore(bazSheet, document.head.firstChild);
     // Recalc 6 elements + documentElement.
-    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "7");
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "6");
 
     // Remove two sheets that each match one node. One is from the beginning of the stylesheet list.
     document.documentElement.offsetTop;
     barSheet.remove();
     bazSheet.remove();
     // Recalc 6 elements + documentElement.
-    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "7");
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "6");
 
     // Add and remove sheets in the same run.
     document.documentElement.offsetTop;
@@ -96,6 +96,6 @@ if (window.internals) {
     var bazSheet = addSheet('.baz');
     barSheet.remove();
     // Recalc 6 elements + documentElement.
-    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "7");
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "6");
 }
 </script>

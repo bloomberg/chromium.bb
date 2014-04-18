@@ -3,11 +3,11 @@ PASS internals.updateStyleAndReturnAffectedElementCount() is 0
 PASS internals.updateStyleAndReturnAffectedElementCount() is 3
 PASS internals.updateStyleAndReturnAffectedElementCount() is 3
 PASS internals.updateStyleAndReturnAffectedElementCount() is 6
-PASS internals.updateStyleAndReturnAffectedElementCount() is 7
-PASS internals.updateStyleAndReturnAffectedElementCount() is 7
-PASS internals.updateStyleAndReturnAffectedElementCount() is 7
 PASS internals.updateStyleAndReturnAffectedElementCount() is 6
-PASS internals.updateStyleAndReturnAffectedElementCount() is 7
+PASS internals.updateStyleAndReturnAffectedElementCount() is 6
+PASS internals.updateStyleAndReturnAffectedElementCount() is 6
+PASS internals.updateStyleAndReturnAffectedElementCount() is 6
+PASS internals.updateStyleAndReturnAffectedElementCount() is 6
 PASS successfullyParsed is true
 
 TEST COMPLETE

@@ -27,7 +27,7 @@
 #include "HTMLNames.h"
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ScriptEventListener.h"
-#include "core/css/MediaValuesDynamic.h"
+#include "core/css/MediaValuesCached.h"
 #include "core/css/parser/SizesAttributeParser.h"
 #include "core/dom/Attribute.h"
 #include "core/fetch/ImageResource.h"
@@ -167,7 +167,7 @@ void HTMLImageElement::parseAttribute(const QualifiedName& name, const AtomicStr
             toRenderImage(renderer())->setImageDevicePixelRatio(m_imageDevicePixelRatio);
         m_imageLoader.updateFromElementIgnoringPreviousError();
     } else if (RuntimeEnabledFeatures::pictureSizesEnabled() && name == sizesAttr) {
-        m_effectiveSize = SizesAttributeParser::findEffectiveSize(value, MediaValuesDynamic::create(document()));
+        m_effectiveSize = SizesAttributeParser::findEffectiveSize(value, MediaValuesCached::create(document()));
     } else if (name == usemapAttr) {
         setIsLink(!value.isNull());
     } else if (name == compositeAttr) {

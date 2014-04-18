@@ -28,7 +28,6 @@
 
 #include "core/css/MediaList.h"
 #include "core/css/MediaQueryEvaluator.h"
-#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
@@ -60,14 +59,11 @@ bool StyleMedia::matchMedium(const String& query) const
     if (!documentElement)
         return false;
 
-    StyleResolver& styleResolver = document->ensureStyleResolver();
-    RefPtr<RenderStyle> rootStyle = styleResolver.styleForElement(documentElement, 0 /*defaultParent*/, DisallowStyleSharing, MatchOnlyUserAgentRules);
-
     RefPtrWillBeRawPtr<MediaQuerySet> media = MediaQuerySet::create();
     if (!media->set(query))
         return false;
 
-    MediaQueryEvaluator screenEval(type(), m_frame, rootStyle.get());
+    MediaQueryEvaluator screenEval(type(), m_frame);
     return screenEval.eval(media.get());
 }
 

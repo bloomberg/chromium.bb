@@ -38,7 +38,7 @@ sheetContainer.innerHTML = '<style>.baz { color: blue; }</style>'
 
 // 9 elements + documentElement + body get recalced.
 if (window.internals)
-    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "11");
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "10");
 
 shouldBe("getComputedStyle(document.querySelector('.foo')).color", '"rgb(0, 0, 0)"');
 shouldBe("getComputedStyle(document.querySelector('.baz')).color", '"rgb(0, 0, 255)"');

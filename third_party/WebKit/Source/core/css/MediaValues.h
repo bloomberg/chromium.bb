@@ -12,7 +12,6 @@
 namespace WebCore {
 
 class Document;
-class RenderStyle;
 class CSSPrimitiveValue;
 
 class MediaValues : public RefCounted<MediaValues> {
@@ -32,8 +31,10 @@ public:
 
     virtual ~MediaValues() { }
 
+    static PassRefPtr<MediaValues> createDynamicIfFrameExists(LocalFrame*);
     virtual PassRefPtr<MediaValues> copy() const = 0;
     virtual bool isSafeToSendToAnotherThread() const = 0;
+    static bool computeLength(double value, unsigned short type, unsigned defaultFontSize, unsigned viewportWidth, unsigned viewportHeight, int& result);
     virtual bool computeLength(double value, unsigned short type, int& result) const = 0;
 
     virtual int viewportWidth() const = 0;
@@ -53,8 +54,6 @@ public:
     virtual bool hasValues() const = 0;
 
 protected:
-    static Document* getExecutingDocument(Document&);
-
     int calculateViewportWidth(LocalFrame*) const;
     int calculateViewportHeight(LocalFrame*) const;
     int calculateDeviceWidth(LocalFrame*) const;
@@ -63,16 +62,11 @@ protected:
     float calculateDevicePixelRatio(LocalFrame*) const;
     int calculateColorBitsPerComponent(LocalFrame*) const;
     int calculateMonochromeBitsPerComponent(LocalFrame*) const;
-    int calculateDefaultFontSize(RenderStyle*) const;
-    int calculateComputedFontSize(RenderStyle*) const;
-    bool calculateHasXHeight(RenderStyle*) const;
-    double calculateXHeight(RenderStyle*) const;
-    double calculateZeroWidth(RenderStyle*) const;
+    int calculateDefaultFontSize(LocalFrame*) const;
     bool calculateScanMediaType(LocalFrame*) const;
     bool calculateScreenMediaType(LocalFrame*) const;
     bool calculatePrintMediaType(LocalFrame*) const;
     bool calculateThreeDEnabled(LocalFrame*) const;
-    float calculateEffectiveZoom(RenderStyle*) const;
     MediaValues::PointerDeviceType calculateLeastCapablePrimaryPointerDeviceType(LocalFrame*) const;
 
 };

@@ -22,16 +22,34 @@ public:
         int monochromeBitsPerComponent;
         PointerDeviceType pointer;
         int defaultFontSize;
-        int computedFontSize;
         bool threeDEnabled;
         bool scanMediaType;
         bool screenMediaType;
         bool printMediaType;
         bool strictMode;
+
+        MediaValuesCachedData()
+            : viewportWidth(0)
+            , viewportHeight(0)
+            , deviceWidth(0)
+            , deviceHeight(0)
+            , devicePixelRatio(1.0)
+            , colorBitsPerComponent(24)
+            , monochromeBitsPerComponent(0)
+            , pointer(UnknownPointer)
+            , defaultFontSize(16)
+            , threeDEnabled(false)
+            , scanMediaType(false)
+            , screenMediaType(true)
+            , printMediaType(false)
+            , strictMode(true)
+        {
+        }
     };
 
+    static PassRefPtr<MediaValues> create();
     static PassRefPtr<MediaValues> create(Document&);
-    static PassRefPtr<MediaValues> create(LocalFrame*, RenderStyle*);
+    static PassRefPtr<MediaValues> create(LocalFrame*);
     static PassRefPtr<MediaValues> create(MediaValuesCachedData&);
     virtual PassRefPtr<MediaValues> copy() const OVERRIDE;
     virtual bool isSafeToSendToAnotherThread() const OVERRIDE;
@@ -54,7 +72,8 @@ public:
     virtual bool hasValues() const OVERRIDE;
 
 protected:
-    MediaValuesCached(LocalFrame*, RenderStyle*);
+    MediaValuesCached();
+    MediaValuesCached(LocalFrame*);
     MediaValuesCached(const MediaValuesCachedData&);
 
     MediaValuesCachedData m_data;

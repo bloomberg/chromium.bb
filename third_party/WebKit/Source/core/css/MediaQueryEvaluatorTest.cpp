@@ -80,7 +80,6 @@ TEST(MediaQueryEvaluatorTest, Basic)
     data.monochromeBitsPerComponent = 0;
     data.pointer = MediaValues::MousePointer;
     data.defaultFontSize = 16;
-    data.computedFontSize = 16;
     data.threeDEnabled = true;
     data.scanMediaType = false;
     data.screenMediaType = true;

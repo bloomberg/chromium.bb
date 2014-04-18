@@ -69,7 +69,7 @@ public:
     MediaQueryEvaluator(const char* acceptedMediaType, bool mediaFeatureResult = false);
 
     // Creates evaluator which evaluates full media queries
-    MediaQueryEvaluator(const String& acceptedMediaType, LocalFrame*, RenderStyle*);
+    MediaQueryEvaluator(const String& acceptedMediaType, LocalFrame*);
 
     // Creates evaluator which evaluates in a thread-safe manner a subset of media values
     MediaQueryEvaluator(const String& acceptedMediaType, const MediaValues&);

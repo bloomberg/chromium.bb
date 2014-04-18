@@ -82,10 +82,10 @@ MediaQueryEvaluator::MediaQueryEvaluator(const char* acceptedMediaType, bool med
 {
 }
 
-MediaQueryEvaluator::MediaQueryEvaluator(const String& acceptedMediaType, LocalFrame* frame, RenderStyle* style)
+MediaQueryEvaluator::MediaQueryEvaluator(const String& acceptedMediaType, LocalFrame* frame)
     : m_mediaType(acceptedMediaType)
     , m_expectedResult(false) // Doesn't matter when we have m_frame and m_style.
-    , m_mediaValues(MediaValuesDynamic::create(frame, style))
+    , m_mediaValues(MediaValues::createDynamicIfFrameExists(frame))
 {
 }
 

@@ -299,8 +299,6 @@ private:
     OwnPtr<MediaQueryEvaluator> m_medium;
     MediaQueryResultList m_viewportDependentMediaQueryResults;
 
-    RefPtr<RenderStyle> m_rootDefaultStyle;
-
     Document& m_document;
     SelectorFilter m_selectorFilter;
 

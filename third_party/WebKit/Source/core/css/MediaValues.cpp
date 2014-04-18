@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/css/MediaValues.h"
 
+#include "core/css/CSSHelper.h"
 #include "core/css/MediaValuesCached.h"
 #include "core/css/MediaValuesDynamic.h"
 #include "core/dom/Document.h"
@@ -13,7 +14,6 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
-#include "core/html/imports/HTMLImportsController.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderView.h"
@@ -23,12 +23,11 @@
 
 namespace WebCore {
 
-Document* MediaValues::getExecutingDocument(Document& document)
+PassRefPtr<MediaValues> MediaValues::createDynamicIfFrameExists(LocalFrame* frame)
 {
-    Document* executingDocument = document.importsController() ? document.importsController()->master() : &document;
-    ASSERT(executingDocument);
-    ASSERT(executingDocument->renderer());
-    return executingDocument;
+    if (frame)
+        return MediaValuesDynamic::create(frame);
+    return MediaValuesCached::create();
 }
 
 int MediaValues::calculateViewportWidth(LocalFrame* frame) const
@@ -90,14 +89,9 @@ int MediaValues::calculateMonochromeBitsPerComponent(LocalFrame* frame) const
     return 0;
 }
 
-int MediaValues::calculateDefaultFontSize(RenderStyle* style) const
+int MediaValues::calculateDefaultFontSize(LocalFrame* frame) const
 {
-    return style->fontDescription().specifiedSize();
-}
-
-int MediaValues::calculateComputedFontSize(RenderStyle* style) const
-{
-    return style->fontDescription().computedSize();
+    return frame->host()->settings().defaultFontSize();
 }
 
 bool MediaValues::calculateScanMediaType(LocalFrame* frame) const
@@ -142,6 +136,69 @@ MediaValues::PointerDeviceType MediaValues::calculateLeastCapablePrimaryPointerD
     // "primary".
 
     return MediaValues::UnknownPointer;
+}
+
+bool MediaValues::computeLength(double value, unsigned short type, unsigned defaultFontSize, unsigned viewportWidth, unsigned viewportHeight, int& result)
+{
+    // The logic in this function is duplicated from CSSPrimitiveValue::computeLengthDouble
+    // because MediaValues::computeLength needs nearly identical logic, but we haven't found a way to make
+    // CSSPrimitiveValue::computeLengthDouble more generic (to solve both cases) without hurting performance.
+
+    // FIXME - Unite the logic here with CSSPrimitiveValue in a performant way.
+    int factor = 0;
+    switch (type) {
+    case CSSPrimitiveValue::CSS_EMS:
+    case CSSPrimitiveValue::CSS_REMS:
+        factor = defaultFontSize;
+        break;
+    case CSSPrimitiveValue::CSS_PX:
+        factor = 1;
+        break;
+    case CSSPrimitiveValue::CSS_EXS:
+        // FIXME: We have a bug right now where the zoom will be applied twice to EX units.
+        // FIXME: We don't seem to be able to cache fontMetrics related values.
+        // Trying to access them is triggering some sort of microtask. Serving the spec's default instead.
+        factor = defaultFontSize / 2.0;
+        break;
+    case CSSPrimitiveValue::CSS_CHS:
+        // FIXME: We don't seem to be able to cache fontMetrics related values.
+        // Trying to access them is triggering some sort of microtask. Serving the (future) spec default instead.
+        factor = defaultFontSize / 2.0;
+        break;
+    case CSSPrimitiveValue::CSS_VW:
+        factor = viewportWidth / 100;
+        break;
+    case CSSPrimitiveValue::CSS_VH:
+        factor = viewportHeight / 100;
+        break;
+    case CSSPrimitiveValue::CSS_VMIN:
+        factor = std::min(viewportWidth, viewportHeight) / 100;
+        break;
+    case CSSPrimitiveValue::CSS_VMAX:
+        factor = std::max(viewportWidth, viewportHeight) / 100;
+        break;
+    case CSSPrimitiveValue::CSS_CM:
+        factor = cssPixelsPerCentimeter;
+        break;
+    case CSSPrimitiveValue::CSS_MM:
+        factor = cssPixelsPerMillimeter;
+        break;
+    case CSSPrimitiveValue::CSS_IN:
+        factor = cssPixelsPerInch;
+        break;
+    case CSSPrimitiveValue::CSS_PT:
+        factor = cssPixelsPerPoint;
+        break;
+    case CSSPrimitiveValue::CSS_PC:
+        factor = cssPixelsPerPica;
+        break;
+    default:
+        return false;
+    }
+
+    ASSERT(factor > 0);
+    result = roundForImpreciseConversion<int>(value*factor);
+    return true;
 }
 
 } // namespace

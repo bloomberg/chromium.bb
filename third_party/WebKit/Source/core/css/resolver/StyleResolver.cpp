@@ -136,24 +136,11 @@ StyleResolver::StyleResolver(Document& document)
     , m_styleResolverStatsSequence(0)
     , m_accessCount(0)
 {
-    // Construct document root element default style. This is needed
-    // to evaluate media queries that contain relative constraints, like "screen and (max-width: 10em)"
-    // This is here instead of constructor because when constructor is run,
-    // Document doesn't have documentElement.
-    // NOTE: This assumes that element that gets passed to the styleForElement call
-    // is always from the document that owns the StyleResolver.
     FrameView* view = document.view();
     if (view)
-        m_medium = adoptPtr(new MediaQueryEvaluator(view->mediaType()));
+        m_medium = adoptPtr(new MediaQueryEvaluator(view->mediaType(), &view->frame()));
     else
         m_medium = adoptPtr(new MediaQueryEvaluator("all"));
-
-    Element* root = document.documentElement();
-    if (root)
-        m_rootDefaultStyle = styleForElement(root, 0, DisallowStyleSharing, MatchOnlyUserAgentRules);
-
-    if (m_rootDefaultStyle && view)
-        m_medium = adoptPtr(new MediaQueryEvaluator(view->mediaType(), &view->frame(), m_rootDefaultStyle.get()));
 
     m_styleTree.clear();
 

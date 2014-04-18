@@ -77,14 +77,7 @@ PassOwnPtr<MediaQueryEvaluator> MediaQueryMatcher::prepareEvaluator() const
     if (!m_document || !m_document->frame())
         return nullptr;
 
-    Element* documentElement = m_document->documentElement();
-    if (!documentElement)
-        return nullptr;
-
-    StyleResolver& styleResolver = m_document->ensureStyleResolver();
-    RefPtr<RenderStyle> rootStyle = styleResolver.styleForElement(documentElement, 0 /*defaultParent*/, DisallowStyleSharing, MatchOnlyUserAgentRules);
-
-    return adoptPtr(new MediaQueryEvaluator(mediaType(), m_document->frame(), rootStyle.get()));
+    return adoptPtr(new MediaQueryEvaluator(mediaType(), m_document->frame()));
 }
 
 bool MediaQueryMatcher::evaluate(const MediaQuerySet* media)
