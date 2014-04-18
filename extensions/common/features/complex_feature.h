@@ -27,7 +27,7 @@ class ComplexFeature : public Feature {
   // extensions::Feature:
   virtual Availability IsAvailableToManifest(const std::string& extension_id,
                                              Manifest::Type type,
-                                             Location location,
+                                             Manifest::Location location,
                                              int manifest_version,
                                              Platform platform) const OVERRIDE;
 

@@ -70,33 +70,38 @@ TEST_F(ExtensionComplexFeatureTest, MultipleRulesWhitelist) {
   scoped_ptr<ComplexFeature> feature(new ComplexFeature(features.Pass()));
 
   // Test match 1st rule.
-  EXPECT_EQ(Feature::IS_AVAILABLE, feature->IsAvailableToManifest(
-      kIdFoo,
-      Manifest::TYPE_EXTENSION,
-      Feature::UNSPECIFIED_LOCATION,
-      Feature::UNSPECIFIED_PLATFORM,
-      Feature::GetCurrentPlatform()).result());
+  EXPECT_EQ(
+      Feature::IS_AVAILABLE,
+      feature->IsAvailableToManifest(kIdFoo,
+                                     Manifest::TYPE_EXTENSION,
+                                     Manifest::INVALID_LOCATION,
+                                     Feature::UNSPECIFIED_PLATFORM,
+                                     Feature::GetCurrentPlatform()).result());
 
   // Test match 2nd rule.
-  EXPECT_EQ(Feature::IS_AVAILABLE, feature->IsAvailableToManifest(
-      kIdBar,
-      Manifest::TYPE_LEGACY_PACKAGED_APP,
-      Feature::UNSPECIFIED_LOCATION,
-      Feature::UNSPECIFIED_PLATFORM,
-      Feature::GetCurrentPlatform()).result());
+  EXPECT_EQ(
+      Feature::IS_AVAILABLE,
+      feature->IsAvailableToManifest(kIdBar,
+                                     Manifest::TYPE_LEGACY_PACKAGED_APP,
+                                     Manifest::INVALID_LOCATION,
+                                     Feature::UNSPECIFIED_PLATFORM,
+                                     Feature::GetCurrentPlatform()).result());
 
   // Test whitelist with wrong extension type.
-  EXPECT_NE(Feature::IS_AVAILABLE, feature->IsAvailableToManifest(
-      kIdBar,
-      Manifest::TYPE_EXTENSION,
-      Feature::UNSPECIFIED_LOCATION,
-      Feature::UNSPECIFIED_PLATFORM,
-      Feature::GetCurrentPlatform()).result());
-  EXPECT_NE(Feature::IS_AVAILABLE, feature->IsAvailableToManifest(kIdFoo,
-      Manifest::TYPE_LEGACY_PACKAGED_APP,
-      Feature::UNSPECIFIED_LOCATION,
-      Feature::UNSPECIFIED_PLATFORM,
-      Feature::GetCurrentPlatform()).result());
+  EXPECT_NE(
+      Feature::IS_AVAILABLE,
+      feature->IsAvailableToManifest(kIdBar,
+                                     Manifest::TYPE_EXTENSION,
+                                     Manifest::INVALID_LOCATION,
+                                     Feature::UNSPECIFIED_PLATFORM,
+                                     Feature::GetCurrentPlatform()).result());
+  EXPECT_NE(
+      Feature::IS_AVAILABLE,
+      feature->IsAvailableToManifest(kIdFoo,
+                                     Manifest::TYPE_LEGACY_PACKAGED_APP,
+                                     Manifest::INVALID_LOCATION,
+                                     Feature::UNSPECIFIED_PLATFORM,
+                                     Feature::GetCurrentPlatform()).result());
 }
 
 TEST_F(ExtensionComplexFeatureTest, MultipleRulesChannels) {
@@ -126,34 +131,37 @@ TEST_F(ExtensionComplexFeatureTest, MultipleRulesChannels) {
   // Test match 1st rule.
   {
     ScopedCurrentChannel current_channel(VersionInfo::CHANNEL_UNKNOWN);
-    EXPECT_EQ(Feature::IS_AVAILABLE, feature->IsAvailableToManifest(
-        "1",
-        Manifest::TYPE_EXTENSION,
-        Feature::UNSPECIFIED_LOCATION,
-        Feature::UNSPECIFIED_PLATFORM,
-        Feature::GetCurrentPlatform()).result());
+    EXPECT_EQ(
+        Feature::IS_AVAILABLE,
+        feature->IsAvailableToManifest("1",
+                                       Manifest::TYPE_EXTENSION,
+                                       Manifest::INVALID_LOCATION,
+                                       Feature::UNSPECIFIED_PLATFORM,
+                                       Feature::GetCurrentPlatform()).result());
   }
 
   // Test match 2nd rule.
   {
     ScopedCurrentChannel current_channel(VersionInfo::CHANNEL_BETA);
-    EXPECT_EQ(Feature::IS_AVAILABLE, feature->IsAvailableToManifest(
-        "2",
-        Manifest::TYPE_LEGACY_PACKAGED_APP,
-        Feature::UNSPECIFIED_LOCATION,
-        Feature::UNSPECIFIED_PLATFORM,
-        Feature::GetCurrentPlatform()).result());
+    EXPECT_EQ(
+        Feature::IS_AVAILABLE,
+        feature->IsAvailableToManifest("2",
+                                       Manifest::TYPE_LEGACY_PACKAGED_APP,
+                                       Manifest::INVALID_LOCATION,
+                                       Feature::UNSPECIFIED_PLATFORM,
+                                       Feature::GetCurrentPlatform()).result());
   }
 
   // Test feature not available to extensions above channel unknown.
   {
     ScopedCurrentChannel current_channel(VersionInfo::CHANNEL_BETA);
-    EXPECT_NE(Feature::IS_AVAILABLE, feature->IsAvailableToManifest(
-        "1",
-        Manifest::TYPE_EXTENSION,
-        Feature::UNSPECIFIED_LOCATION,
-        Feature::UNSPECIFIED_PLATFORM,
-        Feature::GetCurrentPlatform()).result());
+    EXPECT_NE(
+        Feature::IS_AVAILABLE,
+        feature->IsAvailableToManifest("1",
+                                       Manifest::TYPE_EXTENSION,
+                                       Manifest::INVALID_LOCATION,
+                                       Feature::UNSPECIFIED_PLATFORM,
+                                       Feature::GetCurrentPlatform()).result());
   }
 }
 

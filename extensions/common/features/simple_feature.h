@@ -27,6 +27,32 @@ class SimpleFeature : public Feature {
   SimpleFeature();
   virtual ~SimpleFeature();
 
+  // Similar to Manifest::Location, these are the classes of locations
+  // supported in feature files; "component" implies
+  // COMPONENT/EXTERNAL_COMPONENT manifest location types, etc.
+  //
+  // This is only public for testing. Production code should never access it,
+  // nor should it really have any reason to access the SimpleFeature class
+  // directly, it should be dealing with the Feature interface.
+  enum Location {
+    UNSPECIFIED_LOCATION,
+    COMPONENT_LOCATION,
+    POLICY_LOCATION,
+  };
+
+  // Accessors defined for testing. See comment above about not directly using
+  // SimpleFeature in production code.
+  Location location() const { return location_; }
+  void set_location(Location location) { location_ = location; }
+  int min_manifest_version() const { return min_manifest_version_; }
+  void set_min_manifest_version(int min_manifest_version) {
+    min_manifest_version_ = min_manifest_version;
+  }
+  int max_manifest_version() const { return max_manifest_version_; }
+  void set_max_manifest_version(int max_manifest_version) {
+    max_manifest_version_ = max_manifest_version;
+  }
+
   std::set<std::string>* whitelist() { return &whitelist_; }
   std::set<Manifest::Type>* extension_types() { return &extension_types_; }
 
@@ -39,20 +65,7 @@ class SimpleFeature : public Feature {
   // the error found, or an empty string on success.
   virtual std::string Parse(const base::DictionaryValue* value);
 
-  Location location() const { return location_; }
-  void set_location(Location location) { location_ = location; }
-
   std::set<Platform>* platforms() { return &platforms_; }
-
-  int min_manifest_version() const { return min_manifest_version_; }
-  void set_min_manifest_version(int min_manifest_version) {
-    min_manifest_version_ = min_manifest_version;
-  }
-
-  int max_manifest_version() const { return max_manifest_version_; }
-  void set_max_manifest_version(int max_manifest_version) {
-    max_manifest_version_ = max_manifest_version;
-  }
 
   Availability IsAvailableToContext(const Extension* extension,
                                     Context context) const {
@@ -72,7 +85,7 @@ class SimpleFeature : public Feature {
   // extension::Feature:
   virtual Availability IsAvailableToManifest(const std::string& extension_id,
                                              Manifest::Type type,
-                                             Location location,
+                                             Manifest::Location location,
                                              int manifest_version,
                                              Platform platform) const OVERRIDE;
 
@@ -105,6 +118,8 @@ class SimpleFeature : public Feature {
                                   Context context) const;
 
  private:
+  bool MatchesManifestLocation(Manifest::Location manifest_location) const;
+
   // For clarity and consistency, we handle the default value of each of these
   // members the same way: it matches everything. It is up to the higher level
   // code that reads Features out of static data to validate that data and set
@@ -113,7 +128,7 @@ class SimpleFeature : public Feature {
   std::set<Manifest::Type> extension_types_;
   std::set<Context> contexts_;
   URLPatternSet matches_;
-  Location location_;  // we only care about component/not-component now
+  Location location_;
   std::set<Platform> platforms_;
   int min_manifest_version_;
   int max_manifest_version_;
@@ -122,7 +137,6 @@ class SimpleFeature : public Feature {
   typedef std::vector<linked_ptr<SimpleFeatureFilter> > FilterList;
   FilterList filters_;
 
-  FRIEND_TEST_ALL_PREFIXES(ExtensionSimpleFeatureTest, Context);
   DISALLOW_COPY_AND_ASSIGN(SimpleFeature);
 };
 

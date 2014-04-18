@@ -28,7 +28,7 @@ Feature::Availability SimpleFeatureFilter::IsAvailableToContext(
 Feature::Availability SimpleFeatureFilter::IsAvailableToManifest(
     const std::string& extension_id,
     Manifest::Type type,
-    Feature::Location location,
+    Manifest::Location location,
     int manifest_version,
     Feature::Platform platform) const {
   return Feature::CreateAvailability(Feature::IS_AVAILABLE, std::string());

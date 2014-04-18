@@ -10,6 +10,7 @@
 #include "base/lazy_instance.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "extensions/common/extension.h"
 
 namespace extensions {
 
@@ -29,17 +30,17 @@ Feature::Platform Feature::GetCurrentPlatform() {
 }
 
 // static
-Feature::Location Feature::ConvertLocation(Manifest::Location location) {
-  if (location == Manifest::COMPONENT)
-    return COMPONENT_LOCATION;
-  else
-    return UNSPECIFIED_LOCATION;
-}
-
-// static
 Feature::Availability Feature::CreateAvailability(AvailabilityResult result,
                                                   const std::string& message) {
   return Availability(result, message);
+}
+
+Feature::Availability Feature::IsAvailableToExtension(
+    const Extension* extension) {
+  return IsAvailableToManifest(extension->id(),
+                               extension->GetType(),
+                               extension->location(),
+                               extension->manifest_version());
 }
 
 Feature::Feature() : no_parent_(false) {}

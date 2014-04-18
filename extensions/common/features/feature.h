@@ -46,12 +46,6 @@ class Feature {
     BLESSED_WEB_PAGE_CONTEXT,
   };
 
-  // The location required of extensions the feature is supported in.
-  enum Location {
-    UNSPECIFIED_LOCATION,
-    COMPONENT_LOCATION
-  };
-
   // The platforms the feature is supported in.
   enum Platform {
     UNSPECIFIED_PLATFORM,
@@ -101,6 +95,8 @@ class Feature {
   virtual ~Feature();
 
   // Used by ChromeV8Context until the feature system is fully functional.
+  // TODO(kalman): This is no longer used by ChromeV8Context, so what is the
+  // comment trying to say?
   static Availability CreateAvailability(AvailabilityResult result,
                                          const std::string& message);
 
@@ -111,9 +107,6 @@ class Feature {
 
   // Gets the platform the code is currently running on.
   static Platform GetCurrentPlatform();
-
-  // Gets the Feature::Location value for the specified Manifest::Location.
-  static Location ConvertLocation(Manifest::Location extension_location);
 
   virtual std::set<Context>* GetContexts() = 0;
 
@@ -127,16 +120,19 @@ class Feature {
   // manifest.
   Availability IsAvailableToManifest(const std::string& extension_id,
                                      Manifest::Type type,
-                                     Location location,
+                                     Manifest::Location location,
                                      int manifest_version) const {
     return IsAvailableToManifest(extension_id, type, location, manifest_version,
                                  GetCurrentPlatform());
   }
   virtual Availability IsAvailableToManifest(const std::string& extension_id,
                                              Manifest::Type type,
-                                             Location location,
+                                             Manifest::Location location,
                                              int manifest_version,
                                              Platform platform) const = 0;
+
+  // Returns true if the feature is available to |extension|.
+  Availability IsAvailableToExtension(const Extension* extension);
 
   // Returns true if the feature is available to be used in the specified
   // extension and context.

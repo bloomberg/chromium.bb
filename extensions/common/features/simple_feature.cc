@@ -34,7 +34,8 @@ struct Mappings {
     contexts["web_page"] = Feature::WEB_PAGE_CONTEXT;
     contexts["blessed_web_page"] = Feature::BLESSED_WEB_PAGE_CONTEXT;
 
-    locations["component"] = Feature::COMPONENT_LOCATION;
+    locations["component"] = SimpleFeature::COMPONENT_LOCATION;
+    locations["policy"] = SimpleFeature::POLICY_LOCATION;
 
     platforms["chromeos"] = Feature::CHROMEOS_PLATFORM;
     platforms["linux"] = Feature::LINUX_PLATFORM;
@@ -44,7 +45,7 @@ struct Mappings {
 
   std::map<std::string, Manifest::Type> extension_types;
   std::map<std::string, Feature::Context> contexts;
-  std::map<std::string, Feature::Location> locations;
+  std::map<std::string, SimpleFeature::Location> locations;
   std::map<std::string, Feature::Platform> platforms;
 };
 
@@ -264,7 +265,7 @@ std::string SimpleFeature::Parse(const base::DictionaryValue* value) {
 Feature::Availability SimpleFeature::IsAvailableToManifest(
     const std::string& extension_id,
     Manifest::Type type,
-    Location location,
+    Manifest::Location location,
     int manifest_version,
     Platform platform) const {
   // Check extension type first to avoid granting platform app permissions
@@ -279,7 +280,8 @@ Feature::Availability SimpleFeature::IsAvailableToManifest(
   }
 
   // Component extensions can access any feature.
-  if (location == COMPONENT_LOCATION)
+  // TODO(kalman/asargent): Should this match EXTERNAL_COMPONENT too?
+  if (location == Manifest::COMPONENT)
     return CreateAvailability(IS_AVAILABLE, type);
 
   if (!whitelist_.empty()) {
@@ -298,7 +300,7 @@ Feature::Availability SimpleFeature::IsAvailableToManifest(
     }
   }
 
-  if (location_ != UNSPECIFIED_LOCATION && location_ != location)
+  if (!MatchesManifestLocation(location))
     return CreateAvailability(INVALID_LOCATION, type);
 
   if (!platforms_.empty() &&
@@ -329,12 +331,11 @@ Feature::Availability SimpleFeature::IsAvailableToContext(
     const GURL& url,
     SimpleFeature::Platform platform) const {
   if (extension) {
-    Availability result = IsAvailableToManifest(
-        extension->id(),
-        extension->GetType(),
-        ConvertLocation(extension->location()),
-        extension->manifest_version(),
-        platform);
+    Availability result = IsAvailableToManifest(extension->id(),
+                                                extension->GetType(),
+                                                extension->location(),
+                                                extension->manifest_version(),
+                                                platform);
     if (!result.is_available())
       return result;
   }
@@ -476,6 +477,22 @@ bool SimpleFeature::IsIdInWhitelist(const std::string& extension_id,
     return true;
   }
 
+  return false;
+}
+
+bool SimpleFeature::MatchesManifestLocation(
+    Manifest::Location manifest_location) const {
+  switch (location_) {
+    case SimpleFeature::UNSPECIFIED_LOCATION:
+      return true;
+    case SimpleFeature::COMPONENT_LOCATION:
+      // TODO(kalman/asargent): Should this include EXTERNAL_COMPONENT too?
+      return manifest_location == Manifest::COMPONENT;
+    case SimpleFeature::POLICY_LOCATION:
+      return manifest_location == Manifest::EXTERNAL_POLICY ||
+             manifest_location == Manifest::EXTERNAL_POLICY_DOWNLOAD;
+  }
+  NOTREACHED();
   return false;
 }
 

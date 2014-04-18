@@ -159,8 +159,7 @@ bool Manifest::ValidateManifest(
 
     Feature* feature = manifest_feature_provider->GetFeature(*feature_name);
     Feature::Availability result = feature->IsAvailableToManifest(
-        extension_id_, type_, Feature::ConvertLocation(location_),
-        GetManifestVersion());
+        extension_id_, type_, location_, GetManifestVersion());
     if (!result.is_available())
       warnings->push_back(InstallWarning(result.message(), *feature_name));
   }
@@ -260,8 +259,8 @@ bool Manifest::CanAccessKey(const std::string& key) const {
     return true;
 
   return feature->IsAvailableToManifest(
-      extension_id_, type_, Feature::ConvertLocation(location_),
-      GetManifestVersion()).is_available();
+                      extension_id_, type_, location_, GetManifestVersion())
+      .is_available();
 }
 
 }  // namespace extensions

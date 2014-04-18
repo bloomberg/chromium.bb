@@ -47,7 +47,7 @@ class SimpleFeatureFilter {
   virtual Feature::Availability IsAvailableToManifest(
       const std::string& extension_id,
       Manifest::Type type,
-      Feature::Location location,
+      Manifest::Location location,
       int manifest_version,
       Feature::Platform platform) const;
 

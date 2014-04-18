@@ -170,29 +170,33 @@ TEST(BaseFeatureProviderTest, ComplexFeatures) {
   // Make sure both rules are applied correctly.
   {
     ScopedCurrentChannel current_channel(VersionInfo::CHANNEL_BETA);
-    EXPECT_EQ(Feature::IS_AVAILABLE, feature->IsAvailableToManifest(
-        "1",
-        Manifest::TYPE_EXTENSION,
-        Feature::UNSPECIFIED_LOCATION,
-        Feature::UNSPECIFIED_PLATFORM).result());
-    EXPECT_EQ(Feature::IS_AVAILABLE, feature->IsAvailableToManifest(
-        "2",
-        Manifest::TYPE_LEGACY_PACKAGED_APP,
-        Feature::UNSPECIFIED_LOCATION,
-        Feature::UNSPECIFIED_PLATFORM).result());
+    EXPECT_EQ(
+        Feature::IS_AVAILABLE,
+        feature->IsAvailableToManifest("1",
+                                       Manifest::TYPE_EXTENSION,
+                                       Manifest::INVALID_LOCATION,
+                                       Feature::UNSPECIFIED_PLATFORM).result());
+    EXPECT_EQ(
+        Feature::IS_AVAILABLE,
+        feature->IsAvailableToManifest("2",
+                                       Manifest::TYPE_LEGACY_PACKAGED_APP,
+                                       Manifest::INVALID_LOCATION,
+                                       Feature::UNSPECIFIED_PLATFORM).result());
   }
   {
     ScopedCurrentChannel current_channel(VersionInfo::CHANNEL_STABLE);
-    EXPECT_NE(Feature::IS_AVAILABLE, feature->IsAvailableToManifest(
-        "1",
-        Manifest::TYPE_EXTENSION,
-        Feature::UNSPECIFIED_LOCATION,
-        Feature::UNSPECIFIED_PLATFORM).result());
-    EXPECT_NE(Feature::IS_AVAILABLE, feature->IsAvailableToManifest(
-        "2",
-        Manifest::TYPE_LEGACY_PACKAGED_APP,
-        Feature::UNSPECIFIED_LOCATION,
-        Feature::UNSPECIFIED_PLATFORM).result());
+    EXPECT_NE(
+        Feature::IS_AVAILABLE,
+        feature->IsAvailableToManifest("1",
+                                       Manifest::TYPE_EXTENSION,
+                                       Manifest::INVALID_LOCATION,
+                                       Feature::UNSPECIFIED_PLATFORM).result());
+    EXPECT_NE(
+        Feature::IS_AVAILABLE,
+        feature->IsAvailableToManifest("2",
+                                       Manifest::TYPE_LEGACY_PACKAGED_APP,
+                                       Manifest::INVALID_LOCATION,
+                                       Feature::UNSPECIFIED_PLATFORM).result());
   }
 }
 

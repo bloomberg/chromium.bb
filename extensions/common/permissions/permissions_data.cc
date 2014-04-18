@@ -134,11 +134,8 @@ bool ParseHelper(Extension* extension,
       continue;
     }
 
-    Feature::Availability availability = feature->IsAvailableToManifest(
-        extension->id(),
-        extension->GetType(),
-        Feature::ConvertLocation(extension->location()),
-        extension->manifest_version());
+    Feature::Availability availability =
+        feature->IsAvailableToExtension(extension);
 
     if (!availability.is_available()) {
       // Don't fail, but warn the developer that the manifest contains

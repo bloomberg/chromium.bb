@@ -706,7 +706,7 @@ TEST(ExtensionAPITest, DefaultConfigurationFeatures) {
     EXPECT_TRUE(feature->GetContexts()->count(
         Feature::BLESSED_EXTENSION_CONTEXT));
 
-    EXPECT_EQ(Feature::UNSPECIFIED_LOCATION, feature->location());
+    EXPECT_EQ(SimpleFeature::UNSPECIFIED_LOCATION, feature->location());
     EXPECT_TRUE(feature->platforms()->empty());
     EXPECT_EQ(0, feature->min_manifest_version());
     EXPECT_EQ(0, feature->max_manifest_version());
