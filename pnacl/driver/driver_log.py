@@ -56,6 +56,7 @@ def FixArch(arch):
               'x86-32-linux': 'X8632_LINUX',
               'x86-32-mac': 'X8632_MAC',
               'x86-32-nonsfi': 'X8632_NONSFI',
+              'arm-nonsfi': 'ARM_NONSFI',
               }
   if arch not in archfix:
     Log.Fatal('Unrecognized arch "%s"!', arch)

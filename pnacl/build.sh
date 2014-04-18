@@ -451,7 +451,7 @@ libs() {
     newlib ${arch}
   done
   libs-support
-  for arch in arm x86-32 x86-64 mips32 x86-32-nonsfi; do
+  for arch in arm x86-32 x86-64 mips32 arm-nonsfi x86-32-nonsfi; do
     dummy-irt-shim ${arch}
   done
   compiler-rt-all
@@ -1120,6 +1120,7 @@ compiler-rt-all() {
   compiler-rt mips32
   compiler-rt x86-32
   compiler-rt x86-64
+  compiler-rt arm-nonsfi
   compiler-rt x86-32-nonsfi
 }
 
@@ -2329,7 +2330,7 @@ libs-support() {
   libs-support-bitcode x86-64
 
   local arch
-  for arch in arm x86-32 x86-64 mips32 x86-32-nonsfi; do
+  for arch in arm x86-32 x86-64 mips32 arm-nonsfi x86-32-nonsfi; do
     libs-support-native ${arch}
   done
 
@@ -2427,6 +2428,8 @@ libs-support-native() {
   local setjmp_arch="$arch"
   if [ "$setjmp_arch" = "x86-32-nonsfi" ]; then
     setjmp_arch=x86-32
+  elif [ "$setjmp_arch" = "arm-nonsfi" ]; then
+    setjmp_arch=arm
   fi
   ${cc_cmd} -c setjmp_${setjmp_arch/-/_}.S -o "${tmpdir}"/setjmp.o
 

@@ -60,7 +60,12 @@ INITIAL_ENV = {
   'SCONS_OUT'       : '${BASE_NACL}/scons-out',
 
   # Driver settings
-  'ARCH'        : '',     # Target architecture
+  'ARCH'        : '',     # Target architecture, including optional
+                          # suffixes such as '_NONSFI' or '_LINUX'.
+  'BASE_ARCH'   : '',     # Target architecture without any '_NONSFI' suffix.
+                          # Derived from ARCH field.
+  'NONSFI_NACL' : '0',    # Whether targeting Non-SFI Mode.  Derived from
+                          # ARCH field.
   'BIAS'        : 'NONE', # This can be 'NONE', 'ARM', 'MIPS32', 'X8632' or
                           # 'X8664'.
                           # When not set to none, this causes the front-end to

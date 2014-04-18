@@ -53,19 +53,18 @@ EXTRA_ENV = {
                   '--no-fix-cortex-a8 ' +
                   '-m ${LD_EMUL} ' +
                   '--eh-frame-hdr ' +
-                  '${ARCH == X8632_NONSFI ? -pie : -static} ' +
+                  '${NONSFI_NACL ? -pie : -static} ' +
                   # "_begin" allows a PIE to find its load address in
                   # order to apply dynamic relocations.
-                  '${ARCH == X8632_NONSFI ? -defsym=_begin=0} ' +
+                  '${NONSFI_NACL ? -defsym=_begin=0} ' +
                   # Give an error if any TEXTRELs occur.
                   '-z text ' +
                   '--build-id ' +
                   '${!USE_IRT ? --rosegment-gap=32}',
 
-  'LD_EMUL'        : '${LD_EMUL_%ARCH%}',
+  'LD_EMUL'        : '${LD_EMUL_%BASE_ARCH%}',
   'LD_EMUL_ARM'    : 'armelf_nacl',
   'LD_EMUL_X8632'  : 'elf_nacl',
-  'LD_EMUL_X8632_NONSFI': 'elf_nacl',
   'LD_EMUL_X8664'  : 'elf64_nacl',
   'LD_EMUL_MIPS32' : 'elf32ltsmip_nacl',
 
@@ -75,6 +74,7 @@ EXTRA_ENV = {
 
   'LIBS_ARCH'        : '${LIBS_%ARCH%}',
   'LIBS_ARM'         : '${BASE_LIB_NATIVE}arm',
+  'LIBS_ARM_NONSFI'  : '${BASE_LIB_NATIVE}arm-nonsfi',
   'LIBS_X8632'       : '${BASE_LIB_NATIVE}x86-32',
   'LIBS_X8632_NONSFI': '${BASE_LIB_NATIVE}x86-32-nonsfi',
   'LIBS_X8664'       : '${BASE_LIB_NATIVE}x86-64',

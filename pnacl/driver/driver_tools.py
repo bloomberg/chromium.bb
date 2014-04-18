@@ -711,7 +711,16 @@ def DriverMain(module, argv):
 
 
 def SetArch(arch):
-  env.set('ARCH', FixArch(arch))
+  arch = FixArch(arch)
+  env.set('ARCH', arch)
+
+  nonsfi_nacl = False
+  if arch.endswith('_NONSFI'):
+    arch = arch[:-len('_NONSFI')]
+    nonsfi_nacl = True
+  env.set('BASE_ARCH', arch)
+  env.setbool('NONSFI_NACL', nonsfi_nacl)
+
 
 def GetArch(required = False):
   arch = env.getone('ARCH')

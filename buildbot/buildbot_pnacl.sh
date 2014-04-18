@@ -588,9 +588,11 @@ test-nonsfi-mode() {
   local out_dir=scons-out/nacl_irt_test-x86-32-pnacl-pexe-clang
   local pexe_path=${out_dir}/obj/tests/hello_world/hello_world.final.pexe
   ./scons -j8 bitcode=1 --mode=nacl,nacl_irt_test ${pexe_path}
-  toolchain/linux_x86/pnacl_newlib/bin/pnacl-translate -arch x86-32-nonsfi \
-      ${pexe_path} -o /tmp/hellow.nexe
-  rm /tmp/hellow.nexe
+  for arch in x86-32 arm; do
+    toolchain/linux_x86/pnacl_newlib/bin/pnacl-translate -arch ${arch}-nonsfi \
+        ${pexe_path} -o /tmp/hellow.nexe
+    rm /tmp/hellow.nexe
+  done
 }
 
 mode-buildbot-tc-x8632-linux() {

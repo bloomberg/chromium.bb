@@ -77,6 +77,7 @@ EXTRA_ENV = {
   'BIAS_MIPS32' : '-D__MIPS__ -D__mips__ -D__MIPSEL__',
   'BIAS_X8632'  : '-D__i386__ -D__i386 -D__i686 -D__i686__ -D__pentium4__',
   'BIAS_X8664'  : '-D__amd64__ -D__amd64 -D__x86_64__ -D__x86_64 -D__core2__',
+  'BIAS_ARM_NONSFI': '${BIAS_ARM} -D__native_client_nonsfi__',
   'BIAS_X8632_NONSFI': '${BIAS_X8632} -D__native_client_nonsfi__',
   'FRONTEND_TRIPLE' : 'le32-unknown-nacl',
 

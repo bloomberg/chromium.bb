@@ -57,11 +57,13 @@ void apply_relocations(void) {
     switch (reloc_type) {
 #if defined(__i386__)
       case R_386_RELATIVE:
-        *(uint32_t *) addr += (uint32_t) _begin;
-        break;
+#elif defined(__arm__)
+      case R_ARM_RELATIVE:
 #else
 # error Unhandled architecture
 #endif
+        *(uint32_t *) addr += (uint32_t) _begin;
+        break;
       default:
         unhandled_relocation();
     }

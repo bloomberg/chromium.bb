@@ -480,8 +480,8 @@ def NativeLibs(host, arch):
   def H(component_name):
     return Mangle(component_name, host)
   setjmp_arch = arch
-  if setjmp_arch == 'x86-32-nonsfi':
-    setjmp_arch = 'x86-32'
+  if setjmp_arch.endswith('-nonsfi'):
+    setjmp_arch = setjmp_arch[:-len('-nonsfi')]
   libs = {
       Mangle('libs_support_native', arch): {
           'type': 'build',
@@ -560,7 +560,7 @@ def NativeLibs(host, arch):
           ],
       },
   }
-  if arch != 'x86-32-nonsfi':
+  if not arch.endswith('-nonsfi'):
     libs.update({
       Mangle('libgcc_eh', arch): {
           'type': 'build',

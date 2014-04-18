@@ -22,7 +22,7 @@ from driver_temps import TempFiles
 import subprocess
 
 EXTRA_ENV = {
-  'PIC': '${ARCH == X8632_NONSFI ? 1 : 0}',
+  'PIC': '${NONSFI_NACL}',
 
   # Determine if we should build nexes compatible with the IRT
   'USE_IRT' : '1',
@@ -207,29 +207,34 @@ TranslatorPatterns = [
 
 
 def SetUpArch():
-  base_arch = env.getone('ARCH')
+  base_arch = env.getone('BASE_ARCH')
   env.set('TARGET_OS', 'nacl')
-  without_sfi = False
-  if base_arch.endswith('_NONSFI'):
-    base_arch = base_arch[:-len('_NONSFI')]
-    without_sfi = True
-  elif base_arch.endswith('_LINUX'):
+  if base_arch.endswith('_LINUX'):
     base_arch = base_arch[:-len('_LINUX')]
     env.set('TARGET_OS', 'linux')
-    without_sfi = True
   elif base_arch.endswith('_MAC'):
     base_arch = base_arch[:-len('_MAC')]
     env.set('TARGET_OS', 'mac')
-    without_sfi = True
 
-  triple_map = {
-      'nacl':
-          {'X8632': 'i686-none-nacl-gnu',
-           'X8664': 'x86_64-none-nacl-gnu',
-           'ARM': 'armv7a-none-nacl-gnueabihf',
-           'MIPS32': 'mipsel-none-nacl-gnu'},
-      'linux': {'X8632': 'i686-linux-gnu'},
-      'mac': {'X8632': 'i686-apple-darwin'}}
+  if env.getbool('NONSFI_NACL'):
+    triple_map = {
+        'nacl':
+            {'X8632': 'i686-linux-gnu',
+             # TODO(mseaborn): This triple uses soft-float, which is
+             # not correct for arm-nonsfi.  To get hard-float, we'd
+             # have to specify "-gnueabi(hf)", but that makes llc use
+             # "__aeabi_*" functions which our libgcc build currently
+             # doesn't define.
+             'ARM': 'armv7a-linux-none'}}
+  else:
+    triple_map = {
+        'nacl':
+            {'X8632': 'i686-none-nacl-gnu',
+             'X8664': 'x86_64-none-nacl-gnu',
+             'ARM': 'armv7a-none-nacl-gnueabihf',
+             'MIPS32': 'mipsel-none-nacl-gnu'},
+        'linux': {'X8632': 'i686-linux-gnu'},
+        'mac': {'X8632': 'i686-apple-darwin'}}
   env.set('TRIPLE', triple_map[env.getone('TARGET_OS')][base_arch])
 
   # CPU that is representative of baseline feature requirements for NaCl
@@ -256,7 +261,7 @@ def SetUpArch():
   # use %gs:0 to read the thread pointer because that won't be
   # compatible with the libc's use of %gs:0.  Similarly, Non-SFI Mode
   # currently offers no optimized path for reading the thread pointer.
-  if without_sfi:
+  if env.getone('TARGET_OS') != 'nacl' or env.getbool('NONSFI_NACL'):
     env.append('LLC_FLAGS_ARCH', '-mtls-use-call')
 
 

@@ -4,6 +4,33 @@
  * found in the LICENSE file.
  */
 
+#if defined(__native_client_nonsfi__)
+
+    .text
+    .globl setjmp
+
+/* int setjmp(jmp_buf env) */
+setjmp:
+    stmia   r0!, {r4-r11, sp, lr}
+    vstmia  r0!, {d8-d15}
+    mov     r0, #0
+    bx      lr
+
+    .text
+    .globl longjmp
+
+/* void longjmp(jmp_buf env, int val) */
+longjmp:
+    ldmia   r0!, {r4-r11, sp, lr}
+    vldmia  r0!, {d8-d15}
+    /* Return the result argument if nonzero or 1 otherwise */
+    /* Note: move updates condition codes */
+    movs    r0, r1
+    moveq   r0, #1
+    bx      lr
+
+#else
+
 #include "nacl_arm_defs.h"
 
 /*
@@ -56,3 +83,5 @@ longjmp:
 
     bic     lr, lr, #NACL_CONTROL_FLOW_MASK
     bx      lr
+
+#endif
