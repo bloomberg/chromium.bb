@@ -979,6 +979,11 @@ crbug.com/359960 compositing/iframes/scrolling-iframe.html [ Pass Failure ]
 crbug.com/359960 virtual/softwarecompositing/iframes/scrolling-iframe.html [ Pass Failure ]
 crbug.com/359961 inspector/timeline/timeline-window-filter.html [ Pass Timeout ]
 
+# These tests don't work when force compositing mode is enabled.
+crbug.com/364960 fast/multicol/newmulticol/hide-box-horizontal-bt.html [ Skip ]
+crbug.com/364960 fast/multicol/newmulticol/hide-box-vertical-rl.html [ Skip ]
+crbug.com/364960 fast/multicol/newmulticol/layers-in-multicol.html [ Skip ]
+
 # Appears broken, needs investigation.
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/shaping/shaping-selection-rect.html [ Failure ]
 
