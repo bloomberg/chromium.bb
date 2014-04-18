@@ -119,6 +119,7 @@ RenderLayerCompositor::RenderLayerCompositor(RenderView& renderView)
     , m_forceCompositingMode(false)
     , m_forceCompositingModeDirty(true)
     , m_needsUpdateCompositingRequirementsState(false)
+    , m_needsUpdateFixedBackground(false)
     , m_isTrackingRepaints(false)
     , m_rootLayerAttachment(RootLayerUnattached)
 {
