@@ -29,6 +29,10 @@ class BrowserShortcutLauncherItemController : public LauncherItemController {
   // Updates the activation state of the Broswer item.
   void UpdateBrowserItemState();
 
+  // Sets the shelf id for the browser window if the browser is represented.
+  void SetShelfIDForBrowserWindowContents(Browser* browser,
+                                          content::WebContents* web_contents);
+
   // LauncherItemController overrides:
   virtual bool IsOpen() const OVERRIDE;
   virtual bool IsVisible() const OVERRIDE;

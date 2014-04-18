@@ -22,10 +22,12 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_constants.h"
 #include "grit/ash_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -96,6 +98,16 @@ void BrowserShortcutLauncherItemController::UpdateBrowserItemState() {
     browser_item.status = browser_status;
     model->Set(browser_index, browser_item);
   }
+}
+
+void BrowserShortcutLauncherItemController::SetShelfIDForBrowserWindowContents(
+    Browser* browser,
+    content::WebContents* web_contents) {
+  if (!IsBrowserRepresentedInBrowserList(browser))
+    return;
+  ash::SetShelfIDForWindow(
+      launcher_controller()->GetShelfIDForWebContents(web_contents),
+      browser->window()->GetNativeWindow());
 }
 
 bool BrowserShortcutLauncherItemController::IsOpen() const {
@@ -317,13 +329,23 @@ void BrowserShortcutLauncherItemController::ActivateOrAdvanceToNextBrowser() {
 
 bool BrowserShortcutLauncherItemController::IsBrowserRepresentedInBrowserList(
     Browser* browser) {
-  return (browser &&
-          launcher_controller()->IsBrowserFromActiveUser(browser) &&
-          browser->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH &&
-          (browser->is_type_tabbed() ||
-           !browser->is_app() ||
-           !browser->is_type_popup() ||
-           launcher_controller()->
-               GetShelfIDForAppID(web_app::GetExtensionIdFromApplicationName(
-                   browser->app_name())) <= 0));
+  // Only Ash desktop browser windows for the active user are represented.
+  if (!browser ||
+      !launcher_controller()->IsBrowserFromActiveUser(browser) ||
+      browser->host_desktop_type() != chrome::HOST_DESKTOP_TYPE_ASH)
+    return false;
+
+  // v1 App popup windows with a valid app id have their own icon.
+  if (browser->is_app() &&
+      browser->is_type_popup() &&
+      launcher_controller()->GetShelfIDForAppID(
+          web_app::GetExtensionIdFromApplicationName(browser->app_name())) > 0)
+    return false;
+
+  // Stand-alone chrome:// windows (e.g. settings) have their own icon.
+  if (chrome::IsTrustedPopupWindowWithScheme(browser, content::kChromeUIScheme))
+    return false;
+
+  // Tabbed browser and other popup windows are all represented.
+  return true;
 }

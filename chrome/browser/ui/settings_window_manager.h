@@ -9,11 +9,15 @@
 #include <string>
 
 #include "base/memory/singleton.h"
+#include "base/observer_list.h"
 #include "chrome/browser/sessions/session_id.h"
 
+class Browser;
 class Profile;
 
 namespace chrome {
+
+class SettingsWindowManagerObserver;
 
 // Class for managing settings windows when --enable-settings-window is enabled.
 // TODO(stevenjb): Remove flag comment if enabled by default.
@@ -22,9 +26,16 @@ class SettingsWindowManager {
  public:
   static SettingsWindowManager* GetInstance();
 
-  // Show an existing settings window for |profile| or create a new one, and
-  // navigate to |sub_page|.
+  void AddObserver(SettingsWindowManagerObserver* observer);
+  void RemoveObserver(SettingsWindowManagerObserver* observer);
+
+  // Shows an existing settings Browser window for |profile| or creates a new
+  // one. Navigates that window to |sub_page|.
   void ShowForProfile(Profile* profile, const std::string& sub_page);
+
+  // If a Browser settings window for |profile| has already been created,
+  // returns it, otherwise returns NULL.
+  Browser* FindBrowserForProfile(Profile* profile);
 
  private:
   friend struct DefaultSingletonTraits<SettingsWindowManager>;
@@ -33,6 +44,7 @@ class SettingsWindowManager {
   SettingsWindowManager();
   ~SettingsWindowManager();
 
+  ObserverList<SettingsWindowManagerObserver> observers_;
   ProfileSessionMap settings_session_map_;
 
   DISALLOW_COPY_AND_ASSIGN(SettingsWindowManager);

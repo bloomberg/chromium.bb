@@ -28,7 +28,6 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/url_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
 
@@ -210,6 +209,20 @@ GURL GetSettingsUrl(const std::string& sub_page) {
   }
 #endif
   return GURL(url);
+}
+
+bool IsTrustedPopupWindowWithScheme(const Browser* browser,
+                                    const std::string& scheme) {
+  if (!browser->is_type_popup() || !browser->is_trusted_source())
+    return false;
+  if (scheme.empty())  // Any trusted popup window
+    return true;
+  const content::WebContents* web_contents =
+      browser->tab_strip_model()->GetWebContentsAt(0);
+  if (!web_contents)
+    return false;
+  GURL url(web_contents->GetURL());
+  return url.SchemeIs(scheme.c_str());
 }
 
 void ShowSettings(Browser* browser) {

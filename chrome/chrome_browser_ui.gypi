@@ -1301,6 +1301,7 @@
         'browser/ui/search_engines/template_url_table_model.h',
         'browser/ui/settings_window_manager.cc',
         'browser/ui/settings_window_manager.h',
+        'browser/ui/settings_window_manager_observer.h',
         'browser/ui/profile_reset_bubble.h',
         'browser/ui/profile_reset_bubble_stub.cc',
         'browser/ui/simple_message_box.h',

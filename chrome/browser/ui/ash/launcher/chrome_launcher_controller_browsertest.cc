@@ -43,6 +43,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/settings_window_manager.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -2030,4 +2031,24 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, V1AppNavigation) {
   // Make sure that the app is really gone.
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(ash::STATUS_CLOSED, model_->ItemByID(id)->status);
+}
+
+// Checks that a opening a settings window creates a new launcher item.
+IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, SettingsWindow) {
+  chrome::SettingsWindowManager* settings_manager =
+      chrome::SettingsWindowManager::GetInstance();
+  ash::ShelfModel* shelf_model = ash::Shell::GetInstance()->shelf_model();
+
+  // Get the number of items in the shelf and browser menu.
+  int item_count = shelf_model->item_count();
+  size_t browser_count = NumberOfDetectedLauncherBrowsers(false);
+
+  // Open a settings window. Number of browser items should remain unchanged,
+  // number of shelf items should increase.
+  settings_manager->ShowForProfile(browser()->profile(), std::string());
+  Browser* settings_browser =
+      settings_manager->FindBrowserForProfile(browser()->profile());
+  ASSERT_TRUE(settings_browser);
+  EXPECT_EQ(browser_count, NumberOfDetectedLauncherBrowsers(false));
+  EXPECT_EQ(item_count + 1, shelf_model->item_count());
 }
