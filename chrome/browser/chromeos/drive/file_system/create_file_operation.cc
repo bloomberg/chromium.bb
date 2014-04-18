@@ -57,6 +57,7 @@ FileError UpdateLocalState(internal::ResourceMetadata* metadata,
   entry->set_title(file_path.BaseName().AsUTF8Unsafe());
   entry->set_parent_local_id(parent.local_id());
   entry->set_metadata_edit_state(ResourceEntry::DIRTY);
+  entry->set_modification_date(base::Time::Now().ToInternalValue());
   entry->mutable_file_specific_info()->set_content_mime_type(mime_type);
 
   std::string local_id;

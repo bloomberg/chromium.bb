@@ -132,6 +132,7 @@ FileError TryToCopyLocally(internal::ResourceMetadata* metadata,
   entry.mutable_file_specific_info()->set_content_mime_type(
       params->src_entry.file_specific_info().content_mime_type());
   entry.set_metadata_edit_state(ResourceEntry::DIRTY);
+  entry.set_modification_date(base::Time::Now().ToInternalValue());
   entry.mutable_file_info()->set_last_modified(
       params->preserve_last_modified ?
       params->src_entry.file_info().last_modified() : now);
@@ -260,6 +261,7 @@ FileError LocalWorkForTransferJsonGdocFile(
     entry.set_title(params->new_title);
     entry.set_parent_local_id(params->parent_local_id);
     entry.set_metadata_edit_state(ResourceEntry::DIRTY);
+    entry.set_modification_date(base::Time::Now().ToInternalValue());
     error = metadata->RefreshEntry(entry);
     if (error == FILE_ERROR_OK)
       params->changed_path = metadata->GetFilePath(local_id);

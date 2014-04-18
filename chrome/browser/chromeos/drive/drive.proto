@@ -114,6 +114,9 @@ message ResourceEntry {
 
   // Indicates whether this entry's metadata is edited locally or not.
   optional EditState metadata_edit_state = 16;
+
+  // The time of the last modification.
+  optional int64 modification_date = 18;
 }
 
 // Container for the header part of ResourceMetadata.

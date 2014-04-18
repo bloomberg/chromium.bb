@@ -594,7 +594,6 @@ TEST_F(ChangeListProcessorTest, SharedFilesWithNoParentInFeed) {
   new_file.set_resource_id("new_file_id");
   change_lists[0]->mutable_entries()->push_back(new_file);
   change_lists[0]->mutable_parent_resource_ids()->push_back("nonexisting");
-  change_lists[0]->mutable_modification_dates()->push_back(base::Time());
   change_lists[0]->set_largest_changestamp(kBaseResourceListChangestamp + 1);
 
   std::set<base::FilePath> changed_dirs;
@@ -604,6 +603,51 @@ TEST_F(ChangeListProcessorTest, SharedFilesWithNoParentInFeed) {
   ResourceEntry entry;
   EXPECT_EQ(FILE_ERROR_OK, metadata_->GetResourceEntryByPath(
       util::GetDriveGrandRootPath().AppendASCII("other/new_file"), &entry));
+}
+
+TEST_F(ChangeListProcessorTest, ModificationDate) {
+  // Prepare metadata.
+  EXPECT_EQ(FILE_ERROR_OK,
+            ApplyFullResourceList(ParseChangeList(kBaseResourceListFile)));
+
+  // Create change lists with a new file.
+  ScopedVector<ChangeList> change_lists;
+  change_lists.push_back(new ChangeList);
+
+  const base::Time now = base::Time::Now();
+  ResourceEntry new_file_remote;
+  new_file_remote.set_title("new_file_remote");
+  new_file_remote.set_resource_id("new_file_id");
+  new_file_remote.set_modification_date(now.ToInternalValue());
+
+  change_lists[0]->mutable_entries()->push_back(new_file_remote);
+  change_lists[0]->mutable_parent_resource_ids()->push_back(kRootId);
+  change_lists[0]->set_largest_changestamp(kBaseResourceListChangestamp + 1);
+
+  // Add the same file locally, but with a different name, a dirty metadata
+  // state, and a newer modification date.
+  ResourceEntry root;
+  EXPECT_EQ(FILE_ERROR_OK, metadata_->GetResourceEntryByPath(
+      util::GetDriveMyDriveRootPath(), &root));
+
+  ResourceEntry new_file_local;
+  new_file_local.set_resource_id(new_file_remote.resource_id());
+  new_file_local.set_parent_local_id(root.local_id());
+  new_file_local.set_title("new_file_local");
+  new_file_local.set_metadata_edit_state(ResourceEntry::DIRTY);
+  new_file_local.set_modification_date(
+      (now + base::TimeDelta::FromSeconds(1)).ToInternalValue());
+  std::string local_id;
+  EXPECT_EQ(FILE_ERROR_OK, metadata_->AddEntry(new_file_local, &local_id));
+
+  // Apply the change.
+  std::set<base::FilePath> changed_dirs;
+  EXPECT_EQ(FILE_ERROR_OK, ApplyChangeList(change_lists.Pass(), &changed_dirs));
+
+  // The change is rejected due to the old modification date.
+  ResourceEntry entry;
+  EXPECT_EQ(FILE_ERROR_OK, metadata_->GetResourceEntryById(local_id, &entry));
+  EXPECT_EQ(new_file_local.title(), entry.title());
 }
 
 }  // namespace internal

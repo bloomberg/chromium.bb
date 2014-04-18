@@ -52,6 +52,7 @@ FileError UpdateLocalState(internal::ResourceMetadata* metadata,
   entry.set_title(new_title);
   entry.set_parent_local_id(parent_entry.local_id());
   entry.set_metadata_edit_state(ResourceEntry::DIRTY);
+  entry.set_modification_date(base::Time::Now().ToInternalValue());
   error = metadata->RefreshEntry(entry);
   if (error != FILE_ERROR_OK)
     return error;

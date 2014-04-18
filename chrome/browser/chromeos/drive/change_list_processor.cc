@@ -54,19 +54,12 @@ class ChangeListToEntryMapUMAStats {
 };
 
 // Returns true if it's OK to overwrite the local entry with the remote one.
-// |modification_date| is the time of the modification whose result is
-// |remote_entry|.
 bool ShouldApplyChange(const ResourceEntry& local_entry,
-                       const ResourceEntry& remote_entry,
-                       const base::Time& modification_date) {
-  // TODO(hashimoto): Implement more sophisticated conflict resolution.
-
-  // If the entry is locally available and is newly created in this change,
-  // No need to overwrite the local entry.
-  base::Time creation_time =
-      base::Time::FromInternalValue(remote_entry.file_info().creation_time());
-  const bool entry_is_new = creation_time == modification_date;
-  return !entry_is_new;
+                       const ResourceEntry& remote_entry) {
+  if (local_entry.metadata_edit_state() == ResourceEntry::CLEAN)
+    return true;
+  return base::Time::FromInternalValue(remote_entry.modification_date()) >
+      base::Time::FromInternalValue(local_entry.modification_date());
 }
 
 }  // namespace
@@ -85,20 +78,16 @@ ChangeList::ChangeList(const google_apis::ResourceList& resource_list)
 
   entries_.resize(resource_list.entries().size());
   parent_resource_ids_.resize(resource_list.entries().size());
-  modification_dates_.resize(resource_list.entries().size());
   size_t entries_index = 0;
   for (size_t i = 0; i < resource_list.entries().size(); ++i) {
     if (ConvertToResourceEntry(*resource_list.entries()[i],
                                &entries_[entries_index],
                                &parent_resource_ids_[entries_index])) {
-      modification_dates_[entries_index] =
-          resource_list.entries()[i]->modification_date();
       ++entries_index;
     }
   }
   entries_.resize(entries_index);
   parent_resource_ids_.resize(entries_index);
-  modification_dates_.resize(entries_index);
 }
 
 ChangeList::~ChangeList() {}
@@ -147,8 +136,6 @@ FileError ChangeListProcessor::Apply(
         if (entry->shared_with_me())
           uma_stats.IncrementNumSharedWithMeEntries();
       }
-      modification_date_map_[entry->resource_id()] =
-          change_list->modification_dates()[i];
       parent_resource_id_map_[entry->resource_id()] =
           change_list->parent_resource_ids()[i];
       entry_map_[entry->resource_id()].Swap(entry);
@@ -326,11 +313,8 @@ FileError ChangeListProcessor::ApplyEntryMap(
 FileError ChangeListProcessor::ApplyEntry(const ResourceEntry& entry) {
   DCHECK(!entry.deleted());
   DCHECK(parent_resource_id_map_.count(entry.resource_id()));
-  DCHECK(modification_date_map_.count(entry.resource_id()));
   const std::string& parent_resource_id =
       parent_resource_id_map_[entry.resource_id()];
-  const base::Time& modification_date =
-      modification_date_map_[entry.resource_id()];
 
   ResourceEntry new_entry(entry);
   FileError error = SetParentLocalIdOfEntry(resource_metadata_, &new_entry,
@@ -348,7 +332,7 @@ FileError ChangeListProcessor::ApplyEntry(const ResourceEntry& entry) {
 
   switch (error) {
     case FILE_ERROR_OK:
-      if (ShouldApplyChange(existing_entry, new_entry, modification_date)) {
+      if (ShouldApplyChange(existing_entry, new_entry)) {
         // Entry exists and needs to be refreshed.
         new_entry.set_local_id(local_id);
         error = resource_metadata_->RefreshEntry(new_entry);

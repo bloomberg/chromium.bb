@@ -47,6 +47,7 @@ bool ConvertToResourceEntry(const google_apis::ResourceEntry& input,
   converted.set_title(input.title());
   converted.set_base_name(util::NormalizeFileName(converted.title()));
   converted.set_resource_id(input.resource_id());
+  converted.set_modification_date(input.modification_date().ToInternalValue());
 
   // Gets parent Resource ID. On drive.google.com, a file can have multiple
   // parents or no parent, but we are forcing a tree-shaped structure (i.e. no

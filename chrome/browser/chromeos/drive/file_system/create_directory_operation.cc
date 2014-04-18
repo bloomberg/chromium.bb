@@ -39,6 +39,7 @@ FileError CreateDirectoryRecursively(
   entry.mutable_file_info()->set_last_accessed(now.ToInternalValue());
   entry.set_parent_local_id(parent_local_id);
   entry.set_metadata_edit_state(ResourceEntry::DIRTY);
+  entry.set_modification_date(base::Time::Now().ToInternalValue());
 
   std::string local_id;
   FileError error = metadata->AddEntry(entry, &local_id);
