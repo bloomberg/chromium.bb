@@ -44,7 +44,7 @@ static inline void VC_MUL(VC *out, VC *a, VC *b) {
 }
 
 /* out = conj(a) * b */
-static inline void VC_CONJ_MUL(VC *out, VC *a, VC *b) {
+static __inline void VC_CONJ_MUL(VC *out, VC *a, VC *b) {
   out->real = _mm_add_ps(_mm_mul_ps(a->real, b->real),
       _mm_mul_ps(a->imag, b->imag));
   out->imag = _mm_sub_ps(_mm_mul_ps(a->real, b->imag),
@@ -52,13 +52,13 @@ static inline void VC_CONJ_MUL(VC *out, VC *a, VC *b) {
 }
 
 /* Scale complex by a real factor */
-static inline void VC_MUL_F(VC *out, VC *a, __m128 factor) {
+static __inline void VC_MUL_F(VC *out, VC *a, __m128 factor) {
   out->real = _mm_mul_ps(factor, a->real);
   out->imag = _mm_mul_ps(factor, a->imag);
 }
 
 /* out = a + b */
-static inline void VC_ADD(VC *out, VC *a, VC *b) {
+static __inline void VC_ADD(VC *out, VC *a, VC *b) {
   out->real = _mm_add_ps(a->real, b->real);
   out->imag = _mm_add_ps(a->imag, b->imag);
 }
@@ -67,13 +67,13 @@ static inline void VC_ADD(VC *out, VC *a, VC *b) {
  * out.real = a.real + b.imag
  * out.imag = a.imag + b.real
  */
-static inline void VC_ADD_X(VC *out, VC *a, VC *b) {
+static __inline void VC_ADD_X(VC *out, VC *a, VC *b) {
   out->real = _mm_add_ps(a->real, b->imag);
   out->imag = _mm_add_ps(b->real, a->imag);
 }
 
 /* VC_ADD and store the result with Split format. */
-static inline void VC_ADD_STORE_SPLIT(
+static __inline void VC_ADD_STORE_SPLIT(
     OMX_F32 *out,
     VC *a,
     VC *b,
@@ -83,7 +83,7 @@ static inline void VC_ADD_STORE_SPLIT(
 }
 
 /* out = a - b */
-static inline void VC_SUB(VC *out, VC *a, VC *b) {
+static __inline void VC_SUB(VC *out, VC *a, VC *b) {
   out->real = _mm_sub_ps(a->real, b->real);
   out->imag = _mm_sub_ps(a->imag, b->imag);
 }
@@ -92,13 +92,13 @@ static inline void VC_SUB(VC *out, VC *a, VC *b) {
  * out.real = a.real - b.imag
  * out.imag = a.imag - b.real
  */
-static inline void VC_SUB_X(VC *out, VC *a, VC *b) {
+static __inline void VC_SUB_X(VC *out, VC *a, VC *b) {
   out->real = _mm_sub_ps(a->real, b->imag);
   out->imag = _mm_sub_ps(b->real, a->imag);
 }
 
 /* VC_SUB and store the result with Split format. */
-static inline void VC_SUB_STORE_SPLIT(
+static __inline void VC_SUB_STORE_SPLIT(
     OMX_F32 *out,
     VC *a,
     VC *b,
@@ -111,7 +111,7 @@ static inline void VC_SUB_STORE_SPLIT(
  * out.real = a.real + b.real
  * out.imag = a.imag - b.imag
  */
-static inline void VC_ADD_SUB(VC *out, VC *a, VC *b) {
+static __inline void VC_ADD_SUB(VC *out, VC *a, VC *b) {
   out->real = _mm_add_ps(a->real, b->real);
   out->imag = _mm_sub_ps(a->imag, b->imag);
 }
@@ -120,13 +120,13 @@ static inline void VC_ADD_SUB(VC *out, VC *a, VC *b) {
  * out.real = a.real + b.imag
  * out.imag = a.imag - b.real
  */
-static inline void VC_ADD_SUB_X(VC *out, VC *a, VC *b) {
+static __inline void VC_ADD_SUB_X(VC *out, VC *a, VC *b) {
   out->real = _mm_add_ps(a->real, b->imag);
   out->imag = _mm_sub_ps(a->imag, b->real);
 }
 
 /* VC_ADD_SUB_X and store the result with Split format. */
-static inline void VC_ADD_SUB_X_STORE_SPLIT(
+static __inline void VC_ADD_SUB_X_STORE_SPLIT(
     OMX_F32 *out,
     VC *a,
     VC *b,
@@ -139,7 +139,7 @@ static inline void VC_ADD_SUB_X_STORE_SPLIT(
  * out.real = a.real - b.real
  * out.imag = a.imag + b.imag
  */
-static inline void VC_SUB_ADD(VC *out, VC *a, VC *b) {
+static __inline void VC_SUB_ADD(VC *out, VC *a, VC *b) {
   out->real = _mm_sub_ps(a->real, b->real);
   out->imag = _mm_add_ps(a->imag, b->imag);
 }
@@ -148,13 +148,13 @@ static inline void VC_SUB_ADD(VC *out, VC *a, VC *b) {
  * out.real = a.real - b.imag
  * out.imag = a.imag + b.real
  */
-static inline void VC_SUB_ADD_X(VC *out, VC *a, VC *b) {
+static __inline void VC_SUB_ADD_X(VC *out, VC *a, VC *b) {
   out->real = _mm_sub_ps(a->real, b->imag);
   out->imag = _mm_add_ps(a->imag, b->real);
 }
 
 /* VC_SUB_ADD_X and store the result with Split format. */
-static inline void VC_SUB_ADD_X_STORE_SPLIT(
+static __inline void VC_SUB_ADD_X_STORE_SPLIT(
     OMX_F32 *out,
     VC *a, VC *b,
     OMX_INT offset) {
@@ -166,7 +166,7 @@ static inline void VC_SUB_ADD_X_STORE_SPLIT(
  * out[0]      = in.real
  * out[offset] = in.imag
  */
-static inline void VC_STORE_SPLIT(
+static __inline void VC_STORE_SPLIT(
     OMX_F32 *out,
     VC *in,
     OMX_INT offset) {
@@ -178,7 +178,7 @@ static inline void VC_STORE_SPLIT(
  * out.real = in[0];
  * out.imag = in[offset];
 */
-static inline void VC_LOAD_SPLIT(
+static __inline void VC_LOAD_SPLIT(
     VC *out,
     const OMX_F32 *in,
     OMX_INT offset) {
@@ -187,7 +187,7 @@ static inline void VC_LOAD_SPLIT(
 }
 
 /* Vector Complex Unpack from Split format to Interleaved format. */
-static inline void VC_UNPACK(VC *out, VC *in) {
+static __inline void VC_UNPACK(VC *out, VC *in) {
     out->real = _mm_unpacklo_ps(in->real, in->imag);
     out->imag = _mm_unpackhi_ps(in->real, in->imag);
 }
@@ -197,7 +197,7 @@ static inline void VC_UNPACK(VC *out, VC *in) {
  * out.real = [in[0].real, in[1].real, in[2].real, in[3].real]
  * out.imag = [in[0].imag, in[1].imag, in[2].imag, in[3].imag]
  */
-static inline void VC_LOAD_INTERLEAVE(VC *out, const OMX_F32 *in) {
+static __inline void VC_LOAD_INTERLEAVE(VC *out, const OMX_F32 *in) {
     __m128 temp0 = _mm_load_ps(in);
     __m128 temp1 = _mm_load_ps(in + 4);
     out->real = _mm_shuffle_ps(temp0, temp1, _MM_SHUFFLE(2, 0, 2, 0));
@@ -207,7 +207,7 @@ static inline void VC_LOAD_INTERLEAVE(VC *out, const OMX_F32 *in) {
  * Vector Complex Load with Split format.
  * The input address is not 16 byte aligned.
  */
-static inline void VC_LOADU_SPLIT(
+static __inline void VC_LOADU_SPLIT(
     VC *out,
     const OMX_F32 *in,
     OMX_INT offset) {
@@ -216,7 +216,7 @@ static inline void VC_LOADU_SPLIT(
 }
 
 /* Reverse the order of the Complex Vector. */
-static inline void VC_REVERSE(VC *v) {
+static __inline void VC_REVERSE(VC *v) {
   v->real = _mm_shuffle_ps(v->real, v->real, _MM_SHUFFLE(0, 1, 2, 3));
   v->imag = _mm_shuffle_ps(v->imag, v->imag, _MM_SHUFFLE(0, 1, 2, 3));
 }
@@ -231,7 +231,7 @@ static inline void VC_REVERSE(VC *v) {
  * out[6] = in.real[3]
  * out[7] = in.imag[3]
  */
-static inline void VC_STORE_INTERLEAVE(OMX_F32 *out, VC *in) {
+static __inline void VC_STORE_INTERLEAVE(OMX_F32 *out, VC *in) {
   _mm_store_ps(out, _mm_unpacklo_ps(in->real, in->imag));
   _mm_store_ps(out + 4, _mm_unpackhi_ps(in->real, in->imag));
 }
@@ -240,13 +240,13 @@ static inline void VC_STORE_INTERLEAVE(OMX_F32 *out, VC *in) {
  * Vector Complex Store with Interleaved format.
  * Address is not 16 byte aligned.
  */
-static inline void VC_STOREU_INTERLEAVE(OMX_F32 *out, VC *in) {
+static __inline void VC_STOREU_INTERLEAVE(OMX_F32 *out, VC *in) {
   _mm_storeu_ps(out, _mm_unpacklo_ps(in->real, in->imag));
   _mm_storeu_ps(out + 4, _mm_unpackhi_ps(in->real, in->imag));
 }
 
 /* VC_ADD_X and store the result with Split format. */
-static inline void VC_ADD_X_STORE_SPLIT(
+static __inline void VC_ADD_X_STORE_SPLIT(
     OMX_F32 *out,
     VC *a, VC *b,
     OMX_INT offset) {
@@ -258,7 +258,7 @@ static inline void VC_ADD_X_STORE_SPLIT(
  * VC_SUB_X and store the result with inverse order.
  * Address is not 16 byte aligned.
  */
-static inline void VC_SUB_X_INVERSE_STOREU_SPLIT(
+static __inline void VC_SUB_X_INVERSE_STOREU_SPLIT(
     OMX_F32 *out,
     VC *a,
     VC *b,
@@ -274,7 +274,7 @@ static inline void VC_SUB_X_INVERSE_STOREU_SPLIT(
  * Vector Complex Load from Interleaved format to Split format.
  * Store the result into two __m128 registers.
  */
-static inline void VC_LOAD_SHUFFLE(
+static __inline void VC_LOAD_SHUFFLE(
     __m128 *out0,
     __m128 *out1,
     const OMX_F32 *in) {
@@ -285,7 +285,7 @@ static inline void VC_LOAD_SHUFFLE(
 }
 
 /* Finish the butterfly calculation of forward radix4 and store the outputs. */
-static inline void RADIX4_FWD_BUTTERFLY_STORE(
+static __inline void RADIX4_FWD_BUTTERFLY_STORE(
     OMX_F32 *out0,
     OMX_F32 *out1,
     OMX_F32 *out2,
@@ -309,7 +309,7 @@ static inline void RADIX4_FWD_BUTTERFLY_STORE(
 }
 
 /* Finish the butterfly calculation of inverse radix4 and store the outputs. */
-static inline void RADIX4_INV_BUTTERFLY_STORE(
+static __inline void RADIX4_INV_BUTTERFLY_STORE(
     OMX_F32 *out0,
     OMX_F32 *out1,
     OMX_F32 *out2,
@@ -333,7 +333,7 @@ static inline void RADIX4_INV_BUTTERFLY_STORE(
 }
 
 /* Radix4 forward butterfly */
-static inline void RADIX4_FWD_BUTTERFLY(
+static __inline void RADIX4_FWD_BUTTERFLY(
     VC *t0,
     VC *t1,
     VC *t2,
@@ -370,7 +370,7 @@ static inline void RADIX4_FWD_BUTTERFLY(
 }
 
 /* Radix4 inverse butterfly */
-static inline void RADIX4_INV_BUTTERFLY(
+static __inline void RADIX4_INV_BUTTERFLY(
     VC *t0,
     VC *t1,
     VC *t2,
@@ -407,7 +407,7 @@ static inline void RADIX4_INV_BUTTERFLY(
 }
 
 /* Radix4 butterfly in first stage for both forward and inverse */
-static inline void RADIX4_BUTTERFLY_FS(
+static __inline void RADIX4_BUTTERFLY_FS(
     VC *t0,
     VC *t1,
     VC *t2,
@@ -437,7 +437,7 @@ static inline void RADIX4_BUTTERFLY_FS(
  * 11, 10, 9,  8                  14, 10, 6,  2
  * 15, 14, 13, 12                 15, 11, 7,  3
  */
-static inline void VC_LOAD_MATRIX_TRANSPOSE(
+static __inline void VC_LOAD_MATRIX_TRANSPOSE(
     VC *T0,
     VC *T1,
     VC *T2,

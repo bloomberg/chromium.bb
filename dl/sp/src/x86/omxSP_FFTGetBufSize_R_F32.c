@@ -36,25 +36,25 @@
  */
 
 OMXResult omxSP_FFTGetBufSize_R_F32(OMX_INT order, OMX_INT *pSize) {
+  OMX_INT n_by_2;
+  OMX_INT n;
+
   if (!pSize || (order < 1) || (order > TWIDDLE_TABLE_ORDER))
     return OMX_Sts_BadArgErr;
 
-    OMX_INT n_by_2;
-    OMX_INT n;
+  n_by_2 = 1 << (order - 1);
+  n = n_by_2 << 1;
 
-    n_by_2 = 1 << (order - 1);
-    n = n_by_2 << 1;
+  *pSize = sizeof(X86FFTSpec_R_FC32) +
+           // Twiddle factors.
+           sizeof(OMX_F32) * (n << 1) +
+           // Ping Pong buffer for doing the n/2 point complex FFT.
+           // pBuf1
+           sizeof(OMX_F32) * n + 4 +
+           // pBuf2
+           sizeof(OMX_F32) * n + 4 +
+           // Extra bytes to get 32 byte alignment of ptwiddle, pBuf1
+           62;
 
-    *pSize = sizeof(X86FFTSpec_R_FC32) +
-             // Twiddle factors.
-             sizeof(OMX_F32) * (n << 1) +
-             // Ping Pong buffer for doing the n/2 point complex FFT.
-             // pBuf1
-             sizeof(OMX_F32) * n + 4 +
-             // pBuf2
-             sizeof(OMX_F32) * n + 4 +
-             // Extra bytes to get 32 byte alignment of ptwiddle, pBuf1
-             62;
-
-    return OMX_Sts_NoErr;
+  return OMX_Sts_NoErr;
 }

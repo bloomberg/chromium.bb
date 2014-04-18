@@ -173,10 +173,6 @@ static void RevbinPermuteFwdSse(
 
 OMXResult omxSP_FFTFwd_RToCCS_F32_Sfs(const OMX_F32 *pSrc, OMX_F32 *pDst,
                                       const OMXFFTSpec_R_F32 *pFFTSpec) {
-  // Input must be 32 byte aligned
-  if (!pSrc || !pDst || (OMX_INT)pSrc & 31 || (OMX_INT)pDst & 31)
-    return OMX_Sts_BadArgErr;
-
   OMX_INT n;
   OMX_INT n_by_2;
   OMX_INT n_by_4;
@@ -184,6 +180,10 @@ OMXResult omxSP_FFTFwd_RToCCS_F32_Sfs(const OMX_F32 *pSrc, OMX_F32 *pDst,
   OMX_F32 *buf;
 
   const X86FFTSpec_R_FC32 *pFFTStruct = (const X86FFTSpec_R_FC32*) pFFTSpec;
+
+  // Input must be 32 byte aligned
+  if (!pSrc || !pDst || (OMX_INT)pSrc & 31 || (OMX_INT)pDst & 31)
+    return OMX_Sts_BadArgErr;
 
   n = pFFTStruct->N;
 
