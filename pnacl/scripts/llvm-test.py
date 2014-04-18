@@ -193,7 +193,7 @@ def SetupEnvironment(options):
     env['BUILD_PLATFORM'] = 'linux'
     env['BUILD_ARCH'] = os.environ.get('BUILD_ARCH', os.uname()[4])
     env['HOST_ARCH'] = os.environ.get('HOST_ARCH', env['BUILD_ARCH'])
-    env['HOST_TRIPLE'] = 'i686_linux'
+    env['HOST_TRIPLE'] = 'x86_64_linux'
   elif sys.platform == 'cygwin':
     env['BUILD_PLATFORM'] = 'win'
     env['HOST_ARCH'] = os.environ.get('HOST_ARCH', 'x86_32')
@@ -220,16 +220,16 @@ def SetupEnvironment(options):
   # Set up the rest of the environment.
   env['NACL_ROOT'] = pwd
   env['LLVM_TESTSUITE_SRC'] = (
-    '{NACL_ROOT}/pnacl/git/llvm-test-suite'.format(**env))
+    '{NACL_ROOT}/toolchain_build/src/llvm-test-suite'.format(**env))
   env['LLVM_TESTSUITE_BUILD'] = (
     '{NACL_ROOT}/pnacl/build/llvm-test-suite'.format(**env))
   env['TC_SRC_LLVM'] = (
-    '{NACL_ROOT}/pnacl/git/llvm'.format(**env))
+    '{NACL_ROOT}/toolchain_build/src/llvm'.format(**env))
   env['TC_BUILD_LLVM'] = options.llvm_buildpath or (
     '{NACL_ROOT}/toolchain_build/out/llvm_{HOST_TRIPLE}_work'.format(**env))
   env['TC_BUILD_LIBCXX'] = (
-    ('{NACL_ROOT}/pnacl/build/' +
-     'c++-stdlib-newlib-portable-libc++/pnacl-target').format(**env))
+    ('{NACL_ROOT}/toolchain_build/out/' +
+     'libcxx_portable_work/').format(**env))
   env['PNACL_CONCURRENCY'] = os.environ.get('PNACL_CONCURRENCY', '8')
 
   # The toolchain used may not be the one downloaded, but one that is freshly
@@ -252,6 +252,16 @@ def SetupEnvironment(options):
   return env
 
 
+def IsEmptyOrNonexistent(testdir):
+  # TODO(dschuff): Because this script is run directly from the buildbot
+  # script and not as part of a toolchain_build rule, we do not know
+  # whether the llvm target was actually built (in which case the working
+  # directory is still there) or whether it was just retrieved from cache
+  # (in which case it was clobbered, since the bots run with --clobber).
+  # So we have to just exit rather than fail here.
+  return not os.path.exists(testdir) or len(os.listdir(testdir)) == 0
+
+
 def RunLitTest(testdir, testarg, lit_failures, env, options):
   """Run LLVM lit tests, and check failures against known failures.
 
@@ -265,14 +275,10 @@ def RunLitTest(testdir, testarg, lit_failures, env, options):
     0 always
   """
   with remember_cwd():
-    if not os.path.exists(testdir) or len(os.listdir(testdir)) == 0:
-      # TODO(dschuff): Because this script is run directly from the buildbot
-      # script and not as part of a toolchain_build rule, we do not know
-      # whether the llvm target was actually built (in which case the working
-      # directory is still there) or whether it was just retrieved from cache
-      # (in which case it was clobbered, since the bots run with --clobber).
-      # So we have to just exit rather than fail here.
+    if IsEmptyOrNonexistent(testdir):
       print 'Working directory %s is empty. Not running tests' % testdir
+      if env['PNACL_BUILDBOT'] != 'false':
+        print '@@@STEP_TEXT (skipped)@@@'
       return 0
     os.chdir(testdir)
 
@@ -469,6 +475,27 @@ def TestsuiteReport(env, config, options):
   return parse_llvm_test_report.Report(parse_options, filename=report_file)
 
 
+def RunTestsuiteSteps(env, config, options):
+  result = 0
+  if IsEmptyOrNonexistent(env['TC_BUILD_LLVM']):
+    print ('LLVM build directory %s is empty. Skipping testsuite' %
+           env['TC_BUILD_LLVM'])
+    if env['PNACL_BUILDBOT'] != 'false':
+      print '@@@STEP_TEXT (skipped)@@@'
+    return result
+  if options.testsuite_all or options.testsuite_prereq:
+    result = result or TestsuitePrereq(env, options)
+  if options.testsuite_all or options.testsuite_clean:
+    result = result or TestsuiteClean(env)
+  if options.testsuite_all or options.testsuite_configure:
+    result = result or TestsuiteConfigure(env)
+  if options.testsuite_all or options.testsuite_run:
+    result = result or TestsuiteRun(env, config, options)
+  if options.testsuite_all or options.testsuite_report:
+    result = result or TestsuiteReport(env, config, options)
+  return result
+
+
 def main(argv):
   options, args = ParseCommandLine(argv[1:])
   if len(args):
@@ -485,16 +512,8 @@ def main(argv):
     result = result or RunLitTest(env['TC_BUILD_LIBCXX'], 'check-libcxx',
                                   'LIBCXX_KNOWN_FAILURES',
                                   env, options)
-  if options.testsuite_all or options.testsuite_prereq:
-    result = result or TestsuitePrereq(env, options)
-  if options.testsuite_all or options.testsuite_clean:
-    result = result or TestsuiteClean(env)
-  if options.testsuite_all or options.testsuite_configure:
-    result = result or TestsuiteConfigure(env)
-  if options.testsuite_all or options.testsuite_run:
-    result = result or TestsuiteRun(env, config, options)
-  if options.testsuite_all or options.testsuite_report:
-    result = result or TestsuiteReport(env, config, options)
+
+  result = result or RunTestsuiteSteps(env, config, options)
   return result
 
 if __name__ == '__main__':

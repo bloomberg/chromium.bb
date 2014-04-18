@@ -78,6 +78,25 @@ def CopyDriverForTargetLib(host):
       ]
 
 
+# Copy the compiled bitcode archives used for linking C programs into the the
+# current working directory. This allows the driver in the working directory to
+# be used in cases which need the ability to link pexes (e.g. CMake
+# try-compiles, LLVM testsuite, or libc++ testsuite). For now this also requires
+# a build of libnacl however, which is driven by the buildbot script or
+# external test script. TODO(dschuff): add support to drive the LLVM and libcxx
+# test suites from toolchain_build rules.
+def CopyBitcodeCLibs(bias_arch):
+  return [
+      command.RemoveDirectory('usr'),
+      command.Mkdir('usr'),
+      command.Command('cp -r %(' +
+                      Mangle('abs_libs_support_bitcode', bias_arch) +
+                      ')s usr', shell=True),
+      command.Command('cp -r %(' + Mangle('abs_newlib', bias_arch) +
+                      ')s/* usr', shell=True),
+      ]
+
+
 def BiasedBitcodeTargetFlag(arch):
   flagmap = {
       # Arch     Target                           Extra flags.
@@ -315,10 +334,12 @@ def BitcodeLibs(host, bias_arch):
           'type': 'build',
           'output_subdir': BcSubdir('usr', bias_arch),
           'dependencies': ['libcxx_src', 'libcxxabi_src', 'llvm_src', 'gcc_src',
-                           H('llvm'), H('binutils_pnacl'), B('newlib')],
+                           H('llvm'), H('binutils_pnacl'), B('newlib'),
+                           B('libs_support_bitcode')],
           'inputs': { 'driver': os.path.join(NACL_DIR, 'pnacl', 'driver')},
           'commands' :
-              CopyDriverForTargetLib(host) + [
+              CopyDriverForTargetLib(host) +
+              CopyBitcodeCLibs(bias_arch) + [
               command.SkipForIncrementalCommand(
                   ['cmake', '-G', 'Unix Makefiles',
                    '-DCMAKE_C_COMPILER_WORKS=1',
@@ -337,10 +358,15 @@ def BitcodeLibs(host, bias_arch):
                    '-DCMAKE_CXX_FLAGS=-std=gnu++11 ' + LibCxxCflags(bias_arch),
                    '-DLIT_EXECUTABLE=' + command.path.join(
                        '%(llvm_src)s', 'utils', 'lit', 'lit.py'),
+                   # The lit flags are used by the libcxx testsuite, which is
+                   # currenty driven by an external script.
                    '-DLLVM_LIT_ARGS=--verbose  --param shell_prefix="' +
-                    os.path.join(NACL_DIR,'run.py') + '-arch env --retries=1" '+
+                    os.path.join(NACL_DIR,'run.py') +' -arch env --retries=1" '+
                     '--param exe_suffix=".pexe" --param use_system_lib=true ' +
-                    '--param link_flags="-std=gnu++11 --pnacl-exceptions=sjlj"',
+                    '--param link_flags="-std=gnu++11 --pnacl-exceptions=sjlj '+
+                    '-L' + os.path.join(
+                        NACL_DIR,
+                        'toolchain/linux_x86/pnacl_newlib/sdk/lib') + '"',
                    '-DLIBCXX_ENABLE_CXX0X=0',
                    '-DLIBCXX_ENABLE_SHARED=0',
                    '-DLIBCXX_CXX_ABI=libcxxabi',

@@ -83,7 +83,7 @@ download-old-tc() {
 clobber() {
   echo @@@BUILD_STEP clobber@@@
   rm -rf scons-out
-  # Don't clobber toolchain/pnacl_translator; these bots currently don't build
+  # Don't clobber pnacl_translator; these bots currently don't build
   # it, but they use the DEPSed-in version.
   rm -rf toolchain/linux_x86/pnacl_newlib* \
       toolchain/mac_x86/pnacl_newlib* \
@@ -289,25 +289,15 @@ tc-test-bot() {
     archset=
   fi
 
-  echo "@@@BUILD_STEP show-config@@@"
-  ${PNACL_BUILD} show-config
+  # Build the un-sandboxed toolchain. The build script outputs its own buildbot
+  # annotations.
+  # Build and use the 64-bit llvm build, to get 64-bit versions of the build
+  # tools such as fpcmp (used for llvm test suite). For some reason it matters
+  # that they match the build machine. TODO(dschuff): Is this still necessary?
+  ${TOOLCHAIN_BUILD} --verbose --sync --clobber --build-64bit-host \
+    --testsuite-sync \
+    --install toolchain/linux_x86/pnacl_newlib
 
-  ${PNACL_BUILD} clean
-  echo "@@@BUILD_STEP Sync repos for build.sh@@@"
-  python ${TOOLCHAIN_BUILD} --legacy-repo-sync
-  ${PNACL_BUILD} newlib-nacl-headers
-
-  # Build the un-sandboxed toolchain
-  echo "@@@BUILD_STEP compile_toolchain@@@"
-
-  # Assume Linux, where the x86-32 host tools are default.
-  HOST_ARCH=x86_32 ${PNACL_BUILD} build-all
-  # However, make 64-bit versions of the build tools such as fpcmp
-  # (used for llvm test suite and for some reason it matters that they
-  # match the build machine)
-  local build_arch=x86_64
-  ${PNACL_BUILD} llvm-configure
-  PNACL_MAKE_OPTS=BUILD_DIRS_ONLY=1 ${PNACL_BUILD} llvm-make
 
   # run the torture tests. the "trybot" phases take care of prerequisites
   # for both test sets
@@ -343,10 +333,7 @@ tc-test-bot() {
       echo "@@@BUILD_STEP llvm-test-suite ${arch} ${opt} @@@"
       python ${LLVM_TEST} --testsuite-prereq --arch ${arch}
       python ${LLVM_TEST} --testsuite-clean
-      # TODO(jvoung): use default instead of specifying --llvm-buildpath
-      # once this builder uses the toolchain_build infrastructure.
       python ${LLVM_TEST} \
-        --llvm-buildpath="$(pwd)/pnacl/build/llvm_${build_arch}" \
         --testsuite-configure --testsuite-run --testsuite-report \
         --arch ${arch} ${opt} -v -c || handle-error
     done

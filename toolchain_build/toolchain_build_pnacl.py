@@ -251,6 +251,19 @@ def HostToolsSources(GetGitSyncCmd):
   return sources
 
 
+def TestsuiteSources(GetGitSyncCmd):
+  sources = {
+      'llvm_testsuite_src': {
+          'type': 'source',
+          'output_dirname': 'llvm-test-suite',
+          'commands': [
+              GetGitSyncCmd('llvm-test-suite'),
+          ],
+      },
+  }
+  return sources
+
+
 def HostLibs(host):
   libs = {}
   if TripleIsWindows(host) and not command.Runnable.use_cygwin:
@@ -582,6 +595,9 @@ if __name__ == '__main__':
                       help="Use clang instead of gcc with LLVM's cmake build")
   parser.add_argument('--sanitize', choices=['address', 'thread', 'undefined'],
                       help="Use a sanitizer with LLVM's clang cmake build")
+  parser.add_argument('--testsuite-sync', action='store_true', default=False,
+                      help=('Sync the sources for the LLVM testsuite. '
+                      'Only useful if --sync/ is also enabled'))
   args, leftover_args = parser.parse_known_args()
   if '-h' in leftover_args or '--help' in leftover_args:
     print 'The following arguments are specific to toolchain_build_pnacl.py:'
@@ -605,6 +621,9 @@ if __name__ == '__main__':
 
   packages = {}
   packages.update(HostToolsSources(GetGitSyncCmdCallback(revisions)))
+  if args.testsuite_sync:
+    packages.update(TestsuiteSources(GetGitSyncCmdCallback(revisions)))
+
 
   if pynacl.platform.IsLinux64():
     hosts = ['i686-linux']
