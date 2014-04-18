@@ -288,6 +288,22 @@
                 }],
               ],
               'cflags': ['-fPIE'],
+            }, {
+              'target_name': 'nacl_loader_unittests',
+              'type': '<(gtest_target_type)',
+              'sources': [
+                # TODO(hamaji): Currently, we build them twice. Stop building
+                # them for components_unittests. See crbug.com/364751
+                'nacl/loader/nonsfi/nonsfi_sandbox_unittest.cc',
+                'nacl/loader/nonsfi/nonsfi_sandbox_sigsys_unittest.cc',
+                'nacl/loader/run_all_unittests.cc',
+              ],
+              'dependencies': [
+                'nacl_loader',
+                '../base/base.gyp:test_support_base',
+                '../sandbox/sandbox.gyp:sandbox_linux_test_utils',
+                '../testing/gtest.gyp:gtest',
+              ],
             },
           ],
         }],
