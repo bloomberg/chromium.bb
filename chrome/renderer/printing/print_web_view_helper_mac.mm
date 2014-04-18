@@ -17,7 +17,7 @@
 #include "skia/ext/platform_device.h"
 #include "skia/ext/vector_canvas.h"
 #include "third_party/WebKit/public/platform/WebCanvas.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace printing {
 

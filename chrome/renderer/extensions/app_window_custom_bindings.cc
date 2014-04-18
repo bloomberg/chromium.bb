@@ -19,7 +19,7 @@
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
 #include "grit/renderer_resources.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "v8/include/v8.h"

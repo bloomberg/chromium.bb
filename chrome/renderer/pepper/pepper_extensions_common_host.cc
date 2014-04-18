@@ -19,7 +19,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 
 namespace {
@@ -59,7 +59,7 @@ PepperExtensionsCommonHost* PepperExtensionsCommonHost::Create(
       host->GetContainerForInstance(instance);
   if (!container)
     return NULL;
-  blink::WebFrame* frame = container->element().document().frame();
+  blink::WebLocalFrame* frame = container->element().document().frame();
   if (!frame)
     return NULL;
   v8::HandleScope scope(v8::Isolate::GetCurrent());

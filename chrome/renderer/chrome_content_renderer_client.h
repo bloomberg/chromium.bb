@@ -14,7 +14,6 @@
 #include "base/strings/string16.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "ipc/ipc_channel_proxy.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 class ChromeRenderProcessObserver;
 class PrescientNetworkingDispatcher;

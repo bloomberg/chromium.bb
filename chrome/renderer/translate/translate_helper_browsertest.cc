@@ -10,6 +10,7 @@
 #include "content/public/renderer/render_view.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 using testing::AtLeast;
 using testing::Return;

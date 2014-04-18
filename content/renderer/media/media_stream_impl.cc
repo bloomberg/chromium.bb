@@ -29,7 +29,7 @@
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebMediaStreamRegistry.h"
 
 namespace content {
@@ -95,7 +95,7 @@ void MediaStreamImpl::requestUserMedia(
 
   int request_id = g_next_request_id++;
   StreamOptions options;
-  blink::WebFrame* frame = NULL;
+  blink::WebLocalFrame* frame = NULL;
   GURL security_origin;
   bool enable_automatic_output_device_selection = false;
 

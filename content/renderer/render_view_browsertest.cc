@@ -44,8 +44,8 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/WebKit/public/web/WebWindowFeatures.h"
@@ -2032,7 +2032,7 @@ TEST_F(RenderViewImplTest, BasicRenderFrame) {
 TEST_F(RenderViewImplTest, GetSSLStatusOfFrame) {
   LoadHTML("<!DOCTYPE html><html><body></body></html>");
 
-  WebFrame* frame = GetMainFrame();
+  WebLocalFrame* frame = GetMainFrame();
   SSLStatus ssl_status = view()->GetSSLStatusOfFrame(frame);
   EXPECT_FALSE(net::IsCertStatusError(ssl_status.cert_status));
 

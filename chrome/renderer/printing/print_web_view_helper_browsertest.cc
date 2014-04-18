@@ -12,7 +12,7 @@
 #include "printing/print_job_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebRange.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
@@ -21,6 +21,7 @@
 #include "printing/image.h"
 
 using blink::WebFrame;
+using blink::WebLocalFrame;
 using blink::WebString;
 #endif
 

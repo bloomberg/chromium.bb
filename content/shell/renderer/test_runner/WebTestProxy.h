@@ -22,8 +22,6 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebHistoryCommitType.h"
 #include "third_party/WebKit/public/web/WebIconURL.h"
-// TODO(dcheng): Temporary. Delete once forward declarable.
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebNavigationPolicy.h"
 #include "third_party/WebKit/public/web/WebNavigationType.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
@@ -41,6 +39,7 @@ class WebDragData;
 class WebFileChooserCompletion;
 class WebFrame;
 class WebImage;
+class WebLocalFrame;
 class WebMIDIAccessor;
 class WebMIDIAccessorClient;
 class WebMIDIClient;

@@ -13,7 +13,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/page_transition_types.h"
 #include "ipc/ipc_message.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebNavigationPolicy.h"
 #include "third_party/WebKit/public/web/WebNavigationType.h"
 #include "third_party/WebKit/public/web/WebPageVisibilityState.h"
@@ -30,6 +29,8 @@ class MessageLoop;
 namespace blink {
 class WebAudioDevice;
 class WebClipboard;
+class WebFrame;
+class WebLocalFrame;
 class WebMIDIAccessor;
 class WebMIDIAccessorClient;
 class WebMediaStreamCenter;

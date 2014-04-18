@@ -14,7 +14,7 @@
 #include "printing/page_size_margins.h"
 #include "skia/ext/platform_device.h"
 #include "skia/ext/vector_canvas.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 #include "base/process/process_handle.h"

@@ -28,14 +28,13 @@
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayerClient.h"
-// TODO(dcheng): Convert back to forward declare.
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "url/gurl.h"
 
 class RenderAudioSourceProvider;
 
 namespace blink {
 class WebContentDecryptionModule;
+class WebLocalFrame;
 }
 
 namespace base {

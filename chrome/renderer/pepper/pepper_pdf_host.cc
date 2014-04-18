@@ -27,7 +27,7 @@
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -247,7 +247,8 @@ int32_t PepperPDFHost::OnHostMsgSaveAs(
     return PP_ERROR_FAILED;
   GURL url = instance->GetPluginURL();
   content::RenderView* render_view = instance->GetRenderView();
-  blink::WebFrame* frame = render_view->GetWebView()->mainFrame();
+  blink::WebLocalFrame* frame =
+      render_view->GetWebView()->mainFrame()->toWebLocalFrame();
   content::Referrer referrer(frame->document().url(),
                              frame->document().referrerPolicy());
   render_view->Send(new ChromeViewHostMsg_PDFSaveURLAs(

@@ -34,7 +34,7 @@
 #include "third_party/WebKit/public/web/WebDOMResourceProgressEvent.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "v8/include/v8.h"
@@ -458,7 +458,7 @@ void NexeLoadManager::DispatchEvent(const ProgressEvent &event) {
   // the DOM (but the PluginInstance is not destroyed yet).
   if (!container)
     return;
-  blink::WebFrame* frame = container->element().document().frame();
+  blink::WebLocalFrame* frame = container->element().document().frame();
   if (!frame)
     return;
   v8::HandleScope handle_scope(plugin_instance_->GetIsolate());

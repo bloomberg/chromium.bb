@@ -28,7 +28,7 @@
 #include "ppapi/shared_impl/var.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/icu/source/i18n/unicode/usearch.h"
@@ -347,7 +347,8 @@ void SaveAs(PP_Instance instance_id) {
   GURL url = instance->GetPluginURL();
 
   content::RenderView* render_view = instance->GetRenderView();
-  blink::WebFrame* frame = render_view->GetWebView()->mainFrame();
+  blink::WebLocalFrame* frame =
+      render_view->GetWebView()->mainFrame()->toWebLocalFrame();
   content::Referrer referrer(frame->document().url(),
                              frame->document().referrerPolicy());
   render_view->Send(new ChromeViewHostMsg_PDFSaveURLAs(

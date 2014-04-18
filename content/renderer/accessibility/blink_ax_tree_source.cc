@@ -21,8 +21,8 @@
 #include "third_party/WebKit/public/web/WebDocumentType.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFormControlElement.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebNode.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
@@ -32,7 +32,7 @@ using blink::WebAXObject;
 using blink::WebDocument;
 using blink::WebDocumentType;
 using blink::WebElement;
-using blink::WebFrame;
+using blink::WebLocalFrame;
 using blink::WebNode;
 using blink::WebVector;
 using blink::WebView;
@@ -541,7 +541,8 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
 
 blink::WebDocument BlinkAXTreeSource::GetMainDocument() const {
   WebView* view = render_view_->GetWebView();
-  WebFrame* main_frame = view ? view->mainFrame() : NULL;
+  WebLocalFrame* main_frame =
+      view ? view->mainFrame()->toWebLocalFrame() : NULL;
 
   if (main_frame)
     return main_frame->document();

@@ -21,14 +21,14 @@
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "webkit/common/webpreferences.h"
 
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_Graphics3D_API;
 using blink::WebConsoleMessage;
-using blink::WebFrame;
+using blink::WebLocalFrame;
 using blink::WebPluginContainer;
 using blink::WebString;
 
@@ -247,7 +247,7 @@ void PPB_Graphics3D_Impl::OnConsoleMessage(const std::string& message, int id) {
       HostGlobals::Get()->GetInstance(pp_instance())->container();
   if (!container)
     return;
-  WebFrame* frame = container->element().document().frame();
+  WebLocalFrame* frame = container->element().document().frame();
   if (!frame)
     return;
   WebConsoleMessage console_message = WebConsoleMessage(

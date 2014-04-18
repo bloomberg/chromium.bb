@@ -12,8 +12,6 @@
 #include "content/common/content_export.h"
 #include "content/public/common/top_controls_state.h"
 #include "ipc/ipc_sender.h"
-// TODO(dcheng): Convert back to a forward declare.
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPageVisibilityState.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -22,6 +20,7 @@ struct WebPreferences;
 namespace blink {
 class WebElement;
 class WebFrame;
+class WebLocalFrame;
 class WebNode;
 class WebString;
 class WebURLRequest;

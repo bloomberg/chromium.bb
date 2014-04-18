@@ -9,6 +9,7 @@
 #include "content/public/test/render_view_test.h"
 #include "content/renderer/render_view_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "webkit/common/webpreferences.h"
 
 #include <Cocoa/Cocoa.h>

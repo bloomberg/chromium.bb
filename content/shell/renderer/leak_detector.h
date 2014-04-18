@@ -9,6 +9,10 @@
 #include "content/shell/common/leak_detection_result.h"
 #include "third_party/WebKit/public/web/WebLeakDetector.h"
 
+namespace blink {
+class WebLocalFrame;
+}  // namespace blink
+
 namespace content {
 
 class WebKitTestRunner;

@@ -9,8 +9,8 @@
 #include "content/public/renderer/render_view.h"
 #include "content/renderer/web_ui_mojo_context_state.h"
 #include "gin/per_context_data.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebKit.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "v8/include/v8.h"
 
@@ -65,7 +65,7 @@ WebUIMojo::~WebUIMojo() {
 
 void WebUIMojo::CreateContextState() {
   v8::HandleScope handle_scope(blink::mainThreadIsolate());
-  blink::WebFrame* frame =
+  blink::WebLocalFrame* frame =
       render_view()->GetWebView()->mainFrame()->toWebLocalFrame();
   v8::Handle<v8::Context> context = frame->mainWorldScriptContext();
   gin::PerContextData* context_data = gin::PerContextData::From(context);

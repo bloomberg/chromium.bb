@@ -9,14 +9,13 @@
 #include "content/common/content_export.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
-// TODO(dcheng): Convert back to a forward declare.
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebNavigationPolicy.h"
 
 struct WebPreferences;
 
 namespace blink {
 class WebFrame;
+class WebLocalFrame;
 class WebNode;
 class WebPlugin;
 class WebURLRequest;

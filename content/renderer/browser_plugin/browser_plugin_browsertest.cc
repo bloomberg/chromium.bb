@@ -20,6 +20,7 @@
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 
 namespace content {

@@ -15,9 +15,9 @@
 #include "ppapi/shared_impl/url_request_info_data.h"
 #include "ppapi/shared_impl/url_response_info_data.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace blink {
+class WebLocalFrame;
 class WebURLLoader;
 }
 

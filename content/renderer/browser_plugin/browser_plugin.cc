@@ -31,8 +31,8 @@
 #include "third_party/WebKit/public/web/WebDOMCustomEvent.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebPluginParams.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
@@ -839,7 +839,7 @@ void BrowserPlugin::TriggerEvent(const std::string& event_name,
   if (!container())
     return;
 
-  blink::WebFrame* frame = container()->element().document().frame();
+  blink::WebLocalFrame* frame = container()->element().document().frame();
   if (!frame)
     return;
 

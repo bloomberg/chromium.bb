@@ -12,15 +12,14 @@
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/web/WebAXObject.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebNode.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/accessibility/ax_tree.h"
 
 using blink::WebAXObject;
 using blink::WebDocument;
-using blink::WebFrame;
 using blink::WebNode;
 using blink::WebPoint;
 using blink::WebRect;
