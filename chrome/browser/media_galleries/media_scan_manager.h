@@ -72,7 +72,8 @@ class MediaScanManager : public extensions::ExtensionRegistryObserver {
   // extensions::ExtensionRegistryObserver implementation.
   virtual void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
-      const extensions::Extension* extension) OVERRIDE;
+      const extensions::Extension* extension,
+      extensions::UnloadedExtensionInfo::Reason reason) OVERRIDE;
 
   bool ScanInProgress() const;
 

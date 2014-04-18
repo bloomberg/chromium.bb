@@ -226,7 +226,8 @@ void ErrorConsole::OnPrefChanged() {
 }
 
 void ErrorConsole::OnExtensionUnloaded(content::BrowserContext* browser_context,
-                                       const Extension* extension) {
+                                       const Extension* extension,
+                                       UnloadedExtensionInfo::Reason reason) {
   CheckEnabled();
 }
 

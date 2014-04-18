@@ -208,7 +208,8 @@ void GalleryWatchStateTracker::OnExtensionLoaded(
 
 void GalleryWatchStateTracker::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
-    const Extension* extension) {
+    const Extension* extension,
+    UnloadedExtensionInfo::Reason reason) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!ContainsKey(watched_extensions_map_, extension->id()))
     return;

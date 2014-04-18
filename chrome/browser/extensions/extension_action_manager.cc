@@ -82,7 +82,9 @@ ExtensionActionManager* ExtensionActionManager::Get(Profile* profile) {
 }
 
 void ExtensionActionManager::OnExtensionUnloaded(
-    content::BrowserContext* browser_context, const Extension* extension) {
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    UnloadedExtensionInfo::Reason reason) {
   page_actions_.erase(extension->id());
   browser_actions_.erase(extension->id());
   system_indicators_.erase(extension->id());

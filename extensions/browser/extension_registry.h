@@ -71,7 +71,8 @@ class ExtensionRegistry : public KeyedService {
 
   // Invokes the observer method OnExtensionUnloaded(). The extension must not
   // be enabled at the time of the call.
-  void TriggerOnUnloaded(const Extension* extension);
+  void TriggerOnUnloaded(const Extension* extension,
+                         UnloadedExtensionInfo::Reason reason);
 
   // Find an extension by ID using |include_mask| to pick the sets to search:
   //  * enabled_extensions()     --> ExtensionRegistry::ENABLED

@@ -53,9 +53,9 @@ void RuntimeData::ClearAll() {
   extension_flags_.clear();
 }
 
-void RuntimeData::OnExtensionUnloaded(
-    content::BrowserContext* browser_context,
-    const Extension* extension) {
+void RuntimeData::OnExtensionUnloaded(content::BrowserContext* browser_context,
+                                      const Extension* extension,
+                                      UnloadedExtensionInfo::Reason reason) {
   extension_flags_.erase(extension->id());
 }
 

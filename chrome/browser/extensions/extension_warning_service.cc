@@ -122,7 +122,9 @@ void ExtensionWarningService::NotifyWarningsChanged() {
 }
 
 void ExtensionWarningService::OnExtensionUnloaded(
-    content::BrowserContext* browser_context, const Extension* extension) {
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    UnloadedExtensionInfo::Reason reason) {
   // Unloading one extension might have solved the problems of others.
   // Therefore, we clear warnings of this type for all extensions.
   std::set<ExtensionWarning::WarningType> warning_types =

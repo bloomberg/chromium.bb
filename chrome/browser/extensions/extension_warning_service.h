@@ -75,7 +75,9 @@ class ExtensionWarningService : public ExtensionRegistryObserver,
 
   // ExtensionRegistryObserver implementation.
   virtual void OnExtensionUnloaded(content::BrowserContext* browser_context,
-                                   const Extension* extension) OVERRIDE;
+                                   const Extension* extension,
+                                   UnloadedExtensionInfo::Reason reason)
+      OVERRIDE;
 
   // Currently existing warnings.
   ExtensionWarningSet warnings_;

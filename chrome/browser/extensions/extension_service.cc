@@ -1067,9 +1067,10 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
 void ExtensionService::NotifyExtensionUnloaded(
     const Extension* extension,
     UnloadedExtensionInfo::Reason reason) {
-  registry_->TriggerOnUnloaded(extension);
-
   UnloadedExtensionInfo details(extension, reason);
+
+  registry_->TriggerOnUnloaded(extension, reason);
+
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
       content::Source<Profile>(profile_),

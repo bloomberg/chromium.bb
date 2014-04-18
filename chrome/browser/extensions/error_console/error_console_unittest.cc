@@ -118,7 +118,7 @@ TEST_F(ErrorConsoleUnitTest, EnableAndDisableErrorConsole) {
 
   // Unloading the Apps Developer Tools should disable error console.
   registry->RemoveEnabled(adt->id());
-  registry->TriggerOnUnloaded(adt);
+  registry->TriggerOnUnloaded(adt, UnloadedExtensionInfo::REASON_DISABLE);
   EXPECT_FALSE(error_console_->enabled());
   EXPECT_FALSE(error_console_->IsEnabledForChromeExtensionsPage());
   EXPECT_FALSE(error_console_->IsEnabledForAppsDeveloperTools());

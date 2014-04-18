@@ -223,7 +223,8 @@ void ExtensionStorageMonitor::OnExtensionLoaded(
 
 void ExtensionStorageMonitor::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
-    const Extension* extension) {
+    const Extension* extension,
+    UnloadedExtensionInfo::Reason reason) {
   DCHECK(extension);
   StopMonitoringStorage(extension->id());
 }

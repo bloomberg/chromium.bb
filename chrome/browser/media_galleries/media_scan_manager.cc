@@ -428,7 +428,8 @@ MediaScanManager::ScanObservers::~ScanObservers() {}
 
 void MediaScanManager::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
-    const extensions::Extension* extension) {
+    const extensions::Extension* extension,
+    extensions::UnloadedExtensionInfo::Reason reason) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   CancelScan(Profile::FromBrowserContext(browser_context), extension);
 }

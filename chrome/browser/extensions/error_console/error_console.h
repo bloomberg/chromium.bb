@@ -131,7 +131,9 @@ class ErrorConsole : public content::NotificationObserver,
   // ExtensionRegistry implementation. If the Apps Developer Tools app is
   // installed or uninstalled, we may need to turn the ErrorConsole on/off.
   virtual void OnExtensionUnloaded(content::BrowserContext* browser_context,
-                                   const Extension* extension) OVERRIDE;
+                                   const Extension* extension,
+                                   UnloadedExtensionInfo::Reason reason)
+      OVERRIDE;
   virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
                                  const Extension* extension) OVERRIDE;
 

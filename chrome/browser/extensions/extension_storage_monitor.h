@@ -54,7 +54,9 @@ class ExtensionStorageMonitor : public KeyedService,
   virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
                                  const Extension* extension) OVERRIDE;
   virtual void OnExtensionUnloaded(content::BrowserContext* browser_context,
-                                   const Extension* extension) OVERRIDE;
+                                   const Extension* extension,
+                                   UnloadedExtensionInfo::Reason reason)
+      OVERRIDE;
 
   std::string GetNotificationId(const std::string& extension_id);
 

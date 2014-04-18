@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_BROWSER_EXTENSION_REGISTRY_OBSERVER_H_
 #define EXTENSIONS_BROWSER_EXTENSION_REGISTRY_OBSERVER_H_
 
+#include "extensions/common/extension.h"
+
 namespace content {
 class BrowserContext;
 }
@@ -12,6 +14,7 @@ class BrowserContext;
 namespace extensions {
 
 class Extension;
+struct UnloadedExtensionInfo;
 
 // Observer for ExtensionRegistry. Exists in a separate header file to reduce
 // the include file burden for typical clients of ExtensionRegistry.
@@ -27,9 +30,9 @@ class ExtensionRegistryObserver {
 
   // Called after an extension is unloaded. The extension no longer exists in
   // any of the ExtensionRegistry sets (enabled, disabled, etc.).
-  virtual void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const Extension* extension) {}
+  virtual void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                                   const Extension* extension,
+                                   UnloadedExtensionInfo::Reason reason) {}
 };
 
 }  // namespace extensions

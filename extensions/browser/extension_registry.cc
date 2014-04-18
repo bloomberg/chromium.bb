@@ -44,11 +44,13 @@ void ExtensionRegistry::TriggerOnLoaded(const Extension* extension) {
                     OnExtensionLoaded(browser_context_, extension));
 }
 
-void ExtensionRegistry::TriggerOnUnloaded(const Extension* extension) {
+void ExtensionRegistry::TriggerOnUnloaded(
+    const Extension* extension,
+    UnloadedExtensionInfo::Reason reason) {
   DCHECK(!enabled_extensions_.Contains(extension->id()));
   FOR_EACH_OBSERVER(ExtensionRegistryObserver,
                     observers_,
-                    OnExtensionUnloaded(browser_context_, extension));
+                    OnExtensionUnloaded(browser_context_, extension, reason));
 }
 
 const Extension* ExtensionRegistry::GetExtensionById(const std::string& id,

@@ -45,7 +45,9 @@ class ExtensionActionManager : public KeyedService,
  private:
   // Implement ExtensionRegistryObserver.
   virtual void OnExtensionUnloaded(content::BrowserContext* browser_context,
-                                   const Extension* extension) OVERRIDE;
+                                   const Extension* extension,
+                                   UnloadedExtensionInfo::Reason reason)
+      OVERRIDE;
 
   Profile* profile_;
 

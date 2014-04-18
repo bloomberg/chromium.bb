@@ -94,7 +94,9 @@ void ActiveTabPermissionGranter::WebContentsDestroyed(
 }
 
 void ActiveTabPermissionGranter::OnExtensionUnloaded(
-    content::BrowserContext* browser_context, const Extension* extension) {
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    UnloadedExtensionInfo::Reason reason) {
   // Note: don't need to clear the permissions (nor tell the renderer about it)
   // because it's being unloaded anyway.
   granted_extensions_.Remove(extension->id());

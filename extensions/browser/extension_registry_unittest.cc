@@ -49,7 +49,9 @@ class TestObserver : public ExtensionRegistryObserver {
   }
 
   virtual void OnExtensionUnloaded(content::BrowserContext* browser_context,
-                                   const Extension* extension) OVERRIDE {
+                                   const Extension* extension,
+                                   UnloadedExtensionInfo::Reason reason)
+      OVERRIDE {
     unloaded_.push_back(extension);
   }
 
@@ -225,7 +227,7 @@ TEST_F(ExtensionRegistryTest, Observer) {
   observer.Reset();
 
   registry.RemoveEnabled(extension->id());
-  registry.TriggerOnUnloaded(extension);
+  registry.TriggerOnUnloaded(extension, UnloadedExtensionInfo::REASON_DISABLE);
 
   EXPECT_TRUE(observer.loaded().empty());
   EXPECT_TRUE(HasSingleExtension(observer.unloaded(), extension.get()));

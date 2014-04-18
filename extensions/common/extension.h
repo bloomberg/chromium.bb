@@ -511,6 +511,7 @@ struct InstalledExtensionInfo {
 };
 
 struct UnloadedExtensionInfo {
+  // TODO(DHNishi): Move this enum to ExtensionRegistryObserver.
   enum Reason {
     REASON_DISABLE,    // Extension is being disabled.
     REASON_UPDATE,     // Extension is being updated to a newer version.
