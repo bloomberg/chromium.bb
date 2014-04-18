@@ -138,7 +138,7 @@ base::string16 ToolbarModelImpl::GetCorpusNameForMobile() const {
     if (key.is_nonempty() && query_str.substr(key.begin, key.len) == kChipKey) {
       return net::UnescapeAndDecodeUTF8URLComponent(
           query_str.substr(value.begin, value.len),
-          net::UnescapeRule::NORMAL, NULL);
+          net::UnescapeRule::NORMAL);
     }
   }
   return base::string16();

@@ -512,8 +512,7 @@ bool TemplateURLRef::ExtractSearchTermsFromURL(
             params.substr(value.begin, value.len),
             net::UnescapeRule::SPACES |
                 net::UnescapeRule::URL_SPECIAL_CHARS |
-                net::UnescapeRule::REPLACE_PLUS_WITH_SPACE,
-            NULL);
+                net::UnescapeRule::REPLACE_PLUS_WITH_SPACE);
         if (search_terms_component)
           *search_terms_component = search_term_key_location_;
         if (search_terms_position)

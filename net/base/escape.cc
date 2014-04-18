@@ -120,15 +120,18 @@ bool UnescapeUnsignedCharAtIndex(const STR& escaped_text,
   return false;
 }
 
+// Unescapes |escaped_text| according to |rules|, returning the resulting
+// string.  Fills in an |adjustments| parameter, if non-NULL, so it reflects
+// the alterations done to the string that are not one-character-to-one-
+// character.  The resulting |adjustments| will always be sorted by increasing
+// offset.
 template<typename STR>
-STR UnescapeURLWithOffsetsImpl(const STR& escaped_text,
-                               UnescapeRule::Type rules,
-                               std::vector<size_t>* offsets_for_adjustment) {
-  if (offsets_for_adjustment) {
-    std::for_each(offsets_for_adjustment->begin(),
-                  offsets_for_adjustment->end(),
-                  base::LimitOffset<STR>(escaped_text.length()));
-  }
+STR UnescapeURLWithAdjustmentsImpl(
+    const STR& escaped_text,
+    UnescapeRule::Type rules,
+    base::OffsetAdjuster::Adjustments* adjustments) {
+  if (adjustments)
+    adjustments->clear();
   // Do not unescape anything, return the |escaped_text| text.
   if (rules == UnescapeRule::NONE)
     return escaped_text;
@@ -140,7 +143,6 @@ STR UnescapeURLWithOffsetsImpl(const STR& escaped_text,
   result.reserve(escaped_text.length());
 
   // Locations of adjusted text.
-  net::internal::AdjustEncodingOffset::Adjustments adjustments;
   for (size_t i = 0, max = escaped_text.size(); i < max; ++i) {
     if (static_cast<unsigned char>(escaped_text[i]) >= 128) {
       // Non ASCII character, append as is.
@@ -208,7 +210,8 @@ STR UnescapeURLWithOffsetsImpl(const STR& escaped_text,
            // Additionally allow control characters if requested.
            (first_byte < ' ' && (rules & UnescapeRule::CONTROL_CHARS)))) {
         // Use the unescaped version of the character.
-        adjustments.push_back(i);
+        if (adjustments)
+          adjustments->push_back(base::OffsetAdjuster::Adjustment(i, 3, 1));
         result.push_back(first_byte);
         i += 2;
       } else {
@@ -223,13 +226,6 @@ STR UnescapeURLWithOffsetsImpl(const STR& escaped_text,
       // Normal case for unescaped characters.
       result.push_back(escaped_text[i]);
     }
-  }
-
-  // Make offset adjustment.
-  if (offsets_for_adjustment && !adjustments.empty()) {
-    std::for_each(offsets_for_adjustment->begin(),
-                   offsets_for_adjustment->end(),
-                   net::internal::AdjustEncodingOffset(adjustments));
   }
 
   return result;
@@ -339,48 +335,39 @@ base::string16 EscapeForHTML(const base::string16& input) {
 
 std::string UnescapeURLComponent(const std::string& escaped_text,
                                  UnescapeRule::Type rules) {
-  return UnescapeURLWithOffsetsImpl(escaped_text, rules, NULL);
+  return UnescapeURLWithAdjustmentsImpl(escaped_text, rules, NULL);
 }
 
 base::string16 UnescapeURLComponent(const base::string16& escaped_text,
                                     UnescapeRule::Type rules) {
-  return UnescapeURLWithOffsetsImpl(escaped_text, rules, NULL);
+  return UnescapeURLWithAdjustmentsImpl(escaped_text, rules, NULL);
 }
 
-base::string16 UnescapeAndDecodeUTF8URLComponent(
-    const std::string& text,
-    UnescapeRule::Type rules,
-    size_t* offset_for_adjustment) {
-  std::vector<size_t> offsets;
-  if (offset_for_adjustment)
-    offsets.push_back(*offset_for_adjustment);
-  base::string16 result =
-      UnescapeAndDecodeUTF8URLComponentWithOffsets(text, rules, &offsets);
-  if (offset_for_adjustment)
-    *offset_for_adjustment = offsets[0];
-  return result;
+base::string16 UnescapeAndDecodeUTF8URLComponent(const std::string& text,
+                                                 UnescapeRule::Type rules) {
+  return UnescapeAndDecodeUTF8URLComponentWithAdjustments(text, rules, NULL);
 }
 
-base::string16 UnescapeAndDecodeUTF8URLComponentWithOffsets(
+base::string16 UnescapeAndDecodeUTF8URLComponentWithAdjustments(
     const std::string& text,
     UnescapeRule::Type rules,
-    std::vector<size_t>* offsets_for_adjustment) {
+    base::OffsetAdjuster::Adjustments* adjustments) {
   base::string16 result;
-  std::vector<size_t> original_offsets;
-  if (offsets_for_adjustment)
-    original_offsets = *offsets_for_adjustment;
-  std::string unescaped_url(
-      UnescapeURLWithOffsetsImpl(text, rules, offsets_for_adjustment));
-  if (base::UTF8ToUTF16AndAdjustOffsets(unescaped_url.data(),
-                                        unescaped_url.length(),
-                                        &result, offsets_for_adjustment))
-    return result;  // Character set looks like it's valid.
-
-  // Not valid.  Return the escaped version.  Undo our changes to
-  // |offset_for_adjustment| since we haven't changed the string after all.
-  if (offsets_for_adjustment)
-    *offsets_for_adjustment = original_offsets;
-  return base::UTF8ToUTF16AndAdjustOffsets(text, offsets_for_adjustment);
+  base::OffsetAdjuster::Adjustments unescape_adjustments;
+  std::string unescaped_url(UnescapeURLWithAdjustmentsImpl(
+      text, rules, &unescape_adjustments));
+  if (base::UTF8ToUTF16WithAdjustments(unescaped_url.data(),
+                                       unescaped_url.length(),
+                                       &result, adjustments)) {
+    // Character set looks like it's valid.
+    if (adjustments) {
+      base::OffsetAdjuster::MergeSequentialAdjustments(unescape_adjustments,
+                                                       adjustments);
+    }
+    return result;
+  }
+  // Character set is not valid.  Return the escaped version.
+  return base::UTF8ToUTF16WithAdjustments(text, adjustments);
 }
 
 base::string16 UnescapeForHTML(const base::string16& input) {
@@ -420,33 +407,5 @@ base::string16 UnescapeForHTML(const base::string16& input) {
   }
   return text;
 }
-
-namespace internal {
-
-AdjustEncodingOffset::AdjustEncodingOffset(const Adjustments& adjustments)
-  : adjustments(adjustments) {}
-
-void AdjustEncodingOffset::operator()(size_t& offset) {
-  // For each encoded character occurring before an offset subtract 2.
-  if (offset == base::string16::npos)
-    return;
-  size_t adjusted_offset = offset;
-  for (Adjustments::const_iterator i = adjustments.begin();
-       i != adjustments.end(); ++i) {
-    size_t location = *i;
-    if (offset <= location) {
-      offset = adjusted_offset;
-      return;
-    }
-    if (offset <= (location + 2)) {
-      offset = base::string16::npos;
-      return;
-    }
-    adjusted_offset -= 2;
-  }
-  offset = adjusted_offset;
-}
-
-}  // namespace internal
 
 }  // namespace net

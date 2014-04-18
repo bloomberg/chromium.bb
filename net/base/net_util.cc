@@ -627,8 +627,8 @@ void GetIdentityFromURL(const GURL& url,
                         base::string16* password) {
   UnescapeRule::Type flags =
       UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS;
-  *username = UnescapeAndDecodeUTF8URLComponent(url.username(), flags, NULL);
-  *password = UnescapeAndDecodeUTF8URLComponent(url.password(), flags, NULL);
+  *username = UnescapeAndDecodeUTF8URLComponent(url.username(), flags);
+  *password = UnescapeAndDecodeUTF8URLComponent(url.password(), flags);
 }
 
 std::string GetHostOrSpecFromURL(const GURL& url) {

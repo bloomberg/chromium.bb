@@ -17,8 +17,6 @@
 namespace net {
 namespace {
 
-const size_t kNpos = base::string16::npos;
-
 struct EscapeCase {
   const char* input;
   const char* output;
@@ -355,7 +353,7 @@ TEST(EscapeTest, UnescapeAndDecodeUTF8URLComponent) {
 
     // TODO: Need to test unescape_spaces and unescape_percent.
     base::string16 decoded = UnescapeAndDecodeUTF8URLComponent(
-        unescape_cases[i].input, UnescapeRule::NORMAL, NULL);
+        unescape_cases[i].input, UnescapeRule::NORMAL);
     EXPECT_EQ(base::WideToUTF16(unescape_cases[i].decoded), decoded);
   }
 }
@@ -363,25 +361,54 @@ TEST(EscapeTest, UnescapeAndDecodeUTF8URLComponent) {
 TEST(EscapeTest, AdjustOffset) {
   const AdjustOffsetCase adjust_cases[] = {
     {"", 0, 0},
-    {"", 1, std::string::npos},
     {"test", 0, 0},
     {"test", 2, 2},
     {"test", 4, 4},
-    {"test", 5, std::string::npos},
     {"test", std::string::npos, std::string::npos},
     {"%2dtest", 6, 4},
+    {"%2dtest", 3, 1},
     {"%2dtest", 2, std::string::npos},
+    {"%2dtest", 1, std::string::npos},
+    {"%2dtest", 0, 0},
     {"test%2d", 2, 2},
     {"%E4%BD%A0+%E5%A5%BD", 9, 1},
     {"%E4%BD%A0+%E5%A5%BD", 6, std::string::npos},
-    {"%ED%B0%80+%E5%A5%BD", 6, 6},
+    {"%E4%BD%A0+%E5%A5%BD", 0, 0},
+    {"%E4%BD%A0+%E5%A5%BD", 10, 2},
+    {"%E4%BD%A0+%E5%A5%BD", 19, 3},
+
+    {"hi%41test%E4%BD%A0+%E5%A5%BD", 18, 8},
+    {"hi%41test%E4%BD%A0+%E5%A5%BD", 15, std::string::npos},
+    {"hi%41test%E4%BD%A0+%E5%A5%BD", 9, 7},
+    {"hi%41test%E4%BD%A0+%E5%A5%BD", 19, 9},
+    {"hi%41test%E4%BD%A0+%E5%A5%BD", 28, 10},
+    {"hi%41test%E4%BD%A0+%E5%A5%BD", 0, 0},
+    {"hi%41test%E4%BD%A0+%E5%A5%BD", 2, 2},
+    {"hi%41test%E4%BD%A0+%E5%A5%BD", 3, std::string::npos},
+    {"hi%41test%E4%BD%A0+%E5%A5%BD", 5, 3},
+
+    {"%E4%BD%A0+%E5%A5%BDhi%41test", 9, 1},
+    {"%E4%BD%A0+%E5%A5%BDhi%41test", 6, std::string::npos},
+    {"%E4%BD%A0+%E5%A5%BDhi%41test", 0, 0},
+    {"%E4%BD%A0+%E5%A5%BDhi%41test", 10, 2},
+    {"%E4%BD%A0+%E5%A5%BDhi%41test", 19, 3},
+    {"%E4%BD%A0+%E5%A5%BDhi%41test", 21, 5},
+    {"%E4%BD%A0+%E5%A5%BDhi%41test", 22, std::string::npos},
+    {"%E4%BD%A0+%E5%A5%BDhi%41test", 24, 6},
+    {"%E4%BD%A0+%E5%A5%BDhi%41test", 28, 10},
+
+    {"%ED%B0%80+%E5%A5%BD", 6, 6},  // not convertable to UTF-8
   };
 
   for (size_t i = 0; i < arraysize(adjust_cases); i++) {
     size_t offset = adjust_cases[i].input_offset;
-    UnescapeAndDecodeUTF8URLComponent(adjust_cases[i].input,
-                                      UnescapeRule::NORMAL, &offset);
-    EXPECT_EQ(adjust_cases[i].output_offset, offset);
+    base::OffsetAdjuster::Adjustments adjustments;
+    UnescapeAndDecodeUTF8URLComponentWithAdjustments(
+        adjust_cases[i].input, UnescapeRule::NORMAL, &adjustments);
+    base::OffsetAdjuster::AdjustOffset(adjustments, &offset);
+    EXPECT_EQ(adjust_cases[i].output_offset, offset)
+        << "input=" << adjust_cases[i].input
+        << " offset=" << adjust_cases[i].input_offset;
   }
 }
 
@@ -417,41 +444,6 @@ TEST(EscapeTest, UnescapeForHTML) {
   }
 }
 
-TEST(EscapeTest, AdjustEncodingOffset) {
-  // Imagine we have strings as shown in the following cases where the
-  // %XX's represent encoded characters
-
-  // 1: abc%ECdef ==> abcXdef
-  std::vector<size_t> offsets;
-  for (size_t t = 0; t < 9; ++t)
-    offsets.push_back(t);
-  internal::AdjustEncodingOffset::Adjustments adjustments;
-  adjustments.push_back(3);
-  std::for_each(offsets.begin(), offsets.end(),
-                internal::AdjustEncodingOffset(adjustments));
-  size_t expected_1[] = {0, 1, 2, 3, kNpos, kNpos, 4, 5, 6};
-  EXPECT_EQ(offsets.size(), arraysize(expected_1));
-  for (size_t i = 0; i < arraysize(expected_1); ++i)
-    EXPECT_EQ(expected_1[i], offsets[i]);
-
-
-  // 2: %ECabc%EC%ECdef%EC ==> XabcXXdefX
-  offsets.clear();
-  for (size_t t = 0; t < 18; ++t)
-    offsets.push_back(t);
-  adjustments.clear();
-  adjustments.push_back(0);
-  adjustments.push_back(6);
-  adjustments.push_back(9);
-  adjustments.push_back(15);
-  std::for_each(offsets.begin(), offsets.end(),
-                internal::AdjustEncodingOffset(adjustments));
-  size_t expected_2[] = {0, kNpos, kNpos, 1, 2, 3, 4, kNpos, kNpos, 5, kNpos,
-                         kNpos, 6, 7, 8, 9, kNpos, kNpos};
-  EXPECT_EQ(offsets.size(), arraysize(expected_2));
-  for (size_t i = 0; i < arraysize(expected_2); ++i)
-    EXPECT_EQ(expected_2[i], offsets[i]);
-}
 
 }  // namespace
 }  // namespace net

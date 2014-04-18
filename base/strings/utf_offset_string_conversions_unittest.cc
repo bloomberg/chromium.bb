@@ -35,9 +35,11 @@ TEST(UTFOffsetStringConversionsTest, AdjustOffset) {
     {"A\xF0\x90\x8C\x80z", kNpos, kNpos},
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(utf8_to_utf16_cases); ++i) {
-    size_t offset = utf8_to_utf16_cases[i].input_offset;
-    UTF8ToUTF16AndAdjustOffset(utf8_to_utf16_cases[i].utf8, &offset);
-    EXPECT_EQ(utf8_to_utf16_cases[i].output_offset, offset);
+    const size_t offset = utf8_to_utf16_cases[i].input_offset;
+    std::vector<size_t> offsets;
+    offsets.push_back(offset);
+    UTF8ToUTF16AndAdjustOffsets(utf8_to_utf16_cases[i].utf8, &offsets);
+    EXPECT_EQ(utf8_to_utf16_cases[i].output_offset, offsets[0]);
   }
 
   struct UTF16ToUTF8Case {
@@ -64,8 +66,10 @@ TEST(UTFOffsetStringConversionsTest, AdjustOffset) {
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(utf16_to_utf8_cases); ++i) {
     size_t offset = utf16_to_utf8_cases[i].input_offset;
-    UTF16ToUTF8AndAdjustOffset(utf16_to_utf8_cases[i].utf16, &offset);
-    EXPECT_EQ(utf16_to_utf8_cases[i].output_offset, offset);
+    std::vector<size_t> offsets;
+    offsets.push_back(offset);
+    UTF16ToUTF8AndAdjustOffsets(utf16_to_utf8_cases[i].utf16, &offsets);
+    EXPECT_EQ(utf16_to_utf8_cases[i].output_offset, offsets[0]) << i;
   }
 }
 
@@ -108,10 +112,9 @@ TEST(UTFOffsetStringConversionsTest, AdjustOffsets) {
     std::vector<size_t> offsets;
     for (size_t t = 0; t <= 9; ++t)
       offsets.push_back(t);
-    {
-      OffsetAdjuster offset_adjuster(&offsets);
-      offset_adjuster.Add(OffsetAdjuster::Adjustment(3, 3, 1));
-    }
+    OffsetAdjuster::Adjustments adjustments;
+    adjustments.push_back(OffsetAdjuster::Adjustment(3, 3, 1));
+    OffsetAdjuster::AdjustOffsets(adjustments, &offsets);
     size_t expected_1[] = {0, 1, 2, 3, kNpos, kNpos, 4, 5, 6, 7};
     EXPECT_EQ(offsets.size(), arraysize(expected_1));
     for (size_t i = 0; i < arraysize(expected_1); ++i)
@@ -123,13 +126,12 @@ TEST(UTFOffsetStringConversionsTest, AdjustOffsets) {
     std::vector<size_t> offsets;
     for (size_t t = 0; t <= 23; ++t)
       offsets.push_back(t);
-    {
-      OffsetAdjuster offset_adjuster(&offsets);
-      offset_adjuster.Add(OffsetAdjuster::Adjustment(0, 3, 1));
-      offset_adjuster.Add(OffsetAdjuster::Adjustment(4, 4, 2));
-      offset_adjuster.Add(OffsetAdjuster::Adjustment(10, 7, 4));
-      offset_adjuster.Add(OffsetAdjuster::Adjustment(20, 3, 1));
-    }
+    OffsetAdjuster::Adjustments adjustments;
+    adjustments.push_back(OffsetAdjuster::Adjustment(0, 3, 1));
+    adjustments.push_back(OffsetAdjuster::Adjustment(4, 4, 2));
+    adjustments.push_back(OffsetAdjuster::Adjustment(10, 7, 4));
+    adjustments.push_back(OffsetAdjuster::Adjustment(20, 3, 1));
+    OffsetAdjuster::AdjustOffsets(adjustments, &offsets);
     size_t expected_2[] = {
       0, kNpos, kNpos, 1, 2, kNpos, kNpos, kNpos, 4, 5, 6, kNpos, kNpos, kNpos,
       kNpos, kNpos, kNpos, 10, 11, 12, 13, kNpos, kNpos, 14
@@ -144,13 +146,12 @@ TEST(UTFOffsetStringConversionsTest, AdjustOffsets) {
     std::vector<size_t> offsets;
     for (size_t t = 0; t <= 17; ++t)
       offsets.push_back(t);
-    {
-      OffsetAdjuster offset_adjuster(&offsets);
-      offset_adjuster.Add(OffsetAdjuster::Adjustment(0, 3, 0));
-      offset_adjuster.Add(OffsetAdjuster::Adjustment(4, 4, 4));
-      offset_adjuster.Add(OffsetAdjuster::Adjustment(11, 3, 3));
-      offset_adjuster.Add(OffsetAdjuster::Adjustment(15, 2, 0));
-    }
+    OffsetAdjuster::Adjustments adjustments;
+    adjustments.push_back(OffsetAdjuster::Adjustment(0, 3, 0));
+    adjustments.push_back(OffsetAdjuster::Adjustment(4, 4, 4));
+    adjustments.push_back(OffsetAdjuster::Adjustment(11, 3, 3));
+    adjustments.push_back(OffsetAdjuster::Adjustment(15, 2, 0));
+    OffsetAdjuster::AdjustOffsets(adjustments, &offsets);
     size_t expected_3[] = {
       0, kNpos, kNpos, 0, 1, kNpos, kNpos, kNpos, 5, 6, 7, 8, kNpos, kNpos, 11,
       12, kNpos, 12
@@ -159,6 +160,79 @@ TEST(UTFOffsetStringConversionsTest, AdjustOffsets) {
     for (size_t i = 0; i < arraysize(expected_3); ++i)
       EXPECT_EQ(expected_3[i], offsets[i]);
   }
+}
+
+// MergeSequentialAdjustments is used by net/base/escape.{h,cc} and
+// net/base/net_util.{h,cc}.  The two tests EscapeTest.AdjustOffset and
+// NetUtilTest.FormatUrlWithOffsets test its behavior extensively.  This
+// is simply a short, additional test.
+TEST(UTFOffsetStringConversionsTest, MergeSequentialAdjustments) {
+  // Pretend the input string is "abcdefghijklmnopqrstuvwxyz".
+
+  // Set up |first_adjustments| to
+  // - remove the leading "a"
+  // - combine the "bc" into one character (call it ".")
+  // - remove the "f"
+  // - remove the "tuv"
+  // The resulting string should be ".deghijklmnopqrswxyz".
+  OffsetAdjuster::Adjustments first_adjustments;
+  first_adjustments.push_back(OffsetAdjuster::Adjustment(0, 1, 0));
+  first_adjustments.push_back(OffsetAdjuster::Adjustment(1, 2, 1));
+  first_adjustments.push_back(OffsetAdjuster::Adjustment(5, 1, 0));
+  first_adjustments.push_back(OffsetAdjuster::Adjustment(19, 3, 0));
+
+  // Set up |adjustments_on_adjusted_string| to
+  // - combine the "." character that replaced "bc" with "d" into one character
+  //   (call it "?")
+  // - remove the "egh"
+  // - expand the "i" into two characters (call them "12")
+  // - combine the "jkl" into one character (call it "@")
+  // - expand the "z" into two characters (call it "34")
+  // The resulting string should be "?12@mnopqrswxy34".
+  OffsetAdjuster::Adjustments adjustments_on_adjusted_string;
+  adjustments_on_adjusted_string.push_back(OffsetAdjuster::Adjustment(
+      0, 2, 1));
+  adjustments_on_adjusted_string.push_back(OffsetAdjuster::Adjustment(
+      2, 3, 0));
+  adjustments_on_adjusted_string.push_back(OffsetAdjuster::Adjustment(
+      5, 1, 2));
+  adjustments_on_adjusted_string.push_back(OffsetAdjuster::Adjustment(
+      6, 3, 1));
+  adjustments_on_adjusted_string.push_back(OffsetAdjuster::Adjustment(
+      19, 1, 2));
+
+  // Now merge the adjustments and check the results.
+  OffsetAdjuster::MergeSequentialAdjustments(first_adjustments,
+                                             &adjustments_on_adjusted_string);
+  // The merged adjustments should look like
+  // - combine abcd into "?"
+  //   - note: it's also reasonable for the Merge function to instead produce
+  //     two adjustments instead of this, one to remove a and another to
+  //     combine bcd into "?".  This test verifies the current behavior.
+  // - remove efgh
+  // - expand i into "12"
+  // - combine jkl into "@"
+  // - remove tuv
+  // - expand z into "34"
+  ASSERT_EQ(6u, adjustments_on_adjusted_string.size());
+  EXPECT_EQ(0u, adjustments_on_adjusted_string[0].original_offset);
+  EXPECT_EQ(4u, adjustments_on_adjusted_string[0].original_length);
+  EXPECT_EQ(1u, adjustments_on_adjusted_string[0].output_length);
+  EXPECT_EQ(4u, adjustments_on_adjusted_string[1].original_offset);
+  EXPECT_EQ(4u, adjustments_on_adjusted_string[1].original_length);
+  EXPECT_EQ(0u, adjustments_on_adjusted_string[1].output_length);
+  EXPECT_EQ(8u, adjustments_on_adjusted_string[2].original_offset);
+  EXPECT_EQ(1u, adjustments_on_adjusted_string[2].original_length);
+  EXPECT_EQ(2u, adjustments_on_adjusted_string[2].output_length);
+  EXPECT_EQ(9u, adjustments_on_adjusted_string[3].original_offset);
+  EXPECT_EQ(3u, adjustments_on_adjusted_string[3].original_length);
+  EXPECT_EQ(1u, adjustments_on_adjusted_string[3].output_length);
+  EXPECT_EQ(19u, adjustments_on_adjusted_string[4].original_offset);
+  EXPECT_EQ(3u, adjustments_on_adjusted_string[4].original_length);
+  EXPECT_EQ(0u, adjustments_on_adjusted_string[4].output_length);
+  EXPECT_EQ(25u, adjustments_on_adjusted_string[5].original_offset);
+  EXPECT_EQ(1u, adjustments_on_adjusted_string[5].original_length);
+  EXPECT_EQ(2u, adjustments_on_adjusted_string[5].output_length);
 }
 
 }  // namaspace base

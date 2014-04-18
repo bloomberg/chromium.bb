@@ -20,6 +20,7 @@
 
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
+#include "base/strings/utf_offset_string_conversions.h"
 #include "net/base/address_family.h"
 #include "net/base/escape.h"
 #include "net/base/net_export.h"
@@ -310,6 +311,18 @@ NET_EXPORT base::string16 FormatUrlWithOffsets(
     url_parse::Parsed* new_parsed,
     size_t* prefix_end,
     std::vector<size_t>* offsets_for_adjustment);
+// This function is like those above except it takes |adjustments| rather
+// than |offset[s]_for_adjustment|.  |adjustments| will be set to reflect all
+// the transformations that happened to |url| to convert it into the returned
+// value.
+NET_EXPORT base::string16 FormatUrlWithAdjustments(
+    const GURL& url,
+    const std::string& languages,
+    FormatUrlTypes format_types,
+    UnescapeRule::Type unescape_rules,
+    url_parse::Parsed* new_parsed,
+    size_t* prefix_end,
+    base::OffsetAdjuster::Adjustments* adjustments);
 
 // This is a convenience function for FormatUrl() with
 // format_types = kFormatUrlOmitAll and unescape = SPACES.  This is the typical

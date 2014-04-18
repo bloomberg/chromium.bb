@@ -355,15 +355,6 @@ bool IDNToUnicodeOneComponent(const base::char16* comp,
   return false;
 }
 
-// Clamps the offsets in |offsets_for_adjustment| to the length of |str|.
-void LimitOffsets(const base::string16& str, Offsets* offsets_for_adjustment) {
-  if (offsets_for_adjustment) {
-    std::for_each(offsets_for_adjustment->begin(),
-                  offsets_for_adjustment->end(),
-                  base::LimitOffset<base::string16>(str.length()));
-  }
-}
-
 // TODO(brettw) bug 734373: check the scripts for each host component and
 // don't un-IDN-ize if there is more than one. Alternatively, only IDN for
 // scripts that the user has installed. For now, just put the entire
@@ -371,9 +362,12 @@ void LimitOffsets(const base::string16& str, Offsets* offsets_for_adjustment) {
 //
 // We may want to skip this step in the case of file URLs to allow unicode
 // UNC hostnames regardless of encodings.
-base::string16 IDNToUnicodeWithOffsets(const std::string& host,
-                                       const std::string& languages,
-                                       Offsets* offsets_for_adjustment) {
+base::string16 IDNToUnicodeWithAdjustments(
+    const std::string& host,
+    const std::string& languages,
+    base::OffsetAdjuster::Adjustments* adjustments) {
+  if (adjustments)
+    adjustments->clear();
   // Convert the ASCII input to a base::string16 for ICU.
   base::string16 input16;
   input16.reserve(host.length());
@@ -383,7 +377,6 @@ base::string16 IDNToUnicodeWithOffsets(const std::string& host,
   // on a per-component basis.
   base::string16 out16;
   {
-    base::OffsetAdjuster offset_adjuster(offsets_for_adjustment);
     for (size_t component_start = 0, component_end;
          component_start < input16.length();
          component_start = component_end + 1) {
@@ -402,9 +395,9 @@ base::string16 IDNToUnicodeWithOffsets(const std::string& host,
       }
       size_t new_component_length = out16.length() - new_component_start;
 
-      if (converted_idn && offsets_for_adjustment) {
-        offset_adjuster.Add(base::OffsetAdjuster::Adjustment(component_start,
-            component_length, new_component_length));
+      if (converted_idn && adjustments) {
+        adjustments->push_back(base::OffsetAdjuster::Adjustment(
+            component_start, component_length, new_component_length));
       }
 
       // Need to add the dot we just found (if we found one).
@@ -412,55 +405,7 @@ base::string16 IDNToUnicodeWithOffsets(const std::string& host,
         out16.push_back('.');
     }
   }
-
-  LimitOffsets(out16, offsets_for_adjustment);
   return out16;
-}
-
-// Called after transforming a component to set all affected elements in
-// |offsets_for_adjustment| to the correct new values.  |original_offsets|
-// represents the offsets before the transform; |original_component_begin| and
-// |original_component_end| represent the pre-transform boundaries of the
-// affected component.  |transformed_offsets| should be a vector created by
-// adjusting |original_offsets| to be relative to the beginning of the component
-// in question (via an OffsetAdjuster) and then transformed along with the
-// component.  Note that any elements in this vector which didn't originally
-// point into the component may contain arbitrary values and should be ignored.
-// |transformed_component_begin| and |transformed_component_end| are the
-// endpoints of the transformed component and are used in combination with the
-// two offset vectors to calculate the resulting absolute offsets, which are
-// stored in |offsets_for_adjustment|.
-void AdjustForComponentTransform(const Offsets& original_offsets,
-                                 size_t original_component_begin,
-                                 size_t original_component_end,
-                                 const Offsets& transformed_offsets,
-                                 size_t transformed_component_begin,
-                                 size_t transformed_component_end,
-                                 Offsets* offsets_for_adjustment) {
-  if (!offsets_for_adjustment)
-    return;  // Nothing to do.
-
-  for (size_t i = 0; i < original_offsets.size(); ++i) {
-    size_t original_offset = original_offsets[i];
-    if ((original_offset >= original_component_begin) &&
-        (original_offset < original_component_end)) {
-      // This offset originally pointed into the transformed component.
-      // Adjust the transformed relative offset by the new beginning point of
-      // the transformed component.
-      size_t transformed_offset = transformed_offsets[i];
-      (*offsets_for_adjustment)[i] =
-          (transformed_offset == base::string16::npos) ?
-              base::string16::npos :
-              (transformed_offset + transformed_component_begin);
-    } else if ((original_offset >= original_component_end) &&
-               (original_offset != std::string::npos)) {
-      // This offset pointed after the transformed component.  Adjust the
-      // original absolute offset by the difference between the new and old
-      // component lengths.
-      (*offsets_for_adjustment)[i] =
-          original_offset - original_component_end + transformed_component_end;
-    }
-  }
 }
 
 // If |component| is valid, its begin is incremented by |delta|.
@@ -484,34 +429,30 @@ void AdjustAllComponentsButScheme(int delta, url_parse::Parsed* parsed) {
 }
 
 // Helper for FormatUrlWithOffsets().
-base::string16 FormatViewSourceUrl(const GURL& url,
-                                   const Offsets& original_offsets,
-                                   const std::string& languages,
-                                   FormatUrlTypes format_types,
-                                   UnescapeRule::Type unescape_rules,
-                                   url_parse::Parsed* new_parsed,
-                                   size_t* prefix_end,
-                                   Offsets* offsets_for_adjustment) {
+base::string16 FormatViewSourceUrl(
+    const GURL& url,
+    const std::string& languages,
+    FormatUrlTypes format_types,
+    UnescapeRule::Type unescape_rules,
+    url_parse::Parsed* new_parsed,
+    size_t* prefix_end,
+    base::OffsetAdjuster::Adjustments* adjustments) {
   DCHECK(new_parsed);
   const char kViewSource[] = "view-source:";
   const size_t kViewSourceLength = arraysize(kViewSource) - 1;
 
-  // Format the underlying URL and adjust offsets.
+  // Format the underlying URL and record adjustments.
   const std::string& url_str(url.possibly_invalid_spec());
-  Offsets offsets_into_underlying_url(original_offsets);
-  {
-    base::OffsetAdjuster adjuster(&offsets_into_underlying_url);
-    adjuster.Add(base::OffsetAdjuster::Adjustment(0, kViewSourceLength, 0));
-  }
+  adjustments->clear();
   base::string16 result(base::ASCIIToUTF16(kViewSource) +
-      FormatUrlWithOffsets(GURL(url_str.substr(kViewSourceLength)), languages,
-                           format_types, unescape_rules, new_parsed, prefix_end,
-                           &offsets_into_underlying_url));
-  AdjustForComponentTransform(original_offsets, kViewSourceLength,
-                              url_str.length(), offsets_into_underlying_url,
-                              kViewSourceLength, result.length(),
-                              offsets_for_adjustment);
-  LimitOffsets(result, offsets_for_adjustment);
+      FormatUrlWithAdjustments(GURL(url_str.substr(kViewSourceLength)),
+                               languages, format_types, unescape_rules,
+                               new_parsed, prefix_end, adjustments));
+  // Revise |adjustments| by shifting to the offsets to prefix that the above
+  // call to FormatUrl didn't get to see.
+  for (base::OffsetAdjuster::Adjustments::iterator it = adjustments->begin();
+       it != adjustments->end(); ++it)
+    it->original_offset += kViewSourceLength;
 
   // Adjust positions of the parsed components.
   if (new_parsed->scheme.is_nonempty()) {
@@ -534,8 +475,9 @@ class AppendComponentTransform {
   AppendComponentTransform() {}
   virtual ~AppendComponentTransform() {}
 
-  virtual base::string16 Execute(const std::string& component_text,
-                                 Offsets* offsets_into_component) const = 0;
+  virtual base::string16 Execute(
+      const std::string& component_text,
+      base::OffsetAdjuster::Adjustments* adjustments) const = 0;
 
   // NOTE: No DISALLOW_COPY_AND_ASSIGN here, since gcc < 4.3.0 requires an
   // accessible copy constructor in order to call AppendFormattedComponent()
@@ -551,9 +493,9 @@ class HostComponentTransform : public AppendComponentTransform {
  private:
   virtual base::string16 Execute(
       const std::string& component_text,
-      Offsets* offsets_into_component) const OVERRIDE {
-    return IDNToUnicodeWithOffsets(component_text, languages_,
-                                   offsets_into_component);
+      base::OffsetAdjuster::Adjustments* adjustments) const OVERRIDE {
+    return IDNToUnicodeWithAdjustments(component_text, languages_,
+                                       adjustments);
   }
 
   const std::string& languages_;
@@ -568,12 +510,11 @@ class NonHostComponentTransform : public AppendComponentTransform {
  private:
   virtual base::string16 Execute(
       const std::string& component_text,
-      Offsets* offsets_into_component) const OVERRIDE {
+      base::OffsetAdjuster::Adjustments* adjustments) const OVERRIDE {
     return (unescape_rules_ == UnescapeRule::NONE) ?
-        base::UTF8ToUTF16AndAdjustOffsets(component_text,
-                                          offsets_into_component) :
-        UnescapeAndDecodeUTF8URLComponentWithOffsets(component_text,
-            unescape_rules_, offsets_into_component);
+        base::UTF8ToUTF16WithAdjustments(component_text, adjustments) :
+        UnescapeAndDecodeUTF8URLComponentWithAdjustments(component_text,
+            unescape_rules_, adjustments);
   }
 
   const UnescapeRule::Type unescape_rules_;
@@ -582,16 +523,15 @@ class NonHostComponentTransform : public AppendComponentTransform {
 // Transforms the portion of |spec| covered by |original_component| according to
 // |transform|.  Appends the result to |output|.  If |output_component| is
 // non-NULL, its start and length are set to the transformed component's new
-// start and length.  For each element in |original_offsets| which is at least
-// as large as original_component.begin, the corresponding element of
-// |offsets_for_adjustment| is transformed appropriately.
+// start and length.  If |adjustments| is non-NULL, appends adjustments (if
+// any) that reflect the transformation the original component underwent to
+// become the transformed value appended to |output|.
 void AppendFormattedComponent(const std::string& spec,
                               const url_parse::Component& original_component,
-                              const Offsets& original_offsets,
                               const AppendComponentTransform& transform,
                               base::string16* output,
                               url_parse::Component* output_component,
-                              Offsets* offsets_for_adjustment) {
+                              base::OffsetAdjuster::Adjustments* adjustments) {
   DCHECK(output);
   if (original_component.is_nonempty()) {
     size_t original_component_begin =
@@ -600,18 +540,22 @@ void AppendFormattedComponent(const std::string& spec,
     std::string component_str(spec, original_component_begin,
                               static_cast<size_t>(original_component.len));
 
-    // Transform |component_str| and adjust the offsets accordingly.
-    Offsets offsets_into_component(original_offsets);
-    {
-      base::OffsetAdjuster adjuster(&offsets_into_component);
-      adjuster.Add(base::OffsetAdjuster::Adjustment(0, original_component_begin,
-                                                    0));
+    // Transform |component_str| and modify |adjustments| appropriately.
+    base::OffsetAdjuster::Adjustments component_transform_adjustments;
+    output->append(
+        transform.Execute(component_str, &component_transform_adjustments));
+
+    // Shift all the adjustments made for this component so the offsets are
+    // valid for the original string and add them to |adjustments|.
+    for (base::OffsetAdjuster::Adjustments::iterator comp_iter =
+         component_transform_adjustments.begin();
+         comp_iter != component_transform_adjustments.end(); ++comp_iter)
+      comp_iter->original_offset += original_component_begin;
+    if (adjustments) {
+      adjustments->insert(adjustments->end(),
+                          component_transform_adjustments.begin(),
+                          component_transform_adjustments.end());
     }
-    output->append(transform.Execute(component_str, &offsets_into_component));
-    AdjustForComponentTransform(original_offsets, original_component_begin,
-                                static_cast<size_t>(original_component.end()),
-                                offsets_into_component, output_component_begin,
-                                output->length(), offsets_for_adjustment);
 
     // Set positions of the parsed component.
     if (output_component) {
@@ -635,7 +579,7 @@ const FormatUrlType kFormatUrlOmitAll = kFormatUrlOmitUsernamePassword |
 
 base::string16 IDNToUnicode(const std::string& host,
                             const std::string& languages) {
-  return IDNToUnicodeWithOffsets(host, languages, NULL);
+  return IDNToUnicodeWithAdjustments(host, languages, NULL);
 }
 
 std::string GetDirectoryListingEntry(const base::string16& name,
@@ -681,9 +625,8 @@ std::string GetDirectoryListingEntry(const base::string16& name,
 void AppendFormattedHost(const GURL& url,
                          const std::string& languages,
                          base::string16* output) {
-  Offsets offsets;
   AppendFormattedComponent(url.possibly_invalid_spec(),
-      url.parsed_for_possibly_invalid_spec().host, offsets,
+      url.parsed_for_possibly_invalid_spec().host,
       HostComponentTransform(languages), output, NULL, NULL);
 }
 
@@ -694,15 +637,36 @@ base::string16 FormatUrlWithOffsets(
     UnescapeRule::Type unescape_rules,
     url_parse::Parsed* new_parsed,
     size_t* prefix_end,
-    Offsets* offsets_for_adjustment) {
+    std::vector<size_t>* offsets_for_adjustment) {
+  base::OffsetAdjuster::Adjustments adjustments;
+  const base::string16& format_url_return_value =
+      FormatUrlWithAdjustments(url, languages, format_types, unescape_rules,
+                               new_parsed, prefix_end, &adjustments);
+  base::OffsetAdjuster::AdjustOffsets(adjustments, offsets_for_adjustment);
+  if (offsets_for_adjustment) {
+    std::for_each(
+        offsets_for_adjustment->begin(),
+        offsets_for_adjustment->end(),
+        base::LimitOffset<std::string>(format_url_return_value.length()));
+  }
+  return format_url_return_value;
+}
+
+base::string16 FormatUrlWithAdjustments(
+    const GURL& url,
+    const std::string& languages,
+    FormatUrlTypes format_types,
+    UnescapeRule::Type unescape_rules,
+    url_parse::Parsed* new_parsed,
+    size_t* prefix_end,
+    base::OffsetAdjuster::Adjustments* adjustments) {
+  DCHECK(adjustments != NULL);
+  adjustments->clear();
   url_parse::Parsed parsed_temp;
   if (!new_parsed)
     new_parsed = &parsed_temp;
   else
     *new_parsed = url_parse::Parsed();
-  Offsets original_offsets;
-  if (offsets_for_adjustment)
-    original_offsets = *offsets_for_adjustment;
 
   // Special handling for view-source:.  Don't use content::kViewSourceScheme
   // because this library shouldn't depend on chrome.
@@ -711,9 +675,9 @@ base::string16 FormatUrlWithOffsets(
   const char* const kViewSourceTwice = "view-source:view-source:";
   if (url.SchemeIs(kViewSource) &&
       !StartsWithASCII(url.possibly_invalid_spec(), kViewSourceTwice, false)) {
-    return FormatViewSourceUrl(url, original_offsets, languages, format_types,
+    return FormatViewSourceUrl(url, languages, format_types,
                                unescape_rules, new_parsed, prefix_end,
-                               offsets_for_adjustment);
+                               adjustments);
   }
 
   // We handle both valid and invalid URLs (this will give us the spec
@@ -723,7 +687,8 @@ base::string16 FormatUrlWithOffsets(
 
   // Scheme & separators.  These are ASCII.
   base::string16 url_string;
-  url_string.insert(url_string.end(), spec.begin(),
+  url_string.insert(
+      url_string.end(), spec.begin(),
       spec.begin() + parsed.CountCharactersBefore(url_parse::Parsed::USERNAME,
                                                   true));
   const char kHTTP[] = "http://";
@@ -746,36 +711,35 @@ base::string16 FormatUrlWithOffsets(
     // e.g. "http://google.com:search@evil.ru/"
     new_parsed->username.reset();
     new_parsed->password.reset();
-    // Update the offsets based on removed username and/or password.
-    if (offsets_for_adjustment && !offsets_for_adjustment->empty() &&
-        (parsed.username.is_nonempty() || parsed.password.is_nonempty())) {
-      base::OffsetAdjuster offset_adjuster(offsets_for_adjustment);
+    // Update the adjustments based on removed username and/or password.
+    if (parsed.username.is_nonempty() || parsed.password.is_nonempty()) {
       if (parsed.username.is_nonempty() && parsed.password.is_nonempty()) {
-        // The seeming off-by-one and off-by-two in these first two lines are to
-        // account for the ':' after the username and '@' after the password.
-        offset_adjuster.Add(base::OffsetAdjuster::Adjustment(
+        // The seeming off-by-two is to account for the ':' after the username
+        // and '@' after the password.
+        adjustments->push_back(base::OffsetAdjuster::Adjustment(
             static_cast<size_t>(parsed.username.begin),
             static_cast<size_t>(parsed.username.len + parsed.password.len + 2),
             0));
       } else {
         const url_parse::Component* nonempty_component =
             parsed.username.is_nonempty() ? &parsed.username : &parsed.password;
-        // The seeming off-by-one in below is to account for the '@' after the
+        // The seeming off-by-one is to account for the '@' after the
         // username/password.
-        offset_adjuster.Add(base::OffsetAdjuster::Adjustment(
+        adjustments->push_back(base::OffsetAdjuster::Adjustment(
             static_cast<size_t>(nonempty_component->begin),
-            static_cast<size_t>(nonempty_component->len + 1), 0));
+            static_cast<size_t>(nonempty_component->len + 1),
+            0));
       }
     }
   } else {
-    AppendFormattedComponent(spec, parsed.username, original_offsets,
-        NonHostComponentTransform(unescape_rules), &url_string,
-        &new_parsed->username, offsets_for_adjustment);
+    AppendFormattedComponent(spec, parsed.username,
+                             NonHostComponentTransform(unescape_rules),
+                             &url_string, &new_parsed->username, adjustments);
     if (parsed.password.is_valid())
       url_string.push_back(':');
-    AppendFormattedComponent(spec, parsed.password, original_offsets,
-        NonHostComponentTransform(unescape_rules), &url_string,
-        &new_parsed->password, offsets_for_adjustment);
+    AppendFormattedComponent(spec, parsed.password,
+                             NonHostComponentTransform(unescape_rules),
+                             &url_string, &new_parsed->password, adjustments);
     if (parsed.username.is_valid() || parsed.password.is_valid())
       url_string.push_back('@');
   }
@@ -783,9 +747,8 @@ base::string16 FormatUrlWithOffsets(
     *prefix_end = static_cast<size_t>(url_string.length());
 
   // Host.
-  AppendFormattedComponent(spec, parsed.host, original_offsets,
-      HostComponentTransform(languages), &url_string, &new_parsed->host,
-      offsets_for_adjustment);
+  AppendFormattedComponent(spec, parsed.host, HostComponentTransform(languages),
+                           &url_string, &new_parsed->host, adjustments);
 
   // Port.
   if (parsed.port.is_nonempty()) {
@@ -802,36 +765,39 @@ base::string16 FormatUrlWithOffsets(
   // Path & query.  Both get the same general unescape & convert treatment.
   if (!(format_types & kFormatUrlOmitTrailingSlashOnBareHostname) ||
       !CanStripTrailingSlash(url)) {
-    AppendFormattedComponent(spec, parsed.path, original_offsets,
-        NonHostComponentTransform(unescape_rules), &url_string,
-        &new_parsed->path, offsets_for_adjustment);
+    AppendFormattedComponent(spec, parsed.path,
+                             NonHostComponentTransform(unescape_rules),
+                             &url_string, &new_parsed->path, adjustments);
   } else {
-    base::OffsetAdjuster offset_adjuster(offsets_for_adjustment);
-    offset_adjuster.Add(base::OffsetAdjuster::Adjustment(
-        url_string.length(), parsed.path.len, 0));
+    if (parsed.path.len > 0) {
+      adjustments->push_back(base::OffsetAdjuster::Adjustment(
+          parsed.path.begin, parsed.path.len, 0));
+    }
   }
   if (parsed.query.is_valid())
     url_string.push_back('?');
-  AppendFormattedComponent(spec, parsed.query, original_offsets,
-      NonHostComponentTransform(unescape_rules), &url_string,
-      &new_parsed->query, offsets_for_adjustment);
+  AppendFormattedComponent(spec, parsed.query,
+                           NonHostComponentTransform(unescape_rules),
+                           &url_string, &new_parsed->query, adjustments);
 
   // Ref.  This is valid, unescaped UTF-8, so we can just convert.
   if (parsed.ref.is_valid())
     url_string.push_back('#');
-  AppendFormattedComponent(spec, parsed.ref, original_offsets,
-      NonHostComponentTransform(UnescapeRule::NONE), &url_string,
-      &new_parsed->ref, offsets_for_adjustment);
+  AppendFormattedComponent(spec, parsed.ref,
+                           NonHostComponentTransform(UnescapeRule::NONE),
+                           &url_string, &new_parsed->ref, adjustments);
 
-  // If we need to strip out http do it after the fact. This way we don't need
-  // to worry about how offset_for_adjustment is interpreted.
+  // If we need to strip out http do it after the fact.
   if (omit_http && StartsWith(url_string, base::ASCIIToUTF16(kHTTP), true)) {
     const size_t kHTTPSize = arraysize(kHTTP) - 1;
     url_string = url_string.substr(kHTTPSize);
-    if (offsets_for_adjustment && !offsets_for_adjustment->empty()) {
-      base::OffsetAdjuster offset_adjuster(offsets_for_adjustment);
-      offset_adjuster.Add(base::OffsetAdjuster::Adjustment(0, kHTTPSize, 0));
-    }
+    // Because offsets in the |adjustments| are already calculated with respect
+    // to the string with the http:// prefix in it, those offsets remain correct
+    // after stripping the prefix.  The only thing necessary is to add an
+    // adjustment to reflect the stripped prefix.
+    adjustments->insert(adjustments->begin(),
+        base::OffsetAdjuster::Adjustment(0, kHTTPSize, 0));
+
     if (prefix_end)
       *prefix_end -= kHTTPSize;
 
@@ -842,7 +808,6 @@ base::string16 FormatUrlWithOffsets(
     AdjustAllComponentsButScheme(delta, new_parsed);
   }
 
-  LimitOffsets(url_string, offsets_for_adjustment);
   return url_string;
 }
 
