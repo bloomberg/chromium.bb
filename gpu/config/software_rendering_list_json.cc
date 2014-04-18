@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "7.6",
+  "version": "7.7",
   "entries": [
     {
       "id": 1,
@@ -1130,6 +1130,104 @@ LONG_STRING_CONST(
       },
       "features": [
         "all"
+      ]
+    },
+    {
+      "id": 96,
+      "description": "GPU rasterization is whitelisted on N4, N5, N7 and Moto X",
+      "cr_bugs": [362779],
+      "exceptions": [
+        {
+          "machine_model": {
+            "name": {
+              "op": "=",
+              "value": "Nexus 4"
+            }
+          }
+        },
+        {
+          "machine_model": {
+            "name": {
+              "op": "=",
+              "value": "Nexus 5"
+            }
+          }
+        },
+        {
+          "machine_model": {
+            "name": {
+              "op": "=",
+              "value": "Nexus 7"
+            }
+          }
+        },
+        {
+          "machine_model": {
+            "name": {
+              "op": "=",
+              "value": "XT1049"
+            }
+          }
+        },
+        {
+          "machine_model": {
+            "name": {
+              "op": "=",
+              "value": "XT1050"
+            }
+          }
+        },
+        {
+          "machine_model": {
+            "name": {
+              "op": "=",
+              "value": "XT1052"
+            }
+          }
+        },
+        {
+          "machine_model": {
+            "name": {
+              "op": "=",
+              "value": "XT1053"
+            }
+          }
+        },
+        {
+          "machine_model": {
+            "name": {
+              "op": "=",
+              "value": "XT1055"
+            }
+          }
+        },
+        {
+          "machine_model": {
+            "name": {
+              "op": "=",
+              "value": "XT1056"
+            }
+          }
+        },
+        {
+          "machine_model": {
+            "name": {
+              "op": "=",
+              "value": "XT1058"
+            }
+          }
+        },
+        {
+          "machine_model": {
+            "name": {
+              "op": "=",
+              "value": "XT1060"
+            }
+          }
+        }
+      ],
+      "features": [
+        "gpu_rasterization"
       ]
     }
   ]

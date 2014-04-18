@@ -223,18 +223,12 @@ bool IsGpuRasterizationEnabled() {
   else if (command_line.HasSwitch(switches::kEnableGpuRasterization))
     return true;
 
-  if (command_line.HasSwitch(
-          switches::kEnableBleedingEdgeRenderingFastPaths)) {
-    return true;
-  }
-
   if (GpuDataManagerImpl::GetInstance()->IsFeatureBlacklisted(
           gpu::GPU_FEATURE_TYPE_GPU_RASTERIZATION)) {
     return false;
   }
 
-  // Change this to true to turn on the feature by default.
-  return false;
+  return true;
 }
 
 bool IsForceGpuRasterizationEnabled() {
