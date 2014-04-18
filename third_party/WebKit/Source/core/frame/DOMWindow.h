@@ -123,7 +123,6 @@ enum PageshowEventPersistence {
 
         bool allowPopUp(); // Call on first window, not target window.
         static bool allowPopUp(LocalFrame& firstFrame);
-        static bool canShowModalDialog(const LocalFrame*);
         static bool canShowModalDialogNow(const LocalFrame*);
 
         // DOM Level 0

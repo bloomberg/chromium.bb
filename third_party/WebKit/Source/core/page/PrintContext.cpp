@@ -171,24 +171,6 @@ void PrintContext::begin(float width, float height)
     m_frame->setPrinting(true, minLayoutSize, originalPageSize, printingMaximumShrinkFactor / printingMinimumShrinkFactor);
 }
 
-float PrintContext::computeAutomaticScaleFactor(const FloatSize& availablePaperSize)
-{
-    if (!m_frame->view())
-        return 1;
-
-    bool useViewWidth = true;
-    if (m_frame->document() && m_frame->document()->renderView())
-        useViewWidth = m_frame->document()->renderView()->style()->isHorizontalWritingMode();
-
-    float viewLogicalWidth = useViewWidth ? m_frame->view()->contentsWidth() : m_frame->view()->contentsHeight();
-    if (viewLogicalWidth < 1)
-        return 1;
-
-    float maxShrinkToFitScaleFactor = 1 / printingMaximumShrinkFactor;
-    float shrinkToFitScaleFactor = (useViewWidth ? availablePaperSize.width() : availablePaperSize.height()) / viewLogicalWidth;
-    return max(maxShrinkToFitScaleFactor, shrinkToFitScaleFactor);
-}
-
 void PrintContext::spoolPage(GraphicsContext& ctx, int pageNumber, float width)
 {
     // FIXME: Not correct for vertical text.
@@ -202,16 +184,6 @@ void PrintContext::spoolPage(GraphicsContext& ctx, int pageNumber, float width)
     m_frame->view()->paintContents(&ctx, pageRect);
     if (ctx.supportsURLFragments())
         outputLinkedDestinations(ctx, m_frame->document(), pageRect);
-    ctx.restore();
-}
-
-void PrintContext::spoolRect(GraphicsContext& ctx, const IntRect& rect)
-{
-    // FIXME: Not correct for vertical text.
-    ctx.save();
-    ctx.translate(-rect.x(), -rect.y());
-    ctx.clip(rect);
-    m_frame->view()->paintContents(&ctx, rect);
     ctx.restore();
 }
 

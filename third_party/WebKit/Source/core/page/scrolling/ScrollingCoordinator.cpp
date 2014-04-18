@@ -866,19 +866,6 @@ bool ScrollingCoordinator::isForMainFrame(ScrollableArea* scrollableArea) const
     return scrollableArea == m_page->mainFrame()->view();
 }
 
-GraphicsLayer* ScrollingCoordinator::scrollLayerForFrameView(FrameView* frameView)
-{
-    RenderView* renderView = frameView->frame().contentRenderer();
-    if (!renderView)
-        return 0;
-    return renderView->compositor()->scrollLayer();
-}
-
-GraphicsLayer* ScrollingCoordinator::counterScrollingLayerForFrameView(FrameView*)
-{
-    return 0;
-}
-
 void ScrollingCoordinator::frameViewRootLayerDidChange(FrameView* frameView)
 {
     ASSERT(isMainThread());

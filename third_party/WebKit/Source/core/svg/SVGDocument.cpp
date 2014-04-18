@@ -49,22 +49,6 @@ SVGSVGElement* SVGDocument::rootElement() const
     return rootElement(*this);
 }
 
-void SVGDocument::dispatchZoomEvent(float prevScale, float newScale)
-{
-    RefPtrWillBeRawPtr<SVGZoomEvent> event = SVGZoomEvent::create();
-    event->initEvent(EventTypeNames::zoom, true, false);
-    event->setPreviousScale(prevScale);
-    event->setNewScale(newScale);
-    rootElement()->dispatchEvent(event.release(), IGNORE_EXCEPTION);
-}
-
-void SVGDocument::dispatchScrollEvent()
-{
-    RefPtrWillBeRawPtr<Event> event = Event::create();
-    event->initEvent(EventTypeNames::scroll, true, false);
-    rootElement()->dispatchEvent(event.release(), IGNORE_EXCEPTION);
-}
-
 bool SVGDocument::zoomAndPanEnabled() const
 {
     if (SVGSVGElement* svg = rootElement()) {

@@ -124,17 +124,6 @@ void DataObject::clearData(const String& type)
     }
 }
 
-void DataObject::clearAllExceptFiles()
-{
-    for (size_t i = 0; i < m_itemList.size(); ) {
-        if (m_itemList[i]->kind() != DataObjectItem::FileKind) {
-            m_itemList.remove(i);
-            continue;
-        }
-        ++i;
-    }
-}
-
 ListHashSet<String> DataObject::types() const
 {
     ListHashSet<String> results;

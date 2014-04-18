@@ -57,16 +57,12 @@ public:
     const IntRect& pageRect(size_t pageNumber) const { return m_pageRects[pageNumber]; }
     const Vector<IntRect>& pageRects() const { return m_pageRects; }
 
-    float computeAutomaticScaleFactor(const FloatSize& availablePaperSize);
-
     // Enter print mode, updating layout for new page size.
     // This function can be called multiple times to apply new print options without going back to screen mode.
     void begin(float width, float height = 0);
 
     // FIXME: eliminate width argument.
     void spoolPage(GraphicsContext& ctx, int pageNumber, float width);
-
-    void spoolRect(GraphicsContext& ctx, const IntRect&);
 
     // Return to screen mode.
     void end();

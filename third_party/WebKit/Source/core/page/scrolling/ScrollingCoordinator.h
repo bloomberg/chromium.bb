@@ -124,9 +124,6 @@ protected:
 
     bool isForMainFrame(ScrollableArea*) const;
 
-    GraphicsLayer* scrollLayerForFrameView(FrameView*);
-    GraphicsLayer* counterScrollingLayerForFrameView(FrameView*);
-
     Page* m_page;
 
     // Dirty flags used to idenfity what really needs to be computed after compositing is updated.

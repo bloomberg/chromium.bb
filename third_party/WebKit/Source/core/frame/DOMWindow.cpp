@@ -310,16 +310,6 @@ bool DOMWindow::allowPopUp()
     return m_frame && allowPopUp(*m_frame);
 }
 
-bool DOMWindow::canShowModalDialog(const LocalFrame* frame)
-{
-    if (!frame)
-        return false;
-    FrameHost* host = frame->host();
-    if (!host)
-        return false;
-    return host->chrome().canRunModal();
-}
-
 bool DOMWindow::canShowModalDialogNow(const LocalFrame* frame)
 {
     if (!frame)

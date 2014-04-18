@@ -248,13 +248,4 @@ class ReleaseFastMallocFreeMemoryTask : public ExecutionContextTask {
     virtual void performTask(ExecutionContext*) OVERRIDE { WTF::releaseFastMallocFreeMemory(); }
 };
 
-void WorkerThread::releaseFastMallocFreeMemoryInAllThreads()
-{
-    MutexLocker lock(threadSetMutex());
-    HashSet<WorkerThread*>& threads = workerThreads();
-    HashSet<WorkerThread*>::iterator end = threads.end();
-    for (HashSet<WorkerThread*>::iterator it = threads.begin(); it != end; ++it)
-        (*it)->runLoop().postTask(adoptPtr(new ReleaseFastMallocFreeMemoryTask));
-}
-
 } // namespace WebCore

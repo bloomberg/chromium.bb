@@ -81,9 +81,6 @@ public:
     void setFocused(bool);
     bool isFocused() const { return m_isFocused; }
 
-    void setContainingWindowIsVisible(bool);
-    bool containingWindowIsVisible() const { return m_containingWindowIsVisible; }
-
 private:
     explicit FocusController(Page*);
 
@@ -119,8 +116,6 @@ private:
     bool m_isActive;
     bool m_isFocused;
     bool m_isChangingFocusedFrame;
-    bool m_containingWindowIsVisible;
-
 };
 
 } // namespace WebCore

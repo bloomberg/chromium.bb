@@ -68,7 +68,6 @@ namespace WebCore {
 
         // Number of active worker threads.
         static unsigned workerThreadCount();
-        static void releaseFastMallocFreeMemoryInAllThreads();
 
         NotificationClient* getNotificationClient() { return m_notificationClient; }
         void setNotificationClient(NotificationClient* client) { m_notificationClient = client; }

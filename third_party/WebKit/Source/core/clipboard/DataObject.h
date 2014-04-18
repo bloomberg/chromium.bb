@@ -72,7 +72,6 @@ public:
 
     // WebCore helpers.
     void clearData(const String& type);
-    void clearAllExceptFiles();
 
     ListHashSet<String> types() const;
     String getData(const String& type) const;
