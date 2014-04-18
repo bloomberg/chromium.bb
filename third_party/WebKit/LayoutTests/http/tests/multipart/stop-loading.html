@@ -1,0 +1,25 @@
+<html>
+<head>
+<script>
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+}
+
+function firstPartLoaded()
+{
+    window.stop();
+    window.setTimeout(function() {
+        var broken = (testingImage.width != 2 && testingImage != 76);
+        document.getElementById("results").innerHTML = broken ? "PASS" : "FAIL";
+        if (window.testRunner)
+            testRunner.notifyDone(); 
+    }, 100);
+}
+</script>
+</head>
+<body>
+<img id=testingImage src="resources/multipart.php?interval=1&loop=1&img1=2x2-green.png&img2=abe.png" onload="firstPartLoaded()">
+<p id="results"></p>
+</body>
+</html>
