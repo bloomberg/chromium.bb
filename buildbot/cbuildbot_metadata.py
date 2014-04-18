@@ -10,6 +10,7 @@ import functools
 import json
 import logging
 import math
+import multiprocessing
 import os
 import re
 import time
@@ -343,6 +344,7 @@ class BuildData(object):
     cros_build_lib.Info('Reading %d metadata URLs using %d processes now.',
                         len(urls), MAX_PARALLEL)
 
+    build_data_per_url = {}
     def _ReadMetadataURL(url):
       # Read the metadata.json URL and parse json into a dict.
       metadata_dict = json.loads(gs_ctx.Cat(url, print_cmd=False).output)
@@ -368,15 +370,16 @@ class BuildData(object):
         cros_build_lib.Debug('Read %s:\n  build_number=%d, ungathered',
                              url, bd.build_number)
 
-      return bd
+      build_data_per_url[url] = bd
 
-    steps = [functools.partial(_ReadMetadataURL, url) for url in urls]
-    builds = parallel.RunParallelSteps(steps, max_parallel=MAX_PARALLEL,
-                                       return_values=True)
+    with multiprocessing.Manager() as manager:
+      build_data_per_url = manager.dict()
+      parallel.RunTasksInProcessPool(_ReadMetadataURL, [[url] for url in urls],
+                                     processes=MAX_PARALLEL)
+      builds = [build_data_per_url[url] for url in urls]
 
     if exclude_running:
       builds = [b for b in builds if b.status != 'running']
-
     return builds
 
   @staticmethod
@@ -410,8 +413,9 @@ class BuildData(object):
         cros_build_lib.Debug('Marked build_number %d processed for %s.',
                              build.build_number, log_ver_str)
 
-      steps = [functools.partial(_MarkGathered, build) for build in builds]
-      parallel.RunParallelSteps(steps, max_parallel=MAX_PARALLEL)
+      inputs = [[build] for build in builds]
+      parallel.RunTasksInProcessPool(_MarkGathered, inputs,
+                                     processes=MAX_PARALLEL)
 
   def __init__(self, metadata_url, metadata_dict, carbon_version=None,
                sheets_version=None):
