@@ -9,10 +9,12 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_warning_service.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/omaha_query_params/omaha_query_params.h"
 #include "chrome/browser/profiles/profile.h"
@@ -74,6 +76,14 @@ const char kUninstallUrl[] = "uninstall_url";
 // particular value does not matter to user code, but is chosen for consistency
 // with the equivalent Pepper API.
 const char kPackageDirectoryPath[] = "crxfs";
+
+// If an extension reloads itself within this many miliseconds of reloading
+// itself, the reload is considered suspiciously fast.
+const int kFastReloadTime = 10000;
+
+// After this many suspiciously fast consecutive reloads, an extension will get
+// disabled.
+const int kFastReloadCount = 5;
 
 void DispatchOnStartupEventImpl(BrowserContext* browser_context,
                                 const std::string& extension_id,
@@ -297,6 +307,57 @@ void RuntimeAPI::OnBackgroundHostStartup(const Extension* extension) {
   RuntimeEventRouter::DispatchOnStartupEvent(browser_context_, extension->id());
 }
 
+void RuntimeAPI::MaybeReloadExtension(const std::string& extension_id) {
+  std::pair<base::TimeTicks, int>& reload_info =
+      last_reload_time_[extension_id];
+  base::TimeTicks now = base::TimeTicks::Now();
+  if (reload_info.first.is_null() ||
+      (now - reload_info.first).InMilliseconds() > kFastReloadTime) {
+    reload_info.second = 0;
+  } else {
+    reload_info.second++;
+  }
+  if (!reload_info.first.is_null()) {
+    UMA_HISTOGRAM_LONG_TIMES("Extensions.RuntimeReloadTime",
+                             now - reload_info.first);
+  }
+  UMA_HISTOGRAM_COUNTS_100("Extensions.RuntimeReloadFastCount",
+                           reload_info.second);
+  reload_info.first = now;
+
+  ExtensionService* service =
+      ExtensionSystem::Get(browser_context_)->extension_service();
+  if (reload_info.second >= kFastReloadCount) {
+    // Unloading an extension clears all warnings, so first terminate the
+    // extension, and then add the warning. Since this is called from an
+    // extension function unloading the extension has to be done
+    // asynchronously. Fortunately PostTask guarentees FIFO order so just
+    // post both tasks.
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&ExtensionService::TerminateExtension,
+                   service->AsWeakPtr(),
+                   extension_id));
+    ExtensionWarningSet warnings;
+    warnings.insert(
+        ExtensionWarning::CreateReloadTooFrequentWarning(extension_id));
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&ExtensionWarningService::NotifyWarningsOnUI,
+                   browser_context_,
+                   warnings));
+  } else {
+    // We can't call ReloadExtension directly, since when this method finishes
+    // it tries to decrease the reference count for the extension, which fails
+    // if the extension has already been reloaded; so instead we post a task.
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&ExtensionService::ReloadExtension,
+                   service->AsWeakPtr(),
+                   extension_id));
+  }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 // static
@@ -453,14 +514,8 @@ bool RuntimeSetUninstallURLFunction::RunImpl() {
 }
 
 bool RuntimeReloadFunction::RunImpl() {
-  // We can't call ReloadExtension directly, since when this method finishes
-  // it tries to decrease the reference count for the extension, which fails
-  // if the extension has already been reloaded; so instead we post a task.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&ExtensionService::ReloadExtension,
-                 GetProfile()->GetExtensionService()->AsWeakPtr(),
-                 extension_id()));
+  RuntimeAPI::GetFactoryInstance()->Get(GetProfile())->MaybeReloadExtension(
+      extension_id());
   return true;
 }
 

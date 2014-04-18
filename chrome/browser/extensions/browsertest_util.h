@@ -20,6 +20,14 @@ std::string ExecuteScriptInBackgroundPage(Profile* profile,
                                           const std::string& extension_id,
                                           const std::string& script);
 
+// Same as ExecuteScriptInBackgroundPage, but doesn't wait for the script
+// to return a result. Fails the test and returns false if |extension_id|
+// isn't installed in |profile| or doesn't have a background page, or if
+// executing the script fails.
+bool ExecuteScriptInBackgroundPageNoWait(Profile* profile,
+                                         const std::string& extension_id,
+                                         const std::string& script);
+
 }  // namespace browsertest_util
 }  // namespace extensions
 

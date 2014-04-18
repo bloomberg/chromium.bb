@@ -177,6 +177,16 @@ ExtensionWarning ExtensionWarning::CreateDownloadFilenameConflictWarning(
       message_parameters);
 }
 
+// static
+ExtensionWarning ExtensionWarning::CreateReloadTooFrequentWarning(
+    const std::string& extension_id) {
+  std::vector<std::string> message_parameters;
+  return ExtensionWarning(kReloadTooFrequent,
+                          extension_id,
+                          IDS_EXTENSION_WARNING_RELOAD_TOO_FREQUENT,
+                          message_parameters);
+}
+
 std::string ExtensionWarning::GetLocalizedMessage(
     const ExtensionSet* extensions) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

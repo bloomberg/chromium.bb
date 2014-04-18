@@ -7,7 +7,10 @@
 #include "chrome/browser/extensions/api/runtime/runtime_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
+#include "chrome/browser/extensions/test_extension_dir.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/notification_service.h"
+#include "extensions/browser/extension_registry.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 // Tests the privileged components of chrome.runtime.
@@ -67,6 +70,54 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
                        ChromeRuntimeGetPackageDirectoryEntryExtension) {
   ASSERT_TRUE(RunExtensionTest("runtime/get_package_directory/extension"))
       << message_;
+}
+
+// Tests chrome.runtime.reload
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeRuntimeReload) {
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
+  const char kManifest[] =
+      "{"
+      "  \"name\": \"reload\","
+      "  \"version\": \"1.0\","
+      "  \"background\": {"
+      "    \"scripts\": [\"background.js\"]"
+      "  },"
+      "  \"manifest_version\": 2"
+      "}";
+
+  TestExtensionDir dir;
+  dir.WriteManifest(kManifest);
+  dir.WriteFile(FILE_PATH_LITERAL("background.js"), "console.log('loaded');");
+
+  const Extension* extension = LoadExtension(dir.unpacked_path());
+  ASSERT_TRUE(extension);
+  const std::string extension_id = extension->id();
+
+  // Somewhat arbitrary upper limit of 30 iterations. If the extension manages
+  // to reload itself that often without being terminated, the test fails
+  // anyway.
+  for (int i = 0; i < 30; i++) {
+    content::WindowedNotificationObserver unload_observer(
+        chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
+        content::NotificationService::AllSources());
+    content::WindowedNotificationObserver load_observer(
+        chrome::NOTIFICATION_EXTENSION_LOADED,
+        content::NotificationService::AllSources());
+
+    ASSERT_TRUE(ExecuteScriptInBackgroundPageNoWait(
+        extension_id, "chrome.runtime.reload();"));
+    unload_observer.Wait();
+
+    if (registry->GetExtensionById(extension_id,
+                                   ExtensionRegistry::TERMINATED)) {
+      break;
+    } else {
+      load_observer.Wait();
+      WaitForExtensionViewsToLoad();
+    }
+  }
+  ASSERT_TRUE(
+      registry->GetExtensionById(extension_id, ExtensionRegistry::TERMINATED));
 }
 
 }  // namespace extensions

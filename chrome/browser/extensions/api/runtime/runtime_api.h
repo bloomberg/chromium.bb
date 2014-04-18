@@ -47,6 +47,8 @@ class RuntimeAPI : public BrowserContextKeyedAPI,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  void MaybeReloadExtension(const std::string& extension_id);
+
  private:
   friend class BrowserContextKeyedAPIFactory<RuntimeAPI>;
 
@@ -79,6 +81,11 @@ class RuntimeAPI : public BrowserContextKeyedAPI,
   bool registered_for_updates_;
 
   content::NotificationRegistrar registrar_;
+
+  // Map to prevent extensions from getting stuck in reload loops. Maps
+  // extension id to the last time it was reloaded and the number of times
+  // it was reloaded with not enough time in between reloads.
+  std::map<std::string, std::pair<base::TimeTicks, int> > last_reload_time_;
 
   DISALLOW_COPY_AND_ASSIGN(RuntimeAPI);
 };

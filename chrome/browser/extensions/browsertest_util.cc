@@ -34,5 +34,19 @@ std::string ExecuteScriptInBackgroundPage(Profile* profile,
   return result;
 }
 
+bool ExecuteScriptInBackgroundPageNoWait(Profile* profile,
+                                         const std::string& extension_id,
+                                         const std::string& script) {
+  extensions::ProcessManager* manager =
+      extensions::ExtensionSystem::Get(profile)->process_manager();
+  extensions::ExtensionHost* host =
+      manager->GetBackgroundHostForExtension(extension_id);
+  if (host == NULL) {
+    ADD_FAILURE() << "Extension " << extension_id << " has no background page.";
+    return false;
+  }
+  return content::ExecuteScript(host->host_contents(), script);
+}
+
 }  // namespace browsertest_util
 }  // namespace extensions

@@ -2000,6 +2000,11 @@ void ExtensionService::TrackTerminatedExtension(const Extension* extension) {
   UnloadExtension(extension->id(), UnloadedExtensionInfo::REASON_TERMINATE);
 }
 
+void ExtensionService::TerminateExtension(const std::string& extension_id) {
+  const Extension* extension = GetInstalledExtension(extension_id);
+  TrackTerminatedExtension(extension);
+}
+
 void ExtensionService::UntrackTerminatedExtension(const std::string& id) {
   std::string lowercase_id = StringToLowerASCII(id);
   const Extension* extension =

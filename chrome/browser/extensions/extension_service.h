@@ -436,6 +436,11 @@ class ExtensionService
   static void RecordPermissionMessagesHistogram(
       const extensions::Extension* e, const char* histogram);
 
+  // Unloads the given extension and mark the extension as terminated. This
+  // doesn't notify the user that the extension was terminated, if such a
+  // notification is desired the calling code is responsible for doing that.
+  void TerminateExtension(const std::string& extension_id);
+
 #if defined(UNIT_TEST)
   void TrackTerminatedExtensionForTest(const extensions::Extension* extension) {
     TrackTerminatedExtension(extension);

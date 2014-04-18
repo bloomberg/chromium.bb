@@ -288,6 +288,12 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
   std::string ExecuteScriptInBackgroundPage(const std::string& extension_id,
                                             const std::string& script);
 
+  // Returns
+  // extensions::browsertest_util::ExecuteScriptInBackgroundPageNoWait(
+  // profile(), extension_id, script).
+  bool ExecuteScriptInBackgroundPageNoWait(const std::string& extension_id,
+                                           const std::string& script);
+
   bool loaded_;
   bool installed_;
 
