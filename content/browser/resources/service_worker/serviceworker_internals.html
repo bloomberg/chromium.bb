@@ -34,12 +34,12 @@
             <div>
                 <div>Error Log:</div>
                 <textarea class="serviceworker-error-log"
-                  jsvalues=".vid:$this.version_id;.pid:$this.process_id;.tid:$this.thread_id"
-                  rows="10" cols="120" readonly></textarea>
+                  jsvalues=".partition_id:$partition_id;.version_id:$this.version_id"
+                  rows="10" cols="120" readonly jscontent="$this.error_log"></textarea>
             </div>
         </div>
         <div id="serviceworker-list-template"
-             jsvalues="$partition_path:$this.partition_path;.partition_path:$this.partition_path">
+             jsvalues="$partition_id:$this.partition_id;$partition_path:$this.partition_path;.partition_path:$this.partition_path">
             <div class="serviceworker-summary">
                 <span>Instances in: </span>
                 <span jscontent="$this.partition_path"></span>

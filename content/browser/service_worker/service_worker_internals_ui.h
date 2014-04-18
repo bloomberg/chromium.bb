@@ -7,6 +7,7 @@
 
 #include <set>
 
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -29,31 +30,17 @@ class ServiceWorkerVersion;
 
 class ServiceWorkerInternalsUI
     : public WebUIController,
-      public ServiceWorkerContextObserver,
       public base::SupportsWeakPtr<ServiceWorkerInternalsUI> {
  public:
   explicit ServiceWorkerInternalsUI(WebUI* web_ui);
 
-  // ServiceWorkerContextObserver overrides:
-  virtual void OnWorkerStarted(int64 version_id,
-                               int process_id,
-                               int thread_id) OVERRIDE;
-  virtual void OnWorkerStopped(int64 version_id,
-                               int process_id,
-                               int thread_id) OVERRIDE;
-  virtual void OnVersionStateChanged(int64 version_id) OVERRIDE;
-  virtual void OnErrorReported(int64 version_id,
-                               int process_id,
-                               int thread_id,
-                               const ErrorInfo& info) OVERRIDE;
-
  private:
   class OperationProxy;
+  class PartitionObserver;
 
   virtual ~ServiceWorkerInternalsUI();
   void AddContextFromStoragePartition(StoragePartition* partition);
 
-  void AddObserverToStoragePartition(StoragePartition* partition);
   void RemoveObserverFromStoragePartition(StoragePartition* partition);
 
   // Called from Javascript.
@@ -68,7 +55,9 @@ class ServiceWorkerInternalsUI
       base::FilePath* partition_path,
       GURL* scope,
       scoped_refptr<ServiceWorkerContextWrapper>* context) const;
-  std::set<StoragePartition*> registered_partitions_;
+
+  base::ScopedPtrHashMap<uintptr_t, PartitionObserver> observers_;
+  int next_partition_id_;
 };
 
 }  // namespace content
