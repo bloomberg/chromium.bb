@@ -62,7 +62,7 @@ static v8::Handle<v8::Value> getItem(HTMLAllCollection* collection, v8::Handle<v
 {
     v8::Local<v8::Uint32> index = argument->ToArrayIndex();
     if (index.IsEmpty()) {
-        TOSTRING_BOOL(V8StringResource<>, name, argument, v8::Undefined(info.GetIsolate()));
+        TOSTRING_DEFAULT(V8StringResource<>, name, argument, v8::Undefined(info.GetIsolate()));
         v8::Handle<v8::Value> result = getNamedItems(collection, name, info);
 
         if (result.IsEmpty())

@@ -69,10 +69,10 @@ void ParsedProperties::setDefaultLastModified()
 
 bool ParsedProperties::parseBlobPropertyBag(v8::Local<v8::Value> propertyBag, const char* blobClassName, ExceptionState& exceptionState, v8::Isolate* isolate)
 {
-    TONATIVE_BOOL(Dictionary, dictionary, Dictionary(propertyBag, isolate), false);
+    TONATIVE_DEFAULT(Dictionary, dictionary, Dictionary(propertyBag, isolate), false);
 
     String endings;
-    TONATIVE_BOOL(bool, containsEndings, dictionary.get("endings", endings), false);
+    TONATIVE_DEFAULT(bool, containsEndings, dictionary.get("endings", endings), false);
     if (containsEndings) {
         if (endings != "transparent" && endings != "native") {
             exceptionState.throwTypeError("The 'endings' property must be either 'transparent' or 'native'.");
@@ -82,7 +82,7 @@ bool ParsedProperties::parseBlobPropertyBag(v8::Local<v8::Value> propertyBag, co
             m_normalizeLineEndingsToNative = true;
     }
 
-    TONATIVE_BOOL(bool, containsType, dictionary.get("type", m_contentType), false);
+    TONATIVE_DEFAULT(bool, containsType, dictionary.get("type", m_contentType), false);
     if (containsType) {
         if (!m_contentType.containsOnlyASCII()) {
             exceptionState.throwDOMException(SyntaxError, "The 'type' property must consist of ASCII characters.");
@@ -95,9 +95,9 @@ bool ParsedProperties::parseBlobPropertyBag(v8::Local<v8::Value> propertyBag, co
         return true;
 
     v8::Local<v8::Value> lastModified;
-    TONATIVE_BOOL(bool, containsLastModified, dictionary.get("lastModified", lastModified), false);
+    TONATIVE_DEFAULT(bool, containsLastModified, dictionary.get("lastModified", lastModified), false);
     if (containsLastModified) {
-        TONATIVE_BOOL(long long, lastModifiedInt, toInt64(lastModified), false);
+        TONATIVE_DEFAULT(long long, lastModifiedInt, toInt64(lastModified), false);
         setLastModified(static_cast<double>(lastModifiedInt) / msPerSecond);
     } else {
         setDefaultLastModified();
@@ -126,7 +126,7 @@ bool processBlobParts(v8::Local<v8::Object> blobParts, uint32_t blobPartsLength,
             ASSERT(blob);
             blob->appendTo(blobData);
         } else {
-            TOSTRING_BOOL(V8StringResource<>, stringValue, item, false);
+            TOSTRING_DEFAULT(V8StringResource<>, stringValue, item, false);
             blobData.appendText(stringValue, normalizeLineEndingsToNative);
         }
     }

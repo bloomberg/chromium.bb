@@ -183,7 +183,7 @@ ScriptValue WorkerScriptController::evaluate(const String& script, const String&
         state->errorMessage = toCoreString(message->Get());
         state->lineNumber = message->GetLineNumber();
         state->columnNumber = message->GetStartColumn() + 1;
-        TOSTRING_BOOL(V8StringResource<>, sourceURL, message->GetScriptResourceName(), ScriptValue());
+        TOSTRING_DEFAULT(V8StringResource<>, sourceURL, message->GetScriptResourceName(), ScriptValue());
         state->sourceURL = sourceURL;
         state->exception = ScriptValue(block.Exception(), m_isolate);
         block.Reset();

@@ -35,18 +35,18 @@ namespace WebCore {
 
 // Naming scheme:
 // TO*_RETURNTYPE[_ARGTYPE]...
-// ...removing RETURNTYPE/ARGTYPE duplicate if an argument is simply returned
+// ...using _DEFAULT instead of _ANY..._ANY when returing a default value.
 
 #define TONATIVE_EXCEPTION(type, var, value) \
-    type var;                                  \
-    {                                          \
-        v8::TryCatch block;                    \
-        var = (value);                         \
-        if (UNLIKELY(block.HasCaught()))       \
-            return block.ReThrow();            \
+    type var;                                \
+    {                                        \
+        v8::TryCatch block;                  \
+        var = (value);                       \
+        if (UNLIKELY(block.HasCaught()))     \
+            return block.ReThrow();          \
     }
 
-#define TONATIVE_VOID(type, var, value)  \
+#define TONATIVE_VOID(type, var, value)    \
     type var;                              \
     {                                      \
         v8::TryCatch block;                \
@@ -57,29 +57,29 @@ namespace WebCore {
         }                                  \
     }
 
-#define TONATIVE_BOOL(type, var, value, retVal) \
-    type var;                                     \
-    {                                             \
-        v8::TryCatch block;                       \
-        var = (value);                            \
-        if (UNLIKELY(block.HasCaught())) {        \
-            block.ReThrow();                      \
-            return retVal;                        \
-        }                                         \
+#define TONATIVE_DEFAULT(type, var, value, retVal) \
+    type var;                                      \
+    {                                              \
+        v8::TryCatch block;                        \
+        var = (value);                             \
+        if (UNLIKELY(block.HasCaught())) {         \
+            block.ReThrow();                       \
+            return retVal;                         \
+        }                                          \
     }
 
 #define TONATIVE_VOID_EXCEPTIONSTATE(type, var, value, exceptionState) \
-    type var;                                                            \
-    {                                                                    \
-        v8::TryCatch block;                                              \
-        var = (value);                                                   \
-        if (UNLIKELY(block.HasCaught()))                                 \
-            exceptionState.rethrowV8Exception(block.Exception());        \
-        if (UNLIKELY(exceptionState.throwIfNeeded()))                    \
-            return;                                                      \
+    type var;                                                          \
+    {                                                                  \
+        v8::TryCatch block;                                            \
+        var = (value);                                                 \
+        if (UNLIKELY(block.HasCaught()))                               \
+            exceptionState.rethrowV8Exception(block.Exception());      \
+        if (UNLIKELY(exceptionState.throwIfNeeded()))                  \
+            return;                                                    \
     }
 
-#define TONATIVE_BOOL_EXCEPTIONSTATE(type, var, value, exceptionState, retVal) \
+#define TONATIVE_DEFAULT_EXCEPTIONSTATE(type, var, value, exceptionState, retVal) \
     type var;                                                                 \
     {                                                                         \
         v8::TryCatch block;                                                   \
@@ -98,9 +98,9 @@ namespace WebCore {
     if (UNLIKELY(!var.prepare()))       \
         return;
 
-#define TOSTRING_BOOL(type, var, value, retVal) \
-    type var(value);                                 \
-    if (UNLIKELY(!var.prepare()))                    \
+#define TOSTRING_DEFAULT(type, var, value, retVal) \
+    type var(value);                               \
+    if (UNLIKELY(!var.prepare()))                  \
         return retVal;
 
 } // namespace WebCore
