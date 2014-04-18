@@ -85,7 +85,7 @@ class FileSystemProviderProvidedFileSystemTest : public testing::Test {
     profile_.reset(new TestingProfile);
     event_router_.reset(new FakeEventRouter(profile_.get()));
     base::FilePath mount_path =
-        util::GetMountPath(profile_.get(), kExtensionId, kFileSystemId);
+        util::GetMountPointPath(profile_.get(), kExtensionId, kFileSystemId);
     file_system_info_.reset(new ProvidedFileSystemInfo(
         kExtensionId, kFileSystemId, kFileSystemName, mount_path));
     provided_file_system_.reset(
