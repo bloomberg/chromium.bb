@@ -5,8 +5,10 @@
 #ifndef BASE_DEBUG_LEAK_TRACKER_H_
 #define BASE_DEBUG_LEAK_TRACKER_H_
 
-// Only enable leak tracking in debug builds.
-#ifndef NDEBUG
+#include "build/build_config.h"
+
+// Only enable leak tracking in non-uClibc debug builds.
+#if !defined(NDEBUG) && !defined(__UCLIBC__)
 #define ENABLE_LEAK_TRACKER
 #endif
 

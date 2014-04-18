@@ -30,6 +30,8 @@
 #define OS_NACL 1
 #elif defined(__linux__)
 #define OS_LINUX 1
+// include a system header to pull in features.h for glibc/uclibc macros.
+#include <unistd.h>
 #if defined(__GLIBC__) && !defined(__UCLIBC__)
 // we really are using glibc, not uClibc pretending to be glibc
 #define LIBC_GLIBC 1
