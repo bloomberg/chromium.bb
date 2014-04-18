@@ -1471,6 +1471,11 @@
         'browser/renderer_host/p2p/socket_dispatcher_host.h',
       ],
     }],
+    ['enable_webrtc==1 and OS=="linux"', {
+      'dependencies': [
+        '../third_party/libjingle/libjingle.gyp:libjingle_webrtc',
+      ],
+    }],
     ['enable_webrtc==1 and (OS=="linux" or OS=="mac" or OS=="win")', {
       'sources': [
         'browser/media/capture/desktop_capture_device.cc',
