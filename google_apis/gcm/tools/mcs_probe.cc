@@ -29,6 +29,7 @@
 #include "google_apis/gcm/engine/connection_factory_impl.h"
 #include "google_apis/gcm/engine/gcm_store_impl.h"
 #include "google_apis/gcm/engine/mcs_client.h"
+#include "google_apis/gcm/monitoring/gcm_stats_recorder.h"
 #include "net/base/host_mapping_rules.h"
 #include "net/base/net_log_logger.h"
 #include "net/cert/cert_verifier.h"
@@ -240,6 +241,7 @@ class MCSProbe {
   scoped_refptr<net::HttpNetworkSession> network_session_;
   scoped_ptr<net::ProxyService> proxy_service_;
 
+  GCMStatsRecorder recorder_;
   scoped_ptr<GCMStore> gcm_store_;
   scoped_ptr<MCSClient> mcs_client_;
   scoped_ptr<CheckinRequest> checkin_request_;
@@ -306,7 +308,8 @@ void MCSProbe::Start() {
   mcs_client_.reset(new MCSClient("probe",
                                   &clock_,
                                   connection_factory_.get(),
-                                  gcm_store_.get()));
+                                  gcm_store_.get(),
+                                  &recorder_));
   run_loop_.reset(new base::RunLoop());
   gcm_store_->Load(base::Bind(&MCSProbe::LoadCallback,
                               base::Unretained(this)));

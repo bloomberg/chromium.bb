@@ -97,6 +97,12 @@ void GCMClientMock::Send(const std::string& app_id,
                  message));
 }
 
+void GCMClientMock::SetRecording(bool recording) {
+}
+
+void GCMClientMock::ClearActivityLogs() {
+}
+
 GCMClient::GCMStatistics GCMClientMock::GetStatistics() const {
   return GCMClient::GCMStatistics();
 }

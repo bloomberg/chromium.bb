@@ -37,6 +37,7 @@ namespace gcm {
 
 class CollapseKey;
 class ConnectionFactory;
+class GCMStatsRecorder;
 struct ReliablePacketInfo;
 
 // An MCS client. This client is in charge of all communications with an
@@ -54,6 +55,8 @@ class GCM_EXPORT MCSClient {
     CONNECTED,      // Connected and running.
   };
 
+  // Any change made to this enum should have corresponding change in the
+  // GetMessageSendStatusString(...) function in mcs_client.cc.
   enum MessageSendStatus {
     // Message was queued succcessfully.
     QUEUED,
@@ -61,14 +64,19 @@ class GCM_EXPORT MCSClient {
     SENT,
     // Message not saved, because total queue size limit reached.
     QUEUE_SIZE_LIMIT_REACHED,
-    // Messgae not saved, because app queue size limit reached.
+    // Message not saved, because app queue size limit reached.
     APP_QUEUE_SIZE_LIMIT_REACHED,
     // Message too large to send.
     MESSAGE_TOO_LARGE,
     // Message not send becuase of TTL = 0 and no working connection.
     NO_CONNECTION_ON_ZERO_TTL,
     // Message exceeded TTL.
-    TTL_EXCEEDED
+    TTL_EXCEEDED,
+
+    // NOTE: always keep this entry at the end. Add new status types only
+    // immediately above this line. Make sure to update the corresponding
+    // histogram enum accordingly.
+    SEND_STATUS_COUNT
   };
 
   // Callback for MCSClient's error conditions.
@@ -89,7 +97,8 @@ class GCM_EXPORT MCSClient {
   MCSClient(const std::string& version_string,
             base::Clock* clock,
             ConnectionFactory* connection_factory,
-            GCMStore* gcm_store);
+            GCMStore* gcm_store,
+            GCMStatsRecorder* recorder);
   virtual ~MCSClient();
 
   // Initialize the client. Will load any previous id/token information as well
@@ -126,6 +135,12 @@ class GCM_EXPORT MCSClient {
 
   // Returns the current state of the client.
   State state() const { return state_; }
+
+  // Returns the size of the send message queue.
+  int GetSendQueueSize() const;
+
+  // Returns the size of the resend messaage queue.
+  int GetResendQueueSize() const;
 
   // Returns text representation of the state enum.
   std::string GetStateString() const;
@@ -258,6 +273,9 @@ class GCM_EXPORT MCSClient {
 
   // Manager to handle triggering/detecting heartbeats.
   HeartbeatManager heartbeat_manager_;
+
+  // Recorder that records GCM activities for debugging purpose. Not owned.
+  GCMStatsRecorder* recorder_;
 
   base::WeakPtrFactory<MCSClient> weak_ptr_factory_;
 

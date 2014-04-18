@@ -19,6 +19,8 @@
 #include "google_apis/gcm/engine/registration_request.h"
 #include "google_apis/gcm/engine/unregistration_request.h"
 #include "google_apis/gcm/gcm_client.h"
+#include "google_apis/gcm/monitoring/gcm_stats_recorder.h"
+#include "google_apis/gcm/protocol/android_checkin.pb.h"
 #include "google_apis/gcm/protocol/checkin.pb.h"
 #include "net/base/net_log.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -28,6 +30,10 @@ class GURL;
 namespace base {
 class Clock;
 }  // namespace base
+
+namespace mcs_proto {
+class DataMessageStanza;
+}  // namespace mcs_proto
 
 namespace net {
 class HttpNetworkSession;
@@ -51,7 +57,8 @@ class GCM_EXPORT GCMInternalsBuilder {
       const std::string& version,
       base::Clock* clock,
       ConnectionFactory* connection_factory,
-      GCMStore* gcm_store);
+      GCMStore* gcm_store,
+      GCMStatsRecorder* recorder);
   virtual scoped_ptr<ConnectionFactory> BuildConnectionFactory(
       const std::vector<GURL>& endpoints,
       const net::BackoffEntry::Policy& backoff_policy,
@@ -86,6 +93,8 @@ class GCM_EXPORT GCMClientImpl : public GCMClient {
   virtual void Send(const std::string& app_id,
                     const std::string& receiver_id,
                     const OutgoingMessage& message) OVERRIDE;
+  virtual void SetRecording(bool recording) OVERRIDE;
+  virtual void ClearActivityLogs() OVERRIDE;
   virtual GCMStatistics GetStatistics() const OVERRIDE;
 
  private:
@@ -209,6 +218,9 @@ class GCM_EXPORT GCMClientImpl : public GCMClient {
 
   // Builder for the GCM internals (mcs client, etc.).
   scoped_ptr<GCMInternalsBuilder> internals_builder_;
+
+  // Recorder that logs GCM activities.
+  GCMStatsRecorder recorder_;
 
   // State of the GCM Client Implementation.
   State state_;
