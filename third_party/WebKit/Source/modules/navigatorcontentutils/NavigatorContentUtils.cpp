@@ -138,11 +138,8 @@ void NavigatorContentUtils::registerProtocolHandler(Navigator& navigator, const 
     if (!navigator.frame())
         return;
 
-    Document* document = navigator.frame()->document();
-    if (!document)
-        return;
-
-    KURL baseURL = document->baseURL();
+    ASSERT(navigator.frame()->document());
+    KURL baseURL = navigator.frame()->document()->baseURL();
 
     if (!verifyCustomHandlerURL(baseURL, url, exceptionState))
         return;
@@ -181,6 +178,7 @@ String NavigatorContentUtils::isProtocolHandlerRegistered(Navigator& navigator, 
         return declined;
 
     Document* document = navigator.frame()->document();
+    ASSERT(document);
     if (document->activeDOMObjectsAreStopped())
         return declined;
 
@@ -201,8 +199,8 @@ void NavigatorContentUtils::unregisterProtocolHandler(Navigator& navigator, cons
     if (!navigator.frame())
         return;
 
-    Document* document = navigator.frame()->document();
-    KURL baseURL = document->baseURL();
+    ASSERT(navigator.frame()->document());
+    KURL baseURL = navigator.frame()->document()->baseURL();
 
     if (!verifyCustomHandlerURL(baseURL, url, exceptionState))
         return;
