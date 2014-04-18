@@ -123,7 +123,7 @@ class DecryptingAudioDecoderTest : public testing::Test {
 
     config_.Initialize(kCodecVorbis, kSampleFormatPlanarF32,
                        CHANNEL_LAYOUT_STEREO, kSampleRate, NULL, 0, true, true,
-                       base::TimeDelta(), 0);
+                       base::TimeDelta(), base::TimeDelta());
     InitializeAndExpectStatus(config_, PIPELINE_OK);
   }
 
@@ -131,7 +131,7 @@ class DecryptingAudioDecoderTest : public testing::Test {
     ReinitializeConfigChange(config_);
   }
 
-  void ReinitializeConfigChange(const AudioDecoderConfig& new_config) {
+  void ReinitializeConfigChange(AudioDecoderConfig& new_config) {
     EXPECT_CALL(*decryptor_, DeinitializeDecoder(Decryptor::kAudio));
     EXPECT_CALL(*decryptor_, InitializeAudioDecoder(_, _))
         .WillOnce(RunCallback<1>(true));

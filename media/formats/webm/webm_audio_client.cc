@@ -65,27 +65,15 @@ bool WebMAudioClient::InitializeConfig(
     extra_data_size = codec_private.size();
   }
 
-  // Convert |codec_delay| from nanoseconds into frames.
-  int codec_delay_in_frames = 0;
-  if (codec_delay != -1) {
-    codec_delay_in_frames =
-        0.5 +
-        samples_per_second * (static_cast<double>(codec_delay) /
-                              base::Time::kNanosecondsPerSecond);
-  }
-
   config->Initialize(
       audio_codec,
       (audio_codec == kCodecOpus) ? kSampleFormatS16 : kSampleFormatPlanarF32,
       channel_layout,
-      samples_per_second,
-      extra_data,
-      extra_data_size,
-      is_encrypted,
-      true,
+      samples_per_second, extra_data, extra_data_size, is_encrypted, true,
       base::TimeDelta::FromMicroseconds(
           (seek_preroll != -1 ? seek_preroll : 0) / 1000),
-      codec_delay_in_frames);
+      base::TimeDelta::FromMicroseconds(
+          (codec_delay != -1 ? codec_delay : 0) / 1000));
   return config->IsValidConfig();
 }
 

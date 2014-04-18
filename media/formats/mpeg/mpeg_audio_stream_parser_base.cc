@@ -44,13 +44,11 @@ static int LocateEndOfHeaders(const uint8_t* buf, int buf_len, int i) {
 }
 
 MPEGAudioStreamParserBase::MPEGAudioStreamParserBase(uint32 start_code_mask,
-                                                     AudioCodec audio_codec,
-                                                     int codec_delay)
+                                                     AudioCodec audio_codec)
     : state_(UNINITIALIZED),
       in_media_segment_(false),
       start_code_mask_(start_code_mask),
-      audio_codec_(audio_codec),
-      codec_delay_(codec_delay) {}
+      audio_codec_(audio_codec) {}
 
 MPEGAudioStreamParserBase::~MPEGAudioStreamParserBase() {}
 
@@ -201,16 +199,9 @@ int MPEGAudioStreamParserBase::ParseFrame(const uint8* data,
   }
 
   if (!config_.IsValidConfig()) {
-    config_.Initialize(audio_codec_,
-                       kSampleFormatF32,
-                       channel_layout,
-                       sample_rate,
-                       NULL,
-                       0,
-                       false,
-                       false,
-                       base::TimeDelta(),
-                       codec_delay_);
+    config_.Initialize(audio_codec_, kSampleFormatF32, channel_layout,
+                       sample_rate, NULL, 0, false, false,
+                       base::TimeDelta(), base::TimeDelta());
 
     base::TimeDelta base_timestamp;
     if (timestamp_helper_)

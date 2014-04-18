@@ -66,9 +66,15 @@ class MEDIA_EXPORT OpusAudioDecoder : public AudioDecoder {
   // happens.
   int frames_to_discard_;
 
-  // When the input timestamp is |start_input_timestamp_| the decoder needs to
-  // drop |config_.codec_delay()| frames.
+  // Number of frames to be discarded at the start of the stream. This value
+  // is typically the CodecDelay value from the container.  This value should
+  // only be applied when input timestamp is |start_input_timestamp_|.
+  int frame_delay_at_start_;
   base::TimeDelta start_input_timestamp_;
+
+  // Timestamp to be subtracted from all the frames. This is typically computed
+  // from the CodecDelay value in the container.
+  base::TimeDelta timestamp_offset_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(OpusAudioDecoder);
 };
