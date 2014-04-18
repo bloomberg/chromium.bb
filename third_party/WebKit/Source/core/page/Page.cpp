@@ -553,10 +553,8 @@ void Page::willBeDestroyed()
     if (ordinaryPages().contains(this))
         ordinaryPages().remove(this);
 
-    for (LocalFrame* frame = mainFrame(); frame; frame = frame->tree().traverseNext()) {
-        frame->willDetachFrameHost();
-        frame->detachFromFrameHost();
-    }
+    for (LocalFrame* frame = mainFrame(); frame; frame = frame->tree().traverseNext())
+        frame->loader().frameDetached();
 
     if (m_scrollingCoordinator)
         m_scrollingCoordinator->willBeDestroyed();
