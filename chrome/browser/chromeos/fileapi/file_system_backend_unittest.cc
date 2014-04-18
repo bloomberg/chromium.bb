@@ -42,6 +42,7 @@ TEST(ChromeOSFileSystemBackendTest, DefaultMountPoints) {
       fileapi::ExternalMountPoints::CreateRefCounted());
   chromeos::FileSystemBackend backend(
       NULL,  // drive_delegate
+      NULL,  // file_system_provider_delegate
       storage_policy,
       mount_points.get(),
       fileapi::ExternalMountPoints::GetSystemInstance());
@@ -68,11 +69,11 @@ TEST(ChromeOSFileSystemBackendTest, GetRootDirectories) {
   scoped_refptr<fileapi::ExternalMountPoints> system_mount_points(
       fileapi::ExternalMountPoints::CreateRefCounted());
 
-  chromeos::FileSystemBackend backend(
-      NULL,  // drive_delegate
-      storage_policy,
-      mount_points.get(),
-      system_mount_points.get());
+  chromeos::FileSystemBackend backend(NULL,  // drive_delegate
+                                      NULL,  // file_system_provider_delegate
+                                      storage_policy,
+                                      mount_points.get(),
+                                      system_mount_points.get());
 
   const size_t initial_root_dirs_size = backend.GetRootDirectories().size();
 
@@ -114,11 +115,11 @@ TEST(ChromeOSFileSystemBackendTest, AccessPermissions) {
       fileapi::ExternalMountPoints::CreateRefCounted());
   scoped_refptr<fileapi::ExternalMountPoints> system_mount_points(
       fileapi::ExternalMountPoints::CreateRefCounted());
-  chromeos::FileSystemBackend backend(
-      NULL,  // drive_delegate
-      storage_policy,
-      mount_points.get(),
-      system_mount_points.get());
+  chromeos::FileSystemBackend backend(NULL,  // drive_delegate
+                                      NULL,  // file_system_provider_delegate
+                                      storage_policy,
+                                      mount_points.get(),
+                                      system_mount_points.get());
 
   std::string extension("ddammdhioacbehjngdmkjcjbnfginlla");
 
@@ -214,11 +215,11 @@ TEST(ChromeOSFileSystemBackendTest, GetVirtualPathConflictWithSystemPoints) {
       fileapi::ExternalMountPoints::CreateRefCounted());
   scoped_refptr<fileapi::ExternalMountPoints> system_mount_points(
       fileapi::ExternalMountPoints::CreateRefCounted());
-  chromeos::FileSystemBackend backend(
-      NULL,  // drive_delegate
-      storage_policy,
-      mount_points.get(),
-      system_mount_points.get());
+  chromeos::FileSystemBackend backend(NULL,  // drive_delegate
+                                      NULL,  // file_system_provider_delegate
+                                      storage_policy,
+                                      mount_points.get(),
+                                      system_mount_points.get());
 
   const fileapi::FileSystemType type = fileapi::kFileSystemTypeNativeLocal;
   const fileapi::FileSystemMountOption option =
