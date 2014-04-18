@@ -62,10 +62,10 @@ const int kAppendWholeFile = -1;
 const int kAppendTimeSec = 1;
 const int kAppendTimeMs = kAppendTimeSec * 1000;
 const int k320WebMFileDurationMs = 2736;
-const int k640WebMFileDurationMs = 2762;
+const int k640WebMFileDurationMs = 2749;
 const int kOpusEndTrimmingWebMFileDurationMs = 2771;
 const int kVP9WebMFileDurationMs = 2736;
-const int kVP8AWebMFileDurationMs = 2734;
+const int kVP8AWebMFileDurationMs = 2733;
 
 #if defined(USE_PROPRIETARY_CODECS)
 const int k640IsoFileDurationMs = 2737;
@@ -298,7 +298,7 @@ class MockMediaSource {
             base::Bind(&MockMediaSource::DemuxerNeedKey,
                        base::Unretained(this)),
             LogCB(),
-            false)),
+            true)),
         owned_chunk_demuxer_(chunk_demuxer_),
         use_legacy_frame_processor_(use_legacy_frame_processor) {
 
@@ -663,11 +663,7 @@ TEST_P(PipelineIntegrationTest, BasicPlayback_MediaSource_Opus_WebM) {
 
   EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
   EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
-  // TODO(acolwell/wolenetz): Drop the "+ 1" once WebM stream parser always
-  // emits frames with valid durations (see http://crbug.com/351166) and
-  // compliant coded frame processor's "highest presentation end timestamp" is
-  // used to update duration (see http://crbug.com/249422).
-  EXPECT_EQ(kOpusEndTrimmingWebMFileDurationMs + 1,
+  EXPECT_EQ(kOpusEndTrimmingWebMFileDurationMs,
             pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
   Play();
 
@@ -684,11 +680,7 @@ TEST_P(PipelineIntegrationTest, DISABLED_MediaSource_Opus_Seeking_WebM) {
 
   EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
   EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
-  // TODO(acolwell/wolenetz): Drop the "+ 1" once WebM stream parser always
-  // emits frames with valid durations (see http://crbug.com/351166) and
-  // compliant coded frame processor's "highest presentation end timestamp" is
-  // used to update duration (see http://crbug.com/249422).
-  EXPECT_EQ(kOpusEndTrimmingWebMFileDurationMs + 1,
+  EXPECT_EQ(kOpusEndTrimmingWebMFileDurationMs,
             pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
 
   base::TimeDelta start_seek_time = base::TimeDelta::FromMilliseconds(1000);
@@ -749,10 +741,7 @@ TEST_P(PipelineIntegrationTest, MediaSource_ConfigChange_Encrypted_WebM) {
 
   EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
   EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
-  // The "+ 1" is due to estimated audio and video frame durations on the last
-  // frames appended. The unencrypted file has a TrackEntry DefaultDuration
-  // field for the video track, but the encrypted file does not.
-  EXPECT_EQ(kAppendTimeMs + k640WebMFileDurationMs + 1,
+  EXPECT_EQ(kAppendTimeMs + k640WebMFileDurationMs,
             pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
 
   Play();
@@ -812,10 +801,7 @@ TEST_P(PipelineIntegrationTest,
   EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
   EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
   // The second video was not added, so its time has not been added.
-  // The "+ 1" is due to estimated audio and video frame durations on the last
-  // frames appended. The unencrypted file has a TrackEntry DefaultDuration
-  // field for the video track, but the encrypted file does not.
-  EXPECT_EQ(k320WebMFileDurationMs + 1,
+  EXPECT_EQ(k320WebMFileDurationMs,
             pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
 
   Play();

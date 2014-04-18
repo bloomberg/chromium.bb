@@ -172,7 +172,7 @@ class ChunkDemuxerTest : public ::testing::TestWithParam<bool> {
     Demuxer::NeedKeyCB need_key_cb =
         base::Bind(&ChunkDemuxerTest::DemuxerNeedKey, base::Unretained(this));
     demuxer_.reset(
-        new ChunkDemuxer(open_cb, need_key_cb, base::Bind(&LogFunc), false));
+        new ChunkDemuxer(open_cb, need_key_cb, base::Bind(&LogFunc), true));
   }
 
   virtual ~ChunkDemuxerTest() {
@@ -577,7 +577,7 @@ class ChunkDemuxerTest : public ::testing::TestWithParam<bool> {
     // the files are fixed to have the correct duration in their init segments,
     // and the CreateInitDoneCB() call, above, is fixed to used that duration.
     // See http://crbug.com/354284.
-    EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(2768)));
+    EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(2746)));
     AppendData(bear1->data(), bear1->data_size());
     // Last audio frame has timestamp 2721 and duration 24 (estimated from max
     // seen so far for audio track).
@@ -1671,7 +1671,7 @@ TEST_P(ChunkDemuxerTest, WebMFile_AudioAndVideo) {
   // TODO(wolenetz/acolwell): Remove this SetDuration expectation and update the
   // ParseWebMFile() call's expected duration, below, once the file is fixed to
   // have the correct duration in the init segment. See http://crbug.com/354284.
-  EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(2768)));
+  EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(2746)));
 
   ASSERT_TRUE(ParseWebMFile("bear-320x240.webm", buffer_timestamps,
                             base::TimeDelta::FromMilliseconds(2744)));
@@ -1704,7 +1704,7 @@ TEST_P(ChunkDemuxerTest, WebMFile_AudioOnly) {
   // TODO(wolenetz/acolwell): Remove this SetDuration expectation and update the
   // ParseWebMFile() call's expected duration, below, once the file is fixed to
   // have the correct duration in the init segment. See http://crbug.com/354284.
-  EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(2768)));
+  EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(2746)));
 
   ASSERT_TRUE(ParseWebMFile("bear-320x240-audio-only.webm", buffer_timestamps,
                             base::TimeDelta::FromMilliseconds(2744),
@@ -1740,11 +1740,6 @@ TEST_P(ChunkDemuxerTest, WebMFile_AltRefFrames) {
     {100, 12},
     {kSkip, kSkip},
   };
-
-  // TODO(wolenetz/acolwell): Remove this SetDuration expectation and update the
-  // ParseWebMFile() call's expected duration, below, once the file is fixed to
-  // have the correct duration in the init segment. See http://crbug.com/354284.
-  EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(2768)));
 
   ASSERT_TRUE(ParseWebMFile("bear-320x240-altref.webm", buffer_timestamps,
                             base::TimeDelta::FromMilliseconds(2767)));
@@ -2294,14 +2289,14 @@ TEST_P(ChunkDemuxerTest, GetBufferedRanges_EndOfStream) {
   // Append and remove data so that the 2 streams' end ranges do not overlap.
 
   EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(246)));
-  EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(366)));
+  EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(398)));
   AppendSingleStreamCluster(kSourceId, kAudioTrackNum, "200K 223K");
   AppendSingleStreamCluster(kSourceId, kVideoTrackNum,
-                            "200K 233 266 299 300K 333");
+                            "200K 233 266 299 332K 365");
 
   // At this point, the per-stream ranges are as follows:
   // Audio: [0,46) [200,246)
-  // Video: [0,66) [200,366)
+  // Video: [0,66) [200,398)
   CheckExpectedRanges("{ [0,46) [200,246) }");
 
   demuxer_->Remove(kSourceId, base::TimeDelta::FromMilliseconds(200),
@@ -2309,7 +2304,7 @@ TEST_P(ChunkDemuxerTest, GetBufferedRanges_EndOfStream) {
 
   // At this point, the per-stream ranges are as follows:
   // Audio: [0,46)
-  // Video: [0,66) [300,366)
+  // Video: [0,66) [332,398)
   CheckExpectedRanges("{ [0,46) }");
 
   AppendSingleStreamCluster(kSourceId, kAudioTrackNum, "200K 223K");
@@ -2317,7 +2312,7 @@ TEST_P(ChunkDemuxerTest, GetBufferedRanges_EndOfStream) {
 
   // At this point, the per-stream ranges are as follows:
   // Audio: [0,46) [200,246)
-  // Video: [0,66) [200,266) [300,366)
+  // Video: [0,66) [200,266) [332,398)
   // NOTE: The last range on each stream do not overlap in time.
   CheckExpectedRanges("{ [0,46) [200,246) }");
 
@@ -2325,9 +2320,9 @@ TEST_P(ChunkDemuxerTest, GetBufferedRanges_EndOfStream) {
 
   // NOTE: The last range on each stream gets extended to the highest
   // end timestamp according to the spec. The last audio range gets extended
-  // from [200,246) to [200,366) which is why the intersection results in the
+  // from [200,246) to [200,398) which is why the intersection results in the
   // middle range getting larger AND the new range appearing.
-  CheckExpectedRanges("{ [0,46) [200,266) [300,366) }");
+  CheckExpectedRanges("{ [0,46) [200,266) [332,398) }");
 }
 
 TEST_P(ChunkDemuxerTest, DifferentStreamTimecodes) {
@@ -2583,10 +2578,17 @@ TEST_P(ChunkDemuxerTest, ConfigChange_Audio) {
 
   ExpectRead(DemuxerStream::AUDIO, 0);
 
+  // The first config change seen is from a splice frame representing an overlap
+  // of buffer from config 1 by buffers from config 2.
   ReadUntilNotOkOrEndOfStream(DemuxerStream::AUDIO, &status, &last_timestamp);
-
   ASSERT_EQ(status, DemuxerStream::kConfigChanged);
   EXPECT_EQ(last_timestamp.InMilliseconds(), 524);
+  ASSERT_TRUE(audio_config_1.Matches(audio->audio_decoder_config()));
+
+  // The next is due to a typical config difference.
+  ReadUntilNotOkOrEndOfStream(DemuxerStream::AUDIO, &status, &last_timestamp);
+  ASSERT_EQ(status, DemuxerStream::kConfigChanged);
+  EXPECT_EQ(last_timestamp.InMilliseconds(), 527);
 
   // Fetch the new decoder config.
   const AudioDecoderConfig& audio_config_2 = audio->audio_decoder_config();
@@ -2594,22 +2596,26 @@ TEST_P(ChunkDemuxerTest, ConfigChange_Audio) {
   EXPECT_EQ(audio_config_2.samples_per_second(), 44100);
   EXPECT_EQ(audio_config_2.extra_data_size(), 3935u);
 
-  ExpectRead(DemuxerStream::AUDIO, 527);
-
-  // Read until the next config change.
+  // The next config change is from a splice frame representing an overlap of
+  // buffers from config 2 by buffers from config 1.
   ReadUntilNotOkOrEndOfStream(DemuxerStream::AUDIO, &status, &last_timestamp);
   ASSERT_EQ(status, DemuxerStream::kConfigChanged);
-  EXPECT_EQ(last_timestamp.InMilliseconds(), 759);
+  EXPECT_EQ(last_timestamp.InMilliseconds(), 782);
+  ASSERT_TRUE(audio_config_2.Matches(audio->audio_decoder_config()));
+
+  ReadUntilNotOkOrEndOfStream(DemuxerStream::AUDIO, &status, &last_timestamp);
+
+  ASSERT_EQ(status, DemuxerStream::kConfigChanged);
+  EXPECT_EQ(last_timestamp.InMilliseconds(), 779);
 
   // Get the new config and verify that it matches the first one.
   ASSERT_TRUE(audio_config_1.Matches(audio->audio_decoder_config()));
-
-  ExpectRead(DemuxerStream::AUDIO, 779);
 
   // Read until the end of the stream just to make sure there aren't any other
   // config changes.
   ReadUntilNotOkOrEndOfStream(DemuxerStream::AUDIO, &status, &last_timestamp);
   ASSERT_EQ(status, DemuxerStream::kOk);
+  EXPECT_EQ(last_timestamp.InMilliseconds(), 2744);
 }
 
 TEST_P(ChunkDemuxerTest, ConfigChange_Seek) {

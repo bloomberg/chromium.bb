@@ -44,7 +44,8 @@ static void AccurateTrimStart(int frames_to_trim,
 static void AccurateTrimEnd(int frames_to_trim,
                             const scoped_refptr<AudioBuffer> buffer,
                             const AudioTimestampHelper& timestamp_helper) {
-  DCHECK(buffer->timestamp() == timestamp_helper.GetTimestamp());
+  DCHECK_LT(std::abs(timestamp_helper.GetFramesToTarget(buffer->timestamp())),
+            kMinGapSize);
   buffer->TrimEnd(frames_to_trim);
   buffer->set_duration(
       timestamp_helper.GetFrameDuration(buffer->frame_count()));

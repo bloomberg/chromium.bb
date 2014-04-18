@@ -3691,6 +3691,19 @@ TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_NoSplice) {
   CheckNoNextBuffer();
 }
 
+TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_CorrectMediaSegmentStartTime) {
+  SetAudioStream();
+  Seek(0);
+  NewSegmentAppend("0K 2K 4K");
+  CheckExpectedRangesByTimestamp("{ [0,6) }");
+  NewSegmentAppend("6K 8K 10K");
+  CheckExpectedRangesByTimestamp("{ [0,12) }");
+  NewSegmentAppend("1K 4K");
+  CheckExpectedRangesByTimestamp("{ [0,12) }");
+  CheckExpectedBuffers("0K 2K 4K C 1K 4K 6K 8K 10K");
+  CheckNoNextBuffer();
+}
+
 // TODO(vrk): Add unit tests where keyframes are unaligned between streams.
 // (crbug.com/133557)
 
