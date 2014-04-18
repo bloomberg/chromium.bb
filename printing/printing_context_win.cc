@@ -15,7 +15,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "base/win/metro.h"
 #include "printing/backend/print_backend.h"
 #include "printing/backend/printing_info_win.h"
 #include "printing/backend/win_helper.h"
@@ -25,7 +24,6 @@
 #include "printing/printing_utils.h"
 #include "printing/units.h"
 #include "skia/ext/platform_device.h"
-#include "win8/util/win8_util.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/remote_window_tree_host_win.h"
@@ -175,24 +173,6 @@ void PrintingContextWin::AskUserForSettings(
     gfx::NativeView view, int max_pages, bool has_selection,
     const PrintSettingsCallback& callback) {
   DCHECK(!in_print_job_);
-  if (win8::IsSingleWindowMetroMode()) {
-    // The system dialog can not be opened while running in Metro.
-    // But we can programatically launch the Metro print device charm though.
-    HMODULE metro_module = base::win::GetMetroModule();
-    if (metro_module != NULL) {
-      typedef void (*MetroShowPrintUI)();
-      MetroShowPrintUI metro_show_print_ui =
-          reinterpret_cast<MetroShowPrintUI>(
-              ::GetProcAddress(metro_module, "MetroShowPrintUI"));
-      if (metro_show_print_ui) {
-        // TODO(mad): Remove this once we can send user metrics from the metro
-        // driver. crbug.com/142330
-        UMA_HISTOGRAM_ENUMERATION("Metro.Print", 1, 2);
-        metro_show_print_ui();
-      }
-    }
-    return callback.Run(CANCEL);
-  }
   dialog_box_dismissed_ = false;
 
   HWND window = GetRootWindow(view);

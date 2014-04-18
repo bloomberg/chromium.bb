@@ -61,7 +61,6 @@
         'pdf_metafile_skia.h',
         'print_destination_interface.h',
         'print_destination_none.cc',
-        'print_destination_win.cc',
         'print_dialog_gtk_interface.h',
         'print_job_constants.cc',
         'print_job_constants.h',
@@ -115,14 +114,8 @@
         }],
         ['OS=="win"', {
           'dependencies': [
-            '../win8/win8.gyp:win8_util',
+            '<(DEPTH)/ui/aura/aura.gyp:aura',
           ],
-          'conditions': [
-            ['use_aura==1', {
-              'dependencies': [
-                '<(DEPTH)/ui/aura/aura.gyp:aura',
-              ],
-          }]],
           'defines': [
             # PRINT_BACKEND_AVAILABLE disables the default dummy implementation
             # of the print backend and enables a custom implementation instead.
@@ -134,9 +127,6 @@
             'backend/print_backend_win.cc',
             'printing_context_win.cc',
             'printing_context_win.h',
-          ],
-          'sources!': [
-            'print_destination_none.cc',
           ],
         }],
         ['chromeos==1',{
