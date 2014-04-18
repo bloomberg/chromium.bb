@@ -115,6 +115,10 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
   virtual scoped_ptr<AudioLog> CreateAudioLog(
       AudioLogFactory::AudioComponent component) OVERRIDE;
 
+  // Get number of input or output streams.
+  int input_stream_count() const { return num_input_streams_; }
+  int output_stream_count() const { return num_output_streams_; }
+
  protected:
   AudioManagerBase(AudioLogFactory* audio_log_factory);
 
@@ -149,10 +153,6 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
   // Returns the ID of the default audio output device.
   // Implementations that don't yet support this should return an empty string.
   virtual std::string GetDefaultOutputDeviceID();
-
-  // Get number of input or output streams.
-  int input_stream_count() { return num_input_streams_; }
-  int output_stream_count() { return num_output_streams_; }
 
  private:
   struct DispatcherParams;

@@ -29,8 +29,9 @@ namespace media {
 // Maximum number of output streams that can be open simultaneously.
 static const int kMaxOutputStreams = 50;
 
-// Default buffer size in samples for low-latency input and output streams.
-static const int kDefaultLowLatencyBufferSize = 128;
+// Define bounds for for low-latency input and output streams.
+static const int kMinimumInputOutputBufferSize = 128;
+static const int kMaximumInputOutputBufferSize = 4096;
 
 // Default sample-rate on most Apple hardware.
 static const int kFallbackSampleRate = 44100;
@@ -672,7 +673,16 @@ AudioParameters AudioManagerMac::GetPreferredOutputStreamParameters(
 
   const bool has_valid_input_params = input_params.IsValid();
   const int hardware_sample_rate = HardwareSampleRateForDevice(device);
-  const int buffer_size = ChooseBufferSize(hardware_sample_rate);
+
+  // Allow pass through buffer sizes.  If concurrent input and output streams
+  // exist, they will use the smallest buffer size amongst them.  As such, each
+  // stream must be able to FIFO requests appropriately when this happens.
+  int buffer_size = ChooseBufferSize(hardware_sample_rate);
+  if (has_valid_input_params) {
+    buffer_size =
+        std::min(kMaximumInputOutputBufferSize,
+                 std::max(input_params.frames_per_buffer(), buffer_size));
+  }
 
   int hardware_channels;
   if (!GetDeviceChannels(device, kAudioDevicePropertyScopeOutput,
@@ -747,7 +757,7 @@ void AudioManagerMac::HandleDeviceChanges() {
 }
 
 int AudioManagerMac::ChooseBufferSize(int output_sample_rate) {
-  int buffer_size = kDefaultLowLatencyBufferSize;
+  int buffer_size = kMinimumInputOutputBufferSize;
   const int user_buffer_size = GetUserBufferSize();
   if (user_buffer_size) {
     buffer_size = user_buffer_size;
@@ -755,9 +765,9 @@ int AudioManagerMac::ChooseBufferSize(int output_sample_rate) {
     // The default buffer size is too small for higher sample rates and may lead
     // to glitching.  Adjust upwards by multiples of the default size.
     if (output_sample_rate <= 96000)
-      buffer_size = 2 * kDefaultLowLatencyBufferSize;
+      buffer_size = 2 * kMinimumInputOutputBufferSize;
     else if (output_sample_rate <= 192000)
-      buffer_size = 4 * kDefaultLowLatencyBufferSize;
+      buffer_size = 4 * kMinimumInputOutputBufferSize;
   }
 
   return buffer_size;

@@ -217,13 +217,12 @@ OSStatus AUHALStream::Render(
   TRACE_EVENT0("audio", "AUHALStream::Render");
 
   // If the stream parameters change for any reason, we need to insert a FIFO
-  // since the OnMoreData() pipeline can't handle frame size changes.  Generally
-  // this is a temporary situation which can occur after a device change has
-  // occurred but the AudioManager hasn't received the notification yet.
+  // since the OnMoreData() pipeline can't handle frame size changes.
   if (number_of_frames != number_of_frames_) {
     // Create a FIFO on the fly to handle any discrepancies in callback rates.
     if (!audio_fifo_) {
-      VLOG(1) << "Audio frame size change detected; adding FIFO to compensate.";
+      VLOG(1) << "Audio frame size changed from " << number_of_frames_ << " to "
+              << number_of_frames << "; adding FIFO to compensate.";
       audio_fifo_.reset(new AudioPullFifo(
           output_channels_,
           number_of_frames_,
@@ -509,23 +508,39 @@ bool AUHALStream::ConfigureAUHAL() {
   }
 
   // Set the buffer frame size.
-  // WARNING: Setting this value changes the frame size for all audio units in
-  // the current process.  It's imperative that the input and output frame sizes
-  // be the same as the frames_per_buffer() returned by
-  // GetDefaultOutputStreamParameters().
-  // See http://crbug.com/154352 for details.
-  UInt32 buffer_size = number_of_frames_;
-  result = AudioUnitSetProperty(
-      audio_unit_,
-      kAudioDevicePropertyBufferFrameSize,
-      kAudioUnitScope_Output,
-      0,
-      &buffer_size,
-      sizeof(buffer_size));
+  // WARNING: Setting this value changes the frame size for all output audio
+  // units in the current process.  As a result, the AURenderCallback must be
+  // able to handle arbitrary buffer sizes and FIFO appropriately.
+  UInt32 buffer_size = 0;
+  UInt32 property_size = sizeof(buffer_size);
+  result = AudioUnitGetProperty(audio_unit_,
+                                kAudioDevicePropertyBufferFrameSize,
+                                kAudioUnitScope_Output,
+                                0,
+                                &buffer_size,
+                                &property_size);
   if (result != noErr) {
     OSSTATUS_DLOG(ERROR, result)
-        << "AudioUnitSetProperty(kAudioDevicePropertyBufferFrameSize) failed.";
+        << "AudioUnitGetProperty(kAudioDevicePropertyBufferFrameSize) failed.";
     return false;
+  }
+
+  // Only set the buffer size if we're the only active stream or the buffer size
+  // is lower than the current buffer size.
+  if (manager_->output_stream_count() == 1 || number_of_frames_ < buffer_size) {
+    buffer_size = number_of_frames_;
+    result = AudioUnitSetProperty(audio_unit_,
+                                  kAudioDevicePropertyBufferFrameSize,
+                                  kAudioUnitScope_Output,
+                                  0,
+                                  &buffer_size,
+                                  sizeof(buffer_size));
+    if (result != noErr) {
+      OSSTATUS_DLOG(ERROR, result) << "AudioUnitSetProperty("
+                                      "kAudioDevicePropertyBufferFrameSize) "
+                                      "failed.  Size: " << number_of_frames_;
+      return false;
+    }
   }
 
   // Setup callback.

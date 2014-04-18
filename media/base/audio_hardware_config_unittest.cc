@@ -101,7 +101,7 @@ TEST(AudioHardwareConfig, HighLatencyBufferSizes) {
                                 32);
   AudioHardwareConfig fake_config(input_params, output_params);
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_MACOSX)
   EXPECT_EQ(64, fake_config.GetHighLatencyBufferSize());
 
   for (int i = 6400; i <= 204800; i *= 2) {

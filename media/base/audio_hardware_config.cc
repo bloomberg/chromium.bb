@@ -14,7 +14,7 @@ using media::AudioParameters;
 
 namespace media {
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_MACOSX)
 #define HIGH_LATENCY_AUDIO_SUPPORT 1
 #endif
 
