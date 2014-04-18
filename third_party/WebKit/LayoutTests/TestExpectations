@@ -1210,3 +1210,14 @@ crbug.com/362503 http/tests/xmlhttprequest/xmlhttprequest-responseXML-exception.
 crbug.com/363025 virtual/serviceworker/http/tests/serviceworker/state.html [ Failure Pass ]
 crbug.com/364250 [ Debug ] virtual/threaded/animations/interpolation/webkit-transform-interpolation.html [ Pass Crash Timeout ]
 crbug.com/364013 [ Mac ] inspector-protocol/input/dispatchMouseEvent.html [ NeedsRebaseline ]
+
+# Failing since chrome r264636
+crbug.com/364946 [ Mac ] virtual/deferred/fast/images/exif-orientation-css.html [ Pass ImageOnlyFailure ]
+crbug.com/364946 [ Mac ] virtual/deferred/fast/images/gray-scale-jpeg-with-color-profile.html [ Pass ImageOnlyFailure ]
+crbug.com/364946 [ Mac ] virtual/deferred/fast/images/imagemap-case.html [ Pass ImageOnlyFailure ]
+crbug.com/364946 [ Mac ] virtual/deferred/fast/images/imagemap-focus-ring-zoom-style.html [ Pass ImageOnlyFailure ]
+crbug.com/364946 [ Mac ] virtual/deferred/fast/images/imagemap-polygon-focus-ring.html [ Pass ImageOnlyFailure ]
+crbug.com/364946 [ Mac ] virtual/gpu/fast/hidpi/image-srcset-png.html [ Pass ImageOnlyFailure ]
+crbug.com/364946 [ Mac ] virtual/gpu/fast/hidpi/image-srcset-svg-canvas.html [ Pass ImageOnlyFailure ]
+crbug.com/364946 [ Mac ] virtual/gpu/fast/hidpi/image-srcset-svg.html [ Pass ImageOnlyFailure ]
+crbug.com/364946 [ Mac ] virtual/gpu/fast/hidpi/video-controls-in-hidpi.html [ Pass ImageOnlyFailure ]
