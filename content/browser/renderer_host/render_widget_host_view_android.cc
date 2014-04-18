@@ -1485,6 +1485,7 @@ void RenderWidgetHostViewPort::GetDefaultScreenInfo(
   // TODO(husky): Remove any system controls from availableRect.
   results->availableRect = display.work_area();
   results->deviceScaleFactor = display.device_scale_factor();
+  results->orientationAngle = display.RotationAsDegree();
   gfx::DeviceDisplayInfo info;
   results->depth = info.GetBitsPerPixel();
   results->depthPerComponent = info.GetBitsPerComponent();

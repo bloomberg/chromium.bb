@@ -310,6 +310,7 @@ void GetScreenInfoForWindow(WebScreenInfo* results, aura::Window* window) {
   results->depth = 24;
   results->depthPerComponent = 8;
   results->deviceScaleFactor = display.device_scale_factor();
+  results->orientationAngle = display.RotationAsDegree();
 }
 
 bool PointerEventActivates(const ui::Event& event) {

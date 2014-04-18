@@ -374,6 +374,8 @@ blink::WebScreenInfo GetWebScreenInfo(NSView* view) {
       [[screen colorSpace] colorSpaceModel] == NSGrayColorSpaceModel;
   results.rect = display.bounds();
   results.availableRect = display.work_area();
+  results.orientationAngle = display.RotationAsDegree();
+
   return results;
 }
 
