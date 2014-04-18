@@ -144,7 +144,8 @@ void UnitTests::RunTestInProcess(UnitTests::Test test,
   if (!kAllowForkWithThreads) {
     ASSERT_EQ(kNumExpectedThreads, num_threads) << multiple_threads_error;
   } else {
-    LOG(ERROR) << multiple_threads_error;
+    if (kNumExpectedThreads != num_threads)
+      LOG(ERROR) << multiple_threads_error;
   }
 
   int fds[2];
