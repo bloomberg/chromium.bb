@@ -56,7 +56,7 @@ WebPreferences::WebPreferences()
       privileged_webgl_extensions_enabled(false),
       webgl_errors_to_console_enabled(true),
       mock_scrollbars_enabled(false),
-      layer_squashing_enabled(true),
+      layer_squashing_enabled(false),
       threaded_html_parser(true),
       show_paint_rects(false),
       asynchronous_spell_checking_enabled(true),

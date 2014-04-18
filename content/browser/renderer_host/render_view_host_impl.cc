@@ -404,7 +404,7 @@ WebPreferences RenderViewHostImpl::GetWebkitPrefs(const GURL& url) {
   prefs.allow_file_access_from_file_urls =
       command_line.HasSwitch(switches::kAllowFileAccessFromFiles);
 
-  prefs.layer_squashing_enabled = true;
+  prefs.layer_squashing_enabled = false;
   if (command_line.HasSwitch(switches::kEnableLayerSquashing))
       prefs.layer_squashing_enabled = true;
   if (command_line.HasSwitch(switches::kDisableLayerSquashing))
