@@ -284,6 +284,7 @@ crbug.com/331583 [ Mavericks ] ietestcenter/css3/multicolumn/column-containing-b
 crbug.com/14885 [ Mac Debug ] fast/js/JSON-stringify.html [ Failure ]
 crbug.com/306929 [ Mac Release ] fast/js/JSON-stringify.html [ Failure ]
 crbug.com/306929 [ Win7 Debug ] fast/js/JSON-stringify.html [ Failure ]
+crbug.com/364777 [ Linux Debug ] fast/js/JSON-stringify.html [ Failure ]
 
 crbug.com/225184 scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.html [ ImageOnlyFailure Pass ]
 
