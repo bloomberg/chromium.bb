@@ -7,8 +7,6 @@
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
-#include "chrome/browser/infobars/infobar.h"
-#include "chrome/browser/infobars/infobar_container.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_cocoa.h"
@@ -16,6 +14,8 @@
 #import "chrome/browser/ui/cocoa/infobars/infobar_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
+#include "components/infobars/core/infobar.h"
+#include "components/infobars/core/infobar_container.h"
 
 @interface InfoBarContainerController ()
 // Removes |controller| from the list of controllers in this container and

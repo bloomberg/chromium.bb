@@ -7,10 +7,10 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/extensions/extension_view_host_factory.h"
-#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "components/infobars/core/infobar.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/common/extension.h"
@@ -36,7 +36,7 @@ ExtensionInfoBarDelegate::ExtensionInfoBarDelegate(
     const GURL& url,
     content::WebContents* web_contents,
     int height)
-    : InfoBarDelegate(),
+    : infobars::InfoBarDelegate(),
 #if defined(TOOLKIT_VIEWS)
       browser_(browser),
 #endif
@@ -52,9 +52,9 @@ ExtensionInfoBarDelegate::ExtensionInfoBarDelegate(
                  content::Source<Profile>(browser->profile()));
 
   height_ = std::max(0, height);
-  height_ = std::min(2 * InfoBar::kDefaultBarTargetHeight, height_);
+  height_ = std::min(2 * infobars::InfoBar::kDefaultBarTargetHeight, height_);
   if (height_ == 0)
-    height_ = InfoBar::kDefaultBarTargetHeight;
+    height_ = infobars::InfoBar::kDefaultBarTargetHeight;
 }
 
 content::WebContents* ExtensionInfoBarDelegate::GetWebContents() {
@@ -64,7 +64,8 @@ content::WebContents* ExtensionInfoBarDelegate::GetWebContents() {
 // ExtensionInfoBarDelegate::CreateInfoBar() is implemented in platform-specific
 // files.
 
-bool ExtensionInfoBarDelegate::EqualsDelegate(InfoBarDelegate* delegate) const {
+bool ExtensionInfoBarDelegate::EqualsDelegate(
+    infobars::InfoBarDelegate* delegate) const {
   ExtensionInfoBarDelegate* extension_delegate =
       delegate->AsExtensionInfoBarDelegate();
   // When an extension crashes, an InfoBar is shown (for the crashed extension).
@@ -84,7 +85,8 @@ void ExtensionInfoBarDelegate::InfoBarDismissed() {
   closing_ = true;
 }
 
-InfoBarDelegate::Type ExtensionInfoBarDelegate::GetInfoBarType() const {
+infobars::InfoBarDelegate::Type ExtensionInfoBarDelegate::GetInfoBarType()
+    const {
   return PAGE_ACTION_TYPE;
 }
 

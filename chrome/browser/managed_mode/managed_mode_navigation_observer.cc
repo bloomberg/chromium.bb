@@ -12,7 +12,6 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
-#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/managed_mode/managed_mode_interstitial.h"
 #include "chrome/browser/managed_mode/managed_mode_resource_throttle.h"
@@ -21,6 +20,7 @@
 #include "chrome/browser/managed_mode/managed_user_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "components/infobars/core/infobar.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
@@ -83,7 +83,7 @@ class ManagedModeWarningInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   // Creates a managed mode warning infobar and delegate and adds the infobar to
   // |infobar_service|.  Returns the infobar if it was successfully added.
-  static InfoBar* Create(InfoBarService* infobar_service);
+  static infobars::InfoBar* Create(InfoBarService* infobar_service);
 
  private:
   ManagedModeWarningInfoBarDelegate();
@@ -101,7 +101,7 @@ class ManagedModeWarningInfoBarDelegate : public ConfirmInfoBarDelegate {
 };
 
 // static
-InfoBar* ManagedModeWarningInfoBarDelegate::Create(
+infobars::InfoBar* ManagedModeWarningInfoBarDelegate::Create(
     InfoBarService* infobar_service) {
   return infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
       scoped_ptr<ConfirmInfoBarDelegate>(

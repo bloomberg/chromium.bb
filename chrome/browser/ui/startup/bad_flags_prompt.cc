@@ -80,7 +80,7 @@ void ShowBadFlagsPrompt(Browser* browser) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(*flag)) {
       SimpleAlertInfoBarDelegate::Create(
           InfoBarService::FromWebContents(web_contents),
-          InfoBarDelegate::kNoIconID,
+          infobars::InfoBarDelegate::kNoIconID,
           l10n_util::GetStringFUTF16(IDS_BAD_FLAGS_WARNING_MESSAGE,
                                      base::UTF8ToUTF16(
                                          std::string("--") + *flag)),

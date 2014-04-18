@@ -2,18 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_INFOBARS_INFOBAR_MANAGER_H_
-#define CHROME_BROWSER_INFOBARS_INFOBAR_MANAGER_H_
+#ifndef COMPONENTS_INFOBARS_CORE_INFOBAR_MANAGER_H_
+#define COMPONENTS_INFOBARS_CORE_INFOBAR_MANAGER_H_
 
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/infobars/infobar_delegate.h"
+#include "components/infobars/core/infobar_delegate.h"
 
 namespace content {
 class WebContents;
 }
+
+namespace infobars {
 
 class InfoBar;
 
@@ -117,4 +119,6 @@ class InfoBarManager {
   DISALLOW_COPY_AND_ASSIGN(InfoBarManager);
 };
 
-#endif  // CHROME_BROWSER_INFOBARS_INFOBAR_MANAGER_H_
+}  // namespace infobars
+
+#endif  // COMPONENTS_INFOBARS_CORE_INFOBAR_MANAGER_H_

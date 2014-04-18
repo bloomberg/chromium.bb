@@ -10,10 +10,10 @@
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
+#include "components/infobars/core/infobar.h"
 #include "components/translate/core/browser/translate_accept_languages.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_manager.h"
@@ -85,7 +85,7 @@ void TranslateInfoBarDelegate::Create(bool replace_existing_infobar,
   }
 
   // Find any existing translate infobar delegate.
-  InfoBar* old_infobar = NULL;
+  infobars::InfoBar* old_infobar = NULL;
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
   TranslateInfoBarDelegate* old_delegate = NULL;
@@ -100,7 +100,7 @@ void TranslateInfoBarDelegate::Create(bool replace_existing_infobar,
   }
 
   // Add the new delegate.
-  scoped_ptr<InfoBar> infobar(CreateInfoBar(
+  scoped_ptr<infobars::InfoBar> infobar(CreateInfoBar(
       scoped_ptr<TranslateInfoBarDelegate>(new TranslateInfoBarDelegate(
           web_contents, step, old_delegate, original_language,
           target_language, error_type, prefs,
@@ -334,7 +334,7 @@ TranslateInfoBarDelegate::TranslateInfoBarDelegate(
     TranslateErrors::Type error_type,
     PrefService* prefs,
     bool triggered_from_menu)
-    : InfoBarDelegate(),
+    : infobars::InfoBarDelegate(),
       step_(step),
       background_animation_(NONE),
       ui_delegate_(TranslateTabHelper::FromWebContents(web_contents),
@@ -367,7 +367,8 @@ int TranslateInfoBarDelegate::GetIconID() const {
   return IDR_INFOBAR_TRANSLATE;
 }
 
-InfoBarDelegate::Type TranslateInfoBarDelegate::GetInfoBarType() const {
+infobars::InfoBarDelegate::Type TranslateInfoBarDelegate::GetInfoBarType()
+    const {
   return PAGE_ACTION_TYPE;
 }
 
@@ -378,7 +379,7 @@ bool TranslateInfoBarDelegate::ShouldExpire(
   if (!details.is_navigation_to_different_page && !details.is_main_frame)
     return false;
 
-  return InfoBarDelegate::ShouldExpireInternal(details);
+  return infobars::InfoBarDelegate::ShouldExpireInternal(details);
 }
 
 TranslateInfoBarDelegate*

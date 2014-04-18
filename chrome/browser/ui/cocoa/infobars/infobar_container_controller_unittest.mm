@@ -60,7 +60,7 @@ TEST_F(InfoBarContainerControllerTest, BWCPong) {
 TEST_F(InfoBarContainerControllerTest, AddAndRemoveInfoBars) {
   NSView* view = [controller_ view];
 
-  scoped_ptr<InfoBarDelegate> confirm_delegate(
+  scoped_ptr<infobars::InfoBarDelegate> confirm_delegate(
       new MockConfirmInfoBarDelegate(NULL));
   scoped_ptr<InfoBarCocoa> infobar(new InfoBarCocoa(confirm_delegate.Pass()));
   base::scoped_nsobject<ConfirmInfoBarController> controller(

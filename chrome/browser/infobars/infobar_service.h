@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/infobars/infobar_manager.h"
+#include "components/infobars/core/infobar_manager.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -17,22 +17,25 @@ struct LoadCommittedDetails;
 class WebContents;
 }
 
+namespace infobars {
 class InfoBar;
+}
 
 // Associates a Tab to a InfoBarManager and manages its lifetime.
 // It manages the infobar notifications and responds to navigation events.
-class InfoBarService : public InfoBarManager,
+class InfoBarService : public infobars::InfoBarManager,
                        public content::WebContentsObserver,
                        public content::WebContentsUserData<InfoBarService> {
  public:
-  static InfoBarDelegate::NavigationDetails
+  static infobars::InfoBarDelegate::NavigationDetails
       NavigationDetailsFromLoadCommittedDetails(
           const content::LoadCommittedDetails& details);
 
   // This function must only be called on infobars that are owned by an
   // InfoBarService instance (or not owned at all, in which case this returns
   // NULL).
-  static content::WebContents* WebContentsFromInfoBar(InfoBar* infobar);
+  static content::WebContents* WebContentsFromInfoBar(
+      infobars::InfoBar* infobar);
 
   // Retrieve the WebContents for the tab this service is associated with.
   content::WebContents* web_contents() {
@@ -49,10 +52,11 @@ class InfoBarService : public InfoBarManager,
   virtual int GetActiveEntryID() OVERRIDE;
   // TODO(droger): Remove these functions once infobar notifications are
   // removed. See http://crbug.com/354380
-  virtual void NotifyInfoBarAdded(InfoBar* infobar) OVERRIDE;
-  virtual void NotifyInfoBarRemoved(InfoBar* infobar, bool animate) OVERRIDE;
-  virtual void NotifyInfoBarReplaced(InfoBar* old_infobar,
-                                     InfoBar* new_infobar) OVERRIDE;
+  virtual void NotifyInfoBarAdded(infobars::InfoBar* infobar) OVERRIDE;
+  virtual void NotifyInfoBarRemoved(infobars::InfoBar* infobar,
+                                    bool animate) OVERRIDE;
+  virtual void NotifyInfoBarReplaced(infobars::InfoBar* old_infobar,
+                                     infobars::InfoBar* new_infobar) OVERRIDE;
 
   // content::WebContentsObserver:
   virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;

@@ -1,18 +1,20 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_INFOBARS_INFOBAR_H_
-#define CHROME_BROWSER_INFOBARS_INFOBAR_H_
+#ifndef COMPONENTS_INFOBARS_CORE_INFOBAR_H_
+#define COMPONENTS_INFOBARS_CORE_INFOBAR_H_
 
 #include <utility>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/infobars/infobar_delegate.h"
+#include "components/infobars/core/infobar_delegate.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/size.h"
+
+namespace infobars {
 
 class InfoBarContainer;
 class InfoBarManager;
@@ -146,4 +148,6 @@ class InfoBar : public gfx::AnimationDelegate {
   DISALLOW_COPY_AND_ASSIGN(InfoBar);
 };
 
-#endif  // CHROME_BROWSER_INFOBARS_INFOBAR_H_
+}  // namespace infobars
+
+#endif  // COMPONENTS_INFOBARS_CORE_INFOBAR_H_

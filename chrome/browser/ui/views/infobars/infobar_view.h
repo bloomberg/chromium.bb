@@ -7,8 +7,8 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/infobars/infobar.h"
-#include "chrome/browser/infobars/infobar_container.h"
+#include "components/infobars/core/infobar.h"
+#include "components/infobars/core/infobar_container.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/menu/menu_item_view.h"
@@ -30,12 +30,12 @@ class MenuButtonListener;
 class MenuRunner;
 }  // namespace views
 
-class InfoBarView : public InfoBar,
+class InfoBarView : public infobars::InfoBar,
                     public views::View,
                     public views::ButtonListener,
                     public views::ExternalFocusTracker {
  public:
-  explicit InfoBarView(scoped_ptr<InfoBarDelegate> delegate);
+  explicit InfoBarView(scoped_ptr<infobars::InfoBarDelegate> delegate);
 
   const SkPath& fill_path() const { return fill_path_; }
   const SkPath& stroke_path() const { return stroke_path_; }
@@ -101,7 +101,7 @@ class InfoBarView : public InfoBar,
   int OffsetY(views::View* view) const;
 
   // Convenience getter.
-  const InfoBarContainer::Delegate* container_delegate() const;
+  const infobars::InfoBarContainer::Delegate* container_delegate() const;
 
   // Shows a menu at the specified position.
   // NOTE: This must not be called if we're unowned.  (Subclasses should ignore

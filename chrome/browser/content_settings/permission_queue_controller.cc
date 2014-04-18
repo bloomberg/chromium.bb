@@ -8,13 +8,13 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/geolocation/geolocation_infobar_delegate.h"
-#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/media/midi_permission_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/pref_names.h"
+#include "components/infobars/core/infobar.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -52,7 +52,7 @@ class PermissionQueueController::PendingInfobarRequest {
   const PermissionRequestID& id() const { return id_; }
   const GURL& requesting_frame() const { return requesting_frame_; }
   bool has_infobar() const { return !!infobar_; }
-  InfoBar* infobar() { return infobar_; }
+  infobars::InfoBar* infobar() { return infobar_; }
 
   void RunCallback(bool allowed);
   void CreateInfoBar(PermissionQueueController* controller,
@@ -65,7 +65,7 @@ class PermissionQueueController::PendingInfobarRequest {
   GURL embedder_;
   std::string accept_button_label_;
   PermissionDecidedCallback callback_;
-  InfoBar* infobar_;
+  infobars::InfoBar* infobar_;
 
   // Purposefully do not disable copying, as this is stored in STL containers.
 };
@@ -276,7 +276,8 @@ void PermissionQueueController::Observe(
   // pending_infobar_requests_ will not have received any new entries between
   // the NotificationService's call to InfoBarContainer::Observe and this
   // method.
-  InfoBar* infobar = content::Details<InfoBar::RemovedDetails>(details)->first;
+  infobars::InfoBar* infobar =
+      content::Details<infobars::InfoBar::RemovedDetails>(details)->first;
   for (PendingInfobarRequests::iterator i = pending_infobar_requests_.begin();
        i != pending_infobar_requests_.end(); ++i) {
     if (i->infobar() == infobar) {

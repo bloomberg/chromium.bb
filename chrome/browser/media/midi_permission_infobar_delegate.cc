@@ -6,8 +6,8 @@
 
 #include "chrome/browser/content_settings/permission_queue_controller.h"
 #include "chrome/browser/content_settings/permission_request_id.h"
-#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "components/infobars/core/infobar.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
@@ -17,7 +17,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 // static
-InfoBar* MidiPermissionInfoBarDelegate::Create(
+infobars::InfoBar* MidiPermissionInfoBarDelegate::Create(
     InfoBarService* infobar_service,
     PermissionQueueController* controller,
     const PermissionRequestID& id,
@@ -57,7 +57,8 @@ int MidiPermissionInfoBarDelegate::GetIconID() const {
   return IDR_INFOBAR_MIDI;
 }
 
-InfoBarDelegate::Type MidiPermissionInfoBarDelegate::GetInfoBarType() const {
+infobars::InfoBarDelegate::Type MidiPermissionInfoBarDelegate::GetInfoBarType()
+    const {
   return PAGE_ACTION_TYPE;
 }
 

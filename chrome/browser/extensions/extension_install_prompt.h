@@ -25,7 +25,6 @@
 
 class Browser;
 class ExtensionInstallUI;
-class InfoBarDelegate;
 class Profile;
 
 namespace base {
@@ -45,6 +44,10 @@ class ExtensionWebstorePrivateApiTest;
 class MockGetAuthTokenFunction;
 class PermissionSet;
 }  // namespace extensions
+
+namespace infobars {
+class InfoBarDelegate;
+}
 
 // Displays all the UI around extension installation.
 class ExtensionInstallPrompt

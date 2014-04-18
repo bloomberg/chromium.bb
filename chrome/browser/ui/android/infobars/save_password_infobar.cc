@@ -13,9 +13,10 @@
 // SavePasswordInfoBarDelegate-------------------------------------------------
 
 // static
-scoped_ptr<InfoBar> SavePasswordInfoBarDelegate::CreateInfoBar(
+scoped_ptr<infobars::InfoBar> SavePasswordInfoBarDelegate::CreateInfoBar(
     scoped_ptr<SavePasswordInfoBarDelegate> delegate) {
-  return scoped_ptr<InfoBar>(new SavePasswordInfoBar(delegate.Pass()));
+  return scoped_ptr<infobars::InfoBar>(
+      new SavePasswordInfoBar(delegate.Pass()));
 }
 
 // SavePasswordInfoBar --------------------------------------------------------

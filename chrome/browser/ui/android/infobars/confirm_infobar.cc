@@ -15,18 +15,17 @@
 // ConfirmInfoBarDelegate -----------------------------------------------------
 
 // static
-scoped_ptr<InfoBar> ConfirmInfoBarDelegate::CreateInfoBar(
+scoped_ptr<infobars::InfoBar> ConfirmInfoBarDelegate::CreateInfoBar(
     scoped_ptr<ConfirmInfoBarDelegate> delegate) {
-  return scoped_ptr<InfoBar>(new ConfirmInfoBar(delegate.Pass()));
+  return scoped_ptr<infobars::InfoBar>(new ConfirmInfoBar(delegate.Pass()));
 }
 
 
 // ConfirmInfoBar -------------------------------------------------------------
 
 ConfirmInfoBar::ConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate> delegate)
-    : InfoBarAndroid(delegate.PassAs<InfoBarDelegate>()),
-      java_confirm_delegate_() {
-}
+    : InfoBarAndroid(delegate.PassAs<infobars::InfoBarDelegate>()),
+      java_confirm_delegate_() {}
 
 ConfirmInfoBar::~ConfirmInfoBar() {
 }

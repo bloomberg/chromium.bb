@@ -1,16 +1,18 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_INFOBARS_INFOBAR_CONTAINER_H_
-#define CHROME_BROWSER_INFOBARS_INFOBAR_CONTAINER_H_
+#ifndef COMPONENTS_INFOBARS_CORE_INFOBAR_CONTAINER_H_
+#define COMPONENTS_INFOBARS_CORE_INFOBAR_CONTAINER_H_
 
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
-#include "chrome/browser/infobars/infobar_manager.h"
+#include "components/infobars/core/infobar_manager.h"
 #include "third_party/skia/include/core/SkColor.h"
+
+namespace infobars {
 
 class InfoBar;
 
@@ -130,4 +132,6 @@ class InfoBarContainer : public InfoBarManager::Observer {
   DISALLOW_COPY_AND_ASSIGN(InfoBarContainer);
 };
 
-#endif  // CHROME_BROWSER_INFOBARS_INFOBAR_CONTAINER_H_
+}  // namespace infobars
+
+#endif  // COMPONENTS_INFOBARS_CORE_INFOBAR_CONTAINER_H_

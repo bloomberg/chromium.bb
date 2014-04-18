@@ -7,15 +7,15 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/infobars/infobar.h"
+#include "components/infobars/core/infobar.h"
 
 @class InfoBarController;
 
 // The cocoa specific implementation of InfoBar. The real info bar logic is
 // actually in InfoBarController.
-class InfoBarCocoa : public InfoBar {
+class InfoBarCocoa : public infobars::InfoBar {
  public:
-  explicit InfoBarCocoa(scoped_ptr<InfoBarDelegate> delegate);
+  explicit InfoBarCocoa(scoped_ptr<infobars::InfoBarDelegate> delegate);
 
   virtual ~InfoBarCocoa();
 
@@ -26,7 +26,7 @@ class InfoBarCocoa : public InfoBar {
   }
 
   // These functions allow access to protected InfoBar functions.
-  InfoBarManager* OwnerCocoa();
+  infobars::InfoBarManager* OwnerCocoa();
 
   base::WeakPtr<InfoBarCocoa> GetWeakPtr();
 

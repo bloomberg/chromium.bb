@@ -91,8 +91,8 @@ class ConfirmInfoBarControllerTest : public CocoaProfileTest,
         WebContents::Create(WebContents::CreateParams(profile())));
    InfoBarService::CreateForWebContents(web_contents_.get());
 
-    scoped_ptr<InfoBarDelegate> delegate(
-        new MockConfirmInfoBarDelegate(this));
+   scoped_ptr<infobars::InfoBarDelegate> delegate(
+       new MockConfirmInfoBarDelegate(this));
     infobar_ = new InfoBarCocoa(delegate.Pass());
     infobar_->SetOwner(InfoBarService::FromWebContents(web_contents_.get()));
 

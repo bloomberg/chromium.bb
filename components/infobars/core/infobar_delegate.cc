@@ -1,14 +1,16 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/infobars/infobar_delegate.h"
+#include "components/infobars/core/infobar_delegate.h"
 
 #include "base/logging.h"
 #include "build/build_config.h"
-#include "chrome/browser/infobars/infobar.h"
-#include "chrome/browser/infobars/infobar_manager.h"
+#include "components/infobars/core/infobar.h"
+#include "components/infobars/core/infobar_manager.h"
 #include "ui/base/resource/resource_bundle.h"
+
+namespace infobars {
 
 const int InfoBarDelegate::kNoIconID = 0;
 
@@ -105,3 +107,5 @@ bool InfoBarDelegate::ShouldExpireInternal(
   // anyone who overrides this as necessary!
   return (contents_unique_id_ != details.entry_id) || details.is_reload;
 }
+
+}  // namespace infobars

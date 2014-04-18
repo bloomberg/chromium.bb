@@ -8,7 +8,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/media/media_stream_infobar_delegate.h"
 #include "chrome/browser/media/webrtc_browsertest_common.h"
@@ -16,6 +15,7 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/infobars/core/infobar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -98,7 +98,8 @@ void WebRtcTestBase::GetUserMediaAndAccept(
 void WebRtcTestBase::GetUserMediaWithSpecificConstraintsAndAccept(
     content::WebContents* tab_contents,
     const std::string& constraints) const {
-  InfoBar* infobar = GetUserMediaAndWaitForInfoBar(tab_contents, constraints);
+  infobars::InfoBar* infobar =
+      GetUserMediaAndWaitForInfoBar(tab_contents, constraints);
   infobar->delegate()->AsConfirmInfoBarDelegate()->Accept();
   CloseInfoBarInTab(tab_contents, infobar);
 
@@ -116,7 +117,8 @@ void WebRtcTestBase::GetUserMediaAndDeny(content::WebContents* tab_contents) {
 void WebRtcTestBase::GetUserMediaWithSpecificConstraintsAndDeny(
     content::WebContents* tab_contents,
     const std::string& constraints) const {
-  InfoBar* infobar = GetUserMediaAndWaitForInfoBar(tab_contents, constraints);
+  infobars::InfoBar* infobar =
+      GetUserMediaAndWaitForInfoBar(tab_contents, constraints);
   infobar->delegate()->AsConfirmInfoBarDelegate()->Cancel();
   CloseInfoBarInTab(tab_contents, infobar);
 
@@ -128,7 +130,7 @@ void WebRtcTestBase::GetUserMediaWithSpecificConstraintsAndDeny(
 
 void WebRtcTestBase::GetUserMediaAndDismiss(
     content::WebContents* tab_contents) const {
-  InfoBar* infobar =
+  infobars::InfoBar* infobar =
       GetUserMediaAndWaitForInfoBar(tab_contents, kAudioVideoCallConstraints);
   infobar->delegate()->InfoBarDismissed();
   CloseInfoBarInTab(tab_contents, infobar);
@@ -148,7 +150,7 @@ void WebRtcTestBase::GetUserMedia(content::WebContents* tab_contents,
   EXPECT_EQ("ok-requested", result);
 }
 
-InfoBar* WebRtcTestBase::GetUserMediaAndWaitForInfoBar(
+infobars::InfoBar* WebRtcTestBase::GetUserMediaAndWaitForInfoBar(
     content::WebContents* tab_contents,
     const std::string& constraints) const {
   content::WindowedNotificationObserver infobar_added(
@@ -160,7 +162,8 @@ InfoBar* WebRtcTestBase::GetUserMediaAndWaitForInfoBar(
 
   // Wait for the bar to pop up, then return it.
   infobar_added.Wait();
-  content::Details<InfoBar::AddedDetails> details(infobar_added.details());
+  content::Details<infobars::InfoBar::AddedDetails> details(
+      infobar_added.details());
   EXPECT_TRUE(details->delegate()->AsMediaStreamInfoBarDelegate());
   return details.ptr();
 }
@@ -205,8 +208,9 @@ content::WebContents* WebRtcTestBase::OpenPageAndAcceptUserMedia(
 
   content::WebContents* tab_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  content::Details<InfoBar::AddedDetails> details(infobar_added.details());
-  InfoBar* infobar = details.ptr();
+  content::Details<infobars::InfoBar::AddedDetails> details(
+      infobar_added.details());
+  infobars::InfoBar* infobar = details.ptr();
   EXPECT_TRUE(infobar);
   infobar->delegate()->AsMediaStreamInfoBarDelegate()->Accept();
 
@@ -214,9 +218,8 @@ content::WebContents* WebRtcTestBase::OpenPageAndAcceptUserMedia(
   return tab_contents;
 }
 
-void WebRtcTestBase::CloseInfoBarInTab(
-    content::WebContents* tab_contents,
-    InfoBar* infobar) const {
+void WebRtcTestBase::CloseInfoBarInTab(content::WebContents* tab_contents,
+                                       infobars::InfoBar* infobar) const {
   content::WindowedNotificationObserver infobar_removed(
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
       content::NotificationService::AllSources());

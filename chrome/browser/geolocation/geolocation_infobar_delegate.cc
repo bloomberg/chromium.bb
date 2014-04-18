@@ -7,8 +7,8 @@
 #include "base/metrics/histogram.h"
 #include "chrome/browser/content_settings/permission_queue_controller.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "components/infobars/core/infobar.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -62,7 +62,7 @@ void RecordUmaEvent(GeolocationInfoBarDelegateEvent event) {
 }  // namespace
 
 // static
-InfoBar* GeolocationInfoBarDelegate::Create(
+infobars::InfoBar* GeolocationInfoBarDelegate::Create(
     InfoBarService* infobar_service,
     PermissionQueueController* controller,
     const PermissionRequestID& id,
@@ -77,9 +77,9 @@ InfoBar* GeolocationInfoBarDelegate::Create(
           committed_entry ? committed_entry->GetUniqueID() : 0,
           display_languages, accept_button_label);
 
-  InfoBar* infobar = ConfirmInfoBarDelegate::CreateInfoBar(
+  infobars::InfoBar* infobar = ConfirmInfoBarDelegate::CreateInfoBar(
       scoped_ptr<ConfirmInfoBarDelegate>(delegate)).release();
-  return infobar_service->AddInfoBar(scoped_ptr<InfoBar>(infobar));
+  return infobar_service->AddInfoBar(scoped_ptr<infobars::InfoBar>(infobar));
 }
 
 GeolocationInfoBarDelegate::GeolocationInfoBarDelegate(
@@ -130,7 +130,8 @@ int GeolocationInfoBarDelegate::GetIconID() const {
   return IDR_INFOBAR_GEOLOCATION;
 }
 
-InfoBarDelegate::Type GeolocationInfoBarDelegate::GetInfoBarType() const {
+infobars::InfoBarDelegate::Type GeolocationInfoBarDelegate::GetInfoBarType()
+    const {
   return PAGE_ACTION_TYPE;
 }
 

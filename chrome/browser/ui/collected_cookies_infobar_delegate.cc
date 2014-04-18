@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
 
 #include "base/logging.h"
-#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "components/infobars/core/infobar.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -31,7 +31,8 @@ int CollectedCookiesInfoBarDelegate::GetIconID() const {
   return IDR_INFOBAR_COOKIE;
 }
 
-InfoBarDelegate::Type CollectedCookiesInfoBarDelegate::GetInfoBarType() const {
+infobars::InfoBarDelegate::Type
+CollectedCookiesInfoBarDelegate::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;
 }
 

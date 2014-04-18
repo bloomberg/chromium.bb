@@ -1,16 +1,18 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/infobars/infobar.h"
+#include "components/infobars/core/infobar.h"
 
 #include <cmath>
 
 #include "base/logging.h"
 #include "build/build_config.h"
-#include "chrome/browser/infobars/infobar_container.h"
-#include "chrome/browser/infobars/infobar_manager.h"
+#include "components/infobars/core/infobar_container.h"
+#include "components/infobars/core/infobar_manager.h"
 #include "ui/gfx/animation/slide_animation.h"
+
+namespace infobars {
 
 InfoBar::InfoBar(scoped_ptr<InfoBarDelegate> delegate)
     : owner_(NULL),
@@ -173,3 +175,5 @@ void InfoBar::MaybeDelete() {
     delete this;
   }
 }
+
+}  // namespace infobars

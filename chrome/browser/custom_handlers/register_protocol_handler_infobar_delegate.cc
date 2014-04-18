@@ -6,9 +6,9 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
-#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/common/url_constants.h"
+#include "components/infobars/core/infobar.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
@@ -22,12 +22,12 @@ void RegisterProtocolHandlerInfoBarDelegate::Create(
   content::RecordAction(
       base::UserMetricsAction("RegisterProtocolHandler.InfoBar_Shown"));
 
-  scoped_ptr<InfoBar> infobar(ConfirmInfoBarDelegate::CreateInfoBar(
-      scoped_ptr<ConfirmInfoBarDelegate>(
+  scoped_ptr<infobars::InfoBar> infobar(
+      ConfirmInfoBarDelegate::CreateInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
           new RegisterProtocolHandlerInfoBarDelegate(registry, handler))));
 
   for (size_t i = 0; i < infobar_service->infobar_count(); ++i) {
-    InfoBar* existing_infobar = infobar_service->infobar_at(i);
+    infobars::InfoBar* existing_infobar = infobar_service->infobar_at(i);
     RegisterProtocolHandlerInfoBarDelegate* existing_delegate =
         existing_infobar->delegate()->
             AsRegisterProtocolHandlerInfoBarDelegate();
@@ -53,13 +53,13 @@ RegisterProtocolHandlerInfoBarDelegate::
     ~RegisterProtocolHandlerInfoBarDelegate() {
 }
 
-InfoBarDelegate::InfoBarAutomationType
-    RegisterProtocolHandlerInfoBarDelegate::GetInfoBarAutomationType() const {
+infobars::InfoBarDelegate::InfoBarAutomationType
+RegisterProtocolHandlerInfoBarDelegate::GetInfoBarAutomationType() const {
   return RPH_INFOBAR;
 }
 
-InfoBarDelegate::Type
-    RegisterProtocolHandlerInfoBarDelegate::GetInfoBarType() const {
+infobars::InfoBarDelegate::Type
+RegisterProtocolHandlerInfoBarDelegate::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;
 }
 

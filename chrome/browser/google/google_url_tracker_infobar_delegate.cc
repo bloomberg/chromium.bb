@@ -6,8 +6,8 @@
 
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "components/infobars/core/infobar.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
@@ -17,7 +17,7 @@
 
 
 // static
-InfoBar* GoogleURLTrackerInfoBarDelegate::Create(
+infobars::InfoBar* GoogleURLTrackerInfoBarDelegate::Create(
     InfoBarService* infobar_service,
     GoogleURLTracker* google_url_tracker,
     const GURL& search_url) {

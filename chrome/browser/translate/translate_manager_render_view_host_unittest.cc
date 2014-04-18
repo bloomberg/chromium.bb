@@ -13,7 +13,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/test_extension_system.h"
-#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
@@ -28,6 +27,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/infobars/core/infobar.h"
 #include "components/translate/content/common/translate_messages.h"
 #include "components/translate/core/browser/translate_accept_languages.h"
 #include "components/translate/core/browser/translate_download_manager.h"
@@ -159,7 +159,7 @@ class TranslateManagerRenderViewHostTest
   // If there is 1 infobar and it is a translate infobar, closes it and returns
   // true.  Returns false otherwise.
   bool CloseTranslateInfoBar() {
-    InfoBarDelegate* infobar = GetTranslateInfoBar();
+    infobars::InfoBarDelegate* infobar = GetTranslateInfoBar();
     if (!infobar)
       return false;
     infobar->InfoBarDismissed();  // Simulates closing the infobar.
@@ -169,7 +169,7 @@ class TranslateManagerRenderViewHostTest
 
   // Checks whether |infobar| has been removed and clears the removed infobar
   // list.
-  bool CheckInfoBarRemovedAndReset(InfoBarDelegate* delegate) {
+  bool CheckInfoBarRemovedAndReset(infobars::InfoBarDelegate* delegate) {
     bool found = removed_infobars_.count(delegate) != 0;
     removed_infobars_.clear();
     return found;
@@ -235,7 +235,8 @@ class TranslateManagerRenderViewHostTest
                        const content::NotificationDetails& details) {
     DCHECK_EQ(chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED, type);
     removed_infobars_.insert(
-        content::Details<InfoBar::RemovedDetails>(details)->first->delegate());
+        content::Details<infobars::InfoBar::RemovedDetails>(
+            details)->first->delegate());
   }
 
   MOCK_METHOD1(OnPreferenceChanged, void(const std::string&));
@@ -355,7 +356,7 @@ class TranslateManagerRenderViewHostTest
 
   // The infobars that have been removed.
   // WARNING: the pointers point to deleted objects, use only for comparison.
-  std::set<InfoBarDelegate*> removed_infobars_;
+  std::set<infobars::InfoBarDelegate*> removed_infobars_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateManagerRenderViewHostTest);
 };

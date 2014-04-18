@@ -5,12 +5,12 @@
 #include "chrome/browser/ui/views/infobars/translate_infobar_base.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/views/infobars/after_translate_infobar.h"
 #include "chrome/browser/ui/views/infobars/before_translate_infobar.h"
 #include "chrome/browser/ui/views/infobars/translate_message_infobar.h"
+#include "components/infobars/core/infobar.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/animation/slide_animation.h"
@@ -22,13 +22,20 @@
 // TranslateInfoBarDelegate ---------------------------------------------------
 
 // static
-scoped_ptr<InfoBar> TranslateInfoBarDelegate::CreateInfoBar(
+scoped_ptr<infobars::InfoBar> TranslateInfoBarDelegate::CreateInfoBar(
     scoped_ptr<TranslateInfoBarDelegate> delegate) {
-  if (delegate->translate_step() == translate::TRANSLATE_STEP_BEFORE_TRANSLATE)
-    return scoped_ptr<InfoBar>(new BeforeTranslateInfoBar(delegate.Pass()));
-  if (delegate->translate_step() == translate::TRANSLATE_STEP_AFTER_TRANSLATE)
-    return scoped_ptr<InfoBar>(new AfterTranslateInfoBar(delegate.Pass()));
-  return scoped_ptr<InfoBar>(new TranslateMessageInfoBar(delegate.Pass()));
+  if (delegate->translate_step() ==
+      translate::TRANSLATE_STEP_BEFORE_TRANSLATE) {
+    return scoped_ptr<infobars::InfoBar>(
+        new BeforeTranslateInfoBar(delegate.Pass()));
+  }
+  if (delegate->translate_step() ==
+      translate::TRANSLATE_STEP_AFTER_TRANSLATE) {
+    return scoped_ptr<infobars::InfoBar>(
+        new AfterTranslateInfoBar(delegate.Pass()));
+  }
+  return scoped_ptr<infobars::InfoBar>(
+      new TranslateMessageInfoBar(delegate.Pass()));
 }
 
 
@@ -50,8 +57,8 @@ void TranslateInfoBarBase::UpdateLanguageButtonText(
 
 TranslateInfoBarBase::TranslateInfoBarBase(
     scoped_ptr<TranslateInfoBarDelegate> delegate)
-    : InfoBarView(delegate.PassAs<InfoBarDelegate>()),
-      error_background_(InfoBarDelegate::WARNING_TYPE) {
+    : InfoBarView(delegate.PassAs<infobars::InfoBarDelegate>()),
+      error_background_(infobars::InfoBarDelegate::WARNING_TYPE) {
 }
 
 TranslateInfoBarBase::~TranslateInfoBarBase() {
@@ -87,7 +94,7 @@ TranslateInfoBarDelegate* TranslateInfoBarBase::GetDelegate() {
 void TranslateInfoBarBase::OnPaintBackground(gfx::Canvas* canvas) {
   // We need to set the separator color for |error_background_| like
   // InfoBarView::Layout() does for the normal background.
-  const InfoBarContainer::Delegate* delegate = container_delegate();
+  const infobars::InfoBarContainer::Delegate* delegate = container_delegate();
   if (delegate)
     error_background_.set_separator_color(delegate->GetInfoBarSeparatorColor());
 

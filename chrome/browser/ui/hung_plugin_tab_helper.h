@@ -16,10 +16,12 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
-class InfoBarDelegate;
-
 namespace base {
 class FilePath;
+}
+
+namespace infobars {
+class InfoBarDelegate;
 }
 
 // Manages per-tab state with regard to hung plugins. This only handles

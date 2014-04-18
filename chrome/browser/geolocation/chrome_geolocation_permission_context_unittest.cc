@@ -19,11 +19,11 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/geolocation/chrome_geolocation_permission_context_factory.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
-#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/infobars/core/infobar.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_registrar.h"
@@ -59,13 +59,13 @@ class ClosedInfoBarTracker : public content::NotificationObserver {
 
   size_t size() const { return removed_infobars_.size(); }
 
-  bool Contains(InfoBar* infobar) const;
+  bool Contains(infobars::InfoBar* infobar) const;
   void Clear();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(GeolocationPermissionContextTests, TabDestroyed);
   content::NotificationRegistrar registrar_;
-  std::set<InfoBar*> removed_infobars_;
+  std::set<infobars::InfoBar*> removed_infobars_;
 };
 
 ClosedInfoBarTracker::ClosedInfoBarTracker() {
@@ -82,10 +82,10 @@ void ClosedInfoBarTracker::Observe(
     const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED);
   removed_infobars_.insert(
-      content::Details<InfoBar::RemovedDetails>(details)->first);
+      content::Details<infobars::InfoBar::RemovedDetails>(details)->first);
 }
 
-bool ClosedInfoBarTracker::Contains(InfoBar* infobar) const {
+bool ClosedInfoBarTracker::Contains(infobars::InfoBar* infobar) const {
   return removed_infobars_.count(infobar) != 0;
 }
 
@@ -265,7 +265,7 @@ TEST_F(GeolocationPermissionContextTests, SinglePermission) {
   EXPECT_EQ(0U, infobar_service()->infobar_count());
   RequestGeolocationPermission(RequestID(0), requesting_frame);
   ASSERT_EQ(1U, infobar_service()->infobar_count());
-  InfoBar* infobar = infobar_service()->infobar_at(0);
+  infobars::InfoBar* infobar = infobar_service()->infobar_at(0);
   ConfirmInfoBarDelegate* infobar_delegate =
       infobar->delegate()->AsConfirmInfoBarDelegate();
   ASSERT_TRUE(infobar_delegate);
@@ -358,7 +358,7 @@ TEST_F(GeolocationPermissionContextTests, QueuedPermission) {
   RequestGeolocationPermission(RequestID(1), requesting_frame_1);
   // Ensure only one infobar is created.
   ASSERT_EQ(1U, infobar_service()->infobar_count());
-  InfoBar* infobar_0 = infobar_service()->infobar_at(0);
+  infobars::InfoBar* infobar_0 = infobar_service()->infobar_at(0);
   ConfirmInfoBarDelegate* infobar_delegate_0 =
       infobar_0->delegate()->AsConfirmInfoBarDelegate();
   ASSERT_TRUE(infobar_delegate_0);
@@ -376,7 +376,7 @@ TEST_F(GeolocationPermissionContextTests, QueuedPermission) {
   // Now we should have a new infobar for the second frame.
   ASSERT_EQ(1U, infobar_service()->infobar_count());
 
-  InfoBar* infobar_1 = infobar_service()->infobar_at(0);
+  infobars::InfoBar* infobar_1 = infobar_service()->infobar_at(0);
   ConfirmInfoBarDelegate* infobar_delegate_1 =
       infobar_1->delegate()->AsConfirmInfoBarDelegate();
   ASSERT_TRUE(infobar_delegate_1);
@@ -412,7 +412,7 @@ TEST_F(GeolocationPermissionContextTests, HashIsIgnored) {
   EXPECT_EQ(0U, infobar_service()->infobar_count());
   RequestGeolocationPermission(RequestID(0), url_a);
   ASSERT_EQ(1U, infobar_service()->infobar_count());
-  InfoBar* infobar = infobar_service()->infobar_at(0);
+  infobars::InfoBar* infobar = infobar_service()->infobar_at(0);
   ConfirmInfoBarDelegate* infobar_delegate =
       infobar->delegate()->AsConfirmInfoBarDelegate();
   ASSERT_TRUE(infobar_delegate);
@@ -438,7 +438,7 @@ TEST_F(GeolocationPermissionContextTests, PermissionForFileScheme) {
   EXPECT_EQ(0U, infobar_service()->infobar_count());
   RequestGeolocationPermission(RequestID(0), requesting_frame);
   EXPECT_EQ(1U, infobar_service()->infobar_count());
-  InfoBar* infobar = infobar_service()->infobar_at(0);
+  infobars::InfoBar* infobar = infobar_service()->infobar_at(0);
   ConfirmInfoBarDelegate* infobar_delegate =
       infobar->delegate()->AsConfirmInfoBarDelegate();
   ASSERT_TRUE(infobar_delegate);
@@ -477,7 +477,7 @@ TEST_F(GeolocationPermissionContextTests, CancelGeolocationPermissionRequest) {
   RequestGeolocationPermission(RequestID(1), requesting_frame_1);
   ASSERT_EQ(1U, infobar_service()->infobar_count());
 
-  InfoBar* infobar_0 = infobar_service()->infobar_at(0);
+  infobars::InfoBar* infobar_0 = infobar_service()->infobar_at(0);
   ConfirmInfoBarDelegate* infobar_delegate_0 =
       infobar_0->delegate()->AsConfirmInfoBarDelegate();
   ASSERT_TRUE(infobar_delegate_0);
@@ -491,7 +491,7 @@ TEST_F(GeolocationPermissionContextTests, CancelGeolocationPermissionRequest) {
   closed_infobar_tracker_.Clear();
   ASSERT_EQ(1U, infobar_service()->infobar_count());
 
-  InfoBar* infobar_1 = infobar_service()->infobar_at(0);
+  infobars::InfoBar* infobar_1 = infobar_service()->infobar_at(0);
   ConfirmInfoBarDelegate* infobar_delegate_1 =
       infobar_1->delegate()->AsConfirmInfoBarDelegate();
   ASSERT_TRUE(infobar_delegate_1);
@@ -545,10 +545,11 @@ TEST_F(GeolocationPermissionContextTests, SameOriginMultipleTabs) {
   RequestGeolocationPermission(RequestIDForTab(1, 0), url_a);
   ASSERT_EQ(1U, infobar_service_for_tab(1)->infobar_count());
 
-  InfoBar* removed_infobar = infobar_service_for_tab(1)->infobar_at(0);
+  infobars::InfoBar* removed_infobar =
+      infobar_service_for_tab(1)->infobar_at(0);
 
   // Accept the first tab.
-  InfoBar* infobar_0 = infobar_service()->infobar_at(0);
+  infobars::InfoBar* infobar_0 = infobar_service()->infobar_at(0);
   ConfirmInfoBarDelegate* infobar_delegate_0 =
       infobar_0->delegate()->AsConfirmInfoBarDelegate();
   ASSERT_TRUE(infobar_delegate_0);
@@ -565,7 +566,7 @@ TEST_F(GeolocationPermissionContextTests, SameOriginMultipleTabs) {
 
   // But the other tab should still have the info bar...
   ASSERT_EQ(1U, infobar_service_for_tab(0)->infobar_count());
-  InfoBar* infobar_1 = infobar_service_for_tab(0)->infobar_at(0);
+  infobars::InfoBar* infobar_1 = infobar_service_for_tab(0)->infobar_at(0);
   ConfirmInfoBarDelegate* infobar_delegate_1 =
       infobar_1->delegate()->AsConfirmInfoBarDelegate();
   ASSERT_TRUE(infobar_delegate_1);
@@ -591,10 +592,10 @@ TEST_F(GeolocationPermissionContextTests, QueuedOriginMultipleTabs) {
   RequestGeolocationPermission(RequestIDForTab(0, 1), url_b);
   ASSERT_EQ(1U, infobar_service_for_tab(0)->infobar_count());
 
-  InfoBar* removed_infobar = infobar_service()->infobar_at(0);
+  infobars::InfoBar* removed_infobar = infobar_service()->infobar_at(0);
 
   // Accept the second tab.
-  InfoBar* infobar_0 = infobar_service_for_tab(0)->infobar_at(0);
+  infobars::InfoBar* infobar_0 = infobar_service_for_tab(0)->infobar_at(0);
   ConfirmInfoBarDelegate* infobar_delegate_0 =
       infobar_0->delegate()->AsConfirmInfoBarDelegate();
   ASSERT_TRUE(infobar_delegate_0);
@@ -613,7 +614,7 @@ TEST_F(GeolocationPermissionContextTests, QueuedOriginMultipleTabs) {
   ASSERT_EQ(1U, infobar_service_for_tab(0)->infobar_count());
 
   // Accept the second infobar.
-  InfoBar* infobar_1 = infobar_service_for_tab(0)->infobar_at(0);
+  infobars::InfoBar* infobar_1 = infobar_service_for_tab(0)->infobar_at(0);
   ConfirmInfoBarDelegate* infobar_delegate_1 =
       infobar_1->delegate()->AsConfirmInfoBarDelegate();
   ASSERT_TRUE(infobar_delegate_1);
@@ -644,7 +645,7 @@ TEST_F(GeolocationPermissionContextTests, TabDestroyed) {
   RequestGeolocationPermission(RequestID(1), requesting_frame_1);
   // Ensure only one infobar is created.
   ASSERT_EQ(1U, infobar_service()->infobar_count());
-  InfoBar* infobar = infobar_service()->infobar_at(0);
+  infobars::InfoBar* infobar = infobar_service()->infobar_at(0);
 
   // Delete the tab contents.
   DeleteContents();
@@ -668,7 +669,7 @@ TEST_F(GeolocationPermissionContextTests, InfoBarUsesCommittedEntry) {
   RequestGeolocationPermission(RequestID(0), requesting_frame_1);
   // Ensure the infobar is created.
   ASSERT_EQ(1U, infobar_service()->infobar_count());
-  InfoBarDelegate* infobar_delegate =
+  infobars::InfoBarDelegate* infobar_delegate =
       infobar_service()->infobar_at(0)->delegate();
   ASSERT_TRUE(infobar_delegate);
   // Ensure the infobar wouldn't expire for a navigation to the committed entry.

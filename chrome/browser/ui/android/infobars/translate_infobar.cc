@@ -16,9 +16,9 @@
 // TranslateInfoBarDelegate ---------------------------------------------------
 
 // static
-scoped_ptr<InfoBar> TranslateInfoBarDelegate::CreateInfoBar(
+scoped_ptr<infobars::InfoBar> TranslateInfoBarDelegate::CreateInfoBar(
     scoped_ptr<TranslateInfoBarDelegate> delegate) {
-  return scoped_ptr<InfoBar>(new TranslateInfoBar(delegate.Pass()));
+  return scoped_ptr<infobars::InfoBar>(new TranslateInfoBar(delegate.Pass()));
 }
 
 
@@ -26,7 +26,7 @@ scoped_ptr<InfoBar> TranslateInfoBarDelegate::CreateInfoBar(
 
 TranslateInfoBar::TranslateInfoBar(
     scoped_ptr<TranslateInfoBarDelegate> delegate)
-    : InfoBarAndroid(delegate.PassAs<InfoBarDelegate>()),
+    : InfoBarAndroid(delegate.PassAs<infobars::InfoBarDelegate>()),
       java_translate_delegate_() {
 }
 

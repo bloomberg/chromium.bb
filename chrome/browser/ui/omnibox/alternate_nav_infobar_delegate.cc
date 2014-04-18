@@ -9,9 +9,9 @@
 #include "chrome/browser/autocomplete/shortcuts_backend_factory.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/infobars/core/infobar.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -40,7 +40,7 @@ AlternateNavInfoBarDelegate::AlternateNavInfoBarDelegate(
     const base::string16& text,
     const AutocompleteMatch& match,
     const GURL& search_url)
-    : InfoBarDelegate(),
+    : infobars::InfoBarDelegate(),
       profile_(profile),
       text_(text),
       match_(match),
@@ -96,6 +96,7 @@ int AlternateNavInfoBarDelegate::GetIconID() const {
   return IDR_INFOBAR_ALT_NAV_URL;
 }
 
-InfoBarDelegate::Type AlternateNavInfoBarDelegate::GetInfoBarType() const {
+infobars::InfoBarDelegate::Type AlternateNavInfoBarDelegate::GetInfoBarType()
+    const {
   return PAGE_ACTION_TYPE;
 }

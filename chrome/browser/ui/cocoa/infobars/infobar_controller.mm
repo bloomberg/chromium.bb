@@ -162,7 +162,7 @@
   }
 }
 
-- (InfoBarDelegate*)delegate {
+- (infobars::InfoBarDelegate*)delegate {
   return infobar_->delegate();
 }
 

@@ -14,7 +14,7 @@
 const char InfoBarContainerView::kViewClassName[] = "InfoBarContainerView";
 
 InfoBarContainerView::InfoBarContainerView(Delegate* delegate)
-    : InfoBarContainer(delegate) {
+    : infobars::InfoBarContainer(delegate) {
   set_id(VIEW_ID_INFO_BAR_CONTAINER);
 }
 
@@ -52,12 +52,14 @@ void InfoBarContainerView::GetAccessibleState(ui::AXViewState* state) {
   state->name = l10n_util::GetStringUTF16(IDS_ACCNAME_INFOBAR_CONTAINER);
 }
 
-void InfoBarContainerView::PlatformSpecificAddInfoBar(InfoBar* infobar,
-                                                      size_t position) {
+void InfoBarContainerView::PlatformSpecificAddInfoBar(
+    infobars::InfoBar* infobar,
+    size_t position) {
   AddChildViewAt(static_cast<InfoBarView*>(infobar),
                  static_cast<int>(position));
 }
 
-void InfoBarContainerView::PlatformSpecificRemoveInfoBar(InfoBar* infobar) {
+void InfoBarContainerView::PlatformSpecificRemoveInfoBar(
+    infobars::InfoBar* infobar) {
   RemoveChildView(static_cast<InfoBarView*>(infobar));
 }

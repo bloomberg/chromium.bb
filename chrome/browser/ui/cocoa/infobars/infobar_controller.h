@@ -9,9 +9,12 @@
 
 @protocol InfoBarContainerControllerBase;
 class InfoBarCocoa;
-class InfoBarDelegate;
 class InfoBarService;
 @class InfoBarGradientView;
+
+namespace infobars {
+class InfoBarDelegate;
+}
 
 // A controller for an infobar in the browser window.  There is one
 // controller per infobar view.  The base InfoBarController is able to
@@ -39,7 +42,7 @@ class InfoBarService;
 
 @property(nonatomic, assign)
     id<InfoBarContainerControllerBase> containerController;
-@property(nonatomic, readonly) InfoBarDelegate* delegate;
+@property(nonatomic, readonly) infobars::InfoBarDelegate* delegate;
 @property(nonatomic, readonly) InfoBarCocoa* infobar;
 
 // Initializes a new InfoBarController and takes a WeakPtr to |infobar|.

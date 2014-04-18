@@ -9,7 +9,7 @@
 
 InfoBarContainerCocoa::InfoBarContainerCocoa(
     InfoBarContainerController* controller)
-    : InfoBarContainer(this),
+    : infobars::InfoBarContainer(this),
       controller_(controller) {
 }
 
@@ -17,13 +17,15 @@ InfoBarContainerCocoa::~InfoBarContainerCocoa() {
   RemoveAllInfoBarsForDestruction();
 }
 
-void InfoBarContainerCocoa::PlatformSpecificAddInfoBar(InfoBar* infobar,
-                                                       size_t position) {
+void InfoBarContainerCocoa::PlatformSpecificAddInfoBar(
+    infobars::InfoBar* infobar,
+    size_t position) {
   InfoBarCocoa* infobar_cocoa = static_cast<InfoBarCocoa*>(infobar);
   [controller_ addInfoBar:infobar_cocoa position:position];
 }
 
-void InfoBarContainerCocoa::PlatformSpecificRemoveInfoBar(InfoBar* infobar) {
+void InfoBarContainerCocoa::PlatformSpecificRemoveInfoBar(
+    infobars::InfoBar* infobar) {
   InfoBarCocoa* infobar_cocoa = static_cast<InfoBarCocoa*>(infobar);
   [controller_ removeInfoBar:infobar_cocoa];
 }

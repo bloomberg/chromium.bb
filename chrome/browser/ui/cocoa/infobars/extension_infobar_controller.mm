@@ -260,12 +260,12 @@ class InfobarBridge {
 @end
 
 // static
-scoped_ptr<InfoBar> ExtensionInfoBarDelegate::CreateInfoBar(
+scoped_ptr<infobars::InfoBar> ExtensionInfoBarDelegate::CreateInfoBar(
     scoped_ptr<ExtensionInfoBarDelegate> delegate) {
   scoped_ptr<InfoBarCocoa> infobar(
-      new InfoBarCocoa(delegate.PassAs<InfoBarDelegate>()));
+      new InfoBarCocoa(delegate.PassAs<infobars::InfoBarDelegate>()));
   base::scoped_nsobject<ExtensionInfoBarController> controller(
       [[ExtensionInfoBarController alloc] initWithInfoBar:infobar.get()]);
   infobar->set_controller(controller);
-  return infobar.PassAs<InfoBar>();
+  return infobar.PassAs<infobars::InfoBar>();
 }

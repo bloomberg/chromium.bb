@@ -12,9 +12,9 @@
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
-#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/common/chrome_version_info.h"
+#include "components/infobars/core/infobar.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
@@ -132,10 +132,10 @@ class HungPluginInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   // Creates a hung plugin infobar and delegate and adds the infobar to
   // |infobar_service|.  Returns the infobar if it was successfully added.
-  static InfoBar* Create(InfoBarService* infobar_service,
-                         HungPluginTabHelper* helper,
-                         int plugin_child_id,
-                         const base::string16& plugin_name);
+  static infobars::InfoBar* Create(InfoBarService* infobar_service,
+                                   HungPluginTabHelper* helper,
+                                   int plugin_child_id,
+                                   const base::string16& plugin_name);
 
  private:
   HungPluginInfoBarDelegate(HungPluginTabHelper* helper,
@@ -158,10 +158,11 @@ class HungPluginInfoBarDelegate : public ConfirmInfoBarDelegate {
 };
 
 // static
-InfoBar* HungPluginInfoBarDelegate::Create(InfoBarService* infobar_service,
-                                           HungPluginTabHelper* helper,
-                                           int plugin_child_id,
-                                           const base::string16& plugin_name) {
+infobars::InfoBar* HungPluginInfoBarDelegate::Create(
+    InfoBarService* infobar_service,
+    HungPluginTabHelper* helper,
+    int plugin_child_id,
+    const base::string16& plugin_name) {
   return infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
       scoped_ptr<ConfirmInfoBarDelegate>(new HungPluginInfoBarDelegate(
           helper, plugin_child_id, plugin_name))));
@@ -221,7 +222,7 @@ struct HungPluginTabHelper::PluginState {
   base::string16 name;
 
   // Possibly-null if we're not showing an infobar right now.
-  InfoBar* infobar;
+  infobars::InfoBar* infobar;
 
   // Time to delay before re-showing the infobar for a hung plugin. This is
   // increased each time the user cancels it.
@@ -325,7 +326,8 @@ void HungPluginTabHelper::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED, type);
-  InfoBar* infobar = content::Details<InfoBar::RemovedDetails>(details)->first;
+  infobars::InfoBar* infobar =
+      content::Details<infobars::InfoBar::RemovedDetails>(details)->first;
   for (PluginStateMap::iterator i = hung_plugins_.begin();
        i != hung_plugins_.end(); ++i) {
     PluginState* state = i->second.get();

@@ -16,7 +16,6 @@
 #include "chrome/browser/extensions/api/notifications/notifications_api.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
-#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/notifications/notification.h"
@@ -32,6 +31,7 @@
 #include "chrome/common/content_settings_pattern.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/infobars/core/infobar.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -281,8 +281,8 @@ int NotificationPermissionInfoBarDelegate::GetIconID() const {
   return IDR_INFOBAR_DESKTOP_NOTIFICATIONS;
 }
 
-InfoBarDelegate::Type
-    NotificationPermissionInfoBarDelegate::GetInfoBarType() const {
+infobars::InfoBarDelegate::Type
+NotificationPermissionInfoBarDelegate::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;
 }
 

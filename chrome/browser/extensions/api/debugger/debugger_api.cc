@@ -24,11 +24,11 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
-#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/infobars/core/infobar.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/devtools_http_handler.h"
@@ -72,13 +72,12 @@ namespace SendCommand = extensions::api::debugger::SendCommand;
 class ExtensionDevToolsClientHost : public DevToolsClientHost,
                                     public content::NotificationObserver {
  public:
-  ExtensionDevToolsClientHost(
-      Profile* profile,
-      DevToolsAgentHost* agent_host,
-      const std::string& extension_id,
-      const std::string& extension_name,
-      const Debuggee& debuggee,
-      InfoBar* infobar);
+  ExtensionDevToolsClientHost(Profile* profile,
+                              DevToolsAgentHost* agent_host,
+                              const std::string& extension_id,
+                              const std::string& extension_name,
+                              const Debuggee& debuggee,
+                              infobars::InfoBar* infobar);
 
   virtual ~ExtensionDevToolsClientHost();
 
@@ -113,7 +112,7 @@ class ExtensionDevToolsClientHost : public DevToolsClientHost,
   typedef std::map<int, scoped_refptr<DebuggerSendCommandFunction> >
       PendingRequests;
   PendingRequests pending_requests_;
-  InfoBar* infobar_;
+  infobars::InfoBar* infobar_;
   OnDetach::Reason detach_reason_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionDevToolsClientHost);
@@ -144,7 +143,8 @@ class ExtensionDevToolsInfoBarDelegate : public ConfirmInfoBarDelegate {
   // Creates an extension dev tools infobar and delegate and adds the infobar to
   // the InfoBarService associated with |rvh|.  Returns the infobar if it was
   // successfully added.
-  static InfoBar* Create(RenderViewHost* rvh, const std::string& client_name);
+  static infobars::InfoBar* Create(RenderViewHost* rvh,
+                                   const std::string& client_name);
 
   void set_client_host(ExtensionDevToolsClientHost* client_host) {
     client_host_ = client_host;
@@ -170,7 +170,7 @@ class ExtensionDevToolsInfoBarDelegate : public ConfirmInfoBarDelegate {
 };
 
 // static
-InfoBar* ExtensionDevToolsInfoBarDelegate::Create(
+infobars::InfoBar* ExtensionDevToolsInfoBarDelegate::Create(
     RenderViewHost* rvh,
     const std::string& client_name) {
   if (!rvh)
@@ -205,7 +205,8 @@ void ExtensionDevToolsInfoBarDelegate::InfoBarDismissed() {
     client_host_->MarkAsDismissed();
 }
 
-InfoBarDelegate::Type ExtensionDevToolsInfoBarDelegate::GetInfoBarType() const {
+infobars::InfoBarDelegate::Type
+ExtensionDevToolsInfoBarDelegate::GetInfoBarType() const {
   return WARNING_TYPE;
 }
 
@@ -295,7 +296,7 @@ ExtensionDevToolsClientHost::ExtensionDevToolsClientHost(
     const std::string& extension_id,
     const std::string& extension_name,
     const Debuggee& debuggee,
-    InfoBar* infobar)
+    infobars::InfoBar* infobar)
     : profile_(profile),
       agent_host_(agent_host),
       extension_id_(extension_id),
@@ -409,7 +410,8 @@ void ExtensionDevToolsClientHost::Observe(
     Close();
   } else {
     DCHECK_EQ(chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED, type);
-    if (content::Details<InfoBar::RemovedDetails>(details)->first == infobar_) {
+    if (content::Details<infobars::InfoBar::RemovedDetails>(details)->first ==
+        infobar_) {
       infobar_ = NULL;
       SendDetachedEvent();
       Close();
@@ -564,7 +566,7 @@ bool DebuggerAttachFunction::RunImpl() {
     return false;
   }
 
-  InfoBar* infobar = NULL;
+  infobars::InfoBar* infobar = NULL;
   if (!CommandLine::ForCurrentProcess()->
        HasSwitch(switches::kSilentDebuggerExtensionAPI)) {
     // Do not attach to the target if for any reason the infobar cannot be shown

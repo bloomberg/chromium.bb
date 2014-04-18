@@ -6,15 +6,19 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/insecure_content_infobar_delegate.h"
 #include "chrome/common/render_messages.h"
+#include "components/infobars/core/infobar.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(InfoBarService);
+
+using infobars::InfoBar;
+using infobars::InfoBarDelegate;
+using infobars::InfoBarManager;
 
 // static
 InfoBarDelegate::NavigationDetails

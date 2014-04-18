@@ -7,13 +7,15 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/infobars/infobar_delegate.h"
+#include "components/infobars/core/infobar_delegate.h"
 
+namespace infobars {
 class InfoBar;
+}
 
 // An interface derived from InfoBarDelegate implemented by objects wishing to
 // control a ConfirmInfoBar.
-class ConfirmInfoBarDelegate : public InfoBarDelegate {
+class ConfirmInfoBarDelegate : public infobars::InfoBarDelegate {
  public:
   enum InfoBarButton {
     BUTTON_NONE   = 0,
@@ -64,7 +66,7 @@ class ConfirmInfoBarDelegate : public InfoBarDelegate {
   ConfirmInfoBarDelegate();
 
   // Returns a confirm infobar that owns |delegate|.
-  static scoped_ptr<InfoBar> CreateInfoBar(
+  static scoped_ptr<infobars::InfoBar> CreateInfoBar(
       scoped_ptr<ConfirmInfoBarDelegate> delegate);
 
   virtual bool ShouldExpireInternal(
@@ -72,7 +74,8 @@ class ConfirmInfoBarDelegate : public InfoBarDelegate {
 
  private:
   // InfoBarDelegate:
-  virtual bool EqualsDelegate(InfoBarDelegate* delegate) const OVERRIDE;
+  virtual bool EqualsDelegate(
+      infobars::InfoBarDelegate* delegate) const OVERRIDE;
   virtual ConfirmInfoBarDelegate* AsConfirmInfoBarDelegate() OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(ConfirmInfoBarDelegate);

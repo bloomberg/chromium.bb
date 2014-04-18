@@ -9,7 +9,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
@@ -18,6 +17,7 @@
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/common/url_constants.h"
+#include "components/infobars/core/infobar.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
@@ -328,9 +328,8 @@ void PluginInstallerInfoBarDelegate::Create(
               name)))));
 }
 
-
 void PluginInstallerInfoBarDelegate::Replace(
-    InfoBar* infobar,
+    infobars::InfoBar* infobar,
     PluginInstaller* installer,
     scoped_ptr<PluginMetadata> plugin_metadata,
     bool new_install,

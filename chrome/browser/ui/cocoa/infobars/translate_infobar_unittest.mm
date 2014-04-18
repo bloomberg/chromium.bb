@@ -99,7 +99,7 @@ class TranslationInfoBarTest : public CocoaProfileTest {
     scoped_ptr<TranslateInfoBarDelegate> delegate(
         new MockTranslateInfoBarDelegate(web_contents_.get(), type, error,
                                          profile->GetPrefs()));
-    scoped_ptr<InfoBar> infobar(
+    scoped_ptr<infobars::InfoBar> infobar(
         TranslateInfoBarDelegate::CreateInfoBar(delegate.Pass()));
     if (infobar_)
       infobar_->CloseSoon();

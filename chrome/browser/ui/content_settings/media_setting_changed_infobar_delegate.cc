@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/content_settings/media_setting_changed_infobar_delegate.h"
 
 #include "base/logging.h"
-#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "components/infobars/core/infobar.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -31,8 +31,8 @@ int MediaSettingChangedInfoBarDelegate::GetIconID() const {
   return IDR_INFOBAR_MEDIA_STREAM_CAMERA;
 }
 
-InfoBarDelegate::Type
-    MediaSettingChangedInfoBarDelegate::GetInfoBarType() const {
+infobars::InfoBarDelegate::Type
+MediaSettingChangedInfoBarDelegate::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;
 }
 

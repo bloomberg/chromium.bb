@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/startup/obsolete_system_infobar_delegate.h"
 
 #include "base/cpu.h"
-#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/common/url_constants.h"
+#include "components/infobars/core/infobar.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

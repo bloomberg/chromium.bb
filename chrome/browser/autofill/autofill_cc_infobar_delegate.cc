@@ -5,11 +5,11 @@
 #include "chrome/browser/autofill/autofill_cc_infobar_delegate.h"
 
 #include "base/logging.h"
-#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_constants.h"
+#include "components/infobars/core/infobar.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -61,7 +61,8 @@ int AutofillCCInfoBarDelegate::GetIconID() const {
   return IDR_INFOBAR_AUTOFILL;
 }
 
-InfoBarDelegate::Type AutofillCCInfoBarDelegate::GetInfoBarType() const {
+infobars::InfoBarDelegate::Type AutofillCCInfoBarDelegate::GetInfoBarType()
+    const {
   return PAGE_ACTION_TYPE;
 }
 

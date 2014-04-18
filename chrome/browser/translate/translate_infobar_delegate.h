@@ -11,8 +11,8 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/infobars/infobar_delegate.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
+#include "components/infobars/core/infobar_delegate.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/browser/translate_ui_delegate.h"
 #include "components/translate/core/common/translate_constants.h"
@@ -20,7 +20,7 @@
 
 class PrefService;
 
-class TranslateInfoBarDelegate : public InfoBarDelegate {
+class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
  public:
   // The types of background color animations.
   enum BackgroundAnimationType {
@@ -183,13 +183,13 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   typedef std::pair<std::string, base::string16> LanguageNamePair;
 
   // Returns a translate infobar that owns |delegate|.
-  static scoped_ptr<InfoBar> CreateInfoBar(
+  static scoped_ptr<infobars::InfoBar> CreateInfoBar(
       scoped_ptr<TranslateInfoBarDelegate> delegate);
 
   // InfoBarDelegate:
   virtual void InfoBarDismissed() OVERRIDE;
   virtual int GetIconID() const OVERRIDE;
-  virtual InfoBarDelegate::Type GetInfoBarType() const OVERRIDE;
+  virtual infobars::InfoBarDelegate::Type GetInfoBarType() const OVERRIDE;
   virtual bool ShouldExpire(const NavigationDetails& details) const OVERRIDE;
   virtual TranslateInfoBarDelegate* AsTranslateInfoBarDelegate() OVERRIDE;
 

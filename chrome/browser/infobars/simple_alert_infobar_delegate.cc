@@ -4,8 +4,8 @@
 
 #include "chrome/browser/infobars/simple_alert_infobar_delegate.h"
 
-#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "components/infobars/core/infobar.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 // static

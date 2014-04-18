@@ -15,7 +15,6 @@
 #endif
 
 class GURL;
-class InfoBarDelegate;
 class PluginFinder;
 class PluginMetadata;
 
@@ -26,6 +25,10 @@ class PluginPlaceholderHost;
 
 namespace content {
 class WebContents;
+}
+
+namespace infobars {
+class InfoBarDelegate;
 }
 
 class PluginObserver : public content::WebContentsObserver,

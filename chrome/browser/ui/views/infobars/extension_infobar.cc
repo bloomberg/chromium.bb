@@ -30,10 +30,11 @@
 // ExtensionInfoBarDelegate ----------------------------------------------------
 
 // static
-scoped_ptr<InfoBar> ExtensionInfoBarDelegate::CreateInfoBar(
+scoped_ptr<infobars::InfoBar> ExtensionInfoBarDelegate::CreateInfoBar(
     scoped_ptr<ExtensionInfoBarDelegate> delegate) {
   Browser* browser = delegate->browser_;
-  return scoped_ptr<InfoBar>(new ExtensionInfoBar(delegate.Pass(), browser));
+  return scoped_ptr<infobars::InfoBar>(
+      new ExtensionInfoBar(delegate.Pass(), browser));
 }
 
 
@@ -84,7 +85,7 @@ class MenuImageSource: public gfx::CanvasImageSource {
 ExtensionInfoBar::ExtensionInfoBar(
     scoped_ptr<ExtensionInfoBarDelegate> delegate,
     Browser* browser)
-    : InfoBarView(delegate.PassAs<InfoBarDelegate>()),
+    : InfoBarView(delegate.PassAs<infobars::InfoBarDelegate>()),
       browser_(browser),
       infobar_icon_(NULL),
       icon_as_menu_(NULL),

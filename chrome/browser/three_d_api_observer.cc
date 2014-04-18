@@ -6,9 +6,9 @@
 
 #include "base/metrics/histogram.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
-#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "components/infobars/core/infobar.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -37,7 +37,8 @@ class ThreeDAPIInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual ~ThreeDAPIInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
-  virtual bool EqualsDelegate(InfoBarDelegate* delegate) const OVERRIDE;
+  virtual bool EqualsDelegate(
+      infobars::InfoBarDelegate* delegate) const OVERRIDE;
   virtual int GetIconID() const OVERRIDE;
   virtual base::string16 GetMessageText() const OVERRIDE;
   virtual base::string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
@@ -84,7 +85,8 @@ ThreeDAPIInfoBarDelegate::~ThreeDAPIInfoBarDelegate() {
   }
 }
 
-bool ThreeDAPIInfoBarDelegate::EqualsDelegate(InfoBarDelegate* delegate) const {
+bool ThreeDAPIInfoBarDelegate::EqualsDelegate(
+    infobars::InfoBarDelegate* delegate) const {
   // For the time being, if a given web page is actually using both
   // WebGL and Pepper 3D and both APIs are blocked, just leave the
   // first infobar up. If the user selects "try again", both APIs will

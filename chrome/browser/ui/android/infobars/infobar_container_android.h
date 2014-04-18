@@ -12,7 +12,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/infobars/infobar_container.h"
+#include "components/infobars/core/infobar_container.h"
 
 class InfoBarAndroid;
 
@@ -20,7 +20,7 @@ namespace content {
 class WebContents;
 }
 
-class InfoBarContainerAndroid : public InfoBarContainer {
+class InfoBarContainerAndroid : public infobars::InfoBarContainer {
  public:
   InfoBarContainerAndroid(JNIEnv* env,
                           jobject infobar_container,
@@ -39,11 +39,13 @@ class InfoBarContainerAndroid : public InfoBarContainer {
   virtual ~InfoBarContainerAndroid() OVERRIDE;
 
   // InfobarContainer:
-  virtual void PlatformSpecificAddInfoBar(InfoBar* infobar,
+  virtual void PlatformSpecificAddInfoBar(infobars::InfoBar* infobar,
                                           size_t position) OVERRIDE;
-  virtual void PlatformSpecificRemoveInfoBar(InfoBar* infobar) OVERRIDE;
-  virtual void PlatformSpecificReplaceInfoBar(InfoBar* old_infobar,
-                                              InfoBar* new_infobar)  OVERRIDE;
+  virtual void PlatformSpecificRemoveInfoBar(infobars::InfoBar* infobar)
+      OVERRIDE;
+  virtual void PlatformSpecificReplaceInfoBar(
+      infobars::InfoBar* old_infobar,
+      infobars::InfoBar* new_infobar) OVERRIDE;
 
   // Create the Java equivalent of |android_bar| and add it to the java
   // container.

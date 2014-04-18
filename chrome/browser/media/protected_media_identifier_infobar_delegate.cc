@@ -5,8 +5,8 @@
 #include "chrome/browser/media/protected_media_identifier_infobar_delegate.h"
 
 #include "chrome/browser/content_settings/permission_queue_controller.h"
-#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "components/infobars/core/infobar.h"
 #include "content/public/browser/navigation_entry.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -18,7 +18,7 @@
 #endif
 
 // static
-InfoBar* ProtectedMediaIdentifierInfoBarDelegate::Create(
+infobars::InfoBar* ProtectedMediaIdentifierInfoBarDelegate::Create(
     InfoBarService* infobar_service,
     PermissionQueueController* controller,
     const PermissionRequestID& id,
@@ -77,8 +77,8 @@ int ProtectedMediaIdentifierInfoBarDelegate::GetIconID() const {
   return IDR_INFOBAR_PROTECTED_MEDIA_IDENTIFIER;
 }
 
-InfoBarDelegate::Type
-    ProtectedMediaIdentifierInfoBarDelegate::GetInfoBarType() const {
+infobars::InfoBarDelegate::Type
+ProtectedMediaIdentifierInfoBarDelegate::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;
 }
 

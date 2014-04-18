@@ -9,13 +9,13 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/infobars/infobar.h"
-#include "chrome/browser/infobars/infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/managed_mode/managed_user_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "components/infobars/core/infobar.h"
+#include "components/infobars/core/infobar_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_controller.h"
@@ -68,7 +68,7 @@ ManagedModeInterstitial::ManagedModeInterstitial(
     }
     details.type = content::NAVIGATION_TYPE_NEW_PAGE;
     for (int i = service->infobar_count() - 1; i >= 0; --i) {
-      InfoBar* infobar = service->infobar_at(i);
+      infobars::InfoBar* infobar = service->infobar_at(i);
       if (infobar->delegate()->ShouldExpire(
               InfoBarService::NavigationDetailsFromLoadCommittedDetails(
                   details)))

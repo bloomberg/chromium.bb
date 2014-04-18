@@ -8,9 +8,9 @@
 #include "base/android/jni_string.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/android/resource_mapper.h"
-#include "chrome/browser/infobars/infobar.h"
-#include "chrome/browser/infobars/infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "components/infobars/core/infobar.h"
+#include "components/infobars/core/infobar_delegate.h"
 #include "jni/InfoBar_jni.h"
 
 
@@ -18,18 +18,18 @@
 
 // Static constants defined in infobar.h.  We don't really use them for anything
 // but they are required.  The values are copied from the GTK implementation.
-const int InfoBar::kSeparatorLineHeight = 1;
-const int InfoBar::kDefaultArrowTargetHeight = 9;
-const int InfoBar::kMaximumArrowTargetHeight = 24;
-const int InfoBar::kDefaultArrowTargetHalfWidth = kDefaultArrowTargetHeight;
-const int InfoBar::kMaximumArrowTargetHalfWidth = 14;
-const int InfoBar::kDefaultBarTargetHeight = 36;
-
+const int infobars::InfoBar::kSeparatorLineHeight = 1;
+const int infobars::InfoBar::kDefaultArrowTargetHeight = 9;
+const int infobars::InfoBar::kMaximumArrowTargetHeight = 24;
+const int infobars::InfoBar::kDefaultArrowTargetHalfWidth =
+    kDefaultArrowTargetHeight;
+const int infobars::InfoBar::kMaximumArrowTargetHalfWidth = 14;
+const int infobars::InfoBar::kDefaultBarTargetHeight = 36;
 
 // InfoBarAndroid -------------------------------------------------------------
 
-InfoBarAndroid::InfoBarAndroid(scoped_ptr<InfoBarDelegate> delegate)
-    : InfoBar(delegate.Pass()) {
+InfoBarAndroid::InfoBarAndroid(scoped_ptr<infobars::InfoBarDelegate> delegate)
+    : infobars::InfoBar(delegate.Pass()) {
 }
 
 InfoBarAndroid::~InfoBarAndroid() {

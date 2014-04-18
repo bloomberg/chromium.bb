@@ -4,17 +4,18 @@
 
 #include "chrome/browser/ui/views/infobars/infobar_background.h"
 
-#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
+#include "components/infobars/core/infobar.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/views/view.h"
 
-InfoBarBackground::InfoBarBackground(InfoBarDelegate::Type infobar_type)
+InfoBarBackground::InfoBarBackground(
+    infobars::InfoBarDelegate::Type infobar_type)
     : separator_color_(SK_ColorBLACK),
-      top_color_(InfoBar::GetTopColor(infobar_type)),
-      bottom_color_(InfoBar::GetBottomColor(infobar_type)) {
+      top_color_(infobars::InfoBar::GetTopColor(infobar_type)),
+      bottom_color_(infobars::InfoBar::GetBottomColor(infobar_type)) {
   SetNativeControlColor(
       color_utils::AlphaBlend(top_color_, bottom_color_, 128));
 }
@@ -31,7 +32,7 @@ void InfoBarBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
       SkGradientShader::CreateLinear(gradient_points, gradient_colors, NULL, 2,
                                      SkShader::kClamp_TileMode));
   SkPaint paint;
-  paint.setStrokeWidth(SkIntToScalar(InfoBar::kSeparatorLineHeight));
+  paint.setStrokeWidth(SkIntToScalar(infobars::InfoBar::kSeparatorLineHeight));
   paint.setStyle(SkPaint::kFill_Style);
   paint.setStrokeCap(SkPaint::kRound_Cap);
   paint.setShader(gradient_shader.get());
@@ -52,7 +53,8 @@ void InfoBarBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
   paint.setAntiAlias(false);
 
   // Now draw the separator at the bottom.
-  canvas->FillRect(gfx::Rect(0, view->height() - InfoBar::kSeparatorLineHeight,
-                             view->width(), InfoBar::kSeparatorLineHeight),
-                   separator_color_);
+  canvas->FillRect(
+      gfx::Rect(0, view->height() - infobars::InfoBar::kSeparatorLineHeight,
+                view->width(), infobars::InfoBar::kSeparatorLineHeight),
+      separator_color_);
 }

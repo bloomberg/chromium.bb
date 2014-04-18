@@ -24,7 +24,7 @@ class ExtensionViewHost;
 
 // The InfobarDelegate for creating and managing state for the ExtensionInfobar
 // plus monitor when the extension goes away.
-class ExtensionInfoBarDelegate : public InfoBarDelegate,
+class ExtensionInfoBarDelegate : public infobars::InfoBarDelegate,
                                  public content::NotificationObserver {
  public:
   virtual ~ExtensionInfoBarDelegate();
@@ -56,11 +56,12 @@ class ExtensionInfoBarDelegate : public InfoBarDelegate,
                            int height);
 
   // Returns an extension infobar that owns |delegate|.
-  static scoped_ptr<InfoBar> CreateInfoBar(
+  static scoped_ptr<infobars::InfoBar> CreateInfoBar(
       scoped_ptr<ExtensionInfoBarDelegate> delegate);
 
   // InfoBarDelegate:
-  virtual bool EqualsDelegate(InfoBarDelegate* delegate) const OVERRIDE;
+  virtual bool EqualsDelegate(
+      infobars::InfoBarDelegate* delegate) const OVERRIDE;
   virtual void InfoBarDismissed() OVERRIDE;
   virtual Type GetInfoBarType() const OVERRIDE;
   virtual ExtensionInfoBarDelegate* AsExtensionInfoBarDelegate() OVERRIDE;

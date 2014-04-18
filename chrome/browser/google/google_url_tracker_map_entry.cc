@@ -7,7 +7,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/google/google_url_tracker_infobar_delegate.h"
-#include "chrome/browser/infobars/infobar.h"
+#include "components/infobars/core/infobar.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 
@@ -32,8 +32,8 @@ void GoogleURLTrackerMapEntry::Observe(
   DCHECK(infobar_delegate_);
   DCHECK_EQ(chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED, type);
   DCHECK_EQ(infobar_service_, content::Source<InfoBarService>(source).ptr());
-  if (content::Details<InfoBar::RemovedDetails>(details)->first->delegate() ==
-      infobar_delegate_) {
+  if (content::Details<infobars::InfoBar::RemovedDetails>(
+          details)->first->delegate() == infobar_delegate_) {
     google_url_tracker_->DeleteMapEntryForService(infobar_service_);
     // WARNING: At this point |this| has been deleted!
   }

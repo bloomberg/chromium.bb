@@ -6,9 +6,9 @@
 
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
+#include "components/infobars/core/infobar.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/navigation_entry.h"
@@ -103,7 +103,7 @@ SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
 // chrome/browser/ui/android/infobars/save_password_infobar.cc
 
 // static
-scoped_ptr<InfoBar> SavePasswordInfoBarDelegate::CreateInfoBar(
+scoped_ptr<infobars::InfoBar> SavePasswordInfoBarDelegate::CreateInfoBar(
     scoped_ptr<SavePasswordInfoBarDelegate> delegate) {
   return ConfirmInfoBarDelegate::CreateInfoBar(
       delegate.PassAs<ConfirmInfoBarDelegate>());
@@ -112,14 +112,16 @@ scoped_ptr<InfoBar> SavePasswordInfoBarDelegate::CreateInfoBar(
 
 bool SavePasswordInfoBarDelegate::ShouldExpire(
     const NavigationDetails& details) const {
-  return !details.is_redirect && InfoBarDelegate::ShouldExpire(details);
+  return !details.is_redirect &&
+         infobars::InfoBarDelegate::ShouldExpire(details);
 }
 
 int SavePasswordInfoBarDelegate::GetIconID() const {
   return IDR_INFOBAR_SAVE_PASSWORD;
 }
 
-InfoBarDelegate::Type SavePasswordInfoBarDelegate::GetInfoBarType() const {
+infobars::InfoBarDelegate::Type SavePasswordInfoBarDelegate::GetInfoBarType()
+    const {
   return PAGE_ACTION_TYPE;
 }
 
@@ -152,7 +154,7 @@ void SavePasswordInfoBarDelegate::InfoBarDismissed() {
   infobar_response_ = password_manager::metrics_util::INFOBAR_DISMISSED;
 }
 
-InfoBarDelegate::InfoBarAutomationType
-    SavePasswordInfoBarDelegate::GetInfoBarAutomationType() const {
+infobars::InfoBarDelegate::InfoBarAutomationType
+SavePasswordInfoBarDelegate::GetInfoBarAutomationType() const {
   return PASSWORD_INFOBAR;
 }

@@ -16,13 +16,13 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
-#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/ssl_add_cert_handler.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/infobars/core/infobar.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -46,10 +46,10 @@ class SSLCertResultInfoBarDelegate : public ConfirmInfoBarDelegate {
   // NULL, adds the infobar to |infobar_service|; otherwise, replaces
   // |previous_infobar|.  Returns the new infobar if it was successfully added.
   // |cert| is valid iff cert addition was successful.
-  static InfoBar* Create(InfoBarService* infobar_service,
-                         InfoBar* previous_infobar,
-                         const base::string16& message,
-                         net::X509Certificate* cert);
+  static infobars::InfoBar* Create(InfoBarService* infobar_service,
+                                   infobars::InfoBar* previous_infobar,
+                                   const base::string16& message,
+                                   net::X509Certificate* cert);
 
  private:
   SSLCertResultInfoBarDelegate(const base::string16& message,
@@ -71,12 +71,13 @@ class SSLCertResultInfoBarDelegate : public ConfirmInfoBarDelegate {
 };
 
 // static
-InfoBar* SSLCertResultInfoBarDelegate::Create(InfoBarService* infobar_service,
-                                              InfoBar* previous_infobar,
-                                              const base::string16& message,
-                                              net::X509Certificate* cert) {
-  scoped_ptr<InfoBar> infobar(ConfirmInfoBarDelegate::CreateInfoBar(
-      scoped_ptr<ConfirmInfoBarDelegate>(
+infobars::InfoBar* SSLCertResultInfoBarDelegate::Create(
+    InfoBarService* infobar_service,
+    infobars::InfoBar* previous_infobar,
+    const base::string16& message,
+    net::X509Certificate* cert) {
+  scoped_ptr<infobars::InfoBar> infobar(
+      ConfirmInfoBarDelegate::CreateInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
           new SSLCertResultInfoBarDelegate(message, cert))));
   return previous_infobar ?
       infobar_service->ReplaceInfoBar(previous_infobar, infobar.Pass()) :
@@ -99,7 +100,8 @@ int SSLCertResultInfoBarDelegate::GetIconID() const {
   return IDR_INFOBAR_SAVE_PASSWORD;
 }
 
-InfoBarDelegate::Type SSLCertResultInfoBarDelegate::GetInfoBarType() const {
+infobars::InfoBarDelegate::Type SSLCertResultInfoBarDelegate::GetInfoBarType()
+    const {
   return cert_.get() ? PAGE_ACTION_TYPE : WARNING_TYPE;
 }
 
@@ -147,7 +149,7 @@ class SSLTabHelper::SSLAddCertData
                        const content::NotificationDetails& details) OVERRIDE;
 
   InfoBarService* infobar_service_;
-  InfoBar* infobar_;
+  infobars::InfoBar* infobar_;
   content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLAddCertData);
@@ -180,9 +182,12 @@ void SSLTabHelper::SSLAddCertData::Observe(
          type == chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REPLACED);
   if (infobar_ ==
       ((type == chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED) ?
-          content::Details<InfoBar::RemovedDetails>(details)->first :
-          content::Details<InfoBar::ReplacedDetails>(details)->first))
+            content::Details<infobars::InfoBar::RemovedDetails>(
+                details)->first :
+            content::Details<infobars::InfoBar::ReplacedDetails>(
+                details)->first)) {
     infobar_ = NULL;
+  }
 }
 
 

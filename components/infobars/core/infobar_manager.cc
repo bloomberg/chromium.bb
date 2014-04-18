@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/infobars/infobar_manager.h"
+#include "components/infobars/core/infobar_manager.h"
 
 #include "base/command_line.h"
-#include "chrome/browser/infobars/infobar.h"
-#include "chrome/common/chrome_switches.h"
+#include "components/infobars/core/infobar.h"
+#include "components/infobars/core/infobars_switches.h"
+
+namespace infobars {
 
 InfoBar* InfoBarManager::AddInfoBar(scoped_ptr<InfoBar> infobar) {
   DCHECK(infobar);
@@ -135,3 +137,5 @@ void InfoBarManager::RemoveInfoBarInternal(InfoBar* infobar, bool animate) {
 
   infobar->CloseSoon();
 }
+
+}  // namespace infobars

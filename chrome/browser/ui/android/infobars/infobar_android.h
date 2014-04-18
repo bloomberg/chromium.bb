@@ -11,12 +11,15 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/infobars/infobar.h"
+#include "components/infobars/core/infobar.h"
 
-class InfoBarDelegate;
 class InfoBarService;
 
-class InfoBarAndroid : public InfoBar {
+namespace infobars {
+class InfoBarDelegate;
+}
+
+class InfoBarAndroid : public infobars::InfoBar {
  public:
 
   // Make sure this set of values is aligned with the java constants defined in
@@ -31,7 +34,7 @@ class InfoBarAndroid : public InfoBar {
     ACTION_TRANSLATE_SHOW_ORIGINAL = 4,
   };
 
-  explicit InfoBarAndroid(scoped_ptr<InfoBarDelegate> delegate);
+  explicit InfoBarAndroid(scoped_ptr<infobars::InfoBarDelegate> delegate);
   virtual ~InfoBarAndroid();
 
   // InfoBar:

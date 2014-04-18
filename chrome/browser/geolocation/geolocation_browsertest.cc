@@ -13,7 +13,6 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
-#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -23,6 +22,7 @@
 #include "chrome/common/content_settings_pattern.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/infobars/core/infobar.h"
 #include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_details.h"
@@ -138,12 +138,12 @@ class GeolocationNotificationObserver : public content::NotificationObserver {
       content::RenderFrameHost* render_frame_host);
 
   bool has_infobar() const { return !!infobar_; }
-  InfoBar* infobar() { return infobar_; }
+  infobars::InfoBar* infobar() { return infobar_; }
 
  private:
   content::NotificationRegistrar registrar_;
   bool wait_for_infobar_;
-  InfoBar* infobar_;
+  infobars::InfoBar* infobar_;
   bool navigation_started_;
   bool navigation_completed_;
   std::string javascript_response_;
@@ -180,7 +180,7 @@ void GeolocationNotificationObserver::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED) {
-    infobar_ = content::Details<InfoBar::AddedDetails>(details).ptr();
+    infobar_ = content::Details<infobars::InfoBar::AddedDetails>(details).ptr();
     ASSERT_FALSE(infobar_->delegate()->GetIcon().IsEmpty());
     ASSERT_TRUE(infobar_->delegate()->AsConfirmInfoBarDelegate());
   } else if (type == content::NOTIFICATION_DOM_OPERATION_RESPONSE) {
@@ -294,7 +294,7 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
   void NotifyGeoposition(double latitude, double longitude);
 
  private:
-  InfoBar* infobar_;
+  infobars::InfoBar* infobar_;
   Browser* current_browser_;
   // path element of a URL referencing the html content for this test.
   std::string html_for_tests_;

@@ -8,9 +8,9 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/common/url_constants.h"
+#include "components/infobars/core/infobar.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -51,11 +51,11 @@ bool MediaStreamInfoBarDelegate::Create(
     return false;
   }
 
-  scoped_ptr<InfoBar> infobar(ConfirmInfoBarDelegate::CreateInfoBar(
-      scoped_ptr<ConfirmInfoBarDelegate>(
+  scoped_ptr<infobars::InfoBar> infobar(
+      ConfirmInfoBarDelegate::CreateInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
           new MediaStreamInfoBarDelegate(controller.Pass()))));
   for (size_t i = 0; i < infobar_service->infobar_count(); ++i) {
-    InfoBar* old_infobar = infobar_service->infobar_at(i);
+    infobars::InfoBar* old_infobar = infobar_service->infobar_at(i);
     if (old_infobar->delegate()->AsMediaStreamInfoBarDelegate()) {
       infobar_service->ReplaceInfoBar(old_infobar, infobar.Pass());
       return true;
@@ -86,7 +86,8 @@ int MediaStreamInfoBarDelegate::GetIconID() const {
       IDR_INFOBAR_MEDIA_STREAM_CAMERA : IDR_INFOBAR_MEDIA_STREAM_MIC;
 }
 
-InfoBarDelegate::Type MediaStreamInfoBarDelegate::GetInfoBarType() const {
+infobars::InfoBarDelegate::Type MediaStreamInfoBarDelegate::GetInfoBarType()
+    const {
   return PAGE_ACTION_TYPE;
 }
 

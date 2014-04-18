@@ -21,12 +21,15 @@
 #include "url/gurl.h"
 
 class GoogleURLTrackerNavigationHelper;
-class InfoBar;
 class PrefService;
 class Profile;
 
 namespace content {
 class NavigationController;
+}
+
+namespace infobars {
+class InfoBar;
 }
 
 // This object is responsible for checking the Google URL once per network
@@ -179,7 +182,8 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   // Creates an infobar and adds it to the provided InfoBarService.  Returns the
   // infobar on success or NULL on failure.  The caller does not own the
   // returned object, the InfoBarService does.
-  base::Callback<InfoBar*(InfoBarService*, GoogleURLTracker*, const GURL&)>
+  base::Callback<
+      infobars::InfoBar*(InfoBarService*, GoogleURLTracker*, const GURL&)>
       infobar_creator_;
 
   GURL google_url_;

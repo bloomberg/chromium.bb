@@ -1,17 +1,18 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "build/build_config.h"
-
-#include "chrome/browser/infobars/infobar_container.h"
+#include "components/infobars/core/infobar_container.h"
 
 #include <algorithm>
 
 #include "base/logging.h"
-#include "chrome/browser/infobars/infobar.h"
-#include "chrome/browser/infobars/infobar_delegate.h"
+#include "build/build_config.h"
+#include "components/infobars/core/infobar.h"
+#include "components/infobars/core/infobar_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
+
+namespace infobars {
 
 InfoBarContainer::Delegate::~Delegate() {
 }
@@ -173,3 +174,5 @@ int InfoBarContainer::ArrowTargetHeightForInfoBar(size_t infobar_index) const {
       (InfoBar::kDefaultArrowTargetHeight - top_arrow_target_height_) *
           first_infobar_animation.GetCurrentValue());
 }
+
+}  // namespace infobars

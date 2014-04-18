@@ -9,13 +9,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "components/infobars/core/infobar.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/common/extension.h"
 #include "grit/generated_resources.h"
@@ -48,15 +48,16 @@ void ThemeInstalledInfoBarDelegate::Create(
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
   ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile);
-  scoped_ptr<InfoBar> new_infobar(ConfirmInfoBarDelegate::CreateInfoBar(
-      scoped_ptr<ConfirmInfoBarDelegate>(new ThemeInstalledInfoBarDelegate(
-          profile->GetExtensionService(), theme_service, new_theme,
-          previous_theme_id, previous_using_native_theme))));
+  scoped_ptr<infobars::InfoBar> new_infobar(
+      ConfirmInfoBarDelegate::CreateInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
+          new ThemeInstalledInfoBarDelegate(
+              profile->GetExtensionService(), theme_service, new_theme,
+              previous_theme_id, previous_using_native_theme))));
 
   // If there's a previous theme infobar, just replace that instead of adding a
   // new one.
   for (size_t i = 0; i < infobar_service->infobar_count(); ++i) {
-    InfoBar* old_infobar = infobar_service->infobar_at(i);
+    infobars::InfoBar* old_infobar = infobar_service->infobar_at(i);
     ThemeInstalledInfoBarDelegate* theme_infobar =
         old_infobar->delegate()->AsThemePreviewInfobarDelegate();
     if (theme_infobar) {
@@ -106,7 +107,8 @@ int ThemeInstalledInfoBarDelegate::GetIconID() const {
   return IDR_INFOBAR_THEME;
 }
 
-InfoBarDelegate::Type ThemeInstalledInfoBarDelegate::GetInfoBarType() const {
+infobars::InfoBarDelegate::Type ThemeInstalledInfoBarDelegate::GetInfoBarType()
+    const {
   return PAGE_ACTION_TYPE;
 }
 

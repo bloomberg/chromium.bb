@@ -9,7 +9,9 @@
 
 #include "chrome/test/base/in_process_browser_test.h"
 
+namespace infobars {
 class InfoBar;
+}
 
 namespace content {
 class WebContents;
@@ -104,9 +106,10 @@ class WebRtcTestBase : public InProcessBrowserTest {
 
  private:
   void CloseInfoBarInTab(content::WebContents* tab_contents,
-                         InfoBar* infobar) const;
-  InfoBar* GetUserMediaAndWaitForInfoBar(content::WebContents* tab_contents,
-                                         const std::string& constraints) const;
+                         infobars::InfoBar* infobar) const;
+  infobars::InfoBar* GetUserMediaAndWaitForInfoBar(
+      content::WebContents* tab_contents,
+      const std::string& constraints) const;
 
   bool detect_errors_in_javascript_;
 

@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/elapsed_timer.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
-#include "chrome/browser/infobars/infobar_delegate.h"
+#include "components/infobars/core/infobar_delegate.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 
@@ -49,7 +49,7 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
       const std::string& uma_histogram_suffix);
 
   // Returns a save password infobar that owns |delegate|.
-  static scoped_ptr<InfoBar> CreateInfoBar(
+  static scoped_ptr<infobars::InfoBar> CreateInfoBar(
       scoped_ptr<SavePasswordInfoBarDelegate> delegate);
 
   // InfoBarDelegate

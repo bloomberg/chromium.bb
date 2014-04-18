@@ -21,11 +21,11 @@ class MidiPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   // Creates a MIDI permission infobar and delegate and adds the infobar to
   // |infobar_service|.  Returns the infobar if it was successfully added.
-  static InfoBar* Create(InfoBarService* infobar_service,
-                         PermissionQueueController* controller,
-                         const PermissionRequestID& id,
-                         const GURL& requesting_frame,
-                         const std::string& display_languages);
+  static infobars::InfoBar* Create(InfoBarService* infobar_service,
+                                   PermissionQueueController* controller,
+                                   const PermissionRequestID& id,
+                                   const GURL& requesting_frame,
+                                   const std::string& display_languages);
 
  private:
   MidiPermissionInfoBarDelegate(PermissionQueueController* controller,

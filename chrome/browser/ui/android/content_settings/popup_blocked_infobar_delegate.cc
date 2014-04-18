@@ -6,12 +6,12 @@
 
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
+#include "components/infobars/core/infobar.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -23,10 +23,9 @@ void PopupBlockedInfoBarDelegate::Create(content::WebContents* web_contents,
   const GURL& url = web_contents->GetURL();
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  scoped_ptr<InfoBar> infobar(ConfirmInfoBarDelegate::CreateInfoBar(
-      scoped_ptr<ConfirmInfoBarDelegate>(
-          new PopupBlockedInfoBarDelegate(
-                num_popups, url, profile->GetHostContentSettingsMap()))));
+  scoped_ptr<infobars::InfoBar> infobar(ConfirmInfoBarDelegate::CreateInfoBar(
+      scoped_ptr<ConfirmInfoBarDelegate>(new PopupBlockedInfoBarDelegate(
+          num_popups, url, profile->GetHostContentSettingsMap()))));
 
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
@@ -35,7 +34,7 @@ void PopupBlockedInfoBarDelegate::Create(content::WebContents* web_contents,
   // will be shown once, then hide then be shown again.
   // This will be fixed once we have an in place replace infobar mechanism.
   for (size_t i = 0; i < infobar_service->infobar_count(); ++i) {
-    InfoBar* existing_infobar = infobar_service->infobar_at(i);
+    infobars::InfoBar* existing_infobar = infobar_service->infobar_at(i);
     if (existing_infobar->delegate()->AsPopupBlockedInfoBarDelegate()) {
       infobar_service->ReplaceInfoBar(existing_infobar, infobar.Pass());
       return;

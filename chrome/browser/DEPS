@@ -20,6 +20,7 @@ include_rules = [
   "+components/dom_distiller",
   "+components/domain_reliability",
   "+components/favicon_base",
+  "+components/infobars",
   "+components/keyed_service",
   "+components/language_usage_metrics",
   "+components/nacl/browser",

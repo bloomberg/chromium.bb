@@ -28,10 +28,10 @@ using InfoBarUtilities::CreateLabel;
 using InfoBarUtilities::AddMenuItem;
 
 // static
-scoped_ptr<InfoBar> TranslateInfoBarDelegate::CreateInfoBar(
+scoped_ptr<infobars::InfoBar> TranslateInfoBarDelegate::CreateInfoBar(
     scoped_ptr<TranslateInfoBarDelegate> delegate) {
   scoped_ptr<InfoBarCocoa> infobar(
-      new InfoBarCocoa(delegate.PassAs<InfoBarDelegate>()));
+      new InfoBarCocoa(delegate.PassAs<infobars::InfoBarDelegate>()));
   base::scoped_nsobject<TranslateInfoBarControllerBase> infobar_controller;
   switch (infobar->delegate()->AsTranslateInfoBarDelegate()->translate_step()) {
     case translate::TRANSLATE_STEP_BEFORE_TRANSLATE:
@@ -51,7 +51,7 @@ scoped_ptr<InfoBar> TranslateInfoBarDelegate::CreateInfoBar(
       NOTREACHED();
   }
   infobar->set_controller(infobar_controller);
-  return infobar.PassAs<InfoBar>();
+  return infobar.PassAs<infobars::InfoBar>();
 }
 
 @implementation TranslateInfoBarControllerBase (FrameChangeObserver)
