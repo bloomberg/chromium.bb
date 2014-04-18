@@ -202,16 +202,14 @@ bool PwgEncoder::EncodePage(const BitmapImage& image,
   switch (image.colorspace()) {
     case BitmapImage::RGBA:
       return EncodePageWithColorspace<RGBA8>(image, pwg_header_info, output);
-      break;
+
     case BitmapImage::BGRA:
       return EncodePageWithColorspace<BGRA8>(image, pwg_header_info, output);
-      break;
+
     default:
       LOG(ERROR) << "Unsupported colorspace.";
       return false;
   }
-
-  EncodePageHeader(image, pwg_header_info, output);
 }
 
 template <typename InputStruct>
