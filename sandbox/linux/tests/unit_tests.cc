@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <sys/resource.h>
 #include <sys/time.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "base/file_util.h"
@@ -109,17 +110,34 @@ void UnitTests::RunTestInProcess(UnitTests::Test test,
   // We need to fork(), so we can't be multi-threaded, as threads could hold
   // locks.
   int num_threads = CountThreads();
-#if defined(THREAD_SANITIZER)
+#if !defined(THREAD_SANITIZER)
+  const int kNumExpectedThreads = 1;
+#else
   // Under TSAN, there is a special helper thread. It should be completely
   // invisible to our testing, so we ignore it. It should be ok to fork()
   // with this thread. It's currently buggy, but it's the best we can do until
   // there is a way to delay the start of the thread
   // (https://code.google.com/p/thread-sanitizer/issues/detail?id=19).
-  num_threads--;
+  const int kNumExpectedThreads = 2;
 #endif
-  ASSERT_EQ(1, num_threads) << "Running sandbox tests with multiple threads "
-                            << "is not supported and will make the tests "
-                            << "flaky.\n";
+
+  // The kernel is at liberty to wake a thread id futex before updating /proc.
+  // If another test running in the same process has stopped a thread, it may
+  // appear as still running in /proc.
+  // We poll /proc, with an exponential back-off. At most, we'll sleep around
+  // 2^iterations nanoseconds in nanosleep().
+  for (unsigned int iteration = 0; iteration < 30; iteration++) {
+    struct timespec ts = {0, 1L << iteration /* nanoseconds */};
+    PCHECK(0 == HANDLE_EINTR(nanosleep(&ts, &ts)));
+    num_threads = CountThreads();
+    if (kNumExpectedThreads == num_threads)
+      break;
+  }
+
+  ASSERT_EQ(kNumExpectedThreads, num_threads)
+      << "Running sandbox tests with multiple threads "
+      << "is not supported and will make the tests "
+      << "flaky.\n";
   int fds[2];
   ASSERT_EQ(0, pipe(fds));
   // Check that our pipe is not on one of the standard file descriptor.
