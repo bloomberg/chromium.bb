@@ -3204,10 +3204,8 @@ AXObjectCache* FrameView::axObjectCache() const
 
 void FrameView::setCursor(const Cursor& cursor)
 {
-    if (!shouldSetCursor())
-        return;
     Page* page = frame().page();
-    if (!page)
+    if (!page || !page->settings().deviceSupportsMouse())
         return;
     page->chrome().setCursor(cursor);
 }
