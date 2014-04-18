@@ -223,6 +223,7 @@ public:
     PassRefPtr<Attr> getAttributeNode(const AtomicString& name);
     PassRefPtr<Attr> getAttributeNodeNS(const AtomicString& namespaceURI, const AtomicString& localName);
     PassRefPtr<Attr> setAttributeNode(Attr*, ExceptionState&);
+    PassRefPtr<Attr> setAttributeNodeNS(Attr*, ExceptionState&);
     PassRefPtr<Attr> removeAttributeNode(Attr*, ExceptionState&);
 
     PassRefPtr<Attr> attrIfExists(const QualifiedName&);

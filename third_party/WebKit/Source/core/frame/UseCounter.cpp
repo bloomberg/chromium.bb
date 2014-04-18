@@ -707,6 +707,15 @@ String UseCounter::deprecationMessage(Feature feature)
     case HTMLHtmlElementManifest:
         return "'HTMLHtmlElement.manifest' is deprecated. The manifest attribute only has an effect during the early stages of document load.";
 
+    case DocumentCreateAttributeNS:
+        return "'Document.createAttributeNS' is deprecated and has been removed from DOM4 (http://w3.org/tr/dom).";
+
+    case AttributeOwnerElement:
+        return "'Attr.ownerElement' is deprecated and has been removed from DOM4 (http://w3.org/tr/dom).";
+
+    case ElementSetAttributeNodeNS:
+        return "'Element.setAttributeNodeNS' is deprecated and has been removed from DOM4 (http://w3.org/tr/dom).";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

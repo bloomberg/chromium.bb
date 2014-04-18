@@ -28,6 +28,10 @@ interface Attr : Node {
 
     [ImplementedAs=valueForBindings, TreatReturnedNullStringAs=Null, TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString value;
 
+    // DOM Level 2
+
+    [DeprecateAs=AttributeOwnerElement] readonly attribute Element ownerElement;
+
     // DOM 4
 
     [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString prefix;

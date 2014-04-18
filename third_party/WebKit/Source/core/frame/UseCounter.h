@@ -149,6 +149,7 @@ public:
         ElementRemoveAttributeNode = 109, // Removed from DOM4.
         ElementGetAttributeNodeNS = 110, // Removed from DOM4.
         DocumentCreateAttribute = 111, // Removed from DOM4.
+        DocumentCreateAttributeNS = 112, // Removed from DOM4.
         DocumentCreateCDATASection = 113, // Removed from DOM4.
         DocumentInputEncoding = 114, // Removed from DOM4.
         DocumentXMLEncoding = 115, // Removed from DOM4.
@@ -189,6 +190,7 @@ public:
         HTMLObjectElementLegacyCall = 153,
         GetMatchedCSSRules = 155,
         SVGFontInCSS = 156,
+        AttributeOwnerElement = 160, // Removed in DOM4.
         AttributeSpecified = 162, // Removed in DOM4.
         PrefixedAudioDecodedByteCount = 164,
         PrefixedVideoDecodedByteCount = 165,
@@ -234,6 +236,7 @@ public:
         HTMLElementInnerText = 213,
         HTMLElementOuterText = 214,
         ReplaceDocumentViaJavaScriptURL = 215,
+        ElementSetAttributeNodeNS = 216, // Removed from DOM4.
         ElementPrefixedMatchesSelector = 217,
         CSSStyleSheetRules = 219,
         CSSStyleSheetAddRule = 220,
