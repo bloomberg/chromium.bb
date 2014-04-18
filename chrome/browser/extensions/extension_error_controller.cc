@@ -31,7 +31,9 @@ ExtensionErrorController::~ExtensionErrorController() {}
 void ExtensionErrorController::ShowErrorIfNeeded() {
   IdentifyAlertableExtensions();
 
-  if (!blacklisted_extensions_.is_empty()) {
+  // Make sure there's something to show, and that there isn't currently a
+  // bubble displaying.
+  if (!blacklisted_extensions_.is_empty() && !error_ui_.get()) {
     if (!is_first_run_) {
       error_ui_.reset(g_create_ui(this));
       if (!error_ui_->ShowErrorInBubbleView())  // Couldn't find a browser.
@@ -84,12 +86,17 @@ void ExtensionErrorController::OnAlertClosed() {
     prefs->AcknowledgeBlacklistedExtension((*iter)->id());
   }
 
+  blacklisted_extensions_.Clear();
   error_ui_.reset();
 }
 
 void ExtensionErrorController::IdentifyAlertableExtensions() {
   ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context_);
   ExtensionPrefs* prefs = ExtensionPrefs::Get(browser_context_);
+
+  // This should be clear, but in case a bubble crashed somewhere along the
+  // line, let's make sure we start fresh.
+  blacklisted_extensions_.Clear();
 
   // Build up the lists of extensions that require acknowledgment. If this is
   // the first time, grandfather extensions that would have caused
