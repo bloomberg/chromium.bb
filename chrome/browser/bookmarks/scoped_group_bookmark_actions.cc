@@ -5,15 +5,6 @@
 #include "chrome/browser/bookmarks/scoped_group_bookmark_actions.h"
 
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/bookmarks/bookmark_model_factory.h"
-
-ScopedGroupBookmarkActions::ScopedGroupBookmarkActions(Profile* profile)
-    : model_(NULL) {
-  if (profile)
-    model_ = BookmarkModelFactory::GetForProfile(profile);
-  if (model_)
-    model_->BeginGroupedChanges();
-}
 
 ScopedGroupBookmarkActions::ScopedGroupBookmarkActions(BookmarkModel* model)
     : model_(model) {

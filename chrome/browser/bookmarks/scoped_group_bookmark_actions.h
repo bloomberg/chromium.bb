@@ -8,12 +8,10 @@
 #include "base/macros.h"
 
 class BookmarkModel;
-class Profile;
 
 // Scopes the grouping of a set of changes into one undoable action.
 class ScopedGroupBookmarkActions {
  public:
-  explicit ScopedGroupBookmarkActions(Profile* profile);
   explicit ScopedGroupBookmarkActions(BookmarkModel* model);
   ~ScopedGroupBookmarkActions();
 

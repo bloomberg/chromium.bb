@@ -643,10 +643,10 @@ bool BookmarkManagerPrivateRemoveTreesFunction::RunImpl() {
   scoped_ptr<RemoveTrees::Params> params(RemoveTrees::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-#if !defined(OS_ANDROID)
-  ScopedGroupBookmarkActions group_deletes(GetProfile());
-#endif
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(GetProfile());
+#if !defined(OS_ANDROID)
+  ScopedGroupBookmarkActions group_deletes(model);
+#endif
   int64 id;
   for (size_t i = 0; i < params->id_list.size(); ++i) {
     if (!GetBookmarkIdAsInt64(params->id_list[i], &id))
