@@ -92,8 +92,26 @@ void Scheduler::SetNeedsManageTiles() {
   ProcessScheduledActions();
 }
 
+void Scheduler::SetMaxSwapsPending(int max) {
+  state_machine_.SetMaxSwapsPending(max);
+}
+
+void Scheduler::DidSwapBuffers() {
+  state_machine_.DidSwapBuffers();
+  // There is no need to call ProcessScheduledActions here because
+  // swapping should not trigger any new actions.
+  if (!inside_process_scheduled_actions_) {
+    DCHECK_EQ(state_machine_.NextAction(), SchedulerStateMachine::ACTION_NONE);
+  }
+}
+
 void Scheduler::SetSwapUsedIncompleteTile(bool used_incomplete_tile) {
   state_machine_.SetSwapUsedIncompleteTile(used_incomplete_tile);
+  ProcessScheduledActions();
+}
+
+void Scheduler::DidSwapBuffersComplete() {
+  state_machine_.DidSwapBuffersComplete();
   ProcessScheduledActions();
 }
 
@@ -433,7 +451,7 @@ void Scheduler::DrawAndSwapForced() {
 
 void Scheduler::DrawAndReadback() {
   DrawSwapReadbackResult result = client_->ScheduledActionDrawAndReadback();
-  DCHECK(!result.did_swap);
+  DCHECK(!result.did_request_swap);
 }
 
 void Scheduler::ProcessScheduledActions() {

@@ -433,9 +433,18 @@ void ThreadProxy::CheckOutputSurfaceStatusOnImplThread() {
   impl().scheduler->DidLoseOutputSurface();
 }
 
-void ThreadProxy::OnSwapBuffersCompleteOnImplThread() {
-  TRACE_EVENT0("cc", "ThreadProxy::OnSwapBuffersCompleteOnImplThread");
+void ThreadProxy::SetMaxSwapsPendingOnImplThread(int max) {
+  impl().scheduler->SetMaxSwapsPending(max);
+}
+
+void ThreadProxy::DidSwapBuffersOnImplThread() {
+  impl().scheduler->DidSwapBuffers();
+}
+
+void ThreadProxy::DidSwapBuffersCompleteOnImplThread() {
+  TRACE_EVENT0("cc", "ThreadProxy::DidSwapBuffersCompleteOnImplThread");
   DCHECK(IsImplThread());
+  impl().scheduler->DidSwapBuffersComplete();
   Proxy::MainThreadTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&ThreadProxy::DidCompleteSwapBuffers, main_thread_weak_ptr_));
@@ -1237,10 +1246,10 @@ DrawSwapReadbackResult ThreadProxy::DrawSwapReadbackInternal(
     impl().readback_request = NULL;
   } else if (draw_frame) {
     DCHECK(swap_requested);
-    result.did_swap = impl().layer_tree_host_impl->SwapBuffers(frame);
+    result.did_request_swap = impl().layer_tree_host_impl->SwapBuffers(frame);
 
     // We don't know if we have incomplete tiles if we didn't actually swap.
-    if (result.did_swap) {
+    if (result.did_request_swap) {
       DCHECK(!frame.has_no_damage);
       SetSwapUsedIncompleteTileOnImplThread(frame.contains_incomplete_tile);
     }

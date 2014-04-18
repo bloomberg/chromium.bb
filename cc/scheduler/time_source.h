@@ -11,7 +11,7 @@
 
 namespace cc {
 
-class TimeSourceClient {
+class CC_EXPORT TimeSourceClient {
  public:
   virtual void OnTimerTick() = 0;
 

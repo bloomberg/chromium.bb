@@ -168,9 +168,20 @@ class CC_EXPORT SchedulerStateMachine {
   // ManageTiles will occur shortly (even if no redraw is required).
   void SetNeedsManageTiles();
 
+  // Sets how many swaps can be pending to the OutputSurface.
+  void SetMaxSwapsPending(int max);
+
+  // If the scheduler attempted to draw and swap, this provides feedback
+  // regarding whether or not the swap actually occured. We might skip the
+  // swap when there is not damage, for example.
+  void DidSwapBuffers();
+
   // Indicates whether a redraw is required because we are currently rendering
   // with a low resolution or checkerboarded tile.
   void SetSwapUsedIncompleteTile(bool used_incomplete_tile);
+
+  // Notification from the OutputSurface that a swap has been consumed.
+  void DidSwapBuffersComplete();
 
   // Indicates whether to prioritize animation smoothness over new content
   // activation.
@@ -260,7 +271,7 @@ class CC_EXPORT SchedulerStateMachine {
 
   void UpdateStateOnCommit(bool commit_was_aborted);
   void UpdateStateOnActivation();
-  void UpdateStateOnDraw(bool did_swap);
+  void UpdateStateOnDraw(bool did_request_swap);
   void UpdateStateOnManageTiles();
 
   const SchedulerSettings settings_;
@@ -285,6 +296,8 @@ class CC_EXPORT SchedulerStateMachine {
   // ManageTile per BeginImplFrame.
   int manage_tiles_funnel_;
   int consecutive_checkerboard_animations_;
+  int max_pending_swaps_;
+  int pending_swaps_;
   bool needs_redraw_;
   bool needs_manage_tiles_;
   bool swap_used_incomplete_tile_;

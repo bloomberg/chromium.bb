@@ -75,7 +75,10 @@ class CC_EXPORT Scheduler {
 
   void SetNeedsManageTiles();
 
+  void SetMaxSwapsPending(int max);
+  void DidSwapBuffers();
   void SetSwapUsedIncompleteTile(bool used_incomplete_tile);
+  void DidSwapBuffersComplete();
 
   void SetSmoothnessTakesPriority(bool smoothness_takes_priority);
 

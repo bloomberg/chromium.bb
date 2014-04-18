@@ -27,6 +27,8 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       last_frame_number_update_visible_tiles_was_called_(-1),
       manage_tiles_funnel_(0),
       consecutive_checkerboard_animations_(0),
+      max_pending_swaps_(1),
+      pending_swaps_(0),
       needs_redraw_(false),
       needs_manage_tiles_(false),
       swap_used_incomplete_tile_(false),
@@ -226,6 +228,8 @@ scoped_ptr<base::Value> SchedulerStateMachine::AsValue() const  {
   minor_state->SetInteger("manage_tiles_funnel", manage_tiles_funnel_);
   minor_state->SetInteger("consecutive_checkerboard_animations",
                           consecutive_checkerboard_animations_);
+  minor_state->SetInteger("max_pending_swaps_", max_pending_swaps_);
+  minor_state->SetInteger("pending_swaps_", pending_swaps_);
   minor_state->SetBoolean("needs_redraw", needs_redraw_);
   minor_state->SetBoolean("needs_manage_tiles", needs_manage_tiles_);
   minor_state->SetBoolean("swap_used_incomplete_tile",
@@ -364,6 +368,10 @@ bool SchedulerStateMachine::ShouldDraw() const {
   if (HasSwappedThisFrame())
     return false;
 
+  // Do not queue too many swaps.
+  if (pending_swaps_ >= max_pending_swaps_)
+    return false;
+
   // Except for the cases above, do not draw outside of the BeginImplFrame
   // deadline.
   if (begin_impl_frame_state_ != BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE)
@@ -470,6 +478,11 @@ bool SchedulerStateMachine::ShouldSendBeginMainFrame() const {
 
   // We shouldn't normally accept commits if there isn't an OutputSurface.
   if (!HasInitializedOutputSurface())
+    return false;
+
+  // SwapAck throttle the BeginMainFrames
+  // TODO(brianderson): Remove this restriction to improve throughput.
+  if (pending_swaps_ >= max_pending_swaps_)
     return false;
 
   if (skip_begin_main_frame_to_reduce_latency_)
@@ -581,15 +594,15 @@ void SchedulerStateMachine::UpdateState(Action action) {
 
     case ACTION_DRAW_AND_SWAP_FORCED:
     case ACTION_DRAW_AND_SWAP_IF_POSSIBLE: {
-      bool did_swap = true;
-      UpdateStateOnDraw(did_swap);
+      bool did_request_swap = true;
+      UpdateStateOnDraw(did_request_swap);
       return;
     }
 
     case ACTION_DRAW_AND_SWAP_ABORT:
     case ACTION_DRAW_AND_READBACK: {
-      bool did_swap = false;
-      UpdateStateOnDraw(did_swap);
+      bool did_request_swap = false;
+      UpdateStateOnDraw(did_request_swap);
       return;
     }
 
@@ -726,7 +739,7 @@ void SchedulerStateMachine::UpdateStateOnActivation() {
   needs_redraw_ = true;
 }
 
-void SchedulerStateMachine::UpdateStateOnDraw(bool did_swap) {
+void SchedulerStateMachine::UpdateStateOnDraw(bool did_request_swap) {
   DCHECK(readback_state_ != READBACK_STATE_WAITING_FOR_REPLACEMENT_COMMIT &&
          readback_state_ != READBACK_STATE_WAITING_FOR_REPLACEMENT_ACTIVATION)
       << *AsValue();
@@ -751,7 +764,7 @@ void SchedulerStateMachine::UpdateStateOnDraw(bool did_swap) {
   draw_if_possible_failed_ = false;
   active_tree_needs_first_draw_ = false;
 
-  if (did_swap)
+  if (did_request_swap)
     last_frame_number_swap_performed_ = current_frame_number_;
 }
 
@@ -792,8 +805,7 @@ bool SchedulerStateMachine::SupportsProactiveBeginFrame() const {
   // Both the synchronous compositor and disabled vsync settings
   // make it undesirable to proactively request BeginImplFrames.
   // If this is true, the scheduler should poll.
-  return !settings_.using_synchronous_renderer_compositor &&
-         settings_.throttle_frame_production;
+  return !settings_.using_synchronous_renderer_compositor;
 }
 
 // These are the cases where we definitely (or almost definitely) have a
@@ -908,6 +920,10 @@ bool SchedulerStateMachine::ShouldTriggerBeginImplFrameDeadlineEarly() const {
   if (output_surface_state_ == OUTPUT_SURFACE_LOST)
     return true;
 
+  // SwapAck throttle the deadline since we wont draw and swap anyway.
+  if (pending_swaps_ >= max_pending_swaps_)
+    return false;
+
   if (active_tree_needs_first_draw_)
     return true;
 
@@ -996,9 +1012,23 @@ void SchedulerStateMachine::SetNeedsManageTiles() {
   }
 }
 
+void SchedulerStateMachine::SetMaxSwapsPending(int max) {
+  max_pending_swaps_ = max;
+}
+
+void SchedulerStateMachine::DidSwapBuffers() {
+  pending_swaps_++;
+  DCHECK_LE(pending_swaps_, max_pending_swaps_);
+}
+
 void SchedulerStateMachine::SetSwapUsedIncompleteTile(
     bool used_incomplete_tile) {
   swap_used_incomplete_tile_ = used_incomplete_tile;
+}
+
+void SchedulerStateMachine::DidSwapBuffersComplete() {
+  DCHECK_GT(pending_swaps_, 0);
+  pending_swaps_--;
 }
 
 void SchedulerStateMachine::SetSmoothnessTakesPriority(
@@ -1132,6 +1162,7 @@ void SchedulerStateMachine::DidCreateAndInitializeOutputSurface() {
     needs_commit_ = true;
   }
   did_create_and_initialize_first_output_surface_ = true;
+  pending_swaps_ = 0;
 }
 
 void SchedulerStateMachine::NotifyBeginMainFrameStarted() {

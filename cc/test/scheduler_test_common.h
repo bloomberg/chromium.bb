@@ -51,8 +51,6 @@ class FakeFrameRateController : public FrameRateController {
  public:
   explicit FakeFrameRateController(scoped_refptr<TimeSource> timer)
       : FrameRateController(timer) {}
-
-  int NumFramesPending() const { return num_frames_pending_; }
 };
 
 }  // namespace cc

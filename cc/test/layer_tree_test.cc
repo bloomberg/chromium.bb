@@ -128,8 +128,8 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     return result;
   }
 
-  virtual void OnSwapBuffersComplete() OVERRIDE {
-    LayerTreeHostImpl::OnSwapBuffersComplete();
+  virtual void DidSwapBuffersComplete() OVERRIDE {
+    LayerTreeHostImpl::DidSwapBuffersComplete();
     test_hooks_->SwapBuffersCompleteOnThread(this);
   }
 

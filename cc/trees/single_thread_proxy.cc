@@ -382,8 +382,8 @@ void SingleThreadProxy::DidSwapBuffersOnImplThread() {
   client_->DidPostSwapBuffers();
 }
 
-void SingleThreadProxy::OnSwapBuffersCompleteOnImplThread() {
-  TRACE_EVENT0("cc", "SingleThreadProxy::OnSwapBuffersCompleteOnImplThread");
+void SingleThreadProxy::DidSwapBuffersCompleteOnImplThread() {
+  TRACE_EVENT0("cc", "SingleThreadProxy::DidSwapBuffersCompleteOnImplThread");
   client_->DidCompleteSwapBuffers();
 }
 

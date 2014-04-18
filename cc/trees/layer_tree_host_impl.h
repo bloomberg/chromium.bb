@@ -63,8 +63,9 @@ class LayerTreeHostImplClient {
  public:
   virtual void UpdateRendererCapabilitiesOnImplThread() = 0;
   virtual void DidLoseOutputSurfaceOnImplThread() = 0;
+  virtual void SetMaxSwapsPendingOnImplThread(int max) = 0;
   virtual void DidSwapBuffersOnImplThread() = 0;
-  virtual void OnSwapBuffersCompleteOnImplThread() = 0;
+  virtual void DidSwapBuffersCompleteOnImplThread() = 0;
   virtual void BeginFrame(const BeginFrameArgs& args) = 0;
   virtual void OnCanDrawStateChanged(bool can_draw) = 0;
   virtual void NotifyReadyToActivate() = 0;
@@ -233,7 +234,7 @@ class CC_EXPORT LayerTreeHostImpl
       bool valid_for_tile_management) OVERRIDE;
   virtual void DidLoseOutputSurface() OVERRIDE;
   virtual void DidSwapBuffers() OVERRIDE;
-  virtual void OnSwapBuffersComplete() OVERRIDE;
+  virtual void DidSwapBuffersComplete() OVERRIDE;
   virtual void ReclaimResources(const CompositorFrameAck* ack) OVERRIDE;
   virtual void SetMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE;
   virtual void SetTreeActivationCallback(const base::Closure& callback)

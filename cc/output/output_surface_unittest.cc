@@ -59,10 +59,6 @@ class TestOutputSurface : public OutputSurface {
     DidSwapBuffers();
   }
 
-  int pending_swap_buffers() {
-    return pending_swap_buffers_;
-  }
-
   void OnSwapBuffersCompleteForTesting() {
     OnSwapBuffersComplete();
   }
@@ -232,20 +228,17 @@ TEST(OutputSurfaceTest, BeginFrameEmulation) {
   // Initialize BeginFrame emulation
   scoped_refptr<base::TestSimpleTaskRunner> task_runner =
       new base::TestSimpleTaskRunner;
-  bool throttle_frame_production = true;
   const base::TimeDelta display_refresh_interval =
       BeginFrameArgs::DefaultInterval();
 
-  output_surface.InitializeBeginFrameEmulation(
-      task_runner.get(), throttle_frame_production, display_refresh_interval);
+  output_surface.InitializeBeginFrameEmulation(task_runner.get(),
+                                               display_refresh_interval);
 
-  output_surface.SetMaxFramesPending(2);
   output_surface.EnableRetroactiveBeginFrameDeadline(
       false, false, base::TimeDelta());
 
   // We should start off with 0 BeginFrames
   EXPECT_EQ(client.begin_frame_count(), 0);
-  EXPECT_EQ(output_surface.pending_swap_buffers(), 0);
 
   // We should not have a pending task until a BeginFrame has been
   // requested.
@@ -256,54 +249,29 @@ TEST(OutputSurfaceTest, BeginFrameEmulation) {
   // BeginFrame should be called on the first tick.
   task_runner->RunPendingTasks();
   EXPECT_EQ(client.begin_frame_count(), 1);
-  EXPECT_EQ(output_surface.pending_swap_buffers(), 0);
 
   // BeginFrame should not be called when there is a pending BeginFrame.
   task_runner->RunPendingTasks();
   EXPECT_EQ(client.begin_frame_count(), 1);
-  EXPECT_EQ(output_surface.pending_swap_buffers(), 0);
-
   // SetNeedsBeginFrame should clear the pending BeginFrame after
   // a SwapBuffers.
   output_surface.DidSwapBuffersForTesting();
   output_surface.SetNeedsBeginFrame(true);
   EXPECT_EQ(client.begin_frame_count(), 1);
-  EXPECT_EQ(output_surface.pending_swap_buffers(), 1);
   task_runner->RunPendingTasks();
   EXPECT_EQ(client.begin_frame_count(), 2);
-  EXPECT_EQ(output_surface.pending_swap_buffers(), 1);
-
-  // BeginFrame should be throttled by pending swap buffers.
-  output_surface.DidSwapBuffersForTesting();
-  output_surface.SetNeedsBeginFrame(true);
-  EXPECT_EQ(client.begin_frame_count(), 2);
-  EXPECT_EQ(output_surface.pending_swap_buffers(), 2);
-  task_runner->RunPendingTasks();
-  EXPECT_EQ(client.begin_frame_count(), 2);
-  EXPECT_EQ(output_surface.pending_swap_buffers(), 2);
-
-  // SwapAck should decrement pending swap buffers and unblock BeginFrame
-  // again.
-  output_surface.OnSwapBuffersCompleteForTesting();
-  EXPECT_EQ(client.begin_frame_count(), 2);
-  EXPECT_EQ(output_surface.pending_swap_buffers(), 1);
-  task_runner->RunPendingTasks();
-  EXPECT_EQ(client.begin_frame_count(), 3);
-  EXPECT_EQ(output_surface.pending_swap_buffers(), 1);
 
   // Calling SetNeedsBeginFrame again indicates a swap did not occur but
   // the client still wants another BeginFrame.
   output_surface.SetNeedsBeginFrame(true);
   task_runner->RunPendingTasks();
-  EXPECT_EQ(client.begin_frame_count(), 4);
-  EXPECT_EQ(output_surface.pending_swap_buffers(), 1);
+  EXPECT_EQ(client.begin_frame_count(), 3);
 
   // Disabling SetNeedsBeginFrame should prevent further BeginFrames.
   output_surface.SetNeedsBeginFrame(false);
   task_runner->RunPendingTasks();
   EXPECT_FALSE(task_runner->HasPendingTask());
-  EXPECT_EQ(client.begin_frame_count(), 4);
-  EXPECT_EQ(output_surface.pending_swap_buffers(), 1);
+  EXPECT_EQ(client.begin_frame_count(), 3);
 }
 
 TEST(OutputSurfaceTest, OptimisticAndRetroactiveBeginFrames) {
@@ -315,7 +283,6 @@ TEST(OutputSurfaceTest, OptimisticAndRetroactiveBeginFrames) {
   EXPECT_TRUE(output_surface.HasClient());
   EXPECT_FALSE(client.deferred_initialize_called());
 
-  output_surface.SetMaxFramesPending(2);
   output_surface.EnableRetroactiveBeginFrameDeadline(
       true, false, base::TimeDelta());
 
@@ -341,19 +308,6 @@ TEST(OutputSurfaceTest, OptimisticAndRetroactiveBeginFrames) {
   output_surface.DidSwapBuffersForTesting();
   output_surface.SetNeedsBeginFrame(true);
   EXPECT_EQ(client.begin_frame_count(), 3);
-  EXPECT_EQ(output_surface.pending_swap_buffers(), 1);
-
-  // Optimistically injected BeginFrames should be by throttled by pending
-  // swap buffers...
-  output_surface.DidSwapBuffersForTesting();
-  output_surface.SetNeedsBeginFrame(true);
-  EXPECT_EQ(client.begin_frame_count(), 3);
-  EXPECT_EQ(output_surface.pending_swap_buffers(), 2);
-  output_surface.BeginFrameForTesting();
-  EXPECT_EQ(client.begin_frame_count(), 3);
-  // ...and retroactively triggered by OnSwapBuffersComplete
-  output_surface.OnSwapBuffersCompleteForTesting();
-  EXPECT_EQ(client.begin_frame_count(), 4);
 }
 
 TEST(OutputSurfaceTest, RetroactiveBeginFrameDoesNotDoubleTickWhenEmulating) {
@@ -373,23 +327,20 @@ TEST(OutputSurfaceTest, RetroactiveBeginFrameDoesNotDoubleTickWhenEmulating) {
   // Initialize BeginFrame emulation
   scoped_refptr<base::TestSimpleTaskRunner> task_runner =
       new base::TestSimpleTaskRunner;
-  bool throttle_frame_production = true;
   const base::TimeDelta display_refresh_interval = big_interval;
 
-  output_surface.InitializeBeginFrameEmulation(
-      task_runner.get(), throttle_frame_production, display_refresh_interval);
+  output_surface.InitializeBeginFrameEmulation(task_runner.get(),
+                                               display_refresh_interval);
 
   // We need to subtract an epsilon from Now() because some platforms have
   // a slow clock.
   output_surface.CommitVSyncParametersForTesting(
       gfx::FrameTime::Now() - base::TimeDelta::FromSeconds(1), big_interval);
 
-  output_surface.SetMaxFramesPending(2);
   output_surface.EnableRetroactiveBeginFrameDeadline(true, true, big_interval);
 
   // We should start off with 0 BeginFrames
   EXPECT_EQ(client.begin_frame_count(), 0);
-  EXPECT_EQ(output_surface.pending_swap_buffers(), 0);
 
   // The first SetNeedsBeginFrame(true) should start a retroactive
   // BeginFrame.

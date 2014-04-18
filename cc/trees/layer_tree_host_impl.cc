@@ -1300,8 +1300,8 @@ void LayerTreeHostImpl::DidSwapBuffers() {
   client_->DidSwapBuffersOnImplThread();
 }
 
-void LayerTreeHostImpl::OnSwapBuffersComplete() {
-  client_->OnSwapBuffersCompleteOnImplThread();
+void LayerTreeHostImpl::DidSwapBuffersComplete() {
+  client_->DidSwapBuffersCompleteOnImplThread();
 }
 
 void LayerTreeHostImpl::ReclaimResources(const CompositorFrameAck* ack) {
@@ -1900,8 +1900,11 @@ bool LayerTreeHostImpl::InitializeRenderer(
         GetRendererCapabilities().allow_rasterize_on_demand);
   }
 
-  // Setup BeginFrameEmulation if it's not supported natively
-  if (!settings_.begin_impl_frame_scheduling_enabled) {
+  if (!settings_.throttle_frame_production) {
+    // Disable VSync
+    output_surface->SetThrottleFrameProduction(false);
+  } else if (!settings_.begin_impl_frame_scheduling_enabled) {
+    // Setup BeginFrameEmulation if it's not supported natively
     const base::TimeDelta display_refresh_interval =
       base::TimeDelta::FromMicroseconds(
           base::Time::kMicrosecondsPerSecond /
@@ -1909,7 +1912,6 @@ bool LayerTreeHostImpl::InitializeRenderer(
 
     output_surface->InitializeBeginFrameEmulation(
         proxy_->ImplThreadTaskRunner(),
-        settings_.throttle_frame_production,
         display_refresh_interval);
   }
 
@@ -1917,7 +1919,7 @@ bool LayerTreeHostImpl::InitializeRenderer(
       output_surface->capabilities().max_frames_pending;
   if (max_frames_pending <= 0)
     max_frames_pending = OutputSurface::DEFAULT_MAX_FRAMES_PENDING;
-  output_surface->SetMaxFramesPending(max_frames_pending);
+  client_->SetMaxSwapsPendingOnImplThread(max_frames_pending);
 
   resource_provider_ = resource_provider.Pass();
   output_surface_ = output_surface.Pass();

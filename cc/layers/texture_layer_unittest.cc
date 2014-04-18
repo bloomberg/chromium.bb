@@ -1183,7 +1183,6 @@ class TextureLayerNoExtraCommitForMailboxTest
     for (size_t i = 0; i < resources_to_return.size(); ++i)
       output_surface()->ReturnResource(resources_to_return[i].id, &ack);
     host_impl->ReclaimResources(&ack);
-    host_impl->OnSwapBuffersComplete();
   }
 
   virtual void AfterTest() OVERRIDE {}
@@ -1323,7 +1322,6 @@ class TextureLayerChangeInvisibleMailboxTest
     for (size_t i = 0; i < resources_to_return.size(); ++i)
       output_surface()->ReturnResource(resources_to_return[i].id, &ack);
     host_impl->ReclaimResources(&ack);
-    host_impl->OnSwapBuffersComplete();
   }
 
   virtual void AfterTest() OVERRIDE {}

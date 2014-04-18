@@ -25,7 +25,7 @@ class FakeOutputSurfaceClient : public OutputSurfaceClient {
   virtual void SetNeedsRedrawRect(const gfx::Rect& damage_rect) OVERRIDE {}
   virtual void BeginFrame(const BeginFrameArgs& args) OVERRIDE;
   virtual void DidSwapBuffers() OVERRIDE {}
-  virtual void OnSwapBuffersComplete() OVERRIDE {}
+  virtual void DidSwapBuffersComplete() OVERRIDE {}
   virtual void ReclaimResources(const CompositorFrameAck* ack) OVERRIDE {}
   virtual void DidLoseOutputSurface() OVERRIDE;
   virtual void SetExternalDrawConstraints(

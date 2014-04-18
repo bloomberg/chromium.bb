@@ -105,11 +105,11 @@ class CC_EXPORT OutputSurface : public FrameRateControllerClient {
   // thread.
   virtual bool BindToClient(OutputSurfaceClient* client);
 
-  void InitializeBeginFrameEmulation(base::SingleThreadTaskRunner* task_runner,
-                                     bool throttle_frame_production,
-                                     base::TimeDelta interval);
+  // Enable or disable vsync.
+  void SetThrottleFrameProduction(bool enable);
 
-  void SetMaxFramesPending(int max_frames_pending);
+  void InitializeBeginFrameEmulation(base::SingleThreadTaskRunner* task_runner,
+                                     base::TimeDelta interval);
 
   virtual void EnsureBackbuffer();
   virtual void DiscardBackbuffer();
@@ -162,16 +162,16 @@ class CC_EXPORT OutputSurface : public FrameRateControllerClient {
   scoped_ptr<OverlayCandidateValidator> overlay_candidate_validator_;
   gfx::Size surface_size_;
   float device_scale_factor_;
+  base::TimeDelta begin_frame_interval_;
 
   // The FrameRateController is deprecated.
   // Platforms should move to native BeginFrames instead.
   void CommitVSyncParameters(base::TimeTicks timebase,
                              base::TimeDelta interval);
-  virtual void FrameRateControllerTick(bool throttled,
-                                       const BeginFrameArgs& args) OVERRIDE;
+  virtual void FrameRateControllerTick(const BeginFrameArgs& args) OVERRIDE;
   scoped_ptr<FrameRateController> frame_rate_controller_;
-  int max_frames_pending_;
-  int pending_swap_buffers_;
+
+  bool throttle_frame_production_;
   bool needs_begin_frame_;
   bool client_ready_for_begin_frame_;
 

@@ -240,7 +240,6 @@ class LayerTreeHostDelegatedTest : public LayerTreeTest {
     for (size_t i = 0; i < resources_to_return.size(); ++i)
       output_surface()->ReturnResource(resources_to_return[i], &ack);
     host_impl->ReclaimResources(&ack);
-    host_impl->OnSwapBuffersComplete();
   }
 };
 
@@ -1648,7 +1647,6 @@ class LayerTreeHostDelegatedTestResourceSentToParent
     CompositorFrameAck ack;
     output_surface()->ReturnResource(map.find(999)->second, &ack);
     host_impl->ReclaimResources(&ack);
-    host_impl->OnSwapBuffersComplete();
   }
 
   virtual void UnusedResourcesAreAvailable() OVERRIDE {

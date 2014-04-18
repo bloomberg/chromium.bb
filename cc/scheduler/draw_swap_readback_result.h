@@ -19,15 +19,17 @@ struct DrawSwapReadbackResult {
   };
 
   DrawSwapReadbackResult()
-      : draw_result(INVALID_RESULT), did_swap(false), did_readback(false) {}
+      : draw_result(INVALID_RESULT),
+        did_request_swap(false),
+        did_readback(false) {}
   DrawSwapReadbackResult(DrawResult draw_result,
-                         bool did_swap,
+                         bool did_request_swap,
                          bool did_readback)
       : draw_result(draw_result),
-        did_swap(did_swap),
+        did_request_swap(did_request_swap),
         did_readback(did_readback) {}
   DrawResult draw_result;
-  bool did_swap;
+  bool did_request_swap;
   bool did_readback;
 };
 
