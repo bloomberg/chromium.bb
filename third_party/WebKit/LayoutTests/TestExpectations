@@ -1135,3 +1135,8 @@ crbug.com/364946 [ Mac ] virtual/gpu/fast/hidpi/image-srcset-png.html [ Pass Ima
 crbug.com/364946 [ Mac ] virtual/gpu/fast/hidpi/image-srcset-svg-canvas.html [ Pass ImageOnlyFailure ]
 crbug.com/364946 [ Mac ] virtual/gpu/fast/hidpi/image-srcset-svg.html [ Pass ImageOnlyFailure ]
 crbug.com/364946 [ Mac ] virtual/gpu/fast/hidpi/video-controls-in-hidpi.html [ Pass ImageOnlyFailure ]
+
+# Added in r171958 and timing out on some platforms ever since.
+crbug.com/308992 svg/as-object/sizing/svg-in-object-placeholder-height-auto.html [ Pass Timeout ]
+crbug.com/308992 svg/as-object/sizing/svg-in-object-placeholder-height-fixed.html [ Pass Timeout ]
+crbug.com/308992 svg/as-object/sizing/svg-in-object-placeholder-height-percentage.html [ Pass Timeout ]
