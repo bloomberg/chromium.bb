@@ -153,5 +153,70 @@ TEST(NinePatchLayerImplTest, VerifyDrawQuads) {
                            expected_quad_size);
 }
 
+TEST(NinePatchLayerImplTest, Occlusion) {
+  gfx::Size layer_size(1000, 1000);
+  gfx::Size viewport_size(1000, 1000);
+
+  LayerTestCommon::LayerImplTest impl;
+
+  SkBitmap sk_bitmap;
+  sk_bitmap.allocN32Pixels(10, 10);
+  sk_bitmap.setImmutable();
+  UIResourceId uid = 5;
+  UIResourceBitmap bitmap(sk_bitmap);
+  impl.host_impl()->CreateUIResource(uid, bitmap);
+
+  NinePatchLayerImpl* nine_patch_layer_impl =
+      impl.AddChildToRoot<NinePatchLayerImpl>();
+  nine_patch_layer_impl->SetAnchorPoint(gfx::PointF());
+  nine_patch_layer_impl->SetBounds(layer_size);
+  nine_patch_layer_impl->SetContentBounds(layer_size);
+  nine_patch_layer_impl->SetDrawsContent(true);
+  nine_patch_layer_impl->SetUIResourceId(uid);
+  nine_patch_layer_impl->SetImageBounds(gfx::Size(10, 10));
+
+  gfx::Rect aperture = gfx::Rect(3, 3, 4, 4);
+  gfx::Rect border = gfx::Rect(300, 300, 400, 400);
+  nine_patch_layer_impl->SetLayout(aperture, border, true);
+
+  impl.CalcDrawProps(viewport_size);
+
+  {
+    SCOPED_TRACE("No occlusion");
+    gfx::Rect occluded;
+    impl.AppendQuadsWithOcclusion(nine_patch_layer_impl, occluded);
+
+    LayerTestCommon::VerifyQuadsExactlyCoverRect(impl.quad_list(),
+                                                 gfx::Rect(layer_size));
+    EXPECT_EQ(9u, impl.quad_list().size());
+  }
+
+  {
+    SCOPED_TRACE("Full occlusion");
+    gfx::Rect occluded(nine_patch_layer_impl->visible_content_rect());
+    impl.AppendQuadsWithOcclusion(nine_patch_layer_impl, occluded);
+
+    LayerTestCommon::VerifyQuadsExactlyCoverRect(impl.quad_list(), gfx::Rect());
+    EXPECT_EQ(impl.quad_list().size(), 0u);
+  }
+
+  {
+    SCOPED_TRACE("Partial occlusion");
+    gfx::Rect occluded(0, 0, 500, 1000);
+    impl.AppendQuadsWithOcclusion(nine_patch_layer_impl, occluded);
+
+    size_t partially_occluded_count = 0;
+    LayerTestCommon::VerifyQuadsCoverRectWithOcclusion(
+        impl.quad_list(),
+        gfx::Rect(layer_size),
+        occluded,
+        &partially_occluded_count);
+    // The layer outputs nine quads, three of which are partially occluded, and
+    // three fully occluded.
+    EXPECT_EQ(6u, impl.quad_list().size());
+    EXPECT_EQ(3u, partially_occluded_count);
+  }
+}
+
 }  // namespace
 }  // namespace cc
