@@ -193,12 +193,13 @@ TimeDelta ExtensionUpdater::DetermineFirstCheckDelay() {
                                           kStartupWaitSeconds * 8));
   }
 
-  // Read the persisted next check time, and use that if it isn't too soon.
-  // Otherwise pick something random.
+  // Read the persisted next check time, and use that if it isn't too soon
+  // or too late. Otherwise pick something random.
   Time saved_next = Time::FromInternalValue(prefs_->GetInt64(
       pref_names::kNextUpdateCheck));
   Time earliest = now + TimeDelta::FromSeconds(kStartupWaitSeconds);
-  if (saved_next >= earliest) {
+  Time latest = now + TimeDelta::FromSeconds(frequency_seconds_);
+  if (saved_next >= earliest && saved_next <= latest) {
     return saved_next - now;
   } else {
     return TimeDelta::FromSeconds(RandInt(kStartupWaitSeconds,
