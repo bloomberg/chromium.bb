@@ -12,6 +12,7 @@
 #include "base/process/process.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/time/time.h"
 #include "content/common/gpu/media/exynos_video_encode_accelerator.h"
 #include "content/common/gpu/media/video_accelerator_unittest_helpers.h"
 #include "media/base/bind_to_current_loop.h"
@@ -248,6 +249,9 @@ class VEAClient : public VideoEncodeAccelerator::Client {
   void CreateEncoder();
   void DestroyEncoder();
 
+  // Return the number of encoded frames per second.
+  double frames_per_second();
+
   // VideoDecodeAccelerator::Client implementation.
   void RequireBitstreamBuffers(unsigned int input_count,
                                const gfx::Size& input_coded_size,
@@ -339,6 +343,12 @@ class VEAClient : public VideoEncodeAccelerator::Client {
 
   scoped_ptr<StreamValidator> validator_;
 
+  // The time when the encoder has initialized.
+  base::TimeTicks encoder_initialized_time_;
+
+  // The time when the last encoded frame is ready.
+  base::TimeTicks last_frame_ready_time_;
+
   // All methods of this class should be run on the same thread.
   base::ThreadChecker thread_checker_;
 };
@@ -407,6 +417,7 @@ void VEAClient::CreateEncoder() {
   }
   SetInitialConfiguration();
   SetState(CS_INITIALIZED);
+  encoder_initialized_time_ = base::TimeTicks::Now();
 }
 
 void VEAClient::DestroyEncoder() {
@@ -414,6 +425,11 @@ void VEAClient::DestroyEncoder() {
   if (!has_encoder())
     return;
   encoder_.release()->Destroy();
+}
+
+double VEAClient::frames_per_second() {
+  base::TimeDelta duration = last_frame_ready_time_ - encoder_initialized_time_;
+  return num_encoded_frames_ / duration.InSecondsF();
 }
 
 void VEAClient::RequireBitstreamBuffers(unsigned int input_count,
@@ -628,6 +644,7 @@ bool VEAClient::HandleEncodedFrame(bool keyframe) {
   CHECK_LE(num_encoded_frames_, num_frames_in_stream_);
 
   ++num_encoded_frames_;
+  last_frame_ready_time_ = base::TimeTicks::Now();
   if (keyframe) {
     // Got keyframe, reset keyframe detection regardless of whether we
     // got a frame in time or not.
@@ -708,6 +725,7 @@ TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
   ASSERT_EQ(note.Wait(), CS_ENCODING);
   ASSERT_EQ(note.Wait(), CS_FINISHING);
   ASSERT_EQ(note.Wait(), CS_FINISHED);
+  LOG(INFO) << "Encoder fps: " << client->frames_per_second();
 
   encoder_thread.message_loop()->PostTask(
       FROM_HERE,

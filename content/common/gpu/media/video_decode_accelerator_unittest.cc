@@ -945,8 +945,6 @@ int GLRenderingVDAClient::num_decoded_frames() {
 
 double GLRenderingVDAClient::frames_per_second() {
   base::TimeDelta delta = frame_delivery_times_.back() - initialize_done_ticks_;
-  if (delta.InSecondsF() == 0)
-    return 0;
   return num_decoded_frames() / delta.InSecondsF();
 }
 
@@ -1326,7 +1324,7 @@ TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
       EXPECT_EQ(client->num_done_bitstream_buffers(),
                 client->num_queued_fragments());
     }
-    VLOG(0) << "Decoder " << i << " fps: " << client->frames_per_second();
+    LOG(INFO) << "Decoder " << i << " fps: " << client->frames_per_second();
     if (!render_as_thumbnails) {
       int min_fps = suppress_rendering ?
           video_file->min_fps_no_render : video_file->min_fps_render;
@@ -1513,7 +1511,7 @@ TEST_F(VideoDecodeAcceleratorTest, TestDecodeTimeMedian) {
   std::string output_string =
       base::StringPrintf("Decode time median: %" PRId64 " us",
                          decode_time_median.InMicroseconds());
-  VLOG(0) << output_string;
+  LOG(INFO) << output_string;
 
   if (g_output_log != NULL)
     OutputLogFile(g_output_log, output_string);
