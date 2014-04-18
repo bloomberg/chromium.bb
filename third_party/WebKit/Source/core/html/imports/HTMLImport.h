@@ -37,10 +37,10 @@
 
 namespace WebCore {
 
-class CustomElementMicrotaskImportStep;
 class Document;
 class LocalFrame;
 class HTMLImportChild;
+class HTMLImportLoader;
 class HTMLImportsController;
 class KURL;
 
@@ -106,18 +106,17 @@ public:
     virtual ~HTMLImport() { }
 
     HTMLImport* root();
+    bool precedes(HTMLImport*);
     bool isRoot() const { return !isChild(); }
     bool isSync() const { return SyncMode(m_sync) == Sync; }
     const HTMLImportState& state() const { return m_state; }
 
-    void appendChild(HTMLImport*);
+    void appendImport(HTMLImport*);
 
     virtual bool isChild() const { return false; }
     virtual Document* document() const = 0;
     virtual bool isDone() const = 0; // FIXME: Should be renamed to haveFinishedLoading()
-    virtual bool hasLoader() const = 0;
-    virtual bool ownsLoader() const { return false; }
-    virtual CustomElementMicrotaskImportStep* customElementMicrotaskStep() const { return 0; }
+    virtual HTMLImportLoader* loader() const { return 0; }
     virtual void stateWillChange() { }
     virtual void stateDidChange();
 

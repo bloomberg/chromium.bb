@@ -44,9 +44,19 @@ HTMLImport* HTMLImport::root()
     return i;
 }
 
-void HTMLImport::appendChild(HTMLImport* child)
+bool HTMLImport::precedes(HTMLImport* import)
 {
-    TreeNode<HTMLImport>::appendChild(child);
+    for (HTMLImport* i = this; i; i = traverseNext(i)) {
+        if (i == import)
+            return true;
+    }
+
+    return false;
+}
+
+void HTMLImport::appendImport(HTMLImport* child)
+{
+    appendChild(child);
 
     // This prevents HTML parser from going beyond the
     // blockage line before the precise state is computed by recalcState().

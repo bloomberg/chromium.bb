@@ -9,8 +9,9 @@
 #include "core/dom/custom/CustomElementCallbackDispatcher.h"
 #include "core/dom/custom/CustomElementCallbackQueue.h"
 #include "core/dom/custom/CustomElementMicrotaskImportStep.h"
+#include "core/dom/custom/CustomElementMicrotaskQueue.h"
 #include "core/dom/custom/CustomElementScheduler.h"
-#include "core/html/imports/HTMLImport.h"
+#include "core/html/imports/HTMLImportLoader.h"
 #include "wtf/MainThread.h"
 
 namespace WebCore {
@@ -20,6 +21,7 @@ static const CustomElementCallbackQueue::ElementQueueId kMicrotaskQueueId = 0;
 CustomElementMicrotaskDispatcher::CustomElementMicrotaskDispatcher()
     : m_hasScheduledMicrotask(false)
     , m_phase(Quiescent)
+    , m_resolutionAndImports(CustomElementMicrotaskQueue::create())
 {
 }
 
@@ -29,14 +31,14 @@ CustomElementMicrotaskDispatcher& CustomElementMicrotaskDispatcher::instance()
     return instance;
 }
 
-void CustomElementMicrotaskDispatcher::enqueue(HTMLImport* import, PassOwnPtr<CustomElementMicrotaskStep> step)
+void CustomElementMicrotaskDispatcher::enqueue(HTMLImportLoader* importLoader, PassOwnPtr<CustomElementMicrotaskStep> step)
 {
     ASSERT(m_phase == Quiescent || m_phase == DispatchingCallbacks);
     ensureMicrotaskScheduled();
-    if (import && import->customElementMicrotaskStep())
-        import->customElementMicrotaskStep()->enqueue(step);
+    if (importLoader)
+        importLoader->microtaskQueue()->enqueue(step);
     else
-        m_resolutionAndImports.enqueue(step);
+        m_resolutionAndImports->enqueue(step);
 }
 
 void CustomElementMicrotaskDispatcher::enqueue(CustomElementCallbackQueue* queue)
@@ -79,7 +81,7 @@ void CustomElementMicrotaskDispatcher::doDispatch()
     ASSERT_WITH_SECURITY_IMPLICATION(!CustomElementCallbackDispatcher::inCallbackDeliveryScope());
 
     m_phase = Resolving;
-    m_resolutionAndImports.dispatch();
+    m_resolutionAndImports->dispatch();
 
     m_phase = DispatchingCallbacks;
     for (Vector<CustomElementCallbackQueue*>::iterator it = m_elements.begin();it != m_elements.end(); ++it) {

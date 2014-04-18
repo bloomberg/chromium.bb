@@ -27,11 +27,12 @@ start();
 <script>
 end();
 description("Test that a subimport should be loaded even if is linked as a top-level import.");
-console.log(marks.join("\n"));
 var expected = ["START:import-nested-dup-2.html",
                 "START:nest-dup-grand-parent.html",
                 "START:nest-dup-parent.html",
                 "START:nest-dup.html",
+                "START:nest-dup-child.html",
+                "END  :nest-dup-child.html",
                 "END  :nest-dup.html",
                 "END  :nest-dup-parent.html",
                 "END  :nest-dup-grand-parent.html",

@@ -132,9 +132,4 @@ bool LinkImport::hasLoaded() const
     return m_child && m_child->isDone() && !m_child->loaderHasError();
 }
 
-bool LinkImport::ownsLoader() const
-{
-    return m_child && m_child->hasLoader() && m_child->ownsLoader();
-}
-
 } // namespace WebCore

@@ -32,20 +32,23 @@
 #include "core/dom/custom/CustomElementMicrotaskImportStep.h"
 
 #include "core/dom/custom/CustomElementMicrotaskDispatcher.h"
+#include "core/dom/custom/CustomElementMicrotaskQueue.h"
 
 namespace WebCore {
 
-PassOwnPtr<CustomElementMicrotaskImportStep> CustomElementMicrotaskImportStep::create()
+PassOwnPtr<CustomElementMicrotaskImportStep> CustomElementMicrotaskImportStep::create(PassRefPtr<CustomElementMicrotaskQueue> queue)
 {
-    return adoptPtr(new CustomElementMicrotaskImportStep());
+    return adoptPtr(new CustomElementMicrotaskImportStep(queue));
 }
 
-void CustomElementMicrotaskImportStep::enqueue(PassOwnPtr<CustomElementMicrotaskStep> step)
+CustomElementMicrotaskImportStep::CustomElementMicrotaskImportStep(PassRefPtr<CustomElementMicrotaskQueue> queue)
+    : m_importFinished(false)
+    , m_queue(queue)
 {
-    // work should not be being created after the import is done
-    // because the parser is done
-    ASSERT(!m_importFinished);
-    m_queue.enqueue(step);
+}
+
+CustomElementMicrotaskImportStep::~CustomElementMicrotaskImportStep()
+{
 }
 
 void CustomElementMicrotaskImportStep::importDidFinish()
@@ -58,7 +61,7 @@ void CustomElementMicrotaskImportStep::importDidFinish()
 
 CustomElementMicrotaskStep::Result CustomElementMicrotaskImportStep::process()
 {
-    Result result = m_queue.dispatch();
+    Result result = m_queue->dispatch();
     if (!m_importFinished)
         result = Result(result | ShouldStop);
     return result;

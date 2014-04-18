@@ -15,7 +15,7 @@ namespace WebCore {
 class CustomElementCallbackQueue;
 class CustomElementMicrotaskImportStep;
 class CustomElementMicrotaskStep;
-class HTMLImport;
+class HTMLImportLoader;
 
 class CustomElementMicrotaskDispatcher {
     WTF_MAKE_NONCOPYABLE(CustomElementMicrotaskDispatcher);
@@ -24,7 +24,7 @@ public:
 
     static CustomElementMicrotaskDispatcher& instance();
 
-    void enqueue(HTMLImport*, PassOwnPtr<CustomElementMicrotaskStep>);
+    void enqueue(HTMLImportLoader*, PassOwnPtr<CustomElementMicrotaskStep>);
     void enqueue(CustomElementCallbackQueue*);
 
     void importDidFinish(CustomElementMicrotaskImportStep*);
@@ -46,7 +46,7 @@ private:
         DispatchingCallbacks
     } m_phase;
 
-    CustomElementMicrotaskQueue m_resolutionAndImports;
+    RefPtr<CustomElementMicrotaskQueue> m_resolutionAndImports;
     Vector<CustomElementCallbackQueue*> m_elements;
 };
 

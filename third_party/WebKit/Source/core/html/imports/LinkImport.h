@@ -66,7 +66,6 @@ public:
     virtual HTMLLinkElement* link() OVERRIDE;
 
     Document* importedDocument() const;
-    bool ownsLoader() const;
 
 private:
     void clear();

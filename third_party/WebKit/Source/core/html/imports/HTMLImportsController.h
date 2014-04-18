@@ -64,7 +64,6 @@ public:
     // HTMLImport
     virtual Document* document() const OVERRIDE;
     virtual bool isDone() const OVERRIDE;
-    virtual bool hasLoader() const OVERRIDE;
     virtual void stateWillChange() OVERRIDE;
     virtual void stateDidChange() OVERRIDE;
 

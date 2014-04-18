@@ -1,20 +1,10 @@
-CONSOLE MESSAGE: line 30: START:import-nested-dup-2.html
-START:nest-dup-grand-parent.html
-START:nest-dup-parent.html
-START:nest-dup.html
-END  :nest-dup.html
-END  :nest-dup-parent.html
-END  :nest-dup-grand-parent.html
-START:nest-dup-2-parent.html
-START:nest-dup-2.html
-END  :nest-dup-2.html
-END  :nest-dup-2-parent.html
-END  :import-nested-dup-2.html
 Test that a subimport should be loaded even if is linked as a top-level import.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+PASS marks[i] is expected[i]
+PASS marks[i] is expected[i]
 PASS marks[i] is expected[i]
 PASS marks[i] is expected[i]
 PASS marks[i] is expected[i]

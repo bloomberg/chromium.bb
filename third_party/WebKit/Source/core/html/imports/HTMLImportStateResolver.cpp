@@ -37,28 +37,18 @@ namespace WebCore {
 
 inline bool HTMLImportStateResolver::isBlockingFollowers(HTMLImport* import)
 {
-    if (!import->hasLoader())
+    if (!import->loader())
         return true;
-    if (!import->ownsLoader())
-        return false;
     return !import->state().isReady();
 }
 
-inline bool HTMLImportStateResolver::shouldBlockDocumentCreation() const
+inline bool HTMLImportStateResolver::shouldBlockScriptExecution() const
 {
-    // If any of its preceeding imports isn't ready, this import
-    // cannot start loading because such preceeding onces can include
-    // duplicating import that should wins over this.
     for (const HTMLImport* ancestor = m_import; ancestor; ancestor = ancestor->parent()) {
         if (ancestor->previous() && isBlockingFollowers(ancestor->previous()))
             return true;
     }
 
-    return false;
-}
-
-inline bool HTMLImportStateResolver::shouldBlockScriptExecution() const
-{
     for (HTMLImport* child = m_import->firstChild(); child; child = child->next()) {
         if (child->isSync() && isBlockingFollowers(child))
             return true;
@@ -74,8 +64,6 @@ inline bool HTMLImportStateResolver::isActive() const
 
 HTMLImportState HTMLImportStateResolver::resolve() const
 {
-    if (shouldBlockDocumentCreation())
-        return HTMLImportState(HTMLImportState::BlockingDocumentCreation);
     if (shouldBlockScriptExecution())
         return HTMLImportState(HTMLImportState::BlockingScriptExecution);
     if (isActive())

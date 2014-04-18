@@ -48,7 +48,6 @@ public:
 private:
     static bool isBlockingFollowers(HTMLImport*);
 
-    bool shouldBlockDocumentCreation() const;
     bool shouldBlockScriptExecution() const;
     bool isActive() const;
 

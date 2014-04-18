@@ -34,22 +34,28 @@
 #include "core/dom/custom/CustomElementMicrotaskStep.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
 
-class CustomElementMicrotaskQueue {
+class CustomElementMicrotaskQueue : public RefCounted<CustomElementMicrotaskQueue> {
     WTF_MAKE_NONCOPYABLE(CustomElementMicrotaskQueue);
 public:
-    CustomElementMicrotaskQueue() { }
+    static PassRefPtr<CustomElementMicrotaskQueue> create() { return adoptRef(new CustomElementMicrotaskQueue()); }
 
-    bool isEmpty() { return m_queue.isEmpty(); }
+
+    bool isEmpty() const { return m_queue.isEmpty(); }
     void enqueue(PassOwnPtr<CustomElementMicrotaskStep>);
 
     typedef CustomElementMicrotaskStep::Result Result;
     Result dispatch();
 
 private:
+    CustomElementMicrotaskQueue() { }
+
     Vector<OwnPtr<CustomElementMicrotaskStep> > m_queue;
 };
 

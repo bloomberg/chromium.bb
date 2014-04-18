@@ -33,6 +33,7 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/StyleEngine.h"
+#include "core/dom/custom/CustomElementMicrotaskQueue.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/imports/HTMLImportChild.h"
 #include "core/html/imports/HTMLImportsController.h"
@@ -45,6 +46,7 @@ namespace WebCore {
 HTMLImportLoader::HTMLImportLoader(HTMLImportsController* controller)
     : m_controller(controller)
     , m_state(StateLoading)
+    , m_microtaskQueue(CustomElementMicrotaskQueue::create())
 {
 }
 
@@ -180,18 +182,45 @@ void HTMLImportLoader::didFinishLoading()
     ASSERT(!m_importedDocument || !m_importedDocument->parsing());
 }
 
-void HTMLImportLoader::addImport(HTMLImportChild* client)
+void HTMLImportLoader::addImport(HTMLImportChild* import)
 {
-    ASSERT(kNotFound == m_imports.find(client));
-    m_imports.append(client);
+    ASSERT(kNotFound == m_imports.find(import));
+
+    // Ensuring firstImport() manages all children that is loaded by the document.
+    //
+    // FIXME:
+    //   This is a design flaw.
+    //   Import children should be managed by HTMLImportLoader, not by HTMLImport.
+    if (!m_imports.isEmpty() && import->precedes(firstImport())) {
+        import->takeChildrenFrom(firstImport());
+        m_imports.insert(0, import);
+    } else {
+        m_imports.append(import);
+    }
+
     if (isDone())
-        client->didFinishLoading();
+        import->didFinishLoading();
 }
 
 void HTMLImportLoader::removeImport(HTMLImportChild* client)
 {
     ASSERT(kNotFound != m_imports.find(client));
     m_imports.remove(m_imports.find(client));
+}
+
+bool HTMLImportLoader::shouldBlockScriptExecution() const
+{
+    for (size_t i = 0; i < m_imports.size(); ++i) {
+        if (!m_imports[i]->state().shouldBlockScriptExecution())
+            return false;
+    }
+
+    return true;
+}
+
+PassRefPtr<CustomElementMicrotaskQueue> HTMLImportLoader::microtaskQueue() const
+{
+    return m_microtaskQueue;
 }
 
 } // namespace WebCore

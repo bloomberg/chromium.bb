@@ -31,12 +31,15 @@
 #ifndef CustomElementMicrotaskImportStep_h
 #define CustomElementMicrotaskImportStep_h
 
-#include "core/dom/custom/CustomElementMicrotaskQueue.h"
 #include "core/dom/custom/CustomElementMicrotaskStep.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
+
+class CustomElementMicrotaskQueue;
 
 // Processes the Custom Elements in an HTML Import. This is a
 // composite step which processes the Custom Elements created by
@@ -47,23 +50,20 @@ namespace WebCore {
 class CustomElementMicrotaskImportStep : public CustomElementMicrotaskStep {
     WTF_MAKE_NONCOPYABLE(CustomElementMicrotaskImportStep);
 public:
-    static PassOwnPtr<CustomElementMicrotaskImportStep> create();
-    virtual ~CustomElementMicrotaskImportStep() { }
-
-    // API for CustomElementScheduler
-    void enqueue(PassOwnPtr<CustomElementMicrotaskStep>);
+    static PassOwnPtr<CustomElementMicrotaskImportStep> create(PassRefPtr<CustomElementMicrotaskQueue>);
+    virtual ~CustomElementMicrotaskImportStep();
 
     // API for HTML Imports
     void importDidFinish();
 
 private:
-    CustomElementMicrotaskImportStep() : m_importFinished(false) { }
+    CustomElementMicrotaskImportStep(PassRefPtr<CustomElementMicrotaskQueue>);
 
     // CustomElementMicrotaskStep
     virtual Result process() OVERRIDE FINAL;
 
     bool m_importFinished;
-    CustomElementMicrotaskQueue m_queue;
+    RefPtr<CustomElementMicrotaskQueue> m_queue;
 };
 
 }

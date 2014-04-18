@@ -135,6 +135,16 @@ public:
         return child;
     }
 
+    void takeChildrenFrom(NodeType* oldParent)
+    {
+        ASSERT(oldParent != this);
+        while (oldParent->hasChildren()) {
+            NodeType* child = oldParent->firstChild();
+            oldParent->removeChild(child);
+            this->appendChild(child);
+        }
+    }
+
 private:
     NodeType* m_next;
     NodeType* m_previous;

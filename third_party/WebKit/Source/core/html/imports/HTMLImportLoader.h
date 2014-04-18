@@ -33,14 +33,18 @@
 
 #include "core/fetch/RawResource.h"
 #include "core/fetch/ResourceOwner.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
 
+class CustomElementMicrotaskQueue;
 class Document;
 class DocumentWriter;
 class HTMLImportChild;
 class HTMLImportsController;
+
 
 //
 // Owning imported Document lifetime. It also implements ResourceClient through ResourceOwner
@@ -73,12 +77,14 @@ public:
 
     bool isDone() const { return m_state == StateLoaded || m_state == StateError; }
     bool hasError() const { return m_state == StateError; }
+    bool shouldBlockScriptExecution() const;
 
     void importDestroyed();
     void startLoading(const ResourcePtr<RawResource>&);
     void didFinishParsing();
     void didRemoveAllPendingStylesheet();
-    bool isOwnedBy(const HTMLImportChild* import) const { return m_imports[0] == import; }
+
+    PassRefPtr<CustomElementMicrotaskQueue> microtaskQueue() const;
 
 private:
     HTMLImportLoader(HTMLImportsController*);
@@ -103,6 +109,7 @@ private:
     State m_state;
     RefPtr<Document> m_importedDocument;
     RefPtr<DocumentWriter> m_writer;
+    RefPtr<CustomElementMicrotaskQueue> m_microtaskQueue;
 };
 
 } // namespace WebCore

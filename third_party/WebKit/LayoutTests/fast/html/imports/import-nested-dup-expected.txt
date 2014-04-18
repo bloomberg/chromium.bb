@@ -9,6 +9,8 @@ PASS marks[i] is expected[i]
 PASS marks[i] is expected[i]
 PASS marks[i] is expected[i]
 PASS marks[i] is expected[i]
+PASS marks[i] is expected[i]
+PASS marks[i] is expected[i]
 PASS marks.length is expected.length
 PASS successfullyParsed is true
 

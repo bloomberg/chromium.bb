@@ -70,9 +70,7 @@ public:
     virtual bool isChild() const OVERRIDE { return true; }
     virtual Document* document() const OVERRIDE;
     virtual bool isDone() const OVERRIDE;
-    virtual bool hasLoader() const OVERRIDE;
-    virtual bool ownsLoader() const OVERRIDE;
-    virtual CustomElementMicrotaskImportStep* customElementMicrotaskStep() const OVERRIDE FINAL { return m_customElementMicrotaskStep; }
+    virtual HTMLImportLoader* loader() const OVERRIDE { return m_loader; }
     virtual void stateWillChange() OVERRIDE;
     virtual void stateDidChange() OVERRIDE;
 

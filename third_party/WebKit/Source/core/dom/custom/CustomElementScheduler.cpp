@@ -38,6 +38,7 @@
 #include "core/dom/custom/CustomElementLifecycleCallbacks.h"
 #include "core/dom/custom/CustomElementMicrotaskDispatcher.h"
 #include "core/dom/custom/CustomElementMicrotaskImportStep.h"
+#include "core/dom/custom/CustomElementMicrotaskQueue.h"
 #include "core/dom/custom/CustomElementMicrotaskResolutionStep.h"
 #include "core/dom/custom/CustomElementRegistrationContext.h"
 #include "core/html/imports/HTMLImportChild.h"
@@ -76,7 +77,7 @@ void CustomElementScheduler::resolveOrScheduleResolution(PassRefPtr<CustomElemen
 
     HTMLImportLoader* loader = element->document().importLoader();
     OwnPtr<CustomElementMicrotaskResolutionStep> step = CustomElementMicrotaskResolutionStep::create(context, element, descriptor);
-    CustomElementMicrotaskDispatcher::instance().enqueue(loader ? loader->firstImport() : 0, step.release());
+    CustomElementMicrotaskDispatcher::instance().enqueue(loader, step.release());
 }
 
 CustomElementMicrotaskImportStep* CustomElementScheduler::scheduleImport(HTMLImportChild* import)
@@ -84,12 +85,12 @@ CustomElementMicrotaskImportStep* CustomElementScheduler::scheduleImport(HTMLImp
     ASSERT(!import->isDone());
     ASSERT(import->parent());
 
-    OwnPtr<CustomElementMicrotaskImportStep> step = CustomElementMicrotaskImportStep::create();
+    OwnPtr<CustomElementMicrotaskImportStep> step = CustomElementMicrotaskImportStep::create(import->loader()->microtaskQueue());
     CustomElementMicrotaskImportStep* rawStep = step.get();
 
     // Ownership of the new step is transferred to the parent
     // processing step, or the base queue.
-    CustomElementMicrotaskDispatcher::instance().enqueue(import->parent(), step.release());
+    CustomElementMicrotaskDispatcher::instance().enqueue(import->parent()->loader(), step.release());
 
     return rawStep;
 }

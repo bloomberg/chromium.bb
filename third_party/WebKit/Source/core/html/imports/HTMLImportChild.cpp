@@ -72,6 +72,7 @@ void HTMLImportChild::wasAlreadyLoaded()
 {
     ASSERT(!m_loader);
     ASSERT(m_client);
+    ensureLoader();
     stateWillChange();
 }
 
@@ -80,20 +81,7 @@ void HTMLImportChild::startLoading(const ResourcePtr<RawResource>& resource)
     ASSERT(!this->resource());
     ASSERT(!m_loader);
 
-    if (isSync()) {
-        ASSERT(!m_customElementMicrotaskStep);
-        m_customElementMicrotaskStep = CustomElement::didCreateImport(this);
-    }
-
     setResource(resource);
-
-    // If the node is "document blocked", it cannot create HTMLImportLoader
-    // even if there is no sharable one found, as there is possibility that
-    // preceding imports load the sharable imports.
-    // In that case preceding one should win because it comes first in the tree order.
-    // See also didUnblockFromCreatingDocument().
-    if (state().shouldBlockDocumentCreation())
-        return;
 
     ensureLoader();
 }
@@ -134,7 +122,7 @@ void HTMLImportChild::importDestroyed()
 
 Document* HTMLImportChild::document() const
 {
-    return (m_loader && m_loader->isOwnedBy(this)) ? m_loader->document() : 0;
+    return m_loader ? m_loader->document() : 0;
 }
 
 void HTMLImportChild::stateWillChange()
@@ -146,11 +134,7 @@ void HTMLImportChild::stateDidChange()
 {
     HTMLImport::stateDidChange();
 
-    // Once all preceding imports are loaded,
-    // HTMLImportChild can decide whether it should load the import by itself
-    // or it can share existing one.
-    if (!state().shouldBlockDocumentCreation())
-        ensureLoader();
+    ensureLoader();
     if (state().isReady())
         didFinish();
 }
@@ -164,11 +148,15 @@ void HTMLImportChild::ensureLoader()
         shareLoader(found);
     else
         createLoader();
+
+    if (isSync() && !isDone()) {
+        ASSERT(!m_customElementMicrotaskStep);
+        m_customElementMicrotaskStep = CustomElement::didCreateImport(this);
+    }
 }
 
 void HTMLImportChild::createLoader()
 {
-    ASSERT(!state().shouldBlockDocumentCreation());
     ASSERT(!m_loader);
     m_loader = toHTMLImportsController(root())->createLoader();
     m_loader->addImport(this);
@@ -186,16 +174,6 @@ void HTMLImportChild::shareLoader(HTMLImportChild* loader)
 bool HTMLImportChild::isDone() const
 {
     return m_loader && m_loader->isDone();
-}
-
-bool HTMLImportChild::hasLoader() const
-{
-    return m_loader;
-}
-
-bool HTMLImportChild::ownsLoader() const
-{
-    return m_loader && m_loader->isOwnedBy(this);
 }
 
 bool HTMLImportChild::loaderHasError() const
@@ -229,9 +207,8 @@ HTMLLinkElement* HTMLImportChild::link() const
 void HTMLImportChild::showThis()
 {
     HTMLImport::showThis();
-    fprintf(stderr, " loader=%p own=%s async=%s url=%s",
+    fprintf(stderr, " loader=%p sync=%s url=%s",
         m_loader,
-        hasLoader() && ownsLoader() ? "Y" : "N",
         isSync() ? "Y" : "N",
         url().string().utf8().data());
 }

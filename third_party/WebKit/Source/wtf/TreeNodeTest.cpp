@@ -168,6 +168,21 @@ TEST(WTF, TreeNodeRemoveFirst)
     EXPECT_EQ(trio.root->lastChild(), trio.lastChild.get());
 }
 
+TEST(WTF, TreeNodeTakeChildrenFrom)
+{
+    RefPtr<TestTree> newParent = TestTree::create();
+    Trio trio;
+    trio.appendChildren();
+
+    newParent->takeChildrenFrom(trio.root.get());
+
+    EXPECT_FALSE(trio.root->hasChildren());
+    EXPECT_TRUE(newParent->hasChildren());
+    EXPECT_EQ(trio.firstChild.get(), newParent->firstChild());
+    EXPECT_EQ(trio.middleChild.get(), newParent->firstChild()->next());
+    EXPECT_EQ(trio.lastChild.get(), newParent->lastChild());
+}
+
 class TrioWithGrandChild : public Trio {
 public:
     TrioWithGrandChild()

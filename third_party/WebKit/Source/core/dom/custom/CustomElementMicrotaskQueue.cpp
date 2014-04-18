@@ -35,6 +35,46 @@
 
 namespace WebCore {
 
+class MicrotaskQueueInvocationScope {
+public:
+#if defined(NDEBUG)
+    explicit MicrotaskQueueInvocationScope(CustomElementMicrotaskQueue*) { }
+#else
+    explicit MicrotaskQueueInvocationScope(CustomElementMicrotaskQueue* queue)
+        : m_parent(s_top)
+        , m_queue(queue)
+    {
+        s_top = this;
+        ASSERT(m_queue->isEmpty() || !hasReenter());
+    }
+
+    ~MicrotaskQueueInvocationScope()
+    {
+        s_top = m_parent;
+    }
+
+private:
+    bool hasReenter() const
+    {
+        for (MicrotaskQueueInvocationScope* scope = this->m_parent; scope; scope = scope->m_parent) {
+            if (scope->m_queue == m_queue)
+                return true;
+        }
+
+        return false;
+    }
+
+    MicrotaskQueueInvocationScope* m_parent;
+    CustomElementMicrotaskQueue* m_queue;
+
+    static MicrotaskQueueInvocationScope* s_top;
+#endif
+};
+
+#if !defined(NDEBUG)
+MicrotaskQueueInvocationScope* MicrotaskQueueInvocationScope::s_top = 0;
+#endif
+
 void CustomElementMicrotaskQueue::enqueue(PassOwnPtr<CustomElementMicrotaskStep> step)
 {
     m_queue.append(step);
@@ -42,6 +82,7 @@ void CustomElementMicrotaskQueue::enqueue(PassOwnPtr<CustomElementMicrotaskStep>
 
 CustomElementMicrotaskStep::Result CustomElementMicrotaskQueue::dispatch()
 {
+    MicrotaskQueueInvocationScope scope(this);
     Result result = Result(0);
 
     unsigned i;

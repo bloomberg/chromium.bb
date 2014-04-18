@@ -38,19 +38,17 @@ namespace WebCore {
 class HTMLImportState {
 public:
     enum Value {
-        BlockingDocumentCreation = 0,
-        BlockingScriptExecution,
+        BlockingScriptExecution = 0,
         Active,
         Ready,
         Invalid
     };
 
-    explicit HTMLImportState(Value value = BlockingDocumentCreation)
+    explicit HTMLImportState(Value value = BlockingScriptExecution)
         : m_value(value)
     { }
 
     bool shouldBlockScriptExecution() const { return checkedValue() <= BlockingScriptExecution; }
-    bool shouldBlockDocumentCreation() const { return checkedValue() <= BlockingDocumentCreation; }
     bool isReady() const { return checkedValue() == Ready; }
     bool isValid() const { return m_value != Invalid; }
     bool operator==(const HTMLImportState& other) const { return m_value == other.m_value; }
@@ -62,7 +60,7 @@ public:
 #endif
 
     static HTMLImportState invalidState() { return HTMLImportState(Invalid); }
-    static HTMLImportState blockedState() { return HTMLImportState(BlockingDocumentCreation); }
+    static HTMLImportState blockedState() { return HTMLImportState(BlockingScriptExecution); }
 private:
     Value checkedValue() const;
     Value m_value;

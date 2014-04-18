@@ -79,11 +79,22 @@ void HTMLImportsController::clear()
     m_recalcTimer.stop();
 }
 
+static bool makesCycle(HTMLImport* parent, const KURL& url)
+{
+    for (HTMLImport* ancestor = parent; ancestor; ancestor = ancestor->parent()) {
+        if (!ancestor->isRoot() && equalIgnoringFragmentIdentifier(toHTMLImportChild(parent)->url(), url))
+            return true;
+    }
+
+    return false;
+}
+
 HTMLImportChild* HTMLImportsController::createChild(const KURL& url, HTMLImport* parent, HTMLImportChildClient* client)
 {
-    OwnPtr<HTMLImportChild> loader = adoptPtr(new HTMLImportChild(*m_master, url, client->isSync() ? HTMLImport::Sync : HTMLImport::Async));
+    HTMLImport::SyncMode mode = client->isSync() && !makesCycle(parent, url) ? HTMLImport::Sync : HTMLImport::Async;
+    OwnPtr<HTMLImportChild> loader = adoptPtr(new HTMLImportChild(*m_master, url, mode));
     loader->setClient(client);
-    parent->appendChild(loader.get());
+    parent->appendImport(loader.get());
     m_imports.append(loader.release());
     return m_imports.last().get();
 }
@@ -123,7 +134,7 @@ HTMLImportChild* HTMLImportsController::findLinkFor(const KURL& url, HTMLImport*
 {
     for (size_t i = 0; i < m_imports.size(); ++i) {
         HTMLImportChild* candidate = m_imports[i].get();
-        if (candidate != excluding && equalIgnoringFragmentIdentifier(candidate->url(), url) && candidate->hasLoader())
+        if (candidate != excluding && equalIgnoringFragmentIdentifier(candidate->url(), url) && candidate->loader())
             return candidate;
     }
 
@@ -154,7 +165,7 @@ bool HTMLImportsController::shouldBlockScriptExecution(const Document& document)
 {
     ASSERT(document.importsController() == this);
     if (HTMLImportLoader* loader = loaderFor(document))
-        return loader->firstImport()->state().shouldBlockScriptExecution();
+        return loader->shouldBlockScriptExecution();
     return state().shouldBlockScriptExecution();
 }
 
@@ -163,11 +174,6 @@ void HTMLImportsController::wasDetachedFrom(const Document& document)
     ASSERT(document.importsController() == this);
     if (m_master == &document)
         clear();
-}
-
-bool HTMLImportsController::hasLoader() const
-{
-    return true;
 }
 
 bool HTMLImportsController::isDone() const

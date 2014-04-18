@@ -1,0 +1,13 @@
+CONSOLE MESSAGE: line 11: MY-CUSTOM:using-toplevel-1
+CONSOLE MESSAGE: line 11: MY-CUSTOM:using-1-before
+CONSOLE MESSAGE: line 11: MY-CUSTOM:pointing-before
+CONSOLE MESSAGE: line 11: MY-CUSTOM:def-before
+CONSOLE MESSAGE: line 11: MY-CUSTOM:def-after
+CONSOLE MESSAGE: line 11: MY-CUSTOM:pointing-after
+CONSOLE MESSAGE: line 11: MY-CUSTOM:using-1-after
+CONSOLE MESSAGE: line 11: MY-CUSTOM:using-2-before
+CONSOLE MESSAGE: line 11: MY-CUSTOM:using-2-after
+CONSOLE MESSAGE: line 11: MY-CUSTOM:using-toplevel-2
+ 
+PASS Custom Element invocations preserve tree order across imports regardless the loading order. 
+
