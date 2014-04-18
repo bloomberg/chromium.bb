@@ -121,6 +121,14 @@ PermissionMessages ChromePermissionMessageProvider::GetPermissionMessages(
   SuppressMessage(messages,
                   PermissionMessage::kBookmarks,
                   PermissionMessage::kOverrideBookmarksUI);
+  // Both tabs and history already allow reading favicons.
+  SuppressMessage(messages,
+                  PermissionMessage::kTabs,
+                  PermissionMessage::kFavicon);
+  SuppressMessage(messages,
+                  PermissionMessage::kBrowsingHistory,
+                  PermissionMessage::kFavicon);
+  // Warning for history permission already covers warning for tabs permission.
   SuppressMessage(messages,
                   PermissionMessage::kBrowsingHistory,
                   PermissionMessage::kTabs);
