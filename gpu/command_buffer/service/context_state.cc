@@ -188,29 +188,87 @@ void ContextState::RestoreActiveTextureUnitBinding(unsigned int target) const {
     glBindTexture(target, GetServiceId(texture_unit, target));
 }
 
-void ContextState::RestoreAttribute(GLuint attrib_index) const {
-  const VertexAttrib* attrib =
-      vertex_attrib_manager->GetVertexAttrib(attrib_index);
-  const void* ptr = reinterpret_cast<const void*>(attrib->offset());
-  Buffer* buffer = attrib->buffer();
-  glBindBuffer(GL_ARRAY_BUFFER, buffer ? buffer->service_id() : 0);
-  glVertexAttribPointer(
-      attrib_index, attrib->size(), attrib->type(), attrib->normalized(),
-      attrib->gl_stride(), ptr);
-  if (attrib->divisor())
-    glVertexAttribDivisorANGLE(attrib_index, attrib->divisor());
-  // Never touch vertex attribute 0's state (in particular, never
-  // disable it) when running on desktop GL because it will never be
-  // re-enabled.
-  if (attrib_index != 0 ||
-      gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2) {
-    if (attrib->enabled()) {
-      glEnableVertexAttribArray(attrib_index);
-    } else {
-      glDisableVertexAttribArray(attrib_index);
+void ContextState::RestoreVertexAttribValues() const {
+  for (size_t attrib = 0; attrib < vertex_attrib_manager->num_attribs();
+       ++attrib) {
+    glVertexAttrib4fv(attrib, attrib_values[attrib].v);
+  }
+}
+
+void ContextState::RestoreVertexAttribArrays(
+    const scoped_refptr<VertexAttribManager> attrib_manager) const {
+  // This is expected to be called only for VAO with service_id 0,
+  // either to restore the default VAO or a virtual VAO with service_id 0.
+  GLuint vao_service_id = attrib_manager->service_id();
+  DCHECK(vao_service_id == 0);
+
+  // Bind VAO if supported.
+  if (feature_info_->feature_flags().native_vertex_array_object)
+    glBindVertexArrayOES(vao_service_id);
+
+  // Restore vertex attrib arrays.
+  for (size_t attrib_index = 0; attrib_index < attrib_manager->num_attribs();
+       ++attrib_index) {
+    const VertexAttrib* attrib = attrib_manager->GetVertexAttrib(attrib_index);
+
+    // Restore vertex array.
+    Buffer* buffer = attrib->buffer();
+    GLuint buffer_service_id = buffer ? buffer->service_id() : 0;
+    glBindBuffer(GL_ARRAY_BUFFER, buffer_service_id);
+    const void* ptr = reinterpret_cast<const void*>(attrib->offset());
+    glVertexAttribPointer(attrib_index,
+                          attrib->size(),
+                          attrib->type(),
+                          attrib->normalized(),
+                          attrib->gl_stride(),
+                          ptr);
+
+    // Restore attrib divisor if supported.
+    if (feature_info_->feature_flags().angle_instanced_arrays)
+      glVertexAttribDivisorANGLE(attrib_index, attrib->divisor());
+
+    // Never touch vertex attribute 0's state (in particular, never
+    // disable it) when running on desktop GL because it will never be
+    // re-enabled.
+    if (attrib_index != 0 ||
+        gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2) {
+      if (attrib->enabled()) {
+        glEnableVertexAttribArray(attrib_index);
+      } else {
+        glDisableVertexAttribArray(attrib_index);
+      }
     }
   }
-  glVertexAttrib4fv(attrib_index, attrib_values[attrib_index].v);
+}
+
+void ContextState::RestoreVertexAttribs() const {
+  // Restore Vertex Attrib Arrays
+  // TODO: This if should not be needed. RestoreState is getting called
+  // before GLES2Decoder::Initialize which is a bug.
+  if (vertex_attrib_manager.get()) {
+    // Restore VAOs.
+    if (feature_info_->feature_flags().native_vertex_array_object) {
+      // If default VAO is still using shared id 0 instead of unique ids
+      // per-context, default VAO state must be restored.
+      GLuint default_vao_service_id =
+          default_vertex_attrib_manager->service_id();
+      if (default_vao_service_id == 0)
+        RestoreVertexAttribArrays(default_vertex_attrib_manager);
+
+      // Restore the current VAO binding, unless it's the same as the
+      // default above.
+      GLuint curr_vao_service_id = vertex_attrib_manager->service_id();
+      if (curr_vao_service_id != 0)
+        glBindVertexArrayOES(curr_vao_service_id);
+    } else {
+      // If native VAO isn't supported, emulated VAOs are used.
+      // Restore to the currently bound VAO.
+      RestoreVertexAttribArrays(vertex_attrib_manager);
+    }
+  }
+
+  // glVertexAttrib4fv aren't part of VAO state and must be restored.
+  RestoreVertexAttribValues();
 }
 
 void ContextState::RestoreGlobalState(const ContextState* prev_state) const {
@@ -220,18 +278,7 @@ void ContextState::RestoreGlobalState(const ContextState* prev_state) const {
 
 void ContextState::RestoreState(const ContextState* prev_state) const {
   RestoreAllTextureUnitBindings(prev_state);
-
-  // Restore Attrib State
-  // TODO: This if should not be needed. RestoreState is getting called
-  // before GLES2Decoder::Initialize which is a bug.
-  if (vertex_attrib_manager.get()) {
-    // TODO(gman): Move this restoration to VertexAttribManager.
-    for (size_t attrib = 0; attrib < vertex_attrib_manager->num_attribs();
-         ++attrib) {
-      RestoreAttribute(attrib);
-    }
-  }
-
+  RestoreVertexAttribs();
   RestoreBufferBindings();
   RestoreRenderbufferBindings();
   RestoreProgramBindings();

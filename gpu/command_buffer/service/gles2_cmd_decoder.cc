@@ -612,9 +612,6 @@ class GLES2DecoderImpl : public GLES2Decoder,
       unsigned int target) const OVERRIDE {
     state_.RestoreActiveTextureUnitBinding(target);
   }
-  virtual void RestoreAttribute(unsigned index) const OVERRIDE {
-    state_.RestoreAttribute(index);
-  }
   virtual void RestoreBufferBindings() const OVERRIDE {
     state_.RestoreBufferBindings();
   }
@@ -1662,9 +1659,6 @@ class GLES2DecoderImpl : public GLES2Decoder,
   bool unpack_premultiply_alpha_;
   bool unpack_unpremultiply_alpha_;
 
-  // Default vertex attribs manager, used when no VAOs are bound.
-  scoped_refptr<VertexAttribManager> default_vertex_attrib_manager_;
-
   // The buffer we bind to attrib 0 since OpenGL requires it (ES does not).
   GLuint attrib_0_buffer_id_;
 
@@ -2363,12 +2357,12 @@ bool GLES2DecoderImpl::Initialize(
   disallowed_features_ = disallowed_features;
 
   state_.attrib_values.resize(group_->max_vertex_attribs());
-  default_vertex_attrib_manager_ = new VertexAttribManager();
-  default_vertex_attrib_manager_->Initialize(
+  state_.default_vertex_attrib_manager = new VertexAttribManager();
+  state_.default_vertex_attrib_manager->Initialize(
       group_->max_vertex_attribs(),
       feature_info_->workarounds().init_vertex_attributes);
 
-  // vertex_attrib_manager is set to default_vertex_attrib_manager_ by this call
+  // vertex_attrib_manager is set to default_vertex_attrib_manager by this call
   DoBindVertexArrayOES(0);
 
   query_manager_.reset(new QueryManager(this, feature_info_.get()));
@@ -3319,7 +3313,7 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
 
   // Unbind everything.
   state_.vertex_attrib_manager = NULL;
-  default_vertex_attrib_manager_ = NULL;
+  state_.default_vertex_attrib_manager = NULL;
   state_.texture_units.clear();
   state_.bound_array_buffer = NULL;
   state_.current_queries.clear();
@@ -3914,6 +3908,11 @@ void GLES2DecoderImpl::RestoreTextureState(unsigned service_id) const {
 }
 
 void GLES2DecoderImpl::ClearAllAttributes() const {
+  // Must use native VAO 0, as RestoreAllAttributes can't fully restore
+  // other VAOs.
+  if (feature_info_->feature_flags().native_vertex_array_object)
+    glBindVertexArrayOES(0);
+
   for (uint32 i = 0; i < group_->max_vertex_attribs(); ++i) {
     if (i != 0) // Never disable attribute 0
       glDisableVertexAttribArray(i);
@@ -3923,8 +3922,7 @@ void GLES2DecoderImpl::ClearAllAttributes() const {
 }
 
 void GLES2DecoderImpl::RestoreAllAttributes() const {
-  for (uint32 i = 0; i < group_->max_vertex_attribs(); ++i)
-    RestoreAttribute(i);
+  state_.RestoreVertexAttribs();
 }
 
 void GLES2DecoderImpl::OnFboChanged() const {
@@ -4497,7 +4495,7 @@ bool GLES2DecoderImpl::GetHelper(
       *num_written = 1;
       if (params) {
         if (state_.vertex_attrib_manager.get() !=
-            default_vertex_attrib_manager_.get()) {
+            state_.default_vertex_attrib_manager.get()) {
           GLuint client_id = 0;
           vertex_array_manager_->GetClientId(
               state_.vertex_attrib_manager->service_id(), &client_id);
@@ -7095,7 +7093,7 @@ error::Error GLES2DecoderImpl::HandleVertexAttribPointer(
   if (!state_.bound_array_buffer.get() ||
       state_.bound_array_buffer->IsDeleted()) {
     if (state_.vertex_attrib_manager.get() ==
-        default_vertex_attrib_manager_.get()) {
+        state_.default_vertex_attrib_manager.get()) {
       LOCAL_SET_GL_ERROR(
           GL_INVALID_VALUE, "glVertexAttribPointer", "no array buffer bound");
       return error::kNoError;
@@ -9686,7 +9684,7 @@ void GLES2DecoderImpl::DoBindVertexArrayOES(GLuint client_id) {
       service_id = vao->service_id();
     }
   } else {
-    vao = default_vertex_attrib_manager_.get();
+    vao = state_.default_vertex_attrib_manager.get();
   }
 
   // Only set the VAO state if it's changed

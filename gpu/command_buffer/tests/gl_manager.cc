@@ -142,15 +142,15 @@ void GLManager::Initialize(const GLManager::Options& options) {
   surface_ = gfx::GLSurface::CreateOffscreenGLSurface(options.size);
   ASSERT_TRUE(surface_.get() != NULL) << "could not create offscreen surface";
 
-  if (real_gl_context) {
+  if (base_context_) {
     context_ = scoped_refptr<gfx::GLContext>(new gpu::GLContextVirtual(
-        share_group_.get(), real_gl_context, decoder_->AsWeakPtr()));
+        share_group_.get(), base_context_->get(), decoder_->AsWeakPtr()));
     ASSERT_TRUE(context_->Initialize(
         surface_.get(), gfx::PreferIntegratedGpu));
   } else {
-    if (base_context_) {
+    if (real_gl_context) {
       context_ = scoped_refptr<gfx::GLContext>(new gpu::GLContextVirtual(
-          share_group_.get(), base_context_->get(), decoder_->AsWeakPtr()));
+          share_group_.get(), real_gl_context, decoder_->AsWeakPtr()));
       ASSERT_TRUE(context_->Initialize(
           surface_.get(), gfx::PreferIntegratedGpu));
     } else {

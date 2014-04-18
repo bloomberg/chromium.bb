@@ -108,7 +108,10 @@ struct GPU_EXPORT ContextState {
   void RestoreActiveTexture() const;
   void RestoreAllTextureUnitBindings(const ContextState* prev_state) const;
   void RestoreActiveTextureUnitBinding(unsigned int target) const;
-  void RestoreAttribute(GLuint index) const;
+  void RestoreVertexAttribValues() const;
+  void RestoreVertexAttribArrays(
+      const scoped_refptr<VertexAttribManager> attrib_manager) const;
+  void RestoreVertexAttribs() const;
   void RestoreBufferBindings() const;
   void RestoreGlobalState(const ContextState* prev_state) const;
   void RestoreProgramBindings() const;
@@ -146,6 +149,7 @@ struct GPU_EXPORT ContextState {
 
   // Class that manages vertex attribs.
   scoped_refptr<VertexAttribManager> vertex_attrib_manager;
+  scoped_refptr<VertexAttribManager> default_vertex_attrib_manager;
 
   // The program in use by glUseProgram
   scoped_refptr<Program> current_program;
