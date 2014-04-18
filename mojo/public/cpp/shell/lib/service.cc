@@ -7,13 +7,13 @@
 namespace mojo {
 namespace internal {
 
-ServiceFactoryBase::Owner::Owner(ScopedShellHandle shell_handle)
+ServiceConnectorBase::Owner::Owner(ScopedShellHandle shell_handle)
   : shell_(shell_handle.Pass(), this) {
 }
 
-ServiceFactoryBase::Owner::~Owner() {}
+ServiceConnectorBase::Owner::~Owner() {}
 
-ServiceFactoryBase::~ServiceFactoryBase() {}
+ServiceConnectorBase::~ServiceConnectorBase() {}
 
 }  // namespace internal
 }  // namespace mojo

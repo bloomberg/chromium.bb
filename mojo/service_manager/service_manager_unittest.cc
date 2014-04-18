@@ -25,7 +25,7 @@ struct TestContext {
 };
 
 class TestServiceImpl :
-    public Service<TestService, TestServiceImpl, TestContext> {
+    public ServiceConnection<TestService, TestServiceImpl, TestContext> {
  public:
   TestServiceImpl() {}
 
@@ -38,10 +38,11 @@ class TestServiceImpl :
     client()->AckTest();
   }
 
-  void Initialize(ServiceFactory<TestServiceImpl, TestContext>* service_factory,
-                  ScopedMessagePipeHandle client_handle) {
-    Service<TestService, TestServiceImpl, TestContext>::Initialize(
-        service_factory, client_handle.Pass());
+  void Initialize(
+      ServiceConnector<TestServiceImpl, TestContext>* service_connector,
+      ScopedMessagePipeHandle client_handle) {
+    ServiceConnection<TestService, TestServiceImpl, TestContext>::Initialize(
+        service_connector, client_handle.Pass());
     ++context()->num_impls;
   }
 };
@@ -99,8 +100,8 @@ class ServiceManagerTest : public testing::Test, public ServiceLoader {
                            const GURL& url,
                            ScopedShellHandle shell_handle) OVERRIDE {
     test_app_.reset(new Application(shell_handle.Pass()));
-    test_app_->AddServiceFactory(
-        new ServiceFactory<TestServiceImpl, TestContext>(&context_));
+    test_app_->AddServiceConnector(
+        new ServiceConnector<TestServiceImpl, TestContext>(&context_));
   }
 
   virtual void OnServiceError(ServiceManager* manager,

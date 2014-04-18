@@ -28,7 +28,9 @@ bool IsRateLimitedEventType(ui::Event* event) {
 }
 
 class NativeViewportImpl
-    : public Service<mojo::NativeViewport, NativeViewportImpl, shell::Context>,
+    : public ServiceConnection<mojo::NativeViewport,
+                               NativeViewportImpl,
+                               shell::Context>,
       public NativeViewportDelegate {
  public:
   NativeViewportImpl()
@@ -186,9 +188,9 @@ MOJO_NATIVE_VIEWPORT_EXPORT mojo::Application*
     CreateNativeViewportService(mojo::shell::Context* context,
                                 mojo::ScopedShellHandle shell_handle) {
   mojo::Application* app = new mojo::Application(shell_handle.Pass());
-  app->AddServiceFactory(
-    new mojo::ServiceFactory<mojo::services::NativeViewportImpl,
-                             mojo::shell::Context>(context));
+  app->AddServiceConnector(
+      new mojo::ServiceConnector<mojo::services::NativeViewportImpl,
+                                 mojo::shell::Context>(context));
   return app;
 }
 

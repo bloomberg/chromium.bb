@@ -19,41 +19,42 @@
 // class FooImpl : public Foo {
 //  public:
 //   FooImpl();
-//   void Initialize(ServiceFactory<FooImpl>* service_factory,
+//   void Initialize(ServiceConnector<FooImpl>* service_connector,
 //                   ScopedMessagePipeHandle client_handle
 //  private:
-//   ServiceFactory<FooImpl>* service_factory_;
+//   ServiceConnector<FooImpl>* service_connector_;
 //   RemotePtr<FooPeer> client_;
 // };
 //
 //
-// To simplify further FooImpl can use the Service<> template.
-// class FooImpl : public Service<Foo, FooImpl> {
+// To simplify further FooImpl can use the ServiceConnection<> template.
+// class FooImpl : public ServiceConnection<Foo, FooImpl> {
 //  public:
 //   FooImpl();
 //   ...
 //   <Foo implementation>
 // };
 //
-// Instances of FooImpl will be created by a specialized ServiceFactory
+// Instances of FooImpl will be created by a specialized ServiceConnector
 //
-// ServiceFactory<FooImpl>
+// ServiceConnector<FooImpl>
 //
 // Optionally the classes can be specializeed with a shared context
-// class ServiceFactory<FooImpl, MyContext>
+// class ServiceConnector<FooImpl, MyContext>
 // and
-// class FooImpl : public Service<Foo, FooImpl, MyContext>
+// class FooImpl : public ServiceConnection<Foo, FooImpl, MyContext>
 //
-// foo_factory = new ServiceFactory<FooImpl, MyContext>(my_context);
+// foo_connector = new ServiceConnector<FooImpl, MyContext>(my_context);
 // instances of FooImpl can call context() and retrieve the value of my_context.
 //
-// Lastly create an Application instance that collects all the ServiceFactories.
+// Lastly create an Application instance that collects all the
+// ServiceConnectors.
 //
 // Application app(shell_handle);
-// app.AddServiceFactory(new ServiceFactory<FooImpl>);
+// app.AddServiceConnector(new ServiceConnector<FooImpl>);
 //
 //
-// Specialization of ServiceFactory.
+// Specialization of ServiceConnector.
 // ServiceImpl: Implementation of Service interface.
 // Context: Optional type of shared context.v
 //
@@ -61,27 +62,27 @@
 namespace mojo {
 
 namespace internal {
-class ServiceFactoryBase {
+class ServiceConnectorBase {
  public:
   class Owner : public ShellClient {
    public:
     Owner(ScopedShellHandle shell_handle);
     ~Owner();
     Shell* shell() { return shell_.get(); }
-    virtual void AddServiceFactory(
-        internal::ServiceFactoryBase* service_factory) = 0;
-    virtual void RemoveServiceFactory(
-        internal::ServiceFactoryBase* service_factory) = 0;
+    virtual void AddServiceConnector(
+        internal::ServiceConnectorBase* service_connector) = 0;
+    virtual void RemoveServiceConnector(
+        internal::ServiceConnectorBase* service_connector) = 0;
 
    protected:
-    void set_service_factory_owner(ServiceFactoryBase* service_factory,
-                                   Owner* owner) {
-      service_factory->owner_ = owner;
+    void set_service_connector_owner(ServiceConnectorBase* service_connector,
+                                     Owner* owner) {
+      service_connector->owner_ = owner;
     }
     RemotePtr<Shell> shell_;
   };
-  ServiceFactoryBase() : owner_(NULL) {}
-  virtual ~ServiceFactoryBase();
+  ServiceConnectorBase() : owner_(NULL) {}
+  virtual ~ServiceConnectorBase();
   Shell* shell() { return owner_->shell(); }
   virtual void AcceptConnection(const std::string& url,
                                 ScopedMessagePipeHandle client_handle) = 0;
@@ -92,11 +93,11 @@ class ServiceFactoryBase {
 }  // namespace internal
 
 template <class ServiceImpl, typename Context=void>
-class ServiceFactory : public internal::ServiceFactoryBase {
+class ServiceConnector : public internal::ServiceConnectorBase {
  public:
-  ServiceFactory(Context* context = NULL) : context_(context) {}
+  ServiceConnector(Context* context = NULL) : context_(context) {}
 
-  virtual ~ServiceFactory() {
+  virtual ~ServiceConnector() {
     for (typename ServiceList::iterator it = services_.begin();
          it != services_.end(); ++it) {
       delete *it;
@@ -118,7 +119,7 @@ class ServiceFactory : public internal::ServiceFactoryBase {
         services_.erase(it);
         delete service;
         if (services_.empty())
-          owner_->RemoveServiceFactory(this);
+          owner_->RemoveServiceConnector(this);
         return;
       }
     }
@@ -132,21 +133,21 @@ class ServiceFactory : public internal::ServiceFactoryBase {
   Context* context_;
 };
 
-// Specialization of ServiceFactory.
+// Specialization of ServiceConnection.
 // ServiceInterface: Service interface.
 // ServiceImpl: Implementation of Service interface.
 // Context: Optional type of shared context.
 template <class ServiceInterface, class ServiceImpl, typename Context=void>
-class Service : public ServiceInterface {
+class ServiceConnection : public ServiceInterface {
  public:
-  virtual ~Service() {}
+  virtual ~ServiceConnection() {}
 
  protected:
-  Service() : reaper_(this), service_factory_(NULL) {}
+  ServiceConnection() : reaper_(this), service_connector_(NULL) {}
 
-  void Initialize(ServiceFactory<ServiceImpl, Context>* service_factory,
+  void Initialize(ServiceConnector<ServiceImpl, Context>* service_connector,
                   ScopedMessagePipeHandle client_handle) {
-    service_factory_ = service_factory;
+    service_connector_ = service_connector;
     client_.reset(
         MakeScopedHandle(
             InterfaceHandle<typename ServiceInterface::_Peer>(
@@ -155,27 +156,27 @@ class Service : public ServiceInterface {
         &reaper_);
   }
 
-  Shell* shell() { return service_factory_->shell(); }
-  Context* context() const { return service_factory_->context(); }
+  Shell* shell() { return service_connector_->shell(); }
+  Context* context() const { return service_connector_->context(); }
   typename ServiceInterface::_Peer* client() { return client_.get(); }
 
  private:
   // The Reaper class allows us to handle errors on the client proxy without
-  // polluting the name space of the Service<> class.
+  // polluting the name space of the ServiceConnection<> class.
   class Reaper : public ErrorHandler {
    public:
-    Reaper(Service<ServiceInterface, ServiceImpl, Context>* service)
+    Reaper(ServiceConnection<ServiceInterface, ServiceImpl, Context>* service)
         : service_(service) {}
     virtual void OnError() {
-      service_->service_factory_->RemoveService(
+      service_->service_connector_->RemoveService(
           static_cast<ServiceImpl*>(service_));
     }
    private:
-    Service<ServiceInterface, ServiceImpl, Context>* service_;
+    ServiceConnection<ServiceInterface, ServiceImpl, Context>* service_;
   };
-  friend class ServiceFactory<ServiceImpl, Context>;
+  friend class ServiceConnector<ServiceImpl, Context>;
   Reaper reaper_;
-  ServiceFactory<ServiceImpl, Context>* service_factory_;
+  ServiceConnector<ServiceImpl, Context>* service_connector_;
   RemotePtr<typename ServiceInterface::_Peer> client_;
 };
 

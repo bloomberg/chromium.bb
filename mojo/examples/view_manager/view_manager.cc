@@ -56,7 +56,7 @@ class ViewImpl : public View {
   DISALLOW_COPY_AND_ASSIGN(ViewImpl);
 };
 
-class ViewManagerImpl : public Service<ViewManager, ViewManagerImpl>,
+class ViewManagerImpl : public ServiceConnection<ViewManager, ViewManagerImpl>,
                         public NativeViewportClient,
                         public LauncherClient {
  public:
@@ -142,8 +142,8 @@ extern "C" VIEW_MANAGER_EXPORT MojoResult CDECL MojoMain(
     MojoHandle shell_handle) {
   base::MessageLoop loop;
   mojo::Application app(shell_handle);
-  app.AddServiceFactory(
-      new mojo::ServiceFactory<mojo::examples::ViewManagerImpl>);
+  app.AddServiceConnector(
+      new mojo::ServiceConnector<mojo::examples::ViewManagerImpl>);
   loop.Run();
 
   return MOJO_RESULT_OK;

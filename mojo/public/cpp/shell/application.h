@@ -14,18 +14,18 @@
 
 namespace mojo {
 
-class Application : public internal::ServiceFactoryBase::Owner {
+class Application : public internal::ServiceConnectorBase::Owner {
  public:
   explicit Application(ScopedShellHandle shell_handle);
   explicit Application(MojoHandle shell_handle);
   virtual ~Application();
 
-  // internal::ServiceFactoryBase::Owner methods.
-  // Takes ownership of |service_factory|.
-  virtual void AddServiceFactory(internal::ServiceFactoryBase* service_factory)
-      MOJO_OVERRIDE;
-  virtual void RemoveServiceFactory(
-    internal::ServiceFactoryBase* service_factory) MOJO_OVERRIDE;
+  // internal::ServiceConnectorBase::Owner methods.
+  // Takes ownership of |service_connector|.
+  virtual void AddServiceConnector(
+      internal::ServiceConnectorBase* service_connector) MOJO_OVERRIDE;
+  virtual void RemoveServiceConnector(
+      internal::ServiceConnectorBase* service_connector) MOJO_OVERRIDE;
 
  protected:
   // ShellClient methods.
@@ -34,8 +34,8 @@ class Application : public internal::ServiceFactoryBase::Owner {
       MOJO_OVERRIDE;
 
  private:
-  typedef std::vector<internal::ServiceFactoryBase*> ServiceFactoryList;
-  ServiceFactoryList service_factories_;
+  typedef std::vector<internal::ServiceConnectorBase*> ServiceConnectorList;
+  ServiceConnectorList service_connectors_;
 };
 
 }  // namespace mojo
