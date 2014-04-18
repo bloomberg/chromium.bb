@@ -370,7 +370,7 @@ void DecryptingDemuxerStream::InitializeDecoderConfig() {
                                false,  // Output audio is not encrypted.
                                false,
                                base::TimeDelta(),
-                               base::TimeDelta());
+                               0);
       break;
     }
 

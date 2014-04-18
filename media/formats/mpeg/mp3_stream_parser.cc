@@ -90,9 +90,10 @@ static const int kLayer3 = 1;
 static const int kBitrateFree = 0;
 static const int kBitrateBad = 0xf;
 static const int kSampleRateReserved = 3;
+static const int kCodecDelay = 529;
 
 MP3StreamParser::MP3StreamParser()
-    : MPEGAudioStreamParserBase(kMP3StartCodeMask, kCodecMP3) {}
+    : MPEGAudioStreamParserBase(kMP3StartCodeMask, kCodecMP3, kCodecDelay) {}
 
 MP3StreamParser::~MP3StreamParser() {}
 

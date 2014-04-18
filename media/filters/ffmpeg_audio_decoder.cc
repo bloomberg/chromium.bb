@@ -262,22 +262,30 @@ void FFmpegAudioDecoder::DecodeBuffer(
   }
 
   if (!buffer->end_of_stream()) {
-    if (last_input_timestamp_ == kNoTimestamp() &&
-        codec_context_->codec_id == AV_CODEC_ID_VORBIS &&
+    DCHECK(buffer->timestamp() != kNoTimestamp());
+    const bool first_buffer =
+        last_input_timestamp_ == kNoTimestamp() &&
+        output_timestamp_helper_->base_timestamp() == kNoTimestamp();
+    if (first_buffer && codec_context_->codec_id == AV_CODEC_ID_VORBIS &&
         buffer->timestamp() < base::TimeDelta()) {
       // Dropping frames for negative timestamps as outlined in section A.2
       // in the Vorbis spec. http://xiph.org/vorbis/doc/Vorbis_I_spec.html
-      output_frames_to_drop_ = floor(0.5 + -buffer->timestamp().InSecondsF() *
-                                               config_.samples_per_second());
+      DCHECK_EQ(output_frames_to_drop_, 0);
+      output_frames_to_drop_ =
+          0.5 +
+          -buffer->timestamp().InSecondsF() * config_.samples_per_second();
+
+      // If we are dropping samples for Vorbis, the timeline always starts at 0.
+      output_timestamp_helper_->SetBaseTimestamp(base::TimeDelta());
     } else {
-      if (last_input_timestamp_ != kNoTimestamp() &&
-          buffer->timestamp() < last_input_timestamp_) {
+      if (first_buffer) {
+        output_timestamp_helper_->SetBaseTimestamp(buffer->timestamp());
+      } else if (buffer->timestamp() < last_input_timestamp_) {
         const base::TimeDelta diff =
             buffer->timestamp() - last_input_timestamp_;
-        DLOG(WARNING)
-            << "Input timestamps are not monotonically increasing! "
-            << " ts " << buffer->timestamp().InMicroseconds() << " us"
-            << " diff " << diff.InMicroseconds() << " us";
+        DLOG(WARNING) << "Input timestamps are not monotonically increasing! "
+                      << " ts " << buffer->timestamp().InMicroseconds() << " us"
+                      << " diff " << diff.InMicroseconds() << " us";
       }
 
       last_input_timestamp_ = buffer->timestamp();
@@ -354,19 +362,6 @@ bool FFmpegAudioDecoder::FFmpegDecode(
     // with the remaining bytes from this packet.
     packet.size -= result;
     packet.data += result;
-
-    if (output_timestamp_helper_->base_timestamp() == kNoTimestamp() &&
-        !buffer->end_of_stream()) {
-      DCHECK(buffer->timestamp() != kNoTimestamp());
-      if (output_frames_to_drop_ > 0) {
-        // Currently Vorbis is the only codec that causes us to drop samples.
-        // If we have to drop samples it always means the timeline starts at 0.
-        DCHECK_EQ(codec_context_->codec_id, AV_CODEC_ID_VORBIS);
-        output_timestamp_helper_->SetBaseTimestamp(base::TimeDelta());
-      } else {
-        output_timestamp_helper_->SetBaseTimestamp(buffer->timestamp());
-      }
-    }
 
     scoped_refptr<AudioBuffer> output;
     int decoded_frames = 0;
@@ -483,6 +478,7 @@ bool FFmpegAudioDecoder::ConfigureDecoder() {
   av_frame_.reset(av_frame_alloc());
   output_timestamp_helper_.reset(
       new AudioTimestampHelper(config_.samples_per_second()));
+  ResetTimestampState();
 
   av_sample_format_ = codec_context_->sample_fmt;
 
@@ -496,6 +492,8 @@ bool FFmpegAudioDecoder::ConfigureDecoder() {
     state_ = kUninitialized;
     return false;
   }
+
+  output_frames_to_drop_ = config_.codec_delay();
   return true;
 }
 

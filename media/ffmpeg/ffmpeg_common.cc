@@ -298,12 +298,6 @@ static void AVCodecContextToAudioDecoderConfig(
         codec_context->seek_preroll * 1000000.0 / codec_context->sample_rate);
   }
 
-  base::TimeDelta codec_delay;
-  if (codec_context->delay > 0) {
-    codec_delay = base::TimeDelta::FromMicroseconds(
-        codec_context->delay * 1000000.0 / codec_context->sample_rate);
-  }
-
   config->Initialize(codec,
                      sample_format,
                      channel_layout,
@@ -313,7 +307,7 @@ static void AVCodecContextToAudioDecoderConfig(
                      is_encrypted,
                      record_stats,
                      seek_preroll,
-                     codec_delay);
+                     codec_context->delay);
   if (codec != kCodecOpus) {
     DCHECK_EQ(av_get_bytes_per_sample(codec_context->sample_fmt) * 8,
               config->bits_per_channel());

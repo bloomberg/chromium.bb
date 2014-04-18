@@ -63,13 +63,13 @@ class MEDIA_EXPORT AudioDecoderConfig {
 
   ~AudioDecoderConfig();
 
-  // Resets the internal state of this object.
+  // Resets the internal state of this object.  |codec_delay| is in frames.
   void Initialize(AudioCodec codec, SampleFormat sample_format,
                   ChannelLayout channel_layout, int samples_per_second,
                   const uint8* extra_data, size_t extra_data_size,
                   bool is_encrypted, bool record_stats,
                   base::TimeDelta seek_preroll,
-                  base::TimeDelta codec_delay);
+                  int codec_delay);
 
   // Returns true if this object has appropriate configuration values, false
   // otherwise.
@@ -91,7 +91,7 @@ class MEDIA_EXPORT AudioDecoderConfig {
   SampleFormat sample_format() const { return sample_format_; }
   int bytes_per_frame() const { return bytes_per_frame_; }
   base::TimeDelta seek_preroll() const { return seek_preroll_; }
-  base::TimeDelta codec_delay() const { return codec_delay_; }
+  int codec_delay() const { return codec_delay_; }
 
   // Optional byte data required to initialize audio decoders such as Vorbis
   // codebooks.
@@ -119,10 +119,10 @@ class MEDIA_EXPORT AudioDecoderConfig {
   // before the decoded data is valid.
   base::TimeDelta seek_preroll_;
 
-  // |codec_delay_| is the overall delay overhead added by the codec while
-  // encoding. This value should be subtracted from each block's timestamp to
-  // get the actual timestamp.
-  base::TimeDelta codec_delay_;
+  // |codec_delay_| is the number of frames the decoder should discard before
+  // returning decoded data.  This value can include both decoder delay as well
+  // as padding added during encoding.
+  int codec_delay_;
 
   // Not using DISALLOW_COPY_AND_ASSIGN here intentionally to allow the compiler
   // generated copy constructor and assignment operator. Since the extra data is

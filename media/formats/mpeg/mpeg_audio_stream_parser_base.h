@@ -23,7 +23,11 @@ class MEDIA_EXPORT MPEGAudioStreamParserBase : public StreamParser {
  public:
   // |start_code_mask| is used to find the start of each frame header.  Also
   // referred to as the sync code in the MP3 and ADTS header specifications.
-  MPEGAudioStreamParserBase(uint32 start_code_mask, AudioCodec audio_codec);
+  // |codec_delay| is the number of samples the decoder will output before the
+  // first real frame.
+  MPEGAudioStreamParserBase(uint32 start_code_mask,
+                            AudioCodec audio_codec,
+                            int codec_delay);
   virtual ~MPEGAudioStreamParserBase();
 
   // StreamParser implementation.
@@ -142,6 +146,7 @@ class MEDIA_EXPORT MPEGAudioStreamParserBase : public StreamParser {
   bool in_media_segment_;
   const uint32 start_code_mask_;
   const AudioCodec audio_codec_;
+  const int codec_delay_;
 
   DISALLOW_COPY_AND_ASSIGN(MPEGAudioStreamParserBase);
 };
