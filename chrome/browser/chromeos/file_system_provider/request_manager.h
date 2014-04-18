@@ -11,6 +11,9 @@
 #include "base/callback.h"
 #include "base/files/file.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 
 namespace base {
@@ -47,22 +50,37 @@ class RequestManager {
   // returns false. Always disposes the request.
   bool RejectRequest(int request_id, base::File::Error error);
 
+  // Sets a custom timeout for tests. The new timeout value will be applied to
+  // new requests
+  void SetTimeoutForTests(const base::TimeDelta& timeout);
+
  private:
   struct Request {
     Request();
     ~Request();
+
+    // Timer for discarding the request during a timeout.
+    base::OneShotTimer<RequestManager> timeout_timer;
 
     // Callback to be called on success.
     SuccessCallback success_callback;
 
     // Callback to be called on error.
     ErrorCallback error_callback;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Request);
   };
 
-  typedef std::map<int, Request> RequestMap;
+  typedef std::map<int, Request*> RequestMap;
+
+  // Called when a request with |request_id| timeouts.
+  void OnRequestTimeout(int request_id);
 
   RequestMap requests_;
   int next_id_;
+  base::TimeDelta timeout_;
+  base::WeakPtrFactory<RequestManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestManager);
 };

@@ -5,13 +5,16 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
+#include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/file_system_provider/request_manager.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -81,6 +84,7 @@ class FileSystemProviderRequestManagerTest : public testing::Test {
     request_manager_.reset(new RequestManager());
   }
 
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<RequestManager> request_manager_;
 };
 
@@ -301,6 +305,24 @@ TEST_F(FileSystemProviderRequestManagerTest, AbortOnDestroy) {
   EXPECT_EQ(base::File::FILE_ERROR_ABORT, event->error());
 
   EXPECT_EQ(0u, logger.success_events().size());
+}
+
+TEST_F(FileSystemProviderRequestManagerTest, AbortOnTimeout) {
+  EventLogger logger;
+  base::RunLoop run_loop;
+
+  request_manager_->SetTimeoutForTests(base::TimeDelta::FromSeconds(0));
+  int request_id = request_manager_->CreateRequest(
+      base::Bind(&EventLogger::OnSuccess, logger.GetWeakPtr()),
+      base::Bind(&EventLogger::OnError, logger.GetWeakPtr()));
+  EXPECT_LT(0, request_id);
+
+  // Wait until the request is timeouted.
+  run_loop.RunUntilIdle();
+
+  ASSERT_EQ(1u, logger.error_events().size());
+  EventLogger::ErrorEvent* event = logger.error_events()[0];
+  EXPECT_EQ(base::File::FILE_ERROR_ABORT, event->error());
 }
 
 }  // namespace file_system_provider
