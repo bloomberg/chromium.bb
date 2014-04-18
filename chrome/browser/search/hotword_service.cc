@@ -131,8 +131,10 @@ HotwordService::HotwordService(Profile* profile)
       enabled_state = DISABLED;
   } else {
     // If the preference has not been set the hotword extension should
-    // not be running.
-    DisableHotwordExtension(GetExtensionService(profile_));
+    // not be running. However, this should only be done if auto-install
+    // is enabled which is gated through the IsHotwordAllowed check.
+    if (IsHotwordAllowed())
+      DisableHotwordExtension(GetExtensionService(profile_));
   }
   UMA_HISTOGRAM_ENUMERATION("Hotword.Enabled", enabled_state,
                             NUM_HOTWORD_ENABLED_METRICS);
@@ -165,7 +167,11 @@ void HotwordService::Observe(int type,
     const extensions::Extension* extension =
         content::Details<const extensions::InstalledExtensionInfo>(details)
               ->extension;
-    if (extension->id() == extension_misc::kHotwordExtensionId &&
+    // Disabling the extension automatically on install should only occur
+    // if the user is in the field trial for auto-install which is gated
+    // by the IsHotwordAllowed check.
+    if (IsHotwordAllowed() &&
+        extension->id() == extension_misc::kHotwordExtensionId &&
         !profile_->GetPrefs()->GetBoolean(prefs::kHotwordSearchEnabled)) {
       DisableHotwordExtension(GetExtensionService(profile_));
       // Once the extension is disabled, it will not be enabled until the
