@@ -31,9 +31,8 @@
 #ifndef CryptoResultImpl_h
 #define CryptoResultImpl_h
 
-#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScriptPromise.h"
-#include "bindings/v8/ScriptPromiseResolver.h"
+#include "bindings/v8/ScriptPromiseResolverWithContext.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "platform/CryptoResult.h"
 #include "public/platform/WebCrypto.h"
@@ -42,9 +41,6 @@
 #include "wtf/Threading.h"
 
 namespace WebCore {
-
-class ScriptPromiseResolver;
-class ScriptState;
 
 // Wrapper around a Promise to notify completion of the crypto operation.
 // Platform cannot know about Promises which are declared in bindings.
@@ -76,8 +72,7 @@ private:
 
     void clearPromiseResolver();
 
-    RefPtr<ScriptPromiseResolver> m_promiseResolver;
-    RefPtr<NewScriptState> m_scriptState;
+    RefPtr<ScriptPromiseResolverWithContext> m_promiseResolver;
 
 #if !ASSERT_DISABLED
     ThreadIdentifier m_owningThread;
