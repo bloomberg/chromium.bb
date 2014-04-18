@@ -5,6 +5,7 @@
 
 import argparse
 from collections import defaultdict
+import json
 import os
 import re
 import subprocess
@@ -87,6 +88,12 @@ def PrintTopSymbols(symbol_reports, top_count):
   for (symbol, suppressions) in sorted_reports[:top_count]:
     print "%4d occurrences : %s" % (len(suppressions), symboltable[symbol])
 
+def ReadHashExclusions(exclusions):
+  input_file = file(exclusions, 'r')
+  contents = json.load(input_file)
+  return contents['hashes']
+
+
 def main(argv):
   supp = suppressions.GetSuppressions()
 
@@ -105,14 +112,27 @@ def main(argv):
   parser.add_argument('--exclude-symbol', action='append',
     help='Filter out all suppressions containing the specified symbol(s). '
          'Matches against the mangled names.')
+  parser.add_argument('--exclude-hashes', action='append',
+    help='Specify a .json file with a list of hashes to exclude.')
 
   parser.add_argument('reports', metavar='report file', nargs='+',
     help='List of report files')
   args = parser.parse_args(argv)
 
+  # exclude_hashes is a list of strings, each string an error hash.
+  exclude_hashes = []
+
+  exclude_hashes = []
+  if args.exclude_hashes:
+    for excl in args.exclude_hashes:
+      print "reading exclusion", excl
+      exclude_hashes += ReadHashExclusions(excl)
+
   for f in args.reports:
     f_reports, url = ReadReportsFromFile(f)
     for (hash, report) in f_reports:
+      if hash in exclude_hashes:
+        continue
       all_reports[report] += [url]
       report_hashes[report] = hash
 
