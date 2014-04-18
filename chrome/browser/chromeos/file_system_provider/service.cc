@@ -40,7 +40,19 @@ Service::Service(Profile* profile)
       next_id_(1),
       weak_ptr_factory_(this) {}
 
-Service::~Service() { STLDeleteValues(&file_system_map_); }
+Service::~Service() {
+  ProvidedFileSystemMap::iterator it = file_system_map_.begin();
+  while (it != file_system_map_.end()) {
+    const int file_system_id = it->first;
+    const std::string extension_id =
+        it->second->GetFileSystemInfo().extension_id();
+    ++it;
+    UnmountFileSystem(extension_id, file_system_id);
+  }
+
+  DCHECK_EQ(0u, file_system_map_.size());
+  STLDeleteValues(&file_system_map_);
+}
 
 // static
 Service* Service::Get(content::BrowserContext* context) {
@@ -86,15 +98,14 @@ int Service::MountFileSystem(const std::string& extension_id,
 
   // The mount point path and name are unique per system, since they are system
   // wide. This is necessary for copying between profiles.
-  const base::FilePath& mount_point_path =
-      util::GetMountPointPath(profile_, extension_id, file_system_id);
-  const std::string mount_point_name =
-      mount_point_path.BaseName().AsUTF8Unsafe();
+  const base::FilePath& mount_path =
+      util::GetMountPath(profile_, extension_id, file_system_id);
+  const std::string mount_point_name = mount_path.BaseName().AsUTF8Unsafe();
 
   if (!mount_points->RegisterFileSystem(mount_point_name,
                                         fileapi::kFileSystemTypeProvided,
                                         fileapi::FileSystemMountOption(),
-                                        mount_point_path)) {
+                                        mount_path)) {
     FOR_EACH_OBSERVER(
         Observer,
         observers_,
@@ -107,10 +118,10 @@ int Service::MountFileSystem(const std::string& extension_id,
   // system provider file system id.
   // Examples:
   //   file_system_id = 41
-  //   mount_point_name = file_system_id = b33f1337-41-5aa5
-  //   mount_point_path = /provided/b33f1337-41-5aa5
+  //   mount_point_name =  b33f1337-41-5aa5
+  //   mount_path = /provided/b33f1337-41-5aa5
   ProvidedFileSystemInfo file_system_info(
-      extension_id, file_system_id, file_system_name, mount_point_path);
+      extension_id, file_system_id, file_system_name, mount_path);
 
   // The event router may be NULL for unit tests.
   extensions::EventRouter* router = extensions::EventRouter::Get(profile_);
@@ -119,6 +130,7 @@ int Service::MountFileSystem(const std::string& extension_id,
       file_system_factory_.Run(router, file_system_info);
   DCHECK(file_system);
   file_system_map_[file_system_id] = file_system;
+  mount_point_name_to_id_map_[mount_point_name] = file_system_id;
 
   FOR_EACH_OBSERVER(
       Observer,
@@ -133,7 +145,7 @@ bool Service::UnmountFileSystem(const std::string& extension_id,
                                 int file_system_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  ProvidedFileSystemMap::iterator file_system_it =
+  const ProvidedFileSystemMap::iterator file_system_it =
       file_system_map_.find(file_system_id);
   if (file_system_it == file_system_map_.end() ||
       file_system_it->second->GetFileSystemInfo().extension_id() !=
@@ -170,8 +182,11 @@ bool Service::UnmountFileSystem(const std::string& extension_id,
       observers_,
       OnProvidedFileSystemUnmount(file_system_info, base::File::FILE_OK));
 
+  mount_point_name_to_id_map_.erase(mount_point_name);
+
   delete file_system_it->second;
   file_system_map_.erase(file_system_it);
+
   return true;
 }
 
@@ -206,13 +221,30 @@ ProvidedFileSystemInterface* Service::GetProvidedFileSystem(
     int file_system_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  ProvidedFileSystemMap::iterator file_system_it =
+  const ProvidedFileSystemMap::const_iterator file_system_it =
       file_system_map_.find(file_system_id);
   if (file_system_it == file_system_map_.end() ||
       file_system_it->second->GetFileSystemInfo().extension_id() !=
           extension_id) {
     return NULL;
   }
+
+  return file_system_it->second;
+}
+
+ProvidedFileSystemInterface* Service::GetProvidedFileSystem(
+    const std::string& mount_point_name) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  const MountPointNameToIdMap::const_iterator mapping_it =
+      mount_point_name_to_id_map_.find(mount_point_name);
+  if (mapping_it == mount_point_name_to_id_map_.end())
+    return NULL;
+
+  const ProvidedFileSystemMap::const_iterator file_system_it =
+      file_system_map_.find(mapping_it->second);
+  if (file_system_it == file_system_map_.end())
+    return NULL;
 
   return file_system_it->second;
 }

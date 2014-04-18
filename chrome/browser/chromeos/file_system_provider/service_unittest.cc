@@ -82,10 +82,6 @@ class FileSystemProviderServiceTest : public testing::Test {
         base::Bind(&FakeProvidedFileSystem::Create));
   }
 
-  virtual void TearDown() {
-    fileapi::ExternalMountPoints::GetSystemInstance()->RevokeAllFileSystems();
-  }
-
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<ScopedUserManagerEnabler> user_manager_enabler_;
@@ -105,7 +101,7 @@ TEST_F(FileSystemProviderServiceTest, MountFileSystem) {
   EXPECT_EQ(kExtensionId, observer.mounts[0].file_system_info().extension_id());
   EXPECT_EQ(1, observer.mounts[0].file_system_info().file_system_id());
   base::FilePath expected_mount_path =
-      util::GetMountPointPath(profile_.get(), kExtensionId, file_system_id);
+      util::GetMountPath(profile_.get(), kExtensionId, file_system_id);
   EXPECT_EQ(expected_mount_path.AsUTF8Unsafe(),
             observer.mounts[0].file_system_info().mount_path().AsUTF8Unsafe());
   EXPECT_EQ(kFileSystemName,
@@ -191,7 +187,7 @@ TEST_F(FileSystemProviderServiceTest, UnmountFileSystem) {
             observer.unmounts[0].file_system_info().extension_id());
   EXPECT_EQ(1, observer.unmounts[0].file_system_info().file_system_id());
   base::FilePath expected_mount_path =
-      util::GetMountPointPath(profile_.get(), kExtensionId, file_system_id);
+      util::GetMountPath(profile_.get(), kExtensionId, file_system_id);
   EXPECT_EQ(
       expected_mount_path.AsUTF8Unsafe(),
       observer.unmounts[0].file_system_info().mount_path().AsUTF8Unsafe());
