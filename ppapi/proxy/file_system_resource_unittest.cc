@@ -74,7 +74,15 @@ class MockRequestQuotaCallback {
 
 class FileSystemResourceTest : public PluginProxyTest {
  public:
-  FileSystemResourceTest() {}
+  const PPB_FileSystem_1_0* file_system_iface;
+  const PPB_FileRef_1_1* file_ref_iface;
+  const PPB_FileIO_1_1* file_io_iface;
+
+  FileSystemResourceTest()
+      : file_system_iface(thunk::GetPPB_FileSystem_1_0_Thunk()),
+        file_ref_iface(thunk::GetPPB_FileRef_1_1_Thunk()),
+        file_io_iface(thunk::GetPPB_FileIO_1_1_Thunk()) {
+  }
 
   void SendReply(const ResourceMessageCallParams& params,
                  int32_t result,
@@ -93,7 +101,7 @@ class FileSystemResourceTest : public PluginProxyTest {
   // Opens the given file system.
   void OpenFileSystem(PP_Resource file_system) {
     MockCompletionCallback cb;
-    int32_t result = thunk::GetPPB_FileSystem_1_0_Thunk()->Open(
+    int32_t result = file_system_iface->Open(
         file_system,
         kExpectedFileSystemSize,
         PP_MakeCompletionCallback(&MockCompletionCallback::Callback, &cb));
@@ -119,7 +127,7 @@ class FileSystemResourceTest : public PluginProxyTest {
                 PP_Resource file_ref,
                 PP_Resource file_system) {
     MockCompletionCallback cb;
-    int32_t result = thunk::GetPPB_FileIO_1_1_Thunk()->Open(
+    int32_t result = file_io_iface->Open(
         file_io,
         file_ref,
         PP_FILEOPENFLAG_WRITE,
@@ -149,14 +157,14 @@ class FileSystemResourceTest : public PluginProxyTest {
 // Test that Open fails if either host returns failure. The other tests exercise
 // the case where both hosts return PP_OK.
 TEST_F(FileSystemResourceTest, OpenFailure) {
-  const PPB_FileSystem_1_0* fs_iface = thunk::GetPPB_FileSystem_1_0_Thunk();
   // Fail if the first reply doesn't return PP_OK.
   {
     LockingResourceReleaser file_system(
-        fs_iface->Create(pp_instance(), PP_FILESYSTEMTYPE_LOCALTEMPORARY));
+        file_system_iface->Create(pp_instance(),
+                                  PP_FILESYSTEMTYPE_LOCALTEMPORARY));
 
     MockCompletionCallback cb;
-    int32_t result = thunk::GetPPB_FileSystem_1_0_Thunk()->Open(
+    int32_t result = file_system_iface->Open(
         file_system.get(),
         kExpectedFileSystemSize,
         PP_MakeCompletionCallback(&MockCompletionCallback::Callback, &cb));
@@ -176,10 +184,11 @@ TEST_F(FileSystemResourceTest, OpenFailure) {
   // Fail if the second reply doesn't return PP_OK.
   {
     LockingResourceReleaser file_system(
-        fs_iface->Create(pp_instance(), PP_FILESYSTEMTYPE_LOCALTEMPORARY));
+        file_system_iface->Create(pp_instance(),
+                                  PP_FILESYSTEMTYPE_LOCALTEMPORARY));
 
     MockCompletionCallback cb;
-    int32_t result = thunk::GetPPB_FileSystem_1_0_Thunk()->Open(
+    int32_t result = file_system_iface->Open(
         file_system.get(),
         kExpectedFileSystemSize,
         PP_MakeCompletionCallback(&MockCompletionCallback::Callback, &cb));
@@ -199,24 +208,21 @@ TEST_F(FileSystemResourceTest, OpenFailure) {
 }
 
 TEST_F(FileSystemResourceTest, RequestQuota) {
-  const PPB_FileSystem_1_0* fs_iface = thunk::GetPPB_FileSystem_1_0_Thunk();
-  const PPB_FileRef_1_1* fref_iface = thunk::GetPPB_FileRef_1_1_Thunk();
-  const PPB_FileIO_1_1* fio_iface = thunk::GetPPB_FileIO_1_1_Thunk();
-
   LockingResourceReleaser file_system(
-      fs_iface->Create(pp_instance(), PP_FILESYSTEMTYPE_LOCALTEMPORARY));
+      file_system_iface->Create(pp_instance(),
+                                PP_FILESYSTEMTYPE_LOCALTEMPORARY));
 
   OpenFileSystem(file_system.get());
 
   // Create and open two files in the file system. FileIOResource calls
   // FileSystemResource::OpenQuotaFile on success.
   LockingResourceReleaser file_ref1(
-      fref_iface->Create(file_system.get(), "/file1"));
-  LockingResourceReleaser file_io1(fio_iface->Create(pp_instance()));
+      file_ref_iface->Create(file_system.get(), "/file1"));
+  LockingResourceReleaser file_io1(file_io_iface->Create(pp_instance()));
   OpenFile(file_io1.get(), file_ref1.get(), file_system.get());
   LockingResourceReleaser file_ref2(
-      fref_iface->Create(file_system.get(), "/file2"));
-  LockingResourceReleaser file_io2(fio_iface->Create(pp_instance()));
+      file_ref_iface->Create(file_system.get(), "/file2"));
+  LockingResourceReleaser file_io2(file_io_iface->Create(pp_instance()));
   OpenFile(file_io2.get(), file_ref2.get(), file_system.get());
 
   EnterResource<PPB_FileSystem_API> enter(file_system.get(), true);
