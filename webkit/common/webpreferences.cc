@@ -62,6 +62,7 @@ WebPreferences::WebPreferences()
       asynchronous_spell_checking_enabled(true),
       unified_textchecker_enabled(false),
       accelerated_compositing_enabled(false),
+      force_compositing_mode(true),
       accelerated_compositing_for_3d_transforms_enabled(false),
       accelerated_compositing_for_animation_enabled(false),
       accelerated_compositing_for_video_enabled(false),
