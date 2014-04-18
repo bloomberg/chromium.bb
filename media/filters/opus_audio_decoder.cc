@@ -253,7 +253,6 @@ OpusAudioDecoder::OpusAudioDecoder(
       opus_decoder_(NULL),
       last_input_timestamp_(kNoTimestamp()),
       frames_to_discard_(0),
-      frame_delay_at_start_(0),
       start_input_timestamp_(kNoTimestamp()) {}
 
 void OpusAudioDecoder::Initialize(const AudioDecoderConfig& config,
@@ -337,7 +336,7 @@ void OpusAudioDecoder::DecodeBuffer(
     start_input_timestamp_ = input->timestamp();
   if (last_input_timestamp_ == kNoTimestamp() &&
       input->timestamp() == start_input_timestamp_) {
-    frames_to_discard_ = frame_delay_at_start_;
+    frames_to_discard_ = config_.codec_delay();
   }
 
   last_input_timestamp_ = input->timestamp();
@@ -391,17 +390,13 @@ bool OpusAudioDecoder::ConfigureDecoder() {
                           &opus_extra_data))
     return false;
 
-  // Convert from seconds to samples.
-  timestamp_offset_ = config_.codec_delay();
-  frame_delay_at_start_ = TimeDeltaToAudioFrames(config_.codec_delay(),
-                                                 config_.samples_per_second());
-  if (timestamp_offset_ <= base::TimeDelta() || frame_delay_at_start_ < 0) {
+  if (config_.codec_delay() <= 0) {
     DLOG(ERROR) << "Invalid file. Incorrect value for codec delay: "
-                << config_.codec_delay().InMicroseconds();
+                << config_.codec_delay();
     return false;
   }
 
-  if (frame_delay_at_start_ != opus_extra_data.skip_samples) {
+  if (config_.codec_delay() != opus_extra_data.skip_samples) {
     DLOG(ERROR) << "Invalid file. Codec Delay in container does not match the "
                 << "value in Opus Extra Data.";
     return false;
@@ -496,7 +491,12 @@ bool OpusAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& input,
   if (output_timestamp_helper_->base_timestamp() == kNoTimestamp() &&
       !input->end_of_stream()) {
     DCHECK(input->timestamp() != kNoTimestamp());
+    // Adjust the timestamp helper so the base timestamp is corrected for frames
+    // dropped due to codec delay.
     output_timestamp_helper_->SetBaseTimestamp(input->timestamp());
+    output_timestamp_helper_->SetBaseTimestamp(
+        input->timestamp() -
+        output_timestamp_helper_->GetFrameDuration(config_.codec_delay()));
   }
 
   // Trim off any extraneous allocation.
@@ -529,8 +529,7 @@ bool OpusAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& input,
   }
 
   // Assign timestamp and duration to the buffer.
-  output_buffer->get()->set_timestamp(
-      output_timestamp_helper_->GetTimestamp() - timestamp_offset_);
+  output_buffer->get()->set_timestamp(output_timestamp_helper_->GetTimestamp());
   output_buffer->get()->set_duration(
       output_timestamp_helper_->GetFrameDuration(frames_to_output));
   output_timestamp_helper_->AddFrames(frames_decoded);

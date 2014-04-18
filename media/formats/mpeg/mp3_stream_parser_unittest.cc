@@ -40,6 +40,7 @@ TEST_F(MP3StreamParserTest, UnalignedAppend) {
       "{ 0K }"
       "EndOfSegment";
   EXPECT_EQ(expected, ParseFile("sfx.mp3", 17));
+  EXPECT_GT(last_audio_config().codec_delay(), 0);
 }
 
 // Test parsing with a larger piece size to verify that multiple buffers
@@ -55,6 +56,7 @@ TEST_F(MP3StreamParserTest, UnalignedAppend512) {
       "{ 0K }"
       "EndOfSegment";
   EXPECT_EQ(expected, ParseFile("sfx.mp3", 512));
+  EXPECT_GT(last_audio_config().codec_delay(), 0);
 }
 
 TEST_F(MP3StreamParserTest, MetadataParsing) {
