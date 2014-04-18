@@ -651,15 +651,15 @@ FILE* OpenFile(const FilePath& filename, const char* mode) {
   return result;
 }
 
-int ReadFile(const FilePath& filename, char* data, int size) {
+int ReadFile(const FilePath& filename, char* data, int max_size) {
   ThreadRestrictions::AssertIOAllowed();
   int fd = HANDLE_EINTR(open(filename.value().c_str(), O_RDONLY));
   if (fd < 0)
     return -1;
 
-  ssize_t bytes_read = HANDLE_EINTR(read(fd, data, size));
-  if (int ret = IGNORE_EINTR(close(fd)) < 0)
-    return ret;
+  ssize_t bytes_read = HANDLE_EINTR(read(fd, data, max_size));
+  if (IGNORE_EINTR(close(fd)) < 0)
+    return -1;
   return bytes_read;
 }
 
@@ -670,8 +670,8 @@ int WriteFile(const FilePath& filename, const char* data, int size) {
     return -1;
 
   int bytes_written = WriteFileDescriptor(fd, data, size);
-  if (int ret = IGNORE_EINTR(close(fd)) < 0)
-    return ret;
+  if (IGNORE_EINTR(close(fd)) < 0)
+    return -1;
   return bytes_written;
 }
 
@@ -697,8 +697,8 @@ int AppendToFile(const FilePath& filename, const char* data, int size) {
     return -1;
 
   int bytes_written = WriteFileDescriptor(fd, data, size);
-  if (int ret = IGNORE_EINTR(close(fd)) < 0)
-    return ret;
+  if (IGNORE_EINTR(close(fd)) < 0)
+    return -1;
   return bytes_written;
 }
 

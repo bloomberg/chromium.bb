@@ -309,9 +309,9 @@ BASE_EXPORT bool CloseFile(FILE* file);
 // This is a cross-platform analog to Windows' SetEndOfFile() function.
 BASE_EXPORT bool TruncateFile(FILE* file);
 
-// Reads the given number of bytes from the file into the buffer.  Returns
-// the number of read bytes, or -1 on error.
-BASE_EXPORT int ReadFile(const FilePath& filename, char* data, int size);
+// Reads at most the given number of bytes from the file into the buffer.
+// Returns the number of read bytes, or -1 on error.
+BASE_EXPORT int ReadFile(const FilePath& filename, char* data, int max_size);
 
 // Writes the given buffer into the file, overwriting any data that was
 // previously there.  Returns the number of bytes written, or -1 on error.

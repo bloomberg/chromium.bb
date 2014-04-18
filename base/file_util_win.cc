@@ -571,7 +571,7 @@ FILE* OpenFile(const FilePath& filename, const char* mode) {
   return _wfsopen(filename.value().c_str(), w_mode.c_str(), _SH_DENYNO);
 }
 
-int ReadFile(const FilePath& filename, char* data, int size) {
+int ReadFile(const FilePath& filename, char* data, int max_size) {
   ThreadRestrictions::AssertIOAllowed();
   base::win::ScopedHandle file(CreateFile(filename.value().c_str(),
                                           GENERIC_READ,
@@ -584,9 +584,9 @@ int ReadFile(const FilePath& filename, char* data, int size) {
     return -1;
 
   DWORD read;
-  if (::ReadFile(file, data, size, &read, NULL) &&
-      static_cast<int>(read) == size)
+  if (::ReadFile(file, data, max_size, &read, NULL))
     return read;
+
   return -1;
 }
 

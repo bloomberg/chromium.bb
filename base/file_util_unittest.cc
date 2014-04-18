@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <fstream>
 #include <set>
+#include <vector>
 
 #include "base/base_paths.h"
 #include "base/file_util.h"
@@ -1958,6 +1959,51 @@ TEST_F(FileUtilTest, AppendToFile) {
 
   const std::wstring read_content = ReadTextFile(foobar);
   EXPECT_EQ(L"hellohello", read_content);
+}
+
+TEST_F(FileUtilTest, ReadFile) {
+  // Create a test file to be read.
+  const std::string kTestData("The quick brown fox jumps over the lazy dog.");
+  FilePath file_path =
+      temp_dir_.path().Append(FILE_PATH_LITERAL("ReadFileTest"));
+
+  ASSERT_EQ(static_cast<int>(kTestData.size()),
+            WriteFile(file_path, kTestData.data(), kTestData.size()));
+
+  // Make buffers with various size.
+  std::vector<char> small_buffer(kTestData.size() / 2);
+  std::vector<char> exact_buffer(kTestData.size());
+  std::vector<char> large_buffer(kTestData.size() * 2);
+
+  // Read the file with smaller buffer.
+  int bytes_read_small = ReadFile(
+      file_path, &small_buffer[0], static_cast<int>(small_buffer.size()));
+  EXPECT_EQ(bytes_read_small, static_cast<int>(small_buffer.size()));
+  EXPECT_EQ(
+      std::string(small_buffer.begin(), small_buffer.end()),
+      std::string(kTestData.begin(), kTestData.begin() + small_buffer.size()));
+
+  // Read the file with buffer which have exactly same size.
+  int bytes_read_exact = ReadFile(
+      file_path, &exact_buffer[0], static_cast<int>(exact_buffer.size()));
+  EXPECT_EQ(bytes_read_exact, static_cast<int>(kTestData.size()));
+  EXPECT_EQ(std::string(exact_buffer.begin(), exact_buffer.end()), kTestData);
+
+  // Read the file with larger buffer.
+  int bytes_read_large = ReadFile(
+      file_path, &large_buffer[0], static_cast<int>(large_buffer.size()));
+  EXPECT_EQ(bytes_read_large, static_cast<int>(kTestData.size()));
+  EXPECT_EQ(std::string(large_buffer.begin(),
+                        large_buffer.begin() + kTestData.size()),
+            kTestData);
+
+  // Make sure the return value is -1 if the file doesn't exist.
+  FilePath file_path_not_exist =
+      temp_dir_.path().Append(FILE_PATH_LITERAL("ReadFileNotExistTest"));
+  EXPECT_EQ(-1,
+            ReadFile(file_path_not_exist,
+                     &exact_buffer[0],
+                     static_cast<int>(exact_buffer.size())));
 }
 
 TEST_F(FileUtilTest, ReadFileToString) {
