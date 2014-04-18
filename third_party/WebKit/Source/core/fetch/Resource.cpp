@@ -478,13 +478,14 @@ void Resource::removeClient(ResourceClient* client)
     if (m_clientsAwaitingCallback.contains(client)) {
         ASSERT(!m_clients.contains(client));
         m_clientsAwaitingCallback.remove(client);
-        if (m_clientsAwaitingCallback.isEmpty())
-            ResourceCallback::callbackHandler()->cancel(this);
     } else {
-        RELEASE_ASSERT(m_clients.contains(client));
+        ASSERT(m_clients.contains(client));
         m_clients.remove(client);
         didRemoveClient(client);
     }
+
+    if (m_clientsAwaitingCallback.isEmpty())
+        ResourceCallback::callbackHandler()->cancel(this);
 
     bool deleted = deleteIfPossible();
     if (!deleted && !hasClients()) {
@@ -588,10 +589,11 @@ void Resource::finishPendingClients()
         didAddClient(client);
     }
 
+    // It is still possible for the above loop to finish a new client synchronously.
+    // If there's no client waiting we should deschedule.
     bool scheduled = ResourceCallback::callbackHandler()->isScheduled(this);
-    // It is a critical problem if a callback is scheduled but there is no client waiting for it.
-    // Such a callback cannot be cancelled. It is better to crash the renderer now.
-    RELEASE_ASSERT(!scheduled || !m_clientsAwaitingCallback.isEmpty());
+    if (scheduled && m_clientsAwaitingCallback.isEmpty())
+        ResourceCallback::callbackHandler()->cancel(this);
 
     // Prevent the case when there are clients waiting but no callback scheduled.
     ASSERT(m_clientsAwaitingCallback.isEmpty() || scheduled);
