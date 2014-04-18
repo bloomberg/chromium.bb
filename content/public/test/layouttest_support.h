@@ -57,8 +57,7 @@ void SetMockDeviceMotionData(const blink::WebDeviceMotionData& data);
 // a listener through WebKitPlatformSupport::setDeviceOrientationListener().
 void SetMockDeviceOrientationData(const blink::WebDeviceOrientationData& data);
 
-// Sets WebScreenOrientation that should be used when registering a listener
-// through WebKitPlatformSupport::setScreenOrientationListener().
+// Sets WebScreenOrientationType that should be used as a mock orientation.
 void SetMockScreenOrientation(
     const blink::WebScreenOrientationType& orientation);
 
