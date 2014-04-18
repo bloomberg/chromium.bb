@@ -1,6 +1,6 @@
 Name: Hardware Composer Plus
 Short hwcplus
-URL: http://src.chromium.org/viewvc/chrome/trunk/src/third_party/hwcplus/
+URL: https://chromium.googlesource.com/chromium/src/third_party/hwcplus/
 Version: 1.4
 License: Apache 2.0
 Security Critical: yes
