@@ -24,8 +24,6 @@ bool PermissionBubbleManager::Enabled() {
       switches::kEnablePermissionsBubbles);
 }
 
-
-
 PermissionBubbleManager::PermissionBubbleManager(
     content::WebContents* web_contents)
   : content::WebContentsObserver(web_contents),
@@ -56,6 +54,14 @@ PermissionBubbleManager::~PermissionBubbleManager() {
 }
 
 void PermissionBubbleManager::AddRequest(PermissionBubbleRequest* request) {
+  // TODO(gbillock): is there a race between an early request on a
+  // newly-navigated page and the to-be-cleaned-up requests on the previous
+  // page? We should maybe listen to DidStartNavigationToPendingEntry (and
+  // any other renderer-side nav initiations?). Double-check this for
+  // correct behavior on interstitials -- we probably want to basically queue
+  // any request for which GetVisibleURL != GetLastCommittedURL.
+  request_url_ = web_contents()->GetLastCommittedURL();
+
   // Don't re-add an existing request or one with a duplicate text request.
   std::vector<PermissionBubbleRequest*>::iterator requests_iter;
   for (requests_iter = requests_.begin();
@@ -135,10 +141,21 @@ void PermissionBubbleManager::DidFinishLoad(
     timer_->Reset();
 }
 
+void PermissionBubbleManager::NavigationEntryCommitted(
+    const content::LoadCommittedDetails& details) {
+  if (!request_url_.is_empty() &&
+      request_url_ != web_contents()->GetLastCommittedURL()) {
+    // Kill off existing bubble and cancel any pending requests.
+    CancelPendingQueue();
+    FinalizeBubble();
+  }
+}
+
 void PermissionBubbleManager::WebContentsDestroyed(
     content::WebContents* web_contents) {
   // If the web contents has been destroyed, do not attempt to notify
   // the requests of any changes - simply close the bubble.
+  CancelPendingQueue();
   FinalizeBubble();
 
   // The WebContents is going away; be aggressively paranoid and delete
@@ -223,6 +240,17 @@ void PermissionBubbleManager::FinalizeBubble() {
     // TODO(leng):  Explore other options of showing the next bubble.  The
     // advantage of this is that it uses the same code path as the first bubble.
     timer_->Reset();
+  } else {
+    request_url_ = GURL();
+  }
+}
+
+void PermissionBubbleManager::CancelPendingQueue() {
+  std::vector<PermissionBubbleRequest*>::iterator requests_iter;
+  for (requests_iter = queued_requests_.begin();
+       requests_iter != queued_requests_.end();
+       requests_iter++) {
+    (*requests_iter)->RequestFinished();
   }
 }
 

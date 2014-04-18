@@ -76,6 +76,10 @@ class PermissionBubbleManager
       const GURL& validated_url,
       bool is_main_frame,
       content::RenderViewHost* render_view_host) OVERRIDE;
+  // If a page on which permissions requests are pending is navigated,
+  // they will be finalized as if canceled by the user.
+  virtual void NavigationEntryCommitted(
+      const content::LoadCommittedDetails& details) OVERRIDE;
   virtual void WebContentsDestroyed(
       content::WebContents* web_contents) OVERRIDE;
 
@@ -92,6 +96,11 @@ class PermissionBubbleManager
   // Finalize the pending permissions request.
   void FinalizeBubble();
 
+  // Cancel any pending requests. This is called if the WebContents
+  // on which permissions calls are pending is destroyed or navigated away
+  // from the requesting page.
+  void CancelPendingQueue();
+
   // Whether or not we are showing the bubble in this tab.
   bool bubble_showing_;
 
@@ -100,6 +109,7 @@ class PermissionBubbleManager
 
   std::vector<PermissionBubbleRequest*> requests_;
   std::vector<PermissionBubbleRequest*> queued_requests_;
+  GURL request_url_;
   std::vector<bool> accept_states_;
   bool customization_mode_;
 

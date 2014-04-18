@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/website_settings/permission_bubble_request.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_view.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/public/test/test_browser_thread.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -57,13 +57,25 @@ class MockView : public PermissionBubbleView {
 
 }  // namespace
 
-class PermissionBubbleManagerTest : public testing::Test {
+class PermissionBubbleManagerTest : public ChromeRenderViewHostTestHarness {
  public:
-  PermissionBubbleManagerTest();
+  PermissionBubbleManagerTest()
+      : ChromeRenderViewHostTestHarness(),
+        request1_("test1"),
+        request2_("test2") {}
   virtual ~PermissionBubbleManagerTest() {}
 
-  virtual void TearDown() {
+  virtual void SetUp() OVERRIDE {
+    ChromeRenderViewHostTestHarness::SetUp();
+    SetContents(CreateTestWebContents());
+
+    manager_.reset(new PermissionBubbleManager(web_contents()));
+    manager_->SetCoalesceIntervalForTesting(0);
+  }
+
+  virtual void TearDown() OVERRIDE {
     manager_.reset();
+    ChromeRenderViewHostTestHarness::TearDown();
   }
 
   void ToggleAccept(int index, bool value) {
@@ -78,23 +90,17 @@ class PermissionBubbleManagerTest : public testing::Test {
     base::MessageLoop::current()->RunUntilIdle();
   }
 
+  virtual void NavigationEntryCommitted(
+      const content::LoadCommittedDetails& details) {
+    manager_->NavigationEntryCommitted(details);
+  }
+
  protected:
   MockPermissionBubbleRequest request1_;
   MockPermissionBubbleRequest request2_;
   MockView view_;
   scoped_ptr<PermissionBubbleManager> manager_;
-
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
 };
-
-PermissionBubbleManagerTest::PermissionBubbleManagerTest()
-    : request1_("test1"),
-      request2_("test2"),
-      manager_(new PermissionBubbleManager(NULL)),
-      ui_thread_(content::BrowserThread::UI, &message_loop_) {
-  manager_->SetCoalesceIntervalForTesting(0);
-}
 
 TEST_F(PermissionBubbleManagerTest, TestFlag) {
   EXPECT_FALSE(PermissionBubbleManager::Enabled());
@@ -307,4 +313,21 @@ TEST_F(PermissionBubbleManagerTest, DuplicateQueuedRequest) {
   manager_->AddRequest(&dupe_request2);
   EXPECT_TRUE(dupe_request2.finished());
   EXPECT_FALSE(request2_.finished());
+}
+
+TEST_F(PermissionBubbleManagerTest, ForgetRequestsOnPageNavigation) {
+  NavigateAndCommit(GURL("http://www.google.com/"));
+  manager_->SetView(&view_);
+  manager_->AddRequest(&request1_);
+  WaitForCoalescing();
+  manager_->AddRequest(&request2_);
+
+  EXPECT_TRUE(view_.shown_);
+  ASSERT_EQ(1u, view_.permission_requests_.size());
+
+  NavigateAndCommit(GURL("http://www2.google.com/"));
+
+  EXPECT_FALSE(view_.shown_);
+  EXPECT_TRUE(request1_.finished());
+  EXPECT_TRUE(request2_.finished());
 }
