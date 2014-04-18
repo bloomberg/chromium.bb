@@ -710,11 +710,11 @@ void Vlog(const char* message) {
   VLOG(1) << message;
 }
 
-void SetInitTime(PP_Instance instance) {
+void InitializePlugin(PP_Instance instance) {
   nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   DCHECK(load_manager);
   if (load_manager)
-    return load_manager->set_init_time();
+    load_manager->InitializePlugin();
 }
 
 int64_t GetNexeSize(PP_Instance instance) {
@@ -723,6 +723,43 @@ int64_t GetNexeSize(PP_Instance instance) {
   if (load_manager)
     return load_manager->nexe_size();
   return 0;
+}
+
+PP_Bool RequestNaClManifest(PP_Instance instance,
+                            const char* url,
+                            PP_Bool* pp_is_data_uri) {
+  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  DCHECK(load_manager);
+  if (load_manager) {
+    bool is_data_uri;
+    bool result = load_manager->RequestNaClManifest(url, &is_data_uri);
+    *pp_is_data_uri = PP_FromBool(is_data_uri);
+    return PP_FromBool(result);
+  }
+  return PP_FALSE;
+}
+
+PP_Var GetManifestBaseURL(PP_Instance instance) {
+  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  DCHECK(load_manager);
+  if (!load_manager)
+    return PP_MakeUndefined();
+  const GURL& gurl = load_manager->manifest_base_url();
+  if (!gurl.is_valid())
+    return PP_MakeUndefined();
+  return ppapi::StringVar::StringToPPVar(gurl.spec());
+}
+
+PP_Bool ResolvesRelativeToPluginBaseURL(PP_Instance instance,
+                                        const char *url) {
+  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  DCHECK(load_manager);
+  if (!load_manager)
+    return PP_FALSE;
+  const GURL& gurl = load_manager->plugin_base_url().Resolve(url);
+  if (!gurl.is_valid())
+    return PP_FALSE;
+  return PP_TRUE;
 }
 
 const PPB_NaCl_Private nacl_interface = {
@@ -757,8 +794,11 @@ const PPB_NaCl_Private nacl_interface = {
   &GetExitStatus,
   &SetExitStatus,
   &Vlog,
-  &SetInitTime,
-  &GetNexeSize
+  &InitializePlugin,
+  &GetNexeSize,
+  &RequestNaClManifest,
+  &GetManifestBaseURL,
+  &ResolvesRelativeToPluginBaseURL
 };
 
 }  // namespace

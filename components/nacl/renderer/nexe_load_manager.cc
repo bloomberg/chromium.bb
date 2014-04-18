@@ -202,6 +202,10 @@ void HistogramHTTPStatusCode(const std::string& name,
   HistogramEnumerate(name, sample, 7);
 }
 
+void HistogramEnumerateManifestIsDataURI(bool is_data_uri) {
+  HistogramEnumerate("NaCl.Manifest.IsDataURI", is_data_uri, 2);
+}
+
 blink::WebString EventTypeToString(PP_NaClEventType event_type) {
   switch (event_type) {
     case PP_NACL_EVENT_LOADSTART:
@@ -249,6 +253,10 @@ NexeLoadManager::NexeLoadManager(
       weak_factory_(this) {
   SetLastError("");
   HistogramEnumerateOsArch(GetSandboxArch());
+  if (plugin_instance_) {
+    plugin_base_url_ =
+        plugin_instance_->GetContainer()->element().document().url();
+  }
 }
 
 NexeLoadManager::~NexeLoadManager() {
@@ -538,10 +546,40 @@ void NexeLoadManager::set_exit_status(int exit_status) {
   SetReadOnlyProperty(exit_status_name_var.get(), PP_MakeInt32(exit_status));
 }
 
+void NexeLoadManager::InitializePlugin() {
+  init_time_ = base::Time::Now();
+}
+
 void NexeLoadManager::ReportStartupOverhead() const {
   base::TimeDelta overhead = base::Time::Now() - init_time_;
   HistogramStartupTimeMedium(
       "NaCl.Perf.StartupTime.NaClOverhead", overhead, nexe_size_);
+}
+
+bool NexeLoadManager::RequestNaClManifest(const std::string& url,
+                                          bool* is_data_uri) {
+  if (plugin_base_url_.is_valid()) {
+    const GURL& resolved_url = plugin_base_url_.Resolve(url);
+    if (resolved_url.is_valid()) {
+      manifest_base_url_ = resolved_url;
+      is_installed_ = manifest_base_url_.SchemeIs("chrome-extension");
+      *is_data_uri = manifest_base_url_.SchemeIs("data");
+      HistogramEnumerateManifestIsDataURI(*is_data_uri);
+
+      set_nacl_ready_state(PP_NACL_READY_STATE_OPENED);
+      ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+        FROM_HERE,
+        base::Bind(&NexeLoadManager::DispatchEvent,
+                   weak_factory_.GetWeakPtr(),
+                   ProgressEvent(PP_NACL_EVENT_LOADSTART)));
+      return true;
+    }
+  }
+  ReportLoadError(PP_NACL_ERROR_MANIFEST_RESOLVE_URL,
+                  std::string("could not resolve URL \"") + url +
+                  "\" relative to \"" +
+                  plugin_base_url_.possibly_invalid_spec() + "\".");
+  return false;
 }
 
 void NexeLoadManager::ReportDeadNexe() {

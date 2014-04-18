@@ -144,18 +144,6 @@ class Plugin : public pp::Instance {
   // Report the error code that sel_ldr produces when starting a nexe.
   void ReportSelLdrLoadStatus(int status);
 
-  // URL resolution support.
-  // plugin_base_url is the URL used for resolving relative URLs used in
-  // src="...".
-  nacl::string plugin_base_url() const { return plugin_base_url_; }
-  void set_plugin_base_url(const nacl::string& url) { plugin_base_url_ = url; }
-  // manifest_base_url is the URL used for resolving relative URLs mentioned
-  // in manifest files.  If the manifest is a data URI, this is an empty string.
-  nacl::string manifest_base_url() const { return manifest_base_url_; }
-  void set_manifest_base_url(const nacl::string& url) {
-    manifest_base_url_ = url;
-  }
-
   nacl::DescWrapperFactory* wrapper_factory() const { return wrapper_factory_; }
 
   // Requests a NaCl manifest download from a |url| relative to the page origin.

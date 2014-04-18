@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Tue Apr 15 14:43:25 2014. */
+/* From private/ppb_nacl_private.idl modified Fri Apr 18 08:25:19 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -344,12 +344,17 @@ struct PPB_NaCl_Private_1_0 {
   void (*SetExitStatus)(PP_Instance instance, int32_t exit_status);
   /* Logs the message via VLOG. */
   void (*Vlog)(const char* message);
-  /* Sets the time the plugin was initialized. */
-  void (*SetInitTime)(PP_Instance instance);
+  /* Initializes internal state for a NaCl plugin. */
+  void (*InitializePlugin)(PP_Instance instance);
   /* Returns the size of the nexe. */
   int64_t (*GetNexeSize)(PP_Instance instance);
-  /* Sets the size of the nexe. */
-  void (*SetNexeSize)(PP_Instance instance, int64_t nexe_size);
+  /* Performs accounting for requesting the NaCl manifest at the given URL. */
+  PP_Bool (*RequestNaClManifest)(PP_Instance instance,
+                                 const char* manifest_url,
+                                 PP_Bool* is_data_uri);
+  struct PP_Var (*GetManifestBaseURL)(PP_Instance instance);
+  PP_Bool (*ResolvesRelativeToPluginBaseUrl)(PP_Instance instance,
+                                             const char* url);
 };
 
 typedef struct PPB_NaCl_Private_1_0 PPB_NaCl_Private;

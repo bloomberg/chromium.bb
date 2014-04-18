@@ -352,13 +352,19 @@ interface PPB_NaCl_Private {
   /* Logs the message via VLOG. */
   void Vlog([in] str_t message);
 
-  /* Sets the time the plugin was initialized. */
-  void SetInitTime([in] PP_Instance instance);
+  /* Initializes internal state for a NaCl plugin. */
+  void InitializePlugin([in] PP_Instance instance);
 
   /* Returns the size of the nexe. */
   int64_t GetNexeSize([in] PP_Instance instance);
 
-  /* Sets the size of the nexe. */
-  void SetNexeSize([in] PP_Instance instance,
-                   [in] int64_t nexe_size);
+  /* Performs accounting for requesting the NaCl manifest at the given URL. */
+  PP_Bool RequestNaClManifest([in] PP_Instance instance,
+                              [in] str_t manifest_url,
+                              [out] PP_Bool is_data_uri);
+
+  PP_Var GetManifestBaseURL([in] PP_Instance instance);
+
+  PP_Bool ResolvesRelativeToPluginBaseUrl([in] PP_Instance instance,
+                                          [in] str_t url);
 };

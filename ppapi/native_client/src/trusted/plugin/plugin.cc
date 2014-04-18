@@ -268,7 +268,10 @@ void Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
   // associated listener threads do not go unjoined because if they
   // outlive the Plugin object, they will not be memory safe.
   ShutDownSubprocesses();
-  SelLdrStartParams params(manifest_base_url(),
+  pp::Var manifest_base_url =
+      pp::Var(pp::PASS_REF, nacl_interface_->GetManifestBaseURL(pp_instance()));
+  std::string manifest_base_url_str = manifest_base_url.AsString();
+  SelLdrStartParams params(manifest_base_url_str,
                            true /* uses_irt */,
                            true /* uses_ppapi */,
                            uses_nonsfi_mode,
@@ -431,7 +434,7 @@ Plugin* Plugin::New(PP_Instance pp_instance) {
 // failure. Note that module loading functions will log their own errors.
 bool Plugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
   PLUGIN_PRINTF(("Plugin::Init (argc=%" NACL_PRIu32 ")\n", argc));
-  nacl_interface_->SetInitTime(pp_instance());
+  nacl_interface_->InitializePlugin(pp_instance());
 
   url_util_ = pp::URLUtil_Dev::Get();
   if (url_util_ == NULL)
@@ -461,16 +464,6 @@ bool Plugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
     } else {
       manifest_url = LookupArgument(kSrcManifestAttribute);
     }
-    // Use the document URL as the base for resolving relative URLs to find the
-    // manifest.  This takes into account the setting of <base> tags that
-    // precede the embed/object.
-    CHECK(url_util_ != NULL);
-    pp::Var base_var = url_util_->GetDocumentURL(this);
-    if (!base_var.is_string()) {
-      PLUGIN_PRINTF(("Plugin::Init (unable to find document url)\n"));
-      return false;
-    }
-    set_plugin_base_url(base_var.AsString());
     if (manifest_url.empty()) {
       // TODO(sehr,polina): this should be a hard error when scripting
       // the src property is no longer allowed.
@@ -484,7 +477,7 @@ bool Plugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
       // Issue a GET for the manifest_url.  The manifest file will be parsed to
       // determine the nexe URL.
       // Sets src property to full manifest URL.
-      RequestNaClManifest(manifest_url.c_str());
+      RequestNaClManifest(manifest_url);
     }
   }
 
@@ -845,36 +838,12 @@ void Plugin::ProcessNaClManifest(const nacl::string& manifest_json) {
 
 void Plugin::RequestNaClManifest(const nacl::string& url) {
   PLUGIN_PRINTF(("Plugin::RequestNaClManifest (url='%s')\n", url.c_str()));
-  PLUGIN_PRINTF(("Plugin::RequestNaClManifest (plugin base url='%s')\n",
-                 plugin_base_url().c_str()));
-  // The full URL of the manifest file is relative to the base url.
-  CHECK(url_util_ != NULL);
-  pp::Var nmf_resolved_url =
-      url_util_->ResolveRelativeToURL(plugin_base_url(), pp::Var(url));
-  if (!nmf_resolved_url.is_string()) {
-    ErrorInfo error_info;
-    error_info.SetReport(
-        PP_NACL_ERROR_MANIFEST_RESOLVE_URL,
-        nacl::string("could not resolve URL \"") + url.c_str() +
-        "\" relative to \"" + plugin_base_url().c_str() + "\".");
-    ReportLoadError(error_info);
+  PP_Bool is_data_uri;
+  if (!nacl_interface_->RequestNaClManifest(pp_instance(), url.c_str(),
+                                            &is_data_uri))
     return;
-  }
-  PLUGIN_PRINTF(("Plugin::RequestNaClManifest (resolved url='%s')\n",
-                 nmf_resolved_url.AsString().c_str()));
-  nacl_interface_->SetIsInstalled(
-      pp_instance(),
-      PP_FromBool(
-          nacl_interface_->GetUrlScheme(nmf_resolved_url.pp_var()) ==
-          PP_SCHEME_CHROME_EXTENSION));
-  set_manifest_base_url(nmf_resolved_url.AsString());
-  // Inform JavaScript that a load is starting.
-  nacl_interface_->SetNaClReadyState(pp_instance(), PP_NACL_READY_STATE_OPENED);
-  EnqueueProgressEvent(PP_NACL_EVENT_LOADSTART);
-  bool is_data_uri =
-      (nacl_interface_->GetUrlScheme(nmf_resolved_url.pp_var()) ==
-       PP_SCHEME_DATA);
-  HistogramEnumerateManifestIsDataURI(static_cast<int>(is_data_uri));
+  pp::Var nmf_resolved_url =
+      pp::Var(pp::PASS_REF, nacl_interface_->GetManifestBaseURL(pp_instance()));
   if (is_data_uri) {
     pp::CompletionCallback open_callback =
         callback_factory_.NewCallback(&Plugin::NaClManifestBufferReady);
@@ -908,12 +877,15 @@ bool Plugin::SetManifestObject(const nacl::string& manifest_json,
   bool is_pnacl = (mime_type() == kPnaclMIMEType);
   bool nonsfi_mode_enabled =
       PP_ToBool(nacl_interface_->IsNonSFIModeEnabled());
+  pp::Var manifest_base_url =
+      pp::Var(pp::PASS_REF, nacl_interface_->GetManifestBaseURL(pp_instance()));
+  std::string manifest_base_url_str = manifest_base_url.AsString();
   bool pnacl_debug = GetNaClInterface()->NaClDebugEnabledForURL(
-      manifest_base_url().c_str());
+      manifest_base_url_str.c_str());
   const char* sandbox_isa = nacl_interface_->GetSandboxArch();
   nacl::scoped_ptr<JsonManifest> json_manifest(
       new JsonManifest(url_util_,
-                       manifest_base_url(),
+                       manifest_base_url_str,
                        (is_pnacl ? kPortableArch : sandbox_isa),
                        nonsfi_mode_enabled,
                        pnacl_debug));
@@ -973,17 +945,11 @@ bool Plugin::StreamAsFile(const nacl::string& url,
   FileDownloader* downloader = new FileDownloader();
   downloader->Initialize(this);
   url_downloaders_.insert(downloader);
+
   // Untrusted loads are always relative to the page's origin.
-  CHECK(url_util_ != NULL);
-  pp::Var resolved_url =
-      url_util_->ResolveRelativeToURL(pp::Var(plugin_base_url()), url);
-  if (!resolved_url.is_string()) {
-    PLUGIN_PRINTF(("Plugin::StreamAsFile: "
-                   "could not resolve url \"%s\" relative to plugin \"%s\".",
-                   url.c_str(),
-                   plugin_base_url().c_str()));
+  if (!GetNaClInterface()->ResolvesRelativeToPluginBaseUrl(pp_instance(),
+                                                           url.c_str()))
     return false;
-  }
 
   // Try the fast path first. This will only block if the file is installed.
   if (OpenURLFast(url, downloader)) {

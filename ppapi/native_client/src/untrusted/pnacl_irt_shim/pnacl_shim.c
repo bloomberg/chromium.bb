@@ -3242,9 +3242,9 @@ static void Pnacl_M25_PPB_NaCl_Private_Vlog(const char* message) {
   iface->Vlog(message);
 }
 
-static void Pnacl_M25_PPB_NaCl_Private_SetInitTime(PP_Instance instance) {
+static void Pnacl_M25_PPB_NaCl_Private_InitializePlugin(PP_Instance instance) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  iface->SetInitTime(instance);
+  iface->InitializePlugin(instance);
 }
 
 static int64_t Pnacl_M25_PPB_NaCl_Private_GetNexeSize(PP_Instance instance) {
@@ -3252,9 +3252,19 @@ static int64_t Pnacl_M25_PPB_NaCl_Private_GetNexeSize(PP_Instance instance) {
   return iface->GetNexeSize(instance);
 }
 
-static void Pnacl_M25_PPB_NaCl_Private_SetNexeSize(PP_Instance instance, int64_t nexe_size) {
+static PP_Bool Pnacl_M25_PPB_NaCl_Private_RequestNaClManifest(PP_Instance instance, const char* manifest_url, PP_Bool* is_data_uri) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  iface->SetNexeSize(instance, nexe_size);
+  return iface->RequestNaClManifest(instance, manifest_url, is_data_uri);
+}
+
+static void Pnacl_M25_PPB_NaCl_Private_GetManifestBaseURL(struct PP_Var* _struct_result, PP_Instance instance) {
+  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
+  *_struct_result = iface->GetManifestBaseURL(instance);
+}
+
+static PP_Bool Pnacl_M25_PPB_NaCl_Private_ResolvesRelativeToPluginBaseUrl(PP_Instance instance, const char* url) {
+  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
+  return iface->ResolvesRelativeToPluginBaseUrl(instance, url);
 }
 
 /* End wrapper methods for PPB_NaCl_Private_1_0 */
@@ -5162,9 +5172,11 @@ static const struct PPB_NaCl_Private_1_0 Pnacl_Wrappers_PPB_NaCl_Private_1_0 = {
     .GetExitStatus = (int32_t (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_GetExitStatus,
     .SetExitStatus = (void (*)(PP_Instance instance, int32_t exit_status))&Pnacl_M25_PPB_NaCl_Private_SetExitStatus,
     .Vlog = (void (*)(const char* message))&Pnacl_M25_PPB_NaCl_Private_Vlog,
-    .SetInitTime = (void (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_SetInitTime,
+    .InitializePlugin = (void (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_InitializePlugin,
     .GetNexeSize = (int64_t (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_GetNexeSize,
-    .SetNexeSize = (void (*)(PP_Instance instance, int64_t nexe_size))&Pnacl_M25_PPB_NaCl_Private_SetNexeSize
+    .RequestNaClManifest = (PP_Bool (*)(PP_Instance instance, const char* manifest_url, PP_Bool* is_data_uri))&Pnacl_M25_PPB_NaCl_Private_RequestNaClManifest,
+    .GetManifestBaseURL = (struct PP_Var (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_GetManifestBaseURL,
+    .ResolvesRelativeToPluginBaseUrl = (PP_Bool (*)(PP_Instance instance, const char* url))&Pnacl_M25_PPB_NaCl_Private_ResolvesRelativeToPluginBaseUrl
 };
 
 static const struct PPB_NetAddress_Private_0_1 Pnacl_Wrappers_PPB_NetAddress_Private_0_1 = {
