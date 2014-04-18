@@ -21,10 +21,10 @@ void LayerOwner::SetLayer(Layer* layer) {
   layer_->owner_ = this;
 }
 
-Layer* LayerOwner::AcquireLayer() {
+scoped_ptr<Layer> LayerOwner::AcquireLayer() {
   if (layer_owner_)
     layer_owner_->owner_ = NULL;
-  return layer_owner_.release();
+  return layer_owner_.Pass();
 }
 
 scoped_ptr<Layer> LayerOwner::RecreateLayer() {

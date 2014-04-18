@@ -1947,8 +1947,8 @@ TEST_F(WindowTest, AcquireThenRecreateLayer) {
   scoped_ptr<Window> w(
       CreateTestWindow(SK_ColorWHITE, 1, gfx::Rect(0, 0, 100, 100),
                        root_window()));
-  scoped_ptr<ui::Layer>acquired_layer(w->AcquireLayer());
-  scoped_ptr<ui::Layer>doubly_acquired_layer(w->RecreateLayer());
+  scoped_ptr<ui::Layer> acquired_layer(w->AcquireLayer());
+  scoped_ptr<ui::Layer> doubly_acquired_layer(w->RecreateLayer());
   EXPECT_EQ(NULL, doubly_acquired_layer.get());
 
   // Destroy window before layer gets destroyed.

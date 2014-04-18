@@ -173,9 +173,8 @@ void OverscrollNavigationOverlay::StopObservingIfDone() {
     return;
 
   scoped_ptr<ui::Layer> layer;
-  if (window_.get()) {
-    layer.reset(window_->AcquireLayer());
-  }
+  if (window_.get())
+    layer = window_->AcquireLayer();
   Observe(NULL);
   window_slider_.reset();
   window_.reset();

@@ -26,7 +26,7 @@ class COMPOSITOR_EXPORT LayerOwner {
   // function, and the caller is then responsible for disposing of the layer
   // once any animation completes. Note that layer() will remain valid until the
   // end of ~LayerOwner().
-  Layer* AcquireLayer() WARN_UNUSED_RESULT;
+  scoped_ptr<Layer> AcquireLayer();
 
   // Asks the owner to recreate the layer, returning the old Layer. NULL is
   // returned if there is no existing layer, or recreate is not supported.
