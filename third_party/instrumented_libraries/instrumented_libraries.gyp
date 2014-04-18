@@ -91,6 +91,7 @@
         '<(_sanitizer_type)-libgtk2.0-0',
         '<(_sanitizer_type)-libgdk-pixbuf2.0-0',
         '<(_sanitizer_type)-libpci3',
+        '<(_sanitizer_type)-libdbusmenu-glib4',
       ],
       'conditions': [
         ['asan==1', {
@@ -461,6 +462,21 @@
       'dependencies=': [],
       'build_method': 'custom_libpci3',
       'jobs': 1,
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'libdbusmenu-glib4',
+      'custom_configure_flags': [
+          # From debian/rules.
+          '--disable-scrollkeeper',
+          '--enable-gtk-doc',
+          # --enable-introspection introduces a build step that attempts to run
+          # a just-built binary and crashes. Vala requires introspection.
+          # TODO(earthdok): find a better fix.
+          '--disable-introspection',
+          '--disable-vala',
+      ],
+      'dependencies=': [],
       'includes': ['standard_instrumented_library_target.gypi'],
     },
   ],
