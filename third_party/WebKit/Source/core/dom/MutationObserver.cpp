@@ -186,7 +186,7 @@ static MutationObserverSet& suspendedMutationObservers()
 static void activateObserver(PassRefPtr<MutationObserver> observer)
 {
     if (activeMutationObservers().isEmpty())
-        Microtask::enqueueMicrotask(&MutationObserver::deliverMutations);
+        Microtask::enqueueMicrotask(WTF::bind(&MutationObserver::deliverMutations));
 
     activeMutationObservers().add(observer);
 }

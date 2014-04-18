@@ -32,12 +32,14 @@
 #include "core/dom/Microtask.h"
 
 #include "bindings/v8/V8PerIsolateData.h"
+#include "platform/Task.h"
+#include "public/platform/WebThread.h"
 #include "wtf/Vector.h"
 #include <v8.h>
 
 namespace WebCore {
 
-typedef Vector<MicrotaskCallback> MicrotaskQueue;
+typedef Vector<OwnPtr<blink::WebThread::Task> > MicrotaskQueue;
 
 static MicrotaskQueue& microtaskQueue()
 {
@@ -54,19 +56,23 @@ void Microtask::performCheckpoint()
     isolateData->setPerformingMicrotaskCheckpoint(true);
 
     while (!microtaskQueue().isEmpty()) {
-        Vector<MicrotaskCallback> microtasks;
+        MicrotaskQueue microtasks;
         microtasks.swap(microtaskQueue());
         for (size_t i = 0; i < microtasks.size(); ++i) {
-            microtasks[i]();
+            microtasks[i]->run();
         }
     }
 
     isolateData->setPerformingMicrotaskCheckpoint(false);
 }
 
-void Microtask::enqueueMicrotask(MicrotaskCallback callback)
+void Microtask::enqueueMicrotask(PassOwnPtr<blink::WebThread::Task> callback)
 {
     microtaskQueue().append(callback);
 }
 
+void Microtask::enqueueMicrotask(const Closure& callback)
+{
+    enqueueMicrotask(adoptPtr(new Task(callback)));
+}
 } // namespace WebCore

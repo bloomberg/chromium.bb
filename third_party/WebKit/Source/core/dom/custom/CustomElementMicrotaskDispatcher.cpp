@@ -56,7 +56,7 @@ void CustomElementMicrotaskDispatcher::importDidFinish(CustomElementMicrotaskImp
 void CustomElementMicrotaskDispatcher::ensureMicrotaskScheduled()
 {
     if (!m_hasScheduledMicrotask) {
-        Microtask::enqueueMicrotask(&dispatch);
+        Microtask::enqueueMicrotask(WTF::bind(&dispatch));
         m_hasScheduledMicrotask = true;
     }
 }
