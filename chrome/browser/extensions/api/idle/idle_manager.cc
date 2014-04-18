@@ -15,7 +15,6 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/event_router.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 
 namespace keys = extensions::idle_api_constants;
@@ -56,20 +55,19 @@ void DefaultEventDelegate::OnStateChanged(const std::string& extension_id,
   scoped_ptr<Event> event(new Event(idle::OnStateChanged::kEventName,
                                     args.Pass()));
   event->restrict_to_browser_context = profile_;
-  ExtensionSystem::Get(profile_)->event_router()->DispatchEventToExtension(
-      extension_id, event.Pass());
+  EventRouter::Get(profile_)
+      ->DispatchEventToExtension(extension_id, event.Pass());
 }
 
 void DefaultEventDelegate::RegisterObserver(
     EventRouter::Observer* observer) {
-  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      observer, idle::OnStateChanged::kEventName);
+  EventRouter::Get(profile_)
+      ->RegisterObserver(observer, idle::OnStateChanged::kEventName);
 }
 
 void DefaultEventDelegate::UnregisterObserver(EventRouter::Observer* observer) {
-  ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(observer);
+  EventRouter::Get(profile_)->UnregisterObserver(observer);
 }
-
 
 class DefaultIdleProvider : public IdleManager::IdleTimeProvider {
  public:

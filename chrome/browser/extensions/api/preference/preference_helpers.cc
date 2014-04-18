@@ -89,8 +89,7 @@ void DispatchEventToExtensions(
     APIPermission::ID permission,
     bool incognito,
     const std::string& browser_pref) {
-  EventRouter* router =
-      ExtensionSystem::Get(profile)->event_router();
+  EventRouter* router = EventRouter::Get(profile);
   if (!router || !router->HasEventListener(event_name))
     return;
   ExtensionService* extension_service =

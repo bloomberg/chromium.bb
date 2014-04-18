@@ -26,7 +26,6 @@
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function.h"
-#include "extensions/browser/extension_system.h"
 
 using content::BrowserThread;
 
@@ -134,8 +133,7 @@ void LogPrivateAPI::AddEntriesOnUI(scoped_ptr<base::ListValue> value) {
     event_args->Append(value->DeepCopy());
     scoped_ptr<Event> event(new Event(events::kOnAddNetInternalsEntries,
                                       event_args.Pass()));
-    ExtensionSystem::Get(profile_)->event_router()->DispatchEventToExtension(
-        *ix, event.Pass());
+    EventRouter::Get(profile_)->DispatchEventToExtension(*ix, event.Pass());
   }
 }
 

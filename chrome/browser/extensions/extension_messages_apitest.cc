@@ -72,8 +72,8 @@ class MessageSender : public content::NotificationObserver {
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
-    EventRouter* event_router = ExtensionSystem::Get(
-        content::Source<Profile>(source).ptr())->event_router();
+    EventRouter* event_router =
+        EventRouter::Get(content::Source<Profile>(source).ptr());
 
     // Sends four messages to the extension. All but the third message sent
     // from the origin http://b.com/ are supposed to arrive.

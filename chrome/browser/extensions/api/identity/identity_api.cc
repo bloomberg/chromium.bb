@@ -30,7 +30,6 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_dispatcher.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "url/gurl.h"
@@ -207,8 +206,7 @@ void IdentityAPI::OnAccountSignInChanged(const AccountIds& ids,
                                     args.Pass(),
                                     browser_context_));
 
-  ExtensionSystem::Get(browser_context_)->event_router()->BroadcastEvent(
-      event.Pass());
+  EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
 }
 
 void IdentityAPI::AddShutdownObserver(ShutdownObserver* observer) {

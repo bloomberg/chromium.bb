@@ -13,7 +13,7 @@
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/service_factory.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/event_router.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
 
 namespace chromeos {
@@ -113,11 +113,10 @@ int Service::MountFileSystem(const std::string& extension_id,
       extension_id, file_system_id, file_system_name, mount_point_path);
 
   // The event router may be NULL for unit tests.
-  extensions::EventRouter* event_router =
-      extensions::ExtensionSystem::Get(profile_)->event_router();
+  extensions::EventRouter* router = extensions::EventRouter::Get(profile_);
 
   ProvidedFileSystemInterface* file_system =
-      file_system_factory_.Run(event_router, file_system_info);
+      file_system_factory_.Run(router, file_system_info);
   DCHECK(file_system);
   file_system_map_[file_system_id] = file_system;
 

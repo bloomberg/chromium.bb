@@ -42,9 +42,7 @@ class PreferenceWhitelist {
       std::string event_name = base::StringPrintf(
           kOnPrefChangeFormat,
           (*iter).c_str());
-      ExtensionSystem::Get(profile)->event_router()->RegisterObserver(
-          observer,
-          event_name);
+      EventRouter::Get(profile)->RegisterObserver(observer, event_name);
     }
   }
 
@@ -94,7 +92,7 @@ ChromeDirectSettingAPI::GetFactoryInstance() {
 
 // EventRouter::Observer implementation.
 void ChromeDirectSettingAPI::OnListenerAdded(const EventListenerInfo& details) {
-  ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
+  EventRouter::Get(profile_)->UnregisterObserver(this);
   registrar_.Init(profile_->GetPrefs());
   preference_whitelist.Get().RegisterPropertyListeners(
       profile_,
@@ -123,7 +121,7 @@ void ChromeDirectSettingAPI::OnPrefChanged(
     PrefService* pref_service, const std::string& pref_key) {
   std::string event_name = base::StringPrintf(kOnPrefChangeFormat,
                                               pref_key.c_str());
-  EventRouter* router = ExtensionSystem::Get(profile_)->event_router();
+  EventRouter* router = EventRouter::Get(profile_);
   if (router && router->HasEventListener(event_name)) {
     const PrefService::Preference* preference =
         profile_->GetPrefs()->FindPreference(pref_key.c_str());

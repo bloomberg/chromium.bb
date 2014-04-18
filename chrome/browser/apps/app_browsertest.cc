@@ -1017,8 +1017,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
   ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(browser()->profile());
 
   // Clear the registered events to ensure they are updated.
-  extensions::ExtensionSystem::Get(browser()->profile())->event_router()->
-      SetRegisteredEvents(extension->id(), std::set<std::string>());
+  extensions::EventRouter::Get(browser()->profile())
+      ->SetRegisteredEvents(extension->id(), std::set<std::string>());
 
   DictionaryPrefUpdate update(extension_prefs->pref_service(),
                               extensions::pref_names::kExtensions);
@@ -1196,7 +1196,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppIncognitoBrowserTest, IncognitoComponentApp) {
 
   // Wait until the file manager has had a chance to register its listener
   // for the launch event.
-  EventRouter* router = ExtensionSystem::Get(incognito_profile)->event_router();
+  EventRouter* router = EventRouter::Get(incognito_profile);
   ASSERT_TRUE(router != NULL);
   while (!router->ExtensionHasEventListener(
       file_manager->id(), app_runtime::OnLaunched::kEventName)) {

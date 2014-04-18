@@ -157,8 +157,8 @@ TEST_F(ExtensionBluetoothApiTest, DispatchConnectionEvent) {
   // receiver(s).
   base::RunLoop().RunUntilIdle();
 
-  FakeEventRouter* fake_event_router = static_cast<FakeEventRouter*>(
-      ExtensionSystem::Get(test_profile_)->event_router());
+  FakeEventRouter* fake_event_router =
+      static_cast<FakeEventRouter*>(EventRouter::Get(test_profile_));
 
   ASSERT_TRUE(fake_event_router->event());
   EXPECT_STREQ(kTestExtensionId, fake_event_router->extension_id().c_str());
@@ -197,8 +197,8 @@ TEST_F(ExtensionBluetoothApiTest, DoNotDispatchConnectionEvent) {
   // receiver(s).
   base::RunLoop().RunUntilIdle();
 
-  FakeEventRouter* fake_event_router = static_cast<FakeEventRouter*>(
-      ExtensionSystem::Get(test_profile_)->event_router());
+  FakeEventRouter* fake_event_router =
+      static_cast<FakeEventRouter*>(EventRouter::Get(test_profile_));
   EXPECT_TRUE(fake_event_router->event() == NULL);
 
   EXPECT_CALL(*mock_adapter_, RemoveObserver(testing::_)).Times(1);

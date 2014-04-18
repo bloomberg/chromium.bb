@@ -302,10 +302,8 @@ MediaGalleriesEventRouter* MediaGalleriesEventRouter::Get(
 
 bool MediaGalleriesEventRouter::ExtensionHasScanProgressListener(
     const std::string& extension_id) const {
-  EventRouter* router = ExtensionSystem::Get(profile_)->event_router();
-  return router->ExtensionHasEventListener(
-      extension_id,
-      MediaGalleries::OnScanProgress::kEventName);
+  return EventRouter::Get(profile_)->ExtensionHasEventListener(
+      extension_id, MediaGalleries::OnScanProgress::kEventName);
 }
 
 void MediaGalleriesEventRouter::OnScanStarted(const std::string& extension_id) {
@@ -358,8 +356,7 @@ void MediaGalleriesEventRouter::DispatchEventToExtension(
     const std::string& event_name,
     scoped_ptr<base::ListValue> event_args) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  EventRouter* router =
-      extensions::ExtensionSystem::Get(profile_)->event_router();
+  EventRouter* router = EventRouter::Get(profile_);
   if (!router->ExtensionHasEventListener(extension_id, event_name))
     return;
 

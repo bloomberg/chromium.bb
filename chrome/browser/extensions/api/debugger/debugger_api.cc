@@ -385,7 +385,7 @@ void ExtensionDevToolsClientHost::MarkAsDismissed() {
 }
 
 void ExtensionDevToolsClientHost::SendDetachedEvent() {
-  if (!extensions::ExtensionSystem::Get(profile_)->event_router())
+  if (!extensions::EventRouter::Get(profile_))
     return;
 
   scoped_ptr<base::ListValue> args(OnDetach::Create(debuggee_,
@@ -393,8 +393,8 @@ void ExtensionDevToolsClientHost::SendDetachedEvent() {
   scoped_ptr<extensions::Event> event(new extensions::Event(
       OnDetach::kEventName, args.Pass()));
   event->restrict_to_browser_context = profile_;
-  extensions::ExtensionSystem::Get(profile_)->event_router()->
-      DispatchEventToExtension(extension_id_, event.Pass());
+  extensions::EventRouter::Get(profile_)
+      ->DispatchEventToExtension(extension_id_, event.Pass());
 }
 
 void ExtensionDevToolsClientHost::Observe(
@@ -419,7 +419,7 @@ void ExtensionDevToolsClientHost::Observe(
 
 void ExtensionDevToolsClientHost::DispatchOnInspectorFrontend(
     const std::string& message) {
-  if (!extensions::ExtensionSystem::Get(profile_)->event_router())
+  if (!extensions::EventRouter::Get(profile_))
     return;
 
   scoped_ptr<base::Value> result(base::JSONReader::Read(message));
@@ -444,8 +444,8 @@ void ExtensionDevToolsClientHost::DispatchOnInspectorFrontend(
     scoped_ptr<extensions::Event> event(new extensions::Event(
         OnEvent::kEventName, args.Pass()));
     event->restrict_to_browser_context = profile_;
-    extensions::ExtensionSystem::Get(profile_)->event_router()->
-        DispatchEventToExtension(extension_id_, event.Pass());
+    extensions::EventRouter::Get(profile_)
+        ->DispatchEventToExtension(extension_id_, event.Pass());
   } else {
     DebuggerSendCommandFunction* function = pending_requests_[id].get();
     if (!function)

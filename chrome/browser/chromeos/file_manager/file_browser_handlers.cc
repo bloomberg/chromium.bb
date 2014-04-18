@@ -359,9 +359,8 @@ void FileBrowserHandlerExecutor::SetupPermissionsAndDispatchEvent(
     return;
   }
 
-  extensions::EventRouter* event_router =
-      extensions::ExtensionSystem::Get(profile_)->event_router();
-  if (!event_router) {
+  extensions::EventRouter* router = extensions::EventRouter::Get(profile_);
+  if (!router) {
     ExecuteDoneOnUIThread(false);
     return;
   }
@@ -394,7 +393,7 @@ void FileBrowserHandlerExecutor::SetupPermissionsAndDispatchEvent(
   scoped_ptr<extensions::Event> event(new extensions::Event(
       "fileBrowserHandler.onExecute", event_args.Pass()));
   event->restrict_to_browser_context = profile_;
-  event_router->DispatchEventToExtension(extension_->id(), event.Pass());
+  router->DispatchEventToExtension(extension_->id(), event.Pass());
 
   ExecuteDoneOnUIThread(true);
 }

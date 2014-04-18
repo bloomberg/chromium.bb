@@ -39,8 +39,8 @@ namespace dial = api::dial;
 DialAPI::DialAPI(Profile* profile)
     : RefcountedBrowserContextKeyedService(BrowserThread::IO),
       profile_(profile) {
-  ExtensionSystem::Get(profile)->event_router()->RegisterObserver(
-      this, dial::OnDeviceList::kEventName);
+  EventRouter::Get(profile)
+      ->RegisterObserver(this, dial::OnDeviceList::kEventName);
 }
 
 DialAPI::~DialAPI() {}
@@ -108,8 +108,7 @@ void DialAPI::SendEventOnUIThread(const DialRegistry::DeviceList& devices) {
   scoped_ptr<base::ListValue> results = api::dial::OnDeviceList::Create(args);
   scoped_ptr<Event> event(
       new Event(dial::OnDeviceList::kEventName, results.Pass()));
-  extensions::ExtensionSystem::Get(profile_)->event_router()->
-      BroadcastEvent(event.Pass());
+  EventRouter::Get(profile_)->BroadcastEvent(event.Pass());
 }
 
 void DialAPI::SendErrorOnUIThread(const DialRegistry::DialErrorCode code) {
@@ -139,8 +138,7 @@ void DialAPI::SendErrorOnUIThread(const DialRegistry::DialErrorCode code) {
 
   scoped_ptr<base::ListValue> results = api::dial::OnError::Create(dial_error);
   scoped_ptr<Event> event(new Event(dial::OnError::kEventName, results.Pass()));
-  extensions::ExtensionSystem::Get(profile_)->event_router()->
-      BroadcastEvent(event.Pass());
+  EventRouter::Get(profile_)->BroadcastEvent(event.Pass());
 }
 
 void DialAPI::ShutdownOnUIThread() {}

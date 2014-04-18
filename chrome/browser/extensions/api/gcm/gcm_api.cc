@@ -15,7 +15,6 @@
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/common/extensions/api/gcm.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 
 namespace {
@@ -197,19 +196,19 @@ bool GcmSendFunction::ValidateMessageData(
 }
 
 GcmJsEventRouter::GcmJsEventRouter(Profile* profile) : profile_(profile) {
-  if (ExtensionSystem::Get(profile_)->event_router()) {
-    ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-        this, api::gcm::OnMessage::kEventName);
-    ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-        this, api::gcm::OnMessagesDeleted::kEventName);
-    ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-        this, api::gcm::OnSendError::kEventName);
-  }
+  EventRouter* event_router = EventRouter::Get(profile_);
+  if (!event_router)
+    return;
+
+  event_router->RegisterObserver(this, api::gcm::OnMessage::kEventName);
+  event_router->RegisterObserver(this, api::gcm::OnMessagesDeleted::kEventName);
+  event_router->RegisterObserver(this, api::gcm::OnSendError::kEventName);
 }
 
 GcmJsEventRouter::~GcmJsEventRouter() {
-  if (ExtensionSystem::Get(profile_)->event_router())
-    ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
+  EventRouter* event_router = EventRouter::Get(profile_);
+  if (event_router)
+    event_router->UnregisterObserver(this);
 }
 
 void GcmJsEventRouter::OnMessage(
@@ -224,8 +223,7 @@ void GcmJsEventRouter::OnMessage(
       api::gcm::OnMessage::kEventName,
       api::gcm::OnMessage::Create(message_arg).Pass(),
       profile_));
-  ExtensionSystem::Get(profile_)->event_router()->DispatchEventToExtension(
-      app_id, event.Pass());
+  EventRouter::Get(profile_)->DispatchEventToExtension(app_id, event.Pass());
 }
 
 void GcmJsEventRouter::OnMessagesDeleted(const std::string& app_id) {
@@ -233,8 +231,7 @@ void GcmJsEventRouter::OnMessagesDeleted(const std::string& app_id) {
       api::gcm::OnMessagesDeleted::kEventName,
       api::gcm::OnMessagesDeleted::Create().Pass(),
       profile_));
-  ExtensionSystem::Get(profile_)->event_router()->DispatchEventToExtension(
-      app_id, event.Pass());
+  EventRouter::Get(profile_)->DispatchEventToExtension(app_id, event.Pass());
 }
 
 void GcmJsEventRouter::OnSendError(
@@ -249,8 +246,7 @@ void GcmJsEventRouter::OnSendError(
       api::gcm::OnSendError::kEventName,
       api::gcm::OnSendError::Create(error).Pass(),
       profile_));
-  ExtensionSystem::Get(profile_)->event_router()->DispatchEventToExtension(
-      app_id, event.Pass());
+  EventRouter::Get(profile_)->DispatchEventToExtension(app_id, event.Pass());
 }
 
 void GcmJsEventRouter::OnListenerAdded(const EventListenerInfo& details) {

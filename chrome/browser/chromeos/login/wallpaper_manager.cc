@@ -984,15 +984,14 @@ void WallpaperManager::RemoveObserver(WallpaperManager::Observer* observer) {
 void WallpaperManager::EnableSurpriseMe() {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   DCHECK(profile);
-  DCHECK(extensions::ExtensionSystem::Get(profile)->event_router());
+  DCHECK(extensions::EventRouter::Get(profile));
   scoped_ptr<extensions::Event> event(
       new extensions::Event(
     extensions::api::wallpaper_private::OnRequestEnableSurpriseMe::kEventName,
     extensions::api::wallpaper_private::OnRequestEnableSurpriseMe::Create()));
 
-  extensions::ExtensionSystem::Get(profile)->event_router()
-      ->DispatchEventToExtension(extension_misc::kWallpaperManagerId,
-                                 event.Pass());
+  extensions::EventRouter::Get(profile)->DispatchEventToExtension(
+      extension_misc::kWallpaperManagerId, event.Pass());
 }
 
 void WallpaperManager::NotifyAnimationFinished() {

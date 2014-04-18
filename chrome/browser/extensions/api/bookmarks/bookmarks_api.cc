@@ -44,7 +44,6 @@
 #include "content/public/browser/web_contents_view.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_dispatcher.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/quota_service.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -173,11 +172,10 @@ BookmarkEventRouter::~BookmarkEventRouter() {
 void BookmarkEventRouter::DispatchEvent(
     const std::string& event_name,
     scoped_ptr<base::ListValue> event_args) {
-  if (extensions::ExtensionSystem::Get(browser_context_)->event_router()) {
-    extensions::ExtensionSystem::Get(browser_context_)
-        ->event_router()
-        ->BroadcastEvent(make_scoped_ptr(
-              new extensions::Event(event_name, event_args.Pass())));
+  EventRouter* event_router = EventRouter::Get(browser_context_);
+  if (event_router) {
+    event_router->BroadcastEvent(
+        make_scoped_ptr(new extensions::Event(event_name, event_args.Pass())));
   }
 }
 
@@ -289,8 +287,7 @@ void BookmarkEventRouter::ExtensiveBookmarkChangesEnded(BookmarkModel* model) {
 
 BookmarksAPI::BookmarksAPI(BrowserContext* context)
     : browser_context_(context) {
-  EventRouter* event_router =
-      ExtensionSystem::Get(browser_context_)->event_router();
+  EventRouter* event_router = EventRouter::Get(browser_context_);
   event_router->RegisterObserver(this, bookmarks::OnCreated::kEventName);
   event_router->RegisterObserver(this, bookmarks::OnRemoved::kEventName);
   event_router->RegisterObserver(this, bookmarks::OnChanged::kEventName);
@@ -305,8 +302,7 @@ BookmarksAPI::~BookmarksAPI() {
 }
 
 void BookmarksAPI::Shutdown() {
-  ExtensionSystem::Get(browser_context_)->event_router()->UnregisterObserver(
-      this);
+  EventRouter::Get(browser_context_)->UnregisterObserver(this);
 }
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<BookmarksAPI> >
@@ -323,8 +319,7 @@ void BookmarksAPI::OnListenerAdded(const EventListenerInfo& details) {
       browser_context_,
       BookmarkModelFactory::GetForProfile(
           Profile::FromBrowserContext(browser_context_))));
-  ExtensionSystem::Get(browser_context_)->event_router()->UnregisterObserver(
-      this);
+  EventRouter::Get(browser_context_)->UnregisterObserver(this);
 }
 
 bool BookmarksGetFunction::RunImpl() {

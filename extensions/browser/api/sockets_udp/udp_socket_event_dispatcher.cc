@@ -6,7 +6,6 @@
 
 #include "extensions/browser/api/socket/udp_socket.h"
 #include "extensions/browser/event_router.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "net/base/net_errors.h"
 
@@ -174,7 +173,7 @@ void UDPSocketEventDispatcher::DispatchEvent(void* browser_context_id,
       reinterpret_cast<content::BrowserContext*>(browser_context_id);
   if (!extensions::ExtensionsBrowserClient::Get()->IsValidContext(context))
     return;
-  EventRouter* router = ExtensionSystem::Get(context)->event_router();
+  EventRouter* router = EventRouter::Get(context);
   if (router)
     router->DispatchEventToExtension(extension_id, event.Pass());
 }

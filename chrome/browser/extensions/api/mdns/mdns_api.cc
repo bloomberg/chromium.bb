@@ -9,7 +9,6 @@
 #include "base/lazy_instance.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/extensions/api/mdns.h"
-#include "extensions/browser/extension_system.h"
 
 namespace extensions {
 
@@ -32,8 +31,8 @@ bool IsServiceTypeWhitelisted(const std::string& service_type) {
 
 MDnsAPI::MDnsAPI(content::BrowserContext* context) : browser_context_(context) {
   DCHECK(browser_context_);
-  ExtensionSystem::Get(context)->event_router()->RegisterObserver(
-      this, mdns::OnServiceList::kEventName);
+  EventRouter::Get(context)
+      ->RegisterObserver(this, mdns::OnServiceList::kEventName);
 }
 
 MDnsAPI::~MDnsAPI() {
@@ -84,8 +83,7 @@ void MDnsAPI::UpdateMDnsListeners(const EventListenerInfo& details) {
 
   // Check all listeners for service type filers.
   const EventListenerMap::ListenerList& listeners =
-      extensions::ExtensionSystem::Get(browser_context_)
-          ->event_router()
+      extensions::EventRouter::Get(browser_context_)
           ->listeners()
           .GetEventListenersByName(details.event_name);
   for (EventListenerMap::ListenerList::const_iterator it = listeners.begin();
@@ -149,9 +147,7 @@ void MDnsAPI::OnDnsSdEvent(const std::string& service_type,
 
   // TODO(justinlin): To avoid having listeners without filters getting all
   // events, modify API to have this event require filters.
-  extensions::ExtensionSystem::Get(browser_context_)
-      ->event_router()
-      ->BroadcastEvent(event.Pass());
+  extensions::EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
 }
 
 }  // namespace extensions

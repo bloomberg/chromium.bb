@@ -9,7 +9,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/audio.h"
 #include "extensions/browser/event_router.h"
-#include "extensions/browser/extension_system.h"
 
 namespace extensions {
 
@@ -39,13 +38,11 @@ AudioService* AudioAPI::GetService() const {
 }
 
 void AudioAPI::OnDeviceChanged() {
-  if (browser_context_ &&
-      ExtensionSystem::Get(browser_context_)->event_router()) {
+  if (browser_context_ && EventRouter::Get(browser_context_)) {
     scoped_ptr<Event> event(new Event(
         audio::OnDeviceChanged::kEventName,
         scoped_ptr<base::ListValue>(new base::ListValue())));
-    ExtensionSystem::Get(browser_context_)->event_router()->BroadcastEvent(
-        event.Pass());
+    EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
   }
 }
 

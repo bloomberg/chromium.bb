@@ -174,8 +174,8 @@ class StreamsPrivateApiTest : public ExtensionApiTest {
         new Event(streams_private::OnExecuteMimeTypeHandler::kEventName,
                   streams_private::OnExecuteMimeTypeHandler::Create(info)));
 
-    ExtensionSystem::Get(browser()->profile())->event_router()->
-        DispatchEventToExtension(test_extension_id_, event.Pass());
+    extensions::EventRouter::Get(browser()->profile())
+        ->DispatchEventToExtension(test_extension_id_, event.Pass());
   }
 
   // Loads the test extension and set's up its file_browser_handler to handle

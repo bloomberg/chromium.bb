@@ -8,7 +8,6 @@
 #include "chrome/browser/extensions/api/braille_display_private/braille_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "extensions/browser/extension_system.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/screen_locker.h"
@@ -122,22 +121,22 @@ void BrailleDisplayPrivateAPI::OnListenerRemoved(
 BrailleDisplayPrivateAPI::DefaultEventDelegate::DefaultEventDelegate(
     EventRouter::Observer* observer, Profile* profile)
     : observer_(observer), profile_(profile) {
-  EventRouter* event_router = ExtensionSystem::Get(profile_)->event_router();
+  EventRouter* event_router = EventRouter::Get(profile_);
   event_router->RegisterObserver(observer_, OnDisplayStateChanged::kEventName);
   event_router->RegisterObserver(observer_, OnKeyEvent::kEventName);
 }
 
 BrailleDisplayPrivateAPI::DefaultEventDelegate::~DefaultEventDelegate() {
-  ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(observer_);
+  EventRouter::Get(profile_)->UnregisterObserver(observer_);
 }
 
 void BrailleDisplayPrivateAPI::DefaultEventDelegate::BroadcastEvent(
     scoped_ptr<Event> event) {
-  ExtensionSystem::Get(profile_)->event_router()->BroadcastEvent(event.Pass());
+  EventRouter::Get(profile_)->BroadcastEvent(event.Pass());
 }
 
 bool BrailleDisplayPrivateAPI::DefaultEventDelegate::HasListener() {
-  EventRouter* event_router = ExtensionSystem::Get(profile_)->event_router();
+  EventRouter* event_router = EventRouter::Get(profile_);
   return (event_router->HasEventListener(OnDisplayStateChanged::kEventName) ||
           event_router->HasEventListener(OnKeyEvent::kEventName));
 }

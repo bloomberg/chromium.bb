@@ -714,13 +714,12 @@ void ManagementEventRouter::Observe(
   }
 
   scoped_ptr<Event> event(new Event(event_name, args.Pass()));
-  ExtensionSystem::Get(profile)->event_router()->BroadcastEvent(event.Pass());
+  EventRouter::Get(profile)->BroadcastEvent(event.Pass());
 }
 
 ManagementAPI::ManagementAPI(content::BrowserContext* context)
     : browser_context_(context) {
-  EventRouter* event_router =
-      ExtensionSystem::Get(browser_context_)->event_router();
+  EventRouter* event_router = EventRouter::Get(browser_context_);
   event_router->RegisterObserver(this, management::OnInstalled::kEventName);
   event_router->RegisterObserver(this, management::OnUninstalled::kEventName);
   event_router->RegisterObserver(this, management::OnEnabled::kEventName);
@@ -731,8 +730,7 @@ ManagementAPI::~ManagementAPI() {
 }
 
 void ManagementAPI::Shutdown() {
-  ExtensionSystem::Get(browser_context_)->event_router()->UnregisterObserver(
-      this);
+  EventRouter::Get(browser_context_)->UnregisterObserver(this);
 }
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<ManagementAPI> >
@@ -747,8 +745,7 @@ ManagementAPI::GetFactoryInstance() {
 void ManagementAPI::OnListenerAdded(const EventListenerInfo& details) {
   management_event_router_.reset(
       new ManagementEventRouter(Profile::FromBrowserContext(browser_context_)));
-  ExtensionSystem::Get(browser_context_)->event_router()->UnregisterObserver(
-      this);
+  EventRouter::Get(browser_context_)->UnregisterObserver(this);
 }
 
 }  // namespace extensions

@@ -27,7 +27,6 @@
 #include "extensions/browser/extension_pref_value_map.h"
 #include "extensions/browser/extension_pref_value_map_factory.h"
 #include "extensions/browser/extension_prefs_factory.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/pref_names.h"
@@ -413,8 +412,7 @@ PreferenceAPI::PreferenceAPI(content::BrowserContext* context)
     bool rv = PrefMapping::GetInstance()->FindEventForBrowserPref(
         kPrefMapping[i].browser_pref, &event_name, &permission);
     DCHECK(rv);
-    ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-        this, event_name);
+    EventRouter::Get(profile_)->RegisterObserver(this, event_name);
   }
   content_settings_store()->AddObserver(this);
 }
@@ -423,7 +421,7 @@ PreferenceAPI::~PreferenceAPI() {
 }
 
 void PreferenceAPI::Shutdown() {
-  ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
+  EventRouter::Get(profile_)->UnregisterObserver(this);
   if (!extension_prefs()->extensions_disabled())
     ClearIncognitoSessionOnlyContentSettings();
   content_settings_store()->RemoveObserver(this);
@@ -445,7 +443,7 @@ PreferenceAPI* PreferenceAPI::Get(content::BrowserContext* context) {
 
 void PreferenceAPI::OnListenerAdded(const EventListenerInfo& details) {
   preference_event_router_.reset(new PreferenceEventRouter(profile_));
-  ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
+  EventRouter::Get(profile_)->UnregisterObserver(this);
 }
 
 void PreferenceAPI::OnContentSettingChanged(const std::string& extension_id,

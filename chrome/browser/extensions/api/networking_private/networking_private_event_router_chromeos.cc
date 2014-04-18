@@ -74,7 +74,7 @@ NetworkingPrivateEventRouterImpl::NetworkingPrivateEventRouterImpl(
   // our events. We first check and see if there *is* an event router, because
   // some unit tests try to create all profile services, but don't initialize
   // the event router first.
-  EventRouter* event_router = ExtensionSystem::Get(profile_)->event_router();
+  EventRouter* event_router = EventRouter::Get(profile_);
   if (event_router) {
     event_router->RegisterObserver(
         this, api::networking_private::OnNetworksChanged::kEventName);
@@ -94,7 +94,7 @@ void NetworkingPrivateEventRouterImpl::Shutdown() {
   // Unregister with the event router. We first check and see if there *is* an
   // event router, because some unit tests try to shutdown all profile services,
   // but didn't initialize the event router first.
-  EventRouter* event_router = ExtensionSystem::Get(profile_)->event_router();
+  EventRouter* event_router = EventRouter::Get(profile_);
   if (event_router)
     event_router->UnregisterObserver(this);
 
@@ -119,7 +119,7 @@ void NetworkingPrivateEventRouterImpl::OnListenerRemoved(
 }
 
 void NetworkingPrivateEventRouterImpl::StartOrStopListeningForNetworkChanges() {
-  EventRouter* event_router = ExtensionSystem::Get(profile_)->event_router();
+  EventRouter* event_router = EventRouter::Get(profile_);
   bool should_listen =
       event_router->HasEventListener(
           api::networking_private::OnNetworksChanged::kEventName) ||
@@ -141,7 +141,7 @@ void NetworkingPrivateEventRouterImpl::StartOrStopListeningForNetworkChanges() {
 }
 
 void NetworkingPrivateEventRouterImpl::NetworkListChanged() {
-  EventRouter* event_router = ExtensionSystem::Get(profile_)->event_router();
+  EventRouter* event_router = EventRouter::Get(profile_);
   NetworkStateHandler::NetworkStateList networks;
   NetworkHandler::Get()->network_state_handler()->GetNetworkList(&networks);
   if (!event_router->HasEventListener(
@@ -174,7 +174,7 @@ void NetworkingPrivateEventRouterImpl::NetworkListChanged() {
 
 void NetworkingPrivateEventRouterImpl::NetworkPropertiesUpdated(
     const NetworkState* network) {
-  EventRouter* event_router = ExtensionSystem::Get(profile_)->event_router();
+  EventRouter* event_router = EventRouter::Get(profile_);
   if (!event_router->HasEventListener(
            api::networking_private::OnNetworksChanged::kEventName)) {
     NET_LOG_EVENT("NetworkingPrivate.NetworkPropertiesUpdated: No Listeners",
@@ -196,7 +196,7 @@ void NetworkingPrivateEventRouterImpl::OnPortalDetectionCompleted(
     const NetworkPortalDetector::CaptivePortalState& state) {
   const std::string path = network ? network->path() : std::string();
 
-  EventRouter* event_router = ExtensionSystem::Get(profile_)->event_router();
+  EventRouter* event_router = EventRouter::Get(profile_);
   if (!event_router->HasEventListener(
           api::networking_private::OnPortalDetectionCompleted::kEventName)) {
     NET_LOG_EVENT("NetworkingPrivate.OnPortalDetectionCompleted: No Listeners",

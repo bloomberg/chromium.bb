@@ -30,7 +30,6 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/event_router.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
 
@@ -193,29 +192,27 @@ void HistoryEventRouter::DispatchEvent(
     Profile* profile,
     const std::string& event_name,
     scoped_ptr<base::ListValue> event_args) {
-  if (profile && extensions::ExtensionSystem::Get(profile)->event_router()) {
+  if (profile && extensions::EventRouter::Get(profile)) {
     scoped_ptr<extensions::Event> event(new extensions::Event(
         event_name, event_args.Pass()));
     event->restrict_to_browser_context = profile;
-    extensions::ExtensionSystem::Get(profile)->event_router()->
-        BroadcastEvent(event.Pass());
+    extensions::EventRouter::Get(profile)->BroadcastEvent(event.Pass());
   }
 }
 
 HistoryAPI::HistoryAPI(content::BrowserContext* context)
     : browser_context_(context) {
-  ExtensionSystem::Get(browser_context_)->event_router()->RegisterObserver(
-      this, api::history::OnVisited::kEventName);
-  ExtensionSystem::Get(browser_context_)->event_router()->RegisterObserver(
-      this, api::history::OnVisitRemoved::kEventName);
+  EventRouter* event_router = EventRouter::Get(browser_context_);
+  event_router->RegisterObserver(this, api::history::OnVisited::kEventName);
+  event_router->RegisterObserver(this,
+                                 api::history::OnVisitRemoved::kEventName);
 }
 
 HistoryAPI::~HistoryAPI() {
 }
 
 void HistoryAPI::Shutdown() {
-  ExtensionSystem::Get(browser_context_)->event_router()->UnregisterObserver(
-      this);
+  EventRouter::Get(browser_context_)->UnregisterObserver(this);
 }
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<HistoryAPI> >
@@ -235,8 +232,7 @@ void BrowserContextKeyedAPIFactory<HistoryAPI>::DeclareFactoryDependencies() {
 void HistoryAPI::OnListenerAdded(const EventListenerInfo& details) {
   history_event_router_.reset(
       new HistoryEventRouter(Profile::FromBrowserContext(browser_context_)));
-  ExtensionSystem::Get(browser_context_)->event_router()->UnregisterObserver(
-      this);
+  EventRouter::Get(browser_context_)->UnregisterObserver(this);
 }
 
 void HistoryFunction::Run() {

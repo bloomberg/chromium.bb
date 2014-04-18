@@ -9,7 +9,6 @@
 #include "chrome/browser/extensions/api/networking_private/networking_private_service_client_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/networking_private.h"
-#include "extensions/browser/extension_system.h"
 
 namespace extensions {
 
@@ -56,7 +55,7 @@ NetworkingPrivateEventRouterImpl::NetworkingPrivateEventRouterImpl(
   // our events. We first check and see if there *is* an event router, because
   // some unit tests try to create all profile services, but don't initialize
   // the event router first.
-  EventRouter* event_router = ExtensionSystem::Get(profile_)->event_router();
+  EventRouter* event_router = EventRouter::Get(profile_);
   if (!event_router)
     return;
   event_router->RegisterObserver(
@@ -74,7 +73,7 @@ void NetworkingPrivateEventRouterImpl::Shutdown() {
   // Unregister with the event router. We first check and see if there *is* an
   // event router, because some unit tests try to shutdown all profile services,
   // but didn't initialize the event router first.
-  EventRouter* event_router = ExtensionSystem::Get(profile_)->event_router();
+  EventRouter* event_router = EventRouter::Get(profile_);
   if (event_router)
     event_router->UnregisterObserver(this);
 
@@ -100,7 +99,7 @@ void NetworkingPrivateEventRouterImpl::OnListenerRemoved(
 }
 
 void NetworkingPrivateEventRouterImpl::StartOrStopListeningForNetworkChanges() {
-  EventRouter* event_router = ExtensionSystem::Get(profile_)->event_router();
+  EventRouter* event_router = EventRouter::Get(profile_);
   if (!event_router)
     return;
   bool should_listen =
@@ -126,7 +125,7 @@ void NetworkingPrivateEventRouterImpl::StartOrStopListeningForNetworkChanges() {
 
 void NetworkingPrivateEventRouterImpl::OnNetworksChangedEvent(
     const std::vector<std::string>& network_guids) {
-  EventRouter* event_router = ExtensionSystem::Get(profile_)->event_router();
+  EventRouter* event_router = EventRouter::Get(profile_);
   if (!event_router)
     return;
   scoped_ptr<base::ListValue> args(
@@ -138,7 +137,7 @@ void NetworkingPrivateEventRouterImpl::OnNetworksChangedEvent(
 
 void NetworkingPrivateEventRouterImpl::OnNetworkListChangedEvent(
     const std::vector<std::string>& network_guids) {
-  EventRouter* event_router = ExtensionSystem::Get(profile_)->event_router();
+  EventRouter* event_router = EventRouter::Get(profile_);
   if (!event_router)
     return;
   scoped_ptr<base::ListValue> args(

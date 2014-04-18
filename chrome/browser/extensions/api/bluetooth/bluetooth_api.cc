@@ -22,7 +22,6 @@
 #include "device/bluetooth/bluetooth_service_record.h"
 #include "device/bluetooth/bluetooth_socket.h"
 #include "extensions/browser/event_router.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "net/base/io_buffer.h"
 
@@ -155,14 +154,12 @@ BluetoothAPI::ConnectionParams::~ConnectionParams() {}
 BluetoothAPI::BluetoothAPI(content::BrowserContext* context)
     : browser_context_(context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  ExtensionSystem::Get(browser_context_)->event_router()->RegisterObserver(
-      this, bluetooth::OnAdapterStateChanged::kEventName);
-  ExtensionSystem::Get(browser_context_)->event_router()->RegisterObserver(
-      this, bluetooth::OnDeviceAdded::kEventName);
-  ExtensionSystem::Get(browser_context_)->event_router()->RegisterObserver(
-      this, bluetooth::OnDeviceChanged::kEventName);
-  ExtensionSystem::Get(browser_context_)->event_router()->RegisterObserver(
-      this, bluetooth::OnDeviceRemoved::kEventName);
+  EventRouter* event_router = EventRouter::Get(browser_context_);
+  event_router->RegisterObserver(this,
+                                 bluetooth::OnAdapterStateChanged::kEventName);
+  event_router->RegisterObserver(this, bluetooth::OnDeviceAdded::kEventName);
+  event_router->RegisterObserver(this, bluetooth::OnDeviceChanged::kEventName);
+  event_router->RegisterObserver(this, bluetooth::OnDeviceRemoved::kEventName);
 }
 
 BluetoothAPI::~BluetoothAPI() {}
@@ -202,8 +199,7 @@ BluetoothAPI::socket_event_dispatcher() {
 
 void BluetoothAPI::Shutdown() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  ExtensionSystem::Get(browser_context_)->event_router()->UnregisterObserver(
-      this);
+  EventRouter::Get(browser_context_)->UnregisterObserver(this);
 }
 
 void BluetoothAPI::OnListenerAdded(const EventListenerInfo& details) {
@@ -293,7 +289,7 @@ void BluetoothAPI::RegisterSocketWithAdapterUI(
   scoped_ptr<Event> event(
       new Event(bluetooth::OnConnection::kEventName, args.Pass()));
 
-  EventRouter* router = ExtensionSystem::Get(context)->event_router();
+  EventRouter* router = EventRouter::Get(context);
   if (router)
     router->DispatchEventToExtension(params.extension_id, event.Pass());
 }

@@ -25,7 +25,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/event_router.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -134,9 +133,7 @@ void CookiesEventRouter::DispatchEvent(content::BrowserContext* context,
                                        const std::string& event_name,
                                        scoped_ptr<base::ListValue> event_args,
                                        GURL& cookie_domain) {
-  EventRouter* router =
-      context ? extensions::ExtensionSystem::Get(context)->event_router()
-              : NULL;
+  EventRouter* router = context ? extensions::EventRouter::Get(context) : NULL;
   if (!router)
     return;
   scoped_ptr<Event> event(new Event(event_name, event_args.Pass()));
@@ -562,16 +559,15 @@ void CookiesGetAllCookieStoresFunction::Run() {
 
 CookiesAPI::CookiesAPI(content::BrowserContext* context)
     : browser_context_(context) {
-  ExtensionSystem::Get(browser_context_)->event_router()->RegisterObserver(
-      this, cookies::OnChanged::kEventName);
+  EventRouter::Get(browser_context_)
+      ->RegisterObserver(this, cookies::OnChanged::kEventName);
 }
 
 CookiesAPI::~CookiesAPI() {
 }
 
 void CookiesAPI::Shutdown() {
-  ExtensionSystem::Get(browser_context_)->event_router()->UnregisterObserver(
-      this);
+  EventRouter::Get(browser_context_)->UnregisterObserver(this);
 }
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<CookiesAPI> >
@@ -585,8 +581,7 @@ BrowserContextKeyedAPIFactory<CookiesAPI>* CookiesAPI::GetFactoryInstance() {
 void CookiesAPI::OnListenerAdded(
     const extensions::EventListenerInfo& details) {
   cookies_event_router_.reset(new CookiesEventRouter(browser_context_));
-  ExtensionSystem::Get(browser_context_)->event_router()->UnregisterObserver(
-      this);
+  EventRouter::Get(browser_context_)->UnregisterObserver(this);
 }
 
 }  // namespace extensions

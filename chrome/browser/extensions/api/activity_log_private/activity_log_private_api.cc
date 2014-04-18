@@ -14,7 +14,6 @@
 #include "chrome/common/extensions/api/activity_log_private.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_context.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/features/feature.h"
@@ -46,14 +45,13 @@ BrowserContextKeyedAPIFactory<ActivityLogAPI>::DeclareFactoryDependencies() {
 
 ActivityLogAPI::ActivityLogAPI(content::BrowserContext* context)
     : browser_context_(context), initialized_(false) {
-  if (!ExtensionSystem::Get(browser_context_)
-           ->event_router()) {  // Check for testing.
+  if (!EventRouter::Get(browser_context_)) {  // Check for testing.
     DVLOG(1) << "ExtensionSystem event_router does not exist.";
     return;
   }
   activity_log_ = extensions::ActivityLog::GetInstance(browser_context_);
   DCHECK(activity_log_);
-  ExtensionSystem::Get(browser_context_)->event_router()->RegisterObserver(
+  EventRouter::Get(browser_context_)->RegisterObserver(
       this, activity_log_private::OnExtensionActivity::kEventName);
   activity_log_->AddObserver(this);
   initialized_ = true;
@@ -67,8 +65,7 @@ void ActivityLogAPI::Shutdown() {
     DVLOG(1) << "ExtensionSystem event_router does not exist.";
     return;
   }
-  ExtensionSystem::Get(browser_context_)->event_router()->UnregisterObserver(
-      this);
+  EventRouter::Get(browser_context_)->UnregisterObserver(this);
   activity_log_->RemoveObserver(this);
 }
 
@@ -95,8 +92,7 @@ void ActivityLogAPI::OnExtensionActivity(scoped_refptr<Action> activity) {
       new Event(activity_log_private::OnExtensionActivity::kEventName,
           value.Pass()));
   event->restrict_to_browser_context = browser_context_;
-  ExtensionSystem::Get(browser_context_)->event_router()->BroadcastEvent(
-      event.Pass());
+  EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
 }
 
 bool ActivityLogPrivateGetExtensionActivitiesFunction::RunImpl() {

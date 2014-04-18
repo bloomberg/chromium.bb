@@ -8,7 +8,6 @@
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_api_socket.h"
 #include "chrome/common/extensions/api/bluetooth.h"
 #include "extensions/browser/event_router.h"
-#include "extensions/browser/extension_system.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 
@@ -170,7 +169,7 @@ void BluetoothSocketEventDispatcher::DispatchEvent(
   if (!extensions::ExtensionsBrowserClient::Get()->IsValidContext(context))
     return;
 
-  EventRouter* router = ExtensionSystem::Get(context)->event_router();
+  EventRouter* router = EventRouter::Get(context);
   if (router)
     router->DispatchEventToExtension(extension_id, event.Pass());
 }

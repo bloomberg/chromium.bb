@@ -11,7 +11,6 @@
 #include "chrome/browser/search/hotword_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "extensions/browser/event_router.h"
-#include "extensions/browser/extension_system.h"
 
 namespace extensions {
 
@@ -58,7 +57,7 @@ void HotwordPrivateEventService::OnEnabledChanged(
 void HotwordPrivateEventService::SignalEvent() {
   using OnEnabledChanged::kEventName;
 
-  EventRouter* router = ExtensionSystem::Get(profile_)->event_router();
+  EventRouter* router = EventRouter::Get(profile_);
   if (!router || !router->HasEventListener(kEventName))
     return;
   scoped_ptr<base::ListValue> args(new base::ListValue());

@@ -84,7 +84,7 @@ MediaGalleriesPrivateAPI::MediaGalleriesPrivateAPI(
     content::BrowserContext* context)
     : profile_(Profile::FromBrowserContext(context)), weak_ptr_factory_(this) {
   DCHECK(profile_);
-  EventRouter* event_router = ExtensionSystem::Get(profile_)->event_router();
+  EventRouter* event_router = EventRouter::Get(profile_);
   event_router->RegisterObserver(
       this, media_galleries_private::OnGalleryChanged::kEventName);
 }
@@ -93,7 +93,7 @@ MediaGalleriesPrivateAPI::~MediaGalleriesPrivateAPI() {
 }
 
 void MediaGalleriesPrivateAPI::Shutdown() {
-  ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
+  EventRouter::Get(profile_)->UnregisterObserver(this);
   weak_ptr_factory_.InvalidateWeakPtrs();
   content::BrowserThread::PostTask(
       content::BrowserThread::FILE, FROM_HERE,

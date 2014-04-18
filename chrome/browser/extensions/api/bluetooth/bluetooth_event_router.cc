@@ -31,7 +31,6 @@
 #include "device/bluetooth/bluetooth_socket.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host.h"
-#include "extensions/browser/extension_system.h"
 
 namespace extensions {
 
@@ -336,8 +335,7 @@ void BluetoothEventRouter::DispatchAdapterStateEvent() {
   scoped_ptr<Event> event(new Event(
       bluetooth::OnAdapterStateChanged::kEventName,
       args.Pass()));
-  ExtensionSystem::Get(browser_context_)->event_router()->BroadcastEvent(
-      event.Pass());
+  EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
 }
 
 void BluetoothEventRouter::DispatchDeviceEvent(
@@ -349,8 +347,7 @@ void BluetoothEventRouter::DispatchDeviceEvent(
   scoped_ptr<base::ListValue> args =
       bluetooth::OnDeviceAdded::Create(extension_device);
   scoped_ptr<Event> event(new Event(event_name, args.Pass()));
-  ExtensionSystem::Get(browser_context_)->event_router()->BroadcastEvent(
-      event.Pass());
+  EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
 }
 
 void BluetoothEventRouter::CleanUpForExtension(

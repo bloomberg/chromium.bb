@@ -18,7 +18,6 @@
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host.h"
-#include "extensions/browser/extension_system.h"
 
 namespace image_writer_api = extensions::api::image_writer_private;
 
@@ -150,8 +149,8 @@ void OperationManager::OnProgress(const ExtensionId& extension_id,
   scoped_ptr<Event> event(new Event(
       image_writer_api::OnWriteProgress::kEventName, args.Pass()));
 
-  ExtensionSystem::Get(profile_)->event_router()->
-      DispatchEventToExtension(extension_id, event.Pass());
+  EventRouter::Get(profile_)
+      ->DispatchEventToExtension(extension_id, event.Pass());
 }
 
 void OperationManager::OnComplete(const ExtensionId& extension_id) {
@@ -161,8 +160,8 @@ void OperationManager::OnComplete(const ExtensionId& extension_id) {
   scoped_ptr<Event> event(new Event(
       image_writer_api::OnWriteComplete::kEventName, args.Pass()));
 
-  ExtensionSystem::Get(profile_)->event_router()->
-      DispatchEventToExtension(extension_id, event.Pass());
+  EventRouter::Get(profile_)
+      ->DispatchEventToExtension(extension_id, event.Pass());
 
   DeleteOperation(extension_id);
 }
@@ -184,8 +183,8 @@ void OperationManager::OnError(const ExtensionId& extension_id,
   scoped_ptr<Event> event(new Event(
       image_writer_api::OnWriteError::kEventName, args.Pass()));
 
-  ExtensionSystem::Get(profile_)->event_router()->
-      DispatchEventToExtension(extension_id, event.Pass());
+  EventRouter::Get(profile_)
+      ->DispatchEventToExtension(extension_id, event.Pass());
 
   DeleteOperation(extension_id);
 }

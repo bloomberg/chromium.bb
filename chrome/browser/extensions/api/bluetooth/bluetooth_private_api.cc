@@ -12,7 +12,6 @@
 #include "chrome/common/extensions/api/bluetooth_private.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
-#include "extensions/browser/extension_system.h"
 
 namespace bt_private = extensions::api::bluetooth_private;
 
@@ -29,15 +28,14 @@ BluetoothPrivateAPI::GetFactoryInstance() {
 
 BluetoothPrivateAPI::BluetoothPrivateAPI(content::BrowserContext* context)
     : browser_context_(context) {
-  ExtensionSystem::Get(browser_context_)->event_router()->RegisterObserver(
-      this, bt_private::OnPairing::kEventName);
+  EventRouter::Get(browser_context_)
+      ->RegisterObserver(this, bt_private::OnPairing::kEventName);
 }
 
 BluetoothPrivateAPI::~BluetoothPrivateAPI() {}
 
 void BluetoothPrivateAPI::Shutdown() {
-  ExtensionSystem::Get(browser_context_)->event_router()->UnregisterObserver(
-      this);
+  EventRouter::Get(browser_context_)->UnregisterObserver(this);
 }
 
 void BluetoothPrivateAPI::OnListenerAdded(const EventListenerInfo& details) {

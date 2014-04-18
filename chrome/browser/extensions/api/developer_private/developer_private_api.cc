@@ -259,7 +259,7 @@ void DeveloperPrivateEventRouter::Observe(
 
   event_name = developer_private::OnItemStateChanged::kEventName;
   scoped_ptr<Event> event(new Event(event_name, args.Pass()));
-  ExtensionSystem::Get(profile)->event_router()->BroadcastEvent(event.Pass());
+  EventRouter::Get(profile)->BroadcastEvent(event.Pass());
 }
 
 void DeveloperPrivateEventRouter::OnErrorAdded(const ExtensionError* error) {
@@ -276,9 +276,8 @@ void DeveloperPrivateEventRouter::OnErrorAdded(const ExtensionError* error) {
   scoped_ptr<base::ListValue> args(new base::ListValue);
   args->Append(event_data.ToValue().release());
 
-  ExtensionSystem::Get(profile_)->event_router()->BroadcastEvent(
-      scoped_ptr<Event>(new Event(
-          developer_private::OnItemStateChanged::kEventName, args.Pass())));
+  EventRouter::Get(profile_)->BroadcastEvent(scoped_ptr<Event>(new Event(
+      developer_private::OnItemStateChanged::kEventName, args.Pass())));
 }
 
 void DeveloperPrivateAPI::SetLastUnpackedDirectory(const base::FilePath& path) {
@@ -286,7 +285,7 @@ void DeveloperPrivateAPI::SetLastUnpackedDirectory(const base::FilePath& path) {
 }
 
 void DeveloperPrivateAPI::RegisterNotifications() {
-  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+  EventRouter::Get(profile_)->RegisterObserver(
       this, developer_private::OnItemStateChanged::kEventName);
 }
 
@@ -306,8 +305,8 @@ void DeveloperPrivateAPI::OnListenerAdded(
 
 void DeveloperPrivateAPI::OnListenerRemoved(
     const EventListenerInfo& details) {
-  if (!ExtensionSystem::Get(profile_)->event_router()->HasEventListener(
-           developer_private::OnItemStateChanged::kEventName)) {
+  if (!EventRouter::Get(profile_)->HasEventListener(
+          developer_private::OnItemStateChanged::kEventName)) {
     developer_private_event_router_.reset(NULL);
   } else {
     developer_private_event_router_->RemoveExtensionId(details.extension_id);

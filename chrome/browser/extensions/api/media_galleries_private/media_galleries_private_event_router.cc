@@ -11,7 +11,6 @@
 #include "chrome/common/extensions/api/media_galleries_private.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/event_router.h"
-#include "extensions/browser/extension_system.h"
 
 namespace media_galleries_private = extensions::api::media_galleries_private;
 
@@ -34,8 +33,7 @@ void MediaGalleriesPrivateEventRouter::OnGalleryChanged(
     MediaGalleryPrefId gallery_id,
     const std::set<std::string>& extension_ids) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  EventRouter* router =
-      extensions::ExtensionSystem::Get(profile_)->event_router();
+  EventRouter* router = EventRouter::Get(profile_);
   if (!router->HasEventListener(
           media_galleries_private::OnGalleryChanged::kEventName))
     return;

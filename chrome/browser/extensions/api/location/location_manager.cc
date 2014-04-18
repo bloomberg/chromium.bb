@@ -393,8 +393,8 @@ void LocationManager::SendLocationUpdate(
 
   scoped_ptr<Event> event(new Event(event_name, args.Pass()));
 
-  ExtensionSystem::Get(profile_)->event_router()->
-      DispatchEventToExtension(extension_id, event.Pass());
+  EventRouter::Get(profile_)
+      ->DispatchEventToExtension(extension_id, event.Pass());
 }
 
 void LocationManager::Observe(int type,

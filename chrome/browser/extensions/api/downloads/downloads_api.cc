@@ -1861,7 +1861,7 @@ void ExtensionDownloadsEventRouter::DispatchEvent(
     const extensions::Event::WillDispatchCallback& will_dispatch_callback,
     base::Value* arg) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!extensions::ExtensionSystem::Get(profile_)->event_router())
+  if (!extensions::EventRouter::Get(profile_))
     return;
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(arg);
@@ -1877,8 +1877,7 @@ void ExtensionDownloadsEventRouter::DispatchEvent(
   event->restrict_to_browser_context =
       (include_incognito && !profile_->IsOffTheRecord()) ? NULL : profile_;
   event->will_dispatch_callback = will_dispatch_callback;
-  extensions::ExtensionSystem::Get(profile_)->event_router()->
-      BroadcastEvent(event.Pass());
+  extensions::EventRouter::Get(profile_)->BroadcastEvent(event.Pass());
   DownloadsNotificationSource notification_source;
   notification_source.event_name = event_name;
   notification_source.profile = profile_;
