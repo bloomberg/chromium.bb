@@ -180,8 +180,7 @@ void RenderLayerCompositor::updateAcceleratedCompositingSettings()
 {
     m_compositingReasonFinder.updateTriggers();
 
-    Settings* settings = m_renderView.document().settings();
-    bool hasAcceleratedCompositing = settings->acceleratedCompositingEnabled() && m_compositingReasonFinder.hasTriggers();
+    bool hasAcceleratedCompositing = m_renderView.document().settings()->acceleratedCompositingEnabled();
     if (hasAcceleratedCompositing != m_hasAcceleratedCompositing)
         setCompositingLayersNeedRebuild();
 

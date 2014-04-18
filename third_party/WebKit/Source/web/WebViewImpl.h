@@ -412,7 +412,6 @@ public:
     }
 
     WebCore::GraphicsLayer* rootGraphicsLayer();
-    bool allowsAcceleratedCompositing();
     void setRootGraphicsLayer(WebCore::GraphicsLayer*);
     void scheduleCompositingLayerSync();
     void scrollRootLayer();
@@ -545,7 +544,7 @@ private:
 
     void configureAutoResizeMode();
 
-    void setCompositorCreationFailed(bool);
+    void setCompositorCreationFailed();
     void setIsAcceleratedCompositingActive(bool);
     void doComposite();
     void doPixelReadbackToCanvas(WebCanvas*, const WebCore::IntRect&);
@@ -700,7 +699,6 @@ private:
     OwnPtr<WebCore::GraphicsLayerFactory> m_graphicsLayerFactory;
     bool m_isAcceleratedCompositingActive;
     bool m_layerTreeViewCommitsDeferred;
-    bool m_compositorCreationFailed;
     // If true, the graphics context is being restored.
     bool m_recreatingGraphicsContext;
     static const WebInputEvent* m_currentInputEvent;

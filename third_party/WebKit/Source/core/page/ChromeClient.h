@@ -29,7 +29,6 @@
 #include "core/frame/ConsoleTypes.h"
 #include "core/page/FocusType.h"
 #include "core/rendering/RenderEmbeddedObject.h"
-#include "core/rendering/compositing/CompositingTriggers.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 #include "platform/Cursor.h"
 #include "platform/HostWindow.h"
@@ -192,9 +191,6 @@ public:
 
     // Pass 0 as the GraphicsLayer to detatch the root layer.
     virtual void attachRootGraphicsLayer(GraphicsLayer*) = 0;
-
-    // Returns a bitfield indicating conditions that can trigger the compositor.
-    virtual CompositingTriggerFlags allowedCompositingTriggers() const { return static_cast<CompositingTriggerFlags>(AllCompositingTriggers); }
 
     virtual void enterFullScreenForElement(Element*) { }
     virtual void exitFullScreenForElement(Element*) { }

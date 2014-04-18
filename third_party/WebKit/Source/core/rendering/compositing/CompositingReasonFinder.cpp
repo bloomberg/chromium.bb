@@ -40,7 +40,33 @@ CompositingReasonFinder::CompositingReasonFinder(RenderView& renderView)
 
 void CompositingReasonFinder::updateTriggers()
 {
-    m_compositingTriggers = m_renderView.document().page()->chrome().client().allowedCompositingTriggers();
+    m_compositingTriggers = 0;
+
+    Settings& settings = m_renderView.document().page()->settings();
+    if (settings.acceleratedCompositingFor3DTransformsEnabled())
+        m_compositingTriggers |= ThreeDTransformTrigger;
+    if (settings.acceleratedCompositingForVideoEnabled())
+        m_compositingTriggers |= VideoTrigger;
+    if (settings.acceleratedCompositingForPluginsEnabled())
+        m_compositingTriggers |= PluginTrigger;
+    if (settings.acceleratedCompositingForCanvasEnabled())
+        m_compositingTriggers |= CanvasTrigger;
+    if (settings.acceleratedCompositingForAnimationEnabled())
+        m_compositingTriggers |= AnimationTrigger;
+    if (settings.compositedScrollingForFramesEnabled())
+        m_compositingTriggers |= ScrollableInnerFrameTrigger;
+    if (settings.acceleratedCompositingForFiltersEnabled())
+        m_compositingTriggers |= FilterTrigger;
+    if (settings.acceleratedCompositingForGpuRasterizationHintEnabled())
+        m_compositingTriggers |= GPURasterizationTrigger;
+    if (settings.acceleratedCompositingForOverflowScrollEnabled())
+        m_compositingTriggers |= LegacyOverflowScrollTrigger;
+    if (settings.compositorDrivenAcceleratedScrollingEnabled())
+        m_compositingTriggers |= OverflowScrollTrigger;
+    // FIXME: acceleratedCompositingForFixedPositionEnabled should be renamed acceleratedCompositingForViewportConstrainedPositionEnabled().
+    // Or the sticky and fixed position elements should be behind different flags.
+    if (settings.acceleratedCompositingForFixedPositionEnabled())
+        m_compositingTriggers |= ViewportConstrainedPositionedTrigger;
 
     // FIXME: This monkeying with the accelerated triggers is temporary and should
     // be removed once the feature ships.

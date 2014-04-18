@@ -148,8 +148,6 @@ public:
     // Pass 0 as the GraphicsLayer to detatch the root layer.
     virtual void attachRootGraphicsLayer(WebCore::GraphicsLayer*) OVERRIDE;
 
-    virtual WebCore::CompositingTriggerFlags allowedCompositingTriggers() const OVERRIDE;
-
     virtual void enterFullScreenForElement(WebCore::Element*) OVERRIDE;
     virtual void exitFullScreenForElement(WebCore::Element*) OVERRIDE;
 

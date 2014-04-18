@@ -92,6 +92,8 @@ public:
 
     // Called to notify the WebWidget that the widget has exited compositing
     // mode and cannot reenter.
+    // FIXME: Now that GTK Linux is gone, this should be dead code.
+    // Remove it once the content side calling code is deleted.
     virtual void didExitCompositingMode() { }
 
     enum PaintOptions {

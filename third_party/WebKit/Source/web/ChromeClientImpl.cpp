@@ -718,41 +718,6 @@ void ChromeClientImpl::attachRootGraphicsLayer(GraphicsLayer* rootLayer)
     m_webView->setRootGraphicsLayer(rootLayer);
 }
 
-WebCore::CompositingTriggerFlags ChromeClientImpl::allowedCompositingTriggers() const
-{
-    if (!m_webView->allowsAcceleratedCompositing())
-        return 0;
-
-    WebCore::CompositingTriggerFlags flags = 0;
-    Settings& settings = m_webView->page()->settings();
-    if (settings.acceleratedCompositingFor3DTransformsEnabled())
-        flags |= WebCore::ThreeDTransformTrigger;
-    if (settings.acceleratedCompositingForVideoEnabled())
-        flags |= WebCore::VideoTrigger;
-    if (settings.acceleratedCompositingForPluginsEnabled())
-        flags |= WebCore::PluginTrigger;
-    if (settings.acceleratedCompositingForCanvasEnabled())
-        flags |= WebCore::CanvasTrigger;
-    if (settings.acceleratedCompositingForAnimationEnabled())
-        flags |= WebCore::AnimationTrigger;
-    if (settings.compositedScrollingForFramesEnabled())
-        flags |= WebCore::ScrollableInnerFrameTrigger;
-    if (settings.acceleratedCompositingForFiltersEnabled())
-        flags |= WebCore::FilterTrigger;
-    if (settings.acceleratedCompositingForGpuRasterizationHintEnabled())
-        flags |= WebCore::GPURasterizationTrigger;
-    if (settings.acceleratedCompositingForOverflowScrollEnabled())
-        flags |= WebCore::LegacyOverflowScrollTrigger;
-    if (settings.compositorDrivenAcceleratedScrollingEnabled())
-        flags |= WebCore::OverflowScrollTrigger;
-    // FIXME: acceleratedCompositingForFixedPositionEnabled should be renamed acceleratedCompositingForViewportConstrainedPositionEnabled().
-    // Or the sticky and fixed position elements should be behind different flags.
-    if (settings.acceleratedCompositingForFixedPositionEnabled())
-        flags |= WebCore::ViewportConstrainedPositionedTrigger;
-
-    return flags;
-}
-
 void ChromeClientImpl::enterFullScreenForElement(Element* element)
 {
     m_webView->enterFullScreenForElement(element);

@@ -392,7 +392,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_graphicsLayerFactory(adoptPtr(new GraphicsLayerFactoryChromium(this)))
     , m_isAcceleratedCompositingActive(false)
     , m_layerTreeViewCommitsDeferred(false)
-    , m_compositorCreationFailed(false)
     , m_recreatingGraphicsContext(false)
     , m_geolocationClientProxy(adoptPtr(new GeolocationClientProxy(client ? client->geolocationClient() : 0)))
     , m_userMediaClientImpl(this)
@@ -3691,11 +3690,6 @@ void WebViewImpl::suppressInvalidations(bool enable)
         m_client->suppressCompositorScheduling(enable);
 }
 
-bool WebViewImpl::allowsAcceleratedCompositing()
-{
-    return !m_compositorCreationFailed;
-}
-
 void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
 {
     suppressInvalidations(true);
@@ -3803,11 +3797,9 @@ void WebViewImpl::scheduleAnimation()
         m_client->scheduleAnimation();
 }
 
-void WebViewImpl::setCompositorCreationFailed(bool failed)
+void WebViewImpl::setCompositorCreationFailed()
 {
-    m_compositorCreationFailed = failed;
-    // ChromeClientImpl::allowedCompositingTriggers reads this bit, so we need
-    // to update the composting triggers.
+    m_page->settings().setAcceleratedCompositingEnabled(false);
     m_page->updateAcceleratedCompositingSettings();
 }
 
@@ -3864,7 +3856,6 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
             updateLayerTreeViewport();
             m_client->didActivateCompositor();
             m_isAcceleratedCompositingActive = true;
-            setCompositorCreationFailed(false);
             if (m_pageOverlays)
                 m_pageOverlays->update();
             m_layerTreeView->setShowFPSCounter(m_showFPSCounter);
@@ -3873,9 +3864,13 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
             m_layerTreeView->setContinuousPaintingEnabled(m_continuousPaintingEnabled);
             m_layerTreeView->setShowScrollBottleneckRects(m_showScrollBottleneckRects);
         } else {
+            // FIXME: It appears that only unittests, <webview> and android webview
+            // printing can hit this code. We should make them not hit this code and
+            // then delete this else clause.
+            // crbug.com/322276 and crbug.com/364716.
             m_isAcceleratedCompositingActive = false;
             m_client->didDeactivateCompositor();
-            setCompositorCreationFailed(true);
+            setCompositorCreationFailed();
         }
     }
     if (page())
@@ -3936,7 +3931,7 @@ void WebViewImpl::didExitCompositingMode()
 {
     ASSERT(m_isAcceleratedCompositingActive);
     setIsAcceleratedCompositingActive(false);
-    setCompositorCreationFailed(true);
+    setCompositorCreationFailed();
     m_client->didInvalidateRect(IntRect(0, 0, m_size.width, m_size.height));
 
     // Force a style recalc to remove all the composited layers.

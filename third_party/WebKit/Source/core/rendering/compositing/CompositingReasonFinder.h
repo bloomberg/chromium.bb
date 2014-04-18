@@ -26,7 +26,6 @@ public:
     CompositingReasons suppressWillChangeAndAnimationForGpuRasterization(const RenderLayer*, CompositingReasons styleReasons) const;
 
     void updateTriggers();
-    bool hasTriggers() const { return m_compositingTriggers; }
 
     bool has3DTransformTrigger() const;
     bool hasAnimationTrigger() const;
