@@ -60,9 +60,11 @@ void FillDriveEntryPropertiesValue(const drive::ResourceEntry& entry_proto,
   const drive::FileSpecificInfo& file_specific_info =
       entry_proto.file_specific_info();
 
-  properties->thumbnail_url.reset(
-      new std::string("https://www.googledrive.com/thumb/" +
-          entry_proto.resource_id() + "?width=500&height=500"));
+  if (!entry_proto.resource_id().empty()) {
+    properties->thumbnail_url.reset(
+        new std::string("https://www.googledrive.com/thumb/" +
+                        entry_proto.resource_id() + "?width=500&height=500"));
+  }
   if (file_specific_info.has_image_width()) {
     properties->image_width.reset(
         new int(file_specific_info.image_width()));
