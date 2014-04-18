@@ -20,7 +20,7 @@ class GmailPage(MobileMemoryPage):
 
   def __init__(self, page_set):
     super(GmailPage, self).__init__(
-        url='https://mail.google.com/mail/m',
+        url='https://mail.google.com/mail/mu',
         page_set=page_set)
 
     self.reload_and_gc = [{'action': 'reload'},
@@ -101,9 +101,9 @@ class MobileMemoryPageSet(page_set_module.PageSet):
       # Why: Renderer process memory bloat
       'http://techcrunch.com',
       # pylint: disable=C0301
-      'http://techcrunch.com/2014/02/17/pixel-brings-brings-old-school-video-game-art-to-life-in-your-home/'
-      'http://techcrunch.com/2014/02/15/kickstarter-coins-2/'
-      'http://techcrunch.com/2014/02/15/was-y-combinator-worth-it/'
+      'http://techcrunch.com/2014/02/17/pixel-brings-brings-old-school-video-game-art-to-life-in-your-home/',
+      'http://techcrunch.com/2014/02/15/kickstarter-coins-2/',
+      'http://techcrunch.com/2014/02/15/was-y-combinator-worth-it/',
     ]
 
     for url in urls_list:

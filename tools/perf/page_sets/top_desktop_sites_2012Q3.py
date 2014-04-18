@@ -199,7 +199,7 @@ class Top2012Q3PageSet(PageSet):
       'http://download.cnet.com/windows/?tag=hdr;brandnav',
       'https://rapidshare.com/#!shop',
       'http://people.com.cn',
-      'http://ucoz.r',
+      'http://ucoz.ru',
       'http://free.fr',
       'http://nicovideo.jp',
       # pylint: disable=C0301
@@ -232,7 +232,7 @@ class Top2012Q3PageSet(PageSet):
       'http://wsj.com',
       'http://web.de',
       'http://sweetim.com',
-      'http://rambler.r',
+      'http://rambler.ru',
       'http://gmx.net',
       'http://www.indeed.com/jobs?q=software&l=Mountain+View%2C+CA',
       'http://ilivid.com',
