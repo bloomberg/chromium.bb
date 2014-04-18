@@ -8,6 +8,7 @@ import android.content.ComponentCallbacks;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.util.TypedValue;
 import android.view.ViewConfiguration;
 
 import org.chromium.base.CalledByNative;
@@ -21,6 +22,12 @@ import org.chromium.ui.R;
  */
 @JNINamespace("gfx")
 public class ViewConfigurationHelper {
+
+    // Fallback constants when resource lookup fails, see
+    // ui/android/java/res/values/dimens.xml.
+    private static final float MIN_SCALING_SPAN_MM = 27.0f;
+    private static final float MIN_SCALING_TOUCH_MAJOR_DIP = 48.0f;
+
     private final Context mAppContext;
     private ViewConfiguration mViewConfiguration;
 
@@ -104,8 +111,13 @@ public class ViewConfigurationHelper {
         int id = res.getIdentifier("config_minScalingSpan", "dimen", "android");
         // Fall back to a sensible default if the internal identifier does not exist.
         if (id == 0) id = R.dimen.config_min_scaling_span;
-        return res.getDimensionPixelSize(id);
-
+        try {
+            return res.getDimensionPixelSize(id);
+        } catch (Resources.NotFoundException e) {
+            assert false : "MinScalingSpan resource lookup failed.";
+            return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, MIN_SCALING_SPAN_MM,
+                    res.getDisplayMetrics());
+        }
     }
 
     @CalledByNative
@@ -114,7 +126,13 @@ public class ViewConfigurationHelper {
         int id = res.getIdentifier("config_minScalingTouchMajor", "dimen", "android");
         // Fall back to a sensible default if the internal identifier does not exist.
         if (id == 0) id = R.dimen.config_min_scaling_touch_major;
-        return res.getDimensionPixelSize(id);
+        try {
+            return res.getDimensionPixelSize(id);
+        } catch (Resources.NotFoundException e) {
+            assert false : "MinScalingTouchMajor resource lookup failed.";
+            return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                    MIN_SCALING_TOUCH_MAJOR_DIP, res.getDisplayMetrics());
+        }
     }
 
     @CalledByNative
