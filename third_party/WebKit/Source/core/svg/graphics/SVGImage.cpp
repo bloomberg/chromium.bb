@@ -343,8 +343,8 @@ void SVGImage::computeIntrinsicDimensions(Length& intrinsicWidth, Length& intrin
         intrinsicRatio = FloatSize(floatValueForLength(intrinsicWidth, 0), floatValueForLength(intrinsicHeight, 0));
 }
 
-// FIXME: support catchUpIfNecessary.
-void SVGImage::startAnimation(bool /* catchUpIfNecessary */)
+// FIXME: support CatchUpAnimation = CatchUp.
+void SVGImage::startAnimation(CatchUpAnimation)
 {
     SVGSVGElement* rootElement = svgRootElement(m_page.get());
     if (!rootElement || !rootElement->animationsPaused())
