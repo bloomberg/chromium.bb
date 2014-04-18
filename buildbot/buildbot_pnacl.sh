@@ -124,6 +124,14 @@ tc-archive() {
   echo @@@BUILD_STEP archive_toolchain@@@
   ${UP_DOWN_LOAD} UploadToolchainTarball ${BUILDBOT_GOT_REVISION} \
     ${label} pnacl-toolchain.tgz
+
+  echo @@@BUILD_STEP upload_pnacl_toolchain_package_info@@@
+  python build/package_version/package_version.py archive \
+      --archive-package=pnacl_newlib \
+      pnacl-toolchain.tgz@https://storage.googleapis.com/nativeclient-archive2/toolchain/${BUILDBOT_GOT_REVISION}/naclsdk_${label}.tgz
+
+  python build/package_version/package_version.py --annotate upload \
+      --upload-package=pnacl_newlib --revision=${BUILDBOT_GOT_REVISION}
 }
 
 tc-prune-translator-pexes() {

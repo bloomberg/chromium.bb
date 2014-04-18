@@ -67,8 +67,9 @@ try:
   logging.info('Running: ' + ' '.join(cmd))
   subprocess.check_call(cmd)
 
-  if args.buildbot or args.trybot:
-    packages.UploadPackages(TEMP_PACKAGES_FILE, args.trybot)
+  # Temporarily disable the uploading of pnacl built from toolchain_build.
+  #if args.buildbot or args.trybot:
+  #  packages.UploadPackages(TEMP_PACKAGES_FILE, args.trybot)
 
 except subprocess.CalledProcessError:
   # Ignore any failures and keep going (but make the bot stage red).
