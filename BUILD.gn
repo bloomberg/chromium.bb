@@ -21,6 +21,7 @@ group("root") {
     "//components/language_usage_metrics",
     "//components/navigation_metrics",
     "//components/onc",
+    "//components/os_crypt",
     "//components/startup_metric_utils",
     #"//components/translate:translate_core_browser",
     #"//components/translate:translate_core_common",
