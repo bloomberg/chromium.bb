@@ -30,7 +30,7 @@ class Media(test.Test):
 class MediaNetworkSimulation(test.Test):
   """Obtains media metrics under different network simulations."""
   test = media.Media
-  page_set = 'page_sets/media_cns_cases.json'
+  page_set = 'page_sets/media_cns_cases.py'
 
 
 class MediaAndroid(test.Test):
