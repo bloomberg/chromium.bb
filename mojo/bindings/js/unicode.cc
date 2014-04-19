@@ -45,7 +45,7 @@ gin::WrapperInfo g_wrapper_info = { gin::kEmbedderNativeGin };
 
 }  // namespace
 
-const char Unicode::kModuleName[] = "mojo/bindings/js/unicode";
+const char Unicode::kModuleName[] = "mojo/public/js/bindings/unicode";
 
 v8::Local<v8::Value> Unicode::GetModule(v8::Isolate* isolate) {
   gin::PerIsolateData* data = gin::PerIsolateData::From(isolate);

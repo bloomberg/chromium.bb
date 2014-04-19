@@ -55,7 +55,7 @@ gin::WrapperInfo g_wrapper_info = { gin::kEmbedderNativeGin };
 
 }  // namespace
 
-const char Support::kModuleName[] = "mojo/bindings/js/support";
+const char Support::kModuleName[] = "mojo/public/js/bindings/support";
 
 v8::Local<v8::Value> Support::GetModule(v8::Isolate* isolate) {
   gin::PerIsolateData* data = gin::PerIsolateData::From(isolate);

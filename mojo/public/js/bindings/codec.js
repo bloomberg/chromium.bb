@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 define("mojo/public/js/bindings/codec",
-       ["mojo/bindings/js/unicode"],
+       ["mojo/public/js/bindings/unicode"],
        function(unicode) {
   // Memory -------------------------------------------------------------------
 

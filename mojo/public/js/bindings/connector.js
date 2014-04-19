@@ -4,8 +4,8 @@
 
 define("mojo/public/js/bindings/connector", [
   "mojo/public/js/bindings/codec",
-  "mojo/bindings/js/core",
-  "mojo/bindings/js/support",
+  "mojo/public/js/bindings/core",
+  "mojo/public/js/bindings/support",
 ], function(codec, core, support) {
 
   function Connector(handle) {

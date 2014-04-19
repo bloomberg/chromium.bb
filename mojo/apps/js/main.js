@@ -7,7 +7,7 @@ define([
     'monotonic_clock',
     'timer',
     'mojo/public/js/bindings/connection',
-    'mojo/bindings/js/core',
+    'mojo/public/js/bindings/core',
     'mojo/apps/js/bindings/gl',
     'mojo/apps/js/bindings/threading',
     'mojo/services/native_viewport/native_viewport.mojom',
