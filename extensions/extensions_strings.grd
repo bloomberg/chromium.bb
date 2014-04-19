@@ -274,7 +274,7 @@
 
       <!-- Media galleries strings. Please keep alphabetized. -->
       <message name="IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ" desc="Permission string for access to read all of the user's media galleries.">
-        Access photos, music, and other media from your computer.
+        Access photos, music, and other media from your computer
       </message>
 
       <!-- Policy strings. Please keep alphabetized. -->
@@ -318,13 +318,13 @@
       
       <!-- USB API strings. Please keep alphabetized. -->
       <message name="IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE" desc="Permission string for access to a specific USB device.">
-        Access the USB device <ph name="PRODUCT_NAME">$1<ex>SoundKnob</ex></ph> from <ph name="VENDOR_NAME">$2<ex>Griffin Technology</ex></ph>.
+        Access the USB device <ph name="PRODUCT_NAME">$1<ex>SoundKnob</ex></ph> from <ph name="VENDOR_NAME">$2<ex>Griffin Technology</ex></ph>
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_MISSING_PRODUCT" desc="Permission string for access to a specific USB device when a product name cannot be established for a USB device.">
-        Access the USB device from <ph name="VENDOR_NAME">$1<ex>Griffin Technology</ex></ph>.
+        Access the USB device from <ph name="VENDOR_NAME">$1<ex>Griffin Technology</ex></ph>
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_MISSING_VENDOR" desc="Permission string for access to a specific USB device when a vendor name cannot be established for a USB device.">
-        Access the USB device.
+        Access the USB device
       </message>
 
     </messages>

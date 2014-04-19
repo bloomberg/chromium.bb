@@ -35,9 +35,9 @@ TEST(USBDevicePermissionTest, PermissionDataOrder) {
 
 TEST(USBDevicePermissionTest, MAYBE_PermissionMessage) {
   const char* const kMessages[] = {
-      "Access the USB device PVR Mass Storage from HUMAX Co., Ltd..",
-      "Access the USB device from HUMAX Co., Ltd..",
-      "Access the USB device.",
+      "Access the USB device PVR Mass Storage from HUMAX Co., Ltd.",
+      "Access the USB device from HUMAX Co., Ltd.",
+      "Access the USB device",
   };
 
   // Prepare data set

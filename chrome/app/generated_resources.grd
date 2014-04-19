@@ -4295,10 +4295,10 @@ Make sure you do not expose any sensitive information.
         Access your data on all websites
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_FAVICON" desc="Permission string for access to favicons.">
-        Access the icons of the websites you visit.
+        Access the icons of the websites you visit
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_INPUT" desc="Permission string for access to input.">
-        Access anything you type.
+        Access anything you type
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_BOOKMARKS" desc="Permission string for access to bookmarks.">
         Read and modify your bookmarks
@@ -4340,10 +4340,10 @@ Make sure you do not expose any sensitive information.
         Access input devices over USB and Bluetooth
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH" desc="Permission string for general access to the Bluetooth API.">
-        Access information about Bluetooth devices paired with your system.
+        Access information about Bluetooth devices paired with your system
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH_DEVICES" desc="Permission string for implementing Bluetooth profiles.">
-        Access Bluetooth devices paired with your system.
+        Access Bluetooth devices paired with your system
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_AUDIO_CAPTURE" desc="Permission string for access to audio capture devices.">
         Use your microphone
@@ -4373,16 +4373,16 @@ Make sure you do not expose any sensitive information.
         Write to files and folders that you open in the application
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ_WRITE" desc="Permission string for access to read and write to all of the user's media galleries.">
-        Access and change photos, music, and other media from your computer.
+        Access and change photos, music, and other media from your computer
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ_DELETE" desc="Permission string for access to read and delete all of the user's media galleries.">
-        Access and delete photos, music, and other media from your computer.
+        Access and delete photos, music, and other media from your computer
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_SERIAL" desc="Permission string for access to serial devices.">
         Use serial devices attached to your computer
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_SYSTEM_INDICATOR" desc="Permission string for access to an icon in the system indicator area, such as the taskbar or system tray.">
-        Display and manage an icon in the system indicator area.
+        Display an icon in the system indicator area
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_SYNCFILESYSTEM" desc="Permission string for synchronizing files to the user's Google Drive">
         Store data in your Google Drive account
@@ -4415,7 +4415,7 @@ Make sure you do not expose any sensitive information.
         Block parts of web pages
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH_PRIVATE" desc="Permission string for Bluetooth Private API.">
-        Control Bluetooth adapter state and pairing.
+        Control Bluetooth adapter state and pairing
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_ACCESSIBILITY_FEATURES_MODIFY" desc="Permission string for modifying acccessibility settings via extension API shown when an extension utilizing the API is installed.">
         Modify your accessibility settings
@@ -4424,7 +4424,7 @@ Make sure you do not expose any sensitive information.
         Read your accessibility settings
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_AUTOMATION" desc="Permission string for access to accessibility tree. TODO(aboxhall/dtseng): write more accurate description; write different versions for different permission levels">
-        Access and interact with all web pages.
+        Access and interact with all web pages
       </message>
 
       <!-- Extension/App error messages -->
