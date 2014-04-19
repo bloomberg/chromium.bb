@@ -102,19 +102,6 @@ bool IqSender::OnSignalStrategyIncomingStanza(const buzz::XmlElement* stanza) {
   std::string from = stanza->Attr(buzz::QN_FROM);
 
   IqRequestMap::iterator it = requests_.find(id);
-
-  // This is a hack to workaround the issue with the WCS changing IDs
-  // of IQ responses sent from client to host. Whenever we receive a
-  // stanza with an unknown ID we try to match it with an outstanding
-  // request sent to the same peer.
-  if (it == requests_.end()) {
-    for (it = requests_.begin(); it != requests_.end(); ++it) {
-      if (it->second->addressee_ == from) {
-        break;
-      }
-    }
-  }
-
   if (it == requests_.end()) {
     return false;
   }

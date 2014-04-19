@@ -138,24 +138,4 @@ TEST_F(IqSenderTest, InvalidFrom) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(IqSenderTest, IdMatchingHack) {
-  ASSERT_NO_FATAL_FAILURE({
-    SendTestMessage();
-  });
-
-  scoped_ptr<XmlElement> response(new XmlElement(buzz::QN_IQ));
-  response->AddAttr(QName(std::string(), "type"), "result");
-  response->AddAttr(QName(std::string(), "id"), "DIFFERENT_ID");
-  response->AddAttr(QName(std::string(), "from"), kTo);
-
-  XmlElement* result = new XmlElement(
-      QName("test:namespace", "response-body"));
-  response->AddElement(result);
-
-  EXPECT_TRUE(sender_->OnSignalStrategyIncomingStanza(response.get()));
-
-  EXPECT_CALL(callback_, OnReply(request_.get(), XmlEq(response.get())));
-  base::RunLoop().RunUntilIdle();
-}
-
 }  // namespace remoting
