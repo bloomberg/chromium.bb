@@ -39,9 +39,9 @@
          returnCode:(int)returnCode
         contextInfo:(void*)contextInfo {
   if (returnCode == NSAlertFirstButtonReturn) {
-    // Nothing to do. User will restart later.
-  } else if (returnCode == NSAlertSecondButtonReturn) {
     chrome::AttemptRestart();
+  } else if (returnCode == NSAlertSecondButtonReturn) {
+    // Nothing to do. User will restart later.
   } else {
     NOTREACHED();
   }
@@ -59,7 +59,7 @@ void RequestRestart(NSWindow* parent) {
   NSString* text =
       l10n_util::GetNSStringFWithFixup(IDS_UPDATE_RECOMMENDED,
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
-  NSString* notNowButtin = l10n_util::GetNSStringWithFixup(IDS_NOT_NOW);
+  NSString* notNowButton = l10n_util::GetNSStringWithFixup(IDS_NOT_NOW);
   NSString* restartButton =
       l10n_util::GetNSStringWithFixup(IDS_RELAUNCH_AND_UPDATE);
 
@@ -69,8 +69,8 @@ void RequestRestart(NSWindow* parent) {
   [alert setAlertStyle:NSInformationalAlertStyle];
   [alert setMessageText:title];
   [alert setInformativeText:text];
-  [alert addButtonWithTitle:notNowButtin];
   [alert addButtonWithTitle:restartButton];
+  [alert addButtonWithTitle:notNowButton];
 
   if (parent) {
     [alert beginSheetModalForWindow:parent
