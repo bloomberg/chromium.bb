@@ -100,9 +100,13 @@ public class ContentVideoView extends FrameLayout
 
         @Override
         protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-            int width = getDefaultSize(mVideoWidth, widthMeasureSpec);
-            int height = getDefaultSize(mVideoHeight, heightMeasureSpec);
+            // set the default surface view size to (1, 1) so that it won't block
+            // the infobar. (0, 0) is not a valid size for surface view.
+            int width = 1;
+            int height = 1;
             if (mVideoWidth > 0 && mVideoHeight > 0) {
+                width = getDefaultSize(mVideoWidth, widthMeasureSpec);
+                height = getDefaultSize(mVideoHeight, heightMeasureSpec);
                 if (mVideoWidth * height  > width * mVideoHeight) {
                     height = width * mVideoHeight / mVideoWidth;
                 } else if (mVideoWidth * height  < width * mVideoHeight) {
@@ -169,8 +173,8 @@ public class ContentVideoView extends FrameLayout
     protected void showContentVideoView() {
         mVideoSurfaceView.getHolder().addCallback(this);
         this.addView(mVideoSurfaceView, new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
                 Gravity.CENTER));
 
         mProgressView = mClient.getVideoLoadingProgressView();
