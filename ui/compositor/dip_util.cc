@@ -60,6 +60,14 @@ gfx::Size ConvertSizeToPixel(const Layer* layer,
 gfx::Rect ConvertRectToPixel(const Layer* layer,
                              const gfx::Rect& rect_in_dip) {
   float scale = GetDeviceScaleFactor(layer);
-  return gfx::ToFlooredRectDeprecated(gfx::ScaleRect(rect_in_dip, scale));
+  // Use ToEnclosingRect() to ensure we paint all the possible pixels
+  // touched. ToEnclosingRect() floors the origin, and ceils the max
+  // coordinate. To do otherwise (such as flooring the size) potentially
+  // results in rounding down and not drawing all the pixels that are
+  // touched.
+  return gfx::ToEnclosingRect(
+      gfx::RectF(gfx::ScalePoint(rect_in_dip.origin(), scale),
+                 gfx::ScaleSize(rect_in_dip.size(), scale)));
 }
+
 }  // namespace ui
