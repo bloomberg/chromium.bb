@@ -82,6 +82,7 @@ StyleRareInheritedData::StyleRareInheritedData()
     , m_textJustify(RenderStyle::initialTextJustify())
     , m_textOrientation(TextOrientationVerticalRight)
     , m_textIndentLine(RenderStyle::initialTextIndentLine())
+    , m_textIndentType(RenderStyle::initialTextIndentLine())
     , m_lineBoxContain(RenderStyle::initialLineBoxContain())
     , m_imageRendering(RenderStyle::initialImageRendering())
     , m_textUnderlinePosition(RenderStyle::initialTextUnderlinePosition())
@@ -136,6 +137,7 @@ StyleRareInheritedData::StyleRareInheritedData(const StyleRareInheritedData& o)
     , m_textJustify(o.m_textJustify)
     , m_textOrientation(o.m_textOrientation)
     , m_textIndentLine(o.m_textIndentLine)
+    , m_textIndentType(o.m_textIndentType)
     , m_lineBoxContain(o.m_lineBoxContain)
     , m_imageRendering(o.m_imageRendering)
     , m_textUnderlinePosition(o.m_textUnderlinePosition)
@@ -210,6 +212,7 @@ bool StyleRareInheritedData::operator==(const StyleRareInheritedData& o) const
         && m_textJustify == o.m_textJustify
         && m_textOrientation == o.m_textOrientation
         && m_textIndentLine == o.m_textIndentLine
+        && m_textIndentType == o.m_textIndentType
         && m_lineBoxContain == o.m_lineBoxContain
         && hyphenationString == o.hyphenationString
         && locale == o.locale

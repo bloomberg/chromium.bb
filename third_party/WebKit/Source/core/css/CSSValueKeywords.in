@@ -982,6 +982,7 @@ span
 
 // text-indent
 each-line
+//hanging   // hanging exists in SVGCSSValueKeywords.in
 
 // (scan:) media feature
 progressive

@@ -117,6 +117,7 @@ public:
     unsigned m_textJustify : 2; // TextJustify
     unsigned m_textOrientation : 2; // TextOrientation
     unsigned m_textIndentLine : 1; // TextIndentEachLine
+    unsigned m_textIndentType : 1; // TextIndentHanging
     unsigned m_lineBoxContain: 7; // LineBoxContain
     // CSS Image Values Level 3
     unsigned m_imageRendering : 2; // EImageRendering

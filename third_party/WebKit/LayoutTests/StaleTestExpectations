@@ -101,9 +101,6 @@ crbug.com/247466 [ Debug ] inspector/sources/debugger/script-formatter-search.ht
 crbug.com/247466 [ Debug ] inspector/sources/debugger/linkifier.html [ WontFix ]
 crbug.com/239465 [ Win ] fast/canvas/webgl/premultiplyalpha-test.html [ WontFix ]
 
-# 'ex' unit length is different among platforms.
-crbug.com/31488 [ Linux Mac ] fast/css3-text/css3-text-indent/getComputedStyle/getComputedStyle-text-indent.html [ WontFix ]
-
 # LightTPD doesn't accept unknown HTTP methods
 crbug.com/30536 [ Win ] http/tests/xmlhttprequest/methods-lower-case.html [ WontFix ]
 crbug.com/30536 [ Win ] http/tests/xmlhttprequest/methods-async.html [ WontFix ]

@@ -551,12 +551,14 @@ void StyleBuilderFunctions::applyInheritCSSPropertyTextIndent(StyleResolverState
 {
     state.style()->setTextIndent(state.parentStyle()->textIndent());
     state.style()->setTextIndentLine(state.parentStyle()->textIndentLine());
+    state.style()->setTextIndentType(state.parentStyle()->textIndentType());
 }
 
 void StyleBuilderFunctions::applyInitialCSSPropertyTextIndent(StyleResolverState& state)
 {
     state.style()->setTextIndent(RenderStyle::initialTextIndent());
     state.style()->setTextIndentLine(RenderStyle::initialTextIndentLine());
+    state.style()->setTextIndentType(RenderStyle::initialTextIndentType());
 }
 
 void StyleBuilderFunctions::applyValueCSSPropertyTextIndent(StyleResolverState& state, CSSValue* value)
@@ -564,22 +566,25 @@ void StyleBuilderFunctions::applyValueCSSPropertyTextIndent(StyleResolverState& 
     if (!value->isValueList())
         return;
 
-    // [ <length> | <percentage> ] each-line
-    // The order is guaranteed. See BisonCSSParser::parseTextIndent.
-    // The second value, each-line is handled only when css3TextEnabled() returns true.
+    Length lengthOrPercentageValue;
+    TextIndentLine textIndentLineValue = RenderStyle::initialTextIndentLine();
+    TextIndentType textIndentTypeValue = RenderStyle::initialTextIndentType();
 
-    CSSValueList* valueList = toCSSValueList(value);
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(valueList->itemWithoutBoundsCheck(0));
-    Length lengthOrPercentageValue = primitiveValue->convertToLength<FixedConversion | PercentConversion>(state.cssToLengthConversionData());
+    for (CSSValueListIterator i(value); i.hasMore(); i.advance()) {
+        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(i.value());
+        if (!primitiveValue->getValueID())
+            lengthOrPercentageValue = primitiveValue->convertToLength<FixedConversion | PercentConversion>(state.cssToLengthConversionData());
+        else if (primitiveValue->getValueID() == CSSValueEachLine)
+            textIndentLineValue = TextIndentEachLine;
+        else if (primitiveValue->getValueID() == CSSValueHanging)
+            textIndentTypeValue = TextIndentHanging;
+        else
+            ASSERT_NOT_REACHED();
+    }
+
     state.style()->setTextIndent(lengthOrPercentageValue);
-
-    ASSERT(valueList->length() <= 2);
-    CSSPrimitiveValue* eachLineValue = toCSSPrimitiveValue(valueList->item(1));
-    if (eachLineValue) {
-        ASSERT(eachLineValue->getValueID() == CSSValueEachLine);
-        state.style()->setTextIndentLine(TextIndentEachLine);
-    } else
-        state.style()->setTextIndentLine(TextIndentFirstLine);
+    state.style()->setTextIndentLine(textIndentLineValue);
+    state.style()->setTextIndentType(textIndentTypeValue);
 }
 
 void StyleBuilderFunctions::applyInitialCSSPropertyTransformOrigin(StyleResolverState& state)

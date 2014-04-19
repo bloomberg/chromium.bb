@@ -2221,11 +2221,18 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
             }
             }
         case CSSPropertyTextIndent: {
+            // If RuntimeEnabledFeatures::css3TextEnabled() returns false or text-indent has only one value(<length> | <percentage>),
+            // getPropertyCSSValue() returns CSSValue.
+            // If RuntimeEnabledFeatures::css3TextEnabled() returns true and text-indent has each-line or hanging,
+            // getPropertyCSSValue() returns CSSValueList.
             RefPtrWillBeRawPtr<CSSValue> textIndent = zoomAdjustedPixelValueForLength(style->textIndent(), *style);
-            if (RuntimeEnabledFeatures::css3TextEnabled() && style->textIndentLine() == TextIndentEachLine) {
+            if (RuntimeEnabledFeatures::css3TextEnabled() && (style->textIndentLine() == TextIndentEachLine || style->textIndentType() == TextIndentHanging)) {
                 RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
                 list->append(textIndent.release());
-                list->append(cssValuePool().createIdentifierValue(CSSValueEachLine));
+                if (style->textIndentLine() == TextIndentEachLine)
+                    list->append(cssValuePool().createIdentifierValue(CSSValueEachLine));
+                if (style->textIndentType() == TextIndentHanging)
+                    list->append(cssValuePool().createIdentifierValue(CSSValueHanging));
                 return list.release();
             }
             return textIndent.release();

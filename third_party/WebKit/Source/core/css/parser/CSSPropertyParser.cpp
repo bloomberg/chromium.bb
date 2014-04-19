@@ -7741,45 +7741,39 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseTextIndent()
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
 
-    // <length> | <percentage> | inherit
-    if (m_valueList->size() == 1) {
-        CSSParserValue* value = m_valueList->current();
-        if (!value->id && validUnit(value, FLength | FPercent)) {
+    bool hasLengthOrPercentage = false;
+    bool hasEachLine = false;
+    bool hasHanging = false;
+
+    for (CSSParserValue* value = m_valueList->current(); value; value = m_valueList->next()) {
+        // <length> | <percentage> | inherit when RuntimeEnabledFeatures::css3TextEnabled() returns false
+        if (!hasLengthOrPercentage && validUnit(value, FLength | FPercent)) {
             list->append(createPrimitiveNumericValue(value));
-            m_valueList->next();
-            return list.release();
+            hasLengthOrPercentage = true;
+            continue;
         }
+
+        // [ <length> | <percentage> ] && hanging? && each-line? | inherit
+        // when RuntimeEnabledFeatures::css3TextEnabled() returns true
+        if (RuntimeEnabledFeatures::css3TextEnabled()) {
+            if (!hasEachLine && value->id == CSSValueEachLine) {
+                list->append(cssValuePool().createIdentifierValue(CSSValueEachLine));
+                hasEachLine = true;
+                continue;
+            }
+            if (!hasHanging && value->id == CSSValueHanging) {
+                list->append(cssValuePool().createIdentifierValue(CSSValueHanging));
+                hasHanging = true;
+                continue;
+            }
+        }
+        return nullptr;
     }
 
-    if (!RuntimeEnabledFeatures::css3TextEnabled())
+    if (!hasLengthOrPercentage)
         return nullptr;
 
-    // The case where text-indent has only <length>(or <percentage>) value
-    // is handled above if statement even though css3TextEnabled() returns true.
-
-    // [ [ <length> | <percentage> ] && each-line ] | inherit
-    if (m_valueList->size() != 2)
-        return nullptr;
-
-    CSSParserValue* firstValue = m_valueList->current();
-    CSSParserValue* secondValue = m_valueList->next();
-    CSSParserValue* lengthOrPercentageValue = 0;
-
-    // [ <length> | <percentage> ] each-line
-    if (validUnit(firstValue, FLength | FPercent) && secondValue->id == CSSValueEachLine)
-        lengthOrPercentageValue = firstValue;
-    // each-line [ <length> | <percentage> ]
-    else if (firstValue->id == CSSValueEachLine && validUnit(secondValue, FLength | FPercent))
-        lengthOrPercentageValue = secondValue;
-
-    if (lengthOrPercentageValue) {
-        list->append(createPrimitiveNumericValue(lengthOrPercentageValue));
-        list->append(cssValuePool().createIdentifierValue(CSSValueEachLine));
-        m_valueList->next();
-        return list.release();
-    }
-
-    return nullptr;
+    return list.release();
 }
 
 bool CSSPropertyParser::parseLineBoxContain(bool important)
