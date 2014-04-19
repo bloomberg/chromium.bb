@@ -3181,16 +3181,28 @@ TEST_F(AutofillDialogControllerTest, CorrectCountryFromInputs) {
 
 TEST_F(AutofillDialogControllerTest, ValidationRulesLoadedOnCountryChange) {
   ResetControllerWithFormData(DefaultFormData());
-  EXPECT_CALL(*controller()->GetMockValidator(), LoadRules("US"));
+  EXPECT_CALL(*controller()->GetMockValidator(),
+              LoadRules("US")).Times(AtLeast(1));
   controller()->Show();
 
   EXPECT_CALL(*controller()->GetMockValidator(), LoadRules("FR"));
-  controller()->UserEditedOrActivatedInput(SECTION_CC_BILLING,
+  controller()->UserEditedOrActivatedInput(SECTION_BILLING,
                                            ADDRESS_BILLING_COUNTRY,
                                            gfx::NativeView(),
                                            gfx::Rect(),
                                            ASCIIToUTF16("France"),
                                            true);
+}
+
+TEST_F(AutofillDialogControllerTest, UsValidationRulesLoadedForJpOnlyProfile) {
+  ResetControllerWithFormData(DefaultFormData());
+  AutofillProfile jp_profile(base::GenerateGUID(), kSettingsOrigin);
+  jp_profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("JP"));
+  controller()->GetTestingManager()->AddTestingProfile(&jp_profile);
+  EXPECT_CALL(*controller()->GetMockValidator(), LoadRules("US"));
+  EXPECT_CALL(*controller()->GetMockValidator(),
+              LoadRules("JP")).Times(AtLeast(1));
+  controller()->Show();
 }
 
 TEST_F(AutofillDialogControllerTest, InvalidWhenRulesNotReady) {

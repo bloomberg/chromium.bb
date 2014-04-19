@@ -727,8 +727,6 @@ void AutofillDialogControllerImpl::Show() {
       downloader.Pass(),
       ValidationRulesStorageFactory::CreateStorage(),
       this);
-  GetValidator()->LoadRules(
-      GetManager()->GetDefaultCountryCodeForNewAddress());
 
   // TODO(estade): don't show the dialog if the site didn't specify the right
   // fields. First we must figure out what the "right" fields are.
@@ -1199,8 +1197,14 @@ void AutofillDialogControllerImpl::ResetSectionInput(DialogSection section) {
   DetailInputs* inputs = MutableRequestedFieldsForSection(section);
   for (DetailInputs::iterator it = inputs->begin();
        it != inputs->end(); ++it) {
-    if (it->length != DetailInput::NONE)
+    if (it->length != DetailInput::NONE) {
       it->initial_value.clear();
+    } else if (!it->initial_value.empty() &&
+               (it->type == ADDRESS_BILLING_COUNTRY ||
+                it->type == ADDRESS_HOME_COUNTRY)) {
+      GetValidator()->LoadRules(AutofillCountry::GetCountryCode(
+          it->initial_value, g_browser_process->GetApplicationLocale()));
+    }
   }
 }
 
@@ -1969,9 +1973,6 @@ void AutofillDialogControllerImpl::UserEditedOrActivatedInput(
     RebuildInputsForCountry(section, field_contents, true);
     RestoreUserInputFromSnapshot(snapshot);
     UpdateSection(section);
-
-    GetValidator()->LoadRules(AutofillCountry::GetCountryCode(
-        field_contents, g_browser_process->GetApplicationLocale()));
   }
 
   // The rest of this method applies only to textfields while Autofill is
@@ -3364,6 +3365,12 @@ bool AutofillDialogControllerImpl::RebuildInputsForCountry(
   inputs->clear();
   common::BuildInputsForSection(section, country_code, inputs,
                                 MutableAddressLanguageCodeForSection(section));
+
+  if (!country_code.empty()) {
+    GetValidator()->LoadRules(AutofillCountry::GetCountryCode(
+        country_name, g_browser_process->GetApplicationLocale()));
+  }
+
   return true;
 }
 
