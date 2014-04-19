@@ -1,0 +1,4 @@
+ This is a testharness.js-based test.
+PASS The @import style in custom element shadow DOM blocks following script element. 
+Harness: the test ran to completion.
+

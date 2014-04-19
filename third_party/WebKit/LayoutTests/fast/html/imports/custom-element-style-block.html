@@ -12,7 +12,7 @@ test(function(){
     var x = document.querySelector('x-test');
     var port = x.shadowRoot.querySelector('style').sheet.cssRules[0];
     assert_true(port.styleSheet instanceof StyleSheet);
-}, "The @import sytle in custom element shadow DOM blocks following script element.");
+}, "The @import style in custom element shadow DOM blocks following script element.");
 </script>
 </body>
 </html>
