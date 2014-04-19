@@ -4676,6 +4676,12 @@ Make sure you do not expose any sensitive information.
         <message name="IDS_EXTENSIONS_UPDATE_BUTTON" desc="Text for the 'Update extensions' button.">
           Update extensions now
         </message>
+        <message name="IDS_EXTENSIONS_APPS_DEV_TOOLS_PROMO_TEXT" desc="The text encouraging users to get the Apps Developer Tools.">
+          Chrome Apps &amp; Extensions Developer Tool is the new way to debug your apps and extensions.
+        </message>
+        <message name="IDS_EXTENSIONS_APPS_DEV_TOOLS_LINK_TEXT" desc="The text of the link to get the Apps Developer Tools.">
+          Visit website
+        </message>
         <message name="IDS_EXTENSIONS_NONE_INSTALLED" desc="Text that lets the user know that no extensions are installed.">
           Boo... You have no extensions :-(
         </message>
