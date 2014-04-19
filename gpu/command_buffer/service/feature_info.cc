@@ -765,7 +765,7 @@ void FeatureInfo::InitializeFeatures() {
     feature_flags_.ext_shader_texture_lod = true;
   }
 
-  bool ui_gl_fence_works = extensions.Contains("GL_NV_fence") ||
+  bool ui_gl_fence_works = is_es3 || extensions.Contains("GL_NV_fence") ||
                            extensions.Contains("GL_ARB_sync") ||
                            extensions.Contains("EGL_KHR_fence_sync");
 

@@ -942,7 +942,7 @@ TEST_F(FeatureInfoTest, InitializeWithES3) {
   EXPECT_TRUE(info_->feature_flags().use_core_framebuffer_multisample);
   EXPECT_THAT(info_->extensions(),
               HasSubstr("GL_CHROMIUM_framebuffer_multisample"));
-  EXPECT_FALSE(info_->feature_flags().use_async_readpixels);
+  EXPECT_TRUE(info_->feature_flags().use_async_readpixels);
   EXPECT_TRUE(info_->feature_flags().oes_depth24);
   EXPECT_THAT(info_->extensions(), HasSubstr("GL_GOOGLE_depth_texture"));
   EXPECT_THAT(info_->extensions(), HasSubstr("GL_CHROMIUM_depth_texture"));

@@ -42,7 +42,7 @@ class NativeImageBuffer : public base::RefCountedThreadSafe<NativeImageBuffer> {
 
  protected:
   friend class base::RefCountedThreadSafe<NativeImageBuffer>;
-  NativeImageBuffer();
+  explicit NativeImageBuffer(scoped_ptr<gfx::GLFence> write_fence);
   virtual ~NativeImageBuffer();
 
   base::Lock lock_;

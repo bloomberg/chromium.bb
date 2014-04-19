@@ -101,7 +101,9 @@ class NativeImageBufferEGL : public NativeImageBuffer {
   static scoped_refptr<NativeImageBufferEGL> Create(GLuint texture_id);
 
  private:
-  explicit NativeImageBufferEGL(EGLDisplay display, EGLImageKHR image);
+  NativeImageBufferEGL(scoped_ptr<gfx::GLFence> write_fence,
+                       EGLDisplay display,
+                       EGLImageKHR image);
   virtual ~NativeImageBufferEGL();
   virtual void BindToTexture(GLenum target) OVERRIDE;
 
@@ -136,12 +138,16 @@ scoped_refptr<NativeImageBufferEGL> NativeImageBufferEGL::Create(
   if (egl_image == EGL_NO_IMAGE_KHR)
     return NULL;
 
-  return new NativeImageBufferEGL(egl_display, egl_image);
+  return new NativeImageBufferEGL(
+      make_scoped_ptr(gfx::GLFence::Create()), egl_display, egl_image);
 }
 
-NativeImageBufferEGL::NativeImageBufferEGL(EGLDisplay display,
+NativeImageBufferEGL::NativeImageBufferEGL(scoped_ptr<gfx::GLFence> write_fence,
+                                           EGLDisplay display,
                                            EGLImageKHR image)
-    : egl_display_(display), egl_image_(image) {
+    : NativeImageBuffer(write_fence.Pass()),
+      egl_display_(display),
+      egl_image_(image) {
   DCHECK(egl_display_ != EGL_NO_DISPLAY);
   DCHECK(egl_image_ != EGL_NO_IMAGE_KHR);
 }
@@ -161,7 +167,7 @@ void NativeImageBufferEGL::BindToTexture(GLenum target) {
 
 class NativeImageBufferStub : public NativeImageBuffer {
  public:
-  NativeImageBufferStub() {}
+  NativeImageBufferStub() : NativeImageBuffer(scoped_ptr<gfx::GLFence>()) {}
 
  private:
   virtual ~NativeImageBufferStub() {}
@@ -192,8 +198,8 @@ NativeImageBuffer::ClientInfo::ClientInfo(gfx::GLImage* client)
 
 NativeImageBuffer::ClientInfo::~ClientInfo() {}
 
-NativeImageBuffer::NativeImageBuffer() : write_client_(NULL) {
-  write_fence_.reset(gfx::GLFence::Create());
+NativeImageBuffer::NativeImageBuffer(scoped_ptr<gfx::GLFence> write_fence)
+    : write_fence_(write_fence.Pass()), write_client_(NULL) {
 }
 
 NativeImageBuffer::~NativeImageBuffer() {

@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_version_info.h"
 
 namespace {
 
@@ -165,7 +166,8 @@ gfx::GLFence* CreateFence(bool flush) {
     return new EGLFenceSync(flush);
 #endif
   // Prefer ARB_sync which supports server-side wait.
-  if (gfx::g_driver_gl.ext.b_GL_ARB_sync)
+  if (gfx::g_driver_gl.ext.b_GL_ARB_sync ||
+      gfx::GLContext::GetCurrent()->GetVersionInfo()->is_es3)
     return new GLFenceARBSync(flush);
   if (gfx::g_driver_gl.ext.b_GL_NV_fence)
     return new GLFenceNVFence(flush);
