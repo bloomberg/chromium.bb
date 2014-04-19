@@ -40,6 +40,7 @@ private:
         bool matchesCurrentInvalidationSets(Element&);
         bool hasInvalidationSets() const { return m_invalidationSets.size(); }
         bool wholeSubtreeInvalid() const { return m_wholeSubtreeInvalid; }
+        void setWholeSubtreeInvalid() { m_wholeSubtreeInvalid = true; }
 
         typedef Vector<const DescendantInvalidationSet*, 16> InvalidationSets;
         InvalidationSets m_invalidationSets;

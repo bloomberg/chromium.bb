@@ -96,8 +96,10 @@ bool StyleInvalidator::RecursionData::matchesCurrentInvalidationSets(Element& el
 
 bool StyleInvalidator::checkInvalidationSetsAgainstElement(Element& element)
 {
-    if (m_recursionData.wholeSubtreeInvalid())
-        return true;
+    if (element.styleChangeType() >= SubtreeStyleChange || m_recursionData.wholeSubtreeInvalid()) {
+        m_recursionData.setWholeSubtreeInvalid();
+        return false;
+    }
     if (element.needsStyleInvalidation()) {
         if (InvalidationList* invalidationList = m_pendingInvalidationMap.get(&element)) {
             for (InvalidationList::const_iterator it = invalidationList->begin(); it != invalidationList->end(); ++it)
