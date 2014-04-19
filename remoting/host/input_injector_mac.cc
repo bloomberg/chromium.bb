@@ -248,8 +248,9 @@ void InputInjectorMac::Core::InjectMouseEvent(const MouseEvent& event) {
             webrtc::MacDesktopConfiguration::TopLeftOrigin);
 
     // Translate the mouse position into desktop coordinates.
-    mouse_pos_.add(webrtc::DesktopVector(desktop_config.pixel_bounds.left(),
-                                         desktop_config.pixel_bounds.top()));
+    mouse_pos_ = mouse_pos_.add(
+        webrtc::DesktopVector(desktop_config.pixel_bounds.left(),
+                              desktop_config.pixel_bounds.top()));
 
     // Constrain the mouse position to the desktop coordinates.
     mouse_pos_.set(
