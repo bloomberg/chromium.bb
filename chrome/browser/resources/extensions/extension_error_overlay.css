@@ -22,10 +22,27 @@
 #extension-error-overlay-code {
  -webkit-margin-after: 10px;
   border: 1px solid #ccc;
+  display: flex;
   font-family: monospace;
   font-size: 1.2em;
   overflow: auto;
-  padding: 10px;
+  white-space: pre;
+}
+
+#extension-error-overlay-code > * {
+  padding: 5px;
+}
+
+#extension-error-overlay-source {
+  color: #555;
+}
+
+#extension-error-overlay-line-numbers {
+  align-self: flex-start;
+  background-color: rgba(240, 240, 240, 1);
+  border-right: 1px solid #ccc;
+  color: rgba(128, 128, 128, 1);
+  text-align: right;
 }
 
 .extension-error-overlay-context {
