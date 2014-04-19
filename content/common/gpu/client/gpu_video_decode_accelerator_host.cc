@@ -17,10 +17,6 @@
 #include "content/public/common/sandbox_init.h"
 #endif  // OS_WIN
 
-#define NOTIFY_ERROR(error) \
-  PostNotifyError(error);   \
-  DLOG(ERROR)
-
 using media::VideoDecodeAccelerator;
 namespace content {
 
@@ -79,7 +75,8 @@ void GpuVideoDecodeAcceleratorHost::OnChannelError() {
       channel_->RemoveRoute(decoder_route_id_);
     channel_ = NULL;
   }
-  NOTIFY_ERROR(PLATFORM_FAILURE) << "OnChannelError()";
+  DLOG(ERROR) << "OnChannelError()";
+  PostNotifyError(PLATFORM_FAILURE);
 }
 
 bool GpuVideoDecodeAcceleratorHost::Initialize(media::VideoCodecProfile profile,
@@ -98,8 +95,8 @@ bool GpuVideoDecodeAcceleratorHost::Initialize(media::VideoCodecProfile profile,
       impl_->GetRouteID(), profile, route_id, &succeeded));
 
   if (!succeeded) {
-    NOTIFY_ERROR(PLATFORM_FAILURE)
-        << "Send(GpuCommandBufferMsg_CreateVideoDecoder()) failed";
+    DLOG(ERROR) << "Send(GpuCommandBufferMsg_CreateVideoDecoder()) failed";
+    PostNotifyError(PLATFORM_FAILURE);
     channel_->RemoveRoute(route_id);
     return false;
   }
@@ -136,9 +133,10 @@ void GpuVideoDecodeAcceleratorHost::AssignPictureBuffers(
   for (uint32 i = 0; i < buffers.size(); i++) {
     const media::PictureBuffer& buffer = buffers[i];
     if (buffer.size() != picture_buffer_dimensions_) {
-      NOTIFY_ERROR(INVALID_ARGUMENT) << "buffer.size() invalid: expected "
-                                     << picture_buffer_dimensions_.ToString()
-                                     << ", got " << buffer.size().ToString();
+      DLOG(ERROR) << "buffer.size() invalid: expected "
+                  << picture_buffer_dimensions_.ToString()
+                  << ", got " << buffer.size().ToString();
+      PostNotifyError(INVALID_ARGUMENT);
       return;
     }
     texture_ids.push_back(buffer.texture_id());
@@ -200,8 +198,10 @@ void GpuVideoDecodeAcceleratorHost::PostNotifyError(Error error) {
 void GpuVideoDecodeAcceleratorHost::Send(IPC::Message* message) {
   DCHECK(CalledOnValidThread());
   uint32 message_type = message->type();
-  if (!channel_->Send(message))
-    NOTIFY_ERROR(PLATFORM_FAILURE) << "Send(" << message_type << ") failed";
+  if (!channel_->Send(message)) {
+    DLOG(ERROR) << "Send(" << message_type << ") failed";
+    PostNotifyError(PLATFORM_FAILURE);
+  }
 }
 
 void GpuVideoDecodeAcceleratorHost::OnBitstreamBufferProcessed(
