@@ -11,41 +11,96 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/view_messages.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "content/public/test/test_renderer_host.h"
+#include "content/test/test_render_view_host.h"
+#include "content/test/test_web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
 namespace {
 
-class FrameTreeTest : public RenderViewHostTestHarness {
+// Appends a description of the structure of the frame tree to |result|.
+void AppendTreeNodeState(FrameTreeNode* node, std::string* result) {
+  result->append(
+      base::Int64ToString(node->current_frame_host()->GetRoutingID()));
+  if (!node->frame_name().empty()) {
+    result->append(" '");
+    result->append(node->frame_name());
+    result->append("'");
+  }
+  result->append(": [");
+  const char* separator = "";
+  for (size_t i = 0; i < node->child_count(); i++) {
+    result->append(separator);
+    AppendTreeNodeState(node->child_at(i), result);
+    separator = ", ";
+  }
+  result->append("]");
+}
+
+// Logs calls to WebContentsObserver along with the state of the frame tree,
+// for later use in EXPECT_EQ().
+class TreeWalkingWebContentsLogger : public WebContentsObserver {
+ public:
+  explicit TreeWalkingWebContentsLogger(WebContents* web_contents)
+      : WebContentsObserver(web_contents) {}
+
+  virtual ~TreeWalkingWebContentsLogger() {
+    EXPECT_EQ("", log_) << "Activity logged that was not expected";
+  }
+
+  // Gets and resets the log, which is a string of what happened.
+  std::string GetLog() {
+    std::string result = log_;
+    log_.clear();
+    return result;
+  }
+
+  // content::WebContentsObserver implementation.
+  virtual void RenderFrameCreated(RenderFrameHost* render_frame_host) OVERRIDE {
+    LogWhatHappened("RenderFrameCreated", render_frame_host);
+  }
+
+  virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) OVERRIDE {
+    LogWhatHappened("RenderFrameDeleted", render_frame_host);
+  }
+
+  virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE {
+    LogWhatHappened("RenderProcessGone");
+  }
+
+ private:
+  void LogWhatHappened(const std::string& event_name) {
+    if (!log_.empty()) {
+      log_.append("\n");
+    }
+    log_.append(event_name + " -> ");
+    AppendTreeNodeState(
+        static_cast<WebContentsImpl*>(web_contents())->GetFrameTree()->root(),
+        &log_);
+  }
+
+  void LogWhatHappened(const std::string& event_name, RenderFrameHost* rfh) {
+    LogWhatHappened(
+        base::StringPrintf("%s(%d)", event_name.c_str(), rfh->GetRoutingID()));
+  }
+
+  std::string log_;
+
+  DISALLOW_COPY_AND_ASSIGN(TreeWalkingWebContentsLogger);
+};
+
+class FrameTreeTest : public RenderViewHostImplTestHarness {
  protected:
   // Prints a FrameTree, for easy assertions of the tree hierarchy.
   std::string GetTreeState(FrameTree* frame_tree) {
     std::string result;
     AppendTreeNodeState(frame_tree->root(), &result);
     return result;
-  }
-
- private:
-  void AppendTreeNodeState(FrameTreeNode* node, std::string* result) {
-    result->append(base::Int64ToString(
-        node->current_frame_host()->GetRoutingID()));
-    if (!node->frame_name().empty()) {
-      result->append(" '");
-      result->append(node->frame_name());
-      result->append("'");
-    }
-    result->append(": [");
-    const char* separator = "";
-    for (size_t i = 0; i < node->child_count(); i++) {
-      result->append(separator);
-      AppendTreeNodeState(node->child_at(i), result);
-      separator = ", ";
-    }
-    result->append("]");
   }
 };
 
@@ -55,8 +110,7 @@ class FrameTreeTest : public RenderViewHostTestHarness {
 TEST_F(FrameTreeTest, Shape) {
   // Use the FrameTree of the WebContents so that it has all the delegates it
   // needs.  We may want to consider a test version of this.
-  FrameTree* frame_tree =
-      static_cast<WebContentsImpl*>(web_contents())->GetFrameTree();
+  FrameTree* frame_tree = contents()->GetFrameTree();
   FrameTreeNode* root = frame_tree->root();
 
   std::string no_children_node("no children node");
@@ -123,6 +177,44 @@ TEST_F(FrameTreeTest, Shape) {
                      "267 'node with deep subtree': "
                          "[365: [455: []]], 268: []]]",
             GetTreeState(frame_tree));
+}
+
+// Do some simple manipulations of the frame tree, making sure that
+// WebContentsObservers see a consistent view of the tree as we go.
+TEST_F(FrameTreeTest, ObserverWalksTreeDuringFrameCreation) {
+  TreeWalkingWebContentsLogger activity(contents());
+  FrameTree* frame_tree = contents()->GetFrameTree();
+  FrameTreeNode* root = frame_tree->root();
+
+  // Simulate attaching a series of frames to build the frame tree.
+  main_test_rfh()->OnCreateChildFrame(14, std::string());
+  EXPECT_EQ("RenderFrameCreated(14) -> 1: [14: []]", activity.GetLog());
+  main_test_rfh()->OnCreateChildFrame(18, std::string());
+  EXPECT_EQ("RenderFrameCreated(18) -> 1: [14: [], 18: []]", activity.GetLog());
+  frame_tree->RemoveFrame(root->child_at(0));
+  EXPECT_EQ("RenderFrameDeleted(14) -> 1: [18: []]", activity.GetLog());
+  frame_tree->RemoveFrame(root->child_at(0));
+  EXPECT_EQ("RenderFrameDeleted(18) -> 1: []", activity.GetLog());
+}
+
+// Make sure that WebContentsObservers see a consistent view of the tree after
+// recovery from a render process crash.
+TEST_F(FrameTreeTest, ObserverWalksTreeAfterCrash) {
+  TreeWalkingWebContentsLogger activity(contents());
+
+  main_test_rfh()->OnCreateChildFrame(22, std::string());
+  EXPECT_EQ("RenderFrameCreated(22) -> 1: [22: []]", activity.GetLog());
+  main_test_rfh()->OnCreateChildFrame(23, std::string());
+  EXPECT_EQ("RenderFrameCreated(23) -> 1: [22: [], 23: []]", activity.GetLog());
+
+  // Crash the renderer
+  test_rvh()->OnMessageReceived(ViewHostMsg_RenderProcessGone(
+      0, base::TERMINATION_STATUS_PROCESS_CRASHED, -1));
+  EXPECT_EQ(
+      "RenderFrameDeleted(22) -> 1: []\n"
+      "RenderFrameDeleted(23) -> 1: []\n"
+      "RenderProcessGone -> 1: []",
+      activity.GetLog());
 }
 
 }  // namespace

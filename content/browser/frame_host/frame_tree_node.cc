@@ -64,8 +64,12 @@ void FrameTreeNode::RemoveChild(FrameTreeNode* child) {
   }
 
   if (iter != children_.end()) {
-    (*iter)->set_parent(NULL);
-    children_.erase(iter);
+    // Subtle: we need to make sure the node is gone from the tree before
+    // observers are notified of its deletion.
+    scoped_ptr<FrameTreeNode> node_to_delete(*iter);
+    children_.weak_erase(iter);
+    node_to_delete->set_parent(NULL);
+    node_to_delete.reset();
   }
 }
 
@@ -75,7 +79,8 @@ void FrameTreeNode::ResetForNewProcess() {
   // The children may not have been cleared if a cross-process navigation
   // commits before the old process cleans everything up.  Make sure the child
   // nodes get deleted before swapping to a new process.
-  children_.clear();
+  ScopedVector<FrameTreeNode> old_children = children_.Pass();
+  old_children.clear();  // May notify observers.
 }
 
 }  // namespace content
