@@ -1107,9 +1107,12 @@ class GLES2DecoderImpl : public GLES2Decoder,
   }
 
   // Creates a vertex attrib manager for the given vertex array.
-  void CreateVertexAttribManager(GLuint client_id, GLuint service_id) {
+  scoped_refptr<VertexAttribManager> CreateVertexAttribManager(
+      GLuint client_id,
+      GLuint service_id,
+      bool client_visible) {
     return vertex_array_manager()->CreateVertexAttribManager(
-      client_id, service_id, group_->max_vertex_attribs());
+        client_id, service_id, group_->max_vertex_attribs(), client_visible);
   }
 
   void DoBindAttribLocation(GLuint client_id, GLuint index, const char* name);
@@ -2357,7 +2360,17 @@ bool GLES2DecoderImpl::Initialize(
   disallowed_features_ = disallowed_features;
 
   state_.attrib_values.resize(group_->max_vertex_attribs());
-  state_.default_vertex_attrib_manager = new VertexAttribManager();
+  vertex_array_manager_.reset(new VertexArrayManager());
+
+  GLuint default_vertex_attrib_service_id = 0;
+  if (features().native_vertex_array_object) {
+    glGenVertexArraysOES(1, &default_vertex_attrib_service_id);
+    glBindVertexArrayOES(default_vertex_attrib_service_id);
+  }
+
+  state_.default_vertex_attrib_manager =
+      CreateVertexAttribManager(0, default_vertex_attrib_service_id, false);
+
   state_.default_vertex_attrib_manager->Initialize(
       group_->max_vertex_attribs(),
       feature_info_->workarounds().init_vertex_attributes);
@@ -2366,7 +2379,6 @@ bool GLES2DecoderImpl::Initialize(
   DoBindVertexArrayOES(0);
 
   query_manager_.reset(new QueryManager(this, feature_info_.get()));
-  vertex_array_manager_.reset(new VertexArrayManager());
 
   util_.set_num_compressed_texture_formats(
       validators_->compressed_texture_format.GetValues().size());
@@ -9638,14 +9650,14 @@ bool GLES2DecoderImpl::GenVertexArraysOESHelper(
   if (!features().native_vertex_array_object) {
     // Emulated VAO
     for (GLsizei ii = 0; ii < n; ++ii) {
-      CreateVertexAttribManager(client_ids[ii], 0);
+      CreateVertexAttribManager(client_ids[ii], 0, true);
     }
   } else {
     scoped_ptr<GLuint[]> service_ids(new GLuint[n]);
 
     glGenVertexArraysOES(n, service_ids.get());
     for (GLsizei ii = 0; ii < n; ++ii) {
-      CreateVertexAttribManager(client_ids[ii], service_ids[ii]);
+      CreateVertexAttribManager(client_ids[ii], service_ids[ii], true);
     }
   }
 
@@ -9668,7 +9680,6 @@ void GLES2DecoderImpl::DeleteVertexArraysOESHelper(
 
 void GLES2DecoderImpl::DoBindVertexArrayOES(GLuint client_id) {
   VertexAttribManager* vao = NULL;
-  GLuint service_id = 0;
   if (client_id != 0) {
     vao = GetVertexAttribManager(client_id);
     if (!vao) {
@@ -9680,8 +9691,6 @@ void GLES2DecoderImpl::DoBindVertexArrayOES(GLuint client_id) {
           "glBindVertexArrayOES", "bad vertex array id.");
       current_decoder_error_ = error::kNoError;
       return;
-    } else {
-      service_id = vao->service_id();
     }
   } else {
     vao = state_.default_vertex_attrib_manager.get();
@@ -9693,6 +9702,7 @@ void GLES2DecoderImpl::DoBindVertexArrayOES(GLuint client_id) {
     if (!features().native_vertex_array_object) {
       EmulateVertexArrayState();
     } else {
+      GLuint service_id = vao->service_id();
       glBindVertexArrayOES(service_id);
     }
   }

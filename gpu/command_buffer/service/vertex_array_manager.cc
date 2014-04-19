@@ -28,14 +28,22 @@ void VertexArrayManager::Destroy(bool have_context) {
   vertex_attrib_managers_.clear();
 }
 
-void VertexArrayManager::CreateVertexAttribManager(
-    GLuint client_id, GLuint service_id, uint32 num_vertex_attribs) {
+scoped_refptr<VertexAttribManager>
+VertexArrayManager::CreateVertexAttribManager(GLuint client_id,
+                                              GLuint service_id,
+                                              uint32 num_vertex_attribs,
+                                              bool client_visible) {
   scoped_refptr<VertexAttribManager> vertex_attrib_manager(
     new VertexAttribManager(this, service_id, num_vertex_attribs));
-  std::pair<VertexAttribManagerMap::iterator, bool> result =
-      vertex_attrib_managers_.insert(
-      std::make_pair(client_id, vertex_attrib_manager));
-  DCHECK(result.second);
+
+  if (client_visible) {
+    std::pair<VertexAttribManagerMap::iterator, bool> result =
+        vertex_attrib_managers_.insert(
+            std::make_pair(client_id, vertex_attrib_manager));
+    DCHECK(result.second);
+  }
+
+  return vertex_attrib_manager;
 }
 
 VertexAttribManager* VertexArrayManager::GetVertexAttribManager(
