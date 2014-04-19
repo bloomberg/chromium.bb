@@ -70,6 +70,10 @@ int _real_write(int fd, const void *buf, size_t count, size_t *nwrote) {
   return 0;
 }
 
+void _real_exit(int status) {
+  exit(status);
+}
+
 #endif
 
 // The Chromium build system defines __linux__ even for native client builds,
