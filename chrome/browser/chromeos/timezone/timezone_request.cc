@@ -13,7 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "content/public/common/geoposition.h"
+#include "chrome/browser/chromeos/geolocation/geoposition.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -118,7 +118,7 @@ void RecordUmaResult(TimeZoneRequestResult result, unsigned retries) {
 
 // Creates the request url to send to the server.
 GURL TimeZoneRequestURL(const GURL& url,
-                        const content::Geoposition& geoposition,
+                        const Geoposition& geoposition,
                         bool sensor) {
   std::string query(url.query());
   query += base::StringPrintf(
@@ -304,7 +304,7 @@ GURL DefaultTimezoneProviderURL() {
 TimeZoneRequest::TimeZoneRequest(
     net::URLRequestContextGetter* url_context_getter,
     const GURL& service_url,
-    const content::Geoposition& geoposition,
+    const Geoposition& geoposition,
     bool sensor,
     base::TimeDelta retry_timeout)
     : url_context_getter_(url_context_getter),

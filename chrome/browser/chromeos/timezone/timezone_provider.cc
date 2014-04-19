@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/time/time.h"
-#include "content/public/common/geoposition.h"
+#include "chrome/browser/chromeos/geolocation/geoposition.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
@@ -27,7 +27,7 @@ TimeZoneProvider::~TimeZoneProvider() {
 }
 
 void TimeZoneProvider::RequestTimezone(
-    const content::Geoposition& position,
+    const Geoposition& position,
     bool sensor,
     base::TimeDelta timeout,
     TimeZoneRequest::TimeZoneResponseCallback callback) {

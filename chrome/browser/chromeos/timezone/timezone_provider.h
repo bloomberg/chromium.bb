@@ -19,11 +19,9 @@ namespace net {
 class URLRequestContextGetter;
 }
 
-namespace content {
-struct Geoposition;
-}
-
 namespace chromeos {
+
+struct Geoposition;
 
 // This class implements Google TimeZone API.
 //
@@ -36,7 +34,7 @@ class TimeZoneProvider {
   virtual ~TimeZoneProvider();
 
   // Initiates new request (See TimeZoneRequest for parameters description.)
-  void RequestTimezone(const content::Geoposition& position,
+  void RequestTimezone(const Geoposition& position,
                        bool sensor,
                        base::TimeDelta timeout,
                        TimeZoneRequest::TimeZoneResponseCallback callback);

@@ -25429,6 +25429,47 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>The outcome of Entry::WriteData in the simple cache.</summary>
 </histogram>
 
+<histogram name="SimpleGeolocation.Request.Event"
+    enum="SimpleGeolocationRequestEvent">
+  <owner>alemate@chromium.org</owner>
+  <summary>Events in reqests processing of IP-based SimpleGeolocation.</summary>
+</histogram>
+
+<histogram name="SimpleGeolocation.Request.ResponseCode"
+    enum="HttpResponseCode">
+  <owner>alemate@chromium.org</owner>
+  <summary>Http response codes in IP-based SimpleGeolocation.</summary>
+</histogram>
+
+<histogram name="SimpleGeolocation.Request.ResponseFailureTime"
+    units="milliseconds">
+  <owner>alemate@chromium.org</owner>
+  <summary>
+    The time elapsed between the sending of the first API request and the time
+    the final (failed) response was recorded. Includes all retries.
+  </summary>
+</histogram>
+
+<histogram name="SimpleGeolocation.Request.ResponseSuccessTime"
+    units="milliseconds">
+  <owner>alemate@chromium.org</owner>
+  <summary>
+    The time elapsed between the sending of the first API request and the time
+    the final (successfull) response was recorded. Includes all retries.
+  </summary>
+</histogram>
+
+<histogram name="SimpleGeolocation.Request.Result"
+    enum="SimpleGeolocationRequestResult">
+  <owner>alemate@chromium.org</owner>
+  <summary>Result of SimpleGeolocationRequest.</summary>
+</histogram>
+
+<histogram name="SimpleGeolocation.Request.Retries">
+  <owner>alemate@chromium.org</owner>
+  <summary>Number of retries until the final response was recorded.</summary>
+</histogram>
+
 <histogram name="SiteIsolation.AllResponses">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -40322,6 +40363,21 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="3" label="Bad State"/>
   <int value="4" label="Synchronous Write Failure"/>
   <int value="5" label="Fast Empty Return (Success)"/>
+</enum>
+
+<enum name="SimpleGeolocationRequestEvent" type="int">
+  <int value="0" label="Request start"/>
+  <int value="1" label="Response success"/>
+  <int value="2" label="Response not OK"/>
+  <int value="3" label="Response empty"/>
+  <int value="4" label="Response malformed"/>
+</enum>
+
+<enum name="SimpleGeolocationRequestResult" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="Failure"/>
+  <int value="2" label="Server error"/>
+  <int value="3" label="Request is cancelled."/>
 </enum>
 
 <enum name="SimpleIndexState" type="int">

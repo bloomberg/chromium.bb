@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
-#include "content/public/common/geoposition.h"
+#include "chrome/browser/chromeos/geolocation/geoposition.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
@@ -72,7 +72,7 @@ class TimeZoneRequest : private net::URLFetcherDelegate {
   // |retry_timeout| retry request on error until timeout.
   TimeZoneRequest(net::URLRequestContextGetter* url_context_getter,
                   const GURL& service_url,
-                  const content::Geoposition& geoposition,
+                  const Geoposition& geoposition,
                   bool sensor,
                   base::TimeDelta retry_timeout);
 
@@ -95,7 +95,7 @@ class TimeZoneRequest : private net::URLFetcherDelegate {
 
   scoped_refptr<net::URLRequestContextGetter> url_context_getter_;
   const GURL service_url_;
-  content::Geoposition geoposition_;
+  Geoposition geoposition_;
   const bool sensor_;
 
   TimeZoneResponseCallback callback_;

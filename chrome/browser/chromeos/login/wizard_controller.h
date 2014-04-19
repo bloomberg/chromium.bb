@@ -18,7 +18,6 @@
 #include "chrome/browser/chromeos/login/screens/screen_observer.h"
 #include "chrome/browser/chromeos/login/screens/wizard_screen.h"
 #include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
-#include "content/public/common/geoposition.h"
 #include "ui/gfx/rect.h"
 #include "url/gurl.h"
 
@@ -29,10 +28,6 @@ namespace base {
 class DictionaryValue;
 }
 
-namespace content {
-struct Geoposition;
-}
-
 namespace chromeos {
 
 class AutoEnrollmentCheckStep;
@@ -40,6 +35,7 @@ class EnrollmentScreen;
 class ErrorScreen;
 class EulaScreen;
 class HIDDetectionScreen;
+struct Geoposition;
 class KioskAutolaunchScreen;
 class KioskEnableScreen;
 class LocallyManagedUserCreationScreen;
@@ -48,6 +44,7 @@ class LoginScreenContext;
 class NetworkScreen;
 class OobeDisplay;
 class ResetScreen;
+class SimpleGeolocationProvider;
 class TermsOfServiceScreen;
 class TimeZoneProvider;
 struct TimeZoneResponseData;
@@ -164,10 +161,6 @@ class WizardController : public ScreenObserver {
   // Volume percent at which spoken feedback is still audible.
   static const int kMinAudibleOutputVolumePercent;
 
-  // Called from LoginLocationMonitor when location is resolved.
-  static void OnLocationUpdated(const content::Geoposition& position,
-                                base::TimeDelta elapsed);
-
  private:
   // Show specific screen.
   void ShowNetworkScreen();
@@ -279,7 +272,7 @@ class WizardController : public ScreenObserver {
   }
 
   // Called when network is UP.
-  void StartTimezoneResolve() const;
+  void StartTimezoneResolve();
 
   // Creates provider on demand.
   TimeZoneProvider* GetTimezoneProvider();
@@ -287,6 +280,11 @@ class WizardController : public ScreenObserver {
   // TimeZoneRequest::TimeZoneResponseCallback implementation.
   void OnTimezoneResolved(scoped_ptr<TimeZoneResponseData> timezone,
                           bool server_error);
+
+  // Called from SimpleGeolocationProvider when location is resolved.
+  void OnLocationResolved(const Geoposition& position,
+                          bool server_error,
+                          const base::TimeDelta elapsed);
 
   // Whether to skip any screens that may normally be shown after login
   // (registration, Terms of Service, user image selection).
@@ -377,6 +375,7 @@ class WizardController : public ScreenObserver {
 
   base::WeakPtrFactory<WizardController> weak_factory_;
 
+  scoped_ptr<SimpleGeolocationProvider> geolocation_provider_;
   scoped_ptr<TimeZoneProvider> timezone_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(WizardController);
