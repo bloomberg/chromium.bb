@@ -17,6 +17,7 @@ var AutomationNodeImpl = function(owner) {
   this.childIds = [];
   this.attributes = {};
   this.listeners = {};
+  this.location = { left: 0, top: 0, width: 0, height: 0 };
 };
 
 AutomationNodeImpl.prototype = {
@@ -150,6 +151,7 @@ AutomationNodeImpl.prototype = {
     var listeners = nodeImpl.listeners[event.type];
     if (!listeners)
       return;
+
     var eventPhase = event.eventPhase;
     for (var i = 0; i < listeners.length; i++) {
       if (eventPhase == Event.CAPTURING_PHASE && !listeners[i].capture)
@@ -195,9 +197,11 @@ var AutomationNode = utils.expose('AutomationNode',
                                                 'setSelection',
                                                 'addEventListener',
                                                 'removeEventListener'],
-                                    properties: ['id',
-                                                 'role',
-                                                 'state',
-                                                 'loaded'] });
+                                    readonly: ['id',
+                                               'role',
+                                               'state',
+                                               'location',
+                                               'attributes',
+                                               'loaded'] });
 
 exports.AutomationNode = AutomationNode;

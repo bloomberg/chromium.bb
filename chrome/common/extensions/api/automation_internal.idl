@@ -6,6 +6,13 @@
 // essentially a translation of the internal accessibility tree update system
 // into an extension API.
 namespace automationInternal {
+  dictionary Rect {
+    long left;
+    long top;
+    long width;
+    long height;
+  };
+
   // A compact representation of the accessibility information for a
   // single web object, in a form that can be serialized and sent from
   // one process to another.
@@ -14,7 +21,8 @@ namespace automationInternal {
     long id;
     DOMString role;
     object state;
-    // TODO(aboxhall): include location data;
+    Rect location;
+
     object? boolAttributes;
     object? floatAttributes;
     object? htmlAttributes;

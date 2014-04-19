@@ -115,4 +115,10 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, Actions) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, Location) {
+  LoadPage();
+  ASSERT_TRUE(RunExtensionSubtest("automation/tests", "location.html"))
+      << message_;
+}
+
 }  // namespace extensions

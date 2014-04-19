@@ -27,6 +27,7 @@
 #include "extensions/browser/event_router.h"
 #include "ui/accessibility/ax_enums.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace extensions {
 class AutomationWebContentsObserver;
@@ -124,6 +125,11 @@ class AutomationWebContentsObserver
       state_shifter = state_shifter >> 1;
       state_pos++;
     }
+
+    out_node_data->location.left = node_data.location.x();
+    out_node_data->location.top = node_data.location.y();
+    out_node_data->location.width = node_data.location.width();
+    out_node_data->location.height = node_data.location.height();
 
     if (!node_data.bool_attributes.empty()) {
       out_node_data->bool_attributes.reset(

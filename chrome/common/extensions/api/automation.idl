@@ -8,6 +8,13 @@
 // <em>semantic</em> structure of a page, and can be used to programmatically
 // interact with a page.
 [nocompile] namespace automation {
+  dictionary Rect {
+    long left;
+    long top;
+    long width;
+    long height;
+  };
+
   // An event in the Automation tree.
   [nocompile] dictionary AutomationEvent {
     // The $(ref:automation.AutomationNode) to which the event was targeted.
@@ -35,7 +42,8 @@
     // The state of this node, e.g. {pressed": true, "inactive": true} etc.
     object state;
 
-    // TODO(aboxhall): Rect location;
+    // The rendered location (as a bounding box) of this node within the frame.
+    Rect location;
 
     // A collection of this node's other attributes.
     // TODO(aboxhall): Create and use combined list of attributes from

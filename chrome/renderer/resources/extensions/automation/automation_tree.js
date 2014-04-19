@@ -11,7 +11,8 @@ var utils = require('utils');
 var AutomationAttributeDefaults = {
   'id': -1,
   'role': '',
-  'state': {}
+  'state': {},
+  'location': { left: 0, top: 0, width: 0, height: 0 }
 };
 
 
@@ -86,10 +87,10 @@ AutomationTreeImpl.prototype = {
 
     var id = node.id;
     for (var key in AutomationAttributeDefaults) {
-      node[key] = AutomationAttributeDefaults[key];
+      privates(node).impl[key] = AutomationAttributeDefaults[key];
     }
-    node.loaded = false;
-    node.id = id;
+    privates(node).impl.loaded = false;
+    privates(node).impl.id = id;
     this.axNodeDataCache_[id] = undefined;
   },
 
@@ -144,7 +145,7 @@ AutomationTreeImpl.prototype = {
         if (!childNode) {
           childNode = new AutomationNode(this);
           this.axNodeDataCache_[newId] = childNode;
-          childNode.id = newId;
+          privates(childNode).impl.id = newId;
         }
         privates(childNode).impl.indexInParent = j;
         privates(childNode).impl.parentID = nodeData.id;
@@ -164,22 +165,21 @@ AutomationTreeImpl.prototype = {
       }
       for (var key in AutomationAttributeDefaults) {
         if (key in nodeData)
-          node[key] = nodeData[key];
+          privates(node).impl[key] = nodeData[key];
         else
-          node[key] = AutomationAttributeDefaults[key];
+          privates(node).impl[key] = AutomationAttributeDefaults[key];
       }
-      node.attributes = {};
       for (var attributeTypeIndex = 0;
            attributeTypeIndex < AutomationAttributeTypes.length;
            attributeTypeIndex++) {
         var attributeType = AutomationAttributeTypes[attributeTypeIndex];
         for (var attributeID in nodeData[attributeType]) {
-          node.attributes[attributeID] =
+          privates(node).impl.attributes[attributeID] =
               nodeData[attributeType][attributeID];
         }
       }
       privates(node).impl.childIds = newChildIDs;
-      node.loaded = true;
+      privates(node).impl.loaded = true;
       this.axNodeDataCache_[node.id] = node;
     }
     var node = this.get(data.targetID);
