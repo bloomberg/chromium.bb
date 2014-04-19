@@ -2440,7 +2440,7 @@ void RenderBlockFlow::addIntrudingFloats(RenderBlockFlow* prev, LayoutUnit logic
 void RenderBlockFlow::addOverhangingFloats(RenderBlockFlow* child, bool makeChildPaintOtherFloats)
 {
     // Prevent floats from being added to the canvas by the root element, e.g., <html>.
-    if (child->hasOverflowClip() || !child->containsFloats() || child->isDocumentElement() || child->hasColumns() || child->isWritingModeRoot())
+    if (child->hasOverflowClip() || !child->containsFloats() || child->isRenderFlowThread() || child->isRenderRegion() || child->isDocumentElement() || child->hasColumns() || child->isWritingModeRoot())
         return;
 
     LayoutUnit childLogicalTop = child->logicalTop();
