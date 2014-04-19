@@ -22,9 +22,6 @@ class SuggestionsMenuModelDelegate {
  public:
   virtual ~SuggestionsMenuModelDelegate();
 
-  // Called when a suggestions menu is about to show.
-  virtual void SuggestionsMenuWillShow() = 0;
-
   // Called when a menu item has been activated.
   virtual void SuggestionItemSelected(SuggestionsMenuModel* model,
                                       size_t index) = 0;
@@ -82,9 +79,6 @@ class SuggestionsMenuModel : public ui::SimpleMenuModel,
   // Enable/disable an item by key.
   void SetEnabled(const std::string& item_key, bool enabled);
 
-  // ui::SimpleMenuModel implementation.
-  virtual void MenuWillShow() OVERRIDE;
-
   // ui::SimpleMenuModel::Delegate implementation.
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
   virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
@@ -92,7 +86,6 @@ class SuggestionsMenuModel : public ui::SimpleMenuModel,
       int command_id,
       ui::Accelerator* accelerator) OVERRIDE;
   virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
-  virtual void MenuWillShow(ui::SimpleMenuModel* source) OVERRIDE;
 
  private:
   // Represents an item in this model.

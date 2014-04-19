@@ -27,9 +27,6 @@ class AccountChooserModelDelegate {
  public:
   virtual ~AccountChooserModelDelegate();
 
-  // Called right before the account chooser is shown.
-  virtual void AccountChooserWillShow() = 0;
-
   // Called when the active account has changed.
   virtual void AccountChoiceChanged() = 0;
 
@@ -57,9 +54,6 @@ class AccountChooserModel : public ui::SimpleMenuModel,
                       const AutofillMetrics& metric_logger);
   virtual ~AccountChooserModel();
 
-  // ui::SimpleMenuModel implementation.
-  virtual void MenuWillShow() OVERRIDE;
-
   // ui::SimpleMenuModel::Delegate implementation.
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
   virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
@@ -67,7 +61,6 @@ class AccountChooserModel : public ui::SimpleMenuModel,
       int command_id,
       ui::Accelerator* accelerator) OVERRIDE;
   virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
-  virtual void MenuWillShow(ui::SimpleMenuModel* source) OVERRIDE;
 
   // Sets the selection to the given wallet account.
   void SelectWalletAccount(size_t user_index);

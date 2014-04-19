@@ -2371,10 +2371,6 @@ void AutofillDialogControllerImpl::Observe(
 ////////////////////////////////////////////////////////////////////////////////
 // SuggestionsMenuModelDelegate implementation.
 
-void AutofillDialogControllerImpl::SuggestionsMenuWillShow() {
-  HidePopup();
-}
-
 void AutofillDialogControllerImpl::SuggestionItemSelected(
     SuggestionsMenuModel* model,
     size_t index) {
@@ -2575,10 +2571,6 @@ void AutofillDialogControllerImpl::OnPersonalDataChanged() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // AccountChooserModelDelegate implementation.
-
-void AutofillDialogControllerImpl::AccountChooserWillShow() {
-  HidePopup();
-}
 
 void AutofillDialogControllerImpl::AccountChoiceChanged() {
   ScopedViewUpdates updates(view_.get());

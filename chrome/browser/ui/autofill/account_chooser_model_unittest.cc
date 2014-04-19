@@ -39,7 +39,6 @@ class MockAccountChooserModelDelegate : public AccountChooserModelDelegate {
   MockAccountChooserModelDelegate() {}
   virtual ~MockAccountChooserModelDelegate() {}
 
-  MOCK_METHOD0(AccountChooserWillShow, void());
   MOCK_METHOD0(AccountChoiceChanged, void());
   MOCK_METHOD0(AddAccount, void());
   MOCK_METHOD0(UpdateAccountChooserView, void());

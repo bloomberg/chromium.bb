@@ -48,10 +48,6 @@ AccountChooserModel::AccountChooserModel(
 
 AccountChooserModel::~AccountChooserModel() {}
 
-void AccountChooserModel::MenuWillShow() {
-  ui::SimpleMenuModel::MenuWillShow();
-}
-
 void AccountChooserModel::SelectWalletAccount(size_t user_index) {
   DCHECK(user_index == 0U || user_index < wallet_accounts_.size());
   checked_item_ = kWalletAccountsStartId + user_index;
@@ -138,10 +134,6 @@ void AccountChooserModel::ExecuteCommand(int command_id, int event_flags) {
   metric_logger_.LogDialogUiEvent(chooser_event);
 
   DoAccountSwitch(command_id);
-}
-
-void AccountChooserModel::MenuWillShow(ui::SimpleMenuModel* source) {
-  delegate_->AccountChooserWillShow();
 }
 
 void AccountChooserModel::SetHadWalletError() {
