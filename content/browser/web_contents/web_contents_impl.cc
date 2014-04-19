@@ -3402,6 +3402,12 @@ void WebContentsImpl::DidDisownOpener(RenderViewHost* rvh) {
 }
 
 void WebContentsImpl::DidAccessInitialDocument() {
+  // We may have left a failed browser-initiated navigation in the address bar
+  // to let the user edit it and try again.  Clear it now that content might
+  // show up underneath it.
+  if (!IsLoading() && controller_.GetPendingEntry())
+    controller_.DiscardPendingEntry();
+
   // Update the URL display.
   NotifyNavigationStateChanged(content::INVALIDATE_TYPE_URL);
 }
