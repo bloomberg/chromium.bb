@@ -1103,6 +1103,7 @@ chromium_pfq = _config(
   manifest_version=True,
   chrome_rev=constants.CHROME_REV_LATEST,
   upload_hw_test_artifacts=True,
+  chrome_sdk=True,
 )
 
 # TODO(davidjames): Convert this to an external config once the unified master
@@ -1175,6 +1176,7 @@ chrome_try = _config(
 chromium_info = chromium_pfq.derive(
   chrome_try,
   vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
+  chrome_sdk=False,
 )
 
 telemetry_info = telemetry.derive(chrome_try)
