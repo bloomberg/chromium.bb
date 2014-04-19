@@ -145,11 +145,12 @@ void AudioBufferConverter::ResetConverter(
       0,
       buffer->sample_rate(),
       input_params_.bits_per_sample(),
-      // This is arbitrary, but small buffer sizes result in a lot of tiny
-      // ProvideInput calls, so we'll use at least the SincResampler's default
-      // request size.
-      std::max(buffer->frame_count(),
-               static_cast<int>(SincResampler::kDefaultRequestSize)));
+      // If resampling is needed and the FIFO disabled, the AudioConverter will
+      // always request SincResampler::kDefaultRequestSize frames.  Otherwise it
+      // will use the output frame size.
+      buffer->sample_rate() == output_params_.sample_rate()
+          ? output_params_.frames_per_buffer()
+          : SincResampler::kDefaultRequestSize);
 
   io_sample_rate_ratio_ = static_cast<double>(input_params_.sample_rate()) /
                           output_params_.sample_rate();
@@ -159,6 +160,7 @@ void AudioBufferConverter::ResetConverter(
   if (!IsConfigChange(output_params_, buffer))
     return;
 
+  // Note: The FIFO is disabled to avoid extraneous memcpy().
   audio_converter_.reset(
       new AudioConverter(input_params_, output_params_, true));
   audio_converter_->AddInput(this);

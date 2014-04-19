@@ -36,13 +36,15 @@ static scoped_refptr<AudioBuffer> MakeTestBuffer(int sample_rate,
 class AudioBufferConverterTest : public ::testing::Test {
  public:
   AudioBufferConverterTest()
-      : input_frames_(0), expected_output_frames_(0.0), output_frames_(0) {
-    AudioParameters output_params(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                                  kOutChannelLayout,
-                                  kOutSampleRate,
-                                  16,
-                                  kOutFrameSize);
-    ResetConverter(output_params);
+      : input_frames_(0),
+        expected_output_frames_(0.0),
+        output_frames_(0),
+        output_params_(AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                       kOutChannelLayout,
+                       kOutSampleRate,
+                       16,
+                       kOutFrameSize) {
+    audio_buffer_converter_.reset(new AudioBufferConverter(output_params_));
   }
 
   void Reset() {
@@ -55,44 +57,40 @@ class AudioBufferConverterTest : public ::testing::Test {
       input_frames_ += in->frame_count();
       expected_output_frames_ +=
           in->frame_count() *
-          (static_cast<double>(kOutSampleRate) / in->sample_rate());
+          (static_cast<double>(output_params_.sample_rate()) /
+           in->sample_rate());
     }
     audio_buffer_converter_->AddInput(in);
   }
 
+  void ConsumeOutput() {
+    ASSERT_TRUE(audio_buffer_converter_->HasNextBuffer());
+    scoped_refptr<AudioBuffer> out = audio_buffer_converter_->GetNextBuffer();
+    if (!out->end_of_stream()) {
+      output_frames_ += out->frame_count();
+      EXPECT_EQ(out->sample_rate(), output_params_.sample_rate());
+      EXPECT_EQ(out->channel_layout(), output_params_.channel_layout());
+      EXPECT_EQ(out->channel_count(), output_params_.channels());
+    } else {
+      EXPECT_FALSE(audio_buffer_converter_->HasNextBuffer());
+    }
+  }
+
   void ConsumeAllOutput() {
     AddInput(AudioBuffer::CreateEOSBuffer());
-    while (audio_buffer_converter_->HasNextBuffer()) {
-      scoped_refptr<AudioBuffer> out = audio_buffer_converter_->GetNextBuffer();
-      if (!out->end_of_stream()) {
-        output_frames_ += out->frame_count();
-        EXPECT_EQ(out->sample_rate(), out_sample_rate_);
-        EXPECT_EQ(out->channel_layout(), out_channel_layout_);
-        EXPECT_EQ(out->channel_count(), out_channel_count_);
-      } else {
-        EXPECT_FALSE(audio_buffer_converter_->HasNextBuffer());
-      }
-    }
+    while (audio_buffer_converter_->HasNextBuffer())
+      ConsumeOutput();
     EXPECT_EQ(output_frames_, ceil(expected_output_frames_));
   }
 
-  void ResetConverter(AudioParameters out_params) {
-    audio_buffer_converter_.reset(new AudioBufferConverter(out_params));
-    out_channel_layout_ = out_params.channel_layout();
-    out_channel_count_ = out_params.channels();
-    out_sample_rate_ = out_params.sample_rate();
-  }
-
- private:
+ protected:
   scoped_ptr<AudioBufferConverter> audio_buffer_converter_;
 
   int input_frames_;
   double expected_output_frames_;
   int output_frames_;
-
-  int out_sample_rate_;
-  ChannelLayout out_channel_layout_;
-  int out_channel_count_;
+  int input_buffers_;
+  AudioParameters output_params_;
 };
 
 TEST_F(AudioBufferConverterTest, PassThrough) {
@@ -210,17 +208,49 @@ TEST_F(AudioBufferConverterTest, ResetThenConvert) {
 }
 
 TEST_F(AudioBufferConverterTest, DiscreteChannelLayout) {
-  AudioParameters output_params(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                                CHANNEL_LAYOUT_DISCRETE,
-                                2,
-                                0,
-                                kOutSampleRate,
-                                16,
-                                512,
-                                0);
-  ResetConverter(output_params);
+  output_params_ = AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                                   CHANNEL_LAYOUT_DISCRETE,
+                                   2,
+                                   0,
+                                   kOutSampleRate,
+                                   16,
+                                   512,
+                                   0);
+  audio_buffer_converter_.reset(new AudioBufferConverter(output_params_));
   AddInput(MakeTestBuffer(kOutSampleRate, CHANNEL_LAYOUT_STEREO, 2, 512));
   ConsumeAllOutput();
+}
+
+TEST_F(AudioBufferConverterTest, LargeBuffersResampling) {
+  output_params_ = AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                                   kOutChannelLayout,
+                                   kOutSampleRate,
+                                   16,
+                                   2048);
+
+  audio_buffer_converter_.reset(new AudioBufferConverter(output_params_));
+  const int kInputSampleRate = 48000;
+  const int kInputFrameSize = 8192;
+  ASSERT_NE(kInputSampleRate, kOutSampleRate);
+
+  const int kInputBuffers = 3;
+  for (int i = 0; i < kInputBuffers; ++i) {
+    AddInput(MakeTestBuffer(kInputSampleRate,
+                            kOutChannelLayout,
+                            kOutChannelCount,
+                            kInputFrameSize));
+  }
+
+  // Do not add an EOS packet here, as it will invoke flushing.
+  while (audio_buffer_converter_->HasNextBuffer())
+    ConsumeOutput();
+
+  // Since the input buffer size is a multiple of the input request size there
+  // should never be any frames remaining at this point.
+  ASSERT_EQ(kInputFrameSize %
+                audio_buffer_converter_->input_buffer_size_for_testing(),
+            0);
+  EXPECT_EQ(0, audio_buffer_converter_->input_frames_left_for_testing());
 }
 
 }  // namespace media

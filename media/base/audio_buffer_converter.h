@@ -42,6 +42,13 @@ class MEDIA_EXPORT AudioBufferConverter : public AudioConverter::InputCallback {
   // timestamp will be set to match the input buffer.
   void ResetTimestampState();
 
+  int input_buffer_size_for_testing() const {
+    return input_params_.frames_per_buffer();
+  }
+  int input_frames_left_for_testing() const {
+    return input_frames_;
+  }
+
  private:
   // Callback to provide data to the AudioConverter
   virtual double ProvideInput(AudioBus* audio_bus,
