@@ -32,7 +32,7 @@ _kind_to_cpp_type = {
 
 
 def NamespaceToArray(namespace):
-  return namespace.split('.')
+  return namespace.split('.') if namespace else []
 
 def GetNameForKind(kind, internal = False):
   parts = []
