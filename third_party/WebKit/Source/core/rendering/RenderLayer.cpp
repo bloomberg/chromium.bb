@@ -127,6 +127,12 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer, LayerType type)
     , m_hasFilterInfo(false)
     , m_needsToUpdateAncestorDependentProperties(true)
     , m_childNeedsToUpdateAncestorDependantProperties(true)
+    , m_hasCompositingDescendant(false)
+    , m_hasNonCompositedChild(false)
+    , m_shouldIsolateCompositedDescendants(false)
+    , m_lostGroupedMapping(false)
+    , m_suppressingCompositedLayerCreation(false)
+    , m_viewportConstrainedNotCompositedReason(NoNotCompositedReason)
     , m_renderer(renderer)
     , m_parent(0)
     , m_previous(0)
@@ -136,6 +142,8 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer, LayerType type)
     , m_staticInlinePosition(0)
     , m_staticBlockPosition(0)
     , m_enclosingPaginationLayer(0)
+    , m_styleDeterminedCompositingReasons(CompositingReasonNone)
+    , m_compositingReasons(CompositingReasonNone)
     , m_groupedMapping(0)
     , m_repainter(renderer)
     , m_clipper(renderer)
@@ -783,10 +791,10 @@ void RenderLayer::updateScrollingStateAfterCompositingChange()
         }
     }
 
-    compositingProperties().hasNonCompositedChild = false;
+    m_hasNonCompositedChild = false;
     for (RenderLayer* child = firstChild(); child; child = child->nextSibling()) {
         if (child->compositingState() == NotComposited) {
-            compositingProperties().hasNonCompositedChild = true;
+            m_hasNonCompositedChild = true;
             return;
         }
     }
@@ -1181,9 +1189,9 @@ void RenderLayer::clearChildNeedsToUpdateAncestorDependantProperties()
 void RenderLayer::setCompositingReasons(CompositingReasons reasons, CompositingReasons mask)
 {
     ASSERT(reasons == (reasons & mask));
-    if ((compositingProperties().compositingReasons & mask) == (reasons & mask))
+    if ((compositingReasons() & mask) == (reasons & mask))
         return;
-    compositingProperties().compositingReasons = (reasons & mask) | (compositingProperties().compositingReasons & ~mask);
+    m_compositingReasons = (reasons & mask) | (compositingReasons() & ~mask);
     m_clipper.setCompositingClipRectsDirty();
 }
 
