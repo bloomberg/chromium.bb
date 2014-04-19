@@ -8,7 +8,6 @@
 #import <IOBluetooth/objc/IOBluetoothSDPServiceRecord.h>
 #import <IOBluetooth/objc/IOBluetoothSDPUUID.h>
 
-#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -18,7 +17,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/thread_task_runner_handle.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device_mac.h"
 #include "device/bluetooth/bluetooth_socket_mac.h"
@@ -60,23 +58,12 @@ IOBluetoothSDPUUID* GetIOBluetoothSDPUUID(const std::string& uuid) {
                                     length:uuid_bytes_vector.size()];
 }
 
-void OnSocketConnectUI(
-    scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
-    scoped_refptr<device::BluetoothSocketMac> socket,
-    const base::Closure& success_callback,
-    const device::BluetoothProfileMac::ErrorCallback& error_callback) {
-  DCHECK(ui_task_runner->RunsTasksOnCurrentThread());
-  socket->Connect(success_callback, error_callback);
-}
-
-void OnConnectSuccessUIWithAdapter(
-    scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
+void OnConnectSuccessWithAdapter(
     const base::Closure& callback,
     const device::BluetoothProfileMac::ConnectionCallback& connection_callback,
     const std::string& device_address,
     scoped_refptr<device::BluetoothSocketMac> socket,
     scoped_refptr<device::BluetoothAdapter> adapter) {
-  DCHECK(ui_task_runner->RunsTasksOnCurrentThread());
   const device::BluetoothDevice* device = adapter->GetDevice(device_address);
   if (device) {
     connection_callback.Run(device, socket);
@@ -84,28 +71,17 @@ void OnConnectSuccessUIWithAdapter(
   }
 }
 
-void OnConnectSuccessUI(
-    scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
+void OnConnectSuccess(
     const base::Closure& callback,
     const device::BluetoothProfileMac::ConnectionCallback& connection_callback,
     const std::string& device_address,
     scoped_refptr<device::BluetoothSocketMac> socket) {
-  DCHECK(ui_task_runner->RunsTasksOnCurrentThread());
   device::BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&OnConnectSuccessUIWithAdapter,
-                 ui_task_runner,
+      base::Bind(&OnConnectSuccessWithAdapter,
                  callback,
                  connection_callback,
                  device_address,
                  socket));
-}
-
-void OnConnectErrorUI(
-    scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
-    const device::BluetoothProfileMac::ErrorCallback& error_callback,
-    const std::string& error) {
-  DCHECK(ui_task_runner->RunsTasksOnCurrentThread());
-  error_callback.Run(error);
 }
 
 }  // namespace
@@ -130,11 +106,9 @@ void BluetoothProfileMac::SetConnectionCallback(
 }
 
 void BluetoothProfileMac::Connect(
-    const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
     IOBluetoothDevice* device,
     const base::Closure& success_callback,
-    const ErrorCallback& error_callback) {
-  DCHECK(ui_task_runner->RunsTasksOnCurrentThread());
+    const BluetoothSocket::ErrorCompletionCallback& error_callback) {
   if (connection_callback_.is_null()) {
     error_callback.Run(kNoConnectionCallback);
     return;
@@ -150,16 +124,13 @@ void BluetoothProfileMac::Connect(
   std::string device_address = base::SysNSStringToUTF8([device addressString]);
   scoped_refptr<BluetoothSocketMac> socket(
       BluetoothSocketMac::CreateBluetoothSocket(record));
-  OnSocketConnectUI(
-      ui_task_runner,
-      socket,
-      base::Bind(OnConnectSuccessUI,
-                 ui_task_runner,
+  socket->Connect(
+      base::Bind(OnConnectSuccess,
                  success_callback,
                  connection_callback_,
                  device_address,
                  socket),
-      base::Bind(OnConnectErrorUI, ui_task_runner, error_callback));
+      error_callback);
 }
 
 }  // namespace device

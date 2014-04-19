@@ -12,23 +12,13 @@
 #include "base/observer_list.h"
 #include "device/bluetooth/bluetooth_device.h"
 
-#ifdef __OBJC__
 @class IOBluetoothDevice;
-#else
-class IOBluetoothDevice;
-#endif
-
-namespace base {
-class SequencedTaskRunner;
-}  // namespace base
 
 namespace device {
 
 class BluetoothDeviceMac : public BluetoothDevice {
  public:
-  explicit BluetoothDeviceMac(
-      const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
-      IOBluetoothDevice* device);
+  explicit BluetoothDeviceMac(IOBluetoothDevice* device);
   virtual ~BluetoothDeviceMac();
 
   // BluetoothDevice override
@@ -85,7 +75,6 @@ class BluetoothDeviceMac : public BluetoothDevice {
   // List of observers interested in event notifications from us.
   ObserverList<Observer> observers_;
 
-  scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
   base::scoped_nsobject<IOBluetoothDevice> device_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothDeviceMac);
