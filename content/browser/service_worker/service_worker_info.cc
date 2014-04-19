@@ -30,6 +30,8 @@ ServiceWorkerVersionInfo::ServiceWorkerVersionInfo(
       thread_id(thread_id) {}
 ServiceWorkerVersionInfo::~ServiceWorkerVersionInfo() {}
 
+ServiceWorkerRegistrationInfo::ServiceWorkerRegistrationInfo() {}
+
 ServiceWorkerRegistrationInfo::ServiceWorkerRegistrationInfo(
     const GURL& script_url,
     const GURL& pattern,

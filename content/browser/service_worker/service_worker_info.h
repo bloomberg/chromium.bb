@@ -32,6 +32,7 @@ class ServiceWorkerVersionInfo {
 
 class ServiceWorkerRegistrationInfo {
  public:
+  ServiceWorkerRegistrationInfo();
   ServiceWorkerRegistrationInfo(
       const GURL& script_url,
       const GURL& pattern,
@@ -41,7 +42,6 @@ class ServiceWorkerRegistrationInfo {
 
   GURL script_url;
   GURL pattern;
-
   ServiceWorkerVersionInfo active_version;
   ServiceWorkerVersionInfo pending_version;
 };

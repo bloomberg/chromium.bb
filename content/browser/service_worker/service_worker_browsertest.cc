@@ -224,7 +224,6 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
  public:
   typedef ServiceWorkerVersionBrowserTest self;
 
-  ServiceWorkerVersionBrowserTest() : next_registration_id_(1) {}
   virtual ~ServiceWorkerVersionBrowserTest() {}
 
   virtual void TearDownOnIOThread() OVERRIDE {
@@ -302,15 +301,14 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
   }
 
   void SetUpRegistrationOnIOThread(const std::string& worker_url) {
-    const int64 version_id = 1L;
     registration_ = new ServiceWorkerRegistration(
         embedded_test_server()->GetURL("/*"),
         embedded_test_server()->GetURL(worker_url),
-        next_registration_id_++,
+        wrapper()->context()->storage()->NewRegistrationId(),
         wrapper()->context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(
         registration_,
-        version_id,
+        wrapper()->context()->storage()->NewVersionId(),
         wrapper()->context()->AsWeakPtr());
     AssociateRendererProcessToWorker(version_->embedded_worker());
   }
@@ -362,7 +360,6 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
   }
 
  protected:
-  int64 next_registration_id_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;
 };
@@ -576,6 +573,20 @@ class ServiceWorkerBlackBoxBrowserTest : public ServiceWorkerBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBlackBoxBrowserTest, Registration) {
   const std::string kWorkerUrl = "/service_worker/fetch_event.js";
+
+  // Unregistering nothing should return false.
+  {
+    base::RunLoop run_loop;
+    public_context()->UnregisterServiceWorker(
+        embedded_test_server()->GetURL("/*"),
+        RenderProcessID(),
+        base::Bind(&ServiceWorkerBlackBoxBrowserTest::ExpectResultAndRun,
+                   false,
+                   run_loop.QuitClosure()));
+    run_loop.Run();
+  }
+
+  // Register returns when the promise would be resolved.
   {
     base::RunLoop run_loop;
     public_context()->RegisterServiceWorker(
@@ -587,18 +598,26 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBlackBoxBrowserTest, Registration) {
                    run_loop.QuitClosure()));
     run_loop.Run();
   }
+
+  // Registering again should succeed, although the algo still
+  // might not be complete.
   {
-    ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
-    GURL script_url;
-    RunOnIOThread(
-        base::Bind(&ServiceWorkerBlackBoxBrowserTest::FindRegistrationOnIO,
-                   this,
-                   embedded_test_server()->GetURL("/service_worker/empty.html"),
-                   &status,
-                   &script_url));
-    EXPECT_EQ(SERVICE_WORKER_OK, status);
-    EXPECT_EQ(embedded_test_server()->GetURL(kWorkerUrl), script_url);
+    base::RunLoop run_loop;
+    public_context()->RegisterServiceWorker(
+        embedded_test_server()->GetURL("/*"),
+        embedded_test_server()->GetURL(kWorkerUrl),
+        RenderProcessID(),
+        base::Bind(&ServiceWorkerBlackBoxBrowserTest::ExpectResultAndRun,
+                   true,
+                   run_loop.QuitClosure()));
+    run_loop.Run();
   }
+
+  // The registration algo might not be far enough along to have
+  // stored the registration data, so it may not be findable
+  // at this point.
+
+  // Unregistering something should return true.
   {
     base::RunLoop run_loop;
     public_context()->UnregisterServiceWorker(
@@ -609,6 +628,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBlackBoxBrowserTest, Registration) {
                    run_loop.QuitClosure()));
     run_loop.Run();
   }
+
+  // Should not be able to find it.
   {
     ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
     GURL script_url;

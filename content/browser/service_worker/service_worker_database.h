@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "content/browser/service_worker/service_worker_version.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -36,6 +37,12 @@ class ServiceWorkerDatabase {
     bool is_active;
     bool has_fetch_handler;
     base::Time last_update_check;
+
+    ServiceWorkerVersion::Status GetVersionStatus() const {
+      if (is_active)
+        return ServiceWorkerVersion::ACTIVE;
+      return ServiceWorkerVersion::INSTALLED;
+    }
 
     RegistrationData();
     ~RegistrationData();

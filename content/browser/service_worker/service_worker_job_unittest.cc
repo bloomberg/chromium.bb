@@ -137,16 +137,10 @@ TEST_F(ServiceWorkerJobTest, SameDocumentSameRegistration) {
   storage()->FindRegistrationForDocument(
       GURL("http://www.example.com/"),
       SaveFoundRegistration(SERVICE_WORKER_OK, &called, &registration2));
-
-  ServiceWorkerRegistration* null_registration(NULL);
-  ASSERT_EQ(null_registration, registration1);
-  ASSERT_EQ(null_registration, registration2);
-  EXPECT_FALSE(called);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
-  ASSERT_NE(null_registration, registration1);
-  ASSERT_NE(null_registration, registration2);
-
+  ASSERT_TRUE(registration1);
+  ASSERT_EQ(registration1, original_registration);
   ASSERT_EQ(registration1, registration2);
 }
 
@@ -168,8 +162,6 @@ TEST_F(ServiceWorkerJobTest, SameMatchSameRegistration) {
   storage()->FindRegistrationForDocument(
       GURL("http://www.example.com/one"),
       SaveFoundRegistration(SERVICE_WORKER_OK, &called, &registration1));
-
-  EXPECT_FALSE(called);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
 
@@ -177,10 +169,9 @@ TEST_F(ServiceWorkerJobTest, SameMatchSameRegistration) {
   storage()->FindRegistrationForDocument(
       GURL("http://www.example.com/two"),
       SaveFoundRegistration(SERVICE_WORKER_OK, &called, &registration2));
-  EXPECT_FALSE(called);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
-
+  ASSERT_EQ(registration1, original_registration);
   ASSERT_EQ(registration1, registration2);
 }
 
@@ -216,12 +207,9 @@ TEST_F(ServiceWorkerJobTest, DifferentMatchDifferentRegistration) {
       GURL("http://www.example.com/two/"),
       SaveFoundRegistration(SERVICE_WORKER_OK, &called2, &registration2));
 
-  EXPECT_FALSE(called1);
-  EXPECT_FALSE(called2);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called2);
   EXPECT_TRUE(called1);
-
   ASSERT_NE(registration1, registration2);
 }
 

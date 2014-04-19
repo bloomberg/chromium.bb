@@ -77,7 +77,8 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
     const base::FilePath& path,
     quota::QuotaManagerProxy* quota_manager_proxy,
     ObserverListThreadSafe<ServiceWorkerContextObserver>* observer_list)
-    : storage_(new ServiceWorkerStorage(path, quota_manager_proxy)),
+    : storage_(new ServiceWorkerStorage(
+          path, AsWeakPtr(), quota_manager_proxy)),
       embedded_worker_registry_(new EmbeddedWorkerRegistry(AsWeakPtr())),
       job_coordinator_(new ServiceWorkerJobCoordinator(AsWeakPtr())),
       next_handle_id_(0),

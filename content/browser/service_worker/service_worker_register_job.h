@@ -44,7 +44,7 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
       const GURL& script_url);
   virtual ~ServiceWorkerRegisterJob();
 
-  // Registers a callback to be called when the job completes (whether
+  // Registers a callback to be called when the promise would resolve (whether
   // successfully or not). Multiple callbacks may be registered. |process_id| is
   // added via AddProcessToWorker to the ServiceWorkerVersion created by the
   // registration job.
@@ -65,6 +65,7 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
      REGISTER,
      UPDATE,
      INSTALL,
+     STORE,
      ACTIVATE,
      COMPLETE
   };
@@ -91,15 +92,16 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
   void RegisterAndContinue(ServiceWorkerStatusCode status);
   void UpdateAndContinue(ServiceWorkerStatusCode status);
   void OnStartWorkerFinished(ServiceWorkerStatusCode status);
+  void OnStoreRegistrationComplete(ServiceWorkerStatusCode status);
   void InstallAndContinue();
   void OnInstallFinished(ServiceWorkerStatusCode status);
   void ActivateAndContinue();
   void OnActivateFinished(ServiceWorkerStatusCode status);
   void Complete(ServiceWorkerStatusCode status);
 
-  void RunCallbacks(ServiceWorkerStatusCode status,
-                    ServiceWorkerRegistration* registration,
-                    ServiceWorkerVersion* version);
+  void ResolvePromise(ServiceWorkerStatusCode status,
+                      ServiceWorkerRegistration* registration,
+                      ServiceWorkerVersion* version);
 
   CONTENT_EXPORT void AssociatePendingVersionToDocuments(
       ServiceWorkerVersion* version);
@@ -113,6 +115,10 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
   std::vector<int> pending_process_ids_;
   Phase phase_;
   Internal internal_;
+  bool is_promise_resolved_;
+  ServiceWorkerStatusCode promise_resolved_status_;
+  scoped_refptr<ServiceWorkerRegistration> promise_resolved_registration_;
+  scoped_refptr<ServiceWorkerVersion> promise_resolved_version_;
   base::WeakPtrFactory<ServiceWorkerRegisterJob> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRegisterJob);

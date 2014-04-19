@@ -49,8 +49,11 @@ void ServiceWorkerUnregisterJob::DeleteExistingRegistration(
     const scoped_refptr<ServiceWorkerRegistration>& registration) {
   if (status == SERVICE_WORKER_OK) {
     DCHECK(registration);
+    // TODO(michaeln): Deactivate the live registration object and
+    // eventually call storage->DeleteVersionResources()
+    // when the version no longer has any controllees.
     context_->storage()->DeleteRegistration(
-        pattern_,
+        registration->id(),
         base::Bind(&ServiceWorkerUnregisterJob::Complete,
                    weak_factory_.GetWeakPtr()));
     return;

@@ -389,6 +389,9 @@ void ServiceWorkerVersion::RemoveControllee(
   // TODO(kinuko): Fire NoControllees notification when the # of controllees
   // reaches 0, so that a new pending version can be activated (which will
   // deactivate this version).
+  // TODO(michaeln): On no controllees call storage DeleteVersionResources
+  // if this version has been deactivated. Probably storage can listen for
+  // NoControllees for versions that have been deleted.
 }
 
 void ServiceWorkerVersion::AddPendingControllee(
