@@ -347,10 +347,10 @@ void PictureLayerImpl::UpdateTilePriorities() {
     layer_needs_to_register_itself_ = false;
   }
 
-  if (!layer_tree_impl()->device_viewport_valid_for_tile_management()) {
-    for (size_t i = 0; i < tilings_->num_tilings(); ++i)
-      DCHECK(tilings_->tiling_at(i)->has_ever_been_updated());
-    return;
+  if (layer_tree_impl()->device_viewport_valid_for_tile_management()) {
+    visible_rect_for_tile_priority_ = visible_content_rect();
+    viewport_size_for_tile_priority_ = layer_tree_impl()->DrawViewportSize();
+    screen_space_transform_for_tile_priority_ = screen_space_transform();
   }
 
   if (!tilings_->num_tilings())
@@ -375,14 +375,14 @@ void PictureLayerImpl::UpdateTilePriorities() {
 
   // Use visible_content_rect, unless it's empty. If it's empty, then
   // try to inverse project the viewport into layer space and use that.
-  gfx::Rect visible_rect_in_content_space = visible_content_rect();
+  gfx::Rect visible_rect_in_content_space = visible_rect_for_tile_priority_;
   if (visible_rect_in_content_space.IsEmpty()) {
     gfx::Transform screen_to_layer(gfx::Transform::kSkipInitialization);
-    if (screen_space_transform().GetInverse(&screen_to_layer)) {
-      gfx::Size viewport_size = layer_tree_impl()->DrawViewportSize();
+    if (screen_space_transform_for_tile_priority_.GetInverse(
+            &screen_to_layer)) {
       visible_rect_in_content_space =
           gfx::ToEnclosingRect(MathUtil::ProjectClippedRect(
-              screen_to_layer, gfx::Rect(viewport_size)));
+              screen_to_layer, gfx::Rect(viewport_size_for_tile_priority_)));
       visible_rect_in_content_space.Intersect(gfx::Rect(content_bounds()));
     }
   }
@@ -951,9 +951,6 @@ void PictureLayerImpl::ManageTilings(bool animating_transform_to_screen,
   raster_source_scale_was_animating_ = animating_transform_to_screen;
 
   if (!change_target_tiling)
-    return;
-
-  if (!layer_tree_impl()->device_viewport_valid_for_tile_management())
     return;
 
   RecalculateRasterScales(animating_transform_to_screen,

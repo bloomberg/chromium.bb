@@ -214,6 +214,12 @@ class CC_EXPORT PictureLayerImpl
 
   bool layer_needs_to_register_itself_;
 
+  // Save a copy of the visible rect and viewport size of the last frame that
+  // has a valid viewport for prioritizing tiles.
+  gfx::Rect visible_rect_for_tile_priority_;
+  gfx::Size viewport_size_for_tile_priority_;
+  gfx::Transform screen_space_transform_for_tile_priority_;
+
   friend class PictureLayer;
   DISALLOW_COPY_AND_ASSIGN(PictureLayerImpl);
 };

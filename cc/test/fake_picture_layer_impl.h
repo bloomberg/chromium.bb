@@ -46,6 +46,7 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   using PictureLayerImpl::MarkVisibleResourcesAsRequired;
   using PictureLayerImpl::DoPostCommitInitializationIfNeeded;
   using PictureLayerImpl::MinimumContentsScale;
+  using PictureLayerImpl::SanityCheckTilingState;
 
   bool needs_post_commit_initialization() const {
     return needs_post_commit_initialization_;
@@ -66,6 +67,16 @@ class FakePictureLayerImpl : public PictureLayerImpl {
 
   const Region& invalidation() const { return invalidation_; }
   void set_invalidation(const Region& region) { invalidation_ = region; }
+
+  gfx::Rect visible_rect_for_tile_priority() {
+    return visible_rect_for_tile_priority_;
+  }
+  gfx::Size viewport_size_for_tile_priority() {
+    return viewport_size_for_tile_priority_;
+  }
+  gfx::Transform screen_space_transform_for_tile_priority() {
+    return screen_space_transform_for_tile_priority_;
+  }
 
   void set_fixed_tile_size(const gfx::Size& size) { fixed_tile_size_ = size; }
 
