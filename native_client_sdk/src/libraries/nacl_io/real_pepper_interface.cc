@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <ppapi/c/pp_errors.h>
 
-#include "nacl_io/dbgprint.h"
+#include "nacl_io/log.h"
 
 namespace nacl_io {
 
@@ -88,7 +88,7 @@ RealPepperInterface::RealPepperInterface(PP_Instance instance,
     if (iface) \
       BaseClass##interface_ = new Real##BaseClass(iface); \
     else \
-      dbgprintf("nacl_io: interface missing: %s\n", InterfaceString); \
+      LOG_ERROR("interface missing: %s\n", InterfaceString); \
   }
 #include "nacl_io/pepper/all_interfaces.h"
 }

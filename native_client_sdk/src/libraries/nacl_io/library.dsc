@@ -11,7 +11,6 @@
       'NAME' : 'nacl_io',
       'TYPE' : 'lib',
       'SOURCES' : [
-        'dbgprint.c',
         "devfs/dev_fs.cc",
         "devfs/jspipe_node.cc",
         "devfs/tty_event_emitter.cc",
@@ -40,6 +39,7 @@
         "kernel_wrap_glibc.cc",
         "kernel_wrap_newlib.cc",
         "kernel_wrap_win.cc",
+        "log.c",
         "memfs/mem_fs.cc",
         "memfs/mem_fs_node.cc",
         "nacl_io.cc",
@@ -161,7 +161,6 @@
     {
       'FILES': [
         "char_node.h",
-        "dbgprint.h",
         "devfs/dev_fs.h",
         "devfs/jspipe_node.h",
         "devfs/tty_event_emitter.h",
@@ -192,6 +191,7 @@
         "kernel_proxy.h",
         "kernel_wrap.h",
         "kernel_wrap_real.h",
+        "log.h",
         "memfs/mem_fs.h",
         "memfs/mem_fs_node.h",
         "nacl_io.h",

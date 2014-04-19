@@ -17,10 +17,10 @@
 
 #include <ppapi/c/pp_errors.h>
 
-#include "nacl_io/dbgprint.h"
 #include "nacl_io/dir_node.h"
 #include "nacl_io/httpfs/http_fs_node.h"
 #include "nacl_io/kernel_handle.h"
+#include "nacl_io/log.h"
 #include "nacl_io/osinttypes.h"
 #include "nacl_io/osunistd.h"
 #include "sdk_util/string_util.h"
@@ -319,7 +319,7 @@ Error HttpFs::ParseManifest(const char* text) {
           mode = S_IFCHR;
           break;
         default:
-          dbgprintf("Unable to parse type %s for %s.\n",
+          LOG_ERROR("Unable to parse type %s for %s.\n",
                     modestr.c_str(),
                     name.c_str());
           return EINVAL;
@@ -332,7 +332,7 @@ Error HttpFs::ParseManifest(const char* text) {
           mode |= S_IRUSR | S_IRGRP | S_IROTH;
           break;
         default:
-          dbgprintf("Unable to parse read %s for %s.\n",
+          LOG_ERROR("Unable to parse read %s for %s.\n",
                     modestr.c_str(),
                     name.c_str());
           return EINVAL;
@@ -345,7 +345,7 @@ Error HttpFs::ParseManifest(const char* text) {
           mode |= S_IWUSR | S_IWGRP | S_IWOTH;
           break;
         default:
-          dbgprintf("Unable to parse write %s for %s.\n",
+          LOG_ERROR("Unable to parse write %s for %s.\n",
                     modestr.c_str(),
                     name.c_str());
           return EINVAL;

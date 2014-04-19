@@ -2,7 +2,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#include "nacl_io/dbgprint.h"
+#include "nacl_io/log.h"
 
 #include "nacl_io/kernel_wrap_real.h"
 
@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <string.h>
 
-void dbgprintf(const char* format, ...) {
+void nacl_io_log(const char* format, ...) {
   va_list args;
   size_t wrote;
   char* output;
