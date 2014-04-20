@@ -2439,11 +2439,15 @@ class PatchChromeStage(bs.BuilderStage):
 
   option_name = 'rietveld_patches'
 
+  URL_BASE = 'https://codereview.chromium.org/%(id)s'
+
   def PerformStage(self):
-    for patch in ' '.join(self._run.options.rietveld_patches).split():
-      patch, colon, subdir = patch.partition(':')
+    for spatch in ' '.join(self._run.options.rietveld_patches).split():
+      patch, colon, subdir = spatch.partition(':')
       if not colon:
         subdir = 'src'
+      url = self.URL_BASE % {'id': patch}
+      cros_build_lib.PrintBuildbotLink(spatch, url)
       commands.PatchChrome(self._run.options.chrome_root, patch, subdir)
 
 

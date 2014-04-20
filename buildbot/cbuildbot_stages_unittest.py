@@ -3323,5 +3323,25 @@ class BranchUtilStageTest(AbstractStageTest, cros_test_lib.LoggingTestCase):
                       self._SimulateIncrementFailure)
 
 
+class PatchChromeStageTest(AbstractStageTest):
+  """Tests for PatchChromeStage."""
+
+  def setUp(self):
+    self._Prepare(cmd_args=[
+        '-r', self.build_root,
+        '--rietveld-patches=1234',
+        '--rietveld-patches=555:adir',
+    ])
+    self.PatchObject(commands, 'PatchChrome')
+
+  def ConstructStage(self):
+    return stages.PatchChromeStage(self.run)
+
+  def testBasic(self):
+    """Verify requested patches are applied."""
+    stage = self.ConstructStage()
+    stage.PerformStage()
+
+
 if __name__ == '__main__':
   cros_test_lib.main()
