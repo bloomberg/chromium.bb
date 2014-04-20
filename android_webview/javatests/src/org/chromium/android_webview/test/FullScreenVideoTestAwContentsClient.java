@@ -14,6 +14,7 @@ import android.widget.FrameLayout;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
+import org.chromium.content.browser.ContentVideoView;
 import org.chromium.content.browser.test.util.CallbackHelper;
 
 import java.util.concurrent.TimeUnit;
@@ -28,6 +29,8 @@ public class FullScreenVideoTestAwContentsClient extends TestAwContentsClient {
     private CallbackHelper mOnHideCustomViewCallbackHelper = new CallbackHelper();
 
     private Activity mActivity;
+    private ContentVideoView mVideoView;
+    private WebChromeClient.CustomViewCallback mExitCallback;
 
     public FullScreenVideoTestAwContentsClient(Activity activity) {
         mActivity = activity;
@@ -35,6 +38,10 @@ public class FullScreenVideoTestAwContentsClient extends TestAwContentsClient {
 
     @Override
     public void onShowCustomView(View view, WebChromeClient.CustomViewCallback callback) {
+        if (view instanceof ContentVideoView) {
+            mVideoView = (ContentVideoView)view;
+        }
+        mExitCallback = callback;
         mActivity.getWindow().setFlags(
                 WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -51,6 +58,14 @@ public class FullScreenVideoTestAwContentsClient extends TestAwContentsClient {
     public void onHideCustomView() {
         mActivity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         mOnHideCustomViewCallbackHelper.notifyCalled();
+    }
+
+    public WebChromeClient.CustomViewCallback getExitCallback() {
+        return mExitCallback;
+    }
+
+    public ContentVideoView getVideoView() {
+        return mVideoView;
     }
 
     public void waitForCustomViewShown() throws TimeoutException, InterruptedException {
