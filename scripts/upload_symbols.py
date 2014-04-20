@@ -371,6 +371,7 @@ def SymbolDeduplicatorNotify(dedupe_namespace, dedupe_queue):
                                             dedupe_namespace)
     for item in iter(dedupe_queue.get, None):
       with timeout_util.Timeout(DEDUPE_TIMEOUT):
+        cros_build_lib.Debug('sending %s to dedupe server', item.sym_file)
         storage.push(item, item.content(0))
     cros_build_lib.Info('dedupe notification finished; exiting')
   except Exception:
