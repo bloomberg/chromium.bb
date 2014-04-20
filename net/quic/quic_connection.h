@@ -103,6 +103,10 @@ class NET_EXPORT_PRIVATE QuicConnectionVisitorInterface {
 
   // Called to ask if any handshake messages are pending in this visitor.
   virtual bool HasPendingHandshake() const = 0;
+
+  // Called to ask if any streams are open in this visitor, excluding the
+  // reserved crypto and headers stream.
+  virtual bool HasOpenDataStreams() const = 0;
 };
 
 // Interface which gets callbacks from the QuicConnection at interesting
@@ -391,6 +395,9 @@ class NET_EXPORT_PRIVATE QuicConnection
   // true.  Otherwise, it will return false and will reset the timeout alarm.
   bool CheckForTimeout();
 
+  // Sends a ping, and resets the ping alarm.
+  void SendPing();
+
   // Sets up a packet with an QuicAckFrame and sends it out.
   void SendAck();
 
@@ -590,6 +597,9 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Closes any FEC groups protecting packets before |sequence_number|.
   void CloseFecGroupsBefore(QuicPacketSequenceNumber sequence_number);
 
+  // Sets the ping alarm to the appropriate value, if any.
+  void SetPingAlarm();
+
   QuicFramer framer_;
   QuicConnectionHelperInterface* helper_;  // Not owned.
   QuicPacketWriter* writer_;  // Not owned.
@@ -669,6 +679,8 @@ class NET_EXPORT_PRIVATE QuicConnection
   scoped_ptr<QuicAlarm> resume_writes_alarm_;
   // An alarm that fires when the connection may have timed out.
   scoped_ptr<QuicAlarm> timeout_alarm_;
+  // An alarm that fires when a ping should be sent.
+  scoped_ptr<QuicAlarm> ping_alarm_;
 
   QuicConnectionVisitorInterface* visitor_;
   QuicConnectionDebugVisitorInterface* debug_visitor_;
