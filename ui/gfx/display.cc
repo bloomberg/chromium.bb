@@ -115,10 +115,10 @@ void Display::SetRotationAsDegree(int rotation) {
     case 270:
       rotation_ = ROTATE_270;
       break;
+    default:
+      // We should not reach that but we will just ignore the call if we do.
+      NOTREACHED();
   }
-
-  // We should not reach that but we will just ignore the call if we do.
-  NOTREACHED();
 }
 
 Insets Display::GetWorkAreaInsets() const {
