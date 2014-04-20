@@ -101,32 +101,30 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
       frame_background_(new views::FrameBackground()) {
   SetLayoutManager(layout_);
 
-  if (OpaqueBrowserFrameViewLayout::ShouldAddDefaultCaptionButtons()) {
-    minimize_button_ = InitWindowCaptionButton(IDR_MINIMIZE,
-                                               IDR_MINIMIZE_H,
-                                               IDR_MINIMIZE_P,
-                                               IDR_MINIMIZE_BUTTON_MASK,
-                                               IDS_ACCNAME_MINIMIZE,
-                                               VIEW_ID_MINIMIZE_BUTTON);
-    maximize_button_ = InitWindowCaptionButton(IDR_MAXIMIZE,
-                                               IDR_MAXIMIZE_H,
-                                               IDR_MAXIMIZE_P,
-                                               IDR_MAXIMIZE_BUTTON_MASK,
-                                               IDS_ACCNAME_MAXIMIZE,
-                                               VIEW_ID_MAXIMIZE_BUTTON);
-    restore_button_ = InitWindowCaptionButton(IDR_RESTORE,
-                                              IDR_RESTORE_H,
-                                              IDR_RESTORE_P,
-                                              IDR_RESTORE_BUTTON_MASK,
-                                              IDS_ACCNAME_RESTORE,
-                                              VIEW_ID_RESTORE_BUTTON);
-    close_button_ = InitWindowCaptionButton(IDR_CLOSE,
-                                            IDR_CLOSE_H,
-                                            IDR_CLOSE_P,
-                                            IDR_CLOSE_BUTTON_MASK,
-                                            IDS_ACCNAME_CLOSE,
-                                            VIEW_ID_CLOSE_BUTTON);
-  }
+  minimize_button_ = InitWindowCaptionButton(IDR_MINIMIZE,
+                                             IDR_MINIMIZE_H,
+                                             IDR_MINIMIZE_P,
+                                             IDR_MINIMIZE_BUTTON_MASK,
+                                             IDS_ACCNAME_MINIMIZE,
+                                             VIEW_ID_MINIMIZE_BUTTON);
+  maximize_button_ = InitWindowCaptionButton(IDR_MAXIMIZE,
+                                             IDR_MAXIMIZE_H,
+                                             IDR_MAXIMIZE_P,
+                                             IDR_MAXIMIZE_BUTTON_MASK,
+                                             IDS_ACCNAME_MAXIMIZE,
+                                             VIEW_ID_MAXIMIZE_BUTTON);
+  restore_button_ = InitWindowCaptionButton(IDR_RESTORE,
+                                            IDR_RESTORE_H,
+                                            IDR_RESTORE_P,
+                                            IDR_RESTORE_BUTTON_MASK,
+                                            IDS_ACCNAME_RESTORE,
+                                            VIEW_ID_RESTORE_BUTTON);
+  close_button_ = InitWindowCaptionButton(IDR_CLOSE,
+                                          IDR_CLOSE_H,
+                                          IDR_CLOSE_P,
+                                          IDR_CLOSE_BUTTON_MASK,
+                                          IDS_ACCNAME_CLOSE,
+                                          VIEW_ID_CLOSE_BUTTON);
 
   // Initializing the TabIconView is expensive, so only do it if we need to.
   if (browser_view->ShouldShowWindowIcon()) {
@@ -274,8 +272,6 @@ void OpaqueBrowserFrameView::GetWindowMask(const gfx::Size& size,
 }
 
 void OpaqueBrowserFrameView::ResetWindowControls() {
-  if (!OpaqueBrowserFrameViewLayout::ShouldAddDefaultCaptionButtons())
-    return;
   restore_button_->SetState(views::CustomButton::STATE_NORMAL);
   minimize_button_->SetState(views::CustomButton::STATE_NORMAL);
   maximize_button_->SetState(views::CustomButton::STATE_NORMAL);
@@ -472,8 +468,6 @@ gfx::Size OpaqueBrowserFrameView::GetBrowserViewMinimumSize() const {
 }
 
 bool OpaqueBrowserFrameView::ShouldShowCaptionButtons() const {
-  if (!OpaqueBrowserFrameViewLayout::ShouldAddDefaultCaptionButtons())
-    return false;
   return ShouldShowWindowTitleBar();
 }
 

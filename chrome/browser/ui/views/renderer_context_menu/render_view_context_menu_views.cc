@@ -19,7 +19,6 @@
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
 
-
 using content::WebContents;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -35,14 +34,12 @@ RenderViewContextMenuViews::RenderViewContextMenuViews(
 RenderViewContextMenuViews::~RenderViewContextMenuViews() {
 }
 
-#if !defined(OS_WIN)
 // static
 RenderViewContextMenuViews* RenderViewContextMenuViews::Create(
     content::RenderFrameHost* render_frame_host,
     const content::ContextMenuParams& params) {
   return new RenderViewContextMenuViews(render_frame_host, params);
 }
-#endif  // OS_WIN
 
 void RenderViewContextMenuViews::RunMenuAt(views::Widget* parent,
                                            const gfx::Point& point,

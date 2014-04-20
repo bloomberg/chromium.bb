@@ -1495,7 +1495,6 @@
         # For accessibility
         '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
         '../third_party/isimpledom/isimpledom.gyp:isimpledom',
-        '../win8/win8.gyp:win8_util',
       ],
       'sources/': [
         ['exclude', '^browser/device_orientation/data_fetcher_shared_memory_default.cc$'],

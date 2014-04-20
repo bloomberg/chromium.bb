@@ -590,9 +590,6 @@ void StartupBrowserCreatorImpl::ProcessLaunchURLs(
   std::vector<GURL> adjust_urls = urls_to_open;
   if (adjust_urls.empty()) {
     AddStartupURLs(&adjust_urls);
-    if (StartupBrowserCreatorImpl::OpenStartupURLsInExistingBrowser(
-            profile_, adjust_urls))
-      return;
   } else if (!command_line_.HasSwitch(switches::kOpenInNewWindow)) {
     // Always open a list of urls in a window on the native desktop.
     browser = chrome::FindTabbedBrowser(profile_, false,
@@ -940,12 +937,3 @@ void StartupBrowserCreatorImpl::AddStartupURLs(
     }
   }
 }
-
-#if !defined(OS_WIN)
-// static
-bool StartupBrowserCreatorImpl::OpenStartupURLsInExistingBrowser(
-    Profile* profile,
-    const std::vector<GURL>& startup_urls) {
-  return false;
-}
-#endif

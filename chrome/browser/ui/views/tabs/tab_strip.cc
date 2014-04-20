@@ -59,7 +59,6 @@
 #include "ui/gfx/win/hwnd_util.h"
 #include "ui/views/widget/monitor_win.h"
 #include "ui/views/win/hwnd_util.h"
-#include "win8/util/win8_util.h"
 #endif
 
 using base::UserMetricsAction;
@@ -440,10 +439,6 @@ gfx::ImageSkia NewTabButton::GetBackgroundImage(
     background_id = IDR_THEME_TAB_BACKGROUND_V;
   } else if (tab_strip_->controller()->IsIncognito()) {
     background_id = IDR_THEME_TAB_BACKGROUND_INCOGNITO;
-#if defined(OS_WIN)
-  } else if (win8::IsSingleWindowMetroMode()) {
-    background_id = IDR_THEME_TAB_BACKGROUND_V;
-#endif
   } else {
     background_id = IDR_THEME_TAB_BACKGROUND;
   }
@@ -1141,11 +1136,6 @@ void TabStrip::MaybeStartDrag(
     move_behavior = TabDragController::MOVE_VISIBILE_TABS;
   }
 
-#if defined(OS_WIN)
-  // It doesn't make sense to drag tabs out on Win8's single window Metro mode.
-  if (win8::IsSingleWindowMetroMode())
-    detach_behavior = TabDragController::NOT_DETACHABLE;
-#endif
   drag_controller_.reset(new TabDragController);
   drag_controller_->Init(
       this, tab, tabs, gfx::Point(x, y), event.x(), selection_model,

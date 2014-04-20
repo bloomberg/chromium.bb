@@ -26,10 +26,6 @@
 #include "chromeos/network/dhcp_proxy_script_fetcher_chromeos.h"
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_WIN)
-#include "win8/util/win8_util.h"
-#endif
-
 #if !defined(OS_IOS)
 #include "net/proxy/proxy_resolver_v8.h"
 #endif

@@ -1361,7 +1361,6 @@
         'browser/notifications/desktop_notification_service.h',
         'browser/notifications/desktop_notification_service_factory.cc',
         'browser/notifications/desktop_notification_service_factory.h',
-        'browser/notifications/desktop_notification_service_win.cc',
         'browser/notifications/extension_welcome_notification.cc',
         'browser/notifications/extension_welcome_notification.h',
         'browser/notifications/message_center_notification_manager.cc',
@@ -3347,7 +3346,6 @@
             '../third_party/isimpledom/isimpledom.gyp:isimpledom',
             '../ui/views/controls/webview/webview.gyp:webview',
             '../ui/views/views.gyp:views',
-            '../win8/win8.gyp:win8_util',
           ],
           'export_dependent_settings': [
             '../ui/views/controls/webview/webview.gyp:webview',

@@ -27,10 +27,6 @@
 #include "ui/base/x/x11_util.h"
 #endif
 
-#if defined(OS_WIN)
-#include "win8/util/win8_util.h"
-#endif
-
 namespace {
 // Maxmium width of a panel is based on a factor of the working area.
 #if defined(OS_CHROMEOS)
@@ -123,12 +119,6 @@ bool PanelManager::ShouldUsePanels(const std::string& extension_id) {
     return false;
   }
 #endif  // USE_X11 && !OS_CHROMEOS
-
-#if defined(OS_WIN)
-  // No panels in Metro mode.
-  if (win8::IsSingleWindowMetroMode())
-    return false;
-#endif // OS_WIN
 
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
   if (channel == chrome::VersionInfo::CHANNEL_STABLE ||

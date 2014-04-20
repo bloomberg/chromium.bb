@@ -10,17 +10,6 @@
   ],
   'targets': [
     {
-      'target_name': 'win8_util',
-      'type': 'static_library',
-      'dependencies': [
-        '../base/base.gyp:base',
-      ],
-      'sources': [
-        'util/win8_util.cc',
-        'util/win8_util.h',
-      ],
-    },
-    {
       'target_name': 'metro_viewer_constants',
       'type': 'static_library',
       'include_dirs': [

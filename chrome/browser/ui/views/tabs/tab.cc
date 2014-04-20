@@ -49,10 +49,6 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
 
-#if defined(OS_WIN)
-#include "win8/util/win8_util.h"
-#endif
-
 #if defined(USE_ASH)
 #include "ui/aura/env.h"
 #endif
@@ -1681,11 +1677,6 @@ void Tab::GetTabIdAndFrameId(views::Widget* widget,
   } else if (data().incognito) {
     *tab_id = IDR_THEME_TAB_BACKGROUND_INCOGNITO;
     *frame_id = IDR_THEME_FRAME_INCOGNITO;
-#if defined(OS_WIN)
-  } else if (win8::IsSingleWindowMetroMode()) {
-    *tab_id = IDR_THEME_TAB_BACKGROUND_V;
-    *frame_id = 0;
-#endif
   } else {
     *tab_id = IDR_THEME_TAB_BACKGROUND;
     *frame_id = IDR_THEME_FRAME;

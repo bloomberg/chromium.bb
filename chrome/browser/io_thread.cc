@@ -83,10 +83,6 @@
 #include "net/url_request/url_request_throttler_manager.h"
 #include "net/websockets/websocket_job.h"
 
-#if defined(OS_WIN)
-#include "win8/util/win8_util.h"
-#endif
-
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #include "policy/policy_constants.h"
 #endif

@@ -84,10 +84,6 @@
 #include "ui/base/models/list_selection_model.h"
 #include "ui/base/ui_base_types.h"
 
-#if defined(OS_WIN)
-#include "win8/util/win8_util.h"
-#endif  // OS_WIN
-
 #if defined(USE_ASH)
 #include "apps/app_window_registry.h"
 #include "ash/ash_switches.h"
@@ -187,29 +183,6 @@ bool GetTabById(int tab_id,
 // those of the browser.
 bool MatchesBool(bool* boolean, bool value) {
   return !boolean || *boolean == value;
-}
-
-Browser* CreateBrowserWindow(const Browser::CreateParams& params,
-                             Profile* profile,
-                             const std::string& extension_id) {
-  bool use_existing_browser_window = false;
-
-#if defined(OS_WIN)
-  // In windows 8 metro mode we don't allow windows to be created.
-  if (win8::IsSingleWindowMetroMode())
-    use_existing_browser_window = true;
-#endif  // OS_WIN
-
-  Browser* new_window = NULL;
-  if (use_existing_browser_window)
-    // The false parameter passed below is to ensure that we find a browser
-    // object matching the profile passed in, instead of the original profile
-    new_window = chrome::FindTabbedBrowser(profile, false,
-                                           params.host_desktop_type);
-
-  if (!new_window)
-    new_window = new Browser(params);
-  return new_window;
 }
 
 }  // namespace
@@ -572,8 +545,7 @@ bool WindowsCreateFunction::RunImpl() {
   create_params.initial_show_state = ui::SHOW_STATE_NORMAL;
   create_params.host_desktop_type = chrome::GetActiveDesktop();
 
-  Browser* new_window = CreateBrowserWindow(create_params, window_profile,
-                                            extension_id);
+  Browser* new_window = new Browser(create_params);
 
   for (std::vector<GURL>::iterator i = urls.begin(); i != urls.end(); ++i) {
     WebContents* tab = chrome::AddSelectedTabWithURL(
@@ -635,14 +607,6 @@ bool WindowsUpdateFunction::RunImpl() {
   if (!windows_util::GetWindowFromWindowID(this, params->window_id,
                                             &controller))
     return false;
-
-#if defined(OS_WIN)
-  // Silently ignore changes on the window for metro mode.
-  if (win8::IsSingleWindowMetroMode()) {
-    SetResult(controller->CreateWindowValue());
-    return true;
-  }
-#endif
 
   ui::WindowShowState show_state = ui::SHOW_STATE_DEFAULT;  // No change.
   switch (params->update_info.state) {
@@ -763,13 +727,6 @@ bool WindowsRemoveFunction::RunImpl() {
   if (!windows_util::GetWindowFromWindowID(this, params->window_id,
                                            &controller))
     return false;
-
-#if defined(OS_WIN)
-  // In Windows 8 metro mode, an existing Browser instance is reused for
-  // hosting the extension tab. We should not be closing it as we don't own it.
-  if (win8::IsSingleWindowMetroMode())
-    return false;
-#endif
 
   WindowController::Reason reason;
   if (!controller->CanClose(&reason)) {

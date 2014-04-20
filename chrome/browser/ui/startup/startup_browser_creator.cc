@@ -85,10 +85,6 @@
 #include "ui/events/x/touch_factory_x11.h"
 #endif
 
-#if defined(OS_WIN)
-#include "chrome/browser/ui/startup/startup_browser_creator_win.h"
-#endif
-
 #if defined(ENABLE_FULL_PRINTING)
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
@@ -450,16 +446,6 @@ std::vector<GURL> StartupBrowserCreator::GetURLsFromCommandLine(
       }
     }
   }
-#if defined(OS_WIN)
-  if (urls.empty()) {
-    // If we are in Windows 8 metro mode and were launched as a result of the
-    // search charm or via a url navigation in metro, then fetch the
-    // corresponding url.
-    GURL url(chrome::GetURLToOpen(profile));
-    if (url.is_valid())
-      urls.push_back(url);
-  }
-#endif  // OS_WIN
   return urls;
 }
 

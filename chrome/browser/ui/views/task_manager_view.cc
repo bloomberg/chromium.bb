@@ -50,7 +50,6 @@
 #include "chrome/browser/shell_integration.h"
 #include "ui/base/win/shell.h"
 #include "ui/views/win/hwnd_util.h"
-#include "win8/util/win8_util.h"
 #endif
 
 namespace {
@@ -461,10 +460,6 @@ bool TaskManagerView::AcceleratorPressed(const ui::Accelerator& accelerator) {
 
 // static
 void TaskManagerView::Show(Browser* browser) {
-#if defined(OS_WIN)
-  // In Windows Metro it's not good to open this native window.
-  DCHECK(!win8::IsSingleWindowMetroMode());
-#endif
   // In ash we can come here through the ChromeShellDelegate. If there is no
   // browser window at that time of the call, browser could be passed as NULL.
   const chrome::HostDesktopType desktop_type =

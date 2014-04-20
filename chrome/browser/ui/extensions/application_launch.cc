@@ -53,10 +53,6 @@
 #include "chrome/browser/ui/browser_commands_mac.h"
 #endif
 
-#if defined(OS_WIN)
-#include "win8/util/win8_util.h"
-#endif
-
 using content::WebContents;
 using extensions::Extension;
 using extensions::ExtensionPrefs;
@@ -215,17 +211,7 @@ WebContents* OpenApplicationWindow(const AppLaunchParams& params) {
                                                                params.container,
                                                                extension);
 
-  Browser* browser = NULL;
-#if defined(OS_WIN)
-  // On Windows 8's single window Metro mode we don't allow multiple Chrome
-  // windows to be created. We instead attempt to reuse an existing Browser
-  // window.
-  if (win8::IsSingleWindowMetroMode())
-    browser = chrome::FindBrowserWithProfile(profile, params.desktop_type);
-
-#endif
-  if (!browser)
-    browser = new Browser(browser_params);
+  Browser* browser = new Browser(browser_params);
 
   WebContents* web_contents = chrome::AddSelectedTabWithURL(
       browser, url, content::PAGE_TRANSITION_AUTO_TOPLEVEL);

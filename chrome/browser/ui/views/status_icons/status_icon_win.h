@@ -82,29 +82,4 @@ class StatusIconWin : public StatusIcon {
   DISALLOW_COPY_AND_ASSIGN(StatusIconWin);
 };
 
-// Implements status notifications using Windows 8 metro style notifications.
-class StatusIconMetro : public StatusIcon {
- public:
-  // Constructor which provides this icon's unique ID and messaging window.
-  explicit StatusIconMetro(UINT id);
-  virtual ~StatusIconMetro();
-
-  // Overridden from StatusIcon:
-  virtual void SetImage(const gfx::ImageSkia& image) OVERRIDE;
-  virtual void SetPressedImage(const gfx::ImageSkia& image) OVERRIDE;
-  virtual void SetToolTip(const base::string16& tool_tip) OVERRIDE;
-  virtual void DisplayBalloon(const gfx::ImageSkia& icon,
-                              const base::string16& title,
-                              const base::string16& contents) OVERRIDE;
- protected:
-  virtual void UpdatePlatformContextMenu(
-      StatusIconMenuModel* menu) OVERRIDE;
-
- private:
-  base::string16 tool_tip_;
-  const UINT id_;
-
-  DISALLOW_COPY_AND_ASSIGN(StatusIconMetro);
-};
-
 #endif  // CHROME_BROWSER_UI_VIEWS_STATUS_ICONS_STATUS_ICON_WIN_H_

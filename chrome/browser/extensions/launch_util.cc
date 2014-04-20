@@ -17,10 +17,6 @@
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/extension.h"
 
-#if defined(OS_WIN)
-#include "win8/util/win8_util.h"
-#endif
-
 #if defined(USE_ASH)
 #include "ash/shell.h"
 #endif
@@ -68,12 +64,6 @@ LaunchType GetLaunchType(const ExtensionPrefs* prefs,
     if (!extension->is_platform_app() && result == LAUNCH_TYPE_WINDOW)
       result = LAUNCH_TYPE_REGULAR;
 #endif
-
-#if defined(OS_WIN)
-    // We don't support app windows in Windows 8 single window Metro mode.
-    if (win8::IsSingleWindowMetroMode() && result == LAUNCH_TYPE_WINDOW)
-      result = LAUNCH_TYPE_REGULAR;
-#endif  // OS_WIN
 
   return result;
 }

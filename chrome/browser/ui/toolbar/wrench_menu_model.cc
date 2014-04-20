@@ -66,7 +66,6 @@
 #include "chrome/browser/enumerate_modules_model_win.h"
 #include "chrome/browser/ui/metro_pin_tab_helper_win.h"
 #include "content/public/browser/gpu_data_manager.h"
-#include "win8/util/win8_util.h"
 #endif
 
 #if defined(USE_ASH)
@@ -482,31 +481,7 @@ bool WrenchMenuModel::ShouldShowNewIncognitoWindowMenuItem() {
   if (browser_->profile()->IsManaged())
     return false;
 
-#if defined(OS_WIN)
-  if (win8::IsSingleWindowMetroMode() &&
-      browser_->profile()->HasOffTheRecordProfile()) {
-    return false;
-  }
-#endif
-
   return !browser_->profile()->IsGuestSession();
-}
-
-bool WrenchMenuModel::ShouldShowNewWindowMenuItem() {
-#if defined(OS_WIN)
-  if (!win8::IsSingleWindowMetroMode())
-    return true;
-
-  // In Win8's single window Metro mode, we only show the New Window options
-  // if there isn't already a window of the requested type (incognito or not)
-  // that is available.
-  return browser_->profile()->IsOffTheRecord() &&
-      !chrome::FindBrowserWithProfile(
-          browser_->profile()->GetOriginalProfile(),
-          browser_->host_desktop_type());
-#else
-  return true;
-#endif
 }
 
 void WrenchMenuModel::Build(bool is_new_menu) {
@@ -521,8 +496,7 @@ void WrenchMenuModel::Build(bool is_new_menu) {
 #endif
 
   AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
-  if (ShouldShowNewWindowMenuItem())
-    AddItemWithStringId(IDC_NEW_WINDOW, IDS_NEW_WINDOW);
+  AddItemWithStringId(IDC_NEW_WINDOW, IDS_NEW_WINDOW);
 
   if (ShouldShowNewIncognitoWindowMenuItem())
     AddItemWithStringId(IDC_NEW_INCOGNITO_WINDOW, IDS_NEW_INCOGNITO_WINDOW);

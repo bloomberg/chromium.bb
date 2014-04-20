@@ -39,10 +39,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 
-#if defined(OS_WIN)
-#include "win8/util/win8_util.h"
-#endif  // OS_WIN
-
 namespace extensions {
 
 namespace bookmark_keys = bookmark_api_constants;
@@ -629,12 +625,6 @@ bool BookmarkManagerPrivateSetMetaInfoFunction::RunImpl() {
 
 bool BookmarkManagerPrivateCanOpenNewWindowsFunction::RunImpl() {
   bool can_open_new_windows = true;
-
-#if defined(OS_WIN)
-  if (win8::IsSingleWindowMetroMode())
-    can_open_new_windows = false;
-#endif  // OS_WIN
-
   SetResult(new base::FundamentalValue(can_open_new_windows));
   return true;
 }

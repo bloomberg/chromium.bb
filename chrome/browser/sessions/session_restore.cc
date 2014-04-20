@@ -56,10 +56,6 @@
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #endif
 
-#if defined(OS_WIN)
-#include "win8/util/win8_util.h"
-#endif
-
 using content::NavigationController;
 using content::RenderWidgetHost;
 using content::WebContents;
@@ -833,8 +829,8 @@ class SessionRestoreImpl : public content::NotificationObserver {
         browser = browser_;
       } else {
 #if defined(OS_CHROMEOS)
-    chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
-        "SessionRestore-CreateRestoredBrowser-Start", false);
+        chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
+            "SessionRestore-CreateRestoredBrowser-Start", false);
 #endif
         // Show the first window if none are visible.
         ui::WindowShowState show_state = (*i)->show_state;
@@ -842,36 +838,14 @@ class SessionRestoreImpl : public content::NotificationObserver {
           show_state = ui::SHOW_STATE_NORMAL;
           has_visible_browser = true;
         }
-        browser = NULL;
-#if defined(OS_WIN)
-        if (win8::IsSingleWindowMetroMode()) {
-          // We don't want to add tabs to the off the record browser.
-          if (browser_ && !browser_->profile()->IsOffTheRecord()) {
-            browser = browser_;
-          } else {
-            browser = last_browser;
-            // last_browser should never be off the record either.
-            // We don't set browser higher above when browser_ is offtherecord,
-            // and CreateRestoredBrowser below, is never created offtherecord.
-            DCHECK(!browser || !browser->profile()->IsOffTheRecord());
-          }
-          // Metro should only have tabbed browsers.
-          // It never creates any non-tabbed browser, and thus should never
-          // restore non-tabbed items...
-          DCHECK(!browser || browser->is_type_tabbed());
-          DCHECK((*i)->type == Browser::TYPE_TABBED);
-        }
-#endif
-        if (!browser) {
-          browser = CreateRestoredBrowser(
-              static_cast<Browser::Type>((*i)->type),
-              (*i)->bounds,
-              show_state,
-              (*i)->app_name);
-        }
+        browser = CreateRestoredBrowser(
+            static_cast<Browser::Type>((*i)->type),
+            (*i)->bounds,
+            show_state,
+            (*i)->app_name);
 #if defined(OS_CHROMEOS)
-    chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
-        "SessionRestore-CreateRestoredBrowser-End", false);
+        chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
+            "SessionRestore-CreateRestoredBrowser-End", false);
 #endif
       }
       if ((*i)->type == Browser::TYPE_TABBED)
@@ -918,19 +892,8 @@ class SessionRestoreImpl : public content::NotificationObserver {
     chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
         "SessionRestore-CreatingTabs-End", false);
 #endif
-    if (browser_to_activate) {
+    if (browser_to_activate)
       browser_to_activate->window()->Activate();
-#if defined(OS_WIN)
-      // On Win8 Metro, we merge all browsers together, so if we need to
-      // activate one of the previously separated window, we need to activate
-      // the tab. Also, selected_tab_to_activate can be -1 if we clobbered the
-      // tab that would have been activated.
-      // In that case we'll leave activation to last tab.
-      // The only current usage of clobber is for crash recovery, so it's fine.
-      if (win8::IsSingleWindowMetroMode() && selected_tab_to_activate != -1)
-        ShowBrowser(browser_to_activate, selected_tab_to_activate);
-#endif
-    }
 
     // If last_browser is NULL and urls_to_open_ is non-empty,
     // FinishedTabCreation will create a new TabbedBrowser and add the urls to

@@ -30,7 +30,6 @@
 #include "chrome/browser/shell_integration.h"
 #include "ui/base/win/shell.h"
 #include "ui/views/win/hwnd_util.h"
-#include "win8/util/win8_util.h"
 #endif
 
 namespace {

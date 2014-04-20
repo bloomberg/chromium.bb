@@ -85,7 +85,6 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/ui/metro_pin_tab_helper_win.h"
-#include "win8/util/win8_util.h"
 #endif
 
 #if defined(ENABLE_PRINTING)
@@ -535,7 +534,6 @@ void Stop(Browser* browser) {
   browser->tab_strip_model()->GetActiveWebContents()->Stop();
 }
 
-#if !defined(OS_WIN)
 void NewWindow(Browser* browser) {
   NewEmptyWindow(browser->profile()->GetOriginalProfile(),
                  browser->host_desktop_type());
@@ -545,7 +543,6 @@ void NewIncognitoWindow(Browser* browser) {
   NewEmptyWindow(browser->profile()->GetOffTheRecordProfile(),
                  browser->host_desktop_type());
 }
-#endif  // OS_WIN
 
 void CloseWindow(Browser* browser) {
   content::RecordAction(UserMetricsAction("CloseWindow"));
@@ -1010,12 +1007,7 @@ void ToggleDevToolsWindow(Browser* browser, DevToolsToggleAction action) {
 
 bool CanOpenTaskManager() {
 #if defined(ENABLE_TASK_MANAGER)
-#if defined(OS_WIN)
-  // In metro we can't display the task manager, as it is a native window.
-  return !win8::IsSingleWindowMetroMode();
-#else
   return true;
-#endif
 #else
   return false;
 #endif

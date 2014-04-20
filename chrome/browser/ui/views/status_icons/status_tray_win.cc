@@ -11,7 +11,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/win/hwnd_util.h"
-#include "win8/util/win8_util.h"
 
 static const UINT kStatusIconMessage = WM_APP + 1;
 
@@ -135,11 +134,8 @@ StatusIcon* StatusTrayWin::CreatePlatformStatusIcon(
   else
     next_icon_id = ReservedIconId(type);
 
-  StatusIcon* icon = NULL;
-  if (win8::IsSingleWindowMetroMode())
-    icon = new StatusIconMetro(next_icon_id);
-  else
-    icon = new StatusIconWin(next_icon_id, window_, kStatusIconMessage);
+  StatusIcon* icon =
+      new StatusIconWin(next_icon_id, window_, kStatusIconMessage);
 
   icon->SetImage(image);
   icon->SetToolTip(tool_tip);
