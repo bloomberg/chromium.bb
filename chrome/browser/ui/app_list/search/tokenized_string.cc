@@ -22,7 +22,11 @@ TokenizedString::~TokenizedString() {}
 
 void TokenizedString::Tokenize() {
   BreakIterator break_iter(text_,  BreakIterator::BREAK_WORD);
-  CHECK(break_iter.Init());
+  if (!break_iter.Init()) {
+    NOTREACHED() << "BreakIterator init failed"
+                 << ", text=\"" << text_ << "\"";
+    return;
+  }
 
   while (break_iter.Advance()) {
     if (!break_iter.IsWord())
