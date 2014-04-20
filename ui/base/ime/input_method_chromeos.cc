@@ -292,10 +292,11 @@ void InputMethodChromeOS::UpdateContextFocusState() {
   if (candidate_window)
     candidate_window->FocusStateChanged(IsInputFieldFocused());
 
+  const TextInputType current_text_input_type = GetTextInputType();
+  chromeos::IMEBridge::Get()->SetCurrentTextInputType(current_text_input_type);
+
   if (!GetEngine())
     return;
-
-  const TextInputType current_text_input_type = GetTextInputType();
 
   // When focus is not changed, a text input type change causes a focus
   // blink. The focus in to or out from password field should also notify

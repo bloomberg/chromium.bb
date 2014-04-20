@@ -521,8 +521,7 @@ void InputMethodEngine::FocusOut() {
 void InputMethodEngine::Enable() {
   active_ = true;
   observer_->OnActivate(engine_id_);
-  if (current_input_type_ == ui::TEXT_INPUT_TYPE_NONE)
-    current_input_type_ = ui::TEXT_INPUT_TYPE_TEXT;
+  current_input_type_ = IMEBridge::Get()->GetCurrentTextInputType();
   FocusIn(IMEEngineHandlerInterface::InputContext(
       current_input_type_, ui::TEXT_INPUT_MODE_DEFAULT));
   EnableInputView(true);

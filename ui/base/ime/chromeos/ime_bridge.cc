@@ -18,7 +18,8 @@ class IMEBridgeImpl : public IMEBridge {
   IMEBridgeImpl()
     : input_context_handler_(NULL),
       engine_handler_(NULL),
-      candidate_window_handler_(NULL) {
+      candidate_window_handler_(NULL),
+      current_text_input_(ui::TEXT_INPUT_TYPE_NONE) {
   }
 
   virtual ~IMEBridgeImpl() {
@@ -59,10 +60,21 @@ class IMEBridgeImpl : public IMEBridge {
     candidate_window_handler_ = handler;
   }
 
+  // IMEBridge override.
+  virtual void SetCurrentTextInputType(ui::TextInputType input_type) OVERRIDE {
+    current_text_input_ = input_type;
+  }
+
+  // IMEBridge override.
+  virtual ui::TextInputType GetCurrentTextInputType() const OVERRIDE {
+    return current_text_input_;
+  }
+
  private:
   IMEInputContextHandlerInterface* input_context_handler_;
   IMEEngineHandlerInterface* engine_handler_;
   IMECandidateWindowHandlerInterface* candidate_window_handler_;
+  ui::TextInputType current_text_input_;
 
   DISALLOW_COPY_AND_ASSIGN(IMEBridgeImpl);
 };

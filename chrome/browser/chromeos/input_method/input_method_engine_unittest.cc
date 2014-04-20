@@ -111,6 +111,7 @@ class InputMethodEngineTest :  public testing::Test {
     languages_.push_back("en-US");
     layouts_.push_back("us");
     InitInputMethod();
+    IMEBridge::Initialize();
   }
   virtual ~InputMethodEngineTest() {
     engine_.reset();
@@ -136,6 +137,7 @@ class InputMethodEngineTest :  public testing::Test {
     IMEEngineHandlerInterface::InputContext input_context(
         input_type, ui::TEXT_INPUT_MODE_DEFAULT);
     engine_->FocusIn(input_context);
+    IMEBridge::Get()->SetCurrentTextInputType(input_type);
   }
 
   scoped_ptr<InputMethodEngine> engine_;

@@ -173,6 +173,12 @@ class UI_BASE_EXPORT IMEBridge {
   virtual void SetCandidateWindowHandler(
       IMECandidateWindowHandlerInterface* handler) = 0;
 
+  // Updates current text input type.
+  virtual void SetCurrentTextInputType(ui::TextInputType input_type) = 0;
+
+  // Returns the current text input type.
+  virtual ui::TextInputType GetCurrentTextInputType() const = 0;
+
  protected:
   IMEBridge();
 
