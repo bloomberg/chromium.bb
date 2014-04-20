@@ -39,6 +39,8 @@ function Gallery(context, volumeManager) {
   this.metadataCache_ = context.metadataCache;
   this.volumeManager_ = volumeManager;
   this.selectedEntry_ = null;
+  this.metadataCacheObserverId_ = null;
+  this.onExternallyUnmountedBound_ = this.onExternallyUnmounted_.bind(this);
 
   this.dataModel_ = new cr.ui.ArrayDataModel([]);
   this.selectionModel_ = new cr.ui.ListSelectionModel();
@@ -110,15 +112,14 @@ Gallery.prototype.initListeners_ = function() {
   // Search results may contain files from different subdirectories so
   // the observer is not going to work.
   if (!this.context_.searchResults && this.context_.curDirEntry) {
-    this.thumbnailObserverId_ = this.metadataCache_.addObserver(
+    this.metadataCacheObserverId_ = this.metadataCache_.addObserver(
         this.context_.curDirEntry,
         MetadataCache.CHILDREN,
         'thumbnail',
         this.updateThumbnails_.bind(this));
   }
-
-  this.volumeManager_.addEventListener('externally-unmounted',
-      this.onExternallyUnmounted_.bind(this));
+  this.volumeManager_.addEventListener(
+      'externally-unmounted', this.onExternallyUnmountedBound_);
 };
 
 /**
@@ -141,9 +142,10 @@ Gallery.prototype.onExternallyUnmounted_ = function(event) {
  * @param {boolean} exiting True if the app is exiting.
  */
 Gallery.prototype.onUnload = function(exiting) {
-  if (!this.context_.searchResults) {
-    this.metadataCache_.removeObserver(this.thumbnailObserverId_);
-  }
+  if (this.metadataCacheObserverId_ !== null)
+    this.metadataCache_.removeObserver(this.metadataCacheObserverId_);
+  this.volumeManager_.removeEventListener(
+      'externally-unmounted', this.onExternallyUnmountedBound_);
   this.slideMode_.onUnload(exiting);
 };
 

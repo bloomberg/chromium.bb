@@ -1366,9 +1366,10 @@ util.getEntryLabel = function(volumeManager, entry) {
       case RootType.DRIVE_RECENT:
         return str('DRIVE_RECENT_COLLECTION_LABEL');
       case RootType.ARCHIVE:
+      case RootType.REMOVABLE:
         return entry.filesystem.name;
       default:
-        console.error('Unsupported root type: ' + rootType);
+        console.error('Unsupported root type: ' + locationInfo.rootType);
         return entry.filesystem.name;
     }
   }

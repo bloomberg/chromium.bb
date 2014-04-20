@@ -100,8 +100,13 @@ DirectoryModel.prototype.getCurrentRootType = function() {
  *     no entry set, then returns true.
  */
 DirectoryModel.prototype.isReadOnly = function() {
-  return this.getCurrentDirEntry() ? this.volumeManager_.getLocationInfo(
-      this.getCurrentDirEntry()).isReadOnly : true;
+  var currentDirEntry = this.getCurrentDirEntry();
+  if (currentDirEntry) {
+    var locationInfo = this.volumeManager_.getLocationInfo(currentDirEntry);
+    if (locationInfo)
+      return locationInfo.isReadOnly;
+  }
+  return true;
 };
 
 /**
