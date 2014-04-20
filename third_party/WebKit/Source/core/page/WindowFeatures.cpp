@@ -82,35 +82,38 @@ WindowFeatures::WindowFeatures(const String& features)
     String buffer = features.lower();
     while (i < length) {
         // skip to first non-separator, but don't skip past the end of the string
-        while (isWindowFeaturesSeparator(buffer[i])) {
-            if (i >= length)
-                break;
+        while (i < length && isWindowFeaturesSeparator(buffer[i]))
             i++;
-        }
         keyBegin = i;
 
         // skip to first separator
-        while (!isWindowFeaturesSeparator(buffer[i]))
+        while (i < length && !isWindowFeaturesSeparator(buffer[i]))
             i++;
         keyEnd = i;
 
+        ASSERT_WITH_SECURITY_IMPLICATION(i <= length);
+
         // skip to first '=', but don't skip past a ',' or the end of the string
-        while (buffer[i] != '=') {
-            if (buffer[i] == ',' || i >= length)
+        while (i < length && buffer[i] != '=') {
+            if (buffer[i] == ',')
                 break;
             i++;
         }
 
+        ASSERT_WITH_SECURITY_IMPLICATION(i <= length);
+
         // skip to first non-separator, but don't skip past a ',' or the end of the string
-        while (isWindowFeaturesSeparator(buffer[i])) {
-            if (buffer[i] == ',' || i >= length)
+        while (i < length && isWindowFeaturesSeparator(buffer[i])) {
+            if (buffer[i] == ',')
                 break;
             i++;
         }
         valueBegin = i;
 
+        ASSERT_WITH_SECURITY_IMPLICATION(i <= length);
+
         // skip to first separator
-        while (!isWindowFeaturesSeparator(buffer[i]))
+        while (i < length && !isWindowFeaturesSeparator(buffer[i]))
             i++;
         valueEnd = i;
 
