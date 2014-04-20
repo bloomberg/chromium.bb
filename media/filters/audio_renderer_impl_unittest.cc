@@ -11,7 +11,9 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "media/base/audio_buffer.h"
+#include "media/base/audio_buffer_converter.h"
 #include "media/base/audio_hardware_config.h"
+#include "media/base/audio_splicer.h"
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/fake_audio_renderer_sink.h"
 #include "media/base/gmock_callback_support.h"
@@ -37,6 +39,8 @@ static ChannelLayout kChannelLayout = CHANNEL_LAYOUT_STEREO;
 static int kChannelCount = 2;
 static int kChannels = ChannelLayoutToChannelCount(kChannelLayout);
 static int kSamplesPerSecond = 44100;
+// Use a different output sample rate so the AudioBufferConverter is invoked.
+static int kOutputSamplesPerSecond = 48000;
 
 // Constants for distinguishing between muted audio and playing audio when using
 // ConsumeBufferedData(). Must match the type needed by kSampleFormat.
@@ -75,12 +79,13 @@ class AudioRendererImplTest : public ::testing::Test {
     // Mock out demuxer reads
     EXPECT_CALL(demuxer_stream_, Read(_)).WillRepeatedly(
         RunCallback<0>(DemuxerStream::kOk, DecoderBuffer::CreateEOSBuffer()));
-    AudioParameters out_params =
-        AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                        kChannelLayout,
-                        kSamplesPerSecond,
-                        SampleFormatToBytesPerChannel(kSampleFormat) * 8,
-                        512);
+    EXPECT_CALL(demuxer_stream_, SupportsConfigChanges())
+        .WillRepeatedly(Return(true));
+    AudioParameters out_params(AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                               kChannelLayout,
+                               kOutputSamplesPerSecond,
+                               SampleFormatToBytesPerChannel(kSampleFormat) * 8,
+                               512);
     hardware_config_.UpdateOutputConfig(out_params);
     ScopedVector<AudioDecoder> decoders;
     decoders.push_back(decoder_);
@@ -415,6 +420,18 @@ class AudioRendererImplTest : public ::testing::Test {
     time_ += time;
   }
 
+  void force_config_change() {
+    renderer_->OnConfigChange();
+  }
+
+  int converter_input_frames_left() const {
+    return renderer_->buffer_converter_->input_frames_left_for_testing();
+  }
+
+  bool splicer_has_next_buffer() const {
+    return renderer_->splicer_->HasNextBuffer();
+  }
+
   // Fixture members.
   base::MessageLoop message_loop_;
   scoped_ptr<AudioRendererImpl> renderer_;
@@ -612,16 +629,19 @@ TEST_F(AudioRendererImplTest, Underflow_EndOfStream) {
   SatisfyPendingRead(kDataSize);
   WaitForPendingRead();
 
-  // Verify we're getting muted audio during underflow.
+  // Verify we're getting muted audio during underflow.  Note: Since resampling
+  // is active, the number of frames_buffered() won't always match kDataSize.
   bool muted = false;
-  EXPECT_EQ(kDataSize, frames_buffered());
-  EXPECT_FALSE(ConsumeBufferedData(kDataSize, &muted));
+  const int kInitialFramesBuffered = 1114;
+  EXPECT_EQ(kInitialFramesBuffered, frames_buffered());
+  EXPECT_FALSE(ConsumeBufferedData(kInitialFramesBuffered, &muted));
   EXPECT_TRUE(muted);
 
   // Now deliver end of stream, we should get our little bit of data back.
   DeliverEndOfStream();
-  EXPECT_EQ(kDataSize, frames_buffered());
-  EXPECT_TRUE(ConsumeBufferedData(kDataSize, &muted));
+  const int kNextFramesBuffered = 1408;
+  EXPECT_EQ(kNextFramesBuffered, frames_buffered());
+  EXPECT_TRUE(ConsumeBufferedData(kNextFramesBuffered, &muted));
   EXPECT_FALSE(muted);
 
   // Attempt to read to make sure we're truly at the end of stream.
@@ -905,6 +925,28 @@ TEST_F(AudioRendererImplTest, InitializeThenStop) {
 
 TEST_F(AudioRendererImplTest, InitializeThenStopDuringDecoderInit) {
   InitializeAndStopDuringDecoderInit();
+}
+
+TEST_F(AudioRendererImplTest, ConfigChangeDrainsConverter) {
+  Initialize();
+  Preroll();
+  Play();
+
+  // Drain internal buffer, we should have a pending read.
+  EXPECT_TRUE(ConsumeBufferedData(frames_buffered(), NULL));
+  WaitForPendingRead();
+
+  // Deliver a little bit of data.  Use an odd data size to ensure there is data
+  // left in the AudioBufferConverter.  Ensure no buffers are in the splicer.
+  SatisfyPendingRead(2053);
+  EXPECT_FALSE(splicer_has_next_buffer());
+  EXPECT_GT(converter_input_frames_left(), 0);
+
+  // Force a config change and then ensure all buffered data has been put into
+  // the splicer.
+  force_config_change();
+  EXPECT_TRUE(splicer_has_next_buffer());
+  EXPECT_EQ(0, converter_input_frames_left());
 }
 
 }  // namespace media

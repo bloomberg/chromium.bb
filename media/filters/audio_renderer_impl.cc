@@ -757,6 +757,11 @@ void AudioRendererImpl::OnConfigChange() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(expecting_config_changes_);
   buffer_converter_->ResetTimestampState();
+  // Drain flushed buffers from the converter so the AudioSplicer receives all
+  // data ahead of any OnNewSpliceBuffer() calls.  Since discontinuities should
+  // only appear after config changes, AddInput() should never fail here.
+  while (buffer_converter_->HasNextBuffer())
+    CHECK(splicer_->AddInput(buffer_converter_->GetNextBuffer()));
 }
 
 }  // namespace media
