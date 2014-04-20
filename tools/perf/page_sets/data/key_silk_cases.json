@@ -1,6 +1,9 @@
 {
     "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.", 
     "archives": {
+        "key_silk_cases_009.wpr": [
+            "http://jsfiddle.net/TLXLu/2/embedded/result/"
+        ], 
         "key_silk_cases_000.wpr": [
             "http://staff.tumblr.com/", 
             "http://jsfiddle.net/mdxJ7/3/show", 
@@ -25,6 +28,19 @@
             "http://famo.us?scroll", 
             "http://famo.us?tap"
         ], 
+        "key_silk_cases_004.wpr": [
+            "http://jankfree.org/silk/text-mask.html", 
+            "http://jankfree.org/silk/rectangle_transition.html"
+        ], 
+        "key_silk_cases_006.wpr": [
+            "http://jsfiddle.net/rF9Gh/3/embedded/result/"
+        ], 
+        "key_silk_cases_008.wpr": [
+            "http://jsfiddle.net/jx5De/13/embedded/result"
+        ], 
+        "key_silk_cases_011.wpr": [
+            "http://jsfiddle.net/vBQHH/10/embedded/result/"
+        ], 
         "key_silk_cases_001.wpr": [
             "http://groupcloned.com/test/plain/list-recycle-transform.html", 
             "http://groupcloned.com/test/plain/list-animation-simple.html", 
@@ -47,12 +63,11 @@
             "http://jsfiddle.net/FtR7p/42/embedded/result/", 
             "http://jsfiddle.net/ugkd4/9/embedded/result/"
         ], 
-        "key_silk_cases_004.wpr": [
-            "http://jankfree.org/silk/text-mask.html", 
-            "http://jankfree.org/silk/rectangle_transition.html"
+        "key_silk_cases_012.wpr": [
+            "http://jsfiddle.net/xLuvC/embedded/result/"
         ], 
-        "key_silk_cases_006.wpr": [
-            "http://jsfiddle.net/rF9Gh/3/embedded/result/"
+        "key_silk_cases_010.wpr": [
+            "http://jsfiddle.net/cKB9D/6/embedded/result/"
         ], 
         "key_silk_cases_005.wpr": [
             "http://jsfiddle.net/3yDKh/4/embedded/result", 
@@ -60,6 +75,9 @@
         ], 
         "key_silk_cases_007.wpr": [
             "http://jsfiddle.net/jx5De/12/embedded/result"
+        ], 
+        "key_silk_cases_013.wpr": [
+            "http://jsfiddle.net/bNp2h/1/embedded/result/"
         ]
     }
 }

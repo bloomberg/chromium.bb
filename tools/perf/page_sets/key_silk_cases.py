@@ -105,7 +105,7 @@ class Page5(KeySilkCasesPage):
 
   def __init__(self, page_set):
     super(Page5, self).__init__(
-      url='http://jsfiddle.net/jx5De/12/embedded/result',
+      url='http://jsfiddle.net/jx5De/13/embedded/result',
       page_set=page_set)
 
     self.gpu_raster = True
@@ -173,7 +173,7 @@ class Page9(KeySilkCasesPage):
 
   def __init__(self, page_set):
     super(Page9, self).__init__(
-      url='http://jsfiddle.net/humper/yEX8u/3/embedded/result/',
+      url='http://jsfiddle.net/TLXLu/2/embedded/result/',
       page_set=page_set)
 
     self.gpu_raster = True
@@ -191,7 +191,7 @@ class Page10(KeySilkCasesPage):
 
   def __init__(self, page_set):
     super(Page10, self).__init__(
-      url='http://jsfiddle.net/humper/cKB9D/3/embedded/result/',
+      url='http://jsfiddle.net/cKB9D/6/embedded/result/',
       page_set=page_set)
 
     self.gpu_raster = True
@@ -209,7 +209,7 @@ class Page11(KeySilkCasesPage):
 
   def __init__(self, page_set):
     super(Page11, self).__init__(
-      url='http://jsfiddle.net/vBQHH/3/embedded/result/',
+      url='http://jsfiddle.net/vBQHH/10/embedded/result/',
       page_set=page_set)
 
     self.gpu_raster = True
@@ -237,7 +237,7 @@ class Page13(KeySilkCasesPage):
 
   def __init__(self, page_set):
     super(Page13, self).__init__(
-      url='http://jankfree.org/silk/text-mask.html',
+      url='http://jsfiddle.net/xLuvC/embedded/result/',
       page_set=page_set)
 
     self.gpu_raster = True
@@ -252,7 +252,7 @@ class Page14(KeySilkCasesPage):
 
   def __init__(self, page_set):
     super(Page14, self).__init__(
-      url='http://jankfree.org/silk/rectangle_transition.html',
+      url='http://jsfiddle.net/bNp2h/1/embedded/result/',
       page_set=page_set)
 
     self.gpu_raster = True
