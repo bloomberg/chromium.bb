@@ -139,16 +139,6 @@ SearchBox.AutocompleteListItem_ = function(document, item) {
 };
 
 /**
- * Updates the size related style.
- */
-SearchBox.prototype.updateSizeRelatedStyle = function() {
-  // Hide the search box if there is not enough space.
-  this.element.classList.toggle(
-      'too-short',
-      this.element.clientWidth < 100);
-};
-
-/**
  * Clears the search query.
  */
 SearchBox.prototype.clear = function() {

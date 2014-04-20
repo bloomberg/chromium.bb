@@ -142,7 +142,7 @@ a:focus {
   background-color: #f1f1f1;
   display: flex;
   flex-direction: column;
-  max-width: 50%;
+  max-width: 40%;
   min-width: 100px;
   overflow: hidden;
   position: relative;
@@ -389,10 +389,6 @@ div.splitter {
 #search-box {
   display: flex;
   flex: auto;
-}
-
-#search-box.too-short {
-  visibility: hidden;
 }
 
 #search-box .icon {

@@ -1327,8 +1327,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     if (this.navigationList_)
       this.navigationList_.redraw();
 
-    this.ui_.searchBox.updateSizeRelatedStyle();
-
     this.previewPanel_.breadcrumbs.truncate();
   };
 
