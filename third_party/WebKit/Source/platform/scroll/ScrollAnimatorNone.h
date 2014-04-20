@@ -111,6 +111,8 @@ protected:
         static double attackArea(Curve, double startT, double endT);
         static double releaseArea(Curve, double startT, double endT);
 
+        double newScrollAnimationPosition(double deltaTime);
+
         float* m_currentPosition;
         double m_currentVelocity;
 
