@@ -32,38 +32,63 @@ struct PasswordForm;
 // to stay in autofill as well.
 class SavePasswordProgressLogger {
  public:
-  // All three possible decisions about saving a password. Call LogFinalDecision
-  // as soon as one is taken by the password management code.
-  enum Decision { DECISION_SAVE, DECISION_ASK, DECISION_DROP };
+  // IDs of strings allowed in the logs: for security reasons, we only pass the
+  // IDs from the renderer, and map them to strings in the browser.
+  enum StringID {
+    STRING_DECISION_ASK,
+    STRING_DECISION_DROP,
+    STRING_DECISION_SAVE,
+    STRING_METHOD,
+    STRING_METHOD_GET,
+    STRING_METHOD_POST,
+    STRING_METHOD_EMPTY,
+    STRING_OTHER,
+    STRING_SCHEME_HTML,
+    STRING_SCHEME_BASIC,
+    STRING_SCHEME_DIGEST,
+    STRING_SCHEME_MESSAGE,
+    STRING_SIGNON_REALM,
+    STRING_ORIGINAL_SIGNON_REALM,
+    STRING_ORIGIN,
+    STRING_ACTION,
+    STRING_USERNAME_ELEMENT,
+    STRING_PASSWORD_ELEMENT,
+    STRING_PASSWORD_AUTOCOMPLETE_SET,
+    STRING_OLD_PASSWORD_ELEMENT,
+    STRING_SSL_VALID,
+    STRING_PASSWORD_GENERATED,
+    STRING_TIMES_USED,
+    STRING_USE_ADDITIONAL_AUTHENTICATION,
+    STRING_PSL_MATCH,
+    STRING_NAME_OR_ID,
+    STRING_MESSAGE,
+    STRING_INVALID,  // Represents a string returned in a case of an error.
+    STRING_MAX = STRING_INVALID
+  };
 
   SavePasswordProgressLogger();
   virtual ~SavePasswordProgressLogger();
 
-  // Logging: specialized methods (for logging forms, URLs, etc.) take care of
-  // proper removing of sensitive data where appropriate.
-  void LogPasswordForm(const std::string& message,
-                       const autofill::PasswordForm& form);
-  void LogHTMLForm(const std::string& message,
+  // Call these methods to log information. They sanitize the input and call
+  // SendLog to pass it for display.
+  void LogPasswordForm(StringID label, const autofill::PasswordForm& form);
+  void LogHTMLForm(StringID label,
                    const std::string& name_or_id,
                    const std::string& method,
                    const GURL& action);
-  void LogURL(const std::string& message, const GURL& url);
-  void LogBoolean(const std::string& message, bool value);
-  void LogNumber(const std::string& message, int value);
-  void LogNumber(const std::string& message, size_t value);
-  void LogFinalDecision(Decision decision);
-  // Do not use LogMessage when there is an appropriate specialized method
-  // above. LogMessage performs no scrubbing of sensitive data.
-  void LogMessage(const std::string& message);
+  void LogURL(StringID label, const GURL& url);
+  void LogBoolean(StringID label, bool truth_value);
+  void LogNumber(StringID label, int signed_number);
+  void LogNumber(StringID label, size_t unsigned_number);
+  void LogMessage(StringID message);
 
  protected:
   // Sends |log| immediately for display.
   virtual void SendLog(const std::string& log) = 0;
 
  private:
-  // Takes a structured |log|, converts it to a string suitable for plain text
-  // output, adds the |name| as a caption, and sends out via SendLog.
-  void LogValue(const std::string& name, const base::Value& log);
+  // Converts |log| and its |label| to a string and calls SendLog on the result.
+  void LogValue(StringID label, const base::Value& log);
 
   DISALLOW_COPY_AND_ASSIGN(SavePasswordProgressLogger);
 };

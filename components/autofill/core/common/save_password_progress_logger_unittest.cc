@@ -21,7 +21,7 @@ namespace autofill {
 
 namespace {
 
-const char kTestString[] = "Test";
+const char kTestString[] = "Message";  // Corresponds to STRING_MESSAGE.
 
 class TestLogger : public SavePasswordProgressLogger {
  public:
@@ -45,34 +45,62 @@ TEST(SavePasswordProgressLoggerTest, LogPasswordForm) {
   TestLogger logger;
   PasswordForm form;
   form.action = GURL("http://example.org/verysecret?verysecret");
+  form.password_element = UTF8ToUTF16("pwdelement");
   form.password_value = UTF8ToUTF16("verysecret");
   form.username_value = UTF8ToUTF16("verysecret");
-  logger.LogPasswordForm(kTestString, form);
+  logger.LogPasswordForm(SavePasswordProgressLogger::STRING_MESSAGE, form);
   SCOPED_TRACE(testing::Message() << "Log string = ["
                                   << logger.accumulated_log() << "]");
   EXPECT_TRUE(logger.LogsContainSubstring(kTestString));
+  EXPECT_TRUE(logger.LogsContainSubstring("pwdelement"));
   EXPECT_TRUE(logger.LogsContainSubstring("http://example.org"));
   EXPECT_FALSE(logger.LogsContainSubstring("verysecret"));
 }
 
+TEST(SavePasswordProgressLoggerTest, LogPasswordFormElementID) {
+  // Test filtering element IDs.
+  TestLogger logger;
+  PasswordForm form;
+  const std::string kHTMLInside("Username <script> element");
+  const std::string kHTMLInsideExpected("username  script  element");
+  const std::string kIPAddressInside("y128.0.0.1Y");
+  const std::string kIPAddressInsideExpected("y128 0 0 1y");
+  const std::string kSpecialCharsInside("X@#a$%B&*c()D;:e+!x");
+  const std::string kSpecialCharsInsideExpected("x  a  b  c  d  e  x");
+  form.username_element = UTF8ToUTF16(kHTMLInside);
+  form.password_element = UTF8ToUTF16(kIPAddressInside);
+  form.old_password_element = UTF8ToUTF16(kSpecialCharsInside);
+  logger.LogPasswordForm(SavePasswordProgressLogger::STRING_MESSAGE, form);
+  SCOPED_TRACE(testing::Message() << "Log string = ["
+                                  << logger.accumulated_log() << "]");
+  EXPECT_TRUE(logger.LogsContainSubstring(kTestString));
+  EXPECT_FALSE(logger.LogsContainSubstring(kHTMLInside));
+  EXPECT_TRUE(logger.LogsContainSubstring(kHTMLInsideExpected));
+  EXPECT_FALSE(logger.LogsContainSubstring(kIPAddressInside));
+  EXPECT_TRUE(logger.LogsContainSubstring(kIPAddressInsideExpected));
+  EXPECT_FALSE(logger.LogsContainSubstring(kSpecialCharsInside));
+  EXPECT_TRUE(logger.LogsContainSubstring(kSpecialCharsInsideExpected));
+}
+
 TEST(SavePasswordProgressLoggerTest, LogHTMLForm) {
   TestLogger logger;
-  logger.LogHTMLForm(kTestString,
+  logger.LogHTMLForm(SavePasswordProgressLogger::STRING_MESSAGE,
                      "form_name",
-                     "form_method",
+                     "post",
                      GURL("http://example.org/verysecret?verysecret"));
   SCOPED_TRACE(testing::Message() << "Log string = ["
                                   << logger.accumulated_log() << "]");
   EXPECT_TRUE(logger.LogsContainSubstring(kTestString));
   EXPECT_TRUE(logger.LogsContainSubstring("form_name"));
-  EXPECT_TRUE(logger.LogsContainSubstring("form_method"));
+  EXPECT_TRUE(logger.LogsContainSubstring("POST"));
   EXPECT_TRUE(logger.LogsContainSubstring("http://example.org"));
   EXPECT_FALSE(logger.LogsContainSubstring("verysecret"));
 }
 
 TEST(SavePasswordProgressLoggerTest, LogURL) {
   TestLogger logger;
-  logger.LogURL(kTestString, GURL("http://example.org/verysecret?verysecret"));
+  logger.LogURL(SavePasswordProgressLogger::STRING_MESSAGE,
+                GURL("http://example.org/verysecret?verysecret"));
   SCOPED_TRACE(testing::Message() << "Log string = ["
                                   << logger.accumulated_log() << "]");
   EXPECT_TRUE(logger.LogsContainSubstring(kTestString));
@@ -82,7 +110,7 @@ TEST(SavePasswordProgressLoggerTest, LogURL) {
 
 TEST(SavePasswordProgressLoggerTest, LogBooleanTrue) {
   TestLogger logger;
-  logger.LogBoolean(kTestString, true);
+  logger.LogBoolean(SavePasswordProgressLogger::STRING_MESSAGE, true);
   SCOPED_TRACE(testing::Message() << "Log string = ["
                                   << logger.accumulated_log() << "]");
   EXPECT_TRUE(logger.LogsContainSubstring(kTestString));
@@ -91,7 +119,7 @@ TEST(SavePasswordProgressLoggerTest, LogBooleanTrue) {
 
 TEST(SavePasswordProgressLoggerTest, LogBooleanFalse) {
   TestLogger logger;
-  logger.LogBoolean(kTestString, false);
+  logger.LogBoolean(SavePasswordProgressLogger::STRING_MESSAGE, false);
   SCOPED_TRACE(testing::Message() << "Log string = ["
                                   << logger.accumulated_log() << "]");
   EXPECT_TRUE(logger.LogsContainSubstring(kTestString));
@@ -101,7 +129,7 @@ TEST(SavePasswordProgressLoggerTest, LogBooleanFalse) {
 TEST(SavePasswordProgressLoggerTest, LogSignedNumber) {
   TestLogger logger;
   int signed_number = -12345;
-  logger.LogNumber(kTestString, signed_number);
+  logger.LogNumber(SavePasswordProgressLogger::STRING_MESSAGE, signed_number);
   SCOPED_TRACE(testing::Message() << "Log string = ["
                                   << logger.accumulated_log() << "]");
   EXPECT_TRUE(logger.LogsContainSubstring(kTestString));
@@ -111,40 +139,16 @@ TEST(SavePasswordProgressLoggerTest, LogSignedNumber) {
 TEST(SavePasswordProgressLoggerTest, LogUnsignedNumber) {
   TestLogger logger;
   size_t unsigned_number = 654321;
-  logger.LogNumber(kTestString, unsigned_number);
+  logger.LogNumber(SavePasswordProgressLogger::STRING_MESSAGE, unsigned_number);
   SCOPED_TRACE(testing::Message() << "Log string = ["
                                   << logger.accumulated_log() << "]");
   EXPECT_TRUE(logger.LogsContainSubstring(kTestString));
   EXPECT_TRUE(logger.LogsContainSubstring("654321"));
 }
 
-TEST(SavePasswordProgressLoggerTest, LogFinalDecisionSave) {
-  TestLogger logger;
-  logger.LogFinalDecision(SavePasswordProgressLogger::DECISION_SAVE);
-  SCOPED_TRACE(testing::Message() << "Log string = ["
-                                  << logger.accumulated_log() << "]");
-  EXPECT_TRUE(logger.LogsContainSubstring("SAVE"));
-}
-
-TEST(SavePasswordProgressLoggerTest, LogFinalDecisionAsk) {
-  TestLogger logger;
-  logger.LogFinalDecision(SavePasswordProgressLogger::DECISION_ASK);
-  SCOPED_TRACE(testing::Message() << "Log string = ["
-                                  << logger.accumulated_log() << "]");
-  EXPECT_TRUE(logger.LogsContainSubstring("ASK"));
-}
-
-TEST(SavePasswordProgressLoggerTest, LogFinalDecisionDrop) {
-  TestLogger logger;
-  logger.LogFinalDecision(SavePasswordProgressLogger::DECISION_DROP);
-  SCOPED_TRACE(testing::Message() << "Log string = ["
-                                  << logger.accumulated_log() << "]");
-  EXPECT_TRUE(logger.LogsContainSubstring("DROP"));
-}
-
 TEST(SavePasswordProgressLoggerTest, LogMessage) {
   TestLogger logger;
-  logger.LogMessage(kTestString);
+  logger.LogMessage(SavePasswordProgressLogger::STRING_MESSAGE);
   SCOPED_TRACE(testing::Message() << "Log string = ["
                                   << logger.accumulated_log() << "]");
   EXPECT_TRUE(logger.LogsContainSubstring(kTestString));

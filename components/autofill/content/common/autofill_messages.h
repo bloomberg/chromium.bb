@@ -190,7 +190,10 @@ IPC_MESSAGE_ROUTED1(AutofillHostMsg_PasswordFormsRendered,
 IPC_MESSAGE_ROUTED1(AutofillHostMsg_PasswordFormSubmitted,
                     autofill::PasswordForm /* form */)
 
-// Notification that logs during saving the password have been gathered.
+// Sends |log| to browser for displaying to the user. Only strings passed as an
+// argument to methods overriding SavePasswordProgressLogger::SendLog may become
+// |log|, because those are guaranteed to be sanitized. Never pass a free-form
+// string as |log|.
 IPC_MESSAGE_ROUTED1(AutofillHostMsg_RecordSavePasswordProgress,
                     std::string /* log */)
 
