@@ -110,7 +110,8 @@ void ExtensionEnableFlow::CreatePrompt() {
 }
 
 void ExtensionEnableFlow::StartObserving() {
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOAD_ERROR,
                  content::Source<Profile>(profile_));
@@ -126,7 +127,7 @@ void ExtensionEnableFlow::Observe(int type,
                                   const content::NotificationSource& source,
                                   const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_LOADED: {
+    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
       const Extension* extension =
           content::Details<const Extension>(details).ptr();
       if (extension->id() == extension_id_) {

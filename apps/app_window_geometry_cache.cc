@@ -34,7 +34,7 @@ AppWindowGeometryCache::AppWindowGeometryCache(
     : prefs_(prefs),
       sync_delay_(base::TimeDelta::FromMilliseconds(kSyncTimeoutMilliseconds)) {
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_LOADED,
+                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                  content::Source<Profile>(profile));
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
@@ -198,7 +198,7 @@ void AppWindowGeometryCache::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_LOADED: {
+    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
       std::string extension_id =
           content::Details<const extensions::Extension>(details).ptr()->id();
       LoadGeometryFromStorage(extension_id);

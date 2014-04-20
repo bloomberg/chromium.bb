@@ -416,7 +416,8 @@ void ExtensionActionAPI::ExtensionActionExecuted(
 
 ExtensionActionStorageManager::ExtensionActionStorageManager(Profile* profile)
     : profile_(profile) {
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
                  content::NotificationService::AllBrowserContextsAndSources());
@@ -434,7 +435,7 @@ void ExtensionActionStorageManager::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_LOADED: {
+    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
       const Extension* extension =
           content::Details<const Extension>(details).ptr();
       if (!ExtensionActionManager::Get(profile_)->

@@ -173,14 +173,12 @@ DeveloperPrivateAPI::DeveloperPrivateAPI(content::BrowserContext* context)
 
 DeveloperPrivateEventRouter::DeveloperPrivateEventRouter(Profile* profile)
     : profile_(profile) {
-  int types[] = {
-    chrome::NOTIFICATION_EXTENSION_INSTALLED,
-    chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
-    chrome::NOTIFICATION_EXTENSION_LOADED,
-    chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-    chrome::NOTIFICATION_EXTENSION_VIEW_REGISTERED,
-    chrome::NOTIFICATION_EXTENSION_VIEW_UNREGISTERED
-  };
+  int types[] = {chrome::NOTIFICATION_EXTENSION_INSTALLED,
+                 chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
+                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
+                 chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
+                 chrome::NOTIFICATION_EXTENSION_VIEW_REGISTERED,
+                 chrome::NOTIFICATION_EXTENSION_VIEW_UNREGISTERED};
 
   CHECK(registrar_.IsEmpty());
   for (size_t i = 0; i < arraysize(types); ++i) {
@@ -227,7 +225,7 @@ void DeveloperPrivateEventRouter::Observe(
       event_data.event_type = developer::EVENT_TYPE_UNINSTALLED;
       extension = content::Details<const Extension>(details).ptr();
       break;
-    case chrome::NOTIFICATION_EXTENSION_LOADED:
+    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED:
       event_data.event_type = developer::EVENT_TYPE_LOADED;
       extension = content::Details<const Extension>(details).ptr();
       break;

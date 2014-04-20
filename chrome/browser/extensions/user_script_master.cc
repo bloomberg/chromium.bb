@@ -322,7 +322,8 @@ UserScriptMaster::UserScriptMaster(Profile* profile)
       profile_(profile) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
                  content::Source<Profile>(profile_));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<Profile>(profile_));
@@ -372,7 +373,7 @@ void UserScriptMaster::Observe(int type,
       extensions_service_ready_ = true;
       should_start_load = true;
       break;
-    case chrome::NOTIFICATION_EXTENSION_LOADED: {
+    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
       // Add any content scripts inside the extension.
       const Extension* extension =
           content::Details<const Extension>(details).ptr();

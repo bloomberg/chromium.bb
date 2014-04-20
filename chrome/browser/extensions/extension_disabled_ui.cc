@@ -209,7 +209,8 @@ ExtensionDisabledGlobalError::ExtensionDisabledGlobalError(
             skia::ImageOperations::RESIZE_BEST,
             gfx::Size(kIconSize, kIconSize)));
   }
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                  content::Source<Profile>(service->profile()));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_REMOVED,
                  content::Source<Profile>(service->profile()));
@@ -316,7 +317,7 @@ void ExtensionDisabledGlobalError::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   // The error is invalidated if the extension has been loaded or removed.
-  DCHECK(type == chrome::NOTIFICATION_EXTENSION_LOADED ||
+  DCHECK(type == chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED ||
          type == chrome::NOTIFICATION_EXTENSION_REMOVED);
   const Extension* extension = content::Details<const Extension>(details).ptr();
   if (extension != extension_)
@@ -324,7 +325,7 @@ void ExtensionDisabledGlobalError::Observe(
   GlobalErrorServiceFactory::GetForProfile(service_->profile())->
       RemoveGlobalError(this);
 
-  if (type == chrome::NOTIFICATION_EXTENSION_LOADED)
+  if (type == chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED)
     user_response_ = REENABLE;
   else if (type == chrome::NOTIFICATION_EXTENSION_REMOVED)
     user_response_ = UNINSTALL;

@@ -685,7 +685,7 @@ void ExtensionSettingsHandler::Observe(
       HandleLoadRetryMessage(retry_and_path->first, retry_and_path->second);
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_LOADED: {
+    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
       const base::FilePath& path =
           content::Details<const Extension>(details).ptr()->path();
       if (IndexOfLoadingPath(path) != -1)
@@ -1183,7 +1183,8 @@ void ExtensionSettingsHandler::MaybeRegisterForNotifications() {
   Profile* profile = Profile::FromWebUI(web_ui());
 
   // Register for notifications that we need to reload the page.
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                  content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<Profile>(profile));

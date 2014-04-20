@@ -276,7 +276,8 @@ void BackgroundModeManager::RegisterProfile(Profile* profile) {
   // Listen for when extensions are loaded or add the background permission so
   // we can display a "background app installed" notification and enter
   // "launch on login" mode on the Mac.
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                  content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED,
                  content::Source<Profile>(profile));
@@ -324,7 +325,7 @@ void BackgroundModeManager::Observe(
       DecrementKeepAliveCountForStartup();
       break;
 
-    case chrome::NOTIFICATION_EXTENSION_LOADED: {
+    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
         Extension* extension = content::Details<Extension>(details).ptr();
         Profile* profile = content::Source<Profile>(source).ptr();
         if (BackgroundApplicationListModel::IsBackgroundApp(

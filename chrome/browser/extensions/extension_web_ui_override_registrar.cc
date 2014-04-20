@@ -17,7 +17,7 @@ ExtensionWebUIOverrideRegistrar::ExtensionWebUIOverrideRegistrar(
     content::BrowserContext* context)
     : profile_(Profile::FromBrowserContext(context)) {
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_LOADED,
+                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
@@ -31,7 +31,7 @@ void ExtensionWebUIOverrideRegistrar::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_EXTENSION_LOADED) {
+  if (type == chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED) {
     const Extension* extension =
         content::Details<const Extension>(details).ptr();
     ExtensionWebUI::RegisterChromeURLOverrides(

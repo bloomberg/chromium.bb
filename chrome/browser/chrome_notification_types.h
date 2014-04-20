@@ -407,7 +407,7 @@ enum NotificationType {
 
   // Sent when a new extension is loaded. The details are an Extension, and
   // the source is a Profile.
-  NOTIFICATION_EXTENSION_LOADED,
+  NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
 
   // An error occured while attempting to load an extension. The details are a
   // string with details about why the load failed.
@@ -420,7 +420,8 @@ enum NotificationType {
   NOTIFICATION_EXTENSION_LOAD_RETRY,
 
   // Sent when an extension is enabled. Under most circumstances, listeners
-  // will want to use NOTIFICATION_EXTENSION_LOADED. This notification is only
+  // will want to use NOTIFICATION_EXTENSION_LOADED_DEPRECATED. This
+  // notification is only
   // fired when the "Enable" button is hit in the extensions tab.  The details
   // are an Extension, and the source is a Profile.
   NOTIFICATION_EXTENSION_ENABLED,

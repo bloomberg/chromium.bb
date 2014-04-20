@@ -37,7 +37,8 @@ InternalExtensionProvider::InternalExtensionProvider(
   Profile* profile = extension_service->profile();
   registrar_->Add(this, chrome::NOTIFICATION_EXTENSION_HOST_CREATED,
                   content::Source<Profile>(profile));
-  registrar_->Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+  registrar_->Add(this,
+                  chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                   content::Source<Profile>(profile));
   registrar_->Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                   content::Source<Profile>(profile));
@@ -120,7 +121,7 @@ void InternalExtensionProvider::Observe(int type,
 
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_LOADED: {
+    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
       const extensions::Extension* extension =
           content::Details<extensions::Extension>(details).ptr();
       if (extensions::PluginInfo::HasPlugins(extension))

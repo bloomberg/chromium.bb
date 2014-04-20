@@ -46,7 +46,7 @@ class ThemeServiceTest : public ExtensionServiceTestBase {
     scoped_refptr<extensions::UnpackedInstaller> installer(
         extensions::UnpackedInstaller::Create(service_));
     content::WindowedNotificationObserver observer(
-        chrome::NOTIFICATION_EXTENSION_LOADED,
+        chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
         content::Source<Profile>(profile_.get()));
     installer->Load(temp_dir);
     observer.Wait();
@@ -62,9 +62,10 @@ class ThemeServiceTest : public ExtensionServiceTestBase {
 
   // Update the theme with |extension_id|.
   void UpdateUnpackedTheme(const std::string& extension_id) {
-    int updated_notification = service_->IsExtensionEnabled(extension_id) ?
-        chrome::NOTIFICATION_EXTENSION_LOADED :
-        chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED;
+    int updated_notification =
+        service_->IsExtensionEnabled(extension_id)
+            ? chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED
+            : chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED;
 
     const base::FilePath& path =
         service_->GetInstalledExtension(extension_id)->path();

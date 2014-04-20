@@ -173,7 +173,8 @@ EventRouter::EventRouter(BrowserContext* browser_context,
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_ENABLED,
                  content::Source<BrowserContext>(browser_context_));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                  content::Source<BrowserContext>(browser_context_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<BrowserContext>(browser_context_));
@@ -690,7 +691,7 @@ void EventRouter::Observe(int type,
       }
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_LOADED: {
+    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
       // Add all registered lazy listeners to our cache.
       const Extension* extension =
           content::Details<const Extension>(details).ptr();

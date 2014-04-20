@@ -670,7 +670,8 @@ class ExtensionServiceTest
         was_update_(false),
         override_external_install_prompt_(
             FeatureSwitch::prompt_for_external_extensions(), false) {
-    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                    content::NotificationService::AllSources());
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                    content::NotificationService::AllSources());
@@ -682,7 +683,7 @@ class ExtensionServiceTest
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
     switch (type) {
-      case chrome::NOTIFICATION_EXTENSION_LOADED: {
+      case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
         const Extension* extension =
             content::Details<const Extension>(details).ptr();
         loaded_.push_back(make_scoped_refptr(extension));

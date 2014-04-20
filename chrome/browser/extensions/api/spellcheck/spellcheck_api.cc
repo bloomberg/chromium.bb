@@ -42,7 +42,8 @@ SpellcheckService::DictionaryFormat GetDictionaryFormat(std::string format) {
 
 SpellcheckAPI::SpellcheckAPI(content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                  content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<Profile>(profile));
@@ -66,7 +67,7 @@ void SpellcheckAPI::Observe(int type,
   Profile* profile = content::Source<Profile>(source).ptr();
   SpellcheckService* spellcheck = NULL;
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_LOADED: {
+    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
       const Extension* extension = content::Details<Extension>(details).ptr();
       SpellcheckDictionaryInfo* spellcheck_info =
           GetSpellcheckDictionaryInfo(extension);

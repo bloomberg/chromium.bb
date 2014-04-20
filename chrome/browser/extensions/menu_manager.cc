@@ -303,7 +303,8 @@ const char MenuManager::kOnWebviewContextMenus[] = "webview.contextMenus";
 
 MenuManager::MenuManager(Profile* profile, StateStore* store)
     : profile_(profile), store_(store) {
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                  content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<Profile>(profile));
@@ -844,7 +845,7 @@ void MenuManager::Observe(int type,
       }
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_LOADED: {
+    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
       const Extension* extension =
           content::Details<const Extension>(details).ptr();
       if (store_ && BackgroundInfo::HasLazyBackgroundPage(extension)) {

@@ -691,7 +691,7 @@ class PolicyTest : public InProcessBrowserTest {
     scoped_refptr<extensions::UnpackedInstaller> installer =
         extensions::UnpackedInstaller::Create(extension_service());
     content::WindowedNotificationObserver observer(
-        expect_success ? chrome::NOTIFICATION_EXTENSION_LOADED
+        expect_success ? chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED
                        : chrome::NOTIFICATION_EXTENSION_LOAD_ERROR,
         content::NotificationService::AllSources());
     installer->Load(extension_path);
@@ -1645,7 +1645,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
       chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
       content::NotificationService::AllSources());
   content::WindowedNotificationObserver extension_loaded_observer(
-      chrome::NOTIFICATION_EXTENSION_LOADED,
+      chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
       content::NotificationService::AllSources());
   extensions::ExtensionHost* extension_host =
       extensions::ExtensionSystem::Get(browser()->profile())->

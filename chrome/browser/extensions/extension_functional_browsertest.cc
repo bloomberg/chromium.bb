@@ -24,7 +24,7 @@ public:
     base::FilePath path = test_data_dir_.AppendASCII(filename);
 
     content::WindowedNotificationObserver extension_loaded_observer(
-        chrome::NOTIFICATION_EXTENSION_LOADED,
+        chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
         content::NotificationService::AllSources());
 
     scoped_refptr<extensions::CrxInstaller> installer(

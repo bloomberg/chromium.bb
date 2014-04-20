@@ -101,7 +101,8 @@ AlarmManager::AlarmManager(content::BrowserContext* context)
     : profile_(Profile::FromBrowserContext(context)),
       clock_(new base::DefaultClock()),
       delegate_(new DefaultAlarmDelegate(context)) {
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
                  content::Source<Profile>(profile_));
@@ -415,7 +416,7 @@ void AlarmManager::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_LOADED: {
+    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
       const Extension* extension =
           content::Details<const Extension>(details).ptr();
       StateStore* storage = ExtensionSystem::Get(profile_)->state_store();

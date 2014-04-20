@@ -92,7 +92,7 @@ SettingsOverridesAPI::SettingsOverridesAPI(content::BrowserContext* context)
       url_service_(TemplateURLServiceFactory::GetForProfile(profile_)) {
   DCHECK(profile_);
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_LOADED,
+                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
@@ -135,7 +135,7 @@ void SettingsOverridesAPI::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_LOADED: {
+    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
       const Extension* extension =
           content::Details<const Extension>(details).ptr();
       const SettingsOverrides* settings =

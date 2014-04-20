@@ -1018,12 +1018,13 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
   //
   // NOTE: It is important that this happen after notifying the renderers about
   // the new extensions so that if we navigate to an extension URL in
-  // ExtensionRegistryObserver::OnLoaded or NOTIFICATION_EXTENSION_LOADED, the
+  // ExtensionRegistryObserver::OnLoaded or
+  // NOTIFICATION_EXTENSION_LOADED_DEPRECATED, the
   // renderer is guaranteed to know about it.
   registry_->TriggerOnLoaded(extension);
 
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_LOADED,
+      chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
       content::Source<Profile>(profile_),
       content::Details<const Extension>(extension));
 

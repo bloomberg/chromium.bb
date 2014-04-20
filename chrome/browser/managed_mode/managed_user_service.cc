@@ -346,7 +346,7 @@ void ManagedUserService::Observe(int type,
                           const content::NotificationSource& source,
                           const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_LOADED: {
+    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
       const extensions::Extension* extension =
           content::Details<extensions::Extension>(details).ptr();
       if (!extensions::ManagedModeInfo::GetContentPackSiteList(
@@ -572,7 +572,8 @@ void ManagedUserService::Init() {
   if (management_policy)
     extension_system->management_policy()->RegisterProvider(this);
 
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<Profile>(profile_));

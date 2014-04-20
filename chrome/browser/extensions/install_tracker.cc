@@ -21,8 +21,9 @@ InstallTracker::InstallTracker(Profile* profile,
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
       content::Source<Profile>(profile));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
-      content::Source<Profile>(profile));
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
+                 content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
       content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
@@ -108,7 +109,7 @@ void InstallTracker::Observe(int type,
                         OnExtensionInstalled(extension));
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_LOADED: {
+    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
       const Extension* extension =
           content::Details<const Extension>(details).ptr();
       FOR_EACH_OBSERVER(InstallObserver, observers_,

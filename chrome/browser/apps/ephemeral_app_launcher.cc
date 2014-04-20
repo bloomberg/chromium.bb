@@ -137,7 +137,8 @@ EphemeralAppLauncher::EphemeralAppLauncher(
 EphemeralAppLauncher::~EphemeralAppLauncher() {}
 
 void EphemeralAppLauncher::StartObserving() {
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                  content::Source<Profile>(profile()->GetOriginalProfile()));
 }
 
@@ -254,7 +255,7 @@ void EphemeralAppLauncher::CompleteInstall(const std::string& error) {
   // chrome::NOTIFICATION_EXTENSION_INSTALLED, but this is broadcasted before
   // ExtensionService has added the extension to its list of installed
   // extensions and is too early to launch the app. Instead, we will launch at
-  // chrome::NOTIFICATION_EXTENSION_LOADED.
+  // chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED.
   // TODO(tmdiep): Refactor extensions/WebstoreInstaller or
   // WebstoreStandaloneInstaller to support this cleanly.
 }
@@ -269,7 +270,7 @@ void EphemeralAppLauncher::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_LOADED: {
+    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
       const extensions::Extension* extension =
           content::Details<const extensions::Extension>(details).ptr();
       DCHECK(extension);

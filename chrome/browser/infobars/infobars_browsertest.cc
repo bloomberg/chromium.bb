@@ -37,7 +37,7 @@ class InfoBarsTest : public InProcessBrowserTest {
     ExtensionService* service = profile->GetExtensionService();
 
     content::WindowedNotificationObserver observer(
-        chrome::NOTIFICATION_EXTENSION_LOADED,
+        chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
         content::NotificationService::AllSources());
 
     scoped_ptr<ExtensionInstallPrompt> client(new ExtensionInstallPrompt(

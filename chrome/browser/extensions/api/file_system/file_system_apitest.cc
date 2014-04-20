@@ -25,14 +25,14 @@ class AppInstallObserver : public content::NotificationObserver {
       base::Callback<void(const Extension*)> callback)
       : callback_(callback) {
     registrar_.Add(this,
-                   chrome::NOTIFICATION_EXTENSION_LOADED,
+                   chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                    content::NotificationService::AllSources());
   }
 
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
-    EXPECT_EQ(chrome::NOTIFICATION_EXTENSION_LOADED, type);
+    EXPECT_EQ(chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED, type);
     callback_.Run(content::Details<const Extension>(details).ptr());
   }
 

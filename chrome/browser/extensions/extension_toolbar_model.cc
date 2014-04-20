@@ -48,7 +48,8 @@ ExtensionToolbarModel::ExtensionToolbarModel(
       extensions_initialized_(false),
       is_highlighting_(false),
       weak_ptr_factory_(this) {
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<Profile>(profile_));
@@ -204,7 +205,7 @@ void ExtensionToolbarModel::Observe(
   } else {
     extension = content::Details<const Extension>(details).ptr();
   }
-  if (type == chrome::NOTIFICATION_EXTENSION_LOADED) {
+  if (type == chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED) {
     // We don't want to add the same extension twice. It may have already been
     // added by EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED below, if the user
     // hides the browser action and then disables and enables the extension.

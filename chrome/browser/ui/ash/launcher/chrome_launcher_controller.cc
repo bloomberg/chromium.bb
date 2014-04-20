@@ -379,10 +379,9 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
         ash::Shell::GetInstance()->shelf_item_delegate_manager();
   }
 
-  notification_registrar_.Add(
-      this,
-      chrome::NOTIFICATION_EXTENSION_LOADED,
-      content::Source<Profile>(profile_));
+  notification_registrar_.Add(this,
+                              chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
+                              content::Source<Profile>(profile_));
   notification_registrar_.Add(
       this,
       chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
@@ -1115,7 +1114,7 @@ void ChromeLauncherController::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_LOADED: {
+    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
       const Extension* extension =
           content::Details<const Extension>(details).ptr();
       if (IsAppPinned(extension->id())) {

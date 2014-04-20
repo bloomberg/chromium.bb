@@ -290,7 +290,8 @@ PushMessagingAPI::PushMessagingAPI(content::BrowserContext* context)
     : profile_(Profile::FromBrowserContext(context)) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
                  content::Source<Profile>(profile_->GetOriginalProfile()));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                  content::Source<Profile>(profile_->GetOriginalProfile()));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<Profile>(profile_->GetOriginalProfile()));
@@ -341,7 +342,7 @@ void PushMessagingAPI::Observe(int type,
       }
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_LOADED: {
+    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
       const Extension* extension = content::Details<Extension>(details).ptr();
       if (extension->HasAPIPermission(APIPermission::kPushMessaging)) {
         handler_->RegisterExtension(extension->id());

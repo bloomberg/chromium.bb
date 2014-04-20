@@ -52,7 +52,7 @@ RulesRegistryService::RulesRegistryService(content::BrowserContext* context)
                    chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
                    content::Source<Profile>(profile_->GetOriginalProfile()));
     registrar_.Add(this,
-                   chrome::NOTIFICATION_EXTENSION_LOADED,
+                   chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                    content::Source<Profile>(profile_->GetOriginalProfile()));
     registrar_.Add(
         this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
@@ -225,7 +225,7 @@ void RulesRegistryService::Observe(
                              extension->id());
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_LOADED: {
+    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
       const Extension* extension =
           content::Details<const Extension>(details).ptr();
       NotifyRegistriesHelper(&RulesRegistry::OnExtensionLoaded,

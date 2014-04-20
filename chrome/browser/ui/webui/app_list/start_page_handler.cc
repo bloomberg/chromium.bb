@@ -93,7 +93,7 @@ void StartPageHandler::Observe(int type,
   DCHECK_EQ(Profile::FromWebUI(web_ui()),
             content::Source<Profile>(source).ptr());
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_LOADED: {
+    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
       extensions::Extension* extension =
           content::Details<extensions::Extension>(details).ptr();
       if (extension->id() == extension_misc::kHotwordExtensionId)
@@ -160,7 +160,8 @@ void StartPageHandler::HandleInitialize(const base::ListValue* args) {
         prefs::kHotwordSearchEnabled,
         base::Bind(&StartPageHandler::OnHotwordEnabledChanged,
                    base::Unretained(this)));
-    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                    content::Source<Profile>(profile));
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                    content::Source<Profile>(profile));

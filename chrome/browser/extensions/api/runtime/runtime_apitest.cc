@@ -101,7 +101,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeRuntimeReload) {
         chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
         content::NotificationService::AllSources());
     content::WindowedNotificationObserver load_observer(
-        chrome::NOTIFICATION_EXTENSION_LOADED,
+        chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
         content::NotificationService::AllSources());
 
     ASSERT_TRUE(ExecuteScriptInBackgroundPageNoWait(

@@ -112,7 +112,8 @@ void FontSettingsHandler::GetLocalizedValues(
 }
 
 void FontSettingsHandler::InitializeHandler() {
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::NotificationService::AllSources());
@@ -178,7 +179,7 @@ void FontSettingsHandler::RegisterMessages() {
 void FontSettingsHandler::Observe(int type,
                                   const content::NotificationSource& source,
                                   const content::NotificationDetails& details) {
-  DCHECK(type == chrome::NOTIFICATION_EXTENSION_LOADED ||
+  DCHECK(type == chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED ||
          type == chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED);
   NotifyAdvancedFontSettingsAvailability();
 }

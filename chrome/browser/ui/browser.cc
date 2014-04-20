@@ -376,7 +376,8 @@ Browser::Browser(const CreateParams& params)
   search_model_.reset(new SearchModel());
   search_delegate_.reset(new SearchDelegate(search_model_.get()));
 
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                  content::Source<Profile>(profile_->GetOriginalProfile()));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<Profile>(profile_->GetOriginalProfile()));
@@ -1920,7 +1921,7 @@ void Browser::Observe(int type,
       break;
     }
 
-    case chrome::NOTIFICATION_EXTENSION_LOADED:
+    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED:
       chrome::UpdateCommandEnabled(
           this,
           IDC_BOOKMARK_PAGE,

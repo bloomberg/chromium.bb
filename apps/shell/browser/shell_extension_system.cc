@@ -59,7 +59,7 @@ bool ShellExtensionSystem::LoadAndLaunchApp(const base::FilePath& app_dir) {
   RegisterExtensionWithRequestContexts(extension);
 
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_LOADED,
+      chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
       content::Source<BrowserContext>(browser_context_),
       content::Details<const Extension>(extension));
 

@@ -54,8 +54,9 @@ ExtensionInstalledBubble::ExtensionInstalledBubble(Delegate* delegate,
   // fired, but all of the EXTENSION_LOADED Observers have run. Only then can we
   // be sure that a BrowserAction or PageAction has had views created which we
   // can inspect for the purpose of previewing of pointing to them.
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
-      content::Source<Profile>(browser->profile()));
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
+                 content::Source<Profile>(browser->profile()));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
       content::Source<Profile>(browser->profile()));
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSING,
@@ -86,7 +87,7 @@ void ExtensionInstalledBubble::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_LOADED: {
+    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
       const Extension* extension = Details<const Extension>(details).ptr();
       if (extension == extension_) {
         animation_wait_retries_ = 0;

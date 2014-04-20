@@ -76,7 +76,7 @@ void AppSyncUIState::StartObserving() {
   DCHECK(!sync_service_);
 
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_LOADED,
+                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                  content::Source<Profile>(profile_));
 
   sync_service_ = ProfileSyncServiceFactory::GetForProfile(profile_);
@@ -140,7 +140,7 @@ void AppSyncUIState::OnMaxSyncingTimer() {
 void AppSyncUIState::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_EXTENSION_LOADED, type);
+  DCHECK_EQ(chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED, type);
   CheckAppSync();
 }
 

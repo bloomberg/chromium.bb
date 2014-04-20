@@ -26,7 +26,7 @@ ExtensionKeybindingRegistry::ExtensionKeybindingRegistry(
       extension_filter_(extension_filter),
       delegate_(delegate) {
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_LOADED,
+                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                  content::Source<Profile>(profile_->GetOriginalProfile()));
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
@@ -170,7 +170,7 @@ void ExtensionKeybindingRegistry::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_LOADED: {
+    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
       const extensions::Extension* extension =
           content::Details<const extensions::Extension>(details).ptr();
       if (ExtensionMatchesFilter(extension))

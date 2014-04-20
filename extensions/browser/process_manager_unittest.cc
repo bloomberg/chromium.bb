@@ -80,7 +80,7 @@ TEST_F(ProcessManagerTest, ExtensionNotificationRegistration) {
                            chrome::NOTIFICATION_EXTENSIONS_READY,
                            original_context()));
   EXPECT_TRUE(IsRegistered(manager1.get(),
-                           chrome::NOTIFICATION_EXTENSION_LOADED,
+                           chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                            original_context()));
   EXPECT_TRUE(IsRegistered(manager1.get(),
                            chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
@@ -98,7 +98,7 @@ TEST_F(ProcessManagerTest, ExtensionNotificationRegistration) {
 
   // Some notifications are observed for the original context.
   EXPECT_TRUE(IsRegistered(manager2.get(),
-                           chrome::NOTIFICATION_EXTENSION_LOADED,
+                           chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                            original_context()));
 
   // Some notifications are observed for the incognito context.

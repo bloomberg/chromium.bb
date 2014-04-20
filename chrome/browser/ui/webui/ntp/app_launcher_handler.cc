@@ -260,7 +260,7 @@ void AppLauncherHandler::Observe(int type,
     return;
 
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_LOADED: {
+    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
       const Extension* extension =
           content::Details<const Extension>(details).ptr();
       if (!extension->is_app())
@@ -473,8 +473,9 @@ void AppLauncherHandler::HandleGetApps(const base::ListValue* args) {
         extensions::pref_names::kExtensions, callback);
     extension_pref_change_registrar_.Add(prefs::kNtpAppPageNames, callback);
 
-    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
-        content::Source<Profile>(profile));
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
+                   content::Source<Profile>(profile));
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
         content::Source<Profile>(profile));
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,

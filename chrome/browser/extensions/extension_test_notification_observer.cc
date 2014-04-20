@@ -198,7 +198,7 @@ bool ExtensionTestNotificationObserver::WaitForExtensionInstallError() {
 }
 
 void ExtensionTestNotificationObserver::WaitForExtensionLoad() {
-  WaitForNotification(chrome::NOTIFICATION_EXTENSION_LOADED);
+  WaitForNotification(chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED);
 }
 
 void ExtensionTestNotificationObserver::WaitForExtensionAndViewLoad() {
@@ -253,37 +253,37 @@ void ExtensionTestNotificationObserver::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-  case chrome::NOTIFICATION_EXTENSION_LOADED:
+    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED:
       last_loaded_extension_id_ =
         content::Details<const Extension>(details).ptr()->id();
       VLOG(1) << "Got EXTENSION_LOADED notification.";
       break;
 
-  case chrome::NOTIFICATION_CRX_INSTALLER_DONE:
-    VLOG(1) << "Got CRX_INSTALLER_DONE notification.";
-    {
-        const Extension* extension =
-          content::Details<const Extension>(details).ptr();
-        if (extension)
-          last_loaded_extension_id_ = extension->id();
-        else
-          last_loaded_extension_id_.clear();
-    }
-    ++crx_installers_done_observed_;
-    break;
+    case chrome::NOTIFICATION_CRX_INSTALLER_DONE:
+      VLOG(1) << "Got CRX_INSTALLER_DONE notification.";
+      {
+          const Extension* extension =
+            content::Details<const Extension>(details).ptr();
+          if (extension)
+            last_loaded_extension_id_ = extension->id();
+          else
+            last_loaded_extension_id_.clear();
+      }
+      ++crx_installers_done_observed_;
+      break;
 
-  case chrome::NOTIFICATION_EXTENSION_INSTALLED:
-    VLOG(1) << "Got EXTENSION_INSTALLED notification.";
-    ++extension_installs_observed_;
-    break;
+    case chrome::NOTIFICATION_EXTENSION_INSTALLED:
+      VLOG(1) << "Got EXTENSION_INSTALLED notification.";
+      ++extension_installs_observed_;
+      break;
 
-  case chrome::NOTIFICATION_EXTENSION_LOAD_ERROR:
-    VLOG(1) << "Got EXTENSION_LOAD_ERROR notification.";
-    ++extension_load_errors_observed_;
-    break;
+    case chrome::NOTIFICATION_EXTENSION_LOAD_ERROR:
+      VLOG(1) << "Got EXTENSION_LOAD_ERROR notification.";
+      ++extension_load_errors_observed_;
+      break;
 
-  default:
-    NOTREACHED();
-    break;
+    default:
+      NOTREACHED();
+      break;
   }
 }

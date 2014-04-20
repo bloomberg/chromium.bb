@@ -291,7 +291,7 @@ TEST_F(UserScriptListenerTest, MultiProfile) {
   extensions::ExtensionRegistry::Get(&profile2)->AddEnabled(extension);
 
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_LOADED,
+      chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
       content::Source<Profile>(&profile2),
       content::Details<Extension>(extension.get()));
 

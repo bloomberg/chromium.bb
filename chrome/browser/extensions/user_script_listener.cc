@@ -70,7 +70,8 @@ UserScriptListener::UserScriptListener()
     : user_scripts_ready_(false) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::NotificationService::AllSources());
@@ -206,7 +207,7 @@ void UserScriptListener::Observe(int type,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_LOADED: {
+    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
       Profile* profile = content::Source<Profile>(source).ptr();
       const Extension* extension =
           content::Details<const Extension>(details).ptr();

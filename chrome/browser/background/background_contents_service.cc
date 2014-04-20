@@ -334,7 +334,8 @@ void BackgroundContentsService::StartObserving(Profile* profile) {
 
   // Listen for new extension installs so that we can load any associated
   // background page.
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                  content::Source<Profile>(profile));
 
   // Track when the extensions crash so that the user can be notified
@@ -402,7 +403,7 @@ void BackgroundContentsService::Observe(
       RegisterBackgroundContents(bgcontents);
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_LOADED: {
+    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
       const Extension* extension =
           content::Details<const Extension>(details).ptr();
       Profile* profile = content::Source<Profile>(source).ptr();

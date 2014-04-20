@@ -348,7 +348,8 @@ class DevToolsExtensionTest : public DevToolsSanityTest,
     size_t num_before = service->extensions()->size();
     {
       content::NotificationRegistrar registrar;
-      registrar.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+      registrar.Add(this,
+                    chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                     content::NotificationService::AllSources());
       base::CancelableClosure timeout(
           base::Bind(&TimeoutCallback, "Extension load timed out."));
@@ -399,7 +400,7 @@ class DevToolsExtensionTest : public DevToolsSanityTest,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
     switch (type) {
-      case chrome::NOTIFICATION_EXTENSION_LOADED:
+      case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED:
       case chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING:
         base::MessageLoopForUI::current()->Quit();
         break;

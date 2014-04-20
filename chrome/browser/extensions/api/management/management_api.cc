@@ -648,12 +648,10 @@ bool ManagementUninstallSelfFunction::RunImpl() {
 
 ManagementEventRouter::ManagementEventRouter(Profile* profile)
     : profile_(profile) {
-  int types[] = {
-    chrome::NOTIFICATION_EXTENSION_INSTALLED,
-    chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
-    chrome::NOTIFICATION_EXTENSION_LOADED,
-    chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED
-  };
+  int types[] = {chrome::NOTIFICATION_EXTENSION_INSTALLED,
+                 chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
+                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
+                 chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED};
 
   CHECK(registrar_.IsEmpty());
   for (size_t i = 0; i < arraysize(types); i++) {
@@ -685,7 +683,7 @@ void ManagementEventRouter::Observe(
       event_name = management::OnUninstalled::kEventName;
       extension = content::Details<const Extension>(details).ptr();
       break;
-    case chrome::NOTIFICATION_EXTENSION_LOADED:
+    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED:
       event_name = management::OnEnabled::kEventName;
       extension = content::Details<const Extension>(details).ptr();
       break;

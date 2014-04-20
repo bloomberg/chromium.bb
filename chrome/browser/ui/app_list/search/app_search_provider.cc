@@ -48,7 +48,8 @@ AppSearchProvider::AppSearchProvider(
     AppListControllerDelegate* list_controller)
     : profile_(profile),
       list_controller_(list_controller) {
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                  content::Source<Profile>(profile_->GetOriginalProfile()));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
                  content::Source<Profile>(profile_->GetOriginalProfile()));

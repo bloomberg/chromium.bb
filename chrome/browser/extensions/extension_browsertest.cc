@@ -150,7 +150,7 @@ ExtensionBrowserTest::LoadExtensionWithInstallParam(
   ExtensionService* service = extensions::ExtensionSystem::Get(
       profile())->extension_service();
   {
-    observer_->Watch(chrome::NOTIFICATION_EXTENSION_LOADED,
+    observer_->Watch(chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                      content::NotificationService::AllSources());
 
     scoped_refptr<extensions::UnpackedInstaller> installer(
@@ -196,9 +196,10 @@ ExtensionBrowserTest::LoadExtensionWithInstallParam(
     // Re-enable the extension if needed.
     if (service->extensions()->Contains(extension_id)) {
       content::WindowedNotificationObserver load_signal(
-          chrome::NOTIFICATION_EXTENSION_LOADED,
+          chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
           content::Source<Profile>(profile()));
-      // Reload the extension so that the NOTIFICATION_EXTENSION_LOADED
+      // Reload the extension so that the
+      // NOTIFICATION_EXTENSION_LOADED_DEPRECATED
       // observers may access |install_param|.
       service->ReloadExtension(extension_id);
       load_signal.Wait();
@@ -213,7 +214,7 @@ ExtensionBrowserTest::LoadExtensionWithInstallParam(
   // cases.
   {
     content::WindowedNotificationObserver load_signal(
-        chrome::NOTIFICATION_EXTENSION_LOADED,
+        chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
         content::Source<Profile>(profile()));
     CHECK(!extensions::util::IsIncognitoEnabled(extension_id, profile()));
 
@@ -227,7 +228,7 @@ ExtensionBrowserTest::LoadExtensionWithInstallParam(
 
   {
     content::WindowedNotificationObserver load_signal(
-        chrome::NOTIFICATION_EXTENSION_LOADED,
+        chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
         content::Source<Profile>(profile()));
     CHECK(extensions::util::AllowFileAccess(extension_id, profile()));
     if (!(flags & kFlagEnableFileAccess)) {
@@ -504,8 +505,8 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
 }
 
 void ExtensionBrowserTest::ReloadExtension(const std::string extension_id) {
-  observer_->Watch(chrome::NOTIFICATION_EXTENSION_LOADED,
-                content::NotificationService::AllSources());
+  observer_->Watch(chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
+                   content::NotificationService::AllSources());
 
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile())->extension_service();

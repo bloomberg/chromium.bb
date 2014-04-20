@@ -229,7 +229,8 @@ ProcessManager::ProcessManager(BrowserContext* context,
     weak_ptr_factory_(this) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
                  content::Source<BrowserContext>(original_context));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                  content::Source<BrowserContext>(original_context));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<BrowserContext>(original_context));
@@ -650,7 +651,7 @@ void ProcessManager::Observe(int type,
       break;
     }
 
-    case chrome::NOTIFICATION_EXTENSION_LOADED: {
+    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
       BrowserContext* context = content::Source<BrowserContext>(source).ptr();
       ExtensionSystem* system = ExtensionSystem::Get(context);
       if (system->ready().is_signaled()) {
