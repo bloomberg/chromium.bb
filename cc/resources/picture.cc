@@ -255,11 +255,10 @@ void Picture::Record(ContentLayerClient* painter,
   SkPictureRecorder recorder(factory.get());
 
   skia::RefPtr<SkCanvas> canvas;
-  canvas = skia::SharePtr(recorder.beginRecording(
-      layer_rect_.width(),
-      layer_rect_.height(),
-      SkPicture::kUsePathBoundsForClip_RecordingFlag |
-          SkPicture::kOptimizeForClippedPlayback_RecordingFlag));
+  canvas = skia::SharePtr(
+      recorder.beginRecording(layer_rect_.width(),
+                              layer_rect_.height(),
+                              SkPicture::kUsePathBoundsForClip_RecordingFlag));
 
   switch (recording_mode) {
     case RECORD_NORMALLY:

@@ -73,8 +73,7 @@ SkCanvas* StartRecording(SkPicture* picture, gfx::Rect layer_rect) {
   SkCanvas* canvas = picture->beginRecording(
       layer_rect.width(),
       layer_rect.height(),
-      SkPicture::kUsePathBoundsForClip_RecordingFlag |
-          SkPicture::kOptimizeForClippedPlayback_RecordingFlag);
+      SkPicture::kUsePathBoundsForClip_RecordingFlag);
 
   canvas->save();
   canvas->translate(-layer_rect.x(), -layer_rect.y());
