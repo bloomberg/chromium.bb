@@ -55,14 +55,14 @@ bool ImageSource::initialized() const
     return m_decoder;
 }
 
-void ImageSource::setData(SharedBuffer* data, bool allDataReceived)
+void ImageSource::setData(SharedBuffer& data, bool allDataReceived)
 {
     // Make the decoder by sniffing the bytes.
     // This method will examine the data and instantiate an instance of the appropriate decoder plugin.
     // If insufficient bytes are available to determine the image type, no decoder plugin will be
     // made.
     if (!m_decoder)
-        m_decoder = DeferredImageDecoder::create(*data, m_alphaOption, m_gammaAndColorProfileOption);
+        m_decoder = DeferredImageDecoder::create(data, m_alphaOption, m_gammaAndColorProfileOption);
 
     if (m_decoder)
         m_decoder->setData(data, allDataReceived);

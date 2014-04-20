@@ -58,7 +58,7 @@ public:
 
     ImageFrame* frameBufferAtIndex(size_t index);
 
-    void setData(SharedBuffer* data, bool allDataReceived);
+    void setData(SharedBuffer& data, bool allDataReceived);
 
     bool isSizeAvailable();
     IntSize size() const;
@@ -83,7 +83,6 @@ private:
     SkBitmap createSkiaDiscardableBitmap(size_t index);
     SkBitmap createLazyDecodingBitmap(size_t index);
     void activateLazyDecoding();
-    void setData(PassRefPtr<SharedBuffer>, bool allDataReceived);
 
     RefPtr<SharedBuffer> m_data;
     bool m_allDataReceived;

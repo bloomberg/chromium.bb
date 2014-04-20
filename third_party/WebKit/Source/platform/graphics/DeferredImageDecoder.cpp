@@ -117,21 +117,21 @@ ImageFrame* DeferredImageDecoder::frameBufferAtIndex(size_t index)
     return 0;
 }
 
-void DeferredImageDecoder::setData(SharedBuffer* data, bool allDataReceived)
+void DeferredImageDecoder::setData(SharedBuffer& data, bool allDataReceived)
 {
     if (m_actualDecoder) {
-        const bool firstData = !m_data && data;
-        const bool moreData = data && data->size() > m_lastDataSize;
+        const bool firstData = !m_data;
+        const bool moreData = data.size() > m_lastDataSize;
         m_dataChanged = firstData || moreData;
-        m_data = data;
-        m_lastDataSize = data->size();
+        m_data = RefPtr<SharedBuffer>(data);
+        m_lastDataSize = data.size();
         m_allDataReceived = allDataReceived;
-        m_actualDecoder->setData(data, allDataReceived);
+        m_actualDecoder->setData(&data, allDataReceived);
         prepareLazyDecodedFrames();
     }
 
     if (m_frameGenerator)
-        m_frameGenerator->setData(data, allDataReceived);
+        m_frameGenerator->setData(&data, allDataReceived);
 }
 
 bool DeferredImageDecoder::isSizeAvailable()

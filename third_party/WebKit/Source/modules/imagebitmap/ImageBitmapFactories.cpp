@@ -301,7 +301,7 @@ void ImageBitmapFactories::ImageBitmapLoader::didFinishLoading()
     RefPtr<SharedBuffer> sharedBuffer = SharedBuffer::create((char*)m_loader.arrayBufferResult()->data(), m_loader.arrayBufferResult()->byteLength());
 
     OwnPtr<ImageSource> source = adoptPtr(new ImageSource());
-    source->setData(sharedBuffer.get(), true);
+    source->setData(*sharedBuffer, true);
     RefPtr<NativeImageSkia> imageSkia = source->createFrameAtIndex(0);
     if (!imageSkia) {
         rejectPromise();
