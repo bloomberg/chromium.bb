@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/command_line.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #import "chrome/browser/themes/theme_properties.h"
@@ -16,6 +18,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_view.h"
+#include "ui/base/cocoa/animation_utils.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/geometry/rect.h"
 
 using content::WebContents;
@@ -61,6 +65,7 @@ class FullscreenObserver : public WebContentsObserver {
 };
 
 @interface TabContentsController (TabContentsContainerViewDelegate)
+- (BOOL)contentsInFullscreenCaptureMode;
 // Computes and returns the frame to use for the contents view within the
 // container view.
 - (NSRect)frameForContentsView;
@@ -73,6 +78,8 @@ class FullscreenObserver : public WebContentsObserver {
  @private
   TabContentsController* delegate_;  // weak
 }
+
+- (NSColor*)computeBackgroundColor;
 @end
 
 @implementation TabContentsContainerView
@@ -80,6 +87,14 @@ class FullscreenObserver : public WebContentsObserver {
 - (id)initWithDelegate:(TabContentsController*)delegate {
   if ((self = [super initWithFrame:NSZeroRect])) {
     delegate_ = delegate;
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableCoreAnimation)) {
+      ScopedCAActionDisabler disabler;
+      base::scoped_nsobject<CALayer> layer([[CALayer alloc] init]);
+      [layer setBackgroundColor:CGColorGetConstantColor(kCGColorWhite)];
+      [self setLayer:layer];
+      [self setWantsLayer:YES];
+    }
   }
   return self;
 }
@@ -90,24 +105,33 @@ class FullscreenObserver : public WebContentsObserver {
   delegate_ = nil;
 }
 
+- (NSColor*)computeBackgroundColor {
+  // This view is sometimes flashed into visibility (e.g, when closing
+  // windows), so ensure that the flash be white in those cases.
+  if (![delegate_ contentsInFullscreenCaptureMode])
+    return [NSColor whiteColor];
+
+  // Fill with a dark tint of the new tab page's background color.  This is
+  // only seen when the subview is sized specially for fullscreen tab capture.
+  NSColor* bgColor = nil;
+  ThemeService* const theme =
+      static_cast<ThemeService*>([[self window] themeProvider]);
+  if (theme)
+    bgColor = theme->GetNSColor(ThemeProperties::COLOR_NTP_BACKGROUND);
+  if (!bgColor)
+    bgColor = [[self window] backgroundColor];
+  const float kDarknessFraction = 0.80f;
+  return [bgColor blendedColorWithFraction:kDarknessFraction
+                                   ofColor:[NSColor blackColor]];
+}
+
 // Override -drawRect to fill the view with a solid color outside of the
 // subview's frame.
 - (void)drawRect:(NSRect)dirtyRect {
   NSView* const contentsView =
       [[self subviews] count] > 0 ? [[self subviews] objectAtIndex:0] : nil;
   if (!contentsView || !NSContainsRect([contentsView frame], dirtyRect)) {
-    // Fill with a dark tint of the new tab page's background color.  This is
-    // only seen when the subview is sized specially for fullscreen tab capture.
-    NSColor* bgColor = nil;
-    ThemeService* const theme =
-        static_cast<ThemeService*>([[self window] themeProvider]);
-    if (theme)
-      bgColor = theme->GetNSColor(ThemeProperties::COLOR_NTP_BACKGROUND);
-    if (!bgColor)
-      bgColor = [[self window] backgroundColor];
-    const float kDarknessFraction = 0.80f;
-    [[bgColor blendedColorWithFraction:kDarknessFraction
-                               ofColor:[NSColor blackColor]] setFill];
+    [[self computeBackgroundColor] setFill];
     NSRectFill(dirtyRect);
   }
   [super drawRect:dirtyRect];
@@ -123,6 +147,24 @@ class FullscreenObserver : public WebContentsObserver {
     return;
   }
   [contentsView setFrame:[delegate_ frameForContentsView]];
+}
+
+// Update the background layer's color whenever the view needs to repaint.
+- (void)setNeedsDisplayInRect:(NSRect)rect {
+  [super setNeedsDisplayInRect:rect];
+
+  // Convert from an NSColor to a CGColorRef.
+  NSColor* nsBackgroundColor = [self computeBackgroundColor];
+  NSColorSpace* nsColorSpace = [nsBackgroundColor colorSpace];
+  CGColorSpaceRef cgColorSpace = [nsColorSpace CGColorSpace];
+  const NSInteger numberOfComponents = [nsBackgroundColor numberOfComponents];
+  CGFloat components[numberOfComponents];
+  [nsBackgroundColor getComponents:components];
+  base::ScopedCFTypeRef<CGColorRef> cgBackgroundColor(
+      CGColorCreate(cgColorSpace, components));
+
+  ScopedCAActionDisabler disabler;
+  [[self layer] setBackgroundColor:cgBackgroundColor];
 }
 
 @end  // @implementation TabContentsContainerView
@@ -263,6 +305,22 @@ class FullscreenObserver : public WebContentsObserver {
   [self ensureContentsVisible];
 }
 
+- (BOOL)contentsInFullscreenCaptureMode {
+  if (!fullscreenObserver_)
+    return NO;
+  // Note: Grab a known-valid WebContents pointer from |fullscreenObserver_|.
+  content::WebContents* const wc = fullscreenObserver_->web_contents();
+  if (!wc ||
+      wc->GetCapturerCount() == 0 ||
+      wc->GetPreferredSize().IsEmpty() ||
+      !(isEmbeddingFullscreenWidget_ ||
+        (wc->GetDelegate() &&
+         wc->GetDelegate()->IsFullscreenForTabOrPending(wc)))) {
+    return NO;
+  }
+  return YES;
+}
+
 - (NSRect)frameForContentsView {
   const NSSize containerSize = [[self view] frame].size;
   gfx::Rect rect;
@@ -272,22 +330,13 @@ class FullscreenObserver : public WebContentsObserver {
   // In most cases, the contents view is simply sized to fill the container
   // view's bounds. Only WebContentses that are in fullscreen mode and being
   // screen-captured will engage the special layout/sizing behavior.
-  if (!fullscreenObserver_)
+  if (![self contentsInFullscreenCaptureMode])
     return NSRectFromCGRect(rect.ToCGRect());
-  // Note: Grab a known-valid WebContents pointer from |fullscreenObserver_|.
-  content::WebContents* const wc = fullscreenObserver_->web_contents();
-  if (!wc ||
-      wc->GetCapturerCount() == 0 ||
-      wc->GetPreferredSize().IsEmpty() ||
-      !(isEmbeddingFullscreenWidget_ ||
-        (wc->GetDelegate() &&
-         wc->GetDelegate()->IsFullscreenForTabOrPending(wc)))) {
-    return NSRectFromCGRect(rect.ToCGRect());
-  }
 
   // Size the contents view to the capture video resolution and center it. If
   // the container view is not large enough to fit it at the preferred size,
   // scale down to fit (preserving aspect ratio).
+  content::WebContents* const wc = fullscreenObserver_->web_contents();
   const gfx::Size captureSize = wc->GetPreferredSize();
   if (captureSize.width() <= rect.width() &&
       captureSize.height() <= rect.height()) {
