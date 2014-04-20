@@ -120,6 +120,14 @@ AutomationNodeImpl.prototype = {
     }
   },
 
+  toString: function() {
+    return 'node id=' + this.id +
+        ' role=' + this.role +
+        ' state=' + JSON.stringify(this.state) +
+        ' childIds=' + JSON.stringify(this.childIds) +
+        ' attributes=' + JSON.stringify(this.attributes);
+  },
+
   dispatchEventAtCapturing_: function(event, path) {
     privates(event).impl.eventPhase = Event.CAPTURING_PHASE;
     for (var i = path.length - 1; i >= 0; i--) {

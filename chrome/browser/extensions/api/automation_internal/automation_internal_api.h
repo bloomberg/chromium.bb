@@ -8,7 +8,6 @@
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "extensions/browser/event_router.h"
 
 namespace content {
 struct AXEventNotificationDetails;

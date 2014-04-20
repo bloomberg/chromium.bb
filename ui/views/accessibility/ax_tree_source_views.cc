@@ -4,6 +4,8 @@
 
 #include "ui/views/accessibility/ax_tree_source_views.h"
 
+#include <vector>
+
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/views/widget/widget.h"
@@ -13,7 +15,7 @@ namespace views {
 // A simple store associating each |View| with a unique id.
 class AXViewStore {
  public:
-  AXViewStore() : view_id_(0) {};
+  AXViewStore() : view_id_(0) {}
 
   int32 GetOrStoreView(View* view) {
     int32 current_id = RetrieveId(view);
@@ -63,15 +65,18 @@ class AXViewStore {
   std::map<View*, int32> view_to_id_;
 };
 
-AXTreeSourceViews::AXTreeSourceViews(Widget* root) :
-    view_store_(new AXViewStore()),
-    root_(root) {
+AXTreeSourceViews::AXTreeSourceViews(Widget* root)
+    : view_store_(new AXViewStore()),
+      root_(root) {
   root->AddObserver(this);
+  root->AddRemovalsObserver(this);
 }
 
 AXTreeSourceViews::~AXTreeSourceViews() {
-  if (root_)
+  if (root_) {
     root_->RemoveObserver(this);
+    root_->RemoveRemovalsObserver(this);
+  }
 }
 
 View* AXTreeSourceViews::GetRoot() const {
@@ -148,4 +153,4 @@ void AXTreeSourceViews::OnWidgetDestroyed(Widget* widget) {
     root_ = NULL;
 }
 
-} // namespace views
+}  // namespace views

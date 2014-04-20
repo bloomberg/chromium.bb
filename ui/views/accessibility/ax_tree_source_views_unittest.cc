@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <vector>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -68,9 +70,7 @@ TEST_F(AXTreeSourceViewsTest, SimpleAccessers) {
 
 TEST_F(AXTreeSourceViewsTest, SimpleSerialization) {
   AXTreeSourceViews ax_tree(widget_.get());
-  ui::AXTreeSource<View*>* ax_source =
-      static_cast<ui::AXTreeSource<View*>* >(&ax_tree);
-  ui::AXTreeSerializer<View*> ax_serializer(ax_source);
+  ui::AXTreeSerializer<View*> ax_serializer(&ax_tree);
   ui::AXTreeUpdate out_update;
   ax_serializer.SerializeChanges(ax_tree.GetRoot(), &out_update);
   ASSERT_EQ(3U, out_update.nodes.size());
@@ -82,4 +82,4 @@ TEST_F(AXTreeSourceViewsTest, SimpleSerialization) {
             out_update.nodes[2].ToString());
 }
 
-} // namespace views
+}  // namespace views

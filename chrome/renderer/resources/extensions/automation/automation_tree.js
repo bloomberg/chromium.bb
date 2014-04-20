@@ -46,36 +46,18 @@ var AutomationAttributeTypes = [
 var AutomationTreeImpl = function(processID, routingID) {
   this.processID = processID;
   this.routingID = routingID;
-
   this.listeners = {};
-
   this.root = new AutomationNode(this);
-
-  /**
-   * Our cache of the native AXTree.
-   * @type {!Object.<number, Object>}
-   * @private
-   */
   this.axNodeDataCache_ = {};
 };
 
 AutomationTreeImpl.prototype = {
   root: null,
 
-  /**
-   * Looks up AXNodeData from backing AXTree.
-   * We assume this cache is complete at the time a client requests a node.
-   * @param {number} id The id of the AXNode to retrieve.
-   * @return {AutomationNode} The data, if it exists.
-   */
   get: function(id) {
     return this.axNodeDataCache_[id];
   },
 
-  /**
-   * Invalidates a subtree rooted at |node|.
-   * @param {AutomationNode} id The node to invalidate.
-   */
   invalidate: function(node) {
     if (!node)
       return;
@@ -113,11 +95,6 @@ AutomationTreeImpl.prototype = {
     }
   },
 
-  /**
-   * Send an update to this tree.
-   * @param {Object} data The update.
-   * @return {boolean} Whether any changes to the tree occurred.
-   */
   update: function(data) {
     var didUpdateRoot = false;
 
@@ -186,6 +163,20 @@ AutomationTreeImpl.prototype = {
     if (node)
       privates(node).impl.dispatchEvent(data.eventType);
     return true;
+  },
+
+  toString: function() {
+    function toStringInternal(node, indent) {
+      if (!node)
+        return '';
+      var output =
+          new Array(indent).join(' ') + privates(node).impl.toString() + '\n';
+      indent += 2;
+      for (var i = 0; i < node.children().length; i++)
+        output += toStringInternal(node.children()[i], indent);
+      return output;
+    }
+    return toStringInternal(this.root, 0);
   }
 };
 

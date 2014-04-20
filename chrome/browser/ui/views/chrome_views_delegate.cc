@@ -13,6 +13,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/accessibility/accessibility_event_router_views.h"
+#include "chrome/browser/ui/views/accessibility/automation_manager_views.h"
 #include "chrome/common/pref_names.h"
 #include "grit/chrome_unscaled_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -52,6 +53,13 @@
 
 namespace {
 
+Profile* GetProfileForWindow(const views::Widget* window) {
+  if (!window)
+    return NULL;
+  return reinterpret_cast<Profile*>(
+      window->GetNativeWindowProperty(Profile::kProfileKey));
+}
+
 // If the given window has a profile associated with it, use that profile's
 // preference service. Otherwise, store and retrieve the data from Local State.
 // This function may return NULL if the necessary pref service has not yet
@@ -59,8 +67,7 @@ namespace {
 // TODO(mirandac): This function will also separate windows by profile in a
 // multi-profile environment.
 PrefService* GetPrefsForWindow(const views::Widget* window) {
-  Profile* profile = reinterpret_cast<Profile*>(
-      window->GetNativeWindowProperty(Profile::kProfileKey));
+  Profile* profile = GetProfileForWindow(window);
   if (!profile) {
     // Use local state for windows that have no explicit profile.
     return g_browser_process->local_state();
@@ -143,6 +150,9 @@ void ChromeViewsDelegate::NotifyAccessibilityEvent(
     views::View* view, ui::AXEvent event_type) {
   AccessibilityEventRouterViews::GetInstance()->HandleAccessibilityEvent(
       view, event_type);
+
+  AutomationManagerViews::GetInstance()->HandleEvent(
+      GetProfileForWindow(view->GetWidget()), view, event_type);
 }
 
 void ChromeViewsDelegate::NotifyMenuItemFocused(

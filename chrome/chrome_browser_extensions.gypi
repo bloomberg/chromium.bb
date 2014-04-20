@@ -141,6 +141,8 @@
         'browser/extensions/api/audio/audio_service_chromeos.cc',
         'browser/extensions/api/automation_internal/automation_internal_api.cc',
         'browser/extensions/api/automation_internal/automation_internal_api.h',
+        'browser/extensions/api/automation_internal/automation_util.cc',
+        'browser/extensions/api/automation_internal/automation_util.h',
         'browser/extensions/api/autotest_private/autotest_private_api.cc',
         'browser/extensions/api/autotest_private/autotest_private_api.h',
         'browser/extensions/api/bluetooth/bluetooth_api.cc',
