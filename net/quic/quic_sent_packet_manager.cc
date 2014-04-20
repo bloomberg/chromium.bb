@@ -311,6 +311,7 @@ QuicUnackedPacketMap::const_iterator QuicSentPacketManager::MarkPacketHandled(
       all_transmissions.rbegin();
   QuicPacketSequenceNumber newest_transmission = *all_transmissions_it;
   if (newest_transmission != sequence_number) {
+    stats_->bytes_spuriously_retransmitted += transmission_info.bytes_sent;
     ++stats_->packets_spuriously_retransmitted;
   }
 

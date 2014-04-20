@@ -39,6 +39,7 @@ struct NET_EXPORT_PRIVATE QuicConnectionStats {
   uint64 bytes_retransmitted;
   uint32 packets_retransmitted;
 
+  uint64 bytes_spuriously_retransmitted;
   uint32 packets_spuriously_retransmitted;
   uint32 packets_lost;
   uint32 slowstart_packets_lost;  // Number of packets lost exiting slow start.
@@ -54,7 +55,9 @@ struct NET_EXPORT_PRIVATE QuicConnectionStats {
 
   uint32 min_rtt_us;  // Minimum RTT in microseconds.
   uint32 srtt_us;  // Smoothed RTT in microseconds.
+  uint32 max_packet_size;  // In bytes.
   uint64 estimated_bandwidth;  // In bytes per second.
+  uint32 congestion_window;  // In bytes
 
   // Reordering stats for received packets.
   // Number of packets received out of sequence number order.

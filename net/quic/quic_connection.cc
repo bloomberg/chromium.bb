@@ -1035,6 +1035,8 @@ const QuicConnectionStats& QuicConnection::GetStats() {
       sent_packet_manager_.GetRttStats()->SmoothedRtt().ToMicroseconds();
   stats_.estimated_bandwidth =
       sent_packet_manager_.BandwidthEstimate().ToBytesPerSecond();
+  stats_.congestion_window = sent_packet_manager_.GetCongestionWindow();
+  stats_.max_packet_size = options()->max_packet_length;
   return stats_;
 }
 
@@ -1636,8 +1638,12 @@ void QuicConnection::MaybeProcessRevivedPacket() {
   char revived_payload[kMaxPacketSize];
   size_t len = group->Revive(&revived_header, revived_payload, kMaxPacketSize);
   revived_header.public_header.connection_id = connection_id_;
+  revived_header.public_header.connection_id_length =
+      last_header_.public_header.connection_id_length;
   revived_header.public_header.version_flag = false;
   revived_header.public_header.reset_flag = false;
+  revived_header.public_header.sequence_number_length =
+      last_header_.public_header.sequence_number_length;
   revived_header.fec_flag = false;
   revived_header.is_in_fec_group = NOT_IN_FEC_GROUP;
   revived_header.fec_group = 0;

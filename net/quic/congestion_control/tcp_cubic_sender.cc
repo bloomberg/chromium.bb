@@ -145,7 +145,7 @@ bool TcpCubicSender::OnPacketSent(QuicTime /*sent_time*/,
     // DCHECK_LT(largest_sent_sequence_number_, sequence_number);
     largest_sent_sequence_number_ = sequence_number;
   }
-  hybrid_slow_start_.OnPacketSent(sequence_number, AvailableSendWindow());
+  hybrid_slow_start_.OnPacketSent(sequence_number);
   return true;
 }
 
@@ -276,7 +276,9 @@ void TcpCubicSender::OnRetransmissionTimeout(bool packets_retransmitted) {
 
 void TcpCubicSender::UpdateRtt(QuicTime::Delta rtt) {
   if (InSlowStart() &&
-      hybrid_slow_start_.ShouldExitSlowStart(rtt_stats_, congestion_window_)) {
+      hybrid_slow_start_.ShouldExitSlowStart(rtt_stats_->latest_rtt(),
+                                             rtt_stats_->min_rtt(),
+                                             congestion_window_)) {
      slowstart_threshold_ = congestion_window_;
   }
 }

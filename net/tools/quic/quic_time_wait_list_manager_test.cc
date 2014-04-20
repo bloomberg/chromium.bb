@@ -21,7 +21,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using net::test::FramerVisitorCapturingPublicReset;
+using net::test::NoOpFramerVisitor;
+using net::test::QuicVersionMax;
+using net::test::QuicVersionMin;
 using testing::_;
 using testing::Args;
 using testing::Assign;
@@ -38,6 +40,24 @@ using testing::Truly;
 namespace net {
 namespace tools {
 namespace test {
+
+class FramerVisitorCapturingPublicReset : public NoOpFramerVisitor {
+ public:
+  FramerVisitorCapturingPublicReset() {}
+  virtual ~FramerVisitorCapturingPublicReset() {}
+
+  virtual void OnPublicResetPacket(
+      const QuicPublicResetPacket& public_reset) OVERRIDE {
+    public_reset_packet_ = public_reset;
+  }
+
+  const QuicPublicResetPacket public_reset_packet() {
+    return public_reset_packet_;
+  }
+
+ private:
+  QuicPublicResetPacket public_reset_packet_;
+};
 
 class QuicTimeWaitListManagerPeer {
  public:
@@ -85,7 +105,7 @@ class QuicTimeWaitListManagerTest : public ::testing::Test {
   }
 
   void AddConnectionId(QuicConnectionId connection_id) {
-    AddConnectionId(connection_id, net::test::QuicVersionMax(), NULL);
+    AddConnectionId(connection_id, QuicVersionMax(), NULL);
   }
 
   void AddConnectionId(QuicConnectionId connection_id,
@@ -204,7 +224,7 @@ TEST_F(QuicTimeWaitListManagerTest, SendConnectionClose) {
   size_t kConnectionCloseLength = 100;
   AddConnectionId(
       connection_id_,
-      net::test::QuicVersionMax(),
+      QuicVersionMax(),
       new QuicEncryptedPacket(
           new char[kConnectionCloseLength], kConnectionCloseLength, true));
   const int kRandomSequenceNumber = 1;
@@ -356,17 +376,17 @@ TEST_F(QuicTimeWaitListManagerTest, GetQuicVersionFromMap) {
   const int kConnectionId2 = 456;
   const int kConnectionId3 = 789;
 
-  AddConnectionId(kConnectionId1, net::test::QuicVersionMin(), NULL);
-  AddConnectionId(kConnectionId2, net::test::QuicVersionMax(), NULL);
-  AddConnectionId(kConnectionId3, net::test::QuicVersionMax(), NULL);
+  AddConnectionId(kConnectionId1, QuicVersionMin(), NULL);
+  AddConnectionId(kConnectionId2, QuicVersionMax(), NULL);
+  AddConnectionId(kConnectionId3, QuicVersionMax(), NULL);
 
-  EXPECT_EQ(net::test::QuicVersionMin(),
+  EXPECT_EQ(QuicVersionMin(),
             QuicTimeWaitListManagerPeer::GetQuicVersionFromConnectionId(
                 &time_wait_list_manager_, kConnectionId1));
-  EXPECT_EQ(net::test::QuicVersionMax(),
+  EXPECT_EQ(QuicVersionMax(),
             QuicTimeWaitListManagerPeer::GetQuicVersionFromConnectionId(
                 &time_wait_list_manager_, kConnectionId2));
-  EXPECT_EQ(net::test::QuicVersionMax(),
+  EXPECT_EQ(QuicVersionMax(),
             QuicTimeWaitListManagerPeer::GetQuicVersionFromConnectionId(
                 &time_wait_list_manager_, kConnectionId3));
 }
@@ -379,7 +399,7 @@ TEST_F(QuicTimeWaitListManagerTest, AddConnectionIdTwice) {
   size_t kConnectionCloseLength = 100;
   AddConnectionId(
       connection_id_,
-      net::test::QuicVersionMax(),
+      QuicVersionMax(),
       new QuicEncryptedPacket(
           new char[kConnectionCloseLength], kConnectionCloseLength, true));
   EXPECT_TRUE(IsConnectionIdInTimeWait(connection_id_));

@@ -36,9 +36,14 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
 
   virtual void OnPacket() OVERRIDE {}
   virtual void OnPublicResetPacket(
-      const QuicPublicResetPacket& packet) OVERRIDE {}
+      const QuicPublicResetPacket& packet) OVERRIDE {
+    public_reset_packet_.reset(new QuicPublicResetPacket(packet));
+  }
   virtual void OnVersionNegotiationPacket(
-      const QuicVersionNegotiationPacket& packet) OVERRIDE {}
+      const QuicVersionNegotiationPacket& packet) OVERRIDE {
+    version_negotiation_packet_.reset(
+        new QuicVersionNegotiationPacket(packet));
+  }
   virtual void OnRevivedPacket() OVERRIDE {}
 
   virtual bool OnUnauthenticatedPublicHeader(
@@ -143,12 +148,20 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
   const QuicFecData& fec_data() const {
     return fec_data_;
   }
+  const QuicVersionNegotiationPacket* version_negotiation_packet() const {
+    return version_negotiation_packet_.get();
+  }
+  const QuicPublicResetPacket* public_reset_packet() const {
+    return public_reset_packet_.get();
+  }
 
  private:
   QuicErrorCode error_;
   bool has_header_;
   QuicPacketHeader header_;
   QuicFecData fec_data_;
+  scoped_ptr<QuicVersionNegotiationPacket> version_negotiation_packet_;
+  scoped_ptr<QuicPublicResetPacket> public_reset_packet_;
   string fec_redundancy_;
   vector<QuicAckFrame> ack_frames_;
   vector<QuicCongestionFeedbackFrame> feedback_frames_;
@@ -187,12 +200,26 @@ bool SimpleQuicFramer::ProcessPacket(const QuicEncryptedPacket& packet) {
   return framer_.ProcessPacket(packet);
 }
 
+void SimpleQuicFramer::Reset() {
+  visitor_.reset(new SimpleFramerVisitor);
+}
+
+
 const QuicPacketHeader& SimpleQuicFramer::header() const {
   return visitor_->header();
 }
 
 const QuicFecData& SimpleQuicFramer::fec_data() const {
   return visitor_->fec_data();
+}
+
+const QuicVersionNegotiationPacket*
+SimpleQuicFramer::version_negotiation_packet() const {
+  return visitor_->version_negotiation_packet();
+}
+
+const QuicPublicResetPacket* SimpleQuicFramer::public_reset_packet() const {
+  return visitor_->public_reset_packet();
 }
 
 QuicFramer* SimpleQuicFramer::framer() {

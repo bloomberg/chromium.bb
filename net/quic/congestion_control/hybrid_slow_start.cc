@@ -6,8 +6,6 @@
 
 #include <algorithm>
 
-#include "net/quic/congestion_control/rtt_stats.h"
-
 using std::max;
 using std::min;
 
@@ -19,18 +17,16 @@ const int64 kHybridStartLowWindow = 16;
 // Number of delay samples for detecting the increase of delay.
 const uint32 kHybridStartMinSamples = 8;
 const int kHybridStartDelayFactorExp = 4;  // 2^4 = 16
-const int kHybridStartDelayMinThresholdUs = 2000;
-// TODO(ianswett): The original paper specifies 8, not 16ms.
+// The original paper specifies 2 and 8ms, but those have changed over time.
+const int kHybridStartDelayMinThresholdUs = 4000;
 const int kHybridStartDelayMaxThresholdUs = 16000;
 
 HybridSlowStart::HybridSlowStart(const QuicClock* clock)
     : clock_(clock),
       started_(false),
-      found_ack_train_(false),
-      found_delay_(false),
+      hystart_found_(NOT_FOUND),
+      last_sent_sequence_number_(0),
       round_start_(QuicTime::Zero()),
-      update_end_sequence_number_(true),
-      sender_end_sequence_number_(0),
       end_sequence_number_(0),
       last_close_ack_pair_time_(QuicTime::Zero()),
       rtt_sample_count_(0),
@@ -39,52 +35,27 @@ HybridSlowStart::HybridSlowStart(const QuicClock* clock)
 
 void HybridSlowStart::OnPacketAcked(
     QuicPacketSequenceNumber acked_sequence_number, bool in_slow_start) {
+  // OnPacketAcked gets invoked after ShouldExitSlowStart, so it's best to end
+  // the round when the final packet of the burst is received and start it on
+  // the next incoming ack.
   if (in_slow_start && IsEndOfRound(acked_sequence_number)) {
-    Reset(sender_end_sequence_number_);
-  }
-
-  if (sender_end_sequence_number_ == acked_sequence_number) {
-    DVLOG(1) << "Start update end sequence number @" << acked_sequence_number;
-    update_end_sequence_number_ = true;
+    started_ = false;
   }
 }
 
-void HybridSlowStart::OnPacketSent(QuicPacketSequenceNumber sequence_number,
-                                   QuicByteCount available_send_window) {
-  if (update_end_sequence_number_) {
-    sender_end_sequence_number_ = sequence_number;
-    if (available_send_window == 0) {
-      update_end_sequence_number_ = false;
-      DVLOG(1) << "Stop update end sequence number @" << sequence_number;
-    }
-  }
-}
-
-bool HybridSlowStart::ShouldExitSlowStart(const RttStats* rtt_stats,
-                                          int64 congestion_window) {
-  // Hybrid start triggers when cwnd is larger than some threshold.
-  if (congestion_window < kHybridStartLowWindow) {
-    return false;
-  }
-  if (!started_) {
-    // Time to start the hybrid slow start.
-    Reset(sender_end_sequence_number_);
-  }
-  // TODO(ianswett): Merge UpdateAndMaybeExit into ShouldExitSlowStart in
-  // another refactor CL, since it's only used here.
-  return UpdateAndMaybeExit(rtt_stats->latest_rtt(), rtt_stats->min_rtt());
+void HybridSlowStart::OnPacketSent(QuicPacketSequenceNumber sequence_number) {
+  last_sent_sequence_number_ = sequence_number;
 }
 
 void HybridSlowStart::Restart() {
   started_ = false;
-  found_ack_train_ = false;
-  found_delay_  = false;
+  hystart_found_ = NOT_FOUND;
 }
 
-void HybridSlowStart::Reset(QuicPacketSequenceNumber end_sequence_number) {
-  DVLOG(1) << "Reset hybrid slow start @" << end_sequence_number;
+void HybridSlowStart::StartReceiveRound(QuicPacketSequenceNumber last_sent) {
+  DVLOG(1) << "Reset hybrid slow start @" << last_sent;
   round_start_ = last_close_ack_pair_time_ = clock_->ApproximateNow();
-  end_sequence_number_ = end_sequence_number;
+  end_sequence_number_ = last_sent;
   current_min_rtt_ = QuicTime::Delta::Zero();
   rtt_sample_count_ = 0;
   started_ = true;
@@ -94,11 +65,14 @@ bool HybridSlowStart::IsEndOfRound(QuicPacketSequenceNumber ack) const {
   return end_sequence_number_ <= ack;
 }
 
-bool HybridSlowStart::UpdateAndMaybeExit(QuicTime::Delta rtt,
-                                         QuicTime::Delta min_rtt) {
-  // The original code doesn't invoke this until we hit 16 packet per burst.
-  // Since the code handles lower than 16 gracefully I removed that limit.
-  if (found_ack_train_ || found_delay_) {
+bool HybridSlowStart::ShouldExitSlowStart(QuicTime::Delta latest_rtt,
+                                          QuicTime::Delta min_rtt,
+                                          int64 congestion_window) {
+  if (!started_) {
+    // Time to start the hybrid slow start.
+    StartReceiveRound(last_sent_sequence_number_);
+  }
+  if (hystart_found_ != NOT_FOUND) {
     return true;
   }
   QuicTime current_time = clock_->ApproximateNow();
@@ -110,12 +84,22 @@ bool HybridSlowStart::UpdateAndMaybeExit(QuicTime::Delta rtt,
   // more than the capacity.
   // This first trigger will not come into play until we hit roughly 9.6 Mbps
   // with delayed acks (or 4.8Mbps without delayed acks)
+  // TODO(ianswett): QUIC always uses delayed acks, even at the beginning, so
+  // this should likely be at least 4ms.
   // TODO(pwestin): we need to make sure our pacing don't trigger this detector.
+  // TODO(ianswett): Pacing or other cases could be handled by checking the send
+  // time of the first acked packet in a receive round.
   if (current_time.Subtract(last_close_ack_pair_time_).ToMicroseconds() <=
           kHybridStartDelayMinThresholdUs) {
     last_close_ack_pair_time_ = current_time;
-    found_ack_train_ = current_time.Subtract(round_start_).ToMicroseconds() >=
-        min_rtt.ToMicroseconds() >> 1;
+    if (current_time.Subtract(round_start_).ToMicroseconds() >=
+            min_rtt.ToMicroseconds() >> 1) {
+      hystart_found_ = ACK_TRAIN;
+    }
+  } else if (last_close_ack_pair_time_ == round_start_) {
+    // If the previous ack wasn't close, then move forward the round start time
+    // to the incoming ack.
+    last_close_ack_pair_time_ = round_start_ = current_time;
   }
   // Second detection parameter - delay increase detection.
   // Compare the minimum delay (current_min_rtt_) of the current
@@ -125,11 +109,11 @@ bool HybridSlowStart::UpdateAndMaybeExit(QuicTime::Delta rtt,
   // bursts.
   rtt_sample_count_++;
   if (rtt_sample_count_ <= kHybridStartMinSamples) {
-    if (current_min_rtt_.IsZero() || current_min_rtt_ > rtt) {
-      current_min_rtt_ = rtt;
+    if (current_min_rtt_.IsZero() || current_min_rtt_ > latest_rtt) {
+      current_min_rtt_ = latest_rtt;
     }
   }
-  // We only need to check this once.
+  // We only need to check this once per round.
   if (rtt_sample_count_ == kHybridStartMinSamples) {
     // Divide min_rtt by 16 to get a rtt increase threshold for exiting.
     int min_rtt_increase_threshold_us = min_rtt.ToMicroseconds() >>
@@ -141,10 +125,14 @@ bool HybridSlowStart::UpdateAndMaybeExit(QuicTime::Delta rtt,
         QuicTime::Delta::FromMicroseconds(max(min_rtt_increase_threshold_us,
                                               kHybridStartDelayMinThresholdUs));
 
-    found_delay_ = current_min_rtt_ > min_rtt.Add(min_rtt_increase_threshold);
+    if (current_min_rtt_ > min_rtt.Add(min_rtt_increase_threshold)) {
+      hystart_found_= DELAY;
+    }
   }
-  // If either of the two conditions are met we exit from slow start.
-  return found_ack_train_ || found_delay_;
+  // Exit from slow start if the cwnd is greater than 16 and an ack train or
+  // increasing delay are found.
+  return congestion_window >= kHybridStartLowWindow &&
+      hystart_found_ != NOT_FOUND;
 }
 
 }  // namespace net

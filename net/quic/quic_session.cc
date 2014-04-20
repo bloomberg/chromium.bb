@@ -331,8 +331,7 @@ void QuicSession::SendRstStream(QuicStreamId id,
                                 QuicRstStreamErrorCode error,
                                 QuicStreamOffset bytes_written) {
   if (connection()->connected()) {
-    // Don't bother sending a RST_STREAM frame if the connection is already
-    // closed.
+    // Only send a RST_STREAM frame if still connected.
     connection_->SendRstStream(id, error, bytes_written);
   }
   CloseStreamInner(id, true);

@@ -17,6 +17,7 @@ QuicConnectionStats::QuicConnectionStats()
       stream_bytes_received(0),
       bytes_retransmitted(0),
       packets_retransmitted(0),
+      bytes_spuriously_retransmitted(0),
       packets_spuriously_retransmitted(0),
       packets_lost(0),
       slowstart_packets_lost(0),
@@ -48,7 +49,8 @@ ostream& operator<<(ostream& os, const QuicConnectionStats& s) {
      << ", stream bytes received: " << s.stream_bytes_received
      << ", bytes retransmitted: " << s.bytes_retransmitted
      << ", packets retransmitted: " << s.packets_retransmitted
-     << ", packets_spuriously_retransmitted: "
+     << ", bytes spuriously retransmitted: " << s.bytes_spuriously_retransmitted
+     << ", packets spuriously retransmitted: "
      << s.packets_spuriously_retransmitted
      << ", packets lost: " << s.packets_lost
      << ", slowstart packets lost: " << s.slowstart_packets_lost
@@ -59,11 +61,13 @@ ostream& operator<<(ostream& os, const QuicConnectionStats& s) {
      << ", tlp count: " << s.tlp_count
      << ", min_rtt(us): " << s.min_rtt_us
      << ", srtt(us): " << s.srtt_us
-     << ", estimated_bandwidth: " << s.estimated_bandwidth
+     << ", max packet size: " << s.max_packet_size
+     << ", estimated bandwidth: " << s.estimated_bandwidth
+     << ", congestion window: " << s.congestion_window
      << ", tcp_loss_events: " << s.tcp_loss_events
      << ", packets reordered: " << s.packets_reordered
      << ", max sequence reordering: " << s.max_sequence_reordering
-     << ", max_time_reordering(us): " << s.max_time_reordering_us
+     << ", max time reordering(us): " << s.max_time_reordering_us
      << ", total amount of cwnd increase in TCPCubic, in congestion avoidance: "
      << s.cwnd_increase_congestion_avoidance
      << ", amount of cwnd increase in TCPCubic, in cubic mode: "
