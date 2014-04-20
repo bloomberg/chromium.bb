@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/local_discovery/cloud_print_printer_list.h"
+#include "components/cloud_devices/common/cloud_devices_urls.h"
 #include "content/public/test/test_browser_thread.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -56,7 +57,6 @@ class CloudPrintPrinterListTest : public testing::Test {
     token_service_.AddAccount("account_id");
     printer_list_.reset(
         new CloudPrintPrinterList(request_context_.get(),
-                                  "http://SoMeUrL.com/cloudprint",
                                   &token_service_,
                                   "account_id",
                                   &delegate_));
@@ -88,7 +88,7 @@ class CloudPrintPrinterListTest : public testing::Test {
 
 TEST_F(CloudPrintPrinterListTest, SuccessOAuth2) {
   fetcher_factory_->SetFakeResponse(
-      GURL("http://SoMeUrL.com/cloudprint/search"),
+      cloud_devices::GetCloudPrintRelativeURL("search"),
       kSampleSuccessResponseOAuth,
       net::HTTP_OK,
       net::URLRequestStatus::SUCCESS);

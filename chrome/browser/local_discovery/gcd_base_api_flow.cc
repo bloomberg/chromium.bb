@@ -9,8 +9,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/local_discovery/gcd_constants.h"
-#include "chrome/browser/local_discovery/gcd_url.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
+#include "components/cloud_devices/common/cloud_devices_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
@@ -50,9 +50,9 @@ GCDBaseApiFlow::~GCDBaseApiFlow() {}
 void GCDBaseApiFlow::Start() {
   OAuth2TokenService::ScopeSet oauth_scopes;
   if (delegate_->GCDIsCloudPrint()) {
-    oauth_scopes.insert(cloud_print::kCloudPrintAuth);
+    oauth_scopes.insert(cloud_devices::kCloudPrintAuthScope);
   } else {
-    oauth_scopes.insert(kGCDOAuthScope);
+    oauth_scopes.insert(cloud_devices::kCloudDevicesAuthScope);
   }
   oauth_request_ =
       token_service_->StartRequest(account_id_, oauth_scopes, this);

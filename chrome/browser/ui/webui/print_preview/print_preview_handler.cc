@@ -27,7 +27,6 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/platform_util.h"
-#include "chrome/browser/printing/cloud_print/cloud_print_url.h"
 #include "chrome/browser/printing/print_dialog_cloud.h"
 #include "chrome/browser/printing/print_error_dialog.h"
 #include "chrome/browser/printing/print_job_manager.h"
@@ -49,6 +48,7 @@
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/print_messages.h"
+#include "components/cloud_devices/common/cloud_devices_urls.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_manager_base.h"
@@ -432,7 +432,7 @@ class PrintPreviewHandler::AccessTokenService
 
     if (service) {
       OAuth2TokenService::ScopeSet oauth_scopes;
-      oauth_scopes.insert(cloud_print::kCloudPrintAuth);
+      oauth_scopes.insert(cloud_devices::kCloudPrintAuthScope);
       scoped_ptr<OAuth2TokenService::Request> request(
           service->StartRequest(account_id, oauth_scopes, this));
       requests_[type].reset(request.release());
@@ -955,15 +955,12 @@ void PrintPreviewHandler::PrintWithCloudPrintDialog() {
 void PrintPreviewHandler::HandleManageCloudPrint(
     const base::ListValue* /*args*/) {
   ++manage_cloud_printers_dialog_request_count_;
-  Profile* profile = Profile::FromBrowserContext(
-      preview_web_contents()->GetBrowserContext());
-  preview_web_contents()->OpenURL(
-      content::OpenURLParams(
-          CloudPrintURL(profile).GetCloudPrintServiceManageURL(),
-          content::Referrer(),
-          NEW_FOREGROUND_TAB,
-          content::PAGE_TRANSITION_LINK,
-          false));
+  preview_web_contents()->OpenURL(content::OpenURLParams(
+      cloud_devices::GetCloudPrintRelativeURL("manage.html"),
+      content::Referrer(),
+      NEW_FOREGROUND_TAB,
+      content::PAGE_TRANSITION_LINK,
+      false));
 }
 
 void PrintPreviewHandler::HandleShowSystemDialog(
@@ -1178,7 +1175,7 @@ void PrintPreviewHandler::SendCloudPrintEnabled() {
       preview_web_contents()->GetBrowserContext());
   PrefService* prefs = profile->GetPrefs();
   if (prefs->GetBoolean(prefs::kCloudPrintSubmitEnabled)) {
-    GURL gcp_url(CloudPrintURL(profile).GetCloudPrintServiceURL());
+    GURL gcp_url(cloud_devices::GetCloudPrintURL());
     base::StringValue gcp_url_value(gcp_url.spec());
     web_ui()->CallJavascriptFunction("setUseCloudPrint", gcp_url_value);
   }

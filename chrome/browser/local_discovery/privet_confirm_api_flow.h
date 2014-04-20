@@ -24,7 +24,6 @@ class PrivetConfirmApiCallFlow : public GCDBaseApiFlow::Delegate {
                            OAuth2TokenService* token_service_,
                            const std::string& account_id,
                            bool is_cloud_print,
-                           const GURL& base_url,
                            const std::string& token,
                            const ResponseCallback& callback);
 

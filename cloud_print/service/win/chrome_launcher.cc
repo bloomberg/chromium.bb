@@ -23,6 +23,7 @@
 #include "cloud_print/common/win/cloud_print_utils.h"
 #include "cloud_print/service/service_constants.h"
 #include "cloud_print/service/win/service_utils.h"
+#include "components/cloud_devices/common/cloud_devices_urls.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
 #include "url/gurl.h"
@@ -89,27 +90,6 @@ bool LaunchProcess(const CommandLine& cmdline,
     *thread_id = process_info.thread_id();
 
   return true;
-}
-
-GURL GetCloudPrintServiceEnableURL(const std::string& proxy_id) {
-  GURL url(
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kCloudPrintServiceURL));
-  if (url.is_empty())
-    url = GURL("https://www.google.com/cloudprint");
-  url = net::AppendQueryParameter(url, "proxy", proxy_id);
-  std::string url_path(url.path() + "/enable_chrome_connector/enable.html");
-  GURL::Replacements replacements;
-  replacements.SetPathStr(url_path);
-  return url.ReplaceComponents(replacements);
-}
-
-GURL GetCloudPrintServiceEnableURLWithSignin(const std::string& proxy_id) {
-  GURL url(GaiaUrls::GetInstance()->service_login_url());
-  url = net::AppendQueryParameter(url, "service", "cloudprint");
-  url = net::AppendQueryParameter(url, "sarp", "1");
-  return net::AppendQueryParameter(
-      url, "continue", GetCloudPrintServiceEnableURL(proxy_id).spec());
 }
 
 std::string ReadAndUpdateServiceState(const base::FilePath& directory,
@@ -311,7 +291,8 @@ std::string ChromeLauncher::CreateServiceStateFile(
   cmd.AppendSwitch(switches::kNoDefaultBrowserCheck);
   cmd.AppendSwitch(switches::kNoFirstRun);
 
-  cmd.AppendArg(GetCloudPrintServiceEnableURLWithSignin(proxy_id).spec());
+  cmd.AppendArg(
+      cloud_devices::GetCloudPrintEnableURLWithSignin(proxy_id).spec());
 
   base::win::ScopedHandle chrome_handle;
   DWORD thread_id = 0;

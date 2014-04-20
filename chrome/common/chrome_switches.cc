@@ -153,9 +153,6 @@ const char kCheckCloudPrintConnectorPolicy[] =
 // Comma-separated list of SSL cipher suites to disable.
 const char kCipherSuiteBlacklist[]          = "cipher-suite-blacklist";
 
-// The URL of the cloud devices service to use.
-const char kGCDServiceURL[] = "gcd-url";
-
 // Tells chrome to display the cloud print dialog and upload the specified file
 // for printing.
 const char kCloudPrintFile[]                = "cloud-print-file";
@@ -175,15 +172,6 @@ const char kCloudPrintJobTitle[]            = "cloud-print-job-title";
 // Setup cloud print proxy for provided printers. This does not start
 // service or register proxy for autostart.
 const char kCloudPrintSetupProxy[]          = "cloud-print-setup-proxy";
-
-// The URL of the cloud print service to use, overrides any value stored in
-// preferences, and the default. Only used if the cloud print service has been
-// enabled. Used for testing.
-const char kCloudPrintServiceURL[]          = "cloud-print-url";
-
-// The XMPP endpoint the cloud print service will use. Only used if the cloud
-// print service has been enabled. Used for testing.
-const char kCloudPrintXmppEndpoint[] = "cloud-print-xmpp-endpoint";
 
 // Comma-separated options to troubleshoot the component updater. Only valid
 // for the browser process.

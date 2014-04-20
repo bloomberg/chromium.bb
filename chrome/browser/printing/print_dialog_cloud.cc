@@ -15,8 +15,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/devtools/devtools_window.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/printing/cloud_print/cloud_print_url.h"
 #include "chrome/browser/printing/print_dialog_cloud_internal.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -25,6 +25,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/print_messages.h"
 #include "chrome/common/url_constants.h"
+#include "components/cloud_devices/common/cloud_devices_urls.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
@@ -335,9 +336,8 @@ void CloudPrintFlowHandler::RegisterMessages() {
       &web_ui()->GetWebContents()->GetController();
   NavigationEntry* pending_entry = controller->GetPendingEntry();
   if (pending_entry) {
-    Profile* profile = Profile::FromWebUI(web_ui());
-    pending_entry->SetURL(
-        CloudPrintURL(profile).GetCloudPrintServiceDialogURL());
+    pending_entry->SetURL(google_util::AppendGoogleLocaleParam(
+        cloud_devices::GetCloudPrintRelativeURL("client/dialog.html")));
   }
   registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                  content::Source<NavigationController>(controller));
@@ -477,8 +477,7 @@ void CloudPrintFlowHandler::StoreDialogClientSize() const {
 }
 
 bool CloudPrintFlowHandler::IsCloudPrintDialogUrl(const GURL& url) {
-  GURL cloud_print_url =
-      CloudPrintURL(Profile::FromWebUI(web_ui())).GetCloudPrintServiceURL();
+  GURL cloud_print_url = cloud_devices::GetCloudPrintURL();
   return IsSimilarUrl(url, cloud_print_url);
 }
 
@@ -712,16 +711,15 @@ void CreateCloudPrintSigninTab(Browser* browser,
                                bool add_account,
                                const base::Closure& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  CloudPrintURL cp_url(browser->profile());
-  content::WebContents* web_contents =
-      browser->OpenURL(
-          content::OpenURLParams(add_account ?
-                                     cp_url.GetCloudPrintAddAccountURL() :
-                                     cp_url.GetCloudPrintSigninURL(),
-                                 content::Referrer(), NEW_FOREGROUND_TAB,
-                                 content::PAGE_TRANSITION_AUTO_BOOKMARK,
-                                 false));
-  new SignInObserver(web_contents, cp_url.GetCloudPrintServiceURL(), callback);
+  GURL url = add_account ? cloud_devices::GetCloudPrintAddAccountURL()
+                         : cloud_devices::GetCloudPrintSigninURL();
+  content::WebContents* web_contents = browser->OpenURL(
+      content::OpenURLParams(google_util::AppendGoogleLocaleParam(url),
+                             content::Referrer(),
+                             NEW_FOREGROUND_TAB,
+                             content::PAGE_TRANSITION_AUTO_BOOKMARK,
+                             false));
+  new SignInObserver(web_contents, cloud_devices::GetCloudPrintURL(), callback);
 }
 
 void CreatePrintDialogForBytes(content::BrowserContext* browser_context,

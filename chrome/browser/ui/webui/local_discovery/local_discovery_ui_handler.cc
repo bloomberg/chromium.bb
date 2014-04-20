@@ -13,7 +13,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/local_discovery/gcd_url.h"
 #include "chrome/browser/local_discovery/privet_confirm_api_flow.h"
 #include "chrome/browser/local_discovery/privet_constants.h"
 #include "chrome/browser/local_discovery/privet_device_lister_impl.h"
@@ -22,7 +21,6 @@
 #include "chrome/browser/local_discovery/service_discovery_shared_client.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
-#include "chrome/browser/printing/cloud_print/cloud_print_url.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -31,15 +29,16 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/cloud_devices/common/cloud_devices_urls.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager_base.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/page_transition_types.h"
 #include "grit/generated_resources.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_util.h"
+#include "net/base/url_util.h"
 #include "net/http/http_status_code.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -189,12 +188,11 @@ void LocalDiscoveryUIHandler::HandleRequestPrinterList(
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetInstance()->GetForProfile(profile);
 
-  cloud_print_printer_list_.reset(new CloudPrintPrinterList(
-      profile->GetRequestContext(),
-      GetCloudPrintBaseUrl(),
-      token_service,
-      signin_manager->GetAuthenticatedAccountId(),
-      this));
+  cloud_print_printer_list_.reset(
+      new CloudPrintPrinterList(profile->GetRequestContext(),
+                                token_service,
+                                signin_manager->GetAuthenticatedAccountId(),
+                                this));
   cloud_print_printer_list_->Start();
 }
 
@@ -204,7 +202,7 @@ void LocalDiscoveryUIHandler::HandleOpenCloudPrintURL(
   bool rv = args->GetString(0, &url);
   DCHECK(rv);
 
-  GURL url_full(GetCloudPrintBaseUrl() + url);
+  GURL url_full(cloud_devices::GetCloudPrintRelativeURL(url));
 
   Browser* browser = chrome::FindBrowserWithWebContents(
       web_ui()->GetWebContents());
@@ -277,14 +275,11 @@ void LocalDiscoveryUIHandler::OnPrivetRegisterClaimToken(
     return;
   }
 
-  GURL base_url = (is_cloud_print) ? GURL(GetCloudPrintBaseUrl()) : GetGcdURL();
-
   confirm_api_call_flow_.reset(new PrivetConfirmApiCallFlow(
       profile->GetRequestContext(),
       token_service,
       signin_manager->GetAuthenticatedAccountId(),
       is_cloud_print,
-      base_url,
       token,
       base::Bind(&LocalDiscoveryUIHandler::OnConfirmDone,
                  base::Unretained(this))));
@@ -469,12 +464,6 @@ std::string LocalDiscoveryUIHandler::GetSyncAccount() {
   return signin_manager->GetAuthenticatedUsername();
 }
 
-std::string LocalDiscoveryUIHandler::GetCloudPrintBaseUrl() {
-  CloudPrintURL cloud_print_url(Profile::FromWebUI(web_ui()));
-
-  return cloud_print_url.GetCloudPrintServiceURL().spec();
-}
-
 // TODO(noamsml): Create master object for registration flow.
 void LocalDiscoveryUIHandler::ResetCurrentRegistration() {
   if (current_register_operation_.get()) {
@@ -543,9 +532,12 @@ void LocalDiscoveryUIHandler::ShowCloudPrintSetupDialog(
   // Open the connector enable page in the current tab.
   Profile* profile = Profile::FromWebUI(web_ui());
   content::OpenURLParams params(
-      CloudPrintURL(profile).GetCloudPrintServiceEnableURL(
+      cloud_devices::GetCloudPrintEnableURL(
           CloudPrintProxyServiceFactory::GetForProfile(profile)->proxy_id()),
-      content::Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_LINK, false);
+      content::Referrer(),
+      CURRENT_TAB,
+      content::PAGE_TRANSITION_LINK,
+      false);
   web_ui()->GetWebContents()->OpenURL(params);
 }
 

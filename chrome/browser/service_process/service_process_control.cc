@@ -21,6 +21,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/service_messages.h"
 #include "chrome/common/service_process_util.h"
+#include "components/cloud_devices/common/cloud_devices_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/child_process_host.h"
@@ -135,8 +136,8 @@ void ServiceProcessControl::Launch(const base::Closure& success_task,
                               switches::kServiceProcess);
 
   static const char* const kSwitchesToCopy[] = {
-    switches::kCloudPrintServiceURL,
     switches::kCloudPrintSetupProxy,
+    switches::kCloudPrintURL,
     switches::kCloudPrintXmppEndpoint,
 #if defined(OS_WIN)
     switches::kEnableCloudPrintXps,

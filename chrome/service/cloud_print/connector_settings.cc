@@ -4,18 +4,16 @@
 
 #include "chrome/service/cloud_print/connector_settings.h"
 
-#include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/values.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/service/cloud_print/print_system.h"
 #include "chrome/service/service_process_prefs.h"
+#include "components/cloud_devices/common/cloud_devices_urls.h"
 
 namespace {
 
-const char kDefaultCloudPrintServerUrl[] = "https://www.google.com/cloudprint";
 const char kDeleteOnEnumFail[] = "delete_on_enum_fail";
 const char kName[] = "name";
 const char kConnect[] = "connect";
@@ -56,17 +54,7 @@ void ConnectorSettings::InitFrom(ServiceProcessPrefs* prefs) {
   }
 
   // Check if there is an override for the cloud print server URL.
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  server_url_ =
-      GURL(command_line.GetSwitchValueASCII(switches::kCloudPrintServiceURL));
-  if (server_url_.is_empty() || !server_url_.is_valid()) {
-    server_url_ =
-        GURL(prefs->GetString(prefs::kCloudPrintServiceURL, std::string()));
-    DCHECK(server_url_.is_empty() || server_url_.is_valid());
-    if (server_url_.is_empty() || !server_url_.is_valid()) {
-      server_url_ = GURL(kDefaultCloudPrintServerUrl);
-    }
-  }
+  server_url_ = cloud_devices::GetCloudPrintURL();
   DCHECK(server_url_.is_valid());
 
   connect_new_printers_ = prefs->GetBoolean(

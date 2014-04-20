@@ -632,8 +632,6 @@ extern const char kRemoteAccessHostAllowGnubbyAuth[];
 
 extern const char kPrintPreviewStickySettings[];
 extern const char kCloudPrintRoot[];
-extern const char kCloudPrintServiceURL[];
-extern const char kCloudPrintSigninURL[];
 extern const char kCloudPrintDialogWidth[];
 extern const char kCloudPrintDialogHeight[];
 extern const char kCloudPrintSigninDialogWidth[];

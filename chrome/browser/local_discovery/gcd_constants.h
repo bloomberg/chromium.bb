@@ -7,8 +7,6 @@
 
 namespace local_discovery {
 
-extern const char kGCDOAuthScope[];
-extern const char kGCDDefaultUrl[];
 extern const char kGCDKeyKind[];
 
 }  // namespace local_discovery

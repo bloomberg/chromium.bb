@@ -8,9 +8,9 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/cloud_print_private.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/cloud_devices/common/cloud_devices_switches.h"
 #include "net/dns/mock_host_resolver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,7 +25,8 @@ class ExtensionCloudPrintPrivateApiTest : public ExtensionApiTest {
  public:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kCloudPrintServiceURL,
+    command_line->AppendSwitchASCII(
+        switches::kCloudPrintURL,
         "http://www.cloudprintapp.com/files/extensions/api_test/"
         "cloud_print_private");
   }

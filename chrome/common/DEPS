@@ -5,6 +5,7 @@ include_rules = [
   "+components/autofill/content/common",
   "+components/autofill/core/common",
   "+components/bookmarks/core/common",
+  "+components/cloud_devices/common",
   "+components/data_reduction_proxy/common",
   "+components/nacl/common",
   "+components/password_manager/core/common",

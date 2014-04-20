@@ -6,8 +6,6 @@
 
 namespace local_discovery {
 
-const char kGCDOAuthScope[] = "https://www.googleapis.com/auth/clouddevices";
-const char kGCDDefaultUrl[] = "https://www.googleapis.com/clouddevices/v1";
 const char kGCDKeyKind[] = "kind";
 
 }  // namespace local_discovery

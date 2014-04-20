@@ -130,9 +130,6 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
   // Get the sync account email.
   std::string GetSyncAccount();
 
-  // Get the base cloud print URL.
-  std::string GetCloudPrintBaseUrl();
-
   // Reset and cancel the current registration.
   void ResetCurrentRegistration();
 

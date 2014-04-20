@@ -12,6 +12,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/url_constants.h"
+#include "components/cloud_devices/common/cloud_devices_urls.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/manifest_constants.h"
 
@@ -205,19 +206,10 @@ bool AppLaunchInfo::LoadLaunchURL(Extension* extension, base::string16* error) {
   } else if (extension->id() == extension_misc::kCloudPrintAppId) {
     // In order for the --cloud-print-service switch to work, we must update
     // the launch URL and web extent.
-    // TODO(sanjeevr): Ideally we want to use CloudPrintURL here but that is
-    // currently under chrome/browser.
-    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-    GURL cloud_print_service_url = GURL(command_line.GetSwitchValueASCII(
-        switches::kCloudPrintServiceURL));
-    if (!cloud_print_service_url.is_empty()) {
-      std::string path(
-          cloud_print_service_url.path() + "/enable_chrome_connector");
-      GURL::Replacements replacements;
-      replacements.SetPathStr(path);
-      GURL cloud_print_enable_connector_url =
-          cloud_print_service_url.ReplaceComponents(replacements);
-      OverrideLaunchURL(extension, cloud_print_enable_connector_url);
+    GURL url =
+        cloud_devices::GetCloudPrintRelativeURL("enable_chrome_connector");
+    if (!url.is_empty()) {
+      OverrideLaunchURL(extension, url);
     }
   }
 

@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/strings/string_util.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/cloud_devices/common/cloud_devices_switches.h"
 
 base::string16 GetLocalComputerName() {
   DWORD size = 0;
@@ -49,7 +50,7 @@ base::string16 GetCurrentUserName() {
 
 void CopyChromeSwitchesFromCurrentProcess(CommandLine* destination) {
   static const char* const kSwitchesToCopy[] = {
-    switches::kCloudPrintServiceURL,
+    switches::kCloudPrintURL,
     switches::kCloudPrintXmppEndpoint,
     switches::kEnableCloudPrintXps,
     switches::kEnableLogging,

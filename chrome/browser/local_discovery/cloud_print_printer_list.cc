@@ -7,29 +7,23 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/local_discovery/cloud_print_printer_list.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
+#include "components/cloud_devices/common/cloud_devices_urls.h"
 
 namespace local_discovery {
 
-namespace {
-const char kPrinterListURLFormat[] = "%s/search";
-}
-
 CloudPrintPrinterList::CloudPrintPrinterList(
     net::URLRequestContextGetter* request_context,
-    const std::string& cloud_print_url,
     OAuth2TokenService* token_service,
     const std::string& account_id,
     Delegate* delegate)
     : request_context_(request_context),
-      url_(base::StringPrintf(kPrinterListURLFormat, cloud_print_url.c_str())),
       delegate_(delegate),
       api_flow_(request_context_,
                 token_service,
                 account_id,
-                url_,
+                cloud_devices::GetCloudPrintRelativeURL("search"),
                 this) {
 }
-
 
 CloudPrintPrinterList::~CloudPrintPrinterList() {
 }

@@ -15,8 +15,6 @@ extern const char kCloudPrintUserAgent[];
 extern const char kChromeCloudPrintProxyHeader[];
 // The source of cloud print notifications.
 extern const char kCloudPrintPushNotificationsSource[];
-// The cloud print OAuth2 scope.
-extern const char kCloudPrintAuth[];
 
 // Values used to register or update a printer with the cloud print service.
 extern const char kProxyIdValue[];

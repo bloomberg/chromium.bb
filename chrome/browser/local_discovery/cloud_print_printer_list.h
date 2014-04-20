@@ -37,7 +37,6 @@ class CloudPrintPrinterList : public GCDBaseApiFlow::Delegate {
   typedef PrinterList::const_iterator iterator;
 
   CloudPrintPrinterList(net::URLRequestContextGetter* request_context,
-                        const std::string& cloud_print_url,
                         OAuth2TokenService* token_service,
                         const std::string& account_id,
                         Delegate* delegate);
@@ -69,7 +68,6 @@ class CloudPrintPrinterList : public GCDBaseApiFlow::Delegate {
                           PrinterDetails* printer_details);
 
   scoped_refptr<net::URLRequestContextGetter> request_context_;
-  GURL url_;
   PrinterIDMap printer_id_map_;
   PrinterList printer_list_;
   Delegate* delegate_;

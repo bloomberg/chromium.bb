@@ -12,12 +12,17 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
+        '../net/net.gyp:net',
       ],
       'sources': [
         'cloud_devices/common/cloud_device_description.cc',
         'cloud_devices/common/cloud_device_description.h',
         'cloud_devices/common/cloud_device_description_consts.cc',
         'cloud_devices/common/cloud_device_description_consts.h',
+        'cloud_devices/common/cloud_devices_switches.cc',
+        'cloud_devices/common/cloud_devices_switches.h',
+        'cloud_devices/common/cloud_devices_urls.cc',
+        'cloud_devices/common/cloud_devices_urls.h',
         'cloud_devices/common/description_items.h',
         'cloud_devices/common/description_items_inl.h',
         'cloud_devices/common/printer_description.cc',

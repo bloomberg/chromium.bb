@@ -82,8 +82,7 @@ TEST_F(PrivetConfirmApiFlowTest, SuccessOAuth2) {
                                         &token_service_,
                                         account_id_,
                                         true,
-                                        GURL("http://SoMeUrL.com/cloudprint"),
-                                        "SomeCloudprintToken",
+                                        "SomeToken",
                                         callback_.callback());
   GCDBaseApiFlow* cloudprint_flow = confirm_flow.GetBaseApiFlowForTests();
 
@@ -92,9 +91,8 @@ TEST_F(PrivetConfirmApiFlowTest, SuccessOAuth2) {
   cloudprint_flow->OnGetTokenSuccess(NULL, "SomeToken", base::Time());
   net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
 
-  EXPECT_EQ(
-      GURL("http://SoMeUrL.com/cloudprint/confirm?token=SomeCloudprintToken"),
-      fetcher->GetOriginalURL());
+  EXPECT_EQ(GURL("https://www.google.com/cloudprint/confirm?token=SomeToken"),
+            fetcher->GetOriginalURL());
 
   net::HttpRequestHeaders headers;
   fetcher->GetExtraRequestHeaders(&headers);
@@ -120,7 +118,6 @@ TEST_F(PrivetConfirmApiFlowTest, BadToken) {
                                         &token_service_,
                                         account_id_,
                                         true,
-                                        GURL("http://SoMeUrL.com/cloudprint"),
                                         "SomeCloudprintToken",
                                         callback_.callback());
 
@@ -138,8 +135,7 @@ TEST_F(PrivetConfirmApiFlowTest, ServerFailure) {
                                         &token_service_,
                                         account_id_,
                                         true,
-                                        GURL("http://SoMeUrL.com/cloudprint"),
-                                        "SomeCloudprintToken",
+                                        "SomeToken",
                                         callback_.callback());
 
   confirm_flow.Start();
@@ -149,9 +145,8 @@ TEST_F(PrivetConfirmApiFlowTest, ServerFailure) {
   cloudprint_flow->OnGetTokenSuccess(NULL, "SomeToken", base::Time());
   net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
 
-  EXPECT_EQ(
-      GURL("http://SoMeUrL.com/cloudprint/confirm?token=SomeCloudprintToken"),
-      fetcher->GetOriginalURL());
+  EXPECT_EQ(GURL("https://www.google.com/cloudprint/confirm?token=SomeToken"),
+            fetcher->GetOriginalURL());
 
   fetcher->SetResponseString(kFailedConfirmResponse);
   fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::SUCCESS,
@@ -168,8 +163,7 @@ TEST_F(PrivetConfirmApiFlowTest, BadJson) {
                                         &token_service_,
                                         account_id_,
                                         true,
-                                        GURL("http://SoMeUrL.com/cloudprint"),
-                                        "SomeCloudprintToken",
+                                        "SomeToken",
                                         callback_.callback());
 
   confirm_flow.Start();
@@ -179,9 +173,8 @@ TEST_F(PrivetConfirmApiFlowTest, BadJson) {
   cloudprint_flow->OnGetTokenSuccess(NULL, "SomeToken", base::Time());
   net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
 
-  EXPECT_EQ(
-      GURL("http://SoMeUrL.com/cloudprint/confirm?token=SomeCloudprintToken"),
-      fetcher->GetOriginalURL());
+  EXPECT_EQ(GURL("https://www.google.com/cloudprint/confirm?token=SomeToken"),
+            fetcher->GetOriginalURL());
 
   fetcher->SetResponseString(kFailedConfirmResponseBadJson);
   fetcher->set_status(net::URLRequestStatus(
@@ -200,7 +193,6 @@ TEST_F(PrivetConfirmApiFlowTest, SuccessGCD) {
                                         &token_service_,
                                         account_id_,
                                         false,
-                                        GURL("http://SoMeUrL.com/gcd"),
                                         "SomeGcdToken",
                                         callback_.callback());
   GCDBaseApiFlow* gcd_flow = confirm_flow.GetBaseApiFlowForTests();
@@ -210,9 +202,8 @@ TEST_F(PrivetConfirmApiFlowTest, SuccessGCD) {
   gcd_flow->OnGetTokenSuccess(NULL, "SomeToken", base::Time());
   net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
 
-  EXPECT_EQ(GURL(
-                "http://SoMeUrL.com/gcd/registrationTickets/"
-                "SomeGcdToken"),
+  EXPECT_EQ(GURL("https://www.googleapis.com/clouddevices/v1/"
+                 "registrationTickets/SomeGcdToken"),
             fetcher->GetOriginalURL());
 
   EXPECT_EQ("{ \"userEmail\": \"me\" }", fetcher->upload_data());
