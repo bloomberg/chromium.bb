@@ -207,8 +207,6 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     , m_originalViewportEnabled(false)
     , m_isOverlayScrollbarsEnabled(false)
     , m_touchEventEmulationEnabled(false)
-    , m_originalTouchEnabled(false)
-    , m_originalDeviceSupportsMouse(false)
 {
     ASSERT(m_hostId > 0);
     ClientMessageLoopAdapter::ensureClientMessageLoopCreated(m_client);
@@ -384,20 +382,8 @@ void WebDevToolsAgentImpl::overrideDeviceMetrics(int width, int height, float de
 
 void WebDevToolsAgentImpl::setTouchEventEmulationEnabled(bool enabled)
 {
-    if (m_touchEventEmulationEnabled == enabled)
-        return;
-
-    if (!m_touchEventEmulationEnabled) {
-        m_originalTouchEnabled = RuntimeEnabledFeatures::touchEnabled();
-        if (m_webViewImpl->page())
-            m_originalDeviceSupportsMouse = m_webViewImpl->page()->settings().deviceSupportsMouse();
-    }
-    RuntimeEnabledFeatures::setTouchEnabled(enabled ? true : m_originalTouchEnabled);
-    if (m_webViewImpl->page())
-        m_webViewImpl->page()->settings().setDeviceSupportsMouse(enabled ? false : m_originalDeviceSupportsMouse);
     m_client->setTouchEventEmulationEnabled(enabled, m_emulateViewportEnabled);
     m_touchEventEmulationEnabled = enabled;
-    m_webViewImpl->mainFrameImpl()->frame()->view()->layout();
 }
 
 void WebDevToolsAgentImpl::enableViewportEmulation()

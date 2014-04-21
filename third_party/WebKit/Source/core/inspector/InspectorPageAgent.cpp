@@ -342,6 +342,10 @@ InspectorPageAgent::InspectorPageAgent(Page* page, InjectedScriptManager* inject
     , m_ignoreScriptsEnabledNotification(false)
     , m_deviceMetricsOverridden(false)
     , m_emulateViewportEnabled(false)
+    , m_touchEmulationEnabled(false)
+    , m_originalTouchEnabled(false)
+    , m_originalDeviceSupportsMouse(false)
+    , m_originalDeviceSupportsTouch(false)
     , m_embedderTextAutosizingEnabled(m_page->settings().textAutosizingEnabled())
     , m_embedderFontScaleFactor(m_page->settings().deviceScaleAdjustment())
 {
@@ -370,7 +374,6 @@ void InspectorPageAgent::clearFrontend()
 {
     ErrorString error;
     disable(&error);
-    updateTouchEventEmulationInPage(false);
     m_frontend = 0;
 }
 
@@ -435,6 +438,11 @@ void InspectorPageAgent::disable(ErrorString*)
     setContinuousPaintingEnabled(0, false);
     setShowScrollBottleneckRects(0, false);
     setShowViewportSizeOnResize(0, false, 0);
+
+    if (m_state->getBoolean(PageAgentState::touchEventEmulationEnabled)) {
+        updateTouchEventEmulationInPage(false);
+        m_state->setBoolean(PageAgentState::touchEventEmulationEnabled, false);
+    }
 
     if (!deviceMetricsChanged(0, 0, 0, false, false, 1, false))
         return;
@@ -1160,14 +1168,38 @@ void InspectorPageAgent::updateViewMetrics(int width, int height, double deviceS
 
 void InspectorPageAgent::updateTouchEventEmulationInPage(bool enabled)
 {
-    m_state->setBoolean(PageAgentState::touchEventEmulationEnabled, enabled);
+    if (!m_touchEmulationEnabled) {
+        m_originalTouchEnabled = RuntimeEnabledFeatures::touchEnabled();
+        m_originalDeviceSupportsMouse = m_page->settings().deviceSupportsMouse();
+        m_originalDeviceSupportsTouch = m_page->settings().deviceSupportsTouch();
+    }
+    RuntimeEnabledFeatures::setTouchEnabled(enabled ? true : m_originalTouchEnabled);
+    m_page->settings().setDeviceSupportsMouse(enabled ? false : m_originalDeviceSupportsMouse);
+    m_page->settings().setDeviceSupportsTouch(enabled ? true : m_originalDeviceSupportsTouch);
+    m_touchEmulationEnabled = enabled;
     m_client->setTouchEventEmulationEnabled(enabled);
+    m_page->mainFrame()->view()->layout();
 }
 
-void InspectorPageAgent::setTouchEmulationEnabled(ErrorString*, bool enabled)
+void InspectorPageAgent::hasTouchInputs(ErrorString*, bool* result)
+{
+    *result = m_touchEmulationEnabled ? m_originalDeviceSupportsTouch : m_page->settings().deviceSupportsTouch();
+}
+
+void InspectorPageAgent::setTouchEmulationEnabled(ErrorString* error, bool enabled)
 {
     if (m_state->getBoolean(PageAgentState::touchEventEmulationEnabled) == enabled)
         return;
+
+    bool hasTouch = false;
+    hasTouchInputs(error, &hasTouch);
+    if (enabled && hasTouch) {
+        if (error)
+            *error = "Device already supports touch input";
+        return;
+    }
+
+    m_state->setBoolean(PageAgentState::touchEventEmulationEnabled, enabled);
     updateTouchEventEmulationInPage(enabled);
 }
 

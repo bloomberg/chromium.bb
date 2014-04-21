@@ -149,8 +149,6 @@ private:
     bool m_isOverlayScrollbarsEnabled;
 
     bool m_touchEventEmulationEnabled;
-    bool m_originalTouchEnabled;
-    bool m_originalDeviceSupportsMouse;
     OwnPtr<WebCore::IntPoint> m_lastPinchAnchorCss;
     OwnPtr<WebCore::IntPoint> m_lastPinchAnchorDip;
 
