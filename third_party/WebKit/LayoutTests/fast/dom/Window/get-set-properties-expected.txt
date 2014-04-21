@@ -221,8 +221,6 @@ PASS: canGet('locationbar') should be 'true' and is.
 PASS: canSet('locationbar') should be 'true' and is.
 PASS: canGet('menubar') should be 'true' and is.
 PASS: canSet('menubar') should be 'true' and is.
-PASS: canGet('navigator') should be 'true' and is.
-PASS: canSet('navigator') should be 'true' and is.
 PASS: canGet('offscreenBuffering') should be 'true' and is.
 PASS: canSet('offscreenBuffering') should be 'true' and is.
 PASS: canGet('opener') should be 'true' and is.
@@ -262,6 +260,8 @@ PASS: canGet('closed') should be 'true' and is.
 PASS: canSet('closed') should be 'false' and is.
 PASS: canGet('document') should be 'true' and is.
 PASS: canSet('document') should be 'false' and is.
+PASS: canGet('navigator') should be 'true' and is.
+PASS: canSet('navigator') should be 'false' and is.
 PASS: canGet('pageXOffset') should be 'true' and is.
 PASS: canSet('pageXOffset') should be 'false' and is.
 PASS: canGet('pageYOffset') should be 'true' and is.

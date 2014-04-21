@@ -68,8 +68,8 @@ PASS: devicePixelRatio == marker should be true and is.
 PASS: eval('devicePixelRatio == marker') should be true and is.
 PASS: devicePixelRatio == marker should be true and is.
 PASS: eval('devicePixelRatio == marker') should be true and is.
-PASS: navigator == marker should be true and is.
-PASS: eval('navigator == marker') should be true and is.
+PASS: navigator == marker should be false and is.
+PASS: eval('navigator == marker') should be false and is.
 PASS: clientInformation == marker should be true and is.
 PASS: eval('clientInformation == marker') should be true and is.
 PASS: status == marker should be true and is.
