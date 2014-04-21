@@ -39,6 +39,9 @@
   "geolocation": {
     "partial": "permissions/geolocation.html"
   },
+  "nativeMessaging": {
+    "partial": "permissions/nativeMessaging.html"
+  },
   "notifications": {
     "partial": "permissions/notifications.html"
   },
