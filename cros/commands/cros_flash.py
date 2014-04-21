@@ -592,7 +592,9 @@ class RemoteDeviceUpdater(object):
     logging.info('Copying image to temporary directory %s', tempdir_path)
     # Devserver only knows the image names listed in IMAGE_TYPE_TO_NAME.
     # Rename the image to chromiumos_test_image.bin when copying.
-    shutil.copy(path, os.path.join(tempdir_path, IMAGE_TYPE_TO_NAME['test']))
+    TEMP_IMAGE_TYPE  = 'test'
+    shutil.copy(path,
+                os.path.join(tempdir_path, IMAGE_TYPE_TO_NAME[TEMP_IMAGE_TYPE]))
     chroot_path = cros_build_lib.ToChrootPath(tempdir_path)
     # Create and link static_dir/local_imagexxxx/link to the image
     # folder, so that xbuddy/devserver can understand the path.
@@ -606,8 +608,7 @@ class RemoteDeviceUpdater(object):
     symlink_path = os.path.join(DEVSERVER_STATIC_DIR, relative_dir)
     logging.info('Creating a symlink %s -> %s', symlink_path, chroot_path)
     os.symlink(chroot_path, symlink_path)
-    return os.path.join(relative_dir,
-                        IMAGE_NAME_TO_TYPE[os.path.basename(path)])
+    return os.path.join(relative_dir, TEMP_IMAGE_TYPE)
 
   def GetUpdatePayloads(self, path, payload_dir, board=None,
                         src_image_to_delta=None, timeout=60 * 15):
