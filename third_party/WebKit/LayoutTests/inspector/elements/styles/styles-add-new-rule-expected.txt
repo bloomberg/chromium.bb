@@ -33,7 +33,7 @@ display: block;
 element.style  { ()
 
 [collapsed] 
-div.my-class  { (via inspector)
+.my-class  { (via inspector)
 
 [expanded] 
 div  { (user agent stylesheet)
@@ -44,7 +44,7 @@ display: block;
 element.style  { ()
 
 [collapsed] 
-div.class-1.class-2.class-3  { (via inspector)
+.class-1.class-2.class-3  { (via inspector)
 
 [expanded] 
 div  { (user agent stylesheet)
