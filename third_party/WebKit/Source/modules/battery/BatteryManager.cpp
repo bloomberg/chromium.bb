@@ -7,6 +7,7 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "core/events/Event.h"
+#include "modules/battery/BatteryDispatcher.h"
 #include "modules/battery/BatteryStatus.h"
 #include <limits>
 
@@ -14,7 +15,9 @@ namespace WebCore {
 
 PassRefPtrWillBeRawPtr<BatteryManager> BatteryManager::create(ExecutionContext* context)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new BatteryManager(context));
+    RefPtrWillBeRawPtr<BatteryManager> batteryManager(adoptRefWillBeRefCountedGarbageCollected(new BatteryManager(context)));
+    batteryManager->suspendIfNeeded();
+    return batteryManager.release();
 }
 
 BatteryManager::~BatteryManager()
@@ -22,50 +25,94 @@ BatteryManager::~BatteryManager()
 }
 
 BatteryManager::BatteryManager(ExecutionContext* context)
-    : ContextLifecycleObserver(context)
-    , m_batteryStatus(nullptr)
+    : ActiveDOMObject(context)
+    , DeviceSensorEventController(*toDocument(context))
 {
+    m_hasEventListener = true;
+    startUpdating();
 }
 
 bool BatteryManager::charging()
 {
-    return m_batteryStatus ? m_batteryStatus->charging() : true;
+    if (const BatteryStatus* lastData = BatteryDispatcher::instance().getLatestData())
+        return lastData->charging();
+
+    return true;
 }
 
 double BatteryManager::chargingTime()
 {
-    if (!m_batteryStatus)
-        return 0;
+    if (const BatteryStatus* lastData = BatteryDispatcher::instance().getLatestData())
+        return lastData->chargingTime();
 
-    if (!m_batteryStatus->charging())
-        return std::numeric_limits<double>::infinity();
-
-    // The spec requires that if level == 1.0, chargingTime == 0 but this has to
-    // be implement by the backend. Adding this assert will help enforcing it.
-    ASSERT(level() != 1.0 && m_batteryStatus->chargingTime() == 0.0);
-
-    return m_batteryStatus->chargingTime();
+    return 0;
 }
 
 double BatteryManager::dischargingTime()
 {
-    if (!m_batteryStatus || m_batteryStatus->charging())
-        return std::numeric_limits<double>::infinity();
+    if (const BatteryStatus* lastData = BatteryDispatcher::instance().getLatestData())
+        return lastData->dischargingTime();
 
-    return m_batteryStatus->dischargingTime();
+    return std::numeric_limits<double>::infinity();
 }
 
 double BatteryManager::level()
 {
-    return m_batteryStatus ? m_batteryStatus->level() : 1;
+    if (const BatteryStatus* lastData = BatteryDispatcher::instance().getLatestData())
+        return lastData->level();
+
+    return 1;
 }
 
-void BatteryManager::didChangeBatteryStatus(PassRefPtrWillBeRawPtr<Event> event, PassOwnPtr<BatteryStatus> batteryStatus)
+void BatteryManager::didChangeBatteryStatus(PassRefPtrWillBeRawPtr<Event> event)
 {
     ASSERT(RuntimeEnabledFeatures::batteryStatusEnabled());
 
-    m_batteryStatus = batteryStatus;
     dispatchEvent(event);
+}
+
+void BatteryManager::registerWithDispatcher()
+{
+    BatteryDispatcher::instance().addClient(this);
+}
+
+void BatteryManager::unregisterWithDispatcher()
+{
+    BatteryDispatcher::instance().removeClient(this);
+}
+
+bool BatteryManager::hasLastData()
+{
+    return false;
+}
+
+PassRefPtrWillBeRawPtr<Event> BatteryManager::getLastEvent()
+{
+    // Events are dispached via BatteryManager::didChangeBatteryStatus()
+    return nullptr;
+}
+
+bool BatteryManager::isNullEvent(Event*)
+{
+    return false;
+}
+
+void BatteryManager::suspend()
+{
+    m_hasEventListener = false;
+    stopUpdating();
+}
+
+void BatteryManager::resume()
+{
+    m_hasEventListener = true;
+    startUpdating();
+}
+
+void BatteryManager::stop()
+{
+    m_hasEventListener = false;
+    stopUpdating();
 }
 
 } // namespace WebCore

@@ -8,14 +8,14 @@
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/Document.h"
 #include "core/events/EventTarget.h"
+#include "core/frame/DeviceSensorEventController.h"
 #include "heap/Handle.h"
-#include "modules/battery/BatteryStatus.h"
 
 namespace WebCore {
 
 class Navigator;
 
-class BatteryManager FINAL : public RefCountedWillBeRefCountedGarbageCollected<BatteryManager>, public ContextLifecycleObserver, public EventTargetWithInlineData {
+class BatteryManager FINAL : public RefCountedWillBeRefCountedGarbageCollected<BatteryManager>, public ActiveDOMObject, public DeviceSensorEventController, public EventTargetWithInlineData {
     DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<BatteryManager>);
 public:
     virtual ~BatteryManager();
@@ -35,14 +35,25 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(dischargingtimechange);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(levelchange);
 
-    void didChangeBatteryStatus(PassRefPtrWillBeRawPtr<Event>, PassOwnPtr<BatteryStatus>);
+    void didChangeBatteryStatus(PassRefPtrWillBeRawPtr<Event>);
+
+    // ActiveDOMObject implementation.
+    virtual bool canSuspend() const { return true; }
+    virtual void suspend() OVERRIDE;
+    virtual void resume() OVERRIDE;
+    virtual void stop() OVERRIDE;
+
+    // DeviceSensorEventController
+    virtual void registerWithDispatcher() OVERRIDE;
+    virtual void unregisterWithDispatcher() OVERRIDE;
+    virtual bool hasLastData() OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<Event> getLastEvent() OVERRIDE;
+    virtual bool isNullEvent(Event*) OVERRIDE;
 
     void trace(Visitor*) { }
 
 private:
     explicit BatteryManager(ExecutionContext*);
-
-    OwnPtr<BatteryStatus> m_batteryStatus;
 };
 
 }

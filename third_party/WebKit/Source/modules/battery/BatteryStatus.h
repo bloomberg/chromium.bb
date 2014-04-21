@@ -5,15 +5,15 @@
 #ifndef BatteryStatus_h
 #define BatteryStatus_h
 
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-class BatteryStatus {
+class BatteryStatus : public RefCounted<BatteryStatus> {
 public:
-    static PassOwnPtr<BatteryStatus> create();
-    static PassOwnPtr<BatteryStatus> create(bool charging, double chargingTime, double dischargingTime, double level);
+    static PassRefPtr<BatteryStatus> create();
+    static PassRefPtr<BatteryStatus> create(bool charging, double chargingTime, double dischargingTime, double level);
 
     bool charging() const { return m_charging; }
     double chargingTime() const  { return m_chargingTime; }

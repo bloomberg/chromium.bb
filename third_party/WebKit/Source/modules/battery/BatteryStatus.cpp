@@ -9,14 +9,14 @@
 
 namespace WebCore {
 
-PassOwnPtr<BatteryStatus> BatteryStatus::create()
+PassRefPtr<BatteryStatus> BatteryStatus::create()
 {
-    return adoptPtr(new BatteryStatus);
+    return adoptRef(new BatteryStatus);
 }
 
-PassOwnPtr<BatteryStatus> BatteryStatus::create(bool charging, double chargingTime, double dischargingTime, double level)
+PassRefPtr<BatteryStatus> BatteryStatus::create(bool charging, double chargingTime, double dischargingTime, double level)
 {
-    return adoptPtr(new BatteryStatus(charging, chargingTime, dischargingTime, level));
+    return adoptRef(new BatteryStatus(charging, chargingTime, dischargingTime, level));
 }
 
 BatteryStatus::BatteryStatus()

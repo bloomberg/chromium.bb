@@ -253,6 +253,8 @@
     ],
     'modules_files': [
       '<@(extra_blink_module_files)',
+      'battery/BatteryDispatcher.cpp',
+      'battery/BatteryDispatcher.h',
       'battery/BatteryManager.cpp',
       'battery/BatteryManager.h',
       'battery/BatteryStatus.cpp',
