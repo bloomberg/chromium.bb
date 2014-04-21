@@ -616,7 +616,7 @@ class GitCheckout(CheckoutBase):
   def _sync_remote_branch(self):
     """Syncs the remote branch."""
     # We do a 'git pull origin master:refs/remotes/origin/master' instead of
-    # 'git pull origin master' because from the manpage for git-pull: 
+    # 'git pull origin master' because from the manpage for git-pull:
     #   A parameter <ref> without a colon is equivalent to <ref>: when
     #   pulling/fetching, so it merges <ref> into the current branch without
     #   storing the remote branch anywhere locally.
@@ -631,7 +631,7 @@ class GitCheckout(CheckoutBase):
     """Gets the current revision (in unicode) from the local branch."""
     return unicode(self._check_output_git(['rev-parse', 'HEAD']).strip())
 
-  def apply_patch(self, patches, post_processors=None, verbose=False, 
+  def apply_patch(self, patches, post_processors=None, verbose=False,
                   name=None, email=None):
     """Applies a patch on 'working_branch' and switches to it.
 
@@ -723,7 +723,7 @@ class GitCheckout(CheckoutBase):
       base_ref = '%s/%s' % (self.remote,
                             self.remote_branch or self.master_branch)
     found_files = self._check_output_git(
-        ['diff', base_ref,
+        ['diff', base_ref, '--ignore-submodules',
          '--name-only']).splitlines(False)
     assert sorted(patches.filenames) == sorted(found_files), (
         sorted(patches.filenames), sorted(found_files))
@@ -735,7 +735,7 @@ class GitCheckout(CheckoutBase):
     current_branch = self._check_output_git(
         ['rev-parse', '--abbrev-ref', 'HEAD']).strip()
     assert current_branch == self.working_branch
- 
+
     commit_cmd = ['commit', '--amend', '-m', commit_message]
     if user and user != self.commit_user:
       # We do not have the first or last name of the user, grab the username
