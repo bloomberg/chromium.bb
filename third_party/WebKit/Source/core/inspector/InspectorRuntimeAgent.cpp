@@ -169,6 +169,8 @@ void InspectorRuntimeAgent::clearFrontend()
 void InspectorRuntimeAgent::restore()
 {
     if (m_state->getBoolean(InspectorRuntimeAgentState::runtimeEnabled)) {
+        m_scriptStateToId.clear();
+        m_frontend->executionContextsCleared();
         String error;
         enable(&error);
     }

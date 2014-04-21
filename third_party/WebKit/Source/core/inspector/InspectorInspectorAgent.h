@@ -69,7 +69,6 @@ public:
 
     void didClearWindowObjectInMainWorld(LocalFrame*);
 
-    void didCommitLoad(LocalFrame*, DocumentLoader*);
     void domContentLoadedEventFired(LocalFrame*);
 
     bool hasFrontend() const { return m_frontend; }

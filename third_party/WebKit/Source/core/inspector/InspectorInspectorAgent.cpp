@@ -103,14 +103,6 @@ void InspectorInspectorAgent::clearFrontend()
     disable(&error);
 }
 
-void InspectorInspectorAgent::didCommitLoad(LocalFrame* frame, DocumentLoader* loader)
-{
-    if (loader->frame() != frame->page()->mainFrame())
-        return;
-
-    m_injectedScriptManager->discardInjectedScripts();
-}
-
 void InspectorInspectorAgent::enable(ErrorString*)
 {
     m_state->setBoolean(InspectorAgentState::inspectorAgentEnabled, true);
