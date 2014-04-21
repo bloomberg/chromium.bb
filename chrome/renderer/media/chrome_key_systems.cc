@@ -5,6 +5,7 @@
 #include "chrome/renderer/media/chrome_key_systems.h"
 
 #include <string>
+#include <vector>
 
 #include "base/logging.h"
 #include "base/strings/string16.h"

@@ -5,6 +5,8 @@
 #ifndef CHROME_RENDERER_MEDIA_CHROME_KEY_SYSTEMS_H_
 #define CHROME_RENDERER_MEDIA_CHROME_KEY_SYSTEMS_H_
 
+#include <vector>
+
 #include "content/public/renderer/key_system_info.h"
 
 void AddChromeKeySystems(std::vector<content::KeySystemInfo>* key_systems_info);
