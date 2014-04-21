@@ -33861,7 +33861,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </enum>
 
 <enum name="FeatureObserver" type="int">
-<!-- See http://src.chromium.org/viewvc/blink/trunk/Source/core/page/UseCounter.h -->
+<!-- Generated from ../../../third_party/WebKit/Source/core/frame/UseCounter.h -->
 
   <int value="0" label="PageDestruction"/>
   <int value="1" label="LegacyNotifications"/>
@@ -33869,7 +33869,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="3" label="PrefixedIndexedDB"/>
   <int value="4" label="WorkerStart"/>
   <int value="5" label="SharedWorkerStart"/>
-  <int value="6" label="LegacyWebAudioNoteOn"/>
+  <int value="6" label="LegacyWebAudio"/>
   <int value="7" label="WebAudioStart"/>
   <int value="8" label="PrefixedContentSecurityPolicy"/>
   <int value="9" label="UnprefixedIndexedDB"/>
@@ -33920,7 +33920,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="54" label="Unused: CSSOverflowMarquee"/>
   <int value="55" label="Reflection"/>
   <int value="56" label="CursorVisibility"/>
-  <int value="57" label="StorageInfo"/>
+  <int value="57" label="PrefixedStorageInfo"/>
   <int value="58" label="XFrameOptions"/>
   <int value="59" label="XFrameOptionsSameOrigin"/>
   <int value="60" label="XFrameOptionsSameOriginWithBadAncestorChain"/>
@@ -33946,7 +33946,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="80" label="SVGSwitchElement"/>
   <int value="81" label="PrefixedDocumentRegister"/>
   <int value="82" label="HTMLShadowElementOlderShadowRoot"/>
-  <int value="83" label="Document.all()"/>
+  <int value="83" label="DocumentAll"/>
   <int value="84" label="FormElement"/>
   <int value="85" label="DemotedFormElement"/>
   <int value="86" label="CaptureAttributeAsEnum"/>
@@ -34047,9 +34047,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="181" label="BarPropScrollbars"/>
   <int value="182" label="BarPropStatusbar"/>
   <int value="183" label="BarPropToolbar"/>
-  <int value="184" label="input[type=email][multiple]"/>
-  <int value="185" label="input[type=email][maxlength]"/>
-  <int value="186" label="input[type=email][multiple][maxlength]"/>
+  <int value="184" label="InputTypeEmailMultiple"/>
+  <int value="185" label="InputTypeEmailMaxLength"/>
+  <int value="186" label="InputTypeEmailMultipleMaxLength"/>
   <int value="187" label="TextTrackCueConstructor"/>
   <int value="188" label="CSSStyleDeclarationPropertyName"/>
   <int value="189" label="CSSStyleDeclarationFloatPropertyName"/>
@@ -34145,7 +34145,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="279" label="SVGClassName"/>
   <int value="280" label="HTMLAppletElement"/>
   <int value="281" label="HTMLMediaElementSeekToFragmentStart"/>
-  <int value="282" label="HTMLMediaElementSeekToFragmentEnd"/>
+  <int value="282" label="HTMLMediaElementPauseAtFragmentEnd"/>
   <int value="283" label="PrefixedWindowURL"/>
   <int value="284" label="PrefixedWorkerURL"/>
   <int value="285" label="WindowOrientation"/>
@@ -34192,6 +34192,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="326" label="PrefixedElementRequestPointerLock"/>
   <int value="327" label="SelectionSetPosition"/>
   <int value="328" label="AnimationPlayerFinishEvent"/>
+  <int value="329" label="SVGSVGElementInXMLDocument"/>
+  <int value="330" label="CanvasRenderingContext2DSetAlpha"/>
+  <int value="331" label="CanvasRenderingContext2DSetCompositeOperation"/>
+  <int value="332" label="CanvasRenderingContext2DSetLineWidth"/>
+  <int value="333" label="CanvasRenderingContext2DSetLineCap"/>
+  <int value="334" label="CanvasRenderingContext2DSetLineJoin"/>
+  <int value="335" label="CanvasRenderingContext2DSetMiterLimit"/>
+  <int value="336" label="CanvasRenderingContext2DClearShadow"/>
+  <int value="337" label="CanvasRenderingContext2DSetStrokeColor"/>
+  <int value="338" label="CanvasRenderingContext2DSetFillColor"/>
+  <int value="339" label="CanvasRenderingContext2DDrawImageFromRect"/>
+  <int value="340" label="CanvasRenderingContext2DSetShadow"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
