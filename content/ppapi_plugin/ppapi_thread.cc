@@ -53,11 +53,6 @@
 #endif
 
 #if defined(OS_WIN)
-
-// TODO(xhwang): Remove after http://crbug.com/345852 is fixed.
-const char kWidevineCdmFileName[] = "widevinecdm.dll";
-const char kWidevineCdmAdapterFileName[] = "widevinecdmadapter.dll";
-
 extern sandbox::TargetServices* g_target_services;
 
 // Used by EnumSystemLocales for warming up.
@@ -283,18 +278,6 @@ void PpapiThread::OnLoadPlugin(const base::FilePath& path,
       ReportLoadResult(path, LOAD_FAILED);
       // Report detailed reason for load failure.
       ReportLoadErrorCode(path, error);
-#if defined(OW_WIN)
-      // Extra check to help investigate http://crbug.com/345852. This should
-      // never fail because the paths are checked before registering the
-      // adapter.
-      // TODO(xhwang): Remove this after the issue is fixed. See
-      // http://crbug.com/356331
-      if (path.BaseName().MaybeAsASCII() == kWidevineCdmAdapterFileName) {
-        CHECK(base::PathExists(path));
-        CHECK(
-            base::PathExists(path.DirName().AppendASCII(kWidevineCdmFileName)));
-      }
-#endif
       return;
     }
 
