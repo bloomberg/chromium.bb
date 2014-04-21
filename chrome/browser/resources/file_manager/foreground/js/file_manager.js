@@ -878,7 +878,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.driveBuyMoreStorageCommand_ =
         this.dialogDom_.querySelector('#drive-buy-more-space');
 
-    this.defaultActionMenuItem_.addEventListener('click',
+    this.defaultActionMenuItem_.addEventListener('activate',
         this.dispatchSelectionAction_.bind(this));
 
     this.initFileTypeFilter_();
