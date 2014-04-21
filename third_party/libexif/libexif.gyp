@@ -92,6 +92,7 @@
                 'inline=__inline',
               ],
               'msvs_disabled_warnings': [
+                4018, # size/unsigned mismatch
                 4267, # size_t -> ExifLong truncation on amd64
               ],
             }],

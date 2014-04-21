@@ -4,7 +4,7 @@ Version: 0.6.21
 License: LGPL 2.1
 License File: sources/COPYING
 Date: 2012-06-04
-Security Critical: yes.
+Security Critical: yes
 
 Description:
 libexif is a library for parsing, editing, and saving EXIF data. Many maker
@@ -21,3 +21,5 @@ Local Modifications:
   INSTALL, install-sh, Makefile-files, *.sym, *.am, *.in, *.pc.in, *.spec, *.sh
   and *.txt files.
 - Removed "doc", "po", "NEWS", "mkinstalldirs", "missing", "nls" folders.
+- Removed inline from exif_tag_table_count function in exif_tag.c, to build
+  cleanly with MSVC's non-standard inline rules.
