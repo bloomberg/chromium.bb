@@ -166,8 +166,9 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
 
 // The DomDistillerViewerSource renders untrusted content, so ensure no bindings
 // are enabled when the article is not found.
+// Flakiness: crbug.com/356866
 IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
-                       NoWebUIBindingsArticleNotFound) {
+                       DISABLED_NoWebUIBindingsArticleNotFound) {
   // The article does not exist, so assume no distillation will happen.
   expect_distillation_ = false;
   const GURL url(std::string(chrome::kDomDistillerScheme) + "://" +
