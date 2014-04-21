@@ -271,6 +271,15 @@ QuicCryptoClientConfig::CachedState* QuicCryptoClientConfig::LookupOrCreate(
   return cached;
 }
 
+void QuicCryptoClientConfig::ClearCachedStates() {
+  for (CachedStateMap::const_iterator it = cached_states_.begin();
+       it != cached_states_.end(); ++it) {
+    CachedState* cached = it->second;
+    cached->ClearProof();
+    cached->InvalidateServerConfig();
+  }
+}
+
 void QuicCryptoClientConfig::FillInchoateClientHello(
     const QuicServerId& server_id,
     const QuicVersion preferred_version,

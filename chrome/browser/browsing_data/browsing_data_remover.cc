@@ -902,9 +902,14 @@ void BrowsingDataRemover::DoClearCache(int rv) {
         net::HttpTransactionFactory* factory =
             getter->GetURLRequestContext()->http_transaction_factory();
 
+        // Clear QUIC server information from memory.
+        net::HttpCache* http_cache = factory->GetCache();
+        http_cache->GetSession()->quic_stream_factory()->ClearCachedStates();
+
         next_cache_state_ = (next_cache_state_ == STATE_CREATE_MAIN) ?
                                 STATE_DELETE_MAIN : STATE_DELETE_MEDIA;
-        rv = factory->GetCache()->GetBackend(
+
+        rv = http_cache->GetBackend(
             &cache_, base::Bind(&BrowsingDataRemover::DoClearCache,
                                 base::Unretained(this)));
         break;

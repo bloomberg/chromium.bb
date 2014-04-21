@@ -136,6 +136,9 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   // CachedState currently exists, it will be created and cached.
   CachedState* LookupOrCreate(const QuicServerId& server_id);
 
+  // Delete all CachedState objects from cached_states_.
+  void ClearCachedStates();
+
   // FillInchoateClientHello sets |out| to be a CHLO message that elicits a
   // source-address token or SCFG from a server. If |cached| is non-NULL, the
   // source-address token will be taken from it. |out_params| is used in order

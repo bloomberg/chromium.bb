@@ -132,6 +132,9 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   base::Value* QuicStreamFactoryInfoToValue() const;
 
+  // Delete all cached state objects in |crypto_config_|.
+  void ClearCachedStates();
+
   // NetworkChangeNotifier::IPAddressObserver methods:
 
   // Until the servers support roaming, close all connections when the local

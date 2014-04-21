@@ -648,6 +648,10 @@ base::Value* QuicStreamFactory::QuicStreamFactoryInfoToValue() const {
   return list;
 }
 
+void QuicStreamFactory::ClearCachedStates() {
+  crypto_config_.ClearCachedStates();
+}
+
 void QuicStreamFactory::OnIPAddressChanged() {
   CloseAllSessions(ERR_NETWORK_CHANGED);
   require_confirmation_ = true;
