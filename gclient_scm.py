@@ -1196,13 +1196,18 @@ class SVNWrapper(SCMWrapper):
            'Try using @unmanaged.\n%s') % (
             self.checkout_path, from_info))
 
-    try:
-      self._Run(['cleanup', self.checkout_path], options)
-    except subprocess2.CalledProcessError, e:
-      # Look for locked directories.
-      dir_info = scm.SVN.CaptureStatus(
-          None, os.path.join(self.checkout_path, '.'))
-      if any(d[0][2] == 'L' for d in dir_info):
+    # Look for locked directories.
+    dir_info = scm.SVN.CaptureStatus(
+        None, os.path.join(self.checkout_path, '.'))
+    if any(d[0][2] == 'L' for d in dir_info):
+      try:
+        self._Run(['cleanup', self.checkout_path], options)
+      except subprocess2.CalledProcessError, e:
+        # Get the status again, svn cleanup may have cleaned up at least
+        # something.
+        dir_info = scm.SVN.CaptureStatus(
+            None, os.path.join(self.checkout_path, '.'))
+
         # Try to fix the failures by removing troublesome files.
         for d in dir_info:
           if d[0][2] == 'L':
@@ -1354,8 +1359,6 @@ class SVNWrapper(SCMWrapper):
       gclient_utils.rmtree(self.checkout_path)
       # Don't reuse the args.
       return self.update(options, [], file_list)
-
-    self._Run(['cleanup', self.checkout_path], options)
 
     def printcb(file_status):
       if file_list is not None:
