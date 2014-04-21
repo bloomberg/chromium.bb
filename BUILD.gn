@@ -45,6 +45,7 @@ group("root") {
     "//tools/gn",
     "//ui/events",
     "//ui/gfx",
+    "//ui/resources",
     "//url",
   ]
 

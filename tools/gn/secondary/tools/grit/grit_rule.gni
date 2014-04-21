@@ -97,5 +97,8 @@ template("grit") {
     if (defined(invoker.visibility)) {
       visibility = invoker.visibility
     }
+    if (defined(invoker.output_name)) {
+      output_name = invoker.output_name
+    }
   }
 }
