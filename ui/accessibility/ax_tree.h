@@ -17,20 +17,6 @@ class AXNode;
 struct AXTreeUpdateState;
 
 // Used when you want to be notified when changes happen to the tree.
-//
-// Some of the notifications are called in the middle of an update operation.
-// Be careful, as the tree may be in an inconsistent state at this time;
-// don't walk the parents and children at this time:
-//   OnNodeWillBeDeleted
-//   OnNodeCreated
-//   OnNodeChanged
-//
-// Other notifications are called at the end of an atomic update operation.
-// From these, it's safe to walk the tree and do any initialization that
-// assumes the tree is in a consistent state.
-//   OnNodeCreationFinished
-//   OnNodeChangeFinished
-//   OnRootChanged
 class AX_EXPORT AXTreeDelegate {
  public:
   AXTreeDelegate();
@@ -41,23 +27,16 @@ class AX_EXPORT AXTreeDelegate {
   // in the middle of an update, the tree may be in an invalid state!
   virtual void OnNodeWillBeDeleted(AXNode* node) = 0;
 
-  // Called immediately after a new node is created. The tree may be in
-  // the middle of an update, don't walk the parents and children now.
+  // Called after a new node is created. It's guaranteed to be called
+  // after it's been fully initialized, so you can rely on its data and
+  // links to parents and children being valid. This will be called on
+  // parents before it's called on their children.
   virtual void OnNodeCreated(AXNode* node) = 0;
 
-  // Called when a node changes its data or children. The tree may be in
-  // the middle of an update, don't walk the parents and children now.
+  // Called when a node changes its data or children.
   virtual void OnNodeChanged(AXNode* node) = 0;
 
-  // Called for each new node at the end of an update operation,
-  // when the tree is in a consistent state.
-  virtual void OnNodeCreationFinished(AXNode* node) = 0;
-
-  // Called for each existing node that changed at the end of an update
-  // operation, when the tree is in a consistent state.
-  virtual void OnNodeChangeFinished(AXNode* node) = 0;
-
-  // Called at the end of an update operation when the root node changes.
+  // Called when the root node changes.
   virtual void OnRootChanged(AXNode* new_root) = 0;
 };
 
@@ -96,6 +75,10 @@ class AX_EXPORT AXTree {
   bool UpdateNode(const AXNodeData& src, AXTreeUpdateState* update_state);
 
   void OnRootChanged();
+
+  // Convenience function to create a node and call Initialize on it.
+  AXNode* CreateAndInitializeNode(
+      AXNode* parent, int32 id, int32 index_in_parent);
 
   // Call Destroy() on |node|, and delete it from the id map, and then
   // call recursively on all nodes in its subtree.

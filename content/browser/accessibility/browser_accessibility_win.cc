@@ -114,7 +114,7 @@ STDMETHODIMP BrowserAccessibilityRelation::get_nTargets(long* n_targets) {
 
   BrowserAccessibilityManager* manager = owner_->manager();
   for (long i = *n_targets - 1; i >= 0; --i) {
-    BrowserAccessibility* result = manager->GetFromID(target_ids_[i]);
+    BrowserAccessibility* result = manager->GetFromRendererID(target_ids_[i]);
     if (!result || !result->instance_active()) {
       *n_targets = 0;
       break;
@@ -138,7 +138,7 @@ STDMETHODIMP BrowserAccessibilityRelation::get_target(long target_index,
 
   BrowserAccessibilityManager* manager = owner_->manager();
   BrowserAccessibility* result =
-      manager->GetFromID(target_ids_[target_index]);
+      manager->GetFromRendererID(target_ids_[target_index]);
   if (!result || !result->instance_active())
     return E_FAIL;
 
@@ -471,7 +471,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accName(VARIANT var_id, BSTR* name) {
     if (target->GetIntAttribute(ui::AX_ATTR_TITLE_UI_ELEMENT,
                                 &title_elem_id)) {
       BrowserAccessibility* title_elem =
-          manager()->GetFromID(title_elem_id);
+          manager()->GetFromRendererID(title_elem_id);
       if (title_elem)
         name_str = title_elem->GetTextRecursive();
     }
@@ -1055,7 +1055,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accessibleAt(
   DCHECK_EQ(columns * rows, static_cast<int>(cell_ids.size()));
 
   int cell_id = cell_ids[row * columns + column];
-  BrowserAccessibilityWin* cell = GetFromID(cell_id);
+  BrowserAccessibilityWin* cell = GetFromRendererID(cell_id);
   if (cell) {
     *accessible = static_cast<IAccessible*>(cell->NewReference());
     return S_OK;
@@ -1141,7 +1141,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnDescription(long column,
   for (int i = 0; i < rows; ++i) {
     int cell_id = cell_ids[i * columns + column];
     BrowserAccessibilityWin* cell = static_cast<BrowserAccessibilityWin*>(
-        manager()->GetFromID(cell_id));
+        manager()->GetFromRendererID(cell_id));
     if (cell && cell->GetRole() == ui::AX_ROLE_COLUMN_HEADER) {
       base::string16 cell_name = cell->GetString16Attribute(
           ui::AX_ATTR_NAME);
@@ -1185,7 +1185,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnExtentAt(
       ui::AX_ATTR_CELL_IDS);
   int cell_id = cell_ids[row * columns + column];
   BrowserAccessibilityWin* cell = static_cast<BrowserAccessibilityWin*>(
-      manager()->GetFromID(cell_id));
+      manager()->GetFromRendererID(cell_id));
   int colspan;
   if (cell &&
       cell->GetIntAttribute(
@@ -1223,7 +1223,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnIndex(long cell_index,
 
   int cell_id = unique_cell_ids[cell_index];
   BrowserAccessibilityWin* cell =
-      manager()->GetFromID(cell_id)->ToBrowserAccessibilityWin();
+      manager()->GetFromRendererID(cell_id)->ToBrowserAccessibilityWin();
   int col_index;
   if (cell &&
       cell->GetIntAttribute(
@@ -1328,7 +1328,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowDescription(long row,
   for (int i = 0; i < columns; ++i) {
     int cell_id = cell_ids[row * columns + i];
     BrowserAccessibilityWin* cell =
-        manager()->GetFromID(cell_id)->ToBrowserAccessibilityWin();
+        manager()->GetFromRendererID(cell_id)->ToBrowserAccessibilityWin();
     if (cell && cell->GetRole() == ui::AX_ROLE_ROW_HEADER) {
       base::string16 cell_name = cell->GetString16Attribute(
           ui::AX_ATTR_NAME);
@@ -1371,7 +1371,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowExtentAt(long row,
       ui::AX_ATTR_CELL_IDS);
   int cell_id = cell_ids[row * columns + column];
   BrowserAccessibilityWin* cell =
-      manager()->GetFromID(cell_id)->ToBrowserAccessibilityWin();
+      manager()->GetFromRendererID(cell_id)->ToBrowserAccessibilityWin();
   int rowspan;
   if (cell &&
       cell->GetIntAttribute(
@@ -1409,7 +1409,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowIndex(long cell_index,
 
   int cell_id = unique_cell_ids[cell_index];
   BrowserAccessibilityWin* cell =
-      manager()->GetFromID(cell_id)->ToBrowserAccessibilityWin();
+      manager()->GetFromRendererID(cell_id)->ToBrowserAccessibilityWin();
   int cell_row_index;
   if (cell &&
       cell->GetIntAttribute(
@@ -1538,7 +1538,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowColumnExtentsAtIndex(
 
   int cell_id = unique_cell_ids[index];
   BrowserAccessibilityWin* cell =
-      manager()->GetFromID(cell_id)->ToBrowserAccessibilityWin();
+      manager()->GetFromRendererID(cell_id)->ToBrowserAccessibilityWin();
   int rowspan;
   int colspan;
   if (cell &&
@@ -1676,7 +1676,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnHeaderCells(
   for (int i = 0; i < rows; ++i) {
     int cell_id = cell_ids[i * columns + column];
     BrowserAccessibilityWin* cell =
-        manager()->GetFromID(cell_id)->ToBrowserAccessibilityWin();
+        manager()->GetFromRendererID(cell_id)->ToBrowserAccessibilityWin();
     if (cell && cell->GetRole() == ui::AX_ROLE_COLUMN_HEADER)
       (*n_column_header_cells)++;
   }
@@ -1686,7 +1686,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnHeaderCells(
   int index = 0;
   for (int i = 0; i < rows; ++i) {
     int cell_id = cell_ids[i * columns + column];
-    BrowserAccessibility* cell = manager()->GetFromID(cell_id);
+    BrowserAccessibility* cell = manager()->GetFromRendererID(cell_id);
     if (cell && cell->GetRole() == ui::AX_ROLE_COLUMN_HEADER) {
       (*cell_accessibles)[index] = static_cast<IAccessible*>(
           cell->ToBrowserAccessibilityWin()->NewReference());
@@ -1773,7 +1773,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowHeaderCells(
 
   for (int i = 0; i < columns; ++i) {
     int cell_id = cell_ids[row * columns + i];
-    BrowserAccessibility* cell = manager()->GetFromID(cell_id);
+    BrowserAccessibility* cell = manager()->GetFromRendererID(cell_id);
     if (cell && cell->GetRole() == ui::AX_ROLE_ROW_HEADER)
       (*n_row_header_cells)++;
   }
@@ -1783,7 +1783,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowHeaderCells(
   int index = 0;
   for (int i = 0; i < columns; ++i) {
     int cell_id = cell_ids[row * columns + i];
-    BrowserAccessibility* cell = manager()->GetFromID(cell_id);
+    BrowserAccessibility* cell = manager()->GetFromRendererID(cell_id);
     if (cell && cell->GetRole() == ui::AX_ROLE_ROW_HEADER) {
       (*cell_accessibles)[index] = static_cast<IAccessible*>(
           cell->ToBrowserAccessibilityWin()->NewReference());
@@ -2897,9 +2897,9 @@ HRESULT WINAPI BrowserAccessibilityWin::InternalQueryInterface(
 // Private methods.
 //
 
-// Called every time this node's data changes.
-void BrowserAccessibilityWin::OnDataChanged() {
-  BrowserAccessibility::OnDataChanged();
+// Initialize this object and mark it as active.
+void BrowserAccessibilityWin::PreInitialize() {
+  BrowserAccessibility::PreInitialize();
 
   InitRoleAndState();
 
@@ -3078,7 +3078,9 @@ void BrowserAccessibilityWin::OnDataChanged() {
   }
 }
 
-void BrowserAccessibilityWin::OnUpdateFinished() {
+void BrowserAccessibilityWin::PostInitialize() {
+  BrowserAccessibility::PostInitialize();
+
   // Construct the hypertext for this node.
   hyperlink_offset_to_index_.clear();
   hyperlinks_.clear();
@@ -3172,7 +3174,8 @@ bool BrowserAccessibilityWin::IsNative() const {
   return true;
 }
 
-void BrowserAccessibilityWin::OnLocationChanged() const {
+void BrowserAccessibilityWin::SetLocation(const gfx::Rect& new_location) {
+  BrowserAccessibility::SetLocation(new_location);
   manager()->ToBrowserAccessibilityManagerWin()->MaybeCallNotifyWinEvent(
       EVENT_OBJECT_LOCATIONCHANGE, unique_id_win());
 }
@@ -3298,8 +3301,9 @@ LONG BrowserAccessibilityWin::FindBoundary(
       text, line_breaks, boundary, start_offset, direction);
 }
 
-BrowserAccessibilityWin* BrowserAccessibilityWin::GetFromID(int32 id) {
-  return manager()->GetFromID(id)->ToBrowserAccessibilityWin();
+BrowserAccessibilityWin* BrowserAccessibilityWin::GetFromRendererID(
+    int32 renderer_id) {
+  return manager()->GetFromRendererID(renderer_id)->ToBrowserAccessibilityWin();
 }
 
 void BrowserAccessibilityWin::InitRoleAndState() {

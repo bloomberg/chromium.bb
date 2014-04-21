@@ -45,7 +45,7 @@ AXTreeDelegate::~AXTreeDelegate() {
 AXTree::AXTree()
     : delegate_(NULL), root_(NULL) {
   AXNodeData root;
-  root.id = -1;
+  root.id = 0;
   root.role = AX_ROLE_ROOT_WEB_AREA;
 
   AXTreeUpdate initial_state;
@@ -117,10 +117,10 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
     for (size_t i = 0; i < update.nodes.size(); ++i) {
       AXNode* node = GetFromId(update.nodes[i].id);
       if (update_state.new_nodes.find(node) != update_state.new_nodes.end()) {
-        delegate_->OnNodeCreationFinished(node);
+        delegate_->OnNodeCreated(node);
         update_state.new_nodes.erase(node);
       } else {
-        delegate_->OnNodeChangeFinished(node);
+        delegate_->OnNodeChanged(node);
       }
     }
     if (root_->id() != old_root_id)
@@ -134,13 +134,8 @@ std::string AXTree::ToString() const {
   return TreeToStringHelper(root_, 0);
 }
 
-AXNode* AXTree::CreateNode(
-    AXNode* parent, int32 id, int32 index_in_parent) {
-  AXNode* new_node = new AXNode(parent, id, index_in_parent);
-  id_map_[new_node->id()] = new_node;
-  if (delegate_)
-    delegate_->OnNodeCreated(new_node);
-  return new_node;
+AXNode* AXTree::CreateNode(AXNode* parent, int32 id, int32 index_in_parent) {
+  return new AXNode(parent, id, index_in_parent);
 }
 
 bool AXTree::UpdateNode(
@@ -155,19 +150,18 @@ bool AXTree::UpdateNode(
   AXNode* node = GetFromId(src.id);
   if (node) {
     update_state->pending_nodes.erase(node);
-    node->SetData(src);
-    if (delegate_)
-      delegate_->OnNodeChanged(node);
   } else {
     if (src.role != AX_ROLE_ROOT_WEB_AREA) {
       error_ = base::StringPrintf(
           "%d is not in the tree and not the new root", src.id);
       return false;
     }
-    node = CreateNode(NULL, src.id, 0);
+    node = CreateAndInitializeNode(NULL, src.id, 0);
     update_state->new_nodes.insert(node);
-    node->SetData(src);
   }
+
+  // Set the node's data.
+  node->SetData(src);
 
   // First, delete nodes that used to be children of this node but aren't
   // anymore.
@@ -190,6 +184,13 @@ bool AXTree::UpdateNode(
   }
 
   return success;
+}
+
+AXNode* AXTree::CreateAndInitializeNode(
+    AXNode* parent, int32 id, int32 index_in_parent) {
+  AXNode* node = CreateNode(parent, id, index_in_parent);
+  id_map_[node->id()] = node;
+  return node;
 }
 
 void AXTree::DestroyNodeAndSubtree(AXNode* node) {
@@ -250,7 +251,7 @@ bool AXTree::CreateNewChildVector(AXNode* node,
       }
       child->SetIndexInParent(index_in_parent);
     } else {
-      child = CreateNode(node, child_id, index_in_parent);
+      child = CreateAndInitializeNode(node, child_id, index_in_parent);
       update_state->pending_nodes.insert(child);
       update_state->new_nodes.insert(child);
     }

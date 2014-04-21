@@ -19,10 +19,6 @@ void AXNode::SetData(const AXNodeData& src) {
   data_ = src;
 }
 
-void AXNode::SetLocation(const gfx::Rect& new_location) {
-  data_.location = new_location;
-}
-
 void AXNode::SetIndexInParent(int index_in_parent) {
   index_in_parent_ = index_in_parent;
 }
@@ -33,15 +29,6 @@ void AXNode::SwapChildren(std::vector<AXNode*>& children) {
 
 void AXNode::Destroy() {
   delete this;
-}
-
-bool AXNode::IsDescendantOf(AXNode* ancestor) {
-  if (this == ancestor)
-    return true;
-  else if (parent())
-    return parent()->IsDescendantOf(ancestor);
-
-  return false;
 }
 
 }  // namespace ui

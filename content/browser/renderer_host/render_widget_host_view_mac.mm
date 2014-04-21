@@ -3467,7 +3467,7 @@ SkBitmap::Config RenderWidgetHostViewMac::PreferredReadbackFormat() {
     // method returns.
     BrowserAccessibilityManager* manager =
         renderWidgetHostView_->GetBrowserAccessibilityManager();
-    manager->SetFocus(manager->GetFromID(accessibilityObjectId), false);
+    manager->SetFocus(manager->GetFromRendererID(accessibilityObjectId), false);
   }
 }
 

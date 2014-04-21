@@ -24,36 +24,27 @@ class AX_EXPORT AXNode {
   int child_count() const { return static_cast<int>(children_.size()); }
   const AXNodeData& data() const { return data_; }
   const std::vector<AXNode*>& children() const { return children_; }
-  int index_in_parent() const { return index_in_parent_; }
 
   // Get the child at the given index.
   AXNode* ChildAtIndex(int index) const { return children_[index]; }
 
   // Set the node's accessibility data. This may be done during initial
   // initialization or later when the node data changes.
-  void SetData(const AXNodeData& src);
-
-  // Update this node's location. This is separate from SetData just because
-  // changing only the location is common and should be more efficient than
-  // re-copying all of the data.
-  void SetLocation(const gfx::Rect& new_location);
+  virtual void SetData(const AXNodeData& src);
 
   // Set the index in parent, for example if siblings were inserted or deleted.
   void SetIndexInParent(int index_in_parent);
 
   // Swap the internal children vector with |children|. This instance
   // now owns all of the passed children.
-  void SwapChildren(std::vector<AXNode*>& children);
+  virtual void SwapChildren(std::vector<AXNode*>& children);
 
   // This is called when the AXTree no longer includes this node in the
   // tree. Reference counting is used on some platforms because the
   // operating system may hold onto a reference to an AXNode
   // object even after we're through with it, so this may decrement the
   // reference count and clear out the object's data.
-  void Destroy();
-
-  // Return true if this object is equal to or a descendant of |ancestor|.
-  bool IsDescendantOf(AXNode* ancestor);
+  virtual void Destroy();
 
  private:
   int index_in_parent_;

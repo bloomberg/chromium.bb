@@ -16,11 +16,11 @@ class CONTENT_EXPORT BrowserAccessibilityManagerMac
  public:
   BrowserAccessibilityManagerMac(
       NSView* parent_view,
-      const ui::AXTreeUpdate& initial_tree,
+      const ui::AXNodeData& src,
       BrowserAccessibilityDelegate* delegate,
       BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
 
-  static ui::AXTreeUpdate GetEmptyDocument();
+  static ui::AXNodeData GetEmptyDocument();
 
   // Implementation of BrowserAccessibilityManager.
   virtual void NotifyAccessibilityEvent(
