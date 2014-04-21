@@ -25,6 +25,7 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
   if (!media::MediaCodecBridge::IsAvailable()) {
     WebRuntimeFeatures::enableMediaSource(false);
     WebRuntimeFeatures::enablePrefixedEncryptedMedia(false);
+    WebRuntimeFeatures::enableEncryptedMedia(false);
   }
   // WebAudio is enabled by default on ARM and X86 and only when the
   // MediaCodec API is available.
