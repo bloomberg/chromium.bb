@@ -113,6 +113,9 @@ void RenderTextControlSingleLine::layout()
     if (innerTextRenderer && !innerTextRenderer->style()->logicalHeight().isAuto()) {
         innerTextRenderer->style()->setLogicalHeight(Length(Auto));
         layoutScope.setNeedsLayout(innerTextRenderer);
+        HTMLElement* placeholderElement = inputElement()->placeholderElement();
+        if (RenderBox* placeholderBox = placeholderElement ? placeholderElement->renderBox() : 0)
+            layoutScope.setNeedsLayout(placeholderBox);
     }
     if (viewPortRenderer && !viewPortRenderer->style()->logicalHeight().isAuto()) {
         viewPortRenderer->style()->setLogicalHeight(Length(Auto));
