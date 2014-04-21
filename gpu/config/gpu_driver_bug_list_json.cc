@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "4.12",
+  "version": "5.0",
   "entries": [
     {
       "id": 1,
@@ -656,15 +656,10 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
           "value": "10.7"
         }
       },
-      "machine_model": {
-        "name": {
-          "op": "=",
-          "value": "MacBookPro"
-        },
-        "version": {
-          "op": "<",
-          "value": "8"
-        }
+      "machine_model_name": ["MacBookPro"],
+      "machine_model_version": {
+        "op": "<",
+        "value": "8"
       },
       "gpu_count": {
         "op": "=",

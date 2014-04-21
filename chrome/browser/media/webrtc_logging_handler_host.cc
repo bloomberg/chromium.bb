@@ -385,11 +385,13 @@ void WebRtcLoggingHandlerHost::LogInitialInfoOnIOThread(
 
   // GPU
   gpu::GPUInfo gpu_info = content::GpuDataManager::GetInstance()->GetGPUInfo();
-  LogToCircularBuffer("Gpu: machine-model='" + gpu_info.machine_model +
-                      "', vendor-id=" + IntToString(gpu_info.gpu.vendor_id) +
-                      ", device-id=" + IntToString(gpu_info.gpu.device_id) +
-                      ", driver-vendor='" + gpu_info.driver_vendor +
-                      "', driver-version=" + gpu_info.driver_version);
+  LogToCircularBuffer(
+      "Gpu: machine-model-name='" + gpu_info.machine_model_name +
+      "', machine-model-version=" + gpu_info.machine_model_version +
+      "', vendor-id=" + IntToString(gpu_info.gpu.vendor_id) +
+      ", device-id=" + IntToString(gpu_info.gpu.device_id) +
+      ", driver-vendor='" + gpu_info.driver_vendor +
+      "', driver-version=" + gpu_info.driver_version);
 
   // Network interfaces
   LogToCircularBuffer("Discovered " + IntToString(network_list.size()) +

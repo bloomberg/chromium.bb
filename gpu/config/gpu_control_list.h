@@ -265,26 +265,6 @@ class GPU_EXPORT GpuControlList {
     bool value_;
   };
 
-  class GPU_EXPORT MachineModelInfo {
-   public:
-    MachineModelInfo(const std::string& name_op,
-                     const std::string& name_value,
-                     const std::string& version_op,
-                     const std::string& version_string,
-                     const std::string& version_string2);
-    ~MachineModelInfo();
-
-    // Determines if a given name/version is included in the MachineModelInfo.
-    bool Contains(const std::string& name, const std::string& version) const;
-
-    // Determines if the MachineModelInfo contains valid information.
-    bool IsValid() const;
-
-   private:
-    scoped_ptr<StringInfo> name_info_;
-    scoped_ptr<VersionInfo> version_info_;
-  };
-
   class GpuControlListEntry;
   typedef scoped_refptr<GpuControlListEntry> ScopedGpuControlListEntry;
 
@@ -419,11 +399,11 @@ class GPU_EXPORT GpuControlList {
                             const std::string& float_string,
                             const std::string& float_string2);
 
-    bool SetMachineModelInfo(const std::string& name_op,
-                             const std::string& name_value,
-                             const std::string& version_op,
-                             const std::string& version_string,
-                             const std::string& version_string2);
+    bool AddMachineModelName(const std::string& model_name);
+
+    bool SetMachineModelVersionInfo(const std::string& version_op,
+                                    const std::string& version_string,
+                                    const std::string& version_string2);
 
     bool SetGpuCountInfo(const std::string& op,
                          const std::string& int_string,
@@ -469,7 +449,8 @@ class GPU_EXPORT GpuControlList {
     scoped_ptr<FloatInfo> perf_graphics_info_;
     scoped_ptr<FloatInfo> perf_gaming_info_;
     scoped_ptr<FloatInfo> perf_overall_info_;
-    scoped_ptr<MachineModelInfo> machine_model_info_;
+    std::vector<std::string> machine_model_name_list_;
+    scoped_ptr<VersionInfo> machine_model_version_info_;
     scoped_ptr<IntInfo> gpu_count_info_;
     scoped_ptr<BoolInfo> direct_rendering_info_;
     std::set<int> features_;

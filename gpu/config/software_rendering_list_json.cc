@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "7.7",
+  "version": "8.0",
   "entries": [
     {
       "id": 1,
@@ -949,12 +949,7 @@ LONG_STRING_CONST(
           "value": "4.1.2"
         }
       },
-      "machine_model": {
-        "name": {
-          "op": "=",
-          "value": "GT-N7100"
-        }
-      },
+      "machine_model_name": ["GT-N7100"],
       "features": [
         "accelerated_video_decode"
       ]
@@ -966,12 +961,7 @@ LONG_STRING_CONST(
       "os": {
         "type": "android"
       },
-      "machine_model": {
-        "name": {
-          "op": "=",
-          "value": "SCH-I545"
-        }
-      },
+      "machine_model_name": ["SCH-I545"],
       "features": [
         "accelerated_video_decode"
       ]
@@ -1138,92 +1128,9 @@ LONG_STRING_CONST(
       "cr_bugs": [362779],
       "exceptions": [
         {
-          "machine_model": {
-            "name": {
-              "op": "=",
-              "value": "Nexus 4"
-            }
-          }
-        },
-        {
-          "machine_model": {
-            "name": {
-              "op": "=",
-              "value": "Nexus 5"
-            }
-          }
-        },
-        {
-          "machine_model": {
-            "name": {
-              "op": "=",
-              "value": "Nexus 7"
-            }
-          }
-        },
-        {
-          "machine_model": {
-            "name": {
-              "op": "=",
-              "value": "XT1049"
-            }
-          }
-        },
-        {
-          "machine_model": {
-            "name": {
-              "op": "=",
-              "value": "XT1050"
-            }
-          }
-        },
-        {
-          "machine_model": {
-            "name": {
-              "op": "=",
-              "value": "XT1052"
-            }
-          }
-        },
-        {
-          "machine_model": {
-            "name": {
-              "op": "=",
-              "value": "XT1053"
-            }
-          }
-        },
-        {
-          "machine_model": {
-            "name": {
-              "op": "=",
-              "value": "XT1055"
-            }
-          }
-        },
-        {
-          "machine_model": {
-            "name": {
-              "op": "=",
-              "value": "XT1056"
-            }
-          }
-        },
-        {
-          "machine_model": {
-            "name": {
-              "op": "=",
-              "value": "XT1058"
-            }
-          }
-        },
-        {
-          "machine_model": {
-            "name": {
-              "op": "=",
-              "value": "XT1060"
-            }
-          }
+          "machine_model_name": ["Nexus 4", "Nexus 5", "Nexus 7",
+                                 "XT1049", "XT1050", "XT1052", "XT1053",
+                                 "XT1055", "XT1056", "XT1058", "XT1060"]
         }
       ],
       "features": [

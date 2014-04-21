@@ -185,13 +185,12 @@ GpuIDResult CollectGpuID(uint32* vendor_id, uint32* device_id) {
 CollectInfoResult CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
-  std::string model_name;
   int32 model_major = 0, model_minor = 0;
   base::mac::ParseModelIdentifier(base::mac::GetModelIdentifier(),
-                                  &model_name, &model_major, &model_minor);
-  base::ReplaceChars(model_name, " ", "_", &gpu_info->machine_model);
-  gpu_info->machine_model += " " + base::IntToString(model_major) +
-                             "." + base::IntToString(model_minor);
+                                  &gpu_info->machine_model_name,
+                                  &model_major, &model_minor);
+  gpu_info->machine_model_version =
+      base::IntToString(model_major) + "." + base::IntToString(model_minor);
 
   bool result = CollectPCIVideoCardInfo(gpu_info);
   return result ? kCollectInfoSuccess : kCollectInfoNonFatalFailure;

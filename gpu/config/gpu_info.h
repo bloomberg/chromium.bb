@@ -100,9 +100,17 @@ struct GPU_EXPORT GPUInfo {
   // The version of the vertex shader used by the gpu.
   std::string vertex_shader_version;
 
-  // The machine model identifier with format "name major.minor".
-  // Name should not contain any whitespaces.
-  std::string machine_model;
+  // The machine model identifier. They can contain any character, including
+  // whitespaces.  Currently it is supported on MacOSX and Android.
+  // Android examples: "Naxus 5", "XT1032".
+  // On MacOSX, the version is stripped out of the model identifier, for
+  // example, the original identifier is "MacBookPro7,2", and we put
+  // "MacBookPro" as machine_model_name, and "7.2" as machine_model_version.
+  std::string machine_model_name;
+
+  // The version of the machine model. Currently it is supported on MacOSX.
+  // See machine_model_name's comment.
+  std::string machine_model_version;
 
   // The version of OpenGL we are using.
   // TODO(zmo): should be able to tell if it's GL or GLES.

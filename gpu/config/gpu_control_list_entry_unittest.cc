@@ -56,7 +56,6 @@ class GpuControlListEntryTest : public testing::Test {
     gpu_info_.driver_vendor = "NVIDIA";
     gpu_info_.driver_version = "1.6.18";
     gpu_info_.driver_date = "7-14-2009";
-    gpu_info_.machine_model = "MacBookPro 7.1";
     gpu_info_.gl_vendor = "NVIDIA Corporation";
     gpu_info_.gl_renderer = "NVIDIA GeForce GT 120 OpenGL Engine";
     gpu_info_.performance_stats.graphics = 5.0;
@@ -705,6 +704,72 @@ TEST_F(GpuControlListEntryTest, SingleActiveGPU) {
   EXPECT_EQ(GpuControlList::kOsMacosx, entry->GetOsType());
   EXPECT_TRUE(entry->Contains(
       GpuControlList::kOsMacosx, "10.6", gpu_info()));
+}
+
+TEST_F(GpuControlListEntryTest, MachineModelName) {
+  const std::string json = LONG_STRING_CONST(
+      {
+        "id": 1,
+        "os": {
+          "type": "android"
+        },
+        "machine_model_name": ["Nexus 4", "XT1032"],
+        "features": [
+          "test_feature_0"
+        ]
+      }
+  );
+  ScopedEntry entry(GetEntryFromString(json));
+  EXPECT_TRUE(entry.get() != NULL);
+  EXPECT_EQ(GpuControlList::kOsAndroid, entry->GetOsType());
+  GPUInfo gpu_info;
+
+  gpu_info.machine_model_name = "Nexus 4";
+  EXPECT_TRUE(entry->Contains(
+      GpuControlList::kOsAndroid, "4.1", gpu_info));
+
+  gpu_info.machine_model_name = "XT1032";
+  EXPECT_TRUE(entry->Contains(
+      GpuControlList::kOsAndroid, "4.1", gpu_info));
+
+  gpu_info.machine_model_name = "XT1032i";
+  EXPECT_FALSE(entry->Contains(
+      GpuControlList::kOsAndroid, "4.1", gpu_info));
+
+  gpu_info.machine_model_name = "Nexus 5";
+  EXPECT_FALSE(entry->Contains(
+      GpuControlList::kOsAndroid, "4.1", gpu_info));
+
+  gpu_info.machine_model_name = "Nexus";
+  EXPECT_FALSE(entry->Contains(
+      GpuControlList::kOsAndroid, "4.1", gpu_info));
+}
+
+TEST_F(GpuControlListEntryTest, MachineModelVersion) {
+  const std::string json = LONG_STRING_CONST(
+      {
+        "id": 1,
+        "os": {
+          "type": "macosx"
+        },
+        "machine_model_name": ["MacBookPro"],
+        "machine_model_version": {
+          "op": "=",
+          "value": "7.1"
+        },
+        "features": [
+          "test_feature_0"
+        ]
+      }
+  );
+  ScopedEntry entry(GetEntryFromString(json));
+  EXPECT_TRUE(entry.get() != NULL);
+  GPUInfo gpu_info;
+  gpu_info.machine_model_name = "MacBookPro";
+  gpu_info.machine_model_version = "7.1";
+  EXPECT_EQ(GpuControlList::kOsMacosx, entry->GetOsType());
+  EXPECT_TRUE(entry->Contains(
+      GpuControlList::kOsMacosx, "10.6", gpu_info));
 }
 
 class GpuControlListEntryDualGPUTest : public GpuControlListEntryTest {

@@ -38,20 +38,21 @@
 // 13. "perf_graphics" is a FLOAT structure (defined below).
 // 14. "perf_gaming" is a FLOAT structure (defined below).
 // 15. "perf_overall" is a FLOAT structure (defined below).
-// 16. "machine_model" contais "name" and an optional "version".  "name" is a
-//     STRING structure and "version" is a VERSION structure (defined below).
-// 17. "gpu_count" is a INT structure (defined below).
-// 18  "cpu_info" is a STRING structure (defined below).
-// 19. "exceptions" is a list of entries.
-// 20. "features" is a list of gpu control list options, which can be
+// 16. "machine_model_name" is an array of strings.  The strings can contain
+//     any characters.
+// 17. "machine_model_version" is a VERSION structure (defined below).
+// 18. "gpu_count" is a INT structure (defined below).
+// 19  "cpu_info" is a STRING structure (defined below).
+// 20. "exceptions" is a list of entries.
+// 21. "features" is a list of gpu control list options, which can be
 //     configured by a specific list. See its *_json.cc file for a list of
 //     supported features. This field is mandatory.
-// 21. "description" has the description of the entry.
-// 22. "webkit_bugs" is an array of associated webkit bug numbers.
-// 23. "cr_bugs" is an array of associated webkit bug numbers.
-// 24. "disabled" is a boolean. If it is present, the entry will be skipped.
+// 22. "description" has the description of the entry.
+// 23. "webkit_bugs" is an array of associated webkit bug numbers.
+// 24. "cr_bugs" is an array of associated webkit bug numbers.
+// 25. "disabled" is a boolean. If it is present, the entry will be skipped.
 //     This can not be used in exceptions.
-// 25. "direct_rendering" is a boolean. If present, this will filter on whether
+// 26. "direct_rendering" is a boolean. If present, this will filter on whether
 // the GL contexts are direct or indirect based on the value.
 //
 // VERSION includes "op", "style", "value", and "value2".  "op" can be any of

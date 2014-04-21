@@ -244,7 +244,6 @@
         'command_buffer/service/gpu_tracer_unittest.cc',
         'config/gpu_blacklist_unittest.cc',
         'config/gpu_control_list_entry_unittest.cc',
-        'config/gpu_control_list_machine_model_info_unittest.cc',
         'config/gpu_control_list_number_info_unittest.cc',
         'config/gpu_control_list_os_info_unittest.cc',
         'config/gpu_control_list_string_info_unittest.cc',

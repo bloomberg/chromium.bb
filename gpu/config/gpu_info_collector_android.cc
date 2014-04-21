@@ -99,7 +99,8 @@ CollectInfoResult CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   gpu_info->can_lose_context = false;
   gpu_info->finalized = true;
 
-  gpu_info->machine_model = base::android::BuildInfo::GetInstance()->model();
+  gpu_info->machine_model_name =
+      base::android::BuildInfo::GetInstance()->model();
 
   // Create a short-lived context on the UI thread to collect the GL strings.
   // Make sure we restore the existing context if there is one.

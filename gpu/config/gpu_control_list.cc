@@ -243,32 +243,6 @@ GpuControlList::OsType GpuControlList::OsInfo::StringToOsType(
   return kOsUnknown;
 }
 
-GpuControlList::MachineModelInfo::MachineModelInfo(
-    const std::string& name_op,
-    const std::string& name_value,
-    const std::string& version_op,
-    const std::string& version_string,
-    const std::string& version_string2) {
-  name_info_.reset(new StringInfo(name_op, name_value));
-  version_info_.reset(new VersionInfo(
-      version_op, std::string(), version_string, version_string2));
-}
-
-GpuControlList::MachineModelInfo::~MachineModelInfo() {}
-
-bool GpuControlList::MachineModelInfo::Contains(
-    const std::string& name, const std::string& version) const {
-  if (!IsValid())
-    return false;
-  if (!name_info_->Contains(name))
-    return false;
-  return version_info_->Contains(version);
-}
-
-bool GpuControlList::MachineModelInfo::IsValid() const {
-  return name_info_->IsValid() && version_info_->IsValid();
-}
-
 GpuControlList::StringInfo::StringInfo(const std::string& string_op,
                                      const std::string& string_value) {
   op_ = StringToOp(string_op);
@@ -500,7 +474,7 @@ GpuControlList::GpuControlListEntry::GetEntryFromValue(
   const base::ListValue* device_id_list;
   if (value->GetList("device_id", &device_id_list)) {
     for (size_t i = 0; i < device_id_list->GetSize(); ++i) {
-        std::string device_id;
+      std::string device_id;
       if (!device_id_list->GetString(i, &device_id) ||
           !entry->AddDeviceId(device_id)) {
         LOG(WARNING) << "Malformed device_id entry " << entry->id();
@@ -692,28 +666,31 @@ GpuControlList::GpuControlListEntry::GetEntryFromValue(
     dictionary_entry_count++;
   }
 
-  const base::DictionaryValue* machine_model_value = NULL;
-  if (value->GetDictionary("machine_model", &machine_model_value)) {
-    std::string name_op;
-    std::string name_value;
-    const base::DictionaryValue* name = NULL;
-    if (machine_model_value->GetDictionary("name", &name)) {
-      name->GetString(kOp, &name_op);
-      name->GetString("value", &name_value);
+  const base::ListValue* machine_model_name_list;
+  if (value->GetList("machine_model_name", &machine_model_name_list)) {
+    for (size_t i = 0; i < machine_model_name_list->GetSize(); ++i) {
+      std::string model_name;
+      if (!machine_model_name_list->GetString(i, &model_name) ||
+          !entry->AddMachineModelName(model_name)) {
+        LOG(WARNING) << "Malformed machine_model_name entry " << entry->id();
+        return NULL;
+      }
     }
+    dictionary_entry_count++;
+  }
 
+  const base::DictionaryValue* machine_model_version_value = NULL;
+  if (value->GetDictionary(
+          "machine_model_version", &machine_model_version_value)) {
     std::string version_op = "any";
     std::string version_string;
     std::string version_string2;
-    const base::DictionaryValue* version_value = NULL;
-    if (machine_model_value->GetDictionary("version", &version_value)) {
-      version_value->GetString(kOp, &version_op);
-      version_value->GetString("value", &version_string);
-      version_value->GetString("value2", &version_string2);
-    }
-    if (!entry->SetMachineModelInfo(
-            name_op, name_value, version_op, version_string, version_string2)) {
-      LOG(WARNING) << "Malformed machine_model entry " << entry->id();
+    machine_model_version_value->GetString(kOp, &version_op);
+    machine_model_version_value->GetString("value", &version_string);
+    machine_model_version_value->GetString("value2", &version_string2);
+    if (!entry->SetMachineModelVersionInfo(
+            version_op, version_string, version_string2)) {
+      LOG(WARNING) << "Malformed machine_model_version entry " << entry->id();
       return NULL;
     }
     dictionary_entry_count++;
@@ -948,15 +925,21 @@ bool GpuControlList::GpuControlListEntry::SetPerfOverallInfo(
   return perf_overall_info_->IsValid();
 }
 
-bool GpuControlList::GpuControlListEntry::SetMachineModelInfo(
-    const std::string& name_op,
-    const std::string& name_value,
+bool GpuControlList::GpuControlListEntry::AddMachineModelName(
+    const std::string& model_name) {
+  if (model_name.empty())
+    return false;
+  machine_model_name_list_.push_back(model_name);
+  return true;
+}
+
+bool GpuControlList::GpuControlListEntry::SetMachineModelVersionInfo(
     const std::string& version_op,
     const std::string& version_string,
     const std::string& version_string2) {
-  machine_model_info_.reset(new MachineModelInfo(
-      name_op, name_value, version_op, version_string, version_string2));
-  return machine_model_info_->IsValid();
+  machine_model_version_info_.reset(new VersionInfo(
+      version_op, std::string(), version_string, version_string2));
+  return machine_model_version_info_->IsValid();
 }
 
 bool GpuControlList::GpuControlListEntry::SetGpuCountInfo(
@@ -1138,13 +1121,22 @@ bool GpuControlList::GpuControlListEntry::Contains(
       (gpu_info.performance_stats.overall == 0.0 ||
        !perf_overall_info_->Contains(gpu_info.performance_stats.overall)))
     return false;
-  if (machine_model_info_.get() != NULL) {
-    std::vector<std::string> name_version;
-    base::SplitString(gpu_info.machine_model, ' ', &name_version);
-    if (name_version.size() == 2 &&
-        !machine_model_info_->Contains(name_version[0], name_version[1]))
+  if (!machine_model_name_list_.empty() &&
+      !gpu_info.machine_model_name.empty()) {
+    bool found_match = false;
+    for (size_t ii = 0; ii < machine_model_name_list_.size(); ++ii) {
+      if (machine_model_name_list_[ii] == gpu_info.machine_model_name) {
+        found_match = true;
+        break;
+      }
+    }
+    if (!found_match)
       return false;
   }
+  if (machine_model_version_info_.get() != NULL &&
+      !gpu_info.machine_model_version.empty() &&
+      !machine_model_version_info_->Contains(gpu_info.machine_model_version))
+    return false;
   if (gpu_count_info_.get() != NULL &&
       !gpu_count_info_->Contains(gpu_info.secondary_gpus.size() + 1))
     return false;
