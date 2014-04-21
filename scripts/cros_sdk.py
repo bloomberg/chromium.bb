@@ -406,7 +406,7 @@ def _ReExecuteIfNeeded(argv):
     os.execvp(cmd[0], cmd)
   else:
     cgroups.Cgroup.InitSystem()
-    namespaces.Unshare(namespaces.CLONE_NEWNS)
+    namespaces.Unshare(namespaces.CLONE_NEWNS | namespaces.CLONE_NEWUTS)
 
 
 def _CreateParser(sdk_latest_version, bootstrap_latest_version):
