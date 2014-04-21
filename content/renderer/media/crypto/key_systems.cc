@@ -14,7 +14,10 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/key_system_info.h"
 #include "content/renderer/media/crypto/key_systems_support_uma.h"
-#include "net/base/mime_util.h"
+
+#if defined(OS_ANDROID)
+#include "media/base/android/media_codec_bridge.h"
+#endif
 
 #include "widevine_cdm_version.h" // In SHARED_INTERMEDIATE_DIR.
 
@@ -27,23 +30,37 @@ const char kUnsupportedClearKeyKeySystem[] = "unsupported-org.w3.clearkey";
 const char kAudioWebM[] = "audio/webm";
 const char kVideoWebM[] = "video/webm";
 const char kVorbis[] = "vorbis";
-const char kVorbisVP8[] = "vorbis,vp8,vp8.0";
+const char kVP8[] = "vp8";
+const char kVP80[] = "vp8.0";
 
 #if defined(USE_PROPRIETARY_CODECS)
 const char kAudioMp4[] = "audio/mp4";
 const char kVideoMp4[] = "video/mp4";
 const char kMp4a[] = "mp4a";
-const char kMp4aAvc1Avc3[] = "mp4a,avc1,avc3";
+const char kAvc1[] = "avc1";
+const char kAvc3[] = "avc3";
 #endif  // defined(USE_PROPRIETARY_CODECS)
 
 static void AddClearKey(std::vector<KeySystemInfo>* concrete_key_systems) {
   KeySystemInfo info(kClearKeyKeySystem);
 
-  info.supported_types.push_back(std::make_pair(kAudioWebM, kVorbis));
-  info.supported_types.push_back(std::make_pair(kVideoWebM, kVorbisVP8));
+#if defined(OS_ANDROID)
+  // If MediaCodecBridge is not available. EME should not be enabled at all.
+  // See SetRuntimeFeatureDefaultsForPlatform().
+  // VP8 and AVC1 are supported on all MediaCodec implementations:
+  // http://developer.android.com/guide/appendix/media-formats.html
+  DCHECK(media::MediaCodecBridge::IsAvailable());
+#endif
+
+  info.supported_types[kAudioWebM].insert(kVorbis);
+  info.supported_types[kVideoWebM] = info.supported_types[kAudioWebM];
+  info.supported_types[kVideoWebM].insert(kVP8);
+  info.supported_types[kVideoWebM].insert(kVP80);
 #if defined(USE_PROPRIETARY_CODECS)
-  info.supported_types.push_back(std::make_pair(kAudioMp4, kMp4a));
-  info.supported_types.push_back(std::make_pair(kVideoMp4, kMp4aAvc1Avc3));
+  info.supported_types[kAudioMp4].insert(kMp4a);
+  info.supported_types[kVideoMp4] = info.supported_types[kAudioMp4];
+  info.supported_types[kVideoMp4].insert(kAvc1);
+  info.supported_types[kVideoMp4].insert(kAvc3);
 #endif  // defined(USE_PROPRIETARY_CODECS)
 
   info.use_aes_decryptor = true;
@@ -69,6 +86,9 @@ class KeySystems {
 #endif
 
  private:
+  typedef KeySystemInfo::CodecSet CodecSet;
+  typedef KeySystemInfo::ContainerCodecsMap ContainerCodecsMap;
+
   void AddConcreteSupportedKeySystems(
       const std::vector<KeySystemInfo>& concrete_key_systems);
 
@@ -78,13 +98,10 @@ class KeySystems {
 #if defined(ENABLE_PEPPER_CDMS)
       const std::string& pepper_type,
 #endif
-      const std::vector<KeySystemInfo::ContainerCodecsPair>& supported_types,
+      const ContainerCodecsMap& supported_types,
       const std::string& parent_key_system);
 
   friend struct base::DefaultLazyInstanceTraits<KeySystems>;
-
-  typedef base::hash_set<std::string> CodecSet;
-  typedef std::map<std::string, CodecSet> MimeTypeMap;
 
   struct KeySystemProperties {
     KeySystemProperties() : use_aes_decryptor(false) {}
@@ -93,7 +110,7 @@ class KeySystems {
 #if defined(ENABLE_PEPPER_CDMS)
     std::string pepper_type;
 #endif
-    MimeTypeMap types;
+    ContainerCodecsMap supported_types;
   };
 
   typedef std::map<std::string, KeySystemProperties> KeySystemPropertiesMap;
@@ -102,10 +119,6 @@ class KeySystems {
 
   KeySystems();
   ~KeySystems() {}
-
-  void AddSupportedType(const std::string& mime_type,
-                        const std::string& codecs_list,
-                        KeySystemProperties* properties);
 
   bool IsSupportedKeySystemWithContainerAndCodec(const std::string& mime_type,
                                                  const std::string& codec,
@@ -162,7 +175,7 @@ void KeySystems::AddConcreteSupportedKeySystem(
 #if defined(ENABLE_PEPPER_CDMS)
     const std::string& pepper_type,
 #endif
-    const std::vector<KeySystemInfo::ContainerCodecsPair>& supported_types,
+    const ContainerCodecsMap& supported_types,
     const std::string& parent_key_system) {
   DCHECK(!IsConcreteSupportedKeySystem(concrete_key_system))
       << "Key system '" << concrete_key_system << "' already registered";
@@ -177,12 +190,7 @@ void KeySystems::AddConcreteSupportedKeySystem(
   properties.pepper_type = pepper_type;
 #endif
 
-  for (size_t i = 0; i < supported_types.size(); ++i) {
-    const KeySystemInfo::ContainerCodecsPair& pair = supported_types[i];
-    const std::string& mime_type = pair.first;
-    const std::string& codecs_list = pair.second;
-    AddSupportedType(mime_type, codecs_list, &properties);
-  }
+  properties.supported_types = supported_types;
 
   concrete_key_system_map_[concrete_key_system] = properties;
 
@@ -194,20 +202,6 @@ void KeySystems::AddConcreteSupportedKeySystem(
         << "Parent '" << parent_key_system << "' already registered";
     parent_key_system_map_[parent_key_system] = concrete_key_system;
   }
-}
-
-void KeySystems::AddSupportedType(const std::string& mime_type,
-                                  const std::string& codecs_list,
-                                  KeySystemProperties* properties) {
-  std::vector<std::string> mime_type_codecs;
-  net::ParseCodecString(codecs_list, &mime_type_codecs, false);
-
-  CodecSet codecs(mime_type_codecs.begin(), mime_type_codecs.end());
-
-  MimeTypeMap& mime_types_map = properties->types;
-  // mime_types_map must not be repeated for a given key system.
-  DCHECK(mime_types_map.find(mime_type) == mime_types_map.end());
-  mime_types_map[mime_type] = codecs;
 }
 
 bool KeySystems::IsConcreteSupportedKeySystem(const std::string& key_system) {
@@ -234,8 +228,9 @@ bool KeySystems::IsSupportedKeySystemWithContainerAndCodec(
   if (mime_type.empty())
     return true;
 
-  const MimeTypeMap& mime_types_map = key_system_iter->second.types;
-  MimeTypeMap::const_iterator mime_iter = mime_types_map.find(mime_type);
+  const ContainerCodecsMap& mime_types_map =
+      key_system_iter->second.supported_types;
+  ContainerCodecsMap::const_iterator mime_iter = mime_types_map.find(mime_type);
   if (mime_iter == mime_types_map.end())
     return false;
 

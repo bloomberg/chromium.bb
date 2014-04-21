@@ -31,16 +31,15 @@ using content::KeySystemInfo;
 const char kAudioWebM[] = "audio/webm";
 const char kVideoWebM[] = "video/webm";
 const char kVorbis[] = "vorbis";
-const char kVorbisVP8[] = "vorbis,vp8,vp8.0";
+const char kVP8[] = "vp8";
+const char kVP80[] = "vp8.0";
 
 #if defined(USE_PROPRIETARY_CODECS)
 const char kAudioMp4[] = "audio/mp4";
 const char kVideoMp4[] = "video/mp4";
 const char kMp4a[] = "mp4a";
-#if defined(WIDEVINE_CDM_AVAILABLE)
-const char kAvc1Avc3[] = "avc1,avc3";
-#endif  // WIDEVINE_CDM_AVAILABLE
-const char kMp4aAvc1Avc3[] = "mp4a,avc1,avc3";
+const char kAvc1[] = "avc1";
+const char kAvc3[] = "avc3";
 #endif  // defined(USE_PROPRIETARY_CODECS)
 
 #if defined(ENABLE_PEPPER_CDMS)
@@ -85,12 +84,17 @@ static void AddExternalClearKey(
 
   KeySystemInfo info(kExternalClearKeyKeySystem);
 
-  info.supported_types.push_back(std::make_pair(kAudioWebM, kVorbis));
-  info.supported_types.push_back(std::make_pair(kVideoWebM, kVorbisVP8));
+  info.supported_types[kAudioWebM].insert(kVorbis);
+  info.supported_types[kVideoWebM] = info.supported_types[kAudioWebM];
+  info.supported_types[kVideoWebM].insert(kVP8);
+  info.supported_types[kVideoWebM].insert(kVP80);
 #if defined(USE_PROPRIETARY_CODECS)
-  info.supported_types.push_back(std::make_pair(kAudioMp4, kMp4a));
-  info.supported_types.push_back(std::make_pair(kVideoMp4, kMp4aAvc1Avc3));
+  info.supported_types[kAudioMp4].insert(kMp4a);
+  info.supported_types[kVideoMp4] = info.supported_types[kAudioMp4];
+  info.supported_types[kVideoMp4].insert(kAvc1);
+  info.supported_types[kVideoMp4].insert(kAvc3);
 #endif  // defined(USE_PROPRIETARY_CODECS)
+
   info.pepper_type = kExternalClearKeyPepperType;
 
   concrete_key_systems->push_back(info);
@@ -167,7 +171,6 @@ static void AddWidevineWithCodecs(
     WidevineCdmType widevine_cdm_type,
     SupportedCodecs supported_codecs,
     std::vector<KeySystemInfo>* concrete_key_systems) {
-
   KeySystemInfo info(kWidevineKeySystem);
 
   switch (widevine_cdm_type) {
@@ -187,23 +190,26 @@ static void AddWidevineWithCodecs(
       NOTREACHED();
   }
 
+  // TODO(xhwang): A container or an initDataType may be supported even though
+  // there are no codecs supported in that container. Fix this when we support
+  // initDataType.
   if (supported_codecs & WEBM_VP8_AND_VORBIS) {
-    info.supported_types.push_back(std::make_pair(kAudioWebM, kVorbis));
-    info.supported_types.push_back(std::make_pair(kVideoWebM, kVorbisVP8));
+    info.supported_types[kAudioWebM].insert(kVorbis);
+    info.supported_types[kVideoWebM] = info.supported_types[kAudioWebM];
+    info.supported_types[kVideoWebM].insert(kVP8);
+    info.supported_types[kVideoWebM].insert(kVP80);
   }
 
 #if defined(USE_PROPRIETARY_CODECS)
   if (supported_codecs & MP4_CODECS) {
-    // MP4 container is supported for audio and video if any codec is supported.
-    bool is_aac_supported = (supported_codecs & MP4_AAC) != NO_CODECS;
-    bool is_avc1_supported = (supported_codecs & MP4_AVC1) != NO_CODECS;
-    const char* video_codecs = is_avc1_supported ?
-                               (is_aac_supported ? kMp4aAvc1Avc3 : kAvc1Avc3) :
-                               "";
-    const char* audio_codecs = is_aac_supported ? kMp4a : "";
+    if (supported_codecs & MP4_AAC)
+      info.supported_types[kAudioMp4].insert(kMp4a);
 
-    info.supported_types.push_back(std::make_pair(kAudioMp4, audio_codecs));
-    info.supported_types.push_back(std::make_pair(kVideoMp4, video_codecs));
+    if (supported_codecs & MP4_AVC1) {
+      info.supported_types[kVideoMp4] = info.supported_types[kAudioMp4];
+      info.supported_types[kVideoMp4].insert(kAvc1);
+      info.supported_types[kVideoMp4].insert(kAvc3);
+    }
   }
 #endif  // defined(USE_PROPRIETARY_CODECS)
 

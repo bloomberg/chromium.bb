@@ -38,24 +38,25 @@ using blink::WebString;
 // These are the (fake) key systems that are registered for these tests.
 // kUsesAes uses the AesDecryptor like Clear Key.
 // kExternal uses an external CDM, such as Pepper-based or Android platform CDM.
-static const char kUsesAes[] = "org.example.clear";
-static const char kUsesAesParent[] = "org.example";  // Not registered.
-static const char kExternal[] = "com.example.test";
-static const char kExternalParent[] = "com.example";
+const char kUsesAes[] = "org.example.clear";
+const char kUsesAesParent[] = "org.example";  // Not registered.
+const char kExternal[] = "com.example.test";
+const char kExternalParent[] = "com.example";
 
-static const char kClearKey[] = "org.w3.clearkey";
-static const char kPrefixedClearKey[] = "webkit-org.w3.clearkey";
-static const char kExternalClearKey[] = "org.chromium.externalclearkey";
+const char kClearKey[] = "org.w3.clearkey";
+const char kPrefixedClearKey[] = "webkit-org.w3.clearkey";
+const char kExternalClearKey[] = "org.chromium.externalclearkey";
 
-static const char kAudioWebM[] = "audio/webm";
-static const char kVideoWebM[] = "video/webm";
-static const char kWebMAudioCodecs[] = "vorbis";
-static const char kWebMVideoCodecs[] = "vorbis,vp8,vp8.0";
+const char kAudioWebM[] = "audio/webm";
+const char kVideoWebM[] = "video/webm";
+const char kVorbis[] = "vorbis";
+const char kVP8[] = "vp8";
+const char kVP80[] = "vp8.0";
 
-static const char kAudioFoo[] = "audio/foo";
-static const char kVideoFoo[] = "video/foo";
-static const char kFooAudioCodecs[] = "fooaudio";
-static const char kFooVideoCodecs[] = "fooaudio,foovideo";
+const char kAudioFoo[] = "audio/foo";
+const char kVideoFoo[] = "video/foo";
+const char kFooAudioCodec[] = "fooaudio";
+const char kFooVideoCodec[] = "foovideo";
 
 namespace content {
 
@@ -68,11 +69,13 @@ void TestContentRendererClient::AddKeySystems(
     std::vector<content::KeySystemInfo>* key_systems) {
   KeySystemInfo aes(kUsesAes);
 
-  aes.supported_types.push_back(std::make_pair(kAudioWebM, kWebMAudioCodecs));
-  aes.supported_types.push_back(std::make_pair(kVideoWebM, kWebMVideoCodecs));
-
-  aes.supported_types.push_back(std::make_pair(kAudioFoo, kFooAudioCodecs));
-  aes.supported_types.push_back(std::make_pair(kVideoFoo, kFooVideoCodecs));
+  aes.supported_types[kAudioWebM].insert(kVorbis);
+  aes.supported_types[kVideoWebM] = aes.supported_types[kAudioWebM];
+  aes.supported_types[kVideoWebM].insert(kVP8);
+  aes.supported_types[kVideoWebM].insert(kVP80);
+  aes.supported_types[kAudioFoo].insert(kFooAudioCodec);
+  aes.supported_types[kVideoFoo] = aes.supported_types[kAudioFoo];
+  aes.supported_types[kVideoFoo].insert(kFooVideoCodec);
 
   aes.use_aes_decryptor = true;
 
@@ -80,11 +83,13 @@ void TestContentRendererClient::AddKeySystems(
 
   KeySystemInfo ext(kExternal);
 
-  ext.supported_types.push_back(std::make_pair(kAudioWebM, kWebMAudioCodecs));
-  ext.supported_types.push_back(std::make_pair(kVideoWebM, kWebMVideoCodecs));
-
-  ext.supported_types.push_back(std::make_pair(kAudioFoo, kFooAudioCodecs));
-  ext.supported_types.push_back(std::make_pair(kVideoFoo, kFooVideoCodecs));
+  ext.supported_types[kAudioWebM].insert(kVorbis);
+  ext.supported_types[kVideoWebM] = ext.supported_types[kAudioWebM];
+  ext.supported_types[kVideoWebM].insert(kVP8);
+  ext.supported_types[kVideoWebM].insert(kVP80);
+  ext.supported_types[kAudioFoo].insert(kFooAudioCodec);
+  ext.supported_types[kVideoFoo] = ext.supported_types[kAudioFoo];
+  ext.supported_types[kVideoFoo].insert(kFooVideoCodec);
 
   ext.parent_key_system = kExternalParent;
 
