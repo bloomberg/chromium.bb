@@ -51,7 +51,6 @@ HTMLImageElement::HTMLImageElement(Document& document, HTMLFormElement* form)
     , m_compositeOperator(CompositeSourceOver)
     , m_imageDevicePixelRatio(1.0f)
     , m_formWasSetByParser(false)
-    , m_effectiveSize(0)
 {
     ScriptWrappable::init(this);
     if (form && form->inDocument()) {
@@ -156,18 +155,19 @@ void HTMLImageElement::parseAttribute(const QualifiedName& name, const AtomicStr
     if (name == altAttr) {
         if (renderer() && renderer()->isImage())
             toRenderImage(renderer())->updateAltText();
-    } else if (name == srcAttr || name == srcsetAttr) {
-        int effectiveSize = -1; // FIXME - hook up the real value from `sizes`
+    } else if (name == srcAttr || name == srcsetAttr || name == sizesAttr) {
+        int effectiveSize = 0;
+        if (RuntimeEnabledFeatures::pictureSizesEnabled())
+            effectiveSize = SizesAttributeParser::findEffectiveSize(fastGetAttribute(sizesAttr), MediaValuesCached::create(document()));
         ImageCandidate candidate = bestFitSourceForImageAttributes(document().devicePixelRatio(), effectiveSize, fastGetAttribute(srcAttr), fastGetAttribute(srcsetAttr));
         m_bestFitImageURL = candidate.toAtomicString();
         float candidateScaleFactor = candidate.scaleFactor();
+        // FIXME: Make this ">0" part match the spec, once it settles.
         if (candidateScaleFactor > 0)
             m_imageDevicePixelRatio = 1 / candidateScaleFactor;
         if (renderer() && renderer()->isImage())
             toRenderImage(renderer())->setImageDevicePixelRatio(m_imageDevicePixelRatio);
         m_imageLoader.updateFromElementIgnoringPreviousError();
-    } else if (RuntimeEnabledFeatures::pictureSizesEnabled() && name == sizesAttr) {
-        m_effectiveSize = SizesAttributeParser::findEffectiveSize(value, MediaValuesCached::create(document()));
     } else if (name == usemapAttr) {
         setIsLink(!value.isNull());
     } else if (name == compositeAttr) {
@@ -311,6 +311,11 @@ int HTMLImageElement::naturalHeight() const
         return 0;
 
     return m_imageLoader.image()->imageSizeForRenderer(renderer(), 1.0f).height();
+}
+
+const AtomicString& HTMLImageElement::currentSrc() const
+{
+    return m_bestFitImageURL;
 }
 
 bool HTMLImageElement::isURLAttribute(const Attribute& attribute) const

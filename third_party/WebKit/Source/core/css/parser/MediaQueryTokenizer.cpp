@@ -213,6 +213,9 @@ void MediaQueryTokenizer::tokenize(String string, Vector<MediaQueryToken>& outTo
     // * Do not count white spaces
     // * consumeEscape replaces NULLs for replacement characters
 
+    if (string.isEmpty())
+        return;
+
     MediaQueryInputStream input(string);
     MediaQueryTokenizer tokenizer(input);
     while (true) {

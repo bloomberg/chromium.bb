@@ -142,7 +142,7 @@ static void parseImageCandidatesFromSrcsetAttribute(const String& attribute, Vec
         parseImageCandidatesFromSrcsetAttribute<UChar>(attribute, attribute.characters16(), attribute.length(), imageCandidates);
 }
 
-static ImageCandidate pickBestImageCandidate(float deviceScaleFactor, int effectiveSize, Vector<ImageCandidate>& imageCandidates)
+static ImageCandidate pickBestImageCandidate(float deviceScaleFactor, unsigned sourceSize, Vector<ImageCandidate>& imageCandidates)
 {
     bool ignoreSrc = false;
     if (imageCandidates.isEmpty())
@@ -151,7 +151,7 @@ static ImageCandidate pickBestImageCandidate(float deviceScaleFactor, int effect
     // http://picture.responsiveimages.org/#normalize-source-densities
     for (Vector<ImageCandidate>::iterator it = imageCandidates.begin(); it != imageCandidates.end(); ++it) {
         if (it->resourceWidth() > 0) {
-            it->setScaleFactor((float)it->resourceWidth() / (float)effectiveSize);
+            it->setScaleFactor((float)it->resourceWidth() / (float)sourceSize);
             ignoreSrc = true;
         }
     }
@@ -174,16 +174,16 @@ static ImageCandidate pickBestImageCandidate(float deviceScaleFactor, int effect
     return imageCandidates[winner];
 }
 
-ImageCandidate bestFitSourceForSrcsetAttribute(float deviceScaleFactor, int effectiveSize, const String& srcsetAttribute)
+ImageCandidate bestFitSourceForSrcsetAttribute(float deviceScaleFactor, unsigned sourceSize, const String& srcsetAttribute)
 {
     Vector<ImageCandidate> imageCandidates;
 
     parseImageCandidatesFromSrcsetAttribute(srcsetAttribute, imageCandidates);
 
-    return pickBestImageCandidate(deviceScaleFactor, effectiveSize, imageCandidates);
+    return pickBestImageCandidate(deviceScaleFactor, sourceSize, imageCandidates);
 }
 
-ImageCandidate bestFitSourceForImageAttributes(float deviceScaleFactor, int effectiveSize, const String& srcAttribute, const String& srcsetAttribute)
+ImageCandidate bestFitSourceForImageAttributes(float deviceScaleFactor, unsigned sourceSize, const String& srcAttribute, const String& srcsetAttribute)
 {
     DescriptorParsingResult defaultResult;
     defaultResult.scaleFactor = 1.0;
@@ -201,10 +201,10 @@ ImageCandidate bestFitSourceForImageAttributes(float deviceScaleFactor, int effe
     if (!srcAttribute.isEmpty())
         imageCandidates.append(ImageCandidate(srcAttribute, 0, srcAttribute.length(), defaultResult, ImageCandidate::SrcOrigin));
 
-    return pickBestImageCandidate(deviceScaleFactor, effectiveSize, imageCandidates);
+    return pickBestImageCandidate(deviceScaleFactor, sourceSize, imageCandidates);
 }
 
-String bestFitSourceForImageAttributes(float deviceScaleFactor, int effectiveSize, const String& srcAttribute, ImageCandidate& srcsetImageCandidate)
+String bestFitSourceForImageAttributes(float deviceScaleFactor, unsigned sourceSize, const String& srcAttribute, ImageCandidate& srcsetImageCandidate)
 {
     DescriptorParsingResult defaultResult;
     defaultResult.scaleFactor = 1.0;
@@ -218,7 +218,7 @@ String bestFitSourceForImageAttributes(float deviceScaleFactor, int effectiveSiz
     if (!srcAttribute.isEmpty())
         imageCandidates.append(ImageCandidate(srcAttribute, 0, srcAttribute.length(), defaultResult, ImageCandidate::SrcOrigin));
 
-    return pickBestImageCandidate(deviceScaleFactor, effectiveSize, imageCandidates).toString();
+    return pickBestImageCandidate(deviceScaleFactor, sourceSize, imageCandidates).toString();
 }
 
 }

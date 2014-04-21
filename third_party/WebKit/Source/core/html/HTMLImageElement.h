@@ -47,6 +47,7 @@ public:
 
     int naturalWidth() const;
     int naturalHeight() const;
+    const AtomicString& currentSrc() const;
 
     bool isServerMap() const;
 
@@ -130,7 +131,6 @@ private:
     AtomicString m_bestFitImageURL;
     float m_imageDevicePixelRatio;
     bool m_formWasSetByParser;
-    int m_effectiveSize;
 };
 
 } //namespace

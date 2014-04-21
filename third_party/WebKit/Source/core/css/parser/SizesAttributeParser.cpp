@@ -29,16 +29,12 @@ bool SizesAttributeParser::calculateLengthInPixels(TokenIterator startToken, Tok
         int length;
         if (!CSSPrimitiveValue::isLength(startToken->unitType()))
             return false;
-        if (m_mediaValues->computeLength(startToken->numericValue(), startToken->unitType(), length)) {
-            if (length > 0) {
-                result = (unsigned)length;
-                return true;
-            }
+        if ((m_mediaValues->computeLength(startToken->numericValue(), startToken->unitType(), length)) && (length > 0)) {
+            result = (unsigned)length;
+            return true;
         }
     }
-    if (type == FunctionToken) {
-        // FIXME - Handle calc() functions here!
-    }
+    // FIXME - Handle calc() FunctionToken here!
     return false;
 }
 
@@ -101,6 +97,8 @@ bool SizesAttributeParser::parseMediaConditionAndLength(TokenIterator startToken
 
 bool SizesAttributeParser::parse(Vector<MediaQueryToken>& tokens)
 {
+    if (tokens.isEmpty())
+        return false;
     TokenIterator startToken = tokens.begin();
     TokenIterator endToken;
     // Split on a comma token, and send the result tokens to be parsed as (media-condition, length) pairs

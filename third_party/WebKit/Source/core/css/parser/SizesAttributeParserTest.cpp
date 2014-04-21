@@ -36,6 +36,7 @@ TEST(SizesAttributeParserTest, Basic)
         {"300px, 400px", 300},
         {"(min-width:5000px) 200px, (min-width:500px) 400px", 400},
         {"", 500},
+        {"  ", 500},
         {" /**/ ", 500},
         {" /**/ 300px", 300},
         {"300px /**/ ", 300},
@@ -46,6 +47,7 @@ TEST(SizesAttributeParserTest, Basic)
         {"asdf, 200px", 200},
         {"(max-width: 3000px) 200w, 400w", 500},
         {",, , /**/ ,200px", 200},
+        {"50vw", 250},
         // FIXME - test all other units, zero length and calc().
         {0, 0} // Do not remove the terminator line.
     };

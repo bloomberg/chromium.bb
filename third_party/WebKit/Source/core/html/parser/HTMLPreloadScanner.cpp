@@ -34,6 +34,7 @@
 #include "core/css/MediaList.h"
 #include "core/css/MediaQueryEvaluator.h"
 #include "core/css/MediaValues.h"
+#include "core/css/parser/SizesAttributeParser.h"
 #include "core/html/LinkRelAttribute.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/HTMLSrcsetParser.h"
@@ -107,7 +108,8 @@ public:
         , m_linkIsStyleSheet(false)
         , m_matchedMediaAttribute(true)
         , m_inputIsImage(false)
-        , m_encounteredImgSrc(false)
+        , m_imgSourceSize(0)
+        , m_sourceSizeSet(false)
         , m_isCORSEnabled(false)
         , m_allowCredentials(DoNotAllowStoredCredentials)
         , m_mediaValues(mediaValues)
@@ -117,6 +119,8 @@ public:
             && !match(m_tagImpl, linkTag)
             && !match(m_tagImpl, scriptTag))
             m_tagImpl = 0;
+        if (RuntimeEnabledFeatures::pictureSizesEnabled())
+            m_imgSourceSize = SizesAttributeParser::findEffectiveSize(String(), m_mediaValues);
     }
 
     enum URLReplacement {
@@ -171,15 +175,22 @@ private:
             else if (match(attributeName, crossoriginAttr))
                 setCrossOriginAllowed(attributeValue);
         } else if (match(m_tagImpl, imgTag)) {
-            int effectiveSize = -1; // FIXME - hook up the real value from `sizes`
-            if (match(attributeName, srcAttr) && !m_encounteredImgSrc) {
-                m_encounteredImgSrc = true;
-                setUrlToLoad(bestFitSourceForImageAttributes(m_mediaValues->devicePixelRatio(), effectiveSize, attributeValue, m_srcsetImageCandidate), AllowURLReplacement);
+            if (match(attributeName, srcAttr) && m_imgSrcUrl.isNull()) {
+                m_imgSrcUrl = attributeValue;
+                setUrlToLoad(bestFitSourceForImageAttributes(m_mediaValues->devicePixelRatio(), m_imgSourceSize, attributeValue, m_srcsetImageCandidate), AllowURLReplacement);
             } else if (match(attributeName, crossoriginAttr)) {
                 setCrossOriginAllowed(attributeValue);
             } else if (match(attributeName, srcsetAttr) && m_srcsetImageCandidate.isEmpty()) {
-                m_srcsetImageCandidate = bestFitSourceForSrcsetAttribute(m_mediaValues->devicePixelRatio(), effectiveSize, attributeValue);
-                setUrlToLoad(bestFitSourceForImageAttributes(m_mediaValues->devicePixelRatio(), effectiveSize, m_urlToLoad, m_srcsetImageCandidate), AllowURLReplacement);
+                m_imgSrcsetAttributeValue = attributeValue;
+                m_srcsetImageCandidate = bestFitSourceForSrcsetAttribute(m_mediaValues->devicePixelRatio(), m_imgSourceSize, attributeValue);
+                setUrlToLoad(bestFitSourceForImageAttributes(m_mediaValues->devicePixelRatio(), m_imgSourceSize, m_imgSrcUrl, m_srcsetImageCandidate), AllowURLReplacement);
+            } else if (RuntimeEnabledFeatures::pictureSizesEnabled() && match(attributeName, sizesAttr) && !m_sourceSizeSet) {
+                m_imgSourceSize = SizesAttributeParser::findEffectiveSize(attributeValue, m_mediaValues);
+                m_sourceSizeSet = true;
+                if (!m_srcsetImageCandidate.isEmpty()) {
+                    m_srcsetImageCandidate = bestFitSourceForSrcsetAttribute(m_mediaValues->devicePixelRatio(), m_imgSourceSize, m_imgSrcsetAttributeValue);
+                    setUrlToLoad(bestFitSourceForImageAttributes(m_mediaValues->devicePixelRatio(), m_imgSourceSize, m_imgSrcUrl, m_srcsetImageCandidate), AllowURLReplacement);
+                }
             }
         } else if (match(m_tagImpl, linkTag)) {
             if (match(attributeName, hrefAttr))
@@ -273,7 +284,10 @@ private:
     bool m_linkIsStyleSheet;
     bool m_matchedMediaAttribute;
     bool m_inputIsImage;
-    bool m_encounteredImgSrc;
+    String m_imgSrcUrl;
+    String m_imgSrcsetAttributeValue;
+    unsigned m_imgSourceSize;
+    bool m_sourceSizeSet;
     bool m_isCORSEnabled;
     StoredCredentials m_allowCredentials;
     RefPtr<MediaValues> m_mediaValues;
