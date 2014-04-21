@@ -169,6 +169,9 @@ Element::~Element()
     if (hasRareData())
         elementRareData()->clearShadow();
 
+    if (hasActiveAnimations())
+        activeAnimations()->dispose();
+
     if (isCustomElement())
         CustomElement::wasDestroyed(this);
 

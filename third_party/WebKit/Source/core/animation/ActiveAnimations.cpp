@@ -37,8 +37,13 @@ namespace WebCore {
 
 ActiveAnimations::~ActiveAnimations()
 {
+}
+
+void ActiveAnimations::dispose()
+{
     for (size_t i = 0; i < m_animations.size(); ++i)
         m_animations[i]->notifyElementDestroyed();
+    m_animations.clear();
 }
 
 void ActiveAnimations::updateAnimationFlags(RenderStyle& style)

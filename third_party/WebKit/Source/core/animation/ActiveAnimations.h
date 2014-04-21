@@ -53,6 +53,7 @@ public:
     }
 
     ~ActiveAnimations();
+    void dispose();
 
     // Animations that are currently active for this element, their effects will be applied
     // during a style recalc. CSS Transitions are included in this stack.
