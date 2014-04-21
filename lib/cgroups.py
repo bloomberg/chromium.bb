@@ -767,7 +767,7 @@ class ContainChildren(cros_build_lib.MasterPidContextManager):
         self.child.RemoveThisGroup(strict=False)
 
 
-def SimpleContainChildren(process_name, nesting=True, **kwargs):
+def SimpleContainChildren(process_name, nesting=True, pid=None, **kwargs):
   """Convenience context manager to create a cgroup for children containment
 
   See Cgroup.FindStartingGroup and Cgroup.ContainChildren for specifics.
@@ -776,7 +776,9 @@ def SimpleContainChildren(process_name, nesting=True, **kwargs):
   node = Cgroup.FindStartingGroup(process_name, nesting=nesting)
   if node is None:
     return cros_build_lib.NoOpContextManager()
-  name = '%s:%i' % (process_name, os.getpid())
+  if pid is None:
+    pid = os.getpid()
+  name = '%s:%i' % (process_name, pid)
   return ContainChildren(node, name, **kwargs)
 
 # This is a generic group, not associated with any specific process id, so

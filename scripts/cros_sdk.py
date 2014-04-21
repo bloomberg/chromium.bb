@@ -3,13 +3,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""This script fetches and prepares an SDK chroot.
-"""
+"""This script fetches and prepares an SDK chroot."""
 
+import errno
 import glob
 import os
 import pwd
+import signal
 import sys
+import time
 import urlparse
 
 from chromite.cbuildbot import constants
@@ -396,7 +398,113 @@ def _ProxySimSetup(options):
   os.write(parent_writefd, SUCCESS_FLAG)
   os.close(parent_writefd)
 
-  sys.exit(os.waitpid(pid, 0)[1])
+  _ExitAsStatus(os.waitpid(pid, 0)[1])
+
+
+def _ExitAsStatus(status):
+  """Exit the same way as |status|.
+
+  If the status field says it was killed by a signal, then we'll do that to
+  ourselves.  Otherwise we'll exit with the exit code.
+
+  See http://www.cons.org/cracauer/sigint.html for more details.
+
+  Args:
+    status: A status as returned by os.wait type funcs.
+  """
+  sig_status = status & 0xff
+  exit_status = (status >> 8) & 0xff
+
+  if sig_status:
+    # Kill ourselves with the same signal.
+    pid = os.getpid()
+    os.kill(pid, sig_status)
+    time.sleep(0.1)
+
+    # Still here?  Maybe the signal was masked.
+    signal.signal(sig_status, signal.SIG_DFL)
+    os.kill(pid, sig_status)
+    time.sleep(0.1)
+
+    # Still here?  Just exit.
+    exit_status = 127
+
+  # Exit with the code we want.
+  sys.exit(exit_status)
+
+
+def _ReapChildren(pid):
+  """Reap all children that get reparented to us until we see |pid| exit.
+
+  Args:
+    pid: The main child to watch for.
+
+  Returns:
+    The wait status of the |pid| child.
+  """
+  pid_status = 0
+
+  while True:
+    try:
+      (wpid, status) = os.wait()
+      if pid == wpid:
+        # Save the status of our main child so we can exit with it below.
+        pid_status = status
+    except OSError as e:
+      if e.errno == errno.ECHILD:
+        break
+      else:
+        raise
+
+  return pid_status
+
+
+def _CreatePidNamespace():
+  """Start a new pid namespace
+
+  This will launch all the right manager processes.  The child that returns
+  will be isolated in a new pid namespace.
+
+  If functionality is not available, then it will return w/out doing anything.
+
+  Returns:
+    The last pid outside of the namespace.
+  """
+  first_pid = os.getpid()
+
+  try:
+    # First create the namespace.
+    namespaces.Unshare(namespaces.CLONE_NEWPID)
+  except OSError as e:
+    if e.errno == errno.EINVAL:
+      # For older kernels, or the functionality is disabled in the config,
+      # return silently.  We don't want to hard require this stuff.
+      return first_pid
+    else:
+      # For all other errors, abort.  They shouldn't happen.
+      raise
+
+  # Now that we're in the new pid namespace, fork.  The parent is the master
+  # of it in the original namespace, so it only monitors the child inside it.
+  # It is only allowed to fork once too.
+  pid = os.fork()
+  if pid:
+    # Reap the children as the parent of the new namespace.
+    _ExitAsStatus(_ReapChildren(pid))
+  else:
+    # The child needs its own proc mount as it'll be different.
+    osutils.Mount('proc', '/proc', 'proc',
+                  osutils.MS_NOSUID | osutils.MS_NODEV | osutils.MS_NOEXEC |
+                  osutils.MS_RELATIME)
+
+    pid = os.fork()
+    if pid:
+      # Watch all of the children.  We need to act as the master inside the
+      # namespace and reap old processes.
+      _ExitAsStatus(_ReapChildren(pid))
+
+  # The grandchild will return and take over the rest of the sdk steps.
+  return first_pid
 
 
 def _ReExecuteIfNeeded(argv):
@@ -409,6 +517,8 @@ def _ReExecuteIfNeeded(argv):
     cmd = _SudoCommand() + ['--'] + argv
     os.execvp(cmd[0], cmd)
   else:
+    # We must set up the cgroups mounts before we enter our own namespace.
+    # This way it is a shared resource in the root mount namespace.
     cgroups.Cgroup.InitSystem()
     namespaces.Unshare(namespaces.CLONE_NEWNS | namespaces.CLONE_NEWUTS)
 
@@ -438,9 +548,6 @@ If given args those are passed to the chroot environment, and executed."""
                     help='Mount chrome into this path inside SDK chroot')
   parser.add_option('--nousepkg', action='store_true', default=False,
                     help='Do not use binary packages when creating a chroot.')
-  parser.add_option('--proxy-sim', action='store_true', default=False,
-                    help='Simulate a restrictive network requiring an outbound'
-                         ' proxy.')
   parser.add_option('-u', '--url',
                     dest='sdk_url', default=None,
                     help=('''Use sdk tarball located at this url.
@@ -479,6 +586,15 @@ If given args those are passed to the chroot environment, and executed."""
       help='Download the sdk.')
   commands = group
 
+  # Namespace options.
+  group = parser.add_option_group('Namespaces')
+  group.add_option('--proxy-sim', action='store_true', default=False,
+                   help='Simulate a restrictive network requiring an outbound'
+                        ' proxy.')
+  group.add_option('--no-ns-pid', dest='ns_pid',
+                   default=True, action='store_false',
+                   help='Do not create a new PID namespace.')
+
   # Internal options.
   group = parser.add_option_group(
       'Internal Chromium OS Build Team Options',
@@ -512,6 +628,10 @@ def main(argv):
     _ReportMissing(osutils.FindMissingBinaries(PROXY_NEEDED_TOOLS))
 
   _ReExecuteIfNeeded([sys.argv[0]] + argv)
+  if options.ns_pid:
+    first_pid = _CreatePidNamespace()
+  else:
+    first_pid = None
 
   # Expand out the aliases...
   if options.replace:
@@ -561,7 +681,7 @@ def main(argv):
   lock_path = os.path.dirname(options.chroot)
   lock_path = os.path.join(lock_path,
                            '.%s_lock' % os.path.basename(options.chroot))
-  with cgroups.SimpleContainChildren('cros_sdk'):
+  with cgroups.SimpleContainChildren('cros_sdk', pid=first_pid):
     with locking.FileLock(lock_path, 'chroot lock') as lock:
 
       if options.proxy_sim:

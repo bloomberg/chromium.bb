@@ -19,6 +19,31 @@ CLONE_NEWPID = 0x20000000
 CLONE_NEWNET = 0x40000000
 
 
+def SetNS(fd, nstype):
+  """Binding to the Linux setns system call. See setns(2) for details.
+
+  Args:
+    fd: An open file descriptor or path to one.
+    nstype: Namespace to enter; one of CLONE_*.
+
+  Raises:
+    OSError: if setns failed.
+  """
+  try:
+    fp = None
+    if isinstance(fd, basestring):
+      fp = open(fd)
+      fd = fp.fileno()
+
+    libc = ctypes.CDLL(ctypes.util.find_library('c'), use_errno=True)
+    if libc.setns(ctypes.c_int(fd), ctypes.c_int(nstype)) != 0:
+      e = ctypes.get_errno()
+      raise OSError(e, os.strerror(e))
+  finally:
+    if fp is not None:
+      fp.close()
+
+
 def Unshare(flags):
   """Binding to the Linux unshare system call. See unshare(2) for details.
 
@@ -28,7 +53,7 @@ def Unshare(flags):
   Raises:
     OSError: if unshare failed.
   """
-  libc = ctypes.CDLL(ctypes.util.find_library("c"), use_errno=True)
+  libc = ctypes.CDLL(ctypes.util.find_library('c'), use_errno=True)
   if libc.unshare(ctypes.c_int(flags)) != 0:
     e = ctypes.get_errno()
     raise OSError(e, os.strerror(e))

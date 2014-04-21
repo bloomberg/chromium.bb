@@ -262,7 +262,7 @@ class DevServerWrapper(multiprocessing.Process):
       cmd.append('--board=%s' % self.board)
 
     result = self._RunCommand(
-        cmd, enter_chroot=True,
+        cmd, enter_chroot=True, chroot_args=['--no-ns-pid'],
         cwd=constants.SOURCE_ROOT, error_code_ok=True,
         redirect_stdout=True, combine_stdout_stderr=True)
     if result.returncode != 0:
