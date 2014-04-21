@@ -300,5 +300,6 @@ test("events_unittest") {
     "//base",
     "//base/test:run_all_unittests",
     "//testing/gtest",
+    "//ui/gfx:gfx_test_support",
   ]
 }

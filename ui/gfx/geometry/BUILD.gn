@@ -56,5 +56,6 @@ component("geometry") {
 
   deps = [
     "//base",
+    "//ui/gfx:gfx_export",
   ]
 }

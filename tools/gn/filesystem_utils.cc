@@ -179,7 +179,7 @@ SourceFileType GetSourceFileType(const SourceFile& file) {
     return SOURCE_MM;
   if (extension == "rc")
     return SOURCE_RC;
-  if (extension == "S")
+  if (extension == "S" || extension == "s")
     return SOURCE_S;
 
   return SOURCE_UNKNOWN;

@@ -140,10 +140,6 @@ if (is_linux) {
       "nspr/pr/src/md/prosdep.c",
       "nspr/pr/src/md/unix/darwin.c",
       "nspr/pr/src/md/unix/os_Darwin.s",
-      # os_Darwin_x86.s and os_Darwin_x86_64.s are included by
-      # os_Darwin.s.
-      "nspr/pr/src/md/unix/os_Darwin_x86.s",
-      "nspr/pr/src/md/unix/os_Darwin_x86_64.s",
       "nspr/pr/src/md/unix/unix.c",
       "nspr/pr/src/md/unix/unix_errors.c",
       "nspr/pr/src/md/unix/uxproces.c",

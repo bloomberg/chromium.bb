@@ -7,6 +7,16 @@ if (is_android) {
   import("//build/config/android/config.gni")
 }
 
+# Several targets want to include this header file, and some of them are
+# child dependencies of "gfx". Therefore, we separate it out here so multiple
+# targets can all have a dependency for header checking purposes without
+# creating circular dependencies.
+source_set("gfx_export") {
+  sources = [
+    "gfx_export.h",
+  ]
+}
+
 component("gfx") {
   sources = [
     "android/device_display_info.cc",
@@ -84,7 +94,6 @@ component("gfx") {
     "frame_time.h",
     "gdi_util.cc",
     "gdi_util.h",
-    "gfx_export.h",
     "gfx_paths.cc",
     "gfx_paths.h",
     "gpu_memory_buffer.cc",
@@ -235,6 +244,7 @@ component("gfx") {
   defines = [ "GFX_IMPLEMENTATION" ]
 
   deps = [
+    ":gfx_export",
     "//base",
     "//base:i18n",
     "//base:base_static",
@@ -389,6 +399,7 @@ source_set("gfx_test_support") {
 
   deps = [
     "//base",
+    "//base/test:test_support",
     "//skia",
     "//testing/gtest",
   ]

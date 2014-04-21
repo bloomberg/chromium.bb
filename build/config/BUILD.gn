@@ -104,7 +104,13 @@ config("feature_flags") {
   }
   if (use_openssl) {
     defines += [ "USE_OPENSSL=1" ]
-  } else {
+    if (use_openssl_certs) {
+      defines += [ "USE_OPENSSL_CERTS=1" ]
+    }
+  } else if (use_nss_certs) {
+    # USE_NSS really means "use nss for certificate validation and storage"
+    # (like USE_OPENSSL_CERTS) and not "we're linking to NSS." It might be nice
+    # to rename this but we're hoping to transition away from NSS.
     defines += [ "USE_NSS=1" ]
   }
   if (use_ozone) {

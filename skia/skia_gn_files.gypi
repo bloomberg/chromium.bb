@@ -858,6 +858,7 @@
     #mac
     '<(skia_include_path)/utils/mac/SkCGUtils.h',
     '<(skia_src_path)/utils/mac/SkCreateCGImageRef.cpp',
+    '<(skia_src_path)/utils/mac/SkStream_mac.cpp',
 
     #windows
     '<(skia_include_path)/utils/win/SkAutoCoInitialize.h',
