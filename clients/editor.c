@@ -386,13 +386,7 @@ text_input_keysym(void *data,
 		  uint32_t modifiers)
 {
 	struct text_entry *entry = data;
-	const char *state_label = "release";
-	const char *key_label = "Unknown";
 	const char *new_char;
-
-	if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
-		state_label = "pressed";
-	}
 
 	if (key == XKB_KEY_Left ||
 	    key == XKB_KEY_Right) {
