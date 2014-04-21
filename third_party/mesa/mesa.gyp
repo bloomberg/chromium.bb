@@ -95,9 +95,6 @@
             '-Wno-unknown-pragmas',
           ],
         },
-        'cflags': [
-          '-Wno-unknown-pragmas',
-        ],
       },
       'conditions': [
         ['use_x11==0', {
