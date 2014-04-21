@@ -114,6 +114,7 @@ class SyncEngineTest
     sync_engine_.reset(new drive_backend::SyncEngine(
         fake_drive_service.PassAs<drive::DriveServiceInterface>(),
         scoped_ptr<drive::DriveUploaderInterface>(),
+        base::MessageLoopProxy::current(),
         NULL /* notification_manager */,
         extension_service_.get(),
         NULL /* signin_manager */));

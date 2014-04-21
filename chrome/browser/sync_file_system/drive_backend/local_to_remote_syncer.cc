@@ -384,7 +384,7 @@ void LocalToRemoteSyncer::UploadExistingFile(
   DCHECK(remote_file_tracker_->has_synced_details());
 
   base::PostTaskAndReplyWithResult(
-      sync_context_->GetBlockingTaskRunner(), FROM_HERE,
+      sync_context_->GetFileTaskRunner(), FROM_HERE,
       base::Bind(&drive::util::GetMd5Digest, local_path_),
       base::Bind(&LocalToRemoteSyncer::DidGetMD5ForUpload,
                  weak_ptr_factory_.GetWeakPtr(),

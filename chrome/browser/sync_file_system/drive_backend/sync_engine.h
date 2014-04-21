@@ -62,10 +62,9 @@ class SyncEngine : public RemoteFileSyncService,
 
   virtual ~SyncEngine();
 
-  void Initialize(
-      const base::FilePath& base_dir,
-      base::SequencedTaskRunner* task_runner,
-      leveldb::Env* env_override);
+  void Initialize(const base::FilePath& base_dir,
+                  base::SequencedTaskRunner* file_task_runner,
+                  leveldb::Env* env_override);
 
   // RemoteFileSyncService overrides.
   virtual void AddServiceObserver(SyncServiceObserver* observer) OVERRIDE;
@@ -147,6 +146,7 @@ class SyncEngine : public RemoteFileSyncService,
 
   SyncEngine(scoped_ptr<drive::DriveServiceInterface> drive_service,
              scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
+             base::SequencedTaskRunner* worker_task_runner,
              drive::DriveNotificationManager* notification_manager,
              ExtensionServiceInterface* extension_service,
              SigninManagerBase* signin_manager);
@@ -173,6 +173,7 @@ class SyncEngine : public RemoteFileSyncService,
   ObserverList<FileStatusObserver> file_status_observers_;
 
   scoped_ptr<SyncWorker> sync_worker_;
+  scoped_refptr<base::SequencedTaskRunner> worker_task_runner_;
 
   base::WeakPtrFactory<SyncEngine> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(SyncEngine);
