@@ -392,17 +392,6 @@ FolderShortcutsDataModel.prototype = {
    * @private
    */
   save_: function() {
-    // The current implementation doesn't rely on sort order in prefs, however
-    // older versions do. Therefore, we need to sort the paths before saving.
-    // TODO(mtomasz): Remove sorting prefs after M-34 is stable.
-    // crbug.com/333148
-    var compareByPath = function(a, b) {
-      return a.localeCompare(
-          b,
-          undefined,  // locale parameter, use default locale.
-          {usage: 'sort', numeric: true});
-    };
-
     this.rememberLastDriveURL_();
     if (!this.lastDriveRootURL_)
       return;
@@ -412,8 +401,7 @@ FolderShortcutsDataModel.prototype = {
                 map(function(entry) { return entry.toURL(); }).
                 map(this.convertUrlToStoredPath_.bind(this)).
                 concat(Object.keys(this.pendingPaths_)).
-                concat(Object.keys(this.unresolvablePaths_)).
-                sort(compareByPath);
+                concat(Object.keys(this.unresolvablePaths_));
 
     var prefs = {};
     prefs[FolderShortcutsDataModel.NAME] = paths;
