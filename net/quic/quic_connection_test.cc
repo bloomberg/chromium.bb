@@ -3908,8 +3908,33 @@ TEST_P(QuicConnectionTest, AckNotifierCallbackForAckOfNackedPacket) {
   ProcessAckPacket(&third_ack_frame);
 }
 
-// TODO(rjshade): Add a similar test that FEC recovery on peer (and resulting
-//                ACK) triggers notification on our end.
+TEST_P(QuicConnectionTest, AckNotifierFECTriggerCallback) {
+  if (version() < QUIC_VERSION_15) {
+    return;
+  }
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+
+  // Create a delegate which we expect to be called.
+  scoped_refptr<MockAckNotifierDelegate> delegate(
+      new MockAckNotifierDelegate);
+  EXPECT_CALL(*delegate, OnAckNotification(_, _, _, _, _)).Times(1);;
+
+  // Send some data, which will register the delegate to be notified.
+  connection_.SendStreamDataWithString(1, "foo", 0, !kFin, delegate.get());
+  connection_.SendStreamDataWithString(2, "bar", 0, !kFin, NULL);
+
+  // Process an ACK from the server with a revived packet, which should trigger
+  // the callback.
+  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
+  EXPECT_CALL(*send_algorithm_, OnPacketAcked(_, _)).Times(1);
+  QuicAckFrame frame = InitAckFrame(2, 0);
+  NackPacket(1, &frame);
+  frame.received_info.revived_packets.insert(1);
+  ProcessAckPacket(&frame);
+  // If the ack is processed again, the notifier should not be called again.
+  ProcessAckPacket(&frame);
+}
+
 TEST_P(QuicConnectionTest, AckNotifierCallbackAfterFECRecovery) {
   if (version() < QUIC_VERSION_15) {
     return;

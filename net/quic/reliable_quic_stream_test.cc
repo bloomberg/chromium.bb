@@ -10,6 +10,7 @@
 #include "net/quic/quic_utils.h"
 #include "net/quic/quic_write_blocked_list.h"
 #include "net/quic/spdy_utils.h"
+#include "net/quic/test_tools/quic_config_peer.h"
 #include "net/quic/test_tools/quic_flow_controller_peer.h"
 #include "net/quic/test_tools/quic_session_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
@@ -115,8 +116,8 @@ class ReliableQuicStreamTest : public ::testing::TestWithParam<bool> {
 
     // New streams rely on having the peer's flow control receive window
     // negotiated in the config.
-    session_->config()->set_peer_initial_flow_control_window_bytes(
-        initial_flow_control_window_bytes_);
+    QuicConfigPeer::SetReceivedInitialFlowControlWindow(
+        session_->config(), initial_flow_control_window_bytes_);
 
     stream_.reset(new TestStream(kStreamId, session_.get(),
                                  stream_should_process_data));
@@ -377,6 +378,7 @@ void SaveProxyAckNotifierDelegate(
     QuicAckNotifier::DelegateInterface* delegate) {
   *delegate_out = delegate;
 }
+
 TEST_F(ReliableQuicStreamTest, WriteOrBufferDataWithQuicAckNotifier) {
   Initialize(kShouldProcessData);
 

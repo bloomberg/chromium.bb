@@ -13,6 +13,10 @@
 
 namespace net {
 
+namespace test {
+class QuicConfigPeer;
+}  // namespace test
+
 class CryptoHandshakeMessage;
 
 // Describes whether or not a given QuicTag is required or optional in the
@@ -26,6 +30,12 @@ enum QuicConfigPresence {
   PRESENCE_REQUIRED,
 };
 
+// Whether the CryptoHandshakeMessage is from the client or server.
+enum HelloType {
+  CLIENT,
+  SERVER,
+};
+
 // An abstract base class that stores a value that can be sent in CHLO/SHLO
 // message. These values can be OPTIONAL or REQUIRED, depending on |presence_|.
 class NET_EXPORT_PRIVATE QuicConfigValue {
@@ -36,16 +46,11 @@ class NET_EXPORT_PRIVATE QuicConfigValue {
   // Serialises tag name and value(s) to |out|.
   virtual void ToHandshakeMessage(CryptoHandshakeMessage* out) const = 0;
 
-  // Selects a mutually acceptable value from those offered in |client_hello|
+  // Selects a mutually acceptable value from those offered in |peer_hello|
   // and those defined in the subclass.
-  virtual QuicErrorCode ProcessClientHello(
-      const CryptoHandshakeMessage& client_hello,
-      std::string* error_details) = 0;
-
-  // Selects a mutually acceptable value from those offered in |server_hello|
-  // and those defined in the subclass.
-  virtual QuicErrorCode ProcessServerHello(
-      const CryptoHandshakeMessage& server_hello,
+  virtual QuicErrorCode ProcessPeerHello(
+      const CryptoHandshakeMessage& peer_hello,
+      HelloType hello_type,
       std::string* error_details) = 0;
 
  protected:
@@ -87,19 +92,12 @@ class NET_EXPORT_PRIVATE QuicNegotiableUint32 : public QuicNegotiableValue {
   virtual void ToHandshakeMessage(CryptoHandshakeMessage* out) const OVERRIDE;
 
   // Sets |negotiated_value_| to the minimum of |max_value_| and the
-  // corresponding value from |client_hello|. If the corresponding value is
+  // corresponding value from |peer_hello|. If the corresponding value is
   // missing and PRESENCE_OPTIONAL then |negotiated_value_| is set to
   // |default_value_|.
-  virtual QuicErrorCode ProcessClientHello(
-      const CryptoHandshakeMessage& client_hello,
-      std::string* error_details) OVERRIDE;
-
-  // Sets the |negotiated_value_| to the corresponding value from
-  // |server_hello|. Returns error if the value received in |server_hello| is
-  // greater than |max_value_|. If the corresponding value is missing and
-  // PRESENCE_OPTIONAL then |negotiated_value_| is set to |0|,
-  virtual QuicErrorCode ProcessServerHello(
-      const CryptoHandshakeMessage& server_hello,
+  virtual QuicErrorCode ProcessPeerHello(
+      const CryptoHandshakeMessage& peer_hello,
+      HelloType hello_type,
       std::string* error_details) OVERRIDE;
 
  private:
@@ -130,15 +128,9 @@ class NET_EXPORT_PRIVATE QuicNegotiableTag : public QuicNegotiableValue {
   // Selects the tag common to both tags in |client_hello| for |name_| and
   // |possible_values_| with preference to tag in |possible_values_|. The
   // selected tag is set as |negotiated_tag_|.
-  virtual QuicErrorCode ProcessClientHello(
-      const CryptoHandshakeMessage& client_hello,
-      std::string* error_details) OVERRIDE;
-
-  // Sets the value for |name_| tag in |server_hello| as |negotiated_value_|.
-  // Returns error if the value received in |server_hello| isn't present in
-  // |possible_values_|.
-  virtual QuicErrorCode ProcessServerHello(
-      const CryptoHandshakeMessage& server_hello,
+  virtual QuicErrorCode ProcessPeerHello(
+      const CryptoHandshakeMessage& peer_hello,
+      HelloType hello_type,
       std::string* error_details) OVERRIDE;
 
  private:
@@ -158,31 +150,69 @@ class NET_EXPORT_PRIVATE QuicNegotiableTag : public QuicNegotiableValue {
 // Stores uint32 from CHLO or SHLO messages that are not negotiated.
 class NET_EXPORT_PRIVATE QuicFixedUint32 : public QuicConfigValue {
  public:
-  QuicFixedUint32(QuicTag name,
-                  QuicConfigPresence presence,
-                  uint32 default_value);
+  QuicFixedUint32(QuicTag name, QuicConfigPresence presence);
   virtual ~QuicFixedUint32();
 
-  // Returns the value in the *HLO message (or the default if not).
-  uint32 GetUint32() const;
+  bool HasSendValue() const;
 
-  void set_value(uint32 value) { value_ = value; }
+  uint32 GetSendValue() const;
 
-  // Serialises |tag_| and |value_| to |out|.
+  void SetSendValue(uint32 value);
+
+  bool HasReceivedValue() const;
+
+  uint32 GetReceivedValue() const;
+
+  void SetReceivedValue(uint32 value);
+
+  // If has_send_value is true, serialises |tag_| and |send_value_| to |out|.
   virtual void ToHandshakeMessage(CryptoHandshakeMessage* out) const OVERRIDE;
 
-  // Sets |value_| to the corresponding value from |client_hello_| if it exists.
-  virtual QuicErrorCode ProcessClientHello(
-      const CryptoHandshakeMessage& client_hello,
-      std::string* error_details) OVERRIDE;
-
-  // Sets |value_| to the corresponding value from |server_hello_| if it exists.
-  virtual QuicErrorCode ProcessServerHello(
-      const CryptoHandshakeMessage& server_hello,
+  // Sets |value_| to the corresponding value from |peer_hello_| if it exists.
+  virtual QuicErrorCode ProcessPeerHello(
+      const CryptoHandshakeMessage& peer_hello,
+      HelloType hello_type,
       std::string* error_details) OVERRIDE;
 
  private:
-  uint32 value_;
+  uint32 send_value_;
+  bool has_send_value_;
+  uint32 receive_value_;
+  bool has_receive_value_;
+};
+
+// Stores tag from CHLO or SHLO messages that are not negotiated.
+class NET_EXPORT_PRIVATE QuicFixedTag : public QuicConfigValue {
+ public:
+  QuicFixedTag(QuicTag name, QuicConfigPresence presence);
+  virtual ~QuicFixedTag();
+
+  bool HasSendValue() const;
+
+  QuicTag GetSendValue() const;
+
+  void SetSendValue(QuicTag value);
+
+  bool HasReceivedValue() const;
+
+  QuicTag GetReceivedValue() const;
+
+  void SetReceivedValue(QuicTag value);
+
+  // If has_send_value is true, serialises |tag_| and |send_value_| to |out|.
+  virtual void ToHandshakeMessage(CryptoHandshakeMessage* out) const OVERRIDE;
+
+  // Sets |value_| to the corresponding value from |client_hello_| if it exists.
+  virtual QuicErrorCode ProcessPeerHello(
+      const CryptoHandshakeMessage& peer_hello,
+      HelloType hello_type,
+      std::string* error_details) OVERRIDE;
+
+ private:
+  QuicTag send_value_;
+  bool has_send_value_;
+  QuicTag receive_value_;
+  bool has_receive_value_;
 };
 
 // QuicConfig contains non-crypto configuration options that are negotiated in
@@ -197,10 +227,11 @@ class NET_EXPORT_PRIVATE QuicConfig {
 
   QuicTag congestion_control() const;
 
-  void set_loss_detection(const QuicTagVector& loss_detection,
-                          QuicTag default_loss_detection);
+  void SetLossDetectionToSend(QuicTag loss_detection);
 
-  QuicTag loss_detection() const;
+  bool HasReceivedLossDetection() const;
+
+  QuicTag ReceivedLossDetection() const;
 
   void set_idle_connection_state_lifetime(
       QuicTime::Delta max_idle_connection_state_lifetime,
@@ -220,21 +251,26 @@ class NET_EXPORT_PRIVATE QuicConfig {
 
   QuicTime::Delta max_time_before_crypto_handshake() const;
 
-  // Sets the server's TCP sender's max and default initial congestion window
-  // in packets.
-  void set_server_initial_congestion_window(size_t max_initial_window,
-                                            size_t default_initial_window);
+  // Sets the peer's default initial congestion window in packets.
+  void SetInitialCongestionWindowToSend(size_t initial_window);
 
-  uint32 server_initial_congestion_window() const;
+  bool HasReceivedInitialCongestionWindow() const;
+
+  uint32 ReceivedInitialCongestionWindow() const;
 
   // Sets an estimated initial round trip time in us.
-  void set_initial_round_trip_time_us(size_t max_rtt, size_t default_rtt);
+  void SetInitialRoundTripTimeUsToSend(size_t rtt_us);
 
-  uint32 initial_round_trip_time_us() const;
+  bool HasReceivedInitialRoundTripTimeUs() const;
 
-  void set_peer_initial_flow_control_window_bytes(uint32 window);
+  uint32 ReceivedInitialRoundTripTimeUs() const;
 
-  uint32 peer_initial_flow_control_window_bytes() const;
+  // Sets an initial flow control window size to transmit to the peer.
+  void SetInitialFlowControlWindowToSend(uint32 window_bytes);
+
+  bool HasReceivedInitialFlowControlWindowBytes() const;
+
+  uint32 ReceivedInitialFlowControlWindowBytes() const;
 
   bool negotiated();
 
@@ -244,25 +280,23 @@ class NET_EXPORT_PRIVATE QuicConfig {
   // Enabled pacing.
   void EnablePacing(bool enable_pacing);
 
-  // ToHandshakeMessage serializes the settings in this object as a series of
+  // ToHandshakeMessage serialises the settings in this object as a series of
   // tags /value pairs and adds them to |out|.
   void ToHandshakeMessage(CryptoHandshakeMessage* out) const;
 
-  // Calls ProcessClientHello on each negotiable parameter. On failure returns
+  // Calls ProcessPeerHello on each negotiable parameter. On failure returns
   // the corresponding QuicErrorCode and sets detailed error in |error_details|.
-  QuicErrorCode ProcessClientHello(const CryptoHandshakeMessage& client_hello,
-                                   std::string* error_details);
-
-  // Calls ProcessServerHello on each negotiable parameter. On failure returns
-  // the corresponding QuicErrorCode and sets detailed error in |error_details|.
-  QuicErrorCode ProcessServerHello(const CryptoHandshakeMessage& server_hello,
-                                   std::string* error_details);
+  QuicErrorCode ProcessPeerHello(const CryptoHandshakeMessage& peer_hello,
+                                 HelloType hello_type,
+                                 std::string* error_details);
 
  private:
+  friend class test::QuicConfigPeer;
+
   // Congestion control feedback type.
   QuicNegotiableTag congestion_control_;
   // Loss detection feedback type.
-  QuicNegotiableTag loss_detection_;
+  QuicFixedTag loss_detection_;
   // Idle connection state lifetime
   QuicNegotiableUint32 idle_connection_state_lifetime_seconds_;
   // Keepalive timeout, or 0 to turn off keepalive probes
@@ -273,11 +307,11 @@ class NET_EXPORT_PRIVATE QuicConfig {
   // finished. (Not negotiated).
   QuicTime::Delta max_time_before_crypto_handshake_;
   // Initial congestion window in packets.
-  QuicNegotiableUint32 server_initial_congestion_window_;
+  QuicFixedUint32 initial_congestion_window_;
   // Initial round trip time estimate in microseconds.
-  QuicNegotiableUint32 initial_round_trip_time_us_;
-  // Peer's initial flow control receive window in bytes.
-  QuicFixedUint32 peer_initial_flow_control_window_bytes_;
+  QuicFixedUint32 initial_round_trip_time_us_;
+  // Initial flow control receive window in bytes.
+  QuicFixedUint32 initial_flow_control_window_bytes_;
 };
 
 }  // namespace net

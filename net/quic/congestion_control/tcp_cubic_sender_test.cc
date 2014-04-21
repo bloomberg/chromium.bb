@@ -11,6 +11,7 @@
 #include "net/quic/congestion_control/tcp_receiver.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/mock_clock.h"
+#include "net/quic/test_tools/quic_config_peer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using std::min;
@@ -585,9 +586,7 @@ TEST_F(TcpCubicSenderTest, SendWindowNotAffectedByAcks) {
 TEST_F(TcpCubicSenderTest, ConfigureMaxInitialWindow) {
   QuicTcpCongestionWindow congestion_window = sender_->congestion_window();
   QuicConfig config;
-  config.set_server_initial_congestion_window(2 * congestion_window,
-                                              2 * congestion_window);
-  EXPECT_EQ(2 * congestion_window, config.server_initial_congestion_window());
+  QuicConfigPeer::SetReceivedInitialWindow(&config, 2 * congestion_window);
 
   sender_->SetFromConfig(config, true);
   EXPECT_EQ(2 * congestion_window, sender_->congestion_window());

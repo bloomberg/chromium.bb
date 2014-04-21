@@ -60,7 +60,7 @@ const QuicByteCount kMaxPacketSize = 1452;
 
 // Maximum size of the initial congestion window in packets.
 const size_t kDefaultInitialWindow = 10;
-const size_t kMaxInitialWindow = 100;
+const uint32 kMaxInitialWindow = 100;
 
 // Default size of initial flow control window.
 const uint32 kDefaultFlowControlSendWindow = 16 * 1024;  // 16 KB
@@ -70,7 +70,7 @@ const uint32 kDefaultFlowControlSendWindow = 16 * 1024;  // 16 KB
 const size_t kMaxTcpCongestionWindow = 200;
 
 // Don't allow a client to suggest an RTT longer than 15 seconds.
-const size_t kMaxInitialRoundTripTimeUs = 15 * kNumMicrosPerSecond;
+const uint32 kMaxInitialRoundTripTimeUs = 15 * kNumMicrosPerSecond;
 
 // Maximum number of open streams per connection.
 const size_t kDefaultMaxStreamsPerConnection = 100;

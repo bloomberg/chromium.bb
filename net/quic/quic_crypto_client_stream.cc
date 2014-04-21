@@ -318,7 +318,8 @@ void QuicCryptoClientStream::DoHandshakeLoop(
               error, "Server hello invalid: " + error_details);
           return;
         }
-        error = session()->config()->ProcessServerHello(*in, &error_details);
+        error =
+            session()->config()->ProcessPeerHello(*in, SERVER, &error_details);
         if (error != QUIC_NO_ERROR) {
           CloseConnectionWithDetails(
               error, "Server hello invalid: " + error_details);

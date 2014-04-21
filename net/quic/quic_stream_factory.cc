@@ -758,8 +758,7 @@ int QuicStreamFactory::CreateSession(
         http_server_properties_->GetServerNetworkStats(
             server_id.host_port_pair());
     if (stats != NULL) {
-      config.set_initial_round_trip_time_us(stats->srtt.InMicroseconds(),
-                                            stats->srtt.InMicroseconds());
+      config.SetInitialRoundTripTimeUsToSend(stats->srtt.InMicroseconds());
     }
   }
 

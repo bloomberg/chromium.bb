@@ -44,12 +44,14 @@ class DeleteSessionsAlarm : public EpollAlarm {
 class QuicDispatcher::QuicFramerVisitor : public QuicFramerVisitorInterface {
  public:
   explicit QuicFramerVisitor(QuicDispatcher* dispatcher)
-      : dispatcher_(dispatcher) {}
+      : dispatcher_(dispatcher),
+        connection_id_(0) {}
 
   // QuicFramerVisitorInterface implementation
   virtual void OnPacket() OVERRIDE {}
   virtual bool OnUnauthenticatedPublicHeader(
       const QuicPacketPublicHeader& header) OVERRIDE {
+    connection_id_ = header.connection_id;
     return dispatcher_->OnUnauthenticatedPublicHeader(header);
   }
   virtual bool OnUnauthenticatedHeader(
@@ -61,14 +63,23 @@ class QuicDispatcher::QuicFramerVisitor : public QuicFramerVisitorInterface {
     DVLOG(1) << QuicUtils::ErrorToString(framer->error());
   }
 
+  virtual bool OnProtocolVersionMismatch(
+      QuicVersion /*received_version*/) OVERRIDE {
+    if (dispatcher_->time_wait_list_manager()->IsConnectionIdInTimeWait(
+            connection_id_)) {
+      // Keep processing after protocol mismatch - this will be dealt with by
+      // the TimeWaitListManager.
+      return true;
+    } else {
+      DLOG(DFATAL) << "Version mismatch, connection ID (" << connection_id_
+                   << ") not in time wait list.";
+      return false;
+    }
+  }
+
   // The following methods should never get called because we always return
   // false from OnUnauthenticatedHeader().  As a result, we never process the
   // payload of the packet.
-  virtual bool OnProtocolVersionMismatch(
-      QuicVersion /*received_version*/) OVERRIDE {
-    DCHECK(false);
-    return false;
-  }
   virtual void OnPublicResetPacket(
       const QuicPublicResetPacket& /*packet*/) OVERRIDE {
     DCHECK(false);
@@ -136,6 +147,9 @@ class QuicDispatcher::QuicFramerVisitor : public QuicFramerVisitorInterface {
 
  private:
   QuicDispatcher* dispatcher_;
+
+  // Latched in OnUnauthenticatedPublicHeader for use later.
+  QuicConnectionId connection_id_;
 };
 
 QuicDispatcher::QuicDispatcher(const QuicConfig& config,

@@ -68,7 +68,8 @@ const QuicTag kAEAD = TAG('A', 'E', 'A', 'D');  // Authenticated
                                                 // encryption algorithms
 const QuicTag kCGST = TAG('C', 'G', 'S', 'T');  // Congestion control
                                                 // feedback types
-const QuicTag kLOSS = TAG('L', 'O', 'S', 'S');  // Loss detection algorithms
+// kLOSS was 'L', 'O', 'S', 'S', but was changed from a tag vector to a tag.
+const QuicTag kLOSS = TAG('L', 'O', 'S', 'A');  // Loss detection algorithms
 const QuicTag kICSL = TAG('I', 'C', 'S', 'L');  // Idle connection state
                                                 // lifetime
 const QuicTag kKATO = TAG('K', 'A', 'T', 'O');  // Keepalive timeout

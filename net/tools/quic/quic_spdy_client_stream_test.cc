@@ -44,7 +44,7 @@ class QuicSpdyClientStreamTest : public TestWithParam<QuicVersion> {
 
     // New streams rely on having the peer's flow control receive window
     // negotiated in the config.
-    session_.config()->set_peer_initial_flow_control_window_bytes(
+    session_.config()->SetInitialFlowControlWindowToSend(
         kInitialFlowControlWindowForTest);
     stream_.reset(new QuicSpdyClientStream(3, &session_));
   }

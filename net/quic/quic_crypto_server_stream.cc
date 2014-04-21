@@ -89,7 +89,7 @@ void QuicCryptoServerStream::FinishProcessingHandshakeMessage(
 
   // If we are returning a SHLO then we accepted the handshake.
   QuicConfig* config = session()->config();
-  error = config->ProcessClientHello(message, &error_details);
+  error = config->ProcessPeerHello(message, CLIENT, &error_details);
   if (error != QUIC_NO_ERROR) {
     CloseConnectionWithDetails(error, error_details);
     return;

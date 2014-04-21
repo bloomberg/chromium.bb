@@ -229,6 +229,12 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // necessary.
   void InvokeLossDetection(QuicTime time);
 
+  // Marks |sequence_number| as having been revived by the peer, but not
+  // received, so the packet remains pending if it is and the congestion control
+  // does not consider the packet acked.
+  void MarkPacketRevived(QuicPacketSequenceNumber sequence_number,
+                         QuicTime::Delta delta_largest_observed);
+
   // Marks |sequence_number| as being fully handled, either due to receipt
   // by the peer, or having been discarded as indecipherable.  Returns an
   // iterator to the next remaining unacked packet.

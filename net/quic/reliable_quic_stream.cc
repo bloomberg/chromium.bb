@@ -126,7 +126,9 @@ ReliableQuicStream::ReliableQuicStream(QuicStreamId id, QuicSession* session)
       flow_controller_(
           id_,
           is_server_,
-          session_->config()->peer_initial_flow_control_window_bytes(),
+          session_->config()->HasReceivedInitialFlowControlWindowBytes() ?
+              session_->config()->ReceivedInitialFlowControlWindowBytes() :
+              kDefaultFlowControlSendWindow,
           session_->connection()->max_flow_control_receive_window_bytes(),
           session_->connection()->max_flow_control_receive_window_bytes()) {
   if (session_->connection()->version() < QUIC_VERSION_17) {

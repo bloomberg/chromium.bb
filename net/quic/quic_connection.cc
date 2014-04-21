@@ -263,7 +263,6 @@ QuicConnection::~QuicConnection() {
 }
 
 void QuicConnection::SetFromConfig(const QuicConfig& config) {
-  DCHECK_LT(0u, config.server_initial_congestion_window());
   SetIdleNetworkTimeout(config.idle_connection_state_lifetime());
   sent_packet_manager_.SetFromConfig(config);
   // TODO(satyamshekhar): Set congestion control and ICSL also.

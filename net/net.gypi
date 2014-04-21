@@ -1482,6 +1482,8 @@
       'quic/test_tools/mock_random.h',
       'quic/test_tools/quic_client_session_peer.cc',
       'quic/test_tools/quic_client_session_peer.h',
+      'quic/test_tools/quic_config_peer.cc',
+      'quic/test_tools/quic_config_peer.h',
       'quic/test_tools/quic_connection_peer.cc',
       'quic/test_tools/quic_connection_peer.h',
       'quic/test_tools/quic_data_stream_peer.cc',

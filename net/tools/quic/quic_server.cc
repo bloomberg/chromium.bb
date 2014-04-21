@@ -47,9 +47,6 @@ QuicServer::QuicServer()
           kServerInitialFlowControlWindow) {
   // Use hardcoded crypto parameters for now.
   config_.SetDefaults();
-  config_.set_initial_round_trip_time_us(kMaxInitialRoundTripTimeUs, 0);
-  config_.set_server_initial_congestion_window(kMaxInitialWindow,
-                                               kDefaultInitialWindow);
   Initialize();
 }
 

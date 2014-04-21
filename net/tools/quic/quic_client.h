@@ -160,7 +160,6 @@ class QuicClient : public EpollCallbackInterface,
   }
 
   void SetSupportedVersions(const QuicVersionVector& versions) {
-    DCHECK(!session_.get());
     supported_versions_ = versions;
   }
 

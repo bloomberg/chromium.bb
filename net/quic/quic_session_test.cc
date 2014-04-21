@@ -53,11 +53,11 @@ class TestCryptoStream : public QuicCryptoStream {
     handshake_confirmed_ = true;
     CryptoHandshakeMessage msg;
     string error_details;
-    session()->config()->set_peer_initial_flow_control_window_bytes(
+    session()->config()->SetInitialFlowControlWindowToSend(
         kInitialFlowControlWindowForTest);
     session()->config()->ToHandshakeMessage(&msg);
-    const QuicErrorCode error = session()->config()->ProcessClientHello(
-        msg, &error_details);
+    const QuicErrorCode error = session()->config()->ProcessPeerHello(
+        msg, CLIENT, &error_details);
     EXPECT_EQ(QUIC_NO_ERROR, error);
     session()->OnConfigNegotiated();
     session()->OnCryptoHandshakeEvent(QuicSession::HANDSHAKE_CONFIRMED);
@@ -605,10 +605,10 @@ TEST_P(QuicSessionTest, InvalidFlowControlWindowInHandshake) {
 
   CryptoHandshakeMessage msg;
   string error_details;
-  session_.config()->set_peer_initial_flow_control_window_bytes(kInvalidWindow);
+  session_.config()->SetInitialFlowControlWindowToSend(kInvalidWindow);
   session_.config()->ToHandshakeMessage(&msg);
   const QuicErrorCode error =
-      session_.config()->ProcessClientHello(msg, &error_details);
+      session_.config()->ProcessPeerHello(msg, CLIENT, &error_details);
   EXPECT_EQ(QUIC_NO_ERROR, error);
 
   EXPECT_CALL(*connection_, SendConnectionClose(QUIC_FLOW_CONTROL_ERROR));

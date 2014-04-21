@@ -89,7 +89,7 @@ void MockCryptoClientStream::SetConfigNegotiated() {
   session()->config()->ToHandshakeMessage(&msg);
   string error_details;
   const QuicErrorCode error =
-      session()->config()->ProcessClientHello(msg, &error_details);
+      session()->config()->ProcessPeerHello(msg, CLIENT, &error_details);
   ASSERT_EQ(QUIC_NO_ERROR, error);
   ASSERT_TRUE(session()->config()->negotiated());
 }

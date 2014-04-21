@@ -381,11 +381,12 @@ bool QuicSession::IsCryptoHandshakeConfirmed() {
 void QuicSession::OnConfigNegotiated() {
   connection_->SetFromConfig(config_);
   // Tell all streams about the newly received peer receive window.
-  if (connection()->version() >= QUIC_VERSION_17) {
+  if (connection()->version() >= QUIC_VERSION_17 &&
+      config_.HasReceivedInitialFlowControlWindowBytes()) {
     // Streams which were created before the SHLO was received (0RTT requests)
     // are now informed of the peer's initial flow control window.
     uint32 new_flow_control_send_window =
-        config_.peer_initial_flow_control_window_bytes();
+        config_.ReceivedInitialFlowControlWindowBytes();
     if (new_flow_control_send_window < kDefaultFlowControlSendWindow) {
       LOG(DFATAL)
           << "Peer sent us an invalid flow control send window: "

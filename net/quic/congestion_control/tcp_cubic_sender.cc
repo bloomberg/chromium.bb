@@ -61,9 +61,10 @@ bool TcpCubicSender::InSlowStart() const {
 }
 
 void TcpCubicSender::SetFromConfig(const QuicConfig& config, bool is_server) {
-  if (is_server) {
+  if (is_server && config.HasReceivedInitialCongestionWindow()) {
     // Set the initial window size.
-    congestion_window_ = config.server_initial_congestion_window();
+    congestion_window_ = min(kMaxInitialWindow,
+                             config.ReceivedInitialCongestionWindow());
   }
 }
 

@@ -24,7 +24,6 @@ class QuicConfigTest : public ::testing::Test {
  protected:
   QuicConfigTest() {
     config_.SetDefaults();
-    config_.set_initial_round_trip_time_us(kMaxInitialRoundTripTimeUs, 0);
   }
 
   QuicConfig config_;
@@ -70,7 +69,7 @@ TEST_F(QuicConfigTest, ToHandshakeMessageWithPacing) {
   EXPECT_EQ(kQBIC, out[1]);
 }
 
-TEST_F(QuicConfigTest, ProcessClientHello) {
+TEST_F(QuicConfigTest, ProcessPeerHello) {
   QuicConfig client_config;
   QuicTagVector cgst;
   cgst.push_back(kINAR);
@@ -81,16 +80,13 @@ TEST_F(QuicConfigTest, ProcessClientHello) {
       QuicTime::Delta::FromSeconds(kDefaultTimeoutSecs));
   client_config.set_max_streams_per_connection(
       2 * kDefaultMaxStreamsPerConnection, kDefaultMaxStreamsPerConnection);
-  client_config.set_initial_round_trip_time_us(
-      10 * base::Time::kMicrosecondsPerMillisecond,
+  client_config.SetInitialRoundTripTimeUsToSend(
       10 * base::Time::kMicrosecondsPerMillisecond);
-  QuicTagVector loss_detection;
-  loss_detection.push_back(kNACK);
-  client_config.set_loss_detection(loss_detection, kNACK);
   CryptoHandshakeMessage msg;
   client_config.ToHandshakeMessage(&msg);
   string error_details;
-  const QuicErrorCode error = config_.ProcessClientHello(msg, &error_details);
+  const QuicErrorCode error =
+      config_.ProcessPeerHello(msg, CLIENT, &error_details);
   EXPECT_EQ(QUIC_NO_ERROR, error);
   EXPECT_TRUE(config_.negotiated());
   EXPECT_EQ(kQBIC, config_.congestion_control());
@@ -100,8 +96,8 @@ TEST_F(QuicConfigTest, ProcessClientHello) {
             config_.max_streams_per_connection());
   EXPECT_EQ(QuicTime::Delta::FromSeconds(0), config_.keepalive_timeout());
   EXPECT_EQ(10 * base::Time::kMicrosecondsPerMillisecond,
-            config_.initial_round_trip_time_us());
-  EXPECT_EQ(kNACK, config_.loss_detection());
+            config_.ReceivedInitialRoundTripTimeUs());
+  EXPECT_FALSE(config_.HasReceivedLossDetection());
 }
 
 TEST_F(QuicConfigTest, ProcessServerHello) {
@@ -115,18 +111,14 @@ TEST_F(QuicConfigTest, ProcessServerHello) {
   server_config.set_max_streams_per_connection(
       kDefaultMaxStreamsPerConnection / 2,
       kDefaultMaxStreamsPerConnection / 2);
-  server_config.set_server_initial_congestion_window(kDefaultInitialWindow / 2,
-                                                     kDefaultInitialWindow / 2);
-  server_config.set_initial_round_trip_time_us(
-      10 * base::Time::kMicrosecondsPerMillisecond,
+  server_config.SetInitialCongestionWindowToSend(kDefaultInitialWindow / 2);
+  server_config.SetInitialRoundTripTimeUsToSend(
       10 * base::Time::kMicrosecondsPerMillisecond);
-  QuicTagVector loss_detection;
-  loss_detection.push_back(kNACK);
-  server_config.set_loss_detection(loss_detection, kNACK);
   CryptoHandshakeMessage msg;
   server_config.ToHandshakeMessage(&msg);
   string error_details;
-  const QuicErrorCode error = config_.ProcessServerHello(msg, &error_details);
+  const QuicErrorCode error =
+      config_.ProcessPeerHello(msg, SERVER, &error_details);
   EXPECT_EQ(QUIC_NO_ERROR, error);
   EXPECT_TRUE(config_.negotiated());
   EXPECT_EQ(kQBIC, config_.congestion_control());
@@ -135,11 +127,11 @@ TEST_F(QuicConfigTest, ProcessServerHello) {
   EXPECT_EQ(kDefaultMaxStreamsPerConnection / 2,
             config_.max_streams_per_connection());
   EXPECT_EQ(kDefaultInitialWindow / 2,
-            config_.server_initial_congestion_window());
+            config_.ReceivedInitialCongestionWindow());
   EXPECT_EQ(QuicTime::Delta::FromSeconds(0), config_.keepalive_timeout());
   EXPECT_EQ(10 * base::Time::kMicrosecondsPerMillisecond,
-            config_.initial_round_trip_time_us());
-  EXPECT_EQ(kNACK, config_.loss_detection());
+            config_.ReceivedInitialRoundTripTimeUs());
+  EXPECT_FALSE(config_.HasReceivedLossDetection());
 }
 
 TEST_F(QuicConfigTest, MissingOptionalValuesInCHLO) {
@@ -154,11 +146,11 @@ TEST_F(QuicConfigTest, MissingOptionalValuesInCHLO) {
 
   // No error, as rest are optional.
   string error_details;
-  const QuicErrorCode error = config_.ProcessClientHello(msg, &error_details);
+  const QuicErrorCode error =
+      config_.ProcessPeerHello(msg, CLIENT, &error_details);
   EXPECT_EQ(QUIC_NO_ERROR, error);
 
-  EXPECT_EQ(kDefaultFlowControlSendWindow,
-            config_.peer_initial_flow_control_window_bytes());
+  EXPECT_FALSE(config_.HasReceivedInitialFlowControlWindowBytes());
 }
 
 TEST_F(QuicConfigTest, MissingOptionalValuesInSHLO) {
@@ -171,11 +163,11 @@ TEST_F(QuicConfigTest, MissingOptionalValuesInSHLO) {
 
   // No error, as rest are optional.
   string error_details;
-  const QuicErrorCode error = config_.ProcessServerHello(msg, &error_details);
+  const QuicErrorCode error =
+      config_.ProcessPeerHello(msg, SERVER, &error_details);
   EXPECT_EQ(QUIC_NO_ERROR, error);
 
-  EXPECT_EQ(kDefaultFlowControlSendWindow,
-            config_.peer_initial_flow_control_window_bytes());
+  EXPECT_FALSE(config_.HasReceivedInitialFlowControlWindowBytes());
 }
 
 TEST_F(QuicConfigTest, MissingValueInCHLO) {
@@ -184,7 +176,8 @@ TEST_F(QuicConfigTest, MissingValueInCHLO) {
   msg.SetVector(kCGST, QuicTagVector(1, kQBIC));
   // Missing kMSPC. KATO is optional.
   string error_details;
-  const QuicErrorCode error = config_.ProcessClientHello(msg, &error_details);
+  const QuicErrorCode error =
+      config_.ProcessPeerHello(msg, CLIENT, &error_details);
   EXPECT_EQ(QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND, error);
 }
 
@@ -194,7 +187,8 @@ TEST_F(QuicConfigTest, MissingValueInSHLO) {
   msg.SetValue(kMSPC, 3);
   // Missing CGST. KATO is optional.
   string error_details;
-  const QuicErrorCode error = config_.ProcessServerHello(msg, &error_details);
+  const QuicErrorCode error =
+      config_.ProcessPeerHello(msg, SERVER, &error_details);
   EXPECT_EQ(QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND, error);
 }
 
@@ -207,7 +201,8 @@ TEST_F(QuicConfigTest, OutOfBoundSHLO) {
   CryptoHandshakeMessage msg;
   server_config.ToHandshakeMessage(&msg);
   string error_details;
-  const QuicErrorCode error = config_.ProcessServerHello(msg, &error_details);
+  const QuicErrorCode error =
+      config_.ProcessPeerHello(msg, SERVER, &error_details);
   EXPECT_EQ(QUIC_INVALID_NEGOTIATED_VALUE, error);
 }
 
@@ -221,7 +216,8 @@ TEST_F(QuicConfigTest, MultipleNegotiatedValuesInVectorTag) {
   CryptoHandshakeMessage msg;
   server_config.ToHandshakeMessage(&msg);
   string error_details;
-  const QuicErrorCode error = config_.ProcessServerHello(msg, &error_details);
+  const QuicErrorCode error =
+      config_.ProcessPeerHello(msg, SERVER, &error_details);
   EXPECT_EQ(QUIC_INVALID_NEGOTIATED_VALUE, error);
 }
 
@@ -235,8 +231,9 @@ TEST_F(QuicConfigTest, NoOverLapInCGST) {
   CryptoHandshakeMessage msg;
   string error_details;
   server_config.ToHandshakeMessage(&msg);
-  const QuicErrorCode error = config_.ProcessClientHello(msg, &error_details);
-  LOG(INFO) << QuicUtils::ErrorToString(error);
+  const QuicErrorCode error =
+      config_.ProcessPeerHello(msg, CLIENT, &error_details);
+  DVLOG(1) << QuicUtils::ErrorToString(error);
   EXPECT_EQ(QUIC_CRYPTO_MESSAGE_PARAMETER_NO_OVERLAP, error);
 }
 

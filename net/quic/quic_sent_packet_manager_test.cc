@@ -5,6 +5,7 @@
 #include "net/quic/quic_sent_packet_manager.h"
 
 #include "base/stl_util.h"
+#include "net/quic/test_tools/quic_config_peer.h"
 #include "net/quic/test_tools/quic_sent_packet_manager_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -449,6 +450,41 @@ TEST_F(QuicSentPacketManagerTest, LoseButDontRetransmitRevivedPacket) {
   EXPECT_CALL(*send_algorithm_, OnPacketLost(1, _));
   EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(1, _));
   EXPECT_CALL(*send_algorithm_, OnPacketAcked(4, _));
+  manager_.OnIncomingAck(received_info, clock_.ApproximateNow());
+
+  EXPECT_FALSE(manager_.HasPendingRetransmissions());
+  VerifyRetransmittablePackets(NULL, 0);
+}
+
+TEST_F(QuicSentPacketManagerTest, MarkLostThenReviveAndDontRetransmitPacket) {
+  SendDataPacket(1);
+  SendDataPacket(2);
+  SendDataPacket(3);
+  SendDataPacket(4);
+  SendFecPacket(5);
+
+  // Ack 2, 3, and 4, and expect the 1st to be considered lost.
+  ReceivedPacketInfo received_info;
+  received_info.largest_observed = 4;
+  received_info.missing_packets.insert(1);
+  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
+  EXPECT_CALL(*send_algorithm_, OnPacketAcked(_, _)).Times(3);
+  EXPECT_CALL(*send_algorithm_, OnPacketLost(1, _));
+  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(1, _));
+  manager_.OnIncomingAck(received_info, clock_.ApproximateNow());
+
+  EXPECT_TRUE(manager_.HasPendingRetransmissions());
+  QuicPacketSequenceNumber unacked[] = { 1, 5 };
+  VerifyUnackedPackets(unacked, arraysize(unacked));
+  QuicPacketSequenceNumber retransmittable[] = { 1 };
+  VerifyRetransmittablePackets(retransmittable, arraysize(retransmittable));
+
+  // Ack 5th packet (FEC) and revive 1st packet. 1st packet should now be
+  // removed from pending retransmissions map.
+  received_info.largest_observed = 5;
+  received_info.revived_packets.insert(1);
+  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
+  EXPECT_CALL(*send_algorithm_, OnPacketAcked(5, _));
   manager_.OnIncomingAck(received_info, clock_.ApproximateNow());
 
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
@@ -1208,10 +1244,12 @@ TEST_F(QuicSentPacketManagerTest, GetLossDelay) {
 }
 
 TEST_F(QuicSentPacketManagerTest, NegotiateTimeLossDetection) {
+  EXPECT_EQ(kNack,
+            QuicSentPacketManagerPeer::GetLossAlgorithm(
+                &manager_)->GetLossDetectionType());
+
   QuicConfig config;
-  QuicTagVector loss_detection;
-  loss_detection.push_back(kTIME);
-  config.set_loss_detection(loss_detection, kTIME);
+  QuicConfigPeer::SetReceivedLossDetection(&config, kTIME);
   EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
   manager_.SetFromConfig(config);
 
