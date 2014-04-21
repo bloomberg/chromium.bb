@@ -115,6 +115,7 @@
         ['chromeos==1 and disable_nacl==0 and disable_nacl_untrusted==0', {
           'dependencies': [
             '../chrome/third_party/chromevox/chromevox.gyp:chromevox_resources',
+            'chromevox_strings',
           ],
         }],
       ],
@@ -499,6 +500,24 @@
                      '<(about_credits_file)',
           ],
           'message': 'Generating about:credits',
+        },
+      ],
+    },
+    {
+      'target_name': 'chromevox_strings',
+      'type': 'none',
+      'actions': [
+        {
+          'action_name': 'chromevox_strings',
+          'variables': {
+            'grit_grd_file': 'browser/resources/chromeos/chromevox/strings/chromevox_strings.grd',
+            # TODO(plundblad): Change to use PRODUCT_DIR when we have
+            # translations.
+            'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/resources/chromeos/chromevox',
+            # We don't generate any RC files, so no resource_ds file is needed.
+            'grit_resource_ids': '',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
         },
       ],
     },
