@@ -19,9 +19,12 @@
 #include "chrome/common/extensions/api/file_system_provider.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/browser_context.h"
+#include "extensions/browser/extension_registry_observer.h"
+#include "extensions/common/extension.h"
 
 namespace extensions {
 class EventRouter;
+class ExtensionRegistry;
 }  // namespace extensions
 
 namespace chromeos {
@@ -34,14 +37,15 @@ class ServiceFactory;
 
 // Manages and registers the file system provider service. Maintains provided
 // file systems.
-class Service : public KeyedService {
+class Service : public KeyedService,
+                public extensions::ExtensionRegistryObserver {
  public:
   typedef base::Callback<ProvidedFileSystemInterface*(
       extensions::EventRouter* event_router,
       const ProvidedFileSystemInfo& file_system_info)>
       FileSystemFactoryCallback;
 
-  explicit Service(Profile* profile);
+  Service(Profile* profile, extensions::ExtensionRegistry* extension_registry);
   virtual ~Service();
 
   // Sets a custom ProvidedFileSystemInterface factory. Used by unit tests,
@@ -81,8 +85,11 @@ class Service : public KeyedService {
   // Gets the singleton instance for the |context|.
   static Service* Get(content::BrowserContext* context);
 
-  // BrowserContextKeyedService overrides.
-  virtual void Shutdown() OVERRIDE;
+  // extensions::ExtensionRegistryObserver overrides.
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension,
+      extensions::UnloadedExtensionInfo::Reason reason) OVERRIDE;
 
  private:
   typedef std::map<int, ProvidedFileSystemInterface*> ProvidedFileSystemMap;
@@ -93,6 +100,7 @@ class Service : public KeyedService {
                               base::File::Error error);
 
   Profile* profile_;
+  extensions::ExtensionRegistry* extension_registry_;  // Not owned.
   FileSystemFactoryCallback file_system_factory_;
   ObserverList<Observer> observers_;
   ProvidedFileSystemMap file_system_map_;  // Owns pointers.

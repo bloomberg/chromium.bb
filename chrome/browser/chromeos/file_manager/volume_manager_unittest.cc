@@ -18,6 +18,7 @@
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "extensions/browser/extension_registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace file_manager {
@@ -145,8 +146,12 @@ class VolumeManagerTest : public testing::Test {
     ProfileEnvironment(chromeos::PowerManagerClient* power_manager_client,
                        chromeos::disks::DiskMountManager* disk_manager)
         : profile_(new TestingProfile),
+          extension_registry_(
+              new extensions::ExtensionRegistry(profile_.get())),
           file_system_provider_service_(
-              new chromeos::file_system_provider::Service(profile_.get())),
+              new chromeos::file_system_provider::Service(
+                  profile_.get(),
+                  extension_registry_.get())),
           volume_manager_(
               new VolumeManager(profile_.get(),
                                 NULL,  // DriveIntegrationService
@@ -162,6 +167,7 @@ class VolumeManagerTest : public testing::Test {
 
    private:
     scoped_ptr<TestingProfile> profile_;
+    scoped_ptr<extensions::ExtensionRegistry> extension_registry_;
     scoped_ptr<chromeos::file_system_provider::Service>
         file_system_provider_service_;
     scoped_ptr<VolumeManager> volume_manager_;

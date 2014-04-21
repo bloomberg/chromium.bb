@@ -14,6 +14,8 @@
 #include "chrome/browser/chromeos/file_system_provider/service_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
 
 namespace chromeos {
@@ -34,13 +36,20 @@ ProvidedFileSystemInterface* CreateProvidedFileSystem(
 
 }  // namespace
 
-Service::Service(Profile* profile)
+Service::Service(Profile* profile,
+                 extensions::ExtensionRegistry* extension_registry)
     : profile_(profile),
+      extension_registry_(extension_registry),
       file_system_factory_(base::Bind(CreateProvidedFileSystem)),
       next_id_(1),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  extension_registry_->AddObserver(this);
+}
 
-Service::~Service() { STLDeleteValues(&file_system_map_); }
+Service::~Service() {
+  extension_registry_->RemoveObserver(this);
+  STLDeleteValues(&file_system_map_);
+}
 
 // static
 Service* Service::Get(content::BrowserContext* context) {
@@ -217,7 +226,25 @@ ProvidedFileSystemInterface* Service::GetProvidedFileSystem(
   return file_system_it->second;
 }
 
-void Service::Shutdown() {}
+void Service::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension,
+    extensions::UnloadedExtensionInfo::Reason reason) {
+  // Unmount all of the provided file systems associated with this extension.
+  ProvidedFileSystemMap::iterator it = file_system_map_.begin();
+  while (it != file_system_map_.end()) {
+    const ProvidedFileSystemInfo& file_system_info =
+        it->second->GetFileSystemInfo();
+    // Advance the iterator beforehand, otherwise it will become invalidated
+    // by the UnmountFileSystem() call.
+    ++it;
+    if (file_system_info.extension_id() == extension->id()) {
+      bool result = UnmountFileSystem(file_system_info.extension_id(),
+                                      file_system_info.file_system_id());
+      DCHECK(result);
+    }
+  }
+}
 
 void Service::OnRequestUnmountStatus(
     const ProvidedFileSystemInfo& file_system_info,

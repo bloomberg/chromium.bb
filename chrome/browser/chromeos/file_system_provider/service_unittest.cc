@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "base/files/file.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/file_system_provider/fake_provided_file_system.h"
 #include "chrome/browser/chromeos/file_system_provider/mount_path_util.h"
@@ -15,6 +16,9 @@
 #include "chrome/browser/chromeos/login/fake_user_manager.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
 
@@ -65,6 +69,21 @@ class LoggingObserver : public Observer {
   std::vector<Event> unmounts;
 };
 
+// Creates a fake extension with the specified |extension_id|.
+scoped_refptr<extensions::Extension> createFakeExtension(
+    const std::string& extension_id) {
+  base::DictionaryValue manifest;
+  std::string error;
+  manifest.SetString(extensions::manifest_keys::kVersion, "1.0.0.0");
+  manifest.SetString(extensions::manifest_keys::kName, "unused");
+  return extensions::Extension::Create(base::FilePath(),
+                                       extensions::Manifest::UNPACKED,
+                                       manifest,
+                                       extensions::Extension::NO_FLAGS,
+                                       extension_id,
+                                       &error);
+}
+
 }  // namespace
 
 class FileSystemProviderServiceTest : public testing::Test {
@@ -73,13 +92,17 @@ class FileSystemProviderServiceTest : public testing::Test {
   virtual ~FileSystemProviderServiceTest() {}
 
   virtual void SetUp() OVERRIDE {
-    user_manager_ = new FakeUserManager();
-    user_manager_enabler_.reset(new ScopedUserManagerEnabler(user_manager_));
     profile_.reset(new TestingProfile);
+    user_manager_ = new FakeUserManager();
     user_manager_->AddUser(profile_->GetProfileName());
-    file_system_provider_service_.reset(new Service(profile_.get()));
+    user_manager_enabler_.reset(new ScopedUserManagerEnabler(user_manager_));
+    extension_registry_.reset(
+        new extensions::ExtensionRegistry(profile_.get()));
+    file_system_provider_service_.reset(
+        new Service(profile_.get(), extension_registry_.get()));
     file_system_provider_service_->SetFileSystemFactoryForTests(
         base::Bind(&FakeProvidedFileSystem::Create));
+    extension_ = createFakeExtension(kExtensionId);
   }
 
   virtual void TearDown() {
@@ -88,9 +111,11 @@ class FileSystemProviderServiceTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfile> profile_;
-  scoped_ptr<ScopedUserManagerEnabler> user_manager_enabler_;
   FakeUserManager* user_manager_;
+  scoped_ptr<ScopedUserManagerEnabler> user_manager_enabler_;
+  scoped_ptr<extensions::ExtensionRegistry> extension_registry_;
   scoped_ptr<Service> file_system_provider_service_;
+  scoped_refptr<extensions::Extension> extension_;
 };
 
 TEST_F(FileSystemProviderServiceTest, MountFileSystem) {
@@ -184,6 +209,42 @@ TEST_F(FileSystemProviderServiceTest, UnmountFileSystem) {
   const bool result = file_system_provider_service_->UnmountFileSystem(
       kExtensionId, file_system_id);
   EXPECT_TRUE(result);
+  ASSERT_EQ(1u, observer.unmounts.size());
+  EXPECT_EQ(base::File::FILE_OK, observer.unmounts[0].error());
+
+  EXPECT_EQ(kExtensionId,
+            observer.unmounts[0].file_system_info().extension_id());
+  EXPECT_EQ(1, observer.unmounts[0].file_system_info().file_system_id());
+  base::FilePath expected_mount_path =
+      util::GetMountPointPath(profile_.get(), kExtensionId, file_system_id);
+  EXPECT_EQ(
+      expected_mount_path.AsUTF8Unsafe(),
+      observer.unmounts[0].file_system_info().mount_path().AsUTF8Unsafe());
+  EXPECT_EQ(kFileSystemName,
+            observer.unmounts[0].file_system_info().file_system_name());
+
+  std::vector<ProvidedFileSystemInfo> file_system_info_list =
+      file_system_provider_service_->GetProvidedFileSystemInfoList();
+  ASSERT_EQ(0u, file_system_info_list.size());
+
+  file_system_provider_service_->RemoveObserver(&observer);
+}
+
+TEST_F(FileSystemProviderServiceTest, UnmountFileSystem_OnExtensionUnload) {
+  LoggingObserver observer;
+  file_system_provider_service_->AddObserver(&observer);
+
+  int file_system_id = file_system_provider_service_->MountFileSystem(
+      kExtensionId, kFileSystemName);
+  EXPECT_LT(0, file_system_id);
+  ASSERT_EQ(1u, observer.mounts.size());
+
+  // Directly call the observer's method.
+  file_system_provider_service_->OnExtensionUnloaded(
+      profile_.get(),
+      extension_.get(),
+      extensions::UnloadedExtensionInfo::REASON_DISABLE);
+
   ASSERT_EQ(1u, observer.unmounts.size());
   EXPECT_EQ(base::File::FILE_OK, observer.unmounts[0].error());
 
