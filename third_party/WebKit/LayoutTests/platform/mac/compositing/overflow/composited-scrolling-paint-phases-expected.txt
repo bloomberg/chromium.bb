@@ -9,7 +9,6 @@
     (GraphicsLayer
       (bounds 800.00 600.00)
       (contentsOpaque 1)
-      (drawsContent 1)
       (paintingPhases
         GraphicsLayerPaintBackground
         GraphicsLayerPaintForeground
@@ -17,82 +16,91 @@
       )
       (children 1
         (GraphicsLayer
-          (position 28.00 20.00)
-          (bounds 202.00 202.00)
+          (bounds 800.00 242.00)
           (drawsContent 1)
           (paintingPhases
             GraphicsLayerPaintBackground
             GraphicsLayerPaintMask
-            GraphicsLayerPaintCompositedScroll
           )
-          (children 4
+          (children 3
             (GraphicsLayer
-              (position 1.00 1.00)
-              (bounds 185.00 185.00)
+              (position 29.00 31.00)
+              (bounds 80.00 10.00)
+              (contentsOpaque 1)
+              (drawsContent 1)
+              (backgroundColor #008000)
               (paintingPhases
                 GraphicsLayerPaintBackground
                 GraphicsLayerPaintForeground
                 GraphicsLayerPaintMask
               )
-              (children 1
+            )
+            (GraphicsLayer
+              (bounds 800.00 242.00)
+              (drawsContent 1)
+              (paintingPhases
+                GraphicsLayerPaintForeground
+              )
+            )
+            (GraphicsLayer
+              (position 28.00 20.00)
+              (bounds 202.00 202.00)
+              (drawsContent 1)
+              (paintingPhases
+                GraphicsLayerPaintBackground
+                GraphicsLayerPaintMask
+                GraphicsLayerPaintCompositedScroll
+              )
+              (children 4
                 (GraphicsLayer
-                  (bounds 185.00 715.00)
-                  (shouldFlattenTransform 0)
-                  (drawsContent 1)
+                  (position 1.00 1.00)
+                  (bounds 185.00 185.00)
                   (paintingPhases
-                    GraphicsLayerPaintOverflowContents
-                    GraphicsLayerPaintCompositedScroll
+                    GraphicsLayerPaintBackground
+                    GraphicsLayerPaintForeground
+                    GraphicsLayerPaintMask
                   )
-                  (children 2
-                    (GraphicsLayer
-                      (position 0.00 10.00)
-                      (bounds 80.00 10.00)
-                      (contentsOpaque 1)
-                      (drawsContent 1)
-                      (backgroundColor #008000)
-                      (paintingPhases
-                        GraphicsLayerPaintBackground
-                        GraphicsLayerPaintForeground
-                        GraphicsLayerPaintMask
-                      )
-                    )
+                  (children 1
                     (GraphicsLayer
                       (bounds 185.00 715.00)
+                      (shouldFlattenTransform 0)
                       (drawsContent 1)
                       (paintingPhases
                         GraphicsLayerPaintForeground
+                        GraphicsLayerPaintOverflowContents
+                        GraphicsLayerPaintCompositedScroll
                       )
                     )
                   )
                 )
-              )
-            )
-            (GraphicsLayer
-              (position 1.00 186.00)
-              (bounds 185.00 15.00)
-              (paintingPhases
-                GraphicsLayerPaintBackground
-                GraphicsLayerPaintForeground
-                GraphicsLayerPaintMask
-              )
-            )
-            (GraphicsLayer
-              (position 186.00 1.00)
-              (bounds 15.00 185.00)
-              (paintingPhases
-                GraphicsLayerPaintBackground
-                GraphicsLayerPaintForeground
-                GraphicsLayerPaintMask
-              )
-            )
-            (GraphicsLayer
-              (position 186.00 186.00)
-              (bounds 15.00 15.00)
-              (drawsContent 1)
-              (paintingPhases
-                GraphicsLayerPaintBackground
-                GraphicsLayerPaintForeground
-                GraphicsLayerPaintMask
+                (GraphicsLayer
+                  (position 1.00 186.00)
+                  (bounds 185.00 15.00)
+                  (paintingPhases
+                    GraphicsLayerPaintBackground
+                    GraphicsLayerPaintForeground
+                    GraphicsLayerPaintMask
+                  )
+                )
+                (GraphicsLayer
+                  (position 186.00 1.00)
+                  (bounds 15.00 185.00)
+                  (paintingPhases
+                    GraphicsLayerPaintBackground
+                    GraphicsLayerPaintForeground
+                    GraphicsLayerPaintMask
+                  )
+                )
+                (GraphicsLayer
+                  (position 186.00 186.00)
+                  (bounds 15.00 15.00)
+                  (drawsContent 1)
+                  (paintingPhases
+                    GraphicsLayerPaintBackground
+                    GraphicsLayerPaintForeground
+                    GraphicsLayerPaintMask
+                  )
+                )
               )
             )
           )
