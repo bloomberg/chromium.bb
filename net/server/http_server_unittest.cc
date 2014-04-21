@@ -308,7 +308,8 @@ TEST_F(HttpServerTest, Send200) {
   ASSERT_TRUE(EndsWith(response, "Response!", true));
 }
 
-TEST_F(HttpServerTest, SendRaw) {
+// Flaky on at least OS X and Vista. http://crbug.com/365067.
+TEST_F(HttpServerTest, DISABLED_SendRaw) {
   TestHttpClient client;
   ASSERT_EQ(OK, client.ConnectAndWait(server_address_));
   client.Send("GET /test HTTP/1.1\r\n\r\n");
