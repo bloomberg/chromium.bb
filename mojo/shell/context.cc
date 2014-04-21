@@ -59,12 +59,12 @@ Context::Context()
   else
     runner_factory.reset(new InProcessDynamicServiceRunnerFactory());
 
-  dynamic_service_loader_.reset(
-      new DynamicServiceLoader(this, runner_factory.Pass()));
-  service_manager_.set_default_loader(dynamic_service_loader_.get());
-  native_viewport_service_loader_.reset(new NativeViewportServiceLoader(this));
-  service_manager_.SetLoaderForURL(native_viewport_service_loader_.get(),
-                                    GURL("mojo:mojo_native_viewport_service"));
+  service_manager_.set_default_loader(
+      scoped_ptr<ServiceLoader>(
+          new DynamicServiceLoader(this, runner_factory.Pass())));
+  service_manager_.SetLoaderForURL(
+      scoped_ptr<ServiceLoader>(new NativeViewportServiceLoader(this)),
+      GURL("mojo:mojo_native_viewport_service"));
 
   if (cmdline->HasSwitch(switches::kSpy)) {
     spy_.reset(new mojo::Spy(&service_manager_,
@@ -73,7 +73,7 @@ Context::Context()
 }
 
 Context::~Context() {
-  service_manager_.set_default_loader(NULL);
+  service_manager_.set_default_loader(scoped_ptr<ServiceLoader>());
 }
 
 }  // namespace shell

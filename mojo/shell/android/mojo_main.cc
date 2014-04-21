@@ -54,9 +54,6 @@ class NativeViewportServiceLoader : public ServiceLoader {
   scoped_ptr<Application> app_;
 };
 
-LazyInstance<scoped_ptr<NativeViewportServiceLoader> >
-    g_viewport_service_loader = LAZY_INSTANCE_INITIALIZER;
-
 }  // namspace
 
 static void Init(JNIEnv* env, jclass clazz, jobject context) {
@@ -98,9 +95,8 @@ static void Start(JNIEnv* env, jclass clazz, jobject context, jstring jurl) {
 
   shell::Context* shell_context = new shell::Context();
   shell_context->set_activity(activity.obj());
-  g_viewport_service_loader.Get().reset(new NativeViewportServiceLoader());
   shell_context->service_manager()->SetLoaderForURL(
-      g_viewport_service_loader.Get().get(),
+      make_scoped_ptr<ServiceLoader>(new NativeViewportServiceLoader),
       GURL("mojo:mojo_native_viewport_service"));
 
   g_context.Get().reset(shell_context);

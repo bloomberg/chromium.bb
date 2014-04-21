@@ -10,7 +10,9 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "mojo/public/interfaces/shell/shell.mojom.h"
+#include "mojo/service_manager/service_loader.h"
 #include "mojo/service_manager/service_manager_export.h"
 #include "url/gurl.h"
 
@@ -19,8 +21,6 @@ namespace content {
 }
 
 namespace mojo {
-
-class ServiceLoader;
 
 class MOJO_SERVICE_MANAGER_EXPORT ServiceManager {
  public:
@@ -57,16 +57,16 @@ class MOJO_SERVICE_MANAGER_EXPORT ServiceManager {
   // Loads a service if necessary and establishes a new client connection.
   void Connect(const GURL& url, ScopedMessagePipeHandle client_handle);
 
-  // Sets the default Loader to be used if not overridden by
-  // SetLoaderForURL() or SetLoaderForScheme().
-  // Does not take ownership of |loader|.
-  void set_default_loader(ServiceLoader* loader) { default_loader_ = loader; }
+  // Sets the default Loader to be used if not overridden by SetLoaderForURL()
+  // or SetLoaderForScheme().
+  void set_default_loader(scoped_ptr<ServiceLoader> loader) {
+    default_loader_ = loader.Pass();
+  }
   // Sets a Loader to be used for a specific url.
-  // Does not take ownership of |loader|.
-  void SetLoaderForURL(ServiceLoader* loader, const GURL& url);
+  void SetLoaderForURL(scoped_ptr<ServiceLoader> loader, const GURL& url);
   // Sets a Loader to be used for a specific url scheme.
-  // Does not take ownership of |loader|.
-  void SetLoaderForScheme(ServiceLoader* loader, const std::string& scheme);
+  void SetLoaderForScheme(scoped_ptr<ServiceLoader> loader,
+                          const std::string& scheme);
   // Allows to interpose a debugger to service connections.
   void SetInterceptor(Interceptor* interceptor);
 
@@ -87,7 +87,7 @@ class MOJO_SERVICE_MANAGER_EXPORT ServiceManager {
   // Loader management.
   URLToLoaderMap url_to_loader_;
   SchemeToLoaderMap scheme_to_loader_;
-  ServiceLoader* default_loader_;
+  scoped_ptr<ServiceLoader> default_loader_;
   Interceptor* interceptor_;
 
   URLToServiceFactoryMap url_to_service_factory_;

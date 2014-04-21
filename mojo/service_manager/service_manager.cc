@@ -9,6 +9,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/public/cpp/bindings/error_handler.h"
 #include "mojo/public/cpp/bindings/remote_ptr.h"
@@ -71,16 +72,13 @@ bool ServiceManager::TestAPI::HasFactoryForURL(const GURL& url) const {
 }
 
 ServiceManager::ServiceManager()
-    : default_loader_(NULL),
-      interceptor_(NULL) {
+    : interceptor_(NULL) {
 }
 
 ServiceManager::~ServiceManager() {
-  for (URLToServiceFactoryMap::iterator it = url_to_service_factory_.begin();
-       it != url_to_service_factory_.end(); ++it) {
-    delete it->second;
-  }
-  url_to_service_factory_.clear();
+  STLDeleteValues(&url_to_service_factory_);
+  STLDeleteValues(&url_to_loader_);
+  STLDeleteValues(&scheme_to_loader_);
 }
 
 // static
@@ -110,15 +108,20 @@ void ServiceManager::Connect(const GURL& url,
   }
 }
 
-void ServiceManager::SetLoaderForURL(ServiceLoader* loader, const GURL& url) {
-  DCHECK(url_to_loader_.find(url) == url_to_loader_.end());
-  url_to_loader_[url] = loader;
+void ServiceManager::SetLoaderForURL(scoped_ptr<ServiceLoader> loader,
+                                     const GURL& url) {
+  URLToLoaderMap::iterator it = url_to_loader_.find(url);
+  if (it != url_to_loader_.end())
+    delete it->second;
+  url_to_loader_[url] = loader.release();
 }
 
-void ServiceManager::SetLoaderForScheme(ServiceLoader* loader,
+void ServiceManager::SetLoaderForScheme(scoped_ptr<ServiceLoader> loader,
                                         const std::string& scheme) {
-  DCHECK(scheme_to_loader_.find(scheme) == scheme_to_loader_.end());
-  scheme_to_loader_[scheme] = loader;
+  SchemeToLoaderMap::iterator it = scheme_to_loader_.find(scheme);
+  if (it != scheme_to_loader_.end())
+    delete it->second;
+  scheme_to_loader_[scheme] = loader.release();
 }
 
 void ServiceManager::SetInterceptor(Interceptor* interceptor) {
@@ -134,7 +137,7 @@ ServiceLoader* ServiceManager::GetLoaderForURL(const GURL& url) {
   if (scheme_it != scheme_to_loader_.end())
     return scheme_it->second;
   DCHECK(default_loader_);
-  return default_loader_;
+  return default_loader_.get();
 }
 
 void ServiceManager::OnServiceFactoryError(ServiceFactory* service_factory) {
