@@ -167,17 +167,6 @@ QuicAlarm* QuicConnectionPeer::GetAckAlarm(QuicConnection* connection) {
 }
 
 // static
-QuicAlarm* QuicConnectionPeer::GetPingAlarm(QuicConnection* connection) {
-  return connection->ping_alarm_.get();
-}
-
-// static
-QuicAlarm* QuicConnectionPeer::GetResumeWritesAlarm(
-    QuicConnection* connection) {
-  return connection->resume_writes_alarm_.get();
-}
-
-// static
 QuicAlarm* QuicConnectionPeer::GetRetransmissionAlarm(
     QuicConnection* connection) {
   return connection->retransmission_alarm_.get();
@@ -186,6 +175,12 @@ QuicAlarm* QuicConnectionPeer::GetRetransmissionAlarm(
 // static
 QuicAlarm* QuicConnectionPeer::GetSendAlarm(QuicConnection* connection) {
   return connection->send_alarm_.get();
+}
+
+// static
+QuicAlarm* QuicConnectionPeer::GetResumeWritesAlarm(
+    QuicConnection* connection) {
+  return connection->resume_writes_alarm_.get();
 }
 
 // static

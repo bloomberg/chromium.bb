@@ -75,8 +75,6 @@ class AckAlarm : public QuicAlarm::Delegate {
 
  private:
   QuicConnection* connection_;
-
-  DISALLOW_COPY_AND_ASSIGN(AckAlarm);
 };
 
 // This alarm will be scheduled any time a data-bearing packet is sent out.
@@ -95,8 +93,6 @@ class RetransmissionAlarm : public QuicAlarm::Delegate {
 
  private:
   QuicConnection* connection_;
-
-  DISALLOW_COPY_AND_ASSIGN(RetransmissionAlarm);
 };
 
 // An alarm that is scheduled when the sent scheduler requires a
@@ -115,8 +111,6 @@ class SendAlarm : public QuicAlarm::Delegate {
 
  private:
   QuicConnection* connection_;
-
-  DISALLOW_COPY_AND_ASSIGN(SendAlarm);
 };
 
 class TimeoutAlarm : public QuicAlarm::Delegate {
@@ -128,23 +122,6 @@ class TimeoutAlarm : public QuicAlarm::Delegate {
   virtual QuicTime OnAlarm() OVERRIDE {
     connection_->CheckForTimeout();
     // Never reschedule the alarm, since CheckForTimeout does that.
-    return QuicTime::Zero();
-  }
-
- private:
-  QuicConnection* connection_;
-
-  DISALLOW_COPY_AND_ASSIGN(TimeoutAlarm);
-};
-
-class PingAlarm : public QuicAlarm::Delegate {
- public:
-  explicit PingAlarm(QuicConnection* connection)
-      : connection_(connection) {
-  }
-
-  virtual QuicTime OnAlarm() OVERRIDE {
-    connection_->SendPing();
     return QuicTime::Zero();
   }
 
@@ -214,7 +191,6 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       send_alarm_(helper->CreateAlarm(new SendAlarm(this))),
       resume_writes_alarm_(helper->CreateAlarm(new SendAlarm(this))),
       timeout_alarm_(helper->CreateAlarm(new TimeoutAlarm(this))),
-      ping_alarm_(helper->CreateAlarm(new PingAlarm(this))),
       debug_visitor_(NULL),
       packet_creator_(connection_id_, &framer_, random_generator_, is_server),
       packet_generator_(this, NULL, &packet_creator_),
@@ -1084,7 +1060,6 @@ void QuicConnection::ProcessUdpPacket(const IPEndPoint& self_address,
   MaybeProcessUndecryptablePackets();
   MaybeProcessRevivedPacket();
   MaybeSendInResponseToPacket();
-  SetPingAlarm();
 }
 
 void QuicConnection::OnCanWrite() {
@@ -1434,7 +1409,6 @@ bool QuicConnection::OnPacketSent(WriteResult result) {
   if (transmission_type == NOT_RETRANSMISSION) {
     time_of_last_sent_new_packet_ = now;
   }
-  SetPingAlarm();
   DVLOG(1) << ENDPOINT << "time of last sent packet: "
            << now.ToDebuggingValue();
 
@@ -1508,27 +1482,6 @@ void QuicConnection::UpdateStopWaiting(QuicStopWaitingFrame* stop_waiting) {
   stop_waiting->least_unacked = GetLeastUnacked();
   stop_waiting->entropy_hash = sent_entropy_manager_.EntropyHash(
       stop_waiting->least_unacked - 1);
-}
-
-void QuicConnection::SendPing() {
-  if (retransmission_alarm_->IsSet()) {
-    return;
-  }
-  if (version() <= QUIC_VERSION_17) {
-    // TODO(rch): remove this when we remove version 17.
-    // This is a horrible hideous hack which we should not support.
-    IOVector data;
-    char c_data[] = "C";
-    data.Append(c_data, 1);
-    QuicConsumedData consumed_data =
-        packet_generator_.ConsumeData(kCryptoStreamId, data, 0, false, NULL);
-    if (consumed_data.bytes_consumed == 0) {
-      DLOG(ERROR) << "Unable to send ping!?";
-    }
-  } else {
-    // TODO(rch): enable this when we merge version 18.
-    // packet_generator_.AddControlFrame(QuicFrame(new QuicPingFrame));
-  }
 }
 
 void QuicConnection::SendAck() {
@@ -1853,20 +1806,6 @@ bool QuicConnection::CheckForTimeout() {
   timeout_alarm_->Cancel();
   timeout_alarm_->Set(clock_->ApproximateNow().Add(timeout));
   return false;
-}
-
-void QuicConnection::SetPingAlarm() {
-  if (is_server_) {
-    // Only clients send pings.
-    return;
-  }
-  ping_alarm_->Cancel();
-  if (!visitor_->HasOpenDataStreams()) {
-    // Don't send a ping unless there are open streams.
-    return;
-  }
-  QuicTime::Delta ping_timeout = QuicTime::Delta::FromSeconds(kPingTimeoutSecs);
-  ping_alarm_->Set(clock_->ApproximateNow().Add(ping_timeout));
 }
 
 QuicConnection::ScopedPacketBundler::ScopedPacketBundler(

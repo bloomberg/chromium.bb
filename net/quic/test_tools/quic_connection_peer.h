@@ -96,10 +96,9 @@ class QuicConnectionPeer {
   static QuicFecGroup* GetFecGroup(QuicConnection* connection, int fec_group);
 
   static QuicAlarm* GetAckAlarm(QuicConnection* connection);
-  static QuicAlarm* GetPingAlarm(QuicConnection* connection);
-  static QuicAlarm* GetResumeWritesAlarm(QuicConnection* connection);
   static QuicAlarm* GetRetransmissionAlarm(QuicConnection* connection);
   static QuicAlarm* GetSendAlarm(QuicConnection* connection);
+  static QuicAlarm* GetResumeWritesAlarm(QuicConnection* connection);
   static QuicAlarm* GetTimeoutAlarm(QuicConnection* connection);
 
   static QuicPacketWriter* GetWriter(QuicConnection* connection);

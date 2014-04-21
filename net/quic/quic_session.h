@@ -73,7 +73,6 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   virtual void OnCanWrite() OVERRIDE;
   virtual bool HasPendingWrites() const OVERRIDE;
   virtual bool HasPendingHandshake() const OVERRIDE;
-  virtual bool HasOpenDataStreams() const OVERRIDE;
 
   // Called by the headers stream when headers have been received for a stream.
   virtual void OnStreamHeaders(QuicStreamId stream_id,
@@ -176,8 +175,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   QuicPacketCreator::Options* options() { return connection()->options(); }
 
   // Returns the number of currently open streams, including those which have
-  // been implicitly created, but excluding the reserved headers and crypto
-  // streams.
+  // been implicitly created.
   virtual size_t GetNumOpenStreams() const;
 
   void MarkWriteBlocked(QuicStreamId id, QuicPriority priority);
