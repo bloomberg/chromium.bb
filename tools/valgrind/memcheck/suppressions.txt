@@ -6105,7 +6105,7 @@
    fun:_ZN7WebCore10LocalFrame*
    fun:_ZN7WebCore10LocalFrame*
    fun:_ZN7WebCore10LocalFrame6create*
-   fun:_ZN5blink12WebFrameImpl21initializeAsMainFrameEPN7WebCore4PageE
+   fun:_ZN5blink17WebLocalFrameImpl21initializeAsMainFrameEPN7WebCore4PageE
    fun:_ZN5blink11WebViewImpl12setMainFrameEPNS_8WebFrameE
    fun:_ZN7content22BufferedDataSourceTestC2Ev
 }
