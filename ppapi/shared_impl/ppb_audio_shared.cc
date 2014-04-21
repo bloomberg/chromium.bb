@@ -146,10 +146,10 @@ void PPB_Audio_Shared::StartThread() {
 #else
   // Use NaCl's special API for IRT code that creates threads that call back
   // into user code.
-  if (NULL == thread_functions.thread_create ||
-      NULL == thread_functions.thread_join)
+  if (!IsThreadFunctionReady())
     return;
 
+  DCHECK(!thread_active_);
   int result = thread_functions.thread_create(&thread_id_, CallRun, this);
   DCHECK_EQ(result, 0);
   thread_active_ = true;
@@ -179,12 +179,20 @@ void PPB_Audio_Shared::StopThread() {
 #endif
 }
 
+// static
+bool PPB_Audio_Shared::IsThreadFunctionReady() {
+#if defined(OS_NACL)
+  if (thread_functions.thread_create == NULL ||
+      thread_functions.thread_join == NULL)
+    return false;
+#endif
+  return true;
+}
+
 #if defined(OS_NACL)
 // static
 void PPB_Audio_Shared::SetThreadFunctions(
     const struct PP_ThreadFunctions* functions) {
-  DCHECK(thread_functions.thread_create == NULL);
-  DCHECK(thread_functions.thread_join == NULL);
   thread_functions = *functions;
 }
 

@@ -1181,6 +1181,27 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest, MAYBE_NONSFI(Audio)) {
   RUN_AUDIO_SUBTESTS;
 }
 
+#define RUN_AUDIO_THREAD_CREATOR_SUBTESTS \
+  RunTestViaHTTP( \
+      LIST_TEST(Audio_AudioThreadCreatorIsRequired) \
+      LIST_TEST(Audio_AudioThreadCreatorIsCalled) \
+  )
+
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, AudioThreadCreator) {
+  RUN_AUDIO_THREAD_CREATOR_SUBTESTS;
+}
+IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(AudioThreadCreator)) {
+  RUN_AUDIO_THREAD_CREATOR_SUBTESTS;
+}
+IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, AudioThreadCreator) {
+  RUN_AUDIO_THREAD_CREATOR_SUBTESTS;
+}
+// TODO(hidehiko): Enable AudioThreadCreator testing for NonSfi when
+// PPB_Audio_Shared::SetThreadFunctions is fixed.
+IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest, DISABLED_AudioThreadCreator) {
+  RUN_AUDIO_THREAD_CREATOR_SUBTESTS;
+}
+
 TEST_PPAPI_IN_PROCESS(View_CreatedVisible);
 TEST_PPAPI_OUT_OF_PROCESS(View_CreatedVisible);
 TEST_PPAPI_NACL(View_CreatedVisible);

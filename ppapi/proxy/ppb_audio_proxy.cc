@@ -95,6 +95,8 @@ PP_Resource Audio::GetCurrentConfig() {
 PP_Bool Audio::StartPlayback() {
   if (playing())
     return PP_TRUE;
+  if (!PPB_Audio_Shared::IsThreadFunctionReady())
+    return PP_FALSE;
   SetStartPlaybackState();
   PluginDispatcher::GetForResource(this)->Send(
       new PpapiHostMsg_PPBAudio_StartOrStop(

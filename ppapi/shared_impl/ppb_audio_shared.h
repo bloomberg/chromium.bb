@@ -79,6 +79,12 @@ class PPAPI_SHARED_EXPORT PPB_Audio_Shared
                      PP_AudioSampleRate sample_rate,
                      int sample_frame_count);
 
+  // Returns whether a thread can be created on the client context.
+  // In trusted plugin, this should always return true, as it uses Chrome's
+  // thread library. In NaCl plugin, this returns whether SetThreadFunctions
+  // was invoked properly.
+  static bool IsThreadFunctionReady();
+
 #if defined(OS_NACL)
   // NaCl has a special API for IRT code to create threads that can call back
   // into user code.

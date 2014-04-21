@@ -30,6 +30,11 @@ class TestAudio : public TestCase {
   std::string TestAudioCallback3();
   std::string TestAudioCallback4();
 
+#if defined(__native_client__)
+  std::string TestAudioThreadCreatorIsRequired();
+  std::string TestAudioThreadCreatorIsCalled();
+#endif
+
   // Calls |audio_callback_method_| (where |user_data| is "this").
   static void AudioCallbackTrampoline(void* sample_buffer,
                                       uint32_t buffer_size_in_bytes,

@@ -10,6 +10,14 @@
 #include "native_client/src/untrusted/irt/irt.h"
 #include "ppapi/nacl_irt/public/irt_ppapi.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void __nacl_register_thread_creator(const struct nacl_irt_ppapihook *hooks);
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif
 
 #endif

@@ -12,6 +12,11 @@ include_rules = [
   "+ppapi/lib",
   "+ppapi/tests",
   "+ppapi/utility",
+
+  # Test to confirm whether PPB_Audio_Shared works properly in NaCl needs to
+  # call nacl_irt_ppapihook internally to emulate some erroneous situation.
+  "+native_client/src/untrusted/irt/irt.h",
+  "+ppapi/native_client/src/untrusted/irt_stub/thread_creator.h",
 ]
 # checkdeps.py shouldn't check include paths for files in clang, which aren't
 # part of the chrome build.

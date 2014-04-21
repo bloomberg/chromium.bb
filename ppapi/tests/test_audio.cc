@@ -12,9 +12,86 @@
 #include "ppapi/tests/testing_instance.h"
 #include "ppapi/tests/test_utils.h"
 
+#if defined(__native_client__)
+#include "native_client/src/untrusted/irt/irt.h"
+#include "ppapi/native_client/src/untrusted/irt_stub/thread_creator.h"
+#endif
+
 #define ARRAYSIZE_UNSAFE(a) \
   ((sizeof(a) / sizeof(*(a))) / \
    static_cast<size_t>(!(sizeof(a) % sizeof(*(a)))))
+
+#if defined(__native_client__)
+namespace {
+
+void GetNaClIrtPpapiHook(struct nacl_irt_ppapihook* hooks) {
+  nacl_interface_query(NACL_IRT_PPAPIHOOK_v0_1, hooks, sizeof(*hooks));
+}
+
+struct PP_ThreadFunctions g_thread_funcs = {};
+
+void ThreadFunctionsGetter(const struct PP_ThreadFunctions* thread_funcs) {
+  g_thread_funcs = *thread_funcs;
+}
+
+// In order to check if the thread_create is called, CountingThreadCreate()
+// increments this variable. Callers can check if the function is actually
+// called by looking at this value.
+int g_num_thread_create_called = 0;
+int g_num_thread_join_called = 0;
+
+int CountingThreadCreate(uintptr_t* tid,
+                         void (*func)(void* thread_argument),
+                         void* thread_argument) {
+  ++g_num_thread_create_called;
+  return g_thread_funcs.thread_create(tid, func, thread_argument);
+}
+
+int CountingThreadJoin(uintptr_t tid) {
+  ++g_num_thread_join_called;
+  return g_thread_funcs.thread_join(tid);
+}
+
+// Sets NULL for PP_ThreadFunctions to emulate the situation that
+// ppapi_register_thread_creator() is not yet called.
+void SetNullThreadFunctions() {
+  nacl_irt_ppapihook hooks;
+  GetNaClIrtPpapiHook(&hooks);
+  PP_ThreadFunctions thread_functions = {};
+  hooks.ppapi_register_thread_creator(&thread_functions);
+}
+
+void InjectCountingThreadFunctions() {
+  // First of all, we extract the system default thread functions.
+  // Internally, __nacl_register_thread_creator calls
+  // hooks.ppapi_register_thread_creator with default PP_ThreadFunctions
+  // instance. ThreadFunctionGetter stores it to g_thread_funcs.
+  nacl_irt_ppapihook hooks = { NULL, ThreadFunctionsGetter };
+  __nacl_register_thread_creator(&hooks);
+
+  // Here g_thread_funcs stores the thread functions.
+  // Inject the CountingThreadCreate.
+  PP_ThreadFunctions thread_functions = {
+    CountingThreadCreate,
+    CountingThreadJoin,
+  };
+  GetNaClIrtPpapiHook(&hooks);
+  hooks.ppapi_register_thread_creator(&thread_functions);
+}
+
+// Resets the PP_ThreadFunctions on exit from the scope.
+class ScopedThreadFunctionsResetter {
+ public:
+  ScopedThreadFunctionsResetter() {}
+  ~ScopedThreadFunctionsResetter() {
+    nacl_irt_ppapihook hooks;
+    GetNaClIrtPpapiHook(&hooks);
+    __nacl_register_thread_creator(&hooks);
+  }
+};
+
+}  // namespace
+#endif  // __native_client__
 
 REGISTER_TEST_CASE(Audio);
 
@@ -53,6 +130,11 @@ void TestAudio::RunTests(const std::string& filter) {
   RUN_TEST(AudioCallback2, filter);
   RUN_TEST(AudioCallback3, filter);
   RUN_TEST(AudioCallback4, filter);
+
+#if defined(__native_client__)
+  RUN_TEST(AudioThreadCreatorIsRequired, filter);
+  RUN_TEST(AudioThreadCreatorIsCalled, filter);
+#endif
 }
 
 // Test creating audio resources for all guaranteed sample rates and various
@@ -318,6 +400,91 @@ std::string TestAudio::TestAudioCallback4() {
 
   PASS();
 }
+
+#if defined(__native_client__)
+// Tests the behavior of the thread_create functions.
+// For PPB_Audio_Shared to work properly, the user code must call
+// ppapi_register_thread_creator(). This test checks the error handling for the
+// case when user code doesn't call ppapi_register_thread_creator().
+std::string TestAudio::TestAudioThreadCreatorIsRequired() {
+  // We'll inject some thread functions in this test case.
+  // Reset them at the end of this case.
+  ScopedThreadFunctionsResetter thread_resetter;
+
+  // Set the thread functions to NULLs to emulate the situation where
+  // ppapi_register_thread_creator() is not called by user code.
+  SetNullThreadFunctions();
+
+  PP_Resource ac = CreateAudioConfig(PP_AUDIOSAMPLERATE_44100, 1024);
+  ASSERT_TRUE(ac);
+  audio_callback_method_ = NULL;
+  PP_Resource audio = audio_interface_->Create(
+      instance_->pp_instance(), ac, AudioCallbackTrampoline, this);
+  core_interface_->ReleaseResource(ac);
+  ac = 0;
+
+  // StartPlayback() fails, because no thread creating function
+  // is available.
+  ASSERT_FALSE(audio_interface_->StartPlayback(audio));
+
+  // If any more audio callbacks are generated,
+  // we should crash (which is good).
+  audio_callback_method_ = NULL;
+
+  core_interface_->ReleaseResource(audio);
+
+  PASS();
+}
+
+// Tests whether the thread functions passed from the user code are actually
+// called.
+std::string TestAudio::TestAudioThreadCreatorIsCalled() {
+  // We'll inject some thread functions in this test case.
+  // Reset them at the end of this case.
+  ScopedThreadFunctionsResetter thread_resetter;
+
+  // Inject the thread counting function. In the injected function,
+  // when called, g_num_thread_create_called is incremented.
+  g_num_thread_create_called = 0;
+  g_num_thread_join_called = 0;
+  InjectCountingThreadFunctions();
+
+  PP_Resource ac = CreateAudioConfig(PP_AUDIOSAMPLERATE_44100, 1024);
+  ASSERT_TRUE(ac);
+  audio_callback_method_ = NULL;
+  PP_Resource audio = audio_interface_->Create(
+      instance_->pp_instance(), ac, AudioCallbackTrampoline, this);
+  core_interface_->ReleaseResource(ac);
+  ac = 0;
+
+  audio_callback_event_.Reset();
+  test_done_ = false;
+
+  audio_callback_method_ = &TestAudio::AudioCallbackTest;
+  ASSERT_TRUE(audio_interface_->StartPlayback(audio));
+
+  // Wait for the audio callback to be called.
+  audio_callback_event_.Wait();
+  // Here, the injected thread_create is called, but thread_join is not yet.
+  ASSERT_EQ(1, g_num_thread_create_called);
+  ASSERT_EQ(0, g_num_thread_join_called);
+
+  ASSERT_TRUE(audio_interface_->StopPlayback(audio));
+
+  test_done_ = true;
+
+  // Here, the injected thread_join is called.
+  ASSERT_EQ(1, g_num_thread_join_called);
+
+  // If any more audio callbacks are generated,
+  // we should crash (which is good).
+  audio_callback_method_ = NULL;
+
+  core_interface_->ReleaseResource(audio);
+
+  PASS();
+}
+#endif
 
 // TODO(raymes): Test that actually playback happens correctly, etc.
 
