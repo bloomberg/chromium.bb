@@ -10,7 +10,7 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/devtools/port_forwarding_controller.h"
+#include "chrome/browser/devtools/device/port_forwarding_controller.h"
 
 namespace base {
 class ListValue;

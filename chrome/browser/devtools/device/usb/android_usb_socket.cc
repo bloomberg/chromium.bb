@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/devtools/adb/android_usb_socket.h"
+#include "chrome/browser/devtools/device/usb/android_usb_socket.h"
 
 #include "base/message_loop/message_loop.h"
 

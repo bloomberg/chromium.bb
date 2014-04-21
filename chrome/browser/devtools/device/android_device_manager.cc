@@ -1,16 +1,16 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/devtools/android_device.h"
+#include "chrome/browser/devtools/device/android_device_manager.h"
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/devtools/adb/android_rsa.h"
-#include "chrome/browser/devtools/adb/android_usb_device.h"
-#include "chrome/browser/devtools/adb_client_socket.h"
+#include "chrome/browser/devtools/device/adb/adb_client_socket.h"
+#include "chrome/browser/devtools/device/usb/android_rsa.h"
+#include "chrome/browser/devtools/device/usb/android_usb_device.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/socket/tcp_client_socket.h"

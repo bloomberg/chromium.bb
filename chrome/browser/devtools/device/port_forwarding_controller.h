@@ -1,22 +1,23 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DEVTOOLS_PORT_FORWARDING_CONTROLLER_H_
-#define CHROME_BROWSER_DEVTOOLS_PORT_FORWARDING_CONTROLLER_H_
+#ifndef CHROME_BROWSER_DEVTOOLS_DEVICE_PORT_FORWARDING_CONTROLLER_H_
+#define CHROME_BROWSER_DEVTOOLS_DEVICE_PORT_FORWARDING_CONTROLLER_H_
 
 #include <map>
 
 #include "base/prefs/pref_change_registrar.h"
-#include "chrome/browser/devtools/devtools_adb_bridge.h"
+#include "chrome/browser/devtools/device/devtools_android_bridge.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class PrefService;
 class Profile;
 
-class PortForwardingController : private KeyedService,
-                                 private DevToolsAdbBridge::DeviceListListener {
+class PortForwardingController
+    : private KeyedService,
+      private DevToolsAndroidBridge::DeviceListListener {
  public:
   explicit PortForwardingController(Profile* profile);
 
@@ -63,9 +64,9 @@ class PortForwardingController : private KeyedService,
   class Connection;
   typedef std::map<std::string, Connection*> Registry;
 
-  // DevToolsAdbBridge::Listener implementation.
+  // DevToolsAndroidBridge::Listener implementation.
   virtual void DeviceListChanged(
-      const DevToolsAdbBridge::RemoteDevices& devices) OVERRIDE;
+      const DevToolsAndroidBridge::RemoteDevices& devices) OVERRIDE;
 
   void OnPrefsChange();
 
@@ -92,4 +93,4 @@ class PortForwardingController : private KeyedService,
   DISALLOW_COPY_AND_ASSIGN(PortForwardingController);
 };
 
-#endif  // CHROME_BROWSER_DEVTOOLS_PORT_FORWARDING_CONTROLLER_H_
+#endif  // CHROME_BROWSER_DEVTOOLS_DEVICE_PORT_FORWARDING_CONTROLLER_H_

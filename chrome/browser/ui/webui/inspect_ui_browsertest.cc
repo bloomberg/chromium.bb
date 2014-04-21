@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/devtools/devtools_adb_bridge.h"
+#include "chrome/browser/devtools/device/devtools_android_bridge.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
@@ -67,12 +67,12 @@ IN_PROC_BROWSER_TEST_F(InspectUITest, SharedWorker) {
       new base::StringValue(kSharedWorkerTestPage)));
 }
 
-IN_PROC_BROWSER_TEST_F(InspectUITest, AdbTargets) {
-  scoped_refptr<DevToolsAdbBridge> adb_bridge =
-      DevToolsAdbBridge::Factory::GetForProfile(browser()->profile());
+IN_PROC_BROWSER_TEST_F(InspectUITest, AndroidTargets) {
+  scoped_refptr<DevToolsAndroidBridge> android_bridge =
+      DevToolsAndroidBridge::Factory::GetForProfile(browser()->profile());
   AndroidDeviceManager::DeviceProviders providers;
   providers.push_back(AndroidDeviceManager::GetMockDeviceProviderForTest());
-  adb_bridge->set_device_providers_for_test(providers);
+  android_bridge->set_device_providers_for_test(providers);
 
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIInspectURL));
 

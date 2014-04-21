@@ -1,15 +1,14 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DEVTOOLS_ANDROID_DEVICE_H_
-#define CHROME_BROWSER_DEVTOOLS_ANDROID_DEVICE_H_
+#ifndef CHROME_BROWSER_DEVTOOLS_DEVICE_ANDROID_DEVICE_MANAGER_H_
+#define CHROME_BROWSER_DEVTOOLS_DEVICE_ANDROID_DEVICE_MANAGER_H_
 
 #include <vector>
 
 #include "base/memory/ref_counted.h"
 #include "base/threading/non_thread_safe.h"
-#include "chrome/browser/devtools/adb/android_usb_device.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/rsa_private_key.h"
@@ -148,4 +147,4 @@ class AndroidDeviceManager
   bool stopped_;
 };
 
-#endif  // CHROME_BROWSER_DEVTOOLS_ANDROID_DEVICE_H_
+#endif  // CHROME_BROWSER_DEVTOOLS_DEVICE_ANDROID_DEVICE_MANAGER_H_

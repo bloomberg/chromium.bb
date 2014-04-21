@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DEVTOOLS_DEVTOOLS_ADB_BRIDGE_H_
-#define CHROME_BROWSER_DEVTOOLS_DEVTOOLS_ADB_BRIDGE_H_
+#ifndef CHROME_BROWSER_DEVTOOLS_DEVICE_DEVTOOLS_ANDROID_BRIDGE_H_
+#define CHROME_BROWSER_DEVTOOLS_DEVICE_DEVTOOLS_ANDROID_BRIDGE_H_
 
 #include <string>
 #include <vector>
@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
-#include "chrome/browser/devtools/android_device.h"
+#include "chrome/browser/devtools/device/android_device_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "ui/gfx/size.h"
@@ -40,9 +40,9 @@ class Profile;
 // The format used for constructing DevTools server socket names.
 extern const char kDevToolsChannelNameFormat[];
 
-class DevToolsAdbBridge
+class DevToolsAndroidBridge
     : public base::RefCountedThreadSafe<
-          DevToolsAdbBridge,
+          DevToolsAndroidBridge,
           content::BrowserThread::DeleteOnUIThread> {
  public:
   typedef base::Callback<void(int result,
@@ -53,18 +53,18 @@ class DevToolsAdbBridge
     explicit Wrapper(content::BrowserContext* context);
     virtual ~Wrapper();
 
-    DevToolsAdbBridge* Get();
+    DevToolsAndroidBridge* Get();
    private:
-    scoped_refptr<DevToolsAdbBridge> bridge_;
+    scoped_refptr<DevToolsAndroidBridge> bridge_;
   };
 
   class Factory : public BrowserContextKeyedServiceFactory {
    public:
-    // Returns singleton instance of DevToolsAdbBridge.
+    // Returns singleton instance of DevToolsAndroidBridge.
     static Factory* GetInstance();
 
-    // Returns DevToolsAdbBridge associated with |profile|.
-    static DevToolsAdbBridge* GetForProfile(Profile* profile);
+    // Returns DevToolsAndroidBridge associated with |profile|.
+    static DevToolsAndroidBridge* GetForProfile(Profile* profile);
 
    private:
     friend struct DefaultSingletonTraits<Factory>;
@@ -78,7 +78,7 @@ class DevToolsAdbBridge
     DISALLOW_COPY_AND_ASSIGN(Factory);
   };
 
-  class AdbWebSocket : public base::RefCountedThreadSafe<AdbWebSocket> {
+  class AndroidWebSocket : public base::RefCountedThreadSafe<AndroidWebSocket> {
    public:
     class Delegate {
      public:
@@ -90,25 +90,25 @@ class DevToolsAdbBridge
       virtual ~Delegate() {}
     };
 
-    AdbWebSocket() {}
+    AndroidWebSocket() {}
 
     virtual void Disconnect() = 0;
 
     virtual void SendFrame(const std::string& message) = 0;
 
    protected:
-    virtual ~AdbWebSocket() {}
+    virtual ~AndroidWebSocket() {}
 
    private:
-    friend class base::RefCountedThreadSafe<AdbWebSocket>;
+    friend class base::RefCountedThreadSafe<AndroidWebSocket>;
 
-    DISALLOW_COPY_AND_ASSIGN(AdbWebSocket);
+    DISALLOW_COPY_AND_ASSIGN(AndroidWebSocket);
   };
 
   class RemoteBrowser : public base::RefCounted<RemoteBrowser> {
    public:
     RemoteBrowser(
-        scoped_refptr<DevToolsAdbBridge> adb_bridge,
+        scoped_refptr<DevToolsAndroidBridge> android_bridge,
         const std::string& serial,
         const std::string& socket);
 
@@ -140,9 +140,9 @@ class DevToolsAdbBridge
     void Open(const std::string& url);
     void OpenAndInspect(const std::string& url, Profile* profile);
 
-    scoped_refptr<AdbWebSocket> CreateWebSocket(
+    scoped_refptr<AndroidWebSocket> CreateWebSocket(
         const std::string& url,
-        DevToolsAdbBridge::AdbWebSocket::Delegate* delegate);
+        DevToolsAndroidBridge::AndroidWebSocket::Delegate* delegate);
 
    private:
     friend class base::RefCounted<RemoteBrowser>;
@@ -161,7 +161,7 @@ class DevToolsAdbBridge
     void InspectAfterOpenOnUIThread(Profile* profile, int result,
                                     const std::string& response);
 
-    scoped_refptr<DevToolsAdbBridge> adb_bridge_;
+    scoped_refptr<DevToolsAndroidBridge> android_bridge_;
     const std::string serial_;
     const std::string socket_;
     std::string display_name_;
@@ -175,7 +175,7 @@ class DevToolsAdbBridge
 
   class RemoteDevice : public base::RefCounted<RemoteDevice> {
    public:
-    RemoteDevice(scoped_refptr<DevToolsAdbBridge> adb_bridge,
+    RemoteDevice(scoped_refptr<DevToolsAndroidBridge> android_bridge,
                  const std::string& serial,
                  const std::string& model,
                  bool connected);
@@ -196,7 +196,7 @@ class DevToolsAdbBridge
     friend class base::RefCounted<RemoteDevice>;
     virtual ~RemoteDevice();
 
-    scoped_refptr<DevToolsAdbBridge> adb_bridge_;
+    scoped_refptr<DevToolsAndroidBridge> android_bridge_;
     std::string serial_;
     std::string model_;
     bool connected_;
@@ -215,7 +215,7 @@ class DevToolsAdbBridge
     virtual ~DeviceListListener() {}
   };
 
-  explicit DevToolsAdbBridge(Profile* profile);
+  explicit DevToolsAndroidBridge(Profile* profile);
   void AddDeviceListListener(DeviceListListener* listener);
   void RemoveDeviceListListener(DeviceListListener* listener);
 
@@ -239,28 +239,27 @@ class DevToolsAdbBridge
  private:
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
-  friend class base::DeleteHelper<DevToolsAdbBridge>;
+  friend class base::DeleteHelper<DevToolsAndroidBridge>;
 
-  class RefCountedAdbThread
-      : public base::RefCountedThreadSafe<RefCountedAdbThread> {
+  class HandlerThread : public base::RefCountedThreadSafe<HandlerThread> {
    public:
-    static scoped_refptr<RefCountedAdbThread> GetInstance();
+    static scoped_refptr<HandlerThread> GetInstance();
     base::MessageLoop* message_loop();
 
    private:
-    friend class base::RefCountedThreadSafe<RefCountedAdbThread>;
-    static RefCountedAdbThread* instance_;
+    friend class base::RefCountedThreadSafe<HandlerThread>;
+    static HandlerThread* instance_;
     static void StopThread(base::Thread* thread);
 
-    RefCountedAdbThread();
-    virtual ~RefCountedAdbThread();
+    HandlerThread();
+    virtual ~HandlerThread();
     base::Thread* thread_;
   };
 
-  virtual ~DevToolsAdbBridge();
+  virtual ~DevToolsAndroidBridge();
 
   base::MessageLoop* device_message_loop() {
-    return adb_thread_->message_loop();
+    return handler_thread_->message_loop();
   }
 
   AndroidDeviceManager* device_manager() {
@@ -277,7 +276,7 @@ class DevToolsAdbBridge
   void CreateDeviceProviders();
 
   Profile* profile_;
-  scoped_refptr<RefCountedAdbThread> adb_thread_;
+  scoped_refptr<HandlerThread> handler_thread_;
   scoped_refptr<AndroidDeviceManager> device_manager_;
 
   typedef std::vector<DeviceListListener*> DeviceListListeners;
@@ -288,7 +287,7 @@ class DevToolsAdbBridge
 
   AndroidDeviceManager::DeviceProviders device_providers_;
   PrefChangeRegistrar pref_change_registrar_;
-  DISALLOW_COPY_AND_ASSIGN(DevToolsAdbBridge);
+  DISALLOW_COPY_AND_ASSIGN(DevToolsAndroidBridge);
 };
 
-#endif  // CHROME_BROWSER_DEVTOOLS_DEVTOOLS_ADB_BRIDGE_H_
+#endif  // CHROME_BROWSER_DEVTOOLS_DEVICE_DEVTOOLS_ANDROID_BRIDGE_H_

@@ -6,7 +6,6 @@
 
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
-#include "chrome/browser/devtools/devtools_adb_bridge.h"
 #include "chrome/browser/devtools/devtools_targets_ui.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_navigator.h"

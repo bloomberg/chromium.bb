@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DEVTOOLS_ADB_CLIENT_SOCKET_H_
-#define CHROME_BROWSER_DEVTOOLS_ADB_CLIENT_SOCKET_H_
+#ifndef CHROME_BROWSER_DEVTOOLS_DEVICE_ADB_ADB_CLIENT_SOCKET_H_
+#define CHROME_BROWSER_DEVTOOLS_DEVICE_ADB_ADB_CLIENT_SOCKET_H_
 
 #include "base/callback.h"
 #include "net/base/io_buffer.h"
@@ -65,4 +65,4 @@ class AdbClientSocket {
   DISALLOW_COPY_AND_ASSIGN(AdbClientSocket);
 };
 
-#endif  // CHROME_BROWSER_DEVTOOLS_ADB_CLIENT_SOCKET_H_
+#endif  // CHROME_BROWSER_DEVTOOLS_DEVICE_ADB_ADB_CLIENT_SOCKET_H_

@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/devtools/port_forwarding_controller.h"
+#include "chrome/browser/devtools/device/port_forwarding_controller.h"
 
 #include <algorithm>
 #include <map>
@@ -16,13 +16,13 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/non_thread_safe.h"
-#include "chrome/browser/devtools/adb_client_socket.h"
 #include "chrome/browser/devtools/devtools_protocol.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/address_list.h"
+#include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/dns/host_resolver.h"
@@ -215,7 +215,7 @@ class SocketTunnel : public base::NonThreadSafe {
   bool about_to_destroy_;
 };
 
-typedef DevToolsAdbBridge::RemoteBrowser::ParsedVersion ParsedVersion;
+typedef DevToolsAndroidBridge::RemoteBrowser::ParsedVersion ParsedVersion;
 
 static bool IsVersionLower(const ParsedVersion& left,
                            const ParsedVersion& right) {
@@ -227,14 +227,14 @@ static bool IsPortForwardingSupported(const ParsedVersion& version) {
   return !version.empty() && version[0] >= kMinVersionPortForwarding;
 }
 
-static scoped_refptr<DevToolsAdbBridge::RemoteBrowser>
+static scoped_refptr<DevToolsAndroidBridge::RemoteBrowser>
 FindBestBrowserForTethering(
-    const DevToolsAdbBridge::RemoteBrowsers browsers) {
-  scoped_refptr<DevToolsAdbBridge::RemoteBrowser> best_browser;
+    const DevToolsAndroidBridge::RemoteBrowsers browsers) {
+  scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> best_browser;
   ParsedVersion newest_version;
-  for (DevToolsAdbBridge::RemoteBrowsers::const_iterator it = browsers.begin();
-       it != browsers.end(); ++it) {
-    scoped_refptr<DevToolsAdbBridge::RemoteBrowser> browser = *it;
+  for (DevToolsAndroidBridge::RemoteBrowsers::const_iterator it =
+      browsers.begin(); it != browsers.end(); ++it) {
+    scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> browser = *it;
     ParsedVersion current_version = browser->GetParsedVersion();
     if (browser->IsChrome() &&
         IsPortForwardingSupported(current_version) &&
@@ -249,14 +249,14 @@ FindBestBrowserForTethering(
 }  // namespace
 
 class PortForwardingController::Connection
-    : public DevToolsAdbBridge::AdbWebSocket::Delegate,
+    : public DevToolsAndroidBridge::AndroidWebSocket::Delegate,
       public base::RefCountedThreadSafe<
           Connection,
           content::BrowserThread::DeleteOnUIThread> {
  public:
   Connection(Registry* registry,
-             scoped_refptr<DevToolsAdbBridge::RemoteDevice> device,
-             scoped_refptr<DevToolsAdbBridge::RemoteBrowser> browser,
+             scoped_refptr<DevToolsAndroidBridge::RemoteDevice> device,
+             scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> browser,
              const ForwardingMap& forwarding_map);
 
   const PortStatusMap& GetPortStatusMap();
@@ -290,15 +290,15 @@ class PortForwardingController::Connection
   void UpdateSocketCountOnHandlerThread(int port, int increment);
   void UpdateSocketCount(int port, int increment);
 
-  // DevToolsAdbBridge::AdbWebSocket::Delegate implementation:
+  // DevToolsAndroidBridge::AndroidWebSocket::Delegate implementation:
   virtual void OnSocketOpened() OVERRIDE;
   virtual void OnFrameRead(const std::string& message) OVERRIDE;
   virtual void OnSocketClosed(bool closed_by_device) OVERRIDE;
 
   PortForwardingController::Registry* registry_;
-  scoped_refptr<DevToolsAdbBridge::RemoteDevice> device_;
-  scoped_refptr<DevToolsAdbBridge::RemoteBrowser> browser_;
-  scoped_refptr<DevToolsAdbBridge::AdbWebSocket> web_socket_;
+  scoped_refptr<DevToolsAndroidBridge::RemoteDevice> device_;
+  scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> browser_;
+  scoped_refptr<DevToolsAndroidBridge::AndroidWebSocket> web_socket_;
   int command_id_;
   bool connected_;
   ForwardingMap forwarding_map_;
@@ -310,8 +310,8 @@ class PortForwardingController::Connection
 
 PortForwardingController::Connection::Connection(
     Registry* registry,
-    scoped_refptr<DevToolsAdbBridge::RemoteDevice> device,
-    scoped_refptr<DevToolsAdbBridge::RemoteBrowser> browser,
+    scoped_refptr<DevToolsAndroidBridge::RemoteDevice> device,
+    scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> browser,
     const ForwardingMap& forwarding_map)
     : registry_(registry),
       device_(device),
@@ -553,17 +553,17 @@ void PortForwardingController::RemoveListener(Listener* listener) {
 }
 
 void PortForwardingController::DeviceListChanged(
-    const DevToolsAdbBridge::RemoteDevices& devices) {
+    const DevToolsAndroidBridge::RemoteDevices& devices) {
   DevicesStatus status;
 
-  for (DevToolsAdbBridge::RemoteDevices::const_iterator it = devices.begin();
-       it != devices.end(); ++it) {
-    scoped_refptr<DevToolsAdbBridge::RemoteDevice> device = *it;
+  for (DevToolsAndroidBridge::RemoteDevices::const_iterator it =
+      devices.begin(); it != devices.end(); ++it) {
+    scoped_refptr<DevToolsAndroidBridge::RemoteDevice> device = *it;
     if (!device->is_connected())
       continue;
     Registry::iterator rit = registry_.find(device->serial());
     if (rit == registry_.end()) {
-      scoped_refptr<DevToolsAdbBridge::RemoteBrowser> browser =
+      scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> browser =
           FindBestBrowserForTethering(device->browsers());
       if (browser) {
         new Connection(&registry_, device, browser, forwarding_map_);
@@ -606,10 +606,10 @@ void PortForwardingController::StartListening() {
   if (listening_)
     return;
   listening_ = true;
-  DevToolsAdbBridge* adb_bridge =
-      DevToolsAdbBridge::Factory::GetForProfile(profile_);
-  if (adb_bridge)
-    adb_bridge->AddDeviceListListener(this);
+  DevToolsAndroidBridge* android_bridge =
+      DevToolsAndroidBridge::Factory::GetForProfile(profile_);
+  if (android_bridge)
+    android_bridge->AddDeviceListListener(this);
 
 }
 
@@ -617,10 +617,10 @@ void PortForwardingController::StopListening() {
   if (!listening_)
     return;
   listening_ = false;
-  DevToolsAdbBridge* adb_bridge =
-      DevToolsAdbBridge::Factory::GetForProfile(profile_);
-  if (adb_bridge)
-    adb_bridge->RemoveDeviceListListener(this);
+  DevToolsAndroidBridge* android_bridge =
+      DevToolsAndroidBridge::Factory::GetForProfile(profile_);
+  if (android_bridge)
+    android_bridge->RemoveDeviceListListener(this);
 }
 
 void PortForwardingController::UpdateConnections() {

@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/devtools/devtools_adb_bridge.h"
+#include "chrome/browser/devtools/device/devtools_android_bridge.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/browser_thread.h"
@@ -310,7 +310,7 @@ class MockAdbServer: public SingleConnectionServer {
 };
 
 class AdbClientSocketTest : public InProcessBrowserTest,
-                            public DevToolsAdbBridge::DeviceListListener {
+                            public DevToolsAndroidBridge::DeviceListListener {
 
 public:
   void StartTest() {
@@ -326,9 +326,9 @@ public:
   }
 
   virtual void DeviceListChanged(
-      const DevToolsAdbBridge::RemoteDevices& devices) OVERRIDE {
+      const DevToolsAndroidBridge::RemoteDevices& devices) OVERRIDE {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    adb_bridge_->RemoveDeviceListListener(this);
+    android_bridge_->RemoveDeviceListListener(this);
     devices_ = devices;
     EndTest();
   }
@@ -336,10 +336,10 @@ public:
   void CheckDevices() {
     ASSERT_EQ(2U, devices_.size());
 
-    scoped_refptr<DevToolsAdbBridge::RemoteDevice> online_device_;
-    scoped_refptr<DevToolsAdbBridge::RemoteDevice> offline_device_;
+    scoped_refptr<DevToolsAndroidBridge::RemoteDevice> online_device_;
+    scoped_refptr<DevToolsAndroidBridge::RemoteDevice> offline_device_;
 
-    for (DevToolsAdbBridge::RemoteDevices::const_iterator it =
+    for (DevToolsAndroidBridge::RemoteDevices::const_iterator it =
         devices_.begin(); it != devices_.end(); ++it) {
       if ((*it)->serial() == "01498B321301A00A")
         online_device_ = *it;
@@ -359,7 +359,7 @@ public:
 private:
   void EndTest() {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    adb_bridge_ = NULL;
+    android_bridge_ = NULL;
 
     content::BrowserThread::PostTaskAndReply(
         content::BrowserThread::IO,
@@ -391,14 +391,14 @@ private:
 
   void AddListener() {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    adb_bridge_ = DevToolsAdbBridge::Factory::GetForProfile(
+    android_bridge_ = DevToolsAndroidBridge::Factory::GetForProfile(
         browser()->profile());
 
     AndroidDeviceManager::DeviceProviders device_providers;
     device_providers.push_back(AndroidDeviceManager::GetAdbDeviceProvider());
 
-    adb_bridge_->set_device_providers_for_test(device_providers);
-    adb_bridge_->AddDeviceListListener(this);
+    android_bridge_->set_device_providers_for_test(device_providers);
+    android_bridge_->AddDeviceListListener(this);
   }
 
 public:
@@ -406,8 +406,8 @@ public:
 
 private:
   scoped_ptr<MockAdbServer> adb_server_;
-  scoped_refptr<DevToolsAdbBridge> adb_bridge_;
-  DevToolsAdbBridge::RemoteDevices devices_;
+  scoped_refptr<DevToolsAndroidBridge> android_bridge_;
+  DevToolsAndroidBridge::RemoteDevices devices_;
 };
 
 IN_PROC_BROWSER_TEST_F(AdbClientSocketTest, TestAdbClientSocket) {

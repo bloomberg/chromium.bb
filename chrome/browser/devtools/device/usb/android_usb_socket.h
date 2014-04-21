@@ -1,15 +1,15 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DEVTOOLS_ADB_ANDROID_USB_SOCKET_H_
-#define CHROME_BROWSER_DEVTOOLS_ADB_ANDROID_USB_SOCKET_H_
+#ifndef CHROME_BROWSER_DEVTOOLS_DEVICE_USB_ANDROID_USB_SOCKET_H_
+#define CHROME_BROWSER_DEVTOOLS_DEVICE_USB_ANDROID_USB_SOCKET_H_
 
 #include <deque>
 
 #include "base/memory/ref_counted.h"
 #include "base/threading/non_thread_safe.h"
-#include "chrome/browser/devtools/adb/android_usb_device.h"
+#include "chrome/browser/devtools/device/usb/android_usb_device.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/socket/stream_socket.h"
@@ -86,4 +86,4 @@ class AndroidUsbSocket : public net::StreamSocket,
   DISALLOW_COPY_AND_ASSIGN(AndroidUsbSocket);
 };
 
-#endif  // CHROME_BROWSER_DEVTOOLS_ADB_ANDROID_USB_SOCKET_H_
+#endif  // CHROME_BROWSER_DEVTOOLS_DEVICE_USB_ANDROID_USB_SOCKET_H_

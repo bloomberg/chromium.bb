@@ -9,7 +9,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "base/version.h"
-#include "chrome/browser/devtools/devtools_adb_bridge.h"
+#include "chrome/browser/devtools/device/devtools_android_bridge.h"
 #include "chrome/browser/devtools/devtools_target_impl.h"
 #include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/browser_child_process_observer.h"
@@ -335,7 +335,7 @@ void WorkerTargetsUIHandler::UpdateTargets(
 
 class AdbTargetsUIHandler
     : public DevToolsRemoteTargetsUIHandler,
-      public DevToolsAdbBridge::DeviceListListener {
+      public DevToolsAndroidBridge::DeviceListListener {
  public:
   AdbTargetsUIHandler(Callback callback, Profile* profile);
   virtual ~AdbTargetsUIHandler();
@@ -347,31 +347,31 @@ class AdbTargetsUIHandler
                               Profile* profile) OVERRIDE;
 
  private:
-  // DevToolsAdbBridge::Listener overrides.
+  // DevToolsAndroidBridge::Listener overrides.
   virtual void DeviceListChanged(
-      const DevToolsAdbBridge::RemoteDevices& devices) OVERRIDE;
+      const DevToolsAndroidBridge::RemoteDevices& devices) OVERRIDE;
 
   Profile* profile_;
 
   typedef std::map<std::string,
-      scoped_refptr<DevToolsAdbBridge::RemoteBrowser> > RemoteBrowsers;
+      scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> > RemoteBrowsers;
   RemoteBrowsers remote_browsers_;
 };
 
 AdbTargetsUIHandler::AdbTargetsUIHandler(Callback callback, Profile* profile)
     : DevToolsRemoteTargetsUIHandler(kTargetSourceAdb, callback),
       profile_(profile) {
-  DevToolsAdbBridge* adb_bridge =
-      DevToolsAdbBridge::Factory::GetForProfile(profile_);
-  if (adb_bridge)
-    adb_bridge->AddDeviceListListener(this);
+  DevToolsAndroidBridge* android_bridge =
+      DevToolsAndroidBridge::Factory::GetForProfile(profile_);
+  if (android_bridge)
+    android_bridge->AddDeviceListListener(this);
 }
 
 AdbTargetsUIHandler::~AdbTargetsUIHandler() {
-  DevToolsAdbBridge* adb_bridge =
-      DevToolsAdbBridge::Factory::GetForProfile(profile_);
-  if (adb_bridge)
-    adb_bridge->RemoveDeviceListListener(this);
+  DevToolsAndroidBridge* android_bridge =
+      DevToolsAndroidBridge::Factory::GetForProfile(profile_);
+  if (android_bridge)
+    android_bridge->RemoveDeviceListListener(this);
 }
 
 void AdbTargetsUIHandler::Open(const std::string& browser_id,
@@ -390,14 +390,14 @@ void AdbTargetsUIHandler::OpenAndInspect(const std::string& browser_id,
 }
 
 void AdbTargetsUIHandler::DeviceListChanged(
-    const DevToolsAdbBridge::RemoteDevices& devices) {
+    const DevToolsAndroidBridge::RemoteDevices& devices) {
   remote_browsers_.clear();
   STLDeleteValues(&targets_);
 
   scoped_ptr<base::ListValue> device_list(new base::ListValue());
-  for (DevToolsAdbBridge::RemoteDevices::const_iterator dit = devices.begin();
-       dit != devices.end(); ++dit) {
-    DevToolsAdbBridge::RemoteDevice* device = dit->get();
+  for (DevToolsAndroidBridge::RemoteDevices::const_iterator dit =
+      devices.begin(); dit != devices.end(); ++dit) {
+    DevToolsAndroidBridge::RemoteDevice* device = dit->get();
     base::DictionaryValue* device_data = new base::DictionaryValue();
     device_data->SetString(kAdbModelField, device->model());
     device_data->SetString(kAdbSerialField, device->serial());
@@ -409,14 +409,14 @@ void AdbTargetsUIHandler::DeviceListChanged(
     base::ListValue* browser_list = new base::ListValue();
     device_data->Set(kAdbBrowsersList, browser_list);
 
-    DevToolsAdbBridge::RemoteBrowsers& browsers = device->browsers();
-    for (DevToolsAdbBridge::RemoteBrowsers::iterator bit =
+    DevToolsAndroidBridge::RemoteBrowsers& browsers = device->browsers();
+    for (DevToolsAndroidBridge::RemoteBrowsers::iterator bit =
         browsers.begin(); bit != browsers.end(); ++bit) {
-      DevToolsAdbBridge::RemoteBrowser* browser = bit->get();
+      DevToolsAndroidBridge::RemoteBrowser* browser = bit->get();
       base::DictionaryValue* browser_data = new base::DictionaryValue();
       browser_data->SetString(kAdbBrowserNameField, browser->display_name());
       browser_data->SetString(kAdbBrowserVersionField, browser->version());
-      DevToolsAdbBridge::RemoteBrowser::ParsedVersion parsed =
+      DevToolsAndroidBridge::RemoteBrowser::ParsedVersion parsed =
           browser->GetParsedVersion();
       browser_data->SetInteger(
           kAdbBrowserChromeVersionField,
@@ -459,7 +459,7 @@ void AdbTargetsUIHandler::DeviceListChanged(
         target_data->SetBoolean(
             kAdbAttachedForeignField,
             target->IsAttached() &&
-                !DevToolsAdbBridge::HasDevToolsWindow(target->GetId()));
+                !DevToolsAndroidBridge::HasDevToolsWindow(target->GetId()));
         // Pass the screen size in the target object to make sure that
         // the caching logic does not prevent the target item from updating
         // when the screen size changes.

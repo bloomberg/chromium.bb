@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/devtools/android_device.h"
-#include "chrome/browser/devtools/devtools_adb_bridge.h"
+#include "chrome/browser/devtools/device/android_device_manager.h"
+#include "chrome/browser/devtools/device/devtools_android_bridge.h"
 #include "chrome/browser/devtools/devtools_target_impl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -253,10 +253,10 @@ AndroidDeviceManager::GetMockDeviceProviderForTest() {
   return new MockDeviceProvider();
 }
 
-static scoped_refptr<DevToolsAdbBridge::RemoteBrowser>
-FindBrowserByDisplayName(DevToolsAdbBridge::RemoteBrowsers browsers,
+static scoped_refptr<DevToolsAndroidBridge::RemoteBrowser>
+FindBrowserByDisplayName(DevToolsAndroidBridge::RemoteBrowsers browsers,
                          const std::string& name) {
-  for (DevToolsAdbBridge::RemoteBrowsers::iterator it = browsers.begin();
+  for (DevToolsAndroidBridge::RemoteBrowsers::iterator it = browsers.begin();
       it != browsers.end(); ++it)
     if ((*it)->display_name() == name)
       return *it;
@@ -264,12 +264,12 @@ FindBrowserByDisplayName(DevToolsAdbBridge::RemoteBrowsers browsers,
 }
 
 class DevToolsAdbBridgeTest : public InProcessBrowserTest,
-                              public DevToolsAdbBridge::DeviceListListener {
-  typedef DevToolsAdbBridge::RemoteDevices::const_iterator rdci;
-  typedef DevToolsAdbBridge::RemoteBrowsers::const_iterator rbci;
+                              public DevToolsAndroidBridge::DeviceListListener {
+  typedef DevToolsAndroidBridge::RemoteDevices::const_iterator rdci;
+  typedef DevToolsAndroidBridge::RemoteBrowsers::const_iterator rbci;
 public:
   virtual void DeviceListChanged(
-      const DevToolsAdbBridge::RemoteDevices& devices) OVERRIDE {
+      const DevToolsAndroidBridge::RemoteDevices& devices) OVERRIDE {
     devices_ = devices;
     runner_->Quit();
   }
@@ -277,10 +277,10 @@ public:
   void CheckDevices() {
     ASSERT_EQ(2U, devices_.size());
 
-    scoped_refptr<DevToolsAdbBridge::RemoteDevice> connected =
+    scoped_refptr<DevToolsAndroidBridge::RemoteDevice> connected =
         devices_[0]->is_connected() ? devices_[0] : devices_[1];
 
-    scoped_refptr<DevToolsAdbBridge::RemoteDevice> not_connected =
+    scoped_refptr<DevToolsAndroidBridge::RemoteDevice> not_connected =
         devices_[0]->is_connected() ? devices_[1] : devices_[0];
 
     ASSERT_TRUE(connected->is_connected());
@@ -295,26 +295,27 @@ public:
     ASSERT_EQ("SecondDevice", not_connected->serial());
     ASSERT_EQ("Offline", not_connected->model());
 
-    const DevToolsAdbBridge::RemoteBrowsers& browsers = connected->browsers();
+    const DevToolsAndroidBridge::RemoteBrowsers& browsers =
+        connected->browsers();
     ASSERT_EQ(4U, browsers.size());
 
-    scoped_refptr<DevToolsAdbBridge::RemoteBrowser> chrome =
+    scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> chrome =
         FindBrowserByDisplayName(browsers, "Chrome");
     ASSERT_TRUE(chrome);
 
-    scoped_refptr<DevToolsAdbBridge::RemoteBrowser> chrome_beta =
+    scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> chrome_beta =
         FindBrowserByDisplayName(browsers, "Chrome Beta");
     ASSERT_TRUE(chrome_beta);
 
-    scoped_refptr<DevToolsAdbBridge::RemoteBrowser> chromium =
+    scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> chromium =
         FindBrowserByDisplayName(browsers, "Chromium");
     ASSERT_FALSE(chromium);
 
-    scoped_refptr<DevToolsAdbBridge::RemoteBrowser> webview =
+    scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> webview =
         FindBrowserByDisplayName(browsers, "WebView in com.sample.feed");
     ASSERT_TRUE(webview);
 
-    scoped_refptr<DevToolsAdbBridge::RemoteBrowser> noprocess =
+    scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> noprocess =
         FindBrowserByDisplayName(browsers, "Noprocess");
     ASSERT_TRUE(noprocess);
 
@@ -351,25 +352,25 @@ public:
 
 protected:
   scoped_refptr<content::MessageLoopRunner> runner_;
-  DevToolsAdbBridge::RemoteDevices devices_;
+  DevToolsAndroidBridge::RemoteDevices devices_;
 };
 
 IN_PROC_BROWSER_TEST_F(DevToolsAdbBridgeTest, DiscoverAndroidBrowsers) {
   init();
 
-  scoped_refptr<DevToolsAdbBridge> adb_bridge =
-      DevToolsAdbBridge::Factory::GetForProfile(browser()->profile());
+  scoped_refptr<DevToolsAndroidBridge> android_bridge =
+      DevToolsAndroidBridge::Factory::GetForProfile(browser()->profile());
 
   AndroidDeviceManager::DeviceProviders providers;
   providers.push_back(AndroidDeviceManager::GetMockDeviceProviderForTest());
 
-  adb_bridge->set_device_providers_for_test(providers);
+  android_bridge->set_device_providers_for_test(providers);
 
-  if (!adb_bridge) {
-    FAIL() << "Failed to get DevToolsAdbBridge.";
+  if (!android_bridge) {
+    FAIL() << "Failed to get DevToolsAndroidBridge.";
   }
 
-  adb_bridge->AddDeviceListListener(this);
+  android_bridge->AddDeviceListListener(this);
 
   runner_->Run();
 

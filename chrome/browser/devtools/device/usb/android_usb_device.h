@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DEVTOOLS_ADB_ANDROID_USB_DEVICE_H_
-#define CHROME_BROWSER_DEVTOOLS_ADB_ANDROID_USB_DEVICE_H_
+#ifndef CHROME_BROWSER_DEVTOOLS_DEVICE_USB_ANDROID_USB_DEVICE_H_
+#define CHROME_BROWSER_DEVTOOLS_DEVICE_USB_ANDROID_USB_DEVICE_H_
 
 #include <map>
 #include <queue>
@@ -162,4 +162,4 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
   DISALLOW_COPY_AND_ASSIGN(AndroidUsbDevice);
 };
 
-#endif  // CHROME_BROWSER_DEVTOOLS_ADB_ANDROID_USB_DEVICE_H_
+#endif  // CHROME_BROWSER_DEVTOOLS_DEVICE_USB_ANDROID_USB_DEVICE_H_
