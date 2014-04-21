@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<style>
+#container {
+    position: relative;
+    left: 10.5px;
+    width: 100px;
+    height: 50px;
+    transform: translateZ(0);
+}
+#test {
+    position: absolute;
+    left: 12.5px;
+    width: 10px;
+    height: 10px;
+    border: 1px solid red;
+}
+#console {
+    display: none;
+}
+</style>
+<script src="../../resources/run-after-display.js"></script>
+<script>
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+}
+
+function repaintTest() {
+    if (!window.internals)
+        window.setTimeout(runTest, 100);
+    else
+        runAfterDisplay(runTest);
+};
+
+function runTest() {
+    if (window.internals)
+        internals.startTrackingRepaints(document);
+    document.getElementById('test').style.left = "10.5px";
+    if (window.internals)
+        document.getElementById('console').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
+    if (window.internals)
+        internals.stopTrackingRepaints(document);
+
+    // Display the test results only after test is done so that it does not affect repaint rect results.
+    document.getElementById('console').style.display = "block";
+
+    if (window.testRunner)
+        testRunner.notifyDone();
+}
+</script>
+<body onload="repaintTest()">
+<div id="container"><div id="test"></div></div>
+<pre id="console"></pre>

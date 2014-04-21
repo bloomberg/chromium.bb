@@ -204,7 +204,7 @@ void RenderLayerRepainter::setBackingNeedsRepaintInRect(const LayoutRect& r)
         return;
     }
 
-    IntRect repaintRect = pixelSnappedIntRect(r.location() +  m_renderer->layer()->subpixelAccumulation(), r.size());
+    IntRect repaintRect = pixelSnappedIntRect(r);
     m_renderer->compositedLayerMapping()->setContentsNeedDisplayInRect(repaintRect);
 }
 
