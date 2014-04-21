@@ -99,10 +99,6 @@ class CONTENT_EXPORT NavigatorDelegate {
   // this forwards to.
   virtual void RequestOpenURL(RenderFrameHostImpl* render_frame_host,
                               const OpenURLParams& params) {}
-
-  // Returns whether URLs for aborted browser-initiated navigations should be
-  // preserved in the omnibox.  Defaults to false.
-  virtual bool ShouldPreserveAbortedURLs();
 };
 
 }  // namspace content

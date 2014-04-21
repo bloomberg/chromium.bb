@@ -1046,7 +1046,7 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortDoesntShowPendingURL) {
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
   EXPECT_FALSE(controller.GetPendingEntry());
   EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
-  EXPECT_EQ(1, delegate->navigation_state_change_count());
+  EXPECT_EQ(0, delegate->navigation_state_change_count());
 
   // The visible entry should be the last committed URL, not the pending one,
   // so that no spoof is possible.
@@ -2929,57 +2929,6 @@ TEST_F(NavigationControllerTest, ShowBrowserURLAfterFailUntilModified) {
   EXPECT_TRUE(test_rvh()->has_accessed_initial_document());
   EXPECT_FALSE(controller.GetVisibleEntry());
   EXPECT_FALSE(controller.GetPendingEntry());
-
-  notifications.Reset();
-}
-
-// Tests that the URLs for renderer-initiated navigations in new tabs are
-// displayed to the user even after they fail, as long as the initial
-// about:blank page has not been modified.  If so, we must revert to showing
-// about:blank. See http://crbug.com/355537.
-TEST_F(NavigationControllerTest, ShowRendererURLAfterFailUntilModified) {
-  NavigationControllerImpl& controller = controller_impl();
-  TestNotificationTracker notifications;
-  RegisterForAllNavNotifications(&notifications, &controller);
-
-  const GURL url("http://foo");
-
-  // For renderer-initiated navigations in new tabs (with no committed entries),
-  // we show the pending entry's URL as long as the about:blank page is not
-  // modified.
-  NavigationController::LoadURLParams load_url_params(url);
-  load_url_params.transition_type = PAGE_TRANSITION_LINK;
-  load_url_params.is_renderer_initiated = true;
-  controller.LoadURLWithParams(load_url_params);
-  EXPECT_EQ(url, controller.GetVisibleEntry()->GetURL());
-  EXPECT_EQ(url, controller.GetPendingEntry()->GetURL());
-  EXPECT_TRUE(
-      NavigationEntryImpl::FromNavigationEntry(controller.GetPendingEntry())->
-          is_renderer_initiated());
-  EXPECT_TRUE(controller.IsInitialNavigation());
-  EXPECT_FALSE(test_rvh()->has_accessed_initial_document());
-
-  // There should be no title yet.
-  EXPECT_TRUE(contents()->GetTitle().empty());
-
-  // Suppose it aborts before committing, if it's a 204 or download or due to a
-  // stop or a new navigation from the user.  The URL should remain visible.
-  FrameHostMsg_DidFailProvisionalLoadWithError_Params params;
-  params.error_code = net::ERR_ABORTED;
-  params.error_description = base::string16();
-  params.url = url;
-  params.showing_repost_interstitial = false;
-  main_test_rfh()->OnMessageReceived(
-      FrameHostMsg_DidFailProvisionalLoadWithError(0, params));
-  EXPECT_EQ(url, controller.GetVisibleEntry()->GetURL());
-
-  // If something else later modifies the contents of the about:blank page, then
-  // we must revert to showing about:blank to avoid a URL spoof.
-  test_rvh()->OnMessageReceived(
-        ViewHostMsg_DidAccessInitialDocument(0));
-  EXPECT_TRUE(test_rvh()->has_accessed_initial_document());
-  EXPECT_FALSE(controller.GetVisibleEntry());
-  EXPECT_EQ(url, controller.GetPendingEntry()->GetURL());
 
   notifications.Reset();
 }

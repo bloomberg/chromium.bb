@@ -2372,10 +2372,6 @@ void WebContentsImpl::RequestOpenURL(RenderFrameHostImpl* render_frame_host,
   }
 }
 
-bool WebContentsImpl::ShouldPreserveAbortedURLs() {
-  return delegate_->ShouldPreserveAbortedURLs(this);
-}
-
 void WebContentsImpl::DidRedirectProvisionalLoad(
     RenderFrameHostImpl* render_frame_host,
     const GURL& validated_target_url) {

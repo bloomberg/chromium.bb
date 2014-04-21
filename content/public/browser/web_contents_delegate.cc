@@ -37,10 +37,6 @@ bool WebContentsDelegate::ShouldSuppressDialogs() {
   return false;
 }
 
-bool WebContentsDelegate::ShouldPreserveAbortedURLs(WebContents* source) {
-  return false;
-}
-
 bool WebContentsDelegate::AddMessageToConsole(WebContents* source,
                                               int32 level,
                                               const base::string16& message,
