@@ -450,6 +450,17 @@ weston_recorder_frame_notify(struct wl_listener *listener, void *data)
 }
 
 static void
+weston_recorder_free(struct weston_recorder *recorder)
+{
+	if (recorder == NULL)
+		return;
+	free(recorder->rect);
+	free(recorder->tmpbuf);
+	free(recorder->frame);
+	free(recorder);
+}
+
+static void
 weston_recorder_create(struct weston_output *output, const char *filename)
 {
 	struct weston_compositor *compositor = output->compositor;
@@ -461,7 +472,6 @@ weston_recorder_create(struct weston_output *output, const char *filename)
 	do_yflip = !!(compositor->capabilities & WESTON_CAP_CAPTURE_YFLIP);
 
 	recorder = malloc(sizeof *recorder);
-
 	if (recorder == NULL) {
 		weston_log("%s: out of memory\n", __func__);
 		return;
@@ -475,6 +485,12 @@ weston_recorder_create(struct weston_output *output, const char *filename)
 	recorder->count = 0;
 	recorder->destroying = 0;
 	recorder->output = output;
+
+	if ((recorder->frame == NULL) || (recorder->rect == NULL)) {
+		weston_log("%s: out of memory\n", __func__);
+		weston_recorder_free(recorder);
+		return;
+	}
 
 	if (do_yflip)
 		recorder->tmpbuf = NULL;
@@ -493,10 +509,7 @@ weston_recorder_create(struct weston_output *output, const char *filename)
 		break;
 	default:
 		weston_log("unknown recorder format\n");
-		free(recorder->rect);
-		free(recorder->tmpbuf);
-		free(recorder->frame);
-		free(recorder);
+		weston_recorder_free(recorder);
 		return;
 	}
 
@@ -505,10 +518,7 @@ weston_recorder_create(struct weston_output *output, const char *filename)
 
 	if (recorder->fd < 0) {
 		weston_log("problem opening output file %s: %m\n", filename);
-		free(recorder->rect);
-		free(recorder->tmpbuf);
-		free(recorder->frame);
-		free(recorder);
+		weston_recorder_free(recorder);
 		return;
 	}
 
@@ -527,11 +537,8 @@ weston_recorder_destroy(struct weston_recorder *recorder)
 {
 	wl_list_remove(&recorder->frame_listener.link);
 	close(recorder->fd);
-	free(recorder->tmpbuf);
-	free(recorder->frame);
-	free(recorder->rect);
 	recorder->output->disable_planes--;
-	free(recorder);
+	weston_recorder_free(recorder);
 }
 
 static void

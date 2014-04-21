@@ -330,9 +330,9 @@ udev_seat_create(struct udev_input *input, const char *seat_name)
 	struct udev_seat *seat;
 
 	seat = zalloc(sizeof *seat);
-
 	if (!seat)
 		return NULL;
+
 	weston_seat_init(&seat->base, c, seat_name);
 	seat->base.led_update = udev_seat_led_update;
 
