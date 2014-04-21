@@ -149,6 +149,8 @@ public:
 
         bool isTextInsertion() const;
 
+        // Returns 0 if this Command is not supported.
+        int idForHistogram() const;
     private:
         const EditorInternalCommand* m_command;
         EditorCommandSource m_source;

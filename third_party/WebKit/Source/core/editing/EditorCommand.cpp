@@ -1735,4 +1735,9 @@ bool Editor::Command::isTextInsertion() const
     return m_command && m_command->isTextInsertion;
 }
 
+int Editor::Command::idForHistogram() const
+{
+    return isSupported() ? m_command->idForUserMetrics : 0;
+}
+
 } // namespace WebCore
