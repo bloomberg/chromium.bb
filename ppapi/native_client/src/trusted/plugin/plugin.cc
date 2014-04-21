@@ -492,6 +492,8 @@ Plugin::Plugin(PP_Instance pp_instance)
       wrapper_factory_(NULL),
       enable_dev_interfaces_(false),
       time_of_last_progress_event_(0),
+      manifest_open_time_(-1),
+      nexe_open_time_(-1),
       nacl_interface_(NULL),
       uma_interface_(this) {
   PLUGIN_PRINTF(("Plugin::Plugin (this=%p, pp_instance=%"
@@ -585,6 +587,13 @@ void Plugin::NexeFileDidOpen(int32_t pp_error) {
       nexe_bytes_read = stat_buf.st_size;
   }
 
+  int64_t now = NaClGetTimeOfDayMicroseconds();
+  int64_t download_time;
+  if (now < nexe_open_time_)
+    download_time = 0;
+  else
+    download_time = now - nexe_open_time_;
+
   nacl_interface_->NexeFileDidOpen(
       pp_instance(),
       pp_error,
@@ -592,7 +601,7 @@ void Plugin::NexeFileDidOpen(int32_t pp_error) {
       nexe_downloader_.status_code(),
       nexe_bytes_read,
       nexe_downloader_.url().c_str(),
-      nexe_downloader_.TimeSinceOpenMilliseconds());
+      download_time / 1000);
 
   if (nexe_bytes_read == -1)
     return;
@@ -679,8 +688,14 @@ void Plugin::BitcodeDidTranslateContinuation(int32_t pp_error) {
 void Plugin::NaClManifestFileDidOpen(int32_t pp_error) {
   PLUGIN_PRINTF(("Plugin::NaClManifestFileDidOpen (pp_error=%"
                  NACL_PRId32 ")\n", pp_error));
+  int64_t now = NaClGetTimeOfDayMicroseconds();
+  int64_t download_time;
+  if (now < manifest_open_time_)
+    download_time = 0;
+  else
+    download_time = now - manifest_open_time_;
   HistogramTimeSmall("NaCl.Perf.StartupTime.ManifestDownload",
-                     nexe_downloader_.TimeSinceOpenMilliseconds());
+                     download_time / 1000);
   HistogramHTTPStatusCode(
       nacl_interface_->GetIsInstalled(pp_instance()) ?
           "NaCl.HttpStatusCodeClass.Manifest.InstalledApp" :
@@ -779,6 +794,7 @@ void Plugin::ProcessNaClManifest(const nacl::string& manifest_json) {
                                             translate_callback));
       return;
     } else {
+      nexe_open_time_ = NaClGetTimeOfDayMicroseconds();
       // Try the fast path first. This will only block if the file is installed.
       if (OpenURLFast(program_url, &nexe_downloader_)) {
         NexeFileDidOpen(PP_OK);
@@ -829,6 +845,7 @@ void Plugin::RequestNaClManifest(const nacl::string& url) {
   } else {
     pp::CompletionCallback open_callback =
         callback_factory_.NewCallback(&Plugin::NaClManifestFileDidOpen);
+    manifest_open_time_ = NaClGetTimeOfDayMicroseconds();
     // Will always call the callback on success or failure.
     CHECK(nexe_downloader_.Open(nmf_resolved_url.AsString(),
                                 DOWNLOAD_TO_FILE,

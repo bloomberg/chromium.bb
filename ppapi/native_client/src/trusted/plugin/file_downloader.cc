@@ -122,7 +122,6 @@ bool FileDownloader::Open(
     return false;
 
   CHECK(instance_ != NULL);
-  open_time_ = NaClGetTimeOfDayMicroseconds();
   status_code_ = -1;
   url_ = url;
   file_open_notify_callback_ = callback;
@@ -145,8 +144,6 @@ bool FileDownloader::Open(
   // Note that we have the only reference to the underlying objects, so
   // this will implicitly close any pending IO and destroy them.
   url_loader_ = pp::URLLoader(instance_);
-  pp::Var url_var = pp::Var(url);
-  url_scheme_ = instance_->nacl_interface()->GetUrlScheme(url_var.pp_var());
 
   url_request.SetRecordDownloadProgress(record_progress);
 
@@ -185,7 +182,6 @@ void FileDownloader::OpenFast(const nacl::string& url,
 
   file_info_.FreeResources();
   CHECK(instance_ != NULL);
-  open_time_ = NaClGetTimeOfDayMicroseconds();
   status_code_ = NACL_HTTP_STATUS_OK;
   url_ = url;
   mode_ = DOWNLOAD_NONE;
@@ -208,15 +204,6 @@ NaClFileInfo FileDownloader::GetFileInfo() {
   PLUGIN_PRINTF(("FileDownloader::GetFileInfo -- returning %d\n",
                  info_to_return.desc));
   return info_to_return;
-}
-
-int64_t FileDownloader::TimeSinceOpenMilliseconds() const {
-  int64_t now = NaClGetTimeOfDayMicroseconds();
-  // If Open() wasn't called or we somehow return an earlier time now, just
-  // return the 0 rather than worse nonsense values.
-  if (open_time_ < 0 || now < open_time_)
-    return 0;
-  return (now - open_time_) / NACL_MICROS_PER_MILLI;
 }
 
 bool FileDownloader::InitialResponseIsValid() {

@@ -78,9 +78,7 @@ class FileDownloader {
         stream_finish_callback_(pp::BlockUntilComplete()),
         file_io_private_interface_(NULL),
         url_loader_trusted_interface_(NULL),
-        open_time_(-1),
         mode_(DOWNLOAD_NONE),
-        url_scheme_(PP_SCHEME_OTHER),
         data_stream_callback_source_(NULL) {}
   ~FileDownloader() {}
 
@@ -131,9 +129,6 @@ class FileDownloader {
   // descriptor.  The file descriptor is owned by this instance, so the
   // delegate does not have to close it.
   struct NaClFileInfo GetFileInfo();
-
-  // Returns the time delta between the call to Open() and this function.
-  int64_t TimeSinceOpenMilliseconds() const;
 
   // Returns the url passed to Open().
   const nacl::string& url() const { return url_; }
@@ -202,12 +197,10 @@ class FileDownloader {
   const PPB_URLLoaderTrusted* url_loader_trusted_interface_;
   pp::URLLoader url_loader_;
   pp::CompletionCallbackFactory<FileDownloader> callback_factory_;
-  int64_t open_time_;
   int32_t status_code_;
   DownloadMode mode_;
   static const uint32_t kTempBufferSize = 16384;
   std::vector<char> temp_buffer_;
-  PP_UrlSchemeType url_scheme_;
   StreamCallbackSource* data_stream_callback_source_;
   NaClFileInfoAutoCloser file_info_;
 };
