@@ -53,7 +53,7 @@ TEST_F(PowerEventObserverTest, LockBeforeSuspend) {
   EXPECT_EQ(0, client->GetNumPendingSuspendReadinessCallbacks());
 
   // If the system is already locked, no callback should be requested.
-  observer_->SystemResumed(base::TimeDelta());
+  observer_->SuspendDone(base::TimeDelta());
   observer_->ScreenIsUnlocked();
   observer_->ScreenIsLocked();
   observer_->SuspendImminent();
@@ -61,7 +61,7 @@ TEST_F(PowerEventObserverTest, LockBeforeSuspend) {
 
   // It also shouldn't request a callback if it isn't instructed to lock the
   // screen.
-  observer_->SystemResumed(base::TimeDelta());
+  observer_->SuspendDone(base::TimeDelta());
   SetShouldLockScreenBeforeSuspending(false);
   observer_->SuspendImminent();
   EXPECT_EQ(0, client->GetNumPendingSuspendReadinessCallbacks());

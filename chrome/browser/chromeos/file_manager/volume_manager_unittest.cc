@@ -517,12 +517,7 @@ TEST_F(VolumeManagerTest, OnMountEvent_Remounting) {
   // Emulate system suspend and then resume.
   {
     power_manager_client_->SendSuspendImminent();
-    power_manager::SuspendState state;
-    state.set_type(power_manager::SuspendState_Type_SUSPEND_TO_MEMORY);
-    state.set_wall_time(0);
-    power_manager_client_->SendSuspendStateChanged(state);
-    state.set_type(power_manager::SuspendState_Type_RESUME);
-    power_manager_client_->SendSuspendStateChanged(state);
+    power_manager_client_->SendSuspendDone();
 
     // After resume, the device is unmounted and then mounted.
     disk_mount_manager_->UnmountPath(

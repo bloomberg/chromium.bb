@@ -54,7 +54,7 @@ void PowerEventObserver::SuspendImminent() {
   shell->display_configurator()->SuspendDisplays();
 }
 
-void PowerEventObserver::SystemResumed(const base::TimeDelta& sleep_duration) {
+void PowerEventObserver::SuspendDone(const base::TimeDelta& sleep_duration) {
   Shell::GetInstance()->display_configurator()->ResumeDisplays();
   Shell::GetInstance()->system_tray_notifier()->NotifyRefreshClock();
 }

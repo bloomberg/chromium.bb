@@ -119,7 +119,7 @@ TEST_F(MountedDiskMonitorTest, SuspendAndResume) {
 
   // Pseudo system suspend and resume.
   mounted_disk_monitor_->SuspendImminent();
-  mounted_disk_monitor_->SystemResumed(base::TimeDelta::FromSeconds(0));
+  mounted_disk_monitor_->SuspendDone(base::TimeDelta::FromSeconds(0));
 
   // On system resume, we expect unmount and then mount immediately.
   // During the phase, we expect the disk is remounting.

@@ -19,7 +19,8 @@ IdleActionWarningObserver::~IdleActionWarningObserver() {
     warning_dialog_->CloseDialog();
 }
 
-void IdleActionWarningObserver::IdleActionImminent() {
+void IdleActionWarningObserver::IdleActionImminent(
+    const base::TimeDelta& time_until_idle_action) {
   if (!warning_dialog_)
     warning_dialog_ = new IdleActionWarningDialogView;
 }

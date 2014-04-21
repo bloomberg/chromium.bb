@@ -268,18 +268,18 @@ class PowerManagerClientImpl : public PowerManagerClient {
 
     power_manager_proxy_->ConnectToSignal(
         power_manager::kPowerManagerInterface,
-        power_manager::kSuspendStateChangedSignal,
-        base::Bind(&PowerManagerClientImpl::SuspendStateChangedReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
+        power_manager::kSuspendImminentSignal,
+        base::Bind(
+            &PowerManagerClientImpl::SuspendImminentReceived,
+            weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&PowerManagerClientImpl::SignalConnected,
                    weak_ptr_factory_.GetWeakPtr()));
 
     power_manager_proxy_->ConnectToSignal(
         power_manager::kPowerManagerInterface,
-        power_manager::kSuspendImminentSignal,
-        base::Bind(
-            &PowerManagerClientImpl::SuspendImminentReceived,
-            weak_ptr_factory_.GetWeakPtr()),
+        power_manager::kSuspendDoneSignal,
+        base::Bind(&PowerManagerClientImpl::SuspendDoneReceived,
+                   weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&PowerManagerClientImpl::SignalConnected,
                    weak_ptr_factory_.GetWeakPtr()));
 
@@ -452,29 +452,58 @@ class PowerManagerClientImpl : public PowerManagerClient {
     }
 
     dbus::MessageReader reader(signal);
-    power_manager::SuspendImminent protobuf_imminent;
-    if (!reader.PopArrayOfBytesAsProto(&protobuf_imminent)) {
+    power_manager::SuspendImminent proto;
+    if (!reader.PopArrayOfBytesAsProto(&proto)) {
       LOG(ERROR) << "Unable to decode protocol buffer from "
                  << power_manager::kSuspendImminentSignal << " signal";
       return;
     }
 
+    VLOG(1) << "Got " << power_manager::kSuspendImminentSignal << " signal "
+            << "announcing suspend attempt " << proto.suspend_id();
     if (suspend_is_pending_) {
       LOG(WARNING) << "Got " << power_manager::kSuspendImminentSignal
                    << " signal about pending suspend attempt "
-                   << protobuf_imminent.suspend_id() << " while still waiting "
+                   << proto.suspend_id() << " while still waiting "
                    << "on attempt " << pending_suspend_id_;
     }
 
-    pending_suspend_id_ = protobuf_imminent.suspend_id();
+    pending_suspend_id_ = proto.suspend_id();
     suspend_is_pending_ = true;
     num_pending_suspend_readiness_callbacks_ = 0;
     FOR_EACH_OBSERVER(Observer, observers_, SuspendImminent());
     MaybeReportSuspendReadiness();
   }
 
+  void SuspendDoneReceived(dbus::Signal* signal) {
+    dbus::MessageReader reader(signal);
+    power_manager::SuspendDone proto;
+    if (!reader.PopArrayOfBytesAsProto(&proto)) {
+      LOG(ERROR) << "Unable to decode protocol buffer from "
+                 << power_manager::kSuspendDoneSignal << " signal";
+      return;
+    }
+
+    const base::TimeDelta duration =
+        base::TimeDelta::FromInternalValue(proto.suspend_duration());
+    VLOG(1) << "Got " << power_manager::kSuspendDoneSignal << " signal:"
+            << " suspend_id=" << proto.suspend_id()
+            << " duration=" << duration.InSeconds() << " sec";
+    FOR_EACH_OBSERVER(
+        PowerManagerClient::Observer, observers_, SuspendDone(duration));
+  }
+
   void IdleActionImminentReceived(dbus::Signal* signal) {
-    FOR_EACH_OBSERVER(Observer, observers_, IdleActionImminent());
+    dbus::MessageReader reader(signal);
+    power_manager::IdleActionImminent proto;
+    if (!reader.PopArrayOfBytesAsProto(&proto)) {
+      LOG(ERROR) << "Unable to decode protocol buffer from "
+                 << power_manager::kIdleActionImminentSignal << " signal";
+      return;
+    }
+    FOR_EACH_OBSERVER(Observer, observers_,
+        IdleActionImminent(base::TimeDelta::FromInternalValue(
+                               proto.time_until_idle_action())));
   }
 
   void IdleActionDeferredReceived(dbus::Signal* signal) {
@@ -524,31 +553,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
                           LidEventReceived(open, timestamp));
         break;
       }
-    }
-  }
-
-  void SuspendStateChangedReceived(dbus::Signal* signal) {
-    dbus::MessageReader reader(signal);
-    power_manager::SuspendState proto;
-    if (!reader.PopArrayOfBytesAsProto(&proto)) {
-      LOG(ERROR) << "Unable to decode protocol buffer from "
-                 << power_manager::kSuspendStateChangedSignal << " signal";
-      return;
-    }
-
-    VLOG(1) << "Got " << power_manager::kSuspendStateChangedSignal << " signal:"
-            << " type=" << proto.type() << " wall_time=" << proto.wall_time();
-    base::Time wall_time =
-        base::Time::FromInternalValue(proto.wall_time());
-    switch (proto.type()) {
-      case power_manager::SuspendState_Type_SUSPEND_TO_MEMORY:
-        last_suspend_wall_time_ = wall_time;
-        break;
-      case power_manager::SuspendState_Type_RESUME:
-        FOR_EACH_OBSERVER(
-            PowerManagerClient::Observer, observers_,
-            SystemResumed(wall_time - last_suspend_wall_time_));
-        break;
     }
   }
 
@@ -608,6 +612,8 @@ class PowerManagerClientImpl : public PowerManagerClient {
         power_manager::kHandleSuspendReadinessMethod);
     dbus::MessageWriter writer(&method_call);
 
+    VLOG(1) << "Announcing readiness of suspend delay " << suspend_delay_id_
+            << " for suspend attempt " << pending_suspend_id_;
     power_manager::SuspendReadinessInfo protobuf_request;
     protobuf_request.set_delay_id(suspend_delay_id_);
     protobuf_request.set_suspend_id(pending_suspend_id_);
@@ -645,10 +651,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
   // GetSuspendReadinessCallback() during the currently-pending suspend
   // attempt but have not yet been called.
   int num_pending_suspend_readiness_callbacks_;
-
-  // Wall time from the latest signal telling us that the system was about to
-  // suspend to memory.
-  base::Time last_suspend_wall_time_;
 
   // Last state passed to SetIsProjecting().
   bool last_is_projecting_;

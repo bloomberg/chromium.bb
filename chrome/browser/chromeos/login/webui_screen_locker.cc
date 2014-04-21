@@ -347,7 +347,7 @@ void WebUIScreenLocker::LidEventReceived(bool open,
       base::Bind(&WebUIScreenLocker::FocusUserPod, weak_factory_.GetWeakPtr()));
 }
 
-void WebUIScreenLocker::SystemResumed(const base::TimeDelta& sleep_duration) {
+void WebUIScreenLocker::SuspendDone(const base::TimeDelta& sleep_duration) {
   content::BrowserThread::PostTask(
       content::BrowserThread::UI,
       FROM_HERE,

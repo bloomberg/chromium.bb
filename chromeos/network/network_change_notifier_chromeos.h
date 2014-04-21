@@ -36,7 +36,7 @@ class CHROMEOS_EXPORT NetworkChangeNotifierChromeos
       GetCurrentConnectionType() const OVERRIDE;
 
   // PowerManagerClient::Observer overrides.
-  virtual void SystemResumed(const base::TimeDelta& sleep_duration) OVERRIDE;
+  virtual void SuspendDone(const base::TimeDelta& sleep_duration) OVERRIDE;
 
   // NetworkStateHandlerObserver overrides.
   virtual void DefaultNetworkChanged(

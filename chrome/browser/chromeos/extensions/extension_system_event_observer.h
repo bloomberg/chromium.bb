@@ -22,7 +22,7 @@ class ExtensionSystemEventObserver : public PowerManagerClient::Observer,
 
   // PowerManagerClient::Observer overrides:
   virtual void BrightnessChanged(int level, bool user_initiated) OVERRIDE;
-  virtual void SystemResumed(const base::TimeDelta& sleep_duration) OVERRIDE;
+  virtual void SuspendDone(const base::TimeDelta& sleep_duration) OVERRIDE;
 
   // SessionManagerClient::Observer override.
   virtual void ScreenIsUnlocked() OVERRIDE;

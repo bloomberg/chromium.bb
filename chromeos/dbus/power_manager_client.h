@@ -66,6 +66,11 @@ class CHROMEOS_EXPORT PowerManagerClient : public DBusClient {
     // the observer is ready for suspend.
     virtual void SuspendImminent() {}
 
+    // Called when a suspend attempt (previously announced via
+    // SuspendImminent()) has completed. The system may not have actually
+    // suspended (if e.g. the user canceled the suspend attempt).
+    virtual void SuspendDone(const base::TimeDelta& sleep_duration) {}
+
     // Called when the power button is pressed or released.
     virtual void PowerButtonEventReceived(bool down,
                                           const base::TimeTicks& timestamp) {}
@@ -74,11 +79,10 @@ class CHROMEOS_EXPORT PowerManagerClient : public DBusClient {
     virtual void LidEventReceived(bool open,
                                   const base::TimeTicks& timestamp) {}
 
-    // Called when the system resumes from sleep.
-    virtual void SystemResumed(const base::TimeDelta& sleep_duration) {}
-
-    // Called when the idle action will be performed soon.
-    virtual void IdleActionImminent() {}
+    // Called when the idle action will be performed after
+    // |time_until_idle_action|.
+    virtual void IdleActionImminent(
+        const base::TimeDelta& time_until_idle_action) {}
 
     // Called after IdleActionImminent() when the inactivity timer is reset
     // before the idle action has been performed.

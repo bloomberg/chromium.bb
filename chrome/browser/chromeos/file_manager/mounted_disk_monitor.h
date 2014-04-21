@@ -32,7 +32,7 @@ class MountedDiskMonitor
 
   // PowerManagerClient::Observer overrides:
   virtual void SuspendImminent() OVERRIDE;
-  virtual void SystemResumed(const base::TimeDelta& sleep_duration) OVERRIDE;
+  virtual void SuspendDone(const base::TimeDelta& sleep_duration) OVERRIDE;
 
   // DiskMountManager::Observer overrides.
   virtual void OnDiskEvent(

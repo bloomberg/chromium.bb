@@ -21,7 +21,8 @@ class IdleActionWarningObserver : public PowerManagerClient::Observer {
   virtual ~IdleActionWarningObserver();
 
   // PowerManagerClient::Observer:
-  virtual void IdleActionImminent() OVERRIDE;
+  virtual void IdleActionImminent(
+      const base::TimeDelta& time_until_idle_action) OVERRIDE;
   virtual void IdleActionDeferred() OVERRIDE;
 
  private:

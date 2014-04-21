@@ -216,7 +216,7 @@ void AutomaticRebootManager::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-void AutomaticRebootManager::SystemResumed(
+void AutomaticRebootManager::SuspendDone(
     const base::TimeDelta& sleep_duration) {
   MaybeReboot(true);
 }

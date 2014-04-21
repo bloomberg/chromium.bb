@@ -89,7 +89,7 @@ void KioskModeIdleAppNameNotification::OnUserActivity(const ui::Event* event) {
   ResetTimer();
 }
 
-void KioskModeIdleAppNameNotification::SystemResumed(
+void KioskModeIdleAppNameNotification::SuspendDone(
     const base::TimeDelta& sleep_duration) {
   // When we come back from a system resume we stop the timer and show the
   // message.

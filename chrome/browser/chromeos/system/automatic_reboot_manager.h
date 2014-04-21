@@ -97,7 +97,7 @@ class AutomaticRebootManager : public PowerManagerClient::Observer,
   void RemoveObserver(AutomaticRebootManagerObserver* observer);
 
   // PowerManagerClient::Observer:
-  virtual void SystemResumed(const base::TimeDelta& sleep_duration) OVERRIDE;
+  virtual void SuspendDone(const base::TimeDelta& sleep_duration) OVERRIDE;
 
   // UpdateEngineClient::Observer:
   virtual void UpdateStatusChanged(

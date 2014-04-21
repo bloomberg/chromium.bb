@@ -84,7 +84,7 @@ NetworkChangeNotifierChromeos::GetCurrentConnectionType() const {
   return connection_type_;
 }
 
-void NetworkChangeNotifierChromeos::SystemResumed(
+void NetworkChangeNotifierChromeos::SuspendDone(
     const base::TimeDelta& sleep_duration) {
   // Force invalidation of network resources on resume.
   NetworkChangeNotifier::NotifyObserversOfIPAddressChange();

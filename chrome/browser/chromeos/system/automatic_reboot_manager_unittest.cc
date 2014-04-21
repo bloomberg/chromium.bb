@@ -426,7 +426,7 @@ void AutomaticRebootManagerBasicTest::NotifyUpdateRebootNeeded() {
 }
 
 void AutomaticRebootManagerBasicTest::NotifyResumed(bool expect_reboot) {
-  automatic_reboot_manager_->SystemResumed(base::TimeDelta::FromHours(1));
+  automatic_reboot_manager_->SuspendDone(base::TimeDelta::FromHours(1));
   task_runner_->RunUntilIdle();
   EXPECT_EQ(expect_reboot ? 1 : 0,
             power_manager_client_->num_request_restart_calls());

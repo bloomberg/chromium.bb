@@ -55,14 +55,14 @@ TEST_F(PowerDataCollectorTest, PowerChanged) {
   EXPECT_TRUE(data2[1].external_power);
 }
 
-TEST_F(PowerDataCollectorTest, SystemResumed) {
-  power_data_collector_->SystemResumed(base::TimeDelta::FromSeconds(10));
+TEST_F(PowerDataCollectorTest, SuspendDone) {
+  power_data_collector_->SuspendDone(base::TimeDelta::FromSeconds(10));
   const std::deque<PowerDataCollector::SystemResumedSample>& data1 =
       power_data_collector_->system_resumed_data();
   ASSERT_EQ(static_cast<size_t>(1), data1.size());
   ASSERT_EQ(static_cast<int64>(10), data1[0].sleep_duration.InSeconds());
 
-  power_data_collector_->SystemResumed(base::TimeDelta::FromSeconds(20));
+  power_data_collector_->SuspendDone(base::TimeDelta::FromSeconds(20));
   const std::deque<PowerDataCollector::SystemResumedSample>& data2 =
       power_data_collector_->system_resumed_data();
   ASSERT_EQ(static_cast<size_t>(2), data2.size());

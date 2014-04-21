@@ -24,7 +24,7 @@ void ExtensionSystemEventObserver::BrightnessChanged(int level,
   extensions::DispatchBrightnessChangedEvent(level, user_initiated);
 }
 
-void ExtensionSystemEventObserver::SystemResumed(
+void ExtensionSystemEventObserver::SuspendDone(
     const base::TimeDelta& sleep_duration) {
   extensions::DispatchWokeUpEvent();
 }

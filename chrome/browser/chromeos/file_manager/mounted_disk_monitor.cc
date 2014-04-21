@@ -44,12 +44,12 @@ MountedDiskMonitor::~MountedDiskMonitor() {
 void MountedDiskMonitor::SuspendImminent() {
   // Flip the resuming flag while suspending, so it is possible to detect
   // resuming as soon as possible after the lid is open. Note, that mount
-  // events may occur before the SystemResumed method is called.
+  // events may occur before the SuspendDone method is called.
   is_resuming_ = true;
   weak_factory_.InvalidateWeakPtrs();
 }
 
-void MountedDiskMonitor::SystemResumed(
+void MountedDiskMonitor::SuspendDone(
     const base::TimeDelta& sleep_duration) {
   // Undo any previous resets. Release the resuming flag after a fixed timeout.
   weak_factory_.InvalidateWeakPtrs();
