@@ -43,7 +43,8 @@ HTMLParserOptions::HTMLParserOptions(Document* document)
     Settings* settings = document ? document->settings() : 0;
     // We force the main-thread parser for about:blank, javascript: and data: urls for compatibility
     // with historical synchronous loading/parsing behavior of those schemes.
-    useThreading = settings && settings->threadedHTMLParser() && !document->url().isBlankURL()
+    // FIXME: Use isAboutBlankURL() instead of protocolIsAbout() to not include about:srcdoc.
+    useThreading = settings && settings->threadedHTMLParser() && !document->url().protocolIsAbout()
         && (settings->useThreadedHTMLParserForDataURLs() || !document->url().protocolIsData());
 }
 

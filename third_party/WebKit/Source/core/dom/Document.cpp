@@ -293,7 +293,7 @@ static bool shouldInheritSecurityOriginFromOwner(const KURL& url)
     // Note: We generalize this to all "blank" URLs and invalid URLs because we
     // treat all of these URLs as about:blank.
     //
-    return url.isEmpty() || url.isBlankURL();
+    return url.isEmpty() || url.protocolIsAbout();
 }
 
 static Widget* widgetForElement(const Element& focusedElement)

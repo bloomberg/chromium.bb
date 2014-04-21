@@ -130,7 +130,7 @@ bool isValidProtocol(const String& protocol)
 
 String KURL::strippedForUseAsReferrer() const
 {
-    if (isBlankURL() || protocolIs("data") || protocolIs("javascript"))
+    if (protocolIsAbout() || protocolIs("data") || protocolIs("javascript"))
         return String();
 
     KURL referrer(*this);
@@ -160,9 +160,9 @@ const KURL& blankURL()
     return staticBlankURL;
 }
 
-bool KURL::isBlankURL() const
+bool KURL::isAboutBlankURL() const
 {
-    return protocolIs("about");
+    return *this == blankURL();
 }
 
 String KURL::elidedString() const

@@ -277,7 +277,7 @@ bool CSPDirectiveList::allowScriptFromSource(const KURL& url, ContentSecurityPol
 
 bool CSPDirectiveList::allowObjectFromSource(const KURL& url, ContentSecurityPolicy::ReportingStatus reportingStatus) const
 {
-    if (url.isBlankURL())
+    if (url.protocolIsAbout())
         return true;
     return reportingStatus == ContentSecurityPolicy::SendReport ?
         checkSourceAndReportViolation(operativeDirective(m_objectSrc.get()), url, ContentSecurityPolicy::ObjectSrc) :
@@ -286,7 +286,7 @@ bool CSPDirectiveList::allowObjectFromSource(const KURL& url, ContentSecurityPol
 
 bool CSPDirectiveList::allowChildFrameFromSource(const KURL& url, ContentSecurityPolicy::ReportingStatus reportingStatus) const
 {
-    if (url.isBlankURL())
+    if (url.protocolIsAbout())
         return true;
 
     // 'frame-src' is the only directive which overrides something other than the default sources.

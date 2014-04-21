@@ -131,9 +131,11 @@ public:
     // terminated ASCII argument. The argument must be lower-case.
     bool protocolIs(const char*) const;
     bool protocolIsData() const { return protocolIs("data"); }
+    // This includes at least about:blank and about:srcdoc.
+    bool protocolIsAbout() const { return protocolIs("about"); }
     bool protocolIsInHTTPFamily() const;
     bool isLocalFile() const;
-    bool isBlankURL() const;
+    bool isAboutBlankURL() const; // Is exactly about:blank.
 
     bool setProtocol(const String&);
     void setHost(const String&);
