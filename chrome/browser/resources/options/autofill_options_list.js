@@ -490,8 +490,50 @@ cr.define('options.autofillOptions', function() {
       info[0] = index;
       info[1] = numbers;
       info[2] = $('country').value;
+      this.validationRequests_++;
       chrome.send('validatePhoneNumbers', info);
     },
+
+    /**
+     * The number of ongoing validation requests.
+     * @type {number}
+     * @private
+     */
+    validationRequests_: 0,
+
+    /**
+     * Pending Promise resolver functions.
+     * @type {Array.<!Function>}
+     * @private
+     */
+    validationPromiseResolvers_: [],
+
+    /**
+     * This should be called when a reply of chrome.send('validatePhoneNumbers')
+     * is received.
+     */
+    didReceiveValidationResult: function() {
+      this.validationRequests_--;
+      assert(this.validationRequests_ >= 0);
+      if (this.validationRequests_ <= 0) {
+        while (this.validationPromiseResolvers_.length) {
+          this.validationPromiseResolvers_.pop()();
+        }
+      }
+    },
+
+    /**
+     * Returns a Promise which is fulfilled when all of validation requests are
+     * completed.
+     * @return {!Promise} A promise.
+     */
+    doneValidating: function() {
+      if (this.validationRequests_ <= 0)
+        return Promise.resolve();
+      return new Promise(function(resolve) {
+        this.validationPromiseResolvers_.push(resolve);
+      }.bind(this));
+    }
   };
 
   return {

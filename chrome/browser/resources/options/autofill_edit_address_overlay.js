@@ -46,8 +46,10 @@ cr.define('options', function() {
         // Blurring is delayed for list elements.  Queue save and close to
         // ensure that pending changes have been applied.
         setTimeout(function() {
-          self.saveAddress_();
-          self.dismissOverlay_();
+          $('phone-list').doneValidating().then(function() {
+            self.saveAddress_();
+            self.dismissOverlay_();
+          });
         }, 0);
       };
 
@@ -292,6 +294,7 @@ cr.define('options', function() {
   AutofillEditAddressOverlay.setValidatedPhoneNumbers = function(numbers) {
     AutofillEditAddressOverlay.getInstance().setMultiValueList_('phone-list',
                                                                 numbers);
+    $('phone-list').didReceiveValidationResult();
   };
 
   // Export

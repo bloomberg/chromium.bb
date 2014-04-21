@@ -22,3 +22,47 @@ AutofillOptionsWebUITest.prototype = {
 TEST_F('AutofillOptionsWebUITest', 'testOpenAutofillOptions', function() {
   assertEquals(this.browsePreload, document.location.href);
 });
+
+/**
+ * TestFixture for autofill edit address overlay WebUI testing.
+ * @extends {testing.Test}
+ * @constructor
+ */
+function AutofillEditAddressWebUITest() {}
+
+AutofillEditAddressWebUITest.prototype = {
+  __proto__: testing.Test.prototype,
+
+  /**
+   * Browse to autofill edit address overlay.
+   **/
+  browsePreload: 'chrome://settings-frame/autofillEditAddress',
+
+  /** @inheritDoc  */
+  isAsync: true,
+
+  /**
+   * TODO(tkent): Fix an accessibility error.
+   */
+  runAccessibilityChecks: false,
+};
+
+TEST_F('AutofillEditAddressWebUITest',
+       'testAutofillPhoneValueListDoneValidating',
+       function() {
+  assertEquals(this.browsePreload, document.location.href);
+
+  var phoneList = $('phone-list');
+  expectEquals(0, phoneList.validationRequests_);
+  phoneList.doneValidating().then(function() {
+    phoneList.focus();
+    var input = phoneList.querySelector('input');
+    input.focus();
+    document.execCommand('insertText', false, '111-222-333');
+    assertEquals('111-222-333', input.value);
+    input.blur();
+    phoneList.doneValidating().then(function() {
+      testDone();
+    });
+  });
+});
