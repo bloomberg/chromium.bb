@@ -10,12 +10,15 @@ import os
 import sys
 
 # jinja2 is in the third_party directory.
-# Insert at front to override system libraries, and after path[0] == script dir
+# Insert at front to override system libraries, and after path[0] == script dir.
 path = os.path.abspath(__file__)
-while os.path.split(path)[1] != "src":
-  path = os.path.split(path)[0]
+while True:
+  path, tail = os.path.split(path)
+  assert tail
+  if tail == "mojo":
+    break
 sys.path.insert(1, os.path.join(path, "third_party"))
-del path
+del path, tail
 import jinja2
 
 

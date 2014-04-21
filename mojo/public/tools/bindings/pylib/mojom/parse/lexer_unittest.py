@@ -13,12 +13,16 @@ try:
   # pylint: disable=F0401
   from ply import lex
 except ImportError:
-  # This assumes we're under some src/ directory.
+  # Work our way up to the directory containing mojo/ (usually src/). (Note:
+  # Some builds don't check out into a directory called src/.)
   path = os.path.abspath(__file__)
-  while os.path.split(path)[1] != "src":
-    path = os.path.split(path)[0]
+  while True:
+    path, tail = os.path.split(path)
+    assert tail
+    if tail == "mojo":
+      break
   sys.path.append(os.path.join(path, "third_party"))
-  del path
+  del path, tail
   # pylint: disable=F0401
   from ply import lex
 
