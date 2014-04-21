@@ -420,9 +420,12 @@
           'internal_api/protocol_event_buffer_unittest.cc',
           'internal_api/public/change_record_unittest.cc',
           'internal_api/public/sessions/sync_session_snapshot_unittest.cc',
+          'internal_api/sync_backup_manager_unittest.cc',
           'internal_api/sync_core_proxy_impl_unittest.cc',
           'internal_api/sync_encryption_handler_impl_unittest.cc',
-          'internal_api/sync_manager_impl_unittest.cc',
+          'internal_api/sync_manager_impl_unittest.cc',          
+          'internal_api/sync_rollback_manager_base_unittest.cc',
+          'internal_api/sync_rollback_manager_unittest.cc',
           'internal_api/syncapi_server_connection_manager_unittest.cc',
         ],
         'conditions': [

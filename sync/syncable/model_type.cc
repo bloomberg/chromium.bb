@@ -438,6 +438,20 @@ ModelTypeSet PriorityCoreTypes() {
   return result;
 }
 
+ModelTypeSet BackupTypes() {
+  ModelTypeSet result;
+  result.Put(BOOKMARKS);
+  result.Put(PREFERENCES);
+  result.Put(THEMES);
+  result.Put(EXTENSIONS);
+  result.Put(SEARCH_ENGINES);
+  result.Put(APPS);
+  result.Put(APP_SETTINGS);
+  result.Put(EXTENSION_SETTINGS);
+  result.Put(PRIORITY_PREFERENCES);
+  return result;
+}
+
 const char* ModelTypeToString(ModelType model_type) {
   // This is used in serialization routines as well as for displaying debug
   // information.  Do not attempt to change these string values unless you know

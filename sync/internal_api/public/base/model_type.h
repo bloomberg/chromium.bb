@@ -317,6 +317,9 @@ SYNC_EXPORT bool IsRealDataType(ModelType model_type);
 // TODO(haitaol): Make entries of act-once data types immutable.
 SYNC_EXPORT bool IsActOnceDataType(ModelType model_type);
 
+// Returns set of model types that should be backed up before first sync.
+SYNC_EXPORT ModelTypeSet BackupTypes();
+
 }  // namespace syncer
 
 #endif  // SYNC_INTERNAL_API_PUBLIC_BASE_MODEL_TYPE_H_
