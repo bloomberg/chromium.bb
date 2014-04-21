@@ -5,6 +5,9 @@
 """Common file and os related utilities, including tempdir manipulation."""
 
 import collections
+import cStringIO
+import ctypes
+import ctypes.util
 import errno
 import logging
 import os
@@ -12,10 +15,11 @@ import pwd
 import re
 import shutil
 import signal
-import cStringIO
 import tempfile
+
 from chromite.lib import cros_build_lib
 from chromite.lib import retry_util
+
 
 # Env vars that tempdir can be gotten from; minimally, this
 # needs to match python's tempfile module and match normal
@@ -503,17 +507,55 @@ def TempFileDecorator(func):
   return TempDirDecorator(f)
 
 
+# Flags synced from sys/mount.h.  See mount(2) for details.
+MS_RDONLY = 1
+MS_NOSUID = 2
+MS_NODEV = 4
+MS_NOEXEC = 8
+MS_SYNCHRONOUS = 16
+MS_REMOUNT = 32
+MS_MANDLOCK = 64
+MS_DIRSYNC = 128
+MS_NOATIME = 1024
+MS_NODIRATIME = 2048
+MS_BIND = 4096
+MS_MOVE = 8192
+MS_REC = 16384
+MS_SILENT = 32768
+MS_POSIXACL = 1 << 16
+MS_UNBINDABLE = 1 << 17
+MS_PRIVATE = 1 << 18
+MS_SLAVE = 1 << 19
+MS_SHARED = 1 << 20
+MS_RELATIME = 1 << 21
+MS_KERNMOUNT = 1 << 22
+MS_I_VERSION =  1 << 23
+MS_STRICTATIME = 1 << 24
+MS_ACTIVE = 1 << 30
+MS_NOUSER = 1 << 31
+
+
+def Mount(source, target, fstype, flags, data=""):
+  """Call the mount(2) func; see the man page for details."""
+  libc = ctypes.CDLL(ctypes.util.find_library('c'), use_errno=True)
+  if libc.mount(source, target, fstype, ctypes.c_int(flags), data) != 0:
+    e = ctypes.get_errno()
+    raise OSError(e, os.strerror(e))
+
+
 def MountDir(src_path, dst_path, fs_type=None, sudo=True, makedirs=True,
-             mount_opts=('nodev', 'noexec', 'nosuid'), **kwargs):
+             mount_opts=('nodev', 'noexec', 'nosuid'), skip_mtab=False,
+             **kwargs):
   """Mount |src_path| at |dst_path|
 
   Args:
-    src_path: Directory to mount the tmpfs.
-    dst_path: Directory to mount the tmpfs.
+    src_path: Source of the new mount.
+    dst_path: Where to mount things.
     fs_type: Specify the filesystem type to use.  Defaults to autodetect.
     sudo: Run through sudo.
     makedirs: Create |dst_path| if it doesn't exist.
     mount_opts: List of options to pass to `mount`.
+    skip_mtab: Whether to write new entries to /etc/mtab.
     kwargs: Pass all other args to RunCommand.
   """
   if sudo:
@@ -525,6 +567,8 @@ def MountDir(src_path, dst_path, fs_type=None, sudo=True, makedirs=True,
     SafeMakedirs(dst_path, sudo=sudo)
 
   cmd = ['mount', src_path, dst_path]
+  if skip_mtab:
+    cmd += ['-n']
   if fs_type:
     cmd += ['-t', fs_type]
   runcmd(cmd + ['-o', ','.join(mount_opts)], **kwargs)
