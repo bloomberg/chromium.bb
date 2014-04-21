@@ -32,7 +32,6 @@ namespace content {
 // Contains information about an EME key system as well as how to instantiate
 // the corresponding CDM.
 struct CONTENT_EXPORT KeySystemInfo {
- public:
   // Represents the set of codecs supported within a container.
   typedef base::hash_set<std::string> CodecSet;
 

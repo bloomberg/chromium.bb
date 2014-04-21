@@ -18,10 +18,15 @@ namespace android {
 // Defines bitmask values used to specify supported codecs.
 // Each value represents a codec within a specific container.
 enum SupportedCodecs {
-  NO_SUPPORTED_CODECS = 0,
-  WEBM_VP8_AND_VORBIS = 1 << 0,
-  MP4_AAC = 1 << 1,
-  MP4_AVC1 = 1 << 2,
+  NO_CODECS = 0,
+  WEBM_VORBIS = 1 << 0,
+  WEBM_VP8 = 1 << 1,
+  WEBM_CODECS = (WEBM_VORBIS | WEBM_VP8),
+  MP4_AAC = 1 << 2,
+  MP4_AVC1 = 1 << 3,
+  MP4_CODECS = (MP4_AAC | MP4_AVC1),
+  ALL_CODECS = (WEBM_CODECS | MP4_CODECS),
+  INVALID_CODECS = ~ALL_CODECS
 };
 
 }  // namespace android
@@ -36,15 +41,15 @@ IPC_ENUM_TRAITS(android::SupportedCodecs)
 IPC_STRUCT_BEGIN(SupportedKeySystemRequest)
   IPC_STRUCT_MEMBER(std::string, key_system)
   IPC_STRUCT_MEMBER(android::SupportedCodecs, codecs,
-                    android::NO_SUPPORTED_CODECS)
+                    android::NO_CODECS)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(SupportedKeySystemResponse)
   IPC_STRUCT_MEMBER(std::string, key_system)
   IPC_STRUCT_MEMBER(android::SupportedCodecs, compositing_codecs,
-                    android::NO_SUPPORTED_CODECS)
+                    android::NO_CODECS)
   IPC_STRUCT_MEMBER(android::SupportedCodecs, non_compositing_codecs,
-                    android::NO_SUPPORTED_CODECS)
+                    android::NO_CODECS)
 IPC_STRUCT_END()
 
 // Messages sent from the renderer to the browser.
