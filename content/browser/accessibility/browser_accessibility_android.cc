@@ -566,8 +566,8 @@ bool BrowserAccessibilityAndroid::IsIframe() const {
   return html_tag == base::ASCIIToUTF16("iframe");
 }
 
-void BrowserAccessibilityAndroid::PostInitialize() {
-  BrowserAccessibility::PostInitialize();
+void BrowserAccessibilityAndroid::OnDataChanged() {
+  BrowserAccessibility::OnDataChanged();
 
   if (IsEditableText()) {
     if (base::UTF8ToUTF16(value()) != new_value_) {

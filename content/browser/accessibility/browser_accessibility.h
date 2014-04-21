@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/web/WebAXEnums.h"
+#include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_node_data.h"
 
 #if defined(OS_MACOSX) && __OBJC__
@@ -46,37 +47,25 @@ class CONTENT_EXPORT BrowserAccessibility {
 
   virtual ~BrowserAccessibility();
 
-  // Detach all descendants of this subtree and push all of the node pointers,
-  // including this node, onto the end of |nodes|.
-  virtual void DetachTree(std::vector<BrowserAccessibility*>* nodes);
+  // Called only once, immediately after construction. The constructor doesn't
+  // take any arguments because in the Windows subclass we use a special
+  // function to construct a COM object.
+  virtual void Init(BrowserAccessibilityManager* manager, ui::AXNode* node);
 
-  // Perform platform-specific initialization. This can be called multiple times
-  // during the lifetime of this instance after the members of this base object
-  // have been reset with new values from the renderer process.
-  // Child dependent initialization can be done here.
-  virtual void PostInitialize() {}
+  // Called after the object is first initialized and again every time
+  // its data changes.
+  virtual void OnDataChanged();
+
+  // Called after an atomic update to the tree finished and this object
+  // was created or changed in this update.
+  virtual void OnUpdateFinished() {}
 
   // Returns true if this is a native platform-specific object, vs a
   // cross-platform generic object.
   virtual bool IsNative() const;
 
-  // Initialize the tree structure of this object.
-  void InitializeTreeStructure(
-      BrowserAccessibilityManager* manager,
-      BrowserAccessibility* parent,
-      int32 id,
-      int32 index_in_parent);
-
-  // Initialize this object's data.
-  void InitializeData(const ui::AXNodeData& src);
-
-  virtual void SwapChildren(std::vector<BrowserAccessibility*>& children);
-
-  // Update the parent and index in parent if this node has been moved.
-  void UpdateParent(BrowserAccessibility* parent, int index_in_parent);
-
-  // Update this node's location, leaving everything else the same.
-  virtual void SetLocation(const gfx::Rect& new_location);
+  // Called when the location changed.
+  virtual void OnLocationChanged() const {}
 
   // Return true if this object is equal to or a descendant of |ancestor|.
   bool IsDescendantOf(BrowserAccessibility* ancestor);
@@ -126,14 +115,14 @@ class CONTENT_EXPORT BrowserAccessibility {
   BrowserAccessibility* BrowserAccessibilityForPoint(const gfx::Point& point);
 
   // Marks this object for deletion, releases our reference to it, and
-  // recursively calls Destroy() on its children.  May not delete
-  // immediately due to reference counting.
+  // nulls out the pointer to the underlying AXNode.  May not delete
+  // the object immediately due to reference counting.
   //
   // Reference counting is used on some platforms because the
   // operating system may hold onto a reference to a BrowserAccessibility
   // object even after we're through with it. When a BrowserAccessibility
   // has had Destroy() called but its reference count is not yet zero,
-  // queries on this object return failure
+  // instance_active() returns false and queries on this object return failure.
   virtual void Destroy();
 
   // Subclasses should override this to support platform reference counting.
@@ -147,36 +136,31 @@ class CONTENT_EXPORT BrowserAccessibility {
   //
 
   BrowserAccessibilityManager* manager() const { return manager_; }
-  bool instance_active() const { return instance_active_; }
+  bool instance_active() const { return node_ != NULL; }
+  ui::AXNode* node() const { return node_; }
   const std::string& name() const { return name_; }
   const std::string& value() const { return value_; }
   void set_name(const std::string& name) { name_ = name; }
   void set_value(const std::string& value) { value_ = value; }
 
-  std::vector<BrowserAccessibility*>& deprecated_children() {
-    return deprecated_children_;
-  }
-
   // These access the internal accessibility tree, which doesn't necessarily
   // reflect the accessibility tree that should be exposed on each platform.
   // Use PlatformChildCount and PlatformGetChild to implement platform
   // accessibility APIs.
-  uint32 InternalChildCount() const { return deprecated_children_.size(); }
-  BrowserAccessibility* InternalGetChild(uint32 child_index) const {
-    return deprecated_children_[child_index];
-  }
+  uint32 InternalChildCount() const;
+  BrowserAccessibility* InternalGetChild(uint32 child_index) const;
 
-  BrowserAccessibility* GetParent() const { return deprecated_parent_; }
-  int32 GetIndexInParent() const { return deprecated_index_in_parent_; }
+  BrowserAccessibility* GetParent() const;
+  int32 GetIndexInParent() const;
 
-  int32 GetId() const { return data_.id; }
-  gfx::Rect GetLocation() const { return data_.location; }
-  int32 GetRole() const { return data_.role; }
-  int32 GetState() const { return data_.state; }
-  const std::vector<std::pair<std::string, std::string> >& GetHtmlAttributes()
-      const {
-    return data_.html_attributes;
-  }
+  int32 GetId() const;
+  const ui::AXNodeData& GetData() const;
+  gfx::Rect GetLocation() const;
+  int32 GetRole() const;
+  int32 GetState() const;
+
+  typedef std::vector<std::pair<std::string, std::string> > HtmlAttributes;
+  const HtmlAttributes& GetHtmlAttributes() const;
 
 #if defined(OS_MACOSX) && __OBJC__
   BrowserAccessibilityCocoa* ToBrowserAccessibilityCocoa();
@@ -262,43 +246,21 @@ class CONTENT_EXPORT BrowserAccessibility {
   std::string GetTextRecursive() const;
 
  protected:
-  // Perform platform specific initialization. This can be called multiple times
-  // during the lifetime of this instance after the members of this base object
-  // have been reset with new values from the renderer process.
-  // Perform child independent initialization in this method.
-  virtual void PreInitialize() {}
-
   BrowserAccessibility();
 
-  // The manager of this tree of accessibility objects; needed for
-  // global operations like focus tracking.
+  // The manager of this tree of accessibility objects.
   BrowserAccessibilityManager* manager_;
 
-  // The parent of this object, may be NULL if we're the root object.
-  BrowserAccessibility* deprecated_parent_;
+  // The underlying node.
+  ui::AXNode* node_;
 
  private:
   // Return the sum of the lengths of all static text descendants,
   // including this object if it's static text.
   int GetStaticTextLenRecursive() const;
 
-  // The index of this within its parent object.
-  int32 deprecated_index_in_parent_;
-
-  // The children of this object.
-  std::vector<BrowserAccessibility*> deprecated_children_;
-
-  // Accessibility metadata from the renderer
   std::string name_;
   std::string value_;
-  ui::AXNodeData data_;
-
-  // BrowserAccessibility objects are reference-counted on some platforms.
-  // When we're done with this object and it's removed from our accessibility
-  // tree, a client may still be holding onto a pointer to this object, so
-  // we mark it as inactive so that calls to any of this object's methods
-  // immediately return failure.
-  bool instance_active_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibility);
