@@ -18,7 +18,7 @@ function test()
 
         var parentPath = path.substring(0, path.lastIndexOf("/"));
         var name = path.substring(path.lastIndexOf("/") + 1);
-        var fileDescriptor = new WebInspector.FileDescriptor(parentPath, name, path, path, WebInspector.resourceTypes.Script, true, false);
+        var fileDescriptor = new WebInspector.FileDescriptor(parentPath, name, path, path, WebInspector.resourceTypes.Script, true);
         projectStore.addFile(fileDescriptor);
     }
 

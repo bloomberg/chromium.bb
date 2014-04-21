@@ -67,7 +67,7 @@ InspectorTest.dumpUISourceCode = function(uiSourceCode, callback)
     InspectorTest.addResult("UISourceCode: " + url);
     InspectorTest.addResult("UISourceCode is editable: " + uiSourceCode.isEditable());
     if (uiSourceCode.contentType() === WebInspector.resourceTypes.Script || uiSourceCode.contentType() === WebInspector.resourceTypes.Document)
-        InspectorTest.addResult("UISourceCode is content script: " + !!uiSourceCode.isContentScript);
+        InspectorTest.addResult("UISourceCode is content script: " + (uiSourceCode.project().type() === WebInspector.projectTypes.ContentScripts));
     uiSourceCode.requestContent(didRequestContent);
 
     function didRequestContent(content, contentEncoded)
