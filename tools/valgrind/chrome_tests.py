@@ -281,9 +281,6 @@ class ChromeTests:
   def TestContent(self):
     return self.SimpleTest("content", "content_unittests")
 
-  def TestContentBrowser(self):
-    return self.SimpleTest("content", "content_browsertests")
-
   def TestCourgette(self):
     return self.SimpleTest("courgette", "courgette_unittests")
 
@@ -388,6 +385,11 @@ class ChromeTests:
 
   def TestBrowser(self):
     return self.SimpleTest("chrome", "browser_tests",
+                           valgrind_test_args=self.BROWSER_VALGRIND_ARGS,
+                           cmd_args=self.BROWSER_TEST_ARGS)
+
+  def TestContentBrowser(self):
+    return self.SimpleTest("content", "content_browsertests",
                            valgrind_test_args=self.BROWSER_VALGRIND_ARGS,
                            cmd_args=self.BROWSER_TEST_ARGS)
 
