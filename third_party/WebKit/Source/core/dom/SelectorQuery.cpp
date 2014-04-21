@@ -407,10 +407,12 @@ template <typename SelectorQueryTrait>
 void SelectorDataList::execute(ContainerNode& rootNode, typename SelectorQueryTrait::OutputType& output) const
 {
     if (!canUseFastQuery(rootNode)) {
-        if (m_crossesTreeBoundary)
+        if (m_crossesTreeBoundary) {
+            rootNode.document().updateDistributionForNodeIfNeeded(&rootNode);
             executeSlowTraversingShadowTree<SelectorQueryTrait>(rootNode, output);
-        else
+        } else {
             executeSlow<SelectorQueryTrait>(rootNode, output);
+        }
         return;
     }
 
