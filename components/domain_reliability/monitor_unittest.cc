@@ -15,6 +15,7 @@
 #include "components/domain_reliability/config.h"
 #include "components/domain_reliability/test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "net/base/load_flags.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
@@ -71,6 +72,7 @@ class DomainReliabilityMonitorTest : public testing::Test {
     request.status = net::URLRequestStatus();
     request.response_code = 200;
     request.was_cached = false;
+    request.load_flags = 0;
     return request;
   }
 
@@ -115,6 +117,16 @@ TEST_F(DomainReliabilityMonitorTest, ContextRequest) {
   BeaconVector beacons;
   context_->GetQueuedDataForTesting(0, &beacons, NULL, NULL);
   EXPECT_EQ(1u, beacons.size());
+  EXPECT_TRUE(CheckNoBeacons(1));
+}
+
+TEST_F(DomainReliabilityMonitorTest, ContextRequestWithDoNotSendCookies) {
+  RequestInfo request = MakeRequestInfo();
+  request.url = GURL("http://example/always_report");
+  request.load_flags = net::LOAD_DO_NOT_SEND_COOKIES;
+  OnRequestLegComplete(request);
+
+  EXPECT_TRUE(CheckNoBeacons(0));
   EXPECT_TRUE(CheckNoBeacons(1));
 }
 

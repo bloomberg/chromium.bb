@@ -9,6 +9,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -131,7 +132,8 @@ DomainReliabilityMonitor::RequestInfo::RequestInfo(
       status(request.status()),
       response_code(-1),
       socket_address(request.GetSocketAddress()),
-      was_cached(request.was_cached()) {
+      was_cached(request.was_cached()),
+      load_flags(request.load_flags()) {
   request.GetLoadTimingInfo(&load_timing_info);
   // Can't get response code of a canceled request -- there's no transaction.
   if (status.status() != net::URLRequestStatus::CANCELED)
@@ -147,6 +149,12 @@ bool DomainReliabilityMonitor::RequestInfo::DefinitelyReachedNetwork() const {
 void DomainReliabilityMonitor::OnRequestLegComplete(
     const RequestInfo& request) {
   if (!request.DefinitelyReachedNetwork())
+    return;
+
+  // Don't monitor requests that are not sending cookies, since sending a beacon
+  // for such requests may allow the server to correlate that request with the
+  // user (by correlating a particular config).
+  if (request.load_flags & net::LOAD_DO_NOT_SEND_COOKIES)
     return;
 
   std::map<std::string, DomainReliabilityContext*>::iterator it =

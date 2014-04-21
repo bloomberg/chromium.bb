@@ -69,6 +69,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor {
     net::HostPortPair socket_address;
     net::LoadTimingInfo load_timing_info;
     bool was_cached;
+    int load_flags;
   };
 
   void OnRequestLegComplete(const RequestInfo& info);
