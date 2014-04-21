@@ -186,7 +186,7 @@ public class ContentView extends FrameLayout
         MotionEvent offset = createOffsetMotionEvent(event);
         boolean consumed = mContentViewCore.onHoverEvent(offset);
         offset.recycle();
-        super.onHoverEvent(event);
+        if (!mContentViewCore.isTouchExplorationEnabled()) super.onHoverEvent(event);
         return consumed;
     }
 

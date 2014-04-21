@@ -12,6 +12,7 @@ import android.text.SpannableString;
 import android.text.style.URLSpan;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
@@ -45,12 +46,12 @@ public class BrowserAccessibilityManager {
     private long mNativeObj;
     private int mAccessibilityFocusId;
     private boolean mIsHovering;
+    private int mLastHoverId = View.NO_ID;
     private int mCurrentRootId;
     private final int[] mTempLocation = new int[2];
-    private final View mView;
+    private final ViewGroup mView;
     private boolean mUserHasTouchExplored;
     private boolean mPendingScrollToMakeNodeVisible;
-    private boolean mFrameInfoInitialized;
 
     /**
      * Create a BrowserAccessibilityManager object, which is owned by the C++
@@ -122,7 +123,7 @@ public class BrowserAccessibilityManager {
             return createNodeForHost(rootId);
         }
 
-        if (!mFrameInfoInitialized) {
+        if (!isFrameInfoInitialized()) {
             return null;
         }
 
@@ -252,9 +253,11 @@ public class BrowserAccessibilityManager {
         int cssY = (int) (mRenderCoordinates.fromPixToLocalCss(y) +
                           mRenderCoordinates.getScrollY());
         int id = nativeHitTest(mNativeObj, cssX, cssY);
-        if (mAccessibilityFocusId != id) {
-            sendAccessibilityEvent(mAccessibilityFocusId, AccessibilityEvent.TYPE_VIEW_HOVER_EXIT);
+        if (mLastHoverId != id) {
+            // Always send the ENTER and then the EXIT event, to match a standard Android View.
             sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_HOVER_ENTER);
+            sendAccessibilityEvent(mLastHoverId, AccessibilityEvent.TYPE_VIEW_HOVER_EXIT);
+            mLastHoverId = id;
         }
 
         return true;
@@ -266,11 +269,8 @@ public class BrowserAccessibilityManager {
      * web coordinates to screen coordinates.
      */
     public void notifyFrameInfoInitialized() {
-        if (mFrameInfoInitialized) return;
-
-        mFrameInfoInitialized = true;
-        // Invalidate the host, since the chrome accessibility tree is now
-        // ready and listed as the child of the host.
+        // Invalidate the container view, since the chrome accessibility tree is now
+        // ready and listed as the child of the container view.
         mView.sendAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
 
         // (Re-) focus focused element, since we weren't able to create an
@@ -292,11 +292,24 @@ public class BrowserAccessibilityManager {
     }
 
     private void sendAccessibilityEvent(int virtualViewId, int eventType) {
-        // If mFrameInfoInitialized is false, then the virtual hierarchy
+        // If we don't have any frame info, then the virtual hierarchy
         // doesn't exist in the view of the Android framework, so should
         // never send any events.
         if (!mAccessibilityManager.isEnabled() || mNativeObj == 0
-                || !mFrameInfoInitialized) {
+                || !isFrameInfoInitialized()) {
+            return;
+        }
+
+        // This is currently needed if we want Android to draw the yellow box around
+        // the item that has accessibility focus. In practice, this doesn't seem to slow
+        // things down, because it's only called when the accessibility focus moves.
+        // TODO(dmazzoni): remove this if/when Android framework fixes bug.
+        mView.postInvalidate();
+
+        // The container view is indicated by a virtualViewId of NO_ID; post these events directly
+        // since there's no web-specific information to attach.
+        if (virtualViewId == View.NO_ID) {
+            mView.sendAccessibilityEvent(eventType);
             return;
         }
 
@@ -308,13 +321,7 @@ public class BrowserAccessibilityManager {
             return;
         }
 
-        // This is currently needed if we want Android to draw the yellow box around
-        // the item that has accessibility focus. In practice, this doesn't seem to slow
-        // things down, because it's only called when the accessibility focus moves.
-        // TODO(dmazzoni): remove this if/when Android framework fixes bug.
-        mContentViewCore.getContainerView().postInvalidate();
-
-        mContentViewCore.getContainerView().requestSendAccessibilityEvent(mView, event);
+        mView.requestSendAccessibilityEvent(mView, event);
     }
 
     private Bundle getOrCreateBundleForAccessibilityEvent(AccessibilityEvent event) {
@@ -353,11 +360,16 @@ public class BrowserAccessibilityManager {
         result.setClassName(source.getClassName());
 
         // Add the Chrome root node.
-        if (mFrameInfoInitialized) {
+        if (isFrameInfoInitialized()) {
             result.addChild(mView, rootId);
         }
 
         return result;
+    }
+
+    private boolean isFrameInfoInitialized() {
+        return mRenderCoordinates.getContentWidthCss() != 0.0 ||
+               mRenderCoordinates.getContentHeightCss() != 0.0;
     }
 
     @CalledByNative
@@ -409,7 +421,6 @@ public class BrowserAccessibilityManager {
     private void handleNavigate() {
         mAccessibilityFocusId = View.NO_ID;
         mUserHasTouchExplored = false;
-        mFrameInfoInitialized = false;
         // Invalidate the host, since its child is now gone.
         mView.sendAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
     }
