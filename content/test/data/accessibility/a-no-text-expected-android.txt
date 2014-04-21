@@ -1,0 +1,10 @@
+android.webkit.WebView focusable focused scrollable
+    android.view.View
+        android.view.View clickable focusable name='dest1'
+        android.view.View clickable focusable name='dest2'
+        android.view.View clickable focusable name='dest3'
+        android.view.View clickable focusable name='dest4'
+        android.view.View clickable focusable name='dest5'
+        android.view.View clickable focusable name='dest6'
+        android.view.View clickable focusable name='dest7'
+        android.view.View clickable focusable name='dest.8'

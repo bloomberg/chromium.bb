@@ -268,8 +268,7 @@ base::string16 BrowserAccessibilityAndroid::GetText() const {
     return base::string16();
   }
 
-  base::string16 description = GetString16Attribute(
-      ui::AX_ATTR_DESCRIPTION);
+  base::string16 description = GetString16Attribute(ui::AX_ATTR_DESCRIPTION);
   base::string16 text;
   if (!name().empty())
     text = base::UTF8ToUTF16(name());
@@ -293,6 +292,26 @@ base::string16 BrowserAccessibilityAndroid::GetText() const {
       if (!text.empty())
         text += base::ASCIIToUTF16(" Heading");
       break;
+  }
+
+  if (text.empty() && IsLink()) {
+    base::string16 url = GetString16Attribute(ui::AX_ATTR_URL);
+    // Given a url like http://foo.com/bar/baz.png, just return the
+    // base name, e.g., "baz".
+    int trailing_slashes = 0;
+    while (url.size() - trailing_slashes > 0 &&
+           url[url.size() - trailing_slashes - 1] == '/') {
+      trailing_slashes++;
+    }
+    if (trailing_slashes)
+      url = url.substr(0, url.size() - trailing_slashes);
+    size_t slash_index = url.rfind('/');
+    if (slash_index != std::string::npos)
+      url = url.substr(slash_index + 1);
+    size_t dot_index = url.rfind('.');
+    if (dot_index != std::string::npos)
+      url = url.substr(0, dot_index);
+    text = url;
   }
 
   return text;
