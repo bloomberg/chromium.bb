@@ -12,7 +12,7 @@ class SmoothnessTop25(test.Test):
 
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
   test = smoothness.Smoothness
-  page_set = 'page_sets/top_25.json'
+  page_set = 'page_sets/top_25.py'
 
 
 @test.Disabled('mac')
@@ -69,7 +69,7 @@ class SmoothnessGpuRasterizationTop25(test.Test):
   """
   tag = 'gpu_rasterization'
   test = smoothness.Smoothness
-  page_set = 'page_sets/top_25.json'
+  page_set = 'page_sets/top_25.py'
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--enable-threaded-compositing')
     options.AppendExtraBrowserArgs('--force-compositing-mode')

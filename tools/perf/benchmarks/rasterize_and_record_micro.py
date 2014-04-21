@@ -17,7 +17,7 @@ class RasterizeAndRecordMicroTop25(test.Test):
 
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
   test = rasterize_and_record_micro.RasterizeAndRecordMicro
-  page_set = 'page_sets/top_25.json'
+  page_set = 'page_sets/top_25.py'
 
 
 @test.Disabled('mac')

@@ -13,7 +13,7 @@ class MemoryMobile(test.Test):
 
 class MemoryTop25(test.Test):
   test = memory.Memory
-  page_set = 'page_sets/top_25.json'
+  page_set = 'page_sets/top_25.py'
 
 
 class Reload2012Q3(test.Test):
