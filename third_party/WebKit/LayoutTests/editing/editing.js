@@ -899,7 +899,10 @@ function runEditingTest() {
 
     var elem = document.getElementById("test");
     var selection = window.getSelection();
-    selection.setPosition(elem, 0);
+    if (elem)
+        selection.setPosition(elem, 0);
+    else
+        selection.removeAllRanges();
     editingTest();
 }
 
@@ -917,7 +920,10 @@ function runDumpAsTextEditingTest(enableCallbacks) {
 
     var elem = document.getElementById("test");
     var selection = window.getSelection();
-    selection.setPosition(elem, 0);
+    if (elem)
+        selection.setPosition(elem, 0);
+    else
+        selection.removeAllRanges();
     editingTest();
 
     for (var i = 0; i < elementsForDumpingMarkupList.length; i++)
