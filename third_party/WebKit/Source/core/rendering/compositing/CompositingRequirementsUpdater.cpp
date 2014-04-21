@@ -507,7 +507,7 @@ void CompositingRequirementsUpdater::updateRecursive(RenderLayer* ancestorLayer,
     if (layer->isRootLayer()) {
         // The root layer needs to be composited if anything else in the tree is composited.
         // Otherwise, we can disable compositing entirely.
-        if (childRecursionData.m_subtreeIsCompositing || requiresCompositingOrSquashing(reasonsToComposite) || compositor->inForcedCompositingMode()) {
+        if (childRecursionData.m_subtreeIsCompositing || requiresCompositingOrSquashing(reasonsToComposite) || compositor->rootShouldAlwaysComposite()) {
             willBeCompositedOrSquashed = true;
             reasonsToComposite |= CompositingReasonRoot;
         } else {

@@ -661,7 +661,7 @@ bool FrameView::usesCompositedScrolling() const
     if (!renderView)
         return false;
     if (m_frame->settings() && m_frame->settings()->compositedScrollingForFramesEnabled())
-        return renderView->compositor()->inForcedCompositingMode();
+        return renderView->compositor()->upToDateInCompositingMode();
     return false;
 }
 

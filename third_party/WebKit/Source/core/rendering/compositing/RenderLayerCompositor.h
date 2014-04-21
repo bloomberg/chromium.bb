@@ -71,12 +71,12 @@ public:
 
     // Return true if this RenderView is in "compositing mode" (i.e. has one or more
     // composited RenderLayers)
-    bool inCompositingMode() const { return m_compositing; }
+    // FIXME: Rename to inCompositingMode and rename inCompositingMode to staleInCompositingMode.
+    bool upToDateInCompositingMode() const;
+    bool inCompositingMode() const;
     // This will make a compositing layer at the root automatically, and hook up to
     // the native view/window system.
     void setCompositingModeEnabled(bool);
-
-    bool inForcedCompositingMode() const { return m_forceCompositingMode; }
 
     // Returns true if the accelerated compositing is enabled
     bool hasAcceleratedCompositing() const { return m_hasAcceleratedCompositing; }
@@ -88,6 +88,8 @@ public:
     bool acceleratedCompositingForOverflowScrollEnabled() const;
 
     bool canRender3DTransforms() const;
+
+    bool rootShouldAlwaysComposite() const;
 
     // Copy the accelerated compositing related flags from Settings
     void updateAcceleratedCompositingSettings();
@@ -294,8 +296,6 @@ private:
 
     bool compositingLayersNeedRebuild();
 
-    void updateShouldForceCompositingMode();
-
     void enableCompositingModeIfNeeded();
 
     bool requiresHorizontalScrollbarLayer() const;
@@ -322,8 +322,15 @@ private:
     bool m_needsToRecomputeCompositingRequirements;
     bool m_compositing;
     bool m_compositingLayersNeedRebuild;
-    bool m_forceCompositingMode;
-    bool m_forceCompositingModeDirty;
+
+    // The root layer doesn't composite if it's a non-scrollable frame.
+    // So, after a layout we set this dirty bit to know that we need
+    // to recompute whether the root layer should composite even if
+    // none of its descendants composite.
+    // FIXME: Get rid of all the callers of setCompositingModeEnabled
+    // except the one in updateIfNeeded, then rename this to
+    // m_compositingDirty.
+    bool m_rootShouldAlwaysCompositeDirty;
     bool m_needsUpdateCompositingRequirementsState;
     bool m_needsUpdateFixedBackground;
     bool m_isTrackingRepaints; // Used for testing.

@@ -116,8 +116,7 @@ RenderLayerCompositor::RenderLayerCompositor(RenderView& renderView)
     , m_needsToRecomputeCompositingRequirements(false)
     , m_compositing(false)
     , m_compositingLayersNeedRebuild(false)
-    , m_forceCompositingMode(false)
-    , m_forceCompositingModeDirty(true)
+    , m_rootShouldAlwaysCompositeDirty(true)
     , m_needsUpdateCompositingRequirementsState(false)
     , m_needsUpdateFixedBackground(false)
     , m_isTrackingRepaints(false)
@@ -129,6 +128,17 @@ RenderLayerCompositor::RenderLayerCompositor(RenderView& renderView)
 RenderLayerCompositor::~RenderLayerCompositor()
 {
     ASSERT(m_rootLayerAttachment == RootLayerUnattached);
+}
+
+bool RenderLayerCompositor::upToDateInCompositingMode() const
+{
+    ASSERT(!m_rootShouldAlwaysCompositeDirty);
+    return m_compositing;
+}
+
+bool RenderLayerCompositor::inCompositingMode() const
+{
+    return m_compositing;
 }
 
 void RenderLayerCompositor::setCompositingModeEnabled(bool enable)
@@ -148,33 +158,35 @@ void RenderLayerCompositor::setCompositingModeEnabled(bool enable)
 
 void RenderLayerCompositor::enableCompositingModeIfNeeded()
 {
-    ASSERT(!m_forceCompositingModeDirty);
-    if (m_forceCompositingMode && !m_compositing)
+    if (!m_rootShouldAlwaysCompositeDirty)
+        return;
+
+    m_rootShouldAlwaysCompositeDirty = false;
+    if (m_compositing)
+        return;
+
+    if (rootShouldAlwaysComposite()) {
+        // FIXME: Is this needed? It was added in https://bugs.webkit.org/show_bug.cgi?id=26651.
+        // No tests fail if it's deleted.
+        setCompositingLayersNeedRebuild();
         setCompositingModeEnabled(true);
+    }
 }
 
 bool RenderLayerCompositor::compositingLayersNeedRebuild()
 {
-    // Updating m_forceCompositingMode can set the m_compositingLayersNeedRebuild bit.
-    ASSERT(!m_forceCompositingModeDirty);
+    // enableCompositingModeIfNeeded can set the m_compositingLayersNeedRebuild bit.
+    ASSERT(!m_rootShouldAlwaysCompositeDirty);
     return m_compositingLayersNeedRebuild;
 }
 
-void RenderLayerCompositor::updateShouldForceCompositingMode()
+bool RenderLayerCompositor::rootShouldAlwaysComposite() const
 {
-    if (!m_forceCompositingModeDirty)
-        return;
-
-    m_forceCompositingModeDirty = false;
-
     Settings* settings = m_renderView.document().settings();
-    bool forceCompositingMode = settings->forceCompositingMode() && m_hasAcceleratedCompositing;
-    if (forceCompositingMode && !m_renderView.frame()->isMainFrame())
-        forceCompositingMode = m_compositingReasonFinder.requiresCompositingForScrollableFrame();
-    if (forceCompositingMode != m_forceCompositingMode) {
-        setCompositingLayersNeedRebuild();
-        m_forceCompositingMode = forceCompositingMode;
-    }
+    bool shouldComposite = settings->forceCompositingMode() && m_hasAcceleratedCompositing;
+    if (shouldComposite && !m_renderView.frame()->isMainFrame())
+        return m_compositingReasonFinder.requiresCompositingForScrollableFrame();
+    return shouldComposite;
 }
 
 void RenderLayerCompositor::updateAcceleratedCompositingSettings()
@@ -182,11 +194,14 @@ void RenderLayerCompositor::updateAcceleratedCompositingSettings()
     m_compositingReasonFinder.updateTriggers();
 
     bool hasAcceleratedCompositing = m_renderView.document().settings()->acceleratedCompositingEnabled();
+
+    // FIXME: Is this needed? It was added in https://bugs.webkit.org/show_bug.cgi?id=26651.
+    // No tests fail if it's deleted.
     if (hasAcceleratedCompositing != m_hasAcceleratedCompositing)
         setCompositingLayersNeedRebuild();
 
     m_hasAcceleratedCompositing = hasAcceleratedCompositing;
-    m_forceCompositingModeDirty = true;
+    m_rootShouldAlwaysCompositeDirty = true;
 }
 
 bool RenderLayerCompositor::layerSquashingEnabled() const
@@ -300,7 +315,7 @@ void RenderLayerCompositor::setNeedsCompositingUpdate(CompositingUpdateType upda
     // FIXME: Technically we only need to do this when the FrameView's isScrollable method
     // would return a different value.
     if (updateType == CompositingUpdateAfterLayout)
-        m_forceCompositingModeDirty = true;
+        m_rootShouldAlwaysCompositeDirty = true;
 
     // Avoid updating the layers with old values. Compositing layers will be updated after the layout is finished.
     if (m_renderView.needsLayout())
@@ -308,7 +323,6 @@ void RenderLayerCompositor::setNeedsCompositingUpdate(CompositingUpdateType upda
 
     // FIXME: We shouldn't clear dirty bits in this function. Also, we shouldn't
     // enable compositing mode in this function.
-    updateShouldForceCompositingMode();
     enableCompositingModeIfNeeded();
 
     if (!m_needsToRecomputeCompositingRequirements && !m_compositing)
@@ -366,14 +380,12 @@ void RenderLayerCompositor::updateIfNeeded()
         DeprecatedDirtyCompositingDuringCompositingUpdate marker(lifecycle());
         updateCompositingRequirementsState();
 
-        // updateShouldForceCompositingMode can call setCompositingLayersNeedRebuild,
+        // enableCompositingModeIfNeeded can call setCompositingLayersNeedRebuild,
         // which asserts that it's not InCompositingUpdate.
-        updateShouldForceCompositingMode();
+        enableCompositingModeIfNeeded();
     }
 
-    enableCompositingModeIfNeeded();
-
-    if (!m_needsToRecomputeCompositingRequirements && !m_compositing)
+    if (!hasAcceleratedCompositing() || (!m_needsToRecomputeCompositingRequirements && !m_compositing))
         return;
 
     CompositingUpdateType updateType = m_pendingUpdateType;
@@ -482,9 +494,6 @@ void RenderLayerCompositor::updateIfNeeded()
     }
 
     ASSERT(updateRoot || !compositingLayersNeedRebuild());
-
-    if (!hasAcceleratedCompositing())
-        setCompositingModeEnabled(false);
 
     // The scrolling coordinator may realize that it needs updating while compositing was being updated in this function.
     needsToUpdateScrollingCoordinator |= scrollingCoordinator() && scrollingCoordinator()->needsToUpdateAfterCompositingChange();
