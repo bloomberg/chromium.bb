@@ -799,9 +799,9 @@ class GitWrapper(SCMWrapper):
          'an existing branch or use \'git checkout %s -b <branch>\' to\n'
          'create a new branch for your work.') % (revision, self.remote))
 
-  @staticmethod
-  def _AskForData(prompt, options):
+  def _AskForData(self, prompt, options):
     if options.jobs > 1:
+      self.Print(prompt)
       raise gclient_utils.Error("Background task requires input. Rerun "
                                 "gclient with --jobs=1 so that\n"
                                 "interaction is possible.")
