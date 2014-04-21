@@ -73,6 +73,10 @@ HTMLDocument::HTMLDocument(const DocumentInit& initializer, DocumentClassFlags e
 {
     ScriptWrappable::init(this);
     clearXMLVersion();
+    if (isSrcdocDocument() || initializer.importsController()) {
+        ASSERT(inNoQuirksMode());
+        lockCompatibilityMode();
+    }
 }
 
 HTMLDocument::~HTMLDocument()

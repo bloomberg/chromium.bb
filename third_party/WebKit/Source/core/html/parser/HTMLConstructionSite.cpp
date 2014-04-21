@@ -419,8 +419,6 @@ void HTMLConstructionSite::setDefaultCompatibilityMode()
 {
     if (m_isParsingFragment)
         return;
-    if (m_document->isSrcdocDocument())
-        return;
     setCompatibilityMode(Document::QuirksMode);
 }
 
