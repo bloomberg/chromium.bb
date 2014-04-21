@@ -275,7 +275,7 @@ private:
 
     void addRecordToTimeline(PassRefPtr<TypeBuilder::Timeline::TimelineEvent>, double ts);
     void innerAddRecordToTimeline(PassRefPtr<TypeBuilder::Timeline::TimelineEvent>);
-    void addCountersUpdate(TypeBuilder::Array<TypeBuilder::Timeline::TimelineEvent>* records);
+    PassRefPtr<TypeBuilder::Timeline::TimelineEvent> createCountersUpdate();
     void clearRecordStack();
     PassRefPtr<TypeBuilder::Timeline::TimelineEvent> createRecordForEvent(const TraceEventDispatcher::TraceEvent&, const String& type, PassRefPtr<JSONObject> data);
 

@@ -256,7 +256,11 @@ void InspectorTimelineAgent::didGC(double startTime, double endTime, size_t coll
         TimelineRecordType::GCEvent,
         TimelineRecordFactory::createGCEventData(collectedBytesCount));
     record->setEndTime(endTime * msPerSecond);
-    addRecordToTimeline(record.release(), timestamp());
+    double time = timestamp();
+    addRecordToTimeline(record.release(), time);
+    if (m_state->getBoolean(TimelineAgentState::includeCounters)) {
+        addRecordToTimeline(createCountersUpdate(), time);
+    }
 }
 
 InspectorTimelineAgent::~InspectorTimelineAgent()
@@ -1102,7 +1106,8 @@ void InspectorTimelineAgent::innerAddRecordToTimeline(PassRefPtr<TimelineEvent> 
     } else {
         TimelineRecordEntry& parent = m_recordStack.last();
         parent.children->addItem(record);
-        addCountersUpdate(parent.children.get());
+        if (m_state->getBoolean(TimelineAgentState::includeCounters))
+            parent.children->addItem(createCountersUpdate());
     }
 }
 
@@ -1113,10 +1118,8 @@ static size_t getUsedHeapSize()
     return info.usedJSHeapSize;
 }
 
-void InspectorTimelineAgent::addCountersUpdate(TypeBuilder::Array<TimelineEvent>* records)
+PassRefPtr<TypeBuilder::Timeline::TimelineEvent> InspectorTimelineAgent::createCountersUpdate()
 {
-    if (!m_state->getBoolean(TimelineAgentState::includeCounters))
-        return;
     RefPtr<TypeBuilder::Timeline::Counters> counters = TypeBuilder::Timeline::Counters::create();
     if (m_inspectorType == PageInspector) {
         counters->setDocuments(InspectorCounters::counterValue(InspectorCounters::DocumentCounter));
@@ -1124,7 +1127,7 @@ void InspectorTimelineAgent::addCountersUpdate(TypeBuilder::Array<TimelineEvent>
         counters->setJsEventListeners(InspectorCounters::counterValue(InspectorCounters::JSEventListenerCounter));
     }
     counters->setJsHeapSizeUsed(static_cast<double>(getUsedHeapSize()));
-    records->addItem(TimelineRecordFactory::createGenericRecord(timestamp(), 0, TimelineRecordType::UpdateCounters, counters.release()->asObject()));
+    return TimelineRecordFactory::createGenericRecord(timestamp(), 0, TimelineRecordType::UpdateCounters, counters.release()->asObject());
 }
 
 void InspectorTimelineAgent::setFrameIdentifier(TimelineEvent* record, LocalFrame* frame)
