@@ -110,6 +110,7 @@ crbug.com/248938 virtual/threaded/animations/transition-and-animation-1.html [ S
 crbug.com/248938 virtual/threaded/animations/3d/replace-filling-transform.html [ Slow ]
 crbug.com/248938 virtual/threaded/animations/animation-welcome-safari.html [ Slow ]
 crbug.com/311482 virtual/threaded/animations/interpolation/filter-interpolation.html [ Slow ]
+crbug.com/311482 virtual/threaded/animations/keyframes-unprefixed-03.html [ Slow ]
 
 crbug.com/258896 animations/animation-direction-reverse-fill-mode.html [ Slow ]
 
