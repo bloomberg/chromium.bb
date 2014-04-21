@@ -8,6 +8,7 @@
 #include "ui/aura/input_state_lookup.h"
 #include "ui/compositor/compositor.h"
 #include "ui/events/event_target_iterator.h"
+#include "ui/events/platform/platform_event_source.h"
 
 namespace aura {
 
@@ -68,6 +69,9 @@ bool Env::IsMouseButtonDown() const {
 
 void Env::Init() {
   ui::Compositor::Initialize();
+
+  if (!ui::PlatformEventSource::GetInstance())
+    event_source_ = ui::PlatformEventSource::CreateDefault();
 }
 
 void Env::NotifyWindowInitialized(Window* window) {

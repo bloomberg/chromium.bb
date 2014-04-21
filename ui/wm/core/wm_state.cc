@@ -15,8 +15,6 @@ WMState::WMState()
       transient_window_client_(new TransientWindowController) {
   aura::client::SetWindowStackingClient(window_stacking_client_.get());
   aura::client::SetTransientWindowClient(transient_window_client_.get());
-  if (!ui::PlatformEventSource::GetInstance())
-    event_source_ = ui::PlatformEventSource::CreateDefault();
 }
 
 WMState::~WMState() {
