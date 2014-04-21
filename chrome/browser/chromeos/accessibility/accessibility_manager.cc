@@ -542,6 +542,9 @@ void AccessibilityManager::LoadChromeVoxToUserScreen() {
       if (web_ui_login_view)
         login_web_ui = web_ui_login_view->GetWebUI();
     }
+
+    // Lock screen uses the signin progile.
+    chrome_vox_loaded_on_lock_screen_ = true;
   }
 
   LoadChromeVoxExtension(profile_, login_web_ui ?
@@ -970,12 +973,7 @@ void AccessibilityManager::Observe(
           // this as well.
           LoadChromeVoxToUserScreen();
         } else {
-          // Lock screen destroys its resources; no need for us to explicitly
-          // unload ChromeVox.
-          chrome_vox_loaded_on_lock_screen_ = false;
-
-          // However, if spoken feedback was enabled, also enable it on the user
-          // screen.
+          // If spoken feedback was enabled, also enable it on the user screen.
           LoadChromeVoxToUserScreen();
         }
       }
