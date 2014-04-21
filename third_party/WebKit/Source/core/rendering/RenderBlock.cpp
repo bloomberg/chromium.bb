@@ -1491,7 +1491,12 @@ void RenderBlock::simplifiedNormalFlowLayout()
 
 bool RenderBlock::simplifiedLayout()
 {
-    if ((!posChildNeedsLayout() && !needsSimplifiedNormalFlowLayout()) || normalChildNeedsLayout() || selfNeedsLayout())
+    // Check if we need to do a full layout.
+    if (normalChildNeedsLayout() || selfNeedsLayout())
+        return false;
+
+    // Check that we actually need to do a simplified layout.
+    if (!posChildNeedsLayout() && !(needsSimplifiedNormalFlowLayout() || needsPositionedMovementLayout()))
         return false;
 
 
@@ -1519,8 +1524,8 @@ bool RenderBlock::simplifiedLayout()
         // relative positioned container. So if we can have fixed pos objects in our positioned objects list check if any of them
         // are statically positioned and thus need to move with their absolute ancestors.
         bool canContainFixedPosObjects = canContainFixedPositionObjects();
-        if (posChildNeedsLayout() || canContainFixedPosObjects)
-            layoutPositionedObjects(false, !posChildNeedsLayout() && canContainFixedPosObjects ? LayoutOnlyFixedPositionedObjects : DefaultLayout);
+        if (posChildNeedsLayout() || needsPositionedMovementLayout() || canContainFixedPosObjects)
+            layoutPositionedObjects(false, needsPositionedMovementLayout() ? ForcedLayoutAfterContainingBlockMoved : (!posChildNeedsLayout() && canContainFixedPosObjects ? LayoutOnlyFixedPositionedObjects : DefaultLayout));
 
         // Recompute our overflow information.
         // FIXME: We could do better here by computing a temporary overflow object from layoutPositionedObjects and only
@@ -1627,11 +1632,6 @@ void RenderBlock::layoutPositionedObjects(bool relayoutChildren, PositionedLayou
 
         if (!r->needsLayout())
             r->markForPaginationRelayoutIfNeeded(layoutScope);
-
-        // We don't have to do a full layout.  We just have to update our position. Try that first. If we have shrink-to-fit width
-        // and we hit the available width constraint, the layoutIfNeeded() will catch it and do a full layout.
-        if (r->needsPositionedMovementLayoutOnly() && r->tryLayoutDoingPositionedMovementOnly())
-            r->clearNeedsLayout();
 
         // If we are paginated or in a line grid, go ahead and compute a vertical position for our object now.
         // If it's wrong we'll lay out again.
