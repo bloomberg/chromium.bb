@@ -7,22 +7,34 @@ import os
 from telemetry import test
 from telemetry.core import util
 from telemetry.page import page_measurement
+from telemetry.page import page as page_module
 from telemetry.page import page_set
+
+
+class BlinkPerfPageSet(page_set.PageSet):
+  def __init__(self, file_path, page_urls, serving_dirs):
+    super(BlinkPerfPageSet, self).__init__(file_path=file_path,
+                                           serving_dirs=serving_dirs)
+
+    for url in page_urls:
+      self.AddPage(page_module.PageWithDefaultRunNavigate(
+        url, page_set=self, base_dir=self._base_dir))
+    self._InitializeArchive()
 
 
 def _CreatePageSetFromPath(path):
   assert os.path.exists(path)
 
-  page_set_dict = {'pages': []}
+  page_urls = []
+  serving_dirs = set()
 
   def _AddPage(path):
     if not path.endswith('.html'):
       return
     if '../' in open(path, 'r').read():
       # If the page looks like it references its parent dir, include it.
-      page_set_dict['serving_dirs'] = [os.path.dirname(os.path.dirname(path))]
-    page_set_dict['pages'].append({'url':
-                                   'file://' + path.replace('\\', '/')})
+      serving_dirs.add(os.path.dirname(os.path.dirname(path)))
+      page_urls.append('file://' + path.replace('\\', '/'))
 
   def _AddDir(dir_path, skipped):
     for candidate_path in os.listdir(dir_path):
@@ -48,7 +60,7 @@ def _CreatePageSetFromPath(path):
     _AddDir(path, skipped)
   else:
     _AddPage(path)
-  return page_set.PageSet.FromDict(page_set_dict, os.getcwd() + os.sep)
+  return BlinkPerfPageSet(os.getcwd() + os.sep, page_urls, serving_dirs)
 
 
 class _BlinkPerfMeasurement(page_measurement.PageMeasurement):
