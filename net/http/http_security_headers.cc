@@ -253,6 +253,7 @@ bool ParseHSTSHeader(const std::string& value,
   }
 
   switch (state) {
+    case DIRECTIVE_END:
     case AFTER_MAX_AGE:
     case AFTER_INCLUDE_SUBDOMAINS:
     case AFTER_UNKNOWN_LABEL:
@@ -260,7 +261,6 @@ bool ParseHSTSHeader(const std::string& value,
       *include_subdomains = include_subdomains_candidate;
       return true;
     case START:
-    case DIRECTIVE_END:
     case AFTER_MAX_AGE_LABEL:
     case AFTER_MAX_AGE_EQUALS:
       return false;
