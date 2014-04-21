@@ -10,17 +10,12 @@
 #include <string>
 #include <vector>
 
-#include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/system/chromeos/network/network_connect.h"
 #include "ash/system/chromeos/network/network_icon.h"
-#include "base/base64.h"
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/i18n/time_formatting.h"
-#include "base/json/json_writer.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -29,8 +24,6 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/choose_mobile_network_dialog.h"
-#include "chrome/browser/chromeos/enrollment_dialog_view.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/mobile_config.h"
@@ -39,13 +32,9 @@
 #include "chrome/browser/chromeos/options/network_property_ui_data.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/sim_dialog_delegate.h"
+#include "chrome/browser/chromeos/ui/choose_mobile_network_dialog.h"
+#include "chrome/browser/chromeos/ui/mobile_config_ui.h"
 #include "chrome/browser/chromeos/ui_proxy_config_service.h"
-#include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/host_desktop.h"
-#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
-#include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/webui/options/chromeos/core_chromeos_options_handler.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/network/device_state.h"
@@ -715,27 +704,294 @@ int FindCurrentCarrierIndex(const base::ListValue* carriers,
 
 void PopulateWifiDetails(const NetworkState* wifi,
                          const base::DictionaryValue& shill_properties,
-                         base::DictionaryValue* dictionary);
-// TODO(stevenjb): Move implementation here.
+                         base::DictionaryValue* dictionary) {
+  dictionary->SetString(kTagSsid, wifi->name());
+  dictionary->SetInteger(kTagStrength, wifi->signal_strength());
+  dictionary->SetString(kTagEncryption,
+                        EncryptionString(wifi->security(), wifi->eap_method()));
+  CopyStringFromDictionary(
+      shill_properties, shill::kWifiBSsid, kTagBssid, dictionary);
+  CopyIntegerFromDictionary(shill_properties,
+                            shill::kWifiFrequency,
+                            kTagFrequency,
+                            false,
+                            dictionary);
+}
 
 void PopulateWimaxDetails(const NetworkState* wimax,
                           const base::DictionaryValue& shill_properties,
-                          base::DictionaryValue* dictionary);
-// TODO(stevenjb): Move implementation here.
+                          base::DictionaryValue* dictionary) {
+  dictionary->SetInteger(kTagStrength, wimax->signal_strength());
+  CopyStringFromDictionary(
+      shill_properties, shill::kEapIdentityProperty, kTagIdentity, dictionary);
+}
 
 void CreateDictionaryFromCellularApn(const base::DictionaryValue* apn,
-                                     base::DictionaryValue* dictionary);
-// TODO(stevenjb): Move implementation here.
+                                     base::DictionaryValue* dictionary) {
+  CopyStringFromDictionary(*apn, shill::kApnProperty, kTagApn, dictionary);
+  CopyStringFromDictionary(
+      *apn, shill::kApnNetworkIdProperty, kTagNetworkId, dictionary);
+  CopyStringFromDictionary(
+      *apn, shill::kApnUsernameProperty, kTagUsername, dictionary);
+  CopyStringFromDictionary(
+      *apn, shill::kApnPasswordProperty, kTagPassword, dictionary);
+  CopyStringFromDictionary(*apn, shill::kApnNameProperty, kTagName, dictionary);
+  CopyStringFromDictionary(
+      *apn, shill::kApnLocalizedNameProperty, kTagLocalizedName, dictionary);
+  CopyStringFromDictionary(
+      *apn, shill::kApnLanguageProperty, kTagLanguage, dictionary);
+}
 
 void PopulateCellularDetails(const NetworkState* cellular,
                              const base::DictionaryValue& shill_properties,
-                             base::DictionaryValue* dictionary);
-// TODO(stevenjb): Move implementation here.
+                             base::DictionaryValue* dictionary) {
+  dictionary->SetBoolean(kTagCarrierSelectFlag,
+                         CommandLine::ForCurrentProcess()->HasSwitch(
+                             chromeos::switches::kEnableCarrierSwitching));
+  // Cellular network / connection settings.
+  dictionary->SetString(kTagNetworkTechnology, cellular->network_technology());
+  dictionary->SetString(kTagActivationState,
+                        ActivationStateString(cellular->activation_state()));
+  dictionary->SetString(kTagRoamingState,
+                        RoamingStateString(cellular->roaming()));
+  bool restricted = cellular->connection_state() == shill::kStatePortal;
+  dictionary->SetString(
+      kTagRestrictedPool,
+      restricted
+          ? l10n_util::GetStringUTF8(IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL)
+          : l10n_util::GetStringUTF8(IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL));
+
+  const base::DictionaryValue* serving_operator = NULL;
+  if (shill_properties.GetDictionaryWithoutPathExpansion(
+          shill::kServingOperatorProperty, &serving_operator)) {
+    CopyStringFromDictionary(*serving_operator,
+                             shill::kOperatorNameKey,
+                             kTagOperatorName,
+                             dictionary);
+    CopyStringFromDictionary(*serving_operator,
+                             shill::kOperatorCodeKey,
+                             kTagOperatorCode,
+                             dictionary);
+  }
+
+  const base::DictionaryValue* olp = NULL;
+  if (shill_properties.GetDictionaryWithoutPathExpansion(
+          shill::kPaymentPortalProperty, &olp)) {
+    std::string url;
+    olp->GetStringWithoutPathExpansion(shill::kPaymentPortalURL, &url);
+    dictionary->SetString(kTagSupportUrl, url);
+  }
+
+  base::DictionaryValue* apn = new base::DictionaryValue;
+  const base::DictionaryValue* source_apn = NULL;
+  if (shill_properties.GetDictionaryWithoutPathExpansion(
+          shill::kCellularApnProperty, &source_apn)) {
+    CreateDictionaryFromCellularApn(source_apn, apn);
+  }
+  dictionary->Set(kTagApn, apn);
+
+  base::DictionaryValue* last_good_apn = new base::DictionaryValue;
+  if (shill_properties.GetDictionaryWithoutPathExpansion(
+          shill::kCellularLastGoodApnProperty, &source_apn)) {
+    CreateDictionaryFromCellularApn(source_apn, last_good_apn);
+  }
+  dictionary->Set(kTagLastGoodApn, last_good_apn);
+
+  // These default to empty and are only set if device != NULL.
+  std::string carrier_id;
+  std::string mdn;
+
+  // Device settings.
+  const DeviceState* device =
+      NetworkHandler::Get()->network_state_handler()->GetDeviceState(
+          cellular->device_path());
+  if (device) {
+    // TODO(stevenjb): Add NetworkDeviceHandler::GetProperties() and use that
+    // to retrieve the complete dictionary of device properties, instead of
+    // caching them (will be done for the new UI).
+    const base::DictionaryValue& device_properties = device->properties();
+    const NetworkPropertyUIData cellular_property_ui_data(
+        cellular->ui_data().onc_source());
+    CopyStringFromDictionary(device_properties,
+                             shill::kManufacturerProperty,
+                             kTagManufacturer,
+                             dictionary);
+    CopyStringFromDictionary(
+        device_properties, shill::kModelIDProperty, kTagModelId, dictionary);
+    CopyStringFromDictionary(device_properties,
+                             shill::kFirmwareRevisionProperty,
+                             kTagFirmwareRevision,
+                             dictionary);
+    CopyStringFromDictionary(device_properties,
+                             shill::kHardwareRevisionProperty,
+                             kTagHardwareRevision,
+                             dictionary);
+    CopyIntegerFromDictionary(device_properties,
+                              shill::kPRLVersionProperty,
+                              kTagPrlVersion,
+                              true,
+                              dictionary);
+    CopyStringFromDictionary(
+        device_properties, shill::kMeidProperty, kTagMeid, dictionary);
+    CopyStringFromDictionary(
+        device_properties, shill::kIccidProperty, kTagIccid, dictionary);
+    CopyStringFromDictionary(
+        device_properties, shill::kImeiProperty, kTagImei, dictionary);
+    mdn = CopyStringFromDictionary(
+        device_properties, shill::kMdnProperty, kTagMdn, dictionary);
+    CopyStringFromDictionary(
+        device_properties, shill::kImsiProperty, kTagImsi, dictionary);
+    CopyStringFromDictionary(
+        device_properties, shill::kEsnProperty, kTagEsn, dictionary);
+    CopyStringFromDictionary(
+        device_properties, shill::kMinProperty, kTagMin, dictionary);
+    std::string family;
+    device_properties.GetStringWithoutPathExpansion(
+        shill::kTechnologyFamilyProperty, &family);
+    dictionary->SetBoolean(kTagGsm, family == shill::kNetworkTechnologyGsm);
+
+    SetValueDictionary(dictionary,
+                       kTagSimCardLockEnabled,
+                       new base::FundamentalValue(device->sim_lock_enabled()),
+                       cellular_property_ui_data);
+
+    carrier_id = device->home_provider_id();
+
+    MobileConfig* config = MobileConfig::GetInstance();
+    if (config->IsReady()) {
+      const MobileConfig::Carrier* carrier = config->GetCarrier(carrier_id);
+      if (carrier && !carrier->top_up_url().empty())
+        dictionary->SetString(kTagCarrierUrl, carrier->top_up_url());
+    }
+
+    base::ListValue* apn_list_value = new base::ListValue();
+    const base::ListValue* apn_list;
+    if (device_properties.GetListWithoutPathExpansion(
+            shill::kCellularApnListProperty, &apn_list)) {
+      for (base::ListValue::const_iterator iter = apn_list->begin();
+           iter != apn_list->end();
+           ++iter) {
+        const base::DictionaryValue* dict;
+        if ((*iter)->GetAsDictionary(&dict)) {
+          base::DictionaryValue* apn = new base::DictionaryValue;
+          CreateDictionaryFromCellularApn(dict, apn);
+          apn_list_value->Append(apn);
+        }
+      }
+    }
+    SetValueDictionary(dictionary,
+                       kTagProviderApnList,
+                       apn_list_value,
+                       cellular_property_ui_data);
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            chromeos::switches::kEnableCarrierSwitching)) {
+      const base::ListValue* supported_carriers;
+      if (device_properties.GetListWithoutPathExpansion(
+              shill::kSupportedCarriersProperty, &supported_carriers)) {
+        dictionary->Set(kTagCarriers, supported_carriers->DeepCopy());
+        dictionary->SetInteger(
+            kTagCurrentCarrierIndex,
+            FindCurrentCarrierIndex(supported_carriers, device));
+      } else {
+        // In case of any error, set the current carrier tag to -1 indicating
+        // to the JS code to fallback to a single carrier.
+        dictionary->SetInteger(kTagCurrentCarrierIndex, -1);
+      }
+    }
+  }
+
+  // Set Cellular Buttons Visibility
+  dictionary->SetBoolean(
+      kTagDisableConnectButton,
+      cellular->activation_state() == shill::kActivationStateActivating ||
+          cellular->IsConnectingState());
+
+  // Don't show any account management related buttons if the activation
+  // state is unknown or no payment portal URL is available.
+  std::string support_url;
+  if (cellular->activation_state() == shill::kActivationStateUnknown ||
+      !dictionary->GetString(kTagSupportUrl, &support_url) ||
+      support_url.empty()) {
+    VLOG(2) << "No support URL is available. Don't display buttons.";
+    return;
+  }
+
+  if (cellular->activation_state() != shill::kActivationStateActivating &&
+      cellular->activation_state() != shill::kActivationStateActivated) {
+    dictionary->SetBoolean(kTagShowActivateButton, true);
+  } else {
+    bool may_show_portal_button = false;
+
+    // If an online payment URL was provided by shill, then this means that the
+    // "View Account" button should be shown for the current carrier.
+    if (olp) {
+      std::string url;
+      olp->GetStringWithoutPathExpansion(shill::kPaymentPortalURL, &url);
+      may_show_portal_button = !url.empty();
+    }
+    // If no online payment URL was provided by shill, fall back to
+    // MobileConfig to determine if the "View Account" should be shown.
+    if (!may_show_portal_button && MobileConfig::GetInstance()->IsReady()) {
+      const MobileConfig::Carrier* carrier =
+          MobileConfig::GetInstance()->GetCarrier(carrier_id);
+      may_show_portal_button = carrier && carrier->show_portal_button();
+    }
+    if (may_show_portal_button) {
+      // The button should be shown for a LTE network even when the LTE network
+      // is not connected, but CrOS is online. This is done to enable users to
+      // update their plan even if they are out of credits.
+      // The button should not be shown when the device's mdn is not set,
+      // because the network's proper portal url cannot be generated without it
+      const NetworkState* default_network =
+          NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
+      const std::string& technology = cellular->network_technology();
+      bool force_show_view_account_button =
+          (technology == shill::kNetworkTechnologyLte ||
+           technology == shill::kNetworkTechnologyLteAdvanced) &&
+          default_network && !mdn.empty();
+
+      // The button will trigger ShowMorePlanInfoCallback() which will open
+      // carrier specific portal.
+      if (cellular->IsConnectedState() || force_show_view_account_button)
+        dictionary->SetBoolean(kTagShowViewAccountButton, true);
+    }
+  }
+}
 
 void PopulateConnectionDetails(const NetworkState* network,
                                const base::DictionaryValue& shill_properties,
-                               base::DictionaryValue* dictionary);
-// TODO(stevenjb): Move implementation here.
+                               base::DictionaryValue* dictionary) {
+  dictionary->SetString(kNetworkInfoKeyServicePath, network->path());
+  dictionary->SetString(kTagServiceName, network->name());
+  dictionary->SetBoolean(kTagConnecting, network->IsConnectingState());
+  dictionary->SetBoolean(kTagConnected, network->IsConnectedState());
+  dictionary->SetString(kTagConnectionState,
+                        ConnectionStateString(network->connection_state()));
+  dictionary->SetString(kTagNetworkName, network->name());
+  dictionary->SetString(
+      kTagErrorState,
+      ash::network_connect::ErrorString(network->error(), network->path()));
+
+  dictionary->SetBoolean(kTagRemembered, !network->profile_path().empty());
+  bool shared = !network->IsPrivate();
+  dictionary->SetBoolean(kTagShared, shared);
+
+  const std::string& type = network->type();
+  const NetworkState* connected_network =
+      NetworkHandler::Get()->network_state_handler()->ConnectedNetworkByType(
+          NetworkTypePattern::Primitive(type));
+
+  dictionary->SetBoolean(kTagDeviceConnected, connected_network != NULL);
+
+  if (type == shill::kTypeWifi)
+    PopulateWifiDetails(network, shill_properties, dictionary);
+  else if (type == shill::kTypeWimax)
+    PopulateWimaxDetails(network, shill_properties, dictionary);
+  else if (type == shill::kTypeCellular)
+    PopulateCellularDetails(network, shill_properties, dictionary);
+  else if (type == shill::kTypeVPN)
+    PopulateVPNDetails(network, shill_properties, dictionary);
+}
 
 // Helper methods for SetIPConfigProperties
 bool AppendPropertyKeyIfPresent(const std::string& key,
@@ -1081,23 +1337,8 @@ void InternetOptionsHandler::EnableCellularCallback(
     return;
   }
   if (device->IsSimAbsent()) {
-    MobileConfig* config = MobileConfig::GetInstance();
-    if (config->IsReady()) {
-      const MobileConfig::LocaleConfig* locale_config =
-          config->GetLocaleConfig();
-      if (locale_config) {
-        std::string setup_url = locale_config->setup_url();
-        if (!setup_url.empty()) {
-          // The mobile device will be managed by the primary user.
-          chrome::ScopedTabbedBrowserDisplayer displayer(
-               ProfileManager::GetPrimaryUserProfile(),
-               chrome::HOST_DESKTOP_TYPE_ASH);
-          chrome::ShowSingletonTab(displayer.browser(), GURL(setup_url));
-          return;
-        }
-      }
-    }
-    // TODO(nkostylev): Show generic error message. http://crosbug.com/15444
+    mobile_config_ui::DisplayConfigDialog();
+    return;
   }
   LOG(ERROR) << "EnableCellularCallback called for enabled mobile device";
 }
@@ -1263,7 +1504,7 @@ void InternetOptionsHandler::SetSimCardLockCallback(
 
 void InternetOptionsHandler::ChangePinCallback(const base::ListValue* args) {
   SimDialogDelegate::ShowDialog(GetNativeWindow(),
-      SimDialogDelegate::SIM_DIALOG_CHANGE_PIN);
+                                SimDialogDelegate::SIM_DIALOG_CHANGE_PIN);
 }
 
 void InternetOptionsHandler::RefreshNetworksCallback(
@@ -1656,287 +1897,6 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
   // Show details dialog
   web_ui()->CallJavascriptFunction(kShowDetailedInfoFunction, dictionary);
 }
-
-namespace {
-
-void PopulateConnectionDetails(const NetworkState* network,
-                               const base::DictionaryValue& shill_properties,
-                               base::DictionaryValue* dictionary) {
-  dictionary->SetString(kNetworkInfoKeyServicePath, network->path());
-  dictionary->SetString(kTagServiceName, network->name());
-  dictionary->SetBoolean(kTagConnecting, network->IsConnectingState());
-  dictionary->SetBoolean(kTagConnected, network->IsConnectedState());
-  dictionary->SetString(kTagConnectionState,
-                        ConnectionStateString(network->connection_state()));
-  dictionary->SetString(kTagNetworkName, network->name());
-  dictionary->SetString(
-      kTagErrorState,
-      ash::network_connect::ErrorString(network->error(), network->path()));
-
-  dictionary->SetBoolean(kTagRemembered, !network->profile_path().empty());
-  bool shared = !network->IsPrivate();
-  dictionary->SetBoolean(kTagShared, shared);
-
-  const std::string& type = network->type();
-  const NetworkState* connected_network =
-      NetworkHandler::Get()->network_state_handler()->ConnectedNetworkByType(
-          NetworkTypePattern::Primitive(type));
-
-  dictionary->SetBoolean(kTagDeviceConnected, connected_network != NULL);
-
-  if (type == shill::kTypeWifi)
-    PopulateWifiDetails(network, shill_properties, dictionary);
-  else if (type == shill::kTypeWimax)
-    PopulateWimaxDetails(network, shill_properties, dictionary);
-  else if (type == shill::kTypeCellular)
-    PopulateCellularDetails(network, shill_properties, dictionary);
-  else if (type == shill::kTypeVPN)
-    PopulateVPNDetails(network, shill_properties, dictionary);
-}
-
-void PopulateWifiDetails(const NetworkState* wifi,
-                         const base::DictionaryValue& shill_properties,
-                         base::DictionaryValue* dictionary) {
-  dictionary->SetString(kTagSsid, wifi->name());
-  dictionary->SetInteger(kTagStrength, wifi->signal_strength());
-  dictionary->SetString(kTagEncryption,
-                        EncryptionString(wifi->security(), wifi->eap_method()));
-  CopyStringFromDictionary(shill_properties, shill::kWifiBSsid,
-                           kTagBssid, dictionary);
-  CopyIntegerFromDictionary(shill_properties, shill::kWifiFrequency,
-                            kTagFrequency, false, dictionary);
-}
-
-void PopulateWimaxDetails(const NetworkState* wimax,
-                          const base::DictionaryValue& shill_properties,
-                          base::DictionaryValue* dictionary) {
-  dictionary->SetInteger(kTagStrength, wimax->signal_strength());
-  CopyStringFromDictionary(shill_properties, shill::kEapIdentityProperty,
-                           kTagIdentity, dictionary);
-}
-
-void CreateDictionaryFromCellularApn(const base::DictionaryValue* apn,
-                                     base::DictionaryValue* dictionary) {
-  CopyStringFromDictionary(*apn, shill::kApnProperty,
-                           kTagApn, dictionary);
-  CopyStringFromDictionary(*apn, shill::kApnNetworkIdProperty,
-                           kTagNetworkId, dictionary);
-  CopyStringFromDictionary(*apn, shill::kApnUsernameProperty,
-                           kTagUsername, dictionary);
-  CopyStringFromDictionary(*apn, shill::kApnPasswordProperty,
-                           kTagPassword, dictionary);
-  CopyStringFromDictionary(*apn, shill::kApnNameProperty,
-                           kTagName, dictionary);
-  CopyStringFromDictionary(*apn, shill::kApnLocalizedNameProperty,
-                           kTagLocalizedName, dictionary);
-  CopyStringFromDictionary(*apn, shill::kApnLanguageProperty,
-                           kTagLanguage, dictionary);
-}
-
-void PopulateCellularDetails(const NetworkState* cellular,
-                             const base::DictionaryValue& shill_properties,
-                             base::DictionaryValue* dictionary) {
-  dictionary->SetBoolean(kTagCarrierSelectFlag,
-                         CommandLine::ForCurrentProcess()->HasSwitch(
-                             chromeos::switches::kEnableCarrierSwitching));
-  // Cellular network / connection settings.
-  dictionary->SetString(kTagNetworkTechnology, cellular->network_technology());
-  dictionary->SetString(kTagActivationState,
-                        ActivationStateString(cellular->activation_state()));
-  dictionary->SetString(kTagRoamingState,
-                        RoamingStateString(cellular->roaming()));
-  bool restricted = cellular->connection_state() == shill::kStatePortal;
-  dictionary->SetString(kTagRestrictedPool,
-                        restricted ?
-                        l10n_util::GetStringUTF8(
-                            IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL) :
-                        l10n_util::GetStringUTF8(
-                            IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL));
-
-  const base::DictionaryValue* serving_operator = NULL;
-  if (shill_properties.GetDictionaryWithoutPathExpansion(
-          shill::kServingOperatorProperty, &serving_operator)) {
-    CopyStringFromDictionary(*serving_operator, shill::kOperatorNameKey,
-                             kTagOperatorName, dictionary);
-    CopyStringFromDictionary(*serving_operator, shill::kOperatorCodeKey,
-                             kTagOperatorCode, dictionary);
-  }
-
-  const base::DictionaryValue* olp = NULL;
-  if (shill_properties.GetDictionaryWithoutPathExpansion(
-          shill::kPaymentPortalProperty, &olp)) {
-    std::string url;
-    olp->GetStringWithoutPathExpansion(shill::kPaymentPortalURL, &url);
-    dictionary->SetString(kTagSupportUrl, url);
-  }
-
-  base::DictionaryValue* apn = new base::DictionaryValue;
-  const base::DictionaryValue* source_apn = NULL;
-  if (shill_properties.GetDictionaryWithoutPathExpansion(
-          shill::kCellularApnProperty, &source_apn)) {
-    CreateDictionaryFromCellularApn(source_apn, apn);
-  }
-  dictionary->Set(kTagApn, apn);
-
-  base::DictionaryValue* last_good_apn = new base::DictionaryValue;
-  if (shill_properties.GetDictionaryWithoutPathExpansion(
-          shill::kCellularLastGoodApnProperty, &source_apn)) {
-    CreateDictionaryFromCellularApn(source_apn, last_good_apn);
-  }
-  dictionary->Set(kTagLastGoodApn, last_good_apn);
-
-  // These default to empty and are only set if device != NULL.
-  std::string carrier_id;
-  std::string mdn;
-
-  // Device settings.
-  const DeviceState* device = NetworkHandler::Get()->network_state_handler()->
-      GetDeviceState(cellular->device_path());
-  if (device) {
-    // TODO(stevenjb): Add NetworkDeviceHandler::GetProperties() and use that
-    // to retrieve the complete dictionary of device properties, instead of
-    // caching them (will be done for the new UI).
-    const base::DictionaryValue& device_properties = device->properties();
-    const NetworkPropertyUIData cellular_property_ui_data(
-        cellular->ui_data().onc_source());
-    CopyStringFromDictionary(device_properties, shill::kManufacturerProperty,
-                            kTagManufacturer, dictionary);
-    CopyStringFromDictionary(device_properties, shill::kModelIDProperty,
-                            kTagModelId, dictionary);
-    CopyStringFromDictionary(device_properties,
-                            shill::kFirmwareRevisionProperty,
-                            kTagFirmwareRevision, dictionary);
-    CopyStringFromDictionary(device_properties,
-                            shill::kHardwareRevisionProperty,
-                            kTagHardwareRevision, dictionary);
-    CopyIntegerFromDictionary(device_properties, shill::kPRLVersionProperty,
-                             kTagPrlVersion, true, dictionary);
-    CopyStringFromDictionary(device_properties, shill::kMeidProperty,
-                            kTagMeid, dictionary);
-    CopyStringFromDictionary(device_properties, shill::kIccidProperty,
-                            kTagIccid, dictionary);
-    CopyStringFromDictionary(device_properties, shill::kImeiProperty,
-                            kTagImei, dictionary);
-    mdn = CopyStringFromDictionary(device_properties, shill::kMdnProperty,
-                                   kTagMdn, dictionary);
-    CopyStringFromDictionary(device_properties, shill::kImsiProperty,
-                            kTagImsi, dictionary);
-    CopyStringFromDictionary(device_properties, shill::kEsnProperty,
-                            kTagEsn, dictionary);
-    CopyStringFromDictionary(device_properties, shill::kMinProperty,
-                            kTagMin, dictionary);
-    std::string family;
-    device_properties.GetStringWithoutPathExpansion(
-        shill::kTechnologyFamilyProperty, &family);
-    dictionary->SetBoolean(kTagGsm, family == shill::kNetworkTechnologyGsm);
-
-    SetValueDictionary(
-        dictionary, kTagSimCardLockEnabled,
-        new base::FundamentalValue(device->sim_lock_enabled()),
-        cellular_property_ui_data);
-
-    carrier_id = device->home_provider_id();
-
-    MobileConfig* config = MobileConfig::GetInstance();
-    if (config->IsReady()) {
-      const MobileConfig::Carrier* carrier = config->GetCarrier(carrier_id);
-      if (carrier && !carrier->top_up_url().empty())
-        dictionary->SetString(kTagCarrierUrl, carrier->top_up_url());
-    }
-
-    base::ListValue* apn_list_value = new base::ListValue();
-    const base::ListValue* apn_list;
-    if (device_properties.GetListWithoutPathExpansion(
-            shill::kCellularApnListProperty, &apn_list)) {
-      for (base::ListValue::const_iterator iter = apn_list->begin();
-           iter != apn_list->end(); ++iter) {
-        const base::DictionaryValue* dict;
-        if ((*iter)->GetAsDictionary(&dict)) {
-          base::DictionaryValue* apn = new base::DictionaryValue;
-          CreateDictionaryFromCellularApn(dict, apn);
-          apn_list_value->Append(apn);
-        }
-      }
-    }
-    SetValueDictionary(dictionary, kTagProviderApnList, apn_list_value,
-                       cellular_property_ui_data);
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            chromeos::switches::kEnableCarrierSwitching)) {
-      const base::ListValue* supported_carriers;
-      if (device_properties.GetListWithoutPathExpansion(
-              shill::kSupportedCarriersProperty, &supported_carriers)) {
-        dictionary->Set(kTagCarriers, supported_carriers->DeepCopy());
-        dictionary->SetInteger(kTagCurrentCarrierIndex,
-                               FindCurrentCarrierIndex(supported_carriers,
-                                                       device));
-      } else {
-        // In case of any error, set the current carrier tag to -1 indicating
-        // to the JS code to fallback to a single carrier.
-        dictionary->SetInteger(kTagCurrentCarrierIndex, -1);
-      }
-    }
-  }
-
-  // Set Cellular Buttons Visibility
-  dictionary->SetBoolean(
-      kTagDisableConnectButton,
-      cellular->activation_state() == shill::kActivationStateActivating ||
-      cellular->IsConnectingState());
-
-  // Don't show any account management related buttons if the activation
-  // state is unknown or no payment portal URL is available.
-  std::string support_url;
-  if (cellular->activation_state() == shill::kActivationStateUnknown ||
-      !dictionary->GetString(kTagSupportUrl, &support_url) ||
-      support_url.empty()) {
-    VLOG(2) << "No support URL is available. Don't display buttons.";
-    return;
-  }
-
-  if (cellular->activation_state() != shill::kActivationStateActivating &&
-      cellular->activation_state() != shill::kActivationStateActivated) {
-    dictionary->SetBoolean(kTagShowActivateButton, true);
-  } else {
-    bool may_show_portal_button = false;
-
-    // If an online payment URL was provided by shill, then this means that the
-    // "View Account" button should be shown for the current carrier.
-    if (olp) {
-      std::string url;
-      olp->GetStringWithoutPathExpansion(shill::kPaymentPortalURL, &url);
-      may_show_portal_button = !url.empty();
-    }
-    // If no online payment URL was provided by shill, fall back to
-    // MobileConfig to determine if the "View Account" should be shown.
-    if (!may_show_portal_button && MobileConfig::GetInstance()->IsReady()) {
-      const MobileConfig::Carrier* carrier =
-          MobileConfig::GetInstance()->GetCarrier(carrier_id);
-      may_show_portal_button = carrier && carrier->show_portal_button();
-    }
-    if (may_show_portal_button) {
-      // The button should be shown for a LTE network even when the LTE network
-      // is not connected, but CrOS is online. This is done to enable users to
-      // update their plan even if they are out of credits.
-      // The button should not be shown when the device's mdn is not set,
-      // because the network's proper portal url cannot be generated without it
-      const NetworkState* default_network =
-          NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
-      const std::string& technology = cellular->network_technology();
-      bool force_show_view_account_button =
-          (technology == shill::kNetworkTechnologyLte ||
-           technology == shill::kNetworkTechnologyLteAdvanced) &&
-          default_network &&
-          !mdn.empty();
-
-      // The button will trigger ShowMorePlanInfoCallback() which will open
-      // carrier specific portal.
-      if (cellular->IsConnectedState() || force_show_view_account_button)
-        dictionary->SetBoolean(kTagShowViewAccountButton, true);
-    }
-  }
-}
-
-}  // namespace
 
 gfx::NativeWindow InternetOptionsHandler::GetNativeWindow() const {
   return web_ui()->GetWebContents()->GetView()->GetTopLevelNativeWindow();
