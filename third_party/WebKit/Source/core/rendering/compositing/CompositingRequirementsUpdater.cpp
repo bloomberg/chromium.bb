@@ -446,7 +446,7 @@ void CompositingRequirementsUpdater::updateRecursive(RenderLayer* ancestorLayer,
     // If we entered compositing mode during the recursion, the root will also need to be composited (as long as accelerated compositing is enabled).
     if (layer->isRootLayer()) {
         // FIXME: How can we be in compositing mode but not have accelerated compositing?
-        if (compositor->inCompositingMode() && compositor->hasAcceleratedCompositing())
+        if (compositor->staleInCompositingMode() && compositor->hasAcceleratedCompositing())
             willBeCompositedOrSquashed = true;
     }
 

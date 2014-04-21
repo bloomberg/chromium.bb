@@ -452,7 +452,7 @@ void RenderView::repaintViewAndCompositedLayers()
     // The only way we know how to hit these ASSERTS below this point is via the Chromium OS login screen.
     DisableCompositingQueryAsserts disabler;
 
-    if (compositor()->inCompositingMode())
+    if (compositor()->staleInCompositingMode())
         compositor()->repaintCompositedLayers();
 }
 
@@ -890,7 +890,7 @@ void RenderView::updateHitTestResult(HitTestResult& result, const LayoutPoint& p
 
 bool RenderView::usesCompositing() const
 {
-    return m_compositor && m_compositor->inCompositingMode();
+    return m_compositor && m_compositor->staleInCompositingMode();
 }
 
 RenderLayerCompositor* RenderView::compositor()

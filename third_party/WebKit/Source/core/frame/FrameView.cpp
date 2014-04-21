@@ -661,7 +661,7 @@ bool FrameView::usesCompositedScrolling() const
     if (!renderView)
         return false;
     if (m_frame->settings() && m_frame->settings()->compositedScrollingForFramesEnabled())
-        return renderView->compositor()->upToDateInCompositingMode();
+        return renderView->compositor()->inCompositingMode();
     return false;
 }
 
@@ -700,7 +700,7 @@ GraphicsLayer* FrameView::layerForScrollCorner() const
 bool FrameView::hasCompositedContent() const
 {
     if (RenderView* renderView = this->renderView())
-        return renderView->compositor()->inCompositingMode();
+        return renderView->compositor()->staleInCompositingMode();
     return false;
 }
 

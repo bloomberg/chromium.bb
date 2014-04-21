@@ -618,7 +618,7 @@ void ScrollingCoordinator::touchEventTargetRectsDidChange()
     // FIXME: scheduleAnimation() is just a method of forcing the compositor to realize that it
     // needs to commit here. We should expose a cleaner API for this.
     RenderView* renderView = m_page->mainFrame()->contentRenderer();
-    if (renderView && renderView->compositor() && renderView->compositor()->inCompositingMode())
+    if (renderView && renderView->compositor() && renderView->compositor()->staleInCompositingMode())
         m_page->mainFrame()->view()->scheduleAnimation();
 
     m_touchEventTargetRectsAreDirty = true;

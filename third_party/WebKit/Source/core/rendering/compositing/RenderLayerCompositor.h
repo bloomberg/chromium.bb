@@ -71,9 +71,9 @@ public:
 
     // Return true if this RenderView is in "compositing mode" (i.e. has one or more
     // composited RenderLayers)
-    // FIXME: Rename to inCompositingMode and rename inCompositingMode to staleInCompositingMode.
-    bool upToDateInCompositingMode() const;
     bool inCompositingMode() const;
+    // FIXME: Replace all callers with inCompositingMdoe and remove this function.
+    bool staleInCompositingMode() const;
     // This will make a compositing layer at the root automatically, and hook up to
     // the native view/window system.
     void setCompositingModeEnabled(bool);

@@ -130,13 +130,13 @@ RenderLayerCompositor::~RenderLayerCompositor()
     ASSERT(m_rootLayerAttachment == RootLayerUnattached);
 }
 
-bool RenderLayerCompositor::upToDateInCompositingMode() const
+bool RenderLayerCompositor::inCompositingMode() const
 {
     ASSERT(!m_rootShouldAlwaysCompositeDirty);
     return m_compositing;
 }
 
-bool RenderLayerCompositor::inCompositingMode() const
+bool RenderLayerCompositor::staleInCompositingMode() const
 {
     return m_compositing;
 }
@@ -234,7 +234,7 @@ bool RenderLayerCompositor::canRender3DTransforms() const
 void RenderLayerCompositor::setCompositingLayersNeedRebuild()
 {
     // FIXME: crbug,com/332248 ideally this could be merged with setNeedsCompositingUpdate().
-    if (inCompositingMode())
+    if (staleInCompositingMode())
         m_compositingLayersNeedRebuild = true;
     if (!lifecycle().isActive())
         return;
@@ -498,7 +498,7 @@ void RenderLayerCompositor::updateIfNeeded()
 
     // The scrolling coordinator may realize that it needs updating while compositing was being updated in this function.
     needsToUpdateScrollingCoordinator |= scrollingCoordinator() && scrollingCoordinator()->needsToUpdateAfterCompositingChange();
-    if (needsToUpdateScrollingCoordinator && m_renderView.frame()->isMainFrame() && scrollingCoordinator() && inCompositingMode())
+    if (needsToUpdateScrollingCoordinator && m_renderView.frame()->isMainFrame() && scrollingCoordinator() && staleInCompositingMode())
         scrollingCoordinator()->updateAfterCompositingChange();
 
     // Inform the inspector that the layer tree has changed.
@@ -598,7 +598,7 @@ bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* l
 
     if (compositedLayerMappingChanged && layer->renderer()->isRenderPart()) {
         RenderLayerCompositor* innerCompositor = frameContentsCompositor(toRenderPart(layer->renderer()));
-        if (innerCompositor && innerCompositor->inCompositingMode())
+        if (innerCompositor && innerCompositor->staleInCompositingMode())
             innerCompositor->updateRootLayerAttachment();
     }
 
@@ -1071,7 +1071,7 @@ RenderLayerCompositor* RenderLayerCompositor::frameContentsCompositor(RenderPart
 bool RenderLayerCompositor::parentFrameContentLayers(RenderPart* renderer)
 {
     RenderLayerCompositor* innerCompositor = frameContentsCompositor(renderer);
-    if (!innerCompositor || !innerCompositor->inCompositingMode() || innerCompositor->rootLayerAttachment() != RootLayerAttachedViaEnclosingFrame)
+    if (!innerCompositor || !innerCompositor->staleInCompositingMode() || innerCompositor->rootLayerAttachment() != RootLayerAttachedViaEnclosingFrame)
         return false;
 
     RenderLayer* layer = renderer->layer();
@@ -1149,7 +1149,7 @@ GraphicsLayer* RenderLayerCompositor::ensureRootTransformLayer()
 
 void RenderLayerCompositor::setIsInWindow(bool isInWindow)
 {
-    if (!inCompositingMode())
+    if (!staleInCompositingMode())
         return;
 
     if (isInWindow) {
@@ -1205,7 +1205,7 @@ bool RenderLayerCompositor::needsOwnBacking(const RenderLayer* layer) const
     // If squashing is disabled, then layers that would have been squashed should just be separately composited.
     bool needsOwnBackingForDisabledSquashing = !layerSquashingEnabled() && requiresSquashing(layer->compositingReasons());
 
-    return requiresCompositing(layer->compositingReasons()) || needsOwnBackingForDisabledSquashing || (inCompositingMode() && layer->isRootLayer());
+    return requiresCompositing(layer->compositingReasons()) || needsOwnBackingForDisabledSquashing || (staleInCompositingMode() && layer->isRootLayer());
 }
 
 bool RenderLayerCompositor::canBeComposited(const RenderLayer* layer) const
