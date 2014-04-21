@@ -313,7 +313,6 @@ int HarfBuzzShaper::HarfBuzzRun::characterIndexForXPosition(float targetX)
         if (currentX <= targetX && targetX <= nextX)
             return rtl() ? prevCharacterIndex : m_glyphToCharacterIndexes[glyphIndex];
         currentX = nextX;
-        prevAdvance = currentAdvance;
         ++glyphIndex;
     }
 
@@ -641,7 +640,6 @@ static inline bool collectCandidateRuns(const UChar* normalizedBuffer,
         CandidateRun run = { character, startIndexOfCurrentRun, iterator.currentCharacter(), currentFontData, currentScript };
         runs->append(run);
 
-        currentFontData = nextFontData;
         startIndexOfCurrentRun = iterator.currentCharacter();
     } while (iterator.consume(character, clusterLength));
 
@@ -838,7 +836,6 @@ bool HarfBuzzShaper::shapeHarfBuzzRuns()
 
         if (m_font->fontDescription().variant() && u_islower(m_normalizedBuffer[currentRun->startIndex()])) {
             String upperText = String(m_normalizedBuffer.get() + currentRun->startIndex(), currentRun->numCharacters()).upper();
-            currentFontData = m_font->glyphDataForCharacter(upperText[0], false, SmallCapsVariant).fontData;
             ASSERT(!upperText.is8Bit()); // m_normalizedBuffer is 16 bit, therefore upperText is 16 bit, even after we call makeUpper().
             hb_buffer_add_utf16(harfBuzzBuffer.get(), toUint16(upperText.characters16()), currentRun->numCharacters(), 0, currentRun->numCharacters());
         } else {
