@@ -40,8 +40,10 @@ class QuotaInternalsProxy;
 
 namespace content {
 class MockQuotaManager;
+class MockStorageClient;
 class QuotaManagerTest;
 class StorageMonitorTest;
+
 }
 
 namespace quota {
@@ -265,8 +267,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT QuotaManager
   friend class base::RefCountedThreadSafe<QuotaManager, QuotaManagerDeleter>;
   friend class content::QuotaManagerTest;
   friend class content::StorageMonitorTest;
-  friend class MockQuotaManager;
-  friend class MockStorageClient;
+  friend class content::MockQuotaManager;
+  friend class content::MockStorageClient;
   friend class quota_internals::QuotaInternalsProxy;
   friend class QuotaManagerProxy;
   friend class QuotaTemporaryStorageEvictor;

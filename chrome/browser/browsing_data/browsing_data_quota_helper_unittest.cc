@@ -10,13 +10,15 @@
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "chrome/browser/browsing_data/browsing_data_quota_helper_impl.h"
+#include "content/public/test/mock_storage_client.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "webkit/browser/quota/mock_storage_client.h"
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/browser/quota/quota_manager_proxy.h"
 
 using content::BrowserThread;
+using content::MockOriginData;
+using content::MockStorageClient;
 
 class BrowsingDataQuotaHelperTest : public testing::Test {
  public:
@@ -67,9 +69,9 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
                    weak_factory_.GetWeakPtr()));
   }
 
-  void RegisterClient(const quota::MockOriginData* data, std::size_t data_len) {
-    quota::MockStorageClient* client =
-        new quota::MockStorageClient(
+  void RegisterClient(const MockOriginData* data, std::size_t data_len) {
+    MockStorageClient* client =
+        new MockStorageClient(
             quota_manager_->proxy(), data, quota::QuotaClient::kFileSystem,
             data_len);
     quota_manager_->proxy()->RegisterClient(client);
@@ -134,7 +136,7 @@ TEST_F(BrowsingDataQuotaHelperTest, Empty) {
 }
 
 TEST_F(BrowsingDataQuotaHelperTest, FetchData) {
-  const quota::MockOriginData kOrigins[] = {
+  const MockOriginData kOrigins[] = {
     {"http://example.com/", quota::kStorageTypeTemporary, 1},
     {"https://example.com/", quota::kStorageTypeTemporary, 10},
     {"http://example.com/", quota::kStorageTypePersistent, 100},
@@ -155,7 +157,7 @@ TEST_F(BrowsingDataQuotaHelperTest, FetchData) {
 }
 
 TEST_F(BrowsingDataQuotaHelperTest, IgnoreExtensionsAndDevTools) {
-  const quota::MockOriginData kOrigins[] = {
+  const MockOriginData kOrigins[] = {
     {"http://example.com/", quota::kStorageTypeTemporary, 1},
     {"https://example.com/", quota::kStorageTypeTemporary, 10},
     {"http://example.com/", quota::kStorageTypePersistent, 100},

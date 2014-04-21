@@ -11,9 +11,9 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
 #include "content/browser/quota/mock_quota_manager.h"
+#include "content/public/test/mock_storage_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/quota/mock_special_storage_policy.h"
-#include "webkit/browser/quota/mock_storage_client.h"
 
 using quota::kQuotaStatusOk;
 using quota::kStorageTypePersistent;

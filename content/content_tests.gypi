@@ -92,6 +92,8 @@
         'public/test/mock_render_thread.h',
         'public/test/mock_resource_context.cc',
         'public/test/mock_resource_context.h',
+        'public/test/mock_storage_client.cc',
+        'public/test/mock_storage_client.h',
         'public/test/render_view_test.cc',
         'public/test/render_view_test.h',
         'public/test/render_widget_test.cc',
@@ -661,8 +663,6 @@
         '../webkit/common/fileapi/file_system_util_unittest.cc',
         '../webkit/browser/quota/mock_special_storage_policy.cc',
         '../webkit/browser/quota/mock_special_storage_policy.h',
-        '../webkit/browser/quota/mock_storage_client.cc',
-        '../webkit/browser/quota/mock_storage_client.h',
       ],
       'conditions': [
         ['OS == "ios"', {

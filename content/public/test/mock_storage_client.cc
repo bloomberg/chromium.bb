@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/browser/quota/mock_storage_client.h"
+#include "content/public/test/mock_storage_client.h"
 
 #include "base/basictypes.h"
 #include "base/bind.h"
@@ -13,7 +13,10 @@
 #include "net/base/net_util.h"
 #include "webkit/browser/quota/quota_manager_proxy.h"
 
-namespace quota {
+using quota::kQuotaErrorInvalidModification;
+using quota::kQuotaStatusOk;
+
+namespace content {
 
 using std::make_pair;
 
@@ -183,4 +186,4 @@ void MockStorageClient::RunDeleteOriginData(
   callback.Run(kQuotaStatusOk);
 }
 
-}  // namespace quota
+}  // namespace content

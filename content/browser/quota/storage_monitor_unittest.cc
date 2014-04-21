@@ -8,10 +8,10 @@
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
+#include "content/public/test/mock_storage_client.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/quota/mock_special_storage_policy.h"
-#include "webkit/browser/quota/mock_storage_client.h"
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/browser/quota/quota_manager_proxy.h"
 #include "webkit/browser/quota/storage_monitor.h"
@@ -23,7 +23,6 @@ using quota::kQuotaStatusOk;
 using quota::kStorageTypePersistent;
 using quota::kStorageTypeTemporary;
 using quota::MockSpecialStoragePolicy;
-using quota::MockStorageClient;
 using quota::QuotaClient;
 using quota::QuotaManager;
 using quota::QuotaStatusCode;

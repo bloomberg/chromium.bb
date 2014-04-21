@@ -1960,8 +1960,6 @@
         '../tools/json_schema_compiler/test/simple_api_unittest.cc',
         '../tools/json_schema_compiler/test/error_generation_unittest.cc',
         '../ui/webui/resources/js/cr.js',
-        '../webkit/browser/quota/mock_storage_client.cc',
-        '../webkit/browser/quota/mock_storage_client.h',
       ],
       'conditions': [
         ['OS!="ios"', {

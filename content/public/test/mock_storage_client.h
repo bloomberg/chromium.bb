@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_BROWSER_QUOTA_MOCK_STORAGE_CLIENT_H_
-#define WEBKIT_BROWSER_QUOTA_MOCK_STORAGE_CLIENT_H_
+#ifndef CONTENT_PUBLIC_TEST_MOCK_STORAGE_CLIENT_H_
+#define CONTENT_PUBLIC_TEST_MOCK_STORAGE_CLIENT_H_
 
 #include <map>
 #include <set>
@@ -17,8 +17,14 @@
 #include "webkit/browser/quota/quota_client.h"
 
 namespace quota {
-
 class QuotaManagerProxy;
+}
+
+using quota::QuotaClient;
+using quota::QuotaManagerProxy;
+using quota::StorageType;
+
+namespace content {
 
 struct MockOriginData {
   const char* origin;
@@ -91,6 +97,6 @@ class MockStorageClient : public QuotaClient {
   DISALLOW_COPY_AND_ASSIGN(MockStorageClient);
 };
 
-}  // namespace quota
+}  // namespace content
 
-#endif  // WEBKIT_BROWSER_QUOTA_MOCK_STORAGE_CLIENT_H_
+#endif  // CONTENT_PUBLIC_TEST_MOCK_STORAGE_CLIENT_H_
