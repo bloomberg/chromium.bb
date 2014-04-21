@@ -348,6 +348,8 @@ module_init(struct weston_compositor *compositor,
 	char lockfile[256], display_name[8];
 
 	wxs = zalloc(sizeof *wxs);
+	if (wxs == NULL)
+		return -1;
 	wxs->process.cleanup = weston_xserver_cleanup;
 	wxs->wl_display = display;
 	wxs->compositor = compositor;
