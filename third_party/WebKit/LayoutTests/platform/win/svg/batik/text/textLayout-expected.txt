@@ -6,7 +6,7 @@ layer at (0,0) size 450x500
       RenderSVGText {text} at (0,-15) size 42x19 contains 1 chunk(s)
         RenderSVGInlineText {#text} at (0,0) size 42x19
           chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 6 width 42.00: "sample"
-    RenderSVGContainer {g} at (40,36) size 370x421
+    RenderSVGContainer {g} at (40,36) size 367x421
       RenderSVGText {text} at (152,36) size 146x17 contains 1 chunk(s)
         RenderSVGInlineText {#text} at (0,0) size 146x17
           chunk 1 (middle anchor) text run 1 at (152.00,50.00) startOffset 0 endOffset 22 width 146.00: "Text Layout Properties"
@@ -73,13 +73,6 @@ layer at (0,0) size 450x500
         RenderSVGText {text} at (185,187) size 54x10 contains 1 chunk(s)
           RenderSVGInlineText {#text} at (0,0) size 54x10
             chunk 1 text run 1 at (185.00,195.00) startOffset 0 endOffset 15 width 54.00: "textLength=\"70\""
-      RenderSVGContainer {g} at (290,159) size 67x38
-        RenderSVGText {text} at (290,159) size 67x27 contains 1 chunk(s)
-          RenderSVGInlineText {#text} at (0,0) size 67x27
-            chunk 1 text run 1 at (290.00,180.00) startOffset 0 endOffset 6 width 67.00: "sample"
-        RenderSVGText {text} at (290,187) size 43x10 contains 1 chunk(s)
-          RenderSVGInlineText {#text} at (0,0) size 43x10
-            chunk 1 text run 1 at (290.00,195.00) startOffset 0 endOffset 12 width 43.00: "kerning=\"10\""
       RenderSVGContainer {g} at (40,204) size 120x48
         RenderSVGText {text} at (40,204) size 120x27 contains 1 chunk(s)
           RenderSVGInlineText {#text} at (0,0) size 120x27
@@ -100,13 +93,6 @@ layer at (0,0) size 450x500
           RenderSVGTSpan {tspan} at (0,0) size 116x10
             RenderSVGInlineText {#text} at (0,10) size 116x10
               chunk 1 text run 1 at (185.00,250.00) startOffset 0 endOffset 31 width 116.00: "lengthAdjust=\"spacingAndGlyphs\""
-      RenderSVGContainer {g} at (290,204) size 120x38
-        RenderSVGText {text} at (290,204) size 120x27 contains 1 chunk(s)
-          RenderSVGInlineText {#text} at (0,0) size 120x27
-            chunk 1 text run 1 at (290.00,225.00) startOffset 0 endOffset 6 width 67.00: "sample"
-        RenderSVGText {text} at (290,232) size 103x10 contains 1 chunk(s)
-          RenderSVGInlineText {#text} at (0,0) size 103x10
-            chunk 1 text run 1 at (290.00,240.00) startOffset 0 endOffset 29 width 103.00: "textLength=\"120\",kerning=\"10\""
       RenderSVGContainer {g} at (40,254) size 103x38
         RenderSVGText {text} at (40,254) size 103x27 contains 1 chunk(s)
           RenderSVGInlineText {#text} at (0,0) size 103x27
