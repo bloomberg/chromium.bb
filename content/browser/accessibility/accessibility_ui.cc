@@ -89,18 +89,60 @@ base::DictionaryValue* BuildTargetDescriptor(RenderViewHost* rvh) {
                                accessibility_mode);
 }
 
-void SendTargetsData(
+}  // namespace
+
+AccessibilityUI::AccessibilityUI(WebUI* web_ui) : WebUIController(web_ui) {
+  // Set up the chrome://accessibility source.
+  WebUIDataSource* html_source =
+      WebUIDataSource::Create(kChromeUIAccessibilityHost);
+  html_source->SetUseJsonJSFormatV2();
+
+  web_ui->RegisterMessageCallback(
+      "toggleAccessibility",
+      base::Bind(&AccessibilityUI::ToggleAccessibility,
+                 base::Unretained(this)));
+  web_ui->RegisterMessageCallback(
+      "toggleGlobalAccessibility",
+      base::Bind(&AccessibilityUI::ToggleGlobalAccessibility,
+                 base::Unretained(this)));
+  web_ui->RegisterMessageCallback(
+      "requestAccessibilityTree",
+      base::Bind(&AccessibilityUI::RequestAccessibilityTree,
+                 base::Unretained(this)));
+
+  // Add required resources.
+  html_source->SetJsonPath("strings.js");
+  html_source->AddResourcePath("accessibility.css", IDR_ACCESSIBILITY_CSS);
+  html_source->AddResourcePath("accessibility.js", IDR_ACCESSIBILITY_JS);
+  html_source->SetDefaultResource(IDR_ACCESSIBILITY_HTML);
+  html_source->SetRequestFilter(base::Bind(
+      &AccessibilityUI::HandleRequestCallback, base::Unretained(this)));
+
+  BrowserContext* browser_context =
+      web_ui->GetWebContents()->GetBrowserContext();
+  WebUIDataSource::Add(browser_context, html_source);
+}
+
+AccessibilityUI::~AccessibilityUI() {}
+
+void AccessibilityUI::SendTargetsData(
     const WebUIDataSource::GotDataCallback& callback) {
   scoped_ptr<base::ListValue> rvh_list(new base::ListValue());
 
   scoped_ptr<RenderWidgetHostIterator> widgets(
       RenderWidgetHost::GetRenderWidgetHosts());
+  BrowserContext* current_context =
+      web_ui()->GetWebContents()->GetBrowserContext();
   while (RenderWidgetHost* widget = widgets->GetNextHost()) {
     // Ignore processes that don't have a connection, such as crashed tabs.
     if (!widget->GetProcess()->HasConnection())
       continue;
     if (!widget->IsRenderView())
         continue;
+    RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(widget);
+    BrowserContext* context = rwhi->GetProcess()->GetBrowserContext();
+    if (context != current_context)
+      continue;
 
     RenderViewHost* rvh = RenderViewHost::From(widget);
     rvh_list->Append(BuildTargetDescriptor(rvh));
@@ -118,7 +160,7 @@ void SendTargetsData(
   callback.Run(base::RefCountedString::TakeString(&json_string));
 }
 
-bool HandleRequestCallback(
+bool AccessibilityUI::HandleRequestCallback(
     const std::string& path,
     const WebUIDataSource::GotDataCallback& callback) {
   if (path != kDataFile)
@@ -126,43 +168,6 @@ bool HandleRequestCallback(
 
   SendTargetsData(callback);
   return true;
-}
-
-}  // namespace
-
-AccessibilityUI::AccessibilityUI(WebUI* web_ui)
-  : WebUIController(web_ui) {
-  // Set up the chrome://accessibility source.
-  WebUIDataSource* html_source =
-      WebUIDataSource::Create(kChromeUIAccessibilityHost);
-  html_source->SetUseJsonJSFormatV2();
-
-  web_ui->RegisterMessageCallback(
-      "toggleAccessibility",
-      base::Bind(&AccessibilityUI::ToggleAccessibility,
-               base::Unretained(this)));
-  web_ui->RegisterMessageCallback(
-      "toggleGlobalAccessibility",
-      base::Bind(&AccessibilityUI::ToggleGlobalAccessibility,
-               base::Unretained(this)));
-  web_ui->RegisterMessageCallback(
-      "requestAccessibilityTree",
-      base::Bind(&AccessibilityUI::RequestAccessibilityTree,
-                 base::Unretained(this)));
-
-  // Add required resources.
-  html_source->SetJsonPath("strings.js");
-  html_source->AddResourcePath("accessibility.css", IDR_ACCESSIBILITY_CSS);
-  html_source->AddResourcePath("accessibility.js", IDR_ACCESSIBILITY_JS);
-  html_source->SetDefaultResource(IDR_ACCESSIBILITY_HTML);
-  html_source->SetRequestFilter(base::Bind(&HandleRequestCallback));
-
-  BrowserContext* browser_context =
-    web_ui->GetWebContents()->GetBrowserContext();
-  WebUIDataSource::Add(browser_context, html_source);
-}
-
-AccessibilityUI::~AccessibilityUI() {
 }
 
 void AccessibilityUI::ToggleAccessibility(const base::ListValue* args) {

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_ACCESSIBILITY_UI_H_
 
 #include "content/public/browser/web_ui_controller.h"
+#include "content/public/browser/web_ui_data_source.h"
 
 namespace base {
   class ListValue;
@@ -19,6 +20,9 @@ class AccessibilityUI : public WebUIController {
   virtual ~AccessibilityUI();
 
  private:
+  void SendTargetsData(const WebUIDataSource::GotDataCallback& callback);
+  bool HandleRequestCallback(const std::string& path,
+                             const WebUIDataSource::GotDataCallback& callback);
   void ToggleAccessibility(const base::ListValue* args);
   void ToggleGlobalAccessibility(const base::ListValue* args);
   void RequestAccessibilityTree(const base::ListValue* args);
