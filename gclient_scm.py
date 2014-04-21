@@ -759,7 +759,7 @@ class GitWrapper(SCMWrapper):
       self.Print('')
     template_path = os.path.join(
         os.path.dirname(THIS_FILE_PATH), 'git-templates')
-    cfg = gclient_utils.DefaultIndexPackConfig(self.url)
+    cfg = gclient_utils.DefaultIndexPackConfig(url)
     clone_cmd = cfg + [
         'clone', '--no-checkout', '--progress', '--template=%s' % template_path]
     if self.cache_dir:
