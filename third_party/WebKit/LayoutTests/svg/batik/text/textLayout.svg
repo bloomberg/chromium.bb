@@ -85,11 +85,6 @@
         </g>
 
         <g>
-            <text x="290" y="180" kerning="10">sample</text>
-            <text x="290" y="195" class="Caption">kerning="10"</text>
-        </g>
-
-        <g>
             <text x="40" y="225" textLength="120" lengthAdjust="spacingAndGlyphs">sample</text>
             <text x="40" y="240" class="Caption">textLength="120",
             <tspan x="40" dy="10">lengthAdjust="spacingAndGlyphs"</tspan></text>
@@ -98,11 +93,6 @@
         <g>
             <text x="185" y="225" textLength="70" lengthAdjust="spacingAndGlyphs">sample</text>
             <text x="185" y="240" class="Caption">textLength="70"                          <tspan x="185" dy="10">lengthAdjust="spacingAndGlyphs"</tspan></text>
-        </g>
-
-        <g>
-            <text x="290" y="225"  textLength="120" lengthAdjust="spacingAndGlyphs" kerning="10">sample</text>
-            <text x="290" y="240" class="Caption">textLength="120",kerning="10"</text>
         </g>
 
         <g>

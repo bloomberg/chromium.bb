@@ -1119,3 +1119,6 @@ crbug.com/308992 svg/as-object/sizing/svg-in-object-placeholder-height-percentag
 crbug.com/364991 [ Debug ] compositing/overflow/iframe-scroll-children.html [ Pass Crash ]
 crbug.com/364991 [ Debug ] virtual/softwarecompositing/overflow/iframe-scroll-children.html [ Pass Crash ]
 crbug.com/364991 [ Debug ] virtual/gpu/compositedscrolling/overflow/iframe-scroll-children.html [ Pass Crash ]
+
+crbug.com/365171 svg/batik/text/textLayout.svg [ NeedsRebaseline ]
+crbug.com/365171 svg/batik/text/textOnPathSpaces.svg [ NeedsRebaseline ]

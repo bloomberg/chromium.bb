@@ -90,15 +90,6 @@
             <text font-size="10" x="35" y="60">textLength="70"</text>
          </g>
 
-         <g transform="translate(300,160)">
-            <use xlink:href="#Path1" style="fill:none; stroke:blue; stroke-width:2"/>
-	      <text font-size="20">
-                <textPath xlink:href="#Path1" kerning="10">sample</textPath>
-            </text>
-            <text font-size="10" x="35" y="60">kerning="10"</text>
-         </g>
-
-
         <g transform="translate(0,250)">
             <use xlink:href="#Path1" style="fill:none; stroke:blue; stroke-width:2"/>
 	      <text font-size="20">
@@ -119,16 +110,6 @@
             <text font-size="10" x="35" y="80">"spacingAndGlyphs"</text>
          </g>
 
-          <g transform="translate(300,250)">
-            <use xlink:href="#Path1" style="fill:none; stroke:blue; stroke-width:2"/>
-	      <text font-size="20">
-                <textPath xlink:href="#Path1" textLength="140" lengthAdjust="spacingAndGlyphs" kerning="10">sample</textPath>
-            </text>
-            <text font-size="10" x="5" y="60">textLength="140", kerning="10"</text>
-            <text font-size="10" x="5" y="70">lengthAdjust=</text>
-            <text font-size="10" x="5" y="80">"spacingAndGlyphs"</text>
-         </g>
-       
          <g transform="translate(0,350)">
             <use xlink:href="#Path1" style="fill:none; stroke:blue; stroke-width:2"/>
 	      <text font-size="20">
