@@ -149,10 +149,9 @@ void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
       event_id = EVENT_OBJECT_STATECHANGE;
       break;
     case ui::AX_EVENT_LIVE_REGION_CHANGED:
-      // TODO: try not firing a native notification at all, since
-      // on Windows, each individual item in a live region that changes
-      // already gets its own notification.
-      event_id = EVENT_OBJECT_REORDER;
+      if (node->GetBoolAttribute(ui::AX_ATTR_CONTAINER_LIVE_BUSY))
+        return;
+      event_id = EVENT_OBJECT_LIVEREGIONCHANGED;
       break;
     case ui::AX_EVENT_LOAD_COMPLETE:
       event_id = IA2_EVENT_DOCUMENT_LOAD_COMPLETE;
