@@ -399,9 +399,11 @@ Event_Sync_State(EvdevPtr device)
         MT_Slot_Sync(device, &req);
     }
 
-    /* Get current slot id */
-    if (EvdevProbeAbsinfo(device, ABS_MT_SLOT) == Success)
+    /* Get current slot id for multi-touch devices*/
+    if (TestBit(ABS_MT_SLOT, device->info.abs_bitmask) &&
+        (EvdevProbeAbsinfo(device, ABS_MT_SLOT) == Success)) {
         MT_Slot_Set(device, device->info.absinfo[ABS_MT_SLOT].value);
+    }
 
     Event_Get_Time(&device->after_sync_time, device->info.is_monotonic);
 
