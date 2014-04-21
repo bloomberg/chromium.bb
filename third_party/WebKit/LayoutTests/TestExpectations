@@ -810,7 +810,6 @@ crbug.com/347109 http/tests/websocket/useragent-in-openinghandshake.html [ Failu
 # Tests of functionality not implemented in the new WebSocket
 # implementation. These tests will be removed when the old implementation is
 # removed.
-crbug.com/339373 http/tests/websocket/FIXME-handshake-fail-by-null-subprotocol-selection-whitelist.html [ Skip ]
 crbug.com/339373 http/tests/websocket/deflate-frame-comp-bit-onoff.html [ Skip ]
 crbug.com/339373 http/tests/websocket/deflate-frame-invalid-parameter.html [ Skip ]
 crbug.com/339373 http/tests/websocket/deflate-frame-parameter.html [ Skip ]

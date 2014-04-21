@@ -55,22 +55,10 @@
 
 namespace WebCore {
 
-namespace {
-
-// FIXME: The spec says that the Sec-WebSocket-Protocol header in a handshake
-// response can't be null if the header in a request is not null.
-// Some servers are not accustomed to the shutdown,
-// so we provide an adhoc white-list for it tentatively.
-const char* const missingProtocolWhiteList[] = {
-    "ica.citrix.com",
-};
-
 String formatHandshakeFailureReason(const String& detail)
 {
     return "Error during WebSocket handshake: " + detail;
 }
-
-} // namespace
 
 static String resourceName(const KURL& url)
 {
@@ -551,20 +539,8 @@ bool WebSocketHandshake::checkResponseHeaders()
             return false;
         }
     } else if (!m_clientProtocol.isEmpty()) {
-        // FIXME: Some servers are not accustomed to this failure, so we provide an adhoc white-list for it tentatively.
-        Vector<String> protocols;
-        m_clientProtocol.split(String(WebSocket::subProtocolSeperator()), protocols);
-        bool match = false;
-        for (size_t i = 0; i < protocols.size() && !match; ++i) {
-            for (size_t j = 0; j < WTF_ARRAY_LENGTH(missingProtocolWhiteList) && !match; ++j) {
-                if (protocols[i] == missingProtocolWhiteList[j])
-                    match = true;
-            }
-        }
-        if (!match) {
-            m_failureReason = formatHandshakeFailureReason("Sent non-empty 'Sec-WebSocket-Protocol' header but no response was received");
-            return false;
-        }
+        m_failureReason = formatHandshakeFailureReason("Sent non-empty 'Sec-WebSocket-Protocol' header but no response was received");
+        return false;
     }
     return true;
 }
