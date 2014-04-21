@@ -210,7 +210,7 @@ MultiUserWindowManagerChromeOS::MultiUserWindowManagerChromeOS(
     const std::string& current_user_id)
     : current_user_id_(current_user_id),
       notification_blocker_(new MultiUserNotificationBlockerChromeOS(
-          message_center::MessageCenter::Get(), this, current_user_id)),
+          message_center::MessageCenter::Get(), current_user_id)),
       suppress_visibility_changes_(false),
       animation_speed_(ANIMATION_SPEED_NORMAL) {
   // Add a session state observer to be able to monitor session changes.

@@ -7,7 +7,6 @@
 #include "ash/system/system_notifier.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_shell_delegate.h"
-#include "ash/wm/window_state.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_notification_blocker_chromeos.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -207,90 +206,4 @@ TEST_F(MultiUserNotificationBlockerChromeOSTest, Basic) {
                                      GetDefaultUserId()));
   EXPECT_FALSE(ShouldShowNotification(random_system_notifier,
                                       "test2@example.com"));
-}
-
-TEST_F(MultiUserNotificationBlockerChromeOSTest, TeleportedWindows) {
-  ASSERT_EQ(chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_SEPARATED,
-            chrome::MultiUserWindowManager::GetMultiProfileMode());
-
-  std::string u1 = GetDefaultUserId();
-  ash::SessionStateDelegate* delegate =
-      ash::Shell::GetInstance()->session_state_delegate();
-  std::string u2 = delegate->GetUserID(1);
-  std::string u3 = delegate->GetUserID(2);
-  CreateProfile(u2);
-  CreateProfile(u3);
-
-  chrome::MultiUserWindowManager* multi_user_window_manager =
-      chrome::MultiUserWindowManager::GetInstance();
-
-  message_center::NotifierId notifier_id(
-      message_center::NotifierId::APPLICATION, "test-app");
-
-  // Initial status: only notifications for u1 should be shown.
-  EXPECT_EQ(0, GetStateChangedCountAndReset());
-  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id, u1));
-  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, u2));
-  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, u3));
-
-  // Create a new window in u2.
-  SwitchActiveUser(u2);
-  scoped_ptr<aura::Window> w2(CreateWindowForProfile(u2));
-  EXPECT_EQ(2, GetStateChangedCountAndReset());
-  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, u1));
-  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id, u2));
-  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, u3));
-
-  // Moves w2 to u1 desktop.
-  multi_user_window_manager->ShowWindowForUser(w2.get(), u1);
-  EXPECT_EQ(1, GetStateChangedCountAndReset());
-  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, u1));
-  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id, u2));
-  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, u3));
-
-  // Switch back to u1 desktop. Notification for u2 should be shown as a popup
-  // because w2 is visiting to u1.
-  SwitchActiveUser(u1);
-  EXPECT_EQ(2, GetStateChangedCountAndReset());
-  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id, u1));
-  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id, u2));
-  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, u3));
-
-  // Notifications for u2 is not shown in the center.
-  EXPECT_TRUE(ShouldShowNotification(notifier_id, u1));
-  EXPECT_FALSE(ShouldShowNotification(notifier_id, u2));
-  EXPECT_FALSE(ShouldShowNotification(notifier_id, u3));
-
-  // Moves w2 back.
-  multi_user_window_manager->ShowWindowForUser(w2.get(), u2);
-  EXPECT_EQ(1, GetStateChangedCountAndReset());
-  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id, u1));
-  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, u2));
-  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, u3));
-
-  // Close/remove the visiting window.
-  scoped_ptr<aura::Window> w22(CreateWindowForProfile(u2));
-  multi_user_window_manager->ShowWindowForUser(w22.get(), u1);
-  EXPECT_EQ(1, GetStateChangedCountAndReset());
-  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id, u1));
-  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id, u2));
-  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, u3));
-
-  w22.reset();
-  EXPECT_EQ(1, GetStateChangedCountAndReset());
-  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id, u1));
-  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, u2));
-  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, u3));
-
-  // Minimize the visiting window.
-  scoped_ptr<aura::Window> w23(CreateWindowForProfile(u2));
-  multi_user_window_manager->ShowWindowForUser(w23.get(), u1);
-  EXPECT_EQ(1, GetStateChangedCountAndReset());
-
-  ash::wm::GetWindowState(w23.get())->Minimize();
-  EXPECT_EQ(u1, multi_user_window_manager->GetUserPresentingWindow(w23.get()));
-  EXPECT_EQ(0, GetStateChangedCountAndReset());
-  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id, u1));
-  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id, u2));
-  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, u3));
 }
