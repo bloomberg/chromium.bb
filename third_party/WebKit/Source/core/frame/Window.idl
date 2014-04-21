@@ -35,14 +35,14 @@
 ] interface Window : EventTarget {
     // DOM Level 0
     [Replaceable] readonly attribute Screen screen;
-    readonly attribute History history;
+    [Replaceable] readonly attribute History history;
     [Replaceable] readonly attribute BarProp locationbar;
     [Replaceable] readonly attribute BarProp menubar;
     [Replaceable] readonly attribute BarProp personalbar;
     [Replaceable] readonly attribute BarProp scrollbars;
     [Replaceable] readonly attribute BarProp statusbar;
     [Replaceable] readonly attribute BarProp toolbar;
-    [PerWorldBindings, ActivityLogging=GetterForIsolatedWorlds] readonly attribute Navigator navigator;
+    [Replaceable, PerWorldBindings, ActivityLogging=GetterForIsolatedWorlds] readonly attribute Navigator navigator;
     [Replaceable] readonly attribute Navigator clientInformation;
     [DoNotCheckSecurity, Unforgeable, Replaceable, PerWorldBindings, ActivityLogging=ForIsolatedWorlds, PutForwards=href] readonly attribute Location location;
     [Custom, MeasureAs=WindowEvent, NotEnumerable] attribute Event event;

@@ -16,7 +16,7 @@ function setHistoryLength()
 {
     alert("About to shadow child window's history object: " + window.history);
     window.history = "";
-    alert("Child window's history object should not be shadowed: " + window.history);
+    alert("Shadowed child window's history object: " + window.history);
     parent.window.postMessage("done", "*");
 }
 
