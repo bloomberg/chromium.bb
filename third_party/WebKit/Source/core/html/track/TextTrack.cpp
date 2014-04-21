@@ -428,9 +428,14 @@ ExecutionContext* TextTrack::executionContext() const
     return m_document;
 }
 
-HTMLMediaElement* TextTrack::mediaElement()
+HTMLMediaElement* TextTrack::mediaElement() const
 {
     return m_trackList ? m_trackList->owner() : 0;
+}
+
+Node* TextTrack::owner() const
+{
+    return mediaElement();
 }
 
 } // namespace WebCore

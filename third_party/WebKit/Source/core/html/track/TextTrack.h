@@ -79,7 +79,8 @@ public:
     TextTrackCueList* cues();
     TextTrackCueList* activeCues() const;
 
-    HTMLMediaElement* mediaElement();
+    HTMLMediaElement* mediaElement() const;
+    Node* owner() const;
 
     void addCue(PassRefPtr<TextTrackCue>);
     void removeCue(TextTrackCue*, ExceptionState&);

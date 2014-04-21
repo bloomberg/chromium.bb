@@ -10,7 +10,7 @@ EXPECTED (video.textTracks[0].cues[1].myProperty == 'tuna salad?') OK
 
 ** Force garbage collection.
 EXPECTED (video.textTracks[0].cues.length == '4') OK
-EXPECTED (video.textTracks[0].cues[1].myProperty == 'tuna salad?'), OBSERVED 'undefined' FAIL
+EXPECTED (video.textTracks[0].cues[1].myProperty == 'tuna salad?') OK
 
 END OF TEST
 

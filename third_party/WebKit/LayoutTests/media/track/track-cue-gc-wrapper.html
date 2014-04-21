@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+        <script src=../media-file.js></script>
+        <script src=../video-test.js></script>
+        <script>
+        var cue;
+        var track;
+        var j = 0;
+        var cueLimit = 10;
+
+        function checkNativeProperty()
+        {
+            cue = this;
+            testExpected("cue.hasOwnProperty('custom')", true);
+            if (++j >= cueLimit)
+                endTest();
+        }
+
+        function startTest()
+        {
+            findMediaElement();
+            video.src = findMediaFile('video', '../content/test');
+
+            consoleWrite("** Add a text track to the video element **");
+            track = video.addTextTrack("captions", "regular captions track", "en");
+            track.custom = "track";
+            testExpected("track.hasOwnProperty('custom')", true);
+
+            consoleWrite("** Add cues with own native property to the track with enter event listener. **");
+            for (var i = 0; i < cueLimit; i++) {
+                var c = new VTTCue(i / 4, i / 2 + 1, "Label" + i);
+                c.custom = "cue";
+                c.addEventListener("enter", checkNativeProperty);
+                track.addCue(c);
+            }
+            for (var i = 0; i < 10; i++) {
+                cue = track.cues[i];
+                testExpected("cue.hasOwnProperty('custom')", true);
+            }
+
+            consoleWrite("");
+            consoleWrite("** Trigger a garbage collection.  **");
+            track = null;
+            gc();
+            track = video.textTracks[0];
+            testExpected("track.hasOwnProperty('custom')", true);
+
+            consoleWrite("");
+            consoleWrite("** Play the video and test cue wrappers.  **");
+            run("video.play()");
+            track.mode = "showing";
+        }
+        </script>
+    </head>
+
+    <body onload="startTest()">
+        <p>Tests that added cue object wrappers live across garbage collections.</p>
+        <video controls />
+    </body>
+</html>

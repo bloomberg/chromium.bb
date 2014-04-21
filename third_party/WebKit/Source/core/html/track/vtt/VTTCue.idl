@@ -30,6 +30,7 @@
 [
     Constructor(double startTime, double endTime, DOMString text),
     ConstructorCallWith=Document,
+    SetWrapperReferenceFrom=owner,
 ] interface VTTCue : TextTrackCue {
     [RuntimeEnabled=WebVTTRegions] attribute DOMString regionId;
     [RaisesException=Setter] attribute DOMString vertical;

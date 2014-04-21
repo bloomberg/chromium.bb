@@ -56,6 +56,8 @@ public:
     TextTrack* track() const;
     void setTrack(TextTrack*);
 
+    Node* owner() const;
+
     const AtomicString& id() const { return m_id; }
     void setId(const AtomicString&);
 
