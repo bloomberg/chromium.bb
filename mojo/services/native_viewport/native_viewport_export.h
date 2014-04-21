@@ -5,6 +5,8 @@
 #ifndef MOJO_SERVICES_NATIVE_VIEWPORT_EXPORT_H_
 #define MOJO_SERVICES_NATIVE_VIEWPORT_EXPORT_H_
 
+#if defined(COMPONENT_BUILD)
+
 #if defined(WIN32)
 
 #if defined(MOJO_NATIVE_VIEWPORT_IMPLEMENTATION)
@@ -22,5 +24,9 @@
 #endif
 
 #endif  // defined(WIN32)
+
+#else  // !defined(COMPONENT_BUILD)
+#define MOJO_NATIVE_VIEWPORT_EXPORT
+#endif
 
 #endif  // MOJO_SERVICES_NATIVE_VIEWPORT_EXPORT_H_
