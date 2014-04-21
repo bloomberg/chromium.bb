@@ -81,6 +81,9 @@ class ExpireHistoryTest : public testing::Test,
   // manually deleted.
   void EnsureURLInfoGone(const URLRow& row, bool archived);
 
+  // Returns whether a NOTIFICATION_HISTORY_URLS_MODIFIED was sent for |url|.
+  bool ModifiedNotificationSent(const GURL& url);
+
   // Clears the list of notifications received.
   void ClearLastNotifications() {
     STLDeleteValues(&notifications_);
@@ -168,10 +171,10 @@ class ExpireHistoryTest : public testing::Test,
     // store them so we can tell that the correct notifications were sent.
     notifications_.push_back(std::make_pair(type, details.release()));
   }
-  virtual void NotifySyncURLsDeleted(
-      bool all_history,
-      bool archived,
-      URLRows* rows) OVERRIDE {}
+  virtual void NotifySyncURLsModified(URLRows* rows) OVERRIDE {}
+  virtual void NotifySyncURLsDeleted(bool all_history,
+                                     bool archived,
+                                     URLRows* rows) OVERRIDE {}
 };
 
 // The example data consists of 4 visits. The middle two visits are to the
@@ -364,6 +367,20 @@ void ExpireHistoryTest::EnsureURLInfoGone(const URLRow& row, bool archived) {
   EXPECT_TRUE(found_delete_notification);
 }
 
+bool ExpireHistoryTest::ModifiedNotificationSent(const GURL& url) {
+  for (size_t i = 0; i < notifications_.size(); i++) {
+    if (notifications_[i].first == chrome::NOTIFICATION_HISTORY_URLS_MODIFIED) {
+      const history::URLRows& rows =
+          static_cast<URLsModifiedDetails*>(notifications_[i].second)->
+              changed_urls;
+      if (std::find_if(rows.begin(), rows.end(),
+                       history::URLRow::URLRowHasURL(url)) != rows.end())
+        return true;
+    }
+  }
+  return false;
+}
+
 TEST_F(ExpireHistoryTest, DeleteFaviconsIfPossible) {
   // Add a favicon record.
   const GURL favicon_url("http://www.google.com/favicon.ico");
@@ -436,7 +453,7 @@ TEST_F(ExpireHistoryTest, DISABLED_DeleteURLAndFavicon) {
   expirer_.DeleteURL(last_row.url());
 
   // All the normal data + the favicon should be gone.
-  EnsureURLInfoGone(last_row, false /* archived */);
+  EnsureURLInfoGone(last_row, false);
   EXPECT_FALSE(GetFavicon(last_row.url(), favicon_base::FAVICON));
   EXPECT_FALSE(HasFavicon(favicon_id));
 }
@@ -465,7 +482,7 @@ TEST_F(ExpireHistoryTest, DeleteURLWithoutFavicon) {
   expirer_.DeleteURL(last_row.url());
 
   // All the normal data except the favicon should be gone.
-  EnsureURLInfoGone(last_row, false /* archived */);
+  EnsureURLInfoGone(last_row, false);
   EXPECT_TRUE(HasFavicon(favicon_id));
 }
 
@@ -508,7 +525,7 @@ TEST_F(ExpireHistoryTest, DontDeleteStarredURL) {
   expirer_.DeleteURL(url);
 
   // Now it should be completely deleted.
-  EnsureURLInfoGone(url_row, false /* archived */);
+  EnsureURLInfoGone(url_row, false);
 }
 
 // Deletes multiple URLs at once.  The favicon for the third one but
@@ -541,8 +558,8 @@ TEST_F(ExpireHistoryTest, DeleteURLs) {
 
   // First one should still be around (since it was starred).
   ASSERT_TRUE(main_db_->GetRowForURL(rows[0].url(), &rows[0]));
-  EnsureURLInfoGone(rows[1], false /* archived */);
-  EnsureURLInfoGone(rows[2], false /* archived */);
+  EnsureURLInfoGone(rows[1], false);
+  EnsureURLInfoGone(rows[2], false);
   EXPECT_TRUE(HasFavicon(favicon_ids[0]));
   EXPECT_TRUE(HasFavicon(favicon_ids[1]));
   EXPECT_FALSE(HasFavicon(favicon_ids[2]));
@@ -574,6 +591,7 @@ TEST_F(ExpireHistoryTest, FlushRecentURLsUnstarred) {
   EXPECT_EQ(1U, visits.size());
 
   // Verify that the middle URL visit time and visit counts were updated.
+  EXPECT_TRUE(ModifiedNotificationSent(url_row1.url()));
   URLRow temp_row;
   ASSERT_TRUE(main_db_->GetURLRow(url_ids[1], &temp_row));
   EXPECT_TRUE(visit_times[2] == url_row1.last_visit());  // Previous value.
@@ -593,7 +611,7 @@ TEST_F(ExpireHistoryTest, FlushRecentURLsUnstarred) {
   // Verify that the last URL was deleted.
   favicon_base::FaviconID favicon_id2 =
       GetFavicon(url_row2.url(), favicon_base::FAVICON);
-  EnsureURLInfoGone(url_row2, false /* archived */);
+  EnsureURLInfoGone(url_row2, false);
   EXPECT_FALSE(HasFavicon(favicon_id2));
 }
 
@@ -623,6 +641,7 @@ TEST_F(ExpireHistoryTest, FlushURLsForTimes) {
   EXPECT_EQ(1U, visits.size());
 
   // Verify that the middle URL visit time and visit counts were updated.
+  EXPECT_TRUE(ModifiedNotificationSent(url_row1.url()));
   URLRow temp_row;
   ASSERT_TRUE(main_db_->GetURLRow(url_ids[1], &temp_row));
   EXPECT_TRUE(visit_times[2] == url_row1.last_visit());  // Previous value.
@@ -642,7 +661,7 @@ TEST_F(ExpireHistoryTest, FlushURLsForTimes) {
   // Verify that the last URL was deleted.
   favicon_base::FaviconID favicon_id2 =
       GetFavicon(url_row2.url(), favicon_base::FAVICON);
-  EnsureURLInfoGone(url_row2, false /* archived */);
+  EnsureURLInfoGone(url_row2, false);
   EXPECT_FALSE(HasFavicon(favicon_id2));
 }
 
@@ -673,6 +692,7 @@ TEST_F(ExpireHistoryTest, FlushRecentURLsUnstarredRestricted) {
   EXPECT_EQ(1U, visits.size());
 
   // Verify that the middle URL visit time and visit counts were updated.
+  EXPECT_TRUE(ModifiedNotificationSent(url_row1.url()));
   URLRow temp_row;
   ASSERT_TRUE(main_db_->GetURLRow(url_ids[1], &temp_row));
   EXPECT_TRUE(visit_times[2] == url_row1.last_visit());  // Previous value.
@@ -724,6 +744,8 @@ TEST_F(ExpireHistoryTest, FlushRecentURLsStarred) {
   EXPECT_TRUE(new_url_row2.last_visit().is_null());  // No last visit time.
 
   // Visit/typed count should be updated.
+  EXPECT_TRUE(ModifiedNotificationSent(url_row1.url()));
+  EXPECT_TRUE(ModifiedNotificationSent(url_row2.url()));
   EXPECT_EQ(0, new_url_row1.typed_count());
   EXPECT_EQ(1, new_url_row1.visit_count());
   EXPECT_EQ(0, new_url_row2.typed_count());
@@ -760,8 +782,9 @@ TEST_F(ExpireHistoryTest, ArchiveHistoryBeforeUnstarred) {
 
   // The first URL should be deleted, the second should not.
   URLRow temp_row;
-  EnsureURLInfoGone(url_row0, true /* archived */);
+  EnsureURLInfoGone(url_row0, true);
   EXPECT_TRUE(main_db_->GetURLRow(url_ids[1], &temp_row));
+  EXPECT_TRUE(ModifiedNotificationSent(url_row1.url()));
   EXPECT_TRUE(main_db_->GetURLRow(url_ids[2], &temp_row));
 
   // Make sure the archived database has nothing in it.
@@ -770,10 +793,9 @@ TEST_F(ExpireHistoryTest, ArchiveHistoryBeforeUnstarred) {
 
   // Now archive one more visit so that the middle URL should be removed. This
   // one will actually be archived instead of deleted.
+  ClearLastNotifications();
   expirer_.ArchiveHistoryBefore(visit_times[2]);
-  // TODO(engedy): This should fire delete notifications, but currently doesn't.
-  // This should not matter as the archived database is going away anyway.
-  EXPECT_FALSE(main_db_->GetURLRow(url_ids[1], &temp_row));
+  EnsureURLInfoGone(url_row1, true);
   EXPECT_TRUE(main_db_->GetURLRow(url_ids[2], &temp_row));
 
   // Make sure the archived database has an entry for the second URL.
@@ -799,7 +821,7 @@ TEST_F(ExpireHistoryTest, ArchiveHistoryBeforeStarred) {
   StarURL(url_row1.url());
 
   // Now archive the first three visits (first two URLs). The first two visits
-  // should be, the third archived.
+  // should be deleted, the third archived.
   expirer_.ArchiveHistoryBefore(visit_times[2]);
 
   // The first URL should have its visit deleted, but it should still be present
@@ -808,6 +830,7 @@ TEST_F(ExpireHistoryTest, ArchiveHistoryBeforeStarred) {
   ASSERT_TRUE(main_db_->GetURLRow(url_ids[0], &temp_row));
   // Note that the ID is different in the archived DB, so look up by URL.
   EXPECT_FALSE(archived_db_->GetRowForURL(temp_row.url(), NULL));
+  EXPECT_TRUE(ModifiedNotificationSent(url_row0.url()));
   VisitVector visits;
   main_db_->GetVisitsForURL(temp_row.id(), &visits);
   EXPECT_EQ(0U, visits.size());
@@ -816,6 +839,7 @@ TEST_F(ExpireHistoryTest, ArchiveHistoryBeforeStarred) {
   // archived. It should be present in both the main DB (because it's starred)
   // and the archived DB (for the archived visit).
   ASSERT_TRUE(main_db_->GetURLRow(url_ids[1], &temp_row));
+  EXPECT_TRUE(ModifiedNotificationSent(url_row1.url()));
   main_db_->GetVisitsForURL(temp_row.id(), &visits);
   EXPECT_EQ(0U, visits.size());
 
@@ -828,6 +852,7 @@ TEST_F(ExpireHistoryTest, ArchiveHistoryBeforeStarred) {
   // The third URL should be unchanged.
   EXPECT_TRUE(main_db_->GetURLRow(url_ids[2], &temp_row));
   EXPECT_FALSE(archived_db_->GetRowForURL(temp_row.url(), NULL));
+  EXPECT_FALSE(ModifiedNotificationSent(temp_row.url()));
 }
 
 // Tests the return values from ArchiveSomeOldHistory. The rest of the

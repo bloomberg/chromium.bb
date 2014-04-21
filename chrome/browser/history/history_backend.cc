@@ -2746,6 +2746,11 @@ void HistoryBackend::BroadcastNotifications(
     delegate_->BroadcastNotifications(type, details.Pass());
 }
 
+void HistoryBackend::NotifySyncURLsModified(URLRows* rows) {
+  if (typed_url_syncable_service_.get())
+    typed_url_syncable_service_->OnUrlsModified(rows);
+}
+
 void HistoryBackend::NotifySyncURLsDeleted(bool all_history,
                                            bool archived,
                                            URLRows* rows) {

@@ -35,7 +35,8 @@ class BroadcastNotificationDelegate {
   virtual void BroadcastNotifications(int type,
                                       scoped_ptr<HistoryDetails> details) = 0;
 
-  // Tells typed url sync code to handle URL deletions.
+  // Tells typed url sync code to handle URL modifications or deletions.
+  virtual void NotifySyncURLsModified(URLRows* rows) = 0;
   virtual void NotifySyncURLsDeleted(bool all_history,
                                      bool archived,
                                      URLRows* rows) = 0;
@@ -132,6 +133,9 @@ class ExpireHistoryBackend {
     // The unique URL rows affected by this delete.
     std::map<URLID, URLRow> affected_urls;
 
+    // The URLs modified, but not deleted, during this operation.
+    URLRows modified_urls;
+
     // The URLs deleted during this operation.
     URLRows deleted_urls;
 
@@ -224,8 +228,8 @@ class ExpireHistoryBackend {
     DELETION_ARCHIVED
   };
 
-  // Broadcasts URL deleted notifications.
-  void BroadcastDeleteNotifications(DeleteEffects* effects, DeletionType type);
+  // Broadcasts URL modified and deleted notifications.
+  void BroadcastNotifications(DeleteEffects* effects, DeletionType type);
 
   // Schedules a call to DoArchiveIteration.
   void ScheduleArchive();

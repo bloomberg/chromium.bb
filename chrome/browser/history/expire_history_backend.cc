@@ -211,7 +211,7 @@ void ExpireHistoryBackend::DeleteURLs(const std::vector<GURL>& urls) {
 
   DeleteFaviconsIfPossible(&effects);
 
-  BroadcastDeleteNotifications(&effects, DELETION_USER_INITIATED);
+  BroadcastNotifications(&effects, DELETION_USER_INITIATED);
 }
 
 void ExpireHistoryBackend::ExpireHistoryBetween(
@@ -273,7 +273,7 @@ void ExpireHistoryBackend::ExpireVisits(const VisitVector& visits) {
   // and we don't want to leave any evidence.
   ExpireURLsForVisits(visits, &effects);
   DeleteFaviconsIfPossible(&effects);
-  BroadcastDeleteNotifications(&effects, DELETION_USER_INITIATED);
+  BroadcastNotifications(&effects, DELETION_USER_INITIATED);
 
   // Pick up any bits possibly left over.
   ParanoidExpireHistory();
@@ -347,13 +347,17 @@ void ExpireHistoryBackend::DeleteFaviconsIfPossible(DeleteEffects* effects) {
   }
 }
 
-void ExpireHistoryBackend::BroadcastDeleteNotifications(DeleteEffects* effects,
-                                                        DeletionType type) {
+void ExpireHistoryBackend::BroadcastNotifications(DeleteEffects* effects,
+                                                  DeletionType type) {
+  if (!effects->modified_urls.empty()) {
+    scoped_ptr<URLsModifiedDetails> details(new URLsModifiedDetails);
+    details->changed_urls = effects->modified_urls;
+    delegate_->NotifySyncURLsModified(&details->changed_urls);
+    delegate_->BroadcastNotifications(
+        chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
+        details.PassAs<HistoryDetails>());
+  }
   if (!effects->deleted_urls.empty()) {
-    // Broadcast the URL deleted notification. Note that we also broadcast when
-    // we were requested to delete everything even if that was a NOP, since
-    // some components care to know when history is deleted (it's up to them to
-    // determine if they care whether anything was deleted).
     scoped_ptr<URLsDeletedDetails> details(new URLsDeletedDetails);
     details->all_history = false;
     details->archived = (type == DELETION_ARCHIVED);
@@ -493,6 +497,8 @@ void ExpireHistoryBackend::ExpireURLsForVisits(const VisitVector& visits,
 
       // Update the db with the new details.
       main_db_->UpdateURLRow(url_row.id(), url_row);
+
+      effects->modified_urls.push_back(url_row);
     }
   }
 }
@@ -604,34 +610,16 @@ bool ExpireHistoryBackend::ArchiveSomeOldHistory(
   }
 
   // Do the actual archiving.
-  DeleteEffects archived_effects;
   ArchiveURLsAndVisits(archived_visits);
-  DeleteVisitRelatedInfo(archived_visits, &archived_effects);
 
+  // Delete all the visits.
+  deleted_visits.insert(deleted_visits.end(), archived_visits.begin(),
+                        archived_visits.end());
   DeleteEffects deleted_effects;
   DeleteVisitRelatedInfo(deleted_visits, &deleted_effects);
-
-  // This will remove or archive all the affected URLs. Must do the deleting
-  // cleanup before archiving so the delete dependencies structure references
-  // only those URLs that were actually deleted instead of having some visits
-  // archived and then the rest deleted.
   ExpireURLsForVisits(deleted_visits, &deleted_effects);
-  ExpireURLsForVisits(archived_visits, &archived_effects);
-
-  // Create a union of all affected favicons (we don't store favicons for
-  // archived URLs) and delete them.
-  for (std::set<favicon_base::FaviconID>::const_iterator i =
-           archived_effects.affected_favicons.begin();
-       i != archived_effects.affected_favicons.end(); ++i) {
-    deleted_effects.affected_favicons.insert(*i);
-  }
   DeleteFaviconsIfPossible(&deleted_effects);
-
-  // Send notifications for the stuff that was deleted. These won't normally be
-  // in history views since they were subframes, but they will be in the visited
-  // link system, which needs to be updated now. This function is smart enough
-  // to not do anything if nothing was deleted.
-  BroadcastDeleteNotifications(&deleted_effects, DELETION_ARCHIVED);
+  BroadcastNotifications(&deleted_effects, DELETION_ARCHIVED);
 
   return more_to_expire;
 }
