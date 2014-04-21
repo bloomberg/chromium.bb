@@ -32,6 +32,7 @@
 #define WebServiceWorkerContextClient_h
 
 #include "WebWorkerPermissionClientProxy.h"
+#include "public/platform/WebCallbacks.h"
 #include "public/platform/WebServiceWorkerEventResult.h"
 #include "public/platform/WebURL.h"
 
@@ -42,6 +43,8 @@ class WebString;
 class WebServiceWorkerContextProxy;
 class WebServiceWorkerNetworkProvider;
 class WebServiceWorkerResponse;
+struct WebServiceWorkerClientsInfo;
+struct WebServiceWorkerError;
 
 // This interface is implemented by the client. It is supposed to be created
 // on the main thread and then passed on to the worker thread to be owned
@@ -102,13 +105,20 @@ public:
     virtual void didHandleFetchEvent(int fetchEventID) { }
     virtual void didHandleFetchEvent(int fetchEventID, const WebServiceWorkerResponse& response) { }
 
-    // Ownership of the returned object is transferred to the caller.
-    virtual WebServiceWorkerNetworkProvider* createServiceWorkerNetworkProvider(blink::WebDataSource*) { return 0; }
-
     // ServiceWorker specific method. Called after SyncEvent (dispatched via
     // WebServiceWorkerContextProxy) is handled by the ServiceWorker's script
     // context.
     virtual void didHandleSyncEvent(int syncEventID) { }
+
+    // Ownership of the returned object is transferred to the caller.
+    virtual WebServiceWorkerNetworkProvider* createServiceWorkerNetworkProvider(blink::WebDataSource*) { return 0; }
+
+    // Ownership of the passed callbacks is transferred to the callee, callee
+    // should delete the callbacks after calling either onSuccess or onError.
+    // WebServiceWorkerClientsInfo and WebServiceWorkerError ownerships are
+    // passed to the WebServiceWorkerClientsCallbacks implementation.
+    typedef WebCallbacks<WebServiceWorkerClientsInfo, WebServiceWorkerError> WebServiceWorkerClientsCallbacks;
+    virtual void getClients(WebServiceWorkerClientsCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
 };
 
 } // namespace blink
