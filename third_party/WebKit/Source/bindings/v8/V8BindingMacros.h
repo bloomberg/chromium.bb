@@ -80,28 +80,40 @@ namespace WebCore {
     }
 
 #define TONATIVE_DEFAULT_EXCEPTIONSTATE(type, var, value, exceptionState, retVal) \
-    type var;                                                                 \
-    {                                                                         \
-        v8::TryCatch block;                                                   \
-        var = (value);                                                        \
-        if (UNLIKELY(block.HasCaught()))                                      \
-            exceptionState.rethrowV8Exception(block.Exception());             \
-        if (UNLIKELY(exceptionState.throwIfNeeded()))                         \
-            return retVal;                                                    \
+    type var;                                                                     \
+    {                                                                             \
+        v8::TryCatch block;                                                       \
+        var = (value);                                                            \
+        if (UNLIKELY(block.HasCaught()))                                          \
+            exceptionState.rethrowV8Exception(block.Exception());                 \
+        if (UNLIKELY(exceptionState.throwIfNeeded()))                             \
+            return retVal;                                                        \
     }
 
 // type is an instance of class template V8StringResource<>,
 // but Mode argument varies; using type (not Mode) for consistency
 // with other macros and ease of code generation
-#define TOSTRING_VOID(type, var, value) \
-    type var(value);                    \
-    if (UNLIKELY(!var.prepare()))       \
-        return;
+#define TOSTRING_VOID(type, var, value)    \
+    type var(value);                       \
+    if (UNLIKELY(!var.toStringFast())) {   \
+        v8::TryCatch block;                \
+        var.toString();                    \
+        if (UNLIKELY(block.HasCaught())) { \
+            block.ReThrow();               \
+            return;                        \
+        }                                  \
+    }
 
 #define TOSTRING_DEFAULT(type, var, value, retVal) \
     type var(value);                               \
-    if (UNLIKELY(!var.prepare()))                  \
-        return retVal;
+    if (UNLIKELY(!var.toStringFast())) {           \
+        v8::TryCatch block;                        \
+        var.toString();                            \
+        if (UNLIKELY(block.HasCaught())) {         \
+            block.ReThrow();                       \
+            return retVal;                         \
+        }                                          \
+    }
 
 } // namespace WebCore
 

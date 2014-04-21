@@ -176,12 +176,26 @@ public:
     {
     }
 
-    bool prepare();
+    // Returns false if calling toString is needed.
+    bool toStringFast();
+    // This function assumes that toStringFast is already called.
+    // If ToString fails returns false and throws and JS exception.
+    bool toString()
+    {
+        ASSERT(!m_v8Object.IsEmpty());
+        ASSERT(!m_v8Object->IsString());
+        ASSERT(!m_v8Object->IsInt32());
+        ASSERT(m_mode == Externalize);
+        m_mode = DoNotExternalize;
+        m_v8Object = m_v8Object->ToString();
+        return !m_v8Object.IsEmpty();
+    }
+
     operator String() const { return toString<String>(); }
     operator AtomicString() const { return toString<AtomicString>(); }
 
 private:
-    bool prepareBase()
+    bool toStringFastBase()
     {
         if (m_v8Object.IsEmpty())
             return true;
@@ -193,16 +207,7 @@ private:
             setString(int32ToWebCoreString(m_v8Object->Int32Value()));
             return true;
         }
-
-        m_mode = DoNotExternalize;
-        v8::TryCatch block;
-        m_v8Object = m_v8Object->ToString();
-        // Handle the case where an exception is thrown as part of invoking toString on the object.
-        if (block.HasCaught()) {
-            block.ReThrow();
-            return false;
-        }
-        return true;
+        return false;
     }
 
     void setString(const String& string)
@@ -225,27 +230,27 @@ private:
     String m_string;
 };
 
-template<> inline bool V8StringResource<DefaultMode>::prepare()
+template<> inline bool V8StringResource<DefaultMode>::toStringFast()
 {
-    return prepareBase();
+    return toStringFastBase();
 }
 
-template<> inline bool V8StringResource<WithNullCheck>::prepare()
+template<> inline bool V8StringResource<WithNullCheck>::toStringFast()
 {
     if (m_v8Object.IsEmpty() || m_v8Object->IsNull()) {
         setString(String());
         return true;
     }
-    return prepareBase();
+    return toStringFastBase();
 }
 
-template<> inline bool V8StringResource<WithUndefinedOrNullCheck>::prepare()
+template<> inline bool V8StringResource<WithUndefinedOrNullCheck>::toStringFast()
 {
     if (m_v8Object.IsEmpty() || m_v8Object->IsNull() || m_v8Object->IsUndefined()) {
         setString(String());
         return true;
     }
-    return prepareBase();
+    return toStringFastBase();
 }
 
 } // namespace WebCore
