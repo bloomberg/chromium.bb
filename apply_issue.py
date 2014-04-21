@@ -87,6 +87,8 @@ def main():
                          'is detected.')
   parser.add_option('-b', '--base_ref', help='Base git ref to patch on top of, '
                     'used for verification.')
+  parser.add_option('-d', '--ignore_deps', action='store_true',
+                    help='Don\'t run gclient sync on DEPS changes.')
   options, args = parser.parse_args()
 
   if options.password and options.private_key_file:
@@ -218,7 +220,8 @@ def main():
     print('Checkout path=%s' % scm_obj.project_path)
     return 1
 
-  if 'DEPS' in map(os.path.basename, patchset.filenames):
+  if ('DEPS' in map(os.path.basename, patchset.filenames)
+      and not options.ignore_deps):
     gclient_root = gclient_utils.FindGclientRoot(full_dir)
     if gclient_root and scm_type:
       print(
