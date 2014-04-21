@@ -188,8 +188,10 @@ void DocumentLoader::stopLoading()
             m_frame->loader().stopLoading();
     }
 
-    if (!loading)
+    if (!loading) {
+        m_fetcher->stopFetching();
         return;
+    }
 
     if (m_loadingMainResource) {
         // Stop the main resource loader and let it send the cancelled message.
