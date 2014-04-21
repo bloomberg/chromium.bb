@@ -10,15 +10,19 @@ function test()
     WebInspector.inspectorView.showPanel("network");
     WebInspector.experimentsSettings.timelineFlameChart.enableForTest();
     var timelineData = InspectorTest.timelineData();
-    WebInspector.inspectorView.showPanel("timeline");
-    var timeline = WebInspector.panels.timeline;
-    timeline._onModeChanged(WebInspector.TimelinePanel.Mode.FlameChart);
+
+    var timeline = WebInspector.inspectorView.showPanel("timeline");
+    timeline._overviewModeSetting.set(WebInspector.TimelinePanel.OverviewMode.Frames);
+    timeline._flameChartEnabledSetting.set(true);
+    timeline._onModeChanged();
     timeline._currentViews[0]._automaticallySizeWindow = true;
+
     function requestWindowTimesHook(startTime, endTime)
     {
         if (startTime)
             InspectorTest.addResult("time delta: " + (endTime - startTime));
     }
+
     timeline.requestWindowTimes = requestWindowTimesHook;
     var model = timeline._model;
 

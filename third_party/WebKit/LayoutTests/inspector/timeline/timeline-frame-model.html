@@ -202,9 +202,10 @@ function test()
     };
 
     var timelinePanel = WebInspector.inspectorView.showPanel("timeline");
-    timelinePanel._onModeChanged(WebInspector.TimelinePanel.Mode.Frames);
+    timelinePanel._overviewModeSetting.set("Frames");
+    timelinePanel._onModeChanged();
     var overview = timelinePanel._overviewPane;
-    var frameModel = overview._overviewControl._frameModel;
+    var frameModel = overview._overviewControls[0]._frameModel;
 
     for (var testName in testData) {
         var data = testData[testName];

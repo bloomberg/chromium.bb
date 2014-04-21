@@ -22,9 +22,10 @@ function test()
     InspectorTest.override(model, "_createFileReader", createFileReader);
 
     model.loadFromFile({}, new WebInspector.Progress());
-    timeline._selectPresentationMode(WebInspector.TimelinePanel.Mode.Frames);
+    timeline._overviewModeSetting.set("Frames");
+    timeline._onModeChanged();
     timeline._model.reset();
-    console.log("Expected count of barTimes is zero: " + timeline._overviewControl._barTimes.length);
+    console.log("Expected count of barTimes is zero: " + timeline._overviewControls[0]._barTimes.length);
 
     InspectorTest.completeTest();
 }
