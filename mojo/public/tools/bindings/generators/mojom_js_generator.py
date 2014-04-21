@@ -4,11 +4,10 @@
 
 """Generates JavaScript source files from a mojom.Module."""
 
-from generate import mojom
-from generate import mojom_pack
-from generate import mojom_generator
-
-from generate.template_expander import UseJinja
+import mojom.generate.generator as generator
+import mojom.generate.module as mojom
+import mojom.generate.pack as pack
+from mojom.generate.template_expander import UseJinja
 
 _kind_to_javascript_default_value = {
   mojom.BOOL:         "false",
@@ -52,7 +51,7 @@ def JavaScriptPayloadSize(packed):
     return 0;
   last_field = packed_fields[-1]
   offset = last_field.offset + last_field.size
-  pad = mojom_pack.GetPad(offset, 8)
+  pad = pack.GetPad(offset, 8)
   return offset + pad;
 
 
@@ -177,7 +176,7 @@ def TranslateConstants(token, module):
 def ExpressionToText(value, module):
   if value[0] != "EXPRESSION":
     raise Exception("Expected EXPRESSION, got" + value)
-  return "".join(mojom_generator.ExpressionMapper(value,
+  return "".join(generator.ExpressionMapper(value,
       lambda token: TranslateConstants(token, module)))
 
 
@@ -187,7 +186,7 @@ def JavascriptType(kind):
   return kind.name
 
 
-class Generator(mojom_generator.Generator):
+class Generator(generator.Generator):
 
   js_filters = {
     "default_value": JavaScriptDefaultValue,
@@ -195,12 +194,12 @@ class Generator(mojom_generator.Generator):
     "decode_snippet": JavaScriptDecodeSnippet,
     "encode_snippet": JavaScriptEncodeSnippet,
     "expression_to_text": ExpressionToText,
-    "is_object_kind": mojom_generator.IsObjectKind,
-    "is_string_kind": mojom_generator.IsStringKind,
+    "is_object_kind": generator.IsObjectKind,
+    "is_string_kind": generator.IsStringKind,
     "is_array_kind": lambda kind: isinstance(kind, mojom.Array),
     "js_type": JavascriptType,
-    "stylize_method": mojom_generator.StudlyCapsToCamel,
-    "verify_token_type": mojom_generator.VerifyTokenType,
+    "stylize_method": generator.StudlyCapsToCamel,
+    "verify_token_type": generator.VerifyTokenType,
   }
 
   @UseJinja("js_templates/module.js.tmpl", filters=js_filters)

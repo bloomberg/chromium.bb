@@ -2,10 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import mojom
+# TODO(vtl): "data" is a pretty vague name. Rename it?
+
 import copy
 
-# mojom_data provides a mechanism to turn mojom Modules to dictionaries and
+import module as mojom
+
+# This module provides a mechanism to turn mojom Modules to dictionaries and
 # back again. This can be used to persist a mojom Module created progromatically
 # or to read a dictionary from code or a file.
 # Example:
@@ -26,7 +29,7 @@ import copy
 #         {'name': 'bar', 'kind': 'a:x:teststruct'}],
 #     'ordinal': 42}]}]
 # }
-# test_module = mojom_data.ModuleFromData(test_dict)
+# test_module = data.ModuleFromData(test_dict)
 
 # Used to create a subclass of str that supports sorting by index, to make
 # pretty printing maintain the order.

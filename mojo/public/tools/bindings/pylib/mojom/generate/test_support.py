@@ -2,9 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import mojom
 import sys
 import traceback
+
+import module as mojom
 
 # Support for writing mojom test cases.
 # RunTest(fn) will execute fn, catching any exceptions. fn should return

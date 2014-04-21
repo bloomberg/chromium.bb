@@ -4,11 +4,10 @@
 
 """Generates C++ source files from a mojom.Module."""
 
-from generate import mojom
-from generate import mojom_pack
-from generate import mojom_generator
-
-from generate.template_expander import UseJinja
+import mojom.generate.generator as generator
+import mojom.generate.module as mojom
+import mojom.generate.pack as pack
+from mojom.generate.template_expander import UseJinja
 
 
 _kind_to_cpp_type = {
@@ -99,7 +98,7 @@ def GetCppWrapperType(kind):
     return "mojo::Passable<%sHandle>" % kind.name
   if kind.spec == 's':
     return "mojo::String"
-  if mojom_generator.IsHandleKind(kind):
+  if generator.IsHandleKind(kind):
     return "mojo::Passable<%s>" % _kind_to_cpp_type[kind]
   return _kind_to_cpp_type[kind]
 
@@ -144,7 +143,7 @@ def GetCppFieldType(kind):
 
 def IsStructWithHandles(struct):
   for pf in struct.packed.packed_fields:
-    if mojom_generator.IsHandleKind(pf.field.kind):
+    if generator.IsHandleKind(pf.field.kind):
       return True
   return False
 
@@ -164,12 +163,12 @@ def TranslateConstants(token, module):
 def ExpressionToText(value, module):
   if value[0] != "EXPRESSION":
     raise Exception("Expected EXPRESSION, got" + value)
-  return "".join(mojom_generator.ExpressionMapper(value,
+  return "".join(generator.ExpressionMapper(value,
       lambda token: TranslateConstants(token, module)))
 
 _HEADER_SIZE = 8
 
-class Generator(mojom_generator.Generator):
+class Generator(generator.Generator):
 
   cpp_filters = {
     "cpp_const_wrapper_type": GetCppConstWrapperType,
@@ -178,18 +177,18 @@ class Generator(mojom_generator.Generator):
     "cpp_result_type": GetCppResultWrapperType,
     "cpp_wrapper_type": GetCppWrapperType,
     "expression_to_text": ExpressionToText,
-    "get_pad": mojom_pack.GetPad,
-    "is_enum_kind": mojom_generator.IsEnumKind,
-    "is_handle_kind": mojom_generator.IsHandleKind,
-    "is_object_kind": mojom_generator.IsObjectKind,
-    "is_string_kind": mojom_generator.IsStringKind,
+    "get_pad": pack.GetPad,
+    "is_enum_kind": generator.IsEnumKind,
+    "is_handle_kind": generator.IsHandleKind,
+    "is_object_kind": generator.IsObjectKind,
+    "is_string_kind": generator.IsStringKind,
     "is_array_kind": lambda kind: isinstance(kind, mojom.Array),
     "is_struct_with_handles": IsStructWithHandles,
     "struct_size": lambda ps: ps.GetTotalSize() + _HEADER_SIZE,
-    "struct_from_method": mojom_generator.GetStructFromMethod,
-    "response_struct_from_method": mojom_generator.GetResponseStructFromMethod,
-    "stylize_method": mojom_generator.StudlyCapsToCamel,
-    "verify_token_type": mojom_generator.VerifyTokenType,
+    "struct_from_method": generator.GetStructFromMethod,
+    "response_struct_from_method": generator.GetResponseStructFromMethod,
+    "stylize_method": generator.StudlyCapsToCamel,
+    "verify_token_type": generator.VerifyTokenType,
   }
 
   def GetJinjaExports(self):

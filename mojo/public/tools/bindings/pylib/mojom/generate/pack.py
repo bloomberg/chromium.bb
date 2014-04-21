@@ -2,12 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import mojom
+import module as mojom
 
-# mojom_pack provides a mechanism for determining the packed order and offsets
+# This module provides a mechanism for determining the packed order and offsets
 # of a mojom.Struct.
 #
-# ps = mojom_pack.PackedStruct(struct)
+# ps = pack.PackedStruct(struct)
 # ps.packed_fields will access a list of PackedField objects, each of which
 # will have an offset, a size and a bit (for mojom.BOOLs).
 

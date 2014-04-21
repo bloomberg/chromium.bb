@@ -9,12 +9,13 @@ import inspect
 import os
 import sys
 
-_current_dir = os.path.dirname(os.path.realpath(__file__))
-# jinja2 is in the third_party directory (current directory is
-# mojo/public/tools/bindings/pylib/generate).
+# jinja2 is in the third_party directory.
 # Insert at front to override system libraries, and after path[0] == script dir
-sys.path.insert(1, os.path.join(_current_dir, os.pardir, os.pardir, os.pardir,
-                                os.pardir, os.pardir, os.pardir, 'third_party'))
+path = os.path.abspath(__file__)
+while os.path.split(path)[1] != "src":
+  path = os.path.split(path)[0]
+sys.path.insert(1, os.path.join(path, "third_party"))
+del path
 import jinja2
 
 

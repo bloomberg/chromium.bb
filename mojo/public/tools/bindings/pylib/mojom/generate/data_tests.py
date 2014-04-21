@@ -2,13 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import mojom_data
-import mojom_test
 import sys
 
-EXPECT_EQ = mojom_test.EXPECT_EQ
-EXPECT_TRUE = mojom_test.EXPECT_TRUE
-RunTest = mojom_test.RunTest
+import data
+import test_support
+
+EXPECT_EQ = test_support.EXPECT_EQ
+EXPECT_TRUE = test_support.EXPECT_TRUE
+RunTest = test_support.RunTest
 
 
 def DeepEquals(d1, d2):
@@ -54,22 +55,22 @@ test_dict = {
 
 
 def TestRead():
-  module = mojom_data.ModuleFromData(test_dict)
-  return mojom_test.TestTestModule(module)
+  module = data.ModuleFromData(test_dict)
+  return test_support.TestTestModule(module)
 
 
 def TestWrite():
-  module = mojom_test.BuildTestModule()
-  d = mojom_data.ModuleToData(module)
+  module = test_support.BuildTestModule()
+  d = data.ModuleToData(module)
   return EXPECT_TRUE(DeepEquals(test_dict, d))
 
 
 def TestWriteRead():
-  module1 = mojom_test.BuildTestModule()
+  module1 = test_support.BuildTestModule()
 
-  dict1 = mojom_data.ModuleToData(module1)
-  module2 = mojom_data.ModuleFromData(dict1)
-  return EXPECT_TRUE(mojom_test.ModulesAreEqual(module1, module2))
+  dict1 = data.ModuleToData(module1)
+  module2 = data.ModuleFromData(dict1)
+  return EXPECT_TRUE(test_support.ModulesAreEqual(module1, module2))
 
 
 def Main(args):

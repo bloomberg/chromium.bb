@@ -12,13 +12,13 @@ import os
 import pprint
 import sys
 
-script_dir = os.path.dirname(os.path.realpath(__file__))
+script_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(script_dir, "pylib"))
 
-from generate import mojom_data
-from mojom.parse import lexer
-from mojom.parse import parser
-from mojom.parse import translate
+from mojom.generate.data import OrderedModuleFromData
+from mojom.parse.lexer import LexError
+from mojom.parse.parser import Parse, ParseError
+from mojom.parse.translate import Translate
 
 
 def LoadGenerators(generators_string):
@@ -75,13 +75,13 @@ def ProcessFile(args, generator_modules, filename, processed_files={},
     sys.exit(1)
 
   try:
-    tree = parser.Parse(source, filename)
-  except (lexer.LexError, parser.ParseError) as e:
+    tree = Parse(source, filename)
+  except (LexError, ParseError) as e:
     print str(e) + MakeImportStackMessage(imported_filename_stack + [filename])
     sys.exit(1)
 
   dirname, name = os.path.split(filename)
-  mojom = translate.Translate(tree, name)
+  mojom = Translate(tree, name)
   if args.debug_print_intermediate:
     pprint.PrettyPrinter().pprint(mojom)
 
@@ -94,7 +94,7 @@ def ProcessFile(args, generator_modules, filename, processed_files={},
         processed_files=processed_files,
         imported_filename_stack=imported_filename_stack + [filename])
 
-  module = mojom_data.OrderedModuleFromData(mojom)
+  module = OrderedModuleFromData(mojom)
 
   # Set the path as relative to the source root.
   module.path = os.path.relpath(os.path.abspath(filename),

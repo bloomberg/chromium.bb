@@ -4,11 +4,12 @@
 
 """Code shared by the various language-specific code generators."""
 
-import os
-import mojom
-import mojom_pack
-import re
 from functools import partial
+import os
+import re
+
+import module as mojom
+import pack
 
 def GetStructFromMethod(interface, method):
   """Converts a method's parameters into the fields of a struct."""
@@ -16,7 +17,7 @@ def GetStructFromMethod(interface, method):
   struct = mojom.Struct(params_class)
   for param in method.parameters:
     struct.AddField(param.name, param.kind, param.ordinal)
-  struct.packed = mojom_pack.PackedStruct(struct)
+  struct.packed = pack.PackedStruct(struct)
   return struct
 
 def GetResponseStructFromMethod(interface, method):
@@ -25,12 +26,12 @@ def GetResponseStructFromMethod(interface, method):
   struct = mojom.Struct(params_class)
   for param in method.response_parameters:
     struct.AddField(param.name, param.kind, param.ordinal)
-  struct.packed = mojom_pack.PackedStruct(struct)
+  struct.packed = pack.PackedStruct(struct)
   return struct
 
 def GetStructInfo(exported, struct):
-  struct.packed = mojom_pack.PackedStruct(struct)
-  struct.bytes = mojom_pack.GetByteLayout(struct.packed)
+  struct.packed = pack.PackedStruct(struct)
+  struct.bytes = pack.GetByteLayout(struct.packed)
   struct.exported = exported
   return struct
 

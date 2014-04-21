@@ -2,11 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# mojom's classes provide an interface to mojo modules. Modules are collections
-# of interfaces and structs to be used by mojo ipc clients and servers.
+# This module's classes provide an interface to mojo modules. Modules are
+# collections of interfaces and structs to be used by mojo ipc clients and
+# servers.
 #
 # A simple interface would be created this way:
-# module = mojom.Module('Foo')
+# module = mojom.generate.module.Module('Foo')
 # interface = module.AddInterface('Bar')
 # method = interface.AddMethod('Tat', 0)
 # method.AddParameter('baz', 0, mojom.INT32)

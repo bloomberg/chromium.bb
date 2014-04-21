@@ -10,7 +10,7 @@ import sys
 script_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, os.path.join(script_dir, os.pardir, "pylib"))
 
-from generate import mojom_data
+from mojom.generate.data
 import mojom_cpp_generator
 
 def ReadDict(file):
@@ -20,7 +20,7 @@ def ReadDict(file):
     return dict
 
 dict = ReadDict(sys.argv[1])
-module = mojom_data.ModuleFromData(dict)
+module = mojom.generate.data.ModuleFromData(dict)
 dir = None
 if len(sys.argv) > 2:
   dir = sys.argv[2]

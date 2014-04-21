@@ -2,14 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import mojom
-import mojom_pack
-import mojom_test
 import sys
 
-EXPECT_EQ = mojom_test.EXPECT_EQ
-EXPECT_TRUE = mojom_test.EXPECT_TRUE
-RunTest = mojom_test.RunTest
+import module as mojom
+import pack
+import test_support
+
+
+EXPECT_EQ = test_support.EXPECT_EQ
+EXPECT_TRUE = test_support.EXPECT_TRUE
+RunTest = test_support.RunTest
 
 
 def TestOrdinalOrder():
@@ -17,7 +19,7 @@ def TestOrdinalOrder():
   struct = mojom.Struct('test')
   struct.AddField('testfield1', mojom.INT32, 2)
   struct.AddField('testfield2', mojom.INT32, 1)
-  ps = mojom_pack.PackedStruct(struct)
+  ps = pack.PackedStruct(struct)
 
   errors += EXPECT_EQ(2, len(ps.packed_fields))
   errors += EXPECT_EQ('testfield2', ps.packed_fields[0].field.name)
@@ -28,7 +30,7 @@ def TestOrdinalOrder():
 def TestZeroFields():
   errors = 0
   struct = mojom.Struct('test')
-  ps = mojom_pack.PackedStruct(struct)
+  ps = pack.PackedStruct(struct)
   errors += EXPECT_EQ(0, len(ps.packed_fields))
   return errors
 
@@ -37,7 +39,7 @@ def TestOneField():
   errors = 0
   struct = mojom.Struct('test')
   struct.AddField('testfield1', mojom.INT8)
-  ps = mojom_pack.PackedStruct(struct)
+  ps = pack.PackedStruct(struct)
   errors += EXPECT_EQ(1, len(ps.packed_fields))
   return errors
 
@@ -54,7 +56,7 @@ def TestSequence(kinds, fields, offsets):
   for kind in kinds:
     struct.AddField("%d" % index, kind)
     index += 1
-  ps = mojom_pack.PackedStruct(struct)
+  ps = pack.PackedStruct(struct)
   num_fields = len(ps.packed_fields)
   errors += EXPECT_EQ(len(kinds), num_fields)
   for i in xrange(num_fields):
@@ -105,7 +107,7 @@ def TestPaddingPackedOutOfOrderByOrdinal():
   struct.AddField('testfield1', mojom.INT8)
   struct.AddField('testfield3', mojom.UINT8, 3)
   struct.AddField('testfield2', mojom.INT32, 2)
-  ps = mojom_pack.PackedStruct(struct)
+  ps = pack.PackedStruct(struct)
   errors += EXPECT_EQ(3, len(ps.packed_fields))
 
   # Second byte should be packed in behind first, altering order.
@@ -134,7 +136,7 @@ def TestBools():
   struct.AddField('bit6', mojom.BOOL)
   struct.AddField('bit7', mojom.BOOL)
   struct.AddField('bit8', mojom.BOOL)
-  ps = mojom_pack.PackedStruct(struct)
+  ps = pack.PackedStruct(struct)
   errors += EXPECT_EQ(10, len(ps.packed_fields))
 
   # First 8 bits packed together.

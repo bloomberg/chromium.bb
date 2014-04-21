@@ -2,15 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import mojom_test
 import sys
 
-EXPECT_EQ = mojom_test.EXPECT_EQ
-EXPECT_TRUE = mojom_test.EXPECT_TRUE
-RunTest = mojom_test.RunTest
-ModulesAreEqual = mojom_test.ModulesAreEqual
-BuildTestModule = mojom_test.BuildTestModule
-TestTestModule = mojom_test.TestTestModule
+import test_support
+
+EXPECT_EQ = test_support.EXPECT_EQ
+EXPECT_TRUE = test_support.EXPECT_TRUE
+RunTest = test_support.RunTest
+ModulesAreEqual = test_support.ModulesAreEqual
+BuildTestModule = test_support.BuildTestModule
+TestTestModule = test_support.TestTestModule
 
 
 def BuildAndTestModule():
