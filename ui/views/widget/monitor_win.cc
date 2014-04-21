@@ -16,8 +16,7 @@ gfx::Rect GetMonitorBoundsForRect(const gfx::Rect& rect) {
   RECT p_rect = rect.ToRECT();
   HMONITOR monitor = MonitorFromRect(&p_rect, MONITOR_DEFAULTTONEAREST);
   if (monitor) {
-    MONITORINFO mi = {0};
-    mi.cbSize = sizeof(mi);
+    MONITORINFO mi = { sizeof(MONITORINFO) };
     GetMonitorInfo(monitor, &mi);
     return gfx::Rect(mi.rcWork);
   }

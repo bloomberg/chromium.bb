@@ -51,6 +51,9 @@
 #include "chrome/browser/ui/ash/ash_util.h"
 #endif
 
+
+// Helpers --------------------------------------------------------------------
+
 namespace {
 
 Profile* GetProfileForWindow(const views::Widget* window) {
@@ -77,8 +80,14 @@ PrefService* GetPrefsForWindow(const views::Widget* window) {
 
 }  // namespace
 
-///////////////////////////////////////////////////////////////////////////////
-// ChromeViewsDelegate, views::ViewsDelegate implementation:
+
+// ChromeViewsDelegate --------------------------------------------------------
+
+ChromeViewsDelegate::ChromeViewsDelegate() {
+}
+
+ChromeViewsDelegate::~ChromeViewsDelegate() {
+}
 
 void ChromeViewsDelegate::SaveWindowPlacement(const views::Widget* window,
                                               const std::string& window_name,
@@ -181,14 +190,13 @@ gfx::ImageSkia* ChromeViewsDelegate::GetDefaultWindowIcon() const {
 }
 #endif
 
+#if defined(USE_ASH)
 views::NonClientFrameView* ChromeViewsDelegate::CreateDefaultNonClientFrameView(
     views::Widget* widget) {
-#if defined(USE_ASH)
-  if (chrome::IsNativeViewInAsh(widget->GetNativeView()))
-    return ash::Shell::GetInstance()->CreateDefaultNonClientFrameView(widget);
-#endif
-  return NULL;
+  return chrome::IsNativeViewInAsh(widget->GetNativeView()) ?
+      ash::Shell::GetInstance()->CreateDefaultNonClientFrameView(widget) : NULL;
 }
+#endif
 
 void ChromeViewsDelegate::AddRef() {
   g_browser_process->AddRefModule();
@@ -196,12 +204,6 @@ void ChromeViewsDelegate::AddRef() {
 
 void ChromeViewsDelegate::ReleaseRef() {
   g_browser_process->ReleaseModule();
-}
-
-content::WebContents* ChromeViewsDelegate::CreateWebContents(
-    content::BrowserContext* browser_context,
-    content::SiteInstance* site_instance) {
-  return NULL;
 }
 
 void ChromeViewsDelegate::OnBeforeWidgetInit(
@@ -311,21 +313,14 @@ void ChromeViewsDelegate::OnBeforeWidgetInit(
 #endif
 }
 
-base::TimeDelta
-ChromeViewsDelegate::GetDefaultTextfieldObscuredRevealDuration() {
-  return base::TimeDelta();
-}
-
-bool ChromeViewsDelegate::WindowManagerProvidesTitleBar(bool maximized) {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+bool ChromeViewsDelegate::WindowManagerProvidesTitleBar(bool maximized) {
   // On Ubuntu Unity, the system always provides a title bar for maximized
   // windows.
   views::LinuxUI* ui = views::LinuxUI::instance();
   return maximized && ui && ui->UnityIsRunning();
-#endif
-
-  return false;
 }
+#endif
 
 #if !defined(USE_AURA) && !defined(USE_CHROMEOS)
 views::Widget::InitParams::WindowOpacity

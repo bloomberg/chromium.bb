@@ -13,10 +13,10 @@
 
 class ChromeViewsDelegate : public views::ViewsDelegate {
  public:
-  ChromeViewsDelegate() {}
-  virtual ~ChromeViewsDelegate() {}
+  ChromeViewsDelegate();
+  virtual ~ChromeViewsDelegate();
 
-  // Overridden from views::ViewsDelegate:
+  // views::ViewsDelegate:
   virtual void SaveWindowPlacement(const views::Widget* window,
                                    const std::string& window_name,
                                    const gfx::Rect& bounds,
@@ -33,25 +33,24 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
                                      int item_index,
                                      int item_count,
                                      bool has_submenu) OVERRIDE;
-
 #if defined(OS_WIN)
   virtual HICON GetDefaultWindowIcon() const OVERRIDE;
   virtual bool IsWindowInMetro(gfx::NativeWindow window) const OVERRIDE;
 #elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
   virtual gfx::ImageSkia* GetDefaultWindowIcon() const OVERRIDE;
 #endif
+#if defined(USE_ASH)
   virtual views::NonClientFrameView* CreateDefaultNonClientFrameView(
       views::Widget* widget) OVERRIDE;
+#endif
   virtual void AddRef() OVERRIDE;
   virtual void ReleaseRef() OVERRIDE;
-  virtual content::WebContents* CreateWebContents(
-      content::BrowserContext* browser_context,
-      content::SiteInstance* site_instance) OVERRIDE;
   virtual void OnBeforeWidgetInit(
       views::Widget::InitParams* params,
       views::internal::NativeWidgetDelegate* delegate) OVERRIDE;
-  virtual base::TimeDelta GetDefaultTextfieldObscuredRevealDuration() OVERRIDE;
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   virtual bool WindowManagerProvidesTitleBar(bool maximized) OVERRIDE;
+#endif
 
  private:
   // Function to retrieve default opacity value mainly based on platform
