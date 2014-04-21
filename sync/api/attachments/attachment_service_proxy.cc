@@ -21,8 +21,9 @@ void ProxyGetOrDownloadCallback(
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     const AttachmentService::GetOrDownloadCallback& callback,
     const AttachmentService::GetOrDownloadResult& result,
-    const AttachmentMap& attachments) {
-  task_runner->PostTask(FROM_HERE, base::Bind(callback, result, attachments));
+    scoped_ptr<AttachmentMap> attachments) {
+  task_runner->PostTask(
+      FROM_HERE, base::Bind(callback, result, base::Passed(&attachments)));
 }
 
 // Invokes |callback| with |result| and |attachments| in the |task_runner|

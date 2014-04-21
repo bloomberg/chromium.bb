@@ -20,22 +20,24 @@ class SyncData;
 //
 // Outside of sync code, AttachmentService shouldn't be used directly. Instead
 // use the functionality provided by SyncData and SyncChangeProcessor.
+//
+// Destroying this object does not necessarily cancel outstanding async
+// operations. If you need cancel like semantics, use WeakPtr in the callbacks.
 class SYNC_EXPORT AttachmentService {
  public:
   // The result of a GetOrDownloadAttachments operation.
   enum GetOrDownloadResult {
-    GET_SUCCESS,            // No error.
-    GET_NOT_FOUND,          // Attachment was not found or does not exist.
+    GET_SUCCESS,            // No error, all attachments returned.
     GET_UNSPECIFIED_ERROR,  // An unspecified error occurred.
   };
 
   typedef base::Callback<
-      void(const GetOrDownloadResult&, const AttachmentMap& attachments)>
+      void(const GetOrDownloadResult&, scoped_ptr<AttachmentMap> attachments)>
       GetOrDownloadCallback;
 
   // The result of a DropAttachments operation.
   enum DropResult {
-    DROP_SUCCESS,            // No error.
+    DROP_SUCCESS,            // No error, all attachments dropped.
     DROP_UNSPECIFIED_ERROR,  // An unspecified error occurred.
   };
 

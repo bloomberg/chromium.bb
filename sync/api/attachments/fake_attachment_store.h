@@ -39,11 +39,11 @@ class SYNC_EXPORT FakeAttachmentStore : public AttachmentStore {
   virtual ~FakeAttachmentStore();
 
   // AttachmentStore implementation.
-  virtual void Read(const AttachmentId& id,
+  virtual void Read(const AttachmentIdList& id,
                     const ReadCallback& callback) OVERRIDE;
-  virtual void Write(const scoped_refptr<base::RefCountedMemory>& bytes,
+  virtual void Write(const AttachmentList& attachments,
                      const WriteCallback& callback) OVERRIDE;
-  virtual void Drop(const AttachmentId& id,
+  virtual void Drop(const AttachmentIdList& id,
                     const DropCallback& callback) OVERRIDE;
 
  private:

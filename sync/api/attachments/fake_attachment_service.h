@@ -35,7 +35,15 @@ class SYNC_EXPORT FakeAttachmentService : public AttachmentService,
                                 const SyncData& updated_sync_data) OVERRIDE;
 
  private:
+  void ReadDone(const GetOrDownloadCallback& callback,
+                const AttachmentStore::Result& result,
+                scoped_ptr<AttachmentMap> attachments);
+  void DropDone(const DropCallback& callback,
+                const AttachmentStore::Result& result);
+
   const scoped_ptr<AttachmentStore> attachment_store_;
+  // Must be last data member.
+  base::WeakPtrFactory<FakeAttachmentService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAttachmentService);
 };

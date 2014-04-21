@@ -40,10 +40,12 @@ class StubAttachmentService : public AttachmentService,
       OVERRIDE {
     CalledOnValidThread();
     Increment();
+    scoped_ptr<AttachmentMap> attachments(new AttachmentMap());
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(
-            callback, AttachmentService::GET_NOT_FOUND, AttachmentMap()));
+        base::Bind(callback,
+                   AttachmentService::GET_UNSPECIFIED_ERROR,
+                   base::Passed(&attachments)));
   }
 
   virtual void DropAttachments(const AttachmentIdList& attachment_ids,
@@ -134,7 +136,7 @@ class AttachmentServiceProxyTest : public testing::Test,
 
   // a GetOrDownloadCallback
   void IncrementGetOrDownload(const AttachmentService::GetOrDownloadResult&,
-                              const AttachmentMap&) {
+                              scoped_ptr<AttachmentMap>) {
     CalledOnValidThread();
     ++count_callback_get_or_download;
   }
