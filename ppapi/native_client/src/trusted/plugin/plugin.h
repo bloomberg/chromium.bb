@@ -285,9 +285,6 @@ class Plugin : public pp::Instance {
   // chosen for the sandbox ISA, any current service runtime is shut down, the
   // .nexe is loaded and run.
 
-  // Callback used when getting the manifest file as a buffer (e.g., data URIs)
-  void NaClManifestBufferReady(int32_t pp_error);
-
   // Callback used when getting the manifest file as a local file descriptor.
   void NaClManifestFileDidOpen(int32_t pp_error);
 

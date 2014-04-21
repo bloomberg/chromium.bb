@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Fri Apr 18 08:25:19 2014. */
+/* From private/ppb_nacl_private.idl modified Fri Apr 18 11:23:31 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -355,6 +355,7 @@ struct PPB_NaCl_Private_1_0 {
   struct PP_Var (*GetManifestBaseURL)(PP_Instance instance);
   PP_Bool (*ResolvesRelativeToPluginBaseUrl)(PP_Instance instance,
                                              const char* url);
+  struct PP_Var (*ParseDataURL)(const char* data_url);
 };
 
 typedef struct PPB_NaCl_Private_1_0 PPB_NaCl_Private;

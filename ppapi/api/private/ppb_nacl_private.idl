@@ -367,4 +367,6 @@ interface PPB_NaCl_Private {
 
   PP_Bool ResolvesRelativeToPluginBaseUrl([in] PP_Instance instance,
                                           [in] str_t url);
+
+  PP_Var ParseDataURL([in] str_t data_url);
 };

@@ -23,9 +23,6 @@
 
 namespace {
 
-const int32_t kExtensionUrlRequestStatusOk = 200;
-const int32_t kDataUriRequestStatusOk = 0;
-
 struct NaClFileInfo NoFileInfo() {
   struct NaClFileInfo info;
   memset(&info, 0, sizeof(info));
@@ -130,7 +127,6 @@ bool FileDownloader::Open(
   url_ = url;
   file_open_notify_callback_ = callback;
   mode_ = mode;
-  buffer_.clear();
   file_info_.FreeResources();
   pp::URLRequestInfo url_request(instance_);
 
@@ -151,32 +147,10 @@ bool FileDownloader::Open(
   url_loader_ = pp::URLLoader(instance_);
   pp::Var url_var = pp::Var(url);
   url_scheme_ = instance_->nacl_interface()->GetUrlScheme(url_var.pp_var());
-  bool grant_universal_access = false;
-  if (url_scheme_ == PP_SCHEME_DATA) {
-    // TODO(elijahtaylor) Remove this when data URIs can be read without
-    // universal access.
-    // https://bugs.webkit.org/show_bug.cgi?id=17352
-    if (mode_ == DOWNLOAD_TO_BUFFER) {
-      grant_universal_access = true;
-    } else {
-      // Open is to invoke a callback on success or failure. Schedule
-      // it asynchronously to follow PPAPI's convention and avoid reentrancy.
-      pp::Core* core = pp::Module::Get()->core();
-      core->CallOnMainThread(0, callback, PP_ERROR_NOACCESS);
-      PLUGIN_PRINTF(("FileDownloader::Open (pp_error=PP_ERROR_NOACCESS)\n"));
-      return true;
-    }
-  }
 
   url_request.SetRecordDownloadProgress(record_progress);
 
   if (url_loader_trusted_interface_ != NULL) {
-    if (grant_universal_access) {
-      // TODO(sehr,jvoung): See if we can remove this -- currently
-      // only used for data URIs.
-      url_loader_trusted_interface_->GrantUniversalAccess(
-          url_loader_.pp_resource());
-    }
     if (progress_callback != NULL) {
       url_loader_trusted_interface_->RegisterStatusCallback(
           url_loader_.pp_resource(), progress_callback);
@@ -262,30 +236,10 @@ bool FileDownloader::InitialResponseIsValid() {
   }
   full_url_ = full_url.AsString();
 
-  // Note that URLs in the data-URI scheme produce different error
-  // codes than other schemes.  This is because data-URI are really a
-  // special kind of file scheme, and therefore do not produce HTTP
-  // status codes.
-  bool status_ok = false;
   status_code_ = url_response_.GetStatusCode();
-  switch (url_scheme_) {
-    case PP_SCHEME_CHROME_EXTENSION:
-      PLUGIN_PRINTF(("FileDownloader::InitialResponseIsValid (chrome-extension "
-                     "response status_code=%" NACL_PRId32 ")\n", status_code_));
-      status_ok = (status_code_ == kExtensionUrlRequestStatusOk);
-      break;
-    case PP_SCHEME_DATA:
-      PLUGIN_PRINTF(("FileDownloader::InitialResponseIsValid (data URI "
-                     "response status_code=%" NACL_PRId32 ")\n", status_code_));
-      status_ok = (status_code_ == kDataUriRequestStatusOk);
-      break;
-    case PP_SCHEME_OTHER:
-      PLUGIN_PRINTF(("FileDownloader::InitialResponseIsValid (HTTP response "
-                     "status_code=%" NACL_PRId32 ")\n", status_code_));
-      status_ok = (status_code_ == NACL_HTTP_STATUS_OK);
-      break;
-  }
-  return status_ok;
+  PLUGIN_PRINTF(("FileDownloader::InitialResponseIsValid ("
+                 "response status_code=%" NACL_PRId32 ")\n", status_code_));
+  return status_code_ == NACL_HTTP_STATUS_OK;
 }
 
 void FileDownloader::URLLoadStartNotify(int32_t pp_error) {
@@ -356,8 +310,7 @@ void FileDownloader::URLLoadFinishNotify(int32_t pp_error) {
   // Validate response again on load (though it should be the same
   // as it was during InitialResponseIsValid?).
   url_response_ = url_loader_.GetResponseInfo();
-  CHECK(url_response_.GetStatusCode() == NACL_HTTP_STATUS_OK ||
-        url_response_.GetStatusCode() == kExtensionUrlRequestStatusOk);
+  CHECK(url_response_.GetStatusCode() == NACL_HTTP_STATUS_OK);
 
   // Record the full url from the response.
   pp::Var full_url = url_response_.GetURL();
@@ -403,9 +356,7 @@ void FileDownloader::URLReadBodyNotify(int32_t pp_error) {
     }
     StreamFinishNotify(PP_OK);
   } else {
-    if (mode_ == DOWNLOAD_TO_BUFFER) {
-      buffer_.insert(buffer_.end(), &temp_buffer_[0], &temp_buffer_[pp_error]);
-    } else if (mode_ == DOWNLOAD_TO_BUFFER_AND_STREAM) {
+    if (mode_ == DOWNLOAD_TO_BUFFER_AND_STREAM) {
       PLUGIN_PRINTF(("Running data_stream_callback, temp_buffer_=%p\n",
                      &temp_buffer_[0]));
       StreamCallback cb = data_stream_callback_source_->GetCallback();

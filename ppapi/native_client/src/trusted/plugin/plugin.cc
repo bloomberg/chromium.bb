@@ -676,42 +676,6 @@ void Plugin::BitcodeDidTranslateContinuation(int32_t pp_error) {
   }
 }
 
-void Plugin::NaClManifestBufferReady(int32_t pp_error) {
-  PLUGIN_PRINTF(("Plugin::NaClManifestBufferReady (pp_error=%"
-                 NACL_PRId32 ")\n", pp_error));
-  ErrorInfo error_info;
-  if (pp_error != PP_OK) {
-    if (pp_error == PP_ERROR_ABORTED) {
-      ReportLoadAbort();
-    } else {
-      error_info.SetReport(PP_NACL_ERROR_MANIFEST_LOAD_URL,
-                           "could not load manifest url.");
-      ReportLoadError(error_info);
-    }
-    return;
-  }
-
-  const std::deque<char>& buffer = nexe_downloader_.buffer();
-  size_t buffer_size = buffer.size();
-  if (buffer_size > kNaClManifestMaxFileBytes) {
-    error_info.SetReport(PP_NACL_ERROR_MANIFEST_TOO_LARGE,
-                         "manifest file too large.");
-    ReportLoadError(error_info);
-    return;
-  }
-  nacl::scoped_array<char> json_buffer(new char[buffer_size + 1]);
-  if (json_buffer == NULL) {
-    error_info.SetReport(PP_NACL_ERROR_MANIFEST_MEMORY_ALLOC,
-                         "could not allocate manifest memory.");
-    ReportLoadError(error_info);
-    return;
-  }
-  std::copy(buffer.begin(), buffer.begin() + buffer_size, &json_buffer[0]);
-  json_buffer[buffer_size] = '\0';
-
-  ProcessNaClManifest(json_buffer.get());
-}
-
 void Plugin::NaClManifestFileDidOpen(int32_t pp_error) {
   PLUGIN_PRINTF(("Plugin::NaClManifestFileDidOpen (pp_error=%"
                  NACL_PRId32 ")\n", pp_error));
@@ -839,20 +803,29 @@ void Plugin::ProcessNaClManifest(const nacl::string& manifest_json) {
 void Plugin::RequestNaClManifest(const nacl::string& url) {
   PLUGIN_PRINTF(("Plugin::RequestNaClManifest (url='%s')\n", url.c_str()));
   PP_Bool is_data_uri;
+  ErrorInfo error_info;
   if (!nacl_interface_->RequestNaClManifest(pp_instance(), url.c_str(),
                                             &is_data_uri))
     return;
   pp::Var nmf_resolved_url =
       pp::Var(pp::PASS_REF, nacl_interface_->GetManifestBaseURL(pp_instance()));
   if (is_data_uri) {
-    pp::CompletionCallback open_callback =
-        callback_factory_.NewCallback(&Plugin::NaClManifestBufferReady);
-    // Will always call the callback on success or failure.
-    CHECK(nexe_downloader_.Open(nmf_resolved_url.AsString(),
-                                DOWNLOAD_TO_BUFFER,
-                                open_callback,
-                                false,
-                                NULL));
+    std::string string_nmf_resolved_url = nmf_resolved_url.AsString();
+    pp::Var nmf_data = pp::Var(
+        pp::PASS_REF,
+        nacl_interface_->ParseDataURL(string_nmf_resolved_url.c_str()));
+    if (!nmf_data.is_string()) {
+      error_info.SetReport(PP_NACL_ERROR_MANIFEST_LOAD_URL,
+                           "could not load manifest url.");
+      ReportLoadError(error_info);
+    } else if (nmf_data.AsString().size() > kNaClManifestMaxFileBytes) {
+      error_info.SetReport(PP_NACL_ERROR_MANIFEST_TOO_LARGE,
+                           "manifest file too large.");
+      ReportLoadError(error_info);
+    } else {
+      // TODO(teravest): Does this have to be async for any reason?
+      ProcessNaClManifest(nmf_data.AsString());
+    }
   } else {
     pp::CompletionCallback open_callback =
         callback_factory_.NewCallback(&Plugin::NaClManifestFileDidOpen);

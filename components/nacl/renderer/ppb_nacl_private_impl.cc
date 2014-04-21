@@ -27,6 +27,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
+#include "net/base/data_url.h"
 #include "net/http/http_response_headers.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/private/pp_file_handle.h"
@@ -762,6 +763,16 @@ PP_Bool ResolvesRelativeToPluginBaseURL(PP_Instance instance,
   return PP_TRUE;
 }
 
+PP_Var ParseDataURL(const char* data_url) {
+  GURL gurl(data_url);
+  std::string mime_type;
+  std::string charset;
+  std::string data;
+  if (!net::DataURL::Parse(gurl, &mime_type, &charset, &data))
+    return PP_MakeUndefined();
+  return ppapi::StringVar::StringToPPVar(data);
+}
+
 const PPB_NaCl_Private nacl_interface = {
   &LaunchSelLdr,
   &StartPpapiProxy,
@@ -798,7 +809,8 @@ const PPB_NaCl_Private nacl_interface = {
   &GetNexeSize,
   &RequestNaClManifest,
   &GetManifestBaseURL,
-  &ResolvesRelativeToPluginBaseURL
+  &ResolvesRelativeToPluginBaseURL,
+  &ParseDataURL
 };
 
 }  // namespace
