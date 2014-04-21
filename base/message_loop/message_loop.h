@@ -34,7 +34,9 @@
 #include "base/message_loop/message_pump_libevent.h"
 #if !defined(OS_MACOSX) && !defined(OS_ANDROID)
 
-#if defined(USE_GLIB) && !defined(OS_NACL)
+#if defined(OS_CHROMEOS) && !defined(OS_NACL) && !defined(USE_GLIB)
+#include "base/message_loop/message_pump_libevent.h"
+#elif defined(USE_GLIB) && !defined(OS_NACL)
 #include "base/message_loop/message_pump_glib.h"
 #elif !defined(OS_ANDROID_HOST)
 #include "base/message_loop/message_pump_glib.h"
@@ -51,7 +53,7 @@ class RunLoop;
 class ThreadTaskRunnerHandle;
 #if defined(OS_ANDROID)
 class MessagePumpForUI;
-#elif defined(OS_ANDROID_HOST)
+#elif defined(OS_ANDROID_HOST) || (defined(OS_CHROMEOS) && !defined(USE_GLIB))
 typedef MessagePumpLibevent MessagePumpForUI;
 #endif
 class WaitableEvent;
@@ -561,7 +563,8 @@ class BASE_EXPORT MessageLoopForUI : public MessageLoop {
   void RemoveObserver(Observer* observer);
 #endif
 
-#if defined(USE_OZONE) && !defined(OS_NACL)
+#if !defined(OS_NACL) && \
+    (defined(USE_OZONE) || (defined(OS_CHROMEOS) && !defined(USE_GLIB)))
   // Please see MessagePumpLibevent for definition.
   bool WatchFileDescriptor(
       int fd,

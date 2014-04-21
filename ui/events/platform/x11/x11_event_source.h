@@ -41,21 +41,15 @@ class EVENTS_EXPORT X11EventSource : public PlatformEventSource {
   // functions which require a mapped window.
   void BlockUntilWindowMapped(XID window);
 
- private:
-  // Initializes the glib event source for X.
-  void InitXSource();
+ protected:
+  XDisplay* display() { return display_; }
 
+ private:
   // PlatformEventSource:
   virtual uint32_t DispatchEvent(XEvent* xevent) OVERRIDE;
 
   // The connection to the X11 server used to receive the events.
   XDisplay* display_;
-
-  // The GLib event source for X events.
-  GSource* x_source_;
-
-  // The poll attached to |x_source_|.
-  scoped_ptr<GPollFD> x_poll_;
 
   DISALLOW_COPY_AND_ASSIGN(X11EventSource);
 };

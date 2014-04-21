@@ -154,6 +154,8 @@
         'platform/scoped_event_dispatcher.h',
         'platform/x11/x11_event_source.cc',
         'platform/x11/x11_event_source.h',
+        'platform/x11/x11_event_source_glib.cc',
+        'platform/x11/x11_event_source_libevent.cc',
         'win/events_win.cc',
         'x/events_x.cc',
         'linux/text_edit_command_auralinux.cc',
@@ -189,6 +191,14 @@
         ['use_glib==1', {
           'dependencies': [
             '../../build/linux/system.gyp:glib',
+          ],
+          'sources!': [
+            'platform/x11/x11_event_source_libevent.cc',
+          ],
+        }, {
+          # use_glib == 0
+          'sources!': [
+            'platform/x11/x11_event_source_glib.cc',
           ],
         }],
         ['use_ozone_evdev==1', {
