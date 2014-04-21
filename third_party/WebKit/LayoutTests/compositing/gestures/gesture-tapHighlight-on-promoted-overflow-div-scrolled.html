@@ -2,10 +2,9 @@
 <html>
   <head>
     <link rel="stylesheet" type="text/css" href="resources/link-highlight-style.css">
-    <script src="../../compositing/overflow/resources/automatically-opt-into-composited-scrolling.js"></script>
     <script>
       if (window.internals)
-        window.internals.settings.setAcceleratedCompositingForOverflowScrollEnabled(true);
+        window.internals.settings.setCompositorDrivenAcceleratedScrollingEnabled(true);
 
       function runTest() {
         var targetDiv = document.getElementById('targetDiv');
@@ -14,8 +13,6 @@
         if (window.internals)
           window.internals.forceCompositingUpdate(document);
 
-        if (!window.internals || !didOptIn(targetDiv))
-          resultDiv.innerHTML = "Error: target scrollable overflow div did not opt-in.";
         var clientRect = document.getElementById('targetLink').getBoundingClientRect();
         x = (clientRect.left + clientRect.right) / 2;
         y = (clientRect.top + clientRect.bottom) / 2;

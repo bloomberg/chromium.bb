@@ -178,12 +178,8 @@
     [RaisesException] DOMString layerTreeAsText(Document document, optional unsigned short flags);
     [RaisesException] DOMString elementLayerTreeAsText(Element element, optional unsigned short flags);
 
-    [RaisesException] NodeList paintOrderListBeforePromote(Element element);
-    [RaisesException] NodeList paintOrderListAfterPromote(Element element);
-
     [RaisesException] boolean scrollsWithRespectTo(Element element1, Element element2);
     [RaisesException] boolean isUnclippedDescendant(Element element);
-    [RaisesException] boolean needsCompositedScrolling(Element element);
 
     // The values of these constants must be kept in sync with those in RenderLayer.
     const unsigned short DO_NOT_FORCE_COMPOSITED_SCROLLING = 0;

@@ -248,19 +248,6 @@ TEST_F(ScrollingCoordinatorChromiumTest, fastScrollingForFixedPosition)
     }
 }
 
-TEST_F(ScrollingCoordinatorChromiumTest, nonFastScrollableRegion)
-{
-    registerMockedHttpURLLoad("non-fast-scrollable.html");
-    navigateTo(m_baseURL + "non-fast-scrollable.html");
-    forceFullCompositingUpdate();
-
-    WebLayer* rootScrollLayer = getRootScrollLayer();
-    WebVector<WebRect> nonFastScrollableRegion = rootScrollLayer->nonFastScrollableRegion();
-
-    ASSERT_EQ(1u, nonFastScrollableRegion.size());
-    ASSERT_EQ(WebRect(8, 8, 10, 10), nonFastScrollableRegion[0]);
-}
-
 TEST_F(ScrollingCoordinatorChromiumTest, wheelEventHandler)
 {
     registerMockedHttpURLLoad("wheel-event-handler.html");

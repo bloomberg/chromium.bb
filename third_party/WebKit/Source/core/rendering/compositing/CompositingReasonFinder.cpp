@@ -59,31 +59,16 @@ void CompositingReasonFinder::updateTriggers()
         m_compositingTriggers |= FilterTrigger;
     if (settings.acceleratedCompositingForGpuRasterizationHintEnabled())
         m_compositingTriggers |= GPURasterizationTrigger;
-    if (settings.acceleratedCompositingForOverflowScrollEnabled())
-        m_compositingTriggers |= LegacyOverflowScrollTrigger;
-    if (settings.compositorDrivenAcceleratedScrollingEnabled())
+
+    // We map both these settings to universal overlow scrolling.
+    // FIXME: Replace these settings with a generic compositing setting for HighDPI.
+    if (settings.acceleratedCompositingForOverflowScrollEnabled() || settings.compositorDrivenAcceleratedScrollingEnabled())
         m_compositingTriggers |= OverflowScrollTrigger;
+
     // FIXME: acceleratedCompositingForFixedPositionEnabled should be renamed acceleratedCompositingForViewportConstrainedPositionEnabled().
     // Or the sticky and fixed position elements should be behind different flags.
     if (settings.acceleratedCompositingForFixedPositionEnabled())
         m_compositingTriggers |= ViewportConstrainedPositionedTrigger;
-
-    // FIXME: This monkeying with the accelerated triggers is temporary and should
-    // be removed once the feature ships.
-
-    // Currently, we must have the legacy path enabled to use the new path.
-    if (!(m_compositingTriggers & LegacyOverflowScrollTrigger))
-        m_compositingTriggers &= ~OverflowScrollTrigger;
-
-    // Enable universal overflow scrolling (and only universal overflow scrolling)
-    // on the new bleeding edge path. The above requirement (having legacy enabled)
-    // was only necessary to avoid explosions; the legacy path created far fewer
-    // layers. In the world of squashing, this doesn't make sense. We never want
-    // to use the old path in that case.
-    if (RuntimeEnabledFeatures::bleedingEdgeFastPathsEnabled()) {
-        m_compositingTriggers |= OverflowScrollTrigger;
-        m_compositingTriggers &= ~LegacyOverflowScrollTrigger;
-    }
 }
 
 bool CompositingReasonFinder::has3DTransformTrigger() const

@@ -1,2 +1,0 @@
-Passed - correctly opted into composited scrolling with a positioned ancestor.
-

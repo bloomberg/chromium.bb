@@ -1643,42 +1643,6 @@ String Internals::elementLayerTreeAsText(Element* element, ExceptionState& excep
     return elementLayerTreeAsText(element, 0, exceptionState);
 }
 
-static PassRefPtr<NodeList> paintOrderList(Element* element, ExceptionState& exceptionState, RenderLayerStackingNode::PaintOrderListType type)
-{
-    if (!element) {
-        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Element"));
-        return nullptr;
-    }
-
-    element->document().updateLayout();
-
-    RenderObject* renderer = element->renderer();
-    if (!renderer || !renderer->isBox()) {
-        exceptionState.throwDOMException(InvalidAccessError, renderer ? "The provided element's renderer is not a box." : "The provided element has no renderer.");
-        return nullptr;
-    }
-
-    RenderLayer* layer = toRenderBox(renderer)->layer();
-    if (!layer) {
-        exceptionState.throwDOMException(InvalidAccessError, "No render layer can be obtained from the provided element.");
-        return nullptr;
-    }
-
-    Vector<RefPtr<Node> > nodes;
-    layer->stackingNode()->computePaintOrderList(type, nodes);
-    return StaticNodeList::adopt(nodes);
-}
-
-PassRefPtr<NodeList> Internals::paintOrderListBeforePromote(Element* element, ExceptionState& exceptionState)
-{
-    return paintOrderList(element, exceptionState, RenderLayerStackingNode::BeforePromote);
-}
-
-PassRefPtr<NodeList> Internals::paintOrderListAfterPromote(Element* element, ExceptionState& exceptionState)
-{
-    return paintOrderList(element, exceptionState, RenderLayerStackingNode::AfterPromote);
-}
-
 bool Internals::scrollsWithRespectTo(Element* element1, Element* element2, ExceptionState& exceptionState)
 {
     if (!element1 || !element2) {
@@ -1731,30 +1695,6 @@ bool Internals::isUnclippedDescendant(Element* element, ExceptionState& exceptio
     }
 
     return layer->isUnclippedDescendant();
-}
-
-bool Internals::needsCompositedScrolling(Element* element, ExceptionState& exceptionState)
-{
-    if (!element) {
-        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Element"));
-        return 0;
-    }
-
-    element->document().view()->updateLayoutAndStyleForPainting();
-
-    RenderObject* renderer = element->renderer();
-    if (!renderer || !renderer->isBox()) {
-        exceptionState.throwDOMException(InvalidAccessError, renderer ? "The provided element's renderer is not a box." : "The provided element has no renderer.");
-        return 0;
-    }
-
-    RenderLayer* layer = toRenderBox(renderer)->layer();
-    if (!layer) {
-        exceptionState.throwDOMException(InvalidAccessError, "No render layer can be obtained from the provided element.");
-        return 0;
-    }
-
-    return layer->needsCompositedScrolling();
 }
 
 String Internals::layerTreeAsText(Document* document, unsigned flags, ExceptionState& exceptionState) const

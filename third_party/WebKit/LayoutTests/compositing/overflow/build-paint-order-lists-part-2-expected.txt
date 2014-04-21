@@ -1,2 +1,0 @@
-Testing permutation set 1 - this means that the "sibling" will be placed at the index 1 of the paint order.
-
