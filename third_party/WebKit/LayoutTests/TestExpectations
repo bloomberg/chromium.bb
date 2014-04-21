@@ -1087,6 +1087,7 @@ crbug.com/363772 virtual/deferred/fast/images/repaint-subrect-grid.html [ NeedsM
 crbug.com/363772 virtual/deferred/fast/images/exif-orientation.html [ NeedsManualRebaseline ]
 crbug.com/363772 [ Mac Linux Android ] virtual/gpu/fast/hidpi/gradient-with-scaled-ancestor.html [ NeedsManualRebaseline ]
 crbug.com/363772 [ Win Release ] virtual/gpu/fast/hidpi/gradient-with-scaled-ancestor.html [ NeedsManualRebaseline ]
+crbug.com/365400 [ Mac ] compositing/images/direct-pdf-image.html [ Pass ImageOnlyFailure ]
 
 crbug.com/362992 crypto/aes-cbc-generateKey-parseAlgorithm-failures.html [ Skip ]
 crbug.com/362992 crypto/digest-failures.html [ Skip ]
