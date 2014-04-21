@@ -83,6 +83,12 @@ void RenderMultiColumnFlowThread::evacuateAndDestroy()
     multicolContainer->resetMultiColumnFlowThread();
     moveAllChildrenTo(multicolContainer, true);
 
+    // FIXME: it's scary that neither destroy() nor the move*Children* methods take care of this,
+    // and instead leave you with dangling root line box pointers. But since this is how it is done
+    // in other parts of the code that deal with reparenting renderers, let's do the cleanup on our
+    // own here as well.
+    deleteLineBoxTree();
+
     destroy();
 }
 
