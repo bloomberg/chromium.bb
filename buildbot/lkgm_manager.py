@@ -30,6 +30,8 @@ PALADIN_REF_ATTR = 'ref'
 PALADIN_CHANGE_ID_ATTR = 'change_id'
 PALADIN_COMMIT_ATTR = 'commit'
 PALADIN_PATCH_NUMBER_ATTR = 'patch_number'
+PALADIN_OWNER_ATTR = 'owner'
+
 
 MANIFEST_ELEMENT = 'manifest'
 DEFAULT_ELEMENT = 'default'
@@ -233,6 +235,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       pending_commit.setAttribute(PALADIN_CHANGE_ID_ATTR, patch.change_id)
       pending_commit.setAttribute(PALADIN_COMMIT_ATTR, patch.commit)
       pending_commit.setAttribute(PALADIN_PATCH_NUMBER_ATTR, patch.patch_number)
+      pending_commit.setAttribute(PALADIN_OWNER_ATTR, patch.owner)
       manifest_dom.documentElement.appendChild(pending_commit)
 
     with open(manifest, 'w+') as manifest_file:

@@ -505,6 +505,7 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
       gerrit_patch.change_id = '1234567890'
       gerrit_patch.commit = '0987654321'
       gerrit_patch.patch_number = '4'
+      gerrit_patch.owner = 'foo'
       self.manager._AddPatchesToManifest(tmp_manifest, [gerrit_patch])
 
       new_doc = minidom.parse(tmp_manifest)
@@ -522,6 +523,8 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
                        gerrit_patch.tracking_branch)
       self.assertEqual(element.getAttribute(lkgm_manager.PALADIN_REF_ATTR),
                        gerrit_patch.ref)
+      self.assertEqual(element.getAttribute(lkgm_manager.PALADIN_OWNER_ATTR),
+                       gerrit_patch.owner)
       self.assertEqual(
           element.getAttribute(lkgm_manager.PALADIN_PROJECT_URL_ATTR),
           gerrit_patch.project_url)
