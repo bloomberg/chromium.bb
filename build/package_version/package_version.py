@@ -495,6 +495,9 @@ def ExtractPackageTargets(package_target_packages, tar_dir, dest_dir,
         # Destination package file cannot be trusted, if invalid re-extract.
         pass
 
+      # Delete the old package file before we extract.
+      os.unlink(dest_package_file)
+
     if os.path.isdir(dest_package_dir):
       logging.debug('Deleting old package directory: %s', dest_package_dir)
       pynacl.file_tools.RemoveDir(dest_package_dir)
