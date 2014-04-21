@@ -70,33 +70,52 @@ PinchViewport::PinchViewport(FrameHost& owner)
 
 PinchViewport::~PinchViewport() { }
 
-void PinchViewport::mainFrameDidChangeSize()
+void PinchViewport::setSize(const IntSize& size)
 {
     ASSERT(mainFrame() && mainFrame()->view());
 
     if (!m_innerViewportContainerLayer || !m_innerViewportScrollLayer)
         return;
 
-    IntSize newSize = mainFrame()->view()->frameRect().size();
+    IntSize newSize = clampToOuterViewportSize(size);
 
-    m_innerViewportContainerLayer->setSize(newSize);
-    // The innerviewport scroll layer always has the same size as its clip layer, but
-    // the page scale layer lives between them, allowing for non-zero max scroll
-    // offset when page scale > 1.
-    m_innerViewportScrollLayer->setSize(newSize);
+    if (m_size == newSize)
+        return;
 
-    m_offset = clampOffsetToBoundaries(m_offset);
+    m_size = newSize;
+    m_innerViewportContainerLayer->setSize(m_size);
+
+    // Make sure we clamp the offset to within the new bounds.
+    setLocation(m_offset);
 
     // Need to re-compute sizes for the overlay scrollbars.
     setupScrollbar(WebScrollbar::Horizontal);
     setupScrollbar(WebScrollbar::Vertical);
 }
 
+void PinchViewport::mainFrameDidChangeSize()
+{
+    // If we didn't set a size yet (the pinch viewport is initialized before the main frame's view),
+    // set it now to the main frame's size; otherwise, just make sure the inner viewport's size is
+    // clamped to the new frame size.
+    if (m_size.isZero())
+        setSize(contentsSize());
+    else
+        setSize(m_size);
+
+    // In unit tests we may not have initialized the layer tree.
+    if (m_innerViewportScrollLayer)
+        m_innerViewportScrollLayer->setSize(contentsSize());
+
+    // Make sure the viewport's offset is clamped within the newly sized main frame.
+    setLocation(m_offset);
+}
+
 FloatRect PinchViewport::visibleRect() const
 {
-    FloatSize viewportSize(mainFrame()->view()->frameRect().size());
-    viewportSize.scale(1 / m_scale);
-    return FloatRect(m_offset, viewportSize);
+    FloatSize scaledSize(m_size);
+    scaledSize.scale(1 / m_scale);
+    return FloatRect(m_offset, scaledSize);
 }
 
 void PinchViewport::setLocation(const FloatPoint& newLocation)
@@ -191,8 +210,6 @@ void PinchViewport::attachToLayerTree(GraphicsLayer* currentLayerTreeRoot, Graph
         // Setup the inner viewport overlay scrollbars.
         setupScrollbar(WebScrollbar::Horizontal);
         setupScrollbar(WebScrollbar::Vertical);
-
-        mainFrameDidChangeSize();
     }
 
     m_innerViewportScrollLayer->removeAllChildren();
@@ -360,6 +377,11 @@ FloatPoint PinchViewport::clampOffsetToBoundaries(const FloatPoint& offset)
     clampedOffset = clampedOffset.shrunkTo(FloatPoint(maximumScrollPosition()));
     clampedOffset = clampedOffset.expandedTo(FloatPoint(minimumScrollPosition()));
     return clampedOffset;
+}
+
+IntSize PinchViewport::clampToOuterViewportSize(const IntSize& size)
+{
+    return size.shrunkTo(contentsSize());
 }
 
 String PinchViewport::debugName(const GraphicsLayer* graphicsLayer)

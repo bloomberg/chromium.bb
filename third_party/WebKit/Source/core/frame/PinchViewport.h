@@ -63,7 +63,7 @@ class LocalFrame;
 // in the outer viewport and can pan within it.
 class PinchViewport FINAL : public GraphicsLayerClient, public ScrollableArea {
 public:
-    PinchViewport(FrameHost&);
+    explicit PinchViewport(FrameHost&);
     virtual ~PinchViewport();
 
     void attachToLayerTree(GraphicsLayer*, GraphicsLayerFactory*);
@@ -72,7 +72,17 @@ public:
         return m_innerViewportContainerLayer.get();
     }
 
+    // Sets the location of the inner viewport relative to the outer viewport. The
+    // coordinates are in partial CSS pixels.
     void setLocation(const FloatPoint&);
+
+    // Sets the size of the inner viewport when unscaled in CSS pixels.
+    // This will be clamped to the size of the outer viewport (the main frame).
+    void setSize(const IntSize&);
+    IntSize size() const { return m_size; }
+
+    // Let the viewport know that the main frame changed size (either through screen
+    // rotation on Android or window resize elsewhere).
     void mainFrameDidChangeSize();
 
     void setScale(float);
@@ -114,6 +124,7 @@ private:
 
     void setupScrollbar(blink::WebScrollbar::Orientation);
     FloatPoint clampOffsetToBoundaries(const FloatPoint&);
+    IntSize clampToOuterViewportSize(const IntSize&);
 
     LocalFrame* mainFrame() const;
 
@@ -129,6 +140,7 @@ private:
     // Offset of the pinch viewport from the main frame's origin, in CSS pixels.
     FloatPoint m_offset;
     float m_scale;
+    IntSize m_size;
 };
 
 } // namespace WebCore

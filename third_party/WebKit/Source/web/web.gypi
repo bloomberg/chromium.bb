@@ -279,6 +279,7 @@
       'tests/OpenTypeVerticalDataTest.cpp',
       'tests/PageSerializerTest.cpp',
       'tests/PaintAggregatorTest.cpp',
+      'tests/PinchViewportTest.cpp',
       'tests/PopupContainerTest.cpp',
       'tests/PopupMenuTest.cpp',
       'tests/PrerenderingTest.cpp',

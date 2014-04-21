@@ -1580,6 +1580,14 @@ WebSize WebViewImpl::size()
     return m_size;
 }
 
+void WebViewImpl::resizePinchViewport(const WebSize& newSize)
+{
+    if (!pinchVirtualViewportEnabled())
+        return;
+
+    page()->frameHost().pinchViewport().setSize(newSize);
+}
+
 void WebViewImpl::resize(const WebSize& newSize)
 {
     if (m_shouldAutoResize || m_size == newSize)
