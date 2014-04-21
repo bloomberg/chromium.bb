@@ -7,20 +7,46 @@
 
 #include <string>
 
-class Profile;
+#include "base/files/file_path.h"
+#include "webkit/browser/fileapi/file_system_url.h"
 
-namespace base {
-class FilePath;
-}  // namespace base
+class Profile;
 
 namespace chromeos {
 namespace file_system_provider {
+
+class ProvidedFileSystemInterface;
+
 namespace util {
 
 // Constructs a safe mount point path for the provided file system.
-base::FilePath GetMountPointPath(Profile* profile,
-                                 std::string extension_id,
-                                 int file_system_id);
+base::FilePath GetMountPath(Profile* profile,
+                            std::string extension_id,
+                            int file_system_id);
+
+// Finds file system, which is responsible for handling the specified |url| by
+// analysing the mount path.
+// Also, extract the file path from the virtual path to be used by the file
+// system operations.
+class FileSystemURLParser {
+ public:
+  explicit FileSystemURLParser(const fileapi::FileSystemURL& url);
+  virtual ~FileSystemURLParser();
+
+  // Parses the |url| passed to the constructor. If parsing succeeds, then
+  // returns true. Otherwise, false.
+  bool Parse();
+
+  ProvidedFileSystemInterface* file_system() const { return file_system_; }
+  const base::FilePath& file_path() const { return file_path_; }
+
+ private:
+  fileapi::FileSystemURL url_;
+  ProvidedFileSystemInterface* file_system_;
+  base::FilePath file_path_;
+
+  DISALLOW_COPY_AND_ASSIGN(FileSystemURLParser);
+};
 
 }  // namespace util
 }  // namespace file_system_provider
