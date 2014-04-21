@@ -41,6 +41,40 @@
           simpleTimestampOffsetTest(true, 1, 'true');
           simpleTimestampOffsetTest('10.5', 10.5, 'a number string');
           simpleTimestampOffsetTest('', 0, 'an empty string');
+
+          mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
+          {
+              var initSegment = MediaSourceUtil.extractSegmentData(mediaData, segmentInfo.init);
+              var mediaSegment = MediaSourceUtil.extractSegmentData(mediaData, segmentInfo.media[0]);
+
+              test.expectEvent(sourceBuffer, "updateend", "initSegment append ended.");
+              sourceBuffer.appendBuffer(initSegment);
+
+              test.waitForExpectedEvents(function()
+              {
+                  test.expectEvent(sourceBuffer, "updateend", "mediaSegment append ended.");
+                  sourceBuffer.appendBuffer(mediaSegment);
+              });
+
+              test.waitForExpectedEvents(function()
+              {
+                  mediaSource.endOfStream();
+
+                  assert_equals(mediaSource.readyState, "ended");
+
+                  mediaSource.sourceBuffers[0].timestampOffset = 2;
+
+                  assert_equals(mediaSource.readyState, "open");
+
+                  test.expectEvent(mediaSource, "sourceopen", "mediaSource fired 'sourceopen' event.");
+              });
+
+              test.waitForExpectedEvents(function()
+              {
+                  test.done();
+              });
+          }, "Test setting timestampOffset in 'ended' state causes a transition to 'open'.");
+
         </script>
     </body>
 </html>

@@ -24,10 +24,10 @@
             function main()
             {
                 var video = document.querySelector('#v');
-                var mediaSource = new WebKitMediaSource();
+                var mediaSource = new MediaSource();
 
-                mediaSource.addEventListener('webkitsourceopen', onSourceOpen);
-                mediaSource.addEventListener('webkitsourceclose', onSourceClose);
+                mediaSource.addEventListener('sourceopen', onSourceOpen);
+                mediaSource.addEventListener('sourceclose', onSourceClose);
 
                 video.src = URL.createObjectURL(mediaSource);
             }

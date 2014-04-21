@@ -3,10 +3,15 @@ PASS Test SourceBuffer.appendBuffer() event dispatching.
 PASS Test SourceBuffer.appendBuffer() call during a pending appendBuffer(). 
 PASS Test SourceBuffer.abort() call during a pending appendBuffer(). 
 PASS Test SourceBuffer.appendBuffer() triggering an 'ended' to 'open' transition. 
+PASS Test zero byte SourceBuffer.appendBuffer() call triggering an 'ended' to 'open' transition. 
 PASS Test MediaSource.removeSourceBuffer() call during a pending appendBuffer(). 
 PASS Test set MediaSource.duration during a pending appendBuffer() for one of its SourceBuffers. 
 PASS Test MediaSource.endOfStream() during a pending appendBuffer() for one of its SourceBuffers. 
 PASS Test set SourceBuffer.timestampOffset during a pending appendBuffer(). 
 PASS Test appending an empty ArrayBufferView. 
 PASS Test appending an empty ArrayBuffer. 
+PASS Test abort in the middle of an initialization segment. 
+PASS Test abort in the middle of a media segment. 
+PASS Test appending null. 
+PASS Test appending after removeSourceBuffer(). 
 

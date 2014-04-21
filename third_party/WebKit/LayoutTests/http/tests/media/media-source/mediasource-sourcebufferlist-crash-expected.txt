@@ -1,4 +1,3 @@
-CONSOLE WARNING: 'WebKitMediaSource' is deprecated. Please use 'MediaSource' instead.
 PASS successfullyParsed is true
 
 TEST COMPLETE

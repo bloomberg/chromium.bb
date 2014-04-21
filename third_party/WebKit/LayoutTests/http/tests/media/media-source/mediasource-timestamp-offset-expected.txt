@@ -11,4 +11,5 @@ PASS Test setting SourceBuffer.timestampOffset to false.
 PASS Test setting SourceBuffer.timestampOffset to true. 
 PASS Test setting SourceBuffer.timestampOffset to a number string. 
 PASS Test setting SourceBuffer.timestampOffset to an empty string. 
+PASS Test setting timestampOffset in 'ended' state causes a transition to 'open'. 
 

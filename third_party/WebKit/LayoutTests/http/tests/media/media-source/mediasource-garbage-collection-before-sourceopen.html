@@ -5,19 +5,19 @@
     </head>
     <body>
         <video autoplay controls="controls" id='vid'></video>
-        <p>Tests that webkitsourceopen event fires even if garbage collection happens between setting video.src &amp; the webkitsourceopen event.</p>
+        <p>Tests that sourceopen event fires even if garbage collection happens between setting video.src &amp; the sourceopen event.</p>
         <script type="text/javascript">
             function createMediaSourceURL()
             {
-                var mediaSource = new WebKitMediaSource();
+                var mediaSource = new MediaSource();
                 var onSourceOpen = function (e)
                 {
                     sourceOpened = true;
                     consoleWrite("onSourceOpen called.");
                     endTest();
                 };
-                consoleWrite("Setting webkitsourceopen event listener.");
-                mediaSource.addEventListener('webkitsourceopen', onSourceOpen);
+                consoleWrite("Setting sourceopen event listener.");
+                mediaSource.addEventListener('sourceopen', onSourceOpen);
                 return window.URL.createObjectURL(mediaSource);
             }
 
@@ -30,7 +30,7 @@
                     if (sourceOpened)
                         return;
 
-                    failTest('stalled event fired before webkitsourceopen');
+                    failTest('stalled event fired before sourceopen');
                 };
                 video.addEventListener('stalled', onStalled);
 

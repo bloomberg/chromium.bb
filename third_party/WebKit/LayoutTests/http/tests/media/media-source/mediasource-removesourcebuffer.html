@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="/w3c/resources/testharness.js"></script>
+        <script src="/w3c/resources/testharnessreport.js"></script>
+        <script src="mediasource-util.js"></script>
+
+        <link rel='stylesheet' href='/w3c/resources/testharness.css'>
+    </head>
+    <body>
+        <div id="log"></div>
+        <script>
+          mediasource_test(function(test, mediaElement, mediaSource)
+          {
+              var sourceBuffer = mediaSource.addSourceBuffer(MediaSourceUtil.AUDIO_VIDEO_TYPE);
+              assert_true(sourceBuffer != null, "New SourceBuffer returned");
+
+              mediaSource.removeSourceBuffer(sourceBuffer);
+
+              var sourceBuffer2 = mediaSource.addSourceBuffer(MediaSourceUtil.AUDIO_VIDEO_TYPE);
+              assert_true(sourceBuffer2 != null, "New SourceBuffer returned");
+              assert_true(sourceBuffer != sourceBuffer2, "SourceBuffers are different instances.");
+              assert_equals(mediaSource.sourceBuffers.length, 1, "sourceBuffers.length == 1");
+
+              test.done();
+          }, "Test addSourceBuffer(), removeSourceBuffer(), addSourceBuffer() sequence.");
+
+          mediasource_test(function(test, mediaElement, mediaSource)
+          {
+              assert_throws("InvalidAccessError",
+                          function() { mediaSource.removeSourceBuffer(null); },
+                          "removeSourceBuffer() threw an exception when passed null.");
+              test.done();
+          }, "Test removeSourceBuffer() with null");
+
+          mediasource_test(function(test, mediaElement, mediaSource)
+          {
+              var sourceBuffer = mediaSource.addSourceBuffer(MediaSourceUtil.AUDIO_VIDEO_TYPE);
+              assert_true(sourceBuffer != null, "New SourceBuffer returned");
+
+              mediaSource.removeSourceBuffer(sourceBuffer);
+
+              assert_throws("NotFoundError",
+                  function() { mediaSource.removeSourceBuffer(sourceBuffer); },
+                  "removeSourceBuffer() threw an exception when a SourceBuffer that was already removed.");
+
+              test.done();
+          }, "Test calling removeSourceBuffer() twice with the same object.");
+
+        </script>
+    </body>
+</html>
