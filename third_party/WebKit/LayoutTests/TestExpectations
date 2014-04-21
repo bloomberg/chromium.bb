@@ -1121,7 +1121,6 @@ crbug.com/364991 [ Debug ] compositing/overflow/iframe-scroll-children.html [ Pa
 crbug.com/364991 [ Debug ] virtual/softwarecompositing/overflow/iframe-scroll-children.html [ Pass Crash ]
 crbug.com/364991 [ Debug ] virtual/gpu/compositedscrolling/overflow/iframe-scroll-children.html [ Pass Crash ]
 
-crbug.com/365328 [ Linux ] svg/batik/text/textOnPathSpaces.svg [ NeedsRebaseline ]
 crbug.com/365328 [ Linux ] svg/dynamic-updates/SVGTextElement-dom-rotate-attr.html [ NeedsRebaseline ]
 crbug.com/365328 [ Linux ] svg/hixie/perf/003.xml [ NeedsRebaseline ]
 crbug.com/365328 [ Linux ] svg/text/text-path-01-b.svg [ NeedsRebaseline ]
