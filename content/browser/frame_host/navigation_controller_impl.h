@@ -94,6 +94,10 @@ class CONTENT_EXPORT NavigationControllerImpl
   virtual void PruneAllButLastCommitted() OVERRIDE;
   virtual void ClearAllScreenshots() OVERRIDE;
 
+  // Whether this is the initial navigation in an unmodified new tab.  In this
+  // case, we know there is no content displayed in the page.
+  bool IsUnmodifiedBlankTab() const;
+
   // The session storage namespace that all child RenderViews belonging to
   // |instance| should use.
   SessionStorageNamespace* GetSessionStorageNamespace(

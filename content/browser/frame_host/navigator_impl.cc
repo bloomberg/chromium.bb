@@ -230,17 +230,30 @@ void NavigatorImpl::DidFailProvisionalLoadWithError(
     // TODO(creis): Find a way to cancel any pending RFH here.
   }
 
-  // Do not usually clear the pending entry if one exists, so that the user's
-  // typed URL is not lost when a navigation fails or is aborted.  However, in
-  // cases that we don't show the pending entry (e.g., renderer-initiated
-  // navigations in an existing tab), we don't keep it around.  That prevents
-  // spoofs on in-page navigations that don't go through
+  // We usually clear the pending entry when it fails, so that an arbitrary URL
+  // isn't left visible above a committed page.  This must be enforced when
+  // the pending entry isn't visible (e.g., renderer-initiated navigations) to
+  // prevent URL spoofs for in-page navigations that don't go through
   // DidStartProvisionalLoadForFrame.
-  // In general, we allow the view to clear the pending entry and typed URL if
-  // the user requests (e.g., hitting Escape with focus in the address bar).
+  //
+  // However, we do preserve the pending entry in some cases, such as on the
+  // initial navigation of an unmodified blank tab.  We also allow the delegate
+  // to say when it's safe to leave aborted URLs in the omnibox, to let the user
+  // edit the URL and try again.  This may be useful in cases that the committed
+  // page cannot be attacker-controlled.  In these cases, we still allow the
+  // view to clear the pending entry and typed URL if the user requests
+  // (e.g., hitting Escape with focus in the address bar).
+  //
   // Note: don't touch the transient entry, since an interstitial may exist.
-  if (controller_->GetPendingEntry() != controller_->GetVisibleEntry())
+  bool should_preserve_entry = controller_->IsUnmodifiedBlankTab() ||
+      delegate_->ShouldPreserveAbortedURLs();
+  if (controller_->GetPendingEntry() != controller_->GetVisibleEntry() ||
+      !should_preserve_entry) {
     controller_->DiscardPendingEntry();
+
+    // Also force the UI to refresh.
+    controller_->delegate()->NotifyNavigationStateChanged(INVALIDATE_TYPE_URL);
+  }
 
   if (delegate_)
     delegate_->DidFailProvisionalLoadWithError(render_frame_host, params);

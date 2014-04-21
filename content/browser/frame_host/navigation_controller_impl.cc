@@ -429,17 +429,12 @@ NavigationEntry* NavigationControllerImpl::GetVisibleEntry() const {
   // long as no other page has tried to access the initial empty document in
   // the new tab.  If another page modifies this blank page, a URL spoof is
   // possible, so we must stop showing the pending entry.
-  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
-      delegate_->GetRenderViewHost());
   bool safe_to_show_pending =
       pending_entry_ &&
       // Require a new navigation.
       pending_entry_->GetPageID() == -1 &&
       // Require either browser-initiated or an unmodified new tab.
-      (!pending_entry_->is_renderer_initiated() ||
-       (IsInitialNavigation() &&
-        !GetLastCommittedEntry() &&
-        !rvh->has_accessed_initial_document()));
+      (!pending_entry_->is_renderer_initiated() || IsUnmodifiedBlankTab());
 
   // Also allow showing the pending entry for history navigations in a new tab,
   // such as Ctrl+Back.  In this case, no existing page is visible and no one
@@ -1406,6 +1401,16 @@ void NavigationControllerImpl::SetMaxRestoredPageID(int32 max_id) {
 
 int32 NavigationControllerImpl::GetMaxRestoredPageID() const {
   return max_restored_page_id_;
+}
+
+bool NavigationControllerImpl::IsUnmodifiedBlankTab() const {
+  // TODO(creis): Move has_accessed_initial_document from RenderViewHost to
+  // WebContents and NavigationControllerDelegate.
+  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
+      delegate_->GetRenderViewHost());
+  return IsInitialNavigation() &&
+      !GetLastCommittedEntry() &&
+      !rvh->has_accessed_initial_document();
 }
 
 SessionStorageNamespace*

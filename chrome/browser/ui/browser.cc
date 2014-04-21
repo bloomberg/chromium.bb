@@ -1132,6 +1132,16 @@ bool Browser::CanOverscrollContent() const {
 #endif
 }
 
+bool Browser::ShouldPreserveAbortedURLs(WebContents* source) {
+  // Allow failed URLs to stick around in the omnibox on the NTP, but not when
+  // other pages have committed.
+  Profile* profile = Profile::FromBrowserContext(source->GetBrowserContext());
+  if (!profile || !source->GetController().GetLastCommittedEntry())
+    return false;
+  GURL committed_url(source->GetController().GetLastCommittedEntry()->GetURL());
+  return chrome::IsNTPURL(committed_url, profile);
+}
+
 bool Browser::PreHandleKeyboardEvent(content::WebContents* source,
                                      const NativeWebKeyboardEvent& event,
                                      bool* is_keyboard_shortcut) {

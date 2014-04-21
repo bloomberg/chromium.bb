@@ -844,45 +844,33 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, ClickLinkAfter204Error) {
   StartServer();
 
-  // Load a page with links that open in a new window.
-  // The links will point to foo.com.
-  std::string replacement_path;
-  ASSERT_TRUE(GetFilePathWithHostAndPortReplacement(
-      "files/click-noreferrer-links.html",
-      foo_host_port_,
-      &replacement_path));
-  NavigateToURL(shell(), test_server()->GetURL(replacement_path));
-
   // Get the original SiteInstance for later comparison.
   scoped_refptr<SiteInstance> orig_site_instance(
       shell()->web_contents()->GetSiteInstance());
   EXPECT_TRUE(orig_site_instance.get() != NULL);
 
   // Load a cross-site page that fails with a 204 error.
-  NavigateToURL(shell(),GetCrossSiteURL("nocontent"));
+  NavigateToURL(shell(), GetCrossSiteURL("nocontent"));
 
-  // We should still be looking at the normal page.  The typed URL will
-  // still be visible until the user clears it manually, but the last
-  // committed URL will be the previous page.
+  // We should still be looking at the normal page.  Because we started from a
+  // blank new tab, the typed URL will still be visible until the user clears it
+  // manually.  The last committed URL will be the previous page.
   scoped_refptr<SiteInstance> post_nav_site_instance(
       shell()->web_contents()->GetSiteInstance());
   EXPECT_EQ(orig_site_instance, post_nav_site_instance);
   EXPECT_EQ("/nocontent",
             shell()->web_contents()->GetVisibleURL().path());
-  EXPECT_EQ("/files/click-noreferrer-links.html",
-            shell()->web_contents()->GetController().
-                GetLastCommittedEntry()->GetVirtualURL().path());
+  EXPECT_FALSE(
+      shell()->web_contents()->GetController().GetLastCommittedEntry());
 
   // Renderer-initiated navigations should work.
-  bool success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+  base::string16 expected_title = ASCIIToUTF16("Title Of Awesomeness");
+  TitleWatcher title_watcher(shell()->web_contents(), expected_title);
+  GURL url = test_server()->GetURL("files/title2.html");
+  EXPECT_TRUE(ExecuteScript(
       shell()->web_contents(),
-      "window.domAutomationController.send(clickNoRefLink());",
-      &success));
-  EXPECT_TRUE(success);
-
-  // Wait for the cross-site transition in the current tab to finish.
-  WaitForLoadStop(shell()->web_contents());
+      base::StringPrintf("location.href = '%s'", url.spec().c_str())));
+  ASSERT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 
   // Opens in same tab.
   EXPECT_EQ(1u, Shell::windows().size());
@@ -890,9 +878,9 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, ClickLinkAfter204Error) {
             shell()->web_contents()->GetLastCommittedURL().path());
 
   // Should have the same SiteInstance.
-  scoped_refptr<SiteInstance> noref_site_instance(
+  scoped_refptr<SiteInstance> new_site_instance(
       shell()->web_contents()->GetSiteInstance());
-  EXPECT_EQ(orig_site_instance, noref_site_instance);
+  EXPECT_EQ(orig_site_instance, new_site_instance);
 }
 
 // Test for crbug.com/9682.  We should show the URL for a pending renderer-
