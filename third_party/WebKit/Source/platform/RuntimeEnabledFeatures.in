@@ -62,7 +62,7 @@ FileSystem status=stable
 FontLoadEvents status=stable
 FastTextAutosizing
 Gamepad status=stable
-HTMLImports status=experimental
+HTMLImports status=stable
 HighResolutionTimeInWorkers status=stable
 IMEAPI status=experimental
 ImageDataConstructor status=experimental
