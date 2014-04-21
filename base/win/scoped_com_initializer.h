@@ -16,6 +16,11 @@ namespace win {
 
 // Initializes COM in the constructor (STA or MTA), and uninitializes COM in the
 // destructor.
+//
+// WARNING: This should only be used once per thread, ideally scoped to a
+// similar lifetime as the thread itself.  You should not be using this in
+// random utility functions that make COM calls -- instead ensure these
+// functions are running on a COM-supporting thread!
 class ScopedCOMInitializer {
  public:
   // Enum value provided to initialize the thread as an MTA instead of STA.

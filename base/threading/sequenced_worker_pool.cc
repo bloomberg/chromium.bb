@@ -32,6 +32,8 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
+#elif defined(OS_WIN)
+#include "base/win/scoped_com_initializer.h"
 #endif
 
 #if !defined(OS_NACL)
@@ -490,6 +492,10 @@ SequencedWorkerPool::Worker::~Worker() {
 }
 
 void SequencedWorkerPool::Worker::Run() {
+#if defined(OS_WIN)
+  win::ScopedCOMInitializer com_initializer;
+#endif
+
   // Store a pointer to the running sequence in thread local storage for
   // static function access.
   g_lazy_tls_ptr.Get().Set(&running_sequence_);
