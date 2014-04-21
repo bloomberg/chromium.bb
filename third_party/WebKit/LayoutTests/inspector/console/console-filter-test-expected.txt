@@ -98,17 +98,17 @@ Running: removeURL1Filter
 6topGroup console-filter-test.html:9
 8topGroup console-filter-test.html:9
 >outerGroup console-filter-test.html:22
+  10outerGroup console-filter-test.html:9
+  12outerGroup console-filter-test.html:9
+  14outerGroup console-filter-test.html:9
+  16outerGroup console-filter-test.html:9
+  18outerGroup console-filter-test.html:9
   >innerGroup console-filter-test.html:29
     20innerGroup console-filter-test.html:9
     22innerGroup console-filter-test.html:9
     24innerGroup console-filter-test.html:9
     26innerGroup console-filter-test.html:9
     28innerGroup console-filter-test.html:9
-  10outerGroup console-filter-test.html:9
-  12outerGroup console-filter-test.html:9
-  14outerGroup console-filter-test.html:9
-  16outerGroup console-filter-test.html:9
-  18outerGroup console-filter-test.html:9
 end console-filter-test.html:39
 
 Running: restoreURL1Filter
@@ -127,6 +127,16 @@ Running: removeAllFilters
 8topGroup console-filter-test.html:9
 9topGroup log-source.js:3
 >outerGroup console-filter-test.html:22
+  10outerGroup console-filter-test.html:9
+  11outerGroup log-source.js:3
+  12outerGroup console-filter-test.html:9
+  13outerGroup log-source.js:3
+  14outerGroup console-filter-test.html:9
+  15outerGroup log-source.js:3
+  16outerGroup console-filter-test.html:9
+  17outerGroup log-source.js:3
+  18outerGroup console-filter-test.html:9
+  19outerGroup log-source.js:3
   >innerGroup console-filter-test.html:29
     20innerGroup console-filter-test.html:9
     21innerGroup log-source.js:3
@@ -138,21 +148,10 @@ Running: removeAllFilters
     27innerGroup log-source.js:3
     28innerGroup console-filter-test.html:9
     29innerGroup log-source.js:3
-  10outerGroup console-filter-test.html:9
-  11outerGroup log-source.js:3
-  12outerGroup console-filter-test.html:9
-  13outerGroup log-source.js:3
-  14outerGroup console-filter-test.html:9
-  15outerGroup log-source.js:3
-  16outerGroup console-filter-test.html:9
-  17outerGroup log-source.js:3
-  18outerGroup console-filter-test.html:9
-  19outerGroup log-source.js:3
 end console-filter-test.html:39
 
 Running: checkTextFilter
 >outerGroup console-filter-test.html:22
-  >innerGroup console-filter-test.html:29
   10outerGroup console-filter-test.html:9
   11outerGroup log-source.js:3
   12outerGroup console-filter-test.html:9
@@ -163,6 +162,7 @@ Running: checkTextFilter
   17outerGroup log-source.js:3
   18outerGroup console-filter-test.html:9
   19outerGroup log-source.js:3
+  >innerGroup console-filter-test.html:29
 
 Running: checkResetFilter
 0topGroup console-filter-test.html:9
@@ -176,6 +176,16 @@ Running: checkResetFilter
 8topGroup console-filter-test.html:9
 9topGroup log-source.js:3
 >outerGroup console-filter-test.html:22
+  10outerGroup console-filter-test.html:9
+  11outerGroup log-source.js:3
+  12outerGroup console-filter-test.html:9
+  13outerGroup log-source.js:3
+  14outerGroup console-filter-test.html:9
+  15outerGroup log-source.js:3
+  16outerGroup console-filter-test.html:9
+  17outerGroup log-source.js:3
+  18outerGroup console-filter-test.html:9
+  19outerGroup log-source.js:3
   >innerGroup console-filter-test.html:29
     20innerGroup console-filter-test.html:9
     21innerGroup log-source.js:3
@@ -187,15 +197,5 @@ Running: checkResetFilter
     27innerGroup log-source.js:3
     28innerGroup console-filter-test.html:9
     29innerGroup log-source.js:3
-  10outerGroup console-filter-test.html:9
-  11outerGroup log-source.js:3
-  12outerGroup console-filter-test.html:9
-  13outerGroup log-source.js:3
-  14outerGroup console-filter-test.html:9
-  15outerGroup log-source.js:3
-  16outerGroup console-filter-test.html:9
-  17outerGroup log-source.js:3
-  18outerGroup console-filter-test.html:9
-  19outerGroup log-source.js:3
 end console-filter-test.html:39
 
