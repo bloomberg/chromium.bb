@@ -122,11 +122,7 @@ bool ErrorConsole::IsReportingEnabledForExtension(
   if (!enabled_ || !Extension::IdIsValid(extension_id))
     return false;
 
-  int mask = default_mask_;
-  // This call can fail if the preference isn't set, but we don't really care
-  // if it does, because we just use the default mask instead.
-  prefs_->ReadPrefAsInteger(extension_id, kStoreExtensionErrorsPref, &mask);
-  return mask != 0;
+  return GetMaskForExtension(extension_id) != 0;
 }
 
 void ErrorConsole::UseDefaultReportingForExtension(
@@ -140,11 +136,12 @@ void ErrorConsole::UseDefaultReportingForExtension(
 
 void ErrorConsole::ReportError(scoped_ptr<ExtensionError> error) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!enabled_ ||
-      !Extension::IdIsValid(error->extension_id()) ||
-      !ShouldReportErrorForExtension(error->extension_id(), error->type())) {
+  if (!enabled_ || !Extension::IdIsValid(error->extension_id()))
     return;
-  }
+
+  int mask = GetMaskForExtension(error->extension_id());
+  if (!(mask & (1 << error->type())))
+    return;
 
   const ExtensionError* weak_error = errors_.AddError(error.Pass());
   FOR_EACH_OBSERVER(Observer, observers_, OnErrorAdded(weak_error));
@@ -285,28 +282,21 @@ void ErrorConsole::Observe(int type,
   }
 }
 
-bool ErrorConsole::ShouldReportErrorForExtension(
-    const std::string& extension_id, ExtensionError::Type type) const {
+int ErrorConsole::GetMaskForExtension(const std::string& extension_id) const {
   // Registered preferences take priority over everything else.
   int pref = 0;
-  if (prefs_->ReadPrefAsInteger(
-          extension_id, kStoreExtensionErrorsPref, &pref)) {
-    return (pref & (1 << type)) != 0;
-  }
+  if (prefs_->ReadPrefAsInteger(extension_id, kStoreExtensionErrorsPref, &pref))
+    return pref;
 
-  // If the default mask says to report the error, do so.
-  if ((default_mask_ & (1 << type)) != 0)
-    return true;
-
-  // One last check: If the extension is unpacked, we report all errors by
-  // default.
+  // If the extension is unpacked, we report all error types by default.
   const Extension* extension =
       ExtensionRegistry::Get(profile_)->GetExtensionById(
           extension_id, ExtensionRegistry::EVERYTHING);
   if (extension && extension->location() == Manifest::UNPACKED)
-    return true;
+    return (1 << ExtensionError::NUM_ERROR_TYPES) - 1;
 
-  return false;
+  // Otherwise, use the default mask.
+  return default_mask_;
 }
 
 }  // namespace extensions

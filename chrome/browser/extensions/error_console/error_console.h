@@ -145,10 +145,8 @@ class ErrorConsole : public content::NotificationObserver,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Returns true if we should report the error of the given type for the
-  // extension.
-  bool ShouldReportErrorForExtension(const std::string& extension_id,
-                                     ExtensionError::Type type) const;
+  // Returns the applicable bit mask of reporting preferences for the extension.
+  int GetMaskForExtension(const std::string& extension_id) const;
 
   // Whether or not the error console should record errors. This is true if
   // the user is in developer mode, and at least one of the following is true:

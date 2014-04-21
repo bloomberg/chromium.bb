@@ -231,6 +231,9 @@ TEST_F(ErrorConsoleUnitTest, TestDefaultStoringPrefs) {
       CreateNewRuntimeError(packed_extension->id(), "runtime error 1"));
   EXPECT_EQ(0u, error_console_->GetErrorsForExtension(
       packed_extension->id()).size());
+  // Also check that reporting settings are correctly returned.
+  EXPECT_FALSE(error_console_->IsReportingEnabledForExtension(
+      packed_extension->id()));
 
   // Errors should be reported by default for the unpacked extension.
   error_console_->ReportError(
@@ -239,6 +242,9 @@ TEST_F(ErrorConsoleUnitTest, TestDefaultStoringPrefs) {
       CreateNewRuntimeError(unpacked_extension->id(), "runtime error 2"));
   EXPECT_EQ(2u, error_console_->GetErrorsForExtension(
       unpacked_extension->id()).size());
+  // Also check that reporting settings are correctly returned.
+  EXPECT_TRUE(error_console_->IsReportingEnabledForExtension(
+      unpacked_extension->id()));
 
   // Registering a preference should override this for both types of extensions
   // (should be able to enable errors for packed, or disable errors for
@@ -250,6 +256,8 @@ TEST_F(ErrorConsoleUnitTest, TestDefaultStoringPrefs) {
       CreateNewRuntimeError(packed_extension->id(), "runtime error 3"));
   EXPECT_EQ(1u, error_console_->GetErrorsForExtension(
       packed_extension->id()).size());
+  EXPECT_TRUE(error_console_->IsReportingEnabledForExtension(
+      packed_extension->id()));
 
   error_console_->SetReportingForExtension(unpacked_extension->id(),
                                            ExtensionError::RUNTIME_ERROR,
@@ -259,6 +267,8 @@ TEST_F(ErrorConsoleUnitTest, TestDefaultStoringPrefs) {
   EXPECT_EQ(2u,  // We should still have the first two errors.
             error_console_->GetErrorsForExtension(
                 unpacked_extension->id()).size());
+  EXPECT_FALSE(error_console_->IsReportingEnabledForExtension(
+      unpacked_extension->id()));
 }
 
 }  // namespace extensions
