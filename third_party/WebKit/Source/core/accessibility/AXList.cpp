@@ -56,39 +56,4 @@ bool AXList::computeAccessibilityIsIgnored() const
     return accessibilityIsIgnoredByDefault();
 }
 
-bool AXList::isUnorderedList() const
-{
-    if (!m_renderer)
-        return false;
-
-    // The ARIA spec says the "list" role is supposed to mimic a UL or OL tag.
-    // Since it can't be both, it's probably OK to say that it's an un-ordered list.
-    // On the Mac, there's no distinction to the client.
-    if (ariaRoleAttribute() == ListRole)
-        return true;
-
-    return isHTMLUListElement(m_renderer->node());
-}
-
-bool AXList::isOrderedList() const
-{
-    if (!m_renderer)
-        return false;
-
-    // ARIA says a directory is like a static table of contents, which sounds like an ordered list.
-    if (ariaRoleAttribute() == DirectoryRole)
-        return true;
-
-    return isHTMLOListElement(m_renderer->node());
-}
-
-bool AXList::isDescriptionList() const
-{
-    if (!m_renderer)
-        return false;
-
-    return isHTMLDListElement(m_renderer->node());
-}
-
-
 } // namespace WebCore

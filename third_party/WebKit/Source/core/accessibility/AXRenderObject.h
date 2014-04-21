@@ -69,7 +69,6 @@ public:
 
     void setRenderer(RenderObject*);
     RenderBoxModelObject* renderBoxModelObject() const;
-    RenderView* topRenderer() const;
     Document* topDocument() const;
     bool shouldNotifyActiveDescendant() const;
     virtual ScrollableArea* getScrollableAreaIfScrollable() const OVERRIDE FINAL;
@@ -119,7 +118,6 @@ protected:
 
     // Properties of interactive elements.
     virtual String actionVerb() const OVERRIDE;
-    virtual void selectedChildren(AccessibilityChildrenVector&) OVERRIDE;
     virtual String stringValue() const OVERRIDE;
 
     // ARIA attributes.
@@ -208,7 +206,6 @@ private:
     PlainTextRange ariaSelectedTextRange() const;
     bool nodeIsTextControl(const Node*) const;
     bool isTabItemSelected() const;
-    AXObject* internalLinkElement() const;
     AXObject* accessibilityImageMapHitTest(HTMLAreaElement*, const IntPoint&) const;
     bool renderObjectIsObservable(RenderObject*) const;
     RenderObject* renderParentObject() const;

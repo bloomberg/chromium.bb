@@ -404,20 +404,6 @@ bool AXObject::ariaPressedIsPresent() const
     return !getAttribute(aria_pressedAttr).isEmpty();
 }
 
-const AtomicString& AXObject::invalidStatus() const
-{
-    DEFINE_STATIC_LOCAL(const AtomicString, invalidStatusFalse, ("false", AtomicString::ConstructFromLiteral));
-
-    // aria-invalid can return false (default), grammer, spelling, or true.
-    const AtomicString& ariaInvalid = getAttribute(aria_invalidAttr);
-
-    // If empty or not present, it should return false.
-    if (ariaInvalid.isEmpty())
-        return invalidStatusFalse;
-
-    return ariaInvalid;
-}
-
 bool AXObject::supportsARIAAttributes() const
 {
     return supportsARIALiveRegion()

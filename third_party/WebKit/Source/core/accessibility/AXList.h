@@ -42,9 +42,6 @@ public:
     virtual ~AXList();
 
     virtual bool isList() const OVERRIDE { return true; }
-    bool isUnorderedList() const;
-    bool isOrderedList() const;
-    bool isDescriptionList() const;
 
     virtual AccessibilityRole roleValue() const OVERRIDE { return ListRole; }
 private:

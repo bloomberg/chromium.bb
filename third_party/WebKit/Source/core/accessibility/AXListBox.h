@@ -41,11 +41,7 @@ public:
     static PassRefPtr<AXListBox> create(RenderObject*);
     virtual ~AXListBox();
 
-    virtual bool canSetSelectedChildrenAttribute() const OVERRIDE;
-    void setSelectedChildren(AccessibilityChildrenVector&);
     virtual AccessibilityRole roleValue() const OVERRIDE { return ListBoxRole; }
-
-    virtual void selectedChildren(AccessibilityChildrenVector&) OVERRIDE;
 
     virtual void addChildren() OVERRIDE;
 

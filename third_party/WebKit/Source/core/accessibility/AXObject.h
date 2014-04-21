@@ -381,7 +381,6 @@ public:
     virtual bool canSetFocusAttribute() const { return false; }
     virtual bool canSetValueAttribute() const { return false; }
     virtual bool canSetSelectedAttribute() const { return false; }
-    virtual bool canSetSelectedChildrenAttribute() const { return false; }
 
     // Whether objects are ignored, i.e. not included in the tree.
     bool accessibilityIsIgnored() const;
@@ -400,7 +399,6 @@ public:
     // 1-based, to match the aria-level spec.
     virtual unsigned hierarchicalLevel() const { return 0; }
     virtual AccessibilityOrientation orientation() const;
-    virtual int tableLevel() const { return 0; }
     virtual String text() const { return String(); }
     virtual int textLength() const { return 0; }
     virtual AXObject* titleUIElement() const { return 0; }
@@ -421,7 +419,6 @@ public:
     virtual float valueForRange() const { return 0.0f; }
     virtual float maxValueForRange() const { return 0.0f; }
     virtual float minValueForRange() const { return 0.0f; }
-    virtual void selectedChildren(AccessibilityChildrenVector&) { }
     virtual String stringValue() const { return String(); }
 
     // ARIA attributes.
@@ -438,7 +435,6 @@ public:
     bool ariaPressedIsPresent() const;
     virtual AccessibilityRole ariaRoleAttribute() const { return UnknownRole; }
     virtual bool ariaRoleHasPresentationalChildren() const { return false; }
-    const AtomicString& invalidStatus() const;
     virtual bool isARIAGrabbed() { return false; }
     virtual bool isPresentationalChildOfAriaRole() const { return false; }
     virtual bool shouldFocusActiveDescendant() const { return false; }

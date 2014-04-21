@@ -57,62 +57,6 @@ bool AXARIAGridRow::isARIATreeGridRow() const
     return parent->ariaRoleAttribute() == TreeGridRole;
 }
 
-void AXARIAGridRow::disclosedRows(AccessibilityChildrenVector& disclosedRows)
-{
-    // The contiguous disclosed rows will be the rows in the table that
-    // have an aria-level of plus 1 from this row.
-    AXObject* parent = parentObjectUnignored();
-    if (!parent || !parent->isAXTable())
-        return;
-
-    // Search for rows that match the correct level.
-    // Only take the subsequent rows from this one that are +1 from this row's level.
-    int index = rowIndex();
-    if (index < 0)
-        return;
-
-    unsigned level = hierarchicalLevel();
-    AccessibilityChildrenVector& allRows = toAXTable(parent)->rows();
-    int rowCount = allRows.size();
-    for (int k = index + 1; k < rowCount; ++k) {
-        AXObject* row = allRows[k].get();
-        // Stop at the first row that doesn't match the correct level.
-        if (row->hierarchicalLevel() != level + 1)
-            break;
-
-        disclosedRows.append(row);
-    }
-}
-
-AXObject* AXARIAGridRow::disclosedByRow() const
-{
-    // The row that discloses this one is the row in the table
-    // that is aria-level subtract 1 from this row.
-    AXObject* parent = parentObjectUnignored();
-    if (!parent || !parent->isAXTable())
-        return 0;
-
-    // If the level is 1 or less, than nothing discloses this row.
-    unsigned level = hierarchicalLevel();
-    if (level <= 1)
-        return 0;
-
-    // Search for the previous row that matches the correct level.
-    int index = rowIndex();
-    AccessibilityChildrenVector& allRows = toAXTable(parent)->rows();
-    int rowCount = allRows.size();
-    if (index >= rowCount)
-        return 0;
-
-    for (int k = index - 1; k >= 0; --k) {
-        AXObject* row = allRows[k].get();
-        if (row->hierarchicalLevel() == level - 1)
-            return row;
-    }
-
-    return 0;
-}
-
 AXObject* AXARIAGridRow::headerObject()
 {
     AccessibilityChildrenVector rowChildren = children();

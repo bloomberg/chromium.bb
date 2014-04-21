@@ -41,9 +41,6 @@ public:
     static PassRefPtr<AXARIAGridRow> create(RenderObject*);
     virtual ~AXARIAGridRow();
 
-    void disclosedRows(AccessibilityChildrenVector&);
-    AXObject* disclosedByRow() const;
-
     virtual AXObject* headerObject() OVERRIDE;
 
 private:

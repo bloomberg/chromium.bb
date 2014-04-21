@@ -456,17 +456,6 @@ unsigned AXTable::rowCount()
     return m_rows.size();
 }
 
-int AXTable::tableLevel() const
-{
-    int level = 0;
-    for (AXObject* obj = static_cast<AXObject*>(const_cast<AXTable*>(this)); obj; obj = obj->parentObject()) {
-        if (obj->isAXTable())
-            ++level;
-    }
-
-    return level;
-}
-
 AXTableCell* AXTable::cellForColumnAndRow(unsigned column, unsigned row)
 {
     updateChildrenIfNecessary();

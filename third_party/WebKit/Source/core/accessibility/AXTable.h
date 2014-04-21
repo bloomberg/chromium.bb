@@ -64,7 +64,6 @@ public:
 
     unsigned columnCount();
     unsigned rowCount();
-    virtual int tableLevel() const OVERRIDE FINAL;
 
     virtual String title() const OVERRIDE FINAL;
 
