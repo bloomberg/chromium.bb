@@ -134,6 +134,8 @@
       'Timer.cpp',
       'Timer.h',
       'TraceEvent.h',
+      'TracedValue.cpp',
+      'TracedValue.h',
       'UserGestureIndicator.cpp',
       'UserGestureIndicator.h',
       'URLPatternMatcher.cpp',
