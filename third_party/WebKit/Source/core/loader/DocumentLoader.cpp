@@ -188,8 +188,6 @@ void DocumentLoader::stopLoading()
             m_frame->loader().stopLoading();
     }
 
-    m_fetcher->stopFetching();
-
     if (!loading)
         return;
 
@@ -205,6 +203,8 @@ void DocumentLoader::stopLoading()
         // (A back/forward navigation has no resource loaders because its resources are cached.)
         mainReceivedError(ResourceError::cancelledError(m_request.url()));
     }
+
+    m_fetcher->stopFetching();
 }
 
 void DocumentLoader::commitIfReady()
