@@ -64,6 +64,8 @@ public:
             resolveOrRejectImmediately(&m_timer);
     }
 
+    NewScriptState* scriptState() { return m_scriptState.get(); }
+
     // Note that an empty ScriptPromise will be returned after resolve or
     // reject is called.
     ScriptPromise promise()
@@ -122,7 +124,7 @@ private:
     void clear();
 
     ResolutionState m_state;
-    RefPtr<NewScriptState> m_scriptState;
+    const RefPtr<NewScriptState> m_scriptState;
     Timer<ScriptPromiseResolverWithContext> m_timer;
     RefPtr<ScriptPromiseResolver> m_resolver;
     ScopedPersistent<v8::Value> m_value;

@@ -6,8 +6,9 @@
 #include "modules/push_messaging/PushManager.h"
 
 #include "bindings/v8/CallbackPromiseAdapter.h"
+#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScriptPromise.h"
-#include "bindings/v8/ScriptPromiseResolver.h"
+#include "bindings/v8/ScriptPromiseResolverWithContext.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "modules/push_messaging/PushError.h"
@@ -28,10 +29,10 @@ PushManager::~PushManager()
 
 ScriptPromise PushManager::registerPushMessaging(ExecutionContext* context, const String& senderId)
 {
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(context);
+    RefPtr<ScriptPromiseResolverWithContext> resolver = ScriptPromiseResolverWithContext::create(NewScriptState::current(toIsolate(context)));
     ScriptPromise promise = resolver->promise();
     // FIXME: Implement registration.
-    OwnPtr<CallbackPromiseAdapter<PushRegistration, PushError> > adapter = adoptPtr(new CallbackPromiseAdapter<PushRegistration, PushError>(resolver, context));
+    OwnPtr<CallbackPromiseAdapter<PushRegistration, PushError> > adapter = adoptPtr(new CallbackPromiseAdapter<PushRegistration, PushError>(resolver));
     adapter->onError(new blink::WebPushError(blink::WebPushError::ErrorTypeAbort, "FIXME"));
     return promise;
 }

@@ -51,7 +51,6 @@ void ScriptPromiseResolverWithContext::clear()
 {
     m_resolver.clear();
     m_value.clear();
-    m_scriptState.clear();
 }
 
 } // namespace WebCore
