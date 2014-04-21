@@ -148,6 +148,7 @@ bool ShouldAbortPrerenderBeforeSwap(FinalStatus status) {
     case FINAL_STATUS_USED:
     case FINAL_STATUS_WINDOW_OPENER:
     case FINAL_STATUS_APP_TERMINATING:
+    case FINAL_STATUS_PROFILE_DESTROYED:
     case FINAL_STATUS_CACHE_OR_HISTORY_CLEARED:
     // We'll crash the renderer after it's loaded.
     case FINAL_STATUS_RENDERER_CRASHED:
@@ -4162,6 +4163,16 @@ class PrerenderIncognitoBrowserTest : public PrerenderBrowserTest {
 IN_PROC_BROWSER_TEST_F(PrerenderIncognitoBrowserTest, PrerenderIncognito) {
   PrerenderTestURL("files/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
   NavigateToDestURL();
+}
+
+// Checks that prerenders are aborted when an incognito profile is closed.
+IN_PROC_BROWSER_TEST_F(PrerenderIncognitoBrowserTest,
+                       PrerenderIncognitoClosed) {
+  scoped_ptr<TestPrerender> prerender =
+      PrerenderTestURL("files/prerender/prerender_page.html",
+                       FINAL_STATUS_PROFILE_DESTROYED, 1);
+  current_browser()->window()->Close();
+  prerender->WaitForStop();
 }
 
 }  // namespace prerender
