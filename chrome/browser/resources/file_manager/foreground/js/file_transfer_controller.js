@@ -857,7 +857,7 @@ FileTransferController.prototype = {
       return false;
     var destinationLocationInfo =
         this.volumeManager_.getLocationInfo(destinationEntry);
-    if (destinationLocationInfo.isReadOnly)
+    if (!destinationLocationInfo || destinationLocationInfo.isReadOnly)
       return false;
     if (!dataTransfer.types || dataTransfer.types.indexOf('fs/tag') === -1)
       return false;  // Unsupported type of content.
