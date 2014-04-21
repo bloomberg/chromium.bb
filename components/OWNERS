@@ -111,6 +111,7 @@ per-file sync_driver*=haitaol@chromium.org
 per-file sync_driver*=rlarocque@chromium.org
 per-file sync_driver*=tim@chromium.org
 per-file sync_driver*=zea@chromium.org
+per-file sync_driver*=pavely@chromium.org
 
 per-file tracing*=jbauman@chromium.org
 per-file tracing*=nduca@chromium.org
