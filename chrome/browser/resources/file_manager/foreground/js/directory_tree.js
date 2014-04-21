@@ -249,6 +249,29 @@ DirectoryItem.prototype.onExpand_ = function(e) {
 };
 
 /**
+ * Invoked when the tree item is clicked.
+ *
+ * @param {Event} e Click event.
+ * @override
+ */
+DirectoryItem.prototype.handleClick = function(e) {
+  cr.ui.TreeItem.prototype.handleClick.call(this, e);
+
+  if (e.target.classList.contains('expand-icon'))
+    return;
+
+  var currentDirectoryEntry = this.directoryModel_.getCurrentDirEntry();
+  if (currentDirectoryEntry &&
+      util.isSameEntry(this.entry, currentDirectoryEntry)) {
+    // On clicking the current directory, clears the selection on the file list.
+    this.directoryModel_.clearSelection();
+  } else {
+    // Otherwise, changes the current directory.
+    this.directoryModel_.changeDirectoryEntry(this.entry);
+  }
+};
+
+/**
  * Retrieves the latest subdirectories and update them on the tree.
  * @param {boolean} recursive True if the update is recursively.
  * @param {function()=} opt_successCallback Callback called on success.
@@ -352,17 +375,6 @@ DirectoryItem.prototype.selectByEntry = function(entry) {
  */
 DirectoryItem.prototype.doDropTargetAction = function() {
   this.expanded = true;
-};
-
-/**
- * Executes the assigned action. DirectoryItem performs changeDirectory.
- */
-DirectoryItem.prototype.doAction = function() {
-  if (!this.directoryModel_.getCurrentDirEntry() ||
-      !util.isSameEntry(this.entry,
-                        this.directoryModel_.getCurrentDirEntry())) {
-    this.directoryModel_.changeDirectoryEntry(this.entry);
-  }
 };
 
 /**
@@ -480,17 +492,6 @@ DirectoryTree.prototype.decorate = function(directoryModel, volumeManager) {
 
   this.directoryModel_.addEventListener('directory-changed',
       this.onCurrentDirectoryChanged_.bind(this));
-
-  // Add a handler for directory change.
-  this.addEventListener('change', function() {
-    if (this.selectedItem &&
-        (!this.currentEntry_ ||
-         !util.isSameEntry(this.currentEntry_, this.selectedItem.entry))) {
-      this.currentEntry_ = this.selectedItem.entry;
-      this.selectedItem.doAction();
-      return;
-    }
-  }.bind(this));
 
   this.privateOnDirectoryChangedBound_ =
       this.onDirectoryContentChanged_.bind(this);

@@ -674,6 +674,13 @@ DirectoryModel.prototype.changeDirectoryEntry = function(
 };
 
 /**
+ * Clears the selection in the file list.
+ */
+DirectoryModel.prototype.clearSelection = function() {
+  this.setSelectedEntries_([]);
+};
+
+/**
  * Creates an object which could say whether directory has changed while it has
  * been active or not. Designed for long operations that should be cancelled
  * if the used change current directory.

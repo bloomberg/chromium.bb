@@ -278,8 +278,12 @@ NavigationList.prototype.selectByIndex = function(index) {
  */
 NavigationList.prototype.activateModelItem_ = function(modelItem) {
   var onEntryResolved = function(entry) {
-    if (util.isSameEntry(this.directoryModel_.getCurrentDirEntry(), entry))
+    if (util.isSameEntry(this.directoryModel_.getCurrentDirEntry(), entry)) {
+      // On clicking the current directory, clears the selection.
+      this.directoryModel_.clearSelection();
       return;
+    }
+
     metrics.recordUserAction('FolderShortcut.Navigate');
     this.directoryModel_.changeDirectoryEntry(entry);
   }.bind(this);
