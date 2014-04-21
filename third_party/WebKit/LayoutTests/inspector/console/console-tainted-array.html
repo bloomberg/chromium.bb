@@ -1,0 +1,35 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script>
+
+function foo()
+{
+    Object.defineProperty(Array.prototype, "push", {
+        get: function () { throw new Error("FAIL"); }
+    });
+    return [1, 2, 3];
+}
+
+function test()
+{
+    InspectorTest.evaluateInConsole("foo()");
+    InspectorTest.runAfterPendingDispatches(step1);
+
+    function step1()
+    {
+        InspectorTest.dumpConsoleMessages();
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that overriding Array.prototype.push method will not break the inspector.
+</p>
+
+</body>
+</html>

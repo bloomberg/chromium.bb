@@ -41,15 +41,43 @@
 var Object = /** @type {function(new:Object, *=)} */ ({}.constructor);
 
 /**
- * @param {Arguments} array
+ * @param {!Array.<T>} array
+ * @param {...} var_args
+ * @template T
+ */
+function push(array, var_args)
+{
+    for (var i = 1; i < arguments.length; ++i)
+        array[array.length] = arguments[i];
+}
+
+/**
+ * @param {!Arguments.<T>} array
  * @param {number=} index
- * @return {Array.<*>}
+ * @return {!Array.<T>}
+ * @template T
  */
 function slice(array, index)
 {
     var result = [];
-    for (var i = index || 0; i < array.length; ++i)
-        result.push(array[i]);
+    for (var i = index || 0, j = 0; i < array.length; ++i, ++j)
+        result[j] = array[i];
+    return result;
+}
+
+/**
+ * @param {!Array.<T>} array1
+ * @param {!Array.<T>} array2
+ * @return {!Array.<T>}
+ * @template T
+ */
+function concat(array1, array2)
+{
+    var result = [];
+    for (var i = 0; i < array1.length; ++i)
+        push(result, array1[i]);
+    for (var i = 0; i < array2.length; ++i)
+        push(result, array2[i]);
     return result;
 }
 
@@ -89,7 +117,7 @@ function bind(func, thisObject, var_args)
      */
     function bound(var_args)
     {
-        return func.apply(thisObject, args.concat(slice(arguments)));
+        return func.apply(thisObject, concat(args, slice(arguments)));
     }
     bound.toString = function()
     {
@@ -219,7 +247,7 @@ InjectedScript.prototype = {
         if (InjectedScriptHost.type(columns) == "array") {
             columnNames = [];
             for (var i = 0; i < columns.length; ++i)
-                columnNames.push(toString(columns[i]));
+                columnNames[i] = toString(columns[i]);
         }
         return this._wrapObject(table, "console", false, true, columnNames, true);
     },
@@ -289,7 +317,7 @@ InjectedScript.prototype = {
                 group = [];
                 this._objectGroups[objectGroupName] = group;
             }
-            group.push(id);
+            push(group, id);
             this._idToObjectGroupName[id] = objectGroupName;
         }
         return objectId;
@@ -387,7 +415,7 @@ InjectedScript.prototype = {
                     value: this._wrapObject(property.value, objectGroupName),
                     __proto__: null
                 };
-                descriptors.push(descriptor);
+                push(descriptors, descriptor);
             }
         }
         return descriptors;
@@ -407,10 +435,10 @@ InjectedScript.prototype = {
         if ("rawScopes" in details) {
             var objectGroupName = this._idToObjectGroupName[parsedFunctionId.id];
             var rawScopes = details.rawScopes;
-            var scopes = [];
             delete details.rawScopes;
-            for (var i = 0; i < rawScopes.length; i++)
-                scopes.push(InjectedScript.CallFrameProxy._createScopeJson(rawScopes[i].type, rawScopes[i].object, objectGroupName));
+            var scopes = [];
+            for (var i = 0; i < rawScopes.length; ++i)
+                scopes[i] = InjectedScript.CallFrameProxy._createScopeJson(rawScopes[i].type, rawScopes[i].object, objectGroupName);
             details.scopeChain = scopes;
         }
         return details;
@@ -470,7 +498,7 @@ InjectedScript.prototype = {
                             descriptor = { name: name, value: o[name], writable: false, configurable: false, enumerable: false, __proto__: null };
                             if (o === object)
                                 descriptor.isOwn = true;
-                            descriptors.push(descriptor);
+                            push(descriptors, descriptor);
                         } catch (e) {
                             // Silent catch.
                         }
@@ -487,7 +515,7 @@ InjectedScript.prototype = {
                 descriptor.name = name;
                 if (o === object)
                     descriptor.isOwn = true;
-                descriptors.push(descriptor);
+                push(descriptors, descriptor);
             }
         }
 
@@ -498,7 +526,7 @@ InjectedScript.prototype = {
 
             if (ownProperties) {
                 if (object.__proto__ && !accessorPropertiesOnly)
-                    descriptors.push({ name: "__proto__", value: object.__proto__, writable: true, configurable: true, enumerable: false, isOwn: true, __proto__: null });
+                    push(descriptors, { name: "__proto__", value: object.__proto__, writable: true, configurable: true, enumerable: false, isOwn: true, __proto__: null });
                 break;
             }
         }
@@ -536,13 +564,11 @@ InjectedScript.prototype = {
             var resolvedArgs = [];
             args = InjectedScriptHost.evaluate(args);
             for (var i = 0; i < args.length; ++i) {
-                var resolvedCallArgument;
                 try {
-                    resolvedCallArgument = this._resolveCallArgument(args[i]);
+                    resolvedArgs[i] = this._resolveCallArgument(args[i]);
                 } catch (e) {
                     return toString(e);
                 }
-                resolvedArgs.push(resolvedCallArgument)
             }
         }
 
@@ -690,8 +716,9 @@ InjectedScript.prototype = {
         var result = [];
         var depth = 0;
         do {
-            result.push(new InjectedScript.CallFrameProxy(depth++, callFrame, asyncOrdinal));
+            result[depth] = new InjectedScript.CallFrameProxy(depth, callFrame, asyncOrdinal);
             callFrame = callFrame.caller;
+            ++depth;
         } while (callFrame);
         return result;
     },
@@ -767,13 +794,13 @@ InjectedScript.prototype = {
             var callFrame = this.callFrameForId(topCallFrame, callFrameId);
             if (!callFrame)
                 return "Could not find call frame with given id";
-            setter = callFrame.setVariableValue.bind(callFrame);
+            setter = bind(callFrame.setVariableValue, callFrame);
         } else {
             var parsedFunctionId = this._parseObjectId(/** @type {string} */ (functionObjectId));
             var func = this._objectForId(parsedFunctionId);
             if (typeof func !== "function")
                 return "Cannot resolve function by id.";
-            setter = InjectedScriptHost.setFunctionVariableValue.bind(InjectedScriptHost, func);
+            setter = bind(InjectedScriptHost.setFunctionVariableValue, InjectedScriptHost, func);
         }
         var newValueJson;
         try {
@@ -1073,7 +1100,7 @@ InjectedScript.RemoteObject.prototype = {
                 }
                 descriptors = [];
                 for (var i = 0; i < firstLevelKeys.length; ++i)
-                    descriptors.push(nameToDescriptors["#" + firstLevelKeys[i]]);
+                    descriptors[i] = nameToDescriptors["#" + firstLevelKeys[i]];
             }
 
             for (var i = 0; i < descriptors.length; ++i) {
@@ -1169,7 +1196,7 @@ InjectedScript.RemoteObject.prototype = {
             preview.overflow = true;
             preview.lossless = false;
         } else {
-            preview.properties.push(property);
+            push(preview.properties, property);
         }
     },
 
@@ -1219,10 +1246,8 @@ InjectedScript.CallFrameProxy.prototype = {
     {
         var scopeChain = callFrame.scopeChain;
         var scopeChainProxy = [];
-        for (var i = 0; i < scopeChain.length; i++) {
-            var scope = InjectedScript.CallFrameProxy._createScopeJson(callFrame.scopeType(i), scopeChain[i], "backtrace");
-            scopeChainProxy.push(scope);
-        }
+        for (var i = 0; i < scopeChain.length; ++i)
+            scopeChainProxy[i] = InjectedScript.CallFrameProxy._createScopeJson(callFrame.scopeType(i), scopeChain[i], "backtrace");
         return scopeChainProxy;
     },
 
@@ -1397,7 +1422,7 @@ CommandLineAPIImpl.prototype = {
             var nodes = [];
             var node;
             while (node = result.iterateNext())
-                nodes.push(node);
+                push(nodes, node);
             return nodes;
         }
     },
@@ -1421,7 +1446,7 @@ CommandLineAPIImpl.prototype = {
     {
         var result = [];
         for (var key in object)
-            result.push(object[key]);
+            push(result, object[key]);
         return result;
     },
 
@@ -1561,22 +1586,22 @@ CommandLineAPIImpl.prototype = {
     _normalizeEventTypes: function(types)
     {
         if (typeof types === "undefined")
-            types = [ "mouse", "key", "touch", "control", "load", "unload", "abort", "error", "select", "change", "submit", "reset", "focus", "blur", "resize", "scroll", "search", "devicemotion", "deviceorientation" ];
+            types = ["mouse", "key", "touch", "control", "load", "unload", "abort", "error", "select", "change", "submit", "reset", "focus", "blur", "resize", "scroll", "search", "devicemotion", "deviceorientation"];
         else if (typeof types === "string")
-            types = [ types ];
+            types = [types];
 
         var result = [];
-        for (var i = 0; i < types.length; i++) {
+        for (var i = 0; i < types.length; ++i) {
             if (types[i] === "mouse")
-                result.splice(0, 0, "mousedown", "mouseup", "click", "dblclick", "mousemove", "mouseover", "mouseout", "mousewheel");
+                push(result, "mousedown", "mouseup", "click", "dblclick", "mousemove", "mouseover", "mouseout", "mousewheel");
             else if (types[i] === "key")
-                result.splice(0, 0, "keydown", "keyup", "keypress", "textInput");
+                push(result, "keydown", "keyup", "keypress", "textInput");
             else if (types[i] === "touch")
-                result.splice(0, 0, "touchstart", "touchmove", "touchend", "touchcancel");
+                push(result, "touchstart", "touchmove", "touchend", "touchcancel");
             else if (types[i] === "control")
-                result.splice(0, 0, "resize", "scroll", "zoom", "focus", "blur", "select", "change", "submit", "reset");
+                push(result, "resize", "scroll", "zoom", "focus", "blur", "select", "change", "submit", "reset");
             else
-                result.push(types[i]);
+                push(result, types[i]);
         }
         return result;
     },
