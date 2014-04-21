@@ -37,11 +37,13 @@ bool FileSystemBackend::CanHandleURL(const fileapi::FileSystemURL& url) {
     return false;
   return url.type() == fileapi::kFileSystemTypeNativeLocal ||
          url.type() == fileapi::kFileSystemTypeRestrictedNativeLocal ||
-         url.type() == fileapi::kFileSystemTypeDrive;
+         url.type() == fileapi::kFileSystemTypeDrive ||
+         url.type() == fileapi::kFileSystemTypeProvided;
 }
 
 FileSystemBackend::FileSystemBackend(
     FileSystemBackendDelegate* drive_delegate,
+    FileSystemBackendDelegate* file_system_provider_delegate,
     scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy,
     scoped_refptr<fileapi::ExternalMountPoints> mount_points,
     fileapi::ExternalMountPoints* system_mount_points)
@@ -49,9 +51,9 @@ FileSystemBackend::FileSystemBackend(
       file_access_permissions_(new FileAccessPermissions()),
       local_file_util_(fileapi::AsyncFileUtil::CreateForLocalFileSystem()),
       drive_delegate_(drive_delegate),
+      file_system_provider_delegate_(file_system_provider_delegate),
       mount_points_(mount_points),
-      system_mount_points_(system_mount_points) {
-}
+      system_mount_points_(system_mount_points) {}
 
 FileSystemBackend::~FileSystemBackend() {
 }
@@ -232,6 +234,8 @@ fileapi::AsyncFileUtil* FileSystemBackend::GetAsyncFileUtil(
     fileapi::FileSystemType type) {
   if (type == fileapi::kFileSystemTypeDrive)
     return drive_delegate_->GetAsyncFileUtil(type);
+  if (type == fileapi::kFileSystemTypeProvided)
+    return file_system_provider_delegate_->GetAsyncFileUtil(type);
 
   DCHECK(type == fileapi::kFileSystemTypeNativeLocal ||
          type == fileapi::kFileSystemTypeRestrictedNativeLocal);
@@ -286,6 +290,11 @@ FileSystemBackend::CreateFileStreamReader(
         url, offset, expected_modification_time, context);
   }
 
+  if (url.type() == fileapi::kFileSystemTypeProvided) {
+    return file_system_provider_delegate_->CreateFileStreamReader(
+        url, offset, expected_modification_time, context);
+  }
+
   return scoped_ptr<webkit_blob::FileStreamReader>(
       webkit_blob::FileStreamReader::CreateForFileSystemFile(
           context, url, offset, expected_modification_time));
@@ -306,6 +315,11 @@ FileSystemBackend::CreateFileStreamWriter(
 
   if (url.type() == fileapi::kFileSystemTypeRestrictedNativeLocal)
     return scoped_ptr<fileapi::FileStreamWriter>();
+
+  if (url.type() == fileapi::kFileSystemTypeProvided) {
+    return file_system_provider_delegate_->CreateFileStreamWriter(
+        url, offset, context);
+  }
 
   DCHECK(url.type() == fileapi::kFileSystemTypeNativeLocal);
   return scoped_ptr<fileapi::FileStreamWriter>(
