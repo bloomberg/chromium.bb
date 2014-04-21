@@ -807,7 +807,9 @@ CancelCallback FakeDriveService::UpdateResource(
   if (entry) {
     ChangeResource* change = &entry->change_resource;
     FileResource* file = change->mutable_file();
-    file->set_title(new_title);
+
+    if (!new_title.empty())
+      file->set_title(new_title);
 
     // Set parent if necessary.
     if (!parent_resource_id.empty()) {
