@@ -3,5 +3,8 @@
   "version": "0.1",
   "manifest_version": 2,
   "description": "end-to-end browser test for chrome.tabs.onReplaced API",
+  "background": {
+    "page": "on_replaced.html"
+  },
   "permissions": ["tabs"]
 }

@@ -3499,9 +3499,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions, WebNavigation) {
   ASSERT_TRUE(StartSpawnedTestServer());
   extensions::FrameNavigationState::set_allow_extension_scheme(true);
 
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      extensions::switches::kAllowLegacyExtensionManifests);
-
   // Wait for the extension to set itself up and return control to us.
   ASSERT_TRUE(RunExtensionTest("webnavigation/prerender")) << message_;
 
@@ -3519,19 +3516,12 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions, WebNavigation) {
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-// Fails often on Windows dbg bots. http://crbug.com/177163
-#if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_TabsApi DISABLED_TabsApi
-#else
-#define MAYBE_TabsApi TabsApi
-#endif  // defined(OS_WIN) && !defined(NDEBUG)
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions, MAYBE_TabsApi) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions, TabsApi) {
   ASSERT_TRUE(StartSpawnedTestServer());
   extensions::FrameNavigationState::set_allow_extension_scheme(true);
 
   // Wait for the extension to set itself up and return control to us.
-  ASSERT_TRUE(RunExtensionSubtest("tabs/on_replaced", "on_replaced.html"))
-      << message_;
+  ASSERT_TRUE(RunExtensionTest("tabs/on_replaced")) << message_;
 
   ResultCatcher catcher;
 
