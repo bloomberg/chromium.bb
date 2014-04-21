@@ -1337,7 +1337,6 @@ void HTMLSelectElement::updateSelectedState(int listIndex, bool multi, bool shif
 void HTMLSelectElement::listBoxDefaultEventHandler(Event* event)
 {
     const Vector<HTMLElement*>& listItems = this->listItems();
-    bool dragSelection = false;
     if (event->type() == EventTypeNames::gesturetap && event->isGestureEvent()) {
         focus();
         // Calling focus() may cause us to lose our renderer or change the render type, in which case do not want to handle the event.
@@ -1398,18 +1397,12 @@ void HTMLSelectElement::listBoxDefaultEventHandler(Event* event)
                     updateListBoxSelection(true);
                 }
             }
-            dragSelection = true;
         }
     } else if (event->type() == EventTypeNames::mouseup && event->isMouseEvent() && toMouseEvent(event)->button() == LeftButton && renderer() && !toRenderBox(renderer())->autoscrollInProgress()) {
         // We didn't start this click/drag on any options.
         if (m_lastOnChangeSelection.isEmpty())
             return;
-        // This makes sure we fire dispatchFormControlChangeEvent for a single
-        // click. For drag selection, onChange will fire when the autoscroll
-        // timer stops.
-        if (!dragSelection) {
-            listBoxOnChange();
-        }
+        listBoxOnChange();
     } else if (event->type() == EventTypeNames::keydown) {
         if (!event->isKeyboardEvent())
             return;
