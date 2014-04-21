@@ -101,5 +101,43 @@
         }],
       ],
     },
+    {
+      'target_name': 'mojo_view_manager_lib',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+      ],
+      'sources': [
+        'services/public/cpp/view_manager/lib/view.cc',
+        'services/public/cpp/view_manager/lib/view_manager.cc',
+        'services/public/cpp/view_manager/lib/view_tree_host.cc',
+        'services/public/cpp/view_manager/lib/view_tree_node.cc',
+        'services/public/cpp/view_manager/lib/view_tree_node_observer.cc',
+        'services/public/cpp/view_manager/lib/view_tree_node_private.cc',
+        'services/public/cpp/view_manager/lib/view_tree_node_private.h',
+        'services/public/cpp/view_manager/view.h',
+        'services/public/cpp/view_manager/view_manager.h',
+        'services/public/cpp/view_manager/view_tree_host.h',
+        'services/public/cpp/view_manager/view_tree_node.h',
+        'services/public/cpp/view_manager/view_tree_node_observer.h',
+      ],
+    },
+    {
+      'target_name': 'mojo_view_manager_lib_unittests',
+      'type': 'executable',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../base/base.gyp:test_support_base',
+        '../testing/gtest.gyp:gtest',
+        'mojo_run_all_unittests',
+        'mojo_view_manager_lib',
+      ],
+      'sources': [
+        'services/public/cpp/view_manager/tests/view_unittest.cc',
+        'services/public/cpp/view_manager/tests/view_manager_unittest.cc',
+        'services/public/cpp/view_manager/tests/view_tree_host_unittest.cc',
+        'services/public/cpp/view_manager/tests/view_tree_node_unittest.cc',
+      ],
+    },
   ],
 }
