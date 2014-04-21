@@ -360,9 +360,9 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN7content17WorkerProcessHost20CreateMessageFiltersEi
-   fun:_ZN7content17WorkerProcessHost4InitEi
+   fun:_ZN7content17WorkerProcessHost4InitE*
    fun:_ZN7content17WorkerServiceImpl24CreateWorkerFromInstanceENS_17WorkerProcessHost14WorkerInstanceE
-   fun:_ZN7content17WorkerServiceImpl12CreateWorkerERK31ViewHostMsg_CreateWorker_ParamsiPNS_19WorkerMessageFilterEPNS_15ResourceContextERKNS_22WorkerStoragePartitionE
+   fun:_ZN7content17WorkerServiceImpl12CreateWorkerE*
    fun:_ZN7content19WorkerMessageFilter14OnCreateWorkerERK31ViewHostMsg_CreateWorker_ParamsPi
 }
 {
@@ -6366,4 +6366,39 @@
    fun:_ZN7WebCore13WorkerClientsD1Ev
    fun:_ZN7WebCore13WorkerClientsD0Ev
    fun:_ZN3WTF15OwnedPtrDeleterIN7WebCore13WorkerClientsEE9deletePtrEPS2_
+}
+{
+   bug_365258
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEm
+   fun:_ZN7WebCore8ResourcenwEm
+   fun:_ZN7WebCoreL14createResourceENS_8Resource4TypeERKNS_15ResourceRequestERKN3WTF6StringE
+   fun:_ZN7WebCore15ResourceFetcher18revalidateResourceERKNS_12FetchRequestEPNS_8ResourceE
+   fun:_ZN7WebCore15ResourceFetcher15requestResourceENS_8Resource4TypeERNS_12FetchRequestE
+   fun:_ZN7WebCore15ResourceFetcher11fetchScriptERNS_12FetchRequestE
+   fun:_ZN7WebCore12ScriptLoader11fetchScriptERKN3WTF6StringE
+   fun:_ZN7WebCore12ScriptLoader13prepareScriptERKN3WTF12TextPositionENS0_17LegacyTypeSupportE
+   fun:_ZN7WebCore16HTMLScriptRunner9runScriptEPNS_7ElementERKN3WTF12TextPositionE
+   fun:_ZN7WebCore16HTMLScriptRunner7executeEN3WTF10PassRefPtrINS_7ElementEEERKNS1_12TextPositionE
+   fun:_ZN7WebCore18HTMLDocumentParser30runScriptsForPausedTreeBuilderEv
+   fun:_ZN7WebCore18HTMLDocumentParser38processParsedChunkFromBackgroundParserEN3WTF10PassOwnPtrINS0_11ParsedChunkEEE
+   fun:_ZN7WebCore18HTMLDocumentParser23pumpPendingSpeculationsEv
+   fun:_ZN7WebCore18HTMLDocumentParser41didReceiveParsedChunkFromBackgroundParserEN3WTF10PassOwnPtrINS0_11ParsedChunkEEE
+   fun:_ZN3WTF15FunctionWrapperIMN7WebCore18HTMLDocumentParserEFvNS_10PassOwnPtrINS2_11ParsedChunkEEEEEclERKNS_7WeakPtrIS2_EES5_
+   fun:_ZN3WTF17BoundFunctionImplINS_15FunctionWrapperIMN7WebCore18HTMLDocumentParserEFvNS_10PassOwnPtrINS3_11ParsedChunkEEEEEEFvNS_7WeakPtrIS3_EES6_EEclEv
+   fun:_ZNK3WTF8FunctionIFvvEEclEv
+   fun:_ZN3WTFL18callFunctionObjectEPv
+}
+{
+   bug_365259
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEm
+   fun:_ZN3WTF10RefCountedIN7WebCore20IDBDatabaseCallbacksEEnwEm
+   fun:_ZN7WebCore20IDBDatabaseCallbacks6createEv
+   fun:_ZN7WebCore10IDBFactory12openInternalEPNS_16ExecutionContextERKN3WTF6StringElRNS_14ExceptionStateE
+   fun:_ZN7WebCore10IDBFactory4openEPNS_16ExecutionContextERKN3WTF6StringERNS_14ExceptionStateE
+   fun:_ZN7WebCore20IDBFactoryV8InternalL10openMethodERKN2v820FunctionCallbackInfoINS1_5ValueEEE
+   fun:_ZN7WebCore20IDBFactoryV8InternalL18openMethodCallbackERKN2v820FunctionCallbackInfoINS1_5ValueEEE
 }
