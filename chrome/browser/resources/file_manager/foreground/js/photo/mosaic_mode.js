@@ -60,8 +60,11 @@ MosaicMode.prototype.hasActiveTool = function() { return true };
 MosaicMode.prototype.onKeyDown = function(event) {
   switch (util.getKeyModifiers(event) + event.keyIdentifier) {
     case 'Enter':
-      this.toggleMode_();
-      event.preventDefault();
+      if (!document.activeElement ||
+          document.activeElement.localName !== 'button') {
+        this.toggleMode_();
+        event.preventDefault();
+      }
       return;
   }
   this.mosaic_.onKeyDown(event);
