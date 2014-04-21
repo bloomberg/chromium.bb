@@ -18,7 +18,8 @@ public class JavaBridgeChildFrameTest extends JavaBridgeTestBase {
     private class TestController extends Controller {
         private String mStringValue;
 
-       public synchronized void setStringValue(String x) {
+    @SuppressWarnings("unused")  // Called via reflection
+    public synchronized void setStringValue(String x) {
             mStringValue = x;
             notifyResultIsReady();
         }
@@ -43,7 +44,7 @@ public class JavaBridgeChildFrameTest extends JavaBridgeTestBase {
         // In the case that the test fails (i.e. the child frame doesn't get the injected object,
         // the call to testController.setStringValue in the child frame's onload handler will
         // not be made.
-        loadDataSync(getContentView(),
+        loadDataSync(getContentViewCore(),
                 "<html><head></head><body>" +
                 "<iframe id=\"childFrame\" onload=\"testController.setStringValue('PASS');\" />" +
                 "</body></html>", "text/html", false);

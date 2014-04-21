@@ -62,7 +62,7 @@ public class ChromeShellToolbar extends LinearLayout {
         if (mTab != null) mTab.removeObserver(mTabObserver);
         mTab = tab;
         mTab.addObserver(mTabObserver);
-        mUrlTextView.setText(mTab.getContentView().getUrl());
+        mUrlTextView.setText(mTab.getContentViewCore().getUrl());
     }
 
     private void onUpdateUrl(String url) {
@@ -113,7 +113,7 @@ public class ChromeShellToolbar extends LinearLayout {
             public void onFocusChange(View v, boolean hasFocus) {
                 setKeyboardVisibilityForUrl(hasFocus);
                 if (!hasFocus) {
-                    mUrlTextView.setText(mTab.getContentView().getUrl());
+                    mUrlTextView.setText(mTab.getContentViewCore().getUrl());
                 }
             }
         });

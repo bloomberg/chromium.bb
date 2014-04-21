@@ -5,7 +5,6 @@
 package org.chromium.content.browser.test.util;
 
 
-import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
 
 import java.util.concurrent.TimeUnit;
@@ -18,10 +17,10 @@ public class TestCallbackHelperContainer {
     private final TestContentViewClient mTestContentViewClient;
     private final TestWebContentsObserver mTestWebContentsObserver;
 
-    public TestCallbackHelperContainer(ContentView contentView) {
+    public TestCallbackHelperContainer(ContentViewCore contentViewCore) {
         mTestContentViewClient = new TestContentViewClient();
-        contentView.getContentViewCore().setContentViewClient(mTestContentViewClient);
-        mTestWebContentsObserver = new TestWebContentsObserver(contentView.getContentViewCore());
+        contentViewCore.setContentViewClient(mTestContentViewClient);
+        mTestWebContentsObserver = new TestWebContentsObserver(contentViewCore);
     }
 
     protected TestCallbackHelperContainer(

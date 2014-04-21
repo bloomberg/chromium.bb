@@ -31,15 +31,13 @@ public class ContentViewTestBase extends ContentShellTestBase {
             runTestOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    ContentView contentView = activity.getActiveContentView();
-                    contentView.getContentViewCore().addPossiblyUnsafeJavascriptInterface(object,
-                            name, null);
-                    mTestCallbackHelperContainer =
-                            new TestCallbackHelperContainer(contentView);
+                    ContentViewCore viewCore = activity.getActiveContentViewCore();
+                    viewCore.addPossiblyUnsafeJavascriptInterface(object, name, null);
+                    mTestCallbackHelperContainer = new TestCallbackHelperContainer(viewCore);
                 }
             });
 
-            loadDataSync(activity.getActiveContentView(),
+            loadDataSync(activity.getActiveContentViewCore(),
                     "<!DOCTYPE html><title></title>", "text/html", false);
         } catch (Throwable e) {
             throw new RuntimeException(
@@ -51,9 +49,9 @@ public class ContentViewTestBase extends ContentShellTestBase {
      * Loads data on the UI thread and blocks until onPageFinished is called.
      * TODO(cramya): Move method to a separate util file once UiUtils.java moves into base.
      */
-    protected void loadDataSync(final ContentView contentView, final String data,
+    protected void loadDataSync(final ContentViewCore contentViewCore, final String data,
             final String mimeType, final boolean isBase64Encoded) throws Throwable {
-        loadUrl(contentView, mTestCallbackHelperContainer, LoadUrlParams.createLoadDataParams(
+        loadUrl(contentViewCore, mTestCallbackHelperContainer, LoadUrlParams.createLoadDataParams(
                 data, mimeType, isBase64Encoded));
     }
 }

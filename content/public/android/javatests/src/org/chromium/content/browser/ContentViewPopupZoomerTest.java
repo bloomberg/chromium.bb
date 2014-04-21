@@ -85,7 +85,7 @@ public class ContentViewPopupZoomerTest extends ContentShellTestBase {
 
         final ContentView view = getActivity().getActiveContentView();
         final TestCallbackHelperContainer viewClient =
-                new TestCallbackHelperContainer(view);
+                new TestCallbackHelperContainer(view.getContentViewCore());
 
         // The popup should be hidden before the click.
         assertTrue("The zoomer popup is shown after load.",

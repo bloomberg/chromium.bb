@@ -24,7 +24,7 @@ public class ScreenOrientationIntegrationTest extends ContentShellTestBase {
             "<body onorientationchange='changes++;'>foo</body>" +
             "</html>");
 
-    private ContentView mContentView;
+    private ContentViewCore mContentViewCore;
 
     /**
      * Returns the screen orientation as seen by |window.orientation|.
@@ -33,7 +33,7 @@ public class ScreenOrientationIntegrationTest extends ContentShellTestBase {
             throws InterruptedException, TimeoutException {
         return Integer.parseInt(
             JavaScriptUtils.executeJavaScriptAndWaitForResult(
-                    mContentView.getContentViewCore(),
+                    mContentViewCore,
                     "window.orientation"));
     }
 
@@ -45,7 +45,7 @@ public class ScreenOrientationIntegrationTest extends ContentShellTestBase {
             throws InterruptedException, TimeoutException {
         return Integer.parseInt(
             JavaScriptUtils.executeJavaScriptAndWaitForResult(
-                    mContentView.getContentViewCore(),
+                    mContentViewCore,
                     "changes"));
     }
 
@@ -53,7 +53,7 @@ public class ScreenOrientationIntegrationTest extends ContentShellTestBase {
      * Simulate a screen orientation change for the web content.
      */
     private void updateScreenOrientationForContent(int orientation) {
-        mContentView.getContentViewCore().sendOrientationChangeEvent(orientation);
+        mContentViewCore.sendOrientationChangeEvent(orientation);
     }
 
     @Override
@@ -63,7 +63,7 @@ public class ScreenOrientationIntegrationTest extends ContentShellTestBase {
         ContentShellActivity activity = launchContentShellWithUrl(DEFAULT_URL);
         waitForActiveShellToBeDoneLoading();
 
-        mContentView = activity.getActiveContentView();
+        mContentViewCore = activity.getActiveContentViewCore();
     }
 
     @SmallTest

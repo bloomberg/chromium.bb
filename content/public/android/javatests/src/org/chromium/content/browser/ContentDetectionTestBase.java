@@ -32,7 +32,7 @@ public class ContentDetectionTestBase extends ContentShellTestBase {
      */
     protected TestCallbackHelperContainer getTestCallbackHelperContainer() {
         if (mCallbackHelper == null) {
-            mCallbackHelper = new TestCallbackHelperContainer(getContentView());
+            mCallbackHelper = new TestCallbackHelperContainer(getContentViewCore());
         }
         return mCallbackHelper;
     }
@@ -52,7 +52,7 @@ public class ContentDetectionTestBase extends ContentShellTestBase {
      * @return true if the test url is the current one, false otherwise.
      */
     protected boolean isCurrentTestUrl(String testUrl) {
-        return UrlUtils.getTestFileUrl(testUrl).equals(getContentView().getUrl());
+        return UrlUtils.getTestFileUrl(testUrl).equals(getContentViewCore().getUrl());
     }
 
     /**

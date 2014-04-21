@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.shell;
 
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
+
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -11,8 +13,6 @@ import android.net.Uri;
 import android.test.ActivityInstrumentationTestCase2;
 import android.text.TextUtils;
 import android.util.Log;
-
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ThreadUtils;
@@ -96,7 +96,7 @@ public class ChromeShellTestBase extends ActivityInstrumentationTestCase2<Chrome
                             ChromeShellTab tab = activity.getActiveTab();
                             if (tab != null) {
                                 isLoaded.set(!tab.isLoading()
-                                        && !TextUtils.isEmpty(tab.getContentView().getUrl()));
+                                        && !TextUtils.isEmpty(tab.getContentViewCore().getUrl()));
                             } else {
                                 isLoaded.set(false);
                             }

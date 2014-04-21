@@ -187,7 +187,7 @@ public class ModalDialogTest extends ChromeShellTestBase {
                 "Stay on this page");
         clickCancel(jsDialog);
 
-        assertEquals(BEFORE_UNLOAD_URL, getActivity().getActiveContentView().getUrl());
+        assertEquals(BEFORE_UNLOAD_URL, getActivity().getActiveContentViewCore().getUrl());
         executeJavaScriptAndWaitForDialog("history.back();");
 
         jsDialog = getCurrentDialog();
@@ -201,7 +201,7 @@ public class ModalDialogTest extends ChromeShellTestBase {
         int callCount = onPageLoaded.getCallCount();
         clickOk(jsDialog);
         onPageLoaded.waitForCallback(callCount);
-        assertEquals(EMPTY_PAGE, getActivity().getActiveContentView().getUrl());
+        assertEquals(EMPTY_PAGE, getActivity().getActiveContentViewCore().getUrl());
     }
 
     /**

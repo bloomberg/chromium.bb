@@ -29,7 +29,7 @@ public class ContentViewLocationTest extends ContentShellTestBase {
         getInstrumentation().runOnMainSync(new Runnable() {
                 @Override
                 public void run() {
-                    getContentView().onHide();
+                    getContentViewCore().onHide();
                 }
         });
     }
@@ -38,7 +38,7 @@ public class ContentViewLocationTest extends ContentShellTestBase {
         getInstrumentation().runOnMainSync(new Runnable() {
                 @Override
                 public void run() {
-                    getContentView().onShow();
+                    getContentViewCore().onShow();
                 }
         });
     }
@@ -91,7 +91,7 @@ public class ContentViewLocationTest extends ContentShellTestBase {
             fail();
         }
 
-        mTestCallbackHelperContainer = new TestCallbackHelperContainer(getContentView());
+        mTestCallbackHelperContainer = new TestCallbackHelperContainer(getContentViewCore());
         mJavascriptHelper = new OnEvaluateJavaScriptResultHelper();
 
         ensureGeolocationRunning(false);
@@ -125,7 +125,8 @@ public class ContentViewLocationTest extends ContentShellTestBase {
         ensureGeolocationRunning(true);
 
         // Navigate away and ensure that geolocation stops.
-        loadUrl(getContentView(), mTestCallbackHelperContainer, new LoadUrlParams("about:blank"));
+        loadUrl(getContentViewCore(), mTestCallbackHelperContainer,
+              new LoadUrlParams("about:blank"));
         ensureGeolocationRunning(false);
     }
 
@@ -167,7 +168,8 @@ public class ContentViewLocationTest extends ContentShellTestBase {
         startGeolocationWatchPosition();
         ensureGeolocationRunning(false);
 
-        loadUrl(getContentView(), mTestCallbackHelperContainer, new LoadUrlParams("about:blank"));
+        loadUrl(getContentViewCore(), mTestCallbackHelperContainer,
+                new LoadUrlParams("about:blank"));
         showContentViewOnUiThread();
         ensureGeolocationRunning(false);
     }

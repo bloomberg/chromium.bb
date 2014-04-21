@@ -12,8 +12,8 @@ import org.chromium.chrome.browser.UrlUtilities;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.infobar.AutoLoginProcessor;
-import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
+import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.LoadUrlParams;
 import org.chromium.content_public.Referrer;
 import org.chromium.ui.base.WindowAndroid;
@@ -30,7 +30,7 @@ public class ChromeShellTab extends Tab {
      * @param context           The Context the view is running in.
      * @param url               The URL to start this tab with.
      * @param window            The WindowAndroid should represent this tab.
-     * @param contentViewClient The client for the {@link ContentView}s of this Tab.
+     * @param contentViewClient The client for the {@link ContentViewCore}s of this Tab.
      */
     public ChromeShellTab(Context context, String url, WindowAndroid window,
             ContentViewClient contentViewClient) {
@@ -49,7 +49,7 @@ public class ChromeShellTab extends Tab {
     }
 
     /**
-     * Navigates this Tab's {@link ContentView} to a sanitized version of {@code url}.
+     * Navigates this Tab to a sanitized version of {@code url}.
      * @param url The potentially unsanitized URL to navigate to.
      * @param postData Optional data to be sent via POST.
      */
@@ -62,20 +62,20 @@ public class ChromeShellTab extends Tab {
         // Invalid URLs will just return empty.
         if (TextUtils.isEmpty(url)) return;
 
-        ContentView contentView = getContentView();
-        if (TextUtils.equals(url, contentView.getUrl())) {
-            contentView.getContentViewCore().reload(true);
+        ContentViewCore contentViewCore = getContentViewCore();
+        if (TextUtils.equals(url, contentViewCore.getUrl())) {
+            contentViewCore.reload(true);
         } else {
             if (postData == null) {
-                contentView.loadUrl(new LoadUrlParams(url));
+                contentViewCore.loadUrl(new LoadUrlParams(url));
             } else {
-                contentView.loadUrl(LoadUrlParams.createLoadHttpPostParams(url, postData));
+                contentViewCore.loadUrl(LoadUrlParams.createLoadHttpPostParams(url, postData));
             }
         }
     }
 
     /**
-     * Navigates this Tab's {@link ContentView} to a sanitized version of {@code url}.
+     * Navigates this Tab to a sanitized version of {@code url}.
      * @param url The potentially unsanitized URL to navigate to.
      */
     public void loadUrlWithSanitization(String url) {

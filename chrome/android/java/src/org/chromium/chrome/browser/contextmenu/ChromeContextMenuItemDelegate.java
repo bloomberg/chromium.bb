@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.contextmenu;
 
 import org.chromium.chrome.browser.Tab;
+import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.Referrer;
 
 /**
@@ -12,7 +13,8 @@ import org.chromium.content_public.Referrer;
  */
 public interface ChromeContextMenuItemDelegate {
     /**
-     * @return Whether or not this context menu is being shown for an incognito {@link ContentView}.
+     * @return Whether or not this context menu is being shown for an incognito
+     *     {@link ContentViewCore}.
      */
     boolean isIncognito();
 

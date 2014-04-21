@@ -203,16 +203,6 @@ public class ContentViewRenderView extends FrameLayout {
         mNativeContentViewRenderView = 0;
     }
 
-    /**
-     * Makes the passed ContentView the one displayed by this ContentViewRenderView.
-     * TODO(yfriedman): Remove once this rolls downstream and callers are updated.
-     */
-    @Deprecated
-    public void setCurrentContentView(ContentView contentView) {
-        setCurrentContentViewCore(contentView != null ? contentView.getContentViewCore() : null);
-    }
-
-
     public void setCurrentContentViewCore(ContentViewCore contentViewCore) {
         assert mNativeContentViewRenderView != 0;
         mContentViewCore = contentViewCore;

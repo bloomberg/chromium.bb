@@ -68,7 +68,7 @@ public class ImeTest extends ContentShellTestBase {
         mContentViewCore.setAdapterInputConnectionFactory(
                 new TestAdapterInputConnectionFactory());
 
-        mCallbackContainer = new TestCallbackHelperContainer(getContentView());
+        mCallbackContainer = new TestCallbackHelperContainer(mContentViewCore);
         // TODO(aurimas) remove this wait once crbug.com/179511 is fixed.
         assertWaitForPageScaleFactorMatch(2);
         assertTrue(DOMUtils.waitForNonZeroNodeBounds(

@@ -4,13 +4,13 @@
 
 package org.chromium.content_shell_apk;
 
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
+
 import android.content.ComponentName;
 import android.content.Intent;
 import android.net.Uri;
 import android.test.ActivityInstrumentationTestCase2;
 import android.text.TextUtils;
-
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.ContentView;
@@ -79,7 +79,7 @@ public class ContentShellTestBase extends ActivityInstrumentationTestCase2<Conte
         launchContentShellWithUrl(UrlUtils.getTestFileUrl(url));
         assertNotNull(getActivity());
         assertTrue(waitForActiveShellToBeDoneLoading());
-        assertEquals(UrlUtils.getTestFileUrl(url), getContentView().getUrl());
+        assertEquals(UrlUtils.getTestFileUrl(url), getContentViewCore().getUrl());
     }
 
     /**
@@ -138,7 +138,7 @@ public class ContentShellTestBase extends ActivityInstrumentationTestCase2<Conte
                                 // loading because it has no URL set yet.  The second is that
                                 // we've set a URL and it actually is loading.
                                 isLoaded.set(!shell.isLoading()
-                                        && !TextUtils.isEmpty(shell.getContentView().getUrl()));
+                                        && !TextUtils.isEmpty(shell.getContentViewCore().getUrl()));
                             } else {
                                 isLoaded.set(false);
                             }
@@ -156,19 +156,19 @@ public class ContentShellTestBase extends ActivityInstrumentationTestCase2<Conte
     /**
      * Loads a URL in the specified content view.
      *
-     * @param contentView The content view to load the URL in.
+     * @param viewCore The content view core to load the URL in.
      * @param callbackHelperContainer The callback helper container used to monitor progress.
      * @param params The URL params to use.
      */
     protected void loadUrl(
-            final ContentView contentView, TestCallbackHelperContainer callbackHelperContainer,
+            final ContentViewCore viewCore, TestCallbackHelperContainer callbackHelperContainer,
             final LoadUrlParams params) throws Throwable {
         handleBlockingCallbackAction(
                 callbackHelperContainer.getOnPageFinishedHelper(),
                 new Runnable() {
                     @Override
                     public void run() {
-                        contentView.loadUrl(params);
+                        viewCore.loadUrl(params);
                     }
                 });
     }

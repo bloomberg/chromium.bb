@@ -118,9 +118,9 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                getContentView().getContentViewCore().addPossiblyUnsafeJavascriptInterface(object,
+                getContentViewCore().addPossiblyUnsafeJavascriptInterface(object,
                         name, requiredAnnotation);
-                getContentView().getContentViewCore().reload(true);
+                getContentViewCore().reload(true);
             }
         });
         onPageFinishedHelper.waitForCallback(currentCallCount);
@@ -133,7 +133,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                getContentView().getContentViewCore().reload(true);
+                getContentViewCore().reload(true);
             }
         });
         onPageFinishedHelper.waitForCallback(currentCallCount);
@@ -163,7 +163,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                getContentView().getContentViewCore().addPossiblyUnsafeJavascriptInterface(
+                getContentViewCore().addPossiblyUnsafeJavascriptInterface(
                         new Object(), "testObject", null);
             }
         });
@@ -180,7 +180,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                getContentView().getContentViewCore().removeJavascriptInterface("testObject");
+                getContentViewCore().removeJavascriptInterface("testObject");
             }
         });
         assertEquals("object", executeJavaScriptAndGetStringResult("typeof testObject"));
@@ -197,8 +197,8 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                getContentView().getContentViewCore().removeJavascriptInterface("foo");
-                getContentView().getContentViewCore().reload(true);
+                getContentViewCore().removeJavascriptInterface("foo");
+                getContentViewCore().reload(true);
             }
         });
         onPageFinishedHelper.waitForCallback(currentCallCount);
@@ -355,11 +355,11 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                getContentView().getContentViewCore().addPossiblyUnsafeJavascriptInterface(
+                getContentViewCore().addPossiblyUnsafeJavascriptInterface(
                         testObject, "testObject1", null);
-                getContentView().getContentViewCore().addPossiblyUnsafeJavascriptInterface(
+                getContentViewCore().addPossiblyUnsafeJavascriptInterface(
                         testObject, "testObject2", null);
-                getContentView().getContentViewCore().reload(true);
+                getContentViewCore().reload(true);
             }
         });
         onPageFinishedHelper.waitForCallback(currentCallCount);
@@ -402,11 +402,11 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                getContentView().getContentViewCore().addPossiblyUnsafeJavascriptInterface(
+                getContentViewCore().addPossiblyUnsafeJavascriptInterface(
                         object, "testObject", null);
-                getContentView().getContentViewCore().addPossiblyUnsafeJavascriptInterface(
+                getContentViewCore().addPossiblyUnsafeJavascriptInterface(
                         innerObject, "innerObject", null);
-                getContentView().getContentViewCore().reload(true);
+                getContentViewCore().reload(true);
             }
         });
         onPageFinishedHelper.waitForCallback(currentCallCount);
@@ -785,9 +785,9 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                getContentView().getContentViewCore().addJavascriptInterface(new Test(),
+                getContentViewCore().addJavascriptInterface(new Test(),
                         "testObject");
-                getContentView().getContentViewCore().reload(true);
+                getContentViewCore().reload(true);
             }
         });
         onPageFinishedHelper.waitForCallback(currentCallCount);
@@ -835,7 +835,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                getContentView().getContentViewCore().setAllowJavascriptInterfacesInspection(false);
+                getContentViewCore().setAllowJavascriptInterfacesInspection(false);
             }
         });
 
@@ -874,7 +874,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                getContentView().loadUrl(new LoadUrlParams("javascript:(function() { " +
+                getContentViewCore().loadUrl(new LoadUrlParams("javascript:(function() { " +
                                 "testController.setStringValue(" + script + ") })()"));
                 do {
                     final Boolean[] deactivateExitLoopTask = new Boolean[1];

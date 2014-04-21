@@ -33,6 +33,7 @@ import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.content.browser.ActivityContentVideoViewClient;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.browser.ContentView;
+import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.DeviceUtils;
 import org.chromium.content.common.ContentSwitches;
 import org.chromium.printing.PrintManagerDelegateImpl;
@@ -214,16 +215,16 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
     protected void onStop() {
         super.onStop();
 
-        ContentView view = getActiveContentView();
-        if (view != null) view.onHide();
+        ContentViewCore viewCore = getActiveContentViewCore();
+        if (viewCore != null) viewCore.onHide();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
 
-        ContentView view = getActiveContentView();
-        if (view != null) view.onShow();
+        ContentViewCore viewCore = getActiveContentViewCore();
+        if (viewCore != null) viewCore.onShow();
 
         if (mSyncController != null) {
             mSyncController.onStart();
@@ -255,6 +256,14 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
     public ContentView getActiveContentView() {
         ChromeShellTab tab = getActiveTab();
         return tab != null ? tab.getContentView() : null;
+    }
+
+    /**
+     * @return The ContentViewCore of the active tab.
+     */
+    public ContentViewCore getActiveContentViewCore() {
+        ChromeShellTab tab = getActiveTab();
+        return tab != null ? tab.getContentViewCore() : null;
     }
 
     /**

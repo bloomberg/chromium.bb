@@ -18,8 +18,6 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.widget.FrameLayout;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import org.chromium.base.TraceEvent;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -71,13 +69,6 @@ public class ContentView extends FrameLayout
         mContentViewCore.initialize(this, this, nativeWebContents, windowAndroid);
     }
 
-    /**
-     * @return The URL of the page.
-     */
-    public String getUrl() {
-        return mContentViewCore.getUrl();
-    }
-
     // PageInfo implementation.
 
     @Override
@@ -101,100 +92,6 @@ public class ContentView extends FrameLayout
      */
     public ContentViewCore getContentViewCore() {
         return mContentViewCore;
-    }
-
-    /**
-     * Destroy the internal state of the WebView. This method may only be called
-     * after the WebView has been removed from the view system. No other methods
-     * may be called on this WebView after this method has been called.
-     */
-    public void destroy() {
-        mContentViewCore.destroy();
-    }
-
-    /**
-     * Returns true initially, false after destroy() has been called.
-     * It is illegal to call any other public method after destroy().
-     */
-    public boolean isAlive() {
-        return mContentViewCore.isAlive();
-    }
-
-    @VisibleForTesting
-    public ContentViewClient getContentViewClient() {
-        return mContentViewCore.getContentViewClient();
-    }
-
-    /**
-     * Load url without fixing up the url string. Consumers of ContentView are responsible for
-     * ensuring the URL passed in is properly formatted (i.e. the scheme has been added if left
-     * off during user input).
-     *
-     * @param params Parameters for this load.
-     */
-    public void loadUrl(LoadUrlParams params) {
-        mContentViewCore.loadUrl(params);
-    }
-
-    /**
-     * @return Whether the current WebContents has a previous navigation entry.
-     */
-    public boolean canGoBack() {
-        return mContentViewCore.canGoBack();
-    }
-
-    /**
-     * @return Whether the current WebContents has a navigation entry after the current one.
-     */
-    public boolean canGoForward() {
-        return mContentViewCore.canGoForward();
-    }
-
-    /**
-     * Goes to the navigation entry before the current one.
-     */
-    public void goBack() {
-        mContentViewCore.goBack();
-    }
-
-    /**
-     * Goes to the navigation entry following the current one.
-     */
-    public void goForward() {
-        mContentViewCore.goForward();
-    }
-
-    /**
-     * Fling the ContentView from the current position.
-     * @param x Fling touch starting position
-     * @param y Fling touch starting position
-     * @param velocityX Initial velocity of the fling (X) measured in pixels per second.
-     * @param velocityY Initial velocity of the fling (Y) measured in pixels per second.
-     */
-    @VisibleForTesting
-    public void fling(long timeMs, int x, int y, int velocityX, int velocityY) {
-        mContentViewCore.flingForTest(timeMs, x, y, velocityX, velocityY);
-    }
-
-    /**
-     * To be called when the ContentView is shown.
-     **/
-    public void onShow() {
-        mContentViewCore.onShow();
-    }
-
-    /**
-     * To be called when the ContentView is hidden.
-     **/
-    public void onHide() {
-        mContentViewCore.onHide();
-    }
-
-    /**
-     * Hides the select action bar.
-     */
-    public void hideSelectActionBar() {
-        mContentViewCore.hideSelectActionBar();
     }
 
     // FrameLayout overrides.
@@ -385,14 +282,6 @@ public class ContentView extends FrameLayout
         return super.awakenScrollBars();
     }
 
-    public int getSingleTapX()  {
-        return mContentViewCore.getSingleTapX();
-    }
-
-    public int getSingleTapY()  {
-        return mContentViewCore.getSingleTapY();
-    }
-
     @Override
     public void onInitializeAccessibilityNodeInfo(AccessibilityNodeInfo info) {
         super.onInitializeAccessibilityNodeInfo(info);
@@ -425,28 +314,6 @@ public class ContentView extends FrameLayout
     protected void onVisibilityChanged(View changedView, int visibility) {
         super.onVisibilityChanged(changedView, visibility);
         mContentViewCore.onVisibilityChanged(changedView, visibility);
-    }
-
-    /**
-     * Return the current scale of the WebView
-     * @return The current scale.
-     */
-    public float getScale() {
-        return mContentViewCore.getScale();
-    }
-
-    /**
-     * Enable or disable accessibility features.
-     */
-    public void setAccessibilityState(boolean state) {
-        mContentViewCore.setAccessibilityState(state);
-    }
-
-    /**
-     * Inform WebKit that Fullscreen mode has been exited by the user.
-     */
-    public void exitFullscreen() {
-        mContentViewCore.exitFullscreen();
     }
 
     /**

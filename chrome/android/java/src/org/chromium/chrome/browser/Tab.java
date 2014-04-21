@@ -511,7 +511,7 @@ public class Tab implements NavigationClient {
     }
 
     /**
-     * Reloads the current page content if it is a {@link ContentView}.
+     * Reloads the current page content.
      */
     public void reload() {
         // TODO(dtrainor): Should we try to rebuild the ContentView if it's frozen?
@@ -519,7 +519,7 @@ public class Tab implements NavigationClient {
     }
 
     /**
-     * Reloads the current page content if it is a {@link ContentView}.
+     * Reloads the current page content.
      * This version ignores the cache and reloads from the network.
      */
     public void reloadIgnoringCache() {
@@ -860,7 +860,7 @@ public class Tab implements NavigationClient {
      */
     @CalledByNative
     public String getUrl() {
-        return mContentView != null ? mContentView.getUrl() : "";
+        return mContentViewCore != null ? mContentViewCore.getUrl() : "";
     }
 
     /**

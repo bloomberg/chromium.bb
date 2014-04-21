@@ -22,7 +22,7 @@ import java.lang.ref.WeakReference;
  */
 public class TabUtils {
     private static TestContentViewClient createTestContentViewClientForTab(Tab tab) {
-        ContentViewClient client = tab.getContentView().getContentViewClient();
+        ContentViewClient client = tab.getContentViewCore().getContentViewClient();
         if (client instanceof TestContentViewClient) return (TestContentViewClient) client;
 
         TestContentViewClient testClient = new TestContentViewClientWrapper(client);
@@ -39,7 +39,7 @@ public class TabUtils {
 
         public TestCallbackHelperContainerForTab(Tab tab) {
             super(createTestContentViewClientForTab(tab),
-                    new TestWebContentsObserver(tab.getContentView().getContentViewCore()));
+                    new TestWebContentsObserver(tab.getContentViewCore()));
             mOnCloseTabHelper = new CallbackHelper();
             mOnContextMenuShownHelper = new OnContextMenuShownHelper();
             tab.addObserver(new EmptyTabObserver() {

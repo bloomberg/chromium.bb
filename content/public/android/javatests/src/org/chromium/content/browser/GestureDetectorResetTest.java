@@ -94,7 +94,7 @@ public class GestureDetectorResetTest extends ContentShellTestBase {
 
         final ContentView view = getActivity().getActiveContentView();
         final TestCallbackHelperContainer viewClient =
-                new TestCallbackHelperContainer(view);
+                new TestCallbackHelperContainer(view.getContentViewCore());
         final OnPageFinishedHelper onPageFinishedHelper =
                 viewClient.getOnPageFinishedHelper();
 
@@ -120,7 +120,7 @@ public class GestureDetectorResetTest extends ContentShellTestBase {
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                getActivity().getActiveShell().getContentView().loadUrl(
+                getActivity().getActiveShell().getContentViewCore().loadUrl(
                         new LoadUrlParams(CLICK_TEST_URL));
             }
         });

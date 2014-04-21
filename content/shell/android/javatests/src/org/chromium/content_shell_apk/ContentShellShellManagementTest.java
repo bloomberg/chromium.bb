@@ -25,7 +25,7 @@ public class ContentShellShellManagementTest extends ContentShellTestBase {
     @Feature({"Main"})
     public void testMultipleShellsLaunched() throws InterruptedException {
         final ContentShellActivity activity = launchContentShellWithUrl(TEST_PAGE_1);
-        assertEquals(TEST_PAGE_1, activity.getActiveShell().getContentView().getUrl());
+        assertEquals(TEST_PAGE_1, activity.getActiveShell().getContentViewCore().getUrl());
 
         Shell previousActiveShell = activity.getActiveShell();
         assertFalse(previousActiveShell.isDestroyed());
@@ -37,11 +37,11 @@ public class ContentShellShellManagementTest extends ContentShellTestBase {
             }
         });
         waitForActiveShellToBeDoneLoading();
-        assertEquals(TEST_PAGE_2, activity.getActiveShell().getContentView().getUrl());
+        assertEquals(TEST_PAGE_2, activity.getActiveShell().getContentViewCore().getUrl());
 
         assertNotSame(previousActiveShell, activity.getActiveShell());
         assertTrue(previousActiveShell.isDestroyed());
-        assertFalse(previousActiveShell.getContentView().isAlive());
+        assertFalse(previousActiveShell.getContentViewCore().isAlive());
     }
 
 }

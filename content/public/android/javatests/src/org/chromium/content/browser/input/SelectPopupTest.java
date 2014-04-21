@@ -78,7 +78,7 @@ public class SelectPopupTest extends ContentShellTestBase {
 
         final ContentView view = getActivity().getActiveContentView();
         final TestCallbackHelperContainer viewClient =
-                new TestCallbackHelperContainer(view);
+                new TestCallbackHelperContainer(view.getContentViewCore());
         final OnPageFinishedHelper onPageFinishedHelper =
                 viewClient.getOnPageFinishedHelper();
 

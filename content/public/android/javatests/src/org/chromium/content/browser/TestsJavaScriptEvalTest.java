@@ -32,15 +32,15 @@ public class TestsJavaScriptEvalTest extends ContentShellTestBase {
         launchContentShellWithUrl(JSTEST_URL);
         assertTrue("Page failed to load", waitForActiveShellToBeDoneLoading());
 
-        final ContentView view = getActivity().getActiveContentView();
+        final ContentViewCore contentViewCore = getContentViewCore();
         for (int i = 0; i < 30; ++i) {
             for (int j = 0; j < 10; ++j) {
                 // Start evaluation of a JavaScript script -- we don't need a result.
-                view.getContentViewCore().evaluateJavaScript("foobar();", null);
+                contentViewCore.evaluateJavaScript("foobar();", null);
             }
             // DOMUtils does need to evaluate a JavaScript and get its result to get DOM bounds.
             assertNotNull("Failed to get bounds",
-                    DOMUtils.getNodeBounds(view.getContentViewCore(), "test"));
+                    DOMUtils.getNodeBounds(contentViewCore, "test"));
         }
     }
 }

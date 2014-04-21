@@ -224,7 +224,8 @@ public class AppBannerManager implements AppBannerView.Observer, AppDetailsDeleg
      * @return          True if the user is still on the same page.
      */
     private boolean isBannerForCurrentPage(String bannerUrl) {
-        return mContentView != null && TextUtils.equals(mContentView.getUrl(), bannerUrl);
+        return mContentView != null &&
+               TextUtils.equals(mContentView.getContentViewCore().getUrl(), bannerUrl);
     }
 
     private static native boolean nativeIsEnabled();

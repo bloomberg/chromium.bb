@@ -17,7 +17,6 @@ import org.chromium.chrome.shell.ChromeShellActivity;
 import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.chrome.shell.sync.SyncController;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
-import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -178,8 +177,6 @@ public class SyncTest extends ChromeShellTestBase {
     }
 
     private static ContentViewCore getContentViewCore(ChromeShellActivity activity) {
-        ContentView contentView = activity.getActiveContentView();
-        if (contentView == null) return null;
-        return contentView.getContentViewCore();
+        return activity.getActiveContentViewCore();
     }
 }

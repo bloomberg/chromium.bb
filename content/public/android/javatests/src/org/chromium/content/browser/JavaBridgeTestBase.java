@@ -41,7 +41,7 @@ public class JavaBridgeTestBase extends ContentViewTestBase {
                 // converted to a string and used as the new document for the
                 // frame. We don't want this behaviour, so wrap the script in
                 // an anonymous function.
-                getContentView().loadUrl(new LoadUrlParams(
+                getContentViewCore().loadUrl(new LoadUrlParams(
                         "javascript:(function() { " + script + " })()"));
             }
         });

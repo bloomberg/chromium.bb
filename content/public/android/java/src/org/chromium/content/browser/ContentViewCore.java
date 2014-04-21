@@ -891,7 +891,8 @@ public class ContentViewCore
         mContentViewClient = client;
     }
 
-    ContentViewClient getContentViewClient() {
+    @VisibleForTesting
+    public ContentViewClient getContentViewClient() {
         if (mContentViewClient == null) {
             // We use the Null Object pattern to avoid having to perform a null check in this class.
             // We create it lazily because most of the time a client will be set almost immediately
