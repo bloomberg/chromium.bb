@@ -53,7 +53,6 @@ class SyncEngineInitializerTest : public testing::Test {
     sync_context_.reset(new SyncEngineContext(
         fake_drive_service_.get(),
         NULL /* drive_uploader */,
-        base::MessageLoopProxy::current(),
         base::MessageLoopProxy::current()));
 
     sync_task_manager_.reset(new SyncTaskManager(

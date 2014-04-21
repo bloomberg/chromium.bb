@@ -671,9 +671,9 @@ void RemoteToLocalSyncer::DeleteLocalFile(const SyncStatusCallback& callback) {
 
 void RemoteToLocalSyncer::DownloadFile(const SyncStatusCallback& callback) {
   base::PostTaskAndReplyWithResult(
-      sync_context_->GetFileTaskRunner(), FROM_HERE,
+      sync_context_->GetBlockingTaskRunner(), FROM_HERE,
       base::Bind(&sync_file_system::drive_backend::CreateTemporaryFile,
-                 make_scoped_refptr(sync_context_->GetFileTaskRunner())),
+                 make_scoped_refptr(sync_context_->GetBlockingTaskRunner())),
       base::Bind(&RemoteToLocalSyncer::DidCreateTemporaryFileForDownload,
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
@@ -703,7 +703,7 @@ void RemoteToLocalSyncer::DidDownloadFile(const SyncStatusCallback& callback,
 
   base::FilePath path = file.path();
   base::PostTaskAndReplyWithResult(
-      sync_context_->GetFileTaskRunner(), FROM_HERE,
+      sync_context_->GetBlockingTaskRunner(), FROM_HERE,
       base::Bind(&drive::util::GetMd5Digest, path),
       base::Bind(&RemoteToLocalSyncer::DidCalculateMD5ForDownload,
                  weak_ptr_factory_.GetWeakPtr(),

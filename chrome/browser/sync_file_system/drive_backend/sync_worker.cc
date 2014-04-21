@@ -99,12 +99,10 @@ void SyncWorker::RegisterOrigin(
   scoped_ptr<RegisterAppTask> task(
       new RegisterAppTask(context_.get(), origin.host()));
   if (task->CanFinishImmediately()) {
-    context_->GetUiTaskRunner()->PostTask(
-        FROM_HERE, base::Bind(callback, SYNC_STATUS_OK));
+    callback.Run(SYNC_STATUS_OK);
     return;
   }
 
-  // TODO(peria): Forward |callback| to UI thread.
   task_manager_->ScheduleSyncTask(
       FROM_HERE,
       task.PassAs<SyncTask>(),
@@ -115,7 +113,6 @@ void SyncWorker::RegisterOrigin(
 void SyncWorker::EnableOrigin(
     const GURL& origin,
     const SyncStatusCallback& callback) {
-  // TODO(peria): Forward |callback| to UI thread.
   task_manager_->ScheduleTask(
       FROM_HERE,
       base::Bind(&SyncWorker::DoEnableApp,
@@ -128,7 +125,6 @@ void SyncWorker::EnableOrigin(
 void SyncWorker::DisableOrigin(
     const GURL& origin,
     const SyncStatusCallback& callback) {
-  // TODO(peria): Forward |callback| to UI thread.
   task_manager_->ScheduleTask(
       FROM_HERE,
       base::Bind(&SyncWorker::DoDisableApp,
@@ -142,7 +138,6 @@ void SyncWorker::UninstallOrigin(
     const GURL& origin,
     RemoteFileSyncService::UninstallFlag flag,
     const SyncStatusCallback& callback) {
-  // TODO(peria): Forward |callback| to UI thread.
   task_manager_->ScheduleSyncTask(
       FROM_HERE,
       scoped_ptr<SyncTask>(
@@ -216,9 +211,8 @@ void SyncWorker::SetSyncEnabled(bool enabled) {
   if (old_state == GetCurrentState())
     return;
 
-  context_->GetUiTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&SyncEngine::UpdateSyncEnabled, sync_engine_, enabled));
+  // TODO(peria): PostTask()
+  sync_engine_->UpdateSyncEnabled(enabled);
 }
 
 SyncStatusCode SyncWorker::SetDefaultConflictResolutionPolicy(
@@ -280,9 +274,8 @@ void SyncWorker::NotifyLastOperationStatus(
   UpdateServiceStateFromSyncStatusCode(status, used_network);
 
   if (GetMetadataDatabase()) {
-    context_->GetUiTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(&SyncEngine::NotifyLastOperationStatus, sync_engine_));
+    // TODO(peria): Post task
+    sync_engine_->NotifyLastOperationStatus();
   }
 }
 
@@ -367,22 +360,18 @@ SyncWorker::SyncWorker(
 
 void SyncWorker::DoDisableApp(const std::string& app_id,
                               const SyncStatusCallback& callback) {
-  if (GetMetadataDatabase()) {
+  if (GetMetadataDatabase())
     GetMetadataDatabase()->DisableApp(app_id, callback);
-  } else {
-    context_->GetUiTaskRunner()->PostTask(
-        FROM_HERE, base::Bind(callback, SYNC_STATUS_OK));
-  }
+  else
+    callback.Run(SYNC_STATUS_OK);
 }
 
 void SyncWorker::DoEnableApp(const std::string& app_id,
                              const SyncStatusCallback& callback) {
-  if (GetMetadataDatabase()) {
+  if (GetMetadataDatabase())
     GetMetadataDatabase()->EnableApp(app_id, callback);
-  } else {
-    context_->GetUiTaskRunner()->PostTask(
-        FROM_HERE, base::Bind(callback, SYNC_STATUS_OK));
-  }
+  else
+    callback.Run(SYNC_STATUS_OK);
 }
 
 void SyncWorker::PostInitializeTask() {
@@ -392,15 +381,14 @@ void SyncWorker::PostInitializeTask() {
   // already initialized when it runs.
   SyncEngineInitializer* initializer =
       new SyncEngineInitializer(context_.get(),
-                                context_->GetFileTaskRunner(),
+                                context_->GetBlockingTaskRunner(),
                                 base_dir_.Append(kDatabaseName),
                                 env_override_);
   task_manager_->ScheduleSyncTask(
       FROM_HERE,
       scoped_ptr<SyncTask>(initializer),
       SyncTaskManager::PRIORITY_HIGH,
-      base::Bind(&SyncWorker::DidInitialize,
-                 weak_ptr_factory_.GetWeakPtr(),
+      base::Bind(&SyncWorker::DidInitialize, weak_ptr_factory_.GetWeakPtr(),
                  initializer));
 }
 
@@ -422,9 +410,8 @@ void SyncWorker::DidInitialize(SyncEngineInitializer* initializer,
   if (metadata_database)
     context_->SetMetadataDatabase(metadata_database.Pass());
 
-  context_->GetUiTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&SyncEngine::UpdateRegisteredApps, sync_engine_));
+  // TODO(peria): Post task
+  sync_engine_->UpdateRegisteredApps();
 }
 
 void SyncWorker::DidProcessRemoteChange(RemoteToLocalSyncer* syncer,
@@ -433,15 +420,13 @@ void SyncWorker::DidProcessRemoteChange(RemoteToLocalSyncer* syncer,
   if (syncer->is_sync_root_deletion()) {
     MetadataDatabase::ClearDatabase(context_->PassMetadataDatabase());
     PostInitializeTask();
-    context_->GetUiTaskRunner()->PostTask(
-        FROM_HERE, base::Bind(callback, status, syncer->url()));
+    callback.Run(status, syncer->url());
     return;
   }
 
   if (status == SYNC_STATUS_OK) {
-    context_->GetUiTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(&SyncEngine::DidProcessRemoteChange, sync_engine_, syncer));
+    // TODO(peria): Post task
+    sync_engine_->DidProcessRemoteChange(syncer);
 
     if (syncer->sync_action() == SYNC_ACTION_DELETED &&
         syncer->url().is_valid() &&
@@ -450,16 +435,13 @@ void SyncWorker::DidProcessRemoteChange(RemoteToLocalSyncer* syncer,
     }
     should_check_conflict_ = true;
   }
-
-  context_->GetUiTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(callback, status, syncer->url()));
+  callback.Run(status, syncer->url());
 }
 
 void SyncWorker::DidApplyLocalChange(LocalToRemoteSyncer* syncer,
                                      const SyncStatusCallback& callback,
                                      SyncStatusCode status) {
-  // TODO(peria): PostTask (Simple replace fails DriveBackendSync* tests)
+  // TODO(peria): Post task
   sync_engine_->DidApplyLocalChange(syncer, status);
 
   if (status == SYNC_STATUS_UNKNOWN_ORIGIN && syncer->url().is_valid()) {
@@ -482,11 +464,16 @@ void SyncWorker::DidApplyLocalChange(LocalToRemoteSyncer* syncer,
         base::TimeDelta::FromSeconds(kListChangesRetryDelaySeconds);
   }
 
+  if (status != SYNC_STATUS_OK &&
+      status != SYNC_STATUS_NO_CHANGE_TO_SYNC) {
+    callback.Run(status);
+    return;
+  }
+
   if (status == SYNC_STATUS_OK)
     should_check_conflict_ = true;
 
-  context_->GetUiTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(callback, status));
+  callback.Run(status);
 }
 
 void SyncWorker::MaybeStartFetchChanges() {
@@ -596,10 +583,8 @@ void SyncWorker::UpdateServiceState(RemoteServiceState state,
   util::Log(logging::LOG_VERBOSE, FROM_HERE,
             "Service state changed: %d->%d: %s",
             old_state, GetCurrentState(), description.c_str());
-
-  context_->GetUiTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&SyncEngine::UpdateServiceState, sync_engine_, description));
+  // TODO(peria): Post task
+  sync_engine_->UpdateServiceState(description);
 }
 
 }  // namespace drive_backend

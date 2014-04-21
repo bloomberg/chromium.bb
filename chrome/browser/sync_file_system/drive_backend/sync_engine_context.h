@@ -32,16 +32,14 @@ class SyncEngineContext {
   SyncEngineContext(
       drive::DriveServiceInterface* drive_service,
       drive::DriveUploaderInterface* drive_uploader,
-      base::SequencedTaskRunner* ui_task_runner,
-      base::SequencedTaskRunner* file_task_runner);
+      base::SequencedTaskRunner* task_runner);
   ~SyncEngineContext();
 
   drive::DriveServiceInterface* GetDriveService();
   drive::DriveUploaderInterface* GetDriveUploader();
   MetadataDatabase* GetMetadataDatabase();
   RemoteChangeProcessor* GetRemoteChangeProcessor();
-  base::SequencedTaskRunner* GetUiTaskRunner();
-  base::SequencedTaskRunner* GetFileTaskRunner();
+  base::SequencedTaskRunner* GetBlockingTaskRunner();
 
   void SetMetadataDatabase(scoped_ptr<MetadataDatabase> metadata_database);
   void SetRemoteChangeProcessor(RemoteChangeProcessor* remote_change_processor);
@@ -54,8 +52,7 @@ class SyncEngineContext {
   RemoteChangeProcessor* remote_change_processor_;
 
   scoped_ptr<MetadataDatabase> metadata_database_;
-  scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
-  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncEngineContext);
 };
