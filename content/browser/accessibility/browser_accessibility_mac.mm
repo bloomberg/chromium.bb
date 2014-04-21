@@ -21,11 +21,13 @@ BrowserAccessibilityMac::BrowserAccessibilityMac()
     : browser_accessibility_cocoa_(NULL) {
 }
 
-void BrowserAccessibilityMac::PreInitialize() {
-  BrowserAccessibility::PreInitialize();
+void BrowserAccessibilityMac::OnDataChanged() {
+  BrowserAccessibility::OnDataChanged();
 
-  if (browser_accessibility_cocoa_)
+  if (browser_accessibility_cocoa_) {
+    [browser_accessibility_cocoa_ childrenChanged];
     return;
+  }
 
   // We take ownership of the cocoa obj here.
   BrowserAccessibilityManagerMac* manager =
@@ -49,18 +51,6 @@ void BrowserAccessibilityMac::NativeReleaseReference() {
 
 bool BrowserAccessibilityMac::IsNative() const {
   return true;
-}
-
-void BrowserAccessibilityMac::DetachTree(
-    std::vector<BrowserAccessibility*>* nodes) {
-  [browser_accessibility_cocoa_ childrenChanged];
-  BrowserAccessibility::DetachTree(nodes);
-}
-
-void BrowserAccessibilityMac::SwapChildren(
-    std::vector<BrowserAccessibility*>& children) {
-  [browser_accessibility_cocoa_ childrenChanged];
-  BrowserAccessibility::SwapChildren(children);
 }
 
 BrowserAccessibilityCocoa* BrowserAccessibility::ToBrowserAccessibilityCocoa() {

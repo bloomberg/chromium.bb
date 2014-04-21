@@ -62,11 +62,11 @@ namespace aria_strings {
 
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
-    const ui::AXNodeData& src,
+    const ui::AXTreeUpdate& initial_tree,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory) {
-  return new BrowserAccessibilityManagerAndroid(ScopedJavaLocalRef<jobject>(),
-                                                src, delegate, factory);
+  return new BrowserAccessibilityManagerAndroid(
+      ScopedJavaLocalRef<jobject>(), initial_tree, delegate, factory);
 }
 
 BrowserAccessibilityManagerAndroid*
@@ -76,10 +76,10 @@ BrowserAccessibilityManager::ToBrowserAccessibilityManagerAndroid() {
 
 BrowserAccessibilityManagerAndroid::BrowserAccessibilityManagerAndroid(
     ScopedJavaLocalRef<jobject> content_view_core,
-    const ui::AXNodeData& src,
+    const ui::AXTreeUpdate& initial_tree,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory)
-    : BrowserAccessibilityManager(src, delegate, factory) {
+    : BrowserAccessibilityManager(initial_tree, delegate, factory) {
   SetContentViewCore(content_view_core);
 }
 
@@ -93,12 +93,15 @@ BrowserAccessibilityManagerAndroid::~BrowserAccessibilityManagerAndroid() {
 }
 
 // static
-ui::AXNodeData BrowserAccessibilityManagerAndroid::GetEmptyDocument() {
+ui::AXTreeUpdate BrowserAccessibilityManagerAndroid::GetEmptyDocument() {
   ui::AXNodeData empty_document;
   empty_document.id = 0;
   empty_document.role = ui::AX_ROLE_ROOT_WEB_AREA;
   empty_document.state = 1 << ui::AX_STATE_READ_ONLY;
-  return empty_document;
+
+  ui::AXTreeUpdate update;
+  update.nodes.push_back(empty_document);
+  return update;
 }
 
 void BrowserAccessibilityManagerAndroid::SetContentViewCore(
@@ -133,7 +136,7 @@ void BrowserAccessibilityManagerAndroid::NotifyAccessibilityEvent(
   switch (event_type) {
     case ui::AX_EVENT_LOAD_COMPLETE:
       Java_BrowserAccessibilityManager_handlePageLoaded(
-          env, obj.obj(), focus_->GetId());
+          env, obj.obj(), focus_->id());
       break;
     case ui::AX_EVENT_FOCUS:
       Java_BrowserAccessibilityManager_handleFocusChanged(
@@ -185,22 +188,22 @@ void BrowserAccessibilityManagerAndroid::NotifyAccessibilityEvent(
 }
 
 jint BrowserAccessibilityManagerAndroid::GetRootId(JNIEnv* env, jobject obj) {
-  return static_cast<jint>(root_->GetId());
+  return static_cast<jint>(GetRoot()->GetId());
 }
 
 jboolean BrowserAccessibilityManagerAndroid::IsNodeValid(
     JNIEnv* env, jobject obj, jint id) {
-  return GetFromRendererID(id) != NULL;
+  return GetFromID(id) != NULL;
 }
 
 jint BrowserAccessibilityManagerAndroid::HitTest(
     JNIEnv* env, jobject obj, jint x, jint y) {
   BrowserAccessibilityAndroid* result =
       static_cast<BrowserAccessibilityAndroid*>(
-          root_->BrowserAccessibilityForPoint(gfx::Point(x, y)));
+          GetRoot()->BrowserAccessibilityForPoint(gfx::Point(x, y)));
 
   if (!result)
-    return root_->GetId();
+    return GetRoot()->GetId();
 
   if (result->IsFocusable())
     return result->GetId();
@@ -211,13 +214,13 @@ jint BrowserAccessibilityManagerAndroid::HitTest(
   if (nearest_node)
     return nearest_node->GetId();
 
-  return root_->GetId();
+  return GetRoot()->GetId();
 }
 
 jboolean BrowserAccessibilityManagerAndroid::PopulateAccessibilityNodeInfo(
     JNIEnv* env, jobject obj, jobject info, jint id) {
   BrowserAccessibilityAndroid* node = static_cast<BrowserAccessibilityAndroid*>(
-      GetFromRendererID(id));
+      GetFromID(id));
   if (!node)
     return false;
 
@@ -304,7 +307,7 @@ jboolean BrowserAccessibilityManagerAndroid::PopulateAccessibilityNodeInfo(
 jboolean BrowserAccessibilityManagerAndroid::PopulateAccessibilityEvent(
     JNIEnv* env, jobject obj, jobject event, jint id, jint event_type) {
   BrowserAccessibilityAndroid* node = static_cast<BrowserAccessibilityAndroid*>(
-      GetFromRendererID(id));
+      GetFromID(id));
   if (!node)
     return false;
 
@@ -390,25 +393,25 @@ jboolean BrowserAccessibilityManagerAndroid::PopulateAccessibilityEvent(
 
 void BrowserAccessibilityManagerAndroid::Click(
     JNIEnv* env, jobject obj, jint id) {
-  BrowserAccessibility* node = GetFromRendererID(id);
+  BrowserAccessibility* node = GetFromID(id);
   if (node)
     DoDefaultAction(*node);
 }
 
 void BrowserAccessibilityManagerAndroid::Focus(
     JNIEnv* env, jobject obj, jint id) {
-  BrowserAccessibility* node = GetFromRendererID(id);
+  BrowserAccessibility* node = GetFromID(id);
   if (node)
     SetFocus(node, true);
 }
 
 void BrowserAccessibilityManagerAndroid::Blur(JNIEnv* env, jobject obj) {
-  SetFocus(root_, true);
+  SetFocus(GetRoot(), true);
 }
 
 void BrowserAccessibilityManagerAndroid::ScrollToMakeNodeVisible(
     JNIEnv* env, jobject obj, jint id) {
-  BrowserAccessibility* node = GetFromRendererID(id);
+  BrowserAccessibility* node = GetFromID(id);
   if (node)
     ScrollToMakeVisible(*node, gfx::Rect(node->GetLocation().size()));
 }
@@ -467,7 +470,7 @@ int BrowserAccessibilityManagerAndroid::CalculateDistanceSquared(
 jint BrowserAccessibilityManagerAndroid::FindElementType(
     JNIEnv* env, jobject obj, jint start_id, jstring element_type_str,
     jboolean forwards) {
-  BrowserAccessibility* node = GetFromRendererID(start_id);
+  BrowserAccessibility* node = GetFromID(start_id);
   if (!node)
     return 0;
 
@@ -521,7 +524,7 @@ jint BrowserAccessibilityManagerAndroid::FindElementType(
   return 0;
 }
 
-void BrowserAccessibilityManagerAndroid::OnRootChanged() {
+void BrowserAccessibilityManagerAndroid::OnRootChanged(ui::AXNode* new_root) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())

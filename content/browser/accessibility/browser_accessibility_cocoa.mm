@@ -373,7 +373,7 @@ NSDictionary* attributeToMethodNameMap = nil;
     for (uint32 i = 0; i < indirectChildIds.size(); ++i) {
       int32 child_id = indirectChildIds[i];
       BrowserAccessibility* child =
-          browserAccessibility_->manager()->GetFromRendererID(child_id);
+          browserAccessibility_->manager()->GetFromID(child_id);
 
       // This only became necessary as a result of crbug.com/93095. It should be
       // a DCHECK in the future.
@@ -409,7 +409,7 @@ NSDictionary* attributeToMethodNameMap = nil;
   for (size_t i = 0; i < uniqueCellIds.size(); ++i) {
     int id = uniqueCellIds[i];
     BrowserAccessibility* cell =
-        browserAccessibility_->manager()->GetFromRendererID(id);
+        browserAccessibility_->manager()->GetFromID(id);
     if (cell && cell->GetRole() == ui::AX_ROLE_COLUMN_HEADER)
       [ret addObject:cell->ToBrowserAccessibilityCocoa()];
   }
@@ -537,7 +537,7 @@ NSDictionary* attributeToMethodNameMap = nil;
 
   if (headerElementId > 0) {
     BrowserAccessibility* headerObject =
-        browserAccessibility_->manager()->GetFromRendererID(headerElementId);
+        browserAccessibility_->manager()->GetFromID(headerElementId);
     if (headerObject)
       return headerObject->ToBrowserAccessibilityCocoa();
   }
@@ -587,7 +587,7 @@ NSDictionary* attributeToMethodNameMap = nil;
       browserAccessibility_->GetIntListAttribute(attribute);
   for (size_t i = 0; i < attributeValues.size(); ++i) {
     BrowserAccessibility* element =
-        browserAccessibility_->manager()->GetFromRendererID(attributeValues[i]);
+        browserAccessibility_->manager()->GetFromID(attributeValues[i]);
     if (element)
       [outArray addObject:element->ToBrowserAccessibilityCocoa()];
   }
@@ -770,7 +770,7 @@ NSDictionary* attributeToMethodNameMap = nil;
   for (size_t i = 0; i < uniqueCellIds.size(); ++i) {
     int id = uniqueCellIds[i];
     BrowserAccessibility* cell =
-        browserAccessibility_->manager()->GetFromRendererID(id);
+        browserAccessibility_->manager()->GetFromID(id);
     if (cell && cell->GetRole() == ui::AX_ROLE_ROW_HEADER)
       [ret addObject:cell->ToBrowserAccessibilityCocoa()];
   }
@@ -808,7 +808,7 @@ NSDictionary* attributeToMethodNameMap = nil;
     for (uint32 i = 0; i < indirectChildIds.size(); ++i) {
       int id = indirectChildIds[i];
       BrowserAccessibility* rowElement =
-          browserAccessibility_->manager()->GetFromRendererID(id);
+          browserAccessibility_->manager()->GetFromID(id);
       if (rowElement)
         [ret addObject:rowElement->ToBrowserAccessibilityCocoa()];
     }
@@ -872,7 +872,7 @@ NSDictionary* attributeToMethodNameMap = nil;
   if (browserAccessibility_->GetIntAttribute(
           ui::AX_ATTR_TITLE_UI_ELEMENT, &titleElementId)) {
     BrowserAccessibility* titleElement =
-        browserAccessibility_->manager()->GetFromRendererID(titleElementId);
+        browserAccessibility_->manager()->GetFromID(titleElementId);
     if (titleElement)
       return titleElement->ToBrowserAccessibilityCocoa();
   }
@@ -880,7 +880,7 @@ NSDictionary* attributeToMethodNameMap = nil;
       browserAccessibility_->GetIntListAttribute(ui::AX_ATTR_LABELLEDBY_IDS);
   if (labelledby_ids.size() == 1) {
     BrowserAccessibility* titleElement =
-        browserAccessibility_->manager()->GetFromRendererID(labelledby_ids[0]);
+        browserAccessibility_->manager()->GetFromID(labelledby_ids[0]);
     if (titleElement)
       return titleElement->ToBrowserAccessibilityCocoa();
   }
@@ -984,7 +984,7 @@ NSDictionary* attributeToMethodNameMap = nil;
   for (size_t i = 0; i < uniqueCellIds.size(); ++i) {
     int id = uniqueCellIds[i];
     BrowserAccessibility* cell =
-        browserAccessibility_->manager()->GetFromRendererID(id);
+        browserAccessibility_->manager()->GetFromID(id);
     if (cell)
       [ret addObject:cell->ToBrowserAccessibilityCocoa()];
   }

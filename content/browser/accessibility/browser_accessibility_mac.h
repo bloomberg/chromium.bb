@@ -17,15 +17,10 @@ namespace content {
 
 class BrowserAccessibilityMac : public BrowserAccessibility {
  public:
-  // Implementation of BrowserAccessibility.
-  virtual void PreInitialize() OVERRIDE;
+  // BrowserAccessibility overrides.
   virtual void NativeReleaseReference() OVERRIDE;
   virtual bool IsNative() const OVERRIDE;
-
-  // Overrides from BrowserAccessibility.
-  virtual void DetachTree(std::vector<BrowserAccessibility*>* nodes) OVERRIDE;
-  virtual void SwapChildren(std::vector<BrowserAccessibility*>& children)
-      OVERRIDE;
+  virtual void OnDataChanged() OVERRIDE;
 
   // The BrowserAccessibilityCocoa associated with us.
   BrowserAccessibilityCocoa* native_view() const {

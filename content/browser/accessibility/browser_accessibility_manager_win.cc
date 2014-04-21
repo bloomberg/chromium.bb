@@ -16,12 +16,12 @@ namespace content {
 
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
-    const ui::AXNodeData& src,
+    const ui::AXTreeUpdate& initial_tree,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory) {
   return new BrowserAccessibilityManagerWin(
       content::LegacyRenderWidgetHostHWND::Create(GetDesktopWindow()).get(),
-      NULL, src, delegate, factory);
+      NULL, initial_tree, delegate, factory);
 }
 
 BrowserAccessibilityManagerWin*
@@ -32,10 +32,10 @@ BrowserAccessibilityManager::ToBrowserAccessibilityManagerWin() {
 BrowserAccessibilityManagerWin::BrowserAccessibilityManagerWin(
     LegacyRenderWidgetHostHWND* accessible_hwnd,
     IAccessible* parent_iaccessible,
-    const ui::AXNodeData& src,
+    const ui::AXTreeUpdate& initial_tree,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory)
-    : BrowserAccessibilityManager(src, delegate, factory),
+    : BrowserAccessibilityManager(initial_tree, delegate, factory),
       parent_hwnd_(accessible_hwnd->GetParent()),
       parent_iaccessible_(parent_iaccessible),
       tracked_scroll_object_(NULL),
@@ -53,7 +53,7 @@ BrowserAccessibilityManagerWin::~BrowserAccessibilityManagerWin() {
 }
 
 // static
-ui::AXNodeData BrowserAccessibilityManagerWin::GetEmptyDocument() {
+ui::AXTreeUpdate BrowserAccessibilityManagerWin::GetEmptyDocument() {
   ui::AXNodeData empty_document;
   empty_document.id = 0;
   empty_document.role = ui::AX_ROLE_ROOT_WEB_AREA;
@@ -61,7 +61,10 @@ ui::AXNodeData BrowserAccessibilityManagerWin::GetEmptyDocument() {
       (1 << ui::AX_STATE_ENABLED) |
       (1 << ui::AX_STATE_READ_ONLY) |
       (1 << ui::AX_STATE_BUSY);
-  return empty_document;
+
+  ui::AXTreeUpdate update;
+  update.nodes.push_back(empty_document);
+  return update;
 }
 
 void BrowserAccessibilityManagerWin::MaybeCallNotifyWinEvent(DWORD event,
@@ -81,17 +84,22 @@ void BrowserAccessibilityManagerWin::MaybeCallNotifyWinEvent(DWORD event,
   ::NotifyWinEvent(event, parent_hwnd(), OBJID_CLIENT, child_id);
 }
 
-void BrowserAccessibilityManagerWin::AddNodeToMap(BrowserAccessibility* node) {
-  BrowserAccessibilityManager::AddNodeToMap(node);
-  LONG unique_id_win = node->ToBrowserAccessibilityWin()->unique_id_win();
-  unique_id_to_renderer_id_map_[unique_id_win] = node->GetId();
+
+void BrowserAccessibilityManagerWin::OnNodeCreated(ui::AXNode* node) {
+  BrowserAccessibilityManager::OnNodeCreated(node);
+  BrowserAccessibility* obj = GetFromAXNode(node);
+  LONG unique_id_win = obj->ToBrowserAccessibilityWin()->unique_id_win();
+  unique_id_to_ax_id_map_[unique_id_win] = obj->GetId();
 }
 
-void BrowserAccessibilityManagerWin::RemoveNode(BrowserAccessibility* node) {
-  unique_id_to_renderer_id_map_.erase(
-      node->ToBrowserAccessibilityWin()->unique_id_win());
-  BrowserAccessibilityManager::RemoveNode(node);
-  if (node == tracked_scroll_object_) {
+void BrowserAccessibilityManagerWin::OnNodeWillBeDeleted(ui::AXNode* node) {
+  BrowserAccessibilityManager::OnNodeWillBeDeleted(node);
+  BrowserAccessibility* obj = GetFromAXNode(node);
+  if (!obj)
+    return;
+  unique_id_to_ax_id_map_.erase(
+      obj->ToBrowserAccessibilityWin()->unique_id_win());
+  if (obj == tracked_scroll_object_) {
     tracked_scroll_object_->Release();
     tracked_scroll_object_ = NULL;
   }
@@ -99,16 +107,16 @@ void BrowserAccessibilityManagerWin::RemoveNode(BrowserAccessibility* node) {
 
 void BrowserAccessibilityManagerWin::OnWindowFocused() {
   // Fire a focus event on the root first and then the focused node.
-  if (focus_ != root_)
-    NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, root_);
+  if (focus_ != tree_->GetRoot())
+    NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, GetRoot());
   BrowserAccessibilityManager::OnWindowFocused();
 }
 
 void BrowserAccessibilityManagerWin::OnWindowBlurred() {
   // Fire a blur event on the focused node first and then the root.
   BrowserAccessibilityManager::OnWindowBlurred();
-  if (focus_ != root_)
-    NotifyAccessibilityEvent(ui::AX_EVENT_BLUR, root_);
+  if (focus_ != tree_->GetRoot())
+    NotifyAccessibilityEvent(ui::AX_EVENT_BLUR, GetRoot());
 }
 
 void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
@@ -221,9 +229,9 @@ void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
   }
 }
 
-void BrowserAccessibilityManagerWin::OnRootChanged() {
+void BrowserAccessibilityManagerWin::OnRootChanged(ui::AXNode* new_root) {
   if (delegate_ && delegate_->HasFocus())
-    NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, root_);
+    NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, GetRoot());
 }
 
 void BrowserAccessibilityManagerWin::TrackScrollingObject(
@@ -237,9 +245,9 @@ void BrowserAccessibilityManagerWin::TrackScrollingObject(
 BrowserAccessibilityWin* BrowserAccessibilityManagerWin::GetFromUniqueIdWin(
     LONG unique_id_win) {
   base::hash_map<LONG, int32>::iterator iter =
-      unique_id_to_renderer_id_map_.find(unique_id_win);
-  if (iter != unique_id_to_renderer_id_map_.end()) {
-    BrowserAccessibility* result = GetFromRendererID(iter->second);
+      unique_id_to_ax_id_map_.find(unique_id_win);
+  if (iter != unique_id_to_ax_id_map_.end()) {
+    BrowserAccessibility* result = GetFromID(iter->second);
     if (result)
       return result->ToBrowserAccessibilityWin();
   }

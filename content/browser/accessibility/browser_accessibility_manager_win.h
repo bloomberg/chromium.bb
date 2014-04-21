@@ -23,13 +23,13 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   BrowserAccessibilityManagerWin(
       content::LegacyRenderWidgetHostHWND* accessible_hwnd,
       IAccessible* parent_iaccessible,
-      const ui::AXNodeData& src,
+      const ui::AXTreeUpdate& initial_tree,
       BrowserAccessibilityDelegate* delegate,
       BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
 
   virtual ~BrowserAccessibilityManagerWin();
 
-  static ui::AXNodeData GetEmptyDocument();
+  static ui::AXTreeUpdate GetEmptyDocument();
 
   // Get the closest containing HWND.
   HWND parent_hwnd() { return parent_hwnd_; }
@@ -43,9 +43,11 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   // Calls NotifyWinEvent if the parent window's IAccessible pointer is known.
   void MaybeCallNotifyWinEvent(DWORD event, LONG child_id);
 
+  // AXTree methods
+  virtual void OnNodeWillBeDeleted(ui::AXNode* node) OVERRIDE;
+  virtual void OnNodeCreated(ui::AXNode* node) OVERRIDE;
+
   // BrowserAccessibilityManager methods
-  virtual void AddNodeToMap(BrowserAccessibility* node);
-  virtual void RemoveNode(BrowserAccessibility* node) OVERRIDE;
   virtual void OnWindowFocused() OVERRIDE;
   virtual void OnWindowBlurred() OVERRIDE;
   virtual void NotifyAccessibilityEvent(
@@ -65,7 +67,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
 
  protected:
   // BrowserAccessibilityManager methods
-  virtual void OnRootChanged() OVERRIDE;
+  virtual void OnRootChanged(ui::AXNode* new_root) OVERRIDE;
 
  private:
   // The closest ancestor HWND.
@@ -83,8 +85,8 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   BrowserAccessibilityWin* tracked_scroll_object_;
 
   // A mapping from the Windows-specific unique IDs (unique within the
-  // browser process) to renderer ids within this page.
-  base::hash_map<long, int32> unique_id_to_renderer_id_map_;
+  // browser process) to accessibility ids within this page.
+  base::hash_map<long, int32> unique_id_to_ax_id_map_;
 
   // Owned by its parent; OnAccessibleHwndDeleted gets called upon deletion.
   LegacyRenderWidgetHostHWND* accessible_hwnd_;

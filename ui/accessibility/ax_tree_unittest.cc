@@ -28,18 +28,31 @@ class FakeAXTreeDelegate : public AXTreeDelegate {
     changed_ids_.push_back(node->id());
   }
 
+  virtual void OnNodeCreationFinished(AXNode* node) OVERRIDE {
+    creation_finished_ids_.push_back(node->id());
+  }
+
+  virtual void OnNodeChangeFinished(AXNode* node) OVERRIDE {
+    change_finished_ids_.push_back(node->id());
+  }
+
   virtual void OnRootChanged(AXNode* new_root) OVERRIDE {
     new_root_ids_.push_back(new_root->id());
   }
 
   const std::vector<int32>& deleted_ids() { return deleted_ids_; }
   const std::vector<int32>& created_ids() { return created_ids_; }
+  const std::vector<int32>& creation_finished_ids() {
+    return creation_finished_ids_;
+  }
   const std::vector<int32>& new_root_ids() { return new_root_ids_; }
 
  private:
   std::vector<int32> deleted_ids_;
   std::vector<int32> created_ids_;
+  std::vector<int32> creation_finished_ids_;
   std::vector<int32> changed_ids_;
+  std::vector<int32> change_finished_ids_;
   std::vector<int32> new_root_ids_;
 };
 
@@ -271,6 +284,10 @@ TEST(AXTreeTest, TreeDelegateIsCalled) {
   ASSERT_EQ(2U, fake_delegate.created_ids().size());
   EXPECT_EQ(2, fake_delegate.created_ids()[0]);
   EXPECT_EQ(3, fake_delegate.created_ids()[1]);
+
+  ASSERT_EQ(2U, fake_delegate.creation_finished_ids().size());
+  EXPECT_EQ(2, fake_delegate.creation_finished_ids()[0]);
+  EXPECT_EQ(3, fake_delegate.creation_finished_ids()[1]);
 
   ASSERT_EQ(1U, fake_delegate.new_root_ids().size());
   EXPECT_EQ(2, fake_delegate.new_root_ids()[0]);

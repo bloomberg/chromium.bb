@@ -141,8 +141,8 @@ TEST_F(BrowserAccessibilityTest, TestNoLeaks) {
   CountedBrowserAccessibility::reset();
   scoped_ptr<BrowserAccessibilityManager> manager(
       BrowserAccessibilityManager::Create(
-          root, NULL, new CountedBrowserAccessibilityFactory()));
-  manager->UpdateNodesForTesting(button, checkbox);
+          MakeAXTreeUpdate(root, button, checkbox),
+          NULL, new CountedBrowserAccessibilityFactory()));
   ASSERT_EQ(3, CountedBrowserAccessibility::num_instances());
 
   // Delete the manager and test that all 3 instances are deleted.
@@ -152,8 +152,8 @@ TEST_F(BrowserAccessibilityTest, TestNoLeaks) {
   // Construct a manager again, and this time use the IAccessible interface
   // to get new references to two of the three nodes in the tree.
   manager.reset(BrowserAccessibilityManager::Create(
-      root, NULL, new CountedBrowserAccessibilityFactory()));
-  manager->UpdateNodesForTesting(button, checkbox);
+      MakeAXTreeUpdate(root, button, checkbox),
+      NULL, new CountedBrowserAccessibilityFactory()));
   ASSERT_EQ(3, CountedBrowserAccessibility::num_instances());
   IAccessible* root_accessible =
       manager->GetRoot()->ToBrowserAccessibilityWin();
@@ -202,8 +202,8 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChange) {
   CountedBrowserAccessibility::reset();
   scoped_ptr<BrowserAccessibilityManager> manager(
       BrowserAccessibilityManager::Create(
-          root, NULL, new CountedBrowserAccessibilityFactory()));
-  manager->UpdateNodesForTesting(text);
+          MakeAXTreeUpdate(root, text),
+          NULL, new CountedBrowserAccessibilityFactory()));
 
   // Query for the text IAccessible and verify that it returns "old text" as its
   // value.
@@ -298,8 +298,8 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChangeNoLeaks) {
   CountedBrowserAccessibility::reset();
   scoped_ptr<BrowserAccessibilityManager> manager(
       BrowserAccessibilityManager::Create(
-          root, NULL, new CountedBrowserAccessibilityFactory()));
-  manager->UpdateNodesForTesting(div, text3, text4);
+          MakeAXTreeUpdate(root, div, text3, text4),
+          NULL, new CountedBrowserAccessibilityFactory()));
   ASSERT_EQ(4, CountedBrowserAccessibility::num_instances());
 
   // Notify the BrowserAccessibilityManager that the div node and its children
@@ -342,8 +342,8 @@ TEST_F(BrowserAccessibilityTest, TestTextBoundaries) {
   CountedBrowserAccessibility::reset();
   scoped_ptr<BrowserAccessibilityManager> manager(
       BrowserAccessibilityManager::Create(
-          root, NULL, new CountedBrowserAccessibilityFactory()));
-  manager->UpdateNodesForTesting(text1);
+          MakeAXTreeUpdate(root, text1),
+          NULL, new CountedBrowserAccessibilityFactory()));
   ASSERT_EQ(2, CountedBrowserAccessibility::num_instances());
 
   BrowserAccessibilityWin* root_obj =
@@ -442,8 +442,8 @@ TEST_F(BrowserAccessibilityTest, TestSimpleHypertext) {
   CountedBrowserAccessibility::reset();
   scoped_ptr<BrowserAccessibilityManager> manager(
       BrowserAccessibilityManager::Create(
-          root, NULL, new CountedBrowserAccessibilityFactory()));
-  manager->UpdateNodesForTesting(root, text1, text2);
+          MakeAXTreeUpdate(root, root, text1, text2),
+          NULL, new CountedBrowserAccessibilityFactory()));
   ASSERT_EQ(3, CountedBrowserAccessibility::num_instances());
 
   BrowserAccessibilityWin* root_obj =
@@ -532,11 +532,10 @@ TEST_F(BrowserAccessibilityTest, TestComplexHypertext) {
   CountedBrowserAccessibility::reset();
   scoped_ptr<BrowserAccessibilityManager> manager(
       BrowserAccessibilityManager::Create(
-          root, NULL, new CountedBrowserAccessibilityFactory()));
-  manager->UpdateNodesForTesting(root,
-                                 text1, button1, button1_text,
-                                 text2, link1, link1_text);
-
+          MakeAXTreeUpdate(root,
+                           text1, button1, button1_text,
+                           text2, link1, link1_text),
+          NULL, new CountedBrowserAccessibilityFactory()));
   ASSERT_EQ(7, CountedBrowserAccessibility::num_instances());
 
   BrowserAccessibilityWin* root_obj =
@@ -643,7 +642,7 @@ TEST_F(BrowserAccessibilityTest, TestCreateEmptyDocument) {
   manager->OnAccessibilityEvents(params);
 
   // Save for later comparison.
-  BrowserAccessibility* acc1_2 = manager->GetFromRendererID(2);
+  BrowserAccessibility* acc1_2 = manager->GetFromID(2);
 
   // Verify the root has changed.
   EXPECT_NE(root, manager->GetRoot());
@@ -670,7 +669,7 @@ TEST_F(BrowserAccessibilityTest, TestCreateEmptyDocument) {
   // Fire another load complete.
   manager->OnAccessibilityEvents(params);
 
-  BrowserAccessibility* acc2_2 = manager->GetFromRendererID(3);
+  BrowserAccessibility* acc2_2 = manager->GetFromID(3);
 
   // Verify the root has changed.
   EXPECT_NE(root, manager->GetRoot());

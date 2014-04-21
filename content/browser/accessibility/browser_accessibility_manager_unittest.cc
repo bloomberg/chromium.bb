@@ -128,10 +128,9 @@ TEST(BrowserAccessibilityManagerTest, TestNoLeaks) {
   CountedBrowserAccessibility::global_obj_count_ = 0;
   BrowserAccessibilityManager* manager =
       BrowserAccessibilityManager::Create(
-          root,
+          MakeAXTreeUpdate(root, button, checkbox),
           NULL,
           new CountedBrowserAccessibilityFactory());
-  manager->UpdateNodesForTesting(button, checkbox);
 
   ASSERT_EQ(3, CountedBrowserAccessibility::global_obj_count_);
 
@@ -143,10 +142,9 @@ TEST(BrowserAccessibilityManagerTest, TestNoLeaks) {
   // the three nodes in the tree.
   manager =
       BrowserAccessibilityManager::Create(
-          root,
+          MakeAXTreeUpdate(root, button, checkbox),
           NULL,
           new CountedBrowserAccessibilityFactory());
-  manager->UpdateNodesForTesting(button, checkbox);
   ASSERT_EQ(3, CountedBrowserAccessibility::global_obj_count_);
 
   CountedBrowserAccessibility* root_accessible =
@@ -234,10 +232,10 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects) {
   CountedBrowserAccessibility::global_obj_count_ = 0;
   BrowserAccessibilityManager* manager =
       BrowserAccessibilityManager::Create(
-          tree1_root,
+          MakeAXTreeUpdate(tree1_root,
+                           tree1_child1, tree1_child2, tree1_child3),
           NULL,
           new CountedBrowserAccessibilityFactory());
-  manager->UpdateNodesForTesting(tree1_child1, tree1_child2, tree1_child3);
   ASSERT_EQ(4, CountedBrowserAccessibility::global_obj_count_);
 
   // Save references to all of the objects.
@@ -408,13 +406,12 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects2) {
   CountedBrowserAccessibility::global_obj_count_ = 0;
   BrowserAccessibilityManager* manager =
       BrowserAccessibilityManager::Create(
-          tree1_root,
+          MakeAXTreeUpdate(tree1_root, tree1_container,
+                           tree1_child1, tree1_grandchild1,
+                           tree1_child2, tree1_grandchild2,
+                           tree1_child3, tree1_grandchild3),
           NULL,
           new CountedBrowserAccessibilityFactory());
-  manager->UpdateNodesForTesting(tree1_container,
-                                 tree1_child1, tree1_grandchild1,
-                                 tree1_child2, tree1_grandchild2,
-                                 tree1_child3, tree1_grandchild3);
   ASSERT_EQ(8, CountedBrowserAccessibility::global_obj_count_);
 
   // Save references to some objects.
@@ -540,10 +537,9 @@ TEST(BrowserAccessibilityManagerTest, TestMoveChildUp) {
   CountedBrowserAccessibility::global_obj_count_ = 0;
   BrowserAccessibilityManager* manager =
       BrowserAccessibilityManager::Create(
-          tree1_1,
+          MakeAXTreeUpdate(tree1_1, tree1_2, tree1_3, tree1_4),
           NULL,
           new CountedBrowserAccessibilityFactory());
-  manager->UpdateNodesForTesting(tree1_2, tree1_3, tree1_4);
   ASSERT_EQ(4, CountedBrowserAccessibility::global_obj_count_);
 
   // Process a notification containing the changed subtree.
@@ -566,13 +562,7 @@ TEST(BrowserAccessibilityManagerTest, TestMoveChildUp) {
   ASSERT_EQ(0, CountedBrowserAccessibility::global_obj_count_);
 }
 
-// Crashes on Windows. http://crbug.com/304130
-#if defined(OS_WIN)
-#define MAYBE_TestFatalError DISABLED_TestFatalError
-#else
-#define MAYBE_TestFatalError TestFatalError
-#endif
-TEST(BrowserAccessibilityManagerTest, MAYBE_TestFatalError) {
+TEST(BrowserAccessibilityManagerTest, TestFatalError) {
   // Test that BrowserAccessibilityManager raises a fatal error
   // (which will crash the renderer) if the same id is used in
   // two places in the tree.
@@ -590,7 +580,7 @@ TEST(BrowserAccessibilityManagerTest, MAYBE_TestFatalError) {
   scoped_ptr<BrowserAccessibilityManager> manager;
   ASSERT_FALSE(delegate->got_fatal_error());
   manager.reset(BrowserAccessibilityManager::Create(
-      root,
+      MakeAXTreeUpdate(root),
       delegate.get(),
       factory));
   ASSERT_TRUE(delegate->got_fatal_error());
@@ -611,14 +601,22 @@ TEST(BrowserAccessibilityManagerTest, MAYBE_TestFatalError) {
   child2.child_ids.push_back(6);
   child2.child_ids.push_back(5);  // Duplicate
 
+  ui::AXNodeData grandchild4;
+  grandchild4.id = 4;
+
+  ui::AXNodeData grandchild5;
+  grandchild5.id = 5;
+
+  ui::AXNodeData grandchild6;
+  grandchild6.id = 6;
+
   delegate->reset_got_fatal_error();
   factory = new CountedBrowserAccessibilityFactory();
   manager.reset(BrowserAccessibilityManager::Create(
-      root2,
+      MakeAXTreeUpdate(root2, child1, child2,
+                       grandchild4, grandchild5, grandchild6),
       delegate.get(),
       factory));
-  ASSERT_FALSE(delegate->got_fatal_error());
-  manager->UpdateNodesForTesting(child1, child2);
   ASSERT_TRUE(delegate->got_fatal_error());
 }
 
@@ -673,10 +671,9 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRange) {
 
   scoped_ptr<BrowserAccessibilityManager> manager(
       BrowserAccessibilityManager::Create(
-          root,
+          MakeAXTreeUpdate(root, static_text, inline_text1, inline_text2),
           NULL,
           new CountedBrowserAccessibilityFactory()));
-  manager->UpdateNodesForTesting(static_text, inline_text1, inline_text2);
 
   BrowserAccessibility* root_accessible = manager->GetRoot();
   BrowserAccessibility* static_text_accessible =
@@ -762,10 +759,9 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRangeBiDi) {
 
   scoped_ptr<BrowserAccessibilityManager> manager(
       BrowserAccessibilityManager::Create(
-          root,
+          MakeAXTreeUpdate(root, static_text, inline_text1, inline_text2),
           NULL,
           new CountedBrowserAccessibilityFactory()));
-  manager->UpdateNodesForTesting(static_text, inline_text1, inline_text2);
 
   BrowserAccessibility* root_accessible = manager->GetRoot();
   BrowserAccessibility* static_text_accessible =
@@ -859,12 +855,11 @@ TEST(BrowserAccessibilityManagerTest, MAYBE_BoundsForRangeOnParentElement) {
 
   scoped_ptr<BrowserAccessibilityManager> manager(
       BrowserAccessibilityManager::Create(
-          root,
+          MakeAXTreeUpdate(
+              root, div, static_text1, img,
+              static_text2, inline_text1, inline_text2),
           NULL,
           new CountedBrowserAccessibilityFactory()));
-  manager->UpdateNodesForTesting(
-      div, static_text1, img, static_text2, inline_text1, inline_text2);
-
   BrowserAccessibility* root_accessible = manager->GetRoot();
 
   EXPECT_EQ(gfx::Rect(100, 100, 20, 20).ToString(),
@@ -909,10 +904,9 @@ TEST(BrowserAccessibilityManagerTest, NextPreviousInTreeOrder) {
 
   scoped_ptr<BrowserAccessibilityManager> manager(
       BrowserAccessibilityManager::Create(
-          root,
+          MakeAXTreeUpdate(root, node2, node3, node4, node5),
           NULL,
           new CountedBrowserAccessibilityFactory()));
-  manager->UpdateNodesForTesting(node2, node3, node4, node5);
 
   BrowserAccessibility* root_accessible = manager->GetRoot();
   BrowserAccessibility* node2_accessible = root_accessible->PlatformGetChild(0);

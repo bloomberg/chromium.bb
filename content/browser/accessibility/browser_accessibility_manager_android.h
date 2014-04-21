@@ -21,13 +21,13 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
  public:
   BrowserAccessibilityManagerAndroid(
       base::android::ScopedJavaLocalRef<jobject> content_view_core,
-      const ui::AXNodeData& src,
+      const ui::AXTreeUpdate& initial_tree,
       BrowserAccessibilityDelegate* delegate,
       BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
 
   virtual ~BrowserAccessibilityManagerAndroid();
 
-  static ui::AXNodeData GetEmptyDocument();
+  static ui::AXTreeUpdate GetEmptyDocument();
 
   void SetContentViewCore(
       base::android::ScopedJavaLocalRef<jobject> content_view_core);
@@ -66,7 +66,8 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
                        jstring element_type, jboolean forwards);
 
  protected:
-  virtual void OnRootChanged() OVERRIDE;
+  // AXTreeDelegate overrides.
+  virtual void OnRootChanged(ui::AXNode* new_root) OVERRIDE;
 
   virtual bool UseRootScrollOffsetsWhenComputingBounds() OVERRIDE;
 
