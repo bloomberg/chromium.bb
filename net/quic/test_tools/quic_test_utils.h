@@ -193,6 +193,7 @@ class MockConnectionVisitor : public QuicConnectionVisitorInterface {
   MOCK_METHOD0(OnCanWrite, void());
   MOCK_CONST_METHOD0(HasPendingWrites, bool());
   MOCK_CONST_METHOD0(HasPendingHandshake, bool());
+  MOCK_CONST_METHOD0(HasOpenDataStreams, bool());
   MOCK_METHOD1(OnSuccessfulVersionNegotiation,
                void(const QuicVersion& version));
   MOCK_METHOD0(OnConfigNegotiated, void());

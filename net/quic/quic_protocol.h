@@ -110,6 +110,9 @@ const int64 kDefaultInitialTimeoutSecs = 120;  // 2 mins.
 const int64 kDefaultTimeoutSecs = 60 * 10;  // 10 minutes.
 const int64 kDefaultMaxTimeForCryptoHandshakeSecs = 5;  // 5 secs.
 
+// Default ping timeout.
+const int64 kPingTimeoutSecs = 15;  // 15 secs.
+
 // We define an unsigned 16-bit floating point value, inspired by IEEE floats
 // (http://en.wikipedia.org/wiki/Half_precision_floating-point_format),
 // with 5-bit exponent (bias 1), 11-bit mantissa (effective 12 with hidden

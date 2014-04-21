@@ -520,6 +520,16 @@ class TestConnection : public QuicConnection {
         QuicConnectionPeer::GetAckAlarm(this));
   }
 
+  TestConnectionHelper::TestAlarm* GetPingAlarm() {
+    return reinterpret_cast<TestConnectionHelper::TestAlarm*>(
+        QuicConnectionPeer::GetPingAlarm(this));
+  }
+
+  TestConnectionHelper::TestAlarm* GetResumeWritesAlarm() {
+    return reinterpret_cast<TestConnectionHelper::TestAlarm*>(
+        QuicConnectionPeer::GetResumeWritesAlarm(this));
+  }
+
   TestConnectionHelper::TestAlarm* GetRetransmissionAlarm() {
     return reinterpret_cast<TestConnectionHelper::TestAlarm*>(
         QuicConnectionPeer::GetRetransmissionAlarm(this));
@@ -528,11 +538,6 @@ class TestConnection : public QuicConnection {
   TestConnectionHelper::TestAlarm* GetSendAlarm() {
     return reinterpret_cast<TestConnectionHelper::TestAlarm*>(
         QuicConnectionPeer::GetSendAlarm(this));
-  }
-
-  TestConnectionHelper::TestAlarm* GetResumeWritesAlarm() {
-    return reinterpret_cast<TestConnectionHelper::TestAlarm*>(
-        QuicConnectionPeer::GetResumeWritesAlarm(this));
   }
 
   TestConnectionHelper::TestAlarm* GetTimeoutAlarm() {
@@ -606,6 +611,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<QuicVersion> {
     EXPECT_CALL(visitor_, HasPendingWrites()).Times(AnyNumber());
     EXPECT_CALL(visitor_, HasPendingHandshake()).Times(AnyNumber());
     EXPECT_CALL(visitor_, OnCanWrite()).Times(AnyNumber());
+    EXPECT_CALL(visitor_, HasOpenDataStreams()).WillRepeatedly(Return(false));
 
     EXPECT_CALL(*loss_algorithm_, GetLossTimeout())
         .WillRepeatedly(Return(QuicTime::Zero()));
@@ -2643,10 +2649,53 @@ TEST_P(QuicConnectionTest, InitialTimeout) {
   EXPECT_FALSE(connection_.connected());
 
   EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
+  EXPECT_FALSE(connection_.GetPingAlarm()->IsSet());
   EXPECT_FALSE(connection_.GetResumeWritesAlarm()->IsSet());
   EXPECT_FALSE(connection_.GetRetransmissionAlarm()->IsSet());
   EXPECT_FALSE(connection_.GetSendAlarm()->IsSet());
   EXPECT_FALSE(connection_.GetTimeoutAlarm()->IsSet());
+}
+
+TEST_P(QuicConnectionTest, PingAfterSend) {
+  EXPECT_TRUE(connection_.connected());
+  EXPECT_CALL(visitor_, HasOpenDataStreams()).WillRepeatedly(Return(true));
+  EXPECT_FALSE(connection_.GetPingAlarm()->IsSet());
+
+  // Advance to 5ms, and send a packet to the peer, which will set
+  // the ping alarm.
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(5));
+  EXPECT_FALSE(connection_.GetRetransmissionAlarm()->IsSet());
+  SendStreamDataToPeer(1, "GET /", 0, kFin, NULL);
+  EXPECT_TRUE(connection_.GetPingAlarm()->IsSet());
+  EXPECT_EQ(clock_.ApproximateNow().Add(QuicTime::Delta::FromSeconds(15)),
+            connection_.GetPingAlarm()->deadline());
+
+  // Now recevie and ACK of the previous packet, which will move the
+  // ping alarm forward.
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(5));
+  QuicAckFrame frame = InitAckFrame(1, 0);
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
+  EXPECT_CALL(*send_algorithm_, OnPacketAcked(1, _));
+  ProcessAckPacket(&frame);
+  EXPECT_TRUE(connection_.GetPingAlarm()->IsSet());
+  EXPECT_EQ(clock_.ApproximateNow().Add(QuicTime::Delta::FromSeconds(15)),
+            connection_.GetPingAlarm()->deadline());
+
+  writer_->Reset();
+  clock_.AdvanceTime(QuicTime::Delta::FromSeconds(15));
+  connection_.GetPingAlarm()->Fire();
+  EXPECT_EQ(1u, writer_->frame_count());
+  ASSERT_EQ(1u, writer_->stream_frames().size());
+  EXPECT_EQ(kCryptoStreamId, writer_->stream_frames()[0].stream_id);
+  EXPECT_EQ(0u, writer_->stream_frames()[0].offset);
+  writer_->Reset();
+
+  EXPECT_CALL(visitor_, HasOpenDataStreams()).WillRepeatedly(Return(false));
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(5));
+  SendAckPacketToPeer();
+
+  EXPECT_FALSE(connection_.GetPingAlarm()->IsSet());
 }
 
 TEST_P(QuicConnectionTest, TimeoutAfterSend) {

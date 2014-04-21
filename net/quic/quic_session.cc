@@ -86,6 +86,10 @@ class VisitorShim : public QuicConnectionVisitorInterface {
     return session_->HasPendingHandshake();
   }
 
+  virtual bool HasOpenDataStreams() const OVERRIDE {
+    return session_->HasOpenDataStreams();
+  }
+
  private:
   QuicSession* session_;
 };
@@ -299,6 +303,10 @@ bool QuicSession::HasPendingWrites() const {
 
 bool QuicSession::HasPendingHandshake() const {
   return has_pending_handshake_;
+}
+
+bool QuicSession::HasOpenDataStreams() const {
+  return GetNumOpenStreams() > 0;
 }
 
 QuicConsumedData QuicSession::WritevData(
