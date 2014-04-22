@@ -12,7 +12,6 @@ from telemetry.page import page_test
 class RasterizeAndRecordMicro(page_measurement.PageMeasurement):
   def __init__(self):
     super(RasterizeAndRecordMicro, self).__init__('', True)
-    self._compositing_features_enabled = False
     self._chrome_branch_number = None
 
   @classmethod
@@ -56,19 +55,7 @@ class RasterizeAndRecordMicro(page_measurement.PageMeasurement):
           'rasterize_and_record_micro requires Chrome branch 1713 '
           'or later. Skipping measurement.')
 
-    # Check if the we actually have threaded forced compositing enabled.
-    system_info = browser.GetSystemInfo()
-    if (system_info.gpu.feature_status
-        and system_info.gpu.feature_status.get(
-            'compositing', None) == 'enabled_force_threaded'):
-      self._compositing_features_enabled = True
-
   def MeasurePage(self, page, tab, results):
-    if not self._compositing_features_enabled:
-      raise page_test.TestNotSupportedOnPlatformFailure(
-          'Compositing feature status unknown or not '+
-          'forced and threaded. Skipping measurement.')
-
     try:
       tab.WaitForJavaScriptExpression("document.readyState == 'complete'", 10)
     except TimeoutException:
