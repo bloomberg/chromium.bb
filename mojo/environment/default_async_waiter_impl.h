@@ -6,7 +6,7 @@
 #define MOJO_ENVIRONMENT_DEFAULT_ASYNC_WAITER_IMPL_H_
 
 #include "mojo/environment/mojo_environment_impl_export.h"
-#include "mojo/public/c/system/async_waiter.h"
+#include "mojo/public/c/environment/async_waiter.h"
 
 namespace mojo {
 namespace internal {

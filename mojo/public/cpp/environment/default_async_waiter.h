@@ -5,7 +5,7 @@
 #ifndef MOJO_PUBLIC_CPP_ENVIRONMENT_DEFAULT_ASYNC_WAITER_H_
 #define MOJO_PUBLIC_CPP_ENVIRONMENT_DEFAULT_ASYNC_WAITER_H_
 
-#include "mojo/public/c/system/async_waiter.h"
+#include "mojo/public/c/environment/async_waiter.h"
 
 namespace mojo {
 

@@ -1,62 +1,43 @@
 Mojo Public API
 ===============
 
-The Mojo Public API is a binary stable API to the Mojo system. There are
-several components to the API:
+The Mojo Public API is a binary stable API to the Mojo system.
 
-Bindings
+It consists of support for a number of programming languages (with a directory
+for each support language), some "build" tools and build-time requirements, and
+interface definitions for Mojo services (specified using an IDL).
+
+Note that there are various subdirectories named tests/. These contain tests of
+the code in the enclosing directory, and are not meant for use by Mojo
+applications.
+
+C/CPP/JS
 --------
 
-This directory contains a static library that clients may link into their
-binary. The contents of this directory are not binary stable as each client is
-free to use whichever version they prefer.
+The c/, cpp/, js/ subdirectories define the API for C, C++, and JavaScript,
+respectively.
 
-This directory also contains a compiler that translates mojom interface
-definition files into idiomatic bindings for various languages, including
-C++ and JavaScript. Clients are expected to statically link with the generated
-code, which reads and writes the binary stable IPC message format.
+The basic principle for these directories is that they consist of the source
+files that one needs at build/deployment/run time (as appropriate for the
+language), organized in a natural way for the particular language.
 
-Environment
------------
+Interfaces
+----------
 
-This directory contains a static library that clients may link into their
-binary. The contents of this directory are not binary stable as each client is
-free to use whichever version they prefer.
+The interfaces/ subdirectory contains Mojo IDL (a.k.a. .mojom) descriptions of
+standard Mojo services.
 
-The environment static library represents the shared state that is needed to
-support the Bindings and GLES2 libraries. It depends on the Utility library.
+Platform
+--------
 
-GLES2
+The platform/ subdirectory contains any build-time requirements (e.g., static
+libraries) that may be needed to produce a Mojo application for certain
+platforms, such as a native shared library or as a NaCl binary.
+
+Tools
 -----
 
-The IPC protocol used to communicate between Mojo client and the GLES2
-service is not binary stable. To insulate themselves from changes in this
-protocol, clients are expected to link dynamically against the standard GLES2
-headers from Khronos and the headers in this directory, which provide an
-adaptor between the GLES2 C API and the underlying IPC protocol.
-
-System
-------
-
-This directory defines the interface between Mojo clients and the Mojo IPC
-system. Although the Mojo IPC message format is binary stable, the mechanism
-by which these messages are transported is not stable. To insulate themselves
-from changes in the underlying transport, clients are expected to link against
-these headers dynamically.
-
-Tests
------
-
-This directory contains tests for code contained in the public API. Mojo
-clients are expected to ignore this directory.
-
-Utility
--------
-
-This directory contains a static library that clients may link into their
-binary. The contents of this directory are not binary stable as each client is
-free to use whichever version they prefer.
-
-The Utility static library most notably defines an implementation of a RunLoop
-based on the MojoWaitMany that clients may use as the basis for asynchronous
-message processing.
+The tools/ subdirectory contains tools that are useful/necessary at
+build/deployment time. These tools may be needed (as a practical necessity) to
+use the API in any given language, e.g., to generate bindings from Mojo IDL
+files.
