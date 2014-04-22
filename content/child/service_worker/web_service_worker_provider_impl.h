@@ -37,6 +37,7 @@ class WebServiceWorkerProviderImpl
                                        WebServiceWorkerCallbacks*);
 
  private:
+  void RemoveScriptClient();
   ServiceWorkerDispatcher* GetDispatcher();
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;

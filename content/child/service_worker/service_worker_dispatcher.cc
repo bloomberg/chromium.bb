@@ -39,6 +39,13 @@ ServiceWorkerDispatcher::ServiceWorkerDispatcher(
 }
 
 ServiceWorkerDispatcher::~ServiceWorkerDispatcher() {
+  for (ScriptClientMap::iterator it = script_clients_.begin();
+       it != script_clients_.end();
+       ++it) {
+    Send(new ServiceWorkerHostMsg_RemoveScriptClient(
+        CurrentWorkerId(), it->first));
+  }
+
   g_dispatcher_tls.Pointer()->Set(kHasBeenDeleted);
 }
 
