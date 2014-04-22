@@ -30,8 +30,7 @@ namespace media {
 class FakeVideoDecoder : public VideoDecoder {
  public:
   // Constructs an object with a decoding delay of |decoding_delay| frames.
-  explicit FakeVideoDecoder(int decoding_delay,
-                            bool supports_get_decode_output);
+  FakeVideoDecoder(int decoding_delay, bool supports_get_decode_output);
   virtual ~FakeVideoDecoder();
 
   // VideoDecoder implementation.
