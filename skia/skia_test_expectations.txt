@@ -55,4 +55,8 @@ crbug.com/344497 [ Win ] virtual/deferred/fast/images/webp-color-profile-lossy.h
 crbug.com/356644 fast/canvas/image-pattern-rotate.html [ ImageOnlyFailure ]
 crbug.com/356644 virtual/gpu/fast/canvas/image-object-in-canvas.html [ ImageOnlyFailure ]
 
+# Roll to 14271+ cases negligible changes to SkTwoPtConicalGradient.
+crbug.com/365698 fast/gradients/radial-centered.html [ ImageOnlyFailure ]
+crbug.com/365698 svg/custom/radialGradient-focal-radius.svg [ ImageOnlyFailure ]
+
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
