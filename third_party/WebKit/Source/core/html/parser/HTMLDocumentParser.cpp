@@ -475,6 +475,10 @@ void HTMLDocumentParser::processParsedChunkFromBackgroundParser(PassOwnPtr<Parse
         ASSERT(!m_tokenizer);
         ASSERT(!m_token);
     }
+
+    // Make sure any pending text nodes are emitted before returning.
+    if (!isStopped())
+        m_treeBuilder->flush();
 }
 
 void HTMLDocumentParser::pumpPendingSpeculations()

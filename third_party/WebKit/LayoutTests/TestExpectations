@@ -947,6 +947,9 @@ crbug.com/359194 http/tests/xmlhttprequest/xhr-to-blob-in-isolated-world.html [ 
 crbug.com/308992 css2.1/20110323/replaced-intrinsic-001.htm [ Failure ]
 crbug.com/308992 css2.1/20110323/replaced-intrinsic-002.htm [ Failure ]
 
+crbug.com/363974 virtual/windows-directwrite/fast/text/large-text-composed-char.html [ NeedsRebaseline ]
+crbug.com/363974 fast/text/large-text-composed-char.html [ NeedsRebaseline ]
+
 # Disabling this for now since Chromium CL changes output. Will re-enable once Chromium side lands.
 Bug(simonhatch) http/tests/loading/promote-img-in-viewport-priority.html [ Skip ]
 
