@@ -134,14 +134,6 @@
         <include name="IDR_FILE_MANAGER_IMG_GALLERY_2X_CURSOR_SWNE" file="file_manager/foreground/images/gallery/2x/cursor_swne.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_GALLERY_2X_CURSOR_UPDOWN" file="file_manager/foreground/images/gallery/2x/cursor_updown.png" type="BINDATA" />
       </if>
-      <if expr="image_loader_extension">
-        <include name="IDR_IMAGE_LOADER_IMAGE_LOADER_JS" file="image_loader/image_loader.js" type="BINDATA" />
-        <include name="IDR_IMAGE_LOADER_CACHE_JS" file="image_loader/cache.js" type="BINDATA" />
-        <include name="IDR_IMAGE_LOADER_WORKER_JS" file="image_loader/worker.js" type="BINDATA" />
-        <include name="IDR_IMAGE_LOADER_REQUEST_JS" file="image_loader/request.js" type="BINDATA" />
-        <include name="IDR_IMAGE_LOADER_BACKGROUND_JS" file="image_loader/background.js" type="BINDATA" />
-        <include name="IDR_IMAGE_LOADER_CLIENT_JS" file="image_loader/image_loader_client.js" type="BINDATA" />
-      </if>
       <if expr="enable_google_now">
         <include name="IDR_GOOGLE_NOW_BACKGROUND_JS" file="google_now/background.js" type="BINDATA" />
         <include name="IDR_GOOGLE_NOW_CARDS_JS" file="google_now/cards.js" type="BINDATA" />

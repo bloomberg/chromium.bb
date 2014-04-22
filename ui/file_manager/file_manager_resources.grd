@@ -30,6 +30,17 @@
       <include name="IDR_GALLERY_ERROR_UTIL_JS" file="gallery/js/error_util.js" flattenhtml="false" type="BINDATA" />
       <include name="IDR_GALLERY_ICON_16" file="gallery/images/100/icon.png" type="BINDATA" />
       <include name="IDR_GALLERY_ICON_32" file="gallery/images/200/icon.png" type="BINDATA" />
+
+      <!-- Image loader extension manifest and scripts. -->
+      <if expr="image_loader_extension">
+        <include name="IDR_IMAGE_LOADER_MANIFEST" file="image_loader/manifest.json" type="BINDATA" />
+        <include name="IDR_IMAGE_LOADER_IMAGE_LOADER_JS" file="image_loader/image_loader.js" type="BINDATA" />
+        <include name="IDR_IMAGE_LOADER_CACHE_JS" file="image_loader/cache.js" type="BINDATA" />
+        <include name="IDR_IMAGE_LOADER_WORKER_JS" file="image_loader/worker.js" type="BINDATA" />
+        <include name="IDR_IMAGE_LOADER_REQUEST_JS" file="image_loader/request.js" type="BINDATA" />
+        <include name="IDR_IMAGE_LOADER_BACKGROUND_JS" file="image_loader/background.js" type="BINDATA" />
+        <include name="IDR_IMAGE_LOADER_CLIENT_JS" file="image_loader/image_loader_client.js" type="BINDATA" />
+      </if>
     </includes>
   </release>
 </grit>
