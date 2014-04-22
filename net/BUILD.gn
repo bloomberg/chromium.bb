@@ -50,7 +50,7 @@ config("net_config") {
 # TODO(jschuh): crbug.com/167187 fix this and delete this config.
 config("net_win_size_truncation") {
   if (is_win) {
-    cflags += [ "/wd4267" ]
+    cflags = [ "/wd4267" ]
   }
 }
 
