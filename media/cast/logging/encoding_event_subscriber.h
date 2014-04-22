@@ -43,8 +43,6 @@ class EncodingEventSubscriber : public RawEventSubscriber {
   // RawReventSubscriber implementations.
   virtual void OnReceiveFrameEvent(const FrameEvent& frame_event) OVERRIDE;
   virtual void OnReceivePacketEvent(const PacketEvent& packet_event) OVERRIDE;
-  virtual void OnReceiveGenericEvent(const GenericEvent& generic_event)
-      OVERRIDE;
 
   // Assigns frame events and packet events received so far to |frame_events|
   // and |packet_events| and resets the internal state.

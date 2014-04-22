@@ -218,9 +218,10 @@ TEST_F(EncodingEventSubscriberTest, FrameEventSize) {
   RtpTimestamp rtp_timestamp = 100;
   int size = 123;
   bool key_frame = true;
+  int target_bitrate = 1024;
   cast_environment_->Logging()->InsertEncodedFrameEvent(
       now, kVideoFrameEncoded, rtp_timestamp,
-      /*frame_id*/ 0, size, key_frame);
+      /*frame_id*/ 0, size, key_frame, target_bitrate);
 
   GetEventsAndReset();
 
@@ -243,6 +244,7 @@ TEST_F(EncodingEventSubscriberTest, FrameEventSize) {
   EXPECT_EQ(0, event->delay_millis());
   EXPECT_TRUE(event->has_key_frame());
   EXPECT_EQ(key_frame, event->key_frame());
+  EXPECT_EQ(target_bitrate, event->target_bitrate());
 }
 
 TEST_F(EncodingEventSubscriberTest, MultipleFrameEvents) {
@@ -258,7 +260,8 @@ TEST_F(EncodingEventSubscriberTest, MultipleFrameEvents) {
   base::TimeTicks now2(testing_clock_->NowTicks());
   cast_environment_->Logging()->InsertEncodedFrameEvent(
       now2, kAudioFrameEncoded, rtp_timestamp2,
-      /*frame_id*/ 0, /*size*/ 123, /* key_frame - unused */ false );
+      /*frame_id*/ 0, /*size*/ 123, /* key_frame - unused */ false,
+      /*target_bitrate - unused*/ 0);
 
   testing_clock_->Advance(base::TimeDelta::FromMilliseconds(20));
   base::TimeTicks now3(testing_clock_->NowTicks());

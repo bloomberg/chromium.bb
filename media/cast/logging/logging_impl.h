@@ -31,7 +31,8 @@ class LoggingImpl {
 
   void InsertEncodedFrameEvent(const base::TimeTicks& time_of_event,
                                CastLoggingEvent event, uint32 rtp_timestamp,
-                               uint32 frame_id, int frame_size, bool key_frame);
+                               uint32 frame_id, int frame_size, bool key_frame,
+                               int target_bitrate);
 
   void InsertFrameEventWithDelay(const base::TimeTicks& time_of_event,
                                  CastLoggingEvent event, uint32 rtp_timestamp,
@@ -48,10 +49,6 @@ class LoggingImpl {
                          CastLoggingEvent event, uint32 rtp_timestamp,
                          uint32 frame_id, uint16 packet_id,
                          uint16 max_packet_id, size_t size);
-
-  void InsertGenericEvent(const base::TimeTicks& time_of_event,
-                          CastLoggingEvent event, int value);
-
 
   // Delegates to |LoggingRaw::AddRawEventSubscriber()|.
   void AddRawEventSubscriber(RawEventSubscriber* subscriber);

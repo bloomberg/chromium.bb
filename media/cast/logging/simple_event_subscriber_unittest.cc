@@ -42,7 +42,7 @@ TEST_F(SimpleEventSubscriberTest, GetAndResetEvents) {
   // Log some frame events.
   cast_environment_->Logging()->InsertEncodedFrameEvent(
       testing_clock_->NowTicks(), kAudioFrameEncoded, /*rtp_timestamp*/ 100u,
-      /*frame_id*/ 0u, /*frame_size*/ 123, /*key_frame*/ false);
+      /*frame_id*/ 0u, /*frame_size*/ 123, /*key_frame*/ false, 0);
   cast_environment_->Logging()->InsertFrameEventWithDelay(
       testing_clock_->NowTicks(), kAudioPlayoutDelay, /*rtp_timestamp*/ 100u,
       /*frame_id*/ 0u, /*delay*/ base::TimeDelta::FromMilliseconds(100));
@@ -61,10 +61,6 @@ TEST_F(SimpleEventSubscriberTest, GetAndResetEvents) {
       testing_clock_->NowTicks(), kVideoFrameDecoded, /*rtp_timestamp*/ 300u,
       /*frame_id*/ 0u, /*packet_id*/ 1u, /*max_packet_id*/ 5u, /*size*/ 100u);
 
-  // Log some generic events.
-  cast_environment_->Logging()->InsertGenericEvent(testing_clock_->NowTicks(),
-                                                   kRttMs, /*value*/ 150);
-
   std::vector<FrameEvent> frame_events;
   event_subscriber_.GetFrameEventsAndReset(&frame_events);
   EXPECT_EQ(3u, frame_events.size());
@@ -73,18 +69,12 @@ TEST_F(SimpleEventSubscriberTest, GetAndResetEvents) {
   event_subscriber_.GetPacketEventsAndReset(&packet_events);
   EXPECT_EQ(3u, packet_events.size());
 
-  std::vector<GenericEvent> generic_events;
-  event_subscriber_.GetGenericEventsAndReset(&generic_events);
-  EXPECT_EQ(1u, generic_events.size());
-
   // Calling this function again should result in empty vector because no events
   // were logged since last call.
   event_subscriber_.GetFrameEventsAndReset(&frame_events);
   event_subscriber_.GetPacketEventsAndReset(&packet_events);
-  event_subscriber_.GetGenericEventsAndReset(&generic_events);
   EXPECT_TRUE(frame_events.empty());
   EXPECT_TRUE(packet_events.empty());
-  EXPECT_TRUE(generic_events.empty());
 }
 
 }  // namespace cast

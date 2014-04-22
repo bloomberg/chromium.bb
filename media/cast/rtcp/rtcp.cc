@@ -259,10 +259,6 @@ void Rtcp::SendRtcpFromRtpReceiver(
       rtp_receiver_statistics_->GetStatistics(
           &report_block.fraction_lost, &report_block.cumulative_lost,
           &report_block.extended_high_sequence_number, &report_block.jitter);
-      cast_environment_->Logging()->InsertGenericEvent(now, kJitterMs,
-                                                       report_block.jitter);
-      cast_environment_->Logging()->InsertGenericEvent(
-          now, kPacketLoss, report_block.fraction_lost);
     }
 
     report_block.last_sr = last_report_received_;
@@ -448,10 +444,6 @@ bool Rtcp::Rtt(base::TimeDelta* rtt, base::TimeDelta* avg_rtt,
   DCHECK(max_rtt) << "Invalid argument";
 
   if (number_of_rtt_in_avg_ == 0) return false;
-
-  base::TimeTicks now = cast_environment_->Clock()->NowTicks();
-  cast_environment_->Logging()->InsertGenericEvent(now, kRttMs,
-                                                   rtt->InMilliseconds());
 
   *rtt = rtt_;
   *avg_rtt = base::TimeDelta::FromMilliseconds(avg_rtt_ms_);

@@ -69,38 +69,6 @@ void StatsEventSubscriber::OnReceivePacketEvent(
   }
 }
 
-void StatsEventSubscriber::OnReceiveGenericEvent(
-    const GenericEvent& generic_event) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  CastLoggingEvent type = generic_event.type;
-  if (GetEventMediaType(type) != event_media_type_)
-    return;
-
-  GenericStatsMap::iterator it = generic_stats_.find(type);
-  if (it == generic_stats_.end()) {
-    GenericLogStats stats;
-    stats.first_event_time = generic_event.timestamp;
-    stats.last_event_time = generic_event.timestamp;
-    stats.event_counter = 1;
-    stats.sum = generic_event.value;
-    stats.sum_squared = generic_event.value * generic_event.value;
-    stats.min = generic_event.value;
-    stats.max = generic_event.value;
-    generic_stats_.insert(std::make_pair(type, stats));
-  } else {
-    it->second.last_event_time = generic_event.timestamp;
-    ++(it->second.event_counter);
-    it->second.sum += generic_event.value;
-    it->second.sum_squared += generic_event.value * generic_event.value;
-    if (it->second.min > generic_event.value) {
-      it->second.min = generic_event.value;
-    } else if (it->second.max < generic_event.value) {
-      it->second.max = generic_event.value;
-    }
-  }
-}
-
 void StatsEventSubscriber::GetFrameStats(FrameStatsMap* frame_stats_map) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(frame_stats_map);
@@ -118,21 +86,11 @@ void StatsEventSubscriber::GetPacketStats(
   packet_stats_map->insert(packet_stats_.begin(), packet_stats_.end());
 }
 
-void StatsEventSubscriber::GetGenericStats(
-    GenericStatsMap* generic_stats_map) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(generic_stats_map);
-
-  generic_stats_map->clear();
-  generic_stats_map->insert(generic_stats_.begin(), generic_stats_.end());
-}
-
 void StatsEventSubscriber::Reset() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   frame_stats_.clear();
   packet_stats_.clear();
-  generic_stats_.clear();
 }
 
 }  // namespace cast

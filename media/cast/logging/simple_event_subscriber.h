@@ -27,8 +27,6 @@ class SimpleEventSubscriber : public RawEventSubscriber {
   // RawEventSubscriber implementations.
   virtual void OnReceiveFrameEvent(const FrameEvent& frame_event) OVERRIDE;
   virtual void OnReceivePacketEvent(const PacketEvent& packet_event) OVERRIDE;
-  virtual void OnReceiveGenericEvent(const GenericEvent& generic_event)
-      OVERRIDE;
 
   // Assigns frame events received so far to |frame_events| and clears them
   // from this object.
@@ -38,14 +36,9 @@ class SimpleEventSubscriber : public RawEventSubscriber {
   // from this object.
   void GetPacketEventsAndReset(std::vector<PacketEvent>* packet_events);
 
-  // Assigns generic events received so far to |generic_events| and clears them
-  // from this object.
-  void GetGenericEventsAndReset(std::vector<GenericEvent>* generic_events);
-
  private:
   std::vector<FrameEvent> frame_events_;
   std::vector<PacketEvent> packet_events_;
-  std::vector<GenericEvent> generic_events_;
 
   // All functions must be called on the main thread.
   base::ThreadChecker thread_checker_;

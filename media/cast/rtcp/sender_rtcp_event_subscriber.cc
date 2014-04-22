@@ -69,12 +69,6 @@ void SenderRtcpEventSubscriber::OnReceivePacketEvent(
   // Do nothing as RTP sender is not interested in packet events for RTCP.
 }
 
-void SenderRtcpEventSubscriber::OnReceiveGenericEvent(
-    const GenericEvent& generic_event) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  // Do nothing as RTP sender is not interested in generic events for RTCP.
-}
-
 void SenderRtcpEventSubscriber::GetRtcpEventsAndReset(
     RtcpEventMap* rtcp_events) {
   DCHECK(thread_checker_.CalledOnValidThread());

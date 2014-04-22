@@ -24,10 +24,6 @@ class RawEventSubscriber {
   // Called on main thread when a PacketEvent, given by |packet_event|,
   // is logged.
   virtual void OnReceivePacketEvent(const PacketEvent& packet_event) = 0;
-
-  // Called on main thread when a GenericEvent, given by |generic_event|,
-  // is logged.
-  virtual void OnReceiveGenericEvent(const GenericEvent& generic_event) = 0;
 };
 
 }  // namespace cast

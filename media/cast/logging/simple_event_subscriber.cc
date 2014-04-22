@@ -28,12 +28,6 @@ void SimpleEventSubscriber::OnReceivePacketEvent(
   packet_events_.push_back(packet_event);
 }
 
-void SimpleEventSubscriber::OnReceiveGenericEvent(
-    const GenericEvent& generic_event) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  generic_events_.push_back(generic_event);
-}
-
 void SimpleEventSubscriber::GetFrameEventsAndReset(
     std::vector<FrameEvent>* frame_events) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -46,13 +40,6 @@ void SimpleEventSubscriber::GetPacketEventsAndReset(
   DCHECK(thread_checker_.CalledOnValidThread());
   packet_events->swap(packet_events_);
   packet_events_.clear();
-}
-
-void SimpleEventSubscriber::GetGenericEventsAndReset(
-    std::vector<GenericEvent>* generic_events) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  generic_events->swap(generic_events_);
-  generic_events_.clear();
 }
 
 }  // namespace cast

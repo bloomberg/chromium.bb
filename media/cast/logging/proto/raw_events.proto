@@ -13,13 +13,13 @@ package media.cast.proto;
 // Keep in sync with media/cast/logging/logging_defines.h.
 // For compatibility reasons, existing values in this enum must not be changed.
 enum EventType {
-  // Generic events.
   UNKNOWN = 0;
+  // Generic events. No longer used.
   RTT_MS = 1;
   PACKET_LOSS = 2;
   JITTER_MS = 3;
-  VIDEO_ACK_RECEIVED = 4;
-  REMB_BITRATE = 5;
+  VIDEO_ACK_RECEIVED = 4;  // Sender side frame event.
+  REMB_BITRATE = 5;  // Generic event. No longer used.
   // Audio receiver.
   AUDIO_ACK_SENT = 6;
   // Video receiver.
@@ -94,6 +94,9 @@ message AggregatedFrameEvent {
 
   // Only set if there is a kVideoFrameEncoded event.
   optional bool key_frame = 6;
+  
+  // Only set if there is a kVideoFrameEncoded event.
+  optional int32 target_bitrate = 7;
 };
 
 message BasePacketEvent {

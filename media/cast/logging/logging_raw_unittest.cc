@@ -22,7 +22,6 @@ class LoggingRawTest : public ::testing::Test {
   SimpleEventSubscriber event_subscriber_;
   std::vector<FrameEvent> frame_events_;
   std::vector<PacketEvent> packet_events_;
-  std::vector<GenericEvent> generic_events_;
 };
 
 TEST_F(LoggingRawTest, FrameEvent) {
@@ -34,9 +33,6 @@ TEST_F(LoggingRawTest, FrameEvent) {
 
   event_subscriber_.GetPacketEventsAndReset(&packet_events_);
   EXPECT_TRUE(packet_events_.empty());
-
-  event_subscriber_.GetGenericEventsAndReset(&generic_events_);
-  EXPECT_TRUE(generic_events_.empty());
 
   event_subscriber_.GetFrameEventsAndReset(&frame_events_);
   ASSERT_EQ(1u, frame_events_.size());
@@ -55,14 +51,12 @@ TEST_F(LoggingRawTest, EncodedFrameEvent) {
   base::TimeTicks timestamp = base::TimeTicks();
   int size = 1024;
   bool key_frame = true;
+  int target_bitrate = 4096;
   raw_.InsertEncodedFrameEvent(timestamp, event_type, rtp_timestamp, frame_id,
-                               size, key_frame);
+                               size, key_frame, target_bitrate);
 
   event_subscriber_.GetPacketEventsAndReset(&packet_events_);
   EXPECT_TRUE(packet_events_.empty());
-
-  event_subscriber_.GetGenericEventsAndReset(&generic_events_);
-  EXPECT_TRUE(generic_events_.empty());
 
   event_subscriber_.GetFrameEventsAndReset(&frame_events_);
   ASSERT_EQ(1u, frame_events_.size());
@@ -73,6 +67,7 @@ TEST_F(LoggingRawTest, EncodedFrameEvent) {
   EXPECT_EQ(event_type, frame_events_[0].type);
   EXPECT_EQ(base::TimeDelta(), frame_events_[0].delay_delta);
   EXPECT_EQ(key_frame, frame_events_[0].key_frame);
+  EXPECT_EQ(target_bitrate, frame_events_[0].target_bitrate);
 }
 
 TEST_F(LoggingRawTest, FrameEventWithDelay) {
@@ -86,9 +81,6 @@ TEST_F(LoggingRawTest, FrameEventWithDelay) {
 
   event_subscriber_.GetPacketEventsAndReset(&packet_events_);
   EXPECT_TRUE(packet_events_.empty());
-
-  event_subscriber_.GetGenericEventsAndReset(&generic_events_);
-  EXPECT_TRUE(generic_events_.empty());
 
   event_subscriber_.GetFrameEventsAndReset(&frame_events_);
   ASSERT_EQ(1u, frame_events_.size());
@@ -114,9 +106,6 @@ TEST_F(LoggingRawTest, PacketEvent) {
   event_subscriber_.GetFrameEventsAndReset(&frame_events_);
   EXPECT_TRUE(frame_events_.empty());
 
-  event_subscriber_.GetGenericEventsAndReset(&generic_events_);
-  EXPECT_TRUE(generic_events_.empty());
-
   event_subscriber_.GetPacketEventsAndReset(&packet_events_);
   ASSERT_EQ(1u, packet_events_.size());
   EXPECT_EQ(rtp_timestamp, packet_events_[0].rtp_timestamp);
@@ -126,25 +115,6 @@ TEST_F(LoggingRawTest, PacketEvent) {
   EXPECT_EQ(size, packet_events_[0].size);
   EXPECT_EQ(timestamp, packet_events_[0].timestamp);
   EXPECT_EQ(event_type, packet_events_[0].type);
-}
-
-TEST_F(LoggingRawTest, GenericEvent) {
-  CastLoggingEvent event_type = kRttMs;
-  base::TimeTicks timestamp = base::TimeTicks();
-  int value = 100;
-  raw_.InsertGenericEvent(timestamp, event_type, value);
-
-  event_subscriber_.GetFrameEventsAndReset(&frame_events_);
-  EXPECT_TRUE(frame_events_.empty());
-
-  event_subscriber_.GetPacketEventsAndReset(&packet_events_);
-  EXPECT_TRUE(packet_events_.empty());
-
-  event_subscriber_.GetGenericEventsAndReset(&generic_events_);
-  ASSERT_EQ(1u, generic_events_.size());
-  EXPECT_EQ(event_type, generic_events_[0].type);
-  EXPECT_EQ(value, generic_events_[0].value);
-  EXPECT_EQ(timestamp, generic_events_[0].timestamp);
 }
 
 TEST_F(LoggingRawTest, MultipleSubscribers) {
@@ -162,9 +132,6 @@ TEST_F(LoggingRawTest, MultipleSubscribers) {
   event_subscriber_.GetPacketEventsAndReset(&packet_events_);
   EXPECT_TRUE(packet_events_.empty());
 
-  event_subscriber_.GetGenericEventsAndReset(&generic_events_);
-  EXPECT_TRUE(generic_events_.empty());
-
   event_subscriber_.GetFrameEventsAndReset(&frame_events_);
   ASSERT_EQ(1u, frame_events_.size());
   EXPECT_EQ(rtp_timestamp, frame_events_[0].rtp_timestamp);
@@ -176,9 +143,6 @@ TEST_F(LoggingRawTest, MultipleSubscribers) {
 
   event_subscriber_2.GetPacketEventsAndReset(&packet_events_);
   EXPECT_TRUE(packet_events_.empty());
-
-  event_subscriber_2.GetGenericEventsAndReset(&generic_events_);
-  EXPECT_TRUE(generic_events_.empty());
 
   event_subscriber_2.GetFrameEventsAndReset(&frame_events_);
   ASSERT_EQ(1u, frame_events_.size());

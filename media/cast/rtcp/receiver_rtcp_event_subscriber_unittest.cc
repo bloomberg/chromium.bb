@@ -81,8 +81,6 @@ class ReceiverRtcpEventSubscriberTest : public ::testing::Test {
     cast_environment_->Logging()->InsertFrameEvent(
         testing_clock_->NowTicks(), kAudioFrameReceived, /*rtp_timestamp*/ 100u,
         /*frame_id*/ 1u);
-    cast_environment_->Logging()->InsertGenericEvent(testing_clock_->NowTicks(),
-                                                     kRttMs, /*value*/ 100);
   }
 
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.

@@ -50,6 +50,7 @@ TEST_F(StatsEventSubscriberTest, FrameStats) {
   int num_frames = 10;
   int frame_size = 123;
   int delay_base_ms = 10;
+  int target_bitrate = 1234;
   base::TimeTicks now;
   for (int i = 0; i < num_frames; i++) {
     now = testing_clock_->NowTicks();
@@ -58,7 +59,8 @@ TEST_F(StatsEventSubscriberTest, FrameStats) {
     testing_clock_->Advance(base::TimeDelta::FromMilliseconds(30));
 
     cast_environment_->Logging()->InsertEncodedFrameEvent(
-        now, kVideoFrameEncoded, rtp_timestamp, i, frame_size, true);
+        now, kVideoFrameEncoded, rtp_timestamp, i, frame_size, true,
+        target_bitrate);
     testing_clock_->Advance(base::TimeDelta::FromMilliseconds(30));
 
     cast_environment_->Logging()->InsertFrameEventWithDelay(
@@ -129,30 +131,6 @@ TEST_F(StatsEventSubscriberTest, PacketStats) {
   EXPECT_EQ(now, it->second.last_event_time);
   EXPECT_EQ(num_packets, it->second.event_counter);
   EXPECT_EQ(num_packets * packet_size, static_cast<int>(it->second.sum_size));
-}
-
-TEST_F(StatsEventSubscriberTest, GenericStats) {
-  Init(OTHER_EVENT);
-  int num_generic_events = 10;
-  int value = 123;
-  for (int i = 0; i < num_generic_events; i++) {
-    cast_environment_->Logging()->InsertGenericEvent(
-        testing_clock_->NowTicks(), kRttMs, value);
-  }
-
-  GenericStatsMap stats_map;
-  subscriber_->GetGenericStats(&stats_map);
-
-  EXPECT_EQ(1u, stats_map.size());
-  GenericStatsMap::const_iterator it = stats_map.find(kRttMs);
-  ASSERT_NE(stats_map.end(), it);
-
-  EXPECT_EQ(num_generic_events, it->second.event_counter);
-  EXPECT_EQ(num_generic_events * value, it->second.sum);
-  EXPECT_EQ(static_cast<uint64>(num_generic_events * value * value),
-            it->second.sum_squared);
-  EXPECT_LE(value, it->second.min);
-  EXPECT_GE(value, it->second.max);
 }
 
 TEST_F(StatsEventSubscriberTest, Reset) {

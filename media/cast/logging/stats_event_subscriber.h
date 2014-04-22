@@ -23,17 +23,12 @@ class StatsEventSubscriber : public RawEventSubscriber {
   // RawReventSubscriber implementations.
   virtual void OnReceiveFrameEvent(const FrameEvent& frame_event) OVERRIDE;
   virtual void OnReceivePacketEvent(const PacketEvent& packet_event) OVERRIDE;
-  virtual void OnReceiveGenericEvent(const GenericEvent& generic_event)
-      OVERRIDE;
 
   // Assigns |frame_stats_map| with frame stats.
   void GetFrameStats(FrameStatsMap* frame_stats_map) const;
 
   // Assigns |packet_stats_map| with packet stats.
   void GetPacketStats(PacketStatsMap* packet_stats_map) const;
-
-  // Assigns |generic_stats_map| with generic stats data.
-  void GetGenericStats(GenericStatsMap* generic_stats_map) const;
 
   // Resets all stats maps in this object.
   void Reset();
@@ -42,7 +37,6 @@ class StatsEventSubscriber : public RawEventSubscriber {
   EventMediaType event_media_type_;
   FrameStatsMap frame_stats_;
   PacketStatsMap packet_stats_;
-  GenericStatsMap generic_stats_;
   base::ThreadChecker thread_checker_;
   DISALLOW_COPY_AND_ASSIGN(StatsEventSubscriber);
 };

@@ -63,6 +63,7 @@ VideoSender::VideoSender(
       last_sent_frame_id_(-1),
       duplicate_ack_(0),
       last_skip_count_(0),
+      current_requested_bitrate_(video_config.start_bitrate),
       congestion_control_(cast_environment->Clock(),
                           video_config.congestion_control_back_off,
                           video_config.max_bitrate,
@@ -171,7 +172,7 @@ void VideoSender::SendEncodedVideoFrameMainThread(
   cast_environment_->Logging()->InsertEncodedFrameEvent(
       last_send_time_, kVideoFrameEncoded, encoded_frame->rtp_timestamp,
       frame_id, static_cast<int>(encoded_frame->data.size()),
-      encoded_frame->key_frame);
+      encoded_frame->key_frame, current_requested_bitrate_);
 
   // Used by chrome/browser/extension/api/cast_streaming/performance_test.cc
   TRACE_EVENT_INSTANT1(
@@ -344,7 +345,6 @@ void VideoSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
   base::TimeDelta avg_rtt;
   base::TimeDelta min_rtt;
   base::TimeDelta max_rtt;
-  base::TimeTicks now = cast_environment_->Clock()->NowTicks();
 
   // Update delay and max number of frames in flight based on the the new
   // received target delay.
@@ -353,8 +353,6 @@ void VideoSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
   max_unacked_frames_ = 1 + static_cast<uint8>(cast_feedback.target_delay_ms_ *
                                                max_frame_rate_ / 1000);
   if (rtcp_->Rtt(&rtt, &avg_rtt, &min_rtt, &max_rtt)) {
-    cast_environment_->Logging()->InsertGenericEvent(
-        now, kRttMs, rtt.InMilliseconds());
     // Don't use a RTT lower than our average.
     rtt = std::max(rtt, avg_rtt);
   } else {
@@ -374,6 +372,7 @@ void VideoSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
       uint32 new_bitrate = 0;
       if (congestion_control_.OnAck(rtt, &new_bitrate)) {
         video_encoder_->SetBitRate(new_bitrate);
+        current_requested_bitrate_ = new_bitrate;
       }
     }
     // We only count duplicate ACKs when we have sent newer frames.
@@ -400,6 +399,7 @@ void VideoSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
     uint32 new_bitrate = 0;
     if (congestion_control_.OnNack(rtt, &new_bitrate)) {
       video_encoder_->SetBitRate(new_bitrate);
+      current_requested_bitrate_ = new_bitrate;
     }
   }
   ReceivedAck(cast_feedback.ack_frame_id_);

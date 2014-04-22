@@ -699,7 +699,6 @@ class End2EndTest : public ::testing::Test {
   SimpleEventSubscriber event_subscriber_sender_;
   std::vector<FrameEvent> frame_events_;
   std::vector<PacketEvent> packet_events_;
-  std::vector<GenericEvent> generic_events_;
   // |transport_sender_| has a RepeatingTimer which needs a MessageLoop.
   base::MessageLoop message_loop_;
 };

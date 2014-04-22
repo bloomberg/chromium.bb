@@ -52,8 +52,6 @@ class ReceiverRtcpEventSubscriber : public RawEventSubscriber {
   // RawEventSubscriber implementation.
   virtual void OnReceiveFrameEvent(const FrameEvent& frame_event) OVERRIDE;
   virtual void OnReceivePacketEvent(const PacketEvent& packet_event) OVERRIDE;
-  virtual void OnReceiveGenericEvent(const GenericEvent& generic_event)
-      OVERRIDE;
 
   // Assigns events collected to |rtcp_events| and clears them from this
   // object.
