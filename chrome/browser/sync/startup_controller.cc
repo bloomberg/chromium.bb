@@ -68,7 +68,6 @@ StartupController::~StartupController() {}
 
 void StartupController::Reset(const syncer::ModelTypeSet registered_types) {
   received_start_request_ = false;
-  setup_in_progress_ = false;
   start_up_time_ = base::Time();
   start_backend_time_ = base::Time();
   // Don't let previous timers affect us post-reset.

@@ -56,6 +56,10 @@ class StartupController {
 
   // Prepares this object for a new attempt to start sync, forgetting
   // whether or not preconditions were previously met.
+  // NOTE: This resets internal state managed by this class, but does not
+  // touch values that are explicitly set and reset by higher layers to
+  // tell this class whether a setup UI dialog is being shown to the user.
+  // See setup_in_progress_.
   void Reset(const syncer::ModelTypeSet registered_types);
 
   void set_setup_in_progress(bool in_progress);
@@ -88,6 +92,9 @@ class StartupController {
 
   // If |true|, there is setup UI visible so we should not start downloading
   // data types.
+  // Note: this is explicitly controlled by higher layers (UI) and is meant to
+  // reflect what the UI claims the setup state to be. Therefore, only set this
+  // due to explicit requests to do so via set_setup_in_progress.
   bool setup_in_progress_;
 
   // If true, we want to automatically start sync signin whenever we have

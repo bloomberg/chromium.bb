@@ -247,20 +247,19 @@ TEST_F(StartupControllerTest, Reset) {
   EXPECT_TRUE(started());
 }
 
-// Test that setup-in-progress tracking is reset properly on Reset.
-// This scenario doesn't affect auto-start platforms.
+// Test that setup-in-progress tracking is persistent across a Reset.
 TEST_F(StartupControllerTest, ResetDuringSetup) {
   signin()->set_account(kTestUser);
   token_service()->IssueRefreshTokenForUser(kTestUser, kTestToken);
-  controller()->set_setup_in_progress(true);
-  controller()->Reset(syncer::UserTypes());
-  controller()->TryStart();
 
-  if (!browser_defaults::kSyncAutoStarts) {
-    EXPECT_FALSE(started());
-    EXPECT_EQ(kStateStringNotStarted,
-              controller()->GetBackendInitializationStateString());
-  }
+  // Simulate UI telling us setup is in progress.
+  controller()->set_setup_in_progress(true);
+
+  // This could happen if the UI triggers a stop-syncing permanently call.
+  controller()->Reset(syncer::UserTypes());
+
+  // From the UI's point of view, setup is still in progress.
+  EXPECT_TRUE(controller()->setup_in_progress());
 }
 
 }  // namespace browser_sync
