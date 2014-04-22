@@ -1080,25 +1080,28 @@ crbug.com/363025 virtual/serviceworker/http/tests/serviceworker/state.html [ Fai
 
 crbug.com/364250 [ Debug ] virtual/threaded/animations/interpolation/webkit-transform-interpolation.html [ Pass Crash Timeout ]
 
-# Failing since chrome r264636
+# Failing since chrome r264636. Should have their scrollbars removed.
 crbug.com/364946 [ Mac ] virtual/deferred/fast/images/exif-orientation-css.html [ Pass ImageOnlyFailure ]
 crbug.com/364946 [ Mac ] virtual/deferred/fast/images/gray-scale-jpeg-with-color-profile.html [ Pass ImageOnlyFailure ]
-crbug.com/364946 [ Mac ] virtual/deferred/fast/images/imagemap-case.html [ Pass ImageOnlyFailure ]
-crbug.com/364946 [ Mac ] virtual/deferred/fast/images/imagemap-circle-focus-ring.html [ Pass ImageOnlyFailure ]
-crbug.com/364946 [ Mac ] virtual/deferred/fast/images/imagemap-focus-ring.html [ Pass ImageOnlyFailure ]
-crbug.com/364946 [ Mac ] virtual/deferred/fast/images/imagemap-focus-ring-outline-color-explicitly-inherited-from-map.html [ Pass ImageOnlyFailure ]
-crbug.com/364946 [ Mac ] virtual/deferred/fast/images/imagemap-focus-ring-outline-color.html [ Pass ImageOnlyFailure ]
-crbug.com/364946 [ Mac ] virtual/deferred/fast/images/imagemap-focus-ring-outline-color-not-inherited-from-map.html [ Pass ImageOnlyFailure ]
-crbug.com/364946 [ Mac ] virtual/deferred/fast/images/imagemap-focus-ring-zoom.html [ Pass ImageOnlyFailure ]
-crbug.com/364946 [ Mac ] virtual/deferred/fast/images/imagemap-focus-ring-zoom-style.html [ Pass ImageOnlyFailure ]
-crbug.com/364946 [ Mac ] virtual/deferred/fast/images/imagemap-overflowing-circle-focus-ring.html [ Pass ImageOnlyFailure ]
-crbug.com/364946 [ Mac ] virtual/deferred/fast/images/imagemap-overflowing-polygon-focus-ring.html [ Pass ImageOnlyFailure ]
-crbug.com/364946 [ Mac ] virtual/deferred/fast/images/imagemap-polygon-focus-ring.html [ Pass ImageOnlyFailure ]
-crbug.com/364946 [ Mac ] virtual/gpu/fast/hidpi/focus-rings.html [ Pass ImageOnlyFailure ]
 crbug.com/364946 [ Mac ] virtual/gpu/fast/hidpi/image-srcset-png.html [ Pass ImageOnlyFailure ]
-crbug.com/364946 [ Mac ] virtual/gpu/fast/hidpi/image-srcset-svg-canvas.html [ Pass ImageOnlyFailure ]
-crbug.com/364946 [ Mac ] virtual/gpu/fast/hidpi/image-srcset-svg.html [ Pass ImageOnlyFailure ]
-crbug.com/364946 [ Mac ] virtual/gpu/fast/hidpi/video-controls-in-hidpi.html [ Pass ImageOnlyFailure ]
+
+# Need rebaseline once all tests are in ForceCompositingMode.
+crbug.com/361729 [ Mac ] virtual/gpu/fast/hidpi/image-srcset-svg-canvas.html [ ImageOnlyFailure ]
+crbug.com/361729 [ Mac ] virtual/gpu/fast/hidpi/image-srcset-svg.html [ ImageOnlyFailure ]
+crbug.com/361729 [ Mac ] virtual/deferred/fast/images/imagemap-focus-ring-zoom-style.html [ ImageOnlyFailure ]
+
+crbug.com/364946 [ Mac ] virtual/gpu/fast/hidpi/focus-rings.html [ NeedsRebaseline ]
+crbug.com/364946 [ Mac ] virtual/gpu/fast/hidpi/video-controls-in-hidpi.html [ NeedsRebaseline ]
+crbug.com/364946 [ Mac ] virtual/deferred/fast/images/imagemap-case.html [ NeedsRebaseline ]
+crbug.com/364946 [ Mac ] virtual/deferred/fast/images/imagemap-circle-focus-ring.html [ NeedsRebaseline ]
+crbug.com/364946 [ Mac ] virtual/deferred/fast/images/imagemap-focus-ring.html [ NeedsRebaseline ]
+crbug.com/364946 [ Mac ] virtual/deferred/fast/images/imagemap-focus-ring-outline-color-explicitly-inherited-from-map.html [ NeedsRebaseline ]
+crbug.com/364946 [ Mac ] virtual/deferred/fast/images/imagemap-focus-ring-outline-color.html [ NeedsRebaseline ]
+crbug.com/364946 [ Mac ] virtual/deferred/fast/images/imagemap-focus-ring-outline-color-not-inherited-from-map.html [ NeedsRebaseline ]
+crbug.com/364946 [ Mac ] virtual/deferred/fast/images/imagemap-focus-ring-zoom.html [ NeedsRebaseline ]
+crbug.com/364946 [ Mac ] virtual/deferred/fast/images/imagemap-overflowing-circle-focus-ring.html [ NeedsRebaseline ]
+crbug.com/364946 [ Mac ] virtual/deferred/fast/images/imagemap-overflowing-polygon-focus-ring.html [ NeedsRebaseline ]
+crbug.com/364946 [ Mac ] virtual/deferred/fast/images/imagemap-polygon-focus-ring.html [ NeedsRebaseline ]
 
 # Added in r171958 and timing out on some platforms ever since.
 crbug.com/308992 svg/as-object/sizing/svg-in-object-placeholder-height-auto.html [ Pass Timeout ]
