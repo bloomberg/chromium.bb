@@ -27,8 +27,8 @@
 #include "config.h"
 #include "modules/device_orientation/DeviceMotionController.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "core/dom/Document.h"
+#include "core/frame/DOMWindow.h"
 #include "core/page/Page.h"
 #include "modules/device_orientation/DeviceMotionData.h"
 #include "modules/device_orientation/DeviceMotionDispatcher.h"
@@ -93,21 +93,24 @@ bool DeviceMotionController::isNullEvent(Event* event)
     return !motionEvent->deviceMotionData()->canProvideEventData();
 }
 
-void DeviceMotionController::didAddEventListener(DOMWindow*, const AtomicString& eventType)
+void DeviceMotionController::didAddEventListener(DOMWindow* window, const AtomicString& eventType)
 {
-    if (eventType == EventTypeNames::devicemotion && RuntimeEnabledFeatures::deviceMotionEnabled()) {
-        if (page() && page()->visibilityState() == PageVisibilityStateVisible)
-            startUpdating();
-        m_hasEventListener = true;
-    }
+    if (eventType != EventTypeNames::devicemotion)
+        return;
+
+    if (page() && page()->visibilityState() == PageVisibilityStateVisible)
+        startUpdating();
+
+    m_hasEventListener = true;
 }
 
-void DeviceMotionController::didRemoveEventListener(DOMWindow*, const AtomicString& eventType)
+void DeviceMotionController::didRemoveEventListener(DOMWindow* window, const AtomicString& eventType)
 {
-    if (eventType == EventTypeNames::devicemotion) {
-        stopUpdating();
-        m_hasEventListener = false;
-    }
+    if (eventType != EventTypeNames::devicemotion || window->hasEventListeners(EventTypeNames::devicemotion))
+        return;
+
+    stopUpdating();
+    m_hasEventListener = false;
 }
 
 void DeviceMotionController::didRemoveAllEventListeners(DOMWindow*)

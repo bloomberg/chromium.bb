@@ -1,0 +1,88 @@
+<html>
+<head>
+<script src="../../../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+
+description('Tests using multiple event handlers for the Device Orientation API.');
+
+var mockEvent;
+var expectedEvent;
+function setMockOrientation(alpha, beta, gamma, absolute) {
+    mockEvent = {alpha: alpha, beta: beta, gamma: gamma, absolute: absolute};
+    if (window.testRunner)
+        testRunner.setMockDeviceOrientation(
+            true, mockEvent.alpha, true, mockEvent.beta, true, mockEvent.gamma, true, mockEvent.absolute);
+    else
+        debug('This test can not be run without the TestRunner');
+}
+
+var deviceOrientationEvent;
+function checkOrientation(event) {
+    deviceOrientationEvent = event;
+    shouldBe('deviceOrientationEvent.alpha', 'expectedEvent.alpha');
+    shouldBe('deviceOrientationEvent.beta', 'expectedEvent.beta');
+    shouldBe('deviceOrientationEvent.gamma', 'expectedEvent.gamma');
+    shouldBe('deviceOrientationEvent.absolute', 'expectedEvent.absolute');
+}
+
+var counter = 0;
+function firstListener(event) {
+    checkOrientation(event);
+    counter++;
+    proceedIfNecessary();
+}
+
+function secondListener(event) {
+    checkOrientation(event);
+    counter++;
+    proceedIfNecessary();
+}
+
+function proceedIfNecessary() {
+    if (counter == 2) {
+        setMockOrientation(11, 12, 13, true);
+        // Note: this should not stop Device Orientation updates,
+        // because there is still one listener active.
+        window.removeEventListener('deviceorientation', secondListener);
+        setTimeout(function(){initThirdListener();}, 0);
+    }
+}
+
+var childFrame;
+function initThirdListener() {
+    childFrame = document.createElement('iframe');
+    document.body.appendChild(childFrame);
+    childFrame.contentWindow.addEventListener('deviceorientation', thirdListener);
+}
+
+function thirdListener(event) {
+    // Expect the cached event because Device Orientation was already active
+    // when third listener was added.
+    checkOrientation(event);
+    window.removeEventListener('deviceorientation', firstListener);
+    childFrame.contentWindow.removeEventListener('deviceorientation', thirdListener);
+    setTimeout(function(){initFourthListener();}, 0);
+}
+
+function initFourthListener() {
+    expectedEvent = mockEvent;
+    window.addEventListener('deviceorientation', fourthListener);
+}
+
+function fourthListener(event) {
+    checkOrientation(event);
+    finishJSTest();
+}
+
+setMockOrientation(1, 2, 3, true);
+expectedEvent = mockEvent;
+window.addEventListener('deviceorientation', firstListener);
+window.addEventListener('deviceorientation', secondListener);
+
+window.jsTestIsAsync = true;
+
+</script>
+</body>
+</html>

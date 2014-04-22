@@ -27,8 +27,8 @@
 #include "config.h"
 #include "modules/device_orientation/DeviceOrientationController.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "core/dom/Document.h"
+#include "core/frame/DOMWindow.h"
 #include "core/page/Page.h"
 #include "modules/device_orientation/DeviceOrientationData.h"
 #include "modules/device_orientation/DeviceOrientationDispatcher.h"
@@ -102,19 +102,22 @@ bool DeviceOrientationController::isNullEvent(Event* event)
 
 void DeviceOrientationController::didAddEventListener(DOMWindow* window, const AtomicString& eventType)
 {
-    if (eventType == EventTypeNames::deviceorientation && RuntimeEnabledFeatures::deviceOrientationEnabled()) {
-        if (page() && page()->visibilityState() == PageVisibilityStateVisible)
-            startUpdating();
-        m_hasEventListener = true;
-    }
+    if (eventType != EventTypeNames::deviceorientation)
+        return;
+
+    if (page() && page()->visibilityState() == PageVisibilityStateVisible)
+        startUpdating();
+
+    m_hasEventListener = true;
 }
 
 void DeviceOrientationController::didRemoveEventListener(DOMWindow* window, const AtomicString& eventType)
 {
-    if (eventType == EventTypeNames::deviceorientation) {
-        stopUpdating();
-        m_hasEventListener = false;
-    }
+    if (eventType != EventTypeNames::deviceorientation || window->hasEventListeners(EventTypeNames::deviceorientation))
+        return;
+
+    stopUpdating();
+    m_hasEventListener = false;
 }
 
 void DeviceOrientationController::didRemoveAllEventListeners(DOMWindow* window)

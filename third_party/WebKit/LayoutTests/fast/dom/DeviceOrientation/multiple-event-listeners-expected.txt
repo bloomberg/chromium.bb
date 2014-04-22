@@ -1,0 +1,25 @@
+Tests using multiple event handlers for the Device Orientation API.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS deviceOrientationEvent.alpha is expectedEvent.alpha
+PASS deviceOrientationEvent.beta is expectedEvent.beta
+PASS deviceOrientationEvent.gamma is expectedEvent.gamma
+PASS deviceOrientationEvent.absolute is expectedEvent.absolute
+PASS deviceOrientationEvent.alpha is expectedEvent.alpha
+PASS deviceOrientationEvent.beta is expectedEvent.beta
+PASS deviceOrientationEvent.gamma is expectedEvent.gamma
+PASS deviceOrientationEvent.absolute is expectedEvent.absolute
+PASS deviceOrientationEvent.alpha is expectedEvent.alpha
+PASS deviceOrientationEvent.beta is expectedEvent.beta
+PASS deviceOrientationEvent.gamma is expectedEvent.gamma
+PASS deviceOrientationEvent.absolute is expectedEvent.absolute
+PASS deviceOrientationEvent.alpha is expectedEvent.alpha
+PASS deviceOrientationEvent.beta is expectedEvent.beta
+PASS deviceOrientationEvent.gamma is expectedEvent.gamma
+PASS deviceOrientationEvent.absolute is expectedEvent.absolute
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

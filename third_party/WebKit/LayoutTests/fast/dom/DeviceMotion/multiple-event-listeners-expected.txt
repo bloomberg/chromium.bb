@@ -1,0 +1,49 @@
+Tests using multiple event handlers for the Device Motion API.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS deviceMotionEvent.acceleration.x is expectedEvent.accelerationX
+PASS deviceMotionEvent.acceleration.y is expectedEvent.accelerationY
+PASS deviceMotionEvent.acceleration.z is expectedEvent.accelerationZ
+PASS deviceMotionEvent.accelerationIncludingGravity.x is expectedEvent.accelerationIncludingGravityX
+PASS deviceMotionEvent.accelerationIncludingGravity.y is expectedEvent.accelerationIncludingGravityY
+PASS deviceMotionEvent.accelerationIncludingGravity.z is expectedEvent.accelerationIncludingGravityZ
+PASS deviceMotionEvent.rotationRate.alpha is expectedEvent.rotationRateAlpha
+PASS deviceMotionEvent.rotationRate.beta is expectedEvent.rotationRateBeta
+PASS deviceMotionEvent.rotationRate.gamma is expectedEvent.rotationRateGamma
+PASS deviceMotionEvent.interval is expectedEvent.interval
+PASS deviceMotionEvent.acceleration.x is expectedEvent.accelerationX
+PASS deviceMotionEvent.acceleration.y is expectedEvent.accelerationY
+PASS deviceMotionEvent.acceleration.z is expectedEvent.accelerationZ
+PASS deviceMotionEvent.accelerationIncludingGravity.x is expectedEvent.accelerationIncludingGravityX
+PASS deviceMotionEvent.accelerationIncludingGravity.y is expectedEvent.accelerationIncludingGravityY
+PASS deviceMotionEvent.accelerationIncludingGravity.z is expectedEvent.accelerationIncludingGravityZ
+PASS deviceMotionEvent.rotationRate.alpha is expectedEvent.rotationRateAlpha
+PASS deviceMotionEvent.rotationRate.beta is expectedEvent.rotationRateBeta
+PASS deviceMotionEvent.rotationRate.gamma is expectedEvent.rotationRateGamma
+PASS deviceMotionEvent.interval is expectedEvent.interval
+PASS deviceMotionEvent.acceleration.x is expectedEvent.accelerationX
+PASS deviceMotionEvent.acceleration.y is expectedEvent.accelerationY
+PASS deviceMotionEvent.acceleration.z is expectedEvent.accelerationZ
+PASS deviceMotionEvent.accelerationIncludingGravity.x is expectedEvent.accelerationIncludingGravityX
+PASS deviceMotionEvent.accelerationIncludingGravity.y is expectedEvent.accelerationIncludingGravityY
+PASS deviceMotionEvent.accelerationIncludingGravity.z is expectedEvent.accelerationIncludingGravityZ
+PASS deviceMotionEvent.rotationRate.alpha is expectedEvent.rotationRateAlpha
+PASS deviceMotionEvent.rotationRate.beta is expectedEvent.rotationRateBeta
+PASS deviceMotionEvent.rotationRate.gamma is expectedEvent.rotationRateGamma
+PASS deviceMotionEvent.interval is expectedEvent.interval
+PASS deviceMotionEvent.acceleration.x is expectedEvent.accelerationX
+PASS deviceMotionEvent.acceleration.y is expectedEvent.accelerationY
+PASS deviceMotionEvent.acceleration.z is expectedEvent.accelerationZ
+PASS deviceMotionEvent.accelerationIncludingGravity.x is expectedEvent.accelerationIncludingGravityX
+PASS deviceMotionEvent.accelerationIncludingGravity.y is expectedEvent.accelerationIncludingGravityY
+PASS deviceMotionEvent.accelerationIncludingGravity.z is expectedEvent.accelerationIncludingGravityZ
+PASS deviceMotionEvent.rotationRate.alpha is expectedEvent.rotationRateAlpha
+PASS deviceMotionEvent.rotationRate.beta is expectedEvent.rotationRateBeta
+PASS deviceMotionEvent.rotationRate.gamma is expectedEvent.rotationRateGamma
+PASS deviceMotionEvent.interval is expectedEvent.interval
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
