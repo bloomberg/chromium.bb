@@ -6,14 +6,17 @@
 #define UI_OZONE_OZONE_PLATFORM_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "ui/events/ozone/event_factory_ozone.h"
-#include "ui/gfx/ozone/surface_factory_ozone.h"
-#include "ui/ozone/ime/input_method_context_factory_ozone.h"
 #include "ui/ozone/ozone_export.h"
+
+namespace gfx {
+class SurfaceFactoryOzone;
+}
 
 namespace ui {
 
 class CursorFactoryOzone;
+class EventFactoryOzone;
+class InputMethodContextFactoryOzone;
 class NativeDisplayDelegate;
 
 // Base class for Ozone platform implementations.

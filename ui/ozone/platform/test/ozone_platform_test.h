@@ -9,6 +9,7 @@
 #include "ui/base/cursor/ozone/cursor_factory_ozone.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/gfx/ozone/impl/file_surface_factory.h"
+#include "ui/ozone/ime/input_method_context_factory_ozone.h"
 #include "ui/ozone/ozone_platform.h"
 
 namespace ui {

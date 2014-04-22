@@ -115,6 +115,7 @@
 
 #if defined(USE_OZONE)
 #include "ui/ozone/ozone_platform.h"
+#include "ui/events/ozone/event_factory_ozone.h"
 #endif
 
 // One of the linux specific headers defines this as a macro.

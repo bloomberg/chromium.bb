@@ -6,6 +6,7 @@
 #define UI_OZONE_PLATFORM_DRI_OZONE_PLATFORM_DRI_H_
 
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
+#include "ui/ozone/ime/input_method_context_factory_ozone.h"
 #include "ui/ozone/ozone_platform.h"
 #include "ui/ozone/platform/dri/cursor_factory_evdev_dri.h"
 #include "ui/ozone/platform/dri/dri_surface_factory.h"
