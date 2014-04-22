@@ -145,6 +145,12 @@ void LogUIDismissalReason(UIDismissalReason reason) {
                             NUM_UI_RESPONSES);
 }
 
+void LogUIDisplayDisposition(UIDisplayDisposition disposition) {
+  UMA_HISTOGRAM_ENUMERATION("PasswordBubble.DisplayDisposition",
+                            disposition,
+                            NUM_DISPLAY_DISPOSITIONS);
+}
+
 }  // namespace metrics_util
 
 }  // namespace password_manager

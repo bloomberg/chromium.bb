@@ -1656,6 +1656,8 @@
         'browser/ui/omnibox/omnibox_popup_model_unittest.cc',
         'browser/ui/omnibox/omnibox_view_unittest.cc',
         'browser/ui/panels/panel_mouse_watcher_unittest.cc',
+        'browser/ui/passwords/manage_passwords_bubble_model_unittest.cc',
+        'browser/ui/passwords/manage_passwords_bubble_ui_controller_mock.cc',
         'browser/ui/passwords/password_manager_presenter_unittest.cc',
         'browser/ui/search_engines/keyword_editor_controller_unittest.cc',
         'browser/ui/search/instant_page_unittest.cc',

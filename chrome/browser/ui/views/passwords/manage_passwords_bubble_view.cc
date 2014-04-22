@@ -32,25 +32,18 @@
 
 namespace {
 
-// Metrics: "PasswordBubble.DisplayDisposition"
-enum BubbleDisplayDisposition {
-  AUTOMATIC_WITH_PASSWORD_PENDING = 0,
-  MANUAL_WITH_PASSWORD_PENDING,
-  MANUAL_MANAGE_PASSWORDS,
-  NUM_DISPLAY_DISPOSITIONS
-};
+enum FieldType { USERNAME_FIELD, PASSWORD_FIELD };
 
 // Upper limit on the size of the username and password fields.
 const int kUsernameFieldSize = 30;
 const int kPasswordFieldSize = 22;
 
 // Returns the width of |type| field.
-int GetFieldWidth(ManagePasswordsBubbleView::FieldType type) {
+int GetFieldWidth(FieldType type) {
   return ui::ResourceBundle::GetSharedInstance()
       .GetFontList(ui::ResourceBundle::SmallFont)
-      .GetExpectedTextWidth(type == ManagePasswordsBubbleView::USERNAME_FIELD
-                                ? kUsernameFieldSize
-                                : kPasswordFieldSize);
+      .GetExpectedTextWidth(type == USERNAME_FIELD ? kUsernameFieldSize
+                                                   : kPasswordFieldSize);
 }
 
 class SavePasswordRefusalComboboxModel : public ui::ComboboxModel {
@@ -91,7 +84,7 @@ ManagePasswordsBubbleView* ManagePasswordsBubbleView::manage_passwords_bubble_ =
 // static
 void ManagePasswordsBubbleView::ShowBubble(content::WebContents* web_contents,
                                            ManagePasswordsIconView* icon_view,
-                                           BubbleDisplayReason reason) {
+                                           DisplayReason reason) {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   DCHECK(browser);
   DCHECK(browser->window());
@@ -122,10 +115,9 @@ void ManagePasswordsBubbleView::ShowBubble(content::WebContents* web_contents,
 }
 
 // static
-void ManagePasswordsBubbleView::CloseBubble(
-    password_manager::metrics_util::UIDismissalReason reason) {
+void ManagePasswordsBubbleView::CloseBubble() {
   if (manage_passwords_bubble_)
-    manage_passwords_bubble_->Close(reason);
+    manage_passwords_bubble_->CloseWithoutLogging();
 }
 
 // static
@@ -139,39 +131,18 @@ ManagePasswordsBubbleView::ManagePasswordsBubbleView(
     content::WebContents* web_contents,
     views::View* anchor_view,
     ManagePasswordsIconView* icon_view,
-    BubbleDisplayReason reason)
-    : BubbleDelegateView(anchor_view,
+    DisplayReason reason)
+    : ManagePasswordsBubble(web_contents, reason),
+      BubbleDelegateView(anchor_view,
                          anchor_view ? views::BubbleBorder::TOP_RIGHT
                                      : views::BubbleBorder::NONE),
-      manage_passwords_bubble_model_(
-          new ManagePasswordsBubbleModel(web_contents)),
       icon_view_(icon_view) {
   // Compensate for built-in vertical padding in the anchor view's image.
   set_anchor_view_insets(gfx::Insets(5, 0, 5, 0));
   set_notify_enter_exit_on_child(true);
-
-  BubbleDisplayDisposition disposition = AUTOMATIC_WITH_PASSWORD_PENDING;
-  if (reason == USER_ACTION) {
-    // TODO(mkwst): Deal with "Never save passwords" once we've decided how that
-    // flow should work.
-    disposition = manage_passwords_bubble_model_->WaitingToSavePassword()
-                      ? MANUAL_WITH_PASSWORD_PENDING
-                      : MANUAL_MANAGE_PASSWORDS;
-  } else {
-    DCHECK(manage_passwords_bubble_model_->WaitingToSavePassword());
-  }
-
-  UMA_HISTOGRAM_ENUMERATION("PasswordBubble.DisplayDisposition",
-                            disposition,
-                            NUM_DISPLAY_DISPOSITIONS);
 }
 
-ManagePasswordsBubbleView::~ManagePasswordsBubbleView() {
-  if (dismissal_reason_ == password_manager::metrics_util::NOT_DISPLAYED)
-    return;
-
-  password_manager::metrics_util::LogUIDismissalReason(dismissal_reason_);
-}
+ManagePasswordsBubbleView::~ManagePasswordsBubbleView() {}
 
 void ManagePasswordsBubbleView::BuildColumnSet(views::GridLayout* layout,
                                                ColumnSetType type) {
@@ -235,22 +206,21 @@ void ManagePasswordsBubbleView::AdjustForFullscreen(
   SetAnchorRect(gfx::Rect(x_pos, screen_bounds.y(), 0, 0));
 }
 
-void ManagePasswordsBubbleView::Close(
-    password_manager::metrics_util::UIDismissalReason reason) {
-  dismissal_reason_ = reason;
-  icon_view_->SetTooltip(
-      manage_passwords_bubble_model_->manage_passwords_bubble_state() ==
-      ManagePasswordsBubbleModel::PASSWORD_TO_BE_SAVED);
+void ManagePasswordsBubbleView::Close() {
+  icon_view_->SetTooltip(model()->manage_passwords_bubble_state() ==
+                         ManagePasswordsBubbleModel::PASSWORD_TO_BE_SAVED);
+  GetWidget()->Close();
+}
+
+void ManagePasswordsBubbleView::CloseWithoutLogging() {
+  model()->OnCloseWithoutLogging();
+  icon_view_->SetTooltip(model()->manage_passwords_bubble_state() ==
+                         ManagePasswordsBubbleModel::PASSWORD_TO_BE_SAVED);
   GetWidget()->Close();
 }
 
 void ManagePasswordsBubbleView::Init() {
   using views::GridLayout;
-
-  // Default to a dismissal reason of "no interaction". If the user interacts
-  // with the button in such a way that it closes, we'll reset this value
-  // accordingly.
-  dismissal_reason_ = password_manager::metrics_util::NO_DIRECT_INTERACTION;
 
   GridLayout* layout = new GridLayout(this);
   SetFocusable(true);
@@ -273,8 +243,7 @@ void ManagePasswordsBubbleView::Init() {
           .width());
 
   // Build and populate the header.
-  views::Label* title_label =
-      new views::Label(manage_passwords_bubble_model_->title());
+  views::Label* title_label = new views::Label(model()->title());
   title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_label->SetMultiLine(true);
   title_label->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
@@ -285,17 +254,17 @@ void ManagePasswordsBubbleView::Init() {
   layout->AddView(title_label);
   layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 
-  if (manage_passwords_bubble_model_->WaitingToSavePassword()) {
+  if (model()->WaitingToSavePassword()) {
     // If we've got a password that we're deciding whether or not to save,
     // then we need to display a single-view columnset containing the
     // ManagePasswordItemView, followed by double-view columnset containing
     // a "Save" and "Reject" button.
-    ManagePasswordItemView* item = new ManagePasswordItemView(
-        manage_passwords_bubble_model_,
-        manage_passwords_bubble_model_->pending_credentials(),
-        first_field_width,
-        second_field_width,
-        ManagePasswordItemView::FIRST_ITEM);
+    ManagePasswordItemView* item =
+        new ManagePasswordItemView(model(),
+                                   model()->pending_credentials(),
+                                   first_field_width,
+                                   second_field_width,
+                                   ManagePasswordItemView::FIRST_ITEM);
     layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
     layout->AddView(item);
 
@@ -320,16 +289,17 @@ void ManagePasswordsBubbleView::Init() {
     // TODO(mkwst): Do we really want the "No passwords" case? It would probably
     // be better to only clear the pending password upon navigation, rather than
     // as soon as the bubble closes.
-    if (!manage_passwords_bubble_model_->best_matches().empty()) {
+    if (!model()->best_matches().empty()) {
       for (autofill::PasswordFormMap::const_iterator i(
-               manage_passwords_bubble_model_->best_matches().begin());
-           i != manage_passwords_bubble_model_->best_matches().end(); ++i) {
+               model()->best_matches().begin());
+           i != model()->best_matches().end();
+           ++i) {
         ManagePasswordItemView* item = new ManagePasswordItemView(
-            manage_passwords_bubble_model_,
+            model(),
             *i->second,
             first_field_width,
             second_field_width,
-            i == manage_passwords_bubble_model_->best_matches().begin()
+            i == model()->best_matches().begin()
                 ? ManagePasswordItemView::FIRST_ITEM
                 : ManagePasswordItemView::SUBSEQUENT_ITEM);
 
@@ -348,8 +318,7 @@ void ManagePasswordsBubbleView::Init() {
     // Build a "manage" link and "done" button, and throw them both into a new
     // row
     // containing a double-view columnset.
-    manage_link_ =
-        new views::Link(manage_passwords_bubble_model_->manage_link());
+    manage_link_ = new views::Link(model()->manage_link());
     manage_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     manage_link_->SetUnderline(false);
     manage_link_->set_listener(this);
@@ -376,39 +345,32 @@ void ManagePasswordsBubbleView::ButtonPressed(views::Button* sender,
                                               const ui::Event& event) {
   DCHECK(sender == save_button_ || sender == done_button_);
 
-  password_manager::metrics_util::UIDismissalReason reason;
-  if (sender == save_button_) {
-    manage_passwords_bubble_model_->OnSaveClicked();
-    reason = password_manager::metrics_util::CLICKED_SAVE;
-  } else {
-    reason = password_manager::metrics_util::CLICKED_DONE;
-  }
-  Close(reason);
+  if (sender == save_button_)
+    model()->OnSaveClicked();
+  else
+    model()->OnDoneClicked();
+  Close();
 }
 
 void ManagePasswordsBubbleView::LinkClicked(views::Link* source,
                                             int event_flags) {
   DCHECK_EQ(source, manage_link_);
-  manage_passwords_bubble_model_->OnManageLinkClicked();
-  Close(password_manager::metrics_util::CLICKED_MANAGE);
+  model()->OnManageLinkClicked();
+  Close();
 }
 
 void ManagePasswordsBubbleView::OnPerformAction(views::Combobox* source) {
   DCHECK_EQ(source, refuse_combobox_);
-  password_manager::metrics_util::UIDismissalReason reason =
-      password_manager::metrics_util::NOT_DISPLAYED;
   switch (refuse_combobox_->selected_index()) {
     case SavePasswordRefusalComboboxModel::INDEX_NOPE:
-      manage_passwords_bubble_model_->OnNopeClicked();
-      reason = password_manager::metrics_util::CLICKED_NOPE;
+      model()->OnNopeClicked();
       break;
     case SavePasswordRefusalComboboxModel::INDEX_NEVER_FOR_THIS_SITE:
-      manage_passwords_bubble_model_->OnNeverForThisSiteClicked();
-      reason = password_manager::metrics_util::CLICKED_NEVER;
+      model()->OnNeverForThisSiteClicked();
       break;
     default:
       NOTREACHED();
       break;
   }
-  Close(reason);
+  Close();
 }

@@ -1237,6 +1237,8 @@
         'browser/ui/panels/stacked_panel_collection.h',
         'browser/ui/panels/stacked_panel_drag_handler.cc',
         'browser/ui/panels/stacked_panel_drag_handler.h',
+        'browser/ui/passwords/manage_passwords_bubble.cc',
+        'browser/ui/passwords/manage_passwords_bubble.h',
         'browser/ui/passwords/manage_passwords_bubble_model.cc',
         'browser/ui/passwords/manage_passwords_bubble_model.h',
         'browser/ui/passwords/manage_passwords_bubble_ui_controller.cc',

@@ -22,7 +22,15 @@ enum ResponseType {
   NUM_RESPONSE_TYPES,
 };
 
-// Metrics: "PasswordManager.UIResponse"
+// Metrics: "PasswordBubble.DisplayDisposition"
+enum UIDisplayDisposition {
+  AUTOMATIC_WITH_PASSWORD_PENDING = 0,
+  MANUAL_WITH_PASSWORD_PENDING,
+  MANUAL_MANAGE_PASSWORDS,
+  NUM_DISPLAY_DISPOSITIONS
+};
+
+// Metrics: "PasswordManager.UIDismissalReason"
 enum UIDismissalReason {
   // We use this to mean both "Bubble lost focus" and "No interaction with the
   // infobar", depending on which experiment is active.
@@ -81,6 +89,9 @@ void LogUIDismissalReason(UIDismissalReason reason);
 // TODO(mkwst): Drop this (and the infobar metric itself) once the new metric
 // has rolled out to stable.
 void LogUIDismissalReason(ResponseType type);
+
+// Log the appropriate display disposition.
+void LogUIDisplayDisposition(UIDisplayDisposition disposition);
 
 }  // namespace metrics_util
 

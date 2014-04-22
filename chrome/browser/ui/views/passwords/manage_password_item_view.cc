@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/passwords/manage_password_item_view.h"
 
+#include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_resources.h"
 #include "ui/base/l10n/l10n_util.h"

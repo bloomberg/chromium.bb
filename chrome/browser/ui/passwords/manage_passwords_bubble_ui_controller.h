@@ -43,13 +43,22 @@ class ManagePasswordsBubbleUIController
   virtual void OnLoginsChanged(
       const password_manager::PasswordStoreChangeList& changes) OVERRIDE;
 
-  void SavePassword();
+  // Called from the model when the user chooses to save a password; passes the
+  // action off to the FormManager.
+  virtual void SavePassword();
 
-  void NeverSavePassword();
+  // Called from the model when the user chooses to never save passwords; passes
+  // the action off to the FormManager.
+  virtual void NeverSavePassword();
 
   // Called when the bubble is opened after the icon gets displayed. We change
   // the state to know that we do not need to pop up the bubble again.
   void OnBubbleShown();
+
+  // Open a new tab, pointing to the password manager settings page.
+  virtual void NavigateToPasswordManagerSettingsPage();
+
+  virtual const autofill::PasswordForm& PendingCredentials() const;
 
   bool manage_passwords_icon_to_be_shown() const {
     return manage_passwords_icon_to_be_shown_;
@@ -71,10 +80,6 @@ class ManagePasswordsBubbleUIController
     password_to_be_saved_ = false;
   }
 
-  const autofill::PasswordForm& pending_credentials() const {
-    return form_manager_->pending_credentials();
-  }
-
   const autofill::PasswordFormMap best_matches() const {
     return password_form_map_;
   }
@@ -84,11 +89,12 @@ class ManagePasswordsBubbleUIController
     autofill_blocked_ = autofill_blocked;
   }
 
- private:
-  friend class content::WebContentsUserData<ManagePasswordsBubbleUIController>;
-
+ protected:
   explicit ManagePasswordsBubbleUIController(
       content::WebContents* web_contents);
+
+ private:
+  friend class content::WebContentsUserData<ManagePasswordsBubbleUIController>;
 
   // Called when a passwordform is autofilled, when a new passwordform is
   // submitted, or when a navigation occurs to update the visibility of the

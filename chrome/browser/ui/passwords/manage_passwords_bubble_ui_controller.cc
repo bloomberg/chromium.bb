@@ -8,7 +8,9 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
+#include "chrome/common/url_constants.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "content/public/browser/notification_service.h"
 
@@ -58,7 +60,7 @@ void ManagePasswordsBubbleUIController::OnPasswordSubmitted(
     PasswordFormManager* form_manager) {
   form_manager_.reset(form_manager);
   password_form_map_ = form_manager_->best_matches();
-  origin_ = pending_credentials().origin;
+  origin_ = PendingCredentials().origin;
   manage_passwords_icon_to_be_shown_ = true;
   password_to_be_saved_ = true;
   manage_passwords_bubble_needs_showing_ = true;
@@ -117,6 +119,17 @@ void ManagePasswordsBubbleUIController::OnBubbleShown() {
   unset_manage_passwords_bubble_needs_showing();
 }
 
+void ManagePasswordsBubbleUIController::
+    NavigateToPasswordManagerSettingsPage() {
+// TODO(mkwst): chrome_pages.h is compiled out of Android. Need to figure out
+// how this navigation should work there.
+#if !defined(OS_ANDROID)
+  chrome::ShowSettingsSubPage(
+      chrome::FindBrowserWithWebContents(web_contents()),
+      chrome::kPasswordManagerSubPage);
+#endif
+}
+
 void ManagePasswordsBubbleUIController::SavePassword() {
   DCHECK(form_manager_.get());
   form_manager_->Save();
@@ -137,4 +150,10 @@ void ManagePasswordsBubbleUIController::DidNavigateMainFrame(
   password_to_be_saved_ = false;
   manage_passwords_bubble_needs_showing_ = false;
   UpdateBubbleAndIconVisibility();
+}
+
+const autofill::PasswordForm& ManagePasswordsBubbleUIController::
+    PendingCredentials() const {
+  DCHECK(form_manager_);
+  return form_manager_->pending_credentials();
 }

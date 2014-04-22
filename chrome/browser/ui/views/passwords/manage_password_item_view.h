@@ -8,6 +8,8 @@
 #include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
 #include "components/autofill/core/common/password_form.h"
 
+class ManagePasswordsBubbleModel;
+
 namespace views {
 class GridLayout;
 class ImageButton;

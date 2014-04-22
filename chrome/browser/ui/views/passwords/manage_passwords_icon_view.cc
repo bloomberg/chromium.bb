@@ -28,8 +28,7 @@ void ManagePasswordsIconView::Update(
           manage_passwords_icon_to_be_shown() &&
       !location_bar_delegate_->GetToolbarModel()->input_in_progress());
   if (!visible()) {
-    ManagePasswordsBubbleView::CloseBubble(
-        password_manager::metrics_util::NOT_DISPLAYED);
+    ManagePasswordsBubbleView::CloseBubble();
     return;
   }
   int icon_to_display =
