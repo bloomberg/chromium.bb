@@ -33567,6 +33567,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="720" label="WEBCAMPRIVATE_SET"/>
   <int value="721" label="WEBCAMPRIVATE_RESET"/>
   <int value="722" label="WEBCAMPRIVATE_GET"/>
+  <int value="723" label="BLUETOOTHLOWENERGY_GETSERVICE"/>
+  <int value="724" label="BLUETOOTHLOWENERGY_GETSERVICES"/>
+  <int value="725" label="BLUETOOTHLOWENERGY_GETCHARACTERISTIC"/>
+  <int value="726" label="BLUETOOTHLOWENERGY_GETCHARACTERISTICS"/>
+  <int value="727" label="BLUETOOTHLOWENERGY_GETINCLUDEDSERVICES"/>
+  <int value="728" label="BLUETOOTHLOWENERGY_GETDESCRIPTOR"/>
+  <int value="729" label="BLUETOOTHLOWENERGY_GETDESCRIPTORS"/>
+  <int value="730" label="BLUETOOTHLOWENERGY_READCHARACTERISTICVALUE"/>
+  <int value="731" label="BLUETOOTHLOWENERGY_WRITECHARACTERISTICVALUE"/>
+  <int value="732" label="BLUETOOTHLOWENERGY_READDESCRIPTORVALUE"/>
+  <int value="733" label="BLUETOOTHLOWENERGY_WRITEDESCRIPTORVALUE"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

@@ -111,6 +111,10 @@
     "dependencies": ["manifest:bluetooth"],
     "contexts": ["blessed_extension"]
   },
+  "bluetoothLowEnergy": {
+    "dependencies": ["manifest:bluetooth"],
+    "contexts": ["blessed_extension"]
+  },
   "bluetoothPrivate": {
     "dependencies": ["permission:bluetoothPrivate"],
     "contexts": ["blessed_extension"]

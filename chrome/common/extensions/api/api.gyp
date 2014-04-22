@@ -46,6 +46,7 @@
               'automation.idl',
               'autotest_private.idl',
               'bluetooth.idl',
+              'bluetooth_low_energy.idl',
               'bluetooth_private.json',
               'bookmark_manager_private.json',
               'bookmarks.json',
