@@ -554,13 +554,6 @@ int Element::offsetTop()
 
 int Element::offsetWidth()
 {
-    document().updateRenderTreeForNodeIfNeeded(this);
-
-    if (RenderBox* renderer = renderBox()) {
-        if (renderer->canDetermineWidthWithoutLayout())
-            return adjustLayoutUnitForAbsoluteZoom(renderer->fixedOffsetWidth(), *renderer).round();
-    }
-
     document().updateLayoutIgnorePendingStylesheets();
     if (RenderBoxModelObject* renderer = renderBoxModelObject())
         return adjustLayoutUnitForAbsoluteZoom(renderer->pixelSnappedOffsetWidth(), *renderer).round();

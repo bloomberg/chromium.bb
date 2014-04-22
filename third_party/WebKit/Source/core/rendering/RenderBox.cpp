@@ -361,28 +361,6 @@ int RenderBox::pixelSnappedOffsetHeight() const
     return snapSizeToPixel(offsetHeight(), y() + clientTop());
 }
 
-bool RenderBox::canDetermineWidthWithoutLayout() const
-{
-    // FIXME: Remove function and callers.
-    return false;
-}
-
-LayoutUnit RenderBox::fixedOffsetWidth() const
-{
-    ASSERT(canDetermineWidthWithoutLayout());
-
-    RenderStyle* style = this->style();
-
-    LayoutUnit width = std::max(LayoutUnit(style->minWidth().value()), LayoutUnit(style->width().value()));
-    if (style->maxWidth().isFixed())
-        width = std::min(LayoutUnit(style->maxWidth().value()), width);
-
-    LayoutUnit borderLeft = style->borderLeft().nonZero() ? style->borderLeft().width() : 0;
-    LayoutUnit borderRight = style->borderRight().nonZero() ? style->borderRight().width() : 0;
-
-    return width + borderLeft + borderRight + style->paddingLeft().value() + style->paddingRight().value();
-}
-
 int RenderBox::scrollWidth() const
 {
     if (hasOverflowClip())
@@ -2158,12 +2136,9 @@ static float getMaxWidthListMarker(const RenderBox* renderer)
             if (!itemChild->isListMarker())
                 continue;
             RenderBox* itemMarker = toRenderBox(itemChild);
-            // FIXME: canDetermineWidthWithoutLayout expects us to use fixedOffsetWidth, which this code
-            // does not do! This check is likely wrong.
-            if (!itemMarker->canDetermineWidthWithoutLayout() && itemMarker->needsLayout()) {
-                // Make sure to compute the autosized width.
+            // Make sure to compute the autosized width.
+            if (itemMarker->needsLayout())
                 itemMarker->layout();
-            }
             maxWidth = max<float>(maxWidth, toRenderListMarker(itemMarker)->logicalWidth().toFloat());
             break;
         }
