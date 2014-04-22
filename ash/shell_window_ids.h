@@ -61,50 +61,45 @@ const int kShellWindowId_AppListContainer = 12;
 // The container for user-specific modal windows.
 const int kShellWindowId_SystemModalContainer = 13;
 
-// The container for input method components such like candidate windows.  They
-// are almost panels but have no activations/focus, and they should appear over
-// the AppList and SystemModal dialogs.
-const int kShellWindowId_InputMethodContainer = 14;
-
 // The container for the lock screen background.
-const int kShellWindowId_LockScreenBackgroundContainer = 15;
+const int kShellWindowId_LockScreenBackgroundContainer = 14;
 
 // The container for the lock screen.
-const int kShellWindowId_LockScreenContainer = 16;
+const int kShellWindowId_LockScreenContainer = 15;
 
 // The container for the lock screen modal windows.
-const int kShellWindowId_LockSystemModalContainer = 17;
+const int kShellWindowId_LockSystemModalContainer = 16;
 
 // The container for the status area.
-const int kShellWindowId_StatusContainer = 18;
+const int kShellWindowId_StatusContainer = 17;
 
 // The container for menus.
-const int kShellWindowId_MenuContainer = 19;
+const int kShellWindowId_MenuContainer = 18;
 
 // The container for drag/drop images and tooltips.
-const int kShellWindowId_DragImageAndTooltipContainer = 20;
+const int kShellWindowId_DragImageAndTooltipContainer = 19;
 
 // The container for bubbles briefly overlaid onscreen to show settings changes
-// (volume, brightness, etc.).
-const int kShellWindowId_SettingBubbleContainer = 21;
+// (volume, brightness, input method bubbles, etc.).
+const int kShellWindowId_SettingBubbleContainer = 20;
 
 // The container for special components overlaid onscreen, such as the
 // region selector for partial screenshots.
-const int kShellWindowId_OverlayContainer = 22;
+const int kShellWindowId_OverlayContainer = 21;
 
 // ID of the window created by PhantomWindowController or DragWindowController.
-const int kShellWindowId_PhantomWindow = 23;
+const int kShellWindowId_PhantomWindow = 22;
 
 // A parent container that holds the virtual keyboard container. This is to
 // ensure that the virtual keyboard is stacked above most containers but below
 // the mouse cursor and the power off animation.
-const int kShellWindowId_VirtualKeyboardParentContainer = 24;
+const int kShellWindowId_VirtualKeyboardParentContainer = 23;
 
 // The container for mouse cursor.
-const int kShellWindowId_MouseCursorContainer = 25;
+const int kShellWindowId_MouseCursorContainer = 24;
 
 // The topmost container, used for power off animation.
-const int kShellWindowId_PowerButtonAnimationContainer = 26;
+const int kShellWindowId_PowerButtonAnimationContainer = 25;
 
 }  // namespace ash
 
