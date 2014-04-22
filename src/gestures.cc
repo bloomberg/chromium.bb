@@ -495,6 +495,14 @@ void GestureInterpreter::set_callback(GestureReadyFunction callback,
 }
 
 void GestureInterpreter::InitializeTouchpad(void) {
+  if (prop_reg_.get()) {
+    IntProperty stack_version(prop_reg_.get(), "Touchpad Stack Version", 2);
+    if (stack_version.val_ == 2) {
+      InitializeTouchpad2();
+      return;
+    }
+  }
+
   Interpreter* temp = new ImmediateInterpreter(prop_reg_.get(), tracer_.get());
   temp = new FlingStopFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
   temp = new ClickWiggleFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
@@ -524,6 +532,32 @@ void GestureInterpreter::InitializeTouchpad(void) {
                                                 tracer_.get());
   temp = new NonLinearityFilterInterpreter(prop_reg_.get(), temp,
                                            tracer_.get());
+  temp = loggingFilter_ = new LoggingFilterInterpreter(prop_reg_.get(), temp,
+                                                       tracer_.get());
+  interpreter_.reset(temp);
+  temp = NULL;
+}
+
+void GestureInterpreter::InitializeTouchpad2(void) {
+  Interpreter* temp = new ImmediateInterpreter(prop_reg_.get(), tracer_.get());
+  temp = new FlingStopFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
+  temp = new ClickWiggleFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
+  temp = new PalmClassifyingFilterInterpreter(prop_reg_.get(), temp,
+                                              tracer_.get());
+  temp = new LookaheadFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
+  temp = new BoxFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
+  temp = new StationaryWiggleFilterInterpreter(prop_reg_.get(), temp,
+                                               tracer_.get());
+  temp = new AccelFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
+  temp = new TrendClassifyingFilterInterpreter(prop_reg_.get(), temp,
+                                               tracer_.get());
+  temp = new MetricsFilterInterpreter(prop_reg_.get(), temp, tracer_.get(),
+                                      GESTURES_DEVCLASS_TOUCHPAD);
+  temp = new ScalingFilterInterpreter(prop_reg_.get(), temp, tracer_.get(),
+                                      GESTURES_DEVCLASS_TOUCHPAD);
+  temp = new FingerMergeFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
+  temp = new IntegralGestureFilterInterpreter(temp, tracer_.get());
+  temp = new StuckButtonInhibitorFilterInterpreter(temp, tracer_.get());
   temp = loggingFilter_ = new LoggingFilterInterpreter(prop_reg_.get(), temp,
                                                        tracer_.get());
   interpreter_.reset(temp);

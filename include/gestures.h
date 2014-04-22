@@ -495,6 +495,7 @@ struct GestureInterpreter {
   std::string EncodeActivityLog();
  private:
   void InitializeTouchpad(void);
+  void InitializeTouchpad2(void);
   void InitializeMouse(void);
   void InitializeMultitouchMouse(void);
 
