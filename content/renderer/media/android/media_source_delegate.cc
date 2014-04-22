@@ -677,7 +677,7 @@ void MediaSourceDelegate::NotifyDemuxerReady() {
     configs->video_extra_data = std::vector<uint8>(
         config.extra_data(), config.extra_data() + config.extra_data_size());
   }
-  configs->duration_ms = GetDurationMs();
+  configs->duration = GetDuration();
 
   if (demuxer_client_)
     demuxer_client_->DemuxerReady(demuxer_client_id_, *configs);
@@ -686,18 +686,16 @@ void MediaSourceDelegate::NotifyDemuxerReady() {
   is_video_encrypted_ = configs->is_video_encrypted;
 }
 
-int MediaSourceDelegate::GetDurationMs() {
+base::TimeDelta MediaSourceDelegate::GetDuration() const {
   DCHECK(media_loop_->BelongsToCurrentThread());
   if (!chunk_demuxer_)
-    return -1;
+    return media::kNoTimestamp();
 
-  double duration_ms = chunk_demuxer_->GetDuration() * 1000;
-  if (duration_ms > std::numeric_limits<int32>::max()) {
-    LOG(WARNING) << "Duration from ChunkDemuxer is too large; probably "
-                    "something has gone wrong.";
-    return std::numeric_limits<int32>::max();
-  }
-  return duration_ms;
+  double duration = chunk_demuxer_->GetDuration();
+  if (duration == std::numeric_limits<double>::infinity())
+    return media::kInfiniteDuration();
+
+  return ConvertSecondsToTimestamp(duration);
 }
 
 void MediaSourceDelegate::OnDemuxerOpened() {

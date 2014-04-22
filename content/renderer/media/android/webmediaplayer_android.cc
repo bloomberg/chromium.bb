@@ -422,10 +422,7 @@ double WebMediaPlayerAndroid::maxTimeSeekable() const {
   if (ready_state_ < WebMediaPlayer::ReadyStateHaveMetadata)
     return 0.0;
 
-  if (duration() == std::numeric_limits<double>::infinity())
-    return 0.0;
-
-  return std::min(std::numeric_limits<int32>::max() / 1000.0, duration());
+  return duration();
 }
 
 bool WebMediaPlayerAndroid::didLoadingProgress() const {

@@ -168,7 +168,7 @@ class MediaSourceDelegate : public media::DemuxerHost {
                      const scoped_refptr<media::DecoderBuffer>& buffer);
 
   // Helper function for calculating duration.
-  int GetDurationMs();
+  base::TimeDelta GetDuration() const;
 
   bool IsSeeking() const;
 

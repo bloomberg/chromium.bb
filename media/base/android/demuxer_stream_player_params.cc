@@ -12,8 +12,7 @@ DemuxerConfigs::DemuxerConfigs()
       audio_sampling_rate(0),
       is_audio_encrypted(false),
       video_codec(kUnknownVideoCodec),
-      is_video_encrypted(false),
-      duration_ms(0) {}
+      is_video_encrypted(false) {}
 
 DemuxerConfigs::~DemuxerConfigs() {}
 

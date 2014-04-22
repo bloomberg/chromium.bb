@@ -29,7 +29,8 @@ namespace media {
     }                                                             \
   } while (0)
 
-const int kDefaultDurationInMs = 10000;
+const base::TimeDelta kDefaultDuration =
+    base::TimeDelta::FromMilliseconds(10000);
 
 // TODO(wolenetz/qinmin): Simplify tests with more effective mock usage, and
 // fix flaky pointer-based MDJ inequality testing. See http://crbug.com/327839.
@@ -264,7 +265,7 @@ class MediaSourcePlayerTest : public testing::Test {
     configs.audio_codec = audio_codec;
     configs.audio_channels = 2;
     configs.is_audio_encrypted = false;
-    configs.duration_ms = kDefaultDurationInMs;
+    configs.duration = kDefaultDuration;
 
     if (audio_codec == kCodecVorbis) {
       configs.audio_sampling_rate = 44100;
@@ -292,7 +293,7 @@ class MediaSourcePlayerTest : public testing::Test {
     configs.video_codec = kCodecVP8;
     configs.video_size = gfx::Size(320, 240);
     configs.is_video_encrypted = false;
-    configs.duration_ms = kDefaultDurationInMs;
+    configs.duration = kDefaultDuration;
     return configs;
   }
 

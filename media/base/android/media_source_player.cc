@@ -297,7 +297,7 @@ void MediaSourcePlayer::StartInternal() {
 void MediaSourcePlayer::OnDemuxerConfigsAvailable(
     const DemuxerConfigs& configs) {
   DVLOG(1) << __FUNCTION__;
-  duration_ = base::TimeDelta::FromMilliseconds(configs.duration_ms);
+  duration_ = configs.duration;
   clock_.SetDuration(duration_);
 
   audio_codec_ = configs.audio_codec;

@@ -31,7 +31,7 @@ struct MEDIA_EXPORT DemuxerConfigs {
   bool is_video_encrypted;
   std::vector<uint8> video_extra_data;
 
-  int duration_ms;
+  base::TimeDelta duration;
 };
 
 struct MEDIA_EXPORT AccessUnit {

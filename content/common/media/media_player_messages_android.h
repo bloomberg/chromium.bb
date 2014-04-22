@@ -36,7 +36,7 @@ IPC_STRUCT_TRAITS_BEGIN(media::DemuxerConfigs)
   IPC_STRUCT_TRAITS_MEMBER(is_video_encrypted)
   IPC_STRUCT_TRAITS_MEMBER(video_extra_data)
 
-  IPC_STRUCT_TRAITS_MEMBER(duration_ms)
+  IPC_STRUCT_TRAITS_MEMBER(duration)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(media::DemuxerData)
