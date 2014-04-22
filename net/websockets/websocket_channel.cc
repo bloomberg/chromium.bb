@@ -464,8 +464,10 @@ void WebSocketChannel::StartClosingHandshake(uint16 code,
     // errata 3227 to RFC6455. If the renderer is sending us an invalid code or
     // reason it must be malfunctioning in some way, and based on that we
     // interpret this as an internal error.
-    if (SendClose(kWebSocketErrorInternalServerError, "") != CHANNEL_DELETED)
+    if (SendClose(kWebSocketErrorInternalServerError, "") != CHANNEL_DELETED) {
+      DCHECK_EQ(CONNECTED, state_);
       state_ = SEND_CLOSED;
+    }
     return;
   }
   if (SendClose(
@@ -473,6 +475,7 @@ void WebSocketChannel::StartClosingHandshake(uint16 code,
           StreamingUtf8Validator::Validate(reason) ? reason : std::string()) ==
       CHANNEL_DELETED)
     return;
+  DCHECK_EQ(CONNECTED, state_);
   state_ = SEND_CLOSED;
 }
 
@@ -797,6 +800,7 @@ ChannelState WebSocketChannel::HandleFrameByState(
           state_ = RECV_CLOSED;
           if (SendClose(code, reason) == CHANNEL_DELETED)
             return CHANNEL_DELETED;
+          DCHECK_EQ(RECV_CLOSED, state_);
           state_ = CLOSE_WAIT;
 
           if (event_interface_->OnClosingHandshake() == CHANNEL_DELETED)
