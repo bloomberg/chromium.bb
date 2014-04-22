@@ -98,6 +98,7 @@ message SyncEnums {
                               // these data types only and then re-sync with
                               // a server.
     DISABLED_BY_ADMIN = 10;   // An administrator disabled sync for this domain.
+    USER_ROLLBACK     = 11;   // Client told to stop syncing and roll back.
     UNKNOWN            = 100; // Unknown value. This should never be explicitly
                               // used; it is the default value when an
                               // out-of-date client parses a value it doesn't

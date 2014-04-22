@@ -915,10 +915,18 @@ sync_pb::SyncEnums::ErrorType
       return sync_pb::SyncEnums::MIGRATION_DONE;
     case syncer::UNKNOWN_ERROR:
       return sync_pb::SyncEnums::UNKNOWN;
-    default:
-      NOTREACHED();
+    case syncer::INVALID_CREDENTIAL:
+      NOTREACHED();   // NOTREACHED() because auth error is not set through
+                      // error code in sync response.
+      return sync_pb::SyncEnums::UNKNOWN;
+    case syncer::DISABLED_BY_ADMIN:
+      return sync_pb::SyncEnums::DISABLED_BY_ADMIN;
+    case syncer::USER_ROLLBACK:
+      return sync_pb::SyncEnums::USER_ROLLBACK;
+    case syncer::NON_RETRIABLE_ERROR:
       return sync_pb::SyncEnums::UNKNOWN;
   }
+  return sync_pb::SyncEnums::UNKNOWN;
 }
 
 sync_pb::SyncEnums::Action GetClientToServerResponseAction(
@@ -934,12 +942,15 @@ sync_pb::SyncEnums::Action GetClientToServerResponseAction(
       return sync_pb::SyncEnums::STOP_AND_RESTART_SYNC;
     case syncer::DISABLE_SYNC_ON_CLIENT:
       return sync_pb::SyncEnums::DISABLE_SYNC_ON_CLIENT;
+    case syncer::STOP_SYNC_FOR_DISABLED_ACCOUNT:
+    case syncer::DISABLE_SYNC_AND_ROLLBACK:
+      NOTREACHED();   // No corresponding proto action for these. Shouldn't
+                      // test.
+      return sync_pb::SyncEnums::UNKNOWN_ACTION;
     case syncer::UNKNOWN_ACTION:
       return sync_pb::SyncEnums::UNKNOWN_ACTION;
-    default:
-      NOTREACHED();
-      return sync_pb::SyncEnums::UNKNOWN_ACTION;
   }
+  return sync_pb::SyncEnums::UNKNOWN_ACTION;
 }
 
 }  // namespace

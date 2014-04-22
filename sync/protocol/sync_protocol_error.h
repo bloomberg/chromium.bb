@@ -42,6 +42,9 @@ enum SyncProtocolErrorType {
   // An administrator disabled sync for this domain.
   DISABLED_BY_ADMIN,
 
+  // Client told to stop syncing this device and roll back local data.
+  USER_ROLLBACK,
+
   // The default value.
   UNKNOWN_ERROR
 };
@@ -65,6 +68,9 @@ enum ClientAction {
   // Account is disabled by admin. Stop sync, clear prefs and show message on
   // settings page that account is disabled.
   STOP_SYNC_FOR_DISABLED_ACCOUNT,
+
+  // Disable sync and roll back local model to pre-sync state.
+  DISABLE_SYNC_AND_ROLLBACK,
 
   // The default. No action.
   UNKNOWN_ACTION
