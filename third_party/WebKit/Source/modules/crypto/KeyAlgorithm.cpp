@@ -44,11 +44,11 @@ KeyAlgorithm::~KeyAlgorithm()
 {
 }
 
-PassRefPtrWillBeRawPtr<KeyAlgorithm> KeyAlgorithm::create(const blink::WebCryptoKeyAlgorithm& algorithm)
+KeyAlgorithm* KeyAlgorithm::create(const blink::WebCryptoKeyAlgorithm& algorithm)
 {
     switch (algorithm.paramsType()) {
     case blink::WebCryptoKeyAlgorithmParamsTypeNone:
-        return adoptRefWillBeNoop(new KeyAlgorithm(algorithm));
+        return new KeyAlgorithm(algorithm);
     case blink::WebCryptoKeyAlgorithmParamsTypeAes:
         return AesKeyAlgorithm::create(algorithm);
     case blink::WebCryptoKeyAlgorithmParamsTypeHmac:
@@ -59,14 +59,14 @@ PassRefPtrWillBeRawPtr<KeyAlgorithm> KeyAlgorithm::create(const blink::WebCrypto
         return RsaHashedKeyAlgorithm::create(algorithm);
     }
     ASSERT_NOT_REACHED();
-    return nullptr;
+    return 0;
 }
 
-PassRefPtrWillBeRawPtr<KeyAlgorithm> KeyAlgorithm::createHash(const blink::WebCryptoAlgorithm& hash)
+KeyAlgorithm* KeyAlgorithm::createHash(const blink::WebCryptoAlgorithm& hash)
 {
     // Assume that none of the hash algorithms have any parameters.
     ASSERT(hash.paramsType() == blink::WebCryptoAlgorithmParamsTypeNone);
-    return adoptRefWillBeNoop(new KeyAlgorithm(blink::WebCryptoKeyAlgorithm(hash.id(), nullptr)));
+    return new KeyAlgorithm(blink::WebCryptoKeyAlgorithm(hash.id(), nullptr));
 }
 
 KeyAlgorithm::KeyAlgorithm(const blink::WebCryptoKeyAlgorithm& algorithm)

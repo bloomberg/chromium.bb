@@ -2278,8 +2278,7 @@ private:
             return false;
         }
 
-        RefPtrWillBeRawPtr<Key> k = Key::create(key);
-        *value = toV8(k.release(), v8::Handle<v8::Object>(), m_isolate);
+        *value = toV8(Key::create(key), v8::Handle<v8::Object>(), m_isolate);
         return true;
     }
 

@@ -27,7 +27,7 @@
  */
 
 [
-    WillBeGarbageCollected,
+    GarbageCollected,
     NoInterfaceObject
 ] interface Crypto {
     // Note that getRandomValues() is available even when the "Crypto"

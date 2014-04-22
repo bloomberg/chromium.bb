@@ -40,9 +40,12 @@ namespace WebCore {
 
 class ExceptionState;
 
-class Crypto : public RefCountedWillBeGarbageCollectedFinalized<Crypto>, public ScriptWrappable {
+class Crypto : public GarbageCollectedFinalized<Crypto>, public ScriptWrappable {
 public:
-    static PassRefPtrWillBeRawPtr<Crypto> create() { return adoptRefWillBeNoop(new Crypto()); }
+    static Crypto* create()
+    {
+        return new Crypto();
+    }
 
     void getRandomValues(ArrayBufferView*, ExceptionState&);
 
@@ -53,7 +56,7 @@ public:
 private:
     Crypto();
 
-    RefPtrWillBeMember<SubtleCrypto> m_subtleCrypto;
+    Member<SubtleCrypto> m_subtleCrypto;
 };
 
 }

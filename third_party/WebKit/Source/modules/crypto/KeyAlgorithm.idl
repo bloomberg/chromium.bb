@@ -29,7 +29,7 @@
  */
 
 [
-    WillBeGarbageCollected,
+    GarbageCollected,
     NoInterfaceObject,
     SpecialWrapFor=AesKeyAlgorithm|HmacKeyAlgorithm|RsaHashedKeyAlgorithm|RsaKeyAlgorithm
 ] interface KeyAlgorithm {

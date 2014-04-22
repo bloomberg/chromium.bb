@@ -42,9 +42,9 @@ RsaKeyAlgorithm::~RsaKeyAlgorithm()
 {
 }
 
-PassRefPtrWillBeRawPtr<RsaKeyAlgorithm> RsaKeyAlgorithm::create(const blink::WebCryptoKeyAlgorithm& algorithm)
+RsaKeyAlgorithm* RsaKeyAlgorithm::create(const blink::WebCryptoKeyAlgorithm& algorithm)
 {
-    return adoptRefWillBeNoop(new RsaKeyAlgorithm(algorithm));
+    return new RsaKeyAlgorithm(algorithm);
 }
 
 unsigned RsaKeyAlgorithm::modulusLength()

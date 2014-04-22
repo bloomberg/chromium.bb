@@ -36,9 +36,9 @@
 
 namespace WebCore {
 
-PassRefPtrWillBeRawPtr<RsaHashedKeyAlgorithm> RsaHashedKeyAlgorithm::create(const blink::WebCryptoKeyAlgorithm& algorithm)
+RsaHashedKeyAlgorithm* RsaHashedKeyAlgorithm::create(const blink::WebCryptoKeyAlgorithm& algorithm)
 {
-    return adoptRefWillBeNoop(new RsaHashedKeyAlgorithm(algorithm));
+    return new RsaHashedKeyAlgorithm(algorithm);
 }
 
 KeyAlgorithm* RsaHashedKeyAlgorithm::hash()
@@ -50,8 +50,8 @@ KeyAlgorithm* RsaHashedKeyAlgorithm::hash()
 
 void RsaHashedKeyAlgorithm::trace(Visitor* visitor)
 {
-    RsaKeyAlgorithm::trace(visitor);
     visitor->trace(m_hash);
+    RsaKeyAlgorithm::trace(visitor);
 }
 
 RsaHashedKeyAlgorithm::RsaHashedKeyAlgorithm(const blink::WebCryptoKeyAlgorithm& algorithm)

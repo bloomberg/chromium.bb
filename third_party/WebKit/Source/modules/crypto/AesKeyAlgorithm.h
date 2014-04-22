@@ -42,7 +42,7 @@ namespace WebCore {
 
 class AesKeyAlgorithm : public KeyAlgorithm {
 public:
-    static PassRefPtrWillBeRawPtr<AesKeyAlgorithm> create(const blink::WebCryptoKeyAlgorithm&);
+    static AesKeyAlgorithm* create(const blink::WebCryptoKeyAlgorithm&);
 
     unsigned short length();
 

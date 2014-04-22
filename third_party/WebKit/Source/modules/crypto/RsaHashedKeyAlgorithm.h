@@ -37,7 +37,7 @@ namespace WebCore {
 
 class RsaHashedKeyAlgorithm : public RsaKeyAlgorithm {
 public:
-    static PassRefPtrWillBeRawPtr<RsaHashedKeyAlgorithm> create(const blink::WebCryptoKeyAlgorithm&);
+    static RsaHashedKeyAlgorithm* create(const blink::WebCryptoKeyAlgorithm&);
 
     KeyAlgorithm* hash();
 
@@ -46,7 +46,7 @@ public:
 private:
     explicit RsaHashedKeyAlgorithm(const blink::WebCryptoKeyAlgorithm&);
 
-    RefPtrWillBeMember<KeyAlgorithm> m_hash;
+    Member<KeyAlgorithm> m_hash;
 };
 
 DEFINE_KEY_ALGORITHM_TYPE_CASTS(RsaHashedKeyAlgorithm);

@@ -43,20 +43,20 @@ namespace WebCore {
 
 class Key;
 
-class KeyPair : public RefCountedWillBeGarbageCollectedFinalized<KeyPair>, public ScriptWrappable {
+class KeyPair : public GarbageCollectedFinalized<KeyPair>, public ScriptWrappable {
 public:
-    static PassRefPtrWillBeRawPtr<KeyPair> create(const blink::WebCryptoKey& publicKey, const blink::WebCryptoKey& privateKey);
+    static KeyPair* create(const blink::WebCryptoKey& publicKey, const blink::WebCryptoKey& privateKey);
 
-    Key* publicKey() { return m_publicKey.get(); }
-    Key* privateKey() { return m_privateKey.get(); }
+    Key* publicKey() { return m_publicKey; }
+    Key* privateKey() { return m_privateKey; }
 
     void trace(Visitor*);
 
 protected:
-    KeyPair(const PassRefPtrWillBeRawPtr<Key>& publicKey, const PassRefPtrWillBeRawPtr<Key>& privateKey);
+    KeyPair(Key* publicKey, Key* privateKey);
 
-    RefPtrWillBeMember<Key> m_publicKey;
-    RefPtrWillBeMember<Key> m_privateKey;
+    Member<Key> m_publicKey;
+    Member<Key> m_privateKey;
 };
 
 } // namespace WebCore

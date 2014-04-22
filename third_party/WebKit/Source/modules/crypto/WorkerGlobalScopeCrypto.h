@@ -54,7 +54,7 @@ private:
     WorkerGlobalScopeCrypto();
     static const char* supplementName();
 
-    mutable RefPtrWillBeMember<Crypto> m_crypto;
+    mutable PersistentWillBeMember<Crypto> m_crypto;
 };
 
 } // namespace WebCore

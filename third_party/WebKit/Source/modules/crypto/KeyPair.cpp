@@ -36,19 +36,19 @@
 
 namespace WebCore {
 
-PassRefPtrWillBeRawPtr<KeyPair> KeyPair::create(const blink::WebCryptoKey& publicKey, const blink::WebCryptoKey& privateKey)
+KeyPair* KeyPair::create(const blink::WebCryptoKey& publicKey, const blink::WebCryptoKey& privateKey)
 {
     ASSERT(publicKey.type() == blink::WebCryptoKeyTypePublic);
     ASSERT(privateKey.type() == blink::WebCryptoKeyTypePrivate);
-    return adoptRefWillBeNoop(new KeyPair(Key::create(publicKey), Key::create(privateKey)));
+    return new KeyPair(Key::create(publicKey), Key::create(privateKey));
 }
 
-KeyPair::KeyPair(const PassRefPtrWillBeRawPtr<Key>& publicKey, const PassRefPtrWillBeRawPtr<Key>& privateKey)
+KeyPair::KeyPair(Key* publicKey, Key* privateKey)
     : m_publicKey(publicKey)
     , m_privateKey(privateKey)
 {
-    ASSERT(m_publicKey.get());
-    ASSERT(m_privateKey.get());
+    ASSERT(m_publicKey);
+    ASSERT(m_privateKey);
     ScriptWrappable::init(this);
 }
 

@@ -36,9 +36,9 @@
 
 namespace WebCore {
 
-PassRefPtrWillBeRawPtr<AesKeyAlgorithm> AesKeyAlgorithm::create(const blink::WebCryptoKeyAlgorithm& algorithm)
+AesKeyAlgorithm* AesKeyAlgorithm::create(const blink::WebCryptoKeyAlgorithm& algorithm)
 {
-    return adoptRefWillBeNoop(new AesKeyAlgorithm(algorithm));
+    return new AesKeyAlgorithm(algorithm);
 }
 
 unsigned short AesKeyAlgorithm::length()

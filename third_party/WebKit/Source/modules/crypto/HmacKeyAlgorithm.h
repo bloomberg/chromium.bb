@@ -37,7 +37,7 @@ namespace WebCore {
 
 class HmacKeyAlgorithm : public KeyAlgorithm {
 public:
-    static PassRefPtrWillBeRawPtr<HmacKeyAlgorithm> create(const blink::WebCryptoKeyAlgorithm&);
+    static HmacKeyAlgorithm* create(const blink::WebCryptoKeyAlgorithm&);
 
     KeyAlgorithm* hash();
     unsigned length();
@@ -47,7 +47,7 @@ public:
 private:
     explicit HmacKeyAlgorithm(const blink::WebCryptoKeyAlgorithm&);
 
-    RefPtrWillBeMember<KeyAlgorithm> m_hash;
+    Member<KeyAlgorithm> m_hash;
 };
 
 DEFINE_KEY_ALGORITHM_TYPE_CASTS(HmacKeyAlgorithm);

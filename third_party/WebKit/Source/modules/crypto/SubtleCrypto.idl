@@ -29,7 +29,7 @@
  */
 
 [
-    WillBeGarbageCollected,
+    GarbageCollected,
     NoInterfaceObject
 ] interface SubtleCrypto {
     Promise encrypt(Dictionary algorithm, Key key, ArrayBufferView data);

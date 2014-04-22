@@ -36,9 +36,9 @@
 
 namespace WebCore {
 
-PassRefPtrWillBeRawPtr<HmacKeyAlgorithm> HmacKeyAlgorithm::create(const blink::WebCryptoKeyAlgorithm& algorithm)
+HmacKeyAlgorithm* HmacKeyAlgorithm::create(const blink::WebCryptoKeyAlgorithm& algorithm)
 {
-    return adoptRefWillBeNoop(new HmacKeyAlgorithm(algorithm));
+    return new HmacKeyAlgorithm(algorithm);
 }
 
 KeyAlgorithm* HmacKeyAlgorithm::hash()
@@ -55,8 +55,8 @@ unsigned HmacKeyAlgorithm::length()
 
 void HmacKeyAlgorithm::trace(Visitor* visitor)
 {
-    KeyAlgorithm::trace(visitor);
     visitor->trace(m_hash);
+    KeyAlgorithm::trace(visitor);
 }
 
 HmacKeyAlgorithm::HmacKeyAlgorithm(const blink::WebCryptoKeyAlgorithm& algorithm)

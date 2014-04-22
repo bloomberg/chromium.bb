@@ -39,7 +39,7 @@ class RsaKeyAlgorithm : public KeyAlgorithm {
 public:
     ~RsaKeyAlgorithm();
 
-    static PassRefPtrWillBeRawPtr<RsaKeyAlgorithm> create(const blink::WebCryptoKeyAlgorithm&);
+    static RsaKeyAlgorithm* create(const blink::WebCryptoKeyAlgorithm&);
 
     unsigned modulusLength();
     Uint8Array* publicExponent();
