@@ -15,6 +15,11 @@ class Window;
 
 namespace ash {
 
+// A property key to store the id of the ShelfItem associated with the window.
+extern const aura::WindowProperty<ShelfID>* const kShelfID;
+
+// A property key to store the resource id and title of the item shown on the
+// shelf for this window.
 extern const aura::WindowProperty<ShelfItemDetails*>* const
     kShelfItemDetailsKey;
 

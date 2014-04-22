@@ -23,6 +23,7 @@
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_shelf_delegate.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
@@ -67,9 +68,6 @@ class PanelLayoutManagerTest : public test::AshTestBase {
     test::TestShelfDelegate* shelf_delegate =
         test::TestShelfDelegate::instance();
     shelf_delegate->AddShelfItem(window);
-    PanelLayoutManager* manager = static_cast<PanelLayoutManager*>(
-        GetPanelContainer(window)->layout_manager());
-    manager->Relayout();
     shelf_view_test()->RunMessageLoopUntilAnimationsDone();
     return window;
   }
@@ -577,12 +575,12 @@ TEST_F(PanelLayoutManagerTest, MinimizeRestorePanel) {
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(IsPanelCalloutVisible(window.get()));
   // Minimize the panel, callout should be hidden.
-  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
+  wm::GetWindowState(window.get())->Minimize();
   RunAllPendingInMessageLoop();
   EXPECT_FALSE(IsPanelCalloutVisible(window.get()));
-  // Restore the pantel; panel should not be activated by default but callout
+  // Restore the panel; panel should not be activated by default but callout
   // should be visible.
-  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+  wm::GetWindowState(window.get())->Unminimize();
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(IsPanelCalloutVisible(window.get()));
   // Activate the window, ensure callout is visible.
@@ -750,7 +748,7 @@ TEST_F(PanelLayoutManagerTest, PanelsHideAndRestoreWithShelf) {
   scoped_ptr<aura::Window> w2(CreatePanelWindow(bounds));
   scoped_ptr<aura::Window> w3;
   // Minimize w2.
-  w2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
+  wm::GetWindowState(w2.get())->Minimize();
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(w1->IsVisible());
   EXPECT_FALSE(w2->IsVisible());
