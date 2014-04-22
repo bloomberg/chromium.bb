@@ -435,9 +435,14 @@ void ModuleSystem::LazyFieldGetterInner(
 
   // Delete the getter and set this field to |new_field| so the same object is
   // returned every time a certain API is accessed.
-  v8::Handle<v8::Object> object = info.This();
-  object->Delete(property);
-  object->Set(property, new_field);
+  v8::Handle<v8::Value> val = info.This();
+  if (val->IsObject()) {
+    v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(val);
+    object->Delete(property);
+    object->Set(property, new_field);
+  } else {
+    NOTREACHED();
+  }
   info.GetReturnValue().Set(new_field);
 }
 
