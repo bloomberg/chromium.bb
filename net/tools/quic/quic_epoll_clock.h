@@ -32,6 +32,9 @@ class QuicEpollClock : public QuicClock {
 
  protected:
   EpollServer* epoll_server_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(QuicEpollClock);
 };
 
 }  // namespace tools

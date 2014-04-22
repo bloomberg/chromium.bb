@@ -53,6 +53,8 @@ class MockableQuicClient : public QuicClient {
  private:
   QuicConnectionId override_connection_id_;  // ConnectionId to use, if nonzero
   QuicPacketWriterWrapper* test_writer_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockableQuicClient);
 };
 
 // A toy QUIC client used for testing, mostly following the SimpleClient APIs.
@@ -194,6 +196,8 @@ class QuicTestClient : public SimpleClient,
   // proof_verifier_ points to a RecordingProofVerifier that is owned by
   // client_.
   ProofVerifier* proof_verifier_;
+
+  DISALLOW_COPY_AND_ASSIGN(QuicTestClient);
 };
 
 }  // namespace test

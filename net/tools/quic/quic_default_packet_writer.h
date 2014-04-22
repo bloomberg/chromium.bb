@@ -33,6 +33,8 @@ class QuicDefaultPacketWriter : public QuicPacketWriter {
  private:
   int fd_;
   bool write_blocked_;
+
+  DISALLOW_COPY_AND_ASSIGN(QuicDefaultPacketWriter);
 };
 
 }  // namespace tools

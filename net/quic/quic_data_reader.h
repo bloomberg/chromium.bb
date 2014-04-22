@@ -124,6 +124,8 @@ class NET_EXPORT_PRIVATE QuicDataReader {
 
   // The location of the next read from our data buffer.
   size_t pos_;
+
+  DISALLOW_COPY_AND_ASSIGN(QuicDataReader);
 };
 
 }  // namespace net

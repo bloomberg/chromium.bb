@@ -46,6 +46,9 @@ class PrimaryConfigChangedCallback {
   PrimaryConfigChangedCallback();
   virtual ~PrimaryConfigChangedCallback();
   virtual void Run(const std::string& scid) = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PrimaryConfigChangedCallback);
 };
 
 // Callback used to accept the result of the |client_hello| validation step.
@@ -446,6 +449,8 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   uint32 source_address_token_lifetime_secs_;
   uint32 server_nonce_strike_register_max_entries_;
   uint32 server_nonce_strike_register_window_secs_;
+
+  DISALLOW_COPY_AND_ASSIGN(QuicCryptoServerConfig);
 };
 
 }  // namespace net

@@ -15,6 +15,9 @@ class NET_EXPORT_PRIVATE CubeRoot {
   // Calculates the cube root using a table lookup followed by one Newton-
   // Raphson iteration.
   static uint32 Root(uint64 a);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CubeRoot);
 };
 
 }  // namespace net

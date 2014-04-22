@@ -62,6 +62,9 @@ class QuicSocketUtils {
   static WriteResult WritePacket(int fd, const char* buffer, size_t buf_len,
                                  const IPAddressNumber& self_address,
                                  const IPEndPoint& peer_address);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(QuicSocketUtils);
 };
 
 }  // namespace tools

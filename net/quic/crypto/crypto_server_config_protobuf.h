@@ -111,6 +111,8 @@ class NET_EXPORT_PRIVATE QuicServerConfigProtobuf {
   // primary time.  For use as a secondary sort key when selecting the
   // primary config.
   uint64 priority_;
+
+  DISALLOW_COPY_AND_ASSIGN(QuicServerConfigProtobuf);
 };
 
 }  // namespace net

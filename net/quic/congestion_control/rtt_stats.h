@@ -58,6 +58,8 @@ class NET_EXPORT_PRIVATE RttStats {
   // larger than the standard deviation, for a normally distributed signal.
   QuicTime::Delta mean_deviation_;
   int64 initial_rtt_us_;
+
+  DISALLOW_COPY_AND_ASSIGN(RttStats);
 };
 
 }  // namespace net

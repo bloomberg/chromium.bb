@@ -31,7 +31,6 @@ class QuicAckNotifier;
 // a set of AckNotifiers and a map from sequence number to AckNotifier the sake
 // of efficiency - we can quickly check the map to see if any AckNotifiers are
 // interested in a given sequence number.
-
 class NET_EXPORT_PRIVATE AckNotifierManager {
  public:
   AckNotifierManager();
@@ -72,6 +71,8 @@ class NET_EXPORT_PRIVATE AckNotifierManager {
   // number, call OnAck for all mapped AckNotifiers.
   // Does not own the AckNotifiers.
   AckNotifierMap ack_notifier_map_;
+
+  DISALLOW_COPY_AND_ASSIGN(AckNotifierManager);
 };
 
 }  // namespace net

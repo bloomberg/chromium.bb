@@ -62,6 +62,8 @@ class MockCryptoClientStream : public QuicCryptoClientStream {
   QuicClientSessionBase* client_session();
 
   const ProofVerifyDetails* proof_verify_details_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockCryptoClientStream);
 };
 
 }  // namespace net

@@ -44,6 +44,8 @@ class NET_EXPORT_PRIVATE QuicDefaultPacketWriter : public QuicPacketWriter {
   DatagramClientSocket* socket_;
   QuicConnection* connection_;
   bool write_blocked_;
+
+  DISALLOW_COPY_AND_ASSIGN(QuicDefaultPacketWriter);
 };
 
 }  // namespace net

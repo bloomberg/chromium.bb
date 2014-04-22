@@ -36,6 +36,7 @@ class NET_EXPORT_PRIVATE QuicSocketAddressCoder {
 
  private:
   IPEndPoint address_;
+
   DISALLOW_COPY_AND_ASSIGN(QuicSocketAddressCoder);
 };
 

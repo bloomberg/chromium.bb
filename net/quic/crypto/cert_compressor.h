@@ -48,6 +48,9 @@ class NET_EXPORT_PRIVATE CertCompressor {
                               const std::vector<std::string>& cached_certs,
                               const CommonCertSets* common_sets,
                               std::vector<std::string>* out_certs);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CertCompressor);
 };
 
 }  // namespace net

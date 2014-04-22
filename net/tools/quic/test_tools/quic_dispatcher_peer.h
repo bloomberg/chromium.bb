@@ -37,6 +37,9 @@ class QuicDispatcherPeer {
       const IPEndPoint& server,
       const IPEndPoint& client,
       uint32 initial_flow_control_window_bytes);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(QuicDispatcherPeer);
 };
 
 }  // namespace test

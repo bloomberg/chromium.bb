@@ -33,6 +33,9 @@ class NET_EXPORT_PRIVATE Aes128Gcm12Encrypter : public AeadBaseEncrypter {
                               size_t auth_tag_size,
                               AeadParams* aead_params) const OVERRIDE;
 #endif
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(Aes128Gcm12Encrypter);
 };
 
 }  // namespace net

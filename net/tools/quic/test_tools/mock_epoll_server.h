@@ -43,6 +43,8 @@ class FakeTimeEpollServer : public EpollServer {
 
  private:
   int64 now_in_usec_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeTimeEpollServer);
 };
 
 class MockEpollServer : public FakeTimeEpollServer {
@@ -97,6 +99,8 @@ class MockEpollServer : public FakeTimeEpollServer {
  private:  // members
   EventQueue event_queue_;
   int64 until_in_usec_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockEpollServer);
 };
 
 }  // namespace test

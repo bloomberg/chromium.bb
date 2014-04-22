@@ -74,6 +74,8 @@ class NET_EXPORT_PRIVATE QuicDataWriter {
   char* buffer_;
   size_t capacity_;  // Allocation size of payload (or -1 if buffer is const).
   size_t length_;    // Current length of the buffer.
+
+  DISALLOW_COPY_AND_ASSIGN(QuicDataWriter);
 };
 
 }  // namespace net

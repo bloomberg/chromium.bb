@@ -23,6 +23,9 @@ class QuicConfigPeer {
 
   static void SetReceivedInitialFlowControlWindow(QuicConfig* config,
                                                   uint32 window_bytes);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(QuicConfigPeer);
 };
 
 }  // namespace test

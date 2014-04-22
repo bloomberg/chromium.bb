@@ -58,6 +58,8 @@ class NET_EXPORT_PRIVATE AvailableChannelEstimator {
   QuicTime last_receive_time_;
   int number_of_sequence_numbers_;
   QuicByteCount received_bytes_;
+
+  DISALLOW_COPY_AND_ASSIGN(AvailableChannelEstimator);
 };
 
 }  // namespace net

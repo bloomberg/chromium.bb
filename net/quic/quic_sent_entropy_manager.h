@@ -51,6 +51,8 @@ class NET_EXPORT_PRIVATE QuicSentEntropyManager {
 
   // Cumulative hash of entropy of all sent packets.
   QuicPacketEntropyHash packets_entropy_hash_;
+
+  DISALLOW_COPY_AND_ASSIGN(QuicSentEntropyManager);
 };
 
 }  // namespace net

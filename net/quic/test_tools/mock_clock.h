@@ -30,6 +30,8 @@ class MockClock : public QuicClock {
 
  private:
   QuicTime now_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockClock);
 };
 
 }  // namespace net

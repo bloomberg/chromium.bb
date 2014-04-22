@@ -43,6 +43,8 @@ class MockCryptoClientStreamFactory : public QuicCryptoClientStreamFactory  {
   MockCryptoClientStream::HandshakeMode handshake_mode_;
   MockCryptoClientStream* last_stream_;
   const ProofVerifyDetails* proof_verify_details_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockCryptoClientStreamFactory);
 };
 
 }  // namespace net

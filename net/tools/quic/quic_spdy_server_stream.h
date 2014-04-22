@@ -57,6 +57,8 @@ class QuicSpdyServerStream : public QuicDataStream {
   // Buffer into which response header data is read.
   scoped_refptr<GrowableIOBuffer> read_buf_;
   bool request_headers_received_;
+
+  DISALLOW_COPY_AND_ASSIGN(QuicSpdyServerStream);
 };
 
 }  // namespace tools

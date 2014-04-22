@@ -181,6 +181,8 @@ class NET_EXPORT_PRIVATE StrikeRegister {
   // this header.
   InternalNode* internal_nodes_;
   scoped_ptr<uint8[]> external_nodes_;
+
+  DISALLOW_COPY_AND_ASSIGN(StrikeRegister);
 };
 
 }  // namespace net

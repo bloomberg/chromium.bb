@@ -76,6 +76,8 @@ class QuicSpdyClientStream : public QuicDataStream {
   bool response_headers_received_;
   size_t header_bytes_read_;
   size_t header_bytes_written_;
+
+  DISALLOW_COPY_AND_ASSIGN(QuicSpdyClientStream);
 };
 
 }  // namespace tools

@@ -57,6 +57,9 @@ class NET_EXPORT_PRIVATE ChannelIDVerifier {
                         base::StringPiece signed_data,
                         base::StringPiece signature,
                         bool is_channel_id_signature);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ChannelIDVerifier);
 };
 
 }  // namespace net

@@ -98,6 +98,8 @@ class NET_EXPORT_PRIVATE AeadBaseDecrypter : public QuicDecrypter {
 #if defined(USE_OPENSSL)
   ScopedEVPAEADCtx ctx_;
 #endif
+
+  DISALLOW_COPY_AND_ASSIGN(AeadBaseDecrypter);
 };
 
 }  // namespace net

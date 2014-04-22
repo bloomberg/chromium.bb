@@ -82,6 +82,9 @@ class NET_EXPORT_PRIVATE QuicUtils {
   static QuicPriority LowestPriority();
 
   static QuicPriority HighestPriority();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(QuicUtils);
 };
 
 // Utility function that returns an IOVector object wrapped around |str|.

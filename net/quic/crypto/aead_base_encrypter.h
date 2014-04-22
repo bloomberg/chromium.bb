@@ -101,6 +101,8 @@ class NET_EXPORT_PRIVATE AeadBaseEncrypter : public QuicEncrypter {
 #if defined(USE_OPENSSL)
   ScopedEVPAEADCtx ctx_;
 #endif
+
+  DISALLOW_COPY_AND_ASSIGN(AeadBaseEncrypter);
 };
 
 }  // namespace net

@@ -32,6 +32,8 @@ class MockRandom : public QuicRandom {
  private:
   uint32 base_;
   uint8 increment_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockRandom);
 };
 
 }  // namespace net

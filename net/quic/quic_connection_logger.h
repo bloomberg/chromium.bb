@@ -142,6 +142,7 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   // The available type of connection (WiFi, 3G, etc.) when connection was first
   // used.
   const char* const connection_description_;
+
   DISALLOW_COPY_AND_ASSIGN(QuicConnectionLogger);
 };
 

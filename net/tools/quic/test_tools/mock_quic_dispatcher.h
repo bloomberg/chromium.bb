@@ -28,6 +28,9 @@ class MockQuicDispatcher : public QuicDispatcher {
   MOCK_METHOD3(ProcessPacket, void(const IPEndPoint& server_address,
                                    const IPEndPoint& client_address,
                                    const QuicEncryptedPacket& packet));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockQuicDispatcher);
 };
 
 }  // namespace test

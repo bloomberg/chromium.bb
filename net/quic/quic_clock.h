@@ -30,6 +30,9 @@ class NET_EXPORT_PRIVATE QuicClock {
   // WallNow returns the current wall-time - a time that is consistent across
   // different clocks.
   virtual QuicWallTime WallNow() const;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(QuicClock);
 };
 
 }  // namespace net

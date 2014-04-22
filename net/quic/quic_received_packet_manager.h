@@ -150,6 +150,8 @@ class NET_EXPORT_PRIVATE QuicReceivedPacketManager :
   scoped_ptr<ReceiveAlgorithmInterface> receive_algorithm_;
 
   QuicConnectionStats* stats_;
+
+  DISALLOW_COPY_AND_ASSIGN(QuicReceivedPacketManager);
 };
 
 }  // namespace net

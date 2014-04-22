@@ -37,6 +37,9 @@ class NET_EXPORT_PRIVATE ChaCha20Poly1305Decrypter : public AeadBaseDecrypter {
                               size_t auth_tag_size,
                               AeadParams* aead_params) const OVERRIDE;
 #endif
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ChaCha20Poly1305Decrypter);
 };
 
 }  // namespace net

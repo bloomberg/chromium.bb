@@ -43,6 +43,8 @@ class NET_EXPORT_PRIVATE TimeLossAlgorithm : public LossDetectionInterface {
 
  private:
   QuicTime loss_detection_timeout_;
+
+  DISALLOW_COPY_AND_ASSIGN(TimeLossAlgorithm);
 };
 
 }  // namespace net

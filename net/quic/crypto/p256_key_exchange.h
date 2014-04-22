@@ -73,6 +73,8 @@ class NET_EXPORT_PRIVATE P256KeyExchange : public KeyExchange {
 #endif
   // The public key stored as an uncompressed P-256 point.
   uint8 public_key_[kUncompressedP256PointBytes];
+
+  DISALLOW_COPY_AND_ASSIGN(P256KeyExchange);
 };
 
 }  // namespace net

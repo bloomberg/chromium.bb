@@ -41,6 +41,8 @@ class SourceAddressToken {
  private:
   std::string ip_;
   int64 timestamp_;
+
+  DISALLOW_COPY_AND_ASSIGN(SourceAddressToken);
 };
 
 }  // namespace net

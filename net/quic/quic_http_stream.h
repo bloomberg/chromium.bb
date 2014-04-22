@@ -163,6 +163,8 @@ class NET_EXPORT_PRIVATE QuicHttpStream :
   BoundNetLog stream_net_log_;
 
   base::WeakPtrFactory<QuicHttpStream> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(QuicHttpStream);
 };
 
 }  // namespace net

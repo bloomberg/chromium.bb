@@ -83,6 +83,8 @@ class NET_EXPORT_PRIVATE QuicCryptoServerStream : public QuicCryptoStream {
   // FinishProcessingHandshakeMessage for processing.  NULL if no
   // handshake message is being validated.
   ValidateCallback* validate_client_hello_cb_;
+
+  DISALLOW_COPY_AND_ASSIGN(QuicCryptoServerStream);
 };
 
 }  // namespace net

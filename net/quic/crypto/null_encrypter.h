@@ -38,6 +38,8 @@ class NET_EXPORT_PRIVATE NullEncrypter : public QuicEncrypter {
 
  private:
   size_t GetHashLength() const;
+
+  DISALLOW_COPY_AND_ASSIGN(NullEncrypter);
 };
 
 }  // namespace net

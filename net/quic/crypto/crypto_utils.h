@@ -62,6 +62,9 @@ class NET_EXPORT_PRIVATE CryptoUtils {
                          const std::string& hkdf_input,
                          Perspective perspective,
                          CrypterPair* out);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CryptoUtils);
 };
 
 }  // namespace net

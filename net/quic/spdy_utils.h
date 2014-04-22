@@ -16,6 +16,9 @@ class NET_EXPORT_PRIVATE SpdyUtils {
  public:
   static std::string SerializeUncompressedHeaders(
       const SpdyHeaderBlock& headers);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SpdyUtils);
 };
 
 }  // namespace net

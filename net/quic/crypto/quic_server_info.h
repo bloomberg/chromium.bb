@@ -100,6 +100,8 @@ class NET_EXPORT_PRIVATE QuicServerInfo {
   // This is the QUIC server (hostname, port, is_https, privacy_mode) tuple for
   // which we restore the crypto_config.
   const QuicServerId server_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(QuicServerInfo);
 };
 
 class QuicServerInfoFactory {

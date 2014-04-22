@@ -214,6 +214,8 @@ class MockHelper : public QuicConnectionHelperInterface {
  private:
   MockClock clock_;
   MockRandom random_generator_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockHelper);
 };
 
 class MockConnection : public QuicConnection {
@@ -338,6 +340,7 @@ class TestSession : public QuicSession {
 
  private:
   QuicCryptoStream* crypto_stream_;
+
   DISALLOW_COPY_AND_ASSIGN(TestSession);
 };
 
@@ -362,6 +365,7 @@ class TestClientSession : public QuicClientSessionBase {
 
  private:
   QuicCryptoStream* crypto_stream_;
+
   DISALLOW_COPY_AND_ASSIGN(TestClientSession);
 };
 
@@ -378,6 +382,9 @@ class MockPacketWriter : public QuicPacketWriter {
   MOCK_CONST_METHOD0(IsWriteBlockedDataBuffered, bool());
   MOCK_CONST_METHOD0(IsWriteBlocked, bool());
   MOCK_METHOD0(SetWritable, void());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockPacketWriter);
 };
 
 class MockSendAlgorithm : public SendAlgorithmInterface {
@@ -422,6 +429,9 @@ class MockLossAlgorithm : public LossDetectionInterface {
                                  QuicPacketSequenceNumber largest_observed,
                                  const RttStats& rtt_stats));
   MOCK_CONST_METHOD0(GetLossTimeout, QuicTime());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockLossAlgorithm);
 };
 
 class TestEntropyCalculator :
@@ -432,6 +442,9 @@ class TestEntropyCalculator :
 
   virtual QuicPacketEntropyHash EntropyHash(
       QuicPacketSequenceNumber sequence_number) const OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestEntropyCalculator);
 };
 
 class MockEntropyCalculator : public TestEntropyCalculator {
@@ -442,6 +455,9 @@ class MockEntropyCalculator : public TestEntropyCalculator {
   MOCK_CONST_METHOD1(
       EntropyHash,
       QuicPacketEntropyHash(QuicPacketSequenceNumber sequence_number));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockEntropyCalculator);
 };
 
 class MockAckNotifierDelegate : public QuicAckNotifier::DelegateInterface {
@@ -457,6 +473,9 @@ class MockAckNotifierDelegate : public QuicAckNotifier::DelegateInterface {
  protected:
   // Object is ref counted.
   virtual ~MockAckNotifierDelegate();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockAckNotifierDelegate);
 };
 
 }  // namespace test

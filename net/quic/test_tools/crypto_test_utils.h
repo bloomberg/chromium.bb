@@ -140,6 +140,8 @@ class CryptoTestUtils {
  private:
   static void CompareClientAndServerKeys(QuicCryptoClientStream* client,
                                          QuicCryptoServerStream* server);
+
+  DISALLOW_COPY_AND_ASSIGN(CryptoTestUtils);
 };
 
 }  // namespace test

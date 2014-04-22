@@ -7,6 +7,8 @@
 
 #include <openssl/evp.h>
 
+#include "base/basictypes.h"
+
 namespace net {
 
 // ScopedEVPAEADCtx manages an EVP_AEAD_CTX object and calls the needed cleanup
@@ -20,6 +22,8 @@ class ScopedEVPAEADCtx {
 
  private:
   EVP_AEAD_CTX ctx_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedEVPAEADCtx);
 };
 
 }  // namespace net

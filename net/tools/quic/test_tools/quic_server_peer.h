@@ -5,6 +5,8 @@
 #ifndef NET_TOOLS_QUIC_TEST_TOOLS_QUIC_SERVER_PEER_H_
 #define NET_TOOLS_QUIC_TEST_TOOLS_QUIC_SERVER_PEER_H_
 
+#include "base/basictypes.h"
+
 namespace net {
 
 namespace tools {
@@ -19,6 +21,9 @@ class QuicServerPeer {
   static bool SetSmallSocket(QuicServer* server);
   static void DisableRecvmmsg(QuicServer* server);
   static QuicDispatcher* GetDispatcher(QuicServer* server);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(QuicServerPeer);
 };
 
 }  // namespace test

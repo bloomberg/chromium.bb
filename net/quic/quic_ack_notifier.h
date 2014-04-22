@@ -92,6 +92,8 @@ class NET_EXPORT_PRIVATE QuicAckNotifier {
   int retransmitted_packet_count_;
   // Number of bytes that had to be retransmitted.
   int retransmitted_byte_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(QuicAckNotifier);
 };
 
 };  // namespace net

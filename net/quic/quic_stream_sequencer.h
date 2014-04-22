@@ -125,6 +125,8 @@ class NET_EXPORT_PRIVATE QuicStreamSequencer {
 
   // Count of the number of duplicate frames received.
   int num_duplicate_frames_received_;
+
+  DISALLOW_COPY_AND_ASSIGN(QuicStreamSequencer);
 };
 
 }  // namespace net

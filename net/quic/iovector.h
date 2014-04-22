@@ -57,7 +57,6 @@ inline size_t TotalIovecLength(const struct iovec* iov, size_t iovcnt) {
 // to avoid accidentally change an entry that is assembled by two or more
 // Append()'s by simply an index access.
 //
-
 class NET_EXPORT_PRIVATE IOVector {
  public:
   // Provide a default constructor so it'll never be inhibited by adding other
