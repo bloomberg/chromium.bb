@@ -772,17 +772,10 @@ void Plugin::ProcessNaClManifest(const nacl::string& manifest_json) {
   bool uses_nonsfi_mode;
   if (manifest_->GetProgramURL(
           &program_url, &pnacl_options, &uses_nonsfi_mode, &error_info)) {
-    pp::Var program_url_var(program_url);
-    nacl_interface_->SetIsInstalled(
-        pp_instance(),
-        PP_FromBool(
-            nacl_interface_->GetUrlScheme(program_url_var.pp_var()) ==
-            PP_SCHEME_CHROME_EXTENSION));
+    // TODO(teravest): Make ProcessNaClManifest take responsibility for more of
+    // this function.
+    nacl_interface_->ProcessNaClManifest(pp_instance(), program_url.c_str());
     uses_nonsfi_mode_ = uses_nonsfi_mode;
-    nacl_interface_->SetNaClReadyState(pp_instance(),
-                                       PP_NACL_READY_STATE_LOADING);
-    // Inform JavaScript that we found a nexe URL to load.
-    EnqueueProgressEvent(PP_NACL_EVENT_PROGRESS);
     if (pnacl_options.translate) {
       pp::CompletionCallback translate_callback =
           callback_factory_.NewCallback(&Plugin::BitcodeDidTranslate);
@@ -1035,14 +1028,6 @@ const FileDownloader* Plugin::FindFileDownloader(
 
 void Plugin::ReportSelLdrLoadStatus(int status) {
   HistogramEnumerateSelLdrLoadStatus(static_cast<NaClErrorCode>(status));
-}
-
-void Plugin::EnqueueProgressEvent(PP_NaClEventType event_type) {
-  EnqueueProgressEvent(event_type,
-                       NACL_NO_URL,
-                       Plugin::LENGTH_IS_NOT_COMPUTABLE,
-                       Plugin::kUnknownBytes,
-                       Plugin::kUnknownBytes);
 }
 
 void Plugin::EnqueueProgressEvent(PP_NaClEventType event_type,

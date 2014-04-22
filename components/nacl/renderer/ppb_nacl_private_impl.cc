@@ -670,26 +670,12 @@ PP_NaClReadyState GetNaClReadyState(PP_Instance instance) {
   return PP_NACL_READY_STATE_UNSENT;
 }
 
-void SetNaClReadyState(PP_Instance instance, PP_NaClReadyState ready_state) {
-  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
-  DCHECK(load_manager);
-  if (load_manager)
-    load_manager->set_nacl_ready_state(ready_state);
-}
-
 PP_Bool GetIsInstalled(PP_Instance instance) {
   nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   DCHECK(load_manager);
   if (load_manager)
     return PP_FromBool(load_manager->is_installed());
   return PP_FALSE;
-}
-
-void SetIsInstalled(PP_Instance instance, PP_Bool installed) {
-  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
-  DCHECK(load_manager);
-  if (load_manager)
-    load_manager->set_is_installed(PP_ToBool(installed));
 }
 
 int32_t GetExitStatus(PP_Instance instance) {
@@ -773,6 +759,12 @@ PP_Var ParseDataURL(const char* data_url) {
   return ppapi::StringVar::StringToPPVar(data);
 }
 
+void ProcessNaClManifest(PP_Instance instance, const char* program_url) {
+  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  if (load_manager)
+    load_manager->ProcessNaClManifest(program_url);
+}
+
 const PPB_NaCl_Private nacl_interface = {
   &LaunchSelLdr,
   &StartPpapiProxy,
@@ -799,9 +791,7 @@ const PPB_NaCl_Private nacl_interface = {
   &GetUrlScheme,
   &LogToConsole,
   &GetNaClReadyState,
-  &SetNaClReadyState,
   &GetIsInstalled,
-  &SetIsInstalled,
   &GetExitStatus,
   &SetExitStatus,
   &Vlog,
@@ -810,7 +800,8 @@ const PPB_NaCl_Private nacl_interface = {
   &RequestNaClManifest,
   &GetManifestBaseURL,
   &ResolvesRelativeToPluginBaseURL,
-  &ParseDataURL
+  &ParseDataURL,
+  &ProcessNaClManifest
 };
 
 }  // namespace

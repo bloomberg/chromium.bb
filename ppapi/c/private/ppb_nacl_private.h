@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Fri Apr 18 11:23:31 2014. */
+/* From private/ppb_nacl_private.idl modified Tue Apr 22 13:59:14 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -331,13 +331,8 @@ struct PPB_NaCl_Private_1_0 {
   void (*LogToConsole)(PP_Instance instance, const char* message);
   /* Returns the NaCl readiness status for this instance. */
   PP_NaClReadyState (*GetNaClReadyState)(PP_Instance instance);
-  /* Sets the NaCl readiness status for this instance. */
-  void (*SetNaClReadyState)(PP_Instance instance,
-                            PP_NaClReadyState ready_state);
   /* Returns true if the plugin is an installed app. */
   PP_Bool (*GetIsInstalled)(PP_Instance instance);
-  /* Sets whether the plugin is an installed app. */
-  void (*SetIsInstalled)(PP_Instance instance, PP_Bool is_installed);
   /* Returns the exit status of the plugin process. */
   int32_t (*GetExitStatus)(PP_Instance instance);
   /* Sets the exit status of the plugin process. */
@@ -356,6 +351,11 @@ struct PPB_NaCl_Private_1_0 {
   PP_Bool (*ResolvesRelativeToPluginBaseUrl)(PP_Instance instance,
                                              const char* url);
   struct PP_Var (*ParseDataURL)(const char* data_url);
+  /* Processes the NaCl manifest once it's been retrieved.
+   * TODO(teravest): Move the rest of the supporting logic out of the trusted
+   * plugin.
+   */
+  void (*ProcessNaClManifest)(PP_Instance instance, const char* program_url);
 };
 
 typedef struct PPB_NaCl_Private_1_0 PPB_NaCl_Private;

@@ -134,7 +134,6 @@ class Plugin : public pp::Instance {
   // event (loadstart, progress, error, abort, load, loadend).  Events are
   // enqueued on the JavaScript event loop, which then calls back through
   // DispatchProgressEvent.
-  void EnqueueProgressEvent(PP_NaClEventType event_type);
   void EnqueueProgressEvent(PP_NaClEventType event_type,
                             const nacl::string& url,
                             LengthComputable length_computable,

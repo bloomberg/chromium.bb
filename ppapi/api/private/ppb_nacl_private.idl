@@ -331,16 +331,8 @@ interface PPB_NaCl_Private {
   /* Returns the NaCl readiness status for this instance. */
   PP_NaClReadyState GetNaClReadyState([in] PP_Instance instance);
 
-  /* Sets the NaCl readiness status for this instance. */
-  void SetNaClReadyState([in] PP_Instance instance,
-                         [in] PP_NaClReadyState ready_state);
-
   /* Returns true if the plugin is an installed app. */
   PP_Bool GetIsInstalled([in] PP_Instance instance);
-
-  /* Sets whether the plugin is an installed app. */
-  void SetIsInstalled([in] PP_Instance instance,
-                      [in] PP_Bool is_installed);
 
   /* Returns the exit status of the plugin process. */
   int32_t GetExitStatus([in] PP_Instance instance);
@@ -369,4 +361,11 @@ interface PPB_NaCl_Private {
                                           [in] str_t url);
 
   PP_Var ParseDataURL([in] str_t data_url);
+
+  /* Processes the NaCl manifest once it's been retrieved.
+   * TODO(teravest): Move the rest of the supporting logic out of the trusted
+   * plugin.
+   */
+  void ProcessNaClManifest([in] PP_Instance instance,
+                           [in] str_t program_url);
 };

@@ -89,7 +89,6 @@ class NexeLoadManager {
   void LogToConsole(const std::string& message);
 
   bool is_installed() const { return is_installed_; }
-  void set_is_installed(bool installed) { is_installed_ = installed; }
 
   int32_t exit_status() const { return exit_status_; }
   void set_exit_status(int32_t exit_status);
@@ -101,6 +100,7 @@ class NexeLoadManager {
   int64_t nexe_size() const { return nexe_size_; }
 
   bool RequestNaClManifest(const std::string& url, bool* is_data_uri);
+  void ProcessNaClManifest(const std::string& program_url);
 
   // URL resolution support.
   // plugin_base_url is the URL used for resolving relative URLs used in

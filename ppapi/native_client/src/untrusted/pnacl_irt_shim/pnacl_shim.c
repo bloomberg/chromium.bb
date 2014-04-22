@@ -3212,19 +3212,9 @@ static PP_NaClReadyState Pnacl_M25_PPB_NaCl_Private_GetNaClReadyState(PP_Instanc
   return iface->GetNaClReadyState(instance);
 }
 
-static void Pnacl_M25_PPB_NaCl_Private_SetNaClReadyState(PP_Instance instance, PP_NaClReadyState ready_state) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  iface->SetNaClReadyState(instance, ready_state);
-}
-
 static PP_Bool Pnacl_M25_PPB_NaCl_Private_GetIsInstalled(PP_Instance instance) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
   return iface->GetIsInstalled(instance);
-}
-
-static void Pnacl_M25_PPB_NaCl_Private_SetIsInstalled(PP_Instance instance, PP_Bool is_installed) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  iface->SetIsInstalled(instance, is_installed);
 }
 
 static int32_t Pnacl_M25_PPB_NaCl_Private_GetExitStatus(PP_Instance instance) {
@@ -3270,6 +3260,11 @@ static PP_Bool Pnacl_M25_PPB_NaCl_Private_ResolvesRelativeToPluginBaseUrl(PP_Ins
 static void Pnacl_M25_PPB_NaCl_Private_ParseDataURL(struct PP_Var* _struct_result, const char* data_url) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
   *_struct_result = iface->ParseDataURL(data_url);
+}
+
+static void Pnacl_M25_PPB_NaCl_Private_ProcessNaClManifest(PP_Instance instance, const char* program_url) {
+  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
+  iface->ProcessNaClManifest(instance, program_url);
 }
 
 /* End wrapper methods for PPB_NaCl_Private_1_0 */
@@ -5171,9 +5166,7 @@ static const struct PPB_NaCl_Private_1_0 Pnacl_Wrappers_PPB_NaCl_Private_1_0 = {
     .GetUrlScheme = (PP_UrlSchemeType (*)(struct PP_Var url))&Pnacl_M25_PPB_NaCl_Private_GetUrlScheme,
     .LogToConsole = (void (*)(PP_Instance instance, const char* message))&Pnacl_M25_PPB_NaCl_Private_LogToConsole,
     .GetNaClReadyState = (PP_NaClReadyState (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_GetNaClReadyState,
-    .SetNaClReadyState = (void (*)(PP_Instance instance, PP_NaClReadyState ready_state))&Pnacl_M25_PPB_NaCl_Private_SetNaClReadyState,
     .GetIsInstalled = (PP_Bool (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_GetIsInstalled,
-    .SetIsInstalled = (void (*)(PP_Instance instance, PP_Bool is_installed))&Pnacl_M25_PPB_NaCl_Private_SetIsInstalled,
     .GetExitStatus = (int32_t (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_GetExitStatus,
     .SetExitStatus = (void (*)(PP_Instance instance, int32_t exit_status))&Pnacl_M25_PPB_NaCl_Private_SetExitStatus,
     .Vlog = (void (*)(const char* message))&Pnacl_M25_PPB_NaCl_Private_Vlog,
@@ -5182,7 +5175,8 @@ static const struct PPB_NaCl_Private_1_0 Pnacl_Wrappers_PPB_NaCl_Private_1_0 = {
     .RequestNaClManifest = (PP_Bool (*)(PP_Instance instance, const char* manifest_url, PP_Bool* is_data_uri))&Pnacl_M25_PPB_NaCl_Private_RequestNaClManifest,
     .GetManifestBaseURL = (struct PP_Var (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_GetManifestBaseURL,
     .ResolvesRelativeToPluginBaseUrl = (PP_Bool (*)(PP_Instance instance, const char* url))&Pnacl_M25_PPB_NaCl_Private_ResolvesRelativeToPluginBaseUrl,
-    .ParseDataURL = (struct PP_Var (*)(const char* data_url))&Pnacl_M25_PPB_NaCl_Private_ParseDataURL
+    .ParseDataURL = (struct PP_Var (*)(const char* data_url))&Pnacl_M25_PPB_NaCl_Private_ParseDataURL,
+    .ProcessNaClManifest = (void (*)(PP_Instance instance, const char* program_url))&Pnacl_M25_PPB_NaCl_Private_ProcessNaClManifest
 };
 
 static const struct PPB_NetAddress_Private_0_1 Pnacl_Wrappers_PPB_NetAddress_Private_0_1 = {

@@ -582,6 +582,19 @@ bool NexeLoadManager::RequestNaClManifest(const std::string& url,
   return false;
 }
 
+void NexeLoadManager::ProcessNaClManifest(const std::string& program_url) {
+  GURL gurl(program_url);
+  DCHECK(gurl.is_valid());
+  if (gurl.is_valid())
+    is_installed_ = gurl.SchemeIs("chrome-extension");
+  set_nacl_ready_state(PP_NACL_READY_STATE_LOADING);
+  ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+      FROM_HERE,
+      base::Bind(&NexeLoadManager::DispatchEvent,
+                 weak_factory_.GetWeakPtr(),
+                 ProgressEvent(PP_NACL_EVENT_PROGRESS)));
+}
+
 void NexeLoadManager::ReportDeadNexe() {
   if (nacl_ready_state_ == PP_NACL_READY_STATE_DONE &&  // After loadEnd
       !nexe_error_reported_) {
