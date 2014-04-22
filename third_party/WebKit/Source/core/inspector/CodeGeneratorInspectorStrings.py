@@ -258,14 +258,14 @@ $methodDeclarations
 $fieldDeclarations
 
     template<typename R, typename V, typename V0>
-    static R getPropertyValueImpl(JSONObject* object, const String& name, bool* valueFound, JSONArray* protocolErrors, V0 initial_value, bool (*as_method)(JSONValue*, V*), const char* type_name);
+    static R getPropertyValueImpl(JSONObject* object, const char* name, bool* valueFound, JSONArray* protocolErrors, V0 initial_value, bool (*as_method)(JSONValue*, V*), const char* type_name);
 
-    static int getInt(JSONObject* object, const String& name, bool* valueFound, JSONArray* protocolErrors);
-    static double getDouble(JSONObject* object, const String& name, bool* valueFound, JSONArray* protocolErrors);
-    static String getString(JSONObject* object, const String& name, bool* valueFound, JSONArray* protocolErrors);
-    static bool getBoolean(JSONObject* object, const String& name, bool* valueFound, JSONArray* protocolErrors);
-    static PassRefPtr<JSONObject> getObject(JSONObject* object, const String& name, bool* valueFound, JSONArray* protocolErrors);
-    static PassRefPtr<JSONArray> getArray(JSONObject* object, const String& name, bool* valueFound, JSONArray* protocolErrors);
+    static int getInt(JSONObject* object, const char* name, bool* valueFound, JSONArray* protocolErrors);
+    static double getDouble(JSONObject* object, const char* name, bool* valueFound, JSONArray* protocolErrors);
+    static String getString(JSONObject* object, const char* name, bool* valueFound, JSONArray* protocolErrors);
+    static bool getBoolean(JSONObject* object, const char* name, bool* valueFound, JSONArray* protocolErrors);
+    static PassRefPtr<JSONObject> getObject(JSONObject* object, const char* name, bool* valueFound, JSONArray* protocolErrors);
+    static PassRefPtr<JSONArray> getArray(JSONObject* object, const char* name, bool* valueFound, JSONArray* protocolErrors);
 
     void sendResponse(long callId, PassRefPtr<JSONObject> result, const char* commandName, PassRefPtr<JSONArray> protocolErrors, ErrorString invocationError, PassRefPtr<JSONValue> errorData);
 
@@ -399,7 +399,7 @@ void InspectorBackendDispatcherImpl::reportProtocolError(const long* const callI
 }
 
 template<typename R, typename V, typename V0>
-R InspectorBackendDispatcherImpl::getPropertyValueImpl(JSONObject* object, const String& name, bool* valueFound, JSONArray* protocolErrors, V0 initial_value, bool (*as_method)(JSONValue*, V*), const char* type_name)
+R InspectorBackendDispatcherImpl::getPropertyValueImpl(JSONObject* object, const char* name, bool* valueFound, JSONArray* protocolErrors, V0 initial_value, bool (*as_method)(JSONValue*, V*), const char* type_name)
 {
     ASSERT(protocolErrors);
 
@@ -411,7 +411,7 @@ R InspectorBackendDispatcherImpl::getPropertyValueImpl(JSONObject* object, const
     if (!object) {
         if (!valueFound) {
             // Required parameter in missing params container.
-            protocolErrors->pushString(String::format("'params' object must contain required parameter '%s' with type '%s'.", name.utf8().data(), type_name));
+            protocolErrors->pushString(String::format("'params' object must contain required parameter '%s' with type '%s'.", name, type_name));
         }
         return value;
     }
@@ -421,12 +421,12 @@ R InspectorBackendDispatcherImpl::getPropertyValueImpl(JSONObject* object, const
 
     if (valueIterator == end) {
         if (!valueFound)
-            protocolErrors->pushString(String::format("Parameter '%s' with type '%s' was not found.", name.utf8().data(), type_name));
+            protocolErrors->pushString(String::format("Parameter '%s' with type '%s' was not found.", name, type_name));
         return value;
     }
 
     if (!as_method(valueIterator->value.get(), &value))
-        protocolErrors->pushString(String::format("Parameter '%s' has wrong type. It must be '%s'.", name.utf8().data(), type_name));
+        protocolErrors->pushString(String::format("Parameter '%s' has wrong type. It must be '%s'.", name, type_name));
     else
         if (valueFound)
             *valueFound = true;
@@ -442,32 +442,32 @@ struct AsMethodBridges {
     static bool asArray(JSONValue* value, RefPtr<JSONArray>* output) { return value->asArray(output); }
 };
 
-int InspectorBackendDispatcherImpl::getInt(JSONObject* object, const String& name, bool* valueFound, JSONArray* protocolErrors)
+int InspectorBackendDispatcherImpl::getInt(JSONObject* object, const char* name, bool* valueFound, JSONArray* protocolErrors)
 {
     return getPropertyValueImpl<int, int, int>(object, name, valueFound, protocolErrors, 0, AsMethodBridges::asInt, "Number");
 }
 
-double InspectorBackendDispatcherImpl::getDouble(JSONObject* object, const String& name, bool* valueFound, JSONArray* protocolErrors)
+double InspectorBackendDispatcherImpl::getDouble(JSONObject* object, const char* name, bool* valueFound, JSONArray* protocolErrors)
 {
     return getPropertyValueImpl<double, double, double>(object, name, valueFound, protocolErrors, 0, AsMethodBridges::asDouble, "Number");
 }
 
-String InspectorBackendDispatcherImpl::getString(JSONObject* object, const String& name, bool* valueFound, JSONArray* protocolErrors)
+String InspectorBackendDispatcherImpl::getString(JSONObject* object, const char* name, bool* valueFound, JSONArray* protocolErrors)
 {
     return getPropertyValueImpl<String, String, String>(object, name, valueFound, protocolErrors, "", AsMethodBridges::asString, "String");
 }
 
-bool InspectorBackendDispatcherImpl::getBoolean(JSONObject* object, const String& name, bool* valueFound, JSONArray* protocolErrors)
+bool InspectorBackendDispatcherImpl::getBoolean(JSONObject* object, const char* name, bool* valueFound, JSONArray* protocolErrors)
 {
     return getPropertyValueImpl<bool, bool, bool>(object, name, valueFound, protocolErrors, false, AsMethodBridges::asBoolean, "Boolean");
 }
 
-PassRefPtr<JSONObject> InspectorBackendDispatcherImpl::getObject(JSONObject* object, const String& name, bool* valueFound, JSONArray* protocolErrors)
+PassRefPtr<JSONObject> InspectorBackendDispatcherImpl::getObject(JSONObject* object, const char* name, bool* valueFound, JSONArray* protocolErrors)
 {
     return getPropertyValueImpl<PassRefPtr<JSONObject>, RefPtr<JSONObject>, JSONObject*>(object, name, valueFound, protocolErrors, 0, AsMethodBridges::asObject, "Object");
 }
 
-PassRefPtr<JSONArray> InspectorBackendDispatcherImpl::getArray(JSONObject* object, const String& name, bool* valueFound, JSONArray* protocolErrors)
+PassRefPtr<JSONArray> InspectorBackendDispatcherImpl::getArray(JSONObject* object, const char* name, bool* valueFound, JSONArray* protocolErrors)
 {
     return getPropertyValueImpl<PassRefPtr<JSONArray>, RefPtr<JSONArray>, JSONArray*>(object, name, valueFound, protocolErrors, 0, AsMethodBridges::asArray, "Array");
 }
