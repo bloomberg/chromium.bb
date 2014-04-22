@@ -134,11 +134,11 @@ NSTextField* BuildLabel(NSString* title,
   [label setFrameOrigin:frame_origin];
   [label sizeToFit];
 
-  if (background_color) {
-    DCHECK(text_color);
+  if (background_color)
     [[label cell] setBackgroundColor:background_color];
+  if (text_color)
     [[label cell] setTextColor:text_color];
-  }
+
   return label.autorelease();
 }
 
@@ -1009,7 +1009,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   base::scoped_nsobject<NSButton> tutorialOkButton([[HoverButton alloc]
       initWithFrame:NSZeroRect]);
   [tutorialOkButton setTitle:l10n_util::GetNSString(
-      IDS_PROFILES_TUTORIAL_OK_BUTTON)];
+      buttonMessageId)];
   [tutorialOkButton setBezelStyle:NSRoundedBezelStyle];
   [tutorialOkButton setTarget:self];
   [tutorialOkButton setAction:buttonAction];
