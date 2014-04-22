@@ -4,19 +4,11 @@
 
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
 
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/session_id.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_system.h"
-#include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -28,10 +20,13 @@ using content::WebContentsObserver;
 namespace extensions {
 
 ActiveTabPermissionGranter::ActiveTabPermissionGranter(
-    content::WebContents* web_contents, int tab_id, Profile* profile)
-    : WebContentsObserver(web_contents), tab_id_(tab_id),
-      scoped_extension_registry_observer_(this) {
-  scoped_extension_registry_observer_.Add(ExtensionRegistry::Get(profile));
+    content::WebContents* web_contents,
+    int tab_id,
+    Profile* profile)
+    : WebContentsObserver(web_contents),
+      tab_id_(tab_id),
+      extension_registry_observer_(this) {
+  extension_registry_observer_.Add(ExtensionRegistry::Get(profile));
 }
 
 ActiveTabPermissionGranter::~ActiveTabPermissionGranter() {}

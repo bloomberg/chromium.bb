@@ -8,7 +8,6 @@
 #include <map>
 #include <string>
 
-#include "base/memory/linked_ptr.h"
 #include "base/scoped_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -52,8 +51,8 @@ class ExtensionActionManager : public KeyedService,
   Profile* profile_;
 
   // Listen to extension unloaded notifications.
-  ScopedObserver<ExtensionRegistry,
-                 ExtensionRegistryObserver> scoped_extension_registry_observer_;
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   // Keyed by Extension ID.  These maps are populated lazily when their
   // ExtensionAction is first requested, and the entries are removed when the

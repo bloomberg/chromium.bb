@@ -4,23 +4,14 @@
 
 #include "chrome/browser/extensions/extension_action_manager.h"
 
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/api/system_indicator/system_indicator_manager.h"
 #include "chrome/browser/extensions/api/system_indicator/system_indicator_manager_factory.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/extensions/api/extension_action/action_info.h"
-#include "chrome/common/extensions/api/extension_action/page_action_handler.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
-#include "extensions/common/extension.h"
-#include "extensions/common/feature_switch.h"
 
 namespace extensions {
 
@@ -65,11 +56,10 @@ ExtensionActionManagerFactory::GetInstance() {
 }  // namespace
 
 ExtensionActionManager::ExtensionActionManager(Profile* profile)
-    : profile_(profile),
-      scoped_extension_registry_observer_(this) {
+    : profile_(profile), extension_registry_observer_(this) {
   CHECK_EQ(profile, profile->GetOriginalProfile())
       << "Don't instantiate this with an incognito profile.";
-  scoped_extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
+  extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
 }
 
 ExtensionActionManager::~ExtensionActionManager() {

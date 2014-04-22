@@ -72,11 +72,10 @@ const Extension* GetExtensionById(Profile* profile,
 }  // namespace
 
 GalleryWatchStateTracker::GalleryWatchStateTracker(Profile* profile)
-    : profile_(profile),
-      scoped_extension_registry_observer_(this) {
+    : profile_(profile), extension_registry_observer_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile_);
-  scoped_extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
+  extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
   MediaGalleriesPreferences* preferences =
       g_browser_process->media_file_system_registry()->GetPreferences(profile);
   preferences->AddGalleryChangeObserver(this);

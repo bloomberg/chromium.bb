@@ -85,8 +85,8 @@ class ExtensionWarningService : public ExtensionRegistryObserver,
   Profile* profile_;
 
   // Listen to extension unloaded notifications.
-  ScopedObserver<ExtensionRegistry,
-                 ExtensionRegistryObserver> scoped_extension_registry_observer_;
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   ObserverList<Observer> observer_list_;
 };

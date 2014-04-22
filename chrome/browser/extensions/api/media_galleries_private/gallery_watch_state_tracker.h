@@ -138,8 +138,8 @@ class GalleryWatchStateTracker
   // Current profile.
   Profile* profile_;
 
-  ScopedObserver<ExtensionRegistry,
-                 ExtensionRegistryObserver> scoped_extension_registry_observer_;
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   // A map of watched gallery details, per extension.
   WatchedExtensionsMap watched_extensions_map_;

@@ -7,10 +7,12 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/services/gcm/gcm_app_handler.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "google_apis/gcm/gcm_client.h"
 
 class Profile;
@@ -23,12 +25,14 @@ class GCMProfileService;
 
 namespace extensions {
 
+class ExtensionRegistry;
 class GcmJsEventRouter;
 
 // Defines the interface to provide handling logic for a given app.
 class ExtensionGCMAppHandler : public gcm::GCMAppHandler,
                                public BrowserContextKeyedAPI,
-                               public content::NotificationObserver {
+                               public content::NotificationObserver,
+                               public ExtensionRegistryObserver {
  public:
   explicit ExtensionGCMAppHandler(content::BrowserContext* context);
   virtual ~ExtensionGCMAppHandler();
@@ -59,6 +63,14 @@ class ExtensionGCMAppHandler : public gcm::GCMAppHandler,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // ExtensionRegistryObserver implementation.
+  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
+                                 const Extension* extension) OVERRIDE;
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      UnloadedExtensionInfo::Reason reason) OVERRIDE;
+
   gcm::GCMProfileService* GetGCMProfileService() const;
 
   // BrowserContextKeyedAPI implementation.
@@ -67,6 +79,10 @@ class ExtensionGCMAppHandler : public gcm::GCMAppHandler,
 
   Profile* profile_;
   content::NotificationRegistrar registrar_;
+
+  // Listen to extension load, unloaded notifications.
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_;
 
 #if !defined(OS_ANDROID)
   scoped_ptr<extensions::GcmJsEventRouter> js_event_router_;

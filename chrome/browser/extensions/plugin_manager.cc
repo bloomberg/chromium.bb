@@ -6,33 +6,27 @@
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/plugin_manager.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/api/plugins/plugins_handler.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/pepper_plugin_info.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "url/gurl.h"
 
 using content::PluginService;
 
-static const char* kNaClPluginMimeType = "application/x-nacl";
+static const char kNaClPluginMimeType[] = "application/x-nacl";
 
 namespace extensions {
 
 PluginManager::PluginManager(content::BrowserContext* context)
-    : profile_(Profile::FromBrowserContext(context)) {
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                 content::Source<Profile>(profile_));
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-                 content::Source<Profile>(profile_));
+    : profile_(Profile::FromBrowserContext(context)),
+      extension_registry_observer_(this) {
+  extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
 }
 
 PluginManager::~PluginManager() {
@@ -47,85 +41,78 @@ PluginManager::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
-void PluginManager::Observe(int type,
-                            const content::NotificationSource& source,
-                            const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED) {
-    const Extension* extension =
-        content::Details<const Extension>(details).ptr();
-
-    bool plugins_or_nacl_changed = false;
-    if (PluginInfo::HasPlugins(extension)) {
-      const PluginInfo::PluginVector* plugins =
-          PluginInfo::GetPlugins(extension);
-      CHECK(plugins);
-      plugins_or_nacl_changed = true;
-      for (PluginInfo::PluginVector::const_iterator plugin = plugins->begin();
-           plugin != plugins->end(); ++plugin) {
-        PluginService::GetInstance()->RefreshPlugins();
-        PluginService::GetInstance()->AddExtraPluginPath(plugin->path);
-        ChromePluginServiceFilter* filter =
-            ChromePluginServiceFilter::GetInstance();
-        if (plugin->is_public) {
-          filter->RestrictPluginToProfileAndOrigin(
-              plugin->path, profile_, GURL());
-        } else {
-          filter->RestrictPluginToProfileAndOrigin(
-              plugin->path, profile_, extension->url());
-        }
+void PluginManager::OnExtensionLoaded(content::BrowserContext* browser_context,
+                                      const Extension* extension) {
+  bool plugins_or_nacl_changed = false;
+  if (PluginInfo::HasPlugins(extension)) {
+    const PluginInfo::PluginVector* plugins = PluginInfo::GetPlugins(extension);
+    CHECK(plugins);
+    plugins_or_nacl_changed = true;
+    for (PluginInfo::PluginVector::const_iterator plugin = plugins->begin();
+         plugin != plugins->end();
+         ++plugin) {
+      PluginService::GetInstance()->RefreshPlugins();
+      PluginService::GetInstance()->AddExtraPluginPath(plugin->path);
+      ChromePluginServiceFilter* filter =
+          ChromePluginServiceFilter::GetInstance();
+      if (plugin->is_public) {
+        filter->RestrictPluginToProfileAndOrigin(
+            plugin->path, profile_, GURL());
+      } else {
+        filter->RestrictPluginToProfileAndOrigin(
+            plugin->path, profile_, extension->url());
       }
     }
-
-    const NaClModuleInfo::List* nacl_modules =
-        NaClModuleInfo::GetNaClModules(extension);
-    if (nacl_modules) {
-      plugins_or_nacl_changed = true;
-      for (NaClModuleInfo::List::const_iterator module = nacl_modules->begin();
-           module != nacl_modules->end(); ++module) {
-        RegisterNaClModule(*module);
-      }
-      UpdatePluginListWithNaClModules();
-    }
-
-    if (plugins_or_nacl_changed)
-      PluginService::GetInstance()->PurgePluginListCache(profile_, false);
-
-  } else if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED) {
-    const Extension* extension =
-        content::Details<UnloadedExtensionInfo>(details)->extension;
-
-    bool plugins_or_nacl_changed = false;
-    if (PluginInfo::HasPlugins(extension)) {
-      const PluginInfo::PluginVector* plugins =
-          PluginInfo::GetPlugins(extension);
-      plugins_or_nacl_changed = true;
-      for (PluginInfo::PluginVector::const_iterator plugin = plugins->begin();
-           plugin != plugins->end(); ++plugin) {
-        PluginService::GetInstance()->ForcePluginShutdown(plugin->path);
-        PluginService::GetInstance()->RefreshPlugins();
-        PluginService::GetInstance()->RemoveExtraPluginPath(plugin->path);
-        ChromePluginServiceFilter::GetInstance()->UnrestrictPlugin(
-            plugin->path);
-      }
-    }
-
-    const NaClModuleInfo::List* nacl_modules =
-        NaClModuleInfo::GetNaClModules(extension);
-    if (nacl_modules) {
-      plugins_or_nacl_changed = true;
-      for (NaClModuleInfo::List::const_iterator module = nacl_modules->begin();
-           module != nacl_modules->end(); ++module) {
-        UnregisterNaClModule(*module);
-      }
-      UpdatePluginListWithNaClModules();
-    }
-
-    if (plugins_or_nacl_changed)
-      PluginService::GetInstance()->PurgePluginListCache(profile_, false);
-
-  } else {
-    NOTREACHED();
   }
+
+  const NaClModuleInfo::List* nacl_modules =
+      NaClModuleInfo::GetNaClModules(extension);
+  if (nacl_modules) {
+    plugins_or_nacl_changed = true;
+    for (NaClModuleInfo::List::const_iterator module = nacl_modules->begin();
+         module != nacl_modules->end();
+         ++module) {
+      RegisterNaClModule(*module);
+    }
+    UpdatePluginListWithNaClModules();
+  }
+
+  if (plugins_or_nacl_changed)
+    PluginService::GetInstance()->PurgePluginListCache(profile_, false);
+}
+
+void PluginManager::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    UnloadedExtensionInfo::Reason reason) {
+  bool plugins_or_nacl_changed = false;
+  if (PluginInfo::HasPlugins(extension)) {
+    const PluginInfo::PluginVector* plugins = PluginInfo::GetPlugins(extension);
+    plugins_or_nacl_changed = true;
+    for (PluginInfo::PluginVector::const_iterator plugin = plugins->begin();
+         plugin != plugins->end();
+         ++plugin) {
+      PluginService::GetInstance()->ForcePluginShutdown(plugin->path);
+      PluginService::GetInstance()->RefreshPlugins();
+      PluginService::GetInstance()->RemoveExtraPluginPath(plugin->path);
+      ChromePluginServiceFilter::GetInstance()->UnrestrictPlugin(plugin->path);
+    }
+  }
+
+  const NaClModuleInfo::List* nacl_modules =
+      NaClModuleInfo::GetNaClModules(extension);
+  if (nacl_modules) {
+    plugins_or_nacl_changed = true;
+    for (NaClModuleInfo::List::const_iterator module = nacl_modules->begin();
+         module != nacl_modules->end();
+         ++module) {
+      UnregisterNaClModule(*module);
+    }
+    UpdatePluginListWithNaClModules();
+  }
+
+  if (plugins_or_nacl_changed)
+    PluginService::GetInstance()->PurgePluginListCache(profile_, false);
 }
 
 void PluginManager::RegisterNaClModule(const NaClModuleInfo& info) {

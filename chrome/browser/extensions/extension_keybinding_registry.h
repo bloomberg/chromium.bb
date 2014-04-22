@@ -10,12 +10,12 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/scoped_observer.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
-
-class Profile;
+#include "extensions/browser/extension_registry_observer.h"
 
 namespace content {
 class BrowserContext;
@@ -29,11 +29,13 @@ namespace extensions {
 
 class ActiveTabPermissionGranter;
 class Extension;
+class ExtensionRegistry;
 
 // The ExtensionKeybindingRegistry is a class that handles the cross-platform
 // logic for keyboard accelerators. See platform-specific implementations for
 // implementation details for each platform.
-class ExtensionKeybindingRegistry : public content::NotificationObserver {
+class ExtensionKeybindingRegistry : public content::NotificationObserver,
+                                    public ExtensionRegistryObserver {
  public:
   enum ExtensionFilter {
     ALL_EXTENSIONS,
@@ -63,11 +65,6 @@ class ExtensionKeybindingRegistry : public content::NotificationObserver {
   // with |extension_id|, if it exists.
   void ExecuteCommand(const std::string& extension_id,
                       const ui::Accelerator& accelerator);
-
-  // Overridden from content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
 
  protected:
   // Add extension keybinding for the events defined by the |extension|.
@@ -125,6 +122,19 @@ class ExtensionKeybindingRegistry : public content::NotificationObserver {
   bool IsEventTargetsEmpty() const;
 
  private:
+  // Overridden from content::NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
+  // ExtensionRegistryObserver implementation.
+  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
+                                 const Extension* extension) OVERRIDE;
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      UnloadedExtensionInfo::Reason reason) OVERRIDE;
+
   // Returns true if the |extension| matches our extension filter.
   bool ExtensionMatchesFilter(const extensions::Extension* extension);
 
@@ -138,8 +148,7 @@ class ExtensionKeybindingRegistry : public content::NotificationObserver {
   // The content notification registrar for listening to extension events.
   content::NotificationRegistrar registrar_;
 
-  // Weak pointer to our profile. Not owned by us.
-  Profile* profile_;
+  content::BrowserContext* browser_context_;
 
   // What extensions to register keybindings for.
   ExtensionFilter extension_filter_;
@@ -157,6 +166,10 @@ class ExtensionKeybindingRegistry : public content::NotificationObserver {
   typedef std::list<std::pair<std::string, std::string> > TargetList;
   typedef std::map<ui::Accelerator, TargetList> EventTargets;
   EventTargets event_targets_;
+
+  // Listen to extension load, unloaded notifications.
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionKeybindingRegistry);
 };

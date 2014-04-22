@@ -11,26 +11,24 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/pref_names.h"
 
 namespace extensions {
 
 InstallTracker::InstallTracker(Profile* profile,
-                               extensions::ExtensionPrefs* prefs) {
-  AppSorting* sorting = prefs->app_sorting();
+                               extensions::ExtensionPrefs* prefs)
+    : extension_registry_observer_(this) {
+  extension_registry_observer_.Add(ExtensionRegistry::Get(profile));
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
-      content::Source<Profile>(profile));
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                 content::Source<Profile>(profile));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
       content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
       content::Source<Profile>(profile));
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED,
                  content::Source<Profile>(profile));
+  AppSorting* sorting = prefs->app_sorting();
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LAUNCHER_REORDERED,
       content::Source<AppSorting>(sorting));
   registrar_.Add(this, chrome::NOTIFICATION_APP_INSTALLED_TO_APPLIST,
@@ -97,6 +95,19 @@ void InstallTracker::Shutdown() {
   FOR_EACH_OBSERVER(InstallObserver, observers_, OnShutdown());
 }
 
+void InstallTracker::OnExtensionLoaded(content::BrowserContext* browser_context,
+                                       const Extension* extension) {
+  FOR_EACH_OBSERVER(InstallObserver, observers_, OnExtensionLoaded(extension));
+}
+
+void InstallTracker::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    UnloadedExtensionInfo::Reason reason) {
+  FOR_EACH_OBSERVER(
+      InstallObserver, observers_, OnExtensionUnloaded(extension));
+}
+
 void InstallTracker::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
@@ -107,21 +118,6 @@ void InstallTracker::Observe(int type,
               extension;
       FOR_EACH_OBSERVER(InstallObserver, observers_,
                         OnExtensionInstalled(extension));
-      break;
-    }
-    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
-      const Extension* extension =
-          content::Details<const Extension>(details).ptr();
-      FOR_EACH_OBSERVER(InstallObserver, observers_,
-                        OnExtensionLoaded(extension));
-      break;
-    }
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
-      const content::Details<extensions::UnloadedExtensionInfo>& unload_info(
-          details);
-      const Extension* extension = unload_info->extension;
-      FOR_EACH_OBSERVER(InstallObserver, observers_,
-                        OnExtensionUnloaded(extension));
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_UNINSTALLED: {

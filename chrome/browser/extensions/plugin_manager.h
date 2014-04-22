@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_PLUGIN_MANAGER_H_
 #define CHROME_BROWSER_EXTENSIONS_PLUGIN_MANAGER_H_
 
+#include "base/scoped_observer.h"
 #include "chrome/common/extensions/manifest_handlers/nacl_modules_handler.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/browser/extension_registry_observer.h"
 
 class GURL;
 class Profile;
@@ -18,20 +18,16 @@ class BrowserContext;
 }
 
 namespace extensions {
+class ExtensionRegistry;
 
 class PluginManager : public BrowserContextKeyedAPI,
-                      public content::NotificationObserver {
+                      public ExtensionRegistryObserver {
  public:
   explicit PluginManager(content::BrowserContext* context);
   virtual ~PluginManager();
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<PluginManager>* GetFactoryInstance();
-
-  // content::NotificationObserver impelmentation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   friend class BrowserContextKeyedAPIFactory<PluginManager>;
@@ -51,15 +47,25 @@ class PluginManager : public BrowserContextKeyedAPI,
 
   extensions::NaClModuleInfo::List::iterator FindNaClModule(const GURL& url);
 
+  // ExtensionRegistryObserver implementation.
+  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
+                                 const Extension* extension) OVERRIDE;
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      UnloadedExtensionInfo::Reason reason) OVERRIDE;
+
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return "PluginManager"; }
   static const bool kServiceIsNULLWhileTesting = true;
 
   extensions::NaClModuleInfo::List nacl_module_list_;
 
-  content::NotificationRegistrar registrar_;
-
   Profile* profile_;
+
+  // Listen to extension load, unloaded notifications.
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_;
 };
 
 }  // namespace extensions

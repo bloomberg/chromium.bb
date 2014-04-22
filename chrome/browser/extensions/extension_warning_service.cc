@@ -4,28 +4,23 @@
 
 #include "chrome/browser/extensions/extension_warning_service.h"
 
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/common/extension.h"
 
 using content::BrowserThread;
 
 namespace extensions {
 
 ExtensionWarningService::ExtensionWarningService(Profile* profile)
-    : profile_(profile),
-      scoped_extension_registry_observer_(this) {
+    : profile_(profile), extension_registry_observer_(this) {
   DCHECK(CalledOnValidThread());
   if (profile_) {
-    scoped_extension_registry_observer_.Add(
+    extension_registry_observer_.Add(
         ExtensionRegistry::Get(profile_->GetOriginalProfile()));
   }
 }

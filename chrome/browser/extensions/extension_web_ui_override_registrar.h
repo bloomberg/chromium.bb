@@ -6,20 +6,19 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_WEB_UI_OVERRIDE_REGISTRAR_H_
 
 #include "base/basictypes.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "base/scoped_observer.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
-
-class Profile;
+#include "extensions/browser/extension_registry_observer.h"
 
 namespace content {
 class BrowserContext;
 }
 
 namespace extensions {
+class ExtensionRegistry;
 
 class ExtensionWebUIOverrideRegistrar : public BrowserContextKeyedAPI,
-                                        public content::NotificationObserver {
+                                        public ExtensionRegistryObserver {
  public:
   explicit ExtensionWebUIOverrideRegistrar(content::BrowserContext* context);
   virtual ~ExtensionWebUIOverrideRegistrar();
@@ -28,21 +27,25 @@ class ExtensionWebUIOverrideRegistrar : public BrowserContextKeyedAPI,
   static BrowserContextKeyedAPIFactory<ExtensionWebUIOverrideRegistrar>*
       GetFactoryInstance();
 
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
  private:
   friend class BrowserContextKeyedAPIFactory<ExtensionWebUIOverrideRegistrar>;
+
+  // ExtensionRegistryObserver implementation.
+  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
+                                 const Extension* extension) OVERRIDE;
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      UnloadedExtensionInfo::Reason reason) OVERRIDE;
 
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() {
     return "ExtensionWebUIOverrideRegistrar";
   }
 
-  Profile* const profile_;
-  content::NotificationRegistrar registrar_;
+  // Listen to extension load, unloaded notifications.
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionWebUIOverrideRegistrar);
 };

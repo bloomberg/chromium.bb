@@ -7,10 +7,12 @@
 
 #include "base/observer_list.h"
 #include "base/prefs/pref_change_registrar.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/extensions/install_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/extension_registry_observer.h"
 
 class Profile;
 
@@ -21,9 +23,11 @@ class BrowserContext;
 namespace extensions {
 
 class ExtensionPrefs;
+class ExtensionRegistry;
 
 class InstallTracker : public KeyedService,
-                       public content::NotificationObserver {
+                       public content::NotificationObserver,
+                       public ExtensionRegistryObserver {
  public:
   InstallTracker(Profile* profile,
                  extensions::ExtensionPrefs* prefs);
@@ -43,20 +47,32 @@ class InstallTracker : public KeyedService,
   void OnFinishCrxInstall(const std::string& extension_id, bool success);
   void OnInstallFailure(const std::string& extension_id);
 
-  // Overriddes for KeyedService:
+  // Overriddes for KeyedService.
   virtual void Shutdown() OVERRIDE;
-
-  // content::NotificationObserver
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   void OnAppsReordered();
 
+  // content::NotificationObserver.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
+  // ExtensionRegistryObserver implementation.
+  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
+                                 const Extension* extension) OVERRIDE;
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      UnloadedExtensionInfo::Reason reason) OVERRIDE;
+
   ObserverList<InstallObserver> observers_;
   content::NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;
+
+  // Listen to extension load, unloaded notifications.
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(InstallTracker);
 };

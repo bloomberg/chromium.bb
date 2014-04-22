@@ -66,8 +66,8 @@ class ActiveTabPermissionGranter
   ExtensionSet granted_extensions_;
 
   // Listen to extension unloaded notifications.
-  ScopedObserver<ExtensionRegistry,
-                 ExtensionRegistryObserver> scoped_extension_registry_observer_;
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ActiveTabPermissionGranter);
 };

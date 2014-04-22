@@ -4,17 +4,11 @@
 
 #include "chrome/browser/extensions/user_script_master.h"
 
-#include <map>
 #include <string>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
-#include "base/pickle.h"
-#include "base/stl_util.h"
-#include "base/strings/string_util.h"
-#include "base/threading/thread.h"
 #include "base/version.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -25,10 +19,7 @@
 #include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
-#include "extensions/browser/extension_system.h"
-#include "extensions/common/extension.h"
-#include "extensions/common/extension_resource.h"
-#include "extensions/common/extension_set.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/message_bundle.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -315,17 +306,13 @@ void UserScriptMaster::ScriptReloader::RunLoad(
           &ScriptReloader::NotifyMaster, this, Serialize(user_scripts)));
 }
 
-
 UserScriptMaster::UserScriptMaster(Profile* profile)
     : extensions_service_ready_(false),
       pending_load_(false),
-      profile_(profile) {
+      profile_(profile),
+      extension_registry_observer_(this) {
+  extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
-                 content::Source<Profile>(profile_));
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                 content::Source<Profile>(profile_));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
                  content::NotificationService::AllBrowserContextsAndSources());
@@ -364,6 +351,52 @@ void UserScriptMaster::NewScriptsAvailable(base::SharedMemory* handle) {
   }
 }
 
+void UserScriptMaster::OnExtensionLoaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension) {
+  // Add any content scripts inside the extension.
+  extensions_info_[extension->id()] =
+      ExtensionSet::ExtensionPathAndDefaultLocale(
+          extension->path(), LocaleInfo::GetDefaultLocale(extension));
+  bool incognito_enabled = util::IsIncognitoEnabled(extension->id(), profile_);
+  const UserScriptList& scripts =
+      ContentScriptsInfo::GetContentScripts(extension);
+  for (UserScriptList::const_iterator iter = scripts.begin();
+       iter != scripts.end();
+       ++iter) {
+    user_scripts_.push_back(*iter);
+    user_scripts_.back().set_incognito_enabled(incognito_enabled);
+  }
+  if (extensions_service_ready_) {
+    if (script_reloader_.get()) {
+      pending_load_ = true;
+    } else {
+      StartLoad();
+    }
+  }
+}
+
+void UserScriptMaster::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    UnloadedExtensionInfo::Reason reason) {
+  // Remove any content scripts.
+  extensions_info_.erase(extension->id());
+  UserScriptList new_user_scripts;
+  for (UserScriptList::iterator iter = user_scripts_.begin();
+       iter != user_scripts_.end();
+       ++iter) {
+    if (iter->extension_id() != extension->id())
+      new_user_scripts.push_back(*iter);
+  }
+  user_scripts_ = new_user_scripts;
+  if (script_reloader_.get()) {
+    pending_load_ = true;
+  } else {
+    StartLoad();
+  }
+}
+
 void UserScriptMaster::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
@@ -373,41 +406,6 @@ void UserScriptMaster::Observe(int type,
       extensions_service_ready_ = true;
       should_start_load = true;
       break;
-    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
-      // Add any content scripts inside the extension.
-      const Extension* extension =
-          content::Details<const Extension>(details).ptr();
-      extensions_info_[extension->id()] =
-          ExtensionSet::ExtensionPathAndDefaultLocale(
-              extension->path(), LocaleInfo::GetDefaultLocale(extension));
-      bool incognito_enabled =
-          util::IsIncognitoEnabled(extension->id(), profile_);
-      const UserScriptList& scripts =
-          ContentScriptsInfo::GetContentScripts(extension);
-      for (UserScriptList::const_iterator iter = scripts.begin();
-           iter != scripts.end(); ++iter) {
-        user_scripts_.push_back(*iter);
-        user_scripts_.back().set_incognito_enabled(incognito_enabled);
-      }
-      if (extensions_service_ready_)
-        should_start_load = true;
-      break;
-    }
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
-      // Remove any content scripts.
-      const Extension* extension =
-          content::Details<UnloadedExtensionInfo>(details)->extension;
-      extensions_info_.erase(extension->id());
-      UserScriptList new_user_scripts;
-      for (UserScriptList::iterator iter = user_scripts_.begin();
-           iter != user_scripts_.end(); ++iter) {
-        if (iter->extension_id() != extension->id())
-          new_user_scripts.push_back(*iter);
-      }
-      user_scripts_ = new_user_scripts;
-      should_start_load = true;
-      break;
-    }
     case content::NOTIFICATION_RENDERER_PROCESS_CREATED: {
       content::RenderProcessHost* process =
           content::Source<content::RenderProcessHost>(source).ptr();

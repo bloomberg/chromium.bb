@@ -5,44 +5,36 @@
 #include "chrome/browser/extensions/extension_web_ui_override_registrar.h"
 
 #include "base/lazy_instance.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/profiles/profile.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
+#include "extensions/browser/extension_registry.h"
 
 namespace extensions {
 
 ExtensionWebUIOverrideRegistrar::ExtensionWebUIOverrideRegistrar(
     content::BrowserContext* context)
-    : profile_(Profile::FromBrowserContext(context)) {
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                 content::Source<Profile>(profile_));
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-                 content::Source<Profile>(profile_));
+    : extension_registry_observer_(this) {
+  extension_registry_observer_.Add(ExtensionRegistry::Get(context));
 }
 
 ExtensionWebUIOverrideRegistrar::~ExtensionWebUIOverrideRegistrar() {
 }
 
-void ExtensionWebUIOverrideRegistrar::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED) {
-    const Extension* extension =
-        content::Details<const Extension>(details).ptr();
-    ExtensionWebUI::RegisterChromeURLOverrides(
-        profile_, URLOverrides::GetChromeURLOverrides(extension));
+void ExtensionWebUIOverrideRegistrar::OnExtensionLoaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension) {
+  ExtensionWebUI::RegisterChromeURLOverrides(
+      Profile::FromBrowserContext(browser_context),
+      URLOverrides::GetChromeURLOverrides(extension));
+}
 
-  } else if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED) {
-    const Extension* extension =
-        content::Details<UnloadedExtensionInfo>(details)->extension;
-    ExtensionWebUI::UnregisterChromeURLOverrides(
-        profile_, URLOverrides::GetChromeURLOverrides(extension));
-  }
+void ExtensionWebUIOverrideRegistrar::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    UnloadedExtensionInfo::Reason reason) {
+  ExtensionWebUI::UnregisterChromeURLOverrides(
+      Profile::FromBrowserContext(browser_context),
+      URLOverrides::GetChromeURLOverrides(extension));
 }
 
 static base::LazyInstance<

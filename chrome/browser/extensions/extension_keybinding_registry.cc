@@ -12,6 +12,7 @@
 #include "chrome/common/extensions/command.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_constants.h"
@@ -22,21 +23,19 @@ ExtensionKeybindingRegistry::ExtensionKeybindingRegistry(
     content::BrowserContext* context,
     ExtensionFilter extension_filter,
     Delegate* delegate)
-    : profile_(Profile::FromBrowserContext(context)),
+    : browser_context_(context),
       extension_filter_(extension_filter),
-      delegate_(delegate) {
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                 content::Source<Profile>(profile_->GetOriginalProfile()));
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-                 content::Source<Profile>(profile_->GetOriginalProfile()));
+      delegate_(delegate),
+      extension_registry_observer_(this) {
+  extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
+
+  Profile* profile = Profile::FromBrowserContext(browser_context_);
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_COMMAND_ADDED,
-                 content::Source<Profile>(profile_->GetOriginalProfile()));
+                 content::Source<Profile>(profile->GetOriginalProfile()));
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_COMMAND_REMOVED,
-                 content::Source<Profile>(profile_->GetOriginalProfile()));
+                 content::Source<Profile>(profile->GetOriginalProfile()));
 }
 
 ExtensionKeybindingRegistry::~ExtensionKeybindingRegistry() {
@@ -73,7 +72,7 @@ void ExtensionKeybindingRegistry::RemoveExtensionKeybinding(
 
 void ExtensionKeybindingRegistry::Init() {
   ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
+      ExtensionSystem::Get(browser_context_)->extension_service();
   if (!service)
     return;  // ExtensionService can be null during testing.
 
@@ -98,7 +97,7 @@ bool ExtensionKeybindingRegistry::NotifyEventTargets(
 void ExtensionKeybindingRegistry::CommandExecuted(
     const std::string& extension_id, const std::string& command) {
   ExtensionService* service =
-      ExtensionSystem::Get(profile_)->extension_service();
+      ExtensionSystem::Get(browser_context_)->extension_service();
 
   const Extension* extension = service->extensions()->GetByID(extension_id);
   if (!extension)
@@ -117,9 +116,9 @@ void ExtensionKeybindingRegistry::CommandExecuted(
   args->Append(new base::StringValue(command));
 
   scoped_ptr<Event> event(new Event("commands.onCommand", args.Pass()));
-  event->restrict_to_browser_context = profile_;
+  event->restrict_to_browser_context = browser_context_;
   event->user_gesture = EventRouter::USER_GESTURE_ENABLED;
-  EventRouter::Get(profile_)
+  EventRouter::Get(browser_context_)
       ->DispatchEventToExtension(extension_id, event.Pass());
 }
 
@@ -165,34 +164,36 @@ void ExtensionKeybindingRegistry::ExecuteCommand(
   ExecuteCommands(accelerator, extension_id);
 }
 
+void ExtensionKeybindingRegistry::OnExtensionLoaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension) {
+  if (ExtensionMatchesFilter(extension))
+    AddExtensionKeybinding(extension, std::string());
+}
+
+void ExtensionKeybindingRegistry::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    UnloadedExtensionInfo::Reason reason) {
+  if (ExtensionMatchesFilter(extension))
+    RemoveExtensionKeybinding(extension, std::string());
+}
+
 void ExtensionKeybindingRegistry::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
-      const extensions::Extension* extension =
-          content::Details<const extensions::Extension>(details).ptr();
-      if (ExtensionMatchesFilter(extension))
-        AddExtensionKeybinding(extension, std::string());
-      break;
-    }
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
-      const extensions::Extension* extension =
-          content::Details<UnloadedExtensionInfo>(details)->extension;
-      if (ExtensionMatchesFilter(extension))
-        RemoveExtensionKeybinding(extension, std::string());
-      break;
-    }
     case chrome::NOTIFICATION_EXTENSION_COMMAND_ADDED:
     case chrome::NOTIFICATION_EXTENSION_COMMAND_REMOVED: {
       std::pair<const std::string, const std::string>* payload =
           content::Details<std::pair<const std::string, const std::string> >(
               details).ptr();
 
-      const extensions::Extension* extension =
-          ExtensionSystem::Get(profile_)->extension_service()->
-              extensions()->GetByID(payload->first);
+      const Extension* extension = ExtensionSystem::Get(browser_context_)
+                                       ->extension_service()
+                                       ->extensions()
+                                       ->GetByID(payload->first);
       // During install and uninstall the extension won't be found. We'll catch
       // those events above, with the LOADED/UNLOADED, so we ignore this event.
       if (!extension)

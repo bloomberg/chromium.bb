@@ -9,14 +9,12 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/files/file_path.h"
-#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/shared_memory.h"
-#include "base/strings/string_piece.h"
+#include "base/scoped_observer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/user_script.h"
@@ -29,13 +27,16 @@ class Profile;
 
 namespace extensions {
 
+class ExtensionRegistry;
+
 typedef std::map<std::string, ExtensionSet::ExtensionPathAndDefaultLocale>
     ExtensionsInfo;
 
 // Manages a segment of shared memory that contains the user scripts the user
 // has installed.  Lives on the UI thread.
 class UserScriptMaster : public base::RefCountedThreadSafe<UserScriptMaster>,
-                         public content::NotificationObserver {
+                         public content::NotificationObserver,
+                         public ExtensionRegistryObserver {
  public:
   explicit UserScriptMaster(Profile* profile);
 
@@ -134,6 +135,14 @@ class UserScriptMaster : public base::RefCountedThreadSafe<UserScriptMaster>,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // ExtensionRegistryObserver implementation.
+  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
+                                 const Extension* extension) OVERRIDE;
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      UnloadedExtensionInfo::Reason reason) OVERRIDE;
+
   // Sends the renderer process a new set of user scripts.
   void SendUpdate(content::RenderProcessHost* process,
                   base::SharedMemory* shared_memory);
@@ -164,6 +173,10 @@ class UserScriptMaster : public base::RefCountedThreadSafe<UserScriptMaster>,
 
   // The profile for which the scripts managed here are installed.
   Profile* profile_;
+
+  // Listen to extension load, unloaded notifications.
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(UserScriptMaster);
 };
