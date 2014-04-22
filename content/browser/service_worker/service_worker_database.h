@@ -7,9 +7,19 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "content/browser/service_worker/service_worker_version.h"
+#include "content/common/content_export.h"
 #include "url/gurl.h"
+
+namespace leveldb {
+class DB;
+class Env;
+class Slice;
+class WriteBatch;
+}
 
 namespace content {
 
@@ -18,7 +28,7 @@ namespace content {
 // file io. The ServiceWorkerStorage class owns this class and
 // is responsible for only calling it serially on background
 // nonIO threads (ala SequencedWorkerPool).
-class ServiceWorkerDatabase {
+class CONTENT_EXPORT ServiceWorkerDatabase {
  public:
   // We do leveldb stuff in |path| or in memory if |path| is empty.
   explicit ServiceWorkerDatabase(const base::FilePath& path);
@@ -48,8 +58,48 @@ class ServiceWorkerDatabase {
     ~RegistrationData();
   };
 
+  // For use during initialization.
+  bool GetNextAvailableIds(int64* next_avail_registration_id,
+                           int64* next_avail_version_id,
+                           int64* next_avail_resource_id);
+
+  bool is_disabled() const { return is_disabled_; }
+  bool was_corruption_detected() const { return was_corruption_detected_; }
+
  private:
+  // Opens the database at the |path_|. This is lazily called when the first
+  // database API is called. Returns true if the database was opened. Returns
+  // false if the opening failed or was not neccessary, that is, the database
+  // does not exist and |create_if_needed| is false.
+  bool LazyOpen(bool create_if_needed);
+
+  // Populates the database with initial data, namely, database schema version
+  // and next available IDs.
+  bool PopulateInitialData();
+
+  bool ReadInt64(const leveldb::Slice& key, int64* value_out);
+  bool WriteBatch(scoped_ptr<leveldb::WriteBatch> batch);
+
+  bool IsOpen();
+  bool IsEmpty();
+
   base::FilePath path_;
+  scoped_ptr<leveldb::Env> env_;
+  scoped_ptr<leveldb::DB> db_;
+
+  // True if a database error has occurred (e.g. cannot read data).
+  // If true, all database accesses will fail.
+  bool is_disabled_;
+
+  // True if a database corruption was detected.
+  bool was_corruption_detected_;
+
+  base::SequenceChecker sequence_checker_;
+
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, OpenDatabase);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, OpenDatabase_InMemory);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, GetNextAvailableIds);
+
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerDatabase);
 };
 
