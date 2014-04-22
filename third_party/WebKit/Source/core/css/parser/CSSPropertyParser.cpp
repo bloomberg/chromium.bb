@@ -5185,14 +5185,12 @@ static inline bool fastParseColorInternal(RGBA32& rgb, const CharacterType* char
 {
     CSSPrimitiveValue::UnitTypes expect = CSSPrimitiveValue::CSS_UNKNOWN;
 
+    if (length >= 4 && characters[0] == '#')
+        return Color::parseHexColor(characters + 1, length - 1, rgb);
+
     if (!strict && length >= 3) {
-        if (characters[0] == '#') {
-            if (Color::parseHexColor(characters + 1, length - 1, rgb))
-                return true;
-        } else {
-            if (Color::parseHexColor(characters, length, rgb))
-                return true;
-        }
+        if (Color::parseHexColor(characters, length, rgb))
+            return true;
     }
 
     // Try rgba() syntax.
