@@ -301,6 +301,31 @@ TEST_F(MaximizeModeWindowManagerTest, CreateWindows) {
   EXPECT_EQ(rect.ToString(), w8->bounds().ToString());
 }
 
+// Test that a window which got created while the maximize mode window manager
+// is active gets restored to a usable (non tiny) size upon switching back.
+TEST_F(MaximizeModeWindowManagerTest,
+       CreateWindowInMaximizedModeRestoresToUsefulSize) {
+  ash::MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
+  ASSERT_TRUE(manager);
+  EXPECT_EQ(0, manager->GetNumberOfManagedWindows());
+
+  // We pass in an empty rectangle to simulate a window creation with no
+  // particular size.
+  gfx::Rect empty_rect(0, 0, 0, 0);
+  scoped_ptr<aura::Window> window(CreateWindow(ui::wm::WINDOW_TYPE_NORMAL,
+                                               empty_rect));
+  EXPECT_TRUE(wm::GetWindowState(window.get())->IsMaximized());
+  EXPECT_NE(empty_rect.ToString(), window->bounds().ToString());
+  gfx::Rect maximized_size = window->bounds();
+
+  // Destroy the maximize mode and check that the resulting size of the window
+  // is remaining as it is (but not maximized).
+  DestroyMaximizeModeWindowManager();
+
+  EXPECT_FALSE(wm::GetWindowState(window.get())->IsMaximized());
+  EXPECT_EQ(maximized_size.ToString(), window->bounds().ToString());
+}
+
 // Test that non-maximizable windows get properly handled when created in
 // maximized mode.
 TEST_F(MaximizeModeWindowManagerTest,

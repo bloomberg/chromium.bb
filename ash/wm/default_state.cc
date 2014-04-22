@@ -477,8 +477,9 @@ void DefaultState::ReenterToCurrentState(
   window_state->UpdateWindowShowStateFromStateType();
   window_state->NotifyPreStateTypeChange(previous_state_type);
 
-  if (state_type_ == wm::WINDOW_STATE_TYPE_NORMAL ||
-      state_type_ == wm::WINDOW_STATE_TYPE_DEFAULT) {
+  if ((state_type_ == wm::WINDOW_STATE_TYPE_NORMAL ||
+       state_type_ == wm::WINDOW_STATE_TYPE_DEFAULT) &&
+      !stored_bounds_.IsEmpty()) {
     // Use the restore mechanism to set the bounds for
     // the window in normal state. This also covers unminimize case.
     window_state->SetRestoreBoundsInParent(stored_bounds_);
