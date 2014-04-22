@@ -310,10 +310,6 @@ public:
     {
         WebTestProxyBase::printPage(frame);
     }
-    virtual blink::WebNotificationPresenter* notificationPresenter()
-    {
-        return WebTestProxyBase::notificationPresenter();
-    }
     virtual blink::WebMIDIClient* webMIDIClient()
     {
         return WebTestProxyBase::webMIDIClient();
@@ -356,90 +352,6 @@ public:
     virtual void resetInputMethod()
     {
         WebTestProxyBase::resetInputMethod();
-    }
-
-    virtual void didReceiveServerRedirectForProvisionalLoad(blink::WebLocalFrame* frame)
-    {
-        WebTestProxyBase::didReceiveServerRedirectForProvisionalLoad(frame);
-        Base::didReceiveServerRedirectForProvisionalLoad(frame);
-    }
-    virtual void didFailProvisionalLoad(blink::WebLocalFrame* frame, const blink::WebURLError& error)
-    {
-        // If the test finished, don't notify the embedder of the failed load,
-        // as we already destroyed the document loader.
-        if (WebTestProxyBase::didFailProvisionalLoad(frame, error))
-            return;
-        Base::didFailProvisionalLoad(frame, error);
-    }
-    virtual void didReceiveTitle(blink::WebLocalFrame* frame, const blink::WebString& title, blink::WebTextDirection direction)
-    {
-        WebTestProxyBase::didReceiveTitle(frame, title, direction);
-        Base::didReceiveTitle(frame, title, direction);
-    }
-    virtual void didChangeIcon(blink::WebLocalFrame* frame, blink::WebIconURL::Type iconType)
-    {
-        WebTestProxyBase::didChangeIcon(frame, iconType);
-        Base::didChangeIcon(frame, iconType);
-    }
-    virtual void didFinishDocumentLoad(blink::WebLocalFrame* frame)
-    {
-        WebTestProxyBase::didFinishDocumentLoad(frame);
-        Base::didFinishDocumentLoad(frame);
-    }
-    virtual void didHandleOnloadEvents(blink::WebLocalFrame* frame)
-    {
-        WebTestProxyBase::didHandleOnloadEvents(frame);
-        Base::didHandleOnloadEvents(frame);
-    }
-    virtual void didFailLoad(blink::WebLocalFrame* frame, const blink::WebURLError& error)
-    {
-        WebTestProxyBase::didFailLoad(frame, error);
-        Base::didFailLoad(frame, error);
-    }
-    virtual void didFinishLoad(blink::WebLocalFrame* frame)
-    {
-        WebTestProxyBase::didFinishLoad(frame);
-        Base::didFinishLoad(frame);
-    }
-    virtual void didDetectXSS(blink::WebLocalFrame* frame, const blink::WebURL& insecureURL, bool didBlockEntirePage)
-    {
-        WebTestProxyBase::didDetectXSS(frame, insecureURL, didBlockEntirePage);
-        Base::didDetectXSS(frame, insecureURL, didBlockEntirePage);
-    }
-    virtual void willRequestResource(blink::WebLocalFrame* frame, const blink::WebCachedURLRequest& request)
-    {
-        WebTestProxyBase::willRequestResource(frame, request);
-        Base::willRequestResource(frame, request);
-    }
-    virtual void willSendRequest(blink::WebLocalFrame* frame, unsigned identifier, blink::WebURLRequest& request, const blink::WebURLResponse& redirectResponse)
-    {
-        WebTestProxyBase::willSendRequest(frame, identifier, request, redirectResponse);
-        Base::willSendRequest(frame, identifier, request, redirectResponse);
-    }
-    virtual void didReceiveResponse(blink::WebLocalFrame* frame, unsigned identifier, const blink::WebURLResponse& response)
-    {
-        WebTestProxyBase::didReceiveResponse(frame, identifier, response);
-        Base::didReceiveResponse(frame, identifier, response);
-    }
-    virtual void didChangeResourcePriority(blink::WebLocalFrame* frame, unsigned identifier, const blink::WebURLRequest::Priority& priority, int intra_priority_value)
-    {
-        WebTestProxyBase::didChangeResourcePriority(frame, identifier, priority, intra_priority_value);
-        Base::didChangeResourcePriority(frame, identifier, priority, intra_priority_value);
-    }
-    virtual void didFinishResourceLoad(blink::WebLocalFrame* frame, unsigned identifier)
-    {
-        WebTestProxyBase::didFinishResourceLoad(frame, identifier);
-        Base::didFinishResourceLoad(frame, identifier);
-    }
-    virtual bool willCheckAndDispatchMessageEvent(blink::WebLocalFrame* sourceFrame, blink::WebFrame* targetFrame, blink::WebSecurityOrigin target, blink::WebDOMMessageEvent event)
-    {
-        if (WebTestProxyBase::willCheckAndDispatchMessageEvent(sourceFrame, targetFrame, target, event))
-            return true;
-        return Base::willCheckAndDispatchMessageEvent(sourceFrame, targetFrame, target, event);
-    }
-    virtual blink::WebColorChooser* createColorChooser(blink::WebColorChooserClient* client, const blink::WebColor& color, const blink::WebVector<blink::WebColorSuggestion>& suggestions)
-    {
-        return WebTestProxyBase::createColorChooser(client, color, suggestions);
     }
     virtual bool runFileChooser(const blink::WebFileChooserParams& params, blink::WebFileChooserCompletion* completion)
     {
