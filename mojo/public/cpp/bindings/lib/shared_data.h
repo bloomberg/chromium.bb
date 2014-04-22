@@ -32,6 +32,7 @@ class SharedData {
     holder_->Release();
     holder_ = other.holder_;
     holder_->Retain();
+    return *this;
   }
 
   void reset() {

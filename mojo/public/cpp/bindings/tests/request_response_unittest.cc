@@ -25,7 +25,10 @@ class ProviderImpl : public sample::Provider {
       const String& a,
       const Callback<void(String)>& callback) MOJO_OVERRIDE {
     AllocationScope scope;
-    callback.Run(a);
+    Callback<void(String)> callback_copy;
+    // Make sure operator= is used.
+    callback_copy = callback;
+    callback_copy.Run(a);
   }
 
   virtual void EchoStrings(
