@@ -1281,7 +1281,8 @@ WebContents* Browser::OpenURLFromTab(WebContents* source,
   FillNavigateParamsFromOpenURLParams(&nav_params, params);
   nav_params.source_contents = source;
   nav_params.tabstrip_add_types = TabStripModel::ADD_NONE;
-  nav_params.window_action = chrome::NavigateParams::SHOW_WINDOW;
+  if (params.user_gesture)
+    nav_params.window_action = chrome::NavigateParams::SHOW_WINDOW;
   nav_params.user_gesture = params.user_gesture;
 
   PopupBlockerTabHelper* popup_blocker_helper = NULL;
