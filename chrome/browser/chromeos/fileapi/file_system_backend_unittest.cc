@@ -199,13 +199,6 @@ TEST(ChromeOSFileSystemBackendTest, AccessPermissions) {
   backend.RevokeAccessForExtension(extension);
   EXPECT_FALSE(backend.IsAccessAllowed(
       CreateFileSystemURL(extension, "removable/foo", mount_points.get())));
-
-  fileapi::FileSystemURL internal_url = FileSystemURL::CreateForTest(
-      GURL("chrome://foo"),
-      fileapi::kFileSystemTypeExternal,
-      base::FilePath(FPL("removable/")));
-  // Internal WebUI should have full access.
-  EXPECT_TRUE(backend.IsAccessAllowed(internal_url));
 }
 
 TEST(ChromeOSFileSystemBackendTest, GetVirtualPathConflictWithSystemPoints) {

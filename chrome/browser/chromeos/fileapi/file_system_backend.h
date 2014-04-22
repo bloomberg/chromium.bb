@@ -5,26 +5,21 @@
 #ifndef CHROME_BROWSER_CHROMEOS_FILEAPI_FILE_SYSTEM_BACKEND_H_
 #define CHROME_BROWSER_CHROMEOS_FILEAPI_FILE_SYSTEM_BACKEND_H_
 
-#include <map>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/synchronization/lock.h"
 #include "webkit/browser/fileapi/file_system_backend.h"
 #include "webkit/browser/quota/special_storage_policy.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/fileapi/file_system_types.h"
 
 namespace fileapi {
 class CopyOrMoveFileValidatorFactory;
 class ExternalMountPoints;
-class FileSystemFileUtil;
 class FileSystemURL;
-class IsolatedContext;
-}
+}  // namespace fileapi
 
 namespace chromeos {
 

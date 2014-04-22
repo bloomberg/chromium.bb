@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/platform_file.h"
 #include "webkit/common/fileapi/file_system_types.h"
 
 namespace base {
@@ -17,7 +16,6 @@ class Time;
 namespace fileapi {
 class AsyncFileUtil;
 class FileSystemContext;
-class FileSystemOperation;
 class FileSystemURL;
 class FileStreamWriter;
 }  // namespace fileapi
