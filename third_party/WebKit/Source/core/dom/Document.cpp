@@ -1936,7 +1936,7 @@ void Document::clearFocusedElementTimerFired(Timer<Document>*)
     m_clearFocusedElementTimer.stop();
 
     if (m_focusedElement && !m_focusedElement->isFocusable())
-        setFocusedElement(nullptr);
+        m_focusedElement->blur();
 }
 
 // FIXME: This is a bad idea and needs to be removed eventually.

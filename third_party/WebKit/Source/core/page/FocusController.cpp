@@ -48,6 +48,7 @@
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLPlugInElement.h"
 #include "core/html/HTMLShadowElement.h"
+#include "core/html/HTMLTextFormControlElement.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/EventHandler.h"
@@ -618,15 +619,10 @@ static void clearSelectionIfNeeded(LocalFrame* oldFocusedFrame, LocalFrame* newF
 
     if (Node* mousePressNode = newFocusedFrame->eventHandler().mousePressNode()) {
         if (mousePressNode->renderer() && !mousePressNode->canStartSelection()) {
-            // Don't clear the selection for contentEditable elements, but do clear it for input and textarea. See bug 38696.
-            Node* root = selection.rootEditableElement();
-            if (!root)
+            // Don't clear the selection for contentEditable elements, but do
+            // clear it for input and textarea. See bug 38696.
+            if (!enclosingTextFormControl(selection.start()))
                 return;
-
-            if (Node* shadowAncestorNode = root->deprecatedShadowAncestorNode()) {
-                if (!isHTMLInputElement(*shadowAncestorNode) && !isHTMLTextAreaElement(*shadowAncestorNode))
-                    return;
-            }
         }
     }
 
