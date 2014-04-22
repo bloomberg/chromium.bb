@@ -387,9 +387,6 @@ const char kDisableSyncSyncedNotifications[] =
 // --disable-synctypes='Typed URLs, Bookmarks, Autofill Profiles'
 const char kDisableSyncTypes[]              = "disable-sync-types";
 
-// Disables TLS Channel ID extension.
-const char kDisableTLSChannelID[]           = "disable-tls-channel-id";
-
 // Disables some security measures when accessing user media devices like
 // webcams and microphones, especially on non-HTTPS pages.
 const char kDisableUserMediaSecurity[]      = "disable-user-media-security";
