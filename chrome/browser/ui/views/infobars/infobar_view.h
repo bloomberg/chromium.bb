@@ -111,9 +111,6 @@ class InfoBarView : public infobars::InfoBar,
                  views::MenuItemView::AnchorPosition anchor);
 
  private:
-  static const int kHorizontalPadding;
-  static const int kCloseButtonSpacing;
-
   // Does the actual work for AssignWidths().  Assumes |labels| is sorted by
   // decreasing preferred width.
   static void AssignWidthsSorted(Labels* labels, int available_width);
