@@ -196,6 +196,7 @@ int DOMSelection::rangeCount() const
 
 void DOMSelection::collapse(Node* node, int offset, ExceptionState& exceptionState)
 {
+    ASSERT(node);
     if (!m_frame)
         return;
 
@@ -209,6 +210,11 @@ void DOMSelection::collapse(Node* node, int offset, ExceptionState& exceptionSta
 
     // FIXME: Eliminate legacy editing positions
     m_frame->selection().moveTo(VisiblePosition(createLegacyEditingPosition(node, offset), DOWNSTREAM));
+}
+
+void DOMSelection::collapse(Node* node, ExceptionState& exceptionState)
+{
+    collapse(node, 0, exceptionState);
 }
 
 void DOMSelection::collapseToEnd(ExceptionState& exceptionState)

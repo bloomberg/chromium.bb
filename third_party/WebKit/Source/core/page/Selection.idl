@@ -41,8 +41,8 @@
     readonly attribute boolean isCollapsed;
     readonly attribute long rangeCount;
 
-    [RaisesException] void collapse([Default=Undefined] optional Node node,
-                  [Default=Undefined] optional long index);
+    [RaisesException, StrictTypeChecking] void collapse(Node node,
+                                                        optional long offset);
     [RaisesException] void collapseToEnd();
     [RaisesException] void collapseToStart();
 
@@ -77,8 +77,9 @@
                           [Default=Undefined] optional long baseOffset,
                           [Default=Undefined] optional Node extentNode,
                           [Default=Undefined] optional long extentOffset);
-    [ImplementedAs=collapse, MeasureAs=SelectionSetPosition, RaisesException] void setPosition([Default=Undefined] optional Node node,
-                     [Default=Undefined] optional long offset);
+    [ImplementedAs=collapse, MeasureAs=SelectionSetPosition, RaisesException, StrictTypeChecking] void setPosition(Node node,
+                                                                                                                   optional long offset);
+
 
     // IE extentions
     // http://msdn.microsoft.com/en-us/library/ms535869(VS.85).aspx
