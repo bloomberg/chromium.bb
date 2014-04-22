@@ -27,6 +27,20 @@ scoped_ptr<PlatformEvent> CreatePlatformEvent() {
 template <typename T>
 void DestroyScopedPtr(scoped_ptr<T> object) {}
 
+void RemoveDispatcher(PlatformEventDispatcher* dispatcher) {
+  PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(dispatcher);
+}
+
+void RemoveDispatchers(PlatformEventDispatcher* first,
+                       PlatformEventDispatcher* second) {
+  PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(first);
+  PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(second);
+}
+
+void AddDispatcher(PlatformEventDispatcher* dispatcher) {
+  PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(dispatcher);
+}
+
 }  // namespace
 
 class TestPlatformEventSource : public PlatformEventSource {
@@ -300,6 +314,170 @@ TEST_F(PlatformEventTest, OverriddenDispatcherInvokeDefaultDispatcher) {
   EXPECT_EQ(15, list[0]);
   EXPECT_EQ(50, list[1]);
   EXPECT_EQ(10, list[2]);
+}
+
+// Runs a callback during an event dispatch.
+class RunCallbackDuringDispatch : public TestPlatformEventDispatcher {
+ public:
+  RunCallbackDuringDispatch(int id, std::vector<int>* list)
+      : TestPlatformEventDispatcher(id, list) {}
+  virtual ~RunCallbackDuringDispatch() {}
+
+  void set_callback(const base::Closure& callback) {
+    callback_ = callback;
+  }
+
+ protected:
+  // PlatformEventDispatcher:
+  virtual uint32_t DispatchEvent(const PlatformEvent& event) OVERRIDE {
+    if (!callback_.is_null())
+      callback_.Run();
+    return TestPlatformEventDispatcher::DispatchEvent(event);
+  }
+
+ private:
+  base::Closure callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(RunCallbackDuringDispatch);
+};
+
+// Test that if a dispatcher removes another dispatcher that is later in the
+// dispatcher list during dispatching an event, then event dispatching still
+// continues correctly.
+TEST_F(PlatformEventTest, DispatcherRemovesNextDispatcherDuringDispatch) {
+  std::vector<int> list;
+  TestPlatformEventDispatcher first(10, &list);
+  RunCallbackDuringDispatch second(15, &list);
+  TestPlatformEventDispatcher third(20, &list);
+  TestPlatformEventDispatcher fourth(30, &list);
+
+  second.set_callback(base::Bind(&RemoveDispatcher, base::Unretained(&third)));
+
+  scoped_ptr<PlatformEvent> event(CreatePlatformEvent());
+  source()->Dispatch(*event);
+  // |second| removes |third| from the dispatcher list during dispatch. So the
+  // event should only reach |first|, |second|, and |fourth|.
+  ASSERT_EQ(3u, list.size());
+  EXPECT_EQ(10, list[0]);
+  EXPECT_EQ(15, list[1]);
+  EXPECT_EQ(30, list[2]);
+}
+
+// Tests that if a dispatcher removes itself from the dispatcher list during
+// dispatching an event, then event dispatching continues correctly.
+TEST_F(PlatformEventTest, DispatcherRemovesSelfDuringDispatch) {
+  std::vector<int> list;
+  TestPlatformEventDispatcher first(10, &list);
+  RunCallbackDuringDispatch second(15, &list);
+  TestPlatformEventDispatcher third(20, &list);
+
+  second.set_callback(base::Bind(&RemoveDispatcher, base::Unretained(&second)));
+
+  scoped_ptr<PlatformEvent> event(CreatePlatformEvent());
+  source()->Dispatch(*event);
+  // |second| removes itself from the dispatcher list during dispatch. So the
+  // event should reach all three dispatchers in the list.
+  ASSERT_EQ(3u, list.size());
+  EXPECT_EQ(10, list[0]);
+  EXPECT_EQ(15, list[1]);
+  EXPECT_EQ(20, list[2]);
+}
+
+// Tests that if a dispatcher removes itself from the dispatcher list during
+// dispatching an event, and this dispatcher is last in the dispatcher-list,
+// then event dispatching ends correctly.
+TEST_F(PlatformEventTest, DispatcherRemovesSelfDuringDispatchLast) {
+  std::vector<int> list;
+  TestPlatformEventDispatcher first(10, &list);
+  RunCallbackDuringDispatch second(15, &list);
+
+  second.set_callback(base::Bind(&RemoveDispatcher, base::Unretained(&second)));
+
+  scoped_ptr<PlatformEvent> event(CreatePlatformEvent());
+  source()->Dispatch(*event);
+  // |second| removes itself during dispatch. So both dispatchers will have
+  // received the event.
+  ASSERT_EQ(2u, list.size());
+  EXPECT_EQ(10, list[0]);
+  EXPECT_EQ(15, list[1]);
+}
+
+// Tests that if a dispatcher removes a single dispatcher that comes before it
+// in the dispatcher list, then dispatch continues correctly.
+TEST_F(PlatformEventTest, DispatcherRemovesPrevDispatcherDuringDispatch) {
+  std::vector<int> list;
+  TestPlatformEventDispatcher first(10, &list);
+  RunCallbackDuringDispatch second(15, &list);
+  TestPlatformEventDispatcher third(20, &list);
+
+  second.set_callback(base::Bind(&RemoveDispatcher, base::Unretained(&first)));
+
+  scoped_ptr<PlatformEvent> event(CreatePlatformEvent());
+  source()->Dispatch(*event);
+  // |second| removes |first| from the dispatcher list during dispatch. The
+  // event should reach all three dispatchers.
+  ASSERT_EQ(3u, list.size());
+  EXPECT_EQ(10, list[0]);
+  EXPECT_EQ(15, list[1]);
+  EXPECT_EQ(20, list[2]);
+}
+
+// Tests that if a dispatcher removes multiple dispatchers that comes before it
+// in the dispatcher list, then dispatch continues correctly.
+TEST_F(PlatformEventTest, DispatcherRemovesPrevDispatchersDuringDispatch) {
+  std::vector<int> list;
+  TestPlatformEventDispatcher first(10, &list);
+  TestPlatformEventDispatcher second(12, &list);
+  RunCallbackDuringDispatch third(15, &list);
+  TestPlatformEventDispatcher fourth(20, &list);
+
+  third.set_callback(base::Bind(&RemoveDispatchers,
+                                base::Unretained(&first),
+                                base::Unretained(&second)));
+
+  scoped_ptr<PlatformEvent> event(CreatePlatformEvent());
+  source()->Dispatch(*event);
+  // |third| removes |first| and |second| from the dispatcher list during
+  // dispatch. The event should reach all three dispatchers.
+  ASSERT_EQ(4u, list.size());
+  EXPECT_EQ(10, list[0]);
+  EXPECT_EQ(12, list[1]);
+  EXPECT_EQ(15, list[2]);
+  EXPECT_EQ(20, list[3]);
+}
+
+// Tests that adding a dispatcher during dispatching an event receives that
+// event.
+TEST_F(PlatformEventTest, DispatcherAddedDuringDispatchReceivesEvent) {
+  std::vector<int> list;
+  TestPlatformEventDispatcher first(10, &list);
+  RunCallbackDuringDispatch second(15, &list);
+  TestPlatformEventDispatcher third(20, &list);
+  TestPlatformEventDispatcher fourth(30, &list);
+  RemoveDispatchers(&third, &fourth);
+
+  scoped_ptr<PlatformEvent> event(CreatePlatformEvent());
+  source()->Dispatch(*event);
+  ASSERT_EQ(2u, list.size());
+  EXPECT_EQ(10, list[0]);
+  EXPECT_EQ(15, list[1]);
+
+  second.set_callback(base::Bind(&AddDispatcher, base::Unretained(&third)));
+  list.clear();
+  source()->Dispatch(*event);
+  ASSERT_EQ(3u, list.size());
+  EXPECT_EQ(10, list[0]);
+  EXPECT_EQ(15, list[1]);
+  EXPECT_EQ(20, list[2]);
+
+  second.set_callback(base::Bind(&AddDispatcher, base::Unretained(&fourth)));
+  list.clear();
+  source()->Dispatch(*event);
+  ASSERT_EQ(4u, list.size());
+  EXPECT_EQ(10, list[0]);
+  EXPECT_EQ(15, list[1]);
+  EXPECT_EQ(20, list[2]);
+  EXPECT_EQ(30, list[3]);
 }
 
 // Provides mechanism for running tests from inside an active message-loop.

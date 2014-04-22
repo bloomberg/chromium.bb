@@ -34,17 +34,12 @@ PlatformEventSource* PlatformEventSource::GetInstance() { return instance_; }
 void PlatformEventSource::AddPlatformEventDispatcher(
     PlatformEventDispatcher* dispatcher) {
   CHECK(dispatcher);
-  DCHECK(std::find(dispatchers_.begin(), dispatchers_.end(), dispatcher) ==
-         dispatchers_.end());
-  dispatchers_.push_back(dispatcher);
+  dispatchers_.AddObserver(dispatcher);
 }
 
 void PlatformEventSource::RemovePlatformEventDispatcher(
     PlatformEventDispatcher* dispatcher) {
-  PlatformEventDispatcherList::iterator remove =
-      std::remove(dispatchers_.begin(), dispatchers_.end(), dispatcher);
-  if (remove != dispatchers_.end())
-    dispatchers_.erase(remove);
+  dispatchers_.RemoveObserver(dispatcher);
 }
 
 scoped_ptr<ScopedEventDispatcher> PlatformEventSource::OverrideDispatcher(
@@ -77,11 +72,10 @@ uint32_t PlatformEventSource::DispatchEvent(PlatformEvent platform_event) {
     action = overridden_dispatcher_->DispatchEvent(platform_event);
   should_quit = !!(action & POST_DISPATCH_QUIT_LOOP);
 
-  if (action & POST_DISPATCH_PERFORM_DEFAULT) {
-    for (PlatformEventDispatcherList::iterator i = dispatchers_.begin();
-         i != dispatchers_.end();
-         ++i) {
-      PlatformEventDispatcher* dispatcher = *(i);
+  if ((action & POST_DISPATCH_PERFORM_DEFAULT) &&
+      dispatchers_.might_have_observers()) {
+    ObserverList<PlatformEventDispatcher>::Iterator iter(dispatchers_);
+    while (PlatformEventDispatcher* dispatcher = iter.GetNext()) {
       if (dispatcher->CanDispatchEvent(platform_event))
         action = dispatcher->DispatchEvent(platform_event);
       if (action & POST_DISPATCH_QUIT_LOOP)
