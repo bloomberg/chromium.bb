@@ -605,14 +605,9 @@ StyleDifferenceLegacy RenderStyle::visualInvalidationDiffLegacy(const RenderStyl
 
 StyleDifferenceLegacy RenderStyle::repaintOnlyDiff(const RenderStyle& other, unsigned& changedContextSensitiveProperties) const
 {
-    // FIXME: The condition for zIndex may be incorrect or unnecessary.
-    // See StyleAdjuster::adjustRenderStyle() for the conditions that zIndex is applicable.
-    if (position() != StaticPosition) {
-        if (m_box->zIndex() != other.m_box->zIndex() || m_box->hasAutoZIndex() != other.m_box->hasAutoZIndex())
-            changedContextSensitiveProperties |= ContextSensitivePropertyZIndex;
-        if (visual->clip != other.visual->clip || visual->hasClip != other.visual->hasClip)
-            return StyleDifferenceRepaintLayer;
-    }
+    if (position() != StaticPosition && (m_box->zIndex() != other.m_box->zIndex() || m_box->hasAutoZIndex() != other.m_box->hasAutoZIndex()
+        || visual->clip != other.visual->clip || visual->hasClip != other.visual->hasClip))
+        return StyleDifferenceRepaintLayer;
 
     if (RuntimeEnabledFeatures::cssCompositingEnabled() && (rareNonInheritedData->m_effectiveBlendMode != other.rareNonInheritedData->m_effectiveBlendMode
         || rareNonInheritedData->m_isolation != other.rareNonInheritedData->m_isolation))

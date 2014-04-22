@@ -71,10 +71,9 @@ enum StyleDifferenceContextSensitiveProperty {
     ContextSensitivePropertyNone = 0,
     ContextSensitivePropertyTransform = (1 << 0),
     ContextSensitivePropertyOpacity = (1 << 1),
-    ContextSensitivePropertyZIndex = (1 << 2),
-    ContextSensitivePropertyFilter = (1 << 3),
+    ContextSensitivePropertyFilter = (1 << 2),
     // The object needs to be repainted if it contains text or properties dependent on color (e.g., border or outline).
-    ContextSensitivePropertyTextOrColor = (1 << 4)
+    ContextSensitivePropertyTextOrColor = (1 << 3)
 };
 
 // Static pseudo styles. Dynamic ones are produced on the fly.
