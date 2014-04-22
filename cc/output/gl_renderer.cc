@@ -202,7 +202,7 @@ GLRenderer::GLRenderer(RendererClient* client,
                        int highp_threshold_min)
     : DirectRenderer(client, settings, output_surface, resource_provider),
       offscreen_framebuffer_id_(0),
-      shared_geometry_quad_(gfx::RectF(-0.5f, -0.5f, 1.0f, 1.0f)),
+      shared_geometry_quad_(QuadVertexRect()),
       gl_(output_surface->context_provider()->ContextGL()),
       context_support_(output_surface->context_provider()->ContextSupport()),
       texture_mailbox_deleter_(texture_mailbox_deleter),
@@ -461,10 +461,8 @@ void GLRenderer::DrawDebugBorderQuad(const DrawingFrame* frame,
   // Use the full quad_rect for debug quads to not move the edges based on
   // partial swaps.
   gfx::Rect layer_rect = quad->rect;
-  gfx::Transform render_matrix = quad->quadTransform();
-  render_matrix.Translate(0.5f * layer_rect.width() + layer_rect.x(),
-                          0.5f * layer_rect.height() + layer_rect.y());
-  render_matrix.Scale(layer_rect.width(), layer_rect.height());
+  gfx::Transform render_matrix;
+  QuadRectTransform(&render_matrix, quad->quadTransform(), layer_rect);
   GLRenderer::ToGLMatrix(&gl_matrix[0],
                          frame->projection_matrix * render_matrix);
   GLC(gl_,
@@ -799,11 +797,8 @@ scoped_ptr<ScopedResource> GLRenderer::GetBackgroundWithFilters(
     // Copy the readback pixels from device to the background texture for the
     // surface.
     gfx::Transform device_to_framebuffer_transform;
-    device_to_framebuffer_transform.Translate(
-        quad->rect.width() * 0.5f + quad->rect.x(),
-        quad->rect.height() * 0.5f + quad->rect.y());
-    device_to_framebuffer_transform.Scale(quad->rect.width(),
-                                          quad->rect.height());
+    QuadRectTransform(
+        &device_to_framebuffer_transform, gfx::Transform(), quad->rect);
     device_to_framebuffer_transform.PreconcatTransform(
         contents_device_transform_inverse);
 
