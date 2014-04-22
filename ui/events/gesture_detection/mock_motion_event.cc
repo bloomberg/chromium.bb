@@ -9,9 +9,6 @@
 using base::TimeTicks;
 
 namespace ui {
-namespace {
-const float kTouchMajor = 10.f;
-}  // namespace
 
 MockMotionEvent::MockMotionEvent()
     : action(ACTION_CANCEL), pointer_count(1), id(0) {}
@@ -79,7 +76,7 @@ float MockMotionEvent::GetY(size_t pointer_index) const {
 }
 
 float MockMotionEvent::GetTouchMajor(size_t pointer_index) const {
-  return kTouchMajor;
+  return TOUCH_MAJOR;
 }
 
 float MockMotionEvent::GetPressure(size_t pointer_index) const {

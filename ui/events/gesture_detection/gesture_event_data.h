@@ -21,6 +21,7 @@ struct GESTURE_DETECTION_EXPORT GestureEventData {
                    float x,
                    float y,
                    int touch_point_count,
+                   const gfx::RectF& bounding_box,
                    const GestureEventDetails& details);
 
   GestureEventData(EventType type,
@@ -28,7 +29,8 @@ struct GESTURE_DETECTION_EXPORT GestureEventData {
                    base::TimeTicks time,
                    float x,
                    float y,
-                   int touch_point_count);
+                   int touch_point_count,
+                   const gfx::RectF& bounding_box);
 
   EventType type;
   int motion_event_id;

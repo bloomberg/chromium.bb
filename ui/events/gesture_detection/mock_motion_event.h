@@ -11,6 +11,7 @@ namespace ui {
 
 struct MockMotionEvent : public MotionEvent {
   enum { MAX_POINTERS = 3 };
+  enum { TOUCH_MAJOR = 10 };
 
   MockMotionEvent();
   explicit MockMotionEvent(Action action);
@@ -54,7 +55,6 @@ struct MockMotionEvent : public MotionEvent {
   void MovePoint(size_t index, float x, float y);
   void ReleasePoint();
   void CancelPoint();
-
   MotionEvent::Action action;
   size_t pointer_count;
   gfx::PointF points[MAX_POINTERS];

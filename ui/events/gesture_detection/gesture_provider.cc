@@ -30,12 +30,25 @@ const char* GetMotionEventActionName(MotionEvent::Action action) {
   return "";
 }
 
+gfx::RectF GetBoundingBox(const MotionEvent& event) {
+  gfx::RectF bounds;
+  for (size_t i = 0; i < event.GetPointerCount(); ++i) {
+    float diameter = event.GetTouchMajor(i);
+    bounds.Union(gfx::RectF(event.GetX(i) - diameter / 2,
+                            event.GetY(i) - diameter / 2,
+                            diameter,
+                            diameter));
+  }
+  return bounds;
+}
+
 GestureEventData CreateGesture(EventType type,
                                int motion_event_id,
                                base::TimeTicks time,
                                float x,
                                float y,
                                size_t touch_point_count,
+                               const gfx::RectF& bounding_box,
                                const GestureEventDetails& details) {
   return GestureEventData(type,
                           motion_event_id,
@@ -43,6 +56,7 @@ GestureEventData CreateGesture(EventType type,
                           x,
                           y,
                           static_cast<int>(touch_point_count),
+                          bounding_box,
                           details);
 }
 
@@ -51,9 +65,15 @@ GestureEventData CreateGesture(EventType type,
                                base::TimeTicks time,
                                float x,
                                float y,
-                               size_t touch_point_count) {
-  return GestureEventData(
-      type, motion_event_id, time, x, y, static_cast<int>(touch_point_count));
+                               size_t touch_point_count,
+                               const gfx::RectF& bounding_box) {
+  return GestureEventData(type,
+                          motion_event_id,
+                          time,
+                          x,
+                          y,
+                          static_cast<int>(touch_point_count),
+                          bounding_box);
 }
 
 GestureEventData CreateGesture(EventType type,
@@ -65,6 +85,7 @@ GestureEventData CreateGesture(EventType type,
                        event.GetX(),
                        event.GetY(),
                        event.GetPointerCount(),
+                       GetBoundingBox(event),
                        details);
 }
 
@@ -75,7 +96,8 @@ GestureEventData CreateGesture(EventType type,
                        event.GetEventTime(),
                        event.GetX(),
                        event.GetY(),
-                       event.GetPointerCount());
+                       event.GetPointerCount(),
+                       GetBoundingBox(event));
 }
 
 GestureEventDetails CreateTapGestureDetails(EventType type,
@@ -84,8 +106,6 @@ GestureEventDetails CreateTapGestureDetails(EventType type,
   // consistent with double tap behavior on a mobile viewport. See
   // crbug.com/234986 for context.
   GestureEventDetails tap_details(type, 1, 0);
-  tap_details.set_bounding_box(
-      gfx::RectF(event.GetTouchMajor(), event.GetTouchMajor()));
   return tap_details;
 }
 
@@ -142,7 +162,8 @@ class GestureProvider::ScaleGestureListenerImpl
                                   detector.GetEventTime(),
                                   0,
                                   0,
-                                  e.GetPointerCount()));
+                                  e.GetPointerCount(),
+                                  GetBoundingBox(e)));
     pinch_event_sent_ = false;
   }
 
@@ -157,7 +178,8 @@ class GestureProvider::ScaleGestureListenerImpl
                                     detector.GetEventTime(),
                                     detector.GetFocusX(),
                                     detector.GetFocusY(),
-                                    e.GetPointerCount()));
+                                    e.GetPointerCount(),
+                                    GetBoundingBox(e)));
     }
 
     float scale = detector.GetScaleFactor();
@@ -183,6 +205,7 @@ class GestureProvider::ScaleGestureListenerImpl
                                   detector.GetFocusX(),
                                   detector.GetFocusY(),
                                   e.GetPointerCount(),
+                                  GetBoundingBox(e),
                                   pinch_details));
     return true;
   }
@@ -270,8 +293,6 @@ class GestureProvider::GestureListenerImpl
     seen_first_scroll_event_ = false;
 
     GestureEventDetails tap_details(ET_GESTURE_TAP_DOWN, 0, 0);
-    tap_details.set_bounding_box(
-        gfx::RectF(e.GetTouchMajor(), e.GetTouchMajor()));
     provider_->Send(CreateGesture(ET_GESTURE_TAP_DOWN, e, tap_details));
 
     // Return true to indicate that we want to handle touch.
@@ -320,6 +341,7 @@ class GestureProvider::GestureListenerImpl
                                     e1.GetX(),
                                     e1.GetY(),
                                     e2.GetPointerCount(),
+                                    GetBoundingBox(e2),
                                     scroll_details));
     }
 
@@ -351,9 +373,6 @@ class GestureProvider::GestureListenerImpl
 
   virtual void OnShowPress(const MotionEvent& e) OVERRIDE {
     GestureEventDetails show_press_details(ET_GESTURE_SHOW_PRESS, 0, 0);
-    // TODO(jdduke): Expose minor axis length and rotation in |MotionEvent|.
-    show_press_details.set_bounding_box(
-        gfx::RectF(e.GetTouchMajor(), e.GetTouchMajor()));
     provider_->Send(
         CreateGesture(ET_GESTURE_SHOW_PRESS, e, show_press_details));
   }
@@ -430,8 +449,6 @@ class GestureProvider::GestureListenerImpl
     SetIgnoreSingleTap(true);
 
     GestureEventDetails long_press_details(ET_GESTURE_LONG_PRESS, 0, 0);
-    long_press_details.set_bounding_box(
-        gfx::RectF(e.GetTouchMajor(), e.GetTouchMajor()));
     provider_->Send(
         CreateGesture(ET_GESTURE_LONG_PRESS, e, long_press_details));
 
@@ -621,7 +638,8 @@ void GestureProvider::Send(const GestureEventData& gesture) {
                            gesture.time,
                            gesture.x,
                            gesture.y,
-                           gesture.details.touch_points()));
+                           gesture.details.touch_points(),
+                           gesture.details.bounding_box()));
       touch_scroll_in_progress_ = false;
       break;
     case ET_GESTURE_PINCH_BEGIN:
@@ -632,7 +650,8 @@ void GestureProvider::Send(const GestureEventData& gesture) {
                            gesture.time,
                            gesture.x,
                            gesture.y,
-                           gesture.details.touch_points()));
+                           gesture.details.touch_points(),
+                           gesture.details.bounding_box()));
       pinch_in_progress_ = true;
       break;
     case ET_GESTURE_PINCH_END:
@@ -657,8 +676,6 @@ bool GestureProvider::SendLongTapIfNecessary(const MotionEvent& event) {
       !current_longpress_time_.is_null() &&
       !scale_gesture_listener_->IsScaleGestureDetectionInProgress()) {
     GestureEventDetails long_tap_details(ET_GESTURE_LONG_TAP, 0, 0);
-    long_tap_details.set_bounding_box(
-        gfx::RectF(event.GetTouchMajor(), event.GetTouchMajor()));
     Send(CreateGesture(ET_GESTURE_LONG_TAP, event, long_tap_details));
     return true;
   }

@@ -17,13 +17,15 @@ COMPILE_ASSERT(ET_GESTURE_TYPE_END - ET_GESTURE_TYPE_START < 32,
 
 GestureEventData CreateGesture(EventType type,
                                int motion_event_id) {
+  GestureEventDetails details(type, 0, 0);
   return GestureEventData(type,
                           motion_event_id,
                           base::TimeTicks(),
                           0,
                           0,
                           1,
-                          GestureEventDetails(type, 0, 0));
+                          gfx::RectF(0, 0, 0, 0),
+                          details);
 }
 
 enum RequiredTouches {
