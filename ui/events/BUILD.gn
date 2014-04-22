@@ -259,7 +259,7 @@ source_set("events_test_support") {
   }
 }
 
-test("events_unittest") {
+test("events_unittests") {
   sources = [
     "cocoa/cocoa_event_utils_unittest.mm",
     "event_dispatcher_unittest.cc",
