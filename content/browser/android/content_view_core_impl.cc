@@ -1504,7 +1504,7 @@ ContentViewCoreImpl::GetOriginalUrlForActiveNavigationEntry(JNIEnv* env,
   return ConvertUTF8ToJavaString(env, entry->GetOriginalRequestURL().spec());
 }
 
-int ContentViewCoreImpl::GetNativeImeAdapter(JNIEnv* env, jobject obj) {
+long ContentViewCoreImpl::GetNativeImeAdapter(JNIEnv* env, jobject obj) {
   RenderWidgetHostViewAndroid* rwhva = GetRenderWidgetHostViewAndroid();
   if (!rwhva)
     return 0;
