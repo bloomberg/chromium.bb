@@ -388,7 +388,6 @@ crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/cubic-bezier-overflo
 crbug.com/248938 [ Win Debug ] virtual/threaded/animations/compositor-start-event-timing.html [ Pass Timeout ]
 crbug.com/248938 [ Debug ] virtual/threaded/animations/animation-hit-test-transform.html [ Pass Failure Timeout ]
 crbug.com/364640 animations/compositor-start-event-timing.html [ Pass Failure ]
-crbug.com/362507 http/tests/media/media-source/webkitmediasource-seek-to-end-after-duration-change.html [ Pass Timeout ]
 
 crbug.com/320477 [ Debug ] inspector/sources/debugger/debugger-pause-in-internal.html [ Pass Crash ]
 crbug.com/347484 [ Debug ] inspector/profiler/canvas2d/canvas-replay-log-grid.html [ Timeout ]
@@ -476,15 +475,9 @@ crbug.com/283723 [ Win ] http/tests/local/fileapi/file-last-modified-after-delet
 
 crbug.com/356805 http/tests/media/media-source/mediasource-buffered.html [ Failure ]
 crbug.com/356805 http/tests/media/media-source/mediasource-remove.html [ Failure ]
-crbug.com/356805 http/tests/media/media-source/webkitmediasource-append-in-ended-state.html [ Failure ]
-crbug.com/356805 http/tests/media/media-source/webkitmediasource-append-with-offset-in-ended-state.html [ Failure ]
-crbug.com/356805 http/tests/media/media-source/webkitmediasource-duration-changed.html [ Failure ]
 
 # 309184 and 303419 track Android-specific failures
 crbug.com/309184 crbug.com/303419 crbug.com/284782 http/tests/media/media-source/mediasource-duration.html [ Failure Pass ]
-
-# 323284 tracks Android-specific flaky failure
-crbug.com/323284 crbug.com/324120 http/tests/media/media-source/webkitmediasource-removesourcebuffer-texttrack.html [ Pass Crash Failure ]
 
 crbug.com/323301 [ Android ] http/tests/media/media-source/mediasource-play-then-seek-back.html [ Pass Crash ]
 crbug.com/302729 [ Android ] http/tests/media/media-source/mediasource-seek-during-pending-seek.html [ Failure ]

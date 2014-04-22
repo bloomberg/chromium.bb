@@ -30,5 +30,4 @@
 
 partial interface URL {
     [CallWith=ExecutionContext, TreatReturnedNullStringAs=Null] static DOMString createObjectURL(MediaSource? source);
-    [CallWith=ExecutionContext, TreatReturnedNullStringAs=Null] static DOMString createObjectURL(WebKitMediaSource? source);
 };

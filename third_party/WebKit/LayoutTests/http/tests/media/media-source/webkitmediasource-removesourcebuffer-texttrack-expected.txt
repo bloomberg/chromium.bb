@@ -1,5 +1,0 @@
-CONSOLE WARNING: 'WebKitMediaSource' is deprecated. Please use 'MediaSource' instead.
-EVENT(loadedmetadata)
-EVENT(error)
-END OF TEST
-

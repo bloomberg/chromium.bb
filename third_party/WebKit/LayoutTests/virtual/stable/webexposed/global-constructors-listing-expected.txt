@@ -445,11 +445,8 @@ WebKitCSSFilterValue
 WebKitCSSMatrix
 WebKitCSSTransformValue
 WebKitGamepad
-WebKitMediaSource
 WebKitMutationObserver
 WebKitPoint
-WebKitSourceBuffer
-WebKitSourceBufferList
 WebKitTransitionEvent
 WebSocket
 WheelEvent

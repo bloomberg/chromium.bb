@@ -141,7 +141,6 @@ WebAnimationsAPI status=experimental, depends_on=WebAnimationsElementAnimate
 WebAudio condition=WEB_AUDIO, status=stable
 WebGLDraftExtensions status=experimental
 WebMIDI status=test
-WebKitMediaSource status=stable
 WebVTTRegions depends_on=Media, status=experimental
 WOFF2 status=experimental
 XSLT status=stable
