@@ -22,10 +22,11 @@ InspectorTest.dumpConsoleMessages = function(printOriginatingCommand, dumpClassN
 {
     WebInspector.inspectorView.panel("console");
     var result = [];
-    var messageViews = WebInspector.ConsolePanel._view()._visibleViewMessages;
-    for (var i = 0; i < messageViews.length; ++i) {
-        var message = messageViews[i].consoleMessage();
-        var element = messageViews[i].toMessageElement();
+    var viewMessages = WebInspector.ConsolePanel._view()._visibleViewMessages;
+    for (var i = 0; i < viewMessages.length; ++i) {
+        var uiMessage = viewMessages[i];
+        var message = uiMessage.consoleMessage();
+        var element = uiMessage.toMessageElement();
 
         if (dumpClassNames) {
             var classNames = [];
@@ -35,7 +36,7 @@ InspectorTest.dumpConsoleMessages = function(printOriginatingCommand, dumpClassN
             }
         }
 
-        if (InspectorTest.dumpConsoleTableMessage(message)) {
+        if (InspectorTest.dumpConsoleTableMessage(uiMessage)) {
             if (dumpClassNames)
                 InspectorTest.addResult(classNames.join(" > "));
         } else {
@@ -43,18 +44,15 @@ InspectorTest.dumpConsoleMessages = function(printOriginatingCommand, dumpClassN
             InspectorTest.addResult(messageText + (dumpClassNames ? " " + classNames.join(" > ") : ""));
         }
 
-        var uiMessage = messageViews[i];
-        if (printOriginatingCommand && uiMessage.originatingCommand) {
-            var originatingElement = uiMessage.originatingCommand.toMessageElement();
-            InspectorTest.addResult("Originating from: " + originatingElement.textContent.replace(/\u200b/g, ""));
-        }
+        if (printOriginatingCommand && uiMessage.consoleMessage().originatingMessage())
+            InspectorTest.addResult("Originating from: " + uiMessage.consoleMessage().originatingMessage().messageText);
     }
     return result;
 }
 
-InspectorTest.dumpConsoleTableMessage = function(message)
+InspectorTest.dumpConsoleTableMessage = function(viewMessage)
 {
-    var table = InspectorTest.toViewMessage(message).toMessageElement();
+    var table = viewMessage.toMessageElement();
     var headers = table.querySelectorAll("th div");
     if (!headers.length)
         return false;

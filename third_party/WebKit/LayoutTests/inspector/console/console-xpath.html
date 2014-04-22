@@ -14,9 +14,8 @@ function test()
     InspectorTest.evaluateInConsole("$x('/html/body/p').length"); // node iterator
     InspectorTest.evaluateInPage("console.log('complete')"); // node iterator
 
-    function addMessageSniffer(message)
+    function addMessageSniffer(uiMessage)
     {
-        var uiMessage = InspectorTest.toViewMessage(message);
         if (uiMessage.toString().indexOf("complete") !== -1) {
             InspectorTest.dumpConsoleMessages();
             InspectorTest.completeTest();

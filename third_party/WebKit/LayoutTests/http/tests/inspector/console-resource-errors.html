@@ -30,9 +30,8 @@ function test()
     InspectorTest.addConsoleSniffer(addMessage, true);
 
     var messageCount = 0;
-    function addMessage(message)
+    function addMessage(uiMessage)
     {
-        var uiMessage = InspectorTest.toViewMessage(message);
         if (uiMessage.toString().indexOf("non-existent-iframe") !== -1) {
             InspectorTest.expandConsoleMessages();
             InspectorTest.dumpConsoleMessagesWithClasses(true);

@@ -8,10 +8,9 @@ function test()
 {
     InspectorTest.addConsoleSniffer(addMessage, true);
     InspectorTest.evaluateInPage("loadIframe()");
-    function addMessage(message)
+    function addMessage(viewMessage)
     {
-        var uiMessage = InspectorTest.toViewMessage(message);
-        if (uiMessage.toString().indexOf("setTimeout") !== -1) {
+        if (viewMessage.toString().indexOf("setTimeout") !== -1) {
             InspectorTest.expandConsoleMessages();
             InspectorTest.dumpConsoleMessages();
             InspectorTest.completeTest();
