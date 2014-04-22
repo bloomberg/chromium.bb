@@ -281,8 +281,6 @@
         'test/ppapi/ppapi_test.h',
         '../ui/gfx/image/image_unittest_util.cc',
         '../ui/gfx/image/image_unittest_util.h',
-        '../webkit/browser/quota/mock_special_storage_policy.cc',
-        '../webkit/browser/quota/mock_special_storage_policy.h',
       ],
       'conditions': [
         ['OS!="ios"', {
@@ -474,6 +472,7 @@
         # 2) test-specific support libraries:
         '../base/base.gyp:test_support_base',
         '../components/components_resources.gyp:components_resources',
+        '../content/content_shell_and_tests.gyp:webkit_test_support_content',
         '../content/content.gyp:content_app_both',
         '../net/net.gyp:net',
         '../net/net.gyp:net_test_support',
@@ -2450,6 +2449,11 @@
         ['OS=="android"', {
           'dependencies!': [
             '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput',
+          ],
+          'ldflags': [
+            # Some android targets still depend on --gc-sections to link.
+            # TODO: remove --gc-sections for Debug builds (crbug.com/159847).
+            '-Wl,--gc-sections',
           ],
           'sources!': [
             # Bookmark export/import are handled via the BookmarkColumns

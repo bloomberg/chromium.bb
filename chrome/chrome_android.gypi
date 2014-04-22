@@ -44,6 +44,13 @@
           'dependencies': [
             '../base/allocator/allocator.gyp:allocator', ],
         }],
+        ['OS=="android"', {
+          'ldflags': [
+            # Some android targets still depend on --gc-sections to link.
+            # TODO: remove --gc-sections for Debug builds (crbug.com/159847).
+            '-Wl,--gc-sections',
+          ],
+        }],
       ],
     },
     {

@@ -23,6 +23,7 @@
         '../ui/gfx/gfx.gyp:gfx_geometry',
         'command_buffer/command_buffer.gyp:gles2_utils',
         'gles2_cmd_helper',
+        'gpu',
       ],
       'defines': [
         'GLES2_IMPL_IMPLEMENTATION',

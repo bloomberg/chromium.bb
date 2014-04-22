@@ -3166,6 +3166,7 @@
                   # Only link with needed input sections. This is to avoid
                   # getting undefined reference to __cxa_bad_typeid in the CDU
                   # library.
+                  # TODO(primiano): remove below as soon as WebRTC r5898 rolls.
                   '-Wl,--gc-sections',
                   # Warn in case of text relocations.
                   '-Wl,--warn-shared-textrel',

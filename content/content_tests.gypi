@@ -16,9 +16,9 @@
         ['OS!="ios"', {
           # layouttest_support_content is not supported nor required on iOS.
           'dependencies': [
+            'webkit_test_support_content',
             '../skia/skia.gyp:skia',
             '../v8/tools/gyp/v8.gyp:v8',
-            '../webkit/common/webkit_common.gyp:webkit_common',
           ],
           'include_dirs': [
             '..',
@@ -60,6 +60,7 @@
         'content.gyp:content_app_both',
         'content.gyp:content_browser',
         'content.gyp:content_common',
+        'webkit_test_support_content',
       ],
       'include_dirs': [
         '..',
@@ -203,6 +204,16 @@
         'test/weburl_loader_mock_factory.h',
       ],
       'conditions': [
+        ['enable_plugins==0', {
+          'sources!': [
+            'test/ppapi_unittest.cc',
+          ],
+        }],
+        ['input_speech==0', {
+          'sources!': [
+            'test/mock_google_streaming_server.cc',
+          ],
+        }],
         ['OS == "ios"', {
           'sources/': [
             # iOS only needs a small portion of content; exclude all the
@@ -249,6 +260,7 @@
             '../ppapi/ppapi_internal.gyp:ppapi_unittest_shared',
             '../third_party/WebKit/public/blink.gyp:blink',
             '../ui/surface/surface.gyp:surface',
+            '../v8/tools/gyp/v8.gyp:v8',
             '../webkit/child/webkit_child.gyp:webkit_child',
             '../webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
             '../webkit/renderer/compositor_bindings/compositor_bindings.gyp:webkit_compositor_support',
@@ -312,6 +324,23 @@
             '../ui/shell_dialogs/shell_dialogs.gyp:shell_dialogs',
           ],
         }],
+      ],
+    },
+    {
+      'target_name': 'webkit_test_support_content',
+      'type': 'static_library',
+      'dependencies': [
+        '../webkit/common/webkit_common.gyp:webkit_common',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'export_dependent_settings': [
+        '../webkit/common/webkit_common.gyp:webkit_common',
+      ],
+      'sources': [
+        '../webkit/browser/quota/mock_special_storage_policy.cc',
+        '../webkit/browser/quota/mock_special_storage_policy.h',
       ],
     },
     {
@@ -662,8 +691,6 @@
         '../webkit/common/database/database_connections_unittest.cc',
         '../webkit/common/database/database_identifier_unittest.cc',
         '../webkit/common/fileapi/file_system_util_unittest.cc',
-        '../webkit/browser/quota/mock_special_storage_policy.cc',
-        '../webkit/browser/quota/mock_special_storage_policy.h',
       ],
       'conditions': [
         ['OS == "ios"', {
@@ -698,8 +725,6 @@
             '../third_party/libjingle/libjingle.gyp:libjingle',
             '../ui/compositor/compositor.gyp:compositor_test_support',
             '../ui/gl/gl.gyp:gl',
-            '../v8/tools/gyp/v8.gyp:v8',
-            '../webkit/common/webkit_common.gyp:webkit_common',
             '../webkit/child/webkit_child.gyp:webkit_child',
             '../webkit/storage_browser.gyp:webkit_storage_browser',
             '../webkit/storage_common.gyp:webkit_storage_common',
@@ -1271,11 +1296,12 @@
             '../testing/gtest.gyp:gtest',
             '../third_party/WebKit/public/blink.gyp:blink',
             '../ui/base/ui_base.gyp:ui_base',
+            '../v8/tools/gyp/v8.gyp:v8',
             '../ui/gfx/gfx.gyp:gfx',
             '../ui/gfx/gfx.gyp:gfx_geometry',
             '../ui/gl/gl.gyp:gl',
-            # The following two dependencies provide the missing
-            # symbol HeapProfilerStart in Linux component builds.
+            # The following dependency provides the missing symbol
+            # HeapProfilerStart in Linux component builds.
             '../webkit/child/webkit_child.gyp:webkit_child',
           ],
           'include_dirs': [

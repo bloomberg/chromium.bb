@@ -100,6 +100,7 @@
         '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
         '../ui/base/ui_base.gyp:ui_base',
         '../ui/gfx/gfx.gyp:gfx',
+        '../ui/gfx/gfx.gyp:gfx_geometry',
         '../url/url.gyp:url_lib',
         'autofill_core_common',
         'autofill_regexes',
