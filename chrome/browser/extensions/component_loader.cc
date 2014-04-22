@@ -34,6 +34,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "grit/keyboard_resources.h"
+#include "ui/file_manager/grit/file_manager_resources.h"
 #include "ui/keyboard/keyboard_util.h"
 #endif
 
@@ -288,8 +289,10 @@ void ComponentLoader::AddFileManagerExtension() {
 }
 
 void ComponentLoader::AddVideoPlayerExtension() {
-  Add(IDR_VIDEOPLAYER_MANIFEST,
+#if defined(OS_CHROMEOS)
+  Add(IDR_VIDEO_PLAYER_MANIFEST,
       base::FilePath(FILE_PATH_LITERAL("video_player")));
+#endif  // defined(OS_CHROMEOS)
 }
 
 void ComponentLoader::AddGalleryExtension() {

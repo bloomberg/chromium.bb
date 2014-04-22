@@ -11,14 +11,8 @@ namespace file_manager {
 
 const GritResourceMap* GetFileManagerResources(size_t* size) {
   DCHECK(size);
-
-  // TODO(yoshiki): Get the array and size from file_manager_resources_map.cc.
-  // As for now, put the empty array and zero size manually, because the
-  // file_manager_resources_map.cc can't be complied if the resource list is
-  // empty.
-  *size = 0;
-  static const GritResourceMap kEmptyResourceList[] = {};
-  return kEmptyResourceList;
+  *size = kFileManagerResourcesSize;
+  return kFileManagerResources;
 }
 
 }  // namespace keyboard

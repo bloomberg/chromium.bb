@@ -11,7 +11,15 @@
   </outputs>
   <release seq="1">
     <includes>
-      <!-- TODO(yoshiki): move files.app files and add them here. -->
+      <!-- VideoPlayer.app pages and scripts. -->
+      <include name="IDR_VIDEO_PLAYER_MANIFEST" file="video_player/manifest.json" type="BINDATA" />
+      <include name="IDR_VIDEO_PLAYER" file="video_player/video_player.html" allowexternalscript="true" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_VIDEO_PLAYER_JS" file="video_player/js/video_player_scripts.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_VIDEO_PLAYER_BKGND_JS" file="video_player/js/background.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_VIDEO_PLAYER_TEST_UTIL_JS" file="video_player/js/test_util.js" flattenhtml="false" type="BINDATA" />
+      <include name="IDR_VIDEO_PLAYER_ERROR_UTIL_JS" file="video_player/js/error_util.js" flattenhtml="false" type="BINDATA" />
+      <include name="IDR_VIDEO_PLAYER_ICON_16" file="video_player/images/100/icon.png" type="BINDATA" />
+      <include name="IDR_VIDEO_PLAYER_ICON_32" file="video_player/images/200/icon.png" type="BINDATA" />
     </includes>
   </release>
 </grit>

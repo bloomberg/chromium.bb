@@ -10,15 +10,15 @@
 
 //<include src="error_util.js"/>
 
-//<include src="../../../../../ui/webui/resources/js/cr.js"/>
-//<include src="../../../../../ui/webui/resources/js/load_time_data.js"/>
+//<include src="../../../webui/resources/js/cr.js"/>
+//<include src="../../../webui/resources/js/load_time_data.js"/>
 
 (function() {
 'use strict';
 
-//<include src="../../file_manager/common/js/util.js"/>
-//<include src="../../file_manager/foreground/js/media/media_controls.js"/>
-//<include src="../../file_manager/foreground/js/media/util.js"/>
+//<include src="../../../../chrome/browser/resources/file_manager/common/js/util.js"/>
+//<include src="../../../../chrome/browser/resources/file_manager/foreground/js/media/media_controls.js"/>
+//<include src="../../../../chrome/browser/resources/file_manager/foreground/js/media/util.js"/>
 
 //<include src="video_player.js"/>
 

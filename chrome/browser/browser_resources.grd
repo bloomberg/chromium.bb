@@ -338,7 +338,6 @@
       </if>
       <if expr="chromeos">
         <include name="IDR_FILEMANAGER_MANIFEST" file="resources\file_manager\manifest.json" type="BINDATA" />
-        <include name="IDR_VIDEOPLAYER_MANIFEST" file="resources\video_player\manifest.json" type="BINDATA" />
         <include name="IDR_GALLERY_MANIFEST" file="resources\gallery\manifest.json" type="BINDATA" />
       </if>
       <if expr="image_loader_extension">
