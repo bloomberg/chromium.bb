@@ -41,7 +41,6 @@
 #include "core/rendering/style/StyleBackgroundData.h"
 #include "core/rendering/style/StyleBoxData.h"
 #include "core/rendering/style/StyleDeprecatedFlexibleBoxData.h"
-#include "core/rendering/style/StyleDifference.h"
 #include "core/rendering/style/StyleFilterData.h"
 #include "core/rendering/style/StyleFlexibleBoxData.h"
 #include "core/rendering/style/StyleGridData.h"
@@ -1780,9 +1779,7 @@ private:
     Color lightingColor() const { return svgStyle()->lightingColor(); }
 
     void appendContent(PassOwnPtr<ContentData>);
-
-    StyleDifferenceLegacy visualInvalidationDiffLegacy(const RenderStyle&, unsigned& changedContextSensitiveProperties) const;
-    StyleDifferenceLegacy repaintOnlyDiff(const RenderStyle& other, unsigned& changedContextSensitiveProperties) const;
+    StyleDifference repaintOnlyDiff(const RenderStyle& other, unsigned& changedContextSensitiveProperties) const;
 };
 
 inline int adjustForAbsoluteZoom(int value, float zoomFactor)

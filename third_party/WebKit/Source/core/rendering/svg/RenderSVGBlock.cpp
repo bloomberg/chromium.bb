@@ -78,7 +78,7 @@ void RenderSVGBlock::willBeDestroyed()
 
 void RenderSVGBlock::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
 {
-    if (diff.needsFullLayout())
+    if (diff == StyleDifferenceLayout)
         setNeedsBoundariesUpdate();
 
     RenderBlock::styleDidChange(diff, oldStyle);

@@ -118,7 +118,7 @@ void SVGRenderStyle::copyNonInheritedFrom(const SVGRenderStyle* other)
     resources = other->resources;
 }
 
-StyleDifferenceLegacy SVGRenderStyle::diff(const SVGRenderStyle* other) const
+StyleDifference SVGRenderStyle::diff(const SVGRenderStyle* other) const
 {
     // NOTE: All comparisions that may return StyleDifferenceLayout have to go before those who return StyleDifferenceRepaint
 

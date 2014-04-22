@@ -125,7 +125,7 @@ void RenderSVGInline::willBeDestroyed()
 
 void RenderSVGInline::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
 {
-    if (diff.needsFullLayout())
+    if (diff == StyleDifferenceLayout)
         setNeedsBoundariesUpdate();
 
     RenderInline::styleDidChange(diff, oldStyle);

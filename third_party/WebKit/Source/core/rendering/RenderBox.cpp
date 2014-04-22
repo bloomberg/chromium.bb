@@ -143,10 +143,10 @@ void RenderBox::styleWillChange(StyleDifference diff, const RenderStyle& newStyl
     if (oldStyle) {
         // The background of the root element or the body element could propagate up to
         // the canvas.  Just dirty the entire canvas when our style changes substantially.
-        if ((diff.needsRepaint() || diff.needsLayout()) && node()
-            && (isHTMLHtmlElement(*node()) || isHTMLBodyElement(*node()))) {
+        if (diff >= StyleDifferenceRepaint && node() &&
+            (isHTMLHtmlElement(*node()) || isHTMLBodyElement(*node()))) {
 
-            if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled() || !diff.needsFullLayout())
+            if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled() || diff != StyleDifferenceLayout)
                 view()->repaint();
 
             if (oldStyle->hasEntirelyFixedBackground() != newStyle.hasEntirelyFixedBackground())
@@ -155,7 +155,7 @@ void RenderBox::styleWillChange(StyleDifference diff, const RenderStyle& newStyl
 
         // When a layout hint happens and an object's position style changes, we have to do a layout
         // to dirty the render tree using the old position value now.
-        if (diff.needsFullLayout() && parent() && oldStyle->position() != newStyle.position()) {
+        if (diff == StyleDifferenceLayout && parent() && oldStyle->position() != newStyle.position()) {
             markContainingBlocksForLayout();
             if (oldStyle->position() == StaticPosition)
                 repaint();
@@ -211,7 +211,7 @@ void RenderBox::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle
     }
 
     // Our opaqueness might have changed without triggering layout.
-    if (diff.needsRepaint()) {
+    if (diff == StyleDifferenceRepaint || diff == StyleDifferenceRepaintLayer) {
         RenderObject* parentToInvalidate = parent();
         for (unsigned i = 0; i < backgroundObscurationTestMaxDepth && parentToInvalidate; ++i) {
             parentToInvalidate->invalidateBackgroundObscurationStatus();

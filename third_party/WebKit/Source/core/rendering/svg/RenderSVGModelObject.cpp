@@ -100,7 +100,7 @@ void RenderSVGModelObject::addLayerHitTestRects(LayerHitTestRects&, const Render
 
 void RenderSVGModelObject::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
 {
-    if (diff.needsFullLayout()) {
+    if (diff == StyleDifferenceLayout) {
         setNeedsBoundariesUpdate();
         if (style()->hasTransform())
             setNeedsTransformUpdate();

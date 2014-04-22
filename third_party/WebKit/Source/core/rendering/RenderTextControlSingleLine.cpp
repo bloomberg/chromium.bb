@@ -241,7 +241,7 @@ void RenderTextControlSingleLine::styleDidChange(StyleDifference diff, const Ren
         containerRenderer->style()->setWidth(Length());
     }
     RenderObject* innerTextRenderer = innerTextElement()->renderer();
-    if (innerTextRenderer && diff.needsFullLayout())
+    if (innerTextRenderer && diff == StyleDifferenceLayout)
         innerTextRenderer->setNeedsLayout();
     if (HTMLElement* placeholder = inputElement()->placeholderElement())
         placeholder->setInlineStyleProperty(CSSPropertyTextOverflow, textShouldBeTruncated() ? CSSValueEllipsis : CSSValueClip);

@@ -122,11 +122,11 @@ void SVGResourcesCache::clientStyleChanged(RenderObject* renderer, StyleDifferen
     ASSERT(renderer->node());
     ASSERT(renderer->node()->isSVGElement());
 
-    if (diff.hasNoChange() || !renderer->parent())
+    if (diff == StyleDifferenceEqual || !renderer->parent())
         return;
 
     // In this case the proper SVGFE*Element will decide whether the modified CSS properties require a relayout or repaint.
-    if (renderer->isSVGResourceFilterPrimitive() && diff.needsRepaintObjectOnly())
+    if (renderer->isSVGResourceFilterPrimitive() && diff == StyleDifferenceRepaint)
         return;
 
     // Dynamic changes of CSS properties like 'clip-path' may require us to recompute the associated resources for a renderer.

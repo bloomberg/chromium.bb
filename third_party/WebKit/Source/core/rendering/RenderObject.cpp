@@ -1856,53 +1856,51 @@ StyleDifference RenderObject::adjustStyleDifference(StyleDifference diff, unsign
     DisableCompositingQueryAsserts disabler;
 
     if (contextSensitiveProperties & ContextSensitivePropertyTransform && isSVG())
-        diff.setNeedsFullLayout();
+        diff = StyleDifferenceLayout;
 
     // If transform changed, and the layer does not paint into its own separate backing, then we need to repaint.
-    if (contextSensitiveProperties & ContextSensitivePropertyTransform && !diff.needsLayout()) {
+    if (contextSensitiveProperties & ContextSensitivePropertyTransform  && diff <= StyleDifferenceRepaintLayer) {
         // Text nodes share style with their parents but transforms don't apply to them,
         // hence the !isText() check.
         if (!isText() && (!hasLayer() || !toRenderLayerModelObject(this)->layer()->hasDirectReasonsForCompositing()))
-            diff.setNeedsRepaintLayer();
-        else
-            diff.setNeedsRecompositeLayer();
+            diff = StyleDifferenceRepaintLayer;
+        else if (diff < StyleDifferenceRecompositeLayer)
+            diff = StyleDifferenceRecompositeLayer;
     }
 
     // If opacity or filters changed, and the layer does not paint into its own separate backing, then we need to repaint (also
     // ignoring text nodes)
-    if (contextSensitiveProperties & ContextSensitivePropertyOpacity && !diff.needsLayout()) {
+    if (contextSensitiveProperties & ContextSensitivePropertyOpacity && diff <= StyleDifferenceRepaintLayer) {
         if (!isText() && (!hasLayer() || !toRenderLayerModelObject(this)->layer()->hasDirectReasonsForCompositing()))
-            diff.setNeedsRepaintLayer();
-        else
-            diff.setNeedsRecompositeLayer();
+            diff = StyleDifferenceRepaintLayer;
+        else if (diff < StyleDifferenceRecompositeLayer)
+            diff = StyleDifferenceRecompositeLayer;
     }
 
-    if ((contextSensitiveProperties & ContextSensitivePropertyFilter) && hasLayer() && !diff.needsLayout()) {
+    if ((contextSensitiveProperties & ContextSensitivePropertyFilter) && hasLayer() && diff <= StyleDifferenceRepaintLayer) {
         RenderLayer* layer = toRenderLayerModelObject(this)->layer();
         if (!layer->hasDirectReasonsForCompositing() || layer->paintsWithFilters())
-            diff.setNeedsRepaintLayer();
-        else
-            diff.setNeedsRecompositeLayer();
+            diff = StyleDifferenceRepaintLayer;
+        else if (diff < StyleDifferenceRecompositeLayer)
+            diff = StyleDifferenceRecompositeLayer;
     }
 
-    if ((contextSensitiveProperties & ContextSensitivePropertyTextOrColor) && !diff.needsRepaint() && !diff.needsLayout()
+    if ((contextSensitiveProperties & ContextSensitivePropertyTextOrColor) && diff < StyleDifferenceRepaint
         && hasImmediateNonWhitespaceTextChildOrPropertiesDependentOnColor())
-        diff.setNeedsRepaintObject();
+        diff = StyleDifferenceRepaint;
 
     // The answer to layerTypeRequired() for plugins, iframes, and canvas can change without the actual
     // style changing, since it depends on whether we decide to composite these elements. When the
     // layer status of one of these elements changes, we need to force a layout.
-    if (diff.hasNoChange() && style() && isLayerModelObject()) {
+    if (diff == StyleDifferenceEqual && style() && isLayerModelObject()) {
         bool requiresLayer = toRenderLayerModelObject(this)->layerTypeRequired() != NoLayer;
         if (hasLayer() != requiresLayer)
-            diff.setNeedsFullLayout();
+            diff = StyleDifferenceLayout;
     }
 
     // If we have no layer(), just treat a RepaintLayer hint as a normal Repaint.
-    if (diff.needsRepaintLayer() && !hasLayer()) {
-        diff.clearNeedsRepaint();
-        diff.setNeedsRepaintObject();
-    }
+    if (diff == StyleDifferenceRepaintLayer && !hasLayer())
+        diff = StyleDifferenceRepaint;
 
     return diff;
 }
@@ -1966,7 +1964,7 @@ void RenderObject::setStyle(PassRefPtr<RenderStyle> style)
         return;
     }
 
-    StyleDifference diff;
+    StyleDifference diff = StyleDifferenceEqual;
     unsigned contextSensitiveProperties = ContextSensitivePropertyNone;
     if (m_style)
         diff = m_style->visualInvalidationDiff(*style, contextSensitiveProperties);
@@ -2001,10 +1999,10 @@ void RenderObject::setStyle(PassRefPtr<RenderStyle> style)
     // check whether we should layout now, and decide if we need to repaint.
     StyleDifference updatedDiff = adjustStyleDifference(diff, contextSensitiveProperties);
 
-    if (!diff.needsFullLayout()) {
-        if (updatedDiff.needsFullLayout())
+    if (diff <= StyleDifferenceLayoutPositionedMovementOnly) {
+        if (updatedDiff == StyleDifferenceLayout)
             setNeedsLayoutAndPrefWidthsRecalc();
-        else if (updatedDiff.needsPositionedMovementLayoutOnly())
+        else if (updatedDiff == StyleDifferenceLayoutPositionedMovementOnly)
             setNeedsPositionedMovementLayout();
     }
 
@@ -2015,7 +2013,7 @@ void RenderObject::setStyle(PassRefPtr<RenderStyle> style)
             toRenderBox(this)->updateLayerTransform();
     }
 
-    if (updatedDiff.needsRepaint()) {
+    if (updatedDiff == StyleDifferenceRepaint || updatedDiff == StyleDifferenceRepaintLayer) {
         // Do a repaint with the new style now, e.g., for example if we go from
         // not having an outline to having an outline.
         repaint();
@@ -2049,13 +2047,13 @@ void RenderObject::styleWillChange(StyleDifference diff, const RenderStyle& newS
                     layer->setHasVisibleContent();
                 } else if (layer->hasVisibleContent() && (this == layer->renderer() || layer->renderer()->style()->visibility() != VISIBLE)) {
                     layer->dirtyVisibleContentStatus();
-                    if (diff.needsLayout())
+                    if (diff > StyleDifferenceRepaintLayer)
                         repaint();
                 }
             }
         }
 
-        if (m_parent && diff.needsRepaintObjectOnly())
+        if (m_parent && diff == StyleDifferenceRepaint)
             repaint();
         if (isFloating() && (m_style->floating() != newStyle.floating()))
             // For changes in float styles, we need to conceivably remove ourselves
@@ -2072,13 +2070,12 @@ void RenderObject::styleWillChange(StyleDifference diff, const RenderStyle& newS
 
         // Clearing these bits is required to avoid leaving stale renderers.
         // FIXME: We shouldn't need that hack if our logic was totally correct.
-        if (diff.needsFullLayout() || diff.needsPositionedMovementLayoutOnly()) {
+        if (diff == StyleDifferenceLayout || diff == StyleDifferenceLayoutPositionedMovementOnly) {
             setFloating(false);
             clearPositionedState();
         }
-    } else {
+    } else
         s_affectsParentBlock = false;
-    }
 
     if (view()->frameView()) {
         bool shouldBlitOnFixedBackgroundImage = false;
@@ -2146,7 +2143,7 @@ void RenderObject::styleDidChange(StyleDifference diff, const RenderStyle* oldSt
     if (!m_parent)
         return;
 
-    if (diff.needsFullLayout()) {
+    if (diff == StyleDifferenceLayout) {
         RenderCounter::rendererStyleChanged(*this, oldStyle, m_style.get());
 
         // If the object already needs layout, then setNeedsLayout won't do
@@ -2161,10 +2158,10 @@ void RenderObject::styleDidChange(StyleDifference diff, const RenderStyle* oldSt
         if (needsOverflowRecalcAfterStyleChange() && oldStyle->position() != m_style->position())
             markContainingBlocksForOverflowRecalc();
 
-        setNeedsLayoutAndPrefWidthsRecalc();
-    } else if (diff.needsPositionedMovementLayoutOnly()) {
+        if (diff == StyleDifferenceLayout)
+            setNeedsLayoutAndPrefWidthsRecalc();
+    } else if (diff == StyleDifferenceLayoutPositionedMovementOnly)
         setNeedsPositionedMovementLayout();
-    }
 
     // Don't check for repaint here; we need to wait until the layer has been
     // updated by subclasses before we know if we have to repaint (in setStyle()).

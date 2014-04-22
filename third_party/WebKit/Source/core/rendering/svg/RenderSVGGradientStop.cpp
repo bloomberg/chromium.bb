@@ -42,7 +42,7 @@ RenderSVGGradientStop::~RenderSVGGradientStop()
 void RenderSVGGradientStop::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
 {
     RenderObject::styleDidChange(diff, oldStyle);
-    if (diff.hasNoChange())
+    if (diff == StyleDifferenceEqual)
         return;
 
     // <stop> elements should only be allowed to make renderers under gradient elements
