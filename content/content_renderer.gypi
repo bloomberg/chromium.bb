@@ -166,6 +166,8 @@
     'renderer/gpu/stream_texture_host_android.h',
     'renderer/history_controller.cc',
     'renderer/history_controller.h',
+    'renderer/history_entry.cc',
+    'renderer/history_entry.h',
     'renderer/idle_user_detector.cc',
     'renderer/idle_user_detector.h',
     'renderer/image_loading_helper.cc',

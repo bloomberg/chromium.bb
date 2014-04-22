@@ -39,6 +39,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "content/common/content_export.h"
+#include "content/renderer/history_entry.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebHistoryCommitType.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
@@ -48,7 +49,6 @@ class WebFrame;
 }
 
 namespace content {
-class HistoryEntry;
 class RenderFrameImpl;
 class RenderViewImpl;
 
@@ -104,60 +104,6 @@ class RenderViewImpl;
 //            HistoryNode 2_3: (WebHistoryItem H (url: bar.com/f))
 //         HistoryNode 2_2: (WebHistoryItem E (url: bar.com/c)) *REUSED*
 //
-
-class HistoryNode {
- public:
-  HistoryNode(HistoryEntry* entry,
-              const blink::WebHistoryItem& item,
-              int64_t frame_id);
-  ~HistoryNode();
-
-  HistoryNode* AddChild(const blink::WebHistoryItem& item, int64_t frame_id);
-  HistoryNode* CloneAndReplace(HistoryEntry* new_entry,
-                               const blink::WebHistoryItem& new_item,
-                               bool clone_children_of_target,
-                               RenderFrameImpl* target_frame,
-                               RenderFrameImpl* current_frame);
-  blink::WebHistoryItem& item() { return item_; }
-  void set_item(const blink::WebHistoryItem& item) { item_ = item; }
-  std::vector<HistoryNode*>& children() const { return children_->get(); }
-  void RemoveChildren();
-
- private:
-  HistoryEntry* entry_;
-  scoped_ptr<ScopedVector<HistoryNode> > children_;
-  blink::WebHistoryItem item_;
-};
-
-class HistoryEntry {
- public:
-  HistoryEntry(const blink::WebHistoryItem& root, int64_t frame_id);
-  ~HistoryEntry();
-
-  HistoryEntry* CloneAndReplace(const blink::WebHistoryItem& newItem,
-                                bool clone_children_of_target,
-                                RenderFrameImpl* target_frame,
-                                RenderViewImpl* render_view);
-
-  HistoryNode* GetHistoryNodeForFrame(RenderFrameImpl* frame);
-  blink::WebHistoryItem GetItemForFrame(RenderFrameImpl* frame);
-  const blink::WebHistoryItem& root() const { return root_->item(); }
-  HistoryNode* root_history_node() const { return root_.get(); }
-
- private:
-  friend class HistoryNode;
-
-  HistoryEntry();
-
-  scoped_ptr<HistoryNode> root_;
-
-  typedef base::hash_map<uint64_t, HistoryNode*> FramesToItems;
-  FramesToItems frames_to_items_;
-
-  typedef base::hash_map<std::string, HistoryNode*> UniqueNamesToItems;
-  UniqueNamesToItems unique_names_to_items_;
-};
-
 class CONTENT_EXPORT HistoryController {
  public:
   explicit HistoryController(RenderViewImpl* render_view);

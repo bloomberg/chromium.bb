@@ -72,6 +72,12 @@ content/renderer/history_controller.h
 # Copyright Apple Inc, Nokia Corporation and Torch Mobile Inc; BSD license.
 # Moved from third_party/WebKit/.
 content/renderer/history_controller.cc
+# Copyright Apple Inc and Torch Mobile Inc; BSD license. Moved from
+# third_party/WebKit/.
+content/renderer/history_entry.h
+# Copyright Apple Inc, Nokia Corporation and Torch Mobile Inc; BSD license.
+# Moved from third_party/WebKit/.
+content/renderer/history_entry.cc
 # Copyright Google Inc, no license. Not used on Android.
 google_update/google_update_idl.idl
 # Native client not used in Android. Contains the word "Copyright"
