@@ -145,9 +145,7 @@ void RenderBox::styleWillChange(StyleDifference diff, const RenderStyle& newStyl
         // the canvas.  Just dirty the entire canvas when our style changes substantially.
         if (diff >= StyleDifferenceRepaint && node() &&
             (isHTMLHtmlElement(*node()) || isHTMLBodyElement(*node()))) {
-
-            if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled() || diff != StyleDifferenceLayout)
-                view()->repaint();
+            view()->repaint();
 
             if (oldStyle->hasEntirelyFixedBackground() != newStyle.hasEntirelyFixedBackground())
                 view()->compositor()->setNeedsUpdateFixedBackground();
