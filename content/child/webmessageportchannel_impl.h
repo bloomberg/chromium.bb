@@ -54,7 +54,6 @@ class WebMessagePortChannelImpl
   // WebMessagePortChannel implementation.
   virtual void setClient(blink::WebMessagePortChannelClient* client);
   virtual void destroy();
-  virtual void entangle(blink::WebMessagePortChannel* channel);
   virtual void postMessage(const blink::WebString& message,
                            blink::WebMessagePortChannelArray* channels);
   virtual bool tryGetMessage(blink::WebString* message,

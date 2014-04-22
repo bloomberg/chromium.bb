@@ -109,10 +109,6 @@ void WebMessagePortChannelImpl::destroy() {
   child_thread_loop_->ReleaseSoon(FROM_HERE, this);
 }
 
-void WebMessagePortChannelImpl::entangle(WebMessagePortChannel* channel) {
-  NOTREACHED();  // DEPRECATED
-}
-
 void WebMessagePortChannelImpl::postMessage(
     const WebString& message,
     WebMessagePortChannelArray* channels) {
