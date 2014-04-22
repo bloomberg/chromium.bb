@@ -21,6 +21,8 @@ import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.WebContentsObserverAndroid;
 import org.chromium.net.NetError;
 
+import java.security.Principal;
+
 /**
  * Base-class that an AwContents embedder derives from to receive callbacks.
  * This extends ContentViewClient, as in many cases we want to pass-thru ContentViewCore
@@ -164,6 +166,12 @@ public abstract class AwContentsClient {
             String host, String realm);
 
     public abstract void onReceivedSslError(ValueCallback<Boolean> callback, SslError error);
+
+    // TODO(sgurun): Make abstract once this has rolled in downstream.
+    public void onReceivedClientCertRequest(
+            final AwContentsClientBridge.ClientCertificateRequestCallback callback,
+            final String[] keyTypes, final Principal[] principals, final String host,
+            final int port) { }
 
     public abstract void onReceivedLoginRequest(String realm, String account, String args);
 

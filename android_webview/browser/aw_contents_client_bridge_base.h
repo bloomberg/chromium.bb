@@ -16,6 +16,7 @@ class WebContents;
 }
 
 namespace net {
+class SSLCertRequestInfo;
 class X509Certificate;
 }
 
@@ -28,6 +29,8 @@ namespace android_webview {
 // native/ from browser/ layer.
 class AwContentsClientBridgeBase {
  public:
+  typedef base::Callback<void(net::X509Certificate*)> SelectCertificateCallback;
+
   // Adds the handler to the UserData registry.
   static void Associate(content::WebContents* web_contents,
                         AwContentsClientBridgeBase* handler);
@@ -43,6 +46,9 @@ class AwContentsClientBridgeBase {
                                      const GURL& request_url,
                                      const base::Callback<void(bool)>& callback,
                                      bool* cancel_request) = 0;
+  virtual void SelectClientCertificate(
+      net::SSLCertRequestInfo* cert_request_info,
+      const SelectCertificateCallback& callback) = 0;
 
   virtual void RunJavaScriptDialog(
       content::JavaScriptMessageType message_type,

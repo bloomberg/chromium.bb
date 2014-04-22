@@ -17,11 +17,14 @@ import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 
 import org.chromium.android_webview.AwContentsClient;
+import org.chromium.android_webview.AwContentsClientBridge;
 import org.chromium.android_webview.AwHttpAuthHandler;
 import org.chromium.android_webview.InterceptedRequestData;
 import org.chromium.android_webview.JsPromptResultReceiver;
 import org.chromium.android_webview.JsResultReceiver;
 import org.chromium.base.ThreadUtils;
+
+import java.security.Principal;
 
 /**
  * As a convience for tests that only care about specefic callbacks, this class provides
@@ -84,6 +87,14 @@ public class NullContentsClient extends AwContentsClient {
     @Override
     public void onReceivedSslError(ValueCallback<Boolean> callback, SslError error) {
         callback.onReceiveValue(false);
+    }
+
+    @Override
+    public void onReceivedClientCertRequest(
+            final AwContentsClientBridge.ClientCertificateRequestCallback callback,
+            final String[] keyTypes, final Principal[] principals, final String host,
+            final int port) {
+        callback.proceed(null, null);
     }
 
     @Override

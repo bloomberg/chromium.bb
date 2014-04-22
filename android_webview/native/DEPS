@@ -1,5 +1,6 @@
 include_rules = [
   "+content/public/browser",
+  "+content/public/test",
   "+ui/gfx",
   "+ui/shell_dialogs",
 

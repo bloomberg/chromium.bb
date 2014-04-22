@@ -129,6 +129,9 @@ class AwContents : public FindHelper::Listener,
 
   void DrawGL(AwDrawGLInfo* draw_info);
 
+  // TODO(sgurun) test this.
+  void ClearClientCertPreferences(JNIEnv* env, jobject obj);
+
   // Geolocation API support
   void ShowGeolocationPrompt(const GURL& origin, base::Callback<void(bool)>);
   void HideGeolocationPrompt(const GURL& origin);

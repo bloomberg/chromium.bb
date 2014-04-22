@@ -29,7 +29,6 @@ namespace android_webview {
 // any references.
 class AwContentsClientBridge : public AwContentsClientBridgeBase {
  public:
-
   AwContentsClientBridge(JNIEnv* env, jobject obj);
   virtual ~AwContentsClientBridge();
 
@@ -39,6 +38,9 @@ class AwContentsClientBridge : public AwContentsClientBridgeBase {
                                      const GURL& request_url,
                                      const base::Callback<void(bool)>& callback,
                                      bool* cancel_request) OVERRIDE;
+  virtual void SelectClientCertificate(
+      net::SSLCertRequestInfo* cert_request_info,
+      const SelectCertificateCallback& callback) OVERRIDE;
 
   virtual void RunJavaScriptDialog(
       content::JavaScriptMessageType message_type,
@@ -56,16 +58,23 @@ class AwContentsClientBridge : public AwContentsClientBridgeBase {
 
   // Methods called from Java.
   void ProceedSslError(JNIEnv* env, jobject obj, jboolean proceed, jint id);
+  void ProvideClientCertificateResponse(JNIEnv* env, jobject object,
+      jint request_id, jobjectArray encoded_chain_ref,
+      jobject private_key_ref);
   void ConfirmJsResult(JNIEnv*, jobject, int id, jstring prompt);
   void CancelJsResult(JNIEnv*, jobject, int id);
 
  private:
+  void HandleErrorInClientCertificateResponse(int id);
+
   JavaObjectWeakGlobalRef java_ref_;
 
   typedef const base::Callback<void(bool)> CertErrorCallback;
   IDMap<CertErrorCallback, IDMapOwnPointer> pending_cert_error_callbacks_;
   IDMap<content::JavaScriptDialogManager::DialogClosedCallback, IDMapOwnPointer>
       pending_js_dialog_callbacks_;
+  IDMap<SelectCertificateCallback, IDMapOwnPointer>
+      pending_client_cert_request_callbacks_;
 };
 
 bool RegisterAwContentsClientBridge(JNIEnv* env);
