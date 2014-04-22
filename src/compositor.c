@@ -675,7 +675,8 @@ weston_surface_to_buffer_float(struct weston_surface *surface,
 	/* first transform coordinates if the scaler is set */
 	scaler_surface_to_buffer(surface, sx, sy, bx, by);
 
-	weston_transformed_coord(surface->width, surface->height,
+	weston_transformed_coord(surface->width_from_buffer,
+				 surface->height_from_buffer,
 				 vp->buffer.transform, vp->buffer.scale,
 				 *bx, *by, bx, by);
 }
@@ -709,7 +710,8 @@ weston_surface_to_buffer_rect(struct weston_surface *surface,
 	rect.x2 = floorf(xf);
 	rect.y2 = floorf(yf);
 
-	return weston_transformed_rect(surface->width, surface->height,
+	return weston_transformed_rect(surface->width_from_buffer,
+				       surface->height_from_buffer,
 				       vp->buffer.transform, vp->buffer.scale,
 				       rect);
 }
