@@ -2,39 +2,35 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 
-<body>
-    <div id='e'></div>
-</body>
+<div id='e'></div>
 
 <script>
 var element = document.getElementById('e');
 
-var animationWithTimingObject = new Animation(element,
-    [{opacity: '1', offset: 0},
-    {opacity: '0', offset: 1}],
-    {duration: 2, iterations: 5});
-
-var animationWithDuration = new Animation(element,
-    [{opacity: '1', offset: 0},
-    {opacity: '0', offset: 1}],
-    2);
-
-var animationNoTiming = new Animation(element,
-    [{opacity: '1', offset: 0},
-    {opacity: '0', offset: 1}]);
+var keyframes = [{opacity: '1'}, {opacity: '0'}];
+var timingObject = {duration: 2, iterations: 5};
 
 test(function() {
-    assert_false(animationWithTimingObject == undefined);
-    assert_equals(animationWithTimingObject.constructor, Animation);
+    var animation = new Animation(element, keyframes, timingObject);
+    assert_not_equals(animation, undefined);
+    assert_equals(animation.constructor, Animation);
 }, 'Calling new Animation() with a timing object input should create an animation.');
 
 test(function() {
-    assert_false(animationWithDuration == undefined);
-    assert_equals(animationWithDuration.constructor, Animation);
+    var animation = new Animation(element, keyframes, 2);
+    assert_not_equals(animation, undefined);
+    assert_equals(animation.constructor, Animation);
 }, 'Calling new Animation() with a duration input should create an animation.');
 
 test(function() {
-    assert_false(animationNoTiming == undefined);
-    assert_equals(animationNoTiming.constructor, Animation);
+    var animation = new Animation(element, keyframes);
+    assert_not_equals(animation, undefined);
+    assert_equals(animation.constructor, Animation);
 }, 'Calling new Animation() with no timing input should create an animation.');
+
+test(function() {
+    var animation = new Animation(null, keyframes);
+    assert_not_equals(animation, undefined);
+    assert_equals(animation.constructor, Animation);
+}, 'Calling new Animation() with no target should create an animation.');
 </script>

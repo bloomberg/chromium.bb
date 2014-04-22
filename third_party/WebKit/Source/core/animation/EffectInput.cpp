@@ -42,19 +42,19 @@
 namespace WebCore {
 
 // FIXME: Remove this once we've removed the dependency on Element.
-static bool checkDocumentAndRenderer(Element& element)
+static bool checkDocumentAndRenderer(Element* element)
 {
-    if (!element.inActiveDocument())
+    if (!element || !element->inActiveDocument())
         return false;
-    element.document().updateRenderTreeIfNeeded();
-    return element.renderer();
+    element->document().updateRenderTreeIfNeeded();
+    return element->renderer();
 }
 
 PassRefPtrWillBeRawPtr<AnimationEffect> EffectInput::convert(Element* element, const Vector<Dictionary>& keyframeDictionaryVector, ExceptionState& exceptionState, bool unsafe)
 {
     // FIXME: This test will not be neccessary once resolution of keyframe values occurs at
     // animation application time.
-    if (!unsafe && !checkDocumentAndRenderer(*element))
+    if (!unsafe && !checkDocumentAndRenderer(element))
         return nullptr;
 
     StyleSheetContents* styleSheetContents = element->document().elementSheet().contents();
