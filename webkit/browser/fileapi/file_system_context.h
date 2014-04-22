@@ -188,10 +188,15 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
       OpenFileSystemCallback;
 
   // Used for ResolveURL.
+  enum ResolvedEntryType {
+    RESOLVED_ENTRY_FILE,
+    RESOLVED_ENTRY_DIRECTORY,
+    RESOLVED_ENTRY_NOT_FOUND,
+  };
   typedef base::Callback<void(base::File::Error result,
                               const FileSystemInfo& info,
                               const base::FilePath& file_path,
-                              bool is_directory)> ResolveURLCallback;
+                              ResolvedEntryType type)> ResolveURLCallback;
 
   // Used for DeleteFileSystem and OpenPluginPrivateFileSystem.
   typedef base::Callback<void(base::File::Error result)> StatusCallback;
@@ -207,9 +212,12 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
       OpenFileSystemMode mode,
       const OpenFileSystemCallback& callback);
 
-  // Opens the filesystem for the given |url| as read-only, and then checks the
-  // existence of the file entry referred by the URL. This should be called on
-  // the IO thread.
+  // Opens the filesystem for the given |url| as read-only, if the filesystem
+  // backend referred by the URL allows opening by resolveURL. Otherwise it
+  // fails with FILE_ERROR_SECURITY. The entry pointed by the URL can be
+  // absent; in that case RESOLVED_ENTRY_NOT_FOUND type is returned to the
+  // callback for indicating the absence. Can be called from any thread with
+  // a message loop. |callback| is invoked on the caller thread.
   void ResolveURL(
       const FileSystemURL& url,
       const ResolveURLCallback& callback);

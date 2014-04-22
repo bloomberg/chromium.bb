@@ -71,9 +71,10 @@ class FileDefinitionListConverter {
   // Then, calls OnIteratorConverted with the created entry definition.
   void OnResolvedURL(scoped_ptr<FileDefinitionListConverter> self_deleter,
                      FileDefinitionList::const_iterator iterator,
-                     const GURL& root_url,
-                     const std::string& name,
-                     base::File::Error error);
+                     base::File::Error error,
+                     const fileapi::FileSystemInfo& info,
+                     const base::FilePath& file_path,
+                     fileapi::FileSystemContext::ResolvedEntryType type);
 
   // Called when the iterator is converted. Adds the |entry_definition| to
   // |results_| and calls ConvertNextIterator() for the next element.
@@ -132,16 +133,6 @@ void FileDefinitionListConverter::ConvertNextIterator(
     return;
   }
 
-  fileapi::ExternalFileSystemBackend* backend =
-      file_system_context_->external_backend();
-  if (!backend) {
-    OnIteratorConverted(self_deleter.Pass(),
-                        iterator,
-                        CreateEntryDefinitionWithError(
-                            base::File::FILE_ERROR_INVALID_OPERATION));
-    return;
-  }
-
   fileapi::FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
       extensions::Extension::GetBaseURLFromExtensionId(extension_id_),
       fileapi::kFileSystemTypeExternal,
@@ -150,13 +141,8 @@ void FileDefinitionListConverter::ConvertNextIterator(
 
   // The converter object will be deleted if the callback is not called because
   // of shutdown during ResolveURL().
-  //
-  // TODO(mtomasz, nhiroki): Call FileSystemContext::ResolveURL() directly,
-  // after removing redundant thread restrictions in there.
-  backend->ResolveURL(
+  file_system_context_->ResolveURL(
       url,
-      // Not sandboxed file systems are not creatable via ResolveURL().
-      fileapi::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT,
       base::Bind(&FileDefinitionListConverter::OnResolvedURL,
                  base::Unretained(this),
                  base::Passed(&self_deleter),
@@ -166,21 +152,32 @@ void FileDefinitionListConverter::ConvertNextIterator(
 void FileDefinitionListConverter::OnResolvedURL(
     scoped_ptr<FileDefinitionListConverter> self_deleter,
     FileDefinitionList::const_iterator iterator,
-    const GURL& root_url,
-    const std::string& name,
-    base::File::Error error) {
+    base::File::Error error,
+    const fileapi::FileSystemInfo& info,
+    const base::FilePath& file_path,
+    fileapi::FileSystemContext::ResolvedEntryType type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  if (error != base::File::FILE_OK) {
+    OnIteratorConverted(self_deleter.Pass(),
+                        iterator,
+                        CreateEntryDefinitionWithError(error));
+    return;
+  }
+
   EntryDefinition entry_definition;
-  entry_definition.file_system_root_url = root_url.spec();
-  entry_definition.file_system_name = name;
+  entry_definition.file_system_root_url = info.root_url.spec();
+  entry_definition.file_system_name = info.name;
+  DCHECK(type == fileapi::FileSystemContext::RESOLVED_ENTRY_NOT_FOUND ||
+         iterator->is_directory ==
+             (type == fileapi::FileSystemContext::RESOLVED_ENTRY_DIRECTORY));
   entry_definition.is_directory = iterator->is_directory;
-  entry_definition.error = error;
+  entry_definition.error = base::File::FILE_OK;
 
   // Construct a target Entry.fullPath value from the virtual path and the
   // root URL. Eg. Downloads/A/b.txt -> A/b.txt.
   const base::FilePath root_virtual_path =
-      file_system_context_->CrackURL(root_url).virtual_path();
+      file_system_context_->CrackURL(info.root_url).virtual_path();
   DCHECK(root_virtual_path == iterator->virtual_path ||
          root_virtual_path.IsParent(iterator->virtual_path));
   base::FilePath full_path;

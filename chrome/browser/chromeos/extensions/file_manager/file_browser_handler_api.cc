@@ -326,26 +326,6 @@ void FileBrowserHandlerInternalSelectFileFunction::OnFilePathSelected(
   external_backend->GetVirtualPath(full_path, &file_definition.virtual_path);
   DCHECK(!file_definition.virtual_path.empty());
 
-  file_manager::util::ConvertFileDefinitionToEntryDefinition(
-      GetProfile(),
-      extension_id(),
-      file_definition,
-      base::Bind(
-          &FileBrowserHandlerInternalSelectFileFunction::GrantPermissions,
-          this,
-          full_path,
-          file_definition));
-}
-
-void FileBrowserHandlerInternalSelectFileFunction::GrantPermissions(
-    const base::FilePath& full_path,
-    const FileDefinition& file_definition,
-    const EntryDefinition& entry_definition) {
-  fileapi::ExternalFileSystemBackend* external_backend =
-      file_manager::util::GetFileSystemContextForRenderViewHost(
-          GetProfile(), render_view_host())->external_backend();
-  DCHECK(external_backend);
-
   // Grant access to this particular file to target extension. This will
   // ensure that the target extension can access only this FS entry and
   // prevent from traversing FS hierarchy upward.
@@ -356,6 +336,17 @@ void FileBrowserHandlerInternalSelectFileFunction::GrantPermissions(
   content::ChildProcessSecurityPolicy::GetInstance()->GrantCreateReadWriteFile(
       render_view_host()->GetProcess()->GetID(), full_path);
 
+  file_manager::util::ConvertFileDefinitionToEntryDefinition(
+      GetProfile(),
+      extension_id(),
+      file_definition,
+      base::Bind(
+          &FileBrowserHandlerInternalSelectFileFunction::RespondEntryDefinition,
+          this));
+}
+
+void FileBrowserHandlerInternalSelectFileFunction::RespondEntryDefinition(
+    const EntryDefinition& entry_definition) {
   Respond(entry_definition, true);
 }
 

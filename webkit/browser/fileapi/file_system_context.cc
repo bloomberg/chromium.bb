@@ -51,10 +51,29 @@ void DidGetMetadataForResolveURL(
     base::File::Error error,
     const base::File::Info& file_info) {
   if (error != base::File::FILE_OK) {
-    callback.Run(error, FileSystemInfo(), base::FilePath(), false);
+    if (error == base::File::FILE_ERROR_NOT_FOUND) {
+      callback.Run(base::File::FILE_OK, info, path,
+                   FileSystemContext::RESOLVED_ENTRY_NOT_FOUND);
+    } else {
+      callback.Run(error, FileSystemInfo(), base::FilePath(),
+                   FileSystemContext::RESOLVED_ENTRY_NOT_FOUND);
+    }
     return;
   }
-  callback.Run(error, info, path, file_info.is_directory);
+  callback.Run(error, info, path, file_info.is_directory ?
+      FileSystemContext::RESOLVED_ENTRY_DIRECTORY :
+      FileSystemContext::RESOLVED_ENTRY_FILE);
+}
+
+void RelayResolveURLCallback(
+    scoped_refptr<base::MessageLoopProxy> message_loop,
+    const FileSystemContext::ResolveURLCallback& callback,
+    base::File::Error result,
+    const FileSystemInfo& info,
+    const base::FilePath& file_path,
+    FileSystemContext::ResolvedEntryType type) {
+  message_loop->PostTask(
+      FROM_HERE, base::Bind(callback, result, info, file_path, type));
 }
 
 }  // namespace
@@ -322,15 +341,24 @@ void FileSystemContext::OpenFileSystem(
 void FileSystemContext::ResolveURL(
     const FileSystemURL& url,
     const ResolveURLCallback& callback) {
-  // TODO(nhiroki, kinuko): Remove this thread restriction, so it can be called
-  // on either UI or IO thread.
-  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(!callback.is_null());
+
+  // If not on IO thread, forward before passing the task to the backend.
+  if (!io_task_runner_->RunsTasksOnCurrentThread()) {
+    ResolveURLCallback relay_callback =
+        base::Bind(&RelayResolveURLCallback,
+                   base::MessageLoopProxy::current(), callback);
+    io_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&FileSystemContext::ResolveURL, this, url, relay_callback));
+    return;
+  }
 
   FileSystemBackend* backend = GetFileSystemBackend(url.type());
   if (!backend) {
     callback.Run(base::File::FILE_ERROR_SECURITY,
-                 FileSystemInfo(), base::FilePath(), false);
+                 FileSystemInfo(), base::FilePath(),
+                 FileSystemContext::RESOLVED_ENTRY_NOT_FOUND);
     return;
   }
 
@@ -560,7 +588,8 @@ void FileSystemContext::DidOpenFileSystemForResolveURL(
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
 
   if (error != base::File::FILE_OK) {
-    callback.Run(error, FileSystemInfo(), base::FilePath(), false);
+    callback.Run(error, FileSystemInfo(), base::FilePath(),
+                 FileSystemContext::RESOLVED_ENTRY_NOT_FOUND);
     return;
   }
 

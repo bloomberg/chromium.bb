@@ -19,6 +19,7 @@
 #include "content/browser/streams/stream_context.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/common/blob/blob_data.h"
 #include "webkit/common/fileapi/file_system_types.h"
@@ -33,7 +34,6 @@ class Time;
 
 namespace fileapi {
 class FileSystemURL;
-class FileSystemContext;
 class FileSystemOperationRunner;
 struct DirectoryEntry;
 struct FileSystemInfo;
@@ -187,7 +187,7 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
                      base::File::Error result,
                      const fileapi::FileSystemInfo& info,
                      const base::FilePath& file_path,
-                     bool is_directory);
+                     fileapi::FileSystemContext::ResolvedEntryType type);
   void DidDeleteFileSystem(int request_id,
                            base::File::Error result);
   void DidCreateSnapshot(

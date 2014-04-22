@@ -771,16 +771,22 @@ void FileAPIMessageFilter::DidOpenFileSystem(int request_id,
   // For OpenFileSystem we do not create a new operation, so no unregister here.
 }
 
-void FileAPIMessageFilter::DidResolveURL(int request_id,
-                                         base::File::Error result,
-                                         const fileapi::FileSystemInfo& info,
-                                         const base::FilePath& file_path,
-                                         bool is_directory) {
+void FileAPIMessageFilter::DidResolveURL(
+    int request_id,
+    base::File::Error result,
+    const fileapi::FileSystemInfo& info,
+    const base::FilePath& file_path,
+    fileapi::FileSystemContext::ResolvedEntryType type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (result == base::File::FILE_OK &&
+      type == fileapi::FileSystemContext::RESOLVED_ENTRY_NOT_FOUND)
+    result = base::File::FILE_ERROR_NOT_FOUND;
+
   if (result == base::File::FILE_OK) {
     DCHECK(info.root_url.is_valid());
     Send(new FileSystemMsg_DidResolveURL(
-        request_id, info, file_path, is_directory));
+        request_id, info, file_path,
+        type == fileapi::FileSystemContext::RESOLVED_ENTRY_DIRECTORY));
   } else {
     Send(new FileSystemMsg_DidFail(request_id, result));
   }
