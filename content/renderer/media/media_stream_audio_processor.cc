@@ -345,6 +345,10 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
 
   // Create and configure the webrtc::AudioProcessing.
   audio_processing_.reset(webrtc::AudioProcessing::Create(0));
+  // TODO(ajm): Replace with AudioProcessing::Initialize() when this rolls to
+  // Chromium: http://review.webrtc.org/9919004/
+  CHECK_EQ(0,
+           audio_processing_->set_sample_rate_hz(kAudioProcessingSampleRate));
 
   // Enable the audio processing components.
   if (enable_aec) {
@@ -374,13 +378,6 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
 
   if (enable_agc)
     EnableAutomaticGainControl(audio_processing_.get());
-
-  // Configure the audio format the audio processing is running on. This
-  // has to be done after all the needed components are enabled.
-  CHECK_EQ(0,
-           audio_processing_->set_sample_rate_hz(kAudioProcessingSampleRate));
-  CHECK_EQ(0, audio_processing_->set_num_channels(
-      kAudioProcessingNumberOfChannels, kAudioProcessingNumberOfChannels));
 
   RecordProcessingState(AUDIO_PROCESSING_ENABLED);
 }
