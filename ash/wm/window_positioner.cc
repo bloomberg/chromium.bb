@@ -50,7 +50,7 @@ const int kWindowAutoMoveDurationMS = 125;
 // WindowPositioner::SetIgnoreActivations().
 static bool disable_auto_positioning = false;
 
-// If set to true, by default the first window in ASH will be maxmized.
+// If set to true, by default the first window in ASH will be maximized.
 static bool maximize_first_window = false;
 
 // Check if any management should be performed (with a given |window|).
@@ -219,7 +219,7 @@ aura::Window* GetReferenceWindow(const aura::Window* root_window,
         window->GetRootWindow() == root_window && window->TargetVisibility() &&
         wm::GetWindowState(window)->window_position_managed()) {
       if (found && found != window) {
-        // no need to check !signle_window because the function must have
+        // no need to check !single_window because the function must have
         // been already returned in the "if (!single_window)" below.
         *single_window = false;
         return found;
@@ -274,12 +274,30 @@ void WindowPositioner::GetBoundsAndShowStateForNewWindow(
     }
     return;
   }
-  bool maximized = wm::GetWindowState(top_window)->IsMaximized();
+  wm::WindowState* top_window_state = wm::GetWindowState(top_window);
+  bool maximized = top_window_state->IsMaximized();
   // We ignore the saved show state, but look instead for the top level
   // window's show state.
   if (show_state_in == ui::SHOW_STATE_DEFAULT) {
     *show_state_out = maximized ? ui::SHOW_STATE_MAXIMIZED :
         ui::SHOW_STATE_DEFAULT;
+  }
+
+  if (maximized) {
+    bool has_restore_bounds = top_window_state->HasRestoreBounds();
+    if (has_restore_bounds) {
+      // For a maximized window ignore the real bounds of the top level window
+      // and use its restore bounds instead. Offset the bounds to prevent the
+      // windows from overlapping exactly when restored.
+      *bounds_in_out = top_window_state->GetRestoreBoundsInScreen() +
+          gfx::Vector2d(kMinimumWindowOffset, kMinimumWindowOffset);
+    }
+    if (is_saved_bounds || has_restore_bounds) {
+      gfx::Rect work_area = screen->GetDisplayNearestWindow(target).work_area();
+      bounds_in_out->AdjustToFit(work_area);
+      // Use adjusted saved bounds or restore bounds, if there is one.
+      return;
+    }
   }
 
   // Use the size of the other window. The window's bound will be rearranged
@@ -419,7 +437,7 @@ gfx::Rect WindowPositioner::GetPopupPosition(const gfx::Rect& old_pos) {
   popup_position_offset_from_screen_corner_x = grid;
   popup_position_offset_from_screen_corner_y = grid;
   if (!pop_position_offset_increment_x) {
-    // When the popup position increment is , the last popup position
+    // When the popup position increment is 0, the last popup position
     // was not yet initialized.
     last_popup_position_x_ = popup_position_offset_from_screen_corner_x;
     last_popup_position_y_ = popup_position_offset_from_screen_corner_y;

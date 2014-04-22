@@ -21,6 +21,8 @@ typedef test::AshTestBase WindowPositionerTest;
 TEST_F(WindowPositionerTest, OpenMaximizedWindowOnSecondDisplay) {
   if (!SupportsMultipleDisplays())
     return;
+  // Tests that for a screen that is narrower than kForceMaximizeWidthLimit
+  // a new window gets maximized.
   UpdateDisplay("400x400,500x500");
   Shell::GetInstance()->set_target_root_window(
       Shell::GetAllRootWindows()[1]);
@@ -56,6 +58,46 @@ TEST_F(WindowPositionerTest, OpenDefaultWindowOnSecondDisplay) {
 #endif
   EXPECT_TRUE(Shell::GetScreen()->GetDisplayNearestWindow(
       second_root_window).bounds().Contains(bounds));
+}
+
+// Tests that second window inherits first window's maximized state as well as
+// its restore bounds.
+TEST_F(WindowPositionerTest, SecondMaximizedWindowHasProperRestoreSize) {
+#if defined(OS_WIN)
+  ash::WindowPositioner::SetMaximizeFirstWindow(true);
+#endif
+  UpdateDisplay("1400x900");
+  shell::ToplevelWindow::CreateParams params;
+  params.can_resize = true;
+  params.can_maximize = true;
+  views::Widget* widget1 =
+      shell::ToplevelWindow::CreateToplevelWindow(params);
+  gfx::Rect bounds = widget1->GetWindowBoundsInScreen();
+
+#if !defined(OS_WIN)
+  // The window should have default size.
+  EXPECT_FALSE(widget1->IsMaximized());
+  EXPECT_EQ("300x300", bounds.size().ToString());
+  widget1->Maximize();
+#endif
+  // The window should be maximized.
+  bounds = widget1->GetWindowBoundsInScreen();
+  EXPECT_TRUE(widget1->IsMaximized());
+  EXPECT_EQ("0,0 1400x853", bounds.ToString());
+
+  // Create another window
+  views::Widget* widget2 =
+      shell::ToplevelWindow::CreateToplevelWindow(params);
+
+  // The second window should be maximized.
+  bounds = widget2->GetWindowBoundsInScreen();
+  EXPECT_TRUE(widget2->IsMaximized());
+  EXPECT_EQ("0,0 1400x853", bounds.ToString());
+
+  widget2->Restore();
+  // Second window's restored size should be set to default size.
+  bounds = widget2->GetWindowBoundsInScreen();
+  EXPECT_EQ("300x300", bounds.size().ToString());
 }
 
 namespace {

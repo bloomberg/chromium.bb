@@ -343,8 +343,9 @@ void DesktopWindowTreeHostX11::ShowWindowWithState(
 
 void DesktopWindowTreeHostX11::ShowMaximizedWithBounds(
     const gfx::Rect& restored_bounds) {
-  restored_bounds_ = restored_bounds;
   ShowWindowWithState(ui::SHOW_STATE_MAXIMIZED);
+  // Enforce |restored_bounds_| since calling Maximize() could have reset it.
+  restored_bounds_ = restored_bounds;
 }
 
 bool DesktopWindowTreeHostX11::IsVisible() const {
@@ -485,9 +486,9 @@ bool DesktopWindowTreeHostX11::IsActive() const {
 }
 
 void DesktopWindowTreeHostX11::Maximize() {
-  // When we're the process requesting the maximizing, we can accurately keep
-  // track of our restored bounds instead of relying on the heuristics that are
-  // in the PropertyNotify and ConfigureNotify handlers.
+  // When we are in the process of requesting to maximize a window, we can
+  // accurately keep track of our restored bounds instead of relying on the
+  // heuristics that are in the PropertyNotify and ConfigureNotify handlers.
   restored_bounds_ = bounds_;
 
   SetWMSpecState(true,
