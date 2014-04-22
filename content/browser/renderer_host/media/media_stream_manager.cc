@@ -47,7 +47,8 @@ namespace content {
 // Forward declaration of DeviceMonitorMac and its only useable method.
 class DeviceMonitorMac {
  public:
-  void StartMonitoring();
+  void StartMonitoring(
+    const scoped_refptr<base::SingleThreadTaskRunner>& device_task_runner);
 };
 
 namespace {
@@ -834,8 +835,10 @@ void MediaStreamManager::StartMonitoring() {
 void MediaStreamManager::StartMonitoringOnUIThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserMainLoop* browser_main_loop = content::BrowserMainLoop::GetInstance();
-  if (browser_main_loop)
-    browser_main_loop->device_monitor_mac()->StartMonitoring();
+  if (browser_main_loop) {
+    browser_main_loop->device_monitor_mac()
+        ->StartMonitoring(audio_manager_->GetWorkerTaskRunner());
+  }
 }
 #endif
 

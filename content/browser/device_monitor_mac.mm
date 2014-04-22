@@ -8,6 +8,7 @@
 
 #include <set>
 
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
 #import "media/video/capture/mac/avfoundation_glue.h"
@@ -211,8 +212,10 @@ class AVFoundationMonitorImpl;
 
 }  // namespace
 
-// This class is a Key-Value Observer (KVO) shim.  It is needed because C++
-// classes cannot observe Key-Values directly.
+// This class is a Key-Value Observer (KVO) shim. It is needed because C++
+// classes cannot observe Key-Values directly. This class is used by
+// AVfoundationMonitorImpl and executed in its |device_task_runner_|, a.k.a.
+// "Device Thread". -stopObserving is called dutifully on -dealloc on UI thread.
 @interface CrAVFoundationDeviceObserver : NSObject {
  @private
   AVFoundationMonitorImpl* receiver_;
@@ -228,21 +231,41 @@ class AVFoundationMonitorImpl;
 
 namespace {
 
+// AVFoundation implementation of the Mac Device Monitor, registers as a global
+// device connect/disconnect observer and plugs suspend/wake up device observers
+// per device. This class is created and lives in UI thread; device enumeration
+// and operations involving |suspend_observer_| happen on |device_task_runner_|.
 class AVFoundationMonitorImpl : public DeviceMonitorMacImpl {
  public:
-  explicit AVFoundationMonitorImpl(content::DeviceMonitorMac* monitor);
+  AVFoundationMonitorImpl(
+      content::DeviceMonitorMac* monitor,
+      const scoped_refptr<base::SingleThreadTaskRunner>& device_task_runner);
   virtual ~AVFoundationMonitorImpl();
 
   virtual void OnDeviceChanged() OVERRIDE;
 
  private:
+  void OnDeviceChangedOnDeviceThread(
+      const scoped_refptr<base::MessageLoopProxy>& ui_thread);
+  void StartObserverOnDeviceThread();
+
+  base::ThreadChecker thread_checker_;
+
+  // {Video,AudioInput}DeviceManager's "Device" thread task runner used for
+  // device enumeration, valid after MediaStreamManager calls StartMonitoring().
+  const scoped_refptr<base::SingleThreadTaskRunner> device_task_runner_;
+
+  // Created and executed in |device_task_runnner_|.
   base::scoped_nsobject<CrAVFoundationDeviceObserver> suspend_observer_;
+
   DISALLOW_COPY_AND_ASSIGN(AVFoundationMonitorImpl);
 };
 
 AVFoundationMonitorImpl::AVFoundationMonitorImpl(
-    content::DeviceMonitorMac* monitor)
-    : DeviceMonitorMacImpl(monitor) {
+    content::DeviceMonitorMac* monitor,
+    const scoped_refptr<base::SingleThreadTaskRunner>& device_task_runner)
+    : DeviceMonitorMacImpl(monitor),
+      device_task_runner_(device_task_runner) {
   NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
   device_arrival_ =
       [nc addObserverForName:AVFoundationGlue::
@@ -258,23 +281,31 @@ AVFoundationMonitorImpl::AVFoundationMonitorImpl(
                        queue:nil
                   usingBlock:^(NSNotification* notification) {
                       OnDeviceChanged();}];
-  suspend_observer_.reset(
-      [[CrAVFoundationDeviceObserver alloc] initWithChangeReceiver:this]);
-  for (CrAVCaptureDevice* device in [AVCaptureDeviceGlue devices])
-    [suspend_observer_ startObserving:device];
+  device_task_runner_->PostTask(FROM_HERE,
+      base::Bind(&AVFoundationMonitorImpl::StartObserverOnDeviceThread,
+          base::Unretained(this)));
 }
 
 AVFoundationMonitorImpl::~AVFoundationMonitorImpl() {
   NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
   [nc removeObserver:device_arrival_];
   [nc removeObserver:device_removal_];
-  for (CrAVCaptureDevice* device in [AVCaptureDeviceGlue devices])
-    [suspend_observer_ stopObserving:device];
 }
 
 void AVFoundationMonitorImpl::OnDeviceChanged() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  device_task_runner_->PostTask(FROM_HERE,
+      base::Bind(&AVFoundationMonitorImpl::OnDeviceChangedOnDeviceThread,
+          base::Unretained(this),
+          base::MessageLoop::current()->message_loop_proxy()));
+}
+
+void AVFoundationMonitorImpl::OnDeviceChangedOnDeviceThread(
+    const scoped_refptr<base::MessageLoopProxy>& ui_thread) {
+  DCHECK(device_task_runner_->BelongsToCurrentThread());
+  NSArray* devices = [AVCaptureDeviceGlue devices];
   std::vector<DeviceInfo> snapshot_devices;
-  for (CrAVCaptureDevice* device in [AVCaptureDeviceGlue devices]) {
+  for (CrAVCaptureDevice* device in devices) {
     [suspend_observer_ startObserving:device];
     BOOL suspended = [device respondsToSelector:@selector(isSuspended)] &&
         [device isSuspended];
@@ -291,7 +322,18 @@ void AVFoundationMonitorImpl::OnDeviceChanged() {
     snapshot_devices.push_back(DeviceInfo([[device uniqueID] UTF8String],
                                           device_type));
   }
-  ConsolidateDevicesListAndNotify(snapshot_devices);
+  // Post the consolidation of enumerated devices to be done on UI thread.
+  ui_thread->PostTask(FROM_HERE,
+      base::Bind(&DeviceMonitorMacImpl::ConsolidateDevicesListAndNotify,
+          base::Unretained(this), snapshot_devices));
+}
+
+void AVFoundationMonitorImpl::StartObserverOnDeviceThread() {
+  DCHECK(device_task_runner_->BelongsToCurrentThread());
+  suspend_observer_.reset([[CrAVFoundationDeviceObserver alloc]
+                               initWithChangeReceiver:this]);
+  for (CrAVCaptureDevice* device in [AVCaptureDeviceGlue devices])
+    [suspend_observer_ startObserving:device];
 }
 
 }  // namespace
@@ -299,11 +341,19 @@ void AVFoundationMonitorImpl::OnDeviceChanged() {
 @implementation CrAVFoundationDeviceObserver
 
 - (id)initWithChangeReceiver:(AVFoundationMonitorImpl*)receiver {
-  if ((self = [super init])) {
+  if (self = [super init]) {
     DCHECK(receiver != NULL);
     receiver_ = receiver;
   }
   return self;
+}
+
+- (void)dealloc {
+  for (std::set<CrAVCaptureDevice*>::iterator it = monitoredDevices_.begin();
+       it != monitoredDevices_.end(); ++it) {
+    [self stopObserving:*it];
+  }
+  [super dealloc];
 }
 
 - (void)startObserving:(CrAVCaptureDevice*)device {
@@ -359,11 +409,13 @@ DeviceMonitorMac::DeviceMonitorMac() {
 
 DeviceMonitorMac::~DeviceMonitorMac() {}
 
-void DeviceMonitorMac::StartMonitoring() {
+void DeviceMonitorMac::StartMonitoring(
+    const scoped_refptr<base::SingleThreadTaskRunner>& device_task_runner) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (AVFoundationGlue::IsAVFoundationSupported()) {
     DVLOG(1) << "Monitoring via AVFoundation";
-    device_monitor_impl_.reset(new AVFoundationMonitorImpl(this));
+    device_monitor_impl_.reset(new AVFoundationMonitorImpl(this,
+                                                           device_task_runner));
   } else {
     DVLOG(1) << "Monitoring via QTKit";
     device_monitor_impl_.reset(new QTKitMonitorImpl(this));
@@ -372,6 +424,7 @@ void DeviceMonitorMac::StartMonitoring() {
 
 void DeviceMonitorMac::NotifyDeviceChanged(
     base::SystemMonitor::DeviceType type) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   // TODO(xians): Remove the global variable for SystemMonitor.
   base::SystemMonitor::Get()->ProcessDevicesChanged(type);
 }
