@@ -98,6 +98,12 @@ class CONTENT_EXPORT ServiceWorkerContextCore
                                int line_number,
                                int column_number,
                                const GURL& source_url) OVERRIDE;
+  virtual void OnReportConsoleMessage(ServiceWorkerVersion* version,
+                                      int source_identifier,
+                                      int message_level,
+                                      const base::string16& message,
+                                      int line_number,
+                                      const GURL& source_url) OVERRIDE;
 
   ServiceWorkerStorage* storage() { return storage_.get(); }
   EmbeddedWorkerRegistry* embedded_worker_registry() {

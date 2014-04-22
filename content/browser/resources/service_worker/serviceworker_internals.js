@@ -46,7 +46,7 @@ cr.define('serviceworker', function() {
         update();
     }
 
-    var allErrorLogs = {};
+    var allLogMessages = {};
 
     // Fired once per partition from the backend.
     function onPartitionData(registrations, partition_id, partition_path) {
@@ -68,18 +68,18 @@ cr.define('serviceworker', function() {
             container.appendChild(template);
         }
 
-        // Set error_log for each worker versions.
-        if (!(partition_id in allErrorLogs)) {
-            allErrorLogs[partition_id] = {};
+        // Set log for each worker versions.
+        if (!(partition_id in allLogMessages)) {
+            allLogMessages[partition_id] = {};
         }
-        var errorLogs = allErrorLogs[partition_id];
+        var logMessages = allLogMessages[partition_id];
         registrations.forEach(function (worker) {
             [worker.active, worker.pending].forEach(function (version) {
                 if (version) {
-                    if (version.version_id in errorLogs) {
-                        version.error_log = errorLogs[version.version_id];
+                    if (version.version_id in logMessages) {
+                        version.log = logMessages[version.version_id];
                     } else {
-                        version.error_log = '';
+                        version.log = '';
                     }
                 }
             });
@@ -114,30 +114,45 @@ cr.define('serviceworker', function() {
                              process_id,
                              thread_id,
                              error_info) {
-        if (!(partition_id in allErrorLogs)) {
-            allErrorLogs[partition_id] = {};
-        }
-        var error_string = JSON.stringify(error_info) + '\n';
-        var errorLogs = allErrorLogs[partition_id];
-        if (version_id in errorLogs) {
-            errorLogs[version_id] += error_string;
-        } else {
-            errorLogs[version_id] = error_string;
-        }
+        outputLogMessage(partition_id,
+                         version_id,
+                         'Error: ' + JSON.stringify(error_info) + '\n');
+    }
 
-        var logAreas =
-            document.querySelectorAll('textarea.serviceworker-error-log');
-        for (var i = 0; i < logAreas.length; ++i) {
-            var logArea = logAreas[i];
-            if (logArea.partition_id == partition_id &&
-                logArea.version_id == version_id) {
-                logArea.value += error_string;
-            }
-        }
+    function onConsoleMessageReported(partition_id,
+                             version_id,
+                             process_id,
+                             thread_id,
+                             message) {
+        outputLogMessage(partition_id,
+                         version_id,
+                         'Console: ' + JSON.stringify(message) + '\n');
     }
 
     function onVersionStateChanged(partition_id, version_id) {
         update();
+    }
+
+    function outputLogMessage(partition_id, version_id, message) {
+        if (!(partition_id in allLogMessages)) {
+            allLogMessages[partition_id] = {};
+        }
+        var logMessages = allLogMessages[partition_id];
+        if (version_id in logMessages) {
+            logMessages[version_id] += message;
+        } else {
+            logMessages[version_id] = message;
+        }
+
+        var logAreas =
+            document.querySelectorAll('textarea.serviceworker-log');
+        for (var i = 0; i < logAreas.length; ++i) {
+            var logArea = logAreas[i];
+            if (logArea.partition_id == partition_id &&
+                logArea.version_id == version_id) {
+                logArea.value += message;
+            }
+        }
     }
 
     return {
@@ -147,6 +162,7 @@ cr.define('serviceworker', function() {
         onWorkerStarted: onWorkerStarted,
         onWorkerStopped: onWorkerStopped,
         onErrorReported: onErrorReported,
+        onConsoleMessageReported: onConsoleMessageReported,
         onVersionStateChanged: onVersionStateChanged,
     };
 });

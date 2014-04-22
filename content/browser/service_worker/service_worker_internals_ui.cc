@@ -137,6 +137,26 @@ class ServiceWorkerInternalsUI::PartitionObserver
     web_ui_->CallJavascriptFunction("serviceworker.onErrorReported",
                                     args.get());
   }
+  virtual void OnReportConsoleMessage(int64 version_id,
+                                      int process_id,
+                                      int thread_id,
+                                      const ConsoleMessage& message) OVERRIDE {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    ScopedVector<const Value> args;
+    args.push_back(new FundamentalValue(partition_id_));
+    args.push_back(new StringValue(base::Int64ToString(version_id)));
+    args.push_back(new FundamentalValue(process_id));
+    args.push_back(new FundamentalValue(thread_id));
+    scoped_ptr<DictionaryValue> value(new DictionaryValue());
+    value->SetInteger("sourceIdentifier", message.source_identifier);
+    value->SetInteger("message_level", message.message_level);
+    value->SetString("message", message.message);
+    value->SetInteger("lineNumber", message.line_number);
+    value->SetString("sourceURL", message.source_url.spec());
+    args.push_back(value.release());
+    web_ui_->CallJavascriptFunction("serviceworker.onConsoleMessageReported",
+                                    args.get());
+  }
   int partition_id() const { return partition_id_; }
 
  private:

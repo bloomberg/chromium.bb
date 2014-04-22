@@ -66,6 +66,12 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
                          int line_number,
                          int column_number,
                          const GURL& source_url);
+  void OnReportConsoleMessage(int embedded_worker_id,
+                              int source_identifier,
+                              int message_level,
+                              const base::string16& message,
+                              int line_number,
+                              const GURL& source_url);
 
   // Keeps a map from process_id to sender information.
   void AddChildProcessSender(int process_id, IPC::Sender* sender);

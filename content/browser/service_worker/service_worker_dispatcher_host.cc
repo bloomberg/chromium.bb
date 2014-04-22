@@ -102,6 +102,8 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(
                         OnSendMessageToBrowser)
     IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_ReportException,
                         OnReportException)
+    IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_ReportConsoleMessage,
+                        OnReportConsoleMessage)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_ServiceWorkerObjectDestroyed,
                         OnServiceWorkerObjectDestroyed)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -341,6 +343,20 @@ void ServiceWorkerDispatcherHost::OnReportException(
                                                           line_number,
                                                           column_number,
                                                           source_url);
+}
+
+void ServiceWorkerDispatcherHost::OnReportConsoleMessage(
+    int embedded_worker_id,
+    const EmbeddedWorkerHostMsg_ReportConsoleMessage_Params& params) {
+  if (!context_)
+    return;
+  context_->embedded_worker_registry()->OnReportConsoleMessage(
+      embedded_worker_id,
+      params.source_identifier,
+      params.message_level,
+      params.message,
+      params.line_number,
+      params.source_url);
 }
 
 void ServiceWorkerDispatcherHost::OnServiceWorkerObjectDestroyed(

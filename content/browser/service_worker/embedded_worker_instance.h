@@ -51,6 +51,11 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
                                    int line_number,
                                    int column_number,
                                    const GURL& source_url) = 0;
+    virtual void OnReportConsoleMessage(int source_identifier,
+                                        int message_level,
+                                        const base::string16& message,
+                                        int line_number,
+                                        const GURL& source_url) = 0;
   };
 
   ~EmbeddedWorkerInstance();
@@ -121,6 +126,13 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
                          int line_number,
                          int column_number,
                          const GURL& source_url);
+
+  // Called back from Registry when the worker instance reports to the console.
+  void OnReportConsoleMessage(int source_identifier,
+                              int message_level,
+                              const base::string16& message,
+                              int line_number,
+                              const GURL& source_url);
 
   // Chooses a process to start this worker and populate process_id_.
   // Returns false when no process is available.

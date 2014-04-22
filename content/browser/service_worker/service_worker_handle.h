@@ -57,6 +57,12 @@ class CONTENT_EXPORT ServiceWorkerHandle
                                int line_number,
                                int column_number,
                                const GURL& source_url) OVERRIDE;
+  virtual void OnReportConsoleMessage(ServiceWorkerVersion* version,
+                                      int source_identifier,
+                                      int message_level,
+                                      const base::string16& message,
+                                      int line_number,
+                                      const GURL& source_url) OVERRIDE;
   virtual void OnVersionStateChanged(ServiceWorkerVersion* version) OVERRIDE;
 
   ServiceWorkerObjectInfo GetObjectInfo();

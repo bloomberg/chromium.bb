@@ -211,6 +211,11 @@ class EmbeddedWorkerBrowserTest : public ServiceWorkerBrowserTest,
                                  int line_number,
                                  int column_number,
                                  const GURL& source_url) OVERRIDE {}
+  virtual void OnReportConsoleMessage(int source_identifier,
+                                      int message_level,
+                                      const base::string16& message,
+                                      int line_number,
+                                      const GURL& source_url) OVERRIDE {}
 
   scoped_ptr<EmbeddedWorkerInstance> worker_;
   EmbeddedWorkerInstance::Status last_worker_status_;

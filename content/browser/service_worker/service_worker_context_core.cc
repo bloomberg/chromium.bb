@@ -265,4 +265,22 @@ void ServiceWorkerContextCore::OnErrorReported(
           error_message, line_number, column_number, source_url));
 }
 
+void ServiceWorkerContextCore::OnReportConsoleMessage(
+    ServiceWorkerVersion* version,
+    int source_identifier,
+    int message_level,
+    const base::string16& message,
+    int line_number,
+    const GURL& source_url) {
+  if (!observer_list_)
+    return;
+  observer_list_->Notify(
+      &ServiceWorkerContextObserver::OnReportConsoleMessage,
+      version->version_id(),
+      version->embedded_worker()->process_id(),
+      version->embedded_worker()->thread_id(),
+      ServiceWorkerContextObserver::ConsoleMessage(
+          source_identifier, message_level, message, line_number, source_url));
+}
+
 }  // namespace content

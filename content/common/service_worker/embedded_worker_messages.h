@@ -16,6 +16,17 @@
 
 #define IPC_MESSAGE_START EmbeddedWorkerMsgStart
 
+// Parameters structure for EmbeddedWorkerHostMsg_ReportConsoleMessage.
+// The data members directly correspond to parameters of
+// WorkerMessagingProxy::reportConsoleMessage()
+IPC_STRUCT_BEGIN(EmbeddedWorkerHostMsg_ReportConsoleMessage_Params)
+IPC_STRUCT_MEMBER(int, source_identifier)
+IPC_STRUCT_MEMBER(int, message_level)
+IPC_STRUCT_MEMBER(base::string16, message)
+IPC_STRUCT_MEMBER(int, line_number)
+IPC_STRUCT_MEMBER(GURL, source_url)
+IPC_STRUCT_END()
+
 // Browser -> Renderer message to create a new embedded worker context.
 IPC_MESSAGE_CONTROL4(EmbeddedWorkerMsg_StartWorker,
                      int /* embedded_worker_id */,
@@ -50,6 +61,12 @@ IPC_MESSAGE_CONTROL5(EmbeddedWorkerHostMsg_ReportException,
                      int /* line_number */,
                      int /* column_number */,
                      GURL /* source_url */)
+
+// Renderer -> Browser message to report console message.
+IPC_MESSAGE_CONTROL2(
+    EmbeddedWorkerHostMsg_ReportConsoleMessage,
+    int /* embedded_worker_id */,
+    EmbeddedWorkerHostMsg_ReportConsoleMessage_Params /* params */)
 
 // ---------------------------------------------------------------------------
 // For EmbeddedWorkerContext related messages, which are directly sent from

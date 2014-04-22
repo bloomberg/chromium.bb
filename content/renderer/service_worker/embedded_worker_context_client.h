@@ -68,6 +68,11 @@ class EmbeddedWorkerContextClient
                                int line_number,
                                int column_number,
                                const blink::WebString& source_url);
+  virtual void reportConsoleMessage(int source,
+                                    int level,
+                                    const blink::WebString& message,
+                                    int line_number,
+                                    const blink::WebString& source_url);
   virtual void didHandleActivateEvent(int request_id,
                                       blink::WebServiceWorkerEventResult);
   virtual void didHandleInstallEvent(int request_id,

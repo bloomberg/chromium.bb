@@ -26,6 +26,23 @@ class ServiceWorkerContextObserver {
     const int column_number;
     const GURL source_url;
   };
+  struct ConsoleMessage {
+    ConsoleMessage(int source_identifier,
+                   int message_level,
+                   const base::string16& message,
+                   int line_number,
+                   const GURL& source_url)
+        : source_identifier(source_identifier),
+          message_level(message_level),
+          message(message),
+          line_number(line_number),
+          source_url(source_url) {}
+    const int source_identifier;
+    const int message_level;
+    const base::string16 message;
+    const int line_number;
+    const GURL source_url;
+  };
   virtual void OnWorkerStarted(int64 version_id,
                                int process_id,
                                int thread_id) {}
@@ -37,6 +54,10 @@ class ServiceWorkerContextObserver {
                                int process_id,
                                int thread_id,
                                const ErrorInfo& info) {}
+  virtual void OnReportConsoleMessage(int64 version_id,
+                                      int process_id,
+                                      int thread_id,
+                                      const ConsoleMessage& message) {}
 
  protected:
   virtual ~ServiceWorkerContextObserver() {}

@@ -166,6 +166,23 @@ void EmbeddedWorkerContextClient::reportException(
       column_number, GURL(source_url)));
 }
 
+void EmbeddedWorkerContextClient::reportConsoleMessage(
+    int source,
+    int level,
+    const blink::WebString& message,
+    int line_number,
+    const blink::WebString& source_url) {
+  EmbeddedWorkerHostMsg_ReportConsoleMessage_Params params;
+  params.source_identifier = source;
+  params.message_level = level;
+  params.message = message;
+  params.line_number = line_number;
+  params.source_url = GURL(source_url);
+
+  sender_->Send(new EmbeddedWorkerHostMsg_ReportConsoleMessage(
+      embedded_worker_id_, params));
+}
+
 void EmbeddedWorkerContextClient::didHandleActivateEvent(
     int request_id,
     blink::WebServiceWorkerEventResult result) {

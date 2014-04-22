@@ -116,6 +116,19 @@ void EmbeddedWorkerInstance::OnReportException(
       OnReportException(error_message, line_number, column_number, source_url));
 }
 
+void EmbeddedWorkerInstance::OnReportConsoleMessage(
+    int source_identifier,
+    int message_level,
+    const base::string16& message,
+    int line_number,
+    const GURL& source_url) {
+  FOR_EACH_OBSERVER(
+      Observer,
+      observer_list_,
+      OnReportConsoleMessage(
+          source_identifier, message_level, message, line_number, source_url));
+}
+
 void EmbeddedWorkerInstance::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
 }

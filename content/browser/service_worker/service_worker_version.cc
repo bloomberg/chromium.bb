@@ -454,6 +454,21 @@ void ServiceWorkerVersion::OnReportException(
           this, error_message, line_number, column_number, source_url));
 }
 
+void ServiceWorkerVersion::OnReportConsoleMessage(int source_identifier,
+                                                  int message_level,
+                                                  const base::string16& message,
+                                                  int line_number,
+                                                  const GURL& source_url) {
+  FOR_EACH_OBSERVER(Listener,
+                    listeners_,
+                    OnReportConsoleMessage(this,
+                                           source_identifier,
+                                           message_level,
+                                           message,
+                                           line_number,
+                                           source_url));
+}
+
 void ServiceWorkerVersion::OnMessageReceived(
     int request_id, const IPC::Message& message) {
   MessageCallback* callback = message_callbacks_.Lookup(request_id);
