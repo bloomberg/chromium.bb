@@ -764,7 +764,7 @@ class PLATFORM_EXPORT Heap {
 public:
     static void init();
     static void shutdown();
-    static void lastThreadDetached();
+    static void doShutdown();
 
     static BaseHeapPage* contains(Address);
     static BaseHeapPage* contains(void* pointer) { return contains(reinterpret_cast<Address>(pointer)); }
@@ -822,6 +822,7 @@ public:
 
     static CallbackStack* s_markingStack;
     static CallbackStack* s_weakCallbackStack;
+    static bool s_shutdownCalled;
 };
 
 // The NoAllocationScope class is used in debug mode to catch unwanted

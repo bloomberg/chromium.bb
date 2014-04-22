@@ -235,6 +235,7 @@ public:
     // thread.
     static void init();
     static void shutdown();
+    static void shutdownHeapIfNecessary();
 
     static void attachMainThread();
     static void detachMainThread();

@@ -281,11 +281,13 @@ void ThreadState::shutdown()
 {
     delete s_safePointBarrier;
     s_safePointBarrier = 0;
-    // We don't need to call ~ThreadSpecific().
+
+    // Thread-local storage shouldn't be disposed, so we don't call ~ThreadSpecific().
 }
 
 void ThreadState::attachMainThread()
 {
+    RELEASE_ASSERT(!Heap::s_shutdownCalled);
     MutexLocker locker(threadAttachMutex());
     ThreadState* state = new(s_mainThreadStateStorage) ThreadState();
     attachedThreads().add(state);
@@ -293,17 +295,39 @@ void ThreadState::attachMainThread()
 
 void ThreadState::detachMainThread()
 {
-    MutexLocker locker(threadAttachMutex());
+    // Enter a safe point before trying to acquire threadAttachMutex
+    // to avoid dead lock if another thread is preparing for GC, has acquired
+    // threadAttachMutex and waiting for other threads to pause or reach a
+    // safepoint.
     ThreadState* state = mainThreadState();
-    ASSERT(attachedThreads().contains(state));
-    attachedThreads().remove(state);
-    state->~ThreadState();
-    if (!attachedThreads().size())
-        Heap::lastThreadDetached();
+    if (!state->isAtSafePoint())
+        state->enterSafePointWithoutPointers();
+
+    {
+        MutexLocker locker(threadAttachMutex());
+        state->leaveSafePoint();
+        ASSERT(attachedThreads().contains(state));
+        attachedThreads().remove(state);
+        state->~ThreadState();
+    }
+    shutdownHeapIfNecessary();
+}
+
+void ThreadState::shutdownHeapIfNecessary()
+{
+    // We don't need to enter a safe point before acquiring threadAttachMutex
+    // because this thread is already detached.
+
+    MutexLocker locker(threadAttachMutex());
+    // We start shutting down the heap if there is no running thread
+    // and Heap::shutdown() is already called.
+    if (!attachedThreads().size() && Heap::s_shutdownCalled)
+        Heap::doShutdown();
 }
 
 void ThreadState::attach()
 {
+    RELEASE_ASSERT(!Heap::s_shutdownCalled);
     MutexLocker locker(threadAttachMutex());
     ThreadState* state = new ThreadState();
     attachedThreads().add(state);
@@ -338,19 +362,21 @@ void ThreadState::detach()
     ThreadState* state = current();
     state->cleanup();
 
-    // Enter safe point before trying to acquire threadAttachMutex
+    // Enter a safe point before trying to acquire threadAttachMutex
     // to avoid dead lock if another thread is preparing for GC, has acquired
     // threadAttachMutex and waiting for other threads to pause or reach a
     // safepoint.
     if (!state->isAtSafePoint())
         state->enterSafePointWithoutPointers();
-    MutexLocker locker(threadAttachMutex());
-    state->leaveSafePoint();
-    ASSERT(attachedThreads().contains(state));
-    attachedThreads().remove(state);
-    delete state;
-    if (!attachedThreads().size())
-        Heap::lastThreadDetached();
+
+    {
+        MutexLocker locker(threadAttachMutex());
+        state->leaveSafePoint();
+        ASSERT(attachedThreads().contains(state));
+        attachedThreads().remove(state);
+        delete state;
+    }
+    shutdownHeapIfNecessary();
 }
 
 void ThreadState::visitRoots(Visitor* visitor)

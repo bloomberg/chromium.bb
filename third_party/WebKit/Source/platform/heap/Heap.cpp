@@ -1294,11 +1294,16 @@ void Heap::init()
 
 void Heap::shutdown()
 {
-    // Do nothing. Actual shutdown is executed when the last ThreadState is detached.
+    s_shutdownCalled = true;
+    ThreadState::shutdownHeapIfNecessary();
 }
 
-void Heap::lastThreadDetached()
+void Heap::doShutdown()
 {
+    // We don't want to call doShutdown() twice.
+    if (!s_markingVisitor)
+        return;
+
     ASSERT(!ThreadState::isAnyThreadInGC());
     ASSERT(!ThreadState::attachedThreads().size());
     delete s_markingVisitor;
@@ -1459,4 +1464,5 @@ template class ThreadHeap<HeapObjectHeader>;
 Visitor* Heap::s_markingVisitor;
 CallbackStack* Heap::s_markingStack;
 CallbackStack* Heap::s_weakCallbackStack;
+bool Heap::s_shutdownCalled = false;
 }
