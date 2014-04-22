@@ -15,6 +15,7 @@
 class PrefService;
 
 namespace content {
+class BrowserContext;
 class WebContents;
 }
 

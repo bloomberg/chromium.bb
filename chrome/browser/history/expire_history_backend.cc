@@ -14,12 +14,12 @@
 #include "base/files/file_enumerator.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "chrome/browser/bookmarks/bookmark_service.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/archived_database.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/thumbnail_database.h"
+#include "components/bookmarks/core/browser/bookmark_service.h"
 
 namespace history {
 

@@ -4,7 +4,8 @@
 
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 
-#include "chrome/browser/bookmarks/bookmark_service.h"
+#include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/favicon/favicon_handler.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -206,9 +207,8 @@ FaviconService* FaviconTabHelper::GetFaviconService() {
 }
 
 bool FaviconTabHelper::IsBookmarked(const GURL& url) {
-  BookmarkService* bookmark_service =
-      BookmarkService::FromBrowserContext(profile_);
-  return bookmark_service && bookmark_service->IsBookmarked(url);
+  BookmarkModel* bookmark_model = BookmarkModelFactory::GetForProfile(profile_);
+  return bookmark_model && bookmark_model->IsBookmarked(url);
 }
 
 void FaviconTabHelper::DidDownloadFavicon(

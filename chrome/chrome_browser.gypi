@@ -302,8 +302,6 @@
         'browser/bookmarks/bookmark_node_data_views.cc',
         'browser/bookmarks/bookmark_pasteboard_helper_mac.h',
         'browser/bookmarks/bookmark_pasteboard_helper_mac.mm',
-        'browser/bookmarks/bookmark_service.cc',
-        'browser/bookmarks/bookmark_service.h',
         'browser/bookmarks/bookmark_stats.cc',
         'browser/bookmarks/bookmark_stats.h',
         'browser/bookmarks/bookmark_storage.cc',

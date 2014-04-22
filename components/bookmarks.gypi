@@ -21,6 +21,7 @@
         'bookmarks/core/browser/bookmark_node.h',
         'bookmarks/core/browser/bookmark_prompt_prefs.cc',
         'bookmarks/core/browser/bookmark_prompt_prefs.h',
+        'bookmarks/core/browser/bookmark_service.h',
         'bookmarks/core/browser/bookmark_title_match.cc',
         'bookmarks/core/browser/bookmark_title_match.h',
       ],

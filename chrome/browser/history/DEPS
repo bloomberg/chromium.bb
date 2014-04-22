@@ -23,7 +23,6 @@ include_rules = [
   "!chrome/browser/autocomplete/url_prefix.h",
   "!chrome/browser/bookmarks/bookmark_model.h",
   "!chrome/browser/bookmarks/bookmark_model_factory.h",
-  "!chrome/browser/bookmarks/bookmark_service.h",
   "!chrome/browser/bookmarks/bookmark_utils.h",
   "!chrome/browser/browser_process.h",
   "!chrome/browser/chromeos/login/existing_user_controller.h",
@@ -38,6 +37,7 @@ include_rules = [
   "!chrome/browser/profiles/incognito_helpers.h",
   "!chrome/browser/profiles/profile.h",
   "!chrome/browser/profiles/profile_manager.h",
+  "!chrome/browser/search_engines/template_url_id.h",
   "!chrome/browser/signin/oauth2_token_service.h",
   "!chrome/browser/signin/profile_oauth2_token_service.h",
   "!chrome/browser/signin/profile_oauth2_token_service_factory.h",
@@ -48,10 +48,10 @@ include_rules = [
   "!chrome/browser/sync/profile_sync_service_factory.h",
   "!chrome/browser/ui/browser.h",
   "!chrome/browser/ui/browser_finder.h",
-  "!chrome/browser/search_engines/template_url_id.h",
   "!chrome/browser/ui/profile_error_dialog.h",
   "!chrome/browser/ui/webui/ntp/most_visited_handler.h",
   "!chrome/browser/ui/webui/ntp/new_tab_ui.h",
+  "!components/bookmarks/core/browser/bookmark_service.h",
 ]
 
 specific_include_rules = {

@@ -7,8 +7,8 @@
 #include "base/auto_reset.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_service.h"
 #include "chrome/browser/history/scored_history_match.h"
+#include "components/bookmarks/core/browser/bookmark_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
@@ -225,10 +225,10 @@ TEST_F(ScoredHistoryMatchTest, ScoringBookmarks) {
                             one_word_no_offset, word_starts, now, NULL);
   // Now bookmark that URL and make sure its score increases.
   base::AutoReset<int> reset(&ScoredHistoryMatch::bookmark_value_, 5);
-  BookmarkServiceMock bookmark_model_mock(url);
+  BookmarkServiceMock bookmark_service_mock(url);
   ScoredHistoryMatch scored_with_bookmark(
       row, visits, std::string(), ASCIIToUTF16("abc"), Make1Term("abc"),
-      one_word_no_offset, word_starts, now, &bookmark_model_mock);
+      one_word_no_offset, word_starts, now, &bookmark_service_mock);
   EXPECT_GT(scored_with_bookmark.raw_score(), scored.raw_score());
 }
 

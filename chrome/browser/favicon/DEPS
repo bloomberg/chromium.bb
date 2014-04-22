@@ -17,7 +17,8 @@ include_rules = [
   #
   # Do not add to the list of temporarily-allowed dependencies below,
   # and please do not introduce more #includes of these files.
-  "!chrome/browser/bookmarks/bookmark_service.h",
+  "!chrome/browser/bookmarks/bookmark_model.h",
+  "!chrome/browser/bookmarks/bookmark_model_factory.h",
   "!chrome/browser/history/history_backend.h",
   "!chrome/browser/history/history_details.h",
   "!chrome/browser/history/history_service.h",
