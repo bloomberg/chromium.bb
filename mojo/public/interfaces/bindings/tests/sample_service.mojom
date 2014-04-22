@@ -34,6 +34,7 @@ struct Foo {
   handle<message_pipe> source @9;
   handle<data_pipe_consumer>[] input_streams @10;
   handle<data_pipe_producer>[] output_streams @11;
+  bool[][] array_of_array_of_bools @12;
 };
 
 struct DefaultsTestInner {

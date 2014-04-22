@@ -75,6 +75,15 @@ Foo MakeFoo() {
     output_streams[i] = producer.Pass();
   }
 
+  mojo::Array<mojo::Array<bool> >::Builder array_of_array_of_bools(2);
+  for (size_t i = 0; i < 2; ++i) {
+    mojo::Array<bool>::Builder array_of_bools(2);
+    for (size_t j = 0; j < 2; ++j) {
+      array_of_bools[j] = j;
+    }
+    array_of_array_of_bools[i] = array_of_bools.Finish();
+  }
+
   mojo::ScopedMessagePipeHandle pipe0, pipe1;
   mojo::CreateMessagePipe(&pipe0, &pipe1);
 
@@ -91,6 +100,7 @@ Foo MakeFoo() {
   foo.set_source(pipe1.Pass());
   foo.set_input_streams(input_streams.Finish());
   foo.set_output_streams(output_streams.Finish());
+  foo.set_array_of_array_of_bools(array_of_array_of_bools.Finish());
 
   return foo.Finish();
 }
@@ -138,6 +148,14 @@ void CheckFoo(const Foo& foo) {
 
   EXPECT_FALSE(foo.output_streams().is_null());
   EXPECT_EQ(2u, foo.output_streams().size());
+
+  EXPECT_EQ(2u, foo.array_of_array_of_bools().size());
+  for (size_t i = 0; i < foo.array_of_array_of_bools().size(); ++i) {
+    EXPECT_EQ(2u, foo.array_of_array_of_bools()[i].size());
+    for (size_t j = 0; j < foo.array_of_array_of_bools()[i].size(); ++j) {
+      EXPECT_EQ(bool(j), foo.array_of_array_of_bools()[i][j]);
+    }
+  }
 }
 
 void PrintSpacer(int depth) {
@@ -222,6 +240,7 @@ void Print(int depth, const char* name, const Foo& foo) {
     Print(depth, "source", foo.source().get());
     Print(depth, "input_streams", foo.input_streams());
     Print(depth, "output_streams", foo.output_streams());
+    Print(depth, "array_of_array_of_bools", foo.array_of_array_of_bools());
     --depth;
   }
 }

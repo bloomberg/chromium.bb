@@ -215,7 +215,7 @@ class Parser(object):
     p[0] = p[1]
 
   def p_array(self, p):
-    """array : basictypename LBRACKET RBRACKET"""
+    """array : typename LBRACKET RBRACKET"""
     p[0] = p[1] + "[]"
 
   def p_ordinal(self, p):
