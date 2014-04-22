@@ -37,9 +37,6 @@ class MEDIA_EXPORT VideoRendererImpl
  public:
   typedef base::Callback<void(const scoped_refptr<VideoFrame>&)> PaintCB;
 
-  // Maximum duration of the last frame.
-  static base::TimeDelta kMaxLastFrameDuration();
-
   // |decoders| contains the VideoDecoders to use when initializing.
   //
   // |paint_cb| is executed on the video frame timing thread whenever a new

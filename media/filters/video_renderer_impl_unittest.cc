@@ -404,23 +404,6 @@ TEST_F(VideoRendererImplTest, Play) {
   Shutdown();
 }
 
-TEST_F(VideoRendererImplTest, EndOfStream_DefaultFrameDuration) {
-  Initialize();
-  Play();
-
-  // Verify that the ended callback fires when the default last frame duration
-  // has elapsed.
-  int end_timestamp = kFrameDurationInMs * limits::kMaxVideoFrames +
-      VideoRendererImpl::kMaxLastFrameDuration().InMilliseconds();
-  EXPECT_LT(end_timestamp, kVideoDurationInMs);
-
-  QueueEndOfStream();
-  AdvanceTimeInMs(end_timestamp);
-  WaitForEnded();
-
-  Shutdown();
-}
-
 TEST_F(VideoRendererImplTest, EndOfStream_ClipDuration) {
   int duration = kVideoDurationInMs + kFrameDurationInMs / 2;
   InitializeWithDuration(duration);

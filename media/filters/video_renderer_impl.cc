@@ -18,10 +18,6 @@
 
 namespace media {
 
-base::TimeDelta VideoRendererImpl::kMaxLastFrameDuration() {
-  return base::TimeDelta::FromMilliseconds(250);
-}
-
 VideoRendererImpl::VideoRendererImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     ScopedVector<VideoDecoder> decoders,
