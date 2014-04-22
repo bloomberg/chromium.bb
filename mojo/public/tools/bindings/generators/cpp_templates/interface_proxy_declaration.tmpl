@@ -5,7 +5,7 @@ class {{interface.name}}Proxy : public {{interface.name}} {
 
 {%- for method in interface.methods %}
   virtual void {{method.name}}(
-      {{interface_macros.declare_request_params(method)}}
+      {{interface_macros.declare_request_params("", method)}}
   ) MOJO_OVERRIDE;
 {%- endfor %}
 

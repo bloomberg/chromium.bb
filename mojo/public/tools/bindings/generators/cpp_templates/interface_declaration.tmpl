@@ -23,6 +23,6 @@ class {{interface.name}} {
 
 {#--- Methods #}
 {%- for method in interface.methods %}
-  virtual void {{method.name}}({{interface_macros.declare_request_params(method)}}) = 0;
+  virtual void {{method.name}}({{interface_macros.declare_request_params("", method)}}) = 0;
 {%- endfor %}
 };
