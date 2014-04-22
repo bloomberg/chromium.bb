@@ -20,6 +20,14 @@
 #include "base/win/windows_version.h"
 #endif
 
+#if defined (OS_ANDROID) || defined(THREAD_SANITIZER)
+// Just do the bare minimum of audio checking on Android and under TSAN since
+// it's a bit sensitive to device performance.
+static const char kUseLenientAudioChecking[] = "true";
+#else
+static const char kUseLenientAudioChecking[] = "false";
+#endif
+
 namespace content {
 
 class WebRtcBrowserTest : public WebRtcContentBrowserTest,
@@ -305,16 +313,14 @@ IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest,
           << "Must run with fake devices since the test will explicitly look "
           << "for the fake device signal.";
 
-  MakeTypicalPeerConnectionCall("callAndEnsureAudioIsPlaying();");
+  MakeTypicalPeerConnectionCall(base::StringPrintf(
+      "callAndEnsureAudioIsPlaying(%s);", kUseLenientAudioChecking));
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest,
                        EstablishAudioVideoCallAndVerifyMutingWorks) {
   if (!media::AudioManager::Get()->HasAudioOutputDevices()) {
-    // Bots with no output devices will force the audio code into a different
-    // path where it doesn't manage to set either the low or high latency path.
-    // This test will compute useless values in that case, so skip running on
-    // such bots (see crbug.com/326338).
+    // See comment on EstablishAudioVideoCallAndMeasureOutputLevel.
     LOG(INFO) << "Missing output devices: skipping test...";
     return;
   }
@@ -324,13 +330,14 @@ IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest,
           << "Must run with fake devices since the test will explicitly look "
           << "for the fake device signal.";
 
-  MakeTypicalPeerConnectionCall("callAndEnsureAudioTrackMutingWorks();");
+  MakeTypicalPeerConnectionCall(base::StringPrintf(
+      "callAndEnsureAudioTrackMutingWorks(%s);", kUseLenientAudioChecking));
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest,
                        EstablishAudioVideoCallAndVerifyUnmutingWorks) {
   if (!media::AudioManager::Get()->HasAudioOutputDevices()) {
-    // See comment on EstablishAudioVideoCallAndVerifyMutingWorks.
+    // See comment on EstablishAudioVideoCallAndMeasureOutputLevel.
     LOG(INFO) << "Missing output devices: skipping test...";
     return;
   }
@@ -340,7 +347,8 @@ IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest,
           << "Must run with fake devices since the test will explicitly look "
           << "for the fake device signal.";
 
-  MakeTypicalPeerConnectionCall("callAndEnsureAudioTrackUnmutingWorks();");
+  MakeTypicalPeerConnectionCall(base::StringPrintf(
+      "callAndEnsureAudioTrackUnmutingWorks(%s);", kUseLenientAudioChecking));
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, CallAndVerifyVideoMutingWorks) {
