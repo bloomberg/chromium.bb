@@ -4,6 +4,7 @@
 
 #include "content/browser/frame_host/render_frame_host_impl.h"
 
+#include "base/bind.h"
 #include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/user_metrics_action.h"
@@ -17,12 +18,14 @@
 #include "content/browser/renderer_host/input/input_router.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/common/desktop_notification_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/inter_process_time_ticks_converter.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/desktop_notification_delegate.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/user_metrics.h"
@@ -34,12 +37,76 @@ using base::TimeDelta;
 
 namespace content {
 
+namespace {
+
 // The (process id, routing id) pair that identifies one RenderFrame.
 typedef std::pair<int32, int32> RenderFrameHostID;
 typedef base::hash_map<RenderFrameHostID, RenderFrameHostImpl*>
     RoutingIDFrameMap;
-static base::LazyInstance<RoutingIDFrameMap> g_routing_id_frame_map =
+base::LazyInstance<RoutingIDFrameMap> g_routing_id_frame_map =
     LAZY_INSTANCE_INITIALIZER;
+
+class DesktopNotificationDelegateImpl : public DesktopNotificationDelegate {
+ public:
+  DesktopNotificationDelegateImpl(RenderFrameHost* render_frame_host,
+                                  int notification_id)
+      : render_process_id_(render_frame_host->GetProcess()->GetID()),
+        render_frame_id_(render_frame_host->GetRoutingID()),
+        notification_id_(notification_id) {}
+
+  virtual ~DesktopNotificationDelegateImpl() {}
+
+  virtual void NotificationDisplayed() OVERRIDE {
+    RenderFrameHost* rfh =
+        RenderFrameHost::FromID(render_process_id_, render_frame_id_);
+    if (!rfh)
+      return;
+
+    rfh->Send(new DesktopNotificationMsg_PostDisplay(
+        rfh->GetRoutingID(), notification_id_));
+  }
+
+  virtual void NotificationError() OVERRIDE {
+    RenderFrameHost* rfh =
+        RenderFrameHost::FromID(render_process_id_, render_frame_id_);
+    if (!rfh)
+      return;
+
+    rfh->Send(new DesktopNotificationMsg_PostError(
+        rfh->GetRoutingID(), notification_id_));
+    delete this;
+  }
+
+  virtual void NotificationClosed(bool by_user) OVERRIDE {
+    RenderFrameHost* rfh =
+        RenderFrameHost::FromID(render_process_id_, render_frame_id_);
+    if (!rfh)
+      return;
+
+    rfh->Send(new DesktopNotificationMsg_PostClose(
+        rfh->GetRoutingID(), notification_id_, by_user));
+    static_cast<RenderFrameHostImpl*>(rfh)->NotificationClosed(
+        notification_id_);
+    delete this;
+  }
+
+  virtual void NotificationClick() OVERRIDE {
+    RenderFrameHost* rfh =
+        RenderFrameHost::FromID(render_process_id_, render_frame_id_);
+    if (!rfh)
+      return;
+
+    rfh->Send(new DesktopNotificationMsg_PostClick(
+        rfh->GetRoutingID(), notification_id_));
+  }
+
+ private:
+  int render_process_id_;
+  int render_frame_id_;
+  int notification_id_;
+};
+
+}  // namespace
 
 RenderFrameHost* RenderFrameHost::FromID(int render_process_id,
                                          int render_frame_id) {
@@ -69,7 +136,8 @@ RenderFrameHostImpl::RenderFrameHostImpl(
       frame_tree_(frame_tree),
       frame_tree_node_(frame_tree_node),
       routing_id_(routing_id),
-      is_swapped_out_(is_swapped_out) {
+      is_swapped_out_(is_swapped_out),
+      weak_ptr_factory_(this) {
   frame_tree_->RegisterRenderFrameHost(this);
   GetProcess()->AddRoute(routing_id_, this);
   g_routing_id_frame_map.Get().insert(std::make_pair(
@@ -220,6 +288,12 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
                                     OnRunJavaScriptMessage)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(FrameHostMsg_RunBeforeUnloadConfirm,
                                     OnRunBeforeUnloadConfirm)
+    IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_RequestPermission,
+                        OnRequestDesktopNotificationPermission)
+    IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_Show,
+                        OnShowDesktopNotification)
+    IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_Cancel,
+                        OnCancelDesktopNotification)
   IPC_END_MESSAGE_MAP_EX()
 
   if (!msg_is_ok) {
@@ -571,6 +645,35 @@ void RenderFrameHostImpl::OnRunBeforeUnloadConfirm(
   delegate_->RunBeforeUnloadConfirm(this, message, is_reload, reply_msg);
 }
 
+void RenderFrameHostImpl::OnRequestDesktopNotificationPermission(
+    const GURL& source_origin, int callback_context) {
+  base::Closure done_callback = base::Bind(
+      &RenderFrameHostImpl::DesktopNotificationPermissionRequestDone,
+      weak_ptr_factory_.GetWeakPtr(), callback_context);
+  GetContentClient()->browser()->RequestDesktopNotificationPermission(
+      source_origin, this, done_callback);
+}
+
+void RenderFrameHostImpl::OnShowDesktopNotification(
+    int notification_id,
+    const ShowDesktopNotificationHostMsgParams& params) {
+  base::Closure cancel_callback;
+  GetContentClient()->browser()->ShowDesktopNotification(
+      params, this,
+      new DesktopNotificationDelegateImpl(this, notification_id),
+      &cancel_callback);
+  cancel_notification_callbacks_[notification_id] = cancel_callback;
+}
+
+void RenderFrameHostImpl::OnCancelDesktopNotification(int notification_id) {
+  if (!cancel_notification_callbacks_.count(notification_id)) {
+    NOTREACHED();
+    return;
+  }
+  cancel_notification_callbacks_[notification_id].Run();
+  cancel_notification_callbacks_.erase(notification_id);
+}
+
 void RenderFrameHostImpl::SetPendingShutdown(const base::Closure& on_swap_out) {
   render_view_host_->SetPendingShutdown(on_swap_out);
 }
@@ -727,6 +830,16 @@ void RenderFrameHostImpl::JavaScriptDialogClosed(
         render_view_host_,
         render_view_host_->is_waiting_for_beforeunload_ack(),
         render_view_host_->IsWaitingForUnloadACK());
+}
+
+void RenderFrameHostImpl::NotificationClosed(int notification_id) {
+  cancel_notification_callbacks_.erase(notification_id);
+}
+
+void RenderFrameHostImpl::DesktopNotificationPermissionRequestDone(
+    int callback_context) {
+  Send(new DesktopNotificationMsg_PermissionRequestDone(
+      routing_id_, callback_context));
 }
 
 }  // namespace content

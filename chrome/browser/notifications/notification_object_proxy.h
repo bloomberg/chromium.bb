@@ -9,6 +9,11 @@
 
 #include "chrome/browser/notifications/notification_delegate.h"
 
+namespace content {
+class DesktopNotificationDelegate;
+class RenderFrameHost;
+}
+
 // A NotificationObjectProxy stands in for the JavaScript Notification object
 // which corresponds to a notification toast on the desktop.  It can be signaled
 // when various events occur regarding the desktop notification, and the
@@ -17,8 +22,8 @@ class NotificationObjectProxy
     : public NotificationDelegate {
  public:
   // Creates a Proxy object with the necessary callback information.
-  NotificationObjectProxy(int process_id, int route_id,
-                          int notification_id);
+  NotificationObjectProxy(content::RenderFrameHost* render_frame_host,
+                          content::DesktopNotificationDelegate* delegate);
 
   // NotificationDelegate implementation.
   virtual void Display() OVERRIDE;
@@ -36,10 +41,11 @@ class NotificationObjectProxy
 
  private:
   // Callback information to find the JS Notification object where it lives.
-  int process_id_;
-  int route_id_;
-  int notification_id_;
+  int render_process_id_;
+  int render_frame_id_;
+  content::DesktopNotificationDelegate* delegate_;
   bool displayed_;
+  std::string id_;
 };
 
 #endif  // CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_OBJECT_PROXY_H_

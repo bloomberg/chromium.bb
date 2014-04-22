@@ -49,6 +49,7 @@ class Rect;
 namespace content {
 
 class ChildFrameCompositingHelper;
+class NotificationProvider;
 class PepperPluginInstanceImpl;
 class RendererPpapiHost;
 class RenderFrameObserver;
@@ -515,6 +516,13 @@ class CONTENT_EXPORT RenderFrameImpl
   // Used to inform didChangeSelection() when it is called in the context
   // of handling a InputMsg_SelectRange IPC.
   bool handling_select_range_;
+
+  // The next group of objects all implement RenderFrameObserver, so are deleted
+  // along with the RenderFrame automatically.  This is why we just store weak
+  // references.
+
+  // Holds a reference to the service which provides desktop notifications.
+  NotificationProvider* notification_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameImpl);
 };

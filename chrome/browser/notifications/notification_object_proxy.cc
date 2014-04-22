@@ -3,18 +3,22 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/notifications/notification_object_proxy.h"
-#include "base/strings/stringprintf.h"
-#include "chrome/browser/tab_contents/tab_util.h"
-#include "content/public/browser/render_view_host.h"
 
-using content::RenderViewHost;
+#include "base/guid.h"
+#include "base/strings/stringprintf.h"
+#include "content/public/browser/desktop_notification_delegate.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
 
 NotificationObjectProxy::NotificationObjectProxy(
-    int process_id, int route_id, int notification_id)
-    : process_id_(process_id),
-      route_id_(route_id),
-      notification_id_(notification_id),
-      displayed_(false) {
+    content::RenderFrameHost* render_frame_host,
+    content::DesktopNotificationDelegate* delegate)
+    : render_process_id_(render_frame_host->GetProcess()->GetID()),
+      render_frame_id_(render_frame_host->GetRoutingID()),
+      delegate_(delegate),
+      displayed_(false),
+      id_(base::GenerateGUID()) {
 }
 
 void NotificationObjectProxy::Display() {
@@ -24,38 +28,30 @@ void NotificationObjectProxy::Display() {
     return;
   displayed_ = true;
 
-  RenderViewHost* host = RenderViewHost::FromID(process_id_, route_id_);
-  if (host)
-    host->DesktopNotificationPostDisplay(notification_id_);
+  delegate_->NotificationDisplayed();
 }
 
 void NotificationObjectProxy::Error() {
-  RenderViewHost* host = RenderViewHost::FromID(process_id_, route_id_);
-  if (host)
-    host->DesktopNotificationPostError(notification_id_, base::string16());
+  delegate_->NotificationError();
 }
 
 void NotificationObjectProxy::Close(bool by_user) {
-  RenderViewHost* host = RenderViewHost::FromID(process_id_, route_id_);
-  if (host)
-    host->DesktopNotificationPostClose(notification_id_, by_user);
+  delegate_->NotificationClosed(by_user);
 }
 
 void NotificationObjectProxy::Click() {
-  RenderViewHost* host = RenderViewHost::FromID(process_id_, route_id_);
-  if (host)
-    host->DesktopNotificationPostClick(notification_id_);
+  delegate_->NotificationClick();
 }
 
 std::string NotificationObjectProxy::id() const {
-  return base::StringPrintf("%d:%d:%d", process_id_, route_id_,
-                            notification_id_);
+  return id_;
 }
 
 int NotificationObjectProxy::process_id() const {
-  return process_id_;
+  return render_process_id_;
 }
 
 content::WebContents* NotificationObjectProxy::GetWebContents() const {
-  return tab_util::GetWebContentsByID(process_id_, route_id_);
+  return content::WebContents::FromRenderFrameHost(
+      content::RenderFrameHost::FromID(render_process_id_, render_frame_id_));
 }

@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
@@ -39,6 +40,7 @@ class RenderViewHostImpl;
 struct ContextMenuParams;
 struct GlobalRequestID;
 struct Referrer;
+struct ShowDesktopNotificationHostMsgParams;
 
 class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
  public:
@@ -158,6 +160,9 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
                               const base::string16& user_input,
                               bool dialog_was_suppressed);
 
+  // Called when an HTML5 notification is closed.
+  void NotificationClosed(int notification_id);
+
  protected:
   friend class RenderFrameHostFactory;
 
@@ -212,11 +217,19 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
                                 const base::string16& message,
                                 bool is_reload,
                                 IPC::Message* reply_msg);
+  void OnRequestDesktopNotificationPermission(const GURL& origin,
+                                              int callback_id);
+  void OnShowDesktopNotification(
+      int notification_id,
+      const ShowDesktopNotificationHostMsgParams& params);
+  void OnCancelDesktopNotification(int notification_id);
 
   // Returns whether the given URL is allowed to commit in the current process.
   // This is a more conservative check than RenderProcessHost::FilterURL, since
   // it will be used to kill processes that commit unauthorized URLs.
   bool CanCommitURL(const GURL& url);
+
+  void DesktopNotificationPermissionRequestDone(int callback_context);
 
   // For now, RenderFrameHosts indirectly keep RenderViewHosts alive via a
   // refcount that calls Shutdown when it reaches zero.  This allows each
@@ -252,11 +265,16 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
   // ExecuteJavaScript and their corresponding callbacks.
   std::map<int, JavaScriptResultCallback> javascript_callbacks_;
 
+  // Map from notification_id to a callback to cancel them.
+  std::map<int, base::Closure> cancel_notification_callbacks_;
+
   int routing_id_;
   bool is_swapped_out_;
 
   // When the last BeforeUnload message was sent.
   base::TimeTicks send_before_unload_start_time_;
+
+  base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameHostImpl);
 };

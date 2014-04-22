@@ -30,9 +30,6 @@ struct CONTENT_EXPORT ShowDesktopNotificationHostMsgParams {
   // ReplaceID if this notification should replace an existing one; may be
   // empty if no replacement is called for.
   base::string16 replace_id;
-
-  // Notification ID for sending events back for this notification.
-  int notification_id;
 };
 
 }  // namespace content

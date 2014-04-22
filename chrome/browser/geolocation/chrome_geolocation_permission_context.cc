@@ -173,9 +173,9 @@ void ChromeGeolocationPermissionContext::RequestGeolocationPermission(
     const extensions::Extension* extension =
         extension_registry->enabled_extensions().GetExtensionOrAppByURL(
             requesting_frame_origin);
-    if (IsExtensionWithPermissionOrSuggestInConsole(APIPermission::kGeolocation,
-                                                    extension,
-                                                    profile_)) {
+    if (IsExtensionWithPermissionOrSuggestInConsole(
+            APIPermission::kGeolocation, extension,
+            web_contents->GetRenderViewHost())) {
       // Make sure the extension is in the calling process.
       if (extensions::ProcessMap::Get(profile_)
               ->Contains(extension->id(), id.render_process_id())) {

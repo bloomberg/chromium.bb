@@ -10,26 +10,6 @@
 #include "ui/message_center/message_center_util.h"
 
 Notification::Notification(const GURL& origin_url,
-                           const GURL& content_url,
-                           const base::string16& display_source,
-                           const base::string16& replace_id,
-                           NotificationDelegate* delegate)
-    : message_center::Notification(message_center::NOTIFICATION_TYPE_SIMPLE,
-                                   delegate->id(),
-                                   base::string16(),
-                                   base::string16(),
-                                   gfx::Image(),
-                                   display_source,
-                                   message_center::NotifierId(origin_url),
-                                   message_center::RichNotificationData(),
-                                   delegate),
-      origin_url_(origin_url),
-      is_html_(true),
-      content_url_(content_url),
-      replace_id_(replace_id),
-      delegate_(delegate) {}
-
-Notification::Notification(const GURL& origin_url,
                            const GURL& icon_url,
                            const base::string16& title,
                            const base::string16& body,
@@ -48,7 +28,6 @@ Notification::Notification(const GURL& origin_url,
                                    delegate),
       origin_url_(origin_url),
       icon_url_(icon_url),
-      is_html_(false),
       replace_id_(replace_id),
       delegate_(delegate) {
   // "Upconvert" the string parameters to a data: URL.
@@ -78,7 +57,6 @@ Notification::Notification(
                                    rich_notification_data,
                                    delegate),
       origin_url_(origin_url),
-      is_html_(false),
       replace_id_(replace_id),
       delegate_(delegate) {
   // It's important to leave |icon_url_| empty with rich notifications enabled,
@@ -103,7 +81,6 @@ Notification::Notification(const GURL& origin_url,
                                    message_center::RichNotificationData(),
                                    delegate),
       origin_url_(origin_url),
-      is_html_(false),
       replace_id_(replace_id),
       delegate_(delegate) {}
 
@@ -111,7 +88,6 @@ Notification::Notification(const Notification& notification)
     : message_center::Notification(notification),
       origin_url_(notification.origin_url()),
       icon_url_(notification.icon_url()),
-      is_html_(notification.is_html()),
       content_url_(notification.content_url()),
       button_one_icon_url_(notification.button_one_icon_url()),
       button_two_icon_url_(notification.button_two_icon_url()),
@@ -125,7 +101,6 @@ Notification& Notification::operator=(const Notification& notification) {
   message_center::Notification::operator=(notification);
   origin_url_ = notification.origin_url();
   icon_url_ = notification.icon_url();
-  is_html_ = notification.is_html();
   content_url_ = notification.content_url();
   button_one_icon_url_ = notification.button_one_icon_url();
   button_two_icon_url_ = notification.button_two_icon_url();

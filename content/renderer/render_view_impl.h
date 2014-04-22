@@ -148,7 +148,6 @@ class MediaStreamClient;
 class MediaStreamDispatcher;
 class MouseLockDispatcher;
 class NavigationState;
-class NotificationProvider;
 class PepperPluginInstanceImpl;
 class PushMessagingDispatcher;
 class RenderViewObserver;
@@ -430,7 +429,6 @@ class CONTENT_EXPORT RenderViewImpl
       blink::WebExternalPopupMenuClient* popup_menu_client);
   virtual blink::WebStorageNamespace* createSessionStorageNamespace();
   virtual void printPage(blink::WebLocalFrame* frame);
-  virtual blink::WebNotificationPresenter* notificationPresenter();
   virtual bool enumerateChosenDirectory(
       const blink::WebString& path,
       blink::WebFileChooserCompletion* chooser_completion);
@@ -1165,9 +1163,6 @@ class CONTENT_EXPORT RenderViewImpl
   // The next group of objects all implement RenderViewObserver, so are deleted
   // along with the RenderView automatically.  This is why we just store
   // weak references.
-
-  // Holds a reference to the service which provides desktop notifications.
-  NotificationProvider* notification_provider_;
 
   // The push messaging dispatcher attached to this view, lazily initialized.
   PushMessagingDispatcher* push_messaging_dispatcher_;

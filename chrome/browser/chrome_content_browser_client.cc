@@ -255,6 +255,7 @@ using content::BrowserThread;
 using content::BrowserURLHandler;
 using content::ChildProcessSecurityPolicy;
 using content::QuotaPermissionContext;
+using content::RenderFrameHost;
 using content::RenderViewHost;
 using content::SiteInstance;
 using content::WebContents;
@@ -1948,22 +1949,14 @@ content::MediaObserver* ChromeContentBrowserClient::GetMediaObserver() {
 
 void ChromeContentBrowserClient::RequestDesktopNotificationPermission(
     const GURL& source_origin,
-    int callback_context,
-    int render_process_id,
-    int render_view_id) {
+    content::RenderFrameHost* render_frame_host,
+    base::Closure& callback) {
 #if defined(ENABLE_NOTIFICATIONS)
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  WebContents* contents =
-      tab_util::GetWebContentsByID(render_process_id, render_view_id);
-  if (!contents) {
-    NOTREACHED();
-    return;
-  }
-
   // Skip showing the infobar if the request comes from an extension, and that
   // extension has the 'notify' permission. (If the extension does not have the
   // permission, the user will still be prompted.)
-  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+  Profile* profile = Profile::FromBrowserContext(
+      render_frame_host->GetSiteInstance()->GetBrowserContext());
   InfoMap* extension_info_map =
       extensions::ExtensionSystem::Get(profile)->info_map();
   DesktopNotificationService* notification_service =
@@ -1972,7 +1965,7 @@ void ChromeContentBrowserClient::RequestDesktopNotificationPermission(
   if (extension_info_map) {
     extensions::ExtensionSet extensions;
     extension_info_map->GetExtensionsWithAPIPermissionForSecurityOrigin(
-        source_origin, render_process_id,
+        source_origin, render_frame_host->GetProcess()->GetID(),
         extensions::APIPermission::kNotification, &extensions);
     for (extensions::ExtensionSet::const_iterator iter = extensions.begin();
          iter != extensions.end(); ++iter) {
@@ -1983,17 +1976,15 @@ void ChromeContentBrowserClient::RequestDesktopNotificationPermission(
       }
     }
   }
-  RenderViewHost* rvh =
-      RenderViewHost::FromID(render_process_id, render_view_id);
   if (IsExtensionWithPermissionOrSuggestInConsole(
-      APIPermission::kNotification, extension, rvh)) {
-    if (rvh)
-      rvh->DesktopNotificationPermissionRequestDone(callback_context);
+          APIPermission::kNotification, extension,
+          render_frame_host->GetRenderViewHost())) {
+    callback.Run();
     return;
   }
 
-  notification_service->RequestPermission(source_origin, render_process_id,
-      render_view_id, callback_context, contents);
+  notification_service->RequestPermission(
+      source_origin, render_frame_host, callback);
 #else
   NOTIMPLEMENTED();
 #endif
@@ -2045,45 +2036,16 @@ blink::WebNotificationPresenter::Permission
 
 void ChromeContentBrowserClient::ShowDesktopNotification(
     const content::ShowDesktopNotificationHostMsgParams& params,
-    int render_process_id,
-    int render_view_id) {
+    RenderFrameHost* render_frame_host,
+    content::DesktopNotificationDelegate* delegate,
+    base::Closure* cancel_callback) {
 #if defined(ENABLE_NOTIFICATIONS)
-  RenderViewHost* rvh = RenderViewHost::FromID(
-      render_process_id, render_view_id);
-  if (!rvh) {
-    NOTREACHED();
-    return;
-  }
-
-  content::RenderProcessHost* process = rvh->GetProcess();
+  content::RenderProcessHost* process = render_frame_host->GetProcess();
   Profile* profile = Profile::FromBrowserContext(process->GetBrowserContext());
   DesktopNotificationService* service =
       DesktopNotificationServiceFactory::GetForProfile(profile);
   service->ShowDesktopNotification(
-    params, render_process_id, render_view_id);
-#else
-  NOTIMPLEMENTED();
-#endif
-}
-
-void ChromeContentBrowserClient::CancelDesktopNotification(
-    int render_process_id,
-    int render_view_id,
-    int notification_id) {
-#if defined(ENABLE_NOTIFICATIONS)
-  RenderViewHost* rvh = RenderViewHost::FromID(
-      render_process_id, render_view_id);
-  if (!rvh) {
-    NOTREACHED();
-    return;
-  }
-
-  content::RenderProcessHost* process = rvh->GetProcess();
-  Profile* profile = Profile::FromBrowserContext(process->GetBrowserContext());
-  DesktopNotificationService* service =
-      DesktopNotificationServiceFactory::GetForProfile(profile);
-  service->CancelDesktopNotification(
-      render_process_id, render_view_id, notification_id);
+      params, render_frame_host, delegate, cancel_callback);
 #else
   NOTIMPLEMENTED();
 #endif

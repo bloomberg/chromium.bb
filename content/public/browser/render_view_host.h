@@ -91,16 +91,6 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
   // image at that location).
   virtual void CopyImageAt(int x, int y) = 0;
 
-  // Notifies the renderer about the result of a desktop notification.
-  virtual void DesktopNotificationPermissionRequestDone(
-      int callback_context) = 0;
-  virtual void DesktopNotificationPostDisplay(int callback_context) = 0;
-  virtual void DesktopNotificationPostError(int notification_id,
-                                    const base::string16& message) = 0;
-  virtual void DesktopNotificationPostClose(int notification_id,
-                                            bool by_user) = 0;
-  virtual void DesktopNotificationPostClick(int notification_id) = 0;
-
   // Notifies the listener that a directory enumeration is complete.
   virtual void DirectoryEnumerationFinished(
       int request_id,

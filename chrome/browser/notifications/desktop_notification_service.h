@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_member.h"
@@ -32,7 +33,8 @@ class NotificationUIManager;
 class Profile;
 
 namespace content {
-class WebContents;
+class DesktopNotificationDelegate;
+class RenderFrameHost;
 struct ShowDesktopNotificationHostMsgParams;
 }
 
@@ -56,29 +58,19 @@ class DesktopNotificationService : public KeyedService,
                              NotificationUIManager* ui_manager);
   virtual ~DesktopNotificationService();
 
-  // Requests permission (using an info-bar) for a given origin.
-  // |callback_context| contains an opaque value to pass back to the
-  // requesting process when the info-bar finishes.
+  // Requests permission for a given origin. |callback| is run when the UI
+  // finishes.
   void RequestPermission(const GURL& origin,
-                         int process_id,
-                         int route_id,
-                         int callback_context,
-                         content::WebContents* tab);
+                         content::RenderFrameHost* render_frame_host,
+                         const base::Closure& callback);
 
-  // ShowNotification is called on the UI thread handling IPCs from a child
-  // process, identified by |process_id| and |route_id|. |params| contains all
-  // the other parameters supplied by the worker or page.
-  bool ShowDesktopNotification(
+  // Show a desktop notification. If |cancel_callback| is non-null, it's set to
+  // a callback which can be used to cancel the notification.
+  void ShowDesktopNotification(
       const content::ShowDesktopNotificationHostMsgParams& params,
-      int process_id,
-      int route_id);
-
-  // Cancels a notification.  If it has already been shown, it will be
-  // removed from the screen.  If it hasn't been shown yet, it won't be
-  // shown.
-  bool CancelDesktopNotification(int process_id,
-                                 int route_id,
-                                 int notification_id);
+      content::RenderFrameHost* render_frame_host,
+      content::DesktopNotificationDelegate* delegate,
+      base::Closure* cancel_callback);
 
   // Methods to setup and modify permission preferences.
   void GrantPermission(const GURL& origin);
@@ -141,9 +133,6 @@ class DesktopNotificationService : public KeyedService,
   void ShowWelcomeNotificationIfNecessary(const Notification& notification);
 
  private:
-  // Takes a notification object and shows it in the UI.
-  void ShowNotification(const Notification& notification);
-
   // Returns a display name for an origin in the process id, to be used in
   // permission infobar or on the frame of the notification toast.  Different
   // from the origin itself when dealing with extensions.

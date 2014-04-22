@@ -5,7 +5,7 @@
 #ifndef CONTENT_RENDERER_NOTIFICATION_PROVIDER_H_
 #define CONTENT_RENDERER_NOTIFICATION_PROVIDER_H_
 
-#include "content/public/renderer/render_view_observer.h"
+#include "content/public/renderer/render_frame_observer.h"
 #include "content/renderer/active_notification_tracker.h"
 #include "third_party/WebKit/public/web/WebNotification.h"
 #include "third_party/WebKit/public/web/WebNotificationPresenter.h"
@@ -15,18 +15,17 @@ class WebNotificationPermissionCallback;
 }
 
 namespace content {
-class RenderViewImpl;
 
-// NotificationProvider class is owned by the RenderView.  Only
-// to be used on the main thread.
-class NotificationProvider : public RenderViewObserver,
+// NotificationProvider class is owned by the RenderFrame.  Only to be used on
+// the main thread.
+class NotificationProvider : public RenderFrameObserver,
                              public blink::WebNotificationPresenter {
  public:
-  explicit NotificationProvider(RenderViewImpl* render_view);
+  explicit NotificationProvider(RenderFrame* render_frame);
   virtual ~NotificationProvider();
 
  private:
-  // RenderView::Observer implementation.
+  // RenderFrameObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // blink::WebNotificationPresenter interface.
@@ -40,7 +39,7 @@ class NotificationProvider : public RenderViewObserver,
 
   // IPC handlers.
   void OnDisplay(int id);
-  void OnError(int id, const blink::WebString& message);
+  void OnError(int id);
   void OnClose(int id, bool by_user);
   void OnClick(int id);
   void OnPermissionRequestComplete(int id);

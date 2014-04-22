@@ -24,13 +24,6 @@
 // formated text and icon data.
 class Notification : public message_center::Notification {
  public:
-  // Initializes a notification with HTML content.
-  Notification(const GURL& origin_url,
-               const GURL& content_url,
-               const base::string16& display_source,
-               const base::string16& replace_id,
-               NotificationDelegate* delegate);
-
   // Initializes a notification with text content. On non-ash platforms, this
   // creates an HTML representation using a data: URL for display.
   Notification(const GURL& origin_url,
@@ -70,9 +63,6 @@ class Notification : public message_center::Notification {
   virtual ~Notification();
   Notification& operator=(const Notification& notification);
 
-  // If this is a HTML notification.
-  bool is_html() const { return is_html_; }
-
   // The URL (may be data:) containing the contents for the notification.
   const GURL& content_url() const { return content_url_; }
 
@@ -109,10 +99,6 @@ class Notification : public message_center::Notification {
   // URL for the icon associated with the notification. Requires delegate_
   // to have a non NULL RenderViewHost.
   GURL icon_url_;
-
-  // If this is a HTML notification, the content is in |content_url_|. If
-  // false, the data is in |title_| and |message_|.
-  bool is_html_;
 
   // The URL of the HTML content of the toast (may be a data: URL for simple
   // string-based notifications).

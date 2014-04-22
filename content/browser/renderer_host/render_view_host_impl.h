@@ -63,7 +63,6 @@ class SessionStorageNamespaceImpl;
 class TestRenderViewHost;
 class TimeoutMonitor;
 struct FileChooserParams;
-struct ShowDesktopNotificationHostMsgParams;
 
 #if defined(COMPILER_MSVC)
 // RenderViewHostImpl is the bottom of a diamond-shaped hierarchy,
@@ -158,15 +157,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   virtual void ClearFocusedElement() OVERRIDE;
   virtual void ClosePage() OVERRIDE;
   virtual void CopyImageAt(int x, int y) OVERRIDE;
-  virtual void DesktopNotificationPermissionRequestDone(
-      int callback_context) OVERRIDE;
-  virtual void DesktopNotificationPostDisplay(int callback_context) OVERRIDE;
-  virtual void DesktopNotificationPostError(
-      int notification_id,
-      const base::string16& message) OVERRIDE;
-  virtual void DesktopNotificationPostClose(int notification_id,
-                                            bool by_user) OVERRIDE;
-  virtual void DesktopNotificationPostClick(int notification_id) OVERRIDE;
   virtual void DirectoryEnumerationFinished(
       int request_id,
       const std::vector<base::FilePath>& files) OVERRIDE;
@@ -544,11 +534,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnAccessibilityLocationChanges(
       const std::vector<AccessibilityHostMsg_LocationChangeParams>& params);
   void OnDidZoomURL(double zoom_level, bool remember, const GURL& url);
-  void OnRequestDesktopNotificationPermission(const GURL& origin,
-                                              int callback_id);
-  void OnShowDesktopNotification(
-      const ShowDesktopNotificationHostMsgParams& params);
-  void OnCancelDesktopNotification(int notification_id);
   void OnRunFileChooser(const FileChooserParams& params);
   void OnDidAccessInitialDocument();
   void OnFocusedNodeTouched(bool editable);

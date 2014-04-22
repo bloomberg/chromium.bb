@@ -45,22 +45,6 @@ void SuggestAPIPermissionInDevToolsConsole(APIPermission::ID permission,
       host->GetRoutingID(), CONSOLE_MESSAGE_LEVEL_WARNING, message));
 }
 
-void SuggestAPIPermissionInDevToolsConsole(APIPermission::ID permission,
-                                           const Extension* extension,
-                                           Profile* profile) {
-  extensions::ProcessManager* process_manager =
-      extensions::ExtensionSystem::Get(profile)->process_manager();
-
-  std::set<content::RenderViewHost*> views =
-      process_manager->GetRenderViewHostsForExtension(extension->id());
-
-  for (std::set<RenderViewHost*>::const_iterator iter = views.begin();
-       iter != views.end(); ++iter) {
-    RenderViewHost* host = *iter;
-    SuggestAPIPermissionInDevToolsConsole(permission, extension, host);
-  }
-}
-
 bool IsExtensionWithPermissionOrSuggestInConsole(
     APIPermission::ID permission,
     const Extension* extension,
@@ -70,19 +54,6 @@ bool IsExtensionWithPermissionOrSuggestInConsole(
 
   if (extension)
     SuggestAPIPermissionInDevToolsConsole(permission, extension, host);
-
-  return false;
-}
-
-bool IsExtensionWithPermissionOrSuggestInConsole(
-    APIPermission::ID permission,
-    const Extension* extension,
-    Profile* profile) {
-  if (extension && extension->HasAPIPermission(permission))
-    return true;
-
-  if (extension)
-    SuggestAPIPermissionInDevToolsConsole(permission, extension, profile);
 
   return false;
 }
