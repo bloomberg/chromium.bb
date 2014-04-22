@@ -4,6 +4,7 @@
 
 #include "components/signin/core/browser/about_signin_internals.h"
 
+#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/hash.h"
 #include "base/i18n/time_formatting.h"
@@ -16,6 +17,7 @@
 #include "components/signin/core/browser/signin_internals_util.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
+#include "components/signin/core/common/signin_switches.h"
 #include "google_apis/gaia/gaia_constants.h"
 
 using base::Time;
@@ -350,6 +352,12 @@ scoped_ptr<base::DictionaryValue> AboutSigninInternals::SigninStatus::ToValue(
       switches::IsEnableWebBasedSignin() == true ? "True" : "False");
   AddSectionEntry(basic_info, "New Profile Management Enabled?",
       switches::IsNewProfileManagement() == true ? "True" : "False");
+  AddSectionEntry(basic_info, "New Avatar Menu Enabled?",
+      switches::IsNewAvatarMenu() == true ? "True" : "False");
+  bool new_avatar_menu_flag =
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewAvatarMenu);
+  AddSectionEntry(basic_info, "New Avatar Menu Flag Set?",
+      new_avatar_menu_flag ? "True" : "False");
 
   // Only add username.  SID and LSID have moved to tokens section.
   const std::string field =
