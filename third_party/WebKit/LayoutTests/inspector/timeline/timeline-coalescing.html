@@ -20,7 +20,7 @@ InspectorTest.dumpStats = function(record)
         timeByCategory += category + ": " + aggregatedStats[category].toFixed(5);
     }
     var duration = (record.endTime - record.startTime).toFixed(5);
-    var durationTillLastChild = (record.lastChildEndTime - record.startTime).toFixed(5);
+    var durationTillLastChild = (record.endTime - record.startTime).toFixed(5);
     return "duration: " + duration + ":" + durationTillLastChild + (timeByCategory ? " (" + timeByCategory + ")" : "");
 }
 
