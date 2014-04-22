@@ -31,9 +31,9 @@ const float kFullyOpenAngleErrorTolerance = 20.0f;
 // the accelerometers for the base and lid approach the same values (i.e.
 // gravity pointing in the direction of the hinge). When this happens we cannot
 // compute the hinge angle reliably and must turn ignore accelerometer readings.
-// This is the angle from vertical under which we will not compute a hinge
-// angle.
-const float kHingeAxisAlignedThreshold = 15.0f;
+// This is the minimum acceleration perpendicular to the hinge under which to
+// detect hinge angle.
+const float kHingeAngleDetectionThreshold = 0.25f;
 
 // The maximum deviation from the acceleration expected due to gravity under
 // which to detect hinge angle and screen rotation.
@@ -115,18 +115,24 @@ void MaximizeModeController::HandleHingeRotation(const gfx::Vector3dF& base,
   static const gfx::Vector3dF hinge_vector(0.0f, 1.0f, 0.0f);
   bool maximize_mode_engaged =
       Shell::GetInstance()->IsMaximizeModeWindowManagerEnabled();
+  // Ignore the component of acceleration parallel to the hinge for the purposes
+  // of hinge angle calculation.
+  gfx::Vector3dF base_flattened(base);
+  gfx::Vector3dF lid_flattened(lid);
+  base_flattened.set_y(0.0f);
+  lid_flattened.set_y(0.0f);
 
   // As the hinge approaches a vertical angle, the base and lid accelerometers
   // approach the same values making any angle calculations highly inaccurate.
   // Bail out early when it is too close.
-  float hinge_angle = AngleBetweenVectorsInDegrees(base, hinge_vector);
-  if (hinge_angle < kHingeAxisAlignedThreshold ||
-      hinge_angle > 180.0f - kHingeAxisAlignedThreshold) {
+  if (base_flattened.Length() < kHingeAngleDetectionThreshold ||
+      lid_flattened.Length() < kHingeAngleDetectionThreshold) {
     return;
   }
 
   // Compute the angle between the base and the lid.
-  float angle = ClockwiseAngleBetweenVectorsInDegrees(base, lid, hinge_vector);
+  float angle = ClockwiseAngleBetweenVectorsInDegrees(base_flattened,
+      lid_flattened, hinge_vector);
 
   // Toggle maximize mode on or off when corresponding thresholds are passed.
   // TODO(flackr): Make MaximizeModeController own the MaximizeModeWindowManager
