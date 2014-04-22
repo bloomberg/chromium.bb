@@ -490,6 +490,13 @@ def GetTestStepCmds():
   ]
 
 
+def MakeGSPath(options, gs_base_dir):
+  revision = _GetRevision(options)
+  bot_id = options.build_properties.get('buildername', 'testing')
+  randhash = hashlib.sha1(str(random.random())).hexdigest()
+  gs_path = '%s/%s/%s/%s' % (gs_base_dir, bot_id, revision, randhash)
+  return gs_path
+
 def UploadHTML(options, gs_base_dir, dir_to_upload, link_text,
                link_rel_path='index.html', gs_url=GS_URL):
   """Uploads directory at |dir_to_upload| to Google Storage and output a link.
@@ -503,10 +510,7 @@ def UploadHTML(options, gs_base_dir, dir_to_upload, link_text,
     link_rel_path: Link path relative to |dir_to_upload|.
     gs_url: Google storage URL.
   """
-  revision = _GetRevision(options)
-  bot_id = options.build_properties.get('buildername', 'testing')
-  randhash = hashlib.sha1(str(random.random())).hexdigest()
-  gs_path = '%s/%s/%s/%s' % (gs_base_dir, bot_id, revision, randhash)
+  gs_path = MakeGSPath(options, gs_base_dir)
   RunCmd([bb_utils.GSUTIL_PATH, 'cp', '-R', dir_to_upload, 'gs://%s' % gs_path])
   bb_annotations.PrintLink(link_text,
                            '%s/%s/%s' % (gs_url, gs_path, link_rel_path))
@@ -531,7 +535,9 @@ def LogcatDump(options):
   logcat_file = os.path.join(CHROME_OUT_DIR, options.target, 'full_log')
   RunCmd([SrcPath('build' , 'android', 'adb_logcat_printer.py'),
           '--output-path', logcat_file, LOGCAT_DIR])
-  RunCmd(['cat', logcat_file])
+  gs_path = MakeGSPath(options, 'chromium-android/logcat_dumps')
+  RunCmd([bb_utils.GSUTIL_PATH, 'cp', logcat_file, 'gs://%s' % gs_path])
+  bb_annotations.PrintLink('logcat dump', '%s/%s' % (GS_URL, gs_path))
 
 
 def RunStackToolSteps(options):
