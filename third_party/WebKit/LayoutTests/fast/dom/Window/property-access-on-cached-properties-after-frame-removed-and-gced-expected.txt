@@ -80,7 +80,6 @@ PASS window.cached_screen.availTop is 0
 PASS window.cached_screen.availWidth is 0
 PASS window.cached_screen.colorDepth is 0
 PASS window.cached_screen.height is 0
-PASS window.cached_screen.onorientationchange is null
 PASS window.cached_screen.orientation is 'portrait-primary'
 PASS window.cached_screen.pixelDepth is 0
 PASS window.cached_screen.width is 0

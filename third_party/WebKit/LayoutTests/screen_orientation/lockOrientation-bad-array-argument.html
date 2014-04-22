@@ -16,7 +16,7 @@ function completeTest() {
     finishJSTest();
 }
 
-screen.addEventListener("orientationchange", onOrientationChangeEvent);
+window.addEventListener("orientationchange", onOrientationChangeEvent);
 
 function typeErrorEnum(argStr) {
   return "TypeError: Failed to execute 'lockOrientation' on 'Screen': parameter 1 ('" + argStr + "') is not a valid enum value.";

@@ -8,12 +8,7 @@ description("Validates the Screen Orientation API is exposed.");
 shouldBeDefined("screen.lockOrientation");
 shouldBeDefined("screen.unlockOrientation");
 shouldBeDefined("screen.orientation");
-shouldBeDefined("screen.onorientationchange");
-// Screen should be an EventTarget
-shouldBe("screen.__proto__.__proto__", "EventTarget.prototype");
-shouldBeDefined("screen.addEventListener");
-shouldBeDefined("screen.removeEventListener");
-shouldBeDefined("screen.dispatchEvent");
+shouldBeDefined("window.onorientationchange");
 </script>
 </body>
 </html>

@@ -41,7 +41,7 @@ void ScreenOrientationController::dispatchOrientationChangeEvent()
     if (m_document.domWindow()
         && !m_document.activeDOMObjectsAreSuspended()
         && !m_document.activeDOMObjectsAreStopped())
-        m_document.domWindow()->screen().dispatchEvent(Event::create(EventTypeNames::orientationchange));
+        m_document.domWindow()->dispatchEvent(Event::create(EventTypeNames::orientationchange));
 }
 
 const char* ScreenOrientationController::supplementName()

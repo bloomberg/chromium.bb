@@ -27,5 +27,4 @@ enum OrientationLockType {
     boolean lockOrientation(OrientationLockType orientation);
 
     void unlockOrientation();
-    attribute EventHandler onorientationchange;
 };
