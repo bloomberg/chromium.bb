@@ -1,0 +1,3 @@
+#!/bin/sh
+upload_to_google_storage.py -b chromium-gn gn
+upload_to_google_storage.py -b chromium-gn gn32
