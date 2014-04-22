@@ -132,10 +132,6 @@ void AppLaunchSigninScreen::ShowKioskEnableScreen() {
   NOTREACHED();
 }
 
-void AppLaunchSigninScreen::ShowResetScreen() {
-  NOTREACHED();
-}
-
 void AppLaunchSigninScreen::ShowKioskAutolaunchScreen() {
   NOTREACHED();
 }

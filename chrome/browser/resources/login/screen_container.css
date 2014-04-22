@@ -106,6 +106,8 @@
 #progress-dots {
   -webkit-box-pack: center;
   -webkit-margin-before: 15px;
+  -webkit-transition: opacity 200ms ease-in-out,
+                      visibility 200ms ease-in-out;
   display: -webkit-box;
 }
 
@@ -157,6 +159,10 @@
 #oobe.update #update-dot,
 #oobe.user-image #user-image-dot {
   opacity: 1;
+}
+
+#oobe.reset #progress-dots {
+  visibility: hidden;
 }
 
 body:not(.oobe-display) #inner-container {

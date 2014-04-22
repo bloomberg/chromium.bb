@@ -10,6 +10,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
+#include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
@@ -128,6 +129,7 @@ void CoreOobeHandler::RegisterMessages() {
                  &CoreOobeHandler::HandleSkipToLoginForTesting);
   AddCallback("launchHelpApp",
               &CoreOobeHandler::HandleLaunchHelpApp);
+  AddCallback("toggleResetScreen", &CoreOobeHandler::HandleToggleResetScreen);
 }
 
 void CoreOobeHandler::ShowSignInError(
@@ -142,6 +144,23 @@ void CoreOobeHandler::ShowSignInError(
 
 void CoreOobeHandler::ShowTpmError() {
   CallJS("showTpmError");
+}
+
+void CoreOobeHandler::ShowDeviceResetScreen() {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  if (!connector->IsEnterpriseManaged()) {
+    // Don't recreate WizardController if it already exists.
+    WizardController* wizard_controller =
+        WizardController::default_controller();
+    if (wizard_controller && !wizard_controller->login_screen_started()) {
+      wizard_controller->AdvanceToScreen(WizardController::kResetScreenName);
+    } else {
+      scoped_ptr<base::DictionaryValue> params(new base::DictionaryValue());
+      LoginDisplayHostImpl::default_host()->StartWizard(
+          WizardController::kResetScreenName, params.Pass());
+    }
+  }
 }
 
 void CoreOobeHandler::ShowSignInUI(const std::string& email) {
@@ -258,6 +277,8 @@ void CoreOobeHandler::HandleSkipToLoginForTesting(
   if (WizardController::default_controller())
       WizardController::default_controller()->SkipToLoginForTesting(context);
 }
+
+void CoreOobeHandler::HandleToggleResetScreen() { ShowDeviceResetScreen(); }
 
 void CoreOobeHandler::ShowOobeUI(bool show) {
   if (show == show_oobe_ui_)

@@ -173,6 +173,7 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
       user_image_screen_actor_(NULL),
       kiosk_app_menu_handler_(NULL),
       current_screen_(SCREEN_UNKNOWN),
+      previous_screen_(SCREEN_UNKNOWN),
       ready_(false) {
   display_type_ = GetDisplayType(url);
   InitializeScreenMaps();
@@ -496,6 +497,7 @@ const std::string& OobeUI::GetScreenName(Screen screen) const {
 }
 
 void OobeUI::OnCurrentScreenChanged(const std::string& screen) {
+  previous_screen_ = current_screen_;
   if (screen_ids_.count(screen)) {
     Screen new_screen = screen_ids_[screen];
     FOR_EACH_OBSERVER(Observer,

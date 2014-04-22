@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview Oobe reset screen implementation.
+ * @fileoverview Device reset screen implementation.
  */
 
 login.createScreen('ResetScreen', 'reset', function() {

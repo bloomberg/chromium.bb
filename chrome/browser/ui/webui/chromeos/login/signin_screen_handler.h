@@ -157,9 +157,6 @@ class SigninScreenHandlerDelegate {
   virtual void ShowKioskEnableScreen() = 0;
 
   // Shows Reset screen.
-  virtual void ShowResetScreen() = 0;
-
-  // Shows Reset screen.
   virtual void ShowKioskAutolaunchScreen() = 0;
 
   // Show wrong hwid screen.

@@ -97,9 +97,6 @@ class LoginDisplay : public RemoveUserDelegate {
     // Called when the user requests kiosk enable screen.
     virtual void OnStartKioskEnableScreen() = 0;
 
-    // Called when the user requests device reset.
-    virtual void OnStartDeviceReset() = 0;
-
     // Called when the owner permission for kiosk app auto launch is requested.
     virtual void OnStartKioskAutolaunchScreen() = 0;
 

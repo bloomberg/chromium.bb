@@ -77,6 +77,7 @@ class CoreOobeHandler : public BaseScreenHandler,
   virtual void ClearErrors() OVERRIDE;
   virtual void ReloadContent(const base::DictionaryValue& dictionary) OVERRIDE;
   virtual void ShowControlBar(bool show) OVERRIDE;
+  virtual void ShowDeviceResetScreen() OVERRIDE;
 
   // Handlers for JS WebUI messages.
   void HandleEnableLargeCursor(bool enabled);
@@ -91,6 +92,7 @@ class CoreOobeHandler : public BaseScreenHandler,
   void HandleScreenAssetsLoaded(const std::string& screen_async_load_id);
   void HandleSkipToLoginForTesting(const base::ListValue* args);
   void HandleLaunchHelpApp(double help_topic_id);
+  void HandleToggleResetScreen();
 
   // Updates a11y menu state based on the current a11y features state(on/off).
   void UpdateA11yState();

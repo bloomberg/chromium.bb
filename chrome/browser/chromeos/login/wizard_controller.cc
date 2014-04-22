@@ -603,10 +603,11 @@ void WizardController::OnEnrollmentDone() {
 }
 
 void WizardController::OnResetCanceled() {
-  if (previous_screen_)
+  if (previous_screen_) {
     SetCurrentScreen(previous_screen_);
-  else
+  } else {
     ShowLoginScreen(LoginScreenContext());
+  }
 }
 
 void WizardController::OnKioskAutolaunchCanceled() {

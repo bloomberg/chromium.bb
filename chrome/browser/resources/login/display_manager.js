@@ -11,12 +11,13 @@
 /** @const */ var SCREEN_OOBE_HID_DETECTION = 'hid-detection';
 /** @const */ var SCREEN_OOBE_EULA = 'eula';
 /** @const */ var SCREEN_OOBE_UPDATE = 'update';
+/** @const */ var SCREEN_OOBE_RESET = 'reset';
 /** @const */ var SCREEN_OOBE_ENROLLMENT = 'oauth-enrollment';
 /** @const */ var SCREEN_OOBE_KIOSK_ENABLE = 'kiosk-enable';
 /** @const */ var SCREEN_GAIA_SIGNIN = 'gaia-signin';
 /** @const */ var SCREEN_ACCOUNT_PICKER = 'account-picker';
-/** @const */ var SCREEN_ERROR_MESSAGE = 'error-message';
 /** @const */ var SCREEN_USER_IMAGE_PICKER = 'user-image';
+/** @const */ var SCREEN_ERROR_MESSAGE = 'error-message';
 /** @const */ var SCREEN_TPM_ERROR = 'tpm-error-message';
 /** @const */ var SCREEN_PASSWORD_CHANGED = 'password-changed';
 /** @const */ var SCREEN_CREATE_MANAGED_USER_FLOW =
@@ -24,6 +25,9 @@
 /** @const */ var SCREEN_APP_LAUNCH_SPLASH = 'app-launch-splash';
 /** @const */ var SCREEN_CONFIRM_PASSWORD = 'confirm-password';
 /** @const */ var SCREEN_FATAL_ERROR = 'fatal-error';
+/** @const */ var SCREEN_KIOSK_ENABLE = 'kiosk-enable';
+/** @const */ var SCREEN_TERMS_OF_SERVICE = 'terms-of-service';
+/** @const */ var SCREEN_WRONG_HWID = 'wrong-hwid';
 
 /* Accelerator identifiers. Must be kept in sync with webui_login_view.cc. */
 /** @const */ var ACCELERATOR_CANCEL = 'cancel';
@@ -94,6 +98,40 @@ cr.define('cr.ui.login', function() {
                         SCREEN_OOBE_EULA,
                         SCREEN_OOBE_UPDATE]
                       ];
+  /**
+   * Group of screens (screen IDs) where factory-reset screen invocation is
+   * available.
+   * @type Array.<string>
+   * @const
+   */
+  var RESET_AVAILABLE_SCREEN_GROUP = [
+    SCREEN_OOBE_NETWORK,
+    SCREEN_OOBE_EULA,
+    SCREEN_OOBE_UPDATE,
+    SCREEN_OOBE_ENROLLMENT,
+    SCREEN_GAIA_SIGNIN,
+    SCREEN_ACCOUNT_PICKER,
+    SCREEN_KIOSK_ENABLE,
+    SCREEN_ERROR_MESSAGE,
+    SCREEN_USER_IMAGE_PICKER,
+    SCREEN_TPM_ERROR,
+    SCREEN_PASSWORD_CHANGED,
+    SCREEN_TERMS_OF_SERVICE,
+    SCREEN_WRONG_HWID,
+    SCREEN_CONFIRM_PASSWORD,
+    SCREEN_FATAL_ERROR
+  ];
+
+  /**
+   * Group of screens (screen IDs) that are not participating in
+   * left-current-right animation.
+   * @type Array.<string>
+   * @const
+   */
+  var NOT_ANIMATED_SCREEN_GROUP = [
+    SCREEN_OOBE_RESET
+  ];
+
 
   /**
    * OOBE screens group index.
@@ -247,10 +285,8 @@ cr.define('cr.ui.login', function() {
         if (this.allowToggleVersion_)
           $('version-labels').hidden = !$('version-labels').hidden;
       } else if (name == ACCELERATOR_RESET) {
-        if (currentStepId == SCREEN_GAIA_SIGNIN ||
-            currentStepId == SCREEN_ACCOUNT_PICKER) {
+        if (RESET_AVAILABLE_SCREEN_GROUP.indexOf(currentStepId) != -1)
           chrome.send('toggleResetScreen');
-        }
       } else if (name == ACCELERATOR_DEVICE_REQUISITION) {
         if (this.isOobeUI())
           this.showDeviceRequisitionPrompt_();
@@ -303,6 +339,10 @@ cr.define('cr.ui.login', function() {
       }
     },
 
+    screenIsAnimated_: function(screenId) {
+      return NOT_ANIMATED_SCREEN_GROUP.indexOf(screenId) != -1;
+    },
+
     /**
      * Updates a step's css classes to reflect left, current, or right position.
      * @param {number} stepIndex step index.
@@ -319,6 +359,7 @@ cr.define('cr.ui.login', function() {
           header.classList.remove(states[i]);
         }
       }
+
       step.classList.add(state);
       header.classList.add(state);
     },
@@ -351,7 +392,9 @@ cr.define('cr.ui.login', function() {
 
       newStep.classList.remove('hidden');
 
-      if (this.isOobeUI()) {
+      if (this.isOobeUI() &&
+          this.screenIsAnimated_(nextStepId) &&
+          this.screenIsAnimated_(currentStepId)) {
         // Start gliding animation for OOBE steps.
         if (nextStepIndex > this.currentStep_) {
           for (var i = this.currentStep_; i < nextStepIndex; ++i)
@@ -363,9 +406,13 @@ cr.define('cr.ui.login', function() {
           this.updateStep_(nextStepIndex, 'current');
         }
       } else {
-        // Start fading animation for login display.
+        // Start fading animation for login display or reset screen.
         oldStep.classList.add('faded');
         newStep.classList.remove('faded');
+        if (!this.screenIsAnimated_(nextStepId)) {
+          newStep.classList.remove('left');
+          newStep.classList.remove('right');
+        }
       }
 
       this.disableButtons_(newStep, false);

@@ -481,24 +481,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
   base::MessageLoop::current()->RunUntilIdle();
 }
 
-IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowResetScreen) {
-  EXPECT_EQ(WizardController::default_controller()->GetNetworkScreen(),
-            WizardController::default_controller()->current_screen());
-
-  LoginDisplayHostImpl::default_host()->StartSignInScreen(LoginScreenContext());
-  EXPECT_FALSE(ExistingUserController::current_controller() == NULL);
-  ExistingUserController::current_controller()->OnStartDeviceReset();
-
-  ResetScreen* screen =
-      WizardController::default_controller()->GetResetScreen();
-  EXPECT_EQ(screen, WizardController::default_controller()->current_screen());
-
-  // After reset screen is canceled, it returns to sign-in screen.
-  // And this destroys WizardController.
-  OnExit(ScreenObserver::RESET_CANCELED);
-  EXPECT_FALSE(ExistingUserController::current_controller() == NULL);
-}
-
 IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
                        ControlFlowWrongHWIDScreenFromLogin) {
   EXPECT_EQ(WizardController::default_controller()->GetNetworkScreen(),

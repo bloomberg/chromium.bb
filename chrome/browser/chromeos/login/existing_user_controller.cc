@@ -591,10 +591,6 @@ void ExistingUserController::OnStartKioskEnableScreen() {
           weak_factory_.GetWeakPtr()));
 }
 
-void ExistingUserController::OnStartDeviceReset() {
-  ShowResetScreen();
-}
-
 void ExistingUserController::OnStartKioskAutolaunchScreen() {
   ShowKioskAutolaunchScreen();
 }

@@ -131,6 +131,8 @@ class OobeUI : public OobeDisplay,
 
   Screen current_screen() const { return current_screen_; }
 
+  Screen previous_screen() const { return previous_screen_; }
+
   const std::string& GetScreenName(Screen screen) const;
 
   SigninScreenHandler* signin_screen_handler_for_test() {
@@ -195,6 +197,9 @@ class OobeUI : public OobeDisplay,
 
   // Id of the current oobe/login screen.
   Screen current_screen_;
+
+  // Id of the previous oobe/login screen.
+  Screen previous_screen_;
 
   // Maps JS screen names to screen ids.
   std::map<std::string, Screen> screen_ids_;

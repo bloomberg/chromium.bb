@@ -10,7 +10,7 @@
   position: absolute;
 }
 
-.step.animated {
+.step.animated:not(.faded) {
   -webkit-transition: -webkit-transform 200ms ease-in-out,
                       opacity 200ms ease-in-out,
                       visibility 200ms ease-in-out;

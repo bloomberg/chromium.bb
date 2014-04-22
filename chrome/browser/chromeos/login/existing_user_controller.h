@@ -91,7 +91,6 @@ class ExistingUserController : public LoginDisplay::Delegate,
   virtual void OnUserSelected(const std::string& username) OVERRIDE;
   virtual void OnStartEnterpriseEnrollment() OVERRIDE;
   virtual void OnStartKioskEnableScreen() OVERRIDE;
-  virtual void OnStartDeviceReset() OVERRIDE;
   virtual void OnStartKioskAutolaunchScreen() OVERRIDE;
   virtual void ResetPublicSessionAutoLoginTimer() OVERRIDE;
   virtual void ResyncUserData() OVERRIDE;

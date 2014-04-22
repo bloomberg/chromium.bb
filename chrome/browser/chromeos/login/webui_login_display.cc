@@ -346,11 +346,6 @@ void WebUILoginDisplay::ShowKioskEnableScreen() {
     delegate_->OnStartKioskEnableScreen();
 }
 
-void WebUILoginDisplay::ShowResetScreen() {
-  if (delegate_)
-    delegate_->OnStartDeviceReset();
-}
-
 void WebUILoginDisplay::ShowKioskAutolaunchScreen() {
   if (delegate_)
     delegate_->OnStartKioskAutolaunchScreen();
