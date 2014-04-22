@@ -143,7 +143,8 @@ bool BrowserDesktopWindowTreeHostWin::GetClientAreaInsets(
     return false;
   }
 
-  int border_thickness = GetSystemMetrics(SM_CXSIZEFRAME);
+  int border_thickness =
+      GetSystemMetrics(SM_CXSIZEFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER);
   // In fullscreen mode, we have no frame. In restored mode, we draw our own
   // client edge over part of the default frame.
   if (GetWidget()->IsFullscreen())

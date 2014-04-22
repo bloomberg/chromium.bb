@@ -1089,7 +1089,8 @@ bool HWNDMessageHandler::GetClientAreaInsets(gfx::Insets* insets) const {
   if (IsMaximized()) {
     // Windows automatically adds a standard width border to all sides when a
     // window is maximized.
-    int border_thickness = GetSystemMetrics(SM_CXSIZEFRAME);
+    int border_thickness =
+        GetSystemMetrics(SM_CXSIZEFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER);
     if (remove_standard_frame_)
       border_thickness -= 1;
     *insets = gfx::Insets(
@@ -1757,8 +1758,10 @@ LRESULT HWNDMessageHandler::OnNCHitTest(const gfx::Point& point) {
         // the vertical scrollar down arrow would be drawn.
         // We check if the hittest coordinates lie in this region and if yes
         // we return HTCLIENT.
-        int border_width = ::GetSystemMetrics(SM_CXSIZEFRAME);
-        int border_height = ::GetSystemMetrics(SM_CYSIZEFRAME);
+        int border_width = ::GetSystemMetrics(SM_CXSIZEFRAME) +
+                           GetSystemMetrics(SM_CXPADDEDBORDER);
+        int border_height = ::GetSystemMetrics(SM_CYSIZEFRAME) +
+                            GetSystemMetrics(SM_CXPADDEDBORDER);
         int scroll_width = ::GetSystemMetrics(SM_CXVSCROLL);
         int scroll_height = ::GetSystemMetrics(SM_CYVSCROLL);
         RECT window_rect;
@@ -2221,7 +2224,8 @@ void HWNDMessageHandler::OnWindowPosChanging(WINDOWPOS* window_pos) {
           new_window_rect = monitor_rect;
         } else if (IsMaximized()) {
           new_window_rect = work_area;
-          int border_thickness = GetSystemMetrics(SM_CXSIZEFRAME);
+          int border_thickness = GetSystemMetrics(SM_CXSIZEFRAME) +
+                                 GetSystemMetrics(SM_CXPADDEDBORDER);
           new_window_rect.Inset(-border_thickness, -border_thickness);
         } else {
           new_window_rect = gfx::Rect(window_rect);
