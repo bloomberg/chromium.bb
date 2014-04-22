@@ -217,6 +217,10 @@ struct shell_seat {
 	struct wl_listener seat_destroy_listener;
 	struct weston_surface *focused_surface;
 
+	struct wl_listener caps_changed_listener;
+	struct wl_listener pointer_focus_listener;
+	struct wl_listener keyboard_focus_listener;
+
 	struct {
 		struct weston_pointer_grab grab;
 		struct wl_list surfaces_list;
@@ -1985,19 +1989,6 @@ handle_pointer_focus(struct wl_listener *listener, void *data)
 }
 
 static void
-create_pointer_focus_listener(struct weston_seat *seat)
-{
-	struct wl_listener *listener;
-
-	if (!seat->pointer)
-		return;
-
-	listener = malloc(sizeof *listener);
-	listener->notify = handle_pointer_focus;
-	wl_signal_add(&seat->pointer->focus_signal, listener);
-}
-
-static void
 shell_surface_lose_keyboard_focus(struct shell_surface *shsurf)
 {
 	if (--shsurf->focus_count == 0)
@@ -2032,19 +2023,6 @@ handle_keyboard_focus(struct wl_listener *listener, void *data)
 		if (shsurf)
 			shell_surface_gain_keyboard_focus(shsurf);
 	}
-}
-
-static void
-create_keyboard_focus_listener(struct weston_seat *seat)
-{
-	struct wl_listener *listener;
-
-	if (!seat->keyboard)
-		return;
-
-	listener = malloc(sizeof *listener);
-	listener->notify = handle_keyboard_focus;
-	wl_signal_add(&seat->keyboard->focus_signal, listener);
 }
 
 static void
@@ -2850,6 +2828,30 @@ destroy_shell_seat(struct wl_listener *listener, void *data)
 	free(shseat);
 }
 
+static void
+shell_seat_caps_changed(struct wl_listener *listener, void *data)
+{
+	struct shell_seat *seat;
+
+	seat = container_of(listener, struct shell_seat, caps_changed_listener);
+
+	if (seat->seat->keyboard &&
+	    wl_list_empty(&seat->keyboard_focus_listener.link)) {
+		wl_signal_add(&seat->seat->keyboard->focus_signal,
+			      &seat->keyboard_focus_listener);
+	} else if (!seat->seat->keyboard) {
+		wl_list_init(&seat->keyboard_focus_listener.link);
+	}
+
+	if (seat->seat->pointer &&
+	    wl_list_empty(&seat->pointer_focus_listener.link)) {
+		wl_signal_add(&seat->seat->pointer->focus_signal,
+			      &seat->pointer_focus_listener);
+	} else if (!seat->seat->pointer) {
+		wl_list_init(&seat->pointer_focus_listener.link);
+	}
+}
+
 static struct shell_seat *
 create_shell_seat(struct weston_seat *seat)
 {
@@ -2868,6 +2870,17 @@ create_shell_seat(struct weston_seat *seat)
 	wl_signal_add(&seat->destroy_signal,
 	              &shseat->seat_destroy_listener);
 
+	shseat->keyboard_focus_listener.notify = handle_keyboard_focus;
+	wl_list_init(&shseat->keyboard_focus_listener.link);
+
+	shseat->pointer_focus_listener.notify = handle_pointer_focus;
+	wl_list_init(&shseat->pointer_focus_listener.link);
+
+	shseat->caps_changed_listener.notify = shell_seat_caps_changed;
+	wl_signal_add(&seat->updated_caps_signal,
+		      &shseat->caps_changed_listener);
+	shell_seat_caps_changed(&shseat->caps_changed_listener, NULL);
+
 	return shseat;
 }
 
@@ -2877,8 +2890,7 @@ get_shell_seat(struct weston_seat *seat)
 	struct wl_listener *listener;
 
 	listener = wl_signal_get(&seat->destroy_signal, destroy_shell_seat);
-	if (listener == NULL)
-		return create_shell_seat(seat);
+	assert(listener != NULL);
 
 	return container_of(listener,
 			    struct shell_seat, seat_destroy_listener);
@@ -6060,6 +6072,14 @@ shell_add_bindings(struct weston_compositor *ec, struct desktop_shell *shell)
 					  debug_binding, shell);
 }
 
+static void
+handle_seat_created(struct wl_listener *listener, void *data)
+{
+	struct weston_seat *seat = data;
+
+	create_shell_seat(seat);
+}
+
 WL_EXPORT int
 module_init(struct weston_compositor *ec,
 	    int *argc, char *argv[])
@@ -6159,10 +6179,10 @@ module_init(struct weston_compositor *ec,
 	shell->screensaver.timer =
 		wl_event_loop_add_timer(loop, screensaver_timeout, shell);
 
-	wl_list_for_each(seat, &ec->seat_list, link) {
-		create_pointer_focus_listener(seat);
-		create_keyboard_focus_listener(seat);
-	}
+	wl_list_for_each(seat, &ec->seat_list, link)
+		handle_seat_created(NULL, seat);
+	shell->seat_create_listener.notify = handle_seat_created;
+	wl_signal_add(&ec->seat_created_signal, &shell->seat_create_listener);
 
 	screenshooter_create(ec);
 
