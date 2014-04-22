@@ -276,46 +276,24 @@
           'includes': [ 'build/package_app.gypi' ],
         },
         {
-          'target_name': 'mojo_view_manager_bindings',
-          'type': 'static_library',
-          'sources': [
-            'examples/view_manager/view_manager.mojom',
-          ],
-          'variables': {
-            'mojom_base_output_dir': 'mojo',
-          },
-          'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
-          'export_dependent_settings': [
-            'mojo_bindings',
-          ],
-          'dependencies': [
-            'mojo_bindings',
-          ],
-        },
-        {
-          'target_name': 'mojo_view_manager',
+          'target_name': 'mojo_sample_view_manager_app',
           'type': 'shared_library',
           'dependencies': [
-            '../base/base.gyp:base',
+            # TODO(darin): we should not be linking against these libraries!
+            '../ui/gfx/gfx.gyp:gfx',
             '../ui/gfx/gfx.gyp:gfx_geometry',
-            'mojo_common_lib',
-            'mojo_environment_chromium',
-            'mojo_launcher_bindings',
-            'mojo_native_viewport_bindings',
-            'mojo_shell_client',
-            'mojo_system_impl',
+            '../ui/gl/gl.gyp:gl',
+            'mojo_bindings',
+            'mojo_environment_standalone',
+            'mojo_gles2',
             'mojo_view_manager_bindings',
+            'mojo_shell_client',
+            'mojo_system',
+            'mojo_utility',
           ],
           'sources': [
-            'examples/view_manager/view_manager.cc',
+            'examples/sample_view_manager_app/sample_view_manager_app.cc',
           ],
-        },
-        {
-          'target_name': 'package_mojo_view_manager',
-          'variables': {
-            'app_name': 'mojo_view_manager',
-          },
-          'includes': [ 'build/package_app.gypi' ],
         },
       ],
     }],
