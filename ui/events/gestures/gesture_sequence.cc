@@ -1418,7 +1418,6 @@ bool GestureSequence::MaybeSwipe(const TouchEvent& event,
   }
 
   float min_velocity = GestureConfiguration::min_swipe_speed();
-  min_velocity *= min_velocity;
 
   velocity_x = fabs(velocity_x / point_count_);
   velocity_y = fabs(velocity_y / point_count_);

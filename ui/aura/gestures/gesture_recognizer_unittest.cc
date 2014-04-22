@@ -2827,19 +2827,23 @@ TEST_F(GestureRecognizerTest, MultiFingerSwipe) {
   aura::test::EventGenerator generator(root_window(), window.get());
 
   for (int count = 2; count <= kTouchPoints; ++count) {
-    generator.GestureMultiFingerScroll(count, points, 15, kSteps, 0, -150);
+    generator.GestureMultiFingerScroll(
+        count, points, 1000, kSteps, 0, -11 * kSteps);
     EXPECT_TRUE(delegate->swipe_up());
     delegate->Reset();
 
-    generator.GestureMultiFingerScroll(count, points, 15, kSteps, 0, 150);
+    generator.GestureMultiFingerScroll(
+        count, points, 1000, kSteps, 0, 11 * kSteps);
     EXPECT_TRUE(delegate->swipe_down());
     delegate->Reset();
 
-    generator.GestureMultiFingerScroll(count, points, 15, kSteps, -150, 0);
+    generator.GestureMultiFingerScroll(
+        count, points, 1000, kSteps, -11 * kSteps, 0);
     EXPECT_TRUE(delegate->swipe_left());
     delegate->Reset();
 
-    generator.GestureMultiFingerScroll(count, points, 15, kSteps, 150, 0);
+    generator.GestureMultiFingerScroll(
+        count, points, 1000, kSteps, 11 * kSteps, 0);
     EXPECT_TRUE(delegate->swipe_right());
     delegate->Reset();
   }

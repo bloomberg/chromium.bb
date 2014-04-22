@@ -69,6 +69,7 @@ void AuraTestBase::SetUp() {
   ui::GestureConfiguration::set_fling_acceleration_curve_coefficients(
       3, 0.8f);
   ui::GestureConfiguration::set_fling_velocity_cap(15000.0f);
+  ui::GestureConfiguration::set_min_swipe_speed(10);
 
   // The ContextFactory must exist before any Compositors are created.
   bool enable_pixel_output = false;
