@@ -255,9 +255,9 @@ template<> struct DefaultHash<AtomicString> {
     typedef AtomicStringHash Hash;
 };
 
-template<> struct VectorTraits<AtomicString> : SimpleClassVectorTraits<AtomicString> { };
-
 } // namespace WTF
+
+WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(AtomicString);
 
 #ifndef ATOMICSTRING_HIDE_GLOBALS
 using WTF::AtomicString;

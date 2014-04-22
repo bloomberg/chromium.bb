@@ -64,11 +64,6 @@ private:
 
 }
 
-namespace WTF {
-
-template <>
-struct VectorTraits<WebCore::NodeEventContext> : SimpleClassVectorTraits<WebCore::NodeEventContext> { };
-
-}
+WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(WebCore::NodeEventContext);
 
 #endif // NodeEventContext_h

@@ -52,6 +52,9 @@ namespace WTF {
     template<typename T>
     struct VectorTraits : VectorTraitsBase<T> { };
 
+    // Classes marked with SimpleVectorTraits will use memmov, memcpy, memcmp
+    // instead of constructors, copy operators, etc for initialization, move
+    // and comparison.
     template<typename T>
     struct SimpleClassVectorTraits : VectorTraitsBase<T>
     {
@@ -90,6 +93,12 @@ namespace WTF {
     };
 
 } // namespace WTF
+
+#define WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(ClassName) \
+namespace WTF { \
+    template<> \
+    struct VectorTraits<ClassName> : SimpleClassVectorTraits<ClassName> { }; \
+}
 
 using WTF::VectorTraits;
 using WTF::SimpleClassVectorTraits;

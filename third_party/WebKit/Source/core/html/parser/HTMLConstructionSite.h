@@ -70,9 +70,7 @@ struct HTMLConstructionSiteTask {
 
 } // namespace WebCore
 
-namespace WTF {
-template<> struct VectorTraits<WebCore::HTMLConstructionSiteTask> : SimpleClassVectorTraits<WebCore::HTMLConstructionSiteTask> { };
-} // namespace WTF
+WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(WebCore::HTMLConstructionSiteTask);
 
 namespace WebCore {
 
