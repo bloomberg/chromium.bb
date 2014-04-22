@@ -2059,7 +2059,3 @@ blink_web.dll!WebCore::RenderBlock::layout
 UNINITIALIZED READ
 name=bug_365101
 *!device::BluetoothAdapterWin::AdapterStateChanged
-
-UNINITIALIZED READ
-name=bug_365438
-gesture_detection.dll!ui::TouchDispositionGestureFilter::GestureHandlingState::Filter

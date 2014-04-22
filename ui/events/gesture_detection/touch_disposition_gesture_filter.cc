@@ -37,8 +37,8 @@ struct DispositionHandlingInfo {
   int required_touches;
   EventType antecedent_event_type;
 
-  DispositionHandlingInfo(int required_touches)
-      : required_touches(required_touches) {}
+  explicit DispositionHandlingInfo(int required_touches)
+      : required_touches(required_touches), antecedent_event_type(ET_UNKNOWN) {}
 
   DispositionHandlingInfo(int required_touches,
                           EventType antecedent_event_type)
@@ -104,6 +104,8 @@ DispositionHandlingInfo GetDispositionHandlingInfo(EventType type) {
 }
 
 int GetGestureTypeIndex(EventType type) {
+  DCHECK_GE(type, ET_GESTURE_TYPE_START);
+  DCHECK_LE(type, ET_GESTURE_TYPE_END);
   return type - ET_GESTURE_TYPE_START;
 }
 
@@ -337,10 +339,13 @@ bool TouchDispositionGestureFilter::GestureHandlingState::Filter(
       GetDispositionHandlingInfo(gesture_type);
 
   int required_touches = disposition_handling_info.required_touches;
+  EventType antecedent_event_type =
+      disposition_handling_info.antecedent_event_type;
   if ((required_touches & RT_START && start_touch_consumed_) ||
       (required_touches & RT_CURRENT && current_touch_consumed_) ||
-      (last_gesture_of_type_dropped_.has_bit(GetGestureTypeIndex(
-          disposition_handling_info.antecedent_event_type)))) {
+      (antecedent_event_type != ET_UNKNOWN &&
+       last_gesture_of_type_dropped_.has_bit(
+           GetGestureTypeIndex(antecedent_event_type)))) {
     last_gesture_of_type_dropped_.mark_bit(GetGestureTypeIndex(gesture_type));
     return true;
   }
