@@ -17,17 +17,31 @@ namespace views {
 
 namespace {
 
+bool MonitorHasTopmostAutohideTaskbarForEdge(UINT edge, const RECT& rect) {
+  APPBARDATA taskbar_data = { sizeof(APPBARDATA), NULL, 0, edge };
+  // NOTE: This call spins a nested message loop.
+  HWND taskbar = reinterpret_cast<HWND>(SHAppBarMessage(ABM_GETAUTOHIDEBAREX,
+                                                        &taskbar_data));
+  return ::IsWindow(taskbar) &&
+      (GetWindowLong(taskbar, GWL_EXSTYLE) & WS_EX_TOPMOST);
+}
+
 void GetEdgesOnWorkerThread(HMONITOR monitor, int* edge) {
+  DCHECK(monitor);
+
+  MONITORINFO mi = { sizeof(MONITORINFO) };
+  GetMonitorInfo(monitor, &mi);
+
   base::win::ScopedCOMInitializer com_initializer;
   *edge = 0;
-  if (GetTopmostAutoHideTaskbarForEdge(ABE_LEFT, monitor))
-    *edge = Appbar::EDGE_LEFT;
-  if (GetTopmostAutoHideTaskbarForEdge(ABE_TOP, monitor))
-    *edge = Appbar::EDGE_TOP;
-  if (GetTopmostAutoHideTaskbarForEdge(ABE_RIGHT, monitor))
-    *edge = Appbar::EDGE_RIGHT;
-  if (GetTopmostAutoHideTaskbarForEdge(ABE_BOTTOM, monitor))
-    *edge = Appbar::EDGE_BOTTOM;
+  if (MonitorHasTopmostAutohideTaskbarForEdge(ABE_LEFT, mi.rcMonitor))
+    *edge |= Appbar::EDGE_LEFT;
+  if (MonitorHasTopmostAutohideTaskbarForEdge(ABE_TOP, mi.rcMonitor))
+    *edge |= Appbar::EDGE_TOP;
+  if (MonitorHasTopmostAutohideTaskbarForEdge(ABE_RIGHT, mi.rcMonitor))
+    *edge |= Appbar::EDGE_RIGHT;
+  if (MonitorHasTopmostAutohideTaskbarForEdge(ABE_BOTTOM, mi.rcMonitor))
+    *edge |= Appbar::EDGE_BOTTOM;
 }
 
 }
@@ -49,7 +63,7 @@ int Appbar::GetAutohideEdges(HMONITOR monitor, const base::Closure& callback) {
   // edges.
   if (edge_map_.find(monitor) == edge_map_.end())
     edge_map_[monitor] = Appbar::EDGE_BOTTOM;
-  if (!in_callback_) {
+  if (monitor && !in_callback_) {
     int* edge = new int;
     base::WorkerPool::PostTaskAndReply(
         FROM_HERE,
