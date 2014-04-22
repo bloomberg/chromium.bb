@@ -28,9 +28,25 @@ using content::DevToolsTarget;
 using content::RenderViewHost;
 using content::WebContents;
 
+namespace {
+
+const int kMinTetheringPort = 9333;
+const int kMaxTetheringPort = 9444;
+
+base::LazyInstance<bool>::Leaky g_tethering_enabled = LAZY_INSTANCE_INITIALIZER;
+
+}
+
+// static
+void BrowserListTabContentsProvider::EnableTethering() {
+  g_tethering_enabled.Get() = true;
+}
+
 BrowserListTabContentsProvider::BrowserListTabContentsProvider(
     chrome::HostDesktopType host_desktop_type)
-    : host_desktop_type_(host_desktop_type) {
+    : host_desktop_type_(host_desktop_type),
+      last_tethering_port_(kMinTetheringPort) {
+  g_tethering_enabled.Get() = false;
 }
 
 BrowserListTabContentsProvider::~BrowserListTabContentsProvider() {
@@ -115,25 +131,17 @@ void BrowserListTabContentsProvider::EnumerateTargets(TargetCallback callback) {
       *reinterpret_cast<DevToolsTargetImpl::Callback*>(&callback));
 }
 
-#if defined(DEBUG_DEVTOOLS)
-static int g_last_tethering_port_ = 9333;
-
 scoped_ptr<net::StreamListenSocket>
 BrowserListTabContentsProvider::CreateSocketForTethering(
     net::StreamListenSocket::Delegate* delegate,
     std::string* name) {
-  if (g_last_tethering_port_ == 9444)
-    g_last_tethering_port_ = 9333;
-  int port = ++g_last_tethering_port_;
+  if (!g_tethering_enabled.Get())
+    return scoped_ptr<net::StreamListenSocket>();
+
+  if (last_tethering_port_ == kMaxTetheringPort)
+    last_tethering_port_ = kMinTetheringPort;
+  int port = ++last_tethering_port_;
   *name = base::IntToString(port);
   return net::TCPListenSocket::CreateAndListen("127.0.0.1", port, delegate)
       .PassAs<net::StreamListenSocket>();
 }
-#else
-scoped_ptr<net::StreamListenSocket>
-BrowserListTabContentsProvider::CreateSocketForTethering(
-    net::StreamListenSocket::Delegate* delegate,
-    std::string* name) {
-  return scoped_ptr<net::StreamListenSocket>();
-}
-#endif  // defined(DEBUG_DEVTOOLS)

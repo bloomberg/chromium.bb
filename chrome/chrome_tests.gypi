@@ -970,6 +970,7 @@
         'browser/custom_handlers/protocol_handler_registry_browsertest.cc',
         'browser/devtools/device/adb/adb_client_socket_browsertest.cc',
         'browser/devtools/device/devtools_android_bridge_browsertest.cc',
+        'browser/devtools/device/port_forwarding_browsertest.cc',
         'browser/devtools/devtools_sanity_browsertest.cc',
         'browser/dom_distiller/dom_distiller_viewer_source_browsertest.cc',
         'browser/do_not_track_browsertest.cc',

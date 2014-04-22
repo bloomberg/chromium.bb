@@ -16,6 +16,8 @@
 class BrowserListTabContentsProvider
     : public content::DevToolsHttpHandlerDelegate {
  public:
+  static void EnableTethering();
+
   explicit BrowserListTabContentsProvider(
       chrome::HostDesktopType host_desktop_type);
   virtual ~BrowserListTabContentsProvider();
@@ -34,6 +36,7 @@ class BrowserListTabContentsProvider
 
  private:
   chrome::HostDesktopType host_desktop_type_;
+  int last_tethering_port_;
   DISALLOW_COPY_AND_ASSIGN(BrowserListTabContentsProvider);
 };
 
