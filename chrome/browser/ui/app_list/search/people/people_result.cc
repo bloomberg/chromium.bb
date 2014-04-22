@@ -34,7 +34,7 @@ using extensions::api::hangouts_private::HangoutRequest;
 namespace {
 
 const int kIconSize = 32;
-const char kImageSizePath[] = "s32-p/";
+const char kImageSizePath[] = "s64-p/";
 const char kEmailUrlPrefix[] = "mailto:";
 
 const char* const kHangoutsExtensionIds[] = {
@@ -46,7 +46,7 @@ const char* const kHangoutsExtensionIds[] = {
 
 // Add a query parameter to specify the size to fetch the image in. The
 // original profile image can be of an arbitrary size, we ask the server to
-// crop it to a square 32x32 using its smart cropping algorithm.
+// crop it to a square 64x64 using its smart cropping algorithm.
 GURL GetImageUrl(const GURL& url) {
   std::string image_filename = url.ExtractFileName();
   if (image_filename.empty())
