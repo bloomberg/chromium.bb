@@ -9,6 +9,9 @@ function foo()
     Object.defineProperty(Array.prototype, "push", {
         get: function () { throw new Error("FAIL"); }
     });
+    Object.defineProperty(Math, "max", {
+        get: function () { throw new Error("FAIL"); }
+    });
     return [1, 2, 3];
 }
 
@@ -28,7 +31,7 @@ function test()
 
 <body onload="runTest()">
 <p>
-Tests that overriding Array.prototype.push method will not break the inspector.
+Tests that overriding global methods (like Array.prototype.push, Math.max) will not break the inspector.
 </p>
 
 </body>

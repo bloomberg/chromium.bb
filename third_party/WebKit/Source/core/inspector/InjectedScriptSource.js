@@ -163,6 +163,16 @@ function isArrayLike(obj)
 }
 
 /**
+ * @param {number} a
+ * @param {number} b
+ * @return {number}
+ */
+function max(a, b)
+{
+    return a > b ? a : b;
+}
+
+/**
  * @constructor
  */
 var InjectedScript = function()
@@ -1085,8 +1095,8 @@ InjectedScript.RemoteObject.prototype = {
         var firstLevelKeysCount = firstLevelKeys ? firstLevelKeys.length : 0;
 
         var propertiesThreshold = {
-            properties: (isTable || isTableRow) ? 1000 : Math.max(5, firstLevelKeysCount),
-            indexes: (isTable || isTableRow) ? 1000 : Math.max(100, firstLevelKeysCount)
+            properties: (isTable || isTableRow) ? 1000 : max(5, firstLevelKeysCount),
+            indexes: (isTable || isTableRow) ? 1000 : max(100, firstLevelKeysCount)
         };
 
         try {
