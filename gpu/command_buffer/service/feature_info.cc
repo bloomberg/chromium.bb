@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -768,6 +769,7 @@ void FeatureInfo::InitializeFeatures() {
   bool ui_gl_fence_works = is_es3 || extensions.Contains("GL_NV_fence") ||
                            extensions.Contains("GL_ARB_sync") ||
                            extensions.Contains("EGL_KHR_fence_sync");
+  UMA_HISTOGRAM_BOOLEAN("GPU.FenceSupport", ui_gl_fence_works);
 
   feature_flags_.map_buffer_range =
       is_es3 || extensions.Contains("GL_ARB_map_buffer_range");
