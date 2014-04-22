@@ -43,7 +43,9 @@
 #include "public/platform/WebServiceWorkerProvider.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
+#include "v8.h"
 
+using blink::WebServiceWorker;
 using blink::WebServiceWorkerProvider;
 
 namespace WebCore {
@@ -94,6 +96,19 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(ExecutionContext* ex
     return promise;
 }
 
+class UndefinedValue {
+public:
+    typedef WebServiceWorker WebType;
+    static v8::Handle<v8::Value> from(NewScriptState* scriptState, WebServiceWorker* worker)
+    {
+        ASSERT(!worker); // Anything passed here will be leaked.
+        return v8::Undefined(scriptState->isolate());
+    }
+
+private:
+    UndefinedValue();
+};
+
 ScriptPromise ServiceWorkerContainer::unregisterServiceWorker(ExecutionContext* executionContext, const String& pattern)
 {
     ASSERT(RuntimeEnabledFeatures::serviceWorkerEnabled());
@@ -112,7 +127,7 @@ ScriptPromise ServiceWorkerContainer::unregisterServiceWorker(ExecutionContext* 
         return promise;
     }
 
-    m_provider->unregisterServiceWorker(patternURL, new CallbackPromiseAdapter<ServiceWorker, ServiceWorkerError>(resolver));
+    m_provider->unregisterServiceWorker(patternURL, new CallbackPromiseAdapter<UndefinedValue, ServiceWorkerError>(resolver));
     return promise;
 }
 

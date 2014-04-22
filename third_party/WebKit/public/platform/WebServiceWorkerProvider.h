@@ -52,6 +52,11 @@ public:
     // The WebServiceWorker and WebServiceWorkerError ownership are passed to the WebServiceWorkerCallbacks implementation.
     typedef WebCallbacks<WebServiceWorker, WebServiceWorkerError> WebServiceWorkerCallbacks;
     virtual void registerServiceWorker(const WebURL& pattern, const WebURL& scriptUrl, WebServiceWorkerCallbacks*) { }
+
+    // Unregisters the ServiceWorker for a given scope. The provider
+    // must always pass null to onSuccess.
+    // FIXME: "unregister" does not provide a WebServiceWorker, revisit this
+    // to clean up the the callback type to not take a WebServiceWorker*.
     virtual void unregisterServiceWorker(const WebURL& pattern, WebServiceWorkerCallbacks*) { }
 
     virtual ~WebServiceWorkerProvider() { }

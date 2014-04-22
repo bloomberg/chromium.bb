@@ -1,0 +1,4 @@
+
+FAIL Unregistering with no existing registration assert_in_array: unregistering with no existing registration should fail with a NotFoundError value "DisabledError" not in array ["UnknownError", "NotFoundError"]
+FAIL Register then unregister assert_unreached: registration should succeed. Reached unreachable code
+
