@@ -1328,13 +1328,14 @@ HRESULT ChromeAppViewAsh::OnSizeChanged(winui::Core::ICoreWindow* sender,
     return S_OK;
   }
 
-  winfoundtn::Size size;
-  HRESULT hr = args->get_Size(&size);
-  if (FAILED(hr))
-    return hr;
+  // winui::Core::IWindowSizeChangedEventArgs args->Size appears to return
+  // scaled values under HiDPI. We will instead use GetWindowRect() which
+  // should always return values in Pixels.
+  RECT rect = {0};
+  ::GetWindowRect(core_window_hwnd_, &rect);
 
-  uint32 cx = static_cast<uint32>(size.Width);
-  uint32 cy = static_cast<uint32>(size.Height);
+  uint32 cx = static_cast<uint32>(rect.right - rect.left);
+  uint32 cy = static_cast<uint32>(rect.bottom - rect.top);
 
   DVLOG(1) << "Window size changed: width=" << cx << ", height=" << cy;
   ui_channel_->Send(new MetroViewerHostMsg_WindowSizeChanged(cx, cy));
