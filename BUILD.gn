@@ -25,6 +25,7 @@ group("root") {
     "//components/startup_metric_utils",
     #"//components/translate:translate_core_browser",
     #"//components/translate:translate_core_common",
+    "//components/url_matcher",
     "//crypto",
     "//device/usb",
     "//ipc",
