@@ -57,7 +57,7 @@ void BuiltinProviderTest::RunTest(test_data<ResultType>* builtin_cases,
     AutocompleteInput input(builtin_cases[i].input, base::string16::npos,
                             base::string16(), GURL(),
                             AutocompleteInput::INVALID_SPEC, true,
-                            false, true, AutocompleteInput::ALL_MATCHES);
+                            false, true, true);
     builtin_provider_->Start(input, false);
     EXPECT_TRUE(builtin_provider_->done());
     matches = builtin_provider_->matches();

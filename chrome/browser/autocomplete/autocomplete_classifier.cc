@@ -45,7 +45,7 @@ void AutocompleteClassifier::Classify(
   controller_->Start(AutocompleteInput(
       text, base::string16::npos, base::string16(), GURL(),
       page_classification, true, prefer_keyword,
-      allow_exact_keyword_match, AutocompleteInput::BEST_MATCH));
+      allow_exact_keyword_match, false));
   DCHECK(controller_->done());
   const AutocompleteResult& result = controller_->result();
   if (result.empty()) {

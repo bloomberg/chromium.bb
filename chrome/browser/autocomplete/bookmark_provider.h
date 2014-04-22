@@ -45,9 +45,8 @@ class BookmarkProvider : public AutocompleteProvider {
   virtual ~BookmarkProvider();
 
   // Performs the actual matching of |input| over the bookmarks and fills in
-  // |matches_|. If |best_match| then only suggest the single best match,
-  // otherwise suggest the top |kMaxMatches| matches.
-  void DoAutocomplete(const AutocompleteInput& input, bool best_match);
+  // |matches_|.
+  void DoAutocomplete(const AutocompleteInput& input);
 
   // Compose an AutocompleteMatch based on |title_match| that has 1) the URL of
   // title_match's bookmark, and 2) the bookmark's title, not the URL's page

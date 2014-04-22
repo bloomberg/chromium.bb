@@ -28,23 +28,6 @@ class AutocompleteInput {
     FORCED_QUERY,   // Input forced to be a query by an initial '?'
   };
 
-  // Enumeration of the possible match query types. Callers who only need some
-  // of the matches for a particular input can get answers more quickly by
-  // specifying that upfront.
-  enum MatchesRequested {
-    // Only the best match in the whole result set matters.  Providers should at
-    // most return synchronously-available matches, and if possible do even less
-    // work, so that it's safe to ask for these repeatedly in the course of one
-    // higher-level "synchronous" query.
-    BEST_MATCH,
-
-    // Only synchronous matches should be returned.
-    SYNCHRONOUS_MATCHES,
-
-    // All matches should be fetched.
-    ALL_MATCHES,
-  };
-
   // The type of page currently displayed.
   // Note: when adding an element to this enum, please add it at the end
   // and update omnibox_event.proto::PageClassification and
@@ -141,7 +124,7 @@ class AutocompleteInput {
                     bool prevent_inline_autocomplete,
                     bool prefer_keyword,
                     bool allow_exact_keyword_match,
-                    MatchesRequested matches_requested);
+                    bool want_asynchronous_matches);
   ~AutocompleteInput();
 
   // If type is |FORCED_QUERY| and |text| starts with '?', it is removed.
@@ -237,8 +220,9 @@ class AutocompleteInput {
   // keyword search, even if the input is "<keyword> <search string>".
   bool allow_exact_keyword_match() const { return allow_exact_keyword_match_; }
 
-  // See description of enum for details.
-  MatchesRequested matches_requested() const { return matches_requested_; }
+  // Returns whether providers should be allowed to make asynchronous requests
+  // when processing this input.
+  bool want_asynchronous_matches() const { return want_asynchronous_matches_; }
 
   // Resets all internal variables to the null-constructed state.
   void Clear();
@@ -259,7 +243,7 @@ class AutocompleteInput {
   bool prevent_inline_autocomplete_;
   bool prefer_keyword_;
   bool allow_exact_keyword_match_;
-  MatchesRequested matches_requested_;
+  bool want_asynchronous_matches_;
 };
 
 #endif  // CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_INPUT_H_

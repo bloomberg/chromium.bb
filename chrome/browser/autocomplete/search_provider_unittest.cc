@@ -297,8 +297,7 @@ void SearchProviderTest::RunTest(TestData* cases,
     AutocompleteInput input(cases[i].input, base::string16::npos,
                             base::string16(), GURL(),
                             AutocompleteInput::INVALID_SPEC, false,
-                            prefer_keyword, true,
-                            AutocompleteInput::ALL_MATCHES);
+                            prefer_keyword, true, true);
     provider_->Start(input, false);
     matches = provider_->matches();
     base::string16 diagnostic_details =
@@ -345,7 +344,7 @@ void SearchProviderTest::QueryForInput(const base::string16& text,
   AutocompleteInput input(text, base::string16::npos, base::string16(), GURL(),
                           AutocompleteInput::INVALID_SPEC,
                           prevent_inline_autocomplete, prefer_keyword, true,
-                          AutocompleteInput::ALL_MATCHES);
+                          true);
   provider_->Start(input, false);
 
   // RunUntilIdle so that the task scheduled by SearchProvider to create the
@@ -869,8 +868,7 @@ TEST_F(SearchProviderTest, KeywordOrderingAndDescriptions) {
       AutocompleteProvider::TYPE_SEARCH);
   controller.Start(AutocompleteInput(
       ASCIIToUTF16("k t"), base::string16::npos, base::string16(), GURL(),
-      AutocompleteInput::INVALID_SPEC, false, false, true,
-      AutocompleteInput::ALL_MATCHES));
+      AutocompleteInput::INVALID_SPEC, false, false, true, true));
   const AutocompleteResult& result = controller.result();
 
   // There should be three matches, one for the keyword history, one for

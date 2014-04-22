@@ -208,7 +208,7 @@ void OmniboxUIHandler::StartOmniboxQuery(const base::ListValue* input) {
       prevent_inline_autocomplete,
       prefer_keyword,
       true,  // allow exact keyword matches
-      AutocompleteInput::ALL_MATCHES));  // want all matches
+      true));  // want all matches
 }
 
 void OmniboxUIHandler::ResetController() {

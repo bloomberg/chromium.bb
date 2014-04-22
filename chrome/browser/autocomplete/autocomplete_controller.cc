@@ -211,8 +211,7 @@ AutocompleteController::~AutocompleteController() {
 
 void AutocompleteController::Start(const AutocompleteInput& input) {
   const base::string16 old_input_text(input_.text());
-  const AutocompleteInput::MatchesRequested old_matches_requested =
-      input_.matches_requested();
+  const bool old_want_asynchronous_matches = input_.want_asynchronous_matches();
   input_ = input;
 
   // See if we can avoid rerunning autocomplete when the query hasn't changed
@@ -225,7 +224,7 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
   // NOTE: This comes after constructing |input_| above since that construction
   // can change the text string (e.g. by stripping off a leading '?').
   const bool minimal_changes = (input_.text() == old_input_text) &&
-      (input_.matches_requested() == old_matches_requested);
+      (input_.want_asynchronous_matches() == old_want_asynchronous_matches);
 
   expire_timer_.Stop();
   stop_timer_.Stop();
@@ -246,7 +245,7 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
     else
       (*i)->Start(input_, minimal_changes);
 
-    if (input.matches_requested() != AutocompleteInput::ALL_MATCHES)
+    if (!input.want_asynchronous_matches())
       DCHECK((*i)->done());
     base::TimeTicks provider_end_time = base::TimeTicks::Now();
     std::string name = std::string("Omnibox.ProviderTime.") + (*i)->GetName();
@@ -255,8 +254,7 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
     counter->Add(static_cast<int>(
         (provider_end_time - provider_start_time).InMilliseconds()));
   }
-  if (input.matches_requested() == AutocompleteInput::ALL_MATCHES &&
-      (input.text().length() < 6)) {
+  if (input.want_asynchronous_matches() && (input.text().length() < 6)) {
     base::TimeTicks end_time = base::TimeTicks::Now();
     std::string name = "Omnibox.QueryTime." + base::IntToString(
         input.text().length());

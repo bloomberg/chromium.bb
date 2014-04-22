@@ -87,8 +87,7 @@ void OmniboxController::StartAutocomplete(
   autocomplete_controller_->Start(AutocompleteInput(
       user_text, cursor_position, base::string16(), current_url,
       current_page_classification, prevent_inline_autocomplete,
-      prefer_keyword, allow_exact_keyword_match,
-      AutocompleteInput::ALL_MATCHES));
+      prefer_keyword, allow_exact_keyword_match, true));
 }
 
 void OmniboxController::OnResultChanged(bool default_match_changed) {

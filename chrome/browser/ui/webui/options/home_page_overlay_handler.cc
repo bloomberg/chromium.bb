@@ -51,8 +51,7 @@ void HomePageOverlayHandler::RequestAutocompleteSuggestions(
 
   autocomplete_controller_->Start(AutocompleteInput(
       input, base::string16::npos, base::string16(), GURL(),
-      AutocompleteInput::INVALID_SPEC, true,
-      false, false, AutocompleteInput::ALL_MATCHES));
+      AutocompleteInput::INVALID_SPEC, true, false, false, true));
 }
 
 void HomePageOverlayHandler::OnResultChanged(bool default_match_changed) {

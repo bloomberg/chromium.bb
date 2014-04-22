@@ -637,7 +637,8 @@ void OmniboxEditModel::AcceptInput(WindowOpenDisposition disposition,
       old_input.cursor_position(), base::ASCIIToUTF16("com"),
       GURL(), old_input.current_page_classification(),
       old_input.prevent_inline_autocomplete(), old_input.prefer_keyword(),
-      old_input.allow_exact_keyword_match(), old_input.matches_requested());
+      old_input.allow_exact_keyword_match(),
+      old_input.want_asynchronous_matches());
     AutocompleteMatch url_match(
         autocomplete_controller()->history_url_provider()->SuggestExactInput(
             input.text(), input.canonicalized_url(), false));
@@ -918,8 +919,7 @@ void OmniboxEditModel::OnSetFocus(bool control_down) {
     // |permanent_text_| is empty.
     autocomplete_controller()->StartZeroSuggest(AutocompleteInput(
         permanent_text_, base::string16::npos, base::string16(),
-        delegate_->GetURL(), ClassifyPage(), false, false, true,
-        AutocompleteInput::ALL_MATCHES));
+        delegate_->GetURL(), ClassifyPage(), false, false, true, true));
   }
 
   if (user_input_in_progress_ || !in_revert_)

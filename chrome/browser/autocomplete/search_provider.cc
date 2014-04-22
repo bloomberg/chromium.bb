@@ -499,8 +499,7 @@ void SearchProvider::StartOrStopSuggestQuery(bool minimal_changes) {
        !default_results_.navigation_results.empty() ||
        !keyword_results_.suggest_results.empty() ||
        !keyword_results_.navigation_results.empty() ||
-       (!done_ &&
-        input_.matches_requested() == AutocompleteInput::ALL_MATCHES)))
+       (!done_ && input_.want_asynchronous_matches())))
     return;
 
   // We can't keep running any previous query, so halt it.
@@ -516,7 +515,7 @@ void SearchProvider::StartOrStopSuggestQuery(bool minimal_changes) {
     UpdateMatchContentsClass(keyword_input_.text(), &keyword_results_);
 
   // We can't start a new query if we're only allowed synchronous results.
-  if (input_.matches_requested() != AutocompleteInput::ALL_MATCHES)
+  if (!input_.want_asynchronous_matches())
     return;
 
   // To avoid flooding the suggest server, don't send a query until at

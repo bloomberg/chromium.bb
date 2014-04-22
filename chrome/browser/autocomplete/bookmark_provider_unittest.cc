@@ -252,7 +252,7 @@ TEST_F(BookmarkProviderTest, Positions) {
     AutocompleteInput input(base::ASCIIToUTF16(query_data[i].query),
                             base::string16::npos, base::string16(), GURL(),
                             AutocompleteInput::INVALID_SPEC, false, false,
-                            false, AutocompleteInput::ALL_MATCHES);
+                            false, true);
     provider_->Start(input, false);
     const ACMatches& matches(provider_->matches());
     // Validate number of results is as expected.
@@ -326,7 +326,7 @@ TEST_F(BookmarkProviderTest, Rankings) {
     AutocompleteInput input(base::ASCIIToUTF16(query_data[i].query),
                             base::string16::npos, base::string16(), GURL(),
                             AutocompleteInput::INVALID_SPEC, false, false,
-                            false, AutocompleteInput::ALL_MATCHES);
+                            false, true);
     provider_->Start(input, false);
     const ACMatches& matches(provider_->matches());
     // Validate number and content of results is as expected.
@@ -382,7 +382,7 @@ TEST_F(BookmarkProviderTest, InlineAutocompletion) {
     AutocompleteInput input(base::ASCIIToUTF16(query_data[i].query),
                             base::string16::npos, base::string16(), GURL(),
                             AutocompleteInput::INVALID_SPEC, false, false,
-                            false, AutocompleteInput::ALL_MATCHES);
+                            false, true);
     AutocompleteInput fixed_up_input(input);
     provider_->FixupUserInput(&fixed_up_input);
     BookmarkNode node(GURL(query_data[i].url));

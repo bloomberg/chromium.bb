@@ -36,7 +36,7 @@ AutocompleteInput::AutocompleteInput()
       prevent_inline_autocomplete_(false),
       prefer_keyword_(false),
       allow_exact_keyword_match_(true),
-      matches_requested_(ALL_MATCHES) {
+      want_asynchronous_matches_(true) {
 }
 
 AutocompleteInput::AutocompleteInput(
@@ -48,14 +48,14 @@ AutocompleteInput::AutocompleteInput(
     bool prevent_inline_autocomplete,
     bool prefer_keyword,
     bool allow_exact_keyword_match,
-    MatchesRequested matches_requested)
+    bool want_asynchronous_matches)
     : cursor_position_(cursor_position),
       current_url_(current_url),
       current_page_classification_(current_page_classification),
       prevent_inline_autocomplete_(prevent_inline_autocomplete),
       prefer_keyword_(prefer_keyword),
       allow_exact_keyword_match_(allow_exact_keyword_match),
-      matches_requested_(matches_requested) {
+      want_asynchronous_matches_(want_asynchronous_matches) {
   DCHECK(cursor_position <= text.length() ||
          cursor_position == base::string16::npos)
       << "Text: '" << text << "', cp: " << cursor_position;
@@ -538,5 +538,5 @@ void AutocompleteInput::Clear() {
   prevent_inline_autocomplete_ = false;
   prefer_keyword_ = false;
   allow_exact_keyword_match_ = false;
-  matches_requested_ = ALL_MATCHES;
+  want_asynchronous_matches_ = true;
 }

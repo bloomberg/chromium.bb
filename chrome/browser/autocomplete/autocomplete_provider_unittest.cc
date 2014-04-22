@@ -96,7 +96,7 @@ void TestProvider::Start(const AutocompleteInput& input,
       3, 1, AutocompleteMatchType::SEARCH_SUGGEST,
       TemplateURLRef::SearchTermsArgs(base::ASCIIToUTF16("query")));
 
-  if (input.matches_requested() == AutocompleteInput::ALL_MATCHES) {
+  if (input.want_asynchronous_matches()) {
     done_ = false;
     base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(&TestProvider::Run, this));
@@ -403,8 +403,7 @@ void AutocompleteProviderTest::RunQuery(const base::string16 query) {
   result_.Reset();
   controller_->Start(AutocompleteInput(
       query, base::string16::npos, base::string16(), GURL(),
-      AutocompleteInput::INVALID_SPEC, true, false, true,
-      AutocompleteInput::ALL_MATCHES));
+      AutocompleteInput::INVALID_SPEC, true, false, true, true));
 
   if (!controller_->done())
     // The message loop will terminate when all autocomplete input has been
@@ -423,7 +422,7 @@ void AutocompleteProviderTest::RunExactKeymatchTest(
   controller_->Start(AutocompleteInput(
       base::ASCIIToUTF16("k test"), base::string16::npos, base::string16(),
       GURL(), AutocompleteInput::INVALID_SPEC, true, false,
-      allow_exact_keyword_match, AutocompleteInput::SYNCHRONOUS_MATCHES));
+      allow_exact_keyword_match, false));
   EXPECT_TRUE(controller_->done());
   EXPECT_EQ(AutocompleteProvider::TYPE_SEARCH,
       controller_->result().default_match()->provider->type());

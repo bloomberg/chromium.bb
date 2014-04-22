@@ -152,7 +152,7 @@ void OmniboxProvider::Start(const base::string16& query) {
                                        false,
                                        false,
                                        true,
-                                       AutocompleteInput::ALL_MATCHES));
+                                       true));
 }
 
 void OmniboxProvider::Stop() {

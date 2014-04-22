@@ -155,7 +155,7 @@ const AutocompleteInput ZeroSuggestProvider::GetInput(bool is_keyword) const {
   return AutocompleteInput(
       base::string16(), base::string16::npos, base::string16(),
       GURL(current_query_), current_page_classification_, true, false, false,
-      AutocompleteInput::ALL_MATCHES);
+      true);
 }
 
 BaseSearchProvider::Results* ZeroSuggestProvider::GetResultsToFill(

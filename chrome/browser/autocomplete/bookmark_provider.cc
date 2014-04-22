@@ -47,14 +47,12 @@ void BookmarkProvider::Start(const AutocompleteInput& input,
        (input.type() != AutocompleteInput::QUERY)))
     return;
 
-  DoAutocomplete(input,
-                 input.matches_requested() == AutocompleteInput::BEST_MATCH);
+  DoAutocomplete(input);
 }
 
 BookmarkProvider::~BookmarkProvider() {}
 
-void BookmarkProvider::DoAutocomplete(const AutocompleteInput& input,
-                                      bool best_match) {
+void BookmarkProvider::DoAutocomplete(const AutocompleteInput& input) {
   // We may not have a bookmark model for some unit tests.
   if (!bookmark_model_)
     return;
@@ -104,17 +102,11 @@ void BookmarkProvider::DoAutocomplete(const AutocompleteInput& input,
   }
 
   // Sort and clip the resulting matches.
-  size_t max_matches = best_match ? 1 : AutocompleteProvider::kMaxMatches;
-  if (matches_.size() > max_matches) {
-    std::partial_sort(matches_.begin(),
-                      matches_.begin() + max_matches,
-                      matches_.end(),
-                      AutocompleteMatch::MoreRelevant);
-    matches_.resize(max_matches);
-  } else {
-    std::sort(matches_.begin(), matches_.end(),
-              AutocompleteMatch::MoreRelevant);
-  }
+  size_t num_matches =
+      std::min(matches_.size(), AutocompleteProvider::kMaxMatches);
+  std::partial_sort(matches_.begin(), matches_.begin() + num_matches,
+                    matches_.end(), AutocompleteMatch::MoreRelevant);
+  matches_.resize(num_matches);
 }
 
 namespace {

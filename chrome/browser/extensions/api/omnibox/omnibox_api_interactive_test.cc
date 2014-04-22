@@ -43,8 +43,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, PopupStaysClosed) {
   autocomplete_controller->Start(
       AutocompleteInput(base::ASCIIToUTF16("keyword command"),
                         base::string16::npos, base::string16(), GURL(),
-                        AutocompleteInput::NTP, true, false, true,
-                        AutocompleteInput::ALL_MATCHES));
+                        AutocompleteInput::NTP, true, false, true, true));
   location_bar->AcceptInput();
   WaitForAutocompleteDone(autocomplete_controller);
   EXPECT_TRUE(autocomplete_controller->done());

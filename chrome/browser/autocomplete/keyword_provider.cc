@@ -328,7 +328,7 @@ void KeywordProvider::Start(const AutocompleteInput& input,
         template_url, input, keyword.length(), remaining_input, true, -1));
 
     if (profile_ && is_extension_keyword) {
-      if (input.matches_requested() == AutocompleteInput::ALL_MATCHES) {
+      if (input.want_asynchronous_matches()) {
         if (template_url->GetExtensionId() != current_keyword_extension_id_)
           MaybeEndExtensionKeywordMode();
         if (current_keyword_extension_id_.empty())
@@ -341,8 +341,7 @@ void KeywordProvider::Start(const AutocompleteInput& input,
           remaining_input,
           &matches_[0]);
 
-      if (minimal_changes &&
-          (input.matches_requested() != AutocompleteInput::BEST_MATCH)) {
+      if (minimal_changes) {
         // If the input hasn't significantly changed, we can just use the
         // suggestions from last time. We need to readjust the relevance to
         // ensure it is less than the main match's relevance.
@@ -350,7 +349,7 @@ void KeywordProvider::Start(const AutocompleteInput& input,
           matches_.push_back(extension_suggest_matches_[i]);
           matches_.back().relevance = matches_[0].relevance - (i + 1);
         }
-      } else if (input.matches_requested() == AutocompleteInput::ALL_MATCHES) {
+      } else if (input.want_asynchronous_matches()) {
         extension_suggest_last_input_ = input;
         extension_suggest_matches_.clear();
 

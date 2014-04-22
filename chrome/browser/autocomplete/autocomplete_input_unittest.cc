@@ -128,7 +128,7 @@ TEST(AutocompleteInputTest, InputType) {
     AutocompleteInput input(input_cases[i].input, base::string16::npos,
                             base::string16(), GURL(),
                             AutocompleteInput::INVALID_SPEC, true, false, true,
-                            AutocompleteInput::ALL_MATCHES);
+                            true);
     EXPECT_EQ(input_cases[i].type, input.type());
   }
 }
@@ -157,7 +157,7 @@ TEST(AutocompleteInputTest, InputTypeWithDesiredTLD) {
     AutocompleteInput input(input_cases[i].input, base::string16::npos,
                             ASCIIToUTF16("com"), GURL(),
                             AutocompleteInput::INVALID_SPEC, true, false, true,
-                            AutocompleteInput::ALL_MATCHES);
+                            true);
     EXPECT_EQ(input_cases[i].type, input.type());
     if (input_cases[i].type == AutocompleteInput::URL)
       EXPECT_EQ(input_cases[i].spec, input.canonicalized_url().spec());
@@ -170,7 +170,7 @@ TEST(AutocompleteInputTest, InputCrash) {
   AutocompleteInput input(base::WideToUTF16(L"\uff65@s"), base::string16::npos,
                           base::string16(), GURL(),
                           AutocompleteInput::INVALID_SPEC, true, false,
-                          true, AutocompleteInput::ALL_MATCHES);
+                          true, true);
 }
 
 TEST(AutocompleteInputTest, ParseForEmphasizeComponent) {
@@ -214,7 +214,7 @@ TEST(AutocompleteInputTest, ParseForEmphasizeComponent) {
     AutocompleteInput input(input_cases[i].input, base::string16::npos,
                             base::string16(), GURL(),
                             AutocompleteInput::INVALID_SPEC, true,
-                            false, true, AutocompleteInput::ALL_MATCHES);
+                            false, true, true);
     EXPECT_EQ(input_cases[i].scheme.begin, scheme.begin);
     EXPECT_EQ(input_cases[i].scheme.len, scheme.len);
     EXPECT_EQ(input_cases[i].host.begin, host.begin);
@@ -253,7 +253,7 @@ TEST(AutocompleteInputTest, InputTypeWithCursorPosition) {
                             input_cases[i].cursor_position,
                             base::string16(), GURL(),
                             AutocompleteInput::INVALID_SPEC,
-                            true, false, true, AutocompleteInput::ALL_MATCHES);
+                            true, false, true, true);
     EXPECT_EQ(input_cases[i].normalized_input, input.text());
     EXPECT_EQ(input_cases[i].normalized_cursor_position,
               input.cursor_position());
