@@ -16,18 +16,23 @@ import sys
 import tempfile
 import urllib2
 
-import download_toolchains
-import toolchainbinaries
+BUILD_DIR = os.path.dirname(__file__)
+NACL_DIR = os.path.dirname(BUILD_DIR)
+TOOLCHAIN_REV_DIR = os.path.join(NACL_DIR, 'toolchain_revisions')
+PKG_VER = os.path.join(BUILD_DIR, 'package_version', 'package_version.py')
+
+PNACL_PKG = 'pnacl_newlib'
+PNACL_REV_FILE = os.path.join(TOOLCHAIN_REV_DIR, '%s.json' % PNACL_PKG)
 
 
 def ParseArgs(args):
   parser = argparse.ArgumentParser(
       formatter_class=argparse.RawDescriptionHelpFormatter,
-      description="""Update TOOL_REVISIONS' PNaCl version.
+      description="""Update pnacl_newlib.json PNaCl version.
 
 LLVM and other projects are checked-in to the NaCl repository, but their
 head isn't necessarily the one that we currently use in PNaCl. The
-TOOL_REVISIONS file points at subversion revisions to use for tools such
+pnacl_newlib.json file points at subversion revisions to use for tools such
 as LLVM. Our build process then downloads pre-built tool tarballs from
 the toolchain build waterfall.
 
@@ -37,13 +42,13 @@ git repository before running this script:
          v                    |
   ...----A------B------C------D------ NaCl HEAD
          ^      ^      ^      ^
-         |      |      |      |__ Latest TOOL_REVISIONS update.
+         |      |      |      |__ Latest pnacl_newlib.json update.
          |      |      |
          |      |      |__ A newer LLVM change (LLVM repository HEAD).
          |      |
          |      |__ Oldest LLVM change since this PNaCl version.
          |
-         |__ TOOL_REVISIONS points at an older LLVM change.
+         |__ pnacl_newlib.json points at an older LLVM change.
 
 git repository after running this script:
                        _______________
@@ -60,13 +65,11 @@ There is further complication when toolchain builds are merged.
   parser.add_argument('--email', metavar='ADDRESS', type=str,
                       default=getpass.getuser()+'@chromium.org',
                       help="Email address to send errors to.")
-  parser.add_argument('--commits-since', metavar='N', type=int, default=0,
-                      help="Commits to wait between TOOL_REVISIONS updates.")
   parser.add_argument('--svn-id', metavar='SVN_ID', type=int, default=0,
                       help="Update to a specific SVN ID instead of the most "
                       "recent SVN ID with a PNaCl change. This value must "
                       "be more recent than the one in the current "
-                      "TOOL_REVISIONS. This option is useful when multiple "
+                      "pnacl_newlib.json. This option is useful when multiple "
                       "changelists' toolchain builds were merged, or when "
                       "too many PNaCl changes would be pulled in at the "
                       "same time.")
@@ -77,13 +80,6 @@ There is further complication when toolchain builds are merged.
   #           should be shared in some way.
   parser.add_argument('--filter_out_predicates', default=[],
                       help="Toolchains to filter out.")
-  parser.add_argument('-b', '--base-url', dest='base_url',
-                      default=toolchainbinaries.BASE_DOWNLOAD_URL,
-                      help="Base url to download from.")
-  parser.add_argument('--base-once-url', dest='base_once_url',
-                      default=toolchainbinaries.BASE_ONCE_DOWNLOAD_URL,
-                      help="Base url to download new toolchain "
-                      "artifacts from.")
   return parser.parse_args()
 
 
@@ -94,6 +90,19 @@ def ExecCommand(command):
     sys.stderr.write('\nRunning `%s` returned %i, got:\n%s\n' %
                      (' '.join(e.cmd), e.returncode, e.output))
     raise
+
+
+def GetCurrentPNaClRevision():
+  return ExecCommand([sys.executable, PKG_VER,
+                      'getrevision',
+                      '--revision-package', PNACL_PKG]).strip()
+
+
+def SetCurrentPNaClRevision(revision_num):
+  ExecCommand([sys.executable, PKG_VER,
+               'setrevision',
+               '--revision-package', PNACL_PKG,
+               '--revision', str(revision_num)])
 
 
 def GitCurrentBranch():
@@ -239,7 +248,7 @@ def SendEmail(user_email, out):
   if user_email:
     sys.stderr.write('\nSending email to %s.\n' % user_email)
     msg = email.mime.text.MIMEText(out)
-    msg['Subject'] = '[TOOL_REVISIONS updater] failure!'
+    msg['Subject'] = '[PNaCl revision updater] failure!'
     msg['From'] = 'tool_revisions-bot@chromium.org'
     msg['To'] = user_email
     s = smtplib.SMTP('localhost')
@@ -307,7 +316,7 @@ class CLInfo:
     return desc
 
 
-def FmtOut(tr_recent, tr_points_at, pnacl_changes, err=[], msg=[]):
+def FmtOut(tr_points_at, pnacl_changes, err=[], msg=[]):
   assert isinstance(err, list)
   assert isinstance(msg, list)
   old_svn_id = tr_points_at['git svn id']
@@ -325,7 +334,7 @@ def FmtOut(tr_recent, tr_points_at, pnacl_changes, err=[], msg=[]):
           '\n\n'.join(err) +
           '\n\n'.join(msg) +
           ('\n\n' if err or msg else '') +
-          ('Update TOOL_REVISIONS for PNaCl r%s->r%s\n\n'
+          ('Update revision for PNaCl r%s->r%s\n\n'
            'Pull the following PNaCl changes into NaCl:\n%s\n\n'
            '%s\n'
            'R= %s\n'
@@ -338,44 +347,25 @@ def FmtOut(tr_recent, tr_points_at, pnacl_changes, err=[], msg=[]):
 def Main():
   args = ParseArgs(sys.argv[1:])
 
-  # Updating TOOL_REVISIONS involves looking at the 3 following changelists.
-  tr_recent = CLInfo('Most recent TOOL_REVISIONS update')
-  tr_points_at = CLInfo('TOOL_REVISIONS update points at PNaCl version')
+  tr_points_at = CLInfo('revision update points at PNaCl version')
   pnacl_changes = []
   msg = []
 
+  branch = GitCurrentBranch()
+  assert branch == 'master', ('Must be on branch master, currently on %s' %
+                              branch)
+
   try:
-    branch = GitCurrentBranch()
-    assert branch == 'master', ('Must be on branch master, currently on %s' %
-                                branch)
     status = GitStatus()
     assert len(status) == 0, ("Repository isn't clean:\n  %s" %
                               '\n  '.join(status))
     SyncSources()
 
-    # Information on the latest TOOL_REVISIONS modification.
-    for i in ['author', 'date', 'hash', 'subject']:
-      tr_recent[i] = GitCommitInfo(info=i, obj='TOOL_REVISIONS', num=1)
-    recent_commits = GitCommitsSince(tr_recent['date'])
-    tr_recent['commits since'] = len(recent_commits)
-    if len(recent_commits) - 1 < args.commits_since:
-      # This check is conservative: the TOOL_REVISIONS update might not
-      # have changed PNACL_VERSION. We might wait longer than we
-      # actually need to.
-      # TODO(jfb) Look at the previous commit, and if args.commit_since is
-      #           respected (none of the previous commits actually change
-      #           PNACL_VERSION) then do the update.
-      Done(FmtOut(tr_recent, tr_points_at, pnacl_changes,
-                  msg=['Nothing to do: not enough commits since last '
-                       'TOOL_REVISIONS update, need at least %s commits to '
-                       'ensure that we get enough performance runs.' %
-                       args.commits_since]))
-
-    # The current TOOL_REVISIONS points at a specific PNaCl LLVM
+    # The current revision file points at a specific PNaCl LLVM
     # version. LLVM is checked-in to the NaCl repository, but its head
     # isn't necessarily the one that we currently use in PNaCl.
-    current_versions = download_toolchains.LoadVersions('TOOL_REVISIONS')
-    tr_points_at['git svn id'] = current_versions['PNACL_VERSION']
+    pnacl_revision = GetCurrentPNaClRevision()
+    tr_points_at['git svn id'] = pnacl_revision
     tr_points_at['hash'] = FindCommitWithGitSvnId(tr_points_at['git svn id'])
     tr_points_at['date'] = GitCommitInfo(
         info='date', obj=tr_points_at['hash'], num=1)
@@ -386,13 +376,13 @@ def Main():
     assert len(recent_commits) > 1
 
     if args.svn_id and args.svn_id <= int(tr_points_at['git svn id']):
-      Done(FmtOut(tr_recent, tr_points_at, pnacl_changes,
+      Done(FmtOut(tr_points_at, pnacl_changes,
                   err=["Can't update to SVN ID r%s, the current "
-                       "TOOL_REVISIONS' SVN ID (r%s) is more recent." %
+                       "PNaCl revision's SVN ID (r%s) is more recent." %
                        (args.svn_id, tr_points_at['git svn id'])]))
 
     # Find the commits changing PNaCl files that follow the previous
-    # TOOL_REVISIONS PNaCl pointer.
+    # PNaCl revision pointer.
     pnacl_pathes = ['pnacl/', 'toolchain_build/']
     pnacl_hashes = list(set(reduce(
         lambda acc, lst: acc + lst,
@@ -418,14 +408,14 @@ def Main():
                        int(cl['git svn id']) <= args.svn_id]
 
     if len(pnacl_changes) == 0:
-      Done(FmtOut(tr_recent, tr_points_at, pnacl_changes,
+      Done(FmtOut(tr_points_at, pnacl_changes,
                   msg=['No PNaCl change since r%s.' %
                        tr_points_at['git svn id']]))
 
-    current_versions['PNACL_VERSION'] = pnacl_changes[-1]['git svn id']
+    new_pnacl_revision = pnacl_changes[-1]['git svn id']
 
-    new_branch_name = ('TOOL_REVISIONS-pnacl-update-to-%s' %
-                       current_versions['PNACL_VERSION'])
+    new_branch_name = ('pnacl-revision-update-to-%s' %
+                       new_pnacl_revision)
     if GitBranchExists(new_branch_name):
       # TODO(jfb) Figure out if git-try succeeded, checkout the branch
       #           and dcommit.
@@ -437,60 +427,12 @@ def Main():
     else:
       GitCheckoutNewBranch(new_branch_name)
 
-    # Change the value of PNACL_VERSION in the TOOL_REVISIONS file to
-    # the desired git svn id. The hashes are updated below.
-    updates = [['PNACL_VERSION',
-                tr_points_at['git svn id'],
-                current_versions['PNACL_VERSION']]]
-    try:
-      # Update the hashes.
-      # This will download toolchain tarballs that were pre-built by the
-      # toolchain waterfall. This may fail if that toolchain revision
-      # was never built. Such a failure usually occurs because multiple
-      # toolchain builds got kicked-off close to each other and were
-      # merged by the waterfall.
-      updated_deps = download_toolchains.GetUpdatedDEPS(args, current_versions)
-      for flavor, new_value in sorted(updated_deps.iteritems()):
-        keyname = download_toolchains.HashKey(flavor)
-        old_value = current_versions[keyname]
-        updates.append([keyname, old_value, new_value])
-    except urllib2.HTTPError as e:
-      if not args.dry_run:
-        GitCheckout('master', force=True)
-        GitDeleteBranch(new_branch_name, force=True)
-      # TODO(jfb) Automatically split the commits.
-      #           Before doing this, we should try the next versions and see
-      #           if they have a toolchain and don't touch PNaCl.
-      raise Exception(
-          'Failed fetching %s with code %s (%s), '
-          'please split up manually:\n'
-          '  Go to the internal version of '
-          'http://build.chromium.org/p/client.nacl.toolchain/console'
-          '\n'
-          '  On the top PNaCl row, click the missing bots '
-          '(merged toolchain build).\n'
-          '  Force build with your name, reason, no branch, '
-          'and revision %s.' %
-          (e.url, e.code, e.reason, current_versions['PNACL_VERSION']))
-
     if args.dry_run:
-      DryRun("Would update TOOL_REVISIONS to:\n%s" %
-             '\n'.join(['  ' + u[0] + '=' + u[2] for u in updates]))
+      DryRun("Would update PNaCl revision to: %s" % new_pnacl_revision)
     else:
-      # Change the TOOL_REVISIONS file in the local git repository.
-      with open('TOOL_REVISIONS', 'r+') as tool_revisions:
-        content = tool_revisions.read()
-        for keyname, old_value, new_value in updates:
-          old = '%s=%s' % (keyname, old_value)
-          new = '%s=%s' % (keyname, new_value)
-          assert content.find(old) != -1, (
-              "TOOL_REVISIONS doesn't contain %s" % old)
-          content = content.replace(old, new)
-        tool_revisions.seek(0)
-        tool_revisions.truncate()
-        tool_revisions.write(content)
-      GitAdd('TOOL_REVISIONS')
-      GitCommit(FmtOut(tr_recent, tr_points_at, pnacl_changes))
+      SetCurrentPNaClRevision(new_pnacl_revision)
+      GitAdd(PNACL_REV_FILE)
+      GitCommit(FmtOut(tr_points_at, pnacl_changes))
 
       upload_res = UploadChanges()
       msg += ['Upload result:\n%s' % upload_res]
@@ -499,7 +441,7 @@ def Main():
 
       GitCheckout('master', force=False)
 
-    Done(FmtOut(tr_recent, tr_points_at, pnacl_changes, msg=msg))
+    Done(FmtOut(tr_points_at, pnacl_changes, msg=msg))
 
   except SystemExit as e:
     # Normal exit.
@@ -508,7 +450,7 @@ def Main():
   except (BaseException, Exception) as e:
     # Leave the branch around, if any was created: it'll prevent next
     # runs of the cronjob from succeeding until the failure is fixed.
-    out = FmtOut(tr_recent, tr_points_at, pnacl_changes, msg=msg,
+    out = FmtOut(tr_points_at, pnacl_changes, msg=msg,
                  err=['Failed at %s: %s' % (datetime.datetime.now(), e)])
     sys.stderr.write(out)
     if not args.dry_run:
