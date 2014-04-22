@@ -1579,17 +1579,9 @@ void RenderBox::repaintTreeAfterLayout()
         setShouldDoFullRepaintAfterLayout(true);
     }
 
-    bool didFullRepaint = false;
-    if (!layoutDidGetCalled()) {
-        if (shouldDoFullRepaintAfterLayout()) {
-            repaint();
-            didFullRepaint = true;
-        }
-    } else {
-        const LayoutRect newRepaintRect = previousRepaintRect();
-        didFullRepaint = repaintAfterLayoutIfNeeded(containerForRepaint(),
-            shouldDoFullRepaintAfterLayout(), oldRepaintRect, &newRepaintRect);
-    }
+    const LayoutRect newRepaintRect = previousRepaintRect();
+    bool didFullRepaint = repaintAfterLayoutIfNeeded(containerForRepaint(),
+        shouldDoFullRepaintAfterLayout(), oldRepaintRect, &newRepaintRect);
 
     if (!didFullRepaint)
         repaintOverflowIfNeeded();

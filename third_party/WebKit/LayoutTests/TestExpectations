@@ -1078,6 +1078,8 @@ crbug.com/362503 http/tests/xmlhttprequest/xmlhttprequest-responseXML-exception.
 
 crbug.com/363025 virtual/serviceworker/http/tests/serviceworker/state.html [ Failure Pass ]
 
+crbug.com/360453 fast/repaint/box-inline-resize.html [ NeedsRebaseline ]
+
 crbug.com/364250 [ Debug ] virtual/threaded/animations/interpolation/webkit-transform-interpolation.html [ Pass Crash Timeout ]
 
 # Failing since chrome r264636
