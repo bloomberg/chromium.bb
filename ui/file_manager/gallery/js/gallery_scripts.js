@@ -10,8 +10,8 @@
 
 //<include src="error_util.js"/>
 
-//<include src="../../../../../ui/webui/resources/js/cr.js"/>
-//<include src="../../../../../ui/webui/resources/js/load_time_data.js"/>
+//<include src="../../../webui/resources/js/cr.js"/>
+//<include src="../../../webui/resources/js/load_time_data.js"/>
 
 (function() {
 'use strict';
