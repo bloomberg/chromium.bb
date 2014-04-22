@@ -1,0 +1,36 @@
+{
+  "config_version": "ssl-gstatic-com-v1",
+  "config_valid_until": 1405382400.0,
+  "monitored_domain": "ssl.gstatic.com",
+  "collectors": [
+    {
+      "upload_url": "https://clients2.google.com/domainreliability/upload"
+    }
+  ],
+  "monitored_resources": [
+    {
+      "resource_name": "accounts",
+      "url_patterns": ["http*://ssl.gstatic.com/accounts/*"],
+      "success_sample_rate": 0.05,
+      "failure_sample_rate": 1.00
+    },
+    {
+      "resource_name": "analytics",
+      "url_patterns": ["http*://ssl.gstatic.com/analytics/*"],
+      "success_sample_rate": 0.10,
+      "failure_sample_rate": 0.50
+    },
+    {
+      "resource_name": "images",
+      "url_patterns": ["http*://ssl.gstatic.com/images/*"],
+      "success_sample_rate": 0.05,
+      "failure_sample_rate": 0.25
+    },
+    {
+      "resource_name": "other",
+      "url_patterns": ["http*://ssl.gstatic.com/*"],
+      "success_sample_rate": 0.05,
+      "failure_sample_rate": 0.50
+    }
+  ]
+}

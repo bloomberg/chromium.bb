@@ -20,6 +20,7 @@
         'DOMAIN_RELIABILITY_IMPLEMENTATION',
       ],
       'sources': [
+        'domain_reliability/baked_in_configs.h',
         'domain_reliability/beacon.cc',
         'domain_reliability/beacon.h',
         'domain_reliability/config.cc',
@@ -37,6 +38,36 @@
         'domain_reliability/uploader.h',
         'domain_reliability/util.cc',
         'domain_reliability/util.h',
+      ],
+      'actions': [
+        {
+          'action_name': 'bake_in_configs',
+          'variables': {
+            'bake_in_configs_script': 'domain_reliability/bake_in_configs.py',
+            'baked_in_configs_cc':
+                '<(INTERMEDIATE_DIR)/domain_reliability/baked_in_configs.cc',
+            'baked_in_configs': [
+              'domain_reliability/baked_in_configs/apis_google_com.json',
+              'domain_reliability/baked_in_configs/ddm_google_com.json',
+              'domain_reliability/baked_in_configs/ssl_gstatic_com.json',
+              'domain_reliability/baked_in_configs/www_google_com.json',
+              'domain_reliability/baked_in_configs/www_youtube_com.json',
+            ],
+          },
+          'inputs': [
+            '<(bake_in_configs_script)',
+            '<@(baked_in_configs)',
+          ],
+          'outputs': [
+            '<(baked_in_configs_cc)'
+          ],
+          'action': ['python',
+                     '<(bake_in_configs_script)',
+                     '<@(baked_in_configs)',
+                     '<(baked_in_configs_cc)'],
+          'process_outputs_as_sources': 1,
+          'message': 'Baking in Domain Reliability configs',
+        },
       ],
     },
   ],

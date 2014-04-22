@@ -504,6 +504,7 @@ void ProfileImplIOData::InitializeInternal(
   if (IsDomainReliabilityMonitoringEnabled()) {
     domain_reliability_monitor_.reset(
         new domain_reliability::DomainReliabilityMonitor(main_context));
+    domain_reliability_monitor_->AddBakedInConfigs();
     network_delegate()->set_domain_reliability_monitor(
         domain_reliability_monitor_.get());
   }

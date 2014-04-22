@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "components/domain_reliability/baked_in_configs.h"
 #include "components/domain_reliability/beacon.h"
 #include "components/domain_reliability/config.h"
 #include "components/domain_reliability/test_util.h"
@@ -40,6 +41,7 @@ class DomainReliabilityMonitorTest : public testing::Test {
 
   static scoped_ptr<const DomainReliabilityConfig> CreateConfig() {
     DomainReliabilityConfig* config = new DomainReliabilityConfig();
+
     DomainReliabilityConfig::Resource* resource;
 
     resource = new DomainReliabilityConfig::Resource();
@@ -48,6 +50,7 @@ class DomainReliabilityMonitorTest : public testing::Test {
         new std::string("http://example/always_report"));
     resource->success_sample_rate = 1.0;
     resource->failure_sample_rate = 1.0;
+    EXPECT_TRUE(resource->IsValid());
     config->resources.push_back(resource);
 
     resource = new DomainReliabilityConfig::Resource();
@@ -56,13 +59,19 @@ class DomainReliabilityMonitorTest : public testing::Test {
         new std::string("http://example/never_report"));
     resource->success_sample_rate = 0.0;
     resource->failure_sample_rate = 0.0;
+    EXPECT_TRUE(resource->IsValid());
     config->resources.push_back(resource);
 
     DomainReliabilityConfig::Collector* collector;
     collector = new DomainReliabilityConfig::Collector();
     collector->upload_url = GURL("https://example/upload");
-    config->domain = "example";
+    EXPECT_TRUE(collector->IsValid());
     config->collectors.push_back(collector);
+
+    config->version = "1";
+    config->valid_until = 1234567890.0;
+    config->domain = "example";
+    EXPECT_TRUE(config->IsValid());
 
     return scoped_ptr<const DomainReliabilityConfig>(config);
   }
@@ -128,6 +137,21 @@ TEST_F(DomainReliabilityMonitorTest, ContextRequestWithDoNotSendCookies) {
 
   EXPECT_TRUE(CheckNoBeacons(0));
   EXPECT_TRUE(CheckNoBeacons(1));
+}
+
+TEST_F(DomainReliabilityMonitorTest, AddBakedInConfigs) {
+  // AddBakedInConfigs DCHECKs that the baked-in configs parse correctly, so
+  // this unittest will fail if someone tries to add an invalid config to the
+  // source tree.
+  monitor_.AddBakedInConfigs();
+
+  size_t num_baked_in_configs = 0;
+  for (const char* const* p = kBakedInJsonConfigs; *p; ++p)
+    ++num_baked_in_configs;
+
+  // The monitor should have contexts for all of the baked-in configs, plus the
+  // test one added in the test constructor.
+  EXPECT_EQ(num_baked_in_configs + 1, monitor_.contexts_size_for_testing());
 }
 
 }  // namespace domain_reliability

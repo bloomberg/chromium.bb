@@ -1,0 +1,18 @@
+{
+  "config_version": "www-youtube-com-v1",
+  "config_valid_until": 1405382400.0,
+  "monitored_domain": "www.youtube.com",
+  "collectors": [
+    {
+      "upload_url": "https://clients2.google.com/domainreliability/upload"
+    }
+  ],
+  "monitored_resources": [
+    {
+      "resource_name": "ytfe",
+      "url_patterns": ["http*://www.youtube.com/*"],
+      "success_sample_rate": 0.10,
+      "failure_sample_rate": 1.00
+    }
+  ]
+}

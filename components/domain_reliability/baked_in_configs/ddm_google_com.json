@@ -1,0 +1,18 @@
+{
+  "config_version": "ddm-google-com-v1",
+  "config_valid_until": 1405382400.0,
+  "monitored_domain": "ddm.google.com",
+  "collectors": [
+    {
+      "upload_url": "https://clients2.google.com/domainreliability/upload"
+    }
+  ],
+  "monitored_resources": [
+    {
+      "resource_name": "ddm",
+      "url_patterns": ["http*://ddm.google.com/*"],
+      "success_sample_rate": 0.05,
+      "failure_sample_rate": 0.50
+    }
+  ]
+}
