@@ -34,7 +34,6 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
  public:
   // Shows the bubble.
   static void ShowBubble(content::WebContents* web_contents,
-                         ManagePasswordsIconView* icon_view,
                          DisplayReason reason);
 
   // Closes any existing bubble.
@@ -63,7 +62,6 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
 
   ManagePasswordsBubbleView(content::WebContents* web_contents,
                             views::View* anchor_view,
-                            ManagePasswordsIconView* icon_view,
                             DisplayReason reason);
   virtual ~ManagePasswordsBubbleView();
 
@@ -107,8 +105,6 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
   // shown on the active browser window, so there is no case in which it will be
   // shown twice at the same time.
   static ManagePasswordsBubbleView* manage_passwords_bubble_;
-
-  ManagePasswordsIconView* icon_view_;
 
   // The buttons that are shown in the bubble.
   views::BlueButton* save_button_;

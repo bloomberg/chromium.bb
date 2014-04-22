@@ -83,7 +83,6 @@ ManagePasswordsBubbleView* ManagePasswordsBubbleView::manage_passwords_bubble_ =
 
 // static
 void ManagePasswordsBubbleView::ShowBubble(content::WebContents* web_contents,
-                                           ManagePasswordsIconView* icon_view,
                                            DisplayReason reason) {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   DCHECK(browser);
@@ -96,7 +95,7 @@ void ManagePasswordsBubbleView::ShowBubble(content::WebContents* web_contents,
   views::View* anchor_view = is_fullscreen ?
       NULL : browser_view->GetLocationBarView()->manage_passwords_icon_view();
   manage_passwords_bubble_ = new ManagePasswordsBubbleView(
-      web_contents, anchor_view, icon_view, reason);
+      web_contents, anchor_view, reason);
 
   if (is_fullscreen) {
     manage_passwords_bubble_->set_parent_window(
@@ -130,13 +129,11 @@ bool ManagePasswordsBubbleView::IsShowing() {
 ManagePasswordsBubbleView::ManagePasswordsBubbleView(
     content::WebContents* web_contents,
     views::View* anchor_view,
-    ManagePasswordsIconView* icon_view,
     DisplayReason reason)
     : ManagePasswordsBubble(web_contents, reason),
       BubbleDelegateView(anchor_view,
                          anchor_view ? views::BubbleBorder::TOP_RIGHT
-                                     : views::BubbleBorder::NONE),
-      icon_view_(icon_view) {
+                                     : views::BubbleBorder::NONE) {
   // Compensate for built-in vertical padding in the anchor view's image.
   set_anchor_view_insets(gfx::Insets(5, 0, 5, 0));
   set_notify_enter_exit_on_child(true);
@@ -207,15 +204,11 @@ void ManagePasswordsBubbleView::AdjustForFullscreen(
 }
 
 void ManagePasswordsBubbleView::Close() {
-  icon_view_->SetTooltip(model()->manage_passwords_bubble_state() ==
-                         ManagePasswordsBubbleModel::PASSWORD_TO_BE_SAVED);
   GetWidget()->Close();
 }
 
 void ManagePasswordsBubbleView::CloseWithoutLogging() {
   model()->OnCloseWithoutLogging();
-  icon_view_->SetTooltip(model()->manage_passwords_bubble_state() ==
-                         ManagePasswordsBubbleModel::PASSWORD_TO_BE_SAVED);
   GetWidget()->Close();
 }
 

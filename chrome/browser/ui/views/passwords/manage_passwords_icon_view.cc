@@ -48,7 +48,6 @@ void ManagePasswordsIconView::ShowBubbleIfNeeded(
       !ManagePasswordsBubbleView::IsShowing()) {
     ManagePasswordsBubbleView::ShowBubble(
         location_bar_delegate_->GetWebContents(),
-        this,
         ManagePasswordsBubbleView::AUTOMATIC);
     manage_passwords_bubble_ui_controller->OnBubbleShown();
   }
@@ -72,7 +71,6 @@ void ManagePasswordsIconView::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_TAP) {
     ManagePasswordsBubbleView::ShowBubble(
         location_bar_delegate_->GetWebContents(),
-        this,
         ManagePasswordsBubbleView::USER_ACTION);
     event->SetHandled();
   }
@@ -87,7 +85,6 @@ void ManagePasswordsIconView::OnMouseReleased(const ui::MouseEvent& event) {
   if (event.IsOnlyLeftMouseButton() && HitTestPoint(event.location())) {
     ManagePasswordsBubbleView::ShowBubble(
         location_bar_delegate_->GetWebContents(),
-        this,
         ManagePasswordsBubbleView::USER_ACTION);
   }
 }
