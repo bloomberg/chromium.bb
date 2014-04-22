@@ -148,7 +148,6 @@ class CHROMEOS_EXPORT NetworkConfigurationHandler
       const std::string& service_path,
       const std::vector<std::string>& names,
       const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback,
       const base::ListValue& result);
   void ClearPropertiesErrorCallback(
       const std::string& service_path,
