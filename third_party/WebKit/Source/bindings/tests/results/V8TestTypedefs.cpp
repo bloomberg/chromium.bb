@@ -90,7 +90,8 @@ static void TestTypedefsConstructorGetter(v8::Local<v8::String>, const v8::Prope
 
 static void TestTypedefsReplaceableAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
-    info.This()->ForceSet(name, v8Value);
+    if (info.This()->IsObject())
+        v8::Handle<v8::Object>::Cast(info.This())->ForceSet(name, v8Value);
 }
 
 static void TestTypedefsReplaceableAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)

@@ -231,7 +231,8 @@ void V8Window::openerAttributeSetterCustom(v8::Local<v8::Value> value, const v8:
     info.Holder()->Delete(v8AtomicString(info.GetIsolate(), "opener"));
 
     // Put property on the front (this) object.
-    info.This()->Set(v8AtomicString(info.GetIsolate(), "opener"), value);
+    if (info.This()->IsObject())
+        v8::Handle<v8::Object>::Cast(info.This())->Set(v8AtomicString(info.GetIsolate(), "opener"), value);
 }
 
 static bool isLegacyTargetOriginDesignation(v8::Handle<v8::Value> value)
