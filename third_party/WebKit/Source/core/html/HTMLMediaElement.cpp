@@ -1717,6 +1717,7 @@ void HTMLMediaElement::seek(double time, ExceptionState& exceptionState)
 
     // 3 - Set the seeking IDL attribute to true.
     // The flag will be cleared when the engine tells us the time has actually changed.
+    bool previousSeekStillPending = m_seeking;
     m_seeking = true;
 
     // 5 - If the new playback position is later than the end of the media resource, then let it be the end
@@ -1757,6 +1758,8 @@ void HTMLMediaElement::seek(double time, ExceptionState& exceptionState)
     if (noSeekRequired) {
         if (time == now) {
             scheduleEvent(EventTypeNames::seeking);
+            if (previousSeekStillPending)
+                return;
             // FIXME: There must be a stable state before timeupdate+seeked are dispatched and seeking
             // is reset to false. See http://crbug.com/266631
             scheduleTimeupdateEvent(false);
