@@ -90,11 +90,6 @@
         'include_dirs': [
           'src/include',
         ],
-        'xcode_settings': {
-          'WARNING_CFLAGS': [
-            '-Wno-unknown-pragmas',
-          ],
-        },
       },
       'conditions': [
         ['use_x11==0', {
