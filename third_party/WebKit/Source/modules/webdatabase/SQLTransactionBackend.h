@@ -28,11 +28,11 @@
 #ifndef SQLTransactionBackend_h
 #define SQLTransactionBackend_h
 
-#include "heap/Handle.h"
 #include "modules/webdatabase/AbstractSQLStatement.h"
 #include "modules/webdatabase/AbstractSQLTransactionBackend.h"
 #include "modules/webdatabase/DatabaseBasicTypes.h"
 #include "modules/webdatabase/SQLTransactionStateMachine.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Deque.h"
 #include "wtf/Forward.h"
 #include "wtf/ThreadingPrimitives.h"

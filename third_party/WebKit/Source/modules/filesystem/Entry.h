@@ -32,9 +32,9 @@
 #define Entry_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "heap/Handle.h"
 #include "modules/filesystem/DOMFileSystem.h"
 #include "modules/filesystem/EntryBase.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 

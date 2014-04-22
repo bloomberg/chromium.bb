@@ -28,7 +28,7 @@
 #ifndef DatabaseThread_h
 #define DatabaseThread_h
 
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "public/platform/WebThread.h"
 #include "wtf/Deque.h"
 #include "wtf/HashMap.h"

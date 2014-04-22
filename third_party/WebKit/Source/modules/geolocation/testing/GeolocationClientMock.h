@@ -32,9 +32,9 @@
 #ifndef GeolocationClientMock_h
 #define GeolocationClientMock_h
 
-#include "heap/Handle.h"
 #include "modules/geolocation/GeolocationClient.h"
 #include "platform/Timer.h"
+#include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"

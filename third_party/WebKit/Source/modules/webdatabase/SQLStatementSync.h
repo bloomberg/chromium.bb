@@ -31,9 +31,9 @@
 #ifndef SQLStatementSync_h
 #define SQLStatementSync_h
 
-#include "heap/Handle.h"
 #include "modules/webdatabase/sqlite/SQLValue.h"
 #include "modules/webdatabase/DatabaseBasicTypes.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"

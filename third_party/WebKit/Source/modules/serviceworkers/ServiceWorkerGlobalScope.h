@@ -32,7 +32,7 @@
 
 #include "core/dom/Promise.h"
 #include "core/workers/WorkerGlobalScope.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Assertions.h"
 
 namespace WebCore {

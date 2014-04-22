@@ -28,8 +28,8 @@
 
 #include "core/page/Page.h"
 #include "core/page/PageLifecycleObserver.h"
-#include "heap/Handle.h"
 #include "modules/geolocation/Geolocation.h"
+#include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/RefPtr.h"

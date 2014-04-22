@@ -32,8 +32,8 @@
 #ifndef SQLTransactionBackendSync_h
 #define SQLTransactionBackendSync_h
 
-#include "heap/Handle.h"
 #include "modules/webdatabase/DatabaseBasicTypes.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"

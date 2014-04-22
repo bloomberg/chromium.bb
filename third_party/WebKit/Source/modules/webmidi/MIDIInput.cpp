@@ -31,9 +31,9 @@
 #include "config.h"
 #include "modules/webmidi/MIDIInput.h"
 
-#include "heap/Handle.h"
 #include "modules/webmidi/MIDIAccess.h"
 #include "modules/webmidi/MIDIMessageEvent.h"
+#include "platform/heap/Handle.h"
 
 namespace WebCore {
 

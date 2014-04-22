@@ -7,9 +7,9 @@
 
 #include "core/events/EventTarget.h"
 #include "core/frame/DOMWindowProperty.h"
-#include "heap/Handle.h"
 #include "platform/Supplementable.h"
 #include "platform/Timer.h"
+#include "platform/heap/Handle.h"
 #include "public/platform/WebScreenOrientationLockType.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/WTFString.h"

@@ -31,7 +31,7 @@
 #ifndef DataTransferItemFileSystem_h
 #define DataTransferItemFileSystem_h
 
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 
 namespace WebCore {

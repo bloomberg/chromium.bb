@@ -31,7 +31,7 @@
 
 #include "InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"

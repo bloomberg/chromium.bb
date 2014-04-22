@@ -31,7 +31,7 @@
 #ifndef EntryBase_h
 #define EntryBase_h
 
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 

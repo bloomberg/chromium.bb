@@ -32,8 +32,8 @@
 #define Key_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "heap/Handle.h"
 #include "modules/crypto/NormalizeAlgorithm.h"
+#include "platform/heap/Handle.h"
 #include "public/platform/WebCryptoKey.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"

@@ -7,8 +7,8 @@
 
 #include "bindings/v8/ScriptPromise.h"
 #include "core/frame/Navigator.h"
-#include "heap/Handle.h"
 #include "platform/Supplementable.h"
+#include "platform/heap/Handle.h"
 
 namespace WebCore {
 

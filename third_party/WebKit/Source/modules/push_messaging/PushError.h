@@ -6,7 +6,7 @@
 #define PushError_h
 
 #include "core/dom/DOMError.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "public/platform/WebPushError.h"
 #include "wtf/OwnPtr.h"
 

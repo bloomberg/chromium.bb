@@ -32,7 +32,7 @@
 #define TextDecoder_h
 
 #include "bindings/v8/Dictionary.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/ArrayBufferView.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/TextCodec.h"

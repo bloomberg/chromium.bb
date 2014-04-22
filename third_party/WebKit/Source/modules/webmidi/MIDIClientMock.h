@@ -31,8 +31,8 @@
 #ifndef MIDIClientMock_h
 #define MIDIClientMock_h
 
-#include "heap/Handle.h"
 #include "modules/webmidi/MIDIClient.h"
+#include "platform/heap/Handle.h"
 
 namespace WebCore {
 

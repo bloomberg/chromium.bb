@@ -26,9 +26,9 @@
 #ifndef AbstractDatabaseServer_h
 #define AbstractDatabaseServer_h
 
-#include "heap/Handle.h"
 #include "modules/webdatabase/DatabaseBasicTypes.h"
 #include "modules/webdatabase/DatabaseError.h"
+#include "platform/heap/Handle.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 

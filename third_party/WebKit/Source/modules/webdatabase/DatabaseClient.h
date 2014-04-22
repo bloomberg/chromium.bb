@@ -33,7 +33,7 @@
 
 #include "core/page/Page.h"
 #include "core/workers/WorkerClients.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 
 namespace WebCore {

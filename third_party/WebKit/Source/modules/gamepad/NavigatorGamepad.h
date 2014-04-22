@@ -29,8 +29,8 @@
 #include "core/frame/DOMWindowLifecycleObserver.h"
 #include "core/frame/DOMWindowProperty.h"
 #include "core/frame/DeviceSensorEventController.h"
-#include "heap/Handle.h"
 #include "platform/Supplementable.h"
+#include "platform/heap/Handle.h"
 #include "public/platform/WebGamepads.h"
 
 namespace blink {

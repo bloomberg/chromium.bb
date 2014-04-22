@@ -35,9 +35,9 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
-#include "heap/Handle.h"
 #include "modules/filesystem/DOMFileSystemBase.h"
 #include "modules/filesystem/EntriesCallback.h"
+#include "platform/heap/Handle.h"
 
 namespace WebCore {
 

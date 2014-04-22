@@ -30,8 +30,8 @@
 #ifndef SharedWorkerPerformance_h
 #define SharedWorkerPerformance_h
 
-#include "heap/Handle.h"
 #include "platform/Supplementable.h"
+#include "platform/heap/Handle.h"
 
 namespace WebCore {
 

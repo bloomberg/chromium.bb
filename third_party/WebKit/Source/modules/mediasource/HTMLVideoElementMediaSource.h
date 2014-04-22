@@ -31,7 +31,7 @@
 #ifndef HTMLVideoElementMediaSource_h
 #define HTMLVideoElementMediaSource_h
 
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 
 namespace WebCore {

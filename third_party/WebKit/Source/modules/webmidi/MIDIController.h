@@ -32,7 +32,7 @@
 #define MIDIController_h
 
 #include "core/page/Page.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 
 namespace WebCore {
 

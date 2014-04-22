@@ -33,9 +33,9 @@
 
 #include "bindings/v8/ScriptPromise.h"
 #include "core/frame/DOMWindowProperty.h"
-#include "heap/Handle.h"
 #include "modules/webmidi/MIDIOptions.h"
 #include "platform/Supplementable.h"
+#include "platform/heap/Handle.h"
 
 namespace WebCore {
 

@@ -26,8 +26,8 @@
 #ifndef DatabaseServer_h
 #define DatabaseServer_h
 
-#include "heap/Handle.h"
 #include "modules/webdatabase/AbstractDatabaseServer.h"
+#include "platform/heap/Handle.h"
 
 namespace WebCore {
 

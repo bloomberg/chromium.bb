@@ -30,10 +30,10 @@
 #ifndef DatabaseBackendBase_h
 #define DatabaseBackendBase_h
 
-#include "heap/Handle.h"
 #include "modules/webdatabase/sqlite/SQLiteDatabase.h"
 #include "modules/webdatabase/DatabaseBasicTypes.h"
 #include "modules/webdatabase/DatabaseError.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/RefPtr.h"
 #include "wtf/ThreadSafeRefCounted.h"

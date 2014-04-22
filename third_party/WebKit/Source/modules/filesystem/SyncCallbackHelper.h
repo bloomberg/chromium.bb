@@ -35,7 +35,6 @@
 #include "bindings/v8/ExceptionState.h"
 #include "core/fileapi/FileError.h"
 #include "core/html/VoidCallback.h"
-#include "heap/Handle.h"
 #include "modules/filesystem/DirectoryEntry.h"
 #include "modules/filesystem/EntriesCallback.h"
 #include "modules/filesystem/EntryCallback.h"
@@ -44,6 +43,7 @@
 #include "modules/filesystem/FileEntry.h"
 #include "modules/filesystem/FileSystemCallback.h"
 #include "modules/filesystem/MetadataCallback.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 

@@ -26,11 +26,11 @@
 #ifndef AbstractSQLTransactionBackend_h
 #define AbstractSQLTransactionBackend_h
 
-#include "heap/Handle.h"
 #include "modules/webdatabase/sqlite/SQLValue.h"
 #include "modules/webdatabase/AbstractSQLStatement.h"
 #include "modules/webdatabase/SQLError.h"
 #include "modules/webdatabase/SQLTransactionState.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/Vector.h"

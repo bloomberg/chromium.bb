@@ -5,8 +5,8 @@
 #ifndef NavigatorPushManager_h
 #define NavigatorPushManager_h
 
-#include "heap/Handle.h"
 #include "platform/Supplementable.h"
+#include "platform/heap/Handle.h"
 
 namespace WebCore {
 

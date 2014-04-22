@@ -32,7 +32,7 @@
 #define DeviceOrientationDispatcher_h
 
 #include "core/frame/DeviceSensorEventDispatcher.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "public/platform/WebDeviceOrientationListener.h"
 #include "wtf/RefPtr.h"
 

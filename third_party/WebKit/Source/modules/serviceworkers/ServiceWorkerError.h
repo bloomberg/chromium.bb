@@ -32,7 +32,7 @@
 #define ServiceWorkerError_h
 
 #include "core/dom/DOMError.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "public/platform/WebServiceWorkerError.h"
 #include "wtf/PassOwnPtr.h"
 

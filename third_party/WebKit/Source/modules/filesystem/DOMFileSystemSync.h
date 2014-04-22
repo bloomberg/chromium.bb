@@ -32,8 +32,8 @@
 #define DOMFileSystemSync_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "heap/Handle.h"
 #include "modules/filesystem/DOMFileSystemBase.h"
+#include "platform/heap/Handle.h"
 
 namespace WebCore {
 

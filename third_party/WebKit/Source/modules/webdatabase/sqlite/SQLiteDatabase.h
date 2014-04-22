@@ -27,7 +27,7 @@
 #ifndef SQLiteDatabase_h
 #define SQLiteDatabase_h
 
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Threading.h"
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/text/CString.h"

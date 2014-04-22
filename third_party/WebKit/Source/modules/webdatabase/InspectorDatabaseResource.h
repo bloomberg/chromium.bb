@@ -32,7 +32,7 @@
 #define InspectorDatabaseResource_h
 
 #include "InspectorFrontend.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"

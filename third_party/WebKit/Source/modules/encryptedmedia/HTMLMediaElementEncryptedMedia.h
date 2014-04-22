@@ -6,9 +6,9 @@
 #define HTMLMediaElementEncryptedMedia_h
 
 #include "core/events/EventTarget.h"
-#include "heap/Handle.h"
 #include "platform/Supplementable.h"
 #include "platform/graphics/media/MediaPlayer.h"
+#include "platform/heap/Handle.h"
 #include "public/platform/WebMediaPlayerClient.h"
 #include "wtf/Forward.h"
 

@@ -38,10 +38,10 @@
 #include "core/events/Event.h"
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
-#include "heap/Handle.h"
 #include "modules/indexeddb/IDBAny.h"
 #include "modules/indexeddb/IDBTransaction.h"
 #include "modules/indexeddb/IndexedDB.h"
+#include "platform/heap/Handle.h"
 #include "public/platform/WebIDBCursor.h"
 
 namespace WebCore {

@@ -27,8 +27,8 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/events/EventTarget.h"
-#include "heap/Handle.h"
 #include "platform/Timer.h"
+#include "platform/heap/Handle.h"
 #include "public/platform/WebRTCDataChannelHandler.h"
 #include "public/platform/WebRTCDataChannelHandlerClient.h"
 #include "wtf/RefCounted.h"

@@ -29,13 +29,13 @@
 #ifndef DatabaseTask_h
 #define DatabaseTask_h
 
-#include "heap/Handle.h"
 #include "modules/webdatabase/DatabaseBackend.h"
 #include "modules/webdatabase/DatabaseBasicTypes.h"
 #include "modules/webdatabase/DatabaseError.h"
 #include "modules/webdatabase/SQLTransactionBackend.h"
 #include "platform/Task.h"
 #include "platform/TaskSynchronizer.h"
+#include "platform/heap/Handle.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"

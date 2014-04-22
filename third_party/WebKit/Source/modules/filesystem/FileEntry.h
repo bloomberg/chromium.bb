@@ -31,8 +31,8 @@
 #ifndef FileEntry_h
 #define FileEntry_h
 
-#include "heap/Handle.h"
 #include "modules/filesystem/Entry.h"
+#include "platform/heap/Handle.h"
 
 namespace WebCore {
 

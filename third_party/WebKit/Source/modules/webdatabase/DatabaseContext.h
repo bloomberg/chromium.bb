@@ -29,7 +29,7 @@
 #define DatabaseContext_h
 
 #include "core/dom/ActiveDOMObject.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/ThreadSafeRefCounted.h"
 

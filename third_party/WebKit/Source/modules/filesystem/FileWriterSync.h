@@ -33,8 +33,8 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/fileapi/FileError.h"
-#include "heap/Handle.h"
 #include "modules/filesystem/FileWriterBase.h"
+#include "platform/heap/Handle.h"
 #include "public/platform/WebFileWriterClient.h"
 #include "wtf/PassRefPtr.h"
 

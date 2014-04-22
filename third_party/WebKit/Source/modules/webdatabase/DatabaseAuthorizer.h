@@ -28,7 +28,7 @@
 #ifndef DatabaseAuthorizer_h
 #define DatabaseAuthorizer_h
 
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/HashSet.h"
 #include "wtf/ThreadSafeRefCounted.h"

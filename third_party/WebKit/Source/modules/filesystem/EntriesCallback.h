@@ -31,7 +31,7 @@
 #ifndef EntriesCallback_h
 #define EntriesCallback_h
 
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {

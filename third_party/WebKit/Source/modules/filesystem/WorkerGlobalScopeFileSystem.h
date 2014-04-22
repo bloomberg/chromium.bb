@@ -27,8 +27,8 @@
 #ifndef WorkerGlobalScopeFileSystem_h
 #define WorkerGlobalScopeFileSystem_h
 
-#include "heap/Handle.h"
 #include "modules/filesystem/DOMFileSystemSync.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 
 namespace WebCore {

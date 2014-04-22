@@ -32,7 +32,7 @@
 #define DraggedIsolatedFileSystem_h
 
 #include "core/clipboard/DataObject.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"
 

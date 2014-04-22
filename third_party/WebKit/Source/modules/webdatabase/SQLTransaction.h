@@ -30,11 +30,11 @@
 #define SQLTransaction_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "heap/Handle.h"
 #include "modules/webdatabase/AbstractSQLTransaction.h"
 #include "modules/webdatabase/SQLCallbackWrapper.h"
 #include "modules/webdatabase/SQLStatement.h"
 #include "modules/webdatabase/SQLTransactionStateMachine.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 

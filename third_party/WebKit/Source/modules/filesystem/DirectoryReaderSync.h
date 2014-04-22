@@ -33,8 +33,8 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/fileapi/FileError.h"
-#include "heap/Handle.h"
 #include "modules/filesystem/DirectoryReaderBase.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"

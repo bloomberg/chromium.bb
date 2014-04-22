@@ -26,7 +26,7 @@
 #ifndef DeviceOrientationData_h
 #define DeviceOrientationData_h
 
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 

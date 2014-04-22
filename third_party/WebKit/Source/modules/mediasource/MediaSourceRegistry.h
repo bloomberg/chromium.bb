@@ -32,7 +32,7 @@
 #define MediaSourceRegistry_h
 
 #include "core/html/URLRegistry.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/StringHash.h"

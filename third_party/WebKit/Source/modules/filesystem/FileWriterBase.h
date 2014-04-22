@@ -31,7 +31,7 @@
 #ifndef FileWriterBase_h
 #define FileWriterBase_h
 
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"

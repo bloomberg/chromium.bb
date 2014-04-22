@@ -33,9 +33,9 @@
 
 #include "core/frame/ConsoleTypes.h"
 #include "core/workers/WorkerGlobalScope.h"
-#include "heap/Handle.h"
 #include "modules/websockets/WebSocketChannel.h"
 #include "modules/websockets/WebSocketChannelClient.h"
+#include "platform/heap/Handle.h"
 
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"

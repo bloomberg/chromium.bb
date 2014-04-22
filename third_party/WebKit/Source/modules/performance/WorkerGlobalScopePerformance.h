@@ -31,9 +31,9 @@
 #ifndef WorkerGlobalScopePerformance_h
 #define WorkerGlobalScopePerformance_h
 
-#include "heap/Handle.h"
 #include "modules/performance/WorkerPerformance.h"
 #include "platform/Supplementable.h"
+#include "platform/heap/Handle.h"
 
 namespace WebCore {
 

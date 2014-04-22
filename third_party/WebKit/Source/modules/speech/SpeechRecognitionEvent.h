@@ -27,9 +27,9 @@
 #define SpeechRecognitionEvent_h
 
 #include "core/events/Event.h"
-#include "heap/Handle.h"
 #include "modules/speech/SpeechRecognitionResult.h"
 #include "modules/speech/SpeechRecognitionResultList.h"
+#include "platform/heap/Handle.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {

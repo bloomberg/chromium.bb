@@ -31,7 +31,7 @@
 #ifndef MIDIClient_h
 #define MIDIClient_h
 
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 
 namespace WebCore {
 

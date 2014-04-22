@@ -32,7 +32,7 @@
 #define KeyAlgorithm_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "public/platform/WebCryptoKeyAlgorithm.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"

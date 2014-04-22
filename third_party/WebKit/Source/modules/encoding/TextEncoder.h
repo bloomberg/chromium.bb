@@ -31,7 +31,7 @@
 #ifndef TextEncoder_h
 #define TextEncoder_h
 
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/ArrayBufferView.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Uint8Array.h"

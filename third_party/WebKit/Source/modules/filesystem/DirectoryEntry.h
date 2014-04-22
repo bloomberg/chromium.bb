@@ -31,9 +31,9 @@
 #ifndef DirectoryEntry_h
 #define DirectoryEntry_h
 
-#include "heap/Handle.h"
 #include "modules/filesystem/Entry.h"
 #include "modules/filesystem/FileSystemFlags.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"

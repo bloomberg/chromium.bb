@@ -31,9 +31,9 @@
 #ifndef DOMFileSystemBase_h
 #define DOMFileSystemBase_h
 
-#include "heap/Handle.h"
 #include "modules/filesystem/FileSystemFlags.h"
 #include "platform/FileSystemType.h"
+#include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"

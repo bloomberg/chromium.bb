@@ -27,9 +27,9 @@
 #define Gamepad_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "heap/Handle.h"
 #include "modules/gamepad/GamepadButton.h"
 #include "modules/gamepad/GamepadCommon.h"
+#include "platform/heap/Handle.h"
 #include "public/platform/WebGamepad.h"
 #include "wtf/RefCounted.h"
 

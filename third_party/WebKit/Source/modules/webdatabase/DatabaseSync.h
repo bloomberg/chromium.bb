@@ -32,10 +32,10 @@
 #define DatabaseSync_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "heap/Handle.h"
 #include "modules/webdatabase/DatabaseBackendSync.h"
 #include "modules/webdatabase/DatabaseBase.h"
 #include "modules/webdatabase/DatabaseBasicTypes.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"
 
