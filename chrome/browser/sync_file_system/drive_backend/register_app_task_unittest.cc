@@ -58,6 +58,7 @@ class RegisterAppTaskTest : public testing::Test {
     context_.reset(
         new SyncEngineContext(fake_drive_service_.get(),
                               drive_uploader_.get(),
+                              base::MessageLoopProxy::current(),
                               base::MessageLoopProxy::current()));
 
     ASSERT_EQ(google_apis::HTTP_CREATED,

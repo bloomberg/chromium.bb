@@ -15,6 +15,7 @@
 #include "chrome/browser/drive/drive_service_interface.h"
 #include "chrome/browser/sync_file_system/local_change_processor.h"
 #include "chrome/browser/sync_file_system/remote_file_sync_service.h"
+#include "chrome/browser/sync_file_system/sync_action.h"
 #include "net/base/network_change_notifier.h"
 
 class ExtensionServiceInterface;
@@ -62,10 +63,9 @@ class SyncEngine : public RemoteFileSyncService,
 
   virtual ~SyncEngine();
 
-  void Initialize(
-      const base::FilePath& base_dir,
-      base::SequencedTaskRunner* task_runner,
-      leveldb::Env* env_override);
+  void Initialize(const base::FilePath& base_dir,
+                  base::SequencedTaskRunner* file_task_runner,
+                  leveldb::Env* env_override);
 
   // RemoteFileSyncService overrides.
   virtual void AddServiceObserver(SyncServiceObserver* observer) OVERRIDE;
@@ -147,12 +147,16 @@ class SyncEngine : public RemoteFileSyncService,
 
   SyncEngine(scoped_ptr<drive::DriveServiceInterface> drive_service,
              scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
+             base::SequencedTaskRunner* worker_task_runner,
              drive::DriveNotificationManager* notification_manager,
              ExtensionServiceInterface* extension_service,
              SigninManagerBase* signin_manager);
 
-  void DidProcessRemoteChange(RemoteToLocalSyncer* syncer);
-  void DidApplyLocalChange(LocalToRemoteSyncer* syncer,
+  void DidProcessRemoteChange(sync_file_system::SyncAction sync_action,
+                              const fileapi::FileSystemURL& url);
+  void DidApplyLocalChange(sync_file_system::SyncAction sync_action,
+                           const fileapi::FileSystemURL& url,
+                           const base::FilePath& target_path,
                            SyncStatusCode status);
   void UpdateServiceState(const std::string& description);
   void UpdateRegisteredApps();
@@ -173,6 +177,7 @@ class SyncEngine : public RemoteFileSyncService,
   ObserverList<FileStatusObserver> file_status_observers_;
 
   scoped_ptr<SyncWorker> sync_worker_;
+  scoped_refptr<base::SequencedTaskRunner> worker_task_runner_;
 
   base::WeakPtrFactory<SyncEngine> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(SyncEngine);
