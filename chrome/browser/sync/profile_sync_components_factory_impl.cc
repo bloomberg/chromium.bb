@@ -445,13 +445,16 @@ browser_sync::GenericChangeProcessor*
         const base::WeakPtr<syncer::SyncableService>& local_service,
         const base::WeakPtr<syncer::SyncMergeResult>& merge_result) {
   syncer::UserShare* user_share = profile_sync_service->GetUserShare();
-  // TODO(maniscalco): Replace FakeAttachmentService with a real
-  // AttachmentService implementation once it has been implemented (bug 356359).
-  scoped_ptr<syncer::AttachmentStore> attachment_store(
-      new syncer::FakeAttachmentStore(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
+
   scoped_ptr<syncer::AttachmentService> attachment_service(
-      new syncer::FakeAttachmentService(attachment_store.Pass()));
+      // TODO(tim): Bug 339726. Remove merge_result->model_type hack! This
+      // method (CreateGenericChangeProcessor) will cease to exist in favor
+      // of a new SharedChangeProcessor::Connect, at which point we'll know
+      // the data type.
+      // TODO(maniscalco): Replace FakeAttachmentService with a real
+      // AttachmentService implementation once implemented (bug 356359).
+      new syncer::FakeAttachmentService(
+          CreateCustomAttachmentStoreForType(merge_result->model_type())));
   return new GenericChangeProcessor(
       error_handler,
       local_service,
@@ -588,6 +591,15 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
       NOTREACHED();
       return base::WeakPtr<syncer::SyncableService>();
   }
+}
+
+scoped_ptr<syncer::AttachmentStore>
+    ProfileSyncComponentsFactoryImpl::CreateCustomAttachmentStoreForType(
+    syncer::ModelType type) {
+  scoped_ptr<syncer::AttachmentStore> store(
+      new syncer::FakeAttachmentStore(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
+  return store.Pass();
 }
 
 ProfileSyncComponentsFactory::SyncComponents

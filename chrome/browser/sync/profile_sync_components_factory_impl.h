@@ -56,6 +56,8 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
 
   virtual base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
       syncer::ModelType type) OVERRIDE;
+  virtual scoped_ptr<syncer::AttachmentStore>
+      CreateCustomAttachmentStoreForType(syncer::ModelType type) OVERRIDE;
 
   // Legacy datatypes that need to be converted to the SyncableService API.
   virtual SyncComponents CreateBookmarkSyncComponents(

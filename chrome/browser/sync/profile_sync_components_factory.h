@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/sync_driver/data_type_controller.h"
 #include "components/sync_driver/data_type_error_handler.h"
+#include "components/sync_driver/sync_api_component_factory.h"
 #include "sync/api/sync_merge_result.h"
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 #include "sync/internal_api/public/util/weak_handle.h"
@@ -46,7 +47,8 @@ class HistoryBackend;
 }
 
 // Factory class for all profile sync related classes.
-class ProfileSyncComponentsFactory {
+class ProfileSyncComponentsFactory
+    : public browser_sync::SyncApiComponentFactory {
  public:
   // The various factory methods for the data type model associators
   // and change processors all return this struct.  This is needed
@@ -102,12 +104,6 @@ class ProfileSyncComponentsFactory {
 
   virtual browser_sync::SharedChangeProcessor*
       CreateSharedChangeProcessor() = 0;
-
-  // Returns a weak pointer to the syncable service specified by |type|.
-  // Weak pointer may be unset if service is already destroyed.
-  // Note: Should only be called on the same thread on which a datatype resides.
-  virtual base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
-      syncer::ModelType type) = 0;
 
   // Legacy datatypes that need to be converted to the SyncableService API.
   virtual SyncComponents CreateBookmarkSyncComponents(

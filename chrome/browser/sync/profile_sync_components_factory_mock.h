@@ -52,6 +52,10 @@ class ProfileSyncComponentsFactoryMock : public ProfileSyncComponentsFactory {
       browser_sync::SharedChangeProcessor*());
   MOCK_METHOD1(GetSyncableServiceForType,
                base::WeakPtr<syncer::SyncableService>(syncer::ModelType));
+  MOCK_METHOD1(CreateCustomAttachmentStoreForTypeMock,
+               syncer::AttachmentStore*(syncer::ModelType));
+  virtual scoped_ptr<syncer::AttachmentStore>
+      CreateCustomAttachmentStoreForType(syncer::ModelType type) OVERRIDE;
   MOCK_METHOD2(CreateBookmarkSyncComponents,
       SyncComponents(ProfileSyncService* profile_sync_service,
                      browser_sync::DataTypeErrorHandler* error_handler));

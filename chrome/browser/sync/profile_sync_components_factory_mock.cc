@@ -26,6 +26,12 @@ ProfileSyncComponentsFactoryMock::ProfileSyncComponentsFactoryMock(
 
 ProfileSyncComponentsFactoryMock::~ProfileSyncComponentsFactoryMock() {}
 
+scoped_ptr<syncer::AttachmentStore>
+    ProfileSyncComponentsFactoryMock::CreateCustomAttachmentStoreForType(
+        syncer::ModelType type) {
+  return make_scoped_ptr(CreateCustomAttachmentStoreForTypeMock(type));
+}
+
 ProfileSyncComponentsFactory::SyncComponents
     ProfileSyncComponentsFactoryMock::MakeSyncComponents() {
   return SyncComponents(model_associator_.release(),

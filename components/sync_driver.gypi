@@ -39,6 +39,7 @@
         'sync_driver/pref_names.h',
         'sync_driver/proxy_data_type_controller.cc',
         'sync_driver/proxy_data_type_controller.h',
+        'sync_driver/sync_api_component_factory.h',
         'sync_driver/sync_frontend.cc',
         'sync_driver/sync_frontend.h',
         'sync_driver/sync_prefs.cc',
