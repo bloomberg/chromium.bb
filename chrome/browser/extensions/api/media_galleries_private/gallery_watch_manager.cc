@@ -269,8 +269,10 @@ void GalleryWatchManager::OnProfileShutdown(void* profile_id) {
     return;
   delete it->second;
   g_gallery_watch_managers->erase(it);
-  if (g_gallery_watch_managers->empty())
+  if (g_gallery_watch_managers->empty()) {
     delete g_gallery_watch_managers;
+    g_gallery_watch_managers = NULL;
+  }
 }
 
 // static
