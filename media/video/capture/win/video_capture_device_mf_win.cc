@@ -173,7 +173,7 @@ bool LoadMediaFoundationDlls() {
 
 }  // namespace
 
-class MFReaderCallback
+class MFReaderCallback FINAL
     : public base::RefCountedThreadSafe<MFReaderCallback>,
       public IMFSourceReaderCallback {
  public:

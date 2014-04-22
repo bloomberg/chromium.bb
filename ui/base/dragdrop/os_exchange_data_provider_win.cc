@@ -64,7 +64,7 @@ static STGMEDIUM* GetStorageForFileDescriptor(const base::FilePath& path);
 // some sort of sequential data (why not just use an array?). See comments
 // throughout.
 //
-class FormatEtcEnumerator : public IEnumFORMATETC {
+class FormatEtcEnumerator FINAL : public IEnumFORMATETC {
  public:
   FormatEtcEnumerator(DataObjectImpl::StoredData::const_iterator begin,
                       DataObjectImpl::StoredData::const_iterator end);
@@ -897,7 +897,7 @@ template <typename T>
 static STGMEDIUM* GetStorageForString(const std::basic_string<T>& data) {
   return GetStorageForBytes(
       data.c_str(),
-      (data.size() + 1) * sizeof(std::basic_string<T>::value_type));
+      (data.size() + 1) * sizeof(typename std::basic_string<T>::value_type));
 }
 
 static void GetInternetShortcutFileContents(const GURL& url,

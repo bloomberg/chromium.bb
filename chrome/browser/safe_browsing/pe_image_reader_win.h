@@ -60,6 +60,8 @@ class PeImageReader {
   // An interface to an image's optional header.
   class OptionalHeader {
    public:
+    virtual ~OptionalHeader() {}
+
     virtual WordSize GetWordSize() = 0;
 
     // Returns the offset of the DataDirectory member relative to the start of

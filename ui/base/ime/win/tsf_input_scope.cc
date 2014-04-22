@@ -29,7 +29,7 @@ void AppendNonTrivialInputScope(std::vector<InputScope>* input_scopes,
   input_scopes->push_back(input_scope);
 }
 
-class TSFInputScope : public ITfInputScope {
+class TSFInputScope FINAL : public ITfInputScope {
  public:
   explicit TSFInputScope(const std::vector<InputScope>& input_scopes)
       : input_scopes_(input_scopes),

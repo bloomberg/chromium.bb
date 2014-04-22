@@ -40,7 +40,6 @@
 #include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/common/importer/importer_bridge.h"
 #include "chrome/common/importer/importer_data_types.h"
-#include "chrome/common/importer/pstore_declarations.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/common/password_form.h"
@@ -210,46 +209,6 @@ bool CreateUrlFileWithFavicon(const base::FilePath& file,
 
 bool CreateUrlFile(const base::FilePath& file, const base::string16& url) {
   return CreateUrlFileWithFavicon(file, url, base::string16());
-}
-
-void ClearPStoreType(IPStore* pstore, const GUID* type, const GUID* subtype) {
-  base::win::ScopedComPtr<IEnumPStoreItems, NULL> item;
-  HRESULT result = pstore->EnumItems(0, type, subtype, 0, item.Receive());
-  if (result == PST_E_OK) {
-    base::char16* item_name;
-    while (SUCCEEDED(item->Next(1, &item_name, 0))) {
-      pstore->DeleteItem(0, type, subtype, item_name, NULL, 0);
-      CoTaskMemFree(item_name);
-    }
-  }
-  pstore->DeleteSubtype(0, type, subtype, 0);
-  pstore->DeleteType(0, type, 0);
-}
-
-void WritePStore(IPStore* pstore, const GUID* type, const GUID* subtype) {
-  struct PStoreItem {
-    base::char16* name;
-    int data_size;
-    char* data;
-  } items[] = {
-    {L"http://localhost:8080/security/index.htm#ref:StringData", 8,
-     "\x31\x00\x00\x00\x32\x00\x00\x00"},
-    {L"http://localhost:8080/security/index.htm#ref:StringIndex", 20,
-     "\x57\x49\x43\x4b\x18\x00\x00\x00\x02\x00"
-     "\x00\x00\x2f\x00\x74\x00\x01\x00\x00\x00"},
-    {L"user:StringData", 4,
-     "\x31\x00\x00\x00"},
-    {L"user:StringIndex", 20,
-     "\x57\x49\x43\x4b\x18\x00\x00\x00\x01\x00"
-     "\x00\x00\x2f\x00\x74\x00\x00\x00\x00\x00"},
-  };
-
-  for (int i = 0; i < arraysize(items); ++i) {
-    HRESULT res = pstore->WriteItem(0, type, subtype, items[i].name,
-        items[i].data_size, reinterpret_cast<BYTE*>(items[i].data),
-        NULL, 0, 0);
-    ASSERT_TRUE(res == PST_E_OK);
-  }
 }
 
 class TestObserver : public ProfileWriter,

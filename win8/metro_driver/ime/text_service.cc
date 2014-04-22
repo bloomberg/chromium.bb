@@ -334,7 +334,7 @@ class TextServiceImpl : public TextService,
 
  private:
   // TextService overrides:
-  virtual void TextService::CancelComposition() OVERRIDE {
+  virtual void CancelComposition() OVERRIDE {
     if (!current_document_) {
       VLOG(0) << "|current_document_| is NULL due to the previous error.";
       return;
