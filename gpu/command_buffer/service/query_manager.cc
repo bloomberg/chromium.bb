@@ -512,6 +512,18 @@ QueryManager::Query* QueryManager::CreateQuery(
   return query.get();
 }
 
+void QueryManager::GenQueries(GLsizei n, const GLuint* queries) {
+  DCHECK_GE(n, 0);
+  for (GLsizei i = 0; i < n; ++i) {
+    generated_query_ids_.insert(queries[i]);
+  }
+}
+
+bool QueryManager::IsValidQuery(GLuint id) {
+  GeneratedQueryIds::iterator it = generated_query_ids_.find(id);
+  return it != generated_query_ids_.end();
+}
+
 QueryManager::Query* QueryManager::GetQuery(
     GLuint client_id) {
   QueryMap::iterator it = queries_.find(client_id);
@@ -526,6 +538,7 @@ void QueryManager::RemoveQuery(GLuint client_id) {
     query->MarkAsDeleted();
     queries_.erase(it);
   }
+  generated_query_ids_.erase(client_id);
 }
 
 void QueryManager::StartTracking(QueryManager::Query* /* query */) {

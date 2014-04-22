@@ -188,6 +188,9 @@ class GPU_EXPORT QueryManager {
     return decoder_;
   }
 
+  void GenQueries(GLsizei n, const GLuint* queries);
+  bool IsValidQuery(GLuint id);
+
  private:
   void StartTracking(Query* query);
   void StopTracking(Query* query);
@@ -227,6 +230,9 @@ class GPU_EXPORT QueryManager {
   // Info for each query in the system.
   typedef base::hash_map<GLuint, scoped_refptr<Query> > QueryMap;
   QueryMap queries_;
+
+  typedef base::hash_set<GLuint> GeneratedQueryIds;
+  GeneratedQueryIds generated_query_ids_;
 
   // Queries waiting for completion.
   typedef std::deque<scoped_refptr<Query> > QueryQueue;

@@ -7066,15 +7066,29 @@ TEST_F(GLES2DecoderManualInitTest, BeginEndQueryEXT) {
   EXPECT_CALL(*gl_, BeginQueryARB(GL_ANY_SAMPLES_PASSED_EXT, kNewServiceId))
       .Times(1)
       .RetiresOnSaturation();
+
+  // Query object should not be created untill BeginQueriesEXT.
+  QueryManager* query_manager = decoder_->GetQueryManager();
+  ASSERT_TRUE(query_manager != NULL);
+  QueryManager::Query* query = query_manager->GetQuery(kNewClientId);
+  EXPECT_TRUE(query == NULL);
+
+  // BeginQueryEXT should fail  if id is not generated from GenQueriesEXT.
+  begin_cmd.Init(GL_ANY_SAMPLES_PASSED_EXT,
+                 kInvalidClientId,
+                 kSharedMemoryId,
+                 kSharedMemoryOffset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(begin_cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
   begin_cmd.Init(
       GL_ANY_SAMPLES_PASSED_EXT, kNewClientId,
       kSharedMemoryId, kSharedMemoryOffset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(begin_cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
-  QueryManager* query_manager = decoder_->GetQueryManager();
-  ASSERT_TRUE(query_manager != NULL);
-  QueryManager::Query* query = query_manager->GetQuery(kNewClientId);
+  // After BeginQueriesEXT id name should have query object associated with it.
+  query = query_manager->GetQuery(kNewClientId);
   ASSERT_TRUE(query != NULL);
   EXPECT_FALSE(query->pending());
 

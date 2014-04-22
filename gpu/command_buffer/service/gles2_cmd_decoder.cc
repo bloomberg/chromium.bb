@@ -9467,7 +9467,7 @@ bool GLES2DecoderImpl::GenQueriesEXTHelper(
       return false;
     }
   }
-  // NOTE: We don't generate Query objects here. Only in BeginQueryEXT
+  query_manager_->GenQueries(n, client_ids);
   return true;
 }
 
@@ -9482,8 +9482,8 @@ void GLES2DecoderImpl::DeleteQueriesEXTHelper(
         state_.current_queries.erase(it);
 
       query->Destroy(true);
-      query_manager_->RemoveQuery(client_ids[ii]);
     }
+    query_manager_->RemoveQuery(client_ids[ii]);
   }
 }
 
@@ -9577,24 +9577,12 @@ error::Error GLES2DecoderImpl::HandleBeginQueryEXT(
 
   QueryManager::Query* query = query_manager_->GetQuery(client_id);
   if (!query) {
-    // TODO(gman): Decide if we need this check.
-    //
-    // Checks id was made by glGenQueries
-    //
-    // From the POV of OpenGL ES 2.0 you need to call glGenQueriesEXT
-    // for all Query ids but from the POV of the command buffer service maybe
-    // you don't.
-    //
-    // The client can enforce this. I don't think the service cares.
-    //
-    // IdAllocatorInterface* id_allocator =
-    //     group_->GetIdAllocator(id_namespaces::kQueries);
-    // if (!id_allocator->InUse(client_id)) {
-    //   LOCAL_SET_GL_ERROR(
-    //       GL_INVALID_OPERATION,
-    //       "glBeginQueryEXT", "id not made by glGenQueriesEXT");
-    //   return error::kNoError;
-    // }
+    if (!query_manager_->IsValidQuery(client_id)) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
+                         "glBeginQueryEXT",
+                         "id not made by glGenQueriesEXT");
+      return error::kNoError;
+    }
     query = query_manager_->CreateQuery(
         target, client_id, sync_shm_id, sync_shm_offset);
   }

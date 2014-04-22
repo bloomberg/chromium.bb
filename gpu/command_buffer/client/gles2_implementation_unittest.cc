@@ -2906,9 +2906,6 @@ TEST_F(GLES2ImplementationTest, BeginEndQueryEXT) {
   EXPECT_TRUE(NoCommandsWritten());
   EXPECT_EQ(GL_INVALID_OPERATION, CheckError());
 
-  // Test BeginQueryEXT fails if id not GENed.
-  // TODO(gman):
-
   // Test BeginQueryEXT inserts command.
   struct BeginCmds {
     cmds::BeginQueryEXT begin_query;
