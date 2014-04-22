@@ -83,7 +83,7 @@ DomainReliabilityConfig::~DomainReliabilityConfig() {}
 // static
 scoped_ptr<const DomainReliabilityConfig> DomainReliabilityConfig::FromJSON(
     const base::StringPiece& json) {
-  base::Value* value = base::JSONReader::Read(json);
+  scoped_ptr<base::Value> value(base::JSONReader::Read(json));
   if (!value)
     return scoped_ptr<const DomainReliabilityConfig>();
 
