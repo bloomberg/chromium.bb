@@ -57,6 +57,7 @@ group("root") {
 
   if (is_android) {
     deps -= [
+      "//components/os_crypt",
       "//crypto",
       "//net",
       "//skia",
