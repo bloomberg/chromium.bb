@@ -5,7 +5,6 @@
 #include "content/renderer/media/media_stream.h"
 
 #include "base/logging.h"
-#include "content/renderer/media/media_stream_dependency_factory.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
 
@@ -25,53 +24,58 @@ webrtc::MediaStreamInterface* MediaStream::GetAdapter(
   return native_stream->GetWebRtcAdapter(stream);
 }
 
-MediaStream::MediaStream(MediaStreamDependencyFactory* factory,
-                         const blink::WebMediaStream& stream)
-    : stream_adapter_(NULL),
-      is_local_(true),
-      label_(stream.id().utf8()),
-      factory_(factory) {
-  DCHECK(factory_);
+MediaStream::MediaStream(const blink::WebMediaStream& stream)
+    : is_local_(true),
+      webrtc_media_stream_(NULL) {
 }
 
-MediaStream::MediaStream(webrtc::MediaStreamInterface* stream)
-    : stream_adapter_(stream),
-      is_local_(false),
-      factory_(NULL) {
-  DCHECK(stream);
+MediaStream::MediaStream(webrtc::MediaStreamInterface* webrtc_stream)
+    : is_local_(false),
+      webrtc_media_stream_(webrtc_stream) {
 }
 
 MediaStream::~MediaStream() {
+  DCHECK(observers_.empty());
 }
 
 webrtc::MediaStreamInterface* MediaStream::GetWebRtcAdapter(
     const blink::WebMediaStream& stream) {
-  if (!stream_adapter_) {
-    DCHECK(is_local_);
-    stream_adapter_ = factory_->CreateNativeLocalMediaStream(stream);
+  DCHECK(webrtc_media_stream_);
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return webrtc_media_stream_.get();
+}
+
+void MediaStream::AddObserver(MediaStreamObserver* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(std::find(observers_.begin(), observers_.end(), observer) ==
+      observers_.end());
+  observers_.push_back(observer);
+}
+
+void MediaStream::RemoveObserver(MediaStreamObserver* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  std::vector<MediaStreamObserver*>::iterator it =
+      std::find(observers_.begin(), observers_.end(), observer);
+  DCHECK(it != observers_.end());
+  observers_.erase(it);
+}
+
+bool MediaStream::AddTrack(const blink::WebMediaStreamTrack& track) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  for (std::vector<MediaStreamObserver*>::iterator it = observers_.begin();
+       it != observers_.end(); ++it) {
+    (*it)->TrackAdded(track);
   }
-  DCHECK(stream_adapter_);
-  return stream_adapter_.get();
+  return true;
 }
 
-bool MediaStream::AddTrack(const blink::WebMediaStream& stream,
-                           const blink::WebMediaStreamTrack& track) {
-  // If the libjingle representation of the stream has not been created, it
-  // does not matter if the tracks are added or removed. Once the
-  // libjingle representation is created, a libjingle track representation will
-  // be created for all blink tracks.
-  if (!stream_adapter_)
-    return true;
-  return factory_->AddNativeMediaStreamTrack(stream, track);
-}
-
-bool MediaStream::RemoveTrack(const blink::WebMediaStream& stream,
-                              const blink::WebMediaStreamTrack& track) {
-  // If the libjingle representation of the stream has not been created, it
-  // does not matter if the tracks are added or removed.
-  if (!stream_adapter_)
-    return true;
-  return factory_->RemoveNativeMediaStreamTrack(stream, track);
+bool MediaStream::RemoveTrack(const blink::WebMediaStreamTrack& track) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  for (std::vector<MediaStreamObserver*>::iterator it = observers_.begin();
+       it != observers_.end(); ++it) {
+    (*it)->TrackRemoved(track);
+  }
+  return true;
 }
 
 }  // namespace content

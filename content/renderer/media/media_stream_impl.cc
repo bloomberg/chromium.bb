@@ -341,7 +341,6 @@ void MediaStreamImpl::OnStreamGenerated(
                          video_track_vector);
   web_stream->setExtraData(
       new MediaStream(
-          dependency_factory_,
           *web_stream));
 
   // Wait for the tracks to be started successfully or to fail.
