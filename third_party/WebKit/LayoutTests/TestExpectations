@@ -1114,3 +1114,6 @@ crbug.com/308992 svg/as-object/sizing/svg-in-object-placeholder-height-percentag
 
 # Expectations changes due to switiching to In-renderer Shared Worker.
 crbug.com/327256 fast/workers/shared-worker-lifecycle.html [ Failure Pass ]
+
+crbug.com/365865 [ Linux ] virtual/softwarecompositing/repaint/should-not-repaint-composited-descendants.html [ Failure ]
+crbug.com/365865 [ Linux ] compositing/repaint/should-not-repaint-composited-descendants.html [ Failure ]
