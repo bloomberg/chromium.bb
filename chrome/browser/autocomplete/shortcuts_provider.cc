@@ -49,6 +49,8 @@ class DestinationURLEqualsURL {
 
 }  // namespace
 
+const int ShortcutsProvider::kShortcutsProviderDefaultMaxRelevance = 1199;
+
 ShortcutsProvider::ShortcutsProvider(AutocompleteProviderListener* listener,
                                      Profile* profile)
     : AutocompleteProvider(listener, profile,
@@ -145,7 +147,7 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
   int max_relevance;
   if (!OmniboxFieldTrial::ShortcutsScoringMaxRelevance(
       input.current_page_classification(), &max_relevance))
-    max_relevance = 1199;
+    max_relevance = kShortcutsProviderDefaultMaxRelevance;
 
   for (ShortcutsBackend::ShortcutMap::const_iterator it =
            FindFirstMatch(term_string, backend.get());

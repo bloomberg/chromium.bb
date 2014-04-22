@@ -37,6 +37,7 @@ class ShortcutsProvider
  private:
   friend class ClassifyTest;
   friend class ShortcutsProviderTest;
+  FRIEND_TEST_ALL_PREFIXES(ShortcutsProviderTest, CalculateScore);
 
   typedef std::multimap<base::char16, base::string16> WordMap;
 
@@ -101,6 +102,9 @@ class ShortcutsProvider
   int CalculateScore(const base::string16& terms,
                      const history::ShortcutsDatabase::Shortcut& shortcut,
                      int max_relevance);
+
+  // The default max relevance unless overridden by a field trial.
+  static const int kShortcutsProviderDefaultMaxRelevance;
 
   std::string languages_;
   bool initialized_;

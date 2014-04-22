@@ -250,7 +250,7 @@ AutocompleteMatch BookmarkProvider::TitleMatchToACMatch(
       for_each(title_match.match_positions.begin(),
                title_match.match_positions.end(), ScoringFunctor(title.size()));
   const int kBaseBookmarkScore = 900;
-  const int kMaxBookmarkScore = AutocompleteResult::kLowestDefaultScore - 1;
+  const int kMaxBookmarkScore = 1199;
   const double kBookmarkScoreRange =
       static_cast<double>(kMaxBookmarkScore - kBaseBookmarkScore);
   // It's not likely that GetBookmarksWithTitlesMatching will return overlapping

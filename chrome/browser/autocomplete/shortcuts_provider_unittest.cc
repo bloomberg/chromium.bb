@@ -724,7 +724,8 @@ TEST_F(ShortcutsProviderTest, CalculateScore) {
       base::Time::Now(), 1);
 
   // Maximal score.
-  const int max_relevance = AutocompleteResult::kLowestDefaultScore - 1;
+  const int max_relevance =
+      ShortcutsProvider::kShortcutsProviderDefaultMaxRelevance;
   const int kMaxScore = CalculateScore("test", shortcut, max_relevance);
 
   // Score decreases as percent of the match is decreased.

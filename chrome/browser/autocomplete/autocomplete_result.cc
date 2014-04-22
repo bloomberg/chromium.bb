@@ -96,7 +96,6 @@ bool DestinationSort::operator()(const AutocompleteMatch& elem1,
 
 // static
 const size_t AutocompleteResult::kMaxMatches = 6;
-const int AutocompleteResult::kLowestDefaultScore = 1200;
 
 void AutocompleteResult::Selection::Clear() {
   destination_url = GURL();
