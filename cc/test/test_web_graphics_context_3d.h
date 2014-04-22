@@ -301,6 +301,9 @@ class TestWebGraphicsContext3D {
   void set_support_texture_storage(bool support) {
     test_capabilities_.gpu.texture_storage = support;
   }
+  void set_support_sync_query(bool support) {
+    test_capabilities_.gpu.sync_query = support;
+  }
 
   // When this context is lost, all contexts in its share group are also lost.
   void add_share_group_context(TestWebGraphicsContext3D* context3d) {

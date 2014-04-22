@@ -652,6 +652,8 @@ class CC_EXPORT ResourceProvider {
   scoped_ptr<IdAllocator> texture_id_allocator_;
   scoped_ptr<IdAllocator> buffer_id_allocator_;
 
+  bool use_sync_query_;
+
   DISALLOW_COPY_AND_ASSIGN(ResourceProvider);
 };
 

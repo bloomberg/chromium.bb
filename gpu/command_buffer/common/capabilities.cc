@@ -17,6 +17,7 @@ Capabilities::Capabilities()
       texture_usage(false),
       texture_storage(false),
       discard_framebuffer(false),
+      sync_query(false),
       map_image(false) {}
 
 }  // namespace gpu

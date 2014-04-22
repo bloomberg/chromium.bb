@@ -2682,6 +2682,7 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
   caps.texture_storage = feature_info_->feature_flags().ext_texture_storage;
   caps.discard_framebuffer =
       feature_info_->feature_flags().ext_discard_framebuffer;
+  caps.sync_query = feature_info_->feature_flags().chromium_sync_query;
 
 #if defined(OS_MACOSX)
   // This is unconditionally true on mac, no need to test for it at runtime.
