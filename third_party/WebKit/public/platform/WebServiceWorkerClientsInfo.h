@@ -5,13 +5,18 @@
 #ifndef WebServiceWorkerClientsInfo_h
 #define WebServiceWorkerClientsInfo_h
 
+#include "WebCallbacks.h"
 #include "WebVector.h"
 
 namespace blink {
 
+struct WebServiceWorkerError;
+
 struct WebServiceWorkerClientsInfo {
     WebVector<int> clientIDs;
 };
+
+typedef WebCallbacks<WebServiceWorkerClientsInfo, WebServiceWorkerError> WebServiceWorkerClientsCallbacks;
 
 } // namespace blink
 

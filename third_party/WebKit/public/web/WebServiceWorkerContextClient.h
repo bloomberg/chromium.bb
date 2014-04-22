@@ -32,19 +32,17 @@
 #define WebServiceWorkerContextClient_h
 
 #include "WebWorkerPermissionClientProxy.h"
-#include "public/platform/WebCallbacks.h"
+#include "public/platform/WebServiceWorkerClientsInfo.h"
 #include "public/platform/WebServiceWorkerEventResult.h"
 #include "public/platform/WebURL.h"
 
 namespace blink {
 
 class WebDataSource;
-class WebString;
 class WebServiceWorkerContextProxy;
 class WebServiceWorkerNetworkProvider;
 class WebServiceWorkerResponse;
-struct WebServiceWorkerClientsInfo;
-struct WebServiceWorkerError;
+class WebString;
 
 // This interface is implemented by the client. It is supposed to be created
 // on the main thread and then passed on to the worker thread to be owned
@@ -120,7 +118,6 @@ public:
     // should delete the callbacks after calling either onSuccess or onError.
     // WebServiceWorkerClientsInfo and WebServiceWorkerError ownerships are
     // passed to the WebServiceWorkerClientsCallbacks implementation.
-    typedef WebCallbacks<WebServiceWorkerClientsInfo, WebServiceWorkerError> WebServiceWorkerClientsCallbacks;
     virtual void getClients(WebServiceWorkerClientsCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
 };
 
