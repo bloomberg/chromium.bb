@@ -709,6 +709,8 @@ background_draw(struct widget *widget, void *data)
 	image = NULL;
 	if (background->image)
 		image = load_cairo_surface(background->image);
+	else if (background->color == 0)
+		image = load_cairo_surface(DATADIR "/weston/pattern.png");
 
 	if (image && background->type != -1) {
 		im_w = cairo_image_surface_get_width(image);
@@ -1057,10 +1059,9 @@ background_create(struct desktop *desktop)
 
 	s = weston_config_get_section(desktop->config, "shell", NULL, NULL);
 	weston_config_section_get_string(s, "background-image",
-					 &background->image,
-					 DATADIR "/weston/pattern.png");
+					 &background->image, NULL);
 	weston_config_section_get_uint(s, "background-color",
-				       &background->color, 0xff002244);
+				       &background->color, 0);
 
 	weston_config_section_get_string(s, "background-type",
 					 &type, "tile");
