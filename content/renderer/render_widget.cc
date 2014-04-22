@@ -1558,9 +1558,6 @@ void RenderWidget::didDeactivateCompositor() {
 void RenderWidget::initializeLayerTreeView() {
   compositor_ = RenderWidgetCompositor::Create(
       this, is_threaded_compositing_enabled_);
-  if (!compositor_)
-    return;
-
   compositor_->setViewportSize(size_, physical_backing_size_);
   if (init_complete_)
     StartCompositor();

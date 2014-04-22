@@ -116,6 +116,10 @@ class WebViewPlugin : public blink::WebPlugin,
                              const blink::WebImage& image,
                              const blink::WebPoint& point);
 
+  // TODO(ojan): Remove this override and have this class use a non-null
+  // layerTreeView.
+  virtual bool allowsBrokenNullLayerTreeView() const;
+
   // WebWidgetClient methods:
   virtual void didInvalidateRect(const blink::WebRect&);
   virtual void didChangeCursor(const blink::WebCursorInfo& cursor);

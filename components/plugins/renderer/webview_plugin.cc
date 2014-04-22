@@ -219,6 +219,10 @@ void WebViewPlugin::startDragging(WebLocalFrame*,
   web_view_->dragSourceSystemDragEnded();
 }
 
+bool WebViewPlugin::allowsBrokenNullLayerTreeView() const {
+  return true;
+}
+
 void WebViewPlugin::didInvalidateRect(const WebRect& rect) {
   if (container_)
     container_->invalidateRect(rect);

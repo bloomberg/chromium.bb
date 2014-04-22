@@ -566,6 +566,11 @@ class PrepareFrameAndViewForPrint : public blink::WebViewClient,
     return owns_web_view_ && frame() && frame()->isLoading();
   }
 
+  // TODO(ojan): Remove this override and have this class use a non-null
+  // layerTreeView.
+  // blink::WebViewClient override:
+  virtual bool allowsBrokenNullLayerTreeView() const;
+
  protected:
   // blink::WebViewClient override:
   virtual void didStopLoading();
@@ -699,6 +704,10 @@ void PrepareFrameAndViewForPrint::CopySelection(
   // When loading is done this will call didStopLoading() and that will do the
   // actual printing.
   frame()->loadRequest(blink::WebURLRequest(GURL(url_str)));
+}
+
+bool PrepareFrameAndViewForPrint::allowsBrokenNullLayerTreeView() const {
+  return true;
 }
 
 void PrepareFrameAndViewForPrint::didStopLoading() {
