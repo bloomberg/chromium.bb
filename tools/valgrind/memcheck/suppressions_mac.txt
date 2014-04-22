@@ -152,6 +152,7 @@
    bug_264886
    Memcheck:Leak
    fun:_Znw*
+   ...
    fun:_ZN4base26MessagePumpInstrumentation6CreateERKNS_9TimeDeltaES3_
    fun:_ZN4base24MessagePumpCFRunLoopBase21EnableInstrumentationEv
    fun:_ZN4base24MessagePumpNSApplicationC2Ev
