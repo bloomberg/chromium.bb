@@ -1,4 +1,6 @@
 include_rules = [
+  "+mojo/services",
+  "+ui/aura",
   "+ui/events",
   "+ui/gfx",
 ]
