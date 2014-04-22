@@ -164,7 +164,7 @@ void RenderTableRow::layout()
 
     for (RenderObject* child = firstChild(); child; child = child->nextSibling()) {
         if (child->isTableCell()) {
-            SubtreeLayoutScope layouter(child);
+            SubtreeLayoutScope layouter(*child);
             RenderTableCell* cell = toRenderTableCell(child);
             if (!cell->needsLayout())
                 cell->markForPaginationRelayoutIfNeeded(layouter);

@@ -624,7 +624,7 @@ void RenderLayerScrollableArea::updateAfterLayout()
             if (!m_inOverflowRelayout) {
                 // Our proprietary overflow: overlay value doesn't trigger a layout.
                 m_inOverflowRelayout = true;
-                SubtreeLayoutScope layoutScope(m_box);
+                SubtreeLayoutScope layoutScope(*m_box);
                 layoutScope.setNeedsLayout(m_box);
                 if (m_box->isRenderBlock()) {
                     RenderBlock* block = toRenderBlock(m_box);

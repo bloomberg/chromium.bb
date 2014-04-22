@@ -233,7 +233,7 @@ void SVGRenderSupport::layoutChildren(RenderObject* start, bool selfNeedsLayout)
             }
         }
 
-        SubtreeLayoutScope layoutScope(child);
+        SubtreeLayoutScope layoutScope(*child);
         // Resource containers are nasty: they can invalidate clients outside the current SubtreeLayoutScope.
         // Since they only care about viewport size changes (to resolve their relative lengths), we trigger
         // their invalidation directly from SVGSVGElement::svgAttributeChange() or at a higher

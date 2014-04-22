@@ -36,15 +36,15 @@
 
 namespace WebCore {
 
-SubtreeLayoutScope::SubtreeLayoutScope(RenderObject* root)
+SubtreeLayoutScope::SubtreeLayoutScope(RenderObject& root)
     : m_root(root)
 {
-    RELEASE_ASSERT(m_root->document().view()->isInPerformLayout());
+    RELEASE_ASSERT(m_root.document().view()->isInPerformLayout());
 }
 
 SubtreeLayoutScope::~SubtreeLayoutScope()
 {
-    RELEASE_ASSERT(!m_root->needsLayout());
+    RELEASE_ASSERT(!m_root.needsLayout());
 
 #ifndef NDEBUG
     for (HashSet<RenderObject*>::iterator it = m_renderersToLayout.begin(); it != m_renderersToLayout.end(); ++it)
@@ -54,13 +54,13 @@ SubtreeLayoutScope::~SubtreeLayoutScope()
 
 void SubtreeLayoutScope::setNeedsLayout(RenderObject* descendant)
 {
-    ASSERT(descendant->isDescendantOf(m_root));
+    ASSERT(descendant->isDescendantOf(&m_root));
     descendant->setNeedsLayout(MarkContainingBlockChain, this);
 }
 
 void SubtreeLayoutScope::setChildNeedsLayout(RenderObject* descendant)
 {
-    ASSERT(descendant->isDescendantOf(m_root));
+    ASSERT(descendant->isDescendantOf(&m_root));
     descendant->setChildNeedsLayout(MarkContainingBlockChain, this);
 }
 

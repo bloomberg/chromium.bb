@@ -2707,7 +2707,7 @@ void FrameView::paintContents(GraphicsContext* p, const IntRect& rect)
 
 #ifndef NDEBUG
     renderView->assertSubtreeIsLaidOut();
-    RenderObject::SetLayoutNeededForbiddenScope forbidSetNeedsLayout(rootLayer->renderer());
+    RenderObject::SetLayoutNeededForbiddenScope forbidSetNeedsLayout(*rootLayer->renderer());
 #endif
 
     RenderObject* enclosingLayerRenderer = renderer ? renderer->enclosingLayer()->renderer() : 0;

@@ -300,7 +300,7 @@ void RenderBlockFlow::layoutBlock(bool relayoutChildren)
     if (!relayoutChildren && simplifiedLayout())
         return;
 
-    SubtreeLayoutScope layoutScope(this);
+    SubtreeLayoutScope layoutScope(*this);
 
     // Multiple passes might be required for column and pagination based layout
     // In the case of the old column code the number of passes will only be two
@@ -546,7 +546,7 @@ void RenderBlockFlow::layoutBlockChild(RenderBox* child, MarginInfo& marginInfo,
             previousFloatLogicalBottom = max(previousFloatLogicalBottom, oldLogicalTop + childRenderBlockFlow->lowestFloatLogicalBottom());
     }
 
-    SubtreeLayoutScope layoutScope(child);
+    SubtreeLayoutScope layoutScope(*child);
     if (!child->needsLayout())
         child->markForPaginationRelayoutIfNeeded(layoutScope);
 
@@ -578,7 +578,7 @@ void RenderBlockFlow::layoutBlockChild(RenderBox* child, MarginInfo& marginInfo,
     // clearFloatsIfNeeded can also mark the child as needing a layout even though we didn't move. This happens
     // when collapseMargins dynamically adds overhanging floats because of a child with negative margins.
     if (logicalTopAfterClear != logicalTopEstimate || child->needsLayout() || (paginated && childRenderBlock && childRenderBlock->shouldBreakAtLineToAvoidWidow())) {
-        SubtreeLayoutScope layoutScope(child);
+        SubtreeLayoutScope layoutScope(*child);
         if (child->shrinkToAvoidFloats()) {
             // The child's width depends on the line width.
             // When the child shifts to clear an item, its width can
@@ -675,7 +675,7 @@ LayoutUnit RenderBlockFlow::adjustBlockChildForPagination(LayoutUnit logicalTopA
             child->setChildNeedsLayout(MarkOnlyThis);
         }
 
-        SubtreeLayoutScope layoutScope(child);
+        SubtreeLayoutScope layoutScope(*child);
 
         if (childRenderBlock) {
             if (!child->avoidsFloats() && childRenderBlock->containsFloats())
@@ -2331,7 +2331,7 @@ bool RenderBlockFlow::positionNewFloats()
         setLogicalLeftForChild(childBox, floatLogicalLocation.x() + childLogicalLeftMargin);
         setLogicalTopForChild(childBox, floatLogicalLocation.y() + marginBeforeForChild(childBox));
 
-        SubtreeLayoutScope layoutScope(childBox);
+        SubtreeLayoutScope layoutScope(*childBox);
         LayoutState* layoutState = view()->layoutState();
         bool isPaginated = layoutState->isPaginated();
         if (isPaginated && !childBox->needsLayout())

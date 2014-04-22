@@ -47,7 +47,7 @@ PassRefPtrWillBeRawPtr<CSSValue> StyleFetchedImage::cssValue() const
     return CSSImageValue::create(m_image->url(), const_cast<StyleFetchedImage*>(this));
 }
 
-bool StyleFetchedImage::canRender(const RenderObject* renderer, float multiplier) const
+bool StyleFetchedImage::canRender(const RenderObject& renderer, float multiplier) const
 {
     return m_image->canRender(renderer, multiplier);
 }

@@ -426,7 +426,7 @@ void RenderTable::layout()
     recalcBordersInRowDirection();
 
     LayoutRepainter repainter(*this, checkForRepaintDuringLayout());
-    SubtreeLayoutScope layouter(this);
+    SubtreeLayoutScope layouter(*this);
 
 
     // If any table section moved vertically, we will just repaint everything from that

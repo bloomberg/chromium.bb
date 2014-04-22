@@ -161,7 +161,7 @@ void RenderSliderContainer::layout()
     RenderBox* thumb = thumbElement ? thumbElement->renderBox() : 0;
     RenderBox* track = trackElement ? trackElement->renderBox() : 0;
 
-    SubtreeLayoutScope layoutScope(this);
+    SubtreeLayoutScope layoutScope(*this);
     // Force a layout to reset the position of the thumb so the code below doesn't move the thumb to the wrong place.
     // FIXME: Make a custom Render class for the track and move the thumb positioning code there.
     if (track)

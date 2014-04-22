@@ -52,7 +52,7 @@ PassRefPtrWillBeRawPtr<CSSValue> StyleFetchedImageSet::cssValue() const
     return m_imageSetValue;
 }
 
-bool StyleFetchedImageSet::canRender(const RenderObject* renderer, float multiplier) const
+bool StyleFetchedImageSet::canRender(const RenderObject& renderer, float multiplier) const
 {
     return m_bestFitImage->canRender(renderer, multiplier);
 }

@@ -248,7 +248,7 @@ void RenderTableCell::layout()
     if (isBaselineAligned() && section()->rowBaseline(rowIndex()) && cellBaselinePosition() > section()->rowBaseline(rowIndex())) {
         int newIntrinsicPaddingBefore = max<LayoutUnit>(0, intrinsicPaddingBefore() - max<LayoutUnit>(0, cellBaselinePosition() - oldCellBaseline));
         setIntrinsicPaddingBefore(newIntrinsicPaddingBefore);
-        SubtreeLayoutScope layouter(this);
+        SubtreeLayoutScope layouter(*this);
         layouter.setNeedsLayout(this);
         layoutBlock(cellWidthChanged());
     }

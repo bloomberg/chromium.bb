@@ -56,7 +56,7 @@ public:
 
     void clearImageSetValue() { m_imageSetValue = 0; }
 
-    virtual bool canRender(const RenderObject*, float multiplier) const OVERRIDE;
+    virtual bool canRender(const RenderObject&, float multiplier) const OVERRIDE;
     virtual bool isLoaded() const OVERRIDE;
     virtual bool errorOccurred() const OVERRIDE;
     virtual LayoutSize imageSize(const RenderObject*, float multiplier) const OVERRIDE;

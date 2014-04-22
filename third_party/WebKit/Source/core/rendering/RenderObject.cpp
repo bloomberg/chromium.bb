@@ -96,16 +96,16 @@ using namespace HTMLNames;
 
 #ifndef NDEBUG
 
-RenderObject::SetLayoutNeededForbiddenScope::SetLayoutNeededForbiddenScope(RenderObject* renderObject)
+RenderObject::SetLayoutNeededForbiddenScope::SetLayoutNeededForbiddenScope(RenderObject& renderObject)
     : m_renderObject(renderObject)
-    , m_preexistingForbidden(m_renderObject->isSetNeedsLayoutForbidden())
+    , m_preexistingForbidden(m_renderObject.isSetNeedsLayoutForbidden())
 {
-    m_renderObject->setNeedsLayoutIsForbidden(true);
+    m_renderObject.setNeedsLayoutIsForbidden(true);
 }
 
 RenderObject::SetLayoutNeededForbiddenScope::~SetLayoutNeededForbiddenScope()
 {
-    m_renderObject->setNeedsLayoutIsForbidden(m_preexistingForbidden);
+    m_renderObject.setNeedsLayoutIsForbidden(m_preexistingForbidden);
 }
 #endif
 
@@ -831,7 +831,7 @@ RenderObject* RenderObject::clippingContainer() const
     return 0;
 }
 
-static bool mustRepaintFillLayers(const RenderObject* renderer, const FillLayer* layer)
+static bool mustRepaintFillLayers(const RenderObject& renderer, const FillLayer* layer)
 {
     // Nobody will use multiple layers without wanting fancy positioning.
     if (layer->next())
@@ -839,7 +839,7 @@ static bool mustRepaintFillLayers(const RenderObject* renderer, const FillLayer*
 
     // Make sure we have a valid image.
     StyleImage* img = layer->image();
-    if (!img || !img->canRender(renderer, renderer->style()->effectiveZoom()))
+    if (!img || !img->canRender(renderer, renderer.style()->effectiveZoom()))
         return false;
 
     if (!layer->xPosition().isZero() || !layer->yPosition().isZero())
@@ -867,19 +867,19 @@ bool RenderObject::borderImageIsLoadedAndCanBeRendered() const
     ASSERT(style()->hasBorder());
 
     StyleImage* borderImage = style()->borderImage().image();
-    return borderImage && borderImage->canRender(this, style()->effectiveZoom()) && borderImage->isLoaded();
+    return borderImage && borderImage->canRender(*this, style()->effectiveZoom()) && borderImage->isLoaded();
 }
 
 bool RenderObject::mustRepaintBackgroundOrBorder() const
 {
-    if (hasMask() && mustRepaintFillLayers(this, style()->maskLayers()))
+    if (hasMask() && mustRepaintFillLayers(*this, style()->maskLayers()))
         return true;
 
     // If we don't have a background/border/mask, then nothing to do.
     if (!hasBoxDecorations())
         return false;
 
-    if (mustRepaintFillLayers(this, style()->backgroundLayers()))
+    if (mustRepaintFillLayers(*this, style()->backgroundLayers()))
         return true;
 
     // Our fill layers are ok.  Let's check border.

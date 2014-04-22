@@ -63,7 +63,7 @@ public:
     static std::pair<WebCore::Image*, float> brokenImage(float deviceScaleFactor); // Returns an image and the image's resolution scale factor.
     bool willPaintBrokenImage() const;
 
-    bool canRender(const RenderObject* renderer, float multiplier) { return !errorOccurred() && !imageSizeForRenderer(renderer, multiplier).isEmpty(); }
+    bool canRender(const RenderObject& renderer, float multiplier) { return !errorOccurred() && !imageSizeForRenderer(&renderer, multiplier).isEmpty(); }
 
     void setContainerSizeForRenderer(const ImageResourceClient*, const IntSize&, float);
     bool usesImageContainerSize() const;

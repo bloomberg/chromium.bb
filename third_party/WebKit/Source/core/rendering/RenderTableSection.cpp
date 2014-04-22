@@ -635,7 +635,7 @@ void RenderTableSection::updateBaselineForCell(RenderTableCell* cell, unsigned r
 int RenderTableSection::calcRowLogicalHeight()
 {
 #ifndef NDEBUG
-    SetLayoutNeededForbiddenScope layoutForbiddenScope(this);
+    SetLayoutNeededForbiddenScope layoutForbiddenScope(*this);
 #endif
 
     ASSERT(!needsLayout());
@@ -739,7 +739,7 @@ void RenderTableSection::layout()
 
     const Vector<int>& columnPos = table()->columnPositions();
 
-    SubtreeLayoutScope layouter(this);
+    SubtreeLayoutScope layouter(*this);
     for (unsigned r = 0; r < m_grid.size(); ++r) {
         Row& row = m_grid[r].row;
         unsigned cols = row.size();
@@ -874,7 +874,7 @@ static bool shouldFlexCellChild(RenderObject* cellDescendant)
 void RenderTableSection::layoutRows()
 {
 #ifndef NDEBUG
-    SetLayoutNeededForbiddenScope layoutForbiddenScope(this);
+    SetLayoutNeededForbiddenScope layoutForbiddenScope(*this);
 #endif
 
     ASSERT(!needsLayout());
@@ -970,7 +970,7 @@ void RenderTableSection::layoutRows()
                 }
             }
 
-            SubtreeLayoutScope layouter(cell);
+            SubtreeLayoutScope layouter(*cell);
             cell->computeIntrinsicPadding(rHeight, layouter);
 
             LayoutRect oldCellRect = cell->frameRect();

@@ -51,7 +51,7 @@ public:
 
     virtual PassRefPtrWillBeRawPtr<CSSValue> cssValue() const = 0;
 
-    virtual bool canRender(const RenderObject*, float /*multiplier*/) const { return true; }
+    virtual bool canRender(const RenderObject&, float /*multiplier*/) const { return true; }
     virtual bool isLoaded() const { return true; }
     virtual bool errorOccurred() const { return false; }
     virtual LayoutSize imageSize(const RenderObject*, float multiplier) const = 0;

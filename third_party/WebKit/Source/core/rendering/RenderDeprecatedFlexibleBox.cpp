@@ -371,7 +371,7 @@ void RenderDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren)
             if (child->isOutOfFlowPositioned())
                 continue;
 
-            SubtreeLayoutScope layoutScope(child);
+            SubtreeLayoutScope layoutScope(*child);
             if (relayoutChildren || (child->isReplaced() && (child->style()->width().isPercent() || child->style()->height().isPercent())))
                 layoutScope.setChildNeedsLayout(child);
 
@@ -439,7 +439,7 @@ void RenderDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren)
                 continue;
             }
 
-            SubtreeLayoutScope layoutScope(child);
+            SubtreeLayoutScope layoutScope(*child);
 
             // We need to see if this child's height has changed, since we make block elements
             // fill the height of a containing box by default.
@@ -670,7 +670,7 @@ void RenderDeprecatedFlexibleBox::layoutVerticalBox(bool relayoutChildren)
                 continue;
             }
 
-            SubtreeLayoutScope layoutScope(child);
+            SubtreeLayoutScope layoutScope(*child);
             if (!haveLineClamp && (relayoutChildren || (child->isReplaced() && (child->style()->width().isPercent() || child->style()->height().isPercent()))))
                 layoutScope.setChildNeedsLayout(child);
 

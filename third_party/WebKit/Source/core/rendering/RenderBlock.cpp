@@ -1609,7 +1609,7 @@ void RenderBlock::layoutPositionedObjects(bool relayoutChildren, PositionedLayou
         // FIXME: this should only be set from clearNeedsLayout crbug.com/361250
         r->setLayoutDidGetCalled(true);
 
-        SubtreeLayoutScope layoutScope(r);
+        SubtreeLayoutScope layoutScope(*r);
         // A fixed position element with an absolute positioned ancestor has no way of knowing if the latter has changed position. So
         // if this is a fixed position element, mark it for layout if it has an abspos ancestor and needs to move with that ancestor, i.e.
         // it has static position.
