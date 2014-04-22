@@ -661,6 +661,27 @@ void AutofillDialogControllerImpl::Show() {
     return;
   }
 
+  // Fail if the author didn't ask for at least some kind of credit card
+  // information.
+  bool has_credit_card_field = false;
+  for (size_t i = 0; i < form_structure_.field_count(); ++i) {
+    AutofillType type = form_structure_.field(i)->Type();
+    if (type.html_type() != HTML_TYPE_UNKNOWN && type.group() == CREDIT_CARD) {
+      has_credit_card_field = true;
+      break;
+    }
+  }
+
+  if (!has_credit_card_field) {
+    callback_.Run(
+        AutofillManagerDelegate::AutocompleteResultErrorUnsupported,
+        base::ASCIIToUTF16("Form is not a payment form (must contain "
+                           "some autocomplete=\"cc-*\" fields). "),
+        NULL);
+    delete this;
+    return;
+  }
+
   billing_country_combobox_model_.reset(new CountryComboboxModel(
       *GetManager(),
       base::Bind(CountryFilter,
@@ -728,8 +749,6 @@ void AutofillDialogControllerImpl::Show() {
       ValidationRulesStorageFactory::CreateStorage(),
       this);
 
-  // TODO(estade): don't show the dialog if the site didn't specify the right
-  // fields. First we must figure out what the "right" fields are.
   SuggestionsUpdated();
   SubmitButtonDelayBegin();
   view_.reset(CreateView());

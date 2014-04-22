@@ -354,6 +354,10 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
     field.autocomplete_attribute = "shipping tel";
     form.fields.push_back(field);
 
+    FormFieldData cc;
+    cc.autocomplete_attribute = "cc-number";
+    form.fields.push_back(cc);
+
     test_generated_bubble_controller_ =
         new testing::NiceMock<TestGeneratedCreditCardBubbleController>(
             GetActiveWebContents());

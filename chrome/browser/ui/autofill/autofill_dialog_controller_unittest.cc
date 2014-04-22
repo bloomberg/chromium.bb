@@ -463,7 +463,8 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
   void SetUpControllerWithFormData(const FormData& form_data) {
     ResetControllerWithFormData(form_data);
     controller()->Show();
-    if (!profile()->GetPrefs()->GetBoolean(
+    if (controller() &&
+        !profile()->GetPrefs()->GetBoolean(
             ::prefs::kAutofillDialogPayWithoutWallet)) {
       EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems());
       controller()->OnDidFetchWalletCookieValue(std::string());
@@ -676,6 +677,42 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
 };
 
 }  // namespace
+
+TEST_F(AutofillDialogControllerTest, RefuseToShowWithNoAutocompleteAttributes) {
+  FormFieldData email_field;
+  email_field.name = ASCIIToUTF16("email");
+  FormFieldData cc_field;
+  cc_field.name = ASCIIToUTF16("cc");
+  FormFieldData billing_field;
+  billing_field.name = ASCIIToUTF16("billing name");
+
+  FormData form_data;
+  form_data.fields.push_back(email_field);
+  form_data.fields.push_back(cc_field);
+  form_data.fields.push_back(billing_field);
+
+  SetUpControllerWithFormData(form_data);
+  EXPECT_FALSE(controller());
+}
+
+TEST_F(AutofillDialogControllerTest, RefuseToShowWithNoCcField) {
+  FormFieldData shipping_tel;
+  shipping_tel.autocomplete_attribute = "shipping tel";
+
+  FormData form_data;
+  form_data.fields.push_back(shipping_tel);
+
+  SetUpControllerWithFormData(form_data);
+  EXPECT_FALSE(controller());
+
+  // Any cc- field will do.
+  FormFieldData cc_field;
+  cc_field.autocomplete_attribute = "cc-csc";
+  form_data.fields.push_back(cc_field);
+
+  SetUpControllerWithFormData(form_data);
+  EXPECT_TRUE(controller());
+}
 
 // Ensure the default ValidityMessage has the expected values.
 TEST_F(AutofillDialogControllerTest, DefaultValidityMessage) {
@@ -1311,10 +1348,13 @@ TEST_F(AutofillDialogControllerTest, BillingVsShippingPhoneNumber) {
   shipping_tel.autocomplete_attribute = "shipping tel";
   FormFieldData billing_tel;
   billing_tel.autocomplete_attribute = "billing tel";
+  FormFieldData cc_field;
+  cc_field.autocomplete_attribute = "cc-csc";
 
   FormData form_data;
   form_data.fields.push_back(shipping_tel);
   form_data.fields.push_back(billing_tel);
+  form_data.fields.push_back(cc_field);
   SetUpControllerWithFormData(form_data);
 
   SwitchToAutofill();
@@ -1332,7 +1372,7 @@ TEST_F(AutofillDialogControllerTest, BillingVsShippingPhoneNumber) {
   billing_model->ActivatedAt(1);
 
   controller()->OnAccept();
-  ASSERT_EQ(2U, form_structure()->field_count());
+  ASSERT_EQ(3U, form_structure()->field_count());
   EXPECT_EQ(PHONE_HOME_WHOLE_NUMBER,
             form_structure()->field(0)->Type().GetStorableType());
   EXPECT_EQ(PHONE_HOME, form_structure()->field(0)->Type().group());
@@ -1361,12 +1401,15 @@ TEST_F(AutofillDialogControllerTest, BillingVsShippingStreetAddress) {
   FormFieldData billing_address_textarea;
   billing_address_textarea.autocomplete_attribute = "billing street-address";
   billing_address_textarea.form_control_type = "textarea";
+  FormFieldData cc_field;
+  cc_field.autocomplete_attribute = "cc-csc";
 
   FormData form_data;
   form_data.fields.push_back(shipping_address);
   form_data.fields.push_back(billing_address);
   form_data.fields.push_back(shipping_address_textarea);
   form_data.fields.push_back(billing_address_textarea);
+  form_data.fields.push_back(cc_field);
   SetUpControllerWithFormData(form_data);
 
   SwitchToAutofill();
@@ -1384,7 +1427,7 @@ TEST_F(AutofillDialogControllerTest, BillingVsShippingStreetAddress) {
   billing_model->ActivatedAt(1);
 
   controller()->OnAccept();
-  ASSERT_EQ(4U, form_structure()->field_count());
+  ASSERT_EQ(5U, form_structure()->field_count());
   EXPECT_EQ(ADDRESS_HOME_STREET_ADDRESS,
             form_structure()->field(0)->Type().GetStorableType());
   EXPECT_EQ(ADDRESS_HOME, form_structure()->field(0)->Type().group());
@@ -3290,7 +3333,12 @@ TEST_F(AutofillDialogControllerTest, LimitedCountryChoices) {
   field.option_values.push_back(ASCIIToUTF16(""));
   field.option_contents.push_back(ASCIIToUTF16("Germany"));
   field.option_values.push_back(ASCIIToUTF16("GRMNY"));
+
+  FormFieldData cc_field;
+  cc_field.autocomplete_attribute = "cc-csc";
+
   form_data.fields.push_back(field);
+  form_data.fields.push_back(cc_field);
   ResetControllerWithFormData(form_data);
   controller()->Show();
 
