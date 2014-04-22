@@ -158,9 +158,8 @@ private:
 
 class CompositingRequirementsUpdater::RecursionData {
 public:
-    RecursionData(RenderLayer* compAncestor, RenderLayer* mostRecentCompositedLayer, bool testOverlap)
+    RecursionData(RenderLayer* compAncestor, bool testOverlap)
         : m_compositingAncestor(compAncestor)
-        , m_mostRecentCompositedLayer(mostRecentCompositedLayer)
         , m_subtreeIsCompositing(false)
         , m_hasUnisolatedCompositedBlendingDescendant(false)
         , m_testingOverlap(testOverlap)
@@ -173,7 +172,6 @@ public:
 
     RecursionData(const RecursionData& other)
         : m_compositingAncestor(other.m_compositingAncestor)
-        , m_mostRecentCompositedLayer(other.m_mostRecentCompositedLayer)
         , m_subtreeIsCompositing(other.m_subtreeIsCompositing)
         , m_hasUnisolatedCompositedBlendingDescendant(other.m_hasUnisolatedCompositedBlendingDescendant)
         , m_testingOverlap(other.m_testingOverlap)
@@ -185,7 +183,6 @@ public:
     }
 
     RenderLayer* m_compositingAncestor;
-    RenderLayer* m_mostRecentCompositedLayer; // in paint order regardless of hierarchy.
     bool m_subtreeIsCompositing;
     bool m_hasUnisolatedCompositedBlendingDescendant;
     bool m_testingOverlap;
@@ -276,7 +273,7 @@ void CompositingRequirementsUpdater::update(RenderLayer* root)
 
     // Go through the layers in presentation order, so that we can compute which RenderLayers need compositing layers.
     // FIXME: we could maybe do this and the hierarchy udpate in one pass, but the parenting logic would be more complex.
-    RecursionData recursionData(root, 0, true);
+    RecursionData recursionData(root, true);
     OverlapMap overlapTestRequestMap;
     bool saw3DTransform = false;
 
@@ -428,19 +425,12 @@ void CompositingRequirementsUpdater::updateRecursive(RenderLayer* ancestorLayer,
         childRecursionData.m_testingOverlap = true;
     }
 
-    if (requiresCompositing(reasonsToComposite)) {
-        currentRecursionData.m_mostRecentCompositedLayer = layer;
-        childRecursionData.m_mostRecentCompositedLayer = layer;
-    }
-
     RenderLayerStackingNodeIterator iterator(*layer->stackingNode(), NormalFlowChildren | PositiveZOrderChildren);
     while (RenderLayerStackingNode* curNode = iterator.next()) {
         IntRect absoluteChildDecendantBoundingBox;
         updateRecursive(layer, curNode->layer(), overlapMap, childRecursionData, anyDescendantHas3DTransform, unclippedDescendants, absoluteChildDecendantBoundingBox);
         absoluteDecendantBoundingBox.unite(absoluteChildDecendantBoundingBox);
     }
-
-    currentRecursionData.m_mostRecentCompositedLayer = childRecursionData.m_mostRecentCompositedLayer;
 
     // Now that the subtree has been traversed, we can check for compositing reasons that depended on the state of the subtree.
 
@@ -507,9 +497,6 @@ void CompositingRequirementsUpdater::updateRecursive(RenderLayer* ancestorLayer,
 
         if (childRecursionData.m_compositingAncestor == layer)
             overlapMap.finishCurrentOverlapTestingContext();
-
-        if (requiresCompositing(reasonsToComposite))
-            currentRecursionData.m_mostRecentCompositedLayer = layer;
 
         descendantHas3DTransform |= anyDescendantHas3DTransform || layer->has3DTransform();
     }
