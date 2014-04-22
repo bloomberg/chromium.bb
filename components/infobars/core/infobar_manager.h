@@ -26,11 +26,11 @@ class InfoBarManager {
   // Observer class for infobar events.
   class Observer {
    public:
-    virtual void OnInfoBarAdded(InfoBar* infobar) = 0;
-    virtual void OnInfoBarRemoved(InfoBar* infobar, bool animate) = 0;
+    virtual void OnInfoBarAdded(InfoBar* infobar);
+    virtual void OnInfoBarRemoved(InfoBar* infobar, bool animate);
     virtual void OnInfoBarReplaced(InfoBar* old_infobar,
-                                   InfoBar* new_infobar) = 0;
-    virtual void OnManagerShuttingDown(InfoBarManager* manager) = 0;
+                                   InfoBar* new_infobar);
+    virtual void OnManagerShuttingDown(InfoBarManager* manager);
   };
 
   InfoBarManager();

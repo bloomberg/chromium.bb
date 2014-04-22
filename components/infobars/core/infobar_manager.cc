@@ -10,6 +10,26 @@
 
 namespace infobars {
 
+
+// InfoBarManager::Observer ---------------------------------------------------
+
+void InfoBarManager::Observer::OnInfoBarAdded(InfoBar* infobar) {
+}
+
+void InfoBarManager::Observer::OnInfoBarRemoved(InfoBar* infobar,
+                                                bool animate) {
+}
+
+void InfoBarManager::Observer::OnInfoBarReplaced(InfoBar* old_infobar,
+                                                 InfoBar* new_infobar) {
+}
+
+void InfoBarManager::Observer::OnManagerShuttingDown(InfoBarManager* manager) {
+}
+
+
+// InfoBarManager --------------------------------------------------------------
+
 InfoBar* InfoBarManager::AddInfoBar(scoped_ptr<InfoBar> infobar) {
   DCHECK(infobar);
   if (!infobars_enabled_)
