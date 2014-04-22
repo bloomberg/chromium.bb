@@ -492,6 +492,7 @@ function addTargetToList(data, list, properties) {
 function addActionLink(row, text, handler, opt_disabled) {
   var link = document.createElement('span');
   link.classList.add('action');
+  link.setAttribute('tabindex', 1);
   if (opt_disabled)
     link.classList.add('disabled');
   else
