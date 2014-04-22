@@ -46,11 +46,11 @@ FaviconTabHelper::FaviconTabHelper(WebContents* web_contents)
   bool download_largest_icon = false;
 #endif
   favicon_handler_.reset(
-      new FaviconHandler(profile_, this, this, FaviconHandler::FAVICON,
+      new FaviconHandler(this, this, FaviconHandler::FAVICON,
                          download_largest_icon));
   if (chrome::kEnableTouchIcon)
     touch_icon_handler_.reset(
-        new FaviconHandler(profile_, this, this, FaviconHandler::TOUCH,
+        new FaviconHandler(this, this, FaviconHandler::TOUCH,
                            download_largest_icon));
 }
 

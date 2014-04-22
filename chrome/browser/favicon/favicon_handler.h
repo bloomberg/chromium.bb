@@ -22,7 +22,6 @@
 
 class FaviconClient;
 class FaviconHandlerDelegate;
-class Profile;
 class SkBitmap;
 
 namespace base {
@@ -87,8 +86,7 @@ class FaviconHandler {
     TOUCH,
   };
 
-  FaviconHandler(Profile* profile,
-                 FaviconClient* client,
+  FaviconHandler(FaviconClient* client,
                  FaviconHandlerDelegate* delegate,
                  Type icon_type,
                  bool download_largest_icon);
@@ -293,9 +291,6 @@ class FaviconHandler {
 
   // The FaviconBitmapResults from history.
   std::vector<favicon_base::FaviconBitmapResult> history_results_;
-
-  // The Profile associated with this handler.
-  Profile* profile_;
 
   // The client which implements embedder-specific Favicon operations.
   FaviconClient* client_;  // weak

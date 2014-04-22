@@ -227,12 +227,11 @@ class TestFaviconHandlerDelegate : public FaviconHandlerDelegate {
 class TestFaviconHandler : public FaviconHandler {
  public:
   TestFaviconHandler(const GURL& page_url,
-                     Profile* profile,
                      FaviconClient* client,
                      FaviconHandlerDelegate* delegate,
                      Type type,
                      bool download_largest_icon)
-                     : FaviconHandler(profile, client, delegate, type,
+                     : FaviconHandler(client, delegate, type,
                                       download_largest_icon),
         entry_(NavigationEntry::Create()),
         download_id_(0),
@@ -476,10 +475,8 @@ TEST_F(FaviconHandlerTest, GetFaviconFromHistory) {
 
   TestFaviconHandlerDelegate delegate;
   TestFaviconClient client;
-  Profile* profile = Profile::FromBrowserContext(
-      web_contents()->GetBrowserContext());
   TestFaviconHandler helper(
-      page_url, profile, &client, &delegate, FaviconHandler::FAVICON, false);
+      page_url, &client, &delegate, FaviconHandler::FAVICON, false);
 
   helper.FetchFavicon(page_url);
   HistoryRequestHandler* history_handler = helper.history_handler();
@@ -519,10 +516,8 @@ TEST_F(FaviconHandlerTest, DownloadFavicon) {
 
   TestFaviconHandlerDelegate delegate;
   TestFaviconClient client;
-  Profile* profile = Profile::FromBrowserContext(
-      web_contents()->GetBrowserContext());
   TestFaviconHandler helper(
-      page_url, profile, &client, &delegate, FaviconHandler::FAVICON, false);
+      page_url, &client, &delegate, FaviconHandler::FAVICON, false);
 
   helper.FetchFavicon(page_url);
   HistoryRequestHandler* history_handler = helper.history_handler();
@@ -591,10 +586,8 @@ TEST_F(FaviconHandlerTest, UpdateAndDownloadFavicon) {
 
   TestFaviconHandlerDelegate delegate;
   TestFaviconClient client;
-  Profile* profile = Profile::FromBrowserContext(
-      web_contents()->GetBrowserContext());
   TestFaviconHandler helper(
-      page_url, profile, &client, &delegate, FaviconHandler::FAVICON, false);
+      page_url, &client, &delegate, FaviconHandler::FAVICON, false);
 
   helper.FetchFavicon(page_url);
   HistoryRequestHandler* history_handler = helper.history_handler();
@@ -675,10 +668,8 @@ TEST_F(FaviconHandlerTest, FaviconInHistoryInvalid) {
 
   TestFaviconHandlerDelegate delegate;
   TestFaviconClient client;
-  Profile* profile = Profile::FromBrowserContext(
-      web_contents()->GetBrowserContext());
   TestFaviconHandler helper(
-      page_url, profile, &client, &delegate, FaviconHandler::FAVICON, false);
+      page_url, &client, &delegate, FaviconHandler::FAVICON, false);
 
   helper.FetchFavicon(page_url);
   HistoryRequestHandler* history_handler = helper.history_handler();
@@ -750,10 +741,8 @@ TEST_F(FaviconHandlerTest, UpdateFavicon) {
 
   TestFaviconHandlerDelegate delegate;
   TestFaviconClient client;
-  Profile* profile = Profile::FromBrowserContext(
-      web_contents()->GetBrowserContext());
   TestFaviconHandler helper(
-      page_url, profile, &client, &delegate, FaviconHandler::FAVICON, false);
+      page_url, &client, &delegate, FaviconHandler::FAVICON, false);
 
   helper.FetchFavicon(page_url);
   HistoryRequestHandler* history_handler = helper.history_handler();
@@ -814,10 +803,8 @@ TEST_F(FaviconHandlerTest, Download2ndFaviconURLCandidate) {
 
   TestFaviconHandlerDelegate delegate;
   TestFaviconClient client;
-  Profile* profile = Profile::FromBrowserContext(
-      web_contents()->GetBrowserContext());
   TestFaviconHandler helper(
-      page_url, profile, &client, &delegate, FaviconHandler::TOUCH, false);
+      page_url, &client, &delegate, FaviconHandler::TOUCH, false);
 
   helper.FetchFavicon(page_url);
   HistoryRequestHandler* history_handler = helper.history_handler();
@@ -930,10 +917,8 @@ TEST_F(FaviconHandlerTest, UpdateDuringDownloading) {
 
   TestFaviconHandlerDelegate delegate;
   TestFaviconClient client;
-  Profile* profile = Profile::FromBrowserContext(
-      web_contents()->GetBrowserContext());
   TestFaviconHandler helper(
-      page_url, profile, &client, &delegate, FaviconHandler::TOUCH, false);
+      page_url, &client, &delegate, FaviconHandler::TOUCH, false);
 
   helper.FetchFavicon(page_url);
   HistoryRequestHandler* history_handler = helper.history_handler();
@@ -1070,15 +1055,12 @@ TEST_F(FaviconHandlerTest, MultipleFavicons) {
   scale_factors.push_back(ui::SCALE_FACTOR_200P);
   ui::test::ScopedSetSupportedScaleFactors scoped_supported(scale_factors);
 
-  Profile* profile = Profile::FromBrowserContext(
-      web_contents()->GetBrowserContext());
-
   // 1) Test that if there are several single resolution favicons to choose from
   // that the largest exact match is chosen.
   TestFaviconHandlerDelegate delegate1;
   TestFaviconClient client;
   TestFaviconHandler handler1(
-      kPageURL, profile, &client, &delegate1, FaviconHandler::FAVICON, false);
+      kPageURL, &client, &delegate1, FaviconHandler::FAVICON, false);
 
   const int kSizes1[] = { 16, 24, 32, 48, 256 };
   std::vector<FaviconURL> urls1(kSourceIconURLs,
@@ -1100,7 +1082,7 @@ TEST_F(FaviconHandlerTest, MultipleFavicons) {
   // from, the exact match is preferred even if it results in upsampling.
   TestFaviconHandlerDelegate delegate2;
   TestFaviconHandler handler2(
-      kPageURL, profile, &client, &delegate2, FaviconHandler::FAVICON, false);
+      kPageURL, &client, &delegate2, FaviconHandler::FAVICON, false);
 
   const int kSizes2[] = { 16, 24, 48, 256 };
   std::vector<FaviconURL> urls2(kSourceIconURLs,
@@ -1116,7 +1098,7 @@ TEST_F(FaviconHandlerTest, MultipleFavicons) {
   // a little are preferred over huge favicons.
   TestFaviconHandlerDelegate delegate3;
   TestFaviconHandler handler3(
-      kPageURL, profile, &client, &delegate3, FaviconHandler::FAVICON, false);
+      kPageURL, &client, &delegate3, FaviconHandler::FAVICON, false);
 
   const int kSizes3[] = { 256, 48 };
   std::vector<FaviconURL> urls3(kSourceIconURLs,
@@ -1130,7 +1112,7 @@ TEST_F(FaviconHandlerTest, MultipleFavicons) {
 
   TestFaviconHandlerDelegate delegate4;
   TestFaviconHandler handler4(
-      kPageURL, profile, &client, &delegate4, FaviconHandler::FAVICON, false);
+      kPageURL, &client, &delegate4, FaviconHandler::FAVICON, false);
 
   const int kSizes4[] = { 17, 256 };
   std::vector<FaviconURL> urls4(kSourceIconURLs,
@@ -1176,13 +1158,10 @@ TEST_F(FaviconHandlerTest, TestSortFavicon) {
                  FaviconURL::FAVICON,
                  std::vector<gfx::Size>())};
 
-  Profile* profile = Profile::FromBrowserContext(
-      web_contents()->GetBrowserContext());
-
   TestFaviconClient client;
   TestFaviconHandlerDelegate delegate1;
   TestFaviconHandler handler1(
-      kPageURL, profile, &client, &delegate1, FaviconHandler::FAVICON, true);
+      kPageURL, &client, &delegate1, FaviconHandler::FAVICON, true);
   std::vector<FaviconURL> urls1(kSourceIconURLs,
                                 kSourceIconURLs + arraysize(kSourceIconURLs));
   UpdateFaviconURL(&handler1, kPageURL, urls1);
@@ -1244,13 +1223,10 @@ TEST_F(FaviconHandlerTest, TestDownloadLargestFavicon) {
                  FaviconURL::FAVICON,
                  std::vector<gfx::Size>())};
 
-  Profile* profile = Profile::FromBrowserContext(
-      web_contents()->GetBrowserContext());
-
   TestFaviconClient client;
   TestFaviconHandlerDelegate delegate1;
   TestFaviconHandler handler1(
-      kPageURL, profile, &client, &delegate1, FaviconHandler::FAVICON, true);
+      kPageURL, &client, &delegate1, FaviconHandler::FAVICON, true);
   std::vector<FaviconURL> urls1(kSourceIconURLs,
                                 kSourceIconURLs + arraysize(kSourceIconURLs));
   UpdateFaviconURL(&handler1, kPageURL, urls1);
@@ -1319,14 +1295,10 @@ TEST_F(FaviconHandlerTest, TestSelectLargestFavicon) {
                  FaviconURL::FAVICON,
                  two_icons)};
 
-  Profile* profile = Profile::FromBrowserContext(
-      web_contents()->GetBrowserContext());
-
-
   TestFaviconClient client;
   TestFaviconHandlerDelegate delegate1;
   TestFaviconHandler handler1(
-      kPageURL, profile, &client, &delegate1, FaviconHandler::FAVICON, true);
+      kPageURL, &client, &delegate1, FaviconHandler::FAVICON, true);
   std::vector<FaviconURL> urls1(kSourceIconURLs,
                                 kSourceIconURLs + arraysize(kSourceIconURLs));
   UpdateFaviconURL(&handler1, kPageURL, urls1);
@@ -1391,13 +1363,10 @@ TEST_F(FaviconHandlerTest, TestKeepDownloadedLargestFavicon) {
                  FaviconURL::FAVICON,
                  std::vector<gfx::Size>())};
 
-  Profile* profile = Profile::FromBrowserContext(
-      web_contents()->GetBrowserContext());
-
   TestFaviconClient client;
   TestFaviconHandlerDelegate delegate1;
   TestFaviconHandler handler1(
-      kPageURL, profile, &client, &delegate1, FaviconHandler::FAVICON, true);
+      kPageURL, &client, &delegate1, FaviconHandler::FAVICON, true);
   std::vector<FaviconURL> urls1(kSourceIconURLs,
                                 kSourceIconURLs + arraysize(kSourceIconURLs));
   UpdateFaviconURL(&handler1, kPageURL, urls1);

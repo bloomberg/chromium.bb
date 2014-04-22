@@ -15,7 +15,6 @@
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/favicon/favicon_util.h"
 #include "chrome/browser/history/select_favicon_frames.h"
-#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
 #include "skia/ext/image_operations.h"
@@ -241,8 +240,7 @@ FaviconHandler::FaviconCandidate::FaviconCandidate(
 
 ////////////////////////////////////////////////////////////////////////////////
 
-FaviconHandler::FaviconHandler(Profile* profile,
-                               FaviconClient* client,
+FaviconHandler::FaviconHandler(FaviconClient* client,
                                FaviconHandlerDelegate* delegate,
                                Type icon_type,
                                bool download_largest_icon)
@@ -253,10 +251,8 @@ FaviconHandler::FaviconHandler(Profile* profile,
                       : favicon_base::TOUCH_ICON |
                             favicon_base::TOUCH_PRECOMPOSED_ICON),
       download_largest_icon_(download_largest_icon),
-      profile_(profile),
       client_(client),
       delegate_(delegate) {
-  DCHECK(profile_);
   DCHECK(delegate_);
 }
 
