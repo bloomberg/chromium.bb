@@ -61,6 +61,13 @@ public:
         EXPONENTIAL_DISTANCE = 2,
     };
 
+    // These enums are used to distinguish what cached values of panner are dirty.
+    enum {
+        AzimuthElevationDirty = 0x1,
+        DistanceConeGainDirty = 0x2,
+        DopplerRateDirty = 0x4,
+    };
+
     static PassRefPtr<PannerNode> create(AudioContext* context, float sampleRate)
     {
         return adoptRef(new PannerNode(context, sampleRate));
@@ -74,20 +81,13 @@ public:
     virtual void initialize() OVERRIDE;
     virtual void uninitialize() OVERRIDE;
 
-    // AudioContext's listener
-    AudioListener* listener();
-
     // Panning model
     String panningModel() const;
     void setPanningModel(const String&);
 
-    // Position
+    // Position, orientation and velocity
     void setPosition(float x, float y, float z);
-
-    // Orientation
     void setOrientation(float x, float y, float z);
-
-    // Velocity
     void setVelocity(float x, float y, float z);
 
     // Distance parameters
@@ -95,23 +95,25 @@ public:
     void setDistanceModel(const String&);
 
     double refDistance() { return m_distanceEffect.refDistance(); }
-    void setRefDistance(double refDistance) { m_distanceEffect.setRefDistance(refDistance); }
+    void setRefDistance(double);
 
     double maxDistance() { return m_distanceEffect.maxDistance(); }
-    void setMaxDistance(double maxDistance) { m_distanceEffect.setMaxDistance(maxDistance); }
+    void setMaxDistance(double);
 
     double rolloffFactor() { return m_distanceEffect.rolloffFactor(); }
-    void setRolloffFactor(double rolloffFactor) { m_distanceEffect.setRolloffFactor(rolloffFactor); }
+    void setRolloffFactor(double);
 
     // Sound cones - angles in degrees
     double coneInnerAngle() const { return m_coneEffect.innerAngle(); }
-    void setConeInnerAngle(double angle) { m_coneEffect.setInnerAngle(angle); }
+    void setConeInnerAngle(double);
 
     double coneOuterAngle() const { return m_coneEffect.outerAngle(); }
-    void setConeOuterAngle(double angle) { m_coneEffect.setOuterAngle(angle); }
+    void setConeOuterAngle(double);
 
     double coneOuterGain() const { return m_coneEffect.outerGain(); }
-    void setConeOuterGain(double angle) { m_coneEffect.setOuterGain(angle); }
+    void setConeOuterGain(double);
+
+    void markPannerAsDirty(unsigned);
 
     // It must be called on audio thread, currently called only process() in AudioBufferSourceNode.
     double dopplerRate();
@@ -122,26 +124,26 @@ public:
 private:
     PannerNode(AudioContext*, float sampleRate);
 
+    // AudioContext's listener
+    AudioListener* listener();
+
     bool setPanningModel(unsigned); // Returns true on success.
     bool setDistanceModel(unsigned); // Returns true on success.
+
     void calculateAzimuthElevation(double* outAzimuth, double* outElevation);
-    // Returns the combined distance and cone gain attenuation.
-    float calculateDistanceConeGain();
+    float calculateDistanceConeGain(); // Returns the combined distance and cone gain attenuation.
     double calculateDopplerRate();
 
     void azimuthElevation(double* outAzimuth, double* outElevation);
     float distanceConeGain();
 
-    bool isAzimuthElevationDirty();
-    bool isDistanceConeGainDirty();
-    bool isDopplerRateDirty();
+    bool isAzimuthElevationDirty() const { return m_isAzimuthElevationDirty; }
+    bool isDistanceConeGainDirty() const { return m_isDistanceConeGainDirty; }
+    bool isDopplerRateDirty() const { return m_isDopplerRateDirty; }
 
     // Notifies any AudioBufferSourceNodes connected to us either directly or indirectly about our existence.
     // This is in order to handle the pitch change necessary for the doppler shift.
     void notifyAudioSourcesConnectedToNode(AudioNode*, HashMap<AudioNode*, bool> &visitedNodes);
-
-    void updateCachedListener();
-    void updateCachedSourceLocationInfo();
 
     OwnPtr<Panner> m_panner;
     unsigned m_panningModel;
@@ -152,30 +154,27 @@ private:
     FloatPoint3D m_orientation;
     FloatPoint3D m_velocity;
 
-    // Cached source location information
-    FloatPoint3D m_cachedPosition;
-    FloatPoint3D m_cachedOrientation;
-    FloatPoint3D m_cachedVelocity;
+    bool m_isAzimuthElevationDirty;
+    bool m_isDistanceConeGainDirty;
+    bool m_isDopplerRateDirty;
 
     // Gain
     DistanceEffect m_distanceEffect;
     ConeEffect m_coneEffect;
     float m_lastGain;
 
+    // Cached values
     double m_cachedAzimuth;
     double m_cachedElevation;
     float m_cachedDistanceConeGain;
     double m_cachedDopplerRate;
-
-    // Cached listener parameters after processing.
-    RefPtr<AudioListener> m_cachedListener;
 
     RefPtr<HRTFDatabaseLoader> m_hrtfDatabaseLoader;
 
     // AudioContext's connection count
     unsigned m_connectionCount;
 
-    // Synchronize process() with setting of the panning model, distance model and caching of the source location/orientation info.
+    // Synchronize process() with setting of the panning model, source's location information, listener, distance parameters and sound cones.
     mutable Mutex m_processLock;
 };
 

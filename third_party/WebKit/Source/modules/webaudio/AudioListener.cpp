@@ -32,6 +32,7 @@
 
 #include "modules/webaudio/AudioListener.h"
 
+#include "modules/webaudio/PannerNode.h"
 #include "platform/audio/AudioBus.h"
 
 namespace WebCore {
@@ -45,6 +46,101 @@ AudioListener::AudioListener()
     , m_speedOfSound(343.3)
 {
     ScriptWrappable::init(this);
+}
+
+AudioListener::~AudioListener()
+{
+    m_panners.clear();
+}
+
+void AudioListener::addPanner(PannerNode* panner)
+{
+    if (!panner)
+        return;
+
+    m_panners.append(panner);
+}
+
+void AudioListener::removePanner(PannerNode* panner)
+{
+    for (unsigned i = 0; i < m_panners.size(); ++i) {
+        if (panner == m_panners[i]) {
+            m_panners.remove(i);
+            break;
+        }
+    }
+}
+
+void AudioListener::markPannersAsDirty(unsigned type)
+{
+    for (unsigned i = 0; i < m_panners.size(); ++i)
+        m_panners[i]->markPannerAsDirty(type);
+}
+
+void AudioListener::setPosition(const FloatPoint3D &position)
+{
+    if (m_position == position)
+        return;
+
+    // This synchronizes with panner's process().
+    MutexLocker listenerLocker(m_listenerLock);
+    m_position = position;
+    markPannersAsDirty(PannerNode::AzimuthElevationDirty | PannerNode::DistanceConeGainDirty | PannerNode::DopplerRateDirty);
+}
+
+void AudioListener::setOrientation(const FloatPoint3D &orientation)
+{
+    if (m_orientation == orientation)
+        return;
+
+    // This synchronizes with panner's process().
+    MutexLocker listenerLocker(m_listenerLock);
+    m_orientation = orientation;
+    markPannersAsDirty(PannerNode::AzimuthElevationDirty);
+}
+
+void AudioListener::setUpVector(const FloatPoint3D &upVector)
+{
+    if (m_upVector == upVector)
+        return;
+
+    // This synchronizes with panner's process().
+    MutexLocker listenerLocker(m_listenerLock);
+    m_upVector = upVector;
+    markPannersAsDirty(PannerNode::AzimuthElevationDirty);
+}
+
+void AudioListener::setVelocity(const FloatPoint3D &velocity)
+{
+    if (m_velocity == velocity)
+        return;
+
+    // This synchronizes with panner's process().
+    MutexLocker listenerLocker(m_listenerLock);
+    m_velocity = velocity;
+    markPannersAsDirty(PannerNode::DopplerRateDirty);
+}
+
+void AudioListener::setDopplerFactor(double dopplerFactor)
+{
+    if (m_dopplerFactor == dopplerFactor)
+        return;
+
+    // This synchronizes with panner's process().
+    MutexLocker listenerLocker(m_listenerLock);
+    m_dopplerFactor = dopplerFactor;
+    markPannersAsDirty(PannerNode::DopplerRateDirty);
+}
+
+void AudioListener::setSpeedOfSound(double speedOfSound)
+{
+    if (m_speedOfSound == speedOfSound)
+        return;
+
+    // This synchronizes with panner's process().
+    MutexLocker listenerLocker(m_listenerLock);
+    m_speedOfSound = speedOfSound;
+    markPannersAsDirty(PannerNode::DopplerRateDirty);
 }
 
 } // namespace WebCore
