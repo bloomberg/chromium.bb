@@ -93,6 +93,8 @@ enum DeviceEventType {
   scan_canceled,
   // Device is removed.
   removed,
+  // Device is hard unplugged.
+  hard_unplugged,
   // Format started.
   format_start,
   // Format succeeded.

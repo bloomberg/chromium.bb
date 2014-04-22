@@ -529,10 +529,15 @@ void VolumeManager::OnDeviceEvent(
       FOR_EACH_OBSERVER(VolumeManagerObserver, observers_,
                         OnDeviceAdded(device_path));
       return;
-    case chromeos::disks::DiskMountManager::DEVICE_REMOVED:
-      FOR_EACH_OBSERVER(VolumeManagerObserver, observers_,
-                        OnDeviceRemoved(device_path));
+    case chromeos::disks::DiskMountManager::DEVICE_REMOVED: {
+      const bool hard_unplugged =
+          mounted_disk_monitor_->DeviceIsHardUnplugged(device_path);
+      FOR_EACH_OBSERVER(VolumeManagerObserver,
+                        observers_,
+                        OnDeviceRemoved(device_path, hard_unplugged));
+      mounted_disk_monitor_->ClearHardUnpluggedFlag(device_path);
       return;
+    }
     case chromeos::disks::DiskMountManager::DEVICE_SCANNED:
       DVLOG(1) << "Ignore SCANNED event: " << device_path;
       return;

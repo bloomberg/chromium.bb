@@ -55,6 +55,8 @@ class MountedDiskMonitor
   // been unmounted during the resuming time span.
   bool DiskIsRemounting(
       const chromeos::disks::DiskMountManager::Disk& disk) const;
+  bool DeviceIsHardUnplugged(const std::string& device_path) const;
+  void ClearHardUnpluggedFlag(const std::string& device_path);
 
   // In order to avoid consuming time a lot for testing, this allows to set the
   // resuming time span.
@@ -78,6 +80,11 @@ class MountedDiskMonitor
   bool is_resuming_;
   DiskMap mounted_disks_;
   DiskSet unmounted_while_resuming_;
+  // Map of mount paths and device paths that are mount but are not unmount
+  // requested.
+  std::map<std::string, std::string> not_unmount_requested_;
+  // Set of device path that is hard unplugged.
+  std::set<std::string> hard_unplugged_;
   base::TimeDelta resuming_time_span_;
   base::WeakPtrFactory<MountedDiskMonitor> weak_factory_;
 

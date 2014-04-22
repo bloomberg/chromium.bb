@@ -834,12 +834,18 @@ void EventRouter::OnDeviceAdded(const std::string& device_path) {
       device_path);
 }
 
-void EventRouter::OnDeviceRemoved(const std::string& device_path) {
+void EventRouter::OnDeviceRemoved(const std::string& device_path,
+                                  bool hard_unplugged) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DispatchDeviceEvent(
       file_browser_private::DEVICE_EVENT_TYPE_REMOVED,
       device_path);
+
+  if (hard_unplugged) {
+    DispatchDeviceEvent(file_browser_private::DEVICE_EVENT_TYPE_HARD_UNPLUGGED,
+                        device_path);
+  }
 }
 
 void EventRouter::OnVolumeMounted(chromeos::MountError error_code,

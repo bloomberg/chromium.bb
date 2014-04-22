@@ -3812,8 +3812,14 @@ Battery full
   <message name="IDS_EXTERNAL_STORAGE_DISABLED_MESSAGE" desc="Text of notification message which is shown when user inserts removable device but external storage is disabled by policy">
    Sorry, your administrator has disabled external storage on your account.
   </message>
-  <message name="IDS_EXTERNAL_STORAGE_HARD_UNPLUG_MESSAGE" desc="Text of notification message which is shown when user manually removes external storage without clicking the eject icon">
-   Your data may have been lost or damaged. Next time, be sure to click the eject icon in the Files app before removing your device.
+  <message name="IDS_DEVICE_HARD_UNPLUGGED_TITLE" desc="Text of notification title which is shown when user manually removes external storage without clicking the eject icon">
+   Whoa, there. Be careful.
+  </message>
+  <message name="IDS_DEVICE_HARD_UNPLUGGED_MESSAGE" desc="Text of notification message which is shown when user manually removes external storage without clicking the eject icon">
+    In the future, be sure to eject your removable device in the Files app before unplugging it. Otherwise, you might lose data.
+  </message>
+  <message name="IDS_DEVICE_HARD_UNPLUGGED_BUTTON_LABEL" desc="Text of button label which is shown when user manually removes external storage without clicking the eject icon">
+    Got it
   </message>
 
   <!-- Formatting device notifications -->

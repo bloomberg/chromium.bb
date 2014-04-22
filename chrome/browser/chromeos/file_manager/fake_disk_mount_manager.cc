@@ -119,4 +119,12 @@ bool FakeDiskMountManager::AddMountPointForTest(
   return false;
 }
 
+void FakeDiskMountManager::InvokeDiskEventForTest(
+    chromeos::disks::DiskMountManager::DiskEvent event,
+    const chromeos::disks::DiskMountManager::Disk* disk) {
+  FOR_EACH_OBSERVER(chromeos::disks::DiskMountManager::Observer,
+                    observers_,
+                    OnDiskEvent(event, disk));
+}
+
 }  // namespace file_manager

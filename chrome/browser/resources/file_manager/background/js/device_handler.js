@@ -16,10 +16,19 @@ function DeviceHandler() {
    */
   this.mountStatus_ = {};
 
+  /**
+   * List of ID of notificaitons that have a button.
+   * @type {Array.<string>}
+   * @private
+   */
+  this.buttonNotifications_ = [];
+
   chrome.fileBrowserPrivate.onDeviceChanged.addListener(
       this.onDeviceChanged_.bind(this));
   chrome.fileBrowserPrivate.onMountCompleted.addListener(
       this.onMountCompleted_.bind(this));
+  chrome.notifications.onButtonClicked.addListener(
+      this.onNotificationButtonClicked_.bind(this));
 
   Object.seal(this);
 }
@@ -29,9 +38,10 @@ function DeviceHandler() {
  * @param {string} prefix Prefix of notification ID.
  * @param {string} title String ID of title.
  * @param {string} message String ID of message.
+ * @param {string=} opt_buttonLabel String ID of the button label.
  * @constructor
  */
-DeviceHandler.Notification = function(prefix, title, message) {
+DeviceHandler.Notification = function(prefix, title, message, opt_buttonLabel) {
   /**
    * Prefix of notification ID.
    * @type {string}
@@ -49,6 +59,12 @@ DeviceHandler.Notification = function(prefix, title, message) {
    * @type {string}
    */
   this.message = message;
+
+  /**
+   * String ID of button label.
+   * @type {?string}
+   */
+  this.buttonLabel = opt_buttonLabel || null;
 
   Object.freeze(this);
 };
@@ -85,6 +101,17 @@ DeviceHandler.Notification.DEVICE_EXTERNAL_STORAGE_DISABLED =
  * @type {DeviceHandler.Notification}
  * @const
  */
+DeviceHandler.Notification.DEVICE_HARD_UNPLUGGED =
+    new DeviceHandler.Notification(
+        'deviceFail',
+        'DEVICE_HARD_UNPLUGGED_TITLE',
+        'DEVICE_HARD_UNPLUGGED_MESSAGE',
+        'DEVICE_HARD_UNPLUGGED_BUTTON_LABEL');
+
+/**
+ * @type {DeviceHandler.Notification}
+ * @const
+ */
 DeviceHandler.Notification.FORMAT_START = new DeviceHandler.Notification(
     'formatStart',
     'FORMATTING_OF_DEVICE_PENDING_TITLE',
@@ -112,17 +139,22 @@ DeviceHandler.Notification.FORMAT_FAIL = new DeviceHandler.Notification(
  * Shows the notification for the device path.
  * @param {string} devicePath Device path.
  * @param {string=} opt_message Message overrides the default message.
+ * @return {string} Notification ID.
  */
 DeviceHandler.Notification.prototype.show = function(devicePath, opt_message) {
+  var buttons = this.buttonLabel ? [{title: str(this.buttonLabel)}] : undefined;
+  var notificationId = this.makeId_(devicePath);
   chrome.notifications.create(
-      this.makeId_(devicePath),
+      notificationId,
       {
         type: 'basic',
         title: str(this.title),
         message: opt_message || str(this.message),
-        iconUrl: chrome.runtime.getURL('/common/images/icon96.png')
+        iconUrl: chrome.runtime.getURL('/common/images/icon96.png'),
+        buttons: buttons
       },
       function() {});
+  return notificationId;
 };
 
 /**
@@ -167,6 +199,11 @@ DeviceHandler.prototype.onDeviceChanged_ = function(event) {
       DeviceHandler.Notification.DEVICE_EXTERNAL_STORAGE_DISABLED.hide(
           event.devicePath);
       delete this.mountStatus_[event.devicePath];
+      break;
+    case 'hard_unplugged':
+      var id = DeviceHandler.Notification.DEVICE_HARD_UNPLUGGED.show(
+          event.devicePath);
+      this.buttonNotifications_.push(id);
       break;
     case 'format_start':
       DeviceHandler.Notification.FORMAT_START.show(event.devicePath);
@@ -286,5 +323,18 @@ DeviceHandler.prototype.onMountCompleted_ = function(event) {
   if (message) {
     DeviceHandler.Notification.DEVICE_FAIL.hide(volume.devicePath);
     DeviceHandler.Notification.DEVICE_FAIL.show(volume.devicePath, message);
+  }
+};
+
+/**
+ * Handles notification button click.
+ * @param {string} id ID of the notification.
+ * @private
+ */
+DeviceHandler.prototype.onNotificationButtonClicked_ = function(id) {
+  var index = this.buttonNotifications_.indexOf(id);
+  if (index !== -1) {
+    chrome.notifications.clear(id, function() {});
+    this.buttonNotifications_.splice(index, 1);
   }
 };

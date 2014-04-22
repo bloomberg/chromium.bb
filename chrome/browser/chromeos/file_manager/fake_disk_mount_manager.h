@@ -71,6 +71,7 @@ class FakeDiskMountManager : public chromeos::disks::DiskMountManager {
   virtual bool AddDiskForTest(Disk* disk) OVERRIDE;
   virtual bool AddMountPointForTest(
       const MountPointInfo& mount_point) OVERRIDE;
+  void InvokeDiskEventForTest(DiskEvent event, const Disk* disk);
 
  private:
   ObserverList<Observer> observers_;

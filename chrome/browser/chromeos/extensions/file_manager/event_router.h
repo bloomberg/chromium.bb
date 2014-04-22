@@ -118,7 +118,8 @@ class EventRouter
   virtual void OnDiskRemoved(
       const chromeos::disks::DiskMountManager::Disk& disk) OVERRIDE;
   virtual void OnDeviceAdded(const std::string& device_path) OVERRIDE;
-  virtual void OnDeviceRemoved(const std::string& device_path) OVERRIDE;
+  virtual void OnDeviceRemoved(const std::string& device_path,
+                               bool hard_unplugged) OVERRIDE;
   virtual void OnVolumeMounted(chromeos::MountError error_code,
                                const VolumeInfo& volume_info,
                                bool is_remounting) OVERRIDE;
