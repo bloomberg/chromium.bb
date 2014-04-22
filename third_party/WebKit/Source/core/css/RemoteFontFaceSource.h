@@ -45,16 +45,18 @@ protected:
 private:
     class FontLoadHistograms {
     public:
-        FontLoadHistograms() : m_loadStartTime(0), m_fallbackPaintTime(0) { }
+        FontLoadHistograms() : m_loadStartTime(0), m_fallbackPaintTime(0), m_corsFailed(false) { }
         void loadStarted();
         void fallbackFontPainted();
         void recordRemoteFont(const FontResource*);
         void recordFallbackTime(const FontResource*);
+        void corsFailed() { m_corsFailed = true; }
         bool hadBlankText() { return m_fallbackPaintTime; }
     private:
         const char* histogramName(const FontResource*);
         double m_loadStartTime;
         double m_fallbackPaintTime;
+        bool m_corsFailed;
     };
 
     ResourcePtr<FontResource> m_font;
