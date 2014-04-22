@@ -147,7 +147,6 @@ void AppListItemView::SetUIState(UIState state) {
 
   ui_state_ = state;
 
-#if defined(USE_AURA)
   switch (ui_state_) {
     case UI_STATE_NORMAL:
       title_->SetVisible(!item_->is_installing());
@@ -176,10 +175,9 @@ void AppListItemView::SetUIState(UIState state) {
     case UI_STATE_DROPPING_IN_FOLDER:
       break;
   }
+#endif  // !OS_WIN
 
   SchedulePaint();
-#endif  // !OS_WIN
-#endif  // USE_AURA
 }
 
 void AppListItemView::SetTouchDragging(bool touch_dragging) {
