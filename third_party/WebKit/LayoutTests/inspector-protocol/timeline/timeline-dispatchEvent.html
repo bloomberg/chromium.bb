@@ -17,7 +17,7 @@ function test()
 {
     InspectorTest.eventHandler["Tracing.dataCollected"] = dataCollected;
     InspectorTest.eventHandler["Tracing.tracingComplete"] = tracingComplete;
-    InspectorTest.sendCommand("Tracing.start", { "categories" : "disabled-by-default-devtools-timeline", "type": "" }, onStart);
+    InspectorTest.sendCommand("Tracing.start", { "categories" : "disabled-by-default-devtools.timeline", "type": "" }, onStart);
 
     function onStart(response)
     {
@@ -36,7 +36,7 @@ function test()
         var allEvents = reply.params.value;
         devtoolsEvents = devtoolsEvents.concat(allEvents.filter(function(e)
         {
-            return e.cat === "disabled-by-default-devtools-timeline";
+            return e.cat === "disabled-by-default-devtools.timeline";
         }));
     }
 
@@ -44,27 +44,17 @@ function test()
     {
         InspectorTest.log("Tracing complete");
 
-        var clickEvents = devtoolsEvents.filter(function(e)
-        {
-            return e.name === "EventDispatcher::dispatch" && e.args.type === "click";
-        });
-        if (clickEvents.length === 1) {
-            InspectorTest.log("SUCCESS: found click event");
-        } else {
-            fail("click event is missing");
-        }
-
         function windowEventFilter(type, e)
         {
-            return e.name === "DOMWindow::dispatchEvent" && e.args.type === type;
+            return e.name === "EventDispatch" && e.args.type === type;
         };
 
-        var windowEventNames = [ "beforeunload", "unload", "load" ];
+        var windowEventNames = [ "click", "beforeunload", "unload", "load" ];
         for (var i = 0; i < windowEventNames.length; i++) {
             var eventName = windowEventNames[i];
             var events = devtoolsEvents.filter(windowEventFilter.bind(this, eventName));
-            if (clickEvents.length === 1) {
-                InspectorTest.log("SUCCESS: found one " + eventName + " event");
+            if (events.length >= 1) {
+                InspectorTest.log("SUCCESS: found " + eventName + " event");
             } else {
                 fail(eventName + " event is missing");
             }
@@ -80,7 +70,7 @@ function test()
         {
             return e.name + "(" + e.args.type + ")";
         });
-        InspectorTest.log("FAIL: " + message + " devtools-timeline events: " + JSON.stringify(formattedEvents, null, 2));
+        InspectorTest.log("FAIL: " + message + " devtools.timeline events: " + JSON.stringify(formattedEvents, null, 2));
     }
 
     function onStop(response)
