@@ -48,6 +48,7 @@ group("root") {
     "//ui/gfx",
     "//ui/resources",
     "//url",
+    "//v8:v8_base",
   ]
 
   if (is_linux) {
