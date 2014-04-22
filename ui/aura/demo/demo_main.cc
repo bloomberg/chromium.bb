@@ -27,6 +27,10 @@
 #include "ui/gfx/x/x11_connection.h"
 #endif
 
+#if defined(OS_WIN)
+#include "ui/gfx/win/dpi.h"
+#endif
+
 namespace {
 
 // Trivial WindowDelegate implementation that draws a colored background.
@@ -111,6 +115,10 @@ int DemoMain() {
 #endif
 
   gfx::GLSurface::InitializeOneOff();
+
+#if defined(OS_WIN)
+  gfx::InitDeviceScaleFactor(1.0f);
+#endif
 
   // The ContextFactory must exist before any Compositors are created.
   scoped_ptr<ui::InProcessContextFactory> context_factory(
