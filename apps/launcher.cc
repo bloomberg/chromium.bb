@@ -29,6 +29,8 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_handlers/kiosk_mode_info.h"
+#include "net/base/filename_util.h"
+#include "net/base/mime_sniffer.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
 #include "url/gurl.h"
@@ -181,8 +183,21 @@ class PlatformAppPathLauncher
     }
 
     std::string mime_type;
-    if (!net::GetMimeTypeFromFile(file_path_, &mime_type))
-      mime_type = kFallbackMimeType;
+    if (!net::GetMimeTypeFromFile(file_path_, &mime_type)) {
+      // If MIME type of the file can't be determined by its path,
+      // try to sniff it by its content.
+      std::vector<char> content(net::kMaxBytesToSniff);
+      int bytes_read = base::ReadFile(file_path_, &content[0], content.size());
+      if (bytes_read >= 0) {
+        net::SniffMimeType(&content[0],
+                           bytes_read,
+                           net::FilePathToFileURL(file_path_),
+                           std::string(),  // type_hint (passes no hint)
+                           &mime_type);
+      }
+      if (mime_type.empty())
+        mime_type = kFallbackMimeType;
+    }
 
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
             &PlatformAppPathLauncher::LaunchWithMimeType, this, mime_type));
