@@ -41,12 +41,10 @@ base::LazyInstance<base::Callback<void(RenderView*, WebTestProxyBase*)> >::Leaky
 
 RenderViewImpl* CreateWebTestProxy(RenderViewImplParams* params) {
   typedef WebTestProxy<RenderViewImpl, RenderViewImplParams*> ProxyType;
-  ProxyType* render_view_proxy = new ProxyType(
-      reinterpret_cast<RenderViewImplParams*>(params));
+  ProxyType* render_view_proxy = new ProxyType(params);
   if (g_callback == 0)
     return render_view_proxy;
-  g_callback.Get().Run(
-      static_cast<RenderView*>(render_view_proxy), render_view_proxy);
+  g_callback.Get().Run(render_view_proxy, render_view_proxy);
   return render_view_proxy;
 }
 
