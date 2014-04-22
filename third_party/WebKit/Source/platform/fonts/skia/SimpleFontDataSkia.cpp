@@ -293,13 +293,15 @@ bool SimpleFontData::fillGlyphPage(GlyphPage* pageToFill, unsigned offset, unsig
     SkTypeface* typeface = platformData().typeface();
     typeface->charsToGlyphs(buffer, SkTypeface::kUTF16_Encoding, glyphs, length);
 
-    unsigned allGlyphs = 0; // track if any of the glyphIDs are non-zero
+    bool haveGlyphs = false;
     for (unsigned i = 0; i < length; i++) {
-        pageToFill->setGlyphDataForIndex(offset + i, glyphs[i], glyphs[i] ? this : 0);
-        allGlyphs |= glyphs[i];
+        if (glyphs[i]) {
+            pageToFill->setGlyphDataForIndex(offset + i, glyphs[i], this);
+            haveGlyphs = true;
+        }
     }
 
-    return allGlyphs;
+    return haveGlyphs;
 }
 
 } // namespace WebCore

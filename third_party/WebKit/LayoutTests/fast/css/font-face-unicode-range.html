@@ -63,6 +63,16 @@
             src: local('Courier'), local('Courier New');
             unicode-range: U+0052-0055;
         }
+
+        @font-face {
+            font-family: 'test6';
+            src: local('Courier'), local('Courier New');
+        }
+        @font-face {
+            font-family: 'test6';
+            src: url('../../resources/Ahem.ttf');
+            unicode-range: U+0027;  /* missing glyph */
+        }
     </style>
 </head>
 <body onload="finished()">
@@ -112,6 +122,15 @@
         </p>
         <p>
             ABCDEFGHIJKLMNO<span class="ahem">PQ<span class="courier">RSTU</span>VWX</span>YZ
+        </p>
+    </div>
+
+    <div>
+        <p style="font-family: 'test6';">
+            '''
+        </p>
+        <p>
+            <span class="courier">'''</span>
         </p>
     </div>
     <script>

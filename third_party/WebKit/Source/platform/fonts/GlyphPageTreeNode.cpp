@@ -277,8 +277,7 @@ void GlyphPageTreeNode::initializePage(const FontData* fontData, unsigned pageNu
                     else  if (fallbackPage->glyphAt(i)) {
                         m_page->setGlyphDataForIndex(i, fallbackPage->glyphDataForIndex(i));
                         newGlyphs = true;
-                    } else
-                        m_page->setGlyphDataForIndex(i, 0, 0);
+                    }
                 }
 
                 if (!newGlyphs)

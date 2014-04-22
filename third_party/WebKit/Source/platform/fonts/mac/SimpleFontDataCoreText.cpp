@@ -105,9 +105,7 @@ bool SimpleFontData::fillGlyphPage(GlyphPage* pageToFill, unsigned offset, unsig
     if (!shouldUseCoreText(buffer, bufferLength, this)) {
         CGFontGetGlyphsForUnichars(platformData().cgFont(), buffer, glyphs.data(), bufferLength);
         for (unsigned i = 0; i < length; ++i) {
-            if (!glyphs[i]) {
-                pageToFill->setGlyphDataForIndex(offset + i, 0, 0);
-            } else {
+            if (glyphs[i]) {
                 pageToFill->setGlyphDataForIndex(offset + i, glyphs[i], this);
                 haveGlyphs = true;
             }
@@ -118,9 +116,7 @@ bool SimpleFontData::fillGlyphPage(GlyphPage* pageToFill, unsigned offset, unsig
         // places the glyphs at indices corresponding to the first character of each pair.
         unsigned glyphStep = bufferLength / length;
         for (unsigned i = 0; i < length; ++i) {
-            if (!glyphs[i * glyphStep]) {
-                pageToFill->setGlyphDataForIndex(offset + i, 0, 0);
-            } else {
+            if (glyphs[i * glyphStep]) {
                 pageToFill->setGlyphDataForIndex(offset + i, glyphs[i * glyphStep], this);
                 haveGlyphs = true;
             }
@@ -133,10 +129,6 @@ bool SimpleFontData::fillGlyphPage(GlyphPage* pageToFill, unsigned offset, unsig
 
         CFArrayRef runArray = CTLineGetGlyphRuns(line.get());
         CFIndex runCount = CFArrayGetCount(runArray);
-
-        // Initialize glyph entries
-        for (unsigned index = 0; index < length; ++index)
-            pageToFill->setGlyphDataForIndex(offset + index, 0, 0);
 
         Vector<CGGlyph, 512> glyphVector;
         Vector<CFIndex, 512> indexVector;

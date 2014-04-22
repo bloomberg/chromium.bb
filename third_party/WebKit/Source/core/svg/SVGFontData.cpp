@@ -256,10 +256,8 @@ bool SVGFontData::fillBMPGlyphs(SVGFontElement* fontElement, GlyphPage* pageToFi
     for (unsigned i = 0; i < length; ++i) {
         String lookupString(buffer + i, 1);
         fontElement->collectGlyphsForString(lookupString, glyphs);
-        if (glyphs.isEmpty()) {
-            pageToFill->setGlyphDataForIndex(offset + i, 0, 0);
+        if (glyphs.isEmpty())
             continue;
-        }
 
         // Associate entry in glyph page with first valid SVGGlyph.
         // If there are multiple valid ones, just take the first one. WidthIterator will take
@@ -281,10 +279,8 @@ bool SVGFontData::fillNonBMPGlyphs(SVGFontElement* fontElement, GlyphPage* pageT
         // Each character here consists of a surrogate pair
         String lookupString(buffer + i * 2, 2);
         fontElement->collectGlyphsForString(lookupString, glyphs);
-        if (glyphs.isEmpty()) {
-            pageToFill->setGlyphDataForIndex(offset + i, 0, 0);
+        if (glyphs.isEmpty())
             continue;
-        }
 
         // Associate entry in glyph page with first valid SVGGlyph.
         // If there are multiple valid ones, just take the first one. WidthIterator will take
