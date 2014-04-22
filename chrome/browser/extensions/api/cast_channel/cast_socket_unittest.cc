@@ -65,11 +65,6 @@ static void CreateBinaryMessage(const std::string& namespace_,
       data.c_str(), data.size()));
 }
 
-// Returns the size of the body (in bytes) of the given serialized message.
-static size_t ComputeBodySize(const std::string& msg) {
-  return msg.length() - kMessageHeaderSize;
-}
-
 class MockCastSocketDelegate : public CastSocket::Delegate {
  public:
   MOCK_METHOD2(OnError, void(const CastSocket* socket,
@@ -165,6 +160,11 @@ class TestCastSocket : public CastSocket {
     return net::IPEndPoint(number, 8009);
   }
 
+  // Returns the size of the body (in bytes) of the given serialized message.
+  static size_t ComputeBodySize(const std::string& msg) {
+    return msg.length() - CastSocket::MessageHeader::header_size();
+  }
+
   virtual ~TestCastSocket() {
   }
 
@@ -213,8 +213,8 @@ class TestCastSocket : public CastSocket {
   void AddReadResultForMessage(net::IoMode mode, const std::string& msg) {
     size_t body_size = ComputeBodySize(msg);
     const char* data = msg.c_str();
-    AddReadResult(mode, data, kMessageHeaderSize);
-    AddReadResult(mode, data + kMessageHeaderSize, body_size);
+    AddReadResult(mode, data, MessageHeader::header_size());
+    AddReadResult(mode, data + MessageHeader::header_size(), body_size);
   }
   void AddReadResultForMessage(net::IoMode mode,
                                const std::string& msg,
@@ -766,7 +766,7 @@ TEST_F(CastSocketTest, TestWriteErrorLargeMessage) {
   ConnectHelper();
 
   EXPECT_CALL(handler_, OnWriteComplete(net::ERR_FAILED));
-  size_t size = kMaxMessageSize + 1;
+  size_t size = CastSocket::MessageHeader::max_message_size() + 1;
   test_messages_[0].data.reset(
       new base::StringValue(std::string(size, 'a')));
   socket_->SendMessage(test_messages_[0],
@@ -962,7 +962,8 @@ TEST_F(CastSocketTest, TestReadErrorSync) {
 // Test read error - header parse error
 TEST_F(CastSocketTest, TestReadHeaderParseError) {
   CreateCastSocket();
-  uint32 body_size = base::HostToNet32(kMaxMessageSize + 1);
+  uint32 body_size = base::HostToNet32(
+      CastSocket::MessageHeader::max_message_size() + 1);
   // TODO(munjal): Add a method to cast_message_util.h to serialize messages
   char header[sizeof(body_size)];
   memcpy(&header, &body_size, arraysize(header));

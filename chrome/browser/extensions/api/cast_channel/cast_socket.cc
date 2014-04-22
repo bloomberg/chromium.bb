@@ -4,11 +4,13 @@
 
 #include "chrome/browser/extensions/api/cast_channel/cast_socket.h"
 
+#include <stdlib.h>
 #include <string.h>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/lazy_instance.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_byteorder.h"
 #include "chrome/browser/extensions/api/cast_channel/cast_auth_util.h"
@@ -61,11 +63,6 @@ ApiResourceManager<api::cast_channel::CastSocket>::GetFactoryInstance() {
 namespace api {
 namespace cast_channel {
 
-const uint32 kMaxMessageSize = 65536;
-// Don't use sizeof(MessageHeader) because of alignment; instead, sum the
-// sizeof() for the fields.
-const uint32 kMessageHeaderSize = sizeof(uint32);
-
 CastSocket::CastSocket(const std::string& owner_extension_id,
                        const net::IPEndPoint& ip_endpoint,
                        ChannelAuthType channel_auth,
@@ -92,9 +89,9 @@ CastSocket::CastSocket(const std::string& owner_extension_id,
 
   // Reuse these buffers for each message.
   header_read_buffer_ = new net::GrowableIOBuffer();
-  header_read_buffer_->SetCapacity(kMessageHeaderSize);
+  header_read_buffer_->SetCapacity(MessageHeader::header_size());
   body_read_buffer_ = new net::GrowableIOBuffer();
-  body_read_buffer_->SetCapacity(kMaxMessageSize);
+  body_read_buffer_->SetCapacity(MessageHeader::max_message_size());
   current_read_buffer_ = header_read_buffer_;
 }
 
@@ -554,12 +551,12 @@ int CastSocket::DoRead() {
   if (header_read_buffer_->RemainingCapacity() > 0) {
     current_read_buffer_ = header_read_buffer_;
     num_bytes_to_read = header_read_buffer_->RemainingCapacity();
-    DCHECK_LE(num_bytes_to_read, kMessageHeaderSize);
+    DCHECK_LE(num_bytes_to_read, MessageHeader::header_size());
   } else {
     DCHECK_GT(current_message_size_, 0U);
     num_bytes_to_read = current_message_size_ - body_read_buffer_->offset();
     current_read_buffer_ = body_read_buffer_;
-    DCHECK_LE(num_bytes_to_read, kMaxMessageSize);
+    DCHECK_LE(num_bytes_to_read, MessageHeader::max_message_size());
   }
   DCHECK_GT(num_bytes_to_read, 0U);
 
@@ -645,10 +642,10 @@ int CastSocket::DoReadError(int result) {
 
 bool CastSocket::ProcessHeader() {
   DCHECK_EQ(static_cast<uint32>(header_read_buffer_->offset()),
-            kMessageHeaderSize);
+            MessageHeader::header_size());
   MessageHeader header;
   MessageHeader::ReadFromIOBuffer(header_read_buffer_.get(), &header);
-  if (header.message_size > kMaxMessageSize)
+  if (header.message_size > MessageHeader::max_message_size())
     return false;
 
   VLOG_WITH_CONNECTION(2) << "Parsed header { message_size: "
@@ -677,7 +674,7 @@ bool CastSocket::Serialize(const CastMessage& message_proto,
   DCHECK(message_data);
   message_proto.SerializeToString(message_data);
   size_t message_size = message_data->size();
-  if (message_size > kMaxMessageSize) {
+  if (message_size > MessageHeader::max_message_size()) {
     message_data->clear();
     return false;
   }
@@ -713,18 +710,27 @@ void CastSocket::MessageHeader::SetMessageSize(size_t size) {
   message_size = static_cast<size_t>(size);
 }
 
+// TODO(mfoltz): Investigate replacing header serialization with base::Pickle,
+// if bit-for-bit compatible.
 void CastSocket::MessageHeader::PrependToString(std::string* str) {
   MessageHeader output = *this;
   output.message_size = base::HostToNet32(message_size);
-  char char_array[kMessageHeaderSize];
-  memcpy(&char_array, &output, arraysize(char_array));
-  str->insert(0, char_array, arraysize(char_array));
+  size_t header_size = base::checked_cast<uint32,size_t>(
+      MessageHeader::header_size());
+  scoped_ptr<char, base::FreeDeleter> char_array(
+      static_cast<char*>(malloc(header_size)));
+  memcpy(char_array.get(), &output, header_size);
+  str->insert(0, char_array.get(), header_size);
 }
 
+// TODO(mfoltz): Investigate replacing header deserialization with base::Pickle,
+// if bit-for-bit compatible.
 void CastSocket::MessageHeader::ReadFromIOBuffer(
     net::GrowableIOBuffer* buffer, MessageHeader* header) {
   uint32 message_size;
-  memcpy(&message_size, buffer->StartOfBuffer(), kMessageHeaderSize);
+  size_t header_size = base::checked_cast<uint32,size_t>(
+      MessageHeader::header_size());
+  memcpy(&message_size, buffer->StartOfBuffer(), header_size);
   header->message_size = base::NetToHost32(message_size);
 }
 

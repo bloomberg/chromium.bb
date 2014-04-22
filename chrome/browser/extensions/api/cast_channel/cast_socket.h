@@ -37,13 +37,6 @@ namespace cast_channel {
 
 class CastMessage;
 
-// Size (in bytes) of the largest allowed message payload on the wire (without
-// the header).
-extern const uint32 kMaxMessageSize;
-
-// Size (in bytes) of the message header.
-extern const uint32 kMessageHeaderSize;
-
 // This class implements a channel between Chrome and a Cast device using a TCP
 // socket with SSL.  The channel may authenticate that the receiver is a genuine
 // Cast device.  All CastSocket objects must be used only on the IO thread.
@@ -123,6 +116,30 @@ class CastSocket : public ApiResource,
   // READY_STATE_CLOSED.
   // It is fine to delete the CastSocket object in |callback|.
   virtual void Close(const net::CompletionCallback& callback);
+
+ protected:
+  // Message header struct. If fields are added, be sure to update
+  // header_size().  Protected to allow use of *_size() methods in unit tests.
+  struct MessageHeader {
+    MessageHeader();
+    // Sets the message size.
+    void SetMessageSize(size_t message_size);
+    // Prepends this header to |str|.
+    void PrependToString(std::string* str);
+    // Reads |header| from the beginning of |buffer|.
+    static void ReadFromIOBuffer(net::GrowableIOBuffer* buffer,
+                                 MessageHeader* header);
+    // Size (in bytes) of the message header.
+    static uint32 header_size() { return sizeof(uint32); }
+
+    // Maximum size (in bytes) of a message payload on the wire (does not
+    // include header).
+    static uint32 max_message_size() { return 65536; }
+
+    std::string ToString();
+    // The size of the following protocol message in bytes, in host byte order.
+    uint32 message_size;
+  };
 
  private:
   friend class ApiResourceManager<CastSocket>;
@@ -308,22 +325,6 @@ class CastSocket : public ApiResource,
   // The current status of the channel.
   ReadyState ready_state_;
 
-  // Message header struct. If fields are added, be sure to update
-  // kMessageHeaderSize in the .cc.
-  struct MessageHeader {
-    MessageHeader();
-    // Sets the message size.
-    void SetMessageSize(size_t message_size);
-    // Prepends this header to |str|.
-    void PrependToString(std::string* str);
-    // Reads |header| from the beginning of |buffer|.
-    static void ReadFromIOBuffer(net::GrowableIOBuffer* buffer,
-                                 MessageHeader* header);
-    std::string ToString();
-    // The size of the following protocol message in bytes, in host byte order.
-    uint32 message_size;
-  };
-
   // Holds a message to be written to the socket. |callback| is invoked when the
   // message is fully written or an error occurrs.
   struct WriteRequest {
@@ -340,9 +341,11 @@ class CastSocket : public ApiResource,
   // being written.
   std::queue<WriteRequest> write_queue_;
 
-  FRIEND_TEST_ALL_PREFIXES(CastSocketTest, TestRead);
-  FRIEND_TEST_ALL_PREFIXES(CastSocketTest, TestReadMany);
   FRIEND_TEST_ALL_PREFIXES(CastSocketTest, TestFullSecureConnectionFlowAsync);
+  FRIEND_TEST_ALL_PREFIXES(CastSocketTest, TestRead);
+  FRIEND_TEST_ALL_PREFIXES(CastSocketTest, TestReadHeaderParseError);
+  FRIEND_TEST_ALL_PREFIXES(CastSocketTest, TestReadMany);
+  FRIEND_TEST_ALL_PREFIXES(CastSocketTest, TestWriteErrorLargeMessage);
   DISALLOW_COPY_AND_ASSIGN(CastSocket);
 };
 
