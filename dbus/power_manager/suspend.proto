@@ -8,29 +8,6 @@ option optimize_for = LITE_RUNTIME;
 
 package power_manager;
 
-// Included in powerd's SuspendStateChanged signal, sent when the system is
-// suspending or has just resumed.  The SUSPEND_TO_MEMORY notification may
-// arrive after the subsequent resume.
-// TODO(derat): Remove this; other processes should register suspend delays if
-// they need to be notified before the system suspends and listen for
-// SuspendDone to learn when the process is complete.
-message SuspendState {
-  // Next ID to use: 3
-
-  // Type of event.
-  enum Type {
-    SUSPEND_TO_MEMORY = 0;
-    RESUME = 1;
-  }
-  optional Type type = 1;
-
-  // Wall time at which this event occurred, as given by
-  // base::Time::ToInternalValue().  (base::Time is used because the monotonic
-  // clock used by base::TimeTicks doesn't advance while the system is
-  // suspended.)
-  optional int64 wall_time = 2;
-}
-
 // Included in powerd's SuspendImminent signal, sent when the system is about to
 // suspend.  If any clients previously called RegisterSuspendDelay, suspending
 // will be deferred until they've called powerd's HandleSuspendReadiness method.
