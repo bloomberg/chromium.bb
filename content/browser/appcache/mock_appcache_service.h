@@ -1,16 +1,18 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_BROWSER_APPCACHE_MOCK_APPCACHE_SERVICE_H_
-#define WEBKIT_BROWSER_APPCACHE_MOCK_APPCACHE_SERVICE_H_
+#ifndef CONTENT_BROWSER_APPCACHE_MOCK_APPCACHE_SERVICE_H_
+#define CONTENT_BROWSER_APPCACHE_MOCK_APPCACHE_SERVICE_H_
 
 #include "base/compiler_specific.h"
+#include "content/browser/appcache/mock_appcache_storage.h"
 #include "webkit/browser/appcache/appcache_service.h"
-#include "webkit/browser/appcache/mock_appcache_storage.h"
 #include "webkit/browser/quota/quota_manager.h"
 
-namespace appcache {
+using appcache::AppCacheService;
+
+namespace content {
 
 // For use by unit tests.
 class MockAppCacheService : public AppCacheService {
@@ -43,6 +45,6 @@ class MockAppCacheService : public AppCacheService {
   int delete_called_count_;
 };
 
-}  // namespace appcache
+}  // namespace content
 
-#endif  // WEBKIT_BROWSER_APPCACHE_MOCK_APPCACHE_SERVICE_H_
+#endif  // CONTENT_BROWSER_APPCACHE_MOCK_APPCACHE_SERVICE_H_

@@ -7,6 +7,7 @@
 #include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "content/browser/appcache/mock_appcache_service.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_error_job.h"
@@ -18,7 +19,6 @@
 #include "webkit/browser/appcache/appcache_host.h"
 #include "webkit/browser/appcache/appcache_response.h"
 #include "webkit/browser/appcache/appcache_update_job.h"
-#include "webkit/browser/appcache/mock_appcache_service.h"
 
 using appcache::AppCache;
 using appcache::AppCacheEntry;
@@ -37,8 +37,6 @@ using appcache::FALLBACK_NAMESPACE;
 using appcache::HttpResponseInfoIOBuffer;
 using appcache::kNoCacheId;
 using appcache::kNoResponseId;
-using appcache::MockAppCacheService;
-using appcache::MockAppCacheStorage;
 using appcache::Namespace;
 using appcache::NETWORK_NAMESPACE;
 using appcache::NO_UPDATE_EVENT;

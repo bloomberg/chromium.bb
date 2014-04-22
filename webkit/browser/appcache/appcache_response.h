@@ -19,6 +19,10 @@ namespace net {
 class IOBuffer;
 }
 
+namespace content {
+class MockAppCacheStorage;
+}
+
 namespace appcache {
 
 class AppCacheStorage;
@@ -170,7 +174,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheResponseReader
 
  protected:
   friend class AppCacheStorageImpl;
-  friend class MockAppCacheStorage;
+  friend class content::MockAppCacheStorage;
 
   // Should only be constructed by the storage class.
   AppCacheResponseReader(int64 response_id,
@@ -228,7 +232,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheResponseWriter
 
  private:
   friend class AppCacheStorageImpl;
-  friend class MockAppCacheStorage;
+  friend class content::MockAppCacheStorage;
 
   enum CreationPhase {
     NO_ATTEMPT,

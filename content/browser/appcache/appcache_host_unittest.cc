@@ -7,13 +7,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "content/browser/appcache/mock_appcache_policy.h"
+#include "content/browser/appcache/mock_appcache_service.h"
 #include "net/url_request/url_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/appcache/appcache.h"
 #include "webkit/browser/appcache/appcache_backend_impl.h"
 #include "webkit/browser/appcache/appcache_group.h"
 #include "webkit/browser/appcache/appcache_host.h"
-#include "webkit/browser/appcache/mock_appcache_service.h"
 #include "webkit/browser/quota/quota_manager.h"
 
 using appcache::AppCache;
@@ -23,7 +23,6 @@ using appcache::AppCacheFrontend;
 using appcache::AppCacheGroup;
 using appcache::AppCacheHost;
 using appcache::kNoCacheId;
-using appcache::MockAppCacheService;
 using appcache::ERROR_EVENT;
 using appcache::OBSOLETE;
 using appcache::OBSOLETE_EVENT;

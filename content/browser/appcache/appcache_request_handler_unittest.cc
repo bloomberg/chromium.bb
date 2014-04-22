@@ -13,6 +13,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "content/browser/appcache/mock_appcache_policy.h"
+#include "content/browser/appcache/mock_appcache_service.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
@@ -24,7 +25,6 @@
 #include "webkit/browser/appcache/appcache_backend_impl.h"
 #include "webkit/browser/appcache/appcache_request_handler.h"
 #include "webkit/browser/appcache/appcache_url_request_job.h"
-#include "webkit/browser/appcache/mock_appcache_service.h"
 
 using appcache::AppCache;
 using appcache::AppCacheBackendImpl;
@@ -36,8 +36,6 @@ using appcache::AppCacheInfo;
 using appcache::AppCacheRequestHandler;
 using appcache::AppCacheURLRequestJob;
 using appcache::kNoCacheId;
-using appcache::MockAppCacheService;
-using appcache::MockAppCacheStorage;
 
 namespace content {
 

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/appcache/mock_appcache_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/appcache/appcache.h"
 #include "webkit/browser/appcache/appcache_host.h"
-#include "webkit/browser/appcache/mock_appcache_service.h"
 
 using appcache::AppCache;
 using appcache::AppCacheDatabase;
@@ -20,7 +20,6 @@ using appcache::FALLBACK_NAMESPACE;
 using appcache::INTERCEPT_NAMESPACE;
 using appcache::LogLevel;
 using appcache::Manifest;
-using appcache::MockAppCacheService;
 using appcache::Namespace;
 using appcache::NamespaceVector;
 using appcache::NETWORK_NAMESPACE;

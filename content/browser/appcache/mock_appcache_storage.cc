@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/browser/appcache/mock_appcache_storage.h"
+#include "content/browser/appcache/mock_appcache_storage.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -25,7 +25,14 @@
 // happen with a real disk-backed storage impl that involves IO on a
 // background thread.
 
-namespace appcache {
+using appcache::AppCacheResponseWriter;
+using appcache::AppCacheService;
+using appcache::FALLBACK_NAMESPACE;
+using appcache::INTERCEPT_NAMESPACE;
+using appcache::kNoCacheId;
+using appcache::NamespaceType;
+
+namespace content {
 
 MockAppCacheStorage::MockAppCacheStorage(AppCacheService* service)
     : AppCacheStorage(service),
@@ -540,4 +547,4 @@ bool MockAppCacheStorage::ShouldCacheLoadAppearAsync(const AppCache* cache) {
   return IsCacheStored(cache) && cache->HasOneRef();
 }
 
-}  // namespace appcache
+}  // namespace content

@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_BROWSER_APPCACHE_MOCK_APPCACHE_STORAGE_H_
-#define WEBKIT_BROWSER_APPCACHE_MOCK_APPCACHE_STORAGE_H_
+#ifndef CONTENT_BROWSER_APPCACHE_MOCK_APPCACHE_STORAGE_H_
+#define CONTENT_BROWSER_APPCACHE_MOCK_APPCACHE_STORAGE_H_
 
 #include <deque>
 #include <map>
@@ -19,6 +19,17 @@
 #include "webkit/browser/appcache/appcache_group.h"
 #include "webkit/browser/appcache/appcache_response.h"
 #include "webkit/browser/appcache/appcache_storage.h"
+
+using appcache::AppCache;
+using appcache::AppCacheDiskCache;
+using appcache::AppCacheEntry;
+using appcache::AppCacheGroup;
+using appcache::AppCacheInfoCollection;
+using appcache::AppCacheResponseReader;
+using appcache::AppCacheResponseWriter;
+using appcache::AppCacheService;
+using appcache::AppCacheStorage;
+using appcache::kNoCacheId;
 
 namespace content {
 FORWARD_DECLARE_TEST(AppCacheServiceTest, DeleteAppCachesForOrigin);
@@ -39,9 +50,6 @@ FORWARD_DECLARE_TEST(MockAppCacheStorageTest,
 class AppCacheRequestHandlerTest;
 class AppCacheServiceTest;
 class MockAppCacheStorageTest;
-}
-
-namespace appcache {
 
 // For use in unit tests.
 // Note: This class is also being used to bootstrap our development efforts.
@@ -83,10 +91,10 @@ class MockAppCacheStorage : public AppCacheStorage {
       const std::vector<int64>& response_ids) OVERRIDE;
 
  private:
-  friend class content::AppCacheRequestHandlerTest;
-  friend class content::AppCacheServiceTest;
-  friend class content::AppCacheUpdateJobTest;
-  friend class content::MockAppCacheStorageTest;
+  friend class AppCacheRequestHandlerTest;
+  friend class AppCacheServiceTest;
+  friend class AppCacheUpdateJobTest;
+  friend class MockAppCacheStorageTest;
 
   typedef base::hash_map<int64, scoped_refptr<AppCache> > StoredCacheMap;
   typedef std::map<GURL, scoped_refptr<AppCacheGroup> > StoredGroupMap;
@@ -217,30 +225,30 @@ class MockAppCacheStorage : public AppCacheStorage {
 
   base::WeakPtrFactory<MockAppCacheStorage> weak_factory_;
 
-  FRIEND_TEST_ALL_PREFIXES(content::MockAppCacheStorageTest,
+  FRIEND_TEST_ALL_PREFIXES(MockAppCacheStorageTest,
                            BasicFindMainResponse);
-  FRIEND_TEST_ALL_PREFIXES(content::MockAppCacheStorageTest,
+  FRIEND_TEST_ALL_PREFIXES(MockAppCacheStorageTest,
                            BasicFindMainFallbackResponse);
-  FRIEND_TEST_ALL_PREFIXES(content::MockAppCacheStorageTest, CreateGroup);
-  FRIEND_TEST_ALL_PREFIXES(content::MockAppCacheStorageTest,
+  FRIEND_TEST_ALL_PREFIXES(MockAppCacheStorageTest, CreateGroup);
+  FRIEND_TEST_ALL_PREFIXES(MockAppCacheStorageTest,
                            FindMainResponseExclusions);
-  FRIEND_TEST_ALL_PREFIXES(content::MockAppCacheStorageTest,
+  FRIEND_TEST_ALL_PREFIXES(MockAppCacheStorageTest,
                            FindMainResponseWithMultipleCandidates);
-  FRIEND_TEST_ALL_PREFIXES(content::MockAppCacheStorageTest, LoadCache_FarHit);
-  FRIEND_TEST_ALL_PREFIXES(content::MockAppCacheStorageTest,
+  FRIEND_TEST_ALL_PREFIXES(MockAppCacheStorageTest, LoadCache_FarHit);
+  FRIEND_TEST_ALL_PREFIXES(MockAppCacheStorageTest,
                            LoadGroupAndCache_FarHit);
-  FRIEND_TEST_ALL_PREFIXES(content::MockAppCacheStorageTest, MakeGroupObsolete);
-  FRIEND_TEST_ALL_PREFIXES(content::MockAppCacheStorageTest, StoreNewGroup);
-  FRIEND_TEST_ALL_PREFIXES(content::MockAppCacheStorageTest,
+  FRIEND_TEST_ALL_PREFIXES(MockAppCacheStorageTest, MakeGroupObsolete);
+  FRIEND_TEST_ALL_PREFIXES(MockAppCacheStorageTest, StoreNewGroup);
+  FRIEND_TEST_ALL_PREFIXES(MockAppCacheStorageTest,
                            StoreExistingGroup);
-  FRIEND_TEST_ALL_PREFIXES(content::MockAppCacheStorageTest,
+  FRIEND_TEST_ALL_PREFIXES(MockAppCacheStorageTest,
                            StoreExistingGroupExistingCache);
-  FRIEND_TEST_ALL_PREFIXES(content::AppCacheServiceTest,
+  FRIEND_TEST_ALL_PREFIXES(AppCacheServiceTest,
                            DeleteAppCachesForOrigin);
 
   DISALLOW_COPY_AND_ASSIGN(MockAppCacheStorage);
 };
 
-}  // namespace appcache
+}  // namespace content
 
-#endif  // WEBKIT_BROWSER_APPCACHE_MOCK_APPCACHE_STORAGE_H_
+#endif  // CONTENT_BROWSER_APPCACHE_MOCK_APPCACHE_STORAGE_H_

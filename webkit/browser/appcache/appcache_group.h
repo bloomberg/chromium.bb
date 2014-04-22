@@ -24,6 +24,7 @@ FORWARD_DECLARE_TEST(AppCacheGroupTest, QueueUpdate);
 FORWARD_DECLARE_TEST(AppCacheUpdateJobTest, AlreadyChecking);
 FORWARD_DECLARE_TEST(AppCacheUpdateJobTest, AlreadyDownloading);
 class AppCacheUpdateJobTest;
+class MockAppCacheStorage;
 }
 
 namespace appcache {
@@ -105,8 +106,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheGroup
 
   friend class base::RefCounted<AppCacheGroup>;
   friend class content::AppCacheUpdateJobTest;
+  friend class content::MockAppCacheStorage;  // for old_caches()
   friend class AppCacheUpdateJob;
-  friend class MockAppCacheStorage;  // for old_caches()
 
   ~AppCacheGroup();
 

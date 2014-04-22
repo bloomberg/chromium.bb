@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
+#include "content/browser/appcache/mock_appcache_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/appcache/appcache.h"
 #include "webkit/browser/appcache/appcache_group.h"
 #include "webkit/browser/appcache/appcache_response.h"
 #include "webkit/browser/appcache/appcache_storage.h"
-#include "webkit/browser/appcache/mock_appcache_service.h"
 
 using appcache::AppCache;
 using appcache::AppCacheEntry;
@@ -19,8 +19,6 @@ using appcache::INTERCEPT_NAMESPACE;
 using appcache::kNoCacheId;
 using appcache::kNoResponseId;
 using appcache::Manifest;
-using appcache::MockAppCacheService;
-using appcache::MockAppCacheStorage;
 using appcache::Namespace;
 using appcache::NETWORK_NAMESPACE;
 

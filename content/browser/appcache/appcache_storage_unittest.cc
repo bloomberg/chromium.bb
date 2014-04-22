@@ -3,20 +3,19 @@
 // found in the LICENSE file.
 
 #include "base/message_loop/message_loop.h"
+#include "content/browser/appcache/mock_appcache_service.h"
 #include "content/browser/quota/mock_quota_manager_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/appcache/appcache.h"
 #include "webkit/browser/appcache/appcache_group.h"
 #include "webkit/browser/appcache/appcache_response.h"
 #include "webkit/browser/appcache/appcache_storage.h"
-#include "webkit/browser/appcache/mock_appcache_service.h"
 
 using appcache::AppCache;
 using appcache::AppCacheGroup;
 using appcache::AppCacheResponseInfo;
 using appcache::AppCacheStorage;
 using appcache::kUnkownResponseDataSize;
-using appcache::MockAppCacheService;
 
 namespace content {
 

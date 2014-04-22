@@ -5,12 +5,12 @@
 #include <string>
 
 #include "base/message_loop/message_loop.h"
+#include "content/browser/appcache/mock_appcache_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/appcache/appcache.h"
 #include "webkit/browser/appcache/appcache_group.h"
 #include "webkit/browser/appcache/appcache_host.h"
 #include "webkit/browser/appcache/appcache_update_job.h"
-#include "webkit/browser/appcache/mock_appcache_service.h"
 #include "webkit/common/appcache/appcache_interfaces.h"
 
 using appcache::AppCache;
@@ -19,7 +19,6 @@ using appcache::AppCacheGroup;
 using appcache::AppCacheHost;
 using appcache::AppCacheService;
 using appcache::AppCacheUpdateJob;
-using appcache::MockAppCacheService;
 
 namespace {
 

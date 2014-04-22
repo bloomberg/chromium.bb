@@ -8,13 +8,12 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
+#include "content/browser/appcache/mock_appcache_service.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/appcache/appcache_quota_client.h"
-#include "webkit/browser/appcache/mock_appcache_service.h"
 
 using appcache::AppCacheQuotaClient;
-using appcache::MockAppCacheService;
 
 namespace content {
 

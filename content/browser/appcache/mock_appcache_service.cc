@@ -1,13 +1,13 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/browser/appcache/mock_appcache_service.h"
+#include "content/browser/appcache/mock_appcache_service.h"
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 
-namespace appcache {
+namespace content {
 
 static void DeferredCallCallback(
     const net::CompletionCallback& callback, int rv) {
@@ -24,4 +24,4 @@ void MockAppCacheService::DeleteAppCachesForOrigin(
                  mock_delete_appcaches_for_origin_result_));
 }
 
-}  // namespace appcache
+}  // namespace content

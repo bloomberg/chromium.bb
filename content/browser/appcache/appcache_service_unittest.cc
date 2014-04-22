@@ -8,13 +8,13 @@
 #include "base/bind_helpers.h"
 #include "base/pickle.h"
 #include "base/run_loop.h"
+#include "content/browser/appcache/mock_appcache_storage.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/appcache/appcache_response.h"
 #include "webkit/browser/appcache/appcache_service.h"
-#include "webkit/browser/appcache/mock_appcache_storage.h"
 
 using appcache::AppCache;
 using appcache::AppCacheEntry;
@@ -25,7 +25,6 @@ using appcache::AppCacheInfoVector;
 using appcache::AppCacheResponseReader;
 using appcache::AppCacheService;
 using appcache::HttpResponseInfoIOBuffer;
-using appcache::MockAppCacheStorage;
 
 namespace content {
 namespace {
