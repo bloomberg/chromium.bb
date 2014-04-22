@@ -63,12 +63,12 @@ namespace {
 
 // Returns a single bookmark node from the argument ID.
 // This returns NULL in case of failure.
-const BookmarkNode* GetNodeFromString(
-    BookmarkModel* model, const std::string& id_string) {
+const BookmarkNode* GetNodeFromString(BookmarkModel* model,
+                                      const std::string& id_string) {
   int64 id;
   if (!base::StringToInt64(id_string, &id))
     return NULL;
-  return model->GetNodeByID(id);
+  return GetBookmarkNodeByID(model, id);
 }
 
 // Gets a vector of bookmark nodes from the argument list of IDs.

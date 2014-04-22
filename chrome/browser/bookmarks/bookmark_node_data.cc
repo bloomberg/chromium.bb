@@ -10,7 +10,7 @@
 #include "base/pickle.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 
 const char* BookmarkNodeData::kClipboardFormatString =
@@ -250,7 +250,7 @@ std::vector<const BookmarkNode*> BookmarkNodeData::GetNodes(
     return nodes;
 
   for (size_t i = 0; i < elements.size(); ++i) {
-    const BookmarkNode* node = model->GetNodeByID(elements[i].id_);
+    const BookmarkNode* node = GetBookmarkNodeByID(model, elements[i].id_);
     if (!node) {
       nodes.clear();
       return nodes;

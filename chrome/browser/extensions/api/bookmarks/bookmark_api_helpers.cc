@@ -10,6 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/extensions/api/bookmarks/bookmark_api_constants.h"
 #include "chrome/common/extensions/api/bookmarks.h"
 
@@ -100,7 +101,7 @@ bool RemoveNode(BookmarkModel* model,
                 int64 id,
                 bool recursive,
                 std::string* error) {
-  const BookmarkNode* node = model->GetNodeByID(id);
+  const BookmarkNode* node = GetBookmarkNodeByID(model, id);
   if (!node) {
     *error = keys::kNoNodeError;
     return false;

@@ -81,7 +81,7 @@ BookmarkAddOperation::BookmarkAddOperation(Profile* profile,
 
 void BookmarkAddOperation::Undo() {
   BookmarkModel* model = GetBookmarkModel();
-  const BookmarkNode* parent = model->GetNodeByID(parent_id_);
+  const BookmarkNode* parent = GetBookmarkNodeByID(model, parent_id_);
   DCHECK(parent);
 
   model->Remove(parent, index_);
@@ -147,7 +147,7 @@ BookmarkRemoveOperation::BookmarkRemoveOperation(Profile* profile,
 void BookmarkRemoveOperation::Undo() {
   DCHECK(removed_node_.is_valid());
   BookmarkModel* model = GetBookmarkModel();
-  const BookmarkNode* parent = model->GetNodeByID(parent_id_);
+  const BookmarkNode* parent = GetBookmarkNodeByID(model, parent_id_);
   DCHECK(parent);
 
   bookmark_utils::CloneBookmarkNode(model, removed_node_.elements, parent,
@@ -215,7 +215,7 @@ BookmarkEditOperation::BookmarkEditOperation(Profile* profile,
 void BookmarkEditOperation::Undo() {
   DCHECK(original_bookmark_.is_valid());
   BookmarkModel* model = GetBookmarkModel();
-  const BookmarkNode* node = model->GetNodeByID(node_id_);
+  const BookmarkNode* node = GetBookmarkNodeByID(model, node_id_);
   DCHECK(node);
 
   model->SetTitle(node, original_bookmark_.elements[0].title);
@@ -279,8 +279,8 @@ BookmarkMoveOperation::BookmarkMoveOperation(Profile* profile,
 
 void BookmarkMoveOperation::Undo() {
   BookmarkModel* model = GetBookmarkModel();
-  const BookmarkNode* old_parent = model->GetNodeByID(old_parent_id_);
-  const BookmarkNode* new_parent = model->GetNodeByID(new_parent_id_);
+  const BookmarkNode* old_parent = GetBookmarkNodeByID(model, old_parent_id_);
+  const BookmarkNode* new_parent = GetBookmarkNodeByID(model, new_parent_id_);
   DCHECK(old_parent);
   DCHECK(new_parent);
 
@@ -352,12 +352,12 @@ BookmarkReorderOperation::~BookmarkReorderOperation() {
 
 void BookmarkReorderOperation::Undo() {
   BookmarkModel* model = GetBookmarkModel();
-  const BookmarkNode* parent = model->GetNodeByID(parent_id_);
+  const BookmarkNode* parent = GetBookmarkNodeByID(model, parent_id_);
   DCHECK(parent);
 
   std::vector<const BookmarkNode*> ordered_nodes;
   for (size_t i = 0; i < ordered_bookmarks_.size(); ++i)
-    ordered_nodes.push_back(model->GetNodeByID(ordered_bookmarks_[i]));
+    ordered_nodes.push_back(GetBookmarkNodeByID(model, ordered_bookmarks_[i]));
 
   model->ReorderChildren(parent, ordered_nodes);
 }

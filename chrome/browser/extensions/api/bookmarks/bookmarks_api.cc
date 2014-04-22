@@ -131,8 +131,8 @@ const BookmarkNode* BookmarksFunction::GetBookmarkNodeFromId(
   if (!GetBookmarkIdAsInt64(id_string, &id))
     return NULL;
 
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(GetProfile());
-  const BookmarkNode* node = model->GetNodeByID(id);
+  const BookmarkNode* node = GetBookmarkNodeByID(
+      BookmarkModelFactory::GetForProfile(GetProfile()), id);
   if (!node)
     error_ = keys::kNoNodeError;
 
@@ -523,7 +523,7 @@ bool BookmarksCreateFunction::RunImpl() {
     if (!GetBookmarkIdAsInt64(*params->bookmark.parent_id, &parentId))
       return false;
   }
-  const BookmarkNode* parent = model->GetNodeByID(parentId);
+  const BookmarkNode* parent = GetBookmarkNodeByID(model, parentId);
   if (!parent) {
     error_ = keys::kNoParentError;
     return false;
@@ -611,7 +611,7 @@ bool BookmarksMoveFunction::RunImpl() {
     if (!GetBookmarkIdAsInt64(*params->destination.parent_id, &parentId))
       return false;
 
-    parent = model->GetNodeByID(parentId);
+    parent = GetBookmarkNodeByID(model, parentId);
   }
   if (!parent) {
     error_ = keys::kNoParentError;
@@ -739,7 +739,7 @@ class CreateBookmarkBucketMapper : public BookmarkBucketMapper<std::string> {
 
     int64 parent_id_int64;
     base::StringToInt64(parent_id, &parent_id_int64);
-    const BookmarkNode* parent = model->GetNodeByID(parent_id_int64);
+    const BookmarkNode* parent = GetBookmarkNodeByID(model, parent_id_int64);
     if (!parent)
       return;
 
@@ -777,7 +777,7 @@ class RemoveBookmarksBucketMapper : public BookmarkBucketMapper<std::string> {
     for (IdList::iterator it = ids.begin(); it != ids.end(); ++it) {
       BookmarkModel* model = BookmarkModelFactory::GetForProfile(
           Profile::FromBrowserContext(browser_context_));
-      const BookmarkNode* node = model->GetNodeByID(*it);
+      const BookmarkNode* node = GetBookmarkNodeByID(model, *it);
       if (!node || node->is_root())
         return;
 

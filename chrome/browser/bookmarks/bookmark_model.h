@@ -74,16 +74,16 @@ class BookmarkModel : public content::NotificationObserver,
 
   // Returns the root node. The 'bookmark bar' node and 'other' node are
   // children of the root node.
-  const BookmarkNode* root_node() { return &root_; }
+  const BookmarkNode* root_node() const { return &root_; }
 
   // Returns the 'bookmark bar' node. This is NULL until loaded.
-  const BookmarkNode* bookmark_bar_node() { return bookmark_bar_node_; }
+  const BookmarkNode* bookmark_bar_node() const { return bookmark_bar_node_; }
 
   // Returns the 'other' node. This is NULL until loaded.
-  const BookmarkNode* other_node() { return other_node_; }
+  const BookmarkNode* other_node() const { return other_node_; }
 
   // Returns the 'mobile' node. This is NULL until loaded.
-  const BookmarkNode* mobile_node() { return mobile_node_; }
+  const BookmarkNode* mobile_node() const { return mobile_node_; }
 
   bool is_root_node(const BookmarkNode* node) const { return node == &root_; }
 
@@ -172,9 +172,6 @@ class BookmarkModel : public content::NotificationObserver,
   // Blocks until loaded; this is NOT invoked on the main thread.
   // See BookmarkService for more details on this.
   virtual void BlockTillLoaded() OVERRIDE;
-
-  // Returns the node with |id|, or NULL if there is no node with |id|.
-  const BookmarkNode* GetNodeByID(int64 id) const;
 
   // Adds a new folder node at the specified position.
   const BookmarkNode* AddFolder(const BookmarkNode* parent,
@@ -305,9 +302,6 @@ class BookmarkModel : public content::NotificationObserver,
   BookmarkNode* AddNode(BookmarkNode* parent,
                         int index,
                         BookmarkNode* node);
-
-  // Implementation of GetNodeByID.
-  const BookmarkNode* GetNodeByID(const BookmarkNode* node, int64 id) const;
 
   // Returns true if the parent and index are valid.
   bool IsValidIndex(const BookmarkNode* parent, int index, bool allow_end);

@@ -493,11 +493,6 @@ void BookmarkModel::BlockTillLoaded() {
   loaded_signal_.Wait();
 }
 
-const BookmarkNode* BookmarkModel::GetNodeByID(int64 id) const {
-  // TODO(sky): TreeNode needs a method that visits all nodes using a predicate.
-  return GetNodeByID(&root_, id);
-}
-
 const BookmarkNode* BookmarkModel::AddFolder(const BookmarkNode* parent,
                                              int index,
                                              const base::string16& title) {
@@ -815,19 +810,6 @@ BookmarkNode* BookmarkModel::AddNode(BookmarkNode* parent,
   index_->Add(node);
 
   return node;
-}
-
-const BookmarkNode* BookmarkModel::GetNodeByID(const BookmarkNode* node,
-                                               int64 id) const {
-  if (node->id() == id)
-    return node;
-
-  for (int i = 0, child_count = node->child_count(); i < child_count; ++i) {
-    const BookmarkNode* result = GetNodeByID(node->GetChild(i), id);
-    if (result)
-      return result;
-  }
-  return NULL;
 }
 
 bool BookmarkModel::IsValidIndex(const BookmarkNode* parent,

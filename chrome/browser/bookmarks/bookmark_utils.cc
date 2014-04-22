@@ -111,6 +111,18 @@ bool HasSelectedAncestor(BookmarkModel* model,
   return HasSelectedAncestor(model, selected_nodes, node->parent());
 }
 
+const BookmarkNode* GetNodeByID(const BookmarkNode* node, int64 id) {
+  if (node->id() == id)
+    return node;
+
+  for (int i = 0, child_count = node->child_count(); i < child_count; ++i) {
+    const BookmarkNode* result = GetNodeByID(node->GetChild(i), id);
+    if (result)
+      return result;
+  }
+  return NULL;
+}
+
 }  // namespace
 
 namespace bookmark_utils {
@@ -340,7 +352,7 @@ void DeleteBookmarkFolders(BookmarkModel* model,
   for (std::vector<int64>::const_iterator iter = ids.begin();
        iter != ids.end();
        ++iter) {
-    const BookmarkNode* node = model->GetNodeByID(*iter);
+    const BookmarkNode* node = GetBookmarkNodeByID(model, *iter);
     if (!node)
       continue;
     const BookmarkNode* parent = node->parent();
@@ -375,3 +387,8 @@ void RemoveAllBookmarks(BookmarkModel* model, const GURL& url) {
 }
 
 }  // namespace bookmark_utils
+
+const BookmarkNode* GetBookmarkNodeByID(const BookmarkModel* model, int64 id) {
+  // TODO(sky): TreeNode needs a method that visits all nodes using a predicate.
+  return GetNodeByID(model->root_node(), id);
+}

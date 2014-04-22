@@ -8,7 +8,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "components/bookmarks/core/common/bookmark_pref_names.h"
 
 BookmarkExpandedStateTracker::BookmarkExpandedStateTracker(
@@ -47,7 +47,7 @@ BookmarkExpandedStateTracker::GetExpandedNodes() {
     int64 node_id;
     const BookmarkNode* node;
     if ((*i)->GetAsString(&value) && base::StringToInt64(value, &node_id) &&
-        (node = bookmark_model_->GetNodeByID(node_id)) != NULL &&
+        (node = GetBookmarkNodeByID(bookmark_model_, node_id)) != NULL &&
         node->is_folder()) {
       nodes.insert(node);
     } else {

@@ -13,6 +13,7 @@
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -520,7 +521,7 @@ const BookmarkNode* BookmarksHandler::GetNodeByID(
   if (is_partner)
     return partner_bookmarks_shim_->GetNodeByID(id);
 
-  return bookmark_model_->GetNodeByID(id);
+  return GetBookmarkNodeByID(bookmark_model_, id);
 }
 
 const BookmarkNode* BookmarksHandler::GetParentOf(

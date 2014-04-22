@@ -109,4 +109,7 @@ void RemoveAllBookmarks(BookmarkModel* model, const GURL& url);
 
 }  // namespace bookmark_utils
 
+// Returns the node with |id|, or NULL if there is no node with |id|.
+const BookmarkNode* GetBookmarkNodeByID(const BookmarkModel* model, int64 id);
+
 #endif  // CHROME_BROWSER_BOOKMARKS_BOOKMARK_UTILS_H_

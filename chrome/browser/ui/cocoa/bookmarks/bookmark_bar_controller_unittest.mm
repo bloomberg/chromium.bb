@@ -703,7 +703,7 @@ TEST_F(BookmarkBarControllerTest, MenuForFolderNode) {
   EXPECT_TRUE(item);
   if (item) {
     int64 tag = [bar_ nodeIdFromMenuTag:[item tag]];
-    const BookmarkNode* node = model->GetNodeByID(tag);
+    const BookmarkNode* node = GetBookmarkNodeByID(model, tag);
     EXPECT_TRUE(node);
     EXPECT_EQ(gurl, node->url());
   }
