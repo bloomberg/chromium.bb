@@ -37,6 +37,9 @@ public:
 protected:
     MediaValuesDynamic(LocalFrame*);
 
+    // This raw ptr is safe, as MediaValues would not outlive MediaQueryEvaluator, and
+    // MediaQueryEvaluator is reset on |Document::detach|.
+    // FIXME: Oilpan: This raw ptr should be changed to a Member when LocalFrame is migrated to the heap.
     LocalFrame* m_frame;
 };
 
