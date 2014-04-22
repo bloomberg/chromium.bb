@@ -1438,17 +1438,25 @@ bool CompositedLayerMapping::updateSquashingLayers(bool needsSquashingLayers)
         ASSERT(compositor()->layerSquashingEnabled());
 
         if (!m_squashingLayer) {
-            ASSERT(!m_squashingContainmentLayer);
-
             m_squashingLayer = createGraphicsLayer(CompositingReasonLayerForSquashingContents);
             m_squashingLayer->setDrawsContent(true);
-
-            // FIXME: containment layer needs a new CompositingReason, CompositingReasonOverlap is not appropriate.
-            if (!m_ancestorClippingLayer)
-                m_squashingContainmentLayer = createGraphicsLayer(CompositingReasonLayerForSquashingContainer);
             layersChanged = true;
         }
 
+        if (m_ancestorClippingLayer) {
+            if (m_squashingContainmentLayer) {
+                m_squashingContainmentLayer->removeFromParent();
+                m_squashingContainmentLayer = nullptr;
+                layersChanged = true;
+            }
+        } else {
+            if (!m_squashingContainmentLayer) {
+                m_squashingContainmentLayer = createGraphicsLayer(CompositingReasonLayerForSquashingContainer);
+                layersChanged = true;
+            }
+        }
+
+        ASSERT((m_ancestorClippingLayer && !m_squashingContainmentLayer) || (!m_ancestorClippingLayer && m_squashingContainmentLayer));
         ASSERT(m_squashingLayer);
     } else {
         if (m_squashingLayer) {
