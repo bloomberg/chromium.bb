@@ -47,9 +47,6 @@ class SyntheticGestureTargetBase : public SyntheticGestureTarget {
 
   virtual SyntheticGestureParams::GestureSourceType
       GetDefaultSyntheticGestureSourceType() const OVERRIDE;
-  virtual bool SupportsSyntheticGestureSourceType(
-      SyntheticGestureParams::GestureSourceType gesture_source_type) const
-      OVERRIDE;
 
   virtual base::TimeDelta PointerAssumedStoppedTime() const OVERRIDE;
 

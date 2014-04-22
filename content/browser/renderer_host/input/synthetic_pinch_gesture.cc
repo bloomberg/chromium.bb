@@ -30,9 +30,6 @@ SyntheticGesture::Result SyntheticPinchGesture::ForwardInputEvents(
     if (gesture_source_type_ == SyntheticGestureParams::DEFAULT_INPUT)
       gesture_source_type_ = target->GetDefaultSyntheticGestureSourceType();
 
-    if (!target->SupportsSyntheticGestureSourceType(gesture_source_type_))
-      return SyntheticGesture::GESTURE_SOURCE_TYPE_NOT_SUPPORTED_BY_PLATFORM;
-
     state_ = STARTED;
     start_time_ = timestamp;
   }

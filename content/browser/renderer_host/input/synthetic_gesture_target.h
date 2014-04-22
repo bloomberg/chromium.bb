@@ -36,10 +36,6 @@ class CONTENT_EXPORT SyntheticGestureTarget {
   virtual SyntheticGestureParams::GestureSourceType
       GetDefaultSyntheticGestureSourceType() const = 0;
 
-  // Check if a particular gesture type is supported by the target.
-  virtual bool SupportsSyntheticGestureSourceType(
-      SyntheticGestureParams::GestureSourceType gesture_source_type) const = 0;
-
   // After how much time of inaction does the target assume that a pointer has
   // stopped moving.
   virtual base::TimeDelta PointerAssumedStoppedTime() const = 0;

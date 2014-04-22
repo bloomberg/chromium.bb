@@ -165,8 +165,8 @@ class TouchActionBrowserTest : public ContentBrowserTest {
 // http://crbug.com/348539 and is flaky on XP, see
 // http://crbug.com/354763
 //
-// Mac and Linux GTK don't yet have a gesture recognizer, so can't support
-// turning touch events into scroll gestures.
+// Mac doesn't yet have a gesture recognizer, so can't support turning touch
+// events into scroll gestures.
 // Will be fixed with http://crbug.com/337142
 //
 // Verify the test infrastructure works - we can touch-scroll the page and get a
@@ -191,7 +191,13 @@ IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest, DISABLED_DefaultAuto) {
 
 // Verify that touching a touch-action: none region disables scrolling and
 // enables all touch events to be sent.
-IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest, TouchActionNone) {
+// Disabled on MacOS because it doesn't support touch input.
+#if defined(OS_MACOSX)
+#define MAYBE_TouchActionNone DISABLED_TouchActionNone
+#else
+#define MAYBE_TouchActionNone TouchActionNone
+#endif
+IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest, MAYBE_TouchActionNone) {
   LoadURL();
 
   bool scrolled = DoTouchScroll(gfx::Point(50, 150), gfx::Vector2d(0, 45));

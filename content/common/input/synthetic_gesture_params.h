@@ -50,6 +50,11 @@ struct CONTENT_EXPORT SyntheticGestureParams {
     SYNTHETIC_GESTURE_TYPE_MAX = TAP_GESTURE
   };
   virtual GestureType GetGestureType() const = 0;
+
+  // Returns true if the specific gesture source type is supported on this
+  // platform.
+  static bool IsGestureSourceTypeSupported(
+      GestureSourceType gesture_source_type);
 };
 
 }  // namespace content

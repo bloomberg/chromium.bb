@@ -77,14 +77,19 @@ void SyntheticGestureTargetAndroid::DispatchWebTouchEventToPlatform(
               static_cast<int64>(web_touch.timeStampSeconds * 1000.0));
 }
 
+void SyntheticGestureTargetAndroid::DispatchWebMouseWheelEventToPlatform(
+    const blink::WebMouseWheelEvent& web_wheel, const ui::LatencyInfo&) {
+  CHECK(false);
+}
+
+void SyntheticGestureTargetAndroid::DispatchWebMouseEventToPlatform(
+    const blink::WebMouseEvent& web_mouse, const ui::LatencyInfo&) {
+  CHECK(false);
+}
+
 SyntheticGestureParams::GestureSourceType
 SyntheticGestureTargetAndroid::GetDefaultSyntheticGestureSourceType() const {
   return SyntheticGestureParams::TOUCH_INPUT;
-}
-
-bool SyntheticGestureTargetAndroid::SupportsSyntheticGestureSourceType(
-    SyntheticGestureParams::GestureSourceType gesture_source_type) const {
-  return gesture_source_type == SyntheticGestureParams::TOUCH_INPUT;
 }
 
 int SyntheticGestureTargetAndroid::GetTouchSlopInDips() const {

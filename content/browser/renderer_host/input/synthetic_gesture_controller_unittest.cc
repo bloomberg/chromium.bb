@@ -88,11 +88,6 @@ class MockSyntheticGestureTarget : public SyntheticGestureTarget {
   GetDefaultSyntheticGestureSourceType() const OVERRIDE {
     return SyntheticGestureParams::TOUCH_INPUT;
   }
-  virtual bool SupportsSyntheticGestureSourceType(
-      SyntheticGestureParams::GestureSourceType gesture_source_type)
-      const OVERRIDE {
-    return true;
-  }
 
   virtual base::TimeDelta PointerAssumedStoppedTime() const OVERRIDE {
     return base::TimeDelta::FromMilliseconds(pointer_assumed_stopped_time_ms_);

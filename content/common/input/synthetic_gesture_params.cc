@@ -15,4 +15,21 @@ SyntheticGestureParams::SyntheticGestureParams(
 
 SyntheticGestureParams::~SyntheticGestureParams() {}
 
+bool SyntheticGestureParams::IsGestureSourceTypeSupported(
+    GestureSourceType gesture_source_type) {
+  if (gesture_source_type == DEFAULT_INPUT)
+    return true;
+
+  // These values should change very rarely. We thus hard-code them here rather
+  // than having to query the brower's SyntheticGestureTarget.
+#if defined(USE_AURA)
+  return gesture_source_type == TOUCH_INPUT ||
+         gesture_source_type == MOUSE_INPUT;
+#elif defined(OS_ANDROID)
+  return gesture_source_type == TOUCH_INPUT;
+#else
+  return gesture_source_type == MOUSE_INPUT;
+#endif
+}
+
 }  // namespace content

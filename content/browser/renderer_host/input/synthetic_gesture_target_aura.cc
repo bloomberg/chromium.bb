@@ -132,12 +132,6 @@ SyntheticGestureTargetAura::GetDefaultSyntheticGestureSourceType() const {
   return SyntheticGestureParams::TOUCH_INPUT;
 }
 
-bool SyntheticGestureTargetAura::SupportsSyntheticGestureSourceType(
-    SyntheticGestureParams::GestureSourceType gesture_source_type) const {
-  return gesture_source_type == SyntheticGestureParams::TOUCH_INPUT ||
-      gesture_source_type == SyntheticGestureParams::MOUSE_INPUT;
-}
-
 int SyntheticGestureTargetAura::GetTouchSlopInDips() const {
   // - 1 because Aura considers a pointer to be moving if it has moved at least
   // 'max_touch_move_in_pixels_for_click' pixels.

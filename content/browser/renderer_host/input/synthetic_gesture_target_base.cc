@@ -50,23 +50,14 @@ void SyntheticGestureTargetBase::DispatchInputEventToPlatform(
   latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
 
   if (WebInputEvent::isTouchEventType(event.type)) {
-    DCHECK(SupportsSyntheticGestureSourceType(
-            SyntheticGestureParams::TOUCH_INPUT));
-
     const WebTouchEvent& web_touch =
         static_cast<const WebTouchEvent&>(event);
     DispatchWebTouchEventToPlatform(web_touch, latency_info);
   } else if (event.type == WebInputEvent::MouseWheel) {
-    DCHECK(SupportsSyntheticGestureSourceType(
-            SyntheticGestureParams::MOUSE_INPUT));
-
     const WebMouseWheelEvent& web_wheel =
         static_cast<const WebMouseWheelEvent&>(event);
     DispatchWebMouseWheelEventToPlatform(web_wheel, latency_info);
   } else if (WebInputEvent::isMouseEventType(event.type)) {
-    DCHECK(SupportsSyntheticGestureSourceType(
-            SyntheticGestureParams::MOUSE_INPUT));
-
     const WebMouseEvent& web_mouse =
         static_cast<const WebMouseEvent&>(event);
     DispatchWebMouseEventToPlatform(web_mouse, latency_info);
@@ -78,7 +69,10 @@ void SyntheticGestureTargetBase::DispatchInputEventToPlatform(
 void SyntheticGestureTargetBase::DispatchWebTouchEventToPlatform(
       const blink::WebTouchEvent& web_touch,
       const ui::LatencyInfo& latency_info) {
-  host_->ForwardTouchEventWithLatencyInfo(web_touch, latency_info);
+  // We assume that platforms supporting touch have their own implementation of
+  // SyntheticGestureTarget to route the events through their respective input
+  // stack.
+  CHECK(false);
 }
 
 void SyntheticGestureTargetBase::DispatchWebMouseWheelEventToPlatform(
@@ -100,12 +94,6 @@ void SyntheticGestureTargetBase::SetNeedsFlush() {
 SyntheticGestureParams::GestureSourceType
 SyntheticGestureTargetBase::GetDefaultSyntheticGestureSourceType() const {
   return SyntheticGestureParams::MOUSE_INPUT;
-}
-
-bool SyntheticGestureTargetBase::SupportsSyntheticGestureSourceType(
-    SyntheticGestureParams::GestureSourceType gesture_source_type) const {
-  return gesture_source_type == SyntheticGestureParams::MOUSE_INPUT ||
-      gesture_source_type == SyntheticGestureParams::TOUCH_INPUT;
 }
 
 base::TimeDelta SyntheticGestureTargetBase::PointerAssumedStoppedTime()

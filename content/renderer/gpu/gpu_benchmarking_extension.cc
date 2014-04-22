@@ -235,6 +235,11 @@ class GpuBenchmarkingWrapper : public v8::Extension {
           "chrome.gpuBenchmarking.DEFAULT_INPUT = 0;"
           "chrome.gpuBenchmarking.TOUCH_INPUT = 1;"
           "chrome.gpuBenchmarking.MOUSE_INPUT = 2;"
+          "chrome.gpuBenchmarking.gestureSourceTypeSupported = "
+          "    function(gesture_source_type) {"
+          "  native function GestureSourceTypeSupported();"
+          "  return GestureSourceTypeSupported(gesture_source_type);"
+          "};"
           "chrome.gpuBenchmarking.smoothScrollBy = "
           "    function(pixels_to_scroll, opt_callback, opt_start_x,"
           "             opt_start_y, opt_gesture_source_type,"
@@ -250,10 +255,6 @@ class GpuBenchmarkingWrapper : public v8::Extension {
           "                           gesture_source_type, direction,"
           "                           speed_in_pixels_s, true,"
           "                           opt_start_x, opt_start_y);"
-          "};"
-          "chrome.gpuBenchmarking.smoothScrollBySendsTouch = function() {"
-          "  native function SmoothScrollSendsTouch();"
-          "  return SmoothScrollSendsTouch();"
           "};"
           "chrome.gpuBenchmarking.swipe = "
           "    function(direction, distance, opt_callback,"
@@ -337,11 +338,11 @@ class GpuBenchmarkingWrapper : public v8::Extension {
       return v8::FunctionTemplate::New(isolate, SetRasterizeOnlyVisibleContent);
     if (name->Equals(v8::String::NewFromUtf8(isolate, "PrintToSkPicture")))
       return v8::FunctionTemplate::New(isolate, PrintToSkPicture);
+    if (name->Equals(
+            v8::String::NewFromUtf8(isolate, "GestureSourceTypeSupported")))
+      return v8::FunctionTemplate::New(isolate, GestureSourceTypeSupported);
     if (name->Equals(v8::String::NewFromUtf8(isolate, "BeginSmoothScroll")))
       return v8::FunctionTemplate::New(isolate, BeginSmoothScroll);
-    if (name->Equals(
-            v8::String::NewFromUtf8(isolate, "SmoothScrollSendsTouch")))
-      return v8::FunctionTemplate::New(isolate, SmoothScrollSendsTouch);
     if (name->Equals(v8::String::NewFromUtf8(isolate, "BeginScrollBounce")))
       return v8::FunctionTemplate::New(isolate, BeginScrollBounce);
     if (name->Equals(v8::String::NewFromUtf8(isolate, "BeginPinch")))
@@ -428,14 +429,24 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     }
   }
 
-  static void SmoothScrollSendsTouch(
+  static void GestureSourceTypeSupported(
       const v8::FunctionCallbackInfo<v8::Value>& args) {
-    // TODO(epenner): Should other platforms emulate touch events?
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-    args.GetReturnValue().Set(true);
-#else
-    args.GetReturnValue().Set(false);
-#endif
+    if (args.Length() != 1 || !args[0]->IsNumber()) {
+      args.GetReturnValue().Set(false);
+      return;
+    }
+
+    int gesture_source_type = args[0]->IntegerValue();
+    if (gesture_source_type < 0 ||
+        gesture_source_type > SyntheticGestureParams::GESTURE_SOURCE_TYPE_MAX) {
+      args.GetReturnValue().Set(false);
+      return;
+    }
+
+    bool is_supported = SyntheticGestureParams::IsGestureSourceTypeSupported(
+        static_cast<SyntheticGestureParams::GestureSourceType>(
+            gesture_source_type));
+    args.GetReturnValue().Set(is_supported);
   }
 
   static void BeginSmoothScroll(
