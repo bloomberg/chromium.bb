@@ -11,8 +11,9 @@ namespace cc {
 RasterizerTask::RasterizerTask() : did_schedule_(false), did_complete_(false) {}
 
 RasterizerTask::~RasterizerTask() {
-  DCHECK(!did_schedule_);
-  DCHECK(!did_run_ || did_complete_);
+  // Debugging CHECKs to help track down a use-after-free.
+  CHECK(!did_schedule_);
+  CHECK(!did_run_ || did_complete_);
 }
 
 ImageDecodeTask* RasterizerTask::AsImageDecodeTask() { return NULL; }
