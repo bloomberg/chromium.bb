@@ -431,7 +431,6 @@ class CONTENT_EXPORT BrowserPluginGuest
   void OnUpdateGeometry(int instance_id, const gfx::Rect& view_rect);
   void OnUpdateRectACK(
       int instance_id,
-      bool needs_ack,
       const BrowserPluginHostMsg_AutoSize_Params& auto_size_params,
       const BrowserPluginHostMsg_ResizeGuest_Params& resize_guest_params);
 

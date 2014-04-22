@@ -86,7 +86,6 @@ class OverscrollNavigationOverlayTest : public RenderViewHostImplTestHarness {
     params.view_size = gfx::Size(10, 10);
     params.bitmap_rect = gfx::Rect(params.view_size);
     params.scroll_rect = gfx::Rect();
-    params.needs_ack = false;
     ViewHostMsg_UpdateRect rect(test_rvh()->GetRoutingID(), params);
     RenderViewHostTester::TestOnMessageReceived(test_rvh(), rect);
 
@@ -167,7 +166,6 @@ TEST_F(OverscrollNavigationOverlayTest, PaintUpdateWithoutNonEmptyPaint) {
   params.view_size = gfx::Size(10, 10);
   params.bitmap_rect = gfx::Rect(params.view_size);
   params.scroll_rect = gfx::Rect();
-  params.needs_ack = false;
   params.flags = ViewHostMsg_UpdateRect_Flags::IS_REPAINT_ACK;
   ViewHostMsg_UpdateRect rect(test_rvh()->GetRoutingID(), params);
   RenderViewHostTester::TestOnMessageReceived(test_rvh(), rect);

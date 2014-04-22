@@ -257,11 +257,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // blocking until the renderer sends a new frame.
   void WaitForSurface();
 
-  // When a backing store does asynchronous painting, it will call this function
-  // when it is done with the DIB. We will then forward a message to the
-  // renderer to send another paint.
-  void DonePaintingToBackingStore();
-
   // GPU accelerated version of GetBackingStore function. This will
   // trigger a re-composite to the view. It may fail if a resize is pending, or
   // if a composite has already been requested and not acked yet.

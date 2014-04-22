@@ -352,7 +352,6 @@ class CONTENT_EXPORT RenderWidget
   virtual void OnWasHidden();
   virtual void OnWasShown(bool needs_repainting);
   virtual void OnWasSwappedOut();
-  void OnUpdateRectAck();
   void OnCreateVideoAck(int32 video_id);
   void OnUpdateVideoAck(int32 video_id);
   void OnRequestMoveAck();
@@ -555,9 +554,6 @@ class CONTENT_EXPORT RenderWidget
   // The size of the RenderWidget.
   gfx::Size size_;
 
-  // The TransportDIB that is being used to transfer an image to the browser.
-  TransportDIB* current_paint_buf_;
-
   bool has_frame_pending_;
 
   // The size of the view's backing surface in non-DPI-adjusted pixels.
@@ -575,10 +571,6 @@ class CONTENT_EXPORT RenderWidget
 
   // Filtered time per frame based on UpdateRect messages.
   float filtered_time_per_frame_;
-
-  // True if we are expecting an UpdateRect_ACK message (i.e., that a
-  // UpdateRect message has been sent).
-  bool update_reply_pending_;
 
   // Whether the WebWidget is in auto resize mode, which is used for example
   // by extension popups.

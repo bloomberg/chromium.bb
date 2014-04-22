@@ -206,9 +206,8 @@ IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_HandleInputEvent,
 // the previous frame and is ready for the next frame. If the guest sent the
 // embedder a bitmap that does not match the size of the BrowserPlugin's
 // container, the BrowserPlugin requests a new size as well.
-IPC_MESSAGE_ROUTED4(BrowserPluginHostMsg_UpdateRect_ACK,
+IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_UpdateRect_ACK,
     int /* instance_id */,
-    bool /* needs_ack */,
     BrowserPluginHostMsg_AutoSize_Params /* auto_size_params */,
     BrowserPluginHostMsg_ResizeGuest_Params /* resize_guest_params */)
 

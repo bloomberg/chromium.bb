@@ -627,12 +627,10 @@ TEST_F(BrowserPluginTest, AutoSizeAttributes) {
     ASSERT_TRUE(auto_size_msg);
 
     int instance_id = 0;
-    bool needs_ack = false;
     BrowserPluginHostMsg_AutoSize_Params auto_size_params;
     BrowserPluginHostMsg_ResizeGuest_Params resize_params;
     BrowserPluginHostMsg_UpdateRect_ACK::Read(auto_size_msg,
                                               &instance_id,
-                                              &needs_ack,
                                               &auto_size_params,
                                               &resize_params);
     EXPECT_FALSE(auto_size_params.enable);

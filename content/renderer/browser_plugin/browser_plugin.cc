@@ -610,7 +610,6 @@ void BrowserPlugin::OnUpdateRect(
     browser_plugin_manager()->Send(new BrowserPluginHostMsg_UpdateRect_ACK(
         render_view_routing_id_,
         guest_instance_id_,
-        true,
         auto_size_params,
         resize_guest_params));
     return;
@@ -666,7 +665,6 @@ void BrowserPlugin::OnUpdateRect(
   browser_plugin_manager()->Send(new BrowserPluginHostMsg_UpdateRect_ACK(
       render_view_routing_id_,
       guest_instance_id_,
-      UsesDamageBuffer(params),
       auto_size_params,
       resize_guest_params));
 }

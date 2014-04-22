@@ -407,7 +407,6 @@ void RenderWidgetHostProcess::InitUpdateRectParams(
   params->copy_rects.push_back(params->bitmap_rect);
   params->view_size = gfx::Size(w, h);
   params->flags = update_msg_reply_flags_;
-  params->needs_ack = true;
   params->scale_factor = 1;
 }
 
@@ -1056,10 +1055,6 @@ TEST_F(RenderWidgetHostTest, HiddenPaint) {
   ViewHostMsg_UpdateRect_Params params;
   process_->InitUpdateRectParams(&params);
   host_->OnUpdateRect(params);
-
-  // It should have sent out the ACK.
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      ViewMsg_UpdateRect_ACK::ID));
 
   // Now unhide.
   process_->sink().ClearMessages();

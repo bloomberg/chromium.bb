@@ -355,12 +355,10 @@ RenderWidget::RenderWidget(blink::WebPopupType popup_type,
       webwidget_(NULL),
       opener_id_(MSG_ROUTING_NONE),
       init_complete_(false),
-      current_paint_buf_(NULL),
       has_frame_pending_(false),
       overdraw_bottom_height_(0.f),
       next_paint_flags_(0),
       filtered_time_per_frame_(0.0f),
-      update_reply_pending_(false),
       auto_resize_mode_(false),
       need_update_rect_for_auto_resize_(false),
       did_show_(false),
@@ -413,14 +411,6 @@ RenderWidget::RenderWidget(blink::WebPopupType popup_type,
 
 RenderWidget::~RenderWidget() {
   DCHECK(!webwidget_) << "Leaking our WebWidget!";
-  if (current_paint_buf_) {
-    if (RenderProcess::current()) {
-      // If the RenderProcess is already gone, it will have released all DIBs
-      // in its destructor anyway.
-      RenderProcess::current()->ReleaseTransportDIB(current_paint_buf_);
-    }
-    current_paint_buf_ = NULL;
-  }
 
   // If we are swapped out, we have released already.
   if (!is_swapped_out_ && RenderProcess::current())
@@ -603,7 +593,6 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_WasHidden, OnWasHidden)
     IPC_MESSAGE_HANDLER(ViewMsg_WasShown, OnWasShown)
     IPC_MESSAGE_HANDLER(ViewMsg_WasSwappedOut, OnWasSwappedOut)
-    IPC_MESSAGE_HANDLER(ViewMsg_UpdateRect_ACK, OnUpdateRectAck)
     IPC_MESSAGE_HANDLER(ViewMsg_SetInputMethodActive, OnSetInputMethodActive)
     IPC_MESSAGE_HANDLER(ViewMsg_CandidateWindowShown, OnCandidateWindowShown)
     IPC_MESSAGE_HANDLER(ViewMsg_CandidateWindowUpdated,
@@ -833,27 +822,6 @@ void RenderWidget::OnWasSwappedOut() {
 void RenderWidget::OnRequestMoveAck() {
   DCHECK(pending_window_rect_count_);
   pending_window_rect_count_--;
-}
-
-void RenderWidget::OnUpdateRectAck() {
-  TRACE_EVENT0("renderer", "RenderWidget::OnUpdateRectAck");
-  DCHECK(update_reply_pending_);
-  update_reply_pending_ = false;
-
-  // If we sent an UpdateRect message with a zero-sized bitmap, then we should
-  // have no current paint buffer.
-  if (current_paint_buf_) {
-    RenderProcess::current()->ReleaseTransportDIB(current_paint_buf_);
-    current_paint_buf_ = NULL;
-  }
-
-  // Notify subclasses that software rendering was flushed to the screen.
-  if (!is_accelerated_compositing_active_) {
-    DidFlushPaint();
-  }
-
-  // Continue painting if necessary...
-  DoDeferredUpdateAndSendInputAck();
 }
 
 GURL RenderWidget::GetURLForGraphicsContext3D() {
@@ -1389,8 +1357,6 @@ void RenderWidget::didInvalidateRect(const WebRect& rect) {
   // We may not need to schedule another call to DoDeferredUpdate.
   if (invalidation_task_posted_)
     return;
-  if (update_reply_pending_)
-    return;
 
   // When GPU rendering, combine pending animations and invalidations into
   // a single update.
@@ -1426,8 +1392,6 @@ void RenderWidget::didScrollRect(int dx, int dy,
 
   // We may not need to schedule another call to DoDeferredUpdate.
   if (invalidation_task_posted_)
-    return;
-  if (update_reply_pending_)
     return;
 
   // When GPU rendering, combine pending animations and invalidations into
@@ -1583,9 +1547,6 @@ void RenderWidget::didCompleteSwapBuffers() {
   // Notify subclasses threaded composited rendering was flushed to the screen.
   DidFlushPaint();
 
-  if (update_reply_pending_)
-    return;
-
   if (!next_paint_flags_ &&
       !need_update_rect_for_auto_resize_ &&
       !plugin_window_moves_.size()) {
@@ -1597,7 +1558,6 @@ void RenderWidget::didCompleteSwapBuffers() {
   params.plugin_window_moves.swap(plugin_window_moves_);
   params.flags = next_paint_flags_;
   params.scroll_offset = GetScrollOffset();
-  params.needs_ack = false;
   params.scale_factor = device_scale_factor_;
 
   Send(new ViewHostMsg_UpdateRect(routing_id_, params));

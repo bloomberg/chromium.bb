@@ -440,10 +440,6 @@ IPC_STRUCT_BEGIN(ViewHostMsg_UpdateRect_Params)
   // request messages.
   IPC_STRUCT_MEMBER(int, flags)
 
-  // Whether or not the renderer expects a ViewMsg_UpdateRect_ACK for this
-  // update. True for 2D painting, but false for accelerated compositing.
-  IPC_STRUCT_MEMBER(bool, needs_ack)
-
   // All the above coordinates are in DIP. This is the scale factor needed
   // to convert them to pixels.
   IPC_STRUCT_MEMBER(float, scale_factor)
@@ -636,10 +632,6 @@ IPC_MESSAGE_ROUTED1(ViewMsg_WasShown,
 // Sent to inform the view that it was swapped out.  This allows the process to
 // exit if no other views are using it.
 IPC_MESSAGE_ROUTED0(ViewMsg_WasSwappedOut)
-
-// Tells the render view that a ViewHostMsg_UpdateRect message was processed.
-// This signals the render view that it can send another UpdateRect message.
-IPC_MESSAGE_ROUTED0(ViewMsg_UpdateRect_ACK)
 
 // Tells the renderer to focus the first (last if reverse is true) focusable
 // node.

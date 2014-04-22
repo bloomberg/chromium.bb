@@ -1431,12 +1431,8 @@ void BrowserPluginGuest::OnUnlockMouseAck(int instance_id) {
 
 void BrowserPluginGuest::OnUpdateRectACK(
     int instance_id,
-    bool needs_ack,
     const BrowserPluginHostMsg_AutoSize_Params& auto_size_params,
     const BrowserPluginHostMsg_ResizeGuest_Params& resize_guest_params) {
-  // Only the software path expects an ACK.
-  if (needs_ack)
-    Send(new ViewMsg_UpdateRect_ACK(routing_id()));
   OnSetSize(instance_id_, auto_size_params, resize_guest_params);
 }
 
@@ -1538,7 +1534,7 @@ void BrowserPluginGuest::OnUpdateRect(
   relay_params.scale_factor = params.scale_factor;
   relay_params.is_resize_ack = ViewHostMsg_UpdateRect_Flags::is_resize_ack(
       params.flags);
-  relay_params.needs_ack = params.needs_ack;
+  relay_params.needs_ack = false;
 
   bool size_changed = last_seen_view_size_ != params.view_size;
   gfx::Size old_size = last_seen_view_size_;
@@ -1550,47 +1546,7 @@ void BrowserPluginGuest::OnUpdateRect(
   }
   last_seen_auto_size_enabled_ = auto_size_enabled_;
 
-  // HW accelerated case, acknowledge resize only
-  if (!params.needs_ack || !damage_buffer_) {
-    relay_params.damage_buffer_sequence_id = 0;
-    SendMessageToEmbedder(
-        new BrowserPluginMsg_UpdateRect(instance_id(), relay_params));
-    return;
-  }
-
-  // Only copy damage if the guest is in autosize mode and the guest's view size
-  // is less than the maximum size or the guest's view size is equal to the
-  // damage buffer's size and the guest's scale factor is equal to the damage
-  // buffer's scale factor.
-  // The scaling change can happen due to asynchronous updates of the DPI on a
-  // resolution change.
-  if (((auto_size_enabled_ && InAutoSizeBounds(params.view_size)) ||
-      (params.view_size == damage_view_size())) &&
-       params.scale_factor == damage_buffer_scale_factor()) {
-    TransportDIB* dib = GetWebContents()->GetRenderProcessHost()->
-        GetTransportDIB(params.bitmap);
-    if (dib) {
-      size_t guest_damage_buffer_size =
-#if defined(OS_WIN)
-          params.bitmap_rect.width() *
-          params.bitmap_rect.height() * 4;
-#else
-          dib->size();
-#endif
-      size_t embedder_damage_buffer_size = damage_buffer_size_;
-      void* guest_memory = dib->memory();
-      void* embedder_memory = damage_buffer_->memory();
-      size_t size = std::min(guest_damage_buffer_size,
-                             embedder_damage_buffer_size);
-      memcpy(embedder_memory, guest_memory, size);
-    }
-  }
-  relay_params.damage_buffer_sequence_id = damage_buffer_sequence_id_;
-  relay_params.bitmap_rect = params.bitmap_rect;
-  relay_params.scroll_delta = params.scroll_delta;
-  relay_params.scroll_rect = params.scroll_rect;
-  relay_params.copy_rects = params.copy_rects;
-
+  relay_params.damage_buffer_sequence_id = 0;
   SendMessageToEmbedder(
       new BrowserPluginMsg_UpdateRect(instance_id(), relay_params));
 }
