@@ -24,6 +24,15 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
  public:
   typedef StreamParser::TrackId TrackId;
 
+  // Arbitrarily-chosen numbers to estimate the duration of a buffer if none is
+  // set and there is not enough information to get a better estimate.
+  // TODO(wolenetz/acolwell): Parse audio codebook to determine missing audio
+  // frame durations. See http://crbug.com/351166.
+  enum {
+    kDefaultAudioBufferDurationInMs = 23,  // Common 1k samples @44.1kHz
+    kDefaultVideoBufferDurationInMs = 42  // Low 24fps to reduce stalls
+  };
+
  private:
   // Helper class that manages per-track state.
   class Track {

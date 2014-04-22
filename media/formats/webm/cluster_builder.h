@@ -36,10 +36,15 @@ class ClusterBuilder {
                       const uint8* data, int size);
   void AddBlockGroup(int track_num, int64 timecode, int duration, int flags,
                      const uint8* data, int size);
+  void AddBlockGroupWithoutBlockDuration(int track_num, int64 timecode,
+                     int flags, const uint8* data, int size);
 
   scoped_ptr<Cluster> Finish();
 
  private:
+  void AddBlockGroupInternal(int track_num, int64 timecode,
+                             bool include_block_duration, int duration,
+                             int flags, const uint8* data, int size);
   void Reset();
   void ExtendBuffer(int bytes_needed);
   void UpdateUInt64(int offset, int64 value);

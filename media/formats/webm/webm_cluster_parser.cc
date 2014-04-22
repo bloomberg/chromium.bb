@@ -15,13 +15,6 @@
 #include "media/formats/webm/webm_crypto_helpers.h"
 #include "media/formats/webm/webm_webvtt_parser.h"
 
-// Arbitrarily-chosen numbers to estimate the duration of a buffer if none is
-// set and there is not enough information to get a better estimate.
-// TODO(wolenetz/acolwell): Parse audio codebook to determine missing audio
-// frame durations. See http://crbug.com/351166.
-static int kDefaultAudioBufferDurationInMs = 23;  // Common 1k samples @44.1kHz
-static int kDefaultVideoBufferDurationInMs = 42;  // Low 24fps to reduce stalls
-
 namespace media {
 
 WebMClusterParser::WebMClusterParser(

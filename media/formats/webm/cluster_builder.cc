@@ -32,6 +32,13 @@ static const uint8 kBlockGroupHeader[] = {
   0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // Block(size = 0)
 };
 
+static const uint8 kBlockGroupHeaderWithoutBlockDuration[] = {
+  0xA0,  // BlockGroup ID
+  0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // BlockGroup(size = 0)
+  0xA1,  // Block ID
+  0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // Block(size = 0)
+};
+
 enum {
   kClusterSizeOffset = 4,
   kClusterTimecodeOffset = 14,
@@ -39,6 +46,7 @@ enum {
   kSimpleBlockSizeOffset = 1,
 
   kBlockGroupSizeOffset = 1,
+  kBlockGroupWithoutBlockDurationBlockSizeOffset = 10,
   kBlockGroupDurationOffset = 11,
   kBlockGroupBlockSizeOffset = 20,
 
@@ -85,8 +93,30 @@ void ClusterBuilder::AddSimpleBlock(int track_num, int64 timecode, int flags,
 
 void ClusterBuilder::AddBlockGroup(int track_num, int64 timecode, int duration,
                                    int flags, const uint8* data, int size) {
+  AddBlockGroupInternal(track_num, timecode, true, duration, flags, data, size);
+}
+
+void ClusterBuilder::AddBlockGroupWithoutBlockDuration(int track_num,
+                                                       int64 timecode,
+                                                       int flags,
+                                                       const uint8* data,
+                                                       int size) {
+  AddBlockGroupInternal(track_num, timecode, false, 0, flags, data, size);
+}
+
+
+void ClusterBuilder::AddBlockGroupInternal(int track_num, int64 timecode,
+                                           bool include_block_duration,
+                                           int duration, int flags,
+                                           const uint8* data, int size) {
   int block_size = size + 4;
-  int bytes_needed = sizeof(kBlockGroupHeader) + block_size;
+  int bytes_needed = block_size;
+  if (include_block_duration) {
+    bytes_needed += sizeof(kBlockGroupHeader);
+  } else {
+    bytes_needed += sizeof(kBlockGroupHeaderWithoutBlockDuration);
+  }
+
   int block_group_size = bytes_needed - 9;
 
   if (bytes_needed > (buffer_size_ - bytes_used_))
@@ -94,11 +124,21 @@ void ClusterBuilder::AddBlockGroup(int track_num, int64 timecode, int duration,
 
   uint8* buf = buffer_.get() + bytes_used_;
   int block_group_offset = bytes_used_;
-  memcpy(buf, kBlockGroupHeader, sizeof(kBlockGroupHeader));
+  if (include_block_duration) {
+    memcpy(buf, kBlockGroupHeader, sizeof(kBlockGroupHeader));
+    UpdateUInt64(block_group_offset + kBlockGroupDurationOffset, duration);
+    UpdateUInt64(block_group_offset + kBlockGroupBlockSizeOffset, block_size);
+    buf += sizeof(kBlockGroupHeader);
+  } else {
+    memcpy(buf, kBlockGroupHeaderWithoutBlockDuration,
+           sizeof(kBlockGroupHeaderWithoutBlockDuration));
+    UpdateUInt64(
+        block_group_offset + kBlockGroupWithoutBlockDurationBlockSizeOffset,
+        block_size);
+    buf += sizeof(kBlockGroupHeaderWithoutBlockDuration);
+  }
+
   UpdateUInt64(block_group_offset + kBlockGroupSizeOffset, block_group_size);
-  UpdateUInt64(block_group_offset + kBlockGroupDurationOffset, duration);
-  UpdateUInt64(block_group_offset + kBlockGroupBlockSizeOffset, block_size);
-  buf += sizeof(kBlockGroupHeader);
 
   // Make sure the 4 most-significant bits are 0.
   // http://www.matroska.org/technical/specs/index.html#block_structure
