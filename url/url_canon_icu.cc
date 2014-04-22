@@ -15,7 +15,7 @@
 #include "url/url_canon_icu.h"
 #include "url/url_canon_internal.h"  // for _itoa_s
 
-namespace url_canon {
+namespace url {
 
 namespace {
 
@@ -227,4 +227,4 @@ bool ReadUTFChar(const base::char16* str, int* begin, int length,
   return false;
 }
 
-}  // namespace url_canon
+}  // namespace url

@@ -10,7 +10,7 @@
 #include "url/url_export.h"
 #include "url/url_parse.h"
 
-namespace url_canon {
+namespace url {
 
 // Writes the given IPv4 address to |output|.
 URL_EXPORT void AppendIPv4Address(const unsigned char address[4],
@@ -39,11 +39,11 @@ URL_EXPORT void AppendIPv6Address(const unsigned char address[16],
 // notice these spaces and escape them, which will make IP address finding
 // fail. This seems like better behavior than stripping after a space.
 URL_EXPORT bool FindIPv4Components(const char* spec,
-                                   const url_parse::Component& host,
-                                   url_parse::Component components[4]);
+                                   const Component& host,
+                                   Component components[4]);
 URL_EXPORT bool FindIPv4Components(const base::char16* spec,
-                                   const url_parse::Component& host,
-                                   url_parse::Component components[4]);
+                                   const Component& host,
+                                   Component components[4]);
 
 // Converts an IPv4 address to a 32-bit number (network byte order).
 //
@@ -56,16 +56,14 @@ URL_EXPORT bool FindIPv4Components(const base::char16* spec,
 //
 // On success, |num_ipv4_components| will be populated with the number of
 // components in the IPv4 address.
-URL_EXPORT CanonHostInfo::Family IPv4AddressToNumber(
-    const char* spec,
-    const url_parse::Component& host,
-    unsigned char address[4],
-    int* num_ipv4_components);
-URL_EXPORT CanonHostInfo::Family IPv4AddressToNumber(
-    const base::char16* spec,
-    const url_parse::Component& host,
-    unsigned char address[4],
-    int* num_ipv4_components);
+URL_EXPORT CanonHostInfo::Family IPv4AddressToNumber(const char* spec,
+                                                     const Component& host,
+                                                     unsigned char address[4],
+                                                     int* num_ipv4_components);
+URL_EXPORT CanonHostInfo::Family IPv4AddressToNumber(const base::char16* spec,
+                                                     const Component& host,
+                                                     unsigned char address[4],
+                                                     int* num_ipv4_components);
 
 // Converts an IPv6 address to a 128-bit number (network byte order), returning
 // true on success. False means that the input was not a valid IPv6 address.
@@ -73,12 +71,12 @@ URL_EXPORT CanonHostInfo::Family IPv4AddressToNumber(
 // NOTE that |host| is expected to be surrounded by square brackets.
 // i.e. "[::1]" rather than "::1".
 URL_EXPORT bool IPv6AddressToNumber(const char* spec,
-                                    const url_parse::Component& host,
+                                    const Component& host,
                                     unsigned char address[16]);
 URL_EXPORT bool IPv6AddressToNumber(const base::char16* spec,
-                                    const url_parse::Component& host,
+                                    const Component& host,
                                     unsigned char address[16]);
 
-}  // namespace url_canon
+}  // namespace url
 
 #endif  // URL_URL_CANON_IP_H_

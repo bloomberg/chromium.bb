@@ -86,16 +86,17 @@ GURL::GURL(const std::string& url_string, RetainWhiteSpaceSelector) {
   InitCanonical(url_string, false);
 }
 
-GURL::GURL(const char* canonical_spec, size_t canonical_spec_len,
-           const url_parse::Parsed& parsed, bool is_valid)
+GURL::GURL(const char* canonical_spec,
+           size_t canonical_spec_len,
+           const url::Parsed& parsed,
+           bool is_valid)
     : spec_(canonical_spec, canonical_spec_len),
       is_valid_(is_valid),
       parsed_(parsed) {
   InitializeFromCanonicalSpec();
 }
 
-GURL::GURL(std::string canonical_spec,
-           const url_parse::Parsed& parsed, bool is_valid)
+GURL::GURL(std::string canonical_spec, const url::Parsed& parsed, bool is_valid)
     : is_valid_(is_valid),
       parsed_(parsed) {
   spec_.swap(canonical_spec);
@@ -107,8 +108,8 @@ void GURL::InitCanonical(const STR& input_spec, bool trim_path_end) {
   // Reserve enough room in the output for the input, plus some extra so that
   // we have room if we have to escape a few things without reallocating.
   spec_.reserve(input_spec.size() + 32);
-  url_canon::StdStringCanonOutput output(&spec_);
-  is_valid_ = url_util::Canonicalize(
+  url::StdStringCanonOutput output(&spec_);
+  is_valid_ = url::Canonicalize(
       input_spec.data(), static_cast<int>(input_spec.length()), trim_path_end,
       NULL, &output, &parsed_);
 
@@ -131,12 +132,12 @@ void GURL::InitializeFromCanonicalSpec() {
   // what we would have produced. Skip checking for invalid URLs have no meaning
   // and we can't always canonicalize then reproducabely.
   if (is_valid_) {
-    url_parse::Component scheme;
+    url::Component scheme;
     // We can't do this check on the inner_url of a filesystem URL, as
     // canonical_spec actually points to the start of the outer URL, so we'd
     // end up with infinite recursion in this constructor.
-    if (!url_util::FindAndCompareScheme(spec_.data(), spec_.length(),
-                                        "filesystem", &scheme) ||
+    if (!url::FindAndCompareScheme(spec_.data(), spec_.length(),
+                                   "filesystem", &scheme) ||
         scheme.begin == parsed_.scheme.begin) {
       // We need to retain trailing whitespace on path URLs, as the |parsed_|
       // spec we originally received may legitimately contain trailing white-
@@ -186,7 +187,7 @@ GURL GURL::Resolve(const base::string16& relative) const {
 // Note: code duplicated below (it's inconvenient to use a template here).
 GURL GURL::ResolveWithCharsetConverter(
     const std::string& relative,
-    url_canon::CharsetConverter* charset_converter) const {
+    url::CharsetConverter* charset_converter) const {
   // Not allowed for invalid URLs.
   if (!is_valid_)
     return GURL();
@@ -196,12 +197,12 @@ GURL GURL::ResolveWithCharsetConverter(
   // Reserve enough room in the output for the input, plus some extra so that
   // we have room if we have to escape a few things without reallocating.
   result.spec_.reserve(spec_.size() + 32);
-  url_canon::StdStringCanonOutput output(&result.spec_);
+  url::StdStringCanonOutput output(&result.spec_);
 
-  if (!url_util::ResolveRelative(
-          spec_.data(), static_cast<int>(spec_.length()), parsed_,
-          relative.data(), static_cast<int>(relative.length()),
-          charset_converter, &output, &result.parsed_)) {
+  if (!url::ResolveRelative(spec_.data(), static_cast<int>(spec_.length()),
+                            parsed_, relative.data(),
+                            static_cast<int>(relative.length()),
+                            charset_converter, &output, &result.parsed_)) {
     // Error resolving, return an empty URL.
     return GURL();
   }
@@ -219,7 +220,7 @@ GURL GURL::ResolveWithCharsetConverter(
 // Note: code duplicated above (it's inconvenient to use a template here).
 GURL GURL::ResolveWithCharsetConverter(
     const base::string16& relative,
-    url_canon::CharsetConverter* charset_converter) const {
+    url::CharsetConverter* charset_converter) const {
   // Not allowed for invalid URLs.
   if (!is_valid_)
     return GURL();
@@ -229,12 +230,12 @@ GURL GURL::ResolveWithCharsetConverter(
   // Reserve enough room in the output for the input, plus some extra so that
   // we have room if we have to escape a few things without reallocating.
   result.spec_.reserve(spec_.size() + 32);
-  url_canon::StdStringCanonOutput output(&result.spec_);
+  url::StdStringCanonOutput output(&result.spec_);
 
-  if (!url_util::ResolveRelative(
-          spec_.data(), static_cast<int>(spec_.length()), parsed_,
-          relative.data(), static_cast<int>(relative.length()),
-          charset_converter, &output, &result.parsed_)) {
+  if (!url::ResolveRelative(spec_.data(), static_cast<int>(spec_.length()),
+                            parsed_, relative.data(),
+                            static_cast<int>(relative.length()),
+                            charset_converter, &output, &result.parsed_)) {
     // Error resolving, return an empty URL.
     return GURL();
   }
@@ -251,7 +252,7 @@ GURL GURL::ResolveWithCharsetConverter(
 
 // Note: code duplicated below (it's inconvenient to use a template here).
 GURL GURL::ReplaceComponents(
-    const url_canon::Replacements<char>& replacements) const {
+    const url::Replacements<char>& replacements) const {
   GURL result;
 
   // Not allowed for invalid URLs.
@@ -261,9 +262,9 @@ GURL GURL::ReplaceComponents(
   // Reserve enough room in the output for the input, plus some extra so that
   // we have room if we have to escape a few things without reallocating.
   result.spec_.reserve(spec_.size() + 32);
-  url_canon::StdStringCanonOutput output(&result.spec_);
+  url::StdStringCanonOutput output(&result.spec_);
 
-  result.is_valid_ = url_util::ReplaceComponents(
+  result.is_valid_ = url::ReplaceComponents(
       spec_.data(), static_cast<int>(spec_.length()), parsed_, replacements,
       NULL, &output, &result.parsed_);
 
@@ -277,7 +278,7 @@ GURL GURL::ReplaceComponents(
 
 // Note: code duplicated above (it's inconvenient to use a template here).
 GURL GURL::ReplaceComponents(
-    const url_canon::Replacements<base::char16>& replacements) const {
+    const url::Replacements<base::char16>& replacements) const {
   GURL result;
 
   // Not allowed for invalid URLs.
@@ -287,9 +288,9 @@ GURL GURL::ReplaceComponents(
   // Reserve enough room in the output for the input, plus some extra so that
   // we have room if we have to escape a few things without reallocating.
   result.spec_.reserve(spec_.size() + 32);
-  url_canon::StdStringCanonOutput output(&result.spec_);
+  url::StdStringCanonOutput output(&result.spec_);
 
-  result.is_valid_ = url_util::ReplaceComponents(
+  result.is_valid_ = url::ReplaceComponents(
       spec_.data(), static_cast<int>(spec_.length()), parsed_, replacements,
       NULL, &output, &result.parsed_);
 
@@ -310,7 +311,7 @@ GURL GURL::GetOrigin() const {
   if (SchemeIsFileSystem())
     return inner_url_->GetOrigin();
 
-  url_canon::Replacements<char> replacements;
+  url::Replacements<char> replacements;
   replacements.ClearUsername();
   replacements.ClearPassword();
   replacements.ClearPath();
@@ -325,7 +326,7 @@ GURL GURL::GetAsReferrer() const {
       (!has_ref() && !has_username() && !has_password()))
     return GURL(*this);
 
-  url_canon::Replacements<char> replacements;
+  url::Replacements<char> replacements;
   replacements.ClearRef();
   replacements.ClearUsername();
   replacements.ClearPassword();
@@ -357,15 +358,15 @@ GURL GURL::GetWithEmptyPath() const {
 }
 
 bool GURL::IsStandard() const {
-  return url_util::IsStandard(spec_.data(), parsed_.scheme);
+  return url::IsStandard(spec_.data(), parsed_.scheme);
 }
 
 bool GURL::SchemeIs(const char* lower_ascii_scheme) const {
   if (parsed_.scheme.len <= 0)
     return lower_ascii_scheme == NULL;
-  return url_util::LowerCaseEqualsASCII(spec_.data() + parsed_.scheme.begin,
-                                        spec_.data() + parsed_.scheme.end(),
-                                        lower_ascii_scheme);
+  return url::LowerCaseEqualsASCII(spec_.data() + parsed_.scheme.begin,
+                                   spec_.data() + parsed_.scheme.end(),
+                                   lower_ascii_scheme);
 }
 
 bool GURL::SchemeIsHTTPOrHTTPS() const {
@@ -378,21 +379,21 @@ bool GURL::SchemeIsWSOrWSS() const {
 
 int GURL::IntPort() const {
   if (parsed_.port.is_nonempty())
-    return url_parse::ParsePort(spec_.data(), parsed_.port);
-  return url_parse::PORT_UNSPECIFIED;
+    return url::ParsePort(spec_.data(), parsed_.port);
+  return url::PORT_UNSPECIFIED;
 }
 
 int GURL::EffectiveIntPort() const {
   int int_port = IntPort();
-  if (int_port == url_parse::PORT_UNSPECIFIED && IsStandard())
-    return url_canon::DefaultPortForScheme(spec_.data() + parsed_.scheme.begin,
-                                           parsed_.scheme.len);
+  if (int_port == url::PORT_UNSPECIFIED && IsStandard())
+    return url::DefaultPortForScheme(spec_.data() + parsed_.scheme.begin,
+                                     parsed_.scheme.len);
   return int_port;
 }
 
 std::string GURL::ExtractFileName() const {
-  url_parse::Component file_component;
-  url_parse::ExtractFileName(spec_.data(), parsed_.path, &file_component);
+  url::Component file_component;
+  url::ExtractFileName(spec_.data(), parsed_.path, &file_component);
   return ComponentString(file_component);
 }
 
@@ -416,7 +417,7 @@ std::string GURL::PathForRequest() const {
 
 std::string GURL::HostNoBrackets() const {
   // If host looks like an IPv6 literal, strip the square brackets.
-  url_parse::Component h(parsed_.host);
+  url::Component h(parsed_.host);
   if (h.len >= 2 && spec_[h.begin] == '[' && spec_[h.end() - 1] == ']') {
     h.begin++;
     h.len -= 2;
@@ -432,10 +433,10 @@ bool GURL::HostIsIPAddress() const {
   if (!is_valid_ || spec_.empty())
      return false;
 
-  url_canon::RawCanonOutputT<char, 128> ignored_output;
-  url_canon::CanonHostInfo host_info;
-  url_canon::CanonicalizeIPAddress(spec_.c_str(), parsed_.host,
-                                   &ignored_output, &host_info);
+  url::RawCanonOutputT<char, 128> ignored_output;
+  url::CanonHostInfo host_info;
+  url::CanonicalizeIPAddress(spec_.c_str(), parsed_.host, &ignored_output,
+                             &host_info);
   return host_info.IsIPAddress();
 }
 
@@ -502,10 +503,10 @@ bool GURL::DomainIs(const char* lower_ascii_domain,
   const char* start_pos = spec_.data() + parsed_.host.begin +
                           host_len - domain_len;
 
-  if (!url_util::LowerCaseEqualsASCII(start_pos,
-                                      last_pos + 1,
-                                      lower_ascii_domain,
-                                      lower_ascii_domain + domain_len))
+  if (!url::LowerCaseEqualsASCII(start_pos,
+                                 last_pos + 1,
+                                 lower_ascii_domain,
+                                 lower_ascii_domain + domain_len))
     return false;
 
   // Check whether host has right domain start with dot, make sure we got

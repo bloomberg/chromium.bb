@@ -6,7 +6,7 @@
 #include "url/url_canon.h"
 #include "url/url_canon_internal.h"
 
-namespace url_canon {
+namespace url {
 
 namespace {
 
@@ -75,8 +75,10 @@ typedef RawCanonOutputT<base::char16, kTempHostBufferLen> StackBufferW;
 // |has_non_ascii| will be true if there are any non-7-bit characters, and
 // |has_escaped| will be true if there is a percent sign.
 template<typename CHAR, typename UCHAR>
-void ScanHostname(const CHAR* spec, const url_parse::Component& host,
-                  bool* has_non_ascii, bool* has_escaped) {
+void ScanHostname(const CHAR* spec,
+                  const Component& host,
+                  bool* has_non_ascii,
+                  bool* has_escaped) {
   int end = host.end();
   *has_non_ascii = false;
   *has_escaped = false;
@@ -287,13 +289,13 @@ bool DoComplexHost(const base::char16* host, int host_len,
 
 template<typename CHAR, typename UCHAR>
 void DoHost(const CHAR* spec,
-            const url_parse::Component& host,
+            const Component& host,
             CanonOutput* output,
             CanonHostInfo* host_info) {
   if (host.len <= 0) {
     // Empty hosts don't need anything.
     host_info->family = CanonHostInfo::NEUTRAL;
-    host_info->out_host = url_parse::Component();
+    host_info->out_host = Component();
     return;
   }
 
@@ -322,7 +324,7 @@ void DoHost(const CHAR* spec,
     // should not cause an allocation.
     RawCanonOutput<64> canon_ip;
     CanonicalizeIPAddress(output->data(),
-                          url_parse::MakeRange(output_begin, output->length()),
+                          MakeRange(output_begin, output->length()),
                           &canon_ip, host_info);
 
     // If we got an IPv4/IPv6 address, copy the canonical form back to the
@@ -334,15 +336,15 @@ void DoHost(const CHAR* spec,
     }
   }
 
-  host_info->out_host = url_parse::MakeRange(output_begin, output->length());
+  host_info->out_host = MakeRange(output_begin, output->length());
 }
 
 }  // namespace
 
 bool CanonicalizeHost(const char* spec,
-                      const url_parse::Component& host,
+                      const Component& host,
                       CanonOutput* output,
-                      url_parse::Component* out_host) {
+                      Component* out_host) {
   CanonHostInfo host_info;
   DoHost<char, unsigned char>(spec, host, output, &host_info);
   *out_host = host_info.out_host;
@@ -350,9 +352,9 @@ bool CanonicalizeHost(const char* spec,
 }
 
 bool CanonicalizeHost(const base::char16* spec,
-                      const url_parse::Component& host,
+                      const Component& host,
                       CanonOutput* output,
-                      url_parse::Component* out_host) {
+                      Component* out_host) {
   CanonHostInfo host_info;
   DoHost<base::char16, base::char16>(spec, host, output, &host_info);
   *out_host = host_info.out_host;
@@ -360,17 +362,17 @@ bool CanonicalizeHost(const base::char16* spec,
 }
 
 void CanonicalizeHostVerbose(const char* spec,
-                             const url_parse::Component& host,
+                             const Component& host,
                              CanonOutput* output,
-                             CanonHostInfo *host_info) {
+                             CanonHostInfo* host_info) {
   DoHost<char, unsigned char>(spec, host, output, host_info);
 }
 
 void CanonicalizeHostVerbose(const base::char16* spec,
-                             const url_parse::Component& host,
+                             const Component& host,
                              CanonOutput* output,
-                             CanonHostInfo *host_info) {
+                             CanonHostInfo* host_info) {
   DoHost<base::char16, base::char16>(spec, host, output, host_info);
 }
 
-}  // namespace url_canon
+}  // namespace url

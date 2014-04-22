@@ -43,7 +43,7 @@
 #include "url/url_util.h"
 #include "url/url_util_internal.h"
 
-namespace url_parse {
+namespace url {
 
 namespace {
 
@@ -376,7 +376,7 @@ void DoParseFileSystemURL(const CHAR* spec, int spec_len, Parsed* parsed) {
     return;
   }
 
-  url_parse::Component inner_scheme;
+  Component inner_scheme;
   const CHAR* inner_spec = &spec[inner_start];
   int inner_spec_len = spec_len - inner_start;
 
@@ -394,15 +394,13 @@ void DoParseFileSystemURL(const CHAR* spec, int spec_len, Parsed* parsed) {
 
   Parsed inner_parsed;
 
-  if (url_util::CompareSchemeComponent(
-      spec, inner_scheme, url_util::kFileScheme)) {
+  if (CompareSchemeComponent(spec, inner_scheme, kFileScheme)) {
     // File URLs are special.
     ParseFileURL(inner_spec, inner_spec_len, &inner_parsed);
-  } else if (url_util::CompareSchemeComponent(spec, inner_scheme,
-      url_util::kFileSystemScheme)) {
+  } else if (CompareSchemeComponent(spec, inner_scheme, kFileSystemScheme)) {
     // Filesystem URLs don't nest.
     return;
-  } else if (url_util::IsStandard(spec, inner_scheme)) {
+  } else if (IsStandard(spec, inner_scheme)) {
     // All "normal" URLs.
     DoParseStandardURL(inner_spec, inner_spec_len, &inner_parsed);
   } else {
@@ -686,7 +684,7 @@ bool DoExtractQueryKeyValue(const CHAR* spec,
     cur++;
 
   // Save the new query
-  *query = url_parse::MakeRange(cur, end);
+  *query = MakeRange(cur, end);
   return true;
 }
 
@@ -943,4 +941,4 @@ void ParseAfterScheme(const base::char16* spec,
   DoParseAfterScheme(spec, spec_len, after_scheme, parsed);
 }
 
-}  // namespace url_parse
+}  // namespace url

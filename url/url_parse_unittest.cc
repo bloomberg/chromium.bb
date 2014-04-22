@@ -45,7 +45,7 @@
 //      it looks like an absolute drive path. Also, slashes and backslashes are
 //      equally valid here.
 
-namespace url_parse {
+namespace url {
 namespace {
 
 // Used for regular URL parse cases.
@@ -96,7 +96,7 @@ struct FileSystemURLParseCase {
 
 bool ComponentMatches(const char* input,
                       const char* reference,
-                      const url_parse::Component& component) {
+                      const Component& component) {
   // If the component is nonexistant (length == -1), it should begin at 0.
   EXPECT_TRUE(component.len >= 0 || component.len == -1);
 
@@ -116,7 +116,7 @@ bool ComponentMatches(const char* input,
   return strncmp(reference, &input[component.begin], component.len) == 0;
 }
 
-void ExpectInvalidComponent(const url_parse::Component& component) {
+void ExpectInvalidComponent(const Component& component) {
   EXPECT_EQ(0, component.begin);
   EXPECT_EQ(-1, component.len);
 }
@@ -145,8 +145,8 @@ TEST(URLParser, Length) {
   for (size_t i = 0; i < arraysize(length_cases); i++) {
     int true_length = static_cast<int>(strlen(length_cases[i]));
 
-    url_parse::Parsed parsed;
-    url_parse::ParseStandardURL(length_cases[i], true_length, &parsed);
+    Parsed parsed;
+    ParseStandardURL(length_cases[i], true_length, &parsed);
 
     EXPECT_EQ(true_length, parsed.Length());
   }
@@ -205,11 +205,11 @@ TEST(URLParser, CountCharactersBefore) {
     int length = static_cast<int>(strlen(count_cases[i].url));
 
     // Simple test to distinguish file and standard URLs.
-    url_parse::Parsed parsed;
+    Parsed parsed;
     if (length > 0 && count_cases[i].url[0] == 'f')
-      url_parse::ParseFileURL(count_cases[i].url, length, &parsed);
+      ParseFileURL(count_cases[i].url, length, &parsed);
     else
-      url_parse::ParseStandardURL(count_cases[i].url, length, &parsed);
+      ParseStandardURL(count_cases[i].url, length, &parsed);
 
     int chars_before = parsed.CountCharactersBefore(
         count_cases[i].component, count_cases[i].include_delimiter);
@@ -318,11 +318,11 @@ static URLParseCase cases[] = {
 TEST(URLParser, Standard) {
   // Declared outside for loop to try to catch cases in init() where we forget
   // to reset something that is reset by the constructor.
-  url_parse::Parsed parsed;
+  Parsed parsed;
   for (size_t i = 0; i < arraysize(cases); i++) {
     const char* url = cases[i].input;
-    url_parse::ParseStandardURL(url, static_cast<int>(strlen(url)), &parsed);
-    int port = url_parse::ParsePort(url, parsed.port);
+    ParseStandardURL(url, static_cast<int>(strlen(url)), &parsed);
+    int port = ParsePort(url, parsed.port);
 
     EXPECT_TRUE(ComponentMatches(url, cases[i].scheme, parsed.scheme));
     EXPECT_TRUE(ComponentMatches(url, cases[i].username, parsed.username));
@@ -353,10 +353,10 @@ static PathURLParseCase path_cases[] = {
 TEST(URLParser, PathURL) {
   // Declared outside for loop to try to catch cases in init() where we forget
   // to reset something that is reset by the construtor.
-  url_parse::Parsed parsed;
+  Parsed parsed;
   for (size_t i = 0; i < arraysize(path_cases); i++) {
     const char* url = path_cases[i].input;
-    url_parse::ParsePathURL(url, static_cast<int>(strlen(url)), false, &parsed);
+    ParsePathURL(url, static_cast<int>(strlen(url)), false, &parsed);
 
     EXPECT_TRUE(ComponentMatches(url, path_cases[i].scheme, parsed.scheme))
         << i;
@@ -452,11 +452,11 @@ static URLParseCase file_cases[] = {
 TEST(URLParser, ParseFileURL) {
   // Declared outside for loop to try to catch cases in init() where we forget
   // to reset something that is reset by the construtor.
-  url_parse::Parsed parsed;
+  Parsed parsed;
   for (size_t i = 0; i < arraysize(file_cases); i++) {
     const char* url = file_cases[i].input;
-    url_parse::ParseFileURL(url, static_cast<int>(strlen(url)), &parsed);
-    int port = url_parse::ParsePort(url, parsed.port);
+    ParseFileURL(url, static_cast<int>(strlen(url)), &parsed);
+    int port = ParsePort(url, parsed.port);
 
     EXPECT_TRUE(ComponentMatches(url, file_cases[i].scheme, parsed.scheme))
         << " for case #" << i << " [" << url << "] "
@@ -513,11 +513,11 @@ TEST(URLParser, ExtractFileName) {
     const char* url = file_cases[i].input;
     int len = static_cast<int>(strlen(url));
 
-    url_parse::Parsed parsed;
-    url_parse::ParseStandardURL(url, len, &parsed);
+    Parsed parsed;
+    ParseStandardURL(url, len, &parsed);
 
-    url_parse::Component file_name;
-    url_parse::ExtractFileName(url, parsed.path, &file_name);
+    Component file_name;
+    ExtractFileName(url, parsed.path, &file_name);
 
     EXPECT_TRUE(ComponentMatches(url, file_cases[i].expected, file_name));
   }
@@ -530,14 +530,14 @@ static bool NthParameterIs(const char* url,
                            int parameter,
                            const char* expected_key,
                            const char* expected_value) {
-  url_parse::Parsed parsed;
-  url_parse::ParseStandardURL(url, static_cast<int>(strlen(url)), &parsed);
+  Parsed parsed;
+  ParseStandardURL(url, static_cast<int>(strlen(url)), &parsed);
 
-  url_parse::Component query = parsed.query;
+  Component query = parsed.query;
 
   for (int i = 1; i <= parameter; i++) {
-    url_parse::Component key, value;
-    if (!url_parse::ExtractQueryKeyValue(url, &query, &key, &value)) {
+    Component key, value;
+    if (!ExtractQueryKeyValue(url, &query, &key, &value)) {
       if (parameter >= i && !expected_key)
         return true;  // Expected nonexistant key, got one.
       return false;  // Not enough keys.
@@ -616,16 +616,16 @@ static MailtoURLParseCase mailto_cases[] = {
 TEST(URLParser, MailtoUrl) {
   // Declared outside for loop to try to catch cases in init() where we forget
   // to reset something that is reset by the construtor.
-  url_parse::Parsed parsed;
+  Parsed parsed;
   for (size_t i = 0; i < arraysize(mailto_cases); ++i) {
     const char* url = mailto_cases[i].input;
-    url_parse::ParseMailtoURL(url, static_cast<int>(strlen(url)), &parsed);
-    int port = url_parse::ParsePort(url, parsed.port);
+    ParseMailtoURL(url, static_cast<int>(strlen(url)), &parsed);
+    int port = ParsePort(url, parsed.port);
 
     EXPECT_TRUE(ComponentMatches(url, mailto_cases[i].scheme, parsed.scheme));
     EXPECT_TRUE(ComponentMatches(url, mailto_cases[i].path, parsed.path));
     EXPECT_TRUE(ComponentMatches(url, mailto_cases[i].query, parsed.query));
-    EXPECT_EQ(url_parse::PORT_UNSPECIFIED, port);
+    EXPECT_EQ(PORT_UNSPECIFIED, port);
 
     // The remaining components are never used for mailto urls.
     ExpectInvalidComponent(parsed.username);
@@ -648,11 +648,11 @@ static FileSystemURLParseCase filesystem_cases[] = {
 TEST(URLParser, FileSystemURL) {
   // Declared outside for loop to try to catch cases in init() where we forget
   // to reset something that is reset by the construtor.
-  url_parse::Parsed parsed;
+  Parsed parsed;
   for (size_t i = 0; i < arraysize(filesystem_cases); i++) {
     const FileSystemURLParseCase* parsecase = &filesystem_cases[i];
     const char* url = parsecase->input;
-    url_parse::ParseFileSystemURL(url, static_cast<int>(strlen(url)), &parsed);
+    ParseFileSystemURL(url, static_cast<int>(strlen(url)), &parsed);
 
     EXPECT_TRUE(ComponentMatches(url, "filesystem", parsed.scheme));
     EXPECT_EQ(!parsecase->inner_scheme, !parsed.inner_parsed());
@@ -666,7 +666,7 @@ TEST(URLParser, FileSystemURL) {
           parsed.inner_parsed()->password));
       EXPECT_TRUE(ComponentMatches(url, parsecase->inner_host,
           parsed.inner_parsed()->host));
-      int port = url_parse::ParsePort(url, parsed.inner_parsed()->port);
+      int port = ParsePort(url, parsed.inner_parsed()->port);
       EXPECT_EQ(parsecase->inner_port, port);
 
       // The remaining components are never used for filesystem urls.
@@ -687,4 +687,4 @@ TEST(URLParser, FileSystemURL) {
 }
 
 }  // namespace
-}  // namespace url_parse
+}  // namespace url

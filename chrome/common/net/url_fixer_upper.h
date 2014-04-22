@@ -14,7 +14,7 @@ namespace base {
 class FilePath;
 }
 
-namespace url_parse {
+namespace url {
 struct Component;
 struct Parsed;
 }

@@ -10,7 +10,7 @@
 
 #include "url/url_parse_internal.h"
 
-namespace url_parse {
+namespace url {
 
 #ifdef WIN32
 
@@ -78,6 +78,6 @@ inline bool DoesBeginUNCPath(const CHAR* text,
 
 #endif  // WIN32
 
-}  // namespace url_parse
+}  // namespace url
 
 #endif  // URL_URL_FILE_H_

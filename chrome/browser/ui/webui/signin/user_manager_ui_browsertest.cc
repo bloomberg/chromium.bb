@@ -15,10 +15,6 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace {
-const GURL& url = GURL(chrome::kChromeUIUserManagerURL);
-}  // namespace
-
 class UserManagerUIBrowserTest : public InProcessBrowserTest,
                                  public testing::WithParamInterface<bool> {
  public:
@@ -37,7 +33,8 @@ class UserManagerUIBrowserTest : public InProcessBrowserTest,
 };
 
 IN_PROC_BROWSER_TEST_F(UserManagerUIBrowserTest, PageLoads) {
-  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), url, 1);
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+      browser(), GURL(chrome::kChromeUIUserManagerURL), 1);
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 

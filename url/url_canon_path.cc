@@ -7,7 +7,7 @@
 #include "url/url_canon_internal.h"
 #include "url/url_parse_internal.h"
 
-namespace url_canon {
+namespace url {
 
 namespace {
 
@@ -105,7 +105,7 @@ DotDisposition ClassifyAfterDot(const CHAR* spec, int after_dot,
     *consumed_len = 0;
     return DIRECTORY_CUR;
   }
-  if (url_parse::IsURLSlash(spec[after_dot])) {
+  if (IsURLSlash(spec[after_dot])) {
     // Single dot followed by a slash.
     *consumed_len = 1;  // Consume the slash
     return DIRECTORY_CUR;
@@ -119,7 +119,7 @@ DotDisposition ClassifyAfterDot(const CHAR* spec, int after_dot,
       *consumed_len = second_dot_len;
       return DIRECTORY_UP;
     }
-    if (url_parse::IsURLSlash(spec[after_second_dot])) {
+    if (IsURLSlash(spec[after_second_dot])) {
       // Double dot followed by a slash.
       *consumed_len = second_dot_len + 1;
       return DIRECTORY_UP;
@@ -177,7 +177,7 @@ void BackUpToPreviousSlash(int path_begin_in_output,
 // it would be correct for most systems.
 template<typename CHAR, typename UCHAR>
 bool DoPartialPath(const CHAR* spec,
-                   const url_parse::Component& path,
+                   const Component& path,
                    int path_begin_in_output,
                    CanonOutput* output) {
   int end = path.end();
@@ -295,9 +295,9 @@ bool DoPartialPath(const CHAR* spec,
 
 template<typename CHAR, typename UCHAR>
 bool DoPath(const CHAR* spec,
-            const url_parse::Component& path,
+            const Component& path,
             CanonOutput* output,
-            url_parse::Component* out_path) {
+            Component* out_path) {
   bool success = true;
   out_path->begin = output->length();
   if (path.len > 0) {
@@ -305,7 +305,7 @@ bool DoPath(const CHAR* spec,
     // and then canonicalize it, it will of course have a slash already. This
     // check is for the replacement and relative URL resolving cases of file
     // URLs.
-    if (!url_parse::IsURLSlash(spec[path.begin]))
+    if (!IsURLSlash(spec[path.begin]))
       output->push_back('/');
 
     success = DoPartialPath<CHAR, UCHAR>(spec, path, out_path->begin, output);
@@ -320,21 +320,21 @@ bool DoPath(const CHAR* spec,
 }  // namespace
 
 bool CanonicalizePath(const char* spec,
-                      const url_parse::Component& path,
+                      const Component& path,
                       CanonOutput* output,
-                      url_parse::Component* out_path) {
+                      Component* out_path) {
   return DoPath<char, unsigned char>(spec, path, output, out_path);
 }
 
 bool CanonicalizePath(const base::char16* spec,
-                      const url_parse::Component& path,
+                      const Component& path,
                       CanonOutput* output,
-                      url_parse::Component* out_path) {
+                      Component* out_path) {
   return DoPath<base::char16, base::char16>(spec, path, output, out_path);
 }
 
 bool CanonicalizePartialPath(const char* spec,
-                             const url_parse::Component& path,
+                             const Component& path,
                              int path_begin_in_output,
                              CanonOutput* output) {
   return DoPartialPath<char, unsigned char>(spec, path, path_begin_in_output,
@@ -342,7 +342,7 @@ bool CanonicalizePartialPath(const char* spec,
 }
 
 bool CanonicalizePartialPath(const base::char16* spec,
-                             const url_parse::Component& path,
+                             const Component& path,
                              int path_begin_in_output,
                              CanonOutput* output) {
   return DoPartialPath<base::char16, base::char16>(spec, path,
@@ -350,4 +350,4 @@ bool CanonicalizePartialPath(const base::char16* spec,
                                                    output);
 }
 
-}  // namespace url_canon
+}  // namespace url

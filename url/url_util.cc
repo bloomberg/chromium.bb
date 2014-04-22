@@ -12,7 +12,7 @@
 #include "url/url_file.h"
 #include "url/url_util_internal.h"
 
-namespace url_util {
+namespace url {
 
 const char kFileScheme[] = "file";
 const char kFileSystemScheme[] = "filesystem";
@@ -22,7 +22,8 @@ namespace {
 
 // ASCII-specific tolower.  The standard library's tolower is locale sensitive,
 // so we don't want to use it here.
-template <class Char> inline Char ToLowerASCII(Char c) {
+template<class Char>
+inline Char ToLowerASCII(Char c) {
   return (c >= 'A' && c <= 'Z') ? (c + ('a' - 'A')) : c;
 }
 
@@ -70,7 +71,7 @@ void InitStandardSchemes() {
 // lower-case |compare_to| buffer.
 template<typename CHAR>
 inline bool DoCompareSchemeComponent(const CHAR* spec,
-                                     const url_parse::Component& component,
+                                     const Component& component,
                                      const char* compare_to) {
   if (!component.is_nonempty())
     return compare_to[0] == 0;  // When component is empty, match empty scheme.
@@ -82,7 +83,7 @@ inline bool DoCompareSchemeComponent(const CHAR* spec,
 // Returns true if the given scheme identified by |scheme| within |spec| is one
 // of the registered "standard" schemes.
 template<typename CHAR>
-bool DoIsStandard(const CHAR* spec, const url_parse::Component& scheme) {
+bool DoIsStandard(const CHAR* spec, const Component& scheme) {
   if (!scheme.is_nonempty())
     return false;  // Empty or invalid schemes are non-standard.
 
@@ -99,19 +100,19 @@ template<typename CHAR>
 bool DoFindAndCompareScheme(const CHAR* str,
                             int str_len,
                             const char* compare,
-                            url_parse::Component* found_scheme) {
+                            Component* found_scheme) {
   // Before extracting scheme, canonicalize the URL to remove any whitespace.
   // This matches the canonicalization done in DoCanonicalize function.
-  url_canon::RawCanonOutputT<CHAR> whitespace_buffer;
+  RawCanonOutputT<CHAR> whitespace_buffer;
   int spec_len;
   const CHAR* spec = RemoveURLWhitespace(str, str_len,
                                          &whitespace_buffer, &spec_len);
 
-  url_parse::Component our_scheme;
-  if (!url_parse::ExtractScheme(spec, spec_len, &our_scheme)) {
+  Component our_scheme;
+  if (!ExtractScheme(spec, spec_len, &our_scheme)) {
     // No scheme.
     if (found_scheme)
-      *found_scheme = url_parse::Component();
+      *found_scheme = Component();
     return false;
   }
   if (found_scheme)
@@ -120,19 +121,20 @@ bool DoFindAndCompareScheme(const CHAR* str,
 }
 
 template<typename CHAR>
-bool DoCanonicalize(const CHAR* in_spec, int in_spec_len,
+bool DoCanonicalize(const CHAR* in_spec,
+                    int in_spec_len,
                     bool trim_path_end,
-                    url_canon::CharsetConverter* charset_converter,
-                    url_canon::CanonOutput* output,
-                    url_parse::Parsed* output_parsed) {
+                    CharsetConverter* charset_converter,
+                    CanonOutput* output,
+                    Parsed* output_parsed) {
   // Remove any whitespace from the middle of the relative URL, possibly
   // copying to the new buffer.
-  url_canon::RawCanonOutputT<CHAR> whitespace_buffer;
+  RawCanonOutputT<CHAR> whitespace_buffer;
   int spec_len;
   const CHAR* spec = RemoveURLWhitespace(in_spec, in_spec_len,
                                          &whitespace_buffer, &spec_len);
 
-  url_parse::Parsed parsed_input;
+  Parsed parsed_input;
 #ifdef WIN32
   // For Windows, we allow things that look like absolute Windows paths to be
   // fixed up magically to file URLs. This is done for IE compatability. For
@@ -144,17 +146,16 @@ bool DoCanonicalize(const CHAR* in_spec, int in_spec_len,
   // has no meaning as an absolute path name. This is because browsers on Mac
   // & Unix don't generally do this, so there is no compatibility reason for
   // doing so.
-  if (url_parse::DoesBeginUNCPath(spec, 0, spec_len, false) ||
-      url_parse::DoesBeginWindowsDriveSpec(spec, 0, spec_len)) {
-    url_parse::ParseFileURL(spec, spec_len, &parsed_input);
-    return url_canon::CanonicalizeFileURL(spec, spec_len, parsed_input,
-                                          charset_converter,
-                                          output, output_parsed);
+  if (DoesBeginUNCPath(spec, 0, spec_len, false) ||
+      DoesBeginWindowsDriveSpec(spec, 0, spec_len)) {
+    ParseFileURL(spec, spec_len, &parsed_input);
+    return CanonicalizeFileURL(spec, spec_len, parsed_input, charset_converter,
+                               output, output_parsed);
   }
 #endif
 
-  url_parse::Component scheme;
-  if (!url_parse::ExtractScheme(spec, spec_len, &scheme))
+  Component scheme;
+  if (!ExtractScheme(spec, spec_len, &scheme))
     return false;
 
   // This is the parsed version of the input URL, we have to canonicalize it
@@ -162,36 +163,33 @@ bool DoCanonicalize(const CHAR* in_spec, int in_spec_len,
   bool success;
   if (DoCompareSchemeComponent(spec, scheme, kFileScheme)) {
     // File URLs are special.
-    url_parse::ParseFileURL(spec, spec_len, &parsed_input);
-    success = url_canon::CanonicalizeFileURL(spec, spec_len, parsed_input,
-                                             charset_converter, output,
-                                             output_parsed);
+    ParseFileURL(spec, spec_len, &parsed_input);
+    success = CanonicalizeFileURL(spec, spec_len, parsed_input,
+                                  charset_converter, output, output_parsed);
   } else if (DoCompareSchemeComponent(spec, scheme, kFileSystemScheme)) {
     // Filesystem URLs are special.
-    url_parse::ParseFileSystemURL(spec, spec_len, &parsed_input);
-    success = url_canon::CanonicalizeFileSystemURL(spec, spec_len,
-                                                   parsed_input,
-                                                   charset_converter,
-                                                   output, output_parsed);
+    ParseFileSystemURL(spec, spec_len, &parsed_input);
+    success = CanonicalizeFileSystemURL(spec, spec_len, parsed_input,
+                                        charset_converter, output,
+                                        output_parsed);
 
   } else if (DoIsStandard(spec, scheme)) {
     // All "normal" URLs.
-    url_parse::ParseStandardURL(spec, spec_len, &parsed_input);
-    success = url_canon::CanonicalizeStandardURL(spec, spec_len, parsed_input,
-                                                 charset_converter,
-                                                 output, output_parsed);
+    ParseStandardURL(spec, spec_len, &parsed_input);
+    success = CanonicalizeStandardURL(spec, spec_len, parsed_input,
+                                      charset_converter, output, output_parsed);
 
   } else if (DoCompareSchemeComponent(spec, scheme, kMailtoScheme)) {
     // Mailto are treated like a standard url with only a scheme, path, query
-    url_parse::ParseMailtoURL(spec, spec_len, &parsed_input);
-    success = url_canon::CanonicalizeMailtoURL(spec, spec_len, parsed_input,
-                                               output, output_parsed);
+    ParseMailtoURL(spec, spec_len, &parsed_input);
+    success = CanonicalizeMailtoURL(spec, spec_len, parsed_input, output,
+                                    output_parsed);
 
   } else {
     // "Weird" URLs like data: and javascript:
-    url_parse::ParsePathURL(spec, spec_len, trim_path_end, &parsed_input);
-    success = url_canon::CanonicalizePathURL(spec, spec_len, parsed_input,
-                                             output, output_parsed);
+    ParsePathURL(spec, spec_len, trim_path_end, &parsed_input);
+    success = CanonicalizePathURL(spec, spec_len, parsed_input, output,
+                                  output_parsed);
   }
   return success;
 }
@@ -199,15 +197,15 @@ bool DoCanonicalize(const CHAR* in_spec, int in_spec_len,
 template<typename CHAR>
 bool DoResolveRelative(const char* base_spec,
                        int base_spec_len,
-                       const url_parse::Parsed& base_parsed,
+                       const Parsed& base_parsed,
                        const CHAR* in_relative,
                        int in_relative_length,
-                       url_canon::CharsetConverter* charset_converter,
-                       url_canon::CanonOutput* output,
-                       url_parse::Parsed* output_parsed) {
+                       CharsetConverter* charset_converter,
+                       CanonOutput* output,
+                       Parsed* output_parsed) {
   // Remove any whitespace from the middle of the relative URL, possibly
   // copying to the new buffer.
-  url_canon::RawCanonOutputT<CHAR> whitespace_buffer;
+  RawCanonOutputT<CHAR> whitespace_buffer;
   int relative_length;
   const CHAR* relative = RemoveURLWhitespace(in_relative, in_relative_length,
                                              &whitespace_buffer,
@@ -217,8 +215,8 @@ bool DoResolveRelative(const char* base_spec,
   if (base_spec &&
       base_parsed.scheme.is_nonempty()) {
     int after_scheme = base_parsed.scheme.end() + 1;  // Skip past the colon.
-    int num_slashes = url_parse::CountConsecutiveSlashes(
-        base_spec, after_scheme, base_spec_len);
+    int num_slashes = CountConsecutiveSlashes(base_spec, after_scheme,
+                                              base_spec_len);
     base_is_authority_based = num_slashes > 1;
     base_is_hierarchical = num_slashes > 0;
   }
@@ -228,12 +226,10 @@ bool DoResolveRelative(const char* base_spec,
       DoIsStandard(base_spec, base_parsed.scheme);
 
   bool is_relative;
-  url_parse::Component relative_component;
-  if (!url_canon::IsRelativeURL(base_spec, base_parsed,
-                                relative, relative_length,
-                                (base_is_hierarchical || standard_base_scheme),
-                                &is_relative,
-                                &relative_component)) {
+  Component relative_component;
+  if (!IsRelativeURL(base_spec, base_parsed, relative, relative_length,
+                     (base_is_hierarchical || standard_base_scheme),
+                     &is_relative, &relative_component)) {
     // Error resolving.
     return false;
   }
@@ -242,14 +238,13 @@ bool DoResolveRelative(const char* base_spec,
   // non-standard URLs are treated as PathURLs, but if the base has an
   // authority we would like to preserve it.
   if (is_relative && base_is_authority_based && !standard_base_scheme) {
-    url_parse::Parsed base_parsed_authority;
+    Parsed base_parsed_authority;
     ParseStandardURL(base_spec, base_spec_len, &base_parsed_authority);
     if (base_parsed_authority.host.is_nonempty()) {
       bool did_resolve_succeed =
-          url_canon::ResolveRelativeURL(base_spec, base_parsed_authority,
-                                        false, relative,
-                                        relative_component, charset_converter,
-                                        output, output_parsed);
+          ResolveRelativeURL(base_spec, base_parsed_authority, false, relative,
+                             relative_component, charset_converter, output,
+                             output_parsed);
       // The output_parsed is incorrect at this point (because it was built
       // based on base_parsed_authority instead of base_parsed) and needs to be
       // re-created.
@@ -261,10 +256,9 @@ bool DoResolveRelative(const char* base_spec,
     // Relative, resolve and canonicalize.
     bool file_base_scheme = base_parsed.scheme.is_nonempty() &&
         DoCompareSchemeComponent(base_spec, base_parsed.scheme, kFileScheme);
-    return url_canon::ResolveRelativeURL(base_spec, base_parsed,
-                                         file_base_scheme, relative,
-                                         relative_component, charset_converter,
-                                         output, output_parsed);
+    return ResolveRelativeURL(base_spec, base_parsed, file_base_scheme, relative,
+                              relative_component, charset_converter, output,
+                              output_parsed);
   }
 
   // Not relative, canonicalize the input.
@@ -275,11 +269,11 @@ bool DoResolveRelative(const char* base_spec,
 template<typename CHAR>
 bool DoReplaceComponents(const char* spec,
                          int spec_len,
-                         const url_parse::Parsed& parsed,
-                         const url_canon::Replacements<CHAR>& replacements,
-                         url_canon::CharsetConverter* charset_converter,
-                         url_canon::CanonOutput* output,
-                         url_parse::Parsed* out_parsed) {
+                         const Parsed& parsed,
+                         const Replacements<CHAR>& replacements,
+                         CharsetConverter* charset_converter,
+                         CanonOutput* output,
+                         Parsed* out_parsed) {
   // If the scheme is overridden, just do a simple string substitution and
   // reparse the whole thing. There are lots of edge cases that we really don't
   // want to deal with. Like what happens if I replace "http://e:8080/foo"
@@ -296,12 +290,11 @@ bool DoReplaceComponents(const char* spec,
   if (replacements.IsSchemeOverridden()) {
     // Canonicalize the new scheme so it is 8-bit and can be concatenated with
     // the existing spec.
-    url_canon::RawCanonOutput<128> scheme_replaced;
-    url_parse::Component scheme_replaced_parsed;
-    url_canon::CanonicalizeScheme(
-        replacements.sources().scheme,
-        replacements.components().scheme,
-        &scheme_replaced, &scheme_replaced_parsed);
+    RawCanonOutput<128> scheme_replaced;
+    Component scheme_replaced_parsed;
+    CanonicalizeScheme(replacements.sources().scheme,
+                       replacements.components().scheme,
+                       &scheme_replaced, &scheme_replaced_parsed);
 
     // We can assume that the input is canonicalized, which means it always has
     // a colon after the scheme (or where the scheme would be).
@@ -314,8 +307,8 @@ bool DoReplaceComponents(const char* spec,
 
     // We now need to completely re-parse the resulting string since its meaning
     // may have changed with the different scheme.
-    url_canon::RawCanonOutput<128> recanonicalized;
-    url_parse::Parsed recanonicalized_parsed;
+    RawCanonOutput<128> recanonicalized;
+    Parsed recanonicalized_parsed;
     DoCanonicalize(scheme_replaced.data(), scheme_replaced.length(), true,
                    charset_converter,
                    &recanonicalized, &recanonicalized_parsed);
@@ -333,8 +326,8 @@ bool DoReplaceComponents(const char* spec,
     // after this call to check validity (this assumes replacing the scheme is
     // much much less common than other types of replacements, like clearing the
     // ref).
-    url_canon::Replacements<CHAR> replacements_no_scheme = replacements;
-    replacements_no_scheme.SetScheme(NULL, url_parse::Component());
+    Replacements<CHAR> replacements_no_scheme = replacements;
+    replacements_no_scheme.SetScheme(NULL, Component());
     return DoReplaceComponents(recanonicalized.data(), recanonicalized.length(),
                                recanonicalized_parsed, replacements_no_scheme,
                                charset_converter, output, out_parsed);
@@ -343,26 +336,23 @@ bool DoReplaceComponents(const char* spec,
   // If we get here, then we know the scheme doesn't need to be replaced, so can
   // just key off the scheme in the spec to know how to do the replacements.
   if (DoCompareSchemeComponent(spec, parsed.scheme, kFileScheme)) {
-    return url_canon::ReplaceFileURL(spec, parsed, replacements,
-                                     charset_converter, output, out_parsed);
+    return ReplaceFileURL(spec, parsed, replacements, charset_converter, output,
+                          out_parsed);
   }
   if (DoCompareSchemeComponent(spec, parsed.scheme, kFileSystemScheme)) {
-    return url_canon::ReplaceFileSystemURL(spec, parsed, replacements,
-                                           charset_converter, output,
-                                           out_parsed);
+    return ReplaceFileSystemURL(spec, parsed, replacements, charset_converter,
+                                output, out_parsed);
   }
   if (DoIsStandard(spec, parsed.scheme)) {
-    return url_canon::ReplaceStandardURL(spec, parsed, replacements,
-                                         charset_converter, output, out_parsed);
+    return ReplaceStandardURL(spec, parsed, replacements, charset_converter,
+                              output, out_parsed);
   }
   if (DoCompareSchemeComponent(spec, parsed.scheme, kMailtoScheme)) {
-     return url_canon::ReplaceMailtoURL(spec, parsed, replacements,
-                                        output, out_parsed);
+    return ReplaceMailtoURL(spec, parsed, replacements, output, out_parsed);
   }
 
   // Default is a path URL.
-  return url_canon::ReplacePathURL(spec, parsed, replacements,
-                                   output, out_parsed);
+  return ReplacePathURL(spec, parsed, replacements, output, out_parsed);
 }
 
 }  // namespace
@@ -407,34 +397,34 @@ void LockStandardSchemes() {
   standard_schemes_locked = true;
 }
 
-bool IsStandard(const char* spec, const url_parse::Component& scheme) {
+bool IsStandard(const char* spec, const Component& scheme) {
   return DoIsStandard(spec, scheme);
 }
 
-bool IsStandard(const base::char16* spec, const url_parse::Component& scheme) {
+bool IsStandard(const base::char16* spec, const Component& scheme) {
   return DoIsStandard(spec, scheme);
 }
 
 bool FindAndCompareScheme(const char* str,
                           int str_len,
                           const char* compare,
-                          url_parse::Component* found_scheme) {
+                          Component* found_scheme) {
   return DoFindAndCompareScheme(str, str_len, compare, found_scheme);
 }
 
 bool FindAndCompareScheme(const base::char16* str,
                           int str_len,
                           const char* compare,
-                          url_parse::Component* found_scheme) {
+                          Component* found_scheme) {
   return DoFindAndCompareScheme(str, str_len, compare, found_scheme);
 }
 
 bool Canonicalize(const char* spec,
                   int spec_len,
                   bool trim_path_end,
-                  url_canon::CharsetConverter* charset_converter,
-                  url_canon::CanonOutput* output,
-                  url_parse::Parsed* output_parsed) {
+                  CharsetConverter* charset_converter,
+                  CanonOutput* output,
+                  Parsed* output_parsed) {
   return DoCanonicalize(spec, spec_len, trim_path_end, charset_converter,
                         output, output_parsed);
 }
@@ -442,21 +432,21 @@ bool Canonicalize(const char* spec,
 bool Canonicalize(const base::char16* spec,
                   int spec_len,
                   bool trim_path_end,
-                  url_canon::CharsetConverter* charset_converter,
-                  url_canon::CanonOutput* output,
-                  url_parse::Parsed* output_parsed) {
+                  CharsetConverter* charset_converter,
+                  CanonOutput* output,
+                  Parsed* output_parsed) {
   return DoCanonicalize(spec, spec_len, trim_path_end, charset_converter,
                         output, output_parsed);
 }
 
 bool ResolveRelative(const char* base_spec,
                      int base_spec_len,
-                     const url_parse::Parsed& base_parsed,
+                     const Parsed& base_parsed,
                      const char* relative,
                      int relative_length,
-                     url_canon::CharsetConverter* charset_converter,
-                     url_canon::CanonOutput* output,
-                     url_parse::Parsed* output_parsed) {
+                     CharsetConverter* charset_converter,
+                     CanonOutput* output,
+                     Parsed* output_parsed) {
   return DoResolveRelative(base_spec, base_spec_len, base_parsed,
                            relative, relative_length,
                            charset_converter, output, output_parsed);
@@ -464,12 +454,12 @@ bool ResolveRelative(const char* base_spec,
 
 bool ResolveRelative(const char* base_spec,
                      int base_spec_len,
-                     const url_parse::Parsed& base_parsed,
+                     const Parsed& base_parsed,
                      const base::char16* relative,
                      int relative_length,
-                     url_canon::CharsetConverter* charset_converter,
-                     url_canon::CanonOutput* output,
-                     url_parse::Parsed* output_parsed) {
+                     CharsetConverter* charset_converter,
+                     CanonOutput* output,
+                     Parsed* output_parsed) {
   return DoResolveRelative(base_spec, base_spec_len, base_parsed,
                            relative, relative_length,
                            charset_converter, output, output_parsed);
@@ -477,23 +467,22 @@ bool ResolveRelative(const char* base_spec,
 
 bool ReplaceComponents(const char* spec,
                        int spec_len,
-                       const url_parse::Parsed& parsed,
-                       const url_canon::Replacements<char>& replacements,
-                       url_canon::CharsetConverter* charset_converter,
-                       url_canon::CanonOutput* output,
-                       url_parse::Parsed* out_parsed) {
+                       const Parsed& parsed,
+                       const Replacements<char>& replacements,
+                       CharsetConverter* charset_converter,
+                       CanonOutput* output,
+                       Parsed* out_parsed) {
   return DoReplaceComponents(spec, spec_len, parsed, replacements,
                              charset_converter, output, out_parsed);
 }
 
-bool ReplaceComponents(
-      const char* spec,
-      int spec_len,
-      const url_parse::Parsed& parsed,
-      const url_canon::Replacements<base::char16>& replacements,
-      url_canon::CharsetConverter* charset_converter,
-      url_canon::CanonOutput* output,
-      url_parse::Parsed* out_parsed) {
+bool ReplaceComponents(const char* spec,
+                       int spec_len,
+                       const Parsed& parsed,
+                       const Replacements<base::char16>& replacements,
+                       CharsetConverter* charset_converter,
+                       CanonOutput* output,
+                       Parsed* out_parsed) {
   return DoReplaceComponents(spec, spec_len, parsed, replacements,
                              charset_converter, output, out_parsed);
 }
@@ -523,13 +512,14 @@ bool LowerCaseEqualsASCII(const base::char16* a_begin,
   return DoLowerCaseEqualsASCII(a_begin, a_end, b);
 }
 
-void DecodeURLEscapeSequences(const char* input, int length,
-                              url_canon::CanonOutputW* output) {
-  url_canon::RawCanonOutputT<char> unescaped_chars;
+void DecodeURLEscapeSequences(const char* input,
+                              int length,
+                              CanonOutputW* output) {
+  RawCanonOutputT<char> unescaped_chars;
   for (int i = 0; i < length; i++) {
     if (input[i] == '%') {
       unsigned char ch;
-      if (url_canon::DecodeEscaped(input, &i, length, &ch)) {
+      if (DecodeEscaped(input, &i, length, &ch)) {
         unescaped_chars.push_back(ch);
       } else {
         // Invalid escape sequence, copy the percent literal.
@@ -553,10 +543,10 @@ void DecodeURLEscapeSequences(const char* input, int length,
       // character.
       int next_character = i;
       unsigned code_point;
-      if (url_canon::ReadUTFChar(unescaped_chars.data(), &next_character,
-                                 unescaped_chars.length(), &code_point)) {
+      if (ReadUTFChar(unescaped_chars.data(), &next_character,
+                      unescaped_chars.length(), &code_point)) {
         // Valid UTF-8 character, convert to UTF-16.
-        url_canon::AppendUTF16Value(code_point, output);
+        AppendUTF16Value(code_point, output);
         i = next_character;
       } else {
         // If there are any sequences that are not valid UTF-8, we keep
@@ -572,11 +562,10 @@ void DecodeURLEscapeSequences(const char* input, int length,
   }
 }
 
-void EncodeURIComponent(const char* input, int length,
-                        url_canon::CanonOutput* output) {
+void EncodeURIComponent(const char* input, int length, CanonOutput* output) {
   for (int i = 0; i < length; ++i) {
     unsigned char c = static_cast<unsigned char>(input[i]);
-    if (url_canon::IsComponentChar(c))
+    if (IsComponentChar(c))
       output->push_back(c);
     else
       AppendEscapedChar(c, output);
@@ -584,15 +573,15 @@ void EncodeURIComponent(const char* input, int length,
 }
 
 bool CompareSchemeComponent(const char* spec,
-                            const url_parse::Component& component,
+                            const Component& component,
                             const char* compare_to) {
   return DoCompareSchemeComponent(spec, component, compare_to);
 }
 
 bool CompareSchemeComponent(const base::char16* spec,
-                            const url_parse::Component& component,
+                            const Component& component,
                             const char* compare_to) {
   return DoCompareSchemeComponent(spec, component, compare_to);
 }
 
-}  // namespace url_util
+}  // namespace url

@@ -10,7 +10,7 @@
 #include "base/strings/string16.h"
 #include "url/url_parse.h"
 
-namespace url_util {
+namespace url {
 
 extern const char kFileScheme[];
 extern const char kFileSystemScheme[];
@@ -19,12 +19,12 @@ extern const char kMailtoScheme[];
 // Given a string and a range inside the string, compares it to the given
 // lower-case |compare_to| buffer.
 bool CompareSchemeComponent(const char* spec,
-                            const url_parse::Component& component,
+                            const Component& component,
                             const char* compare_to);
 bool CompareSchemeComponent(const base::char16* spec,
-                            const url_parse::Component& component,
+                            const Component& component,
                             const char* compare_to);
 
-}  // namespace url_util
+}  // namespace url
 
 #endif  // URL_URL_UTIL_INTERNAL_H_

@@ -38,7 +38,7 @@
 //      it looks like an absolute drive path. Also, slashes and backslashes are
 //      equally valid here.
 
-namespace url_parse {
+namespace url {
 
 namespace {
 
@@ -219,4 +219,4 @@ void ParseFileURL(const base::char16* url, int url_len, Parsed* parsed) {
   DoParseFileURL(url, url_len, parsed);
 }
 
-}  // namespace url_parse
+}  // namespace url

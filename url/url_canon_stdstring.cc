@@ -4,7 +4,7 @@
 
 #include "url/url_canon_stdstring.h"
 
-namespace url_canon {
+namespace url {
 
 StdStringCanonOutput::StdStringCanonOutput(std::string* str)
     : CanonOutput(), str_(str) {
@@ -29,4 +29,4 @@ void StdStringCanonOutput::Resize(int sz) {
   buffer_len_ = sz;
 }
 
-}  // namespace url_canon
+}  // namespace url

@@ -31,11 +31,8 @@ namespace base {
 class Time;
 }
 
-namespace url_canon {
+namespace url {
 struct CanonHostInfo;
-}
-
-namespace url_parse {
 struct Parsed;
 }
 
@@ -195,7 +192,7 @@ NET_EXPORT base::string16 IDNToUnicode(const std::string& host,
 // Canonicalizes |host| and returns it.  Also fills |host_info| with
 // IP address information.  |host_info| must not be NULL.
 NET_EXPORT std::string CanonicalizeHost(const std::string& host,
-                                        url_canon::CanonHostInfo* host_info);
+                                        url::CanonHostInfo* host_info);
 
 // Returns true if |host| is not an IP address and is compliant with a set of
 // rules based on RFC 1738 and tweaked to be compatible with the real world.
@@ -300,7 +297,7 @@ NET_EXPORT base::string16 FormatUrl(const GURL& url,
                                     const std::string& languages,
                                     FormatUrlTypes format_types,
                                     UnescapeRule::Type unescape_rules,
-                                    url_parse::Parsed* new_parsed,
+                                    url::Parsed* new_parsed,
                                     size_t* prefix_end,
                                     size_t* offset_for_adjustment);
 NET_EXPORT base::string16 FormatUrlWithOffsets(
@@ -308,7 +305,7 @@ NET_EXPORT base::string16 FormatUrlWithOffsets(
     const std::string& languages,
     FormatUrlTypes format_types,
     UnescapeRule::Type unescape_rules,
-    url_parse::Parsed* new_parsed,
+    url::Parsed* new_parsed,
     size_t* prefix_end,
     std::vector<size_t>* offsets_for_adjustment);
 // This function is like those above except it takes |adjustments| rather
@@ -320,7 +317,7 @@ NET_EXPORT base::string16 FormatUrlWithAdjustments(
     const std::string& languages,
     FormatUrlTypes format_types,
     UnescapeRule::Type unescape_rules,
-    url_parse::Parsed* new_parsed,
+    url::Parsed* new_parsed,
     size_t* prefix_end,
     base::OffsetAdjuster::Adjustments* adjustments);
 

@@ -9,7 +9,7 @@
 #include "url/url_file.h"
 #include "url/url_parse_internal.h"
 
-namespace url_canon {
+namespace url {
 
 namespace {
 
@@ -25,10 +25,10 @@ int FileDoDriveSpec(const CHAR* spec, int begin, int end,
                     CanonOutput* output) {
   // The path could be one of several things: /foo/bar, c:/foo/bar, /c:/foo,
   // (with backslashes instead of slashes as well).
-  int num_slashes = url_parse::CountConsecutiveSlashes(spec, begin, end);
+  int num_slashes = CountConsecutiveSlashes(spec, begin, end);
   int after_slashes = begin + num_slashes;
 
-  if (!url_parse::DoesBeginWindowsDriveSpec(spec, after_slashes, end))
+  if (!DoesBeginWindowsDriveSpec(spec, after_slashes, end))
     return begin;  // Haven't consumed any characters
 
   // A drive spec is the start of a path, so we need to add a slash for the
@@ -53,9 +53,9 @@ int FileDoDriveSpec(const CHAR* spec, int begin, int end,
 
 template<typename CHAR, typename UCHAR>
 bool DoFileCanonicalizePath(const CHAR* spec,
-                            const url_parse::Component& path,
+                            const Component& path,
                             CanonOutput* output,
-                            url_parse::Component* out_path) {
+                            Component* out_path) {
   // Copies and normalizes the "c:" at the beginning, if present.
   out_path->begin = output->length();
   int after_drive;
@@ -72,9 +72,8 @@ bool DoFileCanonicalizePath(const CHAR* spec,
     // Use the regular path canonicalizer to canonicalize the rest of the
     // path. Give it a fake output component to write into. DoCanonicalizeFile
     // will compute the full path component.
-    url_parse::Component sub_path =
-        url_parse::MakeRange(after_drive, path.end());
-    url_parse::Component fake_output_path;
+    Component sub_path = MakeRange(after_drive, path.end());
+    Component fake_output_path;
     success = CanonicalizePath(spec, sub_path, output, &fake_output_path);
   } else {
     // No input path, canonicalize to a slash.
@@ -87,14 +86,14 @@ bool DoFileCanonicalizePath(const CHAR* spec,
 
 template<typename CHAR, typename UCHAR>
 bool DoCanonicalizeFileURL(const URLComponentSource<CHAR>& source,
-                           const url_parse::Parsed& parsed,
+                           const Parsed& parsed,
                            CharsetConverter* query_converter,
                            CanonOutput* output,
-                           url_parse::Parsed* new_parsed) {
+                           Parsed* new_parsed) {
   // Things we don't set in file: URLs.
-  new_parsed->username = url_parse::Component();
-  new_parsed->password = url_parse::Component();
-  new_parsed->port = url_parse::Component();
+  new_parsed->username = Component();
+  new_parsed->password = Component();
+  new_parsed->port = Component();
 
   // Scheme (known, so we don't bother running it through the more
   // complicated scheme canonicalizer).
@@ -124,10 +123,10 @@ bool DoCanonicalizeFileURL(const URLComponentSource<CHAR>& source,
 
 bool CanonicalizeFileURL(const char* spec,
                          int spec_len,
-                         const url_parse::Parsed& parsed,
+                         const Parsed& parsed,
                          CharsetConverter* query_converter,
                          CanonOutput* output,
-                         url_parse::Parsed* new_parsed) {
+                         Parsed* new_parsed) {
   return DoCanonicalizeFileURL<char, unsigned char>(
       URLComponentSource<char>(spec), parsed, query_converter,
       output, new_parsed);
@@ -135,56 +134,56 @@ bool CanonicalizeFileURL(const char* spec,
 
 bool CanonicalizeFileURL(const base::char16* spec,
                          int spec_len,
-                         const url_parse::Parsed& parsed,
+                         const Parsed& parsed,
                          CharsetConverter* query_converter,
                          CanonOutput* output,
-                         url_parse::Parsed* new_parsed) {
+                         Parsed* new_parsed) {
   return DoCanonicalizeFileURL<base::char16, base::char16>(
       URLComponentSource<base::char16>(spec), parsed, query_converter,
       output, new_parsed);
 }
 
 bool FileCanonicalizePath(const char* spec,
-                          const url_parse::Component& path,
+                          const Component& path,
                           CanonOutput* output,
-                          url_parse::Component* out_path) {
+                          Component* out_path) {
   return DoFileCanonicalizePath<char, unsigned char>(spec, path,
                                                      output, out_path);
 }
 
 bool FileCanonicalizePath(const base::char16* spec,
-                          const url_parse::Component& path,
+                          const Component& path,
                           CanonOutput* output,
-                          url_parse::Component* out_path) {
+                          Component* out_path) {
   return DoFileCanonicalizePath<base::char16, base::char16>(spec, path,
                                                             output, out_path);
 }
 
 bool ReplaceFileURL(const char* base,
-                    const url_parse::Parsed& base_parsed,
+                    const Parsed& base_parsed,
                     const Replacements<char>& replacements,
                     CharsetConverter* query_converter,
                     CanonOutput* output,
-                    url_parse::Parsed* new_parsed) {
+                    Parsed* new_parsed) {
   URLComponentSource<char> source(base);
-  url_parse::Parsed parsed(base_parsed);
+  Parsed parsed(base_parsed);
   SetupOverrideComponents(base, replacements, &source, &parsed);
   return DoCanonicalizeFileURL<char, unsigned char>(
       source, parsed, query_converter, output, new_parsed);
 }
 
 bool ReplaceFileURL(const char* base,
-                    const url_parse::Parsed& base_parsed,
+                    const Parsed& base_parsed,
                     const Replacements<base::char16>& replacements,
                     CharsetConverter* query_converter,
                     CanonOutput* output,
-                    url_parse::Parsed* new_parsed) {
+                    Parsed* new_parsed) {
   RawCanonOutput<1024> utf8;
   URLComponentSource<char> source(base);
-  url_parse::Parsed parsed(base_parsed);
+  Parsed parsed(base_parsed);
   SetupUTF16OverrideComponents(base, replacements, &utf8, &source, &parsed);
   return DoCanonicalizeFileURL<char, unsigned char>(
       source, parsed, query_converter, output, new_parsed);
 }
 
-}  // namespace url_canon
+}  // namespace url

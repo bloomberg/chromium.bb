@@ -21,13 +21,13 @@ namespace {
   };
 };
 
-namespace url_parse {
+namespace url {
 
 std::ostream& operator<<(std::ostream& os, const Component& part) {
   return os << "(begin=" << part.begin << ", len=" << part.len << ")";
 }
 
-}  // namespace url_parse
+}  // namespace url
 
 struct SegmentCase {
   const std::string input;

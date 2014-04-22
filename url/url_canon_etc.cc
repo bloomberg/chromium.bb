@@ -9,7 +9,7 @@
 #include "url/url_canon.h"
 #include "url/url_canon_internal.h"
 
-namespace url_canon {
+namespace url {
 
 namespace {
 
@@ -82,12 +82,12 @@ inline bool IsSchemeFirstChar(unsigned char c) {
 
 template<typename CHAR, typename UCHAR>
 bool DoScheme(const CHAR* spec,
-              const url_parse::Component& scheme,
+              const Component& scheme,
               CanonOutput* output,
-              url_parse::Component* out_scheme) {
+              Component* out_scheme) {
   if (scheme.len <= 0) {
     // Scheme is unspecified or empty, convert to empty by appending a colon.
-    *out_scheme = url_parse::Component(output->length(), 0);
+    *out_scheme = Component(output->length(), 0);
     output->push_back(':');
     return true;
   }
@@ -98,7 +98,7 @@ bool DoScheme(const CHAR* spec,
   // Danger: it's important that this code does not strip any characters: it
   // only emits the canonical version (be it valid or escaped) of each of
   // the input characters. Stripping would put it out of sync with
-  // url_util::FindAndCompareScheme, which could cause some security checks on
+  // FindAndCompareScheme, which could cause some security checks on
   // schemes to be incorrect.
   bool success = true;
   int end = scheme.end();
@@ -146,16 +146,16 @@ bool DoScheme(const CHAR* spec,
 // replacing components.
 template<typename CHAR, typename UCHAR>
 bool DoUserInfo(const CHAR* username_spec,
-                const url_parse::Component& username,
+                const Component& username,
                 const CHAR* password_spec,
-                const url_parse::Component& password,
+                const Component& password,
                 CanonOutput* output,
-                url_parse::Component* out_username,
-                url_parse::Component* out_password) {
+                Component* out_username,
+                Component* out_password) {
   if (username.len <= 0 && password.len <= 0) {
     // Common case: no user info. We strip empty username/passwords.
-    *out_username = url_parse::Component();
-    *out_password = url_parse::Component();
+    *out_username = Component();
+    *out_password = Component();
     return true;
   }
 
@@ -177,7 +177,7 @@ bool DoUserInfo(const CHAR* username_spec,
                        CHAR_USERINFO, output);
     out_password->len = output->length() - out_password->begin;
   } else {
-    *out_password = url_parse::Component();
+    *out_password = Component();
   }
 
   output->push_back('@');
@@ -192,18 +192,17 @@ inline void WritePortInt(char* output, int output_len, int port) {
 // This function will prepend the colon if there will be a port.
 template<typename CHAR, typename UCHAR>
 bool DoPort(const CHAR* spec,
-            const url_parse::Component& port,
+            const Component& port,
             int default_port_for_scheme,
             CanonOutput* output,
-            url_parse::Component* out_port) {
-  int port_num = url_parse::ParsePort(spec, port);
-  if (port_num == url_parse::PORT_UNSPECIFIED ||
-      port_num == default_port_for_scheme) {
-    *out_port = url_parse::Component();
+            Component* out_port) {
+  int port_num = ParsePort(spec, port);
+  if (port_num == PORT_UNSPECIFIED || port_num == default_port_for_scheme) {
+    *out_port = Component();
     return true;  // Leave port empty.
   }
 
-  if (port_num == url_parse::PORT_INVALID) {
+  if (port_num == PORT_INVALID) {
     // Invalid port: We'll copy the text from the input so the user can see
     // what the error was, and mark the URL as invalid by returning false.
     output->push_back(':');
@@ -231,12 +230,12 @@ bool DoPort(const CHAR* spec,
 
 template<typename CHAR, typename UCHAR>
 void DoCanonicalizeRef(const CHAR* spec,
-                       const url_parse::Component& ref,
+                       const Component& ref,
                        CanonOutput* output,
-                       url_parse::Component* out_ref) {
+                       Component* out_ref) {
   if (ref.len < 0) {
     // Common case of no ref.
-    *out_ref = url_parse::Component();
+    *out_ref = Component();
     return;
   }
 
@@ -295,74 +294,74 @@ char CanonicalSchemeChar(base::char16 ch) {
 }
 
 bool CanonicalizeScheme(const char* spec,
-                        const url_parse::Component& scheme,
+                        const Component& scheme,
                         CanonOutput* output,
-                        url_parse::Component* out_scheme) {
+                        Component* out_scheme) {
   return DoScheme<char, unsigned char>(spec, scheme, output, out_scheme);
 }
 
 bool CanonicalizeScheme(const base::char16* spec,
-                        const url_parse::Component& scheme,
+                        const Component& scheme,
                         CanonOutput* output,
-                        url_parse::Component* out_scheme) {
+                        Component* out_scheme) {
   return DoScheme<base::char16, base::char16>(spec, scheme, output, out_scheme);
 }
 
 bool CanonicalizeUserInfo(const char* username_source,
-                          const url_parse::Component& username,
+                          const Component& username,
                           const char* password_source,
-                          const url_parse::Component& password,
+                          const Component& password,
                           CanonOutput* output,
-                          url_parse::Component* out_username,
-                          url_parse::Component* out_password) {
+                          Component* out_username,
+                          Component* out_password) {
   return DoUserInfo<char, unsigned char>(
       username_source, username, password_source, password,
       output, out_username, out_password);
 }
 
 bool CanonicalizeUserInfo(const base::char16* username_source,
-                          const url_parse::Component& username,
+                          const Component& username,
                           const base::char16* password_source,
-                          const url_parse::Component& password,
+                          const Component& password,
                           CanonOutput* output,
-                          url_parse::Component* out_username,
-                          url_parse::Component* out_password) {
+                          Component* out_username,
+                          Component* out_password) {
   return DoUserInfo<base::char16, base::char16>(
       username_source, username, password_source, password,
       output, out_username, out_password);
 }
 
 bool CanonicalizePort(const char* spec,
-                      const url_parse::Component& port,
+                      const Component& port,
                       int default_port_for_scheme,
                       CanonOutput* output,
-                      url_parse::Component* out_port) {
+                      Component* out_port) {
   return DoPort<char, unsigned char>(spec, port,
                                      default_port_for_scheme,
                                      output, out_port);
 }
 
 bool CanonicalizePort(const base::char16* spec,
-                      const url_parse::Component& port,
+                      const Component& port,
                       int default_port_for_scheme,
                       CanonOutput* output,
-                      url_parse::Component* out_port) {
+                      Component* out_port) {
   return DoPort<base::char16, base::char16>(spec, port, default_port_for_scheme,
                                             output, out_port);
 }
 
 void CanonicalizeRef(const char* spec,
-                     const url_parse::Component& ref,
+                     const Component& ref,
                      CanonOutput* output,
-                     url_parse::Component* out_ref) {
+                     Component* out_ref) {
   DoCanonicalizeRef<char, unsigned char>(spec, ref, output, out_ref);
 }
 
 void CanonicalizeRef(const base::char16* spec,
-                     const url_parse::Component& ref,
+                     const Component& ref,
                      CanonOutput* output,
-                     url_parse::Component* out_ref) {
+                     Component* out_ref) {
   DoCanonicalizeRef<base::char16, base::char16>(spec, ref, output, out_ref);
 }
 
-}  // namespace url_canon
+}  // namespace url

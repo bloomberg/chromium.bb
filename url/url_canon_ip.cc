@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "url/url_canon_internal.h"
 
-namespace url_canon {
+namespace url {
 
 namespace {
 
@@ -31,8 +31,8 @@ int BaseForType(SharedCharTypes type) {
 
 template<typename CHAR, typename UCHAR>
 bool DoFindIPv4Components(const CHAR* spec,
-                          const url_parse::Component& host,
-                          url_parse::Component components[4]) {
+                          const Component& host,
+                          Component components[4]) {
   if (!host.is_nonempty())
     return false;
 
@@ -43,8 +43,7 @@ bool DoFindIPv4Components(const CHAR* spec,
     if (i >= end || spec[i] == '.') {
       // Found the end of the current component.
       int component_len = i - cur_component_begin;
-      components[cur_component] =
-          url_parse::Component(cur_component_begin, component_len);
+      components[cur_component] = Component(cur_component_begin, component_len);
 
       // The next component starts after the dot.
       cur_component_begin = i + 1;
@@ -76,7 +75,7 @@ bool DoFindIPv4Components(const CHAR* spec,
 
   // Fill in any unused components.
   while (cur_component < 4)
-    components[cur_component++] = url_parse::Component();
+    components[cur_component++] = Component();
   return true;
 }
 
@@ -91,10 +90,9 @@ bool DoFindIPv4Components(const CHAR* spec,
 // out any input that is greater than 7 bits. The components are assumed
 // to be non-empty.
 template<typename CHAR>
-CanonHostInfo::Family IPv4ComponentToNumber(
-    const CHAR* spec,
-    const url_parse::Component& component,
-    uint32* number) {
+CanonHostInfo::Family IPv4ComponentToNumber(const CHAR* spec,
+                                            const Component& component,
+                                            uint32* number) {
   // Figure out the base
   SharedCharTypes base;
   int base_prefix_len = 0;  // Size of the prefix for this base.
@@ -159,11 +157,11 @@ CanonHostInfo::Family IPv4ComponentToNumber(
 // See declaration of IPv4AddressToNumber for documentation.
 template<typename CHAR>
 CanonHostInfo::Family DoIPv4AddressToNumber(const CHAR* spec,
-                                            const url_parse::Component& host,
+                                            const Component& host,
                                             unsigned char address[4],
                                             int* num_ipv4_components) {
   // The identified components. Not all may exist.
-  url_parse::Component components[4];
+  Component components[4];
   if (!FindIPv4Components(spec, host, components))
     return CanonHostInfo::NEUTRAL;
 
@@ -227,7 +225,7 @@ CanonHostInfo::Family DoIPv4AddressToNumber(const CHAR* spec,
 // is NEUTRAL, and we could use a second opinion.
 template<typename CHAR, typename UCHAR>
 bool DoCanonicalizeIPv4Address(const CHAR* spec,
-                               const url_parse::Component& host,
+                               const Component& host,
                                CanonOutput* output,
                                CanonHostInfo* host_info) {
   host_info->family = IPv4AddressToNumber(
@@ -295,7 +293,7 @@ struct IPv6Parsed {
   }
 
   // There can be up to 8 hex components (colon separated) in the literal.
-  url_parse::Component hex_components[8];
+  Component hex_components[8];
 
   // The count of hex components present. Ranges from [0,8].
   int num_hex_components;
@@ -305,16 +303,14 @@ struct IPv6Parsed {
   int index_of_contraction;
 
   // The range of characters which are an IPv4 literal.
-  url_parse::Component ipv4_component;
+  Component ipv4_component;
 };
 
 // Parse the IPv6 input string. If parsing succeeded returns true and fills
 // |parsed| with the information. If parsing failed (because the input is
 // invalid) returns false.
 template<typename CHAR, typename UCHAR>
-bool DoParseIPv6(const CHAR* spec,
-                 const url_parse::Component& host,
-                 IPv6Parsed* parsed) {
+bool DoParseIPv6(const CHAR* spec, const Component& host, IPv6Parsed* parsed) {
   // Zero-out the info.
   parsed->reset();
 
@@ -359,7 +355,7 @@ bool DoParseIPv6(const CHAR* spec,
           return false;
 
         parsed->hex_components[parsed->num_hex_components++] =
-            url_parse::Component(cur_component_begin, component_len);
+            Component(cur_component_begin, component_len);
       }
     }
 
@@ -390,8 +386,8 @@ bool DoParseIPv6(const CHAR* spec,
           // Since IPv4 address can only appear at the end, assume the rest
           // of the string is an IPv4 address. (We will parse this separately
           // later).
-          parsed->ipv4_component = url_parse::Component(
-              cur_component_begin, end - cur_component_begin);
+          parsed->ipv4_component =
+              Component(cur_component_begin, end - cur_component_begin);
           break;
         } else {
           // The character was neither a hex digit, nor an IPv4 character.
@@ -440,8 +436,7 @@ bool CheckIPv6ComponentsSize(const IPv6Parsed& parsed,
 // already verified that each character in the string was a hex digit, and
 // that there were no more than 4 characters.
 template<typename CHAR>
-uint16 IPv6HexComponentToNumber(const CHAR* spec,
-                                const url_parse::Component& component) {
+uint16 IPv6HexComponentToNumber(const CHAR* spec, const Component& component) {
   DCHECK(component.len <= 4);
 
   // Copy the hex string into a C-string.
@@ -459,7 +454,7 @@ uint16 IPv6HexComponentToNumber(const CHAR* spec,
 // true on success. False means that the input was not a valid IPv6 address.
 template<typename CHAR, typename UCHAR>
 bool DoIPv6AddressToNumber(const CHAR* spec,
-                           const url_parse::Component& host,
+                           const Component& host,
                            unsigned char address[16]) {
   // Make sure the component is bounded by '[' and ']'.
   int end = host.end();
@@ -467,7 +462,7 @@ bool DoIPv6AddressToNumber(const CHAR* spec,
     return false;
 
   // Exclude the square brackets.
-  url_parse::Component ipv6_comp(host.begin + 1, host.len - 2);
+  Component ipv6_comp(host.begin + 1, host.len - 2);
 
   // Parse the IPv6 address -- identify where all the colon separated hex
   // components are, the "::" contraction, and the embedded IPv4 address.
@@ -522,12 +517,12 @@ bool DoIPv6AddressToNumber(const CHAR* spec,
 // range into |contraction_range|. The run of zeros must be at least 16 bits,
 // and if there is a tie the first is chosen.
 void ChooseIPv6ContractionRange(const unsigned char address[16],
-                                url_parse::Component* contraction_range) {
+                                Component* contraction_range) {
   // The longest run of zeros in |address| seen so far.
-  url_parse::Component max_range;
+  Component max_range;
 
   // The current run of zeros in |address| being iterated over.
-  url_parse::Component cur_range;
+  Component cur_range;
 
   for (int i = 0; i < 16; i += 2) {
     // Test for 16 bits worth of zero.
@@ -536,7 +531,7 @@ void ChooseIPv6ContractionRange(const unsigned char address[16],
     if (is_zero) {
       // Add the zero to the current range (or start a new one).
       if (!cur_range.is_valid())
-        cur_range = url_parse::Component(i, 0);
+        cur_range = Component(i, 0);
       cur_range.len += 2;
     }
 
@@ -556,7 +551,7 @@ void ChooseIPv6ContractionRange(const unsigned char address[16],
 // is NEUTRAL, and we could use a second opinion.
 template<typename CHAR, typename UCHAR>
 bool DoCanonicalizeIPv6Address(const CHAR* spec,
-                               const url_parse::Component& host,
+                               const Component& host,
                                CanonOutput* output,
                                CanonHostInfo* host_info) {
   // Turn the IP address into a 128 bit number.
@@ -608,7 +603,7 @@ void AppendIPv6Address(const unsigned char address[16], CanonOutput* output) {
   // http://tools.ietf.org/html/draft-kawamura-ipv6-text-representation-01#section-4
 
   // Start by finding where to place the "::" contraction (if any).
-  url_parse::Component contraction_range;
+  Component contraction_range;
   ChooseIPv6ContractionRange(address, &contraction_range);
 
   for (int i = 0; i <= 14;) {
@@ -640,20 +635,20 @@ void AppendIPv6Address(const unsigned char address[16], CanonOutput* output) {
 }
 
 bool FindIPv4Components(const char* spec,
-                        const url_parse::Component& host,
-                        url_parse::Component components[4]) {
+                        const Component& host,
+                        Component components[4]) {
   return DoFindIPv4Components<char, unsigned char>(spec, host, components);
 }
 
 bool FindIPv4Components(const base::char16* spec,
-                        const url_parse::Component& host,
-                        url_parse::Component components[4]) {
+                        const Component& host,
+                        Component components[4]) {
   return DoFindIPv4Components<base::char16, base::char16>(
       spec, host, components);
 }
 
 void CanonicalizeIPAddress(const char* spec,
-                           const url_parse::Component& host,
+                           const Component& host,
                            CanonOutput* output,
                            CanonHostInfo* host_info) {
   if (DoCanonicalizeIPv4Address<char, unsigned char>(
@@ -665,7 +660,7 @@ void CanonicalizeIPAddress(const char* spec,
 }
 
 void CanonicalizeIPAddress(const base::char16* spec,
-                           const url_parse::Component& host,
+                           const Component& host,
                            CanonOutput* output,
                            CanonHostInfo* host_info) {
   if (DoCanonicalizeIPv4Address<base::char16, base::char16>(
@@ -677,14 +672,14 @@ void CanonicalizeIPAddress(const base::char16* spec,
 }
 
 CanonHostInfo::Family IPv4AddressToNumber(const char* spec,
-                                          const url_parse::Component& host,
+                                          const Component& host,
                                           unsigned char address[4],
                                           int* num_ipv4_components) {
   return DoIPv4AddressToNumber<char>(spec, host, address, num_ipv4_components);
 }
 
 CanonHostInfo::Family IPv4AddressToNumber(const base::char16* spec,
-                                          const url_parse::Component& host,
+                                          const Component& host,
                                           unsigned char address[4],
                                           int* num_ipv4_components) {
   return DoIPv4AddressToNumber<base::char16>(
@@ -692,15 +687,15 @@ CanonHostInfo::Family IPv4AddressToNumber(const base::char16* spec,
 }
 
 bool IPv6AddressToNumber(const char* spec,
-                         const url_parse::Component& host,
+                         const Component& host,
                          unsigned char address[16]) {
   return DoIPv6AddressToNumber<char, unsigned char>(spec, host, address);
 }
 
 bool IPv6AddressToNumber(const base::char16* spec,
-                         const url_parse::Component& host,
+                         const Component& host,
                          unsigned char address[16]) {
   return DoIPv6AddressToNumber<base::char16, base::char16>(spec, host, address);
 }
 
-}  // namespace url_canon
+}  // namespace url

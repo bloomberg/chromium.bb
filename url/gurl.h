@@ -17,8 +17,8 @@
 
 class URL_EXPORT GURL {
  public:
-  typedef url_canon::StdStringReplacements<std::string> Replacements;
-  typedef url_canon::StdStringReplacements<base::string16> ReplacementsW;
+  typedef url::StdStringReplacements<std::string> Replacements;
+  typedef url::StdStringReplacements<base::string16> ReplacementsW;
 
   // Creates an empty, invalid URL.
   GURL();
@@ -40,16 +40,17 @@ class URL_EXPORT GURL {
   // Constructor for URLs that have already been parsed and canonicalized. This
   // is used for conversions from KURL, for example. The caller must supply all
   // information associated with the URL, which must be correct and consistent.
-  GURL(const char* canonical_spec, size_t canonical_spec_len,
-       const url_parse::Parsed& parsed, bool is_valid);
+  GURL(const char* canonical_spec,
+       size_t canonical_spec_len,
+       const url::Parsed& parsed,
+       bool is_valid);
   // Notice that we take the canonical_spec by value so that we can convert
   // from WebURL without copying the string. When we call this constructor
   // we pass in a temporary std::string, which lets the compiler skip the
   // copy and just move the std::string into the function argument. In the
   // implementation, we use swap to move the data into the GURL itself,
   // which means we end up with zero copies.
-  GURL(std::string canonical_spec,
-       const url_parse::Parsed& parsed, bool is_valid);
+  GURL(std::string canonical_spec, const url::Parsed& parsed, bool is_valid);
 
   ~GURL();
 
@@ -105,7 +106,7 @@ class URL_EXPORT GURL {
   // or may not be valid. If you are using this to index into the spec, BE
   // SURE YOU ARE USING possibly_invalid_spec() to get the spec, and that you
   // don't do anything "important" with invalid specs.
-  const url_parse::Parsed& parsed_for_possibly_invalid_spec() const {
+  const url::Parsed& parsed_for_possibly_invalid_spec() const {
     return parsed_;
   }
 
@@ -152,10 +153,10 @@ class URL_EXPORT GURL {
   // name).
   GURL ResolveWithCharsetConverter(
       const std::string& relative,
-      url_canon::CharsetConverter* charset_converter) const;
+      url::CharsetConverter* charset_converter) const;
   GURL ResolveWithCharsetConverter(
       const base::string16& relative,
-      url_canon::CharsetConverter* charset_converter) const;
+      url::CharsetConverter* charset_converter) const;
 
   // Creates a new GURL by replacing the current URL's components with the
   // supplied versions. See the Replacements class in url_canon.h for more.
@@ -166,12 +167,11 @@ class URL_EXPORT GURL {
   // It is an error to replace components of an invalid URL. The result will
   // be the empty URL.
   //
-  // Note that we use the more general url_canon::Replacements type to give
+  // Note that we use the more general url::Replacements type to give
   // callers extra flexibility rather than our override.
+  GURL ReplaceComponents(const url::Replacements<char>& replacements) const;
   GURL ReplaceComponents(
-      const url_canon::Replacements<char>& replacements) const;
-  GURL ReplaceComponents(
-      const url_canon::Replacements<base::char16>& replacements) const;
+      const url::Replacements<base::char16>& replacements) const;
 
   // A helper function that is equivalent to replacing the path with a slash
   // and clearing out everything after that. We sometimes need to know just the
@@ -377,7 +377,7 @@ class URL_EXPORT GURL {
   void InitializeFromCanonicalSpec();
 
   // Returns the substring of the input identified by the given component.
-  std::string ComponentString(const url_parse::Component& comp) const {
+  std::string ComponentString(const url::Component& comp) const {
     if (comp.len <= 0)
       return std::string();
     return std::string(spec_, comp.begin, comp.len);
@@ -392,7 +392,7 @@ class URL_EXPORT GURL {
   bool is_valid_;
 
   // Identified components of the canonical spec.
-  url_parse::Parsed parsed_;
+  url::Parsed parsed_;
 
   // Used for nested schemes [currently only filesystem:].
   scoped_ptr<GURL> inner_url_;

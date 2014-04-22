@@ -9,102 +9,95 @@
 #include "url/url_test_utils.h"
 #include "url/url_util.h"
 
+namespace url {
+
 TEST(URLUtilTest, FindAndCompareScheme) {
-  url_parse::Component found_scheme;
+  Component found_scheme;
 
   // Simple case where the scheme is found and matches.
   const char kStr1[] = "http://www.com/";
-  EXPECT_TRUE(url_util::FindAndCompareScheme(
+  EXPECT_TRUE(FindAndCompareScheme(
       kStr1, static_cast<int>(strlen(kStr1)), "http", NULL));
-  EXPECT_TRUE(url_util::FindAndCompareScheme(
+  EXPECT_TRUE(FindAndCompareScheme(
       kStr1, static_cast<int>(strlen(kStr1)), "http", &found_scheme));
-  EXPECT_TRUE(found_scheme == url_parse::Component(0, 4));
+  EXPECT_TRUE(found_scheme == Component(0, 4));
 
   // A case where the scheme is found and doesn't match.
-  EXPECT_FALSE(url_util::FindAndCompareScheme(
+  EXPECT_FALSE(FindAndCompareScheme(
       kStr1, static_cast<int>(strlen(kStr1)), "https", &found_scheme));
-  EXPECT_TRUE(found_scheme == url_parse::Component(0, 4));
+  EXPECT_TRUE(found_scheme == Component(0, 4));
 
   // A case where there is no scheme.
   const char kStr2[] = "httpfoobar";
-  EXPECT_FALSE(url_util::FindAndCompareScheme(
+  EXPECT_FALSE(FindAndCompareScheme(
       kStr2, static_cast<int>(strlen(kStr2)), "http", &found_scheme));
-  EXPECT_TRUE(found_scheme == url_parse::Component());
+  EXPECT_TRUE(found_scheme == Component());
 
   // When there is an empty scheme, it should match the empty scheme.
   const char kStr3[] = ":foo.com/";
-  EXPECT_TRUE(url_util::FindAndCompareScheme(
+  EXPECT_TRUE(FindAndCompareScheme(
       kStr3, static_cast<int>(strlen(kStr3)), "", &found_scheme));
-  EXPECT_TRUE(found_scheme == url_parse::Component(0, 0));
+  EXPECT_TRUE(found_scheme == Component(0, 0));
 
   // But when there is no scheme, it should fail.
-  EXPECT_FALSE(url_util::FindAndCompareScheme("", 0, "", &found_scheme));
-  EXPECT_TRUE(found_scheme == url_parse::Component());
+  EXPECT_FALSE(FindAndCompareScheme("", 0, "", &found_scheme));
+  EXPECT_TRUE(found_scheme == Component());
 
   // When there is a whitespace char in scheme, it should canonicalize the url
   // before comparison.
   const char whtspc_str[] = " \r\n\tjav\ra\nscri\tpt:alert(1)";
-  EXPECT_TRUE(url_util::FindAndCompareScheme(
-      whtspc_str, static_cast<int>(strlen(whtspc_str)), "javascript",
-      &found_scheme));
-  EXPECT_TRUE(found_scheme == url_parse::Component(1, 10));
+  EXPECT_TRUE(FindAndCompareScheme(whtspc_str,
+                                   static_cast<int>(strlen(whtspc_str)),
+                                   "javascript", &found_scheme));
+  EXPECT_TRUE(found_scheme == Component(1, 10));
 
   // Control characters should be stripped out on the ends, and kept in the
   // middle.
   const char ctrl_str[] = "\02jav\02scr\03ipt:alert(1)";
-  EXPECT_FALSE(url_util::FindAndCompareScheme(
-      ctrl_str, static_cast<int>(strlen(ctrl_str)), "javascript",
-      &found_scheme));
-  EXPECT_TRUE(found_scheme == url_parse::Component(1, 11));
+  EXPECT_FALSE(FindAndCompareScheme(ctrl_str,
+                                    static_cast<int>(strlen(ctrl_str)),
+                                    "javascript", &found_scheme));
+  EXPECT_TRUE(found_scheme == Component(1, 11));
 }
 
 TEST(URLUtilTest, ReplaceComponents) {
-  url_parse::Parsed parsed;
-  url_canon::RawCanonOutputT<char> output;
-  url_parse::Parsed new_parsed;
+  Parsed parsed;
+  RawCanonOutputT<char> output;
+  Parsed new_parsed;
 
   // Check that the following calls do not cause crash
-  url_canon::Replacements<char> replacements;
-  replacements.SetRef("test", url_parse::Component(0, 4));
-  url_util::ReplaceComponents(NULL, 0, parsed, replacements, NULL, &output,
-                              &new_parsed);
-  url_util::ReplaceComponents("", 0, parsed, replacements, NULL, &output,
-                              &new_parsed);
+  Replacements<char> replacements;
+  replacements.SetRef("test", Component(0, 4));
+  ReplaceComponents(NULL, 0, parsed, replacements, NULL, &output, &new_parsed);
+  ReplaceComponents("", 0, parsed, replacements, NULL, &output, &new_parsed);
   replacements.ClearRef();
-  replacements.SetHost("test", url_parse::Component(0, 4));
-  url_util::ReplaceComponents(NULL, 0, parsed, replacements, NULL, &output,
-                              &new_parsed);
-  url_util::ReplaceComponents("", 0, parsed, replacements, NULL, &output,
-                              &new_parsed);
+  replacements.SetHost("test", Component(0, 4));
+  ReplaceComponents(NULL, 0, parsed, replacements, NULL, &output, &new_parsed);
+  ReplaceComponents("", 0, parsed, replacements, NULL, &output, &new_parsed);
 
   replacements.ClearHost();
-  url_util::ReplaceComponents(NULL, 0, parsed, replacements, NULL, &output,
-                              &new_parsed);
-  url_util::ReplaceComponents("", 0, parsed, replacements, NULL, &output,
-                              &new_parsed);
-  url_util::ReplaceComponents(NULL, 0, parsed, replacements, NULL, &output,
-                              &new_parsed);
-  url_util::ReplaceComponents("", 0, parsed, replacements, NULL, &output,
-                              &new_parsed);
+  ReplaceComponents(NULL, 0, parsed, replacements, NULL, &output, &new_parsed);
+  ReplaceComponents("", 0, parsed, replacements, NULL, &output, &new_parsed);
+  ReplaceComponents(NULL, 0, parsed, replacements, NULL, &output, &new_parsed);
+  ReplaceComponents("", 0, parsed, replacements, NULL, &output, &new_parsed);
 }
 
 static std::string CheckReplaceScheme(const char* base_url,
                                       const char* scheme) {
   // Make sure the input is canonicalized.
-  url_canon::RawCanonOutput<32> original;
-  url_parse::Parsed original_parsed;
-  url_util::Canonicalize(base_url, strlen(base_url), true, NULL,
-                         &original, &original_parsed);
+  RawCanonOutput<32> original;
+  Parsed original_parsed;
+  Canonicalize(base_url, strlen(base_url), true, NULL, &original,
+               &original_parsed);
 
-  url_canon::Replacements<char> replacements;
-  replacements.SetScheme(scheme, url_parse::Component(0, strlen(scheme)));
+  Replacements<char> replacements;
+  replacements.SetScheme(scheme, Component(0, strlen(scheme)));
 
   std::string output_string;
-  url_canon::StdStringCanonOutput output(&output_string);
-  url_parse::Parsed output_parsed;
-  url_util::ReplaceComponents(original.data(), original.length(),
-                              original_parsed, replacements, NULL,
-                              &output, &output_parsed);
+  StdStringCanonOutput output(&output_string);
+  Parsed output_parsed;
+  ReplaceComponents(original.data(), original.length(), original_parsed,
+                    replacements, NULL, &output, &output_parsed);
 
   output.Complete();
   return output_string;
@@ -168,28 +161,26 @@ TEST(URLUtilTest, DecodeURLEscapeSequences) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(decode_cases); i++) {
     const char* input = decode_cases[i].input;
-    url_canon::RawCanonOutputT<base::char16> output;
-    url_util::DecodeURLEscapeSequences(input, strlen(input), &output);
+    RawCanonOutputT<base::char16> output;
+    DecodeURLEscapeSequences(input, strlen(input), &output);
     EXPECT_EQ(decode_cases[i].output,
-              url_test_utils::ConvertUTF16ToUTF8(
-                base::string16(output.data(), output.length())));
+              test_utils::ConvertUTF16ToUTF8(base::string16(output.data(),
+                                                            output.length())));
   }
 
   // Our decode should decode %00
   const char zero_input[] = "%00";
-  url_canon::RawCanonOutputT<base::char16> zero_output;
-  url_util::DecodeURLEscapeSequences(zero_input, strlen(zero_input),
-                                     &zero_output);
-  EXPECT_NE("%00",
-            url_test_utils::ConvertUTF16ToUTF8(
-              base::string16(zero_output.data(), zero_output.length())));
+  RawCanonOutputT<base::char16> zero_output;
+  DecodeURLEscapeSequences(zero_input, strlen(zero_input), &zero_output);
+  EXPECT_NE("%00", test_utils::ConvertUTF16ToUTF8(
+      base::string16(zero_output.data(), zero_output.length())));
 
   // Test the error behavior for invalid UTF-8.
   const char invalid_input[] = "%e4%a0%e5%a5%bd";
   const base::char16 invalid_expected[4] = {0x00e4, 0x00a0, 0x597d, 0};
-  url_canon::RawCanonOutputT<base::char16> invalid_output;
-  url_util::DecodeURLEscapeSequences(invalid_input, strlen(invalid_input),
-                                     &invalid_output);
+  RawCanonOutputT<base::char16> invalid_output;
+  DecodeURLEscapeSequences(invalid_input, strlen(invalid_input),
+                           &invalid_output);
   EXPECT_EQ(base::string16(invalid_expected),
             base::string16(invalid_output.data(), invalid_output.length()));
 }
@@ -220,15 +211,15 @@ TEST(URLUtilTest, TestEncodeURIComponent) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(encode_cases); i++) {
     const char* input = encode_cases[i].input;
-    url_canon::RawCanonOutputT<char> buffer;
-    url_util::EncodeURIComponent(input, strlen(input), &buffer);
+    RawCanonOutputT<char> buffer;
+    EncodeURIComponent(input, strlen(input), &buffer);
     std::string output(buffer.data(), buffer.length());
     EXPECT_EQ(encode_cases[i].output, output);
   }
 }
 
 TEST(URLUtilTest, TestResolveRelativeWithNonStandardBase) {
-  // This tests non-standard (in the sense that GURL::IsStandard() == false)
+  // This tests non-standard (in the sense that GIsStandard() == false)
   // hierarchical schemes.
   struct ResolveRelativeCase {
     const char* base;
@@ -285,18 +276,16 @@ TEST(URLUtilTest, TestResolveRelativeWithNonStandardBase) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(resolve_non_standard_cases); i++) {
     const ResolveRelativeCase& test_data = resolve_non_standard_cases[i];
-    url_parse::Parsed base_parsed;
-    url_parse::ParsePathURL(test_data.base, strlen(test_data.base), false,
-                            &base_parsed);
+    Parsed base_parsed;
+    ParsePathURL(test_data.base, strlen(test_data.base), false, &base_parsed);
 
     std::string resolved;
-    url_canon::StdStringCanonOutput output(&resolved);
-    url_parse::Parsed resolved_parsed;
-    bool valid =
-        url_util::ResolveRelative(test_data.base, strlen(test_data.base),
-                                  base_parsed,
-                                  test_data.rel, strlen(test_data.rel),
-                                  NULL, &output, &resolved_parsed);
+    StdStringCanonOutput output(&resolved);
+    Parsed resolved_parsed;
+    bool valid = ResolveRelative(test_data.base, strlen(test_data.base),
+                                 base_parsed, test_data.rel,
+                                 strlen(test_data.rel), NULL, &output,
+                                 &resolved_parsed);
     output.Complete();
 
     EXPECT_EQ(test_data.is_valid, valid) << i;
@@ -304,3 +293,5 @@ TEST(URLUtilTest, TestResolveRelativeWithNonStandardBase) {
       EXPECT_EQ(test_data.out, resolved) << i;
   }
 }
+
+}  // namespace url

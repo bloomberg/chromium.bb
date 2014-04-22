@@ -9,7 +9,7 @@
 
 #include "url/url_parse.h"
 
-namespace url_parse {
+namespace url {
 
 // We treat slashes and backslashes the same for IE compatability.
 inline bool IsURLSlash(base::char16 ch) {
@@ -86,6 +86,6 @@ void ParseAfterScheme(const base::char16* spec,
                       int after_scheme,
                       Parsed* parsed);
 
-}  // namespace url_parse
+}  // namespace url
 
 #endif  // URL_URL_PARSE_INTERNAL_H_

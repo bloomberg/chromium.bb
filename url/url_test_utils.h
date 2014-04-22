@@ -14,7 +14,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/url_canon_internal.h"
 
-namespace url_test_utils {
+namespace url {
+
+namespace test_utils {
 
 // Converts a UTF-16 string from native wchar_t format to char16, by
 // truncating the high 32 bits.  This is not meant to handle true UTF-32
@@ -32,22 +34,23 @@ inline base::string16 WStringToUTF16(const wchar_t* src) {
 inline base::string16 ConvertUTF8ToUTF16(const std::string& src) {
   int length = static_cast<int>(src.length());
   EXPECT_LT(length, 1024);
-  url_canon::RawCanonOutputW<1024> output;
-  EXPECT_TRUE(url_canon::ConvertUTF8ToUTF16(src.data(), length, &output));
+  RawCanonOutputW<1024> output;
+  EXPECT_TRUE(ConvertUTF8ToUTF16(src.data(), length, &output));
   return base::string16(output.data(), output.length());
 }
 
 // Converts a string from UTF-16 to UTF-8
 inline std::string ConvertUTF16ToUTF8(const base::string16& src) {
   std::string str;
-  url_canon::StdStringCanonOutput output(&str);
-  EXPECT_TRUE(url_canon::ConvertUTF16ToUTF8(src.data(),
-                                            static_cast<int>(src.length()),
-                                            &output));
+  StdStringCanonOutput output(&str);
+  EXPECT_TRUE(ConvertUTF16ToUTF8(src.data(), static_cast<int>(src.length()),
+                                 &output));
   output.Complete();
   return str;
 }
 
-}  // namespace url_test_utils
+}  // namespace test_utils
+
+}  // namespace url
 
 #endif  // URL_URL_TEST_UTILS_H_

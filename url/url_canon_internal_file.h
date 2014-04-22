@@ -18,7 +18,7 @@
 #include "url/url_file.h"
 #include "url/url_parse_internal.h"
 
-using namespace url_canon;
+namespace url {
 
 // Given a pointer into the spec, this copies and canonicalizes the drive
 // letter and colon to the output, if one is found. If there is not a drive
@@ -66,11 +66,11 @@ static void FileDoPath(const CHAR* spec, int begin, int end,
   // path. We supply it with the path following the slashes. It won't prepend
   // a slash because it assumes any nonempty path already starts with one.
   // We explicitly filter out calls with no path here to prevent that case.
-  ParsedURL::Component sub_path(after_slashes, end - after_slashes);
+  ParsedComponent sub_path(after_slashes, end - after_slashes);
   if (sub_path.len > 0) {
     // Give it a fake output component to write into. DoCanonicalizeFile will
     // compute the full path component.
-    ParsedURL::Component fake_output_path;
+    ParsedComponent fake_output_path;
     URLCanonInternal<CHAR, UCHAR>::DoPath(
         spec, sub_path, output, &fake_output_path);
   }
@@ -82,9 +82,9 @@ static bool DoCanonicalizeFileURL(const URLComponentSource<CHAR>& source,
                                   CanonOutput* output,
                                   ParsedURL* new_parsed) {
   // Things we don't set in file: URLs.
-  new_parsed->username = ParsedURL::Component(0, -1);
-  new_parsed->password = ParsedURL::Component(0, -1);
-  new_parsed->port = ParsedURL::Component(0, -1);
+  new_parsed->username = ParsedComponent(0, -1);
+  new_parsed->password = ParsedComponent(0, -1);
+  new_parsed->port = ParsedComponent(0, -1);
 
   // Scheme (known, so we don't bother running it through the more
   // complicated scheme canonicalizer).
@@ -129,5 +129,7 @@ static bool DoCanonicalizeFileURL(const URLComponentSource<CHAR>& source,
 
   return success;
 }
+
+}  // namespace url
 
 #endif  // URL_URL_CANON_INTERNAL_FILE_H_

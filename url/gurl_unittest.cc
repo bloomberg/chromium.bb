@@ -14,18 +14,20 @@
 #define ARRAYSIZE ARRAYSIZE_UNSAFE
 #endif
 
-using url_test_utils::WStringToUTF16;
-using url_test_utils::ConvertUTF8ToUTF16;
+namespace url {
+
+using test_utils::WStringToUTF16;
+using test_utils::ConvertUTF8ToUTF16;
 
 namespace {
 
 template<typename CHAR>
-void SetupReplacement(void (url_canon::Replacements<CHAR>::*func)(const CHAR*,
-                          const url_parse::Component&),
-                      url_canon::Replacements<CHAR>* replacements,
-                      const CHAR* str) {
+void SetupReplacement(
+    void (Replacements<CHAR>::*func)(const CHAR*, const Component&),
+    Replacements<CHAR>* replacements,
+    const CHAR* str) {
   if (str) {
-    url_parse::Component comp;
+    Component comp;
     if (str[0])
       comp.len = static_cast<int>(strlen(str));
     (replacements->*func)(str, comp);
@@ -105,7 +107,7 @@ TEST(GURLTest, Empty) {
   EXPECT_EQ("", url.password());
   EXPECT_EQ("", url.host());
   EXPECT_EQ("", url.port());
-  EXPECT_EQ(url_parse::PORT_UNSPECIFIED, url.IntPort());
+  EXPECT_EQ(PORT_UNSPECIFIED, url.IntPort());
   EXPECT_EQ("", url.path());
   EXPECT_EQ("", url.query());
   EXPECT_EQ("", url.ref());
@@ -138,7 +140,7 @@ TEST(GURLTest, Copy) {
   EXPECT_EQ("", invalid2.password());
   EXPECT_EQ("", invalid2.host());
   EXPECT_EQ("", invalid2.port());
-  EXPECT_EQ(url_parse::PORT_UNSPECIFIED, invalid2.IntPort());
+  EXPECT_EQ(PORT_UNSPECIFIED, invalid2.IntPort());
   EXPECT_EQ("", invalid2.path());
   EXPECT_EQ("", invalid2.query());
   EXPECT_EQ("", invalid2.ref());
@@ -173,7 +175,7 @@ TEST(GURLTest, Assign) {
   EXPECT_EQ("", invalid2.password());
   EXPECT_EQ("", invalid2.host());
   EXPECT_EQ("", invalid2.port());
-  EXPECT_EQ(url_parse::PORT_UNSPECIFIED, invalid2.IntPort());
+  EXPECT_EQ(PORT_UNSPECIFIED, invalid2.IntPort());
   EXPECT_EQ("", invalid2.path());
   EXPECT_EQ("", invalid2.query());
   EXPECT_EQ("", invalid2.ref());
@@ -198,7 +200,7 @@ TEST(GURLTest, CopyFileSystem) {
   EXPECT_EQ("", url2.password());
   EXPECT_EQ("", url2.host());
   EXPECT_EQ("", url2.port());
-  EXPECT_EQ(url_parse::PORT_UNSPECIFIED, url2.IntPort());
+  EXPECT_EQ(PORT_UNSPECIFIED, url2.IntPort());
   EXPECT_EQ("/foo;bar", url2.path());
   EXPECT_EQ("q=a", url2.query());
   EXPECT_EQ("ref", url2.ref());
@@ -268,7 +270,7 @@ TEST(GURLTest, ComponentGettersWorkEvenForInvalidURL) {
   EXPECT_EQ("", url.password());
   EXPECT_EQ("google.com", url.host());
   EXPECT_EQ("foo", url.port());
-  EXPECT_EQ(url_parse::PORT_INVALID, url.IntPort());
+  EXPECT_EQ(PORT_INVALID, url.IntPort());
   EXPECT_EQ("/", url.path());
   EXPECT_EQ("", url.query());
   EXPECT_EQ("", url.ref());
@@ -421,7 +423,7 @@ TEST(GURLTest, Replacements) {
 TEST(GURLTest, ClearFragmentOnDataUrl) {
   // http://crbug.com/291747 - a data URL may legitimately have trailing
   // whitespace in the spec after the ref is cleared. Test this does not trigger
-  // the url_parse::Parsed importing validation DCHECK in GURL.
+  // the Parsed importing validation DCHECK in GURL.
   GURL url(" data: one ? two # three ");
 
   // By default the trailing whitespace will have been stripped.
@@ -492,16 +494,16 @@ TEST(GURLTest, EffectiveIntPort) {
     {"gopher://www.google.com:80/", 80},
 
     // file - no port
-    {"file://www.google.com/", url_parse::PORT_UNSPECIFIED},
-    {"file://www.google.com:443/", url_parse::PORT_UNSPECIFIED},
+    {"file://www.google.com/", PORT_UNSPECIFIED},
+    {"file://www.google.com:443/", PORT_UNSPECIFIED},
 
     // data - no port
-    {"data:www.google.com:90", url_parse::PORT_UNSPECIFIED},
-    {"data:www.google.com", url_parse::PORT_UNSPECIFIED},
+    {"data:www.google.com:90", PORT_UNSPECIFIED},
+    {"data:www.google.com", PORT_UNSPECIFIED},
 
     // filesystem - no port
-    {"filesystem:http://www.google.com:90/t/foo", url_parse::PORT_UNSPECIFIED},
-    {"filesystem:file:///t/foo", url_parse::PORT_UNSPECIFIED},
+    {"filesystem:http://www.google.com:90/t/foo", PORT_UNSPECIFIED},
+    {"filesystem:file:///t/foo", PORT_UNSPECIFIED},
   };
 
   for (size_t i = 0; i < ARRAYSIZE(port_tests); i++) {
@@ -632,3 +634,5 @@ TEST(GURLTest, SchemeIsWSOrWSS) {
   EXPECT_TRUE(GURL("wss://bar/").SchemeIsWSOrWSS());
   EXPECT_FALSE(GURL("http://bar/").SchemeIsWSOrWSS());
 }
+
+}  // namespace url

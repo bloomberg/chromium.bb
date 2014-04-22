@@ -8,16 +8,16 @@
 #include "url/url_canon.h"
 #include "url/url_canon_internal.h"
 
-namespace url_canon {
+namespace url {
 
 namespace {
 
 template<typename CHAR, typename UCHAR>
 bool DoCanonicalizeStandardURL(const URLComponentSource<CHAR>& source,
-                               const url_parse::Parsed& parsed,
+                               const Parsed& parsed,
                                CharsetConverter* query_converter,
                                CanonOutput* output,
-                               url_parse::Parsed* new_parsed) {
+                               Parsed* new_parsed) {
   // Scheme: this will append the colon.
   bool success = CanonicalizeScheme(source.scheme, parsed.scheme,
                                     output, &new_parsed->scheme);
@@ -72,7 +72,7 @@ bool DoCanonicalizeStandardURL(const URLComponentSource<CHAR>& source,
     // When we have an empty path, make up a path when we have an authority
     // or something following the path. The only time we allow an empty
     // output path is when there is nothing else.
-    new_parsed->path = url_parse::Component(output->length(), 1);
+    new_parsed->path = Component(output->length(), 1);
     output->push_back('/');
   } else {
     // No path at all
@@ -95,7 +95,7 @@ bool DoCanonicalizeStandardURL(const URLComponentSource<CHAR>& source,
 // Returns the default port for the given canonical scheme, or PORT_UNSPECIFIED
 // if the scheme is unknown.
 int DefaultPortForScheme(const char* scheme, int scheme_len) {
-  int default_port = url_parse::PORT_UNSPECIFIED;
+  int default_port = PORT_UNSPECIFIED;
   switch (scheme_len) {
     case 4:
       if (!strncmp(scheme, "http", scheme_len))
@@ -125,10 +125,10 @@ int DefaultPortForScheme(const char* scheme, int scheme_len) {
 
 bool CanonicalizeStandardURL(const char* spec,
                              int spec_len,
-                             const url_parse::Parsed& parsed,
+                             const Parsed& parsed,
                              CharsetConverter* query_converter,
                              CanonOutput* output,
-                             url_parse::Parsed* new_parsed) {
+                             Parsed* new_parsed) {
   return DoCanonicalizeStandardURL<char, unsigned char>(
       URLComponentSource<char>(spec), parsed, query_converter,
       output, new_parsed);
@@ -136,10 +136,10 @@ bool CanonicalizeStandardURL(const char* spec,
 
 bool CanonicalizeStandardURL(const base::char16* spec,
                              int spec_len,
-                             const url_parse::Parsed& parsed,
+                             const Parsed& parsed,
                              CharsetConverter* query_converter,
                              CanonOutput* output,
-                             url_parse::Parsed* new_parsed) {
+                             Parsed* new_parsed) {
   return DoCanonicalizeStandardURL<base::char16, base::char16>(
       URLComponentSource<base::char16>(spec), parsed, query_converter,
       output, new_parsed);
@@ -155,13 +155,13 @@ bool CanonicalizeStandardURL(const base::char16* spec,
 // You would also need to update DoReplaceComponents in url_util.cc which
 // relies on this re-checking everything (see the comment there for why).
 bool ReplaceStandardURL(const char* base,
-                        const url_parse::Parsed& base_parsed,
+                        const Parsed& base_parsed,
                         const Replacements<char>& replacements,
                         CharsetConverter* query_converter,
                         CanonOutput* output,
-                        url_parse::Parsed* new_parsed) {
+                        Parsed* new_parsed) {
   URLComponentSource<char> source(base);
-  url_parse::Parsed parsed(base_parsed);
+  Parsed parsed(base_parsed);
   SetupOverrideComponents(base, replacements, &source, &parsed);
   return DoCanonicalizeStandardURL<char, unsigned char>(
       source, parsed, query_converter, output, new_parsed);
@@ -170,17 +170,17 @@ bool ReplaceStandardURL(const char* base,
 // For 16-bit replacements, we turn all the replacements into UTF-8 so the
 // regular codepath can be used.
 bool ReplaceStandardURL(const char* base,
-                        const url_parse::Parsed& base_parsed,
+                        const Parsed& base_parsed,
                         const Replacements<base::char16>& replacements,
                         CharsetConverter* query_converter,
                         CanonOutput* output,
-                        url_parse::Parsed* new_parsed) {
+                        Parsed* new_parsed) {
   RawCanonOutput<1024> utf8;
   URLComponentSource<char> source(base);
-  url_parse::Parsed parsed(base_parsed);
+  Parsed parsed(base_parsed);
   SetupUTF16OverrideComponents(base, replacements, &utf8, &source, &parsed);
   return DoCanonicalizeStandardURL<char, unsigned char>(
       source, parsed, query_converter, output, new_parsed);
 }
 
-}  // namespace url_canon
+}  // namespace url

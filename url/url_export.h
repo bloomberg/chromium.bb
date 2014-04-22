@@ -30,4 +30,11 @@
 
 #endif  // define(COMPONENT_BUILD)
 
+// TODO(vitalybuka, crbug.com/364747) url_util is deprecated, remove after
+// fixing depending code.
+namespace url {}
+namespace url_util = ::url;
+namespace url_parse = ::url;
+namespace url_canon = ::url;
+
 #endif  // URL_URL_EXPORT_H_

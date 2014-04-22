@@ -13,7 +13,7 @@
 
 typedef struct UConverter UConverter;
 
-namespace url_canon {
+namespace url {
 
 // An implementation of CharsetConverter that implementations can use to
 // interface the canonicalizer with ICU's conversion routines.
@@ -35,6 +35,6 @@ class URL_EXPORT ICUCharsetConverter : public CharsetConverter {
   UConverter* converter_;
 };
 
-}  // namespace url_canon
+}  // namespace url
 
 #endif  // URL_URL_CANON_ICU_H_

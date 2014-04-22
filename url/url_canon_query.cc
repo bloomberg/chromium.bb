@@ -35,14 +35,14 @@
 // replace all invalid sequences (including invalid UTF-16 sequences, which IE
 // doesn't) with the "invalid character," and we will escape it.
 
-namespace url_canon {
+namespace url {
 
 namespace {
 
 // Returns true if the characters starting at |begin| and going until |end|
 // (non-inclusive) are all representable in 7-bits.
 template<typename CHAR, typename UCHAR>
-bool IsAllASCII(const CHAR* spec, const url_parse::Component& query) {
+bool IsAllASCII(const CHAR* spec, const Component& query) {
   int end = query.end();
   for (int i = query.begin; i < end; i++) {
     if (static_cast<UCHAR>(spec[i]) >= 0x80)
@@ -69,7 +69,7 @@ void AppendRaw8BitQueryString(const CHAR* source, int length,
 // Runs the converter on the given UTF-8 input. Since the converter expects
 // UTF-16, we have to convert first. The converter must be non-NULL.
 void RunConverter(const char* spec,
-                  const url_parse::Component& query,
+                  const Component& query,
                   CharsetConverter* converter,
                   CanonOutput* output) {
   // This function will replace any misencoded values with the invalid
@@ -83,7 +83,7 @@ void RunConverter(const char* spec,
 // anything, but this overriddden function allows us to use the same code
 // for both UTF-8 and UTF-16 input.
 void RunConverter(const base::char16* spec,
-                  const url_parse::Component& query,
+                  const Component& query,
                   CharsetConverter* converter,
                   CanonOutput* output) {
   converter->ConvertFromUTF16(&spec[query.begin], query.len, output);
@@ -91,7 +91,7 @@ void RunConverter(const base::char16* spec,
 
 template<typename CHAR, typename UCHAR>
 void DoConvertToQueryEncoding(const CHAR* spec,
-                              const url_parse::Component& query,
+                              const Component& query,
                               CharsetConverter* converter,
                               CanonOutput* output) {
   if (IsAllASCII<CHAR, UCHAR>(spec, query)) {
@@ -116,12 +116,12 @@ void DoConvertToQueryEncoding(const CHAR* spec,
 
 template<typename CHAR, typename UCHAR>
 void DoCanonicalizeQuery(const CHAR* spec,
-                         const url_parse::Component& query,
+                         const Component& query,
                          CharsetConverter* converter,
                          CanonOutput* output,
-                         url_parse::Component* out_query) {
+                         Component* out_query) {
   if (query.len < 0) {
-    *out_query = url_parse::Component();
+    *out_query = Component();
     return;
   }
 
@@ -136,29 +136,29 @@ void DoCanonicalizeQuery(const CHAR* spec,
 }  // namespace
 
 void CanonicalizeQuery(const char* spec,
-                       const url_parse::Component& query,
+                       const Component& query,
                        CharsetConverter* converter,
                        CanonOutput* output,
-                       url_parse::Component* out_query) {
+                       Component* out_query) {
   DoCanonicalizeQuery<char, unsigned char>(spec, query, converter,
                                            output, out_query);
 }
 
 void CanonicalizeQuery(const base::char16* spec,
-                       const url_parse::Component& query,
+                       const Component& query,
                        CharsetConverter* converter,
                        CanonOutput* output,
-                       url_parse::Component* out_query) {
+                       Component* out_query) {
   DoCanonicalizeQuery<base::char16, base::char16>(spec, query, converter,
                                                   output, out_query);
 }
 
 void ConvertUTF16ToQueryEncoding(const base::char16* input,
-                                 const url_parse::Component& query,
+                                 const Component& query,
                                  CharsetConverter* converter,
                                  CanonOutput* output) {
   DoConvertToQueryEncoding<base::char16, base::char16>(input, query,
                                                        converter, output);
 }
 
-}  // namespace url_canon
+}  // namespace url
