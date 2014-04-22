@@ -47,20 +47,6 @@ namespace WebCore {
 
 class PannerNode FINAL : public AudioNode {
 public:
-    // These must be defined as in the .idl file and must match those in the Panner class.
-    enum {
-        EQUALPOWER = 0,
-        HRTF = 1,
-    };
-
-    // These must be defined as in the .idl file and must match those
-    // in the DistanceEffect class.
-    enum {
-        LINEAR_DISTANCE = 0,
-        INVERSE_DISTANCE = 1,
-        EXPONENTIAL_DISTANCE = 2,
-    };
-
     // These enums are used to distinguish what cached values of panner are dirty.
     enum {
         AzimuthElevationDirty = 0x1,

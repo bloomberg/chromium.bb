@@ -125,7 +125,7 @@ void PannerNode::process(size_t framesToProcess)
 
     if (tryLocker.locked() && tryListenerLocker.locked()) {
         // HRTFDatabase should be loaded before proceeding for offline audio context when the panning model is HRTF.
-        if (m_panningModel == HRTF && !m_hrtfDatabaseLoader->isLoaded()) {
+        if (m_panningModel == Panner::PanningModelHRTF && !m_hrtfDatabaseLoader->isLoaded()) {
             if (context()->isOfflineContext()) {
                 m_hrtfDatabaseLoader->waitForLoaderThreadCompletion();
             } else {
@@ -187,9 +187,9 @@ AudioListener* PannerNode::listener()
 String PannerNode::panningModel() const
 {
     switch (m_panningModel) {
-    case EQUALPOWER:
+    case Panner::PanningModelEqualPower:
         return "equalpower";
-    case HRTF:
+    case Panner::PanningModelHRTF:
         return "HRTF";
     default:
         ASSERT_NOT_REACHED();
@@ -200,16 +200,16 @@ String PannerNode::panningModel() const
 void PannerNode::setPanningModel(const String& model)
 {
     if (model == "equalpower")
-        setPanningModel(EQUALPOWER);
+        setPanningModel(Panner::PanningModelEqualPower);
     else if (model == "HRTF")
-        setPanningModel(HRTF);
+        setPanningModel(Panner::PanningModelHRTF);
 }
 
 bool PannerNode::setPanningModel(unsigned model)
 {
     switch (model) {
-    case EQUALPOWER:
-    case HRTF:
+    case Panner::PanningModelEqualPower:
+    case Panner::PanningModelHRTF:
         if (!m_panner.get() || model != m_panningModel) {
             // This synchronizes with process().
             MutexLocker processLocker(m_processLock);
@@ -219,6 +219,7 @@ bool PannerNode::setPanningModel(unsigned model)
         }
         break;
     default:
+        ASSERT_NOT_REACHED();
         return false;
     }
 
@@ -264,6 +265,7 @@ bool PannerNode::setDistanceModel(unsigned model)
         }
         break;
     default:
+        ASSERT_NOT_REACHED();
         return false;
     }
 
