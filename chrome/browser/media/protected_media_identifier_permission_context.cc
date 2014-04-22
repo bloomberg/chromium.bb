@@ -128,7 +128,6 @@ void ProtectedMediaIdentifierPermissionContext::DecidePermission(
                      id,
                      requesting_frame,
                      callback));
-      rvh->DisableFullscreenEncryptedMediaPlayback();
       break;
     default:
       NOTREACHED();

@@ -73,7 +73,7 @@ class MockMediaPlayerManager : public MediaPlayerManager {
   virtual MediaPlayerAndroid* GetPlayer(int player_id) OVERRIDE { return NULL; }
   virtual void DestroyAllMediaPlayers() OVERRIDE {}
   virtual MediaDrmBridge* GetDrmBridge(int cdm_id) OVERRIDE { return NULL; }
-  virtual void OnProtectedSurfaceRequested(int player_id) OVERRIDE {}
+  virtual void RequestFullScreen(int player_id) OVERRIDE {}
   virtual void OnSessionCreated(int cdm_id,
                                 uint32 session_id,
                                 const std::string& web_session_id) OVERRIDE {}

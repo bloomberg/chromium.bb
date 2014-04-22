@@ -75,7 +75,7 @@ class MEDIA_EXPORT MediaPlayerManager {
   virtual media::MediaDrmBridge* GetDrmBridge(int cdm_id) = 0;
 
   // Called by the player to get a hardware protected surface.
-  virtual void OnProtectedSurfaceRequested(int player_id) = 0;
+  virtual void RequestFullScreen(int player_id) = 0;
 
   // The following five methods are related to EME.
   // TODO(xhwang): These methods needs to be decoupled from MediaPlayerManager

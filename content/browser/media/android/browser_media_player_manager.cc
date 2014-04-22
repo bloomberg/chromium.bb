@@ -127,7 +127,6 @@ BrowserMediaPlayerManager::BrowserMediaPlayerManager(
     RenderViewHost* render_view_host)
     : WebContentsObserver(WebContents::FromRenderViewHost(render_view_host)),
       fullscreen_player_id_(-1),
-      pending_fullscreen_player_id_(-1),
       fullscreen_player_is_released_(false),
       web_contents_(WebContents::FromRenderViewHost(render_view_host)),
       weak_ptr_factory_(this) {
@@ -355,7 +354,7 @@ void BrowserMediaPlayerManager::DestroyAllMediaPlayers() {
   }
 }
 
-void BrowserMediaPlayerManager::OnProtectedSurfaceRequested(int player_id) {
+void BrowserMediaPlayerManager::RequestFullScreen(int player_id) {
   if (fullscreen_player_id_ == player_id)
     return;
 
@@ -365,20 +364,9 @@ void BrowserMediaPlayerManager::OnProtectedSurfaceRequested(int player_id) {
     return;
   }
 
-  // If the player is pending approval, wait for the approval to happen.
-  if (cdm_ids_pending_approval_.end() !=
-      cdm_ids_pending_approval_.find(player_id)) {
-    pending_fullscreen_player_id_ = player_id;
-    return;
-  }
-
   // Send an IPC to the render process to request the video element to enter
   // fullscreen. OnEnterFullscreen() will be called later on success.
   // This guarantees the fullscreen video will be rendered correctly.
-  // During the process, DisableFullscreenEncryptedMediaPlayback() may get
-  // called before or after OnEnterFullscreen(). If it is called before
-  // OnEnterFullscreen(), the player will not enter fullscreen. And it will
-  // retry the process once CreateSession() is allowed to proceed.
   // TODO(qinmin): make this flag default on android.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableGestureRequirementForMediaFullscreen)) {
@@ -477,26 +465,8 @@ void BrowserMediaPlayerManager::OnRequestExternalSurface(
 }
 #endif  // defined(VIDEO_HOLE)
 
-void BrowserMediaPlayerManager::DisableFullscreenEncryptedMediaPlayback() {
-  if (fullscreen_player_id_ == -1)
-    return;
-
-  // If the fullscreen player is not playing back encrypted video, do nothing.
-  MediaDrmBridge* drm_bridge = GetDrmBridge(fullscreen_player_id_);
-  if (!drm_bridge)
-    return;
-
-  // Exit fullscreen.
-  pending_fullscreen_player_id_ = fullscreen_player_id_;
-  OnExitFullscreen(fullscreen_player_id_);
-}
-
 void BrowserMediaPlayerManager::OnEnterFullscreen(int player_id) {
   DCHECK_EQ(fullscreen_player_id_, -1);
-  if (cdm_ids_pending_approval_.find(player_id) !=
-      cdm_ids_pending_approval_.end()) {
-    return;
-  }
 
 #if defined(VIDEO_HOLE)
   if (external_video_surface_container_)
@@ -650,10 +620,6 @@ void BrowserMediaPlayerManager::OnCreateSession(
     DLOG(WARNING) << "No MediaDrmBridge for ID: " << cdm_id << " found";
     OnSessionError(cdm_id, session_id, media::MediaKeys::kUnknownError, 0);
     return;
-  }
-
-  if (cdm_ids_approved_.find(cdm_id) == cdm_ids_approved_.end()) {
-    cdm_ids_pending_approval_.insert(cdm_id);
   }
 
   BrowserContext* context =
@@ -826,26 +792,10 @@ void BrowserMediaPlayerManager::CreateSessionIfPermitted(
     OnSessionError(cdm_id, session_id, media::MediaKeys::kUnknownError, 0);
     return;
   }
-  cdm_ids_pending_approval_.erase(cdm_id);
-  cdm_ids_approved_.insert(cdm_id);
 
-  if (!drm_bridge->CreateSession(
-           session_id, content_type, &init_data[0], init_data.size())) {
-    return;
-  }
-
-  // TODO(xhwang): Move the following code to OnSessionReady.
-
-  // TODO(qinmin): For prefixed EME implementation, |cdm_id| and player_id are
-  // identical. This will not be the case for unpredixed EME. See:
-  // http://crbug.com/338910
-  if (pending_fullscreen_player_id_ != cdm_id)
-    return;
-
-  pending_fullscreen_player_id_ = -1;
-  MediaPlayerAndroid* player = GetPlayer(cdm_id);
-  if (player->IsPlaying())
-    OnProtectedSurfaceRequested(cdm_id);
+  // This could fail, in which case a SessionError will be fired.
+  drm_bridge->CreateSession(
+      session_id, content_type, &init_data[0], init_data.size());
 }
 
 void BrowserMediaPlayerManager::ReleaseFullscreenPlayer(

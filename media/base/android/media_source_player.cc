@@ -142,7 +142,7 @@ void MediaSourcePlayer::Start() {
   playing_ = true;
 
   if (IsProtectedSurfaceRequired())
-    manager()->OnProtectedSurfaceRequested(player_id());
+    manager()->RequestFullScreen(player_id());
 
   StartInternal();
 }

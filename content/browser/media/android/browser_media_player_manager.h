@@ -91,7 +91,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   virtual media::MediaPlayerAndroid* GetPlayer(int player_id) OVERRIDE;
   virtual media::MediaDrmBridge* GetDrmBridge(int cdm_id) OVERRIDE;
   virtual void DestroyAllMediaPlayers() OVERRIDE;
-  virtual void OnProtectedSurfaceRequested(int player_id) OVERRIDE;
+  virtual void RequestFullScreen(int player_id) OVERRIDE;
   virtual void OnSessionCreated(int cdm_id,
                                 uint32 session_id,
                                 const std::string& web_session_id) OVERRIDE;
@@ -111,10 +111,6 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   void DetachExternalVideoSurface(int player_id);
   void OnFrameInfoUpdated();
 #endif  // defined(VIDEO_HOLE)
-
-  // Called to disble the current fullscreen playback if the video is encrypted.
-  // TODO(qinmin): remove this once we have the new fullscreen mode.
-  void DisableFullscreenEncryptedMediaPlayback();
 
  protected:
   // Clients must use Create() or subclass constructor.
@@ -222,13 +218,6 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   // An array of managed media DRM bridges.
   ScopedVector<media::MediaDrmBridge> drm_bridges_;
 
-  // A set of media keys IDs that are pending approval or approved to access
-  // device DRM credentials.
-  // These 2 sets does not cover all the EME videos. If a video only streams
-  // clear data, it will not be included in either set.
-  std::set<int> cdm_ids_pending_approval_;
-  std::set<int> cdm_ids_approved_;
-
   // The fullscreen video view object or NULL if video is not played in
   // fullscreen.
   scoped_ptr<ContentVideoView> video_view_;
@@ -239,9 +228,6 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
 
   // Player ID of the fullscreen media player.
   int fullscreen_player_id_;
-
-  // The player ID pending to enter fullscreen.
-  int pending_fullscreen_player_id_;
 
   // Whether the fullscreen player has been Release()-d.
   bool fullscreen_player_is_released_;

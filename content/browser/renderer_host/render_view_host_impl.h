@@ -216,7 +216,6 @@ class CONTENT_EXPORT RenderViewHostImpl
                                          float x,
                                          float y) OVERRIDE;
   virtual void RequestFindMatchRects(int current_version) OVERRIDE;
-  virtual void DisableFullscreenEncryptedMediaPlayback() OVERRIDE;
 #endif
 
   void set_delegate(RenderViewHostDelegate* d) {

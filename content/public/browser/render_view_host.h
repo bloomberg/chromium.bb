@@ -215,9 +215,6 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
 
   // Asks the renderer to send the rects of the current find matches.
   virtual void RequestFindMatchRects(int current_version) = 0;
-
-  // Disables fullscreen media playback for encrypted video.
-  virtual void DisableFullscreenEncryptedMediaPlayback() = 0;
 #endif
 
  private:
