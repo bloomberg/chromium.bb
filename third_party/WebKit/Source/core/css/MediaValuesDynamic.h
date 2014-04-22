@@ -13,7 +13,7 @@ class Document;
 
 class MediaValuesDynamic FINAL : public MediaValues {
 public:
-    static PassRefPtr<MediaValues> create(PassRefPtr<LocalFrame>);
+    static PassRefPtr<MediaValues> create(LocalFrame*);
     virtual PassRefPtr<MediaValues> copy() const OVERRIDE;
     virtual bool isSafeToSendToAnotherThread() const OVERRIDE;
     virtual bool computeLength(double value, unsigned short type, int& result) const OVERRIDE;
@@ -35,9 +35,9 @@ public:
     virtual bool hasValues() const OVERRIDE;
 
 protected:
-    MediaValuesDynamic(PassRefPtr<LocalFrame>);
+    MediaValuesDynamic(LocalFrame*);
 
-    RefPtr<LocalFrame> m_frame;
+    LocalFrame* m_frame;
 };
 
 } // namespace
