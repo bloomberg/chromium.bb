@@ -1,0 +1,6 @@
+include_rules = [
+  "+grit/file_manager_resources.h",
+  "+grit/file_manager_resources_map.h",
+  "+ui/base",
+  "+ui/webui",
+]

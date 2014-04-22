@@ -181,6 +181,9 @@
   "ui/keyboard/keyboard_resources.grd": {
     "includes": [28050],
   },
+  "ui/file_manager/file_manager_resources.grd": {
+    "includes": [28100],
+  },
   "chrome/browser/resources/translate_internals_resources.grd": {
     "includes": [28500],
   },

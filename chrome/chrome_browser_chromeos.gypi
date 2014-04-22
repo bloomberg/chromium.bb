@@ -945,6 +945,9 @@
       ],
       'conditions': [
         ['enable_extensions==1', {
+          'dependencies': [
+            '../ui/file_manager/file_manager.gyp:file_manager',
+          ],
           'sources': [
             # Only extension API implementations should go here.
             'browser/chromeos/extensions/echo_private_api.cc',
