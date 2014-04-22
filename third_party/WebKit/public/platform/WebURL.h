@@ -81,7 +81,7 @@ public:
         return m_string;
     }
 
-    const url_parse::Parsed& parsed() const
+    const url::Parsed& parsed() const
     {
         return m_parsed;
     }
@@ -129,7 +129,7 @@ public:
 
 private:
     WebString m_string;
-    url_parse::Parsed m_parsed;
+    url::Parsed m_parsed;
     bool m_isValid;
 };
 
