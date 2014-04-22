@@ -1560,30 +1560,35 @@
         {
           'target_name': 'chromium_linker_test_apk',
           'type': 'none',
-          'dependencies': [
-            'chromium_android_linker_test',
-            'content.gyp:content_icudata',
-            'content.gyp:content_java',
-            'content_shell_java',
-          ],
-          'variables': {
-            'apk_name': 'ChromiumLinkerTest',
-            'java_in_dir': 'shell/android/linker_test_apk',
-            'resource_dir': 'shell/android/linker_test_apk/res',
-            'native_lib_target': 'libchromium_android_linker_test',
-            'additional_input_paths': ['<(PRODUCT_DIR)/content_shell/assets/content_shell.pak'],
-            'asset_location': '<(PRODUCT_DIR)/content_shell/assets',
-            'use_chromium_linker': '1',
-            'enable_chromium_linker_tests': '1',
-            'conditions': [
-              ['icu_use_data_file_flag==1', {
-                'additional_input_paths': [
-                  '<(PRODUCT_DIR)/icudtl.dat',
+          'conditions': [
+            ['target_arch != "x64" and target_arch != "arm64"', {
+              'dependencies': [
+                'chromium_android_linker_test',
+                'content.gyp:content_icudata',
+                'content.gyp:content_java',
+                'content_shell_java',
+              ],
+              'variables': {
+                'apk_name': 'ChromiumLinkerTest',
+                'java_in_dir': 'shell/android/linker_test_apk',
+                'resource_dir': 'shell/android/linker_test_apk/res',
+                'native_lib_target': 'libchromium_android_linker_test',
+                'additional_input_paths': ['<(PRODUCT_DIR)/content_shell/assets/content_shell.pak'],
+                'asset_location': '<(PRODUCT_DIR)/content_shell/assets',
+                'use_chromium_linker': '1',
+                'enable_chromium_linker_tests': '1',
+                'conditions': [
+                  ['icu_use_data_file_flag==1', {
+                    'additional_input_paths': [
+                      '<(PRODUCT_DIR)/icudtl.dat',
+                    ],
+                  }],
                 ],
-              }],
-            ],
-          },
-          'includes': [ '../build/java_apk.gypi' ],
+              },
+              'includes': [ '../build/java_apk.gypi' ],
+            },
+           ],
+          ],
         },
         {
           'target_name': 'chromium_android_linker_test',

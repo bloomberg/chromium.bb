@@ -1363,10 +1363,12 @@
           'target_name': 'chromium_android_linker',
           'type': 'shared_library',
           'conditions': [
-            ['android_webview_build == 0', {
-              # Avoid breaking the webview build because it doesn't have
-              # <(android_ndk_root)/crazy_linker.gyp. Note that it never uses
-              # the linker anyway.
+            ['android_webview_build == 0 and target_arch != "x64" and \
+               target_arch != "arm64"', {
+              # Avoid breaking the webview/64-bit build because they
+              # don't have <(android_ndk_root)/crazy_linker.gyp.
+              # Note that webview never uses the linker anyway.
+              # Note there is no 64-bit support in the linker.
               'sources': [
                 'android/linker/linker_jni.cc',
               ],
