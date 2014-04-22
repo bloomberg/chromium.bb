@@ -57,22 +57,9 @@ GpuMessageFilter::GpuMessageFilter(int render_process_id,
     : BrowserMessageFilter(GpuMsgStart),
       gpu_process_id_(0),
       render_process_id_(render_process_id),
-      share_contexts_(false),
       render_widget_helper_(render_widget_helper),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-#if defined(USE_AURA) || defined(OS_ANDROID)
-  // We use the GPU process for UI on Aura, and we need to share renderer GL
-  // contexts with the compositor context.
-  share_contexts_ = true;
-#else
-  // Share contexts when compositing webview plugin or using share groups
-  // for asynchronous texture uploads.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableShareGroupAsyncTextureUpload))
-    share_contexts_ = true;
-#endif
 }
 
 GpuMessageFilter::~GpuMessageFilter() {
@@ -145,9 +132,10 @@ void GpuMessageFilter::OnEstablishGpuChannel(
     BeginAllFrameSubscriptions();
   }
 
+  bool share_contexts = true;
   host->EstablishGpuChannel(
       render_process_id_,
-      share_contexts_,
+      share_contexts,
       base::Bind(&GpuMessageFilter::EstablishChannelCallback,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Passed(&reply)));

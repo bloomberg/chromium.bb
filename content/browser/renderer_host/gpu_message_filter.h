@@ -78,7 +78,6 @@ class GpuMessageFilter : public BrowserMessageFilter {
 
   int gpu_process_id_;
   int render_process_id_;
-  bool share_contexts_;
 
   scoped_refptr<RenderWidgetHelper> render_widget_helper_;
 
