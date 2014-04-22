@@ -21,8 +21,6 @@ CONTENT_EXPORT extern const char kAllowNoSandboxJob[];
 extern const char kAllowSandboxDebugging[];
 extern const char kAuditAllHandles[];
 extern const char kAuditHandles[];
-CONTENT_EXPORT extern const char kBlacklistGpuCompositing[];
-CONTENT_EXPORT extern const char kBlacklistWebGL[];
 CONTENT_EXPORT extern const char kBlinkPlatformLogChannels[];
 CONTENT_EXPORT extern const char kBlockCrossSiteDocuments[];
 CONTENT_EXPORT extern const char kBrowserAssertTest[];

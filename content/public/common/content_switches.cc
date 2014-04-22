@@ -38,12 +38,6 @@ const char kAuditAllHandles[]               = "enable-handle-auditing-all";
 // is terminated.
 const char kAuditHandles[]                  = "enable-handle-auditing";
 
-// Blacklist the GPU for GPU compositing, to force software compositing.
-const char kBlacklistGpuCompositing[] = "blacklist-gpu-compositing";
-
-// Blacklist the GPU for WebGL.
-const char kBlacklistWebGL[]                = "blacklist-webgl";
-
 // Choose which logging channels in blink platform to activate.  See
 // Logging.cpp in blink's Source/platform for a list of available channels.
 const char kBlinkPlatformLogChannels[]      = "blink-platform-log-channels";

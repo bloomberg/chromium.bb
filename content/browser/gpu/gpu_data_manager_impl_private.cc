@@ -1000,17 +1000,12 @@ void GpuDataManagerImplPrivate::InitializeImpl(
 
 void GpuDataManagerImplPrivate::UpdateBlacklistedFeatures(
     const std::set<int>& features) {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
   blacklisted_features_ = features;
 
   // Force disable using the GPU for these features, even if they would
   // otherwise be allowed.
-  if (card_blacklisted_ ||
-      command_line->HasSwitch(switches::kBlacklistGpuCompositing)) {
+  if (card_blacklisted_) {
     blacklisted_features_.insert(gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING);
-  }
-  if (card_blacklisted_ ||
-      command_line->HasSwitch(switches::kBlacklistWebGL)) {
     blacklisted_features_.insert(gpu::GPU_FEATURE_TYPE_WEBGL);
   }
 
