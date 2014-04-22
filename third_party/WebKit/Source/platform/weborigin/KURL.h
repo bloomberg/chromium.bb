@@ -80,7 +80,7 @@ public:
     // For conversions from other structures that have already parsed and
     // canonicalized the URL. The input must be exactly what KURL would have
     // done with the same input.
-    KURL(const AtomicString& canonicalString, const url::Parsed&, bool isValid);
+    KURL(const AtomicString& canonicalString, const url_parse::Parsed&, bool isValid);
 
     String strippedForUseAsReferrer() const;
 
@@ -173,7 +173,7 @@ public:
 
     operator const String&() const { return string(); }
 
-    const url::Parsed& parsed() const { return m_parsed; }
+    const url_parse::Parsed& parsed() const { return m_parsed; }
 
     const KURL* innerURL() const { return m_innerURL.get(); }
 
@@ -186,11 +186,11 @@ public:
 private:
     void init(const KURL& base, const String& relative, const WTF::TextEncoding* queryEncoding);
 
-    String componentString(const url::Component&) const;
+    String componentString(const url_parse::Component&) const;
     String stringForInvalidComponent() const;
 
     template<typename CHAR>
-    void replaceComponents(const url::Replacements<CHAR>&);
+    void replaceComponents(const url_canon::Replacements<CHAR>&);
 
     template <typename CHAR>
     void init(const KURL& base, const CHAR* relative, int relativeLength, const WTF::TextEncoding* queryEncoding);
@@ -199,7 +199,7 @@ private:
 
     bool m_isValid;
     bool m_protocolIsInHTTPFamily;
-    url::Parsed m_parsed;
+    url_parse::Parsed m_parsed;
     String m_string;
     OwnPtr<KURL> m_innerURL;
 };
