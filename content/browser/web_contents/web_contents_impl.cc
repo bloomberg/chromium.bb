@@ -1263,10 +1263,12 @@ bool WebContentsImpl::HandleGestureEvent(
     totalPinchGestureAmount_ += event.data.pinchUpdate.scale;
     if (totalPinchGestureAmount_ > zoomInThreshold) {
       currentPinchZoomStepDelta_++;
-      delegate_->ContentsZoomChange(true);
+      if (delegate_)
+        delegate_->ContentsZoomChange(true);
     } else if (totalPinchGestureAmount_ < zoomOutThreshold) {
       currentPinchZoomStepDelta_--;
-      delegate_->ContentsZoomChange(false);
+      if (delegate_)
+        delegate_->ContentsZoomChange(false);
     }
     return true;
   }
@@ -2372,6 +2374,12 @@ void WebContentsImpl::RequestOpenURL(RenderFrameHostImpl* render_frame_host,
   }
 }
 
+bool WebContentsImpl::ShouldPreserveAbortedURLs() {
+  if (!delegate_)
+    return false;
+  return delegate_->ShouldPreserveAbortedURLs(this);
+}
+
 void WebContentsImpl::DidRedirectProvisionalLoad(
     RenderFrameHostImpl* render_frame_host,
     const GURL& validated_target_url) {
@@ -2685,8 +2693,9 @@ void WebContentsImpl::OnOpenColorChooser(
     int color_chooser_id,
     SkColor color,
     const std::vector<ColorSuggestion>& suggestions) {
-  ColorChooser* new_color_chooser =
-      delegate_->OpenColorChooser(this, color, suggestions);
+  ColorChooser* new_color_chooser = delegate_ ?
+      delegate_->OpenColorChooser(this, color, suggestions) :
+      NULL;
   if (!new_color_chooser)
     return;
   if (color_chooser_info_.get())
@@ -3580,7 +3589,7 @@ void WebContentsImpl::RendererUnresponsive(RenderViewHost* rvh,
     // close. Otherwise, pretend the unload listeners have all fired and close
     // the tab.
     bool close = true;
-    if (is_during_beforeunload) {
+    if (is_during_beforeunload && delegate_) {
       delegate_->BeforeUnloadFired(this, true, &close);
     }
     if (close)

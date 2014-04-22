@@ -10,4 +10,8 @@ bool NavigatorDelegate::CanOverscrollContent() {
   return false;
 }
 
+bool NavigatorDelegate::ShouldPreserveAbortedURLs() {
+  return false;
+}
+
 }  // namespace content

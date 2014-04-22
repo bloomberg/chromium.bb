@@ -428,6 +428,7 @@ class Browser : public TabStripModelObserver,
 
   // Overridden from content::WebContentsDelegate:
   virtual bool CanOverscrollContent() const OVERRIDE;
+  virtual bool ShouldPreserveAbortedURLs(content::WebContents* source) OVERRIDE;
   virtual bool PreHandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event,

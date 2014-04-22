@@ -25,6 +25,7 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_backend.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
@@ -466,6 +467,50 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_ThirtyFourTabs) {
     EXPECT_GE(CountRenderProcessHosts(), kExpectedProcessCount);
   } else {
     EXPECT_LT(CountRenderProcessHosts(), kExpectedProcessCount);
+  }
+}
+
+// Test that a browser-initiated navigation to an aborted URL load leaves around
+// a pending entry if we start from the NTP but not from a normal page.
+// See http://crbug.com/355537.
+IN_PROC_BROWSER_TEST_F(BrowserTest, ClearPendingOnFailUnlessNTP) {
+  ASSERT_TRUE(test_server()->Start());
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  GURL ntp_url(chrome::GetNewTabPageURL(browser()->profile()));
+  ui_test_utils::NavigateToURL(browser(), ntp_url);
+
+  // Navigate to a 204 URL (aborts with no content) on the NTP and make sure it
+  // sticks around so that the user can edit it.
+  GURL abort_url(test_server()->GetURL("nocontent"));
+  {
+    content::WindowedNotificationObserver stop_observer(
+        content::NOTIFICATION_LOAD_STOP,
+        content::Source<NavigationController>(
+            &web_contents->GetController()));
+    browser()->OpenURL(OpenURLParams(abort_url, Referrer(), CURRENT_TAB,
+                                     content::PAGE_TRANSITION_TYPED, false));
+    stop_observer.Wait();
+    EXPECT_TRUE(web_contents->GetController().GetPendingEntry());
+    EXPECT_EQ(abort_url, web_contents->GetVisibleURL());
+  }
+
+  // Navigate to a real URL.
+  GURL real_url(test_server()->GetURL("title1.html"));
+  ui_test_utils::NavigateToURL(browser(), real_url);
+  EXPECT_EQ(real_url, web_contents->GetVisibleURL());
+
+  // Now navigating to a 204 URL should clear the pending entry.
+  {
+    content::WindowedNotificationObserver stop_observer(
+        content::NOTIFICATION_LOAD_STOP,
+        content::Source<NavigationController>(
+            &web_contents->GetController()));
+    browser()->OpenURL(OpenURLParams(abort_url, Referrer(), CURRENT_TAB,
+                                     content::PAGE_TRANSITION_TYPED, false));
+    stop_observer.Wait();
+    EXPECT_FALSE(web_contents->GetController().GetPendingEntry());
+    EXPECT_EQ(real_url, web_contents->GetVisibleURL());
   }
 }
 
