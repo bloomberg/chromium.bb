@@ -8,7 +8,7 @@
 Example usage:
 $ tools/perf/run_measurement --browser=release \
     --output-format=csv --output=/path/to/loading_measurement_output.csv \
-    loading_measurement tools/perf/page_sets/top_1m.json
+    loading_measurement tools/perf/page_sets/top_1m.py
 $ tools/perf/measurements/loading_measurement_analyzer.py \
     --num-slowest-urls=100 --rank-csv-file=/path/to/top-1m.csv \
     /path/to/loading_measurement_output.csv

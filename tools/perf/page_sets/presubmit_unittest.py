@@ -124,16 +124,6 @@ class PresubmitTest(unittest.TestCase):
     results = self._CheckUpload([], ['/path/to/deleted.wpr.sha1'])
     self.assertResultCount(results, 0, 0)
 
-  def testNewJsonPageSetError(self):
-    results = self._CheckUpload([], [],
-                                ['/data/to/page_sets/new_page_set.json'])
-    self.assertResultCount(results, 1, 0)
-
-  def testNoNewJsonPageSetError(self):
-    results = self._CheckUpload([], [],
-                                ['/path/page_sets/data/new_page_set.json'])
-    self.assertResultCount(results, 0, 0)
-
   def testIgnoreNonHashes(self):
     results = self._CheckUpload(['/path/to/irrelevant.py'])
     self.assertResultCount(results, 0, 0)
