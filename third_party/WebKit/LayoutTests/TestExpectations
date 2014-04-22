@@ -1083,7 +1083,6 @@ crbug.com/364250 [ Debug ] virtual/threaded/animations/interpolation/webkit-tran
 # Failing since chrome r264636. Should have their scrollbars removed.
 crbug.com/364946 [ Mac ] virtual/deferred/fast/images/exif-orientation-css.html [ Pass ImageOnlyFailure ]
 crbug.com/364946 [ Mac ] virtual/deferred/fast/images/gray-scale-jpeg-with-color-profile.html [ Pass ImageOnlyFailure ]
-crbug.com/364946 [ Mac ] virtual/gpu/fast/hidpi/image-srcset-png.html [ Pass ImageOnlyFailure ]
 
 # Need rebaseline once all tests are in ForceCompositingMode.
 crbug.com/361729 [ Mac ] virtual/gpu/fast/hidpi/image-srcset-svg-canvas.html [ ImageOnlyFailure ]
