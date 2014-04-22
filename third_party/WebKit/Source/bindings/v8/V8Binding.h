@@ -902,6 +902,7 @@ class V8ExecutionScope {
 public:
     static PassOwnPtr<V8ExecutionScope> create(v8::Isolate*);
     explicit V8ExecutionScope(v8::Isolate*);
+    ~V8ExecutionScope();
 
 private:
     v8::HandleScope m_handleScope;

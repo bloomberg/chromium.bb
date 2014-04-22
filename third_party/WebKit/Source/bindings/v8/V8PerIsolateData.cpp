@@ -61,6 +61,8 @@ V8PerIsolateData::V8PerIsolateData(v8::Isolate* isolate)
 
 V8PerIsolateData::~V8PerIsolateData()
 {
+    if (m_regexScriptState)
+        m_regexScriptState->disposePerContextData();
     if (isMainThread())
         mainThreadPerIsolateData = 0;
 }

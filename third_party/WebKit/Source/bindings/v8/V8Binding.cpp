@@ -677,4 +677,9 @@ V8ExecutionScope::V8ExecutionScope(v8::Isolate* isolate)
 {
 }
 
+V8ExecutionScope::~V8ExecutionScope()
+{
+    m_scriptState->disposePerContextData();
+}
+
 } // namespace WebCore
