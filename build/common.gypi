@@ -495,11 +495,6 @@
       # Enable plug-in installation by default.
       'enable_plugin_installation%': 1,
 
-      # Enable PPAPI and NPAPI by default.
-      # TODO(nileshagrawal): Make this flag enable/disable NPAPI as well
-      # as PPAPI; see crbug.com/162667.
-      'enable_plugins%': 1,
-
       # Specifies whether to use canvas_skia.cc in place of platform
       # specific implementations of gfx::Canvas. Affects text drawing in the
       # Chrome UI.
@@ -720,6 +715,7 @@
           'enable_plugin_installation%': 1,
         }],
 
+        # Whether PPAPI is enabled.
         ['OS=="android" or OS=="ios" or embedded==1', {
           'enable_plugins%': 0,
         }, {
@@ -1363,7 +1359,7 @@
           # TODO(glider): set clang to 1 earlier for ASan and TSan builds so
           # that it takes effect here.
           ['clang==0 and asan==0 and lsan==0 and tsan==0 and msan==0', {
-            'binutils_version%': '<!pymod_do_main(compiler_version assembler)', 
+            'binutils_version%': '<!pymod_do_main(compiler_version assembler)',
           }],
           # On Android we know the binutils version in the toolchain.
           ['OS=="android"', {
