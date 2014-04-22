@@ -347,6 +347,10 @@ _COPY_PATHS = (
        exe=True,
        cond=C.StagingFlagSet(_CHROME_INTERNAL_FLAG),
        optional=True),
+  # Set as optional for backwards compatibility.
+  Path('libexif.so',
+       exe=True,
+       optional=True),
   Path('libffmpegsumo.so',
        exe=True),
   Path('libpdf.so',
