@@ -202,6 +202,9 @@ class TestingProfile : public Profile {
   // Blocks until TopSites finishes loading.
   void BlockUntilTopSitesLoaded();
 
+  // Allow setting a profile as Guest after-the-fact to simplify some tests.
+  void SetGuestSession(bool guest);
+
   TestingPrefServiceSyncable* GetTestingPrefService();
 
   // content::BrowserContext

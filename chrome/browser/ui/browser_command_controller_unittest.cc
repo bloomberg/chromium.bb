@@ -18,6 +18,7 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -425,6 +426,14 @@ TEST_F(BrowserCommandControllerFullscreenTest,
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_ABOUT));
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_SHOW_APP_MENU));
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FULLSCREEN));
+
+  // Guest Profiles disallow some options.
+  TestingProfile* testprofile = browser()->profile()->AsTestingProfile();
+  EXPECT_TRUE(testprofile);
+  testprofile->SetGuestSession(true);
+
+  browser()->command_controller()->FullscreenStateChanged();
+  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_OPTIONS));
 }
 
 TEST_F(BrowserCommandControllerTest, IncognitoModeOnSigninAllowedPrefChange) {

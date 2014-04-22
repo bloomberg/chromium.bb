@@ -553,6 +553,10 @@ void TestingProfile::BlockUntilTopSitesLoaded() {
   top_sites_loaded_observer.Wait();
 }
 
+void TestingProfile::SetGuestSession(bool guest) {
+  guest_session_ = guest;
+}
+
 base::FilePath TestingProfile::GetPath() const {
   return profile_path_;
 }
