@@ -669,7 +669,7 @@ static void AppendQuadsToFillScreen(
                  visible_screen_space_rect,
                  screen_background_color,
                  false);
-    quad_culler.MaybeAppend(quad.PassAs<DrawQuad>());
+    quad_culler.Append(quad.PassAs<DrawQuad>());
   }
   for (Region::Iterator fill_rects(overhang_region);
        fill_rects.has_rect();
@@ -697,7 +697,7 @@ static void AppendQuadsToFillScreen(
         screen_background_color,
         vertex_opacity,
         false);
-    quad_culler.MaybeAppend(tex_quad.PassAs<DrawQuad>());
+    quad_culler.Append(tex_quad.PassAs<DrawQuad>());
   }
 }
 
