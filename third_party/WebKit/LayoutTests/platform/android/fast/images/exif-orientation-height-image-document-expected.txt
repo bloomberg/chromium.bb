@@ -3,5 +3,4 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (0,0) size 800x600
-layer at (381,0) size 38x600
-  RenderImage {IMG} at (381,0) size 38x600
+      RenderImage {IMG} at (0,0) size 38x600
