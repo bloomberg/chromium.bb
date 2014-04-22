@@ -192,12 +192,30 @@ void RenderSVGRoot::layout()
 
     m_overflow.clear();
     addVisualEffectOverflow();
+
+    if (!shouldApplyViewportClip()) {
+        FloatRect contentRepaintRect = repaintRectInLocalCoordinates();
+        contentRepaintRect = m_localToBorderBoxTransform.mapRect(contentRepaintRect);
+        addVisualOverflow(enclosingLayoutRect(contentRepaintRect));
+    }
+
     updateLayerTransform();
     m_hasBoxDecorations = isDocumentElement() ? calculateHasBoxDecorations() : hasBoxDecorations();
     invalidateBackgroundObscurationStatus();
 
     repainter.repaintAfterLayout();
     clearNeedsLayout();
+}
+
+bool RenderSVGRoot::shouldApplyViewportClip() const
+{
+    // the outermost svg is clipped if auto, and svg document roots are always clipped
+    // When the svg is stand-alone (isDocumentElement() == true) the viewport clipping should always
+    // be applied, noting that the window scrollbars should be hidden if overflow=hidden.
+    return style()->overflowX() == OHIDDEN
+        || style()->overflowX() == OAUTO
+        || style()->overflowX() == OSCROLL
+        || this->isDocumentElement();
 }
 
 void RenderSVGRoot::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
@@ -228,8 +246,9 @@ void RenderSVGRoot::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paint
     PaintInfo childPaintInfo(paintInfo);
     childPaintInfo.context->save();
 
-    // Apply initial viewport clip - not affected by overflow handling
-    childPaintInfo.context->clip(pixelSnappedIntRect(overflowClipRect(paintOffset)));
+    // Apply initial viewport clip
+    if (shouldApplyViewportClip())
+        childPaintInfo.context->clip(pixelSnappedIntRect(overflowClipRect(paintOffset)));
 
     // Convert from container offsets (html renderers) to a relative transform (svg renderers).
     // Transform from our paint container's coordinate system to our local coords.
@@ -345,7 +364,8 @@ LayoutRect RenderSVGRoot::clippedOverflowRectForRepaint(const RenderLayerModelOb
     FloatRect contentRepaintRect = repaintRectInLocalCoordinates();
     contentRepaintRect = m_localToBorderBoxTransform.mapRect(contentRepaintRect);
 
-    // Apply initial viewport clip - not affected by overflow settings
+    // Apply initial viewport clip, overflow:visible content is added to visualOverflow
+    // but the most common case is that overflow is hidden, so always intersect.
     contentRepaintRect.intersect(pixelSnappedBorderBoxRect());
 
     LayoutRect repaintRect = enclosingLayoutRect(contentRepaintRect);
@@ -369,8 +389,9 @@ void RenderSVGRoot::computeFloatRectForRepaint(const RenderLayerModelObject* rep
     // and then call RenderBox's method to handle all the normal CSS Box model bits
     repaintRect = m_localToBorderBoxTransform.mapRect(repaintRect);
 
-    // Apply initial viewport clip - not affected by overflow settings
-    repaintRect.intersect(pixelSnappedBorderBoxRect());
+    // Apply initial viewport clip
+    if (shouldApplyViewportClip())
+        repaintRect.intersect(pixelSnappedBorderBoxRect());
 
     LayoutRect rect = enclosingIntRect(repaintRect);
     RenderReplaced::computeRectForRepaint(repaintContainer, rect, fixed);

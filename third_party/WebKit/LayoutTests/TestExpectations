@@ -1077,6 +1077,7 @@ crbug.com/362501 [ Mac ] svg/text/obb-paintserver.html [ ImageOnlyFailure Crash 
 crbug.com/362503 http/tests/xmlhttprequest/xmlhttprequest-responseXML-exception.html [ Pass Timeout ]
 
 crbug.com/363025 virtual/serviceworker/http/tests/serviceworker/state.html [ Failure Pass ]
+
 crbug.com/364250 [ Debug ] virtual/threaded/animations/interpolation/webkit-transform-interpolation.html [ Pass Crash Timeout ]
 
 # Failing since chrome r264636
@@ -1106,3 +1107,9 @@ crbug.com/308992 svg/as-object/sizing/svg-in-object-placeholder-height-percentag
 
 # Expectations changes due to switiching to In-renderer Shared Worker.
 crbug.com/327256 fast/workers/shared-worker-lifecycle.html [ Failure Pass ]
+
+crbug.com/231577 svg/overflow/overflow-on-outermost-svg-element-in-xhtml-visible.xhtml [ NeedsRebaseline ]
+crbug.com/231577 svg/W3C-SVG-1.1-SE/painting-marker-05-f.svg [ NeedsRebaseline ]
+crbug.com/231577 svg/W3C-SVG-1.1-SE/painting-marker-06-f.svg [ NeedsRebaseline ]
+crbug.com/231577 svg/overflow/overflow-on-outermost-svg-element-ignore-attribute-1.svg [ NeedsRebaseline ]
+crbug.com/231577 svg/overflow/overflow-on-outermost-svg-element-ignore-attribute-3.svg [ NeedsRebaseline ]

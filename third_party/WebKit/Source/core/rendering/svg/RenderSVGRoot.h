@@ -106,6 +106,7 @@ private:
     virtual bool canBeSelectionLeaf() const OVERRIDE { return false; }
     virtual bool canHaveChildren() const OVERRIDE { return true; }
 
+    bool shouldApplyViewportClip() const;
     void updateCachedBoundaries();
     void buildLocalToBorderBoxTransform();
 

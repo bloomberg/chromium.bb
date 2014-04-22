@@ -407,27 +407,6 @@ void StyleAdjuster::adjustOverflow(RenderStyle* style, Element* element)
         style->setOverflowX(OVISIBLE);
         style->setOverflowY(OVISIBLE);
     }
-
-    // Spec: http://www.w3.org/TR/SVG/masking.html#OverflowProperty
-    if (element && element->isSVGElement()) {
-        if (style->overflowY() == OSCROLL)
-            style->setOverflowY(OHIDDEN);
-        else if (style->overflowY() == OAUTO)
-            style->setOverflowY(OVISIBLE);
-
-        if (style->overflowX() == OSCROLL)
-            style->setOverflowX(OHIDDEN);
-        else if (style->overflowX() == OAUTO)
-            style->setOverflowX(OVISIBLE);
-
-        if (style->overflowX() == style->overflowY())
-            return;
-
-        if (style->overflowX() != OVISIBLE)
-            style->setOverflowX(OVISIBLE);
-        else
-            style->setOverflowY(OVISIBLE);
-    }
 }
 
 void StyleAdjuster::adjustStyleForDisplay(RenderStyle* style, RenderStyle* parentStyle)
