@@ -131,6 +131,8 @@ uint32_t X11WholeScreenMoveLoop::DispatchEvent(const ui::PlatformEvent& event) {
 
 bool X11WholeScreenMoveLoop::RunMoveLoop(aura::Window* source,
                                          gfx::NativeCursor cursor) {
+  DCHECK(!in_move_loop_);  // Can only handle one nested loop at a time.
+
   // Start a capture on the host, so that it continues to receive events during
   // the drag. This may be second time we are capturing the mouse events - the
   // first being when a mouse is first pressed. That first capture needs to be
@@ -140,23 +142,21 @@ bool X11WholeScreenMoveLoop::RunMoveLoop(aura::Window* source,
   {
     ScopedCapturer capturer(source->GetHost());
 
-    DCHECK(!in_move_loop_);  // Can only handle one nested loop at a time.
-    in_move_loop_ = true;
-
-    XDisplay* display = gfx::GetXDisplay();
-
-    grab_input_window_ = CreateDragInputWindow(display);
-    if (!drag_image_.isNull() && CheckIfIconValid())
-      CreateDragImageWindow();
-    ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
+    grab_input_window_ = CreateDragInputWindow(gfx::GetXDisplay());
     // Releasing ScopedCapturer ensures that any other instance of
     // X11ScopedCapture will not prematurely release grab that will be acquired
     // below.
   }
   // TODO(varkha): Consider integrating GrabPointerAndKeyboard with
   // ScopedCapturer to avoid possibility of logically keeping multiple grabs.
-  if (!GrabPointerAndKeyboard(cursor))
+  if (!GrabPointerAndKeyboard(cursor)) {
+    XDestroyWindow(gfx::GetXDisplay(), grab_input_window_);
     return false;
+  }
+
+  ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
+  if (!drag_image_.isNull() && CheckIfIconValid())
+    CreateDragImageWindow();
 
   // We are handling a mouse drag outside of the aura::RootWindow system. We
   // must manually make aura think that the mouse button is pressed so that we
@@ -167,6 +167,7 @@ bool X11WholeScreenMoveLoop::RunMoveLoop(aura::Window* source,
     should_reset_mouse_flags_ = true;
   }
 
+  in_move_loop_ = true;
   canceled_ = false;
   base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
   base::MessageLoop::ScopedNestableTaskAllower allow_nested(loop);
