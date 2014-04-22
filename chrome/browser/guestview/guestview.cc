@@ -182,18 +182,18 @@ GuestView::~GuestView() {
 
   webcontents_guestview_map.Get().erase(guest_web_contents());
 
-  while (!pending_events_.empty()) {
-    delete pending_events_.front();
-    pending_events_.pop();
-  }
+  pending_events_.clear();
 }
 
 void GuestView::DispatchEvent(Event* event) {
-  if (!in_extension())
-      return;
+  scoped_ptr<Event> event_ptr(event);
+  if (!in_extension()) {
+    NOTREACHED();
+    return;
+  }
 
   if (!attached()) {
-    pending_events_.push(event);
+    pending_events_.push_back(linked_ptr<Event>(event_ptr.release()));
     return;
   }
 
@@ -209,8 +209,6 @@ void GuestView::DispatchEvent(Event* event) {
       embedder_web_contents_, profile, embedder_extension_id_,
       event->name(), args.Pass(),
       extensions::EventRouter::USER_GESTURE_UNKNOWN, info);
-
-  delete event;
 }
 
 void GuestView::SendQueuedEvents() {
@@ -218,8 +216,8 @@ void GuestView::SendQueuedEvents() {
     return;
 
   while (!pending_events_.empty()) {
-    Event* event = pending_events_.front();
-    pending_events_.pop();
-    DispatchEvent(event);
+    linked_ptr<Event> event_ptr = pending_events_.front();
+    pending_events_.pop_front();
+    DispatchEvent(event_ptr.release());
   }
 }

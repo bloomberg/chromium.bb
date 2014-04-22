@@ -138,7 +138,7 @@ class GuestView : public content::BrowserPluginGuestDelegate {
 
   // This is a queue of Events that are destined to be sent to the embedder once
   // the guest is attached to a particular embedder.
-  std::queue<Event*> pending_events_;
+  std::deque<linked_ptr<Event> > pending_events_;
 
   // This is used to ensure pending tasks will not fire after this object is
   // destroyed.
