@@ -108,23 +108,26 @@ class DummySingleWebContentsDialogManager
     : public web_modal::SingleWebContentsDialogManager {
  public:
   explicit DummySingleWebContentsDialogManager(
+      NativeWebContentsModalDialog dialog,
       web_modal::SingleWebContentsDialogManagerDelegate* delegate)
-      : delegate_(delegate) {}
+      : delegate_(delegate),
+        dialog_(dialog) {}
   virtual ~DummySingleWebContentsDialogManager() {}
 
-  virtual void ManageDialog(NativeWebContentsModalDialog dialog) OVERRIDE {}
-  virtual void ShowDialog(NativeWebContentsModalDialog dialog) OVERRIDE {}
-  virtual void HideDialog(NativeWebContentsModalDialog dialog) OVERRIDE {}
-  virtual void CloseDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
-    delegate_->WillClose(dialog);
+  virtual void Show() OVERRIDE {}
+  virtual void Hide() OVERRIDE {}
+  virtual void Close() OVERRIDE {
+    delegate_->WillClose(dialog_);
   }
-  virtual void FocusDialog(NativeWebContentsModalDialog dialog) OVERRIDE {}
-  virtual void PulseDialog(NativeWebContentsModalDialog dialog) OVERRIDE {}
+  virtual void Focus() OVERRIDE {}
+  virtual void Pulse() OVERRIDE {}
   virtual void HostChanged(
       web_modal::WebContentsModalDialogHost* new_host) OVERRIDE {}
+  virtual NativeWebContentsModalDialog dialog() OVERRIDE { return dialog_; }
 
  private:
   web_modal::SingleWebContentsDialogManagerDelegate* delegate_;
+  NativeWebContentsModalDialog dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(DummySingleWebContentsDialogManager);
 };
@@ -2567,7 +2570,9 @@ TEST_F(TabStripModelTest, TabBlockedState) {
   // DummySingleWebContentsDialogManager doesn't care about the
   // NativeWebContentsModalDialog value, so any dummy value works.
   DummySingleWebContentsDialogManager* native_manager =
-      new DummySingleWebContentsDialogManager(modal_dialog_manager);
+      new DummySingleWebContentsDialogManager(
+          reinterpret_cast<NativeWebContentsModalDialog>(0),
+          modal_dialog_manager);
   modal_dialog_manager->ShowDialogWithManager(
       reinterpret_cast<NativeWebContentsModalDialog>(0),
       scoped_ptr<web_modal::SingleWebContentsDialogManager>(

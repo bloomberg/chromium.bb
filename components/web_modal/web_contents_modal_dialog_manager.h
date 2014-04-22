@@ -29,6 +29,7 @@ class WebContentsModalDialogManager
   void SetDelegate(WebContentsModalDialogManagerDelegate* d);
 
   static SingleWebContentsDialogManager* CreateNativeWebModalManager(
+      NativeWebContentsModalDialog dialog,
       SingleWebContentsDialogManagerDelegate* native_delegate);
 
   // Shows the dialog as a web contents modal dialog. The dialog will notify via

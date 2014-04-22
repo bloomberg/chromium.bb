@@ -36,7 +36,7 @@ void WebContentsModalDialogManager::SetDelegate(
 void WebContentsModalDialogManager::ShowModalDialog(
     NativeWebContentsModalDialog dialog) {
   scoped_ptr<SingleWebContentsDialogManager> mgr(
-      CreateNativeWebModalManager(this));
+      CreateNativeWebModalManager(dialog, this));
   ShowDialogWithManager(dialog, mgr.Pass());
 }
 
@@ -48,12 +48,10 @@ void WebContentsModalDialogManager::ShowDialogWithManager(
     manager->HostChanged(delegate_->GetWebContentsModalDialogHost());
   child_dialogs_.push_back(new DialogState(dialog, manager.Pass()));
 
-  child_dialogs_.back()->manager->ManageDialog(dialog);
-
   if (child_dialogs_.size() == 1) {
     BlockWebContentsInteraction(true);
     if (delegate_ && delegate_->IsWebContentsVisible(web_contents()))
-      child_dialogs_.back()->manager->ShowDialog(dialog);
+      child_dialogs_.back()->manager->Show();
   }
 }
 
@@ -63,7 +61,7 @@ bool WebContentsModalDialogManager::IsDialogActive() const {
 
 void WebContentsModalDialogManager::FocusTopmostDialog() {
   DCHECK(!child_dialogs_.empty());
-  child_dialogs_.front()->manager->FocusDialog(child_dialogs_.front()->dialog);
+  child_dialogs_.front()->manager->Focus();
 }
 
 void WebContentsModalDialogManager::SetCloseOnInterstitialPage(
@@ -92,7 +90,7 @@ void WebContentsModalDialogManager::WillClose(
   child_dialogs_.erase(dlg);
   if (!child_dialogs_.empty() && removed_topmost_dialog &&
       !closing_all_dialogs_) {
-    child_dialogs_.front()->manager->ShowDialog(child_dialogs_.front()->dialog);
+    child_dialogs_.front()->manager->Show();
   }
 
   BlockWebContentsInteraction(!child_dialogs_.empty());
@@ -134,7 +132,7 @@ WebContentsModalDialogManager::WebContentsModalDialogList::iterator
   return i;
 }
 
-// TODO(gbillock): Move this to Views impl within ShowDialog? It would
+// TODO(gbillock): Move this to Views impl within Show()? It would
 // call WebContents* contents = native_delegate_->GetWebContents(); and
 // then set the block state. Advantage: could restrict some of the
 // WCMDM delegate methods, then, and pass them behind the scenes.
@@ -158,8 +156,7 @@ void WebContentsModalDialogManager::CloseAllDialogs() {
 
   // Clear out any dialogs since we are leaving this page entirely.
   while (!child_dialogs_.empty()) {
-    child_dialogs_.front()->manager->CloseDialog(
-        child_dialogs_.front()->dialog);
+    child_dialogs_.front()->manager->Close();
   }
 
   closing_all_dialogs_ = false;
@@ -177,19 +174,18 @@ void WebContentsModalDialogManager::DidNavigateMainFrame(
 
 void WebContentsModalDialogManager::DidGetIgnoredUIEvent() {
   if (!child_dialogs_.empty()) {
-    child_dialogs_.front()->manager->FocusDialog(
-        child_dialogs_.front()->dialog);
+    child_dialogs_.front()->manager->Focus();
   }
 }
 
 void WebContentsModalDialogManager::WasShown() {
   if (!child_dialogs_.empty())
-    child_dialogs_.front()->manager->ShowDialog(child_dialogs_.front()->dialog);
+    child_dialogs_.front()->manager->Show();
 }
 
 void WebContentsModalDialogManager::WasHidden() {
   if (!child_dialogs_.empty())
-    child_dialogs_.front()->manager->HideDialog(child_dialogs_.front()->dialog);
+    child_dialogs_.front()->manager->Hide();
 }
 
 void WebContentsModalDialogManager::WebContentsDestroyed(WebContents* tab) {
@@ -207,7 +203,7 @@ void WebContentsModalDialogManager::DidAttachInterstitialPage() {
   for (WebContentsModalDialogList::iterator it = dialogs.begin();
        it != dialogs.end(); ++it) {
     if ((*it)->close_on_interstitial_webui)
-      (*it)->manager->CloseDialog((*it)->dialog);
+      (*it)->manager->Close();
   }
 }
 

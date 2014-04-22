@@ -33,36 +33,39 @@ class SingleWebContentsDialogManagerDelegate {
 };
 
 // Provides an interface for platform-specific UI implementation for the web
-// contents modal dialog.
+// contents modal dialog. Each object will manage a single
+// NativeWebContentsModalDialog during its lifecycle.
+//
+// Implementation classes should accept a NativeWebContentsModalDialog at
+// construction time and register to be notified when the dialog is closing,
+// so that it can notify its delegate (WillClose method).
 class SingleWebContentsDialogManager {
  public:
   virtual ~SingleWebContentsDialogManager() {}
 
-  // Starts management of the modal aspects of the dialog.  This function should
-  // also register to be notified when the dialog is closing, so that it can
-  // notify the manager.
-  virtual void ManageDialog(NativeWebContentsModalDialog dialog) = 0;
-
   // Makes the web contents modal dialog visible. Only one web contents modal
   // dialog is shown at a time per tab.
-  virtual void ShowDialog(NativeWebContentsModalDialog dialog) = 0;
+  virtual void Show() = 0;
 
   // Hides the web contents modal dialog without closing it.
-  virtual void HideDialog(NativeWebContentsModalDialog dialog) = 0;
+  virtual void Hide() = 0;
 
   // Closes the web contents modal dialog.
   // If this method causes a WillClose() call to the delegate, the manager
   // will be deleted at the close of that invocation.
-  virtual void CloseDialog(NativeWebContentsModalDialog dialog) = 0;
+  virtual void Close() = 0;
 
   // Sets focus on the web contents modal dialog.
-  virtual void FocusDialog(NativeWebContentsModalDialog dialog) = 0;
+  virtual void Focus() = 0;
 
   // Runs a pulse animation for the web contents modal dialog.
-  virtual void PulseDialog(NativeWebContentsModalDialog dialog) = 0;
+  virtual void Pulse() = 0;
 
   // Called when the host view for the dialog has changed.
   virtual void HostChanged(WebContentsModalDialogHost* new_host) = 0;
+
+  // Return the dialog under management by this object.
+  virtual NativeWebContentsModalDialog dialog() = 0;
 
  protected:
   SingleWebContentsDialogManager() {}

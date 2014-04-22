@@ -56,6 +56,7 @@ void ConstrainedWindowMac::ShowWebContentsModalDialog() {
 void ConstrainedWindowMac::CloseWebContentsModalDialog() {
   [[ConstrainedWindowSheetController controllerForSheet:sheet_]
       closeSheet:sheet_];
+  // TODO(gbillock): get this object in config, not from a global.
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       WebContentsModalDialogManager::FromWebContents(web_contents_);
 

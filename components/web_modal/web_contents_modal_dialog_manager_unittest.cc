@@ -43,33 +43,37 @@ class TestNativeWebContentsModalDialogManager
     : public SingleWebContentsDialogManager {
  public:
   TestNativeWebContentsModalDialogManager(
+      NativeWebContentsModalDialog dialog,
       SingleWebContentsDialogManagerDelegate* delegate,
       NativeManagerTracker* tracker)
       : delegate_(delegate),
-        tracker_(tracker) {}
-
-  virtual void ManageDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
+        dialog_(dialog),
+        tracker_(tracker) {
     if (tracker_)
       tracker_->SetState(NativeManagerTracker::NOT_SHOWN);
   }
-  virtual void ShowDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
+
+  virtual void Show() OVERRIDE {
     if (tracker_)
       tracker_->SetState(NativeManagerTracker::SHOWN);
   }
-  virtual void HideDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
+  virtual void Hide() OVERRIDE {
     if (tracker_)
       tracker_->SetState(NativeManagerTracker::HIDDEN);
   }
-  virtual void CloseDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
+  virtual void Close() OVERRIDE {
     if (tracker_)
       tracker_->SetState(NativeManagerTracker::CLOSED);
-    delegate_->WillClose(dialog);
+    delegate_->WillClose(dialog_);
   }
-  virtual void FocusDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
+  virtual void Focus() OVERRIDE {
   }
-  virtual void PulseDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
+  virtual void Pulse() OVERRIDE {
   }
   virtual void HostChanged(WebContentsModalDialogHost* new_host) OVERRIDE {
+  }
+  virtual NativeWebContentsModalDialog dialog() OVERRIDE {
+      return dialog_;
   }
 
   void StopTracking() {
@@ -78,6 +82,7 @@ class TestNativeWebContentsModalDialogManager
 
  private:
   SingleWebContentsDialogManagerDelegate* delegate_;
+  NativeWebContentsModalDialog dialog_;
   NativeManagerTracker* tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(TestNativeWebContentsModalDialogManager);
@@ -124,10 +129,13 @@ class WebContentsModalDialogManagerTest
 
 SingleWebContentsDialogManager*
 WebContentsModalDialogManager::CreateNativeWebModalManager(
+    NativeWebContentsModalDialog dialog,
     SingleWebContentsDialogManagerDelegate* native_delegate) {
   NOTREACHED();
-  return new TestNativeWebContentsModalDialogManager(native_delegate,
-                                                     &unused_tracker);
+  return new TestNativeWebContentsModalDialogManager(
+      dialog,
+      native_delegate,
+      &unused_tracker);
 }
 
 // Test that the dialog is shown immediately when the delegate indicates the web
@@ -138,7 +146,7 @@ TEST_F(WebContentsModalDialogManagerTest, WebContentsVisible) {
 
   NativeManagerTracker tracker;
   TestNativeWebContentsModalDialogManager* native_manager =
-      new TestNativeWebContentsModalDialogManager(manager, &tracker);
+      new TestNativeWebContentsModalDialogManager(dialog, manager, &tracker);
   manager->ShowDialogWithManager(dialog,
       scoped_ptr<SingleWebContentsDialogManager>(native_manager).Pass());
 
@@ -160,7 +168,7 @@ TEST_F(WebContentsModalDialogManagerTest, WebContentsNotVisible) {
 
   NativeManagerTracker tracker;
   TestNativeWebContentsModalDialogManager* native_manager =
-      new TestNativeWebContentsModalDialogManager(manager, &tracker);
+      new TestNativeWebContentsModalDialogManager(dialog, manager, &tracker);
   manager->ShowDialogWithManager(dialog,
       scoped_ptr<SingleWebContentsDialogManager>(native_manager).Pass());
 
@@ -182,11 +190,11 @@ TEST_F(WebContentsModalDialogManagerTest, ShowDialogs) {
   NativeManagerTracker tracker2;
   NativeManagerTracker tracker3;
   TestNativeWebContentsModalDialogManager* native_manager1 =
-      new TestNativeWebContentsModalDialogManager(manager, &tracker1);
+      new TestNativeWebContentsModalDialogManager(dialog1, manager, &tracker1);
   TestNativeWebContentsModalDialogManager* native_manager2 =
-      new TestNativeWebContentsModalDialogManager(manager, &tracker2);
+      new TestNativeWebContentsModalDialogManager(dialog2, manager, &tracker2);
   TestNativeWebContentsModalDialogManager* native_manager3 =
-      new TestNativeWebContentsModalDialogManager(manager, &tracker3);
+      new TestNativeWebContentsModalDialogManager(dialog3, manager, &tracker3);
   manager->ShowDialogWithManager(dialog1,
       scoped_ptr<SingleWebContentsDialogManager>(native_manager1).Pass());
   manager->ShowDialogWithManager(dialog2,
@@ -210,7 +218,7 @@ TEST_F(WebContentsModalDialogManagerTest, VisibilityObservation) {
 
   NativeManagerTracker tracker;
   TestNativeWebContentsModalDialogManager* native_manager =
-      new TestNativeWebContentsModalDialogManager(manager, &tracker);
+      new TestNativeWebContentsModalDialogManager(dialog, manager, &tracker);
   manager->ShowDialogWithManager(dialog,
       scoped_ptr<SingleWebContentsDialogManager>(native_manager).Pass());
 
@@ -243,11 +251,11 @@ TEST_F(WebContentsModalDialogManagerTest, InterstitialPage) {
   NativeManagerTracker tracker2;
   NativeManagerTracker tracker3;
   TestNativeWebContentsModalDialogManager* native_manager1 =
-      new TestNativeWebContentsModalDialogManager(manager, &tracker1);
+      new TestNativeWebContentsModalDialogManager(dialog1, manager, &tracker1);
   TestNativeWebContentsModalDialogManager* native_manager2 =
-      new TestNativeWebContentsModalDialogManager(manager, &tracker2);
+      new TestNativeWebContentsModalDialogManager(dialog2, manager, &tracker2);
   TestNativeWebContentsModalDialogManager* native_manager3 =
-      new TestNativeWebContentsModalDialogManager(manager, &tracker3);
+      new TestNativeWebContentsModalDialogManager(dialog3, manager, &tracker3);
   manager->ShowDialogWithManager(dialog1,
       scoped_ptr<SingleWebContentsDialogManager>(native_manager1).Pass());
   manager->ShowDialogWithManager(dialog2,
@@ -291,13 +299,13 @@ TEST_F(WebContentsModalDialogManagerTest, CloseDialogs) {
   NativeManagerTracker tracker3;
   NativeManagerTracker tracker4;
   TestNativeWebContentsModalDialogManager* native_manager1 =
-      new TestNativeWebContentsModalDialogManager(manager, &tracker1);
+      new TestNativeWebContentsModalDialogManager(dialog1, manager, &tracker1);
   TestNativeWebContentsModalDialogManager* native_manager2 =
-      new TestNativeWebContentsModalDialogManager(manager, &tracker2);
+      new TestNativeWebContentsModalDialogManager(dialog2, manager, &tracker2);
   TestNativeWebContentsModalDialogManager* native_manager3 =
-      new TestNativeWebContentsModalDialogManager(manager, &tracker3);
+      new TestNativeWebContentsModalDialogManager(dialog3, manager, &tracker3);
   TestNativeWebContentsModalDialogManager* native_manager4 =
-      new TestNativeWebContentsModalDialogManager(manager, &tracker4);
+      new TestNativeWebContentsModalDialogManager(dialog4, manager, &tracker4);
   manager->ShowDialogWithManager(dialog1,
       scoped_ptr<SingleWebContentsDialogManager>(native_manager1).Pass());
   manager->ShowDialogWithManager(dialog2,
@@ -307,7 +315,7 @@ TEST_F(WebContentsModalDialogManagerTest, CloseDialogs) {
   manager->ShowDialogWithManager(dialog4,
       scoped_ptr<SingleWebContentsDialogManager>(native_manager4).Pass());
 
-  native_manager1->CloseDialog(dialog1);
+  native_manager1->Close();
 
   EXPECT_TRUE(manager->IsDialogActive());
   EXPECT_TRUE(delegate->web_contents_blocked());
@@ -316,7 +324,7 @@ TEST_F(WebContentsModalDialogManagerTest, CloseDialogs) {
   EXPECT_EQ(NativeManagerTracker::NOT_SHOWN, tracker3.state_);
   EXPECT_EQ(NativeManagerTracker::NOT_SHOWN, tracker4.state_);
 
-  native_manager3->CloseDialog(dialog3);
+  native_manager3->Close();
 
   EXPECT_TRUE(manager->IsDialogActive());
   EXPECT_TRUE(delegate->web_contents_blocked());
@@ -326,7 +334,7 @@ TEST_F(WebContentsModalDialogManagerTest, CloseDialogs) {
   EXPECT_EQ(NativeManagerTracker::NOT_SHOWN, tracker4.state_);
   EXPECT_FALSE(tracker3.was_shown_);
 
-  native_manager2->CloseDialog(dialog2);
+  native_manager2->Close();
 
   EXPECT_TRUE(manager->IsDialogActive());
   EXPECT_TRUE(delegate->web_contents_blocked());
@@ -336,7 +344,7 @@ TEST_F(WebContentsModalDialogManagerTest, CloseDialogs) {
   EXPECT_EQ(NativeManagerTracker::SHOWN, tracker4.state_);
   EXPECT_FALSE(tracker3.was_shown_);
 
-  native_manager4->CloseDialog(dialog4);
+  native_manager4->Close();
 
   EXPECT_FALSE(manager->IsDialogActive());
   EXPECT_FALSE(delegate->web_contents_blocked());
@@ -356,9 +364,11 @@ TEST_F(WebContentsModalDialogManagerTest, CloseAllDialogs) {
   NativeManagerTracker trackers[kWindowCount];
   TestNativeWebContentsModalDialogManager* native_managers[kWindowCount];
   for (int i = 0; i < kWindowCount; i++) {
+    const NativeWebContentsModalDialog dialog = MakeFakeDialog();
     native_managers[i] =
-        new TestNativeWebContentsModalDialogManager(manager, &(trackers[i]));
-    manager->ShowDialogWithManager(MakeFakeDialog(),
+        new TestNativeWebContentsModalDialogManager(
+            dialog, manager, &(trackers[i]));
+    manager->ShowDialogWithManager(dialog,
     scoped_ptr<SingleWebContentsDialogManager>(
         native_managers[i]).Pass());
   }

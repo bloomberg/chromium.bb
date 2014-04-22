@@ -49,9 +49,12 @@ class NativeWebContentsModalDialogManagerViews
       public views::WidgetObserver {
  public:
   NativeWebContentsModalDialogManagerViews(
+      NativeWebContentsModalDialog dialog,
       SingleWebContentsDialogManagerDelegate* native_delegate)
       : native_delegate_(native_delegate),
+        dialog_(dialog),
         host_(NULL) {
+    ManageDialog();
   }
 
   virtual ~NativeWebContentsModalDialogManagerViews() {
@@ -65,9 +68,10 @@ class NativeWebContentsModalDialogManagerViews
     }
   }
 
-  // SingleWebContentsDialogManager overrides
-  virtual void ManageDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
-    views::Widget* widget = GetWidget(dialog);
+  // Sets up this object to manage the dialog_. Registers for closing events
+  // in order to notify the delegate.
+  virtual void ManageDialog() {
+    views::Widget* widget = GetWidget(dialog());
     widget->AddObserver(this);
     observed_widgets_.insert(widget);
     widget->set_movement_disabled(true);
@@ -97,8 +101,9 @@ class NativeWebContentsModalDialogManagerViews
 #endif
   }
 
-  virtual void ShowDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
-    views::Widget* widget = GetWidget(dialog);
+  // SingleWebContentsDialogManager overrides
+  virtual void Show() OVERRIDE {
+    views::Widget* widget = GetWidget(dialog());
 #if defined(USE_AURA)
     scoped_ptr<wm::SuspendChildWindowVisibilityAnimations> suspend;
     if (shown_widgets_.find(widget) != shown_widgets_.end()) {
@@ -110,7 +115,7 @@ class NativeWebContentsModalDialogManagerViews
     if (host_)
       UpdateWebContentsModalDialogPosition(widget, host_);
     widget->Show();
-    FocusDialog(dialog);
+    Focus();
 
 #if defined(USE_AURA)
     // TODO(pkotwicz): Control the z-order of the constrained dialog via
@@ -120,8 +125,8 @@ class NativeWebContentsModalDialogManagerViews
 #endif
   }
 
-  virtual void HideDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
-    views::Widget* widget = GetWidget(dialog);
+  virtual void Hide() OVERRIDE {
+    views::Widget* widget = GetWidget(dialog());
 #if defined(USE_AURA)
     scoped_ptr<wm::SuspendChildWindowVisibilityAnimations> suspend;
     suspend.reset(new wm::SuspendChildWindowVisibilityAnimations(
@@ -130,12 +135,12 @@ class NativeWebContentsModalDialogManagerViews
     widget->Hide();
   }
 
-  virtual void CloseDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
-    GetWidget(dialog)->Close();
+  virtual void Close() OVERRIDE {
+    GetWidget(dialog())->Close();
   }
 
-  virtual void FocusDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
-    views::Widget* widget = GetWidget(dialog);
+  virtual void Focus() OVERRIDE {
+    views::Widget* widget = GetWidget(dialog());
     if (widget->widget_delegate() &&
         widget->widget_delegate()->GetInitiallyFocusedView())
       widget->widget_delegate()->GetInitiallyFocusedView()->RequestFocus();
@@ -146,7 +151,7 @@ class NativeWebContentsModalDialogManagerViews
 #endif
   }
 
-  virtual void PulseDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
+  virtual void Pulse() OVERRIDE {
   }
 
   // WebContentsModalDialogHostObserver overrides
@@ -205,6 +210,10 @@ class NativeWebContentsModalDialogManagerViews
     }
   }
 
+  virtual NativeWebContentsModalDialog dialog() OVERRIDE {
+    return dialog_;
+  }
+
  private:
   static views::Widget* GetWidget(NativeWebContentsModalDialog dialog) {
     views::Widget* widget = views::Widget::GetWidgetForNativeWindow(dialog);
@@ -231,6 +240,7 @@ class NativeWebContentsModalDialogManagerViews
   }
 
   SingleWebContentsDialogManagerDelegate* native_delegate_;
+  NativeWebContentsModalDialog dialog_;
   WebContentsModalDialogHost* host_;
   std::set<views::Widget*> observed_widgets_;
   std::set<views::Widget*> shown_widgets_;
@@ -244,8 +254,9 @@ namespace web_modal {
 
 SingleWebContentsDialogManager* WebContentsModalDialogManager::
 CreateNativeWebModalManager(
+    NativeWebContentsModalDialog dialog,
     SingleWebContentsDialogManagerDelegate* native_delegate) {
-  return new NativeWebContentsModalDialogManagerViews(native_delegate);
+  return new NativeWebContentsModalDialogManagerViews(dialog, native_delegate);
 }
 
 }  // namespace web_modal
