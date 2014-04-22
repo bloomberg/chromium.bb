@@ -631,6 +631,7 @@ cr.define('cr.ui', function() {
         }
       }
       this.cachedItems_ = newCachedItems;
+      this.pinnedItem_ = null;
 
       var newCachedItemHeights = {};
       for (var index in this.cachedItemHeights_) {

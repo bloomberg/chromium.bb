@@ -59,6 +59,18 @@ IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, EventTargetTest) {
   RunTest(base::FilePath(FILE_PATH_LITERAL("event_target_test.html")));
 }
 
+IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, ListTest) {
+  AddLibrary(IDR_WEBUI_JS_CR);
+  AddLibrary(IDR_WEBUI_JS_CR_EVENT_TARGET);
+  AddLibrary(IDR_WEBUI_JS_CR_UI);
+  AddLibrary(IDR_WEBUI_JS_CR_UI_ARRAY_DATA_MODEL);
+  AddLibrary(IDR_WEBUI_JS_CR_UI_LIST_ITEM);
+  AddLibrary(IDR_WEBUI_JS_CR_UI_LIST_SELECTION_CONTROLLER);
+  AddLibrary(IDR_WEBUI_JS_CR_UI_LIST_SELECTION_MODEL);
+  AddLibrary(IDR_WEBUI_JS_CR_UI_LIST);
+  RunTest(base::FilePath(FILE_PATH_LITERAL("list_test.html")));
+}
+
 IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, GridTest) {
   AddLibrary(IDR_WEBUI_JS_CR);
   AddLibrary(IDR_WEBUI_JS_CR_EVENT_TARGET);
