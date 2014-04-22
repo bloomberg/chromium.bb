@@ -491,8 +491,7 @@ class StatsManager(object):
         continue
       for a in b.metadata_dict['cl_actions']:
         actions.append(cbuildbot_metadata.CLActionWithBuildTuple(*a,
-            bot_type=self.BOT_TYPE, bot_id=self.config_target,
-            build_number=b.build_number))
+            bot_type=self.BOT_TYPE, build=b))
 
     return actions
 
@@ -761,6 +760,55 @@ class CLStats(StatsManager):
     self.pre_cq_stats.Gather(start_date,
                              sort_by_build_number=sort_by_build_number)
 
+  def GetSubmittedPatchNumber(self, actions):
+    """Get the patch number of the final patchset submitted.
+
+    This function only makes sense for patches that were submitted.
+
+    Args:
+      actions: A list of actions for a single change.
+    """
+    submit = [a for a in actions if a.action == constants.CL_ACTION_SUBMITTED]
+    assert len(submit) == 1, \
+        'Expected change to be submitted exactly once, got %r' % submit
+    return submit[-1].change['patch_number']
+
+  def SubmittedAfterNewPatch(self, submitted_changes):
+    """Find CLs that were rejected, then a subsequent patch was submitted.
+
+    These are good candidates for bad CLs, and demonstrate that the builder
+    was correctly rejecting a bad patch.
+
+    Args:
+      submitted_changes: A dict mapping submitted CLs to a list of associated
+                         actions.
+
+    Yields:
+      change: The change that was rejected.
+      actions: A list of actions applicable to the CL.
+      a: The reject action that kicked out the CL.
+    """
+    for change, actions in submitted_changes.iteritems():
+      submitted_patch_number = self.GetSubmittedPatchNumber(actions)
+      for a in actions:
+        if a.action == constants.CL_ACTION_KICKED_OUT:
+          if a.change['patch_number'] != submitted_patch_number:
+            yield change, actions, a
+
+  def _PrintCounts(self, reasons, fmt):
+    """Print a sorted list of reasons in descending order of frequency.
+
+    Args:
+      reasons: A key/value mapping mapping the reason to the count.
+      fmt: A format string for our log message, containing %(cnt)d
+        and %(reason)s.
+    """
+    d = reasons
+    for cnt, reason in sorted(((v, k) for (k, v) in d.items()), reverse=True):
+      logging.info(fmt, dict(cnt=cnt, reason=reason))
+    if not d:
+      logging.info('  None')
+
   def Summarize(self):
     """Process, print, and return a summary of cl action statistics.
 
@@ -787,16 +835,18 @@ class CLStats(StatsManager):
       if reason != 'None':
         build_reason_counts[reason] = build_reason_counts.get(reason, 0) + 1
 
-    patch_reason_counts = {}
     rejected_then_submitted = {}
     for k, v in self.per_patch_actions.iteritems():
       if (any(a.action == constants.CL_ACTION_KICKED_OUT for a in v) and
           any(a.action == constants.CL_ACTION_SUBMITTED for a in v)):
         rejected_then_submitted[k] = v
-        for a in v:
-          if a.action == constants.CL_ACTION_KICKED_OUT and a.bot_type == CQ:
-            reason = self.reasons[a.build_number]
-            patch_reason_counts[reason] = patch_reason_counts.get(reason, 0) + 1
+
+    patch_reason_counts = {}
+    for k, v in rejected_then_submitted.iteritems():
+      for a in v:
+        if a.action == constants.CL_ACTION_KICKED_OUT and a.bot_type == CQ:
+          reason = self.reasons[a.build.build_number]
+          patch_reason_counts[reason] = patch_reason_counts.get(reason, 0) + 1
 
     submitted_changes = {k : v for k, v, in self.per_cl_actions.iteritems()
                          if any(a.action==constants.CL_ACTION_SUBMITTED
@@ -820,19 +870,9 @@ class CLStats(StatsManager):
     # These are good candidates for bad CLs. We track them in a dict, setting
     # submitted_after_new_patch[bot_type][patch] = actions for each bad patch.
     submitted_after_new_patch = {}
-    for patch, actions in submitted_changes.iteritems():
-      # The last action taken on a CL should be submit.
-      if actions[-1].action != constants.CL_ACTION_SUBMITTED:
-        logging.warn('CL %s was submitted but submit was not the final '
-                     'action.', patch)
-        continue
-      submitted_patch_number = actions[-1].change['patch_number']
-      for a in actions:
-        if (a.action == constants.CL_ACTION_KICKED_OUT and
-            a.change['patch_number'] != submitted_patch_number):
-          d = submitted_after_new_patch.setdefault(a.bot_type, {})
-          d[patch] = actions
-          break
+    for change, actions, a in self.SubmittedAfterNewPatch(submitted_changes):
+      d = submitted_after_new_patch.setdefault(a.bot_type, {})
+      d[change] = actions
 
     # Sort the candidate bad CLs in order of submit time.
     bad_cl_candidates = {}
@@ -853,7 +893,7 @@ class CLStats(StatsManager):
                'good_patch_rejection_breakdown' :
                    good_patch_rejection_breakdown,
                'median_handling_time' : numpy.median(patch_handle_times),
-               'bad_cl_candidates' : bad_cl_candidates
+               'bad_cl_candidates' : bad_cl_candidates,
                }
 
     logging.info('      Total CL actions: %d.', summary['total_cl_actions'])
@@ -883,12 +923,11 @@ class CLStats(StatsManager):
                      if k.internal else constants.EXTERNAL_CHANGE_PREFIX,
                      k.gerrit_number)
 
-    def PrintCounts(d, desc):
-      for cnt, reason in sorted(((v, k) for (k, v) in d.items()), reverse=True):
-        logging.info('%d %s %s', cnt, desc, reason)
-
-    PrintCounts(patch_reason_counts, 'good patches were rejected due to:')
-    PrintCounts(build_reason_counts, 'builds failed due to:')
+    logging.info('Reasons why good patches were rejected:')
+    fmt = '  %(cnt)d failures in %(reason)s'
+    self._PrintCounts(patch_reason_counts, fmt)
+    logging.info('Reasons why builds failed:')
+    self._PrintCounts(build_reason_counts, '  %(cnt)d failures in %(reason)s')
 
     super_summary.update(summary)
     return super_summary

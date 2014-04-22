@@ -484,7 +484,7 @@ class BuildData(object):
 
   @property
   def status(self):
-    return self['status']['status']
+    return self.get('status', {}).get('status', None)
 
   @classmethod
   def _ToDatetime(cls, time_str):
@@ -734,5 +734,4 @@ CLActionTuple = collections.namedtuple('CLActionTuple',
                                        'change action timestamp reason')
 CLActionWithBuildTuple = collections.namedtuple('CLActionWithBuildTuple',
                                                 'change action timestamp '
-                                                'reason bot_type bot_id '
-                                                'build_number')
+                                                'reason bot_type build')
