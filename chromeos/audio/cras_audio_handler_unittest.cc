@@ -1499,21 +1499,16 @@ TEST_F(CrasAudioHandlerTest, SetInputMute) {
   // Mute the device.
   cras_audio_handler_->SetInputMute(true);
 
-  // Verify the input is muted, OnInputMuteChanged event is fired,
-  // and mute value is saved in the preferences.
+  // Verify the input is muted, OnInputMuteChanged event is fired.
   EXPECT_TRUE(cras_audio_handler_->IsInputMuted());
   EXPECT_EQ(1, test_observer_->input_mute_changed_count());
-  AudioDevice internal_mic(kInternalMic);
-  EXPECT_TRUE(audio_pref_handler_->GetMuteValue(internal_mic));
 
   // Unmute the device.
   cras_audio_handler_->SetInputMute(false);
 
-  // Verify the input is unmuted, OnInputMuteChanged event is fired,
-  // and mute value is saved in the preferences.
+  // Verify the input is unmuted, OnInputMuteChanged event is fired.
   EXPECT_FALSE(cras_audio_handler_->IsInputMuted());
   EXPECT_EQ(2, test_observer_->input_mute_changed_count());
-  EXPECT_FALSE(audio_pref_handler_->GetMuteValue(internal_mic));
 }
 
 TEST_F(CrasAudioHandlerTest, SetOutputVolumePercent) {
@@ -1584,19 +1579,14 @@ TEST_F(CrasAudioHandlerTest, SetMuteForDevice) {
   EXPECT_EQ(kUSBMic.id, cras_audio_handler_->GetActiveInputNode());
   cras_audio_handler_->SetMuteForDevice(kUSBMic.id, true);
 
-  // Verify the USB Mic is muted and mute state is saved in the preferences.
-  EXPECT_TRUE(cras_audio_handler_->IsOutputMutedForDevice(kUSBMic.id));
-  AudioDevice usb_mic(kUSBMic);
-  EXPECT_TRUE(audio_pref_handler_->GetMuteValue(usb_mic));
+  // Verify the USB Mic is muted.
+  EXPECT_TRUE(cras_audio_handler_->IsInputMutedForDevice(kUSBMic.id));
 
-  // Mute the non-active input device.
+  // Mute the non-active input device should be a no-op, see crbug.com/365050.
   cras_audio_handler_->SetMuteForDevice(kInternalMic.id, true);
 
-  // Verify the internal mic is muted and mute value is saved in the
-  // preferences.
-  EXPECT_TRUE(cras_audio_handler_->IsOutputMutedForDevice(kInternalMic.id));
-  AudioDevice internal_mic(kInternalMic);
-  EXPECT_TRUE(audio_pref_handler_->GetMuteValue(internal_mic));
+  // Verify IsInputMutedForDevice returns false for non-active input device.
+  EXPECT_FALSE(cras_audio_handler_->IsInputMutedForDevice(kInternalMic.id));
 }
 
 TEST_F(CrasAudioHandlerTest, SetVolumeGainPercentForDevice) {
