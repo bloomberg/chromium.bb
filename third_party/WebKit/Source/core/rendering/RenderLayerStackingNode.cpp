@@ -282,7 +282,7 @@ void RenderLayerStackingNode::collectLayers(OwnPtr<Vector<RenderLayerStackingNod
             isNormalFlow = false;
         } else {
             isStacking = isStackingContext();
-            isNormalFlow = shouldBeNormalFlowOnlyIgnoringCompositedScrolling();
+            isNormalFlow = shouldBeNormalFlowOnly();
         }
         break;
     case OverflowScrollCanBeStackingContainers:
@@ -292,7 +292,7 @@ void RenderLayerStackingNode::collectLayers(OwnPtr<Vector<RenderLayerStackingNod
         break;
     case OnlyStackingContextsCanBeStackingContainers:
         isStacking = isStackingContext();
-        isNormalFlow = shouldBeNormalFlowOnlyIgnoringCompositedScrolling();
+        isNormalFlow = shouldBeNormalFlowOnly();
         break;
     }
 
@@ -401,11 +401,6 @@ void RenderLayerStackingNode::updateStackingNodesAfterStyleChange(const RenderSt
 }
 
 bool RenderLayerStackingNode::shouldBeNormalFlowOnly() const
-{
-    return shouldBeNormalFlowOnlyIgnoringCompositedScrolling() && !layer()->needsCompositedScrolling();
-}
-
-bool RenderLayerStackingNode::shouldBeNormalFlowOnlyIgnoringCompositedScrolling() const
 {
     const bool couldBeNormalFlow = renderer()->hasOverflowClip()
         || renderer()->hasReflection()

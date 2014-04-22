@@ -170,7 +170,6 @@ private:
 #endif
 
     bool shouldBeNormalFlowOnly() const;
-    bool shouldBeNormalFlowOnlyIgnoringCompositedScrolling() const;
 
     void updateNormalFlowList();
     void dirtyNormalFlowListCanBePromotedToStackingContainer();
