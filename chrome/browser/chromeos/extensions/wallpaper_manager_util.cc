@@ -4,19 +4,15 @@
 
 #include "chrome/browser/chromeos/extensions/wallpaper_manager_util.h"
 
-#include "ash/shell.h"
-#include "base/command_line.h"
+#include "base/logging.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
-#include "chrome/browser/ui/host_desktop.h"
-#include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/common/constants.h"
+#include "extensions/common/extension.h"
+#include "ui/base/window_open_disposition.h"
 
 namespace wallpaper_manager_util {
 

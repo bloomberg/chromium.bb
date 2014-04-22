@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_WALLPAPER_MANAGER_UTIL_H_
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_WALLPAPER_MANAGER_UTIL_H_
 
-extern const char kWallpaperManagerDomain[];
-
 namespace wallpaper_manager_util {
 
 // Opens wallpaper manager application.
