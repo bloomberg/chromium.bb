@@ -371,6 +371,10 @@ source_set("skia_opts") {
 
       # Chrome-specific.
       "ext/convolver_SSE2.cc",
+
+      # These are header files used by this target from the skia one above.
+      "ext/convolver.h",
+      "//third_party/skia/include/core/SkTypes.h",
     ]
 
     if (is_linux || is_mac) {
@@ -386,6 +390,9 @@ source_set("skia_opts") {
     "//build/config/compiler:no_chromium_code"
   ]
 
-  # TODO(brettw) uncomment when visibility is supported.
-  #visibility = ":skia"
+  deps = [
+    "//base",
+  ]
+
+  visibility = ":skia"
 }

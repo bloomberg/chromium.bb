@@ -575,6 +575,7 @@ source_set("net_test_support") {
     "//base",
     "//base/test:test_support",
     "//crypto:platform",
+    "//net",
     "//net/tools/tld_cleanup",
     "//testing/gmock",
     "//testing/gtest",

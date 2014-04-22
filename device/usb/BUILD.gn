@@ -28,7 +28,5 @@ action("usb_device_ids") {
   ]
 
   # Only the device_usb target can depend on us.
-  # TODO(brettw) uncomment this when visibility is implemented in the pushed
-  # GN binary.
-  #visibility = [ ":usb" ]
+  visibility = [ ":usb" ]
 }

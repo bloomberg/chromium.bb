@@ -78,7 +78,7 @@ component("libssl") {
     ]
     sources += [ "exports_win.def" ]
   } else if (is_linux) {
-    #visibility hidden thing.
+    configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
     libs = [ "dl" ]
 
     include_dirs = [ "bodge" ]
