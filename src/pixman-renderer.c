@@ -291,8 +291,8 @@ repaint_region(struct weston_view *ev, struct weston_output *output,
 
 	transform_apply_viewport(&transform, ev->surface);
 
-	fw = pixman_int_to_fixed(ev->surface->width);
-	fh = pixman_int_to_fixed(ev->surface->height);
+	fw = pixman_int_to_fixed(ev->surface->width_from_buffer);
+	fh = pixman_int_to_fixed(ev->surface->height_from_buffer);
 
 	switch (vp->buffer.transform) {
 	case WL_OUTPUT_TRANSFORM_FLIPPED:
