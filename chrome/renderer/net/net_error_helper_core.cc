@@ -646,11 +646,15 @@ void NetErrorHelperCore::StartAutoReloadTimer() {
   DCHECK(committed_error_page_info_);
   DCHECK(can_auto_reload_page_);
   base::TimeDelta delay = GetAutoReloadTime(auto_reload_count_);
-  auto_reload_count_++;
   auto_reload_timer_->Stop();
   auto_reload_timer_->Start(FROM_HERE, delay,
-      base::Bind(&NetErrorHelperCore::Reload,
+      base::Bind(&NetErrorHelperCore::AutoReloadTimerFired,
                  base::Unretained(this)));
+}
+
+void NetErrorHelperCore::AutoReloadTimerFired() {
+  auto_reload_count_++;
+  Reload();
 }
 
 void NetErrorHelperCore::NetworkStateChanged(bool online) {

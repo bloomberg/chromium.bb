@@ -1790,8 +1790,9 @@ TEST_F(NetErrorHelperCoreTest, AutoReloadStopsTimerOnStop) {
 TEST_F(NetErrorHelperCoreTest, AutoReloadStopsLoadingOnStop) {
   core().set_auto_reload_enabled(true);
   DoErrorLoad(net::ERR_CONNECTION_RESET);
-  EXPECT_EQ(1, core().auto_reload_count());
+  EXPECT_EQ(0, core().auto_reload_count());
   timer()->Fire();
+  EXPECT_EQ(1, core().auto_reload_count());
   EXPECT_EQ(1, reload_count());
   core().OnStop();
   EXPECT_FALSE(timer()->IsRunning());
@@ -1805,21 +1806,23 @@ TEST_F(NetErrorHelperCoreTest, AutoReloadStopsOnOtherLoadStart) {
   core().OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                      NetErrorHelperCore::NON_ERROR_PAGE);
   EXPECT_FALSE(timer()->IsRunning());
-  EXPECT_EQ(1, core().auto_reload_count());
+  EXPECT_EQ(0, core().auto_reload_count());
 }
 
 TEST_F(NetErrorHelperCoreTest, AutoReloadResetsCountOnSuccess) {
   core().set_auto_reload_enabled(true);
   DoErrorLoad(net::ERR_CONNECTION_RESET);
   base::TimeDelta delay = timer()->GetCurrentDelay();
-  EXPECT_EQ(1, core().auto_reload_count());
+  EXPECT_EQ(0, core().auto_reload_count());
   timer()->Fire();
+  EXPECT_EQ(1, core().auto_reload_count());
   EXPECT_EQ(1, reload_count());
   DoSuccessLoad();
   DoErrorLoad(net::ERR_CONNECTION_RESET);
-  EXPECT_EQ(1, core().auto_reload_count());
+  EXPECT_EQ(0, core().auto_reload_count());
   EXPECT_EQ(timer()->GetCurrentDelay(), delay);
   timer()->Fire();
+  EXPECT_EQ(1, core().auto_reload_count());
   EXPECT_EQ(2, reload_count());
   DoSuccessLoad();
   EXPECT_EQ(0, core().auto_reload_count());
@@ -1865,7 +1868,7 @@ TEST_F(NetErrorHelperCoreTest, AutoReloadStopsOnOfflineThenRestartsOnOnline) {
   EXPECT_FALSE(timer()->IsRunning());
   core().NetworkStateChanged(true);
   EXPECT_TRUE(timer()->IsRunning());
-  EXPECT_EQ(1, core().auto_reload_count());
+  EXPECT_EQ(0, core().auto_reload_count());
 }
 
 TEST_F(NetErrorHelperCoreTest, AutoReloadDoesNotRestartOnOnlineAfterStop) {

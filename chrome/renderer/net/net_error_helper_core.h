@@ -182,6 +182,7 @@ class NetErrorHelperCore {
   void Reload();
   bool MaybeStartAutoReloadTimer();
   void StartAutoReloadTimer();
+  void AutoReloadTimerFired();
 
   static bool IsReloadableError(const ErrorPageInfo& info);
 
