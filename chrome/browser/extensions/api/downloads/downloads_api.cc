@@ -1521,8 +1521,7 @@ ExtensionDownloadsEventRouter::ExtensionDownloadsEventRouter(
   DCHECK(profile_);
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<Profile>(profile_));
-  extensions::EventRouter* router = extensions::ExtensionSystem::Get(profile_)->
-      event_router();
+  extensions::EventRouter* router = extensions::EventRouter::Get(profile_);
   if (router)
     router->RegisterObserver(this,
                              downloads::OnDeterminingFilename::kEventName);
@@ -1530,8 +1529,7 @@ ExtensionDownloadsEventRouter::ExtensionDownloadsEventRouter(
 
 ExtensionDownloadsEventRouter::~ExtensionDownloadsEventRouter() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  extensions::EventRouter* router = extensions::ExtensionSystem::Get(profile_)->
-      event_router();
+  extensions::EventRouter* router = extensions::EventRouter::Get(profile_);
   if (router)
     router->UnregisterObserver(this);
 }

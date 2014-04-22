@@ -49,8 +49,7 @@ class DefaultAlarmDelegate : public AlarmManager::Delegate {
     args->Append(alarm.js_alarm->ToValue().release());
     scoped_ptr<Event> event(new Event(alarms::OnAlarm::kEventName,
                                       args.Pass()));
-    ExtensionSystem::Get(browser_context_)
-        ->event_router()
+    EventRouter::Get(browser_context_)
         ->DispatchEventToExtension(extension_id, event.Pass());
   }
 

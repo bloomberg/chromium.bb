@@ -47,8 +47,8 @@ class FeedbackTest : public ExtensionBrowserTest {
 
  protected:
   bool IsFeedbackAppAvailable() {
-    return extensions::ExtensionSystem::Get(
-        browser()->profile())->event_router()->ExtensionHasEventListener(
+    return extensions::EventRouter::Get(browser()->profile())
+        ->ExtensionHasEventListener(
             kFeedbackExtensionId,
             extensions::api::feedback_private::OnFeedbackRequested::kEventName);
   }

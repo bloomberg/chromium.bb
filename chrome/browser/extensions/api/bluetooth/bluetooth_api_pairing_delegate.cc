@@ -104,8 +104,7 @@ void BluetoothApiPairingDelegate::DispatchPairingEvent(
       bt_private::OnPairing::Create(pairing_event);
   scoped_ptr<Event> event(
       new Event(bt_private::OnPairing::kEventName, args.Pass()));
-  ExtensionSystem::Get(browser_context_)
-      ->event_router()
+  EventRouter::Get(browser_context_)
       ->DispatchEventToExtension(extension_id_, event.Pass());
 }
 

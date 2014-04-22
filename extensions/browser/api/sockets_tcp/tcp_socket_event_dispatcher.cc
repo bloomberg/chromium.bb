@@ -189,9 +189,9 @@ void TCPSocketEventDispatcher::DispatchEvent(void* browser_context_id,
   if (!extensions::ExtensionsBrowserClient::Get()->IsValidContext(context))
     return;
 
-  EventRouter* router = ExtensionSystem::Get(context)->event_router();
-  if (router)
-    router->DispatchEventToExtension(extension_id, event.Pass());
+  EventRouter* event_router = EventRouter::Get(context);
+  if (event_router)
+    event_router->DispatchEventToExtension(extension_id, event.Pass());
 }
 
 }  // namespace core_api

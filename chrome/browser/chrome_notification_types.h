@@ -405,6 +405,8 @@ enum NotificationType {
   // the tab.
   NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED,
 
+  // DEPRECATED: Use ExtensionRegistry::AddObserver instead.
+  //
   // Sent when a new extension is loaded. The details are an Extension, and
   // the source is a Profile.
   NOTIFICATION_EXTENSION_LOADED_DEPRECATED,

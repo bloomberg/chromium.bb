@@ -92,8 +92,7 @@ bool TtsExtensionLoaderChromeOs::LoadTtsExtension() {
 }
 
 void TtsExtensionLoaderChromeOs::Shutdown() {
-  extensions::ExtensionSystem::Get(profile_)->
-      event_router()->UnregisterObserver(this);
+  extensions::EventRouter::Get(profile_)->UnregisterObserver(this);
 }
 
 bool TtsExtensionLoaderChromeOs::IsTtsLoadedInThisProfile() {

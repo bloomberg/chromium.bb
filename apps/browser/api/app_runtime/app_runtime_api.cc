@@ -10,16 +10,13 @@
 #include "base/values.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
-#include "extensions/common/extension.h"
 #include "url/gurl.h"
 
 using content::BrowserContext;
 using extensions::Event;
 using extensions::Extension;
 using extensions::ExtensionPrefs;
-using extensions::ExtensionSystem;
 
 namespace apps {
 
@@ -36,13 +33,12 @@ void DispatchOnLaunchedEventImpl(const std::string& extension_id,
       extensions::ExtensionsBrowserClient::Get()->IsRunningInForcedAppMode());
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(launch_data.release());
-  ExtensionSystem* system = ExtensionSystem::Get(context);
   scoped_ptr<Event> event(
       new Event(app_runtime::OnLaunched::kEventName, args.Pass()));
   event->restrict_to_browser_context = context;
   event->can_load_ephemeral_apps = true;
-  system->event_router()->DispatchEventWithLazyListener(extension_id,
-                                                        event.Pass());
+  extensions::EventRouter::Get(context)
+      ->DispatchEventWithLazyListener(extension_id, event.Pass());
   ExtensionPrefs::Get(context)
       ->SetLastLaunchTime(extension_id, base::Time::Now());
 }
@@ -64,8 +60,7 @@ void AppEventRouter::DispatchOnRestartedEvent(BrowserContext* context,
       new Event(app_runtime::OnRestarted::kEventName, arguments.Pass()));
   event->restrict_to_browser_context = context;
   event->can_load_ephemeral_apps = true;
-  extensions::ExtensionSystem::Get(context)
-      ->event_router()
+  extensions::EventRouter::Get(context)
       ->DispatchEventToExtension(extension->id(), event.Pass());
 }
 

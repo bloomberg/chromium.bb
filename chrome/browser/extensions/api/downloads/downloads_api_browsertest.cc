@@ -276,21 +276,18 @@ class DownloadExtensionTest : public ExtensionApiTest {
         current_browser(),
         extension_->GetResourceURL("empty.html"),
         content::PAGE_TRANSITION_LINK);
-    extensions::ExtensionSystem::Get(current_browser()->profile())->
-      event_router()->AddEventListener(
-          api::OnCreated::kEventName,
-          tab->GetRenderProcessHost(),
-          GetExtensionId());
-    extensions::ExtensionSystem::Get(current_browser()->profile())->
-      event_router()->AddEventListener(
-          api::OnChanged::kEventName,
-          tab->GetRenderProcessHost(),
-          GetExtensionId());
-    extensions::ExtensionSystem::Get(current_browser()->profile())->
-      event_router()->AddEventListener(
-          api::OnErased::kEventName,
-          tab->GetRenderProcessHost(),
-          GetExtensionId());
+    extensions::EventRouter::Get(current_browser()->profile())
+        ->AddEventListener(api::OnCreated::kEventName,
+                           tab->GetRenderProcessHost(),
+                           GetExtensionId());
+    extensions::EventRouter::Get(current_browser()->profile())
+        ->AddEventListener(api::OnChanged::kEventName,
+                           tab->GetRenderProcessHost(),
+                           GetExtensionId());
+    extensions::EventRouter::Get(current_browser()->profile())
+        ->AddEventListener(api::OnErased::kEventName,
+                           tab->GetRenderProcessHost(),
+                           GetExtensionId());
   }
 
   content::RenderProcessHost* AddFilenameDeterminer() {

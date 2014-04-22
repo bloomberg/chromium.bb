@@ -616,8 +616,7 @@ void EventRouter::IncrementInFlightEventsOnUI(
       reinterpret_cast<BrowserContext*>(browser_context_id);
   if (!ExtensionsBrowserClient::Get()->IsValidContext(browser_context))
     return;
-  ExtensionSystem* extension_system = ExtensionSystem::Get(browser_context);
-  EventRouter* event_router = extension_system->event_router();
+  EventRouter* event_router = EventRouter::Get(browser_context);
   if (!event_router)
     return;
   const Extension* extension =

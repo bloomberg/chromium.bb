@@ -12,7 +12,6 @@
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/bluetooth/test/mock_bluetooth_device.h"
 #include "extensions/browser/event_router.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/common/switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -94,8 +93,7 @@ class BluetoothPrivateApiTest : public ExtensionApiTest {
         bt_private::OnPairing::Create(pairing_event);
     scoped_ptr<extensions::Event> event(
         new extensions::Event(bt_private::OnPairing::kEventName, args.Pass()));
-    extensions::ExtensionSystem::Get(browser()->profile())
-        ->event_router()
+    extensions::EventRouter::Get(browser()->profile())
         ->DispatchEventToExtension(kTestExtensionId, event.Pass());
   }
 
