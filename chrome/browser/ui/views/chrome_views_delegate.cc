@@ -25,8 +25,10 @@
 
 #if defined(OS_WIN)
 #include <dwmapi.h>
+#include "base/task_runner_util.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/app_icon_win.h"
+#include "content/public/browser/browser_thread.h"
 #include "ui/base/win/shell.h"
 #endif
 
@@ -78,12 +80,47 @@ PrefService* GetPrefsForWindow(const views::Widget* window) {
   return profile->GetPrefs();
 }
 
+#if defined(OS_WIN)
+bool MonitorHasTopmostAutohideTaskbarForEdge(UINT edge, const RECT& rect) {
+  APPBARDATA taskbar_data = { sizeof(APPBARDATA), NULL, 0, edge, rect };
+  // NOTE: This call spins a nested message loop.
+  HWND taskbar = reinterpret_cast<HWND>(SHAppBarMessage(ABM_GETAUTOHIDEBAREX,
+                                                        &taskbar_data));
+  return ::IsWindow(taskbar) &&
+      (GetWindowLong(taskbar, GWL_EXSTYLE) & WS_EX_TOPMOST);
+}
+
+int GetAppbarAutohideEdgesOnWorkerThread(HMONITOR monitor) {
+  DCHECK(monitor);
+
+  MONITORINFO mi = { sizeof(MONITORINFO) };
+  GetMonitorInfo(monitor, &mi);
+
+  int edges = 0;
+  if (MonitorHasTopmostAutohideTaskbarForEdge(ABE_LEFT, mi.rcMonitor))
+    edges |= views::ViewsDelegate::EDGE_LEFT;
+  if (MonitorHasTopmostAutohideTaskbarForEdge(ABE_TOP, mi.rcMonitor))
+    edges |= views::ViewsDelegate::EDGE_TOP;
+  if (MonitorHasTopmostAutohideTaskbarForEdge(ABE_RIGHT, mi.rcMonitor))
+    edges |= views::ViewsDelegate::EDGE_RIGHT;
+  if (MonitorHasTopmostAutohideTaskbarForEdge(ABE_BOTTOM, mi.rcMonitor))
+    edges |= views::ViewsDelegate::EDGE_BOTTOM;
+  return edges;
+}
+#endif
+
 }  // namespace
 
 
 // ChromeViewsDelegate --------------------------------------------------------
 
+#if defined(OS_WIN)
+ChromeViewsDelegate::ChromeViewsDelegate()
+    : weak_factory_(this),
+      in_autohide_edges_callback_(false) {
+#else
 ChromeViewsDelegate::ChromeViewsDelegate() {
+#endif
 }
 
 ChromeViewsDelegate::~ChromeViewsDelegate() {
@@ -319,6 +356,46 @@ bool ChromeViewsDelegate::WindowManagerProvidesTitleBar(bool maximized) {
   // windows.
   views::LinuxUI* ui = views::LinuxUI::instance();
   return maximized && ui && ui->UnityIsRunning();
+}
+#endif
+
+#if defined(OS_WIN)
+int ChromeViewsDelegate::GetAppbarAutohideEdges(HMONITOR monitor,
+                                                const base::Closure& callback) {
+  // Initialize the map with EDGE_BOTTOM. This is important, as if we return an
+  // initial value of 0 (no auto-hide edges) then we'll go fullscreen and
+  // windows will automatically remove WS_EX_TOPMOST from the appbar resulting
+  // in us thinking there is no auto-hide edges. By returning at least one edge
+  // we don't initially go fullscreen until we figure out the real auto-hide
+  // edges.
+  if (!appbar_autohide_edge_map_.count(monitor))
+    appbar_autohide_edge_map_[monitor] = EDGE_BOTTOM;
+  if (monitor && !in_autohide_edges_callback_) {
+    base::PostTaskAndReplyWithResult(
+        content::BrowserThread::GetBlockingPool(),
+        FROM_HERE,
+        base::Bind(&GetAppbarAutohideEdgesOnWorkerThread,
+                   monitor),
+        base::Bind(&ChromeViewsDelegate::OnGotAppbarAutohideEdges,
+                   weak_factory_.GetWeakPtr(),
+                   callback,
+                   monitor,
+                   appbar_autohide_edge_map_[monitor]));
+  }
+  return appbar_autohide_edge_map_[monitor];
+}
+
+void ChromeViewsDelegate::OnGotAppbarAutohideEdges(
+    const base::Closure& callback,
+    HMONITOR monitor,
+    int returned_edges,
+    int edges) {
+  appbar_autohide_edge_map_[monitor] = edges;
+  if (returned_edges == edges)
+    return;
+
+  base::AutoReset<bool> in_callback_setter(&in_autohide_edges_callback_, true);
+  callback.Run();
 }
 #endif
 

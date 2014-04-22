@@ -8,13 +8,12 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/threading/worker_pool.h"
-#include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "content/public/browser/browser_thread.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkRect.h"
@@ -34,7 +33,6 @@ namespace {
 // Docs for TaskbarList::SetOverlayIcon() say it does nothing if the HWND is not
 // valid.
 void SetOverlayIcon(HWND hwnd, scoped_ptr<SkBitmap> bitmap) {
-  base::win::ScopedCOMInitializer com_initializer;
   base::win::ScopedComPtr<ITaskbarList3> taskbar;
   HRESULT result = taskbar.CreateInstance(CLSID_TaskbarList, NULL,
                                           CLSCTX_INPROC_SERVER);
@@ -105,9 +103,9 @@ void DrawTaskbarDecoration(gfx::NativeWindow window, const gfx::Image* image) {
   // gfx::Image isn't thread safe.
   scoped_ptr<SkBitmap> bitmap(
       image ? new SkBitmap(*image->ToSkBitmap()) : NULL);
-  // TaskbarList::SetOverlayIcon() may take a while, so we use slow here.
-  base::WorkerPool::PostTask(
-      FROM_HERE, base::Bind(&SetOverlayIcon, hwnd, Passed(&bitmap)), true);
+  content::BrowserThread::GetBlockingPool()->PostWorkerTaskWithShutdownBehavior(
+      FROM_HERE, base::Bind(&SetOverlayIcon, hwnd, Passed(&bitmap)),
+      base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
 }
 
 }  // namespace chrome

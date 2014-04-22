@@ -81,4 +81,11 @@ bool ViewsDelegate::WindowManagerProvidesTitleBar(bool maximized) {
   return false;
 }
 
+#if defined(OS_WIN)
+int ViewsDelegate::GetAppbarAutohideEdges(HMONITOR monitor,
+                                          const base::Closure& callback) {
+  return EDGE_BOTTOM;
+}
+#endif
+
 }  // namespace views

@@ -389,8 +389,6 @@
         'widget/widget_removals_observer.h',
         'widget/window_reorderer.cc',
         'widget/window_reorderer.h',
-        'win/appbar.cc',
-        'win/appbar.h',
         'win/fullscreen_handler.cc',
         'win/fullscreen_handler.h',
         'win/hwnd_message_handler.cc',

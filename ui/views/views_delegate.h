@@ -52,6 +52,15 @@ class NativeWidgetDelegate;
 // implementation.
 class VIEWS_EXPORT ViewsDelegate {
  public:
+#if defined(OS_WIN)
+  enum AppbarAutohideEdge {
+    EDGE_TOP    = 1 << 0,
+    EDGE_LEFT   = 1 << 1,
+    EDGE_BOTTOM = 1 << 2,
+    EDGE_RIGHT  = 1 << 3,
+  };
+#endif
+
   ViewsDelegate();
   virtual ~ViewsDelegate();
 
@@ -116,6 +125,17 @@ class VIEWS_EXPORT ViewsDelegate {
   // |remove_standard_frame| in InitParams). If |maximized|, this applies to
   // maximized windows; otherwise to restored windows.
   virtual bool WindowManagerProvidesTitleBar(bool maximized);
+
+#if defined(OS_WIN)
+  // Starts a query for the appbar autohide edges of the specified monitor and
+  // returns the current value.  If the query finds the edges have changed from
+  // the current value, |callback| is subsequently invoked.  If the edges have
+  // not changed, |callback| is never run.
+  //
+  // The return value is a bitmask of AppbarAutohideEdge.
+  virtual int GetAppbarAutohideEdges(HMONITOR monitor,
+                                     const base::Closure& callback);
+#endif
 
   // The active ViewsDelegate used by the views system.
   static ViewsDelegate* views_delegate;

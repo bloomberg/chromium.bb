@@ -38,7 +38,6 @@
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/monitor_win.h"
 #include "ui/views/widget/widget_hwnd_utils.h"
-#include "ui/views/win/appbar.h"
 #include "ui/views/win/fullscreen_handler.h"
 #include "ui/views/win/hwnd_message_handler_delegate.h"
 #include "ui/views/win/scoped_fullscreen_visibility.h"
@@ -971,10 +970,12 @@ LRESULT HWNDMessageHandler::HandleNcHitTestMessage(unsigned int message,
 
 int HWNDMessageHandler::GetAppbarAutohideEdges(HMONITOR monitor) {
   autohide_factory_.InvalidateWeakPtrs();
-  return Appbar::instance()->GetAutohideEdges(
-      monitor,
-      base::Bind(&HWNDMessageHandler::OnAppbarAutohideEdgesChanged,
-                 autohide_factory_.GetWeakPtr()));
+  return ViewsDelegate::views_delegate ?
+      ViewsDelegate::views_delegate->GetAppbarAutohideEdges(
+          monitor,
+          base::Bind(&HWNDMessageHandler::OnAppbarAutohideEdgesChanged,
+                     autohide_factory_.GetWeakPtr())) :
+      ViewsDelegate::EDGE_BOTTOM;
 }
 
 void HWNDMessageHandler::OnAppbarAutohideEdgesChanged() {
@@ -1668,9 +1669,9 @@ LRESULT HWNDMessageHandler::OnNCCalcSize(BOOL mode, LPARAM l_param) {
       }
     }
     const int autohide_edges = GetAppbarAutohideEdges(monitor);
-    if (autohide_edges & Appbar::EDGE_LEFT)
+    if (autohide_edges & ViewsDelegate::EDGE_LEFT)
       client_rect->left += kAutoHideTaskbarThicknessPx;
-    if (autohide_edges & Appbar::EDGE_TOP) {
+    if (autohide_edges & ViewsDelegate::EDGE_TOP) {
       if (!delegate_->IsUsingCustomFrame()) {
         // Tricky bit.  Due to a bug in DwmDefWindowProc()'s handling of
         // WM_NCHITTEST, having any nonclient area atop the window causes the
@@ -1686,9 +1687,9 @@ LRESULT HWNDMessageHandler::OnNCCalcSize(BOOL mode, LPARAM l_param) {
         client_rect->top += kAutoHideTaskbarThicknessPx;
       }
     }
-    if (autohide_edges & Appbar::EDGE_RIGHT)
+    if (autohide_edges & ViewsDelegate::EDGE_RIGHT)
       client_rect->right -= kAutoHideTaskbarThicknessPx;
-    if (autohide_edges & Appbar::EDGE_BOTTOM)
+    if (autohide_edges & ViewsDelegate::EDGE_BOTTOM)
       client_rect->bottom -= kAutoHideTaskbarThicknessPx;
 
     // We cannot return WVR_REDRAW when there is nonclient area, or Windows
