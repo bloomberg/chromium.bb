@@ -2,6 +2,7 @@ Repaint test for bug 15719
 
 (repaint rects
   (rect 8 66 106 106)
+  (rect 8 66 106 106)
   (rect 28 66 106 106)
 )
 

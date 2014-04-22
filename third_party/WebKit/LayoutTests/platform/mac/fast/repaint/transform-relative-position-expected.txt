@@ -2,6 +2,7 @@ Test for https://bugs.webkit.org/show_bug.cgi?id=17840. The rotated box should b
 
 (repaint rects
   (rect 108 150 202 202)
+  (rect 108 150 202 202)
   (rect 66 108 286 286)
 )
 
