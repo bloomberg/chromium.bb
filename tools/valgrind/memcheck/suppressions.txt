@@ -1839,12 +1839,6 @@
    fun:_ZN27TestURLRequestContextGetter20GetURLRequestContextEv
 }
 {
-   bug_16089 WorkerPool threads can leak by design
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base22PosixDynamicThreadPool8PostTask*
-}
-{
    bug_80462_a
    Memcheck:Leak
    fun:malloc
@@ -3766,13 +3760,6 @@
    Memcheck:Uninitialized
    fun:_ZN7testing8internal11CmpHelperGEIddEENS_15AssertionResultEPKcS4_RKT_RKT0_
    fun:_ZN3gfx30JPEGCodec_EncodeDecodeRGB_Test8TestBodyEv
-}
-{
-   bug_16089 WorkerPool threads and its tasks can leak by design
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base22PosixDynamicThreadPool7AddTaskEPNS_11PendingTaskE
-   fun:_ZN4base22PosixDynamicThreadPool8PostTask*
 }
 {
    bug_139467
