@@ -14,7 +14,7 @@ namespace WebCore {
 
 TEST(BisonCSSParserTest, ParseAnimationTimingFunctionValue)
 {
-    RefPtr<CSSValue> timingFunctionValue;
+    RefPtrWillBeRawPtr<CSSValue> timingFunctionValue;
     timingFunctionValue = BisonCSSParser::parseAnimationTimingFunctionValue("ease");
     EXPECT_EQ(CSSValueEase, toCSSPrimitiveValue(timingFunctionValue.get())->getValueID());
 

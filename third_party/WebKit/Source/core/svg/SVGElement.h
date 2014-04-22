@@ -110,9 +110,11 @@ public:
     bool getBoundingBox(FloatRect&);
 
     void setCursorElement(SVGCursorElement*);
-    void cursorElementRemoved();
     void setCursorImageValue(CSSCursorImageValue*);
+#if !ENABLE(OILPAN)
+    void cursorElementRemoved();
     void cursorImageValueRemoved();
+#endif
 
     SVGElement* correspondingElement();
     void setCorrespondingElement(SVGElement*);

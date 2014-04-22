@@ -56,6 +56,8 @@ CSSCursorImageValue::CSSCursorImageValue(PassRefPtrWillBeRawPtr<CSSValue> imageV
 
 CSSCursorImageValue::~CSSCursorImageValue()
 {
+    // The below teardown is all handled by weak pointer processing in oilpan.
+#if !ENABLE(OILPAN)
     if (!isSVGCursor())
         return;
 
@@ -69,6 +71,7 @@ CSSCursorImageValue::~CSSCursorImageValue()
         if (SVGCursorElement* cursorElement = resourceReferencedByCursorElement(url, referencedElement->treeScope()))
             cursorElement->removeClient(referencedElement);
     }
+#endif
 }
 
 String CSSCursorImageValue::customCSSText() const
@@ -107,7 +110,9 @@ bool CSSCursorImageValue::updateIfSVGCursorIsUsed(Element* element)
             clearImageResource();
 
         SVGElement* svgElement = toSVGElement(element);
+#if !ENABLE(OILPAN)
         m_referencedElements.add(svgElement);
+#endif
         svgElement->setCursorImageValue(this);
         cursorElement->addClient(svgElement);
         return true;
@@ -182,10 +187,12 @@ void CSSCursorImageValue::clearImageResource()
     m_accessedImage = false;
 }
 
+#if !ENABLE(OILPAN)
 void CSSCursorImageValue::removeReferencedElement(SVGElement* element)
 {
     m_referencedElements.remove(element);
 }
+#endif
 
 bool CSSCursorImageValue::equals(const CSSCursorImageValue& other) const
 {
@@ -195,6 +202,7 @@ bool CSSCursorImageValue::equals(const CSSCursorImageValue& other) const
 
 void CSSCursorImageValue::traceAfterDispatch(Visitor* visitor)
 {
+    visitor->trace(m_imageValue);
     CSSValue::traceAfterDispatch(visitor);
 }
 

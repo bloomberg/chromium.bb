@@ -88,6 +88,8 @@ SVGElement::~SVGElement()
 {
     ASSERT(inDocument() || !hasRelativeLengths());
 
+    // The below teardown is all handled by weak pointer processing in oilpan.
+#if !ENABLE(OILPAN)
     if (!hasSVGRareData())
         ASSERT(!SVGElementRareData::rareDataMap().contains(this));
     else {
@@ -96,9 +98,8 @@ SVGElement::~SVGElement()
         ASSERT_WITH_SECURITY_IMPLICATION(it != rareDataMap.end());
 
         SVGElementRareData* rareData = it->value;
-        rareData->destroyAnimatedSMILStyleProperties();
         if (SVGCursorElement* cursorElement = rareData->cursorElement())
-            cursorElement->removeClient(this);
+            cursorElement->removeReferencedElement(this);
         if (CSSCursorImageValue* cursorImageValue = rareData->cursorImageValue())
             cursorImageValue->removeReferencedElement(this);
 
@@ -113,6 +114,7 @@ SVGElement::~SVGElement()
         // removeAllElementReferencesForTarget() below.
         clearHasSVGRareData();
     }
+#endif
     document().accessSVGExtensions().rebuildAllElementReferencesForTarget(this);
     document().accessSVGExtensions().removeAllElementReferencesForTarget(this);
 }
@@ -176,7 +178,7 @@ SVGElementRareData* SVGElement::ensureSVGRareData()
         return svgRareData();
 
     ASSERT(!SVGElementRareData::rareDataMap().contains(this));
-    SVGElementRareData* data = new SVGElementRareData;
+    SVGElementRareData* data = new SVGElementRareData(this);
     SVGElementRareData::rareDataMap().set(this, data);
     setHasSVGRareData();
     return data;
@@ -565,28 +567,34 @@ void SVGElement::setCursorElement(SVGCursorElement* cursorElement)
     rareData->setCursorElement(cursorElement);
 }
 
+#if !ENABLE(OILPAN)
 void SVGElement::cursorElementRemoved()
 {
     ASSERT(hasSVGRareData());
     svgRareData()->setCursorElement(0);
 }
+#endif
 
 void SVGElement::setCursorImageValue(CSSCursorImageValue* cursorImageValue)
 {
     SVGElementRareData* rareData = ensureSVGRareData();
+#if !ENABLE(OILPAN)
     if (CSSCursorImageValue* oldCursorImageValue = rareData->cursorImageValue()) {
         if (cursorImageValue == oldCursorImageValue)
             return;
         oldCursorImageValue->removeReferencedElement(this);
     }
+#endif
     rareData->setCursorImageValue(cursorImageValue);
 }
 
+#if !ENABLE(OILPAN)
 void SVGElement::cursorImageValueRemoved()
 {
     ASSERT(hasSVGRareData());
     svgRareData()->setCursorImageValue(0);
 }
+#endif
 
 SVGElement* SVGElement::correspondingElement()
 {

@@ -891,7 +891,7 @@ private:
 
     void zapWeakMembers(Visitor* visitor)
     {
-        if (m_weakBar && !visitor->isAlive(m_weakBar))
+        if (!visitor->isAlive(m_weakBar))
             m_weakBar = 0;
     }
 

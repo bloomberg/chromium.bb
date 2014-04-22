@@ -40,11 +40,16 @@ public:
     virtual ~SVGCursorElement();
 
     void addClient(SVGElement*);
+#if !ENABLE(OILPAN)
     void removeClient(SVGElement*);
+#endif
     void removeReferencedElement(SVGElement*);
 
     SVGAnimatedLength* x() const { return m_x.get(); }
     SVGAnimatedLength* y() const { return m_y.get(); }
+
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     explicit SVGCursorElement(Document&);
 
@@ -59,7 +64,7 @@ private:
     RefPtr<SVGAnimatedLength> m_x;
     RefPtr<SVGAnimatedLength> m_y;
 
-    HashSet<SVGElement*> m_clients;
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> > m_clients;
 };
 
 } // namespace WebCore

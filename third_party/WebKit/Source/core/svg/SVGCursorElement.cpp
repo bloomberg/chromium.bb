@@ -49,9 +49,12 @@ PassRefPtr<SVGCursorElement> SVGCursorElement::create(Document& document)
 
 SVGCursorElement::~SVGCursorElement()
 {
-    HashSet<SVGElement*>::iterator end = m_clients.end();
-    for (HashSet<SVGElement*>::iterator it = m_clients.begin(); it != end; ++it)
+    // The below teardown is all handled by weak pointer processing in oilpan.
+#if !ENABLE(OILPAN)
+    HashSet<RawPtr<SVGElement> >::iterator end = m_clients.end();
+    for (HashSet<RawPtr<SVGElement> >::iterator it = m_clients.begin(); it != end; ++it)
         (*it)->cursorElementRemoved();
+#endif
 }
 
 bool SVGCursorElement::isSupportedAttribute(const QualifiedName& attrName)
@@ -91,14 +94,16 @@ void SVGCursorElement::addClient(SVGElement* element)
     element->setCursorElement(this);
 }
 
+#if !ENABLE(OILPAN)
 void SVGCursorElement::removeClient(SVGElement* element)
 {
-    HashSet<SVGElement*>::iterator it = m_clients.find(element);
+    HashSet<RawPtr<SVGElement> >::iterator it = m_clients.find(element);
     if (it != m_clients.end()) {
         m_clients.remove(it);
         element->cursorElementRemoved();
     }
 }
+#endif
 
 void SVGCursorElement::removeReferencedElement(SVGElement* element)
 {
@@ -115,11 +120,17 @@ void SVGCursorElement::svgAttributeChanged(const QualifiedName& attrName)
     SVGElementInstance::InvalidationGuard invalidationGuard(this);
 
     // Any change of a cursor specific attribute triggers this recalc.
-    HashSet<SVGElement*>::const_iterator it = m_clients.begin();
-    HashSet<SVGElement*>::const_iterator end = m_clients.end();
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >::const_iterator it = m_clients.begin();
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >::const_iterator end = m_clients.end();
 
     for (; it != end; ++it)
         (*it)->setNeedsStyleRecalc(SubtreeStyleChange);
+}
+
+void SVGCursorElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_clients);
+    SVGElement::trace(visitor);
 }
 
 }
