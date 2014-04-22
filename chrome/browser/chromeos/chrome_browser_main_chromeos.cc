@@ -428,17 +428,6 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   imageburner::BurnManager::Initialize(
       downloads_directory, g_browser_process->system_request_context());
 
-#if defined(USE_X11)
-  // Listen for system key events so that the user will be able to adjust the
-  // volume on the login screen, if Chrome is running on Chrome OS
-  // (i.e. not Linux desktop), and in non-test mode.
-  // Note: SystemKeyEventListener depends on the DBus thread.
-  if (base::SysInfo::IsRunningOnChromeOS() &&
-      !parameters().ui_task) {  // ui_task is non-NULL when running tests.
-    SystemKeyEventListener::Initialize();
-  }
-#endif
-
   DeviceOAuth2TokenServiceFactory::Initialize();
 
   ChromeBrowserMainPartsLinux::PreMainMessageLoopRun();
@@ -697,6 +686,15 @@ void ChromeBrowserMainPartsChromeos::PreBrowserStart() {
   g_browser_process->metrics_service()->StartExternalMetrics();
 
 #if defined(USE_X11)
+  // Listen for system key events so that the user will be able to adjust the
+  // volume on the login screen, if Chrome is running on Chrome OS
+  // (i.e. not Linux desktop), and in non-test mode.
+  // Note: SystemKeyEventListener depends on the DBus thread.
+  if (base::SysInfo::IsRunningOnChromeOS() &&
+      !parameters().ui_task) {  // ui_task is non-NULL when running tests.
+    SystemKeyEventListener::Initialize();
+  }
+
   // Listen for XI_HierarchyChanged events. Note: if this is moved to
   // PreMainMessageLoopRun() then desktopui_PageCyclerTests fail for unknown
   // reasons, see http://crosbug.com/24833.
