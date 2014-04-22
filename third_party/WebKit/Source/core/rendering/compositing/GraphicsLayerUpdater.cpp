@@ -50,7 +50,7 @@ static bool shouldAppendLayer(const RenderLayer& layer)
 
 GraphicsLayerUpdater::UpdateContext::UpdateContext(const UpdateContext& other, const RenderLayer& layer)
     : m_compositingStackingContainer(other.m_compositingStackingContainer)
-    , m_compositingAncestor(other.m_compositingAncestor)
+    , m_compositingAncestor(other.compositingContainer(layer))
 {
     CompositingState compositingState = layer.compositingState();
     if (compositingState != NotComposited && compositingState != PaintsIntoGroupedBacking) {
