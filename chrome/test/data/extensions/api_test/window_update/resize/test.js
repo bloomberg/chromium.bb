@@ -55,7 +55,8 @@ chrome.test.runTests([
   function testCurrentWindowResize() {
     var newWidth = 400;
     chrome.windows.create(
-        { 'url': 'blank.html', 'width': 500, 'height': 500, 'type': 'normal' },
+        { 'url': 'blank.html', 'top': 0, 'left': 0, 'width': 500, 'height': 400,
+          'type': 'normal' },
         pass(function(win1) {
       chrome.windows.getCurrent(pass(function(win2) {
         chrome.test.assertEq(win1.id, win2.id);
@@ -72,17 +73,20 @@ chrome.test.runTests([
 
   function testResizeNormal() {
     chrome.windows.create(
-        { 'url': 'blank.html', 'width': 500, 'height': 600, 'type': 'normal' },
+        { 'url': 'blank.html', 'top': 0, 'left': 0, 'width': 500, 'height': 500,
+          'type': 'normal' },
         pass(changeWidth));
   },
   function testResizePopup() {
     chrome.windows.create(
-        { 'url': 'blank.html', 'width': 300, 'height': 500, 'type': 'popup' },
+        { 'url': 'blank.html', 'top': 0, 'left': 0, 'width': 300, 'height': 400,
+          'type': 'popup' },
         pass(changeWidth));
   },
   function testResizePanel() {
     chrome.windows.create(
-        { 'url': 'blank.html', 'width': 150, 'height': 200, 'type': 'panel' },
+        { 'url': 'blank.html', 'top': 0, 'left': 0, 'width': 150, 'height': 200,
+          'type': 'panel' },
         pass(changeWidth));
   },
 ]);

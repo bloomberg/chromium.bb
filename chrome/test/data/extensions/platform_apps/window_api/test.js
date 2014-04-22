@@ -261,7 +261,7 @@ function testCreate() {
 function testDeprecatedBounds() {
   chrome.test.runTests([
     function contentSize() {
-      var options = { bounds: { width: 250, height: 200 } };
+      var options = { bounds: { left: 0, top: 0, width: 250, height: 200 } };
       chrome.app.window.create('test.html', options, callbackPass(
       function(win) {
         var bounds = win.getBounds();
@@ -274,7 +274,7 @@ function testDeprecatedBounds() {
     },
 
     function windowPosition() {
-      var options = { bounds: { left: 250, top: 200 } };
+      var options = { bounds: { left: 0, top: 0, left: 250, top: 200 } };
       chrome.app.window.create('test.html', options, callbackPass(
       function(win) {
         var bounds = win.getBounds();
@@ -288,7 +288,7 @@ function testDeprecatedBounds() {
 
     function minSize() {
       var options = {
-        bounds: { width: 250, height: 250 },
+        bounds: { left: 0, top: 0, width: 250, height: 250 },
         minWidth: 400, minHeight: 450
       };
       chrome.app.window.create('test.html', options, callbackPass(
@@ -302,7 +302,7 @@ function testDeprecatedBounds() {
 
     function maxSize() {
       var options = {
-        bounds: { width: 250, height: 250 },
+        bounds: { left: 0, top: 0, width: 250, height: 250 },
         maxWidth: 200, maxHeight: 150
       };
       chrome.app.window.create('test.html', options, callbackPass(
@@ -316,7 +316,7 @@ function testDeprecatedBounds() {
 
     function minAndMaxSize() {
       var options = {
-        bounds: { width: 250, height: 250 },
+        bounds: { left: 0, top: 0, width: 250, height: 250 },
         minWidth: 400, minHeight: 450,
         maxWidth: 200, maxHeight: 150
       };
@@ -330,8 +330,9 @@ function testDeprecatedBounds() {
     },
 
     function simpleSetBounds() {
-      chrome.app.window.create('test.html',
-          { bounds: { width: 250, height: 200 } }, callbackPass(function(win) {
+      chrome.app.window.create('test.html', {
+        bounds: { left: 0, top: 0, width: 250, height: 200 }
+      }, callbackPass(function(win) {
         var newBounds = {width: 400, height: 450};
         win.setBounds(newBounds);
         chrome.test.waitForRoundTrip('msg', callbackPass(function() {
@@ -345,13 +346,13 @@ function testDeprecatedBounds() {
 
     function heightOnlySetBounds() {
       chrome.app.window.create('test.html', {
-        bounds: { width: 512, height: 256 }
+        bounds: { left: 0, top: 0, width: 300, height: 256 }
       }, callbackPass(function(win) {
-        win.setBounds({ height: 512 });
+        win.setBounds({ height: 300 });
         chrome.test.waitForRoundTrip('msg', callbackPass(function() {
           var bounds = win.getBounds();
-          chrome.test.assertEq(512, bounds.width);
-          chrome.test.assertEq(512, bounds.height);
+          chrome.test.assertEq(300, bounds.width);
+          chrome.test.assertEq(300, bounds.height);
           win.close();
         }));
       }));
