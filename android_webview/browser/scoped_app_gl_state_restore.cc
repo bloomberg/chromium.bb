@@ -4,6 +4,8 @@
 
 #include "android_webview/browser/scoped_app_gl_state_restore.h"
 
+#include <string>
+
 #include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
 #include "ui/gl/gl_context.h"
@@ -48,7 +50,9 @@ void GLEnableDisable(GLenum cap, bool enable) {
     glDisable(cap);
 }
 
+bool g_globals_initialized = false;
 GLint g_gl_max_texture_units = 0;
+bool g_oes_vertex_array_object = false;
 
 }  // namespace
 
@@ -124,9 +128,16 @@ ScopedAppGLStateRestore::ScopedAppGLStateRestore(CallMode mode) : mode_(mode) {
 
   glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &framebuffer_binding_ext_);
 
-  if (!g_gl_max_texture_units) {
+  if (!g_globals_initialized) {
+    g_globals_initialized = true;
+
     glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &g_gl_max_texture_units);
     DCHECK_GT(g_gl_max_texture_units, 0);
+
+    std::string extensions(
+        reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS)));
+    g_oes_vertex_array_object =
+        extensions.find("GL_OES_vertex_array_object") != std::string::npos;
   }
 
   glGetIntegerv(GL_ACTIVE_TEXTURE, &active_texture_);
@@ -140,6 +151,9 @@ ScopedAppGLStateRestore::ScopedAppGLStateRestore(CallMode mode) : mode_(mode) {
     glGetIntegerv(GL_TEXTURE_BINDING_EXTERNAL_OES,
                   &bindings.texture_external_oes);
   }
+
+  if (g_oes_vertex_array_object)
+    glGetIntegerv(GL_VERTEX_ARRAY_BINDING_OES, &vertex_array_bindings_oes_);
 }
 
 ScopedAppGLStateRestore::~ScopedAppGLStateRestore() {
@@ -225,6 +239,9 @@ ScopedAppGLStateRestore::~ScopedAppGLStateRestore() {
 
   GLEnableDisable(GL_STENCIL_TEST, stencil_test_);
   glStencilFunc(stencil_func_, stencil_mask_, stencil_ref_);
+
+  if (g_oes_vertex_array_object)
+    glBindVertexArrayOES(vertex_array_bindings_oes_);
 }
 
 }  // namespace android_webview

@@ -95,6 +95,8 @@ class ScopedAppGLStateRestore {
 
   std::vector<TextureBindings> texture_bindings_;
 
+  GLint vertex_array_bindings_oes_;
+
   DISALLOW_COPY_AND_ASSIGN(ScopedAppGLStateRestore);
 };
 
