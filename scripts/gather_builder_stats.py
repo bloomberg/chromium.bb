@@ -773,27 +773,30 @@ class CLStats(StatsManager):
         'Expected change to be submitted exactly once, got %r' % submit
     return submit[-1].change['patch_number']
 
-  def SubmittedAfterNewPatch(self, submitted_changes):
-    """Find CLs that were rejected, then a subsequent patch was submitted.
+  def ClassifyRejections(self, submitted_changes):
+    """Categorize rejected CLs, deciding whether the rejection was flaky.
 
-    These are good candidates for bad CLs, and demonstrate that the builder
-    was correctly rejecting a bad patch.
+    We figure out what patches were flakily rejected by looking for patches
+    which were later submitted unmodified after being rejected. These patches
+    are considered to be likely good CLs.
 
     Args:
       submitted_changes: A dict mapping submitted CLs to a list of associated
                          actions.
 
     Yields:
-      change: The change that was rejected.
+      change: The CL that was rejected.
       actions: A list of actions applicable to the CL.
       a: The reject action that kicked out the CL.
+      flaky: Whether the CL rejection was flaky. A CL rejection is considered
+             flaky if the same patch is later submitted, with no changes.
     """
     for change, actions in submitted_changes.iteritems():
       submitted_patch_number = self.GetSubmittedPatchNumber(actions)
       for a in actions:
+        flaky = a.change['patch_number'] == submitted_patch_number
         if a.action == constants.CL_ACTION_KICKED_OUT:
-          if a.change['patch_number'] != submitted_patch_number:
-            yield change, actions, a
+          yield change, actions, a, flaky
 
   def _PrintCounts(self, reasons, fmt):
     """Print a sorted list of reasons in descending order of frequency.
@@ -808,6 +811,53 @@ class CLStats(StatsManager):
       logging.info(fmt, dict(cnt=cnt, reason=reason))
     if not d:
       logging.info('  None')
+
+  def CalculateStageFailures(self, reject_actions, submitted_changes):
+    """Calculate what stages correctly or incorrectly failed.
+
+    Args:
+      reject_actions: A list of actions that reject CLs.
+      submitted_changes: A dict mapping submitted CLs to a list of associated
+                         actions.
+
+    Returns:
+      correctly_rejected_by_stage: A dict, where dict[bot_type][stage_name]
+        counts the number of times a probably bad patch was rejected due to a
+        failure in this stage.
+      incorrectly_rejected_by_stage: A dict, where dict[bot_type][stage_name]
+        counts the number of times a probably good patch was rejected due to a
+        failure in this stage.
+    """
+    # Keep track of a list of builds that were manually annotated as bad CL.
+    # These are used to ensure that we don't treat real failures as being flaky.
+    bad_cl_builds = set()
+    for a in reject_actions:
+      if a.bot_type == CQ:
+        reason = self.reasons[a.build.build_number]
+        if reason == self.REASON_BAD_CL:
+          bad_cl_builds.add((a.build.bot_id, a.build.build_number))
+
+    # Keep track of the stages that correctly detected a bad CL. We assume
+    # here that all of the stages that are broken were broken by the bad CL.
+    correctly_rejected_by_stage = {}
+    for _, _, a, flaky in self.ClassifyRejections(submitted_changes):
+      if not flaky:
+        good = correctly_rejected_by_stage.setdefault(a.bot_type, {})
+        for stage_name in a.build.GetFailedStages():
+          good[stage_name] = good.get(stage_name, 0) + 1
+        if a.bot_type == PRE_CQ:
+          bad_cl_builds.add((a.build.bot_id, a.build.build_number))
+
+    # Keep track of the stages that failed flakily.
+    incorrectly_rejected_by_stage = {}
+    for _, _, a, flaky in self.ClassifyRejections(submitted_changes):
+      # A stage only failed flakily if it wasn't broken by another CL.
+      if flaky and (a.build.bot_id, a.build.build_number) not in bad_cl_builds:
+        bad = incorrectly_rejected_by_stage.setdefault(a.bot_type, {})
+        for stage_name in a.build.GetFailedStages():
+          bad[stage_name] = bad.get(stage_name, 0) + 1
+
+    return correctly_rejected_by_stage, incorrectly_rejected_by_stage
 
   def Summarize(self):
     """Process, print, and return a summary of cl action statistics.
@@ -866,13 +916,17 @@ class CLStats(StatsManager):
     patch_handle_times =  [v[-1].timestamp - v[0].timestamp
                            for v in submitted_patches.values()]
 
+    correctly_rejected_by_stage, incorrectly_rejected_by_stage = \
+        self.CalculateStageFailures(reject_actions, submitted_changes)
+
     # Count CLs that were rejected, then a subsequent patch was submitted.
     # These are good candidates for bad CLs. We track them in a dict, setting
     # submitted_after_new_patch[bot_type][patch] = actions for each bad patch.
     submitted_after_new_patch = {}
-    for change, actions, a in self.SubmittedAfterNewPatch(submitted_changes):
-      d = submitted_after_new_patch.setdefault(a.bot_type, {})
-      d[change] = actions
+    for change, actions, a, flaky in self.ClassifyRejections(submitted_changes):
+      if not flaky:
+        d = submitted_after_new_patch.setdefault(a.bot_type, {})
+        d[change] = actions
 
     # Sort the candidate bad CLs in order of submit time.
     bad_cl_candidates = {}
@@ -894,6 +948,8 @@ class CLStats(StatsManager):
                    good_patch_rejection_breakdown,
                'median_handling_time' : numpy.median(patch_handle_times),
                'bad_cl_candidates' : bad_cl_candidates,
+               'correctly_rejected_by_stage' : correctly_rejected_by_stage,
+               'incorrectly_rejected_by_stage' : incorrectly_rejected_by_stage,
                }
 
     logging.info('      Total CL actions: %d.', summary['total_cl_actions'])
@@ -928,6 +984,14 @@ class CLStats(StatsManager):
     self._PrintCounts(patch_reason_counts, fmt)
     logging.info('Reasons why builds failed:')
     self._PrintCounts(build_reason_counts, '  %(cnt)d failures in %(reason)s')
+
+    logging.info('Stages from the Pre-CQ that caught real failures:')
+    fmt = '  %(cnt)d broken patches were caught by %(reason)s'
+    self._PrintCounts(correctly_rejected_by_stage.get(PRE_CQ, {}), fmt)
+
+    logging.info('Stages from the Pre-CQ that failed but succeeded on retry')
+    fmt = '  %(cnt)d good patches failed incorrectly in %(reason)s'
+    self._PrintCounts(incorrectly_rejected_by_stage.get(PRE_CQ, {}), fmt)
 
     super_summary.update(summary)
     return super_summary

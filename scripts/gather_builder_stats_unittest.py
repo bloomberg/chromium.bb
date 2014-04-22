@@ -52,15 +52,21 @@ class TestCLActionLogic(unittest.TestCase):
       # Build 1 picks up no patches.
       cbuildbot_metadata.CBuildbotMetadata(
           ).UpdateWithDict({'build-number' : 1,
+                            'bot-config' : constants.CQ_MASTER,
+                            'results' : [],
                             'status' : passed_status}),
       # Build 2 picks up c1p1 and does nothing.
       cbuildbot_metadata.CBuildbotMetadata(
           ).UpdateWithDict({'build-number' : 2,
+                            'bot-config' : constants.CQ_MASTER,
+                            'results' : [],
                             'status' : failed_status}
           ).RecordCLAction(c1p1, constants.CL_ACTION_PICKED_UP, t.next()),
       # Build 3 picks up c1p1 and c2p1 and rejects both.
       cbuildbot_metadata.CBuildbotMetadata(
           ).UpdateWithDict({'build-number' : 3,
+                            'bot-config' : constants.CQ_MASTER,
+                            'results' : [],
                             'status' : failed_status}
           ).RecordCLAction(c1p1, constants.CL_ACTION_PICKED_UP, t.next()
           ).RecordCLAction(c2p1, constants.CL_ACTION_PICKED_UP, t.next()
@@ -71,6 +77,8 @@ class TestCLActionLogic(unittest.TestCase):
       # and c2p1 should be detected as a possibly bad patch.
       cbuildbot_metadata.CBuildbotMetadata(
           ).UpdateWithDict({'build-number' : 4,
+                            'bot-config' : constants.CQ_MASTER,
+                            'results' : [],
                             'status' : passed_status}
           ).RecordCLAction(c1p1, constants.CL_ACTION_PICKED_UP, t.next()
           ).RecordCLAction(c2p2, constants.CL_ACTION_PICKED_UP, t.next()
@@ -117,6 +125,8 @@ class TestCLActionLogic(unittest.TestCase):
           'bad_cl_candidates': {CQ: [
               cbuildbot_metadata.GerritChangeTuple(gerrit_number=2,
                                                    internal=True)]},
+          'correctly_rejected_by_stage': {CQ: {}},
+          'incorrectly_rejected_by_stage': {},
           'rejections': 2}
       # Ignore handling time in comparison.
       summary['median_handling_time'] = expected['median_handling_time']
