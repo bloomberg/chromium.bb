@@ -4,11 +4,14 @@
 
 #include "mojo/system/channel.h"
 
+#include <algorithm>
+
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"  // TODO(vtl): Remove this.
 #include "mojo/system/message_pipe_endpoint.h"
 
 namespace mojo {
@@ -46,7 +49,7 @@ bool Channel::Init(scoped_ptr<RawChannel> raw_channel) {
 
   // No need to take |lock_|, since this must be called before this object
   // becomes thread-safe.
-  DCHECK(!raw_channel_);
+  DCHECK(!is_running_no_lock());
   raw_channel_ = raw_channel.Pass();
 
   if (!raw_channel_->Init(this)) {
@@ -60,32 +63,35 @@ bool Channel::Init(scoped_ptr<RawChannel> raw_channel) {
 void Channel::Shutdown() {
   DCHECK(creation_thread_checker_.CalledOnValidThread());
 
-  base::AutoLock locker(lock_);
-  DCHECK(raw_channel_.get());
-  raw_channel_->Shutdown();
-  raw_channel_.reset();
+  IdToEndpointInfoMap local_id_to_endpoint_info_map;
+  {
+    base::AutoLock locker(lock_);
+    if (!is_running_no_lock())
+      return;
 
-  // This shouldn't usually occur, but it should be okay if all the endpoints
-  // are zombies (i.e., waiting to be removed, and not actually having any
-  // references to |MessagePipe|s).
-  // TODO(vtl): To make this actually okay, we need to make sure the other side
-  // channels being killed off properly.
-  LOG_IF(WARNING, !local_id_to_endpoint_info_map_.empty())
-      << "Channel shutting down with endpoints still attached "
-         "(hopefully all zombies)";
+    raw_channel_->Shutdown();
+    raw_channel_.reset();
 
-#ifndef NDEBUG
-  // Check that everything left is a zombie. (Note: We don't explicitly clear
-  // |local_id_to_endpoint_info_map_|, since that would likely put us in an
-  // inconsistent state if we have non-zombies.)
-  for (IdToEndpointInfoMap::const_iterator it =
+    // We need to deal with it outside the lock.
+    std::swap(local_id_to_endpoint_info_map, local_id_to_endpoint_info_map_);
+  }
+
+  size_t num_live = 0;
+  size_t num_zombies = 0;
+  for (IdToEndpointInfoMap::iterator it =
            local_id_to_endpoint_info_map_.begin();
        it != local_id_to_endpoint_info_map_.end();
        ++it) {
-    DCHECK_NE(it->second.state, EndpointInfo::STATE_NORMAL);
-    DCHECK(!it->second.message_pipe.get());
+    if (it->second.state == EndpointInfo::STATE_NORMAL) {
+      it->second.message_pipe->OnRemove(it->second.port);
+      num_live++;
+    } else {
+      DCHECK(!it->second.message_pipe.get());
+      num_zombies++;
+    }
   }
-#endif
+  DVLOG(2) << "Shut down Channel with " << num_live << " live endpoints and "
+           << num_zombies << " zombies";
 }
 
 MessageInTransit::EndpointId Channel::AttachMessagePipeEndpoint(
@@ -190,7 +196,7 @@ void Channel::RunRemoteMessagePipeEndpoint(
 
 bool Channel::WriteMessage(scoped_ptr<MessageInTransit> message) {
   base::AutoLock locker(lock_);
-  if (!raw_channel_.get()) {
+  if (!is_running_no_lock()) {
     // TODO(vtl): I think this is probably not an error condition, but I should
     // think about it (and the shutdown sequence) more carefully.
     LOG(WARNING) << "WriteMessage() after shutdown";
@@ -202,7 +208,8 @@ bool Channel::WriteMessage(scoped_ptr<MessageInTransit> message) {
 
 bool Channel::IsWriteBufferEmpty() {
   base::AutoLock locker(lock_);
-  DCHECK(raw_channel_.get());
+  if (!is_running_no_lock())
+    return true;
   return raw_channel_->IsWriteBufferEmpty();
 }
 
@@ -214,6 +221,9 @@ void Channel::DetachMessagePipeEndpoint(
   bool should_send_remove_message = false;
   {
     base::AutoLock locker_(lock_);
+    if (!is_running_no_lock())
+      return;
+
     IdToEndpointInfoMap::iterator it =
         local_id_to_endpoint_info_map_.find(local_id);
     DCHECK(it != local_id_to_endpoint_info_map_.end());
@@ -251,7 +261,7 @@ void Channel::DetachMessagePipeEndpoint(
 
 Channel::~Channel() {
   // The channel should have been shut down first.
-  DCHECK(!raw_channel_.get());
+  DCHECK(!is_running_no_lock());
 }
 
 void Channel::OnReadMessage(const MessageInTransit::View& message_view) {
@@ -276,8 +286,13 @@ void Channel::OnReadMessage(const MessageInTransit::View& message_view) {
 }
 
 void Channel::OnFatalError(FatalError fatal_error) {
-  // TODO(vtl): IMPORTANT. Notify all our endpoints that they're dead.
-  NOTIMPLEMENTED();
+  LOG(ERROR) << "RawChannel fatal error (type " << fatal_error << ")";
+  // TODO(vtl): We have some nested-deletion bugs on Windows, so this crashes.
+#if defined(OS_WIN)
+  LOG(ERROR) << "Not shutting down due Windows-only bug";
+#else
+  Shutdown();
+#endif
 }
 
 bool Channel::ValidateReadMessage(const MessageInTransit::View& message_view) {
@@ -309,7 +324,7 @@ void Channel::OnReadMessageForDownstream(
     // Since we own |raw_channel_|, and this method and |Shutdown()| should only
     // be called from the creation thread, |raw_channel_| should never be null
     // here.
-    DCHECK(raw_channel_.get());
+    DCHECK(is_running_no_lock());
 
     IdToEndpointInfoMap::const_iterator it =
         local_id_to_endpoint_info_map_.find(local_id);

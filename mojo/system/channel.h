@@ -112,6 +112,29 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
                                  MessageInTransit::EndpointId remote_id);
 
  private:
+  struct EndpointInfo {
+    enum State {
+      // Attached, possibly running or not.
+      STATE_NORMAL,
+      // "Zombie" states:
+      // Waiting for |DetachMessagePipeEndpoint()| before removing.
+      STATE_WAIT_LOCAL_DETACH,
+      // Waiting for a |kSubtypeChannelRemoveMessagePipeEndpointAck| before
+      // removing.
+      STATE_WAIT_REMOTE_REMOVE_ACK,
+      // Waiting for both of the above conditions before removing.
+      STATE_WAIT_LOCAL_DETACH_AND_REMOTE_REMOVE_ACK,
+    };
+
+    EndpointInfo();
+    EndpointInfo(scoped_refptr<MessagePipe> message_pipe, unsigned port);
+    ~EndpointInfo();
+
+    State state;
+    scoped_refptr<MessagePipe> message_pipe;
+    unsigned port;
+  };
+
   friend class base::RefCountedThreadSafe<Channel>;
   virtual ~Channel();
 
@@ -142,28 +165,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
                           MessageInTransit::EndpointId source_id,
                           MessageInTransit::EndpointId destination_id);
 
-  struct EndpointInfo {
-    enum State {
-      // Attached, possibly running or not.
-      STATE_NORMAL,
-      // "Zombie" states:
-      // Waiting for |DetachMessagePipeEndpoint()| before removing.
-      STATE_WAIT_LOCAL_DETACH,
-      // Waiting for a |kSubtypeChannelRemoveMessagePipeEndpointAck| before
-      // removing.
-      STATE_WAIT_REMOTE_REMOVE_ACK,
-      // Waiting for both of the above conditions before removing.
-      STATE_WAIT_LOCAL_DETACH_AND_REMOTE_REMOVE_ACK,
-    };
-
-    EndpointInfo();
-    EndpointInfo(scoped_refptr<MessagePipe> message_pipe, unsigned port);
-    ~EndpointInfo();
-
-    State state;
-    scoped_refptr<MessagePipe> message_pipe;
-    unsigned port;
-  };
+  bool is_running_no_lock() const { return raw_channel_; }
 
   base::ThreadChecker creation_thread_checker_;
 
