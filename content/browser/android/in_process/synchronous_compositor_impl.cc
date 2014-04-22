@@ -140,7 +140,7 @@ void SynchronousCompositorImpl::SetMemoryPolicy(
   DCHECK(CalledOnValidThread());
   DCHECK(output_surface_);
 
-  return output_surface_->SetMemoryPolicy(policy);
+  output_surface_->SetMemoryPolicy(policy);
 }
 
 void SynchronousCompositorImpl::DidChangeRootLayerScrollOffset() {
