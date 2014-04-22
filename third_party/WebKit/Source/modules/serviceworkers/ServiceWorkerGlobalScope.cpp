@@ -33,6 +33,7 @@
 #include "bindings/v8/ScriptObject.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerThreadStartupData.h"
+#include "modules/serviceworkers/ServiceWorkerClients.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "modules/serviceworkers/ServiceWorkerThread.h"
 #include "platform/weborigin/KURL.h"
@@ -62,6 +63,13 @@ ServiceWorkerGlobalScope::~ServiceWorkerGlobalScope()
 String ServiceWorkerGlobalScope::scope(ExecutionContext* context)
 {
     return ServiceWorkerGlobalScopeClient::from(context)->scope().string();
+}
+
+PassRefPtr<ServiceWorkerClients> ServiceWorkerGlobalScope::clients()
+{
+    if (!m_clients)
+        m_clients = ServiceWorkerClients::create();
+    return m_clients;
 }
 
 const AtomicString& ServiceWorkerGlobalScope::interfaceName() const

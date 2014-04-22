@@ -32,6 +32,7 @@
 #define ServiceWorkerGlobalScopeClientImpl_h
 
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
+#include "public/platform/WebServiceWorkerClientsInfo.h"
 #include "wtf/OwnPtr.h"
 
 namespace blink {
@@ -44,6 +45,7 @@ public:
     static PassOwnPtr<WebCore::ServiceWorkerGlobalScopeClient> create(PassOwnPtr<WebServiceWorkerContextClient>);
     virtual ~ServiceWorkerGlobalScopeClientImpl();
 
+    virtual void getClients(WebServiceWorkerClientsCallbacks*);
     virtual WebURL scope() const OVERRIDE;
 
     virtual void didHandleActivateEvent(int eventID, WebServiceWorkerEventResult) OVERRIDE;

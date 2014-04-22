@@ -38,6 +38,7 @@
 namespace WebCore {
 
 class ServiceWorkerThread;
+class ServiceWorkerClients;
 class WorkerThreadStartupData;
 
 class ServiceWorkerGlobalScope FINAL : public WorkerGlobalScope {
@@ -48,6 +49,7 @@ public:
     virtual bool isServiceWorkerGlobalScope() const OVERRIDE { return true; }
 
     // ServiceWorkerGlobalScope.idl
+    PassRefPtr<ServiceWorkerClients> clients();
     String scope(ExecutionContext*);
 
     // EventTarget
@@ -63,6 +65,8 @@ public:
 
 private:
     ServiceWorkerGlobalScope(const KURL&, const String& userAgent, ServiceWorkerThread*, double timeOrigin, PassOwnPtrWillBeRawPtr<WorkerClients>);
+
+    RefPtr<ServiceWorkerClients> m_clients;
 };
 
 } // namespace WebCore

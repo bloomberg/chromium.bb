@@ -405,6 +405,7 @@ ScriptProcessorNode
 SecurityPolicyViolationEvent
 Selection
 ServiceWorker
+ServiceWorkerContainer
 ShadowRoot
 SharedWorker
 SpeechInputEvent

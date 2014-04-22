@@ -49,6 +49,11 @@ ServiceWorkerGlobalScopeClientImpl::~ServiceWorkerGlobalScopeClientImpl()
 {
 }
 
+void ServiceWorkerGlobalScopeClientImpl::getClients(WebServiceWorkerClientsCallbacks* callbacks)
+{
+    m_client->getClients(callbacks);
+}
+
 WebURL ServiceWorkerGlobalScopeClientImpl::scope() const
 {
     return m_client->scope();

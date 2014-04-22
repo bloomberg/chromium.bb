@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<title>Service Worker: Interfaces</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="resources/interfaces.js"></script>
+<script src="resources/test-helpers.js"></script>
+<script>
+
+test(function() {
+    verifyInterface('ServiceWorkerContainer',
+                    navigator.serviceWorker,
+                    {
+                        register: 'function',
+                        unregister: 'function'
+                    });
+
+}, 'Interfaces and attributes of ServiceWorkerContainer');
+
+service_worker_test(
+    'resources/interfaces-worker.js',
+    'Interfaces and attributes in ServiceWorkerGlobalScope');
+
+</script>

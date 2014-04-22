@@ -32,6 +32,8 @@
 #define ServiceWorkerGlobalScopeClient_h
 
 #include "core/workers/WorkerClients.h"
+#include "public/platform/WebCallbacks.h"
+#include "public/platform/WebServiceWorkerClientsInfo.h"
 #include "public/platform/WebServiceWorkerEventResult.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
@@ -51,6 +53,7 @@ class ServiceWorkerGlobalScopeClient : public Supplement<WorkerClients> {
 public:
     virtual ~ServiceWorkerGlobalScopeClient() { }
 
+    virtual void getClients(blink::WebServiceWorkerClientsCallbacks*) = 0;
     virtual blink::WebURL scope() const = 0;
 
     virtual void didHandleActivateEvent(int eventID, blink::WebServiceWorkerEventResult) = 0;

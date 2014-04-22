@@ -32,6 +32,7 @@
     RuntimeEnabled=ServiceWorker,
 ] interface ServiceWorkerGlobalScope : WorkerGlobalScope {
 
+  readonly attribute ServiceWorkerClients clients;
   [CallWith=ExecutionContext, Unforgeable] readonly attribute DOMString scope;
 
   attribute EventHandler onactivate;
