@@ -76,7 +76,7 @@ void BookmarkChangeProcessor::UpdateSyncNodeProperties(
     syncer::WriteNode* dst) {
   // Set the properties of the item.
   dst->SetIsFolder(src->is_folder());
-  dst->SetTitle(base::UTF16ToWideHack(src->GetTitle()));
+  dst->SetTitle(base::UTF16ToUTF8(src->GetTitle()));
   sync_pb::BookmarkSpecifics bookmark_specifics(dst->GetBookmarkSpecifics());
   if (!src->is_folder())
     bookmark_specifics.set_url(src->url().spec());

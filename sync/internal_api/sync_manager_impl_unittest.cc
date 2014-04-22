@@ -334,7 +334,7 @@ TEST_F(SyncApiTest, TestDeleteBehavior) {
         wnode.InitUniqueByCreation(BOOKMARKS, root_node, "testtag");
     EXPECT_EQ(WriteNode::INIT_SUCCESS, result);
     wnode.SetIsFolder(false);
-    wnode.SetTitle(base::UTF8ToWide(test_title));
+    wnode.SetTitle(test_title);
 
     node_id = wnode.GetId();
   }
@@ -379,7 +379,7 @@ TEST_F(SyncApiTest, TestDeleteBehavior) {
     EXPECT_EQ(wnode.GetParentId(), folder_node.GetId());
     EXPECT_EQ(wnode.GetId(), node_id);
     EXPECT_NE(wnode.GetTitle(), test_title);  // Title should be cleared
-    wnode.SetTitle(base::UTF8ToWide(test_title));
+    wnode.SetTitle(test_title);
   }
 
   // Now look up should work.
@@ -444,13 +444,13 @@ TEST_F(SyncApiTest, WriteEncryptedTitle) {
     WriteNode bookmark_node(&trans);
     ASSERT_TRUE(bookmark_node.InitBookmarkByCreation(root_node, NULL));
     bookmark_id = bookmark_node.GetId();
-    bookmark_node.SetTitle(base::UTF8ToWide("foo"));
+    bookmark_node.SetTitle("foo");
 
     WriteNode pref_node(&trans);
     WriteNode::InitUniqueByCreationResult result =
         pref_node.InitUniqueByCreation(PREFERENCES, root_node, "bar");
     ASSERT_EQ(WriteNode::INIT_SUCCESS, result);
-    pref_node.SetTitle(base::UTF8ToWide("bar"));
+    pref_node.SetTitle("bar");
   }
   {
     ReadTransaction trans(FROM_HERE, test_user_share_.user_share());
@@ -1653,7 +1653,7 @@ TEST_F(SyncManagerTest, CreateLocalBookmark) {
     WriteNode node(&trans);
     ASSERT_TRUE(node.InitBookmarkByCreation(bookmark_root, NULL));
     node.SetIsFolder(false);
-    node.SetTitle(base::UTF8ToWide(title));
+    node.SetTitle(title);
 
     sync_pb::BookmarkSpecifics bookmark_specifics(node.GetBookmarkSpecifics());
     bookmark_specifics.set_url(url);
@@ -1992,7 +1992,7 @@ TEST_F(SyncManagerTest, SetBookmarkTitle) {
     WriteNode node(&trans);
     EXPECT_EQ(BaseNode::INIT_OK,
               node.InitByClientTagLookup(BOOKMARKS, client_tag));
-    node.SetTitle(base::UTF8ToWide(client_tag));
+    node.SetTitle(client_tag);
   }
   EXPECT_FALSE(ResetUnsyncedEntry(BOOKMARKS, client_tag));
 
@@ -2002,7 +2002,7 @@ TEST_F(SyncManagerTest, SetBookmarkTitle) {
     WriteNode node(&trans);
     EXPECT_EQ(BaseNode::INIT_OK,
               node.InitByClientTagLookup(BOOKMARKS, client_tag));
-    node.SetTitle(base::UTF8ToWide("title2"));
+    node.SetTitle("title2");
   }
   EXPECT_TRUE(ResetUnsyncedEntry(BOOKMARKS, client_tag));
 }
@@ -2041,7 +2041,7 @@ TEST_F(SyncManagerTest, SetBookmarkTitleWithEncryption) {
     WriteNode node(&trans);
     EXPECT_EQ(BaseNode::INIT_OK,
               node.InitByClientTagLookup(BOOKMARKS, client_tag));
-    node.SetTitle(base::UTF8ToWide(client_tag));
+    node.SetTitle(client_tag);
     const syncable::Entry* node_entry = node.GetEntry();
     const sync_pb::EntitySpecifics& specifics = node_entry->GetSpecifics();
     EXPECT_TRUE(specifics.has_encrypted());
@@ -2056,7 +2056,7 @@ TEST_F(SyncManagerTest, SetBookmarkTitleWithEncryption) {
     WriteNode node(&trans);
     EXPECT_EQ(BaseNode::INIT_OK,
               node.InitByClientTagLookup(BOOKMARKS, client_tag));
-    node.SetTitle(base::UTF8ToWide("title2"));
+    node.SetTitle("title2");
     const syncable::Entry* node_entry = node.GetEntry();
     const sync_pb::EntitySpecifics& specifics = node_entry->GetSpecifics();
     EXPECT_TRUE(specifics.has_encrypted());
@@ -2087,7 +2087,7 @@ TEST_F(SyncManagerTest, SetNonBookmarkTitle) {
     WriteNode node(&trans);
     EXPECT_EQ(BaseNode::INIT_OK,
               node.InitByClientTagLookup(PREFERENCES, client_tag));
-    node.SetTitle(base::UTF8ToWide(client_tag));
+    node.SetTitle(client_tag);
   }
   EXPECT_FALSE(ResetUnsyncedEntry(PREFERENCES, client_tag));
 
@@ -2097,7 +2097,7 @@ TEST_F(SyncManagerTest, SetNonBookmarkTitle) {
     WriteNode node(&trans);
     EXPECT_EQ(BaseNode::INIT_OK,
               node.InitByClientTagLookup(PREFERENCES, client_tag));
-    node.SetTitle(base::UTF8ToWide("title2"));
+    node.SetTitle("title2");
   }
   EXPECT_TRUE(ResetUnsyncedEntry(PREFERENCES, client_tag));
 }
@@ -2138,7 +2138,7 @@ TEST_F(SyncManagerTest, SetNonBookmarkTitleWithEncryption) {
     WriteNode node(&trans);
     EXPECT_EQ(BaseNode::INIT_OK,
               node.InitByClientTagLookup(PREFERENCES, client_tag));
-    node.SetTitle(base::UTF8ToWide(client_tag));
+    node.SetTitle(client_tag);
     const syncable::Entry* node_entry = node.GetEntry();
     const sync_pb::EntitySpecifics& specifics = node_entry->GetSpecifics();
     EXPECT_TRUE(specifics.has_encrypted());
@@ -2153,7 +2153,7 @@ TEST_F(SyncManagerTest, SetNonBookmarkTitleWithEncryption) {
     WriteNode node(&trans);
     EXPECT_EQ(BaseNode::INIT_OK,
               node.InitByClientTagLookup(PREFERENCES, client_tag));
-    node.SetTitle(base::UTF8ToWide("title2"));
+    node.SetTitle("title2");
     const syncable::Entry* node_entry = node.GetEntry();
     const sync_pb::EntitySpecifics& specifics = node_entry->GetSpecifics();
     EXPECT_TRUE(specifics.has_encrypted());
@@ -2186,7 +2186,7 @@ TEST_F(SyncManagerTest, SetLongTitle) {
     WriteNode node(&trans);
     EXPECT_EQ(BaseNode::INIT_OK,
               node.InitByClientTagLookup(PREFERENCES, kClientTag));
-    node.SetTitle(base::UTF8ToWide(title));
+    node.SetTitle(title);
     EXPECT_EQ(node.GetTitle(), title.substr(0, 255));
   }
   EXPECT_TRUE(ResetUnsyncedEntry(PREFERENCES, kClientTag));
@@ -2197,7 +2197,7 @@ TEST_F(SyncManagerTest, SetLongTitle) {
     WriteNode node(&trans);
     EXPECT_EQ(BaseNode::INIT_OK,
               node.InitByClientTagLookup(PREFERENCES, kClientTag));
-    node.SetTitle(base::UTF8ToWide(title));
+    node.SetTitle(title);
     EXPECT_EQ(node.GetTitle(), title.substr(0, 255));
   }
   EXPECT_FALSE(ResetUnsyncedEntry(PREFERENCES, kClientTag));
@@ -2208,7 +2208,7 @@ TEST_F(SyncManagerTest, SetLongTitle) {
     WriteNode node(&trans);
     EXPECT_EQ(BaseNode::INIT_OK,
               node.InitByClientTagLookup(PREFERENCES, kClientTag));
-    node.SetTitle(base::UTF8ToWide("title2"));
+    node.SetTitle("title2");
   }
   EXPECT_TRUE(ResetUnsyncedEntry(PREFERENCES, kClientTag));
 }
@@ -2655,7 +2655,7 @@ TEST_F(SyncManagerTest, PurgeUnappliedTypes) {
   // Take a snapshot to clear all the dirty bits.
   share->directory.get()->SaveChanges();
 
-   // Now request a purge for the unapplied types.
+  // Now request a purge for the unapplied types.
   disabled_types.PutAll(unapplied_types);
   sync_manager_.PurgeDisabledTypes(disabled_types,
                                    ModelTypeSet(),
@@ -2928,7 +2928,6 @@ TEST_F(SyncManagerChangeProcessingTest, MoveIntoPopulatedFolder) {
                                    "childB");
     SetNodeProperties(&child_b);
     child_b_id = child_b.GetMetahandle();
-
   }
 
   // Close that transaction.  The above was to setup the initial scenario.  The
@@ -3047,4 +3046,4 @@ TEST_F(SyncManagerInitInvalidStorageTest, FailToOpenDatabase) {
   EXPECT_FALSE(initialization_succeeded_);
 }
 
-}  // namespace
+}  // namespace syncer

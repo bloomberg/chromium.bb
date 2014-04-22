@@ -92,7 +92,7 @@ class SYNC_EXPORT WriteNode : public BaseNode {
 
   // These Set() functions correspond to the Get() functions of BaseNode.
   void SetIsFolder(bool folder);
-  void SetTitle(const std::wstring& title);
+  void SetTitle(const std::string& title);
 
   // External ID is a client-only field, so setting it doesn't cause the item to
   // be synced again.

@@ -502,7 +502,7 @@ syncer::SyncError GenericChangeProcessor::HandleActionAdd(
       }
     }
   }
-  sync_node->SetTitle(base::UTF8ToWide(change.sync_data().GetTitle()));
+  sync_node->SetTitle(change.sync_data().GetTitle());
   SetNodeSpecifics(change.sync_data().GetSpecifics(), sync_node);
   attachment_service_->OnSyncDataAdd(change.sync_data());
   if (merge_result_.get()) {
@@ -605,7 +605,7 @@ syncer::SyncError GenericChangeProcessor::HandleActionUpdate(
     }
   }
 
-  sync_node->SetTitle(base::UTF8ToWide(change.sync_data().GetTitle()));
+  sync_node->SetTitle(change.sync_data().GetTitle());
   SetNodeSpecifics(change.sync_data().GetSpecifics(), sync_node);
   attachment_service_->OnSyncDataUpdate(sync_node->GetAttachmentIds(),
                                         change.sync_data());

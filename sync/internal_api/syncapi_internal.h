@@ -26,7 +26,7 @@ sync_pb::PasswordSpecificsData* DecryptPasswordSpecifics(
     Cryptographer* crypto);
 
 SYNC_EXPORT void SyncAPINameToServerName(const std::string& syncer_name,
-                                                 std::string* out);
+                                         std::string* out);
 SYNC_EXPORT void ServerNameToSyncAPIName(const std::string& server_name,
                                          std::string* out);
 
