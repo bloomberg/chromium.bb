@@ -114,8 +114,6 @@ public:
     bool needsFullRepaint() const { return m_doFullRepaint; }
 
     void updateAcceleratedCompositingSettings();
-
-    void recalcOverflowAfterStyleChange();
     void updateCompositingLayersAfterStyleChange();
     void updateCompositingLayersAfterLayout();
 

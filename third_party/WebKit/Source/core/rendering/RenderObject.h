@@ -565,10 +565,6 @@ public:
 
     bool preferredLogicalWidthsDirty() const { return m_bitfields.preferredLogicalWidthsDirty(); }
 
-    bool needsOverflowRecalcAfterStyleChange() const { return m_bitfields.selfNeedsOverflowRecalcAfterStyleChange() || m_bitfields.childNeedsOverflowRecalcAfterStyleChange(); }
-    bool selfNeedsOverflowRecalcAfterStyleChange() const { return m_bitfields.selfNeedsOverflowRecalcAfterStyleChange(); }
-    bool childNeedsOverflowRecalcAfterStyleChange() const { return m_bitfields.childNeedsOverflowRecalcAfterStyleChange(); }
-
     bool isSelectionBorder() const;
 
     bool hasClip() const { return isOutOfFlowPositioned() && style()->hasClip(); }
@@ -638,6 +634,7 @@ public:
     void clearNeedsLayout();
     void setChildNeedsLayout(MarkingBehavior = MarkContainingBlockChain, SubtreeLayoutScope* = 0);
     void setNeedsPositionedMovementLayout();
+    void setNeedsSimplifiedNormalFlowLayout();
     void setPreferredLogicalWidthsDirty(MarkingBehavior = MarkContainingBlockChain);
     void clearPreferredLogicalWidthsDirty();
     void invalidateContainerPreferredLogicalWidths();
@@ -1014,9 +1011,6 @@ public:
 
     bool shouldDisableLayoutState() const { return hasColumns() || hasTransform() || hasReflection() || style()->isFlippedBlocksWritingMode(); }
 
-    void setNeedsOverflowRecalcAfterStyleChange();
-    void markContainingBlocksForOverflowRecalc();
-
 protected:
     inline bool layerCreationAllowedForSubtree() const;
 
@@ -1134,8 +1128,6 @@ private:
             , m_needsSimplifiedNormalFlowLayout(false)
             , m_preferredLogicalWidthsDirty(false)
             , m_floating(false)
-            , m_selfNeedsOverflowRecalcAfterStyleChange(false)
-            , m_childNeedsOverflowRecalcAfterStyleChange(false)
             , m_isAnonymous(!node)
             , m_isText(false)
             , m_isBox(false)
@@ -1173,8 +1165,6 @@ private:
         ADD_BOOLEAN_BITFIELD(needsSimplifiedNormalFlowLayout, NeedsSimplifiedNormalFlowLayout);
         ADD_BOOLEAN_BITFIELD(preferredLogicalWidthsDirty, PreferredLogicalWidthsDirty);
         ADD_BOOLEAN_BITFIELD(floating, Floating);
-        ADD_BOOLEAN_BITFIELD(selfNeedsOverflowRecalcAfterStyleChange, SelfNeedsOverflowRecalcAfterStyleChange);
-        ADD_BOOLEAN_BITFIELD(childNeedsOverflowRecalcAfterStyleChange, ChildNeedsOverflowRecalcAfterStyleChange);
 
         ADD_BOOLEAN_BITFIELD(isAnonymous, IsAnonymous);
         ADD_BOOLEAN_BITFIELD(isText, IsText);
@@ -1243,8 +1233,6 @@ private:
     void setIsDragging(bool b) { m_bitfields.setIsDragging(b); }
     void setEverHadLayout(bool b) { m_bitfields.setEverHadLayout(b); }
     void setShouldRepaintOverflow(bool b) { m_bitfields.setShouldRepaintOverflow(b); }
-    void setSelfNeedsOverflowRecalcAfterStyleChange(bool b) { m_bitfields.setSelfNeedsOverflowRecalcAfterStyleChange(b); }
-    void setChildNeedsOverflowRecalcAfterStyleChange(bool b) { m_bitfields.setChildNeedsOverflowRecalcAfterStyleChange(b); }
 
 private:
     // Store state between styleWillChange and styleDidChange
@@ -1343,6 +1331,18 @@ inline void RenderObject::setNeedsPositionedMovementLayout()
         markContainingBlocksForLayout();
         if (hasLayer())
             setLayerNeedsFullRepaintForPositionedMovementLayout();
+    }
+}
+
+inline void RenderObject::setNeedsSimplifiedNormalFlowLayout()
+{
+    bool alreadyNeededLayout = needsSimplifiedNormalFlowLayout();
+    setNeedsSimplifiedNormalFlowLayout(true);
+    ASSERT(!isSetNeedsLayoutForbidden());
+    if (!alreadyNeededLayout) {
+        markContainingBlocksForLayout();
+        if (hasLayer())
+            setLayerNeedsFullRepaint();
     }
 }
 

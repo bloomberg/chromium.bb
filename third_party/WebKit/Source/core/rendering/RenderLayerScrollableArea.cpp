@@ -757,26 +757,6 @@ void RenderLayerScrollableArea::updateAfterCompositingChange()
     layer()->updateScrollingStateAfterCompositingChange();
 }
 
-void RenderLayerScrollableArea::updateAfterOverflowRecalc()
-{
-    computeScrollDimensions();
-    if (Scrollbar* horizontalScrollbar = this->horizontalScrollbar()) {
-        int clientWidth = m_box->pixelSnappedClientWidth();
-        horizontalScrollbar->setProportion(clientWidth, overflowRect().width());
-    }
-    if (Scrollbar* verticalScrollbar = this->verticalScrollbar()) {
-        int clientHeight = m_box->pixelSnappedClientHeight();
-        verticalScrollbar->setProportion(clientHeight, overflowRect().height());
-    }
-
-    bool hasHorizontalOverflow = this->hasHorizontalOverflow();
-    bool hasVerticalOverflow = this->hasVerticalOverflow();
-    bool autoHorizontalScrollBarChanged = m_box->hasAutoHorizontalScrollbar() && (hasHorizontalScrollbar() != hasHorizontalOverflow);
-    bool autoVerticalScrollBarChanged = m_box->hasAutoVerticalScrollbar() && (hasVerticalScrollbar() != hasVerticalOverflow);
-    if (autoHorizontalScrollBarChanged || autoVerticalScrollBarChanged)
-        m_box->setNeedsLayout();
-}
-
 IntSize RenderLayerScrollableArea::clampScrollOffset(const IntSize& scrollOffset) const
 {
     int maxX = scrollWidth() - m_box->pixelSnappedClientWidth();
