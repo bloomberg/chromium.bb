@@ -12,8 +12,10 @@
 if (typeof chrome !== 'undefined' && chrome.app && chrome.app.runtime) {
   var showCalculatorWindow = function () {
     chrome.app.window.create('calculator.html', {
-      defaultWidth: 243, minWidth: 243, maxWidth: 243,
-      defaultHeight: 380, minHeight: 380, maxHeight: 380,
+      innerBounds: {
+        width: 243, minWidth: 243, maxWidth: 243,
+        height: 380, minHeight: 380, maxHeight: 380
+      },
       id: 'calculator'
     }, function(appWindow) {
       appWindow.contentWindow.onload = function() {
