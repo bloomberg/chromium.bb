@@ -287,7 +287,7 @@ crbug.com/364777 [ Linux Debug ] fast/js/JSON-stringify.html [ Failure ]
 
 crbug.com/225184 scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.html [ ImageOnlyFailure Pass ]
 
-crbug.com/341682 editing/selection/4960116.html [ ImageOnlyFailure Pass ]
+crbug.com/341682 crbug.com/365917 editing/selection/4960116.html [ Failure ImageOnlyFailure Pass ]
 crbug.com/365340 editing/pasteboard/paste-noscript-xhtml.xhtml [ Failure Pass ]
 
 crbug.com/231357 [ Win Linux Debug ] compositing/video-page-visibility.html [ ImageOnlyFailure ]
