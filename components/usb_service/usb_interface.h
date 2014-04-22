@@ -1,16 +1,19 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_USB_USB_INTERFACE_H_
-#define CHROME_BROWSER_USB_USB_INTERFACE_H_
+#ifndef COMPONENTS_USB_SERVICE_USB_INTERFACE_H_
+#define COMPONENTS_USB_SERVICE_USB_INTERFACE_H_
 
 #include "base/memory/ref_counted.h"
+#include "components/usb_service/usb_service_export.h"
 
 struct libusb_config_descriptor;
 struct libusb_endpoint_descriptor;
 struct libusb_interface;
 struct libusb_interface_descriptor;
+
+namespace usb_service {
 
 typedef libusb_config_descriptor* PlatformUsbConfigDescriptor;
 typedef const libusb_endpoint_descriptor* PlatformUsbEndpointDescriptor;
@@ -47,7 +50,7 @@ class UsbConfigDescriptor;
 class UsbInterfaceDescriptor;
 class UsbInterfaceAltSettingDescriptor;
 
-class UsbEndpointDescriptor
+class USB_SERVICE_EXPORT UsbEndpointDescriptor
     : public base::RefCounted<const UsbEndpointDescriptor> {
  public:
   int GetAddress() const;
@@ -62,9 +65,8 @@ class UsbEndpointDescriptor
   friend class base::RefCounted<const UsbEndpointDescriptor>;
   friend class UsbInterfaceAltSettingDescriptor;
 
-  UsbEndpointDescriptor(
-      scoped_refptr<const UsbConfigDescriptor> config,
-      PlatformUsbEndpointDescriptor descriptor);
+  UsbEndpointDescriptor(scoped_refptr<const UsbConfigDescriptor> config,
+                        PlatformUsbEndpointDescriptor descriptor);
   ~UsbEndpointDescriptor();
 
   scoped_refptr<const UsbConfigDescriptor> config_;
@@ -73,7 +75,7 @@ class UsbEndpointDescriptor
   DISALLOW_COPY_AND_ASSIGN(UsbEndpointDescriptor);
 };
 
-class UsbInterfaceAltSettingDescriptor
+class USB_SERVICE_EXPORT UsbInterfaceAltSettingDescriptor
     : public base::RefCounted<const UsbInterfaceAltSettingDescriptor> {
  public:
   size_t GetNumEndpoints() const;
@@ -100,7 +102,7 @@ class UsbInterfaceAltSettingDescriptor
   DISALLOW_COPY_AND_ASSIGN(UsbInterfaceAltSettingDescriptor);
 };
 
-class UsbInterfaceDescriptor
+class USB_SERVICE_EXPORT UsbInterfaceDescriptor
     : public base::RefCounted<const UsbInterfaceDescriptor> {
  public:
   size_t GetNumAltSettings() const;
@@ -112,7 +114,7 @@ class UsbInterfaceDescriptor
   friend class UsbConfigDescriptor;
 
   UsbInterfaceDescriptor(scoped_refptr<const UsbConfigDescriptor> config,
-               PlatformUsbInterface usbInterface);
+                         PlatformUsbInterface usbInterface);
   ~UsbInterfaceDescriptor();
 
   scoped_refptr<const UsbConfigDescriptor> config_;
@@ -121,7 +123,8 @@ class UsbInterfaceDescriptor
   DISALLOW_COPY_AND_ASSIGN(UsbInterfaceDescriptor);
 };
 
-class UsbConfigDescriptor : public base::RefCounted<UsbConfigDescriptor> {
+class USB_SERVICE_EXPORT UsbConfigDescriptor
+    : public base::RefCounted<UsbConfigDescriptor> {
  public:
   size_t GetNumInterfaces() const;
   scoped_refptr<const UsbInterfaceDescriptor> GetInterface(size_t index) const;
@@ -138,4 +141,6 @@ class UsbConfigDescriptor : public base::RefCounted<UsbConfigDescriptor> {
   DISALLOW_COPY_AND_ASSIGN(UsbConfigDescriptor);
 };
 
-#endif  // CHROME_BROWSER_USB_USB_INTERFACE_H_
+}  // namespace usb_service;
+
+#endif  // COMPONENTS_USB_SERVICE_USB_INTERFACE_H_

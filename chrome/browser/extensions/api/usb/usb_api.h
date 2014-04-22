@@ -10,16 +10,12 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/usb/usb_device.h"
-#include "chrome/browser/usb/usb_device_handle.h"
 #include "chrome/common/extensions/api/usb.h"
+#include "components/usb_service/usb_device.h"
+#include "components/usb_service/usb_device_handle.h"
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/api/async_api_function.h"
 #include "net/base/io_buffer.h"
-
-class UsbDevice;
-class UsbDeviceHandle;
-class UsbService;
 
 namespace extensions {
 
@@ -35,11 +31,12 @@ class UsbAsyncApiFunction : public AsyncApiFunction {
   virtual bool PrePrepare() OVERRIDE;
   virtual bool Respond() OVERRIDE;
 
-  scoped_refptr<UsbDevice> GetDeviceOrOrCompleteWithError(
+  scoped_refptr<usb_service::UsbDevice> GetDeviceOrOrCompleteWithError(
       const extensions::api::usb::Device& input_device);
 
-  scoped_refptr<UsbDeviceHandle> GetDeviceHandleOrCompleteWithError(
-      const extensions::api::usb::ConnectionHandle& input_device_handle);
+  scoped_refptr<usb_service::UsbDeviceHandle>
+      GetDeviceHandleOrCompleteWithError(
+          const extensions::api::usb::ConnectionHandle& input_device_handle);
 
   void RemoveUsbDeviceResource(int api_resource_id);
 
@@ -54,13 +51,15 @@ class UsbAsyncApiTransferFunction : public UsbAsyncApiFunction {
   virtual ~UsbAsyncApiTransferFunction();
 
   bool ConvertDirectionSafely(const extensions::api::usb::Direction& input,
-                              UsbEndpointDirection* output);
-  bool ConvertRequestTypeSafely(const extensions::api::usb::RequestType& input,
-                                UsbDeviceHandle::TransferRequestType* output);
-  bool ConvertRecipientSafely(const extensions::api::usb::Recipient& input,
-                              UsbDeviceHandle::TransferRecipient* output);
+                              usb_service::UsbEndpointDirection* output);
+  bool ConvertRequestTypeSafely(
+      const extensions::api::usb::RequestType& input,
+      usb_service::UsbDeviceHandle::TransferRequestType* output);
+  bool ConvertRecipientSafely(
+      const extensions::api::usb::Recipient& input,
+      usb_service::UsbDeviceHandle::TransferRecipient* output);
 
-  void OnCompleted(UsbTransferStatus status,
+  void OnCompleted(usb_service::UsbTransferStatus status,
                    scoped_refptr<net::IOBuffer> data,
                    size_t length);
 };
@@ -78,9 +77,10 @@ class UsbFindDevicesFunction : public UsbAsyncApiFunction {
   virtual void AsyncWorkStart() OVERRIDE;
 
  private:
-  void OpenDevices(scoped_ptr<std::vector<scoped_refptr<UsbDevice> > > devices);
+  void OpenDevices(
+      scoped_ptr<std::vector<scoped_refptr<usb_service::UsbDevice> > > devices);
 
-  std::vector<scoped_refptr<UsbDeviceHandle> > device_handles_;
+  std::vector<scoped_refptr<usb_service::UsbDeviceHandle> > device_handles_;
   scoped_ptr<extensions::api::usb::FindDevices::Params> parameters_;
 };
 
@@ -90,7 +90,7 @@ class UsbGetDevicesFunction : public UsbAsyncApiFunction {
 
   UsbGetDevicesFunction();
 
-  static void SetDeviceForTest(UsbDevice* device);
+  static void SetDeviceForTest(usb_service::UsbDevice* device);
 
   virtual bool Prepare() OVERRIDE;
   virtual void AsyncWorkStart() OVERRIDE;
@@ -100,7 +100,7 @@ class UsbGetDevicesFunction : public UsbAsyncApiFunction {
 
  private:
   void EnumerationCompletedFileThread(
-      scoped_ptr<std::vector<scoped_refptr<UsbDevice> > > devices);
+      scoped_ptr<std::vector<scoped_refptr<usb_service::UsbDevice> > > devices);
 
   scoped_ptr<extensions::api::usb::GetDevices::Params> parameters_;
 };
@@ -136,7 +136,7 @@ class UsbOpenDeviceFunction : public UsbAsyncApiFunction {
   virtual ~UsbOpenDeviceFunction();
 
  private:
-  scoped_refptr<UsbDeviceHandle> handle_;
+  scoped_refptr<usb_service::UsbDeviceHandle> handle_;
   scoped_ptr<extensions::api::usb::OpenDevice::Params> parameters_;
 };
 
@@ -153,14 +153,14 @@ class UsbListInterfacesFunction : public UsbAsyncApiFunction {
   virtual void AsyncWorkStart() OVERRIDE;
 
  private:
-  bool ConvertDirectionSafely(const UsbEndpointDirection& input,
+  bool ConvertDirectionSafely(const usb_service::UsbEndpointDirection& input,
                               extensions::api::usb::Direction* output);
   bool ConvertSynchronizationTypeSafely(
-      const UsbSynchronizationType& input,
+      const usb_service::UsbSynchronizationType& input,
       extensions::api::usb::SynchronizationType* output);
-  bool ConvertTransferTypeSafely(const UsbTransferType& input,
+  bool ConvertTransferTypeSafely(const usb_service::UsbTransferType& input,
                                  extensions::api::usb::TransferType* output);
-  bool ConvertUsageTypeSafely(const UsbUsageType& input,
+  bool ConvertUsageTypeSafely(const usb_service::UsbUsageType& input,
                               extensions::api::usb::UsageType* output);
 
   scoped_ptr<base::ListValue> result_;

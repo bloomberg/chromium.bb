@@ -12,13 +12,11 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
-#include "chrome/browser/usb/usb_device_handle.h"
 #include "chrome/common/extensions/api/usb.h"
+#include "components/usb_service/usb_device_handle.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/api_resource.h"
 #include "extensions/browser/api/api_resource_manager.h"
-
-class UsbDeviceHandle;
 
 namespace net {
 class IOBuffer;
@@ -30,10 +28,10 @@ namespace extensions {
 class UsbDeviceResource : public ApiResource {
  public:
   UsbDeviceResource(const std::string& owner_extension_id,
-                    scoped_refptr<UsbDeviceHandle> device);
+                    scoped_refptr<usb_service::UsbDeviceHandle> device);
   virtual ~UsbDeviceResource();
 
-  scoped_refptr<UsbDeviceHandle> device() { return device_; }
+  scoped_refptr<usb_service::UsbDeviceHandle> device() { return device_; }
 
   static const content::BrowserThread::ID kThreadId =
       content::BrowserThread::FILE;
@@ -42,7 +40,7 @@ class UsbDeviceResource : public ApiResource {
   friend class ApiResourceManager<UsbDeviceResource>;
   static const char* service_name() { return "UsbDeviceResourceManager"; }
 
-  scoped_refptr<UsbDeviceHandle> device_;
+  scoped_refptr<usb_service::UsbDeviceHandle> device_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbDeviceResource);
 };

@@ -10,12 +10,13 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/synchronization/lock.h"
-#include "chrome/browser/usb/usb_device_handle.h"
 #include "chrome/common/extensions/api/usb.h"
+#include "components/usb_service/usb_device_handle.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/api_resource.h"
 
 using content::BrowserThread;
+using usb_service::UsbDeviceHandle;
 
 namespace extensions {
 

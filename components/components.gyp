@@ -55,6 +55,11 @@
         'wifi.gypi',
       ],
     }],
+    ['OS != "ios" and OS != "android"', {
+      'includes': [
+        'usb_service.gypi',
+      ]
+    }],
     ['android_webview_build == 0', {
       # Android WebView fails to build if a dependency on sync.gyp:sync is
       # introduced.

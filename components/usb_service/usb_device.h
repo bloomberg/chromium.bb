@@ -1,10 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
-#ifndef CHROME_BROWSER_USB_USB_DEVICE_H_
-#define CHROME_BROWSER_USB_USB_DEVICE_H_
+#ifndef COMPONENTS_USB_SERVICE_USB_DEVICE_H_
+#define COMPONENTS_USB_SERVICE_USB_DEVICE_H_
 
 #include <vector>
 
@@ -12,9 +11,13 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
-#include "chrome/browser/usb/usb_interface.h"
+#include "components/usb_service/usb_interface.h"
+#include "components/usb_service/usb_service_export.h"
 
 struct libusb_device;
+
+namespace usb_service {
+
 class UsbDeviceHandle;
 class UsbContext;
 
@@ -23,7 +26,8 @@ typedef libusb_device* PlatformUsbDevice;
 // A UsbDevice object represents a detected USB device, providing basic
 // information about it. For further manipulation of the device, a
 // UsbDeviceHandle must be created from Open() method.
-class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
+class USB_SERVICE_EXPORT UsbDevice
+    : public base::RefCountedThreadSafe<UsbDevice> {
  public:
   // Accessors to basic information.
   PlatformUsbDevice platform_device() const { return platform_device_; }
@@ -37,7 +41,8 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
   // interfaces can be used. If this argument is missing, permission broker will
   // not be used and this method fails if the device is claimed.
   virtual void RequestUsbAcess(
-      int interface_id, const base::Callback<void(bool success)>& callback);
+      int interface_id,
+      const base::Callback<void(bool success)>& callback);
 #endif  // OS_CHROMEOS
 
   // Creates a UsbDeviceHandle for further manipulation.
@@ -91,4 +96,6 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
   DISALLOW_COPY_AND_ASSIGN(UsbDevice);
 };
 
-#endif  // CHROME_BROWSER_USB_USB_DEVICE_H_
+}  // namespace usb_service
+
+#endif  // COMPONENTS_USB_SERVICE_USB_DEVICE_H_

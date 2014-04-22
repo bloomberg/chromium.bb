@@ -10,9 +10,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "chrome/browser/extensions/api/usb/usb_device_resource.h"
-#include "chrome/browser/usb/usb_device_handle.h"
-#include "chrome/browser/usb/usb_service.h"
 #include "chrome/common/extensions/api/usb.h"
+#include "components/usb_service/usb_device_handle.h"
+#include "components/usb_service/usb_service.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/permissions/usb_device_permission.h"
@@ -49,6 +49,18 @@ using usb::RequestType;
 using usb::SynchronizationType;
 using usb::TransferType;
 using usb::UsageType;
+using usb_service::UsbConfigDescriptor;
+using usb_service::UsbDevice;
+using usb_service::UsbDeviceHandle;
+using usb_service::UsbEndpointDescriptor;
+using usb_service::UsbEndpointDirection;
+using usb_service::UsbInterfaceAltSettingDescriptor;
+using usb_service::UsbInterfaceDescriptor;
+using usb_service::UsbService;
+using usb_service::UsbSynchronizationType;
+using usb_service::UsbTransferStatus;
+using usb_service::UsbTransferType;
+using usb_service::UsbUsageType;
 
 typedef std::vector<scoped_refptr<UsbDevice> > DeviceVector;
 typedef scoped_ptr<DeviceVector> ScopedDeviceVector;
@@ -105,10 +117,10 @@ UsbDevice* g_device_for_test = NULL;
 bool ConvertDirectionToApi(const UsbEndpointDirection& input,
                            Direction* output) {
   switch (input) {
-    case USB_DIRECTION_INBOUND:
+    case usb_service::USB_DIRECTION_INBOUND:
       *output = usb::DIRECTION_IN;
       return true;
-    case USB_DIRECTION_OUTBOUND:
+    case usb_service::USB_DIRECTION_OUTBOUND:
       *output = usb::DIRECTION_OUT;
       return true;
     default:
@@ -120,16 +132,16 @@ bool ConvertDirectionToApi(const UsbEndpointDirection& input,
 bool ConvertSynchronizationTypeToApi(const UsbSynchronizationType& input,
                                      usb::SynchronizationType* output) {
   switch (input) {
-    case USB_SYNCHRONIZATION_NONE:
+    case usb_service::USB_SYNCHRONIZATION_NONE:
       *output = usb::SYNCHRONIZATION_TYPE_NONE;
       return true;
-    case USB_SYNCHRONIZATION_ASYNCHRONOUS:
+    case usb_service::USB_SYNCHRONIZATION_ASYNCHRONOUS:
       *output = usb::SYNCHRONIZATION_TYPE_ASYNCHRONOUS;
       return true;
-    case USB_SYNCHRONIZATION_ADAPTIVE:
+    case usb_service::USB_SYNCHRONIZATION_ADAPTIVE:
       *output = usb::SYNCHRONIZATION_TYPE_ADAPTIVE;
       return true;
-    case USB_SYNCHRONIZATION_SYNCHRONOUS:
+    case usb_service::USB_SYNCHRONIZATION_SYNCHRONOUS:
       *output = usb::SYNCHRONIZATION_TYPE_SYNCHRONOUS;
       return true;
     default:
@@ -142,16 +154,16 @@ bool ConvertTransferTypeToApi(
     const UsbTransferType& input,
     usb::TransferType* output) {
   switch (input) {
-    case USB_TRANSFER_CONTROL:
+    case usb_service::USB_TRANSFER_CONTROL:
       *output = usb::TRANSFER_TYPE_CONTROL;
       return true;
-    case USB_TRANSFER_INTERRUPT:
+    case usb_service::USB_TRANSFER_INTERRUPT:
       *output = usb::TRANSFER_TYPE_INTERRUPT;
       return true;
-    case USB_TRANSFER_ISOCHRONOUS:
+    case usb_service::USB_TRANSFER_ISOCHRONOUS:
       *output = usb::TRANSFER_TYPE_ISOCHRONOUS;
       return true;
-    case USB_TRANSFER_BULK:
+    case usb_service::USB_TRANSFER_BULK:
       *output = usb::TRANSFER_TYPE_BULK;
       return true;
     default:
@@ -162,13 +174,13 @@ bool ConvertTransferTypeToApi(
 
 bool ConvertUsageTypeToApi(const UsbUsageType& input, usb::UsageType* output) {
   switch (input) {
-    case USB_USAGE_DATA:
+    case usb_service::USB_USAGE_DATA:
       *output = usb::USAGE_TYPE_DATA;
       return true;
-    case USB_USAGE_FEEDBACK:
+    case usb_service::USB_USAGE_FEEDBACK:
       *output = usb::USAGE_TYPE_FEEDBACK;
       return true;
-    case USB_USAGE_EXPLICIT_FEEDBACK:
+    case usb_service::USB_USAGE_EXPLICIT_FEEDBACK:
       *output = usb::USAGE_TYPE_EXPLICITFEEDBACK;
       return true;
     default:
@@ -181,10 +193,10 @@ bool ConvertDirection(const Direction& input,
                       UsbEndpointDirection* output) {
   switch (input) {
     case usb::DIRECTION_IN:
-      *output = USB_DIRECTION_INBOUND;
+      *output = usb_service::USB_DIRECTION_INBOUND;
       return true;
     case usb::DIRECTION_OUT:
-      *output = USB_DIRECTION_OUTBOUND;
+      *output = usb_service::USB_DIRECTION_OUTBOUND;
       return true;
     default:
       NOTREACHED();
@@ -265,9 +277,9 @@ scoped_refptr<net::IOBuffer> CreateBufferForTransfer(
   scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(std::max(
       static_cast<size_t>(1), size));
 
-  if (direction == USB_DIRECTION_INBOUND) {
+  if (direction == usb_service::USB_DIRECTION_INBOUND) {
     return buffer;
-  } else if (direction == USB_DIRECTION_OUTBOUND) {
+  } else if (direction == usb_service::USB_DIRECTION_OUTBOUND) {
     if (input.data.get() && size <= input.data->size()) {
       memcpy(buffer->data(), input.data->data(), size);
       return buffer;
@@ -279,21 +291,21 @@ scoped_refptr<net::IOBuffer> CreateBufferForTransfer(
 
 const char* ConvertTransferStatusToErrorString(const UsbTransferStatus status) {
   switch (status) {
-    case USB_TRANSFER_COMPLETED:
+    case usb_service::USB_TRANSFER_COMPLETED:
       return "";
-    case USB_TRANSFER_ERROR:
+    case usb_service::USB_TRANSFER_ERROR:
       return kErrorGeneric;
-    case USB_TRANSFER_TIMEOUT:
+    case usb_service::USB_TRANSFER_TIMEOUT:
       return kErrorTimeout;
-    case USB_TRANSFER_CANCELLED:
+    case usb_service::USB_TRANSFER_CANCELLED:
       return kErrorCancelled;
-    case USB_TRANSFER_STALLED:
+    case usb_service::USB_TRANSFER_STALLED:
       return kErrorStalled;
-    case USB_TRANSFER_DISCONNECT:
+    case usb_service::USB_TRANSFER_DISCONNECT:
       return kErrorDisconnect;
-    case USB_TRANSFER_OVERFLOW:
+    case usb_service::USB_TRANSFER_OVERFLOW:
       return kErrorOverflow;
-    case USB_TRANSFER_LENGTH_SHORT:
+    case usb_service::USB_TRANSFER_LENGTH_SHORT:
       return kErrorTransferLength;
     default:
       NOTREACHED();
@@ -489,7 +501,7 @@ UsbAsyncApiTransferFunction::~UsbAsyncApiTransferFunction() {}
 void UsbAsyncApiTransferFunction::OnCompleted(UsbTransferStatus status,
                                               scoped_refptr<net::IOBuffer> data,
                                               size_t length) {
-  if (status != USB_TRANSFER_COMPLETED)
+  if (status != usb_service::USB_TRANSFER_COMPLETED)
     SetError(ConvertTransferStatusToErrorString(status));
 
   SetResult(CreateTransferInfo(status, data, length));

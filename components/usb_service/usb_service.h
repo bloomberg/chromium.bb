@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_USB_USB_SERVICE_H_
-#define CHROME_BROWSER_USB_USB_SERVICE_H_
+#ifndef COMPONENTS_USB_SERVICE_USB_SERVICE_H_
+#define COMPONENTS_USB_SERVICE_USB_SERVICE_H_
 
 #include <map>
 #include <utility>
@@ -14,6 +14,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/non_thread_safe.h"
+#include "components/usb_service/usb_service_export.h"
+
+struct libusb_device;
+struct libusb_context;
+
+namespace usb_service {
 
 typedef struct libusb_device* PlatformUsbDevice;
 typedef struct libusb_context* PlatformUsbContext;
@@ -25,8 +31,9 @@ class UsbDevice;
 // used to manage and dispatch USB events. It is also responsible for device
 // discovery on the system, which allows it to re-use device handles to prevent
 // competition for the same USB device.
-class UsbService : public base::MessageLoop::DestructionObserver,
-                   public base::NonThreadSafe {
+class USB_SERVICE_EXPORT UsbService
+    : public base::MessageLoop::DestructionObserver,
+      public base::NonThreadSafe {
  public:
   typedef scoped_ptr<std::vector<scoped_refptr<UsbDevice> > >
       ScopedDeviceVector;
@@ -66,4 +73,6 @@ class UsbService : public base::MessageLoop::DestructionObserver,
   DISALLOW_COPY_AND_ASSIGN(UsbService);
 };
 
-#endif  // CHROME_BROWSER_USB_USB_SERVICE_H_
+}  // namespace usb_service
+
+#endif  // COMPONENTS_USB_SERVICE_USB_SERVICE_H_

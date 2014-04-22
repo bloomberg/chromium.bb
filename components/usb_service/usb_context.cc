@@ -1,14 +1,16 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/usb/usb_context.h"
+#include "components/usb_service/usb_context.h"
 
 #include "base/logging.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "third_party/libusb/src/libusb/interrupt.h"
 #include "third_party/libusb/src/libusb/libusb.h"
+
+namespace usb_service {
 
 // The UsbEventHandler works around a design flaw in the libusb interface. There
 // is currently no way to signal to libusb that any caller into one of the event
@@ -71,3 +73,5 @@ UsbContext::~UsbContext() {
   event_handler_ = NULL;
   libusb_exit(context_);
 }
+
+}  // namespace usb_service

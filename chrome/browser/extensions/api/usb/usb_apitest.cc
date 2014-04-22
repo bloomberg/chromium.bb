@@ -13,6 +13,11 @@ using testing::AnyNumber;
 using testing::_;
 using testing::Return;
 using content::BrowserThread;
+using usb_service::UsbConfigDescriptor;
+using usb_service::UsbDevice;
+using usb_service::UsbDeviceHandle;
+using usb_service::UsbEndpointDirection;
+using usb_service::UsbTransferCallback;
 
 namespace {
 
@@ -116,9 +121,11 @@ IN_PROC_BROWSER_TEST_F(UsbApiTest, ResetDevice) {
   EXPECT_CALL(*mock_device_handle_.get(), ResetDevice())
       .WillOnce(Return(true))
       .WillOnce(Return(false));
-  EXPECT_CALL(*mock_device_handle_.get(),
-              InterruptTransfer(USB_DIRECTION_OUTBOUND, 2, _, 1, _, _))
-      .WillOnce(InvokeUsbTransferCallback<5>(USB_TRANSFER_COMPLETED));
+  EXPECT_CALL(
+      *mock_device_handle_.get(),
+      InterruptTransfer(usb_service::USB_DIRECTION_OUTBOUND, 2, _, 1, _, _))
+      .WillOnce(
+          InvokeUsbTransferCallback<5>(usb_service::USB_TRANSFER_COMPLETED));
   ASSERT_TRUE(RunExtensionTest("usb/reset_device"));
 }
 
@@ -131,42 +138,45 @@ IN_PROC_BROWSER_TEST_F(UsbApiTest, ListInterfaces) {
 
 IN_PROC_BROWSER_TEST_F(UsbApiTest, TransferEvent) {
   EXPECT_CALL(*mock_device_handle_.get(),
-              ControlTransfer(USB_DIRECTION_OUTBOUND,
+              ControlTransfer(usb_service::USB_DIRECTION_OUTBOUND,
                               UsbDeviceHandle::STANDARD,
                               UsbDeviceHandle::DEVICE,
-                              1,
-                              2,
-                              3,
-                              _,
-                              1,
-                              _,
-                              _))
-      .WillOnce(InvokeUsbTransferCallback<9>(USB_TRANSFER_COMPLETED));
+                              1, 2, 3, _, 1, _, _))
+      .WillOnce(
+          InvokeUsbTransferCallback<9>(usb_service::USB_TRANSFER_COMPLETED));
   EXPECT_CALL(*mock_device_handle_.get(),
-              BulkTransfer(USB_DIRECTION_OUTBOUND, 1, _, 1, _, _))
-      .WillOnce(InvokeUsbTransferCallback<5>(USB_TRANSFER_COMPLETED));
+              BulkTransfer(usb_service::USB_DIRECTION_OUTBOUND, 1, _, 1, _, _))
+      .WillOnce(
+          InvokeUsbTransferCallback<5>(usb_service::USB_TRANSFER_COMPLETED));
+  EXPECT_CALL(
+      *mock_device_handle_.get(),
+      InterruptTransfer(usb_service::USB_DIRECTION_OUTBOUND, 2, _, 1, _, _))
+      .WillOnce(
+          InvokeUsbTransferCallback<5>(usb_service::USB_TRANSFER_COMPLETED));
   EXPECT_CALL(*mock_device_handle_.get(),
-              InterruptTransfer(USB_DIRECTION_OUTBOUND, 2, _, 1, _, _))
-      .WillOnce(InvokeUsbTransferCallback<5>(USB_TRANSFER_COMPLETED));
-  EXPECT_CALL(*mock_device_handle_.get(),
-              IsochronousTransfer(USB_DIRECTION_OUTBOUND, 3, _, 1, 1, 1, _, _))
-      .WillOnce(InvokeUsbTransferCallback<7>(USB_TRANSFER_COMPLETED));
+              IsochronousTransfer(
+                  usb_service::USB_DIRECTION_OUTBOUND, 3, _, 1, 1, 1, _, _))
+      .WillOnce(
+          InvokeUsbTransferCallback<7>(usb_service::USB_TRANSFER_COMPLETED));
   EXPECT_CALL(*mock_device_handle_.get(), Close()).Times(AnyNumber());
   ASSERT_TRUE(RunExtensionTest("usb/transfer_event"));
 }
 
 IN_PROC_BROWSER_TEST_F(UsbApiTest, ZeroLengthTransfer) {
   EXPECT_CALL(*mock_device_handle_.get(), BulkTransfer(_, _, _, 0, _, _))
-      .WillOnce(InvokeUsbTransferCallback<5>(USB_TRANSFER_COMPLETED));
+      .WillOnce(
+          InvokeUsbTransferCallback<5>(usb_service::USB_TRANSFER_COMPLETED));
   EXPECT_CALL(*mock_device_handle_.get(), Close()).Times(AnyNumber());
   ASSERT_TRUE(RunExtensionTest("usb/zero_length_transfer"));
 }
 
 IN_PROC_BROWSER_TEST_F(UsbApiTest, TransferFailure) {
   EXPECT_CALL(*mock_device_handle_.get(), BulkTransfer(_, _, _, _, _, _))
-      .WillOnce(InvokeUsbTransferCallback<5>(USB_TRANSFER_COMPLETED))
-      .WillOnce(InvokeUsbTransferCallback<5>(USB_TRANSFER_ERROR))
-      .WillOnce(InvokeUsbTransferCallback<5>(USB_TRANSFER_TIMEOUT));
+      .WillOnce(
+           InvokeUsbTransferCallback<5>(usb_service::USB_TRANSFER_COMPLETED))
+      .WillOnce(InvokeUsbTransferCallback<5>(usb_service::USB_TRANSFER_ERROR))
+      .WillOnce(
+          InvokeUsbTransferCallback<5>(usb_service::USB_TRANSFER_TIMEOUT));
   EXPECT_CALL(*mock_device_handle_.get(), Close()).Times(AnyNumber());
   ASSERT_TRUE(RunExtensionTest("usb/transfer_failure"));
 }

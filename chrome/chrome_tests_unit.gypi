@@ -1755,7 +1755,6 @@
         'browser/chrome_content_browser_client_unittest.cc',
         'browser/undo/bookmark_undo_service_test.cc',
         'browser/undo/undo_manager_test.cc',
-        'browser/usb/usb_context_unittest.cc',
         'browser/web_applications/web_app_mac_unittest.mm',
         'browser/web_applications/web_app_unittest.cc',
         'browser/web_resource/eula_accepted_notifier_unittest.cc',
@@ -2524,9 +2523,6 @@
 
             # The importer code is not used on Android.
             'common/importer/firefox_importer_utils_unittest.cc',
-
-            # USB service is not supported on Android.
-            'browser/usb/usb_context_unittest.cc',
 
             # Bookmark undo is not used on Android.
            'browser/undo/bookmark_undo_service_test.cc',

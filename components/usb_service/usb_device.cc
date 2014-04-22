@@ -1,14 +1,14 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/usb/usb_device.h"
+#include "components/usb_service/usb_device.h"
 
 #include <algorithm>
 
 #include "base/stl_util.h"
-#include "chrome/browser/usb/usb_context.h"
-#include "chrome/browser/usb/usb_device_handle.h"
+#include "components/usb_service/usb_context.h"
+#include "components/usb_service/usb_device_handle.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/libusb/src/libusb/libusb.h"
 
@@ -26,19 +26,20 @@ namespace {
 void OnRequestUsbAccessReplied(
     const base::Callback<void(bool success)>& callback,
     bool success) {
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          base::Bind(callback, success));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE, base::Bind(callback, success));
 }
 #endif  // defined(OS_CHROMEOS)
 
 }  // namespace
 
-UsbDevice::UsbDevice(
-    scoped_refptr<UsbContext> context,
-    PlatformUsbDevice platform_device,
-    uint16 vendor_id,
-    uint16 product_id,
-    uint32 unique_id)
+namespace usb_service {
+
+UsbDevice::UsbDevice(scoped_refptr<UsbContext> context,
+                     PlatformUsbDevice platform_device,
+                     uint16 vendor_id,
+                     uint16 product_id,
+                     uint32 unique_id)
     : platform_device_(platform_device),
       vendor_id_(vendor_id),
       product_id_(product_id),
@@ -58,9 +59,8 @@ UsbDevice::UsbDevice()
 
 UsbDevice::~UsbDevice() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  for (HandlesVector::iterator it = handles_.begin();
-      it != handles_.end();
-      ++it) {
+  for (HandlesVector::iterator it = handles_.begin(); it != handles_.end();
+       ++it) {
     (*it)->InternalClose();
   }
   STLClearObject(&handles_);
@@ -86,7 +86,8 @@ void UsbDevice::RequestUsbAcess(
     }
 
     BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+        BrowserThread::UI,
+        FROM_HERE,
         base::Bind(&chromeos::PermissionBrokerClient::RequestUsbAccess,
                    base::Unretained(client),
                    this->vendor_id_,
@@ -117,9 +118,8 @@ scoped_refptr<UsbDeviceHandle> UsbDevice::Open() {
 bool UsbDevice::Close(scoped_refptr<UsbDeviceHandle> handle) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  for (HandlesVector::iterator it = handles_.begin();
-      it != handles_.end();
-      ++it) {
+  for (HandlesVector::iterator it = handles_.begin(); it != handles_.end();
+       ++it) {
     if (*it == handle) {
       (*it)->InternalClose();
       handles_.erase(it);
@@ -146,9 +146,11 @@ void UsbDevice::OnDisconnect() {
   HandlesVector handles;
   swap(handles, handles_);
   for (std::vector<scoped_refptr<UsbDeviceHandle> >::iterator it =
-      handles.begin();
-      it != handles.end();
-      ++it) {
+           handles.begin();
+       it != handles.end();
+       ++it) {
     (*it)->InternalClose();
   }
 }
+
+}  // namespace usb_service

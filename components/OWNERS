@@ -123,6 +123,10 @@ per-file translate.gypi=toyoshim@chromium.org
 
 per-file startup_metric_utils.gypi=jeremy@chromium.org
 
+per-file usb_service.gypi=pfeldman@chromium.org
+per-file usb_service.gypi=rockot@chromium.org
+per-file usb_service.gypi=rpaquay@chromium.org
+
 per-file user_prefs.gypi=battre@chromium.org
 per-file user_prefs.gypi=bauerb@chromium.org
 per-file user_prefs.gypi=mnissler@chromium.org

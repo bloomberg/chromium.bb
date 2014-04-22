@@ -252,6 +252,7 @@
               'sources': [
                 'autofill/content/renderer/renderer_save_password_progress_logger_unittest.cc',
                 'dom_distiller/content/dom_distiller_viewer_source_unittest.cc',
+                'usb_service/usb_context_unittest.cc',
               ],
               'dependencies': [
                 # Dependencies of autofill
@@ -284,6 +285,10 @@
 
                 # Dependencies of url_matcher.
                 'components.gyp:url_matcher',
+
+                # Dependencies of usb_service tests.
+                'components.gyp:usb_service',
+                '../third_party/libusb/libusb.gyp:libusb',
 
                 # Dependencies of visitedlink
                 'components.gyp:visitedlink_browser',
@@ -380,13 +385,16 @@
                 'storage_monitor/media_storage_util_unittest.cc',
                 'storage_monitor/storage_info_unittest.cc',
                 'storage_monitor/storage_monitor_unittest.cc',
+                'usb_service/usb_context_unittest.cc',
                 'web_modal/web_contents_modal_dialog_manager_unittest.cc',
               ],
               'dependencies!': [
                 'components.gyp:storage_monitor',
                 'components.gyp:storage_monitor_test_support',
+                'components.gyp:usb_service',
                 'components.gyp:web_modal',
                 'components.gyp:web_modal_test_support',
+                '../third_party/libusb/libusb.gyp:libusb',
               ],
             }],
             ['OS == "android" and gtest_target_type == "shared_library"', {

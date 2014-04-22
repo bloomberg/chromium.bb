@@ -1,18 +1,20 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/usb/usb_service.h"
+#include "components/usb_service/usb_service.h"
 
 #include <set>
 #include <vector>
 
 #include "base/lazy_instance.h"
 #include "base/stl_util.h"
-#include "chrome/browser/usb/usb_context.h"
-#include "chrome/browser/usb/usb_device.h"
+#include "components/usb_service/usb_context.h"
+#include "components/usb_service/usb_device.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/libusb/src/libusb/libusb.h"
+
+namespace usb_service {
 
 namespace {
 
@@ -120,3 +122,5 @@ void UsbService::RefreshDevices() {
 
   libusb_free_device_list(platform_devices, true);
 }
+
+}  // namespace usb_service
