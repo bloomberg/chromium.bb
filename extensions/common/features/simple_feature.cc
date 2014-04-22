@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/debug/alias.h"
 #include "base/lazy_instance.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
@@ -74,7 +75,14 @@ void ParseEnum(const std::string& string_value,
                const std::map<std::string, T>& mapping) {
   typename std::map<std::string, T>::const_iterator iter =
       mapping.find(string_value);
-  CHECK(iter != mapping.end()) << string_value;
+  if (iter == mapping.end()) {
+    // For http://crbug.com/365192.
+    char minidump[256];
+    base::debug::Alias(&minidump);
+    base::snprintf(minidump, arraysize(minidump),
+        "e::simple_feature.cc:%d:\"%s\"", __LINE__, string_value.c_str());
+    CHECK(false) << string_value;
+  }
   *enum_value = iter->second;
 }
 
