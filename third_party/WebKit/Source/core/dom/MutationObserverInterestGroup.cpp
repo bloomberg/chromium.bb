@@ -36,18 +36,18 @@
 
 namespace WebCore {
 
-PassOwnPtr<MutationObserverInterestGroup> MutationObserverInterestGroup::createIfNeeded(Node& target, MutationObserver::MutationType type, MutationRecordDeliveryOptions oldValueFlag, const QualifiedName* attributeName)
+PassOwnPtrWillBeRawPtr<MutationObserverInterestGroup> MutationObserverInterestGroup::createIfNeeded(Node& target, MutationObserver::MutationType type, MutationRecordDeliveryOptions oldValueFlag, const QualifiedName* attributeName)
 {
     ASSERT((type == MutationObserver::Attributes && attributeName) || !attributeName);
-    HashMap<MutationObserver*, MutationRecordDeliveryOptions> observers;
+    WillBeHeapHashMap<RawPtrWillBeMember<MutationObserver>, MutationRecordDeliveryOptions> observers;
     target.getRegisteredMutationObserversOfType(observers, type, attributeName);
     if (observers.isEmpty())
         return nullptr;
 
-    return adoptPtr(new MutationObserverInterestGroup(observers, oldValueFlag));
+    return adoptPtrWillBeNoop(new MutationObserverInterestGroup(observers, oldValueFlag));
 }
 
-MutationObserverInterestGroup::MutationObserverInterestGroup(HashMap<MutationObserver*, MutationRecordDeliveryOptions>& observers, MutationRecordDeliveryOptions oldValueFlag)
+MutationObserverInterestGroup::MutationObserverInterestGroup(WillBeHeapHashMap<RawPtrWillBeMember<MutationObserver>, MutationRecordDeliveryOptions>& observers, MutationRecordDeliveryOptions oldValueFlag)
     : m_oldValueFlag(oldValueFlag)
 {
     ASSERT(!observers.isEmpty());
@@ -56,18 +56,18 @@ MutationObserverInterestGroup::MutationObserverInterestGroup(HashMap<MutationObs
 
 bool MutationObserverInterestGroup::isOldValueRequested()
 {
-    for (HashMap<MutationObserver*, MutationRecordDeliveryOptions>::iterator iter = m_observers.begin(); iter != m_observers.end(); ++iter) {
+    for (WillBeHeapHashMap<RawPtrWillBeMember<MutationObserver>, MutationRecordDeliveryOptions>::iterator iter = m_observers.begin(); iter != m_observers.end(); ++iter) {
         if (hasOldValue(iter->value))
             return true;
     }
     return false;
 }
 
-void MutationObserverInterestGroup::enqueueMutationRecord(PassRefPtr<MutationRecord> prpMutation)
+void MutationObserverInterestGroup::enqueueMutationRecord(PassRefPtrWillBeRawPtr<MutationRecord> prpMutation)
 {
-    RefPtr<MutationRecord> mutation = prpMutation;
-    RefPtr<MutationRecord> mutationWithNullOldValue;
-    for (HashMap<MutationObserver*, MutationRecordDeliveryOptions>::iterator iter = m_observers.begin(); iter != m_observers.end(); ++iter) {
+    RefPtrWillBeRawPtr<MutationRecord> mutation = prpMutation;
+    RefPtrWillBeRawPtr<MutationRecord> mutationWithNullOldValue = nullptr;
+    for (WillBeHeapHashMap<RawPtrWillBeMember<MutationObserver>, MutationRecordDeliveryOptions>::iterator iter = m_observers.begin(); iter != m_observers.end(); ++iter) {
         MutationObserver* observer = iter->key;
         if (hasOldValue(iter->value)) {
             observer->enqueueMutationRecord(mutation);
@@ -81,6 +81,11 @@ void MutationObserverInterestGroup::enqueueMutationRecord(PassRefPtr<MutationRec
         }
         observer->enqueueMutationRecord(mutationWithNullOldValue);
     }
+}
+
+void MutationObserverInterestGroup::trace(Visitor* visitor)
+{
+    visitor->trace(m_observers);
 }
 
 } // namespace WebCore

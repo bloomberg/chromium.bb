@@ -32,6 +32,7 @@
 #define MutationObserverRegistration_h
 
 #include "core/dom/MutationObserver.h"
+#include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/AtomicStringHash.h"
@@ -40,9 +41,9 @@ namespace WebCore {
 
 class QualifiedName;
 
-class MutationObserverRegistration {
+class MutationObserverRegistration FINAL : public NoBaseWillBeGarbageCollectedFinalized<MutationObserverRegistration> {
 public:
-    static PassOwnPtr<MutationObserverRegistration> create(MutationObserver&, Node&, MutationObserverOptions, const HashSet<AtomicString>& attributeFilter);
+    static PassOwnPtrWillBeRawPtr<MutationObserverRegistration> create(MutationObserver&, Node&, MutationObserverOptions, const HashSet<AtomicString>& attributeFilter);
     ~MutationObserverRegistration();
 
     void resetObservation(MutationObserverOptions, const HashSet<AtomicString>& attributeFilter);
@@ -60,10 +61,14 @@ public:
 
     void addRegistrationNodesToSet(HashSet<Node*>&) const;
 
+    void trace(Visitor*);
+
+    void dispose();
+
 private:
     MutationObserverRegistration(MutationObserver&, Node&, MutationObserverOptions, const HashSet<AtomicString>& attributeFilter);
 
-    RefPtr<MutationObserver> m_observer;
+    RefPtrWillBeMember<MutationObserver> m_observer;
     Node& m_registrationNode;
     RefPtr<Node> m_registrationNodeKeepAlive;
     typedef HashSet<RefPtr<Node> > NodeHashSet;

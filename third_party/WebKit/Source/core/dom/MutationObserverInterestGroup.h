@@ -35,14 +35,15 @@
 #include "core/dom/MutationObserver.h"
 #include "core/dom/Node.h"
 #include "core/dom/QualifiedName.h"
+#include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 
-class MutationObserverInterestGroup {
+class MutationObserverInterestGroup FINAL : public NoBaseWillBeGarbageCollectedFinalized<MutationObserverInterestGroup> {
 public:
-    static PassOwnPtr<MutationObserverInterestGroup> createForChildListMutation(Node& target)
+    static PassOwnPtrWillBeRawPtr<MutationObserverInterestGroup> createForChildListMutation(Node& target)
     {
         if (!target.document().hasMutationObserversOfType(MutationObserver::ChildList))
             return nullptr;
@@ -51,7 +52,7 @@ public:
         return createIfNeeded(target, MutationObserver::ChildList, oldValueFlag);
     }
 
-    static PassOwnPtr<MutationObserverInterestGroup> createForCharacterDataMutation(Node& target)
+    static PassOwnPtrWillBeRawPtr<MutationObserverInterestGroup> createForCharacterDataMutation(Node& target)
     {
         if (!target.document().hasMutationObserversOfType(MutationObserver::CharacterData))
             return nullptr;
@@ -59,7 +60,7 @@ public:
         return createIfNeeded(target, MutationObserver::CharacterData, MutationObserver::CharacterDataOldValue);
     }
 
-    static PassOwnPtr<MutationObserverInterestGroup> createForAttributesMutation(Node& target, const QualifiedName& attributeName)
+    static PassOwnPtrWillBeRawPtr<MutationObserverInterestGroup> createForAttributesMutation(Node& target, const QualifiedName& attributeName)
     {
         if (!target.document().hasMutationObserversOfType(MutationObserver::Attributes))
             return nullptr;
@@ -68,15 +69,17 @@ public:
     }
 
     bool isOldValueRequested();
-    void enqueueMutationRecord(PassRefPtr<MutationRecord>);
+    void enqueueMutationRecord(PassRefPtrWillBeRawPtr<MutationRecord>);
+
+    void trace(Visitor*);
 
 private:
-    static PassOwnPtr<MutationObserverInterestGroup> createIfNeeded(Node& target, MutationObserver::MutationType, MutationRecordDeliveryOptions oldValueFlag, const QualifiedName* attributeName = 0);
-    MutationObserverInterestGroup(HashMap<MutationObserver*, MutationRecordDeliveryOptions>& observers, MutationRecordDeliveryOptions oldValueFlag);
+    static PassOwnPtrWillBeRawPtr<MutationObserverInterestGroup> createIfNeeded(Node& target, MutationObserver::MutationType, MutationRecordDeliveryOptions oldValueFlag, const QualifiedName* attributeName = 0);
+    MutationObserverInterestGroup(WillBeHeapHashMap<RawPtrWillBeMember<MutationObserver>, MutationRecordDeliveryOptions>& observers, MutationRecordDeliveryOptions oldValueFlag);
 
     bool hasOldValue(MutationRecordDeliveryOptions options) { return options & m_oldValueFlag; }
 
-    HashMap<MutationObserver*, MutationRecordDeliveryOptions> m_observers;
+    WillBeHeapHashMap<RawPtrWillBeMember<MutationObserver>, MutationRecordDeliveryOptions> m_observers;
     MutationRecordDeliveryOptions m_oldValueFlag;
 };
 

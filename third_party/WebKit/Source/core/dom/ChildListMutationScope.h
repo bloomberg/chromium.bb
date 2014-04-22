@@ -34,6 +34,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/MutationObserver.h"
 #include "core/dom/Node.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefCounted.h"
@@ -43,7 +44,7 @@ namespace WebCore {
 class MutationObserverInterestGroup;
 
 // ChildListMutationAccumulator is not meant to be used directly; ChildListMutationScope is the public interface.
-class ChildListMutationAccumulator : public RefCounted<ChildListMutationAccumulator> {
+class ChildListMutationAccumulator FINAL : public RefCounted<ChildListMutationAccumulator> {
 public:
     static PassRefPtr<ChildListMutationAccumulator> getOrCreate(Node&);
     ~ChildListMutationAccumulator();
@@ -54,7 +55,7 @@ public:
     bool hasObservers() const { return m_observers; }
 
 private:
-    ChildListMutationAccumulator(PassRefPtr<Node>, PassOwnPtr<MutationObserverInterestGroup>);
+    ChildListMutationAccumulator(PassRefPtr<Node>, PassOwnPtrWillBeRawPtr<MutationObserverInterestGroup>);
 
     void enqueueMutationRecord();
     bool isEmpty();
@@ -69,11 +70,12 @@ private:
     RefPtr<Node> m_nextSibling;
     Node* m_lastAdded;
 
-    OwnPtr<MutationObserverInterestGroup> m_observers;
+    OwnPtrWillBePersistent<MutationObserverInterestGroup> m_observers;
 };
 
-class ChildListMutationScope {
+class ChildListMutationScope FINAL {
     WTF_MAKE_NONCOPYABLE(ChildListMutationScope);
+    STACK_ALLOCATED();
 public:
     explicit ChildListMutationScope(Node& target)
     {

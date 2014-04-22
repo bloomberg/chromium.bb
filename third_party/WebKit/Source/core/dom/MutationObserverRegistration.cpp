@@ -37,9 +37,9 @@
 
 namespace WebCore {
 
-PassOwnPtr<MutationObserverRegistration> MutationObserverRegistration::create(MutationObserver& observer, Node& registrationNode, MutationObserverOptions options, const HashSet<AtomicString>& attributeFilter)
+PassOwnPtrWillBeRawPtr<MutationObserverRegistration> MutationObserverRegistration::create(MutationObserver& observer, Node& registrationNode, MutationObserverOptions options, const HashSet<AtomicString>& attributeFilter)
 {
-    return adoptPtr(new MutationObserverRegistration(observer, registrationNode, options, attributeFilter));
+    return adoptPtrWillBeNoop(new MutationObserverRegistration(observer, registrationNode, options, attributeFilter));
 }
 
 MutationObserverRegistration::MutationObserverRegistration(MutationObserver& observer, Node& registrationNode, MutationObserverOptions options, const HashSet<AtomicString>& attributeFilter)
@@ -53,8 +53,15 @@ MutationObserverRegistration::MutationObserverRegistration(MutationObserver& obs
 
 MutationObserverRegistration::~MutationObserverRegistration()
 {
+    // dispose() hasn't been called if this assert triggers.
+    ASSERT(!m_observer);
+}
+
+void MutationObserverRegistration::dispose()
+{
     clearTransientRegistrations();
     m_observer->observationEnded(this);
+    m_observer.clear();
 }
 
 void MutationObserverRegistration::resetObservation(MutationObserverOptions options, const HashSet<AtomicString>& attributeFilter)
@@ -128,6 +135,11 @@ void MutationObserverRegistration::addRegistrationNodesToSet(HashSet<Node*>& nod
         return;
     for (NodeHashSet::const_iterator iter = m_transientRegistrationNodes->begin(); iter != m_transientRegistrationNodes->end(); ++iter)
         nodes.add(iter->get());
+}
+
+void MutationObserverRegistration::trace(Visitor* visitor)
+{
+    visitor->trace(m_observer);
 }
 
 } // namespace WebCore

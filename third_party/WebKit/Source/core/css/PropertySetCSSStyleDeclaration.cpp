@@ -41,6 +41,7 @@ namespace {
 
 class StyleAttributeMutationScope {
     WTF_MAKE_NONCOPYABLE(StyleAttributeMutationScope);
+    STACK_ALLOCATED();
 public:
     StyleAttributeMutationScope(AbstractPropertySetCSSStyleDeclaration* decl)
     {
@@ -114,8 +115,8 @@ private:
     static bool s_shouldNotifyInspector;
     static bool s_shouldDeliver;
 
-    OwnPtr<MutationObserverInterestGroup> m_mutationRecipients;
-    RefPtr<MutationRecord> m_mutation;
+    OwnPtrWillBeMember<MutationObserverInterestGroup> m_mutationRecipients;
+    RefPtrWillBeMember<MutationRecord> m_mutation;
 };
 
 unsigned StyleAttributeMutationScope::s_scopeCount = 0;

@@ -40,7 +40,10 @@ class HTMLElement;
 
 class ElementRareData : public NodeRareData {
 public:
-    static PassOwnPtr<ElementRareData> create(RenderObject* renderer) { return adoptPtr(new ElementRareData(renderer)); }
+    static PassOwnPtr<ElementRareData> create(RenderObject* renderer)
+    {
+        return adoptPtr(new ElementRareData(renderer));
+    }
 
     ~ElementRareData();
 

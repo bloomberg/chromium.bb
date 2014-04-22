@@ -31,11 +31,13 @@
 #include "config.h"
 #include "core/dom/NodeRareData.h"
 #include "core/dom/Element.h"
+#include "platform/heap/Handle.h"
 
 namespace WebCore {
 
 struct SameSizeAsNodeRareData {
-    void* m_pointer[3];
+    void* m_pointer[2];
+    OwnPtrWillBePersistent<NodeMutationObserverData> m_mutationObserverData;
     unsigned m_bitfields;
 };
 
@@ -53,6 +55,15 @@ void NodeListsNodeData::invalidateCaches(const QualifiedName* attrName)
     TagCollectionCacheNS::iterator tagCacheEnd = m_tagCollectionCacheNS.end();
     for (TagCollectionCacheNS::iterator it = m_tagCollectionCacheNS.begin(); it != tagCacheEnd; ++it)
         it->value->invalidateCache();
+}
+
+void NodeRareData::dispose()
+{
+    if (m_mutationObserverData) {
+        for (unsigned i = 0; i < m_mutationObserverData->registry.size(); i++)
+            m_mutationObserverData->registry.at(i)->dispose();
+        m_mutationObserverData.clear();
+    }
 }
 
 // Ensure the 10 bits reserved for the m_connectedFrameCount cannot overflow

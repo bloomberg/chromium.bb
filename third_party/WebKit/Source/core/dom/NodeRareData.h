@@ -29,6 +29,7 @@
 #include "core/dom/QualifiedName.h"
 #include "core/dom/TagCollection.h"
 #include "core/page/Page.h"
+#include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -209,13 +210,23 @@ private:
     TagCollectionCacheNS m_tagCollectionCacheNS;
 };
 
-class NodeMutationObserverData {
-    WTF_MAKE_NONCOPYABLE(NodeMutationObserverData); WTF_MAKE_FAST_ALLOCATED;
+class NodeMutationObserverData FINAL : public NoBaseWillBeGarbageCollected<NodeMutationObserverData> {
+    WTF_MAKE_NONCOPYABLE(NodeMutationObserverData);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    Vector<OwnPtr<MutationObserverRegistration> > registry;
-    HashSet<MutationObserverRegistration*> transientRegistry;
+    WillBeHeapVector<OwnPtrWillBeMember<MutationObserverRegistration> > registry;
+    WillBeHeapHashSet<RawPtrWillBeMember<MutationObserverRegistration> > transientRegistry;
 
-    static PassOwnPtr<NodeMutationObserverData> create() { return adoptPtr(new NodeMutationObserverData); }
+    static PassOwnPtrWillBeRawPtr<NodeMutationObserverData> create()
+    {
+        return adoptPtrWillBeNoop(new NodeMutationObserverData);
+    }
+
+    void trace(Visitor* visitor)
+    {
+        visitor->trace(registry);
+        visitor->trace(transientRegistry);
+    }
 
 private:
     NodeMutationObserverData() { }
@@ -224,7 +235,12 @@ private:
 class NodeRareData : public NodeRareDataBase {
     WTF_MAKE_NONCOPYABLE(NodeRareData); WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<NodeRareData> create(RenderObject* renderer) { return adoptPtr(new NodeRareData(renderer)); }
+    static PassOwnPtr<NodeRareData> create(RenderObject* renderer)
+    {
+        return adoptPtr(new NodeRareData(renderer));
+    }
+
+    void dispose();
 
     void clearNodeLists() { m_nodeLists.clear(); }
     NodeListsNodeData* nodeLists() const { return m_nodeLists.get(); }
@@ -278,7 +294,7 @@ protected:
 
 private:
     OwnPtr<NodeListsNodeData> m_nodeLists;
-    OwnPtr<NodeMutationObserverData> m_mutationObserverData;
+    OwnPtrWillBePersistent<NodeMutationObserverData> m_mutationObserverData;
 
     unsigned m_connectedFrameCount : ConnectedFrameCountBits;
     unsigned m_elementFlags : NumberOfElementFlags;

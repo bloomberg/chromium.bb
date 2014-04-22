@@ -126,9 +126,15 @@ private:
 
 class MutationRecordWithNullOldValue : public MutationRecord {
 public:
-    MutationRecordWithNullOldValue(PassRefPtr<MutationRecord> record)
+    MutationRecordWithNullOldValue(PassRefPtrWillBeRawPtr<MutationRecord> record)
         : m_record(record)
     {
+    }
+
+    virtual void trace(Visitor* visitor) OVERRIDE
+    {
+        visitor->trace(m_record);
+        MutationRecord::trace(visitor);
     }
 
 private:
@@ -143,7 +149,7 @@ private:
 
     virtual String oldValue() OVERRIDE { return String(); }
 
-    RefPtr<MutationRecord> m_record;
+    RefPtrWillBeMember<MutationRecord> m_record;
 };
 
 const AtomicString& ChildListRecord::type()
@@ -166,24 +172,24 @@ const AtomicString& CharacterDataRecord::type()
 
 } // namespace
 
-PassRefPtr<MutationRecord> MutationRecord::createChildList(PassRefPtr<Node> target, PassRefPtr<NodeList> added, PassRefPtr<NodeList> removed, PassRefPtr<Node> previousSibling, PassRefPtr<Node> nextSibling)
+PassRefPtrWillBeRawPtr<MutationRecord> MutationRecord::createChildList(PassRefPtr<Node> target, PassRefPtr<NodeList> added, PassRefPtr<NodeList> removed, PassRefPtr<Node> previousSibling, PassRefPtr<Node> nextSibling)
 {
-    return adoptRef(new ChildListRecord(target, added, removed, previousSibling, nextSibling));
+    return adoptRefWillBeNoop(new ChildListRecord(target, added, removed, previousSibling, nextSibling));
 }
 
-PassRefPtr<MutationRecord> MutationRecord::createAttributes(PassRefPtr<Node> target, const QualifiedName& name, const AtomicString& oldValue)
+PassRefPtrWillBeRawPtr<MutationRecord> MutationRecord::createAttributes(PassRefPtr<Node> target, const QualifiedName& name, const AtomicString& oldValue)
 {
-    return adoptRef(new AttributesRecord(target, name, oldValue));
+    return adoptRefWillBeNoop(new AttributesRecord(target, name, oldValue));
 }
 
-PassRefPtr<MutationRecord> MutationRecord::createCharacterData(PassRefPtr<Node> target, const String& oldValue)
+PassRefPtrWillBeRawPtr<MutationRecord> MutationRecord::createCharacterData(PassRefPtr<Node> target, const String& oldValue)
 {
-    return adoptRef(new CharacterDataRecord(target, oldValue));
+    return adoptRefWillBeNoop(new CharacterDataRecord(target, oldValue));
 }
 
-PassRefPtr<MutationRecord> MutationRecord::createWithNullOldValue(PassRefPtr<MutationRecord> record)
+PassRefPtrWillBeRawPtr<MutationRecord> MutationRecord::createWithNullOldValue(PassRefPtrWillBeRawPtr<MutationRecord> record)
 {
-    return adoptRef(new MutationRecordWithNullOldValue(record));
+    return adoptRefWillBeNoop(new MutationRecordWithNullOldValue(record));
 }
 
 MutationRecord::~MutationRecord()

@@ -31,6 +31,7 @@
 #ifndef MutationCallback_h
 #define MutationCallback_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
@@ -43,7 +44,7 @@ class MutationCallback {
 public:
     virtual ~MutationCallback() { }
 
-    virtual void call(const Vector<RefPtr<MutationRecord> >&, MutationObserver*) = 0;
+    virtual void call(const WillBeHeapVector<RefPtrWillBeMember<MutationRecord> >&, MutationObserver*) = 0;
     virtual ExecutionContext* executionContext() const = 0;
 };
 

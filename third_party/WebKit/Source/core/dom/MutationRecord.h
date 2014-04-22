@@ -32,6 +32,7 @@
 #define MutationRecord_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
@@ -42,12 +43,12 @@ class Node;
 class NodeList;
 class QualifiedName;
 
-class MutationRecord : public RefCounted<MutationRecord>, public ScriptWrappable {
+class MutationRecord : public RefCountedWillBeGarbageCollectedFinalized<MutationRecord>, public ScriptWrappable {
 public:
-    static PassRefPtr<MutationRecord> createChildList(PassRefPtr<Node> target, PassRefPtr<NodeList> added, PassRefPtr<NodeList> removed, PassRefPtr<Node> previousSibling, PassRefPtr<Node> nextSibling);
-    static PassRefPtr<MutationRecord> createAttributes(PassRefPtr<Node> target, const QualifiedName&, const AtomicString& oldValue);
-    static PassRefPtr<MutationRecord> createCharacterData(PassRefPtr<Node> target, const String& oldValue);
-    static PassRefPtr<MutationRecord> createWithNullOldValue(PassRefPtr<MutationRecord>);
+    static PassRefPtrWillBeRawPtr<MutationRecord> createChildList(PassRefPtr<Node> target, PassRefPtr<NodeList> added, PassRefPtr<NodeList> removed, PassRefPtr<Node> previousSibling, PassRefPtr<Node> nextSibling);
+    static PassRefPtrWillBeRawPtr<MutationRecord> createAttributes(PassRefPtr<Node> target, const QualifiedName&, const AtomicString& oldValue);
+    static PassRefPtrWillBeRawPtr<MutationRecord> createCharacterData(PassRefPtr<Node> target, const String& oldValue);
+    static PassRefPtrWillBeRawPtr<MutationRecord> createWithNullOldValue(PassRefPtrWillBeRawPtr<MutationRecord>);
 
     MutationRecord()
     {
@@ -68,6 +69,9 @@ public:
     virtual const AtomicString& attributeNamespace() { return nullAtom; }
 
     virtual String oldValue() { return String(); }
+
+    virtual void trace(Visitor*) { }
+
 };
 
 } // namespace WebCore

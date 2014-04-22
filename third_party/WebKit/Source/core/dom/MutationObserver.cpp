@@ -49,16 +49,16 @@ namespace WebCore {
 static unsigned s_observerPriority = 0;
 
 struct MutationObserver::ObserverLessThan {
-    bool operator()(const RefPtr<MutationObserver>& lhs, const RefPtr<MutationObserver>& rhs)
+    bool operator()(const RefPtrWillBeMember<MutationObserver>& lhs, const RefPtrWillBeMember<MutationObserver>& rhs)
     {
         return lhs->m_priority < rhs->m_priority;
     }
 };
 
-PassRefPtr<MutationObserver> MutationObserver::create(PassOwnPtr<MutationCallback> callback)
+PassRefPtrWillBeRawPtr<MutationObserver> MutationObserver::create(PassOwnPtr<MutationCallback> callback)
 {
     ASSERT(isMainThread());
-    return adoptRef(new MutationObserver(callback));
+    return adoptRefWillBeNoop(new MutationObserver(callback));
 }
 
 MutationObserver::MutationObserver(PassOwnPtr<MutationCallback> callback)
@@ -140,9 +140,9 @@ void MutationObserver::observe(Node* node, const Dictionary& optionsDictionary, 
     node->registerMutationObserver(*this, options, attributeFilter);
 }
 
-Vector<RefPtr<MutationRecord> > MutationObserver::takeRecords()
+WillBeHeapVector<RefPtrWillBeMember<MutationRecord> > MutationObserver::takeRecords()
 {
-    Vector<RefPtr<MutationRecord> > records;
+    WillBeHeapVector<RefPtrWillBeMember<MutationRecord> > records;
     records.swap(m_records);
     InspectorInstrumentation::didClearAllMutationRecords(m_callback->executionContext(), this);
     return records;
@@ -152,9 +152,10 @@ void MutationObserver::disconnect()
 {
     m_records.clear();
     InspectorInstrumentation::didClearAllMutationRecords(m_callback->executionContext(), this);
-    HashSet<MutationObserverRegistration*> registrations(m_registrations);
-    for (HashSet<MutationObserverRegistration*>::iterator iter = registrations.begin(); iter != registrations.end(); ++iter)
+    WillBeHeapHashSet<RawPtrWillBeMember<MutationObserverRegistration> > registrations(m_registrations);
+    for (WillBeHeapHashSet<RawPtrWillBeMember<MutationObserverRegistration> >::iterator iter = registrations.begin(); iter != registrations.end(); ++iter)
         (*iter)->unregister();
+    ASSERT(m_registrations.isEmpty());
 }
 
 void MutationObserver::observationStarted(MutationObserverRegistration* registration)
@@ -169,21 +170,31 @@ void MutationObserver::observationEnded(MutationObserverRegistration* registrati
     m_registrations.remove(registration);
 }
 
-typedef HashSet<RefPtr<MutationObserver> > MutationObserverSet;
+typedef WillBeHeapHashSet<RefPtrWillBeMember<MutationObserver> > MutationObserverSet;
 
 static MutationObserverSet& activeMutationObservers()
 {
+#if ENABLE(OILPAN)
+    DEFINE_STATIC_LOCAL(Persistent<MutationObserverSet>, activeObservers, (new MutationObserverSet()));
+    return *activeObservers;
+#else
     DEFINE_STATIC_LOCAL(MutationObserverSet, activeObservers, ());
     return activeObservers;
+#endif
 }
 
 static MutationObserverSet& suspendedMutationObservers()
 {
+#if ENABLE(OILPAN)
+    DEFINE_STATIC_LOCAL(Persistent<MutationObserverSet>, suspendedObservers, (new MutationObserverSet()));
+    return *suspendedObservers;
+#else
     DEFINE_STATIC_LOCAL(MutationObserverSet, suspendedObservers, ());
     return suspendedObservers;
+#endif
 }
 
-static void activateObserver(PassRefPtr<MutationObserver> observer)
+static void activateObserver(PassRefPtrWillBeRawPtr<MutationObserver> observer)
 {
     if (activeMutationObservers().isEmpty())
         Microtask::enqueueMicrotask(WTF::bind(&MutationObserver::deliverMutations));
@@ -191,7 +202,7 @@ static void activateObserver(PassRefPtr<MutationObserver> observer)
     activeMutationObservers().add(observer);
 }
 
-void MutationObserver::enqueueMutationRecord(PassRefPtr<MutationRecord> mutation)
+void MutationObserver::enqueueMutationRecord(PassRefPtrWillBeRawPtr<MutationRecord> mutation)
 {
     ASSERT(isMainThread());
     m_records.append(mutation);
@@ -208,7 +219,7 @@ void MutationObserver::setHasTransientRegistration()
 HashSet<Node*> MutationObserver::getObservedNodes() const
 {
     HashSet<Node*> observedNodes;
-    for (HashSet<MutationObserverRegistration*>::const_iterator iter = m_registrations.begin(); iter != m_registrations.end(); ++iter)
+    for (WillBeHeapHashSet<RawPtrWillBeMember<MutationObserverRegistration> >::const_iterator iter = m_registrations.begin(); iter != m_registrations.end(); ++iter)
         (*iter)->addRegistrationNodesToSet(observedNodes);
     return observedNodes;
 }
@@ -224,8 +235,8 @@ void MutationObserver::deliver()
 
     // Calling clearTransientRegistrations() can modify m_registrations, so it's necessary
     // to make a copy of the transient registrations before operating on them.
-    Vector<MutationObserverRegistration*, 1> transientRegistrations;
-    for (HashSet<MutationObserverRegistration*>::iterator iter = m_registrations.begin(); iter != m_registrations.end(); ++iter) {
+    WillBeHeapVector<RawPtrWillBeMember<MutationObserverRegistration>, 1> transientRegistrations;
+    for (WillBeHeapHashSet<RawPtrWillBeMember<MutationObserverRegistration> >::iterator iter = m_registrations.begin(); iter != m_registrations.end(); ++iter) {
         if ((*iter)->hasTransientRegistrations())
             transientRegistrations.append(*iter);
     }
@@ -235,7 +246,7 @@ void MutationObserver::deliver()
     if (m_records.isEmpty())
         return;
 
-    Vector<RefPtr<MutationRecord> > records;
+    WillBeHeapVector<RefPtrWillBeMember<MutationRecord> > records;
     records.swap(m_records);
 
     InspectorInstrumentation::willDeliverMutationRecords(m_callback->executionContext(), this);
@@ -249,7 +260,7 @@ void MutationObserver::resumeSuspendedObservers()
     if (suspendedMutationObservers().isEmpty())
         return;
 
-    Vector<RefPtr<MutationObserver> > suspended;
+    WillBeHeapVector<RefPtrWillBeMember<MutationObserver> > suspended;
     copyToVector(suspendedMutationObservers(), suspended);
     for (size_t i = 0; i < suspended.size(); ++i) {
         if (suspended[i]->canDeliver()) {
@@ -262,7 +273,7 @@ void MutationObserver::resumeSuspendedObservers()
 void MutationObserver::deliverMutations()
 {
     ASSERT(isMainThread());
-    Vector<RefPtr<MutationObserver> > observers;
+    WillBeHeapVector<RefPtrWillBeMember<MutationObserver> > observers;
     copyToVector(activeMutationObservers(), observers);
     activeMutationObservers().clear();
     std::sort(observers.begin(), observers.end(), ObserverLessThan());
@@ -272,6 +283,12 @@ void MutationObserver::deliverMutations()
         else
             suspendedMutationObservers().add(observers[i]);
     }
+}
+
+void MutationObserver::trace(Visitor* visitor)
+{
+    visitor->trace(m_records);
+    visitor->trace(m_registrations);
 }
 
 } // namespace WebCore

@@ -40,13 +40,14 @@
 namespace WebCore {
 
 typedef HashMap<Node*, ChildListMutationAccumulator*> AccumulatorMap;
+
 static AccumulatorMap& accumulatorMap()
 {
     DEFINE_STATIC_LOCAL(AccumulatorMap, map, ());
     return map;
 }
 
-ChildListMutationAccumulator::ChildListMutationAccumulator(PassRefPtr<Node> target, PassOwnPtr<MutationObserverInterestGroup> observers)
+ChildListMutationAccumulator::ChildListMutationAccumulator(PassRefPtr<Node> target, PassOwnPtrWillBeRawPtr<MutationObserverInterestGroup> observers)
     : m_target(target)
     , m_lastAdded(0)
     , m_observers(observers)
@@ -127,7 +128,7 @@ void ChildListMutationAccumulator::enqueueMutationRecord()
 
     RefPtr<NodeList> addedNodes = StaticNodeList::adopt(m_addedNodes);
     RefPtr<NodeList> removedNodes = StaticNodeList::adopt(m_removedNodes);
-    RefPtr<MutationRecord> record = MutationRecord::createChildList(m_target, addedNodes.release(), removedNodes.release(), m_previousSibling.release(), m_nextSibling.release());
+    RefPtrWillBeRawPtr<MutationRecord> record = MutationRecord::createChildList(m_target, addedNodes.release(), removedNodes.release(), m_previousSibling.release(), m_nextSibling.release());
     m_observers->enqueueMutationRecord(record.release());
     m_lastAdded = 0;
     ASSERT(isEmpty());
