@@ -460,6 +460,7 @@ TEST_F(AnimationAnimationTest, ElementDestructorClearsAnimationTarget)
     RefPtr<AnimationPlayer> player = document->timeline().play(animation.get());
     document.clear();
     element.clear();
+    Heap::collectAllGarbage();
     EXPECT_EQ(0, animation->target());
 }
 
