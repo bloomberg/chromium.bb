@@ -86,6 +86,8 @@
       ],
       'libraries': [
         '-lrt',
+        '-lgcc_s',
+        '-lpthread',
         '-lc',
       ]
     },
