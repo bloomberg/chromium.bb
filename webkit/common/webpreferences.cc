@@ -81,7 +81,6 @@ WebPreferences::WebPreferences()
       should_print_backgrounds(false),
       should_clear_document_background(true),
       enable_scroll_animator(false),
-      visual_word_movement_enabled(false),
       lazy_layout_enabled(false),
       region_based_columns_enabled(false),
       touch_enabled(false),

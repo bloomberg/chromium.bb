@@ -273,7 +273,6 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
   settings->setShouldClearDocumentBackground(
       prefs.should_clear_document_background);
   settings->setEnableScrollAnimator(prefs.enable_scroll_animator);
-  settings->setVisualWordMovementEnabled(prefs.visual_word_movement_enabled);
 
   settings->setRegionBasedColumnsEnabled(prefs.region_based_columns_enabled);
 

@@ -169,7 +169,6 @@ CONTENT_EXPORT extern const char kEnableUserMediaScreenCapturing[];
 CONTENT_EXPORT extern const char kEnableViewport[];
 CONTENT_EXPORT extern const char kEnableViewportMeta[];
 CONTENT_EXPORT extern const char kMainFrameResizesAreOrientationChanges[];
-extern const char kEnableVisualWordMovement[];
 CONTENT_EXPORT extern const char kEnableVtune[];
 extern const char kEnableWebAnimationsSVG[];
 CONTENT_EXPORT extern const char kEnableWebGLDraftExtensions[];

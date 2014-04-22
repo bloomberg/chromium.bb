@@ -583,9 +583,6 @@ const char kEnableViewportMeta[]            = "enable-viewport-meta";
 const char kMainFrameResizesAreOrientationChanges[] =
     "main-frame-resizes-are-orientation-changes";
 
-// Enables moving cursor by word in visual order.
-const char kEnableVisualWordMovement[]      = "enable-visual-word-movement";
-
 // Enable the Vtune profiler support.
 const char kEnableVtune[]                   = "enable-vtune-support";
 

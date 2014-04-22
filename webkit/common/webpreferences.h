@@ -129,7 +129,6 @@ struct WEBKIT_COMMON_EXPORT WebPreferences {
   bool should_print_backgrounds;
   bool should_clear_document_background;
   bool enable_scroll_animator;
-  bool visual_word_movement_enabled;
   bool css_variables_enabled;
   bool lazy_layout_enabled;
   bool region_based_columns_enabled;

@@ -473,9 +473,6 @@ WebPreferences RenderViewHostImpl::GetWebkitPrefs(const GURL& url) {
   if (command_line.HasSwitch(switches::kDisableSmoothScrolling))
     prefs.enable_scroll_animator = false;
 
-  prefs.visual_word_movement_enabled =
-      command_line.HasSwitch(switches::kEnableVisualWordMovement);
-
   // Certain GPU features might have been blacklisted.
   GpuDataManagerImpl::GetInstance()->UpdateRendererWebPrefs(&prefs);
 
