@@ -195,10 +195,6 @@ void RendererAccessibilityComplete::SendPendingAccessibilityEvents() {
       serializer_.DeleteClientSubtree(obj);
     }
 
-    // Allow Blink to cache intermediate results since we're doing a bunch
-    // of read-only queries at once.
-    obj.startCachingComputedObjectAttributesUntilTreeMutates();
-
     AccessibilityHostMsg_EventParams event_msg;
     event_msg.event_type = event.event_type;
     event_msg.id = event.id;
