@@ -14,7 +14,9 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/dom_action_types.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_constants.h"
 
 namespace extensions {
 
@@ -164,7 +166,8 @@ int UmaPolicy::MatchActionToStatus(scoped_refptr<Action> action) {
 
 void UmaPolicy::HistogramOnClose(const std::string& url) {
   // Let's try to avoid histogramming useless URLs.
-  if (url == "about:blank" || url.empty() || url == "chrome://newtab/")
+  if (url.empty() || url == content::kAboutBlankURL ||
+      url == chrome::kChromeUINewTabURL)
     return;
 
   int statuses[MAX_STATUS - 1];
@@ -314,7 +317,7 @@ void UmaPolicy::TabClosingAt(TabStripModel* tab_strip_model,
   int32 tab_id = SessionID::IdForTab(contents);
   std::map<int, std::string>::iterator tab_it = tab_list_.find(tab_id);
   if (tab_it != tab_list_.end())
-   tab_list_.erase(tab_id);
+    tab_list_.erase(tab_id);
 
   CleanupClosedPage(url);
 }
@@ -341,7 +344,7 @@ void UmaPolicy::CleanupClosedPage(const std::string& url) {
 // We convert to a string in the hopes that this is faster than Replacements.
 std::string UmaPolicy::CleanURL(const GURL& gurl) {
   if (gurl.spec().empty())
-    return GURL("about:blank").spec();
+    return GURL(content::kAboutBlankURL).spec();
   if (!gurl.is_valid())
     return gurl.spec();
   if (!gurl.has_ref())
