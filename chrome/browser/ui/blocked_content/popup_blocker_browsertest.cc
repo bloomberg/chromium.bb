@@ -127,19 +127,29 @@ class PopupBlockerBrowserTest : public InProcessBrowserTest {
     ASSERT_EQ(0, GetBlockedContentsCount());
   }
 
+  enum WhatToExpect {
+    ExpectPopup,
+    ExpectTab
+  };
+
+  enum ShouldCheckTitle {
+    CheckTitle,
+    DontCheckTitle
+  };
+
   // Navigates to the test indicated by |test_name| using |browser| which is
   // expected to try to open a popup. Verifies that the popup was blocked and
   // then opens the blocked popup. Once the popup stopped loading, verifies
-  // that the title of the page is "PASS" if |check_title| is true.
+  // that the title of the page is "PASS" if |check_title| is set.
   //
-  // If |expect_new_browser| is true, the popup is expected to open a new
+  // If |what_to_expect| is ExpectPopup, the popup is expected to open a new
   // window, or a background tab if it is false.
   //
   // Returns the WebContents of the launched popup.
   WebContents* RunCheckTest(Browser* browser,
                             const std::string& test_name,
-                            bool expect_new_browser,
-                            bool check_title) {
+                            WhatToExpect what_to_expect,
+                            ShouldCheckTitle check_title) {
     GURL url(embedded_test_server()->GetURL(test_name));
 
     CountRenderViewHosts counter;
@@ -180,7 +190,7 @@ class PopupBlockerBrowserTest : public InProcessBrowserTest {
 
     observer.Wait();
     Browser* new_browser;
-    if (expect_new_browser) {
+    if (what_to_expect == ExpectPopup) {
       new_browser = browser_observer.WaitForSingleNewBrowser();
       web_contents = new_browser->tab_strip_model()->GetActiveWebContents();
     } else {
@@ -189,7 +199,7 @@ class PopupBlockerBrowserTest : public InProcessBrowserTest {
       web_contents = browser->tab_strip_model()->GetWebContentsAt(1);
     }
 
-    if (check_title) {
+    if (check_title == CheckTitle) {
       // Check that the check passed.
       base::string16 expected_title(base::ASCIIToUTF16("PASS"));
       content::TitleWatcher title_watcher(web_contents, expected_title);
@@ -214,8 +224,8 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
   RunCheckTest(
       browser(),
       "/popup_blocker/popup-blocked-to-post-blank.html",
-      true,
-      false);
+      ExpectPopup,
+      DontCheckTitle);
 }
 
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
@@ -229,8 +239,8 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
   RunCheckTest(
       CreateIncognitoBrowser(),
       "/popup_blocker/popup-blocked-to-post-blank.html",
-      true,
-      false);
+      ExpectPopup,
+      DontCheckTitle);
 }
 
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
@@ -244,8 +254,8 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
   RunCheckTest(
       browser(),
       "/popup_blocker/popup-fake-click-on-anchor.html",
-      false,
-      false);
+      ExpectTab,
+      DontCheckTitle);
 }
 
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
@@ -259,8 +269,8 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
   RunCheckTest(
       browser(),
       "/popup_blocker/popup-fake-click-on-anchor2.html",
-      false,
-      false);
+      ExpectTab,
+      DontCheckTitle);
 }
 
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, MultiplePopups) {
@@ -374,8 +384,8 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, MAYBE_WindowFeatures) {
   WebContents* popup =
       RunCheckTest(browser(),
                    "/popup_blocker/popup-window-open.html",
-                   true,
-                   false);
+                   ExpectPopup,
+                   DontCheckTitle);
 
   // Check that the new popup has (roughly) the requested size.
   gfx::Size window_size = popup->GetView()->GetContainerSize();
@@ -386,29 +396,29 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, MAYBE_WindowFeatures) {
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, CorrectReferrer) {
   RunCheckTest(browser(),
                "/popup_blocker/popup-referrer.html",
-               true,
-               true);
+               ExpectPopup,
+               CheckTitle);
 }
 
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, WindowFeaturesBarProps) {
   RunCheckTest(browser(),
                "/popup_blocker/popup-windowfeatures.html",
-               true,
-               true);
+               ExpectPopup,
+               CheckTitle);
 }
 
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, SessionStorage) {
   RunCheckTest(browser(),
                "/popup_blocker/popup-sessionstorage.html",
-               true,
-               true);
+               ExpectPopup,
+               CheckTitle);
 }
 
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, Opener) {
   RunCheckTest(browser(),
                "/popup_blocker/popup-opener.html",
-               true,
-               true);
+               ExpectPopup,
+               CheckTitle);
 }
 
 // Tests that the popup can still close itself after navigating. This tests that
@@ -418,8 +428,8 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ClosableAfterNavigation) {
   WebContents* popup =
       RunCheckTest(browser(),
                    "/popup_blocker/popup-opener.html",
-                   true,
-                   true);
+                   ExpectPopup,
+                   CheckTitle);
 
   // Navigate it elsewhere.
   content::TestNavigationObserver nav_observer(popup);
@@ -437,24 +447,24 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ClosableAfterNavigation) {
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, OpenerSuppressed) {
   RunCheckTest(browser(),
                "/popup_blocker/popup-openersuppressed.html",
-               false,
-               true);
+               ExpectTab,
+               CheckTitle);
 }
 
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ShiftClick) {
   RunCheckTest(
       browser(),
       "/popup_blocker/popup-fake-click-on-anchor3.html",
-      true,
-      true);
+      ExpectPopup,
+      CheckTitle);
 }
 
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, WebUI) {
   WebContents* popup =
       RunCheckTest(browser(),
                    "/popup_blocker/popup-webui.html",
-                   true,
-                   false);
+                   ExpectPopup,
+                   DontCheckTitle);
 
   // Check that the new popup displays about:blank.
   EXPECT_EQ(GURL(content::kAboutBlankURL), popup->GetURL());
