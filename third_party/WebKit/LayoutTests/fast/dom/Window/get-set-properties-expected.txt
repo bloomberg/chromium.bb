@@ -266,6 +266,8 @@ PASS: canGet('pageXOffset') should be 'true' and is.
 PASS: canSet('pageXOffset') should be 'false' and is.
 PASS: canGet('pageYOffset') should be 'true' and is.
 PASS: canSet('pageYOffset') should be 'false' and is.
+PASS: canGet('screen') should be 'true' and is.
+PASS: canSet('screen') should be 'false' and is.
 PASS: canGet('window') should be 'true' and is.
 PASS: canSet('window') should be 'false' and is.
 PASS: canGet('top') should be 'true' and is.
