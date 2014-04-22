@@ -170,6 +170,7 @@
       <part file="autofill_strings.grdp" />
       <part file="dom_distiller_strings.grdp" />
       <part file="policy_strings.grdp" />
+      <part file="bookmarks_strings.grdp" />
     </messages>
   </release>
 </grit>

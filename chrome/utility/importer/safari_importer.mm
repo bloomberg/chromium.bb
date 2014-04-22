@@ -20,6 +20,7 @@
 #include "chrome/common/importer/importer_bridge.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/utility/importer/favicon_reencode.h"
+#include "grit/component_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/data_url.h"
 #include "sql/statement.h"

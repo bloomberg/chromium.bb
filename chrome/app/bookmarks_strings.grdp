@@ -2,27 +2,6 @@
 <!-- Bookmarks specific strings (included from generated_resources.grd). -->
 <grit-part>
   <!-- Begin of Bookmarks Bar strings-->
-  <if expr="not is_android and not is_ios and not use_titlecase">
-    <message name="IDS_BOOKMARK_BAR_FOLDER_NAME" desc="Name shown in the tree for the Bookmarks Bar folder.">
-      Bookmarks bar
-    </message>
-  </if>
-  <if expr="not is_android and not is_ios and use_titlecase">
-    <message name="IDS_BOOKMARK_BAR_FOLDER_NAME" desc="In Title Case: Name shown in the tree for the Bookmarks Bar folder.">
-      Bookmarks Bar
-    </message>
-  </if>
-  <if expr="is_android">
-    <message name="IDS_BOOKMARK_BAR_FOLDER_NAME" desc="Mobile: Name shown in the tree for the desktop bookmarks folder">
-      Desktop bookmarks
-    </message>
-  </if>
-  <if expr="is_ios">
-    <message name="IDS_BOOKMARK_BAR_FOLDER_NAME" desc="Mobile: Name shown in the tree for the desktop bookmarks folder">
-      Desktop Bookmarks
-    </message>
-  </if>
-
   <if expr="not is_android">
     <!-- The following two strings are shown when the user has no bookmarks yet. -->
     <message name="IDS_BOOKMARKS_NO_ITEMS" desc="Text shown when the user has no bookmarks">
@@ -51,23 +30,11 @@
   </if>
 
   <if expr="not use_titlecase">
-    <message name="IDS_BOOKMARK_BAR_MOBILE_FOLDER_NAME" desc="Name shown in the tree for the mobile bookmarks folder">
-      Mobile bookmarks
-    </message>
-    <message name="IDS_BOOKMARK_BAR_OTHER_FOLDER_NAME" desc="Name shown in the tree for the other bookmarks folder">
-      Other bookmarks
-    </message>
     <message name="IDS_BOOKMARK_BAR_SHOW_APPS_SHORTCUT" desc="Name shown in the context menu to hide/show the apps shortcut in the bookmakr bar">
       Show apps shortcut
     </message>
   </if>
   <if expr="use_titlecase">
-    <message name="IDS_BOOKMARK_BAR_MOBILE_FOLDER_NAME" desc="In Title Case: Name shown in the tree for the mobile bookmarks folder">
-      Mobile Bookmarks
-    </message>
-    <message name="IDS_BOOKMARK_BAR_OTHER_FOLDER_NAME" desc="In Title Case: Name shown in the tree for the other bookmarks folder">
-      Other Bookmarks
-    </message>
     <message name="IDS_BOOKMARK_BAR_SHOW_APPS_SHORTCUT" desc="In Title Case: Name shown in the context menu to hide/show the apps shortcut in the bookmakr bar">
       Show Apps Shortcut
     </message>
