@@ -23,7 +23,7 @@ namespace net {
 class NET_EXPORT IPEndPoint {
  public:
   IPEndPoint();
-  virtual ~IPEndPoint();
+  ~IPEndPoint();
   IPEndPoint(const IPAddressNumber& address, int port);
   IPEndPoint(const IPEndPoint& endpoint);
 
