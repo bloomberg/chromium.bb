@@ -66,6 +66,8 @@ class BASE_EXPORT TimeDelta {
   static TimeDelta FromMinutes(int minutes);
   static TimeDelta FromSeconds(int64 secs);
   static TimeDelta FromMilliseconds(int64 ms);
+  static TimeDelta FromSecondsD(double secs);
+  static TimeDelta FromMillisecondsD(double ms);
   static TimeDelta FromMicroseconds(int64 us);
 #if defined(OS_WIN)
   static TimeDelta FromQPCValue(LONGLONG qpc_value);
@@ -538,6 +540,22 @@ inline TimeDelta TimeDelta::FromSeconds(int64 secs) {
 inline TimeDelta TimeDelta::FromMilliseconds(int64 ms) {
   // Preserve max to prevent overflow.
   if (ms == std::numeric_limits<int64>::max())
+    return Max();
+  return TimeDelta(ms * Time::kMicrosecondsPerMillisecond);
+}
+
+// static
+inline TimeDelta TimeDelta::FromSecondsD(double secs) {
+  // Preserve max to prevent overflow.
+  if (secs == std::numeric_limits<double>::infinity())
+    return Max();
+  return TimeDelta(secs * Time::kMicrosecondsPerSecond);
+}
+
+// static
+inline TimeDelta TimeDelta::FromMillisecondsD(double ms) {
+  // Preserve max to prevent overflow.
+  if (ms == std::numeric_limits<double>::infinity())
     return Max();
   return TimeDelta(ms * Time::kMicrosecondsPerMillisecond);
 }
