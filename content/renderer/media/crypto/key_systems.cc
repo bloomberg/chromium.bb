@@ -44,13 +44,9 @@ const char kAvc3[] = "avc3";
 static void AddClearKey(std::vector<KeySystemInfo>* concrete_key_systems) {
   KeySystemInfo info(kClearKeyKeySystem);
 
-#if defined(OS_ANDROID)
-  // If MediaCodecBridge is not available. EME should not be enabled at all.
-  // See SetRuntimeFeatureDefaultsForPlatform().
-  // VP8 and AVC1 are supported on all MediaCodec implementations:
+  // On Android, Vorbis, VP8, AAC and AVC1 are supported in all MediaCodec
+  // implementations:
   // http://developer.android.com/guide/appendix/media-formats.html
-  DCHECK(media::MediaCodecBridge::IsAvailable());
-#endif
 
   info.supported_types[kAudioWebM].insert(kVorbis);
   info.supported_types[kVideoWebM] = info.supported_types[kAudioWebM];
