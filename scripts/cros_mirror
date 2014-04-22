@@ -219,7 +219,7 @@ update_manifests() {
   for b in "${branches[@]}"; do
     git checkout -q -f -B ${b} origin/${b} >/dev/null
     find -name '*.xml' -type f \
-      -exec sed -i "/fetch=/s|=\"[^\"]*\"|=\"${URL}\"|" {} +
+      -exec sed -i "s|fetch=\"[^\"]*\"|fetch=\"${URL}\"|" {} +
     git commit -q -a -m 'set fetch references to local mirror'
   done
 
