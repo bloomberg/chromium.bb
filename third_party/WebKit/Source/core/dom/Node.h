@@ -364,7 +364,7 @@ public:
     void setChildNeedsStyleInvalidation()  { setFlag(ChildNeedsStyleInvalidation); }
     void clearChildNeedsStyleInvalidation()  { clearFlag(ChildNeedsStyleInvalidation); }
     void markAncestorsWithChildNeedsStyleInvalidation();
-    bool needsStyleInvalidation() { return getFlag(NeedsStyleInvalidation); }
+    bool needsStyleInvalidation() const { return getFlag(NeedsStyleInvalidation); }
     void clearNeedsStyleInvalidation() { clearFlag(NeedsStyleInvalidation); }
     void setNeedsStyleInvalidation();
 

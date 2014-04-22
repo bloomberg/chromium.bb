@@ -1089,10 +1089,14 @@ private:
     virtual SecurityContext& securityContext() OVERRIDE FINAL { return *this; }
     virtual EventQueue* eventQueue() const OVERRIDE FINAL;
 
-    void scheduleRenderTreeUpdate();
-
     // FIXME: Rename the StyleRecalc state to RenderTreeUpdate.
     bool hasPendingStyleRecalc() const { return m_lifecycle.state() == DocumentLifecycle::VisualUpdatePending; }
+
+    bool shouldScheduleRenderTreeUpdate() const;
+    void scheduleRenderTreeUpdate();
+
+    bool needsFullRenderTreeUpdate() const;
+    bool needsRenderTreeUpdate() const;
 
     void inheritHtmlAndBodyElementStyles(StyleRecalcChange);
 
@@ -1164,8 +1168,6 @@ private:
 
     void didRemoveTouchEventHandler(Node*, bool clearAll);
 
-    bool needsRenderTreeUpdate() const;
-    bool shouldScheduleRenderTreeUpdate() const;
     bool haveStylesheetsLoaded() const;
 
     DocumentLifecycle m_lifecycle;

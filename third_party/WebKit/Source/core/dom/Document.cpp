@@ -1573,15 +1573,29 @@ bool Document::needsRenderTreeUpdate() const
 {
     if (!isActive() || !view())
         return false;
-    if (needsStyleRecalc() || childNeedsStyleRecalc())
+    if (needsFullRenderTreeUpdate())
         return true;
-    if (childNeedsDistributionRecalc())
+    if (childNeedsStyleRecalc())
         return true;
+    if (childNeedsStyleInvalidation())
+        return true;
+    return false;
+}
+
+bool Document::needsFullRenderTreeUpdate() const
+{
+    if (!isActive() || !view())
+        return false;
     if (!m_useElementsNeedingUpdate.isEmpty())
         return true;
     if (!m_layerUpdateElements.isEmpty())
         return true;
-    if (childNeedsStyleInvalidation())
+    if (needsStyleRecalc())
+        return true;
+    if (needsStyleInvalidation())
+        return true;
+    // FIXME: The childNeedsDistributionRecalc bit means either self or children, we should fix that.
+    if (childNeedsDistributionRecalc())
         return true;
     return false;
 }
@@ -1876,19 +1890,13 @@ void Document::updateStyle(StyleRecalcChange change)
 
 void Document::updateRenderTreeForNodeIfNeeded(Node* node)
 {
-    if (!needsRenderTreeUpdate())
-        return;
+    bool needsRecalc = needsFullRenderTreeUpdate();
 
-    // At this point, we know that we need to recalc some style on the document in order to fully update styles.
-    // However, style on 'node' only needs to be recalculated if a global recomputation is needed, or a node on
-    // the path from 'node' to the root needs style recalc.
+    // FIXME: This needs to walk the composed tree instead. Right now we'll return the wrong
+    // answer when the composed parent style is dirty, but our DOM ancestors are not.
+    for (const Node* ancestor = node; ancestor && !needsRecalc; ancestor = ancestor->parentOrShadowHostNode())
+        needsRecalc = ancestor->needsStyleRecalc() || ancestor->needsStyleInvalidation();
 
-    // Global needed.
-    bool needsRecalc = needsStyleRecalc() || childNeedsDistributionRecalc() || !m_useElementsNeedingUpdate.isEmpty() || childNeedsStyleInvalidation();
-
-    // On the path.
-    for (Node* ancestor = node; ancestor && !needsRecalc; ancestor = ancestor->parentOrShadowHostNode())
-        needsRecalc = ancestor->needsStyleRecalc();
     if (needsRecalc)
         updateRenderTreeIfNeeded();
 }
