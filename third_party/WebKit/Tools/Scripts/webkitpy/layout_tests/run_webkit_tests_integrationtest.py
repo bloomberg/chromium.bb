@@ -584,8 +584,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         # By returning False, we know that the incremental results were generated and then deleted.
         self.assertFalse(host.filesystem.exists('/tmp/layout-test-results/incremental_results.json'))
 
-        # This checks that we report only the number of tests that actually failed.
-        self.assertEqual(details.exit_code, 1)
+        self.assertEqual(details.exit_code, test_run_results.EARLY_EXIT_STATUS)
 
         # This checks that passes/text.html is considered SKIPped.
         self.assertTrue('"skipped":1' in host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json'))

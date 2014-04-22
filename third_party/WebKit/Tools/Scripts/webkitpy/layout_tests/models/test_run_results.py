@@ -45,6 +45,10 @@ INTERRUPTED_EXIT_STATUS = signal.SIGINT + 128
 # POSIX limits status codes to 0-255. Normally run-webkit-tests returns the number
 # of tests that failed. These indicate exceptional conditions triggered by the
 # script itself, so we count backwards from 255 (aka -1) to enumerate them.
+#
+# FIXME: crbug.com/357866. We really shouldn't return the number of failures
+# in the exit code at all.
+EARLY_EXIT_STATUS = 251
 SYS_DEPS_EXIT_STATUS = 252
 NO_TESTS_EXIT_STATUS = 253
 NO_DEVICES_EXIT_STATUS = 254
@@ -52,6 +56,7 @@ UNEXPECTED_ERROR_EXIT_STATUS = 255
 
 ERROR_CODES = (
     INTERRUPTED_EXIT_STATUS,
+    EARLY_EXIT_STATUS,
     SYS_DEPS_EXIT_STATUS,
     NO_TESTS_EXIT_STATUS,
     NO_DEVICES_EXIT_STATUS,

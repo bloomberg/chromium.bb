@@ -267,6 +267,8 @@ class Manager(object):
             if initial_results.keyboard_interrupted:
                 exit_code = test_run_results.INTERRUPTED_EXIT_STATUS
             else:
+                if initial_results.interrupted:
+                    exit_code = test_run_results.EARLY_EXIT_STATUS
                 if self._options.show_results and (exit_code or (self._options.full_results_html and initial_results.total_failures)):
                     self._port.show_results_html_file(results_path)
                 self._printer.print_results(time.time() - start_time, initial_results, summarized_failing_results)
