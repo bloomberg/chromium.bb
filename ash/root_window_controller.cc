@@ -157,6 +157,7 @@ void ReparentAllWindows(aura::Window* src, aura::Window* dst) {
       kShellWindowId_AlwaysOnTopContainer,
       kShellWindowId_SystemModalContainer,
       kShellWindowId_LockSystemModalContainer,
+      kShellWindowId_InputMethodContainer,
       kShellWindowId_UnparentedControlContainer, };
   for (size_t i = 0; i < arraysize(kContainerIdsToMove); i++) {
     int id = kContainerIdsToMove[i];
@@ -934,6 +935,13 @@ void RootWindowController::CreateContainersInRootWindow(
   ::wm::SetChildWindowVisibilityChangesAnimated(modal_container);
   SetUsesScreenCoordinates(modal_container);
   SetUsesEasyResizeTargeter(modal_container);
+
+  aura::Window* input_method_container = CreateContainer(
+      kShellWindowId_InputMethodContainer,
+      "InputMethodContainer",
+      non_lock_screen_containers);
+  ::wm::SetChildWindowVisibilityChangesAnimated(input_method_container);
+  SetUsesScreenCoordinates(input_method_container);
 
   // TODO(beng): Figure out if we can make this use
   // SystemModalContainerEventFilter instead of stops_event_propagation.
