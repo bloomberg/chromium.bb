@@ -179,47 +179,34 @@ class TestServerThread(threading.Thread):
     """
     if self.command_line:
       return
-    # The following arguments must exist.
-    type_cmd = _GetServerTypeCommandLine(self.arguments['server-type'])
+
+    args_copy = dict(self.arguments)
+
+    # Translate the server type.
+    type_cmd = _GetServerTypeCommandLine(args_copy.pop('server-type'))
     if type_cmd:
       self.command_line.append(type_cmd)
-    self.command_line.append('--port=%d' % self.host_port)
+
     # Use a pipe to get the port given by the instance of Python test server
     # if the test does not specify the port.
+    assert self.host_port == args_copy['port']
     if self.host_port == 0:
       (self.pipe_in, self.pipe_out) = os.pipe()
       self.command_line.append('--startup-pipe=%d' % self.pipe_out)
-    self.command_line.append('--host=%s' % self.arguments['host'])
-    data_dir = self.arguments['data-dir'] or 'chrome/test/data'
-    if not os.path.isabs(data_dir):
-      data_dir = os.path.join(constants.DIR_SOURCE_ROOT, data_dir)
-    self.command_line.append('--data-dir=%s' % data_dir)
-    # The following arguments are optional depending on the individual test.
-    if self.arguments.has_key('log-to-console'):
-      self.command_line.append('--log-to-console')
-    if self.arguments.has_key('auth-token'):
-      self.command_line.append('--auth-token=%s' % self.arguments['auth-token'])
-    if self.arguments.has_key('https'):
-      self.command_line.append('--https')
-      if self.arguments.has_key('cert-and-key-file'):
-        self.command_line.append('--cert-and-key-file=%s' % os.path.join(
-            constants.DIR_SOURCE_ROOT, self.arguments['cert-and-key-file']))
-      if self.arguments.has_key('ocsp'):
-        self.command_line.append('--ocsp=%s' % self.arguments['ocsp'])
-      if self.arguments.has_key('https-record-resume'):
-        self.command_line.append('--https-record-resume')
-      if self.arguments.has_key('ssl-client-auth'):
-        self.command_line.append('--ssl-client-auth')
-      if self.arguments.has_key('tls-intolerant'):
-        self.command_line.append('--tls-intolerant=%s' %
-                                 self.arguments['tls-intolerant'])
-      if self.arguments.has_key('ssl-client-ca'):
-        for ca in self.arguments['ssl-client-ca']:
-          self.command_line.append('--ssl-client-ca=%s' %
-                                   os.path.join(constants.DIR_SOURCE_ROOT, ca))
-      if self.arguments.has_key('ssl-bulk-cipher'):
-        for bulk_cipher in self.arguments['ssl-bulk-cipher']:
-          self.command_line.append('--ssl-bulk-cipher=%s' % bulk_cipher)
+
+    # Pass the remaining arguments as-is.
+    for key, values in args_copy.iteritems():
+      is_path = key in ['data-dir', 'cert-and-key-file', 'ssl-client-ca']
+      if not isinstance(values, list):
+        values = [values]
+      for value in values:
+        if value is None:
+          self.command_line.append('--%s' % key)
+        else:
+          # Arguments with file paths get mangled.
+          if is_path and not os.path.isabs(value):
+            value = os.path.join(constants.DIR_SOURCE_ROOT, value)
+          self.command_line.append('--%s=%s' % (key, value))
 
   def _CloseUnnecessaryFDsForTestServerProcess(self):
     # This is required to avoid subtle deadlocks that could be caused by the
