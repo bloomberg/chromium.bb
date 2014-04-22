@@ -25,6 +25,7 @@
 
 #if defined(OS_WIN)
 #include <dwmapi.h>
+#include <shellapi.h>
 #include "base/task_runner_util.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/app_icon_win.h"
