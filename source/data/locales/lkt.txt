@@ -232,25 +232,6 @@ lkt{
                 other{"ómakȟa {0}"}
             }
         }
-        length{
-            foot{
-                other{"siíyutȟapi {0}"}
-            }
-            inch{
-                other{"oíyutȟe čísčila {0}"}
-            }
-            mile{
-                other{"makhíyutȟapi {0}"}
-            }
-            yard{
-                other{"čhaéglepi {0}"}
-            }
-        }
-        mass{
-            pound{
-                other{"tkeíyutȟapi {0}"}
-            }
-        }
     }
     unitsNarrow{
         duration{
@@ -273,25 +254,6 @@ lkt{
                 other{"ómakȟa {0}"}
             }
         }
-        length{
-            foot{
-                other{"siíyutȟapi {0}"}
-            }
-            inch{
-                other{"{0}″"}
-            }
-            mile{
-                other{"{0} makh"}
-            }
-            yard{
-                other{"čhaéglepi {0}"}
-            }
-        }
-        mass{
-            pound{
-                other{"{0}#"}
-            }
-        }
     }
     unitsShort{
         duration{
@@ -312,25 +274,6 @@ lkt{
             }
             year{
                 other{"ómakȟa {0}"}
-            }
-        }
-        length{
-            foot{
-                other{"siíyutȟapi {0}"}
-            }
-            inch{
-                other{"oíyutȟe čísčila {0}"}
-            }
-            mile{
-                other{"makhíyutȟapi {0}"}
-            }
-            yard{
-                other{"čhaéglepi {0}"}
-            }
-        }
-        mass{
-            pound{
-                other{"tkeíyutȟapi {0}"}
             }
         }
     }

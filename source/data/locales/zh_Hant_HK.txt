@@ -351,113 +351,14 @@ zh_Hant_HK{
         x-Jamo{"韓文"}
     }
     units{
-        area{
-            square-meter{
-                other{"{0} 平方米"}
-            }
-        }
         duration{
             week{
                 other{"{0}星期"}
             }
         }
-        length{
-            centimeter{
-                other{"{0} 厘米"}
-            }
-            millimeter{
-                other{"{0} 毫米"}
-            }
-        }
-        mass{
-            ounce{
-                other{"{0} 安士"}
-            }
-        }
-        speed{
-            meter-per-second{
-                other{"{0} 米/小時"}
-            }
-        }
-        temperature{
-            celsius{
-                other{"攝氏{0}度"}
-            }
-            fahrenheit{
-                other{"華氏{0}度"}
-            }
-        }
     }
     unitsNarrow{
-        area{
-            square-foot{
-                other{"{0} ft²"}
-            }
-            square-mile{
-                other{"{0}mi²"}
-            }
-        }
-        length{
-            centimeter{
-                other{"{0} 厘米"}
-            }
-            millimeter{
-                other{"{0} 毫米"}
-            }
-        }
-        mass{
-            ounce{
-                other{"{0} 安士"}
-            }
-        }
-        pressure{
-            inch-hg{
-                other{"{0}\u0022 Hg"}
-            }
-        }
-        speed{
-            kilometer-per-hour{
-                other{"{0}kph"}
-            }
-            meter-per-second{
-                other{"{0}m/s"}
-            }
-            mile-per-hour{
-                other{"{0}mph"}
-            }
-        }
-        volume{
-            cubic-kilometer{
-                other{"{0}km³"}
-            }
-            cubic-mile{
-                other{"{0}mi³"}
-            }
-        }
     }
     unitsShort{
-        area{
-            square-meter{
-                other{"{0} 平方米"}
-            }
-        }
-        length{
-            centimeter{
-                other{"{0} 厘米"}
-            }
-            millimeter{
-                other{"{0} 毫米"}
-            }
-        }
-        mass{
-            ounce{
-                other{"{0} 安士"}
-            }
-        }
-        speed{
-            meter-per-second{
-                other{"{0} 米 / 小時"}
-            }
-        }
     }
 }

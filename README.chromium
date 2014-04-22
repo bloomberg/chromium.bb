@@ -92,7 +92,10 @@ This directory contains the source code of ICU 52.1 for C/C++
     add reslocal.mk or {trns,sprep,rbnf,coll}local.mk files to
     source/data/{coll,curr,lang.locale,curr,region,translit,zone,rbnf,sprep}.
 
-  - Run scripts/trimdata.sh
+    This along with #8 (data.build.patch), #3 (brkiter) and #4 (converter) 
+    cuts down the data size by ~ 11MB.
+
+  - Run scripts/trim_data.sh : About 2.1MB data size reduction.
       a. Trim the locale data for Chrome's UI langauges :
          locales, lang, region, currency
       b. Trim the locale data for non-UI languages to the bare minimum :

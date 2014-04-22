@@ -720,105 +720,15 @@ en_GB{
         }
     }
     units{
-        angle{
-            arc-minute{
-                one{"{0} minute"}
-                other{"{0} minutes"}
-            }
-            arc-second{
-                one{"{0} second"}
-                other{"{0} seconds"}
-            }
-        }
-        area{
-            square-kilometer{
-                one{"{0} square kilometre"}
-                other{"{0} square kilometres"}
-            }
-            square-meter{
-                one{"{0} square metre"}
-                other{"{0} square metres"}
-            }
-        }
-        length{
-            centimeter{
-                one{"{0} centimetre"}
-                other{"{0} centimetres"}
-            }
-            kilometer{
-                one{"{0} kilometre"}
-                other{"{0} kilometres"}
-            }
-            meter{
-                one{"{0} metre"}
-                other{"{0} metres"}
-            }
-            millimeter{
-                one{"{0} millimetre"}
-                other{"{0} millimetres"}
-            }
-            picometer{
-                one{"{0} picometre"}
-                other{"{0} picometres"}
-            }
-        }
-        speed{
-            kilometer-per-hour{
-                one{"{0} kilometre per hour"}
-                other{"{0} kilometres per hour"}
-            }
-            meter-per-second{
-                one{"{0} metre per second"}
-                other{"{0} metres per second"}
-            }
-        }
-        volume{
-            cubic-kilometer{
-                one{"{0} cubic kilometre"}
-                other{"{0} cubic kilometres"}
-            }
-            liter{
-                one{"{0} litre"}
-                other{"{0} litres"}
-            }
-        }
     }
     unitsNarrow{
-        acceleration{
-            g-force{
-                one{"{0}G"}
-                other{"{0}G"}
-            }
-        }
         duration{
             millisecond{
                 one{"{0} ms"}
                 other{"{0} ms"}
             }
         }
-        mass{
-            pound{
-                one{"{0}lb"}
-                other{"{0}lb"}
-            }
-        }
-        temperature{
-            celsius{
-                one{"{0}°"}
-                other{"{0}°"}
-            }
-        }
     }
     unitsShort{
-        angle{
-            arc-minute{
-                one{"{0} min"}
-                other{"{0} min"}
-            }
-            arc-second{
-                one{"{0} sec"}
-                other{"{0} secs"}
-            }
-        }
     }
 }

@@ -33,7 +33,7 @@ GENRB_SOURCE =\
  da.txt\
  de.txt\
  el.txt\
- en.txt en_GB.txt en_US.txt\
+ en.txt en_GB.txt en_US.txt en_AU.txt en_001.txt\
  es.txt es_ES.txt es_419.txt\
  es_AR.txt es_CO.txt es_EC.txt es_HN.txt es_PA.txt es_PY.txt es_UY.txt\
  es_BO.txt es_CR.txt es_MX.txt es_PE.txt es_SV.txt es_VE.txt es_CL.txt\

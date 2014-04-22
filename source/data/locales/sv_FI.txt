@@ -85,19 +85,7 @@ sv_FI{
         US{"engelska enheter (USA)"}
     }
     units{
-        temperature{
-            celsius{
-                one{"{0} grader Celsius"}
-                other{"{0} grader Celsius"}
-            }
-        }
     }
     unitsNarrow{
-        speed{
-            kilometer-per-hour{
-                one{"{0} km/h"}
-                other{"{0} km/h"}
-            }
-        }
     }
 }

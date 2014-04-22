@@ -337,71 +337,7 @@ zh_Hans_HK{
         }
     }
     unitsNarrow{
-        length{
-            centimeter{
-                other{"{0}厘米"}
-            }
-            foot{
-                other{"{0}英尺"}
-            }
-            inch{
-                other{"{0}英寸"}
-            }
-            kilometer{
-                other{"{0}公里"}
-            }
-            light-year{
-                other{"{0}光年"}
-            }
-            meter{
-                other{"{0}米"}
-            }
-            mile{
-                other{"{0}英里"}
-            }
-            millimeter{
-                other{"{0}毫米"}
-            }
-            picometer{
-                other{"{0}皮米"}
-            }
-            yard{
-                other{"{0}码"}
-            }
-        }
     }
     unitsShort{
-        length{
-            centimeter{
-                other{"{0}厘米"}
-            }
-            foot{
-                other{"{0}英尺"}
-            }
-            inch{
-                other{"{0}英寸"}
-            }
-            kilometer{
-                other{"{0}公里"}
-            }
-            light-year{
-                other{"{0}光年"}
-            }
-            meter{
-                other{"{0}米"}
-            }
-            mile{
-                other{"{0}英里"}
-            }
-            millimeter{
-                other{"{0}毫米"}
-            }
-            picometer{
-                other{"{0}皮米"}
-            }
-            yard{
-                other{"{0}码"}
-            }
-        }
     }
 }
