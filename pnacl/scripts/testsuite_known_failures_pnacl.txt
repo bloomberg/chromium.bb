@@ -20,16 +20,9 @@ sse.stepfft
 # Assumes that pointers are 8 bytes (an x86-64 test).
 ms_struct-bitfield-1
 
-# The following tests use vectors, which PNaCl's ABI checker rejects.
+# Vectors <2 x double> aren't supported yet.
 SingleSource/Benchmarks/BenchmarkGame/partialsums
-SingleSource/UnitTests/Vector/build
-SingleSource/UnitTests/Vector/build2
-# The divides test works only because clang -O3 precomputes the result
-# at compile time.  Clang -O0 is rejected by the ABI checker.
-SingleSource/UnitTests/Vector/divides O0f
-SingleSource/UnitTests/Vector/multiplies
 SingleSource/UnitTests/Vector/simple
-SingleSource/UnitTests/Vector/sumarray
 SingleSource/UnitTests/Vector/sumarray-dbl
 
 # The following test uses packed bitfield structs which get turned into
