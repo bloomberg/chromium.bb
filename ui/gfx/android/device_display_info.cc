@@ -47,4 +47,8 @@ int DeviceDisplayInfo::GetSmallestDIPWidth() {
   return SharedDeviceDisplayInfo::GetInstance()->GetSmallestDIPWidth();
 }
 
+int DeviceDisplayInfo::GetRotationDegrees() {
+  return SharedDeviceDisplayInfo::GetInstance()->GetRotationDegrees();
+}
+
 }  // namespace gfx

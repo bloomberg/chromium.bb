@@ -27,6 +27,7 @@ class SharedDeviceDisplayInfo {
   int GetBitsPerComponent();
   double GetDIPScale();
   int GetSmallestDIPWidth();
+  int GetRotationDegrees();
 
   // Registers methods with JNI and returns true if succeeded.
   static bool RegisterSharedDeviceDisplayInfo(JNIEnv* env);
@@ -40,7 +41,8 @@ class SharedDeviceDisplayInfo {
                     jint bits_per_pixel,
                     jint bits_per_component,
                     jdouble dip_scale,
-                    jint smallest_dip_width);
+                    jint smallest_dip_width,
+                    jint rotation_degrees);
  private:
   friend struct DefaultSingletonTraits<SharedDeviceDisplayInfo>;
 
@@ -55,7 +57,8 @@ class SharedDeviceDisplayInfo {
                          jint bits_per_pixel,
                          jint bits_per_component,
                          jdouble dip_scale,
-                         jint smallest_dip_width);
+                         jint smallest_dip_width,
+                         jint rotation_degrees);
 
   base::Lock lock_;
   base::android::ScopedJavaGlobalRef<jobject> j_device_info_;
@@ -68,6 +71,7 @@ class SharedDeviceDisplayInfo {
   int bits_per_component_;
   double dip_scale_;
   int smallest_dip_width_;
+  int rotation_degrees_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedDeviceDisplayInfo);
 };

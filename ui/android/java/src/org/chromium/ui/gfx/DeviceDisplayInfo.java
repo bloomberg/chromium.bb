@@ -10,6 +10,7 @@ import android.graphics.Point;
 import android.os.Build;
 import android.util.DisplayMetrics;
 import android.view.Display;
+import android.view.Surface;
 import android.view.WindowManager;
 
 import org.chromium.base.CalledByNative;
@@ -154,6 +155,30 @@ public class DeviceDisplayInfo {
     }
 
     /**
+     * @return the screen's rotation angle from its 'natural' orientation.
+     * Expected values are one of { 0, 90, 180, 270 }.
+     * See http://developer.android.com/reference/android/view/Display.html#getRotation()
+     * for more information about Display.getRotation() behavior.
+     */
+    @CalledByNative
+    private int getRotationDegrees() {
+        switch (getDisplay().getRotation()) {
+            case Surface.ROTATION_0:
+                return 0;
+            case Surface.ROTATION_90:
+                return 90;
+            case Surface.ROTATION_180:
+                return 180;
+            case Surface.ROTATION_270:
+                return 270;
+        }
+
+        // This should not happen.
+        assert false;
+        return 0;
+    }
+
+    /**
      * Inform the native implementation to update its cached representation of
      * the DeviceDisplayInfo values.
      */
@@ -162,7 +187,7 @@ public class DeviceDisplayInfo {
                 getDisplayHeight(), getDisplayWidth(),
                 getPhysicalDisplayHeight(), getPhysicalDisplayWidth(),
                 getBitsPerPixel(), getBitsPerComponent(),
-                getDIPScale(), getSmallestDIPWidth());
+                getDIPScale(), getSmallestDIPWidth(), getRotationDegrees());
     }
 
     private Display getDisplay() {
@@ -184,6 +209,6 @@ public class DeviceDisplayInfo {
             int displayHeight, int displayWidth,
             int physicalDisplayHeight, int physicalDisplayWidth,
             int bitsPerPixel, int bitsPerComponent, double dipScale,
-            int smallestDIPWidth);
+            int smallestDIPWidth, int rotationDegrees);
 
 }

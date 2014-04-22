@@ -51,6 +51,11 @@ class GFX_EXPORT DeviceDisplayInfo {
   // Smallest possible screen size in density-independent pixels.
   int GetSmallestDIPWidth();
 
+  // Returns the display rotation angle from its natural orientation. Expected
+  // values are one of { 0, 90, 180, 270 }.
+  // See DeviceDispayInfo.java for more information.
+  int GetRotationDegrees();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(DeviceDisplayInfo);
 };

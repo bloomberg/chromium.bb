@@ -43,6 +43,7 @@ class ScreenAndroid : public Screen {
     gfx::Display display(0, bounds_in_dip);
     if (!gfx::Display::HasForceDeviceScaleFactor())
       display.set_device_scale_factor(device_scale_factor);
+    display.SetRotationAsDegree(device_info.GetRotationDegrees());
     return display;
   }
 
