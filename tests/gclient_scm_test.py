@@ -1300,6 +1300,8 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
     gclient_scm.os.path.isdir(self.base_path).AndReturn(True)
     gclient_scm.os.path.exists(os.path.join(self.base_path, '.git')
                                ).AndReturn(False)
+    self.mox.StubOutWithMock(gclient_scm.os, 'listdir', True)
+    gclient_scm.os.listdir(self.base_path).AndReturn([])
 
     self.mox.StubOutWithMock(gclient_scm.GitWrapper, '_Clone', True)
     # pylint: disable=E1120
@@ -1332,6 +1334,8 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
     gclient_scm.os.path.isdir(self.base_path).AndReturn(True)
     gclient_scm.os.path.exists(os.path.join(self.base_path, '.git')
                                ).AndReturn(False)
+    self.mox.StubOutWithMock(gclient_scm.os, 'listdir', True)
+    gclient_scm.os.listdir(self.base_path).AndReturn([])
     self.mox.StubOutWithMock(gclient_scm.GitWrapper, '_Clone', True)
     # pylint: disable=E1120
     gclient_scm.GitWrapper._Clone('refs/remotes/origin/master', self.url,

@@ -352,7 +352,8 @@ class GitWrapper(SCMWrapper):
         (os.path.isdir(self.checkout_path) and
          not os.path.exists(os.path.join(self.checkout_path, '.git')))):
       if (os.path.isdir(self.checkout_path) and
-          not os.path.exists(os.path.join(self.checkout_path, '.git'))):
+          not os.path.exists(os.path.join(self.checkout_path, '.git')) and
+          os.listdir(self.checkout_path)):
         # This is a little hack to work around checkouts which are created
         # using "gclient config --name ."
         if not self.relpath == '.':
