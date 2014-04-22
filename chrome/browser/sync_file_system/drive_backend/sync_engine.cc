@@ -50,6 +50,53 @@ namespace sync_file_system {
 class RemoteChangeProcessor;
 
 namespace drive_backend {
+
+class SyncEngine::WorkerObserver
+    : public SyncWorker::Observer {
+ public:
+  WorkerObserver(base::SequencedTaskRunner* ui_task_runner,
+                 base::WeakPtr<SyncEngine> sync_engine)
+      : ui_task_runner_(ui_task_runner),
+        sync_engine_(sync_engine){
+  }
+
+  virtual ~WorkerObserver() {}
+
+  virtual void OnPendingFileListUpdated(int item_count) OVERRIDE {
+    ui_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&SyncEngine::OnPendingFileListUpdated,
+                   sync_engine_,
+                   item_count));
+  }
+
+  virtual void OnFileStatusChanged(const fileapi::FileSystemURL& url,
+                                   SyncFileStatus file_status,
+                                   SyncAction sync_action,
+                                   SyncDirection direction) OVERRIDE {
+    ui_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&SyncEngine::OnFileStatusChanged,
+                   sync_engine_,
+                   url, file_status, sync_action, direction));
+  }
+
+
+  virtual void UpdateServiceState(RemoteServiceState state,
+                                  const std::string& description) OVERRIDE {
+    ui_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&SyncEngine::UpdateServiceState,
+                   sync_engine_, state, description));
+  }
+
+ private:
+  scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
+  base::WeakPtr<SyncEngine> sync_engine_;
+
+  DISALLOW_COPY_AND_ASSIGN(WorkerObserver);
+};
+
 namespace {
 
 void EmptyStatusCallback(SyncStatusCode status) {}
@@ -128,6 +175,8 @@ SyncEngine::~SyncEngine() {
   GetDriveService()->RemoveObserver(this);
   if (notification_manager_)
     notification_manager_->RemoveObserver(this);
+
+  // TODO(tzik): Destroy |sync_worker_| and |worker_observer_| on the worker.
 }
 
 void SyncEngine::Initialize(const base::FilePath& base_dir,
@@ -138,11 +187,17 @@ void SyncEngine::Initialize(const base::FilePath& base_dir,
                             drive_uploader_.get(),
                             base::MessageLoopProxy::current(),
                             file_task_runner));
+  worker_observer_.reset(
+      new WorkerObserver(base::MessageLoopProxy::current(),
+                         weak_ptr_factory_.GetWeakPtr()));
+
   // TODO(peria): Use PostTask on |worker_task_runner_| to call this function.
-  sync_worker_ = SyncWorker::CreateOnWorker(weak_ptr_factory_.GetWeakPtr(),
-                                            base_dir,
-                                            sync_engine_context.Pass(),
-                                            env_override);
+  sync_worker_ = SyncWorker::CreateOnWorker(
+      base_dir,
+      worker_observer_.get(),
+      extension_service_,
+      sync_engine_context.Pass(),
+      env_override);
 
   if (notification_manager_)
     notification_manager_->AddObserver(this);
@@ -393,43 +448,28 @@ SyncEngine::SyncEngine(
       worker_task_runner_(worker_task_runner),
       weak_ptr_factory_(this) {}
 
-void SyncEngine::DidProcessRemoteChange(
-    sync_file_system::SyncAction sync_action,
-    const fileapi::FileSystemURL& url) {
-  if (sync_action != SYNC_ACTION_NONE && url.is_valid()) {
-    FOR_EACH_OBSERVER(FileStatusObserver,
-                      file_status_observers_,
-                      OnFileStatusChanged(url,
-                                          SYNC_FILE_STATUS_SYNCED,
-                                          sync_action,
-                                          SYNC_DIRECTION_REMOTE_TO_LOCAL));
-  }
+void SyncEngine::OnPendingFileListUpdated(int item_count) {
+  FOR_EACH_OBSERVER(
+      Observer,
+      service_observers_,
+      OnRemoteChangeQueueUpdated(item_count));
 }
 
-void SyncEngine::DidApplyLocalChange(
-    sync_file_system::SyncAction sync_action,
-    const fileapi::FileSystemURL& url,
-    const base::FilePath& target_path,
-    SyncStatusCode status) {
-  if ((status == SYNC_STATUS_OK || status == SYNC_STATUS_RETRY) &&
-      url.is_valid() && sync_action != SYNC_ACTION_NONE) {
-    fileapi::FileSystemURL updated_url = url;
-    if (!target_path.empty()) {
-      updated_url = CreateSyncableFileSystemURL(url.origin(), target_path);
-    }
-    FOR_EACH_OBSERVER(FileStatusObserver,
-                      file_status_observers_,
-                      OnFileStatusChanged(updated_url,
-                                          SYNC_FILE_STATUS_SYNCED,
-                                          sync_action,
-                                          SYNC_DIRECTION_LOCAL_TO_REMOTE));
-  }
+void SyncEngine::OnFileStatusChanged(const fileapi::FileSystemURL& url,
+                                     SyncFileStatus file_status,
+                                     SyncAction sync_action,
+                                     SyncDirection direction) {
+  FOR_EACH_OBSERVER(FileStatusObserver,
+                    file_status_observers_,
+                    OnFileStatusChanged(
+                        url, file_status, sync_action, direction));
 }
 
-void SyncEngine::UpdateServiceState(const std::string& description) {
+void SyncEngine::UpdateServiceState(RemoteServiceState state,
+                                    const std::string& description) {
   FOR_EACH_OBSERVER(
       Observer, service_observers_,
-      OnRemoteServiceStateUpdated(GetCurrentState(), description));
+      OnRemoteServiceStateUpdated(state, description));
 }
 
 void SyncEngine::UpdateRegisteredApps() {
@@ -469,14 +509,6 @@ void SyncEngine::UpdateRegisteredApps() {
     else if (!is_app_enabled && is_app_root_tracker_enabled)
       DisableOrigin(origin, base::Bind(&EmptyStatusCallback));
   }
-}
-
-void SyncEngine::NotifyLastOperationStatus() {
-  FOR_EACH_OBSERVER(
-      Observer,
-      service_observers_,
-      OnRemoteChangeQueueUpdated(
-          GetMetadataDatabase()->CountDirtyTracker()));
 }
 
 }  // namespace drive_backend

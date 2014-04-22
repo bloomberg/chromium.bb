@@ -16,7 +16,11 @@
 #include "chrome/browser/sync_file_system/drive_backend/sync_task_manager.h"
 #include "chrome/browser/sync_file_system/local_change_processor.h"
 #include "chrome/browser/sync_file_system/remote_file_sync_service.h"
+#include "chrome/browser/sync_file_system/sync_action.h"
+#include "chrome/browser/sync_file_system/sync_direction.h"
 #include "net/base/network_change_notifier.h"
+
+class ExtensionServiceInterface;
 
 namespace base {
 class SequencedTaskRunner;
@@ -41,15 +45,29 @@ namespace drive_backend {
 class LocalToRemoteSyncer;
 class MetadataDatabase;
 class RemoteToLocalSyncer;
-class SyncEngine;
 class SyncEngineContext;
 class SyncEngineInitializer;
 
 class SyncWorker : public SyncTaskManager::Client {
  public:
+  class Observer {
+   public:
+    virtual void OnPendingFileListUpdated(int item_count) = 0;
+    virtual void OnFileStatusChanged(const fileapi::FileSystemURL& url,
+                                     SyncFileStatus file_status,
+                                     SyncAction sync_action,
+                                     SyncDirection direction) = 0;
+    virtual void UpdateServiceState(RemoteServiceState state,
+                                    const std::string& description) = 0;
+
+   protected:
+    virtual ~Observer() {}
+  };
+
   static scoped_ptr<SyncWorker> CreateOnWorker(
-      const base::WeakPtr<drive_backend::SyncEngine>& sync_engine,
       const base::FilePath& base_dir,
+      Observer* observer,
+      ExtensionServiceInterface* extension_service,
       scoped_ptr<SyncEngineContext> sync_engine_context,
       leveldb::Env* env_override);
 
@@ -105,12 +123,14 @@ class SyncWorker : public SyncTaskManager::Client {
   MetadataDatabase* GetMetadataDatabase();
   SyncTaskManager* GetSyncTaskManager();
 
+  void AddObserver(Observer* observer);
+
  private:
   friend class DriveBackendSyncTest;
   friend class SyncEngineTest;
 
-  SyncWorker(const base::WeakPtr<drive_backend::SyncEngine>& sync_engine,
-             const base::FilePath& base_dir,
+  SyncWorker(const base::FilePath& base_dir,
+             ExtensionServiceInterface* extension_service,
              scoped_ptr<SyncEngineContext> sync_engine_context,
              leveldb::Env* env_override);
 
@@ -122,6 +142,7 @@ class SyncWorker : public SyncTaskManager::Client {
   void PostInitializeTask();
   void DidInitialize(SyncEngineInitializer* initializer,
                      SyncStatusCode status);
+  void UpdateRegisteredApp();
   void DidProcessRemoteChange(RemoteToLocalSyncer* syncer,
                               const SyncFileCallback& callback,
                               SyncStatusCode status);
@@ -157,8 +178,12 @@ class SyncWorker : public SyncTaskManager::Client {
 
   scoped_ptr<SyncTaskManager> task_manager_;
 
+  // TODO(tzik): Add a proxy class for ExtensionServiceInterface to cross
+  // thread, and hold its instance as WeakPtr here.
+  ExtensionServiceInterface* extension_service_;
+
   scoped_ptr<SyncEngineContext> context_;
-  base::WeakPtr<drive_backend::SyncEngine> sync_engine_;
+  ObserverList<Observer> observers_;
 
   base::WeakPtrFactory<SyncWorker> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(SyncWorker);
