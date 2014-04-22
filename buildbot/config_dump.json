@@ -39751,9 +39751,7 @@
         "gs_path": "default",
         "health_alert_recipients": [],
         "health_threshold": 0,
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"suite\": \"bvt\",\n    \"timeout\": 7200\n}"
-        ],
+        "hw_tests": [],
         "hwqual": false,
         "images": [
             "test"

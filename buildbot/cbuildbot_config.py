@@ -1762,7 +1762,8 @@ internal_paladin.add_config('winky-paladin',
 internal_paladin.add_config('wolf-paladin',
   boards=['wolf'],
   paladin_builder_name='wolf paladin',
-  hw_tests=HWTestConfig.DefaultListCQ(),
+  # TODO(davidjames): Re-enable hwtests on wolf -- http://crbug.com/365887
+  #hw_tests=HWTestConfig.DefaultListCQ(),
   upload_hw_test_artifacts=True,
 )
 
