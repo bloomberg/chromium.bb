@@ -22,7 +22,6 @@ class ASH_EXPORT DefaultSystemTrayDelegate : public SystemTrayDelegate {
   virtual void Shutdown() OVERRIDE;
   virtual bool GetTrayVisibilityOnStartup() OVERRIDE;
   virtual user::LoginStatus GetUserLoginStatus() const OVERRIDE;
-  virtual bool IsOobeCompleted() const OVERRIDE;
   virtual void ChangeProfilePicture() OVERRIDE;
   virtual const std::string GetEnterpriseDomain() const OVERRIDE;
   virtual const base::string16 GetEnterpriseMessage() const OVERRIDE;

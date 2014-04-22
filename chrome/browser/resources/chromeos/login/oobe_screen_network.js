@@ -10,6 +10,7 @@ login.createScreen('NetworkScreen', 'connect', function() {
   return {
     EXTERNAL_API: [
       'enableContinueButton',
+      'setInputMethod',
       'setTimezone',
       'showError'
     ],
@@ -88,6 +89,17 @@ login.createScreen('NetworkScreen', 'connect', function() {
      */
     enableContinueButton: function(enable) {
       $('continue-button').disabled = !enable;
+    },
+
+    /**
+     * Sets the current input method.
+     * @param {string} inputMethodId The ID of the input method to select.
+     */
+    setInputMethod: function(inputMethodId) {
+      option = $('keyboard-select').querySelector(
+          'option[value="' + inputMethodId + '"]');
+      if (option)
+        option.selected = true;
     },
 
     /**

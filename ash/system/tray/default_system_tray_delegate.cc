@@ -59,10 +59,6 @@ user::LoginStatus DefaultSystemTrayDelegate::GetUserLoginStatus() const {
   return user::LOGGED_IN_USER;
 }
 
-bool DefaultSystemTrayDelegate::IsOobeCompleted() const {
-  return true;
-}
-
 void DefaultSystemTrayDelegate::ChangeProfilePicture() {
 }
 

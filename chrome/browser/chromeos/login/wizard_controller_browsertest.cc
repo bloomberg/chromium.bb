@@ -206,6 +206,40 @@ class WizardControllerTest : public WizardInProcessBrowserTest {
         ->GetErrorScreen();
   }
 
+  content::WebContents* GetWebContents() {
+    LoginDisplayHostImpl* host = static_cast<LoginDisplayHostImpl*>(
+        LoginDisplayHostImpl::default_host());
+    if (!host)
+      return NULL;
+    WebUILoginView* webui_login_view = host->GetWebUILoginView();
+    if (!webui_login_view)
+      return NULL;
+    return webui_login_view->GetWebContents();
+  }
+
+  void WaitUntilJSIsReady() {
+    LoginDisplayHostImpl* host = static_cast<LoginDisplayHostImpl*>(
+        LoginDisplayHostImpl::default_host());
+    if (!host)
+      return;
+    chromeos::OobeUI* oobe_ui = host->GetOobeUI();
+    if (!oobe_ui)
+      return;
+    base::RunLoop run_loop;
+    const bool oobe_ui_ready = oobe_ui->IsJSReady(run_loop.QuitClosure());
+    if (!oobe_ui_ready)
+      run_loop.Run();
+  }
+
+  bool JSExecuteBooleanExpression(const std::string& expression) {
+    bool result;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+        GetWebContents(),
+        "window.domAutomationController.send(!!(" + expression + "));",
+        &result));
+    return result;
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(WizardControllerTest);
 };
@@ -318,12 +352,22 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowMain) {
   EXPECT_TRUE(ExistingUserController::current_controller() == NULL);
   EXPECT_EQ(WizardController::default_controller()->GetNetworkScreen(),
             WizardController::default_controller()->current_screen());
+
+  WaitUntilJSIsReady();
+
+  // Check visibility of the header bar.
+  ASSERT_FALSE(JSExecuteBooleanExpression("$('login-header-bar').hidden"));
+
   EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_eula_screen_, Show()).Times(1);
   OnExit(ScreenObserver::NETWORK_CONNECTED);
 
   EXPECT_EQ(WizardController::default_controller()->GetEulaScreen(),
             WizardController::default_controller()->current_screen());
+
+  // Header bar should still be visible.
+  ASSERT_FALSE(JSExecuteBooleanExpression("$('login-header-bar').hidden"));
+
   EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(1);
   EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
@@ -635,39 +679,6 @@ class WizardControllerBrokenLocalStateTest : public WizardControllerTest {
     WizardControllerTest::TearDownInProcessBrowserTestFixture();
   }
 
-  content::WebContents* GetWebContents() {
-    LoginDisplayHostImpl* host = static_cast<LoginDisplayHostImpl*>(
-        LoginDisplayHostImpl::default_host());
-    if (!host)
-      return NULL;
-    WebUILoginView* webui_login_view = host->GetWebUILoginView();
-    if (!webui_login_view)
-      return NULL;
-    return webui_login_view->GetWebContents();
-  }
-
-  void WaitUntilJSIsReady() {
-    LoginDisplayHostImpl* host = static_cast<LoginDisplayHostImpl*>(
-        LoginDisplayHostImpl::default_host());
-    if (!host)
-      return;
-    chromeos::OobeUI* oobe_ui = host->GetOobeUI();
-    if (!oobe_ui)
-      return;
-    base::RunLoop run_loop;
-    const bool oobe_ui_ready = oobe_ui->IsJSReady(run_loop.QuitClosure());
-    if (!oobe_ui_ready)
-      run_loop.Run();
-  }
-
-  bool JSExecuteBooleanExpression(const std::string& expression) {
-    bool result;
-    EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-        GetWebContents(),
-        "window.domAutomationController.send(!!(" + expression + "));",
-        &result));
-    return result;
-  }
 
   FakeSessionManagerClient* fake_session_manager_client() const {
     return fake_session_manager_client_;

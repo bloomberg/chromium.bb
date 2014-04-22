@@ -33,7 +33,6 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/ime/extension_ime_util.h"
-#include "chromeos/ime/input_method_manager.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -108,6 +107,7 @@ NetworkScreenHandler::NetworkScreenHandler(CoreOobeActor* core_oobe_actor)
 
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::Get();
+  manager->AddObserver(this);
   manager->GetComponentExtensionIMEManager()->AddObserver(this);
 }
 
@@ -115,9 +115,10 @@ NetworkScreenHandler::~NetworkScreenHandler() {
   if (screen_)
     screen_->OnActorDestroyed(this);
 
-  input_method::InputMethodManager::Get()
-      ->GetComponentExtensionIMEManager()
-      ->RemoveObserver(this);
+  input_method::InputMethodManager* manager =
+      input_method::InputMethodManager::Get();
+  manager->RemoveObserver(this);
+  manager->GetComponentExtensionIMEManager()->RemoveObserver(this);
 }
 
 // NetworkScreenHandler, NetworkScreenActor implementation: --------------------
@@ -484,6 +485,11 @@ void NetworkScreenHandler::OnImeComponentExtensionInitialized() {
     ReloadLocalizedContent();
   else
     should_reinitialize_language_keyboard_list_ = true;
+}
+
+void NetworkScreenHandler::InputMethodChanged(
+    input_method::InputMethodManager* manager, bool show_message) {
+  CallJS("setInputMethod", manager->GetCurrentInputMethod().id());
 }
 
 void NetworkScreenHandler::ReloadLocalizedContent() {

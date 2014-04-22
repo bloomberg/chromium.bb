@@ -130,7 +130,6 @@ class ASH_EXPORT SystemTrayDelegate {
 
   // Gets information about the active user.
   virtual user::LoginStatus GetUserLoginStatus() const = 0;
-  virtual bool IsOobeCompleted() const = 0;
 
   // Shows UI for changing user's profile picture.
   virtual void ChangeProfilePicture() = 0;

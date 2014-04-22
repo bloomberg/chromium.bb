@@ -58,7 +58,6 @@
 #include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
-#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/supervised_user_manager.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_adding_screen.h"
@@ -413,13 +412,6 @@ ash::user::LoginStatus SystemTrayDelegateChromeOS::GetUserLoginStatus() const {
   }
   NOTREACHED();
   return ash::user::LOGGED_IN_NONE;
-}
-
-bool SystemTrayDelegateChromeOS::IsOobeCompleted() const {
-  if (!base::SysInfo::IsRunningOnChromeOS() &&
-      LoginState::Get()->IsUserLoggedIn())
-    return true;
-  return StartupUtils::IsOobeCompleted();
 }
 
 void SystemTrayDelegateChromeOS::ChangeProfilePicture() {

@@ -61,10 +61,6 @@ class SystemTrayDelegateWin : public ash::SystemTrayDelegate,
     return ash::user::LOGGED_IN_OWNER;
   }
 
-  virtual bool IsOobeCompleted() const OVERRIDE {
-    return true;
-  }
-
   virtual void ChangeProfilePicture() OVERRIDE {
   }
 

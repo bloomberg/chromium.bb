@@ -93,6 +93,7 @@ class CoreOobeHandler : public BaseScreenHandler,
   void HandleSkipToLoginForTesting(const base::ListValue* args);
   void HandleLaunchHelpApp(double help_topic_id);
   void HandleToggleResetScreen();
+  void HandleHeaderBarVisible();
 
   // Updates a11y menu state based on the current a11y features state(on/off).
   void UpdateA11yState();

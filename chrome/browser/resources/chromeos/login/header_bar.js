@@ -265,10 +265,29 @@ cr.define('login', function() {
 
     /**
      * Animates Header bar to slowly appear on the screen.
+     *
+     * @param {function()} callback will be called once animation is finished.
      */
-    animateIn: function() {
-      this.classList.remove('login-header-bar-animate-fast');
-      this.classList.add('login-header-bar-animate-slow');
+    animateIn: function(callback) {
+      if (callback) {
+        var launcher = this;
+        launcher.addEventListener(
+            'webkitTransitionEnd', function f(e) {
+              launcher.removeEventListener('webkitTransitionEnd', f);
+              callback();
+            });
+        // Guard timer for 2 seconds + 200 ms + epsilon.
+        ensureTransitionEndEvent(launcher, 2250);
+      }
+
+      if (Oobe.getInstance().displayType == DISPLAY_TYPE.OOBE) {
+        this.classList.remove('login-header-bar-animate-slow');
+        this.classList.add('login-header-bar-animate-fast');
+      } else {
+        this.classList.remove('login-header-bar-animate-fast');
+        this.classList.add('login-header-bar-animate-slow');
+      }
+
       this.classList.remove('login-header-bar-hidden');
     },
   };
@@ -283,8 +302,8 @@ cr.define('login', function() {
   /**
    * Convenience wrapper of animateIn.
    */
-  HeaderBar.animateIn = function() {
-    $('login-header-bar').animateIn();
+  HeaderBar.animateIn = function(callback) {
+    $('login-header-bar').animateIn(callback);
   }
 
   return {

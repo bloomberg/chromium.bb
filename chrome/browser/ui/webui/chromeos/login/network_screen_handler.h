@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chromeos/ime/component_extension_ime_manager.h"
+#include "chromeos/ime/input_method_manager.h"
 #include "ui/gfx/point.h"
 
 class PrefRegistrySimple;
@@ -30,7 +31,8 @@ struct NetworkScreenHandlerOnLanguageChangedCallbackData;
 // the welcome screen (part of the page) of the OOBE.
 class NetworkScreenHandler : public NetworkScreenActor,
                              public BaseScreenHandler,
-                             public ComponentExtensionIMEManager::Observer {
+                             public ComponentExtensionIMEManager::Observer,
+                             public input_method::InputMethodManager::Observer {
  public:
   explicit NetworkScreenHandler(CoreOobeActor* core_oobe_actor);
   virtual ~NetworkScreenHandler();
@@ -56,6 +58,10 @@ class NetworkScreenHandler : public NetworkScreenActor,
 
   // ComponentExtensionIMEManager::Observer implementation:
   virtual void OnImeComponentExtensionInitialized() OVERRIDE;
+
+  // InputMethodManager::Observer implementation:
+  virtual void InputMethodChanged(input_method::InputMethodManager* manager,
+                                  bool show_message) OVERRIDE;
 
   // Registers the preference for derelict state.
   static void RegisterPrefs(PrefRegistrySimple* registry);

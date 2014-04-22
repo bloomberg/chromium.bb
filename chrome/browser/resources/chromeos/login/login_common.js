@@ -43,6 +43,12 @@ cr.define('cr.ui', function() {
   function Oobe() {
   }
 
+  /**
+   * Delay in milliseconds between start of OOBE animation and start of
+   * header bar animation.
+   */
+  var HEADER_BAR_DELAY_MS = 300;
+
   cr.addSingletonGetter(Oobe);
 
   Oobe.prototype = {
@@ -81,13 +87,21 @@ cr.define('cr.ui', function() {
   Oobe.showOobeUI = function(showOobe) {
     if (showOobe) {
       document.body.classList.add('oobe-display');
+
+      // Callback to animate the header bar in.
+      var showHeaderBar = function() {
+        login.HeaderBar.animateIn(function() {
+          chrome.send('headerBarVisible');
+        });
+      };
+      // Start asynchronously so the OOBE network screen comes in first.
+      window.setTimeout(showHeaderBar, HEADER_BAR_DELAY_MS);
     } else {
       document.body.classList.remove('oobe-display');
       Oobe.getInstance().prepareForLoginDisplay_();
     }
 
-    // Don't show header bar for OOBE.
-    Oobe.getInstance().headerHidden = showOobe;
+    Oobe.getInstance().headerHidden = false;
   };
 
   /**

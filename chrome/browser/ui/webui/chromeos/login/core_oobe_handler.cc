@@ -37,6 +37,7 @@ const char kJsApiEnableSpokenFeedback[] = "enableSpokenFeedback";
 const char kJsApiScreenStateInitialize[] = "screenStateInitialize";
 const char kJsApiSkipUpdateEnrollAfterEula[] = "skipUpdateEnrollAfterEula";
 const char kJsApiScreenAssetsLoaded[] = "screenAssetsLoaded";
+const char kJsApiHeaderBarVisible[] = "headerBarVisible";
 
 }  // namespace
 
@@ -130,6 +131,8 @@ void CoreOobeHandler::RegisterMessages() {
   AddCallback("launchHelpApp",
               &CoreOobeHandler::HandleLaunchHelpApp);
   AddCallback("toggleResetScreen", &CoreOobeHandler::HandleToggleResetScreen);
+  AddCallback(kJsApiHeaderBarVisible,
+              &CoreOobeHandler::HandleHeaderBarVisible);
 }
 
 void CoreOobeHandler::ShowSignInError(
@@ -355,6 +358,10 @@ void CoreOobeHandler::HandleLaunchHelpApp(double help_topic_id) {
     help_app_ = new HelpAppLauncher(GetNativeWindow());
   help_app_->ShowHelpTopic(
       static_cast<HelpAppLauncher::HelpTopic>(help_topic_id));
+}
+
+void CoreOobeHandler::HandleHeaderBarVisible() {
+  LoginDisplayHostImpl::default_host()->SetStatusAreaVisible(true);
 }
 
 }  // namespace chromeos

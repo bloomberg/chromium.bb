@@ -314,7 +314,9 @@ chromeos::HIDDetectionScreen* WizardController::GetHIDDetectionScreen() {
 
 void WizardController::ShowNetworkScreen() {
   VLOG(1) << "Showing network screen.";
-  SetStatusAreaVisible(false);
+  // Hide the status area initially; it only appears after OOBE first animates
+  // in. Keep it visible if the user goes back to the existing network screen.
+  SetStatusAreaVisible(network_screen_.get());
   SetCurrentScreen(GetNetworkScreen());
 }
 
@@ -378,7 +380,7 @@ void WizardController::ShowUserImageScreen() {
 
 void WizardController::ShowEulaScreen() {
   VLOG(1) << "Showing EULA screen.";
-  SetStatusAreaVisible(false);
+  SetStatusAreaVisible(true);
   SetCurrentScreen(GetEulaScreen());
 }
 
