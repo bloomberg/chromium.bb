@@ -378,6 +378,7 @@ cr.define('options', function() {
                 OptionsPage.navigateToPage('managedUserImport');
               } else {
                 self.hideErrorBubble_('create');
+                CreateProfileOverlay.updateCreateInProgress(true);
                 chrome.send('createProfile',
                     [managedUser.name, managedUser.iconURL, false, true,
                         managedUser.id]);
