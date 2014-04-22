@@ -2338,7 +2338,7 @@
         "overlays": "public",
         "packages": [
             "virtual/target-os",
-            "chromeos-base/chromeos-dev"
+            "virtual/target-os-dev"
         ],
         "paladin_builder_name": null,
         "paygen": false,
@@ -2434,7 +2434,7 @@
         "overlays": "both",
         "packages": [
             "virtual/target-os",
-            "chromeos-base/chromeos-dev"
+            "virtual/target-os-dev"
         ],
         "paladin_builder_name": "beaglebone paladin",
         "paygen": false,
@@ -2533,7 +2533,7 @@
         "overlays": "both",
         "packages": [
             "virtual/target-os",
-            "chromeos-base/chromeos-dev"
+            "virtual/target-os-dev"
         ],
         "paladin_builder_name": null,
         "paygen": false,
@@ -2651,7 +2651,7 @@
                 "overlays": "both",
                 "packages": [
                     "virtual/target-os",
-                    "chromeos-base/chromeos-dev"
+                    "virtual/target-os-dev"
                 ],
                 "paladin_builder_name": null,
                 "paygen": false,
@@ -2752,7 +2752,7 @@
                 "overlays": "both",
                 "packages": [
                     "virtual/target-os",
-                    "chromeos-base/chromeos-dev"
+                    "virtual/target-os-dev"
                 ],
                 "paladin_builder_name": null,
                 "paygen": false,
@@ -2837,7 +2837,7 @@
         "overlays": "both",
         "packages": [
             "virtual/target-os",
-            "chromeos-base/chromeos-dev"
+            "virtual/target-os-dev"
         ],
         "paladin_builder_name": null,
         "paygen": false,
@@ -2938,7 +2938,7 @@
         "overlays": "both",
         "packages": [
             "virtual/target-os",
-            "chromeos-base/chromeos-dev"
+            "virtual/target-os-dev"
         ],
         "paladin_builder_name": "beaglebone_servo paladin",
         "paygen": false,
@@ -3037,7 +3037,7 @@
         "overlays": "both",
         "packages": [
             "virtual/target-os",
-            "chromeos-base/chromeos-dev"
+            "virtual/target-os-dev"
         ],
         "paladin_builder_name": null,
         "paygen": false,
@@ -37460,7 +37460,7 @@
         "overlays": "both",
         "packages": [
             "virtual/target-os",
-            "chromeos-base/chromeos-dev"
+            "virtual/target-os-dev"
         ],
         "paladin_builder_name": "stumpy_moblab paladin",
         "paygen": false,
@@ -37651,7 +37651,7 @@
         "overlays": "both",
         "packages": [
             "virtual/target-os",
-            "chromeos-base/chromeos-dev"
+            "virtual/target-os-dev"
         ],
         "paladin_builder_name": null,
         "paygen": true,
