@@ -13,6 +13,7 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
@@ -32,10 +33,6 @@ class PowerManagerClient;
 namespace content {
 class BrowserContext;
 }  // namespace content
-
-namespace drive {
-class DriveIntegrationService;
-}  // namespace drive
 
 namespace file_manager {
 
@@ -123,7 +120,7 @@ class VolumeManager : public KeyedService,
   // Returns the instance corresponding to the |context|.
   static VolumeManager* Get(content::BrowserContext* context);
 
-  // Intializes this instance.
+  // Initializes this instance.
   void Initialize();
 
   // Disposes this instance.
@@ -207,6 +204,9 @@ class VolumeManager : public KeyedService,
       file_system_provider_service_;  // Not owned by this class.
   std::map<std::string, VolumeInfo> mounted_volumes_;
 
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<VolumeManager> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(VolumeManager);
 };
 

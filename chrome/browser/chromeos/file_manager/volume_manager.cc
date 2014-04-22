@@ -35,6 +35,9 @@
 namespace file_manager {
 namespace {
 
+// A named constant to be passed to the |is_remounting| parameter.
+const bool kNotRemounting = false;
+
 // Registers |path| as the "Downloads" folder to the FileSystem API backend.
 // If another folder is already mounted. It revokes and overrides the old one.
 bool RegisterDownloadsMountPoint(Profile* profile, const base::FilePath& path) {
@@ -235,7 +238,8 @@ VolumeManager::VolumeManager(
       disk_mount_manager_(disk_mount_manager),
       mounted_disk_monitor_(
           new MountedDiskMonitor(power_manager_client, disk_mount_manager)),
-      file_system_provider_service_(file_system_provider_service) {
+      file_system_provider_service_(file_system_provider_service),
+      weak_ptr_factory_(this) {
   DCHECK(disk_mount_manager);
 }
 
@@ -247,7 +251,9 @@ VolumeManager* VolumeManager::Get(content::BrowserContext* context) {
 }
 
 void VolumeManager::Initialize() {
-  const bool kNotRemounting = false;
+  // If in Sign in profile, then skip mounting and listening for mount events.
+  if (chromeos::ProfileHelper::IsSigninProfile(profile_))
+    return;
 
   // Path to mount user folders have changed several times. We need to migrate
   // the old preferences on paths to the new format when needed. For the detail,
@@ -263,10 +269,6 @@ void VolumeManager::Initialize() {
     profile_->GetPrefs()->SetFilePath(prefs::kSelectFileLastDirectory,
                                       new_path);
   }
-
-  // If in Sign in profile, then skip mounting and listening for mount events.
-  if (chromeos::ProfileHelper::IsSigninProfile(profile_))
-    return;
 
   // Register 'Downloads' folder for the profile to the file system.
   const base::FilePath downloads =
@@ -359,18 +361,21 @@ void VolumeManager::Initialize() {
   pref_change_registrar_.Add(
       prefs::kExternalStorageDisabled,
       base::Bind(&VolumeManager::OnExternalStorageDisabledChanged,
-                 base::Unretained(this)));
+                 weak_ptr_factory_.GetWeakPtr()));
 
+  // Subscribe to Privet volume lister.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnablePrivetStorage)) {
     privet_volume_lister_.reset(new local_discovery::PrivetVolumeLister(
         base::Bind(&VolumeManager::OnPrivetVolumesAvailable,
-                   base::Unretained(this))));
+                   weak_ptr_factory_.GetWeakPtr())));
     privet_volume_lister_->Start();
   }
 }
 
 void VolumeManager::Shutdown() {
+  weak_ptr_factory_.InvalidateWeakPtrs();
+
   pref_change_registrar_.RemoveAll();
   disk_mount_manager_->RemoveObserver(this);
 
@@ -433,7 +438,7 @@ bool VolumeManager::RegisterDownloadsDirectoryForTesting(
   DoMountEvent(
       success ? chromeos::MOUNT_ERROR_NONE : chromeos::MOUNT_ERROR_INVALID_PATH,
       CreateDownloadsVolumeInfo(path),
-      false /* is_remounting */);
+      kNotRemounting);
   return success;
 }
 
@@ -443,7 +448,7 @@ void VolumeManager::AddVolumeInfoForTesting(const base::FilePath& path,
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DoMountEvent(chromeos::MOUNT_ERROR_NONE,
                CreateTestingVolumeInfo(path, volume_type, device_type),
-               false /* is_remounting */);
+               kNotRemounting);
 }
 
 void VolumeManager::OnFileSystemMounted() {
@@ -453,8 +458,7 @@ void VolumeManager::OnFileSystemMounted() {
   // We can pass chromeos::MOUNT_ERROR_NONE even when authentication is failed
   // or network is unreachable. These two errors will be handled later.
   VolumeInfo volume_info = CreateDriveVolumeInfo(profile_);
-  DoMountEvent(chromeos::MOUNT_ERROR_NONE, volume_info,
-               false /* is_remounting */);
+  DoMountEvent(chromeos::MOUNT_ERROR_NONE, volume_info, kNotRemounting);
 }
 
 void VolumeManager::OnFileSystemBeingUnmounted() {
@@ -636,7 +640,7 @@ void VolumeManager::OnProvidedFileSystemMount(
   const chromeos::MountError mount_error = error == base::File::FILE_OK
                                                ? chromeos::MOUNT_ERROR_NONE
                                                : chromeos::MOUNT_ERROR_UNKNOWN;
-  DoMountEvent(mount_error, volume_info, false /* remounting */);
+  DoMountEvent(mount_error, volume_info, kNotRemounting);
 }
 
 void VolumeManager::OnProvidedFileSystemUnmount(
