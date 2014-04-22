@@ -676,7 +676,6 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
                 int count = 1 + siblingTraversalStrategy.countElementsBefore(element);
                 if (m_mode == ResolvingStyle) {
                     RenderStyle* childStyle = context.elementStyle ? context.elementStyle : element.renderStyle();
-                    element.setChildIndex(count);
                     if (childStyle)
                         childStyle->setUnique();
                     parent->setChildrenAffectedByForwardPositionalRules();

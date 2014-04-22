@@ -350,9 +350,6 @@ public:
     void setIsInCanvasSubtree(bool value) { setElementFlag(IsInCanvasSubtree, value); }
     bool isInCanvasSubtree() const { return hasElementFlag(IsInCanvasSubtree); }
 
-    unsigned childIndex() const { return hasRareData() ? rareDataChildIndex() : 0; }
-    void setChildIndex(unsigned);
-
     bool isUpgradedCustomElement() { return customElementState() == Upgraded; }
     bool isUnresolvedCustomElement() { return customElementState() == WaitingForUpgrade; }
 
@@ -632,8 +629,6 @@ private:
     virtual PassRefPtr<Element> cloneElementWithoutAttributesAndChildren();
 
     QualifiedName m_tagName;
-
-    unsigned rareDataChildIndex() const;
 
     SpellcheckAttributeState spellcheckAttributeState() const;
 

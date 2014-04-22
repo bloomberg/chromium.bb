@@ -2419,20 +2419,6 @@ RenderStyle* Element::computedStyle(PseudoId pseudoElementSpecifier)
     return pseudoElementSpecifier ? rareData.computedStyle()->getCachedPseudoStyle(pseudoElementSpecifier) : rareData.computedStyle();
 }
 
-void Element::setChildIndex(unsigned index)
-{
-    ElementRareData& rareData = ensureElementRareData();
-    if (RenderStyle* style = renderStyle())
-        style->setUnique();
-    rareData.setChildIndex(index);
-}
-
-unsigned Element::rareDataChildIndex() const
-{
-    ASSERT(hasRareData());
-    return elementRareData()->childIndex();
-}
-
 AtomicString Element::computeInheritedLanguage() const
 {
     const Node* n = this;
