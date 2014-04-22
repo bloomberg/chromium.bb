@@ -1,0 +1,50 @@
+{
+  // chrome-extension://jcgeabjmjgoblfofpppfkcoakmfobdko/
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAw0/gRbJc545iEGRZs20Rl/HtrSUp8H3gJd4Y6hCe0CG1xQiJhZ5nc8qZyxa96gMxRAKBq54S6sjVVtV6uS70oU6FvrvwItByYkkqr4ZE7eMJKwMqnGItxWbh6KBodf89lpKoIy6MtYTqubBhXB/IQBZsXah90tXwRzaaJNWw+2BBRIhcPsH3ng+wgN7rwFxo4HIv9ZpqkYlx90rwkfjOmKPPnSXyXFIBJfmqfdbd8PLtcxzzOTE+vxwoXZuYWrthKm4uKfNqXIYns74sSJlqyKfctuR+nQdNh8uePv0e+/Ul3wER1/jIXULLjfyoaklyDs+ak3SDf+xWScJ+0LJ0AwIDAQAB",
+  "manifest_version": 2,
+  "name": "Gallery",
+  "version": "2.0",
+  "description": "Picture and video browser app.",
+  "display_in_launcher": false,
+  "incognito" : "split",
+  "icons": {
+    "16": "images/100/icon.png",
+    "32": "images/200/icon.png"
+  },
+  "permissions": [
+    "fileSystem",
+    "fileBrowserPrivate",
+    "fullscreen",
+    "mediaPlayerPrivate",
+    "storage",
+    "chrome://theme/"
+  ],
+  "file_handlers": {
+    "video": {
+      "types": [
+        "image/*"
+      ],
+      "extensions": [
+        "bmp",
+        "gif",
+        "ico",
+        "jpg",
+        "jpeg",
+        "png",
+        "webp"
+      ],
+      // TODO(hirono): Rename and localize this.
+      "title": "Open in new Gallery"
+    }
+  },
+  "app": {
+    "background": {
+      "scripts": [
+        "js/error_util.js",
+        "js/test_util.js",
+        "js/background.js"
+      ]
+    },
+    "content_security_policy": "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' chrome://theme data:; media-src 'self'; object-src 'self'"
+  }
+}

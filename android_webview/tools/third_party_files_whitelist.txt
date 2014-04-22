@@ -43,6 +43,8 @@ chrome/browser/resources/file_manager/foreground/js/media/mediaplayer_scripts.js
 # String 'copyright' used in code.
 chrome/browser/resources/video_player/js/video_player_scripts.js
 # String 'copyright' used in code.
+chrome/browser/resources/gallery/js/gallery_scripts.js
+# String 'copyright' used in code.
 chrome/common/importer/firefox_importer_utils.cc
 # Copyright Netscape Communications Corporation; MPL, GPL v2 or LGPL v2
 # license. Not used on Android.

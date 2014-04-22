@@ -292,6 +292,14 @@ void ComponentLoader::AddVideoPlayerExtension() {
       base::FilePath(FILE_PATH_LITERAL("video_player")));
 }
 
+void ComponentLoader::AddGalleryExtension() {
+#if defined(OS_CHROMEOS)
+  const CommandLine* const command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(chromeos::switches::kFileManagerEnableNewGallery))
+    Add(IDR_GALLERY_MANIFEST, base::FilePath(FILE_PATH_LITERAL("gallery")));
+#endif
+}
+
 void ComponentLoader::AddHangoutServicesExtension() {
 #if defined(GOOGLE_CHROME_BUILD) || defined(ENABLE_HANGOUT_SERVICES_EXTENSION)
   Add(IDR_HANGOUT_SERVICES_MANIFEST,
@@ -442,6 +450,7 @@ void ComponentLoader::AddDefaultComponentExtensionsForKioskMode(
   // Component extensions needed for kiosk apps.
   AddVideoPlayerExtension();
   AddFileManagerExtension();
+  AddGalleryExtension();
 
   // Add virtual keyboard.
   AddKeyboardApp();
@@ -473,6 +482,7 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
   if (!skip_session_components) {
     AddVideoPlayerExtension();
     AddFileManagerExtension();
+    AddGalleryExtension();
 
     AddHangoutServicesExtension();
     AddHotwordHelperExtension();

@@ -110,6 +110,10 @@ const char kEnterpriseEnrollmentSkipRobotAuth[] =
 const char kFileManagerEnableNewAudioPlayer[] =
     "file-manager-enable-new-audio-player";
 
+// Enables the new gallery in the Files.app.
+const char kFileManagerEnableNewGallery[] =
+    "file-manager-enable-new-gallery";
+
 // Passed to Chrome the first time that it's run after the system boots.
 // Not passed on restart after sign out.
 const char kFirstExecAfterBoot[]            = "first-exec-after-boot";
