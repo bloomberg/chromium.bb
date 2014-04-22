@@ -200,6 +200,7 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase {
                                         base::StringPrintf("%d", width));
     converter_command.AppendSwitchASCII("--height",
                                         base::StringPrintf("%d", height));
+    converter_command.AppendSwitchASCII("--delete_frames", "true");
 
     // We produce an output file that will later be used as an input to the
     // barcode decoder and frame analyzer tools.
