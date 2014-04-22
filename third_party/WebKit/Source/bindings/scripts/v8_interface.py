@@ -48,7 +48,7 @@ INTERFACE_H_INCLUDES = frozenset([
     'bindings/v8/V8Binding.h',
     'bindings/v8/V8DOMWrapper.h',
     'bindings/v8/WrapperTypeInfo.h',
-    'heap/Handle.h',
+    'platform/heap/Handle.h',
 ])
 INTERFACE_CPP_INCLUDES = frozenset([
     'RuntimeEnabledFeatures.h',
