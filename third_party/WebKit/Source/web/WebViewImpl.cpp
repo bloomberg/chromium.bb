@@ -513,7 +513,7 @@ void WebViewImpl::handleMouseDown(LocalFrame& mainFrame, const WebMouseEvent& ev
     PageWidgetEventHandler::handleMouseDown(mainFrame, event);
 
     if (event.button == WebMouseEvent::ButtonLeft && m_mouseCaptureNode)
-        m_mouseCaptureGestureToken = mainFrame.eventHandler().lastMouseDownGestureToken();
+        m_mouseCaptureGestureToken = mainFrame.eventHandler().takeLastMouseDownGestureToken();
 
     if (m_selectPopup && m_selectPopup == selectPopup) {
         // That click triggered a select popup which is the same as the one that

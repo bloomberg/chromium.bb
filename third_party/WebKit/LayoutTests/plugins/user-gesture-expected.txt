@@ -6,6 +6,8 @@ Plugin received event: MouseDown
 * handling user gesture
 Plugin received event: MouseUp
 * handling user gesture
+Plugin received event: MouseUp
+* handling user gesture
 Plugin received event: MouseDown
 * not handling user gesture
 Plugin received event: MouseUp

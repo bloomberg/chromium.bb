@@ -178,7 +178,7 @@ public:
 
     void notifyElementActivated();
 
-    UserGestureToken* lastMouseDownGestureToken() const { return m_lastMouseDownUserGestureToken.get(); }
+    PassRefPtr<UserGestureToken> takeLastMouseDownGestureToken() { return m_lastMouseDownUserGestureToken.release(); }
 
 private:
     static DragState& dragState();

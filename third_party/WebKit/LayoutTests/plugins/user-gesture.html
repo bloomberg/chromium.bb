@@ -19,6 +19,9 @@
         eventSender.mouseDown();
         eventSender.mouseUp();
 
+        // Stray mouse up event, should get its own gesture.
+        eventSender.mouseUp();
+
         // Fake mouse events
         var plugin = document.getElementById("plugin");
         var evt = document.createEvent("MouseEvent");
