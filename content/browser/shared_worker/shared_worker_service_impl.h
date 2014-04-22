@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/containers/scoped_ptr_hash_map.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "content/public/browser/notification_observer.h"
@@ -92,37 +93,59 @@ class CONTENT_EXPORT SharedWorkerServiceImpl
   // RenderProcessHostImpl on UI thread if necessary.
   void CheckWorkerDependency();
 
-  void WorkerCreatedResultCallback(int worker_process_id,
-                                   int worker_route_id,
-                                   bool pause_on_start);
   void NotifyWorkerDestroyed(int worker_process_id, int worker_route_id);
 
  private:
+  class SharedWorkerPendingInstance;
+  class SharedWorkerReserver;
+
   friend struct DefaultSingletonTraits<SharedWorkerServiceImpl>;
   friend class SharedWorkerServiceImplTest;
 
   typedef void (*UpdateWorkerDependencyFunc)(const std::vector<int>&,
                                              const std::vector<int>&);
+  typedef bool (*TryIncrementWorkerRefCountFunc)(bool);
   // Pair of render_process_id and worker_route_id.
   typedef std::pair<int, int> ProcessRouteIdPair;
   typedef base::ScopedPtrHashMap<ProcessRouteIdPair, SharedWorkerHost>
       WorkerHostMap;
+  typedef base::ScopedPtrHashMap<int, SharedWorkerPendingInstance>
+      PendingInstaneMap;
 
   SharedWorkerServiceImpl();
   virtual ~SharedWorkerServiceImpl();
 
   void ResetForTesting();
 
+  // Reserves the render process to create Shared Worker. This reservation
+  // procedure will be executed on UI thread and
+  // RenderProcessReservedCallback() or RenderProcessReserveFailedCallback()
+  // will be called on IO thread.
+  void ReserveRenderProcessToCreateWorker(
+      scoped_ptr<SharedWorkerPendingInstance> pending_instance,
+      bool* url_mismatch);
+
+  // Called after the render process is reserved to create Shared Worker in it.
+  void RenderProcessReservedCallback(int pending_instance_id,
+                                     int worker_process_id,
+                                     int worker_route_id,
+                                     bool is_new_worker,
+                                     bool pause_on_start);
+
+  // Called after the fast shutdown is detected while reserving the render
+  // process to create Shared Worker in it.
+  void RenderProcessReserveFailedCallback(int pending_instance_id,
+                                          int worker_process_id,
+                                          int worker_route_id,
+                                          bool is_new_worker);
+
   SharedWorkerHost* FindSharedWorkerHost(
       SharedWorkerMessageFilter* filter,
       int worker_route_id);
 
-  static SharedWorkerHost* FindSharedWorkerHost(
-      const WorkerHostMap& hosts,
-      const GURL& url,
-      const base::string16& name,
-      const WorkerStoragePartition& worker_partition,
-      ResourceContext* resource_context);
+  SharedWorkerHost* FindSharedWorkerHost(const SharedWorkerInstance& instance);
+  SharedWorkerPendingInstance* FindPendingInstance(
+      const SharedWorkerInstance& instance);
 
   // Returns the IDs of the renderer processes which are executing
   // SharedWorkers connected to other renderer processes.
@@ -130,12 +153,18 @@ class CONTENT_EXPORT SharedWorkerServiceImpl
 
   void ChangeUpdateWorkerDependencyFuncForTesting(
       UpdateWorkerDependencyFunc new_func);
+  void ChangeTryIncrementWorkerRefCountFuncForTesting(bool (*new_func)(int));
 
   std::set<int> last_worker_depended_renderers_;
+  // Function ptr to update worker dependency, tests may override this.
   UpdateWorkerDependencyFunc update_worker_dependency_;
 
+  // Function ptr to increment worker ref count, tests may override this.
+  static bool (*s_try_increment_worker_ref_count_)(int);
+
   WorkerHostMap worker_hosts_;
-  WorkerHostMap pending_worker_hosts_;
+  PendingInstaneMap pending_instances_;
+  int next_pending_instance_id_;
 
   ObserverList<WorkerServiceObserver> observers_;
 

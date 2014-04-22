@@ -46,14 +46,16 @@ void NotifyWorkerDestroyedOnUI(int worker_process_id, int worker_route_id) {
 }  // namespace
 
 SharedWorkerHost::SharedWorkerHost(SharedWorkerInstance* instance,
-                                   SharedWorkerMessageFilter* filter)
+                                   SharedWorkerMessageFilter* filter,
+                                   int worker_route_id)
     : instance_(instance),
       worker_document_set_(new WorkerDocumentSet()),
       container_render_filter_(filter),
       worker_process_id_(filter->render_process_id()),
-      worker_route_id_(filter->GetNextRoutingID()),
+      worker_route_id_(worker_route_id),
       load_failed_(false),
       closed_(false),
+      fast_shutdown_detected_(false),
       creation_time_(base::TimeTicks::Now()) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 }
@@ -77,11 +79,17 @@ SharedWorkerHost::~SharedWorkerHost() {
                                          parent_iter->render_frame_id()));
     }
   }
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(
-          &NotifyWorkerDestroyedOnUI, worker_process_id_, worker_route_id_));
+  // If |fast_shutdown_detected_| is true,
+  // SharedWorkerDevToolsManager::GetInstance()->WorkerDestroyed was already
+  // called when the fast shutdown was detected while SharedWorkerServiceImpl
+  // was reserving the rendere process.
+  if (!fast_shutdown_detected_) {
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(
+            &NotifyWorkerDestroyedOnUI, worker_process_id_, worker_route_id_));
+  }
   SharedWorkerServiceImpl::GetInstance()->NotifyWorkerDestroyed(
       worker_process_id_, worker_route_id_);
 }

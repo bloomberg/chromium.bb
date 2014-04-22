@@ -29,7 +29,8 @@ class SharedWorkerInstance;
 class SharedWorkerHost {
  public:
   SharedWorkerHost(SharedWorkerInstance* instance,
-                   SharedWorkerMessageFilter* filter);
+                   SharedWorkerMessageFilter* filter,
+                   int worker_route_id);
   ~SharedWorkerHost();
 
   // Sends |message| to the SharedWorker.
@@ -84,6 +85,7 @@ class SharedWorkerHost {
   int worker_route_id() const { return worker_route_id_; }
   bool load_failed() const { return load_failed_; }
   bool closed() const { return closed_; }
+  void set_fast_shutdown_detected() { fast_shutdown_detected_ = true; }
 
  private:
   // Unique identifier for a worker client.
@@ -126,6 +128,7 @@ class SharedWorkerHost {
   int worker_route_id_;
   bool load_failed_;
   bool closed_;
+  bool fast_shutdown_detected_;
   const base::TimeTicks creation_time_;
   DISALLOW_COPY_AND_ASSIGN(SharedWorkerHost);
 };
