@@ -1412,7 +1412,7 @@ const char kViewerLaunchViaAppId[]          = "viewer-launch-via-appid";
 const char kWaitForMutex[]                  = "wait-for-mutex";
 
 // Indicates that chrome was launched to service a search request in Windows 8.
-const char kWindows8Search[]           = "windows8-search";
+const char kWindows8Search[]                = "windows8-search";
 #endif
 
 #if defined(ENABLE_FULL_PRINTING) && !defined(OFFICIAL_BUILD)
@@ -1423,10 +1423,7 @@ const char kDebugPrint[] = "debug-print";
 #ifndef NDEBUG
 // Enables overriding the path of file manager extension.
 const char kFileManagerExtensionPath[]      = "filemgr-ext-path";
-
-// Enables overriding the path of image loader extension.
-const char kImageLoaderExtensionPath[]      = "image-loader-ext-path";
-#endif  // NDEBUG
+#endif
 
 // Controls print preview in the browser process.
 #if defined(GOOGLE_CHROME_BUILD)

@@ -316,15 +316,6 @@ void ComponentLoader::AddHotwordHelperExtension() {
 
 void ComponentLoader::AddImageLoaderExtension() {
 #if defined(IMAGE_LOADER_EXTENSION)
-#ifndef NDEBUG
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kImageLoaderExtensionPath)) {
-    base::FilePath image_loader_extension_path(
-        command_line->GetSwitchValuePath(switches::kImageLoaderExtensionPath));
-    Add(IDR_IMAGE_LOADER_MANIFEST, image_loader_extension_path);
-    return;
-  }
-#endif  // NDEBUG
   Add(IDR_IMAGE_LOADER_MANIFEST,
       base::FilePath(FILE_PATH_LITERAL("image_loader")));
 #endif  // defined(IMAGE_LOADER_EXTENSION)

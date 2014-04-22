@@ -407,7 +407,6 @@ extern const char kDebugPrint[];
 
 #ifndef NDEBUG
 extern const char kFileManagerExtensionPath[];
-extern const char kImageLoaderExtensionPath[];
 #endif
 
 #if defined(GOOGLE_CHROME_BUILD)
