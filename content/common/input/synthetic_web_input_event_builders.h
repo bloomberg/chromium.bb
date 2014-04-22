@@ -17,9 +17,9 @@ class CONTENT_EXPORT SyntheticWebMouseEventBuilder {
  public:
   static blink::WebMouseEvent Build(blink::WebInputEvent::Type type);
   static blink::WebMouseEvent Build(blink::WebInputEvent::Type type,
-                                     int window_x,
-                                     int window_y,
-                                     int modifiers);
+                                    int window_x,
+                                    int window_y,
+                                    int modifiers);
 };
 
 class CONTENT_EXPORT SyntheticWebMouseWheelEventBuilder {
@@ -27,9 +27,9 @@ class CONTENT_EXPORT SyntheticWebMouseWheelEventBuilder {
   static blink::WebMouseWheelEvent Build(
       blink::WebMouseWheelEvent::Phase phase);
   static blink::WebMouseWheelEvent Build(float dx,
-                                          float dy,
-                                          int modifiers,
-                                          bool precise);
+                                         float dy,
+                                         int modifiers,
+                                         bool precise);
 };
 
 class CONTENT_EXPORT SyntheticWebKeyboardEventBuilder {
@@ -43,14 +43,14 @@ class CONTENT_EXPORT SyntheticWebGestureEventBuilder {
       blink::WebInputEvent::Type type,
       blink::WebGestureEvent::SourceDevice sourceDevice);
   static blink::WebGestureEvent BuildScrollBegin(float dx_hint,
-                                                  float dy_hint);
+                                                 float dy_hint);
   static blink::WebGestureEvent BuildScrollUpdate(float dx,
-                                                   float dy,
-                                                   int modifiers);
-  static blink::WebGestureEvent BuildPinchUpdate(float scale,
-                                                  float anchor_x,
-                                                  float anchor_y,
+                                                  float dy,
                                                   int modifiers);
+  static blink::WebGestureEvent BuildPinchUpdate(float scale,
+                                                 float anchor_x,
+                                                 float anchor_y,
+                                                 int modifiers);
   static blink::WebGestureEvent BuildFling(
       float velocity_x,
       float velocity_y,

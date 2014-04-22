@@ -1223,7 +1223,10 @@ bool WebContentsImpl::HandleWheelEvent(
   //      with control key set which isn't what the user wants
   if (delegate_ &&
       event.wheelTicksY &&
-      (event.modifiers & blink::WebInputEvent::ControlKey)) {
+      (event.modifiers & blink::WebInputEvent::ControlKey) &&
+      // Avoid adjusting the zoom in response to two-finger-scrolling touchpad
+      // gestures, which are regrettably easy to trigger accidentally.
+      !event.hasPreciseScrollingDeltas) {
     delegate_->ContentsZoomChange(event.wheelTicksY > 0);
     return true;
   }
