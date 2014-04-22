@@ -154,7 +154,6 @@ public:
     IntRect pixelSnappedCompositedBounds() const;
     void updateCompositedBounds(GraphicsLayerUpdater::UpdateType);
 
-    void updateAfterWidgetResize();
     void positionOverflowControlsLayers(const IntSize& offsetFromRoot);
     bool hasUnpositionedOverflowControlsLayers() const;
 
@@ -261,7 +260,7 @@ private:
     Color rendererBackgroundColor() const;
     void updateBackgroundColor();
     void updateContentsRect();
-
+    void updateAfterWidgetResize();
     void updateCompositingReasons();
 
     bool hasVisibleNonCompositingDescendantLayers() const;

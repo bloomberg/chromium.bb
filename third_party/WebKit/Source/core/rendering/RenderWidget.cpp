@@ -112,15 +112,6 @@ bool RenderWidget::setWidgetGeometry(const LayoutRect& frame)
     RefPtr<RenderWidget> protector(this);
     RefPtr<Node> protectedNode(node());
     widget->setFrameRect(newFrame);
-
-    {
-        // FIXME: Remove incremental compositing updates after fixing the chicken/egg issues
-        // https://code.google.com/p/chromium/issues/detail?id=343756
-        DisableCompositingQueryAsserts disabler;
-        if (hasLayer() && layer()->compositingState() == PaintsIntoOwnBacking)
-            layer()->compositedLayerMapping()->updateAfterWidgetResize();
-    }
-
     return widget->frameRect().size() != newFrame.size();
 }
 
