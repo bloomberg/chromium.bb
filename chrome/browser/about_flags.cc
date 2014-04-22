@@ -1781,11 +1781,11 @@ const Experiment kExperiments[] = {
   },
 #endif
   {
-    "enable-embedded-shared-worker",
-    IDS_FLAGS_ENABLE_EMBEDDED_SHARED_WORKER_NAME,
-    IDS_FLAGS_ENABLE_EMBEDDED_SHARED_WORKER_DESCRIPTION,
+    "disable-embedded-shared-worker",
+    IDS_FLAGS_DISABLE_EMBEDDED_SHARED_WORKER_NAME,
+    IDS_FLAGS_DISABLE_EMBEDDED_SHARED_WORKER_DESCRIPTION,
     kOsDesktop,
-    SINGLE_VALUE_TYPE(switches::kEnableEmbeddedSharedWorker)
+    SINGLE_VALUE_TYPE(switches::kDisableEmbeddedSharedWorker)
   },
 #if defined(OS_CHROMEOS)
   {

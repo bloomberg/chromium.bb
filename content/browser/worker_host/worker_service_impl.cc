@@ -236,9 +236,9 @@ WorkerService* WorkerService::GetInstance() {
 }
 
 bool WorkerService::EmbeddedSharedWorkerEnabled() {
-  static bool enabled = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableEmbeddedSharedWorker);
-  return enabled;
+  static bool disabled = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableEmbeddedSharedWorker);
+  return !disabled;
 }
 
 WorkerServiceImpl* WorkerServiceImpl::GetInstance() {

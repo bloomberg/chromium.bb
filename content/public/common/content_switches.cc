@@ -144,6 +144,9 @@ const char kDisableDirectNPAPIRequests[]    = "disable-direct-npapi-requests";
 extern const char kDisableDomainBlockingFor3DAPIs[] =
     "disable-domain-blocking-for-3d-apis";
 
+// Disable running the SharedWorker inside the renderer process.
+const char kDisableEmbeddedSharedWorker[]    = "disable-embedded-shared-worker";
+
 // Disable experimental WebGL support.
 const char kDisableExperimentalWebGL[]      = "disable-webgl";
 
@@ -393,9 +396,6 @@ const char kEnableDelegatedRenderer[]       = "enable-delegated-renderer";
 
 // Enables restarting interrupted downloads.
 const char kEnableDownloadResumption[]      = "enable-download-resumption";
-
-// Enables running the SharedWorker inside the renderer process.
-const char kEnableEmbeddedSharedWorker[]    = "enable-embedded-shared-worker";
 
 // Enables support for Encrypted Media Extensions (e.g. MediaKeys).
 const char kEnableEncryptedMedia[] = "enable-encrypted-media";

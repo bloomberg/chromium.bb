@@ -148,6 +148,9 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, DISABLED_LimitPerPage) {
 #else
 IN_PROC_BROWSER_TEST_F(WorkerTest, LimitPerPage) {
 #endif
+  // There is no limitation of SharedWorker if EmbeddedSharedWorker is enabled.
+  if (WorkerService::EmbeddedSharedWorkerEnabled())
+    return;
   int max_workers_per_tab = WorkerServiceImpl::kMaxWorkersPerFrameWhenSeparate;
   std::string query = base::StringPrintf("?count=%d", max_workers_per_tab + 1);
 
@@ -165,6 +168,9 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, DISABLED_LimitTotal) {
 // http://crbug.com/36800
 IN_PROC_BROWSER_TEST_F(WorkerTest, LimitTotal) {
 #endif
+  // There is no limitation of SharedWorker if EmbeddedSharedWorker is enabled.
+  if (WorkerService::EmbeddedSharedWorkerEnabled())
+    return;
   if (base::SysInfo::AmountOfPhysicalMemoryMB() < 8192) {
     VLOG(0) << "WorkerTest.LimitTotal not running because it needs 8 GB RAM.";
     return;
