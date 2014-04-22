@@ -38,14 +38,6 @@
           # to have sources that are built on iOS, the target should be changed
           # to be of type static_library on all platforms.
           'type': 'none',
-          # The cocoa files don't apply to iOS.
-          'sources/': [['exclude', 'cocoa']],
-        }],
-        ['chromeos==1', {
-          'dependencies': [
-            '../chromeos/chromeos.gyp:chromeos_test_support_without_gmock',
-            '../skia/skia.gyp:skia',
-          ],
         }],
         ['use_aura==1', {
           'sources!': [
@@ -285,6 +277,9 @@
           ],
         }],
         ['chromeos==1', {
+          'dependencies': [
+            '../chromeos/chromeos.gyp:chromeos',
+          ],
           'sources!': [
             'base/dragdrop/os_exchange_data_provider_aurax11_unittest.cc',
           ],

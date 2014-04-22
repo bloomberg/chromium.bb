@@ -732,7 +732,6 @@
         }],
       ],
     },
-
     {
       'target_name': 'ash_with_content',
       'type': '<(component)',
@@ -1073,6 +1072,7 @@
         }],
         ['chromeos==1', {
           'dependencies': [
+            '../chromeos/chromeos.gyp:chromeos_test_support_without_gmock',
             '../chromeos/chromeos.gyp:power_manager_proto',
             '../device/bluetooth/bluetooth.gyp:device_bluetooth',
             '../ui/display/display.gyp:display',
