@@ -58,6 +58,7 @@
 #include "libkms.h"
 
 #include "buffers.h"
+#include "cursor.h"
 
 struct crtc {
 	drmModeCrtc *crtc;
@@ -1104,6 +1105,46 @@ static void set_planes(struct device *dev, struct plane_arg *p, unsigned int cou
 			return;
 }
 
+static void set_cursors(struct device *dev, struct pipe_arg *pipes, unsigned int count)
+{
+	uint32_t handles[4], pitches[4], offsets[4] = {0}; /* we only use [0] */
+	struct kms_bo *bo;
+	unsigned int i;
+	int ret;
+
+	/* maybe make cursor width/height configurable some day */
+	uint32_t cw = 64;
+	uint32_t ch = 64;
+
+	/* create cursor bo.. just using PATTERN_PLAIN as it has
+	 * translucent alpha
+	 */
+	bo = create_test_buffer(dev->kms, DRM_FORMAT_ARGB8888,
+			cw, ch, handles, pitches, offsets, PATTERN_PLAIN);
+	if (bo == NULL)
+		return;
+
+	for (i = 0; i < count; i++) {
+		struct pipe_arg *pipe = &pipes[i];
+		ret = cursor_init(dev->fd, handles[0],
+				pipe->crtc->crtc->crtc_id,
+				pipe->mode->hdisplay, pipe->mode->vdisplay,
+				cw, ch);
+		if (ret) {
+			fprintf(stderr, "failed to init cursor for CRTC[%u]\n",
+					pipe->crtc_id);
+			return;
+		}
+	}
+
+	cursor_start();
+}
+
+static void clear_cursors(struct device *dev)
+{
+	cursor_stop();
+}
+
 static void test_page_flip(struct device *dev, struct pipe_arg *pipes, unsigned int count)
 {
 	uint32_t handles[4], pitches[4], offsets[4] = {0}; /* we only use [0] */
@@ -1332,7 +1373,7 @@ static int parse_property(struct property_arg *p, const char *arg)
 
 static void usage(char *name)
 {
-	fprintf(stderr, "usage: %s [-cDdefMPpsvw]\n", name);
+	fprintf(stderr, "usage: %s [-cDdefMPpsCvw]\n", name);
 
 	fprintf(stderr, "\n Query options:\n\n");
 	fprintf(stderr, "\t-c\tlist connectors\n");
@@ -1343,6 +1384,7 @@ static void usage(char *name)
 	fprintf(stderr, "\n Test options:\n\n");
 	fprintf(stderr, "\t-P <crtc_id>:<w>x<h>[+<x>+<y>][*<scale>][@<format>]\tset a plane\n");
 	fprintf(stderr, "\t-s <connector_id>[,<connector_id>][@<crtc_id>]:<mode>[-<vrefresh>][@<format>]\tset a mode\n");
+	fprintf(stderr, "\t-C\ttest hw cursor\n");
 	fprintf(stderr, "\t-v\ttest vsynced page flipping\n");
 	fprintf(stderr, "\t-w <obj_id>:<prop_name>:<value>\tset property\n");
 
@@ -1376,7 +1418,13 @@ static int page_flipping_supported(void)
 #endif
 }
 
-static char optstr[] = "cdD:efM:P:ps:vw:";
+static int cursor_supported(void)
+{
+	/*FIXME: generic ioctl needed? */
+	return 1;
+}
+
+static char optstr[] = "cdD:efM:P:ps:Cvw:";
 
 int main(int argc, char **argv)
 {
@@ -1386,6 +1434,7 @@ int main(int argc, char **argv)
 	int encoders = 0, connectors = 0, crtcs = 0, planes = 0, framebuffers = 0;
 	int drop_master = 0;
 	int test_vsync = 0;
+	int test_cursor = 0;
 	const char *modules[] = { "i915", "radeon", "nouveau", "vmwgfx", "omapdrm", "exynos", "tilcdc", "msm" };
 	char *device = NULL;
 	char *module = NULL;
@@ -1456,6 +1505,9 @@ int main(int argc, char **argv)
 
 			count++;				      
 			break;
+		case 'C':
+			test_cursor = 1;
+			break;
 		case 'v':
 			test_vsync = 1;
 			break;
@@ -1515,6 +1567,11 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
+	if (test_cursor && !cursor_supported()) {
+		fprintf(stderr, "hw cursor not supported by drm.\n");
+		return -1;
+	}
+
 	dev.resources = get_resources(&dev);
 	if (!dev.resources) {
 		drmClose(dev.fd);
@@ -1546,16 +1603,22 @@ int main(int argc, char **argv)
 		if (plane_count)
 			set_planes(&dev, plane_args, plane_count);
 
+		if (test_cursor)
+			set_cursors(&dev, pipe_args, count);
+
 		if (test_vsync)
 			test_page_flip(&dev, pipe_args, count);
 
 		if (drop_master)
 			drmDropMaster(dev.fd);
 
+		getchar();
+
+		if (test_cursor)
+			clear_cursors(&dev);
+
 		kms_bo_destroy(&dev.mode.bo);
 		kms_destroy(&dev.kms);
-
-		getchar();
 	}
 
 	free_resources(dev.resources);

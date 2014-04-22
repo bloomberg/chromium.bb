@@ -14,7 +14,9 @@ noinst_PROGRAMS = \
 endif
 
 modetest_SOURCES = \
-	buffers.c modetest.c buffers.h
+	buffers.c buffers.h \
+	cursor.c cursor.h \
+	modetest.c
 
 modetest_LDADD = \
 	$(top_builddir)/libdrm.la \
