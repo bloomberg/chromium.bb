@@ -11591,11 +11591,6 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
           This account is already being used on this computer.
         </message>
       </if>
-      <if expr="chromeos">
-        <message name="IDS_MULTI_PROFILES_WARNING" desc="A notification message when user signs into a multiprofile session for the first time.">
-          You have enabled multiprofiles, an unsupported experimental mode in Chrome OS. Features may change or break.
-        </message>
-      </if>
 
      <!-- SafeBrowsing -->
       <message name="IDS_SAFE_BROWSING_MALWARE_TITLE" desc="SafeBrowsing Malware HTML title">

@@ -273,7 +273,6 @@ extern const char kOpenNetworkConfiguration[];
 extern const char kRAConsentFirstTime[];
 extern const char kMultiProfileNeverShowIntro[];
 extern const char kMultiProfileWarningShowDismissed[];
-extern const char kMultiProfileNotificationDismissed[];
 extern const char kMultiProfileUserBehavior[];
 extern const char kFirstRunTutorialShown[];
 extern const char kSAMLOfflineSigninTimeLimit[];

@@ -39,7 +39,6 @@ struct DeviceLocalAccount;
 
 namespace chromeos {
 
-class MultiProfileFirstRunNotification;
 class MultiProfileUserController;
 class RemoveUserDelegate;
 class SupervisedUserManagerImpl;
@@ -476,8 +475,6 @@ class UserManagerImpl
       supervised_users_subscription_;
 
   scoped_ptr<MultiProfileUserController> multi_profile_user_controller_;
-  scoped_ptr<MultiProfileFirstRunNotification>
-      multi_profile_first_run_notification_;
 
   // Observer for the policy that can be used to manage user images.
   scoped_ptr<policy::CloudExternalDataPolicyObserver> avatar_policy_observer_;

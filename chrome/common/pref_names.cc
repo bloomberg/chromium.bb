@@ -841,11 +841,6 @@ const char kMultiProfileNeverShowIntro[] =
 const char kMultiProfileWarningShowDismissed[] =
     "settings.multi_profile_warning_show_dismissed";
 
-// A boolean pref recording whether user has dismissed the multiprofile
-// notification.
-const char kMultiProfileNotificationDismissed[] =
-    "settings.multi_profile_notification_dismissed";
-
 // A string pref that holds string enum values of how the user should behave
 // in a multiprofile session. See ChromeOsMultiProfileUserBehavior policy
 // for more details of the valid values.

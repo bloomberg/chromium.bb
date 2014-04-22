@@ -35,7 +35,6 @@
 #include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
-#include "chrome/browser/chromeos/login/multi_profile_first_run_notification.h"
 #include "chrome/browser/chromeos/login/multi_profile_user_controller.h"
 #include "chrome/browser/chromeos/login/remove_user_delegate.h"
 #include "chrome/browser/chromeos/login/supervised_user_manager_impl.h"
@@ -212,9 +211,7 @@ UserManagerImpl::UserManagerImpl()
       is_current_user_ephemeral_regular_user_(false),
       ephemeral_users_enabled_(false),
       supervised_user_manager_(new SupervisedUserManagerImpl(this)),
-      manager_creation_time_(base::TimeTicks::Now()),
-      multi_profile_first_run_notification_(
-          new MultiProfileFirstRunNotification) {
+      manager_creation_time_(base::TimeTicks::Now()) {
   UpdateNumberOfUsers();
   // UserManager instance should be used only on UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -953,7 +950,6 @@ void UserManagerImpl::Observe(int type,
               AuthSyncObserverFactory::GetInstance()->GetForProfile(profile);
           sync_observer->StartObserving();
           multi_profile_user_controller_->StartObserving(profile);
-          multi_profile_first_run_notification_->UserProfilePrepared(profile);
         }
       }
 
