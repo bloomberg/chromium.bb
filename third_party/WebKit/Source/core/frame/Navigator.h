@@ -23,6 +23,7 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/frame/DOMWindowProperty.h"
 #include "core/frame/NavigatorID.h"
+#include "core/frame/NavigatorLanguage.h"
 #include "core/frame/NavigatorOnLine.h"
 #include "heap/Handle.h"
 #include "platform/Supplementable.h"
@@ -40,7 +41,7 @@ class PluginData;
 
 typedef int ExceptionCode;
 
-class Navigator FINAL : public RefCountedWillBeGarbageCollectedFinalized<Navigator>, public NavigatorID, public NavigatorOnLine, public ScriptWrappable, public DOMWindowProperty, public WillBeHeapSupplementable<Navigator> {
+class Navigator FINAL : public RefCountedWillBeGarbageCollectedFinalized<Navigator>, public NavigatorID, public NavigatorLanguage, public NavigatorOnLine, public ScriptWrappable, public DOMWindowProperty, public WillBeHeapSupplementable<Navigator> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Navigator);
 public:
     static PassRefPtrWillBeRawPtr<Navigator> create(LocalFrame* frame)
@@ -50,7 +51,6 @@ public:
 
     virtual ~Navigator();
 
-    AtomicString language() const;
     DOMPluginArray* plugins() const;
     DOMMimeTypeArray* mimeTypes() const;
     bool cookieEnabled() const;

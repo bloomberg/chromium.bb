@@ -22,7 +22,6 @@
 [
     WillBeGarbageCollected,
 ] interface Navigator {
-    readonly attribute DOMString language; // FIXME: move to NavigatorLanguage
     // FIXME: move these 3 to NavigatorPlugins
     readonly attribute PluginArray plugins;
     readonly attribute MimeTypeArray mimeTypes;
@@ -38,4 +37,5 @@
 };
 
 Navigator implements NavigatorID;
+Navigator implements NavigatorLanguage;
 Navigator implements NavigatorOnLine;
