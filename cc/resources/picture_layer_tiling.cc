@@ -189,11 +189,15 @@ void PictureLayerTiling::Invalidate(const Region& layer_region) {
 void PictureLayerTiling::DoInvalidate(const Region& layer_region,
                                       bool recreate_tiles) {
   std::vector<TileMapKey> new_tile_keys;
+  gfx::Rect expanded_live_tiles_rect(
+      tiling_data_.ExpandRectToTileBoundsWithBorders(live_tiles_rect_));
   for (Region::Iterator iter(layer_region); iter.has_rect(); iter.next()) {
     gfx::Rect layer_rect = iter.rect();
     gfx::Rect content_rect =
         gfx::ScaleToEnclosingRect(layer_rect, contents_scale_);
-    content_rect.Intersect(live_tiles_rect_);
+    // Avoid needless work by not bothering to invalidate where there aren't
+    // tiles.
+    content_rect.Intersect(expanded_live_tiles_rect);
     if (content_rect.IsEmpty())
       continue;
     bool include_borders = true;

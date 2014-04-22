@@ -2133,6 +2133,77 @@ TEST_P(TilingDataTest, SetMaxTextureSizeBorders) {
   EXPECT_EQ(10, data.num_tiles_y());
 }
 
+TEST_P(TilingDataTest, ExpandRectToTileBoundsWithBordersEmpty) {
+  gfx::Point origin = GetParam();
+  TilingData empty_total_size(
+      gfx::Size(0, 0), gfx::Rect(origin, gfx::Size(8, 8)), true);
+  EXPECT_RECT_EQ(
+      gfx::Rect(),
+      empty_total_size.ExpandRectToTileBoundsWithBorders(gfx::Rect()));
+  EXPECT_RECT_EQ(gfx::Rect(),
+                 empty_total_size.ExpandRectToTileBoundsWithBorders(
+                     gfx::Rect(100, 100, 100, 100)));
+  EXPECT_RECT_EQ(gfx::Rect(),
+                 empty_total_size.ExpandRectToTileBoundsWithBorders(
+                     gfx::Rect(0, 0, 100, 100)));
+
+  TilingData empty_max_texture_size(
+      gfx::Size(8, 8), gfx::Rect(origin, gfx::Size(0, 0)), true);
+  EXPECT_RECT_EQ(
+      gfx::Rect(),
+      empty_max_texture_size.ExpandRectToTileBoundsWithBorders(gfx::Rect()));
+  EXPECT_RECT_EQ(gfx::Rect(),
+                 empty_max_texture_size.ExpandRectToTileBoundsWithBorders(
+                     gfx::Rect(100, 100, 100, 100)));
+  EXPECT_RECT_EQ(gfx::Rect(),
+                 empty_max_texture_size.ExpandRectToTileBoundsWithBorders(
+                     gfx::Rect(0, 0, 100, 100)));
+}
+
+TEST_P(TilingDataTest, ExpandRectToTileBoundsWithBorders) {
+  gfx::Point origin = GetParam();
+  TilingData data(gfx::Size(4, 4), gfx::Rect(origin, gfx::Size(16, 32)), true);
+
+  // Small rect at origin rounds up to tile 0, 0.
+  gfx::Rect at_origin_src(origin, gfx::Size(1, 1));
+  gfx::Rect at_origin_result(data.TileBoundsWithBorder(0, 0));
+  EXPECT_NE(at_origin_src, at_origin_result);
+  EXPECT_RECT_EQ(at_origin_result,
+                 data.ExpandRectToTileBoundsWithBorders(at_origin_src));
+
+  // Arbitrary internal rect.
+  gfx::Rect rect_src(origin.x() + 6, origin.y() + 6, 1, 3);
+  // Tile 2, 2 => gfx::Rect(4, 4, 4, 4)
+  // Tile 3, 4 => gfx::Rect(6, 8, 4, 4)
+  gfx::Rect rect_result(gfx::UnionRects(data.TileBoundsWithBorder(2, 2),
+                                        data.TileBoundsWithBorder(3, 4)));
+  EXPECT_NE(rect_src, rect_result);
+  EXPECT_RECT_EQ(rect_result, data.ExpandRectToTileBoundsWithBorders(rect_src));
+
+  // On tile bounds rounds up to next tile (since border overlaps).
+  gfx::Rect border_rect_src(
+      gfx::UnionRects(data.TileBounds(1, 2), data.TileBounds(3, 4)));
+  gfx::Rect border_rect_result(gfx::UnionRects(
+      data.TileBoundsWithBorder(0, 1), data.TileBoundsWithBorder(4, 5)));
+  EXPECT_RECT_EQ(border_rect_result,
+                 data.ExpandRectToTileBoundsWithBorders(border_rect_src));
+
+  // Equal to tiling rect.
+  EXPECT_RECT_EQ(data.tiling_rect(),
+                 data.ExpandRectToTileBoundsWithBorders(data.tiling_rect()));
+
+  // Containing, but larger than tiling rect.
+  EXPECT_RECT_EQ(data.tiling_rect(),
+                 data.ExpandRectToTileBoundsWithBorders(
+                     gfx::Rect(origin, gfx::Size(100, 100))));
+
+  // Non-intersecting with tiling rect.
+  gfx::Rect non_intersect(origin.x() + 200, origin.y() + 200, 100, 100);
+  EXPECT_FALSE(non_intersect.Intersects(data.tiling_rect()));
+  EXPECT_RECT_EQ(gfx::Rect(),
+                 data.ExpandRectToTileBoundsWithBorders(non_intersect));
+}
+
 TEST_P(TilingDataTest, Assignment) {
   gfx::Point origin = GetParam();
 
