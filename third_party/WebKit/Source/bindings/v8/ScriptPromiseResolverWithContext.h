@@ -80,6 +80,12 @@ public:
     virtual void resume() OVERRIDE;
     virtual void stop() OVERRIDE;
 
+    // Used by ToV8Value<ScriptPromiseResolverWithContext, NewScriptState*>.
+    static v8::Handle<v8::Object> getCreationContext(NewScriptState* scriptState)
+    {
+        return scriptState->context()->Global();
+    }
+
 private:
     enum ResolutionState {
         Pending,
@@ -93,31 +99,7 @@ private:
     template<typename T>
     v8::Handle<v8::Value> toV8Value(const T& value)
     {
-        // Default implementaion: for types that don't need the
-        // creation context.
-        return V8ValueTraits<T>::toV8Value(value, m_scriptState->isolate());
-    }
-
-    // Pointer specializations.
-    template <typename T>
-    v8::Handle<v8::Value> toV8Value(T* value)
-    {
-        ASSERT(!m_scriptState->contextIsEmpty());
-        return toV8NoInline(value, m_scriptState->context()->Global(), m_scriptState->isolate());
-    }
-    template<typename T> v8::Handle<v8::Value> toV8Value(RefPtr<T> value) { return toV8Value(value.get()); }
-    template<typename T> v8::Handle<v8::Value> toV8Value(PassRefPtr<T> value) { return toV8Value(value.get()); }
-    template<typename T> v8::Handle<v8::Value> toV8Value(OwnPtr<T> value) { return toV8Value(value.get()); }
-    template<typename T> v8::Handle<v8::Value> toV8Value(PassOwnPtr<T> value) { return toV8Value(value.get()); }
-    template<typename T> v8::Handle<v8::Value> toV8Value(RawPtr<T> value) { return toV8Value(value.get()); }
-
-    // const char* should use V8ValueTraits.
-    v8::Handle<v8::Value> toV8Value(const char* value) { return V8ValueTraits<const char*>::toV8Value(value, m_scriptState->isolate()); }
-
-    template<typename T, size_t inlineCapacity>
-    v8::Handle<v8::Value> toV8Value(const Vector<T, inlineCapacity>& value)
-    {
-        return v8ArrayNoInline(value, m_scriptState->isolate());
+        return ToV8Value<ScriptPromiseResolverWithContext, NewScriptState*>::toV8Value(value, m_scriptState.get(), m_scriptState->isolate());
     }
 
     void resolveOrRejectImmediately(Timer<ScriptPromiseResolverWithContext>*);

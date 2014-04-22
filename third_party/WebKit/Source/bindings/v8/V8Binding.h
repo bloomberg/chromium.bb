@@ -809,6 +809,64 @@ v8::Handle<v8::Value> toV8NoInline(T* impl, ExecutionContext* context)
     return toV8NoInline(impl, v8Context->Global(), isolate);
 }
 
+// ToV8Value<U, Context> is a class that converts a C++ object to a
+// v8 value. U has to be a class having a static method getCreationContext
+// which returns an object created from a target context.
+template<typename U, typename Context>
+class ToV8Value {
+public:
+    template<typename T>
+    static v8::Handle<v8::Value> toV8Value(const T& value, Context, v8::Isolate* isolate)
+    {
+        // Default implementaion: for types that don't need the context.
+        return V8ValueTraits<T>::toV8Value(value, isolate);
+    }
+
+    // Pointer specializations.
+    template<typename T>
+    static v8::Handle<v8::Value> toV8Value(T* const& value, Context context, v8::Isolate* isolate)
+    {
+        return toV8NoInline(value, U::getCreationContext(context), isolate);
+    }
+    template<typename T>
+    static v8::Handle<v8::Value> toV8Value(const RefPtr<T>& value, Context context, v8::Isolate* isolate)
+    {
+        return toV8Value(value.get(), context, isolate);
+    }
+    template<typename T>
+    static v8::Handle<v8::Value> toV8Value(const PassRefPtr<T>& value, Context context, v8::Isolate* isolate)
+    {
+        return toV8Value(value.get(), context, isolate);
+    }
+    template<typename T>
+    static v8::Handle<v8::Value> toV8Value(const OwnPtr<T>& value, Context context, v8::Isolate* isolate)
+    {
+        return toV8Value(value.get(), context, isolate);
+    }
+    template<typename T>
+    static v8::Handle<v8::Value> toV8Value(const PassOwnPtr<T>& value, Context context, v8::Isolate* isolate)
+    {
+        return toV8Value(value.get(), context, isolate);
+    }
+    template<typename T>
+    static v8::Handle<v8::Value> toV8Value(const RawPtr<T>& value, Context context, v8::Isolate* isolate)
+    {
+        return toV8Value(value.get(), context, isolate);
+    }
+
+    // const char* should use V8ValueTraits.
+    static v8::Handle<v8::Value> toV8Value(const char* const& value, Context, v8::Isolate* isolate)
+    {
+        return V8ValueTraits<const char*>::toV8Value(value, isolate);
+    }
+
+    template<typename T, size_t inlineCapacity>
+    static v8::Handle<v8::Value> toV8Value(const Vector<T, inlineCapacity>& value, Context, v8::Isolate* isolate)
+    {
+        return v8ArrayNoInline(value, isolate);
+    }
+};
+
 // Result values for platform object 'deleter' methods,
 // http://www.w3.org/TR/WebIDL/#delete
 enum DeleteResult {

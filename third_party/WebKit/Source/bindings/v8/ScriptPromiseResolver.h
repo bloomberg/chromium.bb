@@ -126,56 +126,30 @@ public:
     void resolve(v8::Handle<v8::Value>);
     void reject(v8::Handle<v8::Value>);
 
+    // Used by ToV8Value<ScriptPromiseResolver, v8::Handle<v8::Object> >.
+    static v8::Handle<v8::Object> getCreationContext(v8::Handle<v8::Object> creationContext)
+    {
+        return creationContext;
+    }
+    // Used by ToV8Value<ScriptPromiseResolver, v8::Isolate*>.
+    static v8::Handle<v8::Object> getCreationContext(v8::Isolate* isolate)
+    {
+        return NewScriptState::current(isolate)->context()->Global();
+    }
+
 private:
     template<typename T>
-    v8::Handle<v8::Value> toV8Value(const T& value, v8::Handle<v8::Object>)
+    v8::Handle<v8::Value> toV8Value(const T& value, v8::Handle<v8::Object> creationContext)
     {
-        // Default implementaion: for types that don't need the
-        // creation context.
-        return toV8Value(value);
+        return ToV8Value<ScriptPromiseResolver, v8::Handle<v8::Object> >::toV8Value(value, creationContext, m_isolate);
     }
+
     template<typename T>
     v8::Handle<v8::Value> toV8Value(const T& value)
     {
-        return V8ValueTraits<T>::toV8Value(value, m_isolate);
+        return ToV8Value<ScriptPromiseResolver, v8::Isolate*>::toV8Value(value, m_isolate, m_isolate);
     }
 
-    // Pointer specializations.
-    template<typename T>
-    v8::Handle<v8::Value> toV8Value(T* value, v8::Handle<v8::Object> creationContext)
-    {
-        return toV8NoInline(value, creationContext, m_isolate);
-    }
-    template<typename T>
-    v8::Handle<v8::Value> toV8Value(T* value)
-    {
-        return toV8Value(value, NewScriptState::current(m_isolate)->context()->Global());
-    }
-    template<typename T>
-    v8::Handle<v8::Value> toV8Value(RefPtr<T> value, v8::Handle<v8::Object> creationContext) { return toV8Value(value.get(), creationContext); }
-    template<typename T>
-    v8::Handle<v8::Value> toV8Value(PassRefPtr<T> value, v8::Handle<v8::Object> creationContext) { return toV8Value(value.get(), creationContext); }
-    template<typename T>
-    v8::Handle<v8::Value> toV8Value(OwnPtr<T> value, v8::Handle<v8::Object> creationContext) { return toV8Value(value.get(), creationContext); }
-    template<typename T>
-    v8::Handle<v8::Value> toV8Value(PassOwnPtr<T> value, v8::Handle<v8::Object> creationContext) { return toV8Value(value.get(), creationContext); }
-    template<typename T>
-    v8::Handle<v8::Value> toV8Value(RawPtr<T> value, v8::Handle<v8::Object> creationContext) { return toV8Value(value.get(), creationContext); }
-    template<typename T> v8::Handle<v8::Value> toV8Value(RefPtr<T> value) { return toV8Value(value.get()); }
-    template<typename T> v8::Handle<v8::Value> toV8Value(PassRefPtr<T> value) { return toV8Value(value.get()); }
-    template<typename T> v8::Handle<v8::Value> toV8Value(OwnPtr<T> value) { return toV8Value(value.get()); }
-    template<typename T> v8::Handle<v8::Value> toV8Value(PassOwnPtr<T> value) { return toV8Value(value.get()); }
-    template<typename T> v8::Handle<v8::Value> toV8Value(RawPtr<T> value) { return toV8Value(value.get()); }
-
-    // const char* should use V8ValueTraits.
-    v8::Handle<v8::Value> toV8Value(const char* value, v8::Handle<v8::Object>) { return toV8Value(value); }
-    v8::Handle<v8::Value> toV8Value(const char* value) { return V8ValueTraits<const char*>::toV8Value(value, m_isolate); }
-
-    template<typename T, size_t inlineCapacity>
-    v8::Handle<v8::Value> toV8Value(const Vector<T, inlineCapacity>& value)
-    {
-        return v8ArrayNoInline(value, m_isolate);
-    }
     ScriptPromiseResolver(ExecutionContext*);
     ScriptPromiseResolver(v8::Isolate*);
 
