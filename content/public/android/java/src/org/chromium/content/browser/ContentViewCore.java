@@ -2902,8 +2902,11 @@ public class ContentViewCore
      */
     public boolean isDeviceAccessibilityScriptInjectionEnabled() {
         try {
-            if (!CommandLine.getInstance().hasSwitch(
-                    ContentSwitches.ENABLE_ACCESSIBILITY_SCRIPT_INJECTION)) {
+            // On JellyBean and higher, native accessibility is the default so script
+            // injection is only allowed if enabled via a flag.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN &&
+                    !CommandLine.getInstance().hasSwitch(
+                            ContentSwitches.ENABLE_ACCESSIBILITY_SCRIPT_INJECTION)) {
                 return false;
             }
 
