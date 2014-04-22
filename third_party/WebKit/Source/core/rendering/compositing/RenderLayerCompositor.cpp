@@ -810,7 +810,7 @@ void RenderLayerCompositor::repaintInCompositedAncestor(RenderLayer* layer, cons
     RenderLayer* compositedAncestor = layer->enclosingCompositingLayerForRepaint(ExcludeSelf);
     if (!compositedAncestor)
         return;
-    ASSERT(compositedAncestor->compositingState() == PaintsIntoOwnBacking);
+    ASSERT(compositedAncestor->compositingState() == PaintsIntoOwnBacking || compositedAncestor->compositingState() == PaintsIntoGroupedBacking);
 
     LayoutPoint offset;
     layer->convertToLayerCoords(compositedAncestor, offset);

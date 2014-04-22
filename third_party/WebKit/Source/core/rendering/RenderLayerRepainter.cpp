@@ -186,10 +186,9 @@ void RenderLayerRepainter::setBackingNeedsRepaint()
 
 void RenderLayerRepainter::setBackingNeedsRepaintInRect(const LayoutRect& r)
 {
-    ASSERT(m_renderer->compositingState() == PaintsIntoOwnBacking);
-
     // https://bugs.webkit.org/show_bug.cgi?id=61159 describes an unreproducible crash here,
     // so assert but check that the layer is composited.
+    ASSERT(m_renderer->compositingState() != NotComposited);
     if (m_renderer->compositingState() == NotComposited) {
         // If we're trying to repaint the placeholder document layer, propagate the
         // repaint to the native view system.
@@ -203,9 +202,16 @@ void RenderLayerRepainter::setBackingNeedsRepaintInRect(const LayoutRect& r)
             view->repaintViewRectangle(absRect);
         return;
     }
-
     IntRect repaintRect = pixelSnappedIntRect(r);
-    m_renderer->compositedLayerMapping()->setContentsNeedDisplayInRect(repaintRect);
+    if (m_renderer->compositingState() == PaintsIntoGroupedBacking) {
+        // FIXME: Add a LayoutTest that hits this code path.
+        // See https://code.google.com/p/chromium/issues/detail?id=365597 for real-world
+        // examples that can execute this code.
+        repaintRect.move(-m_renderer->layer()->offsetFromSquashingLayerOrigin());
+        m_renderer->groupedMapping()->squashingLayer()->setNeedsDisplayInRect(repaintRect);
+    } else {
+        m_renderer->compositedLayerMapping()->setContentsNeedDisplayInRect(repaintRect);
+    }
 }
 
 void RenderLayerRepainter::setFilterBackendNeedsRepaintingInRect(const LayoutRect& rect)
