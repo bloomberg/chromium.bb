@@ -375,13 +375,13 @@ bool RenderLayerCompositor::hasUnresolvedDirtyBits()
 void RenderLayerCompositor::updateIfNeeded()
 {
     {
-        // Notice that we call this function before checking the dirty bits below.
+        // FIXME: Notice that we call this function before checking the dirty bits below.
         // We'll need to remove DeprecatedDirtyCompositingDuringCompositingUpdate
         // before moving this function after checking the dirty bits.
         DeprecatedDirtyCompositingDuringCompositingUpdate marker(lifecycle());
         updateCompositingRequirementsState();
 
-        // enableCompositingModeIfNeeded can call setCompositingLayersNeedRebuild,
+        // FIXME: enableCompositingModeIfNeeded can call setCompositingLayersNeedRebuild,
         // which asserts that it's not InCompositingUpdate.
         enableCompositingModeIfNeeded();
     }
@@ -528,6 +528,9 @@ bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* l
     case AllocateOwnCompositedLayerMapping:
         ASSERT(!layer->hasCompositedLayerMapping());
         {
+            // FIXME: This can go away once we get rid of the forceCompositingMode setting.
+            // It's needed because setCompositingModeEnabled call ensureRootLayer, which
+            // eventually calls WebViewImpl::enterForceCompositingMode.
             DeprecatedDirtyCompositingDuringCompositingUpdate marker(lifecycle());
             setCompositingModeEnabled(true);
         }
