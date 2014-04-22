@@ -1599,18 +1599,18 @@ class ValidationPool(object):
     manifest_dom = minidom.parse(manifest)
     pending_commits = manifest_dom.getElementsByTagName(
         lkgm_manager.PALADIN_COMMIT_ELEMENT)
-    for pending_commit in pending_commits:
+    for pc in pending_commits:
       patch = cros_patch.GerritFetchOnlyPatch(
-          pending_commit.getAttribute(lkgm_manager.PALADIN_PROJECT_URL_ATTR),
-          pending_commit.getAttribute(lkgm_manager.PALADIN_PROJECT_ATTR),
-          pending_commit.getAttribute(lkgm_manager.PALADIN_REF_ATTR),
-          pending_commit.getAttribute(lkgm_manager.PALADIN_BRANCH_ATTR),
-          pending_commit.getAttribute(lkgm_manager.PALADIN_REMOTE_ATTR),
-          pending_commit.getAttribute(lkgm_manager.PALADIN_COMMIT_ATTR),
-          pending_commit.getAttribute(lkgm_manager.PALADIN_CHANGE_ID_ATTR),
-          pending_commit.getAttribute(lkgm_manager.PALADIN_GERRIT_NUMBER_ATTR),
-          pending_commit.getAttribute(lkgm_manager.PALADIN_PATCH_NUMBER_ATTR),
-          owner=pending_commit.getAttribute(lkgm_manager.PALADIN_OWNER_ATTR),)
+          pc.getAttribute(lkgm_manager.PALADIN_PROJECT_URL_ATTR),
+          pc.getAttribute(lkgm_manager.PALADIN_PROJECT_ATTR),
+          pc.getAttribute(lkgm_manager.PALADIN_REF_ATTR),
+          pc.getAttribute(lkgm_manager.PALADIN_BRANCH_ATTR),
+          pc.getAttribute(lkgm_manager.PALADIN_REMOTE_ATTR),
+          pc.getAttribute(lkgm_manager.PALADIN_COMMIT_ATTR),
+          pc.getAttribute(lkgm_manager.PALADIN_CHANGE_ID_ATTR),
+          pc.getAttribute(lkgm_manager.PALADIN_GERRIT_NUMBER_ATTR),
+          pc.getAttribute(lkgm_manager.PALADIN_PATCH_NUMBER_ATTR),
+          owner_email=pc.getAttribute(lkgm_manager.PALADIN_OWNER_EMAIL_ATTR),)
       pool.changes.append(patch)
 
     pool.RecordPatchesInMetadata()
@@ -1722,7 +1722,12 @@ class ValidationPool(object):
     for change in sorted(changes, key=SortKeyForChanges):
       project = os.path.basename(change.project)
       gerrit_number = cros_patch.AddPrefix(change, change.gerrit_number)
-      s = '%s | %s | %s' % (project, change.owner, gerrit_number)
+      author = change.owner_email
+      if (change.owner_email.endswith(constants.GOOGLE_EMAIL) or
+          change.owner_email.endswith(constants.CHROMIUM_EMAIL)):
+        author = change.owner
+
+      s = '%s | %s | %s' % (project, author, gerrit_number)
 
       # Print a count of how many times a given CL has failed the CQ.
       all_failures = cls.GetCLStatusCount(CQ, change, cls.STATUS_FAILED,

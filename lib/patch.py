@@ -1242,7 +1242,7 @@ class GerritFetchOnlyPatch(GitRepoPatch):
   """Object that contains information to cherry-pick a Gerrit CL."""
 
   def __init__(self, project_url, project, ref, tracking_branch, remote,
-               sha1, change_id, gerrit_number, patch_number, owner=None):
+               sha1, change_id, gerrit_number, patch_number, owner_email=None):
     """Initializes a GerritFetchOnlyPatch object."""
     super(GerritFetchOnlyPatch, self).__init__(
         project_url, project, ref, tracking_branch, remote,
@@ -1252,8 +1252,12 @@ class GerritFetchOnlyPatch(GitRepoPatch):
     # TODO: Do we need three variables for the commit hash?
     self.revision = self.commit = self.sha1
 
-    # Set owner and url for printing the CL link.
-    self.owner = owner
+    # Set owner, owner_email, and url for printing the CL link.
+    self.owner_email = owner_email
+    self.owner = None
+    if self.owner_email:
+      self.owner = self.owner_email.split('@', 1)[0]
+
     self.url = gob_util.GetChangePageUrl(
         constants.GERRIT_HOSTS[self.remote], int(self.gerrit_number))
 
@@ -1321,13 +1325,8 @@ class GerritPatch(GerritFetchOnlyPatch):
         current_patch_set.get('revision'),
         patch_dict['id'],
         ParseGerritNumber(str(patch_dict['number'])),
-        current_patch_set.get('number'))
-
-    self.owner_email = patch_dict['owner']['email']
-    if self.owner_email:
-      self.owner, _, _ = self.owner_email.partition('@')
-    else:
-      self.owner = None
+        current_patch_set.get('number'),
+        owner_email=patch_dict['owner']['email'])
 
     prefix_str = constants.CHANGE_PREFIX[self.remote]
     self.gerrit_number_str = '%s%s' % (prefix_str, self.gerrit_number)
