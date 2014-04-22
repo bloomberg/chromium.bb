@@ -49,3 +49,6 @@ DesktopCaptureDeviceTest.Capture
 # http://crbug.com/303709
 GamepadProviderTest.PollingAccess
 GamepadProviderTest.UserGesture
+
+# Flaky. http://crbug.com/365715
+AppCacheRequestHandlerTest.MainResource_Miss
