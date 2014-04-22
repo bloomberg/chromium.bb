@@ -278,9 +278,18 @@ class WebUIMojoTest : public ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(WebUIMojoTest);
 };
 
+// Temporarily disabled due to memory leaks. http://crbug.com/360081
+#if defined(LEAK_SANITIZER)
+#define MAYBE_EndToEndPing DISABLED_EndToEndPing
+#define MAYBE_EndToEndEcho DISABLED_EndToEndEcho
+#else
+#define MAYBE_EndToEndPing EndToEndPing
+#define MAYBE_EndToEndEcho EndToEndEcho
+#endif
+
 // Loads a webui page that contains mojo bindings and verifies a message makes
 // it from the browser to the page and back.
-IN_PROC_BROWSER_TEST_F(WebUIMojoTest, DISABLED_EndToEndPing) {
+IN_PROC_BROWSER_TEST_F(WebUIMojoTest, MAYBE_EndToEndPing) {
   // Currently there is no way to have a generated file included in the isolate
   // files. If the bindings file doesn't exist assume we're on such a bot and
   // pass.
@@ -306,7 +315,7 @@ IN_PROC_BROWSER_TEST_F(WebUIMojoTest, DISABLED_EndToEndPing) {
 
 // Loads a webui page that contains mojo bindings and verifies that
 // parameters are passed back correctly from JavaScript.
-IN_PROC_BROWSER_TEST_F(WebUIMojoTest, DISABLED_EndToEndEcho) {
+IN_PROC_BROWSER_TEST_F(WebUIMojoTest, MAYBE_EndToEndEcho) {
   // Currently there is no way to have a generated file included in the isolate
   // files. If the bindings file doesn't exist assume we're on such a bot and
   // pass.
