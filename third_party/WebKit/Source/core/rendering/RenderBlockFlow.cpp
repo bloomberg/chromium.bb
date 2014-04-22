@@ -797,21 +797,17 @@ void RenderBlockFlow::rebuildFloatsFromIntruding()
     // First add in floats from the parent. Self-collapsing blocks let their parent track any floats that intrude into
     // them (as opposed to floats they contain themselves) so check for those here too.
     LayoutUnit logicalTopOffset = logicalTop();
-    if (parentHasFloats || (prev && toRenderBlockFlow(prev)->isSelfCollapsingBlock() && parentBlockFlow->lowestFloatLogicalBottom() > logicalTopOffset))
+    bool parentHasIntrudingFloats = !parentHasFloats && (!prev || toRenderBlockFlow(prev)->isSelfCollapsingBlock()) && parentBlockFlow->lowestFloatLogicalBottom() > logicalTopOffset;
+    if (parentHasFloats || parentHasIntrudingFloats)
         addIntrudingFloats(parentBlockFlow, parentBlockFlow->logicalLeftOffsetForContent(), logicalTopOffset);
 
-    LayoutUnit logicalLeftOffset = 0;
-    if (prev) {
-        logicalTopOffset -= toRenderBox(prev)->logicalTop();
-    } else {
-        prev = parentBlockFlow;
-        logicalLeftOffset += parentBlockFlow->logicalLeftOffsetForContent();
-    }
-
     // Add overhanging floats from the previous RenderBlockFlow, but only if it has a float that intrudes into our space.
-    RenderBlockFlow* blockFlow = toRenderBlockFlow(prev);
-    if (blockFlow->m_floatingObjects && blockFlow->lowestFloatLogicalBottom() > logicalTopOffset)
-        addIntrudingFloats(blockFlow, logicalLeftOffset, logicalTopOffset);
+    if (prev) {
+        RenderBlockFlow* blockFlow = toRenderBlockFlow(prev);
+        logicalTopOffset -= blockFlow->logicalTop();
+        if (blockFlow->lowestFloatLogicalBottom() > logicalTopOffset)
+            addIntrudingFloats(blockFlow, 0, logicalTopOffset);
+    }
 
     if (childrenInline()) {
         LayoutUnit changeLogicalTop = LayoutUnit::max();
