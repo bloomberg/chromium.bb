@@ -817,9 +817,6 @@
           'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
         }],
         ['chromeos==1', {
-          'dependencies': [
-            '../chromeos/chromeos.gyp:chromeos',
-          ],
           'sources/': [
             ['exclude', '^browser/geolocation/wifi_data_provider_linux_unittest.cc'],
           ],
