@@ -35,12 +35,11 @@
 
 namespace {
 
-// The amount of whitespace to have before the find button.
-const int kWhiteSpaceAfterMatchCountLabel = 1;
-
-// The margins around the search field and the close button.
+// The margins around the search field, match count label, and the close button.
 const int kMarginLeftOfCloseButton = 3;
 const int kMarginRightOfCloseButton = 7;
+const int kMarginLeftOfMatchCountLabel = 2;
+const int kMarginRightOfMatchCountLabel = 1;
 const int kMarginLeftOfFindTextfield = 12;
 
 // The margins around the match count label (We add extra space so that the
@@ -316,7 +315,7 @@ void FindBarView::Layout() {
   sz.Enlarge(kMatchCountExtraWidth, 0);
   sz.SetToMax(gfx::Size(kMatchCountMinWidth, 0));
   int match_count_x =
-      find_previous_button_->x() - kWhiteSpaceAfterMatchCountLabel - sz.width();
+      find_previous_button_->x() - kMarginRightOfMatchCountLabel - sz.width();
   int find_text_y = (height() - find_text_->GetPreferredSize().height()) / 2;
   match_count_text_->SetBounds(match_count_x,
                                find_text_y + find_text_->GetBaseline() -
@@ -324,10 +323,10 @@ void FindBarView::Layout() {
                                sz.width(), sz.height());
 
   // And whatever space is left in between, gets filled up by the find edit box.
-  int find_text_width = std::max(0, match_count_x - kMarginLeftOfFindTextfield);
-  find_text_->SetBounds(std::max(0, match_count_x - find_text_width),
-                        find_text_y, find_text_width,
-                        find_text_->GetPreferredSize().height());
+  int find_text_width = std::max(0, match_count_x -
+      kMarginLeftOfMatchCountLabel - kMarginLeftOfFindTextfield);
+  find_text_->SetBounds(kMarginLeftOfFindTextfield, find_text_y,
+      find_text_width, find_text_->GetPreferredSize().height());
 
   // The focus forwarder view is a hidden view that should cover the area
   // between the find text box and the find button so that when the user clicks
