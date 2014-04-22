@@ -26,12 +26,14 @@ class InputServiceLinux : public base::MessageLoop::DestructionObserver {
  public:
   struct InputDeviceInfo {
     enum Subsystem { SUBSYSTEM_HID, SUBSYSTEM_INPUT, SUBSYSTEM_UNKNOWN };
+    enum Type { TYPE_BLUETOOTH, TYPE_USB, TYPE_SERIO, TYPE_UNKNOWN };
 
     InputDeviceInfo();
 
     std::string id;
     std::string name;
     Subsystem subsystem;
+    Type type;
 
     bool is_accelerometer : 1;
     bool is_joystick : 1;

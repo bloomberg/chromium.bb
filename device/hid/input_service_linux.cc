@@ -15,8 +15,11 @@ namespace device {
 
 namespace {
 
-const char kHidSubsystem[] = "hid";
-const char kInputSubsystem[] = "input";
+const char kSubsystemHid[] = "hid";
+const char kSubsystemInput[] = "input";
+const char kTypeBluetooth[] = "bluetooth";
+const char kTypeUsb[] = "usb";
+const char kTypeSerio[] = "serio";
 const char kIdInputAccelerometer[] = "ID_INPUT_ACCELEROMETER";
 const char kIdInputJoystick[] = "ID_INPUT_JOYSTICK";
 const char kIdInputKey[] = "ID_INPUT_KEY";
@@ -42,6 +45,18 @@ bool GetBoolProperty(udev_device* device, const char* key) {
     return false;
   }
   return (value != 0);
+}
+
+InputServiceLinux::InputDeviceInfo::Type GetDeviceType(udev_device* device) {
+  if (udev_device_get_parent_with_subsystem_devtype(
+          device, kTypeBluetooth, NULL)) {
+    return InputServiceLinux::InputDeviceInfo::TYPE_BLUETOOTH;
+  }
+  if (udev_device_get_parent_with_subsystem_devtype(device, kTypeUsb, NULL))
+    return InputServiceLinux::InputDeviceInfo::TYPE_USB;
+  if (udev_device_get_parent_with_subsystem_devtype(device, kTypeSerio, NULL))
+    return InputServiceLinux::InputDeviceInfo::TYPE_SERIO;
+  return InputServiceLinux::InputDeviceInfo::TYPE_UNKNOWN;
 }
 
 class InputServiceLinuxImpl : public InputServiceLinux,
@@ -89,12 +104,14 @@ void InputServiceLinuxImpl::OnDeviceAdded(udev_device* device) {
   const char* subsystem = udev_device_get_subsystem(device);
   if (!subsystem)
     return;
-  else if (strcmp(subsystem, kHidSubsystem) == 0)
+  else if (strcmp(subsystem, kSubsystemHid) == 0)
     info.subsystem = InputServiceLinux::InputDeviceInfo::SUBSYSTEM_HID;
-  else if (strcmp(subsystem, kInputSubsystem) == 0)
+  else if (strcmp(subsystem, kSubsystemInput) == 0)
     info.subsystem = InputServiceLinux::InputDeviceInfo::SUBSYSTEM_INPUT;
   else
     return;
+
+  info.type = GetDeviceType(device);
 
   info.is_accelerometer = GetBoolProperty(device, kIdInputAccelerometer);
   info.is_joystick = GetBoolProperty(device, kIdInputJoystick);
@@ -122,6 +139,7 @@ void InputServiceLinuxImpl::OnDeviceRemoved(udev_device* device) {
 
 InputServiceLinux::InputDeviceInfo::InputDeviceInfo()
     : subsystem(SUBSYSTEM_UNKNOWN),
+      type(TYPE_UNKNOWN),
       is_accelerometer(false),
       is_joystick(false),
       is_key(false),
@@ -144,7 +162,7 @@ InputServiceLinux::~InputServiceLinux() {
 // static
 InputServiceLinux* InputServiceLinux::GetInstance() {
   if (!HasInstance())
-    g_input_service_linux_ptr.Get().reset(new InputServiceLinux());
+    g_input_service_linux_ptr.Get().reset(new InputServiceLinuxImpl());
   return g_input_service_linux_ptr.Get().get();
 }
 

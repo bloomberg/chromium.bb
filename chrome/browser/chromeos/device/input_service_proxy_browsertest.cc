@@ -83,6 +83,7 @@ class TestObserver : public InputServiceProxy::Observer {
   static bool Equals(const InputDeviceInfo& lhs, const InputDeviceInfo& rhs) {
     return lhs.id == rhs.id && lhs.name == rhs.name &&
            lhs.subsystem == rhs.subsystem &&
+           lhs.type == rhs.type &&
            lhs.is_accelerometer == rhs.is_accelerometer &&
            lhs.is_joystick == rhs.is_joystick && lhs.is_key == rhs.is_key &&
            lhs.is_keyboard == rhs.is_keyboard && lhs.is_mouse == rhs.is_mouse &&
@@ -161,6 +162,7 @@ IN_PROC_BROWSER_TEST_F(InputServiceProxyTest, Simple) {
   InputDeviceInfo keyboard;
   keyboard.id = kKeyboardId;
   keyboard.subsystem = InputServiceLinux::InputDeviceInfo::SUBSYSTEM_INPUT;
+  keyboard.type = InputServiceLinux::InputDeviceInfo::TYPE_USB;
   keyboard.is_keyboard = true;
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE, base::Bind(&AddDevice, keyboard));
@@ -169,6 +171,7 @@ IN_PROC_BROWSER_TEST_F(InputServiceProxyTest, Simple) {
   InputDeviceInfo mouse;
   mouse.id = kMouseId;
   mouse.subsystem = InputServiceLinux::InputDeviceInfo::SUBSYSTEM_INPUT;
+  mouse.type = InputServiceLinux::InputDeviceInfo::TYPE_BLUETOOTH;
   mouse.is_mouse = true;
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE, base::Bind(&AddDevice, mouse));
