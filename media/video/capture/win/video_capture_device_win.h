@@ -40,9 +40,9 @@ class VideoCaptureDeviceWin
   bool Init();
 
   // VideoCaptureDevice implementation.
-  virtual void AllocateAndStart(const VideoCaptureParams& params,
-                                scoped_ptr<VideoCaptureDevice::Client> client)
-      OVERRIDE;
+  virtual void AllocateAndStart(
+      const VideoCaptureParams& params,
+      scoped_ptr<VideoCaptureDevice::Client> client) OVERRIDE;
   virtual void StopAndDeAllocate() OVERRIDE;
 
   static void GetDeviceNames(Names* device_names);
@@ -61,6 +61,7 @@ class VideoCaptureDeviceWin
   virtual void FrameReceived(const uint8* buffer, int length);
 
   bool CreateCapabilityMap();
+  void SetAntiFlickerInCaptureFilter();
   void SetErrorState(const std::string& reason);
 
   Name device_name_;
