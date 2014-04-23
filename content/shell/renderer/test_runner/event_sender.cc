@@ -1339,7 +1339,9 @@ std::vector<std::string> EventSender::ContextClick() {
   pressed_button_= WebMouseEvent::ButtonNone;
 #endif
 
-  return MakeMenuItemStringsFor(last_context_menu_data_.release(), delegate_);
+  std::vector<std::string> menu_items = MakeMenuItemStringsFor(last_context_menu_data_.get(), delegate_);
+  last_context_menu_data_.reset();
+  return menu_items;
 }
 
 void EventSender::TextZoomIn() {
