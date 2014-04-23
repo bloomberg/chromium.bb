@@ -6,9 +6,11 @@
 #define CHROME_BROWSER_DRIVE_FAKE_DRIVE_SERVICE_H_
 
 #include "base/files/file_path.h"
-#include "base/values.h"
 #include "chrome/browser/drive/drive_service_interface.h"
-#include "google_apis/drive/auth_service_interface.h"
+
+namespace base {
+class DictionaryValue;
+}
 
 namespace google_apis {
 class AboutResource;
@@ -252,6 +254,15 @@ class FakeDriveService : public DriveServiceInterface {
       const std::string& parent_resource_id,
       const std::string& title,
       bool shared_with_me,
+      const google_apis::GetResourceEntryCallback& callback);
+
+  // Adds a new directory with the given |resource_id|.
+  // |callback| must not be null.
+  google_apis::CancelCallback AddNewDirectoryWithResourceId(
+      const std::string& resource_id,
+      const std::string& parent_resource_id,
+      const std::string& directory_title,
+      const AddNewDirectoryOptions& options,
       const google_apis::GetResourceEntryCallback& callback);
 
   // Sets the last modified time for an entry specified by |resource_id|.

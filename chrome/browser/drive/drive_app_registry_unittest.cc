@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/values.h"
 #include "chrome/browser/drive/drive_app_registry_observer.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"

@@ -125,6 +125,8 @@
         'browser/drive/dummy_drive_service.h',
         'browser/drive/fake_drive_service.cc',
         'browser/drive/fake_drive_service.h',
+        'browser/drive/test_util.cc',
+        'browser/drive/test_util.h',
         'browser/extensions/api/messaging/native_messaging_test_util.cc',
         'browser/extensions/api/messaging/native_messaging_test_util.h',
         'browser/extensions/extension_notification_observer.cc',

@@ -25,17 +25,6 @@ namespace drive {
 namespace util {
 namespace {
 
-// Google Apps MIME types:
-const char kGoogleDocumentMimeType[] = "application/vnd.google-apps.document";
-const char kGoogleDrawingMimeType[] = "application/vnd.google-apps.drawing";
-const char kGooglePresentationMimeType[] =
-    "application/vnd.google-apps.presentation";
-const char kGoogleSpreadsheetMimeType[] =
-    "application/vnd.google-apps.spreadsheet";
-const char kGoogleTableMimeType[] = "application/vnd.google-apps.table";
-const char kGoogleFormMimeType[] = "application/vnd.google-apps.form";
-const char kDriveFolderMimeType[] = "application/vnd.google-apps.folder";
-
 std::string GetMimeTypeFromEntryKind(google_apis::DriveEntryKind kind) {
   switch (kind) {
     case google_apis::ENTRY_KIND_DOCUMENT:
