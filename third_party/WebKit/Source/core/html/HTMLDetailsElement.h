@@ -25,10 +25,16 @@
 
 namespace WebCore {
 
+template<typename T> class EventSender;
+typedef EventSender<HTMLDetailsElement> DetailsEventSender;
+
 class HTMLDetailsElement FINAL : public HTMLElement {
 public:
     static PassRefPtr<HTMLDetailsElement> create(Document&);
     void toggleOpen();
+    virtual ~HTMLDetailsElement();
+
+    void dispatchPendingEvent(DetailsEventSender*);
 
     Element* findMainSummary() const;
 

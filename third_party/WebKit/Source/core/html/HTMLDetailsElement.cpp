@@ -27,6 +27,7 @@
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Text.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/events/EventSender.h"
 #include "core/html/HTMLContentElement.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLSummaryElement.h"
@@ -37,6 +38,12 @@
 namespace WebCore {
 
 using namespace HTMLNames;
+
+static DetailsEventSender& detailsToggleEventSender()
+{
+    DEFINE_STATIC_LOCAL(DetailsEventSender, sharedToggleEventSender, (EventTypeNames::toggle));
+    return sharedToggleEventSender;
+}
 
 PassRefPtr<HTMLDetailsElement> HTMLDetailsElement::create(Document& document)
 {
@@ -51,6 +58,18 @@ HTMLDetailsElement::HTMLDetailsElement(Document& document)
 {
     ScriptWrappable::init(this);
 }
+
+HTMLDetailsElement::~HTMLDetailsElement()
+{
+    detailsToggleEventSender().cancelEvent(this);
+}
+
+void HTMLDetailsElement::dispatchPendingEvent(DetailsEventSender* eventSender)
+{
+    ASSERT_UNUSED(eventSender, eventSender == &detailsToggleEventSender());
+    dispatchEvent(Event::create(EventTypeNames::toggle));
+}
+
 
 RenderObject* HTMLDetailsElement::createRenderer(RenderStyle*)
 {
@@ -94,6 +113,11 @@ void HTMLDetailsElement::parseAttribute(const QualifiedName& name, const AtomicS
         m_isOpen = !value.isNull();
         if (m_isOpen == oldValue)
             return;
+
+        // Dispatch toggle event asynchronously.
+        detailsToggleEventSender().cancelEvent(this);
+        detailsToggleEventSender().dispatchEventSoon(this);
+
         Element* content = ensureUserAgentShadowRoot().getElementById(ShadowElementNames::detailsContent());
         ASSERT(content);
         if (m_isOpen)
