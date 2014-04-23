@@ -52,6 +52,8 @@ class NativeAppWindowViews : public NativeAppWindow,
   void Init(AppWindow* app_window,
             const AppWindow::CreateParams& create_params);
 
+  views::Widget* widget() { return widget_; }
+
   void set_window_for_testing(views::Widget* window) { widget_ = window; }
   void set_web_view_for_testing(views::WebView* view) { web_view_ = view; }
 
@@ -59,7 +61,6 @@ class NativeAppWindowViews : public NativeAppWindow,
   AppWindow* app_window() { return app_window_; }
   const AppWindow* app_window() const { return app_window_; }
 
-  views::Widget* widget() { return widget_; }
   const views::Widget* widget() const { return widget_; }
 
   views::WebView* web_view() { return web_view_; }
