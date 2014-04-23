@@ -601,8 +601,11 @@ bool WindowContainsPoint(XID window, gfx::Point screen_loc) {
                                                   rectangle_kind[kind_index],
                                                   &shape_rects_size,
                                                   &dummy);
-    if (!shape_rects)
-      continue;
+    if (!shape_rects) {
+      // The shape is empty. This can occur when |window| is minimized.
+      DCHECK_EQ(0, shape_rects_size);
+      return false;
+    }
     bool is_in_shape_rects = false;
     for (int i = 0; i < shape_rects_size; ++i) {
       // The ShapeInput and ShapeBounding rects are to be in window space, so we
