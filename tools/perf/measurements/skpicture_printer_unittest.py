@@ -1,10 +1,12 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
 import shutil
 import tempfile
 
 from measurements import skpicture_printer
+from telemetry import test
 from telemetry.page import page_measurement_unittest_base
 from telemetry.unittest import options_for_unittests
 
@@ -18,6 +20,7 @@ class SkpicturePrinterUnitTest(
   def tearDown(self):
     shutil.rmtree(self._options.skp_outdir)
 
+  @test.Disabled('android')
   def testSkpicturePrinter(self):
     ps = self.CreatePageSetFromFileInUnittestDataDir('blank.html')
     measurement = skpicture_printer.SkpicturePrinter()

@@ -1,11 +1,14 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
 from measurements import thread_times
+from metrics import timeline
+from telemetry import test
 from telemetry.core import wpr_modes
 from telemetry.page import page_measurement_unittest_base
 from telemetry.unittest import options_for_unittests
-from metrics import timeline
+
 
 class ThreadTimesUnitTest(
       page_measurement_unittest_base.PageMeasurementUnitTestBase):
@@ -13,6 +16,7 @@ class ThreadTimesUnitTest(
     self._options = options_for_unittests.GetCopy()
     self._options.browser_options.wpr_mode = wpr_modes.WPR_OFF
 
+  @test.Disabled('android')
   def testBasic(self):
     ps = self.CreatePageSetFromFileInUnittestDataDir('scrollable_page.html')
     measurement = thread_times.ThreadTimes()

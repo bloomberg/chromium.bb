@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 from measurements import repaint
+from telemetry import test
 from telemetry.core import wpr_modes
 from telemetry.page import page_measurement_unittest_base
 from telemetry.unittest import options_for_unittests
@@ -21,6 +22,7 @@ class RepaintUnitTest(
     self._options = options_for_unittests.GetCopy()
     self._options.browser_options.wpr_mode = wpr_modes.WPR_OFF
 
+  @test.Disabled('android')
   def testRepaint(self):
     ps = self.CreatePageSetFromFileInUnittestDataDir('blank.html')
     measurement = repaint.Repaint()
@@ -43,5 +45,6 @@ class RepaintUnitTest(
     self.assertEquals(len(mostly_smooth), 1)
     self.assertGreaterEqual(mostly_smooth[0].GetRepresentativeNumber(), 0)
 
+  @test.Disabled('android')
   def testCleanUpTrace(self):
     self.TestTracingCleanedUp(repaint.Repaint, self._options)
