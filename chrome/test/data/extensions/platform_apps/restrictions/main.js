@@ -65,6 +65,7 @@ chrome.test.runTests([
     // Accessing these logs warnings to the console.
     assertEq('undefined', typeof(history.back));
     assertEq('undefined', typeof(history.forward));
+    assertEq('undefined', typeof(history.go));
     assertEq('undefined', typeof(history.length));
 
     // These are part of the HTML5 History API that are feature detected, so we
