@@ -79,47 +79,51 @@
           }],
         },  # end of target 'remoting_apk_manifest'
         {
+          'target_name': 'remoting_android_client_java',
+          'type': 'none',
+          'variables': {
+            'java_in_dir': 'android/java',
+            'has_java_resources': 1,
+            'R_package': 'org.chromium.chromoting',
+            'R_package_relpath': 'org/chromium/chromoting',
+            'res_extra_dirs': [ '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res' ],
+            'res_extra_files': [
+              '<!@pymod_do_main(grit_info <@(grit_defines) --outputs "<(SHARED_INTERMEDIATE_DIR)" resources/remoting_strings.grd)',
+              '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res/drawable/chromoting128.png',
+              '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res/drawable/icon_host.png',
+            ],
+          },
+          'dependencies': [
+            '../base/base.gyp:base_java',
+            '../ui/android/ui_android.gyp:ui_java',
+            'remoting_android_resources',
+          ],
+          'includes': [ '../build/java.gypi' ],
+        },
+        {
           'target_name': 'remoting_apk',
           'type': 'none',
           'dependencies': [
-            'remoting_android_resources',
             'remoting_apk_manifest',
             'remoting_client_jni',
+            'remoting_android_client_java',
           ],
           'variables': {
             'apk_name': '<!(python <(version_py_path) -f <(branding_path) -t "@APK_FILE_NAME@")',
             'android_app_version_name': '<(version_full)',
             'android_app_version_code': '<!(python tools/android_version.py <(android_app_version_name))',
             'android_manifest_path': '<(SHARED_INTERMEDIATE_DIR)/remoting/android/AndroidManifest.xml',
+            'java_in_dir': 'android/apk',
             'native_lib_target': 'libremoting_client_jni',
-            'java_in_dir': 'android/java',
-            'R_package': 'org.chromium.chromoting',
-            'package_name': '<(_target_name)',
-            'resource_dir': 'android/java/res',
-            'additional_res_dirs': [ '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res' ],
-            'additional_input_paths': [
-              '<(PRODUCT_DIR)/obj/remoting/remoting_android_resources.actions_rules_copies.stamp',
-              '<(PRODUCT_DIR)/obj/remoting/remoting_resources.actions_rules_copies.stamp',
-            ],
           },
           'includes': [ '../build/java_apk.gypi' ],
         },  # end of target 'remoting_apk'
-        {
-          # remoting_apk creates a .jar file as a side effect. Any Java targets
-          # that need that .jar in their classpath should depend on this target.
-          'target_name': 'remoting_apk_java',
-          'type': 'none',
-          'dependencies': [
-            'remoting_apk',
-          ],
-          'includes': [ '../build/apk_fake_jar.gypi' ],
-        },  # end of target 'remoting_apk_java'
         {
           'target_name': 'remoting_test_apk',
           'type': 'none',
           'dependencies': [
             '../base/base.gyp:base_java_test_support',
-            'remoting_apk_java',
+            'remoting_android_client_java',
           ],
           'variables': {
             'apk_name': 'ChromotingTest',

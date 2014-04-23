@@ -13,7 +13,7 @@
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
         android:paddingBottom="20sp"
-        android:paddingLeft="16sp"
-        android:paddingRight="16sp"
+        android:paddingStart="16sp"
+        android:paddingEnd="16sp"
         android:paddingTop="20sp"
         style="@android:style/TextAppearance.Holo.Medium"/>

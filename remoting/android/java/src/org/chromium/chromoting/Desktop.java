@@ -131,42 +131,38 @@ public class Desktop extends Activity implements View.OnSystemUiVisibilityChange
     /** Called whenever an action bar button is pressed. */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.actionbar_keyboard:
-                ((InputMethodManager)getSystemService(INPUT_METHOD_SERVICE)).toggleSoftInput(0, 0);
-                return true;
-
-            case R.id.actionbar_hide:
-                hideActionBar();
-                return true;
-
-            case R.id.actionbar_disconnect:
-                JniInterface.disconnectFromHost();
-                return true;
-
-            case R.id.actionbar_send_ctrl_alt_del:
-                {
-                    int[] keys = {
-                        KeyEvent.KEYCODE_CTRL_LEFT,
-                        KeyEvent.KEYCODE_ALT_LEFT,
-                        KeyEvent.KEYCODE_FORWARD_DEL,
-                    };
-                    for (int key : keys) {
-                        JniInterface.sendKeyEvent(key, true);
-                    }
-                    for (int key : keys) {
-                        JniInterface.sendKeyEvent(key, false);
-                    }
-                }
-                return true;
-
-            case R.id.actionbar_help:
-                HelpActivity.launch(this, HELP_URL);
-                return true;
-
-            default:
-                return super.onOptionsItemSelected(item);
+        int id = item.getItemId();
+        if (id == R.id.actionbar_keyboard) {
+            ((InputMethodManager)getSystemService(INPUT_METHOD_SERVICE)).toggleSoftInput(0, 0);
+            return true;
         }
+        if (id == R.id.actionbar_hide) {
+            hideActionBar();
+            return true;
+        }
+        if (id == R.id.actionbar_disconnect) {
+            JniInterface.disconnectFromHost();
+            return true;
+        }
+        if (id == R.id.actionbar_send_ctrl_alt_del) {
+            int[] keys = {
+                KeyEvent.KEYCODE_CTRL_LEFT,
+                KeyEvent.KEYCODE_ALT_LEFT,
+                KeyEvent.KEYCODE_FORWARD_DEL,
+            };
+            for (int key : keys) {
+                JniInterface.sendKeyEvent(key, true);
+            }
+            for (int key : keys) {
+                JniInterface.sendKeyEvent(key, false);
+            }
+            return true;
+        }
+        if (id == R.id.actionbar_help) {
+            HelpActivity.launch(this, HELP_URL);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     /**

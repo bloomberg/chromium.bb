@@ -241,18 +241,16 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
     /** Called whenever an action bar button is pressed. */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.actionbar_directoryrefresh:
-                refreshHostList();
-                return true;
-
-            case R.id.actionbar_help:
-                HelpActivity.launch(this, HELP_URL);
-                return true;
-
-            default:
-                return super.onOptionsItemSelected(item);
+        int id = item.getItemId();
+        if (id == R.id.actionbar_directoryrefresh) {
+            refreshHostList();
+            return true;
         }
+        if (id == R.id.actionbar_help) {
+            HelpActivity.launch(this, HELP_URL);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     /** Called when the user touches hyperlinked text. */

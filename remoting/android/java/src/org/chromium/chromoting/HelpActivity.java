@@ -132,17 +132,15 @@ public class HelpActivity extends Activity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.actionbar_feedback:
-                sendFeedback();
-                return true;
-
-            case R.id.actionbar_play_store:
-                openUrl(PLAY_STORE_URL + getPackageName());
-                return true;
-
-            default:
-                return super.onOptionsItemSelected(item);
+        int id = item.getItemId();
+        if (id == R.id.actionbar_feedback) {
+            sendFeedback();
+            return true;
         }
+        if (id == R.id.actionbar_play_store) {
+            openUrl(PLAY_STORE_URL + getPackageName());
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }
