@@ -59,6 +59,14 @@ void ListChangesTask::RunPreflight(scoped_ptr<SyncTaskToken> token) {
     return;
   }
 
+  SyncTaskManager::UpdateBlockingFactor(
+      token.Pass(),
+      scoped_ptr<BlockingFactor>(new BlockingFactor),
+      base::Bind(&ListChangesTask::StartListing,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ListChangesTask::StartListing(scoped_ptr<SyncTaskToken> token) {
   drive_service()->GetChangeList(
       metadata_database()->GetLargestFetchedChangeID() + 1,
       base::Bind(&ListChangesTask::DidListChanges,
@@ -93,9 +101,6 @@ void ListChangesTask::DidListChanges(
         *resource_list->entries()[i]).release());
   }
 
-  // TODO(tzik): http://crbug.com/310964
-  // This may take long time to run in single task.  Run this as a background
-  // task.
   GURL next_feed;
   if (resource_list->GetNextFeedURL(&next_feed)) {
     drive_service()->GetRemainingChangeList(
@@ -114,11 +119,23 @@ void ListChangesTask::DidListChanges(
     return;
   }
 
+  scoped_ptr<BlockingFactor> blocking_factor(new BlockingFactor);
+  blocking_factor->exclusive = true;
+  SyncTaskManager::UpdateBlockingFactor(
+      token.Pass(),
+      blocking_factor.Pass(),
+      base::Bind(&ListChangesTask::CheckInChangeList,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 resource_list->largest_changestamp()));
+}
+
+void ListChangesTask::CheckInChangeList(int64 largest_change_id,
+                                        scoped_ptr<SyncTaskToken> token) {
   util::Log(logging::LOG_VERBOSE, FROM_HERE,
             "[Changes] Got %" PRIuS " changes, updating MetadataDatabase.",
             change_list_.size());
   metadata_database()->UpdateByChangeList(
-      resource_list->largest_changestamp(),
+      largest_change_id,
       change_list_.Pass(),
       base::Bind(&SyncTaskManager::NotifyTaskDone, base::Passed(&token)));
 }

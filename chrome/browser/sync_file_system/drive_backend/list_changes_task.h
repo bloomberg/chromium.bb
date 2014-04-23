@@ -34,9 +34,12 @@ class ListChangesTask : public SyncTask {
   virtual void RunPreflight(scoped_ptr<SyncTaskToken> token) OVERRIDE;
 
  private:
+  void StartListing(scoped_ptr<SyncTaskToken> token);
   void DidListChanges(scoped_ptr<SyncTaskToken> token,
                       google_apis::GDataErrorCode error,
                       scoped_ptr<google_apis::ResourceList> resource_list);
+  void CheckInChangeList(int64 largest_change_id,
+                         scoped_ptr<SyncTaskToken> token);
 
   bool IsContextReady();
   MetadataDatabase* metadata_database();
