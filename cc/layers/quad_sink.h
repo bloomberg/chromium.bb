@@ -37,10 +37,6 @@ class CC_EXPORT QuadSink {
       const gfx::Rect& content_rect,
       const gfx::Transform& draw_transform) = 0;
 
-  // Returns true if the quad is added to the list, and false if the quad is
-  // entirely culled.
-  virtual bool MaybeAppend(scoped_ptr<DrawQuad> draw_quad) = 0;
-
   virtual void Append(scoped_ptr<DrawQuad> draw_quad) = 0;
 };
 

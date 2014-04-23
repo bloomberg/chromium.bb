@@ -29,7 +29,6 @@ class MockQuadCuller : public QuadSink {
   virtual gfx::Rect UnoccludedContributingSurfaceContentRect(
       const gfx::Rect& content_rect,
       const gfx::Transform& draw_transform) OVERRIDE;
-  virtual bool MaybeAppend(scoped_ptr<DrawQuad> draw_quad) OVERRIDE;
   virtual void Append(scoped_ptr<DrawQuad> draw_quad) OVERRIDE;
 
   const QuadList& quad_list() const { return *active_quad_list_; }

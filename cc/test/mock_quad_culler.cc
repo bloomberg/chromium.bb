@@ -60,14 +60,6 @@ gfx::Rect MockQuadCuller::UnoccludedContributingSurfaceContentRect(
   return result;
 }
 
-bool MockQuadCuller::MaybeAppend(scoped_ptr<DrawQuad> draw_quad) {
-  if (!draw_quad->rect.IsEmpty()) {
-    active_quad_list_->push_back(draw_quad.Pass());
-    return true;
-  }
-  return false;
-}
-
 void MockQuadCuller::Append(scoped_ptr<DrawQuad> draw_quad) {
   DCHECK(!draw_quad->rect.IsEmpty());
   DCHECK(!draw_quad->visible_rect.IsEmpty());

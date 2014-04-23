@@ -569,12 +569,10 @@ static void AppendQuadsForLayer(
     LayerImpl* layer,
     const OcclusionTracker<LayerImpl>& occlusion_tracker,
     AppendQuadsData* append_quads_data) {
-  bool for_surface = false;
   QuadCuller quad_culler(&target_render_pass->quad_list,
                          &target_render_pass->shared_quad_state_list,
                          layer,
-                         occlusion_tracker,
-                         for_surface);
+                         occlusion_tracker);
   layer->AppendQuads(&quad_culler, append_quads_data);
 }
 
@@ -584,12 +582,10 @@ static void AppendQuadsForRenderSurfaceLayer(
     const RenderPass* contributing_render_pass,
     const OcclusionTracker<LayerImpl>& occlusion_tracker,
     AppendQuadsData* append_quads_data) {
-  bool for_surface = true;
   QuadCuller quad_culler(&target_render_pass->quad_list,
                          &target_render_pass->shared_quad_state_list,
                          layer,
-                         occlusion_tracker,
-                         for_surface);
+                         occlusion_tracker);
 
   bool is_replica = false;
   layer->render_surface()->AppendQuads(&quad_culler,
@@ -632,12 +628,10 @@ static void AppendQuadsToFillScreen(
     screen_background_color_region.Intersect(root_scroll_layer_rect);
   }
 
-  bool for_surface = false;
   QuadCuller quad_culler(&target_render_pass->quad_list,
                          &target_render_pass->shared_quad_state_list,
                          root_layer,
-                         occlusion_tracker,
-                         for_surface);
+                         occlusion_tracker);
 
   // Manually create the quad state for the gutter quads, as the root layer
   // doesn't have any bounds and so can't generate this itself.

@@ -108,7 +108,6 @@
       'trees/layer_tree_host_unittest_scroll.cc',
       'trees/layer_tree_host_unittest_video.cc',
       'trees/occlusion_tracker_unittest.cc',
-      'trees/quad_culler_unittest.cc',
       'trees/tree_synchronizer_unittest.cc',
     ],
     'cc_surfaces_unit_tests_source_files': [

@@ -20,8 +20,7 @@ class CC_EXPORT QuadCuller : public QuadSink {
   QuadCuller(QuadList* quad_list,
              SharedQuadStateList* shared_quad_state_list,
              const LayerImpl* layer,
-             const OcclusionTracker<LayerImpl>& occlusion_tracker,
-             bool for_surface);
+             const OcclusionTracker<LayerImpl>& occlusion_tracker);
   virtual ~QuadCuller() {}
 
   // QuadSink implementation.
@@ -33,7 +32,6 @@ class CC_EXPORT QuadCuller : public QuadSink {
   virtual gfx::Rect UnoccludedContributingSurfaceContentRect(
       const gfx::Rect& content_rect,
       const gfx::Transform& draw_transform) OVERRIDE;
-  virtual bool MaybeAppend(scoped_ptr<DrawQuad> draw_quad) OVERRIDE;
   virtual void Append(scoped_ptr<DrawQuad> draw_quad) OVERRIDE;
 
  private:
@@ -43,7 +41,6 @@ class CC_EXPORT QuadCuller : public QuadSink {
   const OcclusionTracker<LayerImpl>& occlusion_tracker_;
 
   SharedQuadState* current_shared_quad_state_;
-  bool for_surface_;
 
   DISALLOW_COPY_AND_ASSIGN(QuadCuller);
 };
