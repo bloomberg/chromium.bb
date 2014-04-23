@@ -17,12 +17,6 @@ AsyncPixelTransferManager::AsyncPixelTransferManager() {}
 AsyncPixelTransferManager::~AsyncPixelTransferManager() {
   if (manager_)
     manager_->RemoveObserver(this);
-
-  for (TextureToDelegateMap::iterator ref = delegate_map_.begin();
-       ref != delegate_map_.end();
-       ref++) {
-    ref->first->RemoveObserver();
-  }
 }
 
 void AsyncPixelTransferManager::Initialize(gles2::TextureManager* manager) {
@@ -38,7 +32,6 @@ AsyncPixelTransferManager::CreatePixelTransferDelegate(
   AsyncPixelTransferDelegate* delegate =
       CreatePixelTransferDelegateImpl(ref, define_params);
   delegate_map_[ref] = make_linked_ptr(delegate);
-  ref->AddObserver();
   return delegate;
 }
 
@@ -56,10 +49,8 @@ AsyncPixelTransferManager::GetPixelTransferDelegate(
 void AsyncPixelTransferManager::ClearPixelTransferDelegateForTest(
     gles2::TextureRef* ref) {
   TextureToDelegateMap::iterator it = delegate_map_.find(ref);
-  if (it != delegate_map_.end()) {
+  if (it != delegate_map_.end())
     delegate_map_.erase(it);
-    ref->RemoveObserver();
-  }
 }
 
 bool AsyncPixelTransferManager::AsyncTransferIsInProgress(
@@ -78,10 +69,8 @@ void AsyncPixelTransferManager::OnTextureManagerDestroying(
 void AsyncPixelTransferManager::OnTextureRefDestroying(
     gles2::TextureRef* texture) {
   TextureToDelegateMap::iterator it = delegate_map_.find(texture);
-  if (it != delegate_map_.end()) {
+  if (it != delegate_map_.end())
     delegate_map_.erase(it);
-    texture->RemoveObserver();
-  }
 }
 
 }  // namespace gpu
