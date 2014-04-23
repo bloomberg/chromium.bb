@@ -236,7 +236,7 @@ gfx::Point EventLocationFromNative(const base::NativeEvent& native_event) {
     native_point.y = GET_Y_LPARAM(native_event.lParam);
   }
   ScreenToClient(native_event.hwnd, &native_point);
-  return gfx::win::ScreenToDIPPoint(gfx::Point(native_point));
+  return gfx::Point(native_point);
 }
 
 gfx::Point EventSystemLocationFromNative(
