@@ -724,17 +724,10 @@ void RenderSandboxHostLinux::Init(const std::string& sandbox_path) {
   // We use SOCK_SEQPACKET rather than SOCK_DGRAM to prevent the renderer from
   // sending datagrams to other sockets on the system. The sandbox may prevent
   // the renderer from calling socket() to create new sockets, but it'll still
-  // inherit some sockets. With PF_UNIX+SOCK_DGRAM, it can call sendmsg to send
+  // inherit some sockets. With AF_UNIX+SOCK_DGRAM, it can call sendmsg to send
   // a datagram to any (abstract) socket on the same system. With
   // SOCK_SEQPACKET, this is prevented.
-#if defined(OS_FREEBSD) || defined(OS_OPENBSD)
-  // The BSDs often don't support SOCK_SEQPACKET yet, so fall back to
-  // SOCK_DGRAM if necessary.
-  if (socketpair(AF_UNIX, SOCK_SEQPACKET, 0, fds) != 0)
-    CHECK(socketpair(AF_UNIX, SOCK_DGRAM, 0, fds) == 0);
-#else
   CHECK(socketpair(AF_UNIX, SOCK_SEQPACKET, 0, fds) == 0);
-#endif
 
   renderer_socket_ = fds[0];
   const int browser_socket = fds[1];
