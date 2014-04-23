@@ -32,8 +32,8 @@
 #define DataObjectItem_h
 
 #include "core/fileapi/File.h"
-#include "heap/Handle.h"
 #include "platform/SharedBuffer.h"
+#include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"

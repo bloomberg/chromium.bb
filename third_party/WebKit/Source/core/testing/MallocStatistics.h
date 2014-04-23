@@ -26,7 +26,7 @@
 #ifndef MallocStatistics_h
 #define MallocStatistics_h
 
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/FastMalloc.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"

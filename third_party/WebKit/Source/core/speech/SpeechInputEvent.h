@@ -30,7 +30,7 @@
 
 #include "core/events/Event.h"
 #include "core/speech/SpeechInputResultList.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 
 namespace WebCore {

@@ -7,7 +7,7 @@
 
 #include "CSSPropertyNames.h"
 #include "core/animation/InterpolableValue.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {

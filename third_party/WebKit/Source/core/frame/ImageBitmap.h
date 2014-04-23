@@ -8,9 +8,9 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/canvas/CanvasImageSource.h"
-#include "heap/Handle.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/Image.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 

@@ -28,7 +28,7 @@
 #define PopStateEvent_h
 
 #include "core/events/Event.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 
 namespace WebCore {
 

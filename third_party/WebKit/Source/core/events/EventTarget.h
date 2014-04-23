@@ -34,7 +34,7 @@
 
 #include "core/events/EventListenerMap.h"
 #include "core/events/ThreadLocalEventNames.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 
 namespace WebCore {

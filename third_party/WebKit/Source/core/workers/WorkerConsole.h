@@ -34,7 +34,7 @@
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/frame/ConsoleBase.h"
 #include "core/frame/ConsoleTypes.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"

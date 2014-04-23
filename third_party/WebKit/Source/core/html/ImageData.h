@@ -30,8 +30,8 @@
 #define ImageData_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "heap/Handle.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Uint8ClampedArray.h"

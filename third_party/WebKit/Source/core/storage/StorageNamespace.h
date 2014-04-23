@@ -26,7 +26,7 @@
 #ifndef StorageNamespace_h
 #define StorageNamespace_h
 
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 

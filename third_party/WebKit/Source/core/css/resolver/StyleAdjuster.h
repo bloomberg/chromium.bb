@@ -22,7 +22,7 @@
 #ifndef StyleAdjuster_h
 #define StyleAdjuster_h
 
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 
 namespace WebCore {
 

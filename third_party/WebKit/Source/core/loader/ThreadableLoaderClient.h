@@ -31,7 +31,7 @@
 #ifndef ThreadableLoaderClient_h
 #define ThreadableLoaderClient_h
 
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Noncopyable.h"
 

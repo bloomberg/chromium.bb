@@ -28,7 +28,7 @@
 #ifndef StyleSheetCollection_h
 #define StyleSheetCollection_h
 
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"

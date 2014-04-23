@@ -32,9 +32,9 @@
 #define DataObject_h
 
 #include "core/clipboard/DataObjectItem.h"
-#include "heap/Handle.h"
 #include "platform/PasteMode.h"
 #include "platform/Supplementable.h"
+#include "platform/heap/Handle.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"

@@ -24,7 +24,7 @@
 
 #include "core/css/CSSSelectorList.h"
 #include "core/css/MediaList.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {

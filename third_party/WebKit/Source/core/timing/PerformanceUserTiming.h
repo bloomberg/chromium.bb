@@ -28,7 +28,7 @@
 
 #include "core/timing/Performance.h"
 #include "core/timing/PerformanceTiming.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"

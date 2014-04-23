@@ -35,7 +35,7 @@
 #include "core/animation/EffectInput.h"
 #include "core/animation/TimedItem.h"
 #include "core/animation/TimingInput.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {

@@ -47,8 +47,8 @@
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerObjectProxy.h"
 #include "core/workers/WorkerThreadStartupData.h"
-#include "heap/Handle.h"
 #include "platform/NotImplemented.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Functional.h"
 #include "wtf/MainThread.h"
 

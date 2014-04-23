@@ -26,7 +26,7 @@
 #ifndef EventFactory_h
 #define EventFactory_h
 
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/AtomicString.h"
 

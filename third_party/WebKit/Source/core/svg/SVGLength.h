@@ -25,7 +25,7 @@
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/svg/SVGLengthContext.h"
 #include "core/svg/properties/SVGProperty.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 
 namespace WebCore {
 

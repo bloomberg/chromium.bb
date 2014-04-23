@@ -24,8 +24,8 @@
 #define ElementStyleResources_h
 
 #include "CSSPropertyNames.h"
-#include "heap/Handle.h"
 #include "platform/graphics/Color.h"
+#include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
 

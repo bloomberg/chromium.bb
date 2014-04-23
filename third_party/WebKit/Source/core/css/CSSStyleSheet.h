@@ -23,7 +23,7 @@
 
 #include "core/css/CSSRule.h"
 #include "core/css/StyleSheet.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/text/TextPosition.h"
 

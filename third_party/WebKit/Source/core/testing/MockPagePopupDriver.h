@@ -28,7 +28,7 @@
 
 #include "core/page/PagePopupClient.h"
 #include "core/page/PagePopupDriver.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {

@@ -31,8 +31,8 @@
 #ifndef DOMWindowPagePopup_h
 #define DOMWindowPagePopup_h
 
-#include "heap/Handle.h"
 #include "platform/Supplementable.h"
+#include "platform/heap/Handle.h"
 
 namespace WebCore {
 

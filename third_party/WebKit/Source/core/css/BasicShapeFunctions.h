@@ -31,7 +31,7 @@
 #define BasicShapeFunctions_h
 
 #include "core/rendering/style/BasicShapes.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 
 namespace WebCore {

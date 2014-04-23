@@ -36,7 +36,7 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/workers/WorkerConsole.h"
 #include "core/workers/WorkerEventQueue.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "wtf/Assertions.h"
 #include "wtf/HashMap.h"

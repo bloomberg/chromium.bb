@@ -32,7 +32,7 @@
 #define GCObservation_h
 
 #include "bindings/v8/ScopedPersistent.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include <v8.h>

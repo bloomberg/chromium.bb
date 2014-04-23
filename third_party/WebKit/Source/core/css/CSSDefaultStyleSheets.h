@@ -23,7 +23,7 @@
 #ifndef CSSDefaultStyleSheets_h
 #define CSSDefaultStyleSheets_h
 
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 
 namespace WebCore {
 

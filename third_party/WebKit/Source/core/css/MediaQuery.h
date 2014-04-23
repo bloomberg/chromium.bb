@@ -29,7 +29,7 @@
 #ifndef MediaQuery_h
 #define MediaQuery_h
 
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/StringHash.h"

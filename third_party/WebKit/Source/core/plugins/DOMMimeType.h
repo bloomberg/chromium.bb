@@ -22,7 +22,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/frame/FrameDestructionObserver.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "platform/plugins/PluginData.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"

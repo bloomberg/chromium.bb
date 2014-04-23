@@ -5,7 +5,7 @@
 #ifndef StyleInvalidator_h
 #define StyleInvalidator_h
 
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 
 namespace WebCore {
 

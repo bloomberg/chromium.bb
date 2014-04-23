@@ -22,7 +22,7 @@
 #define FormDataList_h
 
 #include "core/fileapi/Blob.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "platform/network/FormData.h"
 #include "wtf/Forward.h"
 #include "wtf/text/CString.h"

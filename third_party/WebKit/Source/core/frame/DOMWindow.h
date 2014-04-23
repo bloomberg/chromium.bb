@@ -32,9 +32,9 @@
 #include "core/events/EventTarget.h"
 #include "core/frame/DOMWindowBase64.h"
 #include "core/frame/FrameDestructionObserver.h"
-#include "heap/Handle.h"
 #include "platform/LifecycleContext.h"
 #include "platform/Supplementable.h"
+#include "platform/heap/Handle.h"
 
 #include "wtf/Forward.h"
 

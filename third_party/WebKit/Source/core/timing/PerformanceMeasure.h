@@ -27,7 +27,7 @@
 #define PerformanceMeasure_h
 
 #include "core/timing/PerformanceEntry.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 

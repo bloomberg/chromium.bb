@@ -26,7 +26,7 @@
 #ifndef ScriptedAnimationController_h
 #define ScriptedAnimationController_h
 
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"

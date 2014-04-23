@@ -30,7 +30,7 @@
 #include "bindings/v8/SerializedScriptValue.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/frame/DOMWindowProperty.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"

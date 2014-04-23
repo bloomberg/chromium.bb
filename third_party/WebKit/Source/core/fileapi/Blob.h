@@ -33,8 +33,8 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/html/URLRegistry.h"
-#include "heap/Handle.h"
 #include "platform/blob/BlobData.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"

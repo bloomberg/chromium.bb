@@ -32,7 +32,7 @@
 #define AnimatableValue_h
 
 #include "core/css/CSSValue.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {

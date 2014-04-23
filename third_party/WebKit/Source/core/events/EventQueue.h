@@ -27,7 +27,7 @@
 #ifndef EventQueue_h
 #define EventQueue_h
 
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/PassOwnPtr.h"

@@ -33,8 +33,8 @@
 #define FileInputType_h
 
 #include "core/html/forms/BaseClickableWithKeyInputType.h"
-#include "heap/Handle.h"
 #include "platform/FileChooser.h"
+#include "platform/heap/Handle.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {

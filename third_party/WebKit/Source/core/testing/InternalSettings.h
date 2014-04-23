@@ -29,8 +29,8 @@
 
 #include "InternalSettingsGenerated.h"
 #include "core/editing/EditingBehaviorTypes.h"
-#include "heap/Handle.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"

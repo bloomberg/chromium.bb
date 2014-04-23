@@ -25,7 +25,7 @@
 #ifndef InspectorStyleTextEditor_h
 #define InspectorStyleTextEditor_h
 
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 

@@ -26,7 +26,7 @@
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/ImageResourceClient.h"
 #include "core/fetch/ResourcePtr.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
 #include "wtf/text/AtomicString.h"
 

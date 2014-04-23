@@ -25,7 +25,7 @@
 #include "core/css/StyleRule.h"
 #include "core/fetch/ResourcePtr.h"
 #include "core/fetch/StyleSheetResourceClient.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 
 namespace WebCore {
 

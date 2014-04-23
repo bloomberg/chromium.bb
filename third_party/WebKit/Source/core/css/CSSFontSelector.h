@@ -28,10 +28,10 @@
 
 #include "core/css/FontFaceCache.h"
 #include "core/fetch/ResourcePtr.h"
-#include "heap/Handle.h"
 #include "platform/Timer.h"
 #include "platform/fonts/FontSelector.h"
 #include "platform/fonts/GenericFontFamilySettings.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"

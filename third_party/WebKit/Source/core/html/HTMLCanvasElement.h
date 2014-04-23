@@ -30,12 +30,12 @@
 
 #include "core/html/HTMLElement.h"
 #include "core/html/canvas/CanvasImageSource.h"
-#include "heap/Handle.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/Canvas2DLayerBridge.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/ImageBufferClient.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 
 #define CanvasDefaultInterpolationQuality InterpolationLow

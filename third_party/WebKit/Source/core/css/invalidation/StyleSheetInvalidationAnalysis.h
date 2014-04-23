@@ -26,7 +26,7 @@
 #ifndef StyleSheetInvalidationAnalysis_h
 #define StyleSheetInvalidationAnalysis_h
 
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
 #include "wtf/Vector.h"
 #include "wtf/text/StringImpl.h"

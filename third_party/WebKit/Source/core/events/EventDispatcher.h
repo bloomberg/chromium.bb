@@ -27,7 +27,7 @@
 #define EventDispatcher_h
 
 #include "core/dom/SimulatedClickOptions.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 

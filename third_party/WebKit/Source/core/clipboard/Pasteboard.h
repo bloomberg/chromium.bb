@@ -26,7 +26,7 @@
 #ifndef Pasteboard_h
 #define Pasteboard_h
 
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "public/platform/WebClipboard.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"

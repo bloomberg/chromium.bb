@@ -32,7 +32,7 @@
 #define AnimationEffect_h
 
 #include "CSSPropertyNames.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"

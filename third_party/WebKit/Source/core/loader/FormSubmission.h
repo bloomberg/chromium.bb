@@ -32,7 +32,7 @@
 #define FormSubmission_h
 
 #include "core/loader/FormState.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/Referrer.h"
 

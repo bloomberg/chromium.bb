@@ -42,7 +42,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "platform/network/FormData.h"
 #include "platform/network/FormDataBuilder.h"
 #include "wtf/CurrentTime.h"

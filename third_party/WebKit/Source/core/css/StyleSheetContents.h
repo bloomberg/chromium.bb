@@ -23,7 +23,7 @@
 
 #include "core/css/CSSParserMode.h"
 #include "core/css/RuleSet.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/HashMap.h"
 #include "wtf/ListHashSet.h"

@@ -40,9 +40,9 @@
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/canvas/CanvasRenderingContext2D.h"
-#include "heap/Handle.h"
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/skia/NativeImageSkia.h"
+#include "platform/heap/Handle.h"
 #include "platform/network/ResourceRequest.h"
 #include "wtf/OwnPtr.h"
 

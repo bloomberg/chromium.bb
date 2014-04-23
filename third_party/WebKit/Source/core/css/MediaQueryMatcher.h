@@ -21,7 +21,7 @@
 #define MediaQueryMatcher_h
 
 #include "bindings/v8/ScriptState.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
