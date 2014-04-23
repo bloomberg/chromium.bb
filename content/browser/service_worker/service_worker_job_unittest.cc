@@ -272,10 +272,9 @@ TEST_F(ServiceWorkerJobTest, Unregister_NothingRegistered) {
   GURL pattern("http://www.example.com/*");
 
   bool called;
-  job_coordinator()->Unregister(
-      pattern,
-      render_process_id_,
-      SaveUnregistration(SERVICE_WORKER_ERROR_NOT_FOUND, &called));
+  job_coordinator()->Unregister(pattern,
+                                render_process_id_,
+                                SaveUnregistration(SERVICE_WORKER_OK, &called));
 
   ASSERT_FALSE(called);
   base::RunLoop().RunUntilIdle();
@@ -567,15 +566,13 @@ TEST_F(ServiceWorkerJobTest, ParallelUnreg) {
   job_coordinator()->Unregister(
       pattern,
       render_process_id_,
-      SaveUnregistration(SERVICE_WORKER_ERROR_NOT_FOUND,
-                         &unregistration1_called));
+      SaveUnregistration(SERVICE_WORKER_OK, &unregistration1_called));
 
   bool unregistration2_called = false;
   job_coordinator()->Unregister(
       pattern,
       render_process_id_,
-      SaveUnregistration(SERVICE_WORKER_ERROR_NOT_FOUND,
-                         &unregistration2_called));
+      SaveUnregistration(SERVICE_WORKER_OK, &unregistration2_called));
 
   ASSERT_FALSE(unregistration1_called);
   ASSERT_FALSE(unregistration2_called);

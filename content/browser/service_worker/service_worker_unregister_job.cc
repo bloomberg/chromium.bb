@@ -59,6 +59,12 @@ void ServiceWorkerUnregisterJob::DeleteExistingRegistration(
     return;
   }
 
+  if (status == SERVICE_WORKER_ERROR_NOT_FOUND) {
+    DCHECK(!registration);
+    Complete(SERVICE_WORKER_OK);
+    return;
+  }
+
   Complete(status);
 }
 
