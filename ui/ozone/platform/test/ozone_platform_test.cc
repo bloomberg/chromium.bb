@@ -46,7 +46,8 @@ class OzonePlatformTest : public OzonePlatform {
   }
 
 #if defined(OS_CHROMEOS)
-  scoped_ptr<ui::NativeDisplayDelegate> CreateNativeDisplayDelegate() {
+  virtual scoped_ptr<ui::NativeDisplayDelegate> CreateNativeDisplayDelegate()
+      OVERRIDE {
     return scoped_ptr<ui::NativeDisplayDelegate>(
         new NativeDisplayDelegateOzone());
   }
