@@ -5,7 +5,7 @@ DecodeImage Properties:
 {
     children : <object>
     data : {
-        elementId : <number>
+        backendNodeId : <number>
         imageType : "BMP"
         url : .../inspector/timeline/resources/test.bmp
     }
@@ -17,8 +17,8 @@ ResizeImage Properties:
 {
     children : <object>
     data : {
+        backendNodeId : <number>
         cached : true
-        elementId : <number>
         url : .../inspector/timeline/resources/test.bmp
     }
     endTime : <number>
@@ -29,7 +29,7 @@ DecodeImage Properties:
 {
     children : <object>
     data : {
-        elementId : <number>
+        backendNodeId : <number>
         imageType : "GIF"
         url : .../inspector/timeline/resources/test.gif
     }
@@ -41,8 +41,8 @@ ResizeImage Properties:
 {
     children : <object>
     data : {
+        backendNodeId : <number>
         cached : true
-        elementId : <number>
         url : .../inspector/timeline/resources/test.gif
     }
     endTime : <number>
@@ -53,7 +53,7 @@ DecodeImage Properties:
 {
     children : <object>
     data : {
-        elementId : <number>
+        backendNodeId : <number>
         imageType : "ICO"
         url : .../inspector/timeline/resources/test.ico
     }
@@ -65,8 +65,8 @@ ResizeImage Properties:
 {
     children : <object>
     data : {
+        backendNodeId : <number>
         cached : true
-        elementId : <number>
         url : .../inspector/timeline/resources/test.ico
     }
     endTime : <number>
@@ -77,7 +77,7 @@ DecodeImage Properties:
 {
     children : <object>
     data : {
-        elementId : <number>
+        backendNodeId : <number>
         imageType : "JPEG"
         url : .../inspector/timeline/resources/test.jpg
     }
@@ -89,8 +89,8 @@ ResizeImage Properties:
 {
     children : <object>
     data : {
+        backendNodeId : <number>
         cached : true
-        elementId : <number>
         url : .../inspector/timeline/resources/test.jpg
     }
     endTime : <number>
@@ -101,7 +101,7 @@ DecodeImage Properties:
 {
     children : <object>
     data : {
-        elementId : <number>
+        backendNodeId : <number>
         imageType : "PNG"
         url : .../inspector/timeline/resources/test.png
     }
@@ -113,8 +113,8 @@ ResizeImage Properties:
 {
     children : <object>
     data : {
+        backendNodeId : <number>
         cached : true
-        elementId : <number>
         url : .../inspector/timeline/resources/test.png
     }
     endTime : <number>
@@ -125,7 +125,7 @@ DecodeImage Properties:
 {
     children : <object>
     data : {
-        elementId : <number>
+        backendNodeId : <number>
         imageType : "WEBP"
         url : .../inspector/timeline/resources/test.webp
     }
@@ -137,8 +137,8 @@ ResizeImage Properties:
 {
     children : <object>
     data : {
+        backendNodeId : <number>
         cached : true
-        elementId : <number>
         url : .../inspector/timeline/resources/test.webp
     }
     endTime : <number>
@@ -149,7 +149,7 @@ DecodeImage Properties:
 {
     children : <object>
     data : {
-        elementId : <number>
+        backendNodeId : <number>
         imageType : "PNG"
         url : .../inspector/timeline/resources/big.png
     }
@@ -161,8 +161,8 @@ ResizeImage Properties:
 {
     children : <object>
     data : {
+        backendNodeId : <number>
         cached : true
-        elementId : <number>
         url : .../inspector/timeline/resources/big.png
     }
     endTime : <number>

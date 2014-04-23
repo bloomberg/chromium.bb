@@ -9,7 +9,7 @@ AutosizeText Properties:
 {
     children : <object>
     data : {
-        rootNode : <number>
+        backendNodeId : <number>
     }
     endTime : <number>
     frameId : <string>
@@ -20,7 +20,7 @@ AutosizeText Properties:
 {
     children : <object>
     data : {
-        rootNode : <number>
+        backendNodeId : <number>
     }
     endTime : <number>
     frameId : <string>

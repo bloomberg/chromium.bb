@@ -5,9 +5,9 @@ Paint Properties:
 {
     children : <object>
     data : {
+        backendNodeId : <number>
         clip : <object>
         layerId : <number>
-        rootNode : <number>
     }
     endTime : <number>
     frameId : <string>

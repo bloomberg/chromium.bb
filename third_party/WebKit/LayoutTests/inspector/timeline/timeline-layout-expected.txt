@@ -9,10 +9,10 @@ Layout Properties:
 {
     children : <object>
     data : {
+        backendNodeId : <number>
         dirtyObjects : 3
         partialLayout : true
         root : <object>
-        rootNode : <number>
         totalObjects : 8
     }
     endTime : <number>
@@ -25,10 +25,10 @@ Layout Properties:
 {
     children : <object>
     data : {
+        backendNodeId : <number>
         dirtyObjects : 2
         partialLayout : true
         root : <object>
-        rootNode : <number>
         totalObjects : 11
     }
     endTime : <number>

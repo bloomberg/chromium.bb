@@ -274,7 +274,7 @@ void TimelineRecordFactory::setLayerTreeData(JSONObject* data, PassRefPtr<JSONVa
 void TimelineRecordFactory::setNodeData(JSONObject* data, long long nodeId)
 {
     if (nodeId)
-        data->setNumber("rootNode", nodeId);
+        data->setNumber("backendNodeId", nodeId);
 }
 
 void TimelineRecordFactory::setLayerData(JSONObject* data, long long rootNodeId)
@@ -300,7 +300,7 @@ void TimelineRecordFactory::setLayoutRoot(JSONObject* data, const FloatQuad& qua
 {
     data->setArray("root", createQuad(quad));
     if (rootNodeId)
-        data->setNumber("rootNode", rootNodeId);
+        data->setNumber("backendNodeId", rootNodeId);
 }
 
 void TimelineRecordFactory::setStyleRecalcDetails(JSONObject* data, unsigned elementCount)
@@ -311,7 +311,7 @@ void TimelineRecordFactory::setStyleRecalcDetails(JSONObject* data, unsigned ele
 void TimelineRecordFactory::setImageDetails(JSONObject* data, long long imageElementId, const String& url)
 {
     if (imageElementId)
-        data->setNumber("elementId", imageElementId);
+        data->setNumber("backendNodeId", imageElementId);
     if (!url.isEmpty())
         data->setString("url", url);
 }
