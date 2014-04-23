@@ -70,12 +70,7 @@ public:
 
     // WorkerGlobalScope is about to be destroyed. The client should clear
     // the WebServiceWorkerGlobalScopeProxy when this is called.
-    // FIXME: remove the default impl after chromium-side change lands.
-    virtual void willDestroyWorkerContext() { workerContextDestroyed(); }
-
-    // WorkerGlobalScope is destroyed.
-    // FIXME: deprecate this method after chromium-side change lands.
-    virtual void workerContextDestroyed() { }
+    virtual void willDestroyWorkerContext() { }
 
     // Starting worker context is failed. This could happen when loading
     // worker script fails, or is asked to terminated before the context starts.
