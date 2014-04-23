@@ -1305,9 +1305,9 @@ IN_PROC_BROWSER_TEST_P(TermsOfServiceTest, TermsOfServiceScreen) {
   ASSERT_TRUE(contents);
   std::string json;
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(contents,
-      "var screen = document.getElementById('terms-of-service');"
+      "var screenElement = document.getElementById('terms-of-service');"
       "function SendReplyIfDownloadDone() {"
-      "  if (screen.classList.contains('tos-loading'))"
+      "  if (screenElement.classList.contains('tos-loading'))"
       "    return false;"
       "  var status = {};"
       "  status.heading = document.getElementById('tos-heading').textContent;"
@@ -1317,7 +1317,7 @@ IN_PROC_BROWSER_TEST_P(TermsOfServiceTest, TermsOfServiceScreen) {
       "      document.getElementById('tos-content-heading').textContent;"
       "  status.content ="
       "      document.getElementById('tos-content-main').textContent;"
-      "  status.error = screen.classList.contains('error');"
+      "  status.error = screenElement.classList.contains('error');"
       "  status.acceptEnabled ="
       "      !document.getElementById('tos-accept-button').disabled;"
       "  domAutomationController.send(JSON.stringify(status));"
@@ -1327,7 +1327,7 @@ IN_PROC_BROWSER_TEST_P(TermsOfServiceTest, TermsOfServiceScreen) {
       "var observer = new MutationObserver(SendReplyIfDownloadDone);"
       "if (!SendReplyIfDownloadDone()) {"
       "  var options = { attributes: true, attributeFilter: [ 'class' ] };"
-      "  observer.observe(screen, options);"
+      "  observer.observe(screenElement, options);"
       "}",
       &json));
   scoped_ptr<base::Value> value_ptr(base::JSONReader::Read(json));
