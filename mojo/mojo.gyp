@@ -61,6 +61,7 @@
             'mojo_launcher',
             'mojo_sample_view_manager_app',
             'mojo_view_manager',
+            'mojo_view_manager_unittests',
           ],
         }],
         ['OS == "android"', {

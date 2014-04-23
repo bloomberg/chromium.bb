@@ -36,7 +36,7 @@ class SampleApp : public Application,
     shell()->Connect("mojo:mojo_view_manager",
                      view_manager_pipe.handle_to_peer.Pass());
     view_manager_.reset(view_manager_pipe.handle_to_self.Pass(), this);
-    view_manager_->CreateView(1, base::Bind(&SampleApp::OnCreatedView,
+    view_manager_->CreateNode(1, base::Bind(&SampleApp::OnCreatedView,
                                             base::Unretained(this)));
   }
 
@@ -44,7 +44,12 @@ class SampleApp : public Application,
   }
 
   // ViewManagerClient::
-  virtual void OnConnectionEstablished(int32_t manager_id) OVERRIDE {
+  virtual void OnConnectionEstablished(uint16_t connection_id) OVERRIDE {
+  }
+  virtual void OnNodeHierarchyChanged(uint32_t node,
+                                      uint32_t new_parent,
+                                      uint32_t old_parent,
+                                      int32_t change_id) OVERRIDE {
   }
 
  private:

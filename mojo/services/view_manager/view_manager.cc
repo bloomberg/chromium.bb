@@ -4,7 +4,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "mojo/public/cpp/shell/application.h"
-#include "mojo/services/view_manager/root_view_manager.h"
+#include "mojo/services/view_manager/root_node_manager.h"
 #include "mojo/services/view_manager/view_manager_connection.h"
 
 #if defined(WIN32)
@@ -21,11 +21,11 @@ extern "C" VIEW_MANAGER_EXPORT MojoResult CDECL MojoMain(
     MojoHandle shell_handle) {
   base::MessageLoop loop;
   mojo::Application app(shell_handle);
-  mojo::services::view_manager::RootViewManager root_view_manager;
+  mojo::services::view_manager::RootNodeManager root_node_manager;
   app.AddServiceConnector(new mojo::ServiceConnector
                           <mojo::services::view_manager::ViewManagerConnection,
-                           mojo::services::view_manager::RootViewManager>(
-                               &root_view_manager));
+                           mojo::services::view_manager::RootNodeManager>(
+                               &root_node_manager));
   loop.Run();
 
   return MOJO_RESULT_OK;

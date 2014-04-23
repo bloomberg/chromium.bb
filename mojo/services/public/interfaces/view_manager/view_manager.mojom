@@ -4,34 +4,51 @@
 
 module mojo.services.view_manager {
 
-// Each View is identified by the following pair. The |manager_id| is assigned
-// by the server and uniquely identifies the ViewManager. A value of 0 can be
-// used to indicate 'this' manager. The |view_id| is assigned by the client.
-// Non-negative values may be used. Server uses negative to identify special
-// values. For example, -1 is the root.
-struct ViewId {
-  int32 manager_id;
-  int32 view_id;
-};
-
+// Functions that mutate the hierarchy take a |change_id|. |change_id| is an
+// arbitrary value assigned by the client originating the change. It may be
+// used by the client originating the change to later identify the change in
+// an OnNodeHierarchyChanged callback. |change_id| is only passed to the client
+// that originated the change; all other clients get a value of 0.
+//
+// Nodes are identified by a uint32. The upper 16 bits are the connection id,
+// and the lower 16 the id assigned by the client. CreateNode() only takes a
+// uint16 as the connection id of the originating connection is used.
+//
+// The root node is identified with a connection id of 0, and value of 1.
 [Peer=ViewManagerClient]
 interface ViewManager {
+  // Creates a new node with the specified id. It is up to the client to ensure
+  // the id is unique to the connection (the id need not be globally unique).
+  CreateNode(uint16 node_id) => (bool success);
+
+  // Reparents a node. See description above class for details of |change_id|.
+  AddNode(uint32 parent, uint32 child, int32 change_id) => (bool success);
+
+  // Removes a view from its current parent.  See description above class for
+  // details of |change_id|.
+  RemoveNodeFromParent(uint32 node_id, int32 change_id) => (bool success);
+
   // Creates a new view with the specified id. It is up to the client to ensure
   // the id is unique to the connection (the id need not be globally unique).
-  CreateView(int32 view_id) => (bool success);
+  // CreateView(uint16 view_id) => (bool success);
 
-  // Reparents a view.
-  AddView(ViewId parent, ViewId child) => (bool success);
-
-  // Removes a view from its current parent.
-  RemoveFromParent(ViewId view) => (bool success);
+  // Sets the view a node is showing.
+  // SetView(uint32 node, uint32 view) => (bool success);
 };
 
 [Peer=ViewManager]
 interface ViewManagerClient {
-  // Invoked once the connection has been established. |manager_id| is the id
-  // used to uniquely identify the ViewManager.
-  OnConnectionEstablished(int32 manager_id);
+  // Invoked once the connection has been established. |connection_id| is the id
+  // used to uniquely identify the connection.
+  OnConnectionEstablished(uint16 connection_id);
+
+  // Invoked when a change is done to the hierarchy. A value of 0 is used to
+  // identify a null node. For example, if the old_parent is NULL, 0 is
+  // supplied. See description above ViewManager for details on |change_id|.
+  OnNodeHierarchyChanged(uint32 node,
+                         uint32 new_parent,
+                         uint32 old_parent,
+                         int32 change_id);
 };
 
 }

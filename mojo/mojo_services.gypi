@@ -162,7 +162,7 @@
         },
         {
           'target_name': 'mojo_view_manager',
-          'type': 'shared_library',
+          'type': '<(component)',
           'dependencies': [
             '../base/base.gyp:base',
             '../skia/skia.gyp:skia',
@@ -177,13 +177,38 @@
             'mojo_view_manager_bindings',
           ],
           'sources': [
-            'services/view_manager/root_view_manager.cc',
-            'services/view_manager/root_view_manager.h',
-            'services/view_manager/view.cc',
-            'services/view_manager/view.h',
+            'services/view_manager/ids.h',
+            'services/view_manager/node.cc',
+            'services/view_manager/node.h',
+            'services/view_manager/node_delegate.h',
+            'services/view_manager/root_node_manager.cc',
+            'services/view_manager/root_node_manager.h',
+            'services/view_manager/view_manager.cc',
             'services/view_manager/view_manager_connection.cc',
             'services/view_manager/view_manager_connection.h',
-            'services/view_manager/view_manager.cc',
+            'services/view_manager/view_manager_export.h',
+          ],
+          'defines': [
+            'MOJO_VIEW_MANAGER_IMPLEMENTATION',
+          ],
+        },
+        {
+          'target_name': 'mojo_view_manager_unittests',
+          'type': 'executable',
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../skia/skia.gyp:skia',
+            '../testing/gtest.gyp:gtest',
+            '../ui/aura/aura.gyp:aura',
+            'mojo_environment_chromium',
+            'mojo_run_all_unittests',
+            'mojo_shell_client',
+            'mojo_system_impl',
+            'mojo_view_manager',
+            'mojo_view_manager_bindings',
+          ],
+          'sources': [
+            'services/view_manager/view_manager_connection_unittest.cc',
           ],
         },
         {

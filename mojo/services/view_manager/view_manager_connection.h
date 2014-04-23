@@ -10,53 +10,66 @@
 #include "base/basictypes.h"
 #include "mojo/public/cpp/shell/service.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
+#include "mojo/services/view_manager/node_delegate.h"
+#include "mojo/services/view_manager/view_manager_export.h"
 
 namespace mojo {
 namespace services {
 namespace view_manager {
 
-class RootViewManager;
-class View;
+class Node;
+class RootNodeManager;
 
 // Manages a connection from the client.
-class ViewManagerConnection : public ServiceConnection<ViewManager,
-                                                       ViewManagerConnection,
-                                                       RootViewManager> {
+class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
+    : public ServiceConnection<ViewManager, ViewManagerConnection,
+                               RootNodeManager>,
+      public NodeDelegate {
  public:
   ViewManagerConnection();
   virtual ~ViewManagerConnection();
 
-  int32_t id() const { return id_; }
+  uint16_t id() const { return id_; }
 
   // Invoked from Service when connection is established.
   void Initialize(
-      ServiceConnector<ViewManagerConnection, RootViewManager>* service_factory,
+      ServiceConnector<ViewManagerConnection, RootNodeManager>* service_factory,
       ScopedMessagePipeHandle client_handle);
 
-  // Returns the View by id.
-  View* GetView(int32_t id);
+  // Returns the Node by id.
+  Node* GetNode(const NodeId& id);
+
+  // Notifies the client of a hierarchy change.
+  void NotifyNodeHierarchyChanged(const NodeId& node,
+                                  const NodeId& new_parent,
+                                  const NodeId& old_parent,
+                                  int32_t change_id);
 
  private:
-  typedef std::map<int32_t, View*> ViewMap;
-
-  // Returns the View by ViewId.
-  View* GetViewById(const ViewId& view_id);
+  typedef std::map<uint16_t, Node*> NodeMap;
 
   // Overridden from ViewManager:
-  virtual void CreateView(int32_t view_id,
-                          const mojo::Callback<void(bool)>& callback) OVERRIDE;
-  virtual void AddView(const ViewId& parent_id,
-                       const ViewId& child_id,
-                       const mojo::Callback<void(bool)>& callback) OVERRIDE;
-  virtual void RemoveFromParent(
-      const ViewId& view_id,
-      const mojo::Callback<void(bool)>& callback) OVERRIDE;
+  virtual void CreateNode(uint16_t node_id,
+                          const Callback<void(bool)>& callback) OVERRIDE;
+  virtual void AddNode(uint32_t parent_id,
+                       uint32_t child_id,
+                       int32_t change_id,
+                       const Callback<void(bool)>& callback) OVERRIDE;
+  virtual void RemoveNodeFromParent(
+      uint32_t node_id,
+      int32_t change_id,
+      const Callback<void(bool)>& callback) OVERRIDE;
 
-  // Id of this connection as assigned by RootViewManager. Assigned in
+  // Overriden from NodeDelegate:
+  virtual void OnNodeHierarchyChanged(const NodeId& node,
+                                      const NodeId& new_parent,
+                                      const NodeId& old_parent) OVERRIDE;
+
+  // Id of this connection as assigned by RootNodeManager. Assigned in
   // Initialize().
-  int32_t id_;
+  uint16_t id_;
 
-  ViewMap view_map_;
+  NodeMap node_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewManagerConnection);
 };
