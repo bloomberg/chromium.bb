@@ -49,6 +49,20 @@ ServiceWorkerStorage::FindRegistrationCallback MakeFindCallback(
   return base::Bind(&FindCallback, was_called, result, found);
 }
 
+void GetAllCallback(
+    bool* was_called,
+    std::vector<ServiceWorkerRegistrationInfo>* all_out,
+    const std::vector<ServiceWorkerRegistrationInfo>& all) {
+  *was_called = true;
+  *all_out = all;
+}
+
+ServiceWorkerStorage::GetAllRegistrationInfosCallback MakeGetAllCallback(
+    bool* was_called,
+    std::vector<ServiceWorkerRegistrationInfo>* all) {
+  return base::Bind(&GetAllCallback, was_called, all);
+}
+
 }  // namespace
 
 class ServiceWorkerStorageTest : public testing::Test {
@@ -281,6 +295,136 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(was_called);
   EXPECT_EQ(SERVICE_WORKER_ERROR_NOT_FOUND, result);
+  was_called = false;
+}
+
+TEST_F(ServiceWorkerStorageTest, InstallingRegistrationsAreFindable) {
+  const GURL kScope("http://www.test.com/scope/*");
+  const GURL kScript("http://www.test.com/script.js");
+  const GURL kDocumentUrl("http://www.test.com/scope/document.html");
+  const int64 kRegistrationId = storage()->NewRegistrationId();
+  const int64 kVersionId = storage()->NewVersionId();
+
+  bool was_called = false;
+  ServiceWorkerStatusCode result = SERVICE_WORKER_OK;
+  scoped_refptr<ServiceWorkerRegistration> found_registration;
+
+  // Create an unstored registration.
+  scoped_refptr<ServiceWorkerRegistration> live_registration =
+      new ServiceWorkerRegistration(
+          kScope, kScript, kRegistrationId, context_ptr_);
+  scoped_refptr<ServiceWorkerVersion> live_version =
+      new ServiceWorkerVersion(
+          live_registration, kVersionId, context_ptr_);
+  live_version->SetStatus(ServiceWorkerVersion::INSTALLING);
+  live_registration->set_pending_version(live_version);
+
+  // Should not be findable, including by GetAllRegistrations.
+  storage()->FindRegistrationForId(
+      kRegistrationId,
+      MakeFindCallback(&was_called, &result, &found_registration));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(was_called);
+  EXPECT_EQ(SERVICE_WORKER_ERROR_NOT_FOUND, result);
+  EXPECT_FALSE(found_registration);
+  was_called = false;
+  storage()->FindRegistrationForDocument(
+      kDocumentUrl,
+      MakeFindCallback(&was_called, &result, &found_registration));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(was_called);
+  EXPECT_EQ(SERVICE_WORKER_ERROR_NOT_FOUND, result);
+  EXPECT_FALSE(found_registration);
+  was_called = false;
+  storage()->FindRegistrationForPattern(
+      kScope,
+      MakeFindCallback(&was_called, &result, &found_registration));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(was_called);
+  EXPECT_EQ(SERVICE_WORKER_ERROR_NOT_FOUND, result);
+  EXPECT_FALSE(found_registration);
+  was_called = false;
+  std::vector<ServiceWorkerRegistrationInfo> all_registrations;
+  storage()->GetAllRegistrations(
+      MakeGetAllCallback(&was_called, &all_registrations));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(was_called);
+  EXPECT_TRUE(all_registrations.empty());
+  was_called = false;
+
+  // Notify storage of it being installed.
+  storage()->NotifyInstallingRegistration(live_registration);
+
+  // Now should be findable.
+  storage()->FindRegistrationForId(
+      kRegistrationId,
+      MakeFindCallback(&was_called, &result, &found_registration));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(was_called);
+  EXPECT_EQ(SERVICE_WORKER_OK, result);
+  EXPECT_EQ(live_registration, found_registration);
+  was_called = false;
+  found_registration = NULL;
+  storage()->FindRegistrationForDocument(
+      kDocumentUrl,
+      MakeFindCallback(&was_called, &result, &found_registration));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(was_called);
+  EXPECT_EQ(SERVICE_WORKER_OK, result);
+  EXPECT_EQ(live_registration, found_registration);
+  was_called = false;
+  found_registration = NULL;
+  storage()->FindRegistrationForPattern(
+      kScope,
+      MakeFindCallback(&was_called, &result, &found_registration));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(was_called);
+  EXPECT_EQ(SERVICE_WORKER_OK, result);
+  EXPECT_EQ(live_registration, found_registration);
+  was_called = false;
+  found_registration = NULL;
+  storage()->GetAllRegistrations(
+      MakeGetAllCallback(&was_called, &all_registrations));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(was_called);
+  EXPECT_EQ(1u, all_registrations.size());
+  was_called = false;
+  all_registrations.clear();
+
+  // Notify storage of installation no longer happening.
+  storage()->NotifyDoneInstallingRegistration(live_registration);
+
+  // Once again, should not be findable.
+  storage()->FindRegistrationForId(
+      kRegistrationId,
+      MakeFindCallback(&was_called, &result, &found_registration));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(was_called);
+  EXPECT_EQ(SERVICE_WORKER_ERROR_NOT_FOUND, result);
+  EXPECT_FALSE(found_registration);
+  was_called = false;
+  storage()->FindRegistrationForDocument(
+      kDocumentUrl,
+      MakeFindCallback(&was_called, &result, &found_registration));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(was_called);
+  EXPECT_EQ(SERVICE_WORKER_ERROR_NOT_FOUND, result);
+  EXPECT_FALSE(found_registration);
+  was_called = false;
+  storage()->FindRegistrationForPattern(
+      kScope,
+      MakeFindCallback(&was_called, &result, &found_registration));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(was_called);
+  EXPECT_EQ(SERVICE_WORKER_ERROR_NOT_FOUND, result);
+  EXPECT_FALSE(found_registration);
+  was_called = false;
+
+  storage()->GetAllRegistrations(
+      MakeGetAllCallback(&was_called, &all_registrations));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(was_called);
+  EXPECT_TRUE(all_registrations.empty());
   was_called = false;
 }
 

@@ -8,11 +8,12 @@
 #include <vector>
 
 #include "content/browser/service_worker/service_worker_version.h"
+#include "content/common/content_export.h"
 #include "url/gurl.h"
 
 namespace content {
 
-class ServiceWorkerVersionInfo {
+class CONTENT_EXPORT ServiceWorkerVersionInfo {
  public:
   ServiceWorkerVersionInfo();
   ServiceWorkerVersionInfo(ServiceWorkerVersion::RunningStatus running_status,
@@ -30,7 +31,7 @@ class ServiceWorkerVersionInfo {
   int thread_id;
 };
 
-class ServiceWorkerRegistrationInfo {
+class CONTENT_EXPORT ServiceWorkerRegistrationInfo {
  public:
   ServiceWorkerRegistrationInfo();
   ServiceWorkerRegistrationInfo(

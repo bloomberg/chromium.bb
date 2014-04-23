@@ -22,6 +22,20 @@ void RunSoon(const base::Closure& closure) {
   base::MessageLoop::current()->PostTask(FROM_HERE, closure);
 }
 
+void CompleteFindNow(
+    const scoped_refptr<ServiceWorkerRegistration>& registration,
+    ServiceWorkerStatusCode status,
+    const ServiceWorkerStorage::FindRegistrationCallback& callback) {
+  callback.Run(status, registration);
+}
+
+void CompleteFindSoon(
+    const scoped_refptr<ServiceWorkerRegistration>& registration,
+    ServiceWorkerStatusCode status,
+    const ServiceWorkerStorage::FindRegistrationCallback& callback) {
+  RunSoon(base::Bind(callback, status, registration));
+}
+
 const base::FilePath::CharType kServiceWorkerDirectory[] =
     FILE_PATH_LITERAL("ServiceWorker");
 
@@ -50,9 +64,14 @@ void ServiceWorkerStorage::FindRegistrationForPattern(
   simulated_lazy_initted_ = true;
   scoped_refptr<ServiceWorkerRegistration> null_registration;
   if (!context_) {
-    RunSoon(base::Bind(
-        callback, SERVICE_WORKER_ERROR_FAILED,
-        null_registration));
+    CompleteFindSoon(null_registration, SERVICE_WORKER_ERROR_FAILED, callback);
+    return;
+  }
+
+  scoped_refptr<ServiceWorkerRegistration> installing_registration =
+      FindInstallingRegistrationForPattern(scope);
+  if (installing_registration) {
+    CompleteFindSoon(installing_registration, SERVICE_WORKER_OK, callback);
     return;
   }
 
@@ -60,9 +79,8 @@ void ServiceWorkerStorage::FindRegistrationForPattern(
   OriginRegistrationsMap::const_iterator
       found = stored_registrations_.find(scope.GetOrigin());
   if (found == stored_registrations_.end()) {
-    RunSoon(base::Bind(
-        callback, SERVICE_WORKER_ERROR_NOT_FOUND,
-        null_registration));
+    CompleteFindSoon(null_registration, SERVICE_WORKER_ERROR_NOT_FOUND,
+                     callback);
     return;
   }
 
@@ -74,21 +92,17 @@ void ServiceWorkerStorage::FindRegistrationForPattern(
       scoped_refptr<ServiceWorkerRegistration> registration =
           context_->GetLiveRegistration(data->registration_id);
       if (registration) {
-        RunSoon(base::Bind(
-            callback, SERVICE_WORKER_OK,
-            registration));
+        CompleteFindSoon(registration, SERVICE_WORKER_OK, callback);
         return;
       }
 
       registration = CreateRegistration(data);
-      RunSoon(base::Bind(callback, SERVICE_WORKER_OK, registration));
+      CompleteFindSoon(registration, SERVICE_WORKER_OK, callback);
       return;
     }
   }
 
-  RunSoon(base::Bind(
-      callback, SERVICE_WORKER_ERROR_NOT_FOUND,
-      null_registration));
+  CompleteFindSoon(null_registration, SERVICE_WORKER_ERROR_NOT_FOUND, callback);
 }
 
 void ServiceWorkerStorage::FindRegistrationForDocument(
@@ -97,7 +111,7 @@ void ServiceWorkerStorage::FindRegistrationForDocument(
   simulated_lazy_initted_ = true;
   scoped_refptr<ServiceWorkerRegistration> null_registration;
   if (!context_) {
-    callback.Run(SERVICE_WORKER_ERROR_FAILED, null_registration);
+    CompleteFindNow(null_registration, SERVICE_WORKER_ERROR_FAILED, callback);
     return;
   }
 
@@ -105,9 +119,18 @@ void ServiceWorkerStorage::FindRegistrationForDocument(
   OriginRegistrationsMap::const_iterator
       found = stored_registrations_.find(document_url.GetOrigin());
   if (found == stored_registrations_.end()) {
+    // Look for something currently being installed.
+    scoped_refptr<ServiceWorkerRegistration> installing_registration =
+        FindInstallingRegistrationForDocument(document_url);
+    if (installing_registration) {
+      CompleteFindNow(installing_registration, SERVICE_WORKER_OK, callback);
+      return;
+    }
+
     // Return syncly to simulate this class having an in memory map of
     // origins with registrations.
-    callback.Run(SERVICE_WORKER_ERROR_NOT_FOUND, null_registration);
+    CompleteFindNow(null_registration, SERVICE_WORKER_ERROR_NOT_FOUND,
+                    callback);
     return;
   }
 
@@ -124,23 +147,31 @@ void ServiceWorkerStorage::FindRegistrationForDocument(
       scoped_refptr<ServiceWorkerRegistration> registration =
           context_->GetLiveRegistration(data->registration_id);
       if (registration) {
-        callback.Run(SERVICE_WORKER_OK, registration);
+        CompleteFindNow(registration, SERVICE_WORKER_OK, callback);
         return;
       }
 
       // If we have to create a new instance, return it asyncly to simulate
       // having had to retreive the RegistrationData from the db.
       registration = CreateRegistration(data);
-      RunSoon(base::Bind(callback, SERVICE_WORKER_OK, registration));
+      CompleteFindSoon(registration, SERVICE_WORKER_OK, callback);
       return;
     }
   }
 
+  // Look for something currently being installed.
+  // TODO(michaeln): Should be mixed in with the stored registrations
+  // for this test.
+  scoped_refptr<ServiceWorkerRegistration> installing_registration =
+      FindInstallingRegistrationForDocument(document_url);
+  if (installing_registration) {
+    CompleteFindSoon(installing_registration, SERVICE_WORKER_OK, callback);
+    return;
+  }
+
   // Return asyncly to simulate having had to look in the db since this
   // origin does have some registations.
-  RunSoon(base::Bind(
-      callback, SERVICE_WORKER_ERROR_NOT_FOUND,
-      null_registration));
+  CompleteFindSoon(installing_registration, SERVICE_WORKER_OK, callback);
 }
 
 void ServiceWorkerStorage::FindRegistrationForId(
@@ -149,23 +180,30 @@ void ServiceWorkerStorage::FindRegistrationForId(
   simulated_lazy_initted_ = true;
   scoped_refptr<ServiceWorkerRegistration> null_registration;
   if (!context_) {
-    callback.Run(SERVICE_WORKER_ERROR_FAILED, null_registration);
+    CompleteFindNow(null_registration, SERVICE_WORKER_ERROR_FAILED, callback);
+    return;
+  }
+  scoped_refptr<ServiceWorkerRegistration> installing_registration =
+      FindInstallingRegistrationForId(registration_id);
+  if (installing_registration) {
+    CompleteFindNow(installing_registration, SERVICE_WORKER_OK, callback);
     return;
   }
   RegistrationPtrMap::const_iterator found =
       registrations_by_id_.find(registration_id);
   if (found == registrations_by_id_.end()) {
-    callback.Run(SERVICE_WORKER_ERROR_NOT_FOUND, null_registration);
+    CompleteFindNow(null_registration, SERVICE_WORKER_ERROR_NOT_FOUND,
+                    callback);
     return;
   }
   scoped_refptr<ServiceWorkerRegistration> registration =
       context_->GetLiveRegistration(registration_id);
   if (registration) {
-    callback.Run(SERVICE_WORKER_OK, registration);
+    CompleteFindNow(registration, SERVICE_WORKER_OK, callback);
     return;
   }
   registration = CreateRegistration(found->second);
-  RunSoon(base::Bind(callback, SERVICE_WORKER_OK, registration));
+  CompleteFindSoon(registration, SERVICE_WORKER_OK, callback);
 }
 
 void ServiceWorkerStorage::GetAllRegistrations(
@@ -177,6 +215,7 @@ void ServiceWorkerStorage::GetAllRegistrations(
     return;
   }
 
+  // Add all stored registrations.
   for (RegistrationPtrMap::const_iterator it = registrations_by_id_.begin();
        it != registrations_by_id_.end(); ++it) {
     ServiceWorkerRegistration* registration =
@@ -194,6 +233,14 @@ void ServiceWorkerStorage::GetAllRegistrations(
     else
       info.active_version.status = ServiceWorkerVersion::INSTALLED;
     registrations.push_back(info);
+  }
+
+  // Add unstored registrations that are being installed.
+  for (RegistrationRefsById::const_iterator it =
+           installing_registrations_.begin();
+       it != installing_registrations_.end(); ++it) {
+    if (registrations_by_id_.find(it->first) == registrations_by_id_.end())
+      registrations.push_back(it->second->GetInfo());
   }
 
   RunSoon(base::Bind(callback, registrations));
@@ -290,6 +337,16 @@ int64 ServiceWorkerStorage::NewResourceId() {
   return ++last_resource_id_;
 }
 
+void ServiceWorkerStorage::NotifyInstallingRegistration(
+      ServiceWorkerRegistration* registration) {
+  installing_registrations_[registration->id()] = registration;
+}
+
+void ServiceWorkerStorage::NotifyDoneInstallingRegistration(
+      ServiceWorkerRegistration* registration) {
+  installing_registrations_.erase(registration->id());
+}
+
 scoped_refptr<ServiceWorkerRegistration>
 ServiceWorkerStorage::CreateRegistration(
     const ServiceWorkerDatabase::RegistrationData* data) {
@@ -315,6 +372,45 @@ ServiceWorkerStorage::CreateRegistration(
   // the Find result we're returning here? NOTREACHED condition?
 
   return registration;
+}
+
+ServiceWorkerRegistration*
+ServiceWorkerStorage::FindInstallingRegistrationForDocument(
+    const GURL& document_url) {
+  // TODO(michaeln): if there are multiple matches the one with
+  // the longest scope should win, and these should on equal footing
+  // with the stored registrations in FindRegistrationForDocument().
+  for (RegistrationRefsById::const_iterator it =
+           installing_registrations_.begin();
+       it != installing_registrations_.end(); ++it) {
+    if (ServiceWorkerUtils::ScopeMatches(
+            it->second->pattern(), document_url)) {
+      return it->second;
+    }
+  }
+  return NULL;
+}
+
+ServiceWorkerRegistration*
+ServiceWorkerStorage::FindInstallingRegistrationForPattern(
+    const GURL& scope) {
+  for (RegistrationRefsById::const_iterator it =
+           installing_registrations_.begin();
+       it != installing_registrations_.end(); ++it) {
+    if (it->second->pattern() == scope)
+      return it->second;
+  }
+  return NULL;
+}
+
+ServiceWorkerRegistration*
+ServiceWorkerStorage::FindInstallingRegistrationForId(
+    int64 registration_id) {
+  RegistrationRefsById::const_iterator found =
+      installing_registrations_.find(registration_id);
+  if (found == installing_registrations_.end())
+    return NULL;
+  return found->second;
 }
 
 }  // namespace content

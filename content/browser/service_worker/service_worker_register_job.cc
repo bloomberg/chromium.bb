@@ -37,7 +37,9 @@ ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
       promise_resolved_status_(SERVICE_WORKER_OK),
       weak_factory_(this) {}
 
-ServiceWorkerRegisterJob::~ServiceWorkerRegisterJob() {}
+ServiceWorkerRegisterJob::~ServiceWorkerRegisterJob() {
+  DCHECK(phase_ == INITIAL || phase_ == COMPLETE);
+}
 
 void ServiceWorkerRegisterJob::AddCallback(const RegistrationCallback& callback,
                                            int process_id) {
@@ -202,6 +204,7 @@ void ServiceWorkerRegisterJob::RegisterAndContinue(
   set_registration(new ServiceWorkerRegistration(
       pattern_, script_url_, context_->storage()->NewRegistrationId(),
       context_));
+  context_->storage()->NotifyInstallingRegistration(registration());
   UpdateAndContinue(SERVICE_WORKER_OK);
 }
 
@@ -227,8 +230,9 @@ void ServiceWorkerRegisterJob::UpdateAndContinue(
       registration(), context_->storage()->NewVersionId(), context_));
   for (std::vector<int>::const_iterator it = pending_process_ids_.begin();
        it != pending_process_ids_.end();
-       ++it)
+       ++it) {
     pending_version()->AddProcessToWorker(*it);
+  }
 
   // TODO(michaeln): Start the worker into a paused state where the
   // script resource is downloaded but not yet evaluated.
@@ -377,6 +381,7 @@ void ServiceWorkerRegisterJob::Complete(ServiceWorkerStatusCode status) {
       ResolvePromise(status, NULL, NULL);
   }
   DCHECK(callbacks_.empty());
+  context_->storage()->NotifyDoneInstallingRegistration(registration());
   context_->job_coordinator()->FinishJob(pattern_, this);
 }
 
@@ -400,7 +405,8 @@ void ServiceWorkerRegisterJob::ResolvePromise(
 void ServiceWorkerRegisterJob::AssociatePendingVersionToDocuments(
     ServiceWorkerVersion* version) {
   // TODO(michaeln): This needs to respect the longest prefix wins
-  // when it comes to finding a a registration for a document url.
+  // when it comes to finding a registration for a document url.
+  // This should should utilize storage->FindRegistrationForDocument().
   for (scoped_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
            context_->GetProviderHostIterator();
        !it->IsAtEnd();

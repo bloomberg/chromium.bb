@@ -50,6 +50,7 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   ~ServiceWorkerStorage();
 
   // Finds registration for |document_url| or |pattern| or |registration_id|.
+  // The Find methods will find stored and initially installing registrations.
   // Returns SERVICE_WORKER_OK with non-null registration if registration
   // is found, or returns SERVICE_WORKER_ERROR_NOT_FOUND if no matching
   // registration is found.  The FindRegistrationForPattern method is
@@ -64,7 +65,7 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   void FindRegistrationForId(int64 registration_id,
                              const FindRegistrationCallback& callback);
 
-  // Returns info about all stored registrations.
+  // Returns info about all stored and initially installing registrations.
   void GetAllRegistrations(const GetAllRegistrationInfosCallback& callback);
 
   // Commits |registration| with the installed but not activated |version|
@@ -93,11 +94,23 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   int64 NewVersionId();
   int64 NewResourceId();
 
+  // Intended for use only by ServiceWorkerRegisterJob.
+  void NotifyInstallingRegistration(
+      ServiceWorkerRegistration* registration);
+  void NotifyDoneInstallingRegistration(
+      ServiceWorkerRegistration* registration);
+
  private:
   friend class ServiceWorkerStorageTest;
 
   scoped_refptr<ServiceWorkerRegistration> CreateRegistration(
       const ServiceWorkerDatabase::RegistrationData* data);
+  ServiceWorkerRegistration* FindInstallingRegistrationForDocument(
+      const GURL& document_url);
+  ServiceWorkerRegistration* FindInstallingRegistrationForPattern(
+      const GURL& scope);
+  ServiceWorkerRegistration* FindInstallingRegistrationForId(
+      int64 registration_id);
 
   // TODO(michaeln): Store these structs in a database.
   typedef std::map<int64, ServiceWorkerDatabase::RegistrationData>
@@ -111,6 +124,11 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   typedef std::map<int64, ServiceWorkerDatabase::RegistrationData*>
       RegistrationPtrMap;
   RegistrationPtrMap registrations_by_id_;
+
+  // For finding registrations being installed.
+  typedef std::map<int64, scoped_refptr<ServiceWorkerRegistration> >
+      RegistrationRefsById;
+  RegistrationRefsById installing_registrations_;
 
   int64 last_registration_id_;
   int64 last_version_id_;
