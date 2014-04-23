@@ -146,6 +146,8 @@ class FullscreenObserver : public WebContentsObserver {
       !delegate_) {
     return;
   }
+
+  ScopedCAActionDisabler disabler;
   [contentsView setFrame:[delegate_ frameForContentsView]];
 }
 
@@ -209,6 +211,7 @@ class FullscreenObserver : public WebContentsObserver {
 - (void)ensureContentsVisible {
   if (!contents_)
     return;
+  ScopedCAActionDisabler disabler;
   NSView* contentsContainer = [self view];
   NSArray* subviews = [contentsContainer subviews];
   NSView* contentsNativeView;
