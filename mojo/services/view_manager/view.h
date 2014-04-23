@@ -6,16 +6,23 @@
 #define MOJO_SERVICES_VIEW_MANAGER_VIEW_H_
 
 #include "base/logging.h"
+#include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
+#include "mojo/services/view_manager/view_manager_export.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_observer.h"
 
 namespace mojo {
 namespace services {
 namespace view_manager {
 
-class View {
+class RootViewManager;
+class ViewDelegate;
+class ViewId;
+
+class MOJO_VIEW_MANAGER_EXPORT View : public aura::WindowObserver {
  public:
-  View(int32_t view_id);
-  ~View();
+  View(ViewDelegate* delegate, const int32_t id);
+  virtual ~View();
 
   int32 id() const { return id_; }
 
@@ -25,6 +32,13 @@ class View {
   View* GetParent();
 
  private:
+  ViewId GetViewId() const;
+
+  // WindowObserver overrides:
+  virtual void OnWindowHierarchyChanged(
+      const aura::WindowObserver::HierarchyChangeParams& params) OVERRIDE;
+
+  ViewDelegate* delegate_;
   const int32_t id_;
   aura::Window window_;
 
