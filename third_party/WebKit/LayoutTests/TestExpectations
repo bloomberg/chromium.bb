@@ -1077,8 +1077,8 @@ crbug.com/363025 virtual/serviceworker/http/tests/serviceworker/state.html [ Fai
 
 crbug.com/364250 [ Debug ] virtual/threaded/animations/interpolation/webkit-transform-interpolation.html [ Pass Crash Timeout ]
 
-# Failing since chrome r264636. Should have their scrollbars removed.
-crbug.com/364946 [ Mac ] virtual/deferred/fast/images/exif-orientation-css.html [ Pass ImageOnlyFailure ]
+crbug.com/364946 fast/images/exif-orientation-css.html [ NeedsRebaseline ]
+crbug.com/364946 virtual/deferred/fast/images/exif-orientation-css.html [ NeedsRebaseline ]
 
 # Need rebaseline once all tests are in ForceCompositingMode.
 crbug.com/361729 [ Mac ] virtual/gpu/fast/hidpi/image-srcset-svg-canvas.html [ ImageOnlyFailure ]
