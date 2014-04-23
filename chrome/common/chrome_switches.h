@@ -123,6 +123,7 @@ extern const char kDnsLogDetails[];
 extern const char kDnsPrefetchDisable[];
 extern const char kDumpBrowserHistograms[];
 extern const char kEasyUnlockAppPath[];
+extern const char kEnableAccessRequestNotifications[];
 extern const char kEnableAdview[];
 extern const char kEnableAppList[];
 extern const char kEnableAppWindowControls[];
