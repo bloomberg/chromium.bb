@@ -120,6 +120,16 @@ TEST(EscapeTest, EscapePath) {
     "%7B%7C%7D~%7F%80%FF");
 }
 
+TEST(EscapeTest, DataURLWithAccentedCharacters) {
+  const std::string url =
+      "text/html;charset=utf-8,%3Chtml%3E%3Cbody%3ETonton,%20ton%20th%C3"
+      "%A9%20t'a-t-il%20%C3%B4t%C3%A9%20ta%20toux%20";
+
+  base::OffsetAdjuster::Adjustments adjustments;
+  net::UnescapeAndDecodeUTF8URLComponentWithAdjustments(
+      url, UnescapeRule::SPACES, &adjustments);
+}
+
 TEST(EscapeTest, EscapeUrlEncodedData) {
   ASSERT_EQ(
     // Most of the character space we care about, un-escaped

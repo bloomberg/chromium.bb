@@ -88,10 +88,11 @@ void OffsetAdjuster::MergeSequentialAdjustments(
       // It's not possible for the adjustments to overlap.  (It shouldn't
       // be possible that we have an |adjusted_iter->original_offset| that,
       // when adjusted by the computed |shift|, is in the middle of
-      // |first_iter|'s length.  After all, that would mean the current
-      // adjustment_on_adjusted_string somehow points to an offset that was
-      // supposed to have been eliminated by the first set of adjustments.)
-      DCHECK_LE(first_iter->original_offset + first_iter->original_length,
+      // |first_iter|'s output's length.  After all, that would mean the
+      // current adjustment_on_adjusted_string somehow points to an offset
+      // that was supposed to have been eliminated by the first set of
+      // adjustments.)
+      DCHECK_LE(first_iter->original_offset + first_iter->output_length,
                 adjusted_iter->original_offset + shift);
 
       // Add the |first_adjustment_iter| to the full set of adjustments while
