@@ -17,6 +17,7 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -1322,6 +1323,55 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, AppIdSwitch) {
   ASSERT_NE(
       new_browser->app_name_.find(extension_app->id()),
       std::string::npos) << new_browser->app_name_;
+}
+
+// Open an app window and the dev tools window and ensure that the location
+// bar settings are correct.
+IN_PROC_BROWSER_TEST_F(BrowserTest, ShouldShowLocationBar) {
+  ASSERT_TRUE(test_server()->Start());
+
+  // Load an app.
+  host_resolver()->AddRule("www.example.com", "127.0.0.1");
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("app/")));
+  const Extension* extension_app = GetExtension();
+
+  // Launch it in a window, as AppLauncherHandler::HandleLaunchApp() would.
+  WebContents* app_window =
+      OpenApplication(AppLaunchParams(browser()->profile(),
+                                      extension_app,
+                                      extensions::LAUNCH_CONTAINER_WINDOW,
+                                      NEW_WINDOW));
+  ASSERT_TRUE(app_window);
+
+  DevToolsWindow::OpenDevToolsWindowForTest(
+      browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost(),
+      false);
+
+  // The launch should have created a new app browser and a dev tools browser.
+  ASSERT_EQ(3u,
+            chrome::GetBrowserCount(browser()->profile(),
+                                    browser()->host_desktop_type()));
+
+  // Find the new browsers.
+  Browser* app_browser = NULL;
+  Browser* dev_tools_browser = NULL;
+  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+    if (*it == browser()) {
+      continue;
+    } else if ((*it)->app_name() == DevToolsWindow::kDevToolsApp) {
+      dev_tools_browser = *it;
+    } else {
+      app_browser = *it;
+    }
+  }
+  ASSERT_TRUE(dev_tools_browser);
+  ASSERT_TRUE(app_browser);
+  ASSERT_TRUE(app_browser != browser());
+
+  EXPECT_FALSE(
+      dev_tools_browser->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR));
+  EXPECT_FALSE(
+      app_browser->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR));
 }
 #endif
 

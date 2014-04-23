@@ -2248,30 +2248,23 @@ bool Browser::ShouldShowLocationBar() const {
   if (is_type_tabbed())
     return true;
 
-  // Trusted app windows and system windows never show a location bar.
-  if (is_trusted_source())
-    return false;
-
-  // Other non-app browsers always show a location bar.
-  if (!is_app())
-    return true;
-
-  // Normally apps do not show a location bar.
-  if (app_name() == DevToolsWindow::kDevToolsApp ||
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableStreamlinedHostedApps)) {
-    return false;
+  if (is_app() && CommandLine::ForCurrentProcess()->HasSwitch(
+                      switches::kEnableStreamlinedHostedApps)) {
+    // If kEnableStreamlinedHostedApps is true, show the location bar for
+    // bookmark apps.
+    ExtensionService* service =
+        extensions::ExtensionSystem::Get(profile_)->extension_service();
+    const extensions::Extension* extension =
+        service ? service->GetInstalledExtension(
+                      web_app::GetExtensionIdFromApplicationName(app_name()))
+                : NULL;
+    return (!extension || extension->from_bookmark()) &&
+           app_name() != DevToolsWindow::kDevToolsApp;
   }
 
-  // If kEnableStreamlinedHostedApps is true, show the locaiton bar for non
-  // legacy packaged apps.
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  const extensions::Extension* extension =
-      service ? service->GetInstalledExtension(
-                    web_app::GetExtensionIdFromApplicationName(app_name()))
-              : NULL;
-  return (!extension || !extension->is_legacy_packaged_app());
+  // All app windows and system windows are trusted and never show a location
+  // bar.
+  return !is_trusted_source();
 }
 
 bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,
