@@ -114,10 +114,9 @@ class NET_EXPORT_PRIVATE HttpStreamParser {
     // continuing.
     STATE_NONE,
     STATE_SEND_HEADERS,
-    // If the request comes with a body, either of the following two
-    // states will be executed, depending on whether the body is chunked
-    // or not.
+    STATE_SEND_HEADERS_COMPLETE,
     STATE_SEND_BODY,
+    STATE_SEND_BODY_COMPLETE,
     STATE_SEND_REQUEST_READ_BODY_COMPLETE,
     STATE_READ_HEADERS,
     STATE_READ_HEADERS_COMPLETE,
@@ -146,13 +145,18 @@ class NET_EXPORT_PRIVATE HttpStreamParser {
   int DoLoop(int result);
 
   // The implementations of each state of the state machine.
-  int DoSendHeaders(int result);
-  int DoSendBody(int result);
+  int DoSendHeaders();
+  int DoSendHeadersComplete(int result);
+  int DoSendBody();
+  int DoSendBodyComplete(int result);
   int DoSendRequestReadBodyComplete(int result);
   int DoReadHeaders();
   int DoReadHeadersComplete(int result);
   int DoReadBody();
   int DoReadBodyComplete(int result);
+
+  // This handles most of the logic for DoReadHeadersComplete.
+  int HandleReadHeaderResult(int result);
 
   // Examines |read_buf_| to find the start and end of the headers. If they are
   // found, parse them with DoParseResponseHeaders().  Return the offset for
@@ -173,8 +177,12 @@ class NET_EXPORT_PRIVATE HttpStreamParser {
   // The request to send.
   const HttpRequestInfo* request_;
 
-  // The request header data.
+  // The request header data.  May include a merged request body.
   scoped_refptr<DrainableIOBuffer> request_headers_;
+
+  // Size of just the request headers.  May be less than the length of
+  // |request_headers_| if the body was merged with the headers.
+  int request_headers_length_;
 
   // Temporary buffer for reading.
   scoped_refptr<GrowableIOBuffer> read_buf_;
@@ -234,6 +242,9 @@ class NET_EXPORT_PRIVATE HttpStreamParser {
   // |request_body_read_buf_| unless the data is chunked.
   scoped_refptr<SeekableIOBuffer> request_body_send_buf_;
   bool sent_last_chunk_;
+
+  // Error received when uploading the body, if any.
+  int upload_error_;
 
   base::WeakPtrFactory<HttpStreamParser> weak_ptr_factory_;
 

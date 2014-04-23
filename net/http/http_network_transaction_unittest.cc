@@ -12605,4 +12605,487 @@ TEST_P(HttpNetworkTransactionTest, CloseSSLSocketOnIdleForHttpRequest2) {
   EXPECT_EQ(1, GetIdleSocketCountInTransportSocketPool(session));
 }
 
+TEST_P(HttpNetworkTransactionTest, PostReadsErrorResponseAfterReset) {
+  ScopedVector<UploadElementReader> element_readers;
+  element_readers.push_back(new UploadBytesElementReader("foo", 3));
+  UploadDataStream upload_data_stream(element_readers.Pass(), 0);
+
+  HttpRequestInfo request;
+  request.method = "POST";
+  request.url = GURL("http://www.foo.com/");
+  request.upload_data_stream = &upload_data_stream;
+  request.load_flags = 0;
+
+  scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  scoped_ptr<HttpTransaction> trans(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+  // Send headers successfully, but get an error while sending the body.
+  MockWrite data_writes[] = {
+    MockWrite("POST / HTTP/1.1\r\n"
+              "Host: www.foo.com\r\n"
+              "Connection: keep-alive\r\n"
+              "Content-Length: 3\r\n\r\n"),
+    MockWrite(SYNCHRONOUS, ERR_CONNECTION_RESET),
+  };
+
+  MockRead data_reads[] = {
+    MockRead("HTTP/1.0 400 Not OK\r\n\r\n"),
+    MockRead("hello world"),
+    MockRead(SYNCHRONOUS, OK),
+  };
+  StaticSocketDataProvider data(data_reads, arraysize(data_reads), data_writes,
+                                arraysize(data_writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  TestCompletionCallback callback;
+
+  int rv = trans->Start(&request, callback.callback(), BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+
+  rv = callback.WaitForResult();
+  EXPECT_EQ(OK, rv);
+
+  const HttpResponseInfo* response = trans->GetResponseInfo();
+  ASSERT_TRUE(response != NULL);
+
+  EXPECT_TRUE(response->headers.get() != NULL);
+  EXPECT_EQ("HTTP/1.0 400 Not OK", response->headers->GetStatusLine());
+
+  std::string response_data;
+  rv = ReadTransaction(trans.get(), &response_data);
+  EXPECT_EQ(OK, rv);
+  EXPECT_EQ("hello world", response_data);
+}
+
+// This test makes sure the retry logic doesn't trigger when reading an error
+// response from a server that rejected a POST with a CONNECTION_RESET.
+TEST_P(HttpNetworkTransactionTest,
+       PostReadsErrorResponseAfterResetOnReusedSocket) {
+  scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  MockWrite data_writes[] = {
+    MockWrite("GET / HTTP/1.1\r\n"
+              "Host: www.foo.com\r\n"
+              "Connection: keep-alive\r\n\r\n"),
+    MockWrite("POST / HTTP/1.1\r\n"
+              "Host: www.foo.com\r\n"
+              "Connection: keep-alive\r\n"
+              "Content-Length: 3\r\n\r\n"),
+    MockWrite(SYNCHRONOUS, ERR_CONNECTION_RESET),
+  };
+
+  MockRead data_reads[] = {
+    MockRead("HTTP/1.1 200 Peachy\r\n"
+             "Content-Length: 14\r\n\r\n"),
+    MockRead("first response"),
+    MockRead("HTTP/1.1 400 Not OK\r\n"
+             "Content-Length: 15\r\n\r\n"),
+    MockRead("second response"),
+    MockRead(SYNCHRONOUS, OK),
+  };
+  StaticSocketDataProvider data(data_reads, arraysize(data_reads), data_writes,
+                                arraysize(data_writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  TestCompletionCallback callback;
+  HttpRequestInfo request1;
+  request1.method = "GET";
+  request1.url = GURL("http://www.foo.com/");
+  request1.load_flags = 0;
+
+  scoped_ptr<HttpTransaction> trans1(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+  int rv = trans1->Start(&request1, callback.callback(), BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+
+  rv = callback.WaitForResult();
+  EXPECT_EQ(OK, rv);
+
+  const HttpResponseInfo* response1 = trans1->GetResponseInfo();
+  ASSERT_TRUE(response1 != NULL);
+
+  EXPECT_TRUE(response1->headers.get() != NULL);
+  EXPECT_EQ("HTTP/1.1 200 Peachy", response1->headers->GetStatusLine());
+
+  std::string response_data1;
+  rv = ReadTransaction(trans1.get(), &response_data1);
+  EXPECT_EQ(OK, rv);
+  EXPECT_EQ("first response", response_data1);
+  // Delete the transaction to release the socket back into the socket pool.
+  trans1.reset();
+
+  ScopedVector<UploadElementReader> element_readers;
+  element_readers.push_back(new UploadBytesElementReader("foo", 3));
+  UploadDataStream upload_data_stream(element_readers.Pass(), 0);
+
+  HttpRequestInfo request2;
+  request2.method = "POST";
+  request2.url = GURL("http://www.foo.com/");
+  request2.upload_data_stream = &upload_data_stream;
+  request2.load_flags = 0;
+
+  scoped_ptr<HttpTransaction> trans2(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+  rv = trans2->Start(&request2, callback.callback(), BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+
+  rv = callback.WaitForResult();
+  EXPECT_EQ(OK, rv);
+
+  const HttpResponseInfo* response2 = trans2->GetResponseInfo();
+  ASSERT_TRUE(response2 != NULL);
+
+  EXPECT_TRUE(response2->headers.get() != NULL);
+  EXPECT_EQ("HTTP/1.1 400 Not OK", response2->headers->GetStatusLine());
+
+  std::string response_data2;
+  rv = ReadTransaction(trans2.get(), &response_data2);
+  EXPECT_EQ(OK, rv);
+  EXPECT_EQ("second response", response_data2);
+}
+
+TEST_P(HttpNetworkTransactionTest,
+       PostReadsErrorResponseAfterResetPartialBodySent) {
+  ScopedVector<UploadElementReader> element_readers;
+  element_readers.push_back(new UploadBytesElementReader("foo", 3));
+  UploadDataStream upload_data_stream(element_readers.Pass(), 0);
+
+  HttpRequestInfo request;
+  request.method = "POST";
+  request.url = GURL("http://www.foo.com/");
+  request.upload_data_stream = &upload_data_stream;
+  request.load_flags = 0;
+
+  scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  scoped_ptr<HttpTransaction> trans(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+  // Send headers successfully, but get an error while sending the body.
+  MockWrite data_writes[] = {
+    MockWrite("POST / HTTP/1.1\r\n"
+              "Host: www.foo.com\r\n"
+              "Connection: keep-alive\r\n"
+              "Content-Length: 3\r\n\r\n"
+              "fo"),
+    MockWrite(SYNCHRONOUS, ERR_CONNECTION_RESET),
+  };
+
+  MockRead data_reads[] = {
+    MockRead("HTTP/1.0 400 Not OK\r\n\r\n"),
+    MockRead("hello world"),
+    MockRead(SYNCHRONOUS, OK),
+  };
+  StaticSocketDataProvider data(data_reads, arraysize(data_reads), data_writes,
+                                arraysize(data_writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  TestCompletionCallback callback;
+
+  int rv = trans->Start(&request, callback.callback(), BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+
+  rv = callback.WaitForResult();
+  EXPECT_EQ(OK, rv);
+
+  const HttpResponseInfo* response = trans->GetResponseInfo();
+  ASSERT_TRUE(response != NULL);
+
+  EXPECT_TRUE(response->headers.get() != NULL);
+  EXPECT_EQ("HTTP/1.0 400 Not OK", response->headers->GetStatusLine());
+
+  std::string response_data;
+  rv = ReadTransaction(trans.get(), &response_data);
+  EXPECT_EQ(OK, rv);
+  EXPECT_EQ("hello world", response_data);
+}
+
+// This tests the more common case than the previous test, where headers and
+// body are not merged into a single request.
+TEST_P(HttpNetworkTransactionTest, ChunkedPostReadsErrorResponseAfterReset) {
+  ScopedVector<UploadElementReader> element_readers;
+  element_readers.push_back(new UploadBytesElementReader("foo", 3));
+  UploadDataStream upload_data_stream(UploadDataStream::CHUNKED, 0);
+
+  HttpRequestInfo request;
+  request.method = "POST";
+  request.url = GURL("http://www.foo.com/");
+  request.upload_data_stream = &upload_data_stream;
+  request.load_flags = 0;
+
+  scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  scoped_ptr<HttpTransaction> trans(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+  // Send headers successfully, but get an error while sending the body.
+  MockWrite data_writes[] = {
+    MockWrite("POST / HTTP/1.1\r\n"
+              "Host: www.foo.com\r\n"
+              "Connection: keep-alive\r\n"
+              "Transfer-Encoding: chunked\r\n\r\n"),
+    MockWrite(SYNCHRONOUS, ERR_CONNECTION_RESET),
+  };
+
+  MockRead data_reads[] = {
+    MockRead("HTTP/1.0 400 Not OK\r\n\r\n"),
+    MockRead("hello world"),
+    MockRead(SYNCHRONOUS, OK),
+  };
+  StaticSocketDataProvider data(data_reads, arraysize(data_reads), data_writes,
+                                arraysize(data_writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  TestCompletionCallback callback;
+
+  int rv = trans->Start(&request, callback.callback(), BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  // Make sure the headers are sent before adding a chunk.  This ensures that
+  // they can't be merged with the body in a single send.  Not currently
+  // necessary since a chunked body is never merged with headers, but this makes
+  // the test more future proof.
+  base::RunLoop().RunUntilIdle();
+
+  upload_data_stream.AppendChunk("last chunk", 10, true);
+
+  rv = callback.WaitForResult();
+  EXPECT_EQ(OK, rv);
+
+  const HttpResponseInfo* response = trans->GetResponseInfo();
+  ASSERT_TRUE(response != NULL);
+
+  EXPECT_TRUE(response->headers.get() != NULL);
+  EXPECT_EQ("HTTP/1.0 400 Not OK", response->headers->GetStatusLine());
+
+  std::string response_data;
+  rv = ReadTransaction(trans.get(), &response_data);
+  EXPECT_EQ(OK, rv);
+  EXPECT_EQ("hello world", response_data);
+}
+
+TEST_P(HttpNetworkTransactionTest, PostReadsErrorResponseAfterResetAnd100) {
+  ScopedVector<UploadElementReader> element_readers;
+  element_readers.push_back(new UploadBytesElementReader("foo", 3));
+  UploadDataStream upload_data_stream(element_readers.Pass(), 0);
+
+  HttpRequestInfo request;
+  request.method = "POST";
+  request.url = GURL("http://www.foo.com/");
+  request.upload_data_stream = &upload_data_stream;
+  request.load_flags = 0;
+
+  scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  scoped_ptr<HttpTransaction> trans(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+
+  MockWrite data_writes[] = {
+    MockWrite("POST / HTTP/1.1\r\n"
+              "Host: www.foo.com\r\n"
+              "Connection: keep-alive\r\n"
+              "Content-Length: 3\r\n\r\n"),
+    MockWrite(SYNCHRONOUS, ERR_CONNECTION_RESET),
+  };
+
+  MockRead data_reads[] = {
+    MockRead("HTTP/1.0 100 Continue\r\n\r\n"),
+    MockRead("HTTP/1.0 400 Not OK\r\n\r\n"),
+    MockRead("hello world"),
+    MockRead(SYNCHRONOUS, OK),
+  };
+  StaticSocketDataProvider data(data_reads, arraysize(data_reads), data_writes,
+                                arraysize(data_writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  TestCompletionCallback callback;
+
+  int rv = trans->Start(&request, callback.callback(), BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+
+  rv = callback.WaitForResult();
+  EXPECT_EQ(OK, rv);
+
+  const HttpResponseInfo* response = trans->GetResponseInfo();
+  ASSERT_TRUE(response != NULL);
+
+  EXPECT_TRUE(response->headers.get() != NULL);
+  EXPECT_EQ("HTTP/1.0 400 Not OK", response->headers->GetStatusLine());
+
+  std::string response_data;
+  rv = ReadTransaction(trans.get(), &response_data);
+  EXPECT_EQ(OK, rv);
+  EXPECT_EQ("hello world", response_data);
+}
+
+TEST_P(HttpNetworkTransactionTest, PostIgnoresNonErrorResponseAfterReset) {
+  ScopedVector<UploadElementReader> element_readers;
+  element_readers.push_back(new UploadBytesElementReader("foo", 3));
+  UploadDataStream upload_data_stream(element_readers.Pass(), 0);
+
+  HttpRequestInfo request;
+  request.method = "POST";
+  request.url = GURL("http://www.foo.com/");
+  request.upload_data_stream = &upload_data_stream;
+  request.load_flags = 0;
+
+  scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  scoped_ptr<HttpTransaction> trans(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+  // Send headers successfully, but get an error while sending the body.
+  MockWrite data_writes[] = {
+    MockWrite("POST / HTTP/1.1\r\n"
+              "Host: www.foo.com\r\n"
+              "Connection: keep-alive\r\n"
+              "Content-Length: 3\r\n\r\n"),
+    MockWrite(SYNCHRONOUS, ERR_CONNECTION_RESET),
+  };
+
+  MockRead data_reads[] = {
+    MockRead("HTTP/1.0 200 Just Dandy\r\n\r\n"),
+    MockRead("hello world"),
+    MockRead(SYNCHRONOUS, OK),
+  };
+  StaticSocketDataProvider data(data_reads, arraysize(data_reads), data_writes,
+                                arraysize(data_writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  TestCompletionCallback callback;
+
+  int rv = trans->Start(&request, callback.callback(), BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+
+  rv = callback.WaitForResult();
+  EXPECT_EQ(ERR_CONNECTION_RESET, rv);
+
+  const HttpResponseInfo* response = trans->GetResponseInfo();
+  EXPECT_TRUE(response == NULL);
+}
+
+TEST_P(HttpNetworkTransactionTest,
+       PostIgnoresNonErrorResponseAfterResetAnd100) {
+  ScopedVector<UploadElementReader> element_readers;
+  element_readers.push_back(new UploadBytesElementReader("foo", 3));
+  UploadDataStream upload_data_stream(element_readers.Pass(), 0);
+
+  HttpRequestInfo request;
+  request.method = "POST";
+  request.url = GURL("http://www.foo.com/");
+  request.upload_data_stream = &upload_data_stream;
+  request.load_flags = 0;
+
+  scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  scoped_ptr<HttpTransaction> trans(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+  // Send headers successfully, but get an error while sending the body.
+  MockWrite data_writes[] = {
+    MockWrite("POST / HTTP/1.1\r\n"
+              "Host: www.foo.com\r\n"
+              "Connection: keep-alive\r\n"
+              "Content-Length: 3\r\n\r\n"),
+    MockWrite(SYNCHRONOUS, ERR_CONNECTION_RESET),
+  };
+
+  MockRead data_reads[] = {
+    MockRead("HTTP/1.0 100 Continue\r\n\r\n"),
+    MockRead("HTTP/1.0 302 Redirect\r\n"),
+    MockRead("Location: http://somewhere-else.com/\r\n"),
+    MockRead("Content-Length: 0\r\n\r\n"),
+    MockRead(SYNCHRONOUS, OK),
+  };
+  StaticSocketDataProvider data(data_reads, arraysize(data_reads), data_writes,
+                                arraysize(data_writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  TestCompletionCallback callback;
+
+  int rv = trans->Start(&request, callback.callback(), BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+
+  rv = callback.WaitForResult();
+  EXPECT_EQ(ERR_CONNECTION_RESET, rv);
+
+  const HttpResponseInfo* response = trans->GetResponseInfo();
+  EXPECT_TRUE(response == NULL);
+}
+
+TEST_P(HttpNetworkTransactionTest, PostIgnoresHttp09ResponseAfterReset) {
+  ScopedVector<UploadElementReader> element_readers;
+  element_readers.push_back(new UploadBytesElementReader("foo", 3));
+  UploadDataStream upload_data_stream(element_readers.Pass(), 0);
+
+  HttpRequestInfo request;
+  request.method = "POST";
+  request.url = GURL("http://www.foo.com/");
+  request.upload_data_stream = &upload_data_stream;
+  request.load_flags = 0;
+
+  scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  scoped_ptr<HttpTransaction> trans(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+  // Send headers successfully, but get an error while sending the body.
+  MockWrite data_writes[] = {
+    MockWrite("POST / HTTP/1.1\r\n"
+              "Host: www.foo.com\r\n"
+              "Connection: keep-alive\r\n"
+              "Content-Length: 3\r\n\r\n"),
+    MockWrite(SYNCHRONOUS, ERR_CONNECTION_RESET),
+  };
+
+  MockRead data_reads[] = {
+    MockRead("HTTP 0.9 rocks!"),
+    MockRead(SYNCHRONOUS, OK),
+  };
+  StaticSocketDataProvider data(data_reads, arraysize(data_reads), data_writes,
+                                arraysize(data_writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  TestCompletionCallback callback;
+
+  int rv = trans->Start(&request, callback.callback(), BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+
+  rv = callback.WaitForResult();
+  EXPECT_EQ(ERR_CONNECTION_RESET, rv);
+
+  const HttpResponseInfo* response = trans->GetResponseInfo();
+  EXPECT_TRUE(response == NULL);
+}
+
+TEST_P(HttpNetworkTransactionTest, PostIgnoresPartial400HeadersAfterReset) {
+  ScopedVector<UploadElementReader> element_readers;
+  element_readers.push_back(new UploadBytesElementReader("foo", 3));
+  UploadDataStream upload_data_stream(element_readers.Pass(), 0);
+
+  HttpRequestInfo request;
+  request.method = "POST";
+  request.url = GURL("http://www.foo.com/");
+  request.upload_data_stream = &upload_data_stream;
+  request.load_flags = 0;
+
+  scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  scoped_ptr<HttpTransaction> trans(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+  // Send headers successfully, but get an error while sending the body.
+  MockWrite data_writes[] = {
+    MockWrite("POST / HTTP/1.1\r\n"
+              "Host: www.foo.com\r\n"
+              "Connection: keep-alive\r\n"
+              "Content-Length: 3\r\n\r\n"),
+    MockWrite(SYNCHRONOUS, ERR_CONNECTION_RESET),
+  };
+
+  MockRead data_reads[] = {
+    MockRead("HTTP/1.0 400 Not a Full Response\r\n"),
+    MockRead(SYNCHRONOUS, OK),
+  };
+  StaticSocketDataProvider data(data_reads, arraysize(data_reads), data_writes,
+                                arraysize(data_writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  TestCompletionCallback callback;
+
+  int rv = trans->Start(&request, callback.callback(), BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+
+  rv = callback.WaitForResult();
+  EXPECT_EQ(ERR_CONNECTION_RESET, rv);
+
+  const HttpResponseInfo* response = trans->GetResponseInfo();
+  EXPECT_TRUE(response == NULL);
+}
+
 }  // namespace net

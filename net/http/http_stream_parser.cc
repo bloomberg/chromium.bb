@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "net/base/io_buffer.h"
@@ -19,12 +20,14 @@
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/ssl_client_socket.h"
 
+namespace net {
+
 namespace {
 
 const size_t kMaxMergedHeaderAndBodySize = 1400;
 const size_t kRequestBodyBufferSize = 1 << 14;  // 16KB
 
-std::string GetResponseHeaderLines(const net::HttpResponseHeaders& headers) {
+std::string GetResponseHeaderLines(const HttpResponseHeaders& headers) {
   std::string raw_headers = headers.raw_headers();
   const char* null_separated_headers = raw_headers.c_str();
   const char* header_line = null_separated_headers;
@@ -39,9 +42,8 @@ std::string GetResponseHeaderLines(const net::HttpResponseHeaders& headers) {
 
 // Return true if |headers| contain multiple |field_name| fields with different
 // values.
-bool HeadersContainMultipleCopiesOfField(
-    const net::HttpResponseHeaders& headers,
-    const std::string& field_name) {
+bool HeadersContainMultipleCopiesOfField(const HttpResponseHeaders& headers,
+                                         const std::string& field_name) {
   void* it = NULL;
   std::string field_value;
   if (!headers.EnumerateHeader(&it, field_name, &field_value))
@@ -56,11 +58,10 @@ bool HeadersContainMultipleCopiesOfField(
   return false;
 }
 
-base::Value* NetLogSendRequestBodyCallback(
-    int length,
-    bool is_chunked,
-    bool did_merge,
-    net::NetLog::LogLevel /* log_level */) {
+base::Value* NetLogSendRequestBodyCallback(int length,
+                                           bool is_chunked,
+                                           bool did_merge,
+                                           NetLog::LogLevel /* log_level */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("length", length);
   dict->SetBoolean("is_chunked", is_chunked);
@@ -68,9 +69,14 @@ base::Value* NetLogSendRequestBodyCallback(
   return dict;
 }
 
-}  // namespace
+// Returns true if |error_code| is an error for which we give the server a
+// chance to send a body containing error information, if the error was received
+// while trying to upload a request body.
+bool ShouldTryReadingOnUploadError(int error_code) {
+  return (error_code == ERR_CONNECTION_RESET);
+}
 
-namespace net {
+}  // namespace
 
 // Similar to DrainableIOBuffer(), but this version comes with its own
 // storage. The motivation is to avoid repeated allocations of
@@ -101,7 +107,7 @@ namespace net {
 // // size() == BytesRemaining() == BytesConsumed() == 0.
 // // data() points to the beginning of the buffer.
 //
-class HttpStreamParser::SeekableIOBuffer : public net::IOBuffer {
+class HttpStreamParser::SeekableIOBuffer : public IOBuffer {
  public:
   explicit SeekableIOBuffer(int capacity)
     : IOBuffer(capacity),
@@ -176,6 +182,7 @@ HttpStreamParser::HttpStreamParser(ClientSocketHandle* connection,
     : io_state_(STATE_NONE),
       request_(request),
       request_headers_(NULL),
+      request_headers_length_(0),
       read_buf_(read_buffer),
       read_buf_unused_offset_(0),
       response_header_start_offset_(-1),
@@ -187,6 +194,7 @@ HttpStreamParser::HttpStreamParser(ClientSocketHandle* connection,
       connection_(connection),
       net_log_(net_log),
       sent_last_chunk_(false),
+      upload_error_(OK),
       weak_ptr_factory_(this) {
   io_callback_ = base::Bind(&HttpStreamParser::OnIOComplete,
                             weak_ptr_factory_.GetWeakPtr());
@@ -223,6 +231,7 @@ int HttpStreamParser::SendRequest(const std::string& request_line,
   response_->socket_address = HostPortPair::FromIPEndPoint(ip_endpoint);
 
   std::string request = request_line + headers.ToString();
+  request_headers_length_ = request.size();
 
   if (request_->upload_data_stream != NULL) {
     request_body_send_buf_ = new SeekableIOBuffer(kRequestBodyBufferSize);
@@ -243,7 +252,8 @@ int HttpStreamParser::SendRequest(const std::string& request_line,
   // single write.
   bool did_merge = false;
   if (ShouldMergeRequestHeadersAndBody(request, request_->upload_data_stream)) {
-    size_t merged_size = request.size() + request_->upload_data_stream->size();
+    size_t merged_size =
+        request_headers_length_ + request_->upload_data_stream->size();
     scoped_refptr<IOBuffer> merged_request_headers_and_body(
         new IOBuffer(merged_size));
     // We'll repurpose |request_headers_| to store the merged headers and
@@ -251,8 +261,8 @@ int HttpStreamParser::SendRequest(const std::string& request_line,
     request_headers_ = new DrainableIOBuffer(
         merged_request_headers_and_body.get(), merged_size);
 
-    memcpy(request_headers_->data(), request.data(), request.size());
-    request_headers_->DidConsume(request.size());
+    memcpy(request_headers_->data(), request.data(), request_headers_length_);
+    request_headers_->DidConsume(request_headers_length_);
 
     size_t todo = request_->upload_data_stream->size();
     while (todo) {
@@ -370,10 +380,18 @@ int HttpStreamParser::DoLoop(int result) {
     io_state_ = STATE_NONE;
     switch (state) {
       case STATE_SEND_HEADERS:
-        result = DoSendHeaders(result);
+        DCHECK_EQ(OK, result);
+        result = DoSendHeaders();
+        break;
+      case STATE_SEND_HEADERS_COMPLETE:
+        result = DoSendHeadersComplete(result);
         break;
       case STATE_SEND_BODY:
-        result = DoSendBody(result);
+        DCHECK_EQ(OK, result);
+        result = DoSendBody();
+        break;
+      case STATE_SEND_BODY_COMPLETE:
+        result = DoSendBodyComplete(result);
         break;
       case STATE_SEND_REQUEST_READ_BODY_COMPLETE:
         result = DoSendRequestReadBodyComplete(result);
@@ -405,21 +423,38 @@ int HttpStreamParser::DoLoop(int result) {
   return result;
 }
 
-int HttpStreamParser::DoSendHeaders(int result) {
-  // If there was a problem writing to the socket, just return the error code.
-  if (result < 0)
-    return result;
-  request_headers_->DidConsume(result);
+int HttpStreamParser::DoSendHeaders() {
   int bytes_remaining = request_headers_->BytesRemaining();
-  if (bytes_remaining > 0) {
-    // Record our best estimate of the 'request time' as the time when we send
-    // out the first bytes of the request headers.
-    if (bytes_remaining == request_headers_->size()) {
-      response_->request_time = base::Time::Now();
+  DCHECK_GT(bytes_remaining, 0);
+
+  // Record our best estimate of the 'request time' as the time when we send
+  // out the first bytes of the request headers.
+  if (bytes_remaining == request_headers_->size())
+    response_->request_time = base::Time::Now();
+
+  io_state_ = STATE_SEND_HEADERS_COMPLETE;
+  return connection_->socket()
+      ->Write(request_headers_.get(), bytes_remaining, io_callback_);
+}
+
+int HttpStreamParser::DoSendHeadersComplete(int result) {
+  if (result < 0) {
+    // In the unlikely case that the headers and body were merged, all the
+    // the headers were sent, but not all of the body way, and |result| is
+    // an error that this should try reading after, stash the error for now and
+    // act like the request was successfully sent.
+    if (request_headers_->BytesConsumed() >= request_headers_length_ &&
+        ShouldTryReadingOnUploadError(result)) {
+      upload_error_ = result;
+      return OK;
     }
+    return result;
+  }
+
+  request_headers_->DidConsume(result);
+  if (request_headers_->BytesRemaining() > 0) {
     io_state_ = STATE_SEND_HEADERS;
-    return connection_->socket()
-        ->Write(request_headers_.get(), bytes_remaining, io_callback_);
+    return OK;
   }
 
   if (request_->upload_data_stream != NULL &&
@@ -441,16 +476,9 @@ int HttpStreamParser::DoSendHeaders(int result) {
   return OK;
 }
 
-int HttpStreamParser::DoSendBody(int result) {
-  // |result| is the number of bytes sent from the last call to
-  // DoSendBody(), 0 (i.e. OK), or negative if the last write failed.
-  if (result < 0)
-    return result;
-
-  // Send the remaining data in the request body buffer.
-  request_body_send_buf_->DidConsume(result);
+int HttpStreamParser::DoSendBody() {
   if (request_body_send_buf_->BytesRemaining() > 0) {
-    io_state_ = STATE_SEND_BODY;
+    io_state_ = STATE_SEND_BODY_COMPLETE;
     return connection_->socket()
         ->Write(request_body_send_buf_.get(),
                 request_body_send_buf_->BytesRemaining(),
@@ -467,6 +495,23 @@ int HttpStreamParser::DoSendBody(int result) {
   return request_->upload_data_stream->Read(request_body_read_buf_.get(),
                                             request_body_read_buf_->capacity(),
                                             io_callback_);
+}
+
+int HttpStreamParser::DoSendBodyComplete(int result) {
+  if (result < 0) {
+    // If |result| is an error that this should try reading after, stash the
+    // error for now and act like the request was successfully sent.
+    if (ShouldTryReadingOnUploadError(result)) {
+      upload_error_ = result;
+      return OK;
+    }
+    return result;
+  }
+
+  request_body_send_buf_->DidConsume(result);
+
+  io_state_ = STATE_SEND_BODY;
+  return OK;
 }
 
 int HttpStreamParser::DoSendRequestReadBodyComplete(int result) {
@@ -518,110 +563,50 @@ int HttpStreamParser::DoReadHeaders() {
 }
 
 int HttpStreamParser::DoReadHeadersComplete(int result) {
-  DCHECK_EQ(0, read_buf_unused_offset_);
+  result = HandleReadHeaderResult(result);
 
-  if (result == 0)
-    result = ERR_CONNECTION_CLOSED;
+  // TODO(mmenke):  The code below is ugly and hacky.  A much better and more
+  // flexible long term solution would be to separate out the read and write
+  // loops, though this would involve significant changes, both here and
+  // elsewhere (WebSockets, for instance).
 
-  if (result < 0 && result != ERR_CONNECTION_CLOSED) {
+  // If still reading the headers, or there was no error uploading the request
+  // body, just return the result.
+  if (io_state_ == STATE_READ_HEADERS || upload_error_ == OK)
+    return result;
+
+  // If the result is ERR_IO_PENDING, |io_state_| should be STATE_READ_HEADERS.
+  DCHECK_NE(ERR_IO_PENDING, result);
+
+  // On errors, use the original error received when sending the request.
+  // The main cases where these are different is when there's a header-related
+  // error code, or when there's an ERR_CONNECTION_CLOSED, which can result in
+  // special handling of partial responses and HTTP/0.9 responses.
+  if (result < 0) {
+    // Nothing else to do.  In the HTTP/0.9 or only partial headers received
+    // cases, can normally go to other states after an error reading headers.
     io_state_ = STATE_DONE;
-    return result;
-  }
-  // If we've used the connection before, then we know it is not a HTTP/0.9
-  // response and return ERR_CONNECTION_CLOSED.
-  if (result == ERR_CONNECTION_CLOSED && read_buf_->offset() == 0 &&
-      connection_->is_reused()) {
-    io_state_ = STATE_DONE;
-    return result;
+    // Don't let caller see the headers.
+    response_->headers = NULL;
+    return upload_error_;
   }
 
-  // Record our best estimate of the 'response time' as the time when we read
-  // the first bytes of the response headers.
-  if (read_buf_->offset() == 0 && result != ERR_CONNECTION_CLOSED)
-    response_->response_time = base::Time::Now();
-
-  if (result == ERR_CONNECTION_CLOSED) {
-    // The connection closed before we detected the end of the headers.
-    if (read_buf_->offset() == 0) {
-      // The connection was closed before any data was sent. Likely an error
-      // rather than empty HTTP/0.9 response.
-      io_state_ = STATE_DONE;
-      return ERR_EMPTY_RESPONSE;
-    } else if (request_->url.SchemeIsSecure()) {
-      // The connection was closed in the middle of the headers. For HTTPS we
-      // don't parse partial headers. Return a different error code so that we
-      // know that we shouldn't attempt to retry the request.
-      io_state_ = STATE_DONE;
-      return ERR_RESPONSE_HEADERS_TRUNCATED;
-    }
-    // Parse things as well as we can and let the caller decide what to do.
-    int end_offset;
-    if (response_header_start_offset_ >= 0) {
-      io_state_ = STATE_READ_BODY_COMPLETE;
-      end_offset = read_buf_->offset();
-    } else {
-      // Now waiting for the body to be read.
-      end_offset = 0;
-    }
-    int rv = DoParseResponseHeaders(end_offset);
-    if (rv < 0)
-      return rv;
+  // Skip over 1xx responses as usual, and allow 4xx/5xx error responses to
+  // override the error received while uploading the body.
+  int response_code_class = response_->headers->response_code() / 100;
+  if (response_code_class == 1 || response_code_class == 4 ||
+      response_code_class == 5) {
     return result;
   }
 
-  read_buf_->set_offset(read_buf_->offset() + result);
-  DCHECK_LE(read_buf_->offset(), read_buf_->capacity());
-  DCHECK_GE(result,  0);
+  // All other status codes are not allowed after an error during upload, to
+  // make sure the consumer has some indication there was an error.
 
-  int end_of_header_offset = ParseResponseHeaders();
-
-  // Note: -1 is special, it indicates we haven't found the end of headers.
-  // Anything less than -1 is a net::Error, so we bail out.
-  if (end_of_header_offset < -1)
-    return end_of_header_offset;
-
-  if (end_of_header_offset == -1) {
-    io_state_ = STATE_READ_HEADERS;
-    // Prevent growing the headers buffer indefinitely.
-    if (read_buf_->offset() >= kMaxHeaderBufSize) {
-      io_state_ = STATE_DONE;
-      return ERR_RESPONSE_HEADERS_TOO_BIG;
-    }
-  } else {
-    CalculateResponseBodySize();
-    // If the body is zero length, the caller may not call ReadResponseBody,
-    // which is where any extra data is copied to read_buf_, so we move the
-    // data here.
-    if (response_body_length_ == 0) {
-      int extra_bytes = read_buf_->offset() - end_of_header_offset;
-      if (extra_bytes) {
-        CHECK_GT(extra_bytes, 0);
-        memmove(read_buf_->StartOfBuffer(),
-                read_buf_->StartOfBuffer() + end_of_header_offset,
-                extra_bytes);
-      }
-      read_buf_->SetCapacity(extra_bytes);
-      if (response_->headers->response_code() / 100 == 1) {
-        // After processing a 1xx response, the caller will ask for the next
-        // header, so reset state to support that. We don't completely ignore a
-        // 1xx response because it cannot be returned in reply to a CONNECT
-        // request so we return OK here, which lets the caller inspect the
-        // response and reject it in the event that we're setting up a CONNECT
-        // tunnel.
-        response_header_start_offset_ = -1;
-        response_body_length_ = -1;
-        // Now waiting for the second set of headers to be read.
-      } else {
-        io_state_ = STATE_DONE;
-      }
-      return OK;
-    }
-
-    // Note where the headers stop.
-    read_buf_unused_offset_ = end_of_header_offset;
-    // Now waiting for the body to be read.
-  }
-  return result;
+  // Nothing else to do.
+  io_state_ = STATE_DONE;
+  // Don't let caller see the headers.
+  response_->headers = NULL;
+  return upload_error_;
 }
 
 int HttpStreamParser::DoReadBody() {
@@ -755,6 +740,113 @@ int HttpStreamParser::DoReadBodyComplete(int result) {
     user_read_buf_len_ = 0;
   }
 
+  return result;
+}
+
+int HttpStreamParser::HandleReadHeaderResult(int result) {
+  DCHECK_EQ(0, read_buf_unused_offset_);
+
+  if (result == 0)
+    result = ERR_CONNECTION_CLOSED;
+
+  if (result < 0 && result != ERR_CONNECTION_CLOSED) {
+    io_state_ = STATE_DONE;
+    return result;
+  }
+  // If we've used the connection before, then we know it is not a HTTP/0.9
+  // response and return ERR_CONNECTION_CLOSED.
+  if (result == ERR_CONNECTION_CLOSED && read_buf_->offset() == 0 &&
+      connection_->is_reused()) {
+    io_state_ = STATE_DONE;
+    return result;
+  }
+
+  // Record our best estimate of the 'response time' as the time when we read
+  // the first bytes of the response headers.
+  if (read_buf_->offset() == 0 && result != ERR_CONNECTION_CLOSED)
+    response_->response_time = base::Time::Now();
+
+  if (result == ERR_CONNECTION_CLOSED) {
+    // The connection closed before we detected the end of the headers.
+    if (read_buf_->offset() == 0) {
+      // The connection was closed before any data was sent. Likely an error
+      // rather than empty HTTP/0.9 response.
+      io_state_ = STATE_DONE;
+      return ERR_EMPTY_RESPONSE;
+    } else if (request_->url.SchemeIsSecure()) {
+      // The connection was closed in the middle of the headers. For HTTPS we
+      // don't parse partial headers. Return a different error code so that we
+      // know that we shouldn't attempt to retry the request.
+      io_state_ = STATE_DONE;
+      return ERR_RESPONSE_HEADERS_TRUNCATED;
+    }
+    // Parse things as well as we can and let the caller decide what to do.
+    int end_offset;
+    if (response_header_start_offset_ >= 0) {
+      io_state_ = STATE_READ_BODY_COMPLETE;
+      end_offset = read_buf_->offset();
+    } else {
+      // Now waiting for the body to be read.
+      end_offset = 0;
+    }
+    int rv = DoParseResponseHeaders(end_offset);
+    if (rv < 0)
+      return rv;
+    return result;
+  }
+
+  read_buf_->set_offset(read_buf_->offset() + result);
+  DCHECK_LE(read_buf_->offset(), read_buf_->capacity());
+  DCHECK_GE(result,  0);
+
+  int end_of_header_offset = ParseResponseHeaders();
+
+  // Note: -1 is special, it indicates we haven't found the end of headers.
+  // Anything less than -1 is a net::Error, so we bail out.
+  if (end_of_header_offset < -1)
+    return end_of_header_offset;
+
+  if (end_of_header_offset == -1) {
+    io_state_ = STATE_READ_HEADERS;
+    // Prevent growing the headers buffer indefinitely.
+    if (read_buf_->offset() >= kMaxHeaderBufSize) {
+      io_state_ = STATE_DONE;
+      return ERR_RESPONSE_HEADERS_TOO_BIG;
+    }
+  } else {
+    CalculateResponseBodySize();
+    // If the body is zero length, the caller may not call ReadResponseBody,
+    // which is where any extra data is copied to read_buf_, so we move the
+    // data here.
+    if (response_body_length_ == 0) {
+      int extra_bytes = read_buf_->offset() - end_of_header_offset;
+      if (extra_bytes) {
+        CHECK_GT(extra_bytes, 0);
+        memmove(read_buf_->StartOfBuffer(),
+                read_buf_->StartOfBuffer() + end_of_header_offset,
+                extra_bytes);
+      }
+      read_buf_->SetCapacity(extra_bytes);
+      if (response_->headers->response_code() / 100 == 1) {
+        // After processing a 1xx response, the caller will ask for the next
+        // header, so reset state to support that. We don't completely ignore a
+        // 1xx response because it cannot be returned in reply to a CONNECT
+        // request so we return OK here, which lets the caller inspect the
+        // response and reject it in the event that we're setting up a CONNECT
+        // tunnel.
+        response_header_start_offset_ = -1;
+        response_body_length_ = -1;
+        // Now waiting for the second set of headers to be read.
+      } else {
+        io_state_ = STATE_DONE;
+      }
+      return OK;
+    }
+
+    // Note where the headers stop.
+    read_buf_unused_offset_ = end_of_header_offset;
+    // Now waiting for the body to be read.
+  }
   return result;
 }
 
