@@ -219,7 +219,7 @@ def libpci3_make_install(parsed_arguments, environment, install_prefix):
   run_shell_commands([
       'cp %s/* %s/ -rd' % (destdir, install_prefix),
       'install -m 644 lib/libpci.so* %s/lib/' % install_prefix,
-      'ln -s libpci.so.3.1.8 %s/lib/libpci.so.3' % install_prefix],
+      'ln -sf libpci.so.3.1.8 %s/lib/libpci.so.3' % install_prefix],
                      parsed_arguments.verbose, environment)
 
 
