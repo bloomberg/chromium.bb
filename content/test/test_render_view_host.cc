@@ -308,7 +308,7 @@ void TestRenderViewHost::SendNavigateWithParameters(
 
   main_render_frame_host_->SendNavigateWithParameters(
       page_id, url, transition, original_request_url, response_code,
-      file_path_for_history_item);
+      file_path_for_history_item, std::vector<GURL>());
 }
 
 void TestRenderViewHost::SendBeforeUnloadACK(bool proceed) {

@@ -84,6 +84,10 @@ TEST_F(ProtoValueConversionsTest, TabNavigationToValue) {
   TestSpecificsToValue(TabNavigationToValue);
 }
 
+TEST_F(ProtoValueConversionsTest, NavigationRedirectToValue) {
+  TestSpecificsToValue(NavigationRedirectToValue);
+}
+
 TEST_F(ProtoValueConversionsTest, PasswordSpecificsData) {
   sync_pb::PasswordSpecificsData specifics;
   specifics.set_password_value("secret");

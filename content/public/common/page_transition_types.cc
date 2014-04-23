@@ -47,6 +47,11 @@ bool PageTransitionIsRedirect(PageTransition type) {
   return (type & PAGE_TRANSITION_IS_REDIRECT_MASK) != 0;
 }
 
+bool PageTransitionIsNewNavigation(PageTransition type) {
+  return (type & PAGE_TRANSITION_FORWARD_BACK) == 0 &&
+      !PageTransitionCoreTypeIs(type, content::PAGE_TRANSITION_RELOAD);
+}
+
 int32 PageTransitionGetQualifier(PageTransition type) {
   return type & PAGE_TRANSITION_QUALIFIER_MASK;
 }

@@ -122,6 +122,7 @@ class SESSIONS_EXPORT SerializedNavigationEntry {
       const std::set<std::string>& content_pack_categories) {
     content_pack_categories_ = content_pack_categories;
   }
+  const std::vector<GURL>& redirect_chain() const { return redirect_chain_; }
 
   // Converts a set of SerializedNavigationEntrys into a list of
   // NavigationEntrys with sequential page IDs and the given context. The caller
@@ -156,6 +157,7 @@ class SESSIONS_EXPORT SerializedNavigationEntry {
   GURL favicon_url_;
   int http_status_code_;
   bool is_restored_;    // Not persisted.
+  std::vector<GURL> redirect_chain_;  // Not persisted.
 
   // Additional information.
   BlockedState blocked_state_;

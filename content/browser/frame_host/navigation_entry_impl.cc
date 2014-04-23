@@ -289,6 +289,15 @@ int NavigationEntryImpl::GetHttpStatusCode() const {
   return http_status_code_;
 }
 
+void NavigationEntryImpl::SetRedirectChain(
+    const std::vector<GURL>& redirect_chain) {
+  redirect_chain_ = redirect_chain;
+}
+
+const std::vector<GURL>& NavigationEntryImpl::GetRedirectChain() const {
+  return redirect_chain_;
+}
+
 bool NavigationEntryImpl::IsRestored() const {
   return restore_type_ != RESTORE_NONE;
 }
@@ -335,7 +344,7 @@ void NavigationEntryImpl::ResetForCommit() {
   set_is_renderer_initiated(false);
   set_transferred_global_request_id(GlobalRequestID());
   set_should_replace_entry(false);
-  redirect_chain_.clear();
+
   set_should_clear_history_list(false);
   set_frame_tree_node_id(-1);
 }

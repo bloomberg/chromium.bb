@@ -86,6 +86,8 @@ class CONTENT_EXPORT NavigationEntryImpl
   virtual void ClearExtraData(const std::string& key) OVERRIDE;
   virtual void SetHttpStatusCode(int http_status_code) OVERRIDE;
   virtual int GetHttpStatusCode() const OVERRIDE;
+  virtual void SetRedirectChain(const std::vector<GURL>& redirects) OVERRIDE;
+  virtual const std::vector<GURL>& GetRedirectChain() const OVERRIDE;
   virtual bool IsRestored() const OVERRIDE;
 
   // Once a navigation entry is committed, we should no longer track several
@@ -191,16 +193,6 @@ class CONTENT_EXPORT NavigationEntryImpl
 
   void set_should_replace_entry(bool should_replace_entry) {
     should_replace_entry_ = should_replace_entry;
-  }
-
-  // Any redirects present in a pending entry when it is transferred from one
-  // process to another.  Not valid after commit.
-  const std::vector<GURL>& redirect_chain() const {
-    return redirect_chain_;
-  }
-
-  void set_redirect_chain(const std::vector<GURL>& redirect_chain) {
-    redirect_chain_ = redirect_chain;
   }
 
   void SetScreenshotPNGData(scoped_refptr<base::RefCountedBytes> png_data);
@@ -315,7 +307,8 @@ class CONTENT_EXPORT NavigationEntryImpl
   bool should_replace_entry_;
 
   // This is used when transferring a pending entry from one process to another.
-  // It is cleared in |ResetForCommit| and should not be persisted.
+  // We also send this data through session sync for offline analysis.
+  // It is preserved after commit but should not be persisted.
   std::vector<GURL> redirect_chain_;
 
   // This is set to true when this entry's navigation should clear the session

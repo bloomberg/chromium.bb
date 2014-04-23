@@ -57,8 +57,8 @@ void TestRenderFrameHost::SendNavigateWithTransitionAndResponseCode(
   // so we keep a copy of it to use in SendNavigateWithParameters.
   GURL url_copy(url);
   OnDidStartProvisionalLoadForFrame(-1, url_copy);
-  SendNavigateWithParameters(
-      page_id, url_copy, transition, url_copy, response_code, 0);
+  SendNavigateWithParameters(page_id, url_copy, transition, url_copy,
+      response_code, 0, std::vector<GURL>());
 }
 
 void TestRenderFrameHost::SendNavigateWithOriginalRequestURL(
@@ -66,16 +66,16 @@ void TestRenderFrameHost::SendNavigateWithOriginalRequestURL(
     const GURL& url,
     const GURL& original_request_url) {
   OnDidStartProvisionalLoadForFrame(-1, url);
-  SendNavigateWithParameters(
-      page_id, url, PAGE_TRANSITION_LINK, original_request_url, 200, 0);
+  SendNavigateWithParameters(page_id, url, PAGE_TRANSITION_LINK,
+      original_request_url, 200, 0, std::vector<GURL>());
 }
 
 void TestRenderFrameHost::SendNavigateWithFile(
     int page_id,
     const GURL& url,
     const base::FilePath& file_path) {
-  SendNavigateWithParameters(
-      page_id, url, PAGE_TRANSITION_LINK, url, 200, &file_path);
+  SendNavigateWithParameters(page_id, url, PAGE_TRANSITION_LINK, url, 200,
+      &file_path, std::vector<GURL>());
 }
 
 void TestRenderFrameHost::SendNavigateWithParams(
@@ -84,19 +84,28 @@ void TestRenderFrameHost::SendNavigateWithParams(
   OnNavigate(msg);
 }
 
+void TestRenderFrameHost::SendNavigateWithRedirects(
+    int page_id,
+    const GURL& url,
+    const std::vector<GURL>& redirects) {
+  SendNavigateWithParameters(
+      page_id, url, PAGE_TRANSITION_LINK, url, 200, 0, redirects);
+}
+
 void TestRenderFrameHost::SendNavigateWithParameters(
     int page_id,
     const GURL& url,
     PageTransition transition,
     const GURL& original_request_url,
     int response_code,
-    const base::FilePath* file_path_for_history_item) {
+    const base::FilePath* file_path_for_history_item,
+    const std::vector<GURL>& redirects) {
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.page_id = page_id;
   params.url = url;
   params.referrer = Referrer();
   params.transition = transition;
-  params.redirects = std::vector<GURL>();
+  params.redirects = redirects;
   params.should_update_history = true;
   params.searchable_form_url = GURL();
   params.searchable_form_encoding = std::string();

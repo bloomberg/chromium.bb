@@ -49,6 +49,9 @@ const base::Time kTimestamp = syncer::ProtoTimeToTime(100);
 const base::string16 kSearchTerms = base::ASCIIToUTF16("my search terms");
 const GURL kFaviconURL("http://virtual-url.com/favicon.ico");
 const int kHttpStatusCode = 404;
+const GURL kRedirectURL0("http://go/redirect0");
+const GURL kRedirectURL1("http://go/redirect1");
+const GURL kOtherURL("http://other.com");
 
 const int kPageID = 10;
 
@@ -70,6 +73,11 @@ scoped_ptr<content::NavigationEntry> MakeNavigationEntryForTest() {
   navigation_entry->GetFavicon().valid = true;
   navigation_entry->GetFavicon().url = kFaviconURL;
   navigation_entry->SetHttpStatusCode(kHttpStatusCode);
+  std::vector<GURL> redirect_chain;
+  redirect_chain.push_back(kRedirectURL0);
+  redirect_chain.push_back(kRedirectURL1);
+  redirect_chain.push_back(kVirtualURL);
+  navigation_entry->SetRedirectChain(redirect_chain);
   return navigation_entry.Pass();
 }
 
@@ -90,6 +98,7 @@ sync_pb::TabNavigation MakeSyncDataForTest() {
   sync_data.set_search_terms(base::UTF16ToUTF8(kSearchTerms));
   sync_data.set_favicon_url(kFaviconURL.spec());
   sync_data.set_http_status_code(kHttpStatusCode);
+  // The redirect chain only syncs one way.
   return sync_data;
 }
 
@@ -113,6 +122,7 @@ TEST(SerializedNavigationEntryTest, DefaultInitializer) {
   EXPECT_TRUE(navigation.search_terms().empty());
   EXPECT_FALSE(navigation.favicon_url().is_valid());
   EXPECT_EQ(0, navigation.http_status_code());
+  EXPECT_EQ(0U, navigation.redirect_chain().size());
 }
 
 // Create a SerializedNavigationEntry from a NavigationEntry.  All its fields
@@ -140,6 +150,10 @@ TEST(SerializedNavigationEntryTest, FromNavigationEntry) {
   EXPECT_EQ(kTimestamp, navigation.timestamp());
   EXPECT_EQ(kFaviconURL, navigation.favicon_url());
   EXPECT_EQ(kHttpStatusCode, navigation.http_status_code());
+  ASSERT_EQ(3U, navigation.redirect_chain().size());
+  EXPECT_EQ(kRedirectURL0, navigation.redirect_chain()[0]);
+  EXPECT_EQ(kRedirectURL1, navigation.redirect_chain()[1]);
+  EXPECT_EQ(kVirtualURL, navigation.redirect_chain()[2]);
 }
 
 // Create a SerializedNavigationEntry from a sync_pb::TabNavigation.  All its
@@ -167,6 +181,7 @@ TEST(SerializedNavigationEntryTest, FromSyncData) {
   EXPECT_EQ(kSearchTerms, navigation.search_terms());
   EXPECT_EQ(kFaviconURL, navigation.favicon_url());
   EXPECT_EQ(kHttpStatusCode, navigation.http_status_code());
+  // The redirect chain only syncs one way.
 }
 
 // Create a SerializedNavigationEntry, pickle it, then create another one by
@@ -200,6 +215,7 @@ TEST(SerializedNavigationEntryTest, Pickle) {
   EXPECT_EQ(kTimestamp, new_navigation.timestamp());
   EXPECT_EQ(kSearchTerms, new_navigation.search_terms());
   EXPECT_EQ(kHttpStatusCode, new_navigation.http_status_code());
+  EXPECT_EQ(0U, new_navigation.redirect_chain().size());
 }
 
 // Create a NavigationEntry, then create another one by converting to
@@ -235,6 +251,10 @@ TEST(SerializedNavigationEntryTest, ToNavigationEntry) {
   new_navigation_entry->GetExtraData(kSearchTermsKey, &search_terms);
   EXPECT_EQ(kSearchTerms, search_terms);
   EXPECT_EQ(kHttpStatusCode, new_navigation_entry->GetHttpStatusCode());
+  ASSERT_EQ(3U, new_navigation_entry->GetRedirectChain().size());
+  EXPECT_EQ(kRedirectURL0, new_navigation_entry->GetRedirectChain()[0]);
+  EXPECT_EQ(kRedirectURL1, new_navigation_entry->GetRedirectChain()[1]);
+  EXPECT_EQ(kVirtualURL, new_navigation_entry->GetRedirectChain()[2]);
 }
 
 // Create a NavigationEntry, convert it to a SerializedNavigationEntry, then
@@ -261,6 +281,41 @@ TEST(SerializedNavigationEntryTest, ToSyncData) {
   EXPECT_EQ(kTimestamp.ToInternalValue(), sync_data.global_id());
   EXPECT_EQ(kFaviconURL.spec(), sync_data.favicon_url());
   EXPECT_EQ(kHttpStatusCode, sync_data.http_status_code());
+  // The proto navigation redirects don't include the final chain entry
+  // (because it didn't redirect) so the lengths should differ by 1.
+  ASSERT_EQ(3, sync_data.navigation_redirect_size() + 1);
+  EXPECT_EQ(navigation_entry->GetRedirectChain()[0].spec(),
+            sync_data.navigation_redirect(0).url());
+  EXPECT_EQ(navigation_entry->GetRedirectChain()[1].spec(),
+            sync_data.navigation_redirect(1).url());
+  EXPECT_FALSE(sync_data.has_last_navigation_redirect_url());
+}
+
+// Test that the last_navigation_redirect_url is set when needed.
+// This test is just like the above, but with a different virtual_url.
+// Create a NavigationEntry, convert it to a SerializedNavigationEntry, then
+// create a sync protocol buffer from it.  The protocol buffer should
+// have a last_navigation_redirect_url.
+TEST(SerializedNavigationEntryTest, LastNavigationRedirectUrl) {
+  const scoped_ptr<content::NavigationEntry> navigation_entry(
+      MakeNavigationEntryForTest());
+
+  navigation_entry->SetVirtualURL(kOtherURL);
+
+  const SerializedNavigationEntry& navigation =
+      SerializedNavigationEntry::FromNavigationEntry(kIndex, *navigation_entry);
+
+  const sync_pb::TabNavigation sync_data = navigation.ToSyncData();
+
+  EXPECT_TRUE(sync_data.has_last_navigation_redirect_url());
+  EXPECT_EQ(kVirtualURL.spec(), sync_data.last_navigation_redirect_url());
+
+  // The redirect chain should be the same as in the above test.
+  ASSERT_EQ(3, sync_data.navigation_redirect_size() + 1);
+  EXPECT_EQ(navigation_entry->GetRedirectChain()[0].spec(),
+            sync_data.navigation_redirect(0).url());
+  EXPECT_EQ(navigation_entry->GetRedirectChain()[1].spec(),
+            sync_data.navigation_redirect(1).url());
 }
 
 // Ensure all transition types and qualifiers are converted to/from the sync

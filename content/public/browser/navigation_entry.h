@@ -210,6 +210,11 @@ class NavigationEntry {
   virtual void SetHttpStatusCode(int http_status_code) = 0;
   virtual int GetHttpStatusCode() const = 0;
 
+  // The redirect chain traversed during this navigation, from the initial
+  // redirecting URL to the final non-redirecting current URL.
+  virtual void SetRedirectChain(const std::vector<GURL>& redirects) = 0;
+  virtual const std::vector<GURL>& GetRedirectChain() const = 0;
+
   // True if this entry is restored and hasn't been loaded.
   virtual bool IsRestored() const = 0;
 };

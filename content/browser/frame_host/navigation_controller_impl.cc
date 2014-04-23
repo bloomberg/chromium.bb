@@ -701,7 +701,7 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
   if (params.frame_tree_node_id != -1)
     entry->set_frame_tree_node_id(params.frame_tree_node_id);
   if (params.redirect_chain.size() > 0)
-    entry->set_redirect_chain(params.redirect_chain);
+    entry->SetRedirectChain(params.redirect_chain);
   if (params.should_replace_current_entry)
     entry->set_should_replace_entry(true);
   entry->set_should_clear_history_list(params.should_clear_history_list);
@@ -822,6 +822,7 @@ bool NavigationControllerImpl::RendererDidNavigate(
   active_entry->SetTimestamp(timestamp);
   active_entry->SetHttpStatusCode(params.http_status_code);
   active_entry->SetPageState(params.page_state);
+  active_entry->SetRedirectChain(params.redirects);
 
   // Once it is committed, we no longer need to track several pieces of state on
   // the entry.

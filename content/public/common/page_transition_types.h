@@ -38,6 +38,10 @@ CONTENT_EXPORT bool PageTransitionIsMainFrame(PageTransition type);
 // Returns whether a transition involves a redirection
 CONTENT_EXPORT bool PageTransitionIsRedirect(PageTransition type);
 
+// Returns whether a transition is a new navigation (rather than a return
+// to a previously committed navigation).
+CONTENT_EXPORT bool PageTransitionIsNewNavigation(PageTransition type);
+
 // Return the qualifier
 CONTENT_EXPORT int32 PageTransitionGetQualifier(PageTransition type);
 

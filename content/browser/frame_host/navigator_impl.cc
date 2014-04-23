@@ -108,7 +108,13 @@ void MakeNavigateParams(const NavigationEntryImpl& entry,
             entry.GetBrowserInitiatedPostData()->size());
   }
 
-  params->redirects = entry.redirect_chain();
+  // Set the redirect chain to the navigation's redirects, unless we are
+  // returning to a completed navigation (whose previous redirects don't apply).
+  if (PageTransitionIsNewNavigation(params->transition)) {
+    params->redirects = entry.GetRedirectChain();
+  } else {
+    params->redirects.clear();
+  }
 
   params->can_load_local_resources = entry.GetCanLoadLocalResources();
   params->frame_to_navigate = entry.GetFrameToNavigate();
@@ -169,7 +175,7 @@ void NavigatorImpl::DidStartProvisionalLoad(
         entry->set_transferred_global_request_id(
             pending_entry->transferred_global_request_id());
         entry->set_should_replace_entry(pending_entry->should_replace_entry());
-        entry->set_redirect_chain(pending_entry->redirect_chain());
+        entry->SetRedirectChain(pending_entry->GetRedirectChain());
       }
       controller_->SetPendingEntry(entry);
       if (delegate_)

@@ -5,6 +5,8 @@
 #ifndef CONTENT_TEST_TEST_RENDER_FRAME_HOST_H_
 #define CONTENT_TEST_TEST_RENDER_FRAME_HOST_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/common/page_transition_types.h"
@@ -43,13 +45,18 @@ class TestRenderFrameHost : public RenderFrameHostImpl {
       const base::FilePath& file_path);
   void SendNavigateWithParams(
       FrameHostMsg_DidCommitProvisionalLoad_Params* params);
+  void SendNavigateWithRedirects(
+      int page_id,
+      const GURL& url,
+      const std::vector<GURL>& redirects);
   void SendNavigateWithParameters(
       int page_id,
       const GURL& url,
       PageTransition transition,
       const GURL& original_request_url,
       int response_code,
-      const base::FilePath* file_path_for_history_item);
+      const base::FilePath* file_path_for_history_item,
+      const std::vector<GURL>& redirects);
 
   void set_contents_mime_type(const std::string& mime_type) {
     contents_mime_type_ = mime_type;

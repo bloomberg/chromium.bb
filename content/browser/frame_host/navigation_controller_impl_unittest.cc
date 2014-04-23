@@ -1320,13 +1320,11 @@ TEST_F(NavigationControllerTest, ResetEntryValuesAfterCommit) {
   pending_entry->set_is_renderer_initiated(true);
   pending_entry->set_transferred_global_request_id(transfer_id);
   pending_entry->set_should_replace_entry(true);
-  pending_entry->set_redirect_chain(redirects);
   pending_entry->set_should_clear_history_list(true);
   EXPECT_EQ(post_data.get(), pending_entry->GetBrowserInitiatedPostData());
   EXPECT_TRUE(pending_entry->is_renderer_initiated());
   EXPECT_EQ(transfer_id, pending_entry->transferred_global_request_id());
   EXPECT_TRUE(pending_entry->should_replace_entry());
-  EXPECT_EQ(1U, pending_entry->redirect_chain().size());
   EXPECT_TRUE(pending_entry->should_clear_history_list());
 
   main_test_rfh()->SendNavigate(0, url1);
@@ -1341,8 +1339,33 @@ TEST_F(NavigationControllerTest, ResetEntryValuesAfterCommit) {
   EXPECT_EQ(GlobalRequestID(-1, -1),
             committed_entry->transferred_global_request_id());
   EXPECT_FALSE(committed_entry->should_replace_entry());
-  EXPECT_EQ(0U, committed_entry->redirect_chain().size());
   EXPECT_FALSE(committed_entry->should_clear_history_list());
+}
+
+// Test that Redirects are preserved after a commit.
+TEST_F(NavigationControllerTest, RedirectsAreNotResetByCommit) {
+  NavigationControllerImpl& controller = controller_impl();
+  const GURL url1("http://foo1");
+  controller.LoadURL(url1, Referrer(), PAGE_TRANSITION_TYPED, std::string());
+
+  // Set up some redirect values.
+  std::vector<GURL> redirects;
+  redirects.push_back(GURL("http://foo2"));
+
+  // Set redirects on the pending entry.
+  NavigationEntryImpl* pending_entry =
+      NavigationEntryImpl::FromNavigationEntry(controller.GetPendingEntry());
+  pending_entry->SetRedirectChain(redirects);
+  EXPECT_EQ(1U, pending_entry->GetRedirectChain().size());
+  EXPECT_EQ(GURL("http://foo2"), pending_entry->GetRedirectChain()[0]);
+
+  // Normal navigation will preserve redirects in the committed entry.
+  main_test_rfh()->SendNavigateWithRedirects(0, url1, redirects);
+  NavigationEntryImpl* committed_entry =
+      NavigationEntryImpl::FromNavigationEntry(
+          controller.GetLastCommittedEntry());
+  ASSERT_EQ(1U, committed_entry->GetRedirectChain().size());
+  EXPECT_EQ(GURL("http://foo2"), committed_entry->GetRedirectChain()[0]);
 }
 
 // Tests what happens when we navigate back successfully
