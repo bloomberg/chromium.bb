@@ -9846,6 +9846,9 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         <message name="IDS_OPTIONS_TAB_TITLE" desc="The format of the title on the browser tab for an options subpage, e.g. Settings - Basics">
           <ph name="OPTIONS_TITLE">$1<ex>Settings</ex></ph> - <ph name="SUBPAGE_TITLE">$2<ex>Under the Hood</ex></ph>
         </message>
+        <message name="IDS_OPTIONS_DELETABLE_ITEM_DELETE_BUTTON" desc="The label of the button to delete an item in a list">
+          Delete this item
+        </message>
         <message name="IDS_OPTIONS_STARTUP_GROUP_NAME" desc="The title of the startup group">
           On startup
         </message>

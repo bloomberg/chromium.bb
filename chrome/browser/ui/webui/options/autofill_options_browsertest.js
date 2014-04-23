@@ -35,16 +35,11 @@ AutofillEditAddressWebUITest.prototype = {
 
   /**
    * Browse to autofill edit address overlay.
-   **/
+   */
   browsePreload: 'chrome://settings-frame/autofillEditAddress',
 
-  /** @inheritDoc  */
+  /** @override  */
   isAsync: true,
-
-  /**
-   * TODO(tkent): Fix an accessibility error.
-   */
-  runAccessibilityChecks: false,
 };
 
 TEST_F('AutofillEditAddressWebUITest',

@@ -143,6 +143,8 @@ void CoreOptionsHandler::GetStaticLocalizedValues(
       l10n_util::GetStringUTF16(IDS_CLOSE));
   localized_strings->SetString("done",
       l10n_util::GetStringUTF16(IDS_DONE));
+  localized_strings->SetString("deletableItemDeleteButtonTitle",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_DELETABLE_ITEM_DELETE_BUTTON));
 }
 
 void CoreOptionsHandler::Uninitialize() {
