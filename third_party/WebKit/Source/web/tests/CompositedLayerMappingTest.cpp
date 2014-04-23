@@ -49,23 +49,6 @@ namespace WebCore {
 
 namespace {
 
-class MockWebViewClient : public WebViewClient {
-public:
-    virtual void initializeLayerTreeView()
-    {
-        m_layerTreeView = adoptPtr(Platform::current()->unitTestSupport()->createLayerTreeViewForTesting(WebUnitTestSupport::TestViewTypeUnitTest));
-        ASSERT(m_layerTreeView);
-    }
-
-    virtual WebLayerTreeView* layerTreeView()
-    {
-        return m_layerTreeView.get();
-    }
-
-private:
-    OwnPtr<WebLayerTreeView> m_layerTreeView;
-};
-
 class MockWebFrameClient : public WebFrameClient {
 };
 
@@ -108,7 +91,7 @@ public:
 protected:
     std::string m_baseURL;
     MockWebFrameClient m_mockWebFrameClient;
-    MockWebViewClient m_mockWebViewClient;
+    FrameTestHelpers::TestWebViewClient m_mockWebViewClient;
     WebViewImpl* m_webViewImpl;
     WebFrame* m_mainFrame;
 };
