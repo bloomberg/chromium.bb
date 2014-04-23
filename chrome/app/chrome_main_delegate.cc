@@ -39,7 +39,6 @@
 #include "ui/base/ui_base_switches.h"
 
 #if defined(OS_WIN)
-#include <atlbase.h>
 #include <malloc.h>
 #include <algorithm>
 #include "base/strings/string_util.h"
