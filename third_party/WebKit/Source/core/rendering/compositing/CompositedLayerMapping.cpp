@@ -1411,9 +1411,6 @@ static void updateScrollParentForGraphicsLayer(GraphicsLayer* layer, GraphicsLay
 
 void CompositedLayerMapping::updateScrollParent(RenderLayer* scrollParent)
 {
-    if (!scrollParent && m_squashedLayers.size() && compositor()->acceleratedCompositingForOverflowScrollEnabled())
-        scrollParent = m_squashedLayers[0].renderLayer->scrollParent();
-
     if (ScrollingCoordinator* scrollingCoordinator = scrollingCoordinatorFromLayer(m_owningLayer)) {
         GraphicsLayer* topmostLayer = childForSuperlayers();
         updateScrollParentForGraphicsLayer(m_squashingContainmentLayer.get(), topmostLayer, scrollParent, scrollingCoordinator);
