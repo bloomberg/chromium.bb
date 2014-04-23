@@ -72,6 +72,7 @@
         'browser/extensions/updater/extension_cache_fake.cc',
         'browser/extensions/window_open_interactive_apitest.cc',
         'browser/mouseleave_browsertest.cc',
+        'browser/notifications/notification_browsertest.cc',
         'browser/password_manager/password_generation_interactive_uitest.cc',
         'browser/renderer_context_menu/render_view_context_menu_browsertest_util.cc',
         'browser/renderer_context_menu/render_view_context_menu_browsertest_util.h',
@@ -288,6 +289,7 @@
           ],
           'sources!': [
             # chromeos does not use cross-platform panels
+            'browser/notifications/notification_browsertest.cc',
             'browser/ui/panels/detached_panel_browsertest.cc',
             'browser/ui/panels/docked_panel_browsertest.cc',
             'browser/ui/panels/panel_browsertest.cc',
