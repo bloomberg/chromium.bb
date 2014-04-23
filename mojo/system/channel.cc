@@ -40,7 +40,8 @@ Channel::EndpointInfo::~EndpointInfo() {
 }
 
 Channel::Channel()
-    : next_local_id_(kBootstrapEndpointId) {
+    : is_running_(false),
+      next_local_id_(kBootstrapEndpointId) {
 }
 
 bool Channel::Init(scoped_ptr<RawChannel> raw_channel) {
@@ -57,30 +58,32 @@ bool Channel::Init(scoped_ptr<RawChannel> raw_channel) {
     return false;
   }
 
+  is_running_ = true;
   return true;
 }
 
 void Channel::Shutdown() {
   DCHECK(creation_thread_checker_.CalledOnValidThread());
 
-  IdToEndpointInfoMap local_id_to_endpoint_info_map;
+  IdToEndpointInfoMap to_destroy;
   {
     base::AutoLock locker(lock_);
     if (!is_running_no_lock())
       return;
 
+    // Note: Don't reset |raw_channel_|, in case we're being called from within
+    // |OnReadMessage()| or |OnFatalError()|.
     raw_channel_->Shutdown();
-    raw_channel_.reset();
+    is_running_ = false;
 
     // We need to deal with it outside the lock.
-    std::swap(local_id_to_endpoint_info_map, local_id_to_endpoint_info_map_);
+    std::swap(to_destroy, local_id_to_endpoint_info_map_);
   }
 
   size_t num_live = 0;
   size_t num_zombies = 0;
-  for (IdToEndpointInfoMap::iterator it =
-           local_id_to_endpoint_info_map_.begin();
-       it != local_id_to_endpoint_info_map_.end();
+  for (IdToEndpointInfoMap::iterator it = to_destroy.begin();
+       it != to_destroy.end();
        ++it) {
     if (it->second.state == EndpointInfo::STATE_NORMAL) {
       it->second.message_pipe->OnRemove(it->second.port);

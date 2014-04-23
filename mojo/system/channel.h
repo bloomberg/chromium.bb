@@ -165,7 +165,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
                           MessageInTransit::EndpointId source_id,
                           MessageInTransit::EndpointId destination_id);
 
-  bool is_running_no_lock() const { return raw_channel_; }
+  bool is_running_no_lock() const { return is_running_; }
 
   base::ThreadChecker creation_thread_checker_;
 
@@ -177,6 +177,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   base::Lock lock_;  // Protects the members below.
 
   scoped_ptr<RawChannel> raw_channel_;
+  bool is_running_;
 
   typedef base::hash_map<MessageInTransit::EndpointId, EndpointInfo>
       IdToEndpointInfoMap;
