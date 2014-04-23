@@ -32,8 +32,30 @@ function set(name, message, stack, targetChrome) {
     targetChrome.extension.lastError = errorObject;
 
   assertRuntimeIsAvailable();
-  targetChrome.runtime.lastError = errorObject;
+
+  // We check to see if developers access runtime.lastError in order to decide
+  // whether or not to log it in the (error) console.
+  privates(targetChrome.runtime).accessedLastError = false;
+  $Object.defineProperty(targetChrome.runtime, 'lastError', {
+      configurable: true,
+      get: function() {
+        privates(targetChrome.runtime).accessedLastError = true;
+        return errorObject;
+      },
+      set: function(error) {
+        errorObject = errorObject;
+      }});
 };
+
+/**
+ * Check if anyone has checked chrome.runtime.lastError since it was set.
+ * @param {Object} targetChrome the Chrome object to check.
+ * @return boolean True if the lastError property was set.
+ */
+function hasAccessed(targetChrome) {
+  assertRuntimeIsAvailable();
+  return privates(targetChrome.runtime).accessedLastError === true;
+}
 
 /**
  * Clears the last error on |targetChrome|.
@@ -47,6 +69,7 @@ function clear(targetChrome) {
 
   assertRuntimeIsAvailable();
   delete targetChrome.runtime.lastError;
+  delete privates(targetChrome.runtime).accessedLastError;
 };
 
 function assertRuntimeIsAvailable() {
@@ -78,5 +101,6 @@ function run(name, message, stack, callback, args) {
 }
 
 exports.clear = clear;
+exports.hasAccessed = hasAccessed;
 exports.set = set;
 exports.run = run;

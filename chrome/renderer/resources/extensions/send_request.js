@@ -74,11 +74,16 @@ function handleResponse(requestId, name, success, responseList, error) {
         validate(responseList, request.callbackSchema.parameters);
       }
       safeCallbackApply(name, request, request.callback, responseList);
-    } else if (error) {
-      // The native call caused an error, but no callback was present.
-      // Notify the developer of the error via the console.
-      console.error("Error in response handler for " + (name || "unknown") +
-          ": " + error + (request.stack ? "\n" + request.stack : ""));
+    }
+
+    if (!lastError.hasAccessed(chrome) &&
+        !lastError.hasAccessed(callerChrome)) {
+      // The native call caused an error, but the developer didn't check
+      // runtime.lastError.
+      // Notify the developer of the error via the (error) console.
+      console.error("Unchecked runtime.lastError while running " +
+          (name || "unknown") + ": " + error +
+          (request.stack ? "\n" + request.stack : ""));
     }
   } finally {
     delete requests[requestId];

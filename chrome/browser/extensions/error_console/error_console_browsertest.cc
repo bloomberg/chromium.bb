@@ -542,6 +542,8 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, BadAPIPermissionsRuntimeError) {
                   5u, 1u);
 }
 
+// Test that if there is an error in an HTML page loaded by an extension (most
+// common with apps), it is caught and reported by the ErrorConsole.
 IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, BadExtensionPage) {
   const Extension* extension = NULL;
   LoadExtensionAndCheckErrors(
@@ -550,6 +552,43 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, BadExtensionPage) {
       1,  // One error: the page will load JS which has a reference error.
       ACTION_NEW_TAB,
       &extension);
+}
+
+// Test that extension errors that go to chrome.runtime.lastError are caught
+// and reported by the ErrorConsole.
+IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, CatchesLastError) {
+  const Extension* extension = NULL;
+  LoadExtensionAndCheckErrors(
+      "trigger_last_error",
+      kNoFlags,
+      1,  // One error, which is sent through last error when trying to remove
+          // a non-existent permisison.
+      ACTION_NONE,
+      &extension);
+
+  const ErrorList& errors =
+      error_console()->GetErrorsForExtension(extension->id());
+  ASSERT_EQ(1u, errors.size());
+
+  std::string script_url = extension->url().Resolve("background.js").spec();
+
+  CheckRuntimeError(
+      errors[0],
+      extension->id(),
+      script_url,
+      false,  // not incognito
+      "Unchecked runtime.lastError while running permissions.remove: "
+          "'foobar' is not a recognized permission.",
+      logging::LOG_ERROR,
+      extension->url().Resolve(kBackgroundPageName),
+      1u);
+
+  const StackTrace& stack_trace = GetStackTraceFromError(errors[0]);
+  ASSERT_EQ(1u, stack_trace.size());
+  CheckStackFrame(stack_trace[0],
+                  script_url,
+                  kAnonymousFunction,
+                  12u, 20u);
 }
 
 }  // namespace extensions
