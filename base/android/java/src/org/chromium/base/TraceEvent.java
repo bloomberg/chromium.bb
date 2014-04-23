@@ -180,6 +180,7 @@ public class TraceEvent {
      * systrace, this is for WebView only.
      */
     public static void setATraceEnabled(boolean enabled) {
+        if (sEnabled == enabled) return;
         if (enabled) {
             nativeStartATrace();
         } else {
