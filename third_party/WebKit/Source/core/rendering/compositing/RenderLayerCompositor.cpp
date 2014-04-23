@@ -206,6 +206,8 @@ void RenderLayerCompositor::updateAcceleratedCompositingSettings()
 
 bool RenderLayerCompositor::layerSquashingEnabled() const
 {
+    if (!RuntimeEnabledFeatures::layerSquashingEnabled())
+        return false;
     if (Settings* settings = m_renderView.document().settings())
         return settings->layerSquashingEnabled();
     return true;
