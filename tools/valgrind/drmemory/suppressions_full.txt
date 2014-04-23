@@ -1999,8 +1999,7 @@ content.dll!std::*
 ...
 content.dll!content::BrowserAccessibilityManagerWin::*
 ...
-content.dll!content::BrowserAccessibilityManager::UpdateNode
-content.dll!content::BrowserAccessibilityManager::UpdateNodes
+*!*::UpdateNode
 
 UNINITIALIZED READ
 name=bug_347976
