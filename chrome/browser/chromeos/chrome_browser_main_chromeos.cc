@@ -198,10 +198,7 @@ void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line,
   if (ShouldAutoLaunchKioskApp(parsed_command_line)) {
     RunAutoLaunchKioskApp();
   } else if (parsed_command_line.HasSwitch(switches::kLoginManager)) {
-    const std::string first_screen =
-        parsed_command_line.HasSwitch(switches::kLoginScreen) ?
-            WizardController::kLoginScreenName : std::string();
-    ShowLoginWizard(first_screen);
+    ShowLoginWizard(std::string());
 
     if (KioskModeSettings::Get()->IsKioskModeEnabled())
       InitializeKioskModeScreensaver();

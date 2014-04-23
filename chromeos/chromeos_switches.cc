@@ -136,9 +136,6 @@ const char kHasChromeOSDiamondKey[]         = "has-chromeos-diamond-key";
 // Path for the screensaver used in Kiosk mode
 const char kKioskModeScreensaverPath[]      = "kiosk-mode-screensaver-path";
 
-// Allows override of oobe for testing - goes directly to the login screen.
-const char kLoginScreen[]                   = "login-screen";
-
 // Enables Chrome-as-a-login-manager behavior.
 const char kLoginManager[]                  = "login-manager";
 
