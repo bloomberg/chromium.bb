@@ -15,7 +15,6 @@ import android.widget.Toast;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
-import org.chromium.base.TraceEvent;
 import org.chromium.content.R;
 
 import java.io.File;
@@ -188,7 +187,6 @@ public class TracingControllerAndroid {
         }
 
         logAndToastInfo(mContext.getString(R.string.profiler_started_toast) + ": " + categories);
-        TraceEvent.setEnabledToMatchNative();
         mFilename = filename;
         mIsTracing = true;
         return true;
@@ -216,7 +214,6 @@ public class TracingControllerAndroid {
 
         logAndToastInfo(
                 mContext.getString(R.string.profiler_stopped_toast, mFilename));
-        TraceEvent.setEnabledToMatchNative();
         mIsTracing = false;
         mFilename = null;
     }

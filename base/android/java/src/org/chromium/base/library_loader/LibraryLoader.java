@@ -215,7 +215,10 @@ public class LibraryLoader {
         // following calls).
         sInitialized = true;
         CommandLine.enableNativeProxy();
-        TraceEvent.setEnabledToMatchNative();
+
+        // From now on, keep tracing in sync with native.
+        TraceEvent.registerNativeEnabledObserver();
+
         // Record histogram for the Chromium linker.
         if (Linker.isUsed()) {
             nativeRecordChromiumAndroidLinkerHistogram(Linker.loadAtFixedAddressFailed(),
