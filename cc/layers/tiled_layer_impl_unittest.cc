@@ -316,5 +316,68 @@ TEST_F(TiledLayerImplTest, EmptyMask) {
   EXPECT_EQ(0, layer->TilingForTesting()->num_tiles_y());
 }
 
+TEST_F(TiledLayerImplTest, Occlusion) {
+  gfx::Size tile_size(100, 100);
+  gfx::Size layer_bounds(1000, 1000);
+  gfx::Size viewport_size(1000, 1000);
+
+  LayerTestCommon::LayerImplTest impl;
+
+  TiledLayerImpl* tiled_layer = impl.AddChildToRoot<TiledLayerImpl>();
+  tiled_layer->SetAnchorPoint(gfx::PointF());
+  tiled_layer->SetBounds(layer_bounds);
+  tiled_layer->SetContentBounds(layer_bounds);
+  tiled_layer->SetDrawsContent(true);
+  tiled_layer->set_skips_draw(false);
+
+  scoped_ptr<LayerTilingData> tiler =
+      LayerTilingData::Create(tile_size, LayerTilingData::NO_BORDER_TEXELS);
+  tiler->SetTilingRect(gfx::Rect(layer_bounds));
+  tiled_layer->SetTilingData(*tiler);
+
+  ResourceProvider::ResourceId resource_id = 1;
+  for (int i = 0; i < tiled_layer->TilingForTesting()->num_tiles_x(); ++i) {
+    for (int j = 0; j < tiled_layer->TilingForTesting()->num_tiles_y(); ++j)
+      tiled_layer->PushTileProperties(i, j, resource_id++, gfx::Rect(), false);
+  }
+
+  impl.CalcDrawProps(viewport_size);
+
+  {
+    SCOPED_TRACE("No occlusion");
+    gfx::Rect occluded;
+    impl.AppendQuadsWithOcclusion(tiled_layer, occluded);
+
+    LayerTestCommon::VerifyQuadsExactlyCoverRect(impl.quad_list(),
+                                                 gfx::Rect(layer_bounds));
+    EXPECT_EQ(100u, impl.quad_list().size());
+  }
+
+  {
+    SCOPED_TRACE("Full occlusion");
+    gfx::Rect occluded(tiled_layer->visible_content_rect());
+    impl.AppendQuadsWithOcclusion(tiled_layer, occluded);
+
+    LayerTestCommon::VerifyQuadsExactlyCoverRect(impl.quad_list(), gfx::Rect());
+    EXPECT_EQ(impl.quad_list().size(), 0u);
+  }
+
+  {
+    SCOPED_TRACE("Partial occlusion");
+    gfx::Rect occluded(150, 0, 200, 1000);
+    impl.AppendQuadsWithOcclusion(tiled_layer, occluded);
+
+    size_t partially_occluded_count = 0;
+    LayerTestCommon::VerifyQuadsCoverRectWithOcclusion(
+        impl.quad_list(),
+        gfx::Rect(layer_bounds),
+        occluded,
+        &partially_occluded_count);
+    // The layer outputs one quad, which is partially occluded.
+    EXPECT_EQ(100u - 10u, impl.quad_list().size());
+    EXPECT_EQ(10u + 10u, partially_occluded_count);
+  }
+}
+
 }  // namespace
 }  // namespace cc
