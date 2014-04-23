@@ -52,9 +52,6 @@ protected:
     virtual void paintReplaced(PaintInfo&, const LayoutPoint&) OVERRIDE FINAL;
     virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE FINAL;
 
-    const RenderObjectChildList* children() const { return &m_children; }
-    RenderObjectChildList* children() { return &m_children; }
-
 protected:
     virtual void layout() OVERRIDE FINAL;
 
@@ -71,10 +68,6 @@ private:
 
     bool getReplacementTextGeometry(const LayoutPoint& accumulatedOffset, FloatRect& contentRect, Path&, FloatRect& replacementTextRect, Font&, TextRun&, float& textWidth) const;
 
-    virtual bool canHaveChildren() const OVERRIDE FINAL;
-    virtual RenderObjectChildList* virtualChildren() OVERRIDE FINAL { return children(); }
-    virtual const RenderObjectChildList* virtualChildren() const OVERRIDE FINAL { return children(); }
-
     virtual CompositingReasons additionalCompositingReasons(CompositingTriggerFlags) const OVERRIDE;
 
     bool m_hasFallbackContent; // FIXME: This belongs on HTMLObjectElement.
@@ -82,7 +75,6 @@ private:
     bool m_showsUnavailablePluginIndicator;
     PluginUnavailabilityReason m_pluginUnavailabilityReason;
     String m_unavailablePluginReplacementText;
-    RenderObjectChildList m_children;
 };
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderEmbeddedObject, isEmbeddedObject());
