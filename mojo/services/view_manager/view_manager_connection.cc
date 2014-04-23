@@ -26,8 +26,8 @@ void ViewManagerConnection::Initialize(
   DCHECK_EQ(0, id_);  // Should only get Initialize() once.
   ServiceConnection<ViewManager, ViewManagerConnection, RootViewManager>::
       Initialize(service_factory, client_handle.Pass());
-  id_ = context()->GetAndAdvanceNextConnectionId();
   context()->AddConnection(this);
+  id_ = context()->GetAndAdvanceNextConnectionId();
   client()->OnConnectionEstablished(id_);
 }
 
@@ -44,65 +44,40 @@ View* ViewManagerConnection::GetViewById(const ViewId& view_id) {
 
 void ViewManagerConnection::CreateView(
     int32_t view_id,
-    const Callback<void(bool)>& callback) {
+    const mojo::Callback<void(bool)>& callback) {
   // Negative values are reserved.
   if (view_map_.find(view_id) != view_map_.end() || view_id < 0) {
     callback.Run(false);
     return;
   }
-  view_map_[view_id] = new View(this, view_id);
+  view_map_[view_id] = new View(view_id);
   callback.Run(true);
 }
 
 void ViewManagerConnection::AddView(
     const ViewId& parent_id,
     const ViewId& child_id,
-    int32_t change_id,
-    const Callback<void(bool)>& callback) {
+    const mojo::Callback<void(bool)>& callback) {
   View* parent_view = GetViewById(parent_id);
   View* child_view = GetViewById(child_id);
   bool success = false;
   if (parent_view && child_view && parent_view != child_view) {
-    RootViewManager::ScopedChange change(this, context(), change_id);
     parent_view->Add(child_view);
     success = true;
   }
   callback.Run(success);
 }
 
-void ViewManagerConnection::RemoveViewFromParent(
+void ViewManagerConnection::RemoveFromParent(
       const ViewId& view_id,
-      int32_t change_id,
-      const Callback<void(bool)>& callback) {
+      const mojo::Callback<void(bool)>& callback) {
   View* view = GetViewById(view_id);
   bool success = false;
   if (view && view->GetParent()) {
-    RootViewManager::ScopedChange change(this, context(), change_id);
-    view->GetParent()->Remove(view);
+    view->GetParent()->Add(view);
     success = true;
   }
   callback.Run(success);
-}
-
-void ViewManagerConnection::NotifyViewHierarchyChanged(
-    const ViewId& view,
-    const ViewId& new_parent,
-    const ViewId& old_parent,
-    int32_t change_id) {
-  client()->OnViewHierarchyChanged(view, new_parent, old_parent, change_id);
-}
-
-ViewId ViewManagerConnection::GetViewId(const View* view) const {
-  ViewId::Builder builder;
-  builder.set_manager_id(id_);
-  builder.set_view_id(view->id());
-  return builder.Finish();
-}
-
-void ViewManagerConnection::OnViewHierarchyChanged(const ViewId& view,
-                                                   const ViewId& new_parent,
-                                                   const ViewId& old_parent) {
-  context()->NotifyViewHierarchyChanged(view, new_parent, old_parent);
 }
 
 }  // namespace view_manager
