@@ -241,8 +241,7 @@ static void setUpFullyClippedStack(BitStack& stack, Node* node)
 // --------
 
 TextIterator::TextIterator(const Range* range, TextIteratorBehaviorFlags behavior)
-    : m_shadowDepth(0)
-    , m_startContainer(0)
+    : m_startContainer(0)
     , m_startOffset(0)
     , m_endContainer(0)
     , m_endOffset(0)
@@ -272,8 +271,7 @@ TextIterator::TextIterator(const Range* range, TextIteratorBehaviorFlags behavio
 }
 
 TextIterator::TextIterator(const Position& start, const Position& end, TextIteratorBehaviorFlags behavior)
-    : m_shadowDepth(0)
-    , m_startContainer(0)
+    : m_startContainer(0)
     , m_startOffset(0)
     , m_endContainer(0)
     , m_endOffset(0)
@@ -320,6 +318,14 @@ void TextIterator::initialize(const Position& start, const Position& end)
     m_startOffset = startOffset;
     m_endContainer = endContainer;
     m_endOffset = endOffset;
+
+    // Figure out the initial value of m_shadowDepth: the depth of startContainer's tree scope from
+    // the common ancestor tree scope.
+    const TreeScope* commonAncestorTreeScope = startContainer->treeScope().commonAncestorTreeScope(endContainer->treeScope());
+    ASSERT(commonAncestorTreeScope);
+    m_shadowDepth = 0;
+    for (const TreeScope* treeScope = &startContainer->treeScope(); treeScope != commonAncestorTreeScope; treeScope = treeScope->parentTreeScope())
+        ++m_shadowDepth;
 
     // Set up the current node for processing.
     if (startContainer->offsetInCharacters())

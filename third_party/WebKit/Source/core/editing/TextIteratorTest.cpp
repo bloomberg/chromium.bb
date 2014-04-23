@@ -62,11 +62,14 @@ protected:
     HTMLDocument& document() const;
 
     Vector<String> iterate(TextIteratorBehavior = TextIteratorDefaultBehavior);
+    Vector<String> iteratePartial(const Position& start, const Position& end, TextIteratorBehavior = TextIteratorDefaultBehavior);
 
     void setBodyInnerHTML(const char*);
     PassRefPtrWillBeRawPtr<Range> getBodyRange() const;
 
 private:
+    Vector<String> iterateWithIterator(TextIterator&);
+
     OwnPtr<DummyPageHolder> m_dummyPageHolder;
 
     HTMLDocument* m_document;
@@ -82,13 +85,24 @@ void TextIteratorTest::SetUp()
 Vector<String> TextIteratorTest::iterate(TextIteratorBehavior iteratorBehavior)
 {
     document().view()->updateLayoutAndStyleIfNeededRecursive(); // Force renderers to be created; TextIterator needs them.
-
     RefPtrWillBeRawPtr<Range> range = getBodyRange();
-    TextIterator textIterator(range.get(), iteratorBehavior);
+    TextIterator iterator(range.get(), iteratorBehavior);
+    return iterateWithIterator(iterator);
+}
+
+Vector<String> TextIteratorTest::iteratePartial(const Position& start, const Position& end, TextIteratorBehavior iteratorBehavior)
+{
+    document().view()->updateLayoutAndStyleIfNeededRecursive();
+    TextIterator iterator(start, end, iteratorBehavior);
+    return iterateWithIterator(iterator);
+}
+
+Vector<String> TextIteratorTest::iterateWithIterator(TextIterator& iterator)
+{
     Vector<String> textChunks;
-    while (!textIterator.atEnd()) {
-        textChunks.append(textIterator.substring(0, textIterator.length()));
-        textIterator.advance();
+    while (!iterator.atEnd()) {
+        textChunks.append(iterator.substring(0, iterator.length()));
+        iterator.advance();
     }
     return textChunks;
 }
@@ -349,6 +363,47 @@ TEST_F(TextIteratorTest, EnteringShadowTreeWithContentInsertionPointWithOption)
     createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent);
 
     EXPECT_EQ(expectedTextChunks, iterate(TextIteratorEntersAuthorShadowRoots));
+}
+
+TEST_F(TextIteratorTest, StartingAtNodeInShadowRoot)
+{
+    static const char* bodyContent = "<div id=\"outer\">Hello, <span id=\"host\">text</span> iterator.</div>";
+    static const char* shadowContent = "<span><content>content</content> shadow</span>";
+    static const char* expectedTextChunksRawString[] = {
+        " shadow",
+        "text",
+        " iterator."
+    };
+    Vector<String> expectedTextChunks = createVectorString(expectedTextChunksRawString, WTF_ARRAY_LENGTH(expectedTextChunksRawString));
+
+    setBodyInnerHTML(bodyContent);
+    RefPtr<ShadowRoot> shadowRoot = createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent);
+    Node* outerDiv = document().getElementById("outer");
+    Node* spanInShadow = shadowRoot->firstChild();
+    Position start(spanInShadow, Position::PositionIsBeforeChildren);
+    Position end(outerDiv, Position::PositionIsAfterChildren);
+
+    EXPECT_EQ(expectedTextChunks, iteratePartial(start, end, TextIteratorEntersAuthorShadowRoots));
+}
+
+TEST_F(TextIteratorTest, FinishingAtNodeInShadowRoot)
+{
+    static const char* bodyContent = "<div id=\"outer\">Hello, <span id=\"host\">text</span> iterator.</div>";
+    static const char* shadowContent = "<span><content>content</content> shadow</span>";
+    static const char* expectedTextChunksRawString[] = {
+        "Hello, ",
+        " shadow"
+    };
+    Vector<String> expectedTextChunks = createVectorString(expectedTextChunksRawString, WTF_ARRAY_LENGTH(expectedTextChunksRawString));
+
+    setBodyInnerHTML(bodyContent);
+    RefPtr<ShadowRoot> shadowRoot = createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent);
+    Node* outerDiv = document().getElementById("outer");
+    Node* spanInShadow = shadowRoot->firstChild();
+    Position start(outerDiv, Position::PositionIsBeforeChildren);
+    Position end(spanInShadow, Position::PositionIsAfterChildren);
+
+    EXPECT_EQ(expectedTextChunks, iteratePartial(start, end, TextIteratorEntersAuthorShadowRoots));
 }
 
 TEST_F(TextIteratorTest, FullyClipsContents)
