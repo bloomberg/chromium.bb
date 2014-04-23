@@ -135,14 +135,14 @@ class CBuildbotMetadata(object):
              'internal': change.internal}
 
   @staticmethod
-  def GetReportMetadataDict(builder_run, build_root, get_changes_from_pool,
-                            get_statuses_from_slaves, config=None, stage=None,
-                            final_status=None, sync_instance=None,
-                            completion_instance=None):
+  def GetMetadataDict(builder_run, build_root, get_changes_from_pool,
+                      get_statuses_from_slaves, config=None, stage=None,
+                      final_status=None, sync_instance=None,
+                      completion_instance=None):
     """Return a metadata dictionary summarizing a build.
 
     This method replaces code that used to exist in the ArchivingStageMixin
-    class from cbuildbot_stage. It contains all the Report-stage-time
+    class from cbuildbot_stage. It contains all the Archive-stage-time
     metadata construction logic. The logic here is intended to be gradually
     refactored out so that the metadata is constructed gradually by the
     stages that are responsible for pieces of data, as they run.

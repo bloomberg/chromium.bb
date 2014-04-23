@@ -1716,6 +1716,63 @@ class ArchivingStageTest(AbstractStageTest):
     archive_stage = stages.ArchiveStage(self.run, self._current_board)
     return stages.ArchivingStage(self.run, self._current_board, archive_stage)
 
+  def testMetadataJson(self):
+    """Test that the json metadata is built correctly"""
+    # First add some results to make sure we can handle various types.
+    results_lib.Results.Clear()
+    results_lib.Results.Record('Sync', results_lib.Results.SUCCESS, time=1)
+    results_lib.Results.Record('Build', results_lib.Results.SUCCESS, time=2)
+    results_lib.Results.Record('Test', FailStage.FAIL_EXCEPTION, time=3)
+    results_lib.Results.Record('SignerTests', results_lib.Results.SKIPPED)
+
+    # Now run the code.
+    stage = self.ConstructStage()
+    stage.UploadMetadata(stage='tests')
+
+    # Now check the results.
+    json_file = os.path.join(
+        stage.archive_path,
+        constants.METADATA_STAGE_JSON % { 'stage': 'tests' } )
+    json_data = json.loads(osutils.ReadFile(json_file))
+
+    important_keys = (
+        'boards',
+        'bot-config',
+        'metadata-version',
+        'results',
+        'sdk-version',
+        'toolchain-tuple',
+        'toolchain-url',
+        'version',
+    )
+    for key in important_keys:
+      self.assertTrue(key in json_data)
+
+    self.assertEquals(json_data['boards'], ['x86-generic'])
+    self.assertEquals(json_data['bot-config'], 'x86-generic-paladin')
+    self.assertEquals(json_data['version']['full'], stage.version)
+    self.assertEquals(json_data['metadata-version'], '2')
+
+    results_passed = ('Sync', 'Build',)
+    results_failed = ('Test',)
+    results_skipped = ('SignerTests',)
+    for result in json_data['results']:
+      if result['name'] in results_passed:
+        self.assertEquals(result['status'], constants.FINAL_STATUS_PASSED)
+      elif result['name'] in results_failed:
+        self.assertEquals(result['status'], constants.FINAL_STATUS_FAILED)
+      elif result['name'] in results_skipped:
+        self.assertEquals(result['status'], constants.FINAL_STATUS_PASSED)
+        self.assertTrue('skipped' in result['summary'].lower())
+
+    # The buildtools manifest doesn't have any overlays. In this case, we can't
+    # find any toolchains.
+    overlays = portage_utilities.FindOverlays(
+        constants.BOTH_OVERLAYS, board=None, buildroot=self.build_root)
+    overlay_tuples = ['i686-pc-linux-gnu', 'arm-none-eabi']
+    self.assertEquals(json_data['toolchain-tuple'],
+                      overlay_tuples if overlays else [])
+
 
 class ArchiveStageTest(AbstractStageTest):
   """Exercise ArchiveStage functionality."""
