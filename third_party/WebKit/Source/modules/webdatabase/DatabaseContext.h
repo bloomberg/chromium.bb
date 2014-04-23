@@ -29,6 +29,7 @@
 #define DatabaseContext_h
 
 #include "core/dom/ActiveDOMObject.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/ThreadSafeRefCounted.h"
@@ -43,7 +44,10 @@ class DatabaseThread;
 class ExecutionContext;
 class SecurityOrigin;
 
-class DatabaseContext FINAL : public ThreadSafeRefCountedWillBeGarbageCollectedFinalized<DatabaseContext>, public ActiveDOMObject {
+class DatabaseContext FINAL
+    : public ThreadSafeRefCountedWillBeGarbageCollectedFinalized<DatabaseContext>
+    , public ActiveDOMObject
+    , private WorkerGlobalScope::TerminationObserver {
 public:
     friend class DatabaseManager;
 
@@ -54,7 +58,6 @@ public:
 
     // For life-cycle management (inherited from ActiveDOMObject):
     virtual void contextDestroyed() OVERRIDE;
-    virtual void willStop() OVERRIDE;
     virtual void stop() OVERRIDE;
 
     DatabaseContext* backend();
@@ -74,6 +77,7 @@ public:
 private:
     explicit DatabaseContext(ExecutionContext*);
 
+    virtual void wasRequestedToTerminate() OVERRIDE;
     void stopSyncDatabases();
 
     RefPtrWillBeMember<DatabaseThread> m_databaseThread;

@@ -55,9 +55,6 @@ public:
     // which don't need special treatment can skip implementation.
     virtual void suspend();
     virtual void resume();
-    // willStop is called when stop() for the owner worker is called. It's not
-    // called if the owner is a Document. It's ok to post a task to the context.
-    virtual void willStop();
     virtual void stop();
 
     void didMoveToNewExecutionContext(ExecutionContext*);

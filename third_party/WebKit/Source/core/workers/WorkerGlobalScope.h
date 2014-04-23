@@ -82,7 +82,17 @@ namespace WebCore {
         void clearScript() { m_script.clear(); }
         void clearInspector();
 
-        void willStopActiveDOMObjects();
+        // FIXME: We can remove this interface when we remove openDatabaseSync.
+        class TerminationObserver {
+        public:
+            virtual ~TerminationObserver() { }
+            // The function is probably called in the main thread.
+            virtual void wasRequestedToTerminate() = 0;
+        };
+        void registerTerminationObserver(TerminationObserver*);
+        void unregisterTerminationObserver(TerminationObserver*);
+        void wasRequestedToTerminate();
+
         void dispose();
 
         WorkerThread* thread() const { return m_thread; }
@@ -168,6 +178,7 @@ namespace WebCore {
         OwnPtrWillBeMember<WorkerClients> m_workerClients;
 
         double m_timeOrigin;
+        TerminationObserver* m_terminationObserver;
     };
 
 DEFINE_TYPE_CASTS(WorkerGlobalScope, ExecutionContext, context, context->isWorkerGlobalScope(), context.isWorkerGlobalScope());

@@ -86,17 +86,6 @@ void ContextLifecycleNotifier::notifySuspendingActiveDOMObjects()
     }
 }
 
-void ContextLifecycleNotifier::notifyWillStopActiveDOMObjects()
-{
-    TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverActiveDOMObjects);
-    ActiveDOMObjectSet::iterator activeObjectsEnd = m_activeDOMObjects.end();
-    for (ActiveDOMObjectSet::iterator iter = m_activeDOMObjects.begin(); iter != activeObjectsEnd; ++iter) {
-        ASSERT((*iter)->executionContext() == context());
-        ASSERT((*iter)->suspendIfNeededCalled());
-        (*iter)->willStop();
-    }
-}
-
 void ContextLifecycleNotifier::notifyStoppingActiveDOMObjects()
 {
     TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverActiveDOMObjects);

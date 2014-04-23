@@ -79,10 +79,6 @@ void ActiveDOMObject::resume()
 {
 }
 
-void ActiveDOMObject::willStop()
-{
-}
-
 void ActiveDOMObject::stop()
 {
 }

@@ -105,6 +105,8 @@ DatabaseContext::DatabaseContext(ExecutionContext* context)
     // For debug accounting only. We must do this before we register the
     // instance. The assertions assume this.
     DatabaseManager::manager().didConstructDatabaseContext();
+    if (context->isWorkerGlobalScope())
+        toWorkerGlobalScope(context)->registerTerminationObserver(this);
 }
 
 DatabaseContext::~DatabaseContext()
@@ -129,11 +131,13 @@ void DatabaseContext::contextDestroyed()
 {
     RefPtrWillBeRawPtr<DatabaseContext> protector(this);
     stopDatabases();
+    if (executionContext()->isWorkerGlobalScope())
+        toWorkerGlobalScope(executionContext())->unregisterTerminationObserver(this);
     DatabaseManager::manager().unregisterDatabaseContext(this);
     ActiveDOMObject::contextDestroyed();
 }
 
-void DatabaseContext::willStop()
+void DatabaseContext::wasRequestedToTerminate()
 {
     DatabaseManager::manager().interruptAllDatabasesForContext(this);
 }
