@@ -17,16 +17,16 @@ def Main(args):
   src_dir = os.path.dirname(script_dir)
   nacl_dir = os.path.join(src_dir, 'native_client')
   nacl_build_dir = os.path.join(nacl_dir, 'build')
-  package_version_dir = os.path.join(nacl_build_dir, 'package_version')
-  package_version = os.path.join(package_version_dir, 'package_version.py')
-  if not os.path.exists(package_version):
-    print "Can't find '%s'" % package_version
+  download_script = os.path.join(nacl_build_dir, 'download_toolchains.py')
+  if not os.path.exists(download_script):
+    print "Can't find '%s'" % download_script
     print 'Presumably you are intentionally building without NativeClient.'
     print 'Skipping NativeClient toolchain download.'
     sys.exit(0)
-  sys.path.insert(0, package_version_dir)
-  import package_version
+  sys.path.insert(0, nacl_build_dir)
+  import download_toolchains
 
+  # TODO (robertm): Finish getting PNaCl ready for prime time.
   # BUG:
   # We remove this --optional-pnacl argument, and instead replace it with
   # --no-pnacl for most cases.  However, if the bot name is an sdk
@@ -41,17 +41,21 @@ def Main(args):
     if use_pnacl:
       print '\n*** DOWNLOADING PNACL TOOLCHAIN ***\n'
     else:
-      args.extend(['--exclude', 'pnacl_newlib'])
+      args.append('--no-pnacl')
 
   # Only download the ARM gcc toolchain if we are building for ARM
   # TODO(olonho): we need to invent more reliable way to get build
   # configuration info, to know if we're building for ARM.
-  if 'target_arch=arm' not in os.environ.get('GYP_DEFINES', ''):
-      args.extend(['--exclude', 'nacl_arm_newlib'])
+  if 'target_arch=arm' in os.environ.get('GYP_DEFINES', ''):
+      args.append('--arm-untrusted')
 
-  args.append('sync')
-  args.append('--extract')
-  package_version.main(args)
+  # Append the name of the file to use as a version and hash source.
+  # NOTE:  While not recommended, it is possible to redirect this file to
+  # a chrome location to avoid branching NaCl if just a toolchain needs
+  # to be bumped.
+  args.append(os.path.join(nacl_dir, 'TOOL_REVISIONS'))
+
+  download_toolchains.main(args)
   return 0
 
 

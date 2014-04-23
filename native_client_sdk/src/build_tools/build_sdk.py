@@ -49,12 +49,7 @@ sys.path.append(os.path.join(NACL_DIR, 'build'))
 import getos
 import oshelpers
 
-BUILD_DIR = os.path.join(NACL_DIR, 'build')
-NACL_TOOLCHAIN_DIR = os.path.join(NACL_DIR, 'toolchain')
-NACL_TOOLCHAINTARS_DIR = os.path.join(NACL_TOOLCHAIN_DIR, '.tars')
-
-CYGTAR = os.path.join(BUILD_DIR, 'cygtar.py')
-PKGVER = os.path.join(BUILD_DIR, 'package_version', 'package_version.py')
+CYGTAR = os.path.join(NACL_DIR, 'build', 'cygtar.py')
 
 NACLPORTS_URL = 'https://naclports.googlecode.com/svn/trunk/src'
 NACLPORTS_REV = 1226
@@ -63,14 +58,29 @@ GYPBUILD_DIR = 'gypbuild'
 
 options = None
 
-  # Map of: ToolchainName: (PackageName, SDKDir).
-TOOLCHAIN_PACKAGE_MAP = {
-    'newlib': ('nacl_x86_newlib', '%(platform)s_x86_newlib'),
-    'bionic': ('nacl_arm_bionic', '%(platform)s_arm_bionic'),
-    'arm': ('nacl_arm_newlib', '%(platform)s_arm_newlib'),
-    'glibc': ('nacl_x86_glibc', '%(platform)s_x86_glibc'),
-    'pnacl': ('pnacl_newlib', '%(platform)s_pnacl')
-    }
+
+def GetGlibcToolchain():
+  tcdir = os.path.join(NACL_DIR, 'toolchain', '.tars')
+  tcname = 'toolchain_%s_x86.tar.bz2' % getos.GetPlatform()
+  return os.path.join(tcdir, tcname)
+
+
+def GetNewlibToolchain():
+  tcdir = os.path.join(NACL_DIR, 'toolchain', '.tars')
+  tcname = 'naclsdk_%s_x86.tgz' % getos.GetPlatform()
+  return os.path.join(tcdir, tcname)
+
+
+def GetBionicToolchain():
+  tcdir = os.path.join(NACL_DIR, 'toolchain', '.tars')
+  tcname = 'naclsdk_%s_arm_bionic.tgz' % getos.GetPlatform()
+  return os.path.join(tcdir, tcname)
+
+
+def GetPNaClToolchain():
+  tcdir = os.path.join(NACL_DIR, 'toolchain', '.tars')
+  tcname = 'naclsdk_pnacl_%s_x86.tgz' % getos.GetPlatform()
+  return os.path.join(tcdir, tcname)
 
 
 def GetToolchainNaClInclude(tcname, tcpath, arch):
@@ -121,14 +131,8 @@ def GetToolchainDirName(tcname, xarch):
 
 
 def GetGypToolchainLib(tcname, xarch):
-  if xarch == 'arm':
-    toolchain = xarch
-  else:
-    toolchain = tcname
-
-  tcpath = os.path.join(GetGypGenDir(xarch), 'sdk',
-                        '%s_x86' % getos.GetPlatform(),
-                        TOOLCHAIN_PACKAGE_MAP[toolchain][0])
+  tcpath = os.path.join(GetGypGenDir(xarch), 'sdk', 'toolchain',
+                        GetToolchainDirName(tcname, xarch))
   return GetToolchainNaClLib(tcname, tcpath, xarch)
 
 
@@ -145,12 +149,12 @@ def GetPNaClNativeLib(tcpath, arch):
 
 
 def BuildStepDownloadToolchains(toolchains):
-  buildbot_common.BuildStep('Running package_version.py')
-  args = [sys.executable, PKGVER, '--exclude', 'arm_trusted']
+  buildbot_common.BuildStep('Running download_toolchains.py')
+  download_script = os.path.join('build', 'download_toolchains.py')
+  args = [sys.executable, download_script, '--no-arm-trusted',
+          '--arm-untrusted', '--keep']
   if 'bionic' in toolchains:
-    build_platform = '%s_x86' % getos.GetPlatform()
-    args.extend(['--append', os.path.join(build_platform, 'nacl_arm_bionic')])
-  args.append('sync')
+    args.append('--allow-bionic')
   buildbot_common.Run(args, cwd=NACL_DIR)
 
 
@@ -195,39 +199,66 @@ def BuildStepCopyTextFiles(pepperdir, pepper_ver, chrome_revision,
 def BuildStepUntarToolchains(pepperdir, toolchains):
   buildbot_common.BuildStep('Untar Toolchains')
   platform = getos.GetPlatform()
-  build_platform = '%s_x86' % platform
   tmpdir = os.path.join(OUT_DIR, 'tc_temp')
   buildbot_common.RemoveDir(tmpdir)
   buildbot_common.MakeDir(tmpdir)
 
-  # Create a list of extract packages tuples, the first part should be
-  # "$PACKAGE_TARGET/$PACKAGE". The second part should be the destination
-  # directory relative to pepperdir/toolchain.
-  extract_packages = []
-  for toolchain in toolchains:
-    toolchain_map = TOOLCHAIN_PACKAGE_MAP.get(toolchain, None)
-    if toolchain_map:
-      package_name, tcname = toolchain_map
-      package_tuple = (os.path.join(build_platform, package_name),
-                       tcname % {'platform': platform})
-      extract_packages.append(package_tuple)
+  if 'newlib' in toolchains:
+    # Untar the newlib toolchains
+    tarfile = GetNewlibToolchain()
+    buildbot_common.Run([sys.executable, CYGTAR, '-C', tmpdir, '-xf', tarfile],
+                        cwd=NACL_DIR)
 
-  if extract_packages:
-    # Extract all of the packages into the temp directory.
-    package_names = [package_tuple[0] for package_tuple in extract_packages]
-    buildbot_common.Run([sys.executable, PKGVER,
-                           '--packages', ','.join(package_names),
-                           '--tar-dir', NACL_TOOLCHAINTARS_DIR,
-                           '--dest-dir', tmpdir,
-                           'extract'])
+    # Then rename/move it to the pepper toolchain directory
+    srcdir = os.path.join(tmpdir, 'sdk', 'nacl-sdk')
+    tcname = platform + '_x86_newlib'
+    newlibdir = os.path.join(pepperdir, 'toolchain', tcname)
+    buildbot_common.Move(srcdir, newlibdir)
 
-    # Move all the packages we extracted to the correct destination.
-    for package_name, dest_dir in extract_packages:
-      full_src_dir = os.path.join(tmpdir, package_name)
-      full_dst_dir = os.path.join(pepperdir, 'toolchain', dest_dir)
-      buildbot_common.Move(full_src_dir, full_dst_dir)
+  if 'bionic' in toolchains:
+    # Untar the bionic toolchains
+    tarfile = GetBionicToolchain()
+    tcname = platform + '_arm_bionic'
+    buildbot_common.Run([sys.executable, CYGTAR, '-C', tmpdir, '-xf', tarfile],
+                        cwd=NACL_DIR)
+    srcdir = os.path.join(tmpdir, tcname)
+    bionicdir = os.path.join(pepperdir, 'toolchain', tcname)
+    buildbot_common.Move(srcdir, bionicdir)
 
-  # Cleanup the temporary directory we are no longer using.
+  if 'arm' in toolchains:
+    # Copy the existing arm toolchain from native_client tree
+    tcname = platform + '_arm_newlib'
+    arm_toolchain = os.path.join(NACL_DIR, 'toolchain', '%s_x86' % platform,
+                                 'nacl_arm_newlib' )
+    arm_toolchain_sdk = os.path.join(pepperdir, 'toolchain', tcname)
+    buildbot_common.CopyDir(arm_toolchain, arm_toolchain_sdk)
+
+  if 'glibc' in toolchains:
+    # Untar the glibc toolchains
+    tarfile = GetGlibcToolchain()
+    tcname = platform + '_x86_glibc'
+    buildbot_common.Run([sys.executable, CYGTAR, '-C', tmpdir, '-xf', tarfile],
+                        cwd=NACL_DIR)
+
+    # Then rename/move it to the pepper toolchain directory
+    srcdir = os.path.join(tmpdir, 'toolchain', platform + '_x86')
+    glibcdir = os.path.join(pepperdir, 'toolchain', tcname)
+    buildbot_common.Move(srcdir, glibcdir)
+
+  # Untar the pnacl toolchains
+  if 'pnacl' in toolchains:
+    tmpdir = os.path.join(tmpdir, 'pnacl')
+    buildbot_common.RemoveDir(tmpdir)
+    buildbot_common.MakeDir(tmpdir)
+    tarfile = GetPNaClToolchain()
+    tcname = platform + '_pnacl'
+    buildbot_common.Run([sys.executable, CYGTAR, '-C', tmpdir, '-xf', tarfile],
+                        cwd=NACL_DIR)
+
+    # Then rename/move it to the pepper toolchain directory
+    pnacldir = os.path.join(pepperdir, 'toolchain', tcname)
+    buildbot_common.Move(tmpdir, pnacldir)
+
   buildbot_common.RemoveDir(tmpdir)
 
 
