@@ -440,9 +440,7 @@ TEST_P(QuicDataStreamTest, StreamFlowControlViolation) {
   GenerateBody(&body, kWindow + 1);
   QuicStreamFrame frame(kStreamId, false, 0, MakeIOVector(body));
   EXPECT_CALL(*connection_, SendConnectionClose(QUIC_FLOW_CONTROL_ERROR));
-  EXPECT_DFATAL(stream_->OnStreamFrame(frame),
-                "Server: Flow control violation on stream 3, receive window: "
-                "50, bytes received: 51");
+  stream_->OnStreamFrame(frame);
 }
 
 TEST_P(QuicDataStreamTest, StreamFlowControlFinNotBlocked) {

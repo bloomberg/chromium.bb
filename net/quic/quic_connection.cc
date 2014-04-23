@@ -150,6 +150,8 @@ class PingAlarm : public QuicAlarm::Delegate {
 
  private:
   QuicConnection* connection_;
+
+  DISALLOW_COPY_AND_ASSIGN(PingAlarm);
 };
 
 QuicConnection::PacketType GetPacketType(
@@ -221,7 +223,6 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       idle_network_timeout_(
           QuicTime::Delta::FromSeconds(kDefaultInitialTimeoutSecs)),
       overall_connection_timeout_(QuicTime::Delta::Infinite()),
-      creation_time_(clock_->ApproximateNow()),
       time_of_last_received_packet_(clock_->ApproximateNow()),
       time_of_last_sent_new_packet_(clock_->ApproximateNow()),
       sequence_number_of_last_sent_packet_(0),
@@ -251,6 +252,7 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
   timeout_alarm_->Set(clock_->ApproximateNow().Add(idle_network_timeout_));
   framer_.set_visitor(this);
   framer_.set_received_entropy_calculator(&received_packet_manager_);
+  stats_.connection_creation_time = clock_->ApproximateNow();
 }
 
 QuicConnection::~QuicConnection() {
@@ -597,6 +599,14 @@ bool QuicConnection::OnStopWaitingFrame(const QuicStopWaitingFrame& frame) {
 
   last_stop_waiting_frames_.push_back(frame);
   return connected_;
+}
+
+bool QuicConnection::OnPingFrame(const QuicPingFrame& frame) {
+  DCHECK(connected_);
+  if (debug_visitor_) {
+    debug_visitor_->OnPingFrame(frame);
+  }
+  return true;
 }
 
 bool QuicConnection::ValidateAckFrame(const QuicAckFrame& incoming_ack) {
@@ -1525,8 +1535,7 @@ void QuicConnection::SendPing() {
       DLOG(ERROR) << "Unable to send ping!?";
     }
   } else {
-    // TODO(rch): enable this when we merge version 18.
-    // packet_generator_.AddControlFrame(QuicFrame(new QuicPingFrame));
+    packet_generator_.AddControlFrame(QuicFrame(new QuicPingFrame));
   }
 }
 
@@ -1830,7 +1839,8 @@ bool QuicConnection::CheckForTimeout() {
   QuicTime::Delta timeout = idle_network_timeout_.Subtract(delta);
 
   if (!overall_connection_timeout_.IsInfinite()) {
-    QuicTime::Delta connected_time = now.Subtract(creation_time_);
+    QuicTime::Delta connected_time =
+        now.Subtract(stats_.connection_creation_time);
     DVLOG(1) << ENDPOINT << "connection time: "
              << connected_time.ToMilliseconds() << " overall timeout: "
              << overall_connection_timeout_.ToMilliseconds();

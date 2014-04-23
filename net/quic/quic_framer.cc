@@ -409,6 +409,14 @@ SerializedPacket QuicFramer::BuildDataPacket(
           return kNoPacket;
         }
         break;
+      case PING_FRAME:
+        if (quic_version_ <= QUIC_VERSION_17) {
+          LOG(DFATAL) << "Attempt to add a PingFrame in "
+                      << QuicVersionToString(quic_version_);
+          return kNoPacket;
+        }
+        // Ping has no payload.
+        break;
       case RST_STREAM_FRAME:
         if (!AppendRstStreamFrame(*frame.rst_stream_frame, &writer)) {
           LOG(DFATAL) << "AppendRstStreamFrame failed";
@@ -1285,6 +1293,21 @@ bool QuicFramer::ProcessFrameData(const QuicPacketHeader& header) {
         }
         continue;
       }
+      case PING_FRAME: {
+        if (quic_version_ <= QUIC_VERSION_17) {
+          LOG(DFATAL) << "Trying to read a Ping in "
+                      << QuicVersionToString(quic_version_);
+          return RaiseError(QUIC_INTERNAL_ERROR);
+        }
+        // Ping has no payload.
+        QuicPingFrame ping_frame;
+        if (!visitor_->OnPingFrame(ping_frame)) {
+          DVLOG(1) << "Visitor asked to stop further processing.";
+          // Returning true since there was no parsing error.
+          return true;
+        }
+        continue;
+      }
 
       default:
         set_detailed_error("Illegal frame type.");
@@ -1926,6 +1949,9 @@ size_t QuicFramer::ComputeFrameLength(
     }
     case STOP_WAITING_FRAME:
       return GetStopWaitingFrameSize(sequence_number_length);
+    case PING_FRAME:
+      // Ping has no payload.
+      return kQuicFrameTypeSize;
     case RST_STREAM_FRAME:
       return GetMinRstStreamFrameSize(quic_version_) +
           frame.rst_stream_frame->error_details.size();

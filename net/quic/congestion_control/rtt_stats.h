@@ -26,6 +26,10 @@ class NET_EXPORT_PRIVATE RttStats {
   // the packet is sent and the peer reports the ack being delayed |ack_delay|.
   void UpdateRtt(QuicTime::Delta send_delta, QuicTime::Delta ack_delay);
 
+  // Forces RttStats to sample a new recent min rtt within the next
+  // |num_samples| UpdateRtt calls.
+  void SampleNewRecentMinRtt(uint32 num_samples);
+
   QuicTime::Delta SmoothedRtt() const;
 
   int64 initial_rtt_us() const {
@@ -41,8 +45,15 @@ class NET_EXPORT_PRIVATE RttStats {
     return latest_rtt_;
   }
 
+  // Returns the min_rtt for the entire connection.
   QuicTime::Delta min_rtt() const {
     return min_rtt_;
+  }
+
+  // Returns the min_rtt since SampleNewRecentMinRtt has been called, or the
+  // min_rtt for the entire connection if SampleNewMinRtt was never called.
+  QuicTime::Delta recent_min_rtt() const {
+    return recent_min_rtt_;
   }
 
   QuicTime::Delta mean_deviation() const {
@@ -52,12 +63,16 @@ class NET_EXPORT_PRIVATE RttStats {
  private:
   QuicTime::Delta latest_rtt_;
   QuicTime::Delta min_rtt_;
+  QuicTime::Delta recent_min_rtt_;
   QuicTime::Delta smoothed_rtt_;
   // Mean RTT deviation during this session.
   // Approximation of standard deviation, the error is roughly 1.25 times
   // larger than the standard deviation, for a normally distributed signal.
   QuicTime::Delta mean_deviation_;
   int64 initial_rtt_us_;
+
+  QuicTime::Delta new_min_rtt_;
+  uint32 num_min_rtt_samples_remaining_;
 
   DISALLOW_COPY_AND_ASSIGN(RttStats);
 };

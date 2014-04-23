@@ -9,17 +9,9 @@
 
 #include "base/basictypes.h"
 #include "net/base/net_export.h"
+#include "net/quic/quic_time.h"
 
 namespace net {
-// TODO(satyamshekhar): Add more interesting stats:
-// 1. SHLO received to first stream packet processed time.
-// 2. CHLO sent to SHLO received time.
-// 3. Number of migrations.
-// 4. Number of out of order packets.
-// 5. Number of connections that require more that 1-RTT.
-// 6. Avg number of streams / session.
-// 7. Number of duplicates received.
-
 // Structure to hold stats for a QuicConnection.
 struct NET_EXPORT_PRIVATE QuicConnectionStats {
   QuicConnectionStats();
@@ -75,7 +67,9 @@ struct NET_EXPORT_PRIVATE QuicConnectionStats {
   uint32 cwnd_increase_congestion_avoidance;
   // Total amount of cwnd increase by TCPCubic in cubic mode.
   uint32 cwnd_increase_cubic_mode;
-  // TODO(satyamshekhar): Add window_size, mss and mtu.
+
+  // Creation time, as reported by the QuicClock.
+  QuicTime connection_creation_time;
 };
 
 }  // namespace net

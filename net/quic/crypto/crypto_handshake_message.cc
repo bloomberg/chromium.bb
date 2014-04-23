@@ -240,6 +240,7 @@ string CryptoHandshakeMessage::DebugStringInternal(size_t indent) const {
     bool done = false;
     switch (it->first) {
       case kICSL:
+      case kIFCW:
       case kIRTT:
       case kKATO:
       case kMSPC:
@@ -255,6 +256,7 @@ string CryptoHandshakeMessage::DebugStringInternal(size_t indent) const {
       case kKEXS:
       case kAEAD:
       case kCGST:
+      case kLOSS:
       case kPDMD:
       case kVER:
         // tag lists

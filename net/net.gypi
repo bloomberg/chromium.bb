@@ -1438,6 +1438,7 @@
       'quic/congestion_control/paced_sender_test.cc',
       'quic/congestion_control/pacing_sender_test.cc',
       'quic/congestion_control/quic_max_sized_map_test.cc',
+      'quic/congestion_control/rtt_stats_test.cc',
       'quic/congestion_control/tcp_cubic_sender_test.cc',
       'quic/congestion_control/tcp_loss_algorithm_test.cc',
       'quic/congestion_control/tcp_receiver_test.cc',

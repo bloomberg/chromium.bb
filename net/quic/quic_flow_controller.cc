@@ -88,9 +88,9 @@ void QuicFlowController::AddBytesSent(uint64 bytes_sent) {
 
 bool QuicFlowController::FlowControlViolation() {
   if (receive_window_offset_ < TotalReceivedBytes()) {
-    // TODO(rjshade): Lower severity from DFATAL once we have established that
+    // TODO(rjshade): Lower severity from ERROR once we have established that
     //                flow control is working correctly.
-    LOG(DFATAL)
+    LOG(ERROR)
         << ENDPOINT << "Flow control violation on stream " << id_
         << ", receive window: " << receive_window_offset_
         << ", bytes received: " << TotalReceivedBytes();

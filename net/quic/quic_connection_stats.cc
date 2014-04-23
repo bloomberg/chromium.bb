@@ -35,7 +35,8 @@ QuicConnectionStats::QuicConnectionStats()
       max_time_reordering_us(0),
       tcp_loss_events(0),
       cwnd_increase_congestion_avoidance(0),
-      cwnd_increase_cubic_mode(0) {
+      cwnd_increase_cubic_mode(0),
+      connection_creation_time(QuicTime::Zero()) {
 }
 
 QuicConnectionStats::~QuicConnectionStats() {}

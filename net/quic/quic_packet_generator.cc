@@ -61,6 +61,9 @@ QuicPacketGenerator::~QuicPacketGenerator() {
       case STOP_WAITING_FRAME:
         delete it->stop_waiting_frame;
         break;
+      case PING_FRAME:
+        delete it->ping_frame;
+        break;
       case NUM_FRAME_TYPES:
         DCHECK(false) << "Cannot delete type: " << it->type;
     }

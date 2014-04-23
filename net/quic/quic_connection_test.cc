@@ -350,6 +350,10 @@ class TestPacketWriter : public QuicPacketWriter {
     return framer_.stream_frames();
   }
 
+  const vector<QuicPingFrame>& ping_frames() const {
+    return framer_.ping_frames();
+  }
+
   size_t last_packet_size() {
     return last_packet_size_;
   }
@@ -2686,9 +2690,13 @@ TEST_P(QuicConnectionTest, PingAfterSend) {
   clock_.AdvanceTime(QuicTime::Delta::FromSeconds(15));
   connection_.GetPingAlarm()->Fire();
   EXPECT_EQ(1u, writer_->frame_count());
-  ASSERT_EQ(1u, writer_->stream_frames().size());
-  EXPECT_EQ(kCryptoStreamId, writer_->stream_frames()[0].stream_id);
-  EXPECT_EQ(0u, writer_->stream_frames()[0].offset);
+  if (version() > QUIC_VERSION_17) {
+    ASSERT_EQ(1u, writer_->ping_frames().size());
+  } else {
+    ASSERT_EQ(1u, writer_->stream_frames().size());
+    EXPECT_EQ(kCryptoStreamId, writer_->stream_frames()[0].stream_id);
+    EXPECT_EQ(0u, writer_->stream_frames()[0].offset);
+  }
   writer_->Reset();
 
   EXPECT_CALL(visitor_, HasOpenDataStreams()).WillRepeatedly(Return(false));

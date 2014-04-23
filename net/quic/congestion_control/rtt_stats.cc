@@ -20,13 +20,20 @@ const float kOneMinusBeta = (1 - kBeta);
 RttStats::RttStats()
     : latest_rtt_(QuicTime::Delta::Zero()),
       min_rtt_(QuicTime::Delta::Zero()),
+      recent_min_rtt_(QuicTime::Delta::Zero()),
       smoothed_rtt_(QuicTime::Delta::Zero()),
       mean_deviation_(QuicTime::Delta::Zero()),
-      initial_rtt_us_(kInitialRttMs * base::Time::kMicrosecondsPerMillisecond) {
-}
+      initial_rtt_us_(kInitialRttMs * base::Time::kMicrosecondsPerMillisecond),
+      new_min_rtt_(QuicTime::Delta::Zero()),
+      num_min_rtt_samples_remaining_(0) { }
 
 bool RttStats::HasUpdates() const {
   return !smoothed_rtt_.IsZero();
+}
+
+void RttStats::SampleNewRecentMinRtt(uint32 num_samples) {
+  num_min_rtt_samples_remaining_ = num_samples;
+  new_min_rtt_ = QuicTime::Delta::Zero();
 }
 
 // Updates the RTT based on a new sample.
@@ -54,6 +61,19 @@ void RttStats::UpdateRtt(QuicTime::Delta send_delta,
   // First time call or link delay decreases.
   if (min_rtt_.IsZero() || min_rtt_ > rtt_sample) {
     min_rtt_ = rtt_sample;
+  }
+  if (recent_min_rtt_.IsZero() || recent_min_rtt_ > rtt_sample) {
+    recent_min_rtt_ = rtt_sample;
+  }
+  // Recent min_rtt update.
+  if (num_min_rtt_samples_remaining_ > 0) {
+    --num_min_rtt_samples_remaining_;
+    if (new_min_rtt_.IsZero() || new_min_rtt_ > rtt_sample) {
+      new_min_rtt_ = rtt_sample;
+    }
+    if (num_min_rtt_samples_remaining_ == 0) {
+      recent_min_rtt_ = new_min_rtt_;
+    }
   }
   // First time call.
   if (!HasUpdates()) {

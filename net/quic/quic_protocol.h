@@ -166,6 +166,7 @@ enum QuicFrameType {
   WINDOW_UPDATE_FRAME = 4,
   BLOCKED_FRAME = 5,
   STOP_WAITING_FRAME = 6,
+  PING_FRAME = 7,
 
   // STREAM, ACK, and CONGESTION_FEEDBACK frames are special frames. They are
   // encoded differently on the wire and their values do not need to be stable.
@@ -266,7 +267,8 @@ enum QuicVersion {
   QUIC_VERSION_13 = 13,
   QUIC_VERSION_15 = 15,
   QUIC_VERSION_16 = 16,
-  QUIC_VERSION_17 = 17,  // Current version.
+  QUIC_VERSION_17 = 17,
+  QUIC_VERSION_18 = 18,  // Current version.
 };
 
 // This vector contains QUIC versions which we currently support.
@@ -276,7 +278,8 @@ enum QuicVersion {
 //
 // IMPORTANT: if you are addding to this list, follow the instructions at
 // http://sites/quic/adding-and-removing-versions
-static const QuicVersion kSupportedQuicVersions[] = {QUIC_VERSION_17,
+static const QuicVersion kSupportedQuicVersions[] = {QUIC_VERSION_18,
+                                                     QUIC_VERSION_17,
                                                      QUIC_VERSION_16,
                                                      QUIC_VERSION_15,
                                                      QUIC_VERSION_13};
@@ -569,6 +572,11 @@ typedef QuicPacketPublicHeader QuicVersionNegotiationPacket;
 struct NET_EXPORT_PRIVATE QuicPaddingFrame {
 };
 
+// A ping frame contains no payload, though it is retransmittable,
+// and ACK'd just like other normal frames.
+struct NET_EXPORT_PRIVATE QuicPingFrame {
+};
+
 struct NET_EXPORT_PRIVATE QuicStreamFrame {
   QuicStreamFrame();
   QuicStreamFrame(const QuicStreamFrame& frame);
@@ -826,6 +834,7 @@ struct NET_EXPORT_PRIVATE QuicFrame {
   explicit QuicFrame(QuicRstStreamFrame* frame);
   explicit QuicFrame(QuicConnectionCloseFrame* frame);
   explicit QuicFrame(QuicStopWaitingFrame* frame);
+  explicit QuicFrame(QuicPingFrame* frame);
   explicit QuicFrame(QuicGoAwayFrame* frame);
   explicit QuicFrame(QuicWindowUpdateFrame* frame);
   explicit QuicFrame(QuicBlockedFrame* frame);
@@ -840,6 +849,7 @@ struct NET_EXPORT_PRIVATE QuicFrame {
     QuicAckFrame* ack_frame;
     QuicCongestionFeedbackFrame* congestion_feedback_frame;
     QuicStopWaitingFrame* stop_waiting_frame;
+    QuicPingFrame* ping_frame;
     QuicRstStreamFrame* rst_stream_frame;
     QuicConnectionCloseFrame* connection_close_frame;
     QuicGoAwayFrame* goaway_frame;

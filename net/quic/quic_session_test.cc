@@ -612,10 +612,7 @@ TEST_P(QuicSessionTest, InvalidFlowControlWindowInHandshake) {
   EXPECT_EQ(QUIC_NO_ERROR, error);
 
   EXPECT_CALL(*connection_, SendConnectionClose(QUIC_FLOW_CONTROL_ERROR));
-  string expected_error("Peer sent us an invalid flow control send window: ");
-  expected_error.append(reinterpret_cast<const char*>(&kInvalidWindow),
-                        sizeof(kInvalidWindow));
-  EXPECT_DFATAL(session_.OnConfigNegotiated(), expected_error);
+  session_.OnConfigNegotiated();
 }
 
 }  // namespace

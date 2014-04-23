@@ -214,6 +214,7 @@ class TestQuicVisitor : public ::net::QuicFramerVisitorInterface {
     STLDeleteElements(&ack_frames_);
     STLDeleteElements(&congestion_feedback_frames_);
     STLDeleteElements(&stop_waiting_frames_);
+    STLDeleteElements(&ping_frames_);
     STLDeleteElements(&fec_data_);
   }
 
@@ -292,6 +293,12 @@ class TestQuicVisitor : public ::net::QuicFramerVisitorInterface {
     return true;
   }
 
+  virtual bool OnPingFrame(const QuicPingFrame& frame) OVERRIDE {
+    ++frame_count_;
+    ping_frames_.push_back(new QuicPingFrame(frame));
+    return true;
+  }
+
   virtual void OnFecData(const QuicFecData& fec) OVERRIDE {
     ++fec_count_;
     fec_data_.push_back(new QuicFecData(fec));
@@ -347,6 +354,7 @@ class TestQuicVisitor : public ::net::QuicFramerVisitorInterface {
   vector<QuicAckFrame*> ack_frames_;
   vector<QuicCongestionFeedbackFrame*> congestion_feedback_frames_;
   vector<QuicStopWaitingFrame*> stop_waiting_frames_;
+  vector<QuicPingFrame*> ping_frames_;
   vector<QuicFecData*> fec_data_;
   string fec_protected_payload_;
   QuicRstStreamFrame rst_stream_frame_;
@@ -3362,6 +3370,39 @@ TEST_P(QuicFramerTest, BlockedFrame) {
   }
 }
 
+TEST_P(QuicFramerTest, PingFrame) {
+  if (version_ <= QUIC_VERSION_17) {
+    return;
+  }
+
+  unsigned char packet[] = {
+    // public flags (8 byte connection_id)
+    0x3C,
+    // connection_id
+    0x10, 0x32, 0x54, 0x76,
+    0x98, 0xBA, 0xDC, 0xFE,
+    // packet sequence number
+    0xBC, 0x9A, 0x78, 0x56,
+    0x34, 0x12,
+    // private flags
+    0x00,
+
+    // frame type (ping frame)
+    0x07,
+  };
+
+  QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
+  EXPECT_TRUE(framer_.ProcessPacket(encrypted));
+
+  EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
+  ASSERT_TRUE(visitor_.header_.get());
+  EXPECT_TRUE(CheckDecryption(encrypted, !kIncludeVersion));
+
+  EXPECT_EQ(1u, visitor_.ping_frames_.size());
+
+  // No need to check the PING frame boundaries because it has no payload.
+}
+
 TEST_P(QuicFramerTest, PublicResetPacket) {
   unsigned char packet[] = {
     // public flags (public reset, 8 byte connection_id)
@@ -4935,6 +4976,54 @@ TEST_P(QuicFramerTest, BuildBlockedPacket) {
   } else {
     string expected_error =
         "Attempt to add a BlockedFrame in " + QuicVersionToString(version_);
+    EXPECT_DFATAL(framer_.BuildUnsizedDataPacket(header, frames),
+                  expected_error);
+    return;
+  }
+}
+
+TEST_P(QuicFramerTest, BuildPingPacket) {
+  QuicPacketHeader header;
+  header.public_header.connection_id = GG_UINT64_C(0xFEDCBA9876543210);
+  header.public_header.reset_flag = false;
+  header.public_header.version_flag = false;
+  header.fec_flag = false;
+  header.entropy_flag = true;
+  header.packet_sequence_number = GG_UINT64_C(0x123456789ABC);
+  header.fec_group = 0;
+
+  QuicPingFrame ping_frame;
+
+  QuicFrames frames;
+  frames.push_back(QuicFrame(&ping_frame));
+
+  unsigned char packet[] = {
+    // public flags (8 byte connection_id)
+    0x3C,
+    // connection_id
+    0x10, 0x32, 0x54, 0x76,
+    0x98, 0xBA, 0xDC, 0xFE,
+    // packet sequence number
+    0xBC, 0x9A, 0x78, 0x56,
+    0x34, 0x12,
+    // private flags(entropy)
+    0x01,
+
+    // frame type (ping frame)
+    0x07,
+  };
+
+  if (version_ > QUIC_VERSION_17) {
+    scoped_ptr<QuicPacket> data(
+        framer_.BuildUnsizedDataPacket(header, frames).packet);
+    ASSERT_TRUE(data != NULL);
+
+    test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                        data->length(), AsChars(packet),
+                                        arraysize(packet));
+  } else {
+    string expected_error =
+        "Attempt to add a PingFrame in " + QuicVersionToString(version_);
     EXPECT_DFATAL(framer_.BuildUnsizedDataPacket(header, frames),
                   expected_error);
     return;

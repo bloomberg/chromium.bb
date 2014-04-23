@@ -111,6 +111,12 @@ vector<TestParams> GetTestParams() {
     for (size_t i = 1; i < all_supported_versions.size(); ++i) {
       QuicVersionVector server_supported_versions;
       server_supported_versions.push_back(all_supported_versions[i]);
+      if (all_supported_versions[i] >= QUIC_VERSION_17) {
+        // Until flow control is globally rolled out and we remove
+        // QUIC_VERSION_16, the server MUST support at least one QUIC version
+        // that does not use flow control.
+        server_supported_versions.push_back(QUIC_VERSION_16);
+      }
       params.push_back(TestParams(all_supported_versions,
                                   server_supported_versions,
                                   server_supported_versions[0],

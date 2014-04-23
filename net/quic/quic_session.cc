@@ -388,7 +388,7 @@ void QuicSession::OnConfigNegotiated() {
     uint32 new_flow_control_send_window =
         config_.ReceivedInitialFlowControlWindowBytes();
     if (new_flow_control_send_window < kDefaultFlowControlSendWindow) {
-      LOG(DFATAL)
+      LOG(ERROR)
           << "Peer sent us an invalid flow control send window: "
           << new_flow_control_send_window
           << ", below default: " << kDefaultFlowControlSendWindow;
