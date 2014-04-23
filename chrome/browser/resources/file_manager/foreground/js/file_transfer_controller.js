@@ -253,31 +253,32 @@ FileTransferController.prototype = {
 
     // Call processEntry for each item of entries.
     var processEntries = function(entries) {
-      return Promise.all(entries.map(processEntry)).then(concatArrays);
+      var files = entries.filter(function(entry) {return entry.isFile;});
+      var dirs = entries.filter(function(entry) {return !entry.isFile;});
+      var promises = dirs.map(processDirectoryEntry);
+      if (files.length > 0)
+        promises.push(processFileEntries(files));
+      return Promise.all(promises).then(concatArrays);
     };
 
-    // Check entry type and do particular instructions.
-    var processEntry = function(entry) {
-      if (entry.isFile) {
-        // The entry is file. Obtain metadata.
-        return new Promise(function(callback) {
-          chrome.fileBrowserPrivate.getDriveEntryProperties(entry.toURL(),
-                                                            callback);
-        }).
-        then(function(metadata) {
-          if (metadata &&
-              metadata.isHosted &&
-              !metadata.sharedWithMe) {
-            return [entry];
-          } else {
-            return [];
-          }
+    // Check all file entries and keeps only those need sharing operation.
+    var processFileEntries = function(entries) {
+      return new Promise(function(callback) {
+        var urls = util.entriesToURLs(entries);
+        chrome.fileBrowserPrivate.getDriveEntryProperties(urls, callback);
+      }).
+      then(function(metadatas) {
+        return entries.filter(function(entry, i) {
+          var metadata = metadatas[i];
+          return metadata && metadata.isHosted && !metadata.sharedWithMe;
         });
-      } else {
-        // The entry is directory. Check child entries.
-        return readEntries(entry.createReader());
-      }
-    }.bind(this);
+      });
+    };
+
+    // Check child entries.
+    var processDirectoryEntry = function(entry) {
+      return readEntries(entry.createReader());
+    };
 
     // Read entries from DirectoryReader and call processEntries for the chunk
     // of entries.
