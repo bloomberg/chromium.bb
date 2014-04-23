@@ -95,6 +95,7 @@
           'sources': [
             'installer/setup/compat_checks_unittest.cc',
             'installer/setup/setup_constants.cc',
+            'installer/util/advanced_firewall_manager_win_unittest.cc',
             'installer/util/callback_work_item_unittest.cc',
             'installer/util/channel_info_unittest.cc',
             'installer/util/copy_reg_key_work_item_unittest.cc',
@@ -119,6 +120,7 @@
             'installer/util/installer_util_unittests.rc',
             'installer/util/installer_util_unittests_resource.h',
             'installer/util/language_selector_unittest.cc',
+            'installer/util/legacy_firewall_manager_win_unittest.cc',
             'installer/util/logging_installer_unittest.cc',
             'installer/util/lzma_util_unittest.cc',
             'installer/util/master_preferences_unittest.cc',

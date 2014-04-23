@@ -11,6 +11,8 @@
       # This part is shared between the two versions of the target.
       ['installer_util_target==1', {
         'sources': [
+          'installer/util/advanced_firewall_manager_win.cc',
+          'installer/util/advanced_firewall_manager_win.h',
           'installer/util/app_command.cc',
           'installer/util/app_command.h',
           'installer/util/app_commands.cc',
@@ -47,6 +49,8 @@
           'installer/util/delete_tree_work_item.h',
           'installer/util/duplicate_tree_detector.cc',
           'installer/util/duplicate_tree_detector.h',
+          'installer/util/firewall_manager_win.cc',
+          'installer/util/firewall_manager_win.h',
           'installer/util/google_chrome_binaries_distribution.cc',
           'installer/util/google_chrome_binaries_distribution.h',
           'installer/util/google_chrome_sxs_distribution.cc',
@@ -71,6 +75,8 @@
           'installer/util/l10n_string_util.h',
           'installer/util/language_selector.cc',
           'installer/util/language_selector.h',
+          'installer/util/legacy_firewall_manager_win.cc',
+          'installer/util/legacy_firewall_manager_win.h',
           'installer/util/master_preferences_constants.cc',
           'installer/util/master_preferences_constants.h',
           'installer/util/move_tree_work_item.cc',
