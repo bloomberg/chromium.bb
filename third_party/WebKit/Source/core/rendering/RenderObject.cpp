@@ -1903,15 +1903,16 @@ StyleDifference RenderObject::adjustStyleDifference(StyleDifference diff, unsign
         }
     }
 
-    // If opacity or filters changed, and the layer does not paint into its own separate backing, then we need to repaint (also
+    // If opacity or zIndex changed, and the layer does not paint into its own separate backing, then we need to repaint (also
     // ignoring text nodes)
-    if (contextSensitiveProperties & ContextSensitivePropertyOpacity && !diff.needsLayout()) {
+    if ((contextSensitiveProperties & (ContextSensitivePropertyOpacity | ContextSensitivePropertyZIndex)) && !diff.needsLayout()) {
         if (!isText() && (!hasLayer() || !toRenderLayerModelObject(this)->layer()->hasDirectReasonsForCompositing()))
             diff.setNeedsRepaintLayer();
         else
             diff.setNeedsRecompositeLayer();
     }
 
+    // If filter changed, and the layer does not paint into its own separate backing or it paints with filters, then we need to repaint.
     if ((contextSensitiveProperties & ContextSensitivePropertyFilter) && hasLayer() && !diff.needsLayout()) {
         RenderLayer* layer = toRenderLayerModelObject(this)->layer();
         if (!layer->hasDirectReasonsForCompositing() || layer->paintsWithFilters())
