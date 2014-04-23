@@ -19,7 +19,7 @@ class PageSetUnitTest(unittest.TestCase):
     page_sets_dir = os.path.dirname(__file__)
     page_sets = discover.GetAllPageSetFilenames(page_sets_dir)
     for path in page_sets:
-      page_set = page_set_module.PageSet.FromFile(path, ignore_archive=True)
+      page_set = page_set_module.PageSet.FromFile(path)
 
       # TODO: Eventually these should be fatal.
       if not page_set.archive_data_file:
@@ -31,8 +31,8 @@ class PageSetUnitTest(unittest.TestCase):
         continue
 
       wpr_archive_info = page_set_archive_info.PageSetArchiveInfo.FromFile(
-          os.path.join(page_sets_dir, page_set.archive_data_file),
-          ignore_archive=True)
+        os.path.join(page_sets_dir, page_set.archive_data_file),
+        ignore_archive=True)
 
       logging.info('Testing %s', path)
       for page in page_set.pages:

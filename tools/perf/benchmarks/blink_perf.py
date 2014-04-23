@@ -7,19 +7,7 @@ import os
 from telemetry import test
 from telemetry.core import util
 from telemetry.page import page_measurement
-from telemetry.page import page as page_module
 from telemetry.page import page_set
-
-
-class BlinkPerfPageSet(page_set.PageSet):
-  def __init__(self, file_path, page_urls, serving_dirs):
-    super(BlinkPerfPageSet, self).__init__(file_path=file_path,
-                                           serving_dirs=serving_dirs)
-
-    for url in page_urls:
-      self.AddPage(page_module.PageWithDefaultRunNavigate(
-        url, page_set=self, base_dir=self._base_dir))
-    self._InitializeArchive()
 
 
 def _CreatePageSetFromPath(path):
@@ -60,7 +48,10 @@ def _CreatePageSetFromPath(path):
     _AddDir(path, skipped)
   else:
     _AddPage(path)
-  return BlinkPerfPageSet(os.getcwd() + os.sep, page_urls, serving_dirs)
+  ps = page_set.PageSet(file_path=os.getcwd()+os.sep, serving_dirs=serving_dirs)
+  for url in page_urls:
+    ps.AddPageWithDefaultRunNavigate(url)
+  return ps
 
 
 class _BlinkPerfMeasurement(page_measurement.PageMeasurement):
