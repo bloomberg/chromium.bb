@@ -34,7 +34,7 @@
     WillBeGarbageCollected,
 ] interface Window : EventTarget {
     // DOM Level 0
-    readonly attribute Screen screen;
+    [Replaceable] readonly attribute Screen screen;
     readonly attribute History history;
     [Replaceable] readonly attribute BarProp locationbar;
     [Replaceable] readonly attribute BarProp menubar;
