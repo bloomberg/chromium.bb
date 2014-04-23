@@ -36,6 +36,7 @@
 #include "platform/image-decoders/ImageDecoder.h"
 #include "platform/image-decoders/ImageFrame.h"
 #include "third_party/skia/include/core/SkBitmapDevice.h"
+#include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkStream.h"
 
 namespace WebCore {
@@ -47,7 +48,7 @@ GraphicsContext* GraphicsContextRecorder::record(const IntSize& size, bool isCer
     ASSERT(!m_context);
     m_isCertainlyOpaque = isCertainlyOpaque;
     m_recorder = adoptPtr(new SkPictureRecorder);
-    SkCanvas* canvas = m_recorder->beginRecording(size.width(), size.height());
+    SkCanvas* canvas = m_recorder->beginRecording(size.width(), size.height(), 0, 0);
     m_context = adoptPtr(new GraphicsContext(canvas));
     m_context->setTrackOpaqueRegion(isCertainlyOpaque);
     m_context->setCertainlyOpaque(isCertainlyOpaque);

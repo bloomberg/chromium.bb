@@ -29,6 +29,7 @@
 #include "SkBitmapDevice.h"
 #include "SkCanvas.h"
 #include "SkPicture.h"
+#include "SkPictureRecorder.h"
 #include "platform/SharedBuffer.h"
 #include "platform/Task.h"
 #include "platform/graphics/ImageDecodingStore.h"
@@ -156,7 +157,7 @@ TEST_F(DeferredImageDecoderTest, drawIntoSkPicture)
     EXPECT_TRUE(image->bitmap().isImmutable());
 
     SkPictureRecorder recorder;
-    SkCanvas* tempCanvas = recorder.beginRecording(100, 100);
+    SkCanvas* tempCanvas = recorder.beginRecording(100, 100, 0, 0);
     tempCanvas->drawBitmap(image->bitmap(), 0, 0);
     RefPtr<SkPicture> picture = adoptRef(recorder.endRecording());
     EXPECT_EQ(0, m_frameBufferRequestCount);
@@ -179,7 +180,7 @@ TEST_F(DeferredImageDecoderTest, drawIntoSkPictureProgressive)
     m_lazyDecoder->setData(*partialData, false);
     RefPtr<NativeImageSkia> image = m_lazyDecoder->frameBufferAtIndex(0)->asNewNativeImage();
     SkPictureRecorder recorder;
-    SkCanvas* tempCanvas = recorder.beginRecording(100, 100);
+    SkCanvas* tempCanvas = recorder.beginRecording(100, 100, 0, 0);
     tempCanvas->drawBitmap(image->bitmap(), 0, 0);
     RefPtr<SkPicture> picture = adoptRef(recorder.endRecording());
     m_canvas->drawPicture(*picture);
@@ -187,7 +188,7 @@ TEST_F(DeferredImageDecoderTest, drawIntoSkPictureProgressive)
     // Fully received the file and draw the SkPicture again.
     m_lazyDecoder->setData(*m_data, true);
     image = m_lazyDecoder->frameBufferAtIndex(0)->asNewNativeImage();
-    tempCanvas = recorder.beginRecording(100, 100);
+    tempCanvas = recorder.beginRecording(100, 100, 0, 0);
     tempCanvas->drawBitmap(image->bitmap(), 0, 0);
     picture = adoptRef(recorder.endRecording());
     m_canvas->drawPicture(*picture);
@@ -214,7 +215,7 @@ TEST_F(DeferredImageDecoderTest, decodeOnOtherThread)
     EXPECT_TRUE(image->bitmap().isImmutable());
 
     SkPictureRecorder recorder;
-    SkCanvas* tempCanvas = recorder.beginRecording(100, 100);
+    SkCanvas* tempCanvas = recorder.beginRecording(100, 100, 0, 0);
     tempCanvas->drawBitmap(image->bitmap(), 0, 0);
     RefPtr<SkPicture> picture = adoptRef(recorder.endRecording());
     EXPECT_EQ(0, m_frameBufferRequestCount);
@@ -320,7 +321,7 @@ TEST_F(DeferredImageDecoderTest, decodedSize)
 
     // The following code should not fail any assert.
     SkPictureRecorder recorder;
-    SkCanvas* tempCanvas = recorder.beginRecording(100, 100);
+    SkCanvas* tempCanvas = recorder.beginRecording(100, 100, 0, 0);
     tempCanvas->drawBitmap(image->bitmap(), 0, 0);
     RefPtr<SkPicture> picture = adoptRef(recorder.endRecording());
     EXPECT_EQ(0, m_frameBufferRequestCount);

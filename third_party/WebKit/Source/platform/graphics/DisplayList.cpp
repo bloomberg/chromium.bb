@@ -33,6 +33,7 @@
 
 #include "platform/geometry/IntSize.h"
 #include "third_party/skia/include/core/SkPicture.h"
+#include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
@@ -61,7 +62,7 @@ SkCanvas* DisplayList::beginRecording(const IntSize& size, uint32_t recordFlags)
     m_picture.clear();
     if (!m_recorder)
         m_recorder = adoptPtr(new SkPictureRecorder);
-    return m_recorder->beginRecording(size.width(), size.height(), recordFlags);
+    return m_recorder->beginRecording(size.width(), size.height(), 0, recordFlags);
 }
 
 void DisplayList::endRecording()

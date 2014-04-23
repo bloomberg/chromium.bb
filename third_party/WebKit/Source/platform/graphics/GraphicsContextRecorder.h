@@ -34,6 +34,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "third_party/skia/include/core/SkPicture.h"
+#include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
