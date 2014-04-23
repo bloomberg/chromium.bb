@@ -715,7 +715,7 @@ void CastSocket::MessageHeader::SetMessageSize(size_t size) {
 void CastSocket::MessageHeader::PrependToString(std::string* str) {
   MessageHeader output = *this;
   output.message_size = base::HostToNet32(message_size);
-  size_t header_size = base::checked_cast<uint32,size_t>(
+  size_t header_size = base::checked_cast<size_t,uint32>(
       MessageHeader::header_size());
   scoped_ptr<char, base::FreeDeleter> char_array(
       static_cast<char*>(malloc(header_size)));
@@ -728,7 +728,7 @@ void CastSocket::MessageHeader::PrependToString(std::string* str) {
 void CastSocket::MessageHeader::ReadFromIOBuffer(
     net::GrowableIOBuffer* buffer, MessageHeader* header) {
   uint32 message_size;
-  size_t header_size = base::checked_cast<uint32,size_t>(
+  size_t header_size = base::checked_cast<size_t,uint32>(
       MessageHeader::header_size());
   memcpy(&message_size, buffer->StartOfBuffer(), header_size);
   header->message_size = base::NetToHost32(message_size);
