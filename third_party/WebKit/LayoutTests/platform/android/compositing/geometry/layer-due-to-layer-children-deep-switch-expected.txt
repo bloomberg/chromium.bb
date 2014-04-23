@@ -2,16 +2,6 @@ This content is in the parent
 Box should switch between perspective and flat
 
 First dump layer tree:
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-    )
-  )
-)
 
 Second dump layer tree:
 (GraphicsLayer
@@ -28,7 +18,7 @@ Second dump layer tree:
           (drawsContent 1)
           (children 1
             (GraphicsLayer
-              (position 31.00 39.00)
+              (position 31.00 41.00)
               (bounds 250.00 220.00)
               (contentsOpaque 1)
               (drawsContent 1)
@@ -62,14 +52,4 @@ Second dump layer tree:
 )
 
 Third dump layer tree:
-(GraphicsLayer
-  (bounds 1032.00 1226.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 1032.00 1226.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-    )
-  )
-)
 
