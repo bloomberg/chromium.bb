@@ -194,6 +194,9 @@ void RenderLayerRepainter::setBackingNeedsRepaintInRect(const LayoutRect& r)
         m_renderer->layer()->convertToLayerCoords(m_renderer->layer()->root(), delta);
         absRect.moveBy(delta);
 
+        if (absRect.isEmpty())
+            return;
+
         RenderView* view = m_renderer->view();
         if (view)
             view->repaintViewRectangle(absRect);
@@ -227,6 +230,9 @@ void RenderLayerRepainter::setFilterBackendNeedsRepaintingInRect(const LayoutRec
     ASSERT(parentLayer);
     FloatQuad repaintQuad(rectForRepaint);
     LayoutRect parentLayerRect = m_renderer->localToContainerQuad(repaintQuad, parentLayer->renderer()).enclosingBoundingBox();
+
+    if (parentLayerRect.isEmpty())
+        return;
 
     if (parentLayer->hasCompositedLayerMapping()) {
         parentLayer->repainter().setBackingNeedsRepaintInRect(parentLayerRect);

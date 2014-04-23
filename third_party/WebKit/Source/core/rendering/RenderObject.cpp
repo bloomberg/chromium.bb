@@ -1383,6 +1383,9 @@ static PassRefPtr<JSONValue> jsonObjectForRepaintInfo(const IntRect& rect, const
 
 void RenderObject::repaintUsingContainer(const RenderLayerModelObject* repaintContainer, const IntRect& r, InvalidationReason invalidationReason) const
 {
+    if (r.isEmpty())
+        return;
+
     TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"), "RenderObject::repaintUsingContainer()",
         "object", this->debugName().ascii(),
         "info", TracedValue::fromJSONValue(jsonObjectForRepaintInfo(r, invalidationReasonToString(invalidationReason))));
