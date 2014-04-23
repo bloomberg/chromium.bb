@@ -274,6 +274,10 @@ class NavigationOrSwapObserver : public WebContentsObserver,
     tab_strip_model_->RemoveObserver(this);
   }
 
+  void set_did_start_loading() {
+    did_start_loading_ = true;
+  }
+
   void Wait() {
     loop_.Run();
   }
@@ -344,6 +348,7 @@ class NewTabNavigationOrSwapObserver {
         static_cast<Browser*>(new_tab->GetDelegate())->tab_strip_model();
     swap_observer_.reset(new NavigationOrSwapObserver(tab_strip_model,
                                                       new_tab));
+    swap_observer_->set_did_start_loading();
     return true;
   }
 
@@ -3219,30 +3224,30 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClickNavigateGoBack) {
   GoBackToPrerender();
 }
 
-// http://crbug.com/345474
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       DISABLED_PrerenderClickNewWindow) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClickNewWindow) {
+  // Prerender currently doesn't interpose on this navigation.
+  // http://crbug.com/345474.
   PrerenderTestURL("files/prerender/prerender_page_with_link.html",
-                   FINAL_STATUS_WINDOW_OPENER,
+                   FINAL_STATUS_APP_TERMINATING,
                    1);
   OpenDestURLViaClickNewWindow();
 }
 
-// http://crbug.com/345474
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       DISABLED_PrerenderClickNewForegroundTab) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClickNewForegroundTab) {
+  // Prerender currently doesn't interpose on this navigation.
+  // http://crbug.com/345474.
   PrerenderTestURL("files/prerender/prerender_page_with_link.html",
-                   FINAL_STATUS_WINDOW_OPENER,
+                   FINAL_STATUS_APP_TERMINATING,
                    1);
   OpenDestURLViaClickNewForegroundTab();
 }
 
-// http://crbug.com/345474
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       DISABLED_PrerenderClickNewBackgroundTab) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClickNewBackgroundTab) {
+  // Prerender currently doesn't interpose on this navigation.
+  // http://crbug.com/345474.
   scoped_ptr<TestPrerender> prerender =
       PrerenderTestURL("files/prerender/prerender_page_with_link.html",
-                       FINAL_STATUS_WINDOW_OPENER,
+                       FINAL_STATUS_APP_TERMINATING,
                        1);
   ASSERT_TRUE(prerender->contents());
   prerender->contents()->set_should_be_shown(false);
