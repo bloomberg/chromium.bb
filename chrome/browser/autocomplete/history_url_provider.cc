@@ -18,6 +18,7 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
+#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/history_service.h"
@@ -1149,7 +1150,7 @@ int HistoryURLProvider::CalculateRelevanceScoreUsingScoringParams(
 ACMatchClassifications HistoryURLProvider::ClassifyDescription(
     const base::string16& input_text,
     const base::string16& description) {
-  base::string16 clean_description = history::CleanUpTitleForMatching(
+  base::string16 clean_description = bookmark_utils::CleanUpTitleForMatching(
       description);
   history::TermMatches description_matches(SortAndDeoverlapMatches(
       history::MatchTermInString(input_text, clean_description, 0)));

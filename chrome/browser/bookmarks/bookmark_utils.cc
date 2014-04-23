@@ -21,6 +21,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "net/base/net_util.h"
 #include "ui/base/models/tree_node_iterator.h"
+#include "url/gurl.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/bookmarks/scoped_group_bookmark_actions.h"
@@ -29,6 +30,10 @@
 using base::Time;
 
 namespace {
+
+// The maximum length of URL or title returned by the Cleanup functions.
+const size_t kCleanedUpUrlMaxLength = 1024u;
+const size_t kCleanedUpTitleMaxLength = 1024u;
 
 void CloneBookmarkNodeImpl(BookmarkModel* model,
                            const BookmarkNodeData::Element& element,
@@ -121,6 +126,22 @@ const BookmarkNode* GetNodeByID(const BookmarkNode* node, int64 id) {
       return result;
   }
   return NULL;
+}
+
+// Attempts to shorten a URL safely (i.e., by preventing the end of the URL
+// from being in the middle of an escape sequence) to no more than
+// kCleanedUpUrlMaxLength characters, returning the result.
+std::string TruncateUrl(const std::string& url) {
+  if (url.length() <= kCleanedUpUrlMaxLength)
+    return url;
+
+  // If we're in the middle of an escape sequence, truncate just before it.
+  if (url[kCleanedUpUrlMaxLength - 1] == '%')
+    return url.substr(0, kCleanedUpUrlMaxLength - 1);
+  if (url[kCleanedUpUrlMaxLength - 2] == '%')
+    return url.substr(0, kCleanedUpUrlMaxLength - 2);
+
+  return url.substr(0, kCleanedUpUrlMaxLength);
 }
 
 }  // namespace
@@ -384,6 +405,19 @@ void RemoveAllBookmarks(BookmarkModel* model, const GURL& url) {
     if (index > -1)
       model->Remove(node->parent(), index);
   }
+}
+
+base::string16 CleanUpUrlForMatching(const GURL& gurl,
+                                     const std::string& languages) {
+  return base::i18n::ToLower(net::FormatUrl(
+      GURL(TruncateUrl(gurl.spec())), languages,
+      net::kFormatUrlOmitUsernamePassword,
+      net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS,
+      NULL, NULL, NULL));
+}
+
+base::string16 CleanUpTitleForMatching(const base::string16& title) {
+  return base::i18n::ToLower(title.substr(0u, kCleanedUpTitleMaxLength));
 }
 
 }  // namespace bookmark_utils

@@ -11,11 +11,13 @@
 #include "base/i18n/case_conversion.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/url_database.h"
-#include "components/bookmarks/core/browser/bookmark_title_match.h"
+#include "components/bookmarks/core/browser/bookmark_match.h"
 #include "components/query_parser/query_parser.h"
+#include "components/query_parser/snippet.h"
 #include "third_party/icu/source/common/unicode/normalizer2.h"
 
 namespace {
@@ -71,8 +73,12 @@ BookmarkIndex::NodeSet::const_iterator BookmarkIndex::Match::nodes_end() const {
   return nodes.empty() ? terms.front()->second.end() : nodes.end();
 }
 
-BookmarkIndex::BookmarkIndex(content::BrowserContext* browser_context)
-    : browser_context_(browser_context) {
+BookmarkIndex::BookmarkIndex(content::BrowserContext* browser_context,
+                             bool index_urls,
+                             const std::string& languages)
+    : index_urls_(index_urls),
+      browser_context_(browser_context),
+      languages_(languages) {
 }
 
 BookmarkIndex::~BookmarkIndex() {
@@ -85,6 +91,12 @@ void BookmarkIndex::Add(const BookmarkNode* node) {
       ExtractQueryWords(Normalize(node->GetTitle()));
   for (size_t i = 0; i < terms.size(); ++i)
     RegisterNode(terms[i], node);
+  if (index_urls_) {
+    terms = ExtractQueryWords(
+        bookmark_utils::CleanUpUrlForMatching(node->url(), languages_));
+    for (size_t i = 0; i < terms.size(); ++i)
+      RegisterNode(terms[i], node);
+  }
 }
 
 void BookmarkIndex::Remove(const BookmarkNode* node) {
@@ -95,12 +107,17 @@ void BookmarkIndex::Remove(const BookmarkNode* node) {
       ExtractQueryWords(Normalize(node->GetTitle()));
   for (size_t i = 0; i < terms.size(); ++i)
     UnregisterNode(terms[i], node);
+  if (index_urls_) {
+    terms = ExtractQueryWords(
+        bookmark_utils::CleanUpUrlForMatching(node->url(), languages_));
+    for (size_t i = 0; i < terms.size(); ++i)
+      UnregisterNode(terms[i], node);
+  }
 }
 
-void BookmarkIndex::GetBookmarksWithTitlesMatching(
-    const base::string16& input_query,
-    size_t max_count,
-    std::vector<BookmarkTitleMatch>* results) {
+void BookmarkIndex::GetBookmarksMatching(const base::string16& input_query,
+                                         size_t max_count,
+                                         std::vector<BookmarkMatch>* results) {
   const base::string16 query = Normalize(input_query);
   std::vector<base::string16> terms = ExtractQueryWords(query);
   if (terms.empty())
@@ -108,7 +125,7 @@ void BookmarkIndex::GetBookmarksWithTitlesMatching(
 
   Matches matches;
   for (size_t i = 0; i < terms.size(); ++i) {
-    if (!GetBookmarksWithTitleMatchingTerm(terms[i], i == 0, &matches))
+    if (!GetBookmarksMatchingTerm(terms[i], i == 0, &matches))
       return;
   }
 
@@ -177,22 +194,48 @@ void BookmarkIndex::ExtractBookmarkNodePairs(
 void BookmarkIndex::AddMatchToResults(
     const BookmarkNode* node,
     query_parser::QueryParser* parser,
-    const std::vector<query_parser::QueryNode*>& query_nodes,
-    std::vector<BookmarkTitleMatch>* results) {
-  BookmarkTitleMatch title_match;
+    const query_parser::QueryNodeStarVector& query_nodes,
+    std::vector<BookmarkMatch>* results) {
   // Check that the result matches the query.  The previous search
   // was a simple per-word search, while the more complex matching
   // of QueryParser may filter it out.  For example, the query
   // ["thi"] will match the bookmark titled [Thinking], but since
   // ["thi"] is quoted we don't want to do a prefix match.
-  if (parser->DoesQueryMatch(Normalize(node->GetTitle()), query_nodes,
-                             &(title_match.match_positions))) {
-    title_match.node = node;
-    results->push_back(title_match);
+  query_parser::QueryWordVector title_words, url_words;
+  const base::string16 lower_title =
+      base::i18n::ToLower(Normalize(node->GetTitle()));
+  parser->ExtractQueryWords(lower_title, &title_words);
+  if (index_urls_) {
+    parser->ExtractQueryWords(
+        bookmark_utils::CleanUpUrlForMatching(node->url(), languages_),
+        &url_words);
   }
+  query_parser::Snippet::MatchPositions title_matches, url_matches;
+  for (size_t i = 0; i < query_nodes.size(); ++i) {
+    const bool has_title_matches =
+        query_nodes[i]->HasMatchIn(title_words, &title_matches);
+    const bool has_url_matches = index_urls_ &&
+        query_nodes[i]->HasMatchIn(url_words, &url_matches);
+    if (!has_title_matches && !has_url_matches)
+      return;
+    query_parser::QueryParser::SortAndCoalesceMatchPositions(&title_matches);
+    if (index_urls_)
+      query_parser::QueryParser::SortAndCoalesceMatchPositions(&url_matches);
+  }
+  BookmarkMatch match;
+  if (lower_title.length() == node->GetTitle().length()) {
+    // Only use title matches if the lowercase string is the same length
+    // as the original string, otherwise the matches are meaningless.
+    // TODO(mpearson): revise match positions appropriately.
+    match.title_match_positions.swap(title_matches);
+  }
+  if (index_urls_)
+    match.url_match_positions.swap(url_matches);
+  match.node = node;
+  results->push_back(match);
 }
 
-bool BookmarkIndex::GetBookmarksWithTitleMatchingTerm(const base::string16& term,
+bool BookmarkIndex::GetBookmarksMatchingTerm(const base::string16& term,
                                                       bool first_term,
                                                       Matches* matches) {
   Index::const_iterator i = index_.lower_bound(term);

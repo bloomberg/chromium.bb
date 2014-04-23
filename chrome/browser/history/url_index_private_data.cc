@@ -22,6 +22,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/autocomplete/url_prefix.h"
+#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/history_db_task.h"
 #include "chrome/browser/history/history_service.h"
@@ -756,10 +757,12 @@ void URLIndexPrivateData::AddRowWordsToIndex(const URLRow& row,
   HistoryID history_id = static_cast<HistoryID>(row.id());
   // Split URL into individual, unique words then add in the title words.
   const GURL& gurl(row.url());
-  const base::string16& url = CleanUpUrlForMatching(gurl, languages);
+  const base::string16& url =
+      bookmark_utils::CleanUpUrlForMatching(gurl, languages);
   String16Set url_words = String16SetFromString16(url,
       word_starts ? &word_starts->url_word_starts_ : NULL);
-  const base::string16& title = CleanUpTitleForMatching(row.title());
+  const base::string16& title =
+      bookmark_utils::CleanUpTitleForMatching(row.title());
   String16Set title_words = String16SetFromString16(title,
       word_starts ? &word_starts->title_word_starts_ : NULL);
   String16Set words;
@@ -1237,9 +1240,11 @@ bool URLIndexPrivateData::RestoreWordStartsMap(
          iter != history_info_map_.end(); ++iter) {
       RowWordStarts word_starts;
       const URLRow& row(iter->second.url_row);
-      const base::string16& url = CleanUpUrlForMatching(row.url(), languages);
+      const base::string16& url =
+          bookmark_utils::CleanUpUrlForMatching(row.url(), languages);
       String16VectorFromString16(url, false, &word_starts.url_word_starts_);
-      const base::string16& title = CleanUpTitleForMatching(row.title());
+      const base::string16& title =
+          bookmark_utils::CleanUpTitleForMatching(row.title());
       String16VectorFromString16(title, false, &word_starts.title_word_starts_);
       word_starts_map_[iter->first] = word_starts;
     }

@@ -24,6 +24,8 @@ struct QueryWord {
   size_t position;
 };
 
+typedef std::vector<query_parser::QueryWord> QueryWordVector;
+
 // QueryNode is used by QueryParser to represent the elements that constitute a
 // query. While QueryNode is exposed by way of ParseQuery, it really isn't meant
 // for external usage.
@@ -45,15 +47,17 @@ class QueryNode {
   // Returns true if this node matches at least one of the words in |words|. An
   // entry is added to |match_positions| for all matching words giving the
   // matching regions.
-  virtual bool HasMatchIn(const std::vector<QueryWord>& words,
+  virtual bool HasMatchIn(const QueryWordVector& words,
                           Snippet::MatchPositions* match_positions) const = 0;
 
   // Returns true if this node matches at least one of the words in |words|.
-  virtual bool HasMatchIn(const std::vector<QueryWord>& words) const = 0;
+  virtual bool HasMatchIn(const QueryWordVector& words) const = 0;
 
   // Appends the words that make up this node in |words|.
   virtual void AppendWords(std::vector<base::string16>* words) const = 0;
 };
+
+typedef std::vector<query_parser::QueryNode*> QueryNodeStarVector;
 
 // This class is used to parse queries entered into the history search into more
 // normalized queries that can be passed to the SQLite backend.
@@ -85,23 +89,27 @@ class QueryParser {
   // query. This is intended for later usage with DoesQueryMatch. Ownership of
   // the nodes passes to the caller.
   void ParseQueryNodes(const base::string16& query,
-                       std::vector<QueryNode*>* nodes);
+                       QueryNodeStarVector* nodes);
 
   // Returns true if the string text matches the query nodes created by a call
   // to ParseQuery. If the query does match, each of the matching positions in
   // the text is added to |match_positions|.
   bool DoesQueryMatch(const base::string16& text,
-                      const std::vector<QueryNode*>& nodes,
+                      const QueryNodeStarVector& nodes,
                       Snippet::MatchPositions* match_positions);
 
   // Returns true if all of the |words| match the query |nodes| created by a
   // call to ParseQuery.
-  bool DoesQueryMatch(const std::vector<QueryWord>& words,
-                      const std::vector<QueryNode*>& nodes);
+  bool DoesQueryMatch(const QueryWordVector& words,
+                      const QueryNodeStarVector& nodes);
 
   // Extracts the words from |text|, placing each word into |words|.
   void ExtractQueryWords(const base::string16& text,
-                         std::vector<QueryWord>* words);
+                         QueryWordVector* words);
+
+  // Sorts the match positions in |matches| by their first index, then
+  // coalesces any match positions that intersect each other.
+  static void SortAndCoalesceMatchPositions(Snippet::MatchPositions* matches);
 
  private:
   // Does the work of parsing |query|; creates nodes in |root| as appropriate.

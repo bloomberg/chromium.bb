@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/i18n/string_compare.h"
+#include "base/prefs/pref_service.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/bookmarks/bookmark_expanded_state_tracker.h"
 #include "chrome/browser/bookmarks/bookmark_index.h"
@@ -23,7 +24,8 @@
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/bookmarks/core/browser/bookmark_title_match.h"
+#include "chrome/common/pref_names.h"
+#include "components/bookmarks/core/browser/bookmark_match.h"
 #include "components/favicon_base/favicon_types.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -70,7 +72,8 @@ class SortComparator : public std::binary_function<const BookmarkNode*,
 
 // BookmarkModel --------------------------------------------------------------
 
-BookmarkModel::BookmarkModel(Profile* profile)
+BookmarkModel::BookmarkModel(Profile* profile,
+                             bool index_urls)
     : profile_(profile),
       loaded_(false),
       root_(GURL()),
@@ -79,6 +82,7 @@ BookmarkModel::BookmarkModel(Profile* profile)
       mobile_node_(NULL),
       next_node_id_(1),
       observers_(ObserverList<BookmarkModelObserver>::NOTIFY_EXISTING_ONLY),
+      index_urls_(index_urls),
       loaded_signal_(true, false),
       extensive_changes_(0) {
   if (!profile_) {
@@ -609,14 +613,14 @@ void BookmarkModel::ResetDateFolderModified(const BookmarkNode* node) {
   SetDateFolderModified(node, Time());
 }
 
-void BookmarkModel::GetBookmarksWithTitlesMatching(
+void BookmarkModel::GetBookmarksMatching(
     const base::string16& text,
     size_t max_count,
-    std::vector<BookmarkTitleMatch>* matches) {
+    std::vector<BookmarkMatch>* matches) {
   if (!loaded_)
     return;
 
-  index_->GetBookmarksWithTitlesMatching(text, max_count, matches);
+  index_->GetBookmarksMatching(text, max_count, matches);
 }
 
 void BookmarkModel::ClearStore() {
@@ -945,7 +949,13 @@ BookmarkLoadDetails* BookmarkModel::CreateLoadDetails() {
       CreatePermanentNode(BookmarkNode::OTHER_NODE);
   BookmarkPermanentNode* mobile_node =
       CreatePermanentNode(BookmarkNode::MOBILE);
-  return new BookmarkLoadDetails(bb_node, other_node, mobile_node,
-                                 new BookmarkIndex(profile_),
-                                 next_node_id_);
+  return new BookmarkLoadDetails(
+      bb_node, other_node, mobile_node,
+      new BookmarkIndex(
+          profile_,
+          index_urls_,
+          profile_ ?
+              profile_->GetPrefs()->GetString(prefs::kAcceptLanguages) :
+              std::string()),
+      next_node_id_);
 }

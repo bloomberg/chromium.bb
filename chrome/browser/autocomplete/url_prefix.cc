@@ -77,13 +77,11 @@ bool URLPrefix::PrefixMatch(const URLPrefix& prefix,
 }
 
 // static
-void URLPrefix::ComputeMatchStartAndInlineAutocompleteOffset(
+size_t URLPrefix::GetInlineAutocompleteOffset(
     const AutocompleteInput& input,
     const AutocompleteInput& fixed_up_input,
     const bool allow_www_prefix_without_scheme,
-    const base::string16& text,
-    size_t* match_start,
-    size_t* inline_autocomplete_offset) {
+    const base::string16& text) {
   const URLPrefix* best_prefix = allow_www_prefix_without_scheme ?
       BestURLPrefixWithWWWCase(text, input.text()) :
       BestURLPrefix(text, input.text());
@@ -99,12 +97,7 @@ void URLPrefix::ComputeMatchStartAndInlineAutocompleteOffset(
         BestURLPrefix(text, fixed_up_input.text());
     matching_string = &fixed_up_input.text();
   }
-  if (best_prefix != NULL) {
-    *match_start = best_prefix->prefix.length();
-    *inline_autocomplete_offset =
-        best_prefix->prefix.length() + matching_string->length();
-  } else {
-    *match_start = base::string16::npos;
-    *inline_autocomplete_offset = base::string16::npos;
-  }
+  return (best_prefix != NULL) ?
+      (best_prefix->prefix.length() + matching_string->length()) :
+      base::string16::npos;
 }

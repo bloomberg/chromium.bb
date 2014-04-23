@@ -11,9 +11,10 @@
 
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
+#include "components/query_parser/query_parser.h"
 
 class BookmarkNode;
-struct BookmarkTitleMatch;
+struct BookmarkMatch;
 
 namespace content {
 class BrowserContext;
@@ -23,21 +24,21 @@ namespace history {
 class URLDatabase;
 }
 
-namespace query_parser {
-class QueryNode;
-class QueryParser;
-}
-
-// BookmarkIndex maintains an index of the titles of bookmarks for quick
-// look up. BookmarkIndex is owned and maintained by BookmarkModel, you
+// BookmarkIndex maintains an index of the titles and URLs of bookmarks for
+// quick look up. BookmarkIndex is owned and maintained by BookmarkModel, you
 // shouldn't need to interact directly with BookmarkIndex.
 //
 // BookmarkIndex maintains the index (index_) as a map of sets. The map (type
 // Index) maps from a lower case string to the set (type NodeSet) of
-// BookmarkNodes that contain that string in their title.
+// BookmarkNodes that contain that string in their title or URL.
 class BookmarkIndex {
  public:
-  explicit BookmarkIndex(content::BrowserContext* browser_context);
+  // |index_urls| says whether URLs should be stored in the index in addition
+  // to bookmark titles.  |languages| used to help parse IDNs in URLs for the
+  // bookmark index.
+  BookmarkIndex(content::BrowserContext* browser_context,
+                bool index_urls,
+                const std::string& languages);
   ~BookmarkIndex();
 
   // Invoked when a bookmark has been added to the model.
@@ -46,11 +47,12 @@ class BookmarkIndex {
   // Invoked when a bookmark has been removed from the model.
   void Remove(const BookmarkNode* node);
 
-  // Returns up to |max_count| of bookmarks containing the text |query|.
-  void GetBookmarksWithTitlesMatching(
+  // Returns up to |max_count| of bookmarks containing each term from
+  // the text |query| in either the title or the URL.
+  void GetBookmarksMatching(
       const base::string16& query,
       size_t max_count,
-      std::vector<BookmarkTitleMatch>* results);
+      std::vector<BookmarkMatch>* results);
 
  private:
   typedef std::set<const BookmarkNode*> NodeSet;
@@ -88,21 +90,21 @@ class BookmarkIndex {
   void AddMatchToResults(
       const BookmarkNode* node,
       query_parser::QueryParser* parser,
-      const std::vector<query_parser::QueryNode*>& query_nodes,
-      std::vector<BookmarkTitleMatch>* results);
+      const query_parser::QueryNodeStarVector& query_nodes,
+      std::vector<BookmarkMatch>* results);
 
   // Populates |matches| for the specified term. If |first_term| is true, this
   // is the first term in the query. Returns true if there is at least one node
   // matching the term.
-  bool GetBookmarksWithTitleMatchingTerm(const base::string16& term,
-                                         bool first_term,
-                                         Matches* matches);
+  bool GetBookmarksMatchingTerm(const base::string16& term,
+                                bool first_term,
+                                Matches* matches);
 
   // Iterates over |matches| updating each Match's nodes to contain the
   // intersection of the Match's current nodes and the nodes at |index_i|.
   // If the intersection is empty, the Match is removed.
   //
-  // This is invoked from GetBookmarksWithTitleMatchingTerm.
+  // This is invoked from GetBookmarksMatchingTerm.
   void CombineMatchesInPlace(const Index::const_iterator& index_i,
                              Matches* matches);
 
@@ -114,7 +116,7 @@ class BookmarkIndex {
   // non-empty the result is added to result, not combined in place. This
   // variant is used for prefix matching.
   //
-  // This is invoked from GetBookmarksWithTitleMatchingTerm.
+  // This is invoked from GetBookmarksMatchingTerm.
   void CombineMatches(const Index::const_iterator& index_i,
                       const Matches& current_matches,
                       Matches* result);
@@ -130,7 +132,13 @@ class BookmarkIndex {
 
   Index index_;
 
+  // True if URLs are stored in the index as well as bookmark titles.
+  const bool index_urls_;
+
   content::BrowserContext* browser_context_;
+
+  // Languages used to help parse IDNs in URLs for the bookmark index.
+  const std::string languages_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkIndex);
 };

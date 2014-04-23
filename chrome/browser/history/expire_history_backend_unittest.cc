@@ -56,7 +56,7 @@ class ExpireHistoryTest : public testing::Test,
                           public BroadcastNotificationDelegate {
  public:
   ExpireHistoryTest()
-      : bookmark_model_(NULL),
+      : bookmark_model_(NULL, false),
         ui_thread_(BrowserThread::UI, &message_loop_),
         db_thread_(BrowserThread::DB, &message_loop_),
         expirer_(this, &bookmark_model_),

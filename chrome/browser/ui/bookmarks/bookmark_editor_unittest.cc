@@ -12,7 +12,7 @@ using base::ASCIIToUTF16;
 namespace {
 
 TEST(BookmarkEditorTest, ApplyEditsWithNoFolderChange) {
-  BookmarkModel model(NULL);
+  BookmarkModel model(NULL, false);
   const BookmarkNode* bookmarkbar = model.bookmark_bar_node();
   model.AddURL(bookmarkbar, 0, ASCIIToUTF16("url0"), GURL("chrome://newtab"));
   model.AddURL(bookmarkbar, 1, ASCIIToUTF16("url1"), GURL("chrome://newtab"));

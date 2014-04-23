@@ -32,7 +32,7 @@ class BookmarkIndex;
 class BookmarkLoadDetails;
 class BookmarkModelObserver;
 class BookmarkStorage;
-struct BookmarkTitleMatch;
+struct BookmarkMatch;
 class Profile;
 class ScopedGroupBookmarkActions;
 
@@ -58,7 +58,9 @@ class BookmarkModel : public content::NotificationObserver,
                       public BookmarkService,
                       public KeyedService {
  public:
-  explicit BookmarkModel(Profile* profile);
+  // |index_urls| says whether URLs should be stored in the BookmarkIndex
+  // in addition to bookmark titles.
+  BookmarkModel(Profile* profile, bool index_urls);
   virtual ~BookmarkModel();
 
   // Invoked prior to destruction to release any necessary resources.
@@ -210,10 +212,12 @@ class BookmarkModel : public content::NotificationObserver,
   // combobox of most recently modified folders.
   void ResetDateFolderModified(const BookmarkNode* node);
 
-  void GetBookmarksWithTitlesMatching(
+  // Returns up to |max_count| of bookmarks containing each term from |text|
+  // in either the title or the URL.
+  void GetBookmarksMatching(
       const base::string16& text,
       size_t max_count,
-      std::vector<BookmarkTitleMatch>* matches);
+      std::vector<BookmarkMatch>* matches);
 
   // Sets the store to NULL, making it so the BookmarkModel does not persist
   // any changes to disk. This is only useful during testing to speed up
@@ -384,6 +388,10 @@ class BookmarkModel : public content::NotificationObserver,
   scoped_refptr<BookmarkStorage> store_;
 
   scoped_ptr<BookmarkIndex> index_;
+
+  // True if URLs are stored in the BookmarkIndex in addition to bookmark
+  // titles.
+  const bool index_urls_;
 
   base::WaitableEvent loaded_signal_;
 

@@ -13,7 +13,7 @@
 #include "components/query_parser/snippet.h"
 
 class BookmarkModel;
-struct BookmarkTitleMatch;
+struct BookmarkMatch;
 class Profile;
 
 // This class is an autocomplete provider which quickly (and synchronously)
@@ -48,15 +48,15 @@ class BookmarkProvider : public AutocompleteProvider {
   // |matches_|.
   void DoAutocomplete(const AutocompleteInput& input);
 
-  // Compose an AutocompleteMatch based on |title_match| that has 1) the URL of
-  // title_match's bookmark, and 2) the bookmark's title, not the URL's page
+  // Compose an AutocompleteMatch based on |match| that has 1) the URL of
+  // |match|'s bookmark, and 2) the bookmark's title, not the URL's page
   // title, as the description.  |input| is used to compute the match's
   // inline_autocompletion.  |fixed_up_input| is used in that way as well;
   // it's passed separately so this function doesn't have to compute it.
-  AutocompleteMatch TitleMatchToACMatch(
+  AutocompleteMatch BookmarkMatchToACMatch(
       const AutocompleteInput& input,
       const AutocompleteInput& fixed_up_input,
-      const BookmarkTitleMatch& title_match);
+      const BookmarkMatch& match);
 
   // Converts |positions| into ACMatchClassifications and returns the
   // classifications. |text_length| is used to determine the need to add an
@@ -64,9 +64,13 @@ class BookmarkProvider : public AutocompleteProvider {
   // properly highlighted.
   static ACMatchClassifications ClassificationsFromMatch(
       const query_parser::Snippet::MatchPositions& positions,
-      size_t text_length);
+      size_t text_length,
+      bool is_url);
 
   BookmarkModel* bookmark_model_;
+
+  // True if we should use matches in the URL for scoring.
+  const bool score_using_url_matches_;
 
   // Languages used during the URL formatting.
   std::string languages_;

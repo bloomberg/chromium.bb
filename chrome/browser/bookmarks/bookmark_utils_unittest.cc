@@ -70,7 +70,7 @@ class BookmarkUtilsTest : public testing::Test,
 };
 
 TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesWordPhraseQuery) {
-  BookmarkModel model(NULL);
+  BookmarkModel model(NULL, false);
   const BookmarkNode* node1 = model.AddURL(model.other_node(),
                                            0,
                                            ASCIIToUTF16("foo bar"),
@@ -128,7 +128,7 @@ TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesWordPhraseQuery) {
 
 // Check exact matching against a URL query.
 TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesUrl) {
-  BookmarkModel model(NULL);
+  BookmarkModel model(NULL, false);
   const BookmarkNode* node1 = model.AddURL(model.other_node(),
                                            0,
                                            ASCIIToUTF16("Google"),
@@ -163,7 +163,7 @@ TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesUrl) {
 
 // Check exact matching against a title query.
 TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesTitle) {
-  BookmarkModel model(NULL);
+  BookmarkModel model(NULL, false);
   const BookmarkNode* node1 = model.AddURL(model.other_node(),
                                            0,
                                            ASCIIToUTF16("Google"),
@@ -200,7 +200,7 @@ TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesTitle) {
 
 // Check matching against a query with multiple predicates.
 TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesConjunction) {
-  BookmarkModel model(NULL);
+  BookmarkModel model(NULL, false);
   const BookmarkNode* node1 = model.AddURL(model.other_node(),
                                            0,
                                            ASCIIToUTF16("Google"),
@@ -249,7 +249,7 @@ TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesConjunction) {
 }
 
 TEST_F(BookmarkUtilsTest, CopyPaste) {
-  BookmarkModel model(NULL);
+  BookmarkModel model(NULL, false);
   const BookmarkNode* node = model.AddURL(model.other_node(),
                                           0,
                                           ASCIIToUTF16("foo bar"),
@@ -276,7 +276,7 @@ TEST_F(BookmarkUtilsTest, CopyPaste) {
 }
 
 TEST_F(BookmarkUtilsTest, CutToClipboard) {
-  BookmarkModel model(NULL);
+  BookmarkModel model(NULL, false);
   model.AddObserver(this);
 
   base::string16 title(ASCIIToUTF16("foo"));
@@ -301,7 +301,7 @@ TEST_F(BookmarkUtilsTest, CutToClipboard) {
 }
 
 TEST_F(BookmarkUtilsTest, GetParentForNewNodes) {
-  BookmarkModel model(NULL);
+  BookmarkModel model(NULL, false);
   // This tests the case where selection contains one item and that item is a
   // folder.
   std::vector<const BookmarkNode*> nodes;
@@ -342,7 +342,7 @@ TEST_F(BookmarkUtilsTest, GetParentForNewNodes) {
 
 // Verifies that meta info is copied when nodes are cloned.
 TEST_F(BookmarkUtilsTest, CloneMetaInfo) {
-  BookmarkModel model(NULL);
+  BookmarkModel model(NULL, false);
   // Add a node containing meta info.
   const BookmarkNode* node = model.AddURL(model.other_node(),
                                           0,

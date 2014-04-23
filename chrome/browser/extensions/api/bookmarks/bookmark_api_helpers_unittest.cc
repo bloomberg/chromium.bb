@@ -22,7 +22,7 @@ namespace bookmark_api_helpers {
 class ExtensionBookmarksTest : public testing::Test {
  public:
   virtual void SetUp() OVERRIDE {
-    model_.reset(new BookmarkModel(NULL));
+    model_.reset(new BookmarkModel(NULL, false));
     model_->AddURL(model_->other_node(), 0, base::ASCIIToUTF16("Digg"),
                      GURL("http://www.reddit.com"));
     model_->AddURL(model_->other_node(), 0, base::ASCIIToUTF16("News"),

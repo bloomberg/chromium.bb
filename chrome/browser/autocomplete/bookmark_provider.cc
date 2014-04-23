@@ -15,12 +15,13 @@
 #include "chrome/browser/autocomplete/url_prefix.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
-#include "components/bookmarks/core/browser/bookmark_title_match.h"
+#include "components/bookmarks/core/browser/bookmark_match.h"
 #include "net/base/net_util.h"
 
-typedef std::vector<BookmarkTitleMatch> TitleMatches;
+typedef std::vector<BookmarkMatch> BookmarkMatches;
 
 // BookmarkProvider ------------------------------------------------------------
 
@@ -29,7 +30,8 @@ BookmarkProvider::BookmarkProvider(
     Profile* profile)
     : AutocompleteProvider(listener, profile,
                            AutocompleteProvider::TYPE_BOOKMARK),
-      bookmark_model_(NULL) {
+      bookmark_model_(NULL),
+      score_using_url_matches_(OmniboxFieldTrial::BookmarksIndexURLsValue()) {
   if (profile) {
     bookmark_model_ = BookmarkModelFactory::GetForProfile(profile);
     languages_ = profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
@@ -43,8 +45,7 @@ void BookmarkProvider::Start(const AutocompleteInput& input,
   matches_.clear();
 
   if (input.text().empty() ||
-      ((input.type() != AutocompleteInput::UNKNOWN) &&
-       (input.type() != AutocompleteInput::QUERY)))
+      (input.type() == AutocompleteInput::FORCED_QUERY))
     return;
 
   DoAutocomplete(input);
@@ -57,12 +58,12 @@ void BookmarkProvider::DoAutocomplete(const AutocompleteInput& input) {
   if (!bookmark_model_)
     return;
 
-  TitleMatches matches;
+  BookmarkMatches matches;
   // Retrieve enough bookmarks so that we have a reasonable probability of
   // suggesting the one that the user desires.
   const size_t kMaxBookmarkMatches = 50;
 
-  // GetBookmarksWithTitlesMatching returns bookmarks matching the user's
+  // GetBookmarksMatching returns bookmarks matching the user's
   // search terms using the following rules:
   //  - The search text is broken up into search terms. Each term is searched
   //    for separately.
@@ -77,26 +78,21 @@ void BookmarkProvider::DoAutocomplete(const AutocompleteInput& input) {
   //  - Multiple terms enclosed in quotes will require those exact words in that
   //    exact order to match.
   //
-  // Note: GetBookmarksWithTitlesMatching() will never return a match span
-  // greater than the length of the title against which it is being matched,
-  // nor can those spans ever overlap because the match spans are coalesced
-  // for all matched terms.
-  //
-  // Please refer to the code for BookmarkIndex::GetBookmarksWithTitlesMatching
-  // for complete details of how title searches are performed against the user's
+  // Please refer to the code for BookmarkIndex::GetBookmarksMatching for
+  // complete details of how searches are performed against the user's
   // bookmarks.
-  bookmark_model_->GetBookmarksWithTitlesMatching(input.text(),
-                                                  kMaxBookmarkMatches,
-                                                  &matches);
+  bookmark_model_->GetBookmarksMatching(input.text(),
+                                        kMaxBookmarkMatches,
+                                        &matches);
   if (matches.empty())
     return;  // There were no matches.
   AutocompleteInput fixed_up_input(input);
   FixupUserInput(&fixed_up_input);
-  for (TitleMatches::const_iterator i = matches.begin(); i != matches.end();
+  for (BookmarkMatches::const_iterator i = matches.begin(); i != matches.end();
        ++i) {
     // Create and score the AutocompleteMatch. If its score is 0 then the
     // match is discarded.
-    AutocompleteMatch match(TitleMatchToACMatch(input, fixed_up_input, *i));
+    AutocompleteMatch match(BookmarkMatchToACMatch(input, fixed_up_input, *i));
     if (match.relevance > 0)
       matches_.push_back(match);
   }
@@ -114,12 +110,8 @@ namespace {
 // for_each helper functor that calculates a match factor for each query term
 // when calculating the final score.
 //
-// Calculate a 'factor' from 0.0 to 1.0 based on 1) how much of the bookmark's
-// title the term matches, and 2) where the match is positioned within the
-// bookmark's title. A full length match earns a 1.0. A half-length match earns
-// at most a 0.5 and at least a 0.25. A single character match against a title
-// that is 100 characters long where the match is at the first character will
-// earn a 0.01 and at the last character will earn a 0.0001.
+// Calculate a 'factor' from 0 to the bookmark's title length for a match
+// based on 1) how many characters match and 2) where the match is positioned.
 class ScoringFunctor {
  public:
   // |title_length| is the length of the bookmark title against which this
@@ -131,7 +123,7 @@ class ScoringFunctor {
 
   void operator()(const query_parser::Snippet::MatchPosition& match) {
     double term_length = static_cast<double>(match.second - match.first);
-    scoring_factor_ += term_length / title_length_ *
+    scoring_factor_ += term_length *
         (title_length_ - match.first) / title_length_;
   }
 
@@ -144,32 +136,44 @@ class ScoringFunctor {
 
 }  // namespace
 
-AutocompleteMatch BookmarkProvider::TitleMatchToACMatch(
+AutocompleteMatch BookmarkProvider::BookmarkMatchToACMatch(
     const AutocompleteInput& input,
     const AutocompleteInput& fixed_up_input,
-    const BookmarkTitleMatch& title_match) {
+    const BookmarkMatch& bookmark_match) {
   // The AutocompleteMatch we construct is non-deletable because the only
   // way to support this would be to delete the underlying bookmark, which is
   // unlikely to be what the user intends.
   AutocompleteMatch match(this, 0, false,
                           AutocompleteMatchType::BOOKMARK_TITLE);
-  const base::string16& title(title_match.node->GetTitle());
-  DCHECK(!title.empty());
-
-  const GURL& url(title_match.node->url());
+  base::string16 title(bookmark_match.node->GetTitle());
+  const GURL& url(bookmark_match.node->url());
   const base::string16& url_utf16 = base::UTF8ToUTF16(url.spec());
-  size_t match_start, inline_autocomplete_offset;
-  URLPrefix::ComputeMatchStartAndInlineAutocompleteOffset(
-      input, fixed_up_input, false, url_utf16, &match_start,
-      &inline_autocomplete_offset);
+  size_t inline_autocomplete_offset = URLPrefix::GetInlineAutocompleteOffset(
+      input, fixed_up_input, false, url_utf16);
   match.destination_url = url;
+  const size_t match_start = bookmark_match.url_match_positions.empty() ?
+      0 : bookmark_match.url_match_positions[0].first;
   const bool trim_http = !AutocompleteInput::HasHTTPScheme(input.text()) &&
       ((match_start == base::string16::npos) || (match_start != 0));
-  match.contents = net::FormatUrl(url, languages_,
+  std::vector<size_t> offsets = BookmarkMatch::OffsetsFromMatchPositions(
+      bookmark_match.url_match_positions);
+  // In addition to knowing how |offsets| is transformed, we need to know how
+  // |inline_autocomplete_offset| is transformed.  We add it to the end of
+  // |offsets|, compute how everything is transformed, then remove it from the
+  // end.
+  offsets.push_back(inline_autocomplete_offset);
+  match.contents = net::FormatUrlWithOffsets(url, languages_,
       net::kFormatUrlOmitAll & ~(trim_http ? 0 : net::kFormatUrlOmitHTTP),
-      net::UnescapeRule::SPACES, NULL, NULL, &inline_autocomplete_offset);
-  match.contents_class.push_back(
-      ACMatchClassification(0, ACMatchClassification::URL));
+      net::UnescapeRule::SPACES, NULL, NULL, &offsets);
+  inline_autocomplete_offset = offsets.back();
+  offsets.pop_back();
+  BookmarkMatch::MatchPositions new_url_match_positions =
+      BookmarkMatch::ReplaceOffsetsInMatchPositions(
+          bookmark_match.url_match_positions, offsets);
+  match.contents_class =
+      ClassificationsFromMatch(new_url_match_positions,
+                               match.contents.size(),
+                               true);
   match.fill_into_edit =
       AutocompleteInput::FormattedStringWithEquivalentMeaning(url,
                                                               match.contents);
@@ -187,48 +191,56 @@ AutocompleteMatch BookmarkProvider::TitleMatchToACMatch(
   }
   match.description = title;
   match.description_class =
-      ClassificationsFromMatch(title_match.match_positions,
-                               match.description.size());
+      ClassificationsFromMatch(bookmark_match.title_match_positions,
+                               match.description.size(),
+                               false);
   match.starred = true;
 
   // Summary on how a relevance score is determined for the match:
   //
-  // For each term matching within the bookmark's title (as given by the set of
-  // Snippet::MatchPositions) calculate a 'factor', sum up those factors, then
-  // use the sum to figure out a value between the base score and the maximum
-  // score.
+  // For each match within the bookmark's title or URL (or both), calculate a
+  // 'factor', sum up those factors, then use the sum to figure out a value
+  // between the base score and the maximum score.
   //
-  // The factor for each term is the product of:
+  // The factor for each match is the product of:
   //
-  //  1) how much of the bookmark's title has been matched by the term:
-  //       (term length / title length).
+  //  1) how many characters in the bookmark's title/URL are part of this match.
+  //     This is capped at the length of the bookmark's title
+  //     to prevent terms that match in both the title and the URL from
+  //     scoring too strongly.
   //
-  //  Example: Given a bookmark title 'abcde fghijklm', with a title length
-  //     of 14, and two different search terms, 'abcde' and 'fghijklm', with
-  //     term lengths of 5 and 8, respectively, 'fghijklm' will score higher
-  //     (with a partial factor of 8/14 = 0.571) than 'abcde' (5/14 = 0.357).
-  //
-  //  2) where the term match occurs within the bookmark's title, giving more
-  //     points for matches that appear earlier in the title:
-  //       ((title length - position of match start) / title_length).
+  //  2) where the match occurs within the bookmark's title or URL,
+  //     giving more points for matches that appear earlier in the string:
+  //       ((string_length - position of match start) / string_length).
   //
   //  Example: Given a bookmark title of 'abcde fghijklm', with a title length
   //     of 14, and two different search terms, 'abcde' and 'fghij', with
   //     start positions of 0 and 6, respectively, 'abcde' will score higher
   //     (with a a partial factor of (14-0)/14 = 1.000 ) than 'fghij' (with
-  //     a partial factor of (14-6)/14 = 0.571 ).
+  //     a partial factor of (14-6)/14 = 0.571 ).  (In this example neither
+  //     term matches in the URL.)
   //
-  // Once all term factors have been calculated they are summed. The resulting
-  // sum will never be greater than 1.0 because of the way the bookmark model
-  // matches and removes overlaps. (In particular, the bookmark model only
+  // Once all match factors have been calculated they are summed.  If URL
+  // matches are not considered, the resulting sum will never be greater than
+  // the length of the bookmark title because of the way the bookmark model
+  // matches and removes overlaps.  (In particular, the bookmark model only
   // matches terms to the beginning of words and it removes all overlapping
-  // matches, keeping only the longest. Together these mean that each
-  // character is included in at most one match. This property ensures the
-  // sum of factors is at most 1.) This sum is then multiplied against the
-  // scoring range available, which is 299. The 299 is calculated by
-  // subtracting the minimum possible score, 900, from the maximum possible
-  // score, 1199. This product, ranging from 0 to 299, is added to the minimum
-  // possible score, 900, giving the preliminary score.
+  // matches, keeping only the longest.  Together these mean that each
+  // character is included in at most one match.)  If URL matches are
+  // considered, the sum can be greater.
+  //
+  // This sum is then normalized by the length of the bookmark title (if URL
+  // matches are not considered) or by the length of the bookmark title + 10
+  // (if URL matches are considered) and capped at 1.0.  (If URL matches
+  // are considered, we want to expand the scoring range so fewer bookmarks
+  // will hit the 1.0 cap and hence lose all ability to distinguish between
+  // these high-quality bookmarks.)
+  //
+  // The normalized value is multiplied against the scoring range available,
+  // which is 299.  The 299 is calculated by subtracting the minimum possible
+  // score, 900, from the maximum possible score, 1199.  This product, ranging
+  // from 0 to 299, is added to the minimum possible score, 900, giving the
+  // preliminary score.
   //
   // If the preliminary score is less than the maximum possible score, 1199,
   // it can be boosted up to that maximum possible score if the URL referenced
@@ -238,18 +250,32 @@ AutocompleteMatch BookmarkProvider::TitleMatchToACMatch(
   // scored up to a maximum of three, the score is boosted by a fixed amount
   // given by |kURLCountBoost|, below.
   //
-  ScoringFunctor position_functor =
-      for_each(title_match.match_positions.begin(),
-               title_match.match_positions.end(), ScoringFunctor(title.size()));
+  if (score_using_url_matches_) {
+    // Pretend empty titles are identical to the URL.
+    if (title.empty())
+      title = base::ASCIIToUTF16(url.spec());
+  } else {
+    DCHECK(!title.empty());
+  }
+  ScoringFunctor title_position_functor =
+      for_each(bookmark_match.title_match_positions.begin(),
+               bookmark_match.title_match_positions.end(),
+               ScoringFunctor(title.size()));
+  ScoringFunctor url_position_functor =
+      for_each(bookmark_match.url_match_positions.begin(),
+               bookmark_match.url_match_positions.end(),
+               ScoringFunctor(bookmark_match.node->url().spec().length()));
+  const double summed_factors = title_position_functor.ScoringFactor() +
+      (score_using_url_matches_ ? url_position_functor.ScoringFactor() : 0);
+  const double normalized_sum = std::min(
+      summed_factors / (title.size() + (score_using_url_matches_ ? 10 : 0)),
+      1.0);
   const int kBaseBookmarkScore = 900;
   const int kMaxBookmarkScore = 1199;
   const double kBookmarkScoreRange =
       static_cast<double>(kMaxBookmarkScore - kBaseBookmarkScore);
-  // It's not likely that GetBookmarksWithTitlesMatching will return overlapping
-  // matches but let's play it safe.
-  match.relevance = std::min(kMaxBookmarkScore,
-      static_cast<int>(position_functor.ScoringFactor() * kBookmarkScoreRange) +
-      kBaseBookmarkScore);
+  match.relevance = static_cast<int>(normalized_sum * kBookmarkScoreRange) +
+      kBaseBookmarkScore;
   // Don't waste any time searching for additional referenced URLs if we
   // already have a perfect title match.
   if (match.relevance >= kMaxBookmarkScore)
@@ -268,11 +294,14 @@ AutocompleteMatch BookmarkProvider::TitleMatchToACMatch(
 // static
 ACMatchClassifications BookmarkProvider::ClassificationsFromMatch(
     const query_parser::Snippet::MatchPositions& positions,
-    size_t text_length) {
+    size_t text_length,
+    bool is_url) {
+  ACMatchClassification::Style url_style =
+      is_url ? ACMatchClassification::URL : ACMatchClassification::NONE;
   ACMatchClassifications classifications;
   if (positions.empty()) {
     classifications.push_back(
-        ACMatchClassification(0, ACMatchClassification::NONE));
+        ACMatchClassification(0, url_style));
     return classifications;
   }
 
@@ -282,7 +311,7 @@ ACMatchClassifications BookmarkProvider::ClassificationsFromMatch(
        ++i) {
     AutocompleteMatch::ACMatchClassifications new_class;
     AutocompleteMatch::ClassifyLocationInString(i->first, i->second - i->first,
-        text_length, 0, &new_class);
+        text_length, url_style, &new_class);
     classifications = AutocompleteMatch::MergeClassifications(
         classifications, new_class);
   }

@@ -9,6 +9,7 @@
 #include "base/memory/singleton.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/startup_task_runner_service.h"
@@ -47,7 +48,8 @@ BookmarkModelFactory::~BookmarkModelFactory() {}
 KeyedService* BookmarkModelFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
-  BookmarkModel* bookmark_model = new BookmarkModel(profile);
+  BookmarkModel* bookmark_model =
+      new BookmarkModel(profile, OmniboxFieldTrial::BookmarksIndexURLsValue());
   bookmark_model->Load(StartupTaskRunnerServiceFactory::GetForProfile(profile)->
       GetBookmarkTaskRunner());
 #if !defined(OS_ANDROID)

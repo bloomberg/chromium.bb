@@ -115,7 +115,7 @@ class HistoryBackendTestBase : public testing::Test {
   typedef std::vector<std::pair<int, HistoryDetails*> > NotificationList;
 
   HistoryBackendTestBase()
-      : bookmark_model_(NULL),
+      : bookmark_model_(NULL, false),
         loaded_(false),
         ui_thread_(content::BrowserThread::UI, &message_loop_) {
   }

@@ -16,7 +16,7 @@ using base::ASCIIToUTF16;
 namespace {
 
 TEST(BookmarkUIUtilsTest, HasBookmarkURLs) {
-  BookmarkModel model(NULL);
+  BookmarkModel model(NULL, false);
 
   std::vector<const BookmarkNode*> nodes;
 
@@ -56,7 +56,7 @@ TEST(BookmarkUIUtilsTest, HasBookmarkURLs) {
 }
 
 TEST(BookmarkUIUtilsTest, HasBookmarkURLsAllowedInIncognitoMode) {
-  BookmarkModel model(NULL);
+  BookmarkModel model(NULL, false);
   TestingProfile profile;
 
   std::vector<const BookmarkNode*> nodes;

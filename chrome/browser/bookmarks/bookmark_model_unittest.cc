@@ -141,7 +141,7 @@ class BookmarkModelTest : public testing::Test,
   };
 
   BookmarkModelTest()
-    : model_(NULL) {
+    : model_(NULL, false) {
     model_.AddObserver(this);
     ClearCounts();
   }

@@ -14,13 +14,15 @@
 class BookmarkModel;
 class BookmarkNode;
 class Profile;
+class GURL;
 
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
 // A collection of bookmark utility functions used by various parts of the UI
-// that show bookmarks: bookmark manager, bookmark bar view ...
+// that show bookmarks (bookmark manager, bookmark bar view, ...) and other
+// systems that involve indexing and searching bookmarks.
 namespace bookmark_utils {
 
 // Fields to use when finding matching bookmarks.
@@ -106,6 +108,21 @@ void AddIfNotBookmarked(BookmarkModel* model,
 
 // Removes all bookmarks for the given |url|.
 void RemoveAllBookmarks(BookmarkModel* model, const GURL& url);
+
+// Truncates an overly-long URL, unescapes it, and lower-cases it,
+// returning the result.  This unescaping makes it possible to match
+// substrings that were originally escaped for navigation; for
+// example, if the user searched for "a&p", the query would be escaped
+// as "a%26p", so without unescaping, an input string of "a&p" would
+// no longer match this URL.  Note that the resulting unescaped URL
+// may not be directly navigable (which is why we escaped it to begin
+// with).  |languages| is passed to net::FormatUrl().
+base::string16 CleanUpUrlForMatching(const GURL& gurl,
+                                     const std::string& languages);
+
+// Returns the lower-cased title, possibly truncated if the original title
+// is overly-long.
+base::string16 CleanUpTitleForMatching(const base::string16& title);
 
 }  // namespace bookmark_utils
 
