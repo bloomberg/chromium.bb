@@ -153,31 +153,31 @@ void WebSocket::EventQueue::resumeTimerFired(Timer<EventQueue>*)
 
 const size_t maxReasonSizeInBytes = 123;
 
-static inline bool isValidProtocolCharacter(UChar character)
+static inline bool isValidSubprotocolCharacter(UChar character)
 {
-    // Hybi-10 says "(Subprotocol string must consist of) characters in the range U+0021 to U+007E not including
-    // separator characters as defined in [RFC2616]."
     const UChar minimumProtocolCharacter = '!'; // U+0021.
     const UChar maximumProtocolCharacter = '~'; // U+007E.
-    return character >= minimumProtocolCharacter && character <= maximumProtocolCharacter
-        && character != '"' && character != '(' && character != ')' && character != ',' && character != '/'
+    // Set to true if character does not matches "separators" ABNF defined in
+    // RFC2616. SP and HT are excluded since the range check excludes them.
+    bool isNotSeparator = character != '"' && character != '(' && character != ')' && character != ',' && character != '/'
         && !(character >= ':' && character <= '@') // U+003A - U+0040 (':', ';', '<', '=', '>', '?', '@').
         && !(character >= '[' && character <= ']') // U+005B - U+005D ('[', '\\', ']').
         && character != '{' && character != '}';
+    return character >= minimumProtocolCharacter && character <= maximumProtocolCharacter && isNotSeparator;
 }
 
-static bool isValidProtocolString(const String& protocol)
+static bool isValidSubprotocolString(const String& protocol)
 {
     if (protocol.isEmpty())
         return false;
     for (size_t i = 0; i < protocol.length(); ++i) {
-        if (!isValidProtocolCharacter(protocol[i]))
+        if (!isValidSubprotocolCharacter(protocol[i]))
             return false;
     }
     return true;
 }
 
-static String encodeProtocolString(const String& protocol)
+static String encodeSubprotocolString(const String& protocol)
 {
     StringBuilder builder;
     for (size_t i = 0; i < protocol.length(); i++) {
@@ -331,17 +331,10 @@ void WebSocket::connect(const String& url, const Vector<String>& protocols, Exce
 
     m_channel = WebSocketChannel::create(executionContext(), this);
 
-    // FIXME: There is a disagreement about restriction of subprotocols between WebSocket API and hybi-10 protocol
-    // draft. The former simply says "only characters in the range U+0021 to U+007E are allowed," while the latter
-    // imposes a stricter rule: "the elements MUST be non-empty strings with characters as defined in [RFC2616],
-    // and MUST all be unique strings."
-    //
-    // Here, we throw SyntaxError if the given protocols do not meet the latter criteria. This behavior does not
-    // comply with WebSocket API specification, but it seems to be the only reasonable way to handle this conflict.
     for (size_t i = 0; i < protocols.size(); ++i) {
-        if (!isValidProtocolString(protocols[i])) {
+        if (!isValidSubprotocolString(protocols[i])) {
             m_state = CLOSED;
-            exceptionState.throwDOMException(SyntaxError, "The subprotocol '" + encodeProtocolString(protocols[i]) + "' is invalid.");
+            exceptionState.throwDOMException(SyntaxError, "The subprotocol '" + encodeSubprotocolString(protocols[i]) + "' is invalid.");
             releaseChannel();
             return;
         }
@@ -350,7 +343,7 @@ void WebSocket::connect(const String& url, const Vector<String>& protocols, Exce
     for (size_t i = 0; i < protocols.size(); ++i) {
         if (!visited.add(protocols[i]).isNewEntry) {
             m_state = CLOSED;
-            exceptionState.throwDOMException(SyntaxError, "The subprotocol '" + encodeProtocolString(protocols[i]) + "' is duplicated.");
+            exceptionState.throwDOMException(SyntaxError, "The subprotocol '" + encodeSubprotocolString(protocols[i]) + "' is duplicated.");
             releaseChannel();
             return;
         }

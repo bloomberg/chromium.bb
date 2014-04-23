@@ -197,6 +197,7 @@ private:
     unsigned long m_bufferedAmount;
     unsigned long m_bufferedAmountAfterClose;
     BinaryType m_binaryType;
+    // The subprotocol the server selected.
     String m_subprotocol;
     String m_extensions;
 
