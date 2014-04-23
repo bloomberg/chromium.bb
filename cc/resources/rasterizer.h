@@ -32,7 +32,6 @@ class CC_EXPORT RasterizerTask : public Task {
   typedef std::vector<scoped_refptr<RasterizerTask> > Vector;
 
   virtual void ScheduleOnOriginThread(RasterizerTaskClient* client) = 0;
-  virtual void RunOnOriginThread() = 0;
   virtual void CompleteOnOriginThread(RasterizerTaskClient* client) = 0;
   virtual void RunReplyOnOriginThread() = 0;
 

@@ -46,6 +46,9 @@ class RasterTaskGraphRunner : public TaskGraphRunner,
 #endif
       workers_.push_back(worker.Pass());
     }
+
+    // Use index 0 for origin thread.
+    current_tls_.Set(new ThreadLocalState(0));
   }
 
   virtual ~RasterTaskGraphRunner() { NOTREACHED(); }
@@ -101,10 +104,6 @@ class RasterFinishedTaskImpl : public RasterizerTask {
 
   // Overridden from RasterizerTask:
   virtual void ScheduleOnOriginThread(RasterizerTaskClient* client) OVERRIDE {}
-  virtual void RunOnOriginThread() OVERRIDE {
-    TRACE_EVENT0("cc", "RasterFinishedTaskImpl::RunOnOriginThread");
-    RasterFinished();
-  }
   virtual void CompleteOnOriginThread(RasterizerTaskClient* client) OVERRIDE {}
   virtual void RunReplyOnOriginThread() OVERRIDE {}
 
@@ -142,26 +141,16 @@ class RasterRequiredForActivationFinishedTaskImpl
   virtual void RunOnWorkerThread() OVERRIDE {
     TRACE_EVENT0(
         "cc", "RasterRequiredForActivationFinishedTaskImpl::RunOnWorkerThread");
-    RunRasterFinished();
-  }
 
-  // Overridden from RasterizerTask:
-  virtual void RunOnOriginThread() OVERRIDE {
-    TRACE_EVENT0(
-        "cc", "RasterRequiredForActivationFinishedTaskImpl::RunOnOriginThread");
-    RunRasterFinished();
-  }
-
- private:
-  virtual ~RasterRequiredForActivationFinishedTaskImpl() {}
-
-  void RunRasterFinished() {
     if (tasks_required_for_activation_count_) {
       g_raster_required_for_activation_delay.Get().delay->EndParallel(
           activation_delay_end_time_);
     }
     RasterFinished();
   }
+
+ private:
+  virtual ~RasterRequiredForActivationFinishedTaskImpl() {}
 
   base::TimeTicks activation_delay_end_time_;
   const size_t tasks_required_for_activation_count_;

@@ -92,11 +92,6 @@ class RasterTaskImpl : public RasterTask {
     DCHECK(!canvas_);
     canvas_ = client->AcquireCanvasForRaster(this);
   }
-  virtual void RunOnOriginThread() OVERRIDE {
-    TRACE_EVENT0("cc", "RasterTaskImpl::RunOnOriginThread");
-    if (canvas_)
-      AnalyzeAndRaster(picture_pile_);
-  }
   virtual void CompleteOnOriginThread(RasterizerTaskClient* client) OVERRIDE {
     canvas_ = NULL;
     client->ReleaseCanvasForRaster(this);
@@ -222,15 +217,16 @@ class ImageDecodeTaskImpl : public ImageDecodeTask {
   // Overridden from Task:
   virtual void RunOnWorkerThread() OVERRIDE {
     TRACE_EVENT0("cc", "ImageDecodeTaskImpl::RunOnWorkerThread");
-    Decode();
+
+    devtools_instrumentation::ScopedImageDecodeTask image_decode_task(
+        pixel_ref_.get());
+    // This will cause the image referred to by pixel ref to be decoded.
+    pixel_ref_->lockPixels();
+    pixel_ref_->unlockPixels();
   }
 
   // Overridden from RasterizerTask:
   virtual void ScheduleOnOriginThread(RasterizerTaskClient* client) OVERRIDE {}
-  virtual void RunOnOriginThread() OVERRIDE {
-    TRACE_EVENT0("cc", "ImageDecodeTaskImpl::RunOnOriginThread");
-    Decode();
-  }
   virtual void CompleteOnOriginThread(RasterizerTaskClient* client) OVERRIDE {}
   virtual void RunReplyOnOriginThread() OVERRIDE {
     reply_.Run(!HasFinishedRunning());
@@ -240,14 +236,6 @@ class ImageDecodeTaskImpl : public ImageDecodeTask {
   virtual ~ImageDecodeTaskImpl() {}
 
  private:
-  void Decode() {
-    devtools_instrumentation::ScopedImageDecodeTask image_decode_task(
-        pixel_ref_.get());
-    // This will cause the image referred to by pixel ref to be decoded.
-    pixel_ref_->lockPixels();
-    pixel_ref_->unlockPixels();
-  }
-
   skia::RefPtr<SkPixelRef> pixel_ref_;
   int layer_id_;
   RenderingStatsInstrumentation* rendering_stats_;

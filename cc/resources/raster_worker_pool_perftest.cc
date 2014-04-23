@@ -90,7 +90,6 @@ class PerfImageDecodeTaskImpl : public ImageDecodeTask {
 
   // Overridden from RasterizerTask:
   virtual void ScheduleOnOriginThread(RasterizerTaskClient* client) OVERRIDE {}
-  virtual void RunOnOriginThread() OVERRIDE {}
   virtual void CompleteOnOriginThread(RasterizerTaskClient* client) OVERRIDE {}
   virtual void RunReplyOnOriginThread() OVERRIDE { Reset(); }
 
@@ -119,7 +118,6 @@ class PerfRasterTaskImpl : public RasterTask {
   virtual void ScheduleOnOriginThread(RasterizerTaskClient* client) OVERRIDE {
     client->AcquireCanvasForRaster(this);
   }
-  virtual void RunOnOriginThread() OVERRIDE {}
   virtual void CompleteOnOriginThread(RasterizerTaskClient* client) OVERRIDE {
     client->ReleaseCanvasForRaster(this);
   }

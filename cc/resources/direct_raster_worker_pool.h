@@ -29,7 +29,7 @@ class CC_EXPORT DirectRasterWorkerPool : public RasterWorkerPool,
 
   // Overridden from Rasterizer:
   virtual void SetClient(RasterizerClient* client) OVERRIDE;
-  virtual void Shutdown() OVERRIDE {}
+  virtual void Shutdown() OVERRIDE;
   virtual void ScheduleTasks(RasterTaskQueue* queue) OVERRIDE;
   virtual void CheckForCompletedTasks() OVERRIDE;
 
@@ -49,13 +49,13 @@ class CC_EXPORT DirectRasterWorkerPool : public RasterWorkerPool,
   void RunTaskOnOriginThread(RasterizerTask* task);
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  scoped_ptr<TaskGraphRunner> task_graph_runner_;
+  const NamespaceToken namespace_token_;
   RasterizerClient* client_;
   ResourceProvider* resource_provider_;
   ContextProvider* context_provider_;
 
   bool run_tasks_on_origin_thread_pending_;
-
-  RasterTaskQueue raster_tasks_;
 
   bool raster_tasks_pending_;
   bool raster_tasks_required_for_activation_pending_;
@@ -66,7 +66,10 @@ class CC_EXPORT DirectRasterWorkerPool : public RasterWorkerPool,
   scoped_refptr<RasterizerTask> raster_finished_task_;
   scoped_refptr<RasterizerTask> raster_required_for_activation_finished_task_;
 
-  RasterizerTask::Vector completed_tasks_;
+  // Task graph used when scheduling tasks and vector used to gather
+  // completed tasks.
+  TaskGraph graph_;
+  Task::Vector completed_tasks_;
 
   base::WeakPtrFactory<DirectRasterWorkerPool> weak_ptr_factory_;
 
