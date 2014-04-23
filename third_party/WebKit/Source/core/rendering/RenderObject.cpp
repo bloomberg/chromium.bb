@@ -77,7 +77,10 @@
 #include "core/rendering/style/CursorList.h"
 #include "core/rendering/style/ShadowList.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
+#include "platform/JSONValues.h"
 #include "platform/Partitions.h"
+#include "platform/TraceEvent.h"
+#include "platform/TracedValue.h"
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "wtf/RefCountedLeakCounter.h"
@@ -1360,13 +1363,29 @@ RenderLayerModelObject* RenderObject::containerForRepaint() const
     return repaintContainer;
 }
 
+template<typename T> PassRefPtr<JSONValue> jsonObjectForRect(const T& rect)
+{
+    RefPtr<JSONObject> object = JSONObject::create();
+    object->setNumber("x", rect.x());
+    object->setNumber("y", rect.y());
+    object->setNumber("width", rect.width());
+    object->setNumber("height", rect.height());
+    return object.release();
+}
+
+static PassRefPtr<JSONValue> jsonObjectForRepaintInfo(const IntRect& rect, const String& invalidationReason)
+{
+    RefPtr<JSONObject> object = JSONObject::create();
+    object->setValue("rect", jsonObjectForRect(rect));
+    object->setString("invalidation_reason", invalidationReason);
+    return object.release();
+}
+
 void RenderObject::repaintUsingContainer(const RenderLayerModelObject* repaintContainer, const IntRect& r, InvalidationReason invalidationReason) const
 {
-    // FIXME: This should use a ConvertableToTraceFormat when they are available in Blink.
     TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"), "RenderObject::repaintUsingContainer()",
-        "object", TRACE_STR_COPY(this->debugName().ascii().data()),
-        "info", TRACE_STR_COPY(String::format("rect: %d,%d %dx%d, invalidation_reason: %s",
-            r.x(), r.y(), r.width(), r.height(), invalidationReasonToString(invalidationReason)).ascii().data()));
+        "object", this->debugName().ascii(),
+        "info", TracedValue::fromJSONValue(jsonObjectForRepaintInfo(r, invalidationReasonToString(invalidationReason))));
 
     // FIXME: Repaint container should never be null. crbug.com/363699
     if (!repaintContainer) {
@@ -1510,6 +1529,15 @@ void RenderObject::repaintTreeAfterLayout()
         child->repaintTreeAfterLayout();
 }
 
+static PassRefPtr<JSONValue> jsonObjectForOldAndNewRects(const LayoutRect& oldRect, const LayoutRect& newRect)
+{
+    RefPtr<JSONObject> object = JSONObject::create();
+
+    object->setValue("old", jsonObjectForRect(oldRect));
+    object->setValue("new", jsonObjectForRect(newRect));
+    return object.release();
+}
+
 bool RenderObject::repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repaintContainer, bool wasSelfLayout,
     const LayoutRect& oldBounds, const LayoutRect* newBoundsPtr)
 {
@@ -1523,10 +1551,8 @@ bool RenderObject::repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repa
 
     // FIXME: This should use a ConvertableToTraceFormat when they are available in Blink.
     TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"), "RenderObject::repaintAfterLayoutIfNeeded()",
-        "object", TRACE_STR_COPY(this->debugName().ascii().data()),
-        "info", TRACE_STR_COPY(String::format("oldBounds: %d,%d %dx%d newBounds: %d,%d %dx%d",
-            oldBounds.x().toInt(), oldBounds.y().toInt(), oldBounds.width().toInt(), oldBounds.height().toInt(),
-            newBounds.x().toInt(), newBounds.y().toInt(), newBounds.width().toInt(), newBounds.height().toInt()).ascii().data()));
+        "object", this->debugName().ascii(),
+        "info", TracedValue::fromJSONValue(jsonObjectForOldAndNewRects(oldBounds, newBounds)));
 
     InvalidationReason invalidationReason = wasSelfLayout ? InvalidationSelfLayout : InvalidationIncremental;
 

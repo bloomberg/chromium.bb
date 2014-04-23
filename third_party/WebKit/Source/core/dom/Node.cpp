@@ -86,6 +86,8 @@
 #include "core/rendering/RenderBox.h"
 #include "core/svg/graphics/SVGImage.h"
 #include "platform/Partitions.h"
+#include "platform/TraceEvent.h"
+#include "platform/TracedValue.h"
 #include "wtf/HashSet.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCountedLeakCounter.h"
@@ -728,7 +730,7 @@ void Node::traceStyleChange(StyleChangeType changeType)
 
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("style.debug"),
         "Node::setNeedsStyleRecalc",
-        "data", jsonObjectForStyleInvalidation(nodeCount, this)->toJSONString().ascii()
+        "data", TracedValue::fromJSONValue(jsonObjectForStyleInvalidation(nodeCount, this))
     );
 }
 
