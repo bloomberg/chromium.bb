@@ -232,8 +232,8 @@ void RenderGrid::removeChild(RenderObject* child)
     const RenderBox* childBox = toRenderBox(child);
     GridCoordinate coordinate = m_gridItemCoordinate.take(childBox);
 
-    for (GridResolvedPosition row = coordinate.rows.resolvedInitialPosition; row <= coordinate.rows.resolvedFinalPosition; ++row) {
-        for (GridResolvedPosition column = coordinate.columns.resolvedInitialPosition; column <= coordinate.columns.resolvedFinalPosition; ++column) {
+    for (GridSpan::iterator row = coordinate.rows.begin(); row != coordinate.rows.end(); ++row) {
+        for (GridSpan::iterator column = coordinate.columns.begin(); column != coordinate.columns.end(); ++column) {
             GridCell& cell = m_grid[row.toInt()][column.toInt()];
             cell.remove(cell.find(childBox));
         }
@@ -500,7 +500,7 @@ double RenderGrid::computeNormalizedFractionBreadth(Vector<GridTrack>& tracks, c
     // |availableLogicalSpace| already accounts for the used breadths so no need to remove it here.
 
     Vector<GridTrackForNormalization> tracksForNormalization;
-    for (GridResolvedPosition resolvedPosition = tracksSpan.resolvedInitialPosition; resolvedPosition <= tracksSpan.resolvedFinalPosition; ++resolvedPosition) {
+    for (GridSpan::iterator resolvedPosition = tracksSpan.begin(); resolvedPosition != tracksSpan.end(); ++resolvedPosition) {
         const GridTrackSize& trackSize = gridTrackSize(direction, resolvedPosition.toInt());
         if (!trackSize.maxTrackBreadth().isFlex())
             continue;
@@ -727,8 +727,8 @@ void RenderGrid::growGrid(GridTrackSizingDirection direction, size_t maximumPosi
 
 void RenderGrid::insertItemIntoGrid(RenderBox* child, const GridCoordinate& coordinate)
 {
-    for (GridResolvedPosition row = coordinate.rows.resolvedInitialPosition; row <= coordinate.rows.resolvedFinalPosition; ++row) {
-        for (GridResolvedPosition column = coordinate.columns.resolvedInitialPosition; column <= coordinate.columns.resolvedFinalPosition; ++column)
+    for (GridSpan::iterator row = coordinate.rows.begin(); row != coordinate.rows.end(); ++row) {
+        for (GridSpan::iterator column = coordinate.columns.begin(); column != coordinate.columns.end(); ++column)
             m_grid[row.toInt()][column.toInt()].append(child);
     }
 
@@ -807,9 +807,9 @@ void RenderGrid::populateExplicitGridAndOrderIterator()
         // |positions| is 0 if we need to run the auto-placement algorithm. Our estimation ignores
         // this case as the auto-placement algorithm will grow the grid as needed.
         if (rowPositions)
-            maximumRowIndex = std::max<size_t>(maximumRowIndex, rowPositions->resolvedFinalPosition.toInt() + 1);
+            maximumRowIndex = std::max<size_t>(maximumRowIndex, rowPositions->resolvedFinalPosition.next().toInt());
         if (columnPositions)
-            maximumColumnIndex = std::max<size_t>(maximumColumnIndex, columnPositions->resolvedFinalPosition.toInt() + 1);
+            maximumColumnIndex = std::max<size_t>(maximumColumnIndex, columnPositions->resolvedFinalPosition.next().toInt());
     }
 
     m_grid.grow(maximumRowIndex);
@@ -967,7 +967,7 @@ LayoutUnit RenderGrid::gridAreaBreadthForChild(const RenderBox* child, GridTrack
     const GridCoordinate& coordinate = cachedGridCoordinate(child);
     const GridSpan& span = (direction == ForColumns) ? coordinate.columns : coordinate.rows;
     LayoutUnit gridAreaBreadth = 0;
-    for (GridResolvedPosition trackPosition = span.resolvedInitialPosition; trackPosition <= span.resolvedFinalPosition; ++trackPosition)
+    for (GridSpan::iterator trackPosition = span.begin(); trackPosition != span.end(); ++trackPosition)
         gridAreaBreadth += tracks[trackPosition.toInt()].m_usedBreadth;
     return gridAreaBreadth;
 }
@@ -1001,7 +1001,7 @@ LayoutUnit RenderGrid::endOfColumnForChild(const RenderBox* child) const
     // The grid items should be inside the grid container's border box, that's why they need to be shifted.
     LayoutUnit columnPosition = startOfColumn + marginStartForChild(child);
 
-    LayoutUnit endOfColumn = m_columnPositions[coordinate.columns.resolvedFinalPosition.toInt() + 1];
+    LayoutUnit endOfColumn = m_columnPositions[coordinate.columns.resolvedFinalPosition.next().toInt()];
     // FIXME: This should account for the grid item's <overflow-position>.
     return columnPosition + std::max<LayoutUnit>(0, endOfColumn - m_columnPositions[coordinate.columns.resolvedInitialPosition.toInt()] - child->logicalWidth());
 }
@@ -1026,7 +1026,7 @@ LayoutUnit RenderGrid::centeredColumnPositionForChild(const RenderBox* child) co
 {
     const GridCoordinate& coordinate = cachedGridCoordinate(child);
     LayoutUnit startOfColumn = m_columnPositions[coordinate.columns.resolvedInitialPosition.toInt()];
-    LayoutUnit endOfColumn = m_columnPositions[coordinate.columns.resolvedFinalPosition.toInt() + 1];
+    LayoutUnit endOfColumn = m_columnPositions[coordinate.columns.resolvedFinalPosition.next().toInt()];
     LayoutUnit columnPosition = startOfColumn + marginStartForChild(child);
     return columnPosition + std::max<LayoutUnit>(0, endOfColumn - startOfColumn - child->logicalWidth()) / 2;
 }
@@ -1118,6 +1118,9 @@ static GridSpan dirtiedGridAreas(const Vector<LayoutUnit>& coordinates, LayoutUn
         --startGridAreaIndex;
 
     size_t endGridAreaIndex = std::upper_bound(coordinates.begin() + startGridAreaIndex, coordinates.end() - 1, end) - coordinates.begin();
+    if (endGridAreaIndex > 0)
+        --endGridAreaIndex;
+
     return GridSpan(startGridAreaIndex, endGridAreaIndex);
 }
 
@@ -1180,14 +1183,14 @@ void RenderGrid::paintChildren(PaintInfo& paintInfo, const LayoutPoint& paintOff
                 populator.storeChild(*overflowIterator);
         }
 
-        for (GridResolvedPosition row = dirtiedRows.resolvedInitialPosition; row < dirtiedRows.resolvedFinalPosition; ++row) {
+        for (GridSpan::iterator row = dirtiedRows.begin(); row != dirtiedRows.end(); ++row) {
 
             for (; overflowIterator != end && isInSameRowBeforeDirtyArea(cachedGridCoordinate(*overflowIterator), row, dirtiedColumns); ++overflowIterator) {
                 if ((*overflowIterator)->frameRect().intersects(localRepaintRect))
                     populator.storeChild(*overflowIterator);
             }
 
-            for (GridResolvedPosition column = dirtiedColumns.resolvedInitialPosition; column < dirtiedColumns.resolvedFinalPosition; ++column) {
+            for (GridSpan::iterator column = dirtiedColumns.begin(); column != dirtiedColumns.end(); ++column) {
                 const Vector<RenderBox*, 1>& children = m_grid[row.toInt()][column.toInt()];
                 // FIXME: If we start adding spanning children in all grid areas they span, this
                 // would make us paint them several times, which is wrong!

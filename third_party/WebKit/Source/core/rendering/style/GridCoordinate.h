@@ -117,6 +117,18 @@ struct GridSpan {
 
     GridResolvedPosition resolvedInitialPosition;
     GridResolvedPosition resolvedFinalPosition;
+
+    typedef GridResolvedPosition iterator;
+
+    iterator begin() const
+    {
+        return resolvedInitialPosition;
+    }
+
+    iterator end() const
+    {
+        return resolvedFinalPosition.next();
+    }
 };
 
 // This represents a grid area that spans in both rows' and columns' direction.

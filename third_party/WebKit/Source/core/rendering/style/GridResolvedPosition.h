@@ -74,6 +74,11 @@ public:
         return m_integerPosition == other.m_integerPosition;
     }
 
+    bool operator!=(const GridResolvedPosition& other) const
+    {
+        return m_integerPosition != other.m_integerPosition;
+    }
+
     bool operator<(const GridResolvedPosition& other) const
     {
         return m_integerPosition < other.m_integerPosition;
@@ -97,6 +102,11 @@ public:
     size_t toInt() const
     {
         return m_integerPosition;
+    }
+
+    GridResolvedPosition next() const
+    {
+        return GridResolvedPosition(m_integerPosition + 1);
     }
 
     static size_t explicitGridColumnCount(const RenderStyle&);
