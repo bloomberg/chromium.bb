@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/sync_file_system/drive_backend/callback_helper.h"
 #include "chrome/browser/sync_file_system/drive_backend/conflict_resolver.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
 #include "chrome/browser/sync_file_system/drive_backend/list_changes_task.h"
@@ -219,7 +220,7 @@ void SyncEngine::RegisterOrigin(
       FROM_HERE,
       base::Bind(&SyncWorker::RegisterOrigin,
                  base::Unretained(sync_worker_.get()),
-                 origin, callback));
+                 origin, CreateRelayedCallback(callback)));
 }
 
 void SyncEngine::EnableOrigin(
@@ -228,7 +229,7 @@ void SyncEngine::EnableOrigin(
       FROM_HERE,
       base::Bind(&SyncWorker::EnableOrigin,
                  base::Unretained(sync_worker_.get()),
-                 origin, callback));
+                 origin, CreateRelayedCallback(callback)));
 }
 
 void SyncEngine::DisableOrigin(
@@ -237,7 +238,7 @@ void SyncEngine::DisableOrigin(
       FROM_HERE,
       base::Bind(&SyncWorker::DisableOrigin,
                  base::Unretained(sync_worker_.get()),
-                 origin, callback));
+                 origin, CreateRelayedCallback(callback)));
 }
 
 void SyncEngine::UninstallOrigin(
@@ -248,7 +249,7 @@ void SyncEngine::UninstallOrigin(
       FROM_HERE,
       base::Bind(&SyncWorker::UninstallOrigin,
                  base::Unretained(sync_worker_.get()),
-                 origin, flag, callback));
+                 origin, flag, CreateRelayedCallback(callback)));
 }
 
 void SyncEngine::ProcessRemoteChange(const SyncFileCallback& callback) {
@@ -256,7 +257,7 @@ void SyncEngine::ProcessRemoteChange(const SyncFileCallback& callback) {
       FROM_HERE,
       base::Bind(&SyncWorker::ProcessRemoteChange,
                  base::Unretained(sync_worker_.get()),
-                 callback));
+                 CreateRelayedCallback(callback)));
 }
 
 void SyncEngine::SetRemoteChangeProcessor(RemoteChangeProcessor* processor) {
@@ -376,7 +377,7 @@ void SyncEngine::ApplyLocalChange(
                  local_path,
                  local_metadata,
                  url,
-                 callback));
+                 CreateRelayedCallback(callback)));
 }
 
 SyncTaskManager* SyncEngine::GetSyncTaskManagerForTesting() {
