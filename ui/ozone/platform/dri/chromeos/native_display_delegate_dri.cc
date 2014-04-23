@@ -13,7 +13,7 @@
 namespace ui {
 
 namespace {
-const int kMaxDisplayCount = 2;
+const size_t kMaxDisplayCount = 2;
 }  // namespace
 
 NativeDisplayDelegateDri::NativeDisplayDelegateDri(

@@ -5,6 +5,7 @@
 #include "ui/ozone/platform/caca/ozone_platform_caca.h"
 
 #include "ui/base/cursor/ozone/cursor_factory_ozone.h"
+#include "ui/ozone/ime/input_method_context_factory_ozone.h"
 #include "ui/ozone/ozone_platform.h"
 #include "ui/ozone/platform/caca/caca_connection.h"
 #include "ui/ozone/platform/caca/caca_event_factory.h"

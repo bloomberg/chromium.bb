@@ -10,6 +10,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/ozone/surface_factory_ozone.h"
 
+namespace gfx {
+class SurfaceOzone;
+}
+
 namespace ui {
 
 class CacaConnection;
@@ -26,7 +30,7 @@ class CacaSurfaceFactory : public gfx::SurfaceFactoryOzone {
   virtual bool LoadEGLGLES2Bindings(
       AddGLLibraryCallback add_gl_library,
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) OVERRIDE;
-  virtual scoped_ptr<gfx::SurfaceOzone> CreateSurfaceForWidget(
+  virtual scoped_ptr<gfx::SurfaceOzoneCanvas> CreateCanvasForWidget(
       gfx::AcceleratedWidget widget) OVERRIDE;
 
  private:

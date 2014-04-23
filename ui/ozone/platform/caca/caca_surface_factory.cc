@@ -23,6 +23,8 @@ class CacaSurface : public gfx::SurfaceOzoneCanvas {
   CacaSurface(CacaConnection* connection);
   virtual ~CacaSurface();
 
+  bool Initialize();
+
   // gfx::SurfaceOzoneCanvas overrides:
   virtual skia::RefPtr<SkCanvas> GetCanvas() OVERRIDE;
   virtual bool ResizeCanvas(const gfx::Size& viewport_size) OVERRIDE;
@@ -46,7 +48,7 @@ CacaSurface::~CacaSurface() {
   caca_free_dither(dither_);
 }
 
-bool CacaSurface::InitializeCanvas() {
+bool CacaSurface::Initialize() {
   SkImageInfo info = SkImageInfo::Make(connection_->bitmap_size().width(),
                                        connection_->bitmap_size().height(),
                                        kPMColor_SkColorType,
@@ -140,7 +142,9 @@ scoped_ptr<gfx::SurfaceOzoneCanvas> CacaSurfaceFactory::CreateCanvasForWidget(
   CHECK_EQ(INITIALIZED, state_);
   CHECK_EQ(kDefaultWidgetHandle, widget);
 
-  return make_scoped_ptr<gfx::SurfaceOzoneCanvas>(new CacaSurface(connection_));
+  scoped_ptr<CacaSurface> canvas(new CacaSurface(connection_));
+  CHECK(canvas->Initialize());
+  return canvas.PassAs<gfx::SurfaceOzoneCanvas>();
 }
 
 }  // namespace ui
