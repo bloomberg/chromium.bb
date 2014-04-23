@@ -91,16 +91,6 @@ void WebAXObject::enableInlineTextBoxAccessibility()
     AXObjectCache::setInlineTextBoxAccessibility(true);
 }
 
-void WebAXObject::startCachingComputedObjectAttributesUntilTreeMutates()
-{
-    m_private->axObjectCache()->startCachingComputedObjectAttributesUntilTreeMutates();
-}
-
-void WebAXObject::stopCachingComputedObjectAttributes()
-{
-    m_private->axObjectCache()->stopCachingComputedObjectAttributes();
-}
-
 bool WebAXObject::isDetached() const
 {
     if (m_private.isNull())

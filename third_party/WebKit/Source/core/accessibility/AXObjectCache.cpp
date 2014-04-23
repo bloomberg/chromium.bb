@@ -901,18 +901,6 @@ void AXObjectCache::inlineTextBoxesUpdated(RenderObject* renderer)
     }
 }
 
-void AXObjectCache::startCachingComputedObjectAttributesUntilTreeMutates()
-{
-    // FIXME: no longer needed. When Chromium no longer calls
-    // WebAXObject::startCachingComputedObjectAttributesUntilTreeMutates,
-    // delete this function and the WebAXObject interfaces.
-}
-
-void AXObjectCache::stopCachingComputedObjectAttributes()
-{
-    // FIXME: no longer needed (see above).
-}
-
 const Element* AXObjectCache::rootAXEditableElement(const Node* node)
 {
     const Element* result = node->rootEditableElement();

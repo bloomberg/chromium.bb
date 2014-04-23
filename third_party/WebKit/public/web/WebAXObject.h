@@ -76,9 +76,6 @@ public:
     BLINK_EXPORT static void enableAccessibility();
     BLINK_EXPORT static bool accessibilityEnabled();
 
-    BLINK_EXPORT void startCachingComputedObjectAttributesUntilTreeMutates();
-    BLINK_EXPORT void stopCachingComputedObjectAttributes();
-
     // Temporary: this flag will only be toggleable until Chromium has it on by default.
     BLINK_EXPORT static void enableInlineTextBoxAccessibility();
 

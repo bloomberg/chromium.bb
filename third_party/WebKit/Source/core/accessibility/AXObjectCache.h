@@ -195,9 +195,6 @@ public:
 
     bool nodeHasRole(Node*, const AtomicString& role);
 
-    void startCachingComputedObjectAttributesUntilTreeMutates();
-    void stopCachingComputedObjectAttributes();
-
     AXComputedObjectAttributeCache* computedObjectAttributeCache() { return m_computedObjectAttributeCache.get(); }
 
 protected:
