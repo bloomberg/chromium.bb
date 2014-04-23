@@ -106,25 +106,22 @@ void RenderLayerRepainter::clearRepaintRects()
 
 void RenderLayerRepainter::computeRepaintRects(const RenderLayerModelObject* repaintContainer)
 {
-    if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
-        return;
-
-    m_repaintRect = m_renderer->clippedOverflowRectForRepaint(repaintContainer);
-}
-
-void RenderLayerRepainter::computeRepaintRectsIncludingDescendants()
-{
     if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled()) {
         // FIXME: We want RenderLayerRepainter to go away when
         // repaint-after-layout is on by default so we need to figure out how to
         // handle this update.
         m_renderer->setPreviousRepaintRect(m_renderer->clippedOverflowRectForRepaint(m_renderer->containerForRepaint()));
     } else {
-        // FIXME: computeRepaintRects() has to walk up the parent chain for every layer to compute the rects.
-        // We should make this more efficient.
-        // FIXME: it's wrong to call this when layout is not up-to-date, which we do.
-        computeRepaintRects(m_renderer->containerForRepaint());
+        m_repaintRect = m_renderer->clippedOverflowRectForRepaint(repaintContainer);
     }
+}
+
+void RenderLayerRepainter::computeRepaintRectsIncludingDescendants()
+{
+    // FIXME: computeRepaintRects() has to walk up the parent chain for every layer to compute the rects.
+    // We should make this more efficient.
+    // FIXME: it's wrong to call this when layout is not up-to-date, which we do.
+    computeRepaintRects(m_renderer->containerForRepaint());
 
     for (RenderLayer* layer = m_renderer->layer()->firstChild(); layer; layer = layer->nextSibling())
         layer->repainter().computeRepaintRectsIncludingDescendants();
