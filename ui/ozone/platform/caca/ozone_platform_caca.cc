@@ -4,8 +4,11 @@
 
 #include "ui/ozone/platform/caca/ozone_platform_caca.h"
 
+#include "ui/base/cursor/ozone/cursor_factory_ozone.h"
 #include "ui/ozone/ozone_platform.h"
 #include "ui/ozone/platform/caca/caca_connection.h"
+#include "ui/ozone/platform/caca/caca_event_factory.h"
+#include "ui/ozone/platform/caca/caca_surface_factory.h"
 
 #if defined(OS_CHROMEOS)
 #include "ui/ozone/common/chromeos/native_display_delegate_ozone.h"
@@ -13,37 +16,49 @@
 
 namespace ui {
 
-OzonePlatformCaca::OzonePlatformCaca()
-    : connection_(),
-      surface_factory_ozone_(&connection_),
-      event_factory_ozone_(&connection_) {}
+namespace {
 
-OzonePlatformCaca::~OzonePlatformCaca() {}
+class OzonePlatformCaca : public OzonePlatform {
+ public:
+  OzonePlatformCaca()
+      : surface_factory_ozone_(&connection_),
+        event_factory_ozone_(&connection_) {}
+  virtual ~OzonePlatformCaca() {}
 
-gfx::SurfaceFactoryOzone* OzonePlatformCaca::GetSurfaceFactoryOzone() {
-  return &surface_factory_ozone_;
-}
-
-ui::EventFactoryOzone* OzonePlatformCaca::GetEventFactoryOzone() {
-  return &event_factory_ozone_;
-}
-
-ui::InputMethodContextFactoryOzone*
-OzonePlatformCaca::GetInputMethodContextFactoryOzone() {
-  return &input_method_context_factory_ozone_;
-}
-
-ui::CursorFactoryOzone* OzonePlatformCaca::GetCursorFactoryOzone() {
-  return &cursor_factory_ozone_;
-}
+  // OzonePlatform:
+  virtual gfx::SurfaceFactoryOzone* GetSurfaceFactoryOzone() OVERRIDE {
+    return &surface_factory_ozone_;
+  }
+  virtual EventFactoryOzone* GetEventFactoryOzone() OVERRIDE {
+    return &event_factory_ozone_;
+  }
+  virtual InputMethodContextFactoryOzone* GetInputMethodContextFactoryOzone()
+      OVERRIDE {
+    return &input_method_context_factory_ozone_;
+  }
+  virtual CursorFactoryOzone* GetCursorFactoryOzone() OVERRIDE {
+    return &cursor_factory_ozone_;
+  }
 
 #if defined(OS_CHROMEOS)
-scoped_ptr<ui::NativeDisplayDelegate>
-OzonePlatformCaca::CreateNativeDisplayDelegate() {
-  return scoped_ptr<ui::NativeDisplayDelegate>(
-      new NativeDisplayDelegateOzone());
-}
+  virtual scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate()
+      OVERRIDE {
+    return scoped_ptr<NativeDisplayDelegate>(new NativeDisplayDelegateOzone());
+  }
 #endif
+
+ private:
+  CacaConnection connection_;
+  CacaSurfaceFactory surface_factory_ozone_;
+  CacaEventFactory event_factory_ozone_;
+  // This creates a minimal input context.
+  InputMethodContextFactoryOzone input_method_context_factory_ozone_;
+  CursorFactoryOzone cursor_factory_ozone_;
+
+  DISALLOW_COPY_AND_ASSIGN(OzonePlatformCaca);
+};
+
+}  // namespace
 
 OzonePlatform* CreateOzonePlatformCaca() { return new OzonePlatformCaca; }
 
