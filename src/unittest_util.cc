@@ -22,15 +22,24 @@ TestInterpreterWrapper::TestInterpreterWrapper(Interpreter* interpreter)
 }
 
 void TestInterpreterWrapper::Reset(Interpreter* interpreter) {
+  Reset(interpreter, static_cast<MetricsProperties*>(NULL));
+}
+
+void TestInterpreterWrapper::Reset(Interpreter* interpreter,
+                                   MetricsProperties* mprops) {
   memset(&dummy_, 0, sizeof(HardwareProperties));
   if (!hwprops_)
     hwprops_ = &dummy_;
 
-  if (mprops_.get()) {
-    mprops_.reset(NULL);
+  if (!mprops) {
+    if (mprops_.get()) {
+      mprops_.reset(NULL);
+    }
+    prop_reg_.reset(new PropRegistry());
+    mprops_.reset(new MetricsProperties(prop_reg_.get()));
+  } else {
+    mprops_.reset(mprops);
   }
-  prop_reg_.reset(new PropRegistry());
-  mprops_.reset(new MetricsProperties(prop_reg_.get()));
 
   interpreter_ = interpreter;
   if (interpreter_) {

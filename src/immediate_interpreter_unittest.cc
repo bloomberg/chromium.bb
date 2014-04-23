@@ -3039,7 +3039,9 @@ TEST(ImmediateInterpreterTest, AvoidAccidentalPinchTest) {
     if (input.flag == kS) {
       ii.reset(new ImmediateInterpreter(NULL, NULL));
       ii->pinch_enable_.val_ = true;
-      wrapper.Reset(ii.get());
+      MetricsProperties* mprops = new MetricsProperties(NULL);
+      mprops->two_finger_close_vertical_distance_thresh.val_ = 35.0;
+      wrapper.Reset(ii.get(), mprops);
     }
     // Prep inputs
     FingerState fs[] = {

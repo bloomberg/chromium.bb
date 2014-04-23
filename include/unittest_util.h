@@ -20,6 +20,8 @@ class TestInterpreterWrapper : public GestureConsumer {
                          const HardwareProperties* hwprops);
 
   void Reset(Interpreter* interpreter);
+  // Takes ownership of mprops
+  void Reset(Interpreter* interpreter, MetricsProperties* mprops);
   void Reset(Interpreter* interpreter, const HardwareProperties* hwprops);
   Gesture* SyncInterpret(HardwareState* state, stime_t* timeout);
   Gesture* HandleTimer(stime_t now, stime_t* timeout);
