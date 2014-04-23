@@ -438,7 +438,10 @@ static const MediaFormatStrict format_codec_mappings[] = {
   { "audio/x-wav", "1" },
   { "video/ogg", "opus,theora,vorbis" },
   { "audio/ogg", "opus,vorbis" },
-  { "application/ogg", "opus,theora,vorbis" }
+  { "application/ogg", "opus,theora,vorbis" },
+  { "audio/mpeg", "" },
+  { "audio/mp3", "" },
+  { "audio/x-mp3", "" }
 };
 
 MimeUtil::MimeUtil() {
@@ -448,6 +451,9 @@ MimeUtil::MimeUtil() {
 // static
 bool MimeUtil::AreSupportedCodecs(const MimeMappings& supported_codecs,
                                   const std::vector<std::string>& codecs) {
+  if (supported_codecs.empty())
+    return codecs.empty();
+
   for (size_t i = 0; i < codecs.size(); ++i) {
     if (supported_codecs.find(codecs[i]) == supported_codecs.end())
       return false;

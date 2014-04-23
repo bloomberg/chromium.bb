@@ -16,11 +16,9 @@ const char* kNot = "";
 #if defined(USE_PROPRIETARY_CODECS)
 const char* kPropProbably = "probably";
 const char* kPropMaybe = "maybe";
-const char* kPropProbablyElseMaybe = "probably";
 #else
 const char* kPropProbably = "";
 const char* kPropMaybe = "";
-const char* kPropProbablyElseMaybe = "maybe";
 #endif  // USE_PROPRIETARY_CODECS
 
 // TODO(amogh.bihani): Change the opus tests when opus is  on
@@ -358,159 +356,145 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_mp3) {
   EXPECT_EQ(kNot, CanPlay("'video/mpeg'"));
   EXPECT_EQ(kNot, CanPlay("'video/x-mp3'"));
 
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/mpeg'"));
+  // audio/mpeg does not allow any codecs parameter
+  EXPECT_EQ(kPropProbably, CanPlay("'audio/mpeg'"));
 
-  // audio/mpeg and audio/mp3 do not allow any codecs parameter
-  // TODO(amogh.bihani): Change these tests when bug 53193 is fixed.
-  // http://crbug.com/53193 ----------------------------------------------------
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/mpeg; codecs=\"avc1\"'"));
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/mpeg; codecs=\"avc3\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\"avc1\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\"avc3\"'"));
 
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/mpeg; codecs=\"avc1.4D401E\"'"));
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/mpeg; codecs=\"avc3.64001F\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\"avc1.4D401E\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\"avc3.64001F\"'"));
 
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/mpeg; codecs=\"mp4a\"'"));
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/mpeg; codecs=\"mp4a.40.2\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\"mp4a\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\"mp4a.40.2\"'"));
 
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/mpeg; codecs=\"avc1.unknown\"'"));
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/mpeg; codecs=\"avc3.unknown\"'"));
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/mpeg; codecs=\"mp4a.unknown\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\"avc1.unknown\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\"avc3.unknown\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\"mp4a.unknown\"'"));
 
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/mpeg; codecs=\"avc1.\"'"));
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/mpeg; codecs=\"avc3.\"'"));
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/mpeg; codecs=\"mp4a.\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\"avc1.\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\"avc3.\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\"mp4a.\"'"));
 
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/mpeg; codecs=\"vorbis\"'"));
-  EXPECT_EQ(kOpusAndPropProbably, CanPlay("'audio/mpeg; codecs=\"opus\"'"));
-  EXPECT_EQ(kTheoraAndPropProbably, CanPlay("'audio/mpeg; codecs=\"theora\"'"));
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/mpeg; codecs=\"vp8\"'"));
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/mpeg; codecs=\"vp8.0\"'"));
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/mpeg; codecs=\"vp9\"'"));
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/mpeg; codecs=\"vp9.0\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\"vorbis\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\"opus\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\"theora\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\"vp8\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\"vp8.0\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\"vp9\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\"vp9.0\"'"));
 
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/mpeg; codecs=\"AVC1\"'"));
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/mpeg; codecs=\"AVC1.4d401e\"'"));
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/mpeg; codecs=\"AVC3\"'"));
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/mpeg; codecs=\"AVC3.64001f\"'"));
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/mpeg; codecs=\"MP4A\"'"));
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/mpeg; codecs=\"MP4A.40.2\"'"));
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/mpeg; codecs=\"AVC1, MP4\"'"));
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/mpeg; codecs=\"AVC3, MP4\"'"));
-  EXPECT_EQ(kPropMaybe,
-            CanPlay("'audio/mpeg; codecs=\", AVC1.4D401E, MP4.40.2\"'"));
-  EXPECT_EQ(kPropMaybe,
-            CanPlay("'audio/mpeg; codecs=\", AVC3.64001F, MP4.40.2\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\"AVC1\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\"AVC1.4d401e\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\"AVC3\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\"AVC3.64001f\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\"MP4A\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\"MP4A.40.2\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\"AVC1, MP4\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\"AVC3, MP4\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\", AVC1.4D401E, MP4.40.2\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\", AVC3.64001F, MP4.40.2\"'"));
 
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/mpeg; codecs=\"avc2\"'"));
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/mpeg; codecs=\"avc4\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\"avc2\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\"avc4\"'"));
 
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/mpeg; codecs=\"avc1x\"'"));
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/mpeg; codecs=\"avc3x\"'"));
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/mpeg; codecs=\"mp4ax\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\"avc1x\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\"avc3x\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\"mp4ax\"'"));
 
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/mpeg; codecs=\"unknown\"'"));
-  // ---------------------------------------------------------------------------
+  EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\"unknown\"'"));
 
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/mp3'"));
+  // audio/mp3 does not allow any codecs parameter
+  EXPECT_EQ(kPropProbably, CanPlay("'audio/mp3'"));
 
-  // TODO(amogh.bihani): Change these tests when bug 53193 is fixed.
-  // http://crbug.com/53193 ----------------------------------------------------
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/mp3; codecs=\"avc1\"'"));
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/mp3; codecs=\"avc3\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\"avc1\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\"avc3\"'"));
 
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/mp3; codecs=\"avc1.4D401E\"'"));
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/mp3; codecs=\"avc3.64001F\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\"avc1.4D401E\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\"avc3.64001F\"'"));
 
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/mp3; codecs=\"mp4a\"'"));
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/mp3; codecs=\"mp4a.40.2\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\"mp4a\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\"mp4a.40.2\"'"));
 
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/mp3; codecs=\"avc1.unknown\"'"));
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/mp3; codecs=\"avc3.unknown\"'"));
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/mp3; codecs=\"mp4a.unknown\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\"avc1.unknown\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\"avc3.unknown\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\"mp4a.unknown\"'"));
 
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/mp3; codecs=\"avc1.\"'"));
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/mp3; codecs=\"avc3.\"'"));
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/mp3; codecs=\"mp4a.\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\"avc1.\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\"avc3.\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\"mp4a.\"'"));
 
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/mp3; codecs=\"vorbis\"'"));
-  EXPECT_EQ(kOpusAndPropProbably, CanPlay("'audio/mp3; codecs=\"opus\"'"));
-  EXPECT_EQ(kTheoraAndPropProbably, CanPlay("'audio/mp3; codecs=\"theora\"'"));
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/mp3; codecs=\"vp8\"'"));
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/mp3; codecs=\"vp8.0\"'"));
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/mp3; codecs=\"vp9\"'"));
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/mp3; codecs=\"vp9.0\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\"vorbis\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\"opus\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\"theora\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\"vp8\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\"vp8.0\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\"vp9\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\"vp9.0\"'"));
 
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/mp3; codecs=\"AVC1\"'"));
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/mp3; codecs=\"AVC1.4d401e\"'"));
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/mp3; codecs=\"AVC3\"'"));
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/mp3; codecs=\"AVC3.64001f\"'"));
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/mp3; codecs=\"MP4A\"'"));
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/mp3; codecs=\"MP4A.40.2\"'"));
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/mp3; codecs=\"AVC1, MP4\"'"));
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/mp3; codecs=\"AVC3, MP4\"'"));
-  EXPECT_EQ(kPropMaybe,
-            CanPlay("'audio/mp3; codecs=\", AVC1.4D401E, MP4.40.2\"'"));
-  EXPECT_EQ(kPropMaybe,
-            CanPlay("'audio/mp3; codecs=\", AVC3.64001F, MP4.40.2\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\"AVC1\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\"AVC1.4d401e\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\"AVC3\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\"AVC3.64001f\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\"MP4A\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\"MP4A.40.2\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\"AVC1, MP4\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\"AVC3, MP4\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\", AVC1.4D401E, MP4.40.2\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\", AVC3.64001F, MP4.40.2\"'"));
 
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/mp3; codecs=\"avc2\"'"));
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/mp3; codecs=\"avc4\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\"avc2\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\"avc4\"'"));
 
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/mp3; codecs=\"avc1x\"'"));
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/mp3; codecs=\"avc3x\"'"));
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/mp3; codecs=\"mp4ax\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\"avc1x\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\"avc3x\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\"mp4ax\"'"));
 
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/mp3; codecs=\"unknown\"'"));
-  // ---------------------------------------------------------------------------
+  EXPECT_EQ(kNot, CanPlay("'audio/mp3; codecs=\"unknown\"'"));
 
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/x-mp3'"));
+  // audio/x-mp3 does not allow any codecs parameter
+  EXPECT_EQ(kPropProbably, CanPlay("'audio/x-mp3'"));
 
-  // TODO(amogh.bihani): Change these tests when bug 53193 is fixed.
-  // http://crbug.com/53193 ----------------------------------------------------
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/x-mp3; codecs=\"avc1\"'"));
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/x-mp3; codecs=\"avc3\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/x-mp3; codecs=\"avc1\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/x-mp3; codecs=\"avc3\"'"));
 
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/x-mp3; codecs=\"avc1.4D401E\"'"));
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/x-mp3; codecs=\"avc3.64001F\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/x-mp3; codecs=\"avc1.4D401E\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/x-mp3; codecs=\"avc3.64001F\"'"));
 
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/x-mp3; codecs=\"mp4a\"'"));
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/x-mp3; codecs=\"mp4a.40.2\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/x-mp3; codecs=\"mp4a\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/x-mp3; codecs=\"mp4a.40.2\"'"));
 
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/x-mp3; codecs=\"avc1.unknown\"'"));
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/x-mp3; codecs=\"avc3.unknown\"'"));
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/x-mp3; codecs=\"mp4a.unknown\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/x-mp3; codecs=\"avc1.unknown\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/x-mp3; codecs=\"avc3.unknown\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/x-mp3; codecs=\"mp4a.unknown\"'"));
 
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/x-mp3; codecs=\"vorbis\"'"));
-  EXPECT_EQ(kOpusAndPropProbably, CanPlay("'audio/x-mp3; codecs=\"opus\"'"));
-  EXPECT_EQ(kTheoraAndPropProbably,
-            CanPlay("'audio/x-mp3; codecs=\"theora\"'"));
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/x-mp3; codecs=\"vp8\"'"));
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/x-mp3; codecs=\"vp8.0\"'"));
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/x-mp3; codecs=\"vp9\"'"));
-  EXPECT_EQ(kPropProbably, CanPlay("'audio/x-mp3; codecs=\"vp9.0\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/x-mp3; codecs=\"vorbis\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/x-mp3; codecs=\"opus\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/x-mp3; codecs=\"theora\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/x-mp3; codecs=\"vp8\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/x-mp3; codecs=\"vp8.0\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/x-mp3; codecs=\"vp9\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/x-mp3; codecs=\"vp9.0\"'"));
 
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/x-mp3; codecs=\"AVC1\"'"));
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/x-mp3; codecs=\"AVC1.4d401e\"'"));
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/x-mp3; codecs=\"AVC3\"'"));
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/x-mp3; codecs=\"AVC3.64001f\"'"));
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/x-mp3; codecs=\"MP4A\"'"));
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/x-mp3; codecs=\"MP4A.40.2\"'"));
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/x-mp3; codecs=\"AVC1, MP4\"'"));
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/x-mp3; codecs=\"AVC3, MP4\"'"));
-  EXPECT_EQ(kPropMaybe,
-            CanPlay("'audio/x-mp3; codecs=\", AVC1.4D401E, MP4.40.2\"'"));
-  EXPECT_EQ(kPropMaybe,
-            CanPlay("'audio/x-mp3; codecs=\", AVC3.64001F, MP4.40.2\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/x-mp3; codecs=\"AVC1\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/x-mp3; codecs=\"AVC1.4d401e\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/x-mp3; codecs=\"AVC3\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/x-mp3; codecs=\"AVC3.64001f\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/x-mp3; codecs=\"MP4A\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/x-mp3; codecs=\"MP4A.40.2\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/x-mp3; codecs=\"AVC1, MP4\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/x-mp3; codecs=\"AVC3, MP4\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/x-mp3; codecs=\", AVC1.4D401E, MP4.40.2\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/x-mp3; codecs=\", AVC3.64001F, MP4.40.2\"'"));
 
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/x-mp3; codecs=\"avc2\"'"));
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/x-mp3; codecs=\"avc4\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/x-mp3; codecs=\"avc2\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/x-mp3; codecs=\"avc4\"'"));
 
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/x-mp3; codecs=\"avc1x\"'"));
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/x-mp3; codecs=\"avc3x\"'"));
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/x-mp3; codecs=\"mp4ax\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/x-mp3; codecs=\"avc1x\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/x-mp3; codecs=\"avc3x\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/x-mp3; codecs=\"mp4ax\"'"));
 
-  EXPECT_EQ(kPropMaybe, CanPlay("'audio/x-mp3; codecs=\"unknown\"'"));
-  // ---------------------------------------------------------------------------
+  EXPECT_EQ(kNot, CanPlay("'audio/x-mp3; codecs=\"unknown\"'"));
 }
 
 IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_mp4) {

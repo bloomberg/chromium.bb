@@ -432,18 +432,17 @@ RendererWebKitPlatformSupportImpl::MimeRegistry::supportsMediaMIMEType(
 
   // Check list of strict codecs to see if it is supported.
   if (net::IsStrictMediaMimeType(mime_type_ascii)) {
+    // Check if the codecs are a perfect match.
+    std::vector<std::string> strict_codecs;
+    net::ParseCodecString(ToASCIIOrEmpty(codecs), &strict_codecs, false);
+    if (net::IsSupportedStrictMediaMimeType(mime_type_ascii, strict_codecs))
+      return IsSupported;
+
     // We support the container, but no codecs were specified.
     if (codecs.isNull())
       return MayBeSupported;
 
-    // Check if the codecs are a perfect match.
-    std::vector<std::string> strict_codecs;
-    net::ParseCodecString(ToASCIIOrEmpty(codecs), &strict_codecs, false);
-    if (!net::IsSupportedStrictMediaMimeType(mime_type_ascii, strict_codecs))
-      return IsNotSupported;
-
-    // Good to go!
-    return IsSupported;
+    return IsNotSupported;
   }
 
   // If we don't recognize the codec, it's possible we support it.
