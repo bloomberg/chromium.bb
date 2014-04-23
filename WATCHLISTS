@@ -225,12 +225,12 @@
     'deep_memory_profiler': {
       'filepath': 'tools/(deep_memory_profiler|find_runtime_symbols)',
     },
-    'device_orientation': {
-      'filepath': 'content/browser/device_orientation/|'\
-                  'content/common/device_orientation/|'\
-                  'content/public/android/java/src/org/chromium/content/browser/DeviceMotionAndOrientation.java|'\
-                  'content/public/android/javatests/src/org/chromium/content/browser/DeviceMotionAndOrientationTest.java|'\
-                  'content/renderer/device_orientation/',
+    'device_sensors': {
+      'filepath': 'content/browser/device_sensors/|'\
+                  'content/common/device_sensors/|'\
+                  'content/public/android/java/src/org/chromium/content/browser/DeviceSensors.java|'\
+                  'content/public/android/javatests/src/org/chromium/content/browser/DeviceSensorsTest.java|'\
+                  'content/renderer/device_sensors/',
     },
     'devtools': {
       'filepath': 'devtools',
@@ -759,7 +759,7 @@
     'content_shell': ['jochen+watch@chromium.org'],
     'cookie_monster': ['erikwright@chromium.org'],
     'deep_memory_profiler': ['dmikurube+memory@chromium.org'],
-    'device_orientation': ['timvolodine@chromium.org', 'mvanouwerkerk@chromium.org'],
+    'device_sensors': ['timvolodine@chromium.org', 'mvanouwerkerk@chromium.org', 'rijubrata.bhaumik@intel.com'],
     'devtools': ['pfeldman@chromium.org', 'yurys@chromium.org',
                  'vsevik@chromium.org', 'aandrey+blink@chromium.org',
                  'paulirish+reviews@chromium.org',

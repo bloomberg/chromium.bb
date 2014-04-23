@@ -1,6 +1,6 @@
 # Device Motion / Orientation API related
-per-file DeviceMotionAndOrientationTest.java=mvanouwerkerk@chromium.org
-per-file DeviceMotionAndOrientationTest.java=timvolodine@chromium.org
+per-file DeviceSensorsTest.java=mvanouwerkerk@chromium.org
+per-file DeviceSensorsTest.java=timvolodine@chromium.org
 
 # Geolocation API related
 per-file LocationProviderTest.java=mvanouwerkerk@chromium.org
