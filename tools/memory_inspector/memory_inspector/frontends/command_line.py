@@ -4,15 +4,20 @@
 
 """Command line frontend for Memory Inspector"""
 
+import json
 import memory_inspector
 import optparse
+import os
 import time
 
+from memory_inspector.classification import mmap_classifier
 from memory_inspector.core import backends
+from memory_inspector.data import serialization
 
 
-def main(argv):
-  usage = '%prog [options] devices | ps | stats'
+def main():
+  COMMANDS = ['devices', 'ps', 'stats', 'mmaps', 'classified_mmaps']
+  usage = ('%prog [options] ' + ' | '.join(COMMANDS))
   parser = optparse.OptionParser(usage=usage)
   parser.add_option('-b', '--backend', help='Backend name '
                     '(e.g., Android)', type='string', default='Android')
@@ -22,13 +27,18 @@ def main(argv):
                     type='int')
   parser.add_option('-m', '--filter_process_name', help='Process '
                     'name to match', type='string')
+  parser.add_option('-r', '--mmap_rule',
+                    help='mmap rule', type='string',
+                    default=
+                    'classification_rules/default/mmap-android.py')
   (options, args) = parser.parse_args()
 
   memory_inspector.RegisterAllBackends()
 
-  if not args:
+  if not args or args[0] not in COMMANDS:
     parser.print_help()
     return -1
+
   if args[0] == 'devices':
     _ListDevices(options.backend)
     return 0
@@ -52,22 +62,52 @@ def main(argv):
         ' --device_id')
     return -1
 
+  device = backends.GetDevice(options.backend, device_id)
+  if not device:
+    print 'Device', device_id, 'does not exist'
+    return -1
+
+  device.Initialize()
   if args[0] == 'ps':
-    _ListProcesses(options.backend, device_id,
-                     options.filter_process_name)
+    if not options.filter_process_name:
+      print 'Listing all processes'
+    else:
+      print ('Listing processes matching '
+          + options.filter_process_name.lower())
+    print ''
+    print '%-10s : %-50s : %12s %12s %12s' % (
+        'Process ID', 'Process Name', 'RUN_TIME', 'THREADS',
+        'MEM_RSS_KB')
+    print ''
+    for process in device.ListProcesses():
+      if (not options.filter_process_name or
+          options.filter_process_name.lower() in process.name.lower()):
+        stats = process.GetStats()
+        run_time_min, run_time_sec = divmod(stats.run_time, 60)
+        print '%10s : %-50s : %6s m %2s s %8s %12s' % (
+            process.pid, process.name, run_time_min, run_time_sec,
+            stats.threads, stats.vm_rss)
     return 0
 
-  if args[0] == 'stats':
-    if not options.process_id:
-      print 'You need to provide --process_id'
-      return -1
-    else:
-      _ListProcessStats(options.backend, device_id,
-                        options.process_id)
-    return 0
-  else:
-    print 'Invalid command entered'
+  if not options.process_id:
+    print 'You need to provide --process_id'
     return -1
+
+  process = device.GetProcess(options.process_id)
+
+  if not process:
+    print 'Cannot find process [%d] on device %s' % (
+        options.process_id, device.id)
+    return -1
+  elif args[0] == 'stats':
+    _ListProcessStats(process)
+    return 0
+  elif args[0] == 'mmaps':
+    _ListProcessMmaps(process)
+    return 0
+  elif args[0] == 'classified_mmaps':
+    _ListProcessClassifiedMmaps(process, options.mmap_rule)
+    return 0
 
 
 def _ListDevices(backend_name):
@@ -78,71 +118,51 @@ def _ListDevices(backend_name):
       print '%-16s : %s' % (device.id, device.name)
 
 
-def _ListProcesses(backend_name, device_id, filter_process_name):
-  device = backends.GetDevice(backend_name, device_id)
-  if not device:
-    print 'Device', device_id, 'does not exist'
-    return
-  if not filter_process_name:
-    print 'Listing all processes'
-  else:
-    print 'Listing processes matching ' + filter_process_name.lower()
-  print ''
-  device.Initialize()
-  _PrintProcessHeadingLine()
-  for process in device.ListProcesses():
-    if (not filter_process_name or
-        filter_process_name.lower() in process.name.lower()):
-      stats = process.GetStats()
-      _PrintProcess(process, stats)
-
-
-def _ListProcessStats(backend_name, device_id, process_id):
-  """Prints process stats periodically and displays an error if the
-     process or device does not exist.
+def _ListProcessStats(process):
+  """Prints process stats periodically
   """
-  device = backends.GetDevice(backend_name, device_id)
-  if not device:
-    print 'Device', device_id, 'does not exist'
-  else:
-    device.Initialize()
-    process = device.GetProcess(process_id)
-    if not process:
-      print 'Cannot find process [%d] on device %s' % (
-            process_id, device_id)
-      return
-    print 'Stats for process: [%d] %s' % (process_id, process.name)
-    _PrintProcessStatsHeadingLine()
-    while True:
-      stats = process.GetStats()
-      _PrintProcessStats(process, stats)
-      time.sleep(1)
-
-
-def _PrintProcessHeadingLine():
-  print '%-10s : %-50s : %12s %12s %12s' % (
-      'Process ID', 'Process Name', 'RUN_TIME', 'THREADS','MEM_RSS_KB')
-  print ''
-
-
-def _PrintProcess(process, stats):
-  run_time_min, run_time_sec = divmod(stats.run_time, 60)
-  print '%10s : %-50s : %6s m %2s s %8s %12s' % (
-      process.pid, process.name, run_time_min, run_time_sec,
-      stats.threads, stats.vm_rss)
-
-
-def _PrintProcessStatsHeadingLine():
+  print 'Stats for process: [%d] %s' % (process.pid, process.name)
   print '%-10s : %-50s : %12s %12s %13s %12s %14s' % (
-        'Process ID', 'Process Name', 'RUN_TIME', 'THREADS',
-        'CPU_USAGE', 'MEM_RSS_KB', 'PAGE_FAULTS')
+      'Process ID', 'Process Name', 'RUN_TIME', 'THREADS',
+      'CPU_USAGE', 'MEM_RSS_KB', 'PAGE_FAULTS')
   print ''
-
-
-def _PrintProcessStats(process, stats):
-  run_time_min, run_time_sec = divmod(stats.run_time, 60)
-  print '%10s : %-50s : %6s m %2s s %8s %12s %13s %11s' % (
+  while True:
+    stats = process.GetStats()
+    run_time_min, run_time_sec = divmod(stats.run_time, 60)
+    print '%10s : %-50s : %6s m %2s s %8s %12s %13s %11s' % (
         process.pid, process.name, run_time_min, run_time_sec,
         stats.threads, stats.cpu_usage, stats.vm_rss, stats.page_faults)
+    time.sleep(1)
+
+
+def _ListProcessMmaps(process):
+  """Prints process memory maps
+  """
+  print 'Memory Maps for process: [%d] %s' % (process.pid, process.name)
+  print '%-10s %-10s %6s %12s %12s %13s %13s %-40s' % (
+      'START', 'END', 'FLAGS', 'PRIV.DIRTY', 'PRIV.CLEAN',
+      'SHARED DIRTY', 'SHARED CLEAN', 'MAPPED_FILE')
+  print '%38s %12s %12s %13s' % ('(kb)', '(kb)', '(kb)', '(kb)')
+  print ''
+  maps = process.DumpMemoryMaps()
+  for entry in maps.entries:
+    print '%-10x %-10x %6s %12s %12s %13s %13s %-40s' % (
+        entry.start, entry.end, entry.prot_flags,
+        entry.priv_dirty_bytes / 1024, entry.priv_clean_bytes / 1024,
+        entry.shared_dirty_bytes / 1024,
+        entry.shared_clean_bytes / 1024, entry.mapped_file)
+
+
+def _ListProcessClassifiedMmaps(process, mmap_rule):
+  """Prints process classified memory maps
+  """
+  maps = process.DumpMemoryMaps()
+  if not os.path.exists(mmap_rule):
+    print 'File', mmap_rule, 'not found'
+    return
+  with open(mmap_rule) as f:
+    rules = mmap_classifier.LoadRules(f.read())
+  classified_results_tree =  mmap_classifier.Classify(maps, rules)
+  print json.dumps(classified_results_tree, cls=serialization.Encoder)
 
 

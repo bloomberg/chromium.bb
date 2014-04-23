@@ -11,4 +11,4 @@ from memory_inspector.frontends import command_line
 
 
 if __name__ == '__main__':
-  sys.exit(command_line.main(sys.argv))
+  sys.exit(command_line.main())
