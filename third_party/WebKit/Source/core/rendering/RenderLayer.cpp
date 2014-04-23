@@ -3494,8 +3494,13 @@ void RenderLayer::clearCompositedLayerMapping(bool layerBeingDestroyed)
 
 void RenderLayer::setGroupedMapping(CompositedLayerMapping* groupedMapping, bool layerBeingDestroyed)
 {
-    if (!layerBeingDestroyed && m_groupedMapping)
+    if (groupedMapping == m_groupedMapping)
+        return;
+
+    if (!layerBeingDestroyed && m_groupedMapping) {
         m_groupedMapping->setNeedsGraphicsLayerUpdate();
+        m_groupedMapping->removeRenderLayerFromSquashingGraphicsLayer(this);
+    }
     m_groupedMapping = groupedMapping;
     if (!layerBeingDestroyed && m_groupedMapping)
         m_groupedMapping->setNeedsGraphicsLayerUpdate();
