@@ -58,4 +58,15 @@ typedef mojo::Interface<{{interface.name}}>::ScopedHandle Scoped{{interface.name
 }  // namespace {{namespace}}
 {%- endfor %}
 
+{#--- Enum TypeTraits Specializations #}
+{%  if enums %}
+namespace mojo {
+namespace internal {
+{%    for enum in enums %}
+{%      include "enum_traits.tmpl" %}
+{%-   endfor %}
+}  // namespace internal
+}  // namespace mojo
+{%- endif %}
+
 #endif  // {{header_guard}}

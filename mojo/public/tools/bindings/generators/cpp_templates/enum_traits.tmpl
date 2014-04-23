@@ -1,0 +1,5 @@
+template <> struct TypeTraits<{% for namespace in namespaces_as_array -%}
+{{namespace}}::{% endfor %}{{enum.name}}> {
+  static const bool kIsHandle = false;
+  static const bool kIsObject = false;
+};

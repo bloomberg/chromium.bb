@@ -4,11 +4,16 @@
 
 module sample {
 
+enum Enum {
+  ENUM_VALUE
+};
+
 [Peer=ProviderClient]
 interface Provider {
   EchoString(string a) => (string a);
   EchoStrings(string a, string b) => (string a, string b);
   EchoMessagePipeHandle(handle<message_pipe> a) => (handle<message_pipe> a);
+  EchoEnum(Enum a) => (Enum a);
 };
 
 [Peer=Provider]
