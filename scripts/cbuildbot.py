@@ -363,7 +363,6 @@ class Builder(object):
         print_report = False
         success = self._ReExecuteInBuildroot(sync_instance)
       else:
-        self._RunStage(stages.ReportBuildStartStage)
         self.RunStages()
 
     except Exception as ex:
