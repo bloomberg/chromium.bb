@@ -84,6 +84,9 @@ fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 [ Mac ] fast/forms/calendar-picker/month-open-picker-with-f4-key.html [ WontFix ]
 [ Mac ] fast/forms/calendar-picker/week-open-picker-with-f4-key.html [ WontFix ]
 
+# Mac does not have menu key.
+[ Mac ] fast/events/menu-key-context-menu.html [ WontFix ]
+
 # Link Highlighting is only supported on Windows and Linux
 [ Mac ] compositing/gestures [ WontFix ]
 

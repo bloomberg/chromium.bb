@@ -2711,11 +2711,8 @@ bool EventHandler::sendContextMenuEventForKey()
         int y = firstRect.maxY() ? firstRect.maxY() - 1 : 0;
         location = IntPoint(x, y);
     } else if (focusedElement) {
-        RenderBoxModelObject* box = focusedElement->renderBoxModelObject();
-        if (!box)
-            return false;
-        IntRect clippedRect = box->pixelSnappedAbsoluteClippedOverflowRect();
-        location = IntPoint(clippedRect.x(), clippedRect.maxY() - 1);
+        IntRect clippedRect = focusedElement->boundsInRootViewSpace();
+        location = IntPoint(clippedRect.center());
     } else {
         location = IntPoint(
             rightAligned ? view->contentsWidth() - kContextMenuMargin : kContextMenuMargin,
