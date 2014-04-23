@@ -307,27 +307,14 @@ void RenderLayerCompositor::updateIfNeededRecursive()
 void RenderLayerCompositor::setNeedsCompositingUpdate(CompositingUpdateType updateType)
 {
     ASSERT(updateType != CompositingUpdateNone);
-    // FIXME: this code was historically part of updateCompositingLayers, and
-    // for now is kept totally equivalent to the previous implementation. We
-    // should carefully clean up the awkward early-exit semantics, balancing between
-    // skipping unnecessary compositing updates and not incorrectly skipping
-    // necessary updates.
-
     // FIXME: Technically we only need to do this when the FrameView's isScrollable method
     // would return a different value.
     if (updateType == CompositingUpdateAfterLayout)
         m_rootShouldAlwaysCompositeDirty = true;
 
-    // Avoid updating the layers with old values. Compositing layers will be updated after the layout is finished.
-    if (m_renderView.needsLayout())
-        return;
-
-    // FIXME: We shouldn't clear dirty bits in this function. Also, we shouldn't
-    // enable compositing mode in this function.
+    // FIXME: This function should only set dirty bits. We shouldn't
+    // enable compositing mode here.
     enableCompositingModeIfNeeded();
-
-    if (!m_needsToRecomputeCompositingRequirements && !m_compositing)
-        return;
 
     m_pendingUpdateType = std::max(m_pendingUpdateType, updateType);
 
@@ -386,19 +373,20 @@ void RenderLayerCompositor::updateIfNeeded()
         enableCompositingModeIfNeeded();
     }
 
-    if (!hasAcceleratedCompositing() || (!m_needsToRecomputeCompositingRequirements && !m_compositing))
-        return;
-
     CompositingUpdateType updateType = m_pendingUpdateType;
-
     bool needCompositingRequirementsUpdate = m_needsToRecomputeCompositingRequirements;
     bool needHierarchyAndGeometryUpdate = compositingLayersNeedRebuild();
-    bool needsToUpdateScrollingCoordinator = scrollingCoordinator() ? scrollingCoordinator()->needsToUpdateAfterCompositingChange() : false;
-
-    if (updateType == CompositingUpdateNone && !needCompositingRequirementsUpdate && !needHierarchyAndGeometryUpdate && !needsToUpdateScrollingCoordinator)
-        return;
 
     m_pendingUpdateType = CompositingUpdateNone;
+    m_compositingLayersNeedRebuild = false;
+    m_needsToRecomputeCompositingRequirements = false;
+
+    if (!hasAcceleratedCompositing() || (!needCompositingRequirementsUpdate && !m_compositing))
+        return;
+
+    bool needsToUpdateScrollingCoordinator = scrollingCoordinator() ? scrollingCoordinator()->needsToUpdateAfterCompositingChange() : false;
+    if (updateType == CompositingUpdateNone && !needCompositingRequirementsUpdate && !needHierarchyAndGeometryUpdate && !needsToUpdateScrollingCoordinator)
+        return;
 
     GraphicsLayerUpdater::UpdateType graphicsLayerUpdateType = GraphicsLayerUpdater::DoNotForceUpdate;
     CompositingPropertyUpdater::UpdateType compositingPropertyUpdateType = CompositingPropertyUpdater::DoNotForceUpdate;
@@ -408,10 +396,6 @@ void RenderLayerCompositor::updateIfNeeded()
         graphicsLayerUpdateType = GraphicsLayerUpdater::ForceUpdate;
         compositingPropertyUpdateType = CompositingPropertyUpdater::ForceUpdate;
     }
-
-    // Only clear the flags if we're updating the entire hierarchy.
-    m_compositingLayersNeedRebuild = false;
-    m_needsToRecomputeCompositingRequirements = false;
 
     RenderLayer* updateRoot = rootRenderLayer();
 
